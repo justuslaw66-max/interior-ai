@@ -303,3 +303,47 @@ its existing 361-line versus 280-line failure. Neither inherited area is part
 of this batch. Full E2E, Phase 8, CH-0004, other CH-0017 through CH-0030 work,
 Hamilton adapter limitations, workflows, dependencies, schema, and migrations
 remain untouched.
+
+## Phase 0 viewport-workspace architecture ratchet — 2026-08-04
+
+This bounded CH-0019/CH-0020 batch starts from exact clean source
+`3f84fbd98e1154285c537119e7ec8227727f9d24` after the completed baseline
+chain. The 361-line viewport registration combined immutable viewport
+state/configuration projection with reference and command wiring inside one
+341-line builder. History grew the original 258-line composition through
+imported-wall editing, multi-room plan summary, and selected-fixture lighting;
+the behavior remains valid, but the mixed construction responsibilities no
+longer fit the verified 280-line registration budget.
+
+The selected extraction is the viewport workspace read model. The new pure
+`design-page-viewport-workspace-read-model.ts` consumes an explicit typed set
+of read-only `state`/`derived` sources and constructs viewport state and
+configuration. The original registration remains the sole orchestration owner
+for boundary selection, references, command callbacks, adapter invocation, and
+the returned viewport region. It introduces no hook, effect, store, registry,
+camera state, selection state, or Consumer/Pro fork.
+
+The original module is 210 physical lines, down from 361; the new module is
+298 lines, with seven focused functions and a 48-line maximum. The design
+architecture limit is tightened from 300 to the verified 280 maximum, and the
+code-quality baseline lowers the registration's one overlong-function maximum
+from 341 to 193. No allowance, exception, suppression, cycle, or unsafe
+TypeScript construct is added.
+
+Deterministic coverage now locks empty, one-room, multi-room, 2D, 3D,
+Consumer, Pro, client-preview, presentation, selected-opening removal,
+room/project switching, canonical room ordering, repeated construction, and
+save/reload-equivalent input behavior. Focused viewport, camera, continuity,
+selection, lighting, presentation, persistence, keyboard, and accessibility
+checks pass, as do full zero-warning lint, typecheck, code quality, and the
+strict 57-page production build. The sandboxed build fails only on the known
+Turbopack helper-port restriction; the approved outside-sandbox run passes with
+the inherited floor-plan NFT tracing warning. `test:design-page-cleanup` clears
+the viewport 280-line guard and next stops at the untouched
+`DesignPageWorkspace.tsx` 594/550 limit. That next architecture batch, Full
+E2E, Phase 8, CH-0004, CH-0017 through CH-0030, and unrelated editor/scene work
+remain out of scope.
+
+Independent read-only review corrected two documentation-only count/coverage
+descriptions and then passed the current complete diff with no actionable
+architecture, state-ownership, behavior, test, ratchet, or scope findings.

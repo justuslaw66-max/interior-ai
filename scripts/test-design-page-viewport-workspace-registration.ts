@@ -11,12 +11,19 @@ const workspaceSource = readSource(
 const registrationSource = readSource(
   "lib/design-page-viewport-workspace-registration.ts"
 );
+const readModelSource = readSource(
+  "lib/design-page-viewport-workspace-read-model.ts"
+);
 
 assert.match(
   workspaceSource,
   /buildDesignPageViewportWorkspaceRegistration\(\{[\s\S]*?presentation: presentationQaWorkspace/
 );
 assert.match(registrationSource, /buildDesignPageViewportRegionAdapter\(\{/);
+assert.match(
+  registrationSource,
+  /buildDesignPageViewportWorkspaceReadModel\(\{[\s\S]*?sources: \{[\s\S]*?state: readModel\.state,[\s\S]*?configuration: readModel\.configuration/
+);
 assert.doesNotMatch(workspaceSource, /buildDesignPageViewportRegionAdapter\(\{/);
 
 for (const group of [
@@ -32,7 +39,7 @@ for (const group of [
 }
 
 assert.match(
-  registrationSource,
+  readModelSource,
   /selectedCount: itemSelection\.state\.selectedIds\.size[\s\S]*?pendingZoneType: zone\.state\.pendingZoneType/,
   "Selection controls should retain item-selection and zone ownership."
 );
@@ -53,6 +60,7 @@ assert.match(
 );
 
 assert.ok(registrationSource.split("\n").length <= 280);
+assert.ok(readModelSource.split("\n").length <= 400);
 assert.ok(workspaceSource.split("\n").length <= 550);
 
 console.log("design page viewport workspace registration guardrails passed");

@@ -1845,3 +1845,120 @@ resolved SHA and final clean status are reported after commit. Rollback is one
 local revert. No Phase 8, CH-0004, CH-0017 through CH-0030, workflow,
 dependency, schema, migration, catalog, production-data, push, or deployment
 change is included.
+
+## Viewport workspace registration architecture ratchet — 2026-08-04
+
+This bounded remediation began from exact clean source
+`3f84fbd98e1154285c537119e7ec8227727f9d24` on
+`refactor/viewport-workspace-registration`. Entry status, tracked diff, diff
+check, diff stat, and untracked output were empty. The completed hook,
+save-status, Hamilton, presentation, and GLB baseline commits were direct
+ancestors. `lsof` resolved the listening Node application (`PID 24623`) to the
+canonical `/Users/justus/Developer/interior-ai` checkout, matching the edit
+target. No work was discarded, carried from another branch, pushed, or
+deployed.
+
+The exact inherited failure reproduced after all earlier cleanup guards:
+`scripts/test-design-page-viewport-workspace-registration.ts:55` required the
+viewport registration's newline-split source to be at most 280 entries. The
+file was 361 physical lines / 362 newline-split entries. The separate design
+architecture check reported the same file at 361/300 plus the existing
+`DesignPageWorkspace.tsx` 594/550 failure. Targeted ESLint was green. Related
+viewport guards were green except the separately inherited
+`test-editor-3d-floor-cutaway.ts` source assertion for `floorWorldY`, which was
+recorded and not modified.
+
+The pre-edit responsibility inventory found six imports, one 341-line
+top-level builder, and five nested arrow callbacks. The initial viewport
+composition was 258 lines; imported-wall editing brought it to 279,
+multi-room plan summary to 304, and selected-fixture lighting to 361. The
+module selected existing core-shell, viewport-shell, document/room, scene,
+selection, plan, imported-wall, placement, camera, and zone boundaries. It
+derived selected-fixture light state, assembled 12 viewport state groups and
+configuration, passed one plan-quality reference group, constructed 11 command
+groups, invoked `buildDesignPageViewportRegionAdapter`, and returned one
+viewport region. It contained no hook, React state, external effect,
+registration/unregistration lifecycle, analytics, store, persistence write,
+or cleanup responsibility; mutations occur only when its callbacks delegate
+to the established command owners.
+
+The chosen extraction is immutable viewport read-model construction. Before,
+one builder selected sources, projected state/configuration, and wired
+commands. After, `design-page-viewport-workspace-read-model.ts` receives an
+explicit typed set of read-only `state`/`derived` sources and constructs only
+viewport state/configuration. It cannot access actions and imports no React.
+The original registration still selects boundaries, owns references and every
+command/event callback, invokes the adapter, and returns the public registration
+facade. There is no second viewport registry, selected-region state, camera
+state, scene/document model, Consumer/Pro model, or hidden side effect.
+
+The canonical scene and placement invariants are unchanged: 2D and 3D still
+consume the same document/scene projection and shared placement/collision
+owners; plan coordinates remain XZ, vertical remains Y, and durable rotation
+remains canonical `rotationDeg`. Existing viewport-shell state continues to own
+view mode, selected plan rooms/overlay, camera view, editor/presentation mode,
+and plan preferences. Existing document/scene owners continue to own active
+room, room order/counts, fixture state, lighting settings, and persistence.
+Client preview and presentation policies are projected through the existing
+adapter, while Consumer/Pro differences remain capability/theme projections
+over the same model. Keyboard, accessibility, save/reload, project switching,
+and cleanup owners are untouched.
+
+The registration is now 210 physical lines, a 151-line reduction and safely
+below 280. The extracted module is 298 lines with seven focused functions; the
+largest is 48 lines. The design architecture limit tightens from 300 to 280,
+and the automatically lowered code-quality baseline changes the original
+builder maximum from 341 to 193. No allowance is raised, and no exception,
+suppression, explicit `any`, TypeScript suppression, unexplained production
+assertion, dependency, barrel, or cycle is added.
+
+Deterministic read-model coverage proves empty/no-current-room behavior,
+one-room and ordered multi-room projections, 2D and 3D availability, Consumer
+fixture restriction, Pro selected-fixture projection, client-preview
+suppression, presentation navigator disablement, selected-opening
+presence/removal, active-room and project switching, repeated construction
+without duplication, and save/reload-equivalent input parity. Cleanup and
+unregistration are not applicable to the extracted pure function; the
+unchanged higher-level registration remains effect-free, and existing scene
+and viewport-shell lifecycle coverage remains green.
+
+Validation on the production/test change before documentation:
+
+- PASS: the new read-model test; viewport overlay and selection controls; plan
+  canvas, plan quality, zone, 2D camera, navigation, representative-project
+  2D/3D continuity, selection transforms, scene layers/registration,
+  presentation, persistence/presentation, room plan, floating-overlay,
+  designer-theme, topology-editor, lighting, Consumer/Pro capability and
+  accessibility, selection keyboard, and design persistence checks.
+- PASS: targeted ESLint with `--max-warnings=0`; full repository lint with zero
+  warnings; typecheck; and code quality across 1,038 production files with the
+  lowered baseline, no new cycle, unsafe TypeScript, or suppression.
+- PASS: strict `APP_ENV=development CATALOG_STRICT_VALIDATION=true npm run
+  build` outside the sandbox, all 57 pages. The first sandboxed attempt failed
+  only because Turbopack could not bind its internal helper port; the inherited
+  floor-plan NFT whole-project tracing warning remains.
+- PARTIAL/EXPECTED INHERITED FAIL: `npm run test:design-page-cleanup` runs the
+  new read-model coverage, clears the original viewport 280-line assertion,
+  and next stops at the untouched `DesignPageWorkspace.tsx` 594/550 assertion
+  in the same guard. Direct design architecture likewise reports only 594/550;
+  its viewport limit is now 280 and passes.
+
+Independent read-only review first corrected two documentation-only
+inaccuracies: the new module has seven functions, and the test proves ordered
+room projections rather than an ordered viewport-region list. Its final
+complete-diff disposition is **PASS — no actionable findings**. It confirmed a
+cohesive read-model boundary, read-only dependency direction, unchanged
+canonical state/command owners, equivalent viewport and policy mappings,
+unweakened static guards, lowered ratchets, and no hidden side effect, cycle,
+duplicated state, alternate registry, or scope creep. The synthetic typed
+facade fixture and absence of repeated browser/manual UI validation are noted
+as non-blockers; focused runtime assertions and the author's strict build and
+broader validation cover this behavior-preserving batch.
+
+The implementation commit is the single focused local commit containing this
+record; its resolved SHA and final clean status are reported after creation.
+Rollback is one local revert. Full E2E was not run. The next inherited
+workspace architecture failure is recorded only and not fixed. No Phase 8,
+CH-0004, CH-0017 through CH-0030, dependency, workflow, schema, migration,
+catalog, presentation-lighting, GLB, unrelated editor/scene cleanup, push, or
+deployment change is included.

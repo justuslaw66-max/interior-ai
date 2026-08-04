@@ -23,6 +23,9 @@ const viewportAdapterSource = readSource(
 const viewportWorkspaceSource = readSource(
   "lib/design-page-viewport-workspace-registration.ts"
 );
+const viewportReadModelSource = readSource(
+  "lib/design-page-viewport-workspace-read-model.ts"
+);
 const controlsSource = readSource(
   "components/editor/design-page/DesignPageViewportSelectionControls.tsx"
 );
@@ -30,6 +33,7 @@ const modelSource = readSource(
   "lib/design-page-viewport-selection-controls.ts"
 );
 const normalizedViewportWorkspace = normalizeWhitespace(viewportWorkspaceSource);
+const normalizedViewportReadModel = normalizeWhitespace(viewportReadModelSource);
 const normalizedViewportOverlay = normalizeWhitespace(viewportOverlaySource);
 const normalizedViewportAdapter = normalizeWhitespace(viewportAdapterSource);
 const normalizedModel = normalizeWhitespace(modelSource);
@@ -112,6 +116,14 @@ for (const expected of [
   "pendingZoneType: zone.state.pendingZoneType",
   "selectedZone: zone.state.selectedZone",
   "isClientPreview: coreShell.derived.access.isClientPreview",
+] as const) {
+  assert.ok(
+    normalizedViewportReadModel.includes(expected),
+    `Viewport read model should preserve ${expected}.`
+  );
+}
+
+for (const expected of [
   "switchFloor: documentRoom.actions.floor.handleSwitchFloor",
   "alignX: placementSelection.actions.interaction.alignSelectionX",
   "alignZ: placementSelection.actions.interaction.alignSelectionZ",

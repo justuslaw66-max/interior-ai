@@ -659,6 +659,10 @@ const viewportRegistrationSource = fs.readFileSync(
   path.join(process.cwd(), "lib/design-page-viewport-workspace-registration.ts"),
   "utf8"
 );
+const viewportReadModelSource = fs.readFileSync(
+  path.join(process.cwd(), "lib/design-page-viewport-workspace-read-model.ts"),
+  "utf8"
+);
 assert.match(selectionSource, /canonicalTopology\.actions\.removeOpening\(overlayId\)/);
 assert.match(selectionSource, /deletePlanOverlay: deletePlanOverlayById/);
 assert.match(
@@ -673,7 +677,7 @@ for (const mutation of ["move_vertex", "move_wall", "update_wall", "split_wall"]
 assert.match(importedWallEditorSource, /Edit local copy/);
 assert.match(importedWallEditorSource, /source plan is unchanged/i);
 assert.match(importedWallEditorSource, /!straightWall/);
-assert.match(viewportRegistrationSource, /importedWallEditing\.state\.available/);
+assert.match(viewportReadModelSource, /importedWallEditing\.state\.available/);
 assert.match(
   viewportRegistrationSource,
   /importedWallEditor: importedWallEditing\.actions/

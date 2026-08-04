@@ -299,8 +299,8 @@ const designPageSource = fs.readFileSync(
   path.join(root, "components", "editor", "design-page", "DesignPageWorkspace.tsx"),
   "utf8"
 );
-const viewportWorkspaceSource = fs.readFileSync(
-  path.join(root, "lib", "design-page-viewport-workspace-registration.ts"),
+const viewportReadModelSource = fs.readFileSync(
+  path.join(root, "lib", "design-page-viewport-workspace-read-model.ts"),
   "utf8"
 );
 const presentationWorkspaceSource = fs.readFileSync(
@@ -505,9 +505,9 @@ assert.doesNotMatch(
   "The design workspace should delegate the loading veil to the viewport overlay layer."
 );
 assert.match(
-  viewportWorkspaceSource,
-  /buildDesignPageViewportRegionAdapter\(\{[\s\S]*?sceneLoading: sceneRoomRead\.state\.scene\.showSceneLoadingVeil,[\s\S]*?configuration:\s*\{[\s\S]*?dark: coreShell\.derived\.access\.showDesignerTheme,[\s\S]*?sceneBackgroundColor: planWorkspace\.derived\.sceneBackgroundColor/,
-  "The viewport workspace should inject the resolved loading theme and background."
+  viewportReadModelSource,
+  /sceneLoading: sceneRoomRead\.state\.scene\.showSceneLoadingVeil,[\s\S]*?const dark = coreShell\.derived\.access\.showDesignerTheme;[\s\S]*?sceneBackgroundColor: planWorkspace\.derived\.sceneBackgroundColor/,
+  "The viewport read model should inject the resolved loading theme and background."
 );
 assert.match(
   viewportAdapterSource,

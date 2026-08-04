@@ -60,6 +60,10 @@ const viewportWorkspaceRegistrationSource = readFileSync(
   join(root, "lib/design-page-viewport-workspace-registration.ts"),
   "utf8"
 );
+const viewportWorkspaceReadModelSource = readFileSync(
+  join(root, "lib/design-page-viewport-workspace-read-model.ts"),
+  "utf8"
+);
 
 assert.match(planEditingFacadeSource, /useDesignPagePlanQualityController\(\{/);
 assert.match(planWorkspaceFacadeSource, /useDesignPagePlanEditingFacade\(\{/);
@@ -179,14 +183,14 @@ assert.doesNotMatch(
   "The workspace should delegate plan-quality review rendering to the viewport overlay layer."
 );
 assert.match(
-  viewportWorkspaceRegistrationSource,
-  /buildDesignPageViewportRegionAdapter\(\{[\s\S]*?visibility: \{[\s\S]*?planQuality: quality\.reviewPanelVisible/,
-  "The viewport workspace should inject controller-owned quality visibility."
+  viewportWorkspaceReadModelSource,
+  /visibility: \{[\s\S]*?planQuality: quality\.reviewPanelVisible/,
+  "The viewport read model should inject controller-owned quality visibility."
 );
 assert.match(
-  viewportWorkspaceRegistrationSource,
+  viewportWorkspaceReadModelSource,
   /planQuality: \{[\s\S]*?report: quality\.report,[\s\S]*?collapsed: quality\.reviewPanelCollapsed/,
-  "The viewport workspace should inject the controller-owned quality report state."
+  "The viewport read model should inject the controller-owned quality report state."
 );
 assert.match(
   viewportWorkspaceRegistrationSource,

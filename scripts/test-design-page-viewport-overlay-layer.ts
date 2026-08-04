@@ -20,7 +20,11 @@ const adapterSource = readSource("lib/design-page-viewport-region-adapter.ts");
 const viewportWorkspaceSource = readSource(
   "lib/design-page-viewport-workspace-registration.ts"
 );
+const viewportReadModelSource = readSource(
+  "lib/design-page-viewport-workspace-read-model.ts"
+);
 const normalizedViewportWorkspace = normalizeWhitespace(viewportWorkspaceSource);
+const normalizedViewportReadModel = normalizeWhitespace(viewportReadModelSource);
 const normalizedOverlay = normalizeWhitespace(overlaySource);
 const normalizedAdapter = normalizeWhitespace(adapterSource);
 
@@ -53,7 +57,7 @@ for (const contractName of [
   );
 }
 
-// Viewport workspace injects live values; the adapter owns policy and action shaping.
+// The read model injects live values; workspace orchestration owns actions.
 for (const expected of [
   "rail: planWorkspace.derived.floatingPlanOverlayStackVisible",
   "sceneLoading: sceneRoomRead.state.scene.showSceneLoadingVeil",
@@ -64,6 +68,14 @@ for (const expected of [
   "crossRoomDragTarget: coreShell.state.placement.crossRoomDragTarget",
   'enabled: base.state.editor.viewMode === "3d" && scene.hasWholeHousePlan',
   "floorProperties: planWorkspace.derived.floatingFloorPropertiesPanelVisible",
+] as const) {
+  assert.ok(
+    normalizedViewportReadModel.includes(expected),
+    `Viewport read model should preserve the live boundary: ${expected}.`
+  );
+}
+
+for (const expected of [
   "setPanel: planWorkspace.refs.quality.setReviewPanelNode",
   "deletePlanOverlay: selectionInspection.actions.selection.deletePlanOverlayById",
   "showToast: coreShell.actions.feedback.showRuleToast",

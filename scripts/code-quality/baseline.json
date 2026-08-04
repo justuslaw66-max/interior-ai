@@ -3565,7 +3565,7 @@
     "lib/design-page-viewport-workspace-registration.ts": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 341
+        "maximum": 193
       }
     },
     "lib/design-page-zone-layout.ts": {

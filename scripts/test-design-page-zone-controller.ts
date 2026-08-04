@@ -26,6 +26,9 @@ const viewportAdapterSource = readSource(
 const viewportWorkspaceRegistrationSource = readSource(
   "lib/design-page-viewport-workspace-registration.ts"
 );
+const viewportWorkspaceReadModelSource = readSource(
+  "lib/design-page-viewport-workspace-read-model.ts"
+);
 const structureLayerSource = readSource(
   "components/editor/design-page/DesignSceneStructureLayer.tsx"
 );
@@ -355,9 +358,9 @@ assert.match(
   "The scene region should pass the zone-bounds resolver to the guidance layer."
 );
 assert.match(
-  viewportWorkspaceRegistrationSource,
+  viewportWorkspaceReadModelSource,
   /selectionControls:\s*\{[\s\S]*?pendingZoneType:\s*zone\.state\.pendingZoneType,[\s\S]*?selectedZone:\s*zone\.state\.selectedZone,[\s\S]*?isClientPreview:\s*coreShell\.derived\.access\.isClientPreview/,
-  "The viewport registration should inject zone live-policy inputs."
+  "The viewport read model should inject zone live-policy inputs."
 );
 assert.match(
   viewportAdapterSource,

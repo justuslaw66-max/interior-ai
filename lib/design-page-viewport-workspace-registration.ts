@@ -1,9 +1,6 @@
 import { buildDesignPageViewportRegionAdapter } from "@/lib/design-page-viewport-region-adapter";
-import { PLAN_FLOATING_OVERLAY_STACK_WIDTH_PX } from "@/lib/design-page-editor-configuration";
+import { buildDesignPageViewportWorkspaceReadModel } from "@/lib/design-page-viewport-workspace-read-model";
 import type { DesignPagePresentationWorkspaceRegistration } from "@/lib/useDesignPagePresentationWorkspaceRegistration";
-import { resolveDesignLightingSettings } from "@/lib/design-lighting-settings";
-import { LIGHTING_PRESETS } from "@/lib/lightingPresets";
-import { resolveFixturePhotometrics } from "@/lib/resolve-lighting-scene";
 
 export type BuildDesignPageViewportWorkspaceRegistrationInput = {
   boundaries: {
@@ -33,176 +30,28 @@ export function buildDesignPageViewportWorkspaceRegistration({
   const placement = selection.boundaries.placement;
   const placementSelection = selection.boundaries.selection;
 
-  const floor = documentRoom.derived.floor;
-  const floorState = documentRoom.state.floor;
-  const room = documentRoom.derived.room;
   const plan = documentRoom.derived.plan;
-  const scene = sceneRoomRead.derived.scene;
-  const roomRead = sceneRoomRead.derived.room;
-  const quality = planWorkspace.state.quality;
-  const inspector = planWorkspace.state.inspector;
-  const lightingSettings = resolveDesignLightingSettings(
-    coreShell.state.document.designSnapshot
-  );
-  const selectedFixturePhotometrics = itemSelection.state.selectedItem
-    ? resolveFixturePhotometrics(
-        itemSelection.state.selectedItem,
-        selectionInspection.derived.selectedProduct
-      )
-    : null;
-  const selectedFixtureLight =
-    coreShell.derived.access.isDesigner &&
-    itemSelection.state.selectedItem &&
-    selectedFixturePhotometrics
-      ? {
-          isOn:
-            itemSelection.state.selectedItem.fixtureLight?.isOn ??
-            LIGHTING_PRESETS[lightingSettings.preset].fixtureDefaultOn,
-          dimmer:
-            itemSelection.state.selectedItem.fixtureLight?.dimmer ?? 1,
-          cctKelvin:
-            itemSelection.state.selectedItem.fixtureLight?.cctKelvin ??
-            selectedFixturePhotometrics.cctKelvin,
-          beamAngleDeg:
-            itemSelection.state.selectedItem.fixtureLight?.beamAngleDeg ??
-            selectedFixturePhotometrics.beamAngleDeg,
-          beamAdjustable:
-            selectedFixturePhotometrics.emitterType === "spot",
-          luminousFluxLumens:
-            selectedFixturePhotometrics.luminousFluxLumens,
-          dimmable: selectedFixturePhotometrics.dimmable,
-          verification: selectedFixturePhotometrics.verification,
-        }
-      : null;
+  const readModel = buildDesignPageViewportWorkspaceReadModel({
+    sources: {
+      base,
+      coreShell,
+      documentRoom,
+      documentSelection,
+      importedWallEditing,
+      itemSelection,
+      placement,
+      planWorkspace,
+      sceneRoomRead,
+      selection,
+      selectionInspection,
+      viewportShell,
+      zone,
+    },
+  });
 
   const region = buildDesignPageViewportRegionAdapter({
-    state: {
-      visibility: {
-        rail: planWorkspace.derived.floatingPlanOverlayStackVisible ||
-          importedWallEditing.state.available,
-        sceneLoading: sceneRoomRead.state.scene.showSceneLoadingVeil,
-        selectionInspector: inspector.floatingSelectionInspectorVisible,
-        planQuality: quality.reviewPanelVisible,
-        floorProperties: planWorkspace.derived.floatingFloorPropertiesPanelVisible,
-        isClientPreview: coreShell.derived.access.isClientPreview,
-      },
-      opening: {
-        selectedId: viewportShell.state.planSelection.selectedPlanOverlayId,
-        value: inspector.visiblePlanOpening
-          ? {
-              kind: inspector.visiblePlanOpening.kind,
-              wall: inspector.visiblePlanOpening.wall,
-              widthMm: inspector.visiblePlanOpening.widthMm,
-              wallSpanMeters: inspector.visiblePlanOpeningWallSpanMeters,
-            }
-          : null,
-      },
-      selectionInspector: {
-        summary: inspector.selectedObjectInspector,
-        selectedRoom: scene.selectedPlanRoomContext,
-        hasSelectedItem: Boolean(itemSelection.state.selectedItem),
-        hasVisiblePlanOpening: Boolean(inspector.visiblePlanOpening),
-        hasSelectedPlanFixedElement: Boolean(inspector.selectedPlanFixedElement),
-        hasSelectedPlanAnnotation: Boolean(inspector.selectedPlanAnnotation),
-        surfaceInspectorIsWall: roomRead.surfaceInspectorIsWall,
-        surfaceInspectorIsCeiling: roomRead.surfaceInspectorIsCeiling,
-        surfaceInspector: placement.state.surfaceInspector,
-        measurementUnit: viewportShell.state.plan.planMeasurementUnit,
-        activeRoomHeightMm: roomRead.activeRoomHeightMm,
-        activeRoomWallHeightEvidence: roomRead.activeRoomWallHeightEvidence,
-        canEditActiveRoomWallHeight: roomRead.canEditActiveRoomWallHeight,
-        activeFloorRoomCount: floor.activeFloorRoomCount,
-        designRoomCount: coreShell.state.document.designSnapshot.rooms.length,
-        selectedFixtureLight,
-      },
-      planSummary:
-        base.state.editor.viewMode === "2d" && plan.housePlan2D.rooms.length > 0
-          ? {
-              rooms: plan.housePlan2D.rooms,
-              selectedRoomIds:
-                viewportShell.state.planSelection.selectedPlanRoomIds,
-            }
-          : null,
-      planQuality: {
-        report: quality.report,
-        collapsed: quality.reviewPanelCollapsed,
-      },
-      planCanvas: planWorkspace.derived.planCanvasOverlaysState,
-      aiLayoutPreview: {
-        proposal: coreShell.state.placement.pendingAiLayoutProposal,
-        toneText: scene.aiLayoutPreviewTone.text,
-      },
-      crossRoomDragTarget: coreShell.state.placement.crossRoomDragTarget,
-      navigator: {
-        enabled:
-          base.state.editor.viewMode === "3d" && scene.hasWholeHousePlan,
-        rooms: plan.housePlan2D.rooms,
-        activeRoomId: coreShell.state.document.designSnapshot.activeRoomId,
-        cameraPosition: viewportShell.state.camera.cameraView.pos,
-        cameraTarget: viewportShell.state.camera.cameraView.target,
-        itemCountsByRoomId: roomRead.roomItemCountsById,
-        targetRoomId: placement.derived.placementTargetRoomId,
-        targetRoomValid: selection.derived.placement.activeTargetValid,
-      },
-      floorProperties: {
-        roomWidth: room.roomWidth,
-        roomDepth: room.roomDepth,
-        floorOptions: floor.floorOptions,
-        hiddenFloorLevels: floorState.hiddenFloorLevels,
-        activeFloorLevel: floor.activeFloorLevel,
-        activeFloorRoomCount: floor.activeFloorRoomCount,
-        measurementUnit: viewportShell.state.plan.planMeasurementUnit,
-        activeRoomHeightMm: roomRead.activeRoomHeightMm,
-        activeRoomWallHeightEvidence: roomRead.activeRoomWallHeightEvidence,
-        canEditActiveRoomWallHeight: roomRead.canEditActiveRoomWallHeight,
-        activeRoomWallThicknessMm: roomRead.activeRoomWallThicknessMm,
-        activeRoomSlabThicknessMm: roomRead.activeRoomSlabThicknessMm,
-        activeRoomSlabThicknessEvidence:
-          roomRead.activeRoomSlabThicknessEvidence,
-        canEditActiveRoomSlabThickness:
-          roomRead.canEditActiveRoomSlabThickness,
-        activeRoomBaseboardDepthMm: roomRead.activeRoomBaseboardDepthMm,
-        activeRoomWallOpacity: roomRead.activeRoomWallOpacity,
-        activeRoomFloorOpacity: roomRead.activeRoomFloorOpacity,
-        activeRoomCeilingOpacity: roomRead.activeRoomCeilingOpacity,
-        activeRoomCeilingVisible: roomRead.activeRoomCeilingVisible,
-        activeRoomCeilingColor: roomRead.activeRoomCeilingColor,
-        stackedFloorView: floorState.stackedFloorView,
-        canRedo: documentSelection.state.history.canRedo,
-      },
-      importedWallEditor: importedWallEditing.state.available
-        ? importedWallEditing.state
-        : null,
-      selectionControls: {
-        viewMode: base.state.editor.viewMode,
-        stackedFloorView: floorState.stackedFloorView,
-        floorOptions: floor.floorOptions,
-        activeFloorLevel: floor.activeFloorLevel,
-        hiddenFloorLevels: floorState.hiddenFloorLevels,
-        selectedCount: itemSelection.state.selectedIds.size,
-        pendingZoneType: zone.state.pendingZoneType,
-        selectedZone: zone.state.selectedZone,
-        isClientPreview: coreShell.derived.access.isClientPreview,
-      },
-    },
-    configuration: {
-      dark: coreShell.derived.access.showDesignerTheme,
-      sceneBackgroundColor: planWorkspace.derived.sceneBackgroundColor,
-      canEditPlanGeometry: placement.derived.canEditPlanGeometry,
-      selectionInspectorDockedWithRightRail:
-        planWorkspace.derived.selectionInspectorDockedWithRightRail,
-      floatingOverlayStackWidthPx: PLAN_FLOATING_OVERLAY_STACK_WIDTH_PX,
-      selectionInspectorRightPx:
-        planWorkspace.derived.selectionInspectorRightPx,
-      selectionInspectorTopPx: planWorkspace.derived.selectionInspectorTopPx,
-      selectionInspectorWidthPx:
-        planWorkspace.derived.selectionInspectorWidthPx,
-      planQualityReviewTopPx: quality.reviewPanelTopPx,
-      editorMode: viewportShell.state.editor.editorMode,
-      importedWallEditor: {
-        dark: coreShell.derived.access.showDesignerTheme,
-      },
-    },
+    state: readModel.state,
+    configuration: readModel.configuration,
     references: {
       planQuality: {
         setPanel: planWorkspace.refs.quality.setReviewPanelNode,

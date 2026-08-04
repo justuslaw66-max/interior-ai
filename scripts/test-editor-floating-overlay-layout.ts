@@ -26,6 +26,14 @@ const viewportWorkspaceSource = fs.readFileSync(
   ),
   "utf8"
 );
+const viewportReadModelSource = fs.readFileSync(
+  path.join(
+    process.cwd(),
+    "lib",
+    "design-page-viewport-workspace-read-model.ts"
+  ),
+  "utf8"
+);
 const presentationWorkspaceSource = fs.readFileSync(
   path.join(
     process.cwd(),
@@ -352,9 +360,9 @@ assert.match(
 );
 
 assert.match(
-  viewportWorkspaceSource,
+  viewportReadModelSource,
   /rail:\s*planWorkspace\.derived\.floatingPlanOverlayStackVisible[\s\S]*?enabled:\s*base\.state\.editor\.viewMode === "3d" && scene\.hasWholeHousePlan/,
-  "The viewport registration should inject the shared overlay gate and 3D whole-home navigator state."
+  "The viewport read model should inject the shared overlay gate and 3D whole-home navigator state."
 );
 assert.match(
   viewportAdapterSource,
@@ -411,7 +419,7 @@ assert.match(
 );
 
 assert.match(
-  viewportWorkspaceSource,
+  `${viewportReadModelSource}\n${viewportWorkspaceSource}`,
   /floatingOverlayStackWidthPx: PLAN_FLOATING_OVERLAY_STACK_WIDTH_PX[\s\S]*?setPanel: planWorkspace\.refs\.quality\.setReviewPanelNode[\s\S]*?toggleCollapsed: planWorkspace\.actions\.quality\.toggleReviewPanel[\s\S]*?activateIssue: planWorkspace\.actions\.quality\.activateIssue/,
   "The viewport workspace should inject plan-review sizing, reference, and actions."
 );
@@ -544,9 +552,14 @@ assert.doesNotMatch(
 );
 
 assert.match(
-  viewportWorkspaceSource,
-  /selectionInspector:\s*inspector\.floatingSelectionInspectorVisible[\s\S]*?summary:\s*inspector\.selectedObjectInspector/,
-  "The viewport registration should inject inspector state and its deduped visibility flag."
+  viewportReadModelSource,
+  /selectionInspector:\s*inspector\.floatingSelectionInspectorVisible/,
+  "The viewport read model should inject the deduped inspector visibility flag."
+);
+assert.match(
+  viewportReadModelSource,
+  /summary:\s*inspector\.selectedObjectInspector/,
+  "The viewport read model should inject controller-owned inspector state."
 );
 assert.match(
   viewportAdapterSource,

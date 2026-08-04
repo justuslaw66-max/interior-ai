@@ -29,7 +29,7 @@ const lineLimits = new Map([
   ["components/editor/design-page/DesignPagePanelRegion.tsx", 700],
   ["components/editor/design-page/DesignPageDialogLayer.tsx", 700],
   ["components/editor/design-page/DesignPagePresentationQaLayer.tsx", 700],
-  ["lib/design-page-viewport-workspace-registration.ts", 300],
+  ["lib/design-page-viewport-workspace-registration.ts", 280],
   ["lib/design-page-panel-workspace-registration.ts", 300],
   ["lib/useDesignPageSceneRegionWorkspaceRegistration.ts", 450],
 ]);

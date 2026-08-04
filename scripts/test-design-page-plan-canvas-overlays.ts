@@ -26,6 +26,9 @@ const viewportAdapterSource = readSource(
 const viewportWorkspaceSource = readSource(
   "lib/design-page-viewport-workspace-registration.ts"
 );
+const viewportReadModelSource = readSource(
+  "lib/design-page-viewport-workspace-read-model.ts"
+);
 const actionsControllerSource = readSource(
   "lib/useDesignPagePlanCanvasActionsController.ts"
 );
@@ -43,6 +46,7 @@ const planAuthoringRegistrationSource = readSource(
   "lib/useDesignPagePlanAuthoringRegistration.ts"
 );
 const normalizedViewportWorkspace = normalizeWhitespace(viewportWorkspaceSource);
+const normalizedViewportReadModel = normalizeWhitespace(viewportReadModelSource);
 const normalizedViewportOverlay = normalizeWhitespace(viewportOverlaySource);
 const normalizedViewportAdapter = normalizeWhitespace(viewportAdapterSource);
 const normalizedActionsController = normalizeWhitespace(actionsControllerSource);
@@ -70,10 +74,10 @@ assert.match(
   "Plan authoring should compose the grouped plan boundary."
 );
 assert.ok(
-  normalizedViewportWorkspace.includes(
+  normalizedViewportReadModel.includes(
     "planCanvas: planWorkspace.derived.planCanvasOverlaysState"
   ),
-  "Viewport workspace should pass resolved plan-canvas state through the viewport boundary."
+  "Viewport read model should pass resolved plan-canvas state through the viewport boundary."
 );
 assert.ok(
   normalizedViewportWorkspace.includes(
