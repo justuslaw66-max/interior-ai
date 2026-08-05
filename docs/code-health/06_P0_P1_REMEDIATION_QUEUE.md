@@ -460,3 +460,31 @@ Rollback: revert the single CH-0012 implementation commit. If callers must be is
   Focused deterministic coverage, isolated PostgreSQL migration/browser proof,
   all required static/release gates, the strict production build, and Phase 8
   budgets pass for the cloud-baseline remediation. Full E2E was not run.
+
+### RC47-RC55 archival P2 compare queue — 2026-08-05
+
+- **`ARCH-RC51-COMPARE` — P2, locally remediated:** from exact clean
+  `faaa463d2f0211fa2ec8f15fe3da1efc3e80c1c1`, ordered compared-product IDs now
+  resolve through one pure selector over the current unfiltered public catalog
+  projection. Filtered/grouped cards no longer own lookup, no mutable catalog
+  object is copied into compare state, and selected variants continue to build
+  current price/media/dimension projections. The archival RC51 commit
+  `27b6a55bccbab5bf9a6556fea04fa4179343e447` was evidence only.
+- **Failure boundary:** a genuinely missing, retired, mismatched, or non-public
+  identity remains in deterministic order as one removable unavailable entry
+  with no preview or purchase action. The selector cannot substitute another
+  product or bypass the existing `isLiveCatalogEntry` hydration boundary. A
+  removed selected variant is separately detected when the lower-level resolver
+  falls back and becomes variant-unavailable rather than adopting the fallback's
+  media, dimensions, price, or purchase identity.
+- **Behavior preserved:** duplicate toggle removal, the three-item
+  replace-oldest limit, clear/remove, Consumer/Pro sharing, pointer/keyboard
+  access, analytics observation, catalog filters, grouping, IDs, and variant
+  semantics are unchanged.
+- **Evidence:** deterministic filter/identity/refresh coverage and the complete
+  focused Chromium compare suite pass, as do product-flow, variant/price,
+  publication/draft, refresh, and accessibility checks. Full required-gate
+  results are in `HANDOFF.md`; Full E2E is intentionally excluded.
+- **Remaining queue:** RC52 drawer focus remains P2. RC47, RC54, and the RC53/55
+  responsive share work remain P3. No integration branch is eligible from this
+  closure alone.

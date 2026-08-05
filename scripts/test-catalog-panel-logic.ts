@@ -1,9 +1,13 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import path from "node:path";
+import { createElement } from "react";
+import { renderToStaticMarkup } from "react-dom/server";
+import CatalogCompareTray from "../components/catalog/CatalogCompareTray";
 import { CATALOG_ITEMS } from "../lib/catalog";
 import type { CatalogItemSchema } from "../lib/catalog-schema";
 import {
+  buildCatalogCardView,
   collectFilterFacets,
   deriveSeatCount,
   filterCatalogItems,
@@ -13,10 +17,12 @@ import {
   TOP_CATEGORY_ORDER,
   type CatalogFilterState,
 } from "../lib/catalog/view-builders";
+import { resolveCatalogCompareItems } from "../lib/catalog/compare";
 import {
   CATALOG_MAIN_GROUPS,
   getCatalogMainGroupCategories,
 } from "../lib/catalog/category-taxonomy";
+import { groupCatalogItems } from "../lib/catalog/family-grouping";
 import {
   buildCatalogRecommendationSet,
   buildCatalogRoomGuidance,
@@ -149,6 +155,251 @@ function run(): void {
   assert(
     tableFiltered.every((item) => tableCategories.includes(mapToTopCategory(item.category, item))),
     "Main-group filter returned an item outside the selected group",
+  );
+
+  const comparedProduct = CATALOG_ITEMS["bed-real-castlery-lexi-tufted"];
+  assert(comparedProduct, "Expected the fixed Lexi compare fixture in the canonical catalog");
+  const comparedVariant = comparedProduct.variants.find(
+    (variant) => variant.id === "queen_frost_white",
+  );
+  assert(comparedVariant, "Expected the fixed Lexi Frost White canonical variant");
+  const secondComparedProduct =
+    CATALOG_ITEMS["dining-real-castlery-sloane-travertine-180"];
+  assert(secondComparedProduct, "Expected the fixed Sloane compare-order fixture");
+  const selectedVariantIdByProductId = {
+    [comparedProduct.id]: comparedVariant.id,
+  };
+
+  const canonicalCompareCard = buildCatalogCardView(comparedProduct, comparedVariant.id);
+  const secondCompareCard = buildCatalogCardView(secondComparedProduct);
+  const canonicalCardByProductId = new Map([
+    [canonicalCompareCard.id, canonicalCompareCard],
+    [secondCompareCard.id, secondCompareCard],
+  ]);
+  const compareProductIds = [secondComparedProduct.id, comparedProduct.id] as const;
+  const resolvedCompare = resolveCatalogCompareItems(
+    compareProductIds,
+    canonicalCardByProductId,
+    selectedVariantIdByProductId,
+  );
+
+  assert.deepEqual(
+    resolvedCompare.map((entry) => entry.productId),
+    compareProductIds,
+    "Canonical compare resolution must preserve selected product order",
+  );
+  assert(
+    resolvedCompare.every((entry) => entry.status === "available"),
+    "Canonical compare products should resolve as available",
+  );
+  const selectedVariantEntry = resolvedCompare[1];
+  assert.equal(selectedVariantEntry.status, "available");
+  assert.equal(
+    selectedVariantEntry.card.variantId,
+    comparedVariant.id,
+    "Compare resolution must preserve the selected canonical variant id",
+  );
+  assert.equal(selectedVariantEntry.card.variantLabel, canonicalCompareCard.variantLabel);
+  assert.equal(selectedVariantEntry.card.thumbUrl, canonicalCompareCard.thumbUrl);
+  assert.deepEqual(selectedVariantEntry.card.dimsMm, canonicalCompareCard.dimsMm);
+  assert.equal(selectedVariantEntry.card.priceLabel, canonicalCompareCard.priceLabel);
+
+  const otherCategory = mapToTopCategory(secondComparedProduct.category, secondComparedProduct);
+  const compareExcludingFilters: Array<{
+    name: string;
+    search: string;
+    filters: CatalogFilterState;
+  }> = [
+    { name: "category", search: "", filters: { category: [otherCategory] } },
+    { name: "search", search: secondComparedProduct.id, filters: {} },
+    { name: "room", search: "", filters: { roomTags: ["bedroom"] } },
+    { name: "brand", search: "", filters: { brandIds: ["not-the-compared-brand"] } },
+    { name: "price", search: "", filters: { priceMin: 1_000_000 } },
+  ];
+
+  for (const scenario of compareExcludingFilters) {
+    const filtered = filterCatalogItems(items, scenario.search, scenario.filters);
+    assert(
+      !filtered.some((item) => item.id === comparedProduct.id),
+      `${scenario.name} fixture must exclude the compared product from rendered results`,
+    );
+    const filteredCardByProductId = new Map(
+      filtered.map((item) => {
+        const card = buildCatalogCardView(item);
+        return [card.id, card] as const;
+      }),
+    );
+    assert.equal(
+      resolveCatalogCompareItems(
+        [comparedProduct.id],
+        filteredCardByProductId,
+        selectedVariantIdByProductId,
+      )[0]?.status,
+      "unavailable",
+      `${scenario.name} proves the filtered map cannot own compare identity resolution`,
+    );
+    const canonicalResult = resolveCatalogCompareItems(
+      [comparedProduct.id],
+      canonicalCardByProductId,
+      selectedVariantIdByProductId,
+    );
+    assert.equal(
+      canonicalResult[0]?.status,
+      "available",
+      `${scenario.name} must not invalidate a canonically available compared product`,
+    );
+    assert.equal(
+      canonicalResult.length,
+      1,
+      `${scenario.name} result count and compare count must remain independent`,
+    );
+  }
+
+  const stockFilteredCardByProductId = new Map([[secondCompareCard.id, secondCompareCard]]);
+  assert.equal(
+    resolveCatalogCompareItems(
+      [comparedProduct.id],
+      stockFilteredCardByProductId,
+      selectedVariantIdByProductId,
+    )[0]?.status,
+    "unavailable",
+    "A rendered stock/smart-filter result map must not be able to resolve an excluded product",
+  );
+  assert.equal(
+    resolveCatalogCompareItems(
+      [comparedProduct.id],
+      canonicalCardByProductId,
+      selectedVariantIdByProductId,
+    )[0]?.status,
+    "available",
+    "Stock and smart filters must not invalidate a canonically available compared product",
+  );
+
+  const groupedFiltered = groupCatalogItems(
+    filterCatalogItems(items, "", { category: [otherCategory] }),
+  );
+  assert(
+    !groupedFiltered.some((family) => family.items.some((item) => item.id === comparedProduct.id)),
+    "Grouping fixture must exclude the compared product from rendered families",
+  );
+  assert.equal(
+    resolveCatalogCompareItems(
+      [comparedProduct.id],
+      canonicalCardByProductId,
+      selectedVariantIdByProductId,
+    )[0]?.status,
+    "available",
+    "Rendered family grouping must not own compare identity resolution",
+  );
+
+  const missingProductId = "retired-catalog-product";
+  assert.deepEqual(
+    resolveCatalogCompareItems([missingProductId], canonicalCardByProductId),
+    [{ status: "unavailable", productId: missingProductId, reason: "product" }],
+    "A genuinely missing or retired product must retain its identity in one safe unavailable state",
+  );
+  const unavailableMarkup = renderToStaticMarkup(
+    createElement(CatalogCompareTray, {
+      items: resolveCatalogCompareItems([missingProductId], canonicalCardByProductId),
+      onRemove: () => undefined,
+      onClear: () => undefined,
+      onPreview: () => undefined,
+      onAdd: () => undefined,
+    }),
+  );
+  assert.match(unavailableMarkup, /Product unavailable/);
+  assert.match(unavailableMarkup, /no longer available in the public catalog/);
+  assert.match(unavailableMarkup, /<button type="button"/);
+  assert.doesNotMatch(
+    unavailableMarkup,
+    />Open<|>Add</,
+    "Unavailable compare entries must not expose preview or purchase actions",
+  );
+  const mismatchedCardByProductId = new Map([[comparedProduct.id, secondCompareCard]]);
+  assert.deepEqual(
+    resolveCatalogCompareItems([comparedProduct.id], mismatchedCardByProductId),
+    [{ status: "unavailable", productId: comparedProduct.id, reason: "product" }],
+    "A filtered-out or corrupt product identity must never resolve to another product",
+  );
+  const draftProductId = "tv-real-castlery-harper-tv-console-150";
+  assert.equal(CATALOG_ITEMS[draftProductId], undefined);
+  assert.equal(
+    resolveCatalogCompareItems([draftProductId], canonicalCardByProductId)[0]?.status,
+    "unavailable",
+    "An identity absent from the public canonical registry must remain unavailable",
+  );
+
+  const refreshedCompareCard = {
+    ...canonicalCompareCard,
+    priceLabel: "SGD 321",
+    badges: [...canonicalCompareCard.badges, "Catalog refreshed"],
+  };
+  const refreshedResult = resolveCatalogCompareItems(
+    [comparedProduct.id],
+    new Map([[comparedProduct.id, refreshedCompareCard]]),
+    selectedVariantIdByProductId,
+  )[0];
+  assert.equal(refreshedResult?.status, "available");
+  assert.strictEqual(
+    refreshedResult.card,
+    refreshedCompareCard,
+    "Compare resolution must use the current canonical projection after catalog refresh",
+  );
+  assert.notStrictEqual(
+    refreshedResult.card,
+    canonicalCompareCard,
+    "Compare state must not retain a stale full product/card object",
+  );
+
+  const productAfterVariantRetirement: CatalogItemSchema = {
+    ...comparedProduct,
+    variants: comparedProduct.variants.filter((variant) => variant.id !== comparedVariant.id),
+  };
+  const substitutedCard = buildCatalogCardView(
+    productAfterVariantRetirement,
+    comparedVariant.id,
+  );
+  assert.notEqual(
+    substitutedCard.variantId,
+    comparedVariant.id,
+    "Variant-retirement fixture must reproduce the underlying default-variant fallback",
+  );
+  const retiredVariantResult = resolveCatalogCompareItems(
+    [comparedProduct.id],
+    new Map([[comparedProduct.id, substitutedCard]]),
+    selectedVariantIdByProductId,
+  );
+  assert.deepEqual(
+    retiredVariantResult,
+    [{ status: "unavailable", productId: comparedProduct.id, reason: "variant" }],
+    "A removed selected variant must fail closed instead of substituting product data",
+  );
+  const retiredVariantMarkup = renderToStaticMarkup(
+    createElement(CatalogCompareTray, {
+      items: retiredVariantResult,
+      onRemove: () => undefined,
+      onClear: () => undefined,
+      onPreview: () => undefined,
+      onAdd: () => undefined,
+    }),
+  );
+  assert.match(retiredVariantMarkup, /selected variant is no longer available/);
+  assert.doesNotMatch(retiredVariantMarkup, />Open<|>Add</);
+
+  assert.match(
+    catalogPanelSource,
+    /if \(prev\.includes\(id\)\)[\s\S]*?return prev\.filter\(\(entry\) => entry !== id\)/,
+    "Compare toggling must prevent duplicate ids by removing an already-selected identity",
+  );
+  assert.match(
+    catalogPanelSource,
+    /if \(prev\.length >= 3\)[\s\S]*?return \[\.\.\.prev\.slice\(1\), id\]/,
+    "Compare toggling must keep the existing three-item limit and deterministic replacement order",
+  );
+  assert.equal(
+    furnishPanelSource.match(/<CatalogPanel\b/g)?.length,
+    1,
+    "Consumer and Pro must share one CatalogPanel and compare identity path",
   );
 
   const sofaTemplate = items[0];

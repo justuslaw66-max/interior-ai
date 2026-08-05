@@ -2897,3 +2897,94 @@ The implementation will be one local commit with subject
 `fix: canonicalize cloud baseline before autosave`. Rollback is one local
 `git revert` of that commit. No push, PR, deployment, workflow run, or external
 state change is authorized.
+
+## ARCH-RC51 canonical compare lookup remediation — 2026-08-05
+
+### Outcome and scope
+
+`ARCH-RC51-COMPARE` is locally remediated on `fix/arch-rc51-compare` from exact
+clean starting source `faaa463d2f0211fa2ec8f15fe3da1efc3e80c1c1`. The old
+RC51 patch `27b6a55bccbab5bf9a6556fea04fa4179343e447` was inspected only as
+intent evidence and was not cherry-picked. No RC52 drawer-focus, RC47/RC54,
+responsive-share, undo touch-target, workflow, deployment, dependency, schema,
+migration, external-setting, push, or integration-branch work is included.
+
+The root cause was one dependency edge inside `CatalogPanel`: local ordered
+product IDs survived category and filter changes, but their tray projections
+were read from filtered `cardById`. The correction adds one pure typed selector
+that maps those IDs through `allCardById`, the current unfiltered public
+furnish-catalog projection. The compare state still stores only IDs; selected
+variants remain keyed by product ID; no second registry, per-product fetch, or
+mutable product/card snapshot is introduced.
+
+Search, room, category, brand, price, stock/smart filtering, memory scope, and
+family grouping now affect only rendered results. Compared entries retain
+deterministic order and current selected variant, price, thumbnail identity,
+dimensions, retailer/detail, and purchase behavior. A truly missing, retired,
+mismatched, draft, or otherwise non-public ID becomes one removable unavailable
+entry with no open/add action, so it cannot silently disappear, substitute
+another product, or expand publication visibility. Consumer and Pro compose the
+same `CatalogPanel`; analytics remains observational. The selector also receives
+the separately stored selected variant ID: if refresh removes that variant and
+the underlying resolver falls back, the mismatch becomes variant-unavailable
+instead of silently adopting the fallback's media, dimensions, price, or
+purchase identity.
+
+The complete owner and fallback matrix is in
+`docs/architecture/catalog-compare-identity.md`. Focused deterministic coverage
+was test-first: it initially failed because the canonical selector did not yet
+exist, then passed after implementation. The focused Chromium regression first
+exposed that its fixed Hamilton fixture was outside the live virtualized slice;
+the final test searches that same fixed canonical ID into the slice instead of
+using a positional product, then proves the transition. The complete compare
+spec passes 8/8. Product-flow, finish-picker, commerce, publication/live/draft,
+catalog-refresh, accessibility, targeted lint, and typecheck checks also pass.
+
+### Final validation, review, and rollback
+
+- `test-catalog-panel-logic.ts` — pass after the expected test-first missing-
+  selector failure; fixed canonical IDs cover category, search, room, brand,
+  price, stock/smart filtering, grouping, product/variant identity mismatch,
+  missing/non-public identity, refresh, order, variant fidelity, unavailable
+  rendering, limits, and the shared mode path.
+- Focused Chromium `06-catalog-compare.spec.ts` — 8/8 pass, including category,
+  search, price, clear/remove, deterministic three-item replacement, drawer
+  focus, native-keyboard actions, and mobile accessibility.
+- Product flow, finish picker, commerce actions, catalog refresh,
+  publication/live/draft/placeholder gates, and editor capability/accessibility
+  — pass.
+- `npm run test:design-page-cleanup` — 78/78 guards pass.
+- `npm run test:required-test-truthfulness` and
+  `npm run test:critical-required` — pass.
+- Full `npm run lint -- --max-warnings=0`, `npm run typecheck`, and
+  `npm run check:code-quality` — pass. The only ratchet update lowers
+  `CatalogPanel` maximum overlong-function debt from 980 to 979.
+- Strict `CATALOG_STRICT_VALIDATION=true npm run test:catalog-audit` — pass:
+  144 files, zero failures, warnings, or duplicate asset IDs; all catalog
+  registry/editor/media/retailer/variant subchecks pass.
+- Strict `APP_ENV=development CATALOG_STRICT_VALIDATION=true npm run build` —
+  pass for all 57 pages outside the sandbox after the sandboxed Turbopack
+  helper-port attempt failed with `EPERM`; the inherited floor-plan NFT trace
+  warning remains.
+- `npm run test:phase8-performance` — pass: representative project boundaries,
+  initial JS 5,809,133 raw / 1,108,197 Brotli, initial CSS 129,803 / 17,182,
+  Cabinetry lazy chunk 492,639 / 84,899, and GLTFExporter 34,525 / 8,970.
+- Full E2E — not run, by explicit scope.
+
+Independent read-only review first found that catalog refresh could remove
+`queen_frost_white`, let the lower-level resolver substitute
+`queen_nickel_grey`, and leave comparison marked available; it also rejected
+catalog-order/visibility-based fixtures. The correction passes the selected
+variant ID into the compare selector, fails closed on a substituted variant,
+removes Open/Add for that state, and uses fixed Lexi/Frost White, Sloane,
+Hamilton, Peri, and draft Harper IDs. Rereview returned **PASS — no remaining
+actionable findings**. It confirmed no duplicate registry/mutable compare
+snapshot, draft bypass, stale projection, filter/grouping change, broad panel
+cleanup, suppression, dependency, or allowance increase, and made no edits.
+
+The implementation is one focused local commit containing this record; its
+resolved SHA is reported in the final response. Rollback is `git revert` of that
+single commit. Remaining archival findings are RC52 at P2 and RC47, RC54, plus
+RC53/55 responsive share at P3. The starting source already contains the
+completed RC49/50, RC53 revision, and RC48 keyboard work; this change does not
+alter those invariants.

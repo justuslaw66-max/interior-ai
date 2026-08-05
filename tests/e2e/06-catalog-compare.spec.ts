@@ -50,6 +50,53 @@ test.describe("6. Catalog Compare", () => {
     await expect(tray).toHaveCount(0);
   });
 
+  test("compared product stays resolved after category, search, and price changes", async ({ page }) => {
+    test.setTimeout(75_000);
+    await page.goto("/design");
+    await page.waitForLoadState("domcontentloaded");
+    await openCatalog(page);
+    await selectCatalogCategory(page, "seating", "sofa");
+
+    const productId = "sofa-real-castlery-hamilton-2-seater";
+    const searchInput = page.getByRole("textbox", { name: "Search catalog products" });
+    await searchInput.fill(productId);
+    const compareToggle = page.getByTestId(`catalog-compare-toggle-${productId}`);
+    await expect(compareToggle).toBeVisible({ timeout: 20_000 });
+    await compareToggle.focus();
+    await page.keyboard.press("Enter");
+
+    const tray = page.getByTestId("catalog-compare-tray");
+    const removeButton = page.getByTestId(`catalog-compare-remove-${productId}`);
+    await expect(tray).toContainText("Quick compare (1/3)");
+    await expect(removeButton).toBeVisible();
+    const variantLabel = await tray.getByTestId("catalog-compare-variant-label").textContent();
+    expect(variantLabel?.trim()).toBeTruthy();
+    await expect(tray.getByTestId("catalog-compare-variant-label")).toContainText("Brilliant White");
+
+    await searchInput.clear();
+    await selectCatalogCategory(page, "tables", "coffee_table");
+    await expect(compareToggle).toHaveCount(0);
+    await expect(removeButton).toBeVisible();
+    await expect(tray.getByTestId("catalog-compare-variant-label")).toHaveText(variantLabel ?? "");
+
+    await searchInput.fill("coffee-real-castlery-peri-120");
+    await expect(page.getByTestId("catalog-preview-coffee-real-castlery-peri-120")).toBeVisible({
+      timeout: 20_000,
+    });
+    await expect(removeButton).toBeVisible();
+
+    await page.getByRole("button", { name: "Filters" }).click();
+    await page.getByLabel("Price min (SGD)").fill("99999");
+    await page.getByRole("button", { name: "Close" }).click();
+    await expect(page.getByTestId("catalog-empty-recovery")).toBeVisible({ timeout: 20_000 });
+    await expect(tray).toContainText("Quick compare (1/3)");
+    await expect(removeButton).toBeVisible();
+
+    await removeButton.focus();
+    await page.keyboard.press("Enter");
+    await expect(tray).toHaveCount(0);
+  });
+
   test("catalog panel search, filters, and drawer open", async ({ page }) => {
     await page.goto("/design");
     await page.waitForLoadState("domcontentloaded");

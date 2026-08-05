@@ -39,6 +39,8 @@ Place `use client` at the narrowest interactive boundary. Browser-safe shared mo
 
 Catalog architecture separates authoring source, validation/publication, generated immutable projections, and consumer adapters. Every consumer uses stable identities from the canonical projection; runtime mutation of imported maps is forbidden. Public DTOs exclude authoring paths and validation internals.
 
+Compared product IDs resolve through the current unfiltered public catalog projection, never through filtered or grouped card results. Comparison state contains ordered identities rather than mutable product objects; absent identities fail closed as unavailable without exposing draft/admin data or substituting another product.
+
 Generated files contain provenance and are changed only by their generator. CI runs drift/schema check mode. Catalog source, generated output, fixtures, and local/build artifacts stay visibly separate.
 
 ## Persistence, security, and integrations

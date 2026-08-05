@@ -1661,7 +1661,7 @@
     "components/catalog/CatalogPanel.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 980
+        "maximum": 979
       },
       "complexFunctions": {
         "count": 1,

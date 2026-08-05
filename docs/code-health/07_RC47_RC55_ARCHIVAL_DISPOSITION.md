@@ -344,3 +344,50 @@ and restaging the returned identity. The reviewer then returned **functional
 PASS** and made no edits. Its final documentation-only ownership finding is
 resolved by recording `useDesignPageCloudConflictCopyController.ts` as the
 recovery-copy create/gate/commit owner composed by persistence.
+
+## ARCH-RC51 compare remediation closure — 2026-08-05
+
+The RC51 row above records the historical finding at audited source
+`7016da0ad74c7d463a07ec061259b50d757031e0`. On exact clean starting source
+`faaa463d2f0211fa2ec8f15fe3da1efc3e80c1c1`, `ARCH-RC51-COMPARE` is locally
+remediated on `fix/arch-rc51-compare`. Archival RC51 commit
+`27b6a55bccbab5bf9a6556fea04fa4179343e447` was inspected only for intent and
+was not cherry-picked.
+
+The verified defect was the lookup edge, not compare storage: ordered
+`compareIds` survived filter/navigation state, but `compareCards` mapped them
+through filtered `cardById`. The current implementation uses one pure
+`resolveCatalogCompareItems` selector over `allCardById`, the unfiltered public
+card projection rebuilt from current furnish-catalog items and per-product
+variant selections. No product object, registry, fetch path, ID, filter, group,
+or visual design was duplicated or changed.
+
+Category, search, room, brand, price, smart/stock-style filtering, and family
+grouping no longer control compared-product resolution. Ordering, duplicate
+prevention, the three-item replace-oldest limit, selected variant, price,
+dimensions, media identity, retailer/purchase re-entry, remove/clear, and native
+button accessibility remain on their existing paths. A missing, retired,
+identity-mismatched, or non-public product produces one removable unavailable
+entry with no open/add action. Consumer and Pro share the same `CatalogPanel`
+and selector.
+
+Deterministic coverage proves canonical-versus-filtered lookup for every filter
+class, grouping independence, actual canonical product and variant IDs, order,
+count independence, stale-refresh replacement, safe missing/mismatched/draft
+behavior, unavailable rendering, duplicate/limit guards, and one shared mode
+path. It also reproduces a removed `queen_frost_white` selection falling back to
+`queen_nickel_grey` inside the underlying variant resolver and proves the
+compare selector rejects that substitution. The complete focused Chromium
+compare spec passes 8/8 using fixed canonical product IDs, including the new
+real category/search/price transition and native-keyboard add/remove behavior.
+Product-flow, finish-picker, commerce, publication/live/draft, catalog-refresh,
+and editor accessibility checks pass. Final required-gate results are recorded
+in `docs/code-health/HANDOFF.md`; Full E2E was not run.
+
+The detailed owner/identity/source/fallback matrix is
+`docs/architecture/catalog-compare-identity.md`. Rollback is one local revert of
+the focused implementation commit once its SHA is resolved. Remaining archival
+findings are RC52 at P2 and RC47, RC54, plus RC53/55 responsive share work at
+P3. The RC49/50 and RC53 persistence and RC48 keyboard invariants are already
+present in the required starting source; this closure neither reopens nor
+changes them and does not authorize an integration branch.

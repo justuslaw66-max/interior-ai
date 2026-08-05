@@ -42,6 +42,7 @@ import {
   type CatalogMainGroupId,
 } from "@/lib/catalog/category-taxonomy";
 import { useCatalogFilterNavigation } from "@/lib/catalog/filter-navigation";
+import { resolveCatalogCompareItems } from "@/lib/catalog/compare";
 
 const CARD_ROW_HEIGHT = 252;
 const GRID_HEIGHT = 540;
@@ -519,11 +520,10 @@ export default function CatalogPanel({
     return items.find((item) => item.id === selectedId) ?? null;
   }, [selectedId, items]);
 
-  const compareCards = useMemo(() => {
-    return compareIds
-      .map((id) => cardById.get(id))
-      .filter((entry): entry is CatalogCardView => Boolean(entry));
-  }, [compareIds, cardById]);
+  const compareItems = useMemo(
+    () => resolveCatalogCompareItems(compareIds, allCardById, variantSelectionByItem),
+    [allCardById, compareIds, variantSelectionByItem],
+  );
 
   const selectedDetail = useMemo(() => {
     if (!selectedItem) return null;
@@ -961,7 +961,7 @@ export default function CatalogPanel({
       </div>
 
       <CatalogCompareTray
-        items={compareCards}
+        items={compareItems}
         onRemove={(id) => {
           track("catalog_compare_remove", { itemId: id, source: "tray" });
           setCompareIds((prev) => prev.filter((entry) => entry !== id));
