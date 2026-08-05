@@ -265,3 +265,82 @@ drawer before hydration changes the default category.
 Any application or test change invalidates the evidence for the candidate
 audited here. Integration becomes eligible only after all G dispositions are
 resolved or defensibly reclassified from reviewed current evidence.
+
+## ARCH-RC49-50 remediation closure — 2026-08-05
+
+The RC49/RC50 disposition above is historical evidence for audited source
+`7016da0ad74c7d463a07ec061259b50d757031e0`. On the later exact clean source
+`e06795dc92874afb383f61b28ba380930c1c7252`, the combined P1
+`ARCH-RC49-50-CLOUD-BASELINE` invariant is locally remediated on
+`fix/arch-rc49-50-cloud-baseline`. Archival commits
+`d41bdf31720918705480a36a44c91347987080bb` and
+`ee612c84f5f6c1e5370c7aeb12593cf920fe1967` remain unmerged intent references;
+neither was cherry-picked.
+
+### Before and after sequence
+
+Before: the requested-design coordinator fetched the selected ID; the API
+client validated only the transport shell; `legacyApiToSnapshot` migrated or
+fell back; persistence fingerprinted that raw snapshot; only afterward did the
+document controller install it, hydrate floor-plan defaults, enrich product
+snapshots, and reconcile active-room zones. Revision installed separately, and
+autosave checked hydration/conflict/fingerprint equality without a pending
+loaded-baseline acknowledgment.
+
+After: the coordinator creates a unique request epoch and starts an identity-
+bound loading state; the load owner validates exact returned ID and parseable
+revision; one projection performs supported migration, floor-plan defaults,
+product enrichment, active-room zone reconciliation, stored-document
+validation, canonical round-trip, and then fingerprinting. The resulting
+fingerprint is installed as pending with `{designId, revision, epoch}` before
+the canonical document, identity, and revision commit. A post-commit effect can
+acknowledge only the exact still-current identity and fingerprint. All existing-
+design mutation paths remain blocked while loading, pending, failed, or
+detached from an acknowledged matching cloud identity.
+
+Create/update/autosave responses stage their exact event-time stored snapshot
+and returned revision as a new pending identity before acknowledgment. A
+recovery copy gets its own ID, revision, epoch, and fingerprint. Superseded and
+aborted requests cannot install or acknowledge; migration/normalization failure
+fails closed; local-only drafts do not wait for a cloud acknowledgment.
+`ARCH-RC53-CLOUD-REVISION` remains unchanged: queued writes still require their
+separate execution-time revision-ownership remediation.
+
+### Verification and scope
+
+Deterministic tests cover equivalent defaults/order, raw-versus-canonical
+fingerprints, active-room zone normalization, exact identity matching,
+pre-acknowledgment blocking, post-acknowledgment edits, superseded requests,
+duplicate identity, failed/future migration, reload idempotence, and local-only
+behavior with deferred adapters rather than sleeps. The final focused Chromium
+database-backed paths pass for load/edit/one write/reload, My Designs switching,
+and duplicate failure/success identity. The final isolated local database
+identity was `interior_ai_test_arch_rc49_50_final_20260805` at
+`127.0.0.1:5432` as local user `justus`; all 42 migrations applied, seed cleanup
+left zero design rows, and the database was deleted and verified absent.
+
+`test:critical-required`, required-test truthfulness, production-artifact
+evidence, full zero-warning lint, typecheck, code quality, the strict 57-page
+production build, and Phase 8 representative project/bundle checks pass. No
+allowance increased; persistence and document-history baselines decreased.
+Full E2E was not run. No workflow, dependency, lockfile, schema, migration,
+server CAS, RC53, push, deployment, or other RC remediation is included.
+
+Rollback is one local revert of the focused implementation commit after its SHA
+is created. RC47, RC48, RC51, RC52, RC53, RC54, and RC55 findings remain open
+as recorded above; this closure does not make the archival integration set
+eligible by itself.
+
+### Independent remediation review
+
+The separate read-only implementation review identified and verified fixes for
+a newer-load/write interleaving, status-only baseline installation, an ungated
+recovery-copy path, null-identity loading eligibility, and stale render-captured
+revision use during failure restoration. The corrected implementation preserves
+the active loading envelope, installs only exact identity/fingerprint baselines,
+restores only the matching live generation, blocks transient null-cloud writes,
+and gates recovery-copy creation before and after its request before detaching
+and restaging the returned identity. The reviewer then returned **functional
+PASS** and made no edits. Its final documentation-only ownership finding is
+resolved by recording `useDesignPageCloudConflictCopyController.ts` as the
+recovery-copy create/gate/commit owner composed by persistence.

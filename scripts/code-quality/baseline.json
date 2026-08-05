@@ -717,7 +717,7 @@
       "limit": 400
     },
     "lib/useDesignPagePersistence.ts": {
-      "lines": 1359,
+      "lines": 1288,
       "limit": 400
     },
     "lib/useDesignPagePlanActions.ts": {
@@ -4599,7 +4599,7 @@
     "lib/useDesignPageDocumentHistoryController.ts": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 168
+        "maximum": 153
       }
     },
     "lib/useDesignPageDocumentRoomRegistration.ts": {
@@ -4802,12 +4802,12 @@
     },
     "lib/useDesignPagePersistence.ts": {
       "overlongFunctions": {
-        "count": 7,
-        "maximum": 1205
+        "count": 6,
+        "maximum": 1161
       },
       "complexFunctions": {
         "count": 2,
-        "maximum": 24
+        "maximum": 20
       }
     },
     "lib/useDesignPagePersistenceRegistration.ts": {

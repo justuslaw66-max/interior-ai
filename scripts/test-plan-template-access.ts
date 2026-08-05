@@ -73,6 +73,14 @@ const persistenceControllerPath = path.join(
   "useDesignPagePersistence.ts"
 );
 const persistenceControllerSource = fs.readFileSync(persistenceControllerPath, "utf8");
+const cloudBaselineControllerSource = fs.readFileSync(
+  path.join(process.cwd(), "lib", "useDesignPageCloudBaselineController.ts"),
+  "utf8"
+);
+const cloudLoadControllerSource = fs.readFileSync(
+  path.join(process.cwd(), "lib", "useDesignPageCloudLoadController.ts"),
+  "utf8"
+);
 const persistenceNewPlanFacadeSource = fs.readFileSync(
   path.join(process.cwd(), "lib", "useDesignPagePersistenceNewPlanFacade.ts"),
   "utf8"
@@ -816,8 +824,13 @@ assert.match(
 
 assert.match(
   persistenceControllerSource,
-  /const detachCurrentDesignForNewDraft = useCallback\(\(\) => \{[\s\S]*?documentEpochRef\.current \+= 1;[\s\S]*?setDesignId\(null\);[\s\S]*?setShareToken\(null\);[\s\S]*?setShareEnabled\(false\);[\s\S]*?setLastPersistedSnapshotFingerprint\(null\);[\s\S]*?localStorage\.removeItem\(storageKey\);/,
+  /const detachCurrentDesignForNewDraft = useCallback\(\(\) => \{[\s\S]*?detachCloudBaseline\(\);[\s\S]*?setDesignId\(null\);[\s\S]*?setShareToken\(null\);[\s\S]*?setShareEnabled\(false\);[\s\S]*?setLastPersistedSnapshotFingerprint\(null\);[\s\S]*?localStorage\.removeItem\(storageKey\);/,
   "A separate plan should invalidate old writes and remove cloud/share identity before local autosave resumes."
+);
+assert.match(
+  cloudBaselineControllerSource,
+  /function useDetachCloudBaseline[\s\S]*?documentEpochRef\.current \+= 1;[\s\S]*?createDetachedCloudBaseline\(\)/,
+  "Detaching a cloud baseline must invalidate the prior document epoch."
 );
 
 assert.match(
@@ -827,8 +840,8 @@ assert.match(
 );
 
 assert.match(
-  persistenceControllerSource,
-  /const loadDesign = useCallback[\s\S]*?const request = designLoadRequest\.start\(\);[\s\S]*?!designLoadRequest\.isCurrent\(request\)[\s\S]*?documentEpochRef\.current \+= 1;[\s\S]*?setDesignSnapshot\(snapshot\)/,
+  cloudLoadControllerSource,
+  /requestCoordinator\.start\(\)[\s\S]*?!input\.requestCoordinator\.isCurrent\(request\)[\s\S]*?baseline\.installLoaded\([\s\S]*?commitLoadedCloudDesign/,
   "Loading another design should invalidate stale document requests and autosaves before changing identity."
 );
 

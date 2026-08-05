@@ -460,3 +460,34 @@ RC53 contains two separable concerns; RC54 needs only its certification
 correction; and RC48 must be adapted to current controller and analytics/history
 ownership. Detailed proof is in
 `docs/code-health/07_RC47_RC55_ARCHIVAL_DISPOSITION.md`.
+
+## ARCH-RC49-50 implementation record — 2026-08-05
+
+The first bounded persistence item in the RC47-RC55 sequence is complete
+locally from `e06795dc92874afb383f61b28ba380930c1c7252` on
+`fix/arch-rc49-50-cloud-baseline`. No archival commit was cherry-picked.
+
+The accepted boundary consists of one pure canonical persistence projection,
+one pure typed cloud-baseline state machine, a focused React acknowledgment
+owner, a focused cloud-load owner, and a focused recovery-copy create/gate/commit
+owner. The existing persistence controller composes those owners and continues
+to own manual save, autosave, conflict UI, local backup, and serialized writes.
+The existing requested-design coordinator continues to own abort and
+supersession. The projection performs supported migration, floor-plan defaults,
+product snapshots, active-room zone reconciliation, stored document validation,
+and fingerprinting in that order. The state machine binds acknowledgment to
+exact design, revision, and epoch identities and fails closed.
+
+This extraction reduces `useDesignPagePersistence.ts` from 1,359 to 1,288
+physical lines. Code-quality allowances only decrease: persistence line and
+function-debt metrics tighten overall, document-history overlong-function maximum drops
+to 153, and no exception, suppression, unsafe TypeScript construct, dependency,
+or runtime cycle is added.
+
+Focused and database-backed verification plus the complete required static and
+release gates pass. The next persistence step remains the distinct P1
+`ARCH-RC53-CLOUD-REVISION`; do not fold execution-time revision ownership into
+this completed baseline protocol. The P2/P3 sequence remains RC48 keyboard,
+RC51 compare, RC52 drawer focus, RC47 assertions, RC54 projection assertion,
+and RC53/55 responsive share. Certify a later integration artifact only after
+those approved batches are accumulated under the established cadence.

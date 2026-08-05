@@ -428,3 +428,38 @@ The integration result is **B. ARCHIVAL DISPOSITION COMPLETE — ADDITIONAL
 BOUNDED REMEDIATION REQUIRED**. No integration branch should be created yet.
 The exact commit inventory, semantic evidence, validation results, and
 independent review are in `docs/code-health/07_RC47_RC55_ARCHIVAL_DISPOSITION.md`.
+
+## ARCH-RC49-50 cloud-baseline remediation — 2026-08-05
+
+The P1 cloud-baseline finding above is locally remediated on
+`fix/arch-rc49-50-cloud-baseline`, branched from exact clean
+`e06795dc92874afb383f61b28ba380930c1c7252`. The archival RC49/RC50 commits were
+not replayed. Their retained intent was adapted to the current requested-design
+coordinator, versioned document migration, floor-plan hydration, product/zone
+normalization, document epoch, server compare-and-swap, and conflict surfaces.
+
+Before the change, `useDesignPagePersistence` fingerprinted the deserialized
+transport snapshot before the editor's canonical persistence projection and
+installed that value immediately. Autosave had no identity-bound pending
+acknowledgment, so initialization, hydration, or a stale response could become a
+dirty baseline or enable a write. The remediation establishes one canonical
+projection for both the loaded baseline and current saved state, then retains a
+typed `designId` + revision + epoch pending identity until a post-commit render
+matches it exactly. Loading, normalization failure, supersession, project
+switching, and recovery-copy creation cannot unblock a different identity.
+
+Focused deterministic tests cover defaults/order equivalence, raw versus
+canonical input, transient empty state, exact and mismatched acknowledgment,
+real edits, superseded loads, duplicates, migration failure, save/reload, and
+local-only behavior. A disposable local PostgreSQL database applied all 42
+migrations; three focused Chromium paths proved clean existing-design load,
+post-acknowledgment edit/write/reload, cross-design switching, and duplicate
+identity. The database contained zero design rows after cleanup and was deleted.
+The critical-required suite, truthfulness, production-artifact evidence, full
+zero-warning lint, typecheck, code quality, strict 57-page build, and Phase 8
+performance/bundle checks pass. Full E2E was not run.
+
+`ARCH-RC53-CLOUD-REVISION` and all RC47/48/51/52/53/54/55 P2/P3 findings remain
+separate. This batch changes no workflow, dependency, lockfile, schema,
+migration, server CAS, deployment, push, or RC53 execution-time revision
+ownership.

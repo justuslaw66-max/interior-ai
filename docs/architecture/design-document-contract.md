@@ -156,6 +156,36 @@ backups remain available offline; cloud changes remain visibly pending or
 failed until connectivity returns. Multi-tab automatic merging is not
 implemented: conflicts require an explicit reload/reconciliation decision.
 
+### Canonical loaded-baseline protocol
+
+A cloud response does not become a save baseline directly. The client first
+requires an exact returned design ID and a parseable database revision, then
+performs supported document migration, floor-plan persistence defaulting,
+catalog product-snapshot enrichment, active-room zone reconciliation,
+stored-document validation, and canonical round-trip. Only the resulting
+snapshot may be fingerprinted.
+
+The pending baseline identity is the tuple `{designId, revision, epoch}`. The
+epoch is the current document/load generation, not a route string or timer. The
+baseline remains pending while the canonical snapshot, floor-plan state, cloud
+identity, and revision commit. A later render acknowledges it only when all
+three identity fields and the current canonical fingerprint match. Autosave and
+other existing-design mutation paths fail closed until acknowledgment.
+
+Superseded or aborted requests cannot install a pending baseline. Migration,
+future-schema, invalid-revision, or normalization failures retain a blocked
+state rather than falling back over an existing cloud design. Project switching
+detaches the old identity. A duplicate or recovery copy receives its own ID,
+revision, epoch, and fingerprint and cannot reuse the source design's
+acknowledgment. New local-only documents have no cloud identity and therefore do
+not wait for this protocol.
+
+Successful create and update responses stage a pending identity from the exact
+event-time stored snapshot and returned revision before acknowledgment. This
+protocol does not replace server compare-and-swap and does not define queued
+revision freshness; each update still sends `expectedUpdatedAt`, and
+execution-time revision ownership remains a separate concurrency invariant.
+
 ## Compatibility test fixtures
 
 Historical v1 and v2 files live in `tests/fixtures/design-documents`. The

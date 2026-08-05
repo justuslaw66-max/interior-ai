@@ -432,13 +432,16 @@ Rollback: revert the single CH-0012 implementation commit. If callers must be is
 
 ### RC47-RC55 archival P1 persistence queue — 2026-08-05
 
-- **`ARCH-RC49-50-CLOUD-BASELINE` — P1, open:** current load fingerprints the
-  raw API snapshot before canonical post-commit normalization, and recovery-copy
-  immediately installs its fingerprint. No pending baseline survives through
-  the acknowledging render and blocks autosave. A normal load or new recovery
-  copy can therefore appear dirty and schedule an unintended write. RC49 starts
-  the historical protocol and RC50 completes it; treat them as one bounded
-  current-architecture remediation.
+- **`ARCH-RC49-50-CLOUD-BASELINE` — P1, locally remediated:** starting from
+  exact clean `e06795dc92874afb383f61b28ba380930c1c7252`, the current architecture
+  now validates and canonically projects loaded cloud documents before creating
+  a fingerprint, binds the pending baseline to design ID, loaded revision, and
+  document/load epoch, and blocks load, manual-save, recovery-copy, and autosave
+  writes until the exact post-commit projection acknowledges it. Superseded or
+  failed loads fail closed; duplicates receive an independent identity. RC49
+  `d41bdf31720918705480a36a44c91347987080bb` and RC50
+  `ee612c84f5f6c1e5370c7aeb12593cf920fe1967` were used only as intent evidence
+  and were not cherry-picked.
 - **`ARCH-RC53-CLOUD-REVISION` — P1, open:** manual and autosave operations
   capture `lastCloudRevision` before entering the serialized write queue. A
   later operation can execute after its predecessor committed while still
@@ -451,7 +454,9 @@ Rollback: revert the single CH-0012 implementation commit. If callers must be is
   cross-session overwrite or cross-design mutation. They do not make the two
   same-client persistence gaps safe. P1 reflects production reach, edit-loss/
   stranding potential, and weak detectability; no P0 is established.
-- **Gate:** these findings block a final integration branch. The related P2/P3
-  items and full RC inventory are recorded in
-  `docs/code-health/07_RC47_RC55_ARCHIVAL_DISPOSITION.md`. No remediation was
-  implemented during the audit.
+- **Gate:** `ARCH-RC53-CLOUD-REVISION` remains the open P1 persistence item and
+  is explicitly outside this batch. The related P2/P3 items and full RC
+  inventory remain in `docs/code-health/07_RC47_RC55_ARCHIVAL_DISPOSITION.md`.
+  Focused deterministic coverage, isolated PostgreSQL migration/browser proof,
+  all required static/release gates, the strict production build, and Phase 8
+  budgets pass for the cloud-baseline remediation. Full E2E was not run.

@@ -2785,3 +2785,115 @@ detailed ledger is
 `docs/code-health/07_RC47_RC55_ARCHIVAL_DISPOSITION.md`. This audit branch and
 its one documentation-only commit are local only; no push or external change is
 authorized.
+
+## ARCH-RC49-50 canonical cloud-baseline remediation — 2026-08-05
+
+### Outcome and exact scope
+
+`ARCH-RC49-50-CLOUD-BASELINE` is locally remediated on
+`fix/arch-rc49-50-cloud-baseline`, starting from exact clean
+`e06795dc92874afb383f61b28ba380930c1c7252`. The working tree and listener check
+were clean: no application server was listening, so no running-worktree mismatch
+existed. Archival RC49 `d41bdf31720918705480a36a44c91347987080bb`
+and RC50 `ee612c84f5f6c1e5370c7aeb12593cf920fe1967` were read only for
+intent; neither was cherry-picked.
+
+This is one bounded P1 persistence-integrity change. It adds a single canonical
+saved-document projection, a pure identity-bound baseline state machine, a
+focused render acknowledgment controller, a focused cloud-load controller, and
+a focused recovery-copy create/gate/commit controller. The existing
+requested-design coordinator still owns request supersession; the existing
+persistence controller composes those owners and retains manual save, autosave,
+conflict UI, local backup, and the write queue. Consumer and Pro use the same
+path. Server CAS, API shapes, storage keys, schemas, migrations, workflows,
+dependencies, lockfile, and RC53 revision freshness are unchanged.
+
+### Defect and corrected sequence
+
+Previously the load path fingerprinted the raw deserialized API snapshot before
+post-commit floor-plan defaults, product enrichment, active-room zone
+reconciliation, and the canonical stored-document projection. Revision and
+document identity installed later, while autosave had no pending acknowledgment
+gate. A transient or stale projection could therefore appear dirty and become
+write-eligible.
+
+The corrected order is:
+
+1. The requested-design coordinator starts a unique request epoch and aborts
+   the prior request.
+2. The API client returns a transport shell; the load owner verifies exact
+   design ID and a parseable loaded revision.
+3. One projection performs supported migration, floor-plan persistence
+   defaults, product snapshots, active-room zone reconciliation, stored
+   validation, canonical round-trip, and only then fingerprinting.
+4. A pending `{designId, revision, epoch}` baseline installs before the
+   canonical document, floor-plan state, design ID, and revision commit.
+5. A post-commit render acknowledges only the exact current identity and
+   canonical fingerprint. Dirty state becomes false at that point.
+6. Existing-design writes remain blocked while loading, pending, failed, or
+   identity-mismatched. A real edit after acknowledgment becomes dirty and may
+   autosave through the existing CAS path.
+
+Successful create/update/autosave responses stage their exact event-time
+fingerprint and returned revision. Recovery copies get an independent ID,
+revision, and epoch. Superseded/aborted loads cannot install or acknowledge;
+normalization and future-schema failures fail closed; switching designs detaches
+the prior identity; local-only drafts do not wait for cloud acknowledgment.
+
+### Coverage and database evidence
+
+The existing locked-manifest persistence guard now executes deterministic
+behavioral coverage for canonical defaults/order, raw-versus-canonical product
+and zone state, pre-acknowledgment blocking, mismatched and exact identity,
+post-acknowledgment edits, superseded responses that ignore abort, duplicate
+identity, normalization/future-schema failure, save/reload idempotence, and
+local-only state. Deferred promises and controlled adapters are used instead of
+sleep-based unit tests. Static guards were retargeted to the extracted owners;
+none was removed or weakened.
+
+The final isolated database `interior_ai_test_arch_rc49_50_final_20260805` ran
+locally at `127.0.0.1:5432` as `justus`. The Gate A3 database command created it
+and applied 42 migrations. Focused Chromium tests passed the existing-design
+load/edit/one-write/reload path, My Designs switching/history/refresh path, and
+duplicate failure/success/new-ID path. Test cleanup left zero `Design` rows.
+The disposable database was permanently dropped and a catalog query returned
+zero matches for its name. No shared database was accessed.
+
+### Final validation
+
+- `npm run test:critical-required` — pass.
+- `npm run test:required-test-truthfulness` — pass.
+- `npm run test:production-artifact-evidence` — pass.
+- `npm run verify:design-persistence` and focused routing/cleanup guards — pass.
+- Full ESLint with `--max-warnings=0`, typecheck, code quality, and diff hygiene
+  — pass.
+- Strict `APP_ENV=development npm run build` — pass for all 57 pages outside the
+  sandbox; only the inherited floor-plan NFT trace warning remains.
+- `npm run test:phase8-performance` — representative fingerprints/save/load and
+  initial/lazy bundle budgets pass.
+- Full E2E — not run, by scope.
+
+Code-quality allowances only decrease. `useDesignPagePersistence.ts` drops from
+1,359 to 1,288 lines; its overlong-function count and complexity maximum fall,
+and the document-history maximum function decreases to 153. No exception,
+suppression, unsafe TypeScript construct, dependency, or runtime cycle is added.
+
+### Review, remaining work, and rollback
+
+Independent read-only review first found a loading/write interleaving that could
+replace a newer load, a status-only baseline install, and an ungated recovery
+copy. Rereview found null-identity loading and live-generation failure-restore
+gaps. All were corrected with exact identity/fingerprint installation, loading-
+envelope preservation, matching-generation restoration, fail-closed null-cloud
+gates, recovery-copy pre/post gates, and detach/restage ordering. The reviewer
+then checked the complete functional diff and returned **PASS**. Its final P3
+documentation finding identified stale recovery-copy ownership wording; the
+architecture record now names the focused conflict-copy controller and the
+reviewer made no edits. The remaining archival work is
+`ARCH-RC53-CLOUD-REVISION` at P1; RC48/51/52 at P2; and RC47, RC54, plus the
+RC53/55 responsive share work at P3. None is authorized or included here.
+
+The implementation will be one local commit with subject
+`fix: canonicalize cloud baseline before autosave`. Rollback is one local
+`git revert` of that commit. No push, PR, deployment, workflow run, or external
+state change is authorized.

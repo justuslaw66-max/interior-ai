@@ -31,6 +31,15 @@ import {
 } from "./design-document-contract";
 import { migrateDesignDocument } from "./design-document-migrations";
 
+export function isPersistableFloorPlanAssetUrl(assetUrl: string): boolean {
+  return (
+    assetUrl.startsWith("data:") ||
+    assetUrl.startsWith("/") ||
+    assetUrl.startsWith("http://") ||
+    assetUrl.startsWith("https://")
+  );
+}
+
 /**
  * Format for storage (database or localStorage)
  * Stores the v3 snapshot directly

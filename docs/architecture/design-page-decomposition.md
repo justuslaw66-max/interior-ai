@@ -235,6 +235,43 @@ and neither creates application/document state.
 - Preserve event timing, once-only refs, metadata fields, guest/auth identity,
   and error-swallowing behavior at telemetry boundaries.
 
+### Canonical cloud-load baseline ownership
+
+Cloud-load normalization and acknowledgment are now explicit decomposition
+boundaries rather than incidental state inside the persistence monolith:
+
+- `design-page-persistence-projection.ts` owns the single saved-document
+  projection: floor-plan persistence defaults, catalog product snapshots,
+  active-room zone reconciliation, migration/validation, canonical round-trip,
+  and fingerprinting. Loaded baselines and current saved-state fingerprints must
+  use this projection; no transport or partially hydrated snapshot may own a
+  baseline.
+- `design-page-cloud-baseline.ts` owns the pure state machine and exact
+  `{designId, revision, epoch}` identity comparison. Its states are detached,
+  loading, pending, acknowledged, and failed. Existing-design writes are
+  eligible only for an acknowledged matching identity.
+- `useDesignPageCloudBaselineController.ts` owns render-to-render
+  acknowledgment after the canonical document, identity, revision, and
+  floor-plan state commit. It does not fetch, migrate, or write documents.
+- `useDesignPageCloudLoadController.ts` owns fetch/validate/normalize/install
+  sequencing and delegates abort/supersession to the existing requested-design
+  coordinator. It does not own autosave or conflict policy.
+- `useDesignPageCloudConflictCopyController.ts` owns recovery-copy creation,
+  including its pre/post write gates and detached-new-identity commit. It does
+  not own general conflict UI or ordinary save/autosave policy.
+- `useDesignPagePersistence.ts` retains manual save, autosave, conflict UI,
+  local backup, URL, and serialized-write ownership and composes the focused
+  recovery-copy controller. It consumes the baseline controller as a write gate
+  and stages successful ordinary cloud-write identities; it does not implement
+  a second normalizer or fingerprint.
+
+The ordering invariant is request epoch → validated ID/revision → canonical
+projection → pending baseline → document/identity/revision commit → exact
+post-commit acknowledgment → dirty calculation/autosave eligibility. A stale,
+aborted, failed, or cross-design request cannot skip this order. Local-only
+drafts remain detached from cloud acknowledgment and retain their existing
+local persistence behavior.
+
 ## Performance considerations
 
 - File extraction alone does not reduce render work, bundle size, scene cost, or

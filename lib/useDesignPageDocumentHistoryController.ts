@@ -10,9 +10,8 @@ import {
 
 import { useUndoRedoHotkeys } from "@/hooks/useUndoRedoHotkeys";
 import { trackProductEvent } from "@/lib/analytics";
-import { CATALOG_ITEMS } from "@/lib/catalog";
-import { enrichDesignSnapshotProductSnapshots } from "@/lib/design-item-product-snapshot";
 import { isPersistableFloorPlanAssetUrl } from "@/lib/design-page-floor-plan-utils";
+import { projectCanonicalDesignPersistence } from "@/lib/design-page-persistence-projection";
 import type { PlanLayerPresetId, PlanMeasurementUnit } from "@/lib/design-page-types";
 import type {
   EditorAnnotation2D,
@@ -21,7 +20,6 @@ import type {
 } from "@/lib/editorScene";
 import type { FloorPlanUnderlay } from "@/lib/floor-plan-types";
 import {
-  snapshotToStored,
   storedToSnapshot,
   type StoredDesign,
 } from "@/lib/room-persistence";
@@ -139,31 +137,16 @@ export function useDesignPageDocumentHistoryController({
     ]
   );
 
-  const buildDesignSnapshotForPersistence = useCallback(
-    (snapshot: DesignSnapshot = designSnapshotRef.current): DesignSnapshot => {
-      const floorPlan = buildPersistedFloorPlanState();
-      const nextSnapshot: DesignSnapshot = { ...snapshot };
-
-      if (floorPlan) {
-        nextSnapshot.floorPlan = floorPlan;
-      } else {
-        delete nextSnapshot.floorPlan;
-      }
-
-      return enrichDesignSnapshotProductSnapshots(nextSnapshot, CATALOG_ITEMS);
-    },
+  const getStoredDesignForPersistence = useCallback(
+    (snapshot: DesignSnapshot = designSnapshotRef.current) =>
+      projectCanonicalDesignPersistence(snapshot, {
+        floorPlan: buildPersistedFloorPlanState(),
+      }).stored,
     [buildPersistedFloorPlanState, designSnapshotRef]
   );
 
-  const getStoredDesignForPersistence = useCallback(
-    (snapshot: DesignSnapshot = designSnapshotRef.current) =>
-      snapshotToStored(buildDesignSnapshotForPersistence(snapshot)),
-    [buildDesignSnapshotForPersistence, designSnapshotRef]
-  );
-
   const fingerprintStoredDesign = useCallback(
-    (stored: StoredDesign) =>
-      fingerprintDesignSnapshot(storedToSnapshot(stored)),
+    (stored: StoredDesign) => fingerprintDesignSnapshot(storedToSnapshot(stored)),
     []
   );
 

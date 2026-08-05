@@ -6,6 +6,7 @@ import {
   type HouseRoomDoorwaySuggestion,
 } from "@/lib/design-page-house-plan";
 export { HOUSE_PLAN_RENDERED_WALL_THICKNESS_METERS } from "@/lib/editor-geometry-tolerances";
+export { isPersistableFloorPlanAssetUrl } from "@/lib/room-persistence";
 
 export const SUPPORTED_FLOOR_PLAN_MIME_TYPES = new Set([
   "image/png",
@@ -101,15 +102,6 @@ export async function hashFloorPlanSourceBytes(bytes: ArrayBuffer): Promise<stri
   return Array.from(new Uint8Array(digest), (value) =>
     value.toString(16).padStart(2, "0")
   ).join("");
-}
-
-export function isPersistableFloorPlanAssetUrl(assetUrl: string): boolean {
-  return (
-    assetUrl.startsWith("data:") ||
-    assetUrl.startsWith("/") ||
-    assetUrl.startsWith("http://") ||
-    assetUrl.startsWith("https://")
-  );
 }
 
 export async function renderPdfPageToImageDataUrl(

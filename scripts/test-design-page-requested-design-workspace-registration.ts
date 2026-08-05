@@ -23,6 +23,7 @@ const loadCoordinatorSource = readSource(
   "lib/design-page-requested-design-load-coordinator.ts"
 );
 const persistenceSource = readSource("lib/useDesignPagePersistence.ts");
+const cloudLoadSource = readSource("lib/useDesignPageCloudLoadController.ts");
 
 const baseDecision = {
   requestedDesignId: "requested-design",
@@ -194,16 +195,16 @@ assert.match(
 
 assert.match(
   persistenceSource,
-  /createDesignPageLoadRequestCoordinator[\s\S]*?const request = designLoadRequest\.start\(\)/,
+  /createDesignPageLoadRequestCoordinator[\s\S]*?requestCoordinator: designLoadRequest/,
   "Persistence should delegate request epochs and abort ownership to the coordinator."
 );
 assert.match(
-  persistenceSource,
-  /await designApi\.get\(id, request\.controller\.signal\)[\s\S]*?!designLoadRequest\.isCurrent\(request\)[\s\S]*?return "superseded"/,
+  cloudLoadSource,
+  /requestCoordinator\.start\(\)[\s\S]*?await designApi\.get\(id, request\.controller\.signal\)[\s\S]*?!input\.requestCoordinator\.isCurrent\(request\)[\s\S]*?return "superseded"/,
   "A response must claim the current request before it can mutate document state."
 );
 assert.match(
-  persistenceSource,
+  cloudLoadSource,
   /error\.kind === "forbidden"[\s\S]*?"You do not have access to that design"[\s\S]*?error\.kind === "not_found"[\s\S]*?"Design not found"[\s\S]*?"unavailable"/,
   "Denied, missing, and unavailable loads should retain distinct user-facing errors."
 );

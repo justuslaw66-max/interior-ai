@@ -1,6 +1,9 @@
 import type { Page, Request } from "@playwright/test";
 import { expect, test } from "./fixtures";
-import { fingerprintDesignSnapshot } from "../../lib/snapshot-fingerprint";
+import {
+  normalizeLoadedCloudDesign,
+  projectCanonicalDesignPersistence,
+} from "../../lib/design-page-persistence-projection";
 import { legacyApiToSnapshot } from "../../lib/room-persistence";
 import type { DesignSnapshot } from "../../lib/room-types";
 import {
@@ -70,19 +73,6 @@ function fixtureStructure(snapshot: DesignSnapshot) {
   };
 }
 
-function expectUpdateRetainsFixtureContent(
-  payload: unknown,
-  expected: DesignSnapshot
-) {
-  const snapshot = (payload as {
-    snapshot?: DesignSnapshot;
-  } | null)?.snapshot;
-  expect(snapshot).toBeDefined();
-  expect(fixtureStructure(snapshot as DesignSnapshot)).toEqual(
-    fixtureStructure(expected)
-  );
-}
-
 async function openMyDesigns(page: Page) {
   await page.getByTestId("editor-command-overflow").click();
   await page.getByTestId("editor-command-overflow-load").click();
@@ -136,7 +126,11 @@ async function expectLoadedDesign(page: Page, designId: string) {
 }
 
 async function getPersistedFingerprint(page: Page, designId: string) {
-  return fingerprintDesignSnapshot(await getPersistedSnapshot(page, designId));
+  const response = await page.request.get(
+    `/api/designs/${encodeURIComponent(designId)}`
+  );
+  expect(response.status()).toBe(200);
+  return normalizeLoadedCloudDesign(await response.json(), designId).fingerprint;
 }
 
 async function getPersistedSnapshot(page: Page, designId: string) {
@@ -174,16 +168,15 @@ test.describe("canonical saved-design routing", () => {
 
       const initialFingerprint = await expectLoadedDesign(page, seed.designId);
       const persistedAfterLoad = await getPersistedSnapshot(page, seed.designId);
-      expect(initialFingerprint).toBe(fingerprintDesignSnapshot(persistedAfterLoad));
+      expect(initialFingerprint).toBe(
+        await getPersistedFingerprint(page, seed.designId)
+      );
       expect(fixtureStructure(persistedAfterLoad)).toEqual(
         fixtureStructure(seed.snapshot)
       );
       await page.waitForTimeout(1_200);
       expect(mutations.created).toEqual([]);
-      for (const update of mutations.updated) {
-        expect(update.pathname).toBe(`/api/designs/${seed.designId}`);
-        expectUpdateRetainsFixtureContent(update.payload, seed.snapshot);
-      }
+      expect(mutations.updated).toEqual([]);
       const updatesBeforeEdit = mutations.updated.length;
 
       await page.goBack({ waitUntil: "domcontentloaded" });
@@ -270,6 +263,7 @@ test.describe("canonical saved-design routing", () => {
     const email = `route-history-${Date.now()}@example.com`;
     const first = await createBetaSeedDesign({ email });
     const second = await createBetaSeedDesign({ email });
+    const mutations = observeDesignMutations(page);
     const firstSnapshot = structuredClone(first.snapshot);
     const secondSnapshot = structuredClone(second.snapshot);
     for (const snapshot of [firstSnapshot, secondSnapshot]) {
@@ -312,7 +306,9 @@ test.describe("canonical saved-design routing", () => {
       await expectLoadedDesign(page, first.designId);
       await settleCloudConflictIfItAppears(page, first.designId);
       const firstFingerprint = await readStableFingerprint(page);
-      const seededSecondFingerprint = fingerprintDesignSnapshot(secondSnapshot);
+      const seededSecondFingerprint = projectCanonicalDesignPersistence(
+        secondSnapshot
+      ).fingerprint;
       expect(firstFingerprint).not.toBe(seededSecondFingerprint);
 
       await openMyDesigns(page);
@@ -339,6 +335,9 @@ test.describe("canonical saved-design routing", () => {
         secondFingerprint,
         { timeout: 60_000 }
       );
+      await page.waitForTimeout(1_200);
+      expect(mutations.created).toEqual([]);
+      expect(mutations.updated).toEqual([]);
     } finally {
       await cleanupBetaSeed(first.userId);
     }
