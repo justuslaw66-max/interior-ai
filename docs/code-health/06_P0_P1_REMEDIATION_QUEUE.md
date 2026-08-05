@@ -568,3 +568,32 @@ Rollback: revert the single CH-0012 implementation commit. If callers must be is
 - **Remaining queue:** only RC53/55 responsive share remains P3. No integration
   branch, push, deployment, workflow change, or external-setting change is
   authorized by this closure.
+
+### RC47-RC55 archival P3 responsive-share queue — 2026-08-05
+
+- **`ARCH-RC53-55-SHARE-RESPONSIVE` — P3, locally remediated:** from exact
+  clean `29a4c46070404a2426da123bc5b42c0592d95e34`, one canonical ARCH-RC54
+  public projection now feeds one responsive shell and selected-room owner.
+  Mobile cards expose every projected room; tablet/desktop retain the existing
+  room table; one viewer/navigation tree remains actionable in every mode.
+- **Continuity and readiness:** a selected room and supported saved view survive
+  breakpoint changes. Missing room identity falls back to the first canonical
+  public room. Readiness requires the exact current projection/mode/room layout
+  key, Canvas creation, and finite positive measured surface dimensions. The
+  numeric generation hash is diagnostic and cannot authorize stale evidence.
+- **Accessibility and identity:** canonical room/view IDs back stable selectors;
+  the active scope contains no duplicate selectors or DOM IDs. Room controls
+  support Left/Right/Home/End, targets are at least 44 px, focus remains visible,
+  all safe-area insets are present, and focused geometry checks reject page
+  overflow or clipped non-scrollable controls.
+- **Evidence and scope:** the responsive/read-only suite passes 12/12 in
+  Chromium and WebKit; focused beta/client-preview and duplication pass 5/5;
+  projection security, persistence, required truthfulness, critical-required,
+  cleanup, lint, typecheck, code quality, strict build, Phase 8, and diff checks
+  pass. Independent read-only review is PASS. The RC53 cloud-revision portion,
+  RC54 projection policy, token/auth/publication behavior, persistence, and
+  external systems were not changed. Full E2E was intentionally excluded.
+- **Remaining queue:** no RC47-RC55 archival finding remains after the bounded
+  local remediation branches. No integration branch, push, deployment,
+  workflow, ruleset, runner, or external-setting action is included or
+  authorized here.

@@ -25,6 +25,11 @@ import ShoppingCsvDownload from "./export/ShoppingCsvDownload";
 import { projectSharedDesignSnapshot } from "@/lib/shared-design-snapshot";
 import ShareFloorPlanPreview from "@/components/ShareFloorPlanPreview";
 import ShareShoppingCheckout from "@/components/ShareShoppingCheckout";
+import { PublicShareShell } from "@/components/public-share/PublicShareShell";
+import {
+  PublicShareRoomSchedule,
+  type PublicShareRoomScheduleItem,
+} from "@/components/public-share/PublicShareRoomSchedule";
 
 export const metadata = {
   robots: { index: false, follow: false },
@@ -76,8 +81,12 @@ export default async function SharePage({
 
   if (!design) {
     return (
-      <main className="min-h-screen flex items-center justify-center p-8">
-        <div className="rounded-xl border bg-white p-6">
+      <main
+        className="flex min-h-screen items-center justify-center p-8"
+        data-testid="public-share-invalid"
+        data-layout-status="invalid"
+      >
+        <div className="rounded-xl border bg-white p-6" role="status">
           <div className="text-lg font-semibold">Link not available</div>
           <div className="text-sm text-neutral-600">
             This share link is disabled or invalid.
@@ -150,7 +159,7 @@ export default async function SharePage({
     })
     .slice(0, 6);
   const remainingShoppingCount = Math.max(0, shoppingPreviewItems.length - visibleShoppingItems.length);
-  const roomListItems = designSnapshot.rooms.map((room) => {
+  const roomListItems: PublicShareRoomScheduleItem[] = designSnapshot.rooms.map((room) => {
     const shoppingRoom = shoppingRoomById.get(room.id);
     const health = roomHealthById.get(room.id);
     const areaSqm = room.geometry.width * room.geometry.depth;
@@ -264,7 +273,12 @@ export default async function SharePage({
   ];
 
   return (
-    <main className="min-h-screen bg-neutral-100">
+    <PublicShareShell
+      key={`${design.id}:${shareToken}`}
+      snapshot={designSnapshot}
+      projectionIdentity={`${design.id}:${shareToken}:${handoffFidelitySummary.fingerprint}`}
+      projectionFingerprint={handoffFidelitySummary.fingerprint}
+    >
       {qaFidelitySummary ? (
         <div
           data-testid="qa-share-snapshot-fingerprint"
@@ -288,7 +302,7 @@ export default async function SharePage({
               Read-only • {design.style ?? "Style"} • {design.budget ?? "Budget"}
             </div>
             <div className="mt-2 text-xs text-neutral-500">
-              Best on desktop • Orbit to look around • No editing in share view
+              Responsive preview • Orbit to look around • No editing in share view
             </div>
             <div
               data-testid="share-handoff-id"
@@ -414,7 +428,7 @@ export default async function SharePage({
       </section>
 
       <div className="mx-auto max-w-6xl px-6 py-6">
-        <ShareViewer initialSnapshot={designSnapshot} />
+        <ShareViewer />
       </div>
 
       <ShareFloorPlanPreview snapshot={designSnapshot} />
@@ -480,61 +494,7 @@ export default async function SharePage({
               Open export pack
             </a>
           </div>
-          <div className="mt-4 overflow-x-auto rounded-xl border border-neutral-200" data-testid="share-room-list">
-            <table className="min-w-full divide-y divide-neutral-200 text-sm">
-              <thead className="bg-neutral-50 text-left text-[11px] font-semibold uppercase tracking-wide text-neutral-500">
-                <tr>
-                  <th className="px-3 py-2">Room</th>
-                  <th className="px-3 py-2">Type</th>
-                  <th className="px-3 py-2">Size</th>
-                  <th className="px-3 py-2">Items</th>
-                  <th className="px-3 py-2">Health</th>
-                  <th className="px-3 py-2 text-right">Subtotal</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-neutral-100 bg-white">
-                {roomListItems.map((room) => (
-                  <tr key={room.id}>
-                    <td className="px-3 py-3">
-                      <div className="font-semibold text-neutral-950">{room.name}</div>
-                      <div className="text-xs text-neutral-500">{room.floorLabel}</div>
-                    </td>
-                    <td className="px-3 py-3 text-neutral-700">{room.roomType}</td>
-                    <td className="px-3 py-3 text-neutral-700">
-                      <div>{room.dimensionsLabel}</div>
-                      <div className="text-xs text-neutral-500">{room.areaLabel}</div>
-                    </td>
-                    <td className="px-3 py-3 text-neutral-700">
-                      {room.itemCount} item{room.itemCount === 1 ? "" : "s"}
-                      <div className="text-xs text-neutral-500">
-                        {room.shoppableCount} shoppable
-                      </div>
-                    </td>
-                    <td className="px-3 py-3">
-                      <div
-                        data-testid="share-room-health"
-                        className={
-                          room.healthLabel === "Ready"
-                            ? "font-semibold text-emerald-700"
-                            : room.healthLabel === "Review"
-                              ? "font-semibold text-amber-700"
-                              : "font-semibold text-red-700"
-                        }
-                      >
-                        {room.healthLabel} {room.healthScore}
-                      </div>
-                      <div className="max-w-52 truncate text-xs text-neutral-500" title={room.healthNextAction}>
-                        {room.healthNextAction}
-                      </div>
-                    </td>
-                    <td className="px-3 py-3 text-right font-semibold text-neutral-950">
-                      {formatCurrency(room.subtotal)}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <PublicShareRoomSchedule rooms={roomListItems} />
         </div>
       </section>
 
@@ -787,6 +747,6 @@ export default async function SharePage({
       </section>
 
       <ShareFooterCTA shareToken={shareToken} />
-    </main>
+    </PublicShareShell>
   );
 }

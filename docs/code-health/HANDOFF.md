@@ -3367,3 +3367,128 @@ The remaining archival finding is the distinct P3
 `ARCH-RC53-55-SHARE-RESPONSIVE` work. No responsive layout, integration branch,
 push, deployment, workflow, ruleset, runner, or external setting is included or
 authorized here.
+
+## ARCH-RC53-55 responsive public-share remediation — 2026-08-05
+
+### Source, branch, and intent
+
+- Starting SHA: `29a4c46070404a2426da123bc5b42c0592d95e34`, verified clean with no
+  untracked files before branching.
+- Branch: `fix/arch-rc53-55-share-responsive`.
+- Archival evidence only: RC53
+  `b0eab4cbbadf0203667fb750c42fb0e25eb43f62` intended a usable mobile
+  multi-room schedule; RC55
+  `4883ffb9fc87248b6aa8624cdef39c5f97a173d1` intended stable responsive
+  identities and settled-layout verification. Neither was cherry-picked and
+  neither is an ancestor. The already resolved RC53 cloud-revision batch was
+  not modified.
+
+### Reproduction and root cause
+
+The exact starting route was anonymous `/share/[shareToken]` using the
+deterministic beta share fixture. Server token lookup and ARCH-RC54 projection
+were already canonical. The client viewer nevertheless copied that projection
+into mutable state and used `switchRoom` to rewrite the copy. It exposed only a
+mount-ref readiness flag and a fixed desktop-oriented `78vh` surface. The page
+rendered one horizontal room table at mobile widths, lacked explicit
+mobile/tablet/desktop state and canonical room/view selectors, and could style
+an invalid active room differently from the room that visually fell back.
+
+The smallest pre-edit Chromium share suite passed 2/2, proving read-only and
+saved-view behavior but not the missing responsive contract. A test-first
+responsive matrix then failed 4/4 at the absent `public-share-root` boundary.
+
+### Current architecture and contract
+
+`SharePage` still performs exact enabled-token lookup and calls
+`projectSharedDesignSnapshot` once. `PublicShareShell` receives that one object
+and owns responsive mode, requested/resolved room, selected saved view, layout
+identity, surface evidence, and readiness. `ShareViewer`, `ShareScene`, and
+`PublicShareRoomSchedule` consume the shell. There is no alternate API,
+snapshot copy, room store, user-agent branch, reload, or simultaneously
+actionable hidden layout.
+
+Modes are mobile below 768 px, tablet from 768 through 1023 px, and desktop at
+1024 px and above. Mobile mounts the complete non-actionable room card list;
+tablet/desktop mount the established table. The one room-navigation tree is
+horizontally scrollable on mobile and wraps otherwise. A still-public selected
+room and its selected saved view survive mode changes; explicit room selection
+clears the prior room's saved view, and a missing room falls back to the first
+canonical projected room.
+
+`public-share-root[data-layout-status="ready"]` requires a valid projection,
+resolved public room, resolved layout mode, Canvas creation for the exact
+current internal `projectionIdentity:mode:selectedRoomId` key, and a finite
+positive `ResizeObserver` surface measurement for that same key/generation.
+The exposed nonzero numeric generation is a diagnostic hash only; exact key
+equality prevents a stale report even under a demonstrated 32-bit hash
+collision. Token/design/fingerprint, room, or mode changes produce a new key.
+Timers cannot make the shell ready, and loading, error, invalid/revoked, empty,
+and resolving states remain distinct and non-ready.
+
+Stable identities are `public-share-root`, the four non-ready state markers,
+`share-room-list`, exactly one of `share-room-list-mobile` or
+`share-room-list-table`, `share-room-navigation`,
+`share-room-action-{canonicalRoomId}`, `share-preview-surface`,
+`share-saved-view-navigation`, and
+`share-saved-view-action-{declaredSavedViewId}`. Roles and accessible names
+remain primary. The active rendered scope has no duplicate identity or DOM ID.
+
+### Validation and bundle evidence
+
+- Responsive unit/render contract — pass, including thresholds, deterministic
+  room fallback, exact-key stale evidence, a known diagnostic-hash collision,
+  finite dimensions, non-ready state rendering, and no timer/user-agent path.
+- Focused public share — **12/12 pass** with zero retries: Chromium 6/6 and
+  WebKit 6/6. This covers existing read-only/saved views plus single/multi-room
+  desktop/mobile, room switching, desktop-to-mobile and mobile-to-desktop
+  continuity, tablet, mobile landscape, history, reload, invalid, and revoked.
+- Accessibility/layout — pass: all projected mobile rooms, logical authored
+  focus order, Left/Right/Home/End movement, visible focus, 44 px targets,
+  top/right/bottom/left safe-area insets, finite surfaces, selector/ID
+  uniqueness, no horizontal page overflow, and no clipped non-scrollable
+  primary/footer/client-handoff control.
+- Chromium beta/client-preview plus share duplication/privacy — **5/5 pass**;
+  existing duplicate-only coverage is 4/4 within that run.
+- ARCH-RC54 public-projection/security, central-lighting compatibility,
+  design persistence, editor accessibility, required-test truthfulness,
+  critical-required, and all 78 design-page cleanup guards — pass.
+- Full lint with `--max-warnings=0`, typecheck, and code quality — pass. The
+  quality baseline only decreased: the share page dropped 792 to 752 lines and
+  its longest function 740 to 695; the former 370-line/two-overlong-function
+  ShareViewer entries were removed after extraction to a 223-line component.
+- Strict `APP_ENV=development CATALOG_STRICT_VALIDATION=true npm run build` —
+  pass for all 57 pages. The inherited floor-plan NFT trace warning remains.
+- Complete Phase 8 — pass. `/design` initial JS moves from 26 chunks,
+  5,812,152 raw / 1,109,035 Brotli to 25 chunks, 5,812,163 / 1,108,349
+  (**+11 raw / -686 Brotli; -1 chunk**). Initial CSS remains one file and moves
+  129,803 / 17,182 to 130,408 / 17,276 (**+605 raw / +94 Brotli**).
+  The share page entry moves from 10 JS chunks, 1,559,006 / 341,655 to 8,
+  1,562,542 / 341,027 (**+3,536 raw / -628 Brotli; -2 chunks**), with the same
+  CSS delta. No share-only lazy chunk existed before or after; Cabinetry Studio
+  492,639 / 84,899 and GLTFExporter 34,525 / 8,970 remain lazy and green.
+- `git diff --check` — pass. Full E2E — deliberately not run.
+
+Independent read-only review examined both archival patches, the complete
+diff, public projection/selection ownership, exact-key readiness, all responsive
+modes, multi-room and saved-view continuity, selectors, focus, target geometry,
+safe areas, overflow, privacy, auth/token exclusions, and tests. It identified
+and drove fixes for generation-scoped Canvas/surface evidence, a real 32-bit
+hash collision, mobile all-room assertions, selector/DOM-ID uniqueness, focus
+movement/visibility, touch geometry, four-inset coverage, footer wrapping, and
+the component quality cap. Final result: **PASS — no remaining code blocker**.
+
+### Scope, rollback, and remaining findings
+
+ARCH-RC54 projection code and policy, token lifecycle, authorization,
+publication policy, cloud revisions/baselines, duplicate persistence, public
+visibility, client-preview capability policy, dependencies, workflows,
+rulesets, runners, deployments, and external settings are unchanged. No Full
+E2E, push, deployment, or integration branch was performed.
+
+Rollback is `git revert <implementation-commit-sha>`, then rerun
+`npm run test:share-responsive-unit`, the Chromium/WebKit responsive matrix,
+focused beta/duplicate specs, public-projection security, strict build, and
+Phase 8. No schema, data, token, authorization, deployment, or external rollback
+is required. No RC47-RC55 archival finding remains after the bounded local
+remediation branches; integration remains a separate, unauthorized action.

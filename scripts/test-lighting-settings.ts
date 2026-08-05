@@ -861,7 +861,7 @@ const shadowBudgetSource = read(
   "components/editor/design-page/lighting/ShadowBudgetManager.ts"
 );
 const readOnlyViewerSource = read("components/ReadOnlyViewer.tsx");
-const shareViewerSource = read("components/ShareViewer.tsx");
+const shareViewerSource = read("components/public-share/ShareScene.tsx");
 const designerCanvasSource = read("components/DesignerCanvas.tsx");
 assert.match(
   lightingSystemSource,

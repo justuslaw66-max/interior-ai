@@ -554,3 +554,58 @@ commands; no data or external rollback is required. The only remaining
 archival finding is the separate P3 `ARCH-RC53-55-SHARE-RESPONSIVE` batch. This
 closure does not authorize an integration branch, push, deployment, workflow
 change, or external-setting change.
+
+## ARCH-RC53/55 responsive-share closure — 2026-08-05
+
+From exact clean starting source
+`29a4c46070404a2426da123bc5b42c0592d95e34`, the responsive portion of RC53
+and the settled-layout intent of RC55 are locally remediated on
+`fix/arch-rc53-55-share-responsive`. Archival commits
+`b0eab4cbbadf0203667fb750c42fb0e25eb43f62` and
+`4883ffb9fc87248b6aa8624cdef39c5f97a173d1` were inspected only as intent
+evidence and were not cherry-picked. Their unrelated cloud-revision work was
+not replayed.
+
+The verified current defect was a single desktop-shaped room table at every
+width, a client-owned mutable copy of the public snapshot for room switching,
+an invalid selected-room ID that could disagree with the visually rendered
+fallback, and a mount-only readiness marker that did not prove responsive mode,
+Canvas creation, or finite current-generation dimensions. Canonical room and
+saved-view actions lacked stable identities, and the page did not expose one
+semantic layout boundary for deterministic Chromium/WebKit verification.
+
+The current-architecture correction keeps `projectSharedDesignSnapshot` as the
+only public document source and gives `PublicShareShell` one room/view selection
+owner. One active component tree renders the viewer; only the non-actionable
+room schedule chooses mobile cards or a tablet/desktop table. Room and saved
+view state survive breakpoint changes, while a missing room resolves to the
+first canonical projected room. Exact internal layout-key equality is the
+readiness authority; the exposed numeric generation hash is diagnostic only.
+Ready also requires resolved mode/room, current Canvas evidence, and a finite
+positive current surface measurement. Loading, error, invalid/revoked, empty,
+and resolving states cannot claim ready.
+
+Stable identities cover the public root, schedule mode, room navigation,
+canonical room actions, saved-view navigation/actions, and preview surface.
+Focused coverage proves uniqueness, every projected mobile room, projection
+fingerprint parity across modes, deterministic resize/history/reload behavior,
+44 px touch targets, visible keyboard focus, four safe-area insets, no page
+overflow, and viewport containment for non-scrollable actions. The exact
+responsive contract and rollback matrix are in
+`docs/architecture/public-share-responsive-layout.md`.
+
+Final evidence is 12/12 focused public-share cases across Chromium and WebKit,
+5/5 Chromium beta/client-preview and share-duplication cases, all 78 design-page
+cleanup guards, public-projection security, required-test truthfulness,
+critical-required, zero-warning lint, typecheck, code quality, strict 57-page
+production build, complete Phase 8 budgets, and diff hygiene. Independent
+read-only review is **PASS — no remaining code blocker**. Full E2E was not run.
+
+ARCH-RC54 projection fields, fingerprint behavior, closed-schema security,
+token lifecycle, authorization, publication policy, cloud revision/baseline,
+persistence, and duplication behavior are unchanged. All RC47-RC55 archival
+findings are now locally remediated in their bounded branches; this closure does
+not create or authorize an integration branch, push, deployment, workflow,
+ruleset, runner, or external-setting change. Rollback is one local revert of the
+focused implementation commit followed by the responsive, projection,
+duplication, build, and Phase 8 checks; no data or external rollback is needed.

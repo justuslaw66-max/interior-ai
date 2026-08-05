@@ -408,6 +408,11 @@ test.describe("00. Beta Smoke Gate", () => {
       expect(cloudFingerprint).toMatch(/[a-f0-9]{8}/);
 
       await page.goto(`/share/${seed.shareToken}`, { waitUntil: "commit", timeout: 120000 });
+      await expect(page.getByTestId("public-share-root")).toHaveAttribute(
+        "data-layout-status",
+        "ready",
+        { timeout: 60000 }
+      );
       const shareViewer = page.getByTestId("share-viewer");
       await expect(shareViewer).toBeVisible({ timeout: 60000 });
       await expect(shareViewer).toHaveAttribute("data-ready", "true", { timeout: 60000 });
@@ -506,11 +511,25 @@ test.describe("00. Beta Smoke Gate", () => {
       });
       const mobilePage = await mobileContext.newPage();
       await mobilePage.goto(`/share/${seed.shareToken}`, { waitUntil: "commit", timeout: 120000 });
-      await expect(mobilePage.getByTestId("share-copy-link")).toBeVisible({ timeout: 60000 });
-      const mobileOverflow = await mobilePage.evaluate(
-        () => document.documentElement.scrollWidth - document.documentElement.clientWidth
+      await expect(mobilePage.getByTestId("public-share-root")).toHaveAttribute(
+        "data-layout-status",
+        "ready",
+        { timeout: 60000 }
       );
-      expect(mobileOverflow).toBeLessThanOrEqual(4);
+      await expect(mobilePage.getByTestId("public-share-root")).toHaveAttribute(
+        "data-layout-mode",
+        "mobile"
+      );
+      await expect(mobilePage.getByTestId("share-copy-link")).toBeVisible();
+      await expect(mobilePage.getByTestId("share-room-list-mobile")).toBeVisible();
+      await expect(mobilePage.getByTestId("share-room-list-table")).toHaveCount(0);
+      await expect
+        .poll(() =>
+          mobilePage.evaluate(
+            () => document.documentElement.scrollWidth - document.documentElement.clientWidth
+          )
+        )
+        .toBeLessThanOrEqual(1);
       await mobileContext.close();
 
       const mobileEditorContext = await browser.newContext({

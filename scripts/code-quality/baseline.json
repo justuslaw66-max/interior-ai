@@ -93,7 +93,7 @@
       "limit": 400
     },
     "app/share/[shareToken]/page.tsx": {
-      "lines": 792,
+      "lines": 752,
       "limit": 250
     },
     "app/tools/glb-optimizer/page.tsx": {
@@ -358,10 +358,6 @@
     },
     "components/scene/RoomEnvironment.tsx": {
       "lines": 273,
-      "limit": 250
-    },
-    "components/ShareViewer.tsx": {
-      "lines": 370,
       "limit": 250
     },
     "features/cabinetry/automation.ts": {
@@ -1537,7 +1533,7 @@
     "app/share/[shareToken]/page.tsx": {
       "overlongFunctions": {
         "count": 2,
-        "maximum": 740
+        "maximum": 695
       },
       "complexFunctions": {
         "count": 1,
@@ -2668,12 +2664,6 @@
       "overlongFunctions": {
         "count": 1,
         "maximum": 75
-      }
-    },
-    "components/ShareViewer.tsx": {
-      "overlongFunctions": {
-        "count": 2,
-        "maximum": 132
       }
     },
     "components/SnapGuides.tsx": {

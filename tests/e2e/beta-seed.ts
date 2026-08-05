@@ -303,7 +303,9 @@ export function buildBetaDesignSnapshot(): DesignSnapshot {
   };
 }
 
-export async function createBetaSeedDesign(options: { email?: string } = {}) {
+export async function createBetaSeedDesign(
+  options: { email?: string; snapshot?: DesignSnapshot } = {}
+) {
   const prisma = getBetaPrismaClient();
   const requestedEmail = options.email?.trim();
   let user = requestedEmail
@@ -338,7 +340,7 @@ export async function createBetaSeedDesign(options: { email?: string } = {}) {
     },
   });
 
-  const snapshot = buildBetaDesignSnapshot();
+  const snapshot = options.snapshot ?? buildBetaDesignSnapshot();
   const activeRoom = snapshot.rooms.find((room) => room.id === snapshot.activeRoomId) ?? snapshot.rooms[0];
   const shareToken = betaId("share");
   const design = await prisma.design.create({

@@ -83,6 +83,10 @@ const adminOperationsDataSource = readFileSync(
 const sharePageSource = readFileSync(join(root, "app/share/[shareToken]/page.tsx"), "utf8");
 const exportPageSource = readFileSync(join(root, "app/share/[shareToken]/export/page.tsx"), "utf8");
 const shareActionsSource = readFileSync(join(root, "components/SharePageActions.tsx"), "utf8");
+const shareRoomScheduleSource = readFileSync(
+  join(root, "components/public-share/PublicShareRoomSchedule.tsx"),
+  "utf8"
+);
 const feedbackSource = readFileSync(join(root, "components/BetaFeedbackWidget.tsx"), "utf8");
 const catalogRuntimeSource = readFileSync(join(root, "lib/catalog-runtime.ts"), "utf8");
 const roomPlanStatusSource = readFileSync(
@@ -294,7 +298,7 @@ assert.match(
   "share page shopping preview should be directly linkable from first-viewport actions."
 );
 assert.match(
-  sharePageSource,
+  shareRoomScheduleSource,
   /data-testid="share-room-health"/,
   "share page room list should show room health."
 );
