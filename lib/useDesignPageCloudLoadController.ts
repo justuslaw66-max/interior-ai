@@ -29,6 +29,7 @@ import {
   type createDesignPageLoadRequestCoordinator,
 } from "@/lib/design-page-requested-design-load-coordinator";
 import type { DesignPageCloudBaselineController } from "@/lib/useDesignPageCloudBaselineController";
+import type { CloudBaselineIdentity } from "@/lib/design-page-cloud-baseline";
 
 type DesignMode = "homeowner" | "designer";
 type Budget = "$" | "$$" | "$$$";
@@ -52,6 +53,12 @@ type CloudLoadControllerInput = {
     setLastDbSaveAt: (savedAt: number | null) => void;
     setLastCloudSaveError: (error: string | null) => void;
     setCloudSaveConflict: (conflict: null) => void;
+    invalidateCloudWrites: () => void;
+    installCloudWriteIdentity: (identity: {
+      designId: string;
+      revision: string;
+      documentEpoch: number;
+    }) => void;
     setMode: Dispatch<SetStateAction<DesignMode>>;
     setNotes: Dispatch<SetStateAction<string>>;
     setSavedViews: Dispatch<SetStateAction<NamedCameraView[]>>;
@@ -84,9 +91,15 @@ export function sanitizeDesignPageSavedViews(value: unknown): NamedCameraView[] 
 function commitLoadedCloudDesign(
   input: CloudLoadControllerInput,
   data: LoadedDesignTransport,
-  normalized: ReturnType<typeof normalizeLoadedCloudDesign>
+  normalized: ReturnType<typeof normalizeLoadedCloudDesign>,
+  identity: CloudBaselineIdentity
 ): void {
   const { actions } = input;
+  actions.installCloudWriteIdentity({
+    designId: identity.designId,
+    revision: identity.revision,
+    documentEpoch: identity.epoch,
+  });
   actions.setLastPersistedFingerprint(null);
   actions.setDesignSnapshot(normalized.snapshot);
   actions.hydratePersistedFloorPlanState(normalized.snapshot, true);
@@ -150,6 +163,7 @@ async function executeCloudDesignLoad(
   id: string,
   options?: { notFoundMessage?: string }
 ): Promise<DesignPageCloudLoadResult> {
+  input.actions.invalidateCloudWrites();
   const request = input.requestCoordinator.start();
   input.baseline.beginLoad({
     designId: id,
@@ -167,7 +181,7 @@ async function executeCloudDesignLoad(
       fingerprint: normalized.fingerprint,
     });
     if (!identity) return "superseded";
-    commitLoadedCloudDesign(input, data, normalized);
+    commitLoadedCloudDesign(input, data, normalized, identity);
     return "loaded";
   } catch (error) {
     if (isSupersededDesignPageLoadError(

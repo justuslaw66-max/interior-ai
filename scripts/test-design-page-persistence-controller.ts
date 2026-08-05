@@ -12,7 +12,10 @@ import {
   isCloudWriteBlocked,
   stagePendingCloudWriteBaseline,
   type CloudBaselineIdentity,
+  type CloudBaselineState,
 } from "../lib/design-page-cloud-baseline";
+import { createDesignPageCloudWriteQueue } from "../lib/design-page-cloud-write-queue";
+import { executeDesignPageCloudWrite } from "../lib/design-page-cloud-write-execution";
 import { migrateDesignDocument } from "../lib/design-document-migrations";
 import {
   normalizeLoadedCloudDesign,
@@ -41,6 +44,14 @@ const cloudBaselineControllerSource = fs.readFileSync(
 );
 const cloudLoadControllerSource = fs.readFileSync(
   path.join(root, "lib", "useDesignPageCloudLoadController.ts"),
+  "utf8"
+);
+const explicitCloudSaveControllerSource = fs.readFileSync(
+  path.join(root, "lib", "useDesignPageExplicitCloudSaveController.ts"),
+  "utf8"
+);
+const cloudWriteExecutionSource = fs.readFileSync(
+  path.join(root, "lib", "design-page-cloud-write-execution.ts"),
   "utf8"
 );
 const conflictCopyControllerSource = fs.readFileSync(
@@ -120,14 +131,14 @@ assert.match(
 );
 
 assert.match(
-  controllerSource,
-  /const storedSnapshot = getStoredDesignForPersistence\(\);[\s\S]*?const payload = \{[\s\S]*?designApi\.create\(payload\)[\s\S]*?const savedFingerprint = fingerprintStoredDesign\(storedSnapshot\);[\s\S]*?stageCloudWriteBaseline\(\{[\s\S]*?fingerprint: savedFingerprint/,
-  "Manual saves should fingerprint the exact event-time snapshot sent through the design API client."
+  `${explicitCloudSaveControllerSource}\n${cloudWriteExecutionSource}`,
+  /prepareManualWrite[\s\S]*?designApi\.create\(payload\)[\s\S]*?executeManualSave[\s\S]*?getStoredDesign\(\)[\s\S]*?fingerprintStoredDesign\(stored\)[\s\S]*?prepareManualWrite[\s\S]*?queue\.settleSuccess\(binding[\s\S]*?input\.stage\(\{/,
+  "Manual saves should bind and acknowledge the exact event-time snapshot sent through the design API client."
 );
 assert.match(
-  controllerSource,
-  /const saveDesignToCloud = useCallback[\s\S]*?expectedUpdatedAt: lastCloudRevision[\s\S]*?designApi\.update\(designId, payload\)/,
-  "Manual updates should reject stale cloud revisions just like autosave."
+  explicitCloudSaveControllerSource,
+  /prepareManualWrite[\s\S]*?expectedUpdatedAt: binding\.revision[\s\S]*?designApi\.update\(binding\.designId, payload\)/,
+  "Manual updates should use the revision bound to the queued request."
 );
 
 assert.match(
@@ -185,13 +196,18 @@ assert.match(
 
 assert.match(
   controllerSource,
-  /currentCloudWriteIsBlocked\(\)[\s\S]*?const timer = setTimeout\(async \(\) => \{[\s\S]*?const storedSnapshot = await enqueueCloudWrite\(async \(\) => \{[\s\S]*?const snapshot = getStoredDesignForPersistence\(\);[\s\S]*?designApi\.update\([\s\S]*?designId,[\s\S]*?expectedUpdatedAt: lastCloudRevision[\s\S]*?scheduledEpoch === documentEpochRef\.current[\s\S]*?stageCloudWriteBaseline\([\s\S]*?fingerprintStoredDesign\(storedSnapshot\.snapshot\)[\s\S]*?epoch: scheduledEpoch[\s\S]*?setLastCloudRevision\(committedRevision\)/,
-  "Cloud autosave should remain blocked until acknowledgment, then capture and acknowledge its exact event-time snapshot."
+  /currentCloudWriteIsBlocked\(\)[\s\S]*?const timer = setTimeout\(async \(\) => \{[\s\S]*?const snapshot = getStoredDesignForPersistence\(\);[\s\S]*?const fingerprint = fingerprintStoredDesign\(snapshot\);[\s\S]*?executeDesignPageCloudWrite\(\{[\s\S]*?kind: "update",[\s\S]*?prepare: \(binding\)[\s\S]*?expectedUpdatedAt: binding\.revision[\s\S]*?stage: stageCloudWriteBaseline[\s\S]*?setLastCloudRevision\(result\.revision\)/,
+  "Cloud autosave should bind its canonical snapshot, revision, epochs, and request before mutation and acknowledgment."
+);
+assert.match(
+  cloudWriteExecutionSource,
+  /queue\.settleSuccess\(binding[\s\S]*?fingerprint: binding\.fingerprint[\s\S]*?requestId: binding\.requestId/,
+  "Shared cloud-write completion should stage only the exact settled request."
 );
 
 assert.match(
-  `${controllerSource}\n${cloudLoadControllerSource}\n${controllerSource}`,
-  /const \[lastCloudRevision, setLastCloudRevision\][\s\S]*?setLastCloudRevision\(normalized\.revision\)[\s\S]*?setLastCloudRevision\(committedRevision\)/,
+  `${controllerSource}\n${cloudLoadControllerSource}\n${explicitCloudSaveControllerSource}\n${controllerSource}`,
+  /const \[lastCloudRevision, setLastCloudRevision\][\s\S]*?setLastCloudRevision\(normalized\.revision\)[\s\S]*?setLastCloudRevision\(saved\.revision\)[\s\S]*?setLastCloudRevision\(result\.revision\)/,
   "Persistence should retain revisions returned by load/create/update operations."
 );
 assert.match(
@@ -206,8 +222,8 @@ assert.match(
 );
 assert.match(
   conflictCopyControllerSource,
-  /saveConflictAsNewCopy[\s\S]*?currentWriteIsBlocked\(\)[\s\S]*?createConflictCopy\(input\)[\s\S]*?currentWriteIsBlocked\(\)/,
-  "Recovery-copy creation should remain gated through its independent baseline commit."
+  /saveConflictAsNewCopy[\s\S]*?currentWriteIsBlocked\(\)[\s\S]*?invalidateCloudWrites\(\)[\s\S]*?prepareConflictCopy\(input\)[\s\S]*?createConflictCopy\(input, prepared\)/,
+  "Recovery-copy creation should invalidate older writes before binding its independent request."
 );
 assert.match(
   conflictCopyControllerSource,
@@ -386,7 +402,11 @@ const loadBWithCompletedWriteA = stagePendingCloudWriteBaseline(
     designId: identityB.designId,
     requestEpoch: 12,
   }),
-  { identity: writeIdentityA, fingerprint: loadedCloud.fingerprint }
+  {
+    identity: writeIdentityA,
+    fingerprint: loadedCloud.fingerprint,
+    writeRequest: { requestId: 1, persistenceEpoch: 0 },
+  }
 );
 assert.equal(loadBWithCompletedWriteA.status, "loading");
 if (loadBWithCompletedWriteA.status !== "loading") process.exit(1);
@@ -503,13 +523,19 @@ assert.equal(
   "A route load blocks transient local writes before cloud identity commits."
 );
 
-type Deferred<T> = { promise: Promise<T>; resolve: (value: T) => void };
+type Deferred<T> = {
+  promise: Promise<T>;
+  resolve: (value: T) => void;
+  reject: (reason: unknown) => void;
+};
 function createDeferred<T>(): Deferred<T> {
   let resolve!: (value: T) => void;
-  const promise = new Promise<T>((settle) => {
+  let reject!: (reason: unknown) => void;
+  const promise = new Promise<T>((settle, fail) => {
     resolve = settle;
+    reject = fail;
   });
-  return { promise, resolve };
+  return { promise, resolve, reject };
 }
 
 async function verifyControlledAutosaveAdapter() {
@@ -530,7 +556,352 @@ async function verifyControlledAutosaveAdapter() {
   assert.equal(await committed, "saved");
 }
 
-void verifyControlledAutosaveAdapter().then(() => {
+async function verifyRevisionBoundCloudWriteQueue() {
+  const revisionN = "2026-08-05T04:00:00.000Z";
+  const revisionN1 = "2026-08-05T04:01:00.000Z";
+  const revisionN2 = "2026-08-05T04:02:00.000Z";
+
+  const designSwitchQueue = createDesignPageCloudWriteQueue({
+    designId: "design-a",
+    revision: revisionN,
+    documentEpoch: 1,
+  });
+  const writeACompletion = createDeferred<{ id: string; updatedAt: string }>();
+  let writeAStarted = false;
+  let staleDesignStages = 0;
+  const pendingWriteA = executeDesignPageCloudWrite({
+    queue: designSwitchQueue,
+    kind: "update",
+    fingerprint: "a-n",
+    prepare: () => () => {
+      writeAStarted = true;
+      return writeACompletion.promise;
+    },
+    stage: () => {
+      staleDesignStages += 1;
+      return true;
+    },
+  });
+  await Promise.resolve();
+  await Promise.resolve();
+  assert.equal(writeAStarted, true, "A must be in flight before B loads.");
+  designSwitchQueue.invalidate({
+    designId: "design-b",
+    revision: revisionN1,
+    documentEpoch: 2,
+  });
+  const baselineB = { designId: "design-b", fingerprint: "b-current" };
+  writeACompletion.resolve({ id: "design-a", updatedAt: revisionN1 });
+  const completedWriteA = await pendingWriteA;
+  assert.equal(completedWriteA.status, "stale");
+  assert.equal(staleDesignStages, 0);
+  assert.deepEqual(baselineB, {
+    designId: "design-b",
+    fingerprint: "b-current",
+  });
+  assert.deepEqual(designSwitchQueue.getCurrent(), {
+    designId: "design-b",
+    revision: revisionN1,
+    documentEpoch: 2,
+    persistenceEpoch: 1,
+  }, "A. An old-design completion must be inert after B loads.");
+
+  const outOfOrderQueue = createDesignPageCloudWriteQueue({
+    designId: "design-a",
+    revision: revisionN,
+    documentEpoch: 1,
+  });
+  const writeN = outOfOrderQueue.bind({ kind: "update", fingerprint: "n" });
+  const writeN1 = outOfOrderQueue.bind({ kind: "update", fingerprint: "n+1" });
+  assert.equal(
+    outOfOrderQueue.settleSuccess(writeN1, {
+      designId: "design-a",
+      revision: revisionN2,
+    }),
+    "accepted",
+    "B. The newest out-of-order completion may advance the revision."
+  );
+  assert.equal(
+    outOfOrderQueue.settleSuccess(writeN, {
+      designId: "design-a",
+      revision: revisionN1,
+    }),
+    "stale",
+    "B. N cannot replace or acknowledge N+1."
+  );
+  assert.equal(outOfOrderQueue.getCurrent().revision, revisionN2);
+
+  const queuedRevisionQueue = createDesignPageCloudWriteQueue({
+    designId: "design-a",
+    revision: revisionN,
+    documentEpoch: 1,
+  });
+  const completionN = createDeferred<{ id: string; updatedAt: string }>();
+  let mutationNStarted = false;
+  let stagedFingerprint: string | null = null;
+  const pendingN = executeDesignPageCloudWrite({
+    queue: queuedRevisionQueue,
+    kind: "update",
+    fingerprint: "n",
+    prepare: () => () => {
+      mutationNStarted = true;
+      return completionN.promise;
+    },
+    stage: (write) => {
+      stagedFingerprint = write.fingerprint;
+      return true;
+    },
+  });
+  await Promise.resolve();
+  await Promise.resolve();
+  assert.equal(mutationNStarted, true);
+  const preparedN1Revisions: Array<string | null> = [];
+  const mutatedN1Revisions: Array<string | null> = [];
+  const pendingN1 = executeDesignPageCloudWrite({
+    queue: queuedRevisionQueue,
+    kind: "update",
+    fingerprint: "n+1",
+    prepare: (binding) => {
+      preparedN1Revisions.push(binding.revision);
+      return async () => {
+        mutatedN1Revisions.push(binding.revision);
+        return { id: "design-a", updatedAt: revisionN2 };
+      };
+    },
+    stage: (write) => {
+      stagedFingerprint = write.fingerprint;
+      return true;
+    },
+  });
+  completionN.resolve({ id: "design-a", updatedAt: revisionN1 });
+  assert.equal((await pendingN).status, "stale");
+  const completedN1 = await pendingN1;
+  assert.equal(completedN1.status, "saved");
+  assert.deepEqual(preparedN1Revisions, [revisionN, revisionN1]);
+  assert.deepEqual(mutatedN1Revisions, [revisionN1]);
+  assert.equal(stagedFingerprint, "n+1");
+  assert.equal(
+    queuedRevisionQueue.getCurrent().revision,
+    revisionN2,
+    "B. An in-flight N must rebind, not discard, its newer queued write."
+  );
+
+  const epochQueue = createDesignPageCloudWriteQueue({
+    designId: "design-a",
+    revision: revisionN,
+    documentEpoch: 1,
+  });
+  const epochCompletion = createDeferred<{ id: string; updatedAt: string }>();
+  let oldEpochStages = 0;
+  const oldEpochWrite = executeDesignPageCloudWrite({
+    queue: epochQueue,
+    kind: "update",
+    fingerprint: "old",
+    prepare: () => () => epochCompletion.promise,
+    stage: () => {
+      oldEpochStages += 1;
+      return true;
+    },
+  });
+  await Promise.resolve();
+  await Promise.resolve();
+  epochQueue.invalidate();
+  epochCompletion.resolve({ id: "design-a", updatedAt: revisionN1 });
+  assert.equal((await oldEpochWrite).status, "stale");
+  assert.equal(oldEpochStages, 0);
+  assert.equal(epochQueue.getCurrent().revision, revisionN,
+    "C. Completion from an older persistence epoch must be inert.");
+
+  const recoveryQueue = createDesignPageCloudWriteQueue({
+    designId: "design-a",
+    revision: revisionN,
+    documentEpoch: 1,
+  });
+  const originalCompletion = createDeferred<{ id: string; updatedAt: string }>();
+  let recoveryBaseline: CloudBaselineState = createDetachedCloudBaseline();
+  let originalStages = 0;
+  const originalWrite = executeDesignPageCloudWrite({
+    queue: recoveryQueue,
+    kind: "update",
+    fingerprint: "original",
+    prepare: () => () => originalCompletion.promise,
+    stage: () => {
+      originalStages += 1;
+      return true;
+    },
+  });
+  await Promise.resolve();
+  await Promise.resolve();
+  recoveryQueue.invalidate();
+  const recoveryWrite = executeDesignPageCloudWrite({
+    queue: recoveryQueue,
+    kind: "recovery_copy",
+    fingerprint: "recovery",
+    prepare: () => async () => ({
+      id: "design-recovery",
+      updatedAt: revisionN2,
+    }),
+    stage: (write) => {
+      recoveryBaseline = stagePendingCloudWriteBaseline(recoveryBaseline, {
+        identity: {
+          designId: write.designId,
+          revision: write.revision,
+          epoch: write.epoch,
+        },
+        fingerprint: write.fingerprint,
+        writeRequest: {
+          requestId: write.requestId,
+          persistenceEpoch: write.persistenceEpoch,
+        },
+      });
+      return recoveryBaseline.status === "pending";
+    },
+  });
+  originalCompletion.resolve({ id: "design-a", updatedAt: revisionN1 });
+  assert.equal((await originalWrite).status, "stale");
+  assert.equal(originalStages, 0);
+  assert.equal(recoveryBaseline.status, "detached",
+    "D. The original write cannot clear recovery dirty state.");
+  const completedRecovery = await recoveryWrite;
+  assert.equal(completedRecovery.status, "saved");
+  assert.equal(recoveryQueue.getCurrent().designId, "design-recovery");
+  assert.equal(recoveryBaseline.status, "pending");
+  recoveryBaseline = acknowledgePendingCloudBaseline(recoveryBaseline, {
+    identity: {
+      designId: "design-recovery",
+      revision: revisionN2,
+      epoch: 1,
+    },
+    currentFingerprint: "recovery",
+  });
+  assert.equal(recoveryBaseline.status, "acknowledged");
+
+  const failureQueue = createDesignPageCloudWriteQueue({
+    designId: "design-a",
+    revision: revisionN,
+    documentEpoch: 1,
+  });
+  const lateFailure = createDeferred<{ id: string; updatedAt: string }>();
+  const failingWrite = executeDesignPageCloudWrite({
+    queue: failureQueue,
+    kind: "update",
+    fingerprint: "n",
+    prepare: () => () => lateFailure.promise,
+  });
+  await Promise.resolve();
+  await Promise.resolve();
+  const newerWrite = failureQueue.bind({ kind: "update", fingerprint: "n+1" });
+  assert.equal(failureQueue.settleSuccess(newerWrite, {
+    designId: "design-a",
+    revision: revisionN1,
+  }), "accepted");
+  let saveStatus = "saved";
+  let failureStatusMutations = 0;
+  lateFailure.reject(new Error("obsolete transport failure"));
+  const failedResult = await failingWrite;
+  if (failedResult.status === "failed") {
+    failureStatusMutations += 1;
+    saveStatus = "failed";
+  }
+  assert.equal(failedResult.status, "stale");
+  assert.equal(failureStatusMutations, 0);
+  assert.equal(
+    saveStatus,
+    "saved",
+    "E. A stale failure cannot downgrade the current save status."
+  );
+
+  const obsoleteRetryQueue = createDesignPageCloudWriteQueue({
+    designId: "design-a",
+    revision: revisionN,
+    documentEpoch: 1,
+  });
+  const preparedRetryRevisions: Array<string | null> = [];
+  const mutatedRetryRevisions: Array<string | null> = [];
+  const obsoleteRevisionRetry = executeDesignPageCloudWrite({
+    queue: obsoleteRetryQueue,
+    kind: "update",
+    fingerprint: "retry-old-revision",
+    prepare: (binding) => {
+      preparedRetryRevisions.push(binding.revision);
+      return async () => {
+        mutatedRetryRevisions.push(binding.revision);
+        return { id: "design-a", updatedAt: revisionN2 };
+      };
+    },
+  });
+  obsoleteRetryQueue.installIdentity({
+    designId: "design-a",
+    revision: revisionN1,
+    documentEpoch: 1,
+  });
+  assert.equal((await obsoleteRevisionRetry).status, "saved");
+  assert.deepEqual(preparedRetryRevisions, [revisionN, revisionN1]);
+  assert.deepEqual(mutatedRetryRevisions, [revisionN1],
+    "F. The obsolete revision must be rejected before a newly bound retry mutates.");
+  let obsoleteEpochMutations = 0;
+  const obsoleteEpochRetry = executeDesignPageCloudWrite({
+    queue: obsoleteRetryQueue,
+    kind: "update",
+    fingerprint: "retry-old-epoch",
+    prepare: () => async () => {
+      obsoleteEpochMutations += 1;
+      return { id: "design-a", updatedAt: revisionN2 };
+    },
+  });
+  obsoleteRetryQueue.invalidate();
+  assert.equal((await obsoleteEpochRetry).status, "stale");
+  assert.equal(obsoleteEpochMutations, 0,
+    "F. An obsolete epoch retry must stop before mutation.");
+
+  const validQueue = createDesignPageCloudWriteQueue({
+    designId: "design-a",
+    revision: revisionN,
+    documentEpoch: 1,
+  });
+  let validBaseline: CloudBaselineState = createDetachedCloudBaseline();
+  const validExecution = await executeDesignPageCloudWrite({
+    queue: validQueue,
+    kind: "update",
+    fingerprint: "valid",
+    prepare: () => async () => ({
+      id: "design-a",
+      updatedAt: revisionN1,
+    }),
+    stage: (write) => {
+      validBaseline = stagePendingCloudWriteBaseline(validBaseline, {
+        identity: {
+          designId: write.designId,
+          revision: write.revision,
+          epoch: write.epoch,
+        },
+        fingerprint: write.fingerprint,
+        writeRequest: {
+          requestId: write.requestId,
+          persistenceEpoch: write.persistenceEpoch,
+        },
+      });
+      return validBaseline.status === "pending";
+    },
+  });
+  assert.equal(validExecution.status, "saved");
+  validBaseline = acknowledgePendingCloudBaseline(validBaseline, {
+    identity: { designId: "design-a", revision: revisionN1, epoch: 1 },
+    currentFingerprint: "newer-local-edit",
+  });
+  assert.equal(validBaseline.status, "acknowledged");
+  if (validBaseline.status !== "acknowledged") process.exit(1);
+  assert.equal(
+    validBaseline.fingerprint,
+    "valid",
+    "G. A valid exact acknowledgment advances the canonical baseline."
+  );
+}
+
+void Promise.all([
+  verifyControlledAutosaveAdapter(),
+  verifyRevisionBoundCloudWriteQueue(),
+]).then(() => {
   console.log("Design page persistence controller guardrails passed.");
 }).catch((error: unknown) => {
   console.error(error);

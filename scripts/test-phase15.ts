@@ -81,7 +81,8 @@ const instrumentation: Array<[string, string[]]> = [
   ["lib/useDesignPageSelectionTransforms.ts", ["object_transformed", "validation_warning_shown"]],
   ["lib/useDesignPageDocumentHistoryController.ts", ["undo_used"]],
   ["components/editor/EditorViewToggle.tsx", ["view_switched_to_3d"]],
-  ["lib/useDesignPagePersistence.ts", ["project_saved", "project_save_failed", "design_shared"]],
+  ["lib/useDesignPageExplicitCloudSaveController.ts", ["project_saved", "project_save_failed"]],
+  ["lib/useDesignPagePersistence.ts", ["design_shared"]],
   ["lib/useDesignPageLocalBackupHydration.ts", ["project_recovered"]],
   ["components/CartSidebar.tsx", ["shopping_list_opened", "product_purchase_clicked"]],
 ];

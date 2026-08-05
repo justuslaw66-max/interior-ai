@@ -4,6 +4,14 @@ import { useCallback, type Dispatch, type MutableRefObject, type SetStateAction 
 
 import { track } from "@/lib/analytics";
 import { designApi } from "@/lib/design-api-client";
+import {
+  executeDesignPageCloudWrite,
+  type DesignPageCloudWriteResult,
+} from "@/lib/design-page-cloud-write-execution";
+import type {
+  DesignPageCloudWriteBinding,
+  DesignPageCloudWriteQueue,
+} from "@/lib/design-page-cloud-write-queue";
 import type { NamedCameraView, Style } from "@/lib/design-page-types";
 import {
   snapshotToLegacyApi,
@@ -35,12 +43,20 @@ type ConflictCopyControllerInput = {
   actions: {
     setConflict: Dispatch<SetStateAction<DesignPageCloudSaveConflictState | null>>;
     currentWriteIsBlocked: () => boolean;
+    invalidateCloudWrites: () => void;
+    installCloudWriteIdentity: (identity: {
+      designId: string;
+      revision: string;
+      documentEpoch: number;
+    }) => void;
     detachBaseline: () => void;
     stageWriteBaseline: (write: {
       designId: string;
       revision: string;
       fingerprint: string;
       epoch: number;
+      requestId: number;
+      persistenceEpoch: number;
     }) => boolean;
     setDesignId: Dispatch<SetStateAction<string | null>>;
     setShareToken: Dispatch<SetStateAction<string | null>>;
@@ -54,7 +70,7 @@ type ConflictCopyControllerInput = {
     showRuleToast: (message: string) => void;
   };
   adapters: {
-    enqueueCloudWrite: <T>(operation: () => Promise<T>) => Promise<T>;
+    cloudWriteQueue: DesignPageCloudWriteQueue;
     getStoredDesignForPersistence: () => StoredDesign;
     fingerprintStoredDesign: (stored: StoredDesign) => string;
   };
@@ -65,35 +81,57 @@ type CreatedConflictCopy = {
   designId: string;
   revision: string;
   stored: StoredDesign;
+  binding: DesignPageCloudWriteBinding;
 };
 
-async function createConflictCopy(
+type UnsuccessfulConflictCopy = Exclude<
+  DesignPageCloudWriteResult,
+  { status: "saved" }
+>;
+
+function prepareConflictCopy(
   input: ConflictCopyControllerInput
-): Promise<CreatedConflictCopy> {
+): {
+  stored: StoredDesign;
+  fingerprint: string;
+  payload: Parameters<typeof designApi.create>[0];
+} {
   const { state, adapters } = input;
   const stored = adapters.getStoredDesignForPersistence();
   const legacyData = snapshotToLegacyApi(storedToSnapshot(stored));
-  const data = await adapters.enqueueCloudWrite(() =>
-    designApi.create({
-      title: "Recovered design copy",
-      ...legacyData,
-      savedViews: state.savedViews,
-      style: state.style,
-      budget: state.budget,
-      mode: state.mode,
-      notes: state.notes,
-    })
-  );
-  const designId = typeof data?.id === "string" && data.id.trim()
-    ? data.id
-    : null;
-  const revision = typeof data?.updatedAt === "string" && data.updatedAt.trim()
-    ? data.updatedAt
-    : null;
-  if (!designId || !revision) {
-    throw new Error("The new cloud copy did not return a valid revision.");
-  }
-  return { designId, revision, stored };
+  const payload = {
+    title: "Recovered design copy",
+    ...legacyData,
+    savedViews: state.savedViews,
+    style: state.style,
+    budget: state.budget,
+    mode: state.mode,
+    notes: state.notes,
+  };
+  return {
+    stored,
+    fingerprint: adapters.fingerprintStoredDesign(stored),
+    payload,
+  };
+}
+
+async function createConflictCopy(
+  input: ConflictCopyControllerInput,
+  prepared: ReturnType<typeof prepareConflictCopy>
+): Promise<CreatedConflictCopy | UnsuccessfulConflictCopy> {
+  const result = await executeDesignPageCloudWrite({
+    queue: input.adapters.cloudWriteQueue,
+    kind: "recovery_copy",
+    fingerprint: prepared.fingerprint,
+    prepare: () => () => designApi.create(prepared.payload),
+  });
+  if (result.status !== "saved") return result;
+  return {
+    designId: result.designId,
+    revision: result.revision,
+    stored: prepared.stored,
+    binding: result.binding,
+  };
 }
 
 function commitConflictCopy(
@@ -103,11 +141,18 @@ function commitConflictCopy(
 ): void {
   const { state, actions, adapters, refs } = input;
   actions.detachBaseline();
+  actions.installCloudWriteIdentity({
+    designId: copy.designId,
+    revision: copy.revision,
+    documentEpoch: refs.documentEpochRef.current,
+  });
   if (!actions.stageWriteBaseline({
     designId: copy.designId,
     revision: copy.revision,
     fingerprint: adapters.fingerprintStoredDesign(copy.stored),
     epoch: refs.documentEpochRef.current,
+    requestId: copy.binding.requestId,
+    persistenceEpoch: copy.binding.persistenceEpoch,
   })) throw new Error("The new cloud copy could not establish its baseline.");
   actions.setDesignId(copy.designId);
   actions.setShareToken(null);
@@ -141,6 +186,18 @@ function recordConflictCopyFailure(
   );
 }
 
+function stopStaleConflictCopy(
+  input: ConflictCopyControllerInput,
+  conflict: DesignPageCloudSaveConflictState
+): void {
+  input.actions.setConflict((previous) =>
+    previous?.designId === conflict.designId &&
+      previous.detectedAt === conflict.detectedAt
+      ? { ...previous, isWorking: false }
+      : previous
+  );
+}
+
 async function saveConflictAsNewCopy(
   input: ConflictCopyControllerInput
 ): Promise<void> {
@@ -154,13 +211,23 @@ async function saveConflictAsNewCopy(
     });
     return;
   }
+  actions.invalidateCloudWrites();
   actions.setConflict({ ...conflict, isWorking: true, resolutionError: null });
   try {
-    const copy = await createConflictCopy(input);
-    if (actions.currentWriteIsBlocked()) {
-      throw new Error("The cloud design changed while the new copy was being saved.");
+    const prepared = prepareConflictCopy(input);
+    const result = await createConflictCopy(input, prepared);
+    if ("status" in result) {
+      if (result.status === "stale") {
+        stopStaleConflictCopy(input, conflict);
+        return;
+      }
+      const error = result.status === "failed"
+        ? result.error
+        : new Error(result.message);
+      recordConflictCopyFailure(input, conflict, error);
+      return;
     }
-    commitConflictCopy(input, conflict, copy);
+    commitConflictCopy(input, conflict, result);
   } catch (error) {
     recordConflictCopyFailure(input, conflict, error);
   }

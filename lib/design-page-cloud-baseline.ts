@@ -1,3 +1,5 @@
+import type { DesignPageCloudWriteRequestIdentity } from "@/lib/design-page-cloud-write-queue";
+
 export type CloudBaselineIdentity = {
   designId: string;
   revision: string;
@@ -11,12 +13,14 @@ type PendingCloudBaseline = {
   identity: CloudBaselineIdentity;
   fingerprint: string;
   requireFingerprintMatch: boolean;
+  writeRequest: DesignPageCloudWriteRequestIdentity | null;
 };
 
 type AcknowledgedCloudBaseline = {
   status: "acknowledged";
   identity: CloudBaselineIdentity;
   fingerprint: string;
+  writeRequest: DesignPageCloudWriteRequestIdentity | null;
 };
 
 type RestorableCloudBaseline =
@@ -75,6 +79,7 @@ export function installPendingCloudBaseline(
     identity: CloudBaselineIdentity;
     fingerprint: string;
     requireFingerprintMatch: boolean;
+    writeRequest?: DesignPageCloudWriteRequestIdentity | null;
   }
 ): CloudBaselineState {
   if (
@@ -89,6 +94,7 @@ export function installPendingCloudBaseline(
     identity: input.identity,
     fingerprint: input.fingerprint,
     requireFingerprintMatch: input.requireFingerprintMatch,
+    writeRequest: input.writeRequest ?? null,
   };
 }
 
@@ -108,12 +114,14 @@ export function cancelCloudBaselineLoad(
 export function createPendingCloudWriteBaseline(input: {
   identity: CloudBaselineIdentity;
   fingerprint: string;
+  writeRequest: DesignPageCloudWriteRequestIdentity;
 }): PendingCloudBaseline {
   return {
     status: "pending",
     identity: input.identity,
     fingerprint: input.fingerprint,
     requireFingerprintMatch: false,
+    writeRequest: input.writeRequest,
   };
 }
 
@@ -126,7 +134,11 @@ function sharesCloudDocumentGeneration(
 
 export function stagePendingCloudWriteBaseline(
   state: CloudBaselineState,
-  input: { identity: CloudBaselineIdentity; fingerprint: string }
+  input: {
+    identity: CloudBaselineIdentity;
+    fingerprint: string;
+    writeRequest: DesignPageCloudWriteRequestIdentity;
+  }
 ): CloudBaselineState {
   const pending = createPendingCloudWriteBaseline(input);
   if (state.status === "loading") {
@@ -164,6 +176,7 @@ export function acknowledgePendingCloudBaseline(
     status: "acknowledged",
     identity: state.identity,
     fingerprint: state.fingerprint,
+    writeRequest: state.writeRequest,
   };
 }
 

@@ -20,13 +20,14 @@ import {
   type CloudBaselineIdentity,
   type CloudBaselineState,
 } from "@/lib/design-page-cloud-baseline";
+import type { DesignPageCloudWriteRequestIdentity } from "@/lib/design-page-cloud-write-queue";
 
 type BaselineControllerInput = {
   designId: string | null;
   revision: string | null;
   currentFingerprint: string;
   acknowledgeFingerprint: (fingerprint: string) => void;
-  finishSaving: (saving: false) => void;
+  finishSaving: (writeRequest: DesignPageCloudWriteRequestIdentity | null) => void;
   documentEpochRef: MutableRefObject<number>;
 };
 
@@ -38,6 +39,7 @@ function pendingBaselineMatches(
     identity: CloudBaselineIdentity;
     fingerprint: string;
     requireFingerprintMatch: boolean;
+    writeRequest: DesignPageCloudWriteRequestIdentity | null;
     includeLoadingPrevious?: boolean;
   }
 ): boolean {
@@ -49,7 +51,10 @@ function pendingBaselineMatches(
     candidate.identity.revision === input.identity.revision &&
     candidate.identity.epoch === input.identity.epoch &&
     candidate.fingerprint === input.fingerprint &&
-    candidate.requireFingerprintMatch === input.requireFingerprintMatch;
+    candidate.requireFingerprintMatch === input.requireFingerprintMatch &&
+    candidate.writeRequest?.requestId === input.writeRequest?.requestId &&
+    candidate.writeRequest?.persistenceEpoch ===
+      input.writeRequest?.persistenceEpoch;
 }
 
 function useCloudBaselineStore() {
@@ -117,12 +122,14 @@ function useInstallLoadedBaseline(
           identity,
           fingerprint: loaded.fingerprint,
           requireFingerprintMatch: true,
+          writeRequest: null,
         })
       );
       if (!pendingBaselineMatches(next, {
         identity,
         fingerprint: loaded.fingerprint,
         requireFingerprintMatch: true,
+        writeRequest: null,
       })) return null;
       documentEpochRef.current = nextEpoch;
       return identity;
@@ -171,6 +178,8 @@ function useStageCloudWrite(
       revision: string;
       fingerprint: string;
       epoch: number;
+      requestId: number;
+      persistenceEpoch: number;
     }) => {
       if (write.epoch !== documentEpochRef.current) return false;
       const identity = {
@@ -182,12 +191,20 @@ function useStageCloudWrite(
         stagePendingCloudWriteBaseline(state, {
           identity,
           fingerprint: write.fingerprint,
+          writeRequest: {
+            requestId: write.requestId,
+            persistenceEpoch: write.persistenceEpoch,
+          },
         })
       );
       return pendingBaselineMatches(next, {
         identity,
         fingerprint: write.fingerprint,
         requireFingerprintMatch: false,
+        writeRequest: {
+          requestId: write.requestId,
+          persistenceEpoch: write.persistenceEpoch,
+        },
         includeLoadingPrevious: true,
       });
     },
@@ -225,7 +242,7 @@ function useAcknowledgePendingBaseline(input: {
   currentFingerprint: string;
   getCurrentIdentity: () => CloudBaselineIdentity | null;
   acknowledgeFingerprint: (fingerprint: string) => void;
-  finishSaving: (saving: false) => void;
+  finishSaving: (writeRequest: DesignPageCloudWriteRequestIdentity | null) => void;
 }) {
   const { store, currentFingerprint, getCurrentIdentity } = input;
   useEffect(() => {
@@ -241,7 +258,7 @@ function useAcknowledgePendingBaseline(input: {
       if (acknowledged.status !== "acknowledged") return;
       store.transition(() => acknowledged);
       input.acknowledgeFingerprint(acknowledged.fingerprint);
-      input.finishSaving(false);
+      input.finishSaving(acknowledged.writeRequest);
     });
     return () => {
       active = false;

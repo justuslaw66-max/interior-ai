@@ -1,4 +1,4 @@
-import type { Page } from "@playwright/test";
+import type { Page, Route } from "@playwright/test";
 import { expect, test } from "./fixtures";
 import { fingerprintDesignSnapshot } from "../../lib/snapshot-fingerprint";
 import { legacyApiToSnapshot } from "../../lib/room-persistence";
@@ -113,6 +113,32 @@ async function closePresentExport(page: Page) {
   await expect(close).toBeEnabled();
   await close.evaluate((button) => (button as HTMLButtonElement).click());
   await expect(close).toBeHidden();
+}
+
+async function expectLoadedDesignRemainsStable(
+  page: Page,
+  designId: string,
+  fingerprint: string,
+) {
+  for (let sample = 0; sample < 8; sample += 1) {
+    await expect(page.getByTestId("qa-editor-cloud-design")).toHaveAttribute(
+      "data-design-id",
+      designId,
+    );
+    await expect(page.getByTestId("qa-editor-snapshot-fingerprint")).toHaveAttribute(
+      "data-fingerprint",
+      fingerprint,
+    );
+    await expect(page.getByTestId("save-status")).toHaveAttribute(
+      "data-status",
+      "saved",
+    );
+    await expect(page.getByTestId("save-status")).toHaveAttribute(
+      "data-source",
+      "cloud",
+    );
+    await page.waitForTimeout(125);
+  }
 }
 
 test.describe("3. Save + Reload Persistence", () => {
@@ -282,6 +308,89 @@ test.describe("3. Save + Reload Persistence", () => {
       await cleanupBetaSeed(seed.userId);
     }
   });
+
+  for (const staleResult of ["success", "failure"] as const) {
+    test(`stale design-A write ${staleResult} is inert after design B loads`, async ({
+      page,
+    }) => {
+      test.setTimeout(150_000);
+      const email = `arch-rc53-${staleResult}-${Date.now()}@example.com`;
+      const seedA = await createBetaSeedDesign({ email });
+      try {
+        const seedB = await createBetaSeedDesign({ email });
+        await loadSeedDesign(page, seedA);
+
+        let captureWrite!: (route: Route) => void;
+        const heldWrite = new Promise<Route>((resolve) => {
+          captureWrite = resolve;
+        });
+        let writeCaptured = false;
+        const designARoute = `**/api/designs/${seedA.designId}`;
+        await page.route(designARoute, async (route) => {
+          if (route.request().method() === "PUT" && !writeCaptured) {
+            writeCaptured = true;
+            captureWrite(route);
+            return;
+          }
+          await route.continue();
+        });
+
+        const widthInput = page.getByRole("spinbutton", { name: "Width mm" }).first();
+        await widthInput.fill("5900");
+        await widthInput.press("Enter");
+        const delayedWrite = await heldWrite;
+
+        await openMyDesigns(page);
+        await page.getByTestId(`load-design-${seedB.designId}`).click();
+        await expect(page.getByTestId("load-designs-modal")).toBeHidden({
+          timeout: 30_000,
+        });
+        await expect(page.getByTestId("qa-editor-cloud-design")).toHaveAttribute(
+          "data-design-id",
+          seedB.designId,
+          { timeout: 30_000 },
+        );
+        const fingerprintB = await readStableFingerprint(page);
+        await expect(
+          page.getByRole("spinbutton", { name: "Width mm" }).first(),
+        ).toHaveValue("5800");
+
+        const responseObserved = page.waitForResponse((response) =>
+          response.request().method() === "PUT" &&
+          new URL(response.url()).pathname === `/api/designs/${seedA.designId}`
+        );
+        await delayedWrite.fulfill(
+          staleResult === "success"
+            ? {
+                status: 200,
+                contentType: "application/json",
+                body: JSON.stringify({
+                  id: seedA.designId,
+                  updatedAt: new Date().toISOString(),
+                }),
+              }
+            : {
+                status: 503,
+                contentType: "application/json",
+                headers: { "x-operation-id": "arch-rc53-stale-failure" },
+                body: JSON.stringify({
+                  error: "Obsolete write failed after a newer design loaded.",
+                  code: "INTERNAL_ERROR",
+                  operationId: "arch-rc53-stale-failure",
+                }),
+              },
+        );
+        await responseObserved;
+        await expectLoadedDesignRemainsStable(page, seedB.designId, fingerprintB);
+        await expect(
+          page.getByRole("spinbutton", { name: "Width mm" }).first(),
+        ).toHaveValue("5800");
+        await page.unroute(designARoute);
+      } finally {
+        await cleanupBetaSeed(seedA.userId);
+      }
+    });
+  }
 
   test("cloud conflict pauses autosave and preserves local work as a new copy", async ({
     page,

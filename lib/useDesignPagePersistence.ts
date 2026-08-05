@@ -9,9 +9,13 @@ import {
   type Dispatch,
   type SetStateAction,
 } from "react";
-import { track, trackProductEvent, trackProductPerformance } from "@/lib/analytics";
+import { track, trackProductEvent } from "@/lib/analytics";
 import { getAnonId } from "@/lib/anon";
 import { designApi, DesignApiError } from "@/lib/design-api-client";
+import { executeDesignPageCloudWrite } from "@/lib/design-page-cloud-write-execution";
+import {
+  createDesignPageCloudWriteQueue,
+} from "@/lib/design-page-cloud-write-queue";
 import { getDesignPageSaveStatus } from "@/lib/design-page-save-status";
 import { writeValidatedLocalBackup } from "@/lib/design-page-local-backup-recovery";
 import type { NamedCameraView, Style } from "@/lib/design-page-types";
@@ -20,11 +24,7 @@ import {
   markGuestDesignClaimed,
   saveGuestDesign,
 } from "@/lib/guestDesigns";
-import {
-  snapshotToLegacyApi,
-  storedToSnapshot,
-  type StoredDesign,
-} from "@/lib/room-persistence";
+import type { StoredDesign } from "@/lib/room-persistence";
 import type { DesignItem, DesignSnapshot, ZoneMin } from "@/lib/room-types";
 import { createDesignPageLoadRequestCoordinator } from "@/lib/design-page-requested-design-load-coordinator";
 import { useDesignPageCloudBaselineController } from "@/lib/useDesignPageCloudBaselineController";
@@ -36,6 +36,10 @@ import {
   sanitizeDesignPageSavedViews,
   useDesignPageCloudLoadController,
 } from "@/lib/useDesignPageCloudLoadController";
+import {
+  useDesignPageManualCloudSave,
+  useDesignPagePreserveCloudSave,
+} from "@/lib/useDesignPageExplicitCloudSaveController";
 
 export { sanitizeDesignPageSavedViews };
 export type { DesignPageCloudSaveConflictState };
@@ -56,9 +60,7 @@ export type PendingSavedDesignDelete = {
   mode: SavedDesignDeleteMode;
 };
 
-export type PreserveCurrentDesignResult =
-  | { ok: true; savedDesignId: string }
-  | { ok: false; error: string };
+export type { PreserveCurrentDesignResult } from "@/lib/useDesignPageExplicitCloudSaveController";
 
 type DesignPagePersistenceState = {
   identity: {
@@ -191,15 +193,34 @@ export function useDesignPagePersistence({
   const firstSaveRef = useRef(false);
   const guestPromptActionRef = useRef<null | (() => void)>(null);
   const documentEpochRef = useRef(0);
-  const cloudWriteTailRef = useRef<Promise<unknown>>(Promise.resolve());
+  const [cloudWriteQueue] = useState(() =>
+    createDesignPageCloudWriteQueue({
+      designId,
+      revision: lastCloudRevision,
+      documentEpoch: documentEpochRef.current,
+    })
+  );
   const shareStatusAbortRef = useRef<AbortController | null>(null);
   const designListAbortRef = useRef<AbortController | null>(null);
   const [designLoadRequest] = useState(createDesignPageLoadRequestCoordinator);
+  const finishCloudBaselineSaving = useCallback(
+    (writeRequest: Parameters<
+      typeof cloudWriteQueue.requestIdentityIsLatest
+    >[0] | null) => {
+      if (
+        !writeRequest ||
+        cloudWriteQueue.requestIdentityIsLatest(writeRequest)
+      ) {
+        setIsSaving(false);
+      }
+    },
+    [cloudWriteQueue]
+  );
   const cloudBaselineController = useDesignPageCloudBaselineController({
     designId, revision: lastCloudRevision,
     currentFingerprint: currentStoredDesignFingerprint,
     acknowledgeFingerprint: setLastPersistedSnapshotFingerprint,
-    finishSaving: setIsSaving,
+    finishSaving: finishCloudBaselineSaving,
     documentEpochRef,
   });
   const cloudBaseline = cloudBaselineController.state.baseline;
@@ -207,16 +228,19 @@ export function useDesignPagePersistence({
     detach: detachCloudBaseline, stageWrite: stageCloudWriteBaseline } =
     cloudBaselineController.actions;
 
-  const enqueueCloudWrite = useCallback(<T,>(operation: () => Promise<T>): Promise<T> => {
-    const queued = cloudWriteTailRef.current
-      .catch(() => undefined)
-      .then(() => operation());
-    cloudWriteTailRef.current = queued.then(
-      () => undefined,
-      () => undefined
-    );
-    return queued;
-  }, []);
+  const invalidateCloudWrites = useCallback(() => {
+    cloudWriteQueue.invalidate();
+    setIsSaving(false);
+  }, [cloudWriteQueue]);
+
+  const installCloudWriteIdentity = useCallback(
+    (identity: {
+      designId: string;
+      revision: string;
+      documentEpoch: number;
+    }) => cloudWriteQueue.installIdentity(identity),
+    [cloudWriteQueue]
+  );
 
   const recordCloudSaveFailure = useCallback(
     (error: unknown, targetDesignId: string | null, fallback: string) => {
@@ -300,268 +324,53 @@ export function useDesignPagePersistence({
     [setShareEnabled, setShareToken]
   );
 
-  const saveDesignToCloud = useCallback(async () => {
-    if (currentCloudWriteIsBlocked()) {
-      showRuleToast("Wait for the loaded cloud design to finish restoring before saving.");
-      return null;
-    }
-    const saveEpoch = documentEpochRef.current;
-    const saveStartedAt = performance.now();
-    setIsSaving(true);
-    setLastCloudSaveError(null);
-    try {
-      const storedSnapshot = getStoredDesignForPersistence();
-      const legacyData = snapshotToLegacyApi(storedToSnapshot(storedSnapshot));
-
-      const payload = {
-        title: "My Living Room",
-        ...legacyData,
-        savedViews,
-        style,
-        budget,
-        mode,
-        notes,
-        ...(designId && lastCloudRevision
-          ? { expectedUpdatedAt: lastCloudRevision }
-          : {}),
-      };
-
-      const data = await enqueueCloudWrite(() =>
-        designId
-          ? designApi.update(designId, payload)
-          : designApi.create(payload)
-      );
-      const savedDesignId =
-        designId ??
-        (typeof data?.id === "string" && data.id.trim() ? data.id : null);
-      const savedRevision =
-        typeof data.updatedAt === "string" && data.updatedAt.trim()
-          ? data.updatedAt
-          : null;
-      if (savedDesignId && savedRevision) {
-        const savedFingerprint = fingerprintStoredDesign(storedSnapshot);
-        if (!stageCloudWriteBaseline({
-          designId: savedDesignId,
-          revision: savedRevision,
-          fingerprint: savedFingerprint,
-          epoch: saveEpoch,
-        })) return null;
-        setDesignId(savedDesignId);
-        setLastCloudRevision(savedRevision);
-        setLastDbSaveAt(Date.now());
-        setLastCloudSaveError(null);
-        setCloudSaveConflict(null);
-        void fetchShareStatus(savedDesignId);
-        if (isDesigner) {
-          void enableShare(savedDesignId);
-        }
-        if (!firstSaveRef.current) {
-          track("design_saved_db", {
-            design_id: savedDesignId,
-            items_count: items.length,
-            room_type: "living_room",
-            mode,
-            is_guest: !isAuthenticated,
-          });
-          firstSaveRef.current = true;
-        }
-        const durationMs = performance.now() - saveStartedAt;
-        trackProductEvent("project_saved", {
-          source: "cloud",
-          result: "success",
-          durationMs,
-          itemCount: items.length,
-        });
-        trackProductPerformance({
-          metric: "save_duration_ms",
-          value: durationMs,
-          context: {
-            mode: mode === "designer" ? "pro" : "consumer",
-            itemCount: items.length,
-            source: "cloud",
-          },
-        });
-        return savedDesignId;
-      }
-
-      showRuleToast("Save failed: no design identity or revision returned");
-      setLastCloudSaveError("No design identity or revision returned");
-      trackProductEvent("project_save_failed", {
-        source: "cloud",
-        result: "failure",
-        errorCode: "missing_design_id",
-        durationMs: performance.now() - saveStartedAt,
-      });
-      return null;
-    } catch (error) {
-      const message = recordCloudSaveFailure(
-        error,
-        designId,
-        "Cloud save failed."
-      );
-      if (error instanceof DesignApiError && error.kind === "forbidden") {
-        showMaxDesignUpgrade();
-        track("upgrade_prompt_shown", { reason: "max_designs" });
-      }
-      showRuleToast(`Save failed: ${message}`);
-      trackProductEvent("project_save_failed", {
-        source: "cloud",
-        result: "failure",
-        errorCode:
-          error instanceof DesignApiError
-            ? error.kind
-            : error instanceof Error
-              ? error.name
-              : "unknown",
-        durationMs: performance.now() - saveStartedAt,
-      });
-      return null;
-    } finally {
-      setIsSaving(false);
-    }
-  }, [
-    budget,
-    currentCloudWriteIsBlocked,
-    designId,
-    enableShare,
-    enqueueCloudWrite,
-    fetchShareStatus,
-    fingerprintStoredDesign,
-    getStoredDesignForPersistence,
-    isAuthenticated,
-    isDesigner,
-    items.length,
-    mode,
-    notes,
-    lastCloudRevision,
-    recordCloudSaveFailure,
-    savedViews,
-    setDesignId,
+  const sharedExplicitSaveActions = {
+    currentWriteIsBlocked: currentCloudWriteIsBlocked,
+    setIsSaving,
+    setLastCloudSaveError,
+    setLastCloudRevision,
+    setLastDbSaveAt,
+    setCloudSaveConflict,
     showMaxDesignUpgrade,
-    showRuleToast,
-    style,
-    stageCloudWriteBaseline,
-  ]);
-
-  const preserveCurrentDesign = useCallback(async (): Promise<PreserveCurrentDesignResult> => {
-    if (!isAuthenticated) {
-      return {
-        ok: false,
-        error: "Sign in before starting a new plan so the current design can be kept.",
-      };
-    }
-    if (currentCloudWriteIsBlocked()) {
-      return {
-        ok: false,
-        error: "Wait for the loaded cloud design to finish restoring before starting a new plan.",
-      };
-    }
-    const saveEpoch = documentEpochRef.current;
-
-    setIsSaving(true);
-    setLastCloudSaveError(null);
-    try {
-      const storedSnapshot = getStoredDesignForPersistence();
-      const legacyData = snapshotToLegacyApi(storedToSnapshot(storedSnapshot));
-      const creatingSavedCopy = !designId;
-      const payload = designId
-        ? {
-                  items,
-                  zones,
-                  savedViews,
-                  roomWidth,
-                  roomDepth,
-                  snapshot: storedSnapshot,
-                  style,
-                  budget,
-                  mode,
-                  notes,
-                  ...(lastCloudRevision
-                    ? { expectedUpdatedAt: lastCloudRevision }
-                    : {}),
-                }
-        : {
-                  title: "My Living Room",
-                  ...legacyData,
-                  savedViews,
-                  style,
-                  budget,
-                  mode,
-                  notes,
-                };
-      const data = await enqueueCloudWrite(() =>
-        designId ? designApi.update(designId, payload) : designApi.create(payload)
-      );
-      const savedDesignId = designId ??
-        (typeof data?.id === "string" && data.id.trim() ? data.id : null);
-      const savedRevision =
-        typeof data?.updatedAt === "string" && data.updatedAt.trim()
-          ? data.updatedAt
-          : null;
-      if (!savedDesignId || !savedRevision) {
-        const error = "The current design was saved without a complete cloud identity.";
-        setLastCloudSaveError(error);
-        return { ok: false, error };
-      }
-
-      if (!stageCloudWriteBaseline({
-        designId: savedDesignId,
-        revision: savedRevision,
-        fingerprint: fingerprintStoredDesign(storedSnapshot),
-        epoch: saveEpoch,
-      })) {
-        return { ok: false, error: "The cloud design changed while it was being saved." };
-      }
-      setLastDbSaveAt(Date.now());
-      setLastCloudRevision(savedRevision);
-      setLastCloudSaveError(null);
-      setCloudSaveConflict(null);
-      track("design_preserved_before_new_plan", {
-        design_id: savedDesignId,
-        created_saved_copy: creatingSavedCopy,
-        room_count: designSnapshot.rooms.length,
-        items_count: items.length,
-      });
-      return { ok: true, savedDesignId };
-    } catch (error) {
-      const message = recordCloudSaveFailure(
-        error,
-        designId,
-        "Cloud save failed."
-      );
-      if (error instanceof DesignApiError && error.kind === "forbidden") {
-        showMaxDesignUpgrade();
-        track("upgrade_prompt_shown", { reason: "max_designs" });
-      }
-      return { ok: false, error: message };
-    } finally {
-      setIsSaving(false);
-    }
-  }, [
-    budget,
-    currentCloudWriteIsBlocked,
-    designId,
-    designSnapshot.rooms.length,
-    enqueueCloudWrite,
-    fingerprintStoredDesign,
-    getStoredDesignForPersistence,
-    isAuthenticated,
-    items,
-    lastCloudRevision,
-    mode,
-    notes,
-    roomDepth,
-    roomWidth,
     recordCloudSaveFailure,
-    savedViews,
-    showMaxDesignUpgrade,
-    style,
-    stageCloudWriteBaseline,
-    zones,
-  ]);
+  };
+  const sharedExplicitSaveAdapters = {
+    queue: cloudWriteQueue,
+    stageWrite: stageCloudWriteBaseline,
+    getStoredDesign: getStoredDesignForPersistence,
+    fingerprintStoredDesign,
+  };
+  const saveDesignToCloud = useDesignPageManualCloudSave({
+    state: {
+      savedViews, style, budget, mode, notes,
+      isAuthenticated, isDesigner, itemsCount: items.length,
+    },
+    actions: {
+      ...sharedExplicitSaveActions,
+      setDesignId,
+      fetchShareStatus,
+      enableShare,
+      showRuleToast,
+    },
+    adapters: sharedExplicitSaveAdapters,
+    refs: { firstSave: firstSaveRef },
+  });
+  const preserveCurrentDesign = useDesignPagePreserveCloudSave({
+    state: {
+      savedViews, style, budget, mode, notes, isAuthenticated,
+      designSnapshot, items, zones, roomWidth, roomDepth,
+    },
+    actions: sharedExplicitSaveActions,
+    adapters: sharedExplicitSaveAdapters,
+  });
 
   const detachCurrentDesignForNewDraft = useCallback(() => {
     detachCloudBaseline();
+    cloudWriteQueue.invalidate({
+      designId: null,
+      revision: null,
+      documentEpoch: documentEpochRef.current,
+    });
     shareStatusAbortRef.current?.abort();
     designLoadRequest.cancel();
     setDesignId(null);
@@ -588,6 +397,7 @@ export function useDesignPagePersistence({
       // The next local-backup effect will retry with the new draft.
     }
   }, [
+    cloudWriteQueue,
     designLoadRequest,
     detachCloudBaseline,
     setDesignId,
@@ -715,6 +525,11 @@ export function useDesignPagePersistence({
       }
       if (designId && deletedIds.has(designId)) {
         detachCloudBaseline();
+        cloudWriteQueue.invalidate({
+          designId: null,
+          revision: null,
+          documentEpoch: documentEpochRef.current,
+        });
         setDesignId(null);
         setShareToken(null);
         setShareEnabled(false);
@@ -744,6 +559,7 @@ export function useDesignPagePersistence({
       setDeletingDesignIds(new Set());
     }
   }, [
+    cloudWriteQueue,
     deletingDesignIds.size,
     detachCloudBaseline,
     designId,
@@ -821,6 +637,8 @@ export function useDesignPagePersistence({
       setLastDbSaveAt,
       setLastCloudSaveError,
       setCloudSaveConflict,
+      invalidateCloudWrites,
+      installCloudWriteIdentity,
       setMode,
       setNotes,
       setSavedViews,
@@ -845,6 +663,8 @@ export function useDesignPagePersistence({
     actions: {
       setConflict: setCloudSaveConflict,
       currentWriteIsBlocked: currentCloudWriteIsBlocked,
+      invalidateCloudWrites,
+      installCloudWriteIdentity,
       detachBaseline: detachCloudBaseline,
       stageWriteBaseline: stageCloudWriteBaseline,
       setDesignId,
@@ -859,7 +679,7 @@ export function useDesignPagePersistence({
       showRuleToast,
     },
     adapters: {
-      enqueueCloudWrite,
+      cloudWriteQueue,
       getStoredDesignForPersistence,
       fingerprintStoredDesign,
     },
@@ -954,9 +774,14 @@ export function useDesignPagePersistence({
 
   const clearPersistedSnapshotFingerprint = useCallback(() => {
     detachCloudBaseline();
+    cloudWriteQueue.invalidate({
+      designId: null,
+      revision: null,
+      documentEpoch: documentEpochRef.current,
+    });
     setLastPersistedSnapshotFingerprint(null);
     setLastCloudRevision(null);
-  }, [detachCloudBaseline]);
+  }, [cloudWriteQueue, detachCloudBaseline]);
 
   useEffect(() => {
     return () => {
@@ -1045,66 +870,73 @@ export function useDesignPagePersistence({
     }
 
     let cancelled = false;
-    const scheduledEpoch = documentEpochRef.current;
+    let result: Awaited<ReturnType<typeof executeDesignPageCloudWrite>> | null =
+      null;
     setIsSaving(true);
     const timer = setTimeout(async () => {
       try {
-        const storedSnapshot = await enqueueCloudWrite(async () => {
-          if (scheduledEpoch !== documentEpochRef.current) return null;
-          const snapshot = getStoredDesignForPersistence();
-          const responseData = await designApi.update(
-            designId,
-            {
+        const snapshot = getStoredDesignForPersistence();
+        const fingerprint = fingerprintStoredDesign(snapshot);
+        result = await executeDesignPageCloudWrite({
+          queue: cloudWriteQueue,
+          kind: "update",
+          fingerprint,
+          prepare: (binding) => {
+            if (!binding.designId || !binding.revision) {
+              throw new Error(
+                "Autosave was rejected because its cloud identity was incomplete."
+              );
+            }
+            const targetDesignId = binding.designId;
+            const payload = {
               items,
               zones,
               savedViews,
               roomWidth,
               roomDepth,
               snapshot,
-              ...(lastCloudRevision
-                ? { expectedUpdatedAt: lastCloudRevision }
-                : {}),
-            }
-          );
-          return {
-            snapshot,
-            updatedAt:
-              typeof responseData?.updatedAt === "string"
-                ? responseData.updatedAt
-                : null,
-          };
+              expectedUpdatedAt: binding.revision,
+            };
+            return () => designApi.update(targetDesignId, payload);
+          },
+          failureIsRelevant: () => !cancelled,
+          stage: stageCloudWriteBaseline,
         });
-        if (
-          storedSnapshot &&
-          scheduledEpoch === documentEpochRef.current
-        ) {
-          // A request can commit after this effect has been superseded. Keep
-          // its server revision even when the older UI snapshot should no
-          // longer become the displayed saved fingerprint.
-          const committedRevision = storedSnapshot.updatedAt;
-          if (!committedRevision) {
-            setLastCloudRevision(null);
-            return;
-          }
-          if (!stageCloudWriteBaseline({
-            designId,
-            revision: committedRevision,
-            fingerprint: fingerprintStoredDesign(storedSnapshot.snapshot),
-            epoch: scheduledEpoch,
-          })) return;
-          setLastCloudRevision(committedRevision);
-          if (!cancelled) {
-            setLastDbSaveAt(Date.now());
-            setLastCloudSaveError(null);
-            setCloudSaveConflict(null);
-          }
+        if (result.status === "invalid") {
+          setLastCloudSaveError("Autosave returned no valid cloud revision.");
+          return;
+        }
+        if (result.status === "failed") {
+          recordCloudSaveFailure(
+            result.error,
+            result.binding.designId,
+            "Autosave failed"
+          );
+          return;
+        }
+        if (result.status !== "saved") return;
+        setLastCloudRevision(result.revision);
+        if (!cancelled && cloudWriteQueue.requestIsLatest(result.binding)) {
+          setLastDbSaveAt(Date.now());
+          setLastCloudSaveError(null);
+          setCloudSaveConflict(null);
         }
       } catch (error) {
-        if (!cancelled) {
-          recordCloudSaveFailure(error, designId, "Autosave failed");
+        if (
+          !cancelled &&
+          (!result || cloudWriteQueue.failureIsCurrent(result.binding))
+        ) {
+          recordCloudSaveFailure(
+            error,
+            result?.binding.designId ?? null,
+            "Autosave failed"
+          );
         }
       } finally {
-        if (!cancelled) {
+        if (
+          !cancelled &&
+          (!result || cloudWriteQueue.requestIsLatest(result.binding))
+        ) {
           setIsSaving(false);
         }
       }
@@ -1119,14 +951,13 @@ export function useDesignPagePersistence({
     cloudRetryNonce,
     cloudSaveConflict,
     cloudBaseline,
+    cloudWriteQueue,
     currentCloudWriteIsBlocked,
     currentStoredDesignFingerprint,
     designId,
-    enqueueCloudWrite,
     fingerprintStoredDesign,
     getStoredDesignForPersistence,
     items,
-    lastCloudRevision,
     lastPersistedSnapshotFingerprint,
     localBackupHydrated,
     recordCloudSaveFailure,

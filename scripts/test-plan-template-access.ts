@@ -73,6 +73,10 @@ const persistenceControllerPath = path.join(
   "useDesignPagePersistence.ts"
 );
 const persistenceControllerSource = fs.readFileSync(persistenceControllerPath, "utf8");
+const explicitCloudSaveControllerSource = fs.readFileSync(
+  path.join(process.cwd(), "lib", "useDesignPageExplicitCloudSaveController.ts"),
+  "utf8"
+);
 const cloudBaselineControllerSource = fs.readFileSync(
   path.join(process.cwd(), "lib", "useDesignPageCloudBaselineController.ts"),
   "utf8"
@@ -817,14 +821,14 @@ assert.match(
 );
 
 assert.match(
-  persistenceControllerSource,
-  /const preserveCurrentDesign = useCallback[\s\S]*?const data = await enqueueCloudWrite\(\(\) =>\s*designId \? designApi\.update\(designId, payload\) : designApi\.create\(payload\)\s*\);[\s\S]*?return \{ ok: true, savedDesignId \};/,
-  "Preserving the current design should update an existing ID or create a saved copy without adopting it."
+  explicitCloudSaveControllerSource,
+  /preparePreserveWrite[\s\S]*?designApi\.update\(binding\.designId, payload\)[\s\S]*?designApi\.create\(payload\)[\s\S]*?executePreserveSave[\s\S]*?executeDesignPageCloudWrite\(\{[\s\S]*?commitPreservedDesign\(input, result\)/,
+  "Preserving the current design should bind and validate an existing update or saved-copy creation before adopting its revision."
 );
 
 assert.match(
   persistenceControllerSource,
-  /const detachCurrentDesignForNewDraft = useCallback\(\(\) => \{[\s\S]*?detachCloudBaseline\(\);[\s\S]*?setDesignId\(null\);[\s\S]*?setShareToken\(null\);[\s\S]*?setShareEnabled\(false\);[\s\S]*?setLastPersistedSnapshotFingerprint\(null\);[\s\S]*?localStorage\.removeItem\(storageKey\);/,
+  /const detachCurrentDesignForNewDraft = useCallback\(\(\) => \{[\s\S]*?detachCloudBaseline\(\);[\s\S]*?cloudWriteQueue\.invalidate\(\{[\s\S]*?designId: null,[\s\S]*?setDesignId\(null\);[\s\S]*?setShareToken\(null\);[\s\S]*?setShareEnabled\(false\);[\s\S]*?setLastPersistedSnapshotFingerprint\(null\);[\s\S]*?localStorage\.removeItem\(storageKey\);/,
   "A separate plan should invalidate old writes and remove cloud/share identity before local autosave resumes."
 );
 assert.match(
@@ -835,13 +839,13 @@ assert.match(
 
 assert.match(
   persistenceControllerSource,
-  /const scheduledEpoch = documentEpochRef\.current;[\s\S]*?enqueueCloudWrite[\s\S]*?scheduledEpoch !== documentEpochRef\.current[\s\S]*?getStoredDesignForPersistence\(\)/,
-  "Queued autosave should reject stale document epochs before reading a newly applied template."
+  /const snapshot = getStoredDesignForPersistence\(\);[\s\S]*?executeDesignPageCloudWrite\(\{[\s\S]*?kind: "update",[\s\S]*?fingerprint,[\s\S]*?expectedUpdatedAt: binding\.revision/,
+  "Queued autosave should bind the exact pre-template snapshot and let the queue reject stale epochs before mutation."
 );
 
 assert.match(
   cloudLoadControllerSource,
-  /requestCoordinator\.start\(\)[\s\S]*?!input\.requestCoordinator\.isCurrent\(request\)[\s\S]*?baseline\.installLoaded\([\s\S]*?commitLoadedCloudDesign/,
+  /invalidateCloudWrites\(\);[\s\S]*?requestCoordinator\.start\(\)[\s\S]*?!input\.requestCoordinator\.isCurrent\(request\)[\s\S]*?baseline\.installLoaded\([\s\S]*?commitLoadedCloudDesign/,
   "Loading another design should invalidate stale document requests and autosaves before changing identity."
 );
 
