@@ -626,3 +626,39 @@ RC54 **B**; RC55 **F**. These archival items do not change the existing
 code-health count: **0 unresolved P0 and 13 unresolved P1**. CH-0004 remains
 unstarted. No integration branch is eligible until the open bounded items are
 corrected, reviewed, and the exact artifact is certified.
+
+### ARCH-RC53 public-share projection-source queue — 2026-08-06
+
+- **`ARCH-RC53-SHARE-PROJECTION-SOURCE` — locally remediated:** from exact clean
+  `12bc689b7db757c0f7323774d214aaa1aa8c8028` on
+  `fix/arch-rc53-share-projection-source`, anonymous share page, HTML export,
+  PDF export, native-share/CSV/PDF titles, and duplicate analytics now consume
+  the existing `projectSharedDesignTransport` result instead of raw outer
+  title/style/budget/notes. No archival patch was cherry-picked.
+- **Privacy classification:** declared snapshot title/style/categorical budget/
+  notes are intended public. Owner name/email, row `createdAt`, private
+  provenance, and unknown outer fields are owner/internal only. Derived totals,
+  readiness, filenames, catalog presentation, and generic metadata are public
+  only as projection-derived/static values. No product/privacy ambiguity
+  remains. Anonymous exports now label the preparer as `Interior AI` and omit
+  row-created metadata.
+- **Closed-flow invariant:** present fields in a valid v3 snapshot win over
+  divergent raw columns. A no-snapshot row, or presentation metadata absent
+  from an older v3 row, enters only through the explicit legacy transport
+  upgrade and must become a valid closed v3 projection before presentation.
+  Non-owner API and recipient-copy semantics remain projection-owned; private
+  raw changes do not affect public output or fingerprint, while projected
+  presentation changes do.
+- **Typed presentation boundary and client preview:** the shared resolver
+  enforces title ≤120, style ≤80, notes ≤20,000, and the explicit modern plus
+  legacy budget categories. Owner/client preview consumes that same
+  snapshot-first resolver and maps its category/style output only into existing
+  editor controls; an independent divergent-envelope fixture proves the raw
+  owner values do not regain ownership.
+- **Scope:** no cloud revision/baseline, token lifecycle, authorization,
+  publication rule, responsive geometry, RC55 projection identity, Gate A3
+  ownership, dependency, lockfile, workflow, runner, deployment, secret, or
+  external setting changed. Full E2E remains excluded.
+- **Remaining archival queue:** RC48 tracing/rotation ownership; RC55
+  collision-resistant projection identity; RC55 required-gate ownership for
+  responsive Chromium/WebKit coverage.

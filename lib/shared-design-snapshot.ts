@@ -17,6 +17,7 @@ import {
   assertSharedDesignInput,
   assertSharedDesignSnapshotPublic,
   removeLegacySharedDesignRootFields,
+  resolveSharedDesignPresentation,
 } from "@/lib/shared-design-projection-schema";
 
 export { assertSharedDesignSnapshotPublic } from "@/lib/shared-design-projection-schema";
@@ -302,12 +303,16 @@ export function projectSharedDesignTransport(
     projectLegacyDesignTransport(data);
 
   // Older v3 rows may keep presentation metadata only in the legacy columns.
-  // Fill absent snapshot values once, then make the snapshot the sole source
-  // for both the public response envelope and a recipient-owned copy.
-  projectedStored.title ??= data.title ?? "Untitled Living Room";
-  projectedStored.style ??= data.style ?? undefined;
-  projectedStored.budget ??= data.budget ?? undefined;
-  projectedStored.notes ??= data.notes ?? undefined;
+  // Resolve those fields through the same constrained read model used by
+  // owner/client preview, then make the snapshot the sole public source.
+  const presentation = resolveSharedDesignPresentation(projectedStored, data);
+  projectedStored.title = presentation.title;
+  if (presentation.style === null) delete projectedStored.style;
+  else projectedStored.style = presentation.style;
+  if (presentation.budget === null) delete projectedStored.budget;
+  else projectedStored.budget = presentation.budget;
+  if (presentation.notes === null) delete projectedStored.notes;
+  else projectedStored.notes = presentation.notes;
   assertSharedDesignSnapshotPublic(projectedStored);
 
   const activeRoom =

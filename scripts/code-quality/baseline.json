@@ -85,15 +85,15 @@
       "limit": 250
     },
     "app/share/[shareToken]/export/page.tsx": {
-      "lines": 1601,
+      "lines": 1585,
       "limit": 250
     },
     "app/share/[shareToken]/export/pdf/route.ts": {
-      "lines": 547,
+      "lines": 531,
       "limit": 400
     },
     "app/share/[shareToken]/page.tsx": {
-      "lines": 752,
+      "lines": 741,
       "limit": 250
     },
     "app/tools/glb-optimizer/page.tsx": {
@@ -1501,21 +1501,21 @@
     "app/share/[shareToken]/export/page.tsx": {
       "overlongFunctions": {
         "count": 7,
-        "maximum": 600
+        "maximum": 584
       },
       "complexFunctions": {
         "count": 1,
-        "maximum": 48
+        "maximum": 44
       }
     },
     "app/share/[shareToken]/export/pdf/route.ts": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 304
+        "maximum": 288
       },
       "complexFunctions": {
         "count": 1,
-        "maximum": 42
+        "maximum": 39
       }
     },
     "app/share/[shareToken]/export/PlanSvgDownload.tsx": {
@@ -1533,11 +1533,11 @@
     "app/share/[shareToken]/page.tsx": {
       "overlongFunctions": {
         "count": 2,
-        "maximum": 695
+        "maximum": 684
       },
       "complexFunctions": {
         "count": 1,
-        "maximum": 44
+        "maximum": 42
       }
     },
     "app/tools/glb-optimizer/page.tsx": {

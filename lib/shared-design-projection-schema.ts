@@ -14,6 +14,22 @@ const SENSITIVE_KEY_FRAGMENTS = [
 const PUBLIC_CABINET_ROLE_VALUES = new Set([
   "client", "designer", "fabricator", "installer", "supplier",
 ]);
+const PUBLIC_BUDGET_VALUES = new Set([
+  "budget", "mid", "luxury", "$", "$$", "$$$",
+]);
+
+export const SHARED_DESIGN_PRESENTATION_LIMITS = {
+  title: 120,
+  style: 80,
+  notes: 20_000,
+} as const;
+
+export type SharedDesignPresentation = {
+  title: string;
+  style: string | null;
+  budget: string | null;
+  notes: string | null;
+};
 
 const PUBLIC_DESIGN_KEYS = new Set([
   "activeRoomId", "budget", "coordinateSystem", "floorPlan", "lighting",
@@ -107,6 +123,67 @@ function assertOnlyDeclaredKeys(
   return record;
 }
 
+function assertBoundedString(
+  value: unknown,
+  path: string,
+  maxLength: number,
+  options: { allowEmpty?: boolean } = {}
+) {
+  if (
+    typeof value !== "string" ||
+    value.length > maxLength ||
+    (!options.allowEmpty && value.trim().length === 0)
+  ) {
+    throw new Error(
+      `Shared design projection requires ${path} to be a string of at most ${maxLength} characters`
+    );
+  }
+}
+
+function assertSharedDesignPresentationFields(
+  design: Record<string, unknown>,
+  path: string,
+  options: { allowNullOptionals?: boolean } = {}
+) {
+  if (design.title !== undefined) {
+    assertBoundedString(
+      design.title,
+      `${path}.title`,
+      SHARED_DESIGN_PRESENTATION_LIMITS.title
+    );
+  }
+  if (
+    design.style !== undefined &&
+    !(options.allowNullOptionals && design.style === null)
+  ) {
+    assertBoundedString(
+      design.style,
+      `${path}.style`,
+      SHARED_DESIGN_PRESENTATION_LIMITS.style
+    );
+  }
+  if (
+    design.budget !== undefined &&
+    !(options.allowNullOptionals && design.budget === null) &&
+    (typeof design.budget !== "string" || !PUBLIC_BUDGET_VALUES.has(design.budget))
+  ) {
+    throw new Error(
+      `${path}.budget must be a declared public budget category`
+    );
+  }
+  if (
+    design.notes !== undefined &&
+    !(options.allowNullOptionals && design.notes === null)
+  ) {
+    assertBoundedString(
+      design.notes,
+      `${path}.notes`,
+      SHARED_DESIGN_PRESENTATION_LIMITS.notes,
+      { allowEmpty: true }
+    );
+  }
+}
+
 function assertRoomCollections(room: Record<string, unknown>, path: string) {
   (Array.isArray(room.items) ? room.items : []).forEach((item, index) =>
     assertOnlyDeclaredKeys(item, PUBLIC_ITEM_KEYS, `${path}.items[${index}]`)
@@ -141,6 +218,7 @@ function assertDeclaredDesignShape(
   floorPlanKeys: ReadonlySet<string>
 ) {
   const design = assertOnlyDeclaredKeys(value, rootKeys, "snapshot");
+  assertSharedDesignPresentationFields(design, "snapshot");
   (Array.isArray(design.rooms) ? design.rooms : []).forEach((room, index) => {
     const path = `snapshot.rooms[${index}]`;
     const declaredRoom = assertOnlyDeclaredKeys(room, PUBLIC_ROOM_KEYS, path);
@@ -149,6 +227,34 @@ function assertDeclaredDesignShape(
   if (design.floorPlan !== undefined) {
     assertOnlyDeclaredKeys(design.floorPlan, floorPlanKeys, "snapshot.floorPlan");
   }
+}
+
+/**
+ * Resolves the one shared presentation read model. Snapshot values win; the
+ * legacy envelope is consulted only when an older document omitted a field.
+ */
+export function resolveSharedDesignPresentation(
+  snapshot: unknown,
+  legacy: {
+    title?: unknown;
+    style?: unknown;
+    budget?: unknown;
+    notes?: unknown;
+  } = {}
+): SharedDesignPresentation {
+  const source = requireRecord(snapshot, "snapshot");
+  const presentation: Record<string, unknown> = {
+    title: source.title !== undefined
+      ? source.title
+      : legacy.title ?? "Untitled Living Room",
+    style: source.style !== undefined ? source.style : legacy.style ?? null,
+    budget: source.budget !== undefined ? source.budget : legacy.budget ?? null,
+    notes: source.notes !== undefined ? source.notes : legacy.notes ?? null,
+  };
+  assertSharedDesignPresentationFields(presentation, "snapshot", {
+    allowNullOptionals: true,
+  });
+  return presentation as SharedDesignPresentation;
 }
 
 export function assertSharedDesignInput(value: unknown) {

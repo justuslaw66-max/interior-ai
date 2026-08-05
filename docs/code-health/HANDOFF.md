@@ -3535,3 +3535,68 @@ its remote branch exists, but no PR, status check, or workflow run was found.
 No integration branch, push, deployment, workflow/ruleset change, or other
 external mutation was performed. Integration planning remains blocked until the
 bounded corrections are reviewed and the exact immutable artifact is certified.
+
+## ARCH-RC53 public-share projection-source handoff — 2026-08-06
+
+Starting source was exact clean
+`12bc689b7db757c0f7323774d214aaa1aa8c8028`; branch is
+`fix/arch-rc53-share-projection-source`. The starting commit changed only five
+code-health documents from application parent
+`83425bad3cc30dc37100d090e79159998782bc29`. No Node/Next listener was present,
+so there was no running-checkout mismatch. Archival RC53 was not an ancestor and
+was not cherry-picked.
+
+The main share route and anonymous HTML/PDF exports projected the stored v3
+snapshot but rendered raw row title/style/budget/notes; raw title also reached
+native-share and download naming. Export prepared-by/created metadata came from
+owner name/email and design-row `createdAt`. Duplicate analytics used raw
+style/budget. Static page/export metadata remained generic.
+
+The correction reuses `projectSharedDesignTransport` as the single read model
+for page/export presentation and converts only its validated snapshot for
+existing downstream consumers. Intended-public title/style/budget/notes,
+rooms/items/materials/views, and floor-plan content now have one source. Owner
+identity and row-created metadata are removed from anonymous output. Legacy
+no-snapshot rows and older v3 rows missing presentation metadata use the
+existing explicit upgrade/fill path; unknown outer fields are ignored and
+unknown/sensitive snapshot fields still fail closed. Title/style/notes now have
+exact 120/80/20,000-character limits; budget accepts only the declared modern
+and legacy categories. Owner/client preview uses the same snapshot-first
+constrained presentation resolver, with editor labels derived from its result.
+The non-owner API, recipient copy, token/revision binding, fingerprint
+algorithm, responsive modes, and 12-case matrix ownership remain unchanged.
+
+Focused authoring checks passed:
+
+- `npm run test:floor-plan-publication-security`;
+- `npm run verify:design-persistence`, including an independent divergent raw
+  owner/client-preview fixture;
+- `npm run typecheck`;
+- zero-warning ESLint over all changed production/test source files;
+- `git diff --check`.
+
+Final local evidence is green:
+
+- projection/publication security, shared-presentation type/limit/category
+  rejection, and extracted PDF privacy assertions pass;
+- the final zero-retry responsive run is 12/12: Chromium 6/6 and WebKit 6/6;
+- beta plus share duplication/privacy is 5/5 in Chromium;
+- responsive unit, design persistence/client-preview parity, required-test
+  truthfulness, all 78 design-page cleanup guards, and `critical-required`
+  pass;
+- full lint with zero warnings, typecheck, code quality, and diff hygiene pass;
+- strict production build passes all 57 pages with only the inherited
+  floor-plan NFT trace warning;
+- complete Phase 8 passes. `/design` initial JS is 5,813,953 raw / 1,109,058
+  Brotli bytes and CSS is 130,408 / 17,276; Cabinetry Studio 492,639 / 84,899
+  and GLTFExporter 34,525 / 8,970 remain lazy and within budget.
+
+Independent read-only review first identified the missing client-preview
+source parity and presentation constraints. After correction it returned
+**PASS — no blocking finding**, confirming snapshot-first resolution, exact
+limits/categories, real PDF text extraction, and no auth/token/publication,
+responsive, or projection-identity scope drift. The independent field/source
+matrix and rollback are in `docs/architecture/public-design-projection.md`.
+Full E2E was deliberately not run. Remaining archival gaps are RC48
+tracing/rotation ownership, RC55 projection-identity collision resistance, and
+RC55 Gate A3 ownership.

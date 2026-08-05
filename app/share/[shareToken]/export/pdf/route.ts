@@ -5,11 +5,11 @@ import { resolveCatalogVariant } from "@/lib/catalog/variant-resolver";
 import { resolveDesignItemVisualProduct } from "@/lib/design-item-product-snapshot";
 import { getExportCapabilities, type UserPlan } from "@/lib/export-capabilities";
 import { prisma } from "@/lib/prisma";
-import { legacyApiToSnapshot } from "@/lib/room-persistence";
-import { projectSharedDesignSnapshot } from "@/lib/shared-design-snapshot";
+import { storedToSnapshot } from "@/lib/room-persistence";
+import { projectSharedDesignTransport } from "@/lib/shared-design-snapshot";
 import { resolveRoomShoppingItems, summarizeShoppingRooms, summarizeWholeHomeShopping } from "@/lib/room-shopping";
 import { buildRoomSurfaceMaterialBomRows } from "@/lib/surface-material-bom";
-import type { DesignItem, DesignSnapshot, PersistedPlanOpening, RoomSnapshot, SavedView, ZoneMin } from "@/lib/room-types";
+import type { DesignSnapshot, PersistedPlanOpening, RoomSnapshot, SavedView } from "@/lib/room-types";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -261,10 +261,8 @@ export async function GET(
         style: true,
         budget: true,
         notes: true,
-        createdAt: true,
         user: {
           select: {
-            name: true,
             plan: true,
           },
         },
@@ -275,18 +273,8 @@ export async function GET(
       return NextResponse.json({ error: "Share link not found" }, { status: 404 });
     }
 
-    const designSnapshot: DesignSnapshot = projectSharedDesignSnapshot(
-      legacyApiToSnapshot({
-        id: design.id,
-        title: design.title,
-        roomWidth: design.roomWidth,
-        roomDepth: design.roomDepth,
-        items: design.items as unknown as DesignItem[],
-        snapshot: design.snapshot as Parameters<typeof legacyApiToSnapshot>[0]["snapshot"],
-        zones: (design.zones as unknown as ZoneMin[]) || [],
-        savedViews: (design.savedViews as unknown as SavedView[]) || [],
-      })
-    );
+    const publicDesign = projectSharedDesignTransport(design);
+    const designSnapshot: DesignSnapshot = storedToSnapshot(publicDesign.snapshot);
 
     const rooms = designSnapshot.rooms ?? [];
     const userPlan: UserPlan = design.user?.plan === "pro" ? "pro" : "free";
@@ -297,8 +285,6 @@ export async function GET(
       regular: await pdfDoc.embedFont(StandardFonts.Helvetica),
       bold: await pdfDoc.embedFont(StandardFonts.HelveticaBold),
     };
-    const createdDate = new Date(design.createdAt).toLocaleDateString("en-US");
-    const preparedBy = design.user?.name ?? "Interior AI";
     const planOpenings = designSnapshot.floorPlan?.openings ?? [];
     const roomSummaries = summarizeShoppingRooms(rooms, designSnapshot.activeRoomId);
     const homeSummary = summarizeWholeHomeShopping(roomSummaries);
@@ -321,7 +307,7 @@ export async function GET(
     let page = addPage(pdfDoc, watermarked);
     let y = PAGE_SIZE[1] - MARGIN;
 
-    drawTextLine(page, design.title, MARGIN, y, fonts.bold, 25);
+    drawTextLine(page, publicDesign.title, MARGIN, y, fonts.bold, 25);
     y -= 32;
     drawTextLine(
       page,
@@ -333,11 +319,9 @@ export async function GET(
       watermarked ? rgb(0.65, 0.38, 0.04) : rgb(0.05, 0.45, 0.25)
     );
     y -= 24;
-    drawTextLine(page, `Created: ${createdDate}`, MARGIN, y, fonts.regular, 10, rgb(0.35, 0.35, 0.35));
+    drawTextLine(page, "Prepared by: Interior AI", MARGIN, y, fonts.regular, 10, rgb(0.35, 0.35, 0.35));
     y -= 14;
-    drawTextLine(page, `Prepared by: ${preparedBy}`, MARGIN, y, fonts.regular, 10, rgb(0.35, 0.35, 0.35));
-    y -= 14;
-    drawTextLine(page, `Style: ${design.style ?? "Not specified"}   Budget: ${design.budget ?? "Not specified"}`, MARGIN, y, fonts.regular, 10, rgb(0.35, 0.35, 0.35));
+    drawTextLine(page, `Style: ${publicDesign.style ?? "Not specified"}   Budget: ${publicDesign.budget ?? "Not specified"}`, MARGIN, y, fonts.regular, 10, rgb(0.35, 0.35, 0.35));
     y -= 32;
 
     y = drawSectionHeading(page, "Export Overview", y, fonts);
@@ -494,10 +478,10 @@ export async function GET(
       }
     }
 
-    if (design.notes) {
+    if (publicDesign.notes) {
       ({ page, y } = ensureSpace(pdfDoc, page, y, 90, watermarked));
       y = drawSectionHeading(page, "Design Notes", y, fonts);
-      y = drawWrappedText(page, design.notes, MARGIN, y, PAGE_SIZE[0] - MARGIN * 2, fonts.regular, 10, 13);
+      y = drawWrappedText(page, publicDesign.notes, MARGIN, y, PAGE_SIZE[0] - MARGIN * 2, fonts.regular, 10, 13);
     }
 
     ({ page, y } = ensureSpace(pdfDoc, page, y, 70, watermarked));
@@ -523,7 +507,7 @@ export async function GET(
     });
 
     const pdfBytes = await pdfDoc.save();
-    const filename = `${slugify(design.title)}-presentation-pack.pdf`;
+    const filename = `${slugify(publicDesign.title)}-presentation-pack.pdf`;
 
     return new NextResponse(Buffer.from(pdfBytes), {
       status: 200,

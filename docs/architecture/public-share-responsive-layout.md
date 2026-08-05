@@ -4,9 +4,11 @@
 
 This contract applies only to anonymous/client-facing
 `/share/[shareToken]` presentation. `app/share/[shareToken]/page.tsx` remains the
-server owner for exact enabled-token lookup and creates one canonical public
-snapshot through `projectSharedDesignSnapshot`. The responsive implementation
-does not fetch, copy, or reconstruct another share document.
+server owner for exact enabled-token lookup and obtains one canonical public
+transport through `projectSharedDesignTransport`. The shell receives the
+validated snapshot from that transport; title/style/budget/notes and every
+presentation/export consumer read from the same projection. The responsive
+implementation does not fetch, copy, or reconstruct another share document.
 
 `components/public-share/PublicShareShell.tsx` owns the client presentation
 state for that snapshot: responsive mode, selected room, selected saved view,
@@ -48,7 +50,7 @@ their cloud-revision and unrelated test changes are outside this contract.
 
 | Step | Owner and symbol | Public data consumed | Desktop | Tablet / intermediate | Mobile | Focus, overflow, and readiness |
 | --- | --- | --- | --- | --- | --- | --- |
-| Token route | `SharePage` | Exact enabled token selects the stored row; the canonical projector emits the public snapshot | Server response | Same | Same | Invalid/revoked routes render `public-share-invalid`; route loading and error boundaries are distinct and never ready |
+| Token route | `SharePage` | Exact enabled token selects the stored row; the canonical transport projector emits the public snapshot and presentation fields | Server response | Same | Same | Invalid/revoked routes render `public-share-invalid`; route loading and error boundaries are distinct and never ready |
 | Projection and initial room | `PublicShareShell`; `resolvePublicShareSelectedRoomId` | Canonical room IDs and declared `activeRoomId` | Declared room or first projected room | Same | Same | A missing room falls back to the first canonical public room; empty rooms remain a distinct non-ready state |
 | Header actions | `SharePageActions` | Public title and route token already present in the URL | Wrapped action row | Wrapped action row | Wrapped action row | Native buttons/links, logical DOM order, 44px minimum targets; hash-only shopping navigation is a native anchor |
 | Room schedule | `PublicShareRoomSchedule` | Derived name/type/geometry/item/health/commerce summaries for every public room | One table | One table | One card list | Exactly one schedule projection is mounted for the active mode; table overflow stays local and the page is clipped against accidental horizontal spill |
@@ -141,6 +143,10 @@ duplicate responsive identity or duplicate DOM `id`.
   are not public-share modes.
 - Client preview is the owner `/design` document with editing chrome/actions
   suppressed. It remains distinct from the public projection.
+- Route title/style/budget/notes, native-share/CSV titles, and anonymous HTML/PDF
+  exports use the transport projection. Owner identity and row-created metadata
+  are absent; page metadata remains static and cannot open a raw presentation
+  fallback.
 - Legacy `/d/[token]` is a separate read-only route and was not changed by this
   remediation.
 - Responsive presentation is not an authorization boundary. Token lifecycle,

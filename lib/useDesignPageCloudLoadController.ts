@@ -24,6 +24,7 @@ import {
   type Style,
 } from "@/lib/design-page-types";
 import type { DesignSnapshot } from "@/lib/room-types";
+import { resolveSharedDesignPresentation } from "@/lib/shared-design-projection-schema";
 import {
   isSupersededDesignPageLoadError,
   type createDesignPageLoadRequestCoordinator,
@@ -70,6 +71,33 @@ type CloudLoadControllerInput = {
   };
 };
 
+export function resolveDesignPageCloudPresentation(
+  data: LoadedDesignTransport,
+  snapshot: DesignSnapshot
+) {
+  const presentation = resolveSharedDesignPresentation(snapshot, data);
+  const style = presentation.style === null
+    ? null
+    : STYLES.find(
+        (candidate) => candidate.toLowerCase() === presentation.style?.toLowerCase()
+      ) ?? null;
+  const budgetByPublicCategory: Record<string, Budget> = {
+    budget: "$",
+    mid: "$$",
+    luxury: "$$$",
+    $: "$",
+    $$: "$$",
+    $$$: "$$$",
+  };
+  return {
+    ...presentation,
+    style,
+    budget: presentation.budget === null
+      ? null
+      : budgetByPublicCategory[presentation.budget],
+  };
+}
+
 export function sanitizeDesignPageSavedViews(value: unknown): NamedCameraView[] {
   if (!Array.isArray(value)) return [];
   return value
@@ -95,6 +123,10 @@ function commitLoadedCloudDesign(
   identity: CloudBaselineIdentity
 ): void {
   const { actions } = input;
+  const presentation = resolveDesignPageCloudPresentation(
+    data,
+    normalized.snapshot
+  );
   actions.installCloudWriteIdentity({
     designId: identity.designId,
     revision: identity.revision,
@@ -111,19 +143,19 @@ function commitLoadedCloudDesign(
   actions.setCloudSaveConflict(null);
   const nextMode = data.mode === "designer" ? "designer" : "homeowner";
   actions.setMode(nextMode);
-  actions.setNotes(typeof data.notes === "string" ? data.notes : "");
+  actions.setNotes(presentation.notes ?? "");
   actions.setSavedViews(sanitizeDesignPageSavedViews(data.savedViews));
-  if (typeof data.style === "string" && STYLES.includes(data.style as Style)) {
-    actions.setStyle(data.style as Style);
+  if (presentation.style !== null) {
+    actions.setStyle(presentation.style);
   }
-  if (typeof data.budget === "string" && ["$", "$$", "$$$"].includes(data.budget)) {
-    actions.setBudget(data.budget as Budget);
+  if (presentation.budget !== null) {
+    actions.setBudget(presentation.budget);
   }
   void actions.fetchShareStatus(data.id);
   if (nextMode === "designer" && !data.shareEnabled) {
     void actions.enableShare(data.id);
   }
-  actions.showRuleToast(`Loaded ${data.title}`);
+  actions.showRuleToast(`Loaded ${presentation.title}`);
 }
 
 function handleCloudLoadFailure(

@@ -24,6 +24,7 @@ import {
 import { storedToSnapshot } from "../lib/room-persistence";
 import { fingerprintDesignSnapshot } from "../lib/snapshot-fingerprint";
 import { sanitizeDesignPageSavedViews } from "../lib/useDesignPagePersistence";
+import { resolveDesignPageCloudPresentation } from "../lib/useDesignPageCloudLoadController";
 
 const root = process.cwd();
 const pageSource = fs.readFileSync(
@@ -161,6 +162,16 @@ assert.match(
   cloudLoadControllerSource,
   /commitLoadedCloudDesign[\s\S]*?actions\.setDesignSnapshot\(normalized\.snapshot\);[\s\S]*?actions\.setDesignId\(data\.id\);[\s\S]*?actions\.setLastCloudRevision\(normalized\.revision\);/,
   "The canonical document, design identity, and revision must commit together."
+);
+assert.match(
+  cloudLoadControllerSource,
+  /resolveDesignPageCloudPresentation\([\s\S]*?data,[\s\S]*?normalized\.snapshot[\s\S]*?actions\.setNotes\(presentation\.notes[\s\S]*?Loaded \$\{presentation\.title\}/,
+  "Owner/client-preview presentation must resolve from the same snapshot-first read model as anonymous sharing."
+);
+assert.doesNotMatch(
+  cloudLoadControllerSource,
+  /actions\.setNotes\([^\n]*data\.notes|actions\.setStyle\([^\n]*data\.style|actions\.setBudget\([^\n]*data\.budget|Loaded \$\{data\.title\}/,
+  "Owner/client-preview presentation must not read raw envelope fields directly."
 );
 assert.match(
   cloudBaselineControllerSource,
@@ -317,6 +328,35 @@ const loadedCloud = normalizeLoadedCloudDesign({
   snapshot: rawCloudStored,
   updatedAt: "2026-08-05T01:00:00.000Z",
 });
+const previewSnapshot = structuredClone(loadedCloud.snapshot);
+previewSnapshot.title = "Snapshot-owned preview title";
+previewSnapshot.style = "modern";
+previewSnapshot.budget = "mid";
+previewSnapshot.notes = "Snapshot-owned preview notes";
+const clientPreviewPresentation = resolveDesignPageCloudPresentation(
+  {
+    id: "design-a",
+    title: "Divergent raw owner title",
+    roomWidth: 5,
+    roomDepth: 4,
+    items: [],
+    style: "Luxury",
+    budget: "$$$",
+    notes: "PRIVATE RAW OWNER NOTES SENTINEL",
+  },
+  previewSnapshot
+);
+assert.deepEqual(clientPreviewPresentation, {
+  title: "Snapshot-owned preview title",
+  style: "Modern",
+  budget: "$$",
+  notes: "Snapshot-owned preview notes",
+});
+assert.equal(
+  JSON.stringify(clientPreviewPresentation).includes("PRIVATE RAW OWNER NOTES SENTINEL"),
+  false,
+  "Owner/client-preview shared fields must ignore divergent raw envelope values."
+);
 assert.notEqual(
   fingerprintDesignSnapshot(storedToSnapshot(rawCloudStored)),
   loadedCloud.fingerprint,

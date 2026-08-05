@@ -656,3 +656,65 @@ not create or authorize an integration branch, push, deployment, workflow,
 ruleset, runner, or external-setting change. Rollback is one local revert of the
 focused implementation commit followed by the responsive, projection,
 duplication, build, and Phase 8 checks; no data or external rollback is needed.
+
+## ARCH-RC53 public-share projection-source closure — 2026-08-06
+
+This section supersedes only the final-confirmation finding that visible public
+share metadata can bypass the canonical projection. From exact clean starting
+source `12bc689b7db757c0f7323774d214aaa1aa8c8028`, the bounded remediation is
+implemented on `fix/arch-rc53-share-projection-source`. Archival RC53 commit
+`b0eab4cbbadf0203667fb750c42fb0e25eb43f62` was not cherry-picked, and the
+resolved cloud-revision queue was not modified.
+
+The verified bypasses were raw outer-row `title`, `style`, `budget`, and `notes`
+in the share page and its anonymous HTML/PDF exports, plus raw title use in
+native-share/CSV/PDF naming and raw style/budget use in duplication analytics.
+The export routes also rendered owner name/email and row `createdAt`, neither of
+which is declared public. Static route metadata remained generic and did not
+perform a presentation lookup.
+
+`title`, `style`, categorical `budget`, and deliberately public `notes` are
+`INTENDED_PUBLIC_PROJECTED_FIELD`; rooms/items/materials/views and floor-plan
+content retain the same classification. Totals, readiness, filenames, catalog
+labels, and static route metadata are `PUBLIC_DERIVED_METADATA`. Owner
+name/email, row `createdAt`, and unknown outer fields are
+`OWNER_OR_INTERNAL_ONLY`. Known no-snapshot outer fields and presentation
+metadata absent from older v3 snapshots are `LEGACY_COMPATIBILITY_ONLY` and may
+enter only through the explicit validated transport upgrade. Design ID, token,
+and revision binding retain their existing
+non-presentation roles. No field remains `AMBIGUOUS_PRODUCT_DECISION`.
+
+The presentation boundary validates title as non-empty and at most 120
+characters, style as non-empty and at most 80, notes at most 20,000, and budget
+as one of the modern `budget`/`mid`/`luxury` or explicit legacy `$`/`$$`/`$$$`
+categories. Invalid types, oversize values, and undeclared categories fail
+closed. Owner/client preview now uses the same snapshot-first resolver and has
+an independent divergent-envelope fixture; its editor-specific labels are
+derived from that value rather than read from the raw row.
+
+All three anonymous presentation surfaces now call
+`projectSharedDesignTransport(design)` and read presentation values from its
+validated snapshot/read model. Valid v3 snapshot fields win over divergent raw
+columns; legacy rows are upgraded or filled once and then read from the closed snapshot.
+Owner identity and row-created metadata are absent from anonymous exports. The
+non-owner API and recipient duplicate continue to use the same transport, and
+duplicate analytics now observes projected style/budget. There is no second
+projection, arbitrary spread, denylist-only boundary, token/auth change,
+responsive-layout change, or RC54/RC55 fingerprint-identity change.
+
+Independent fixtures assert divergent outer versus projected presentation
+values, a private raw-notes sentinel, unknown outer fields, exact legacy
+upgrade, projected-field fingerprint changes, raw-private fingerprint
+neutrality, API/HTML/serialized-props/metadata/export/copy exclusion, static
+metadata ownership, extracted PDF-text exclusion, multi-room/saved-view
+behavior, owner/client-preview source parity, and recipient-copy parity.
+The detailed field/source matrix, before/after flow, client-preview distinction,
+and rollback procedure are recorded in
+`docs/architecture/public-design-projection.md`.
+
+RC53's public-share projection-source finding is locally remediated. The
+remaining archival gaps are RC48 tracing/selected-item rotation ownership, RC55
+collision-resistant projection identity, and RC55 merge-required Gate A3
+ownership for responsive Chromium/WebKit coverage. No integration branch,
+push, deployment, workflow, ruleset, runner, secret, or external setting was
+created or changed.

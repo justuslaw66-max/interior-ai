@@ -3,8 +3,8 @@ import { CATALOG_ITEMS } from "@/lib/catalog";
 import { resolveCatalogVariant } from "@/lib/catalog/variant-resolver";
 import { resolveDesignItemVisualProduct } from "@/lib/design-item-product-snapshot";
 import { buildHousePlan2D } from "@/lib/design-page-house-plan";
-import { legacyApiToSnapshot } from "@/lib/room-persistence";
-import { projectSharedDesignSnapshot } from "@/lib/shared-design-snapshot";
+import { storedToSnapshot } from "@/lib/room-persistence";
+import { projectSharedDesignTransport } from "@/lib/shared-design-snapshot";
 import {
   summarizeShoppingRooms,
   summarizeWholeHomeShopping,
@@ -20,7 +20,7 @@ import {
 import { buildShareExportFidelitySummary } from "@/lib/share-export-fidelity";
 import { buildRoomHealthSummary } from "@/lib/room-health-summary";
 import { buildRoomSurfaceMaterialBomRows } from "@/lib/surface-material-bom";
-import type { DesignItem, DesignSnapshot, PersistedPlanOpening, RoomSnapshot, SavedView, ZoneMin } from "@/lib/room-types";
+import type { DesignSnapshot, PersistedPlanOpening, RoomSnapshot, SavedView } from "@/lib/room-types";
 import {
   getExportCapabilities,
   getPlanDisplayName,
@@ -1020,11 +1020,8 @@ export default async function ExportPage({
       style: true,
       budget: true,
       notes: true,
-      createdAt: true,
       user: {
         select: {
-          name: true,
-          email: true,
           plan: true,
         },
       },
@@ -1044,19 +1041,8 @@ export default async function ExportPage({
     );
   }
 
-  // Convert to v3 format
-  const designSnapshot: DesignSnapshot = projectSharedDesignSnapshot(
-    legacyApiToSnapshot({
-      id: design.id,
-      title: design.title,
-      roomWidth: design.roomWidth,
-      roomDepth: design.roomDepth,
-      items: design.items as unknown as DesignItem[],
-      snapshot: design.snapshot as Parameters<typeof legacyApiToSnapshot>[0]["snapshot"],
-      zones: (design.zones as unknown as ZoneMin[]) || [],
-      savedViews: (design.savedViews as unknown as SavedView[]) || [],
-    })
-  );
+  const publicDesign = projectSharedDesignTransport(design);
+  const designSnapshot: DesignSnapshot = storedToSnapshot(publicDesign.snapshot);
   const handoffFidelitySummary = buildShareExportFidelitySummary(designSnapshot, CATALOG_ITEMS);
   const qaFidelitySummary = handoffFidelitySummary;
 
@@ -1065,7 +1051,6 @@ export default async function ExportPage({
   const capabilities = getExportCapabilities(userPlan);
   const roomSummaries = summarizeShoppingRooms(rooms, designSnapshot.activeRoomId);
   const homeSummary = summarizeWholeHomeShopping(roomSummaries);
-  const preparedBy = design.user?.name ?? design.user?.email ?? "Interior AI";
   const planOpenings = designSnapshot.floorPlan?.openings ?? [];
   const roomMetrics = rooms.map((room) => ({
     roomId: room.id,
@@ -1198,7 +1183,7 @@ export default async function ExportPage({
               </a>
               <ShoppingCsvDownload
                 rows={shoppingCsvRows}
-                title={design.title}
+                title={publicDesign.title}
                 shareToken={shareToken}
               />
             </div>
@@ -1212,12 +1197,11 @@ export default async function ExportPage({
             <div className="mb-3 text-xs font-semibold uppercase tracking-wide text-gray-500">
               Presentation Pack
             </div>
-            <h1 className="mb-3 text-4xl font-bold text-gray-900">{design.title}</h1>
+            <h1 className="mb-3 text-4xl font-bold text-gray-900">{publicDesign.title}</h1>
             <div className="grid gap-2 text-sm text-gray-600 sm:grid-cols-2">
-              <div>Created: {new Date(design.createdAt).toLocaleDateString()}</div>
-              <div>Prepared by: {preparedBy}</div>
-              <div>Style: {design.style ?? "Not specified"}</div>
-              <div>Budget: {design.budget ?? "Not specified"}</div>
+              <div>Prepared by: Interior AI</div>
+              <div>Style: {publicDesign.style ?? "Not specified"}</div>
+              <div>Budget: {publicDesign.budget ?? "Not specified"}</div>
               <div data-testid="export-handoff-id">Handoff ID: {handoffFidelitySummary.fingerprint}</div>
             </div>
           </div>
@@ -1340,7 +1324,7 @@ export default async function ExportPage({
 
           <PlanOverview
             floors={planFloors}
-            title={design.title}
+            title={publicDesign.title}
             shareToken={shareToken}
             watermarked={capabilities.watermark}
           />
@@ -1469,11 +1453,11 @@ export default async function ExportPage({
           ))}
 
           {/* Design Notes */}
-          {design.notes && (
+          {publicDesign.notes && (
             <div className="page-break mb-12">
               <h2 className="mb-4 text-2xl font-bold text-gray-900">Design Notes</h2>
               <div className="whitespace-pre-wrap rounded-lg bg-gray-50 p-4 text-sm text-gray-700">
-                {design.notes}
+                {publicDesign.notes}
               </div>
             </div>
           )}

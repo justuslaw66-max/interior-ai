@@ -22,6 +22,7 @@ import {
   projectSharedDesignTransport,
   projectSharedStoredDesign,
 } from "@/lib/shared-design-snapshot";
+import { SHARED_DESIGN_PRESENTATION_LIMITS } from "@/lib/shared-design-projection-schema";
 import {
   storedToSnapshot,
   type StoredDesign,
@@ -547,7 +548,7 @@ assert.equal(
   "The share projection must remain renderable with identical canonical geometry"
 );
 
-const projectedTransport = projectSharedDesignTransport({
+const rawOuterInput = {
   id: "shared-design-1",
   title: "Divergent legacy title",
   roomWidth: 99,
@@ -566,7 +567,8 @@ const projectedTransport = projectSharedDesignTransport({
   budget: "divergent-legacy-budget",
   mode: "homeowner",
   notes: "Divergent legacy notes",
-});
+} as const;
+const projectedTransport = projectSharedDesignTransport(rawOuterInput);
 assert.deepEqual(
   projectedTransport.snapshot,
   projectedStoredDesign,
@@ -581,6 +583,76 @@ assert.deepEqual(projectedTransport.savedViews, projectedStoredDesign.rooms[0].s
 assert.equal(projectedTransport.style, projectedStoredDesign.style);
 assert.equal(projectedTransport.budget, projectedStoredDesign.budget);
 assert.equal(projectedTransport.notes, projectedStoredDesign.notes);
+for (const rawOuterValue of [
+  rawOuterInput.title,
+  rawOuterInput.style,
+  rawOuterInput.budget,
+  rawOuterInput.notes,
+]) {
+  assert.equal(
+    JSON.stringify(projectedTransport).includes(rawOuterValue),
+    false,
+    `A divergent raw outer value must not enter the public transport: ${rawOuterValue}`
+  );
+}
+
+const RAW_OUTER_PRIVATE_SENTINEL = "PRIVATE RAW OUTER NOTES MUST NEVER BE PUBLIC";
+const changedPrivateOuterInput = {
+  ...rawOuterInput,
+  notes: RAW_OUTER_PRIVATE_SENTINEL,
+  unknownOuterPresentationField: RAW_OUTER_PRIVATE_SENTINEL,
+};
+const changedPrivateOuterTransport = projectSharedDesignTransport(changedPrivateOuterInput);
+assert.deepEqual(
+  changedPrivateOuterTransport,
+  projectedTransport,
+  "Raw private or unknown outer fields must not change a valid v3 public transport"
+);
+assert.equal(
+  fingerprintPublicDesignProjection(storedToSnapshot(changedPrivateOuterTransport.snapshot)),
+  fingerprintPublicDesignProjection(storedToSnapshot(projectedTransport.snapshot)),
+  "Raw private outer changes must not change the public fingerprint"
+);
+assert.equal(
+  JSON.stringify(changedPrivateOuterTransport).includes(RAW_OUTER_PRIVATE_SENTINEL),
+  false,
+  "A raw private outer sentinel must not be serialized by the public transport"
+);
+
+const olderV3Snapshot = structuredClone(sharedStoredDesign);
+delete olderV3Snapshot.title;
+delete olderV3Snapshot.style;
+delete olderV3Snapshot.budget;
+delete olderV3Snapshot.notes;
+const olderV3Transport = projectSharedDesignTransport({
+  ...rawOuterInput,
+  snapshot: olderV3Snapshot,
+  title: "Legacy-column public title",
+  style: "legacy-column-public-style",
+  budget: "luxury",
+  notes: "Legacy-column public notes",
+});
+assert.equal(olderV3Transport.snapshot.title, "Legacy-column public title");
+assert.equal(olderV3Transport.snapshot.style, "legacy-column-public-style");
+assert.equal(olderV3Transport.snapshot.budget, "luxury");
+assert.equal(olderV3Transport.snapshot.notes, "Legacy-column public notes");
+assert.equal(olderV3Transport.title, olderV3Transport.snapshot.title);
+assert.equal(olderV3Transport.style, olderV3Transport.snapshot.style);
+assert.equal(olderV3Transport.budget, olderV3Transport.snapshot.budget);
+assert.equal(olderV3Transport.notes, olderV3Transport.snapshot.notes);
+
+const missingLegacyPresentationTransport = projectSharedDesignTransport({
+  ...rawOuterInput,
+  snapshot: olderV3Snapshot,
+  title: null,
+  style: null,
+  budget: null,
+  notes: null,
+});
+assert.equal(missingLegacyPresentationTransport.title, "Untitled Living Room");
+assert.equal(missingLegacyPresentationTransport.style, null);
+assert.equal(missingLegacyPresentationTransport.budget, null);
+assert.equal(missingLegacyPresentationTransport.notes, null);
 
 const legacyTransport = projectSharedDesignTransport({
   id: "legacy-shared-design",
@@ -590,7 +662,10 @@ const legacyTransport = projectSharedDesignTransport({
   items: [{ id: "sofa-1", type: "sofa", x: 1, y: 1, width: 2, depth: 1 }],
   zones: [{ id: "zone-1", name: "Conversation", itemIds: ["sofa-1"] }],
   savedViews: [{ id: "view-1", name: "Client Preview", mode: "3d" }],
+  style: "legacy-public-style",
+  budget: "$$",
   mode: "homeowner",
+  notes: "Legacy public notes",
 });
 assert.ok(
   projectSharedStoredDesign(legacyTransport.snapshot),
@@ -615,6 +690,14 @@ assert.deepEqual(
 );
 assert.equal((legacyTransport.zones[0] as unknown as { name?: string }).name, "Conversation");
 assert.equal((legacyTransport.savedViews[0] as unknown as { mode?: string }).mode, "3d");
+assert.equal(legacyTransport.snapshot.title, "Legacy shared room");
+assert.equal(legacyTransport.snapshot.style, "legacy-public-style");
+assert.equal(legacyTransport.snapshot.budget, "$$");
+assert.equal(legacyTransport.snapshot.notes, "Legacy public notes");
+assert.equal(legacyTransport.title, legacyTransport.snapshot.title);
+assert.equal(legacyTransport.style, legacyTransport.snapshot.style);
+assert.equal(legacyTransport.budget, legacyTransport.snapshot.budget);
+assert.equal(legacyTransport.notes, legacyTransport.snapshot.notes);
 
 const rootExtension = structuredClone(sharedStoredDesign);
 rootExtension.secret = "private-root-sentinel";
@@ -622,6 +705,41 @@ assert.throws(
   () => projectSharedStoredDesign(rootExtension),
   /undeclared field snapshot.secret/,
   "Unknown root fields must fail closed before a public projection is returned"
+);
+const invalidPublicTitle = structuredClone(sharedStoredDesign) as unknown as Record<
+  string,
+  unknown
+>;
+invalidPublicTitle.title = 42;
+assert.throws(
+  () => projectSharedStoredDesign(invalidPublicTitle),
+  /snapshot\.title.*string.*120/i,
+  "Public title must retain its exact bounded string contract"
+);
+const oversizedPublicStyle = structuredClone(sharedStoredDesign);
+oversizedPublicStyle.style = "s".repeat(
+  SHARED_DESIGN_PRESENTATION_LIMITS.style + 1
+);
+assert.throws(
+  () => projectSharedStoredDesign(oversizedPublicStyle),
+  /snapshot\.style.*string.*80/i,
+  "Public style must fail closed above its declared limit"
+);
+const invalidPublicBudget = structuredClone(sharedStoredDesign);
+invalidPublicBudget.budget = "premium-plus";
+assert.throws(
+  () => projectSharedStoredDesign(invalidPublicBudget),
+  /snapshot\.budget.*declared public budget category/i,
+  "Public budget must be one of the declared canonical or legacy categories"
+);
+const oversizedPublicNotes = structuredClone(sharedStoredDesign);
+oversizedPublicNotes.notes = "n".repeat(
+  SHARED_DESIGN_PRESENTATION_LIMITS.notes + 1
+);
+assert.throws(
+  () => projectSharedStoredDesign(oversizedPublicNotes),
+  /snapshot\.notes.*string.*20000/i,
+  "Public notes must fail closed above the persisted notes limit"
 );
 const roomExtension = structuredClone(sharedStoredDesign);
 roomExtension.rooms[0].diagnosticBlob = "private-room-sentinel";
@@ -738,6 +856,22 @@ const publicFingerprintMutations: Array<{
   label: string;
   mutate: (snapshot: DesignSnapshot) => void;
 }> = [
+  {
+    label: "design title",
+    mutate: (snapshot) => { snapshot.title = "Public client presentation"; },
+  },
+  {
+    label: "design style",
+    mutate: (snapshot) => { snapshot.style = "scandinavian"; },
+  },
+  {
+    label: "design budget",
+    mutate: (snapshot) => { snapshot.budget = "luxury"; },
+  },
+  {
+    label: "public design notes",
+    mutate: (snapshot) => { snapshot.notes = "Updated public handoff note"; },
+  },
   {
     label: "room name",
     mutate: (snapshot) => { snapshot.rooms[1].name = "Dining Gallery"; },
@@ -1116,10 +1250,32 @@ for (const sharePath of [
   const shareSource = fs.readFileSync(path.join(process.cwd(), sharePath), "utf8");
   assert.match(
     shareSource,
-    /projectSharedDesignSnapshot\(\s*legacyApiToSnapshot\(/,
-    `${sharePath} must project the stored snapshot before rendering or export`
+    /const publicDesign = projectSharedDesignTransport\(design\)/,
+    `${sharePath} must create one canonical public transport before rendering or export`
+  );
+  assert.match(shareSource, /storedToSnapshot\(publicDesign\.snapshot\)/);
+  assert.doesNotMatch(
+    shareSource,
+    /\bdesign\.(?:title|style|budget|notes|createdAt)\b/,
+    `${sharePath} must not render a raw outer presentation field`
+  );
+  assert.doesNotMatch(
+    shareSource,
+    /createdAt:\s*true|\b(?:name|email):\s*true/,
+    `${sharePath} must not select owner identity or row-created metadata for anonymous presentation`
   );
 }
+
+const sharePageSource = fs.readFileSync(
+  path.join(process.cwd(), "app/share/[shareToken]/page.tsx"),
+  "utf8"
+);
+assert.match(sharePageSource, /export const metadata = \{[\s\S]*?robots:/);
+assert.doesNotMatch(
+  sharePageSource,
+  /generateMetadata/,
+  "Share page metadata must remain static instead of opening a second raw presentation lookup"
+);
 
 const shareDuplicateRoute = fs.readFileSync(
   path.join(process.cwd(), "app/api/share/[shareToken]/duplicate/route.ts"),
@@ -1131,6 +1287,9 @@ assert.match(
   "Share-token duplication must not inherit the owner's private floor-plan source"
 );
 assert.match(shareDuplicateRoute, /projectSharedDesignTransport\(source\)/);
+assert.match(shareDuplicateRoute, /style:\s*projectedSource\.style/);
+assert.match(shareDuplicateRoute, /budget:\s*projectedSource\.budget/);
+assert.doesNotMatch(shareDuplicateRoute, /style:\s*source\.style|budget:\s*source\.budget/);
 
 const designRoute = fs.readFileSync(
   path.join(process.cwd(), "app/api/designs/[id]/route.ts"),

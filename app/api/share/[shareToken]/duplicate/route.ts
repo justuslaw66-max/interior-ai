@@ -62,8 +62,8 @@ export async function POST(
     source_design_id: source.id,
     shared_context: true,
     new_design_id: copy.id,
-    style: source.style ?? null,
-    budget: source.budget ?? null,
+    style: projectedSource.style,
+    budget: projectedSource.budget,
   });
 
   return NextResponse.json({ id: copy.id });

@@ -3,7 +3,7 @@ import ShareViewer from "@/components/ShareViewer";
 import ShareTracking from "./ShareTracking";
 import { ShareFooterCTA } from "@/components/ShareFooterCTA";
 import SharePageActions from "@/components/SharePageActions";
-import { legacyApiToSnapshot } from "@/lib/room-persistence";
+import { storedToSnapshot } from "@/lib/room-persistence";
 import {
   buildCheckoutReadinessRows,
   buildShareCheckoutLines,
@@ -18,11 +18,11 @@ import {
   summarizeWholeHomeShopping,
   type ActiveRoomShoppingItem,
 } from "@/lib/room-shopping";
-import type { DesignItem, DesignSnapshot, SavedView, ZoneMin } from "@/lib/room-types";
+import type { DesignSnapshot } from "@/lib/room-types";
 import LazyImage from "@/components/common/LazyImage";
 import ShopLink from "./export/ShopLink";
 import ShoppingCsvDownload from "./export/ShoppingCsvDownload";
-import { projectSharedDesignSnapshot } from "@/lib/shared-design-snapshot";
+import { projectSharedDesignTransport } from "@/lib/shared-design-snapshot";
 import ShareFloorPlanPreview from "@/components/ShareFloorPlanPreview";
 import ShareShoppingCheckout from "@/components/ShareShoppingCheckout";
 import { PublicShareShell } from "@/components/public-share/PublicShareShell";
@@ -96,19 +96,8 @@ export default async function SharePage({
     );
   }
 
-  // Convert legacy format to v3
-  const designSnapshot: DesignSnapshot = projectSharedDesignSnapshot(
-    legacyApiToSnapshot({
-      id: design.id,
-      title: design.title,
-      roomWidth: design.roomWidth,
-      roomDepth: design.roomDepth,
-      items: design.items as unknown as DesignItem[],
-      snapshot: design.snapshot as Parameters<typeof legacyApiToSnapshot>[0]["snapshot"],
-      zones: (design.zones as unknown as ZoneMin[]) || [],
-      savedViews: (design.savedViews as unknown as SavedView[]) || [],
-    })
-  );
+  const publicDesign = projectSharedDesignTransport(design);
+  const designSnapshot: DesignSnapshot = storedToSnapshot(publicDesign.snapshot);
   const shoppingRooms = summarizeShoppingRooms(
     designSnapshot.rooms,
     designSnapshot.activeRoomId
@@ -297,9 +286,9 @@ export default async function SharePage({
       <header className="mx-auto max-w-6xl px-6 pt-6">
         <div className="flex flex-col items-stretch gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div className="min-w-0">
-            <h1 className="text-xl font-semibold">{design.title}</h1>
+            <h1 className="text-xl font-semibold">{publicDesign.title}</h1>
             <div className="text-sm text-neutral-600">
-              Read-only • {design.style ?? "Style"} • {design.budget ?? "Budget"}
+              Read-only • {publicDesign.style ?? "Style"} • {publicDesign.budget ?? "Budget"}
             </div>
             <div className="mt-2 text-xs text-neutral-500">
               Responsive preview • Orbit to look around • No editing in share view
@@ -312,7 +301,7 @@ export default async function SharePage({
             </div>
           </div>
 
-          <SharePageActions shareToken={shareToken} title={design.title} />
+          <SharePageActions shareToken={shareToken} title={publicDesign.title} />
         </div>
       </header>
 
@@ -433,12 +422,12 @@ export default async function SharePage({
 
       <ShareFloorPlanPreview snapshot={designSnapshot} />
 
-      {design.notes ? (
+      {publicDesign.notes ? (
         <section className="border-t bg-white" data-testid="share-design-notes">
           <div className="mx-auto max-w-6xl px-6 py-5">
             <h2 className="text-lg font-semibold text-neutral-950">Design notes</h2>
             <p className="mt-2 whitespace-pre-wrap rounded-xl border border-neutral-200 bg-neutral-50 p-4 text-sm leading-6 text-neutral-700">
-              {design.notes}
+              {publicDesign.notes}
             </p>
           </div>
         </section>
@@ -733,7 +722,7 @@ export default async function SharePage({
                 </a>
                 <ShoppingCsvDownload
                   rows={shoppingCsvRows}
-                  title={design.title}
+                  title={publicDesign.title}
                   shareToken={shareToken}
                 />
               </div>
