@@ -463,3 +463,37 @@ performance/bundle checks pass. Full E2E was not run.
 separate. This batch changes no workflow, dependency, lockfile, schema,
 migration, server CAS, deployment, push, or RC53 execution-time revision
 ownership.
+
+## Final RC47-RC55 archival-disposition confirmation — 2026-08-05
+
+Exact source `83425bad3cc30dc37100d090e79159998782bc29` was independently and
+locally reviewed against all nine original archival commits. Final outcome:
+**B. RC47–RC55 DISPOSITION COMPLETE — ADDITIONAL BOUNDED REMEDIATION REQUIRED**.
+The final per-RC mapping is RC47 **A**, RC48 **F**, RC49 **B**, RC50 **B**, RC51
+**B**, RC52 **B**, RC53 **F**, RC54 **B**, and RC55 **F**, using the category
+names in `07_RC47_RC55_ARCHIVAL_DISPOSITION.md`.
+
+The current implementation closes or strongly supersedes the RC47 assertions,
+RC49/50 canonical baseline protocol, RC51 compare lookup, RC52 semantic focus
+restoration, RC53 execution-time cloud revision protocol, and RC54 public
+projection/security contract. Four bounded gaps remain:
+
+- **P2 — RC48:** capture-phase selected-item `R` handling can pre-empt the
+  floor-plan tracing `R` shortcut when tracing and a selected item coexist.
+- **P2 — RC53 responsive:** visible title/style/budget/notes are still rendered
+  from raw outer design-row values while identity/readiness derives from the
+  projected snapshot.
+- **P3 — RC55 readiness:** the exact readiness key includes an eight-hex
+  projection fingerprint, so a projection-fingerprint collision is not covered
+  by the secondary layout-hash collision test.
+- **P3 — RC55 gate ownership:** the responsive unit/matrix and focused WebKit
+  evidence are not all merge-required Gate A3 coverage.
+
+The focused rotation/Consumer batch also has one retained P2 failure: the Undo
+button measured 30 px high against the 44 px touch-target contract. No P0 was
+found. The pre-existing code-health queue remains **0 unresolved P0 and 13
+unresolved P1**; this confirmation adds no new P0/P1 item. CH-0004 was not
+started. CH-0030 commit `d7a50698707153b43df0a982766288060c24b997`
+remains excluded: its remote branch exists, but no PR, check, or workflow-run
+evidence was found. Integration planning remains blocked on the bounded
+archival corrections and subsequent exact-artifact certification.

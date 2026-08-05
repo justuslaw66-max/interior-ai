@@ -491,3 +491,32 @@ this completed baseline protocol. The P2/P3 sequence remains RC48 keyboard,
 RC51 compare, RC52 drawer focus, RC47 assertions, RC54 projection assertion,
 and RC53/55 responsive share. Certify a later integration artifact only after
 those approved batches are accumulated under the established cadence.
+
+## Final RC47-RC55 sequencing correction — 2026-08-05
+
+The final read-only confirmation at exact source
+`83425bad3cc30dc37100d090e79159998782bc29` supersedes the earlier sequencing
+status. RC47, RC49, RC50, RC51, RC52, the RC53 cloud sub-scope, and RC54 are
+closed by current implementation. RC48, the RC53 responsive sub-scope, and RC55
+remain open; RC53 is therefore **F. STILL_REQUIRED** overall.
+
+Before integration planning, keep the remaining work bounded and ordered:
+
+1. Correct keyboard ownership so active floor-plan tracing owns its `R`
+   contract even when furniture remains selected, and add a direct collision
+   regression test.
+2. Make the canonical public projection the sole source of visible responsive
+   metadata, including title, style, budget, and notes.
+3. Replace the truncated projection identity with collision-safe identity
+   evidence and test a projection-identity collision, not only a secondary
+   layout-generation collision.
+4. Assign the responsive unit/browser and focused WebKit contracts to an actual
+   merge-required release gate. Retain the separate 44 px Undo touch-target
+   failure in the Consumer batch.
+5. Run focused checks during remediation, then Gate A3 once against the exact
+   immutable artifact proposed for promotion. Any later code change invalidates
+   that certification.
+
+Do not replay, cherry-pick, or merge the RC47-RC55 chain. Do not create an
+integration branch yet. The exact final mapping and evidence are in
+`docs/code-health/07_RC47_RC55_ARCHIVAL_DISPOSITION.md`.

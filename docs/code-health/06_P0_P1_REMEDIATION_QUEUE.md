@@ -597,3 +597,32 @@ Rollback: revert the single CH-0012 implementation commit. If callers must be is
   local remediation branches. No integration branch, push, deployment,
   workflow, ruleset, runner, or external-setting action is included or
   authorized here.
+
+### Superseding final RC47-RC55 disposition — 2026-08-05
+
+The preceding “no finding remains” statement is superseded by independent and
+local read-only review of exact source
+`83425bad3cc30dc37100d090e79159998782bc29`. Final outcome is **B. RC47–RC55
+DISPOSITION COMPLETE — ADDITIONAL BOUNDED REMEDIATION REQUIRED**.
+
+- **P2 `ARCH-RC48-KEYBOARD` — OPEN:** selected-item capture-phase `R` can
+  suppress floor-plan tracing's bubble-phase `R`; add explicit mode ownership
+  and collision coverage.
+- **P2 `ARCH-RC53-55-SHARE-RESPONSIVE-PROJECTION` — OPEN:** the share page
+  still renders visible outer metadata from the raw row rather than exclusively
+  from the canonical public projection.
+- **P3 `ARCH-RC55-READINESS-IDENTITY` — OPEN:** eight-hex projection identity
+  can collide; the existing test only proves the secondary layout hash cannot
+  authorize a stale key.
+- **P3 `ARCH-RC55-REQUIRED-GATE` — OPEN:** responsive unit/browser and focused
+  WebKit coverage do not yet have complete merge-required Gate A3 ownership.
+- **P2 Consumer touch-target evidence — OPEN:** the focused rotation/Consumer
+  batch retained one failure because Undo measured 30 px rather than 44 px.
+
+The RC49/50 baseline and RC53 cloud-revision findings are closed by the current
+canonical baseline and execution-time write-queue protocols. The final per-RC
+mapping is RC47 **A**; RC48 **F**; RC49/50/51/52 **B**; RC53 **F** overall;
+RC54 **B**; RC55 **F**. These archival items do not change the existing
+code-health count: **0 unresolved P0 and 13 unresolved P1**. CH-0004 remains
+unstarted. No integration branch is eligible until the open bounded items are
+corrected, reviewed, and the exact artifact is certified.

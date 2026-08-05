@@ -1,19 +1,66 @@
 # RC47-RC55 archival commit-disposition audit
 
-## Decision
+## Final confirmation decision — 2026-08-05
+
+**B. RC47–RC55 DISPOSITION COMPLETE — ADDITIONAL BOUNDED REMEDIATION REQUIRED.**
+
+The final read-only confirmation audited exact application source
+`83425bad3cc30dc37100d090e79159998782bc29`. All nine archival commits remain
+recoverable, form the original continuous one-parent RC47-RC55 chain, and are
+neither ancestors nor patch-equivalent replays of the audited source. The
+current bounded implementation commits listed below are ancestors of the
+audited source; the old RC chain must not be cherry-picked or merged.
+
+| RC | Original archival commit | Current implementation commit(s) | Final category | Confirmation |
+| --- | --- | --- | --- | --- |
+| RC47 | `23e12bfe85742acb3bb10ecfb808401b3b63c638` | `e7cd5d9df19439f0956f840b977ddf8c23dc2757` | **A. RESOLVED_BY_CURRENT_IMPLEMENTATION** | The unique visible product drawer is asserted as the named modal `dialog`; both exact product flows retain their content contracts. |
+| RC48 | `e0db6f6661df2870e2f6f6063a7f0d866dd23618` | `faaa463d2f0211fa2ec8f15fe3da1efc3e80c1c1` | **F. STILL_REQUIRED** | Per-item global rotation ownership was removed, but the capture-phase selected-item `R` router can still consume `R` while floor-plan tracing is active, preventing tracing's bubble-phase `R` contract. No collision test exists. |
+| RC49 | `d41bdf31720918705480a36a44c91347987080bb` | `f2760c529c0a964d99d53dbe73d8fb4a7c8def75` | **B. SUPERSEDED_BY_STRONGER_IMPLEMENTATION** | Canonical projection precedes fingerprinting and an identity-bound design/revision/epoch acknowledgment gates autosave. |
+| RC50 | `ee612c84f5f6c1e5370c7aeb12593cf920fe1967` | `f2760c529c0a964d99d53dbe73d8fb4a7c8def75` | **B. SUPERSEDED_BY_STRONGER_IMPLEMENTATION** | The same pending-baseline protocol fails closed on mismatch, supersession, migration failure, and recovery-copy transitions. |
+| RC51 | `27b6a55bccbab5bf9a6556fea04fa4179343e447` | `bb0e4f8f999d774b8490eca16efdc84d6751aafd` | **B. SUPERSEDED_BY_STRONGER_IMPLEMENTATION** | Compare resolution uses the canonical full product map and retains an explicit remove-only unavailable state. |
+| RC52 | `637281505493572229be864449d77e3a626c67fe` | `793986d22b073c2d4ba093350b2442838703deb0` | **B. SUPERSEDED_BY_STRONGER_IMPLEMENTATION** | Semantic opener identity survives hydration/replacement; restoration resolves a connected, visible, enabled target and respects modal/unmount cancellation. |
+| RC53 | `b0eab4cbbadf0203667fb750c42fb0e25eb43f62` | cloud `80627fa5a8cae1205999a90c9f2fa240b1df4305`; responsive `83425bad3cc30dc37100d090e79159998782bc29` | **F. STILL_REQUIRED** | Cloud-write revision ownership is superseded by the stronger execution-time queue protocol. The responsive sub-scope remains open because visible share metadata can come from raw outer row fields while readiness identity uses the projected snapshot. |
+| RC54 | `588b90e8c526e54d314376f177bdb9c738ac659e` | `29a4c46070404a2426da123bc5b42c0592d95e34` | **B. SUPERSEDED_BY_STRONGER_IMPLEMENTATION** | Public API and duplicate paths use one closed public transport projection with non-tautological security and like-for-like assertions. |
+| RC55 | `4883ffb9fc87248b6aa8624cdef39c5f97a173d1` | `83425bad3cc30dc37100d090e79159998782bc29` | **F. STILL_REQUIRED** | Responsive layout behavior is substantially implemented, but an eight-hex projection fingerprint collision can preserve the exact readiness key, and the focused responsive/WebKit contracts are not merge-required Gate A3 coverage. |
+
+RC53 has exactly one overall category: **F**, because its resolved cloud
+sub-scope does not close its still-required responsive sub-scope.
+
+The remaining bounded work is two P2 corrections and two P3 certification
+corrections: isolate tracing/item `R` ownership; render all public visible
+metadata from the canonical projection; make projection identity collision-safe;
+and assign the responsive plus WebKit coverage to a required release gate. A
+separate focused Consumer rotation batch also retained one failure: Undo was
+30 px high against the 44 px touch-target contract. Per the audit rules, that
+failure was not retried or fixed and keeps the disposition open.
+
+Focused confirmation passed the responsive share matrix 12/12 (Chromium and
+WebKit), drawer focus 18/18, compare plus exact product flows 15/15, beta smoke
+1/1, stale cloud-write isolation 2/2, and 11/12 rotation/Consumer cases. All
+required static gates, lint, typecheck, code quality, strict 57-page build, and
+Phase 8 budgets passed. Full E2E was not run. The green tests establish the
+implemented behavior but do not negate the directly inspected gaps above.
+
+No integration branch should be created from this result. Complete and review
+the bounded findings, then certify the exact immutable artifact under the
+established release cadence.
+
+## Historical starting decision
+
+The following audit record describes the original candidate
+`7016da0ad74c7d463a07ec061259b50d757031e0` before the bounded remediation
+commits. Its all-`G` mapping is historical and is superseded by the final table
+above.
 
 **B. ARCHIVAL DISPOSITION COMPLETE — ADDITIONAL BOUNDED REMEDIATION REQUIRED.**
 
-The candidate `7016da0ad74c7d463a07ec061259b50d757031e0` does not contain every
-required RC47-RC55 application or certification correction. All nine archival
-commits are recoverable and retained, but none is an ancestor or patch-equivalent
-of the candidate. Each has primary disposition **G. STILL_REQUIRED**. The nine
-commits reduce to eight bounded findings: two P1 persistence findings, three P2
-editor/catalog findings, and three P3 certification/responsive-layout findings.
-No P0 was found.
-
-Do not create the final integration branch from this candidate. Remediate and
-review the bounded findings first, then certify the exact resulting artifact.
+The candidate did not contain every required RC47-RC55 application or
+certification correction. All nine archival commits were recoverable and
+retained, but none was an ancestor or patch-equivalent of that candidate. Each
+then had primary disposition **G. STILL_REQUIRED**. The nine commits reduced to
+eight bounded findings: two P1 persistence findings, three P2 editor/catalog
+findings, and three P3 certification/responsive-layout findings. No P0 was
+found.
 
 ## Scope and safety
 
