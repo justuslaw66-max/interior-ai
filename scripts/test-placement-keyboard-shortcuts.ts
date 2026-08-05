@@ -2,10 +2,11 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import {
+  isDesignPageSelectionShortcutBlocked,
   resolvePendingPlacementKeyboardCommand,
   resolveSelectedItemKeyboardCommand,
   resolveSelectedPlanKeyboardCommand,
-} from "@/lib/useDesignPageSelectionKeyboard";
+} from "@/lib/design-page-selection-keyboard-commands";
 
 const root = process.cwd();
 const workspaceSource = readFileSync(
@@ -30,6 +31,18 @@ const placementSelectionFacadeSource = readFileSync(
 );
 const selectionWorkspaceSource = readFileSync(
   join(root, "lib/useDesignPageSelectionWorkspaceRegistration.ts"),
+  "utf8"
+);
+const selectionTransformsSource = readFileSync(
+  join(root, "lib/useDesignPageSelectionTransforms.ts"),
+  "utf8"
+);
+const furnitureSource = readFileSync(
+  join(root, "components/scene/FurnitureItem.tsx"),
+  "utf8"
+);
+const rotationControlsSource = readFileSync(
+  join(root, "components/editor/SelectedItemRotationControls.tsx"),
   "utf8"
 );
 
@@ -60,8 +73,43 @@ assert.match(
 );
 assert.match(
   keyboardSource,
-  /useEffect\(\(\) => \{[\s\S]*?if \(!hasSelectedItem\)[\s\S]*?setRotationInputValue\(String\(selectedRotationDegrees\)\);[\s\S]*?\}, \[hasSelectedItem, selectedItemId, selectedRotationDegrees, setRotationInputValue\]\);/,
+  /if \(!state\.selectedItemId\)[\s\S]*?setRotationInputValue\(String\(state\.selectedRotationDegrees\)\)/,
   "Rotation input synchronization should rerun when the selected item identity changes."
+);
+assert.doesNotMatch(
+  furnitureSource,
+  /Keyboard listener for rotation|source:\s*"keyboard"/,
+  "Scene items must not own global rotation keyboard commands."
+);
+assert.match(
+  keyboardSource,
+  /window\.addEventListener\("keydown", handleSelectedItemShortcut, true\)/,
+  "The central selected-item router should capture accepted commands before component-level handlers."
+);
+assert.match(
+  keyboardSource,
+  /event\.stopImmediatePropagation\(\)/,
+  "An accepted central command should prevent a second routing layer from interpreting the keypress."
+);
+assert.match(
+  keyboardSource,
+  /hasSelectedItem:\s*Boolean\(input\.refs\.primaryId\.current\)/,
+  "Keyboard commands should resolve selection from the current primary-item ref."
+);
+assert.match(
+  selectionTransformsSource,
+  /const selectedId = getPrimaryId\(\);[\s\S]{0,180}?getItems\(\)\.find/,
+  "Rotation commands should resolve the current item at execution time instead of retaining a stale item closure."
+);
+assert.match(
+  selectionTransformsSource,
+  /source: options\?\.source \?\? "inspector"/,
+  "The shared transform path should preserve keyboard versus inspector analytics sources."
+);
+assert.match(
+  rotationControlsSource,
+  /onClick=\{\(\) => onRotateByDegrees\(90\)\}[\s\S]*?onClick=\{onResetRotation\}/,
+  "Toolbar rotation and reset controls should remain independent of global keyboard ownership."
 );
 for (const formerInlineOwner of [
   "handleDeleteKey",
@@ -132,10 +180,31 @@ assert.equal(
   null,
   "Placement commands should require an active preview."
 );
+assert.equal(
+  resolvePendingPlacementKeyboardCommand({
+    ...pendingBase,
+    key: "r",
+    keyboardShortcutsEnabled: false,
+  }),
+  null,
+  "Captured canvas interactions should suppress pending-placement transforms."
+);
+assert.deepEqual(
+  resolvePendingPlacementKeyboardCommand({
+    ...pendingBase,
+    key: "Escape",
+    keyboardShortcutsEnabled: false,
+  }),
+  { type: "cancel" },
+  "Escape should remain available to cancel a captured pending placement."
+);
 
 const selectedItemBase = {
   canEdit: true,
   hasSelectedItem: true,
+  keyboardShortcutsEnabled: true,
+  rotationSnapEnabled: true,
+  rotationSnapStepDegrees: 15,
 } as const;
 
 assert.deepEqual(
@@ -149,9 +218,85 @@ assert.deepEqual(
 );
 assert.deepEqual(
   resolveSelectedItemKeyboardCommand({ ...selectedItemBase, key: "r" }),
-  { type: "rotate", degrees: 90 },
+  { type: "rotate", degrees: 90, snap: true },
   "R should rotate the selected item by a quarter turn."
 );
+assert.deepEqual(
+  resolveSelectedItemKeyboardCommand({
+    ...selectedItemBase,
+    key: "R",
+    shiftKey: true,
+  }),
+  { type: "rotate", degrees: -90, snap: true },
+  "Shift+R should rotate the selected item by a negative quarter turn."
+);
+assert.deepEqual(
+  resolveSelectedItemKeyboardCommand({
+    ...selectedItemBase,
+    key: "q",
+    rotationSnapStepDegrees: 5,
+  }),
+  { type: "rotate", degrees: -5, snap: true },
+  "Q should rotate left by the current snap step."
+);
+assert.deepEqual(
+  resolveSelectedItemKeyboardCommand({
+    ...selectedItemBase,
+    key: "e",
+    rotationSnapStepDegrees: 5,
+  }),
+  { type: "rotate", degrees: 5, snap: true },
+  "E should rotate right by the current snap step."
+);
+assert.deepEqual(
+  resolveSelectedItemKeyboardCommand({
+    ...selectedItemBase,
+    key: "e",
+    rotationSnapEnabled: false,
+  }),
+  { type: "rotate", degrees: 1, snap: false },
+  "Free rotation should preserve the existing one-degree keyboard step."
+);
+assert.deepEqual(
+  resolveSelectedItemKeyboardCommand({ ...selectedItemBase, key: "0" }),
+  { type: "reset-rotation" },
+  "0 should reset the selected item rotation."
+);
+assert.deepEqual(
+  resolveSelectedItemKeyboardCommand({
+    ...selectedItemBase,
+    key: "r",
+    repeat: true,
+  }),
+  { type: "rotate", degrees: 90, snap: true },
+  "Each accepted key-repeat event should resolve to one rotation command."
+);
+for (const modifier of ["metaKey", "ctrlKey", "altKey"] as const) {
+  assert.equal(
+    resolveSelectedItemKeyboardCommand({
+      ...selectedItemBase,
+      key: "r",
+      [modifier]: true,
+    }),
+    null,
+    `${modifier} rotation variants should remain unassigned.`
+  );
+}
+for (const disabledState of [
+  { hasSelectedItem: false },
+  { canEdit: false },
+  { keyboardShortcutsEnabled: false },
+] as const) {
+  assert.equal(
+    resolveSelectedItemKeyboardCommand({
+      ...selectedItemBase,
+      ...disabledState,
+      key: "r",
+    }),
+    null,
+    "Rotation should be a safe no-op when selection, editing, or the interaction context disallows it."
+  );
+}
 assert.deepEqual(
   resolveSelectedItemKeyboardCommand({ ...selectedItemBase, key: "ArrowUp" }),
   { type: "nudge", deltaX: 0, deltaZ: -0.05 },
@@ -165,6 +310,39 @@ assert.deepEqual(
   }),
   { type: "nudge", deltaX: 0.25, deltaZ: 0 },
   "Shift+Arrow should use the 0.25 metre coarse selected-item step."
+);
+
+for (const tagName of ["INPUT", "TEXTAREA", "SELECT"] as const) {
+  assert.equal(
+    isDesignPageSelectionShortcutBlocked({ tagName } as unknown as EventTarget),
+    true,
+    `${tagName} focus should block design-page selection shortcuts.`
+  );
+}
+assert.equal(
+  isDesignPageSelectionShortcutBlocked({
+    tagName: "DIV",
+    isContentEditable: true,
+  } as unknown as EventTarget),
+  true,
+  "Contenteditable focus should block design-page selection shortcuts."
+);
+assert.equal(
+  isDesignPageSelectionShortcutBlocked({
+    tagName: "BUTTON",
+    closest: (selector: string) =>
+      selector.includes("aria-modal") ? { role: "dialog" } : null,
+  } as unknown as EventTarget),
+  true,
+  "Modal and captured interaction contexts should block selection shortcuts."
+);
+assert.equal(
+  isDesignPageSelectionShortcutBlocked({
+    tagName: "BUTTON",
+    closest: () => null,
+  } as unknown as EventTarget),
+  false,
+  "Ordinary editor controls should not block selection shortcuts."
 );
 
 const selectedPlanBase = {

@@ -566,28 +566,28 @@ export function useDesignPageSelectionTransforms({
   );
 
   const rotateSelectedByDegrees = useCallback(
-    (deltaDegrees: number) => {
-      if (!selectedItem) return;
-      applyItemRotation(
-        selectedItem.instanceId,
-        (selectedItem.rotationY ?? 0) + (deltaDegrees * Math.PI) / 180,
+    (deltaDegrees: number, options?: ApplySelectionRotationOptions) => {
+      const selectedId = getPrimaryId();
+      const currentItem = getItems().find((item) => item.instanceId === selectedId);
+      if (!currentItem) return;
+      applyItemRotation(currentItem.instanceId,
+        (currentItem.rotationY ?? 0) + (deltaDegrees * Math.PI) / 180,
         {
+          ...options,
           actionLabel: `Rotate ${deltaDegrees > 0 ? "+" : ""}${deltaDegrees}°`,
-          source: "inspector",
-        }
-      );
+          source: options?.source ?? "inspector",
+        });
     },
-    [applyItemRotation, selectedItem]
+    [applyItemRotation, getItems, getPrimaryId]
   );
 
-  const resetSelectedRotation = useCallback(() => {
-    if (!selectedItem) return;
-    applyItemRotation(selectedItem.instanceId, 0, {
-      actionLabel: "Reset rotation",
-      source: "inspector",
-    });
-  }, [applyItemRotation, selectedItem]);
-
+  const resetSelectedRotation = useCallback(
+    (options?: ApplySelectionRotationOptions) => {
+      const selectedId = getPrimaryId();
+      if (!selectedId) return;
+      applyItemRotation(selectedId, 0, { ...options, actionLabel: "Reset rotation",
+        source: options?.source ?? "inspector" });
+    }, [applyItemRotation, getPrimaryId]);
   const setSelectedRotationDegrees = useCallback(
     (degrees: number, snap: boolean, actionLabel: string) => {
       if (!selectedItem) return;

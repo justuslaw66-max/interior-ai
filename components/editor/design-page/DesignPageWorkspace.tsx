@@ -365,12 +365,12 @@ export function DesignPageWorkspace() {
       placeInPlan: handlePlaceCabinetInPlan,
     },
   } = cabinetryRegistration;
-
   const selectionWorkspaceRegistration =
     useDesignPageSelectionWorkspaceRegistration({
       boundaries: {
         coreShell: coreShellRegistration,
         documentSelection: documentSelectionRegistration,
+        editorInteraction: editorInteractionRegistration,
         planAuthoring: planAuthoringRegistration,
         placement: placementWorkspaceRegistration,
         cabinetry: cabinetryRegistration,

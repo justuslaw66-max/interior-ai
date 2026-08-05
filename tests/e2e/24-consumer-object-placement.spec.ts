@@ -64,6 +64,27 @@ async function setupConsumerItem(page: Page): Promise<Locator> {
 }
 
 test.describe("24. Consumer object placement", () => {
+  test("rotation keyboard command remains one undoable Consumer edit", async ({ page }) => {
+    test.setTimeout(150_000);
+    const panel = await setupConsumerItem(page);
+    const rotationToggle = panel.getByTestId("rotation-controls-toggle");
+    if ((await rotationToggle.getAttribute("aria-expanded")) !== "true") {
+      await rotationToggle.click();
+    }
+    await panel.getByTestId("rotation-btn-reset").click();
+    const beforeRotation = await readFingerprint(page);
+
+    await page.keyboard.press("R");
+    await expect.poll(() => readFingerprint(page)).not.toBe(beforeRotation);
+    const undo = page.getByTestId("command-undo");
+    await expect(undo).toHaveAccessibleName(/Undo Rotate \+90/i);
+    await undo.click();
+    await expect(page.getByTestId("qa-editor-snapshot-fingerprint")).toHaveAttribute(
+      "data-fingerprint",
+      beforeRotation
+    );
+  });
+
   test("tabs to a placed item in the 2D plan before running transform shortcuts", async ({ page }) => {
     test.setTimeout(150_000);
     await setupConsumerItem(page);

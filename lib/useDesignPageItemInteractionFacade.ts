@@ -74,6 +74,8 @@ export type UseDesignPageItemInteractionFacadeInput = {
     | "rotationSnapEnabled"
     | "rotationSnapStepRadians"
   > & {
+    keyboardShortcutsEnabled: boolean;
+    rotationSnapStepDegrees: number;
     catalogItems: PanelInput["configuration"]["catalogItems"];
   };
   refs: {
@@ -136,11 +138,8 @@ export function useDesignPageItemInteractionFacade({
   refs,
   actions,
 }: UseDesignPageItemInteractionFacadeInput) {
-  const {
-    items: itemsRef,
-    selectedIds: selectedIdsRef,
-    primaryId: primaryIdRef,
-  } = refs;
+  const { items: itemsRef, selectedIds: selectedIdsRef, primaryId: primaryIdRef } =
+    refs;
   const getSelectedItemPanelSelectedIds = useCallback(
     () => selectedIdsRef.current,
     [selectedIdsRef]
@@ -216,17 +215,19 @@ export function useDesignPageItemInteractionFacade({
     state: {
       canEdit: configuration.canEdit,
       editorMode: state.editor.editorMode,
-      hasPendingCatalogPlacement:
-        state.placement.hasPendingCatalogPlacement,
+      hasPendingCatalogPlacement: state.placement.hasPendingCatalogPlacement,
       isClientPreview: state.editor.isClientPreview,
+      keyboardShortcutsEnabled: configuration.keyboardShortcutsEnabled,
       selectedItemId: state.selection.selectedItem?.instanceId ?? null,
       selectedPlanOverlayId: state.plan.selectedPlanOverlayId,
       selectedPlanRoomId: state.plan.selectedPlanRoomId,
       selectedRotationDegrees: transforms.state.selectedRotationDegrees,
       selectedZoneId: state.plan.selectedZoneId,
+      rotationSnapEnabled: configuration.rotationSnapEnabled,
+      rotationSnapStepDegrees: configuration.rotationSnapStepDegrees,
       viewMode: state.editor.viewMode,
     },
-    refs: { selectedIds: refs.selectedIds },
+    refs: { primaryId: refs.primaryId, selectedIds: refs.selectedIds },
     actions: {
       setRotationInputValue:
         actions.productInspection.setRotationInputValue,
@@ -240,6 +241,7 @@ export function useDesignPageItemInteractionFacade({
       item: {
         duplicate: transforms.actions.duplicateSelectedItem,
         rotateByDegrees: transforms.actions.rotateSelectedByDegrees,
+        resetRotation: transforms.actions.resetSelectedRotation,
         nudge: transforms.actions.nudgeSelectedItem,
       },
       room: actions.room.keyboard,

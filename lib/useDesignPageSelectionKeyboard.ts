@@ -5,169 +5,25 @@ import { useEffect } from "react";
 import type { CatalogItemSchema } from "@/lib/catalog-schema";
 import type { HousePlanRoom2D } from "@/lib/design-page-house-plan";
 import type { EditorViewMode } from "@/components/editor/EditorViewToggle";
+import {
+  isDesignPageSelectionShortcutBlocked,
+  resolvePendingPlacementKeyboardCommand,
+  resolveSelectedItemKeyboardCommand,
+  resolveSelectedPlanKeyboardCommand,
+  type DesignPageKeyboardInput,
+  type PendingPlacementKeyboardCommand,
+  type SelectedItemKeyboardCommand,
+  type SelectedPlanKeyboardCommand,
+} from "@/lib/design-page-selection-keyboard-commands";
 import type { DesignItem } from "@/lib/room-types";
 import type { DesignPageEditorMode } from "@/lib/useDesignPagePanelMode";
 
-export type DesignPageKeyboardInput = {
-  key: string;
-  shiftKey?: boolean;
-  metaKey?: boolean;
-  ctrlKey?: boolean;
-  altKey?: boolean;
-};
-
-export type PendingPlacementKeyboardCommand =
-  | { type: "cancel" }
-  | { type: "confirm" }
-  | { type: "rotate"; direction: "left" | "right" }
-  | { type: "nudge"; deltaX: number; deltaZ: number };
-
-export type SelectedItemKeyboardCommand =
-  | { type: "duplicate" }
-  | { type: "rotate"; degrees: number }
-  | { type: "nudge"; deltaX: number; deltaZ: number };
-
-export type SelectedPlanKeyboardCommand =
-  | { type: "clear-selection" }
-  | { type: "delete-room"; roomId: string }
-  | { type: "duplicate-room"; roomId: string }
-  | {
-      type: "nudge-room";
-      deltaX: number;
-      deltaZ: number;
-      snap: boolean;
-    };
-
-export type ResolvePendingPlacementKeyboardCommandInput =
-  DesignPageKeyboardInput & {
-    canEdit: boolean;
-    hasPendingPlacement: boolean;
-  };
-
-export function resolvePendingPlacementKeyboardCommand({
-  key,
-  shiftKey = false,
-  metaKey = false,
-  ctrlKey = false,
-  altKey = false,
-  canEdit,
-  hasPendingPlacement,
-}: ResolvePendingPlacementKeyboardCommandInput): PendingPlacementKeyboardCommand | null {
-  if (!hasPendingPlacement) return null;
-  if (key === "Escape") return { type: "cancel" };
-  if (!canEdit) return null;
-
-  if (key === "Enter") return { type: "confirm" };
-  if (key.toLowerCase() === "r" && !metaKey && !ctrlKey && !altKey) {
-    return {
-      type: "rotate",
-      direction: shiftKey ? "left" : "right",
-    };
-  }
-
-  const step = shiftKey ? 0.25 : 0.1;
-  if (key === "ArrowLeft") return { type: "nudge", deltaX: -step, deltaZ: 0 };
-  if (key === "ArrowRight") return { type: "nudge", deltaX: step, deltaZ: 0 };
-  if (key === "ArrowUp") return { type: "nudge", deltaX: 0, deltaZ: -step };
-  if (key === "ArrowDown") return { type: "nudge", deltaX: 0, deltaZ: step };
-
-  return null;
-}
-
-export type ResolveSelectedItemKeyboardCommandInput = DesignPageKeyboardInput & {
-  canEdit: boolean;
-  hasSelectedItem: boolean;
-};
-
-export function resolveSelectedItemKeyboardCommand({
-  key,
-  shiftKey = false,
-  metaKey = false,
-  ctrlKey = false,
-  altKey = false,
-  canEdit,
-  hasSelectedItem,
-}: ResolveSelectedItemKeyboardCommandInput): SelectedItemKeyboardCommand | null {
-  if (!hasSelectedItem || !canEdit) return null;
-
-  if ((metaKey || ctrlKey) && key.toLowerCase() === "d") {
-    return { type: "duplicate" };
-  }
-  if (key.toLowerCase() === "r" && !metaKey && !ctrlKey && !altKey) {
-    return { type: "rotate", degrees: 90 };
-  }
-
-  const step = shiftKey ? 0.25 : 0.05;
-  if (key === "ArrowLeft") return { type: "nudge", deltaX: -step, deltaZ: 0 };
-  if (key === "ArrowRight") return { type: "nudge", deltaX: step, deltaZ: 0 };
-  if (key === "ArrowUp") return { type: "nudge", deltaX: 0, deltaZ: -step };
-  if (key === "ArrowDown") return { type: "nudge", deltaX: 0, deltaZ: step };
-
-  return null;
-}
-
-export type ResolveSelectedPlanKeyboardCommandInput = DesignPageKeyboardInput & {
-  canEdit: boolean;
-  hasSelectedItem: boolean;
-  selectedItemCount: number;
-  selectedPlanOverlayId: string | null;
-  selectedPlanRoomId: string | null;
-  selectedZoneId: string | null;
-  viewMode: EditorViewMode;
-};
-
-export function resolveSelectedPlanKeyboardCommand({
-  key,
-  shiftKey = false,
-  metaKey = false,
-  ctrlKey = false,
-  canEdit,
-  hasSelectedItem,
-  selectedItemCount,
-  selectedPlanOverlayId,
-  selectedPlanRoomId,
-  selectedZoneId,
-  viewMode,
-}: ResolveSelectedPlanKeyboardCommandInput): SelectedPlanKeyboardCommand | null {
-  if (key === "Escape") {
-    const hasSelection =
-      Boolean(selectedPlanRoomId) ||
-      Boolean(selectedPlanOverlayId) ||
-      selectedItemCount > 0 ||
-      Boolean(selectedZoneId);
-    return hasSelection ? { type: "clear-selection" } : null;
-  }
-
-  if (!selectedPlanRoomId || selectedPlanOverlayId || hasSelectedItem) return null;
-
-  if ((key === "Backspace" || key === "Delete") && canEdit) {
-    return { type: "delete-room", roomId: selectedPlanRoomId };
-  }
-  if ((metaKey || ctrlKey) && key.toLowerCase() === "d" && canEdit) {
-    return { type: "duplicate-room", roomId: selectedPlanRoomId };
-  }
-
-  if (viewMode !== "2d") return null;
-  const step = shiftKey ? 0.25 : 0.05;
-  const snap = !shiftKey;
-  if (key === "ArrowLeft") {
-    return { type: "nudge-room", deltaX: -step, deltaZ: 0, snap };
-  }
-  if (key === "ArrowRight") {
-    return { type: "nudge-room", deltaX: step, deltaZ: 0, snap };
-  }
-  if (key === "ArrowUp") {
-    return { type: "nudge-room", deltaX: 0, deltaZ: -step, snap };
-  }
-  if (key === "ArrowDown") {
-    return { type: "nudge-room", deltaX: 0, deltaZ: step, snap };
-  }
-
-  return null;
-}
-
 type SelectedIdsRef = {
   current: Set<string>;
+};
+
+type PrimaryIdRef = {
+  current: DesignItem["instanceId"] | null;
 };
 
 type CommitItems = (
@@ -207,16 +63,6 @@ function isDeleteShortcutTarget(target: EventTarget | null): boolean {
   return Boolean(
     element?.tagName === "INPUT" ||
       element?.tagName === "TEXTAREA" ||
-      element?.isContentEditable
-  );
-}
-
-function isSelectionShortcutTarget(target: EventTarget | null): boolean {
-  const element = target as HTMLElement | null;
-  return Boolean(
-    element?.tagName === "INPUT" ||
-      element?.tagName === "TEXTAREA" ||
-      element?.tagName === "SELECT" ||
       element?.isContentEditable
   );
 }
@@ -285,16 +131,25 @@ export type DesignPageSelectionKeyboardState = {
   editorMode: DesignPageEditorMode;
   hasPendingCatalogPlacement: boolean;
   isClientPreview: boolean;
+  keyboardShortcutsEnabled: boolean;
   selectedItemId: DesignItem["instanceId"] | null;
   selectedPlanOverlayId: string | null;
   selectedPlanRoomId: HousePlanRoom2D["id"] | null;
   selectedRotationDegrees: number;
   selectedZoneId: string | null;
+  rotationSnapEnabled: boolean;
+  rotationSnapStepDegrees: number;
   viewMode: EditorViewMode;
 };
 
 export type DesignPageSelectionKeyboardRefs = {
+  primaryId: PrimaryIdRef;
   selectedIds: SelectedIdsRef;
+};
+
+type KeyboardRotationOptions = {
+  snap: boolean;
+  source: "keyboard";
 };
 
 export type DesignPageSelectionKeyboardActions = {
@@ -308,7 +163,11 @@ export type DesignPageSelectionKeyboardActions = {
   };
   item: {
     duplicate: () => void;
-    rotateByDegrees: (degrees: number) => void;
+    rotateByDegrees: (
+      degrees: number,
+      options: KeyboardRotationOptions
+    ) => void;
+    resetRotation: (options: KeyboardRotationOptions) => void;
     nudge: (deltaX: number, deltaZ: number) => void;
   };
   room: {
@@ -328,166 +187,138 @@ export type UseDesignPageSelectionKeyboardControllerInput = {
   actions: DesignPageSelectionKeyboardActions;
 };
 
+function getKeyboardInput(event: KeyboardEvent): DesignPageKeyboardInput {
+  return {
+    key: event.key,
+    shiftKey: event.shiftKey,
+    metaKey: event.metaKey,
+    ctrlKey: event.ctrlKey,
+    altKey: event.altKey,
+    repeat: event.repeat,
+  };
+}
+
+function consumeKeyboardCommand(event: KeyboardEvent): void {
+  event.preventDefault();
+  event.stopImmediatePropagation();
+}
+
+function executePendingPlacementCommand(
+  command: PendingPlacementKeyboardCommand,
+  actions: DesignPageSelectionKeyboardActions["placement"]
+): void {
+  if (command.type === "cancel") actions.cancel();
+  else if (command.type === "confirm") actions.confirm();
+  else if (command.type === "rotate") actions.rotate(command.direction);
+  else actions.nudge(command.deltaX, command.deltaZ);
+}
+
+function executeSelectedItemCommand(
+  command: SelectedItemKeyboardCommand,
+  actions: DesignPageSelectionKeyboardActions["item"]
+): void {
+  if (command.type === "duplicate") actions.duplicate();
+  else if (command.type === "rotate") {
+    actions.rotateByDegrees(command.degrees, {
+      snap: command.snap,
+      source: "keyboard",
+    });
+  } else if (command.type === "reset-rotation") {
+    actions.resetRotation({ snap: true, source: "keyboard" });
+  } else actions.nudge(command.deltaX, command.deltaZ);
+}
+
+function routeSelectedItemKeyboardEvent(
+  event: KeyboardEvent,
+  input: UseDesignPageSelectionKeyboardControllerInput
+): void {
+  if (isDesignPageSelectionShortcutBlocked(event.target)) return;
+  const keyboardInput = getKeyboardInput(event);
+  const pendingCommand = resolvePendingPlacementKeyboardCommand({
+    ...keyboardInput,
+    canEdit: input.state.canEdit,
+    hasPendingPlacement: input.state.hasPendingCatalogPlacement,
+    keyboardShortcutsEnabled: input.state.keyboardShortcutsEnabled,
+  });
+  if (pendingCommand) {
+    consumeKeyboardCommand(event);
+    executePendingPlacementCommand(pendingCommand, input.actions.placement);
+    return;
+  }
+  const itemCommand = resolveSelectedItemKeyboardCommand({
+    ...keyboardInput,
+    canEdit: input.state.canEdit,
+    hasSelectedItem: Boolean(input.refs.primaryId.current),
+    keyboardShortcutsEnabled: input.state.keyboardShortcutsEnabled,
+    rotationSnapEnabled: input.state.rotationSnapEnabled,
+    rotationSnapStepDegrees: input.state.rotationSnapStepDegrees,
+  });
+  if (!itemCommand) return;
+  consumeKeyboardCommand(event);
+  executeSelectedItemCommand(itemCommand, input.actions.item);
+}
+
+function executeSelectedPlanCommand(
+  command: SelectedPlanKeyboardCommand,
+  actions: DesignPageSelectionKeyboardActions
+): void {
+  if (command.type === "clear-selection") actions.clearAllSelection();
+  else if (command.type === "delete-room") actions.room.delete(command.roomId);
+  else if (command.type === "duplicate-room") actions.room.duplicate(command.roomId);
+  else actions.room.nudge(command.deltaX, command.deltaZ, { snap: command.snap });
+}
+
+function routeSelectedPlanKeyboardEvent(
+  event: KeyboardEvent,
+  input: UseDesignPageSelectionKeyboardControllerInput
+): void {
+  if (isDesignPageSelectionShortcutBlocked(event.target)) return;
+  const command = resolveSelectedPlanKeyboardCommand({
+    ...getKeyboardInput(event),
+    canEdit: input.state.canEdit,
+    hasSelectedItem: Boolean(input.refs.primaryId.current),
+    selectedItemCount: input.refs.selectedIds.current.size,
+    selectedPlanOverlayId: input.state.selectedPlanOverlayId,
+    selectedPlanRoomId: input.state.selectedPlanRoomId,
+    selectedZoneId: input.state.selectedZoneId,
+    viewMode: input.state.viewMode,
+  });
+  if (!command) return;
+  event.preventDefault();
+  executeSelectedPlanCommand(command, input.actions);
+}
+
 export function useDesignPageSelectionKeyboardController({
   state,
   refs,
   actions,
 }: UseDesignPageSelectionKeyboardControllerInput): void {
-  const {
-    canEdit,
-    editorMode,
-    hasPendingCatalogPlacement,
-    isClientPreview,
-    selectedItemId,
-    selectedPlanOverlayId,
-    selectedPlanRoomId,
-    selectedRotationDegrees,
-    selectedZoneId,
-    viewMode,
-  } = state;
-  const hasSelectedItem = Boolean(selectedItemId);
-  const { selectedIds: selectedIdsRef } = refs;
-  const {
-    setRotationInputValue,
-    clearAllSelection,
-    placement,
-    item,
-    room,
-  } = actions;
-  const {
-    cancel: cancelPendingPlacement,
-    confirm: confirmPendingPlacement,
-    rotate: rotatePendingPlacement,
-    nudge: nudgePendingPlacement,
-  } = placement;
-  const {
-    duplicate: duplicateSelectedItem,
-    rotateByDegrees: rotateSelectedItemByDegrees,
-    nudge: nudgeSelectedItem,
-  } = item;
-  const {
-    delete: deleteSelectedRoom,
-    duplicate: duplicateSelectedRoom,
-    nudge: nudgeSelectedRoom,
-  } = room;
-
+  const setRotationInputValue = actions.setRotationInputValue;
   useEffect(() => {
-    if (!hasSelectedItem) {
+    if (!state.selectedItemId) {
       setRotationInputValue("0");
       return;
     }
-    setRotationInputValue(String(selectedRotationDegrees));
-  }, [hasSelectedItem, selectedItemId, selectedRotationDegrees, setRotationInputValue]);
+    setRotationInputValue(String(state.selectedRotationDegrees));
+  }, [setRotationInputValue, state.selectedItemId, state.selectedRotationDegrees]);
 
   useEffect(() => {
-    if (isClientPreview) return;
+    if (state.isClientPreview) return;
+    const input = { state, refs, actions };
+    const handleSelectedItemShortcut = (event: KeyboardEvent) =>
+      routeSelectedItemKeyboardEvent(event, input);
 
-    const handleSelectedItemShortcut = (event: KeyboardEvent) => {
-      if (isSelectionShortcutTarget(event.target)) return;
-
-      const keyboardInput: DesignPageKeyboardInput = {
-        key: event.key,
-        shiftKey: event.shiftKey,
-        metaKey: event.metaKey,
-        ctrlKey: event.ctrlKey,
-        altKey: event.altKey,
-      };
-      const pendingCommand = resolvePendingPlacementKeyboardCommand({
-        ...keyboardInput,
-        canEdit,
-        hasPendingPlacement: hasPendingCatalogPlacement,
-      });
-      if (pendingCommand) {
-        event.preventDefault();
-        if (pendingCommand.type === "cancel") cancelPendingPlacement();
-        else if (pendingCommand.type === "confirm") confirmPendingPlacement();
-        else if (pendingCommand.type === "rotate") {
-          rotatePendingPlacement(pendingCommand.direction);
-        } else {
-          nudgePendingPlacement(pendingCommand.deltaX, pendingCommand.deltaZ);
-        }
-        return;
-      }
-
-      const itemCommand = resolveSelectedItemKeyboardCommand({
-        ...keyboardInput,
-        canEdit,
-        hasSelectedItem,
-      });
-      if (!itemCommand) return;
-
-      event.preventDefault();
-      if (itemCommand.type === "duplicate") duplicateSelectedItem();
-      else if (itemCommand.type === "rotate") {
-        rotateSelectedItemByDegrees(itemCommand.degrees);
-      } else {
-        nudgeSelectedItem(itemCommand.deltaX, itemCommand.deltaZ);
-      }
-    };
-
-    window.addEventListener("keydown", handleSelectedItemShortcut);
-    return () => window.removeEventListener("keydown", handleSelectedItemShortcut);
-  }, [
-    canEdit,
-    cancelPendingPlacement,
-    confirmPendingPlacement,
-    duplicateSelectedItem,
-    hasPendingCatalogPlacement,
-    hasSelectedItem,
-    isClientPreview,
-    nudgePendingPlacement,
-    nudgeSelectedItem,
-    rotatePendingPlacement,
-    rotateSelectedItemByDegrees,
-  ]);
+    window.addEventListener("keydown", handleSelectedItemShortcut, true);
+    return () =>
+      window.removeEventListener("keydown", handleSelectedItemShortcut, true);
+  }, [actions, refs, state]);
 
   useEffect(() => {
-    if (isClientPreview || editorMode === "present") return;
-
-    const handleSelectedPlanObjectShortcut = (event: KeyboardEvent) => {
-      if (isSelectionShortcutTarget(event.target)) return;
-
-      const command = resolveSelectedPlanKeyboardCommand({
-        key: event.key,
-        shiftKey: event.shiftKey,
-        metaKey: event.metaKey,
-        ctrlKey: event.ctrlKey,
-        altKey: event.altKey,
-        canEdit,
-        hasSelectedItem,
-        selectedItemCount: selectedIdsRef.current.size,
-        selectedPlanOverlayId,
-        selectedPlanRoomId,
-        selectedZoneId,
-        viewMode,
-      });
-      if (!command) return;
-
-      event.preventDefault();
-      if (command.type === "clear-selection") clearAllSelection();
-      else if (command.type === "delete-room") deleteSelectedRoom(command.roomId);
-      else if (command.type === "duplicate-room") {
-        duplicateSelectedRoom(command.roomId);
-      } else {
-        nudgeSelectedRoom(command.deltaX, command.deltaZ, { snap: command.snap });
-      }
-    };
-
+    if (state.isClientPreview || state.editorMode === "present") return;
+    const input = { state, refs, actions };
+    const handleSelectedPlanObjectShortcut = (event: KeyboardEvent) =>
+      routeSelectedPlanKeyboardEvent(event, input);
     window.addEventListener("keydown", handleSelectedPlanObjectShortcut);
     return () => window.removeEventListener("keydown", handleSelectedPlanObjectShortcut);
-  }, [
-    canEdit,
-    clearAllSelection,
-    deleteSelectedRoom,
-    duplicateSelectedRoom,
-    editorMode,
-    hasSelectedItem,
-    isClientPreview,
-    nudgeSelectedRoom,
-    selectedIdsRef,
-    selectedPlanOverlayId,
-    selectedPlanRoomId,
-    selectedZoneId,
-    viewMode,
-  ]);
+  }, [actions, refs, state]);
 }

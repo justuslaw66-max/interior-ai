@@ -23,6 +23,7 @@ Domain calculations must not depend on React, Three.js, Prisma, HTTP request obj
 
 - 2D and 3D consume the same canonical scene/document projection and shared placement/collision engine.
 - The plan plane is XZ, Y is vertical, and durable rotation is `rotationDeg` about Y. Adapters may derive radians or matrices but may not persist a competing representation.
+- Global selected-item rotation shortcuts are owned by `useDesignPageSelectionKeyboardController` and must execute through the shared selection-transform command path. Scene items may own pointer rotation gestures, but must not register window- or document-level rotation shortcuts.
 - Plan/topology calculations, measurements, constraints, openings, and placement decisions remain pure domain logic where practical.
 - Rendering adapters own scene projection, picking, resource handles, material application, frame invalidation, and deterministic cleanup. They do not write persistence.
 - Asset loading/decoding is deduplicated by normalized identity. Resource clone/instance and disposal ownership must be explicit.

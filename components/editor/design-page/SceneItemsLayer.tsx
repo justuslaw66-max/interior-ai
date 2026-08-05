@@ -78,7 +78,6 @@ type SceneItemsLayerConfiguration = {
   walls: WallDescriptor[];
   snapEnabled: boolean;
   rotationSnapStepRadians: number;
-  rotationSnapStepDegrees: number;
   rotationSnapEnabled: boolean;
   planShowLabels: boolean;
   planShowDimensions: boolean;
@@ -422,7 +421,6 @@ export function SceneItemsLayer({
                 actions.onDeleteSelectedItem();
               }}
               rotationSnapStepRadians={configuration.rotationSnapStepRadians}
-              rotationSnapStepDegrees={configuration.rotationSnapStepDegrees}
               rotationSnapEnabled={configuration.rotationSnapEnabled}
               showGuidesAndMeasurements={
                 isActiveSceneRoom &&

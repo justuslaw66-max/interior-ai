@@ -270,8 +270,6 @@ export function useDesignPageSceneRegionWorkspaceRegistration({
       snapEnabled: base.state.editor.snapEnabled,
       rotationSnapStepRadians:
         selectionInspection.state.inspection.rotationSnapStepRadians,
-      rotationSnapStepDegrees:
-        selectionInspection.state.inspection.rotationSnapStepDegrees,
       rotationSnapEnabled:
         selectionInspection.state.inspection.rotationSnapEnabled,
     },

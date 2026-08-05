@@ -21,7 +21,6 @@ import { resolveMaterialProps } from "@/lib/design-page-material-props";
 import {
   getRotatedFootprint,
   normalizeRotationDegrees,
-  ROTATION_SNAP_STEP_DEGREES,
   ROTATION_SNAP_STEP_RADIANS,
 } from "@/lib/design-page-utils";
 import {
@@ -101,7 +100,6 @@ export function Furniture({
   planShowDimensions = true,
   planMeasurementUnit = "mm",
   rotationSnapStepRadians = ROTATION_SNAP_STEP_RADIANS,
-  rotationSnapStepDegrees = ROTATION_SNAP_STEP_DEGREES,
   rotationSnapEnabled = true,
   renderQuality = "standard",
   renderReadyKey,
@@ -240,70 +238,6 @@ export function Furniture({
     if (!interactive) return;
     placementStartRef.current = performance.now();
   }, [instanceId, interactive]);
-
-  // Keyboard listener for rotation
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (locked || !interactive || !isPrimarySelected) return;
-      if (dragging || rotateDragging) return;
-      const activeElement = document.activeElement as HTMLElement | null;
-      if (activeElement) {
-        const tagName = activeElement.tagName;
-        if (
-          tagName === "INPUT" ||
-          tagName === "TEXTAREA" ||
-          tagName === "SELECT" ||
-          activeElement.isContentEditable
-        ) {
-          return;
-        }
-      }
-
-      let nextRotation: number | null = null;
-      let isSnapped = true;
-      if ((e.key === "r" || e.key === "R") && !e.metaKey && !e.ctrlKey && !e.altKey) {
-        nextRotation = rotation + (e.shiftKey ? -Math.PI / 2 : Math.PI / 2);
-      } else if ((e.key === "q" || e.key === "Q") && !e.metaKey && !e.ctrlKey && !e.altKey) {
-        const step =
-          ((rotationSnapEnabled ? rotationSnapStepDegrees : 1) * Math.PI) / 180;
-        nextRotation = rotation - step;
-        isSnapped = rotationSnapEnabled;
-      } else if ((e.key === "e" || e.key === "E") && !e.metaKey && !e.ctrlKey && !e.altKey) {
-        const step =
-          ((rotationSnapEnabled ? rotationSnapStepDegrees : 1) * Math.PI) / 180;
-        nextRotation = rotation + step;
-        isSnapped = rotationSnapEnabled;
-      } else if (e.key === "0" && !e.metaKey && !e.ctrlKey && !e.altKey) {
-        nextRotation = 0;
-      }
-
-      if (nextRotation === null) return;
-      e.preventDefault();
-      setRotation((prev: number) => {
-        const fallback = nextRotation ?? prev;
-        const accepted = onRotate?.(instanceId, fallback, {
-          source: "keyboard",
-          snap: isSnapped,
-        });
-        return accepted === false ? prev : fallback;
-      });
-    };
-
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [
-    dragging,
-    interactive,
-    instanceId,
-    isPrimarySelected,
-    locked,
-    onRotate,
-    rotateDragging,
-    rotation,
-    rotationSnapEnabled,
-    rotationSnapStepDegrees,
-    rotationSnapStepRadians,
-  ]);
 
   const getPointerRotation = (
     e: ThreeEvent<PointerEvent>,

@@ -7,6 +7,7 @@ import type { DesignItem } from "@/lib/room-types";
 import type { DesignPageCabinetryWorkspaceRegistration } from "@/lib/useDesignPageCabinetryWorkspaceRegistration";
 import type { DesignPageCoreShellRegistration } from "@/lib/useDesignPageCoreShellRegistration";
 import type { DesignPageDocumentSelectionRegistrationFacade } from "@/lib/useDesignPageDocumentSelectionRegistrationFacade";
+import type { DesignPageEditorInteractionRegistration } from "@/lib/useDesignPageEditorInteractionRegistration";
 import { useDesignPagePlacementSelectionWorkspaceFacade } from "@/lib/useDesignPagePlacementSelectionWorkspaceFacade";
 import type { DesignPagePlacementWorkspaceRegistration } from "@/lib/useDesignPagePlacementWorkspaceRegistration";
 import type { DesignPagePlanAuthoringRegistration } from "@/lib/useDesignPagePlanAuthoringRegistration";
@@ -15,6 +16,7 @@ export type UseDesignPageSelectionWorkspaceRegistrationInput = {
   boundaries: {
     coreShell: DesignPageCoreShellRegistration;
     documentSelection: DesignPageDocumentSelectionRegistrationFacade;
+    editorInteraction: DesignPageEditorInteractionRegistration;
     planAuthoring: DesignPagePlanAuthoringRegistration;
     placement: DesignPagePlacementWorkspaceRegistration;
     cabinetry: DesignPageCabinetryWorkspaceRegistration;
@@ -33,13 +35,8 @@ function replaceActiveItemsSnapshot(
  * behavior after cabinetry has supplied its domain-specific item label.
  */
 export function useDesignPageSelectionWorkspaceRegistration({
-  boundaries: {
-    coreShell,
-    documentSelection,
-    planAuthoring,
-    placement,
-    cabinetry,
-  },
+  boundaries: { coreShell, documentSelection, editorInteraction, planAuthoring,
+    placement, cabinetry },
 }: UseDesignPageSelectionWorkspaceRegistrationInput) {
   const base = coreShell.boundaries.base;
   const viewportShell = coreShell.boundaries.viewportShell;
@@ -105,8 +102,12 @@ export function useDesignPageSelectionWorkspaceRegistration({
       roomWidth,
       roomDepth,
       wallThickness,
-      rotationSnapEnabled:
-        selectionInspection.state.inspection.rotationSnapEnabled,
+      keyboardShortcutsEnabled:
+        editorInteraction.boundaries.camera.state.canvas.controlsEnabled &&
+        viewportShell.state.editor.editorMode !== "buy" &&
+        viewportShell.state.editor.editorMode !== "present",
+      rotationSnapEnabled: selectionInspection.state.inspection.rotationSnapEnabled,
+      rotationSnapStepDegrees: selectionInspection.state.inspection.rotationSnapStepDegrees,
       rotationSnapStepRadians:
         selectionInspection.state.inspection.rotationSnapStepRadians,
       catalogItems: CATALOG_ITEMS,

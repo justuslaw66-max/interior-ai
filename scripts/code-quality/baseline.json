@@ -201,7 +201,7 @@
       "limit": 250
     },
     "components/editor/design-page/SceneItemsLayer.tsx": {
-      "lines": 503,
+      "lines": 501,
       "limit": 250
     },
     "components/editor/design-page/SelectedCabinetPanel.tsx": {
@@ -341,7 +341,7 @@
       "limit": 400
     },
     "components/scene/FurnitureItem.tsx": {
-      "lines": 1068,
+      "lines": 1002,
       "limit": 250
     },
     "components/scene/glb-scaled-model/huggMaterial.ts": {
@@ -765,15 +765,11 @@
       "limit": 400
     },
     "lib/useDesignPageSceneRegionWorkspaceRegistration.ts": {
-      "lines": 438,
+      "lines": 436,
       "limit": 400
     },
     "lib/useDesignPageSelectionInspectorModel.ts": {
       "lines": 418,
-      "limit": 400
-    },
-    "lib/useDesignPageSelectionKeyboard.ts": {
-      "lines": 493,
       "limit": 400
     },
     "lib/useDesignPageSelectionTransforms.ts": {
@@ -2051,7 +2047,7 @@
     "components/editor/design-page/SceneItemsLayer.tsx": {
       "overlongFunctions": {
         "count": 2,
-        "maximum": 369
+        "maximum": 368
       },
       "complexFunctions": {
         "count": 1,
@@ -2611,10 +2607,10 @@
     "components/scene/FurnitureItem.tsx": {
       "overlongFunctions": {
         "count": 2,
-        "maximum": 1016
+        "maximum": 951
       },
       "complexFunctions": {
-        "count": 2,
+        "count": 1,
         "maximum": 64
       }
     },
@@ -3541,7 +3537,7 @@
     "lib/design-page-scene-region-adapter.ts": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 187
+        "maximum": 186
       }
     },
     "lib/design-page-selection-panel-model.ts": {
@@ -5037,7 +5033,7 @@
     "lib/useDesignPageSceneRegionWorkspaceRegistration.ts": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 410
+        "maximum": 408
       }
     },
     "lib/useDesignPageSceneRoomReadRegistration.ts": {
@@ -5074,16 +5070,6 @@
         "maximum": 26
       }
     },
-    "lib/useDesignPageSelectionKeyboard.ts": {
-      "overlongFunctions": {
-        "count": 1,
-        "maximum": 163
-      },
-      "complexFunctions": {
-        "count": 1,
-        "maximum": 22
-      }
-    },
     "lib/useDesignPageSelectionTransforms.ts": {
       "overlongFunctions": {
         "count": 5,
@@ -5097,7 +5083,7 @@
     "lib/useDesignPageSelectionWorkspaceRegistration.ts": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 128
+        "maximum": 127
       }
     },
     "lib/useDesignPageSurfaceActions.ts": {

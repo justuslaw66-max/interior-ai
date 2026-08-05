@@ -1,4 +1,4 @@
-import { type Page } from "@playwright/test";
+import { type Locator, type Page } from "@playwright/test";
 
 import { test, expect } from "./fixtures";
 import {
@@ -29,7 +29,15 @@ async function expectAngle(page: Page, expected: number) {
     .toBe(normalizeAngle(expected));
 }
 
-async function setupSelectedItem(page: Page): Promise<void> {
+async function readFingerprint(page: Page): Promise<string> {
+  const marker = page.getByTestId("qa-editor-snapshot-fingerprint");
+  await expect(marker).toHaveAttribute("data-fingerprint", /[a-f0-9]{8}/);
+  const fingerprint = await marker.getAttribute("data-fingerprint");
+  if (!fingerprint) throw new Error("Editor snapshot fingerprint is missing");
+  return fingerprint;
+}
+
+async function setupSelectedItem(page: Page): Promise<Locator> {
   await page.route("**/api/me", async (route) => {
     await route.fulfill({
       status: 200,
@@ -98,6 +106,7 @@ async function setupSelectedItem(page: Page): Promise<void> {
 
   await page.getByTestId("rotation-btn-reset").click();
   await expectAngle(page, 0);
+  return selectedItemPanel;
 }
 
 test.describe("11. Rotation Shortcuts And Presets", () => {
@@ -116,8 +125,32 @@ test.describe("11. Rotation Shortcuts And Presets", () => {
     await page.keyboard.press("R");
     await expectAngle(page, start + 90);
 
+    await page.keyboard.press("Shift+R");
+    await expectAngle(page, start);
+
     await page.keyboard.press("0");
     await expectAngle(page, 0);
+  });
+
+  test("one keypress creates one undoable rotation and toolbar rotation remains available", async ({
+    page,
+  }) => {
+    test.setTimeout(180_000);
+    await setupSelectedItem(page);
+
+    const undo = page.getByTestId("command-undo");
+    const undoLabelBeforeRotation = await undo.getAttribute("aria-label");
+    await page.keyboard.press("R");
+    await expectAngle(page, 90);
+    await expect(undo).toHaveAccessibleName(/Undo Rotate \+90/i);
+
+    await undo.click();
+    await expectAngle(page, 0);
+    expect(await undo.getAttribute("aria-label")).toBe(undoLabelBeforeRotation);
+
+    await page.getByTestId("rotation-btn-quarter-turn").click();
+    await expectAngle(page, 90);
+    await expect(undo).toHaveAccessibleName(/Undo Rotate \+90/i);
   });
 
   test("snap presets update keyboard step behavior", async ({ page }) => {
@@ -166,5 +199,159 @@ test.describe("11. Rotation Shortcuts And Presets", () => {
     await applyButton.click();
     await expectAngle(page, 33);
     await expect(input).toHaveValue("33");
+  });
+
+  test("input, textarea, select, contenteditable, and modal focus suppress rotation", async ({
+    page,
+  }) => {
+    test.setTimeout(180_000);
+    await setupSelectedItem(page);
+
+    for (const kind of ["input", "textarea", "select", "contenteditable"] as const) {
+      await page.evaluate((targetKind) => {
+        document.getElementById("rotation-focus-exclusion")?.remove();
+        const element = document.createElement(
+          targetKind === "contenteditable" ? "div" : targetKind
+        );
+        element.id = "rotation-focus-exclusion";
+        if (targetKind === "contenteditable") element.contentEditable = "true";
+        if (element instanceof HTMLSelectElement) {
+          element.append(new Option("Rotation focus fixture", "fixture"));
+        }
+        document.body.append(element);
+        element.focus();
+      }, kind);
+      await expect(page.locator("#rotation-focus-exclusion")).toBeFocused();
+      await page.keyboard.press("R");
+      await expectAngle(page, 0);
+    }
+    await page.evaluate(() => {
+      document.getElementById("rotation-focus-exclusion")?.remove();
+    });
+
+    await page.keyboard.press("Meta+K");
+    const palette = page.getByTestId("editor-command-palette");
+    await expect(palette).toBeVisible();
+    const paletteAction = palette.locator("button").first();
+    await expect(paletteAction).toBeVisible();
+    await paletteAction.focus();
+    await page.keyboard.press("R");
+    await expectAngle(page, 0);
+    await palette.click({ position: { x: 5, y: 5 } });
+    await expect(palette).toBeHidden();
+  });
+
+  test("selection remounts and 2D/3D transitions retain one current rotation owner", async ({
+    page,
+  }) => {
+    test.setTimeout(180_000);
+    await setupSelectedItem(page);
+
+    const planView = page.getByTestId("editor-view-2d");
+    await planView.click();
+    await expect(planView).toHaveAttribute("aria-pressed", "true");
+    await page.keyboard.press("Escape");
+    await expect(page.getByTestId("selected-item-panel")).toBeHidden();
+
+    const planItem = page.getByTestId("plan-item-keyboard-target").filter({
+      hasText: "Hugg",
+    });
+    await planItem.click();
+    await expect(page.getByTestId("selected-item-panel")).toBeVisible();
+
+    const spatialView = page.getByTestId("editor-view-3d");
+    await spatialView.click();
+    await expect(spatialView).toHaveAttribute("aria-pressed", "true");
+    await planView.click();
+    await expect(planView).toHaveAttribute("aria-pressed", "true");
+
+    await page.keyboard.press("R");
+    await expectAngle(page, 90);
+    await expect(page.getByTestId("command-undo")).toHaveAccessibleName(
+      /Undo Rotate \+90/i
+    );
+  });
+
+  test("selection changes and group rotation affect each current item exactly once", async ({
+    page,
+  }) => {
+    test.setTimeout(180_000);
+    await setupSelectedItem(page);
+    await page.keyboard.press("Meta+D");
+
+    const planView = page.getByTestId("editor-view-2d");
+    await planView.click();
+    await expect(planView).toHaveAttribute("aria-pressed", "true");
+    const planItems = page.getByTestId("plan-item-keyboard-target").filter({
+      hasText: "Hugg",
+    });
+    await expect(planItems).toHaveCount(2);
+
+    await planItems.nth(0).click();
+    await page.keyboard.press("R");
+    await expectAngle(page, 90);
+
+    await planItems.nth(1).click();
+    await expectAngle(page, 0);
+    await page.keyboard.press("Shift+R");
+    await expectAngle(page, -90);
+
+    await planItems.nth(0).click();
+    await expectAngle(page, 90);
+    await page.keyboard.press("0");
+    await expectAngle(page, 0);
+    await planItems.nth(1).click();
+    await page.keyboard.press("0");
+    await expectAngle(page, 0);
+
+    await planItems.nth(0).click();
+    await planItems.nth(1).click({ modifiers: ["Shift"] });
+    await expect(planItems.nth(0)).toHaveAttribute("aria-pressed", "true");
+    await expect(planItems.nth(1)).toHaveAttribute("aria-pressed", "true");
+    await page.keyboard.press("R");
+
+    await planItems.nth(0).click();
+    await expectAngle(page, 90);
+    await planItems.nth(1).click();
+    await expectAngle(page, 90);
+  });
+
+  test("one repeat event rotates once and no selection is a safe no-op", async ({
+    page,
+  }) => {
+    test.setTimeout(180_000);
+    const panel = await setupSelectedItem(page);
+
+    const lock = panel.getByRole("button", { name: "Lock", exact: true });
+    await lock.click();
+    const lockedFingerprint = await readFingerprint(page);
+    await page.keyboard.press("R");
+    await expectAngle(page, 0);
+    expect(await readFingerprint(page)).toBe(lockedFingerprint);
+    await expect(page.getByTestId("collision-toast")).toContainText(
+      "Unlock this item to rotate"
+    );
+    await panel.getByRole("button", { name: "Unlock", exact: true }).click();
+
+    await page.evaluate(() => {
+      window.dispatchEvent(
+        new KeyboardEvent("keydown", {
+          bubbles: true,
+          key: "r",
+          repeat: true,
+        })
+      );
+    });
+    await expectAngle(page, 90);
+    const undo = page.getByTestId("command-undo");
+    await expect(undo).toHaveAccessibleName(/Undo Rotate \+90/i);
+    await undo.click();
+    await expectAngle(page, 0);
+
+    await page.keyboard.press("Escape");
+    await expect(page.getByTestId("selected-item-panel")).toBeHidden();
+    const fingerprint = await readFingerprint(page);
+    await page.keyboard.press("R");
+    expect(await readFingerprint(page)).toBe(fingerprint);
   });
 });

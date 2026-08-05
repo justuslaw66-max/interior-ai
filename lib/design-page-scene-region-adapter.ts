@@ -125,7 +125,6 @@ export type BuildDesignPageSceneRegionAdapterInput = {
     orbit: CanvasConfiguration["orbit"];
     snapEnabled: ItemsConfiguration["snapEnabled"];
     rotationSnapStepRadians: ItemsConfiguration["rotationSnapStepRadians"];
-    rotationSnapStepDegrees: ItemsConfiguration["rotationSnapStepDegrees"];
     rotationSnapEnabled: ItemsConfiguration["rotationSnapEnabled"];
   };
   references: Pick<DesignPageSceneRegionReferences, "canvas">;
@@ -293,7 +292,6 @@ export function buildDesignPageSceneRegionAdapter({
         walls: room.walls,
         snapEnabled: configuration.snapEnabled,
         rotationSnapStepRadians: configuration.rotationSnapStepRadians,
-        rotationSnapStepDegrees: configuration.rotationSnapStepDegrees,
         rotationSnapEnabled: configuration.rotationSnapEnabled,
         planShowLabels: plan.layers.labels,
         planShowDimensions: plan.layers.dimensions,

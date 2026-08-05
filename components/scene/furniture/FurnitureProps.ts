@@ -73,7 +73,6 @@ export type FurnitureProps = {
   planShowDimensions?: boolean;
   planMeasurementUnit?: PlanMeasurementUnit;
   rotationSnapStepRadians?: number;
-  rotationSnapStepDegrees?: number;
   rotationSnapEnabled?: boolean;
   renderQuality?: "standard" | "lite";
   renderReadyKey?: string;
