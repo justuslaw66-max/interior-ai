@@ -60,6 +60,8 @@
     "test:e2e:cabinetry-release": "node scripts/required-test-truthfulness.mjs run release.cabinetry-browser",
     "test:e2e:release": "node scripts/required-test-truthfulness.mjs run release.gate-a3",
     "test:e2e:smoke": "playwright test tests/e2e/00-runtime-smoke.spec.ts",
+    "test:catalog-drawer-focus-unit": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\",\"jsx\":\"react-jsx\"}' -r tsconfig-paths/register scripts/test-catalog-panel-logic.ts",
+    "test:catalog-drawer-focus": "playwright test --config=playwright.drawer-focus.config.ts",
     "test:e2e:smart-placement": "playwright test tests/e2e/17-smart-placement-smoke.spec.ts",
     "test:e2e:pro-upgrade": "playwright test tests/e2e/pro-upgrade.spec.ts",
     "test:design-page-cleanup": "node scripts/run-design-page-cleanup-tests.mjs",

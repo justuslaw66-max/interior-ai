@@ -121,7 +121,7 @@
       "limit": 250
     },
     "components/catalog/CatalogItemDrawer.tsx": {
-      "lines": 582,
+      "lines": 519,
       "limit": 250
     },
     "components/catalog/CatalogPanel.tsx": {
@@ -1639,7 +1639,7 @@
     "components/catalog/CatalogItemDrawer.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 521
+        "maximum": 473
       },
       "complexFunctions": {
         "count": 1,
@@ -1661,7 +1661,7 @@
     "components/catalog/CatalogPanel.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 979
+        "maximum": 978
       },
       "complexFunctions": {
         "count": 1,

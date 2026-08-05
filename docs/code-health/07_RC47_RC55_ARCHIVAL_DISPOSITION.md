@@ -391,3 +391,53 @@ findings are RC52 at P2 and RC47, RC54, plus RC53/55 responsive share work at
 P3. The RC49/50 and RC53 persistence and RC48 keyboard invariants are already
 present in the required starting source; this closure neither reopens nor
 changes them and does not authorize an integration branch.
+
+## ARCH-RC52 drawer-focus remediation closure — 2026-08-05
+
+The RC52 row above records the historical finding at audited source
+`7016da0ad74c7d463a07ec061259b50d757031e0`. From exact clean starting source
+`bb0e4f8f999d774b8490eca16efdc84d6751aafd`,
+`ARCH-RC52-DRAWER-FOCUS` is locally remediated on
+`fix/arch-rc52-drawer-focus`. Archival commit
+`637281505493572229be864449d77e3a626c67fe` was inspected only for intent and
+was not cherry-picked. Its intent was to keep the product-preview opening
+owner stable through catalog hydration so close could return keyboard focus.
+
+The verified current defect was direct-node authority. `CatalogItemDrawer`
+captured only `document.activeElement`; cleanup focused it only if the same
+node remained connected. Hydration, category/filter/virtualization changes, or
+responsive replacement could unmount it, while WebKit pointer activation could
+leave it uncaptured from the outset. The disconnected or absent path had no
+semantic resolution and no safe fallback.
+
+The current architecture now establishes one typed descriptor at activation:
+product ID, the stable `details` action, and `product-card` or `compare-tray`
+source. One focus owner resolves a connected, visible, enabled target only when
+the drawer closes. It prefers the still-valid direct element, then the current
+exact semantic action, then another current same-product details action, then
+the programmatically focusable catalog-results region. It never focuses a
+disconnected node or accepts `body`; a newer visible modal or alertdialog
+suppresses entry, Escape ownership, and restoration; unmount and newer-open
+generations cancel queued focus work. Every close path releases the DOM-bearing
+optimization after cleanup captures it. Product changes inside the drawer
+retain the original opener, while every reopen establishes a new identity. The
+mechanism is not an authorization boundary.
+
+Deterministic test-first coverage proves pointer, Enter, Space, Escape, close,
+different-product reopen, hydration-style connected-node replacement,
+desktop/mobile replacement in both directions, filtering/DOM removal fallback,
+real live-catalog product unavailability, compare tray, searched product cards,
+route/workspace unmount cancellation, alertdialog entry/Escape/restoration
+ownership, Consumer/Pro parity, dialog semantics, active element,
+connectedness, visibility, enabled state, and unique exact targets. The
+complete focused matrix passes 18/18 in Chromium and WebKit. The unit/render focus identity assertions,
+catalog accessibility/compare/product-flow/responsive suites, required local
+gates, strict catalog audit/build, and Phase 8 gate are recorded in
+`docs/code-health/HANDOFF.md`; Full E2E was not run.
+
+The detailed owner, lifecycle, former-failure proof, and fallback matrix is
+`docs/architecture/catalog-drawer-focus.md`. Rollback is one local revert of
+the focused implementation commit once its SHA is resolved. Remaining archival
+findings are RC47 and RC54 plus RC53/55 responsive share work at P3. No RC47,
+RC54, RC55, touch-target, responsive-share, integration-branch, push, workflow,
+deployment, or external-setting work is included.

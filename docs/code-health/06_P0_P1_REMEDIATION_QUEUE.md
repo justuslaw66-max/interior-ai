@@ -488,3 +488,28 @@ Rollback: revert the single CH-0012 implementation commit. If callers must be is
 - **Remaining queue:** RC52 drawer focus remains P2. RC47, RC54, and the RC53/55
   responsive share work remain P3. No integration branch is eligible from this
   closure alone.
+
+### RC47-RC55 archival P2 drawer-focus queue — 2026-08-05
+
+- **`ARCH-RC52-DRAWER-FOCUS` — P2, locally remediated:** from exact clean
+  `bb0e4f8f999d774b8490eca16efdc84d6751aafd`, product-card and compare-tray
+  preview actions now establish one typed product/action/source restoration
+  identity. Close-time lookup accepts only a connected, visible, enabled
+  current action and falls back deterministically to a same-product details
+  action or the catalog-results region.
+- **Lifecycle boundary:** hydration, category/filtering, virtualization, and
+  desktop/mobile replacement may disconnect the direct element without losing
+  semantic identity. A newer modal or alertdialog suppresses entry, Escape, and
+  restoration; route/workspace unmount and newer opens cancel queued focus;
+  drawer-internal product changes preserve the original opener; reopen replaces
+  it. Every close path releases the DOM-bearing optimization after cleanup.
+- **Evidence and scope:** fixed Consumer/Pro product-card, compare-tray, search,
+  real live-catalog unavailability, hydration-style replacement, both responsive
+  directions, alertdialog entry/restoration, and unmount cases pass 18/18 with
+  real focus assertions in Chromium and WebKit. RC52 archival commit
+  `637281505493572229be864449d77e3a626c67fe` remained evidence only. No category
+  freeze, drawer redesign, touch-target, publication, entitlement, purchase,
+  routing, responsive-share, or other archival remediation is included.
+- **Remaining queue:** P2 compare and drawer-focus findings are locally closed.
+  RC47 and RC54 plus RC53/55 responsive share remain P3 and require separate
+  bounded changes before any final integration candidate is eligible.

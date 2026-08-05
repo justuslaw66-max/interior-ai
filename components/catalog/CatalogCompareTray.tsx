@@ -1,10 +1,11 @@
 import type { CatalogCompareItem } from "@/lib/catalog/compare";
+import { getCatalogDrawerFocusAttributes } from "./useCatalogDrawerFocusRestoration";
 
 type Props = {
   items: CatalogCompareItem[];
   onRemove: (id: string) => void;
   onClear: () => void;
-  onPreview: (id: string) => void;
+  onPreview: (id: string, opener: HTMLButtonElement) => void;
   onAdd: (id: string, variantId?: string) => void;
 };
 
@@ -63,7 +64,15 @@ function AvailableCompareCard({
       <div className="mt-1 line-clamp-1 text-[10px] text-neutral-500">{card.badges.join(" • ")}</div>
 
       <div className="mt-2 grid grid-cols-3 gap-1">
-        <button type="button" onClick={() => onPreview(card.id)} className="rounded border border-neutral-200 px-1.5 py-1 text-[10px] text-neutral-700">Open</button>
+        <button
+          type="button"
+          onClick={(event) => onPreview(card.id, event.currentTarget)}
+          className="rounded border border-neutral-200 px-1.5 py-1 text-[10px] text-neutral-700"
+          data-testid={`catalog-compare-open-${card.id}`}
+          {...getCatalogDrawerFocusAttributes({ productId: card.id, action: "details", source: "compare-tray" })}
+        >
+          Open
+        </button>
         <button type="button" onClick={() => onAdd(card.id, card.variantId)} className="rounded bg-neutral-900 px-1.5 py-1 text-[10px] text-white">Add</button>
         <button type="button" onClick={() => onRemove(card.id)} className="rounded border border-red-200 px-1.5 py-1 text-[10px] text-red-700" data-testid={`catalog-compare-remove-${card.id}`}>Remove</button>
       </div>

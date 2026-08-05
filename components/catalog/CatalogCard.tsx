@@ -3,10 +3,11 @@ import type { CatalogCardView } from "@/lib/catalog/view-builders";
 import LazyImage from "@/components/common/LazyImage";
 import PlaceholderImage from "@/components/common/PlaceholderImage";
 import CatalogCardSwatches from "./CatalogCardSwatches";
+import { getCatalogDrawerFocusAttributes } from "./useCatalogDrawerFocusRestoration";
 
 type Props = {
   item: CatalogCardView;
-  onPreview: () => void;
+  onPreview: (opener: HTMLButtonElement) => void;
   onAdd: () => void;
   onAutoPlace?: () => void;
   onDragStart?: () => void;
@@ -103,8 +104,8 @@ export default function CatalogCard({
         <div className="grid grid-cols-3 gap-1.5">
           <button
             type="button"
-            onClick={onPreview}
-            data-testid={`catalog-preview-${item.id}`}
+            onClick={(event) => onPreview(event.currentTarget)}
+            data-testid={`catalog-preview-${item.id}`} {...getCatalogDrawerFocusAttributes({ productId: item.id, action: "details", source: "product-card" })}
             className="inline-flex min-h-8 items-center justify-center gap-1 rounded-lg border border-neutral-200 bg-white px-1 py-1 text-[11px] font-semibold text-neutral-800 transition-colors hover:bg-neutral-50"
             aria-label="View details"
             title="View details"

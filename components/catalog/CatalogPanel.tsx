@@ -43,6 +43,7 @@ import {
 } from "@/lib/catalog/category-taxonomy";
 import { useCatalogFilterNavigation } from "@/lib/catalog/filter-navigation";
 import { resolveCatalogCompareItems } from "@/lib/catalog/compare";
+import { useCatalogDrawerPreviewFocus } from "./useCatalogDrawerFocusRestoration";
 
 const CARD_ROW_HEIGHT = 252;
 const GRID_HEIGHT = 540;
@@ -728,6 +729,10 @@ export default function CatalogPanel({
     });
   };
 
+  const { focusRestoration, clearFocusRestoration, openCatalogDrawerPreview } = useCatalogDrawerPreviewFocus({ variantSelectionByItem,
+    onSelect: (id, variantId) => { setSelectedId(id); setSelectedFinishId(variantId); },
+    onPrefetch: prefetchDetail });
+  const closeCatalogDrawer = () => { setSelectedId(null); clearFocusRestoration(); };
   const toggleCompare = (id: string) => {
     setCompareIds((prev) => {
       if (prev.includes(id)) {
@@ -777,7 +782,7 @@ export default function CatalogPanel({
   };
 
   return (
-    <div className="relative">
+    <div className="relative" data-catalog-drawer-focus-scope>
       <div className="text-sm font-semibold text-neutral-900">{title}</div>
       {subtitle && <div className="mt-0.5 line-clamp-1 text-xs text-neutral-500">{subtitle}</div>}
       <div className="mt-2">
@@ -924,7 +929,7 @@ export default function CatalogPanel({
       />
 
       <div
-        ref={catalogGridRef}
+        ref={catalogGridRef} tabIndex={-1} data-testid="catalog-results-focus-target" data-catalog-drawer-focus-fallback
         className="mt-3 overflow-y-auto"
         style={{ maxHeight: GRID_HEIGHT, minHeight: GRID_HEIGHT }}
         onScroll={(event) => setScrollTop(event.currentTarget.scrollTop)}
@@ -932,11 +937,7 @@ export default function CatalogPanel({
         <CatalogGrid
           items={cardViews}
           virtual={{ start: startIndex, end: endIndex, topPad, bottomPad }}
-          onPreview={(id) => {
-            setSelectedId(id);
-            setSelectedFinishId(variantSelectionByItem[id]);
-            prefetchDetail(id);
-          }}
+          onPreview={(id, opener) => openCatalogDrawerPreview(id, "product-card", opener)}
           onAdd={(id) => addRememberedItem(id)}
           onAutoPlace={
             onAutoPlaceInRoom
@@ -970,11 +971,9 @@ export default function CatalogPanel({
           track("catalog_compare_clear", { itemCount: compareIds.length });
           setCompareIds([]);
         }}
-        onPreview={(id) => {
+        onPreview={(id, opener) => {
           track("catalog_compare_open", { itemId: id, source: "tray" });
-          setSelectedId(id);
-          setSelectedFinishId(variantSelectionByItem[id]);
-          prefetchDetail(id);
+          openCatalogDrawerPreview(id, "compare-tray", opener);
         }}
         onAdd={(id, variantId) => {
           track("catalog_compare_add_to_room", { itemId: id, source: "tray" });
@@ -1076,7 +1075,8 @@ export default function CatalogPanel({
         }
         relatedSections={relatedSections}
         isCompared={selectedId ? compareIds.includes(selectedId) : false}
-        onClose={() => setSelectedId(null)}
+        focusRestoration={focusRestoration}
+        onClose={closeCatalogDrawer}
         configurationOptions={selectedConfigurationOptions}
         onSetConfiguration={handleSetConfiguration}
         onSetSize={handleSetSize}
@@ -1141,7 +1141,7 @@ export default function CatalogPanel({
           }
           rememberRecent(id);
           onAddToRoom(id, variantId ?? variantSelectionByItem[id], purchaseOptionId);
-          setSelectedId(null);
+          closeCatalogDrawer();
         }}
         onToggleCompare={toggleCompare}
         onPreviewRelated={(id) => {

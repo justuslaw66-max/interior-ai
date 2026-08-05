@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useId, useMemo, useRef, useState } from "react";
+import { useId, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import type { CatalogDetailView } from "@/lib/catalog/view-builders";
 import CatalogPlacementHint from "./CatalogPlacementHint";
@@ -10,6 +10,7 @@ import CatalogItemFinishPicker from "./CatalogItemFinishPicker";
 import CatalogItemRelatedList from "./CatalogItemRelatedList";
 import CatalogComfortProfile from "./CatalogComfortProfile";
 import LazyImage from "@/components/common/LazyImage";
+import { useCatalogDrawerFocusRestoration, type CatalogDrawerFocusRestorationRequest } from "./useCatalogDrawerFocusRestoration";
 
 type RelatedSection = {
   title: string;
@@ -40,24 +41,8 @@ type Props = {
   onSetSize?: (sizeId: string) => void;
   configurationOptions?: CatalogConfigurationOption[];
   onSetConfiguration?: (productId: string) => void;
+  focusRestoration: CatalogDrawerFocusRestorationRequest | null;
 };
-
-const FOCUSABLE_SELECTOR = [
-  "a[href]",
-  "button:not([disabled])",
-  "input:not([disabled])",
-  "select:not([disabled])",
-  "textarea:not([disabled])",
-  '[tabindex]:not([tabindex="-1"])',
-].join(",");
-
-function getFocusableElements(container: HTMLElement): HTMLElement[] {
-  return Array.from(container.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR)).filter(
-    (element) =>
-      element.getAttribute("aria-hidden") !== "true" &&
-      !element.closest('[aria-hidden="true"]')
-  );
-}
 
 export default function CatalogItemDrawer({
   open,
@@ -76,68 +61,20 @@ export default function CatalogItemDrawer({
   onSetSize,
   configurationOptions = [],
   onSetConfiguration,
+  focusRestoration,
 }: Props) {
   const [selectedPurchaseOptionId, setSelectedPurchaseOptionId] = useState<string | null>(null);
   const titleId = useId();
   const panelRef = useRef<HTMLElement | null>(null);
   const closeButtonRef = useRef<HTMLButtonElement | null>(null);
-  const onCloseRef = useRef(onClose);
-
-  useEffect(() => {
-    onCloseRef.current = onClose;
-  }, [onClose]);
-
-  useEffect(() => {
-    if (!open) return;
-
-    const opener =
-      document.activeElement instanceof HTMLElement ? document.activeElement : null;
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-
-    const frame = window.requestAnimationFrame(() => {
-      closeButtonRef.current?.focus();
-    });
-
-    const handleKeyDown = (event: KeyboardEvent) => {
-      const panel = panelRef.current;
-      if (!panel) return;
-
-      if (event.key === "Escape") {
-        event.preventDefault();
-        event.stopPropagation();
-        onCloseRef.current();
-        return;
-      }
-
-      if (event.key !== "Tab") return;
-      const focusable = getFocusableElements(panel);
-      if (focusable.length === 0) {
-        event.preventDefault();
-        panel.focus();
-        return;
-      }
-
-      const first = focusable[0];
-      const last = focusable[focusable.length - 1];
-      const active = document.activeElement;
-      if (event.shiftKey && (active === first || !panel.contains(active))) {
-        event.preventDefault();
-        last.focus();
-      } else if (!event.shiftKey && (active === last || !panel.contains(active))) {
-        event.preventDefault();
-        first.focus();
-      }
-    };
-
-    document.addEventListener("keydown", handleKeyDown);
-    return () => {
-      window.cancelAnimationFrame(frame);
-      document.removeEventListener("keydown", handleKeyDown);
-      document.body.style.overflow = previousOverflow;
-      if (opener?.isConnected) opener.focus();
-    };
-  }, [open]);
+  useCatalogDrawerFocusRestoration({
+    open,
+    contentAvailable: Boolean(detail),
+    panelRef,
+    initialFocusRef: closeButtonRef,
+    restorationRequest: focusRestoration,
+    onClose,
+  });
 
   const selectedPurchaseOption = useMemo(() => {
     if (!detail) return null;
@@ -186,7 +123,7 @@ export default function CatalogItemDrawer({
         data-testid="catalog-item-drawer-backdrop"
         className="fixed inset-0 z-[89] bg-transparent"
         aria-hidden="true"
-        onPointerDown={() => onCloseRef.current()}
+        onPointerDown={onClose}
       />
       <aside
         ref={panelRef}

@@ -7,7 +7,7 @@ import CatalogCard from "./CatalogCard";
 type Props = {
   items: CatalogCardView[];
   virtual: { start: number; end: number; topPad: number; bottomPad: number };
-  onPreview: (id: string) => void;
+  onPreview: (id: string, opener: HTMLButtonElement) => void;
   onAdd: (id: string) => void;
   onAutoPlace?: (id: string) => void;
   onCatalogDragStart?: (id: string) => void;
@@ -53,7 +53,7 @@ export default function CatalogGrid({
           <CatalogCard
             key={item.id}
             item={item}
-            onPreview={() => onPreview(item.id)}
+            onPreview={(opener) => onPreview(item.id, opener)}
             onAdd={() => onAdd(item.id)}
             onAutoPlace={onAutoPlace ? () => onAutoPlace(item.id) : undefined}
             onDragStart={onCatalogDragStart ? () => onCatalogDragStart(item.id) : undefined}

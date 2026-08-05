@@ -4,6 +4,10 @@ import path from "node:path";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import CatalogCompareTray from "../components/catalog/CatalogCompareTray";
+import {
+  getCatalogDrawerFocusAttributes,
+  shouldCloseCatalogDrawerForUnavailableContent,
+} from "../components/catalog/useCatalogDrawerFocusRestoration";
 import { CATALOG_ITEMS } from "../lib/catalog";
 import type { CatalogItemSchema } from "../lib/catalog-schema";
 import {
@@ -203,6 +207,43 @@ function run(): void {
   assert.equal(selectedVariantEntry.card.thumbUrl, canonicalCompareCard.thumbUrl);
   assert.deepEqual(selectedVariantEntry.card.dimsMm, canonicalCompareCard.dimsMm);
   assert.equal(selectedVariantEntry.card.priceLabel, canonicalCompareCard.priceLabel);
+
+  assert.deepEqual(
+    getCatalogDrawerFocusAttributes({
+      productId: comparedProduct.id,
+      action: "details",
+      source: "product-card",
+    }),
+    {
+      "data-catalog-drawer-focus-product-id": comparedProduct.id,
+      "data-catalog-drawer-focus-action": "details",
+      "data-catalog-drawer-focus-source": "product-card",
+    },
+    "Drawer focus identity must use stable product/action/source values",
+  );
+  const availableCompareMarkup = renderToStaticMarkup(
+    createElement(CatalogCompareTray, {
+      items: resolvedCompare,
+      onRemove: () => undefined,
+      onClear: () => undefined,
+      onPreview: () => undefined,
+      onAdd: () => undefined,
+    }),
+  );
+  assert.match(
+    availableCompareMarkup,
+    new RegExp(`data-catalog-drawer-focus-product-id="${comparedProduct.id}"`),
+    "Available compare openers must render the canonical product identity",
+  );
+  assert.match(availableCompareMarkup, /data-catalog-drawer-focus-action="details"/);
+  assert.match(availableCompareMarkup, /data-catalog-drawer-focus-source="compare-tray"/);
+  assert.equal(
+    shouldCloseCatalogDrawerForUnavailableContent(true, false),
+    true,
+    "An open drawer must close when its selected product becomes unavailable",
+  );
+  assert.equal(shouldCloseCatalogDrawerForUnavailableContent(true, true), false);
+  assert.equal(shouldCloseCatalogDrawerForUnavailableContent(false, false), false);
 
   const otherCategory = mapToTopCategory(secondComparedProduct.category, secondComparedProduct);
   const compareExcludingFilters: Array<{

@@ -2988,3 +2988,133 @@ single commit. Remaining archival findings are RC52 at P2 and RC47, RC54, plus
 RC53/55 responsive share at P3. The starting source already contains the
 completed RC49/50, RC53 revision, and RC48 keyboard work; this change does not
 alter those invariants.
+
+## ARCH-RC52 catalog drawer focus restoration — 2026-08-05
+
+### Outcome, starting state, and scope
+
+`ARCH-RC52-DRAWER-FOCUS` is locally remediated on
+`fix/arch-rc52-drawer-focus` from exact starting SHA
+`bb0e4f8f999d774b8490eca16efdc84d6751aafd`. Before editing, status, diff,
+diff-check, and untracked-file checks were empty; HEAD matched exactly; the
+archival commit was not an ancestor; and `lsof` found no running application
+server to mismatch with the canonical `/Users/justus/Developer/interior-ai`
+checkout. Archival RC52 commit
+`637281505493572229be864449d77e3a626c67fe` was inspected only as evidence and
+was not cherry-picked. Its intent was to preserve the opening owner through
+catalog hydration so drawer close could return focus.
+
+The verified current defect was that `CatalogItemDrawer` captured only
+`document.activeElement` and treated that exact node as restoration authority.
+If hydration, filter/category projection, virtualization, or responsive
+replacement disconnected it, cleanup had no semantic lookup or safe fallback.
+WebKit pointer activation could also leave the button uncaptured without any
+replacement. The drawer then disappeared with focus commonly falling to
+`body`.
+
+The current correction establishes one typed descriptor at activation:
+`{ productId, action: "details", source: "product-card" | "compare-tray" }`.
+Close-time resolution accepts only connected, visible, enabled controls and
+uses this order: the still-matching direct element; the current exact
+product/action/source control; another current same-product details control;
+then the programmatically focusable catalog-results region. The direct element
+is only a short-lived optimization: every ordinary and add-to-room close path
+clears the DOM-bearing request after effect cleanup captures it.
+
+Initial focus remains the labelled modal drawer's close button and Tab remains
+contained. A newer visible `dialog` or `alertdialog` with `aria-modal=true`
+suppresses drawer entry focus, Escape handling, and restoration. Restoration is
+one animation-frame transaction bound to the current open generation; a newer
+open supersedes it and unmount cancels it. The unavailable-content policy closes
+the drawer when live catalog/imported-model hydration removes the selected
+product. No disconnected node or `body` is focused, no duplicate control or
+global selector registry was added, and the mechanism is not an authorization
+or publication boundary.
+
+No RC47, RC54, RC55, responsive-share, touch-target, drawer redesign,
+publication, entitlement, purchase, routing, workflow, deployment, dependency,
+schema, migration, push, or integration-branch work is included. Full E2E was
+not run by explicit scope.
+
+### Test-first and focused browser evidence
+
+The first focused Chromium pointer test failed before implementation because
+product-card actions had no semantic restoration attributes. After the typed
+owner was installed it passed. Cross-browser work then exposed native WebKit
+pointer-focus behavior, which is why activation captures the actual event
+owner rather than relying on `activeElement`.
+
+- `npm run test:catalog-drawer-focus-unit` — pass; stable typed attributes,
+  compare-tray rendering, and unavailable-content close policy are covered.
+- `APP_ENV=development npm run test:catalog-drawer-focus` — **18/18 pass**:
+  nine scenarios each in Chromium and WebKit. Coverage includes Consumer
+  pointer close; Pro Enter/Space/Escape/close and different-product reopen;
+  hydration-style node replacement; desktop-to-mobile and mobile-to-desktop
+  replacement; filter/DOM removal fallback; real live-catalog product removal
+  followed by imported-model state publication; compare-tray and searched-card
+  sources; alertdialog entry-race/Escape/restoration ownership; and workspace
+  unmount cancellation. Assertions use `activeElement`, connectedness,
+  visibility, enabled state, and unique semantic targets without sleeps.
+- Existing Chromium catalog regression set — **10/10 pass** across
+  `06-catalog-compare.spec.ts`, `catalog-category-layout.spec.ts`, and
+  `26-phase14-product-flow.spec.ts`, including compare persistence,
+  search/filter/drawer, focus containment/restoration, mobile compare access,
+  narrow catalog layout, and product lifecycle.
+- `npm run test:phase14-product-flow` and
+  `npm run test:catalog-asset-availability` — pass; 144 catalog files and 812
+  asset references checked, with only the existing five draft blockers.
+
+### Required local validation
+
+- `npm run test:design-page-cleanup` — pass, all 78 source guards.
+- `npm run test:required-test-truthfulness` — pass after registering the new
+  release-only browser spec (99 classified E2E files; CH-0017 passes).
+- `npm run test:critical-required` — pass, including security, persistence,
+  billing, product, Phase 15, editor accessibility, and cabinetry chains.
+- Full `npm run lint -- --max-warnings=0` — pass with zero warnings; only Babel's
+  informational generated-file deoptimization notes appeared.
+- `npm run typecheck` — pass.
+- `npm run check:code-quality` — pass: 1,059 production files, no growth,
+  suppressions, unsafe TypeScript, or runtime cycles. Existing allowances only
+  decrease: `CatalogItemDrawer` 582 to 519 lines and maximum overlong function
+  521 to 473; `CatalogPanel` maximum 979 to 978.
+- `CATALOG_STRICT_VALIDATION=true npm run test:catalog-audit` — pass across 144
+  files with zero failures, warnings, or duplicate asset IDs; all strict
+  registry/editor/media/retailer/variant subchecks pass.
+- `APP_ENV=development CATALOG_STRICT_VALIDATION=true npm run build` — pass for
+  all 57 pages outside the sandbox. The first identical sandbox attempt was
+  blocked by Turbopack/PostCSS internal worker port `EPERM`; the unrestricted
+  retry passed. Only the inherited floor-plan NFT trace warning remains.
+- `npm run test:phase8-performance` — pass. Representative project boundaries
+  pass; initial JS is 5,812,152 raw / 1,109,035 Brotli, initial CSS 129,803 /
+  17,182, Cabinetry Studio remains one lazy 492,639 / 84,899 chunk, and
+  GLTFExporter remains 34,525 / 8,970.
+- Final `git diff --check` — pass. Full E2E — deliberately not run.
+
+### Independent review, rollback, and remaining work
+
+The independent read-only reviewer inspected the archival intent, complete
+diff, semantic identity, lifecycle, fallback, overlay ordering, cancellation,
+both engines, accessibility, and tests and made no edits. It initially found
+that production alertdialogs were omitted from modal detection, the entry frame
+could steal focus from a newer modal, retained DOM optimizations were not
+cleared, and several lifecycle cases needed stronger distinctions. It then
+found the add-to-room close bypassing cleanup. All findings were corrected with
+dialog/alertdialog exclusion at entry/key/restoration, centralized close
+cleanup, different-product reopen, successor-before-unmount focus, and the real
+live-catalog removal workflow. Final rereview: **PASS — no actionable
+findings**.
+
+Residual risk is limited to overlays correctly exposing `role="dialog"` or
+`role="alertdialog"` plus `aria-modal="true"`; deliberately non-modal or
+semantically incomplete overlays are not treated as focus owners. Current
+responsive behavior is CSS-responsive, so deterministic tests explicitly
+replace the connected opener node after each viewport transition to exercise a
+future remount without redesigning the shell.
+
+Rollback is `git revert <implementation-commit-sha>` for the single focused
+local commit, followed by the focused unit and browser suites. No data,
+deployment, workflow, or external-setting rollback is required. Remaining
+archival findings are RC47 and RC54 plus RC53/55 responsive-share work at P3;
+they require separate bounded remediations and do not authorize a final
+integration branch.
