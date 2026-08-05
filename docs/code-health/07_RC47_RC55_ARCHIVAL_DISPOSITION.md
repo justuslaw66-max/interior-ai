@@ -488,3 +488,69 @@ data or external rollback is required. Remaining archival findings are RC54 and
 the RC53/55 responsive-share work at P3. No drawer redesign, RC52 production
 change, RC54, responsive-share, integration-branch, push, workflow, deployment,
 or external-setting work is included.
+
+## ARCH-RC54 public-projection assertion closure — 2026-08-05
+
+The RC54 row above is the historical finding at audited source
+`7016da0ad74c7d463a07ec061259b50d757031e0`. From exact clean starting source
+`e7cd5d9df19439f0956f840b977ddf8c23dc2757`,
+`ARCH-RC54-PROJECTION-ASSERTION` is locally remediated on
+`fix/arch-rc54-projection-assertion`. Archival commit
+`588b90e8c526e54d314376f177bdb9c738ac659e` was inspected only for intent and
+was not cherry-picked.
+
+Classification is **E — CODE AND TEST BOTH REQUIRE CORRECTION**. The focused
+public-projection security suite and original beta smoke passed before editing,
+but the smoke was evidentially invalid: the source fingerprint came from an
+unauthenticated public response, while the duplicate fingerprint came from an
+authenticated owner response, and the generic design fingerprint was applied
+directly to both. Independent read-only review then found two production
+boundary defects: arbitrary snapshot extensions survived projection, and raw
+legacy envelope values could be returned or copied beside the projected v3
+snapshot.
+
+The old comparison was
+`ownerDuplicateFingerprint === publicSourceFingerprint`. The corrected
+comparison is
+`publicFingerprint(project(ownerDuplicate)) === publicFingerprint(publicSource)`.
+The duplicate owner GET no longer appends the source share token. The public
+side also requires the exact response envelope, requested design ID, current
+`updatedAt` revision, `shareEnabled: true`, a redacted `shareToken`, a valid v3
+snapshot, a wrong-token 404, and independently specified beta fixture room,
+item, variant, XZ transform, rotation, material, saved-view, opening, and note
+values.
+
+Production now fails closed on undeclared document, room, item, zone,
+saved-view, layout-version, and floor-plan fields and recursively rejects
+sensitive nested key names after normalized comparison while preserving a
+path/value-bounded typed public cabinetry responsibility role.
+`projectSharedDesignTransport` makes the projected snapshot the single source
+for the non-owner API envelope and recipient copy;
+direct divergent-title/dimension/item/style/budget/note cases prove raw legacy
+columns cannot bypass it. Known historical legacy item, zone, and saved-view
+field names remain explicitly declared and are upgraded to a parser-valid v3
+snapshot when no stored snapshot exists.
+
+Focused contract coverage proves multi-room and item-order normalization,
+schema-revision-1 normalization, owner-only source/provenance changes remaining
+fingerprint-neutral, meaningful public changes remaining fingerprint-visible,
+private sentinels not leaking, missing required public data failing, unexpected
+sensitive fields failing rather than being broadly picked away, and stale or
+wrong design/revision identity not comparing as current. The full contract and
+field classification are in
+`docs/architecture/public-design-projection.md`.
+
+Final independent read-only review returned **PASS — no actionable findings**
+after reproducing the complete mixed-case/short-form leakage matrix and the
+valid public cabinetry role. New public fields require deliberate closed-schema
+maintenance; they fail closed until reviewed.
+
+The bounded production projection and two consuming API routes changed; share
+UI, responsive layout, token lifecycle, authorization, persistence schema,
+dependencies, workflows, deployment, and external settings did not. Rollback
+is one local revert of the focused implementation commit, followed by the
+focused public-projection security, share/duplicate, and Chromium beta-smoke
+commands; no data or external rollback is required. The only remaining
+archival finding is the separate P3 `ARCH-RC53-55-SHARE-RESPONSIVE` batch. This
+closure does not authorize an integration branch, push, deployment, workflow
+change, or external-setting change.

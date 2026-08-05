@@ -19,6 +19,7 @@ import {
 import { mapPublishedFloorPlanRevisionRows } from "@/lib/floor-plan-catalog-repository";
 import {
   projectSharedDesignSnapshot,
+  projectSharedDesignTransport,
   projectSharedStoredDesign,
 } from "@/lib/shared-design-snapshot";
 import {
@@ -26,6 +27,14 @@ import {
   type StoredDesign,
 } from "@/lib/room-persistence";
 import { buildDuplicatedDesignData } from "@/lib/design-duplication";
+import { fingerprintDesignSnapshot } from "@/lib/snapshot-fingerprint";
+import type { DesignSnapshot } from "@/lib/room-types";
+import {
+  fingerprintPublicDesignProjection,
+  normalizePublicDesignProjection,
+  parsePublicDesignProjection,
+  publicDesignProjectionHasIdentity,
+} from "../tests/e2e/public-projection-assertion";
 
 const PRIVATE_EMAIL = "private-admin@example.com";
 const PRIVATE_FILE = "Justus-Home-810A-private.pdf";
@@ -339,28 +348,95 @@ const sharedStoredDesign: StoredDesign = {
   version: 3,
   activeRoomId: "room-1",
   title: "Shared furnishing design",
+  style: "modern",
+  budget: "mid",
   notes: "A deliberately shared design note",
-  rooms: [{
-    id: "room-1",
-    name: "Shared Living Room",
-    roomType: "living",
-    geometry: { width: 4, depth: 3, height: 2.6 },
-    surfaces: {},
-    surfaceFinishes: {},
-    items: [{
-      instanceId: "shared-sofa",
-      productId: "sofa-product",
-      variantId: "sofa-variant",
-      position: [0, 0, 0],
-    }],
-    zones: [{ id: "shared-zone", type: "seating", itemIds: ["shared-sofa"] }],
-    savedViews: [{
-      id: "shared-view",
-      name: "Shared View",
-      cameraPosition: [1, 2, 3],
-      cameraTarget: [0, 0, 0],
-    }],
-  }],
+  rooms: [
+    {
+      id: "room-1",
+      name: "Shared Living Room",
+      roomType: "living",
+      geometry: { width: 4, depth: 3, height: 2.6 },
+      surfaces: { floorMaterialId: "public-oak" },
+      surfaceFinishes: { floorMaterialId: "public-oak" },
+      items: [
+        {
+          instanceId: "shared-sofa",
+          productId: "sofa-product",
+          variantId: "sofa-variant",
+          productSnapshot: {
+            schemaVersion: 1,
+            productId: "sofa-product",
+            variantId: "sofa-variant",
+            name: "Shared Sofa",
+            category: "sofa",
+            dimensionsMm: { w: 2100, d: 950, h: 820 },
+            variantLabel: "Natural linen",
+            finish: { code: "linen-natural", label: "Natural linen" },
+            assets: { materialPreset: "linen-natural" },
+          },
+          position: [-0.75, 0, 0.5],
+          rotationY: 0.25,
+          materialPreset: "linen-natural",
+          releaseChecklistSnapshot: [{
+            id: "release-check-1",
+            phase: "design_approval",
+            label: "Approve shared finish",
+            owner: "designer",
+            status: "required",
+            dueBefore: "quote_request",
+            notes: "Visible recipient approval role",
+          }],
+        },
+        {
+          instanceId: "shared-table",
+          productId: "table-product",
+          variantId: "table-oak",
+          position: [0.8, 0, -0.4],
+          rotationY: 1.57,
+        },
+      ],
+      zones: [{
+        id: "shared-zone",
+        type: "seating",
+        itemIds: ["shared-sofa", "shared-table"],
+      }],
+      savedViews: [{
+        id: "shared-view",
+        name: "Shared View",
+        cameraPosition: [1, 2, 3],
+        cameraTarget: [0, 0, 0],
+      }],
+    },
+    {
+      id: "room-2",
+      name: "Dining Room",
+      roomType: "dining",
+      geometry: { width: 5, depth: 4, height: 2.7 },
+      planPosition: { x: 5, z: 0 },
+      surfaces: { floorMaterialId: "public-stone" },
+      surfaceFinishes: { floorMaterialId: "public-stone" },
+      items: [{
+        instanceId: "shared-dining-table",
+        productId: "dining-product",
+        variantId: "dining-walnut",
+        position: [5, 0, 0],
+        rotationY: 0,
+        materialPreset: "walnut",
+      }],
+      zones: [{
+        id: "shared-dining-zone",
+        type: "dining",
+        itemIds: ["shared-dining-table"],
+      }],
+      savedViews: [{
+        id: "shared-dining-view",
+        name: "Dining View",
+        cameraPosition: [5, 3, 4],
+        cameraTarget: [5, 0, 0],
+      }],
+    },
+  ],
   floorPlan: {
     underlay: {
       id: "private-underlay",
@@ -471,6 +547,133 @@ assert.equal(
   "The share projection must remain renderable with identical canonical geometry"
 );
 
+const projectedTransport = projectSharedDesignTransport({
+  id: "shared-design-1",
+  title: "Divergent legacy title",
+  roomWidth: 99,
+  roomDepth: 98,
+  items: [{
+    instanceId: "legacy-private-item",
+    productId: "legacy-private-product",
+    variantId: "legacy-private-variant",
+    position: [0, 0, 0],
+    rotationY: 0,
+  }],
+  zones: [],
+  savedViews: [],
+  snapshot: sharedStoredDesign,
+  style: "divergent-legacy-style",
+  budget: "divergent-legacy-budget",
+  mode: "homeowner",
+  notes: "Divergent legacy notes",
+});
+assert.deepEqual(
+  projectedTransport.snapshot,
+  projectedStoredDesign,
+  "A v3 public transport must use the projected snapshot as its content source"
+);
+assert.equal(projectedTransport.title, projectedStoredDesign.title);
+assert.equal(projectedTransport.roomWidth, projectedStoredDesign.rooms[0].geometry.width);
+assert.equal(projectedTransport.roomDepth, projectedStoredDesign.rooms[0].geometry.depth);
+assert.deepEqual(projectedTransport.items, projectedStoredDesign.rooms[0].items);
+assert.deepEqual(projectedTransport.zones, projectedStoredDesign.rooms[0].zones);
+assert.deepEqual(projectedTransport.savedViews, projectedStoredDesign.rooms[0].savedViews);
+assert.equal(projectedTransport.style, projectedStoredDesign.style);
+assert.equal(projectedTransport.budget, projectedStoredDesign.budget);
+assert.equal(projectedTransport.notes, projectedStoredDesign.notes);
+
+const legacyTransport = projectSharedDesignTransport({
+  id: "legacy-shared-design",
+  title: "Legacy shared room",
+  roomWidth: 6,
+  roomDepth: 4,
+  items: [{ id: "sofa-1", type: "sofa", x: 1, y: 1, width: 2, depth: 1 }],
+  zones: [{ id: "zone-1", name: "Conversation", itemIds: ["sofa-1"] }],
+  savedViews: [{ id: "view-1", name: "Client Preview", mode: "3d" }],
+  mode: "homeowner",
+});
+assert.ok(
+  projectSharedStoredDesign(legacyTransport.snapshot),
+  "A no-snapshot legacy row must become a valid public v3 snapshot"
+);
+assert.deepEqual(
+  legacyTransport.items[0],
+  {
+    id: "sofa-1",
+    type: "sofa",
+    x: 1,
+    y: 1,
+    width: 2,
+    depth: 1,
+    instanceId: "sofa-1",
+    productId: "sofa",
+    variantId: "legacy",
+    position: [1, 0, 1],
+    rotationY: 0,
+  },
+  "Known legacy public fields must be preserved while required v3 identity is added"
+);
+assert.equal((legacyTransport.zones[0] as unknown as { name?: string }).name, "Conversation");
+assert.equal((legacyTransport.savedViews[0] as unknown as { mode?: string }).mode, "3d");
+
+const rootExtension = structuredClone(sharedStoredDesign);
+rootExtension.secret = "private-root-sentinel";
+assert.throws(
+  () => projectSharedStoredDesign(rootExtension),
+  /undeclared field snapshot.secret/,
+  "Unknown root fields must fail closed before a public projection is returned"
+);
+const roomExtension = structuredClone(sharedStoredDesign);
+roomExtension.rooms[0].diagnosticBlob = "private-room-sentinel";
+assert.throws(
+  () => projectSharedStoredDesign(roomExtension),
+  /undeclared field snapshot.rooms\[0\]\.diagnosticBlob/,
+  "Unknown room fields must fail closed before a public projection is returned"
+);
+const itemExtension = structuredClone(sharedStoredDesign);
+Object.assign(itemExtension.rooms[0].items[0], {
+  ownerInternalState: "private-item-sentinel",
+});
+assert.throws(
+  () => projectSharedStoredDesign(itemExtension),
+  /undeclared field snapshot.rooms\[0\]\.items\[0\]\.ownerInternalState/,
+  "Unknown item fields must fail closed before a public projection is returned"
+);
+const draftItemExtension = structuredClone(sharedStoredDesign);
+Object.assign(draftItemExtension.rooms[0].items[0], {
+  publicationStatus: "draft",
+});
+assert.throws(
+  () => projectSharedStoredDesign(draftItemExtension),
+  /undeclared field snapshot.rooms\[0\]\.items\[0\]\.publicationStatus/,
+  "An invented per-item draft lifecycle must fail closed instead of leaking publicly"
+);
+for (const nestedSensitiveKey of [
+  "AddressBinding",
+  "ReviewerID",
+  "SHA256",
+  "URI",
+  "adminData",
+  "authData",
+  "userEmail",
+  "authenticationData",
+  "apiKeyValue",
+  "administratorEmail",
+  "ownerData",
+  "sessionId",
+]) {
+  const nestedSensitiveExtension = structuredClone(sharedStoredDesign);
+  Object.assign(
+    nestedSensitiveExtension.rooms[0].items[0].productSnapshot!,
+    { [nestedSensitiveKey]: `private-${nestedSensitiveKey}` }
+  );
+  assert.throws(
+    () => projectSharedStoredDesign(nestedSensitiveExtension),
+    new RegExp(`${nestedSensitiveKey}$`),
+    `Nested sensitive field ${nestedSensitiveKey} must fail closed`
+  );
+}
+
 const projectedSharedSnapshot = projectSharedDesignSnapshot(
   storedToSnapshot(sharedStoredDesign)
 );
@@ -494,6 +697,237 @@ for (const sentinel of [
 ]) {
   assert.equal(serializedShared.includes(sentinel), false, `Shared snapshot leaked ${sentinel}`);
 }
+
+assert.deepEqual(projectedSharedSnapshot.rooms[0].zones, sharedStoredDesign.rooms[0].zones);
+assert.deepEqual(projectedSharedSnapshot.rooms[1].items, sharedStoredDesign.rooms[1].items);
+assert.deepEqual(projectedSharedSnapshot.rooms[1].surfaces, sharedStoredDesign.rooms[1].surfaces);
+assert.equal(projectedSharedSnapshot.rooms[1].name, "Dining Room");
+assert.equal(projectedSharedSnapshot.rooms[0].items[0].variantId, "sofa-variant");
+assert.deepEqual(
+  projectedSharedSnapshot.rooms[0].items[0].productSnapshot?.dimensionsMm,
+  { w: 2100, d: 950, h: 820 }
+);
+assert.deepEqual(projectedSharedSnapshot.rooms[0].items[0].position, [-0.75, 0, 0.5]);
+assert.equal(projectedSharedSnapshot.rooms[0].items[0].rotationY, 0.25);
+assert.equal(projectedSharedSnapshot.rooms[0].items[0].materialPreset, "linen-natural");
+assert.equal(
+  projectedSharedSnapshot.rooms[0].items[0].releaseChecklistSnapshot?.[0].owner,
+  "designer",
+  "A typed public cabinetry responsibility role must survive projection"
+);
+assert.equal(projectedSharedSnapshot.floorPlan?.fixedElements?.[0].rotationDeg, 0);
+
+const sharedPublicFingerprint = fingerprintPublicDesignProjection(
+  storedToSnapshot(sharedStoredDesign)
+);
+const changedPrivateOwnerSnapshot = structuredClone(sharedStoredDesign);
+changedPrivateOwnerSnapshot.floorPlan!.sourceJobId = "different-private-job";
+changedPrivateOwnerSnapshot.floorPlan!.sourceAssetSha256 = "a".repeat(64);
+changedPrivateOwnerSnapshot.floorPlan!.underlay!.name = "different-private-file.pdf";
+changedPrivateOwnerSnapshot.floorPlan!.openings![0].evidence = {
+  height: "user_confirmed",
+  sillHeight: "assumed",
+};
+assert.equal(
+  fingerprintPublicDesignProjection(storedToSnapshot(changedPrivateOwnerSnapshot)),
+  sharedPublicFingerprint,
+  "Owner-only import metadata must not change the public projection fingerprint"
+);
+
+const publicFingerprintMutations: Array<{
+  label: string;
+  mutate: (snapshot: DesignSnapshot) => void;
+}> = [
+  {
+    label: "room name",
+    mutate: (snapshot) => { snapshot.rooms[1].name = "Dining Gallery"; },
+  },
+  {
+    label: "room dimensions",
+    mutate: (snapshot) => { snapshot.rooms[1].geometry.width = 5.5; },
+  },
+  {
+    label: "item XZ position",
+    mutate: (snapshot) => { snapshot.rooms[0].items[0].position = [-1, 0, 0.75]; },
+  },
+  {
+    label: "item rotation",
+    mutate: (snapshot) => { snapshot.rooms[0].items[0].rotationY = 0.5; },
+  },
+  {
+    label: "selected variant",
+    mutate: (snapshot) => {
+      snapshot.rooms[0].items[0].variantId = "sofa-variant-blue";
+      snapshot.rooms[0].items[0].productSnapshot!.variantId = "sofa-variant-blue";
+    },
+  },
+  {
+    label: "product dimensions",
+    mutate: (snapshot) => { snapshot.rooms[0].items[0].productSnapshot!.dimensionsMm.w = 2200; },
+  },
+  {
+    label: "material identity",
+    mutate: (snapshot) => { snapshot.rooms[0].items[0].materialPreset = "linen-blue"; },
+  },
+  {
+    label: "surface material",
+    mutate: (snapshot) => {
+      snapshot.rooms[0].surfaces!.floorMaterialId = "public-walnut";
+      snapshot.rooms[0].surfaceFinishes!.floorMaterialId = "public-walnut";
+    },
+  },
+  {
+    label: "canonical rotationDeg",
+    mutate: (snapshot) => { snapshot.floorPlan!.fixedElements![0].rotationDeg = 90; },
+  },
+];
+for (const { label, mutate } of publicFingerprintMutations) {
+  const changed = storedToSnapshot(structuredClone(sharedStoredDesign));
+  mutate(changed);
+  assert.notEqual(
+    fingerprintPublicDesignProjection(changed),
+    sharedPublicFingerprint,
+    `${label} must change the public projection fingerprint`
+  );
+}
+
+const reorderedOwnerSnapshot = storedToSnapshot(structuredClone(sharedStoredDesign));
+reorderedOwnerSnapshot.rooms.reverse();
+for (const room of reorderedOwnerSnapshot.rooms) {
+  room.items.reverse();
+  room.zones.reverse();
+  room.zones.forEach((zone) => zone.itemIds.reverse());
+  room.savedViews.reverse();
+}
+assert.equal(
+  fingerprintPublicDesignProjection(reorderedOwnerSnapshot),
+  sharedPublicFingerprint,
+  "Equivalent room, item, zone, and saved-view ordering must normalize identically"
+);
+assert.notEqual(
+  fingerprintDesignSnapshot(projectSharedDesignSnapshot(reorderedOwnerSnapshot)),
+  fingerprintDesignSnapshot(projectedSharedSnapshot),
+  "The public assertion must not rely on the generic order-sensitive design fingerprint"
+);
+
+const normalizedProjection = normalizePublicDesignProjection(
+  storedToSnapshot(sharedStoredDesign)
+);
+assert.deepEqual(normalizedProjection.rooms.map((room) => room.id), ["room-1", "room-2"]);
+assert.deepEqual(
+  normalizedProjection.rooms[0].items.map((item) => item.instanceId),
+  ["shared-sofa", "shared-table"]
+);
+
+const fixedRevision = "2026-08-05T04:00:00.000Z";
+const publicResponseBody = {
+  id: "shared-design-1",
+  title: "Shared furnishing design",
+  roomWidth: 4,
+  roomDepth: 3,
+  items: projectedStoredDesign.rooms[0].items,
+  snapshot: projectedStoredDesign,
+  zones: projectedStoredDesign.rooms[0].zones,
+  savedViews: projectedStoredDesign.rooms[0].savedViews,
+  style: "modern",
+  budget: "mid",
+  mode: "homeowner",
+  notes: "A deliberately shared design note",
+  updatedAt: fixedRevision,
+  shareToken: null,
+  shareEnabled: true,
+};
+const parsedPublicResponse = parsePublicDesignProjection(
+  publicResponseBody,
+  "shared-design-1"
+);
+const parsedLegacyResponse = parsePublicDesignProjection({
+  id: "legacy-shared-design",
+  title: legacyTransport.title,
+  roomWidth: legacyTransport.roomWidth,
+  roomDepth: legacyTransport.roomDepth,
+  items: legacyTransport.items,
+  snapshot: legacyTransport.snapshot,
+  zones: legacyTransport.zones,
+  savedViews: legacyTransport.savedViews,
+  style: legacyTransport.style,
+  budget: legacyTransport.budget,
+  mode: legacyTransport.mode,
+  notes: legacyTransport.notes,
+  updatedAt: fixedRevision,
+  shareToken: null,
+  shareEnabled: true,
+}, "legacy-shared-design");
+assert.equal(parsedLegacyResponse.snapshot.rooms[0].items[0].instanceId, "sofa-1");
+assert.equal(
+  publicDesignProjectionHasIdentity(parsedPublicResponse, {
+    designId: "shared-design-1",
+    revision: fixedRevision,
+  }),
+  true
+);
+assert.equal(
+  publicDesignProjectionHasIdentity(parsedPublicResponse, {
+    designId: "shared-design-1",
+    revision: "2026-08-05T03:59:59.000Z",
+  }),
+  false,
+  "A stale shared revision must not compare as the current projection identity"
+);
+assert.equal(
+  publicDesignProjectionHasIdentity(parsedPublicResponse, {
+    designId: "different-design",
+    revision: fixedRevision,
+  }),
+  false,
+  "A different design must not compare as the current projection identity"
+);
+assert.throws(
+  () => parsePublicDesignProjection({ ...publicResponseBody, snapshot: null }, "shared-design-1"),
+  /valid v3 public snapshot is required/,
+  "Missing required public snapshot data must fail closed"
+);
+assert.throws(
+  () => parsePublicDesignProjection(
+    { ...publicResponseBody, ownerUserId: "private-owner" },
+    "shared-design-1"
+  ),
+  /response fields were/,
+  "Unexpected sensitive response fields must be detected rather than picked away"
+);
+assert.throws(
+  () => parsePublicDesignProjection(
+    { ...publicResponseBody, title: "Divergent public title" },
+    "shared-design-1"
+  ),
+  /title did not match the public snapshot/,
+  "The outer title must be bound to the projected snapshot"
+);
+assert.throws(
+  () => parsePublicDesignProjection(
+    { ...publicResponseBody, roomWidth: 99 },
+    "shared-design-1"
+  ),
+  /roomWidth did not match the active public room/,
+  "The outer dimensions must be bound to the projected active room"
+);
+assert.throws(
+  () => parsePublicDesignProjection(
+    { ...publicResponseBody, items: [{ ownerInternalState: "private-item" }] },
+    "shared-design-1"
+  ),
+  /items did not match the public snapshot/,
+  "Raw outer items must not bypass the projected active room"
+);
+const unexpectedSensitiveSnapshot: DesignSnapshot & { ownerInternalState: string } = {
+  ...storedToSnapshot(sharedStoredDesign),
+  ownerInternalState: "private-owner-state",
+};
+assert.throws(
+  () => fingerprintPublicDesignProjection(unexpectedSensitiveSnapshot),
+  /undeclared field snapshot.ownerInternalState/,
+  "Unexpected sensitive snapshot fields must fail the fingerprint assertion"
+);
 
 const duplicatedSharedDesign = buildDuplicatedDesignData(
   {
@@ -520,6 +954,15 @@ assert.equal(
   (duplicatedSharedDesign.items as Array<{ instanceId: string }>)[0].instanceId,
   "shared-sofa",
   "A projected shared design must remain duplication-compatible"
+);
+const duplicatedLegacyDesign = buildDuplicatedDesignData(
+  legacyTransport,
+  "legacy-share-recipient"
+);
+assert.equal(
+  (duplicatedLegacyDesign.items as Array<{ instanceId: string }>)[0].instanceId,
+  "sofa-1",
+  "A normalized legacy public transport must remain duplication-compatible"
 );
 
 const payload = buildPublicFloorPlanRevisionPayload({
@@ -684,15 +1127,17 @@ const shareDuplicateRoute = fs.readFileSync(
 );
 assert.match(
   shareDuplicateRoute,
-  /snapshot:\s*projectSharedStoredDesign\(source\.snapshot\)/,
+  /buildDuplicatedDesignData\(projectedSource, userId\)/,
   "Share-token duplication must not inherit the owner's private floor-plan source"
 );
+assert.match(shareDuplicateRoute, /projectSharedDesignTransport\(source\)/);
 
 const designRoute = fs.readFileSync(
   path.join(process.cwd(), "app/api/designs/[id]/route.ts"),
   "utf8"
 );
-assert.match(designRoute, /isOwner\s*\?\s*design\.snapshot \?\? null/);
-assert.match(designRoute, /:\s*projectSharedStoredDesign\(design\.snapshot\)/);
+assert.match(designRoute, /projectSharedDesignTransport\(design\)/);
+assert.match(designRoute, /const responseContent = sharedProjection \?\?/);
+assert.match(designRoute, /\.\.\.responseContent/);
 
 console.log("Public floor-plan document projection checks passed.");

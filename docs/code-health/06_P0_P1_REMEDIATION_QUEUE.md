@@ -538,3 +538,33 @@ Rollback: revert the single CH-0012 implementation commit. If callers must be is
 - **Remaining queue:** RC54 and RC53/55 responsive share remain P3 and require
   separate bounded changes. This closure does not authorize an integration
   branch, push, deployment, workflow change, or external-setting change.
+
+### RC47-RC55 archival P3 public-projection assertion queue — 2026-08-05
+
+- **`ARCH-RC54-PROJECTION-ASSERTION` — P3, locally remediated:** from exact
+  clean `e7cd5d9df19439f0956f840b977ddf8c23dc2757`, the beta smoke now validates
+  the closed public response envelope and design/revision identity, asserts
+  meaningful public fixture values, and compares the authenticated duplicate
+  only after canonical public projection and order-stable public
+  fingerprinting. RC54 archival commit
+  `588b90e8c526e54d314376f177bdb9c738ac659e` remained intent evidence only.
+- **Classification and scope:** **E — CODE AND TEST BOTH REQUIRE CORRECTION**.
+  The prior test compared a public source with an owner-visible duplicate.
+  Independent review also found that arbitrary snapshot extensions survived
+  projection and raw outer API/copy values could diverge from the projected v3
+  snapshot. Production now enforces a closed declared structural schema and
+  derives the non-owner envelope and recipient copy from one canonical public
+  transport projection. Normalized nested sensitive names fail closed, a typed
+  cabinetry responsibility role remains public, and no-snapshot legacy rows
+  become parser-valid v3 projections. Authorization, token lifecycle, client preview,
+  persistence schema, and responsive layout remain unchanged.
+- **Evidence:** deterministic public/private field, leakage, completeness,
+  multi-room, ordering, variant, dimensions, XZ/rotation, material, stale
+  identity, divergent outer-envelope, and undeclared-field cases pass in the
+  public-projection security suite. The exact Chromium beta smoke and focused
+  share/duplicate specs pass after the correction. Final independent read-only
+  review is **PASS — no actionable findings**. Complete local gate results are
+  recorded in `HANDOFF.md`; Full E2E is intentionally excluded.
+- **Remaining queue:** only RC53/55 responsive share remains P3. No integration
+  branch, push, deployment, workflow change, or external-setting change is
+  authorized by this closure.

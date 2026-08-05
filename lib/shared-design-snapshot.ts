@@ -1,18 +1,29 @@
 import { projectPublicFloorPlanDocumentV2 } from "@/lib/floor-plan-imports/public-document";
 import { compileFloorPlanDocumentV2 } from "@/lib/floor-plan-compiler-v2";
 import {
+  legacyApiToSnapshot,
   sanitizeStoredDesign,
+  snapshotToStored,
   type StoredDesign,
 } from "@/lib/room-persistence";
 import type {
+  DesignItem,
   DesignSnapshot,
   PersistedFloorPlanState,
+  SavedView,
+  ZoneMin,
 } from "@/lib/room-types";
+import {
+  assertSharedDesignInput,
+  assertSharedDesignSnapshotPublic,
+  removeLegacySharedDesignRootFields,
+} from "@/lib/shared-design-projection-schema";
+
+export { assertSharedDesignSnapshotPublic } from "@/lib/shared-design-projection-schema";
 
 function cloneJson<T>(value: T): T {
   return JSON.parse(JSON.stringify(value)) as T;
 }
-
 function projectSharedCanonicalDocument(
   floorPlan: PersistedFloorPlanState
 ) {
@@ -137,11 +148,14 @@ function projectSharedRooms(
 export function projectSharedDesignSnapshot(
   snapshot: DesignSnapshot
 ): DesignSnapshot {
+  assertSharedDesignInput(snapshot);
   const cloned = cloneJson(snapshot);
   const floorPlan = projectSharedFloorPlanState(cloned.floorPlan);
   cloned.rooms = projectSharedRooms(cloned.rooms as SharedRoom[], floorPlan) as DesignSnapshot["rooms"];
   if (floorPlan) cloned.floorPlan = floorPlan;
   else delete cloned.floorPlan;
+  removeLegacySharedDesignRootFields(cloned);
+  assertSharedDesignSnapshotPublic(cloned);
   return cloned;
 }
 
@@ -149,9 +163,171 @@ export function projectSharedDesignSnapshot(
 export function projectSharedStoredDesign(value: unknown): StoredDesign | null {
   const stored = sanitizeStoredDesign(value);
   if (!stored) return null;
+  assertSharedDesignInput(stored);
   const floorPlan = projectSharedFloorPlanState(stored.floorPlan);
   stored.rooms = projectSharedRooms(stored.rooms, floorPlan);
   if (floorPlan) stored.floorPlan = floorPlan;
   else delete stored.floorPlan;
+  removeLegacySharedDesignRootFields(stored);
+  assertSharedDesignSnapshotPublic(stored);
   return stored;
+}
+
+export type SharedDesignTransportProjection = {
+  snapshot: StoredDesign;
+  title: string;
+  roomWidth: number;
+  roomDepth: number;
+  items: DesignItem[];
+  zones: ZoneMin[];
+  savedViews: SavedView[];
+  style: string | null;
+  budget: string | null;
+  mode: "homeowner" | "designer";
+  notes: string | null;
+};
+
+export type SharedDesignTransportInput = {
+  id: string;
+  title?: string | null;
+  roomWidth: number;
+  roomDepth: number;
+  items: unknown;
+  zones?: unknown;
+  savedViews?: unknown;
+  snapshot?: unknown;
+  style?: string | null;
+  budget?: string | null;
+  mode?: string | null;
+  notes?: string | null;
+};
+
+function recordValue(value: unknown): Record<string, unknown> {
+  return value && typeof value === "object" && !Array.isArray(value)
+    ? value as Record<string, unknown>
+    : {};
+}
+
+function finiteNumber(value: unknown, fallback: number) {
+  return typeof value === "number" && Number.isFinite(value) ? value : fallback;
+}
+
+function legacyPublicItems(value: unknown): DesignItem[] {
+  return (Array.isArray(value) ? value : []).map((entry, index) => {
+    const item = recordValue(entry);
+    const instanceId =
+      typeof item.instanceId === "string"
+        ? item.instanceId
+        : typeof item.id === "string"
+          ? item.id
+          : `legacy-item-${index + 1}`;
+    return {
+      ...item,
+      instanceId,
+      productId:
+        typeof item.productId === "string"
+          ? item.productId
+          : typeof item.type === "string"
+            ? item.type
+            : "legacy-item",
+      variantId: typeof item.variantId === "string" ? item.variantId : "legacy",
+      position: Array.isArray(item.position) && item.position.length === 3
+        ? item.position as [number, number, number]
+        : [
+            finiteNumber(item.x, 0),
+            0,
+            finiteNumber(item.z, finiteNumber(item.y, 0)),
+          ],
+      rotationY: finiteNumber(item.rotationY, 0),
+    } as DesignItem;
+  });
+}
+
+function legacyPublicZones(value: unknown): ZoneMin[] {
+  return (Array.isArray(value) ? value : []).map((entry, index) => {
+    const zone = recordValue(entry);
+    const type = ["seating", "reading", "tv", "dining"].includes(String(zone.type))
+      ? zone.type as ZoneMin["type"]
+      : "seating";
+    return {
+      ...zone,
+      id: typeof zone.id === "string" ? zone.id : `legacy-zone-${index + 1}`,
+      type,
+      itemIds: Array.isArray(zone.itemIds)
+        ? zone.itemIds.filter((itemId): itemId is string => typeof itemId === "string")
+        : [],
+    } as ZoneMin;
+  });
+}
+
+function legacyPublicSavedViews(value: unknown): SavedView[] {
+  return (Array.isArray(value) ? value : []).map((entry, index) => {
+    const view = recordValue(entry);
+    return {
+      ...view,
+      id: typeof view.id === "string" ? view.id : `legacy-view-${index + 1}`,
+      name: typeof view.name === "string" ? view.name : `View ${index + 1}`,
+      cameraPosition: Array.isArray(view.cameraPosition) && view.cameraPosition.length === 3
+        ? view.cameraPosition as [number, number, number]
+        : [0, 2, 4],
+      cameraTarget: Array.isArray(view.cameraTarget) && view.cameraTarget.length === 3
+        ? view.cameraTarget as [number, number, number]
+        : [0, 0, 0],
+    } as SavedView;
+  });
+}
+
+function projectLegacyDesignTransport(data: SharedDesignTransportInput) {
+  return snapshotToStored(projectSharedDesignSnapshot(legacyApiToSnapshot({
+    id: data.id,
+    title: data.title ?? undefined,
+    roomWidth: data.roomWidth,
+    roomDepth: data.roomDepth,
+    items: legacyPublicItems(data.items),
+    zones: legacyPublicZones(data.zones),
+    savedViews: legacyPublicSavedViews(data.savedViews),
+    style: data.style ?? undefined,
+    budget: data.budget ?? undefined,
+    mode: data.mode ?? undefined,
+    notes: data.notes ?? undefined,
+  })));
+}
+
+/** Canonical adapter for public reads and copies of legacy or v3 API designs. */
+export function projectSharedDesignTransport(
+  data: SharedDesignTransportInput
+): SharedDesignTransportProjection {
+  const projectedStored =
+    projectSharedStoredDesign(data.snapshot) ??
+    projectLegacyDesignTransport(data);
+
+  // Older v3 rows may keep presentation metadata only in the legacy columns.
+  // Fill absent snapshot values once, then make the snapshot the sole source
+  // for both the public response envelope and a recipient-owned copy.
+  projectedStored.title ??= data.title ?? "Untitled Living Room";
+  projectedStored.style ??= data.style ?? undefined;
+  projectedStored.budget ??= data.budget ?? undefined;
+  projectedStored.notes ??= data.notes ?? undefined;
+  assertSharedDesignSnapshotPublic(projectedStored);
+
+  const activeRoom =
+    projectedStored.rooms.find((room) => room.id === projectedStored.activeRoomId) ??
+    projectedStored.rooms[0];
+  if (!activeRoom) {
+    throw new Error("Shared design projection requires an active public room");
+  }
+
+  return {
+    snapshot: projectedStored,
+    title: projectedStored.title,
+    roomWidth: activeRoom.geometry.width,
+    roomDepth: activeRoom.geometry.depth,
+    items: activeRoom.items,
+    zones: activeRoom.zones,
+    savedViews: activeRoom.savedViews,
+    style: projectedStored.style ?? null,
+    budget: projectedStored.budget ?? null,
+    mode: data.mode === "designer" ? "designer" : "homeowner",
+    notes: projectedStored.notes ?? null,
+  };
 }

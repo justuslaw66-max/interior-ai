@@ -1408,12 +1408,6 @@
         "maximum": 18
       }
     },
-    "app/api/share/[shareToken]/duplicate/route.ts": {
-      "overlongFunctions": {
-        "count": 1,
-        "maximum": 72
-      }
-    },
     "app/api/shopify/checkout/route.ts": {
       "overlongFunctions": {
         "count": 1,

@@ -3,6 +3,7 @@ import fs from "node:fs/promises";
 import type { APIRequestContext, Download, Locator, Page } from "@playwright/test";
 import { fingerprintDesignSnapshot } from "../../lib/snapshot-fingerprint";
 import { legacyApiToSnapshot } from "../../lib/room-persistence";
+import type { DesignSnapshot } from "../../lib/room-types";
 import {
   addAuthCookies,
   cleanupBetaSeed,
@@ -10,6 +11,12 @@ import {
   disconnectBetaPrismaClient,
 } from "./beta-seed";
 import { confirmPlanTemplateReplacementIfNeeded } from "./plan-template-test-utils";
+import {
+  fingerprintPublicDesignProjection,
+  normalizePublicDesignProjection,
+  parsePublicDesignProjection,
+  publicDesignProjectionHasIdentity,
+} from "./public-projection-assertion";
 import { getE2EBaseUrl } from "./release-environment";
 
 const BASE_URL = getE2EBaseUrl();
@@ -120,14 +127,81 @@ async function loadSavedDesign(page: Page, designId: string) {
   await expect(modal).toBeHidden();
 }
 
-async function getApiDesignFingerprint(
+async function getPublicApiDesignProjection(
   request: APIRequestContext,
   designId: string,
   shareToken: string
 ) {
   const response = await request.get(`${BASE_URL}/api/designs/${designId}?shareToken=${shareToken}`);
   expect(response.status()).toBe(200);
-  return fingerprintDesignSnapshot(legacyApiToSnapshot(await response.json()));
+  return parsePublicDesignProjection(await response.json(), designId);
+}
+
+async function getOwnerApiDesignSnapshot(
+  request: APIRequestContext,
+  designId: string
+) {
+  const response = await request.get(`${BASE_URL}/api/designs/${designId}`);
+  expect(response.status()).toBe(200);
+  const body = await response.json();
+  expect(body.id).toBe(designId);
+  expect(body.mode).toBe("homeowner");
+  expect(body.shareEnabled).toBe(false);
+  expect(body.shareToken).toBeNull();
+  return legacyApiToSnapshot(body);
+}
+
+function expectBetaPublicProjection(snapshot: DesignSnapshot) {
+  expect(snapshot.version).toBe(3);
+  expect(snapshot.activeRoomId).toBe("beta-living");
+  expect(
+    snapshot.rooms
+      .map(({ id, name, roomType, floorLabel }) => ({ id, name, roomType, floorLabel }))
+      .sort((left, right) => left.id.localeCompare(right.id))
+  ).toEqual([
+    { id: "beta-bedroom", name: "Bedroom", roomType: "bedroom", floorLabel: "1F" },
+    { id: "beta-dining", name: "Dining Room", roomType: "dining", floorLabel: "1F" },
+    { id: "beta-living", name: "Living Room", roomType: "living", floorLabel: "1F" },
+  ]);
+  const livingRoom = snapshot.rooms.find((room) => room.id === "beta-living");
+  const diningRoom = snapshot.rooms.find((room) => room.id === "beta-dining");
+  const bedroom = snapshot.rooms.find((room) => room.id === "beta-bedroom");
+  expect(livingRoom).toBeDefined();
+  expect(diningRoom).toBeDefined();
+  expect(bedroom).toBeDefined();
+  expect(livingRoom?.surfaceFinishes).toEqual(
+    expect.objectContaining({ floorMaterialId: "oak-natural", floorRotationDeg: 90 })
+  );
+  expect(livingRoom?.items.find((item) => item.instanceId === "beta-dawson-chair-1")).toEqual(
+    expect.objectContaining({
+      instanceId: "beta-dawson-chair-1",
+      productId: "armchair-real-castlery-avery-performance-armchair",
+      variantId: "white_quartz",
+      position: [-0.9, 0, -0.3],
+      rotationY: 0.15,
+    })
+  );
+  expect(diningRoom?.items.find((item) => item.instanceId === "beta-sloane-table-1")).toEqual(
+    expect.objectContaining({
+      instanceId: "beta-sloane-table-1",
+      variantId: "150cm_grey_oak",
+      position: [6.1, 0, 0.1],
+      rotationY: 1.57,
+    })
+  );
+  expect(livingRoom?.savedViews.map((view) => view.name)).toEqual(["Client Preview"]);
+  expect(diningRoom?.savedViews.map((view) => view.name)).toEqual(["Dining Plan"]);
+  expect(bedroom?.savedViews.map((view) => view.name)).toEqual(["Bedroom Preview"]);
+  expect(
+    snapshot.floorPlan?.openings
+      ?.map(({ id, roomId, kind }) => ({ id, roomId, kind }))
+      .sort((left, right) => left.id.localeCompare(right.id))
+  ).toEqual([
+    { id: "opening-bedroom-door", roomId: "beta-bedroom", kind: "door" },
+    { id: "opening-dining-window", roomId: "beta-dining", kind: "window" },
+    { id: "opening-living-door", roomId: "beta-living", kind: "door" },
+  ]);
+  expect(snapshot.notes).toBe("Deterministic beta smoke fixture.");
 }
 
 async function readDownloadText(download: Download) {
@@ -236,12 +310,28 @@ test.describe("00. Beta Smoke Gate", () => {
     const seed = await createBetaSeedDesign();
     try {
       await addAuthCookies(page.context(), new URL(page.url()).origin, seed.sessionToken);
-      const sharedFingerprint = await getApiDesignFingerprint(
+      const sharedProjection = await getPublicApiDesignProjection(
         request,
         seed.designId,
         seed.shareToken,
       );
+      expect(
+        publicDesignProjectionHasIdentity(sharedProjection, {
+          designId: seed.designId,
+          revision: seed.revision,
+        })
+      ).toBe(true);
+      expect(sharedProjection.mode).toBe("homeowner");
+      expectBetaPublicProjection(sharedProjection.snapshot);
+      const sharedFingerprint = fingerprintDesignSnapshot(sharedProjection.snapshot);
       expect(sharedFingerprint).toMatch(/[a-f0-9]{8}/);
+      expect(fingerprintPublicDesignProjection(sharedProjection.snapshot)).toBe(
+        fingerprintPublicDesignProjection(seed.snapshot)
+      );
+      const wrongShareTokenResponse = await request.get(
+        `${BASE_URL}/api/designs/${seed.designId}?shareToken=wrong-${seed.shareToken}`
+      );
+      expect(wrongShareTokenResponse.status()).toBe(404);
 
       await page.goto("/design");
       await expect(page.getByTestId("scene-canvas").first()).toBeVisible({ timeout: 30000 });
@@ -301,7 +391,20 @@ test.describe("00. Beta Smoke Gate", () => {
       expect(reloadedEditorFingerprint).toMatch(/[a-f0-9]{8}/);
       await expectCloudSaveSettled(page);
 
-      const cloudFingerprint = await getApiDesignFingerprint(request, seed.designId, seed.shareToken);
+      const cloudProjection = await getPublicApiDesignProjection(
+        request,
+        seed.designId,
+        seed.shareToken
+      );
+      expect(cloudProjection.mode).toBe("homeowner");
+      expect(Date.parse(cloudProjection.revision)).toBeGreaterThanOrEqual(
+        Date.parse(sharedProjection.revision)
+      );
+      expectBetaPublicProjection(cloudProjection.snapshot);
+      const cloudFingerprint = fingerprintDesignSnapshot(cloudProjection.snapshot);
+      const cloudPublicProjectionFingerprint = fingerprintPublicDesignProjection(
+        cloudProjection.snapshot
+      );
       expect(cloudFingerprint).toMatch(/[a-f0-9]{8}/);
 
       await page.goto(`/share/${seed.shareToken}`, { waitUntil: "commit", timeout: 120000 });
@@ -336,12 +439,20 @@ test.describe("00. Beta Smoke Gate", () => {
       expect(duplicateResponse.status()).toBe(200);
       const duplicateBody = await duplicateResponse.json();
       expect(typeof duplicateBody.id).toBe("string");
-      const duplicatedFingerprint = await getApiDesignFingerprint(
+      const duplicatedOwnerSnapshot = await getOwnerApiDesignSnapshot(
         page.context().request,
-        duplicateBody.id,
-        seed.shareToken
+        duplicateBody.id
       );
-      expect(duplicatedFingerprint).toBe(cloudFingerprint);
+      const duplicatedPublicProjection = normalizePublicDesignProjection(
+        duplicatedOwnerSnapshot
+      );
+      expectBetaPublicProjection(duplicatedPublicProjection);
+      const duplicatedPublicProjectionFingerprint = fingerprintPublicDesignProjection(
+        duplicatedOwnerSnapshot
+      );
+      expect(duplicatedPublicProjectionFingerprint).toBe(
+        cloudPublicProjectionFingerprint
+      );
 
       await page.getByTestId("share-export-pack").click();
       await expect(page).toHaveURL(/\/export$/, { timeout: 30_000 });

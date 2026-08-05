@@ -5,7 +5,7 @@ import { auth } from "@/lib/auth";
 import { trackServerEvent } from "@/lib/server-analytics";
 import { buildDesignUpdatePayload } from "@/lib/design-route-payload";
 import { sanitizePrivateFloorPlanUnderlayForSave } from "@/lib/floor-plan-imports/retention";
-import { projectSharedStoredDesign } from "@/lib/shared-design-snapshot";
+import { projectSharedDesignTransport } from "@/lib/shared-design-snapshot";
 import { syncFloorPlanDesignReference } from "@/lib/floor-plan-design-reference";
 import {
   ApiBoundaryError,
@@ -48,9 +48,20 @@ export async function GET(
       throw new ApiBoundaryError(404, "NOT_FOUND", "Design not found.");
     }
 
-    const responseSnapshot = isOwner
-      ? design.snapshot ?? null
-      : projectSharedStoredDesign(design.snapshot);
+    const sharedProjection = isOwner ? null : projectSharedDesignTransport(design);
+    const responseContent = sharedProjection ?? {
+      title: design.title,
+      roomWidth: design.roomWidth,
+      roomDepth: design.roomDepth,
+      items: design.items,
+      snapshot: design.snapshot ?? null,
+      zones: design.zones ?? [],
+      savedViews: design.savedViews ?? [],
+      style: design.style,
+      budget: design.budget,
+      mode: design.mode,
+      notes: design.notes,
+    };
 
     logOperationalEvent({
       operation,
@@ -62,17 +73,7 @@ export async function GET(
     });
     return NextResponse.json({
       id: design.id,
-      title: design.title,
-      roomWidth: design.roomWidth,
-      roomDepth: design.roomDepth,
-      items: design.items,
-      snapshot: responseSnapshot,
-      zones: design.zones ?? [],
-      savedViews: design.savedViews ?? [],
-      style: design.style,
-      budget: design.budget,
-      mode: design.mode,
-      notes: design.notes,
+      ...responseContent,
       updatedAt: design.updatedAt,
       shareToken: isOwner ? design.shareToken : null,
       shareEnabled: isOwner ? design.shareEnabled : hasValidShareToken,

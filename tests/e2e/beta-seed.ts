@@ -365,6 +365,7 @@ export async function createBetaSeedDesign(options: { email?: string } = {}) {
     designId: design.id,
     sessionToken,
     shareToken,
+    revision: design.updatedAt.toISOString(),
     snapshot,
     userCreated,
   };

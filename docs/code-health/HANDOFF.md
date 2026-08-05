@@ -3229,3 +3229,141 @@ Remaining archival findings are RC54 and RC53/55 responsive share at P3. No
 RC52 production change, drawer redesign, RC54, responsive-share,
 integration-branch, push, workflow, deployment, or external-setting work is
 included.
+
+## ARCH-RC54 like-for-like public projection assertion — 2026-08-05
+
+### Outcome and starting state
+
+`ARCH-RC54-PROJECTION-ASSERTION` is locally remediated on
+`fix/arch-rc54-projection-assertion` from exact starting SHA
+`e7cd5d9df19439f0956f840b977ddf8c23dc2757`. Initial status, diff, diff-check,
+and untracked-file checks were empty. No Interior AI listener was present.
+Archival RC54 commit `588b90e8c526e54d314376f177bdb9c738ac659e`
+was inspected only as intent evidence and was not cherry-picked. Its projection
+assertion was adapted to the current schema/revision architecture; RC53/55
+responsive share work was not included.
+
+The exact registered beta smoke initially passed 1/1, as did the focused
+publication-security suite. That green result did not prove the intended
+invariant: `request` read the source anonymously through
+`GET /api/designs/:id?shareToken=...` and therefore received
+`projectSharedStoredDesign`, while `page.context().request` read the duplicate
+as its authenticated owner and received the owner snapshot. Both then used
+`legacyApiToSnapshot` plus the generic `fingerprintDesignSnapshot`. Passing was
+fixture-dependent because the duplicate happened already to contain a public
+snapshot.
+
+### Contract and correction
+
+Classification is **E — CODE AND TEST BOTH REQUIRE CORRECTION**. The exact old assertion was
+`duplicatedFingerprint === cloudFingerprint`, where the former represented an
+owner read and the latter a public read. The final assertion compares the
+order-stable public fingerprint of the canonically projected owner duplicate
+with the order-stable public fingerprint of the actual source public response.
+The existing raw public fingerprint remains the expected ShareViewer/export QA
+fingerprint, so the remediation does not redefine runtime UI evidence.
+
+Independent read-only review of the first correction found two production
+defects that the green baseline did not expose: arbitrary snapshot extensions
+survived the production projector, and the non-owner API/recipient copy could
+use raw outer values beside a projected v3 snapshot. The amended projector now
+fails closed on undeclared document, room, item, zone, saved-view,
+layout-version, and floor-plan fields, recursively rejects sensitive nested key
+names after normalized comparison, preserves only a path/value-bounded typed
+public cabinetry owner role, and explicitly permits only known historical
+legacy field names. A no-snapshot legacy row is upgraded with required v3
+item/zone/view identity and is proved parser- and duplicate-compatible.
+`projectSharedDesignTransport` supplies both the projected snapshot and its
+derived active-room/presentation envelope to the public API and duplication
+route. Direct divergent title, dimensions, item, style, budget, and note cases
+prove those raw columns cannot bypass the projection.
+
+The public-response parser requires exactly `id`, `title`, `roomWidth`,
+`roomDepth`, `items`, `snapshot`, `zones`, `savedViews`, `style`, `budget`,
+`mode`, `notes`, `updatedAt`, `shareToken`, and `shareEnabled`; it binds the
+requested design ID and current cloud revision, requires `shareEnabled: true`,
+requires the bearer token to be redacted, and rejects a missing/invalid v3
+snapshot, unexpected envelope field, or outer content divergent from the
+projected snapshot. The smoke independently asserts
+literal multi-room identities, room names/types, material and surface identity,
+selected variants, XZ positions, rotation, saved presentation views, openings,
+and public notes. A wrong token remains 404.
+
+The focused projection fixture proves exact private underlay/source/hash/job/
+address/review exclusions, public canonical geometry and deterministic room
+identity, multi-room and item fidelity, selected variants, product dimensions,
+XZ positions, rotation and `rotationDeg`, materials and surfaces, and saved
+views. Owner-only changes leave the public fingerprint unchanged; each
+meaningful public mutation changes it. Reordered rooms/items/zones/item
+references/views normalize identically. Missing required data, an unexpected
+sensitive response field, and an unexpected owner/internal snapshot field fail
+closed. Stale revision and wrong design identities do not compare as current.
+The generic order-sensitive design fingerprint is explicitly shown not to be
+the parity contract.
+
+`updatedAt` is the current live shared-design revision identity; this design
+share flow has no separate immutable publication-revision request parameter.
+Content equality is kept separate from authorization. Token generation,
+enable/disable/revocation, permissions, public route selection, and share-copy
+authentication are untouched. Client preview remains the owner document with
+editing UI suppressed; it is not substituted for a public share projection.
+The complete A-E field inventory is
+`docs/architecture/public-design-projection.md`.
+
+### Validation, review, and rollback
+
+Final validation:
+
+- Exact Chromium beta/public/share/duplicate set — **7/7 pass**, including the
+  exact registered beta smoke **1/1**, public read-only/view behavior **2/2**,
+  and duplication/privacy/legacy public GET behavior **4/4**.
+- `npm run test:floor-plan-publication-security` — pass. Direct coverage
+  includes multi-room projection, v3 and no-snapshot legacy transport,
+  deterministic ordering, private-neutral/public-sensitive fingerprints,
+  exact public/private sentinels, mixed-case and short-form nested sensitive
+  keys, typed cabinetry public owner-role preservation, divergent outer
+  envelope rejection, revision/design identity, and duplication compatibility.
+- `npm run verify:design-persistence` and
+  `npm run test:editor-capabilities-accessibility` — pass.
+- `npm run test:design-page-cleanup` — all 78 guards pass, including the
+  client-preview/presentation ownership checks.
+- `npm run test:required-test-truthfulness` and
+  `npm run test:critical-required` — pass.
+- Full `npm run lint -- --max-warnings=0` — pass with zero warnings; only the
+  inherited generated-file Babel deoptimization notes appeared.
+- `npm run typecheck` and `npm run check:code-quality` — pass; 1,060 production
+  files, no growth, unsafe TypeScript suppression, or runtime cycle. The
+  duplicate route dropped below the overlong-function threshold, so its stale
+  accepted ratchet entry was removed.
+- `APP_ENV=development CATALOG_STRICT_VALIDATION=true npm run build` — pass for
+  all 57 pages outside the sandbox after the sandboxed Turbopack worker-port
+  attempt failed with `EPERM`; only the inherited floor-plan NFT tracing
+  warning remains.
+- `npm run test:phase8-performance` — pass: representative project and boundary
+  budgets; initial JS 5,812,152 raw / 1,109,035 Brotli, initial CSS 129,803 /
+  17,182, Cabinetry Studio lazy chunk 492,639 / 84,899, and GLTFExporter 34,525
+  / 8,970.
+- `git diff --check` — pass. Full E2E — deliberately not run.
+
+Independent read-only review first returned FAIL and drove correction of the
+production extension leak, divergent outer envelope, optional-field overclaim,
+typed cabinetry role false positive, invalid legacy v3 fallback, and normalized
+mixed-case/short-form leakage variants. Final targeted re-review returned
+**PASS — no actionable findings**. It reproduced rejection of `AddressBinding`,
+`ReviewerID`, `SHA256`, `URI`, `adminData`, `authData`, `ownerData`, `userEmail`,
+`authenticationData`, `apiKeyValue`, `administratorEmail`, and `sessionId`,
+while confirming `releaseChecklistSnapshot[].owner = "designer"` survives.
+The reviewer made no changes and did not run Full E2E. Residual maintenance
+risk is deliberate: new public fields or legitimate nested names require an
+explicit closed-schema update.
+
+Rollback is `git revert <implementation-commit-sha>` followed by
+`npm run test:floor-plan-publication-security`, the focused share/duplicate
+specs, and the exact Chromium beta-smoke case. No data, schema, migration,
+deployment, workflow, token, authorization, or external-setting rollback is
+required.
+
+The remaining archival finding is the distinct P3
+`ARCH-RC53-55-SHARE-RESPONSIVE` work. No responsive layout, integration branch,
+push, deployment, workflow, ruleset, runner, or external setting is included or
+authorized here.

@@ -4,7 +4,7 @@ import { logAppEvent } from "@/lib/app-events";
 import { buildDuplicatedDesignData } from "@/lib/design-duplication";
 import { trackServerEvent } from "@/lib/server-analytics";
 import { prisma } from "@/lib/prisma";
-import { projectSharedStoredDesign } from "@/lib/shared-design-snapshot";
+import { projectSharedDesignTransport } from "@/lib/shared-design-snapshot";
 import { rateLimit } from "@/lib/rateLimit";
 
 export const runtime = "nodejs";
@@ -41,23 +41,10 @@ export async function POST(
     );
   }
 
+  const projectedSource = projectSharedDesignTransport(source);
+
   const copy = await prisma.design.create({
-    data: buildDuplicatedDesignData(
-      {
-        title: source.title,
-        roomWidth: source.roomWidth,
-        roomDepth: source.roomDepth,
-        items: source.items,
-        snapshot: projectSharedStoredDesign(source.snapshot),
-        zones: source.zones,
-        savedViews: source.savedViews,
-        style: source.style,
-        budget: source.budget,
-        mode: source.mode,
-        notes: source.notes,
-      },
-      userId
-    ),
+    data: buildDuplicatedDesignData(projectedSource, userId),
     select: { id: true },
   });
 
