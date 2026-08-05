@@ -3600,3 +3600,57 @@ matrix and rollback are in `docs/architecture/public-design-projection.md`.
 Full E2E was deliberately not run. Remaining archival gaps are RC48
 tracing/rotation ownership, RC55 projection-identity collision resistance, and
 RC55 Gate A3 ownership.
+
+## ARCH-RC48 tracing/selected-item keyboard handoff — 2026-08-06
+
+Starting source was exact clean
+`8818ac76d4772271f027e8dc3c8e9cd6b8009229`; branch is
+`fix/arch-rc48-tracing-keyboard-ownership`. The centralized selected-item
+implementation commit `faaa463d2f0211fa2ec8f15fe3da1efc3e80c1c1` is an
+ancestor. Archival RC48 `e0db6f6661df2870e2f6f6063a7f0d866dd23618` is not an
+ancestor and was not cherry-picked. The verified dev listener used this same
+checkout.
+
+Before remediation, capture-phase selected-item routing consumed `R` and
+rotated the selected item before active floor-plan tracing's bubble listener
+could run. The direct Chromium test reproduced a changed document fingerprint.
+After remediation, a pure priority resolver and synchronous tracing-mode ref
+make active tracing the sole owner of plain `R`. The item router declines before
+consuming; tracing changes straight-wall to rectangle-wall once, and selected
+item fingerprint, selection, and Undo label stay unchanged.
+
+The modifier contract is explicit: tracing owns plain `R`; absent pending
+placement, selected-item owns `Shift+R`, `Q`, `E`, and `0`; browser/platform
+owns `Cmd/Ctrl/Alt+R`. Editable or modal focus and captured pointer interaction
+suppress both paths. Repeat events retain one owner per event. Inactive tracing, selection transitions,
+locked/no-selection cases, 2D/3D parity, Consumer/Pro projection, history,
+dirty/autosave, analytics, and scoped rotation-button activation keep their
+existing owners.
+
+ARCH-RC48 is fully resolved by current implementation after the direct red-to-
+green collision proof. Remaining archival work is RC55 collision-resistant
+projection identity and RC55 merge-required Gate A3 ownership for responsive
+Chromium/WebKit coverage. The separate Consumer Undo 44 px touch-target failure
+remains outside this change.
+
+Final local evidence is green: the expanded active-tracing collision case is
+1/1; the focused Chromium rotation matrix plus Consumer command route is 10/10;
+the complete floor-plan-required umbrella, all 78 design-page cleanup guards,
+required-test truthfulness, `critical-required`, zero-warning lint, typecheck,
+code quality, and diff hygiene pass. The strict production build generates all
+57 pages with only the inherited floor-plan NFT trace warning. Complete Phase 8
+passes at 5,814,916 raw / 1,109,297 Brotli initial `/design` JavaScript and
+130,408 raw / 17,276 Brotli CSS; Cabinetry Studio and GLTFExporter remain lazy
+and within budget. Full E2E was deliberately not run.
+
+Independent read-only review initially found two evidence/documentation gaps:
+active-context composed-route coverage for `Shift+R/Q/E/0` and no-selection,
+and the absence of the complete priority order in one rule. Both were corrected
+and rerun. Final rereview is **PASS — no remaining blocker, regression, or
+scope drift**; the reviewer made no edits or commits.
+
+Rollback is `git revert <implementation-commit-sha>`, followed by
+`npm run test:design-page-selection-keyboard` and the focused Chromium
+collision case. No data, schema, dependency, workflow, integration branch,
+push, deployment, or external-setting rollback is required. Full E2E is not
+part of this bounded remediation.

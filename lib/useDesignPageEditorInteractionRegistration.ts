@@ -118,9 +118,13 @@ export function useDesignPageEditorInteractionRegistration({
     },
   });
 
-  const tracing = useDesignPagePlanTracingFacade(
-    planWorkspace.configuration.tracing
-  );
+  const tracing = useDesignPagePlanTracingFacade({
+    ...planWorkspace.configuration.tracing,
+    state: {
+      ...planWorkspace.configuration.tracing.state,
+      keyboardShortcutsEnabled: camera.state.canvas.controlsEnabled,
+    },
+  });
 
   const presentationState = useDesignPagePresentationStateRegistration({
     state: { cameraView: planViewport.state.camera.cameraView },

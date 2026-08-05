@@ -7,6 +7,10 @@ import {
   resolveSelectedItemKeyboardCommand,
   resolveSelectedPlanKeyboardCommand,
 } from "@/lib/design-page-selection-keyboard-commands";
+import {
+  isFloorPlanRectangleWallShortcut,
+  resolveDesignPageHigherPriorityKeyboardOwner,
+} from "@/lib/design-page-keyboard-context";
 
 const root = process.cwd();
 const workspaceSource = readFileSync(
@@ -43,6 +47,14 @@ const furnitureSource = readFileSync(
 );
 const rotationControlsSource = readFileSync(
   join(root, "components/editor/SelectedItemRotationControls.tsx"),
+  "utf8"
+);
+const floorPlanTracingSource = readFileSync(
+  join(root, "lib/useDesignPageFloorPlanTracing.ts"),
+  "utf8"
+);
+const floorPlanWorkflowSource = readFileSync(
+  join(root, "lib/useDesignPageFloorPlanWorkflowState.ts"),
   "utf8"
 );
 
@@ -95,6 +107,26 @@ assert.match(
   keyboardSource,
   /hasSelectedItem:\s*Boolean\(input\.refs\.primaryId\.current\)/,
   "Keyboard commands should resolve selection from the current primary-item ref."
+);
+assert.match(
+  keyboardSource,
+  /resolveDesignPageHigherPriorityKeyboardOwner\([\s\S]{0,300}?floorPlanTraceRoomMode:\s*input\.refs\.floorPlanTraceRoomMode\.current[\s\S]{0,160}?if \(higherPriorityOwner\) return;[\s\S]{0,160}?resolvePendingPlacementKeyboardCommand/,
+  "The selected-item router should decline a current tracing-owned command before placement or item routing."
+);
+assert.match(
+  floorPlanTracingSource,
+  /isDesignPageSelectionShortcutBlocked\(event\.target\)/,
+  "Floor-plan tracing should apply the shared focus exclusions."
+);
+assert.match(
+  floorPlanTracingSource,
+  /isFloorPlanRectangleWallShortcut\(keyboardInput\)[\s\S]{0,160}?changeDrawRoomMode\("rectangle_wall"\)/,
+  "Floor-plan tracing should use the exact rectangle-wall shortcut resolver."
+);
+assert.match(
+  floorPlanWorkflowSource,
+  /floorPlanTraceRoomModeRef\.current = resolved;[\s\S]{0,120}?setFloorPlanTraceRoomModeState\(resolved\)/,
+  "Tracing ownership should update its event-time ref before scheduling the React state update."
 );
 assert.match(
   selectionTransformsSource,
@@ -206,6 +238,59 @@ const selectedItemBase = {
   rotationSnapEnabled: true,
   rotationSnapStepDegrees: 15,
 } as const;
+
+const tracingOwnerBase = {
+  floorPlanTraceRoomMode: true,
+  keyboardShortcutsEnabled: true,
+} as const;
+
+assert.equal(
+  resolveDesignPageHigherPriorityKeyboardOwner({
+    ...tracingOwnerBase,
+    key: "r",
+  }),
+  "floor-plan-tracing",
+  "Active room tracing should own unmodified R independently of selection."
+);
+assert.equal(
+  resolveDesignPageHigherPriorityKeyboardOwner({
+    ...tracingOwnerBase,
+    key: "r",
+    repeat: true,
+  }),
+  "floor-plan-tracing",
+  "A repeated tracing R event should still have exactly one owner."
+);
+for (const unownedTracingInput of [
+  { key: "r", floorPlanTraceRoomMode: false },
+  { key: "R", shiftKey: true },
+  { key: "r", metaKey: true },
+  { key: "r", ctrlKey: true },
+  { key: "r", altKey: true },
+  { key: "q" },
+  { key: "e" },
+  { key: "0" },
+  { key: "r", keyboardShortcutsEnabled: false },
+] as const) {
+  assert.equal(
+    resolveDesignPageHigherPriorityKeyboardOwner({
+      ...tracingOwnerBase,
+      ...unownedTracingInput,
+    }),
+    null,
+    "Tracing should claim only plain R in an active, uncaptured room-draw context."
+  );
+}
+assert.equal(
+  isFloorPlanRectangleWallShortcut({ key: "r" }),
+  true,
+  "Plain R should remain the rectangle-wall tracing alias."
+);
+assert.equal(
+  isFloorPlanRectangleWallShortcut({ key: "r", ctrlKey: true }),
+  false,
+  "Browser refresh modifiers must not be intercepted by floor-plan tracing."
+);
 
 assert.deepEqual(
   resolveSelectedItemKeyboardCommand({

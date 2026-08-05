@@ -10,6 +10,11 @@ import {
 import { track } from "@/lib/analytics";
 import type { EditorViewMode } from "@/components/editor/EditorViewToggle";
 import {
+  isDesignPageSelectionShortcutBlocked,
+  type DesignPageKeyboardInput,
+} from "@/lib/design-page-selection-keyboard-commands";
+import { isFloorPlanRectangleWallShortcut } from "@/lib/design-page-keyboard-context";
+import {
   resolveFloorPlanDrawCancelDecision,
   resolveFloorPlanOpeningCancelDecision,
   type HousePlan2D,
@@ -80,11 +85,13 @@ type UseDesignPageFloorPlanTracingInput = {
     isClientPreview: boolean;
     editorMode: DesignPageEditorMode;
     viewMode: EditorViewMode;
+    keyboardShortcutsEnabled?: boolean;
     selectedPlanRoomId: string | null;
     selectedPlanOverlayId: string | null;
     selectedZoneId: string | null;
   };
   refs: {
+    floorPlanTraceRoomModeRef: MutableRef<boolean>;
     selectedIdsRef: MutableRef<Set<string>>;
   };
   actions: {
@@ -143,11 +150,12 @@ export function useDesignPageFloorPlanTracing({
     isClientPreview,
     editorMode,
     viewMode,
+    keyboardShortcutsEnabled = true,
     selectedPlanRoomId,
     selectedPlanOverlayId,
     selectedZoneId,
   } = state;
-  const { selectedIdsRef } = refs;
+  const { floorPlanTraceRoomModeRef, selectedIdsRef } = refs;
   const {
     history,
     handleAddRoom,
@@ -502,15 +510,10 @@ export function useDesignPageFloorPlanTracing({
   useEffect(() => {
     if (isClientPreview || editorMode === "present" || viewMode !== "2d") return;
     const handleKeyDown = (event: KeyboardEvent) => {
-      const target = event.target as HTMLElement | null;
       if (
-        target?.tagName === "INPUT" ||
-        target?.tagName === "TEXTAREA" ||
-        target?.tagName === "SELECT" ||
-        target?.isContentEditable
-      ) {
-        return;
-      }
+        !keyboardShortcutsEnabled ||
+        isDesignPageSelectionShortcutBlocked(event.target)
+      ) return;
 
       if (event.key === "Escape") {
         const cancelledDraw = cancelActiveFloorPlanDraw();
@@ -538,10 +541,18 @@ export function useDesignPageFloorPlanTracing({
       }
 
       const key = event.key.toLowerCase();
+      const keyboardInput: DesignPageKeyboardInput = {
+        key: event.key,
+        shiftKey: event.shiftKey,
+        metaKey: event.metaKey,
+        ctrlKey: event.ctrlKey,
+        altKey: event.altKey,
+        repeat: event.repeat,
+      };
       if (key === "v" || key === "s") {
         event.preventDefault();
         selectFloorPlanTool();
-      } else if (key === "r") {
+      } else if (isFloorPlanRectangleWallShortcut(keyboardInput)) {
         event.preventDefault();
         changeDrawRoomMode("rectangle_wall");
       } else if (key === "d" && !floorPlanTraceRoomMode) {
@@ -573,6 +584,7 @@ export function useDesignPageFloorPlanTracing({
     floorPlanTraceRoomMode,
     isClientPreview,
     handleUndoFloorPlanTraceRoomPoint,
+    keyboardShortcutsEnabled,
     selectFloorPlanTool,
     selectedIdsRef,
     selectedPlanOverlayId,
@@ -582,6 +594,7 @@ export function useDesignPageFloorPlanTracing({
   ]);
 
   return {
+    refs: { floorPlanTraceRoomModeRef },
     state: {
       consumerPlanCompletionSignal,
     },

@@ -1,6 +1,13 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
+import {
+  useCallback,
+  useMemo,
+  useRef,
+  useState,
+  type Dispatch,
+  type SetStateAction,
+} from "react";
 import type { RoomOpening2D } from "@/lib/editorScene";
 import type {
   FloorPlanDrawAngleLockMode,
@@ -21,7 +28,19 @@ export function useDesignPageFloorPlanWorkflowState() {
   const [floorPlanCalibrationMode, setFloorPlanCalibrationMode] = useState(false);
   const [floorPlanCalibrationPoints, setFloorPlanCalibrationPoints] = useState<FloorPlanPoint[]>([]);
   const [floorPlanCalibrationDistanceInput, setFloorPlanCalibrationDistanceInput] = useState("");
-  const [floorPlanTraceRoomMode, setFloorPlanTraceRoomMode] = useState(false);
+  const [floorPlanTraceRoomMode, setFloorPlanTraceRoomModeState] = useState(false);
+  const floorPlanTraceRoomModeRef = useRef(false);
+  const setFloorPlanTraceRoomMode: Dispatch<SetStateAction<boolean>> = useCallback(
+    (next) => {
+      const resolved =
+        typeof next === "function"
+          ? next(floorPlanTraceRoomModeRef.current)
+          : next;
+      floorPlanTraceRoomModeRef.current = resolved;
+      setFloorPlanTraceRoomModeState(resolved);
+    },
+    []
+  );
   const [floorPlanDrawRoomMode, setFloorPlanDrawRoomMode] =
     useState<FloorPlanDrawRoomMode>("rectangle_wall");
   const [floorPlanDrawAngleLockMode, setFloorPlanDrawAngleLockMode] =
@@ -47,7 +66,7 @@ export function useDesignPageFloorPlanWorkflowState() {
     if (resetMode) setFloorPlanTraceRoomMode(false);
     setFloorPlanTraceRoomPoints([]);
     setBlankGridRoomPreviewPoint(null);
-  }, []);
+  }, [setFloorPlanTraceRoomMode]);
 
   const resetFloorPlanOpeningTrace = useCallback((resetMode = true) => {
     if (resetMode) setFloorPlanTraceOpeningMode(false);
@@ -91,7 +110,12 @@ export function useDesignPageFloorPlanWorkflowState() {
         resetFloorPlanRoomTrace(false);
       }
     },
-    [resetFloorPlanCalibration, resetFloorPlanOpeningTrace, resetFloorPlanRoomTrace]
+    [
+      resetFloorPlanCalibration,
+      resetFloorPlanOpeningTrace,
+      resetFloorPlanRoomTrace,
+      setFloorPlanTraceRoomMode,
+    ]
   );
 
   const activateFloorPlanRoomDrawMode = useCallback(
@@ -103,7 +127,11 @@ export function useDesignPageFloorPlanWorkflowState() {
       setBlankGridRoomPreviewPoint(null);
       resetFloorPlanOpeningTrace(true);
     },
-    [resetFloorPlanCalibration, resetFloorPlanOpeningTrace]
+    [
+      resetFloorPlanCalibration,
+      resetFloorPlanOpeningTrace,
+      setFloorPlanTraceRoomMode,
+    ]
   );
 
   const activateFloorPlanOpeningTrace = useCallback(
@@ -149,6 +177,7 @@ export function useDesignPageFloorPlanWorkflowState() {
     floorPlanCalibrationDistanceInput,
     setFloorPlanCalibrationDistanceInput,
     floorPlanTraceRoomMode,
+    floorPlanTraceRoomModeRef,
     setFloorPlanTraceRoomMode,
     floorPlanDrawRoomMode,
     setFloorPlanDrawRoomMode,

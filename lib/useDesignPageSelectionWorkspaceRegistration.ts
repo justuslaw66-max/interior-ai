@@ -121,6 +121,8 @@ export function useDesignPageSelectionWorkspaceRegistration({
       selectedIds: itemSelection.refs.selectedIds,
       primaryId: itemSelection.refs.primaryId,
       designSnapshot: coreShell.refs.designSnapshotRef,
+      floorPlanTraceRoomMode:
+        editorInteraction.boundaries.tracing.refs.floorPlanTraceRoomModeRef,
     },
     actions: {
       document: {

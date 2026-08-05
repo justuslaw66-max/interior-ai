@@ -5,6 +5,7 @@ import { useEffect } from "react";
 import type { CatalogItemSchema } from "@/lib/catalog-schema";
 import type { HousePlanRoom2D } from "@/lib/design-page-house-plan";
 import type { EditorViewMode } from "@/components/editor/EditorViewToggle";
+import { resolveDesignPageHigherPriorityKeyboardOwner } from "@/lib/design-page-keyboard-context";
 import {
   isDesignPageSelectionShortcutBlocked,
   resolvePendingPlacementKeyboardCommand,
@@ -143,6 +144,7 @@ export type DesignPageSelectionKeyboardState = {
 };
 
 export type DesignPageSelectionKeyboardRefs = {
+  floorPlanTraceRoomMode: { current: boolean };
   primaryId: PrimaryIdRef;
   selectedIds: SelectedIdsRef;
 };
@@ -234,6 +236,12 @@ function routeSelectedItemKeyboardEvent(
 ): void {
   if (isDesignPageSelectionShortcutBlocked(event.target)) return;
   const keyboardInput = getKeyboardInput(event);
+  const higherPriorityOwner = resolveDesignPageHigherPriorityKeyboardOwner({
+    ...keyboardInput,
+    floorPlanTraceRoomMode: input.refs.floorPlanTraceRoomMode.current,
+    keyboardShortcutsEnabled: input.state.keyboardShortcutsEnabled,
+  });
+  if (higherPriorityOwner) return;
   const pendingCommand = resolvePendingPlacementKeyboardCommand({
     ...keyboardInput,
     canEdit: input.state.canEdit,

@@ -252,6 +252,7 @@ export function useDesignPageFloorPlanDocumentState() {
       floorPlanUnderlayRef,
       floorPlanUnderlayUrlRef,
       floorPlanPdfSourceDataRef,
+      floorPlanTraceRoomModeRef: workflow.floorPlanTraceRoomModeRef,
     },
   };
 }

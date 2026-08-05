@@ -230,6 +230,7 @@ export function buildDesignPagePlanWorkspaceRegistrationInput({
       underlayObjectUrl: floorPlan.refs.floorPlanUnderlayUrlRef,
       pdfSourceData: floorPlan.refs.floorPlanPdfSourceDataRef,
       selectedIds: selection.refs.selectedIds,
+      floorPlanTraceRoomMode: floorPlan.refs.floorPlanTraceRoomModeRef,
     },
     actions: {
       document: {

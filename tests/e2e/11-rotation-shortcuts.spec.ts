@@ -5,6 +5,7 @@ import {
   addCatalogDrawerItemToRoom,
   getSelectedItemPanel,
   openCatalogPreview,
+  selectEditorWorkspace,
 } from "./variant-test-utils";
 
 const ROTATION_TEST_ITEM_ID =
@@ -151,6 +152,100 @@ test.describe("11. Rotation Shortcuts And Presets", () => {
     await page.getByTestId("rotation-btn-quarter-turn").click();
     await expectAngle(page, 90);
     await expect(undo).toHaveAccessibleName(/Undo Rotate \+90/i);
+  });
+
+  test("active rectangle-wall tracing owns R without rotating the selected item", async ({
+    page,
+  }) => {
+    test.setTimeout(180_000);
+    await setupSelectedItem(page);
+
+    const fingerprintBefore = await readFingerprint(page);
+    const fingerprint = page.getByTestId("qa-editor-snapshot-fingerprint");
+    const undo = page.getByTestId("command-undo");
+    const undoLabelBefore = await undo.getAttribute("aria-label");
+    const planView = page.getByTestId("editor-view-2d");
+    await planView.click();
+    await expect(planView).toHaveAttribute("aria-pressed", "true");
+    await selectEditorWorkspace(page, "editor-workflow-plan");
+
+    const selectedPlanItem = page.getByTestId("plan-item-keyboard-target").filter({
+      hasText: "Hugg",
+    });
+    await expect(selectedPlanItem).toHaveAttribute("aria-pressed", "true");
+
+    await page.getByTestId("floor-plan-tool-draw_room").click();
+    await expect(page.getByTestId("floor-plan-trace-room-toggle")).toHaveText("Done");
+    await page.getByTestId("floor-plan-draw-mode-straight_wall").click();
+    await expect(page.getByTestId("floor-plan-exact-wall-length")).toBeVisible();
+
+    await page.keyboard.press("R");
+
+    await expect(page.getByTestId("floor-plan-exact-wall-length")).toHaveCount(0);
+    await expect(page.getByTestId("qa-editor-snapshot-fingerprint")).toHaveAttribute(
+      "data-fingerprint",
+      fingerprintBefore
+    );
+    expect(await undo.getAttribute("aria-label")).toBe(undoLabelBefore);
+    await expect(selectedPlanItem).toHaveAttribute("aria-pressed", "true");
+
+    const expectSelectedItemCommand = async (
+      key: string,
+      undoName: RegExp,
+    ) => {
+      await page.keyboard.press(key);
+      await expect(fingerprint).not.toHaveAttribute(
+        "data-fingerprint",
+        fingerprintBefore,
+      );
+      await expect(undo).toHaveAccessibleName(undoName);
+      await undo.click();
+      await expect(fingerprint).toHaveAttribute(
+        "data-fingerprint",
+        fingerprintBefore,
+      );
+      expect(await undo.getAttribute("aria-label")).toBe(undoLabelBefore);
+      await expect(selectedPlanItem).toHaveAttribute("aria-pressed", "true");
+    };
+
+    await expectSelectedItemCommand("Shift+R", /Undo Rotate -90/i);
+    await expectSelectedItemCommand("Q", /Undo Rotate -15/i);
+    await expectSelectedItemCommand("E", /Undo Rotate \+15/i);
+
+    await page.keyboard.press("E");
+    await expect(fingerprint).not.toHaveAttribute(
+      "data-fingerprint",
+      fingerprintBefore,
+    );
+    await page.keyboard.press("0");
+    await expect(fingerprint).toHaveAttribute(
+      "data-fingerprint",
+      fingerprintBefore,
+    );
+    await expect(undo).toHaveAccessibleName(/Undo Reset rotation/i);
+    await undo.click();
+    await expect(fingerprint).not.toHaveAttribute(
+      "data-fingerprint",
+      fingerprintBefore,
+    );
+    await undo.click();
+    await expect(fingerprint).toHaveAttribute(
+      "data-fingerprint",
+      fingerprintBefore,
+    );
+    expect(await undo.getAttribute("aria-label")).toBe(undoLabelBefore);
+
+    await page.getByTestId("selection-inspector-clear").click();
+    await expect(selectedPlanItem).toHaveAttribute("aria-pressed", "false");
+    await page.getByTestId("floor-plan-draw-mode-straight_wall").click();
+    await expect(page.getByTestId("floor-plan-exact-wall-length")).toBeVisible();
+    await page.keyboard.press("R");
+    await expect(page.getByTestId("floor-plan-exact-wall-length")).toHaveCount(0);
+    await expect(fingerprint).toHaveAttribute(
+      "data-fingerprint",
+      fingerprintBefore,
+    );
+    expect(await undo.getAttribute("aria-label")).toBe(undoLabelBefore);
   });
 
   test("snap presets update keyboard step behavior", async ({ page }) => {

@@ -662,3 +662,27 @@ corrected, reviewed, and the exact artifact is certified.
 - **Remaining archival queue:** RC48 tracing/rotation ownership; RC55
   collision-resistant projection identity; RC55 required-gate ownership for
   responsive Chromium/WebKit coverage.
+
+### ARCH-RC48 tracing/selected-item keyboard queue — 2026-08-06
+
+- **`ARCH-RC48-KEYBOARD` — locally remediated:** starting from exact clean
+  `8818ac76d4772271f027e8dc3c8e9cd6b8009229`, active room tracing now owns only
+  unmodified `R`; selected-item capture declines that command from synchronous
+  event-time tool state before placement or item routing.
+- **Preserved commands:** absent pending placement, `Shift+R`, `Q`, `E`, and
+  `0` retain the canonical selected-item transform owner and its
+  history/dirty/autosave/analytics path.
+  `Cmd/Ctrl/Alt+R` is not intercepted. Editable/modal focus and captured pointer
+  interaction block tracing and item commands consistently; repeat events have
+  one owner each.
+- **Direct evidence:** the focused Chromium regression was red before the fix
+  because `R` changed the selected item fingerprint. It is green after the fix:
+  tracing switches straight-wall to rectangle-wall while selected-item
+  fingerprint, selection, and Undo history remain unchanged.
+- **Scope and rollback:** no 2D/3D projection, persistence, schema, dependency,
+  workflow, external setting, or unrelated Consumer Undo touch target changed.
+  Roll back with one local revert and rerun the selection-keyboard and focused
+  Chromium collision checks.
+- **Remaining archival queue:** only RC55 collision-resistant projection
+  identity and RC55 merge-required Gate A3 ownership for responsive
+  Chromium/WebKit coverage remain.

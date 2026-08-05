@@ -100,6 +100,7 @@ export type UseDesignPagePlanWorkspaceFacadeInput = {
     underlayObjectUrl: UnderlayInput["refs"]["underlayObjectUrlRef"];
     pdfSourceData: UnderlayInput["refs"]["pdfSourceDataRef"];
     selectedIds: TracingInput["refs"]["selectedIdsRef"];
+    floorPlanTraceRoomMode: TracingInput["refs"]["floorPlanTraceRoomModeRef"];
   };
   actions: {
     document: EditingInput["actions"]["document"];
@@ -347,7 +348,10 @@ export function useDesignPagePlanWorkspaceFacade({
       selectedPlanOverlayId: plan.selectedPlanOverlayId,
       selectedZoneId: plan.selectedZoneId,
     },
-    refs: { selectedIdsRef: refs.selectedIds },
+    refs: {
+      selectedIdsRef: refs.selectedIds,
+      floorPlanTraceRoomModeRef: refs.floorPlanTraceRoomMode,
+    },
     actions: {
       history: actions.history.history,
       handleAddRoom: actions.room.handleAddRoom,

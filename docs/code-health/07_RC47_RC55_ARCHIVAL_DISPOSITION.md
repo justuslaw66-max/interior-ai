@@ -14,32 +14,32 @@ audited source; the old RC chain must not be cherry-picked or merged.
 | RC | Original archival commit | Current implementation commit(s) | Final category | Confirmation |
 | --- | --- | --- | --- | --- |
 | RC47 | `23e12bfe85742acb3bb10ecfb808401b3b63c638` | `e7cd5d9df19439f0956f840b977ddf8c23dc2757` | **A. RESOLVED_BY_CURRENT_IMPLEMENTATION** | The unique visible product drawer is asserted as the named modal `dialog`; both exact product flows retain their content contracts. |
-| RC48 | `e0db6f6661df2870e2f6f6063a7f0d866dd23618` | `faaa463d2f0211fa2ec8f15fe3da1efc3e80c1c1` | **F. STILL_REQUIRED** | Per-item global rotation ownership was removed, but the capture-phase selected-item `R` router can still consume `R` while floor-plan tracing is active, preventing tracing's bubble-phase `R` contract. No collision test exists. |
+| RC48 | `e0db6f6661df2870e2f6f6063a7f0d866dd23618` | `faaa463d2f0211fa2ec8f15fe3da1efc3e80c1c1` plus the bounded ARCH-RC48 remediation on `fix/arch-rc48-tracing-keyboard-ownership` | **A. RESOLVED_BY_CURRENT_IMPLEMENTATION** | The selected-item capture router now declines active tracing's unmodified `R` from a synchronous tool-state ref before placement/item routing. A direct Chromium collision test proves tracing changes tools while item state, selection, and Undo history remain unchanged. |
 | RC49 | `d41bdf31720918705480a36a44c91347987080bb` | `f2760c529c0a964d99d53dbe73d8fb4a7c8def75` | **B. SUPERSEDED_BY_STRONGER_IMPLEMENTATION** | Canonical projection precedes fingerprinting and an identity-bound design/revision/epoch acknowledgment gates autosave. |
 | RC50 | `ee612c84f5f6c1e5370c7aeb12593cf920fe1967` | `f2760c529c0a964d99d53dbe73d8fb4a7c8def75` | **B. SUPERSEDED_BY_STRONGER_IMPLEMENTATION** | The same pending-baseline protocol fails closed on mismatch, supersession, migration failure, and recovery-copy transitions. |
 | RC51 | `27b6a55bccbab5bf9a6556fea04fa4179343e447` | `bb0e4f8f999d774b8490eca16efdc84d6751aafd` | **B. SUPERSEDED_BY_STRONGER_IMPLEMENTATION** | Compare resolution uses the canonical full product map and retains an explicit remove-only unavailable state. |
 | RC52 | `637281505493572229be864449d77e3a626c67fe` | `793986d22b073c2d4ba093350b2442838703deb0` | **B. SUPERSEDED_BY_STRONGER_IMPLEMENTATION** | Semantic opener identity survives hydration/replacement; restoration resolves a connected, visible, enabled target and respects modal/unmount cancellation. |
-| RC53 | `b0eab4cbbadf0203667fb750c42fb0e25eb43f62` | cloud `80627fa5a8cae1205999a90c9f2fa240b1df4305`; responsive `83425bad3cc30dc37100d090e79159998782bc29` | **F. STILL_REQUIRED** | Cloud-write revision ownership is superseded by the stronger execution-time queue protocol. The responsive sub-scope remains open because visible share metadata can come from raw outer row fields while readiness identity uses the projected snapshot. |
+| RC53 | `b0eab4cbbadf0203667fb750c42fb0e25eb43f62` | cloud `80627fa5a8cae1205999a90c9f2fa240b1df4305`; responsive `83425bad3cc30dc37100d090e79159998782bc29`; projection source `8818ac76d4772271f027e8dc3c8e9cd6b8009229` | **A. RESOLVED_BY_CURRENT_IMPLEMENTATION** | Cloud writes use the execution-time queue protocol, while the responsive share page and exports now source visible metadata from the canonical public transport projection. |
 | RC54 | `588b90e8c526e54d314376f177bdb9c738ac659e` | `29a4c46070404a2426da123bc5b42c0592d95e34` | **B. SUPERSEDED_BY_STRONGER_IMPLEMENTATION** | Public API and duplicate paths use one closed public transport projection with non-tautological security and like-for-like assertions. |
 | RC55 | `4883ffb9fc87248b6aa8624cdef39c5f97a173d1` | `83425bad3cc30dc37100d090e79159998782bc29` | **F. STILL_REQUIRED** | Responsive layout behavior is substantially implemented, but an eight-hex projection fingerprint collision can preserve the exact readiness key, and the focused responsive/WebKit contracts are not merge-required Gate A3 coverage. |
 
-RC53 has exactly one overall category: **F**, because its resolved cloud
-sub-scope does not close its still-required responsive sub-scope.
+RC53 now has exactly one overall category: **A**. Its cloud, responsive, and
+public projection-source sub-scopes are present in current implementation.
 
-The remaining bounded work is two P2 corrections and two P3 certification
-corrections: isolate tracing/item `R` ownership; render all public visible
-metadata from the canonical projection; make projection identity collision-safe;
-and assign the responsive plus WebKit coverage to a required release gate. A
-separate focused Consumer rotation batch also retained one failure: Undo was
-30 px high against the 44 px touch-target contract. Per the audit rules, that
-failure was not retried or fixed and keeps the disposition open.
+The remaining archival work is two P3 RC55 corrections: make projection
+identity collision-safe and assign the responsive plus WebKit coverage to a
+required release gate. A separate focused Consumer rotation batch also retained
+one failure: Undo was 30 px high against the 44 px touch-target contract. Per
+the audit rules, that unrelated failure was not retried or fixed and keeps the
+overall disposition open.
 
-Focused confirmation passed the responsive share matrix 12/12 (Chromium and
-WebKit), drawer focus 18/18, compare plus exact product flows 15/15, beta smoke
-1/1, stale cloud-write isolation 2/2, and 11/12 rotation/Consumer cases. All
+Focused confirmation now includes the responsive share matrix 12/12 (Chromium
+and WebKit), drawer focus 18/18, compare plus exact product flows 15/15, beta
+smoke 1/1, stale cloud-write isolation 2/2, the ARCH-RC48 Chromium collision
+case 1/1, and the focused rotation matrix plus Consumer route 10/10. All
 required static gates, lint, typecheck, code quality, strict 57-page build, and
-Phase 8 budgets passed. Full E2E was not run. The green tests establish the
-implemented behavior but do not negate the directly inspected gaps above.
+Phase 8 budgets pass. Full E2E was not run. The green tests do not close the
+remaining RC55 or unrelated Consumer touch-target findings.
 
 No integration branch should be created from this result. Complete and review
 the bounded findings, then certify the exact immutable artifact under the
@@ -718,3 +718,44 @@ collision-resistant projection identity, and RC55 merge-required Gate A3
 ownership for responsive Chromium/WebKit coverage. No integration branch,
 push, deployment, workflow, ruleset, runner, secret, or external setting was
 created or changed.
+
+## ARCH-RC48 tracing/selected-item keyboard closure — 2026-08-06
+
+From exact clean starting source
+`8818ac76d4772271f027e8dc3c8e9cd6b8009229`, the remaining RC48 keyboard
+collision is locally remediated on
+`fix/arch-rc48-tracing-keyboard-ownership`. Archival RC48 commit
+`e0db6f6661df2870e2f6f6063a7f0d866dd23618` was inspected as evidence only and
+was not cherry-picked.
+
+The verified defect was event-order ownership: selected-item rotation listened
+in capture phase and consumed `R` before active floor-plan tracing's bubble
+listener could receive it. The bounded correction adds an explicit higher-
+priority owner resolver and a synchronous tracing-mode ref. With room tracing
+active, only plain unmodified `R` belongs to tracing; the selected-item router
+returns before `preventDefault`, propagation stop, command resolution, history,
+dirty state, autosave, or analytics. Absent pending placement, `Shift+R`, `Q`,
+`E`, and `0` remain on the canonical selected-item transform path.
+`Cmd/Ctrl/Alt+R` remains unowned by
+both routes. Editable/modal focus and captured pointer interaction block both.
+Every accepted repeat event has the same single owner.
+
+The direct Chromium regression first failed because `R` changed the selected
+item fingerprint. It now proves `R` changes the active draw mode from straight
+wall to rectangle wall exactly through tracing while the selected item remains
+selected and its snapshot fingerprint and Undo label remain unchanged. Pure
+and static guardrails cover active/inactive tracing, all modifiers, `Q/E/0`,
+repeat, editable/modal exclusion, captured interaction, current selection refs,
+and the ref-before-state-update transition contract.
+
+RC48 is therefore **A. RESOLVED_BY_CURRENT_IMPLEMENTATION**. Canonical
+selected-item history, dirty/autosave, analytics, 2D/3D projection, and scoped
+rotation-button activation are unchanged. The remaining archival gaps are only
+RC55 collision-resistant projection identity and RC55 merge-required Gate A3
+ownership for responsive Chromium/WebKit coverage. The unrelated Consumer Undo
+44 px touch-target failure remains separate and was not modified.
+
+Rollback is one local revert of the focused remediation commit, followed by the
+selection-keyboard guardrail and focused Chromium collision test. No schema,
+data, dependency, workflow, integration branch, push, deployment, or external
+setting rollback is required.

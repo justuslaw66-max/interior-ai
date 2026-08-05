@@ -83,6 +83,7 @@ export type UseDesignPageItemInteractionFacadeInput = {
     selectedIds: MutableRefObject<Set<string>>;
     primaryId: MutableRefObject<string | null>;
     designSnapshot: MutableRefObject<DesignSnapshot>;
+    floorPlanTraceRoomMode: MutableRefObject<boolean>;
   };
   actions: {
     document: Pick<
@@ -227,7 +228,11 @@ export function useDesignPageItemInteractionFacade({
       rotationSnapStepDegrees: configuration.rotationSnapStepDegrees,
       viewMode: state.editor.viewMode,
     },
-    refs: { primaryId: refs.primaryId, selectedIds: refs.selectedIds },
+    refs: {
+      primaryId: refs.primaryId,
+      selectedIds: refs.selectedIds,
+      floorPlanTraceRoomMode: refs.floorPlanTraceRoomMode,
+    },
     actions: {
       setRotationInputValue:
         actions.productInspection.setRotationInputValue,
