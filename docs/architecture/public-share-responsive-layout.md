@@ -12,7 +12,7 @@ implementation does not fetch, copy, or reconstruct another share document.
 
 `components/public-share/PublicShareShell.tsx` owns the client presentation
 state for that snapshot: responsive mode, selected room, selected saved view,
-layout generation, finite surface measurement, and semantic readiness.
+versioned layout identity/generation, finite surface measurement, and semantic readiness.
 `components/ShareViewer.tsx`, `ShareScene.tsx`, and
 `PublicShareRoomSchedule.tsx` consume that owner. The schedule receives a pure
 server-derived room summary from the same snapshot; it is not a second
@@ -85,6 +85,24 @@ projected rooms, so a still-present room survives mode changes and a removed
 room falls back deterministically. Saved-view selection is room-scoped and is
 cleared by an explicit room change; it is not cleared by a layout change.
 
+Content, binding, layout, diagnostic, and React identities are intentionally
+separate. The server computes `public-design-projection.v1:sha256:<64 hex>` once
+from the validated closed projection and passes it to the shell. Exact enabled
+token/design lookup remains the publication and authorization binding; the
+public API's design ID plus `updatedAt` remains its revision assertion. The
+shell's design/token React key is only a render-instance boundary. The legacy
+eight-hex projection fingerprint remains visible for handoff/QA diagnostics and
+does not participate in readiness.
+
+A content identity change rebuilds the layout key even when mode, room, and
+view remain textually identical. A mode, room, or view change rebuilds only the
+layout key, not public content identity. Selection is resolved against the
+current snapshot before key construction, so a stale room or view may survive
+only when the new projection still declares that exact canonical identity.
+There is no asynchronous identity completion: validation and SHA-256 happen on
+the server, and failure renders the route error boundary rather than a ready
+shell.
+
 ## Semantic readiness and generation
 
 `public-share-root[data-layout-status="ready"]` is the only ready boundary.
@@ -93,20 +111,21 @@ Ready requires all of the following real state:
 1. The server has completed exact-token lookup and public projection.
 2. A canonical selected public room exists.
 3. `mobile`, `tablet`, or `desktop` mode has resolved.
-4. The deterministic generation for projection identity, mode, and selected
-   room is current.
+4. The deterministic exact layout identity for collision-resistant projection
+   content, mode, selected room, and selected saved view is current.
 5. The read-only Canvas has been created.
 6. The active preview surface has a finite positive width and height measured
    after that component commit.
 
-The authoritative internal identity is the complete
-`projectionIdentity:mode:selectedRoomId` layout key. Canvas creation and surface
-measurement must both report that exact current key; a stale key cannot ready a
-new layout even if a diagnostic hash collides. The exposed nonzero numeric
-generation is a deterministic hash of that key for test diagnostics only, and
-the surface report must also carry the current generation. The shell rejects an
-old `ResizeObserver` report, and a prior measurement cannot satisfy the new
-layout key. No timer can make the page ready.
+The authoritative internal identity is the versioned JSON tuple
+`["public-share-layout", 1, projectionContentIdentity, mode, selectedRoomId,
+selectedSavedViewId]`. Canvas creation and surface measurement must both report
+that exact current key; a stale key cannot ready a new layout even if the
+diagnostic generation collides. The exposed nonzero numeric generation is a
+deterministic FNV hash of that key for test diagnostics only, and the surface
+report must also carry the current generation. The shell rejects an old
+`ResizeObserver` report, and a prior measurement cannot satisfy the new layout
+key. No timer can make the page ready.
 
 Server loading uses `data-layout-status="loading"`; invalid/revoked uses
 `invalid`; the route error boundary uses `error`; an empty projected room set
@@ -119,7 +138,7 @@ Stable identities supplement roles and accessible names:
 
 | Identity | Meaning |
 | --- | --- |
-| `public-share-root` | Loaded responsive public-share shell; exposes status, mode, generation, selected room, public fingerprint, and finite surface size |
+| `public-share-root` | Loaded responsive public-share shell; exposes status, mode, generation, selected room/view, collision-resistant content identity, diagnostic public fingerprint, and finite surface size |
 | `public-share-loading`, `public-share-error`, `public-share-invalid`, `public-share-empty` | Mutually distinct non-ready states |
 | `share-room-list` | Room-schedule region derived from every projected room |
 | `share-room-list-mobile` / `share-room-list-table` | The single mounted schedule presentation for the active mode |
@@ -155,9 +174,11 @@ duplicate responsive identity or duplicate DOM `id`.
 
 ## Verification and rollback
 
-`scripts/test-public-share-responsive.ts` protects mode thresholds, room
-fallback, generation inputs, stale-generation rejection, finite measurement,
-no timer/user-agent path, selectors, and rendered loading/error states.
+`scripts/test-public-share-responsive.ts` protects the known old-FNV content
+collision, SHA-256 distinction, canonical equivalence, public/private changes,
+mode/room/view layout inputs, mode thresholds, room fallback, diagnostic hash
+collision, exact-key stale-generation rejection, finite measurement, no
+timer/user-agent path, selectors, and rendered loading/error states.
 `tests/e2e/share-responsive.spec.ts` uses deterministic public fixtures for
 single/multi-room desktop, tablet, mobile portrait/landscape, both resize
 directions, room/view continuity, projection fingerprint, finite surface,

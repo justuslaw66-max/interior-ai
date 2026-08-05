@@ -21,14 +21,13 @@ audited source; the old RC chain must not be cherry-picked or merged.
 | RC52 | `637281505493572229be864449d77e3a626c67fe` | `793986d22b073c2d4ba093350b2442838703deb0` | **B. SUPERSEDED_BY_STRONGER_IMPLEMENTATION** | Semantic opener identity survives hydration/replacement; restoration resolves a connected, visible, enabled target and respects modal/unmount cancellation. |
 | RC53 | `b0eab4cbbadf0203667fb750c42fb0e25eb43f62` | cloud `80627fa5a8cae1205999a90c9f2fa240b1df4305`; responsive `83425bad3cc30dc37100d090e79159998782bc29`; projection source `8818ac76d4772271f027e8dc3c8e9cd6b8009229` | **A. RESOLVED_BY_CURRENT_IMPLEMENTATION** | Cloud writes use the execution-time queue protocol, while the responsive share page and exports now source visible metadata from the canonical public transport projection. |
 | RC54 | `588b90e8c526e54d314376f177bdb9c738ac659e` | `29a4c46070404a2426da123bc5b42c0592d95e34` | **B. SUPERSEDED_BY_STRONGER_IMPLEMENTATION** | Public API and duplicate paths use one closed public transport projection with non-tautological security and like-for-like assertions. |
-| RC55 | `4883ffb9fc87248b6aa8624cdef39c5f97a173d1` | `83425bad3cc30dc37100d090e79159998782bc29` | **F. STILL_REQUIRED** | Responsive layout behavior is substantially implemented, but an eight-hex projection fingerprint collision can preserve the exact readiness key, and the focused responsive/WebKit contracts are not merge-required Gate A3 coverage. |
+| RC55 | `4883ffb9fc87248b6aa8624cdef39c5f97a173d1` | responsive `83425bad3cc30dc37100d090e79159998782bc29`; projection identity on `fix/arch-rc55-projection-identity` | **F. STILL_REQUIRED (GATE OWNERSHIP ONLY)** | A committed pair of distinct closed public projections collides at the old eight-hex fingerprint but now receives different SHA-256 content and exact layout identities. Focused responsive/WebKit contracts are still not merge-required Gate A3 coverage. |
 
 RC53 now has exactly one overall category: **A**. Its cloud, responsive, and
 public projection-source sub-scopes are present in current implementation.
 
-The remaining archival work is two P3 RC55 corrections: make projection
-identity collision-safe and assign the responsive plus WebKit coverage to a
-required release gate. A separate focused Consumer rotation batch also retained
+The remaining archival work is one P3 RC55 correction: assign the responsive
+plus WebKit coverage to a required release gate. A separate focused Consumer rotation batch also retained
 one failure: Undo was 30 px high against the 44 px touch-target contract. Per
 the audit rules, that unrelated failure was not retried or fixed and keeps the
 overall disposition open.
@@ -759,3 +758,72 @@ Rollback is one local revert of the focused remediation commit, followed by the
 selection-keyboard guardrail and focused Chromium collision test. No schema,
 data, dependency, workflow, integration branch, push, deployment, or external
 setting rollback is required.
+
+## ARCH-RC55 projection-identity closure — 2026-08-06
+
+From exact clean starting source
+`abec1b92b86a0b74193f437aea11033f666adca0`, the bounded projection-identity
+remediation is implemented on `fix/arch-rc55-projection-identity`. Archival
+RC55 commit `4883ffb9fc87248b6aa8624cdef39c5f97a173d1` is not an ancestor and was
+inspected only for intent. RC54, the responsive implementation, RC53 cloud
+revision/projection-source ownership, and RC48 keyboard ownership are
+ancestors and remain unchanged.
+
+The retained deterministic collision fixture contains two valid closed public
+projections whose only meaningful difference is title:
+`ARCH-RC55 1vnkyl8-80u7s7-q7q69o` and
+`ARCH-RC55 y1co6q-7jaizn-1n448ct`. Both produce the former FNV-1a fingerprint
+`bafccb68`; under the former `design:token:fingerprint` contract they also
+produce the same projection and desktop-room layout identities. The new
+versioned identities are respectively
+`public-design-projection.v1:sha256:bca20ead56fca406f2109f34ab09e20c0fa5e90f0128983f773b4773ea635b45`
+and
+`public-design-projection.v1:sha256:baf781927092d4f47e815cd08ff33ea50cfde427cef00b27d8584c232db7141d`.
+
+`lib/public-design-projection-identity.ts` reuses the established RC54 stable
+room/item/zone/view/layout ordering and the generic canonical snapshot
+serializer, validates the closed public shape, prefixes representation contract
+`public-design-projection.v1`, and applies the platform `node:crypto` SHA-256
+without truncation. It runs once on the server route. There is no client digest,
+loading state, completion callback, render-time randomness, timestamp, or
+animation-frame serialization. Identity failure throws during server render,
+so the shell cannot advertise ready.
+
+Publication/binding identity remains separate: the exact enabled token selects
+the design row, the shell React key remains design plus token, and the public
+API continues to bind design ID plus current `updatedAt`. The versioned layout
+key is the exact JSON tuple of content identity, responsive mode, canonical
+selected room, and selected saved view. Canvas and surface evidence must match
+that full key; the small numeric FNV generation remains diagnostic only. A
+removed room or view is resolved against the current closed projection before
+keying, so stale selection or measurement evidence cannot ready a replacement
+projection.
+
+Focused evidence passes: the identity/collision and responsive unit contract;
+ARCH-RC54 projection/security; the zero-retry 12/12 Chromium/WebKit responsive
+and read-only matrix; 5/5 Chromium beta plus share duplication/privacy; invalid
+and revoked tokens; room/view continuity; required-test truthfulness; all 78
+design-page cleanup guards; `critical-required`; full zero-warning lint;
+typecheck; strict 57-page build; and complete Phase 8. `/design` JS and CSS are
+unchanged from the exact base. The share route remains 19 JS chunks and changes
+from 2,439,017 raw / 572,346 Brotli bytes to 2,439,363 / 572,348 (+346 / +2);
+CSS remains 130,408 / 17,276. The server-only identity source is 2,622 raw / 765
+Brotli bytes and contributes no client SHA dependency. A 12-room/720-item,
+554,055-byte canonical public projection measures 7.21 ms p50 / 7.55 ms p95
+over 100 server-side identity derivations.
+
+The global code-quality command remains nonzero only for ten metrics already
+present in the untouched starting SHA's RC48 tracing/interaction files. The
+RC55 page/shell changes initially exposed three local ratchet findings; all
+three were removed, no exception or allowance changed, and an isolated archive
+of the exact base reproduces the same ten remaining findings. Fixing those
+unrelated files or raising their allowances is outside this batch.
+
+RC55 projection identity is therefore resolved. RC55 remains overall **F**
+only because merge-required Gate A3 ownership is deliberately deferred to its
+separate batch. Full E2E, workflow/ruleset/runner changes, push, deployment,
+integration branch creation, responsive geometry, token/auth lifecycle, and
+the unrelated Consumer Undo target were not performed. Rollback is one local
+revert of the focused implementation commit, followed by the identity,
+projection-security, responsive, beta/duplication, build, and Phase 8 checks;
+no data or external rollback is required.

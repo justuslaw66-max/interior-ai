@@ -24,6 +24,10 @@ async function expectShareReady(
   await expect(root).toHaveAttribute("data-layout-status", "ready");
   await expect(root).toHaveAttribute("data-layout-mode", expected.mode);
   await expect(root).toHaveAttribute("data-selected-room-id", expected.roomId);
+  await expect(root).toHaveAttribute(
+    "data-projection-content-identity",
+    /^public-design-projection\.v1:sha256:[a-f0-9]{64}$/
+  );
   await expectFiniteAttribute(root, "data-layout-generation");
   await expectFiniteAttribute(root, "data-surface-width");
   await expectFiniteAttribute(root, "data-surface-height");
@@ -122,6 +126,9 @@ test.describe("ARCH-RC53-55 responsive public share", () => {
         roomId: "room_living",
       });
       const fingerprint = await desktopRoot.getAttribute("data-projection-fingerprint");
+      const contentIdentity = await desktopRoot.getAttribute(
+        "data-projection-content-identity"
+      );
       const safeAreaStyle = await desktopRoot.getAttribute("style");
       for (const inset of ["top", "right", "bottom", "left"]) {
         expect(safeAreaStyle).toContain(`safe-area-inset-${inset}`);
@@ -149,6 +156,9 @@ test.describe("ARCH-RC53-55 responsive public share", () => {
         desktopGeneration
       );
       expect(await mobileRoot.getAttribute("data-projection-fingerprint")).toBe(fingerprint);
+      expect(await mobileRoot.getAttribute("data-projection-content-identity")).toBe(
+        contentIdentity
+      );
       await expectNoPageOverflow(page);
       await expectTouchTargets(page);
       await expectUniqueResponsiveIdentities(page);
@@ -180,9 +190,18 @@ test.describe("ARCH-RC53-55 responsive public share", () => {
       await diningRoom.click();
       await expectShareReady(page, { mode: "desktop", roomId: "beta-dining" });
       await expect(diningRoom).toHaveAttribute("aria-pressed", "true");
+      const roomGeneration = Number(await root.getAttribute("data-layout-generation"));
       const diningView = page.getByTestId("share-saved-view-action-view-dining-plan");
       await diningView.click();
       await expect(diningView).toHaveAttribute("aria-pressed", "true");
+      await expect(root).toHaveAttribute(
+        "data-selected-saved-view-id",
+        "view-dining-plan"
+      );
+      await expect(root).toHaveAttribute("data-layout-status", "ready");
+      await expect
+        .poll(async () => Number(await root.getAttribute("data-layout-generation")))
+        .not.toBe(roomGeneration);
       await diningView.focus();
       await expect(diningView).toBeFocused();
       const desktopGeneration = Number(await root.getAttribute("data-layout-generation"));

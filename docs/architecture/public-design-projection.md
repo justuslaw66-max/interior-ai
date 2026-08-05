@@ -22,10 +22,10 @@ responsibility roles.
 
 `tests/e2e/public-projection-assertion.ts` is certification-only. It validates
 the exact public API envelope, canonicalizes both inputs to stored design schema
-revision 1, applies the production public projection, rejects undeclared or
-sensitive fields, sorts stable room/item/zone/view identities, and then
-delegates object-key and noisy-timestamp normalization to
-`fingerprintDesignSnapshot`. It is evidence of content parity, not an
+revision 1, applies the production public projection, and rejects undeclared or
+sensitive fields. It delegates stable public collection ordering to the
+production public-identity contract and object-key/noisy-timestamp normalization
+to `fingerprintDesignSnapshot`. It is evidence of content parity, not an
 authorization or share-token decision.
 
 Client preview is separate. It suppresses owner editing chrome and actions
@@ -195,3 +195,56 @@ followed by public-projection security, the 12-case Chromium/WebKit share
 matrix, duplication/privacy, beta smoke, persistence, build, and Phase 8
 checks. No schema, data, token, authorization, deployment, or external rollback
 is required.
+
+## ARCH-RC55 content identity contract
+
+Public content equality is no longer owned by the generic eight-hex design
+fingerprint. `buildPublicProjectionContentIdentity` accepts the already
+projected public `DesignSnapshot`, repeats the closed ARCH-RC54 shape/sensitive
+field assertion, orders stable rooms/items/zones/item references/saved views/
+layout versions, and reuses `serializeDesignSnapshotFingerprint` for sorted
+object keys and declared noisy-time omission. The preimage begins with
+`public-design-projection.v1`, so an incompatible future representation cannot
+silently reuse this identity. Node's built-in SHA-256 produces the complete
+64-hex digest; it is not truncated and adds no dependency.
+
+The current public-sharing identity inventory is:
+
+| Identity | Owner / symbol | Algorithm or tuple and inputs | Size / timing | Authority and consumers | Collision evidence |
+| --- | --- | --- | --- | --- | --- |
+| Public representation version | `DesignSnapshot.version`, stored `schemaRevision`, and `PUBLIC_PROJECTION_CONTENT_IDENTITY_VERSION` | v3 document/schema revision plus literal `public-design-projection.v1` in the digest preimage | Small synchronous literals | Prevents incompatible public representations sharing content identity | Version prefix is asserted by the identity contract |
+| Legacy public content diagnostic | `fingerprintDesignSnapshot`; exposed through `buildShareExportFidelitySummary.fingerprint` | FNV-1a over migrated, key-sorted snapshot serialization with `timestamp`/`createdAt`/`updatedAt` omitted | 32 bits, eight hex; synchronous and weak-map cached by object | Handoff display, QA parity, and diagnostics only; never layout correctness after RC55 | Committed pair collides at `bafccb68` |
+| RC54 certification fingerprint | `fingerprintPublicDesignProjection` in `tests/e2e/public-projection-assertion.ts` | Stable public collection ordering followed by the same generic FNV serializer | 32 bits, eight hex; synchronous test-only | Like-for-like beta/duplicate content evidence, not runtime authorization/readiness | Public-field/private-field/order tests; collision resistance is not claimed |
+| Public projection content identity | `buildPublicProjectionContentIdentity` | SHA-256 over `public-design-projection.v1` plus the canonical closed public projection serialization | 256 bits, 64 hex plus prefix; synchronous server computation once per share render | Correctness authority for layout/readiness and stale-projection rejection | Old collision pair receives `bca20e…35b45` and `baf781…7141d` |
+| Publication/binding identity | share route/API owners | Exact enabled token selects one design; public API assertion separately compares design ID plus `updatedAt` | Opaque IDs/token and timestamp; synchronous route/database result | Authorization, revocation, live design/revision binding; never inferred from content equality | Wrong token, disabled share, stale revision, and wrong design tests |
+| Responsive layout identity | `buildPublicShareLayoutKey` | JSON tuple `["public-share-layout", 1, contentIdentity, mode, selectedRoomId, selectedSavedViewId]` | Exact bounded string; synchronous after client state resolution | Canvas/surface readiness, mode/room/view changes, stale-layout rejection | Field-difference, same-state, old-content collision, and exact-key stale tests |
+| Numeric diagnostic generation | `buildPublicShareLayoutGeneration` | FNV-1a over the complete layout key | Nonzero unsigned 32-bit number; synchronous | DOM/test/log diagnostics and corroborating surface evidence only; exact key remains authoritative | A committed current-layout-key pair shares generation `2663472089` but cannot ready the other key |
+| Room/view selection identity | `usePublicShareSelection` | Requested room resolved against canonical current rooms; requested view resolved against the selected room's declared view IDs | Canonical strings or null; synchronous React state | Room/view continuity and fallback; contributes to layout identity only after current-projection resolution | Resize continuity and removed-room/view fallback coverage |
+| Render-instance keys | `PublicShareShell` route key and child React keys | Design ID plus route token for shell; canonical room/view/item IDs for children; one fixed wall mesh uses bounded index geometry | Strings or bounded local index; synchronous render metadata | React remount/reconciliation only; never content equality or authorization | Static identity/DOM uniqueness and responsive browser coverage |
+
+The two collision projections are committed in
+`scripts/fixtures/public-share-projection-identity-collision.json`. They are
+closed, valid, canonically unequal, and differ in the deliberately public title
+field. Their former content and same-design/token layout identities are equal at
+`bafccb68`; their new content and layout identities are different. Tests do not
+search for a collision at runtime.
+
+Equivalent object-property order and stable public collection order produce
+one content identity. Declared public presentation, room, item, variant,
+dimension, transform, material, surface, and canonical rotation changes produce
+different identities. Owner-only floor-plan provenance is projected out before
+identity and therefore has no effect; an undeclared or sensitive field passed
+directly to the identity function throws. Timestamps remain the established
+derived/noisy class and publication `updatedAt` stays separately binding.
+
+The digest is synchronous and server-owned. A digest or validation error aborts
+the server render and cannot mark a client layout ready. No Web Crypto promise,
+stale completion, timer, retry, random value, object identity, array index,
+responsive mode, or render-time timestamp enters content identity. Desktop and
+mobile therefore expose the same content identity; mode belongs only to the
+layout tuple. Public identity does not authorize access.
+
+Rollback is one local revert of the ARCH-RC55 implementation commit, followed
+by the collision/identity contract, public projection/security, responsive
+Chromium/WebKit, beta/duplication, strict build, and Phase 8 checks. There is no
+schema, data, token, authorization, dependency, deployment, or external rollback.

@@ -686,3 +686,35 @@ corrected, reviewed, and the exact artifact is certified.
 - **Remaining archival queue:** only RC55 collision-resistant projection
   identity and RC55 merge-required Gate A3 ownership for responsive
   Chromium/WebKit coverage remain.
+
+### ARCH-RC55 collision-resistant projection identity queue — 2026-08-06
+
+- **`ARCH-RC55-READINESS-IDENTITY` — locally remediated:** from exact clean
+  `abec1b92b86a0b74193f437aea11033f666adca0` on
+  `fix/arch-rc55-projection-identity`, correctness now uses full versioned
+  SHA-256 identity over the closed canonical public projection. The exact
+  retained title pair
+  `ARCH-RC55 1vnkyl8-80u7s7-q7q69o` /
+  `ARCH-RC55 y1co6q-7jaizn-1n448ct` collides at old FNV `bafccb68` but receives
+  different new identities.
+- **Identity vocabulary:** content identity is separate from the enabled-token
+  design binding and public API `updatedAt` revision. The versioned exact layout
+  tuple adds mode, canonical room, and saved view. Numeric FNV layout generation
+  and the existing eight-hex handoff fingerprint are diagnostic only; the shell
+  React key remains a design/token render-instance identity.
+- **Failure and continuity:** SHA-256 is computed synchronously once on the
+  server; there is no async completion race. A throw prevents the shell from
+  rendering ready. Exact current-key checks reject stale Canvas and surface
+  evidence, and selection resolution preserves only room/view IDs still present
+  in the current projection.
+- **Scope and evidence:** no field policy, token/auth lifecycle, cloud revision,
+  responsive geometry, dependency, workflow, required-test manifest, Gate A3
+  ownership, Full E2E, Consumer Undo target, push, deployment, or integration
+  branch changed. Identity/security unit coverage, 12/12 responsive
+  Chromium/WebKit, 5/5 beta/duplication, truthfulness, cleanup, critical-required,
+  zero-warning lint, typecheck, strict build, and Phase 8 pass. The global
+  code-quality command retains only ten unrelated violations independently
+  reproduced at the untouched starting SHA; no allowance was changed.
+- **Remaining archival queue:** only `ARCH-RC55-REQUIRED-GATE` remains open for
+  canonical merge-required Gate A3 ownership of the responsive Chromium/WebKit
+  coverage. RC55 remains overall F until that separate batch closes.

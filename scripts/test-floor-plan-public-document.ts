@@ -29,6 +29,7 @@ import {
 } from "@/lib/room-persistence";
 import { buildDuplicatedDesignData } from "@/lib/design-duplication";
 import { fingerprintDesignSnapshot } from "@/lib/snapshot-fingerprint";
+import { buildPublicProjectionContentIdentity } from "@/lib/public-design-projection-identity";
 import type { DesignSnapshot } from "@/lib/room-types";
 import {
   fingerprintPublicDesignProjection,
@@ -838,6 +839,9 @@ assert.equal(projectedSharedSnapshot.floorPlan?.fixedElements?.[0].rotationDeg, 
 const sharedPublicFingerprint = fingerprintPublicDesignProjection(
   storedToSnapshot(sharedStoredDesign)
 );
+const sharedPublicContentIdentity = buildPublicProjectionContentIdentity(
+  projectedSharedSnapshot
+);
 const changedPrivateOwnerSnapshot = structuredClone(sharedStoredDesign);
 changedPrivateOwnerSnapshot.floorPlan!.sourceJobId = "different-private-job";
 changedPrivateOwnerSnapshot.floorPlan!.sourceAssetSha256 = "a".repeat(64);
@@ -850,6 +854,13 @@ assert.equal(
   fingerprintPublicDesignProjection(storedToSnapshot(changedPrivateOwnerSnapshot)),
   sharedPublicFingerprint,
   "Owner-only import metadata must not change the public projection fingerprint"
+);
+assert.equal(
+  buildPublicProjectionContentIdentity(
+    projectSharedDesignSnapshot(storedToSnapshot(changedPrivateOwnerSnapshot))
+  ),
+  sharedPublicContentIdentity,
+  "Owner-only import metadata must not change public correctness identity"
 );
 
 const publicFingerprintMutations: Array<{
@@ -923,6 +934,11 @@ for (const { label, mutate } of publicFingerprintMutations) {
     sharedPublicFingerprint,
     `${label} must change the public projection fingerprint`
   );
+  assert.notEqual(
+    buildPublicProjectionContentIdentity(projectSharedDesignSnapshot(changed)),
+    sharedPublicContentIdentity,
+    `${label} must change the collision-resistant public content identity`
+  );
 }
 
 const reorderedOwnerSnapshot = storedToSnapshot(structuredClone(sharedStoredDesign));
@@ -937,6 +953,13 @@ assert.equal(
   fingerprintPublicDesignProjection(reorderedOwnerSnapshot),
   sharedPublicFingerprint,
   "Equivalent room, item, zone, and saved-view ordering must normalize identically"
+);
+assert.equal(
+  buildPublicProjectionContentIdentity(
+    projectSharedDesignSnapshot(reorderedOwnerSnapshot)
+  ),
+  sharedPublicContentIdentity,
+  "Equivalent public collection ordering must keep one content identity"
 );
 assert.notEqual(
   fingerprintDesignSnapshot(projectSharedDesignSnapshot(reorderedOwnerSnapshot)),
@@ -1061,6 +1084,11 @@ assert.throws(
   () => fingerprintPublicDesignProjection(unexpectedSensitiveSnapshot),
   /undeclared field snapshot.ownerInternalState/,
   "Unexpected sensitive snapshot fields must fail the fingerprint assertion"
+);
+assert.throws(
+  () => buildPublicProjectionContentIdentity(unexpectedSensitiveSnapshot),
+  /undeclared field snapshot.ownerInternalState/,
+  "Unexpected sensitive snapshot fields must fail closed before identity"
 );
 
 const duplicatedSharedDesign = buildDuplicatedDesignData(

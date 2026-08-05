@@ -1,0 +1,73 @@
+{
+  "schema": "interior-ai.public-projection-fnv1a-collision.v1",
+  "oldFingerprint": "bafccb68",
+  "meaningfulDifference": "title",
+  "projectionA": {
+    "version": 3,
+    "activeRoomId": "room-1",
+    "title": "ARCH-RC55 1vnkyl8-80u7s7-q7q69o",
+    "style": "modern",
+    "budget": "mid",
+    "notes": "Deterministic ARCH-RC55 collision fixture.",
+    "rooms": [
+      {
+        "id": "room-1",
+        "name": "Living Room",
+        "roomType": "living",
+        "floorLevel": 1,
+        "floorLabel": "1F",
+        "geometry": {
+          "width": 4,
+          "depth": 5,
+          "wallThickness": 0.2,
+          "height": 2.6,
+          "slabThickness": 0.1
+        },
+        "planPosition": { "x": 0, "z": 0 },
+        "planShape": "rectangle",
+        "surfaces": {},
+        "surfaceFinishes": {},
+        "surfaceOpacity": { "wall": 1, "floor": 1, "ceiling": 1 },
+        "ceilingVisible": true,
+        "items": [],
+        "zones": [],
+        "savedViews": [],
+        "layoutVersions": []
+      }
+    ]
+  },
+  "projectionB": {
+    "version": 3,
+    "activeRoomId": "room-1",
+    "title": "ARCH-RC55 y1co6q-7jaizn-1n448ct",
+    "style": "modern",
+    "budget": "mid",
+    "notes": "Deterministic ARCH-RC55 collision fixture.",
+    "rooms": [
+      {
+        "id": "room-1",
+        "name": "Living Room",
+        "roomType": "living",
+        "floorLevel": 1,
+        "floorLabel": "1F",
+        "geometry": {
+          "width": 4,
+          "depth": 5,
+          "wallThickness": 0.2,
+          "height": 2.6,
+          "slabThickness": 0.1
+        },
+        "planPosition": { "x": 0, "z": 0 },
+        "planShape": "rectangle",
+        "surfaces": {},
+        "surfaceFinishes": {},
+        "surfaceOpacity": { "wall": 1, "floor": 1, "ceiling": 1 },
+        "ceilingVisible": true,
+        "items": [],
+        "zones": [],
+        "savedViews": [],
+        "layoutVersions": []
+      }
+    ]
+  }
+}

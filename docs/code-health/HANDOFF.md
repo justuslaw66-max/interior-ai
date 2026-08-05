@@ -3654,3 +3654,62 @@ Rollback is `git revert <implementation-commit-sha>`, followed by
 collision case. No data, schema, dependency, workflow, integration branch,
 push, deployment, or external-setting rollback is required. Full E2E is not
 part of this bounded remediation.
+
+## ARCH-RC55 collision-resistant public projection identity — 2026-08-06
+
+Starting source was exact clean
+`abec1b92b86a0b74193f437aea11033f666adca0`; branch is
+`fix/arch-rc55-projection-identity`. Archival RC55
+`4883ffb9fc87248b6aa8624cdef39c5f97a173d1` is not an ancestor and was not
+cherry-picked. RC54 closed projection, RC53 cloud revision/projection-source,
+responsive layout, and RC48 keyboard commits remain ancestors. No running app
+listener was present before edits.
+
+The committed fixture proves a current-runtime collision rather than relying
+on probability. Closed projections titled
+`ARCH-RC55 1vnkyl8-80u7s7-q7q69o` and
+`ARCH-RC55 y1co6q-7jaizn-1n448ct` are canonically unequal but both produce old
+FNV-1a `bafccb68`, the same former design/token projection identity, and the
+same former desktop-room layout key. Their new full versioned SHA-256 identities
+are `public-design-projection.v1:sha256:bca20ead56fca406f2109f34ab09e20c0fa5e90f0128983f773b4773ea635b45`
+and `public-design-projection.v1:sha256:baf781927092d4f47e815cd08ff33ea50cfde427cef00b27d8584c232db7141d`.
+
+The server-only identity utility validates the closed projection, reuses RC54
+stable collection ordering and the existing canonical snapshot serializer,
+prefixes representation version `public-design-projection.v1`, and applies
+untruncated built-in SHA-256. The shell's exact versioned JSON layout tuple adds
+responsive mode, canonical selected room, and selected saved view. Canvas and
+surface readiness require that exact current key. Numeric FNV generation and
+the old handoff fingerprint are diagnostic only. Design/token lookup and the
+API's design/`updatedAt` revision binding remain separate; the shell React key
+is a render-instance identity. A removed room/view is retained only if the
+current projection still declares it.
+
+Identity computation is synchronous once per server render, so there is no Web
+Crypto completion or supersession race. Validation/digest failure aborts render
+and cannot mark layout ready. The 12-room/720-item 554,055-byte public fixture
+measures 7.21 ms p50 / 7.55 ms p95 over 100 runs. `/design` JS and CSS are byte-
+identical to the base at 5,814,916 / 1,109,297 raw/Brotli JS and 130,408 /
+17,276 CSS. Like-for-like share output remains 19 JS chunks and moves by only
++346 raw / +2 Brotli bytes to 2,439,363 / 572,348; CSS is unchanged. The 2,622-
+byte server utility introduces no eager client digest dependency.
+
+Final focused evidence is green: projection identity/collision and responsive
+unit contracts; ARCH-RC54 projection/security; 12/12 zero-retry responsive and
+read-only Chromium/WebKit; 5/5 Chromium beta plus duplication/privacy;
+room/view continuity; invalid/revoked tokens; truthfulness; all 78 cleanup
+guards; `critical-required`; full zero-warning lint; typecheck; strict 57-page
+build; complete Phase 8; and diff hygiene. The only nonzero requested gate is
+the global code-quality command: after all three RC55-owned page/shell findings
+were removed, it reports ten RC48 tracing/interaction metrics independently
+reproduced from an untouched archive of the exact starting SHA. No quality
+exception, budget, retry, timeout, or suppression changed.
+
+RC55 projection identity is resolved. The only remaining RC55 archival gap is
+the separate merge-required Gate A3 ownership batch for responsive Chromium/
+WebKit coverage. Full E2E was not run. No required-test manifest, workflow,
+ruleset, runner, deployment, integration branch, push, responsive geometry,
+public field policy, token/auth lifecycle, cloud revision, or unrelated Consumer
+Undo target changed. Rollback is one local revert followed by identity,
+projection-security, responsive, beta/duplication, build, and Phase 8 checks;
+no data or external rollback is required.

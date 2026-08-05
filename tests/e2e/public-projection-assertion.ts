@@ -8,12 +8,9 @@ import {
   assertSharedDesignSnapshotPublic,
   projectSharedStoredDesign,
 } from "../../lib/shared-design-snapshot";
+import { canonicalizePublicDesignProjection } from "../../lib/public-design-projection-identity";
 import type {
-  DesignItem,
   DesignSnapshot,
-  LayoutVersion,
-  RoomSnapshot,
-  ZoneMin,
 } from "../../lib/room-types";
 
 const PUBLIC_DESIGN_RESPONSE_FIELDS = [
@@ -54,48 +51,6 @@ function fail(message: string): never {
   throw new Error(`Invalid public design projection: ${message}`);
 }
 
-function compareStableId(
-  left: { id?: string; instanceId?: string },
-  right: { id?: string; instanceId?: string }
-) {
-  const leftId = left.id ?? left.instanceId ?? "";
-  const rightId = right.id ?? right.instanceId ?? "";
-  if (leftId < rightId) return -1;
-  if (leftId > rightId) return 1;
-  return 0;
-}
-
-function normalizeItems(items: DesignItem[]) {
-  return [...items].sort(compareStableId);
-}
-
-function normalizeZones(zones: ZoneMin[]) {
-  return [...zones]
-    .sort(compareStableId)
-    .map((zone) => ({ ...zone, itemIds: [...zone.itemIds].sort() }));
-}
-
-function normalizeLayoutVersions(layoutVersions: LayoutVersion[] | undefined) {
-  if (!layoutVersions) return undefined;
-  return [...layoutVersions]
-    .sort(compareStableId)
-    .map((layoutVersion) => ({
-      ...layoutVersion,
-      items: normalizeItems(layoutVersion.items),
-      zones: normalizeZones(layoutVersion.zones),
-    }));
-}
-
-function normalizeRoom(room: RoomSnapshot): RoomSnapshot {
-  return {
-    ...room,
-    items: normalizeItems(room.items),
-    zones: normalizeZones(room.zones),
-    savedViews: [...room.savedViews].sort(compareStableId),
-    layoutVersions: normalizeLayoutVersions(room.layoutVersions),
-  };
-}
-
 function normalizeValue(value: unknown): unknown {
   if (Array.isArray(value)) return value.map(normalizeValue);
   if (!isRecord(value)) return value;
@@ -120,10 +75,7 @@ export function normalizePublicDesignProjection(
   if (!projectedStored) fail("snapshot could not be canonicalized to the public schema");
   const projected = storedToSnapshot(projectedStored);
   assertSharedDesignSnapshotPublic(projected);
-  return {
-    ...projected,
-    rooms: projected.rooms.map(normalizeRoom).sort(compareStableId),
-  };
+  return canonicalizePublicDesignProjection(projected);
 }
 
 export function fingerprintPublicDesignProjection(snapshot: DesignSnapshot) {

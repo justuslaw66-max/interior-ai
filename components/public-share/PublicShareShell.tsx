@@ -59,7 +59,6 @@ function useResponsiveLayoutMode() {
       desktopQuery.removeEventListener("change", updateMode);
     };
   }, []);
-
   return mode;
 }
 
@@ -100,15 +99,27 @@ function usePublicShareSelection(snapshot: DesignSnapshot) {
 }
 
 function usePublicShareReadiness(input: {
-  projectionIdentity: string;
+  projectionContentIdentity: string;
   layoutMode: PublicShareLayoutMode | null;
   selectedRoomId: string | null;
+  selectedSavedViewId: string | null;
   hasSelectedRoom: boolean;
 }) {
-  const { projectionIdentity, layoutMode, selectedRoomId, hasSelectedRoom } = input;
+  const {
+    projectionContentIdentity,
+    layoutMode,
+    selectedRoomId,
+    selectedSavedViewId,
+    hasSelectedRoom,
+  } = input;
   const layoutKey =
     layoutMode && selectedRoomId
-      ? buildPublicShareLayoutKey(projectionIdentity, layoutMode, selectedRoomId)
+      ? buildPublicShareLayoutKey(
+          projectionContentIdentity,
+          layoutMode,
+          selectedRoomId,
+          selectedSavedViewId
+        )
       : null;
   const layoutGeneration = layoutKey ? buildPublicShareLayoutGeneration(layoutKey) : 0;
   const [canvasLayoutKey, setCanvasLayoutKey] = useState<string | null>(null);
@@ -141,20 +152,24 @@ function usePublicShareReadiness(input: {
 
 function PublicShareRoot({
   children,
-  projectionFingerprint,
+  projectionContentIdentity,
+  projectionDiagnosticFingerprint,
   layoutMode,
   layoutGeneration,
   layoutReady,
   selectedRoomId,
+  selectedSavedViewId,
   hasSelectedRoom,
   surface,
 }: {
   children: ReactNode;
-  projectionFingerprint: string;
+  projectionContentIdentity: string;
+  projectionDiagnosticFingerprint: string;
   layoutMode: PublicShareLayoutMode | null;
   layoutGeneration: number;
   layoutReady: boolean;
   selectedRoomId: string | null;
+  selectedSavedViewId: string | null;
   hasSelectedRoom: boolean;
   surface: SurfaceMeasurement | null;
 }) {
@@ -167,7 +182,9 @@ function PublicShareRoot({
       data-layout-mode={layoutMode ?? "resolving"}
       data-layout-generation={layoutGeneration}
       data-selected-room-id={selectedRoomId ?? ""}
-      data-projection-fingerprint={projectionFingerprint}
+      data-selected-saved-view-id={selectedSavedViewId ?? ""}
+      data-projection-content-identity={projectionContentIdentity}
+      data-projection-fingerprint={projectionDiagnosticFingerprint}
       data-surface-width={surface?.width ?? 0}
       data-surface-height={surface?.height ?? 0}
       style={safeAreaStyle}
@@ -179,21 +196,22 @@ function PublicShareRoot({
 
 export function PublicShareShell({
   snapshot,
-  projectionIdentity,
-  projectionFingerprint,
+  projectionContentIdentity,
+  projectionDiagnosticFingerprint,
   children,
 }: {
   snapshot: DesignSnapshot;
-  projectionIdentity: string;
-  projectionFingerprint: string;
+  projectionContentIdentity: string;
+  projectionDiagnosticFingerprint: string;
   children: ReactNode;
 }) {
   const layoutMode = useResponsiveLayoutMode();
   const selection = usePublicShareSelection(snapshot);
   const readiness = usePublicShareReadiness({
-    projectionIdentity,
+    projectionContentIdentity,
     layoutMode,
     selectedRoomId: selection.selectedRoomId,
+    selectedSavedViewId: selection.selectedSavedViewId,
     hasSelectedRoom: Boolean(selection.activeRoom),
   });
   const contextValue: PublicShareLayoutContextValue = {
@@ -206,15 +224,16 @@ export function PublicShareShell({
     reportCanvasReady: readiness.reportCanvasReady,
     reportSurfaceMeasurement: readiness.reportSurfaceMeasurement,
   };
-
   return (
     <PublicShareLayoutContext.Provider value={contextValue}>
       <PublicShareRoot
-        projectionFingerprint={projectionFingerprint}
+        projectionContentIdentity={projectionContentIdentity}
+        projectionDiagnosticFingerprint={projectionDiagnosticFingerprint}
         layoutMode={layoutMode}
         layoutGeneration={readiness.layoutGeneration}
         layoutReady={readiness.layoutReady}
         selectedRoomId={selection.selectedRoomId}
+        selectedSavedViewId={selection.selectedSavedViewId}
         hasSelectedRoom={Boolean(selection.activeRoom)}
         surface={readiness.surface}
       >

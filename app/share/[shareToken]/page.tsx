@@ -11,6 +11,7 @@ import {
 } from "@/lib/share-shopping-csv";
 import { CATALOG_ITEMS } from "@/lib/catalog";
 import { buildShareExportFidelitySummary } from "@/lib/share-export-fidelity";
+import { buildPublicProjectionContentIdentity } from "@/lib/public-design-projection-identity";
 import { buildRoomHealthSummary } from "@/lib/room-health-summary";
 import {
   resolveRoomShoppingItems,
@@ -54,7 +55,6 @@ function formatMeters(value: number) {
 function formatCategory(value: string) {
   return value.replace(/_/g, " ").replace(/\b\w/g, (letter) => letter.toUpperCase());
 }
-
 export default async function SharePage({
   params,
 }: {
@@ -265,8 +265,8 @@ export default async function SharePage({
     <PublicShareShell
       key={`${design.id}:${shareToken}`}
       snapshot={designSnapshot}
-      projectionIdentity={`${design.id}:${shareToken}:${handoffFidelitySummary.fingerprint}`}
-      projectionFingerprint={handoffFidelitySummary.fingerprint}
+      projectionContentIdentity={buildPublicProjectionContentIdentity(designSnapshot)}
+      projectionDiagnosticFingerprint={handoffFidelitySummary.fingerprint}
     >
       {qaFidelitySummary ? (
         <div

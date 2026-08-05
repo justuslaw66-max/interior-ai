@@ -2,6 +2,8 @@ import type { RoomSnapshot } from "@/lib/room-types";
 
 export type PublicShareLayoutMode = "mobile" | "tablet" | "desktop";
 
+export const PUBLIC_SHARE_LAYOUT_CONTRACT_VERSION = 1 as const;
+
 export function resolvePublicShareLayoutMode(width: number): PublicShareLayoutMode {
   if (width < 768) return "mobile";
   if (width < 1024) return "tablet";
@@ -19,11 +21,19 @@ export function resolvePublicShareSelectedRoomId(
 }
 
 export function buildPublicShareLayoutKey(
-  projectionIdentity: string,
+  projectionContentIdentity: string,
   mode: PublicShareLayoutMode,
-  selectedRoomId: string
+  selectedRoomId: string,
+  selectedSavedViewId: string | null
 ) {
-  return `${projectionIdentity}:${mode}:${selectedRoomId}`;
+  return JSON.stringify([
+    "public-share-layout",
+    PUBLIC_SHARE_LAYOUT_CONTRACT_VERSION,
+    projectionContentIdentity,
+    mode,
+    selectedRoomId,
+    selectedSavedViewId,
+  ]);
 }
 
 export function buildPublicShareLayoutGeneration(layoutKey: string) {
