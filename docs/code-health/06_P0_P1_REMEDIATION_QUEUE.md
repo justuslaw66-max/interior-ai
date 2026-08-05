@@ -513,3 +513,28 @@ Rollback: revert the single CH-0012 implementation commit. If callers must be is
 - **Remaining queue:** P2 compare and drawer-focus findings are locally closed.
   RC47 and RC54 plus RC53/55 responsive share remain P3 and require separate
   bounded changes before any final integration candidate is eligible.
+
+### RC47-RC55 archival P3 drawer-assertion queue — 2026-08-05
+
+- **`ARCH-RC47-ASSERTIONS` — P3, locally remediated:** from exact clean
+  `793986d22b073c2d4ba093350b2442838703deb0`, product specs 104 and 143 now
+  select the unique visible modal product drawer by `dialog` role and its
+  accessible name `Review exact variant`, assert `aria-modal="true"`, and retain
+  their exact Arcadia and Seb Small product, variant, commerce, selected-item,
+  material, dimension, warranty, swatch, and configuration contracts. The Seb
+  assertion no longer uses `.first()`. Archival RC47 commit
+  `23e12bfe85742acb3bb10ecfb808401b3b63c638` remained evidence only.
+- **Classification and scope:** **A — STALE TEST ASSERTIONS**. The rendered
+  product drawer was already one correctly named modal dialog; the obsolete
+  `complementary` query targeted the wrong semantic contract, while the actual
+  complementary landmark remained the separate plan-information region. No
+  production, drawer-focus, compare, catalog, product, responsive-share, or
+  external behavior changed.
+- **Evidence:** the exact two-spec Chromium run moves from 5 passed / 2 failed
+  to 7/7 passed; the RC52 Chromium/WebKit drawer-focus matrix remains 18/18;
+  the focused Chromium compare/layout/product-flow set remains 10/10. All
+  required local gates, strict catalog audit/build, Phase 8 budgets, and diff
+  hygiene pass. Full E2E was intentionally excluded.
+- **Remaining queue:** RC54 and RC53/55 responsive share remain P3 and require
+  separate bounded changes. This closure does not authorize an integration
+  branch, push, deployment, workflow change, or external-setting change.

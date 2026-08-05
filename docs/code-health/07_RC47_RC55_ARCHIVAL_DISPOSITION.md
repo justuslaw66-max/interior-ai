@@ -441,3 +441,50 @@ the focused implementation commit once its SHA is resolved. Remaining archival
 findings are RC47 and RC54 plus RC53/55 responsive share work at P3. No RC47,
 RC54, RC55, touch-target, responsive-share, integration-branch, push, workflow,
 deployment, or external-setting work is included.
+
+## ARCH-RC47 drawer-assertion remediation closure — 2026-08-05
+
+The RC47 row above records the historical finding at audited source
+`7016da0ad74c7d463a07ec061259b50d757031e0`. From exact clean starting source
+`793986d22b073c2d4ba093350b2442838703deb0`, `ARCH-RC47-ASSERTIONS` is locally
+remediated on `fix/arch-rc47-drawer-assertions`. Archival commit
+`23e12bfe85742acb3bb10ecfb808401b3b63c638` was inspected only for intent and
+was not cherry-picked. Its relevant intent was to align product certification
+with the product preview's current semantics; its unrelated multi-room change
+was already protected by current split coverage and was not replayed.
+
+Focused Chromium execution reproduced exactly five passes and two failures:
+`tests/e2e/104-arcadia-coffee-table-smoke.spec.ts` failed at its Arcadia title
+assertion after selecting `getByRole("complementary")`, and
+`tests/e2e/143-seb-lift-top-small-product-info.spec.ts` failed the equivalent
+Seb Small title assertion through the same selector. The rendered accessibility
+tree showed the correct Arcadia and Seb Small content inside one modal `dialog`
+named `Review exact variant`; the only `complementary` landmark was the separate
+`Plan information and controls` region. Classification is **A — STALE TEST
+ASSERTIONS**. No product behavior or production file changed.
+
+Both specs now query
+`getByRole("dialog", { name: /^Review exact variant$/i })`, require exactly one
+match, visibility, and `aria-modal="true"`, then retain exact product title,
+variant, retailer, add, selected-item, material, dimension, warranty, swatch,
+and configured-state assertions. The Seb title assertion is exact and no longer
+uses `.first()`, so duplicate matching content cannot be hidden. The shared
+drawer name remains the visible dialog title; current-product identity is
+proved separately by the exact title and product-specific detail assertions.
+
+The corrected two-spec Chromium run passes 7/7. RC52 unit/render checks pass,
+and its complete pointer/keyboard, Consumer/Pro, desktop/mobile, product-card,
+compare-tray, close/Escape/backdrop, reopen, overlay-ownership, and restoration
+matrix passes 18/18 across Chromium and WebKit. The focused Chromium compare,
+layout, and product-flow regression set passes 10/10. Product-flow, editor
+accessibility, asset availability, design-page cleanup, required-test
+truthfulness, critical-required, zero-warning lint, typecheck, code quality,
+strict catalog audit, the strict 57-page production build, Phase 8 budgets, and
+diff hygiene all pass. Full E2E was not run.
+
+Rollback is one local revert of the focused implementation commit once its SHA
+is resolved, followed by the two product specs and RC52 drawer-focus matrix; no
+data or external rollback is required. Remaining archival findings are RC54 and
+the RC53/55 responsive-share work at P3. No drawer redesign, RC52 production
+change, RC54, responsive-share, integration-branch, push, workflow, deployment,
+or external-setting work is included.

@@ -16,7 +16,10 @@ test.describe("104. Arcadia Coffee Table Catalog Smoke", () => {
     expect(opened).toBeTruthy();
 
     await expect(page.getByText("Product details")).toBeVisible({ timeout: 10000 });
-    const drawer = page.getByRole("complementary");
+    const drawer = page.getByRole("dialog", { name: /^Review exact variant$/i });
+    await expect(drawer).toHaveCount(1);
+    await expect(drawer).toBeVisible();
+    await expect(drawer).toHaveAttribute("aria-modal", "true");
     await expect(drawer.getByText(/^Arcadia Coffee Table$/i)).toBeVisible();
     await expect(page.getByTestId("catalog-detail-variant-label")).toContainText(/Caramel Oak/i);
     await expect(page.getByTestId("catalog-detail-add-to-room")).toBeEnabled();

@@ -3118,3 +3118,114 @@ deployment, workflow, or external-setting rollback is required. Remaining
 archival findings are RC47 and RC54 plus RC53/55 responsive-share work at P3;
 they require separate bounded remediations and do not authorize a final
 integration branch.
+
+## ARCH-RC47 product drawer assertion alignment — 2026-08-05
+
+### Outcome, starting state, and classification
+
+`ARCH-RC47-ASSERTIONS` is locally remediated on
+`fix/arch-rc47-drawer-assertions` from exact starting SHA
+`793986d22b073c2d4ba093350b2442838703deb0`. Before editing, status, diff,
+diff-check, and untracked-file checks were empty; HEAD matched exactly; archival
+RC47 commit `23e12bfe85742acb3bb10ecfb808401b3b63c638` was not an ancestor; and
+`lsof` found no running Interior AI server to mismatch with the canonical
+checkout. The archival commit was inspected only as evidence and was not
+cherry-picked. Its drawer-selector intent was retained; its unrelated
+multi-room assertion was not replayed.
+
+The smallest Chromium command over specs 104 and 143 reproduced the audited
+baseline exactly: five passes and two failures. The failures were:
+
+- `tests/e2e/104-arcadia-coffee-table-smoke.spec.ts`, “Arcadia Coffee Table
+  appears with verified Caramel Oak identity,” starting-source lines 19-20;
+- `tests/e2e/143-seb-lift-top-small-product-info.spec.ts`, “Seb Lift Top Small
+  appears in catalog with details, swatch, and open state controls,”
+  starting-source lines 245-246.
+
+Both selected `getByRole("complementary")` and then failed to find their exact
+product title. The browser accessibility snapshots showed correct Arcadia and
+Seb Small product identities, retailer links, and drawer content inside one
+`dialog` named `Review exact variant`; `aria-modal` was `true`. The only
+`complementary` landmark was the separate `Plan information and controls`
+region. Both cases opened from the product-card details action in Chromium.
+Product behavior was correct, so the classification is **A — STALE TEST
+ASSERTIONS**, not a product semantics regression.
+
+### Current semantic contract and bounded correction
+
+`CatalogItemDrawer` is a modal dialog labelled by its visible `Review exact
+variant` title. The Close button receives initial focus; Tab remains contained;
+Close, Escape, backdrop, add-to-room, or unavailable content close the same
+drawer. RC52 retains one product/action/source restoration descriptor, resolves
+only connected visible enabled current targets, defers to a newer topmost
+modal, never treats a stale DOM node as authority, and never falls back to
+`body`. Consumer and Pro, product-card and compare-tray, and desktop/mobile
+projections share this owner. The underlying catalog and plan-information
+landmarks remain separate from the portal dialog.
+
+Only the two product specs changed. Their old selector
+`getByRole("complementary")` is replaced by
+`getByRole("dialog", { name: /^Review exact variant$/i })`; each now proves
+exactly one match, visibility, and `aria-modal="true"`. Exact product title,
+variant, retailer, add-to-room, selected-item, material, dimension, warranty,
+swatch, and Seb open-state assertions remain. The Seb title is anchored and its
+old `.first()` is removed, preventing duplicate matching content from being
+masked. No helper, production file, accessibility document, timeout, retry,
+skip, dependency, lockfile, budget, or allowance changed.
+
+### Validation
+
+- Exact specs 104 and 143, Chromium — baseline **5 passed / 2 failed** on the
+  obsolete role; corrected result **7/7 passed**.
+- `npm run test:catalog-drawer-focus-unit` — pass.
+- `APP_ENV=development npm run test:catalog-drawer-focus` — **18/18 pass**,
+  nine cases each in Chromium and WebKit, including Consumer/Pro,
+  pointer/Enter/Space/Escape, Close/backdrop, initial focus and containment,
+  different-product reopen, product-card/compare-tray parity, both responsive
+  directions, stale-node replacement/fallback, unavailable-product close,
+  newer-overlay ownership, and workspace unmount.
+- Chromium `06-catalog-compare.spec.ts`, `catalog-category-layout.spec.ts`, and
+  `26-phase14-product-flow.spec.ts` — **10/10 pass**.
+- `npm run test:phase14-product-flow`,
+  `npm run test:editor-capabilities-accessibility`, and
+  `npm run test:catalog-asset-availability` — pass; the asset check scanned 144
+  files / 812 references and retained the existing five draft blockers only.
+- `npm run test:design-page-cleanup` — all 78 guards pass.
+- `npm run test:required-test-truthfulness` and
+  `npm run test:critical-required` — pass.
+- Full `npm run lint -- --max-warnings=0` — pass with zero warnings; only the
+  inherited generated-file Babel deoptimization notes appeared.
+- `npm run typecheck` and `npm run check:code-quality` — pass; 1,059 production
+  files, no growth, unsafe TypeScript suppression, or runtime cycle.
+- `CATALOG_STRICT_VALIDATION=true npm run test:catalog-audit` — pass across 144
+  files with zero failures, warnings, or duplicate asset IDs.
+- `APP_ENV=development CATALOG_STRICT_VALIDATION=true npm run build` — pass for
+  all 57 pages after the sandboxed Turbopack worker-port attempt failed with
+  `EPERM`; only the inherited floor-plan NFT tracing warning remains.
+- `npm run test:phase8-performance` — pass: representative project and boundary
+  budgets; initial JS 5,812,152 raw / 1,109,035 Brotli, initial CSS 129,803 /
+  17,182, Cabinetry Studio lazy chunk 492,639 / 84,899, and GLTFExporter 34,525
+  / 8,970.
+- `git diff --check` — pass. Full E2E — deliberately not run.
+
+### Review, rollback, and remaining work
+
+Independent read-only review returned **PASS — no actionable findings**. It
+confirmed that exactly the two obsolete assertions changed; the verified
+role/name/modal contract and unique count are asserted; exact product and
+commerce details remain; the Seb `.first()` removal strengthens duplicate
+detection; and no helper, test-ID substitution, dual-role selector, production
+change, RC52 regression, or unrelated cleanup was introduced. The only
+residual note is intentional: the dialog's accessible name is the generic
+visible title, while current-product identity is established by the scoped
+exact title and product-specific assertions. The reviewer made no changes and
+did not rerun validation.
+
+Rollback is `git revert <implementation-commit-sha>` followed by the exact
+two-spec Chromium run and RC52 Chromium/WebKit matrix. No data, schema,
+migration, deployment, workflow, or external rollback is required.
+
+Remaining archival findings are RC54 and RC53/55 responsive share at P3. No
+RC52 production change, drawer redesign, RC54, responsive-share,
+integration-branch, push, workflow, deployment, or external-setting work is
+included.

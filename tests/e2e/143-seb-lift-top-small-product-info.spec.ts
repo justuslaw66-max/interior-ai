@@ -242,8 +242,11 @@ test.describe("143. Seb Lift Top Small Product Info", () => {
     expect(opened).toBeTruthy();
 
     await expect(page.getByText("Product details")).toBeVisible({ timeout: 10000 });
-    const drawer = page.getByRole("complementary");
-    await expect(drawer.getByText(/Seb Lift Top Coffee Table, Small/i).first()).toBeVisible();
+    const drawer = page.getByRole("dialog", { name: /^Review exact variant$/i });
+    await expect(drawer).toHaveCount(1);
+    await expect(drawer).toBeVisible();
+    await expect(drawer).toHaveAttribute("aria-modal", "true");
+    await expect(drawer.getByText(/^Seb Lift Top Coffee Table, Small$/i)).toBeVisible();
     await expect(page.getByTestId("catalog-detail-variant-label")).toContainText(/Muted Honey/i);
     await expect(page.getByTestId("catalog-detail-add-to-room")).toBeEnabled();
     await expect(drawer.getByRole("link", { name: /retailer/i })).toHaveAttribute(
