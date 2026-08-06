@@ -697,7 +697,7 @@
       "limit": 400
     },
     "lib/useDesignPageFloorPlanTracing.ts": {
-      "lines": 611,
+      "lines": 556,
       "limit": 400
     },
     "lib/useDesignPageFloorPlanUnderlayController.ts": {
@@ -722,10 +722,6 @@
     },
     "lib/useDesignPagePlanPresentationModel.ts": {
       "lines": 445,
-      "limit": 400
-    },
-    "lib/useDesignPagePlanWorkspaceFacade.ts": {
-      "lines": 408,
       "limit": 400
     },
     "lib/useDesignPagePresentationQaFacade.ts": {
@@ -4615,7 +4611,7 @@
     "lib/useDesignPageEditorInteractionRegistration.ts": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 152
+        "maximum": 151
       }
     },
     "lib/useDesignPageEditorShellRuntime.ts": {
@@ -4638,16 +4634,8 @@
     },
     "lib/useDesignPageFloorPlanTracing.ts": {
       "overlongFunctions": {
-        "count": 2,
-        "maximum": 493
-      },
-      "complexFunctions": {
         "count": 1,
-        "maximum": 25
-      },
-      "deeplyNestedFunctions": {
-        "count": 1,
-        "maximum": 7
+        "maximum": 435
       }
     },
     "lib/useDesignPageFloorPlanUnderlayController.ts": {
@@ -4663,7 +4651,7 @@
     "lib/useDesignPageFloorPlanWorkflowState.ts": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 171
+        "maximum": 157
       }
     },
     "lib/useDesignPageHistory.ts": {
@@ -4713,7 +4701,7 @@
     "lib/useDesignPageItemInteractionFacade.ts": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 171
+        "maximum": 139
       }
     },
     "lib/useDesignPageItemSelectionController.ts": {
@@ -4885,13 +4873,13 @@
     "lib/useDesignPagePlanWorkspaceFacade.ts": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 243
+        "maximum": 220
       }
     },
     "lib/useDesignPagePlanWorkspaceRegistrationFacade.ts": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 206
+        "maximum": 179
       }
     },
     "lib/useDesignPagePresentationBackupRegistrationFacade.ts": {
@@ -5067,7 +5055,7 @@
     "lib/useDesignPageSelectionWorkspaceRegistration.ts": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 127
+        "maximum": 125
       }
     },
     "lib/useDesignPageSurfaceActions.ts": {

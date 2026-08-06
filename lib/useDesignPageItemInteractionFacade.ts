@@ -19,6 +19,7 @@ import {
 type TransformInput = UseDesignPageSelectionTransformsInput;
 type KeyboardInput = UseDesignPageSelectionKeyboardControllerInput;
 type PanelInput = UseDesignPageSelectedItemPanelControllerInput;
+type SelectionTransforms = ReturnType<typeof useDesignPageSelectionTransforms>;
 
 export type UseDesignPageItemInteractionFacadeInput = {
   state: {
@@ -74,6 +75,7 @@ export type UseDesignPageItemInteractionFacadeInput = {
     | "rotationSnapEnabled"
     | "rotationSnapStepRadians"
   > & {
+    keyboardOwnership: KeyboardInput["refs"]["keyboardOwnership"];
     keyboardShortcutsEnabled: boolean;
     rotationSnapStepDegrees: number;
     catalogItems: PanelInput["configuration"]["catalogItems"];
@@ -83,7 +85,6 @@ export type UseDesignPageItemInteractionFacadeInput = {
     selectedIds: MutableRefObject<Set<string>>;
     primaryId: MutableRefObject<string | null>;
     designSnapshot: MutableRefObject<DesignSnapshot>;
-    floorPlanTraceRoomMode: MutableRefObject<boolean>;
   };
   actions: {
     document: Pick<
@@ -131,6 +132,55 @@ export type UseDesignPageItemInteractionFacadeInput = {
     };
   };
 };
+
+function useDesignPageItemInteractionKeyboard(
+  input: Pick<
+    UseDesignPageItemInteractionFacadeInput,
+    "state" | "configuration" | "refs" | "actions"
+  >,
+  transforms: SelectionTransforms
+): void {
+  const { state, configuration, refs, actions } = input;
+  useDesignPageSelectionKeyboardController({
+    state: {
+      canEdit: configuration.canEdit,
+      editorMode: state.editor.editorMode,
+      hasPendingCatalogPlacement: state.placement.hasPendingCatalogPlacement,
+      isClientPreview: state.editor.isClientPreview,
+      keyboardShortcutsEnabled: configuration.keyboardShortcutsEnabled,
+      selectedItemId: state.selection.selectedItem?.instanceId ?? null,
+      selectedPlanOverlayId: state.plan.selectedPlanOverlayId,
+      selectedPlanRoomId: state.plan.selectedPlanRoomId,
+      selectedRotationDegrees: transforms.state.selectedRotationDegrees,
+      selectedZoneId: state.plan.selectedZoneId,
+      rotationSnapEnabled: configuration.rotationSnapEnabled,
+      rotationSnapStepDegrees: configuration.rotationSnapStepDegrees,
+      viewMode: state.editor.viewMode,
+    },
+    refs: {
+      keyboardOwnership: configuration.keyboardOwnership,
+      primaryId: refs.primaryId,
+      selectedIds: refs.selectedIds,
+    },
+    actions: {
+      setRotationInputValue: actions.productInspection.setRotationInputValue,
+      clearAllSelection: actions.selection.clearAllSelection,
+      placement: {
+        cancel: actions.placement.cancel,
+        confirm: actions.placement.confirm,
+        rotate: actions.placement.rotate,
+        nudge: actions.placement.nudge,
+      },
+      item: {
+        duplicate: transforms.actions.duplicateSelectedItem,
+        rotateByDegrees: transforms.actions.rotateSelectedByDegrees,
+        resetRotation: transforms.actions.resetSelectedRotation,
+        nudge: transforms.actions.nudgeSelectedItem,
+      },
+      room: actions.room.keyboard,
+    },
+  });
+}
 
 export function useDesignPageItemInteractionFacade({
   state,
@@ -212,46 +262,10 @@ export function useDesignPageItemInteractionFacade({
     },
   });
 
-  useDesignPageSelectionKeyboardController({
-    state: {
-      canEdit: configuration.canEdit,
-      editorMode: state.editor.editorMode,
-      hasPendingCatalogPlacement: state.placement.hasPendingCatalogPlacement,
-      isClientPreview: state.editor.isClientPreview,
-      keyboardShortcutsEnabled: configuration.keyboardShortcutsEnabled,
-      selectedItemId: state.selection.selectedItem?.instanceId ?? null,
-      selectedPlanOverlayId: state.plan.selectedPlanOverlayId,
-      selectedPlanRoomId: state.plan.selectedPlanRoomId,
-      selectedRotationDegrees: transforms.state.selectedRotationDegrees,
-      selectedZoneId: state.plan.selectedZoneId,
-      rotationSnapEnabled: configuration.rotationSnapEnabled,
-      rotationSnapStepDegrees: configuration.rotationSnapStepDegrees,
-      viewMode: state.editor.viewMode,
-    },
-    refs: {
-      primaryId: refs.primaryId,
-      selectedIds: refs.selectedIds,
-      floorPlanTraceRoomMode: refs.floorPlanTraceRoomMode,
-    },
-    actions: {
-      setRotationInputValue:
-        actions.productInspection.setRotationInputValue,
-      clearAllSelection: actions.selection.clearAllSelection,
-      placement: {
-        cancel: actions.placement.cancel,
-        confirm: actions.placement.confirm,
-        rotate: actions.placement.rotate,
-        nudge: actions.placement.nudge,
-      },
-      item: {
-        duplicate: transforms.actions.duplicateSelectedItem,
-        rotateByDegrees: transforms.actions.rotateSelectedByDegrees,
-        resetRotation: transforms.actions.resetSelectedRotation,
-        nudge: transforms.actions.nudgeSelectedItem,
-      },
-      room: actions.room.keyboard,
-    },
-  });
+  useDesignPageItemInteractionKeyboard(
+    { state, configuration, refs, actions },
+    transforms
+  );
 
   const selectedItemPanel = useDesignPageSelectedItemPanelController({
     state: {

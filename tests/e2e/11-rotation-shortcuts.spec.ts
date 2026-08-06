@@ -246,6 +246,31 @@ test.describe("11. Rotation Shortcuts And Presets", () => {
       fingerprintBefore,
     );
     expect(await undo.getAttribute("aria-label")).toBe(undoLabelBefore);
+
+    const spatialView = page.getByTestId("editor-view-3d");
+    await spatialView.click();
+    await expect(spatialView).toHaveAttribute("aria-pressed", "true");
+    await page.keyboard.press("R");
+    await expect(fingerprint).toHaveAttribute(
+      "data-fingerprint",
+      fingerprintBefore,
+    );
+
+    await planView.click();
+    await expect(planView).toHaveAttribute("aria-pressed", "true");
+    await selectEditorWorkspace(page, "editor-workflow-plan");
+    await page.getByTestId("floor-plan-tool-draw_room").click();
+    const tracingToggle = page.getByTestId("floor-plan-trace-room-toggle");
+    await expect(tracingToggle).toHaveText("Done");
+    await page.getByTestId("floor-plan-draw-mode-straight_wall").click();
+    await expect(page.getByTestId("floor-plan-exact-wall-length")).toBeVisible();
+    await page.keyboard.press("R");
+    await expect(page.getByTestId("floor-plan-exact-wall-length")).toHaveCount(0);
+    await expect(fingerprint).toHaveAttribute(
+      "data-fingerprint",
+      fingerprintBefore,
+    );
+    expect(await undo.getAttribute("aria-label")).toBe(undoLabelBefore);
   });
 
   test("snap presets update keyboard step behavior", async ({ page }) => {

@@ -99,8 +99,7 @@ export type UseDesignPagePlanWorkspaceFacadeInput = {
     floorCameraViews: UnderlayInput["refs"]["floorCameraViewsRef"];
     underlayObjectUrl: UnderlayInput["refs"]["underlayObjectUrlRef"];
     pdfSourceData: UnderlayInput["refs"]["pdfSourceDataRef"];
-    selectedIds: TracingInput["refs"]["selectedIdsRef"];
-    floorPlanTraceRoomMode: TracingInput["refs"]["floorPlanTraceRoomModeRef"];
+    keyboardOwnership: TracingInput["refs"]["keyboardOwnership"];
   };
   actions: {
     document: EditingInput["actions"]["document"];
@@ -133,22 +132,22 @@ export type UseDesignPagePlanWorkspaceFacadeInput = {
       | "resetFloorPlanCalibration"
       | "clearFloorPlanTraceBuffers"
       | "revokeUnderlayObjectUrl"
-    > &
-      Pick<
-        TracingInput["actions"],
-        | "setPlanGuidedActionsEnabled"
-        | "setPlanGuidedActionsChoiceSeen"
-        | "setBlankGridRoomPreviewPoint"
-        | "setFloorPlanTraceRoomMode"
-        | "setFloorPlanTraceRoomPoints"
-        | "setFloorPlanTraceOpeningMode"
-        | "setFloorPlanTraceOpeningPoints"
-        | "activateFloorPlanSelectTool"
-        | "activateFloorPlanCalibrationMode"
-        | "activateFloorPlanRoomTrace"
-        | "activateFloorPlanRoomDrawMode"
-        | "activateFloorPlanOpeningTrace"
-      >;
+    >;
+    floorPlanTracing: Pick<
+      TracingInput["actions"],
+      | "setPlanGuidedActionsEnabled"
+      | "setPlanGuidedActionsChoiceSeen"
+      | "setBlankGridRoomPreviewPoint"
+      | "setFloorPlanTraceRoomMode"
+      | "setFloorPlanTraceRoomPoints"
+      | "setFloorPlanTraceOpeningMode"
+      | "setFloorPlanTraceOpeningPoints"
+      | "activateFloorPlanSelectTool"
+      | "activateFloorPlanCalibrationMode"
+      | "activateFloorPlanRoomTrace"
+      | "activateFloorPlanRoomDrawMode"
+      | "activateFloorPlanOpeningTrace"
+    >;
   };
 };
 
@@ -263,10 +262,10 @@ export function useDesignPagePlanWorkspaceFacade({
       resetFloorPlanCalibrationPoints: () =>
         actions.floorPlanState.setFloorPlanCalibrationPoints([]),
       resetFloorPlanTraceOpeningPoints: () =>
-        actions.floorPlanState.setFloorPlanTraceOpeningPoints([]),
+        actions.floorPlanTracing.setFloorPlanTraceOpeningPoints([]),
       resetFloorPlanTraceRoomPoints: () => {
-        actions.floorPlanState.setFloorPlanTraceRoomPoints([]);
-        actions.floorPlanState.setBlankGridRoomPreviewPoint(null);
+        actions.floorPlanTracing.setFloorPlanTraceRoomPoints([]);
+        actions.floorPlanTracing.setBlankGridRoomPreviewPoint(null);
       },
     },
   });
@@ -348,10 +347,7 @@ export function useDesignPagePlanWorkspaceFacade({
       selectedPlanOverlayId: plan.selectedPlanOverlayId,
       selectedZoneId: plan.selectedZoneId,
     },
-    refs: {
-      selectedIdsRef: refs.selectedIds,
-      floorPlanTraceRoomModeRef: refs.floorPlanTraceRoomMode,
-    },
+    refs: { keyboardOwnership: refs.keyboardOwnership },
     actions: {
       history: actions.history.history,
       handleAddRoom: actions.room.handleAddRoom,
@@ -361,30 +357,7 @@ export function useDesignPagePlanWorkspaceFacade({
       setDesignPanelOpen: actions.navigation.setDesignPanelOpen,
       setPlanFocusPanelRevealed:
         actions.navigation.setPlanFocusPanelRevealed,
-      setPlanGuidedActionsEnabled:
-        actions.floorPlanState.setPlanGuidedActionsEnabled,
-      setPlanGuidedActionsChoiceSeen:
-        actions.floorPlanState.setPlanGuidedActionsChoiceSeen,
-      setBlankGridRoomPreviewPoint:
-        actions.floorPlanState.setBlankGridRoomPreviewPoint,
-      setFloorPlanTraceRoomMode:
-        actions.floorPlanState.setFloorPlanTraceRoomMode,
-      setFloorPlanTraceRoomPoints:
-        actions.floorPlanState.setFloorPlanTraceRoomPoints,
-      setFloorPlanTraceOpeningMode:
-        actions.floorPlanState.setFloorPlanTraceOpeningMode,
-      setFloorPlanTraceOpeningPoints:
-        actions.floorPlanState.setFloorPlanTraceOpeningPoints,
-      activateFloorPlanSelectTool:
-        actions.floorPlanState.activateFloorPlanSelectTool,
-      activateFloorPlanCalibrationMode:
-        actions.floorPlanState.activateFloorPlanCalibrationMode,
-      activateFloorPlanRoomTrace:
-        actions.floorPlanState.activateFloorPlanRoomTrace,
-      activateFloorPlanRoomDrawMode:
-        actions.floorPlanState.activateFloorPlanRoomDrawMode,
-      activateFloorPlanOpeningTrace:
-        actions.floorPlanState.activateFloorPlanOpeningTrace,
+      ...actions.floorPlanTracing,
       handleSelectPlanOverlay: actions.selection.selectPlanOverlay,
       clearAllSelection: actions.selection.clearAllSelection,
       showRuleToast: actions.feedback.showToast,
@@ -407,6 +380,9 @@ export function useDesignPagePlanUnderlayFacade(input: UnderlayInput) {
   return useDesignPageFloorPlanUnderlayController(input);
 }
 
-export function useDesignPagePlanTracingFacade(input: TracingInput) {
-  return useDesignPageFloorPlanTracing(input);
+export function useDesignPagePlanTracingFacade(
+  input: TracingInput,
+  keyboardShortcutsEnabled: boolean
+) {
+  return useDesignPageFloorPlanTracing(input, keyboardShortcutsEnabled);
 }

@@ -5,7 +5,10 @@ import { useEffect } from "react";
 import type { CatalogItemSchema } from "@/lib/catalog-schema";
 import type { HousePlanRoom2D } from "@/lib/design-page-house-plan";
 import type { EditorViewMode } from "@/components/editor/EditorViewToggle";
-import { resolveDesignPageHigherPriorityKeyboardOwner } from "@/lib/design-page-keyboard-context";
+import {
+  resolveDesignPageHigherPriorityKeyboardOwner,
+  type DesignPageKeyboardOwnership,
+} from "@/lib/design-page-keyboard-context";
 import {
   isDesignPageSelectionShortcutBlocked,
   resolvePendingPlacementKeyboardCommand,
@@ -144,7 +147,7 @@ export type DesignPageSelectionKeyboardState = {
 };
 
 export type DesignPageSelectionKeyboardRefs = {
-  floorPlanTraceRoomMode: { current: boolean };
+  keyboardOwnership: DesignPageKeyboardOwnership;
   primaryId: PrimaryIdRef;
   selectedIds: SelectedIdsRef;
 };
@@ -236,17 +239,21 @@ function routeSelectedItemKeyboardEvent(
 ): void {
   if (isDesignPageSelectionShortcutBlocked(event.target)) return;
   const keyboardInput = getKeyboardInput(event);
+  const { keyboardOwnership } = input.refs;
+  const keyboardShortcutsEnabled =
+    keyboardOwnership.keyboardShortcutsEnabled &&
+    input.state.keyboardShortcutsEnabled;
   const higherPriorityOwner = resolveDesignPageHigherPriorityKeyboardOwner({
     ...keyboardInput,
-    floorPlanTraceRoomMode: input.refs.floorPlanTraceRoomMode.current,
-    keyboardShortcutsEnabled: input.state.keyboardShortcutsEnabled,
+    floorPlanTraceRoomMode: keyboardOwnership.floorPlanTraceRoomModeRef.current,
+    keyboardShortcutsEnabled,
   });
   if (higherPriorityOwner) return;
   const pendingCommand = resolvePendingPlacementKeyboardCommand({
     ...keyboardInput,
     canEdit: input.state.canEdit,
     hasPendingPlacement: input.state.hasPendingCatalogPlacement,
-    keyboardShortcutsEnabled: input.state.keyboardShortcutsEnabled,
+    keyboardShortcutsEnabled,
   });
   if (pendingCommand) {
     consumeKeyboardCommand(event);
@@ -257,7 +264,7 @@ function routeSelectedItemKeyboardEvent(
     ...keyboardInput,
     canEdit: input.state.canEdit,
     hasSelectedItem: Boolean(input.refs.primaryId.current),
-    keyboardShortcutsEnabled: input.state.keyboardShortcutsEnabled,
+    keyboardShortcutsEnabled,
     rotationSnapEnabled: input.state.rotationSnapEnabled,
     rotationSnapStepDegrees: input.state.rotationSnapStepDegrees,
   });

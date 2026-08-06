@@ -1,5 +1,6 @@
 "use client";
 
+import { createDesignPageKeyboardOwnership } from "@/lib/design-page-keyboard-context";
 import type { useDesignPageDocumentHistoryController } from "@/lib/useDesignPageDocumentHistoryController";
 import type {
   useDesignPageFloorPlanDocumentState,
@@ -101,6 +102,54 @@ export type UseDesignPagePlanWorkspaceRegistrationFacadeInput = {
     feedback: WorkspaceInput["actions"]["feedback"];
   };
 };
+
+function buildDesignPagePlanWorkspaceRefs(
+  boundaries: UseDesignPagePlanWorkspaceRegistrationFacadeInput["boundaries"]
+): WorkspaceInput["refs"] {
+  return {
+    designSnapshot: boundaries.snapshot.refs.designSnapshotRef,
+    planOpenings: boundaries.document.refs.planOpeningsRef,
+    floorCameraViews: boundaries.cameraBridge.refs.floorCameraViews,
+    underlayObjectUrl: boundaries.floorPlan.refs.floorPlanUnderlayUrlRef,
+    pdfSourceData: boundaries.floorPlan.refs.floorPlanPdfSourceDataRef,
+    keyboardOwnership: createDesignPageKeyboardOwnership(
+      boundaries.floorPlan.refs.floorPlanTraceRoomModeRef,
+      boundaries.selection.items.refs.selectedIds
+    ),
+  };
+}
+
+function buildDesignPageFloorPlanTracingActions(
+  document: PlanDocumentBoundary,
+  floorPlan: FloorPlanDocumentBoundary
+): WorkspaceInput["actions"]["floorPlanTracing"] {
+  return {
+    setPlanGuidedActionsEnabled:
+      document.actions.setPlanGuidedActionsEnabled,
+    setPlanGuidedActionsChoiceSeen:
+      document.actions.setPlanGuidedActionsChoiceSeen,
+    setBlankGridRoomPreviewPoint:
+      floorPlan.actions.setBlankGridRoomPreviewPoint,
+    setFloorPlanTraceRoomMode:
+      floorPlan.actions.setFloorPlanTraceRoomMode,
+    setFloorPlanTraceRoomPoints:
+      floorPlan.actions.setFloorPlanTraceRoomPoints,
+    setFloorPlanTraceOpeningMode:
+      floorPlan.actions.setFloorPlanTraceOpeningMode,
+    setFloorPlanTraceOpeningPoints:
+      floorPlan.actions.setFloorPlanTraceOpeningPoints,
+    activateFloorPlanSelectTool:
+      floorPlan.actions.activateFloorPlanSelectTool,
+    activateFloorPlanCalibrationMode:
+      floorPlan.actions.activateFloorPlanCalibrationMode,
+    activateFloorPlanRoomTrace:
+      floorPlan.actions.activateFloorPlanRoomTrace,
+    activateFloorPlanRoomDrawMode:
+      floorPlan.actions.activateFloorPlanRoomDrawMode,
+    activateFloorPlanOpeningTrace:
+      floorPlan.actions.activateFloorPlanOpeningTrace,
+  };
+}
 
 /**
  * Maps already-registered controller boundaries to the plan workspace input.
@@ -223,15 +272,7 @@ export function buildDesignPagePlanWorkspaceRegistrationInput({
       planMeasurementUnit: document.state.planMeasurementUnit,
       houseRoomById: scene.derived.houseRoomById,
     },
-    refs: {
-      designSnapshot: snapshot.refs.designSnapshotRef,
-      planOpenings: document.refs.planOpeningsRef,
-      floorCameraViews: cameraBridge.refs.floorCameraViews,
-      underlayObjectUrl: floorPlan.refs.floorPlanUnderlayUrlRef,
-      pdfSourceData: floorPlan.refs.floorPlanPdfSourceDataRef,
-      selectedIds: selection.refs.selectedIds,
-      floorPlanTraceRoomMode: floorPlan.refs.floorPlanTraceRoomModeRef,
-    },
+    refs: buildDesignPagePlanWorkspaceRefs(boundaries),
     actions: {
       document: {
         setDesignSnapshot: snapshot.actions.setDesignSnapshot,
@@ -286,31 +327,11 @@ export function buildDesignPagePlanWorkspaceRegistrationInput({
           floorPlan.actions.clearFloorPlanTraceBuffers,
         revokeUnderlayObjectUrl:
           floorPlan.actions.revokeFloorPlanUnderlayUrl,
-        setPlanGuidedActionsEnabled:
-          document.actions.setPlanGuidedActionsEnabled,
-        setPlanGuidedActionsChoiceSeen:
-          document.actions.setPlanGuidedActionsChoiceSeen,
-        setBlankGridRoomPreviewPoint:
-          floorPlan.actions.setBlankGridRoomPreviewPoint,
-        setFloorPlanTraceRoomMode:
-          floorPlan.actions.setFloorPlanTraceRoomMode,
-        setFloorPlanTraceRoomPoints:
-          floorPlan.actions.setFloorPlanTraceRoomPoints,
-        setFloorPlanTraceOpeningMode:
-          floorPlan.actions.setFloorPlanTraceOpeningMode,
-        setFloorPlanTraceOpeningPoints:
-          floorPlan.actions.setFloorPlanTraceOpeningPoints,
-        activateFloorPlanSelectTool:
-          floorPlan.actions.activateFloorPlanSelectTool,
-        activateFloorPlanCalibrationMode:
-          floorPlan.actions.activateFloorPlanCalibrationMode,
-        activateFloorPlanRoomTrace:
-          floorPlan.actions.activateFloorPlanRoomTrace,
-        activateFloorPlanRoomDrawMode:
-          floorPlan.actions.activateFloorPlanRoomDrawMode,
-        activateFloorPlanOpeningTrace:
-          floorPlan.actions.activateFloorPlanOpeningTrace,
       },
+      floorPlanTracing: buildDesignPageFloorPlanTracingActions(
+        document,
+        floorPlan
+      ),
     },
   };
 }

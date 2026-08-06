@@ -10,10 +10,9 @@ import {
 import { track } from "@/lib/analytics";
 import type { EditorViewMode } from "@/components/editor/EditorViewToggle";
 import {
-  isDesignPageSelectionShortcutBlocked,
-  type DesignPageKeyboardInput,
-} from "@/lib/design-page-selection-keyboard-commands";
-import { isFloorPlanRectangleWallShortcut } from "@/lib/design-page-keyboard-context";
+  bindDesignPageKeyboardOwnership,
+  type DesignPageKeyboardOwnershipSource,
+} from "@/lib/design-page-keyboard-context";
 import {
   resolveFloorPlanDrawCancelDecision,
   resolveFloorPlanOpeningCancelDecision,
@@ -38,10 +37,9 @@ import type {
   RoomType,
 } from "@/lib/room-types";
 import type { DesignPageEditorMode } from "@/lib/useDesignPagePanelMode";
+import { useDesignPageFloorPlanTracingKeyboard } from "@/lib/useDesignPageFloorPlanTracingKeyboard";
 import { useFloorPlanRoomCreation } from "@/lib/useFloorPlanRoomCreation";
 import { useFloorPlanRoomDrawing } from "@/lib/useFloorPlanRoomDrawing";
-
-type MutableRef<T> = { current: T };
 
 type HistoryAdapter = {
   begin: (name: string) => void;
@@ -85,14 +83,12 @@ type UseDesignPageFloorPlanTracingInput = {
     isClientPreview: boolean;
     editorMode: DesignPageEditorMode;
     viewMode: EditorViewMode;
-    keyboardShortcutsEnabled?: boolean;
     selectedPlanRoomId: string | null;
     selectedPlanOverlayId: string | null;
     selectedZoneId: string | null;
   };
   refs: {
-    floorPlanTraceRoomModeRef: MutableRef<boolean>;
-    selectedIdsRef: MutableRef<Set<string>>;
+    keyboardOwnership: DesignPageKeyboardOwnershipSource;
   };
   actions: {
     history: HistoryAdapter;
@@ -127,7 +123,7 @@ export function useDesignPageFloorPlanTracing({
   state,
   refs,
   actions,
-}: UseDesignPageFloorPlanTracingInput) {
+}: UseDesignPageFloorPlanTracingInput, keyboardShortcutsEnabled = true) {
   const {
     activeRoom,
     housePlanRooms,
@@ -150,12 +146,14 @@ export function useDesignPageFloorPlanTracing({
     isClientPreview,
     editorMode,
     viewMode,
-    keyboardShortcutsEnabled = true,
     selectedPlanRoomId,
     selectedPlanOverlayId,
     selectedZoneId,
   } = state;
-  const { floorPlanTraceRoomModeRef, selectedIdsRef } = refs;
+  const keyboardOwnership = bindDesignPageKeyboardOwnership(
+    refs.keyboardOwnership,
+    keyboardShortcutsEnabled
+  );
   const {
     history,
     handleAddRoom,
@@ -507,94 +505,28 @@ export function useDesignPageFloorPlanTracing({
     ]
   );
 
-  useEffect(() => {
-    if (isClientPreview || editorMode === "present" || viewMode !== "2d") return;
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (
-        !keyboardShortcutsEnabled ||
-        isDesignPageSelectionShortcutBlocked(event.target)
-      ) return;
-
-      if (event.key === "Escape") {
-        const cancelledDraw = cancelActiveFloorPlanDraw();
-        const hasSelection =
-          selectedPlanRoomId ||
-          selectedPlanOverlayId ||
-          selectedZoneId ||
-          selectedIdsRef.current.size > 0;
-
-        if (hasSelection) clearAllSelection();
-        if (cancelledDraw || hasSelection) {
-          event.preventDefault();
-          event.stopPropagation();
-        }
-        return;
-      }
-
-      if (
-        (event.key === "Backspace" || event.key === "Delete") &&
-        handleUndoFloorPlanTraceRoomPoint()
-      ) {
-        event.preventDefault();
-        event.stopPropagation();
-        return;
-      }
-
-      const key = event.key.toLowerCase();
-      const keyboardInput: DesignPageKeyboardInput = {
-        key: event.key,
-        shiftKey: event.shiftKey,
-        metaKey: event.metaKey,
-        ctrlKey: event.ctrlKey,
-        altKey: event.altKey,
-        repeat: event.repeat,
-      };
-      if (key === "v" || key === "s") {
-        event.preventDefault();
-        selectFloorPlanTool();
-      } else if (isFloorPlanRectangleWallShortcut(keyboardInput)) {
-        event.preventDefault();
-        changeDrawRoomMode("rectangle_wall");
-      } else if (key === "d" && !floorPlanTraceRoomMode) {
-        event.preventDefault();
-        addFloorPlanOpeningFromTool("door");
-      } else if (key === "w" && !floorPlanTraceRoomMode) {
-        event.preventDefault();
-        addFloorPlanOpeningFromTool("window");
-      } else if (key === "b") {
-        event.preventDefault();
-        changeDrawRoomMode("straight_wall");
-      } else if (key === "f") {
-        event.preventDefault();
-        changeDrawRoomMode("rectangle_wall");
-      } else if (key === "h") {
-        event.preventDefault();
-        changeDrawRoomMode("arc_wall");
-      }
-    };
-
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [
-    addFloorPlanOpeningFromTool,
-    cancelActiveFloorPlanDraw,
-    changeDrawRoomMode,
-    clearAllSelection,
-    editorMode,
-    floorPlanTraceRoomMode,
-    isClientPreview,
-    handleUndoFloorPlanTraceRoomPoint,
-    keyboardShortcutsEnabled,
-    selectFloorPlanTool,
-    selectedIdsRef,
-    selectedPlanOverlayId,
-    selectedPlanRoomId,
-    selectedZoneId,
-    viewMode,
-  ]);
+  useDesignPageFloorPlanTracingKeyboard({
+    state: {
+      editorMode,
+      isClientPreview,
+      selectedPlanOverlayId,
+      selectedPlanRoomId,
+      selectedZoneId,
+      viewMode,
+    },
+    capabilities: { keyboardOwnership },
+    actions: {
+      addFloorPlanOpeningFromTool,
+      cancelActiveFloorPlanDraw,
+      changeDrawRoomMode,
+      clearAllSelection,
+      handleUndoFloorPlanTraceRoomPoint,
+      selectFloorPlanTool,
+    },
+  });
 
   return {
-    refs: { floorPlanTraceRoomModeRef },
+    capabilities: { keyboardOwnership },
     state: {
       consumerPlanCompletionSignal,
     },

@@ -3713,3 +3713,57 @@ public field policy, token/auth lifecycle, cloud revision, or unrelated Consumer
 Undo target changed. Rollback is one local revert followed by identity,
 projection-security, responsive, beta/duplication, build, and Phase 8 checks;
 no data or external rollback is required.
+
+## ARCH-RC48 code-quality ratchet restoration — 2026-08-06
+
+This section corrects the earlier ARCH-RC48 handoff without deleting the
+inaccurate record. Its claims that the full `npm run check:code-quality` gate
+passed and that rereview found “no remaining blocker” were false for repository
+code quality; they were valid only for the selected-item/tracing behavior. The
+later RC55 handoff correctly reported that the full command remained red.
+
+A clean three-SHA audit compared pre-RC48
+`8818ac76d4772271f027e8dc3c8e9cd6b8009229`, RC48 behavior
+`abec1b92b86a0b74193f437aea11033f666adca0`, and the authoritative RC55 source
+`27e78d25477b6e6d9282c59cd3c801e701abee9b`. All ten findings first appear in
+the RC48 behavior commit and none is RC55-owned: nine are real RC48 growth
+findings and one is the downward `handleKeyDown` complexity-baseline mismatch.
+The checker self-test passed throughout, but it is not the repository scan.
+
+The bounded remediation on `fix/arch-rc48-code-quality-ratchet` extracts
+`useDesignPageFloorPlanTracingKeyboard` as the single tracing listener owner,
+extracts `useSynchronizedFloorPlanTraceMode` as the intentional React-state/
+event-time-ref owner, and passes one typed keyboard-ownership capability through
+plan, editor, and selection wiring. The broad tracing hook no longer registers
+a listener, and the capability carries the current trace-mode and selection
+refs plus the resolved canvas-shortcut state. There is no new store, registry,
+listener, durable source of truth, exception, suppression, or framework.
+
+Final source metrics distinguish physical file size from maximum function
+length: editor interaction 190 / 151; tracing 556 / 435 with no complexity or
+nesting debt; workflow state 181 / 157; item interaction 323 / 139; plan
+workspace 388 / 220; plan registration 346 / 179; and selection registration
+170 / 125. The extracted keyboard module is 170 physical lines and the
+synchronized-mode module is 144; neither carries function, complexity, or
+nesting debt.
+The former nested `handleKeyDown` is removed. The baseline changes only
+downward: tracing 611→556, editor 152→151, tracing overlong 2/493→1/435,
+workflow 171→157, item interaction 171→139, plan workspace 243→220 with its
+408-line file allowance removed, plan registration 206→179, and selection
+registration 127→125; the stale tracing complexity 1/25 and nesting 1/7 entries
+are removed.
+
+Focused keyboard/transform coverage includes an executable listener
+mount-cleanup-remount proof. The tracing collision browser scenario also
+crosses 2D→3D→2D before proving the remounted owner. Consumer rotation/Undo,
+floor-plan, cleanup, required static, zero-warning lint, typecheck, strict
+build, and Phase 8 evidence remain green. The final implementation commit is
+also checked in two separate clean exact-commit worktrees; `npm ci` and the
+full `npm run check:code-quality` exit zero in both. Full E2E, RC55 Gate A3
+ownership, workflows, deployments, the integration branch, and the unrelated
+Consumer Undo touch target remain outside this remediation.
+
+Rollback is one local revert of the focused implementation commit, followed by
+the selection-keyboard guardrail, focused tracing collision case, and full
+code-quality command. No data, schema, dependency, deployment, or external
+rollback is required.

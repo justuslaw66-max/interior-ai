@@ -1,13 +1,6 @@
 "use client";
 
-import {
-  useCallback,
-  useMemo,
-  useRef,
-  useState,
-  type Dispatch,
-  type SetStateAction,
-} from "react";
+import { useCallback, useMemo, useState } from "react";
 import type { RoomOpening2D } from "@/lib/editorScene";
 import type {
   FloorPlanDrawAngleLockMode,
@@ -16,6 +9,7 @@ import type {
   FloorPlanUnderlay,
 } from "@/lib/floor-plan-types";
 import type { RoomType } from "@/lib/room-types";
+import { useSynchronizedFloorPlanTraceMode } from "@/lib/useSynchronizedFloorPlanTraceMode";
 
 export type FloorPlanActiveTool = "select" | "draw_room" | RoomOpening2D["kind"];
 
@@ -23,24 +17,16 @@ type ResetFloorPlanInteractionOptions = {
   resetCalibrationDistance?: boolean;
 };
 
+function getFloorPlanCalibrationSummary(underlay: FloorPlanUnderlay | null) {
+  if (!underlay?.calibration) return null;
+  return `${underlay.calibration.referenceLengthMeters}m set (${underlay.widthMeters} x ${underlay.depthMeters}m)`;
+}
+
 export function useDesignPageFloorPlanWorkflowState() {
   const [floorPlanUnderlay, setFloorPlanUnderlay] = useState<FloorPlanUnderlay | null>(null);
   const [floorPlanCalibrationMode, setFloorPlanCalibrationMode] = useState(false);
   const [floorPlanCalibrationPoints, setFloorPlanCalibrationPoints] = useState<FloorPlanPoint[]>([]);
   const [floorPlanCalibrationDistanceInput, setFloorPlanCalibrationDistanceInput] = useState("");
-  const [floorPlanTraceRoomMode, setFloorPlanTraceRoomModeState] = useState(false);
-  const floorPlanTraceRoomModeRef = useRef(false);
-  const setFloorPlanTraceRoomMode: Dispatch<SetStateAction<boolean>> = useCallback(
-    (next) => {
-      const resolved =
-        typeof next === "function"
-          ? next(floorPlanTraceRoomModeRef.current)
-          : next;
-      floorPlanTraceRoomModeRef.current = resolved;
-      setFloorPlanTraceRoomModeState(resolved);
-    },
-    []
-  );
   const [floorPlanDrawRoomMode, setFloorPlanDrawRoomMode] =
     useState<FloorPlanDrawRoomMode>("rectangle_wall");
   const [floorPlanDrawAngleLockMode, setFloorPlanDrawAngleLockMode] =
@@ -62,16 +48,25 @@ export function useDesignPageFloorPlanWorkflowState() {
     if (resetDistance) setFloorPlanCalibrationDistanceInput("");
   }, []);
 
-  const resetFloorPlanRoomTrace = useCallback((resetMode = true) => {
-    if (resetMode) setFloorPlanTraceRoomMode(false);
-    setFloorPlanTraceRoomPoints([]);
-    setBlankGridRoomPreviewPoint(null);
-  }, [setFloorPlanTraceRoomMode]);
-
   const resetFloorPlanOpeningTrace = useCallback((resetMode = true) => {
     if (resetMode) setFloorPlanTraceOpeningMode(false);
     setFloorPlanTraceOpeningPoints([]);
   }, []);
+
+  const {
+    floorPlanTraceRoomMode,
+    floorPlanTraceRoomModeRef,
+    setFloorPlanTraceRoomMode,
+    resetFloorPlanRoomTrace,
+    activateFloorPlanRoomTrace,
+    activateFloorPlanRoomDrawMode,
+  } = useSynchronizedFloorPlanTraceMode({
+    resetFloorPlanCalibration,
+    resetFloorPlanOpeningTrace,
+    setFloorPlanDrawRoomMode,
+    setFloorPlanTraceRoomPoints,
+    setBlankGridRoomPreviewPoint,
+  });
 
   const resetFloorPlanInteraction = useCallback(
     (options: ResetFloorPlanInteractionOptions = {}) => {
@@ -79,7 +74,11 @@ export function useDesignPageFloorPlanWorkflowState() {
       resetFloorPlanRoomTrace(true);
       resetFloorPlanOpeningTrace(true);
     },
-    [resetFloorPlanCalibration, resetFloorPlanOpeningTrace, resetFloorPlanRoomTrace]
+    [
+      resetFloorPlanCalibration,
+      resetFloorPlanOpeningTrace,
+      resetFloorPlanRoomTrace,
+    ]
   );
 
   const activateFloorPlanSelectTool = useCallback(() => {
@@ -96,42 +95,6 @@ export function useDesignPageFloorPlanWorkflowState() {
       }
     },
     [resetFloorPlanOpeningTrace, resetFloorPlanRoomTrace]
-  );
-
-  const activateFloorPlanRoomTrace = useCallback(
-    (enabled: boolean) => {
-      setFloorPlanTraceRoomMode(enabled);
-      if (enabled) {
-        resetFloorPlanCalibration(false);
-        setFloorPlanTraceRoomPoints([]);
-        setBlankGridRoomPreviewPoint(null);
-        resetFloorPlanOpeningTrace(true);
-      } else {
-        resetFloorPlanRoomTrace(false);
-      }
-    },
-    [
-      resetFloorPlanCalibration,
-      resetFloorPlanOpeningTrace,
-      resetFloorPlanRoomTrace,
-      setFloorPlanTraceRoomMode,
-    ]
-  );
-
-  const activateFloorPlanRoomDrawMode = useCallback(
-    (mode: FloorPlanDrawRoomMode) => {
-      setFloorPlanDrawRoomMode(mode);
-      setFloorPlanTraceRoomMode(true);
-      resetFloorPlanCalibration(false);
-      setFloorPlanTraceRoomPoints([]);
-      setBlankGridRoomPreviewPoint(null);
-      resetFloorPlanOpeningTrace(true);
-    },
-    [
-      resetFloorPlanCalibration,
-      resetFloorPlanOpeningTrace,
-      setFloorPlanTraceRoomMode,
-    ]
   );
 
   const activateFloorPlanOpeningTrace = useCallback(
@@ -153,10 +116,10 @@ export function useDesignPageFloorPlanWorkflowState() {
     setFloorPlanTraceOpeningPoints([]);
   }, []);
 
-  const floorPlanCalibrationSummary = useMemo(() => {
-    if (!floorPlanUnderlay?.calibration) return null;
-    return `${floorPlanUnderlay.calibration.referenceLengthMeters}m set (${floorPlanUnderlay.widthMeters} x ${floorPlanUnderlay.depthMeters}m)`;
-  }, [floorPlanUnderlay]);
+  const floorPlanCalibrationSummary = useMemo(
+    () => getFloorPlanCalibrationSummary(floorPlanUnderlay),
+    [floorPlanUnderlay]
+  );
 
   const blankGridRoomDrawActive = floorPlanTraceRoomMode && !floorPlanUnderlay;
 

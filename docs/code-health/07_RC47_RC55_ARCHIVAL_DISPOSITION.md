@@ -827,3 +827,35 @@ the unrelated Consumer Undo target were not performed. Rollback is one local
 revert of the focused implementation commit, followed by the identity,
 projection-security, responsive, beta/duplication, build, and Phase 8 checks;
 no data or external rollback is required.
+
+## ARCH-RC48 code-quality disposition correction — 2026-08-06
+
+The earlier RC48 closure remains the authoritative behavior record, but its
+statement that all required static/code-quality gates passed was inaccurate.
+Likewise, “only RC55 remains” referred only to the behavioral archival queue;
+RC48 still carried one merge-blocking code-quality sub-scope. This correction
+preserves those historical statements and explicitly supersedes their quality
+interpretation. The later RC55 records correctly kept code quality red.
+
+The clean comparison of `8818ac76d4772271f027e8dc3c8e9cd6b8009229`,
+`abec1b92b86a0b74193f437aea11033f666adca0`, and
+`27e78d25477b6e6d9282c59cd3c801e701abee9b` assigns all ten findings to RC48:
+nine real growth findings across the tracing, workflow, editor, plan, and
+selection facades, plus one required downward complexity correction. None is
+owned by RC55. `npm run test:code-quality` passing was checker-self-test
+evidence only and never established a green repository scan.
+
+`fix/arch-rc48-code-quality-ratchet` resolves that sub-scope structurally with
+one focused tracing keyboard binding, one synchronized trace-mode owner, and
+one typed event-time ownership capability passed through the existing facade
+chain. Selected-item/tracing behavior, history, autosave, analytics, 2D/3D,
+Consumer/Pro, RC55 projection identity, and listener priority remain unchanged.
+All source metrics are back within their accepted ratchets, every baseline
+change is downward, and no exception or suppression was added. Two separate clean
+exact-commit worktrees each pass `npm ci` followed by the full
+`npm run check:code-quality` command.
+
+RC48 is now **A. RESOLVED_BY_CURRENT_IMPLEMENTATION** for both behavior and the
+code-quality sub-scope. The remaining archival gap is still only RC55’s
+separate merge-required Gate A3 ownership; the Consumer Undo touch target
+remains an unrelated product finding.

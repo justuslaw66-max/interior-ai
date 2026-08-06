@@ -11,6 +11,11 @@ import {
   isFloorPlanRectangleWallShortcut,
   resolveDesignPageHigherPriorityKeyboardOwner,
 } from "@/lib/design-page-keyboard-context";
+import {
+  bindDesignPageFloorPlanTracingKeyboard,
+  type DesignPageKeyboardEventTarget,
+  type UseDesignPageFloorPlanTracingKeyboardInput,
+} from "@/lib/useDesignPageFloorPlanTracingKeyboard";
 
 const root = process.cwd();
 const workspaceSource = readFileSync(
@@ -53,8 +58,24 @@ const floorPlanTracingSource = readFileSync(
   join(root, "lib/useDesignPageFloorPlanTracing.ts"),
   "utf8"
 );
+const floorPlanTracingKeyboardSource = readFileSync(
+  join(root, "lib/useDesignPageFloorPlanTracingKeyboard.ts"),
+  "utf8"
+);
 const floorPlanWorkflowSource = readFileSync(
   join(root, "lib/useDesignPageFloorPlanWorkflowState.ts"),
+  "utf8"
+);
+const synchronizedTraceModeSource = readFileSync(
+  join(root, "lib/useSynchronizedFloorPlanTraceMode.ts"),
+  "utf8"
+);
+const planWorkspaceSource = readFileSync(
+  join(root, "lib/useDesignPagePlanWorkspaceFacade.ts"),
+  "utf8"
+);
+const planRegistrationSource = readFileSync(
+  join(root, "lib/useDesignPagePlanWorkspaceRegistrationFacade.ts"),
   "utf8"
 );
 
@@ -110,23 +131,147 @@ assert.match(
 );
 assert.match(
   keyboardSource,
-  /resolveDesignPageHigherPriorityKeyboardOwner\([\s\S]{0,300}?floorPlanTraceRoomMode:\s*input\.refs\.floorPlanTraceRoomMode\.current[\s\S]{0,160}?if \(higherPriorityOwner\) return;[\s\S]{0,160}?resolvePendingPlacementKeyboardCommand/,
+  /resolveDesignPageHigherPriorityKeyboardOwner\([\s\S]{0,300}?floorPlanTraceRoomMode:\s*keyboardOwnership\.floorPlanTraceRoomModeRef\.current[\s\S]{0,160}?if \(higherPriorityOwner\) return;[\s\S]{0,160}?resolvePendingPlacementKeyboardCommand/,
   "The selected-item router should decline a current tracing-owned command before placement or item routing."
 );
 assert.match(
-  floorPlanTracingSource,
+  floorPlanTracingKeyboardSource,
   /isDesignPageSelectionShortcutBlocked\(event\.target\)/,
   "Floor-plan tracing should apply the shared focus exclusions."
 );
 assert.match(
-  floorPlanTracingSource,
+  floorPlanTracingKeyboardSource,
   /isFloorPlanRectangleWallShortcut\(keyboardInput\)[\s\S]{0,160}?changeDrawRoomMode\("rectangle_wall"\)/,
   "Floor-plan tracing should use the exact rectangle-wall shortcut resolver."
 );
 assert.match(
-  floorPlanWorkflowSource,
+  synchronizedTraceModeSource,
   /floorPlanTraceRoomModeRef\.current = resolved;[\s\S]{0,120}?setFloorPlanTraceRoomModeState\(resolved\)/,
   "Tracing ownership should update its event-time ref before scheduling the React state update."
+);
+assert.match(
+  floorPlanWorkflowSource,
+  /useSynchronizedFloorPlanTraceMode\(\{/,
+  "Floor-plan workflow state should delegate its synchronized trace mode to the focused owner."
+);
+assert.match(
+  floorPlanTracingSource,
+  /useDesignPageFloorPlanTracingKeyboard\(\{/,
+  "The tracing domain hook should delegate keyboard listener ownership."
+);
+assert.doesNotMatch(
+  floorPlanTracingSource,
+  /addEventListener\("keydown"/,
+  "The broad tracing hook must not retain a second keyboard listener."
+);
+assert.equal(
+  floorPlanTracingKeyboardSource.match(/addEventListener\("keydown"/g)?.length,
+  1,
+  "The tracing keyboard binding should register exactly one listener."
+);
+assert.equal(
+  floorPlanTracingKeyboardSource.match(/removeEventListener\("keydown"/g)?.length,
+  1,
+  "The tracing keyboard binding should clean up exactly one listener."
+);
+
+const tracingListeners = new Set<(event: KeyboardEvent) => void>();
+const tracingTarget: DesignPageKeyboardEventTarget = {
+  addEventListener: (_type, listener) => tracingListeners.add(listener),
+  removeEventListener: (_type, listener) => tracingListeners.delete(listener),
+};
+let rectangleWallActivations = 0;
+const tracingBindingInput: UseDesignPageFloorPlanTracingKeyboardInput = {
+  state: {
+    editorMode: "design",
+    isClientPreview: false,
+    selectedPlanOverlayId: null,
+    selectedPlanRoomId: null,
+    selectedZoneId: null,
+    viewMode: "2d",
+  },
+  capabilities: {
+    keyboardOwnership: {
+      floorPlanTraceRoomModeRef: { current: true },
+      selectedIdsRef: { current: new Set<string>() },
+      keyboardShortcutsEnabled: true,
+    },
+  },
+  actions: {
+    addFloorPlanOpeningFromTool: () => undefined,
+    cancelActiveFloorPlanDraw: () => false,
+    changeDrawRoomMode: (mode) => {
+      if (mode === "rectangle_wall") rectangleWallActivations += 1;
+    },
+    clearAllSelection: () => undefined,
+    handleUndoFloorPlanTraceRoomPoint: () => false,
+    selectFloorPlanTool: () => undefined,
+  },
+};
+const tracingKeyEvent = {
+  key: "r",
+  shiftKey: false,
+  metaKey: false,
+  ctrlKey: false,
+  altKey: false,
+  repeat: false,
+  target: null,
+  preventDefault: () => undefined,
+  stopPropagation: () => undefined,
+} as unknown as KeyboardEvent;
+const dispatchTracingKey = () => {
+  for (const listener of tracingListeners) listener(tracingKeyEvent);
+};
+
+const removeFirstTracingBinding = bindDesignPageFloorPlanTracingKeyboard(
+  tracingTarget,
+  tracingBindingInput
+);
+assert.equal(tracingListeners.size, 1, "Tracing should mount one listener.");
+dispatchTracingKey();
+assert.equal(
+  rectangleWallActivations,
+  1,
+  "One tracing keypress should invoke one current owner."
+);
+removeFirstTracingBinding();
+assert.equal(tracingListeners.size, 0, "Tracing should remove its listener.");
+dispatchTracingKey();
+assert.equal(
+  rectangleWallActivations,
+  1,
+  "An unmounted tracing owner must not receive keyboard events."
+);
+const removeRemountedTracingBinding = bindDesignPageFloorPlanTracingKeyboard(
+  tracingTarget,
+  tracingBindingInput
+);
+dispatchTracingKey();
+assert.equal(
+  rectangleWallActivations,
+  2,
+  "A remounted tracing owner should receive the keypress exactly once."
+);
+removeRemountedTracingBinding();
+assert.equal(
+  tracingListeners.size,
+  0,
+  "A remounted tracing owner should also clean up its listener."
+);
+assert.match(
+  planRegistrationSource,
+  /keyboardOwnership:\s*createDesignPageKeyboardOwnership\(/,
+  "Plan registration should create one typed keyboard-ownership capability."
+);
+assert.match(
+  planWorkspaceSource,
+  /refs:\s*\{\s*keyboardOwnership:\s*refs\.keyboardOwnership\s*\}/,
+  "The plan facade should pass the cohesive keyboard capability without reconstructing refs."
+);
+assert.match(
+  selectionWorkspaceSource,
+  /keyboardOwnership:\s*editorInteraction\.boundaries\.tracing\.capabilities\.keyboardOwnership/,
+  "Selection registration should consume the same resolved keyboard-ownership capability."
 );
 assert.match(
   selectionTransformsSource,

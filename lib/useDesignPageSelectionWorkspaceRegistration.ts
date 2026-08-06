@@ -11,6 +11,7 @@ import type { DesignPageEditorInteractionRegistration } from "@/lib/useDesignPag
 import { useDesignPagePlacementSelectionWorkspaceFacade } from "@/lib/useDesignPagePlacementSelectionWorkspaceFacade";
 import type { DesignPagePlacementWorkspaceRegistration } from "@/lib/useDesignPagePlacementWorkspaceRegistration";
 import type { DesignPagePlanAuthoringRegistration } from "@/lib/useDesignPagePlanAuthoringRegistration";
+import type { DesignPageEditorMode } from "@/lib/useDesignPagePanelMode";
 
 export type UseDesignPageSelectionWorkspaceRegistrationInput = {
   boundaries: {
@@ -28,6 +29,10 @@ function replaceActiveItemsSnapshot(
   nextItems: DesignItem[]
 ): void {
   targetRef.current = nextItems;
+}
+
+function selectionKeyboardShortcutsEnabled(editorMode: DesignPageEditorMode) {
+  return editorMode !== "buy" && editorMode !== "present";
 }
 
 /**
@@ -102,10 +107,8 @@ export function useDesignPageSelectionWorkspaceRegistration({
       roomWidth,
       roomDepth,
       wallThickness,
-      keyboardShortcutsEnabled:
-        editorInteraction.boundaries.camera.state.canvas.controlsEnabled &&
-        viewportShell.state.editor.editorMode !== "buy" &&
-        viewportShell.state.editor.editorMode !== "present",
+      keyboardOwnership: editorInteraction.boundaries.tracing.capabilities.keyboardOwnership,
+      keyboardShortcutsEnabled: selectionKeyboardShortcutsEnabled(viewportShell.state.editor.editorMode),
       rotationSnapEnabled: selectionInspection.state.inspection.rotationSnapEnabled,
       rotationSnapStepDegrees: selectionInspection.state.inspection.rotationSnapStepDegrees,
       rotationSnapStepRadians:
@@ -121,8 +124,6 @@ export function useDesignPageSelectionWorkspaceRegistration({
       selectedIds: itemSelection.refs.selectedIds,
       primaryId: itemSelection.refs.primaryId,
       designSnapshot: coreShell.refs.designSnapshotRef,
-      floorPlanTraceRoomMode:
-        editorInteraction.boundaries.tracing.refs.floorPlanTraceRoomModeRef,
     },
     actions: {
       document: {

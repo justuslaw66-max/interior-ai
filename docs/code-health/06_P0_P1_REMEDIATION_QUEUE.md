@@ -718,3 +718,25 @@ corrected, reviewed, and the exact artifact is certified.
 - **Remaining archival queue:** only `ARCH-RC55-REQUIRED-GATE` remains open for
   canonical merge-required Gate A3 ownership of the responsive Chromium/WebKit
   coverage. RC55 remains overall F until that separate batch closes.
+
+### ARCH-RC48 code-quality ratchet queue correction — 2026-08-06
+
+- **Historical correction:** the earlier ARCH-RC48 entry’s “only RC55 remains”
+  wording was accurate only for keyboard behavior. Its full-code-quality-pass
+  report was false: a clean three-SHA audit found nine RC48-introduced growth
+  findings and one required downward complexity-baseline correction, all first
+  present at `abec1b92b86a0b74193f437aea11033f666adca0` and none owned by RC55.
+- **`ARCH-RC48-CODE-QUALITY` — locally remediated:** from exact clean
+  `27e78d25477b6e6d9282c59cd3c801e701abee9b` on
+  `fix/arch-rc48-code-quality-ratchet`, tracing listener lifecycle and
+  synchronized event-time mode ownership move to two narrow hooks, while one
+  typed ownership capability replaces the separately threaded refs/config.
+- **Ratchet result:** all nine growth findings are eliminated structurally;
+  baseline updates only lower existing debt and remove stale complexity/
+  nesting entries. No exception, suppression, policy, threshold, workflow,
+  dependency, RC55 projection source, or external setting changes.
+- **Proof and remaining queue:** focused behavior and all required local gates
+  pass. Two clean exact-commit worktrees each pass `npm ci` and the full
+  `npm run check:code-quality`. `npm run test:code-quality` is recorded only as
+  checker-self-test evidence. Only `ARCH-RC55-REQUIRED-GATE` remains in the
+  archival queue; Full E2E and the unrelated Undo target remain excluded.
