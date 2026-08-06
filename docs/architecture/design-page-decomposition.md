@@ -221,6 +221,11 @@ and neither creates application/document state.
   effective containing block or z-index context.
 - Preserve test IDs, roles, labels, keyboard shortcuts, status/live-region
   semantics, and touch target behavior.
+- `EditorCommandBar` owns the responsive command-history target contract. Its
+  semantic Undo and Redo buttons are 44 px square below `md`, with a containing
+  48 px mobile bar and an inset top-edge focus outline; at `md` and above the
+  buttons remain 30 px square in the intentional 36 px desktop bar. The desktop
+  save-status chip remains exactly 30 px and is not a touch-target surrogate.
 
 ### Persistence, URLs, APIs, and telemetry
 

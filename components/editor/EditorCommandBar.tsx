@@ -260,15 +260,20 @@ export default function EditorCommandBar({
     if (next !== "3d") setLightingSettingsOpen(false);
     onViewModeChange(next);
   };
+  const commandHistoryButtonClass = `command-history-action inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border text-sm font-semibold leading-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-current disabled:cursor-not-allowed disabled:opacity-40 md:h-[30px] md:w-[30px] ${
+    dark
+      ? "designer-control"
+      : "border-neutral-200 bg-white text-neutral-900 hover:bg-neutral-50"
+  }`;
 
   return (
     <div
       data-testid="editor-command-bar"
-      className={`absolute left-0 right-0 top-0 z-50 flex h-9 items-center gap-2 overflow-visible border-b px-2 shadow-sm backdrop-blur transition-opacity duration-300 sm:px-4 ${
+      className={`absolute left-0 right-0 top-0 z-50 flex h-12 items-center gap-0 overflow-visible border-b px-2 shadow-sm backdrop-blur transition-opacity duration-300 sm:px-4 md:h-9 md:gap-2 ${
         dark ? "designer-command-bar" : "border-neutral-200 bg-white/95 text-neutral-950"
       } ${isClientPreview ? "pointer-events-none opacity-0" : "opacity-100"}`}
     >
-      <div className="flex min-w-0 flex-[1.25] items-center gap-1.5">
+      <div className="flex min-w-0 flex-[1.25] items-center gap-1 md:gap-1.5">
         {designSidebarToggleVisible ? (
           <button
             type="button"
@@ -295,11 +300,7 @@ export default function EditorCommandBar({
           type="button"
           data-testid="command-undo"
           aria-label={undoName ? `Undo ${undoName}` : "Undo"}
-          className={
-            dark
-              ? "designer-control inline-flex h-[30px] w-[30px] shrink-0 items-center justify-center rounded-lg border text-sm font-semibold leading-none disabled:cursor-not-allowed disabled:opacity-40"
-              : "inline-flex h-[30px] w-[30px] shrink-0 items-center justify-center rounded-lg border border-neutral-200 bg-white text-sm font-semibold leading-none text-neutral-900 hover:bg-neutral-50 disabled:cursor-not-allowed disabled:opacity-40"
-          }
+          className={commandHistoryButtonClass}
           onClick={onUndo}
           disabled={isClientPreview || !canUndo}
           title={undoName ? `Undo "${undoName}" (Cmd/Ctrl+Z)` : "Undo (Cmd/Ctrl+Z)"}
@@ -310,11 +311,7 @@ export default function EditorCommandBar({
           type="button"
           data-testid="command-redo"
           aria-label={redoName ? `Redo ${redoName}` : "Redo"}
-          className={
-            dark
-              ? "designer-control inline-flex h-[30px] w-[30px] shrink-0 items-center justify-center rounded-lg border text-sm font-semibold leading-none disabled:cursor-not-allowed disabled:opacity-40"
-              : "inline-flex h-[30px] w-[30px] shrink-0 items-center justify-center rounded-lg border border-neutral-200 bg-white text-sm font-semibold leading-none text-neutral-900 hover:bg-neutral-50 disabled:cursor-not-allowed disabled:opacity-40"
-          }
+          className={commandHistoryButtonClass}
           onClick={onRedo}
           disabled={isClientPreview || !canRedo}
           title={redoName ? `Redo "${redoName}" (Cmd/Ctrl+Shift+Z)` : "Redo (Cmd/Ctrl+Shift+Z)"}
@@ -431,7 +428,7 @@ export default function EditorCommandBar({
         ) : null}
       </div>
 
-      <div className="flex min-w-0 flex-[0.9] items-center justify-end gap-1.5">
+      <div className="flex min-w-0 flex-[0.9] items-center justify-end gap-0.5 md:gap-1.5">
         <button
           type="button"
           data-testid="editor-command-new-plan"

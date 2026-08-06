@@ -254,6 +254,12 @@ body {
   outline-offset: 2px;
 }
 
+@media (max-width: 767px) {
+  .command-history-action:focus-visible {
+    outline-offset: -2px !important;
+  }
+}
+
 [data-theme="designer"] .designer-tool-rail .designer-control-active {
   border-color: var(--accent-on-dark);
   background: var(--accent-on-dark);

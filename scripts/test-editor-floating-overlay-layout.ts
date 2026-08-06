@@ -646,8 +646,8 @@ assert.match(
 
 assert.match(
   editorCommandBarSource,
-  /data-testid="editor-command-bar"[\s\S]{0,200}?h-9/,
-  "The editor command bar should be exactly 36px tall."
+  /data-testid="editor-command-bar"[\s\S]{0,200}?h-12[\s\S]{0,200}?md:h-9/,
+  "The editor command bar should contain 44px mobile history targets and remain exactly 36px tall on desktop."
 );
 
 for (const controlTestId of [

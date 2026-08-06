@@ -842,3 +842,60 @@ corrected, reviewed, and the exact artifact is certified.
   WebKit command, direct manifest/truthfulness, and production-evidence checks.
   No data, schema, token, credential, deployment, or external-setting rollback
   is required.
+
+### Consumer Undo 44 px touch-target remediation — 2026-08-06
+
+- **Disposition:** the retained Consumer Undo failure is locally remediated on
+  `fix/consumer-undo-touch-target` from exact clean starting SHA
+  `840037865531c7bc5fb8ac92d5fccd0b7393d942`. Classification is **A — product
+  touch-target defect**: the actual semantic Undo and Redo buttons, not a visual
+  child or wrapper, measured 30 x 30 px at the focused 390 x 844 / DPR 1
+  Chromium viewport. The 36 px parent did not contain a compliant target.
+- **Correction and preserved contracts:** `EditorCommandBar` now owns one shared
+  responsive history-action class: Undo and Redo are 44 x 44 px below `md` and
+  remain 30 x 30 px at desktop. A 48 px mobile bar contains the target and its
+  inset top-edge focus outline; compact mobile gaps keep at least 4 px between
+  the sidebar, Undo, Redo, and view toggle, while all desktop gaps and the 36 px
+  bar remain unchanged. The 30 px desktop save-status chip, callbacks, disabled
+  logic, accessible names, titles/tooltips, history controller, Consumer/Pro
+  distinction, public share, and Gate A3 ownership are unchanged.
+- **Focused evidence:** the original line-128 Consumer assertion now measures
+  both dimensions of the button and passes. Placement Enter/Redo Space,
+  rotation, nudge pointer Undo/Redo, duplicate, and delete each preserve the
+  expected document fingerprint and one-history-entry semantics. The dedicated
+  Consumer/Pro matrix passes 6/6 across Chromium and WebKit and both breakpoint
+  directions, including enabled pointer/Enter/Space/focus/history behavior,
+  disabled-state stability, complete semantic hit-box ownership, accessible
+  names, adjacent history spacing, desktop 30 px controls, 36 px bar, exact
+  30 px save status, and no horizontal page overflow. Focused Chromium
+  placement/rotation plus desktop toolbar coverage passes 7/7.
+- **Validation and budgets:** design cleanup passes 78/78; required-test
+  truthfulness passes at 22 gates / 374 classified sources after synchronizing
+  only the release-only browser path inventory; direct manifest validation,
+  critical-required, zero-warning lint, typecheck, and code quality pass. The
+  automatic quality baseline only decreases `EditorCommandBar` from 739 to 736
+  lines, overlong maximum 647 to 644, and complexity maximum 65 to 64. The
+  strict local optimized build passes 57 pages with the inherited floor-plan
+  NFT trace warning. Phase 8 stays green: initial JS raw 5,815,818 -> 5,815,471
+  (-347), gzip +69, Brotli +186; CSS raw 130,408 -> 130,792 (+384), gzip +97,
+  Brotli +45; lazy chunks are unchanged.
+- **Independent review:** read-only review initially found that WebKit proved
+  disabled geometry but not enabled activation/focus/history parity. The final
+  two-engine enabled flow closes that gap with real Tab/Option+Tab focus,
+  pointer Undo/Redo, Enter Undo, Space Redo, and fingerprint checks. Final
+  complete-diff disposition is **PASS — no actionable findings**; the reviewer
+  confirmed the separate starting mobile flex collision does not occlude the
+  history targets and should not broaden this no-redesign patch.
+- **Scope boundary and remaining evidence:** no Full E2E, push, deployment,
+  integration branch, dependency, lockfile, public-share implementation,
+  history behavior, workflow, ruleset, runner, secret, or external setting is
+  changed. Visual inspection reconfirmed an unrelated starting-SHA mobile
+  workspace/right-action flex-group collision (including the `New plan` action);
+  redesigning or relocating those controls is outside this bounded remediation.
+  The history targets and their immediate neighbors do not overlap. GitHub
+  ruleset enforcement remains external and unverified.
+- **Rollback:** revert the single focused implementation commit, rebuild, then
+  rerun the command-bar accessibility matrix, Consumer placement file, compact
+  desktop toolbar spec, design cleanup, required-test truthfulness, code quality,
+  lint, typecheck, critical-required, Phase 8, strict build, and the clean-source
+  responsive public-share required gate. No data or external rollback is needed.

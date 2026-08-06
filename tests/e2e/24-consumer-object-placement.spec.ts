@@ -22,10 +22,45 @@ async function readFingerprint(page: Page): Promise<string> {
 async function expectTouchTarget(locator: Locator, label: string): Promise<void> {
   const box = await locator.boundingBox();
   expect(box, `${label} should be measurable`).not.toBeNull();
+  expect(box?.width ?? 0, `${label} should be at least 44px wide`).toBeGreaterThanOrEqual(44);
   expect(box?.height ?? 0, `${label} should be at least 44px tall`).toBeGreaterThanOrEqual(44);
 }
 
-async function setupConsumerItem(page: Page): Promise<Locator> {
+async function expectFocusIndicatorInsideViewport(page: Page, locator: Locator) {
+  await locator.focus();
+  await page.keyboard.press("Shift+Tab");
+  await page.keyboard.press("Tab");
+  await expect(locator).toBeFocused();
+  const focusGeometry = await locator.evaluate((button) => {
+    const bounds = button.getBoundingClientRect();
+    const style = window.getComputedStyle(button);
+    const outlineWidth = Number.parseFloat(style.outlineWidth);
+    const outlineOffset = Number.parseFloat(style.outlineOffset);
+    const outerSpread = Math.max(0, outlineWidth + outlineOffset);
+    return {
+      focusVisible: button.matches(":focus-visible"),
+      outlineStyle: style.outlineStyle,
+      outlineWidth,
+      left: bounds.left - outerSpread,
+      top: bounds.top - outerSpread,
+      right: bounds.right + outerSpread,
+      bottom: bounds.bottom + outerSpread,
+    };
+  });
+  expect(focusGeometry.focusVisible).toBe(true);
+  expect(focusGeometry.outlineStyle).not.toBe("none");
+  expect(focusGeometry.outlineWidth).toBeGreaterThanOrEqual(2);
+  expect(focusGeometry.left).toBeGreaterThanOrEqual(0);
+  expect(focusGeometry.top).toBeGreaterThanOrEqual(0);
+  expect(focusGeometry.right).toBeLessThanOrEqual(390);
+  expect(focusGeometry.bottom).toBeLessThanOrEqual(844);
+}
+
+async function setupConsumerItem(page: Page): Promise<{
+  panel: Locator;
+  beforePlacement: string;
+  afterPlacement: string;
+}> {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.route("**/api/me", async (route) => {
     await route.fulfill({
@@ -49,9 +84,11 @@ async function setupConsumerItem(page: Page): Promise<Locator> {
     await continueToFurnish.click();
   }
 
+  const beforePlacement = await readFingerprint(page);
   const opened = await openCatalogPreview(page, TEST_ITEM_ID, "Hugg");
   expect(opened, "The deterministic Hugg fixture must be available").toBe(true);
   await addCatalogDrawerItemToRoom(page);
+  const afterPlacement = await readFingerprint(page);
 
   const panel = getSelectedItemPanel(page);
   await expect(panel).toBeVisible({ timeout: 15_000 });
@@ -60,13 +97,13 @@ async function setupConsumerItem(page: Page): Promise<Locator> {
     await controls.click();
   }
   await expect(controls).toHaveAttribute("aria-expanded", "true");
-  return panel;
+  return { panel, beforePlacement, afterPlacement };
 }
 
 test.describe("24. Consumer object placement", () => {
   test("rotation keyboard command remains one undoable Consumer edit", async ({ page }) => {
     test.setTimeout(150_000);
-    const panel = await setupConsumerItem(page);
+    const { panel } = await setupConsumerItem(page);
     const rotationToggle = panel.getByTestId("rotation-controls-toggle");
     if ((await rotationToggle.getAttribute("aria-expanded")) !== "true") {
       await rotationToggle.click();
@@ -82,6 +119,28 @@ test.describe("24. Consumer object placement", () => {
     await expect(page.getByTestId("qa-editor-snapshot-fingerprint")).toHaveAttribute(
       "data-fingerprint",
       beforeRotation
+    );
+  });
+
+  test("placement is one keyboard-undoable Consumer edit", async ({ page }) => {
+    test.setTimeout(150_000);
+    const { beforePlacement, afterPlacement } = await setupConsumerItem(page);
+    const undo = page.getByTestId("command-undo");
+    const redo = page.getByTestId("command-redo");
+
+    await expect(undo).toBeEnabled();
+    await expect(redo).toBeDisabled();
+    await expectFocusIndicatorInsideViewport(page, undo);
+    await undo.press("Enter");
+    await expect(page.getByTestId("qa-editor-snapshot-fingerprint")).toHaveAttribute(
+      "data-fingerprint",
+      beforePlacement
+    );
+    await expect(redo).toBeEnabled();
+    await redo.press("Space");
+    await expect(page.getByTestId("qa-editor-snapshot-fingerprint")).toHaveAttribute(
+      "data-fingerprint",
+      afterPlacement
     );
   });
 
@@ -127,7 +186,7 @@ test.describe("24. Consumer object placement", () => {
 
   test("keeps transform controls touch friendly and every edit recoverable", async ({ page }) => {
     test.setTimeout(150_000);
-    const panel = await setupConsumerItem(page);
+    const { panel } = await setupConsumerItem(page);
 
     await expect(panel.getByTestId("selected-item-dimensions")).toBeVisible();
     await expect(panel.getByTestId("selected-item-size-guidance")).toContainText(
@@ -147,6 +206,10 @@ test.describe("24. Consumer object placement", () => {
     ] as const) {
       await expectTouchTarget(locator, label);
     }
+    const horizontalOverflow = await page.evaluate(
+      () => document.documentElement.scrollWidth - document.documentElement.clientWidth
+    );
+    expect(horizontalOverflow).toBeLessThanOrEqual(1);
 
     const beforeNudge = await readFingerprint(page);
     await panel.getByTestId("selected-item-nudge-right").click();
@@ -190,7 +253,7 @@ test.describe("24. Consumer object placement", () => {
 
   test("delete creates one undoable history entry", async ({ page }) => {
     test.setTimeout(150_000);
-    const panel = await setupConsumerItem(page);
+    const { panel } = await setupConsumerItem(page);
     const beforeDelete = await readFingerprint(page);
 
     await panel.getByTestId("selected-item-delete").click();

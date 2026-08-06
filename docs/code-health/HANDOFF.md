@@ -3923,3 +3923,88 @@ production rebuild, `npm run test:public-share-responsive-required`, direct
 manifest/truthfulness, production-artifact evidence, critical-required, and
 focused invalid/revoked checks. No data, schema, token, credential, deployment,
 or external-setting rollback is required.
+
+## Consumer Undo 44 px touch-target remediation — 2026-08-06
+
+Starting source is exact clean
+`840037865531c7bc5fb8ac92d5fccd0b7393d942`; branch is
+`fix/consumer-undo-touch-target`. Entry status, tracked diff/stat/check, and
+untracked inventory were empty. No application listener existed at entry. The
+approved focused reproduction started Node on port 3000, and `lsof` resolved
+its cwd to `/Users/justus/Developer/interior-ai` before test execution.
+
+The exact Chromium test is `24. Consumer object placement › keeps transform
+controls touch friendly and every edit recoverable`, at 390 x 844, DPR 1. It
+failed at the unchanged minimum-size assertion because semantic
+`button[data-testid="command-undo"]` measured 30 x 30 px. Its parent command bar
+was 36 px, the adjacent semantic Redo shared the same geometry, the icon was the
+single text glyph `↶`, the accessible name was the live `Undo <history name>`
+label, and the disabled state retained 30 x 30 px. There was no larger hit-area
+wrapper, clipped intended 44 px target, hidden duplicate, or stale-child
+measurement. Classification is **A — product touch-target defect**.
+
+`EditorCommandBar` is the exact owner. One shared history-action class now gives
+the existing Undo and Redo buttons 44 x 44 px below `md` and restores their
+original 30 x 30 px dimensions at `md`. The mobile command bar is 48 px so the
+targets are fully contained without top-edge clipping; only mobile gaps compact,
+with 4 px retained around the history pair, while desktop spacing and the 36 px
+bar are unchanged. The mobile focus outline is inset at the viewport edge.
+Callbacks, native button semantics, disabled predicates, accessible names,
+titles, glyphs, history controller, save status, Consumer/Pro policy, and
+public-share code are unchanged. The desktop save-status chip remains exactly
+30 px.
+
+Focused tests prove a single semantic button owns each full measured hit box;
+disabled Undo/Redo remain dimensionally stable; Consumer and Pro both transition
+44 -> 30 -> 44 across mobile/desktop/mobile; and Chromium/WebKit agree 6/6 with
+no skips or retries, including enabled pointer, Enter, Space, visible focus, and
+exactly-once placement-history behavior in both engines. The original Consumer
+file passes 5/5 in Chromium, including rotation, placement Enter, Redo Space,
+nudge pointer Undo/Redo, duplicate, and delete fingerprint restoration. The
+original failing test now checks width as well as its unchanged height minimum.
+Focus is keyboard-visible and contained; the history controls have one
+accessible name, adjacent history hit regions do not overlap, and the page has
+no horizontal overflow. Compact desktop Consumer and Pro coverage remains 2/2
+with 30 px controls, a 36 px bar, and a 30 px save chip.
+
+Visual inspection covers Consumer and Pro at 390 x 844 and 1440 x 900. History
+alignment, glyphs, disabled appearance, responsive size, and desktop geometry
+are stable. The inspection also reconfirmed a separate starting-SHA mobile
+workspace/right-action flex-group collision that can cover `New plan`; it is not
+caused by a duplicate Undo region. Repairing that existing command-bar layout
+would require the redesign or relocation this bounded brief explicitly excludes,
+so it is recorded rather than changed.
+
+Validation passes: targeted zero-warning ESLint; command-bar structural guard;
+design cleanup 78/78; required-test truthfulness and direct manifest validation
+at 22 gates / 374 classified sources; typecheck; critical-required; full lint
+with zero warnings; and code quality. The browser path inventory alone advances
+from 100 to 101 for the new release-only focused spec; no gate identity, cadence,
+project, workflow, or Gate A3 owner changes. The automatically decreased quality
+baseline records `EditorCommandBar` 739 -> 736 lines, overlong maximum 647 ->
+644, and complexity maximum 65 -> 64. The strict local optimized build completes
+57 pages with only the inherited floor-plan NFT trace warning.
+
+Phase 8 remains green. Starting `/design` initial JS was 5,815,818 raw /
+1,361,953 gzip / 1,109,241 Brotli bytes and CSS was 130,408 / 22,170 / 17,276.
+The final build is 5,815,471 / 1,362,022 / 1,109,427 JS and 130,792 / 22,267 /
+17,321 CSS: JS raw -347, gzip +69, Brotli +186; CSS raw +384, gzip +97, Brotli
++45. Cabinetry Studio and GLTF-exporter lazy chunks are unchanged and every
+budget passes.
+
+The clean exact-commit `npm run test:public-share-responsive-required` gate is
+the final post-commit validation because its truthfulness runner rejects dirty
+source by contract. Independent read-only review initially found that WebKit
+proved disabled geometry but not enabled activation/focus/history parity. The
+final 6/6 matrix fixes that gap; complete-diff re-review passes with no
+actionable findings across classification, semantic target geometry,
+breakpoints, focus/keyboard/pointer/history behavior, overflow,
+desktop/save-status preservation, tests, and scope. The reviewer confirmed the
+separate starting mobile flex collision should not broaden this no-redesign
+patch. Full E2E is not run. GitHub ruleset enforcement remains external and
+unverified.
+
+Rollback is `git revert <implementation-commit-sha>`, followed by the focused
+browser suites, all static gates, strict build, Phase 8, and clean-source public
+share required gate. No schema, data, deployment, credential, or external-setting
+rollback is involved.
