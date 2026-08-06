@@ -93,7 +93,7 @@
       "limit": 400
     },
     "app/share/[shareToken]/page.tsx": {
-      "lines": 741,
+      "lines": 730,
       "limit": 250
     },
     "app/tools/glb-optimizer/page.tsx": {
@@ -1529,7 +1529,7 @@
     "app/share/[shareToken]/page.tsx": {
       "overlongFunctions": {
         "count": 2,
-        "maximum": 684
+        "maximum": 663
       },
       "complexFunctions": {
         "count": 1,

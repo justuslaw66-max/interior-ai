@@ -7,7 +7,6 @@ import {
   useEffect,
   useMemo,
   useState,
-  type CSSProperties,
   type ReactNode,
 } from "react";
 import type { DesignSnapshot, RoomSnapshot } from "@/lib/room-types";
@@ -19,6 +18,10 @@ import {
   resolvePublicShareSelectedRoomId,
   type PublicShareLayoutMode,
 } from "@/lib/public-share-layout";
+import {
+  PublicShareRootStateReporter,
+  type PublicShareRootState,
+} from "@/components/public-share/PublicShareRootStateReporter";
 
 type SurfaceMeasurement = {
   layoutKey: string;
@@ -61,13 +64,6 @@ function useResponsiveLayoutMode() {
   }, []);
   return mode;
 }
-
-const safeAreaStyle: CSSProperties = {
-  paddingTop: "env(safe-area-inset-top)",
-  paddingLeft: "env(safe-area-inset-left)",
-  paddingRight: "env(safe-area-inset-right)",
-  paddingBottom: "env(safe-area-inset-bottom)",
-};
 
 function usePublicShareSelection(snapshot: DesignSnapshot) {
   const [requestedRoomId, setRequestedRoomId] = useState(() =>
@@ -150,48 +146,42 @@ function usePublicShareReadiness(input: {
   return { layoutGeneration, layoutKey, layoutReady, reportCanvasReady, reportSurfaceMeasurement, surface };
 }
 
-function PublicShareRoot({
-  children,
-  projectionContentIdentity,
-  projectionDiagnosticFingerprint,
-  layoutMode,
-  layoutGeneration,
-  layoutReady,
-  selectedRoomId,
-  selectedSavedViewId,
-  hasSelectedRoom,
-  surface,
-}: {
-  children: ReactNode;
+function useReportPublicShareShellRootState(input: {
+  selection: ReturnType<typeof usePublicShareSelection>;
+  readiness: ReturnType<typeof usePublicShareReadiness>;
+  layoutMode: PublicShareLayoutMode | null;
   projectionContentIdentity: string;
   projectionDiagnosticFingerprint: string;
-  layoutMode: PublicShareLayoutMode | null;
-  layoutGeneration: number;
-  layoutReady: boolean;
-  selectedRoomId: string | null;
-  selectedSavedViewId: string | null;
-  hasSelectedRoom: boolean;
-  surface: SurfaceMeasurement | null;
 }) {
-  const layoutStatus = hasSelectedRoom ? (layoutReady ? "ready" : "resolving") : "empty";
-  return (
-    <main
-      className="min-h-screen overflow-x-clip bg-neutral-100"
-      data-testid="public-share-root"
-      data-layout-status={layoutStatus}
-      data-layout-mode={layoutMode ?? "resolving"}
-      data-layout-generation={layoutGeneration}
-      data-selected-room-id={selectedRoomId ?? ""}
-      data-selected-saved-view-id={selectedSavedViewId ?? ""}
-      data-projection-content-identity={projectionContentIdentity}
-      data-projection-fingerprint={projectionDiagnosticFingerprint}
-      data-surface-width={surface?.width ?? 0}
-      data-surface-height={surface?.height ?? 0}
-      style={safeAreaStyle}
-    >
-      {children}
-    </main>
+  const { selection, readiness, layoutMode, projectionContentIdentity, projectionDiagnosticFingerprint } = input;
+  const rootState = useMemo<PublicShareRootState>(
+    () => ({
+      layoutStatus: selection.activeRoom
+        ? readiness.layoutReady
+          ? "ready"
+          : "resolving"
+        : "empty",
+      projectionContentIdentity,
+      projectionDiagnosticFingerprint,
+      layoutMode,
+      layoutGeneration: readiness.layoutGeneration,
+      selectedRoomId: selection.selectedRoomId,
+      selectedSavedViewId: selection.selectedSavedViewId,
+      surface: readiness.surface,
+    }),
+    [
+      layoutMode,
+      projectionContentIdentity,
+      projectionDiagnosticFingerprint,
+      readiness.layoutGeneration,
+      readiness.layoutReady,
+      readiness.surface,
+      selection.activeRoom,
+      selection.selectedRoomId,
+      selection.selectedSavedViewId,
+    ]
   );
+  return rootState;
 }
 
 export function PublicShareShell({
@@ -224,21 +214,17 @@ export function PublicShareShell({
     reportCanvasReady: readiness.reportCanvasReady,
     reportSurfaceMeasurement: readiness.reportSurfaceMeasurement,
   };
+  const rootState = useReportPublicShareShellRootState({
+    selection,
+    readiness,
+    layoutMode,
+    projectionContentIdentity,
+    projectionDiagnosticFingerprint,
+  });
   return (
     <PublicShareLayoutContext.Provider value={contextValue}>
-      <PublicShareRoot
-        projectionContentIdentity={projectionContentIdentity}
-        projectionDiagnosticFingerprint={projectionDiagnosticFingerprint}
-        layoutMode={layoutMode}
-        layoutGeneration={readiness.layoutGeneration}
-        layoutReady={readiness.layoutReady}
-        selectedRoomId={selection.selectedRoomId}
-        selectedSavedViewId={selection.selectedSavedViewId}
-        hasSelectedRoom={Boolean(selection.activeRoom)}
-        surface={readiness.surface}
-      >
-        {children}
-      </PublicShareRoot>
+      <PublicShareRootStateReporter state={rootState} />
+      {children}
     </PublicShareLayoutContext.Provider>
   );
 }

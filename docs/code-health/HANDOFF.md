@@ -3841,3 +3841,85 @@ manifest/truthfulness validation, the required responsive command, explicit
 Chromium and WebKit projects, and production-artifact evidence validation. No
 data, schema, token, deployment, credential, or external-setting rollback is
 required.
+
+## ARCH-RC55 Chromium public-share root lifecycle — 2026-08-06
+
+Starting SHA is `371feb2641866aba28db0a5332971768bfe283a8`; branch is
+`fix/arch-rc55-public-share-root-lifecycle`. The starting status, diff, diff
+check, and untracked inventory were empty; Node was `v24.13.0`, npm was
+`11.6.2`, full `check:code-quality` passed, the Gate A3 ownership commit was
+HEAD, and no prior lifecycle remediation was present. No Interior AI server was
+listening, so there was no process/worktree mismatch.
+
+The first local canonical launch was blocked before browser discovery by the
+sandbox's port restriction; its approved relaunch then lacked the CI staging
+placeholders and failed all routes at environment validation. Per the bounded
+non-reproduction rule, neither was treated as product evidence. A focused run
+with the workflow's non-secret CI placeholders reproduced the authoritative
+Chromium failure in 612 ms.
+
+Test-only MutationObserver evidence assigned node 1 to the resolving server
+root under hidden React stream container `S:0`. It was connected,
+hidden/aria-hidden, not inert, and contained 21 actionable descendants. At
+332.5 ms, separate node 2 appeared resolving and visible under `body` with the
+same URL token, projection SHA-256 identity, selected room, and generation.
+The longer authoritative trace continued
+`1 resolving → 2 resolving → 2 (resolving, ready) → 1 ready` over about 1.17
+seconds. No hydration console mismatch, second production owner, responsive
+double presentation, key churn, or harness double navigation was present. The
+cause is classification B: the automatic route loading boundary staged the SSR
+tree while Chromium hydration created a client replacement tree.
+
+The fix makes `PublicShareResolvedRoot` the sole resolved-root source owner and
+mounts it through `PublicShareClientBoundary` with `ssr: false`. The automatic
+route stream retains its accessible `public-share-loading` status, while the
+dynamic boundary emits no server or intermediate fallback markup and contains
+no resolved server tree for hydration to replay. The mounted root itself owns
+the resolving state. `PublicShareShell` reports
+resolving/ready/empty layout attributes to the mounted ancestor through a
+bounded state reporter. Loading, invalid/revoked, and error retain distinct
+non-root identities. The root is not keyed by projection, layout generation,
+time, randomness, or viewport width and does not remount when resolving becomes
+ready. The route restores the prior design-ID/share-token boundary key so an
+actual token/design generation invalidates all room, view, canvas, and surface
+state before the new root becomes actionable.
+
+The required spec now installs a bounded observer before navigation, assigns
+diagnostic node identities with a WeakMap, and records timestamps, URL,
+connectedness, state, projection/layout identity, room/view, parent and stream
+owner, visibility, `aria-hidden`, inertness, actionable count, duplicate stable
+selectors, out-of-owner actions, and focus. The bounded log fails on truncation
+and continuously maintains maximum root/action counters. Every sample must have
+at most one connected and visible root, and no hidden, inert, removed, or
+superseded root may contain focus or emit an action. Visible and
+accessibility-active lifecycle owner maxima also stay at one; a briefly
+connected hidden Next fallback remains diagnostic and cannot exempt an action.
+Coverage includes direct
+anonymous navigation, a semantic database-gated slow read, ordered loading →
+resolving → ready, hydration, empty public room content, the actual route error
+boundary, both responsive directions, room and saved-view continuity, an
+actual same-document App Router token A → B transition with a retained stale
+control, back/forward, same-token reload, invalid/revoked, and both required
+engines. The static test scans `app` and `components` and accepts exactly one
+source owner.
+
+The corrected focused strict-production matrix passes Chromium 4/4 and WebKit
+4/4, aggregate 8/8, with zero retries, flakes, or skips. Static responsive and
+typecheck pass, and the strict 57-page build passes with only the inherited
+whole-project floor-plan NFT warning. Final clean exact-commit required,
+manifest/truthfulness, production-evidence, critical-required, Phase 8, lint,
+code-quality, and bundle evidence are reported in the task handoff.
+
+Gate `ci.public-share-responsive` remains the canonical required owner.
+Release Gate A3 ownership and the 22-gate / 373-source inventory are unchanged;
+no runnable source path was added or removed. Public authorization/projection,
+projection SHA-256 identity, persistence, responsive geometry, dependencies,
+Full E2E, the integration branch, push/deploy, runners, and external settings
+were not changed. GitHub ruleset enforcement remains externally pending. The
+unrelated Consumer Undo 44 px touch-target gap remains open.
+
+Rollback is `git revert <implementation-commit-sha>`, followed by a strict
+production rebuild, `npm run test:public-share-responsive-required`, direct
+manifest/truthfulness, production-artifact evidence, critical-required, and
+focused invalid/revoked checks. No data, schema, token, credential, deployment,
+or external-setting rollback is required.

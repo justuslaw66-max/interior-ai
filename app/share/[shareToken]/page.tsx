@@ -26,7 +26,9 @@ import ShoppingCsvDownload from "./export/ShoppingCsvDownload";
 import { projectSharedDesignTransport } from "@/lib/shared-design-snapshot";
 import ShareFloorPlanPreview from "@/components/ShareFloorPlanPreview";
 import ShareShoppingCheckout from "@/components/ShareShoppingCheckout";
-import { PublicShareShell } from "@/components/public-share/PublicShareShell";
+import { PublicShareClientBoundary } from "@/components/public-share/PublicShareClientBoundary";
+import { PublicShareInvalidView } from "@/components/public-share/PublicShareRootLifecycle";
+import { resolvePublicShareSelectedRoomId } from "@/lib/public-share-layout";
 import {
   PublicShareRoomSchedule,
   type PublicShareRoomScheduleItem,
@@ -55,13 +57,20 @@ function formatMeters(value: number) {
 function formatCategory(value: string) {
   return value.replace(/_/g, " ").replace(/\b\w/g, (letter) => letter.toUpperCase());
 }
+
+function formatCurrency(value: number) {
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    maximumFractionDigits: 0,
+  }).format(value);
+}
 export default async function SharePage({
   params,
 }: {
   params: Promise<{ shareToken: string }>;
 }) {
   const { shareToken } = await params;
-
   const design = await prisma.design.findFirst({
     where: { shareToken, shareEnabled: true },
     select: {
@@ -78,23 +87,7 @@ export default async function SharePage({
       notes: true,
     },
   });
-
-  if (!design) {
-    return (
-      <main
-        className="flex min-h-screen items-center justify-center p-8"
-        data-testid="public-share-invalid"
-        data-layout-status="invalid"
-      >
-        <div className="rounded-xl border bg-white p-6" role="status">
-          <div className="text-lg font-semibold">Link not available</div>
-          <div className="text-sm text-neutral-600">
-            This share link is disabled or invalid.
-          </div>
-        </div>
-      </main>
-    );
-  }
+  if (!design) return <PublicShareInvalidView />;
 
   const publicDesign = projectSharedDesignTransport(design);
   const designSnapshot: DesignSnapshot = storedToSnapshot(publicDesign.snapshot);
@@ -226,13 +219,9 @@ export default async function SharePage({
       tone: presentationViewItems.length > 0 ? "ready" : "info",
     },
   ];
-  const formatCurrency = (value: number) =>
-    new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "USD",
-      maximumFractionDigits: 0,
-    }).format(value);
   const handoffFidelitySummary = buildShareExportFidelitySummary(designSnapshot, CATALOG_ITEMS);
+  const projectionContentIdentity = buildPublicProjectionContentIdentity(designSnapshot);
+  const initialSelectedRoomId = resolvePublicShareSelectedRoomId(designSnapshot.rooms, designSnapshot.activeRoomId);
   const qaFidelitySummary = handoffFidelitySummary;
   const handoffReady =
     handoffFidelitySummary.missingCommerceCount === 0 &&
@@ -260,13 +249,13 @@ export default async function SharePage({
       detail: `${shoppingSummary.itemCount} planned item${shoppingSummary.itemCount === 1 ? "" : "s"}`,
     },
   ];
-
   return (
-    <PublicShareShell
+    <PublicShareClientBoundary
       key={`${design.id}:${shareToken}`}
       snapshot={designSnapshot}
-      projectionContentIdentity={buildPublicProjectionContentIdentity(designSnapshot)}
+      projectionContentIdentity={projectionContentIdentity}
       projectionDiagnosticFingerprint={handoffFidelitySummary.fingerprint}
+      selectedRoomId={initialSelectedRoomId}
     >
       {qaFidelitySummary ? (
         <div
@@ -736,6 +725,6 @@ export default async function SharePage({
       </section>
 
       <ShareFooterCTA shareToken={shareToken} />
-    </PublicShareShell>
+    </PublicShareClientBoundary>
   );
 }

@@ -128,9 +128,12 @@ report must also carry the current generation. The shell rejects an old
 key. No timer can make the page ready.
 
 Server loading uses `data-layout-status="loading"`; invalid/revoked uses
-`invalid`; the route error boundary uses `error`; an empty projected room set
-uses `empty`; and an incomplete active layout uses `resolving`. None advertises
-ready. Readiness is evidence only and never enables data access or an action.
+`invalid`; the route error boundary uses `error`; the client shell's defensive
+no-active-room state uses `empty`; and an incomplete active layout uses
+`resolving`. The closed transport requires an active public room, so a valid
+room with no public items/views is the browser-tested empty-content projection
+and becomes ready normally. None of the non-ready states advertises ready.
+Readiness is evidence only and never enables data access or an action.
 
 ## Stable identities
 
@@ -150,12 +153,28 @@ Stable identities supplement roles and accessible names:
 
 No identity uses an array index, translated display text, random/time value, or
 viewport width. Missing saved-view IDs do not gain an index-derived public
-identity; malformed views remain unavailable. The settled active tree is
-intended to contain no duplicate responsive identity or duplicate DOM `id`.
-The first canonical Chromium production-server run at implementation snapshot
-`729caae` exposed two simultaneous `public-share-root` elements during
-hydration for about 1.17 seconds, so that invariant is not currently certified
-and RC55 remains open.
+identity; malformed views remain unavailable. `PublicShareResolvedRoot` is the
+single semantic and DOM source owner of `public-share-root`. The route first
+uses the distinct accessible `public-share-loading` identity. The client-only
+dynamic boundary renders no server or intermediate fallback markup; once its
+module mounts, the one resolved root itself transitions from `resolving` to
+`ready` (or the defensive `empty` state). Invalid, revoked, and error retain
+distinct non-root identities.
+
+This placement corrects the Chromium streaming sequence exposed at `729caae`.
+Previously the automatic route loading boundary kept server root node 1 in a
+hidden `S:0` staging container while hydration created visible client root node
+2 under `body`; both were connected for about 1.17 seconds. The resolved tree
+is now client-only, so no server root, viewer, control, or landmark exists for
+hydration to replay. Once mounted, the observer sees one root node across
+projection readiness, room/view selection, and desktop/mobile mode changes.
+The route is keyed by design ID plus share token, so a same-document token
+transition disconnects the old generation before the new root becomes
+actionable. No hidden or superseded second tree remains actionable or focusable.
+Next may connect the outgoing loading fallback and incoming invalid/error
+fallback within one mutation handoff. Diagnostics retain that connected count,
+but correctness requires at most one visible and one accessibility-active
+lifecycle owner; the hidden outgoing fallback cannot exempt or emit actions.
 
 ## Route and capability boundaries
 
@@ -187,7 +206,12 @@ timer/user-agent path, selectors, and rendered loading/error states.
 single/multi-room desktop, tablet, mobile portrait/landscape, both resize
 directions, room/view continuity, projection fingerprint, finite surface,
 touch size, overflow, selector uniqueness, keyboard focus, history/reload, and
-invalid/revoked states. `04-share.spec.ts` retains its separate read-only/privacy
+invalid/revoked states. A database lock provides a semantic slow-projection
+barrier, and the browser suite also covers empty public room content, the real
+route error boundary, a same-document App Router token transition, and a
+retained stale control. Diagnostics are bounded, fail on truncation, preserve
+ordered phases, and continuously accumulate maximum root/action counts.
+`04-share.spec.ts` retains its separate read-only/privacy
 and saved-view coverage in advisory Full E2E and release Gate A3; it is not
 duplicated into the required responsive owner.
 
@@ -202,11 +226,13 @@ report is bound to the clean checkout SHA and validated against process exit
 and aggregate counts. Advisory Full E2E and release Gate A3 may discover the
 spec but are not its canonical required owner.
 
-The first canonical execution passed the static prerequisite and WebKit 4/4,
-then failed Chromium 0/4 without retry on the duplicate-root condition above.
-The required runner rejected the failed process/report aggregate as designed.
-No product or responsive-test behavior was changed after the defect was exposed;
-correcting it requires a separately authorized production-scope batch.
+The original canonical execution passed the static prerequisite and WebKit
+4/4, then failed Chromium 0/4 without retry on the duplicate-root condition
+above. The bounded lifecycle remediation adds a WeakMap-identified,
+MutationObserver-backed transient uniqueness assertion to the same required
+spec. The corrected focused production matrix passes Chromium 4/4 and WebKit
+4/4 (8/8 aggregate) with zero retries, flakes, or skips. Gate ownership and the
+required runner remain unchanged.
 
 Rollback is one local revert of the focused implementation commit, followed by
 the responsive unit/render test, Chromium/WebKit share matrix, public

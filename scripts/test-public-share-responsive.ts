@@ -1,12 +1,12 @@
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import type { RoomSnapshot } from "@/lib/room-types";
 import type { DesignSnapshot } from "@/lib/room-types";
-import PublicShareLoading from "@/app/share/[shareToken]/loading";
 import PublicShareError from "@/app/share/[shareToken]/error";
+import { PublicShareLoadingState } from "@/components/public-share/PublicShareRootLifecycle";
 import {
   buildPublicProjectionContentIdentity,
   PUBLIC_PROJECTION_CONTENT_IDENTITY_VERSION,
@@ -28,6 +28,13 @@ import {
 
 const root = process.cwd();
 const read = (relativePath: string) => readFileSync(join(root, relativePath), "utf8");
+function sourceFiles(relativeDirectory: string): string[] {
+  return readdirSync(join(root, relativeDirectory), { withFileTypes: true }).flatMap((entry) => {
+    const relativePath = join(relativeDirectory, entry.name);
+    if (entry.isDirectory()) return sourceFiles(relativePath);
+    return /\.[cm]?[jt]sx?$/.test(entry.name) ? [relativePath] : [];
+  });
+}
 const rooms = [
   { id: "room-living" },
   { id: "room-dining" },
@@ -269,6 +276,8 @@ assert.equal(
 );
 
 const shellSource = read("components/public-share/PublicShareShell.tsx");
+const rootLifecycleSource = read("components/public-share/PublicShareRootLifecycle.tsx");
+const clientBoundarySource = read("components/public-share/PublicShareClientBoundary.tsx");
 assert.match(shellSource, /resolvePublicShareSelectedRoomId/);
 assert.match(shellSource, /measurement\.generation !== layoutGeneration/);
 assert.match(shellSource, /isPublicShareLayoutReady/);
@@ -284,16 +293,37 @@ assert.match(viewerSource, /getBoundingClientRect/);
 assert.match(viewerSource, /data-testid="share-preview-surface"/);
 assert.doesNotMatch(viewerSource, /saved-view-\$\{index\}|initialSnapshot/);
 
-const loadingSource = read("app/share/[shareToken]/loading.tsx");
 const errorSource = read("app/share/[shareToken]/error.tsx");
+const loadingSource = read("app/share/[shareToken]/loading.tsx");
 const pageSource = read("app/share/[shareToken]/page.tsx");
-assert.match(loadingSource, /data-layout-status="loading"/);
+assert.equal(existsSync(join(root, "app/share/[shareToken]/loading.tsx")), true);
+assert.match(rootLifecycleSource, /data-testid="public-share-root"/);
+assert.equal(
+  (rootLifecycleSource.match(/data-testid="public-share-root"/g) ?? []).length,
+  1,
+  "The stable public-share root identity must have one source owner"
+);
+assert.deepEqual(
+  [...sourceFiles("app"), ...sourceFiles("components")].filter((relativePath) =>
+    read(relativePath).split("\n").some((line) => /^\s+data-testid="public-share-root"/.test(line))
+  ),
+  ["components/public-share/PublicShareRootLifecycle.tsx"],
+  "No route fallback or alternate presentation may claim the stable public-share root"
+);
+assert.match(loadingSource, /PublicShareLoadingState/);
+assert.match(rootLifecycleSource, /data-layout-status="loading"/);
 assert.match(errorSource, /data-layout-status="error"/);
-assert.match(pageSource, /data-layout-status="invalid"/);
+assert.match(rootLifecycleSource, /data-layout-status="invalid"/);
+assert.match(pageSource, /<PublicShareClientBoundary/);
+assert.match(pageSource, /key=\{`\$\{design\.id\}:\$\{shareToken\}`\}/);
+assert.match(clientBoundarySource, /ssr: false/);
+assert.match(clientBoundarySource, /loading: \(\) => null/);
+assert.doesNotMatch(clientBoundarySource, /public-share-client-resolving/);
+assert.doesNotMatch(loadingSource + errorSource, /data-testid="public-share-root"/);
 assert.match(pageSource, /buildPublicProjectionContentIdentity\(designSnapshot\)/);
 assert.doesNotMatch(pageSource, /projectionIdentity=/);
-assert.doesNotMatch(loadingSource + errorSource, /data-layout-status="ready"/);
-const loadingMarkup = renderToStaticMarkup(createElement(PublicShareLoading));
+assert.doesNotMatch(errorSource, /data-layout-status="ready"/);
+const loadingMarkup = renderToStaticMarkup(createElement(PublicShareLoadingState));
 const errorMarkup = renderToStaticMarkup(
   createElement(PublicShareError, { reset: () => undefined })
 );

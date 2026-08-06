@@ -942,3 +942,56 @@ was made.
 The unrelated Consumer Undo 44 px touch-target finding remains open. Rollback
 is one local revert followed by manifest/truthfulness, static, Chromium,
 WebKit, and production-evidence checks; no data or external rollback is needed.
+
+## ARCH-RC55 public-share root lifecycle disposition — 2026-08-06
+
+The bounded runtime remediation starts at
+`371feb2641866aba28db0a5332971768bfe283a8` on
+`fix/arch-rc55-public-share-root-lifecycle`. The tree was clean and
+untracked-free, full `check:code-quality` passed, the Gate A3 ownership commit
+was present, and no archival lifecycle patch had been applied.
+
+The pre-fix MutationObserver sequence assigned stable node 1 to the resolving
+server tree under hidden React stream owner `S:0`, then observed separately
+created node 2 resolving and visible under `body`. Node 1 remained connected,
+hidden/aria-hidden, non-inert, and contained 21 actionable descendants. Both
+nodes had the same public projection SHA-256 identity and selected room. The
+authoritative longer trace continued through simultaneous resolving/ready
+states before node 1 disappeared about 1.17 seconds after navigation. This is
+classification B, an SSR/hydration replacement defect at the automatic route
+loading boundary, not duplicated responsive presentation or test navigation.
+
+After remediation, `PublicShareResolvedRoot` is the sole source owner of
+`data-testid="public-share-root"`. It mounts through a client-only dynamic
+boundary (`ssr: false`), so the route stream contains the accessible
+`public-share-loading` but no resolved or intermediate client-fallback server
+tree. The mounted root itself transitions from resolving to ready and stays the same node
+through resolving → ready and viewport, room, and saved-view generation
+changes. A design-ID/share-token key invalidates the old root only for an
+actual route generation change. Loading, invalid/revoked, and error keep
+distinct non-root identities.
+The static owner scan rejects any second JSX owner across `app` and
+`components`.
+
+The corrected focused production matrix is Chromium 4/4 and WebKit 4/4,
+aggregate 8/8, with zero retry, flake, or skip. Observer samples never exceed
+one connected or visible root, retain one node identity through both responsive
+directions, reject duplicate stable selectors and out-of-owner actions, and
+never focus a hidden, inert, removed, or superseded root. Visible and
+accessibility-active lifecycle owner counts also stay at one even when Next
+briefly connects a hidden outgoing fallback during invalid/error handoff. The
+log fails on truncation while continuous maximum counters remain active. A database-gated
+slow read, empty-content projection, actual error boundary, same-document token
+A/B transition with a retained stale control, back/forward, reload, invalid,
+and revoked coverage preserve public projection and room/view contracts. Gate
+`ci.public-share-responsive`, its
+required command, manifest ownership, release Gate A3 ownership, and the
+22-gate / 373-source inventory remain unchanged.
+
+No public authorization/projection, SHA-256 identity, persistence, geometry,
+dependency, Full E2E, integration branch, push, deployment, runner, or GitHub
+setting changed. GitHub ruleset enforcement remains externally pending, and
+the Consumer Undo 44 px touch-target gap remains separate. Rollback is a local
+revert of the lifecycle commit followed by strict rebuild, required responsive,
+direct truthfulness/manifest, production-evidence, and critical-required
+validation; no data or external rollback is needed.

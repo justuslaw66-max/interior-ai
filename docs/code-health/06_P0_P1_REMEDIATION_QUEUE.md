@@ -791,3 +791,54 @@ corrected, reviewed, and the exact artifact is certified.
   manifest/truthfulness checks, the static contract, Chromium and WebKit, and
   production-evidence validation. No data, schema, deployment, credential, or
   external-setting rollback is involved.
+
+### ARCH-RC55 Chromium public-share root lifecycle — 2026-08-06
+
+- **Disposition:** resolved on `fix/arch-rc55-public-share-root-lifecycle` from
+  exact clean starting SHA `371feb2641866aba28db0a5332971768bfe283a8`.
+  `ci.public-share-responsive` remains the sole required owner; neither Gate A3
+  ownership nor the 22-gate / 373-source inventory changed.
+- **Verified cause:** classification B, SSR/hydration replacement. The automatic
+  `[shareToken]/loading.tsx` boundary staged server node 1 under hidden React
+  container `S:0` with 21 actionable descendants while Chromium created a
+  separate visible client node 2 under `body`. Both carried the same token,
+  projection identity, selected room, and resolving generation. This was not a
+  responsive branch, React-key, token-generation, or locator defect.
+- **Correction:** `PublicShareResolvedRoot` is the one resolved-root owner and
+  mounts only through `PublicShareClientBoundary` with `ssr: false`; therefore
+  the streamed server response cannot contain an old resolved tree for client
+  hydration to duplicate. The accessible route loading status is retained,
+  while the dynamic boundary emits no server/intermediate fallback markup.
+  Loading, invalid/revoked, and error do not claim `public-share-root`.
+  `PublicShareShell` reports resolving,
+  ready, and empty attributes to the one mounted root without remounting it.
+  The restored design-ID/share-token key remounts only for an actual public
+  generation change, preventing room/view/readiness state from leaking from
+  token A into token B.
+  No projection, authorization, persistence, responsive geometry, or
+  dependency changed.
+- **Strict transient proof:** a test-only MutationObserver assigns WeakMap node
+  identities and records state, projection/layout generation, room/view,
+  parent/stream owner, connectedness, visibility, `aria-hidden`, inertness,
+  focus, actionable descendants, duplicate stable selectors, and actions
+  outside the current owner. The bounded log fails if truncated while maximum
+  invariant counters continue updating. It rejects any sample with more than
+  one connected or visible root, more than one visible or accessibility-active
+  lifecycle owner, or any focus inside a hidden, inert, removed, or superseded
+  root. A connected-but-hidden Next fallback handoff remains diagnostic only
+  and cannot own or exempt actions. Direct navigation, a database-gated slow projection,
+  ordered loading → resolving → ready, empty public content, route error,
+  both resize directions, same-document token A → B with a retained stale
+  control, browser back/forward, same-token reload, invalid/revoked, Chromium,
+  and WebKit are covered without sleeps or retries.
+- **Focused result:** static contract PASS; Chromium 4/4 PASS; WebKit 4/4 PASS;
+  aggregate 8/8 PASS; zero retry, flake, or skip. The canonical clean-commit
+  required result is recorded in HANDOFF.
+- **Remaining external/separate work:** GitHub ruleset enforcement is still
+  external and unverified. Consumer Undo remains the unrelated 44 px
+  touch-target gap and was not changed.
+- **Rollback:** revert the focused lifecycle commit, rebuild the strict
+  production artifact, then rerun the static contract, the required Chromium /
+  WebKit command, direct manifest/truthfulness, and production-evidence checks.
+  No data, schema, token, credential, deployment, or external-setting rollback
+  is required.
