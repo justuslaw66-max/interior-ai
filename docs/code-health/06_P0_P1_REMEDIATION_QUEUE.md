@@ -1,5 +1,34 @@
 # P0/P1 remediation queue
 
+## Final Deep Clean v1 re-triage — 2026-08-06
+
+- **Source and status:** exact clean source
+  `2328f297e43b77e5a82693b1844bce1fe61512f9`; **0 unresolved P0 / 12
+  unresolved P1**; **A. INTEGRATION PLANNING MAY BEGIN**. This is not merge or
+  release permission.
+- **CH-0019 correction:** `RESOLVED`, not READY. Ancestors `fe668ab`, `6f63c11`,
+  `9ba876b`, the architecture/contract chain through `69a7627`, `101f25d`,
+  `299536f`, and `55bc4b6` close every original baseline, Pro-visual, and
+  Phase 8 failure. Current validation is green for those owners.
+- **Current unresolved P1 split:** READY 3 (`CH-0004`, `CH-0013`, `CH-0015`);
+  REQUIRES_PRODUCT_DECISION 7 (`CH-0002`, `CH-0003`, `CH-0005`, `CH-0007`,
+  `CH-0008`, `CH-0010`, `CH-0011`); BLOCKED_DEPENDENCY 2 (`CH-0006`,
+  `CH-0018`); BLOCKED_EXTERNAL_CONTROL 0.
+- **Integration sequencing:** no READY P1 is pre-integration required. CH-0004,
+  CH-0013, and CH-0015 may be implemented after integration but before release;
+  none is accepted risk. CH-0018 remains a data-loss-sensitive release blocker
+  until supported predecessors and a populated sanitized upgrade fixture exist.
+- **RC47-RC55:** closed under the current semantic owners. Fresh public-share
+  required coverage passed 8/8 and required Pro visual passed 4/4. The fresh
+  drawer matrix was 17/18 because one Chromium case twice lost an optional
+  `Maybe later` locator between `isVisible()` and `click()` before reaching the
+  drawer assertions; the corrected RC52 Workspace-unmount case passed in both
+  engines. Treat that setup race as P2 pre-release test debt, not a reopened
+  archival application invariant, and do not report this audit as fresh 18/18.
+- **Exactly one next action:** after the documentation-only audit commit,
+  prepare `integration/deep-clean-v1` from that exact commit. Do not create it
+  in this audit.
+
 ## ARCH-RC52 WebKit Workspace-focus closure — 2026-08-06
 
 - **Outcome:** **A. RC47–RC55 LOCAL DISPOSITION COMPLETE** on
@@ -24,8 +53,9 @@
   all four RC55 sub-scopes, and the separate Consumer Undo/Redo touch target
   are green under current ownership. Old archival commits remain evidence only
   and must not be cherry-picked.
-- **Queue counts:** this closure adds no P0/P1 item. Counts remain **0
-  unresolved P0 and 13 unresolved P1**. RC47-RC55 no longer blocks local
+- **Queue counts:** this closure adds no P0/P1 item. The superseding final
+  re-triage records **0 unresolved P0 and 12 unresolved P1** after resolving
+  CH-0019. RC47-RC55 no longer blocks local
   integration planning; immutable-preview review and exact-artifact Gate A3
   certification remain later release-cadence work.
 - **Boundaries:** Full E2E was not run. GitHub ruleset enforcement, CH-0030
@@ -57,10 +87,12 @@ Current superseding statuses are: CH-0017 **TRUTHFULNESS AND REQUIRED EXTERNAL W
 ## Counts and selected action
 
 - Unresolved P0: **0**.
-- Unresolved P1: **13**.
-- Resolved P1: **5** (`CH-0001`, `CH-0012`, `CH-0016`, `CH-0017`, `CH-0028`).
+- Unresolved P1: **12**.
+- Resolved P1: **6** (`CH-0001`, `CH-0012`, `CH-0016`, `CH-0017`, `CH-0019`, `CH-0028`).
 - Former P1 findings downgraded with current evidence: **2** (`CH-0009`, `CH-0014`).
-- Selected active batch: **CH-0029 post-response browser/main-thread starvation**. CH-0004 was not started.
+- Selected active batch: **none**. Exactly one next action is the cumulative
+  integration branch after this audit-only documentation commit; CH-0004 and
+  CH-0030 were not started.
 
 ## Classification summary
 
@@ -84,7 +116,7 @@ Current superseding statuses are: CH-0017 **TRUTHFULNESS AND REQUIRED EXTERNAL W
 | CH-0016 | P1, resolved | RESOLVED | Strict clean-source build, artifact/trace hashing, production start, and health/report identity now fail closed; CI upload/retention is configured but external execution and platform acceptance remain unverified. |
 | CH-0017 | P1, resolved/frozen | RESOLVED | TRUTHFULNESS AND REQUIRED EXTERNAL WORKFLOW VERIFIED — IMPLEMENTATION FROZEN. |
 | CH-0018 | P1 | BLOCKED_DEPENDENCY | Supported predecessor versions and a representative sanitized fixture owner are required. |
-| CH-0019 | P1 release / P2 code health | READY | Several bounded baseline batches are independent; failures must remain separate from CH-0001. |
+| CH-0019 | P1 release / P2 code health, resolved | RESOLVED | Every original baseline, architecture, Pro-visual, and Phase 8 failure is closed by current ancestors and green current gates. |
 | CH-0028 | P1 release/runtime, resolved | RESOLVED | EXTERNALLY VERIFIED — RESOLVED at verified source `db346a51718967bd4dc1605b07c0850e02fd08d1`. |
 | CH-0029 | P2 performance | OPEN | OPEN — POST-RESPONSE BROWSER/MAIN-THREAD STARVATION. A local C/G contention correction is complete; required-only external verification remains required. |
 
@@ -235,10 +267,15 @@ Current superseding statuses are: CH-0017 **TRUTHFULNESS AND REQUIRED EXTERNAL W
 
 ### CH-0019 — red baseline and masked assertions
 
-- **Current evidence and affected symbols:** The four inherited groups remain exactly reproducible: `CatalogPanel.tsx:358` hook error; `FloorPlanImportAssistant.tsx:294` hook warning; `scripts/test-command-bar-save-status.ts:34` stale size-literal assertion (`h-7` expected while the implementation is `h-[30px]`, with the same `md:flex` behavior); and five invalid `shape`/`room_compatibility` values in three Hamilton YAML files. Separately, `check-design-page-architecture.mjs` fails at 594/550 and 361/300, the Phase 8 raw bundle is 7,068,799/6,955,000 bytes, and Pro visual policy is 2/4 because `open-custom-millwork-studio` is hidden in Chromium and WebKit.
-- **Reach and impact:** These failures block CI or release evidence. The inherited four do not establish P0/P1 runtime defects individually; the hidden paid-Pro entry can block a core workflow, while architecture and bundle failures are release/maintainability/performance constraints. No CH-0001 regression evidence exists.
-- **Dependencies and tests:** Command-bar intended responsive behavior and Cabinet Preview visibility require confirmation; the other bounded batches are ready. Retain exact failing commands and run timing/visual gates twice where applicable.
-- **Scope and rollback:** Use Baseline A (React hooks), Baseline B (save-status contract), and Baseline C (Hamilton vocabulary) as separate commits; group the warning with Baseline A only if small and independently reviewable. Handle architecture, bundle, and Cabinet Preview as separate follow-ups. Each rollback is one bounded commit; no suppressions, schema weakening, budget raises, or combined cleanup.
+- **Current status:** `RESOLVED`. The original failures described by this heading
+  are historical and no longer reproduce at the final audited source.
+- **Current evidence:** Hook diagnostics, save status, Hamilton vocabulary,
+  design architecture, Pro visual policy, and Phase 8 are each closed by their
+  bounded ancestor commits. Full zero-warning lint, cleanup 78/78, code quality,
+  Pro visual 4/4, Phase 8, and the 57-page strict build pass.
+- **Scope and rollback:** Preserve the existing independent rollback boundaries;
+  do not combine or replay their patches. A future regression requires a new
+  concrete failing owner rather than reopening this historical umbrella.
 
 ### CH-0028 — first-reload model readiness convergence
 
@@ -304,9 +341,13 @@ Risk order includes blocked findings so decisions are visible; `READY` ordering 
 15. `CH-0005` — `REQUIRES_PRODUCT_DECISION` (retirement authority).
 16. `CH-0013` — `READY` (surface drift/schema gates, then payload).
 17. `CH-0015` — `READY` (accessible overlay ownership).
-18. `CH-0019` — `READY` in bounded baseline batches and required before architectural refactoring.
+18. `CH-0019` — `RESOLVED` by the completed bounded baseline, architecture,
+    Pro-visual, and Phase 8 sequence; no longer queued.
 
-`CH-0009`, `CH-0014`, and `CH-0029` remain P2 findings; none competes in the P1 decision rule. Baselines A and B are complete locally; Baseline C (Hamilton controlled vocabulary) is next and remains separate. CH-0029 and CH-0004 were not modified by either baseline batch.
+`CH-0009`, `CH-0014`, and `CH-0029` remain P2 findings; none competes in the P1
+decision rule. Baselines A, B, and C and the later CH-0019 closure batches are
+complete in current ancestry. CH-0029 and CH-0004 were not modified by those
+baseline batches.
 
 ### Baseline A — inherited React-hook diagnostics — 2026-08-03
 
@@ -656,10 +697,10 @@ DISPOSITION COMPLETE — ADDITIONAL BOUNDED REMEDIATION REQUIRED**.
 The RC49/50 baseline and RC53 cloud-revision findings are closed by the current
 canonical baseline and execution-time write-queue protocols. The final per-RC
 mapping is RC47 **A**; RC48 **F**; RC49/50/51/52 **B**; RC53 **F** overall;
-RC54 **B**; RC55 **F**. These archival items do not change the existing
-code-health count: **0 unresolved P0 and 13 unresolved P1**. CH-0004 remains
-unstarted. No integration branch is eligible until the open bounded items are
-corrected, reviewed, and the exact artifact is certified.
+RC54 **B**; RC55 **F**. At that historical checkpoint, these archival items did
+not change the then-current code-health count of **0 unresolved P0 and 13
+unresolved P1**. The final re-triage at the top of this file supersedes that
+count and the integration hold.
 
 ### ARCH-RC53 public-share projection-source queue — 2026-08-06
 

@@ -2,18 +2,31 @@
 
 This is a sequence of small, reversible batches, not a calendar promise. A phase may start only when its entry criteria are true. Each implementation commit cites CH IDs and contains one coherent behavior/security/gate change. Full Gate A3 is reserved for the exact immutable artifact proposed for stable-staging promotion; focused checks and preview smoke are used during iteration.
 
-## RC47-RC55 integration hold — 2026-08-06
+## Deep Clean v1 integration-planning status — 2026-08-06
 
-The final read-only confirmation at exact application source
-`7dddf06249b44c3b447a2fdde98b64b3306be003` closes every archival sub-scope
-except RC52's fresh WebKit drawer-focus matrix. Chromium passed 9/9, WebKit
-passed 8/9, and an unchanged narrow rerun reproduced focus moving away from the
-workspace trigger before the unmount assertion. RC52 remains **F.
-STILL_REQUIRED**, so RC47-RC55 integration planning stays blocked. A future
-bounded task must characterize whether application focus ownership or test
-sequencing owns the failure; do not replay the archival patch, change the test
-to hide it, or fold the work into another remediation. RC55's responsive gate
-and root lifecycle and the separate Undo/Redo target are green.
+Final read-only re-triage at exact application source
+`2328f297e43b77e5a82693b1844bce1fe61512f9` concludes **A. INTEGRATION
+PLANNING MAY BEGIN**. RC47-RC55 is closed, current ancestry is complete, the
+locally exercised merge-required owners are green, there is no unresolved P0,
+and no READY P1 must precede branch planning. CH-0019 is resolved by the
+cumulative baseline, architecture, Pro-visual, and Phase 8 ancestors, reducing
+the current count to 12 unresolved P1.
+
+The fresh drawer-focus matrix was 17/18 because one Chromium case reproducibly
+raced an optional onboarding button before reaching any drawer assertion. The
+corrected RC52 Workspace-unmount case and required Pro visual coverage passed
+in both engines, so the setup race does not reopen RC52; record it as P2
+pre-release test debt and do not claim a fresh 18/18 result. No archival patch
+may be replayed.
+
+Prepare `integration/deep-clean-v1` only after the documentation-only audit
+commit, from that exact commit whose application parent is `2328f297...`.
+Before pushing, rerun the direct manifest/truthfulness checks, code quality,
+lint, typecheck, strict build, public-share required owner, and diff hygiene.
+After pushing, require exact-candidate secret scan, stable checks, advisory
+preflight, merge-gate propagation, and administrator verification that the
+ruleset actually requires the intended status. This is not permission to merge
+or release.
 
 ## Bounded dependency security batch — repository remediation complete
 
@@ -36,6 +49,9 @@ Every batch must:
 
 **Findings:** CH-0019, then gate-only portions of CH-0013, CH-0017, CH-0025.
 **Purpose:** Separate inherited implementation defects, stale tests, and environmental issues before structural changes.
+
+**Current status:** CH-0019 is RESOLVED by the bounded records in this roadmap;
+the original sequencing below is retained as historical implementation evidence.
 
 Recommended one-issue batches:
 
@@ -317,7 +333,6 @@ raised baseline. P6-C through P6-G remain separate and were not started.
 - CH-0007/CH-0008: canonical catalog source, statuses, handling of 73 unspecified entries, and Shopify intent.
 - CH-0010: whether designer entry may automatically enable sharing.
 - CH-0011: PostHog replay legal basis, consent, opt-out, and masking.
-- CH-0019: intended command-bar save and Cabinet Preview visibility behavior.
 - CH-0024: migration for any external deep-readiness monitor.
 - CH-0027: formatter choice.
 

@@ -1,5 +1,73 @@
 # Code health audit handoff
 
+## Final Deep Clean v1 integration-readiness audit — 2026-08-06
+
+Read-only audit began at exact clean source
+`2328f297e43b77e5a82693b1844bce1fe61512f9`. No production code or test was
+changed, no integration branch was created, and Full E2E was not run. The only
+changes are the permitted current audit records.
+
+Result: **A. INTEGRATION PLANNING MAY BEGIN**, not permission to merge.
+RC47-RC55 is closed; the old archival patches and CH-0030 profiler remain
+excluded non-ancestors. The canonical manifest is 22 gates / 374 sources (19
+merge-required, one advisory, two release-blocking), SHA-256
+`cfec291840a1fc4c82e6c3795b2aa3c24211886c22513ab58a1fe89c8521f73b`.
+`ci.public-share-responsive` remains the sole required responsive owner in
+`stable-checks`, and a failure propagates through that job to `merge-gate`.
+
+Fresh local validation passed auth/admin hardening; code quality; truthfulness
+and direct manifest validation; production-artifact contract; critical
+domains; cleanup 78/78; floor-plan required; lint with zero warnings;
+typecheck; strict catalog/material/required-asset checks; persistence; Pro
+visual 4/4; public share 8/8; touch targets 6/6; Consumer placement/history
+5/5; Phase 8; and the strict staging build at 57/57 pages. Full npm audit is 11
+nodes (10 high, 1 moderate), omit-dev is 7 (6 high, 1 moderate), zero critical,
+with zero Next/Auth/PostCSS vulnerability nodes; the remaining five IDs are
+documented toolchain-only paths. Legacy non-required `validate:product-assets`
+remains red only for 30 unverified renderer-memory-disposal checks.
+
+The fresh drawer matrix was 17/18: Chromium 8/9 and WebKit 9/9. The sole case
+failed twice before its focus assertions because optional `Maybe later`
+disappeared between the setup helper's visibility check and forced click. The
+corrected RC52 Workspace-unmount case passed in both engines, so the archival
+invariant remains closed. Record the race as P2 pre-release test debt and do
+not claim this audit freshly reproduced the earlier 18/18 result.
+
+Current triage is **0 P0 / 12 P1**. READY: CH-0004, CH-0013, CH-0015.
+REQUIRES_PRODUCT_DECISION: CH-0002, CH-0003, CH-0005, CH-0007, CH-0008,
+CH-0010, CH-0011. BLOCKED_DEPENDENCY: CH-0006, CH-0018. CH-0019 is resolved.
+No READY P1 must precede integration planning; all three remain pre-release,
+and no product decision or dependency is accepted implicitly.
+
+CH-0030 remains commit `d7a50698707153b43df0a982766288060c24b997` on
+local/origin `test/ch-0030-ci-renderer-gpu-profile`, with no PR, workflow run,
+or commit status. Runner labels/groups and A-B authorization remain unknown.
+GitHub ruleset enforcement, Vercel/OAuth/database/scheduler controls,
+immutable HTTPS artifact identity, promotion, and durable release evidence
+remain external or release blockers, not local branch-planning blockers.
+
+| Blocker | Repository state | Administrator/release-owner action | Planning | Merge | Release |
+| --- | --- | --- | --- | --- | --- |
+| CH-0030 runner A-B | Profiler branch/commit exists and is excluded; no PR/run/status. | Inventory authorized runner labels/groups and approve the isolated required-smoke A-B. | May proceed. | A-B is not an independent prerequisite; an actual red required smoke blocks. | Keep runtime environment approval explicit. |
+| GitHub ruleset | Manifest/workflow/merge propagation are repository-complete. | Verify the target ruleset requires the exact `merge-gate` status and retains evidence. | May proceed. | Blocked until verified and exact-candidate checks pass. | Blocked. |
+| Vercel | Prebuilt/artifact contracts exist; no deployment was performed. | Verify project/environment, protection, config, artifact identity, and promotion authority. | May proceed. | Not an independent local-planning blocker. | Blocked. |
+| OAuth | Fail-closed code and synthetic fixture pass; no provider round trip/settings change. | Verify approved HTTPS callbacks, clients, scopes, session fixtures, and revocation. | May proceed. | Repository merge can proceed under required CI. | Blocked. |
+| Database | Repository migration owner exists; local RC55 DB has 42 migrations; no migration was run in this audit. | Approve dedicated target, supported predecessors, sanitized populated fixture, backup/restore, and migration evidence. | May proceed. | Required CI migration must pass. | Blocked, including CH-0018. |
+| Scheduler | Environment/authorization contracts exist; platform jobs are unverified. | Verify job identities, targets, cadence, retry/dead-letter, credentials, and monitoring. | May proceed. | Not an independent source-merge blocker. | Blocked where applicable. |
+| Promotion | Repository scripts fail closed; no promotion occurred. | Approve named operators and exact tested deployment/artifact. | May proceed. | Not an independent source-merge blocker. | Blocked. |
+| Immutable HTTPS/release evidence | Release contracts exist; no candidate URL or durable bundle was produced. | Create one immutable candidate, bind source/artifact/database identities, run release gates, retain hashes and approvals. | May proceed. | Not an independent source-merge blocker. | Blocked. |
+
+Exactly one next action: after committing these audit-only records, prepare
+`integration/deep-clean-v1` immediately from that documentation commit; its
+application parent remains `2328f297...`. Before push, rerun the focused local
+candidate checks. After push, require exact-candidate secret scan, stable lane,
+advisory preflight, merge-gate, and administrator ruleset verification. Run the
+one complete Full E2E only after pre-release P1 work is incorporated, the
+candidate and HTTPS artifact are immutable, and the approved runtime/database
+environment and required external evidence exist. Cluster any failures by
+shared root cause (auth, database, server/process, catalog readiness, renderer
+contention, or selector contract) before remediation.
+
 ## ARCH-RC52 WebKit Workspace-focus lifecycle closure — 2026-08-06
 
 Branch `fix/arch-rc52-webkit-workspace-focus` starts exactly at clean
@@ -62,8 +130,9 @@ drawer is open; standalone Workspace pointer/keyboard behavior is covered by
 the required Chromium/WebKit Pro visual matrix. Rollback is one local revert of
 the focused assertion/documentation commit, followed by the exact two-engine
 case and full 18-case matrix; no data or external rollback is required.
-RC47–RC55 no longer blocks local integration planning. Code-health totals
-remain 0 unresolved P0 and 13 unresolved P1. GitHub ruleset enforcement,
+RC47–RC55 no longer blocks local integration planning. The superseding final
+re-triage records 0 unresolved P0 and 12 unresolved P1 after resolving
+CH-0019. GitHub ruleset enforcement,
 CH-0030 runner A/B, Full E2E, and applicable Vercel/OAuth/database/scheduler/
 promotion/release controls remain external or pending; local validation is not
 stable-staging certification.

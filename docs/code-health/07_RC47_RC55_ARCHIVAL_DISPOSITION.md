@@ -1,5 +1,32 @@
 # RC47-RC55 archival commit-disposition audit
 
+## Final read-only integration recheck — 2026-08-06
+
+**A. RC47-RC55 CLOSED** at exact application source
+`2328f297e43b77e5a82693b1844bce1fe61512f9`.
+
+All authoritative implementation commits in the table below are ancestors.
+All nine original archival commits remain recoverable non-ancestors and
+`git cherry HEAD release/cabinetry-alpha-rc55` continues to show them only on
+the archival side. CH-0030 profiler commit `d7a5069...` also remains excluded.
+No archival commit should be cherry-picked, merged, or replayed.
+
+Fresh required public-share coverage passed Chromium 4/4 and WebKit 4/4;
+required Pro visual passed 4/4; Consumer/Pro touch targets passed 6/6; and the
+original Consumer placement/history spec passed 5/5. The corrected RC52
+Workspace-unmount semantic-owner case passed in both engines. The complete
+fresh drawer run was Chromium 8/9 and WebKit 9/9 because the Pro-opener case
+timed out twice in its shared `openCatalog` setup: an optional `Maybe later`
+button disappeared between `isVisible()` and `click()`. The failure occurs
+before any drawer focus assertion. It is a separate P2 test-contract race and
+does not reopen RC52, but it supersedes any claim that this final audit itself
+produced a fresh 18/18 matrix. Fix it before release-wide browser certification.
+
+The code-health count is now **0 unresolved P0 / 12 unresolved P1** because
+CH-0019 is resolved by the complete current ancestry. GitHub ruleset
+enforcement and the remaining external/release controls are not established by
+this local closure.
+
 ## Final bounded RC52 WebKit closure — 2026-08-06
 
 **A. RC47–RC55 LOCAL DISPOSITION COMPLETE.**
@@ -67,8 +94,9 @@ was not run. The independent read-only review result for this bounded closure
 is recorded in `HANDOFF.md`; the earlier 8/9 WebKit snapshot is superseded by
 the traced semantic-owner proof and final 18/18 matrix above.
 
-No new P0 or P1 is assigned by this confirmation. The separate code-health
-inventory remains **0 unresolved P0 and 13 unresolved P1**. GitHub ruleset
+No new P0 or P1 is assigned by this confirmation. The superseding final
+re-triage records **0 unresolved P0 and 12 unresolved P1** after resolving
+CH-0019. GitHub ruleset
 enforcement remains externally unverified; CH-0030 isolated/larger-runner A/B
 remains externally blocked absent changed administrator inventory; and Vercel,
 OAuth, database, scheduler, promotion, and release controls remain pending

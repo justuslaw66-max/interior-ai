@@ -1,6 +1,111 @@
 # Code health audit
 
-## Final RC47-RC55 read-only confirmation — 2026-08-06
+## Final Deep Clean v1 integration-readiness audit — 2026-08-06
+
+The final read-only audit started from exact clean source
+`2328f297e43b77e5a82693b1844bce1fe61512f9`, whose direct parent is the
+documentation checkpoint `ff5f98db74f44cece2519f0570ee2fdfdbb5b2b1` and
+whose application parent is `7dddf06249b44c3b447a2fdde98b64b3306be003`.
+All intended Deep Clean application remediations, the dependency-security
+batch, Phase 8A/B, RC47-RC55, and Consumer Undo/Redo touch-target work are in
+ancestry. The isolated CH-0030 profiler commit
+`d7a50698707153b43df0a982766288060c24b997` and all nine archival RC commits
+remain non-ancestors and must not be replayed.
+
+**RC47-RC55 result: A. CLOSED.** The corrected RC52 Workspace-unmount case
+passed in both engines, as did the required Pro visual owner. The fresh full
+drawer matrix was Chromium 8/9 and WebKit 9/9 because one Chromium case timed
+out twice in `openCatalog` while an optional `Maybe later` button disappeared
+between `isVisible()` and `click()`. That failure occurs before the drawer-focus
+assertions and is a separate reproducible P2 test-contract race; it does not
+reopen an archival application invariant. It does block representing this
+audit's fresh drawer result as 18/18 and must be fixed before release-wide
+browser certification.
+
+The canonical manifest is SHA-256
+`cfec291840a1fc4c82e6c3795b2aa3c24211886c22513ab58a1fe89c8521f73b` and
+validates **22 gates / 374 classified sources**: 251 script tests, 101 browser
+specs, 6 cabinetry browser modules, 8 multi-room browser modules, and 8
+cabinetry script modules. It contains 19 merge-required gates, one advisory
+Full E2E gate, and two release-blocking gates. `ci.public-share-responsive`
+remains the sole merge-required responsive owner; neither advisory Full E2E nor
+release Gate A3 substitutes for it. `stable-checks`, `secret-scan`, and
+`advisory-contract-preflight` feed `ci.merge-gate`, which fails unless all three
+jobs succeed.
+
+| Gate | Cadence / status | Canonical command | Package closure: scripts / SHA-256 | Current audit result |
+| --- | --- | --- | --- | --- |
+| `ci.secret-scan` | merge-required / blocking | `gitleaks/gitleaks-action@v2` | n/a | External workflow required; local binary unavailable. |
+| `ci.required-test-truthfulness` | merge-required / blocking | `npm run test:required-test-truthfulness` | 1 / `a63f8a3c477cedbe71fea9dc36e6ab1bda3eb228ce36352f2d6b5e942d1283e6` | PASS. |
+| `ci.code-quality` | merge-required / blocking | `npm run check:code-quality` | 1 / `099078f332ea2801748b635c031df32cc42f49efcdaaf73d88944533749113ff` | PASS. |
+| `ci.production-artifact-contract` | merge-required / blocking | `npm run test:production-artifact-evidence` | 1 / `2c72a65b5affbfbb1c5d94377bad6d0b2135181d25b5fcd56fac3c389a1cd5c7` | PASS. |
+| `ci.production-artifact-build` | merge-required / blocking | `npm run evidence:production:build` | 1 / `b7ba610a68ce331c0879a5ab80d10390a877d3756173910dc6987986c9f08258` | Strict direct staging build PASS 57/57; workflow-bound artifact evidence still requires exact-candidate CI. |
+| `ci.production-runtime-smoke` | merge-required / blocking | `npm run evidence:production:smoke` | 1 / `d9971664dba648e6b1026b61fbf13ad8bf14f6faa052b3d0e5eed4d8cc7fd2b1` | Not simulated locally; exact-artifact workflow execution required. |
+| `ci.authorization-boundaries` | merge-required / blocking | `npm run test:auth-env-hardening` | 1 / `d2a92b4f2ee3191abb9d4fc30f5d8497b9da0b1c59dfc1d6333101fb9d398e84` | PASS: 25 routes, 14 pages, 13 privileged CLIs. |
+| `ci.database-migrations` | merge-required / blocking | `npm run gate:a3:db` | 1 / `f075521ce17b8ea6466796237f70d8b9e3359cd01ebb9d8beac64433846de1c7` | Not run; database mutation was prohibited. Existing local RC55 test DB read-only precheck showed 42 migrations. |
+| `ci.critical-domain-contracts` | merge-required / blocking | `npm run test:critical-required` | 41 / `dc376b8f529d5243a506925e0037debba1e5319e53f785fd5a447263728d63d4` | PASS. |
+| `ci.design-cleanup` | merge-required / blocking | `npm run test:design-page-cleanup` | 1 / `2649e75478c4214608459c1c4cfe063e69f07246b2341bfb484f8584a9697b49` | PASS 78/78. |
+| `ci.typecheck` | merge-required / blocking | `npm run typecheck` | 1 / `b43579a2174ed4e7ee7f7129cb8edbb2b10c02d5e9aeee9099621be7b3b90d9f` | PASS. |
+| `ci.lint` | merge-required / blocking | `npm run lint -- --max-warnings=0` | 1 / `9d4b756f63d86d3dbfa77b655cb12478f23d5efff0466b3e233736393e8bdbea` | PASS, zero warnings. |
+| `ci.floor-plan-required` | merge-required / blocking | `npm run test:floor-plan-required` | 55 / `c7939de350af5aa1f7be49616ec6dbabde2f0fbe708a0a3b23d3faff57944cfa` | PASS; 30 existing architecture-size notices remain advisory. |
+| `ci.catalog-materials` | merge-required / blocking | `npm run test:catalog-audit && npm run test:catalog-asset-availability` | 8 / `a0354533f0992678a6264a37233a3ef0a6562502d6aa9565247db438a6ea1bda` | PASS; five missing local assets are draft-only warnings. |
+| `ci.asset-inventory` | merge-required / blocking | `npm run assets:inventory:strict` | 1 / `474f6817f74b6072bc7e366a8b48c5db5ca8c89ccb2a670fd839ece38d0603a1` | PASS: 1,613 files. |
+| `ci.pro-visual-static` | merge-required / blocking | `npm run test:designer-theme-contrast && npm run test:cabinetry-preview-renderer` | 2 / `0908541015653b673b36cc89a5067873e130b354e7273df75ec6956e05a20534` | PASS. |
+| `ci.pro-visual-policy` | merge-required / blocking | `npm run test:pro-visual-policy` | 1 / `e405cb73f95c111fb19dd7bbb4886c760841f8a08afcf0ba5bdb7e99482e3fa3` | PASS 4/4, Chromium and WebKit. |
+| `ci.public-share-responsive` | merge-required / blocking | `npm run test:public-share-responsive-required` | 2 / `d554bcd17619cead3de0012153f24a352b71dd45719262e0a7902c7453a033fe` | PASS 8/8, Chromium and WebKit. Canonical responsive owner. |
+| `ci.merge-gate` | merge-required / blocking | GitHub Actions result aggregation | n/a | External: requires success from `secret-scan`, `stable-checks`, and `advisory-contract-preflight`; ruleset enforcement unverified. |
+| `advisory.full-e2e` | advisory / nonblocking | `npm run test:e2e:advisory` | 1 / `814167f721e8d3bc126e455a00cf30975a211f45fa4edf83b0905b8b54d679fb` | Not run by explicit policy. |
+| `release.gate-a3` | release-blocking | `npm run test:e2e:release` | 1 / `e52bf0d5b54a97f622095dd017039c8faf3a55016dd5b707a9985249de800dab` | Not run; reserved for the exact immutable release artifact. |
+| `release.cabinetry-browser` | release-blocking | `npm run test:e2e:cabinetry-release` | 1 / `21953753f89d99e6e1d9c07447e2648cb8e042e3a830467fc4a40fc7a08c82b4` | Not run; release cadence. |
+
+Workflow ordering in `stable-checks` is source verification, Node/install/auth
+fixture, database migration, auth and lightweight contracts, pristine strict
+build, browser installation, runtime smoke/evidence bundling, critical/static
+domains, lint/cleanup/typecheck/floor-plan, Pro/asset/catalog owners, responsive
+share, then Pro visual browser policy. Any ordinary step failure fails
+`stable-checks`; `ci.merge-gate` uses `if: always()` and explicitly exits
+nonzero unless all three prerequisite jobs report `success`.
+
+Fresh local results passed authorization hardening; full code quality;
+required-test truthfulness and direct manifest validation; production-artifact
+contract; critical domains; design cleanup 78/78; floor-plan required; lint
+with zero warnings; typecheck; catalog/material/required-asset checks; design
+persistence; Pro visual 4/4; public share 8/8; Consumer/Pro touch targets 6/6;
+original Consumer placement/history 5/5; Phase 8; and the strict staging build
+at 57/57 pages. The legacy non-required `validate:product-assets` command still
+exits nonzero only for its 30 unverified renderer-memory-disposal checks. The
+fresh drawer result is the setup-race-qualified 17/18 above. Full E2E was not
+run. The first build/browser attempts that could not bind sandbox ports, and
+the first public-share run against a nonexistent `test` database role, were
+environment failures; the approved reruns used the existing 42-migration local
+RC55 test database and reached the product assertions.
+
+Fresh dependency audits match the bounded compatibility record: full audit 11
+package nodes (10 high, 1 moderate), omit-dev 7 (6 high, 1 moderate), zero
+critical, and zero Next/Auth/PostCSS vulnerability nodes. The five remaining
+advisory IDs are confined to ESLint/type-analysis, Sentry bundler/schema, and
+Prisma CLI/tool paths; no request-time import or untrusted input was found.
+They remain recorded toolchain debt, not a reopened direct-production P1.
+
+Current triage is **0 unresolved P0 and 12 unresolved P1**. CH-0019 is now
+`RESOLVED`: every original hook, save-status, Hamilton vocabulary,
+architecture, Pro visual, and Phase 8 failure is closed by current ancestors
+and the current gates. The unresolved P1 split is three `READY` (CH-0004,
+CH-0013, CH-0015), seven `REQUIRES_PRODUCT_DECISION` (CH-0002, CH-0003,
+CH-0005, CH-0007, CH-0008, CH-0010, CH-0011), and two
+`BLOCKED_DEPENDENCY` (CH-0006, CH-0018). No P1 is primarily blocked only by an
+external control. None of the three READY P1s must precede integration-branch
+planning, but all remain pre-release work; CH-0018 and the authorization,
+privacy, catalog, and rate-policy decisions are release blockers rather than
+accepted risk.
+
+**Integration result: A. INTEGRATION PLANNING MAY BEGIN.** This is not merge or
+release permission. GitHub required-check/ruleset enforcement, CH-0030 runner
+inventory/A-B authorization, Vercel, OAuth, populated-predecessor database
+evidence, scheduler, immutable HTTPS artifact identity, promotion, and release
+evidence remain external or release-cadence requirements.
+
+## Superseded RC47-RC55 read-only confirmation — 2026-08-06
 
 Exact application source `7dddf06249b44c3b447a2fdde98b64b3306be003`
 closes RC47, RC48, RC49/50, RC51, RC53, RC54, RC55, and the separate Consumer
@@ -8,9 +113,10 @@ Undo/Redo 44 px defect, but a fresh unchanged Chromium/WebKit drawer-focus run
 passed 17/18 and a narrow WebKit rerun reproduced the same focus loss. RC52 is
 therefore **F. STILL_REQUIRED** and the final outcome is **C. RC47–RC55
 DISPOSITION BLOCKED**. No archival commit should be replayed; the current
-implementation chain remains authoritative. This bounded P2 archival finding
-does not change the code-health totals of **0 unresolved P0 and 13 unresolved
-P1**. Full evidence and the final mapping are in
+implementation chain remains authoritative. At that superseded checkpoint,
+this bounded P2 archival finding did not change the then-current totals of **0
+unresolved P0 and 13 unresolved P1**; the final audit above supersedes both the
+RC52 disposition and the count. Full evidence and the final mapping are in
 `07_RC47_RC55_ARCHIVAL_DISPOSITION.md`.
 
 ## 2026-08-05 bounded dependency P1 remediation
@@ -19,7 +125,7 @@ Starting from exact clean source `55bc4b65c121c1a6646fd2d8b38bb93f9061c372`, bra
 
 This register is anchored to checkpoint `08bdfe0c5e5c882777dc5da38168ea7db14840ad`. IDs are stable: implementation commits, pull requests, exceptions, and release evidence should cite them without renumbering. P0 means active catastrophic risk, P1 high risk or release blocker, P2 material maintainability/reliability debt, and P3 hygiene. No P0 was confirmed in this audit.
 
-Post-CH-0001 triage was performed on 2026-07-31 at `62ba966ecb2011e4233c99ce1dcc0641914af008`. CH-0012 repository remediation was then completed at `2c9e8b4d2322484a8d80873019d2c3495dd862f5`. CH-0016 repository remediation was completed next at `cbed3550026e2803675f740b49be5fb15f15612b`; external execution and durable evidence retention remain unverified. CH-0017 is **TRUTHFULNESS AND REQUIRED EXTERNAL WORKFLOW VERIFIED — IMPLEMENTATION FROZEN**. CH-0028 is **EXTERNALLY VERIFIED — RESOLVED** at verified source `db346a51718967bd4dc1605b07c0850e02fd08d1`. CH-0029 is **OPEN — POST-RESPONSE BROWSER/MAIN-THREAD STARVATION**. The current classification is zero unresolved P0 findings, thirteen unresolved P1 findings, five resolved P1 findings, and two former P1 findings downgraded to P2 with current evidence. The finding-by-finding evidence, reachability, dependencies, test coverage, remediation scope, rollback, and ordered queue are recorded in `06_P0_P1_REMEDIATION_QUEUE.md`.
+Post-CH-0001 triage was performed on 2026-07-31 at `62ba966ecb2011e4233c99ce1dcc0641914af008`. CH-0012 repository remediation was then completed at `2c9e8b4d2322484a8d80873019d2c3495dd862f5`. CH-0016 repository remediation was completed next at `cbed3550026e2803675f740b49be5fb15f15612b`; external execution and durable evidence retention remain unverified. CH-0017 is **TRUTHFULNESS AND REQUIRED EXTERNAL WORKFLOW VERIFIED — IMPLEMENTATION FROZEN**. CH-0028 is **EXTERNALLY VERIFIED — RESOLVED** at verified source `db346a51718967bd4dc1605b07c0850e02fd08d1`. CH-0029 is **OPEN — POST-RESPONSE BROWSER/MAIN-THREAD STARVATION**. The superseding final classification is zero unresolved P0 findings, twelve unresolved P1 findings, six resolved P1 findings, and two former P1 findings downgraded to P2 with current evidence. The finding-by-finding evidence, reachability, dependencies, test coverage, remediation scope, rollback, and ordered queue are recorded in `06_P0_P1_REMEDIATION_QUEUE.md`.
 
 ## Priority summary
 
@@ -270,9 +376,9 @@ CH-0001, CH-0012, and CH-0016 are closed for repository-controlled remediation. 
 ### CH-0019 — The audit baseline is red and masking later assertions
 
 - **Severity:** P1 for release readiness, P2 as code-health debt.
-- **Status:** READY as bounded baseline-restoration batches; it does not outrank a higher-risk READY product finding under the post-closure decision rule.
+- **Status:** RESOLVED by the cumulative current ancestry. The baseline-restoration records below remain the historical defect description.
 - **Locations/symbols:** `CatalogPanel.tsx`; `FloorPlanImportAssistant.tsx`; `scripts/test-command-bar-save-status.ts`; three Hamilton catalog YAMLs; design architecture checker; Phase 8 benchmark; Pro visual policy.
-- **Evidence/current behavior:** At `62ba966ecb2011e4233c99ce1dcc0641914af008`, focused reruns confirm the four inherited groups: one `CatalogPanel` hook error, one `FloorPlanImportAssistant` hook warning, the stale command-bar save-status assertion, and five catalog vocabulary failures across three Hamilton YAML files. Separate current checks also confirm masked or omitted failures: design architecture is 594/550 and 361/300 lines, Phase 8 CPU fingerprinting now passes but the initial-JS raw bundle is 7,068,799/6,955,000 bytes, and Pro visual policy remains 2/4 because the Cabinet Preview opener is hidden in Chromium and WebKit. Sequential commands mask the architecture check behind the save-status assertion. CI builds with `CATALOG_STRICT_VALIDATION=false`.
+- **Evidence/current behavior:** The historical failures at `62ba966e` were closed by bounded ancestors: hook diagnostics `fe668ab`, save status `6f63c11`, Hamilton vocabulary `9ba876b`, the architecture/contract sequence through `69a7627`, Pro visual policy `101f25d`, and Phase 8A/B `299536f`/`55bc4b6`. At the final audited source, full lint has zero warnings, cleanup is 78/78, code quality and architecture guards pass, Pro visual is 4/4, Phase 8 passes, and the strict build is 57/57. No masked CH-0019 failure remains.
 - **Risk:** Refactors cannot distinguish regressions from inherited failures; release confidence is ambiguous.
 - **Improvement:** Establish a baseline-restoration phase with one defect per reviewed commit, record stale-test versus implementation decisions explicitly, and run masked checks separately until green.
 - **Expected outcome:** Required fast baseline is green before structural work, with any temporary exception owner/expiry documented.
