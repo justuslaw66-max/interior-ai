@@ -1,5 +1,25 @@
 # P0/P1 remediation queue
 
+## Final RC47-RC55 read-only confirmation — 2026-08-06
+
+- **Outcome:** **C. RC47–RC55 DISPOSITION BLOCKED** at exact application source
+  `7dddf06249b44c3b447a2fdde98b64b3306be003`.
+- **Sole archival item:** `ARCH-RC52-DRAWER-FOCUS-WEBKIT` remains open as a
+  bounded P2 technical finding. Chromium passed 9/9; WebKit passed 8/9; an
+  unchanged narrow rerun reproduced loss of focus from the workspace trigger
+  before the workspace-unmount assertion. No test or production source was
+  changed, and no product decision is being hidden as a technical resolution.
+- **Closed items:** RC47, RC48, RC49/50, RC51, all three RC53 sub-scopes, RC54,
+  all four RC55 sub-scopes, and the separate Consumer Undo/Redo touch target
+  are green under current ownership. Old archival commits remain evidence only
+  and must not be cherry-picked.
+- **Queue counts:** this confirmation adds no P0/P1 item. Counts remain **0
+  unresolved P0 and 13 unresolved P1**. RC47-RC55 still blocks integration
+  planning until the focused two-engine RC52 matrix is green.
+- **Boundaries:** Full E2E was not run. GitHub ruleset enforcement, CH-0030
+  larger-runner A/B, and applicable Vercel/OAuth/database/scheduler/release
+  controls remain external and unverified.
+
 ## Current bounded dependency-security batch
 
 - Branch: `security/dependency-auth-next-compatibility`.

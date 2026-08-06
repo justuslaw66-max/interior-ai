@@ -1,5 +1,46 @@
 # Code health audit handoff
 
+## Final RC47-RC55 archival-disposition confirmation — 2026-08-06
+
+Read-only confirmation ran against exact clean application source
+`7dddf06249b44c3b447a2fdde98b64b3306be003` on
+`fix/consumer-undo-touch-target`. All listed current implementation commits are
+ancestors; all nine archival commits remain recoverable non-ancestors and
+RC-side additions. No archival commit was replayed and no production source,
+test, branch integration, workflow, external setting, or Full E2E scope was
+changed.
+
+Final outcome is **C. RC47–RC55 DISPOSITION BLOCKED**. RC47 A, RC48 A, RC49 B,
+RC50 B, RC51 B, RC53 A, RC54 B, and RC55 B are defensibly dispositioned under
+the current implementation chain. RC52 is **F. STILL_REQUIRED** because the
+fresh drawer-focus matrix passed Chromium 9/9 and WebKit 8/9, then an unchanged
+targeted WebKit rerun reproduced the same failure: after opening the workspace
+menu, `editor-command-workspace` did not retain focus before the unmount
+transition assertion. No remediation was started. The current semantic opener
+implementation and the other 17 cases remain green, so the next work is a
+bounded RC52 focus-ownership/test-sequencing investigation rather than an
+archival cherry-pick.
+
+Fresh evidence passed: canonical responsive gate 8/8 across Chromium/WebKit
+with zero retries/flakes/skips; focused product/rotation/compare/share/privacy/
+Consumer Chromium batch 35/35; Undo/Redo Consumer/Pro matrix 6/6; direct
+manifest 22 gates / 374 sources; truthfulness; production-artifact evidence;
+critical-required; cleanup 78/78; complete floor-plan-required; lint;
+typecheck; code quality; strict 57-route build; Phase 8; and diff hygiene. The
+separate Undo/Redo issue is resolved at 44 x 44 mobile, 30 x 30 desktop, 48/36
+px bars, and an exact 30 px desktop save chip, with exactly-once pointer/Enter/
+Space history behavior. The immediate history targets do not overlap or clip;
+the separately recorded mobile workspace/right-action flex collision is not
+reclassified by this result.
+
+The independent read-only reviewer confirmed ancestry, original-to-current
+mappings, sub-scope completeness, ownership, Undo remediation, and stale
+summaries. Its retained green RC52 matrix assumption is superseded by the fresh
+reproducible WebKit result. Code-health totals remain 0 unresolved P0 and 13
+unresolved P1. GitHub ruleset enforcement, CH-0030 runner A/B, Full E2E, and
+applicable Vercel/OAuth/database/scheduler/promotion/release controls remain
+external or pending; local gate ownership does not certify them.
+
 ## Latest bounded implementation record — Next.js/Auth.js security compatibility
 
 Branch `security/dependency-auth-next-compatibility` starts exactly at clean frozen source `55bc4b65c121c1a6646fd2d8b38bb93f9061c372`. It updates Next 16.2.10 -> 16.2.11, next-auth beta.30 -> beta.32, Prisma adapter 2.11.1 -> 2.11.3 with one core 0.41.3, aligned eslint-config-next, and PostCSS 8.5.20 -> 8.5.23. Fresh full audit moves 16 -> 11 package nodes (critical 2 -> 0); omit-dev moves 12 -> 7, with no remaining Next/Auth/PostCSS advisory node. Required local gates, focused real-session authorization, 57-page build, built runtime health/session, and Phase 8 budgets pass. The only compatibility code change strengthens the existing test-only auth preflight for providers, CSRF, Google sign-in/PKCE/callback URL, sign-out, and redirects. Full evidence, remaining advisory classifications, and rollback are in `docs/security/P1_DEPENDENCY_AUTH_NEXT_COMPATIBILITY.md`. No Full E2E, CH-0004, push, deployment, schema, provider, or platform-setting change occurred.

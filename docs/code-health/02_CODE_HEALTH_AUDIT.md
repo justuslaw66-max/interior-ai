@@ -1,5 +1,18 @@
 # Code health audit
 
+## Final RC47-RC55 read-only confirmation — 2026-08-06
+
+Exact application source `7dddf06249b44c3b447a2fdde98b64b3306be003`
+closes RC47, RC48, RC49/50, RC51, RC53, RC54, RC55, and the separate Consumer
+Undo/Redo 44 px defect, but a fresh unchanged Chromium/WebKit drawer-focus run
+passed 17/18 and a narrow WebKit rerun reproduced the same focus loss. RC52 is
+therefore **F. STILL_REQUIRED** and the final outcome is **C. RC47–RC55
+DISPOSITION BLOCKED**. No archival commit should be replayed; the current
+implementation chain remains authoritative. This bounded P2 archival finding
+does not change the code-health totals of **0 unresolved P0 and 13 unresolved
+P1**. Full evidence and the final mapping are in
+`07_RC47_RC55_ARCHIVAL_DISPOSITION.md`.
+
 ## 2026-08-05 bounded dependency P1 remediation
 
 Starting from exact clean source `55bc4b65c121c1a6646fd2d8b38bb93f9061c372`, branch `security/dependency-auth-next-compatibility` updates the minimum coherent Next.js/Auth.js set (`next` 16.2.11, `next-auth` beta.32, Prisma adapter 2.11.3/core 0.41.3, and PostCSS 8.5.23). Fresh audits remove every reported direct-production Next/Auth advisory and both critical nodes while retaining five explicitly classified tool-path advisory IDs outside this batch. Runtime/auth behavior, 57-page build, required gates, and Phase 8 budgets remain green. The complete inventory, compatibility matrix, exact audit deltas, lockfile scope, validation, and rollback are in `docs/security/P1_DEPENDENCY_AUTH_NEXT_COMPATIBILITY.md`. CH-0004 and all other findings were untouched.

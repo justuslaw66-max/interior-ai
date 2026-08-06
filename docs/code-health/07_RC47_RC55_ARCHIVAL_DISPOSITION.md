@@ -1,6 +1,71 @@
 # RC47-RC55 archival commit-disposition audit
 
-## Current superseding disposition — 2026-08-06
+## Final read-only confirmation — 2026-08-06
+
+**C. RC47–RC55 DISPOSITION BLOCKED.**
+
+The authoritative application source is exact commit
+`7dddf06249b44c3b447a2fdde98b64b3306be003`. Entry and post-validation
+`git status --short`, tracked diff/stat/check, and untracked inventories were
+empty. All nine original archival commits remain recoverable on their local
+release branches and tags, none is an ancestor of the authoritative source,
+and `git cherry HEAD release/cabinetry-alpha-rc55` reports all nine as RC-side
+additions. Every listed current implementation commit is an ancestor of the
+authoritative source. The archival chain remains evidence only and must not be
+cherry-picked, merged, or replayed.
+
+| RC | Original archival commit | Authoritative current implementation | Current owner modules | Focused evidence | Required gate owner | Final category |
+| --- | --- | --- | --- | --- | --- | --- |
+| RC47 | `23e12bfe85742acb3bb10ecfb808401b3b63c638` | `e7cd5d9df19439f0956f840b977ddf8c23dc2757` | `CatalogItemDrawer`; exact-product specs 104/143; retained semantic-coordinate coverage | Both named product specs use the unique named modal `dialog`, contain no drawer `.first()` fallback, and passed in the focused Chromium batch | `release.gate-a3` inventory plus focused product checks | **A. RESOLVED_BY_CURRENT_IMPLEMENTATION** |
+| RC48 | `e0db6f6661df2870e2f6f6063a7f0d866dd23618` | `faaa463d2f0211fa2ec8f15fe3da1efc3e80c1c1`; `abec1b92b86a0b74193f437aea11033f666adca0`; `d93e34558221e99797ca73791364c016a14ef0cc` | central selection command router; focused tracing listener; synchronized event-time trace state | static keyboard/tracing ownership passed; Chromium rotation/tracing passed 9/9; full code-quality scan passed at HEAD and retained two-clean-worktree exact-commit evidence remains valid | code-quality ratchet and `release.gate-a3` inventory | **A. RESOLVED_BY_CURRENT_IMPLEMENTATION** |
+| RC49 | `d41bdf31720918705480a36a44c91347987080bb` | `f2760c529c0a964d99d53dbe73d8fb4a7c8def75` | canonical persistence projection; cloud baseline and load controllers | persistence guardrails passed inside cleanup, `critical-required`, and floor-plan-required; normalization/identity/epoch acknowledgment remains fail-closed | `ci.critical-domain-contracts` | **B. SUPERSEDED_BY_STRONGER_IMPLEMENTATION** |
+| RC50 | `ee612c84f5f6c1e5370c7aeb12593cf920fe1967` | `f2760c529c0a964d99d53dbe73d8fb4a7c8def75` | same pending-baseline protocol, including recovery-copy and local/new-design paths | same green persistence evidence; autosave remains blocked until exact canonical acknowledgment | `ci.critical-domain-contracts` | **B. SUPERSEDED_BY_STRONGER_IMPLEMENTATION** |
+| RC51 | `27b6a55bccbab5bf9a6556fea04fa4179343e447` | `bb0e4f8f999d774b8490eca16efdc84d6751aafd` | `lib/catalog/compare.ts`; canonical unfiltered product map; compare tray | static compare contract passed; Chromium compare suite passed 8/8 across category, search, price, unavailable/remove-only, and exact-variant behavior | `release.gate-a3` inventory plus focused compare checks | **B. SUPERSEDED_BY_STRONGER_IMPLEMENTATION** |
+| RC52 | `637281505493572229be864449d77e3a626c67fe` | `793986d22b073c2d4ba093350b2442838703deb0` | semantic opener identity and close-time focus resolver | Chromium passed 9/9 and WebKit passed 8/9; unchanged targeted WebKit rerun reproduced loss of focus from `editor-command-workspace` before the workspace-unmount assertion | focused Chromium/WebKit drawer matrix plus `release.gate-a3` inventory | **F. STILL_REQUIRED** |
+| RC53 | `b0eab4cbbadf0203667fb750c42fb0e25eb43f62` | cloud `80627fa5a8cae1205999a90c9f2fa240b1df4305`; responsive `83425bad3cc30dc37100d090e79159998782bc29`; projection source `8818ac76d4772271f027e8dc3c8e9cd6b8009229` | execution-time cloud queue/revision; single responsive selection owner; closed snapshot-first public transport | persistence, responsive static, projection/security, share privacy/duplication, and canonical responsive matrix passed | `ci.critical-domain-contracts`; `ci.public-share-responsive`; `ci.floor-plan-required` | **A. RESOLVED_BY_CURRENT_IMPLEMENTATION** |
+| RC54 | `588b90e8c526e54d314376f177bdb9c738ac659e` | `29a4c46070404a2426da123bc5b42c0592d95e34` | closed public projection schema/snapshot; public API and duplicate route | projection/security and fingerprint fixtures passed; Chromium share privacy/duplication passed 6/6 including the two share-read-only cases | `ci.floor-plan-required`; `release.gate-a3` inventory | **B. SUPERSEDED_BY_STRONGER_IMPLEMENTATION** |
+| RC55 | `4883ffb9fc87248b6aa8624cdef39c5f97a173d1` | responsive `83425bad3cc30dc37100d090e79159998782bc29`; identity `27e78d25477b6e6d9282c59cd3c801e701abee9b`; gate `371feb2641866aba28db0a5332971768bfe283a8`; root lifecycle `840037865531c7bc5fb8ac92d5fccd0b7393d942` | responsive shell; full SHA-256 identity; one canonical manifest/CI owner; sole resolved-root lifecycle | collision fixture/static contract passed; fresh workflow-equivalent Chromium 4/4 plus WebKit 4/4 passed with zero retry, flake, or skip; root ownership remained one | `ci.public-share-responsive` in `stable-checks` | **B. SUPERSEDED_BY_STRONGER_IMPLEMENTATION** |
+
+RC52 is the only remaining archival behavior/evidence gap. Its WebKit failure is
+reproducible without changing source or test: after the drawer is reopened and
+the workspace menu is programmatically opened, the trigger does not retain
+focus at `tests/e2e/catalog-drawer-focus.spec.ts:342`. Because the focused
+Chromium/WebKit matrix is red, RC52 remains **F. STILL_REQUIRED** and RC47–RC55
+continues to block integration planning. This confirmation does not decide
+whether the bounded correction belongs in application focus ownership or test
+sequencing; that requires a separate remediation, which this read-only task did
+not start.
+
+The separately exposed Consumer Undo/Redo accessibility finding is
+**RESOLVED** at `7dddf06249b44c3b447a2fdde98b64b3306be003` and does not remain an
+archival blocker. Fresh Chromium/WebKit coverage passed 6/6: mobile Undo and
+Redo are 44 x 44 px, desktop controls remain 30 x 30 px, the bars are 48/36 px,
+the desktop save-status chip is exactly 30 px, and pointer, Enter, and Space
+produce exactly one history mutation. The history targets and their immediate
+neighbors do not overlap or clip, and page horizontal overflow is zero. A
+separate pre-existing mobile workspace/right-action flex collision remains
+outside this history-target claim.
+
+Required confirmation passed for direct manifest validation (22 gates / 374
+classified test sources), required-test truthfulness, production-artifact
+evidence, `critical-required`, all 78 design-page cleanup guards, the complete
+floor-plan-required chain, zero-warning lint, typecheck, full code quality,
+strict 57-route production build, complete Phase 8 budgets, public projection
+and privacy, focused RC47/48/51/53/54/55 coverage, and diff hygiene. Full E2E
+was not run. The independent read-only reviewer confirmed ancestry, mappings,
+sub-scope completeness, current ownership, Undo remediation, and documentation
+staleness; its retained green drawer assumption is superseded by the fresh
+reproducible WebKit result above.
+
+No new P0 or P1 is assigned by this confirmation. The separate code-health
+inventory remains **0 unresolved P0 and 13 unresolved P1**. GitHub ruleset
+enforcement remains externally unverified; CH-0030 isolated/larger-runner A/B
+remains externally blocked absent changed administrator inventory; and Vercel,
+OAuth, database, scheduler, promotion, and release controls remain pending
+where applicable. Local repository ownership is not external enforcement or
+release certification.
+
+## Prior superseded disposition — 2026-08-06
 
 **F. ARCH-RC55 REQUIRED MATRIX RED — ARCHIVAL DISPOSITION REMAINS OPEN.**
 

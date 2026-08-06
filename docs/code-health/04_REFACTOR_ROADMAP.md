@@ -2,6 +2,19 @@
 
 This is a sequence of small, reversible batches, not a calendar promise. A phase may start only when its entry criteria are true. Each implementation commit cites CH IDs and contains one coherent behavior/security/gate change. Full Gate A3 is reserved for the exact immutable artifact proposed for stable-staging promotion; focused checks and preview smoke are used during iteration.
 
+## RC47-RC55 integration hold — 2026-08-06
+
+The final read-only confirmation at exact application source
+`7dddf06249b44c3b447a2fdde98b64b3306be003` closes every archival sub-scope
+except RC52's fresh WebKit drawer-focus matrix. Chromium passed 9/9, WebKit
+passed 8/9, and an unchanged narrow rerun reproduced focus moving away from the
+workspace trigger before the unmount assertion. RC52 remains **F.
+STILL_REQUIRED**, so RC47-RC55 integration planning stays blocked. A future
+bounded task must characterize whether application focus ownership or test
+sequencing owns the failure; do not replay the archival patch, change the test
+to hide it, or fold the work into another remediation. RC55's responsive gate
+and root lifecycle and the separate Undo/Redo target are green.
+
 ## Bounded dependency security batch — repository remediation complete
 
 The P1 Next.js/Auth.js advisory batch begins at `55bc4b65c121c1a6646fd2d8b38bb93f9061c372` and is intentionally independent of the CH queue. It takes only the fixed Next 16.2.11 patch, aligned ESLint config, Auth.js beta.32/core 0.41.3/adapter 2.11.3 set, and PostCSS 8.5.23 override needed to eliminate the reported direct-production paths. Its exit contract is a clean install and fresh audits; focused real-session auth and fail-closed coverage; all required local gates except prohibited Full E2E; unchanged budgets; an optimized 57-page build and production start; and a clean detached exact-commit final build. Detailed evidence is in `docs/security/P1_DEPENDENCY_AUTH_NEXT_COMPATIBILITY.md`. This does not start CH-0004, Phase 8 follow-on work, or another dependency wave.
