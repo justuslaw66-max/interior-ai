@@ -1,15 +1,14 @@
 # RC47-RC55 archival commit-disposition audit
 
-## Final confirmation decision — 2026-08-05
+## Current superseding disposition — 2026-08-06
 
-**B. RC47–RC55 DISPOSITION COMPLETE — ADDITIONAL BOUNDED REMEDIATION REQUIRED.**
+**F. ARCH-RC55 REQUIRED MATRIX RED — ARCHIVAL DISPOSITION REMAINS OPEN.**
 
-The final read-only confirmation audited exact application source
-`83425bad3cc30dc37100d090e79159998782bc29`. All nine archival commits remain
-recoverable, form the original continuous one-parent RC47-RC55 chain, and are
-neither ancestors nor patch-equivalent replays of the audited source. The
-current bounded implementation commits listed below are ancestors of the
-audited source; the old RC chain must not be cherry-picked or merged.
+The original read-only confirmation audited exact application source
+`83425bad3cc30dc37100d090e79159998782bc29`; this superseding disposition also
+incorporates the later bounded implementation branches listed below. All nine
+archival commits remain recoverable, form the original continuous one-parent
+RC47-RC55 chain, and must not be cherry-picked or merged.
 
 | RC | Original archival commit | Current implementation commit(s) | Final category | Confirmation |
 | --- | --- | --- | --- | --- |
@@ -21,28 +20,35 @@ audited source; the old RC chain must not be cherry-picked or merged.
 | RC52 | `637281505493572229be864449d77e3a626c67fe` | `793986d22b073c2d4ba093350b2442838703deb0` | **B. SUPERSEDED_BY_STRONGER_IMPLEMENTATION** | Semantic opener identity survives hydration/replacement; restoration resolves a connected, visible, enabled target and respects modal/unmount cancellation. |
 | RC53 | `b0eab4cbbadf0203667fb750c42fb0e25eb43f62` | cloud `80627fa5a8cae1205999a90c9f2fa240b1df4305`; responsive `83425bad3cc30dc37100d090e79159998782bc29`; projection source `8818ac76d4772271f027e8dc3c8e9cd6b8009229` | **A. RESOLVED_BY_CURRENT_IMPLEMENTATION** | Cloud writes use the execution-time queue protocol, while the responsive share page and exports now source visible metadata from the canonical public transport projection. |
 | RC54 | `588b90e8c526e54d314376f177bdb9c738ac659e` | `29a4c46070404a2426da123bc5b42c0592d95e34` | **B. SUPERSEDED_BY_STRONGER_IMPLEMENTATION** | Public API and duplicate paths use one closed public transport projection with non-tautological security and like-for-like assertions. |
-| RC55 | `4883ffb9fc87248b6aa8624cdef39c5f97a173d1` | responsive `83425bad3cc30dc37100d090e79159998782bc29`; projection identity on `fix/arch-rc55-projection-identity` | **F. STILL_REQUIRED (GATE OWNERSHIP ONLY)** | A committed pair of distinct closed public projections collides at the old eight-hex fingerprint but now receives different SHA-256 content and exact layout identities. Focused responsive/WebKit contracts are still not merge-required Gate A3 coverage. |
+| RC55 | `4883ffb9fc87248b6aa8624cdef39c5f97a173d1` | responsive `83425bad3cc30dc37100d090e79159998782bc29`; projection identity `27e78d25477b6e6d9282c59cd3c801e701abee9b`; Gate A3 registration on `fix/arch-rc55-gate-a3-ownership` | **F. STILL_REQUIRED** | `ci.public-share-responsive` now owns the static plus Chromium/WebKit contract in merge-required `stable-checks`, but its first canonical production-server run passed WebKit 4/4 and failed Chromium 0/4 because two public-share roots coexist during hydration. The required gate therefore cannot close RC55. |
 
 RC53 now has exactly one overall category: **A**. Its cloud, responsive, and
 public projection-source sub-scopes are present in current implementation.
 
-The remaining archival work is one P3 RC55 correction: assign the responsive
-plus WebKit coverage to a required release gate. A separate focused Consumer rotation batch also retained
-one failure: Undo was 30 px high against the 44 px touch-target contract. Per
-the audit rules, that unrelated failure was not retried or fixed and keeps the
-overall disposition open.
+The bounded Gate A3 ownership correction is registered, but one RC55
+implementation gap remains because the newly required Chromium execution
+exposed a duplicate public-share root during hydration. A separate focused
+Consumer rotation batch retained one
+unrelated failure: Undo was 30 px high against the 44 px touch-target contract.
+That accessibility finding was not retried, fixed, or used to reopen RC55.
 
-Focused confirmation now includes the responsive share matrix 12/12 (Chromium
-and WebKit), drawer focus 18/18, compare plus exact product flows 15/15, beta
+The first canonical `ci.public-share-responsive` run at implementation snapshot
+`729caae` passed its static prerequisite and all four WebKit records, then
+failed all four Chromium records without retry. A read-only timing diagnostic
+observed root count/status transition from one resolving root, to two resolving
+roots, to simultaneous resolving and ready roots, then one ready root about
+1.17 seconds later. Historical focused confirmation still includes drawer
+focus 18/18, compare plus exact product flows 15/15, beta
 smoke 1/1, stale cloud-write isolation 2/2, the ARCH-RC48 Chromium collision
 case 1/1, and the focused rotation matrix plus Consumer route 10/10. All
 required static gates, lint, typecheck, code quality, strict 57-page build, and
-Phase 8 budgets pass. Full E2E was not run. The green tests do not close the
-remaining RC55 or unrelated Consumer touch-target findings.
+Phase 8 budgets pass. Full E2E was not run. The merge-required ownership record
+truthfully exposes the failure but does not close RC55; the unrelated Consumer
+touch-target finding remains separate.
 
-No integration branch should be created from this result. Complete and review
-the bounded findings, then certify the exact immutable artifact under the
-established release cadence.
+No integration branch was created by this result. Promotion still requires
+review and certification of the exact immutable artifact under the established
+release cadence, plus separately authorized GitHub required-check enforcement.
 
 ## Historical starting decision
 
@@ -859,3 +865,80 @@ RC48 is now **A. RESOLVED_BY_CURRENT_IMPLEMENTATION** for both behavior and the
 code-quality sub-scope. The remaining archival gap is still only RC55’s
 separate merge-required Gate A3 ownership; the Consumer Undo touch target
 remains an unrelated product finding.
+
+## ARCH-RC55 canonical merge-required Gate A3 ownership — 2026-08-06
+
+This section supersedes the prior statement that RC55 had no merge-required
+owner, but does not classify RC55 resolved. Starting source was exact clean
+`d93e34558221e99797ca73791364c016a14ef0cc`; branch is
+`fix/arch-rc55-gate-a3-ownership`. No archival commit was cherry-picked.
+
+The proven gap was governance rather than responsive behavior. The static
+contract was a manually invoked risk-triggered script with no gate owner. The
+responsive spec was discovered by advisory Full E2E and release Gate A3, but
+neither execution was merge-required through `stable-checks`. The focused
+configuration also selected `04-share.spec.ts`, so it was not an exact
+responsive ownership boundary.
+
+`ci.public-share-responsive` is now the one canonical merge-required owner. Its
+two-script package closure first executes
+`scripts/test-public-share-responsive.ts`, then the required-test runner invokes
+only `playwright.share-responsive.config.ts`. That configuration owns only
+`share-responsive.spec.ts` and exactly Chromium plus WebKit. The four named
+test identities protect single/multi-room, desktop/mobile/tablet/landscape,
+both breakpoint directions, room/view/focus continuity, deterministic fallback
+and layout readiness, collision-resistant identity, finite geometry, overflow,
+safe area, 44 px applicable share controls, keyboard focus, invalid/revoked
+tokens, and absence of owner controls. The static phase retains closed public
+projection/privacy and stale-readiness rejection.
+
+The required runner binds its clean source SHA, canonical configuration,
+projects, process exit, per-test records, and aggregate counts. It rejects
+missing/renamed sources, stale inventories, wrong config, either one-engine
+subset, grep/shard filtering, zero discovery, skip, retry/flake, annotations,
+`.only`, duplicate required owners, imported-owner records with no module
+contribution, and process/report/count disagreement. Helpers and the collision
+fixture are required sources but are not counted as independent runnable specs.
+The evidence-producing runner executes the declared static package prerequisite
+itself and rechecks cleanliness afterward. It also requires the staging,
+strict-catalog, and production-server environment; required-mode configuration
+throws before it can substitute `npm run dev`.
+
+Stable CI reuses the already migrated database and strict staging `.next`
+artifact after runtime evidence preparation. The command forces `npm run start`,
+does not reuse a listener, does not create a development build, and disables
+trace, screenshot, and video for the required run. Failure remains the primary
+`stable-checks` result and propagates through the existing `merge-gate` needs
+edge. No duplicate required job or step was added. Advisory Full E2E and
+`release.gate-a3` may still discover the spec but cannot substitute for this
+owner.
+
+The final manifest is 22 gates and 373 classified sources. Inventory counts and
+hashes are 251 script tests
+`34354f2440b3671752b14d298aa37c548bdcb1c7aca7b5367c370cc765fb7cd3`,
+100 browser specs
+`c80ed50279d95e08f94726784270ef887459703ec7aaaa113a3226a3268bcd07`,
+6 cabinetry browser modules
+`805b0ec8a0d24658c0cb5e01616fb1a684c8dc2aae81b6338f3d1b87fd6fafa9`,
+8 multi-room browser modules
+`e701b0ff04421c8eca749fdd8e6daffcd0c0fbb987226ec2319bdcee8d368851`,
+and 8 cabinetry script modules
+`55ed53e1acde7854a321a3a6480aba3c2c89636d9227057d66341bfd845d6696`.
+The package closure hash is
+`d554bcd17619cead3de0012153f24a352b71dd45719262e0a7902c7453a033fe`.
+
+Registration is complete, but RC55 and the RC47-RC55 archival queue remain
+open. At implementation snapshot `729caae`, the canonical command passed the
+static prerequisite and WebKit 4/4 but failed Chromium 0/4 because the locator
+resolved to two identical `public-share-root` elements during hydration. A
+separate ignored timing diagnostic confirmed that both roots coexist for about
+1.17 seconds, including a period with one resolving and one ready root. Per the
+bounded-remediation stop rule, no product or responsive-test behavior was
+changed after this discovery. GitHub ruleset enforcement remains external and
+unverified; no ruleset, branch-protection, runner, deployment, secret,
+environment, OAuth, product behavior, responsive geometry, projection identity,
+persistence, keyboard, Full E2E, integration branch, push, or deployment change
+was made.
+The unrelated Consumer Undo 44 px touch-target finding remains open. Rollback
+is one local revert followed by manifest/truthfulness, static, Chromium,
+WebKit, and production-evidence checks; no data or external rollback is needed.

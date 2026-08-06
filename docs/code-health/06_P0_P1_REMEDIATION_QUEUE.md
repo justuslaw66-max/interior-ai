@@ -740,3 +740,54 @@ corrected, reviewed, and the exact artifact is certified.
   `npm run check:code-quality`. `npm run test:code-quality` is recorded only as
   checker-self-test evidence. Only `ARCH-RC55-REQUIRED-GATE` remains in the
   archival queue; Full E2E and the unrelated Undo target remain excluded.
+
+### ARCH-RC55 canonical Gate A3 ownership queue — 2026-08-06
+
+- **`ARCH-RC55-REQUIRED-GATE` — owner registered; validation blocked:** from exact clean
+  `d93e34558221e99797ca73791364c016a14ef0cc` on
+  `fix/arch-rc55-gate-a3-ownership`, new gate
+  `ci.public-share-responsive` is the sole merge-required owner of
+  `scripts/test-public-share-responsive.ts` and
+  `tests/e2e/share-responsive.spec.ts`.
+- **Truthful closure:**
+  `npm run test:public-share-responsive-required` has a two-script
+  manifest-controlled closure with SHA-256
+  `d554bcd17619cead3de0012153f24a352b71dd45719262e0a7902c7453a033fe`.
+  It runs the static projection/layout/privacy contract, then the exact
+  `playwright.share-responsive.config.ts` scope: four responsive identities in
+  Chromium and WebKit, no path/title/project filter, no shard, zero retries,
+  no skip/flake/annotation, nonzero discovery, and JSON/process/count agreement.
+  The evidence runner, rather than an unverified outer shell phase, executes the
+  declared static prerequisite and requires the exact staging/strict-server
+  environment; direct runner or required-config dev-server substitution fails.
+- **CI ownership:** the one new `stable-checks` step follows database migration,
+  the pristine strict staging build, browser installation, runtime smoke, and
+  production-evidence preparation. It starts the existing `.next` output with
+  `npm run start`, cannot reuse a listener, and does not invoke `next dev` or a
+  second compilation. Stable failure reaches the unchanged `merge-gate`
+  dependency. Full E2E remains separately advisory; `release.gate-a3` remains
+  the complete release inventory, not the merge-required owner.
+- **Inventory and evidence:** the manifest is 22 gates / 373 classified
+  sources: 251 script tests, 100 browser specs, 6 cabinetry browser modules, 8
+  multi-room browser modules, and 8 cabinetry script modules. Their hashes are
+  unchanged because no runnable source was added or removed. Required capture
+  disables trace, screenshot, and video; only ignored structured JSON/envelope
+  output is produced, and existing safe upload/retention policy is unchanged.
+- **Disposition and scope:** the first canonical run at implementation snapshot
+  `729caae` passed the static prerequisite and WebKit 4/4 but failed Chromium
+  0/4 without retry because two `public-share-root` elements coexist during
+  hydration. A read-only timing diagnostic measured the duplicate interval at
+  about 1.17 seconds, including simultaneous resolving and ready roots.
+  `ARCH-RC55-REQUIRED-GATE` therefore remains open and the RC47-RC55 archival
+  queue is not closed. Product behavior, responsive geometry,
+  projection identity/source policy, persistence, keyboard ownership, Full E2E,
+  dependencies, runners, deployments, secrets, environments, OAuth, GitHub
+  rulesets, and branch protection were not changed; correcting the newly exposed
+  runtime behavior requires a separately authorized production-scope batch.
+  The external ruleset still does not have repository-verifiable required-check
+  evidence. The unrelated
+  Consumer Undo 44 px touch-target finding remains open.
+- **Rollback:** revert the single focused ownership commit, then rerun direct
+  manifest/truthfulness checks, the static contract, Chromium and WebKit, and
+  production-evidence validation. No data, schema, deployment, credential, or
+  external-setting rollback is involved.

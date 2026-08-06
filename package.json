@@ -66,6 +66,7 @@
     "test:e2e:pro-upgrade": "playwright test tests/e2e/pro-upgrade.spec.ts",
     "test:share-responsive-unit": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\",\"jsx\":\"react-jsx\"}' -r tsconfig-paths/register scripts/test-public-share-responsive.ts",
     "test:share-responsive": "playwright test --config=playwright.share-responsive.config.ts",
+    "test:public-share-responsive-required": "env APP_ENV=staging CATALOG_STRICT_VALIDATION=true PLAYWRIGHT_USE_PRODUCTION_SERVER=1 node scripts/required-test-truthfulness.mjs run ci.public-share-responsive",
     "test:design-page-cleanup": "node scripts/run-design-page-cleanup-tests.mjs",
     "test:design-editor-routing": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' -r tsconfig-paths/register scripts/test-design-editor-routing.ts",
     "test:editor-capabilities-accessibility": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' -r tsconfig-paths/register scripts/test-editor-capabilities-accessibility.ts",

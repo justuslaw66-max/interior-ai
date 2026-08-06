@@ -429,6 +429,67 @@
       "ci": { "job": "stable-checks", "step": "Run Pro visual policy matrix" }
     },
     {
+      "id": "ci.public-share-responsive",
+      "invariant": "The closed public projection and responsive share presentation execute in Chromium and WebKit across canonical room, view, breakpoint, readiness, identity, overflow, focus, touch-target, privacy, and invalid-token states.",
+      "cadence": "merge-required",
+      "blocking": true,
+      "command": "npm run test:public-share-responsive-required",
+      "packageScript": "test:public-share-responsive-required",
+      "packageClosure": { "expectedScriptCount": 2, "expectedSha256": "d554bcd17619cead3de0012153f24a352b71dd45719262e0a7902c7453a033fe" },
+      "packagePrerequisites": ["test:share-responsive-unit"],
+      "requiredEnvironment": {
+        "APP_ENV": "staging",
+        "CATALOG_STRICT_VALIDATION": "true",
+        "PLAYWRIGHT_USE_PRODUCTION_SERVER": "1"
+      },
+      "runner": "playwright",
+      "requiredSources": [
+        "scripts/test-public-share-responsive.ts",
+        "scripts/fixtures/public-share-projection-identity-collision.json",
+        "tests/e2e/share-responsive.spec.ts",
+        "tests/e2e/beta-seed.ts",
+        "tests/e2e/fixtures.ts",
+        "playwright.share-responsive.config.ts"
+      ],
+      "requiredTests": [
+        {
+          "id": "share.single-room-responsive-projection",
+          "file": "tests/e2e/share-responsive.spec.ts",
+          "title": "single-room desktop and mobile share has a deterministic fallback and projection"
+        },
+        {
+          "id": "share.multi-room-responsive-continuity",
+          "file": "tests/e2e/share-responsive.spec.ts",
+          "title": "multi-room selection, saved view, focus, and identity survive both resize directions"
+        },
+        {
+          "id": "share.tablet-landscape-overflow",
+          "file": "tests/e2e/share-responsive.spec.ts",
+          "title": "tablet and mobile-landscape layouts remain ready without overflow"
+        },
+        {
+          "id": "share.invalid-revoked-history",
+          "file": "tests/e2e/share-responsive.spec.ts",
+          "title": "history, reload, invalid, and revoked states are distinct and deterministic"
+        }
+      ],
+      "requiredProjects": ["chromium", "webkit"],
+      "allowSkips": false,
+      "allowRetries": false,
+      "allowAnnotations": false,
+      "requireCleanSource": true,
+      "reportType": "required-test-evidence",
+      "reportPath": ".local/required-test-evidence/ci.public-share-responsive/evidence.json",
+      "maxAgeMinutes": 240,
+      "artifactBinding": "none",
+      "playwright": {
+        "config": "playwright.share-responsive.config.ts",
+        "args": ["playwright", "test", "--config=playwright.share-responsive.config.ts"],
+        "exactConfigOnly": true
+      },
+      "ci": { "job": "stable-checks", "step": "Run required responsive public-share matrix" }
+    },
+    {
       "id": "ci.merge-gate",
       "invariant": "Merge eligibility requires secret-scan, stable-checks, and advisory-contract-preflight to conclude successfully.",
       "cadence": "merge-required",

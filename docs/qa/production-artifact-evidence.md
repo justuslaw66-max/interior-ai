@@ -244,6 +244,21 @@ proves application configuration shape only; no external integration call or
 external-control claim follows from it. GitHub execution and artifact retention
 must be confirmed from an actual workflow run.
 
+After that strict artifact and its runtime evidence are complete,
+`ci.public-share-responsive` reuses the same checked-out `.next` output through
+`npm run start` for its Chromium/WebKit merge-required matrix. It does not run a
+second build or any development server. Its source-bound JSON/envelope remains
+under ignored `.local/required-test-evidence/`; raw Playwright output is not an
+upload input and trace, screenshot, and video capture are disabled for the
+required run. This added consumer does not alter the CH-0016 bundle inputs,
+hash, upload inventory, retention request, or source/artifact claims.
+
+The first local canonical responsive consumer run at implementation snapshot
+`729caae` truthfully failed: its static prerequisite and WebKit 4/4 passed, while
+Chromium 0/4 encountered two public-share roots during hydration. The failure
+does not invalidate the existing CH-0016 artifact contract or alter its bundle;
+it prevents RC55 closure and requires a separate production-behavior decision.
+
 Outcome-D execution at exact head `b811ddeaad5f3e2d64f647bad5c5fbe59db1615b`
 failed the first furnished-template diagnostic poll in both attempts while the
 health/catalog identity passed. Because bundling follows smoke, no stable bundle

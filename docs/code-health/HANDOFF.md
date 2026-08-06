@@ -3767,3 +3767,77 @@ Rollback is one local revert of the focused implementation commit, followed by
 the selection-keyboard guardrail, focused tracing collision case, and full
 code-quality command. No data, schema, dependency, deployment, or external
 rollback is required.
+
+## ARCH-RC55 canonical merge-required Gate A3 ownership — 2026-08-06
+
+Starting SHA is `d93e34558221e99797ca73791364c016a14ef0cc`; branch is
+`fix/arch-rc55-gate-a3-ownership`. The starting tree was clean and untracked-free,
+the baseline full code-quality command passed, and no running application
+listener existed. No prior ownership patch was present or cherry-picked.
+
+The pre-edit ownership table had no gate owner for
+`scripts/test-public-share-responsive.ts`, advisory plus release-wide discovery
+for `tests/e2e/share-responsive.spec.ts`, no `stable-checks` execution for
+either, and a manual focused config that also selected `04-share.spec.ts`.
+That was a real merge-governance gap despite the green local responsive matrix.
+
+The selected owner is new narrow gate `ci.public-share-responsive`. Canonical
+command `npm run test:public-share-responsive-required` runs a two-script
+closure (SHA-256
+`d554bcd17619cead3de0012153f24a352b71dd45719262e0a7902c7453a033fe`):
+the static projection/layout/privacy contract followed by the truthfulness
+runner using only `playwright.share-responsive.config.ts`. Required browser
+scope is the four responsive identities, exactly Chromium and WebKit, no CLI
+filter or shard, zero retry/flake/skip/annotation, `forbidOnly`, nonzero
+discovery, and exact process/JSON/count agreement.
+The evidence runner owns the declared static prerequisite and rechecks clean
+source after it completes. It requires exact staging, strict-catalog, and
+production-server values, while required-mode configuration rejects a missing
+production flag instead of selecting `npm run dev`.
+
+The stable workflow adds one step after the migrated database, pristine strict
+staging build, Chromium/WebKit install, runtime smoke, and safe evidence bundle.
+It reuses `.next` with `npm run start`; it cannot reuse another listener, run
+`next dev`, or trigger a second compilation. A failed child remains a failed
+`stable-checks` job and the existing `merge-gate` needs/result check propagates
+it. Full E2E remains in the separate informational workflow and
+`release.gate-a3` remains the complete release inventory. Neither is represented
+as the canonical merge-required owner.
+
+The final manifest is 22 gates / 373 classified sources: 251 script tests, 100
+browser specs, 6 cabinetry browser modules, 8 multi-room browser modules, and 8
+cabinetry script modules. Exact hashes are recorded in the disposition ledger
+and required-test truthfulness document. No source file was added, removed, or
+double-counted; imported helpers remain supporting files rather than runnable
+specs. Required execution disables trace, screenshot, and video and produces
+only ignored structured report/evidence files. Existing production-evidence and
+advisory retention rules are unchanged.
+
+Truthfulness negatives now explicitly cover missing static/browser sources,
+stale inventory hash, wrong config, Chromium-only, WebKit-only, grep, shard,
+zero discovery, skip, retry/flake, `.only`, nonzero process with contradictory
+report, aggregate mismatch, duplicate merge-required owner, and registered
+owner without imported contribution. Product share behavior and RC47-RC55
+projection, responsive geometry, selection, persistence, keyboard, and
+accessibility implementation were not modified.
+
+The merge-required owner is registered, but RC55 and the RC47-RC55 archival
+queue remain open. The first canonical run at implementation snapshot
+`729caae` passed the static prerequisite and WebKit 4/4, then failed Chromium
+0/4 without retry because `public-share-root` resolved to two elements during
+hydration. An ignored read-only timing diagnostic observed one resolving root,
+then two resolving roots, then simultaneous resolving and ready roots, before
+settling to one ready root about 1.17 seconds later. This is a production-runtime
+condition rather than a report/count/config failure. Product and responsive-test
+behavior were left unchanged under the bounded stop rule. GitHub ruleset
+selection remains external and unverified. Full E2E, an integration
+branch, push, deployment, rulesets, branch protection, runners, secrets,
+environments, and OAuth were not touched. The unrelated Consumer Undo control
+still measures 30 px against its 44 px touch-target expectation and remains the
+separate accessibility gap.
+
+Rollback is `git revert <implementation-commit-sha>`, followed by direct
+manifest/truthfulness validation, the required responsive command, explicit
+Chromium and WebKit projects, and production-artifact evidence validation. No
+data, schema, token, deployment, credential, or external-setting rollback is
+required.

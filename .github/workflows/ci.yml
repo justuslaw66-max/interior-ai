@@ -345,6 +345,9 @@ jobs:
       - name: Audit catalog asset availability
         run: npm run test:catalog-asset-availability
 
+      - name: Run required responsive public-share matrix
+        run: npm run test:public-share-responsive-required
+
       - name: Run Pro visual policy matrix
         env:
           APP_ENV: staging

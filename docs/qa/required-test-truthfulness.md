@@ -1,11 +1,11 @@
 # Required-test truthfulness
 
-Status: **TRUTHFULNESS AND REQUIRED EXTERNAL WORKFLOW VERIFIED —
-IMPLEMENTATION FROZEN**. CH-0029 changes no gate identity, cadence,
-truthfulness semantic, workflow owner, evidence contract, or external control.
-Its three risk-triggered focused scripts necessarily advance the discovery
-fingerprint from 365 to 368 classified sources; that inventory update is not a
-change to frozen CH-0017 behavior.
+Status: **ARCH-RC55 RESPONSIVE OWNERSHIP REGISTERED — CANONICAL CHROMIUM MATRIX
+RED; EXTERNAL RULESET ENFORCEMENT UNVERIFIED**. Repository truthfulness now
+assigns the responsive public-share contract to one merge-required owner. Its
+first canonical local run failed Chromium and therefore does not resolve RC55.
+GitHub ruleset selection and an exact-head workflow run remain external evidence;
+repository registration does not claim either control is configured.
 
 ## Canonical inventory
 
@@ -14,10 +14,10 @@ required and advisory gate classification. `package.json` remains the command
 owner; the manifest points to those commands and verifies their recursive test
 sources instead of duplicating their shell bodies.
 
-The manifest currently classifies 250 `scripts/test-*` files as risk-triggered
-tests, 98 Playwright specs as release-only browser inventory, 14 imported
+The manifest currently classifies 251 `scripts/test-*` files as risk-triggered
+tests, 100 Playwright specs as release-only browser inventory, 14 imported
 cabinetry/multi-room browser modules, and 8 imported cabinetry script-test
-modules, for 370 classified sources in total. The sorted path-set hashes make a new,
+modules, for 373 classified sources in total. The sorted path-set hashes make a new,
 deleted, renamed, or moved test source a blocking manifest-review event. Static
 registration contracts additionally prove every split-suite registration is
 imported and invoked, so removing an import/call cannot silently exclude an
@@ -44,17 +44,92 @@ Repository-controlled cadence is explicit:
   conclusion and dishonest evidence remain visible and are never accepted as
   release certification.
 
-The 21-gate inventory includes the required Git-history secret scan, code
+The 22-gate inventory includes the required Git-history secret scan, code
 quality, CH-0016 artifact-contract and runtime smoke, authorization/security,
 database migration process, persistence, Stripe, Phase 14/15, Consumer/Pro
 capability boundaries, cabinetry unit/accessibility/performance and release
 evidence, design guards, typecheck, zero-warning lint, the complete floor-plan
 umbrella (including live progress), catalog/materials, asset availability,
-Chromium/WebKit Pro visual policy, and final merge-result aggregation. Gate A3
-owns all 98 current browser specs and separately locks the six repaired
+Chromium/WebKit Pro visual policy, the Chromium/WebKit responsive public-share
+gate, and final merge-result aggregation. Gate A3 discovers all 100 current
+browser specs and separately locks the six repaired
 commerce/Kelsey requirement identities; cabinetry release evidence owns 23
 named Consumer/Pro workflows. CH-0016 runtime smoke locks its two runtime
 requirement identities.
+
+## ARCH-RC55 canonical responsive owner
+
+Before ARCH-RC55 ownership remediation, the static contract was only a manual
+risk-triggered command. The browser spec was discovered by
+`advisory.full-e2e` and `release.gate-a3`, but neither provided merge-required
+ownership and `stable-checks` invoked neither responsive source.
+
+| Source | Previous execution | Canonical required owner |
+| --- | --- | --- |
+| `scripts/test-public-share-responsive.ts` | Manual `test:share-responsive-unit`; risk-triggered inventory only | `ci.public-share-responsive` static phase |
+| `tests/e2e/share-responsive.spec.ts` | Advisory full inventory and release Gate A3 discovery | `ci.public-share-responsive` Chromium/WebKit phase |
+| `playwright.share-responsive.config.ts` | Manual focused configuration, also selecting `04-share.spec.ts` | Exact config for `ci.public-share-responsive`, selecting only `share-responsive.spec.ts` |
+| `tests/e2e/beta-seed.ts`, `tests/e2e/fixtures.ts`, collision fixture | Imported helpers/fixture, not independent runnable specs | Required supporting sources of `ci.public-share-responsive` |
+
+The canonical command is
+`npm run test:public-share-responsive-required`. Its two-script package closure
+(SHA-256
+`d554bcd17619cead3de0012153f24a352b71dd45719262e0a7902c7453a033fe`)
+runs the static contract first, then the required-test runner with the exact
+responsive configuration. The Playwright invocation has no title/path/project
+filter and no shard; the configuration declares exactly `chromium` and
+`webkit`, zero retries, one worker, `forbidOnly`, and only the four responsive
+test identities. A required run disables trace, screenshot, and video capture,
+does not reuse an existing listener, and writes only the canonical JSON report
+plus evidence envelope under ignored `.local/required-test-evidence/`.
+The evidence-producing runner itself executes the declared static prerequisite,
+then rechecks source cleanliness; it is not merely labeled by an outer shell
+command. Direct runner invocation fails unless the exact staging, strict-catalog,
+and production-server environment is active, and required-mode configuration
+throws instead of falling back to `npm run dev`.
+
+`stable-checks` invokes the command after database migration, the pristine
+strict staging build, Chromium/WebKit installation, runtime smoke, and safe
+production-evidence preparation. The command forces `npm run start` against
+that existing `.next` output; it cannot select `next dev` or compile a second
+development artifact. The step has no fail-open policy, so failure makes
+`stable-checks` fail and the existing `merge-gate` aggregation rejects the PR.
+No second required job or duplicate required invocation exists.
+
+At implementation snapshot `729caae`, the first canonical command passed the
+static prerequisite and all four WebKit records, then failed all four Chromium
+records without retry. Each Chromium failure was a strict-locator rejection:
+two identical `public-share-root` elements coexisted while resolving. An ignored
+read-only timing diagnostic confirmed the runtime transition `1 resolving → 2
+resolving → 2 (resolving, ready) → 1 ready` over about 1.17 seconds. The runner
+correctly rejected its process/report/aggregate result. This is application
+evidence exposed by registration, not a truthfulness bypass; product and test
+behavior remain unchanged pending separately authorized production work.
+
+`advisory.full-e2e` may still discover the same spec through the broad default
+configuration, and `release.gate-a3` still includes it in its complete release
+inventory. Those executions remain advisory and release-wide respectively and
+cannot substitute for `ci.public-share-responsive`. The direct runnable source
+owner check rejects any second merge-required owner. Imported test-module
+registration still requires a contributing report record before attribution;
+non-registering helpers are not counted as specs.
+
+Final inventory metadata is 22 gates and 373 classified sources:
+
+| Inventory | Count | Sorted path SHA-256 |
+| --- | ---: | --- |
+| `script-tests` | 251 | `34354f2440b3671752b14d298aa37c548bdcb1c7aca7b5367c370cc765fb7cd3` |
+| `browser-specs` | 100 | `c80ed50279d95e08f94726784270ef887459703ec7aaaa113a3226a3268bcd07` |
+| `cabinetry-browser-modules` | 6 | `805b0ec8a0d24658c0cb5e01616fb1a684c8dc2aae81b6338f3d1b87fd6fafa9` |
+| `multi-room-browser-modules` | 8 | `e701b0ff04421c8eca749fdd8e6daffcd0c0fbb987226ec2319bdcee8d368851` |
+| `cabinetry-script-modules` | 8 | `55ed53e1acde7854a321a3a6480aba3c2c89636d9227057d66341bfd845d6696` |
+
+The negative suite rejects a missing static source or browser spec, stale path
+hash, wrong Playwright config, Chromium-only or WebKit-only execution, grep or
+shard narrowing, zero discovery, skip, retry/flake, `.only`, process/report
+disagreement, aggregate-count disagreement, duplicate merge-required owner,
+and registered-owner reports with no imported-module contribution. External
+`merge-gate` ruleset selection remains `not-verified` and was not modified.
 
 ## Truthful pass contract
 

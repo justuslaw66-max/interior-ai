@@ -88,6 +88,7 @@ function makeRepository() {
     "tests/e2e/required.spec.ts",
     'import { registerRequiredTests } from "./required-module";\nregisterRequiredTests();\n',
   );
+  write(root, "playwright.config.ts", "export default {};\n");
   const packageScripts = {
     "test:fixture": "npm run test:fixture-child",
     "test:fixture-child": "node scripts/test-fixture.mjs",
@@ -1151,6 +1152,110 @@ for (const [fileName, content, expectedReason] of [
 
 {
   const context = makeRepository();
+  const gate = context.manifest.gates.find((entry) => entry.id === "release.fixture");
+  gate.packagePrerequisites = ["test:fixture"];
+  gate.requiredSources = [...gate.requiredSources, "scripts/test-fixture.mjs"];
+  gate.packageClosure = packageClosure(
+    JSON.parse(readFileSync(path.join(context.root, "package.json"), "utf8")).scripts,
+    ["test:release", "test:fixture"],
+  );
+  write(
+    context.root,
+    "scripts/required-test-manifest.json",
+    `${JSON.stringify(context.manifest, null, 2)}\n`,
+  );
+  const prerequisiteRepository = validateRequiredTestRepository({ repositoryRoot: context.root });
+  assert.equal(
+    prerequisiteRepository.valid,
+    true,
+    `a declared Playwright prerequisite must contribute to the package closure: ${JSON.stringify(prerequisiteRepository.issues)}`,
+  );
+  delete gate.packagePrerequisites;
+  write(
+    context.root,
+    "scripts/required-test-manifest.json",
+    `${JSON.stringify(context.manifest, null, 2)}\n`,
+  );
+  expectIssue(
+    validateRequiredTestRepository({ repositoryRoot: context.root }),
+    "does not execute required source scripts/test-fixture.mjs through its package command",
+  );
+}
+
+{
+  const context = makeRepository();
+  rmSync(path.join(context.root, "scripts/test-fixture.mjs"));
+  expectIssue(
+    validateRequiredTestRepository({ repositoryRoot: context.root }),
+    "required source scripts/test-fixture.mjs is missing",
+  );
+}
+
+{
+  const context = makeRepository();
+  context.manifest.sourceInventories[0].expectedPathSha256 = "0".repeat(64);
+  write(
+    context.root,
+    "scripts/required-test-manifest.json",
+    `${JSON.stringify(context.manifest, null, 2)}\n`,
+  );
+  expectIssue(
+    validateRequiredTestRepository({ repositoryRoot: context.root }),
+    "source inventory script-tests changed",
+  );
+}
+
+{
+  const context = makeRepository();
+  const mergeGate = context.manifest.gates.find((gate) => gate.id === "ci.merge-fixture");
+  mergeGate.requiredSources.push("scripts/test-fixture.mjs");
+  write(
+    context.root,
+    "scripts/required-test-manifest.json",
+    `${JSON.stringify(context.manifest, null, 2)}\n`,
+  );
+  expectIssue(
+    validateRequiredTestRepository({ repositoryRoot: context.root }),
+    "required source scripts/test-fixture.mjs has more than one merge-required owner",
+  );
+}
+
+{
+  const context = makeRepository();
+  const gate = context.manifest.gates.find((entry) => entry.id === "release.fixture");
+  gate.playwright.args = ["playwright", "test", "--config=other.config.ts"];
+  write(context.root, "other.config.ts", "export default {};\n");
+  write(
+    context.root,
+    "scripts/required-test-manifest.json",
+    `${JSON.stringify(context.manifest, null, 2)}\n`,
+  );
+  expectIssue(
+    validateRequiredTestRepository({ repositoryRoot: context.root }),
+    "Playwright invocation does not use its exact config",
+  );
+}
+
+{
+  const context = makeRepository();
+  const gate = context.manifest.gates.find((entry) => entry.id === "release.fixture");
+  gate.playwright.config = "other.config.ts";
+  gate.playwright.args = ["playwright", "test", "--config=other.config.ts"];
+  gate.playwright.exactConfigOnly = true;
+  write(context.root, "other.config.ts", "export default {};\n");
+  write(
+    context.root,
+    "scripts/required-test-manifest.json",
+    `${JSON.stringify(context.manifest, null, 2)}\n`,
+  );
+  expectIssue(
+    validateRequiredTestRepository({ repositoryRoot: context.root }),
+    "exact Playwright config is not a required source",
+  );
+}
+
+{
+  const context = makeRepository();
   rmSync(path.join(context.root, "tests/e2e/required.spec.ts"));
   expectIssue(
     validateRequiredTestRepository({ repositoryRoot: context.root }),
@@ -1205,6 +1310,13 @@ for (const [fileName, content, expectedReason] of [
 {
   const context = makeRepository();
   const report = makeReport();
+  report.config.shard = { current: 1, total: 2 };
+  expectIssue(reportResult(context.root, report), "unapproved grep or shard filter");
+}
+
+{
+  const context = makeRepository();
+  const report = makeReport();
   report.config.configFile = "/tmp/other/playwright.config.ts";
   report.config.rootDir = "/tmp/other/tests/e2e";
   expectIssue(
@@ -1225,6 +1337,29 @@ for (const [fileName, content, expectedReason] of [
 {
   const context = makeRepository();
   expectIssue(reportResult(context.root, makeReport({ retry: 1 })), "required test was flaky or retried");
+}
+
+for (const missingProject of ["chromium", "webkit"]) {
+  const context = makeRepository();
+  const gate = context.manifest.gates.find((entry) => entry.id === "release.fixture");
+  gate.requiredProjects = ["chromium", "webkit"];
+  write(
+    context.root,
+    "scripts/required-test-manifest.json",
+    `${JSON.stringify(context.manifest, null, 2)}\n`,
+  );
+  const presentProject = missingProject === "chromium" ? "webkit" : "chromium";
+  expectIssue(
+    reportResult(context.root, makeReport({ project: presentProject })),
+    `required project ${missingProject} is missing`,
+  );
+}
+
+{
+  const context = makeRepository();
+  const report = makeReport();
+  report.stats.expected = 2;
+  expectIssue(reportResult(context.root, report), "aggregate counts do not match parsed test results");
 }
 
 {
@@ -1676,6 +1811,28 @@ assert.equal(
     stableJob.indexOf("Run runtime smoke tests") <
       stableJob.indexOf("Prepare standalone production evidence bundle"),
     "only completed smoke evidence may be bundled",
+  );
+  assert.ok(
+    stableJob.indexOf("Build strict production-equivalent artifact evidence") <
+        stableJob.indexOf("Run required responsive public-share matrix") &&
+      stableJob.indexOf("Install Playwright Chromium and WebKit") <
+        stableJob.indexOf("Run required responsive public-share matrix") &&
+      stableJob.indexOf("Run required responsive public-share matrix") <
+        stableJob.indexOf("Run Pro visual policy matrix"),
+    "the responsive public-share gate must reuse the strict build and installed Chromium/WebKit before the remaining browser policy",
+  );
+  assert.match(
+    stableJob,
+    /Run required responsive public-share matrix[\s\S]*?npm run test:public-share-responsive-required/,
+  );
+  const responsiveConfig = readFileSync(
+    path.join(process.cwd(), "playwright.share-responsive.config.ts"),
+    "utf8",
+  );
+  assert.match(
+    responsiveConfig,
+    /if \(requiredTestGateId && !useProductionServer\)[\s\S]*Required responsive evidence must use the strict production server/,
+    "required responsive evidence must fail instead of selecting the development server",
   );
   assert.doesNotMatch(
     stableJob.slice(0, stableJob.indexOf("Build strict production-equivalent artifact evidence")),

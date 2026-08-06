@@ -776,6 +776,10 @@ function packageScriptNames(gate) {
   return Array.isArray(gate.packageScripts) ? gate.packageScripts : [];
 }
 
+function packagePrerequisiteNames(gate) {
+  return Array.isArray(gate.packagePrerequisites) ? gate.packagePrerequisites : [];
+}
+
 function scriptReferences(script) {
   return [...script.matchAll(/\bnpm run ([A-Za-z0-9:_-]+)/g)].map((match) => match[1]);
 }
@@ -830,6 +834,67 @@ function extractWorkflowJob(workflow, jobName) {
     return workflow.slice(start, next?.index ?? workflow.length);
   }
   return "";
+}
+
+function validatePlaywrightInvocation(gate, repositoryRoot, issues) {
+  if (gate.runner !== "playwright") return;
+  const config = gate.playwright?.config;
+  const args = gate.playwright?.args;
+  if (
+    typeof config !== "string" ||
+    config.length === 0 ||
+    !Array.isArray(args) ||
+    args.some((argument) => typeof argument !== "string") ||
+    args[0] !== "playwright" ||
+    args[1] !== "test"
+  ) {
+    issues.push(`gate ${gate.id} has a malformed Playwright invocation`);
+    return;
+  }
+  let configPath;
+  try {
+    configPath = repositoryPath(repositoryRoot, config, `gate ${gate.id} Playwright config`);
+  } catch (error) {
+    issues.push(error instanceof Error ? error.message : String(error));
+    return;
+  }
+  if (!existsSync(configPath) || !statSync(configPath).isFile()) {
+    issues.push(`gate ${gate.id} Playwright config ${config} is missing`);
+  }
+  if (
+    gate.playwright.exactConfigOnly === true &&
+    !(gate.requiredSources ?? []).includes(config)
+  ) {
+    issues.push(`gate ${gate.id} exact Playwright config is not a required source`);
+  }
+  const explicitConfigs = [];
+  for (let index = 2; index < args.length; index += 1) {
+    const argument = args[index];
+    if (argument === "-c" || argument === "--config") {
+      explicitConfigs.push(args[index + 1]);
+      index += 1;
+    } else if (argument.startsWith("--config=")) {
+      explicitConfigs.push(argument.slice("--config=".length));
+    }
+  }
+  if (
+    explicitConfigs.some((candidate) => candidate !== config) ||
+    (config !== "playwright.config.ts" && explicitConfigs.length !== 1)
+  ) {
+    issues.push(`gate ${gate.id} Playwright invocation does not use its exact config`);
+  }
+  if (gate.playwright.exactConfigOnly === true) {
+    const allowedInvocations = [
+      ["playwright", "test", "-c", config],
+      ["playwright", "test", "--config", config],
+      ["playwright", "test", `--config=${config}`],
+    ];
+    if (!allowedInvocations.some((allowed) => JSON.stringify(allowed) === JSON.stringify(args))) {
+      issues.push(
+        `gate ${gate.id} Playwright invocation must use only its exact config without filters or sharding`,
+      );
+    }
+  }
 }
 
 function sourceContainsFocusedTest(source) {
@@ -1003,6 +1068,7 @@ export function validateRequiredTestRepository({
   const packageJson = readJson(path.join(root, "package.json"), "package.json");
   const packageScripts = packageJson.scripts ?? {};
   const gateIds = new Set();
+  const canonicalRunnableOwners = new Map();
   for (const gate of manifest.gates) {
     validateGateShape(gate, issues);
     if (gateIds.has(gate.id)) issues.push(`gate ${gate.id} is duplicated`);
@@ -1015,7 +1081,23 @@ export function validateRequiredTestRepository({
         issues.push(`gate ${gate.id} references missing supporting inventory ${inventoryId}`);
       }
     }
+    validatePlaywrightInvocation(gate, root, issues);
     reportOwnershipAliases(manifest, gate, inventories, root, issues);
+    const canonicalGateSources = new Set([
+      ...(gate.requiredInventory ? inventories.get(gate.requiredInventory) ?? [] : []),
+      ...(gate.requiredSources ?? []).filter(
+        (source) =>
+          /^scripts\/test-.*\.(?:js|mjs|ts)$/.test(source) ||
+          /^tests\/e2e\/.*\.spec\.ts$/.test(source),
+      ),
+    ]);
+    if (gate.cadence === "merge-required") {
+      for (const source of canonicalGateSources) {
+        const owners = canonicalRunnableOwners.get(source) ?? [];
+        owners.push(gate.id);
+        canonicalRunnableOwners.set(source, owners);
+      }
+    }
     for (const source of gate.requiredSources ?? []) {
       let absolutePath;
       try {
@@ -1029,7 +1111,8 @@ export function validateRequiredTestRepository({
       }
     }
     const namedScripts = packageScriptNames(gate);
-    for (const scriptName of namedScripts) {
+    const prerequisiteScripts = packagePrerequisiteNames(gate);
+    for (const scriptName of [...namedScripts, ...prerequisiteScripts]) {
       if (typeof packageScripts[scriptName] !== "string") {
         issues.push(`gate ${gate.id} package script ${scriptName} is missing`);
       }
@@ -1040,9 +1123,22 @@ export function validateRequiredTestRepository({
           issues.push(`gate ${gate.id} canonical command omits package script ${scriptName}`);
         }
       }
+      for (const [name, value] of Object.entries(gate.requiredEnvironment ?? {})) {
+        if (
+          typeof value !== "string" ||
+          !namedScripts.some((scriptName) => packageScripts[scriptName]?.includes(`${name}=${value}`))
+        ) {
+          issues.push(
+            `gate ${gate.id} canonical package command does not set required environment ${name}`,
+          );
+        }
+      }
       let expanded = new Set();
       try {
-        const closure = expandedPackageScriptEntries(packageScripts, namedScripts);
+        const closure = expandedPackageScriptEntries(
+          packageScripts,
+          [...namedScripts, ...prerequisiteScripts],
+        );
         expanded = expandedPackageSources(closure);
         const identity = packageClosureIdentity(closure);
         if (
@@ -1056,13 +1152,11 @@ export function validateRequiredTestRepository({
       } catch (error) {
         issues.push(error instanceof Error ? error.message : String(error));
       }
-      if (gate.runner !== "playwright") {
-        for (const source of gate.requiredSources ?? []) {
-          if (/^scripts\/test-/.test(source) && !expanded.has(source)) {
-            issues.push(
-              `gate ${gate.id} does not execute required source ${source} through its package command`,
-            );
-          }
+      for (const source of gate.requiredSources ?? []) {
+        if (/^scripts\/test-/.test(source) && !expanded.has(source)) {
+          issues.push(
+            `gate ${gate.id} does not execute required source ${source} through its package command`,
+          );
         }
       }
     }
@@ -1074,6 +1168,13 @@ export function validateRequiredTestRepository({
           issues.push(`gate ${gate.id} required spec ${source} contains a prohibited skip or fixme`);
         }
       }
+    }
+  }
+  for (const [source, owners] of canonicalRunnableOwners) {
+    if (owners.length > 1) {
+      issues.push(
+        `required source ${source} has more than one merge-required owner: ${owners.join(", ")}`,
+      );
     }
   }
 
@@ -1758,6 +1859,22 @@ function gitHead(repositoryRoot) {
   return result.stdout.trim();
 }
 
+function runRequiredPackagePrerequisites({ repositoryRoot, gate, environment }) {
+  const executable = process.platform === "win32" ? "npm.cmd" : "npm";
+  for (const scriptName of packagePrerequisiteNames(gate)) {
+    const child = spawnSync(executable, ["run", scriptName], {
+      cwd: repositoryRoot,
+      env: environment,
+      stdio: "inherit",
+    });
+    if (child.status !== 0) {
+      throw new Error(
+        `gate ${gate.id} prerequisite ${scriptName} exited nonzero`,
+      );
+    }
+  }
+}
+
 export function assertCleanRequiredTestSource(repositoryRoot) {
   const result = spawnSync("git", ["status", "--porcelain", "--untracked-files=all"], {
     cwd: repositoryRoot,
@@ -1814,7 +1931,18 @@ export function runRequiredPlaywrightGate({
   if (!gate || gate.runner !== "playwright" || gate.reportType !== "required-test-evidence") {
     throw new Error(`gate ${gateId} is not a runnable required Playwright gate`);
   }
-  if (gate.cadence === "release-blocking") assertCleanRequiredTestSource(root);
+  for (const [name, value] of Object.entries(gate.requiredEnvironment ?? {})) {
+    if (environment[name] !== value) {
+      throw new Error(`gate ${gateId} requires ${name}=${value}`);
+    }
+  }
+  if (gate.cadence === "release-blocking" || gate.requireCleanSource === true) {
+    assertCleanRequiredTestSource(root);
+  }
+  runRequiredPackagePrerequisites({ repositoryRoot: root, gate, environment });
+  if (gate.cadence === "release-blocking" || gate.requireCleanSource === true) {
+    assertCleanRequiredTestSource(root);
+  }
   const sourceCommitSha = gitHead(root);
   const artifactSha256 = environment.REQUIRED_TEST_ARTIFACT_SHA256?.trim() || null;
   if (gate.artifactBinding !== "none" && !/^[a-f0-9]{64}$/.test(artifactSha256 ?? "")) {

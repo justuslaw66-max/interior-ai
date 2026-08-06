@@ -150,8 +150,12 @@ Stable identities supplement roles and accessible names:
 
 No identity uses an array index, translated display text, random/time value, or
 viewport width. Missing saved-view IDs do not gain an index-derived public
-identity; malformed views remain unavailable. The active tree contains no
-duplicate responsive identity or duplicate DOM `id`.
+identity; malformed views remain unavailable. The settled active tree is
+intended to contain no duplicate responsive identity or duplicate DOM `id`.
+The first canonical Chromium production-server run at implementation snapshot
+`729caae` exposed two simultaneous `public-share-root` elements during
+hydration for about 1.17 seconds, so that invariant is not currently certified
+and RC55 remains open.
 
 ## Route and capability boundaries
 
@@ -183,9 +187,26 @@ timer/user-agent path, selectors, and rendered loading/error states.
 single/multi-room desktop, tablet, mobile portrait/landscape, both resize
 directions, room/view continuity, projection fingerprint, finite surface,
 touch size, overflow, selector uniqueness, keyboard focus, history/reload, and
-invalid/revoked states. `04-share.spec.ts` retains read-only/privacy and every
-saved-view behavior. `playwright.share-responsive.config.ts` runs both in
-Chromium and WebKit with zero retries.
+invalid/revoked states. `04-share.spec.ts` retains its separate read-only/privacy
+and saved-view coverage in advisory Full E2E and release Gate A3; it is not
+duplicated into the required responsive owner.
+
+`ci.public-share-responsive` is the one merge-required owner. Its canonical
+`npm run test:public-share-responsive-required` closure runs the static contract
+and then `share-responsive.spec.ts` through
+`playwright.share-responsive.config.ts` in exactly Chromium and WebKit with no
+filter, shard, retry, flake, skip, or `.only`. Stable CI starts the already-built
+strict staging artifact with `npm run start`; required execution cannot reuse a
+listener or retain raw trace, screenshot, or video output. The structured
+report is bound to the clean checkout SHA and validated against process exit
+and aggregate counts. Advisory Full E2E and release Gate A3 may discover the
+spec but are not its canonical required owner.
+
+The first canonical execution passed the static prerequisite and WebKit 4/4,
+then failed Chromium 0/4 without retry on the duplicate-root condition above.
+The required runner rejected the failed process/report aggregate as designed.
+No product or responsive-test behavior was changed after the defect was exposed;
+correcting it requires a separately authorized production-scope batch.
 
 Rollback is one local revert of the focused implementation commit, followed by
 the responsive unit/render test, Chromium/WebKit share matrix, public
