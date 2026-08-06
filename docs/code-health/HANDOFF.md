@@ -1,5 +1,63 @@
 # Code health audit handoff
 
+## Integration tracked-artifact hygiene checkpoint — 2026-08-06
+
+Branch `fix/integration-tracked-artifact-hygiene` starts exactly at
+`4634384a819a515137ed0d72b339d13496c7a757` (tree
+`9540ec0b4a0e81f4df1633ad05d1e13cd99672a9`), whose direct application parent
+is `2328f297e43b77e5a82693b1844bce1fe61512f9`. Entry status, diff, untracked,
+operation-marker, and file-use checks were empty; no application/test listener
+was active, and `integration/deep-clean-v1` existed neither locally nor on the
+configured remote. The integration branch was not created.
+
+The complete entry `git ls-files -ci --exclude-standard` inventory was
+`.env.staging.template` and `test-results/.last-run.json`. The 1,729-byte
+`.env.staging.template` is classified
+`INTENTIONAL_TRACKED_EXCEPTION_WITH_DOCUMENTED_OWNER`: deployment guides
+consume its placeholder-only contract, and `.gitignore` now explicitly
+unignores that exact template while continuing to ignore populated `.env*`
+files. The 45-byte Playwright `.last-run.json` is classified
+`GENERATED_OUTPUT_REMOVE_FROM_REPOSITORY`: default Playwright output generates
+it, no source/test discovery path consumes it, and CH-0017 evidence preparation
+already rejects it as redundant run state. It was deleted from the tracked
+tree while `/test-results` remains ignored. The entry inventory's privacy risk
+was limited to accidentally substituting real values into the environment
+template or retaining stale test identifiers/state; no actual secret or
+private diagnostic was present. The final tracked-ignored inventory is empty.
+
+`prisma/dev.db` is classified `UNUSED_OR_OBSOLETE_PLACEHOLDER`. It was an empty,
+zero-byte non-SQLite file introduced in historical bulk source, with no script,
+schema, migration, test, deployment, Docker/CI, or documentation consumer. The
+only active datasource is PostgreSQL through `DATABASE_URL`. The placeholder
+was deleted, and mutable `*.db`, `*.db-journal`, `*.sqlite`, and `*.sqlite3`
+local artifacts are now ignored; there is no database-fixture allowlist entry.
+No database was created or modified.
+
+`scripts/code-quality/check.mjs` remains the single merge-required owner for
+source hygiene. Its new Git-index policy uses NUL-delimited `git ls-files`
+inventories, normalizes portable path separators, rejects tracked output under
+`test-results/`, `playwright-report/`, `.next/`, and `.local/`, rejects mutable
+database artifacts, and rejects any other ignored-but-tracked file unless an
+exact reviewed policy entry owns it. Nine deterministic scenarios cover
+tracked and untracked Playwright output, framework/local output, generic
+ignored tracking, mutable databases, an exact fixture allowlist, valid source,
+detached clean checkouts, ignored dependency output, and Windows separators.
+
+Validation passed: focused hygiene 9 scenarios; canonical code quality over
+1,075 production files; required-test truthfulness; direct manifest validation
+at 22 gates / 375 classified sources; production-artifact evidence; design-page
+cleanup 78/78; zero-warning lint; typecheck; and diff checks. One focused
+Chromium invocation ran only the runtime-smoke health/catalog case and passed
+1/1. It recreated the ordinary 45-byte `.last-run.json`, which remained ignored
+and untracked while the guard passed; the transient file was then removed.
+Full E2E and the strict production build were not run because neither product
+nor build tooling changed. No runtime, test behavior, architecture, schema,
+migration, dependency, workflow, external control, push, or deployment changed.
+
+The exact local commit containing this checkpoint is the recommended new
+starting SHA for `integration/deep-clean-v1`; record its immutable SHA after
+commit creation. Do not create the integration branch in this remediation.
+
 ## Final Deep Clean v1 integration-readiness audit — 2026-08-06
 
 Read-only audit began at exact clean source

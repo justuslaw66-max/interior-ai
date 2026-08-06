@@ -1,5 +1,26 @@
 # P0/P1 remediation queue
 
+## Integration tracked-artifact hygiene checkpoint — 2026-08-06
+
+- **Scope:** bounded CH-0027 repository hygiene only on
+  `fix/integration-tracked-artifact-hygiene`, starting at
+  `4634384a819a515137ed0d72b339d13496c7a757` / tree
+  `9540ec0b4a0e81f4df1633ad05d1e13cd99672a9`; no P0/P1 remediation, product
+  behavior, external control, push, deployment, or Full E2E work was started.
+- **Disposition:** remove generated `test-results/.last-run.json` and the
+  `UNUSED_OR_OBSOLETE_PLACEHOLDER` `prisma/dev.db`; explicitly retain the
+  placeholder-only `.env.staging.template` as deployment-owned source rather
+  than ignored local configuration. The final tracked-ignored inventory is
+  empty and no mutable local database artifact remains tracked.
+- **Recurrence owner:** the existing required `check:code-quality` gate now
+  inspects normalized Git-tracked and ignored-but-tracked paths. Nine focused
+  scenarios and the required local gates pass, including a 1/1 focused
+  Playwright generation check and design cleanup 78/78.
+- **Exactly one next action:** use the exact local commit containing this
+  checkpoint as the starting SHA when `integration/deep-clean-v1` is later
+  created. This remediation does not create that branch and does not change the
+  final Deep Clean v1 re-triage below.
+
 ## Final Deep Clean v1 re-triage — 2026-08-06
 
 - **Source and status:** exact clean source

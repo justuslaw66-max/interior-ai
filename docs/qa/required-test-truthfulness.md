@@ -14,10 +14,10 @@ required and advisory gate classification. `package.json` remains the command
 owner; the manifest points to those commands and verifies their recursive test
 sources instead of duplicating their shell bodies.
 
-The manifest currently classifies 251 `scripts/test-*` files as risk-triggered
-tests, 100 Playwright specs as release-only browser inventory, 14 imported
+The manifest currently classifies 252 `scripts/test-*` files as risk-triggered
+tests, 101 Playwright specs as release-only browser inventory, 14 imported
 cabinetry/multi-room browser modules, and 8 imported cabinetry script-test
-modules, for 373 classified sources in total. The sorted path-set hashes make a new,
+modules, for 375 classified sources in total. The sorted path-set hashes make a new,
 deleted, renamed, or moved test source a blocking manifest-review event. Static
 registration contracts additionally prove every split-suite registration is
 imported and invoked, so removing an import/call cannot silently exclude an

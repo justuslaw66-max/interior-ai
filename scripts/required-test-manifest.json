@@ -6,8 +6,8 @@
       "root": "scripts",
       "filePattern": "^test-.*\\.(?:js|mjs|ts)$",
       "classification": "risk-triggered",
-      "expectedFileCount": 251,
-      "expectedPathSha256": "34354f2440b3671752b14d298aa37c548bdcb1c7aca7b5367c370cc765fb7cd3"
+      "expectedFileCount": 252,
+      "expectedPathSha256": "b7165fefaa3407e32df0d01e0836e1fe0c6e8cd137785526959cdbcc9d960cb3"
     },
     {
       "id": "browser-specs",
@@ -88,16 +88,18 @@
     },
     {
       "id": "ci.code-quality",
-      "invariant": "Production size, complexity, suppression, unsafe-TypeScript, and cycle ratchets do not regress.",
+      "invariant": "Production size, complexity, suppression, unsafe-TypeScript, cycle, and tracked-source hygiene ratchets do not regress.",
       "cadence": "merge-required",
       "blocking": true,
       "command": "npm run check:code-quality",
       "packageScript": "check:code-quality",
-      "packageClosure": { "expectedScriptCount": 1, "expectedSha256": "099078f332ea2801748b635c031df32cc42f49efcdaaf73d88944533749113ff" },
+      "packageClosure": { "expectedScriptCount": 1, "expectedSha256": "8f9316f4c27ed5e0366b61899d76ecfc1ab6d6c882e5df4a625e34ccaa9d2964" },
       "runner": "node",
       "requiredSources": [
         "scripts/code-quality/check.mjs",
-        "scripts/test-code-quality-ratchet.mjs"
+        "scripts/code-quality/tracked-artifact-policy.mjs",
+        "scripts/test-code-quality-ratchet.mjs",
+        "scripts/test-tracked-artifact-hygiene.mjs"
       ],
       "requiredProjects": [],
       "allowSkips": false,

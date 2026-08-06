@@ -31,6 +31,10 @@
 # misc
 .DS_Store
 *.pem
+*.db
+*.db-journal
+*.sqlite
+*.sqlite3
 /.local/
 
 # debug
@@ -43,6 +47,7 @@ yarn-error.log*
 # env files (can opt-in for committing if needed)
 .env*
 !.env.example
+!.env.staging.template
 
 # vercel
 .vercel

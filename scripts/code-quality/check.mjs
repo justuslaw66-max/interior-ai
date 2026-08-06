@@ -11,6 +11,7 @@ import {
   summarizeScan,
   updateBaseline,
 } from "./policy.mjs";
+import { inspectTrackedArtifactHygiene } from "./tracked-artifact-policy.mjs";
 
 const repositoryRoot = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
 const baselinePath = join(repositoryRoot, "scripts/code-quality/baseline.json");
@@ -83,6 +84,7 @@ try {
 }
 const failures = [
   ...historyFailures,
+  ...inspectTrackedArtifactHygiene(repositoryRoot),
   ...evaluateScan(scan, baseline, exceptions),
 ];
 const blockingFailures = update

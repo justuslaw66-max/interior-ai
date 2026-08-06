@@ -160,6 +160,15 @@ Ephemeral/ignored: `.next/`, `.local/asset-inventory.json`, coverage, Playwright
 
 Tracked only by deliberate review: platform visual baselines, generated surface runtime, schema/migrations, catalog authoring data, deterministic golden fixtures, and release manifests. Generated/local artifacts such as `test-results/.last-run.json` and `prisma/dev.db` should be untracked in CH-0027 after clean-clone proof.
 
+Source-control enforcement is owned by `npm run check:code-quality`. The guard
+reads NUL-delimited Git-tracked and ignored-but-tracked inventories rather than
+walking generated directories. It rejects tracked `test-results/`,
+`playwright-report/`, `.next/`, `.local/`, and mutable database extensions.
+Deterministic database fixtures require an exact reviewed path allowlist; there
+is currently no such entry. `.env.staging.template` is deployment-owned,
+placeholder-only source and is explicitly unignored, while populated `.env*`
+files remain local and ignored.
+
 ## Merge and release policy
 
 - No new P0/P1 finding or red required gate can merge without named owner, documented scope, compensating control, expiry, and release approver.
