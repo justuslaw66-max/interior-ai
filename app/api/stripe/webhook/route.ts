@@ -1,8 +1,24 @@
 import Stripe from "stripe";
+import type { Prisma } from "@prisma/client";
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { logAppEvent } from "@/lib/app-events";
 import { trackMonetization } from "@/lib/monetization-tracking";
+import {
+  buildTrustedLifecycleProvenance,
+  type VerifiedStripeWebhookContext,
+} from "@/lib/app-event-provenance";
+import {
+  claimTrustedLifecycleEvent,
+  claimTrustedLifecycleEventInTransaction,
+  recordTrustedLifecycleEventInTransaction,
+} from "@/lib/trusted-app-events";
+import {
+  applyVerifiedStripeEntitlementOnce,
+  verifyStripeWebhookEnvelope,
+  type AppliedStripeEntitlement,
+  type StripeEntitlementDecision,
+  type StripeWebhookTransactionPort,
+} from "@/lib/stripe-webhook-transaction";
 import {
   checkoutSessionUsesManagedProPrice,
   isActiveProSubscription,
@@ -14,15 +30,12 @@ import {
   type ProPriceCatalog,
 } from "@/lib/stripe-pro-billing";
 
-type EntitlementDecision = {
-  plan: "free" | "pro";
-  subscriptionId: string | null;
-  reason: string;
-};
+type EntitlementDecision = StripeEntitlementDecision;
+type AppliedEntitlement = AppliedStripeEntitlement;
 
-type AppliedEntitlement = {
-  duplicate: boolean;
-  users: Array<{ id: string; plan: string }>;
+type ResolvedWebhookEntitlement = {
+  handled: boolean;
+  customerId: string | null;
   decision: EntitlementDecision | null;
 };
 
@@ -82,92 +95,247 @@ async function reconcileSubscriptionDecision(
       };
 }
 
+function recordUpgradeTransition(
+  tx: Prisma.TransactionClient,
+  eventId: string,
+  trustedContext: VerifiedStripeWebhookContext,
+  userId: string,
+  subscriptionId: string | null
+) {
+  return recordTrustedLifecycleEventInTransaction(
+    tx,
+    {
+      id: `stripe:${eventId}:upgrade:${userId}`,
+      eventType: "upgrade_checkout_completed",
+      userId,
+      meta: { subscriptionId },
+    },
+    trustedContext
+  ).then(() => undefined);
+}
+
+function recordCancellationTransition(
+  tx: Prisma.TransactionClient,
+  eventId: string,
+  trustedContext: VerifiedStripeWebhookContext,
+  userId: string
+) {
+  return recordTrustedLifecycleEventInTransaction(
+    tx,
+    {
+      id: `stripe:${eventId}:cancellation:${userId}`,
+      eventType: "subscription_canceled",
+      userId,
+    },
+    trustedContext
+  ).then(() => undefined);
+}
+
+function stripeWebhookTransactionPort(
+  tx: Prisma.TransactionClient,
+  event: Stripe.Event,
+  customerId: string | null,
+  decision: EntitlementDecision | null,
+  trustedContext: VerifiedStripeWebhookContext
+): StripeWebhookTransactionPort {
+  return {
+    claimProcessed: () => claimTrustedLifecycleEventInTransaction(
+      tx,
+      {
+        id: `stripe:${event.id}`,
+        eventType: "stripe_webhook_processed",
+        meta: {
+          stripeEventType: event.type,
+          customerId,
+          decision: decision?.plan ?? "ignored",
+          reason: decision?.reason ?? "not_managed",
+        },
+      },
+      trustedContext
+    ),
+    findUsers: (stripeCustomerId) => tx.user.findMany({
+      where: { stripeCustomerId },
+      select: { id: true, plan: true },
+    }),
+    updateUsers: async (stripeCustomerId, nextDecision) => {
+      await tx.user.updateMany({
+        where: { stripeCustomerId },
+        data: {
+          plan: nextDecision.plan,
+          stripeSubscriptionId: nextDecision.subscriptionId,
+        },
+      });
+    },
+    recordUpgrade: (userId, subscriptionId) => recordUpgradeTransition(
+      tx,
+      event.id,
+      trustedContext,
+      userId,
+      subscriptionId
+    ),
+    recordCancellation: (userId) => recordCancellationTransition(
+      tx,
+      event.id,
+      trustedContext,
+      userId
+    ),
+  };
+}
+
 async function applyEntitlementOnce(
   event: Stripe.Event,
   customerId: string | null,
-  decision: EntitlementDecision | null
+  decision: EntitlementDecision | null,
+  trustedContext: VerifiedStripeWebhookContext
 ): Promise<AppliedEntitlement> {
-  return prisma.$transaction(async (tx) => {
-    const claim = await tx.appEvent.createMany({
-      data: [
-        {
-          id: `stripe:${event.id}`,
-          eventType: "stripe_webhook_processed",
-          meta: {
-            stripeEventId: event.id,
-            stripeEventType: event.type,
-            customerId,
-            decision: decision?.plan ?? "ignored",
-            reason: decision?.reason ?? "not_managed",
-          },
-        },
-      ],
-      skipDuplicates: true,
-    });
-
-    if (claim.count === 0) {
-      return { duplicate: true, users: [], decision };
-    }
-
-    if (!customerId || !decision) {
-      return { duplicate: false, users: [], decision };
-    }
-
-    const users = await tx.user.findMany({
-      where: { stripeCustomerId: customerId },
-      select: { id: true, plan: true },
-    });
-
-    if (users.length > 0) {
-      await tx.user.updateMany({
-        where: { stripeCustomerId: customerId },
-        data: {
-          plan: decision.plan,
-          stripeSubscriptionId: decision.subscriptionId,
-        },
-      });
-    }
-
-    return { duplicate: false, users, decision };
-  });
+  return applyVerifiedStripeEntitlementOnce(customerId, decision, (operation) =>
+    prisma.$transaction((tx) => operation(
+      stripeWebhookTransactionPort(tx, event, customerId, decision, trustedContext)
+    ))
+  );
 }
 
-async function trackAppliedEntitlement(event: Stripe.Event, applied: AppliedEntitlement) {
+async function resolveCheckoutEntitlement(
+  stripe: Stripe,
+  event: Stripe.Event,
+  catalog: ProPriceCatalog
+): Promise<ResolvedWebhookEntitlement> {
+  const session = event.data.object as Stripe.Checkout.Session;
+  const customerId = stripeCustomerId(session.customer);
+  const managed = await checkoutSessionUsesManagedProPrice(stripe, session, catalog);
+  return {
+    handled: true,
+    customerId,
+    decision: managed && customerId
+      ? {
+          plan: "pro",
+          subscriptionId: stripeSubscriptionId(session.subscription),
+          reason: "managed_checkout_completed",
+        }
+      : null,
+  };
+}
+
+async function resolveSubscriptionEntitlement(
+  stripe: Stripe,
+  event: Stripe.Event,
+  catalog: ProPriceCatalog
+): Promise<ResolvedWebhookEntitlement> {
+  const subscription = event.data.object as Stripe.Subscription;
+  const customerId = stripeCustomerId(subscription.customer);
+  if (!customerId) return { handled: true, customerId: null, decision: null };
+
+  const user = await prisma.user.findUnique({
+    where: { stripeCustomerId: customerId },
+    select: { stripeSubscriptionId: true },
+  });
+  const affectsManagedSubscription =
+    subscriptionUsesManagedProPrice(subscription, catalog) ||
+    user?.stripeSubscriptionId === subscription.id;
+  const decision = affectsManagedSubscription
+    ? await reconcileSubscriptionDecision(
+        stripe,
+        customerId,
+        catalog,
+        event.type === "customer.subscription.deleted" ? undefined : subscription
+      )
+    : null;
+  return { handled: true, customerId, decision };
+}
+
+async function resolveWebhookEntitlement(
+  stripe: Stripe,
+  event: Stripe.Event,
+  catalog: ProPriceCatalog
+): Promise<ResolvedWebhookEntitlement> {
+  if (
+    event.type === "checkout.session.completed" ||
+    event.type === "checkout.session.async_payment_succeeded"
+  ) {
+    return resolveCheckoutEntitlement(stripe, event, catalog);
+  }
+  if (
+    event.type === "customer.subscription.created" ||
+    event.type === "customer.subscription.updated" ||
+    event.type === "customer.subscription.deleted"
+  ) {
+    return resolveSubscriptionEntitlement(stripe, event, catalog);
+  }
+  return { handled: false, customerId: null, decision: null };
+}
+
+async function recordVerifiedProcessingFailure(
+  event: Stripe.Event,
+  trustedContext: VerifiedStripeWebhookContext
+) {
+  try {
+    await claimTrustedLifecycleEvent(
+      {
+        id: `stripe:${event.id}:processing-failure`,
+        eventType: "webhook_failed",
+        meta: { stripeEventType: event.type, reason: "handler" },
+      },
+      trustedContext
+    );
+  } catch (error) {
+    console.error("Verified webhook failure evidence could not be persisted", {
+      errorType: error instanceof Error ? error.name : "unknown",
+    });
+  }
+}
+
+async function trackAppliedEntitlement(applied: AppliedEntitlement) {
   if (applied.duplicate || !applied.decision) return;
 
   const jobs: Array<Promise<unknown>> = [];
   for (const user of applied.users) {
     if (applied.decision.plan === "pro" && user.plan !== "pro") {
       jobs.push(
-        logAppEvent({
-          eventType: "upgrade_checkout_completed",
-          userId: user.id,
-          meta: {
-            provider: "stripe",
-            stripeEventId: event.id,
-            subscriptionId: applied.decision.subscriptionId,
-          },
-        }),
         trackMonetization("upgrade_checkout_completed", user.id, { plan: "pro" })
       );
     }
 
     if (applied.decision.plan === "free" && user.plan === "pro") {
       jobs.push(
-        logAppEvent({
-          eventType: "subscription_canceled",
-          userId: user.id,
-          meta: {
-            provider: "stripe",
-            stripeEventId: event.id,
-          },
-        }),
         trackMonetization("subscription_canceled", user.id, { plan: "free" })
       );
     }
   }
 
   await Promise.allSettled(jobs);
+}
+
+async function readVerifiedStripeEvent(
+  req: Request,
+  stripe: Stripe,
+  webhookSecret: string
+): Promise<{ ok: true; event: Stripe.Event } | { ok: false; response: NextResponse }> {
+  const signature = req.headers.get("stripe-signature");
+  if (!signature) {
+    return {
+      ok: false,
+      response: NextResponse.json({ error: "Missing stripe-signature" }, { status: 400 }),
+    };
+  }
+
+  const body = await req.text();
+  const verified = verifyStripeWebhookEnvelope(
+    (rawBody, rawSignature, secret) =>
+      stripe.webhooks.constructEvent(rawBody, rawSignature, secret),
+    body,
+    signature,
+    webhookSecret
+  );
+  if (!verified.ok) {
+    console.warn("Webhook signature verification failed", {
+      errorType: verified.errorType,
+    });
+    return {
+      ok: false,
+      response: NextResponse.json({ error: "Invalid webhook signature" }, { status: 400 }),
+    };
+  }
+  return { ok: true, event: verified.event };
 }
 
 export async function POST(req: Request) {
@@ -185,76 +353,30 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Webhook service unavailable" }, { status: 503 });
   }
 
-  const signature = req.headers.get("stripe-signature");
-  if (!signature) {
-    return NextResponse.json({ error: "Missing stripe-signature" }, { status: 400 });
-  }
+  const verified = await readVerifiedStripeEvent(req, stripe, webhookSecret);
+  if (!verified.ok) return verified.response;
+  const event = verified.event;
 
-  const body = await req.text();
-  let event: Stripe.Event;
-  try {
-    event = stripe.webhooks.constructEvent(body, signature, webhookSecret);
-  } catch (error) {
-    await logAppEvent({
-      eventType: "webhook_failed",
-      meta: { provider: "stripe", reason: "signature" },
-    });
-    console.warn("Webhook signature verification failed", {
-      errorType: error instanceof Error ? error.name : "unknown",
-    });
-    return NextResponse.json({ error: "Invalid webhook signature" }, { status: 400 });
-  }
+  const trustedContext: VerifiedStripeWebhookContext = {
+    producer: "VERIFIED_STRIPE_WEBHOOK",
+    verificationMethod: "STRIPE_SIGNATURE",
+    externalEventId: event.id,
+  };
+  buildTrustedLifecycleProvenance(trustedContext);
 
   try {
-    let customerId: string | null = null;
-    let decision: EntitlementDecision | null = null;
-
-    if (
-      event.type === "checkout.session.completed" ||
-      event.type === "checkout.session.async_payment_succeeded"
-    ) {
-      const session = event.data.object as Stripe.Checkout.Session;
-      customerId = stripeCustomerId(session.customer);
-      const managed = await checkoutSessionUsesManagedProPrice(stripe, session, catalog);
-      if (managed && customerId) {
-        decision = {
-          plan: "pro",
-          subscriptionId: stripeSubscriptionId(session.subscription),
-          reason: "managed_checkout_completed",
-        };
-      }
-    } else if (
-      event.type === "customer.subscription.created" ||
-      event.type === "customer.subscription.updated" ||
-      event.type === "customer.subscription.deleted"
-    ) {
-      const subscription = event.data.object as Stripe.Subscription;
-      customerId = stripeCustomerId(subscription.customer);
-
-      if (customerId) {
-        const user = await prisma.user.findUnique({
-          where: { stripeCustomerId: customerId },
-          select: { stripeSubscriptionId: true },
-        });
-        const affectsManagedSubscription =
-          subscriptionUsesManagedProPrice(subscription, catalog) ||
-          user?.stripeSubscriptionId === subscription.id;
-
-        if (affectsManagedSubscription) {
-          decision = await reconcileSubscriptionDecision(
-            stripe,
-            customerId,
-            catalog,
-            event.type === "customer.subscription.deleted" ? undefined : subscription
-          );
-        }
-      }
-    } else {
+    const resolved = await resolveWebhookEntitlement(stripe, event, catalog);
+    if (!resolved.handled) {
       return NextResponse.json({ received: true, ignored: true });
     }
 
-    const applied = await applyEntitlementOnce(event, customerId, decision);
-    await trackAppliedEntitlement(event, applied);
+    const applied = await applyEntitlementOnce(
+      event,
+      resolved.customerId,
+      resolved.decision,
+      trustedContext
+    );
+    await trackAppliedEntitlement(applied);
 
     return NextResponse.json({
       received: true,
@@ -262,14 +384,7 @@ export async function POST(req: Request) {
       entitlement: applied.decision?.plan ?? "ignored",
     });
   } catch (error) {
-    await logAppEvent({
-      eventType: "webhook_failed",
-      meta: {
-        provider: "stripe",
-        stripeEventId: event.id,
-        reason: "handler",
-      },
-    });
+    await recordVerifiedProcessingFailure(event, trustedContext);
     console.error("Webhook handler failed", {
       errorType: error instanceof Error ? error.name : "unknown",
     });

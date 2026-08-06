@@ -1,4 +1,6 @@
 import assert from "node:assert/strict";
+import fs from "node:fs";
+import path from "node:path";
 import type Stripe from "stripe";
 import { parseProBillingInterval } from "../lib/pro-plan-catalog";
 import {
@@ -126,5 +128,28 @@ assert.equal(
   )?.id,
   "sub_monthly"
 );
+
+const webhookSource = fs.readFileSync(
+  path.join(process.cwd(), "app/api/stripe/webhook/route.ts"),
+  "utf8"
+);
+const verificationCall = webhookSource.indexOf("verifyStripeWebhookEnvelope(");
+const trustedContextCall = webhookSource.indexOf(
+  "buildTrustedLifecycleProvenance(trustedContext)"
+);
+assert.ok(verificationCall >= 0 && trustedContextCall > verificationCall);
+const invalidSignaturePath = webhookSource.slice(
+  verificationCall,
+  webhookSource.indexOf("const trustedContext", verificationCall)
+);
+assert.doesNotMatch(invalidSignaturePath, /webhook_failed|recordTrustedLifecycleEvent/);
+assert.match(webhookSource, /applyVerifiedStripeEntitlementOnce/);
+assert.match(webhookSource, /claimTrustedLifecycleEventInTransaction/);
+assert.match(webhookSource, /recordTrustedLifecycleEventInTransaction/);
+assert.match(webhookSource, /id: `stripe:\$\{event\.id\}`/);
+assert.match(webhookSource, /id: `stripe:\$\{event\.id\}:processing-failure`/);
+assert.match(webhookSource, /eventType: "upgrade_checkout_completed"/);
+assert.match(webhookSource, /eventType: "subscription_canceled"/);
+assert.match(webhookSource, /eventType: "webhook_failed"/);
 
 console.log("Stripe Pro billing contract checks passed.");

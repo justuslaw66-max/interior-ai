@@ -22,13 +22,13 @@ export default function RefreshPlanButton() {
     const trackCompletion = () => {
       if (completionTrackedRef.current) return;
       completionTrackedRef.current = true;
-      track("upgrade_checkout_completed", { source: "billing_success_page" });
+      track("checkout_success_viewed", { source: "billing_success_page" });
       fetch("/api/track/app-event", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          eventType: "upgrade_checkout_completed",
-          meta: { source: "billing_success_page", verified: true },
+          eventType: "checkout_success_viewed",
+          meta: { source: "billing_success_page", planStatusObserved: "pro" },
         }),
       }).catch(() => undefined);
     };

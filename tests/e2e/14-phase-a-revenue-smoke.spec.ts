@@ -332,14 +332,32 @@ test.describe("14. Phase A Revenue Smoke", () => {
 
     await prismaWithRetry(() => prisma.appEvent.createMany({
       data: [
-        { eventType: "landing_viewed", userId: user.id, createdAt: new Date() },
-        { eventType: "design_started", userId: user.id, createdAt: new Date() },
-        { eventType: "first_item_added", userId: user.id, createdAt: new Date() },
-        { eventType: "third_item_added", userId: user.id, createdAt: new Date() },
-        { eventType: "export_clicked", userId: user.id, createdAt: new Date() },
-        { eventType: "upgrade_clicked", userId: user.id, createdAt: new Date() },
-        { eventType: "checkout_started", userId: user.id, createdAt: new Date() },
-        { eventType: "checkout_completed", userId: user.id, createdAt: new Date() },
+        ...[
+          "landing_viewed",
+          "design_started",
+          "first_item_added",
+          "third_item_added",
+          "export_clicked",
+          "upgrade_clicked",
+          "checkout_started",
+        ].map((eventType) => ({
+          eventType,
+          userId: user.id,
+          authority: "BROWSER_AUTHORIZED_ANALYTICS" as const,
+          producer: "SERVER_APPLICATION" as const,
+          verificationMethod: "SERVER_ACTION" as const,
+          provenanceVersion: 1,
+          createdAt: new Date(),
+        })),
+        {
+          eventType: "checkout_success_viewed",
+          userId: user.id,
+          authority: "BROWSER_AUTHORIZED_ANALYTICS",
+          producer: "SERVER_APPLICATION",
+          verificationMethod: "SERVER_ACTION",
+          provenanceVersion: 1,
+          createdAt: new Date(),
+        },
       ],
     }));
 

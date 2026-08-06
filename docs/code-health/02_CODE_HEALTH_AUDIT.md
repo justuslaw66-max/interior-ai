@@ -1,5 +1,35 @@
 # Code health audit
 
+## CH-0004 trusted event provenance remediation — 2026-08-07
+
+Starting from exact integration source
+`2e1df7ed7cefb5df2560fca70f77ef8785f37c8f` / tree
+`394d4444d46ca8c1ce95ae3f0113197c015fd813`, the bounded CH-0004 branch
+separates public browser analytics, trusted server lifecycle events, internal
+diagnostics, and unverifiable legacy rows. Public ingestion now denies every
+trusted/diagnostic/unknown type for every browser identity and rejects reserved
+provenance keys. A forward-only migration adds server-owned authority,
+producer, verification method, provenance version, and external event identity;
+all predecessor rows default to `UNTRUSTED_OR_LEGACY` without a name/role/meta
+backfill. A database constraint rejects any trusted row without the exact
+current verified-Stripe contract and valid `evt_...` identity.
+
+Verified Stripe webhook records and entitlement transitions are atomic and
+idempotent. Invalid signatures create no trusted failure record; a verified
+processing failure is bound to the signed event identity. Browser billing
+success emits only `checkout_success_viewed`. Admin webhook health requires the
+complete current Stripe provenance contract, while browser interaction metrics
+are explicitly non-authoritative. The exact vocabulary, producer/consumer
+graph, migration evidence, test owner, and rollback contract are in
+`docs/security/CH-0004_TRUSTED_EVENT_PROVENANCE.md`.
+
+This locally resolves one decision-free pre-candidate P1. The superseding
+repository count is **0 unresolved P0 / 11 unresolved P1 / 7 resolved P1**;
+READY is now CH-0013 and CH-0015. External exact-candidate preview smoke,
+review/integration authorization, and later release certification remain
+separate. No CH-0013, CH-0015, product-decision P1, Full E2E, workflow, external
+control, push, deployment, or integration-branch mutation is included.
+
 ## Final Deep Clean v1 integration-readiness audit — 2026-08-06
 
 The final read-only audit started from exact clean source
@@ -189,15 +219,15 @@ CH-0001, CH-0012, and CH-0016 are closed for repository-controlled remediation. 
 
 ### CH-0004 — Public event ingestion can forge server-authoritative lifecycle events
 
-- **Severity:** P1.
-- **Locations/symbols:** `lib/app-events.ts`; `app/api/track/app-event/route.ts`; `app/admin/operations-data.ts`.
-- **Evidence/current behavior:** Client events share an allowlist with `upgrade_checkout_completed`, `subscription_canceled`, and `webhook_failed`; the public route accepts the full set with optional authentication, and admin metrics consume the resulting records.
-- **Risk:** Anonymous clients can poison KPIs, alerts, and operational decisions.
-- **Improvement:** Separate browser and trusted-server event schemas; record provenance; require authenticated internal ingestion or direct service emission for lifecycle events.
-- **Expected outcome:** Admin metrics contain only authoritative billing/webhook state for server-only event types.
-- **Tests:** Anonymous and signed-in client denial for every server-only event; server provenance accepted; schema/version rejection; admin aggregation excludes forged fixtures.
+- **Severity:** P1, locally resolved on the bounded pre-candidate branch.
+- **Locations/symbols:** `lib/app-event-provenance.ts`; `lib/app-events.ts`; `lib/trusted-app-events.ts`; `lib/app-event-operations.ts`; public app-event and Stripe webhook routes; billing success UI; admin operations; Prisma provenance migration.
+- **Evidence/current behavior:** Browser ingestion uses only the browser-authorized union and cannot select a trusted/internal emitter or persist reserved provenance. Trusted Stripe events require signature-verified context, current version, exact producer/method, and external event ID. Admin lifecycle queries require that complete contract; legacy/browser/malformed same-name rows are excluded.
+- **Risk disposition:** The original anonymous/authenticated/Pro/admin forgery path no longer creates authoritative evidence. Browser analytics remain intentionally forgeable interaction signals and are labelled non-authoritative.
+- **Implementation:** Four authority classes, separate emitters and compile-time unions, forward-only provenance fields with legacy default, atomic/idempotent Stripe lifecycle recording, success-view analytics rename, and trusted-only operations query.
+- **Expected outcome:** Satisfied locally; no browser or legacy record can affect authoritative webhook health or lifecycle evidence.
+- **Tests:** Phase 7 executes the identity/type/provenance ingestion matrix, trusted persistence failure, invalid signature, idempotent retry, transaction rollback, mixed-authority admin fixtures, and resolved import graph; focused live database route denial/persistence, Stripe/billing UI checks, and populated-predecessor migration proof supplement it.
 - **Dependencies/decision:** None.
-- **Compatibility:** Behavior-preserving for legitimate browser analytics and server events.
+- **Compatibility:** Legitimate browser analytics remain available with explicit non-authoritative provenance; trusted lifecycle behavior remains Stripe-webhook-owned. Exact-candidate external preview/release evidence remains later work.
 
 ### CH-0005 — Published floor-plan retirement uses a weaker role than publication
 

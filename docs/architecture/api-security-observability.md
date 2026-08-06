@@ -72,6 +72,32 @@ When correlation is required, the server stores a one-way 16-character SHA-256
 reference. Provider cart/order references are represented only by presence flags
 outside their authoritative provider records.
 
+## App-event authority and provenance
+
+`AppEvent` has four explicit authority classes. Browser-authorized analytics
+describe interaction, intent, views, and requests; they never prove a payment,
+cancellation, webhook outcome, or lifecycle transition. Trusted lifecycle
+events require a server-only emitter, an approved producer, its exact
+verification method, provenance version, and durable external event identity.
+Internal diagnostics are separate from both classes. Rows predating this
+contract, or missing/malformed provenance, are `UNTRUSTED_OR_LEGACY` and remain
+excluded from authoritative operations.
+
+The public app-event route accepts only
+`BROWSER_AUTHORIZED_ANALYTICS_EVENT_TYPES`. Authentication, Pro entitlement,
+or administrator role never promotes a request to trusted. Reserved provenance
+keys are rejected, and browser metadata cannot populate server-owned authority
+columns, including external event identity. The historical `checkout_completed`
+name remains public-denied and legacy-only because it has no approved producer.
+The current trusted producer is a Stripe webhook only after signature
+verification. Invalid signatures create no trusted failure evidence; verified
+processing failures use the verified event identity and deterministic retry
+deduplication. Admin webhook health requires the complete trusted provenance
+contract, including a valid Stripe event ID; a database check constraint rejects
+malformed trusted rows. Customer-interaction metrics are explicitly labelled
+non-authoritative. The full vocabulary and producer/consumer matrix is in
+`docs/security/CH-0004_TRUSTED_EVENT_PROVENANCE.md`.
+
 ## Secrets and retention
 
 - Secrets stay in server environment variables. Only deliberately public keys
@@ -92,9 +118,12 @@ outside their authoritative provider records.
 ## Verification
 
 `npm run test:phase7-security-boundaries` checks request limits, telemetry
-redaction, AI input/output contracts, design/import limits, owner-scoped source
-guards, commerce return semantics, share-token handling, and cabinetry import
-preflight. `tests/e2e/03-persistence.spec.ts` forces a cloud-save failure and
+redaction, app-event authority/provenance, browser identity denial, trusted
+producer context, admin trusted-only filters, client/server import direction,
+AI input/output contracts, design/import limits, owner-scoped source guards,
+commerce return semantics, share-token handling, and cabinetry import preflight.
+This source remains owned exactly once by merge-required
+`ci.critical-domain-contracts`. `tests/e2e/03-persistence.spec.ts` forces a cloud-save failure and
 verifies that the failed state remains visible, its Retry control is reachable,
 and the queued write returns to a cloud-saved state. Production build and the
 existing persistence/cabinetry suites remain the release gate.

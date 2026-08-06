@@ -6,6 +6,25 @@ datasource db {
   provider = "postgresql"
 }
 
+enum AppEventAuthority {
+  BROWSER_AUTHORIZED_ANALYTICS
+  TRUSTED_SERVER_LIFECYCLE
+  UNTRUSTED_OR_LEGACY
+  INTERNAL_DIAGNOSTIC
+}
+
+enum AppEventProducer {
+  PUBLIC_BROWSER_INGESTION
+  SERVER_APPLICATION
+  VERIFIED_STRIPE_WEBHOOK
+}
+
+enum AppEventVerificationMethod {
+  PUBLIC_REQUEST
+  SERVER_ACTION
+  STRIPE_SIGNATURE
+}
+
 model Design {
   id                 String                    @id @default(cuid())
   title              String                    @default("Untitled Living Room")
@@ -75,18 +94,25 @@ model ConversionEvent {
 }
 
 model AppEvent {
-  id         String   @id @default(cuid())
-  eventType  String
-  userId     String?
-  designId   String?
-  shareToken String?
-  meta       Json?
-  createdAt  DateTime @default(now())
+  id                 String                      @id @default(cuid())
+  eventType          String
+  userId             String?
+  designId           String?
+  shareToken         String?
+  meta               Json?
+  authority          AppEventAuthority           @default(UNTRUSTED_OR_LEGACY)
+  producer           AppEventProducer?
+  verificationMethod AppEventVerificationMethod?
+  provenanceVersion  Int?
+  externalEventId    String?
+  createdAt          DateTime                    @default(now())
 
   @@index([eventType])
   @@index([createdAt])
   @@index([designId])
   @@index([shareToken])
+  @@index([authority, eventType, createdAt])
+  @@index([producer, provenanceVersion])
 }
 
 model User {

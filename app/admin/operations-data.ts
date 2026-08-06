@@ -2,6 +2,11 @@ import type { FloorPlanImportJobStatus, ImportJobStatus } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { bytesToMiB, resolveImportQaLimits } from "@/lib/importQaPolicy";
 import { getRejectedLiveGateAssets, type LiveGateEvaluation } from "@/lib/live-catalog";
+import {
+  browserAnalyticsWhere,
+  trustedWebhookFailureWhere,
+  type OperationsAppEventClient,
+} from "@/lib/app-event-operations";
 
 export type StatusTone = "neutral" | "info" | "success" | "warning" | "critical";
 
@@ -141,15 +146,9 @@ export async function loadOperationsDashboardData(): Promise<OperationsDashboard
   const since24h = daysAgo(1);
   const since7d = daysAgo(7);
   const appEventClient = (prisma as unknown as {
-    appEvent: {
-      count: (args: { where: { eventType: string; createdAt: { gte: Date } } }) => Promise<number>;
-      findMany: (args: {
-        where: { eventType: string; createdAt: { gte: Date } };
-        orderBy: { createdAt: "desc" };
-        take: number;
-      }) => Promise<WebhookFailureEvent[]>;
-    };
+    appEvent: OperationsAppEventClient<WebhookFailureEvent>;
   }).appEvent;
+  const trustedWebhookWhere = trustedWebhookFailureWhere(since24h);
 
   const [activityResult, assetImportResult, floorPlanResult, liveGateResult] = await Promise.all([
     safeQuery<ActivityData>(
@@ -168,15 +167,15 @@ export async function loadOperationsDashboardData(): Promise<OperationsDashboard
         ] = await Promise.all([
           prisma.design.count({ where: { createdAt: { gte: since24h } } }),
           prisma.design.count({ where: { createdAt: { gte: since7d } } }),
-          appEventClient.count({ where: { eventType: "share_link_created", createdAt: { gte: since24h } } }),
-          appEventClient.count({ where: { eventType: "share_link_opened", createdAt: { gte: since24h } } }),
-          appEventClient.count({ where: { eventType: "export_opened", createdAt: { gte: since24h } } }),
-          appEventClient.count({ where: { eventType: "export_printed", createdAt: { gte: since24h } } }),
-          appEventClient.count({ where: { eventType: "checkout_started", createdAt: { gte: since24h } } }),
+          appEventClient.count({ where: browserAnalyticsWhere("share_link_created", since24h) }),
+          appEventClient.count({ where: browserAnalyticsWhere("share_link_opened", since24h) }),
+          appEventClient.count({ where: browserAnalyticsWhere("export_opened", since24h) }),
+          appEventClient.count({ where: browserAnalyticsWhere("export_printed", since24h) }),
+          appEventClient.count({ where: browserAnalyticsWhere("checkout_started", since24h) }),
           prisma.productClick.count({ where: { createdAt: { gte: since24h } } }),
-          appEventClient.count({ where: { eventType: "webhook_failed", createdAt: { gte: since24h } } }),
+          appEventClient.count({ where: trustedWebhookWhere }),
           appEventClient.findMany({
-            where: { eventType: "webhook_failed", createdAt: { gte: since24h } },
+            where: trustedWebhookWhere,
             orderBy: { createdAt: "desc" },
             take: 5,
           }),
@@ -370,7 +369,7 @@ export async function loadOperationsDashboardData(): Promise<OperationsDashboard
         ? "Events unavailable"
         : activity.webhookFailed24h > 0
           ? `${activity.webhookFailed24h} failed in 24h`
-          : "No failures in 24h",
+          : "No trusted failures in 24h",
       state: !activityResult.available
         ? "unavailable"
         : activity.webhookFailed24h > 0
@@ -454,17 +453,17 @@ export async function loadOperationsDashboardData(): Promise<OperationsDashboard
       {
         label: "Shares opened",
         value: activityResult.available ? activity.shareOpened24h : null,
-        detail: activityResult.available ? `${activity.shareCreated24h.toLocaleString()} links created` : "Unavailable",
+        detail: activityResult.available ? `Browser analytics · ${activity.shareCreated24h.toLocaleString()} links created` : "Unavailable",
       },
       {
         label: "Exports printed",
         value: activityResult.available ? activity.exportPrinted24h : null,
-        detail: activityResult.available ? `${activity.exportOpened24h.toLocaleString()} export sessions` : "Unavailable",
+        detail: activityResult.available ? `Browser analytics · ${activity.exportOpened24h.toLocaleString()} export sessions` : "Unavailable",
       },
       {
         label: "Checkout starts",
         value: activityResult.available ? activity.checkoutStarted24h : null,
-        detail: "Customer intent",
+        detail: "Non-authoritative browser analytics",
       },
       {
         label: "Affiliate clicks",

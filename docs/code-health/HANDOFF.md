@@ -4203,3 +4203,167 @@ Rollback is `git revert <implementation-commit-sha>`, followed by the focused
 browser suites, all static gates, strict build, Phase 8, and clean-source public
 share required gate. No schema, data, deployment, credential, or external-setting
 rollback is involved.
+
+## CH-0004 trusted event provenance separation — 2026-08-07
+
+### Source, defect, and bounded outcome
+
+This pre-candidate P1 branch starts from exact synchronized integration source
+`2e1df7ed7cefb5df2560fca70f77ef8785f37c8f` / tree
+`394d4444d46ca8c1ce95ae3f0113197c015fd813`. Entry status, index, diff,
+untracked, tracked-ignored, and Git-operation checks were clean. Node is
+`v24.13.0`; npm is `11.6.2`. No application/test listener used the checkout,
+and `origin/integration/deep-clean-v1` matched the starting SHA after fetch.
+The branch is `fix/ch-0004-trusted-event-provenance`; the integration branch was
+not modified.
+
+The original public app-event route admitted lifecycle/operational names from
+anonymous and authenticated callers, including Pro/admin sessions. `AppEvent`
+had no durable provenance, the invalid-signature Stripe catch wrote
+`webhook_failed`, billing-success clients wrote `upgrade_checkout_completed`,
+and admin webhook health trusted same-named rows. Event name, session role,
+headers, and spoofable metadata therefore contaminated operational evidence.
+
+The final contract has four authority classes:
+
+- `BROWSER_AUTHORIZED_ANALYTICS`: 21 interaction/view/request types, including
+  new `checkout_success_viewed`;
+- `TRUSTED_SERVER_LIFECYCLE`: `upgrade_checkout_completed`,
+  `subscription_canceled`, `webhook_failed`, and `stripe_webhook_processed`;
+- `INTERNAL_DIAGNOSTIC`: `checkout_variant_validation_failed` and
+  `variant_resolution_issue`;
+- `UNTRUSTED_OR_LEGACY`: every pre-contract or malformed/unverifiable record.
+
+The old `checkout_completed` name is reserved and public-denied but deliberately
+absent from the emit-capable trusted union: there is no approved producer, so
+existing or fixture rows with that name remain legacy-only.
+
+The complete starting/final matrix and producer/consumer graph are in
+`docs/security/CH-0004_TRUSTED_EVENT_PROVENANCE.md`.
+
+### APIs, persistence, Stripe, billing, and operations
+
+`lib/app-event-provenance.ts` owns exact compile-time unions, the public parser,
+reserved-key rejection (including external identity), current version,
+trusted-context validation, and a pure trusted-record predicate.
+`lib/browser-app-event-ingestion.ts` owns the dependency-injected request core
+used by the public route and deterministic identity matrix. `lib/app-events.ts` owns only public browser
+analytics, server-recorded non-authoritative analytics, and internal
+diagnostics. `lib/trusted-app-events.ts` is explicitly server-only and is the
+sole product importer of its deterministic data/persistence core; a required
+resolved-import guard permits only the Stripe webhook route to import the
+facade. No request can select an authority or pass a generic `trusted` option.
+
+Migration `20260807090000_add_app_event_provenance` adds typed `authority`,
+`producer`, `verificationMethod`, nullable/queryable `provenanceVersion`, and
+`externalEventId`, plus authority/producer indexes. Existing rows receive only
+the `UNTRUSTED_OR_LEGACY` default; there is no update/backfill statement.
+Browser metadata stays in `meta` and cannot populate server-owned columns. A
+null-safe check constraint rejects trusted rows unless event type, producer,
+method, version, and a valid Stripe `evt_...` identity all match the current
+four-type contract.
+
+Stripe constructs its trusted context only after signature verification.
+Invalid signatures log no trusted event. The verified event claim, entitlement
+update, and activation/cancellation lifecycle records share one transaction;
+deterministic IDs keep retries idempotent and an event-record failure rolls the
+entitlement transaction back. A verified handler failure creates at most one
+trusted `webhook_failed` record using the signed event identity and still
+returns failure if operational evidence cannot be written. PostHog remains
+best-effort and outside lifecycle truth.
+
+Billing success no longer emits `upgrade_checkout_completed`; it emits the
+non-authoritative `checkout_success_viewed`. Admin browser signals are filtered
+to current browser authority and labelled non-authoritative. Webhook health and
+recent failures require trusted lifecycle authority, verified Stripe producer,
+Stripe signature method, provenance version 1, and a valid external event ID
+matching the Stripe event pattern. Browser, legacy, metadata-spoofed, and
+malformed same-name rows cannot
+affect the authoritative count.
+
+### Focused evidence and migration proof
+
+Test-first Phase 7 execution initially failed on the intentionally missing
+provenance module, then executed the anonymous/ordinary/Pro/admin ingestion
+denial/no-record matrix, valid browser persistence callback, trusted context and
+persistence failure, invalid Stripe signature, verified retry deduplication,
+transaction rollback, trusted/browser/legacy/malformed admin fixtures,
+top-level/nested reserved keys, resolved import ownership, billing naming,
+schema constraint, and migration no-backfill guards. Stripe/billing source tests
+also pass signature order, atomic/idempotent IDs, lifecycle types, success UI,
+and Refresh Plan behavior. Beta feedback and beta readiness focused checks pass.
+
+The populated predecessor proof used an isolated local database. Exact starting
+source applied 42 migrations and received three legacy lifecycle rows, including
+spoofed trusted metadata. Current source applied migration 43 with 5/5 valid
+fixture rows preserved, 3/3 predecessor rows classified legacy, exactly 1
+authoritative webhook-failure row across trusted/browser/legacy same-name
+fixtures, and the malformed trusted-row insert rejected by
+`AppEvent_trusted_provenance_check`. The final proof also rejected null-
+provenance, reserved `checkout_completed`, and unknown-name trusted rows. All
+disposable databases and the temporary
+starting-SHA worktree were removed after recording results.
+
+Live route testing against a separate fully migrated disposable database
+returned 200/`persisted:true` for `design_started`; the stored row was exactly
+browser authority / public browser producer / public request verification /
+version 1 / no external identity. All four emit-capable trusted types, the
+reserved legacy `checkout_completed` name, an internal
+diagnostic, an unknown type, and a reserved-provenance spoof returned bounded
+400 responses; the database contained one total row and zero forbidden rows.
+
+Focused in-app browser testing used the canonical app after `lsof` confirmed
+the Node listener cwd. The signed-in billing-success screen reached `active`,
+showed Open Pro tools and Go to dashboard, emitted `checkout_success_viewed`,
+and had zero browser warnings/errors. The unchanged developer database lacked
+the branch migration, so its best-effort event write correctly reported
+`persisted:false`; persistence authority was separately proven against the
+disposable fully migrated target above.
+
+### Required ownership, validation, review, and rollback
+
+No test source was added. `scripts/test-phase7-security-boundaries.ts` and the
+existing Stripe/billing sources remain singly owned by merge-required
+`ci.critical-domain-contracts` through `npm run test:critical-required`. The
+required inventory remains 22 gates / 375 classified sources. No retry, skip,
+timeout, project, cadence, workflow, Full E2E, or release Gate A3 ownership
+changed. Code-quality debt only decreases: operations-data lines 513 -> 512 and
+overlong maximum 374 -> 368; the Stripe webhook and public event route no longer
+need overlong/complex-function baseline entries. The final guard reports 1,081
+production files, 194 oversized files, 549 files with function-metric debt, 19
+lint suppressions, no runtime cycle, and no unsafe TypeScript suppression.
+
+All focused checks and locally required gates pass: Phase 7 security boundaries;
+Stripe/Pro billing; feedback/readiness; auth environment/admin hardening;
+`test:critical-required`; required-test truthfulness plus direct manifest check;
+production-artifact evidence; all 78 design-page cleanup owners; zero-warning
+full lint; typecheck; code-quality ratchet; Prisma validation; diff hygiene;
+strict local production build; and complete Phase 8. The manifest remains 22
+gates / 375 classified sources. The strict local build generated all 57 pages
+with only the inherited floor-plan NFT trace warning. A separate staging-
+classified build attempt compiled and typechecked, then correctly stopped at
+environment preflight because the local checkout lacks eight required staging
+configuration/secrets; no values were invented.
+
+Phase 8 is unchanged from the starting source: `/design` initial JavaScript is
+5,815,471 raw / 1,362,022 gzip / 1,109,427 Brotli bytes and CSS is 130,792 /
+22,267 / 17,321, a zero-byte CH-0004 delta with no budget change. Cabinetry
+Studio and GLTF-exporter lazy chunks remain 492,639 / 84,899 and 34,525 / 8,970
+raw/Brotli bytes.
+
+The independent read-only review first found four provenance/test ownership
+gaps, then identified PostgreSQL three-valued `CHECK` semantics on re-review.
+All were corrected. Final complete-diff spot review reports no remaining
+actionable finding and confirms null-safe provenance, exact trusted vocabulary,
+resolved import ownership, and deterministic required coverage. The reviewer
+made no edits and ran no broad gate.
+Exact-candidate immutable-preview smoke remains a later external pre-candidate
+step after authorized integration; no local test claims that certification.
+
+Rollback is one focused application commit revert. In an environment where the
+migration has run, leave the nullable provenance columns in place or use a
+reviewed forward correction/database restore; never rewrite migration history
+or infer trust while rolling back. Historical rows are not deleted. CH-0013,
+CH-0015, product-decision/dependency P1s, GitHub/Vercel/OAuth/database-service/
+scheduler controls, deployment, promotion, push, and integration remain
+separate and unauthorized.

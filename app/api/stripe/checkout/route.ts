@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { config } from "@/lib/config";
 import { rateLimit } from "@/lib/rateLimit";
-import { logAppEvent } from "@/lib/app-events";
+import { recordServerAnalyticsEvent } from "@/lib/app-events";
 import {
   isActiveProSubscription,
   listBlockingManagedProSubscriptions,
@@ -179,7 +179,7 @@ export async function POST(req: Request) {
       },
     });
 
-    await logAppEvent({
+    await recordServerAnalyticsEvent({
       eventType: "checkout_started",
       userId: session.user.id,
       meta: {

@@ -33,7 +33,14 @@ const stagingEvidencePanelSource = readFileSync(
   join(root, "components/admin/StagingSmokeEvidencePanel.tsx"),
   "utf8"
 );
-const appEventsSource = readFileSync(join(root, "lib/app-events.ts"), "utf8");
+const appEventProvenanceSource = readFileSync(
+  join(root, "lib/app-event-provenance.ts"),
+  "utf8"
+);
+const browserAppEventIngestionSource = readFileSync(
+  join(root, "lib/browser-app-event-ingestion.ts"),
+  "utf8"
+);
 const appEventRouteSource = readFileSync(join(root, "app/api/track/app-event/route.ts"), "utf8");
 const betaSmokeSource = readFileSync(join(root, "tests/e2e/00-beta-smoke.spec.ts"), "utf8");
 const stagingSignoffSource = readFileSync(join(root, "tests/e2e/19-staging-signoff.spec.ts"), "utf8");
@@ -287,14 +294,14 @@ assert.ok(
   "the design-page onboarding controller should track first-run activation step completion with useful funnel context."
 );
 assert.match(
-  appEventsSource,
+  appEventProvenanceSource,
   /first_run_activation_step_completed/,
   "first-run activation step completion should be an app event type."
 );
 assert.match(
-  appEventRouteSource,
-  /first_run_activation_step_completed/,
-  "first-run activation step completion should be accepted by the app-event API."
+  browserAppEventIngestionSource,
+  /parseBrowserAnalyticsEventInput\(body\)/,
+  "the app-event API should enforce the browser-authorized typed parser."
 );
 assert.match(
   appEventRouteSource,

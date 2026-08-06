@@ -343,8 +343,8 @@ function ActivityOverview({ data }: { data: OperationsDashboardData }) {
     <section className={styles.activityPanel} aria-labelledby="activity-heading">
       <div className={styles.activityHeading}>
         <div>
-          <h2 id="activity-heading">Activity overview</h2>
-          <p>Customer and commerce signals from the last 24 hours.</p>
+          <h2 id="activity-heading">Non-authoritative customer analytics</h2>
+          <p>Interaction signals from the last 24 hours; these are not lifecycle evidence.</p>
         </div>
         {!data.activityAvailable ? <StatusBadge tone="neutral">Unavailable</StatusBadge> : null}
       </div>

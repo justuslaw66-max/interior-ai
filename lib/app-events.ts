@@ -1,53 +1,47 @@
+import "server-only";
+
 import { prisma } from "@/lib/prisma";
 import crypto from "crypto";
 import { sanitizeObservabilityMeta } from "@/lib/observability";
+import {
+  APP_EVENT_PROVENANCE_VERSION,
+  type BrowserAuthorizedAnalyticsEventType,
+  type InternalDiagnosticEventType,
+} from "@/lib/app-event-provenance";
 
-export const APP_EVENT_TYPES = [
-  "landing_viewed",
-  "design_started",
-  "first_item_added",
-  "third_item_added",
-  "first_run_activation_step_completed",
-  "export_clicked",
-  "upgrade_clicked",
-  "share_link_created",
-  "share_link_opened",
-  "design_duplicated",
-  "share_design_duplicated",
-  "export_opened",
-  "export_printed",
-  "export_pdf_clicked",
-  "export_upgrade_prompt_shown",
-  "checkout_started",
-  "checkout_completed",
-  "checkout_return_observed",
-  "checkout_variant_validation_failed",
-  "upgrade_checkout_started",
-  "upgrade_checkout_completed",
-  "billing_portal_opened",
-  "subscription_canceled",
-  "beta_feedback_submitted",
-  "webhook_failed",
-  "variant_resolution_issue",
-] as const;
-
-export type AppEventType = (typeof APP_EVENT_TYPES)[number];
-
-export type AppEventPayload = {
-  eventType: AppEventType;
+export type BrowserAnalyticsEventPayload = {
+  eventType: BrowserAuthorizedAnalyticsEventType;
   userId?: string | null;
   designId?: string | null;
   shareToken?: string | null;
   meta?: Record<string, unknown> | null;
 };
 
-export type AppEventLogResult = {
+export type InternalDiagnosticEventPayload = {
+  eventType: InternalDiagnosticEventType;
+  userId?: string | null;
+  designId?: string | null;
+  meta?: Record<string, unknown> | null;
+};
+
+export type AppEventRecordResult = {
   persisted: boolean;
   eventId: string | null;
   error?: string;
 };
 
-export async function logAppEvent(payload: AppEventPayload) {
+type PersistedAnalyticsEvent = {
+  eventType: BrowserAuthorizedAnalyticsEventType | InternalDiagnosticEventType;
+  userId?: string | null;
+  designId?: string | null;
+  shareToken?: string | null;
+  meta?: Record<string, unknown> | null;
+  authority: "BROWSER_AUTHORIZED_ANALYTICS" | "INTERNAL_DIAGNOSTIC";
+  producer: "PUBLIC_BROWSER_INGESTION" | "SERVER_APPLICATION";
+  verificationMethod: "PUBLIC_REQUEST" | "SERVER_ACTION";
+};
+
+async function persistBestEffortAppEvent(payload: PersistedAnalyticsEvent) {
   try {
     const shareRef = payload.shareToken
       ? crypto.createHash("sha256").update(payload.shareToken).digest("hex").slice(0, 16)
@@ -68,10 +62,15 @@ export async function logAppEvent(payload: AppEventPayload) {
         // Raw bearer tokens must never be copied into analytics storage.
         shareToken: null,
         meta: metaValue,
+        authority: payload.authority,
+        producer: payload.producer,
+        verificationMethod: payload.verificationMethod,
+        provenanceVersion: APP_EVENT_PROVENANCE_VERSION,
+        externalEventId: null,
       },
     });
 
-    return { persisted: true, eventId: event.id } satisfies AppEventLogResult;
+    return { persisted: true, eventId: event.id } satisfies AppEventRecordResult;
   } catch (err) {
     console.warn("[AppEvent] Failed to persist event", {
       eventType: payload.eventType,
@@ -81,6 +80,35 @@ export async function logAppEvent(payload: AppEventPayload) {
       persisted: false,
       eventId: null,
       error: "event_logging_failed",
-    } satisfies AppEventLogResult;
+    } satisfies AppEventRecordResult;
   }
+}
+
+export function recordBrowserAnalyticsEvent(
+  payload: BrowserAnalyticsEventPayload
+) {
+  return persistBestEffortAppEvent({
+    ...payload,
+    authority: "BROWSER_AUTHORIZED_ANALYTICS",
+    producer: "PUBLIC_BROWSER_INGESTION",
+    verificationMethod: "PUBLIC_REQUEST",
+  });
+}
+
+export function recordServerAnalyticsEvent(payload: BrowserAnalyticsEventPayload) {
+  return persistBestEffortAppEvent({
+    ...payload,
+    authority: "BROWSER_AUTHORIZED_ANALYTICS",
+    producer: "SERVER_APPLICATION",
+    verificationMethod: "SERVER_ACTION",
+  });
+}
+
+export function recordInternalDiagnosticEvent(payload: InternalDiagnosticEventPayload) {
+  return persistBestEffortAppEvent({
+    ...payload,
+    authority: "INTERNAL_DIAGNOSTIC",
+    producer: "SERVER_APPLICATION",
+    verificationMethod: "SERVER_ACTION",
+  });
 }

@@ -1,7 +1,7 @@
 import { Prisma } from "@prisma/client";
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
-import { logAppEvent } from "@/lib/app-events";
+import { recordServerAnalyticsEvent } from "@/lib/app-events";
 import { readJsonRequest } from "@/lib/api-boundary";
 import { compileCandidateFloorPlanDocumentV2 } from "@/lib/floor-plan-imports/validation";
 import { hashCanonicalJson } from "@/lib/floor-plan-imports/json";
@@ -486,7 +486,7 @@ export async function POST(
       return { id: created.id };
     }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable });
 
-    await logAppEvent({
+    await recordServerAnalyticsEvent({
       eventType: "design_duplicated",
       userId,
       designId: copy.id,

@@ -43,20 +43,33 @@ const appEventRouteSource = readFileSync(
   "utf8"
 );
 const appEventsSource = readFileSync(join(process.cwd(), "lib/app-events.ts"), "utf8");
+const appEventProvenanceSource = readFileSync(
+  join(process.cwd(), "lib/app-event-provenance.ts"),
+  "utf8"
+);
+const browserAppEventIngestionSource = readFileSync(
+  join(process.cwd(), "lib/browser-app-event-ingestion.ts"),
+  "utf8"
+);
 
 assert.match(
-  appEventsSource,
+  appEventProvenanceSource,
   /"beta_feedback_submitted"/,
-  "beta feedback should be included in the typed app-event union."
+  "beta feedback should be included in the browser-authorized typed event union."
 );
 assert.match(
   appEventRouteSource,
-  /new Set<AppEventType>\(APP_EVENT_TYPES\)/,
-  "beta feedback should be accepted through the shared typed app-event allow-list."
+  /ingestBrowserAppEvent/,
+  "beta feedback should pass through the shared browser ingestion boundary."
+);
+assert.match(
+  browserAppEventIngestionSource,
+  /parseBrowserAnalyticsEventInput\(body\)/,
+  "browser ingestion should enforce the shared typed app-event allow-list."
 );
 assert.match(
   appEventsSource,
-  /AppEventLogResult[\s\S]*eventId/,
+  /AppEventRecordResult[\s\S]*eventId/,
   "app event logging should return a persisted report id for smoke evidence."
 );
 assert.match(

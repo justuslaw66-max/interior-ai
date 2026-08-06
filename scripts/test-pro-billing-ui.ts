@@ -41,6 +41,12 @@ const success = read("app/billing/success/RefreshPlanButton.tsx");
 assert.match(success, /data-testid="billing-activation-status"/);
 assert.match(success, /href="\/design\?mode=designer"/);
 assert.match(success, /MAX_ATTEMPTS = 20/);
+assert.match(success, /checkout_success_viewed/);
+assert.doesNotMatch(success, /upgrade_checkout_completed|verified:\s*true/);
+
+const successPageTracking = read("app/billing/success/CheckoutCompletedTracking.tsx");
+assert.match(successPageTracking, /checkout_success_viewed/);
+assert.doesNotMatch(successPageTracking, /upgrade_checkout_completed/);
 
 const portal = read("app/api/stripe/portal/route.ts");
 assert.match(portal, /\/design\?refresh_plan=true/);

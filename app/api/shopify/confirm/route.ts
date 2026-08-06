@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { trackServerEvent } from "@/lib/server-analytics";
-import { logAppEvent } from "@/lib/app-events";
+import { recordServerAnalyticsEvent } from "@/lib/app-events";
 import { rateLimit } from "@/lib/rateLimit";
 import {
   ApiBoundaryError,
@@ -48,7 +48,7 @@ export async function POST(req: Request) {
 
     // This endpoint only records that the browser returned from Shopify. Order and
     // revenue confirmation must come from a provider-verified webhook.
-    await logAppEvent({
+    await recordServerAnalyticsEvent({
       eventType: "checkout_return_observed",
       userId,
       designId: ownedDesignId,

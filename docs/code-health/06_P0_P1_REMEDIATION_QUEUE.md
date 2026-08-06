@@ -1,5 +1,36 @@
 # P0/P1 remediation queue
 
+## CH-0004 trusted event provenance closure — 2026-08-07
+
+- **Source/scope:** exact integration source
+  `2e1df7ed7cefb5df2560fca70f77ef8785f37c8f` / tree
+  `394d4444d46ca8c1ce95ae3f0113197c015fd813`; bounded branch
+  `fix/ch-0004-trusted-event-provenance`; no integration-branch mutation, push,
+  deployment, external control, Full E2E, CH-0013, or CH-0015 work.
+- **Disposition:** `RESOLVED — LOCAL PRE-CANDIDATE REMEDIATION COMPLETE`.
+  Browser analytics, trusted Stripe lifecycle, internal diagnostics, and
+  untrusted/legacy records have separate typed/durable contracts. Historical
+  records remain preserved and fail closed. Admin lifecycle health requires
+  current verified Stripe provenance rather than event name or metadata.
+- **Evidence owner:** existing `scripts/test-phase7-security-boundaries.ts`
+  remains singly owned by merge-required `ci.critical-domain-contracts` through
+  `npm run test:critical-required`; no test source, gate, cadence, retry, skip,
+  timeout, workflow, or Full E2E ownership was added.
+- **Migration/rollback:** the populated 42-migration predecessor upgraded to 43
+  with 3/3 historical lifecycle rows preserved as legacy; trusted/browser/
+  legacy fixtures produced exactly one authoritative count, while null-
+  provenance, reserved-name, and unknown-name trusted inserts were rejected by
+  the database constraint. Rollback is one
+  application commit revert; deployed schema rollback is
+  a forward correction or database restore, never migration-history rewriting.
+- **Superseding counts:** **0 unresolved P0 / 11 unresolved P1 / 7 resolved
+  P1**. READY is now CH-0013 and CH-0015; seven product-decision and two
+  dependency-blocked P1s remain.
+- **Exactly one next action:** obtain separate integrator review and integration
+  authorization for CH-0004; the independent implementation review has no
+  remaining actionable finding. After integration, the next decision-free pre-candidate P1 is
+  CH-0013 (or CH-0015 if the approved sequence changes).
+
 ## Integration tracked-artifact hygiene checkpoint — 2026-08-06
 
 - **Scope:** bounded CH-0027 repository hygiene only on
@@ -108,12 +139,12 @@ Current superseding statuses are: CH-0017 **TRUTHFULNESS AND REQUIRED EXTERNAL W
 ## Counts and selected action
 
 - Unresolved P0: **0**.
-- Unresolved P1: **12**.
-- Resolved P1: **6** (`CH-0001`, `CH-0012`, `CH-0016`, `CH-0017`, `CH-0019`, `CH-0028`).
+- Unresolved P1: **11**.
+- Resolved P1: **7** (`CH-0001`, `CH-0004`, `CH-0012`, `CH-0016`, `CH-0017`, `CH-0019`, `CH-0028`).
 - Former P1 findings downgraded with current evidence: **2** (`CH-0009`, `CH-0014`).
-- Selected active batch: **none**. Exactly one next action is the cumulative
-  integration branch after this audit-only documentation commit; CH-0004 and
-  CH-0030 were not started.
+- Selected active batch: **CH-0004 locally complete**. Exactly one next action
+  is separate review/integration authorization; CH-0013, CH-0015, and CH-0030
+  were not started by this batch.
 
 ## Classification summary
 
@@ -122,7 +153,7 @@ Current superseding statuses are: CH-0017 **TRUTHFULNESS AND REQUIRED EXTERNAL W
 | CH-0001 | P1, resolved | RESOLVED | Repository-controlled remediation complete at the exact HEAD commit; platform controls remain explicitly unverified. |
 | CH-0002 | P1 | REQUIRES_PRODUCT_DECISION | Guest retention, quotas, and legacy-overage behavior determine the safe transaction contract. |
 | CH-0003 | P1 | REQUIRES_PRODUCT_DECISION | Per-operation/global budgets and limiter-outage policy are not approved. |
-| CH-0004 | P1 | READY | Trusted versus browser event authority can be separated without changing valid browser analytics. |
+| CH-0004 | P1, resolved | RESOLVED | Browser/trusted/internal/legacy authority is typed and durable; public forgery is denied and authoritative operations require verified Stripe provenance. |
 | CH-0005 | P1 | REQUIRES_PRODUCT_DECISION | Publisher-only retirement versus a distinct emergency-withdraw role changes operational authority. |
 | CH-0006 | P1 | BLOCKED_DEPENDENCY | Public/unknown consumers of the legacy catalog DTO must be inventoried before narrowing it. |
 | CH-0007 | P1 | REQUIRES_PRODUCT_DECISION | Canonical catalog source/precedence and Shopify intent are product/catalog decisions. |
@@ -166,10 +197,10 @@ Current superseding statuses are: CH-0017 **TRUTHFULNESS AND REQUIRED EXTERNAL W
 
 ### CH-0004 — browser-forgeable lifecycle events
 
-- **Current evidence and affected symbols:** `lib/app-events.ts:APP_EVENT_TYPES` includes `upgrade_checkout_completed`, `subscription_canceled`, and `webhook_failed`. `app/api/track/app-event/route.ts` accepts the complete set through its public allowlist, with authentication optional, and `app/admin/operations-data.ts` counts at least `webhook_failed` as operational evidence.
-- **Reach and impact:** The ingestion route is publicly reachable. Security/integrity impact is forged server-authoritative operational data; no design-row corruption is shown; core product state is not directly changed, but alerts and release/operations decisions can be poisoned.
-- **Dependencies and tests:** No product decision. Existing Phase 7 coverage does not prove browser denial for every server-only type. Add a browser/trusted schema matrix, provenance assertions, and admin aggregation exclusion fixtures.
-- **Scope and rollback:** Split browser and trusted-server schemas, record provenance, and move authoritative emissions to server call sites. Roll back the browser-type narrowing independently while retaining provenance fields; never restore public authority for server-only events as a fallback.
+- **Current evidence and affected symbols:** `lib/app-event-provenance.ts` owns the exact class unions/parser and current provenance version; `lib/app-events.ts` owns non-authoritative browser/server analytics plus internal diagnostics; `lib/trusted-app-events.ts` is server-only and imported only by the verified Stripe webhook route; `lib/app-event-operations.ts` owns the full trusted admin filter. Billing success uses `checkout_success_viewed`.
+- **Reach and impact:** The public route remains reachable but denies all trusted, internal, unknown, and provenance-reserved submissions for anonymous and authenticated/Pro/admin identities. Authentication never promotes authority. Valid browser analytics persist with public/browser/current provenance and remain non-authoritative.
+- **Dependencies and tests:** No product decision. Existing Phase 7 required ownership executes the full identity/type ingestion matrix, context/persistence failure, resolved importer graph, mixed-authority admin fixtures, invalid signature, verified retry deduplication, transaction rollback, migration default/constraint, and billing naming. Live disposable-database requests returned one 200 persisted browser record, 400 for every trusted/reserved lifecycle name, spoof, and unknown type, with zero forbidden rows.
+- **Scope and rollback:** `RESOLVED — LOCAL PRE-CANDIDATE REMEDIATION COMPLETE`. Revert the one focused application commit if needed; retaining nullable provenance columns is safe. A deployed database uses a forward correction/restore. Never promote historical rows or restore public trusted names.
 
 ### CH-0005 — weaker retirement authority
 

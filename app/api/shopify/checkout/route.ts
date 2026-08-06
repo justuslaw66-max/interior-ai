@@ -3,7 +3,10 @@ import { auth } from "@/lib/auth";
 import { trackServerEvent } from "@/lib/server-analytics";
 import { config } from "@/lib/config";
 import { rateLimit } from "@/lib/rateLimit";
-import { logAppEvent } from "@/lib/app-events";
+import {
+  recordInternalDiagnosticEvent,
+  recordServerAnalyticsEvent,
+} from "@/lib/app-events";
 import { CATALOG_ITEMS_MAP } from "@/lib/catalog";
 import { assertStrictVariantResolution } from "@/lib/catalog/variant-resolver";
 import {
@@ -126,7 +129,7 @@ export async function POST(req: Request) {
   for (const line of parsedLines) {
     const item = CATALOG_ITEMS_MAP.get(line.productId);
     if (!item) {
-      void logAppEvent({
+      void recordInternalDiagnosticEvent({
         eventType: "checkout_variant_validation_failed",
         meta: { reason: "unknown_catalog_item", productId: line.productId, variantId: line.variantId },
       });
@@ -135,7 +138,7 @@ export async function POST(req: Request) {
 
     const strict = assertStrictVariantResolution(item, line.variantId);
     if (!strict.ok) {
-      void logAppEvent({
+      void recordInternalDiagnosticEvent({
         eventType: "checkout_variant_validation_failed",
         meta: { reason: "strict_resolution_failed", productId: line.productId, variantId: line.variantId, error: strict.error },
       });
@@ -144,7 +147,7 @@ export async function POST(req: Request) {
 
     const resolved = strict.resolved;
     if (resolved.commerce.type !== "shopify") {
-      void logAppEvent({
+      void recordInternalDiagnosticEvent({
         eventType: "checkout_variant_validation_failed",
         meta: { reason: "non_shopify_variant", productId: line.productId, variantId: line.variantId },
       });
@@ -154,7 +157,7 @@ export async function POST(req: Request) {
       );
     }
     if (!resolved.commerce.variantId) {
-      void logAppEvent({
+      void recordInternalDiagnosticEvent({
         eventType: "checkout_variant_validation_failed",
         meta: { reason: "missing_shopify_mapping", productId: line.productId, variantId: line.variantId },
       });
@@ -164,7 +167,7 @@ export async function POST(req: Request) {
       );
     }
     if (!resolved.commerce.available) {
-      void logAppEvent({
+      void recordInternalDiagnosticEvent({
         eventType: "checkout_variant_validation_failed",
         meta: { reason: "variant_marked_unavailable", productId: line.productId, variantId: line.variantId },
       });
@@ -174,7 +177,7 @@ export async function POST(req: Request) {
       );
     }
     if (resolved.commerce.variantId !== line.merchandiseId) {
-      void logAppEvent({
+      void recordInternalDiagnosticEvent({
         eventType: "checkout_variant_validation_failed",
         meta: {
           reason: "merchandise_id_mismatch",
@@ -256,7 +259,7 @@ export async function POST(req: Request) {
     .map((node) => ({ id: node.id }));
 
   if (unavailable.length > 0) {
-    void logAppEvent({
+    void recordInternalDiagnosticEvent({
       eventType: "checkout_variant_validation_failed",
       meta: { reason: "shopify_availability_failed", unavailable },
     });
@@ -274,7 +277,7 @@ export async function POST(req: Request) {
     .map((node) => node.id as string);
 
   if (missingPrice.length > 0) {
-    void logAppEvent({
+    void recordInternalDiagnosticEvent({
       eventType: "checkout_variant_validation_failed",
       meta: { reason: "missing_price", invalidPriceVariantIds: missingPrice },
     });
@@ -339,7 +342,7 @@ export async function POST(req: Request) {
     total_quantity: parsedLines.reduce((sum: number, l) => sum + l.quantity, 0),
   });
 
-  void logAppEvent({
+  void recordServerAnalyticsEvent({
     eventType: "checkout_started",
     userId: session?.user?.id ?? null,
     meta: { provider: "shopify", providerReferencePresent: true },

@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { config } from "@/lib/config";
 import { rateLimit } from "@/lib/rateLimit";
-import { logAppEvent } from "@/lib/app-events";
+import { recordServerAnalyticsEvent } from "@/lib/app-events";
 import { trackMonetization } from "@/lib/monetization-tracking";
 
 function getStripeClient() {
@@ -60,7 +60,7 @@ export async function POST(req: Request) {
     });
 
     await Promise.allSettled([
-      logAppEvent({
+      recordServerAnalyticsEvent({
         eventType: "billing_portal_opened",
         userId: dbUser.id,
       }),

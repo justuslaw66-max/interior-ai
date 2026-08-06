@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
-import { logAppEvent } from "@/lib/app-events";
+import { recordServerAnalyticsEvent } from "@/lib/app-events";
 import { buildDuplicatedDesignData } from "@/lib/design-duplication";
 import { trackServerEvent } from "@/lib/server-analytics";
 import { prisma } from "@/lib/prisma";
@@ -48,7 +48,7 @@ export async function POST(
     select: { id: true },
   });
 
-  await logAppEvent({
+  await recordServerAnalyticsEvent({
     eventType: "share_design_duplicated",
     userId,
     designId: copy.id,

@@ -4,7 +4,7 @@ import { auth } from "@/lib/auth";
 import crypto from "crypto";
 import { trackServerEvent } from "@/lib/server-analytics";
 import { rateLimit } from "@/lib/rateLimit";
-import { logAppEvent } from "@/lib/app-events";
+import { recordServerAnalyticsEvent } from "@/lib/app-events";
 import { sendShareLinkEmail } from "@/lib/email";
 import {
   ApiBoundaryError,
@@ -122,7 +122,7 @@ export async function POST(
     is_regenerate: regenerate,
   });
 
-  await logAppEvent({
+  await recordServerAnalyticsEvent({
     eventType: "share_link_created",
     userId: session.user.id,
     designId: id,
