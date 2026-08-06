@@ -15,6 +15,34 @@ the same `CatalogPanel`, drawer, semantic target, and fallback policy.
 | 5. Close or supersession | `closeCatalogDrawer`; `CatalogItemDrawer.onClose`; restoration effect cleanup | Close button, Escape, backdrop, add-to-room, unavailable content, or parent state closes the same drawer. Product/configuration changes while open do not restore early. | Cleanup removes the key listener, restores body overflow, and schedules one generation-bound restoration frame. A newer open invalidates the old generation. The unavailable-content policy closes after live-catalog pruning; the centralized close owner releases the stored element and scope. | Close button, Escape, real live-catalog product removal, add/product-flow regression suites, and different-product reopen coverage. |
 | 6. Resolve and focus | `restoreCatalogDrawerFocus` and `findCurrentSemanticTarget` | Resolution requires a connected, rendered, non-hidden, enabled target. | Order: matching direct element; current exact product/action/source control; current same-product semantic control; focusable catalog-results region. If the catalog scope unmounted or another visible modal (`dialog` or `alertdialog` with `aria-modal=true`) is active, restoration is cancelled and no focus mutation occurs. `body` is not an accepted fallback. | Active-element, connectedness, visibility, enabled state, unique exact target, safe fallback, production-shaped alertdialog, route/workspace unmount, Chromium, and WebKit assertions. |
 
+## Workspace supersession and return-focus contract
+
+The Workspace menu is a newer semantic focus owner when it opens over the
+catalog drawer. Programmatic or keyboard activation (`click` detail 0) uses the
+command bar's documented next-animation-frame initial-focus rule: the first
+connected Workspace `menuitem` receives focus. While the menu is open, its
+trigger is not the asserted focus owner. Activating an item returns focus
+synchronously to the current connected Workspace trigger before the selected
+workflow runs; if that workflow unmounts the catalog drawer, the drawer's
+generation-bound restoration is cancelled on unmount and cannot overwrite the
+trigger or a still-newer dialog.
+
+The bounded WebKit investigation classified the former line-342 failure as
+**F. TEST_ORDERING_OR_ASSERTION_DEFECT**, not a product focus defect. Both
+WebKit and Chromium ran the first-item focus frame before the test action that
+forced focus back to `editor-command-workspace`; whether the old immediate
+trigger assertion observed that manufactured focus was timing-sensitive. The
+test now asserts the connected, visible, enabled Plan item while Workspace is
+open, then the connected trigger after Plan closes the menu and unmounts the
+drawer, and finally retains that owner across two animation frames.
+
+Browser-native pointer focus before drawer entry need not be identical.
+Chromium may focus the clicked product button while WebKit may retain the
+catalog-results target. The product contract begins with drawer entry focus and
+requires both engines to converge on the same semantic sequence: drawer close
+button, Workspace menu item, then Workspace trigger. No test calls `focus()` to
+manufacture one of those owners.
+
 ## Verified former defect
 
 Before this remediation, `CatalogItemDrawer` read `document.activeElement` in
@@ -42,6 +70,9 @@ with `aria-modal=true`) owns focus and Escape. Parent
 unmount marks the owner inactive and cancels any queued frame, so route, room,
 or workspace replacement cannot cause a late mutation in the next surface.
 
-Rollback is a revert of the single `ARCH-RC52-DRAWER-FOCUS` implementation
-commit. That restores direct-node-only behavior and the previous quality
-baseline; no data migration or external rollback is required.
+Rollback of the WebKit lifecycle closure is a revert of its single focused
+assertion/documentation commit, followed by the exact two-engine scenario and
+full 18-case matrix. The earlier production architecture remains owned by the
+single `ARCH-RC52-DRAWER-FOCUS` implementation commit; reverting that separate
+commit would restore direct-node-only behavior. Neither rollback requires a
+data migration or external action.

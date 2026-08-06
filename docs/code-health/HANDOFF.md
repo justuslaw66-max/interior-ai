@@ -1,45 +1,72 @@
 # Code health audit handoff
 
-## Final RC47-RC55 archival-disposition confirmation — 2026-08-06
+## ARCH-RC52 WebKit Workspace-focus lifecycle closure — 2026-08-06
 
-Read-only confirmation ran against exact clean application source
-`7dddf06249b44c3b447a2fdde98b64b3306be003` on
-`fix/consumer-undo-touch-target`. All listed current implementation commits are
-ancestors; all nine archival commits remain recoverable non-ancestors and
-RC-side additions. No archival commit was replayed and no production source,
-test, branch integration, workflow, external setting, or Full E2E scope was
-changed.
+Branch `fix/arch-rc52-webkit-workspace-focus` starts exactly at clean
+documentation checkpoint `ff5f98db74f44cece2519f0570ee2fdfdbb5b2b1`, whose
+exact application parent is `7dddf06249b44c3b447a2fdde98b64b3306be003`.
+Entry status/diff/untracked checks were empty, the direct required-test manifest
+was 22 gates / 374 classified sources, and no application listener existed to
+mismatch the canonical checkout. No archival commit was replayed. No production
+source, integration branch, workflow, external setting, dependency, lockfile,
+deployment, or Full E2E scope changed.
 
-Final outcome is **C. RC47–RC55 DISPOSITION BLOCKED**. RC47 A, RC48 A, RC49 B,
-RC50 B, RC51 B, RC53 A, RC54 B, and RC55 B are defensibly dispositioned under
-the current implementation chain. RC52 is **F. STILL_REQUIRED** because the
-fresh drawer-focus matrix passed Chromium 9/9 and WebKit 8/9, then an unchanged
-targeted WebKit rerun reproduced the same failure: after opening the workspace
-menu, `editor-command-workspace` did not retain focus before the unmount
-transition assertion. No remediation was started. The current semantic opener
-implementation and the other 17 cases remain green, so the next work is a
-bounded RC52 focus-ownership/test-sequencing investigation rather than an
-archival cherry-pick.
+Final outcome is **A. RC47–RC55 LOCAL DISPOSITION COMPLETE**. RC52's primary
+classification is **F. TEST_ORDERING_OR_ASSERTION_DEFECT**. Bounded
+capture-phase focus/pointer tracing, relevant-node mutation observation, and
+drawer/Workspace lifecycle markers proved the sequence in both engines:
+product activation → drawer generation 4 → drawer close-button focus →
+programmatic Workspace click with `detail=0` → scheduled first-item frame →
+connected/visible/actionable Plan menu-item focus → Plan activation → current
+connected Workspace-trigger focus → menu/drawer unmount → generation 5
+cancellation → no terminal focus mutation across two animation frames. The
+former test explicitly moved focus from Plan back to the trigger while the menu
+was still open and asserted that accidental ordering. The correction removes
+that test-triggered focus, asserts Plan while Workspace owns focus, then asserts
+the trigger only after close/unmount. No application correction was justified.
 
-Fresh evidence passed: canonical responsive gate 8/8 across Chromium/WebKit
-with zero retries/flakes/skips; focused product/rotation/compare/share/privacy/
-Consumer Chromium batch 35/35; Undo/Redo Consumer/Pro matrix 6/6; direct
-manifest 22 gates / 374 sources; truthfulness; production-artifact evidence;
-critical-required; cleanup 78/78; complete floor-plan-required; lint;
-typecheck; code quality; strict 57-route build; Phase 8; and diff hygiene. The
-separate Undo/Redo issue is resolved at 44 x 44 mobile, 30 x 30 desktop, 48/36
-px bars, and an exact 30 px desktop save chip, with exactly-once pointer/Enter/
-Space history behavior. The immediate history targets do not overlap or clip;
-the separately recorded mobile workspace/right-action flex collision is not
-reclassified by this result.
+Before correction, the authoritative result was Chromium 9/9 and WebKit 8/9.
+The first unchanged isolated runs in this checkout passed once in both engines,
+so no repeated polling was used to manufacture a result; the diagnostic traces
+instead exposed the timing-sensitive assertion. After correction, the exact
+case passes 2/2 and the complete matrix passes **18/18**: Chromium 9/9 and
+WebKit 9/9, zero retries/flakes/skips. Chromium incidentally focuses the product
+button on pointer activation while WebKit can retain the catalog-results
+fallback; both immediately converge on drawer close, Workspace Plan, and final
+Workspace trigger as the semantic owners. No disconnected, hidden, disabled,
+or modal-obscured target is accepted; no valid-target path ends on body; and no
+newer overlay or post-unmount frame loses focus.
 
-The independent read-only reviewer confirmed ancestry, original-to-current
-mappings, sub-scope completeness, ownership, Undo remediation, and stale
-summaries. Its retained green RC52 matrix assumption is superseded by the fresh
-reproducible WebKit result. Code-health totals remain 0 unresolved P0 and 13
-unresolved P1. GitHub ruleset enforcement, CH-0030 runner A/B, Full E2E, and
-applicable Vercel/OAuth/database/scheduler/promotion/release controls remain
-external or pending; local gate ownership does not certify them.
+Local validation passes: catalog focus unit/render logic; the exact case and
+18-case matrix; required Consumer/Pro visual policy 4/4 across Chromium/WebKit
+including Workspace pointer/keyboard focus; design cleanup 78/78; truthfulness
+and direct 22/374 manifest validation; critical-required; full zero-warning
+lint; typecheck; code quality over 1,075 production files; the strict 57-page
+build; and complete Phase 8 project/bundle/boundary budgets. Phase 8 measures
+initial JS at 5,815,471 raw / 1,109,427 Brotli, initial CSS at 130,792 /
+17,321, Cabinetry Studio at one lazy 492,639 / 84,899 chunk, and GLTFExporter
+at 34,525 / 8,970. The build retains only the inherited floor-plan NFT trace
+warning. The clean-source responsive public-share required gate and final diff/
+status checks are run against the focused commit and reported in the final
+handoff; Full E2E is deliberately not run.
+
+Independent read-only review returned **PASS — no actionable findings** after
+inspecting the complete diff, both focus traces, native versus product pointer
+semantics, semantic Workspace owner, current-trigger resolution, drawer
+generation cancellation, unmount/return focus, accessibility, and scope. It
+confirmed there is no WebKit branch, stale trigger, test weakening, body
+fallback, global focus framework, or unrelated editor change. Its one
+non-blocking limitation is explicit: this exact drawer-unmount subcase uses DOM
+`click()` (`detail=0`) rather than a native pointer takeover while the modal
+drawer is open; standalone Workspace pointer/keyboard behavior is covered by
+the required Chromium/WebKit Pro visual matrix. Rollback is one local revert of
+the focused assertion/documentation commit, followed by the exact two-engine
+case and full 18-case matrix; no data or external rollback is required.
+RC47–RC55 no longer blocks local integration planning. Code-health totals
+remain 0 unresolved P0 and 13 unresolved P1. GitHub ruleset enforcement,
+CH-0030 runner A/B, Full E2E, and applicable Vercel/OAuth/database/scheduler/
+promotion/release controls remain external or pending; local validation is not
+stable-staging certification.
 
 ## Latest bounded implementation record — Next.js/Auth.js security compatibility
 

@@ -1,18 +1,17 @@
 # RC47-RC55 archival commit-disposition audit
 
-## Final read-only confirmation — 2026-08-06
+## Final bounded RC52 WebKit closure — 2026-08-06
 
-**C. RC47–RC55 DISPOSITION BLOCKED.**
+**A. RC47–RC55 LOCAL DISPOSITION COMPLETE.**
 
-The authoritative application source is exact commit
-`7dddf06249b44c3b447a2fdde98b64b3306be003`. Entry and post-validation
-`git status --short`, tracked diff/stat/check, and untracked inventories were
-empty. All nine original archival commits remain recoverable on their local
-release branches and tags, none is an ancestor of the authoritative source,
-and `git cherry HEAD release/cabinetry-alpha-rc55` reports all nine as RC-side
-additions. Every listed current implementation commit is an ancestor of the
-authoritative source. The archival chain remains evidence only and must not be
-cherry-picked, merged, or replayed.
+The bounded follow-up starts from exact documentation checkpoint
+`ff5f98db74f44cece2519f0570ee2fdfdbb5b2b1`, whose exact application parent is
+`7dddf06249b44c3b447a2fdde98b64b3306be003`, on
+`fix/arch-rc52-webkit-workspace-focus`. Entry status, diff/stat/check, and
+untracked inventories were empty; the direct manifest was 22 gates / 374
+classified sources; and no application server was listening. All nine original
+archival commits remain recoverable non-ancestors and evidence only. They must
+not be cherry-picked, merged, or replayed.
 
 | RC | Original archival commit | Authoritative current implementation | Current owner modules | Focused evidence | Required gate owner | Final category |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -21,20 +20,32 @@ cherry-picked, merged, or replayed.
 | RC49 | `d41bdf31720918705480a36a44c91347987080bb` | `f2760c529c0a964d99d53dbe73d8fb4a7c8def75` | canonical persistence projection; cloud baseline and load controllers | persistence guardrails passed inside cleanup, `critical-required`, and floor-plan-required; normalization/identity/epoch acknowledgment remains fail-closed | `ci.critical-domain-contracts` | **B. SUPERSEDED_BY_STRONGER_IMPLEMENTATION** |
 | RC50 | `ee612c84f5f6c1e5370c7aeb12593cf920fe1967` | `f2760c529c0a964d99d53dbe73d8fb4a7c8def75` | same pending-baseline protocol, including recovery-copy and local/new-design paths | same green persistence evidence; autosave remains blocked until exact canonical acknowledgment | `ci.critical-domain-contracts` | **B. SUPERSEDED_BY_STRONGER_IMPLEMENTATION** |
 | RC51 | `27b6a55bccbab5bf9a6556fea04fa4179343e447` | `bb0e4f8f999d774b8490eca16efdc84d6751aafd` | `lib/catalog/compare.ts`; canonical unfiltered product map; compare tray | static compare contract passed; Chromium compare suite passed 8/8 across category, search, price, unavailable/remove-only, and exact-variant behavior | `release.gate-a3` inventory plus focused compare checks | **B. SUPERSEDED_BY_STRONGER_IMPLEMENTATION** |
-| RC52 | `637281505493572229be864449d77e3a626c67fe` | `793986d22b073c2d4ba093350b2442838703deb0` | semantic opener identity and close-time focus resolver | Chromium passed 9/9 and WebKit passed 8/9; unchanged targeted WebKit rerun reproduced loss of focus from `editor-command-workspace` before the workspace-unmount assertion | focused Chromium/WebKit drawer matrix plus `release.gate-a3` inventory | **F. STILL_REQUIRED** |
+| RC52 | `637281505493572229be864449d77e3a626c67fe` | `793986d22b073c2d4ba093350b2442838703deb0`; bounded assertion correction on `fix/arch-rc52-webkit-workspace-focus` | semantic opener identity, close-time focus resolver, and semantic Workspace-menu assertion | Traces prove the `detail=0` Workspace open schedules first-menu-item focus in both engines. The former test then moved focus back to the trigger while the menu remained open. The corrected exact case and full matrix pass Chromium 9/9 and WebKit 9/9 with zero retry, flake, or skip. | focused Chromium/WebKit drawer matrix plus `release.gate-a3` inventory | **B. SUPERSEDED_BY_STRONGER_IMPLEMENTATION** |
 | RC53 | `b0eab4cbbadf0203667fb750c42fb0e25eb43f62` | cloud `80627fa5a8cae1205999a90c9f2fa240b1df4305`; responsive `83425bad3cc30dc37100d090e79159998782bc29`; projection source `8818ac76d4772271f027e8dc3c8e9cd6b8009229` | execution-time cloud queue/revision; single responsive selection owner; closed snapshot-first public transport | persistence, responsive static, projection/security, share privacy/duplication, and canonical responsive matrix passed | `ci.critical-domain-contracts`; `ci.public-share-responsive`; `ci.floor-plan-required` | **A. RESOLVED_BY_CURRENT_IMPLEMENTATION** |
 | RC54 | `588b90e8c526e54d314376f177bdb9c738ac659e` | `29a4c46070404a2426da123bc5b42c0592d95e34` | closed public projection schema/snapshot; public API and duplicate route | projection/security and fingerprint fixtures passed; Chromium share privacy/duplication passed 6/6 including the two share-read-only cases | `ci.floor-plan-required`; `release.gate-a3` inventory | **B. SUPERSEDED_BY_STRONGER_IMPLEMENTATION** |
 | RC55 | `4883ffb9fc87248b6aa8624cdef39c5f97a173d1` | responsive `83425bad3cc30dc37100d090e79159998782bc29`; identity `27e78d25477b6e6d9282c59cd3c801e701abee9b`; gate `371feb2641866aba28db0a5332971768bfe283a8`; root lifecycle `840037865531c7bc5fb8ac92d5fccd0b7393d942` | responsive shell; full SHA-256 identity; one canonical manifest/CI owner; sole resolved-root lifecycle | collision fixture/static contract passed; fresh workflow-equivalent Chromium 4/4 plus WebKit 4/4 passed with zero retry, flake, or skip; root ownership remained one | `ci.public-share-responsive` in `stable-checks` | **B. SUPERSEDED_BY_STRONGER_IMPLEMENTATION** |
 
-RC52 is the only remaining archival behavior/evidence gap. Its WebKit failure is
-reproducible without changing source or test: after the drawer is reopened and
-the workspace menu is programmatically opened, the trigger does not retain
-focus at `tests/e2e/catalog-drawer-focus.spec.ts:342`. Because the focused
-Chromium/WebKit matrix is red, RC52 remains **F. STILL_REQUIRED** and RC47–RC55
-continues to block integration planning. This confirmation does not decide
-whether the bounded correction belongs in application focus ownership or test
-sequencing; that requires a separate remediation, which this read-only task did
-not start.
+RC52's primary classification is **F. TEST_ORDERING_OR_ASSERTION_DEFECT**. In
+both engines the drawer generation establishes its close button, programmatic
+Workspace activation opens the menu and moves focus on the scheduled animation
+frame to the connected, visible Plan menu item, and Plan activation returns
+focus to the current connected Workspace trigger. The menu and drawer then
+unmount, drawer generation 4 is invalidated by unmount generation 5, and two
+terminal animation frames produce no later focus mutation. The former test
+explicitly focused the trigger while the open menu correctly owned focus; its
+result depended on whether that test action ran before or after the menu's
+initial-focus frame. The focused test now asserts Plan during open ownership
+and the trigger only after close/unmount. No production code changed.
+
+Native pointer focus before drawer entry remains observably different:
+Chromium focuses the product button while WebKit can retain the catalog-results
+fallback. That incidental transition is not the product contract; both engines
+then focus the drawer close button and reach identical semantic owners. The
+complete RC52 matrix is **18/18**: Chromium 9/9 and WebKit 9/9, with no retry,
+flake, skip, invalid destination, body fallback where a valid target exists,
+newer-overlay theft, or late post-unmount focus mutation. RC47–RC55 therefore
+no longer blocks local integration planning. Immutable-preview review and the
+established Gate A3 promotion cadence remain separate and were not started.
 
 The separately exposed Consumer Undo/Redo accessibility finding is
 **RESOLVED** at `7dddf06249b44c3b447a2fdde98b64b3306be003` and does not remain an
@@ -52,10 +63,9 @@ evidence, `critical-required`, all 78 design-page cleanup guards, the complete
 floor-plan-required chain, zero-warning lint, typecheck, full code quality,
 strict 57-route production build, complete Phase 8 budgets, public projection
 and privacy, focused RC47/48/51/53/54/55 coverage, and diff hygiene. Full E2E
-was not run. The independent read-only reviewer confirmed ancestry, mappings,
-sub-scope completeness, current ownership, Undo remediation, and documentation
-staleness; its retained green drawer assumption is superseded by the fresh
-reproducible WebKit result above.
+was not run. The independent read-only review result for this bounded closure
+is recorded in `HANDOFF.md`; the earlier 8/9 WebKit snapshot is superseded by
+the traced semantic-owner proof and final 18/18 matrix above.
 
 No new P0 or P1 is assigned by this confirmation. The separate code-health
 inventory remains **0 unresolved P0 and 13 unresolved P1**. GitHub ruleset

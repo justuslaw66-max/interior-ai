@@ -1,24 +1,38 @@
 # P0/P1 remediation queue
 
-## Final RC47-RC55 read-only confirmation — 2026-08-06
+## ARCH-RC52 WebKit Workspace-focus closure — 2026-08-06
 
-- **Outcome:** **C. RC47–RC55 DISPOSITION BLOCKED** at exact application source
+- **Outcome:** **A. RC47–RC55 LOCAL DISPOSITION COMPLETE** on
+  `fix/arch-rc52-webkit-workspace-focus`, starting exactly at
+  `ff5f98db74f44cece2519f0570ee2fdfdbb5b2b1` with application parent
   `7dddf06249b44c3b447a2fdde98b64b3306be003`.
-- **Sole archival item:** `ARCH-RC52-DRAWER-FOCUS-WEBKIT` remains open as a
-  bounded P2 technical finding. Chromium passed 9/9; WebKit passed 8/9; an
-  unchanged narrow rerun reproduced loss of focus from the workspace trigger
-  before the workspace-unmount assertion. No test or production source was
-  changed, and no product decision is being hidden as a technical resolution.
+- **Sole archival item closed:** `ARCH-RC52-DRAWER-FOCUS-WEBKIT` is classified
+  **F. TEST_ORDERING_OR_ASSERTION_DEFECT**. Both engines run the documented
+  Workspace first-item focus frame and make the connected Plan menu item the
+  semantic owner. The old test then focused the trigger while the menu remained
+  open and asserted that manufactured intermediate state. The corrected test
+  asserts Plan while open and the current connected Workspace trigger only
+  after Plan closes the menu and unmounts the catalog drawer. No production
+  source changed.
+- **Trace and result:** the browser-native product-button focus difference is
+  confined to pre-drawer pointer behavior. Drawer close, Workspace Plan, and
+  final Workspace trigger owners are identical in both engines. Drawer
+  generation 4 is invalidated by unmount generation 5, with no later focus
+  mutation. Chromium passes 9/9 and WebKit passes 9/9; all 18 cases use zero
+  retries and contain no skip or flake.
 - **Closed items:** RC47, RC48, RC49/50, RC51, all three RC53 sub-scopes, RC54,
   all four RC55 sub-scopes, and the separate Consumer Undo/Redo touch target
   are green under current ownership. Old archival commits remain evidence only
   and must not be cherry-picked.
-- **Queue counts:** this confirmation adds no P0/P1 item. Counts remain **0
-  unresolved P0 and 13 unresolved P1**. RC47-RC55 still blocks integration
-  planning until the focused two-engine RC52 matrix is green.
+- **Queue counts:** this closure adds no P0/P1 item. Counts remain **0
+  unresolved P0 and 13 unresolved P1**. RC47-RC55 no longer blocks local
+  integration planning; immutable-preview review and exact-artifact Gate A3
+  certification remain later release-cadence work.
 - **Boundaries:** Full E2E was not run. GitHub ruleset enforcement, CH-0030
   larger-runner A/B, and applicable Vercel/OAuth/database/scheduler/release
-  controls remain external and unverified.
+  controls remain external and unverified. Rollback is one local revert of the
+  focused assertion/documentation commit followed by the exact two-engine case
+  and full 18-case matrix; there is no data or external rollback.
 
 ## Current bounded dependency-security batch
 

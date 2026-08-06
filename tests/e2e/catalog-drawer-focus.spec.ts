@@ -338,11 +338,18 @@ test.describe("ARCH-RC52 catalog drawer focus restoration", () => {
       (button as HTMLButtonElement).click();
     });
     const workspaceTrigger = page.getByTestId("editor-command-workspace");
-    await workspaceTrigger.focus();
-    await expectConnectedActionableFocus(workspaceTrigger);
-    await page.getByTestId("editor-workflow-plan").evaluate((button) => {
+    const workspaceMenu = page.getByTestId("editor-command-workspace-menu");
+    const planWorkspaceItem = page.getByTestId("editor-workflow-plan");
+    await expect(workspaceTrigger).toHaveAttribute("aria-expanded", "true");
+    await expect(workspaceMenu).toBeVisible();
+    await expectConnectedActionableFocus(planWorkspaceItem);
+    await expect(page.getByTestId("catalog-item-drawer")).toBeVisible();
+
+    await planWorkspaceItem.evaluate((button) => {
       (button as HTMLButtonElement).click();
     });
+    await expect(workspaceTrigger).toHaveAttribute("aria-expanded", "false");
+    await expect(workspaceMenu).toBeHidden();
     await expect(page.getByTestId("catalog-item-drawer")).toBeHidden();
     await waitForTwoAnimationFrames(page);
     await expectConnectedActionableFocus(workspaceTrigger);
