@@ -1,5 +1,32 @@
 # P0/P1 remediation queue
 
+## CH-0013 canonical surface-material required owner — 2026-08-07
+
+- **Source/scope:** exact integration source
+  `8f05b0fedc3de9d92b9815cbde3092568fd7507f` / tree
+  `748a0502b666c636720aafe552e016bb6756de2c`; bounded branch
+  `fix/ch-0013-surface-material-required-owner`; test governance only.
+- **Disposition:** `RESOLVED — LOCAL PRE-CANDIDATE REMEDIATION COMPLETE`.
+  Existing merge-required `ci.catalog-materials` now singly owns the schema,
+  browser-helper, and focused runtime/lazy-bundle suite. The existing
+  production-artifact owner retains the one generator-drift execution before
+  build, so the new closure does not duplicate it or full Phase 8.
+- **Ownership evidence:** 22 gates / 376 classified sources; 12-script catalog
+  closure SHA-256
+  `7ea65dfdc5ea31aac049836764123a9bc5a2e80b3af30c36bb42c34d8755b5e0`;
+  15 named semantic contributions; stable checks invoke the command after the
+  strict build and continue to feed `merge-gate`.
+- **Behavior/rollback:** no product code, material ID, generated output,
+  catalog boundary, dependency, budget, schema, migration, or external setting
+  changed. Revert the single implementation commit; do not edit generated
+  files separately.
+- **Superseding counts:** **0 unresolved P0 / 10 unresolved P1 / 8 resolved
+  P1**. READY is now CH-0015; seven product-decision and two dependency-blocked
+  P1s remain.
+- **Exactly one next action:** obtain separate integrator review and
+  authorization for CH-0013. After that review, CH-0015 is the next bounded
+  decision-free pre-candidate P1. Do not begin it in this branch.
+
 ## CH-0004 trusted event provenance closure — 2026-08-07
 
 - **Source/scope:** exact integration source
@@ -162,7 +189,7 @@ Current superseding statuses are: CH-0017 **TRUTHFULNESS AND REQUIRED EXTERNAL W
 | CH-0010 | P1 | REQUIRES_PRODUCT_DECISION | Irreversible revocation is fail-safe, but automatic designer sharing changes the user contract. |
 | CH-0011 | P1, conditional | REQUIRES_PRODUCT_DECISION | Legal basis, consent, opt-out, masking, and project-side PostHog state require an owner decision and external verification. |
 | CH-0012 | P1, resolved | RESOLVED | Supported editable entry points now converge on the canonical persisted-document loader; legacy bookmarks temporarily redirect. |
-| CH-0013 | P1 | READY | Gate wiring is decision-free; payload restructuring can follow behind parity fixtures. |
+| CH-0013 | P1, resolved | RESOLVED | Phase 8A/B runtime work is preserved and `ci.catalog-materials` now singly owns the required schema/browser-helper/lazy-boundary suite; generator drift remains required once through production-artifact evidence. |
 | CH-0014 | P2 | DOWNGRADED_WITH_EVIDENCE | Source shows per-item ownership, but no measured P1 outage, data loss, or security/privacy consequence is currently demonstrated. |
 | CH-0015 | P1 | READY | Invisible focusable drawer content is a concrete accessibility/core-workflow defect and a shared primitive exists. |
 | CH-0016 | P1, resolved | RESOLVED | Strict clean-source build, artifact/trace hashing, production start, and health/report identity now fail closed; CI upload/retention is configured but external execution and platform acceptance remain unverified. |

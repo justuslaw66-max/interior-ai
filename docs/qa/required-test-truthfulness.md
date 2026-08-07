@@ -1,10 +1,10 @@
 # Required-test truthfulness
 
-Status: **ARCH-RC55 RESPONSIVE OWNERSHIP REGISTERED — CANONICAL CHROMIUM MATRIX
-RED; EXTERNAL RULESET ENFORCEMENT UNVERIFIED**. Repository truthfulness now
-assigns the responsive public-share contract to one merge-required owner. Its
-first canonical local run failed Chromium and therefore does not resolve RC55.
-GitHub ruleset selection and an exact-head workflow run remain external evidence;
+Status: **CH-0013 SURFACE SEMANTIC OWNERSHIP REGISTERED — LOCAL CONTRACT GREEN;
+EXTERNAL RULESET ENFORCEMENT UNVERIFIED**. Repository truthfulness assigns the
+surface-material semantic suite to one merge-required owner without changing
+the existing responsive, advisory Full E2E, or release Gate A3 owners. GitHub
+ruleset selection and an exact-head workflow run remain external evidence;
 repository registration does not claim either control is configured.
 
 ## Canonical inventory
@@ -14,10 +14,10 @@ required and advisory gate classification. `package.json` remains the command
 owner; the manifest points to those commands and verifies their recursive test
 sources instead of duplicating their shell bodies.
 
-The manifest currently classifies 252 `scripts/test-*` files as risk-triggered
+The manifest currently classifies 253 `scripts/test-*` files as risk-triggered
 tests, 101 Playwright specs as release-only browser inventory, 14 imported
 cabinetry/multi-room browser modules, and 8 imported cabinetry script-test
-modules, for 375 classified sources in total. The sorted path-set hashes make a new,
+modules, for 376 classified sources in total. The sorted path-set hashes make a new,
 deleted, renamed, or moved test source a blocking manifest-review event. Static
 registration contracts additionally prove every split-suite registration is
 imported and invoked, so removing an import/call cannot silently exclude an
@@ -56,6 +56,45 @@ browser specs and separately locks the six repaired
 commerce/Kelsey requirement identities; cabinetry release evidence owns 23
 named Consumer/Pro workflows. CH-0016 runtime smoke locks its two runtime
 requirement identities.
+
+## CH-0013 canonical surface-material owner
+
+`ci.catalog-materials` now owns `test:surface-material-semantics` in the
+existing post-build catalog-quality step. Its 12-script gate closure has
+SHA-256
+`7ea65dfdc5ea31aac049836764123a9bc5a2e80b3af30c36bb42c34d8755b5e0`.
+Required command-source validation proves the schema, browser-helper, and
+focused Phase 8 source remain reachable. Fifteen named contribution markers
+must remain inside executable assertions and bind YAML/render/lazy parity,
+fixture exclusion, texture/UV, 2D/3D,
+persistence, browser grouping/filtering, variants/Nippon, BOM/export,
+publication negatives, and lazy/bundle boundaries.
+
+The already-required production-artifact build retains the only generator
+drift execution before the strict build. The semantic command therefore
+consumes fresh exact-source projections without duplicating that command or
+the full Phase 8 gate. New negatives reject a missing required command source,
+a missing registered executable contribution, and filtered, skipped, retried,
+`.only`, or fail-open command mutations independently of the closure hash, in
+addition to the existing missing/renamed source, zero-discovery,
+duplicate-owner, advisory-only, stale-inventory, and imported-contribution
+cases. Exact CI step names, the post-build ordering, the combined fail-fast
+invocation inside its declared owner step, and workflow-level fail-open syntax
+are also validated. Package-level failure swallowing rejects equivalent
+`||true`, `|| :`, and `; exit 0` forms after hash regeneration.
+
+The path inventories are 253 script tests at
+`4b3aac7e5b284060e26d4e62810494020c8b367b371cc27282a7fa0357a5b9e3`,
+101 browser specs at
+`b4e63b256df544fa8009e1dc5bf393251ff3cb68fa2d3caee6fa7d5dde521875`,
+6 cabinetry browser modules at
+`805b0ec8a0d24658c0cb5e01616fb1a684c8dc2aae81b6338f3d1b87fd6fafa9`,
+8 multi-room browser modules at
+`e701b0ff04421c8eca749fdd8e6daffcd0c0fbb987226ec2319bdcee8d368851`,
+and 8 cabinetry script modules at
+`55ed53e1acde7854a321a3a6480aba3c2c89636d9227057d66341bfd845d6696`.
+The exact suite inventory and rollback are in the CH-0013 security/quality
+record.
 
 ## ARCH-RC55 canonical responsive owner
 

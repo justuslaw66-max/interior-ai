@@ -905,6 +905,190 @@ function sourceContainsProhibitedSkip(source) {
   return /\b(?:describe|test)\.(?:fixme|skip)\s*\(/.test(source);
 }
 
+function skipQuotedLiteral(source, start) {
+  const quote = source[start];
+  let index = start + 1;
+  while (index < source.length) {
+    if (source[index] === "\\") {
+      index += 2;
+      continue;
+    }
+    if (source[index] === quote) return index + 1;
+    index += 1;
+  }
+  return source.length;
+}
+
+function skipComment(source, start) {
+  if (source[start + 1] === "/") {
+    const newline = source.indexOf("\n", start + 2);
+    return newline === -1 ? source.length : newline + 1;
+  }
+  if (source[start + 1] === "*") {
+    const end = source.indexOf("*/", start + 2);
+    return end === -1 ? source.length : end + 2;
+  }
+  return start;
+}
+
+function slashStartsRegularExpression(source, index) {
+  let cursor = index - 1;
+  while (cursor >= 0 && /\s/.test(source[cursor])) cursor -= 1;
+  if (cursor < 0) return true;
+  if (/[({[=,:;!&|?+\-*%^~<>]/.test(source[cursor])) return true;
+  if (/[A-Za-z0-9_$]/.test(source[cursor])) {
+    const end = cursor + 1;
+    while (cursor >= 0 && /[A-Za-z0-9_$]/.test(source[cursor])) cursor -= 1;
+    return new Set([
+      "await",
+      "case",
+      "delete",
+      "in",
+      "instanceof",
+      "new",
+      "of",
+      "return",
+      "throw",
+      "typeof",
+      "void",
+      "yield",
+    ]).has(source.slice(cursor + 1, end));
+  }
+  return false;
+}
+
+function skipRegularExpression(source, start) {
+  let index = start + 1;
+  let inCharacterClass = false;
+  while (index < source.length) {
+    if (source[index] === "\\") {
+      index += 2;
+      continue;
+    }
+    if (source[index] === "[") inCharacterClass = true;
+    if (source[index] === "]") inCharacterClass = false;
+    if (source[index] === "/" && !inCharacterClass) {
+      index += 1;
+      while (/[A-Za-z]/.test(source[index] ?? "")) index += 1;
+      return index;
+    }
+    if (source[index] === "\n") return index;
+    index += 1;
+  }
+  return source.length;
+}
+
+function assertionArgumentsEnd(source, openParen) {
+  let depth = 1;
+  let index = openParen + 1;
+  while (index < source.length) {
+    const character = source[index];
+    if (character === '"' || character === "'" || character === "`") {
+      index = skipQuotedLiteral(source, index);
+      continue;
+    }
+    if (character === "/") {
+      const afterComment = skipComment(source, index);
+      if (afterComment !== index) {
+        index = afterComment;
+        continue;
+      }
+      if (slashStartsRegularExpression(source, index)) {
+        index = skipRegularExpression(source, index);
+        continue;
+      }
+    }
+    if (character === "(") depth += 1;
+    if (character === ")") {
+      depth -= 1;
+      if (depth === 0) return index;
+    }
+    index += 1;
+  }
+  return -1;
+}
+
+function assertionContainsLiteralMarker(source, start, end, marker) {
+  let index = start;
+  while (index < end) {
+    const character = source[index];
+    if (character === "/") {
+      const afterComment = skipComment(source, index);
+      if (afterComment !== index) {
+        index = afterComment;
+        continue;
+      }
+      if (slashStartsRegularExpression(source, index)) {
+        index = skipRegularExpression(source, index);
+        continue;
+      }
+    }
+    if (character === '"' || character === "'" || character === "`") {
+      const literalEnd = skipQuotedLiteral(source, index);
+      if (source.slice(index + 1, literalEnd - 1).includes(marker)) return true;
+      index = literalEnd;
+      continue;
+    }
+    index += 1;
+  }
+  return false;
+}
+
+function sourceContainsExecutableContribution(source, marker) {
+  const isIdentifierCharacter = (character) => /[A-Za-z0-9_$]/.test(character ?? "");
+  let index = 0;
+  while (index < source.length) {
+    const character = source[index];
+    if (character === '"' || character === "'" || character === "`") {
+      index = skipQuotedLiteral(source, index);
+      continue;
+    }
+    if (character === "/") {
+      const afterComment = skipComment(source, index);
+      if (afterComment !== index) {
+        index = afterComment;
+        continue;
+      }
+      if (slashStartsRegularExpression(source, index)) {
+        index = skipRegularExpression(source, index);
+        continue;
+      }
+    }
+    if (
+      source.startsWith("assert", index) &&
+      !isIdentifierCharacter(source[index - 1]) &&
+      !isIdentifierCharacter(source[index + "assert".length])
+    ) {
+      let cursor = index + "assert".length;
+      while (/\s/.test(source[cursor] ?? "")) cursor += 1;
+      if (source[cursor] === ".") {
+        cursor += 1;
+        if (!/[A-Za-z_$]/.test(source[cursor] ?? "")) {
+          index += 1;
+          continue;
+        }
+        while (isIdentifierCharacter(source[cursor])) cursor += 1;
+        while (/\s/.test(source[cursor] ?? "")) cursor += 1;
+      }
+      if (source[cursor] === "(") {
+        const end = assertionArgumentsEnd(source, cursor);
+        if (
+          end !== -1 &&
+          assertionContainsLiteralMarker(source, cursor + 1, end, marker)
+        ) {
+          return true;
+        }
+      }
+    }
+    index += 1;
+  }
+  return false;
+}
+
+function commandCanSwallowFailure(command) {
+  return /\|\||;\s*(?:true|:|exit\s+0)(?:\s|$)/.test(command);
+}
+
 function validateGateShape(gate, issues) {
   if (!/^[a-z0-9][a-z0-9.-]+$/.test(gate.id ?? "")) {
     issues.push(`gate ${String(gate.id)} has an invalid stable requirement ID`);
@@ -925,11 +1109,80 @@ function validateGateShape(gate, issues) {
     issues.push(`gate ${gate.id} has malformed required source or project coverage`);
   }
   if (
+    gate.requiredCommandSources !== undefined &&
+    (!Array.isArray(gate.requiredCommandSources) ||
+      gate.requiredCommandSources.some((source) => typeof source !== "string" || source.length === 0))
+  ) {
+    issues.push(`gate ${gate.id} has malformed required command-source coverage`);
+  }
+  if (
+    gate.forbiddenCommandFragments !== undefined &&
+    (!Array.isArray(gate.forbiddenCommandFragments) ||
+      gate.forbiddenCommandFragments.some(
+        (fragment) => typeof fragment !== "string" || fragment.length === 0,
+      ))
+  ) {
+    issues.push(`gate ${gate.id} has malformed forbidden command fragments`);
+  }
+  if (
+    gate.forbidCommandFailureSwallowing !== undefined &&
+    typeof gate.forbidCommandFailureSwallowing !== "boolean"
+  ) {
+    issues.push(`gate ${gate.id} has malformed command failure-swallowing policy`);
+  }
+  const contributionIds = new Set();
+  for (const contribution of gate.requiredContributions ?? []) {
+    if (!/^[a-z0-9][a-z0-9.-]+$/.test(contribution.id ?? "")) {
+      issues.push(`gate ${gate.id} has an invalid required contribution ID`);
+    } else if (contributionIds.has(contribution.id)) {
+      issues.push(`gate ${gate.id} duplicates required contribution ${contribution.id}`);
+    }
+    contributionIds.add(contribution.id);
+    if (
+      typeof contribution.source !== "string" ||
+      contribution.source.length === 0 ||
+      typeof contribution.marker !== "string" ||
+      contribution.marker.length === 0
+    ) {
+      issues.push(`gate ${gate.id} has an incomplete required contribution ${contribution.id}`);
+    }
+  }
+  if (
     gate.ci?.workflow !== undefined &&
     (typeof gate.ci.workflow !== "string" ||
       !/^\.github\/workflows\/[A-Za-z0-9._-]+\.ya?ml$/.test(gate.ci.workflow))
   ) {
     issues.push(`gate ${gate.id} has an invalid CI workflow owner`);
+  }
+  for (const [field, values] of [
+    ["steps", gate.ci?.steps],
+    ["afterSteps", gate.ci?.afterSteps],
+    ["invocations", gate.ci?.invocations],
+  ]) {
+    if (
+      values !== undefined &&
+      (!Array.isArray(values) ||
+        values.some((value) => typeof value !== "string" || value.length === 0))
+    ) {
+      issues.push(`gate ${gate.id} has malformed CI ${field}`);
+    }
+  }
+  if (
+    gate.ci?.stepInvocations !== undefined &&
+    !Array.isArray(gate.ci.stepInvocations)
+  ) {
+    issues.push(`gate ${gate.id} has malformed CI step invocation bindings`);
+  } else {
+    for (const binding of gate.ci?.stepInvocations ?? []) {
+      if (
+        typeof binding?.step !== "string" ||
+        binding.step.length === 0 ||
+        typeof binding?.invocation !== "string" ||
+        binding.invocation.length === 0
+      ) {
+        issues.push(`gate ${gate.id} has malformed CI step invocation binding`);
+      }
+    }
   }
   const requirementIds = new Set();
   for (const requirement of gate.requiredTests ?? []) {
@@ -1110,6 +1363,27 @@ export function validateRequiredTestRepository({
         issues.push(`gate ${gate.id} required source ${source} is missing`);
       }
     }
+    for (const contribution of gate.requiredContributions ?? []) {
+      if (!(gate.requiredSources ?? []).includes(contribution.source)) {
+        issues.push(
+          `gate ${gate.id} required contribution ${contribution.id} source ${contribution.source} is not a required source`,
+        );
+        continue;
+      }
+      const absolutePath = path.join(root, contribution.source);
+      if (
+        existsSync(absolutePath) &&
+        statSync(absolutePath).isFile() &&
+        !sourceContainsExecutableContribution(
+          readFileSync(absolutePath, "utf8"),
+          contribution.marker,
+        )
+      ) {
+        issues.push(
+          `gate ${gate.id} required contribution ${contribution.id} executable marker is missing from ${contribution.source}`,
+        );
+      }
+    }
     const namedScripts = packageScriptNames(gate);
     const prerequisiteScripts = packagePrerequisiteNames(gate);
     for (const scriptName of [...namedScripts, ...prerequisiteScripts]) {
@@ -1149,6 +1423,20 @@ export function validateRequiredTestRepository({
             `gate ${gate.id} package-script closure changed: expected ${gate.packageClosure?.expectedScriptCount ?? "missing"}/${gate.packageClosure?.expectedSha256 ?? "missing"}, found ${identity.expectedScriptCount}/${identity.expectedSha256}`,
           );
         }
+        for (const [scriptName, command] of closure) {
+          if (gate.forbidCommandFailureSwallowing && commandCanSwallowFailure(command)) {
+            issues.push(
+              `gate ${gate.id} package script ${scriptName} can swallow process failures`,
+            );
+          }
+          for (const fragment of gate.forbiddenCommandFragments ?? []) {
+            if (command.includes(fragment)) {
+              issues.push(
+                `gate ${gate.id} package script ${scriptName} contains forbidden command fragment ${fragment}`,
+              );
+            }
+          }
+        }
       } catch (error) {
         issues.push(error instanceof Error ? error.message : String(error));
       }
@@ -1156,6 +1444,15 @@ export function validateRequiredTestRepository({
         if (/^scripts\/test-/.test(source) && !expanded.has(source)) {
           issues.push(
             `gate ${gate.id} does not execute required source ${source} through its package command`,
+          );
+        }
+      }
+      for (const source of gate.requiredCommandSources ?? []) {
+        if (!(gate.requiredSources ?? []).includes(source)) {
+          issues.push(`gate ${gate.id} command source ${source} is not a required source`);
+        } else if (!expanded.has(source)) {
+          issues.push(
+            `gate ${gate.id} does not execute required command source ${source} through its package command`,
           );
         }
       }
@@ -1214,6 +1511,9 @@ export function validateRequiredTestRepository({
     if (gate.blocking && /continue-on-error:\s*true/.test(job)) {
       issues.push(`blocking CI job ${gate.ci.job} for gate ${gate.id} cannot continue on error`);
     }
+    if (gate.blocking && /\bnpm run [^\n]*\|\|\s*true\b/.test(job)) {
+      issues.push(`blocking CI job ${gate.ci.job} for gate ${gate.id} cannot fail open`);
+    }
     if (
       !gate.blocking &&
       workflowRelativePath === ".github/workflows/ci.yml" &&
@@ -1235,6 +1535,64 @@ export function validateRequiredTestRepository({
     for (const scriptName of packageScriptNames(gate)) {
       if (!job.includes(`npm run ${scriptName}`)) {
         issues.push(`CI job ${gate.ci.job} does not invoke gate ${gate.id} (${scriptName})`);
+      }
+    }
+    const requiredStepNames = [
+      ...(typeof gate.ci.step === "string" ? [gate.ci.step] : []),
+      ...(Array.isArray(gate.ci.steps) ? gate.ci.steps : []),
+    ];
+    const stepIndexes = requiredStepNames.map((stepName) => ({
+      stepName,
+      index: Math.max(
+        job.indexOf(`- name: ${stepName}`),
+        job.indexOf(`- uses: ${stepName}`),
+      ),
+    }));
+    for (const { stepName, index } of stepIndexes) {
+      if (index === -1) {
+        issues.push(`CI job ${gate.ci.job} does not contain gate ${gate.id} step ${stepName}`);
+      }
+    }
+    for (const prerequisiteStep of gate.ci.afterSteps ?? []) {
+      const prerequisiteIndex = Math.max(
+        job.indexOf(`- name: ${prerequisiteStep}`),
+        job.indexOf(`- uses: ${prerequisiteStep}`),
+      );
+      if (prerequisiteIndex === -1) {
+        issues.push(
+          `CI job ${gate.ci.job} does not contain gate ${gate.id} prerequisite step ${prerequisiteStep}`,
+        );
+        continue;
+      }
+      for (const { stepName, index } of stepIndexes) {
+        if (index !== -1 && index <= prerequisiteIndex) {
+          issues.push(
+            `CI gate ${gate.id} step ${stepName} must run after CI step ${prerequisiteStep}`,
+          );
+        }
+      }
+    }
+    for (const binding of Array.isArray(gate.ci.stepInvocations)
+      ? gate.ci.stepInvocations
+      : []) {
+      const step = stepIndexes.find((entry) => entry.stepName === binding.step);
+      if (!step) {
+        issues.push(
+          `CI gate ${gate.id} binds an invocation to undeclared step ${binding.step}`,
+        );
+        continue;
+      }
+      if (step.index === -1) continue;
+      const stepLineStart = job.lastIndexOf("\n", step.index) + 1;
+      const stepIndent = job.slice(stepLineStart, step.index);
+      const nextStepPattern = new RegExp(`^${stepIndent.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}- (?:name|uses):`, "gm");
+      nextStepPattern.lastIndex = stepLineStart + 1;
+      const nextStep = nextStepPattern.exec(job);
+      const stepBlock = job.slice(stepLineStart, nextStep?.index ?? job.length);
+      if (!stepBlock.includes(binding.invocation)) {
+        issues.push(
+          `CI gate ${gate.id} step ${binding.step} does not contain its bound invocation`,
+        );
       }
     }
     const requiredInvocations = Array.isArray(gate.ci.invocations)

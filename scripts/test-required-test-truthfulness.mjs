@@ -76,7 +76,7 @@ function makeRepository() {
   write(
     root,
     "scripts/test-fixture.mjs",
-    'import { runFixtureChecks } from "./fixture-module.mjs";\nrunFixtureChecks();\n',
+    'import assert from "node:assert/strict";\nimport { runFixtureChecks } from "./fixture-module.mjs";\nconst fixtureResult = runFixtureChecks();\nassert.equal(fixtureResult, true, "fixture exclusion semantic assertion");\n',
   );
   write(
     root,
@@ -112,6 +112,8 @@ function makeRepository() {
     `jobs:
   stable-checks:
     steps:
+      - name: Prerequisite
+        run: node scripts/fixture-module.mjs
       - name: Fixture
         run: npm run test:fixture
   e2e-full:
@@ -255,12 +257,29 @@ function makeRepository() {
         runner: "node",
         supportingInventories: ["script-support-modules"],
         requiredSources: ["scripts/test-fixture.mjs"],
+        requiredCommandSources: ["scripts/test-fixture.mjs"],
+        forbiddenCommandFragments: ["--filter", "--skip", "--retry", "--only"],
+        forbidCommandFailureSwallowing: true,
+        requiredContributions: [
+          {
+            id: "fixture.exclusion",
+            source: "scripts/test-fixture.mjs",
+            marker: "fixture exclusion semantic assertion",
+          },
+        ],
         requiredProjects: [],
         allowSkips: false,
         allowRetries: false,
         reportType: "process-exit",
         artifactBinding: "none",
-        ci: { job: "stable-checks", step: "Fixture" },
+        ci: {
+          job: "stable-checks",
+          step: "Fixture",
+          afterSteps: ["Prerequisite"],
+          stepInvocations: [
+            { step: "Fixture", invocation: "npm run test:fixture" },
+          ],
+        },
       },
       requiredGate,
       inventoryGate,
@@ -1127,6 +1146,74 @@ for (const [fileName, content, expectedReason] of [
 
 {
   const context = makeRepository();
+  const workflowPath = path.join(context.root, ".github/workflows/ci.yml");
+  const workflow = readFileSync(workflowPath, "utf8").replace(
+    "- name: Fixture",
+    "- name: Renamed fixture",
+  );
+  write(context.root, ".github/workflows/ci.yml", workflow);
+  expectIssue(
+    validateRequiredTestRepository({ repositoryRoot: context.root }),
+    "does not contain gate ci.fixture step Fixture",
+  );
+}
+
+{
+  const context = makeRepository();
+  const workflowPath = path.join(context.root, ".github/workflows/ci.yml");
+  const workflow = readFileSync(workflowPath, "utf8").replace(
+    `      - name: Prerequisite
+        run: node scripts/fixture-module.mjs
+      - name: Fixture
+        run: npm run test:fixture`,
+    `      - name: Fixture
+        run: npm run test:fixture
+      - name: Prerequisite
+        run: node scripts/fixture-module.mjs`,
+  );
+  write(context.root, ".github/workflows/ci.yml", workflow);
+  expectIssue(
+    validateRequiredTestRepository({ repositoryRoot: context.root }),
+    "step Fixture must run after CI step Prerequisite",
+  );
+}
+
+{
+  const context = makeRepository();
+  const workflowPath = path.join(context.root, ".github/workflows/ci.yml");
+  const workflow = readFileSync(workflowPath, "utf8").replace(
+    `      - name: Prerequisite
+        run: node scripts/fixture-module.mjs
+      - name: Fixture
+        run: npm run test:fixture`,
+    `      - name: Prerequisite
+        run: npm run test:fixture
+      - name: Fixture
+        run: node scripts/fixture-module.mjs`,
+  );
+  write(context.root, ".github/workflows/ci.yml", workflow);
+  expectIssue(
+    validateRequiredTestRepository({ repositoryRoot: context.root }),
+    "step Fixture does not contain its bound invocation",
+  );
+}
+
+{
+  const context = makeRepository();
+  const workflowPath = path.join(context.root, ".github/workflows/ci.yml");
+  const workflow = readFileSync(workflowPath, "utf8").replace(
+    "run: npm run test:fixture",
+    "run: npm run test:fixture || true",
+  );
+  write(context.root, ".github/workflows/ci.yml", workflow);
+  expectIssue(
+    validateRequiredTestRepository({ repositoryRoot: context.root }),
+    "cannot fail open",
+  );
+}
+
+{
+  const context = makeRepository();
   write(
     context.root,
     "scripts/test-fixture.mjs",
@@ -1147,6 +1234,137 @@ for (const [fileName, content, expectedReason] of [
   expectIssue(
     validateRequiredTestRepository({ repositoryRoot: context.root }),
     "package-script closure changed",
+  );
+}
+
+{
+  const context = makeRepository();
+  const packageJsonPath = path.join(context.root, "package.json");
+  const packageJson = JSON.parse(readFileSync(packageJsonPath, "utf8"));
+  packageJson.scripts["test:fixture-child"] = "node scripts/fixture-module.mjs";
+  write(context.root, "package.json", `${JSON.stringify(packageJson, null, 2)}\n`);
+  const gate = context.manifest.gates.find((entry) => entry.id === "ci.fixture");
+  gate.packageClosure = packageClosure(packageJson.scripts, ["test:fixture"]);
+  write(
+    context.root,
+    "scripts/required-test-manifest.json",
+    `${JSON.stringify(context.manifest, null, 2)}\n`,
+  );
+  expectIssue(
+    validateRequiredTestRepository({ repositoryRoot: context.root }),
+    "does not execute required source scripts/test-fixture.mjs through its package command",
+  );
+  expectIssue(
+    validateRequiredTestRepository({ repositoryRoot: context.root }),
+    "does not execute required command source scripts/test-fixture.mjs through its package command",
+  );
+}
+
+{
+  const context = makeRepository();
+  const fixturePath = path.join(context.root, "scripts/test-fixture.mjs");
+  write(
+    context.root,
+    "scripts/test-fixture.mjs",
+    readFileSync(fixturePath, "utf8").replace("fixture exclusion semantic assertion", "removed contribution"),
+  );
+  expectIssue(
+    validateRequiredTestRepository({ repositoryRoot: context.root }),
+    "required contribution fixture.exclusion executable marker is missing",
+  );
+}
+
+{
+  const context = makeRepository();
+  const fixturePath = path.join(context.root, "scripts/test-fixture.mjs");
+  write(
+    context.root,
+    "scripts/test-fixture.mjs",
+    `${readFileSync(fixturePath, "utf8").replace(
+      '"fixture exclusion semantic assertion"',
+      '"removed executable contribution"',
+    )}// fixture exclusion semantic assertion\n`,
+  );
+  expectIssue(
+    validateRequiredTestRepository({ repositoryRoot: context.root }),
+    "required contribution fixture.exclusion executable marker is missing",
+  );
+}
+
+{
+  const context = makeRepository();
+  const fixturePath = path.join(context.root, "scripts/test-fixture.mjs");
+  write(
+    context.root,
+    "scripts/test-fixture.mjs",
+    readFileSync(fixturePath, "utf8").replace(
+      'assert.equal(fixtureResult, true, "fixture exclusion semantic assertion");',
+      "assert.equal(fixtureResult, true /* fixture exclusion semantic assertion */);",
+    ),
+  );
+  expectIssue(
+    validateRequiredTestRepository({ repositoryRoot: context.root }),
+    "required contribution fixture.exclusion executable marker is missing",
+  );
+}
+
+{
+  const context = makeRepository();
+  const fixturePath = path.join(context.root, "scripts/test-fixture.mjs");
+  write(
+    context.root,
+    "scripts/test-fixture.mjs",
+    `${readFileSync(fixturePath, "utf8").replace(
+      'assert.equal(fixtureResult, true, "fixture exclusion semantic assertion");',
+      "assert.equal(fixtureResult, true);",
+    )}// assert.equal(true, "fixture exclusion semantic assertion");\n`,
+  );
+  expectIssue(
+    validateRequiredTestRepository({ repositoryRoot: context.root }),
+    "required contribution fixture.exclusion executable marker is missing",
+  );
+}
+
+for (const unsafeSuffix of [
+  " --filter narrowed",
+  " --skip",
+  " --retry=1",
+  " --only",
+]) {
+  const context = makeRepository();
+  const packageJsonPath = path.join(context.root, "package.json");
+  const packageJson = JSON.parse(readFileSync(packageJsonPath, "utf8"));
+  packageJson.scripts["test:fixture-child"] += unsafeSuffix;
+  write(context.root, "package.json", `${JSON.stringify(packageJson, null, 2)}\n`);
+  const gate = context.manifest.gates.find((entry) => entry.id === "ci.fixture");
+  gate.packageClosure = packageClosure(packageJson.scripts, ["test:fixture"]);
+  write(
+    context.root,
+    "scripts/required-test-manifest.json",
+    `${JSON.stringify(context.manifest, null, 2)}\n`,
+  );
+  expectIssue(
+    validateRequiredTestRepository({ repositoryRoot: context.root }),
+    "contains forbidden command fragment",
+  );
+}
+
+for (const failOpenSuffix of [" || true", "||true", " || :", "; exit 0"]) {
+  const context = makeRepository();
+  const packageJsonPath = path.join(context.root, "package.json");
+  const packageJson = JSON.parse(readFileSync(packageJsonPath, "utf8"));
+  packageJson.scripts["test:fixture-child"] += failOpenSuffix;
+  write(context.root, "package.json", `${JSON.stringify(packageJson, null, 2)}\n`);
+  const gate = context.manifest.gates.find((entry) => entry.id === "ci.fixture");
+  gate.packageClosure = packageClosure(packageJson.scripts, ["test:fixture"]);
+  write(
+    context.root,
+    "scripts/required-test-manifest.json",
+    `${JSON.stringify(context.manifest, null, 2)}\n`,
+  );
+  expectIssue(
+    validateRequiredTestRepository({ repositoryRoot: context.root }),
+    "can swallow process failures",
   );
 }
 

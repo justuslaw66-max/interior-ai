@@ -6,8 +6,8 @@
       "root": "scripts",
       "filePattern": "^test-.*\\.(?:js|mjs|ts)$",
       "classification": "risk-triggered",
-      "expectedFileCount": 252,
-      "expectedPathSha256": "b7165fefaa3407e32df0d01e0836e1fe0c6e8cd137785526959cdbcc9d960cb3"
+      "expectedFileCount": 253,
+      "expectedPathSha256": "4b3aac7e5b284060e26d4e62810494020c8b367b371cc27282a7fa0357a5b9e3"
     },
     {
       "id": "browser-specs",
@@ -335,17 +335,104 @@
     },
     {
       "id": "ci.catalog-materials",
-      "invariant": "Catalog quality, registry/media identities, retailer mappings, and required asset availability remain strict.",
+      "invariant": "Catalog quality, registry/media identities, surface-material schema and render/lazy parity, retailer mappings, and required asset availability remain strict.",
       "cadence": "merge-required",
       "blocking": true,
-      "command": "npm run test:catalog-audit && npm run test:catalog-asset-availability",
-      "packageScripts": ["test:catalog-audit", "test:catalog-asset-availability"],
-      "packageClosure": { "expectedScriptCount": 8, "expectedSha256": "a0354533f0992678a6264a37233a3ef0a6562502d6aa9565247db438a6ea1bda" },
+      "command": "npm run test:catalog-audit && npm run test:catalog-asset-availability && npm run test:surface-material-semantics",
+      "packageScripts": ["test:catalog-audit", "test:catalog-asset-availability", "test:surface-material-semantics"],
+      "packageClosure": { "expectedScriptCount": 12, "expectedSha256": "7ea65dfdc5ea31aac049836764123a9bc5a2e80b3af30c36bb42c34d8755b5e0" },
       "runner": "npm-chain",
       "requiredSources": [
         "scripts/test-catalog-quality-audit.ts",
         "scripts/test-catalog-registry-sync.ts",
-        "scripts/test-catalog-asset-availability.ts"
+        "scripts/test-catalog-asset-availability.ts",
+        "scripts/test-surface-material-schema.ts",
+        "scripts/test-surface-material-browser-semantics.ts",
+        "scripts/test-phase8-performance-boundaries.ts"
+      ],
+      "requiredCommandSources": [
+        "scripts/test-surface-material-schema.ts",
+        "scripts/test-surface-material-browser-semantics.ts",
+        "scripts/test-phase8-performance-boundaries.ts"
+      ],
+      "forbiddenCommandFragments": ["--filter", "--skip", "--retry", "--only"],
+      "forbidCommandFailureSwallowing": true,
+      "requiredContributions": [
+        {
+          "id": "surface.yaml-render-parity",
+          "source": "scripts/test-surface-material-schema.ts",
+          "marker": "every production YAML record must contribute exactly one render-registry record"
+        },
+        {
+          "id": "surface.render-lazy-id-parity",
+          "source": "scripts/test-surface-material-schema.ts",
+          "marker": "generated render and lazy catalog projections must preserve identical IDs and ordering"
+        },
+        {
+          "id": "surface.fixture-exclusion",
+          "source": "scripts/test-surface-material-schema.ts",
+          "marker": "test-only published flooring fixture must not be in production runtime data"
+        },
+        {
+          "id": "surface.texture-map-identity",
+          "source": "scripts/test-surface-material-schema.ts",
+          "marker": "texture-map identities must match canonical YAML"
+        },
+        {
+          "id": "surface.physical-uv-scaling",
+          "source": "scripts/test-surface-material-schema.ts",
+          "marker": "physical repeat must not change between different room sizes"
+        },
+        {
+          "id": "surface.2d-3d-parity",
+          "source": "scripts/test-surface-material-schema.ts",
+          "marker": "north wall finishes should render only on the room-facing side"
+        },
+        {
+          "id": "surface.room-assignment",
+          "source": "scripts/test-surface-material-schema.ts",
+          "marker": "selected wall face must resolve its override material"
+        },
+        {
+          "id": "surface.save-reload",
+          "source": "scripts/test-surface-material-schema.ts",
+          "marker": "surface assignments and rendering settings must survive the application save/sanitize/reload boundary"
+        },
+        {
+          "id": "surface.search-filter-grouping",
+          "source": "scripts/test-surface-material-browser-semantics.ts",
+          "marker": "surface search must retain product, ID, supplier, collection, and suitability terms"
+        },
+        {
+          "id": "surface.variants",
+          "source": "scripts/test-surface-material-browser-semantics.ts",
+          "marker": "the selected material variant must remain the primary browser identity"
+        },
+        {
+          "id": "surface.nippon-selection",
+          "source": "scripts/test-surface-material-browser-semantics.ts",
+          "marker": "the lazy browser must expose every Nippon selection"
+        },
+        {
+          "id": "surface.bom-export",
+          "source": "scripts/test-surface-material-schema.ts",
+          "marker": "surface BOM CSV rows must include floor pattern, rotation, and joint metadata"
+        },
+        {
+          "id": "surface.negative-publication-policy",
+          "source": "scripts/test-surface-material-schema.ts",
+          "marker": "published surface materials must not have unresolved publish blockers"
+        },
+        {
+          "id": "surface.lazy-catalog-boundary",
+          "source": "scripts/test-phase8-performance-boundaries.ts",
+          "marker": "the full surface catalog must be absent from /design initial chunks"
+        },
+        {
+          "id": "surface.phase8-bundle-boundary",
+          "source": "scripts/test-phase8-performance-boundaries.ts",
+          "marker": "the required surface-material bundle boundary needs the strict /design route manifest"
+        }
       ],
       "requiredProjects": [],
       "allowSkips": false,
@@ -354,7 +441,14 @@
       "artifactBinding": "none",
       "ci": {
         "job": "stable-checks",
-        "steps": ["Audit catalog quality", "Audit catalog asset availability"]
+        "steps": ["Audit catalog quality and surface-material semantics", "Audit catalog asset availability"],
+        "afterSteps": ["Build strict production-equivalent artifact evidence"],
+        "stepInvocations": [
+          {
+            "step": "Audit catalog quality and surface-material semantics",
+            "invocation": "npm run test:catalog-audit && npm run test:surface-material-semantics"
+          }
+        ]
       }
     },
     {

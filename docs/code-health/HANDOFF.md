@@ -1,5 +1,60 @@
 # Code health audit handoff
 
+## CH-0013 surface-material required-owner handoff — 2026-08-07
+
+The bounded branch `fix/ch-0013-surface-material-required-owner` starts from
+exact integration SHA `8f05b0fedc3de9d92b9815cbde3092568fd7507f`
+and tree `748a0502b666c636720aafe552e016bb6756de2c`.
+`integration/deep-clean-v1` and its remote-tracking ref remain at that SHA.
+
+Previous gap: `test:surface-material-schema` and the surface portion of the
+Phase 8 boundary had no canonical merge-required manifest/CI owner. Advisory
+Full E2E and release Gate A3 discovered broader flooring behavior but could not
+substitute for required ownership.
+
+Selected owner: existing `ci.catalog-materials`. Its canonical command adds
+`npm run test:surface-material-semantics` to the existing catalog-quality step
+after the exact-source strict build. The semantic umbrella runs schema parity,
+browser search/filter/grouping/variant/Nippon/swatch helpers, and the focused
+surface runtime/chunk boundary. The existing production-artifact build remains
+the sole generator-drift executor before build. Full Phase 8 is not duplicated.
+
+Final manifest: 22 gates / 376 sources (253 script tests, 101 browser specs,
+14 imported browser modules, 8 imported script modules); catalog closure 12
+scripts / SHA-256
+`7ea65dfdc5ea31aac049836764123a9bc5a2e80b3af30c36bb42c34d8755b5e0`;
+manifest SHA-256
+`d9a201872750c58742ca2e116044fd60663f35b3229bfa1fc78f77beadae06fc`.
+Fifteen named contributions bind YAML/render/lazy parity, fixture exclusion,
+texture/UV, 2D/3D, assignment/persistence, browser semantics, variants/Nippon,
+BOM/export, publication negatives, and lazy/Phase 8 bundle boundaries.
+Contribution ownership requires executable assertions, command modifiers are
+rejected even after closure-hash regeneration, and the exact invocation is
+bound to its named CI step after the strict build.
+
+The delta is workflow, package/manifest truthfulness, test, and documentation
+only. There is no production material code, material ID, generated projection,
+Phase 8 budget, database, dependency, browser redesign, push, deployment, or
+external setting change. `stable-checks` remains blocking and `merge-gate`
+still consumes it. Full E2E remains advisory; Gate A3 remains separate and
+release-blocking.
+
+Local validation passes the exact 12.70-second canonical catalog/material
+command, generator drift, 22-gate/376-source truthfulness, production-artifact
+contract, critical-required, 78/78 design cleanup, strict asset inventory,
+zero-warning lint, typecheck, code quality, the complete Phase 8 gate, the
+57/57 strict build, and the Chromium/WebKit Pro visual policy matrix (4/4).
+The final clean-commit responsive public-share result is recorded in the
+Codex handoff after the implementation commit is created; Full E2E was not
+run.
+
+The exact inventory, durations, path hashes, truthfulness negatives, and
+rollback are in
+`docs/security/CH-0013_SURFACE_MATERIAL_REQUIRED_OWNERSHIP.md`. Rollback is one
+focused commit revert. External ruleset selection and an exact-head workflow
+run remain unverified. The superseding triage is 0 unresolved P0 / 10
+unresolved P1 / 8 resolved P1; CH-0015 is next, but is not part of this branch.
+
 ## Integration tracked-artifact hygiene checkpoint — 2026-08-06
 
 Branch `fix/integration-tracked-artifact-hygiene` starts exactly at

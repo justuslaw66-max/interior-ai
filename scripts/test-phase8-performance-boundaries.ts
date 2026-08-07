@@ -293,13 +293,20 @@ function findProductionTypeScriptFiles(root: string): string[] {
   });
 }
 
-function assertSurfaceCatalogChunkBoundary(): void {
+function assertSurfaceCatalogChunkBoundary(requireBuild = false): void {
   const nextRoot = path.join(process.cwd(), ".next");
   const routeManifestPath = path.join(
     nextRoot,
     "server/app/design/page_client-reference-manifest.js"
   );
-  if (!fs.existsSync(routeManifestPath)) return;
+  if (!fs.existsSync(routeManifestPath)) {
+    assert.equal(
+      requireBuild,
+      false,
+      "the required surface-material bundle boundary needs the strict /design route manifest"
+    );
+    return;
+  }
 
   const buildManifest = JSON.parse(
     read(path.join(nextRoot, "build-manifest.json"))
@@ -507,6 +514,13 @@ async function assertSurfaceMaterialRuntimeBoundary(): Promise<void> {
 }
 
 async function main(): Promise<void> {
+  if (process.argv.includes("--surface-material-contract-only")) {
+    await assertSurfaceMaterialRuntimeBoundary();
+    assertSurfaceCatalogChunkBoundary(true);
+    console.log("Surface material runtime and Phase 8 bundle boundary checks passed.");
+    return;
+  }
+
   const cabinetryOverlay = read("components/editor/design-page/CabinetryStudioOverlay.tsx");
   assert.match(cabinetryOverlay, /dynamic<CabinetryStudioProps>/);
   assert.match(cabinetryOverlay, /import\("@\/features\/cabinetry\/components\/CabinetryStudio"\)/);

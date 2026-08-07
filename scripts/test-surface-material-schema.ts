@@ -50,7 +50,12 @@ import {
 import {
   TEST_FIXTURE_SURFACE_MATERIAL_RENDER_REGISTRY,
 } from "../tests/fixtures/surface-material-runtime.generated";
-import type { RoomSnapshot } from "../lib/room-types";
+import type { DesignSnapshot, RoomSnapshot } from "../lib/room-types";
+import {
+  sanitizeStoredDesign,
+  snapshotToStored,
+  storedToSnapshot,
+} from "../lib/room-persistence";
 import { resolveSurfaceTextureRepeat } from "../lib/surface-material-texture-repeat";
 import { buildHousePlan2D } from "../lib/design-page-house-plan";
 import {
@@ -619,6 +624,11 @@ assert.ok(goodrichEntries.length >= 4, "expected at least four draft Goodrich su
 assert.equal(result.duplicateMaterialIds.size, 0, "surface material material_id values must be unique");
 assert.equal(result.duplicateSlugs.size, 0, "surface material slug values must be unique");
 assert.equal(getPublishedFlooringMaterials().length, 0, "draft Goodrich fixtures must not publish to consumer flooring registry");
+assert.equal(
+  productionRuntimeIds.length,
+  entries.length,
+  "every production YAML record must contribute exactly one render-registry record"
+);
 assert.ok(
   goodrichEntries.every((entry) => productionRuntimeIds.includes(entry.surface_material.material_id)),
   "production runtime registry must be generated from Goodrich YAML entries"
@@ -632,6 +642,30 @@ assert.deepEqual(
   productionRuntimeIds,
   "generated render and lazy catalog projections must preserve identical IDs and ordering"
 );
+const yamlByMaterialId = new Map(
+  entries.map((entry) => [entry.surface_material.material_id, entry] as const)
+);
+for (const runtimeMaterial of SURFACE_MATERIAL_RENDER_REGISTRY) {
+  const sourceMaterial = yamlByMaterialId.get(runtimeMaterial.surface_material.material_id);
+  assert.ok(
+    sourceMaterial,
+    `${runtimeMaterial.surface_material.material_id} render record must retain a canonical YAML source`
+  );
+  assert.deepEqual(
+    runtimeMaterial.texture_assets,
+    {
+      swatch_url: sourceMaterial.texture_assets.swatch_url ?? null,
+      base_color_url: sourceMaterial.texture_assets.base_color_url ?? null,
+      texture_repeat_size_cm: sourceMaterial.texture_assets.texture_repeat_size_cm ?? null,
+      normal_url: sourceMaterial.texture_assets.normal_url ?? null,
+      roughness_url: sourceMaterial.texture_assets.roughness_url ?? null,
+      ao_url: sourceMaterial.texture_assets.ao_url ?? null,
+      preview_room_url: sourceMaterial.texture_assets.preview_room_url ?? null,
+      tileable: sourceMaterial.texture_assets.tileable,
+    },
+    `${runtimeMaterial.surface_material.material_id} texture-map identities must match canonical YAML`
+  );
+}
 
 const grandMarble = findRuntimeMaterialFixture("goodrich-geff-novaclick-gnv-018-grand-marble");
 assert.equal(grandMarble.physical_specs?.tile_width_mm, 457.2);
@@ -895,6 +929,32 @@ assert.equal(
   getRuntimeSurfaceMaterialById(roomWithSurfaceMaterial.surfaces?.floorMaterialId)?.surface_material.material_id,
   "goodrich-geff-novaclick-gnv-001-ivory-oak",
   "client floor material resolver must return the selected surface material"
+);
+const surfacePersistenceSnapshot: DesignSnapshot = {
+  version: 3,
+  rooms: [roomWithSurfaceMaterial],
+  activeRoomId: roomWithSurfaceMaterial.id,
+};
+const storedSurfaceDesign = snapshotToStored(surfacePersistenceSnapshot);
+const sanitizedStoredSurfaceDesign = sanitizeStoredDesign(
+  JSON.parse(JSON.stringify(storedSurfaceDesign))
+);
+assert.ok(
+  sanitizedStoredSurfaceDesign,
+  "surface assignments must remain valid through the application storage sanitizer"
+);
+const reloadedRoomWithSurfaceMaterial = storedToSnapshot(
+  sanitizedStoredSurfaceDesign
+).rooms[0];
+assert.deepEqual(
+  reloadedRoomWithSurfaceMaterial.surfaces,
+  roomWithSurfaceMaterial.surfaces,
+  "surface assignments and rendering settings must survive the application save/sanitize/reload boundary"
+);
+assert.deepEqual(
+  reloadedRoomWithSurfaceMaterial.surfaceFinishes,
+  roomWithSurfaceMaterial.surfaces,
+  "surface compatibility assignments must survive the application save/sanitize/reload boundary"
 );
 const bomRows = buildRoomSurfaceMaterialBomRows([roomWithSurfaceMaterial]);
 assert.equal(bomRows.length, 3, "room floor plus wall surfaces must create BOM rows");
@@ -1392,7 +1452,11 @@ assert.match(missingPublishedTextureFailures, /published surface materials requi
 assert.match(missingPublishedTextureFailures, /published surface materials require known texture tileability/);
 assert.match(missingPublishedTextureFailures, /published surface materials require texture_assets\.texture_repeat_size_cm/);
 assert.match(missingPublishedTextureFailures, /published surface materials require physical dimensions/);
-assert.match(missingPublishedTextureFailures, /published surface materials must not have unresolved publish blockers/);
+assert.match(
+  missingPublishedTextureFailures,
+  /published surface materials must not have unresolved publish blockers/,
+  "published surface materials must not have unresolved publish blockers"
+);
 
 const missingDraftBlockerFixture = cloneSurfaceMaterial(fixtureSource);
 missingDraftBlockerFixture.texture_assets.swatch_url = null;

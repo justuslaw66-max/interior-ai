@@ -1,5 +1,35 @@
 # Code health audit
 
+## CH-0013 required surface-material ownership remediation — 2026-08-07
+
+Starting from exact integration source
+`8f05b0fedc3de9d92b9815cbde3092568fd7507f` / tree
+`748a0502b666c636720aafe552e016bb6756de2c`, the bounded CH-0013 branch
+assigns the existing surface-material semantic suite to merge-required
+`ci.catalog-materials`. The new deterministic command owns schema/YAML/render/
+lazy parity, browser helper semantics, and the focused Phase 8 lazy-chunk
+boundary after the existing strict build. Existing production-artifact
+evidence remains the single pre-build generator-drift executor, avoiding
+duplicate execution.
+
+The manifest remains 22 gates and now classifies 376 sources. The catalog gate
+has a 12-script closure at
+`7ea65dfdc5ea31aac049836764123a9bc5a2e80b3af30c36bb42c34d8755b5e0`
+with 15 named semantic contributions. Truthfulness rejects source
+removal/rename, a missing contribution, duplicate required ownership,
+advisory-only substitution, zero discovery, narrowed or fail-open command
+mutations, and stale inventory/closure hashes.
+
+No production material code, material ID, generated output, catalog boundary,
+browser UI, dependency, schema, migration, budget, or external control changed.
+Full E2E was not run. The authoritative inventory and rollback record is
+`docs/security/CH-0013_SURFACE_MATERIAL_REQUIRED_OWNERSHIP.md`.
+
+This locally resolves the next decision-free pre-candidate P1. The superseding
+repository count is **0 unresolved P0 / 10 unresolved P1 / 8 resolved P1**;
+READY is now CH-0015. Separate integrator review, exact-head required CI, and
+external ruleset evidence remain pending.
+
 ## CH-0004 trusted event provenance remediation — 2026-08-07
 
 Starting from exact integration source
@@ -330,14 +360,15 @@ CH-0001, CH-0012, and CH-0016 are closed for repository-controlled remediation. 
 ### CH-0013 — Generated surface registry is an unenforced, oversized client contract
 
 - **Severity:** P1.
+- **Status:** RESOLVED — CLIENT PAYLOAD, FIXTURE ISOLATION, GENERATOR DRIFT, AND CANONICAL MERGE-REQUIRED SEMANTIC OWNERSHIP COMPLETE. External ruleset selection and exact-head CI execution remain unverified integration/release evidence.
 - **Locations/symbols:** `scripts/generate-surface-material-runtime.ts`; `scripts/test-surface-material-schema.ts`; `lib/generated/surface-material-runtime.generated.ts`; `lib/surface-material-runtime.ts`; plan panel and surface inspector consumers; `package.json`; CI.
-- **Evidence/current behavior:** Generated file is 92,044 lines/2.52 MB with 980 production entries, currently all draft. Production and fixtures are imported/spread before filtering; the built client contains a sentinel in a 3.79 MB chunk. Generator has `--check`, but its suggested package command does not exist and neither drift nor schema check is wired to CI. Measured initial JS is approximately 7,068,799 raw/1,160,288 Brotli, above current 6,955,000/1,130,000 budgets.
-- **Risk:** Silent generated drift, large parse/download costs, linear lookups, and accidental fixture/draft shipping.
-- **Improvement:** Add generate/check/schema commands and CI drift enforcement first. Then split compact render records from lazy authoring metadata and test fixtures, use keyed immutable indexes, and load Pro draft metadata on demand.
-- **Expected outcome:** Reproducible generated data, no fixture leakage, preserved saved-material rendering, and budget headroom.
-- **Tests:** generator idempotence/drift; schema; fixture exclusion; Consumer/Pro visibility; selected/saved material render/export parity; raw/compressed bundle budgets.
+- **Evidence/current behavior:** Phase 8A/B already provide a 980-record compact eager render projection, same-order 980-record lazy catalog projection, isolated one-record test fixture, 2,484-row lazy Nippon catalog, stable keyed lookup, and passing unchanged bundle budgets. CH-0013 now makes `ci.catalog-materials` the sole merge-required semantic owner through a 12-script closure, while the existing production-artifact owner runs generator drift once before the strict build.
+- **Risk closed:** A missing/renamed semantic source, missing contribution, stale generator output, fixture leak, schema/parity failure, lazy-boundary regression, narrowed/fail-open command, duplicate owner, or advisory-only substitution now fails required CI.
+- **Implementation:** The focused semantic umbrella runs schema parity, deterministic browser-helper behavior, and the surface-only Phase 8 runtime/chunk boundary after the existing strict build. Fifteen manifest contribution IDs bind the complete contract without running Full E2E or duplicating the full Phase 8 gate.
+- **Expected outcome:** Achieved locally; external exact-head workflow/ruleset evidence remains separate.
+- **Tests:** generator freshness under production-artifact evidence; schema/YAML/render/lazy/texture/UV/2D/3D/persistence/BOM/export/publication; browser search/filter/grouping/variant/Nippon/swatch; focused lazy/chunk boundary; truthfulness negatives; full required validation listed in HANDOFF.
 - **Dependencies/decision:** No decision if Pro visibility is preserved; confirm whether complete offline browsing is a product requirement.
-- **Compatibility:** Gate wiring is behavior-preserving; payload restructuring requires parity fixtures.
+- **Compatibility:** Gate-only and test-only delta; runtime behavior and the existing fallback for non-projected collection labels are unchanged. Roll back the one focused implementation commit.
 
 ### CH-0014 — Each 3D item owns expensive loading, listeners, and frame work
 

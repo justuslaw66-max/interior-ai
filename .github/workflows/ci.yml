@@ -339,8 +339,8 @@ jobs:
       - name: Verify asset inventory
         run: npm run assets:inventory:strict
 
-      - name: Audit catalog quality
-        run: npm run test:catalog-audit
+      - name: Audit catalog quality and surface-material semantics
+        run: npm run test:catalog-audit && npm run test:surface-material-semantics
 
       - name: Audit catalog asset availability
         run: npm run test:catalog-asset-availability

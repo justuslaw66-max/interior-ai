@@ -92,3 +92,20 @@ identity, BOM, export, search helpers, and production/test counts.
 
 The Phase 8A measurement and exact before/after chunk inventories are recorded
 in `docs/architecture/phase8-performance-baseline-and-budgets.md`.
+
+## Required semantic ownership
+
+As of CH-0013, merge-required `ci.catalog-materials` is the sole owner of the
+surface schema, browser-helper semantics, and focused runtime/lazy-bundle
+boundary through `npm run test:surface-material-semantics`. Stable CI runs it
+after the existing exact-source strict build, so the focused Phase 8 mode
+checks real chunk placement without rebuilding or executing unrelated Phase 8
+CSS/cabinetry policies.
+
+Generator freshness remains required once under the existing production-
+artifact build owner before that build. It is intentionally not repeated in
+the semantic umbrella. Advisory Full E2E may still discover the flooring
+browser spec, and Gate A3 still owns complete release discovery; neither is the
+merge-required semantic owner. The exact inventory, 15 contribution IDs,
+counts, hashes, ordering, and rollback are recorded in
+`docs/security/CH-0013_SURFACE_MATERIAL_REQUIRED_OWNERSHIP.md`.
