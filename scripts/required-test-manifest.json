@@ -586,6 +586,80 @@
       "ci": { "job": "stable-checks", "step": "Run required responsive public-share matrix" }
     },
     {
+      "id": "ci.cart-overlay-accessibility",
+      "invariant": "The Selection Tray owns one modal drawer lifecycle with no closed accessibility-active controls and deterministic focus entry, containment, Escape, backdrop, return, replacement, supersession, responsive, Consumer, and Pro behavior in Chromium and WebKit.",
+      "cadence": "merge-required",
+      "blocking": true,
+      "command": "npm run test:cart-overlay-accessibility-required",
+      "packageScript": "test:cart-overlay-accessibility-required",
+      "packageClosure": { "expectedScriptCount": 2, "expectedSha256": "cc8a751cbca29e97536938dab1525cb17ee1cc8dad18174564d58d4dae1703fb" },
+      "packagePrerequisites": ["test:cart-overlay-static"],
+      "requiredEnvironment": { "APP_ENV": "development" },
+      "runner": "playwright",
+      "requiredSources": [
+        "scripts/test-cart-overlay-static.tsx",
+        "tests/required/cart-overlay-accessibility.spec.ts",
+        "playwright.cart-overlay.config.ts"
+      ],
+      "requiredTests": [
+        {
+          "id": "cart.consumer-lifecycle",
+          "file": "tests/required/cart-overlay-accessibility.spec.ts",
+          "title": "consumer empty cart owns a closed, pointer, keyboard, and reopen lifecycle"
+        },
+        {
+          "id": "cart.pro-lifecycle",
+          "file": "tests/required/cart-overlay-accessibility.spec.ts",
+          "title": "pro empty cart owns a closed, pointer, keyboard, and reopen lifecycle"
+        },
+        {
+          "id": "cart.semantic-opener-replacement",
+          "file": "tests/required/cart-overlay-accessibility.spec.ts",
+          "title": "cart restoration resolves the current semantic replacement opener"
+        },
+        {
+          "id": "cart.missing-opener",
+          "file": "tests/required/cart-overlay-accessibility.spec.ts",
+          "title": "cart restoration ignores a missing and disabled opener"
+        },
+        {
+          "id": "cart.newer-modal",
+          "file": "tests/required/cart-overlay-accessibility.spec.ts",
+          "title": "a newer modal supersedes cart Escape and focus restoration"
+        },
+        {
+          "id": "cart.owned-dialog",
+          "file": "tests/required/cart-overlay-accessibility.spec.ts",
+          "title": "an owned dialog keeps initial focus and cannot steal focus when the cart closes"
+        },
+        {
+          "id": "cart.responsive-lifecycle",
+          "file": "tests/required/cart-overlay-accessibility.spec.ts",
+          "title": "responsive cart retains modal ownership without overflow or clipped focus"
+        },
+        {
+          "id": "cart.route-unmount",
+          "file": "tests/required/cart-overlay-accessibility.spec.ts",
+          "title": "route replacement cancels cart focus restoration"
+        }
+      ],
+      "requiredProjects": ["chromium", "webkit"],
+      "allowSkips": false,
+      "allowRetries": false,
+      "allowAnnotations": false,
+      "reportType": "required-test-evidence",
+      "reportPath": ".local/required-test-evidence/ci.cart-overlay-accessibility/evidence.json",
+      "maxAgeMinutes": 240,
+      "artifactBinding": "none",
+      "playwright": {
+        "config": "playwright.cart-overlay.config.ts",
+        "testRoot": "tests/required",
+        "args": ["playwright", "test", "-c", "playwright.cart-overlay.config.ts"],
+        "exactConfigOnly": true
+      },
+      "ci": { "job": "stable-checks", "step": "Run required cart overlay accessibility matrix" }
+    },
+    {
       "id": "ci.merge-gate",
       "invariant": "Merge eligibility requires secret-scan, stable-checks, and advisory-contract-preflight to conclude successfully.",
       "cadence": "merge-required",

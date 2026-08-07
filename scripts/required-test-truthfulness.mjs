@@ -408,7 +408,13 @@ function validateAdvisoryRequiredPair({
       `required-test evidence ${gateId} cannot claim release or production-artifact identity`,
     );
   }
-  const records = collectReportTests(report.suites);
+  const records = collectReportTests(
+    report.suites,
+    normalizePath(gate.playwright?.testRoot ?? "tests/e2e").replace(
+      /^<repository-root>\//,
+      "",
+    ),
+  );
   const configuredProjects = new Set(
     projects.map((project) => project.name ?? project.id).filter(Boolean),
   );
@@ -839,10 +845,16 @@ function extractWorkflowJob(workflow, jobName) {
 function validatePlaywrightInvocation(gate, repositoryRoot, issues) {
   if (gate.runner !== "playwright") return;
   const config = gate.playwright?.config;
+  const testRoot = gate.playwright?.testRoot ?? "tests/e2e";
+  const testRootSegments = typeof testRoot === "string" ? testRoot.split("/") : [];
   const args = gate.playwright?.args;
   if (
     typeof config !== "string" ||
     config.length === 0 ||
+    typeof testRoot !== "string" ||
+    !/^tests\/[A-Za-z0-9_./-]+$/.test(testRoot) ||
+    testRoot.endsWith("/") ||
+    testRootSegments.some((segment) => segment === "." || segment === "..") ||
     !Array.isArray(args) ||
     args.some((argument) => typeof argument !== "string") ||
     args[0] !== "playwright" ||
@@ -860,6 +872,11 @@ function validatePlaywrightInvocation(gate, repositoryRoot, issues) {
   }
   if (!existsSync(configPath) || !statSync(configPath).isFile()) {
     issues.push(`gate ${gate.id} Playwright config ${config} is missing`);
+  }
+  try {
+    repositoryPath(repositoryRoot, testRoot, `gate ${gate.id} Playwright test root`);
+  } catch (error) {
+    issues.push(error instanceof Error ? error.message : String(error));
   }
   if (
     gate.playwright.exactConfigOnly === true &&
@@ -1340,8 +1357,8 @@ export function validateRequiredTestRepository({
       ...(gate.requiredInventory ? inventories.get(gate.requiredInventory) ?? [] : []),
       ...(gate.requiredSources ?? []).filter(
         (source) =>
-          /^scripts\/test-.*\.(?:js|mjs|ts)$/.test(source) ||
-          /^tests\/e2e\/.*\.spec\.ts$/.test(source),
+          /^scripts\/test-.*\.(?:[cm]?js|tsx?)$/.test(source) ||
+          /^tests\/.*\.spec\.(?:[cm]?js|tsx?)$/.test(source),
       ),
     ]);
     if (gate.cadence === "merge-required") {
@@ -1680,24 +1697,27 @@ export function validateRequiredTestRepository({
   return { valid: issues.length === 0, issues, manifest, inventories };
 }
 
-function reportFile(file) {
+function reportFile(file, testRoot) {
   const normalized = normalizePath(file ?? "").replace(/^<repository-root>\//, "");
-  if (normalized.startsWith("tests/e2e/")) return normalized;
-  const marker = "/tests/e2e/";
+  if (normalized.startsWith(`${testRoot}/`)) return normalized;
+  const marker = `/${testRoot}/`;
   const markerIndex = normalized.lastIndexOf(marker);
   return markerIndex >= 0
     ? normalized.slice(markerIndex + 1)
-    : `tests/e2e/${normalized.replace(/^\/+/, "")}`;
+    : `${testRoot}/${normalized.replace(/^\/+/, "")}`;
 }
 
-function collectReportTests(suites, inheritedFile = "", result = []) {
+function collectReportTests(suites, testRoot, inheritedFile = "", result = []) {
   if (!Array.isArray(suites)) return result;
   for (const suite of suites) {
     if (!suite || typeof suite !== "object") continue;
     const suiteFile = typeof suite.file === "string" ? suite.file : inheritedFile;
     for (const spec of Array.isArray(suite.specs) ? suite.specs : []) {
       if (!spec || typeof spec !== "object") continue;
-      const file = reportFile(typeof spec.file === "string" ? spec.file : suiteFile);
+      const file = reportFile(
+        typeof spec.file === "string" ? spec.file : suiteFile,
+        testRoot,
+      );
       const tests = Array.isArray(spec.tests) ? spec.tests : [];
       if (tests.length === 0) {
         result.push({
@@ -1743,7 +1763,7 @@ function collectReportTests(suites, inheritedFile = "", result = []) {
         });
       }
     }
-    collectReportTests(suite.suites, suiteFile, result);
+    collectReportTests(suite.suites, testRoot, suiteFile, result);
   }
   return result;
 }
@@ -1870,7 +1890,10 @@ export function validateRequiredTestReport({
   ) {
     issues.push(`gate ${gateId} report was produced by another Playwright configuration`);
   }
-  if (rootDir !== "tests/e2e") {
+  const expectedTestRoot = normalizePath(
+    gate.playwright?.testRoot ?? "tests/e2e",
+  ).replace(/^<repository-root>\//, "");
+  if (rootDir !== expectedTestRoot) {
     issues.push(`gate ${gateId} report uses an unexpected test root`);
   }
   const reportProjects = new Set(
@@ -1904,7 +1927,7 @@ export function validateRequiredTestReport({
     ownershipIssues,
   );
   issues.push(...ownershipIssues);
-  const reportedRecords = collectReportTests(report.suites);
+  const reportedRecords = collectReportTests(report.suites, expectedTestRoot);
   for (const importedModule of ownershipAliases.keys()) {
     for (const project of requiredProjects) {
       if (

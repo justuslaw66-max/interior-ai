@@ -75,9 +75,6 @@ for (const required of [
   'aria-modal="true"',
   "aria-labelledby={titleId}",
   "aria-describedby={description ? descriptionId : undefined}",
-  'event.key === "Escape"',
-  'event.key !== "Tab"',
-  "opener.focus()",
   "focus-visible:ring-2",
   "motion-reduce:transition-none",
   "min-h-11",
@@ -88,9 +85,40 @@ for (const required of [
   );
 }
 
+const dialogLifecycle = read(
+  "components/editor/design-system/useEditorDialogLifecycle.ts"
+);
+for (const required of [
+  'event.key === "Escape"',
+  'event.key === "Tab"',
+  "isTopmostDialog(token)",
+  "hasExternalModal()",
+  'element.closest(\'[hidden], [inert], [aria-hidden="true"]\')',
+  "returnFocusId ? document.getElementById(returnFocusId) : opener",
+  "target.focus({ preventScroll: true })",
+  "window.requestAnimationFrame",
+  "window.cancelAnimationFrame",
+]) {
+  assert.ok(
+    dialogLifecycle.includes(required),
+    `shared dialog lifecycle must preserve ${required}`
+  );
+}
+assert.match(
+  dialogLifecycle,
+  /initialFocusRef\?\.current[\s\S]*?data-editor-dialog-initial-focus[\s\S]*?closeButtonRef\.current/,
+  "explicit shared-dialog initial focus must take precedence over the close button"
+);
+assert.match(
+  dialogLifecycle,
+  /if \(!cancelFocusRestorationOnUnmount\) return;[\s\S]*?cancelPendingRestoration\(restoreFrameRef\);/,
+  "only callers that opt into route/unmount cancellation may suppress pending focus return"
+);
+
 for (const relativePath of [
   "components/ConfirmDialog.tsx",
   "components/CopyFallbackDialog.tsx",
+  "components/ItemCartDrawer.tsx",
   "components/editor/design-page/AiNotesDialog.tsx",
   "components/editor/design-page/PlanAnnotationDialog.tsx",
   "components/editor/design-page/RoomRenameDialog.tsx",

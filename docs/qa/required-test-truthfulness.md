@@ -1,9 +1,10 @@
 # Required-test truthfulness
 
-Status: **CH-0013 SURFACE SEMANTIC OWNERSHIP REGISTERED — LOCAL CONTRACT GREEN;
+Status: **CH-0015A CART OVERLAY OWNER REGISTERED — LOCAL CONTRACT GREEN;
 EXTERNAL RULESET ENFORCEMENT UNVERIFIED**. Repository truthfulness assigns the
-surface-material semantic suite to one merge-required owner without changing
-the existing responsive, advisory Full E2E, or release Gate A3 owners. GitHub
+Selection Tray lifecycle suite to one merge-required Chromium/WebKit owner
+outside Full E2E discovery, while retaining the CH-0013 surface-material owner
+and existing responsive, advisory Full E2E, and release Gate A3 owners. GitHub
 ruleset selection and an exact-head workflow run remain external evidence;
 repository registration does not claim either control is configured.
 
@@ -44,18 +45,43 @@ Repository-controlled cadence is explicit:
   conclusion and dishonest evidence remain visible and are never accepted as
   release certification.
 
-The 22-gate inventory includes the required Git-history secret scan, code
+The 23-gate inventory includes the required Git-history secret scan, code
 quality, CH-0016 artifact-contract and runtime smoke, authorization/security,
 database migration process, persistence, Stripe, Phase 14/15, Consumer/Pro
 capability boundaries, cabinetry unit/accessibility/performance and release
 evidence, design guards, typecheck, zero-warning lint, the complete floor-plan
 umbrella (including live progress), catalog/materials, asset availability,
 Chromium/WebKit Pro visual policy, the Chromium/WebKit responsive public-share
-gate, and final merge-result aggregation. Gate A3 discovers all 100 current
+gate, the Chromium/WebKit Selection Tray lifecycle gate, and final merge-result
+aggregation. Gate A3 discovers all 100 current
 browser specs and separately locks the six repaired
 commerce/Kelsey requirement identities; cabinetry release evidence owns 23
 named Consumer/Pro workflows. CH-0016 runtime smoke locks its two runtime
 requirement identities.
+
+## CH-0015A canonical cart overlay owner
+
+`ci.cart-overlay-accessibility` is the sole merge-required owner for
+`scripts/test-cart-overlay-static.tsx`,
+`tests/required/cart-overlay-accessibility.spec.ts`, and
+`playwright.cart-overlay.config.ts`. Its package prerequisite renders the
+closed, empty-open, and populated-open component contracts before the browser
+phase. Eight stable browser identities execute in Chromium and WebKit, giving
+16 required records with zero retry, skip, annotation, filter, or shard.
+The static prerequisite also proves populated unique actions and that Clear,
+Remove, and decrement-to-zero focus a surviving modal control before mutation.
+
+The runnable spec deliberately lives under the gate-declared
+`tests/required` root. It is therefore not discovered by advisory Full E2E or
+release Gate A3, whose 101-spec inventory and configuration are unchanged.
+Truthfulness now validates a safe explicit repository test root, normalizes
+report files against it, and includes positive and traversal-negative fixture
+coverage. Runnable-owner enforcement also includes `scripts/test-*.tsx` and
+specs below `tests/required`, so neither source class can acquire a duplicate
+required owner. A mismatched report root still fails closed. The manifest advances
+from 22 to 23 gates while its classified inventory remains 376 sources; these
+three focused files are explicit sources of the new gate rather than members
+of the broad Full E2E inventory.
 
 ## CH-0013 canonical surface-material owner
 

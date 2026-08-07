@@ -1,5 +1,31 @@
 # P0/P1 remediation queue
 
+## CH-0015A Selection Tray accessibility — 2026-08-08
+
+- **Source/scope:** exact integration source
+  `00c93f510f24c6f759a6d16b839dadbe253920f8` / tree
+  `5ad9392dffa8cad88871e898713fcead8e5656c1`; bounded branch
+  `fix/ch-0015-cart-overlay-accessibility`; Selection Tray plus the existing
+  shared dialog lifecycle only.
+- **Disposition:** `PARTIALLY RESOLVED — CH-0015A LOCAL REMEDIATION COMPLETE`.
+  Closed tray content is absent from DOM/accessibility/focus/pointer ownership;
+  the open tray has one modal owner with deterministic focus and dismissal,
+  including focus transfer before Clear, Remove, or decrement-to-zero unmounts
+  the active row/footer control.
+  The separate shopping cart/checkout panel and every unrelated overlay remain
+  unchanged.
+- **Required owner:** new merge-required `ci.cart-overlay-accessibility` runs
+  eight stable identities in Chromium and WebKit outside Full E2E discovery.
+  Inventory is 23 gates / 376 classified sources.
+- **Behavior/rollback:** product/variant identity, quantity, removal, add-all,
+  pricing, totals, Shopify/affiliate, checkout, and authorization contracts are
+  unchanged. Revert the single focused implementation commit; no data or
+  external rollback is required.
+- **Queue status:** CH-0015 remains `IN_PROGRESS` rather than `RESOLVED` because
+  the architecture inventory still identifies major custom overlay lifecycles.
+  Select exactly one later overlay batch after separate review; do not bulk
+  migrate or infer modal intent.
+
 ## CH-0013 canonical surface-material required owner — 2026-08-07
 
 - **Source/scope:** exact integration source
@@ -191,7 +217,7 @@ Current superseding statuses are: CH-0017 **TRUTHFULNESS AND REQUIRED EXTERNAL W
 | CH-0012 | P1, resolved | RESOLVED | Supported editable entry points now converge on the canonical persisted-document loader; legacy bookmarks temporarily redirect. |
 | CH-0013 | P1, resolved | RESOLVED | Phase 8A/B runtime work is preserved and `ci.catalog-materials` now singly owns the required schema/browser-helper/lazy-boundary suite; generator drift remains required once through production-artifact evidence. |
 | CH-0014 | P2 | DOWNGRADED_WITH_EVIDENCE | Source shows per-item ownership, but no measured P1 outage, data loss, or security/privacy consequence is currently demonstrated. |
-| CH-0015 | P1 | READY | Invisible focusable drawer content is a concrete accessibility/core-workflow defect and a shared primitive exists. |
+| CH-0015 | P1 | IN_PROGRESS | CH-0015A fixes the Selection Tray; inventoried custom overlays remain open and must be migrated one bounded surface at a time. |
 | CH-0016 | P1, resolved | RESOLVED | Strict clean-source build, artifact/trace hashing, production start, and health/report identity now fail closed; CI upload/retention is configured but external execution and platform acceptance remain unverified. |
 | CH-0017 | P1, resolved/frozen | RESOLVED | TRUTHFULNESS AND REQUIRED EXTERNAL WORKFLOW VERIFIED — IMPLEMENTATION FROZEN. |
 | CH-0018 | P1 | BLOCKED_DEPENDENCY | Supported predecessor versions and a representative sanitized fixture owner are required. |
@@ -306,7 +332,7 @@ Current superseding statuses are: CH-0017 **TRUTHFULNESS AND REQUIRED EXTERNAL W
 
 ### CH-0015 — inaccessible drawer/overlay ownership
 
-- **Current evidence and affected symbols:** Closed `components/ItemCartDrawer.tsx` remains mounted and is only translated off-screen. `components/editor/design-system/EditorDialog.tsx` already owns role, focus trap/return, Escape, and backdrop semantics, while several overlays use custom lifecycles.
+- **Current evidence and affected symbols:** CH-0015A migrates `components/ItemCartDrawer.tsx` to `components/editor/design-system/EditorDialog.tsx`; closed Selection Tray content is now unmounted and the shared lifecycle owns semantics, topmost focus, dismissal, semantic return, and cancellation. Several inventoried overlays still use custom lifecycles, so the parent finding remains open.
 - **Reach and impact:** Cart and editor overlays are production-reachable core workflows. Keyboard and assistive-technology users can focus invisible controls or lose context; this is accessibility and workflow impact, not data corruption or a security boundary.
 - **Dependencies and tests:** No decision unless a named surface must be non-modal. Add closed/open tab order, axe, accessible name, Escape, outside-click, focus-return, narrow-viewport, and nested-prompt tests.
 - **Scope and rollback:** Migrate one overlay at a time to the shared primitive without visual/domain redesign. Roll back a single overlay adapter independently.
@@ -419,7 +445,7 @@ Risk order includes blocked findings so decisions are visible; `READY` ordering 
 14. `CH-0003` — `REQUIRES_PRODUCT_DECISION` (distributed cost budgets/outage policy).
 15. `CH-0005` — `REQUIRES_PRODUCT_DECISION` (retirement authority).
 16. `CH-0013` — `READY` (surface drift/schema gates, then payload).
-17. `CH-0015` — `READY` (accessible overlay ownership).
+17. `CH-0015` — `IN_PROGRESS` (Selection Tray complete in CH-0015A; remaining accessible overlay ownership queued in bounded batches).
 18. `CH-0019` — `RESOLVED` by the completed bounded baseline, architecture,
     Pro-visual, and Phase 8 sequence; no longer queued.
 

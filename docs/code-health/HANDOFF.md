@@ -1,5 +1,73 @@
 # Code health audit handoff
 
+## CH-0015A accessible Selection Tray handoff — 2026-08-08
+
+The bounded branch `fix/ch-0015-cart-overlay-accessibility` starts from exact
+integration SHA `00c93f510f24c6f759a6d16b839dadbe253920f8` and tree
+`5ad9392dffa8cad88871e898713fcead8e5656c1`. The branch owns only the editor
+Selection Tray and the shared `EditorDialog` lifecycle needed for that
+migration. `integration/deep-clean-v1`, pricing, checkout, catalog identity,
+dependencies, data, external controls, deployment, and Full E2E are excluded.
+
+The Selection Tray is classification **A — modal dialog/drawer** because its
+existing full-viewport backdrop prevents editor interaction. Before this
+change, the closed off-canvas tree stayed mounted, pointer-active, present in
+the accessibility snapshot, and initially exposed a tabbable close button;
+it had no role, name, modal declaration, focus entry/trap/return, or Escape
+contract. The new closed state unmounts the entire cart tree. The open state
+uses the existing `EditorDialog` with a named modal owner, intentional
+close-button focus, topmost Tab/Escape/backdrop handling, semantic live-opener
+resolution, stale-frame cancellation, route/unmount suppression, and nested or
+newer-modal focus-theft protection. Desktop remains a 24rem light right drawer;
+mobile remains viewport-width; the existing content/actions and 300 ms entry
+motion are retained without keeping closed controls mounted.
+
+`ci.cart-overlay-accessibility` is the new single merge-required owner because
+the existing Node critical umbrella cannot produce honest Chromium/WebKit
+evidence and the other browser owners cover different surfaces. Eight stable
+identities execute in both engines, 16/16, with zero retry/skip/annotation and
+an explicit `tests/required` root outside Full E2E discovery. The manifest is
+23 gates / 376 classified sources, SHA-256
+`00d82d1433fab594db6ce5eee7c1be8c8c679b992030d5a62927b4622e2a4faa`.
+
+Final local validation is green for the cart static contract; cart browser
+matrix 16/16 Chromium/WebKit; Consumer/Pro; desktop/mobile; empty/populated
+rendering; focus, close, replacement, supersession, and route lifecycles;
+commerce and checkout contracts through the critical Phase 14, Stripe/Pro,
+and design-commerce owners; required truthfulness; direct manifest check;
+production-artifact contract; critical-required; design cleanup 78/78;
+zero-warning lint; typecheck; code quality; strict 57/57 build; Phase 8; and
+Pro visual policy 4/4. The clean-source public-share gate must run against the
+implementation commit and be reported separately. The initial `/design` delta is +3,231 raw / +912
+Brotli JavaScript bytes and +433 raw / +129 Brotli CSS bytes with one additional
+initial JavaScript file, unchanged CSS file count, unchanged cabinetry/GLTF
+lazy chunks, no cart-only chunk, and all budgets
+green.
+
+The hands-on empty-state audit confirmed zero closed DOM descendants, the
+named modal/accessibility tree, close-button focus ring, contained Tab order,
+Escape return, backdrop ownership, and no horizontal overflow at 1280×720 and
+390×844. Populated row/action identity is rendered deterministically by the
+static prerequisite; there is no production-visible seeded Selection Tray path
+or directly nested prompt in this source. `CartSidebar` and its retailer prompt
+are separate later surfaces and were not coupled into this batch.
+
+Independent read-only review initially found shared-dialog unmount return,
+explicit initial-focus priority, direct state-close return, rendered-action
+geometry, backdrop precedence, runnable-owner discovery, and nested/route
+coverage gaps. Final rereview then found that populated Clear, Remove, and
+decrement-to-zero could unmount their focused action while leaving the modal
+open; those paths now focus the surviving close button before the unchanged
+mutation callback, with deterministic ordering/source coverage. Each valid
+finding was corrected and its affected focused coverage rerun. Final
+complete-diff disposition: **PASS — no remaining actionable findings**.
+Rollback is one focused commit
+revert followed by the cart static/matrix, commerce, editor accessibility,
+Phase 8, and strict-build checks; no data or external rollback is required.
+CH-0015 remains open for the architecture inventory's bounded later overlay
+batches. Separate integrator review remains required; nothing is pushed or
+integrated by this handoff.
+
 ## CH-0013 surface-material required-owner handoff — 2026-08-07
 
 The bounded branch `fix/ch-0013-surface-material-required-owner` starts from

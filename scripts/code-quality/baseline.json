@@ -2065,7 +2065,7 @@
     "components/editor/design-system/EditorDialog.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 153
+        "maximum": 107
       }
     },
     "components/editor/DesignControlsAiPanel.tsx": {
@@ -2533,7 +2533,7 @@
     "components/ItemCartDrawer.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 140
+        "maximum": 95
       }
     },
     "components/OnboardingChecklist.tsx": {

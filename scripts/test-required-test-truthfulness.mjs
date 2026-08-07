@@ -1440,6 +1440,28 @@ for (const failOpenSuffix of [" || true", "||true", " || :", "; exit 0"]) {
 
 {
   const context = makeRepository();
+  const processGate = context.manifest.gates.find((gate) => gate.id === "ci.fixture");
+  const mergeGate = context.manifest.gates.find((gate) => gate.id === "ci.merge-fixture");
+  const focusedSources = [
+    "scripts/test-focused.tsx",
+    "tests/required/focused.spec.ts",
+  ];
+  for (const source of focusedSources) write(context.root, source, "export {};\n");
+  processGate.requiredSources.push(...focusedSources);
+  mergeGate.requiredSources.push(...focusedSources);
+  write(
+    context.root,
+    "scripts/required-test-manifest.json",
+    `${JSON.stringify(context.manifest, null, 2)}\n`,
+  );
+  const result = validateRequiredTestRepository({ repositoryRoot: context.root });
+  for (const source of focusedSources) {
+    expectIssue(result, `required source ${source} has more than one merge-required owner`);
+  }
+}
+
+{
+  const context = makeRepository();
   const gate = context.manifest.gates.find((entry) => entry.id === "release.fixture");
   gate.playwright.args = ["playwright", "test", "--config=other.config.ts"];
   write(context.root, "other.config.ts", "export default {};\n");
@@ -1542,6 +1564,46 @@ for (const failOpenSuffix of [" || true", "||true", " || :", "; exit 0"]) {
     "produced by another Playwright configuration",
   );
   expectIssue(reportResult(context.root, report), "unexpected test root");
+}
+
+{
+  const context = makeRepository();
+  const gate = context.manifest.gates.find((entry) => entry.id === "release.fixture");
+  write(
+    context.root,
+    "tests/required/focused.spec.ts",
+    "test('required identity', async () => { expect(true).toBeTruthy(); });\n",
+  );
+  gate.requiredSources = ["tests/required/focused.spec.ts"];
+  gate.requiredTests[0].file = "tests/required/focused.spec.ts";
+  gate.playwright.testRoot = "tests/required";
+  delete gate.reportOwnershipRegistrations;
+  delete gate.supportingInventories;
+  write(
+    context.root,
+    "scripts/required-test-manifest.json",
+    `${JSON.stringify(context.manifest, null, 2)}\n`,
+  );
+  const report = makeReport({ file: "focused.spec.ts" });
+  report.config.rootDir = "<repository-root>/tests/required";
+  const result = reportResult(context.root, report);
+  assert.deepEqual(result.issues, [], "an explicit focused test root must remain truthful");
+  assert.equal(result.valid, true);
+}
+
+{
+  const context = makeRepository();
+  const gate = context.manifest.gates.find((entry) => entry.id === "release.fixture");
+  gate.playwright.testRoot = "tests/../outside";
+  write(
+    context.root,
+    "scripts/required-test-manifest.json",
+    `${JSON.stringify(context.manifest, null, 2)}\n`,
+  );
+  expectIssue(
+    validateRequiredTestRepository({ repositoryRoot: context.root }),
+    "malformed Playwright invocation",
+  );
 }
 
 {

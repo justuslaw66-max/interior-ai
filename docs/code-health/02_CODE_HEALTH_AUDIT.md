@@ -1,5 +1,37 @@
 # Code health audit
 
+## CH-0015A accessible cart overlay lifecycle — 2026-08-08
+
+Starting from exact integration source
+`00c93f510f24c6f759a6d16b839dadbe253920f8` / tree
+`5ad9392dffa8cad88871e898713fcead8e5656c1`, the first bounded CH-0015 batch
+migrates only `ItemCartDrawer` (Selection Tray) to the shared modal
+`EditorDialog`. The old closed drawer stayed mounted off-screen with focusable,
+pointer-active, accessibility-visible controls; the new closed state unmounts
+the complete dialog tree. Open state is a labelled modal right drawer with
+intentional close-button focus, Tab containment, topmost Escape/backdrop
+dismissal, current semantic opener restoration, replacement/missing-opener
+handling, nested-modal suppression, route/unmount cancellation, destructive
+row/footer mutation focus fallback, and one
+Consumer/Pro mobile/desktop contract.
+
+No item identity, quantity/removal callback, add-all/clear ordering, price,
+total, commerce source, checkout eligibility/URL, Shopify/affiliate behavior,
+or purchase authorization changed. The separate shopping `CartSidebar` and
+its retailer confirmation are not part of CH-0015A.
+
+Required ownership advances to 23 gates / 376 classified inventory sources.
+`ci.cart-overlay-accessibility` owns eight stable identities in both Chromium
+and WebKit outside Full E2E discovery; required-test truthfulness binds its
+explicit focused test root. The complete before/after contract, test ownership,
+overlay inventory, remaining batches, and rollback are in
+`docs/architecture/cart-overlay-accessibility.md`.
+
+This batch is a **partial CH-0015 remediation**. The Selection Tray surface is
+locally complete, but CH-0015 remains open for the inventoried custom Plans,
+My Designs, command palette, checkout prompt, feedback, import, and other
+overlay lifecycles. No unrelated overlay was migrated.
+
 ## CH-0013 required surface-material ownership remediation — 2026-08-07
 
 Starting from exact integration source
@@ -386,8 +418,10 @@ CH-0001, CH-0012, and CH-0016 are closed for repository-controlled remediation. 
 ### CH-0015 — Drawers and major overlays bypass accessible dialog ownership
 
 - **Severity:** P1.
+- **Status:** PARTIALLY REMEDIATED — CH-0015A SELECTION TRAY COMPLETE LOCALLY; OTHER OVERLAYS REMAIN OPEN.
 - **Locations/symbols:** `ItemCartDrawer`; editor dialog layer; Plans dialog; My Designs dialog; Command Palette; shared `EditorDialog`.
-- **Evidence/current behavior:** Closed cart is translated off-screen while controls remain mounted/focusable. It lacks dialog semantics, inert/focus containment, Escape and focus return. Several major modals bypass the shared accessible dialog primitive.
+- **Pre-remediation evidence:** Closed cart was translated off-screen while controls remained mounted/focusable. It lacked dialog semantics, inert/focus containment, Escape and focus return. Several major modals bypassed the shared accessible dialog primitive.
+- **CH-0015A current behavior:** Selection Tray closed content is unmounted; open content uses the shared modal lifecycle with labelled semantics, deterministic entry/trap/Escape/backdrop/current-opener return, nested-owner suppression, and stale-frame cancellation. The remaining custom overlays are unchanged and inventoried in `docs/architecture/cart-overlay-accessibility.md`.
 - **Risk:** Keyboard and assistive-technology users can focus invisible controls, lose context, or become trapped; overlay behavior diverges.
 - **Improvement:** Migrate overlays to one primitive with semantic title/description, inert background, focus trap/return, Escape policy, responsive sizing, and explicit non-modal exceptions.
 - **Expected outcome:** Consistent accessible overlay lifecycle without changing domain actions.
