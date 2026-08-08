@@ -3,79 +3,27 @@
 import {
   useCallback,
   useEffect,
+  useLayoutEffect,
   useRef,
   type MutableRefObject,
   type RefObject,
 } from "react";
-
-const FOCUSABLE_SELECTOR = [
-  "a[href]",
-  "button:not([disabled])",
-  "input:not([disabled])",
-  "select:not([disabled])",
-  "textarea:not([disabled])",
-  '[tabindex]:not([tabindex="-1"])',
-].join(",");
-const MODAL_SELECTOR = ':is([role="dialog"], [role="alertdialog"])[aria-modal="true"]';
-const dialogStack: symbol[] = [];
-const dialogRoots = new Map<symbol, HTMLElement>();
-
-function isActionable(element: HTMLElement) {
-  if (
-    !element.isConnected ||
-    element.closest('[hidden], [inert], [aria-hidden="true"]')
-  ) return false;
-  const style = window.getComputedStyle(element);
-  if (style.display === "none" || style.visibility === "hidden") return false;
-  if (element.getAttribute("aria-disabled") === "true") return false;
-  if (element instanceof HTMLButtonElement || element instanceof HTMLInputElement) {
-    if (element.disabled) return false;
-  }
-  const rect = element.getBoundingClientRect();
-  return rect.width > 0 && rect.height > 0;
-}
-
-function getFocusableElements(container: HTMLElement) {
-  return Array.from(container.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR)).filter(
-    isActionable
-  );
-}
-
-function hasExternalModal() {
-  const ownedRoots = new Set(dialogRoots.values());
-  return Array.from(document.querySelectorAll<HTMLElement>(MODAL_SELECTOR)).some(
-    (modal) => !ownedRoots.has(modal) && isActionable(modal)
-  );
-}
-
-function isTopmostDialog(token: symbol) {
-  return dialogStack.at(-1) === token && !hasExternalModal();
-}
-
-function handleTab(event: KeyboardEvent, panel: HTMLElement) {
-  const focusable = getFocusableElements(panel);
-  if (focusable.length === 0) {
-    event.preventDefault();
-    panel.focus();
-    return;
-  }
-  const first = focusable[0];
-  const last = focusable[focusable.length - 1];
-  const active = document.activeElement;
-  if (event.shiftKey && (active === first || !panel.contains(active))) {
-    event.preventDefault();
-    last.focus();
-  } else if (!event.shiftKey && (active === last || !panel.contains(active))) {
-    event.preventDefault();
-    first.focus();
-  }
-}
-
-function removeDialog(token: symbol) {
-  const index = dialogStack.lastIndexOf(token);
-  if (index >= 0) dialogStack.splice(index, 1);
-  dialogRoots.delete(token);
-}
+import {
+  hasExternalEditorModal,
+  isEditorDialogBackgroundManaged,
+  isTopmostEditorDialog,
+  observeEditorDialogOwnership,
+  registerEditorDialogRoot,
+  setEditorDialogOwnershipGuard,
+  unregisterEditorDialogRoot,
+  type EditorDialogToken,
+} from "@/components/editor/design-system/editorDialogRegistry";
+import {
+  handleTab,
+  isActionable,
+  resolveInitialFocusTarget,
+  resolveReadyFocusTarget,
+} from "@/components/editor/design-system/editorDialogFocus";
 
 function cancelPendingRestoration(restoreFrameRef: MutableRefObject<number | null>) {
   if (restoreFrameRef.current === null) return;
@@ -91,13 +39,19 @@ type EditorDialogLifecycleOptions = {
   initialFocusRef?: { current: HTMLElement | null };
   returnFocusId?: string;
   cancelFocusRestorationOnUnmount: boolean;
+  waitForEntryTransition: boolean;
   closeDisabled: boolean;
   onClose: () => void;
 };
 
 type DialogSessionOptions = Pick<
   EditorDialogLifecycleOptions,
-  "dialogRef" | "panelRef" | "closeButtonRef" | "initialFocusRef" | "returnFocusId"
+  | "dialogRef"
+  | "panelRef"
+  | "closeButtonRef"
+  | "initialFocusRef"
+  | "returnFocusId"
+  | "waitForEntryTransition"
 > & {
   generation: number;
   closeDisabledRef: MutableRefObject<boolean>;
@@ -107,46 +61,275 @@ type DialogSessionOptions = Pick<
   requestClose: () => void;
 };
 
-function registerDialogSession(options: DialogSessionOptions) {
-  const { dialogRef, panelRef, closeButtonRef, initialFocusRef, returnFocusId } = options;
-  const dialog = dialogRef.current;
-  const panel = panelRef.current;
-  if (!dialog || !panel) return;
-  const token = Symbol("editor-dialog");
-  const opener = document.activeElement instanceof HTMLElement ? document.activeElement : null;
-  dialogStack.push(token);
-  dialogRoots.set(token, dialog);
-  const entryFrame = window.requestAnimationFrame(() => {
-    if (!isTopmostDialog(token)) return;
-    const initialTarget =
-      initialFocusRef?.current ??
-      panel.querySelector<HTMLElement>('[data-editor-dialog-initial-focus="true"]') ??
-      closeButtonRef.current ??
-      getFocusableElements(panel)[0] ?? panel;
-    if (isActionable(initialTarget)) initialTarget.focus();
+type DialogEntryState = "mounting" | "entering" | "interactive";
+const ENTRY_TRANSITION_EVENTS = [
+  "transitionrun",
+  "transitionstart",
+  "transitionend",
+  "transitioncancel",
+] as const;
+
+function setDialogEntryState(
+  dialog: HTMLElement,
+  panel: HTMLElement,
+  state: DialogEntryState
+) {
+  dialog.dataset.editorDialogState = state;
+  panel.dataset.editorDialogState = state;
+}
+
+function scheduleTrackedFrame(frames: Set<number>, callback: () => void) {
+  const frame = window.requestAnimationFrame(() => {
+    frames.delete(frame);
+    callback();
   });
-  const handleKeyDown = (event: KeyboardEvent) => {
-    if (!isTopmostDialog(token)) return;
+  frames.add(frame);
+  return frame;
+}
+
+function updateTransitionListeners(
+  panel: HTMLElement,
+  listener: (event: TransitionEvent) => void,
+  action: "add" | "remove"
+) {
+  for (const eventName of ENTRY_TRANSITION_EVENTS) {
+    if (action === "add") panel.addEventListener(eventName, listener);
+    else panel.removeEventListener(eventName, listener);
+  }
+}
+
+function createEntryReadinessController(
+  dialog: HTMLElement,
+  panel: HTMLElement,
+  token: EditorDialogToken,
+  options: DialogSessionOptions
+) {
+  const frames = new Set<number>();
+  let disposed = false;
+  let checkFrame: number | null = null;
+  let initialFocusAdmitted = false;
+  const isCurrentEntry = () =>
+    !disposed &&
+    options.generationRef.current === options.generation &&
+    dialog.isConnected &&
+    panel.isConnected;
+  const completeWhenReady = () => {
+    if (!isCurrentEntry() || initialFocusAdmitted || !isTopmostEditorDialog(token)) return;
+    const target = resolveReadyFocusTarget(
+      panel,
+      options,
+      options.waitForEntryTransition
+    );
+    if (!target) return;
+    initialFocusAdmitted = true;
+    setDialogEntryState(dialog, panel, "interactive");
+    if (isTopmostEditorDialog(token) && isActionable(target)) {
+      target.focus({ preventScroll: true });
+    }
+  };
+  const schedule = () => {
+    if (!isCurrentEntry() || checkFrame !== null) return;
+    checkFrame = scheduleTrackedFrame(frames, () => {
+      checkFrame = null;
+      completeWhenReady();
+    });
+  };
+  const reschedule = () => {
+    if (checkFrame !== null) {
+      window.cancelAnimationFrame(checkFrame);
+      frames.delete(checkFrame);
+      checkFrame = null;
+    }
+    schedule();
+  };
+  const dispose = () => {
+    disposed = true;
+    for (const frame of frames) window.cancelAnimationFrame(frame);
+  };
+  return { isCurrentEntry, schedule, reschedule, dispose };
+}
+
+function scheduleDialogEntry(
+  dialog: HTMLElement,
+  panel: HTMLElement,
+  token: EditorDialogToken,
+  options: DialogSessionOptions
+) {
+  const readiness = createEntryReadinessController(dialog, panel, token, options);
+  const handleTransition = (event: TransitionEvent) => {
+    if (event.target !== panel) return;
+    if (event.type === "transitionrun" || event.type === "transitionstart") {
+      setDialogEntryState(dialog, panel, "entering");
+    } else {
+      readiness.reschedule();
+    }
+  };
+  const observer = options.waitForEntryTransition
+    ? new ResizeObserver(readiness.reschedule)
+    : null;
+  setDialogEntryState(dialog, panel, "mounting");
+  if (options.waitForEntryTransition) {
+    panel.inert = true;
+    updateTransitionListeners(panel, handleTransition, "add");
+    observer?.observe(panel);
+    window.addEventListener("resize", readiness.reschedule);
+    panel.getBoundingClientRect();
+    setDialogEntryState(dialog, panel, "entering");
+    readiness.schedule();
+  } else {
+    readiness.schedule();
+  }
+  setEditorDialogOwnershipGuard(token, () => {
+    if (!readiness.isCurrentEntry() || !isTopmostEditorDialog(token)) return;
+    if (options.waitForEntryTransition) {
+      const interactive = dialog.dataset.editorDialogState === "interactive";
+      const hasOwner = interactive
+        ? dialog.contains(document.activeElement)
+        : document.activeElement === dialog;
+      const target = interactive ? resolveInitialFocusTarget(panel, options) : dialog;
+      if (!hasOwner && isActionable(target)) target.focus({ preventScroll: true });
+    }
+    readiness.reschedule();
+  });
+  return () => {
+    readiness.dispose();
+    if (options.waitForEntryTransition) panel.inert = false;
+    observer?.disconnect();
+    window.removeEventListener("resize", readiness.reschedule);
+    updateTransitionListeners(panel, handleTransition, "remove");
+  };
+}
+
+function createDialogInputHandlers(
+  dialog: HTMLElement,
+  panel: HTMLElement,
+  token: EditorDialogToken,
+  options: DialogSessionOptions
+) {
+  const keydown = (event: KeyboardEvent) => {
+    if (!isTopmostEditorDialog(token)) return;
     if (event.key === "Escape" && !options.closeDisabledRef.current) {
       event.preventDefault();
       event.stopImmediatePropagation();
       options.requestClose();
-    } else if (event.key === "Tab") handleTab(event, panel);
+    } else if (event.key === "Tab") {
+      if (
+        options.waitForEntryTransition &&
+        dialog.dataset.editorDialogState !== "interactive"
+      ) {
+        event.preventDefault();
+        dialog.focus({ preventScroll: true });
+      } else {
+        handleTab(event, panel);
+      }
+    }
   };
-  document.addEventListener("keydown", handleKeyDown);
+  const focusin = (event: FocusEvent) => {
+    if (!isTopmostEditorDialog(token)) return;
+    const interactive = dialog.dataset.editorDialogState === "interactive";
+    if (!interactive) {
+      if (event.target !== dialog) dialog.focus({ preventScroll: true });
+      return;
+    }
+    if (event.target instanceof Node && dialog.contains(event.target)) return;
+    const target = resolveInitialFocusTarget(panel, options);
+    if (isActionable(target)) target.focus({ preventScroll: true });
+  };
+  return { keydown, focusin };
+}
+
+function scheduleFocusRestoration(
+  opener: HTMLElement | null,
+  ownedTopmostFocus: boolean,
+  options: DialogSessionOptions
+) {
+  options.restoreFrameRef.current = window.requestAnimationFrame(() => {
+    options.restoreFrameRef.current = null;
+    if (
+      options.unmountedRef.current ||
+      options.generationRef.current !== options.generation ||
+      !ownedTopmostFocus ||
+      hasExternalEditorModal()
+    ) return;
+    const target = options.returnFocusId
+      ? document.getElementById(options.returnFocusId)
+      : opener;
+    if (target instanceof HTMLElement && isActionable(target)) {
+      target.focus({ preventScroll: true });
+    }
+  });
+}
+
+function registerDialogSession(options: DialogSessionOptions) {
+  const dialog = options.dialogRef.current;
+  const panel = options.panelRef.current;
+  if (!dialog || !panel) return;
+  const opener = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+  const token = registerEditorDialogRoot(dialog, options.waitForEntryTransition);
+  dialog.dataset.editorDialogGeneration = String(options.generation);
+  dialog.dataset.editorDialogFocusTrap = "active";
+  const handlers = createDialogInputHandlers(dialog, panel, token, options);
+  document.addEventListener("keydown", handlers.keydown);
+  if (options.waitForEntryTransition)
+    document.addEventListener("focusin", handlers.focusin);
+  if (
+    (options.waitForEntryTransition || isEditorDialogBackgroundManaged()) &&
+    isTopmostEditorDialog(token) &&
+    isActionable(dialog)
+  ) {
+    dialog.focus({ preventScroll: true });
+  }
+  const cancelEntry = scheduleDialogEntry(dialog, panel, token, options);
+  const stopObservingOwnership = observeEditorDialogOwnership();
   return () => {
-    const ownedTopmostFocus = isTopmostDialog(token);
-    window.cancelAnimationFrame(entryFrame);
-    document.removeEventListener("keydown", handleKeyDown);
-    removeDialog(token);
-    options.restoreFrameRef.current = window.requestAnimationFrame(() => {
-      options.restoreFrameRef.current = null;
-      if (options.unmountedRef.current || options.generationRef.current !== options.generation) return;
-      if (!ownedTopmostFocus || hasExternalModal()) return;
-      const target = returnFocusId ? document.getElementById(returnFocusId) : opener;
-      if (target instanceof HTMLElement && isActionable(target)) target.focus({ preventScroll: true });
-    });
+    const ownedTopmostFocus = isTopmostEditorDialog(token);
+    cancelEntry();
+    stopObservingOwnership();
+    document.removeEventListener("keydown", handlers.keydown);
+    if (options.waitForEntryTransition)
+      document.removeEventListener("focusin", handlers.focusin);
+    delete dialog.dataset.editorDialogFocusTrap;
+    unregisterEditorDialogRoot(token);
+    scheduleFocusRestoration(opener, ownedTopmostFocus, options);
   };
+}
+
+function useDialogSessionEffects(
+  options: EditorDialogLifecycleOptions,
+  closeDisabledRef: MutableRefObject<boolean>,
+  restoreFrameRef: MutableRefObject<number | null>,
+  generationRef: MutableRefObject<number>,
+  unmountedRef: MutableRefObject<boolean>,
+  requestClose: () => void
+) {
+  const {
+    open, dialogRef, panelRef, closeButtonRef, initialFocusRef,
+    returnFocusId, waitForEntryTransition,
+  } = options;
+  const startSession = useCallback(() => {
+    const generation = generationRef.current + 1;
+    generationRef.current = generation;
+    cancelPendingRestoration(restoreFrameRef);
+    return registerDialogSession({
+      dialogRef, panelRef, closeButtonRef, initialFocusRef, returnFocusId,
+      waitForEntryTransition, generation, requestClose,
+      closeDisabledRef, restoreFrameRef, generationRef, unmountedRef,
+    });
+  }, [
+    closeButtonRef, closeDisabledRef, dialogRef, generationRef, initialFocusRef,
+    panelRef, requestClose, restoreFrameRef, returnFocusId, unmountedRef,
+    waitForEntryTransition,
+  ]);
+
+  useLayoutEffect(() => {
+    if (!open || !waitForEntryTransition) return;
+    return startSession();
+  }, [open, startSession, waitForEntryTransition]);
+
+  useEffect(() => {
+    if (!open || waitForEntryTransition) return;
+    return startSession();
+  }, [open, startSession, waitForEntryTransition]);
 }
 
 export function useEditorDialogLifecycle({
@@ -156,6 +339,7 @@ export function useEditorDialogLifecycle({
   initialFocusRef,
   returnFocusId,
   cancelFocusRestorationOnUnmount,
+  waitForEntryTransition,
   closeDisabled,
   onClose,
 }: EditorDialogLifecycleOptions) {
@@ -174,25 +358,18 @@ export function useEditorDialogLifecycle({
     onCloseRef.current();
   }, []);
 
-  useEffect(() => {
-    if (!open) return;
-    const generation = generationRef.current + 1;
-    generationRef.current = generation;
-    cancelPendingRestoration(restoreFrameRef);
-    return registerDialogSession({
-      dialogRef, panelRef, closeButtonRef, initialFocusRef, returnFocusId, generation,
-      closeDisabledRef, restoreFrameRef, generationRef, unmountedRef,
-      requestClose,
-    });
-  }, [
-    closeButtonRef,
-    dialogRef,
-    initialFocusRef,
-    open,
-    panelRef,
-    requestClose,
-    returnFocusId,
-  ]);
+  useDialogSessionEffects(
+    {
+      open, dialogRef, panelRef, closeButtonRef, initialFocusRef, returnFocusId,
+      cancelFocusRestorationOnUnmount, waitForEntryTransition, closeDisabled,
+      onClose,
+    },
+    closeDisabledRef,
+    restoreFrameRef,
+    generationRef,
+    unmountedRef,
+    requestClose
+  );
 
   useEffect(() => {
     unmountedRef.current = false;

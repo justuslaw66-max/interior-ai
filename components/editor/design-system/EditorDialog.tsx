@@ -29,6 +29,7 @@ export type EditorDialogProps = {
   initialFocusRef?: { current: HTMLElement | null };
   returnFocusId?: string;
   cancelFocusRestorationOnUnmount?: boolean;
+  waitForEntryTransition?: boolean;
   placement?: "center" | "right";
   overlayClassName?: string;
   panelClassName?: string;
@@ -79,7 +80,7 @@ export function EditorDialog({
   closeButtonRef: providedCloseButtonRef,
   initialFocusRef,
   returnFocusId,
-  cancelFocusRestorationOnUnmount = false,
+  cancelFocusRestorationOnUnmount = false, waitForEntryTransition = false,
   placement = "center",
   overlayClassName = "",
   panelClassName = "",
@@ -98,8 +99,7 @@ export function EditorDialog({
     panelRef,
     closeButtonRef,
     initialFocusRef,
-    returnFocusId,
-    cancelFocusRestorationOnUnmount,
+    returnFocusId, cancelFocusRestorationOnUnmount, waitForEntryTransition,
     closeDisabled,
     onClose,
   });
@@ -109,11 +109,11 @@ export function EditorDialog({
   return (
     <div
       ref={dialogRef}
-      id={dialogId}
-      className={`fixed inset-0 z-50 flex items-center bg-black/45 backdrop-blur-[1px] motion-reduce:transition-none ${
+      id={dialogId} tabIndex={-1}
+      className={`fixed inset-0 z-50 flex items-center bg-black/45 backdrop-blur-[1px] outline-none motion-reduce:transition-none ${
         placement === "right" ? "justify-end p-0" : "justify-center p-4"
       } ${overlayClassName}`}
-      data-testid={testId}
+      data-testid={testId} data-editor-dialog-state="mounting"
       role="dialog"
       aria-modal="true"
       aria-labelledby={titleId}
@@ -130,7 +130,7 @@ export function EditorDialog({
     >
       <div
         ref={panelRef}
-        tabIndex={-1}
+        tabIndex={-1} data-editor-dialog-state="mounting"
         className={`w-full max-w-md rounded-2xl border p-5 shadow-2xl outline-none transition-transform motion-reduce:transition-none ${themeClasses.panel} ${panelClassName}`}
       >
         <div className={`flex items-start justify-between gap-4 ${headerClassName}`}>

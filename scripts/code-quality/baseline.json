@@ -2065,7 +2065,7 @@
     "components/editor/design-system/EditorDialog.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 107
+        "maximum": 106
       }
     },
     "components/editor/DesignControlsAiPanel.tsx": {

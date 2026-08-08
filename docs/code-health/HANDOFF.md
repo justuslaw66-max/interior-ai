@@ -1,5 +1,83 @@
 # Code health audit handoff
 
+## CH-0015A cart entry-focus readiness follow-up — 2026-08-08
+
+The bounded follow-up branch
+`fix/ch-0015a-cart-entry-focus-readiness` starts from exact CH-0015A commit
+`8b0213c567cf4b34c19861ae4ad20f0c7d201432` / tree
+`d0bf05a679b43f286506db28604204dda27218ac`; its direct parent and the unchanged
+`integration/deep-clean-v1` remain
+`00c93f510f24c6f759a6d16b839dadbe253920f8`. The integrator's canonical cart
+gate reached product assertions and stopped integration at 15/16 after the
+responsive Chromium identity observed focused close-button geometry outside
+the viewport during entry.
+
+Classification is **E — code and test both require correction**. The shared
+lifecycle's first-frame initial focus accepted a nonzero but off-viewport
+rectangle while the cart was still translating. The test's preceding
+`transform: none` poll was not a semantic readiness boundary: Tailwind 4 emits
+the entry through the individual CSS `translate` property, and Chromium can
+also expose final computed style before applying an `@starting-style` at first
+paint. The follow-up gives only the cart an explicit
+`mounting → entering → interactive` contract. The pre-correction trace proved
+that `aria-modal=true` and the focus trap were active while focus remained on
+the outside opener through `mounting` and `entering`. The corrected lifecycle
+uses the stationary, full-viewport dialog container as its purposeful entry
+focus owner before paint, marks every background branch both `inert` and
+`aria-hidden`, keeps the moving panel itself inert, and admits the close button
+once only after animation settlement and complete in-viewport target geometry. A forced layout read commits the
+mounting style before transition start without a timer or double animation
+frame. Transition cancellation, responsive measurement, reduced motion,
+no-transition CSS, close, route unmount, reopen, and newer-modal supersession
+all pass through generation-checked cancellation/readiness paths.
+
+The required responsive identity retains its strict 390×844 geometry bounds,
+replaces the transform poll with the explicit `interactive` state, and records
+animation frames, generation, focus connectedness/visibility/geometry and
+dialog containment, accessible-dialog count, background inert/hidden/actionable
+state, trap state, transition events, computed transform/translate values,
+resize events, accessibility snapshots, and `ResizeObserver` delivery. No
+retry, sleep, timeout increase, force-click,
+commerce change, unrelated overlay migration, integration, push, deployment,
+or external setting is part of this follow-up.
+
+Focused validation on the completed working tree is green: the exact
+responsive Chromium identity passes with normal motion, an immediate Tab
+during entry, mobile geometry, bidirectional responsive resize, transition
+cancellation, reduced motion, and no-transition CSS; the
+canonical required owner passes Chromium 8/8 plus WebKit 8/8, 16/16 total,
+with zero retries, failures, or skips. Its final Playwright report SHA-256 is
+`185305e509911360b7241cbfe98b9a2bfd3f590f7fb2365e562ed9c52339fd2d`;
+the sanitized evidence-envelope SHA-256 is
+`09703bcbe657db20504ead0311a123e55b571191529b6cabec7123cab7dac027`.
+Cart static rendering/callbacks, shared editor accessibility, critical
+security/persistence/Stripe/commerce/Phase 14/15, all cabinetry checks,
+cabinetry release evidence, Pro visual policy 4/4, typecheck, full zero-warning
+lint, code quality for 1,084 production files, tracked-artifact hygiene,
+production-artifact contracts, required-test truthfulness, direct manifest
+validation at 23 gates / 376 sources, public-share static prerequisites, design
+cleanup 78/78, strict build 57/57, and complete Phase 8 all pass. The manifest
+SHA-256 remains
+`00d82d1433fab594db6ce5eee7c1be8c8c679b992030d5a62927b4622e2a4faa`.
+The code-quality baseline decreases only the existing `EditorDialog` maximum
+overlong-function metric from 107 to 106.
+
+The strict `/design` measurement is 25 initial JavaScript files at 5,823,211
+raw / 1,111,703 Brotli bytes and one CSS file at 131,273 / 17,471. Against the
+direct parent record this is -1 JavaScript file, +4,509 raw / +1,364 Brotli
+JavaScript bytes, and +48 raw / +21 Brotli CSS bytes; the unchanged cabinetry
+and GLTF lazy chunks remain 492,639 / 84,899 and 34,525 / 8,970 raw/Brotli.
+All budgets pass.
+
+The ignored evidence names uncommitted starting HEAD `8b0213c...` and is
+removed after hashing; the implementation commit and integrator rerun are
+required before source binding or integration. Public-share browser validation
+remains deferred to the integrator's separately provisioned database; its
+static prerequisite passes. Independent staged-diff review: **PASS — no
+actionable findings** after correction of entry ownership, cart-scoped
+background management, supersession recovery, moving-panel inertness, and
+paused-transition readiness coverage. Full E2E was not run.
+
 ## CH-0015A accessible Selection Tray handoff — 2026-08-08
 
 The bounded branch `fix/ch-0015-cart-overlay-accessibility` starts from exact

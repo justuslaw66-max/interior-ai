@@ -30,6 +30,30 @@ viewport backdrop prevented interaction with the editor while open, so modal
 ownership is established by product behavior rather than introduced by this
 change. Desktop and mobile use the same modal contract.
 
+### Entry-focus readiness follow-up
+
+The CH-0015A integrator gate later reached product assertions and passed 15 of
+16 records. Its sole Chromium failure exposed two coupled boundaries. The
+shared lifecycle treated any nonzero target rectangle as actionable and moved
+focus on its first requested animation frame, even while the cart's 300 ms
+entry could still place that rectangle beyond the viewport. Separately,
+Tailwind 4 implements `translate-x-full` with the individual CSS `translate`
+property, so polling `transform: none` did not prove that entry was settled.
+
+The bounded follow-up replaces the cart's `@starting-style` dependency with an
+explicit `mounting → entering → interactive` lifecycle. A forced layout read
+commits the off-canvas mounting geometry before the entering state starts the
+transition, without a timer or double animation frame. A layout effect focuses
+the stable, full-viewport dialog container before the modal can paint, while
+the animated panel remains inert and non-focused. The underlying editor
+branches become both `inert` and `aria-hidden` at that same ownership boundary.
+Close-button focus is admitted exactly once per current generation only after
+no panel animation is active and the complete target rectangle is within the viewport. `transitionend`,
+`transitioncancel`, viewport resize, and `ResizeObserver` delivery all
+re-evaluate readiness; reduced motion reaches the same geometry gate without
+waiting for an absent transition. Closing remains immediate and unmounts the
+tree.
+
 ## Implemented contract
 
 `ItemCartDrawer` now delegates its overlay to the existing `EditorDialog`.
@@ -52,7 +76,12 @@ Open state:
 
 - the right-side drawer is `role="dialog"`, named `Selection Tray`, and
   `aria-modal="true"`;
-- the named close button receives initial focus on the next animation frame;
+- during `mounting` and `entering`, the stationary dialog container is the
+  visible in-viewport focus owner, while every background branch is inert and
+  accessibility-hidden;
+- the named close button receives initial focus only in the explicit
+  `interactive` state, after entry motion is settled and its full actionable
+  rectangle is inside the viewport;
 - Tab and Shift+Tab are contained in the topmost dialog;
 - Escape, the close button, and the backdrop close the tray; Escape is consumed
   only by the topmost owner;
@@ -98,7 +127,7 @@ are excluded.
 
 | Owner / surface | Primitive and intent | Closed DOM / focusability | Role / name / modal | Focus and dismissal behavior | Responsive behavior | Existing coverage / later disposition |
 | --- | --- | --- | --- | --- | --- | --- |
-| `ItemCartDrawer` Selection Tray | `EditorDialog`; modal drawer | **After CH-0015A:** unmounted / 0 actionable | dialog / `Selection Tray` / true | close / yes / topmost / yes / current semantic ID / topmost-safe | Mobile full-width; desktop right 24rem | Required 16/16 Chromium/WebKit plus static empty/populated contract; complete for CH-0015A |
+| `ItemCartDrawer` Selection Tray | `EditorDialog`; modal drawer | **After CH-0015A:** unmounted / 0 actionable | dialog / `Selection Tray` / true | interactive-state close / yes / topmost / yes / current semantic ID / topmost-safe | Mobile full-width; desktop right 24rem | Required Chromium/WebKit matrix plus static empty/populated and entry-geometry trace contract; complete for CH-0015A after focused recertification |
 | `ConfirmDialog`, `CopyFallbackDialog`, `AiNotesDialog`, `PlanAnnotationDialog`, `PresentExportDialog`, `RoomRenameDialog`, `UpgradeDialog` | Shared `EditorDialog`; modal | Unmounted / 0 | dialog / caller title / true | caller target or close / yes / topmost / guarded / direct node unless ID supplied / topmost-safe after CH-0015A | Centered, viewport-capped | Static editor accessibility; focused multi-room rename/annotation; other caller scenarios remain risk-specific |
 | `CatalogItemDrawer` | Custom portal drawer; modal | Unmounted / 0 | dialog / `Review exact variant` / true | close / yes / yes / pointer backdrop / current catalog semantic target / newer-modal guarded | Floating right, capped to viewport | Dedicated Chromium/WebKit drawer-focus matrix; retain until a separately scoped migration |
 | `LightingSettingsDrawer` | Custom portal; modal bottom/side sheet | Unmounted / 0 | dialog / `Lighting settings` / true | close / yes / yes / yes / direct ref / not centrally stacked | Mobile bottom sheet; desktop right sheet | Focused lighting tests; no complete two-engine nested matrix recorded here |
@@ -150,11 +179,13 @@ requested local required gates, Phase 8, strict build, and focused visual
 inspection. Full E2E is deliberately excluded. Exact command results are
 recorded in the current `HANDOFF.md` entry.
 
-The `/design` initial bundle moves from 25 to 26 JavaScript files and remains
-one CSS file. JavaScript moves from 5,815,471 raw / 1,109,427 Brotli bytes to
-5,818,702 raw / 1,110,339 Brotli bytes (+3,231 / +912). CSS moves from 130,792
-raw / 17,321 Brotli bytes to 131,225 raw / 17,450 Brotli bytes (+433 / +129).
-The cabinetry
+Against the direct parent record, the `/design` initial bundle moves from 26 to
+25 JavaScript files and remains one CSS file. JavaScript moves from 5,818,702
+raw / 1,110,339 Brotli bytes to 5,823,211 raw / 1,111,703 Brotli bytes
+(+4,509 / +1,364). CSS moves from 131,225 raw / 17,450 Brotli bytes to 131,273
+raw / 17,471 Brotli bytes (+48 / +21). Relative to the pre-CH-0015A integration
+baseline, the total delta is +7,740 raw / +2,276 Brotli JavaScript bytes and
++481 raw / +150 Brotli CSS bytes. The cabinetry
 lazy chunk remains 492,639 raw / 84,899 Brotli bytes and the GLTF exporter
 remains 34,525 raw / 8,970 Brotli bytes. No cart-only lazy chunk exists before
 or after. Every Phase 8 budget remains green.

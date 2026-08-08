@@ -169,12 +169,12 @@ export default function ItemCartDrawer({
         closeButtonRef={closeButtonRef}
         dialogId={dialogId}
         returnFocusId={triggerId}
-        cancelFocusRestorationOnUnmount
+        cancelFocusRestorationOnUnmount waitForEntryTransition
         placement="right"
         forceLight
         testId="selection-tray-dialog"
         overlayClassName="!bg-black/30 backdrop-blur-sm"
-        panelClassName="flex h-full max-w-96 flex-col rounded-none border-y-0 border-r-0 !p-0 shadow-xl duration-300 ease-in-out starting:translate-x-full sm:w-96"
+        panelClassName="flex h-full max-w-96 flex-col rounded-none border-y-0 border-r-0 !p-0 shadow-xl duration-300 ease-in-out data-[editor-dialog-state=mounting]:translate-x-full sm:w-96"
         headerClassName="!items-center border-b border-neutral-200 p-4"
         contentClassName="!mt-0 min-h-0 flex-1 overflow-y-auto p-4"
         footerClassName="!mt-0 border-t border-neutral-200 p-4"

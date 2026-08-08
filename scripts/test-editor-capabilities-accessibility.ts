@@ -88,26 +88,56 @@ for (const required of [
 const dialogLifecycle = read(
   "components/editor/design-system/useEditorDialogLifecycle.ts"
 );
+const dialogFocus = read(
+  "components/editor/design-system/editorDialogFocus.ts"
+);
+const dialogRegistry = read(
+  "components/editor/design-system/editorDialogRegistry.ts"
+);
+const dialogLifecycleSources = `${dialogLifecycle}\n${dialogFocus}\n${dialogRegistry}`;
 for (const required of [
   'event.key === "Escape"',
   'event.key === "Tab"',
-  "isTopmostDialog(token)",
-  "hasExternalModal()",
+  "isTopmostEditorDialog(token)",
+  "hasExternalEditorModal()",
   'element.closest(\'[hidden], [inert], [aria-hidden="true"]\')',
-  "returnFocusId ? document.getElementById(returnFocusId) : opener",
+  "document.getElementById(options.returnFocusId)",
   "target.focus({ preventScroll: true })",
   "window.requestAnimationFrame",
   "window.cancelAnimationFrame",
+  'type DialogEntryState = "mounting" | "entering" | "interactive"',
+  "isFullyWithinViewport(target)",
+  "hasActivePanelAnimation(panel)",
+  'event.type === "transitionrun"',
+  '"transitioncancel"',
+  "new ResizeObserver(readiness.reschedule)",
+  'dialog.dataset.editorDialogState !== "interactive"',
+  "useLayoutEffect",
+  "refreshBackgroundInertness()",
+  'dialog.dataset.editorDialogFocusTrap = "active"',
+  "options.generationRef.current === options.generation",
+  "dialog.focus({ preventScroll: true })",
+  "panel.getBoundingClientRect();",
 ]) {
   assert.ok(
-    dialogLifecycle.includes(required),
+    dialogLifecycleSources.includes(required),
     `shared dialog lifecycle must preserve ${required}`
   );
 }
-assert.match(
+assert.doesNotMatch(
   dialogLifecycle,
+  /scheduleTrackedFrame\(frames,\s*\(\)\s*=>\s*scheduleTrackedFrame/,
+  "transition-aware focus entry must not use a double-rAF paint workaround"
+);
+assert.match(
+  dialogFocus,
   /initialFocusRef\?\.current[\s\S]*?data-editor-dialog-initial-focus[\s\S]*?closeButtonRef\.current/,
   "explicit shared-dialog initial focus must take precedence over the close button"
+);
+assert.match(
+  dialogRegistry,
+  /sibling\.inert = true;[\s\S]*?sibling\.setAttribute\("aria-hidden", "true"\)/,
+  "the topmost shared dialog must make every background branch inaccessible"
 );
 assert.match(
   dialogLifecycle,
@@ -125,11 +155,19 @@ for (const relativePath of [
   "components/editor/design-page/UpgradeDialog.tsx",
   "components/editor/design-page/PresentExportDialog.tsx",
 ]) {
+  const source = read(relativePath);
   assert.match(
-    read(relativePath),
+    source,
     /EditorDialog/,
     `${relativePath} should use the shared accessible dialog primitive`
   );
+  if (relativePath !== "components/ItemCartDrawer.tsx") {
+    assert.doesNotMatch(
+      source,
+      /waitForEntryTransition/,
+      `${relativePath} must retain next-frame initial focus unless it explicitly adopts entry readiness`
+    );
+  }
 }
 
 const presentExport = read(

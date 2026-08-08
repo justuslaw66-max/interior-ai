@@ -15,6 +15,18 @@ handling, nested-modal suppression, route/unmount cancellation, destructive
 row/footer mutation focus fallback, and one
 Consumer/Pro mobile/desktop contract.
 
+The bounded entry-focus follow-up from exact CH-0015A source `8b0213c...`
+classifies the integrator's 15/16 result as **E — code and test both require
+correction**. The original follow-up made the cart accessibility-active while
+leaving focus on its outside opener during entry. The corrected cart focuses
+the stationary dialog container before paint, makes background branches inert
+and accessibility-hidden, and moves focus once to the close button only after
+an explicit interactive state, no active entry animation, and a fully
+in-viewport target rectangle. The required responsive identity retains its
+geometry assertions and replaces the non-semantic `transform: none` poll with
+per-frame focus, background, generation, transition, reduced-motion, and
+responsive-measurement evidence.
+
 No item identity, quantity/removal callback, add-all/clear ordering, price,
 total, commerce source, checkout eligibility/URL, Shopify/affiliate behavior,
 or purchase authorization changed. The separate shopping `CartSidebar` and

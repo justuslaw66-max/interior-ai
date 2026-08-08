@@ -11,7 +11,12 @@
   Closed tray content is absent from DOM/accessibility/focus/pointer ownership;
   the open tray has one modal owner with deterministic focus and dismissal,
   including focus transfer before Clear, Remove, or decrement-to-zero unmounts
-  the active row/footer control.
+  the active row/footer control. The entry-focus follow-up additionally defers
+  close-button focus through `mounting → entering → interactive` until motion
+  is settled and the full target rectangle is within the viewport. During the
+  first two phases the stable dialog container owns focus and background
+  branches are inert and accessibility-hidden; the required responsive
+  geometry assertion remains strict.
   The separate shopping cart/checkout panel and every unrelated overlay remain
   unchanged.
 - **Required owner:** new merge-required `ci.cart-overlay-accessibility` runs

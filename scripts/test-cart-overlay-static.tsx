@@ -38,6 +38,7 @@ assert.match(emptyOpen, /role="dialog"/);
 assert.match(emptyOpen, /aria-modal="true"/);
 assert.match(emptyOpen, /Selection Tray/);
 assert.match(emptyOpen, /data-testid="selection-tray-close"/);
+assert.match(emptyOpen, /data-editor-dialog-state="mounting"/);
 assert.match(emptyOpen, /No items selected/);
 assert.doesNotMatch(emptyOpen, /data-testid="selection-tray-clear"/);
 
@@ -71,6 +72,21 @@ assert.match(
   drawerSource,
   /cancelFocusRestorationOnUnmount/,
   "The tray must cancel semantic restoration when its route owner unmounts."
+);
+assert.match(
+  drawerSource,
+  /waitForEntryTransition/,
+  "The tray must own focus during entry and defer close-button focus until interactive."
+);
+assert.match(
+  drawerSource,
+  /data-\[editor-dialog-state=mounting\]:translate-x-full/,
+  "The tray must derive its off-canvas entry geometry from the explicit mounting state."
+);
+assert.doesNotMatch(
+  drawerSource,
+  /starting:translate-x-full/,
+  "The tray must not depend on an ambiguous starting-style paint boundary."
 );
 assert.match(
   drawerSource,
