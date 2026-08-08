@@ -27,6 +27,36 @@ const commandBarSource = fs.readFileSync(
   ),
   "utf8"
 );
+const commandBarLeafSource = fs.readFileSync(
+  path.join(root, "components", "editor", "EditorCommandBar.tsx"),
+  "utf8"
+);
+const panelRegionSource = fs.readFileSync(
+  path.join(
+    root,
+    "components",
+    "editor",
+    "design-page",
+    "DesignPagePanelRegion.tsx"
+  ),
+  "utf8"
+);
+const clientPreviewFocusPath = path.join(
+  root,
+  "lib",
+  "useClientPreviewCommandBarFocus.ts"
+);
+assert.ok(
+  fs.existsSync(clientPreviewFocusPath),
+  "Client Preview should have one focused persistent-panel focus lifecycle."
+);
+const clientPreviewFocusSource = fs.existsSync(clientPreviewFocusPath)
+  ? fs.readFileSync(clientPreviewFocusPath, "utf8")
+  : "";
+const coreShellSource = fs.readFileSync(
+  path.join(root, "lib", "useDesignPageCoreShellRegistration.ts"),
+  "utf8"
+);
 const editorChromeSource = fs.readFileSync(
   path.join(root, "components/editor/design-page/DesignPageEditorChrome.tsx"),
   "utf8"
@@ -217,6 +247,57 @@ const toolRailIndex = editorChromeSource.indexOf("<EditorToolRail");
 assert.ok(
   commandCompositionIndex >= 0 && betaStartIndex > commandCompositionIndex && toolRailIndex > betaStartIndex,
   "Editor chrome composition should remain Command bar, Beta start, then Tool rail."
+);
+
+assert.match(
+  commandBarLeafSource,
+  /id=\{CLIENT_PREVIEW_COMMAND_BAR_ID\}[\s\S]*?data-testid="editor-command-bar"[\s\S]*?inert=\{isClientPreview\}[\s\S]*?aria-hidden=\{isClientPreview\}/,
+  "Client Preview should inert and accessibility-hide the one command-bar root."
+);
+assert.match(
+  commandBarLeafSource,
+  /onClickCapture=\{guardHiddenCommandAction\}/,
+  "The command-bar root should block programmatic hidden action routing in one capture guard."
+);
+assert.match(
+  clientPreviewFocusSource,
+  /function guardHiddenCommandAction[\s\S]*?currentTarget\.inert[\s\S]*?preventDefault\(\)[\s\S]*?stopPropagation\(\)/,
+  "The root guard should suppress events only while the command bar is inert."
+);
+assert.match(
+  panelRegionSource,
+  /id=\{CLIENT_PREVIEW_EXIT_ACTION_ID\}[\s\S]*?data-testid="client-preview-exit"[\s\S]*?aria-label="Exit Presentation"/,
+  "The visible preview Exit action should expose one stable semantic focus target."
+);
+assert.doesNotMatch(
+  commandBarLeafSource + panelRegionSource,
+  /EditorDialog/,
+  "The persistent command bar should not become a modal dialog."
+);
+assert.doesNotMatch(
+  clientPreviewFocusSource,
+  /EditorDialog|querySelector|setTimeout|requestAnimationFrame/,
+  "Client Preview focus routing should not use modal, selector, timeout, or frame behavior."
+);
+for (const focusContractMarker of [
+  "generationRef",
+  "scopeKey",
+  "semanticIdentity",
+  "isConnected",
+  "CLIENT_PREVIEW_EXIT_ACTION_ID",
+  "CLIENT_PREVIEW_FALLBACK_ACTION_ID",
+  "getAnimations",
+] as const) {
+  assert.match(
+    clientPreviewFocusSource,
+    new RegExp(`\\b${focusContractMarker}\\b`),
+    `Client Preview focus lifecycle should retain ${focusContractMarker}.`
+  );
+}
+assert.match(
+  coreShellSource,
+  /useClientPreviewBaseBoundary\([\s\S]*?searchParams\.get\("designId"\)[\s\S]*?designId/,
+  "Preview focus scope should cancel on requested and loaded design identity changes."
 );
 
 console.log("Design-page editor command-bar guardrails passed.");

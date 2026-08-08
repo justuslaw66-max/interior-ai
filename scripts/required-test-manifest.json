@@ -490,7 +490,7 @@
     },
     {
       "id": "ci.pro-visual-policy",
-      "invariant": "Consumer and Pro visual policy executes in both required desktop browser engines with no focus, skip, retry, or flake.",
+      "invariant": "Consumer and Pro visual policy, including Client Preview command-bar focus exclusion and semantic return, executes in both required browser engines with no focus, skip, retry, or flake.",
       "cadence": "merge-required",
       "blocking": true,
       "command": "npm run test:pro-visual-policy",
@@ -508,6 +508,21 @@
           "id": "visual.cabinet-preview-policy",
           "file": "tests/e2e/pro-visual-policy.spec.ts",
           "title": "keeps all recommended Cabinet Preview templates readable under the RC-5 policy"
+        },
+        {
+          "id": "visual.client-preview-command-bar-focus",
+          "file": "tests/e2e/pro-visual-policy.spec.ts",
+          "title": "excludes the persistent command bar from Client Preview focus and restores semantic focus"
+        },
+        {
+          "id": "visual.client-preview-responsive-scope",
+          "file": "tests/e2e/pro-visual-policy.spec.ts",
+          "title": "keeps Client Preview responsive, scope-cancelled, and Pro-gated"
+        },
+        {
+          "id": "visual.client-preview-presentation-entry",
+          "file": "tests/e2e/pro-visual-policy.spec.ts",
+          "title": "uses the same Client Preview focus contract from presentation export"
         }
       ],
       "requiredProjects": ["chromium", "webkit"],

@@ -1,12 +1,12 @@
 # Required-test truthfulness
 
-Status: **CH-0015A CART OVERLAY OWNER REGISTERED — LOCAL CONTRACT GREEN;
+Status: **CH-0015B CLIENT PREVIEW CONTRACT REGISTERED — LOCAL CONTRACT GREEN;
 EXTERNAL RULESET ENFORCEMENT UNVERIFIED**. Repository truthfulness assigns the
-Selection Tray lifecycle suite to one merge-required Chromium/WebKit owner
-outside Full E2E discovery, while retaining the CH-0013 surface-material owner
-and existing responsive, advisory Full E2E, and release Gate A3 owners. GitHub
-ruleset selection and an exact-head workflow run remain external evidence;
-repository registration does not claim either control is configured.
+Client Preview command-bar contract to the existing merge-required Pro visual
+Chromium/WebKit owner and retains the Selection Tray, CH-0013
+surface-material, responsive, advisory Full E2E, and release Gate A3 owners.
+GitHub ruleset selection and an exact-head workflow run remain external
+evidence; repository registration does not claim either control is configured.
 
 ## Canonical inventory
 
@@ -58,6 +58,34 @@ browser specs and separately locks the six repaired
 commerce/Kelsey requirement identities; cabinetry release evidence owns 23
 named Consumer/Pro workflows. CH-0016 runtime smoke locks its two runtime
 requirement identities.
+
+## CH-0015B canonical Client Preview command-bar owner
+
+Existing `ci.pro-visual-policy` remains the sole merge-required owner for
+`tests/e2e/pro-visual-policy.spec.ts`; no gate or runnable source is added. Its
+stable identity inventory expands from two to five:
+
+- Consumer/Pro visual-theme policy;
+- Cabinet Preview readability policy;
+- Client Preview command-bar focus exclusion and semantic restoration;
+- responsive/scope-cancelled/Consumer-denied/Pro-enabled Client Preview;
+- presentation-export entry parity.
+
+All five execute once in Chromium and once in WebKit, producing 10 required
+records with zero retry, skip, annotation, grep, inverse-grep, or shard. The
+canonical local result is 10/10; the three new identities pass 6/6. The new
+coverage proves one command-bar root, native inert and accessibility-tree
+exclusion, zero effective focusable descendants, blocked pointer and
+programmatic action routing, visible Exit focus, semantic return/fallback,
+generation and scope cancellation, actual export entry, Consumer denial, Pro
+success, and 390×844 behavior.
+
+The manifest remains 23 gates and 376 classified sources. All five inventory
+counts and sorted path SHA-256 values are unchanged because CH-0015B adds no
+test source. Stable IDs/titles make missing or renamed coverage fail
+truthfulness. Advisory Full E2E and release Gate A3 may still discover this
+spec at their separate cadences but cannot substitute for the merge-required
+owner.
 
 ## CH-0015A canonical cart overlay owner
 

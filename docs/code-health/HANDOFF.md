@@ -1,5 +1,110 @@
 # Code health audit handoff
 
+## CH-0015B Client Preview command-bar handoff — 2026-08-08
+
+Branch `fix/ch-0015-client-preview-command-bar-inertness` starts exactly at
+integration SHA `f8c44bcd632820754edc4f862eef24c66e433510` and tree
+`ae067068656c46ac9aecb174b02a01ea21b6bdf4`. Entry status, staged/unstaged
+diff, diff check, untracked inventory, and tracked-ignored inventory were empty;
+Node was `v24.13.0` and npm `11.6.2`. No application, Playwright, browser, or
+temporary-database process was using repository output. The only listener was
+PostgreSQL from `/opt/homebrew/var/postgresql@16`. The canonical application
+worktree and every later local app process were verified at
+`/Users/justus/Developer/interior-ai`; `integration/deep-clean-v1` was not
+modified.
+
+The reproduced defect was an opacity-only **PERSISTENT_PANEL** concealment.
+Client Preview kept the one responsive command bar mounted at `display:flex`,
+faded it to zero opacity, and set `pointer-events:none`, but left eight command
+controls in keyboard and accessibility ownership. Chromium could retain focus
+on invisible Preview/More/Save and Tab to another hidden action. WebKit could
+drop focus to `body`; both engines still exposed More and Save to accessible
+role queries and accepted programmatic hidden focus. Exit Presentation was
+visible, connected, enabled, and in viewport but did not receive focus. The
+same defect reproduced at 390×844. Direct URL/restored preview state is not
+supported; Consumer capability derivation already denied preview.
+
+The command bar remains mounted to preserve its local state and 300 ms fade.
+Effective Client Preview now applies native `inert`, `aria-hidden`, existing
+pointer suppression, and one root capture guard that prevents programmatic
+hidden command action routing. It is not migrated to `EditorDialog`, and no
+per-button tab-index patch, duplicate mobile bar, browser branch, fixed timer,
+arbitrary animation-frame chain, or global selector is used.
+
+`useClientPreviewCommandBarFocus` wraps the raw state setter at the core-shell
+boundary, covering More → Preview, the global presentation shortcut, export
+capture, visible Exit, and export completion. Each entry generation records a
+semantic opener and moves focus exactly once to the visible, connected,
+enabled, in-viewport Exit Presentation action when command-bar focus became
+unavailable; a valid owner outside the command bar keeps focus. Exit invalidates
+the generation, waits for the panel's own CSS animations, and restores the
+still-current semantic opener or visible More fallback. Disconnected, replaced, hidden,
+inert, disabled, preview-only, and `body` targets are rejected. Route, design,
+plan/capability, mode, and unmount changes cancel pending restoration.
+
+The selected-item panel does not share the command-bar root or lifecycle. Its
+separate P2 preview-transition hardening item remains open and unchanged, as do
+public sharing, Plans, My Designs, Guest Save, Command Palette, floor-plan
+upload, retailer confirmation, and all unrelated overlays.
+
+Test ownership stays with existing merge-required `ci.pro-visual-policy`.
+Three stable Client Preview identities were added to its existing source,
+giving five identities × Chromium/WebKit = 10 required records. The manifest
+remains 23 gates / 376 classified sources with unchanged inventory counts and
+path hashes; only the Pro gate's invariant and stable identities change. Full
+E2E remains advisory and was not run.
+
+Final local validation before the implementation commit:
+
+- exact command-bar static guard: pass;
+- focused Client Preview Chromium/WebKit matrix: 6/6, including pointer,
+  keyboard, Preview/More/Save focus, zero effective inert descendants,
+  accessibility exclusion, visible Exit geometry/focus, semantic return,
+  repeated generations, scope cancellation, 390×844, Consumer denial, Pro
+  success, and real presentation-export entry;
+- canonical `ci.pro-visual-policy`: 10/10, zero retry/skip/flake;
+- canonical cart overlay regression owner: Chromium 8/8 + WebKit 8/8;
+- critical-required, required-test truthfulness, direct manifest check, and
+  production-artifact evidence: pass;
+- design cleanup: 78/78; full lint: zero warnings; typecheck and code quality:
+  pass. The quality ratchet is lowered for the three touched existing large
+  functions/files; no exception or budget increases;
+- strict production build: 57/57 routes, with the inherited floor-plan NFT
+  trace warning only;
+- complete Phase 8 project, bundle, and boundary gate: pass;
+- public-share responsive static prerequisite: pass. Its database-backed
+  Chromium/WebKit required gate is deferred to the integrator because this
+  workspace does not have a disposable migrated database; local app-event
+  writes report the corresponding Prisma schema error;
+- final diff/status/index/ignored hygiene is rerun after documentation and
+  review. Full E2E was not run.
+
+The starting Phase 8 artifact was 25 `/design` initial JS chunks at 5,823,211
+raw / 1,111,703 Brotli bytes and one CSS file at 131,273 / 17,471. The final
+artifact is the same 25 JS chunks at 5,827,579 / 1,112,646
+(**+4,368 / +943**) and byte-identical CSS. Cabinetry Studio stays one lazy
+492,639 / 84,899 chunk and GLTFExporter stays 34,525 / 8,970. All budgets are
+green. Production-artifact screenshots verify unchanged normal/exit layout,
+the active-preview fade without reflow, a visible Exit focus ring on desktop
+and 390×844, semantic More focus after exit, and no hidden command-bar
+interaction interception.
+
+Independent read-only complete-diff review: **PASS — no production correctness
+finding remains**. The reviewer identified requested-design scope cancellation,
+missing disabled/superseded/unmount evidence, and overbroad entry-focus wording;
+all were corrected and affected Chromium/WebKit checks rerun. The final
+same-window App Router unmount probe leaves restoration genuinely pending and
+detects zero late semantic-fallback focus. The reviewer notes only a non-blocking
+maintenance risk: that probe locates the mounted App Router through private React
+Fiber fields and may require adjustment after a pinned React/Next upgrade. The
+reviewer made no edits or commits.
+
+Rollback is one local revert of the focused implementation commit, followed by
+the static command-bar guard, canonical Pro gate, design cleanup, Phase 8, and
+strict build. No data, schema, dependency, authorization, public-share,
+deployment, or external-control rollback is needed. CH-0015 remains open for
+the selected-item P2 and remaining inventoried overlay lifecycles.
+
 ## CH-0015A cart entry-focus readiness follow-up — 2026-08-08
 
 The bounded follow-up branch

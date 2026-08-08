@@ -18,6 +18,7 @@ import {
   SelectedItemPanel,
   type SelectedItemPanelProps,
 } from "@/components/editor/design-page/SelectedItemPanel";
+import { CLIENT_PREVIEW_EXIT_ACTION_ID } from "@/lib/useClientPreviewCommandBarFocus";
 
 export type DesignPageShoppingDockContract = {
   overview: ShoppingOverviewPanelProps;
@@ -47,6 +48,31 @@ export type DesignPagePanelRegionProps = {
   actions: DesignPagePanelRegionActions;
 };
 
+function ClientPreviewExitAction({
+  visible,
+  onExit,
+}: {
+  visible: boolean;
+  onExit: () => void;
+}) {
+  if (!visible) return null;
+  return (
+    <div className="fixed left-1/2 top-4 z-60 -translate-x-1/2 transform">
+      <button
+        id={CLIENT_PREVIEW_EXIT_ACTION_ID}
+        data-testid="client-preview-exit"
+        type="button"
+        aria-label="Exit Presentation"
+        className="rounded-lg bg-red-600 px-6 py-3 text-sm font-semibold text-white shadow-lg transition-all hover:bg-red-700"
+        onClick={onExit}
+        title="Exit Presentation Mode (P)"
+      >
+        ✕ Exit Presentation
+      </button>
+    </div>
+  );
+}
+
 export function DesignPagePanelRegion({
   state,
   configuration,
@@ -56,17 +82,10 @@ export function DesignPagePanelRegion({
 
   return (
     <>
-      {isClientPreview ? (
-        <div className="fixed left-1/2 top-4 z-60 -translate-x-1/2 transform">
-          <button
-            className="rounded-lg bg-red-600 px-6 py-3 text-sm font-semibold text-white shadow-lg transition-all hover:bg-red-700"
-            onClick={actions.exitClientPreview}
-            title="Exit Presentation Mode (P)"
-          >
-            ✕ Exit Presentation
-          </button>
-        </div>
-      ) : null}
+      <ClientPreviewExitAction
+        visible={isClientPreview}
+        onExit={actions.exitClientPreview}
+      />
 
       {state.shopping ? (
         <div

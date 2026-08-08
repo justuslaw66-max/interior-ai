@@ -1,5 +1,33 @@
 # P0/P1 remediation queue
 
+## CH-0015B Client Preview command-bar accessibility — 2026-08-08
+
+- **Source/scope:** exact integration source
+  `f8c44bcd632820754edc4f862eef24c66e433510` / tree
+  `ae067068656c46ac9aecb174b02a01ea21b6bdf4`; bounded branch
+  `fix/ch-0015-client-preview-command-bar-inertness`; the one persistent
+  command-bar root, existing Exit Presentation action, shared preview setter,
+  focused Pro visual/static coverage, and documentation only.
+- **Disposition:** `PARTIALLY RESOLVED — CH-0015B LOCAL REMEDIATION COMPLETE`.
+  Active preview now makes the mounted command bar inert,
+  accessibility-hidden, pointer-inactive, and action-routing-inactive. Entry
+  focuses visible Exit once per generation when command-bar focus becomes
+  unavailable, while a valid outside focus owner remains; ordinary exit resolves
+  the current semantic opener or More fallback; scope change/unmount cancels
+  stale work. The command bar remains a persistent panel and no modal primitive
+  is added.
+- **Required owner:** existing merge-required `ci.pro-visual-policy` now owns
+  five stable identities in Chromium and WebKit, 10 records total. The focused
+  CH-0015B subset passes 6/6. Inventory stays 23 gates / 376 sources; no new
+  gate or runnable source exists.
+- **Behavior/rollback:** Consumer denial, Pro capability, export behavior,
+  public sharing, selected-item state, and styling remain unchanged. Revert the
+  single focused implementation commit and rerun the Pro gate, design cleanup,
+  Phase 8, and strict build; no data or external rollback is required.
+- **Queue status:** CH-0015 remains `IN_PROGRESS`. The selected-item-panel P2
+  preview transition is separately owned, and the CH-0015A inventory still
+  lists custom overlay lifecycles for later bounded batches.
+
 ## CH-0015A Selection Tray accessibility — 2026-08-08
 
 - **Source/scope:** exact integration source
@@ -222,7 +250,7 @@ Current superseding statuses are: CH-0017 **TRUTHFULNESS AND REQUIRED EXTERNAL W
 | CH-0012 | P1, resolved | RESOLVED | Supported editable entry points now converge on the canonical persisted-document loader; legacy bookmarks temporarily redirect. |
 | CH-0013 | P1, resolved | RESOLVED | Phase 8A/B runtime work is preserved and `ci.catalog-materials` now singly owns the required schema/browser-helper/lazy-boundary suite; generator drift remains required once through production-artifact evidence. |
 | CH-0014 | P2 | DOWNGRADED_WITH_EVIDENCE | Source shows per-item ownership, but no measured P1 outage, data loss, or security/privacy consequence is currently demonstrated. |
-| CH-0015 | P1 | IN_PROGRESS | CH-0015A fixes the Selection Tray; inventoried custom overlays remain open and must be migrated one bounded surface at a time. |
+| CH-0015 | P1 | IN_PROGRESS | CH-0015A fixes the Selection Tray and CH-0015B fixes Client Preview command-bar concealment/focus; the separate selected-item P2 and inventoried custom overlays remain open for bounded batches. |
 | CH-0016 | P1, resolved | RESOLVED | Strict clean-source build, artifact/trace hashing, production start, and health/report identity now fail closed; CI upload/retention is configured but external execution and platform acceptance remain unverified. |
 | CH-0017 | P1, resolved/frozen | RESOLVED | TRUTHFULNESS AND REQUIRED EXTERNAL WORKFLOW VERIFIED — IMPLEMENTATION FROZEN. |
 | CH-0018 | P1 | BLOCKED_DEPENDENCY | Supported predecessor versions and a representative sanitized fixture owner are required. |
@@ -337,7 +365,7 @@ Current superseding statuses are: CH-0017 **TRUTHFULNESS AND REQUIRED EXTERNAL W
 
 ### CH-0015 — inaccessible drawer/overlay ownership
 
-- **Current evidence and affected symbols:** CH-0015A migrates `components/ItemCartDrawer.tsx` to `components/editor/design-system/EditorDialog.tsx`; closed Selection Tray content is now unmounted and the shared lifecycle owns semantics, topmost focus, dismissal, semantic return, and cancellation. Several inventoried overlays still use custom lifecycles, so the parent finding remains open.
+- **Current evidence and affected symbols:** CH-0015A migrates `components/ItemCartDrawer.tsx` to `components/editor/design-system/EditorDialog.tsx`; closed Selection Tray content is now unmounted and the shared lifecycle owns semantics, topmost focus, dismissal, semantic return, and cancellation. CH-0015B keeps `EditorCommandBar` classified as a persistent panel while adding inert/accessibility concealment and generation-scoped focus entry/return. The selected-item P2 and several inventoried custom overlays remain open.
 - **Reach and impact:** Cart and editor overlays are production-reachable core workflows. Keyboard and assistive-technology users can focus invisible controls or lose context; this is accessibility and workflow impact, not data corruption or a security boundary.
 - **Dependencies and tests:** No decision unless a named surface must be non-modal. Add closed/open tab order, axe, accessible name, Escape, outside-click, focus-return, narrow-viewport, and nested-prompt tests.
 - **Scope and rollback:** Migrate one overlay at a time to the shared primitive without visual/domain redesign. Roll back a single overlay adapter independently.
@@ -450,7 +478,7 @@ Risk order includes blocked findings so decisions are visible; `READY` ordering 
 14. `CH-0003` — `REQUIRES_PRODUCT_DECISION` (distributed cost budgets/outage policy).
 15. `CH-0005` — `REQUIRES_PRODUCT_DECISION` (retirement authority).
 16. `CH-0013` — `READY` (surface drift/schema gates, then payload).
-17. `CH-0015` — `IN_PROGRESS` (Selection Tray complete in CH-0015A; remaining accessible overlay ownership queued in bounded batches).
+17. `CH-0015` — `IN_PROGRESS` (Selection Tray complete in CH-0015A and Client Preview command bar complete in CH-0015B; selected-item P2 and remaining accessible overlay ownership stay queued in bounded batches).
 18. `CH-0019` — `RESOLVED` by the completed bounded baseline, architecture,
     Pro-visual, and Phase 8 sequence; no longer queued.
 

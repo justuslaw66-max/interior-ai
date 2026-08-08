@@ -5,13 +5,8 @@ import { LightingSettingsDrawer } from "@/components/editor/design-page/Lighting
 import { handleWorkspaceMenuKeyDown } from "@/components/editor/workspaceMenuKeyboard";
 import { ChevronDown, Ellipsis, PanelLeft, Plus, UserRound } from "lucide-react";
 import { signIn, signOut } from "next-auth/react";
-import {
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-  type ReactNode,
-} from "react";
+import { CLIENT_PREVIEW_COMMAND_BAR_ID, CLIENT_PREVIEW_FALLBACK_ACTION_ID, guardHiddenCommandAction } from "@/lib/useClientPreviewCommandBarFocus";
+import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 type EditorMode = "design" | "adjust" | "ai" | "buy" | "present";
 
 export type EditorSaveStatus = {
@@ -90,6 +85,10 @@ function getSaveStatusDotClassName(tone: EditorSaveStatus["tone"]) {
   return "bg-neutral-400";
 }
 
+function signInWithReturn() {
+  signIn("google", { callbackUrl: window.location.href });
+}
+
 export default function EditorCommandBar({
   isClientPreview,
   dark = false,
@@ -142,9 +141,7 @@ export default function EditorCommandBar({
   const overflowRef = useRef<HTMLDivElement | null>(null);
   const accountRef = useRef<HTMLDivElement | null>(null);
   const moreButtonRef = useRef<HTMLButtonElement | null>(null);
-  const closeLightingSettings = useCallback(
-    () => setLightingSettingsOpen(false), []
-  );
+  const closeLightingSettings = useCallback(() => setLightingSettingsOpen(false), []);
 
   useEffect(() => {
     if (!workspaceOpen && !overflowOpen && !accountOpen) return;
@@ -252,10 +249,6 @@ export default function EditorCommandBar({
   const workspaceMenuPanelClass = dark
     ? "designer-work-surface absolute left-0 top-[calc(100%+0.5rem)] z-[80] w-64 rounded-2xl p-2 shadow-2xl"
     : "absolute left-0 top-[calc(100%+0.5rem)] z-[80] w-64 rounded-2xl border border-neutral-200 bg-white p-2 text-neutral-900 shadow-2xl";
-  const signInWithReturn = () => {
-    const callbackUrl = typeof window !== "undefined" ? window.location.href : "/";
-    signIn("google", { callbackUrl });
-  };
   const handleViewModeChange = (next: EditorViewMode) => {
     if (next !== "3d") setLightingSettingsOpen(false);
     onViewModeChange(next);
@@ -268,7 +261,11 @@ export default function EditorCommandBar({
 
   return (
     <div
+      id={CLIENT_PREVIEW_COMMAND_BAR_ID}
       data-testid="editor-command-bar"
+      inert={isClientPreview}
+      aria-hidden={isClientPreview}
+      onClickCapture={guardHiddenCommandAction}
       className={`absolute left-0 right-0 top-0 z-50 flex h-12 items-center gap-0 overflow-visible border-b px-2 shadow-sm backdrop-blur transition-opacity duration-300 sm:px-4 md:h-9 md:gap-2 ${
         dark ? "designer-command-bar" : "border-neutral-200 bg-white/95 text-neutral-950"
       } ${isClientPreview ? "pointer-events-none opacity-0" : "opacity-100"}`}
@@ -510,6 +507,7 @@ export default function EditorCommandBar({
         <div ref={overflowRef} className="relative shrink-0">
           <button
             ref={moreButtonRef}
+            id={CLIENT_PREVIEW_FALLBACK_ACTION_ID}
             type="button"
             data-testid="editor-command-overflow"
             aria-label="More"

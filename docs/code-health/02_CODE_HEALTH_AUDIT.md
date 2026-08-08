@@ -1,5 +1,43 @@
 # Code health audit
 
+## CH-0015B Client Preview command-bar accessibility — 2026-08-08
+
+Starting from exact integration source
+`f8c44bcd632820754edc4f862eef24c66e433510` / tree
+`ae067068656c46ac9aecb174b02a01ea21b6bdf4`, this second bounded CH-0015 batch
+remediates only the persistent editor command bar during effective Client
+Preview. The starting root stayed mounted at `display:flex` and used only
+opacity plus pointer suppression; eight command actions remained focusable,
+tabbable, accessibility-active, and programmatically focusable. Entry from
+Preview, More, Save, the global presentation shortcut, or export could leave
+focus invisible or drop it to `body` rather than the visible Exit Presentation
+action.
+
+The root now uses native `inert`, `aria-hidden`, pointer suppression, and one
+capture guard while preview is active. A shared generation-scoped helper moves
+focus exactly once to the visible Exit action when command-bar focus becomes
+unavailable, preserves a valid outside focus owner, restores the current
+semantic opener or More fallback after exit, and cancels stale work on route,
+design, plan, mode, or unmount changes. Manual and export entry share the same setter.
+Consumer capability derivation, direct URL behavior, public sharing, styling,
+and all modal primitives remain unchanged. The command bar is explicitly
+**PERSISTENT_PANEL**, not `EditorDialog`.
+
+Existing merge-required `ci.pro-visual-policy` owns three new stable identities
+in both Chromium and WebKit. The focused subset passes 6/6 and the canonical
+gate passes 10/10 with zero retry/skip; the manifest stays 23 gates / 376
+classified sources. Design cleanup passes 78/78, critical-required and cart
+16/16 remain green, zero-warning lint/typecheck/code quality pass, strict build
+passes 57/57, and Phase 8 remains green. Initial JS changes by +4,368 raw /
++943 Brotli bytes with the same 25 chunks; CSS and the Cabinetry/GLTF lazy
+chunks are unchanged.
+
+This is still a **partial CH-0015 remediation**. The selected-item panel's
+separate P2 preview transition and the previously inventoried custom overlay
+lifecycles remain open. Rollback is the one focused implementation commit; no
+data, schema, dependency, authorization, public-share, or external rollback is
+needed.
+
 ## CH-0015A accessible cart overlay lifecycle — 2026-08-08
 
 Starting from exact integration source

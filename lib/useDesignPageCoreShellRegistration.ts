@@ -18,6 +18,7 @@ import { useDesignPageWorkspacePaywallRegistration } from "@/lib/useDesignPagePa
 import { useDesignPageSnapshotDocumentState } from "@/lib/useDesignPageDocumentStateController";
 import { useDesignPageTransientFeedback } from "@/lib/useDesignPageTransientFeedback";
 import { useDesignPageViewportShellRegistration } from "@/lib/useDesignPageViewportShellRegistration";
+import { useClientPreviewCommandBarFocus } from "@/lib/useClientPreviewCommandBarFocus";
 
 export type UseDesignPageCoreShellRegistrationInput = {
   configuration: {
@@ -25,6 +26,29 @@ export type UseDesignPageCoreShellRegistrationInput = {
     nodeEnv: string | undefined;
   };
 };
+
+function useClientPreviewBaseBoundary(
+  baseRegistration: ReturnType<typeof useDesignPageCoreShellBaseRegistration>,
+  active: boolean,
+  scopeKey: string
+) {
+  const focus = useClientPreviewCommandBarFocus({
+    active,
+    rawActive: baseRegistration.state.access.clientPreview,
+    scopeKey,
+    setRawActive: baseRegistration.actions.access.setClientPreview,
+  });
+  return {
+    ...baseRegistration,
+    actions: {
+      ...baseRegistration.actions,
+      access: {
+        ...baseRegistration.actions.access,
+        setClientPreview: focus.actions.setClientPreview,
+      },
+    },
+  };
+}
 
 /**
  * Registers the route-bound state and the early editor runtimes in their
@@ -106,9 +130,7 @@ export function useDesignPageCoreShellRegistration({
     capabilities.useDesignerWorkspace,
     clientPreview
   );
-  // Pro mode changes the available tools, not the product's visual theme.
-  // Keeping one shared light interface avoids contrast regressions and makes
-  // switching modes feel continuous.
+  const baseBoundary = useClientPreviewBaseBoundary(baseRegistration, isClientPreview, [pathname, searchParams.get("designId") ?? "local", designId ?? "local", plan, isDesigner ? "pro" : "consumer"].join("|"));
   const showDesignerTheme = false;
   const {
     state: {
@@ -220,7 +242,7 @@ export function useDesignPageCoreShellRegistration({
 
   return {
     boundaries: {
-      base: baseRegistration,
+      base: baseBoundary,
       viewportShell: viewportShellRegistration,
       paywall: paywallRegistration,
       snapshotDocument: snapshotDocumentController,

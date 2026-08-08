@@ -1,4 +1,119 @@
-# CH-0015A cart overlay lifecycle and overlay inventory
+# CH-0015 accessibility lifecycle and overlay inventory
+
+## CH-0015B Client Preview command-bar lifecycle — 2026-08-08
+
+Status: **CH-0015B LOCALLY REMEDIATED; CH-0015 REMAINS OPEN FOR SEPARATE
+SURFACES**.
+
+This bounded record starts from exact integration source
+`f8c44bcd632820754edc4f862eef24c66e433510` / tree
+`ae067068656c46ac9aecb174b02a01ea21b6bdf4` on
+`fix/ch-0015-client-preview-command-bar-inertness`. It owns only the one
+persistent `EditorCommandBar` while Client Preview is active, its existing
+visible Exit Presentation action, and the shared state boundary required to
+give every preview entry path one focus contract. It does not turn the command
+bar into a dialog, migrate another overlay, change public sharing, or change
+Consumer/Pro authorization.
+
+### Starting ownership and reproduced defect
+
+`useDesignPageCoreShellBaseRegistration` owns the local raw
+`clientPreview` boolean. `useEditorMode` derives effective Client Preview only
+when the current capabilities also permit designer mode, so a Consumer cannot
+gain preview by changing this client state. There is no direct URL or persisted
+preview-state entry. The one responsive command bar remains mounted at all
+widths. Manual More → Preview, the global `P`/`Shift+P` presentation shortcut,
+and export capture all call the same setter. The visible Exit Presentation
+button, the global shortcut, and export completion call that same setter to
+exit.
+
+Before CH-0015B, active preview left the command bar at `display:flex` and
+only animated it to `opacity:0` with `pointer-events:none`. Its eight ordinary
+tab stops remained focusable and accessibility-active in both engines.
+Entering from Preview, More, or Save could leave focus on that connected but
+invisible button. Chromium Tab could move to another hidden command action;
+programmatic focus could target hidden More; and accessibility role queries
+still found hidden More and Save. WebKit could instead drop focus to `body`,
+while retaining the same accessibility and programmatic-focus defect. The
+visible Exit Presentation action existed and was connected, enabled, visible,
+and in viewport, but did not own focus. The same defect reproduced at
+390×844.
+
+The classification is **PERSISTENT_PANEL**, not modal. Retaining the mounted
+root preserves its existing local menu/drawer state and opacity transition.
+While effective Client Preview is active, that one root now receives native
+`inert`, `aria-hidden="true"`, existing pointer suppression, and one capture
+guard that rejects programmatically dispatched hidden actions. Normal editing
+sets `inert=false`, `aria-hidden="false"`, restores pointer interaction, and
+keeps the existing layout and styling. No per-button tab-index patch, duplicate
+bar, browser branch, timer, animation-frame chain, global selector, or
+`EditorDialog` is introduced.
+
+### Entry, exit, and cancellation contract
+
+`useClientPreviewCommandBarFocus` wraps the raw setter at the core-shell
+boundary, so manual, shortcut, export, and visible Exit paths cannot diverge.
+Each real entry creates a generation and records the focused command action's
+semantic identity plus its connected node only as a checked fast path. Once
+the inert root and visible Exit action are committed, focus moves exactly once
+to the connected, visible, enabled, in-viewport `Exit Presentation` button when
+command-bar focus became unavailable. A valid focus owner outside the command
+bar remains the focus owner.
+An inert descendant cannot retain or receive focus, and hidden More/Save are
+absent from the accessibility tree.
+
+Exit invalidates the generation and waits for the command bar's own CSS
+animations to settle. It then restores the still-connected, semantically
+current opener; if that opener was removed or replaced incompatibly, the
+visible More action is the documented fallback. It never focuses `body`, an
+inert/hidden/disabled action, a disconnected node, or the preview-only Exit
+action after exit. Route, design, plan/capability, or Consumer/Pro mode changes
+clear raw preview and cancel pending restoration. Unmount invalidates the
+generation. A later entry always creates a new generation, so a stale entry or
+restore callback cannot steal focus.
+
+| Path | Semantic opener / entry | Active focus owner | Exit / restoration |
+| --- | --- | --- | --- |
+| More → Preview, pointer or keyboard | `editor-command-overflow-preview` | visible `client-preview-exit` | current Preview action; More fallback if removed |
+| Global `P` / `Shift+P` while a command action owns focus | current Preview, More, Save, or other command action | visible `client-preview-exit` | same current semantic action; More fallback |
+| Present & Export capture | current command action or current safe document focus | visible `client-preview-exit` when command focus becomes unavailable | current semantic opener; More fallback |
+| Route/design/plan/mode change | no new opener | preview is cancelled | restoration is cancelled |
+| Unmount | no new opener | no surviving preview owner | all pending entry/return work is cancelled |
+
+The selected-item panel is a separate persistent region with its own
+concealment lifecycle. Its previously inventoried P2 preview transition—where
+an enabled collapse control can briefly remain focusable while hidden—remains
+separate and unchanged. It does not share the command-bar root or lifecycle,
+so absorbing it here would be scope drift.
+
+### Required ownership, validation, bundle, and rollback
+
+Existing merge-required `ci.pro-visual-policy` remains the sole canonical
+owner. Its one runnable source now declares five stable identities in Chromium
+and WebKit: the two existing visual-policy cases plus command-bar focus/return,
+responsive scope/Consumer denial, and presentation-export parity. The
+canonical result is 10/10 with zero retries, skips, annotations, filters, or
+shards; the focused Client Preview subset is 6/6. The manifest remains 23
+gates / 376 classified sources with unchanged inventory counts and path
+hashes. Static command-bar coverage is strengthened inside the existing 78-file
+design-cleanup owner.
+
+The exact strict build passes 57/57 routes. Phase 8 moves `/design` initial
+JavaScript from 25 chunks and 5,823,211 raw / 1,111,703 Brotli bytes to the
+same 25 chunks and 5,827,579 / 1,112,646 (**+4,368 / +943**). Initial CSS is
+byte-identical at 131,273 / 17,471. Cabinetry Studio remains one lazy
+492,639 / 84,899 chunk and GLTFExporter remains 34,525 / 8,970. Every Phase 8
+budget passes.
+
+Rollback is one local revert of the focused CH-0015B implementation commit,
+followed by the command-bar static guard, canonical Pro visual gate, design
+cleanup, Phase 8, and strict build. No data, schema, dependency, capability,
+public-share, deployment, or external-control rollback is involved.
+
+CH-0015 remains open for the selected-item P2 hardening item and the custom
+overlay lifecycles already inventoried below.
+
+## CH-0015A cart overlay lifecycle
 
 Status: **CH-0015A LOCALLY REMEDIATED; CH-0015 REMAINS OPEN FOR LATER
 SURFACES**.
@@ -147,6 +262,7 @@ are excluded.
 | `CartSidebar` and retailer-tab confirmation | Persistent complementary shopping panel plus custom modal-looking confirmation | Main panel mounted; confirmation unmounted | aside has no explicit complementary label; prompt none / none / none | prompt none / no / no / no / no / none | Fixed-size scroll panel and centered prompt | Commerce/checkout contracts; **separate from Selection Tray** and later CH-0015 scope |
 | `CatalogPlacementConfirmPanel` | Custom non-modal placement panel | Conditional unmount / 0 | dialog / labelled / false | product-directed / no / workflow shortcuts / no backdrop / workflow-specific / none | Mobile bottom sheet; desktop floating panel | Placement workflows; explicit non-modal exception to preserve |
 | `CatalogCompareTray` | Conditional non-modal compare tray | Conditional unmount / 0 | named region/group semantics, not modal | native controls / no / no / no / workflow-specific / none | Responsive tray | Compare identity/accessibility checks; not a modal candidate by default |
+| `EditorCommandBar` during Client Preview | Persistent non-modal panel | **After CH-0015B:** mounted but inert / 0 effective focusable | accessibility-hidden while preview is active / false | visible Exit Presentation / no trap / `P` or Exit / n/a / current semantic opener or More fallback / generation-scoped | One responsive root; no mobile duplicate | Required Pro visual Chromium/WebKit 10/10 plus static command-bar guard; complete for CH-0015B |
 | command-bar Workspace/More/Account menus | Custom non-modal menus/popovers | Conditional unmount / 0 | menu/menuitem where supplied / false | first item / roving/native / yes / outside action / trigger / newer-modal aware only in focused owners | Compact desktop/mobile chrome | Pro visual Chromium/WebKit and command-bar coverage; later unified popover review |
 | editor design-controls, inspector, and selected-item panels | Persistent non-modal editor regions, not overlays | Mounted and visibly interactive | complementary/region varies / false | ordinary document order / no / n/a / n/a / n/a / n/a | Desktop sidebars and mobile bottom panels | Layout/capability/placement tests; not candidates for modal semantics without a product decision |
 

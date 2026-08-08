@@ -237,7 +237,7 @@
       "limit": 250
     },
     "components/editor/EditorCommandBar.tsx": {
-      "lines": 736,
+      "lines": 734,
       "limit": 250
     },
     "components/editor/floor-plan-import-review/FloorPlanImportReviewPanel.tsx": {
@@ -1757,7 +1757,7 @@
     "components/editor/design-page/DesignPagePanelRegion.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 85
+        "maximum": 78
       }
     },
     "components/editor/design-page/DesignPagePlanCanvasOverlays.tsx": {
@@ -2117,7 +2117,7 @@
     "components/editor/EditorCommandBar.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 644
+        "maximum": 643
       },
       "complexFunctions": {
         "count": 1,
@@ -4539,7 +4539,7 @@
     "lib/useDesignPageCoreShellRegistration.ts": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 251
+        "maximum": 249
       }
     },
     "lib/useDesignPageCrossRoomItemTransfer.ts": {

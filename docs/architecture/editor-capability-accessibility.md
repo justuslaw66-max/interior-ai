@@ -47,6 +47,37 @@ export and design persistence routes retain those independent checks.
   decisions; renderer checks against those theme values are intentionally not
   subscription checks.
 
+## Client Preview command-bar contract
+
+Client Preview is a Pro/designer presentation mode. The editor command bar is
+a **persistent panel**, not a modal dialog, and remains one mounted responsive
+root so its local state and existing opacity transition survive entry/exit.
+Capability derivation remains in `useEditorMode`; preview concealment is a
+client interaction policy and is not an authorization boundary.
+
+Normal editing keeps the root visible, accessibility-active, and interactive.
+Effective Client Preview makes the root `inert`, accessibility-hidden, and
+pointer-inactive before or as it fades to zero opacity. The root capture guard
+also rejects programmatically dispatched hidden command actions. Hidden
+descendants therefore contribute no tab stops or accessibility-tree controls,
+cannot retain or receive focus, and cannot execute command routing. The same
+root serves desktop and narrow layouts; no hidden mobile duplicate exists.
+
+The core-shell preview setter is the single entry/exit boundary for More →
+Preview, the presentation shortcut, export capture, visible Exit Presentation,
+and export completion. A generation-scoped focus lifecycle records the current
+semantic command opener, moves focus once to the visible connected Exit action
+when command-bar focus becomes unavailable, and on ordinary exit restores the
+current matching opener or visible More fallback after the panel's own animation
+settles. Route, design, plan, mode, or unmount changes invalidate pending focus
+work. A disconnected, hidden, inert, disabled, or semantically stale element is
+never restored.
+
+Consumer denial is unchanged, direct URL/restored preview is not supported,
+and public sharing is separate. The selected-item panel is also a separate
+persistent region; its P2 preview-transition hardening remains outside the
+command-bar lifecycle.
+
 ## Loading boundaries
 
 The Cabinetry Studio remains client-only and dynamically loaded. Advanced plan
