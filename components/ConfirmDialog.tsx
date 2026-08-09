@@ -13,6 +13,7 @@ type ConfirmDialogProps = {
   confirmLabel: string;
   busy?: boolean;
   destructive?: boolean;
+  returnFocusIds?: readonly string[];
   onCancel: () => void;
   onConfirm: () => void;
 };
@@ -24,6 +25,7 @@ export default function ConfirmDialog({
   confirmLabel,
   busy = false,
   destructive = false,
+  returnFocusIds,
   onCancel,
   onConfirm,
 }: ConfirmDialogProps) {
@@ -37,6 +39,7 @@ export default function ConfirmDialog({
       onClose={onCancel}
       closeDisabled={busy}
       showCloseButton={false}
+      returnFocusIds={returnFocusIds}
       panelClassName="max-w-sm"
       footer={
         <EditorDialogActions>

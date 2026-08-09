@@ -1,5 +1,97 @@
 # CH-0015 accessibility lifecycle and overlay inventory
 
+## CH-0015D My Designs parent and nested delete lifecycle — 2026-08-09
+
+Status: **CH-0015D LOCALLY REMEDIATED; CH-0015 REMAINS OPEN FOR SIX
+REQUIRED OVERLAY BATCHES**.
+
+This bounded batch starts from exact integration source
+`00628978e1eeb38d89370f84e537fc971de538e4` / tree
+`ef0c3bc8ac72276eaade6d3ea19f6710c8ffca7a` on
+`fix/ch-0015-my-designs-dialog-accessibility`. My Designs is classified as a
+**MODAL_DIALOG**. Its existing shared single/bulk `ConfirmDialog` is part of
+the parent lifecycle, not a separate overlay migration. Cloud/local identity,
+list ordering and selection, requested-design routing and supersession,
+single/bulk/current-design deletion, authorization, API/database contracts,
+autosave/baseline handling, and every unrelated overlay are unchanged.
+
+### Reproduced parent and nested-child defect
+
+The old parent was a fixed custom overlay with no dialog role/name,
+`aria-modal`, registry membership, intentional focus, containment, Escape
+owner, or semantic return. Pointer and keyboard entry unmounted the transient
+`My designs` menu item and left focus on `body`; Tab/Shift+Tab reached Account
+and More, Escape did nothing, and backdrop close returned to `body`.
+
+The shared Confirm child correctly registered as topmost, but the unregistered
+parent stayed accessibility-active and focusable behind it. Programmatic focus
+could move from Confirm to a parent delete action. Cancel happened to recover
+the raw surviving opener, while success/failure and removal of the active row
+had no documented deterministic parent target. This was a parent ownership and
+caller return-identity defect; the shared Confirm lifecycle itself was not
+redesigned.
+
+### Final parent/child ownership and focus hierarchy
+
+Closed My Designs has no dialog DOM or actionable descendant. The lazy module
+is still requested only on first open; after first use its component remains
+mounted across ordinary close so the shared lifecycle can complete semantic
+return, while route unmount cancels the generation. Open My Designs uses
+`EditorDialog` with the accessible name `My Designs`, `aria-modal=true`,
+visible close-button initial focus, deterministic Tab/Shift+Tab, topmost
+Escape/backdrop ownership, and inert/`aria-hidden` editor background. Direct
+return first resolves the current transient command action when connected,
+then the persistent visible `editor-command-more-action` fallback.
+
+Design action identities are derived only from canonical design ID plus
+`open` or `delete`. Confirm receives an optional ordered semantic return list,
+which is the only shared-Confirm change and preserves every existing default
+caller. Single delete resolves current delete action, then current row-open
+actions in list order, then the visible parent close. Selected/all delete
+resolves its current bulk origin first, then current row-open actions, then
+close. The shared actionable check rejects hidden, inert, disabled,
+disconnected, deleted, or obscured candidates, so success skips removed rows,
+failure returns to the surviving delete action, a surviving list focuses the
+first current row, and an empty list focuses close.
+
+While Confirm is open it is the sole topmost owner. The mounted parent becomes
+inert and accessibility-hidden and cannot own Tab, Escape, backdrop, or focus.
+Busy confirmation disables both stable actions and the existing mutation guard
+prevents duplicate requests. A newer registered dialog suppresses stale child
+return; after that dialog closes, Confirm resumes ownership. Cancel/confirm
+closes only Confirm. Parent close, route replacement, unmount, and reopen use
+the shared topmost/generation rules.
+
+### Required owner, bundle, residual inventory, and rollback
+
+New merge-required `ci.my-designs-overlay-accessibility` is the sole canonical
+browser owner. Its static prerequisite remains registered under
+`ci.design-cleanup` and proves closed/loading/empty/populated, semantic-ID
+ordering, unchanged delete guards, and the lazy import. Eight
+stable tests execute once in Chromium and WebKit against a strict production
+artifact and isolated migrated PostgreSQL database: **16/16**, zero retries,
+skips, flakes, filters, shards, or timeout changes. The manifest is derived as
+**24 gates / 376 classified sources**; the three focused gate sources are
+explicitly owned outside advisory Full E2E and release Gate A3 discovery.
+
+Against the exact base, `/design` remains 25 initial JavaScript chunks and one
+CSS chunk. JavaScript moves from 5,828,568 raw / 1,112,834 Brotli to 5,829,340
+/ 1,113,320 (**+772 / +486**); CSS moves from 131,484 / 17,470 to 131,611 /
+17,495 (**+127 / +25**). The My Designs lazy chunk changes from
+`0185bv3nfz_v-.js` at 7,577 / 1,974 to `1ohqb2843ow--.js` at 7,884 / 2,220
+(**+307 / +246**). Cabinetry Studio and GLTFExporter remain unchanged at
+492,639 / 84,899 and 34,525 / 8,970. Every Phase 8 budget passes.
+
+The six remaining required batches are **Guest Save, Command Palette, Floor
+Plan Upload, retailer confirmation, Share Link Fallback, and public legacy
+Upgrade**. The last two remain required, not P2-deferred. The selected-item
+preview transition remains separate P2 post-candidate work.
+
+Rollback is one local revert of the focused CH-0015D commit, followed by the
+My Designs static/required gates, persistence/routing guards, Phase 8, and the
+strict build. No data, schema, migration, dependency, deployment, integration
+branch, or external-control rollback is required.
+
 ## CH-0015C Plans dialog lifecycle — 2026-08-09
 
 Status: **CH-0015C LOCALLY REMEDIATED; CH-0015 REMAINS OPEN FOR SEVEN
@@ -350,7 +442,7 @@ are excluded.
 | `CatalogCategoryTabs` category browser | Custom responsive popup/dialog | Unmounted / 0 | dialog / `Choose a product category` / no modal declaration | panel / no / yes / mobile backdrop; outside pointer desktop / direct trigger ref / none | Mobile bottom sheet; desktop anchored popup | Catalog category layout coverage; requires explicit hybrid classification later |
 | `CatalogFilterDrawer` | Custom anchored non-modal filter panel | Unmounted / 0 | none / none / false | none / no / no / no / no / none | Anchored scroll panel | Catalog filter tests; retain non-modal intent or add complementary semantics later |
 | `PlansDialog` | `EditorDialog`; modal | Unmounted / 0 | dialog / `Plans` / true | close / yes / topmost / yes / current Account or Upgrade semantic ID / topmost-safe | Max 420px with 16px narrow gutter and capped scroll content | Required Pro visual Chromium/WebKit 20/20 plus Stripe/Pro and editor-accessibility guards; complete for CH-0015C |
-| `MyDesignsDialog` plus delete `ConfirmDialog` | Custom modal-looking parent plus shared modal child | Unmounted / 0 | parent none; child dialog / child title / child true | parent none; child shared lifecycle / parent no Escape / parent backdrop / parent no return / child can supersede | Centered, max 80vh | Persistence/design tests; parent migration and nested focus ownership remain |
+| `MyDesignsDialog` plus delete `ConfirmDialog` | `EditorDialog` parent plus shared modal child | Dialog DOM absent; lazy component retained after first ordinary dismissal / 0 actionable | parent dialog / `My Designs` / true; child dialog / delete title / true | close / yes / topmost / yes / current command or More; nested return by current design/bulk semantic ID and surviving-row/close hierarchy | Centered, viewport-capped and scrollable | Required Chromium/WebKit 16/16 plus static/persistence/routing guards; complete for CH-0015D |
 | `GuestSavePromptDialog`, `ShareLinkFallbackDialog` | Custom modal-looking overlays | Unmounted / 0 | none / none / none | none / no / no / no / no / none | Centered viewport-capped | Auth/share behavior tests; later CH-0015 surfaces |
 | `BetaFeedbackWidget` | Custom modal | Unmounted / 0 | dialog / `Send beta feedback` / true | textarea autofocus / no / textarea only / yes / no / none | Centered, viewport-capped | Feedback contracts; later full keyboard/return review |
 | legacy `UpgradeModal` | Custom modal-looking overlay | Unmounted / 0 | none / none / none | none / no / no / no / no / none | Centered viewport-capped | Billing UI source coverage; distinct from shared `UpgradeDialog` and remains later scope |
@@ -415,7 +507,7 @@ must choose one bounded surface, preserve any explicit non-modal contract, and
 repeat test-first characterization rather than applying modal semantics in
 bulk.
 
-The authoritative required residual sequence after CH-0015C is My Designs,
-Guest Save, Command Palette, Floor Plan Upload, retailer confirmation, Share
-Link Fallback, and public legacy Upgrade. The last two are required rather than
-P2-deferred. The selected-item preview transition remains a separate P2 item.
+The authoritative required residual sequence after CH-0015D is Guest Save,
+Command Palette, Floor Plan Upload, retailer confirmation, Share Link Fallback,
+and public legacy Upgrade. The last two are required rather than P2-deferred.
+The selected-item preview transition remains a separate P2 item.

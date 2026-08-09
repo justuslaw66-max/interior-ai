@@ -7,6 +7,7 @@ import { ChevronDown, Ellipsis, PanelLeft, Plus, UserRound } from "lucide-react"
 import { signIn, signOut } from "next-auth/react";
 import { CLIENT_PREVIEW_COMMAND_BAR_ID, CLIENT_PREVIEW_FALLBACK_ACTION_ID, guardHiddenCommandAction } from "@/lib/useClientPreviewCommandBarFocus";
 import { PLANS_ACCOUNT_OPENER_ID } from "@/lib/plans-dialog-focus";
+import { MY_DESIGNS_COMMAND_ACTION_ID } from "@/lib/my-designs-command-focus";
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 type EditorMode = "design" | "adjust" | "ai" | "buy" | "present";
 export type EditorSaveStatus = {
@@ -538,8 +539,7 @@ export default function EditorCommandBar({
             >
               {showLoadDesign && (
                 <button
-                  type="button"
-                  data-testid="editor-command-overflow-load"
+                  type="button" role="menuitem" id={MY_DESIGNS_COMMAND_ACTION_ID} data-testid="editor-command-overflow-load"
                   className={menuButtonClass}
                   onClick={() => {
                     setOverflowOpen(false);

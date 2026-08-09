@@ -1,4 +1,14 @@
+"use client";
+
+import { useMemo } from "react";
 import ConfirmDialog from "@/components/ConfirmDialog";
+import { EditorDialog } from "@/components/editor/design-system/EditorDialog";
+import {
+  MY_DESIGNS_CLOSE_ACTION_ID, MY_DESIGNS_DELETE_ALL_ACTION_ID,
+  MY_DESIGNS_DELETE_SELECTED_ACTION_ID, MY_DESIGNS_RETURN_FOCUS_IDS,
+  getMyDesignsDeleteActionId, getMyDesignsDeleteReturnFocusIds,
+  getMyDesignsOpenActionId,
+} from "@/lib/my-designs-dialog-focus";
 
 export type SavedDesignSummary = {
   id: string;
@@ -28,11 +38,8 @@ export type MyDesignsDialogProps = {
   onToggleAll: () => void;
   onToggleSelection: (id: string) => void;
   onLoadDesign: (id: string) => void | Promise<void>;
-  onRequestDelete: (
-    ids: string[],
-    mode: PendingSavedDesignDelete["mode"],
-    title?: string
-  ) => void;
+  onRequestDelete: (ids: string[], mode: PendingSavedDesignDelete["mode"],
+    title?: string) => void;
   onCancelDelete: () => void;
   onConfirmDelete: () => void | Promise<void>;
 };
@@ -57,44 +64,34 @@ export function MyDesignsDialog({
   onCancelDelete,
   onConfirmDelete,
 }: MyDesignsDialogProps) {
+  const deleteReturnFocusIds = useMemo(
+    () => pendingDeleteDesign
+      ? getMyDesignsDeleteReturnFocusIds(
+          pendingDeleteDesign,
+          designs.map(({ id }) => id)
+        )
+      : undefined,
+    [designs, pendingDeleteDesign]
+  );
   return (
     <>
-      {open && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
-          onClick={onClose}
-        >
-          <div
-            data-testid="load-designs-modal"
-            className={
-              designerTheme
-                ? "designer-panel w-full max-w-2xl max-h-[80vh] rounded-xl p-6 shadow-2xl overflow-y-auto"
-                : "w-full max-w-2xl max-h-[80vh] rounded-xl bg-white p-6 shadow-2xl overflow-y-auto"
-            }
-            onClick={(event) => event.stopPropagation()}
-          >
-            <div className="mb-4 flex items-center justify-between">
-              <h2
-                className={
-                  designerTheme
-                    ? "designer-text-primary text-xl font-bold"
-                    : "text-xl font-bold"
-                }
-              >
-                My Designs
-              </h2>
-              <button
-                onClick={onClose}
-                className={
-                  designerTheme
-                    ? "designer-text-secondary text-2xl hover:text-white"
-                    : "text-2xl text-gray-500 hover:text-gray-700"
-                }
-              >
-                ✕
-              </button>
-            </div>
-
+      <EditorDialog
+        open={open}
+        title="My Designs"
+        onClose={onClose}
+        closeLabel="Close My Designs"
+        testId="load-designs-modal"
+        dialogId="editor-my-designs-dialog"
+        closeButtonId={MY_DESIGNS_CLOSE_ACTION_ID}
+        closeButtonTestId="load-designs-close"
+        returnFocusIds={MY_DESIGNS_RETURN_FOCUS_IDS}
+        cancelFocusRestorationOnUnmount
+        manageBackground
+        dark={designerTheme}
+        forceLight={!designerTheme}
+        panelClassName={`${designerTheme ? "designer-panel " : ""}!max-w-2xl max-h-[calc(100dvh-2rem)] !rounded-xl !p-6 flex min-h-0 flex-col overflow-hidden`}
+        contentClassName="min-h-0 overflow-y-auto pr-1"
+      >
             <div
               data-testid="load-designs-template-shortcut"
               className={
@@ -175,6 +172,7 @@ export function MyDesignsDialog({
                 </span>
                 <button
                   type="button"
+                  id={MY_DESIGNS_DELETE_SELECTED_ACTION_ID}
                   data-testid="delete-selected-saved-designs"
                   disabled={selectedDesignCount === 0 || deletingDesignIds.size > 0}
                   onClick={() =>
@@ -190,6 +188,7 @@ export function MyDesignsDialog({
                 </button>
                 <button
                   type="button"
+                  id={MY_DESIGNS_DELETE_ALL_ACTION_ID}
                   data-testid="delete-all-saved-designs"
                   disabled={designs.length === 0 || deletingDesignIds.size > 0}
                   onClick={() => onRequestDelete(allDesignIds, "all")}
@@ -250,6 +249,7 @@ export function MyDesignsDialog({
                     </label>
                     <button
                       type="button"
+                      id={getMyDesignsOpenActionId(design.id)}
                       data-testid={`load-design-${design.id}`}
                       onClick={() => onLoadDesign(design.id)}
                       className={
@@ -281,6 +281,7 @@ export function MyDesignsDialog({
                     </button>
                     <button
                       type="button"
+                      id={getMyDesignsDeleteActionId(design.id)}
                       data-testid={`delete-saved-design-${design.id}`}
                       disabled={deletingDesignIds.has(design.id)}
                       onClick={() =>
@@ -298,9 +299,7 @@ export function MyDesignsDialog({
                 ))}
               </div>
             )}
-          </div>
-        </div>
-      )}
+      </EditorDialog>
 
       <ConfirmDialog
         open={Boolean(pendingDeleteDesign)}
@@ -321,6 +320,7 @@ export function MyDesignsDialog({
         confirmLabel="Delete"
         busy={deletingDesignIds.size > 0}
         destructive
+        returnFocusIds={deleteReturnFocusIds}
         onCancel={onCancelDelete}
         onConfirm={onConfirmDelete}
       />

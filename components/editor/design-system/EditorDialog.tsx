@@ -25,6 +25,7 @@ export type EditorDialogProps = {
   testId?: string;
   dialogId?: string;
   closeButtonTestId?: string;
+  closeButtonId?: string;
   closeButtonRef?: { current: HTMLButtonElement | null };
   initialFocusRef?: { current: HTMLElement | null };
   returnFocusId?: string;
@@ -77,7 +78,7 @@ export function EditorDialog({
   dark = false,
   forceLight = false,
   testId, dialogId,
-  closeButtonTestId,
+  closeButtonTestId, closeButtonId,
   closeButtonRef: providedCloseButtonRef,
   initialFocusRef,
   returnFocusId, returnFocusIds, manageBackground = false,
@@ -151,7 +152,7 @@ export function EditorDialog({
           </div>
           {showCloseButton ? (
             <button
-              ref={closeButtonRef}
+              ref={closeButtonRef} id={closeButtonId}
               type="button"
               aria-label={closeLabel}
               data-testid={closeButtonTestId}

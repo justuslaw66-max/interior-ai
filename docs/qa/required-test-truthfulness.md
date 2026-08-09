@@ -1,10 +1,11 @@
 # Required-test truthfulness
 
-Status: **CH-0015C PLANS CONTRACT REGISTERED — LOCAL CONTRACT GREEN;
+Status: **CH-0015D MY DESIGNS CONTRACT REGISTERED — LOCAL CONTRACT GREEN;
 EXTERNAL RULESET ENFORCEMENT UNVERIFIED**. Repository truthfulness assigns the
-Client Preview command-bar and Plans dialog contracts to the existing
-merge-required Pro visual Chromium/WebKit owner and retains the Selection Tray, CH-0013
-surface-material, responsive, advisory Full E2E, and release Gate A3 owners.
+My Designs parent/nested-delete lifecycle to its focused merge-required
+Chromium/WebKit owner, retains Client Preview and Plans under Pro visual, and
+retains the Selection Tray, CH-0013 surface-material, responsive, advisory Full
+E2E, and release Gate A3 owners.
 GitHub ruleset selection and an exact-head workflow run remain external
 evidence; repository registration does not claim either control is configured.
 
@@ -45,19 +46,53 @@ Repository-controlled cadence is explicit:
   conclusion and dishonest evidence remain visible and are never accepted as
   release certification.
 
-The 23-gate inventory includes the required Git-history secret scan, code
+The 24-gate inventory includes the required Git-history secret scan, code
 quality, CH-0016 artifact-contract and runtime smoke, authorization/security,
 database migration process, persistence, Stripe, Phase 14/15, Consumer/Pro
 capability boundaries, cabinetry unit/accessibility/performance and release
 evidence, design guards, typecheck, zero-warning lint, the complete floor-plan
 umbrella (including live progress), catalog/materials, asset availability,
 Chromium/WebKit Pro visual policy, the Chromium/WebKit responsive public-share
-gate, the Chromium/WebKit Selection Tray lifecycle gate, and final merge-result
-aggregation. Gate A3 discovers all 100 current
+gate, the Chromium/WebKit Selection Tray lifecycle gate, the Chromium/WebKit My
+Designs parent/nested-delete lifecycle gate, and final merge-result
+aggregation. Gate A3 discovers all 101 current
 browser specs and separately locks the six repaired
 commerce/Kelsey requirement identities; cabinetry release evidence owns 23
 named Consumer/Pro workflows. CH-0016 runtime smoke locks its two runtime
 requirement identities.
+
+## CH-0015D canonical My Designs owner
+
+`ci.my-designs-overlay-accessibility` is the sole merge-required browser owner
+for `tests/required/my-designs-overlay-accessibility.spec.ts` and
+`playwright.my-designs-overlay.config.ts`. The static guard
+`scripts/test-my-designs-overlay-static.tsx` remains registered under
+`ci.design-cleanup`; the focused gate consumes it as a prerequisite that renders
+closed/loading/empty/populated/nested contracts, proves semantic opener and
+delete-return ordering, retains the first-use lazy import, and guards the
+unchanged persistence deletion path before browser execution.
+
+Eight stable identities execute once in Chromium and WebKit against the strict
+production artifact and explicit isolated database: **16/16**, zero retry,
+skip, annotation, flake, grep, inverse-grep, filter, shard, or timeout change.
+Coverage owns pointer/keyboard, Consumer/Pro, desktop/390×844, role/name/modal,
+initial focus, Tab/Shift+Tab, Escape/close/backdrop, direct return and opener
+replacement/fallback, loading/empty/populated, single/bulk cancel/success,
+parent inert/hidden nested ownership, failure, busy duplicate guard,
+current-design detach, surviving-row/empty hierarchy, newer-dialog
+supersession, reopen, route unmount, no overflow/clipping/duplicates, and lazy
+resource entry.
+
+The runnable spec deliberately remains under the gate-declared
+`tests/required` root, so advisory Full E2E and release Gate A3 do not discover
+or double-own it. Exact config/report/process validation fails closed on a
+missing/renamed/skipped/retried/flaky/filtered/focused/zero-discovery record.
+Stable-checks invokes the package command after the strict build and after the
+already-isolated migration step; merge-gate continues to consume
+stable-checks. The derived manifest advances from 23 to **24 gates** and keeps
+**376 classified sources** with unchanged five inventory counts/hashes because
+the three new focused sources are explicit gate sources. External GitHub
+ruleset enforcement and an exact-head hosted run remain unverified.
 
 ## CH-0015C canonical Plans dialog owner
 

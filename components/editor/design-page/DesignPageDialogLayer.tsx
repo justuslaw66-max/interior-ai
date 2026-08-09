@@ -1,6 +1,6 @@
 "use client";
 
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useState } from "react";
 import BetaFeedbackWidget, {
   type BetaFeedbackWidgetProps,
 } from "@/components/BetaFeedbackWidget";
@@ -97,6 +97,20 @@ export function DesignPageDialogLayer({
   dialogs,
   overlays,
 }: DesignPageDialogLayerProps) {
+  const [myDesignsMounted, setMyDesignsMounted] = useState(false);
+  const closeMyDesigns = () => {
+    setMyDesignsMounted(true);
+    dialogs.myDesigns.onClose();
+  };
+  const openMyDesignTemplates = () => {
+    setMyDesignsMounted(false);
+    dialogs.myDesigns.onOpenTemplates();
+  };
+  const loadMyDesign = (designId: string) => {
+    setMyDesignsMounted(false);
+    return dialogs.myDesigns.onLoadDesign(designId);
+  };
+
   return (
     <>
       <UpgradeDialog {...dialogs.upgrade} />
@@ -104,9 +118,14 @@ export function DesignPageDialogLayer({
       <PlansDialog {...dialogs.plans} />
       <AiNotesDialog {...dialogs.aiNotes} />
       <PresentExportDialog {...dialogs.presentExport} />
-      {dialogs.myDesigns.open ? (
+      {dialogs.myDesigns.open || myDesignsMounted ? (
         <Suspense fallback={null}>
-          <MyDesignsDialog {...dialogs.myDesigns} />
+          <MyDesignsDialog
+            {...dialogs.myDesigns}
+            onClose={closeMyDesigns}
+            onOpenTemplates={openMyDesignTemplates}
+            onLoadDesign={loadMyDesign}
+          />
         </Suspense>
       ) : null}
       <RoomRenameDialog {...dialogs.roomRename} />

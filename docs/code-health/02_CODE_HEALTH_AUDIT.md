@@ -1,5 +1,36 @@
 # Code health audit
 
+## CH-0015D accessible My Designs lifecycle — 2026-08-09
+
+Starting from exact integration source
+`00628978e1eeb38d89370f84e537fc971de538e4` / tree
+`ef0c3bc8ac72276eaade6d3ea19f6710c8ffca7a`, this bounded batch classifies My
+Designs as a **MODAL_DIALOG** and includes its existing shared single/bulk
+delete Confirm as one nested lifecycle. The old parent lacked modal semantics,
+focus entry/containment/Escape/return and stayed accessibility-active behind
+the registered child.
+
+The parent now uses `EditorDialog`, retains first-use lazy loading, restores to
+the current command action or persistent More fallback, and becomes
+inert/hidden while Confirm is topmost. Canonical design-ID action identities
+give cancel/failure the surviving delete action and give successful deletion a
+current surviving row or close fallback without retaining a stale row node.
+The only Confirm extension is an optional ordered semantic return list; its
+general lifecycle and every other caller remain unchanged. Persistence,
+routing, current-design detach, deletion/API, selection/order, authorization,
+and Consumer/Pro behavior are preserved.
+
+New `ci.my-designs-overlay-accessibility` passes 16/16 production-artifact
+records across Chromium/WebKit against an isolated 43-migration database with
+zero retries/skips/flakes. Static ownership remains in `ci.design-cleanup`
+(79/79); persistence, requested-design, strict build,
+code-quality, and complete Phase 8 contracts pass; the manifest is 24 gates /
+376 classified sources. Focused visual inspection passes loading, empty,
+populated, single, bulk, failure, busy, Consumer desktop, and Pro 390×844
+states without overflow or clipped focus. This is still a partial CH-0015
+remediation: six required overlay batches and the separate selected-item P2
+remain.
+
 ## CH-0015C accessible Plans dialog — 2026-08-09
 
 Starting from exact integration source
@@ -508,10 +539,10 @@ CH-0001, CH-0012, and CH-0016 are closed for repository-controlled remediation. 
 ### CH-0015 — Drawers and major overlays bypass accessible dialog ownership
 
 - **Severity:** P1.
-- **Status:** PARTIALLY REMEDIATED — CH-0015A SELECTION TRAY, CH-0015B CLIENT PREVIEW COMMAND BAR, AND CH-0015C PLANS COMPLETE LOCALLY; SEVEN REQUIRED OVERLAYS REMAIN OPEN.
-- **Locations/symbols:** `ItemCartDrawer`; editor dialog layer; Plans dialog; My Designs dialog; Command Palette; shared `EditorDialog`.
+- **Status:** PARTIALLY REMEDIATED — CH-0015A SELECTION TRAY, CH-0015B CLIENT PREVIEW COMMAND BAR, CH-0015C PLANS, AND CH-0015D MY DESIGNS COMPLETE LOCALLY; SIX REQUIRED OVERLAYS REMAIN OPEN.
+- **Locations/symbols:** `ItemCartDrawer`; editor dialog layer; Plans dialog; My Designs dialog and nested Confirm; Command Palette; shared `EditorDialog`.
 - **Pre-remediation evidence:** Closed cart was translated off-screen while controls remained mounted/focusable. It lacked dialog semantics, inert/focus containment, Escape and focus return. Several major modals bypassed the shared accessible dialog primitive.
-- **Current behavior:** Selection Tray closed content is unmounted; open content uses the shared modal lifecycle with labelled semantics, deterministic entry/trap/Escape/backdrop/current-opener return, nested-owner suppression, and stale-frame cancellation. Client Preview correctly conceals its persistent command bar. Plans now uses the same shared modal lifecycle across direct Account and nested Upgrade entry, with semantic return and narrow containment. The remaining custom overlays are unchanged and inventoried in `docs/architecture/cart-overlay-accessibility.md`.
+- **Current behavior:** Selection Tray closed content is unmounted; open content uses the shared modal lifecycle with labelled semantics, deterministic entry/trap/Escape/backdrop/current-opener return, nested-owner suppression, and stale-frame cancellation. Client Preview correctly conceals its persistent command bar. Plans uses the lifecycle across direct Account and nested Upgrade entry. My Designs now owns the same parent lifecycle while its existing delete Confirm exclusively owns nested focus and returns by current design/bulk semantic identity. The remaining custom overlays are unchanged and inventoried in `docs/architecture/cart-overlay-accessibility.md`.
 - **Risk:** Keyboard and assistive-technology users can focus invisible controls, lose context, or become trapped; overlay behavior diverges.
 - **Improvement:** Migrate overlays to one primitive with semantic title/description, inert background, focus trap/return, Escape policy, responsive sizing, and explicit non-modal exceptions.
 - **Expected outcome:** Consistent accessible overlay lifecycle without changing domain actions.

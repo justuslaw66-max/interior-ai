@@ -117,8 +117,8 @@ assert.match(
 
 assert.match(
   dialogLayerSource,
-  /<MyDesignsDialog\s+\{\.\.\.dialogs\.myDesigns\}\s*\/>/,
-  "The fixed dialog layer should own My Designs leaf composition."
+  /<MyDesignsDialog[\s\S]*?\{\.\.\.dialogs\.myDesigns\}[\s\S]*?onClose=\{closeMyDesigns\}[\s\S]*?onOpenTemplates=\{openMyDesignTemplates\}[\s\S]*?onLoadDesign=\{loadMyDesign\}[\s\S]*?\/>/,
+  "The fixed dialog layer should own My Designs leaf composition, ordinary close return, and restoration-canceling exits."
 );
 assert.match(
   source,

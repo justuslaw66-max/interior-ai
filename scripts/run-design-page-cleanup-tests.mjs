@@ -68,6 +68,7 @@ const typescriptGuardFiles = [
   "test-editor-floating-overlay-layout.ts",
   "test-floor-plan-quality.ts",
   "test-load-design-delete-modal.ts",
+  "test-my-designs-overlay-static.tsx",
   "test-manual-placement-scoring.ts",
   "test-placement-best-option.ts",
   "test-placement-best-room.ts",
@@ -119,7 +120,7 @@ const compilerOptions = JSON.stringify({
 for (const fileName of guardFiles) {
   console.log(`\n[design-page-cleanup] ${fileName}`);
   const scriptPath = join(scriptsDirectory, fileName);
-  const commandArguments = fileName.endsWith(".ts")
+  const commandArguments = /\.tsx?$/.test(fileName)
     ? [
         tsNodeBin,
         "--transpile-only",

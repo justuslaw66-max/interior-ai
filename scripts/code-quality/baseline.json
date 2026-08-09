@@ -1911,11 +1911,11 @@
     "components/editor/design-page/MyDesignsDialog.tsx": {
       "overlongFunctions": {
         "count": 2,
-        "maximum": 290
+        "maximum": 283
       },
       "complexFunctions": {
         "count": 1,
-        "maximum": 28
+        "maximum": 25
       }
     },
     "components/editor/design-page/PlacedCabinetAssetMarkers.tsx": {
@@ -2117,7 +2117,7 @@
     "components/editor/EditorCommandBar.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 643
+        "maximum": 642
       },
       "complexFunctions": {
         "count": 1,

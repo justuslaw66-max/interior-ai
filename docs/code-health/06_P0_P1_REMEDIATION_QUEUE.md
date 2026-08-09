@@ -1,5 +1,37 @@
 # P0/P1 remediation queue
 
+## CH-0015D My Designs dialog accessibility — 2026-08-09
+
+- **Source/scope:** exact integration source
+  `00628978e1eeb38d89370f84e537fc971de538e4` / tree
+  `ef0c3bc8ac72276eaade6d3ea19f6710c8ffca7a`; bounded branch
+  `fix/ch-0015-my-designs-dialog-accessibility`; My Designs parent, semantic
+  command/design/bulk identities, its existing nested Confirm return wiring,
+  retained first-use lazy boundary, focused gate, and records only.
+- **Disposition:** `PARTIALLY RESOLVED — CH-0015D LOCAL REMEDIATION COMPLETE`.
+  My Designs is a labelled modal with intentional close focus, containment,
+  topmost Escape/backdrop, background inertness, semantic command/More return,
+  and route/unmount/reopen generation safety. Confirm conceals the mounted
+  parent; cancel/failure returns to the current delete action and successful
+  mutation resolves a current surviving row or close without focusing a
+  deleted node.
+- **Required owner:** the static guard remains in `ci.design-cleanup` and runs
+  as the fail-closed prerequisite for new browser owner
+  `ci.my-designs-overlay-accessibility`, which owns eight stable identities.
+  Canonical strict-artifact
+  result: Chromium 8/8 + WebKit 8/8, zero retry/skip/flake; derived inventory
+  is 24 gates / 376 classified sources.
+- **Behavior/rollback:** persistence, cloud/local identity, requested-design
+  routing/supersession, list selection/order, single/bulk/current-design delete,
+  authorization, API/schema, Consumer/Pro policy, and other overlays are
+  unchanged. Revert the one focused commit and rerun My Designs required,
+  persistence/routing, Phase 8, and strict build; no data or external rollback
+  is required.
+- **Queue status:** CH-0015 remains `IN_PROGRESS` with six required batches:
+  Guest Save, Command Palette, Floor Plan Upload, retailer confirmation, Share
+  Link Fallback, and public legacy Upgrade. The last two remain required; the
+  selected-item preview transition remains separate P2 work.
+
 ## CH-0015C Plans dialog accessibility — 2026-08-09
 
 - **Source/scope:** exact integration source
@@ -280,7 +312,7 @@ Current superseding statuses are: CH-0017 **TRUTHFULNESS AND REQUIRED EXTERNAL W
 | CH-0012 | P1, resolved | RESOLVED | Supported editable entry points now converge on the canonical persisted-document loader; legacy bookmarks temporarily redirect. |
 | CH-0013 | P1, resolved | RESOLVED | Phase 8A/B runtime work is preserved and `ci.catalog-materials` now singly owns the required schema/browser-helper/lazy-boundary suite; generator drift remains required once through production-artifact evidence. |
 | CH-0014 | P2 | DOWNGRADED_WITH_EVIDENCE | Source shows per-item ownership, but no measured P1 outage, data loss, or security/privacy consequence is currently demonstrated. |
-| CH-0015 | P1 | IN_PROGRESS | CH-0015A fixes Selection Tray, CH-0015B fixes Client Preview command-bar concealment/focus, and CH-0015C fixes direct/nested Plans. Seven required overlay batches and the separate selected-item P2 remain. |
+| CH-0015 | P1 | IN_PROGRESS | CH-0015A fixes Selection Tray, CH-0015B fixes Client Preview command-bar concealment/focus, CH-0015C fixes direct/nested Plans, and CH-0015D fixes My Designs plus its nested delete Confirm. Six required overlay batches and the separate selected-item P2 remain. |
 | CH-0016 | P1, resolved | RESOLVED | Strict clean-source build, artifact/trace hashing, production start, and health/report identity now fail closed; CI upload/retention is configured but external execution and platform acceptance remain unverified. |
 | CH-0017 | P1, resolved/frozen | RESOLVED | TRUTHFULNESS AND REQUIRED EXTERNAL WORKFLOW VERIFIED — IMPLEMENTATION FROZEN. |
 | CH-0018 | P1 | BLOCKED_DEPENDENCY | Supported predecessor versions and a representative sanitized fixture owner are required. |
@@ -395,7 +427,7 @@ Current superseding statuses are: CH-0017 **TRUTHFULNESS AND REQUIRED EXTERNAL W
 
 ### CH-0015 — inaccessible drawer/overlay ownership
 
-- **Current evidence and affected symbols:** CH-0015A migrates `components/ItemCartDrawer.tsx` to `components/editor/design-system/EditorDialog.tsx`; closed Selection Tray content is now unmounted and the shared lifecycle owns semantics, topmost focus, dismissal, semantic return, and cancellation. CH-0015B keeps `EditorCommandBar` classified as a persistent panel while adding inert/accessibility concealment and generation-scoped focus entry/return. CH-0015C migrates direct/nested Plans to the shared lifecycle and adds current semantic Account/Upgrade return plus narrow containment. The selected-item P2 and seven required overlay batches remain open.
+- **Current evidence and affected symbols:** CH-0015A migrates `components/ItemCartDrawer.tsx` to `components/editor/design-system/EditorDialog.tsx`; closed Selection Tray content is now unmounted and the shared lifecycle owns semantics, topmost focus, dismissal, semantic return, and cancellation. CH-0015B keeps `EditorCommandBar` classified as a persistent panel while adding inert/accessibility concealment and generation-scoped focus entry/return. CH-0015C migrates direct/nested Plans. CH-0015D migrates My Designs and gives its existing nested delete Confirm current semantic deletion/survivor return while the parent is inert/hidden. The selected-item P2 and six required overlay batches remain open.
 - **Reach and impact:** Cart and editor overlays are production-reachable core workflows. Keyboard and assistive-technology users can focus invisible controls or lose context; this is accessibility and workflow impact, not data corruption or a security boundary.
 - **Dependencies and tests:** No decision unless a named surface must be non-modal. Add closed/open tab order, axe, accessible name, Escape, outside-click, focus-return, narrow-viewport, and nested-prompt tests.
 - **Scope and rollback:** Migrate one overlay at a time to the shared primitive without visual/domain redesign. Roll back a single overlay adapter independently.
@@ -508,7 +540,7 @@ Risk order includes blocked findings so decisions are visible; `READY` ordering 
 14. `CH-0003` — `REQUIRES_PRODUCT_DECISION` (distributed cost budgets/outage policy).
 15. `CH-0005` — `REQUIRES_PRODUCT_DECISION` (retirement authority).
 16. `CH-0013` — `READY` (surface drift/schema gates, then payload).
-17. `CH-0015` — `IN_PROGRESS` (Selection Tray, Client Preview command bar, and Plans are complete in CH-0015A/B/C; seven required overlay batches and the selected-item P2 stay queued separately).
+17. `CH-0015` — `IN_PROGRESS` (Selection Tray, Client Preview command bar, Plans, and My Designs are complete in CH-0015A/B/C/D; six required overlay batches and the selected-item P2 stay queued separately).
 18. `CH-0019` — `RESOLVED` by the completed bounded baseline, architecture,
     Pro-visual, and Phase 8 sequence; no longer queued.
 

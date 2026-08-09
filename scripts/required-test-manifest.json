@@ -700,6 +700,87 @@
       "ci": { "job": "stable-checks", "step": "Run required cart overlay accessibility matrix" }
     },
     {
+      "id": "ci.my-designs-overlay-accessibility",
+      "invariant": "My Designs owns one modal parent lifecycle while its nested single and bulk delete confirmation exclusively owns the topmost dialog, conceals the mounted parent, invokes each mutation once, and restores focus by current semantic identity across Consumer, Pro, responsive, replacement, failure, supersession, and unmount paths in Chromium and WebKit.",
+      "cadence": "merge-required",
+      "blocking": true,
+      "command": "npm run test:my-designs-overlay-accessibility-required",
+      "packageScript": "test:my-designs-overlay-accessibility-required",
+      "packageClosure": { "expectedScriptCount": 2, "expectedSha256": "a0f941f3c13cf76f469164bc1f0562ec045124e0c2e4f0ccbf5b98f9d9d6159e" },
+      "packagePrerequisites": ["test:my-designs-overlay-static"],
+      "requiredEnvironment": {
+        "APP_ENV": "development",
+        "PLAYWRIGHT_USE_PRODUCTION_SERVER": "1"
+      },
+      "runner": "playwright",
+      "requiredSources": [
+        "scripts/test-my-designs-overlay-static.tsx",
+        "tests/required/my-designs-overlay-accessibility.spec.ts",
+        "playwright.my-designs-overlay.config.ts"
+      ],
+      "requiredTests": [
+        {
+          "id": "my-designs.consumer-parent-lifecycle",
+          "file": "tests/required/my-designs-overlay-accessibility.spec.ts",
+          "title": "consumer parent pointer lifecycle owns semantics, containment, dismissal, return, and lazy entry"
+        },
+        {
+          "id": "my-designs.pro-keyboard-narrow",
+          "file": "tests/required/my-designs-overlay-accessibility.spec.ts",
+          "title": "pro keyboard and narrow lifecycle preserves backdrop return without overflow or clipped focus"
+        },
+        {
+          "id": "my-designs.content-states",
+          "file": "tests/required/my-designs-overlay-accessibility.spec.ts",
+          "title": "loading, empty, and populated states retain one parent owner"
+        },
+        {
+          "id": "my-designs.single-delete",
+          "file": "tests/required/my-designs-overlay-accessibility.spec.ts",
+          "title": "single delete cancel and success conceal the parent and restore a current semantic target"
+        },
+        {
+          "id": "my-designs.single-delete-failure",
+          "file": "tests/required/my-designs-overlay-accessibility.spec.ts",
+          "title": "failed single delete invokes once and restores the surviving delete action"
+        },
+        {
+          "id": "my-designs.bulk-delete",
+          "file": "tests/required/my-designs-overlay-accessibility.spec.ts",
+          "title": "bulk delete cancel, busy guard, and success invoke once per target and focus the surviving row"
+        },
+        {
+          "id": "my-designs.current-design-delete",
+          "file": "tests/required/my-designs-overlay-accessibility.spec.ts",
+          "title": "deleting the loaded final design preserves detach semantics and focuses the empty parent hierarchy"
+        },
+        {
+          "id": "my-designs.supersession-unmount",
+          "file": "tests/required/my-designs-overlay-accessibility.spec.ts",
+          "title": "semantic replacement, newer owned dialog, reopen, and route unmount suppress stale restoration"
+        }
+      ],
+      "requiredProjects": ["chromium", "webkit"],
+      "allowSkips": false,
+      "allowRetries": false,
+      "allowAnnotations": false,
+      "reportType": "required-test-evidence",
+      "reportPath": ".local/required-test-evidence/ci.my-designs-overlay-accessibility/evidence.json",
+      "maxAgeMinutes": 240,
+      "artifactBinding": "none",
+      "playwright": {
+        "config": "playwright.my-designs-overlay.config.ts",
+        "testRoot": "tests/required",
+        "args": ["playwright", "test", "--config=playwright.my-designs-overlay.config.ts"],
+        "exactConfigOnly": true
+      },
+      "ci": {
+        "job": "stable-checks",
+        "step": "Run required My Designs overlay accessibility matrix",
+        "afterSteps": ["Build strict production-equivalent artifact evidence"]
+      }
+    },
+    {
       "id": "ci.merge-gate",
       "invariant": "Merge eligibility requires secret-scan, stable-checks, and advisory-contract-preflight to conclude successfully.",
       "cadence": "merge-required",

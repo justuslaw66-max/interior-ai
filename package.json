@@ -65,6 +65,8 @@
     "test:catalog-drawer-focus": "playwright test --config=playwright.drawer-focus.config.ts",
     "test:cart-overlay-static": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\",\"jsx\":\"react-jsx\"}' -r tsconfig-paths/register scripts/test-cart-overlay-static.tsx",
     "test:cart-overlay-accessibility-required": "env APP_ENV=development node scripts/required-test-truthfulness.mjs run ci.cart-overlay-accessibility",
+    "test:my-designs-overlay-static": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\",\"jsx\":\"react-jsx\"}' -r tsconfig-paths/register scripts/test-my-designs-overlay-static.tsx",
+    "test:my-designs-overlay-accessibility-required": "env APP_ENV=development PLAYWRIGHT_USE_PRODUCTION_SERVER=1 node scripts/required-test-truthfulness.mjs run ci.my-designs-overlay-accessibility",
     "test:e2e:smart-placement": "playwright test tests/e2e/17-smart-placement-smoke.spec.ts",
     "test:e2e:pro-upgrade": "playwright test tests/e2e/pro-upgrade.spec.ts",
     "test:share-responsive-unit": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\",\"jsx\":\"react-jsx\"}' -r tsconfig-paths/register scripts/test-public-share-responsive.ts",

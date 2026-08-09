@@ -1,5 +1,107 @@
 # Code health audit handoff
 
+## CH-0015D accessible My Designs dialog handoff — 2026-08-09
+
+Branch `fix/ch-0015-my-designs-dialog-accessibility` starts exactly at
+integration SHA `00628978e1eeb38d89370f84e537fc971de538e4` and tree
+`ef0c3bc8ac72276eaade6d3ea19f6710c8ffca7a`. Entry status, index, staged and
+unstaged diff, diff check, untracked inventory, and tracked-ignored inventory
+were clean; Node was `v24.13.0` and npm `11.6.2`. No Git operation or
+repository-owned application/browser/test/Prisma/disposable-database process
+was active. The only listener was Homebrew PostgreSQL with cwd
+`/opt/homebrew/var/postgresql@16`; every later port-3000 process was verified
+from `/Users/justus/Developer/interior-ai`. `integration/deep-clean-v1` was not
+modified.
+
+The defect is **MODAL_DIALOG parent ownership with a nested caller-return
+defect**. Before, pointer or keyboard More → My designs unmounted the transient
+menu item, rendered a custom unlabelled/unregistered parent, and left focus on
+`body`. Tab and Shift+Tab escaped to Account and More, Escape did not close,
+and backdrop/close had no semantic return. Shared Confirm became registered
+topmost but could not conceal the unregistered parent; the parent remained
+accessibility-active and accepted focus behind Confirm. Cancel sometimes
+returned to a raw surviving delete node, while success/removal left `body` and
+had no deterministic surviving target.
+
+After, My Designs composes `EditorDialog`: close-button initial focus, one
+labelled `aria-modal` dialog, deterministic Tab/Shift+Tab, topmost
+Escape/backdrop, and inert/`aria-hidden` editor ownership. Direct close resolves
+the current `editor-command-my-designs-action`, then the persistent visible
+`editor-command-more-action`. The first-use dynamic import remains; after the
+first open, the component stays mounted across ordinary close so its return
+frame can finish, while actual route unmount cancels the generation. Reopen
+creates a new generation.
+
+Confirm remains the shared component and parent stays mounted. Its only change
+is an optional ordered `returnFocusIds` input forwarded to the existing
+lifecycle. While Confirm is open it is topmost and My Designs is inert,
+accessibility-hidden, and unable to own focus, Tab, Escape, or backdrop. Single
+cancel/failure resolves `designId + delete`; successful single deletion skips
+the removed action and resolves the first current `designId + open`, then
+close. Selected/all deletion resolves the current enabled bulk origin, current
+row-open actions in list order, then close. Hidden, inert, disabled,
+disconnected, deleted, obscured, or superseded candidates are rejected. Busy
+actions remain present/disabled and the unchanged deletion guard prevents a
+second mutation. A newer registered Room Rename dialog suppresses stale return
+and Confirm reclaims ownership when that newer owner closes.
+
+No persistence owner changed. The existing hook still fetches only on open,
+preserves ordering/selection, calls `designApi.delete` once per unique target,
+records partial failure, and detaches the cloud baseline/queue/design/share
+identity when the loaded design is deleted. `openSavedDesign` still closes My
+Designs and pushes the canonical requested-design URL; the existing loader
+owns abort, supersession, route recovery, and unmount cancellation. No API,
+schema, migration, authorization, autosave, duplicate, analytics, Consumer/Pro,
+or unrelated-overlay behavior changed.
+
+Focused and canonical evidence:
+
+- new static modal/semantic/lazy/persistence guard, existing load/delete guard,
+  full design-persistence umbrella, canonical editor routing,
+  requested-design supersession, and shared editor accessibility: pass;
+- development characterization: Chromium 8/8 and WebKit 8/8; canonical strict
+  production-artifact `ci.my-designs-overlay-accessibility`: **16/16**, one
+  worker, zero retry/skip/flake/filter/shard, exact report and exit agreement;
+- isolated PostgreSQL database `ch0015d_00628978_20260809` received all 43
+  committed migrations. Deterministic Consumer/Pro/multiple-design fixtures
+  assert initial and final per-user counts, single/bulk/current-design mutation,
+  and complete fixture cleanup; no existing database was modified;
+- visual inspection passes loading, populated, single Confirm, bulk Confirm,
+  failure toast, busy disabled actions, empty, Consumer desktop, and Pro
+  390×844. The narrow focused delete ring is fully visible; tests also assert
+  zero horizontal overflow and every focused rectangle within panel/viewport;
+- manifest/direct truthfulness derives **24 gates / 376 classified sources**.
+  The static guard remains registered under `ci.design-cleanup` (now 79/79)
+  and is also the browser gate's fail-closed prerequisite; the runnable spec
+  and config have one browser owner outside advisory Full E2E and Gate A3
+  discovery; stable-checks invokes the focused gate after strict build;
+- zero-warning lint, typecheck, full code-quality ratchet, strict build 57/57,
+  complete Phase 8, critical-required, production-evidence contract, design
+  cleanup, Pro visual, cart required, public-share required, workflow/script
+  syntax, and final Git hygiene are the required final handoff suite. Full E2E
+  is intentionally excluded.
+
+Against the exact base, `/design` stays at 25 initial JS chunks and one CSS
+chunk. JS moves 5,828,568 / 1,112,834 raw/Brotli → 5,829,340 / 1,113,320
+(**+772 / +486**); CSS moves 131,484 / 17,470 → 131,611 / 17,495
+(**+127 / +25**). My Designs remains lazy: `0185bv3nfz_v-.js` 7,577 / 1,974
+→ `1ohqb2843ow--.js` 7,884 / 2,220 (**+307 / +246**). Cabinetry Studio and
+GLTFExporter remain 492,639 / 84,899 and 34,525 / 8,970. Every budget is green.
+Code-quality debt is lowered: `MyDesignsDialog` complexity 28 → 25 and longest
+function 290 → 283; `EditorCommandBar` longest function 643 → 642. No allowance
+is raised.
+
+CH-0015 remains open for exactly six required batches: Guest Save, Command
+Palette, Floor Plan Upload, retailer confirmation, Share Link Fallback, and
+public legacy Upgrade. Share Link Fallback and public legacy Upgrade are
+required, not P2-deferred. The selected-item preview transition remains a
+separate P2 post-candidate item. None was modified.
+
+Rollback is one local revert of the focused implementation commit, then rerun
+the My Designs static/required owner, persistence/routing guards, Phase 8, and
+strict build. No database/data, schema, migration, dependency, deployment,
+integration-branch, or external-control rollback is needed.
+
 ## CH-0015C accessible Plans dialog handoff — 2026-08-09
 
 Branch `fix/ch-0015-plans-dialog-accessibility` starts exactly at integration

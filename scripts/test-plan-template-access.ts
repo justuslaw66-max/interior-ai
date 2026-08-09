@@ -792,7 +792,7 @@ const dialogModel = buildDesignPageDialogLayerModel({
 assert.strictEqual(dialogModel.dialogs.myDesigns.onOpenTemplates, openNewPlanPickerAction);
 assert.match(
   dialogLayerSource,
-  /<MyDesignsDialog\s+\{\.\.\.dialogs\.myDesigns\}\s*\/>[\s\S]*?<PlanTemplateChoiceDialog\s+\{\.\.\.dialogs\.planTemplateChoice\}\s*\/>/,
+  /<MyDesignsDialog[\s\S]*?\{\.\.\.dialogs\.myDesigns\}[\s\S]*?onOpenTemplates=\{openMyDesignTemplates\}[\s\S]*?\/>[\s\S]*?<PlanTemplateChoiceDialog\s+\{\.\.\.dialogs\.planTemplateChoice\}\s*\/>/,
   "The dialog layer should own My Designs before the plan-template choice dialog."
 );
 
