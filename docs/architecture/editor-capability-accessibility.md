@@ -105,6 +105,15 @@ Editor keyboard shortcuts remain owned by the editor. While a modal is open,
 the modal consumes Escape and Tab navigation so the background editor does not
 receive those interactions.
 
+CH-0015E applies the same lifecycle to `ShareLinkFallbackDialog` as a nested
+child of Present/Export. Both dialogs remain registered, but only the registry
+top is interactive: the fallback conceals and inerts the parent, owns initial
+focus, Tab/Shift+Tab, Escape, and backdrop, then restores to the current
+semantic Create Share action inside the resumed parent. The parent close action
+is the sole ordered fallback. Design/project, mode-generation, supersession,
+and unmount boundaries cancel stale child restoration; no caller-level trap,
+global listener, raw-node-only return, or timer is added.
+
 ## Verification
 
 - `npm run test:editor-capabilities-accessibility` verifies the capability

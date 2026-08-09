@@ -55,7 +55,7 @@ export function DesignPageWorkspace() {
       access: {
         capabilities,
         wantsDesigner,
-        canUseDesigner,
+        canUseDesigner, isDesigner,
         isClientPreview,
         showDesignerTheme,
       },
@@ -411,7 +411,7 @@ export function DesignPageWorkspace() {
     boundaries: { presentation: presentationQaWorkspace },
   }).regions.panel;
   const dialogLayerModel = buildDesignPageDialogLayerAdapter(buildDesignPageDialogLayerModel({
-    access: { isClientPreview, isAuthenticated: Boolean(session?.user), capabilities, designerTheme: showDesignerTheme },
+    access: { isClientPreview, isAuthenticated: Boolean(session?.user), isDesigner, capabilities, designerTheme: showDesignerTheme },
     billing: {
       upgrade: { open: showUpgrade, variantLabel: upgradeCtaVariant, contentVariant: upgradeCtaVariant,
         description: upgradeDialogDescription, exportWorkflowBenefit: upgradeDialogExportWorkflowBenefit,

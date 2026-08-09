@@ -1977,11 +1977,11 @@
     "components/editor/design-page/PresentExportDialog.tsx": {
       "overlongFunctions": {
         "count": 2,
-        "maximum": 753
+        "maximum": 752
       },
       "complexFunctions": {
         "count": 2,
-        "maximum": 79
+        "maximum": 78
       }
     },
     "components/editor/design-page/PresentExportProfessionalPlanControls.tsx": {
@@ -2048,12 +2048,6 @@
       "complexFunctions": {
         "count": 1,
         "maximum": 47
-      }
-    },
-    "components/editor/design-page/ShareLinkFallbackDialog.tsx": {
-      "overlongFunctions": {
-        "count": 1,
-        "maximum": 103
       }
     },
     "components/editor/design-page/UpgradeDialog.tsx": {

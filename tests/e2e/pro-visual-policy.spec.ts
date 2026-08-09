@@ -404,10 +404,202 @@ async function mockAuthenticatedPlan(page: Page, plan: "free" | "pro") {
   return { sessionReady };
 }
 
+const SHARE_FALLBACK_DESIGN_ID = "ch0015e-design";
+const SHARE_FALLBACK_NEXT_DESIGN_ID = "ch0015e-next-design";
+const SHARE_FALLBACK_TOKEN = "ch0015e-share-token";
+const SHARE_FALLBACK_URL = `http://127.0.0.1:3000/share/${SHARE_FALLBACK_TOKEN}`;
+
+type ShareFallbackClipboardMode =
+  | "missing"
+  | "permission-denied"
+  | "rejected"
+  | "success";
+
+function shareFallbackDesignPayload(id: string) {
+  return {
+    id,
+    title: "CH-0015E Share Fallback",
+    roomWidth: 4,
+    roomDepth: 4,
+    items: [],
+    zones: [],
+    savedViews: [],
+    style: "Modern",
+    budget: "mid",
+    mode: "homeowner",
+    notes: "",
+    shareToken: null,
+    shareEnabled: false,
+    updatedAt: "2026-08-10T00:00:00.000Z",
+  };
+}
+
+async function mockShareFallbackDesign(page: Page) {
+  let shareRequestCount = 0;
+  for (const designId of [
+    SHARE_FALLBACK_DESIGN_ID,
+    SHARE_FALLBACK_NEXT_DESIGN_ID,
+  ]) {
+    await page.route(`**/api/designs/${designId}`, (route) =>
+      route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify(shareFallbackDesignPayload(designId)),
+      })
+    );
+  }
+  for (const designId of [
+    SHARE_FALLBACK_DESIGN_ID,
+    SHARE_FALLBACK_NEXT_DESIGN_ID,
+  ]) {
+    await page.route(`**/api/designs/${designId}/share`, (route) => {
+      shareRequestCount += 1;
+      return route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({ shareToken: SHARE_FALLBACK_TOKEN }),
+      });
+    });
+  }
+  await page.addInitScript(() => {
+    const state = {
+      mode: "missing" as ShareFallbackClipboardMode,
+      writes: [] as string[],
+      openedUrl: null as string | null,
+    };
+    (
+      window as typeof window & {
+        ch0015eShareFallback?: typeof state;
+      }
+    ).ch0015eShareFallback = state;
+    Object.defineProperty(navigator, "clipboard", {
+      configurable: true,
+      get() {
+        if (state.mode === "missing") return undefined;
+        return {
+          writeText(value: string) {
+            state.writes.push(value);
+            if (state.mode === "success") return Promise.resolve();
+            if (state.mode === "permission-denied") {
+              return Promise.reject(
+                new DOMException("Clipboard permission denied", "NotAllowedError")
+              );
+            }
+            return Promise.reject(new Error("Clipboard write rejected"));
+          },
+        };
+      },
+    });
+    Object.defineProperty(window, "open", {
+      configurable: true,
+      value(value?: string | URL) {
+        state.openedUrl = value === undefined ? null : String(value);
+        return null;
+      },
+    });
+  });
+  return { getShareRequestCount: () => shareRequestCount };
+}
+
+async function setShareFallbackClipboardMode(
+  page: Page,
+  mode: ShareFallbackClipboardMode
+) {
+  await page.evaluate((nextMode) => {
+    const state = (
+      window as typeof window & {
+        ch0015eShareFallback?: { mode: ShareFallbackClipboardMode };
+      }
+    ).ch0015eShareFallback;
+    if (!state) throw new Error("Share fallback clipboard state is unavailable");
+    state.mode = nextMode;
+  }, mode);
+}
+
+async function openPresentExport(
+  page: Page,
+  activation: "keyboard" | "pointer"
+) {
+  const workspace = page.getByTestId("editor-command-workspace");
+  if (activation === "keyboard") {
+    await workspace.focus();
+    await workspace.press("Enter");
+  } else {
+    await workspace.click();
+  }
+  const exportAction = page.getByTestId("editor-workflow-export");
+  await expect(exportAction).toBeVisible();
+  if (activation === "keyboard") {
+    await exportAction.focus();
+    await exportAction.press("Enter");
+  } else {
+    await exportAction.click();
+  }
+  const parent = page.getByRole("dialog", {
+    name: "Present & Export",
+    includeHidden: true,
+  });
+  await expect(parent).toBeVisible();
+  return parent;
+}
+
+async function activateCreateShare(
+  page: Page,
+  activation: "keyboard" | "pointer"
+) {
+  const createShare = page.getByTestId("create-share");
+  await expect(createShare).toBeEnabled();
+  if (activation === "keyboard") {
+    await createShare.focus();
+    await createShare.press("Enter");
+  } else {
+    await createShare.click();
+  }
+  await expect(page.getByTestId("share-fallback-modal")).toBeVisible();
+  return createShare;
+}
+
+async function expectShareFallbackTopmost(page: Page, parent: Locator) {
+  const fallback = page.getByTestId("share-fallback-modal");
+  const namedFallback = page.getByRole("dialog", { name: "Share Link" });
+  const close = page.getByTestId("share-fallback-close");
+  await expect(fallback).toHaveCount(1);
+  await expect(namedFallback).toHaveCount(1);
+  await expect(fallback).toHaveAttribute("aria-modal", "true");
+  await expect(fallback).toHaveAttribute("data-editor-dialog-focus-trap", "active");
+  await expect(close).toBeVisible();
+  await expect(close).toBeFocused();
+  await expect(parent).toHaveAttribute("aria-hidden", "true");
+  expect(await parent.evaluate((element) => element.inert)).toBe(true);
+  const accessibilityTree = await page.locator("body").ariaSnapshot();
+  expect(accessibilityTree).toContain("Share Link");
+  expect(accessibilityTree).not.toContain("Present & Export");
+  expect(
+    await page.evaluate(() => {
+      const ids = Array.from(document.querySelectorAll<HTMLElement>("[id]"))
+        .map((element) => element.id)
+        .filter(Boolean);
+      return ids.length - new Set(ids).size;
+    })
+  ).toBe(0);
+  return { fallback, close };
+}
+
+async function expectShareFallbackClosed(page: Page, parent: Locator) {
+  await expect(page.getByTestId("share-fallback-modal")).toHaveCount(0);
+  await expect(page.getByRole("dialog", { name: "Share Link" })).toHaveCount(0);
+  await expect(parent).toBeVisible();
+  await expect(parent).not.toHaveAttribute("aria-hidden", "true");
+  await expect(parent).toHaveAttribute("data-editor-dialog-focus-trap", "active");
+  expect(await parent.evaluate((element) => element.inert)).toBe(false);
+  await expect(page.getByTestId("create-share")).toBeFocused();
+}
+
 async function openPlansFromAccount(
   page: Page,
   activation: "keyboard" | "pointer"
 ) {
+  await page.waitForLoadState("networkidle");
   const account = page.getByTestId("editor-command-account");
   await expect(account).toHaveCount(1);
   await expect(account).toBeVisible();
@@ -521,6 +713,45 @@ async function waitForTwoFrames(page: Page) {
         requestAnimationFrame(() => requestAnimationFrame(() => resolve()))
       )
   );
+}
+
+async function navigateWithMountedAppRouter(page: Page, href: string) {
+  await page.getByTestId("editor-command-bar").evaluate((element, nextHref) => {
+    type AppRouter = {
+      push: (href: string, options?: { scroll?: boolean }) => void;
+      replace: (href: string, options?: { scroll?: boolean }) => void;
+    };
+    type ReactFiber = {
+      memoizedProps?: { value?: unknown };
+      return?: ReactFiber | null;
+    };
+    const fiberKey = Object.getOwnPropertyNames(element).find((key) =>
+      key.startsWith("__reactFiber")
+    );
+    let fiber = fiberKey
+      ? ((element as unknown as Record<string, unknown>)[fiberKey] as
+          | ReactFiber
+          | undefined)
+      : undefined;
+    let router: AppRouter | null = null;
+    while (fiber) {
+      const candidate = fiber.memoizedProps?.value;
+      if (
+        candidate &&
+        typeof candidate === "object" &&
+        "push" in candidate &&
+        typeof candidate.push === "function" &&
+        "replace" in candidate &&
+        typeof candidate.replace === "function"
+      ) {
+        router = candidate as AppRouter;
+        break;
+      }
+      fiber = fiber.return ?? undefined;
+    }
+    if (!router) throw new Error("Mounted App Router was not found");
+    router.push(nextHref, { scroll: false });
+  }, href);
 }
 
 test.describe("Pro visual policy", () => {
@@ -827,6 +1058,302 @@ test.describe("Pro visual policy", () => {
     await page.getByTestId("editor-command-account").click();
     await expect(page.getByTestId("editor-command-sign-in")).toBeVisible();
     await expect(page.getByTestId("editor-command-view-plans")).toHaveCount(0);
+  });
+
+  test("gives Consumer pointer Share Link Fallback exclusive nested ownership and preserved actions", async ({
+    page,
+  }, testInfo) => {
+    const identity = await mockAuthenticatedPlan(page, "free");
+    const shareMock = await mockShareFallbackDesign(page);
+    await page.goto(`/design?designId=${SHARE_FALLBACK_DESIGN_ID}`, {
+      waitUntil: "domcontentloaded",
+    });
+    await identity.sessionReady;
+    await expect(page.getByTestId("pro-mode-indicator")).toHaveCount(0);
+    const parent = await openPresentExport(page, "pointer");
+    await expect(page.getByTestId("share-fallback-modal")).toHaveCount(0);
+    await expect(page.getByTestId("share-copy-button")).toHaveCount(0);
+    await expect(page.getByTestId("share-open-button")).toHaveCount(0);
+
+    await setShareFallbackClipboardMode(page, "missing");
+    await activateCreateShare(page, "pointer");
+    let child = await expectShareFallbackTopmost(page, parent);
+    await expect(page.getByTestId("share-url-input")).toHaveValue(
+      SHARE_FALLBACK_URL
+    );
+    await child.close.press("Shift+Tab");
+    await expect(page.getByTestId("share-done-button")).toBeFocused();
+    await page.keyboard.press("Tab");
+    await expect(child.close).toBeFocused();
+    await page.screenshot({
+      path: testInfo.outputPath("consumer-share-fallback-wide.png"),
+      animations: "disabled",
+    });
+    await child.close.press("Escape");
+    await expectShareFallbackClosed(page, parent);
+
+    await activateCreateShare(page, "pointer");
+    child = await expectShareFallbackTopmost(page, parent);
+    await child.fallback.click({ position: { x: 2, y: 2 } });
+    await expectShareFallbackClosed(page, parent);
+
+    await activateCreateShare(page, "pointer");
+    child = await expectShareFallbackTopmost(page, parent);
+    await child.close.click();
+    await expectShareFallbackClosed(page, parent);
+
+    await activateCreateShare(page, "pointer");
+    await expectShareFallbackTopmost(page, parent);
+    await setShareFallbackClipboardMode(page, "success");
+    await page.getByTestId("share-copy-button").click();
+    await expect(page.getByTestId("share-fallback-modal")).toBeVisible();
+    expect(
+      await page.evaluate(() => {
+        const state = (
+          window as typeof window & {
+            ch0015eShareFallback?: { writes: string[] };
+          }
+        ).ch0015eShareFallback;
+        return state?.writes ?? [];
+      })
+    ).toEqual([SHARE_FALLBACK_URL]);
+    await expect(page.getByText("Share link copied to clipboard!")).toBeVisible();
+    await page.getByTestId("share-open-button").click();
+    await expectShareFallbackClosed(page, parent);
+    expect(
+      await page.evaluate(
+        () =>
+          (
+            window as typeof window & {
+              ch0015eShareFallback?: { openedUrl: string | null };
+            }
+          ).ch0015eShareFallback?.openedUrl ?? null
+      )
+    ).toBe(SHARE_FALLBACK_URL);
+    expect(shareMock.getShareRequestCount()).toBe(4);
+  });
+
+  test("gives Pro keyboard and narrow Share Link Fallback semantic return and parent guards", async ({
+    page,
+  }, testInfo) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    const identity = await mockAuthenticatedPlan(page, "pro");
+    const shareMock = await mockShareFallbackDesign(page);
+    await page.goto(
+      `/design?designId=${SHARE_FALLBACK_DESIGN_ID}&mode=designer`,
+      { waitUntil: "domcontentloaded" }
+    );
+    await identity.sessionReady;
+    await expect(page.getByTestId("pro-mode-indicator")).toBeVisible();
+    await setShareFallbackClipboardMode(page, "permission-denied");
+    const parent = await openPresentExport(page, "keyboard");
+    const requestCountBeforeActivation = shareMock.getShareRequestCount();
+    const createShare = await activateCreateShare(page, "keyboard");
+    const child = await expectShareFallbackTopmost(page, parent);
+    const panel = child.fallback.locator(":scope > div");
+    await expect(panel).toHaveCount(1);
+    const geometry = await panel.evaluate((element) => {
+      const rect = element.getBoundingClientRect();
+      const focused = document.activeElement?.getBoundingClientRect();
+      return {
+        left: rect.left,
+        right: rect.right,
+        top: rect.top,
+        bottom: rect.bottom,
+        innerWidth,
+        innerHeight,
+        scrollWidth: document.documentElement.scrollWidth,
+        focusedLeft: focused?.left ?? -1,
+        focusedRight: focused?.right ?? -1,
+      };
+    });
+    expect(geometry.scrollWidth).toBe(geometry.innerWidth);
+    expect(geometry.left).toBeGreaterThanOrEqual(2);
+    expect(geometry.right).toBeLessThanOrEqual(geometry.innerWidth - 2);
+    expect(geometry.top).toBeGreaterThanOrEqual(2);
+    expect(geometry.bottom).toBeLessThanOrEqual(geometry.innerHeight - 2);
+    expect(geometry.focusedLeft).toBeGreaterThanOrEqual(geometry.left);
+    expect(geometry.focusedRight).toBeLessThanOrEqual(geometry.right);
+    await page.screenshot({
+      path: testInfo.outputPath("pro-share-fallback-390x844.png"),
+      animations: "disabled",
+    });
+
+    const parentClose = parent.getByRole("button", {
+      name: "Close export panel",
+      includeHidden: true,
+    });
+    const parentBack = parent.getByRole("button", {
+      name: "Back to Design Mode",
+      includeHidden: true,
+    });
+    await expect(parentClose).toBeDisabled();
+    await expect(parentBack).toBeDisabled();
+    await parentClose.evaluate((element) => (element as HTMLButtonElement).click());
+    await parentBack.evaluate((element) => (element as HTMLButtonElement).click());
+    await expect(parent).toBeAttached();
+    await expect(child.fallback).toBeVisible();
+
+    await createShare.evaluate((element) => (element as HTMLElement).focus());
+    await expect(child.close).toBeFocused();
+    await page.keyboard.press("Tab");
+    await expectFocusInside(child.fallback);
+    await page.keyboard.press("Shift+Tab");
+    await expectFocusInside(child.fallback);
+
+    await createShare.evaluate((element) => {
+      element.replaceWith(element.cloneNode(true));
+    });
+    await page.getByTestId("share-done-button").click();
+    await expectShareFallbackClosed(page, parent);
+    await expect(page.getByTestId("create-share")).toBeFocused();
+    expect(shareMock.getShareRequestCount()).toBe(
+      requestCountBeforeActivation + 1
+    );
+  });
+
+  test("cancels Share Link Fallback restoration across supersession, project scope, mode, and unmount", async ({
+    page,
+  }) => {
+    const identity = await mockAuthenticatedPlan(page, "pro");
+    const shareMock = await mockShareFallbackDesign(page);
+    await page.goto(
+      `/design?designId=${SHARE_FALLBACK_DESIGN_ID}&mode=designer`,
+      { waitUntil: "domcontentloaded" }
+    );
+    await identity.sessionReady;
+    await setShareFallbackClipboardMode(page, "rejected");
+    const parent = await openPresentExport(page, "pointer");
+    let requestCountBeforeActivation = shareMock.getShareRequestCount();
+    await activateCreateShare(page, "pointer");
+    expect(shareMock.getShareRequestCount()).toBe(
+      requestCountBeforeActivation + 1
+    );
+    let child = await expectShareFallbackTopmost(page, parent);
+
+    const trayTrigger = page.getByTestId("selection-tray-trigger");
+    await trayTrigger.evaluate((element) => (element as HTMLButtonElement).click());
+    let tray = page.getByTestId("selection-tray-dialog");
+    let trayClose = page.getByTestId("selection-tray-close");
+    await expect(trayClose).toBeFocused();
+    await expect(child.fallback).toHaveAttribute("aria-hidden", "true");
+    expect(await child.fallback.evaluate((element) => element.inert)).toBe(true);
+    await trayClose.press("Escape");
+    await expect(tray).toHaveCount(0);
+    await expect(child.close).toBeFocused();
+
+    await trayTrigger.evaluate((element) => (element as HTMLButtonElement).click());
+    tray = page.getByTestId("selection-tray-dialog");
+    trayClose = page.getByTestId("selection-tray-close");
+    await expect(trayClose).toBeFocused();
+    await page.getByTestId("share-done-button").evaluate((element) =>
+      (element as HTMLButtonElement).click()
+    );
+    await expect(page.getByTestId("share-fallback-modal")).toHaveCount(0);
+    await expect(trayClose).toBeFocused();
+    await trayClose.press("Escape");
+    await expect(tray).toHaveCount(0);
+    await expect(parent).toBeVisible();
+    await expect(page.getByTestId("create-share")).not.toBeFocused();
+
+    requestCountBeforeActivation = shareMock.getShareRequestCount();
+    await activateCreateShare(page, "pointer");
+    expect(shareMock.getShareRequestCount()).toBe(
+      requestCountBeforeActivation + 1
+    );
+    await expectShareFallbackTopmost(page, parent);
+    await page.evaluate((nextDesignId) => {
+      const createShare = document.getElementById(
+        "present-export-create-share-action"
+      );
+      if (!(createShare instanceof HTMLElement)) {
+        throw new Error("Current Create Share semantic action was not found");
+      }
+      createShare.id = "present-export-create-share-action-retired";
+      const sentinel = document.createElement("button");
+      sentinel.id = "present-export-create-share-action";
+      sentinel.dataset.testid = "share-fallback-project-focus-sentinel";
+      sentinel.textContent = "Project focus sentinel";
+      sentinel.style.position = "fixed";
+      sentinel.style.inset = "2px auto auto 2px";
+      document.body.append(sentinel);
+      document.body.dataset.shareFallbackProjectFocusCount = "0";
+      sentinel.addEventListener("focus", () => {
+        document.body.dataset.shareFallbackProjectFocusCount = String(
+          Number(document.body.dataset.shareFallbackProjectFocusCount ?? "0") + 1
+        );
+      });
+      window.history.pushState(
+        null,
+        "",
+        `/design?designId=${nextDesignId}&mode=designer`
+      );
+    }, SHARE_FALLBACK_NEXT_DESIGN_ID);
+    await expect(page).toHaveURL(new RegExp(`designId=${SHARE_FALLBACK_NEXT_DESIGN_ID}`));
+    await expect(page.getByTestId("share-fallback-modal")).toHaveCount(0);
+    await waitForTwoFrames(page);
+    expect(
+      await page.evaluate(() =>
+        Number(document.body.dataset.shareFallbackProjectFocusCount ?? "0")
+      )
+    ).toBe(0);
+
+    await expect(page.getByTestId("create-share")).toBeEnabled();
+    requestCountBeforeActivation = shareMock.getShareRequestCount();
+    await activateCreateShare(page, "pointer");
+    expect(shareMock.getShareRequestCount()).toBe(
+      requestCountBeforeActivation + 1
+    );
+    child = await expectShareFallbackTopmost(page, parent);
+    await child.fallback.evaluate((element) => {
+      element.dataset.shareFallbackLifecycleGeneration = "before-mode-change";
+    });
+    await page.evaluate((nextDesignId) => {
+      window.history.pushState(null, "", `/design?designId=${nextDesignId}`);
+    }, SHARE_FALLBACK_NEXT_DESIGN_ID);
+    await expect(page).toHaveURL(
+      new RegExp(`designId=${SHARE_FALLBACK_NEXT_DESIGN_ID}(?:&|$)`)
+    );
+    await expect(child.fallback).not.toHaveAttribute(
+      "data-share-fallback-lifecycle-generation",
+      "before-mode-change"
+    );
+    await expect(child.close).toBeFocused();
+    expect(
+      await page.evaluate(() =>
+        Number(document.body.dataset.shareFallbackProjectFocusCount ?? "0")
+      )
+    ).toBe(0);
+
+    await page.evaluate(() => {
+      const current = document.getElementById("present-export-create-share-action");
+      if (current) current.id = "present-export-create-share-action-unmount-retired";
+      const sentinel = document.createElement("button");
+      sentinel.id = "present-export-create-share-action";
+      sentinel.dataset.testid = "share-fallback-unmount-focus-sentinel";
+      sentinel.textContent = "Unmount focus sentinel";
+      sentinel.style.position = "fixed";
+      sentinel.style.inset = "4px auto auto 4px";
+      document.body.append(sentinel);
+      document.body.dataset.shareFallbackUnmountFocusCount = "0";
+      sentinel.addEventListener("focus", () => {
+        document.body.dataset.shareFallbackUnmountFocusCount = String(
+          Number(document.body.dataset.shareFallbackUnmountFocusCount ?? "0") + 1
+        );
+      });
+    });
+    await navigateWithMountedAppRouter(
+      page,
+      "/auth/error?error=AccessDenied"
+    );
+    await expect(page).toHaveURL(/\/auth\/error\?error=AccessDenied$/);
+    await expect(page.getByTestId("share-fallback-modal")).toHaveCount(0);
+    await waitForTwoFrames(page);
+    expect(
+      await page.evaluate(() =>
+        Number(document.body.dataset.shareFallbackUnmountFocusCount ?? "0")
+      )
+    ).toBe(0);
   });
 
   test("uses the consumer visual theme with a clear Pro mode indicator", async ({

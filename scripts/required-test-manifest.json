@@ -490,7 +490,7 @@
     },
     {
       "id": "ci.pro-visual-policy",
-      "invariant": "Consumer and Pro visual policy, including Client Preview command-bar focus exclusion and the direct and nested Plans modal lifecycle, semantic return, topmost ownership, narrow containment, and billing preservation, executes in both required browser engines with no focus, skip, retry, or flake.",
+      "invariant": "Consumer and Pro visual policy, including Client Preview command-bar focus exclusion, direct and nested Plans ownership, and the route-mocked Present/Export to Share Link Fallback clipboard-failure lifecycle with topmost isolation, semantic return, preserved Copy/Open behavior, narrow containment, scope cancellation, and supersession, executes in both required browser engines with no focus, skip, retry, or flake.",
       "cadence": "merge-required",
       "blocking": true,
       "command": "npm run test:pro-visual-policy",
@@ -548,6 +548,21 @@
           "id": "visual.plans-unmount-billing-policy",
           "file": "tests/e2e/pro-visual-policy.spec.ts",
           "title": "cancels Plans return on route unmount and preserves Free and Pro billing policy"
+        },
+        {
+          "id": "visual.share-fallback-consumer-pointer-actions",
+          "file": "tests/e2e/pro-visual-policy.spec.ts",
+          "title": "gives Consumer pointer Share Link Fallback exclusive nested ownership and preserved actions"
+        },
+        {
+          "id": "visual.share-fallback-pro-keyboard-narrow",
+          "file": "tests/e2e/pro-visual-policy.spec.ts",
+          "title": "gives Pro keyboard and narrow Share Link Fallback semantic return and parent guards"
+        },
+        {
+          "id": "visual.share-fallback-supersession-scope",
+          "file": "tests/e2e/pro-visual-policy.spec.ts",
+          "title": "cancels Share Link Fallback restoration across supersession, project scope, mode, and unmount"
         }
       ],
       "requiredProjects": ["chromium", "webkit"],

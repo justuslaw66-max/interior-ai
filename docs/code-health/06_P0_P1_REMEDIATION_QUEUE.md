@@ -1,5 +1,33 @@
 # P0/P1 remediation queue
 
+## CH-0015E Share Link Fallback accessibility — 2026-08-10
+
+- **Source/scope:** exact integration source
+  `d16109b95cc57774bf384b580f4bf669026bdf59` / tree
+  `4dd30065236e651f552944c5077cef1be62c1a1f`; bounded branch
+  `fix/ch-0015-share-link-fallback-accessibility`; nested fallback, parent
+  dismissal guard, semantic Create Share/parent-close hierarchy,
+  design/mode/unmount scope adapter, existing Pro/static owners, and records
+  only.
+- **Disposition:** `PARTIALLY RESOLVED — CH-0015E LOCAL REMEDIATION COMPLETE`.
+  Missing, permission-denied, or rejected clipboard writes now open one named
+  registered child. It conceals/inerts the mounted Present/Export parent, owns
+  focus, Tab/Shift+Tab, Escape, and backdrop, then returns to the current Create
+  Share action and resumes the same parent. Supersession and scope changes
+  cannot restore stale focus.
+- **Required owner:** existing `ci.pro-visual-policy` owns three new stable
+  identities. Canonical result: Chromium 13/13 + WebKit 13/13, zero
+  retry/skip/flake/filter/shard/timeout change; inventory remains 24 gates / 376
+  classified sources.
+- **Behavior/rollback:** share API/token/URL, clipboard success/failure and
+  Copy/Open behavior, analytics meaning, authorization/public projection,
+  Consumer/Pro policy, and unrelated overlays are unchanged. Revert one
+  focused commit and rerun the Share static guard, Pro owner, Phase 8, and
+  strict build; no data or external rollback is required.
+- **Queue status:** CH-0015 remains `IN_PROGRESS` with four required batches:
+  Guest Save, Command Palette, Floor Plan Upload, and retailer confirmation.
+  Public legacy Upgrade is P2 post-candidate and is not in this count.
+
 ## CH-0015D My Designs dialog accessibility — 2026-08-09
 
 - **Source/scope:** exact integration source

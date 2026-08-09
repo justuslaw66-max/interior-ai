@@ -1,5 +1,46 @@
 # Code health audit
 
+## CH-0015E accessible Share Link Fallback lifecycle — 2026-08-10
+
+Starting from exact integration source
+`d16109b95cc57774bf384b580f4bf669026bdf59` / tree
+`4dd30065236e651f552944c5077cef1be62c1a1f`, this bounded batch classifies
+Share Link Fallback as a **MODAL_DIALOG nested child of Present/Export**. A
+successful share followed by missing/denied/rejected clipboard access formerly
+placed an unregistered overlay above the still-registered parent. The fallback
+had no role, name, modal state, focus entry/containment, Escape/backdrop owner,
+or return; the parent remained accessibility-active, trapped Tab, consumed
+Escape, and could restore into the editor while the fallback stayed visible.
+
+The fallback now uses the shared `EditorDialog` registry. It is absent while
+closed and becomes the only topmost keyboard/accessibility owner while open;
+Present/Export remains mounted but inert and `aria-hidden`, with close/Back
+guarded. Child close, Escape, or backdrop closes only the child, returns to the
+current semantic Create Share action (then parent close fallback), and resumes
+the same parent instance. Design-bound state plus keyed lifecycle scope cancels
+project, mode, parent, route, unmount, and newer-modal stale restoration.
+Copy/Open, share request/token/URL, authorization, public projection,
+analytics meaning, busy guard, and Consumer/Pro policy are preserved.
+
+Existing `ci.pro-visual-policy` is still the one canonical browser owner. Its
+three added identities pass **26/26** across Chromium/WebKit with no retry,
+skip, filter, shard, or timeout increase. Focused desktop and 390×844 visual
+inspection passes; static/editor guards, 79/79 design cleanup, critical
+contracts, production-evidence contract, truthfulness, lint, typecheck,
+code-quality, strict 57/57 build, and Phase 8 pass. Manifest inventory remains
+24 gates / 376 sources. The initial bundle stays at 25 JS chunks; JS changes by
++1,442 raw / +205 Brotli and CSS by -4 / -2, with no fallback-only lazy chunk
+and all budgets green. `ShareLinkFallbackDialog` removes its previous
+overlong-function debt; Present/Export maximum function length and complexity
+also decrease by one, with no allowance raised.
+
+This remains a **partial CH-0015 remediation**. Four required batches remain:
+Guest Save, Command Palette, Floor Plan Upload, and retailer confirmation.
+Public legacy Upgrade is P2 post-candidate, as is the separate selected-item
+preview transition. Rollback is the one focused implementation commit; no
+data, schema, dependency, share-token, authorization, deployment, or external
+rollback is needed.
+
 ## CH-0015D accessible My Designs lifecycle — 2026-08-09
 
 Starting from exact integration source

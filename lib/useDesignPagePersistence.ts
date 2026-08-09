@@ -179,7 +179,8 @@ export function useDesignPagePersistence({
   const [sharingDesign, setSharingDesign] = useState(false);
   const [shareSuccessToast, setShareSuccessToast] = useState(false);
   const [shareErrorToast, setShareErrorToast] = useState<string | null>(null);
-  const [shareLinkFallback, setShareLinkFallback] = useState<string | null>(null);
+  const [shareLinkFallback, setShareLinkFallback] =
+    useState<{ designId: string; url: string } | null>(null);
   const [showMyDesigns, setShowMyDesigns] = useState(false);
   const [myDesigns, setMyDesigns] = useState<SavedDesignSummary[]>([]);
   const [loadingDesigns, setLoadingDesigns] = useState(false);
@@ -590,7 +591,7 @@ export function useDesignPagePersistence({
         });
       } catch (clipboardError) {
         console.warn("Clipboard access denied, showing fallback modal:", clipboardError);
-        setShareLinkFallback(shareUrl);
+        setShareLinkFallback({ designId, url: shareUrl });
         track("share_link_created_fallback", {
           design_id: designId,
           shared_context: true,
@@ -815,9 +816,8 @@ export function useDesignPagePersistence({
   }, [designId, enableShare, isDesigner, shareEnabled]);
 
   useEffect(() => {
-    if (!designId) {
-      setIsSaving(false);
-    }
+    setShareLinkFallback((current) => current?.designId === designId ? current : null);
+    if (!designId) setIsSaving(false);
   }, [designId]);
 
   const writeLocalDesignBackup = useCallback(() => {
@@ -1078,7 +1078,7 @@ export function useDesignPagePersistence({
       sharingDesign,
       shareSuccessToast,
       shareErrorToast,
-      shareLinkFallback,
+      shareLinkFallback: shareLinkFallback?.designId === designId ? shareLinkFallback.url : null,
       showMyDesigns,
       myDesigns,
       loadingDesigns,

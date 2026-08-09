@@ -80,6 +80,7 @@ export type BuildDesignPageDialogLayerModelInput = {
   access: {
     isClientPreview: boolean;
     isAuthenticated: boolean;
+    isDesigner: boolean;
     capabilities: EditorCapabilities;
     designerTheme: boolean;
   };
@@ -284,8 +285,8 @@ export function buildDesignPageDialogLayerModel({
       },
       toasts: feedback.toasts,
       shareFallback: {
-        url: sharing.url,
-        dark: access.designerTheme,
+        url: sharing.url, dark: access.designerTheme,
+        lifecycleMode: access.isDesigner ? "designer" : "consumer",
         onClose: sharing.onClose,
         onCopy: sharing.onCopy,
         onOpen: sharing.onOpen,

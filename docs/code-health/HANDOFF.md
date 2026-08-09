@@ -1,5 +1,114 @@
 # Code health audit handoff
 
+## CH-0015E accessible Share Link Fallback handoff — 2026-08-10
+
+Branch `fix/ch-0015-share-link-fallback-accessibility` starts exactly at
+integration SHA `d16109b95cc57774bf384b580f4bf669026bdf59` and tree
+`4dd30065236e651f552944c5077cef1be62c1a1f`. Entry status, index,
+staged/unstaged diff, diff check, non-ignored untracked inventory, and
+tracked-ignored inventory were clean; Node was `v24.13.0` and npm `11.6.2`.
+No Git operation or repository-owned app/browser/test/Prisma/disposable-
+database process was active. Homebrew PostgreSQL was the sole listener and its
+cwd was `/opt/homebrew/var/postgresql@16`; every later port-3000 process was
+verified in `/Users/justus/Developer/interior-ai`.
+`integration/deep-clean-v1` was not modified.
+
+The defect is **MODAL_DIALOG nested-child ownership failure**. Route-mocked
+share success plus missing/rejected clipboard access reproduced 2/2 in both
+Chromium and WebKit before test expectations changed. Present/Export was the
+only registered and named modal, remained non-inert and accessibility-visible,
+and continued to own Tab/Shift+Tab and Escape beneath a role-less fallback.
+Chromium focus escaped both layers and WebKit retained parent focus. Escape
+closed the parent and restored the underlying editor action while the fallback
+remained visible; fallback backdrop did not dismiss. This directly confirmed
+parent focus containment, Escape, and restoration theft beneath the visible
+child.
+
+After, Share Link Fallback composes `EditorDialog` with one `Share Link`
+dialog, `aria-modal=true`, visible close-button initial focus, deterministic
+containment, and topmost Escape/backdrop. Present/Export stays mounted but is
+inert and `aria-hidden`; its close and Back actions are disabled while the
+child is topmost and its registry lifecycle cannot take focus or dismiss.
+Closing only the child restores the current
+`present-export-create-share-action`, with
+`present-export-close-action` as the sole parent fallback, and the same parent
+resumes topmost ownership. Child close/Copy/Open identities are also stable.
+Hidden, inert, disabled, disconnected, obscured, or superseded targets are
+rejected by the shared resolver.
+
+Fallback state is still owned by the persistence hook but is now paired with
+the design ID that produced the URL. Project change retires stale UI state;
+design/mode/parent scope keys create or cancel lifecycle generations; route or
+parent unmount and registered Selection Tray supersession prevent stale return.
+There is no new trap, registry, Escape listener, DOM query, fixed timer,
+browser-specific production path, or hidden duplicate tree. Copy still writes
+and leaves the fallback open with the existing toast. Open still calls the
+existing window-open path and closes the child. Create Share still calls
+`designApi.share` once per explicit activation, stores the token/enabled state,
+constructs the same URL, and retains existing success/fallback analytics,
+saved-design/busy guards, authorization, and public projection behavior.
+
+Focused and canonical evidence:
+
+- deterministic pre-fix characterization: Chromium 2/2 + WebKit 2/2 reproduced
+  the wrong owner; final focused Share matrix: Chromium 3/3 + WebKit 3/3;
+- canonical `ci.pro-visual-policy`: **26/26** (13/13 per engine), one worker,
+  zero retries/skips/flakes/filters/shards or timeout changes; all missing,
+  permission-denied, and rejected clipboard paths, Consumer pointer, Pro
+  keyboard, desktop/390×844, Copy/Open, repeated failure, semantic replacement,
+  parent guard/concealment, third-dialog supersession, project/mode, and route
+  unmount assertions pass;
+- visual inspection passes Consumer wide and Pro 390×844 screenshots in both
+  engines: child above concealed parent, close focus ring visible, all actions
+  contained, and document scroll width equal to viewport width;
+- editor accessibility, critical-required, required truthfulness, direct
+  manifest, production-artifact evidence, 79/79 design cleanup, canonical My
+  Designs 16/16 against the isolated 43-migration database, and cart 16/16:
+  pass;
+- zero-warning lint, typecheck, full code-quality ratchet, strict catalog build
+  57/57, and complete Phase 8: pass. The inherited floor-plan NFT trace warning
+  is unchanged. Full E2E was intentionally not run.
+
+The canonical clean-commit `ci.public-share-responsive` owner passes its unit
+contract, **8/8** browser cases (4/4 per engine), and required-test truthfulness
+validation against the isolated database. A uniquely named disposable database
+`ch0015e_d16109b9_20260810` received all 43 committed migrations; the first
+dirty-source wrapper invocation failed closed before starting a server or test.
+No existing database was modified, and the disposable database can be removed
+after the final evidence run.
+
+Against CH-0015D, `/design` remains 25 initial JS chunks and one CSS chunk.
+JavaScript moves 5,829,340 / 1,113,320 raw/Brotli → 5,830,782 / 1,113,525
+(**+1,442 / +205**); CSS moves 131,611 / 17,495 → 131,607 / 17,493
+(**-4 / -2**). Present/Export and fallback remain initial and have no dedicated
+lazy chunk. Cabinetry Studio and GLTFExporter remain 492,639 / 84,899 and
+34,525 / 8,970. All budgets pass. Code-quality debt is lowered:
+`ShareLinkFallbackDialog` no longer has an overlong function and Present/Export
+maximum function length/complexity each fall by one; no allowance is raised.
+
+CH-0015 remains open for exactly four required batches: Guest Save, Command
+Palette, Floor Plan Upload, and retailer confirmation. Public legacy Upgrade is
+P2 post-candidate; the selected-item preview transition remains separate P2.
+No residual surface was implemented here.
+
+The separate read-only reviewer found one blocking first-pass issue: the
+initial scope key incorrectly used the hard-coded light theme as a proxy for
+effective workspace mode, so mode change did not prove a new generation. The
+fix passes the actual `isDesigner` identity through the existing dialog-layer
+model, keys the child with explicit `designer`/`consumer` scope, and marks the
+old browser root so the test must observe its replacement. The affected static,
+type, code-quality, and focused Chromium/WebKit matrix pass; the final
+unfiltered owner passes 26/26. The reviewer's read-only follow-up reports the
+finding fully resolved and no remaining actionable code, test, scope,
+architecture, or documentation issue.
+
+Rollback is one local revert of the focused implementation commit, followed by
+the Share static/editor guard, Pro visual owner, critical regression owners,
+Phase 8, and strict build. The disposable CH-0015E test database can be dropped
+after evidence review. No product data, schema migration, dependency, token,
+public-share authorization, deployment, integration-branch, or external-control
+rollback is required.
+
 ## CH-0015D accessible My Designs dialog handoff — 2026-08-09
 
 Branch `fix/ch-0015-my-designs-dialog-accessibility` starts exactly at

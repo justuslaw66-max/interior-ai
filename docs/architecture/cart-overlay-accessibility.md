@@ -1,5 +1,103 @@
 # CH-0015 accessibility lifecycle and overlay inventory
 
+## CH-0015E Share Link Fallback nested modal lifecycle — 2026-08-10
+
+Status: **CH-0015E LOCALLY REMEDIATED; CH-0015 REMAINS OPEN FOR FOUR
+REQUIRED OVERLAY BATCHES**.
+
+This bounded batch starts from exact integration source
+`d16109b95cc57774bf384b580f4bf669026bdf59` / tree
+`4dd30065236e651f552944c5077cef1be62c1a1f` on
+`fix/ch-0015-share-link-fallback-accessibility`. Share Link Fallback is a
+**MODAL_DIALOG — NESTED CHILD OF PRESENT/EXPORT**. The parent remains mounted;
+share authorization, token creation, URL construction, public projection,
+analytics meaning, clipboard product behavior, and every unrelated overlay
+remain unchanged.
+
+### Clipboard-failure reachability and reproduced ownership defect
+
+Create Share still requires a saved design and retains its busy guard. A
+successful `designApi.share(designId)` stores the returned token and enabled
+state, then constructs the existing same-origin `/share/{token}` URL. A
+successful clipboard write retains the existing success toast and analytics.
+When `navigator.clipboard` is missing, permission is denied, or `writeText`
+rejects, the same successful URL reaches the fallback and the existing
+fallback analytics path.
+
+Before remediation, deterministic route/API mocking reproduced the defect in
+Chromium and WebKit. Present/Export remained the only registered, named modal;
+the visually topmost fallback had no role, name, `aria-modal`, registry entry,
+focus trap, Escape owner, or backdrop dismissal. The parent was neither inert
+nor `aria-hidden`. Chromium focus moved outside both overlays and WebKit focus
+remained in the parent; Tab and Shift+Tab entered parent controls. Escape
+closed Present/Export beneath the visible fallback and restored the underlying
+editor action, while fallback backdrop activation did nothing. The result was
+two visible layers but one incorrect keyboard/accessibility owner.
+
+### Final nested contract and semantic focus hierarchy
+
+The fallback now composes `EditorDialog`. Closed state has no dialog or
+actionable DOM. Open state has exactly one `role="dialog"`, the accessible name
+`Share Link`, `aria-modal=true`, visible close-button initial focus,
+deterministic Tab/Shift+Tab containment, topmost Escape/backdrop ownership, and
+managed background isolation. Present/Export stays mounted and registered but
+becomes inert and `aria-hidden`; its close and Back actions are guarded, its
+trap cannot reclaim focus, and it cannot dismiss or restore while the child is
+visible. Closing only the child exposes the same parent instance, returns to
+the current connected Create Share semantic action, and resumes parent
+topmost ownership.
+
+Stable identities cover the parent Create Share and close actions plus the
+child close, Copy, and Open actions. Return resolution prefers the current
+`present-export-create-share-action`, then the one documented parent fallback
+`present-export-close-action`. The shared resolver rejects missing, hidden,
+inert, disabled, disconnected, obscured, or superseded targets and confines
+nested restoration to the resumed parent registry root. Design/project change
+binds fallback state to the creating design and retires it synchronously; mode
+change creates a new lifecycle generation; parent/route unmount and a newer
+registered modal cancel stale restoration. Reopen and repeated failures create
+fresh generations without a second focus trap, Escape listener, registry,
+timer, raw-node authority, or duplicate dialog tree.
+
+Copy still writes the displayed URL and leaves the fallback open with the
+existing success toast. Open still invokes the existing window-open path and
+closes only the fallback. API request counts remain one per explicit Create
+Share activation in the focused matrix; the share and analytics call sites are
+unchanged apart from binding fallback UI state to its design identity.
+
+### Required owner, responsive evidence, bundle, residual inventory, rollback
+
+Existing merge-required `ci.pro-visual-policy` remains the sole browser owner.
+It adds three stable identities and now runs 13 tests per required engine:
+**Chromium 13/13 + WebKit 13/13**, one worker, zero retries, skips, flakes,
+filters, shards, or timeout increases. The matrix covers Consumer pointer and
+Pro keyboard entry, all three clipboard-failure forms, wide and 390×844
+layouts, initial/Tab/Shift+Tab focus, parent concealment and guards,
+Escape/close/backdrop, current semantic return, Copy/Open, repeated failures,
+third-dialog supersession, project/mode scope changes, and route unmount.
+Focused screenshots show the child above a concealed parent, contained actions
+and focus rings, and no horizontal overflow. The required manifest remains
+**24 gates / 376 classified sources**.
+
+Against CH-0015D, `/design` remains 25 initial JavaScript chunks and one CSS
+chunk. Initial JavaScript moves from 5,829,340 raw / 1,113,320 Brotli bytes to
+5,830,782 / 1,113,525 (**+1,442 / +205**); CSS moves from 131,611 / 17,495 to
+131,607 / 17,493 (**-4 / -2**). Present/Export and its fallback remain in the
+initial graph, so no dedicated lazy chunk exists. Cabinetry Studio and
+GLTFExporter remain 492,639 / 84,899 and 34,525 / 8,970. Every Phase 8 budget
+passes.
+
+The four remaining required CH-0015 batches are **Guest Save, Command Palette,
+Floor Plan Upload, and retailer confirmation**. Public `/share/[token]/export`
+legacy Upgrade is explicitly **P2 post-candidate**, not part of that required
+count. The selected-item preview transition remains separate P2 work.
+
+Rollback is one local revert of the focused CH-0015E commit, followed by the
+Share Fallback static guard, Pro visual owner, editor accessibility, Phase 8,
+and strict build. No data/schema migration, dependency, share token, public
+authorization, deployment, integration-branch, or external-control rollback
+is required.
+
 ## CH-0015D My Designs parent and nested delete lifecycle — 2026-08-09
 
 Status: **CH-0015D LOCALLY REMEDIATED; CH-0015 REMAINS OPEN FOR SIX
@@ -443,9 +541,10 @@ are excluded.
 | `CatalogFilterDrawer` | Custom anchored non-modal filter panel | Unmounted / 0 | none / none / false | none / no / no / no / no / none | Anchored scroll panel | Catalog filter tests; retain non-modal intent or add complementary semantics later |
 | `PlansDialog` | `EditorDialog`; modal | Unmounted / 0 | dialog / `Plans` / true | close / yes / topmost / yes / current Account or Upgrade semantic ID / topmost-safe | Max 420px with 16px narrow gutter and capped scroll content | Required Pro visual Chromium/WebKit 20/20 plus Stripe/Pro and editor-accessibility guards; complete for CH-0015C |
 | `MyDesignsDialog` plus delete `ConfirmDialog` | `EditorDialog` parent plus shared modal child | Dialog DOM absent; lazy component retained after first ordinary dismissal / 0 actionable | parent dialog / `My Designs` / true; child dialog / delete title / true | close / yes / topmost / yes / current command or More; nested return by current design/bulk semantic ID and surviving-row/close hierarchy | Centered, viewport-capped and scrollable | Required Chromium/WebKit 16/16 plus static/persistence/routing guards; complete for CH-0015D |
-| `GuestSavePromptDialog`, `ShareLinkFallbackDialog` | Custom modal-looking overlays | Unmounted / 0 | none / none / none | none / no / no / no / no / none | Centered viewport-capped | Auth/share behavior tests; later CH-0015 surfaces |
+| `GuestSavePromptDialog` | Custom modal-looking overlay | Unmounted / 0 | none / none / none | none / no / no / no / no / none | Centered viewport-capped | Auth behavior tests; later CH-0015 surface |
+| `ShareLinkFallbackDialog` nested above `PresentExportDialog` | `EditorDialog` child above mounted `EditorDialog` parent | **After CH-0015E:** child DOM absent while closed / 0 actionable | child dialog / `Share Link` / true; parent remains registered but inert/hidden while child is topmost | child close / yes / topmost / yes / current Create Share then parent close / topmost-safe and generation-scoped | Centered, viewport-capped; actions and focus ring contained at 390×844 | Existing Pro visual owner, Chromium/WebKit 26/26 total; complete for CH-0015E |
 | `BetaFeedbackWidget` | Custom modal | Unmounted / 0 | dialog / `Send beta feedback` / true | textarea autofocus / no / textarea only / yes / no / none | Centered, viewport-capped | Feedback contracts; later full keyboard/return review |
-| legacy `UpgradeModal` | Custom modal-looking overlay | Unmounted / 0 | none / none / none | none / no / no / no / no / none | Centered viewport-capped | Billing UI source coverage; distinct from shared `UpgradeDialog` and remains later scope |
+| legacy `UpgradeModal` | Custom modal-looking overlay | Unmounted / 0 | none / none / none | none / no / no / no / no / none | Centered viewport-capped | Billing UI source coverage; distinct from shared `UpgradeDialog`; P2 post-candidate |
 | `FloorPlanUploadPanel` import workspace | Custom full-screen modal workspace | Unmounted / 0 | dialog / source-labelled / true | dialog container / no full trap observed / yes / source-dependent / direct node / none | Full viewport workspace | Floor-plan required umbrella; later shared-lifecycle review |
 | `FloorPlanImportHistory` delete confirmations | Inline `alertdialog` prompts inside an expanded non-modal panel | Unmounted with conditional prompt / 0 | alertdialog / labelled / no modal | none / no / no / n/a / in-panel / none | In-panel cards | Floor-plan tests; keep inline/non-modal or clarify intent later |
 | `CartSidebar` and retailer-tab confirmation | Persistent complementary shopping panel plus custom modal-looking confirmation | Main panel mounted; confirmation unmounted | aside has no explicit complementary label; prompt none / none / none | prompt none / no / no / no / no / none | Fixed-size scroll panel and centered prompt | Commerce/checkout contracts; **separate from Selection Tray** and later CH-0015 scope |
@@ -507,7 +606,7 @@ must choose one bounded surface, preserve any explicit non-modal contract, and
 repeat test-first characterization rather than applying modal semantics in
 bulk.
 
-The authoritative required residual sequence after CH-0015D is Guest Save,
-Command Palette, Floor Plan Upload, retailer confirmation, Share Link Fallback,
-and public legacy Upgrade. The last two are required rather than P2-deferred.
-The selected-item preview transition remains a separate P2 item.
+The authoritative required residual sequence after CH-0015E is Guest Save,
+Command Palette, Floor Plan Upload, and retailer confirmation. Public legacy
+Upgrade and the selected-item preview transition are separate P2
+post-candidate items.

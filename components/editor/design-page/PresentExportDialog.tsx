@@ -13,6 +13,7 @@ import type { PlanLayerPresetId, PlanMeasurementUnit } from "@/lib/design-page-t
 import { compareLayoutVersion, summarizeLayoutVersionComparison } from "@/lib/layout-versions";
 import type { LightingPreset } from "@/lib/lightingPresets";
 import type { RoomSnapshot, SavedView } from "@/lib/room-types";
+import { PRESENT_EXPORT_CLOSE_ACTION_ID, PRESENT_EXPORT_CREATE_SHARE_ACTION_ID } from "@/lib/share-link-fallback-dialog-focus";
 import type { ExportStylePreset, PlanLayers, PlanTheme } from "@/lib/useDesignPagePlanState";
 import { formatTimeAgo } from "@/lib/design-page-utils";
 
@@ -37,7 +38,7 @@ export type PresentExportDialogProps = {
     open: boolean;
     designerTheme: boolean;
     canUseAdvancedPlanControls: boolean;
-    canUseAdvancedExportStyles: boolean;
+    canUseAdvancedExportStyles: boolean; shareFallbackOpen?: boolean;
   };
   state: {
     exportReadiness: { items: ExportReadinessItem[]; readyCount: number; score: number };
@@ -154,6 +155,9 @@ export function PresentExportDialog({ configuration, state, actions }: PresentEx
       description="Review the design, save views, and prepare presentation outputs."
       onClose={actions.onClose}
       closeLabel="Close export panel"
+      closeDisabled={Boolean(configuration.shareFallbackOpen)}
+      closeButtonId={PRESENT_EXPORT_CLOSE_ACTION_ID} closeButtonTestId="present-export-close"
+      testId="present-export-dialog" cancelFocusRestorationOnUnmount manageBackground
       dark={showDesignerTheme}
       overlayClassName="items-start overflow-y-auto sm:items-center"
       panelClassName={
@@ -730,12 +734,8 @@ export function PresentExportDialog({ configuration, state, actions }: PresentEx
               Client Handoff
             </h3>
             <button
-              data-testid="create-share"
-              className={
-                showDesignerTheme
-                  ? "w-full rounded-lg bg-purple-600 px-4 py-3 text-sm font-medium text-white hover:bg-purple-700 disabled:opacity-50"
-                  : "w-full rounded-lg bg-purple-600 px-4 py-3 text-sm font-medium text-white hover:bg-purple-700 disabled:opacity-50"
-              }
+              id={PRESENT_EXPORT_CREATE_SHARE_ACTION_ID} data-testid="create-share"
+              className="w-full rounded-lg bg-purple-600 px-4 py-3 text-sm font-medium text-white outline-none hover:bg-purple-700 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 disabled:opacity-50"
               disabled={sharingDesign || !designId}
               onClick={actions.onCreateShareLink}
               title={!designId ? "Save your design first to create a share link" : ""}
@@ -842,7 +842,7 @@ export function PresentExportDialog({ configuration, state, actions }: PresentEx
           {/* Exit Present Mode Button */}
           <div className="border-t pt-4">
             <button
-              className={
+              disabled={Boolean(configuration.shareFallbackOpen)} className={
                 showDesignerTheme
                   ? "designer-control w-full rounded-lg border px-4 py-3 text-sm font-medium"
                   : "w-full rounded-lg border border-gray-300 px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50"

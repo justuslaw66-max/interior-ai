@@ -82,7 +82,9 @@ export type DesignPageDialogLayerDialogs = {
 export type DesignPageDialogLayerOverlays = {
   betaFeedback: BetaFeedbackWidgetProps | null;
   toasts: DesignPageToastsProps;
-  shareFallback: ShareLinkFallbackDialogProps;
+  shareFallback: ShareLinkFallbackDialogProps & {
+    lifecycleMode: "consumer" | "designer";
+  };
   validation: DesignValidationFeedbackProps;
   cabinetry: CabinetryStudioOverlayProps;
   itemCart: ItemCartDrawerProps;
@@ -93,11 +95,22 @@ export type DesignPageDialogLayerProps = {
   overlays: DesignPageDialogLayerOverlays;
 };
 
-export function DesignPageDialogLayer({
-  dialogs,
-  overlays,
-}: DesignPageDialogLayerProps) {
+function getShareFallbackLayerState(
+  dialogs: DesignPageDialogLayerDialogs,
+  overlays: DesignPageDialogLayerOverlays
+) {
+  const parentOpen = dialogs.presentExport.configuration.open;
+  return {
+    open: parentOpen && Boolean(overlays.shareFallback.url),
+    scopeKey: `${dialogs.presentExport.state.designId ?? "unsaved"}:${
+      overlays.shareFallback.lifecycleMode
+    }:${parentOpen ? "parent-open" : "parent-closed"}`,
+  };
+}
+
+export function DesignPageDialogLayer({ dialogs, overlays }: DesignPageDialogLayerProps) {
   const [myDesignsMounted, setMyDesignsMounted] = useState(false);
+  const shareFallback = getShareFallbackLayerState(dialogs, overlays);
   const closeMyDesigns = () => {
     setMyDesignsMounted(true);
     dialogs.myDesigns.onClose();
@@ -117,7 +130,13 @@ export function DesignPageDialogLayer({
       <GuestSavePromptDialog {...dialogs.guestSave} />
       <PlansDialog {...dialogs.plans} />
       <AiNotesDialog {...dialogs.aiNotes} />
-      <PresentExportDialog {...dialogs.presentExport} />
+      <PresentExportDialog
+        {...dialogs.presentExport}
+        configuration={{
+          ...dialogs.presentExport.configuration,
+          shareFallbackOpen: shareFallback.open,
+        }}
+      />
       {dialogs.myDesigns.open || myDesignsMounted ? (
         <Suspense fallback={null}>
           <MyDesignsDialog
@@ -137,7 +156,11 @@ export function DesignPageDialogLayer({
         <BetaFeedbackWidget {...overlays.betaFeedback} />
       ) : null}
       <DesignPageToasts {...overlays.toasts} />
-      <ShareLinkFallbackDialog {...overlays.shareFallback} />
+      <ShareLinkFallbackDialog
+        key={shareFallback.scopeKey}
+        {...overlays.shareFallback}
+        url={shareFallback.open ? overlays.shareFallback.url : null}
+      />
       <DesignValidationFeedback {...overlays.validation} />
       <CabinetryStudioOverlay {...overlays.cabinetry} />
       <ItemCartDrawer {...overlays.itemCart} />

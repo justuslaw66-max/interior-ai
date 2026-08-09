@@ -175,6 +175,7 @@ for (const relativePath of [
   "components/editor/design-page/RoomRenameDialog.tsx",
   "components/editor/design-page/UpgradeDialog.tsx",
   "components/editor/design-page/PresentExportDialog.tsx",
+  "components/editor/design-page/ShareLinkFallbackDialog.tsx",
 ]) {
   const source = read(relativePath);
   assert.match(
@@ -198,6 +199,95 @@ assert.match(
   presentExport,
   /dynamic\([\s\S]*PresentExportProfessionalPlanControls[\s\S]*ssr:\s*false/,
   "professional plan controls should remain behind a client-only lazy boundary"
+);
+assert.match(
+  presentExport,
+  /closeDisabled=\{Boolean\(configuration\.shareFallbackOpen\)\}[\s\S]*?closeButtonId=\{PRESENT_EXPORT_CLOSE_ACTION_ID\}[\s\S]*?manageBackground/,
+  "Present/Export must suppress parent dismissal while the nested share fallback is topmost"
+);
+assert.match(
+  presentExport,
+  /id=\{PRESENT_EXPORT_CREATE_SHARE_ACTION_ID\}\s+data-testid="create-share"/,
+  "Create Share must expose its stable semantic focus identity"
+);
+
+const shareFallback = read(
+  "components/editor/design-page/ShareLinkFallbackDialog.tsx"
+);
+for (const required of [
+  "<EditorDialog",
+  "open={Boolean(url)}",
+  'title="Share Link"',
+  'closeButtonTestId="share-fallback-close"',
+  "returnFocusIds={SHARE_LINK_FALLBACK_RETURN_FOCUS_IDS}",
+  "cancelFocusRestorationOnUnmount",
+  "manageBackground",
+  "SHARE_LINK_FALLBACK_COPY_ACTION_ID",
+  "SHARE_LINK_FALLBACK_OPEN_ACTION_ID",
+  'aria-label="Share URL"',
+  "min-w-0",
+  "max-h-[calc(100dvh-2rem)]",
+]) {
+  assert.ok(
+    shareFallback.includes(required),
+    `Share Link Fallback must preserve ${required}`
+  );
+}
+assert.doesNotMatch(
+  shareFallback,
+  /addEventListener|querySelector|setTimeout|requestAnimationFrame/,
+  "Share Link Fallback must not create a second focus, keyboard, or restoration lifecycle"
+);
+
+const shareFallbackFocus = read("lib/share-link-fallback-dialog-focus.ts");
+for (const semanticId of [
+  "present-export-create-share-action",
+  "present-export-close-action",
+  "share-link-fallback-close-action",
+  "share-link-fallback-copy-action",
+  "share-link-fallback-open-action",
+]) {
+  assert.ok(
+    shareFallbackFocus.includes(semanticId),
+    `Share Link Fallback focus identity must preserve ${semanticId}`
+  );
+}
+assert.match(
+  shareFallbackFocus,
+  /SHARE_LINK_FALLBACK_RETURN_FOCUS_IDS[\s\S]*PRESENT_EXPORT_CREATE_SHARE_ACTION_ID,[\s\S]*PRESENT_EXPORT_CLOSE_ACTION_ID/,
+  "fallback return must prefer the current Create Share action before the parent close fallback"
+);
+
+const dialogLayer = read(
+  "components/editor/design-page/DesignPageDialogLayer.tsx"
+);
+assert.match(
+  dialogLayer,
+  /getShareFallbackLayerState[\s\S]*dialogs\.presentExport\.state\.designId[\s\S]*overlays\.shareFallback\.lifecycleMode[\s\S]*parentOpen/,
+  "design, mode, and parent scope changes must create a new fallback lifecycle generation"
+);
+const dialogLayerModel = read("lib/design-page-dialog-layer-model.ts");
+assert.match(
+  dialogLayerModel,
+  /lifecycleMode:\s*access\.isDesigner\s*\?\s*"designer"\s*:\s*"consumer"/,
+  "Share Link Fallback lifecycle scope must use the actual effective workspace mode"
+);
+assert.match(
+  dialogLayer,
+  /shareFallback\.open[\s\S]*<ShareLinkFallbackDialog[\s\S]*key=\{shareFallback\.scopeKey\}/,
+  "the fixed dialog layer must coordinate one nested parent/child ownership state"
+);
+
+const persistence = read("lib/useDesignPagePersistence.ts");
+assert.match(
+  persistence,
+  /setShareLinkFallback\(\{ designId, url: shareUrl \}\)/,
+  "clipboard-failure fallback state must remain bound to the design that created the share URL"
+);
+assert.match(
+  persistence,
+  /current\?\.designId === designId \? current : null/,
+  "a project identity change must retire stale fallback state"
 );
 
 const pdfRoute = read("app/api/export/pdf/route.ts");
