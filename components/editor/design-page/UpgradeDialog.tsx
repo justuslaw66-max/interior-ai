@@ -5,6 +5,7 @@ import {
   EditorDialogActions,
   EditorDialogButton,
 } from "@/components/editor/design-system/EditorDialog";
+import { PLANS_UPGRADE_OPENER_ID } from "@/lib/plans-dialog-focus";
 
 export type UpgradeDialogState = {
   open: boolean;
@@ -38,14 +39,14 @@ export function UpgradeDialog({ state, actions }: UpgradeDialogProps) {
     <EditorDialog
       open
       title="Upgrade to Pro"
-      description={state.description}
+      description={state.description} testId="upgrade-dialog"
       onClose={actions.onClose}
       closeDisabled={state.startingCheckout}
       showCloseButton={false}
       footer={
         <EditorDialogActions>
           <EditorDialogButton
-            variant="primary"
+            id={PLANS_UPGRADE_OPENER_ID} variant="primary"
             data-testid="upgrade-see-plans"
             data-editor-dialog-initial-focus="true"
             disabled={state.startingCheckout}

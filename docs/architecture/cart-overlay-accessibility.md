@@ -1,5 +1,102 @@
 # CH-0015 accessibility lifecycle and overlay inventory
 
+## CH-0015C Plans dialog lifecycle — 2026-08-09
+
+Status: **CH-0015C LOCALLY REMEDIATED; CH-0015 REMAINS OPEN FOR SEVEN
+REQUIRED OVERLAY BATCHES**.
+
+This bounded batch starts from exact integration source
+`683a91c12e3ac5b690375925ad93f84bec2c443f` / tree
+`9a06040b0a803156ae5402e1bc3da79ca70ab82f` on
+`fix/ch-0015-plans-dialog-accessibility`. Plans is classified as a
+**MODAL_DIALOG**. The batch owns the Account → Plans and shared Upgrade →
+Plans paths, their semantic opener wiring, the shared lifecycle support needed
+for nested ownership, focused required coverage, and these records. Pricing,
+plan eligibility, capability derivation, checkout/portal routing, Stripe IDs,
+subscription state, entitlements, analytics, and every other overlay remain
+unchanged.
+
+### Reproduced direct and nested defects
+
+Before remediation, `PlansDialog` was an unregistered fixed overlay with a
+420px panel, no dialog role/name/modal state, no initial focus, no trap, no
+Escape owner, and no focus return. Account first focused the transient `View
+Pro plans` menu item, then synchronously unmounted that item while opening
+Plans. Plans left focus on `body`; Tab and Shift+Tab escaped into the editor,
+Escape did not close Plans, and close/backdrop returned to `body`.
+
+Upgrade already used `EditorDialog`. Its `See plans` action opened Plans
+without closing Upgrade, which is the intended product flow. The old Plans
+overlay mounted visually later but never joined the registry, so Upgrade
+remained the only role=`dialog`, `aria-modal=true` owner and kept its focus
+trap/keyboard listeners. Focus stayed on the obscured Upgrade action; Tab could
+enter obscured Upgrade controls, and Escape closed Upgrade beneath the still
+visible Plans overlay. Closing Plans returned to `body`, and later closing
+Upgrade also returned to `body`.
+
+### Final modal and semantic-return contract
+
+Closed Plans has no DOM, accessibility, focus, pointer, or registry owner. The
+mounted `EditorDialog` lifecycle remains alive across an ordinary close so its
+pending return is not mistaken for route unmount. Open Plans has exactly one
+`role="dialog"`, the accessible name `Plans`, `aria-modal="true"`, intentional
+close-button focus, one deterministic Tab/Shift+Tab owner, topmost Escape and
+backdrop ownership, and background inert/`aria-hidden` management. Tab movement
+is explicit rather than delegated to browser/OS full-keyboard-access settings.
+
+Direct entry resolves `editor-command-account-action`, which identifies the
+current visible Account command rather than the transient menu item. If that
+semantic owner is removed, the one documented visible fallback is the existing
+`editor-command-more-action`. Nested entry resolves
+`upgrade-see-plans-action`. While Plans is topmost, Upgrade stays mounted but
+is inert and accessibility-hidden and cannot own focus or keyboard events.
+Closing Plans closes only Plans, returns to the current connected Upgrade
+action, and restores Upgrade as topmost owner. Closing Upgrade later follows
+Upgrade's existing lifecycle. Missing, hidden, inert, disabled, disconnected,
+obscured, or superseded semantic targets are rejected; no stale captured node
+is used when a semantic identity was supplied. A newer modal suppresses Plans
+return if Plans closes underneath it; when the newer registered owner closes
+first, Plans reclaims focus as the still-mounted topmost modal. Route/unmount
+invalidates the pending generation.
+
+The 390×844 panel has a 16px viewport gutter: measured bounds were x=16–374,
+document scroll width was exactly 390, and the focused yearly action and its
+ring remained within both panel and viewport. Desktop and nested visual checks
+preserve the existing copy, prices, order, annual highlight, disabled/current
+plan status, and action layout. Plans remains part of the initial `/design`
+graph; there is no Plans-only lazy chunk.
+
+### Required ownership, bundle, residual inventory, and rollback
+
+Existing merge-required `ci.pro-visual-policy` is the sole browser owner. It
+now declares ten stable identities total: the prior five plus Account pointer,
+Account keyboard/narrow, Upgrade pointer, Upgrade keyboard/supersession, and
+route-unmount/billing policy. The canonical result is **20/20** across Chromium
+and WebKit with zero retries, skips, flakes, filters, or timeout changes. The
+manifest remains **23 gates / 376 classified sources**. The existing Stripe/Pro
+static command owns pricing, portal, checkout, and entitlement preservation;
+the shared editor accessibility guard owns topmost focus containment.
+
+Against CH-0015B, `/design` initial JavaScript remains 25 chunks and moves from
+5,827,579 raw / 1,112,646 Brotli bytes to 5,828,568 / 1,112,834 (**+989 /
++188**). Initial CSS moves from 131,273 / 17,471 to 131,484 / 17,470
+(**+211 / -1**). Cabinetry Studio remains 492,639 / 84,899 and GLTFExporter
+34,525 / 8,970. Every Phase 8 budget passes.
+
+The final required residual inventory is authoritative. The seven required
+batches after Plans are: **My Designs, Guest Save, Command Palette, Floor Plan
+Upload, retailer confirmation, Share Link Fallback, and public legacy
+Upgrade**. Share Link Fallback and public legacy Upgrade are not P2-deferred;
+older wording that placed them only in a post-candidate P2 bucket is superseded.
+The separate selected-item preview transition remains P2 and is not one of
+these seven required batches. No residual surface was implemented here.
+
+Rollback is one local revert of the focused CH-0015C implementation commit,
+followed by the Plans static guard, canonical Pro gate, Stripe/Pro contract,
+editor accessibility guard, Phase 8, and strict build. No data, schema,
+dependency, billing configuration, Stripe, entitlement, deployment, or
+external-control rollback is required.
+
 ## CH-0015B Client Preview command-bar lifecycle — 2026-08-08
 
 Status: **CH-0015B LOCALLY REMEDIATED; CH-0015 REMAINS OPEN FOR SEPARATE
@@ -252,7 +349,7 @@ are excluded.
 | `EditorCommandPalette` | Custom command overlay; intended modal interaction | Unmounted / 0 | dialog / `Command palette` / **missing `aria-modal`** | input autofocus / no / input/global Escape / yes / no explicit return / none | Centered, width/height capped | Command-bar static/browser checks; later CH-0015 surface |
 | `CatalogCategoryTabs` category browser | Custom responsive popup/dialog | Unmounted / 0 | dialog / `Choose a product category` / no modal declaration | panel / no / yes / mobile backdrop; outside pointer desktop / direct trigger ref / none | Mobile bottom sheet; desktop anchored popup | Catalog category layout coverage; requires explicit hybrid classification later |
 | `CatalogFilterDrawer` | Custom anchored non-modal filter panel | Unmounted / 0 | none / none / false | none / no / no / no / no / none | Anchored scroll panel | Catalog filter tests; retain non-modal intent or add complementary semantics later |
-| `PlansDialog` | Custom modal-looking overlay | Unmounted / 0 | **none / none / none** | none / no / no / yes / no / none | Fixed 420px inline width | Billing/UI source tests only; later CH-0015 migration without pricing changes |
+| `PlansDialog` | `EditorDialog`; modal | Unmounted / 0 | dialog / `Plans` / true | close / yes / topmost / yes / current Account or Upgrade semantic ID / topmost-safe | Max 420px with 16px narrow gutter and capped scroll content | Required Pro visual Chromium/WebKit 20/20 plus Stripe/Pro and editor-accessibility guards; complete for CH-0015C |
 | `MyDesignsDialog` plus delete `ConfirmDialog` | Custom modal-looking parent plus shared modal child | Unmounted / 0 | parent none; child dialog / child title / child true | parent none; child shared lifecycle / parent no Escape / parent backdrop / parent no return / child can supersede | Centered, max 80vh | Persistence/design tests; parent migration and nested focus ownership remain |
 | `GuestSavePromptDialog`, `ShareLinkFallbackDialog` | Custom modal-looking overlays | Unmounted / 0 | none / none / none | none / no / no / no / no / none | Centered viewport-capped | Auth/share behavior tests; later CH-0015 surfaces |
 | `BetaFeedbackWidget` | Custom modal | Unmounted / 0 | dialog / `Send beta feedback` / true | textarea autofocus / no / textarea only / yes / no / none | Centered, viewport-capped | Feedback contracts; later full keyboard/return review |
@@ -317,3 +414,8 @@ contains major custom overlays without the shared lifecycle. The next batch
 must choose one bounded surface, preserve any explicit non-modal contract, and
 repeat test-first characterization rather than applying modal semantics in
 bulk.
+
+The authoritative required residual sequence after CH-0015C is My Designs,
+Guest Save, Command Palette, Floor Plan Upload, retailer confirmation, Share
+Link Fallback, and public legacy Upgrade. The last two are required rather than
+P2-deferred. The selected-item preview transition remains a separate P2 item.

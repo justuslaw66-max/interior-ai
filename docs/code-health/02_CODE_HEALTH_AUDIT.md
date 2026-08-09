@@ -1,5 +1,45 @@
 # Code health audit
 
+## CH-0015C accessible Plans dialog — 2026-08-09
+
+Starting from exact integration source
+`683a91c12e3ac5b690375925ad93f84bec2c443f` / tree
+`9a06040b0a803156ae5402e1bc3da79ca70ab82f`, this bounded batch classifies
+Plans as a **MODAL_DIALOG** and remediates both Account → Plans and shared
+Upgrade → Plans. The old custom overlay exposed no role/name/modal state,
+initial focus, containment, Escape ownership, or semantic return. In the
+nested path it appeared above Upgrade while Upgrade remained the only registry
+owner and could trap Tab or consume Escape beneath Plans.
+
+Plans now uses `EditorDialog`, is absent while closed, and becomes the single
+topmost focus/Escape/backdrop owner while open. Direct entry returns to the
+current Account command or the one visible More fallback instead of the
+unmounted menu item. Nested entry retains Upgrade, makes it inert and
+accessibility-hidden, returns to the current `See plans` action, and restores
+Upgrade ownership without recreating or closing it. Deterministic Tab movement
+does not depend on Safari full-keyboard-access preferences; newer-modal and
+route/unmount supersession cancel stale return work. The 390×844 panel retains
+a 16px gutter, complete actions, an unclipped focus ring, and no horizontal
+overflow. When a newer registered modal closes first, Plans deterministically
+reclaims focus as the restored topmost owner.
+
+Prices, intervals, annual/default presentation, current-plan state, checkout
+payloads/URLs, portal routing, Stripe configuration, plan refresh, Consumer
+denial, server entitlements, and subscription state are unchanged. Existing
+`ci.pro-visual-policy` owns five new identities; its canonical result is 20/20
+across Chromium/WebKit with zero retry/skip/flake. The manifest remains 23
+gates / 376 classified sources, Stripe/Pro static coverage passes, and no new
+gate or runnable source exists. Phase 8 remains green at 25 initial JS chunks,
+5,828,568 raw / 1,112,834 Brotli bytes and 131,484 / 17,470 CSS bytes.
+
+This remains a **partial CH-0015 remediation**. The authoritative seven
+required batches after Plans are My Designs, Guest Save, Command Palette,
+Floor Plan Upload, retailer confirmation, Share Link Fallback, and public
+legacy Upgrade. Share Link Fallback and public legacy Upgrade are required,
+not P2-deferred; the separate selected-item preview transition remains P2.
+Rollback is the one focused implementation commit with no billing, data,
+schema, dependency, deployment, or external-setting rollback.
+
 ## CH-0015B Client Preview command-bar accessibility — 2026-08-08
 
 Starting from exact integration source
@@ -468,10 +508,10 @@ CH-0001, CH-0012, and CH-0016 are closed for repository-controlled remediation. 
 ### CH-0015 — Drawers and major overlays bypass accessible dialog ownership
 
 - **Severity:** P1.
-- **Status:** PARTIALLY REMEDIATED — CH-0015A SELECTION TRAY COMPLETE LOCALLY; OTHER OVERLAYS REMAIN OPEN.
+- **Status:** PARTIALLY REMEDIATED — CH-0015A SELECTION TRAY, CH-0015B CLIENT PREVIEW COMMAND BAR, AND CH-0015C PLANS COMPLETE LOCALLY; SEVEN REQUIRED OVERLAYS REMAIN OPEN.
 - **Locations/symbols:** `ItemCartDrawer`; editor dialog layer; Plans dialog; My Designs dialog; Command Palette; shared `EditorDialog`.
 - **Pre-remediation evidence:** Closed cart was translated off-screen while controls remained mounted/focusable. It lacked dialog semantics, inert/focus containment, Escape and focus return. Several major modals bypassed the shared accessible dialog primitive.
-- **CH-0015A current behavior:** Selection Tray closed content is unmounted; open content uses the shared modal lifecycle with labelled semantics, deterministic entry/trap/Escape/backdrop/current-opener return, nested-owner suppression, and stale-frame cancellation. The remaining custom overlays are unchanged and inventoried in `docs/architecture/cart-overlay-accessibility.md`.
+- **Current behavior:** Selection Tray closed content is unmounted; open content uses the shared modal lifecycle with labelled semantics, deterministic entry/trap/Escape/backdrop/current-opener return, nested-owner suppression, and stale-frame cancellation. Client Preview correctly conceals its persistent command bar. Plans now uses the same shared modal lifecycle across direct Account and nested Upgrade entry, with semantic return and narrow containment. The remaining custom overlays are unchanged and inventoried in `docs/architecture/cart-overlay-accessibility.md`.
 - **Risk:** Keyboard and assistive-technology users can focus invisible controls, lose context, or become trapped; overlay behavior diverges.
 - **Improvement:** Migrate overlays to one primitive with semantic title/description, inert background, focus trap/return, Escape policy, responsive sizing, and explicit non-modal exceptions.
 - **Expected outcome:** Consistent accessible overlay lifecycle without changing domain actions.

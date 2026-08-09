@@ -28,7 +28,9 @@ export type EditorDialogProps = {
   closeButtonRef?: { current: HTMLButtonElement | null };
   initialFocusRef?: { current: HTMLElement | null };
   returnFocusId?: string;
+  returnFocusIds?: readonly string[];
   cancelFocusRestorationOnUnmount?: boolean;
+  manageBackground?: boolean;
   waitForEntryTransition?: boolean;
   placement?: "center" | "right";
   overlayClassName?: string;
@@ -74,12 +76,11 @@ export function EditorDialog({
   showCloseButton = true,
   dark = false,
   forceLight = false,
-  testId,
-  dialogId,
+  testId, dialogId,
   closeButtonTestId,
   closeButtonRef: providedCloseButtonRef,
   initialFocusRef,
-  returnFocusId,
+  returnFocusId, returnFocusIds, manageBackground = false,
   cancelFocusRestorationOnUnmount = false, waitForEntryTransition = false,
   placement = "center",
   overlayClassName = "",
@@ -99,7 +100,8 @@ export function EditorDialog({
     panelRef,
     closeButtonRef,
     initialFocusRef,
-    returnFocusId, cancelFocusRestorationOnUnmount, waitForEntryTransition,
+    returnFocusId, returnFocusIds, cancelFocusRestorationOnUnmount, manageBackground,
+    waitForEntryTransition,
     closeDisabled,
     onClose,
   });

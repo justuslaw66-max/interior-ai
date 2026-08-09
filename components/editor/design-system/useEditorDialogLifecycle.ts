@@ -10,6 +10,7 @@ import {
 } from "react";
 import {
   hasExternalEditorModal,
+  isElementInTopmostEditorDialog,
   isEditorDialogBackgroundManaged,
   isTopmostEditorDialog,
   observeEditorDialogOwnership,
@@ -37,8 +38,8 @@ type EditorDialogLifecycleOptions = {
   panelRef: RefObject<HTMLDivElement | null>;
   closeButtonRef: RefObject<HTMLButtonElement | null>;
   initialFocusRef?: { current: HTMLElement | null };
-  returnFocusId?: string;
-  cancelFocusRestorationOnUnmount: boolean;
+  returnFocusId?: string; returnFocusIds?: readonly string[];
+  cancelFocusRestorationOnUnmount: boolean; manageBackground: boolean;
   waitForEntryTransition: boolean;
   closeDisabled: boolean;
   onClose: () => void;
@@ -50,7 +51,7 @@ type DialogSessionOptions = Pick<
   | "panelRef"
   | "closeButtonRef"
   | "initialFocusRef"
-  | "returnFocusId"
+  | "returnFocusId" | "returnFocusIds" | "manageBackground"
   | "waitForEntryTransition"
 > & {
   generation: number;
@@ -181,13 +182,13 @@ function scheduleDialogEntry(
   }
   setEditorDialogOwnershipGuard(token, () => {
     if (!readiness.isCurrentEntry() || !isTopmostEditorDialog(token)) return;
-    if (options.waitForEntryTransition) {
-      const interactive = dialog.dataset.editorDialogState === "interactive";
-      const hasOwner = interactive
-        ? dialog.contains(document.activeElement)
-        : document.activeElement === dialog;
+    const interactive = dialog.dataset.editorDialogState === "interactive";
+    const hasOwner = interactive
+      ? dialog.contains(document.activeElement)
+      : document.activeElement === dialog;
+    if (!hasOwner) {
       const target = interactive ? resolveInitialFocusTarget(panel, options) : dialog;
-      if (!hasOwner && isActionable(target)) target.focus({ preventScroll: true });
+      if (isActionable(target)) target.focus({ preventScroll: true });
     }
     readiness.reschedule();
   });
@@ -251,10 +252,19 @@ function scheduleFocusRestoration(
       !ownedTopmostFocus ||
       hasExternalEditorModal()
     ) return;
-    const target = options.returnFocusId
+    const legacyTarget = options.returnFocusId
       ? document.getElementById(options.returnFocusId)
-      : opener;
-    if (target instanceof HTMLElement && isActionable(target)) {
+      : null;
+    const semanticTargets = options.returnFocusIds?.map((id) =>
+      document.getElementById(id)
+    ) ?? [];
+    const hasSemanticAuthority =
+      Boolean(options.returnFocusId) || Boolean(options.returnFocusIds?.length);
+    const target = [...semanticTargets, legacyTarget].find(
+      (candidate): candidate is HTMLElement =>
+        candidate instanceof HTMLElement && isActionable(candidate)
+    ) ?? (hasSemanticAuthority ? null : opener);
+    if (target instanceof HTMLElement && isElementInTopmostEditorDialog(target) && isActionable(target)) {
       target.focus({ preventScroll: true });
     }
   });
@@ -265,15 +275,17 @@ function registerDialogSession(options: DialogSessionOptions) {
   const panel = options.panelRef.current;
   if (!dialog || !panel) return;
   const opener = document.activeElement instanceof HTMLElement ? document.activeElement : null;
-  const token = registerEditorDialogRoot(dialog, options.waitForEntryTransition);
+  const token = registerEditorDialogRoot(dialog, options.manageBackground || options.waitForEntryTransition);
   dialog.dataset.editorDialogGeneration = String(options.generation);
   dialog.dataset.editorDialogFocusTrap = "active";
   const handlers = createDialogInputHandlers(dialog, panel, token, options);
   document.addEventListener("keydown", handlers.keydown);
-  if (options.waitForEntryTransition)
+  if (options.manageBackground || options.waitForEntryTransition)
     document.addEventListener("focusin", handlers.focusin);
   if (
-    (options.waitForEntryTransition || isEditorDialogBackgroundManaged()) &&
+    (options.manageBackground ||
+      options.waitForEntryTransition ||
+      isEditorDialogBackgroundManaged()) &&
     isTopmostEditorDialog(token) &&
     isActionable(dialog)
   ) {
@@ -286,7 +298,7 @@ function registerDialogSession(options: DialogSessionOptions) {
     cancelEntry();
     stopObservingOwnership();
     document.removeEventListener("keydown", handlers.keydown);
-    if (options.waitForEntryTransition)
+    if (options.manageBackground || options.waitForEntryTransition)
       document.removeEventListener("focusin", handlers.focusin);
     delete dialog.dataset.editorDialogFocusTrap;
     unregisterEditorDialogRoot(token);
@@ -304,7 +316,7 @@ function useDialogSessionEffects(
 ) {
   const {
     open, dialogRef, panelRef, closeButtonRef, initialFocusRef,
-    returnFocusId, waitForEntryTransition,
+    returnFocusId, returnFocusIds, manageBackground, waitForEntryTransition,
   } = options;
   const startSession = useCallback(() => {
     const generation = generationRef.current + 1;
@@ -312,13 +324,13 @@ function useDialogSessionEffects(
     cancelPendingRestoration(restoreFrameRef);
     return registerDialogSession({
       dialogRef, panelRef, closeButtonRef, initialFocusRef, returnFocusId,
-      waitForEntryTransition, generation, requestClose,
+      returnFocusIds, manageBackground, waitForEntryTransition, generation, requestClose,
       closeDisabledRef, restoreFrameRef, generationRef, unmountedRef,
     });
   }, [
     closeButtonRef, closeDisabledRef, dialogRef, generationRef, initialFocusRef,
-    panelRef, requestClose, restoreFrameRef, returnFocusId, unmountedRef,
-    waitForEntryTransition,
+    panelRef, requestClose, restoreFrameRef, returnFocusId, returnFocusIds,
+    unmountedRef, manageBackground, waitForEntryTransition,
   ]);
 
   useLayoutEffect(() => {
@@ -338,7 +350,9 @@ export function useEditorDialogLifecycle({
   closeButtonRef,
   initialFocusRef,
   returnFocusId,
+  returnFocusIds,
   cancelFocusRestorationOnUnmount,
+  manageBackground,
   waitForEntryTransition,
   closeDisabled,
   onClose,
@@ -361,7 +375,8 @@ export function useEditorDialogLifecycle({
   useDialogSessionEffects(
     {
       open, dialogRef, panelRef, closeButtonRef, initialFocusRef, returnFocusId,
-      cancelFocusRestorationOnUnmount, waitForEntryTransition, closeDisabled,
+      returnFocusIds, cancelFocusRestorationOnUnmount, manageBackground,
+      waitForEntryTransition, closeDisabled,
       onClose,
     },
     closeDisabledRef,

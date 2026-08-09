@@ -141,6 +141,26 @@ assert.match(
 );
 assert.match(
   dialogLifecycle,
+  /options\.manageBackground \|\| options\.waitForEntryTransition\)\s*document\.addEventListener\("focusin"/,
+  "background-managed dialogs must contain attempted focus outside the topmost owner"
+);
+assert.match(
+  dialogLifecycle,
+  /setEditorDialogOwnershipGuard[\s\S]*?if \(!hasOwner\)[\s\S]*?resolveInitialFocusTarget/,
+  "a dialog must reclaim focus when a newer registry owner closes"
+);
+assert.match(
+  dialogLifecycleSources,
+  /isElementInTopmostEditorDialog\(target\)/,
+  "nested focus return must remain inside the current topmost registry owner"
+);
+assert.match(
+  dialogFocus,
+  /const activeIndex[\s\S]*?event\.preventDefault\(\);[\s\S]*?focusable\[nextIndex\]\.focus\(\);/,
+  "shared dialog Tab handling must not depend on browser keyboard-navigation preferences"
+);
+assert.match(
+  dialogLifecycle,
   /if \(!cancelFocusRestorationOnUnmount\) return;[\s\S]*?cancelPendingRestoration\(restoreFrameRef\);/,
   "only callers that opt into route/unmount cancellation may suppress pending focus return"
 );
@@ -151,6 +171,7 @@ for (const relativePath of [
   "components/ItemCartDrawer.tsx",
   "components/editor/design-page/AiNotesDialog.tsx",
   "components/editor/design-page/PlanAnnotationDialog.tsx",
+  "components/editor/design-page/PlansDialog.tsx",
   "components/editor/design-page/RoomRenameDialog.tsx",
   "components/editor/design-page/UpgradeDialog.tsx",
   "components/editor/design-page/PresentExportDialog.tsx",

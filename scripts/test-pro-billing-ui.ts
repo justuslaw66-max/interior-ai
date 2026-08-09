@@ -59,6 +59,52 @@ assert.match(checkout, /subscription_exists/);
 const plansDialog = read("components/editor/design-page/PlansDialog.tsx");
 assert.match(plansDialog, /Start monthly — \{state\.monthlyLabel\}/);
 assert.match(plansDialog, /Start yearly — \{state\.yearlyLabel\}/);
+for (const required of [
+  "EditorDialog",
+  'title="Plans"',
+  'testId="plans-dialog"',
+  'closeButtonTestId="plans-dialog-close"',
+  "manageBackground",
+  "returnFocusIds",
+  "cancelFocusRestorationOnUnmount",
+]) {
+  assert.ok(
+    plansDialog.includes(required),
+    `Plans must use the shared modal lifecycle with ${required}`
+  );
+}
+assert.doesNotMatch(
+  plansDialog,
+  /position:\s*"fixed"|event\.stopPropagation\(\)/,
+  "Plans must not retain its custom overlay or backdrop owner."
+);
+
+const plansFocus = read("lib/plans-dialog-focus.ts");
+for (const semanticId of [
+  "editor-command-account-action",
+  "editor-command-more-action",
+  "upgrade-see-plans-action",
+]) {
+  assert.ok(
+    plansFocus.includes(semanticId),
+    `Plans must own the semantic opener identity ${semanticId}`
+  );
+}
+assert.match(
+  commandBar,
+  /id=\{PLANS_ACCOUNT_OPENER_ID\}[\s\S]*?data-testid="editor-command-account"/,
+  "The direct Plans path must return to the current semantic Account command."
+);
+assert.match(
+  read("components/editor/design-page/UpgradeDialog.tsx"),
+  /id=\{PLANS_UPGRADE_OPENER_ID\}[\s\S]*?data-testid="upgrade-see-plans"/,
+  "The nested Plans path must return to the current Plans action inside Upgrade."
+);
+assert.match(
+  read("lib/design-page-dialog-layer-model.ts"),
+  /openedFromUpgrade:\s*billing\.upgrade\.open/,
+  "Plans nested ownership must be derived from the existing Upgrade state."
+);
 
 const designPage = read("components/editor/design-page/DesignPageWorkspace.tsx");
 const presentationWorkspace = read(

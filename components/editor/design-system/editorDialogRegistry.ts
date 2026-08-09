@@ -44,6 +44,12 @@ export function isTopmostEditorDialog(token: EditorDialogToken) {
   return dialogStack.at(-1) === token && !hasExternalEditorModal();
 }
 
+export function isElementInTopmostEditorDialog(element: HTMLElement) {
+  const token = dialogStack.at(-1);
+  const root = token ? dialogRoots.get(token) : undefined;
+  return !root || root.contains(element);
+}
+
 function restoreManagedBackground() {
   for (const [element, previous] of managedBackground) {
     element.inert = previous.inert;

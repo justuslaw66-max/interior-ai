@@ -35,16 +35,16 @@ export function handleTab(event: KeyboardEvent, panel: HTMLElement) {
     panel.focus();
     return;
   }
-  const first = focusable[0];
-  const last = focusable[focusable.length - 1];
   const active = document.activeElement;
-  if (event.shiftKey && (active === first || !panel.contains(active))) {
-    event.preventDefault();
-    last.focus();
-  } else if (!event.shiftKey && (active === last || !panel.contains(active))) {
-    event.preventDefault();
-    first.focus();
-  }
+  const activeIndex = active instanceof HTMLElement
+    ? focusable.indexOf(active)
+    : -1;
+  const nextIndex = activeIndex < 0
+    ? (event.shiftKey ? focusable.length - 1 : 0)
+    : (activeIndex + (event.shiftKey ? -1 : 1) + focusable.length) %
+      focusable.length;
+  event.preventDefault();
+  focusable[nextIndex].focus();
 }
 
 export function resolveInitialFocusTarget(

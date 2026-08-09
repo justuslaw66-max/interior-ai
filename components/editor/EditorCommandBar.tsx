@@ -6,9 +6,9 @@ import { handleWorkspaceMenuKeyDown } from "@/components/editor/workspaceMenuKey
 import { ChevronDown, Ellipsis, PanelLeft, Plus, UserRound } from "lucide-react";
 import { signIn, signOut } from "next-auth/react";
 import { CLIENT_PREVIEW_COMMAND_BAR_ID, CLIENT_PREVIEW_FALLBACK_ACTION_ID, guardHiddenCommandAction } from "@/lib/useClientPreviewCommandBarFocus";
+import { PLANS_ACCOUNT_OPENER_ID } from "@/lib/plans-dialog-focus";
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 type EditorMode = "design" | "adjust" | "ai" | "buy" | "present";
-
 export type EditorSaveStatus = {
   kind: "pending" | "saving" | "saved" | "failed" | "conflict";
   source: string;
@@ -625,7 +625,7 @@ export default function EditorCommandBar({
 
         <div ref={accountRef} className="relative shrink-0">
           <button
-            type="button"
+            id={PLANS_ACCOUNT_OPENER_ID} type="button"
             data-testid="editor-command-account"
             aria-label="Account"
             aria-haspopup="menu"

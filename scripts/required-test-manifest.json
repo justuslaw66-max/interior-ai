@@ -490,7 +490,7 @@
     },
     {
       "id": "ci.pro-visual-policy",
-      "invariant": "Consumer and Pro visual policy, including Client Preview command-bar focus exclusion and semantic return, executes in both required browser engines with no focus, skip, retry, or flake.",
+      "invariant": "Consumer and Pro visual policy, including Client Preview command-bar focus exclusion and the direct and nested Plans modal lifecycle, semantic return, topmost ownership, narrow containment, and billing preservation, executes in both required browser engines with no focus, skip, retry, or flake.",
       "cadence": "merge-required",
       "blocking": true,
       "command": "npm run test:pro-visual-policy",
@@ -523,6 +523,31 @@
           "id": "visual.client-preview-presentation-entry",
           "file": "tests/e2e/pro-visual-policy.spec.ts",
           "title": "uses the same Client Preview focus contract from presentation export"
+        },
+        {
+          "id": "visual.plans-account-pointer",
+          "file": "tests/e2e/pro-visual-policy.spec.ts",
+          "title": "gives Account pointer entry a complete Plans modal lifecycle"
+        },
+        {
+          "id": "visual.plans-account-keyboard-narrow",
+          "file": "tests/e2e/pro-visual-policy.spec.ts",
+          "title": "gives Account keyboard entry semantic replacement and narrow Plans return"
+        },
+        {
+          "id": "visual.plans-upgrade-pointer",
+          "file": "tests/e2e/pro-visual-policy.spec.ts",
+          "title": "gives Upgrade pointer entry exclusive nested Plans ownership"
+        },
+        {
+          "id": "visual.plans-upgrade-keyboard",
+          "file": "tests/e2e/pro-visual-policy.spec.ts",
+          "title": "gives Upgrade keyboard entry topmost Escape and supersession safety"
+        },
+        {
+          "id": "visual.plans-unmount-billing-policy",
+          "file": "tests/e2e/pro-visual-policy.spec.ts",
+          "title": "cancels Plans return on route unmount and preserves Free and Pro billing policy"
         }
       ],
       "requiredProjects": ["chromium", "webkit"],

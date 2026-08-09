@@ -1,9 +1,9 @@
 # Required-test truthfulness
 
-Status: **CH-0015B CLIENT PREVIEW CONTRACT REGISTERED — LOCAL CONTRACT GREEN;
+Status: **CH-0015C PLANS CONTRACT REGISTERED — LOCAL CONTRACT GREEN;
 EXTERNAL RULESET ENFORCEMENT UNVERIFIED**. Repository truthfulness assigns the
-Client Preview command-bar contract to the existing merge-required Pro visual
-Chromium/WebKit owner and retains the Selection Tray, CH-0013
+Client Preview command-bar and Plans dialog contracts to the existing
+merge-required Pro visual Chromium/WebKit owner and retains the Selection Tray, CH-0013
 surface-material, responsive, advisory Full E2E, and release Gate A3 owners.
 GitHub ruleset selection and an exact-head workflow run remain external
 evidence; repository registration does not claim either control is configured.
@@ -58,6 +58,31 @@ browser specs and separately locks the six repaired
 commerce/Kelsey requirement identities; cabinetry release evidence owns 23
 named Consumer/Pro workflows. CH-0016 runtime smoke locks its two runtime
 requirement identities.
+
+## CH-0015C canonical Plans dialog owner
+
+Existing `ci.pro-visual-policy` remains the sole merge-required owner for
+`tests/e2e/pro-visual-policy.spec.ts`; no gate, config, or runnable source is
+added. Its stable identity inventory expands from five to ten. The five Plans
+identities cover direct Account pointer, direct Account keyboard plus 390×844,
+nested Upgrade pointer, nested Upgrade keyboard plus newer-modal supersession,
+and route-unmount plus Free/Pro billing preservation.
+
+All ten identities execute once in Chromium and once in WebKit, producing 20
+required records with zero retry, skip, annotation, grep, inverse-grep, shard,
+or timeout change. Canonical local result: **20/20**; the five Plans identities
+pass 10/10. Coverage proves role/name/modal state, exactly one active Plans
+owner, intentional focus, deterministic Tab/Shift+Tab, topmost Escape/backdrop,
+direct/nested semantic return, Upgrade inertness and ownership resumption,
+opener replacement/removal, newer-modal and route/unmount cancellation,
+reopen, narrow containment/focus ring, Consumer denial, Pro state, and unchanged
+monthly checkout payload.
+
+The manifest remains 23 gates / 376 classified sources with unchanged path-set
+inventories and hashes. Stable IDs/titles make missing or renamed Plans
+coverage fail truthfulness. The existing Stripe/Pro static owner retains
+pricing, checkout, portal, and entitlement contracts; advisory Full E2E cannot
+substitute for this required owner and was not run.
 
 ## CH-0015B canonical Client Preview command-bar owner
 

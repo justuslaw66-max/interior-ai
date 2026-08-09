@@ -1,5 +1,118 @@
 # Code health audit handoff
 
+## CH-0015C accessible Plans dialog handoff — 2026-08-09
+
+Branch `fix/ch-0015-plans-dialog-accessibility` starts exactly at integration
+SHA `683a91c12e3ac5b690375925ad93f84bec2c443f` and tree
+`9a06040b0a803156ae5402e1bc3da79ca70ab82f`. Entry status, staged/unstaged
+diff, diff check, untracked inventory, and tracked-ignored inventory were empty;
+Node was `v24.13.0` and npm `11.6.2`. No repository-owned application,
+Playwright, browser, or temporary-database process was active. Homebrew
+PostgreSQL was the only listener and its cwd was
+`/opt/homebrew/var/postgresql@16`. Every local app listener used for this batch
+was confirmed by `lsof` to run from `/Users/justus/Developer/interior-ai`.
+`integration/deep-clean-v1` was not modified.
+
+The defect classification is **MODAL_DIALOG with incomplete lifecycle and
+nested-owner conflict**. Direct Account entry focused the transient `View Pro
+plans` menu item, unmounted it when the menu closed, then opened an unlabelled,
+unregistered Plans overlay with focus on `body`. Tab escaped into the editor,
+Escape did not close Plans, and close/backdrop returned to `body`. Nested
+Upgrade entry kept focus on `upgrade-see-plans`; Plans rendered visually above
+Upgrade but Upgrade remained the only registered `aria-modal` dialog and could
+trap Tab or consume Escape. Reproduced Escape closed Upgrade beneath Plans and
+left Plans visible; closing either surface ultimately returned to `body`.
+
+Plans now composes the reviewed `EditorDialog` lifecycle while keeping its hook
+mounted across ordinary closed state, so closed DOM remains absent but return
+is not cancelled as an unmount. Open Plans owns one role=`dialog`, one `Plans`
+name, `aria-modal=true`, close-button initial focus, deterministic
+Tab/Shift+Tab, topmost Escape/backdrop, and managed background inertness. The
+shared trap explicitly advances focus and therefore does not depend on Safari
+or macOS full-keyboard-access settings. Background-managed dialogs also guard
+outside focus attempts and reclaim focus when a newer registered dialog closes
+and ownership returns to the still-mounted underlying modal.
+
+Direct return resolves the current `editor-command-account-action`; the one
+documented fallback is the existing visible `editor-command-more-action`.
+Nested return resolves `upgrade-see-plans-action`. Upgrade remains mounted but
+is inert and `aria-hidden=true` while Plans is topmost. Plans close affects
+only Plans, restores the current Upgrade action, and makes Upgrade topmost
+again; later Upgrade close retains its existing behavior. Hidden, inert,
+disabled, disconnected, obscured, missing, superseded, or stale identities are
+rejected. A newer modal suppresses return, route/unmount cancels pending work,
+and reopen creates a fresh generation.
+
+The production delta is limited to Plans, semantic Account/Upgrade wiring, the
+shared dialog lifecycle/focus support needed for nested ownership, and the
+existing dialog-layer state adapter. Static coverage is strengthened in the
+existing Stripe/Pro and editor-accessibility owners. Required browser coverage
+extends the existing `ci.pro-visual-policy` source and manifest owner; no new
+gate, runnable spec, dependency, lockfile, database, billing source of truth,
+or second Plans state exists. The improved `PlansDialog` overlong-function
+baseline is lowered from 165 to 147; no code-quality or bundle allowance is
+raised.
+
+Focused and canonical validation:
+
+- Account/Upgrade pointer/keyboard Plans matrix: Chromium 5/5 and WebKit 5/5,
+  including role/name/modal state, initial focus, Tab/Shift+Tab, Escape,
+  close/backdrop, direct/nested return, Upgrade ownership resumption, inert
+  background, opener replacement/removal, newer-modal supersession,
+  route/unmount cancellation, reopen, Consumer/Free/Pro policy, and unchanged
+  monthly checkout payload;
+- canonical `ci.pro-visual-policy`: **20/20** across Chromium/WebKit, zero
+  retry/skip/flake; manifest remains **23 gates / 376 classified sources**;
+- 390×844: panel x=16–374, document scroll width 390, every plan action visible,
+  and focused yearly-action ring fully inside the panel/viewport; desktop and
+  nested visual inspection pass with unchanged price/copy/action order;
+- exact Stripe/Pro billing and shared editor accessibility guards: pass;
+  critical-required, required-test truthfulness, direct manifest check,
+  production-artifact evidence, and 78/78 design cleanup: pass;
+- canonical cart regression owner: Chromium 8/8 + WebKit 8/8; public-share
+  responsive static prerequisite: pass. The database-backed public-share
+  required gate is deferred to integrator review because this workspace has no
+  disposable migrated database; local analytics persistence shows the expected
+  Prisma schema denial and no database was mutated;
+- zero-warning full lint, typecheck, code-quality ratchet, strict 57/57 build,
+  and complete Phase 8 project/bundle/boundary gate: pass. The inherited
+  floor-plan NFT trace warning remains the only build warning. Full E2E was not
+  run.
+
+Phase 8 starts from CH-0015B at 25 `/design` initial JS chunks, 5,827,579 raw /
+1,112,646 Brotli bytes and 131,273 / 17,471 CSS bytes. It finishes with the
+same 25 chunks at 5,828,568 / 1,112,834 (**+989 / +188**) and CSS at 131,484 /
+17,470 (**+211 / -1**). Cabinetry Studio stays one lazy 492,639 / 84,899 chunk
+and GLTFExporter stays 34,525 / 8,970. Plans remains in the initial graph, so
+there is no Plans-only lazy chunk. All budgets are green.
+
+CH-0015 remains open for exactly seven required batches after Plans: My
+Designs, Guest Save, Command Palette, Floor Plan Upload, retailer confirmation,
+Share Link Fallback, and public legacy Upgrade. The final residual inventory is
+authoritative: Share Link Fallback and public legacy Upgrade are required, not
+P2-deferred. The selected-item preview transition remains separate P2 work.
+None of these surfaces was modified.
+
+A separate read-only reviewer identified two initial P2 evidence gaps:
+supersession used an unregistered modal fixture, and the route focus trace was
+armed after navigation. The stronger follow-up then found that a newer dialog
+could return focus outside a still-open Upgrade and that the late sentinel
+could still create a false negative. The final implementation restricts
+nested restoration to the current topmost registry root, makes every restored
+modal reclaim ownership, uses the registered Selection Tray as the newer
+owner, requires final focus inside Upgrade, and establishes the connected
+route sentinel before navigation. The affected Chromium/WebKit subset passes
+4/4, the complete canonical owner passes 20/20, and the independent cart owner
+passes 16/16. The reviewer found no pricing, billing, entitlement, scope, or
+unrelated-overlay change; its final read-only follow-up is a clean pass with no
+remaining actionable production, test, manifest, or documentation finding.
+
+Rollback is one local revert of the focused implementation commit, followed by
+the Plans static/accessibility guards, canonical Pro and cart gates, Phase 8,
+and strict build. No price, subscription, checkout, Stripe, entitlement, data,
+schema, dependency, deployment, integration-branch, or external-control
+rollback is needed.
+
 ## CH-0015B Client Preview command-bar handoff — 2026-08-08
 
 Branch `fix/ch-0015-client-preview-command-bar-inertness` starts exactly at

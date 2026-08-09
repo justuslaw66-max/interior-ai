@@ -1965,7 +1965,7 @@
     "components/editor/design-page/PlansDialog.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 165
+        "maximum": 147
       }
     },
     "components/editor/design-page/PlanTemplateChoiceDialog.tsx": {

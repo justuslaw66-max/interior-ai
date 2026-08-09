@@ -221,7 +221,7 @@ export function buildDesignPageDialogLayerModel({
       },
       plans: {
         state: {
-          open: billing.plans.open,
+          open: billing.plans.open, openedFromUpgrade: billing.upgrade.open,
           layout: billing.plans.layout,
           proActive: access.capabilities.manageSubscription,
           startingCheckout: billing.startingCheckout,

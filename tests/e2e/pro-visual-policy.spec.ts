@@ -379,8 +379,455 @@ async function expectWardrobeFrontFitsViewport(screenshot: Buffer) {
   ).toBeLessThan(0.96);
 }
 
+async function mockAuthenticatedPlan(page: Page, plan: "free" | "pro") {
+  let resolveSession!: () => void;
+  const sessionReady = new Promise<void>((resolve) => {
+    resolveSession = resolve;
+  });
+  await mockPlan(page, plan);
+  await page.unroute(/\/api\/auth\/session(?:\?.*)?$/);
+  await page.route(/\/api\/auth\/session(?:\?.*)?$/, async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        user: {
+          id: plan === "free" ? "ch0015-free" : "plans-pro-user",
+          name: `Plans ${plan} user`,
+          email: `plans-${plan}@example.test`,
+        },
+        expires: "2099-01-01T00:00:00.000Z",
+      }),
+    });
+    resolveSession();
+  });
+  return { sessionReady };
+}
+
+async function openPlansFromAccount(
+  page: Page,
+  activation: "keyboard" | "pointer"
+) {
+  const account = page.getByTestId("editor-command-account");
+  await expect(account).toHaveCount(1);
+  await expect(account).toBeVisible();
+  if (activation === "keyboard") {
+    await account.focus();
+    await account.press("Enter");
+  } else {
+    await account.click();
+  }
+  const accountMenu = page.getByTestId("editor-command-account-menu");
+  const plansAction = page.getByTestId("editor-command-view-plans");
+  await expect(accountMenu).toBeVisible();
+  await expect(plansAction).toHaveCount(1);
+  await expect(plansAction).toBeVisible();
+  if (activation === "keyboard") {
+    await plansAction.focus();
+    await expect(plansAction).toBeFocused();
+    await plansAction.press("Enter");
+  } else {
+    await plansAction.click();
+  }
+  await expect(accountMenu).toHaveCount(0);
+  return account;
+}
+
+async function openUpgradeDialog(
+  page: Page,
+  activation: "keyboard" | "pointer"
+) {
+  const more = page.getByTestId("editor-command-overflow");
+  await expect(more).toHaveCount(1);
+  if (activation === "keyboard") {
+    await more.focus();
+    await more.press("Enter");
+  } else {
+    await more.click();
+  }
+  const proTools = page.getByTestId("editor-command-overflow-pro-tools");
+  await expect(proTools).toHaveCount(1);
+  await expect(proTools).toBeVisible();
+  if (activation === "keyboard") {
+    await proTools.focus();
+    await proTools.press("Enter");
+  } else {
+    await proTools.click();
+  }
+  const upgrade = page.getByTestId("upgrade-dialog");
+  const plansAction = page.getByTestId("upgrade-see-plans");
+  await expect(upgrade).toHaveCount(1);
+  await expect(upgrade).toHaveAttribute("role", "dialog");
+  await expect(upgrade).toHaveAttribute("aria-modal", "true");
+  await expect(plansAction).toBeFocused();
+  return { upgrade, plansAction };
+}
+
+async function openPlansFromUpgrade(
+  page: Page,
+  activation: "keyboard" | "pointer"
+) {
+  const nested = await openUpgradeDialog(page, activation);
+  if (activation === "keyboard") {
+    await nested.plansAction.press("Enter");
+  } else {
+    await nested.plansAction.click();
+  }
+  return nested;
+}
+
+async function expectPlansDialog(page: Page) {
+  const dialog = page.getByTestId("plans-dialog");
+  const namedDialog = page.getByRole("dialog", { name: "Plans", exact: true });
+  const close = page.getByTestId("plans-dialog-close");
+  await expect(dialog).toHaveCount(1);
+  await expect(namedDialog).toHaveCount(1);
+  await expect(dialog).toHaveAttribute("aria-modal", "true");
+  await expect(close).toHaveCount(1);
+  await expect(close).toBeVisible();
+  await expect(close).toBeFocused();
+  expect(
+    await close.evaluate((element) => {
+      const rect = element.getBoundingClientRect();
+      return (
+        element.isConnected &&
+        rect.width > 0 &&
+        rect.height > 0 &&
+        rect.left >= 0 &&
+        rect.top >= 0 &&
+        rect.right <= window.innerWidth &&
+        rect.bottom <= window.innerHeight
+      );
+    })
+  ).toBe(true);
+  return { dialog, close };
+}
+
+async function expectFocusInside(dialog: Locator) {
+  expect(
+    await dialog.evaluate((element) => element.contains(document.activeElement))
+  ).toBe(true);
+}
+
+async function expectPlansClosed(page: Page) {
+  await expect(page.getByTestId("plans-dialog")).toHaveCount(0);
+  await expect(page.getByRole("dialog", { name: "Plans", exact: true })).toHaveCount(0);
+}
+
+async function waitForTwoFrames(page: Page) {
+  await page.evaluate(
+    () =>
+      new Promise<void>((resolve) =>
+        requestAnimationFrame(() => requestAnimationFrame(() => resolve()))
+      )
+  );
+}
+
 test.describe("Pro visual policy", () => {
   test.use({ viewport: { width: 2048, height: 1200 }, deviceScaleFactor: 1 });
+
+  test("gives Account pointer entry a complete Plans modal lifecycle", async ({
+    page,
+  }) => {
+    const identity = await mockAuthenticatedPlan(page, "free");
+    await page.goto("/design", { waitUntil: "domcontentloaded" });
+    await identity.sessionReady;
+    const account = await openPlansFromAccount(page, "pointer");
+    let plans = await expectPlansDialog(page);
+    await expect(page.getByTestId("plans-layout-default")).toBeVisible();
+    await expect(page.getByTestId("checkout-monthly")).toContainText(
+      "Start monthly — SGD 29.90/month"
+    );
+    await expect(page.getByTestId("checkout-yearly")).toContainText(
+      "Start yearly — SGD 249.90/year"
+    );
+    await expect(page.getByTestId("plans-pro-active")).toHaveCount(0);
+    expect(
+      await page
+        .getByTestId("editor-command-bar")
+        .evaluate((element) => Boolean(element.closest('[inert][aria-hidden="true"]')))
+    ).toBe(true);
+
+    await plans.close.press("Shift+Tab");
+    await expectFocusInside(plans.dialog);
+    await page.keyboard.press("Tab");
+    await expect(plans.close).toBeFocused();
+    await plans.close.press("Escape");
+    await expectPlansClosed(page);
+    await expect(account).toBeFocused();
+
+    await openPlansFromAccount(page, "pointer");
+    plans = await expectPlansDialog(page);
+    await plans.close.click();
+    await expectPlansClosed(page);
+    await expect(account).toBeFocused();
+
+    await openPlansFromAccount(page, "pointer");
+    plans = await expectPlansDialog(page);
+    await plans.dialog.click({ position: { x: 2, y: 2 } });
+    await expectPlansClosed(page);
+    await expect(account).toBeFocused();
+
+    let checkoutInterval: string | null = null;
+    await page.route("**/api/stripe/checkout", async (route) => {
+      const body = route.request().postDataJSON() as { interval?: string };
+      checkoutInterval = body.interval ?? null;
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({}),
+      });
+    });
+    await openPlansFromAccount(page, "pointer");
+    await expectPlansDialog(page);
+    await page.getByTestId("checkout-monthly").click();
+    await expectPlansClosed(page);
+    await expect.poll(() => checkoutInterval).toBe("monthly");
+    await expect(page.getByTestId("pro-mode-indicator")).toHaveCount(0);
+  });
+
+  test("gives Account keyboard entry semantic replacement and narrow Plans return", async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    const identity = await mockAuthenticatedPlan(page, "free");
+    await page.goto("/design", { waitUntil: "domcontentloaded" });
+    await identity.sessionReady;
+    const account = await openPlansFromAccount(page, "keyboard");
+    let plans = await expectPlansDialog(page);
+    const panel = plans.dialog.locator(":scope > div");
+    await expect(panel).toHaveCount(1);
+    const geometry = await panel.evaluate((element) => {
+      const rect = element.getBoundingClientRect();
+      return {
+        left: rect.left,
+        right: rect.right,
+        top: rect.top,
+        bottom: rect.bottom,
+        innerWidth,
+        innerHeight,
+        scrollWidth: document.documentElement.scrollWidth,
+      };
+    });
+    expect(geometry.scrollWidth).toBe(geometry.innerWidth);
+    expect(geometry.left).toBeGreaterThanOrEqual(2);
+    expect(geometry.right).toBeLessThanOrEqual(geometry.innerWidth - 2);
+    expect(geometry.top).toBeGreaterThanOrEqual(2);
+    expect(geometry.bottom).toBeLessThanOrEqual(geometry.innerHeight - 2);
+    await plans.close.press("Shift+Tab");
+    await expectFocusInside(plans.dialog);
+    await page.keyboard.press("Tab");
+    await expect(plans.close).toBeFocused();
+
+    await account.evaluate((element) => {
+      const replacement = element.cloneNode(true);
+      element.replaceWith(replacement);
+    });
+    await plans.close.press("Enter");
+    await expectPlansClosed(page);
+    await expect(page.getByTestId("editor-command-account")).toBeFocused();
+
+    await page.reload({ waitUntil: "domcontentloaded" });
+    await openPlansFromAccount(page, "keyboard");
+    plans = await expectPlansDialog(page);
+    await page.getByTestId("editor-command-account").evaluate((element) => element.remove());
+    await plans.close.press("Enter");
+    await expectPlansClosed(page);
+    await expect(page.getByTestId("editor-command-overflow")).toBeFocused();
+
+    await page.reload({ waitUntil: "domcontentloaded" });
+    await openPlansFromAccount(page, "keyboard");
+    plans = await expectPlansDialog(page);
+    await plans.close.press("Escape");
+    await expectPlansClosed(page);
+    await expect(page.getByTestId("editor-command-account")).toBeFocused();
+  });
+
+  test("gives Upgrade pointer entry exclusive nested Plans ownership", async ({
+    page,
+  }) => {
+    const identity = await mockAuthenticatedPlan(page, "free");
+    await page.goto("/design", { waitUntil: "domcontentloaded" });
+    await identity.sessionReady;
+    const nested = await openPlansFromUpgrade(page, "pointer");
+    let plans = await expectPlansDialog(page);
+    await expect(nested.upgrade).toHaveAttribute("aria-hidden", "true");
+    expect(await nested.upgrade.evaluate((element) => element.inert)).toBe(true);
+    await nested.plansAction.evaluate((element) => (element as HTMLElement).focus());
+    expect(
+      await nested.upgrade.evaluate((element) =>
+        element.contains(document.activeElement)
+      )
+    ).toBe(false);
+    await page.keyboard.press("Tab");
+    await expectFocusInside(plans.dialog);
+    await page.keyboard.press("Shift+Tab");
+    await expectFocusInside(plans.dialog);
+
+    await plans.close.click();
+    await expectPlansClosed(page);
+    await expect(nested.upgrade).not.toHaveAttribute("aria-hidden", "true");
+    expect(await nested.upgrade.evaluate((element) => element.inert)).toBe(false);
+    await expect(nested.plansAction).toBeFocused();
+
+    await nested.plansAction.click();
+    plans = await expectPlansDialog(page);
+    await plans.dialog.click({ position: { x: 2, y: 2 } });
+    await expectPlansClosed(page);
+    await expect(nested.upgrade).toBeVisible();
+    await expect(nested.plansAction).toBeFocused();
+    await nested.plansAction.press("Escape");
+    await expect(page.getByTestId("upgrade-dialog")).toHaveCount(0);
+  });
+
+  test("gives Upgrade keyboard entry topmost Escape and supersession safety", async ({
+    page,
+  }) => {
+    const identity = await mockAuthenticatedPlan(page, "free");
+    await page.goto("/design", { waitUntil: "domcontentloaded" });
+    await identity.sessionReady;
+    const nested = await openPlansFromUpgrade(page, "keyboard");
+    let plans = await expectPlansDialog(page);
+    await plans.close.press("Escape");
+    await expectPlansClosed(page);
+    await expect(nested.upgrade).toBeVisible();
+    await expect(nested.plansAction).toBeFocused();
+
+    await nested.plansAction.press("Enter");
+    plans = await expectPlansDialog(page);
+    const trayTrigger = page.getByTestId("selection-tray-trigger");
+    await trayTrigger.evaluate((element) => (element as HTMLButtonElement).click());
+    let newerDialog = page.getByTestId("selection-tray-dialog");
+    let newerClose = page.getByTestId("selection-tray-close");
+    await expect(newerDialog).toHaveAttribute("role", "dialog");
+    await expect(newerDialog).toHaveAttribute("aria-modal", "true");
+    await expect(newerClose).toBeFocused();
+    await expect(plans.dialog).toHaveAttribute("aria-hidden", "true");
+    expect(await plans.dialog.evaluate((element) => element.inert)).toBe(true);
+    await newerClose.press("Escape");
+    await expect(newerDialog).toHaveCount(0);
+    await expect(plans.dialog).toBeVisible();
+    await expect(plans.close).toBeFocused();
+
+    await trayTrigger.evaluate((element) => (element as HTMLButtonElement).click());
+    newerDialog = page.getByTestId("selection-tray-dialog");
+    newerClose = page.getByTestId("selection-tray-close");
+    await expect(newerClose).toBeFocused();
+    await plans.close.evaluate((element) => (element as HTMLButtonElement).click());
+    await expectPlansClosed(page);
+    await waitForTwoFrames(page);
+    await expect(newerClose).toBeFocused();
+    await newerClose.press("Escape");
+    await expect(newerDialog).toHaveCount(0);
+    await expect(nested.upgrade).toBeVisible();
+    await expect(nested.plansAction).toBeFocused();
+  });
+
+  test("cancels Plans return on route unmount and preserves Free and Pro billing policy", async ({
+    page,
+  }) => {
+    const identity = await mockAuthenticatedPlan(page, "free");
+    await page.goto("/design", { waitUntil: "domcontentloaded" });
+    await identity.sessionReady;
+    await openPlansFromAccount(page, "pointer");
+    await expectPlansDialog(page);
+    await page.evaluate(() => {
+      const opener = document.getElementById("editor-command-account-action");
+      if (!(opener instanceof HTMLElement)) {
+        throw new Error("Current Account semantic opener was not found");
+      }
+      opener.id = "editor-command-account-action-retired";
+      const sentinel = document.createElement("button");
+      sentinel.id = "editor-command-account-action";
+      sentinel.dataset.testid = "plans-unmount-focus-sentinel";
+      sentinel.textContent = "Plans unmount focus sentinel";
+      sentinel.style.position = "fixed";
+      sentinel.style.inset = "0 auto auto 0";
+      document.body.append(sentinel);
+      document.body.dataset.plansUnmountFocusCount = "0";
+      document.addEventListener("focusin", (event) => {
+        const target = event.target;
+        if (
+          target instanceof HTMLElement &&
+          target.id === "editor-command-account-action"
+        ) {
+          document.body.dataset.plansUnmountFocusCount = String(
+            Number(document.body.dataset.plansUnmountFocusCount ?? "0") + 1
+          );
+        }
+      });
+    });
+    const commandBar = page.getByTestId("editor-command-bar");
+    await commandBar.evaluate((element) => {
+      type AppRouter = {
+        push: (href: string, options?: { scroll?: boolean }) => void;
+        replace: (href: string, options?: { scroll?: boolean }) => void;
+      };
+      type ReactFiber = {
+        memoizedProps?: { value?: unknown };
+        return?: ReactFiber | null;
+      };
+      const fiberKey = Object.getOwnPropertyNames(element).find((key) =>
+        key.startsWith("__reactFiber")
+      );
+      let fiber = fiberKey
+        ? ((element as unknown as Record<string, unknown>)[fiberKey] as
+            | ReactFiber
+            | undefined)
+        : undefined;
+      let router: AppRouter | null = null;
+      while (fiber) {
+        const candidate = fiber.memoizedProps?.value;
+        if (
+          candidate &&
+          typeof candidate === "object" &&
+          "push" in candidate &&
+          typeof candidate.push === "function" &&
+          "replace" in candidate &&
+          typeof candidate.replace === "function"
+        ) {
+          router = candidate as AppRouter;
+          break;
+        }
+        fiber = fiber.return ?? undefined;
+      }
+      if (!router) throw new Error("Mounted App Router was not found");
+      router.push("/auth/error?error=AccessDenied", { scroll: false });
+    });
+    await expect(page).toHaveURL(/\/auth\/error\?error=AccessDenied$/);
+    await expectPlansClosed(page);
+    await expect(page.getByTestId("plans-unmount-focus-sentinel")).toBeAttached();
+    await waitForTwoFrames(page);
+    expect(
+      await page.evaluate(() => Number(document.body.dataset.plansUnmountFocusCount ?? "0"))
+    ).toBe(0);
+
+    await mockPlan(page, "pro");
+    await page.goto("/design?mode=designer", { waitUntil: "domcontentloaded" });
+    await expect(page.getByTestId("pro-mode-indicator")).toBeVisible();
+    const account = page.getByTestId("editor-command-account");
+    await account.click();
+    await expect(page.getByTestId("editor-command-manage-billing")).toBeVisible();
+    await expect(page.getByTestId("editor-command-view-plans")).toHaveCount(0);
+
+    await page.unroute(/\/api\/auth\/session(?:\?.*)?$/);
+    await page.route(/\/api\/auth\/session(?:\?.*)?$/, (route) =>
+      route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: "null",
+      })
+    );
+    await mockPlan(page, "free");
+    await page.goto("/design?mode=designer", { waitUntil: "domcontentloaded" });
+    await expect(page.getByTestId("pro-mode-indicator")).toHaveCount(0);
+    await expect(page.getByTestId("upgrade-dialog")).toBeVisible();
+    await page.keyboard.press("Escape");
+    await expect(page.getByTestId("upgrade-dialog")).toHaveCount(0);
+    await page.getByTestId("editor-command-account").click();
+    await expect(page.getByTestId("editor-command-sign-in")).toBeVisible();
+    await expect(page.getByTestId("editor-command-view-plans")).toHaveCount(0);
+  });
 
   test("uses the consumer visual theme with a clear Pro mode indicator", async ({
     page,
