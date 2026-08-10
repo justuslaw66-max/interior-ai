@@ -90,6 +90,26 @@ CI uses check mode only. A generated diff must be produced locally by the genera
 
 ## Performance and bundle budgets
 
+### Phase 8 project-benchmark evidence contract — 2026-08-10
+
+The canonical owner remains `npm run test:phase8-performance`; no additional
+merge gate or duplicate execution owner is created. Its deterministic first
+step characterizes scale/operation order, sample and warmup counts,
+`performance.now()` millisecond timing, shallow-clone cold cache misses,
+same-identity cached hits, nearest-rank summaries, fixture dimensions and
+serialization, and the unchanged 6 ms large cold-fingerprint p95 limit. It also
+executes synthetic passing/failing evidence plus fail-closed nonce,
+source/tree/file, schema, completion, sample, summary, stale-report, process,
+and exit-mismatch negatives without depending on host timing.
+
+The real child writes complete raw evidence on success and threshold failure.
+The parent independently binds and validates the current invocation, recomputes
+summaries/decisions, checks actual exit or signal, and preserves separate
+stdout/stderr. Local evidence is ignored and non-certifying. An exact-head
+integration run must retain the completed v1 report and sidecars; summary-only
+output cannot satisfy Phase 8 evidence. The required-test manifest inventory is
+unchanged because no newly discovered `test-*` source or new CI owner was added.
+
 Current repository budgets are already red and must be restored before ratcheting:
 
 - Phase 8 large `fingerprintCold` p95: 6 ms budget; audit observed 11.218 ms once.

@@ -1,5 +1,58 @@
 # Code health audit handoff
 
+## CH-0015E Phase 8 benchmark-observability blocker — 2026-08-10
+
+The original retained CH-0015E Phase 8 failure remains large
+`fingerprintCold` p95 **8.554958 ms** against the committed **6 ms** threshold.
+Its classification remains **G. INCONCLUSIVE**: the historical report retained
+only summaries and cannot separate a production regression, pre-existing
+failure, harness/report corruption, host/process contention, or an unsupported
+threshold contract. The preserved forensic archive and its manifest are not
+modified or committed by this batch.
+
+Branch `test/ch0015e-phase8-fingerprint-observability` starts exactly at feature
+SHA `d8648f3f20b2d1a3dca7bc575ab88ae268f529b8`, tree
+`9cf0fde5df47c9f6b23804cec56981af579e19a7`, with direct parent and unchanged
+`integration/deep-clean-v1` at
+`d16109b95cc57774bf384b580f4bf669026bdf59`. This batch changes benchmark/test
+infrastructure and records only. It does not change the production snapshot
+fingerprint, representative projects, performance budgets, CH-0015E
+accessibility behavior, or integration state.
+
+The Phase 8 project benchmark now emits
+`interior-ai.phase8-project-benchmark-evidence.v1`. A nonce-bound child report
+retains all samples and threshold decisions and is atomically completed before
+the child exits. A separate parent binds commit/tree/PID/command, fixture and
+critical-file SHA-256 identities, captures stdout/stderr separately, rejects
+stale or corrupt reports, independently recomputes p50/p95/max and every
+threshold decision, verifies actual exit/signal agreement, and writes its own
+hashed atomic completion. Process/host observations are outside timed samples;
+GC unavailability is explicit and non-failing rather than enabled through an
+intrusive observer or trace flag.
+
+The existing `test:phase8-performance` command remains the only Phase 8 owner
+and now runs the deterministic contract/negative suite before the wrapped real
+benchmark. No new required gate, test-source discovery entry, retry, or relaxed
+budget is introduced. The local real smoke for this commit is non-certifying;
+its result and evidence hash are reported with the task handoff after the final
+clean commit/tree is exercised and the ignored evidence is removed.
+
+Integration must remain blocked. The integrator must check out the exact
+observability commit and tree with a clean index/worktree, confirm the protected
+integration ref and absence of competing repository processes, verify Node/npm,
+run the deterministic evidence suite plus required truthfulness/direct manifest,
+production-artifact contracts, code quality, zero-warning lint, typecheck and
+artifact hygiene, then run the complete `npm run test:phase8-performance` owner
+once. Review the completed raw v1 evidence and wrapper exit before assigning a
+new forensic class; the result must not be called an integration run or used to
+unblock CH-0015E by this batch alone.
+
+Rollback is `git revert <observability-commit>`, followed by the deterministic
+benchmark contract, complete Phase 8 owner, required-test truthfulness,
+production-artifact contract, code quality, lint, typecheck and hygiene checks.
+No production/data/fixture/threshold/deployment/external-service rollback is
+required.
+
 ## CH-0015E accessible Share Link Fallback handoff — 2026-08-10
 
 Branch `fix/ch-0015-share-link-fallback-accessibility` starts exactly at

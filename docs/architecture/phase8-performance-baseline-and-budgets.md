@@ -22,14 +22,18 @@ tightening asset limits.
 
 | Scale | Rooms | Items | Pure persisted size | Browser persisted size |
 | --- | ---: | ---: | ---: | ---: |
-| Small consumer | 1 | 6 | 5,719 B | 5,467 B |
-| Medium furnished | 4 | 120 | 89,729 B | 84,629 B |
-| Large professional | 12 | 720 | 530,384 B | 499,748 B |
+| Small consumer | 1 | 6 | 6,606 B | 5,467 B |
+| Medium furnished | 4 | 120 | 103,606 B | 84,629 B |
+| Large professional | 12 | 720 | 612,481 B | 499,748 B |
 
 The fixtures include product snapshots, zones, saved views, layout versions,
 surface settings, and floor openings. Browser sizes are smaller because model
 URLs are deliberately removed to make the runtime run deterministic and
 offline. The pure benchmark retains them and covers canonical save/load.
+The pure sizes above are the current canonical serialization values discovered
+by the Phase 8 characterization test; the older 5,719/89,729/530,384-byte table
+was stale after intervening document-schema growth. No representative fixture
+was changed while correcting the table.
 
 Reproduction commands:
 
@@ -41,6 +45,32 @@ npm run start -- -p 3100
 PHASE8_BASE_URL=http://127.0.0.1:3100 npm run benchmark:phase8:browser -- --check
 npm run test:phase8-performance
 ```
+
+## Phase 8 benchmark-observability hardening — 2026-08-10
+
+The unexplained CH-0015E run retained a large `fingerprintCold` p95 of
+8.554958 ms against the unchanged 6 ms ceiling. Its forensic classification
+remains **G. INCONCLUSIVE** because the former summary-only output cannot
+distinguish a production regression, pre-existing failure, report corruption,
+host/process contention, or an unsupported threshold contract.
+
+Future project-benchmark invocations use the versioned
+`interior-ai.phase8-project-benchmark-evidence.v1` child/parent contract in
+`docs/architecture/phase8-project-benchmark-evidence.md`. It retains every raw
+sample and source/host/process identity, writes child and parent reports
+atomically, and requires independent parent recomputation plus exit-code
+agreement. This changes benchmark observability only: sample counts/order,
+warmup, timer, percentile, units, fixtures, thresholds, clone/cache behavior,
+and the production fingerprint implementation are unchanged.
+
+Local runs remain non-certifying. The exact-head integrator must start from the
+observability commit with a clean index/worktree, verify its commit and tree,
+verify every bound source hash and the required manifest, confirm no competing
+repository process, and run `npm run test:phase8-performance` once under the
+documented reference conditions. The resulting completed v1 report, sidecars,
+captured streams, and wrapper exit must be retained together for classification.
+CH-0015E remains blocked until that exact-head run is reviewed; this hardening
+batch does not reinterpret the original 8.554958 ms result.
 
 ## Baseline before optimization
 
