@@ -127,7 +127,7 @@ export function DesignPageDialogLayer({ dialogs, overlays }: DesignPageDialogLay
   return (
     <>
       <UpgradeDialog {...dialogs.upgrade} />
-      <GuestSavePromptDialog {...dialogs.guestSave} />
+      <GuestSavePromptDialog key={dialogs.guestSave.lifecycleScopeKey} {...dialogs.guestSave} />
       <PlansDialog {...dialogs.plans} />
       <AiNotesDialog {...dialogs.aiNotes} />
       <PresentExportDialog

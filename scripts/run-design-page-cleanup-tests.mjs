@@ -67,6 +67,7 @@ const typescriptGuardFiles = [
   "test-editor-3d-floor-cutaway.ts",
   "test-editor-floating-overlay-layout.ts",
   "test-floor-plan-quality.ts",
+  "test-guest-save-overlay-static.tsx",
   "test-load-design-delete-modal.ts",
   "test-my-designs-overlay-static.tsx",
   "test-manual-placement-scoring.ts",

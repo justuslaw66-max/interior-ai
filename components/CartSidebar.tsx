@@ -7,6 +7,8 @@ import { track, trackProductEvent } from "@/lib/analytics";
 import { createCommerceEvent } from "@/lib/commerce-helpers";
 import { resolveCatalogVariant } from "@/lib/catalog/variant-resolver";
 import { trackVariantIssues } from "@/lib/catalog/variant-observability";
+import { GUEST_CHECKOUT_OPENER_ID, type GuestPromptReason } from "@/lib/guest-save-prompt";
+import { useShopifyCheckoutLock } from "@/lib/useShopifyCheckoutLock";
 
 export type CartSidebarPlacedItem = {
   instanceId: string;
@@ -92,7 +94,7 @@ export type CartSidebarProps = {
   onBulkSwap: (direction: "cheaper" | "premium") => void;
   onShowUpgrade: () => void;
   isGuest?: boolean;
-  onGuestCapture?: (reason: string, onContinue: () => void) => void;
+  onGuestCapture?: (reason: GuestPromptReason, onContinue: () => void) => void;
   theme?: "default" | "designer";
 };
 
@@ -114,6 +116,7 @@ export default function CartSidebar({
   const [openInSameTab, setOpenInSameTab] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
   const cartOpenedRef = useRef(false);
+  const checkoutLock = useShopifyCheckoutLock(setBusy);
   const autoFillPulseRef = useRef(false);
   const noticeTimerRef = useRef<number | null>(null);
   const [autoFillPulse, setAutoFillPulse] = useState(false);
@@ -413,8 +416,8 @@ export default function CartSidebar({
 
     setConfirmOpen({ title, tabs, lines });
   };
-
   const startShopifyCheckoutInternal = async () => {
+    if (checkoutLock.active()) return;
     const invalidShopify = shopifyItems.filter(
       (line) => !line.shopifyVariantId || !line.shopifyAvailable
     );
@@ -427,7 +430,6 @@ export default function CartSidebar({
       );
       return;
     }
-
     const lines = shopifyItems
       .filter((x) => x.shopifyVariantId)
       .map((x) => ({
@@ -441,7 +443,6 @@ export default function CartSidebar({
       showCartNotice("No Shopify items have variant IDs yet.", "warning");
       return;
     }
-
     track("shopify_checkout_started", {
       design_id: designId ?? null,
       cart_items_shopify: shopifyItems.length,
@@ -453,8 +454,7 @@ export default function CartSidebar({
       result: "success",
     });
 
-    setBusy(true);
-    try {
+    await checkoutLock.run(async () => {
       const res = await fetch("/api/shopify/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -478,12 +478,11 @@ export default function CartSidebar({
       const u = new URL(data.checkoutUrl as string);
       if (designId) u.searchParams.set("designId", designId);
       window.location.href = u.toString();
-    } finally {
-      setBusy(false);
-    }
+    });
   };
 
   const startShopifyCheckout = async () => {
+    if (busy || checkoutLock.active()) return;
     if (isGuest && onGuestCapture) {
       onGuestCapture("checkout", () => {
         void startShopifyCheckoutInternal();
@@ -628,7 +627,7 @@ export default function CartSidebar({
           </div>
 
           <div className="mt-3 grid gap-2">
-            <button
+            <button id={GUEST_CHECKOUT_OPENER_ID}
               data-testid="checkout-shopify"
               className={`w-full rounded-xl px-3 py-2 text-sm font-semibold text-white transition ${
                 shopifyItems.length === 0 || busy ? "bg-neutral-300" : "bg-neutral-900 hover:bg-neutral-800"

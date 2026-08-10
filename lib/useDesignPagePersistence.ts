@@ -40,6 +40,7 @@ import {
   useDesignPageManualCloudSave,
   useDesignPagePreserveCloudSave,
 } from "@/lib/useDesignPageExplicitCloudSaveController";
+import { useGuestSavePromptController } from "@/lib/useGuestSavePromptController";
 
 export { sanitizeDesignPageSavedViews };
 export type { DesignPageCloudSaveConflictState };
@@ -66,6 +67,7 @@ type DesignPagePersistenceState = {
   identity: {
     designId: string | null;
     shareEnabled: boolean;
+    guestPromptScopeKey: string;
   };
   document: {
     designSnapshot: DesignSnapshot;
@@ -129,7 +131,7 @@ export type UseDesignPagePersistenceParams = {
 
 export function useDesignPagePersistence({
   state: {
-    identity: { designId, shareEnabled },
+    identity: { designId, shareEnabled, guestPromptScopeKey },
     document: {
       designSnapshot,
       currentStoredDesignFingerprint,
@@ -190,9 +192,7 @@ export function useDesignPagePersistence({
   const [deletingDesignIds, setDeletingDesignIds] = useState<Set<string>>(new Set());
   const [pendingDeleteDesign, setPendingDeleteDesign] =
     useState<PendingSavedDesignDelete | null>(null);
-  const [guestPromptReason, setGuestPromptReason] = useState<string | null>(null);
   const firstSaveRef = useRef(false);
-  const guestPromptActionRef = useRef<null | (() => void)>(null);
   const documentEpochRef = useRef(0);
   const [cloudWriteQueue] = useState(() =>
     createDesignPageCloudWriteQueue({
@@ -714,11 +714,6 @@ export function useDesignPagePersistence({
     );
   }, [cloudSaveConflict, loadDesign, showRuleToast]);
 
-  const openGuestPrompt = useCallback((reason: string, onContinue: () => void) => {
-    guestPromptActionRef.current = onContinue;
-    setGuestPromptReason(reason);
-  }, []);
-
   const claimGuestDesign = useCallback(async () => {
     if (isAuthenticated) return;
     const anonymousId = getAnonId();
@@ -760,18 +755,11 @@ export function useDesignPagePersistence({
     zones,
   ]);
 
-  const handleGuestPromptNotNow = useCallback(() => {
-    const action = guestPromptActionRef.current;
-    guestPromptActionRef.current = null;
-    setGuestPromptReason(null);
-    action?.();
-  }, []);
-
-  const handleGuestSaveAndContinue = useCallback(async () => {
-    setGuestPromptReason(null);
-    await claimGuestDesign();
-    requestSignIn();
-  }, [claimGuestDesign, requestSignIn]);
+  const guestPromptController = useGuestSavePromptController({
+    scopeKey: guestPromptScopeKey,
+    claimGuestDesign,
+    requestSignIn,
+  });
 
   const clearPersistedSnapshotFingerprint = useCallback(() => {
     detachCloudBaseline();
@@ -1088,7 +1076,9 @@ export function useDesignPagePersistence({
       allSavedDesignIds,
       selectedSavedDesignCount,
       allSavedDesignsSelected,
-      guestPromptReason,
+      guestPrompt: guestPromptController.snapshot.session,
+      guestPromptPrimaryBusy: guestPromptController.snapshot.primaryBusy,
+      guestPromptScopeKey,
     },
     actions: {
       saveDesignToCloud,
@@ -1111,9 +1101,10 @@ export function useDesignPagePersistence({
       requestDeleteSavedDesigns,
       cancelDeleteSavedDesigns,
       handleDeleteSavedDesign,
-      openGuestPrompt,
-      handleGuestPromptNotNow,
-      handleGuestSaveAndContinue,
+      openGuestPrompt: guestPromptController.open,
+      cancelGuestPrompt: guestPromptController.cancel,
+      handleGuestPromptNotNow: guestPromptController.continueWithoutSaving,
+      handleGuestSaveAndContinue: guestPromptController.saveAndContinue,
     },
   };
 }

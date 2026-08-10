@@ -395,7 +395,6 @@ export function DesignPageWorkspace() {
     regions: { presentExport: presentExportDialog, editorChrome: editorChromeModel,
       presentationQaLayer: presentationQaLayerModel },
   } = presentationQaWorkspace;
-
   const sceneCanvasRegionModel =
     useDesignPageSceneRegionWorkspaceRegistration({
       boundaries: { presentation: presentationQaWorkspace },
@@ -423,7 +422,7 @@ export function DesignPageWorkspace() {
       plansActions: { onClose: closePlansDialog, onManageBilling: manageBillingFromPlans, onStartCheckout: startCheckoutFromPlans },
     },
     persistence: {
-      guestSave: { open: Boolean(persistenceState.guestPromptReason), onNotNow: persistenceActions.handleGuestPromptNotNow, onSaveAndContinue: persistenceActions.handleGuestSaveAndContinue },
+      guestSave: { reason: persistenceState.guestPrompt?.reason ?? null, busy: persistenceState.guestPromptPrimaryBusy, lifecycleScopeKey: persistenceState.guestPromptScopeKey, onCancel: () => { if (persistenceState.guestPrompt) persistenceActions.cancelGuestPrompt(persistenceState.guestPrompt); }, onContinueWithoutSaving: () => { if (persistenceState.guestPrompt) persistenceActions.handleGuestPromptNotNow(persistenceState.guestPrompt); }, onSaveAndContinue: () => persistenceState.guestPrompt ? persistenceActions.handleGuestSaveAndContinue(persistenceState.guestPrompt) : undefined },
       myDesigns: {
         data: { open: persistenceState.showMyDesigns, designs: persistenceState.myDesigns, loading: persistenceState.loadingDesigns, allDesignIds: persistenceState.allSavedDesignIds,
           selectedDesignIds: persistenceState.selectedSavedDesignIds, selectedDesignCount: persistenceState.selectedSavedDesignCount,

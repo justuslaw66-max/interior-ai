@@ -145,7 +145,14 @@ const plansModel = buildDesignPageDialogLayerModel({
     plansActions: {},
   },
   persistence: {
-    guestSave: { open: false, onNotNow: noop, onSaveAndContinue: noop },
+    guestSave: {
+      reason: null,
+      busy: false,
+      lifecycleScopeKey: "pro-billing-test",
+      onCancel: noop,
+      onContinueWithoutSaving: noop,
+      onSaveAndContinue: noop,
+    },
     myDesigns: { data: {}, actions: {} },
     templateChoice: { data: {}, actions: {} },
   },

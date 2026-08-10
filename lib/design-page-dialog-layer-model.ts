@@ -93,10 +93,8 @@ export type BuildDesignPageDialogLayerModelInput = {
     plansActions: Dialogs["plans"]["actions"];
   };
   persistence: {
-    guestSave: {
-      open: boolean;
-      onNotNow: Dialogs["guestSave"]["onNotNow"];
-      onSaveAndContinue: Dialogs["guestSave"]["onSaveAndContinue"];
+    guestSave: Dialogs["guestSave"] & {
+      reason: BuildDesignPageDialogLayerAdapterInput["state"]["guestSaveReason"];
     };
     myDesigns: { data: MyDesignsData; actions: MyDesignsActions };
     templateChoice: {
@@ -191,11 +189,12 @@ export function buildDesignPageDialogLayerModel({
   cabinetry,
   cart,
 }: BuildDesignPageDialogLayerModelInput): BuildDesignPageDialogLayerAdapterInput {
+  const { reason: guestSaveReason, ...guestSave } = persistence.guestSave;
   return {
     state: {
       isClientPreview: access.isClientPreview,
       upgradeOpen: billing.upgrade.open,
-      guestSaveOpen: persistence.guestSave.open,
+      guestSaveReason,
     },
     dialogs: {
       upgrade: {
@@ -216,10 +215,7 @@ export function buildDesignPageDialogLayerModel({
         },
         actions: billing.upgradeActions,
       },
-      guestSave: {
-        onNotNow: persistence.guestSave.onNotNow,
-        onSaveAndContinue: persistence.guestSave.onSaveAndContinue,
-      },
+      guestSave,
       plans: {
         state: {
           open: billing.plans.open, openedFromUpgrade: billing.upgrade.open,

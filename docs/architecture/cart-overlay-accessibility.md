@@ -1,5 +1,68 @@
 # CH-0015 accessibility lifecycle and overlay inventory
 
+## CH-0015F Guest Save Prompt modal lifecycle — 2026-08-10
+
+Status: **CH-0015F LOCALLY REMEDIATED; CH-0015 REMAINS OPEN FOR THREE
+REQUIRED OVERLAY BATCHES**.
+
+This bounded batch starts from exact integration source
+`d649708ba31eb9d8ede183dea6d6268c9dd1aca3` / tree
+`a34e6a5831c0e7b40649895a7cc3e3f18b07fec4` on
+`fix/ch-0015-guest-save-prompt-accessibility`. It classifies the prompt as a
+**MODAL_DIALOG** across exactly `save`, `ai-layout`, and `checkout`; the full
+entry, continuation, scope, focus, domain-preservation, performance, and
+rollback contract is recorded in
+`docs/architecture/guest-save-prompt-lifecycle.md`.
+
+Before remediation, the reason was an arbitrary persistence string reduced to
+a Boolean at render time, the callback was an unscoped raw ref, and focus
+remained on the obscured Save, Generate layout, or Checkout here action. The
+custom overlay had no role/name/modal semantics, registry/topmost owner,
+containment, Escape/backdrop/close distinction, background isolation, or
+semantic return. `Not now` alone ran the callback, but generic close paths did
+not exist and stale or duplicate callback ownership was not bounded.
+
+The final prompt composes `EditorDialog`: closed DOM is absent; open state has
+one named modal, visible close initial focus, deterministic Tab/Shift+Tab,
+topmost Escape/backdrop, and inert/`aria-hidden` editor/cart/command/AI
+background. `Not now` consumes and runs the current generation exactly once;
+Escape, backdrop, and close cancel with zero continuation. Save and continue
+preserves guest claim then sign-in behavior without running the stored
+callback. Route, requested/actual design, workspace/project, mode, preview,
+plan/auth, unmount, reopen, and registered-dialog supersession retire stale
+work.
+
+Reason-specific return resolves Save then More, AI then Workspace, or checkout
+then Workspace, rejecting missing, hidden, inert, disabled, disconnected,
+obscured, or superseded candidates. The same semantic ID survives responsive
+remount. Stable action IDs also cover close, explicit continuation, and
+primary action.
+
+New sole owner `ci.guest-save-overlay-accessibility` runs eight stable cases
+once in Chromium and WebKit against the strict production artifact: **16/16**,
+one worker, zero retries/skips/flakes/filters/shards or timeout increase. It
+covers all three pointer/keyboard entries, cancellation versus continuation,
+exact-once and duplicate guards, responsive replacement/removal/fallback,
+scope/auth/unmount cancellation, newer-dialog ownership, Consumer guest and
+authenticated Pro parity, desktop/390x844 geometry, focus ring, background
+isolation, and zero overflow. AI and checkout boundaries are synthetic; no
+paid model or merchant is contacted. The manifest is **25 gates / 376
+classified sources**.
+
+Against CH-0015E, `/design` remains 25 initial JavaScript chunks and one CSS
+chunk. JavaScript moves 5,830,782 / 1,113,525 raw/Brotli to 5,834,673 /
+1,114,584 (`+3,891 / +1,059`); CSS moves 131,607 / 17,493 to 131,910 /
+17,506 (`+303 / +13`). Cabinetry Studio and GLTFExporter remain 492,639 /
+84,899 and 34,525 / 8,970. All Phase 8 byte boundaries pass and no new lazy
+chunk is introduced.
+
+The three remaining required CH-0015 batches are **Command Palette, Floor Plan
+Upload, and retailer confirmation**. Public legacy Upgrade and selected-item
+preview remain separate P2 work. Rollback is one local revert of CH-0015F,
+then the focused static/browser owners, Save/AI/checkout guards, Phase 8, and
+strict build; no data, schema, dependency, policy, deployment, integration, or
+external-service rollback is required.
+
 ## CH-0015E Share Link Fallback nested modal lifecycle — 2026-08-10
 
 Status: **CH-0015E LOCALLY REMEDIATED; CH-0015 REMAINS OPEN FOR FOUR
@@ -541,7 +604,7 @@ are excluded.
 | `CatalogFilterDrawer` | Custom anchored non-modal filter panel | Unmounted / 0 | none / none / false | none / no / no / no / no / none | Anchored scroll panel | Catalog filter tests; retain non-modal intent or add complementary semantics later |
 | `PlansDialog` | `EditorDialog`; modal | Unmounted / 0 | dialog / `Plans` / true | close / yes / topmost / yes / current Account or Upgrade semantic ID / topmost-safe | Max 420px with 16px narrow gutter and capped scroll content | Required Pro visual Chromium/WebKit 20/20 plus Stripe/Pro and editor-accessibility guards; complete for CH-0015C |
 | `MyDesignsDialog` plus delete `ConfirmDialog` | `EditorDialog` parent plus shared modal child | Dialog DOM absent; lazy component retained after first ordinary dismissal / 0 actionable | parent dialog / `My Designs` / true; child dialog / delete title / true | close / yes / topmost / yes / current command or More; nested return by current design/bulk semantic ID and surviving-row/close hierarchy | Centered, viewport-capped and scrollable | Required Chromium/WebKit 16/16 plus static/persistence/routing guards; complete for CH-0015D |
-| `GuestSavePromptDialog` | Custom modal-looking overlay | Unmounted / 0 | none / none / none | none / no / no / no / no / none | Centered viewport-capped | Auth behavior tests; later CH-0015 surface |
+| `GuestSavePromptDialog` | `EditorDialog`; modal | Unmounted / 0 | dialog / `Save and sync this design?` / true | close / yes / topmost / yes / Save→More, AI→Workspace, checkout→Workspace / generation- and scope-safe | Centered viewport-capped; actions and focus ring contained at 390×844 | Required Chromium/WebKit 16/16 plus static continuation guard; complete for CH-0015F |
 | `ShareLinkFallbackDialog` nested above `PresentExportDialog` | `EditorDialog` child above mounted `EditorDialog` parent | **After CH-0015E:** child DOM absent while closed / 0 actionable | child dialog / `Share Link` / true; parent remains registered but inert/hidden while child is topmost | child close / yes / topmost / yes / current Create Share then parent close / topmost-safe and generation-scoped | Centered, viewport-capped; actions and focus ring contained at 390×844 | Existing Pro visual owner, Chromium/WebKit 26/26 total; complete for CH-0015E |
 | `BetaFeedbackWidget` | Custom modal | Unmounted / 0 | dialog / `Send beta feedback` / true | textarea autofocus / no / textarea only / yes / no / none | Centered, viewport-capped | Feedback contracts; later full keyboard/return review |
 | legacy `UpgradeModal` | Custom modal-looking overlay | Unmounted / 0 | none / none / none | none / no / no / no / no / none | Centered viewport-capped | Billing UI source coverage; distinct from shared `UpgradeDialog`; P2 post-candidate |
@@ -606,7 +669,7 @@ must choose one bounded surface, preserve any explicit non-modal contract, and
 repeat test-first characterization rather than applying modal semantics in
 bulk.
 
-The authoritative required residual sequence after CH-0015E is Guest Save,
-Command Palette, Floor Plan Upload, and retailer confirmation. Public legacy
-Upgrade and the selected-item preview transition are separate P2
+The authoritative required residual sequence after CH-0015F is Command
+Palette, Floor Plan Upload, and retailer confirmation. Public legacy Upgrade
+and the selected-item preview transition are separate P2
 post-candidate items.

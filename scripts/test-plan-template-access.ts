@@ -772,7 +772,14 @@ const dialogModel = buildDesignPageDialogLayerModel({
   access: { isClientPreview: false, isAuthenticated: true, capabilities: resolveEditorCapabilities("pro"), designerTheme: false },
   billing: { upgrade: {}, plans: {}, startingCheckout: false, annualSavingsLabel: "", upgradeActions: {}, plansActions: {} },
   persistence: {
-    guestSave: { open: false, onNotNow: noop, onSaveAndContinue: noop },
+    guestSave: {
+      reason: null,
+      busy: false,
+      lifecycleScopeKey: "plan-template-test",
+      onCancel: noop,
+      onContinueWithoutSaving: noop,
+      onSaveAndContinue: noop,
+    },
     myDesigns: { data: {}, actions: { onOpenTemplates: openNewPlanPickerAction } },
     templateChoice: {
       data: { open: true, templateLabel: "Studio", busy: false, errorMessage: null },

@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import type { AiLayoutRole } from "@/lib/ai/layout-planner";
+import { GUEST_AI_LAYOUT_OPENER_ID } from "@/lib/guest-save-prompt";
 import { STYLES, type AiLayoutProposal, type Style } from "@/lib/design-page-types";
 import type { RoomType } from "@/lib/room-types";
 
@@ -346,8 +347,7 @@ export default function DesignControlsAiPanel({
             ))}
           </div>
         </div>
-
-        <button
+        <button id={GUEST_AI_LAYOUT_OPENER_ID}
           className={
             dark
               ? "designer-control-active mt-4 w-full rounded-lg border px-4 py-3 text-sm font-medium disabled:cursor-not-allowed disabled:opacity-50"
@@ -366,7 +366,6 @@ export default function DesignControlsAiPanel({
               : "Switch to a living room to generate an AI starter layout."}
         </div>
       </div>
-
       {aiLayoutProposal && (
         <div
           className={

@@ -109,7 +109,7 @@
       "limit": 250
     },
     "components/CartSidebar.tsx": {
-      "lines": 1090,
+      "lines": 1089,
       "limit": 250
     },
     "components/catalog/CatalogCategoryTabs.tsx": {
@@ -165,7 +165,7 @@
       "limit": 250
     },
     "components/editor/design-page/DesignPageWorkspace.tsx": {
-      "lines": 543,
+      "lines": 542,
       "limit": 250
     },
     "components/editor/design-page/DesignSceneCanvas.tsx": {
@@ -217,7 +217,7 @@
       "limit": 250
     },
     "components/editor/DesignControlsAiPanel.tsx": {
-      "lines": 466,
+      "lines": 465,
       "limit": 250
     },
     "components/editor/DesignControlsFurnishPanel.tsx": {
@@ -237,7 +237,7 @@
       "limit": 250
     },
     "components/editor/EditorCommandBar.tsx": {
-      "lines": 734,
+      "lines": 733,
       "limit": 250
     },
     "components/editor/floor-plan-import-review/FloorPlanImportReviewPanel.tsx": {
@@ -681,7 +681,7 @@
       "limit": 400
     },
     "lib/useDesignPageAiLayout.ts": {
-      "lines": 455,
+      "lines": 454,
       "limit": 400
     },
     "lib/useDesignPageCameraNavigation.ts": {
@@ -713,7 +713,7 @@
       "limit": 400
     },
     "lib/useDesignPagePersistence.ts": {
-      "lines": 1119,
+      "lines": 1110,
       "limit": 400
     },
     "lib/useDesignPagePlanActions.ts": {
@@ -1567,7 +1567,7 @@
     "components/CartSidebar.tsx": {
       "overlongFunctions": {
         "count": 6,
-        "maximum": 992
+        "maximum": 989
       },
       "complexFunctions": {
         "count": 3,
@@ -1807,7 +1807,7 @@
     "components/editor/design-page/DesignPageWorkspace.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 510
+        "maximum": 509
       }
     },
     "components/editor/design-page/DesignSceneCanvas.tsx": {
@@ -2065,7 +2065,7 @@
     "components/editor/DesignControlsAiPanel.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 388
+        "maximum": 386
       },
       "complexFunctions": {
         "count": 1,
@@ -2111,7 +2111,7 @@
     "components/editor/EditorCommandBar.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 642
+        "maximum": 640
       },
       "complexFunctions": {
         "count": 1,
@@ -3395,7 +3395,7 @@
     "lib/design-page-dialog-layer-model.ts": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 141
+        "maximum": 139
       }
     },
     "lib/design-page-equivalent-variant.ts": {
@@ -4397,7 +4397,7 @@
     "lib/useDesignPageAiLayout.ts": {
       "overlongFunctions": {
         "count": 2,
-        "maximum": 384
+        "maximum": 382
       },
       "complexFunctions": {
         "count": 1,
@@ -4745,7 +4745,7 @@
     "lib/useDesignPagePersistence.ts": {
       "overlongFunctions": {
         "count": 4,
-        "maximum": 990
+        "maximum": 979
       }
     },
     "lib/useDesignPagePersistenceRegistration.ts": {

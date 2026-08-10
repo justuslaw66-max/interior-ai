@@ -153,7 +153,7 @@ assert.doesNotMatch(pageSource, /const runAiLayout\s*=/);
 assert.match(controllerSource, /fetch\("\/api\/ai\/layout"/);
 assert.match(controllerSource, /floorPlanQualityContext/);
 assert.match(controllerSource, /"Apply AI layout proposal"/);
-assert.match(controllerSource, /openGuestPrompt\("ai_layout"/);
+assert.match(controllerSource, /openGuestPrompt\("ai-layout"/);
 assert.match(controllerSource, /ai_layout_fallback_used/);
 assert.match(controllerSource, /ai_layout_unsupported_room_type/);
 

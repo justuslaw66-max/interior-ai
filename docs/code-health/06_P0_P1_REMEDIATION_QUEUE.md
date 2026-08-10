@@ -1,5 +1,32 @@
 # P0/P1 remediation queue
 
+## CH-0015F Guest Save Prompt accessibility — 2026-08-10
+
+- **Source/scope:** exact integration source
+  `d649708ba31eb9d8ede183dea6d6268c9dd1aca3` / tree
+  `a34e6a5831c0e7b40649895a7cc3e3f18b07fec4`; bounded branch
+  `fix/ch-0015-guest-save-prompt-accessibility`; exactly Save, AI layout,
+  checkout, their typed continuation controller and semantic IDs, one shared
+  dialog extension for visible initial focus, focused gates, and records.
+- **Disposition:** `PARTIALLY RESOLVED — CH-0015F LOCAL REMEDIATION COMPLETE`.
+  `save | ai-layout | checkout` remains typed through rendering. One scoped,
+  generation-bound callback is consumed before execution or cancellation.
+  `EditorDialog` owns name/modal state, close focus, containment, topmost
+  Escape/backdrop, background isolation, and reason-specific return.
+- **Required owner:** new `ci.guest-save-overlay-accessibility` owns eight
+  stable scenarios after its static prerequisite and strict build. Canonical
+  result: Chromium 8/8 + WebKit 8/8, zero retry/skip/flake/filter/shard; derived
+  inventory is 25 gates / 376 classified sources.
+- **Behavior/rollback:** explicit Not now alone executes the continuation once;
+  Escape/backdrop/close execute none. Guest claim/sign-in, no-op AI guest
+  behavior, checkout eligibility/payload/navigation, auth/quota policy, and
+  unrelated overlays stay unchanged. Revert the one focused commit and rerun
+  Guest Save static/browser, Save/AI/checkout guards, Phase 8, and strict build;
+  no data or external rollback is required.
+- **Queue status:** CH-0015 remains `IN_PROGRESS` with exactly three required
+  batches: Command Palette, Floor Plan Upload, and retailer confirmation.
+  Public legacy Upgrade and selected-item preview are separate P2 work.
+
 ## CH-0015E Share Link Fallback accessibility — 2026-08-10
 
 - **Source/scope:** exact integration source

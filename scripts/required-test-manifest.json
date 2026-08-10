@@ -715,6 +715,90 @@
       "ci": { "job": "stable-checks", "step": "Run required cart overlay accessibility matrix" }
     },
     {
+      "id": "ci.guest-save-overlay-accessibility",
+      "invariant": "The Guest Save Prompt owns one typed, generation-bound modal lifecycle across Save, AI layout, and Shopify checkout, separating explicit continuation from cancellation and restoring current semantic focus across desktop, narrow, scope, auth, and supersession paths in Chromium and WebKit.",
+      "cadence": "merge-required",
+      "blocking": true,
+      "command": "npm run test:guest-save-overlay-accessibility-required",
+      "packageScript": "test:guest-save-overlay-accessibility-required",
+      "packageClosure": { "expectedScriptCount": 2, "expectedSha256": "c39ee6ba1530d042c500662969f56b81b728ee7f4b6d644dc5420db54d3b254e" },
+      "packagePrerequisites": ["test:guest-save-overlay-static"],
+      "requiredEnvironment": {
+        "APP_ENV": "development",
+        "PLAYWRIGHT_USE_PRODUCTION_SERVER": "1"
+      },
+      "runner": "playwright",
+      "requiredSources": [
+        "scripts/test-guest-save-overlay-static.tsx",
+        "scripts/build-guest-save-overlay-browser-fixture.mjs",
+        "scripts/guest-save-overlay-ts-loader.mjs",
+        "tests/required/guest-save-overlay-accessibility.spec.ts",
+        "tests/required/fixtures/guest-save-checkout-harness.tsx",
+        "playwright.guest-save-overlay.config.ts"
+      ],
+      "requiredTests": [
+        {
+          "id": "guest-save.save-pointer-lifecycle",
+          "file": "tests/required/guest-save-overlay-accessibility.spec.ts",
+          "title": "Save pointer lifecycle owns semantics, containment, cancellation, return, and reopen"
+        },
+        {
+          "id": "guest-save.save-keyboard-lifecycle",
+          "file": "tests/required/guest-save-overlay-accessibility.spec.ts",
+          "title": "Save keyboard lifecycle returns across responsive remount and blocks duplicate primary activation"
+        },
+        {
+          "id": "guest-save.ai-pointer-lifecycle",
+          "file": "tests/required/guest-save-overlay-accessibility.spec.ts",
+          "title": "AI pointer lifecycle cancels every generic dismissal without starting generation"
+        },
+        {
+          "id": "guest-save.ai-keyboard-fallback",
+          "file": "tests/required/guest-save-overlay-accessibility.spec.ts",
+          "title": "AI keyboard lifecycle rejects a removed opener and restores the workflow fallback"
+        },
+        {
+          "id": "guest-save.checkout-pointer-lifecycle",
+          "file": "tests/required/guest-save-overlay-accessibility.spec.ts",
+          "title": "Checkout pointer lifecycle cancels without request or navigation and continues once"
+        },
+        {
+          "id": "guest-save.checkout-keyboard-scope",
+          "file": "tests/required/guest-save-overlay-accessibility.spec.ts",
+          "title": "Checkout keyboard lifecycle uses semantic fallback with no cancelled request"
+        },
+        {
+          "id": "guest-save.topmost-supersession",
+          "file": "tests/required/guest-save-overlay-accessibility.spec.ts",
+          "title": "A newer registered modal owns topmost dismissal before the Guest Save Prompt"
+        },
+        {
+          "id": "guest-save.mobile-authenticated-policy",
+          "file": "tests/required/guest-save-overlay-accessibility.spec.ts",
+          "title": "Guest mobile geometry contains every reason and authenticated Pro bypass remains unchanged"
+        }
+      ],
+      "requiredProjects": ["chromium", "webkit"],
+      "allowSkips": false,
+      "allowRetries": false,
+      "allowAnnotations": false,
+      "reportType": "required-test-evidence",
+      "reportPath": ".local/required-test-evidence/ci.guest-save-overlay-accessibility/evidence.json",
+      "maxAgeMinutes": 240,
+      "artifactBinding": "none",
+      "playwright": {
+        "config": "playwright.guest-save-overlay.config.ts",
+        "testRoot": "tests/required",
+        "args": ["playwright", "test", "--config=playwright.guest-save-overlay.config.ts"],
+        "exactConfigOnly": true
+      },
+      "ci": {
+        "job": "stable-checks",
+        "step": "Run required Guest Save Prompt accessibility matrix",
+        "afterSteps": ["Build strict production-equivalent artifact evidence"]
+      }
+    },
+    {
       "id": "ci.my-designs-overlay-accessibility",
       "invariant": "My Designs owns one modal parent lifecycle while its nested single and bulk delete confirmation exclusively owns the topmost dialog, conceals the mounted parent, invokes each mutation once, and restores focus by current semantic identity across Consumer, Pro, responsive, replacement, failure, supersession, and unmount paths in Chromium and WebKit.",
       "cadence": "merge-required",

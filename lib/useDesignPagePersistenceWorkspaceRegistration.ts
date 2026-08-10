@@ -13,6 +13,23 @@ export type UseDesignPagePersistenceWorkspaceRegistrationInput = {
   };
 };
 
+export function createGuestPromptScopeKey(
+  coreShell: DesignPageCoreShellRegistration
+) {
+  const base = coreShell.boundaries.base;
+  return [
+    base.derived.navigation.pathname,
+    base.derived.navigation.searchParams.get("designId") ?? "local",
+    base.state.identity.designId ?? "local",
+    base.derived.navigation.urlWorkspace ?? "default",
+    base.state.brief.mode,
+    base.state.access.plan,
+    coreShell.derived.access.isDesigner ? "designer" : "consumer",
+    coreShell.derived.access.isClientPreview ? "preview" : "editing",
+    base.state.identity.session?.user ? "authenticated" : "guest",
+  ].join("|");
+}
+
 /**
  * Adapts the established shell, document, and authoring contracts to the
  * persistence/new-plan lifecycle without moving ownership into the workspace.
@@ -20,8 +37,7 @@ export type UseDesignPagePersistenceWorkspaceRegistrationInput = {
 export function useDesignPagePersistenceWorkspaceRegistration({
   boundaries: { coreShell, documentSelection, planAuthoring },
 }: UseDesignPagePersistenceWorkspaceRegistrationInput) {
-  const base = coreShell.boundaries.base;
-  const viewportShell = coreShell.boundaries.viewportShell;
+  const { base, viewportShell } = coreShell.boundaries;
   const { snapshotDocument, documentRoom } = documentSelection.boundaries;
   const underlay = planAuthoring.boundaries.underlay;
 
@@ -31,6 +47,7 @@ export function useDesignPagePersistenceWorkspaceRegistration({
       identity: {
         designId: base.state.identity.designId,
         shareEnabled: base.state.identity.shareEnabled,
+        guestPromptScopeKey: createGuestPromptScopeKey(coreShell),
       },
       document: {
         savedViews: viewportShell.state.camera.savedViews,

@@ -8,6 +8,7 @@ import { signIn, signOut } from "next-auth/react";
 import { CLIENT_PREVIEW_COMMAND_BAR_ID, CLIENT_PREVIEW_FALLBACK_ACTION_ID, guardHiddenCommandAction } from "@/lib/useClientPreviewCommandBarFocus";
 import { PLANS_ACCOUNT_OPENER_ID } from "@/lib/plans-dialog-focus";
 import { MY_DESIGNS_COMMAND_ACTION_ID } from "@/lib/my-designs-command-focus";
+import { GUEST_PROMPT_WORKFLOW_FALLBACK_ID, GUEST_SAVE_OPENER_ID } from "@/lib/guest-save-prompt";
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 type EditorMode = "design" | "adjust" | "ai" | "buy" | "present";
 export type EditorSaveStatus = {
@@ -322,7 +323,7 @@ export default function EditorCommandBar({
         </div>
 
         <div ref={workspaceRef} className="relative shrink-0">
-          <button
+          <button id={GUEST_PROMPT_WORKFLOW_FALLBACK_ID}
             type="button"
             data-testid="editor-command-workspace"
             aria-label={`Workspace: ${activeWorkflowStep.label}`}
@@ -490,8 +491,7 @@ export default function EditorCommandBar({
             </button>
           ) : null}
         </div>
-
-        <button
+        <button id={GUEST_SAVE_OPENER_ID}
           type="button"
           data-testid="save-design"
           className={
@@ -504,7 +504,6 @@ export default function EditorCommandBar({
         >
           {isSaving ? "Saving..." : "Save"}
         </button>
-
         <div ref={overflowRef} className="relative shrink-0">
           <button
             ref={moreButtonRef}

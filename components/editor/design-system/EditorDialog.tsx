@@ -26,6 +26,7 @@ export type EditorDialogProps = {
   dialogId?: string;
   closeButtonTestId?: string;
   closeButtonId?: string;
+  closeButtonClassName?: string;
   closeButtonRef?: { current: HTMLButtonElement | null };
   initialFocusRef?: { current: HTMLElement | null };
   returnFocusId?: string;
@@ -78,7 +79,7 @@ export function EditorDialog({
   dark = false,
   forceLight = false,
   testId, dialogId,
-  closeButtonTestId, closeButtonId,
+  closeButtonTestId, closeButtonId, closeButtonClassName = "",
   closeButtonRef: providedCloseButtonRef,
   initialFocusRef,
   returnFocusId, returnFocusIds, manageBackground = false,
@@ -157,7 +158,7 @@ export function EditorDialog({
               aria-label={closeLabel}
               data-testid={closeButtonTestId}
               disabled={closeDisabled}
-              className={`inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-lg text-xl font-semibold outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 ${themeClasses.close}`}
+              className={`inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-lg text-xl font-semibold outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 ${themeClasses.close} ${closeButtonClassName}`}
               onClick={requestClose}
             >
               <span aria-hidden="true">×</span>

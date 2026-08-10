@@ -1,5 +1,45 @@
 # Code health audit
 
+## CH-0015F accessible Guest Save Prompt lifecycle — 2026-08-10
+
+Starting from exact integration source
+`d649708ba31eb9d8ede183dea6d6268c9dd1aca3` / tree
+`a34e6a5831c0e7b40649895a7cc3e3f18b07fec4`, this bounded batch classifies the
+Guest Save Prompt as a **MODAL_DIALOG** across exactly Save, AI layout, and
+Shopify checkout. The defect combined missing modal semantics and topmost
+ownership with a string/raw-callback state model whose reason was reduced to a
+Boolean before rendering. Focus remained on an obscured opener and stale or
+duplicate continuation ownership was not generation- or scope-bound.
+
+The prompt now uses `EditorDialog` with one named modal, visible initial close
+focus, deterministic containment, topmost Escape/backdrop, background
+inertness/accessibility concealment, and current semantic return. Typed reason
+`save | ai-layout | checkout` binds one in-memory continuation to one
+generation and route/design/workspace/mode/auth scope. Only explicit Not now
+runs it, exactly once; Escape, backdrop, and close cancel it. Primary action
+retains guest claim then sign-in, while AI's no-op guest continuation and the
+checkout closure retain existing domain behavior. Save returns to Save then
+More; AI and checkout return to their current action then Workspace. Invalid,
+removed, hidden, inert, disabled, obscured, or superseded targets are skipped.
+
+New merge-required `ci.guest-save-overlay-accessibility` passes **16/16**
+across Chromium/WebKit with zero retries/skips/flakes/filters/shards and owns
+all three reasons, desktop/390x844, continuation/cancellation, semantic return,
+scope/auth/unmount, duplicate guards, and newer-dialog isolation. Static
+ownership raises design cleanup to 80/80. Derived inventory is 25 gates / 376
+sources. Strict build remains 57/57 and the measured Phase 8 bundle remains 25
+initial JS chunks plus one CSS chunk: JS `+3,891 / +1,059` raw/Brotli, CSS
+`+303 / +13`, unchanged Cabinetry/GLTF lazy chunks, and all budgets green.
+
+Save/local/cloud/autosave/revision ownership, AI request/planner/quota/result,
+cart/variant/quantity/price/purchase-mode/Shopify/affiliate behavior,
+authentication and guest-quota policy, API/schema, and unrelated overlays are
+unchanged. This is a partial CH-0015 remediation: Command Palette, Floor Plan
+Upload, and retailer confirmation remain required; public legacy Upgrade and
+selected-item preview remain P2. Rollback is one focused revert followed by
+the Guest Save owners, domain guards, Phase 8, and strict build, with no data,
+schema, dependency, policy, deployment, or external rollback.
+
 ## CH-0015E accessible Share Link Fallback lifecycle — 2026-08-10
 
 Starting from exact integration source

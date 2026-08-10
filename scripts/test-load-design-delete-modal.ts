@@ -153,7 +153,14 @@ const dialogModel = buildDesignPageDialogLayerModel({
     plansActions: {},
   },
   persistence: {
-    guestSave: { open: false, onNotNow: noop, onSaveAndContinue: noop },
+    guestSave: {
+      reason: null,
+      busy: false,
+      lifecycleScopeKey: "load-design-test",
+      onCancel: noop,
+      onContinueWithoutSaving: noop,
+      onSaveAndContinue: noop,
+    },
     myDesigns: {
       data: {
         open: true,

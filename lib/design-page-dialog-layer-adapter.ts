@@ -12,7 +12,7 @@ export type BuildDesignPageDialogLayerAdapterInput = {
   state: {
     isClientPreview: boolean;
     upgradeOpen: boolean;
-    guestSaveOpen: boolean;
+    guestSaveReason: GuestSaveDialog["reason"];
   };
   dialogs: Omit<
     DesignPageDialogLayerDialogs,
@@ -22,7 +22,7 @@ export type BuildDesignPageDialogLayerAdapterInput = {
       state: Omit<UpgradeDialog["state"], "open">;
       actions: UpgradeDialog["actions"];
     };
-    guestSave: Omit<GuestSaveDialog, "open">;
+    guestSave: Omit<GuestSaveDialog, "reason">;
     presentExport: PresentExportDialog;
   };
   overlays: DesignPageDialogLayerOverlays;
@@ -47,7 +47,7 @@ export function buildDesignPageDialogLayerAdapter({
       },
       guestSave: {
         ...dialogs.guestSave,
-        open: state.guestSaveOpen && !isClientPreview,
+        reason: isClientPreview ? null : state.guestSaveReason,
       },
       plans: dialogs.plans,
       aiNotes: dialogs.aiNotes,

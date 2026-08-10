@@ -1,5 +1,90 @@
 # Code health audit handoff
 
+## CH-0015F accessible Guest Save Prompt handoff — 2026-08-10
+
+Branch `fix/ch-0015-guest-save-prompt-accessibility` starts exactly at
+integration SHA `d649708ba31eb9d8ede183dea6d6268c9dd1aca3`, tree
+`a34e6a5831c0e7b40649895a7cc3e3f18b07fec4`. Entry worktree/index/untracked/
+tracked-ignored/diff checks were clean; Node was `v24.13.0`, npm `11.6.2`, and
+`integration/deep-clean-v1` plus origin were synchronized at that source. No
+Git operation or repository-owned app/browser/test/benchmark/Prisma/database
+process was active. Every later port-3000 listener was verified in the
+canonical `/Users/justus/Developer/interior-ai` checkout and stopped after its
+gate. The integration branch was not modified.
+
+The defect is a **MODAL_DIALOG lifecycle and continuation-ownership failure**.
+The prompt's arbitrary reason/raw callback survived only in persistence and
+was reduced to a Boolean before rendering. Save, AI Generate, and Checkout
+focus stayed on the obscured opener. The custom shell had no role/name/modal
+state, registered topmost owner, initial focus, containment, Escape/backdrop/
+close contract, background inertness/tree isolation, or semantic return.
+
+`GuestPromptReason` is now exactly `save | ai-layout | checkout`. One in-memory
+controller binds reason, callback, generation, and a route/requested+actual
+design/workspace/mode/preview/plan/auth scope. It consumes and clears before
+execution or cancellation; reopen supersedes; scope/auth/unmount and a newer
+session retire stale work. Explicit Not now alone runs the current continuation
+exactly once. Escape, backdrop, and close cancel with zero continuation. Save
+and continue preserves guest claim then sign-in and does not execute the stored
+callback. A ref-backed checkout single-flight guard prevents duplicate
+activation without moving eligibility, payload, analytics, URL, or navigation
+ownership.
+
+The prompt now composes `EditorDialog`, is absent while closed, and while open
+is the single named modal with visible close initial focus, deterministic
+Tab/Shift+Tab, topmost Escape/backdrop, and inert/`aria-hidden` background.
+Return order is Save: current Save → More; AI: current Generate → Workspace;
+and checkout: current Checkout → Workspace. Shared resolution rejects hidden,
+inert, disabled, disconnected, obscured, or superseded targets and accepts a
+responsive replacement only through the same stable semantic ID.
+
+Save remains an authenticated direct cloud save and a guest `save` prompt with
+the existing no-op Not-now callback. Guest AI still cancels its old request
+epoch, opens `ai-layout`, starts no request, and continues with the existing
+no-op behavior; authenticated catalog fallback/request behavior is unchanged.
+Guest checkout still captures the actual existing checkout closure before any
+request/navigation. The public catalog has zero Shopify mappings, so the
+visible action remains disabled and its no-variant behavior is unchanged. A
+test-only browser bundle mounts the actual CartSidebar/controller/dialog with
+an in-memory eligible Shopify catalog object, then normal click/Enter reaches
+the real handler, exact request body, URL construction, and a safe same-origin
+synthetic navigation. It adds no production eligibility seam. AI, checkout,
+and auth boundaries remain synthetic; no paid model or merchant is contacted.
+
+New sole required owner `ci.guest-save-overlay-accessibility` runs eight stable
+tests once per engine against the strict artifact: **Chromium 8/8 + WebKit
+8/8**, zero retries/skips/flakes/filters/shards/timeout changes, with exact
+report/process validation. It covers all three reasons, pointer/keyboard,
+cancel/continue/primary duplicate handling, semantic replacement/removal,
+scope/auth/unmount, newer-dialog topmost ownership, Consumer guest and
+authenticated Pro behavior, desktop/390x844, focus ring, background isolation,
+overflow, and duplicate IDs. Stable checks run it after strict build. The
+derived manifest is **25 gates / 376 classified sources**; package closure is
+2 scripts / SHA-256
+`c39ee6ba1530d042c500662969f56b81b728ee7f4b6d644dc5420db54d3b254e`.
+
+Focused static/domain tests, direct manifest validation, truthfulness,
+typecheck, full code-quality, zero-warning lint, production-artifact contract,
+critical-required, 80/80 design cleanup, canonical Pro 26/26, My Designs 16/16,
+cart 16/16, public-share 8/8, and the strict 57/57 build pass. Complete Phase 8
+passes from the final clean implementation source with its raw evidence hash
+reported in the task handoff. Full E2E was intentionally not run.
+
+Against CH-0015E, `/design` remains 25 initial JS chunks and one CSS chunk.
+Initial JavaScript changes 5,830,782 / 1,113,525 raw/Brotli → 5,834,673 /
+1,114,584 (`+3,891 / +1,059`); CSS changes 131,607 / 17,493 → 131,910 /
+17,506 (`+303 / +13`). Cabinetry Studio and GLTFExporter remain 492,639 /
+84,899 and 34,525 / 8,970. Every bundle boundary is green; Guest Save remains
+in the existing initial graph with no dedicated lazy chunk.
+
+CH-0015 remains open for exactly three required batches: Command Palette,
+Floor Plan Upload, and retailer confirmation. Public legacy Upgrade and the
+selected-item preview transition remain separate P2 work. Rollback is one
+local revert of the focused implementation commit, then Guest Save static and
+required owners, Save/AI/checkout guards, Phase 8, and strict build. No data,
+schema, dependency, auth/quota policy, deployment, integration-branch, or
+external-service rollback is required.
+
 ## CH-0015E Phase 8 benchmark-observability blocker — 2026-08-10
 
 The original retained CH-0015E Phase 8 failure remains large

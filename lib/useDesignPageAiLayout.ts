@@ -24,6 +24,7 @@ import {
 import { pickBestRugForSofa } from "@/lib/design-page-rug-sizing";
 import type { LayoutPlan } from "@/lib/design-page-types";
 import type { FloorPlanAiPlanningContext } from "@/lib/floor-plan-quality";
+import type { GuestPromptReason } from "@/lib/guest-save-prompt";
 import type { DesignItem, RoomType } from "@/lib/room-types";
 
 type AiLayoutItemsUpdater =
@@ -42,7 +43,7 @@ export type UseDesignPageAiLayoutParams = {
     clearAllSelection: () => void;
     setEditorMode: (mode: "ai") => void;
     setDesignPanelOpen: (open: boolean) => void;
-    openGuestPrompt: (reason: string, onContinue: () => void) => void;
+    openGuestPrompt: (reason: GuestPromptReason, onContinue: () => void) => void;
     showRuleToast: (message: string) => void;
   };
   configuration: {
@@ -215,10 +216,9 @@ export function useDesignPageAiLayout({
       requestRef.current = null;
       const requestEpoch = ++requestEpochRef.current;
       if (!isAuthenticated) {
-        openGuestPrompt("ai_layout", () => {});
+        openGuestPrompt("ai-layout", () => {});
         return;
       }
-
       const seedToUse = nextSeed ?? seed;
       if (nextSeed !== undefined) {
         setSeed(nextSeed);
@@ -259,7 +259,6 @@ export function useDesignPageAiLayout({
         });
         return;
       }
-
       const requiredCategoryCounts = getRequiredAiLayoutCatalogCounts(catalog);
       if (!requiredCategoryCounts.sofa || !requiredCategoryCounts.coffee_table) {
         const reasons: string[] = [];

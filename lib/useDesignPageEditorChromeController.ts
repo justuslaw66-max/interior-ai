@@ -9,6 +9,7 @@ import type {
   DesignPageEditorChromeState,
 } from "@/components/editor/design-page/DesignPageEditorChrome";
 import type { DesignPageEditorMode } from "@/lib/useDesignPagePanelMode";
+import type { GuestPromptReason } from "@/lib/guest-save-prompt";
 
 type CommandBarActions = DesignPageEditorChromeActions["commandBar"]["commandBar"];
 type RoomActions = DesignPageEditorChromeActions["commandBar"]["room"];
@@ -68,7 +69,10 @@ export type UseDesignPageEditorChromeControllerInput = {
       toggleMyDesigns: CommandBarActions["onToggleLoadDesign"];
       saveDesignToCloud: () => Promise<string | null | undefined>;
       retrySaveStatus: CommandBarActions["onRetrySaveStatus"];
-      openGuestPrompt: (reason: string, onContinue: () => void) => void;
+      openGuestPrompt: (
+        reason: GuestPromptReason,
+        onContinue: () => void
+      ) => void;
     };
     cabinetry: {
       openStudio: () => void;

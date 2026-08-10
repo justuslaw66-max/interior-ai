@@ -1,11 +1,11 @@
 # Required-test truthfulness
 
-Status: **CH-0015D MY DESIGNS CONTRACT REGISTERED — LOCAL CONTRACT GREEN;
+Status: **CH-0015F GUEST SAVE PROMPT CONTRACT REGISTERED — LOCAL CONTRACT GREEN;
 EXTERNAL RULESET ENFORCEMENT UNVERIFIED**. Repository truthfulness assigns the
-My Designs parent/nested-delete lifecycle to its focused merge-required
-Chromium/WebKit owner, retains Client Preview and Plans under Pro visual, and
-retains the Selection Tray, CH-0013 surface-material, responsive, advisory Full
-E2E, and release Gate A3 owners.
+Guest Save, AI-layout, and checkout prompt lifecycle to one focused
+merge-required Chromium/WebKit owner; it retains My Designs, Client Preview,
+Plans, Selection Tray, CH-0013 surface-material, responsive, advisory Full E2E,
+and release Gate A3 ownership without duplication.
 GitHub ruleset selection and an exact-head workflow run remain external
 evidence; repository registration does not claim either control is configured.
 
@@ -46,7 +46,7 @@ Repository-controlled cadence is explicit:
   conclusion and dishonest evidence remain visible and are never accepted as
   release certification.
 
-The 24-gate inventory includes the required Git-history secret scan, code
+The 25-gate inventory includes the required Git-history secret scan, code
 quality, CH-0016 artifact-contract and runtime smoke, authorization/security,
 database migration process, persistence, Stripe, Phase 14/15, Consumer/Pro
 capability boundaries, cabinetry unit/accessibility/performance and release
@@ -54,12 +54,46 @@ evidence, design guards, typecheck, zero-warning lint, the complete floor-plan
 umbrella (including live progress), catalog/materials, asset availability,
 Chromium/WebKit Pro visual policy, the Chromium/WebKit responsive public-share
 gate, the Chromium/WebKit Selection Tray lifecycle gate, the Chromium/WebKit My
-Designs parent/nested-delete lifecycle gate, and final merge-result
-aggregation. Gate A3 discovers all 101 current
+Designs parent/nested-delete lifecycle gate, the Guest Save Prompt lifecycle
+gate, and final merge-result aggregation. Gate A3 discovers all 101 current
 browser specs and separately locks the six repaired
 commerce/Kelsey requirement identities; cabinetry release evidence owns 23
 named Consumer/Pro workflows. CH-0016 runtime smoke locks its two runtime
 requirement identities.
+
+## CH-0015F canonical Guest Save Prompt owner
+
+`ci.guest-save-overlay-accessibility` is the sole merge-required browser owner
+for `tests/required/guest-save-overlay-accessibility.spec.ts` and
+`playwright.guest-save-overlay.config.ts`. Its prerequisite
+`scripts/test-guest-save-overlay-static.tsx` remains registered in
+`ci.design-cleanup` and renders closed/open semantics, proves typed reason
+preservation and generation/scope/exact-once consumption, locks the three
+semantic openers, and retains the existing Save, AI, and checkout call sites.
+
+Eight stable identities execute once in Chromium and WebKit against the strict
+production artifact: **16/16**, zero retry, skip, annotation, flake, grep,
+inverse-grep, filter, shard, `.only`, or timeout increase. The matrix covers
+Save/AI/checkout pointer and keyboard paths, one modal/name/initial focus,
+Tab/Shift+Tab, parent inert/hidden ownership, Escape/backdrop/close zero
+continuation, explicit Not now exact once, primary duplicate guard,
+reason-specific return, responsive remount, opener removal/fallback,
+route/design/workspace/mode/auth/unmount invalidation, newer-dialog
+supersession, reopen, Consumer guest and authenticated Pro parity, desktop and
+390x844 containment, focus ring, overflow, and duplicate IDs. AI and checkout
+network boundaries are synthetic and no model or merchant is contacted.
+
+The runnable spec stays under the gate-declared `tests/required` root, outside
+advisory Full E2E and release Gate A3 discovery. Exact config, report,
+process-exit, project, stable-ID, source, prerequisite, and nonzero-discovery
+validation fails closed. Stable checks invoke the gate after the strict build;
+merge-gate still consumes stable-checks. Canonical package closure is 2 scripts
+with SHA-256
+`c39ee6ba1530d042c500662969f56b81b728ee7f4b6d644dc5420db54d3b254e`.
+Derived inventory advances from 24 to **25 gates** and remains **376 classified
+sources** because the new focused TSX/spec/config are explicitly owned rather
+than part of broad discovery. External GitHub ruleset enforcement and an
+exact-head hosted run remain unverified.
 
 ## CH-0015D canonical My Designs owner
 
