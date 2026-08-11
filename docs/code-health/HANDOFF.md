@@ -1,5 +1,48 @@
 # Code health audit handoff
 
+## CH-0015H test-contract hardening handoff — 2026-08-12
+
+This child begins at `ee55098be7c750e8fa2a631978f3d4ebd956708c` /
+tree `e6162ead7031eb41cbba23b3ac56f5873cfe0f92` on
+`fix/ch-0015h-pro-visual-integration-blockers`. Entry index, tracked changes,
+untracked files, tracked-ignored changes, diff checks, and port 3000 were clean;
+the only listener observed was the unrelated Homebrew PostgreSQL process.
+
+Scope is limited to Pro Visual test evidence, its static contract, required-test
+classification, and records. Palette now proves one existing production
+transaction with snapshot fingerprints `F0`, `F1 != F0`, one Undo, `F2 == F0`,
+and disabled Undo after restoration. Browser coverage requires Palette absence
+after activation; the production executor contract separately proves
+synchronous consumption/closure before run and duplicate rejection. No
+mutation-delivery callback is treated as historical ordering evidence. No QA
+layout overlay or `debug_layout` mode participates.
+
+Client Preview now has a reusable test-only, 64-event semantic recorder for
+More `focusin`/`focusout`. It records A entry, B Preview active, C exit request,
+D settled command bar, and E post-exit restoration, with restoration and dialog
+generation, hashed requested-design/mode/plan scope, opener/fallback eligibility,
+inert/hidden/disabled state, geometry, visual availability, and animation
+settlement. The responsive scope-cancellation case asserts zero invalid More
+focus events rather than zero raw events. The permitted exception is only the
+current semantic More opener or More fallback after phase E; the recorder owns
+no focus, timeout, frame, or mutation behavior.
+
+This is test hardening, not a product fix. The original WebKit classification
+remains **D — NOT_REPRODUCED_WITH_PROVENANCE**. Original evidence/report hashes
+are `018afa76c7bc69104c879440f6d69801ddef9b238c713509f551f9f1a5095223` /
+`fd35b65201f0583a1b8e86de8df08d3520cf9ab8f833273af4829d61d00b339c`;
+diagnostic focus/report hashes are
+`e997098141ddf0828d69d67a09252cb0b79304a5751231d86e7a3c28ade0d2c5` /
+`e524a7e6cb7601f1858d06ac4dbceab1603689d15e02044f4351735465e5c9d2`.
+The complete instrumented WebKit project reproduced no in-window More focus
+event. The historical event remains semantically unclassifiable because its
+original trace/report was unavailable; future invalid events now retain phase
+and semantic state for direct classification.
+Production focus behavior, Palette behavior, command ordering/filtering,
+capability policy, Floor Plan Upload, dependencies, thresholds, and workflows
+are unchanged. Rollback is one focused child revert followed by the affected
+static, Pro Visual, shared-dialog, truthfulness, Phase 8, and strict-build gates.
+
 ## CH-0015H accessible Command Palette handoff — 2026-08-11
 
 Branch `fix/ch-0015-command-palette-accessibility` starts exactly at

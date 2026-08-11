@@ -1,5 +1,30 @@
 # Code health audit
 
+## CH-0015H test-contract hardening — 2026-08-12
+
+Starting from `ee55098be7c750e8fa2a631978f3d4ebd956708c` / tree
+`e6162ead7031eb41cbba23b3ac56f5873cfe0f92`, this child changes no production
+module. Palette exact-once evidence now uses the production-rendered snapshot
+fingerprint, one existing command, and one Undo to prove `F0 -> F1 -> F0` with
+no extra transaction. Client Preview scope cancellation now uses a bounded
+test-only semantic A–E recorder and fails on invalid More focus based on
+generation, scope, dialog ownership, fallback eligibility, concealment,
+geometry, visual state, and animation settlement.
+
+The original WebKit classification remains **D —
+NOT_REPRODUCED_WITH_PROVENANCE**, with original evidence/report SHA-256
+`018afa76c7bc69104c879440f6d69801ddef9b238c713509f551f9f1a5095223` /
+`fd35b65201f0583a1b8e86de8df08d3520cf9ab8f833273af4829d61d00b339c`
+and diagnostic focus/report SHA-256
+`e997098141ddf0828d69d67a09252cb0b79304a5751231d86e7a3c28ade0d2c5` /
+`e524a7e6cb7601f1858d06ac4dbceab1603689d15e02044f4351735465e5c9d2`.
+The complete instrumented WebKit project reproduced no in-window More focus
+event, while the unavailable original trace/report prevents semantic
+classification of the historical event. Future invalid events retain enough
+phase and semantic state to classify directly. No product root cause or fix is
+claimed. Production focus and Palette behavior, command policy, Floor Plan
+Upload, dependencies, performance thresholds, and workflows are unchanged.
+
 ## CH-0015H accessible Command Palette lifecycle — 2026-08-11
 
 Starting from exact integration source

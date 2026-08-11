@@ -1,5 +1,41 @@
 # Required-test truthfulness
 
+## CH-0015H bounded contract correction — 2026-08-12
+
+The CH-0015H child above
+`ee55098be7c750e8fa2a631978f3d4ebd956708c` replaces two weak assertions
+without changing the 18 stable Pro Visual identities, Chromium/WebKit project
+ownership, one-script package closure, retries, timeouts, filters, shards,
+cadence, Full E2E, or Gate A3. `ci.pro-visual-policy` now classifies the
+test-only semantic focus recorder as a required supporting source; gate count
+remains 26, classified inventory remains 376 sources, and package closure
+remains 1 script / SHA-256
+`e405cb73f95c111fb19dd7bbb4886c760841f8a08afcf0ba5bdb7e99482e3fa3`.
+
+The Palette pointer identity proves `F0 -> F1 -> F0` through the
+production-rendered snapshot fingerprint and one production Undo, requires no
+remaining Undo transaction, and requires the Palette to be absent after action
+activation. The executor contract independently proves synchronous
+consume/close before run and duplicate rejection; mutation-delivery timing is
+not used as ordering evidence. The test no longer enables `debug_layout` or
+reads the QA layout overlay. The responsive Client Preview identity replaces
+its raw More focus count with a fixed-capacity A–E semantic event record,
+positively classifies a current post-exit More restoration, and fails on any
+invalid More `focusin`.
+
+The original WebKit classification is unchanged: **D —
+NOT_REPRODUCED_WITH_PROVENANCE**. Original evidence/report SHA-256 values are
+`018afa76c7bc69104c879440f6d69801ddef9b238c713509f551f9f1a5095223` /
+`fd35b65201f0583a1b8e86de8df08d3520cf9ab8f833273af4829d61d00b339c`;
+the bounded diagnostic focus/report values are
+`e997098141ddf0828d69d67a09252cb0b79304a5751231d86e7a3c28ade0d2c5` /
+`e524a7e6cb7601f1858d06ac4dbceab1603689d15e02044f4351735465e5c9d2`.
+The complete instrumented WebKit project reproduced no in-window More focus
+event. The historical event cannot be classified semantically because its
+original trace/report was unavailable; no product root cause is asserted. Any
+future invalid event now retains phase and semantic evidence for direct
+classification.
+
 Status: **CH-0015H COMMAND PALETTE CONTRACT REGISTERED — LOCAL CONTRACT GREEN;
 EXTERNAL RULESET ENFORCEMENT UNVERIFIED**. Repository truthfulness assigns the
 Command Palette lifecycle to the existing Pro visual merge-required

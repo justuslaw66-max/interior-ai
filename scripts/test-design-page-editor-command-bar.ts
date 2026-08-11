@@ -97,6 +97,25 @@ assert.ok(
 const commandPaletteSessionSource = fs.existsSync(commandPaletteSessionPath)
   ? fs.readFileSync(commandPaletteSessionPath, "utf8")
   : "";
+const proVisualPolicySource = fs.readFileSync(
+  path.join(root, "tests", "e2e", "pro-visual-policy.spec.ts"),
+  "utf8"
+);
+const clientPreviewFocusRecorderPath = path.join(
+  root,
+  "tests",
+  "e2e",
+  "client-preview-focus-recorder.ts"
+);
+assert.ok(
+  fs.existsSync(clientPreviewFocusRecorderPath),
+  "Client Preview should retain one bounded test-only semantic focus recorder."
+);
+const clientPreviewFocusRecorderSource = fs.existsSync(
+  clientPreviewFocusRecorderPath
+)
+  ? fs.readFileSync(clientPreviewFocusRecorderPath, "utf8")
+  : "";
 const dialogRegistrySource = fs.readFileSync(
   path.join(
     root,
@@ -453,6 +472,76 @@ assert.equal(
   false
 );
 assert.deepEqual(executionLog, ["palette-closed", "action-dialog-opened"]);
+assert.doesNotMatch(
+  proVisualPolicySource,
+  /debug_layout=1|qa-design-layout-debug-overlay/,
+  "Palette exact-once coverage must not enable or read the QA layout overlay."
+);
+assert.match(
+  proVisualPolicySource,
+  /const F0 = await readEditorSnapshotFingerprint[\s\S]*?getByTestId\("editor-command-palette"\)\)\.toHaveCount\(0\)[\s\S]*?const F1 = await readEditorSnapshotFingerprint[\s\S]*?expect\(F1\)\.not\.toBe\(F0\)[\s\S]*?await undo\.click\(\)[\s\S]*?const F2 = await readEditorSnapshotFingerprint[\s\S]*?expect\(F2\)\.toBe\(F0\)[\s\S]*?await expect\(undo\)\.toBeDisabled\(\)/,
+  "Palette pointer coverage should prove one production fingerprint transition, one Undo restoration, and no remaining transaction."
+);
+assert.doesNotMatch(
+  proVisualPolicySource,
+  /clientPreviewStaleMoreFocusCount/,
+  "Client Preview scope-cancellation coverage must not use a raw More focus count."
+);
+for (const phase of [
+  "A_ENTRY_TRANSITION",
+  "B_PREVIEW_ACTIVE",
+  "C_EXIT_REQUESTED",
+  "D_EXIT_SETTLING",
+  "E_POST_EXIT_RESTORATION",
+] as const) {
+  assert.match(
+    clientPreviewFocusRecorderSource,
+    new RegExp(`\\b${phase}\\b`),
+    `The semantic focus recorder should retain ${phase}.`
+  );
+}
+for (const invalidReason of [
+  "entry-transition-not-concealed",
+  "preview-active",
+  "exit-not-semantically-settled",
+  "restoration-cancelled",
+  "stale-preview-scope",
+  "stale-restoration-generation",
+  "newer-dialog-generation",
+  "fallback-not-permitted",
+  "inert-target-or-ancestor",
+  "aria-hidden-target-or-ancestor",
+  "nonfinite-target-geometry",
+  "target-outside-viewport",
+  "pointer-blocked-target-or-ancestor",
+  "command-bar-animation-pending",
+] as const) {
+  assert.match(
+    clientPreviewFocusRecorderSource,
+    new RegExp(invalidReason),
+    `The semantic focus recorder should reject ${invalidReason}.`
+  );
+}
+assert.match(
+  clientPreviewFocusRecorderSource,
+  /const capacity = 64;[\s\S]*?addEventListener\("focusin", recordFocus\)[\s\S]*?addEventListener\("focusout", recordFocus\)/,
+  "The semantic focus recorder should retain a fixed-capacity bubble-phase focus event ledger."
+);
+assert.doesNotMatch(
+  clientPreviewFocusRecorderSource,
+  /setTimeout|requestAnimationFrame|MutationObserver|\.focus\(/,
+  "The semantic focus recorder should not own timing, observation, or focus behavior."
+);
+assert.match(
+  clientPreviewFocusRecorderSource,
+  /hashScope[\s\S]*?currentScopeHash[\s\S]*?entryScopeHash[\s\S]*?advanceExitPhaseIfSettled[\s\S]*?event\.type === "focusin"/,
+  "The semantic focus recorder should retain hashed scope and classify settlement at focus-event time."
+);
+assert.match(
+  proVisualPolicySource,
+  /installClientPreviewFocusRecorder[\s\S]*?restorationEligible: true[\s\S]*?requireValidMoreFocus: true[\s\S]*?restorationEligible: false/,
+  "The responsive Client Preview case should classify a valid current restoration before rejecting invalid scope-cancelled More focus."
+);
 assert.match(
   presentationQaFacadeSource,
   /commandPaletteScopeKey[\s\S]*?returnFocusIds: commandPalette\.state\.returnFocusIds[\s\S]*?onRunAction: commandPalette\.actions\.runAction/,

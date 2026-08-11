@@ -1,5 +1,26 @@
 # P0/P1 remediation queue
 
+## CH-0015H test-contract hardening — 2026-08-12
+
+- **Source/scope:** child of
+  `ee55098be7c750e8fa2a631978f3d4ebd956708c`; Pro Visual Palette and Client
+  Preview assertions, one test-only recorder, static guard, truthfulness, and
+  records only. Production focus, Palette actions, Floor Plan Upload,
+  dependencies, Phase 8 thresholds, and workflows are unchanged.
+- **Disposition:** `TEST CONTRACT HARDENED; PRODUCT CLASSIFICATION UNCHANGED`.
+  Palette owns a production `F0 -> F1 -> F0` exact-once/one-Undo proof and
+  Client Preview owns a fixed-capacity A–E semantic invalid-focus proof.
+- **Provenance:** original WebKit result remains **D —
+  NOT_REPRODUCED_WITH_PROVENANCE**. Original evidence/report hashes are
+  `018afa76c7bc69104c879440f6d69801ddef9b238c713509f551f9f1a5095223` /
+  `fd35b65201f0583a1b8e86de8df08d3520cf9ab8f833273af4829d61d00b339c`;
+  diagnostic focus/report hashes are
+  `e997098141ddf0828d69d67a09252cb0b79304a5751231d86e7a3c28ade0d2c5` /
+  `e524a7e6cb7601f1858d06ac4dbceab1603689d15e02044f4351735465e5c9d2`.
+  No product root cause or remediation is inferred.
+- **Queue status:** CH-0015 remains open only for Floor Plan Upload. This child
+  changes no production disposition.
+
 ## CH-0015H Command Palette accessibility — 2026-08-11
 
 - **Source/scope:** exact integration source

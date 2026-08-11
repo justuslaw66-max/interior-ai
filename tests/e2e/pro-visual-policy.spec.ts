@@ -1,5 +1,15 @@
 import { test, expect, type Locator, type Page } from "@playwright/test";
 import sharp from "sharp";
+import {
+  beginClientPreviewFocusWindow,
+  completeClientPreviewFocusWindow,
+  exitClientPreviewWithScopeChange,
+  installClientPreviewFocusRecorder,
+  markClientPreviewEntered,
+  markClientPreviewExitRequested,
+  stopClientPreviewFocusRecorder,
+  type ClientPreviewFocusReport,
+} from "./client-preview-focus-recorder";
 
 const RECOMMENDED_CABINET_TEMPLATES = [
   "base",
@@ -772,6 +782,52 @@ const COMMAND_PALETTE_ACTION_IDS = [
   "preset-technical",
 ] as const;
 
+async function readEditorSnapshotFingerprint(page: Page): Promise<string> {
+  const marker = page.getByTestId("qa-editor-snapshot-fingerprint");
+  await expect(marker).toHaveAttribute("data-fingerprint", /[a-f0-9]{8}/);
+  const fingerprint = await marker.getAttribute("data-fingerprint");
+  if (!fingerprint) throw new Error("Editor snapshot fingerprint is missing");
+  return fingerprint;
+}
+
+function expectSemanticClientPreviewFocusContract(
+  report: ClientPreviewFocusReport,
+  options: {
+    exitReason: string;
+    restorationEligible: boolean;
+    requireValidMoreFocus?: boolean;
+  }
+) {
+  expect(report.capacity).toBe(64);
+  expect(report.dropped).toBe(0);
+  expect(report.exitReason).toBe(options.exitReason);
+  expect(report.restorationEligible).toBe(options.restorationEligible);
+  expect(report.transitions).toEqual([
+    "A_ENTRY_TRANSITION",
+    "B_PREVIEW_ACTIVE",
+    "C_EXIT_REQUESTED",
+    "D_EXIT_SETTLING",
+    "E_POST_EXIT_RESTORATION",
+  ]);
+  expect(report.finalPhase).toBe("E_POST_EXIT_RESTORATION");
+  const invalidFocusEvents = report.events.filter((event) => event.invalid);
+  expect(
+    invalidFocusEvents,
+    `Invalid More focus provenance: ${JSON.stringify(invalidFocusEvents)}`
+  ).toEqual([]);
+  for (const event of report.events.filter(
+    (candidate) => candidate.eventType === "focusin"
+  )) {
+    expect(event.phase).toBe("E_POST_EXIT_RESTORATION");
+    expect(event.invalidReasons).toEqual([]);
+  }
+  if (options.requireValidMoreFocus) {
+    expect(
+      report.events.filter((event) => event.eventType === "focusin")
+    ).not.toHaveLength(0);
+  }
+}
+
 async function prepareCommandPaletteEditor(
   page: Page,
   plan: "free" | "pro",
@@ -1232,9 +1288,7 @@ test.describe("Pro visual policy", () => {
   test("preserves editable suppression and pointer action exact-once close ordering", async ({
     page,
   }) => {
-    await prepareCommandPaletteEditor(page, "free", {
-      href: "/design?debug_layout=1",
-    });
+    await prepareCommandPaletteEditor(page, "free");
     for (const kind of ["input", "textarea", "contenteditable"] as const) {
       const editable = page.locator(`#palette-editable-${kind}`);
       await page.evaluate((editableKind) => {
@@ -1254,22 +1308,29 @@ test.describe("Pro visual policy", () => {
     }
 
     const workspace = page.getByTestId("editor-command-workspace");
-    const historyDebug = page.getByTestId("qa-design-layout-debug-overlay");
-    await expect(historyDebug).toBeVisible();
-    const historyText = await historyDebug.textContent();
-    const undoCount = Number(historyText?.match(/Undo: (\d+)/)?.[1]);
-    expect(Number.isFinite(undoCount)).toBe(true);
+    const fingerprint = page.getByTestId("qa-editor-snapshot-fingerprint");
+    const F0 = await readEditorSnapshotFingerprint(page);
     const palette = await openCommandPalette(page, "Meta+K", workspace);
     await palette.input.fill("insert default door");
     await page
       .getByTestId("editor-command-palette-action-insert-default-door")
       .click();
     await expect(page.getByTestId("editor-command-palette")).toHaveCount(0);
-    await expect(historyDebug).toContainText(`Undo: ${undoCount + 1}`);
-    await expect(page.getByTestId("command-undo")).toHaveAccessibleName(
-      "Undo Add door"
-    );
+    await expect(fingerprint).not.toHaveAttribute("data-fingerprint", F0);
+    const F1 = await readEditorSnapshotFingerprint(page);
+    expect(F1).not.toBe(F0);
+
+    const undo = page.getByTestId("command-undo");
+    await expect(undo).toHaveAccessibleName("Undo Add door");
     await expect(workspace).toBeFocused();
+    await undo.click();
+    await expect(fingerprint).toHaveAttribute("data-fingerprint", F0);
+    const F2 = await readEditorSnapshotFingerprint(page);
+    expect(F2).toBe(F0);
+    await expect(undo).toBeDisabled();
+    await expect(page.getByTestId("command-redo")).toHaveAccessibleName(
+      "Redo Add door"
+    );
   });
 
   test("gives Account pointer entry a complete Plans modal lifecycle", async ({
@@ -2016,11 +2077,12 @@ test.describe("Pro visual policy", () => {
     await dismissBlockingPrompt(page);
     await expectEditingCommandBarActive(page);
 
+    const more = page.getByTestId("editor-command-overflow");
     await openClientPreviewFromMore(page, "pointer");
     await expectClientPreviewCommandBarExcluded(page, true);
     await page.getByTestId("client-preview-exit").click();
     await expectEditingCommandBarActive(page);
-    await expect(page.getByTestId("editor-command-overflow")).toBeFocused();
+    await expect(more).toBeFocused();
 
     await openClientPreviewFromMore(page, "keyboard");
     await expectClientPreviewCommandBarExcluded(page);
@@ -2035,7 +2097,6 @@ test.describe("Pro visual policy", () => {
     await expectEditingCommandBarActive(page);
     await expect(save).toBeFocused();
 
-    const more = page.getByTestId("editor-command-overflow");
     await more.focus();
     await page.keyboard.press("p");
     await expectClientPreviewCommandBarExcluded(page);
@@ -2252,24 +2313,36 @@ test.describe("Pro visual policy", () => {
     await expect(page.getByTestId("pro-mode-indicator")).toBeVisible();
     const commandBar = page.getByTestId("editor-command-bar");
     const more = page.getByTestId("editor-command-overflow");
+    await installClientPreviewFocusRecorder(page);
     await more.focus();
+    await beginClientPreviewFocusWindow(page);
     await page.keyboard.press("p");
     await expectClientPreviewCommandBarExcluded(page);
+    await markClientPreviewEntered(page);
+    await markClientPreviewExitRequested(page, {
+      reason: "keyboard-exit-current-scope",
+      restorationEligible: true,
+    });
+    await page.keyboard.press("p");
+    await expectEditingCommandBarActive(page);
+    await expect(more).toBeFocused();
+    expectSemanticClientPreviewFocusContract(
+      await completeClientPreviewFocusWindow(page),
+      {
+        exitReason: "keyboard-exit-current-scope",
+        restorationEligible: true,
+        requireValidMoreFocus: true,
+      }
+    );
 
-    await page.evaluate(() => {
-      document.body.dataset.clientPreviewStaleMoreFocusCount = "0";
-      document.addEventListener("focusin", (event) => {
-        if (
-          event.target instanceof HTMLElement &&
-          event.target.dataset.testid === "editor-command-overflow"
-        ) {
-          const count = Number(
-            document.body.dataset.clientPreviewStaleMoreFocusCount ?? "0"
-          );
-          document.body.dataset.clientPreviewStaleMoreFocusCount = String(count + 1);
-        }
-      });
-      window.history.pushState(null, "", "/design?designId=next-project&mode=designer");
+    await beginClientPreviewFocusWindow(page);
+    await page.keyboard.press("p");
+    await expectClientPreviewCommandBarExcluded(page);
+    await markClientPreviewEntered(page);
+
+    await exitClientPreviewWithScopeChange(page, {
+      reason: "requested-design-changed",
+      href: "/design?designId=next-project&mode=designer",
     });
     await expect(page).toHaveURL(/designId=next-project/);
     await expect(page.getByTestId("client-preview-exit")).toHaveCount(0);
@@ -2277,53 +2350,67 @@ test.describe("Pro visual policy", () => {
     await commandBar.evaluate((element) =>
       Promise.allSettled(element.getAnimations().map((animation) => animation.finished))
     );
-    expect(
-      await page.evaluate(() =>
-        Number(document.body.dataset.clientPreviewStaleMoreFocusCount ?? "0")
-      )
-    ).toBe(0);
+    expectSemanticClientPreviewFocusContract(
+      await completeClientPreviewFocusWindow(page),
+      {
+        exitReason: "requested-design-changed",
+        restorationEligible: false,
+      }
+    );
     await expect(more).not.toBeFocused();
 
     await more.focus();
+    await beginClientPreviewFocusWindow(page);
     await page.keyboard.press("p");
     await expectClientPreviewCommandBarExcluded(page);
-    await page.evaluate(() => {
-      document.body.dataset.clientPreviewStaleMoreFocusCount = "0";
-      window.dispatchEvent(
-        new KeyboardEvent("keydown", { key: "p", bubbles: true })
-      );
-      window.history.pushState(null, "", "/design?designId=third-project&mode=designer");
+    await markClientPreviewEntered(page);
+    await exitClientPreviewWithScopeChange(page, {
+      reason: "keyboard-exit-superseded-by-requested-design",
+      href: "/design?designId=third-project&mode=designer",
+      dispatchExitHotkey: true,
     });
     await expect(page).toHaveURL(/designId=third-project/);
     await expect(page.getByTestId("client-preview-exit")).toHaveCount(0);
     await commandBar.evaluate((element) =>
       Promise.allSettled(element.getAnimations().map((animation) => animation.finished))
     );
-    expect(
-      await page.evaluate(() =>
-        Number(document.body.dataset.clientPreviewStaleMoreFocusCount ?? "0")
-      )
-    ).toBe(0);
+    expectSemanticClientPreviewFocusContract(
+      await completeClientPreviewFocusWindow(page),
+      {
+        exitReason: "keyboard-exit-superseded-by-requested-design",
+        restorationEligible: false,
+      }
+    );
     await expect(more).not.toBeFocused();
 
     await more.focus();
+    await beginClientPreviewFocusWindow(page);
     await page.keyboard.press("p");
     await expectClientPreviewCommandBarExcluded(page);
+    await markClientPreviewEntered(page);
     await mockPlan(page, "free");
     const planResponse = page.waitForResponse(
       (response) => new URL(response.url()).pathname === "/api/me"
     );
-    await page.evaluate(() => {
-      window.history.pushState(
-        null,
-        "",
-        "/design?designId=third-project&mode=designer&refresh_plan=1"
-      );
+    await exitClientPreviewWithScopeChange(page, {
+      reason: "effective-plan-changed",
+      href: "/design?designId=third-project&mode=designer&refresh_plan=1",
     });
     await planResponse;
     await expect(page.getByTestId("client-preview-exit")).toHaveCount(0);
     await expect(page.getByTestId("pro-mode-indicator")).toHaveCount(0);
     await expectEditingCommandBarActive(page);
+    await commandBar.evaluate((element) =>
+      Promise.allSettled(element.getAnimations().map((animation) => animation.finished))
+    );
+    expectSemanticClientPreviewFocusContract(
+      await completeClientPreviewFocusWindow(page),
+      {
+        exitReason: "effective-plan-changed",
+        restorationEligible: false,
+      }
+    );
+    await stopClientPreviewFocusRecorder(page);
   });
 
   test("uses the same Client Preview focus contract from presentation export", async ({

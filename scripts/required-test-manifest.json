@@ -497,7 +497,10 @@
       "packageScript": "test:pro-visual-policy",
       "packageClosure": { "expectedScriptCount": 1, "expectedSha256": "e405cb73f95c111fb19dd7bbb4886c760841f8a08afcf0ba5bdb7e99482e3fa3" },
       "runner": "playwright",
-      "requiredSources": ["tests/e2e/pro-visual-policy.spec.ts"],
+      "requiredSources": [
+        "tests/e2e/pro-visual-policy.spec.ts",
+        "tests/e2e/client-preview-focus-recorder.ts"
+      ],
       "requiredTests": [
         {
           "id": "visual.consumer-pro-theme",

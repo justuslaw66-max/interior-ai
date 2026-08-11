@@ -1,5 +1,48 @@
 # Command Palette modal lifecycle
 
+## CH-0015H test-contract hardening — 2026-08-12
+
+This bounded child starts at CH-0015H implementation commit
+`ee55098be7c750e8fa2a631978f3d4ebd956708c` / tree
+`e6162ead7031eb41cbba23b3ac56f5873cfe0f92`. It changes test evidence only;
+the production Palette executor, history owner, Client Preview focus lifecycle,
+command inventory, capability policy, and Floor Plan Upload are unchanged.
+
+The original WebKit result remains **D — NOT_REPRODUCED_WITH_PROVENANCE**. The
+original required evidence SHA-256 is
+`018afa76c7bc69104c879440f6d69801ddef9b238c713509f551f9f1a5095223` and
+its Playwright report SHA-256 is
+`fd35b65201f0583a1b8e86de8df08d3520cf9ab8f833273af4829d61d00b339c`.
+The complete bounded instrumented WebKit project reproduced no in-window More
+focus event and retained focus report SHA-256
+`e997098141ddf0828d69d67a09252cb0b79304a5751231d86e7a3c28ade0d2c5`
+plus Playwright report SHA-256
+`e524a7e6cb7601f1858d06ac4dbceab1603689d15e02044f4351735465e5c9d2`.
+The original trace/report needed to classify that historical event semantically
+was unavailable, so these facts do not identify or imply a product root cause.
+A future invalid event is now retained with enough phase and semantic state for
+direct classification.
+
+Palette exact-once coverage now uses the production-rendered snapshot
+fingerprint: `F0`, one existing Insert default door action, `F1 != F0`, one
+production Undo, and `F2 == F0`. The test also requires Undo to be disabled
+after that single reversal, so a duplicate transaction cannot hide behind a
+final visual assertion. The browser requires Palette absence after the action;
+the production executor contract separately proves synchronous consume/close
+before domain execution and duplicate-session rejection. No mutation-delivery
+timing is treated as historical ordering evidence.
+
+Client Preview scope-cancellation coverage now uses a fixed-capacity,
+bubble-phase, test-only semantic recorder instead of a raw focus count. Each
+window records phases A entry, B active Preview, C exit request, D semantic
+settlement, and E post-exit restoration, together with generation, hashed scope,
+opener/fallback, current dialog generation, inert/hidden/disabled state,
+geometry, visual state, and command-bar animation settlement. A More
+`focusin` is valid only in phase E when the current semantic opener or permitted
+fallback remains eligible; every other More `focusin` fails the test. The
+recorder never focuses an element, observes production mutations, or owns a
+timer/frame.
+
 ## CH-0015H pre-remediation characterization — 2026-08-11
 
 CH-0015H starts from exact integration source
