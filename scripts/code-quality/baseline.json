@@ -1567,11 +1567,11 @@
     "components/CartSidebar.tsx": {
       "overlongFunctions": {
         "count": 6,
-        "maximum": 989
+        "maximum": 979
       },
       "complexFunctions": {
         "count": 3,
-        "maximum": 50
+        "maximum": 44
       }
     },
     "components/catalog/CatalogActiveFilterChips.tsx": {

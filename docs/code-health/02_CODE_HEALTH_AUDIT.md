@@ -1,5 +1,45 @@
 # Code health audit
 
+## CH-0015G accessible Retailer Confirmation lifecycle — 2026-08-11
+
+Starting from exact integration source
+`d76994a778db99cb57834ef6bb62db5e8705a478` / tree
+`ba00cb930778c84a4879d70274182868eb9c428f`, this bounded batch classifies the
+global and retailer-group four-plus-tab prompt as a **MODAL_DIALOG**. The prior
+custom overlay left focus on an obscured opener, exposed background actions,
+had no role/name/modal or dismissal/return lifecycle, and was visually clipped
+by CartSidebar's overflow container.
+
+The prompt now directly composes `EditorDialog` outside the scrolling aside.
+It is absent while closed and owns one named modal, visible cross-engine focus
+ring, Tab/Shift+Tab, topmost Escape/backdrop, full-viewport inert/hidden
+background, and current semantic global/group return with Cart fallback. A
+typed generation captures cloned lines, count, preference, opener, and
+design/cart scope. Continue consumes exactly once before opening; cancellation,
+scope, route/unmount, supersession, and newer-modal ownership execute nothing
+and cannot restore stale focus.
+
+The exact count/open/track contract is preserved: bundle one-link treatment,
+zero/one/three/four boundary, no URL dedupe, missing URL exclusion, existing
+unavailable handling, row bypass, click payload and fail-open behavior,
+clickKey/UTM decoration, 350ms pacing, and same-tab first-link navigation.
+Guest/Consumer/Pro, Shopify, catalog, auth, persistence, API/schema, shared
+dialog primitives, and unrelated overlays are unchanged.
+
+New merge-required `ci.retailer-confirmation-accessibility` owns 12 stable
+cases and passes **24/24** across Chromium/WebKit with zero retries/skips/
+filters/shards/timeout increase. Its static prerequisite is guard 81 in design
+cleanup. Derived inventory is 26 gates / 376 sources. Focused desktop/mobile
+visual inspection passes. Strict build remains 57/57; `/design` remains 25
+initial JS plus one CSS chunk, with JS `+3,881 / +729` raw/Brotli, unchanged
+CSS/Cabinetry/GLTF sizes, and all Phase 8 byte budgets green.
+
+This is a partial CH-0015 remediation: Command Palette and Floor Plan Upload
+remain required; public legacy Upgrade and selected-item preview remain P2.
+Rollback is one focused revert plus Retailer/Cart/Guest, commerce,
+truthfulness, design cleanup, Phase 8, and strict build, with no data, schema,
+dependency, policy, deployment, or external rollback.
+
 ## CH-0015F accessible Guest Save Prompt lifecycle — 2026-08-10
 
 Starting from exact integration source

@@ -8,6 +8,16 @@ import { createCommerceEvent } from "@/lib/commerce-helpers";
 import { resolveCatalogVariant } from "@/lib/catalog/variant-resolver";
 import { trackVariantIssues } from "@/lib/catalog/variant-observability";
 import { GUEST_CHECKOUT_OPENER_ID, type GuestPromptReason } from "@/lib/guest-save-prompt";
+import { RetailerConfirmationDialog } from "@/components/RetailerConfirmationDialog";
+import {
+  RETAILER_CONFIRMATION_CART_FALLBACK_ID, RETAILER_CONFIRMATION_GLOBAL_OPENER_ID,
+  cancelRetailerConfirmationSession, canonicalRetailerGroupIdentity,
+  consumeRetailerConfirmationSession, countRetailerTabs,
+  createRetailerConfirmationScopeKey, createRetailerConfirmationSession,
+  getCurrentRetailerConfirmationSession, getRetailerGroupOpenerId, updateRetailerConfirmationSameTab,
+  type RetailerConfirmationLine, type RetailerConfirmationOpener,
+  type RetailerConfirmationSession,
+} from "@/lib/retailer-confirmation";
 import { useShopifyCheckoutLock } from "@/lib/useShopifyCheckoutLock";
 
 export type CartSidebarPlacedItem = {
@@ -121,11 +131,8 @@ export default function CartSidebar({
   const noticeTimerRef = useRef<number | null>(null);
   const [autoFillPulse, setAutoFillPulse] = useState(false);
   const [notice, setNotice] = useState<CartNotice | null>(null);
-  const [confirmOpen, setConfirmOpen] = useState<null | {
-    title: string;
-    tabs: number;
-    lines: typeof cartLines;
-  }>(null);
+  const [confirmationSession, setConfirmationSession] = useState<RetailerConfirmationSession | null>(null);
+  const confirmationSessionRef = useRef<RetailerConfirmationSession | null>(null); const confirmationGenerationRef = useRef(0);
 
   const showCartNotice = (message: string, tone: CartNotice["tone"] = "info") => {
     setNotice({ message, tone });
@@ -217,6 +224,24 @@ export default function CartSidebar({
       shopifyAvailable: boolean;
     }>;
   }, [items]);
+
+  const confirmationScopeKey = useMemo(() =>
+    createRetailerConfirmationScopeKey(designId, items), [designId, items]);
+  const renderedConfirmationSession = getCurrentRetailerConfirmationSession(confirmationSession, confirmationScopeKey);
+
+  useEffect(() => {
+    const active = confirmationSessionRef.current;
+    if (!active || active.scopeKey === confirmationScopeKey) return;
+    cancelRetailerConfirmationSession(active, active);
+    confirmationSessionRef.current = null;
+    setConfirmationSession(null);
+  }, [confirmationScopeKey]);
+
+  useEffect(() => () => {
+    const active = confirmationSessionRef.current;
+    if (active) cancelRetailerConfirmationSession(active, active);
+    confirmationSessionRef.current = null;
+  }, []);
 
   useEffect(() => {
     for (const item of items) {
@@ -347,6 +372,7 @@ export default function CartSidebar({
     }
     return Array.from(map.entries()).map(([retailer, entry]) => ({
       retailer,
+      groupIdentity: canonicalRetailerGroupIdentity(retailer),
       lines: entry.lines,
       includedLines: entry.includedLines,
       subtotal: entry.includedLines.reduce((s, x) => s + x.linePrice, 0),
@@ -354,20 +380,16 @@ export default function CartSidebar({
     }));
   }, [affiliateAll]);
 
-  const countTabs = (lines: typeof cartLines) =>
-    lines
-      .filter((x) => x.buyUrl)
-      .reduce((sum, x) => sum + (x.linkOpenCount ?? x.qty ?? 1), 0);
-
-  const openUrl = async (url: string) => {
-    if (openInSameTab) {
+  const openUrl = async (url: string, sameTabPreference: boolean) => {
+    if (sameTabPreference) {
       window.location.href = url;
       return;
     }
     window.open(url, "_blank", "noopener,noreferrer");
   };
 
-  const doBuyLines = async (lines: typeof cartLines) => {
+  const doBuyLines = async (lines: readonly RetailerConfirmationLine[],
+    sameTabPreference = openInSameTab) => {
     const purchasable = lines.filter((x) => x.buyUrl);
     if (purchasable.length === 0) {
       showCartNotice("No items in this group have buy links yet.", "warning");
@@ -376,9 +398,9 @@ export default function CartSidebar({
 
     setBusy(true);
     showCartNotice(
-      openInSameTab
+      sameTabPreference
         ? "Opening the first retailer link in this tab."
-        : `Opening ${countTabs(purchasable)} retailer tab${countTabs(purchasable) === 1 ? "" : "s"}.`
+        : `Opening ${countRetailerTabs(purchasable)} retailer tab${countRetailerTabs(purchasable) === 1 ? "" : "s"}.`
     );
     try {
       for (const line of purchasable) {
@@ -394,11 +416,11 @@ export default function CartSidebar({
             category: line.category,
             result: "success",
           });
-          await openUrl(urlToOpen);
+          await openUrl(urlToOpen, sameTabPreference);
 
-          if (openInSameTab) return;
+          if (sameTabPreference) return;
 
-          await new Promise((r) => setTimeout(r, 350));
+          await new Promise((resolve) => setTimeout(resolve, 350));
         }
       }
     } finally {
@@ -406,15 +428,61 @@ export default function CartSidebar({
     }
   };
 
-  const requestBuy = (title: string, lines: typeof cartLines) => {
-    const tabs = countTabs(lines);
+  const requestBuy = (
+    title: string,
+    lines: readonly RetailerConfirmationLine[],
+    opener: RetailerConfirmationOpener
+  ) => {
+    const tabs = countRetailerTabs(lines);
 
     if (tabs <= 3) {
-      doBuyLines(lines);
+      void doBuyLines(lines);
       return;
     }
 
-    setConfirmOpen({ title, tabs, lines });
+    const active = confirmationSessionRef.current;
+    if (active) cancelRetailerConfirmationSession(active, active);
+    confirmationGenerationRef.current += 1;
+    const session = createRetailerConfirmationSession({
+      generation: confirmationGenerationRef.current,
+      opener,
+      title,
+      lines,
+      tabCount: tabs,
+      openInSameTab,
+      scopeKey: confirmationScopeKey,
+    });
+    confirmationSessionRef.current = session;
+    setConfirmationSession(session);
+  };
+
+  const cancelConfirmation = (expected: RetailerConfirmationSession) => {
+    if (!cancelRetailerConfirmationSession(confirmationSessionRef.current, expected)) return;
+    confirmationSessionRef.current = null;
+    setConfirmationSession(null);
+  };
+
+  const continueConfirmation = (expected: RetailerConfirmationSession) => {
+    const consumed = consumeRetailerConfirmationSession(
+      confirmationSessionRef.current,
+      expected
+    );
+    if (!consumed) return;
+    confirmationSessionRef.current = null;
+    setConfirmationSession(null);
+    void doBuyLines(consumed.lines, consumed.openInSameTab);
+  };
+
+  const toggleConfirmationSameTab = (expected: RetailerConfirmationSession) => {
+    const next = updateRetailerConfirmationSameTab(
+      confirmationSessionRef.current,
+      expected,
+      !expected.openInSameTab
+    );
+    if (!next) return;
+    confirmationSessionRef.current = next;
+    setConfirmationSession(next);
+    setOpenInSameTab(next.openInSameTab);
   };
   const startShopifyCheckoutInternal = async () => {
     if (checkoutLock.active()) return;
@@ -522,7 +590,7 @@ export default function CartSidebar({
           ? "border-sky-400/30 bg-sky-500/10 text-sky-100"
           : "border-sky-200 bg-sky-50 text-sky-800";
 
-  return (
+  return (<>
     <aside
       data-testid="cart-panel"
       className={panelClass}
@@ -562,6 +630,8 @@ export default function CartSidebar({
         </div>
 
         <button
+          id={RETAILER_CONFIRMATION_CART_FALLBACK_ID}
+          data-testid="retailer-confirmation-cart-fallback"
           className={secondaryButtonClass}
           onClick={() => setIsCollapsed((v) => !v)}
           aria-expanded={!isCollapsed}
@@ -639,12 +709,17 @@ export default function CartSidebar({
             </button>
 
             <button
+              id={RETAILER_CONFIRMATION_GLOBAL_OPENER_ID}
               data-testid="checkout-affiliate"
               className={`${secondaryButtonClass} w-full ${
                 affiliateItems.length === 0 || busy ? "opacity-60" : ""
               }`}
               disabled={affiliateItems.length === 0 || busy}
-              onClick={() => requestBuy("Buy external items", affiliateItems)}
+              onClick={() => requestBuy(
+                "Buy external items",
+                affiliateItems,
+                { kind: "global" }
+              )}
             >
               Open retailer links ({affiliateItems.length})
             </button>
@@ -847,6 +922,8 @@ export default function CartSidebar({
                         </div>
 
                         <button
+                          id={getRetailerGroupOpenerId(g.groupIdentity)}
+                          data-testid={getRetailerGroupOpenerId(g.groupIdentity)}
                           className={`rounded-lg px-3 py-1 text-xs font-semibold text-white ${
                             busy || g.includedLines.length === 0
                               ? "bg-neutral-400"
@@ -854,7 +931,14 @@ export default function CartSidebar({
                           }`}
                           disabled={busy || g.includedLines.length === 0}
                           onClick={() =>
-                            requestBuy(`Buy from ${g.retailer}`, g.includedLines)
+                            requestBuy(
+                              `Buy from ${g.retailer}`,
+                              g.includedLines,
+                              {
+                                kind: "retailer-group",
+                                groupIdentity: g.groupIdentity,
+                              }
+                            )
                           }
                         >
                           Buy retailer
@@ -963,7 +1047,7 @@ export default function CartSidebar({
                                       : "bg-neutral-200 text-neutral-600"
                                   }`}
                                   disabled={!x.buyUrl || busy}
-                                  onClick={() => doBuyLines([x])}
+                                  onClick={() => void doBuyLines([x])}
                                 >
                                   {x.buyUrl ? "Open" : "Review"}
                                 </button>
@@ -992,98 +1076,14 @@ export default function CartSidebar({
         </div>
       )}
 
-      {confirmOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-          <div
-            className={
-              isDesignerTheme
-                ? "designer-panel designer-panel-strong w-full max-w-md rounded-2xl p-5"
-                : "w-full max-w-md rounded-2xl bg-white p-5 shadow-lg"
-            }
-          >
-            <div className="text-lg font-semibold">{confirmOpen.title}</div>
-            <div className="mt-1 text-sm text-neutral-600">
-              {openInSameTab ? (
-                <>
-                  This will open the first link in the{" "}
-                  <span className="font-semibold">same tab</span>.
-                </>
-              ) : (
-                <>
-                  This will open <span className="font-semibold">{confirmOpen.tabs}</span>{" "}
-                  tab{confirmOpen.tabs === 1 ? "" : "s"} to retailer pages.
-                </>
-              )}
-            </div>
-
-            <div className="mt-4 max-h-48 overflow-auto rounded-xl border">
-              <ul className="divide-y text-sm">
-                {confirmOpen.lines
-                  .filter((x) => x.buyUrl)
-                  .map((x) => (
-                    <li key={x.instanceId} className="p-3">
-                      <div className="flex items-start justify-between gap-2">
-                        <div className="min-w-0">
-                          <div className="truncate font-semibold">{x.name}</div>
-                          <div className="text-xs text-neutral-500">
-                            {x.retailer} • {x.isBundleLine ? `set of ${x.qty}` : `qty ${x.qty}`}
-                          </div>
-                        </div>
-                        <div className="text-xs text-neutral-500">
-                          {x.linkOpenCount} tab{x.linkOpenCount === 1 ? "" : "s"}
-                        </div>
-                      </div>
-                    </li>
-                  ))}
-              </ul>
-            </div>
-
-            <div className="mt-4 flex items-center justify-between rounded-xl border bg-neutral-50 px-3 py-2">
-              <div>
-                <div className="text-sm font-semibold">Open in same tab</div>
-                <div className="text-xs text-neutral-500">
-                  Safer for popup blockers. Opens the first link and leaves this page.
-                </div>
-              </div>
-
-              <button
-                className={`rounded-lg px-3 py-1 text-sm ${
-                  openInSameTab ? "bg-neutral-900 text-white" : "bg-white border"
-                }`}
-                onClick={() => setOpenInSameTab((v) => !v)}
-                type="button"
-              >
-                {openInSameTab ? "On" : "Off"}
-              </button>
-            </div>
-
-            <div className="mt-4 flex justify-end gap-2">
-              <button
-                className="rounded-xl bg-neutral-200 px-4 py-2 text-sm"
-                onClick={() => setConfirmOpen(null)}
-                disabled={busy}
-              >
-                Cancel
-              </button>
-              <button
-                className="rounded-xl bg-neutral-900 px-4 py-2 text-sm text-white"
-                onClick={() => {
-                  const payload = confirmOpen;
-                  setConfirmOpen(null);
-                  doBuyLines(payload.lines);
-                }}
-                disabled={busy}
-              >
-                Continue
-              </button>
-            </div>
-
-            <div className="mt-2 text-[11px] text-neutral-500">
-              Tip: reduce quantity to open fewer tabs.
-            </div>
-          </div>
-        </div>
-      )}
     </aside>
-  );
+    <RetailerConfirmationDialog
+        key={confirmationScopeKey} session={renderedConfirmationSession}
+        busy={busy}
+        isDesignerTheme={isDesignerTheme}
+        onCancel={cancelConfirmation}
+        onContinue={continueConfirmation}
+        onToggleSameTab={toggleConfirmationSameTab}
+    />
+  </>);
 }

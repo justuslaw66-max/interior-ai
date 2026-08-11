@@ -1,5 +1,56 @@
 # CH-0015 accessibility lifecycle and overlay inventory
 
+## CH-0015G Retailer Confirmation modal lifecycle — 2026-08-11
+
+Status: **CH-0015G LOCALLY REMEDIATED; CH-0015 REMAINS OPEN FOR TWO
+REQUIRED OVERLAY BATCHES**.
+
+This bounded batch starts from exact integration source
+`d76994a778db99cb57834ef6bb62db5e8705a478` / tree
+`ba00cb930778c84a4879d70274182868eb9c428f` on
+`fix/ch-0015-retailer-confirmation-accessibility`. Retailer Confirmation is a
+**MODAL_DIALOG** for exactly the global and per-retailer actions when the
+existing count is four or more tabs. Row Open and the zero/one/three-tab direct
+paths remain non-modal.
+
+The former custom overlay had no role, name, modal state, focus entry/trap,
+Escape/backdrop/close owner, background isolation, or semantic return. Focus
+stayed on the obscured opener, Tab reached the Cart background, Cancel returned
+to `body`, and the overlay was clipped by CartSidebar's scrolling aside. The
+new local dialog directly composes `EditorDialog` as a sibling of the aside:
+one named modal owns visible close focus, containment, topmost dismissal, full-
+viewport isolation, and global/group semantic return with Cart fallback.
+
+A typed generation/session captures cloned lines, exact tab count, same-tab
+preference, opener identity, and design/cart scope. Continue consumes before
+opening, exactly once. Cancel, generic dismissal, scope change, route/unmount,
+reopen supersession, and newer-dialog ownership retire stale work. Counting,
+duplicate and unavailable behavior, bundle-one-link behavior, direct row
+opening, tracking payload/fail-open, clickKey/UTM decoration, 350ms pacing,
+same-tab first navigation, Guest/Consumer/Pro policy, and Shopify ownership are
+unchanged. The complete contract is in
+`docs/architecture/retailer-confirmation-lifecycle.md`.
+
+New `ci.retailer-confirmation-accessibility` owns 12 stable cases in Chromium
+and WebKit: **24/24**, one worker, zero retries/skips/filters/shards/timeout
+increase. Focused desktop and 390×844 screenshots confirm a full-viewport
+backdrop, contained actions, 16px panel gutters, visible focus ring, and no
+horizontal overflow. The manifest advances to **26 gates / 376 classified
+sources** and design cleanup to 81 guards.
+
+Against CH-0015F, `/design` remains 25 initial JavaScript chunks and one CSS
+chunk. JavaScript moves 5,834,673 / 1,114,584 raw/Brotli to 5,838,554 /
+1,115,313 (`+3,881 / +729`); CSS remains 131,910 / 17,506. Cabinetry Studio and
+GLTFExporter remain 492,639 / 84,899 and 34,525 / 8,970. All Phase 8 byte
+boundaries pass and Retailer Confirmation adds no lazy chunk.
+
+The two remaining required CH-0015 batches are **Command Palette and Floor
+Plan Upload**. Public legacy Upgrade and selected-item preview remain separate
+P2 work. Rollback is one focused revert followed by Retailer/Cart/Guest and
+commerce guards, truthfulness, Phase 8, and strict build; no data, schema,
+dependency, policy, deployment, integration, or external-service rollback is
+required.
+
 ## CH-0015F Guest Save Prompt modal lifecycle — 2026-08-10
 
 Status: **CH-0015F LOCALLY REMEDIATED; CH-0015 REMAINS OPEN FOR THREE

@@ -1,5 +1,32 @@
 # P0/P1 remediation queue
 
+## CH-0015G Retailer Confirmation accessibility — 2026-08-11
+
+- **Source/scope:** exact integration source
+  `d76994a778db99cb57834ef6bb62db5e8705a478` / tree
+  `ba00cb930778c84a4879d70274182868eb9c428f`; bounded branch
+  `fix/ch-0015-retailer-confirmation-accessibility`; exactly the global and
+  retailer-group four-plus-tab confirmation, its typed session/semantic IDs,
+  local direct `EditorDialog` composition, focused gate, and records.
+- **Disposition:** `PARTIALLY RESOLVED — CH-0015G LOCAL REMEDIATION COMPLETE`.
+  One named full-viewport modal owns close focus, containment, topmost generic
+  dismissal, background isolation, and current semantic return. One typed
+  generation captures lines/count/preference/opener/scope and consumes exactly
+  once; cancel, scope, unmount, and supersession cannot continue stale work.
+- **Required owner:** new `ci.retailer-confirmation-accessibility` owns 12
+  stable cases after its static prerequisite. Canonical result: Chromium 12/12
+  + WebKit 12/12, zero retries/skips/filters/shards/timeout change; derived
+  inventory is 26 gates / 376 classified sources and design cleanup has 81
+  guards.
+- **Behavior/rollback:** the zero/one/three/four count boundary, bundles,
+  duplicates, unavailable/missing URL behavior, row bypass, affiliate
+  tracking/fail-open/UTM/pacing/same-tab, Guest/Consumer/Pro, and Shopify remain
+  unchanged. Revert one focused commit and rerun Retailer/Cart/Guest, commerce,
+  truthfulness, Phase 8, and strict build; no data or external rollback.
+- **Queue status:** CH-0015 remains `IN_PROGRESS` with exactly two required
+  batches: Command Palette and Floor Plan Upload. Public legacy Upgrade and
+  selected-item preview remain separate P2 work.
+
 ## CH-0015F Guest Save Prompt accessibility — 2026-08-10
 
 - **Source/scope:** exact integration source

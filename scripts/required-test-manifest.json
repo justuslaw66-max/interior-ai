@@ -715,6 +715,103 @@
       "ci": { "job": "stable-checks", "step": "Run required cart overlay accessibility matrix" }
     },
     {
+      "id": "ci.retailer-confirmation-accessibility",
+      "invariant": "Retailer multi-tab confirmation owns one typed, generation-bound modal lifecycle across global and retailer-group actions while preserving exact affiliate counting, tracking, opening, cancellation, focus, responsive, Guest, Consumer, and Pro behavior in Chromium and WebKit.",
+      "cadence": "merge-required",
+      "blocking": true,
+      "command": "npm run test:retailer-confirmation-accessibility-required",
+      "packageScript": "test:retailer-confirmation-accessibility-required",
+      "packageClosure": { "expectedScriptCount": 2, "expectedSha256": "808a1bf39daa58ac4e0e7a0599ecdb9782abd2beeec7c2d434e2ca3e49bbc836" },
+      "packagePrerequisites": ["test:retailer-confirmation-static"],
+      "requiredEnvironment": { "APP_ENV": "development" },
+      "runner": "playwright",
+      "requiredSources": [
+        "scripts/test-retailer-confirmation-static.tsx",
+        "scripts/build-retailer-confirmation-browser-fixture.mjs",
+        "scripts/guest-save-overlay-ts-loader.mjs",
+        "tests/required/retailer-confirmation-accessibility.spec.ts",
+        "tests/required/fixtures/retailer-confirmation-harness.tsx",
+        "playwright.retailer-confirmation.config.ts"
+      ],
+      "requiredTests": [
+        {
+          "id": "retailer-confirmation.global-pointer-lifecycle",
+          "file": "tests/required/retailer-confirmation-accessibility.spec.ts",
+          "title": "Global pointer lifecycle owns modal cancellation and exact-once continuation"
+        },
+        {
+          "id": "retailer-confirmation.global-keyboard-fail-open",
+          "file": "tests/required/retailer-confirmation-accessibility.spec.ts",
+          "title": "Global keyboard lifecycle keeps tracking failure fail-open without duplicate windows"
+        },
+        {
+          "id": "retailer-confirmation.group-pointer-same-tab",
+          "file": "tests/required/retailer-confirmation-accessibility.spec.ts",
+          "title": "Retailer-group pointer lifecycle preserves same-tab first-link navigation"
+        },
+        {
+          "id": "retailer-confirmation.group-keyboard-restoration",
+          "file": "tests/required/retailer-confirmation-accessibility.spec.ts",
+          "title": "Retailer-group keyboard lifecycle restores replacements and the Cart fallback"
+        },
+        {
+          "id": "retailer-confirmation.count-boundaries",
+          "file": "tests/required/retailer-confirmation-accessibility.spec.ts",
+          "title": "Counting boundaries preserve zero one three and four tab behavior"
+        },
+        {
+          "id": "retailer-confirmation.count-bundle-exclusion-missing",
+          "file": "tests/required/retailer-confirmation-accessibility.spec.ts",
+          "title": "Counting preserves bundle exclusion and missing-link behavior"
+        },
+        {
+          "id": "retailer-confirmation.count-duplicate",
+          "file": "tests/required/retailer-confirmation-accessibility.spec.ts",
+          "title": "Counting preserves duplicate URLs without deduplication"
+        },
+        {
+          "id": "retailer-confirmation.count-unavailable-row",
+          "file": "tests/required/retailer-confirmation-accessibility.spec.ts",
+          "title": "Counting preserves unavailable affiliate and row-open behavior"
+        },
+        {
+          "id": "retailer-confirmation.scope-route-unmount",
+          "file": "tests/required/retailer-confirmation-accessibility.spec.ts",
+          "title": "Scope route and unmount changes cancel stale continuation and restoration"
+        },
+        {
+          "id": "retailer-confirmation.newer-dialog",
+          "file": "tests/required/retailer-confirmation-accessibility.spec.ts",
+          "title": "A newer registered dialog supersedes dismissal and stale focus restoration"
+        },
+        {
+          "id": "retailer-confirmation.audience-parity",
+          "file": "tests/required/retailer-confirmation-accessibility.spec.ts",
+          "title": "Guest Consumer and Pro receive the same affiliate confirmation contract"
+        },
+        {
+          "id": "retailer-confirmation.responsive-visual",
+          "file": "tests/required/retailer-confirmation-accessibility.spec.ts",
+          "title": "Desktop and 390x844 global and group prompts contain actions focus rings and IDs"
+        }
+      ],
+      "requiredProjects": ["chromium", "webkit"],
+      "allowSkips": false,
+      "allowRetries": false,
+      "allowAnnotations": false,
+      "reportType": "required-test-evidence",
+      "reportPath": ".local/required-test-evidence/ci.retailer-confirmation-accessibility/evidence.json",
+      "maxAgeMinutes": 240,
+      "artifactBinding": "none",
+      "playwright": {
+        "config": "playwright.retailer-confirmation.config.ts",
+        "testRoot": "tests/required",
+        "args": ["playwright", "test", "-c", "playwright.retailer-confirmation.config.ts"],
+        "exactConfigOnly": true
+      },
+      "ci": { "job": "stable-checks", "step": "Run required Retailer Confirmation accessibility matrix" }
+    },
+    {
       "id": "ci.guest-save-overlay-accessibility",
       "invariant": "The Guest Save Prompt owns one typed, generation-bound modal lifecycle across Save, AI layout, and Shopify checkout, separating explicit continuation from cancellation and restoring current semantic focus across desktop, narrow, scope, auth, and supersession paths in Chromium and WebKit.",
       "cadence": "merge-required",

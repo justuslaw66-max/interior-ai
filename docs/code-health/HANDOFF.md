@@ -1,5 +1,98 @@
 # Code health audit handoff
 
+## CH-0015G accessible Retailer Confirmation handoff — 2026-08-11
+
+Branch `fix/ch-0015-retailer-confirmation-accessibility` starts exactly at
+integration SHA `d76994a778db99cb57834ef6bb62db5e8705a478`, tree
+`ba00cb930778c84a4879d70274182868eb9c428f`. Entry worktree/index/untracked/
+tracked-ignored/diff checks were clean; local and remote
+`integration/deep-clean-v1` were synchronized. Node was `v24.13.0`, npm
+`11.6.2`. No Git operation or repository-owned app/browser/test process was
+active. Homebrew PostgreSQL remained owned by
+`/opt/homebrew/var/postgresql@16` and was not treated as disposable. Every
+port-3000 listener used later was verified in
+`/Users/justus/Developer/interior-ai` and stopped after use. Integration was
+not modified.
+
+The defect is a **MODAL_DIALOG ownership failure** for global and retailer-
+group four-plus-tab actions. Before test or production edits, the actual
+CartSidebar reproduced no role/name/`aria-modal`, no initial/contained focus,
+non-inert and accessibility-visible background, no Escape/backdrop dismissal,
+and `body` after Cancel. One/three-tab direct behavior and four tracking/window
+operations still worked. Focused final screenshot review additionally exposed
+that rendering inside the scrolling aside clipped the supposedly fixed modal
+to the Cart box.
+
+`RetailerConfirmationSession` now binds generation, canonical global/group
+opener, cloned lines, exact tab count, same-tab preference, consumed state, and
+design/cart scope. Reopen supersedes; scope change and unmount cancel. Continue
+validates and consumes synchronously before clearing and opening, so duplicate
+events and stale callbacks cannot execute twice. Generic dismissal consumes
+with zero continuation. The local `RetailerConfirmationDialog` directly
+composes `EditorDialog` as a sibling of the scrolling aside; no shared
+primitive, Confirm, or Guest Save lifecycle changed.
+
+Open state has one named modal, visible close initial focus, deterministic
+Tab/Shift+Tab, topmost Escape/backdrop/close, full-viewport inert/`aria-hidden`
+background, and cross-engine focus rings. Global return resolves the current
+global action then Cart collapse/expand fallback. Group return resolves the
+current canonical-plus-exact-discriminator encoded group ID then the same Cart fallback. The
+shared resolver rejects missing, disabled, hidden, inert, disconnected,
+obscured, or superseded candidates. Continue intentionally has no focus-return
+requirement because Cart actions become busy/disabled and same-tab mode may
+navigate away. A newer registered dialog owns focus/dismissal and returns to
+the still-current Retailer modal.
+
+The domain contract is unchanged: included affiliate lines only; no-link zero;
+ordinary quantity; bundle one; existing unavailable behavior; no duplicate
+dedupe; up to three direct and four-plus confirm; row Open bypass. Tracking
+keeps design/product/variant payload, clickKey plus Interior AI affiliate UTM,
+original-URL fail-open, `_blank`/`noopener,noreferrer`, 350ms pacing, and
+same-tab first-link navigation. Guest/Consumer/Pro behavior is identical.
+Shopify checkout, auth, persistence, APIs/schema, catalog publication, and
+unrelated overlays are untouched. Focused boundaries are synthetic and do not
+contact a merchant or paid service.
+
+New sole owner `ci.retailer-confirmation-accessibility` has a static
+prerequisite plus 12 stable cases per engine: **Chromium 12/12 + WebKit 12/12**,
+zero retries/skips/annotations/filters/shards/focused tests/timeout increases.
+It covers pointer/keyboard global and group entry, all dismissal paths,
+exact-once and fail-open tracking, same-tab, semantic replacement/fallback,
+newer dialog, scope/route/unmount, zero/one/three/four, bundles/exclusion/
+missing/duplicates/unavailable/row, Guest/Consumer/Pro, desktop/390×844,
+full-viewport geometry, focus rings, overflow, and duplicate IDs. Stable checks
+run it after the strict build. The manifest is **26 gates / 376 classified
+sources**; package closure is 2 scripts / SHA-256
+`808a1bf39daa58ac4e0e7a0599ecdb9782abd2beeec7c2d434e2ca3e49bbc836`.
+
+Focused typecheck, zero-warning lint, static/domain, code-quality, strict 57/57
+build, and Phase 8 byte checks pass. The complete final validation set also
+includes truthfulness, production-evidence contract, Cart/Guest, critical and
+commerce guards, and 81/81 design cleanup. Full E2E is intentionally not run.
+
+Against CH-0015F, `/design` stays at 25 initial JS chunks and one CSS chunk.
+Initial JS changes 5,834,673 / 1,114,584 raw/Brotli to 5,838,554 / 1,115,313
+(`+3,881 / +729`); CSS stays 131,910 / 17,506. Cabinetry Studio and
+GLTFExporter remain 492,639 / 84,899 and 34,525 / 8,970. Retailer Confirmation
+remains in the initial graph with no dedicated lazy chunk, and every byte
+budget passes.
+
+Independent read-only review initially requested two corrections: suppress
+scope-change restoration/continuation during render instead of waiting only
+for a passive effect, and disambiguate canonical group identities without
+changing raw retailer grouping. Both are fixed and the affected 24-record gate
+is green. The reviewer retracted a proposed 377-source inventory finding after
+confirming that the canonical script inventory excludes `.tsx`; direct
+discovery remains 26 gates / 376 sources. Final rereview is **PASS — no
+remaining actionable issue**. The reviewer made no edits.
+
+CH-0015 remains open for exactly Command Palette and Floor Plan Upload. Public
+legacy Upgrade and selected-item preview remain separate P2 work. Rollback is
+one local revert of the focused commit, then Retailer static/browser,
+Cart/Guest/commerce, truthfulness, Phase 8, and strict build. No data, schema,
+dependency, catalog, auth, deployment, integration-branch, merchant, or
+external-service rollback is required.
+
 ## CH-0015F accessible Guest Save Prompt handoff — 2026-08-10
 
 Branch `fix/ch-0015-guest-save-prompt-accessibility` starts exactly at

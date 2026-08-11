@@ -358,6 +358,9 @@ jobs:
       - name: Run required cart overlay accessibility matrix
         run: npm run test:cart-overlay-accessibility-required
 
+      - name: Run required Retailer Confirmation accessibility matrix
+        run: npm run test:retailer-confirmation-accessibility-required
+
       - name: Run required Guest Save Prompt accessibility matrix
         run: npm run test:guest-save-overlay-accessibility-required
 

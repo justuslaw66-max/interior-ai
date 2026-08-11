@@ -1,11 +1,11 @@
 # Required-test truthfulness
 
-Status: **CH-0015F GUEST SAVE PROMPT CONTRACT REGISTERED — LOCAL CONTRACT GREEN;
+Status: **CH-0015G RETAILER CONFIRMATION CONTRACT REGISTERED — LOCAL CONTRACT GREEN;
 EXTERNAL RULESET ENFORCEMENT UNVERIFIED**. Repository truthfulness assigns the
-Guest Save, AI-layout, and checkout prompt lifecycle to one focused
-merge-required Chromium/WebKit owner; it retains My Designs, Client Preview,
-Plans, Selection Tray, CH-0013 surface-material, responsive, advisory Full E2E,
-and release Gate A3 ownership without duplication.
+Retailer multi-tab lifecycle to one focused merge-required Chromium/WebKit
+owner; it retains Guest Save, My Designs, Client Preview, Plans, Selection
+Tray, CH-0013 surface-material, responsive, advisory Full E2E, and release Gate
+A3 ownership without duplication.
 GitHub ruleset selection and an exact-head workflow run remain external
 evidence; repository registration does not claim either control is configured.
 
@@ -46,7 +46,7 @@ Repository-controlled cadence is explicit:
   conclusion and dishonest evidence remain visible and are never accepted as
   release certification.
 
-The 25-gate inventory includes the required Git-history secret scan, code
+The 26-gate inventory includes the required Git-history secret scan, code
 quality, CH-0016 artifact-contract and runtime smoke, authorization/security,
 database migration process, persistence, Stripe, Phase 14/15, Consumer/Pro
 capability boundaries, cabinetry unit/accessibility/performance and release
@@ -55,11 +55,45 @@ umbrella (including live progress), catalog/materials, asset availability,
 Chromium/WebKit Pro visual policy, the Chromium/WebKit responsive public-share
 gate, the Chromium/WebKit Selection Tray lifecycle gate, the Chromium/WebKit My
 Designs parent/nested-delete lifecycle gate, the Guest Save Prompt lifecycle
-gate, and final merge-result aggregation. Gate A3 discovers all 101 current
+gate, the Retailer Confirmation lifecycle gate, and final merge-result
+aggregation. Gate A3 discovers all 101 current
 browser specs and separately locks the six repaired
 commerce/Kelsey requirement identities; cabinetry release evidence owns 23
 named Consumer/Pro workflows. CH-0016 runtime smoke locks its two runtime
 requirement identities.
+
+## CH-0015G canonical Retailer Confirmation owner
+
+`ci.retailer-confirmation-accessibility` is the sole merge-required browser
+owner for `tests/required/retailer-confirmation-accessibility.spec.ts` and
+`playwright.retailer-confirmation.config.ts`. Its two-script closure first
+builds the actual CartSidebar fixture and runs
+`scripts/test-retailer-confirmation-static.tsx`. That prerequisite proves typed
+generation/scope/snapshot/exact-once behavior; zero/one/three/four, bundle,
+duplicate, missing and unavailable counting; stable IDs; unchanged row bypass,
+tracking/fail-open/UTM/pacing; and unchanged Guest Shopify ownership.
+
+Twelve stable identities execute once in Chromium and WebKit: **24/24**, zero
+retry, skip, annotation, flake, grep, inverse-grep, filter, shard, `.only`, or
+timeout increase. Coverage owns global/group pointer and keyboard entry,
+role/name/modal state, close focus/ring, Tab/Shift+Tab, full-viewport inert/
+hidden background, Escape/backdrop/close/cancel, exact-once Continue, tracking
+failure, same-tab navigation, semantic replacement/fallback, newer-dialog
+ownership, scope/route/unmount, direct/confirm boundaries, duplicate URL,
+bundle/exclusion/missing/unavailable/row behavior, Guest/Consumer/Pro parity,
+desktop/390×844 containment, overflow, and duplicate IDs. Tracking and
+destination boundaries are synthetic and contact no merchant.
+
+The runnable spec remains under the gate-declared `tests/required` root,
+outside advisory Full E2E and release Gate A3 discovery. Exact config, report,
+process-exit, project, stable-ID, source, prerequisite, and nonzero-discovery
+validation fails closed. Stable checks invoke it after strict build. Canonical
+package closure is 2 scripts with SHA-256
+`808a1bf39daa58ac4e0e7a0599ecdb9782abd2beeec7c2d434e2ca3e49bbc836`.
+Derived inventory advances from 25 to **26 gates** and stays **376 classified
+sources** because its TSX/spec/config/fixture/builder sources are explicit gate
+sources outside broad inventories. External GitHub ruleset enforcement and an
+exact-head hosted run remain unverified.
 
 ## CH-0015F canonical Guest Save Prompt owner
 
