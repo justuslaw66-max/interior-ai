@@ -490,7 +490,7 @@
     },
     {
       "id": "ci.pro-visual-policy",
-      "invariant": "Consumer and Pro visual policy, including Client Preview command-bar focus exclusion, direct and nested Plans ownership, and the route-mocked Present/Export to Share Link Fallback clipboard-failure lifecycle with topmost isolation, semantic return, preserved Copy/Open behavior, narrow containment, scope cancellation, and supersession, executes in both required browser engines with no focus, skip, retry, or flake.",
+      "invariant": "Consumer and Pro visual policy, including the accessible Cmd/Ctrl+K Command Palette lifecycle, Client Preview command-bar focus exclusion, direct and nested Plans ownership, and the route-mocked Present/Export to Share Link Fallback clipboard-failure lifecycle with topmost isolation, semantic return, preserved command and Copy/Open behavior, narrow containment, scope cancellation, and supersession, executes in both required browser engines with no focus, skip, retry, or flake.",
       "cadence": "merge-required",
       "blocking": true,
       "command": "npm run test:pro-visual-policy",
@@ -563,6 +563,31 @@
           "id": "visual.share-fallback-supersession-scope",
           "file": "tests/e2e/pro-visual-policy.spec.ts",
           "title": "cancels Share Link Fallback restoration across supersession, project scope, mode, and unmount"
+        },
+        {
+          "id": "visual.command-palette-consumer-meta",
+          "file": "tests/e2e/pro-visual-policy.spec.ts",
+          "title": "gives Consumer Meta Command Palette complete modal and Enter execution ownership"
+        },
+        {
+          "id": "visual.command-palette-pro-control-narrow",
+          "file": "tests/e2e/pro-visual-policy.spec.ts",
+          "title": "gives Pro Control narrow Palette containment, semantic replacement, fallback, and backdrop dismissal"
+        },
+        {
+          "id": "visual.command-palette-modal-ownership",
+          "file": "tests/e2e/pro-visual-policy.spec.ts",
+          "title": "blocks Palette behind another modal and gives a newer registered dialog exclusive ownership"
+        },
+        {
+          "id": "visual.command-palette-scope-cancellation",
+          "file": "tests/e2e/pro-visual-policy.spec.ts",
+          "title": "invalidates open Palette sessions on Client Preview, project scope, and unmount"
+        },
+        {
+          "id": "visual.command-palette-editable-pointer",
+          "file": "tests/e2e/pro-visual-policy.spec.ts",
+          "title": "preserves editable suppression and pointer action exact-once close ordering"
         }
       ],
       "requiredProjects": ["chromium", "webkit"],

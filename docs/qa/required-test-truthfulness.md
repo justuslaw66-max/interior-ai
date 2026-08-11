@@ -1,13 +1,45 @@
 # Required-test truthfulness
 
-Status: **CH-0015G RETAILER CONFIRMATION CONTRACT REGISTERED — LOCAL CONTRACT GREEN;
+Status: **CH-0015H COMMAND PALETTE CONTRACT REGISTERED — LOCAL CONTRACT GREEN;
 EXTERNAL RULESET ENFORCEMENT UNVERIFIED**. Repository truthfulness assigns the
-Retailer multi-tab lifecycle to one focused merge-required Chromium/WebKit
-owner; it retains Guest Save, My Designs, Client Preview, Plans, Selection
-Tray, CH-0013 surface-material, responsive, advisory Full E2E, and release Gate
-A3 ownership without duplication.
+Command Palette lifecycle to the existing Pro visual merge-required
+Chromium/WebKit owner; it retains Retailer, Guest Save, My Designs, Client
+Preview, Plans, Selection Tray, CH-0013 surface-material, responsive, advisory
+Full E2E, and release Gate A3 ownership without duplication.
 GitHub ruleset selection and an exact-head workflow run remain external
 evidence; repository registration does not claim either control is configured.
+
+## CH-0015H Command Palette ownership
+
+`ci.pro-visual-policy` remains the sole browser owner and keeps its one-script
+package closure SHA-256
+`e405cb73f95c111fb19dd7bbb4886c760841f8a08afcf0ba5bdb7e99482e3fa3`.
+Five stable identities were added to the existing Chromium/WebKit matrix; no
+new gate, project, retry, timeout, filter, shard, cadence, workflow, Full E2E,
+or release Gate A3 substitute was introduced. Direct manifest discovery
+remains 26 gates / 376 classified sources.
+
+The identities own Meta/Control, Consumer/Pro, desktop/390x844, one named
+`aria-modal` dialog, input entry, background inertness/tree concealment,
+Tab/Shift+Tab, input/action Escape, backdrop, semantic replacement/fallback,
+editable and Preview suppression, repeated open, Plans/other-modal blocking,
+newer registered visual/focus ownership, requested/current design/project/
+audience/editor-mode/Preview/unmount cancellation, filter/order/disabled and
+first-enabled Enter behavior, pointer exact-once history, close-before-action
+execution, and overflow. Closed assertions use the stable Palette test ID so a
+hidden mounted duplicate cannot satisfy absence.
+
+The focused static prerequisite remains inside `test:design-page-cleanup`. It
+locks shared `EditorDialog` composition, additive active-modal query, typed
+session fields, semantic candidates, command scope wiring, registry-derived
+direct-root z-stack plus reversible Palette visual supersession, query
+consumption, exact-once execution, and a
+synthetic action-created-dialog sequence in which close must occur first.
+Browser hit-testing separately proves the ordinary Palette is above editor
+chrome and a registered Guest Save owner nested under a lower stacking context
+is interactive while Palette is visually withdrawn, with stack indices 0/1.
+Current command inventory has no direct registered-dialog opener;
+the executor contract covers future additions without altering current IDs.
 
 ## Canonical inventory
 

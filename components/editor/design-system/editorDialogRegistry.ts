@@ -5,12 +5,83 @@ export type EditorDialogToken = symbol;
 
 const dialogStack: EditorDialogToken[] = [];
 const dialogRoots = new Map<EditorDialogToken, HTMLElement>();
+const dialogVisualLayers = new Map<
+  EditorDialogToken,
+  {
+    baseZIndex: number;
+    inlineValue: string;
+    inlinePriority: string;
+    hideWhenSuperseded: boolean;
+    visibilityValue: string;
+    visibilityPriority: string;
+  }
+>();
 const dialogBackgroundOwners = new Set<EditorDialogToken>();
 const dialogOwnershipGuards = new Map<EditorDialogToken, () => void>();
 const managedBackground = new Map<
   HTMLElement,
   { inert: boolean; ariaHidden: string | null }
 >();
+
+export function resolveEditorDialogStackZIndexes(
+  baseZIndexes: readonly number[]
+) {
+  const stackBase = Math.max(50, ...baseZIndexes);
+  return baseZIndexes.map((_, index) => stackBase + index);
+}
+
+function refreshDialogVisualStack() {
+  const layers = dialogStack.map((token) => dialogVisualLayers.get(token));
+  const zIndexes = resolveEditorDialogStackZIndexes(
+    layers.map((layer) => layer?.baseZIndex ?? 50)
+  );
+  dialogStack.forEach((token, index) => {
+    const root = dialogRoots.get(token);
+    const layer = dialogVisualLayers.get(token);
+    if (!root || !layer) return;
+    root.style.setProperty("z-index", String(zIndexes[index]), "important");
+    root.dataset.editorDialogStackIndex = String(index);
+    if (layer.hideWhenSuperseded && index < dialogStack.length - 1) {
+      root.style.setProperty("visibility", "hidden", "important");
+      root.dataset.editorDialogVisuallySuppressed = "true";
+    } else {
+      restoreDialogVisibility(root, layer);
+    }
+  });
+}
+
+function restoreDialogVisibility(
+  root: HTMLElement,
+  layer: { visibilityValue: string; visibilityPriority: string }
+) {
+  if (layer.visibilityValue) {
+    root.style.setProperty(
+      "visibility",
+      layer.visibilityValue,
+      layer.visibilityPriority
+    );
+  } else {
+    root.style.removeProperty("visibility");
+  }
+  delete root.dataset.editorDialogVisuallySuppressed;
+}
+
+function restoreDialogVisualLayer(token: EditorDialogToken) {
+  const root = dialogRoots.get(token);
+  const layer = dialogVisualLayers.get(token);
+  if (!root || !layer) return;
+  if (layer.inlineValue) {
+    root.style.setProperty(
+      "z-index",
+      layer.inlineValue,
+      layer.inlinePriority
+    );
+  } else {
+    root.style.removeProperty("z-index");
+  }
+  restoreDialogVisibility(root, layer);
+  delete root.dataset.editorDialogStackIndex;
+}
 
 function isVisibleModal(element: HTMLElement) {
   if (
@@ -34,6 +105,10 @@ function getExternalEditorModal() {
 
 export function hasExternalEditorModal() {
   return Boolean(getExternalEditorModal());
+}
+
+export function hasActiveEditorModal() {
+  return dialogStack.length > 0 || hasExternalEditorModal();
 }
 
 export function isEditorDialogBackgroundManaged() {
@@ -95,12 +170,26 @@ export function notifyTopmostEditorDialog() {
 
 export function registerEditorDialogRoot(
   dialog: HTMLElement,
-  manageBackground: boolean
+  manageBackground: boolean,
+  hideWhenSuperseded = false
 ) {
   const token = Symbol("editor-dialog");
   dialogStack.push(token);
   dialogRoots.set(token, dialog);
+  const computedZIndex = Number.parseInt(
+    window.getComputedStyle(dialog).zIndex,
+    10
+  );
+  dialogVisualLayers.set(token, {
+    baseZIndex: Number.isFinite(computedZIndex) ? computedZIndex : 50,
+    inlineValue: dialog.style.getPropertyValue("z-index"),
+    inlinePriority: dialog.style.getPropertyPriority("z-index"),
+    hideWhenSuperseded,
+    visibilityValue: dialog.style.getPropertyValue("visibility"),
+    visibilityPriority: dialog.style.getPropertyPriority("visibility"),
+  });
   if (manageBackground) dialogBackgroundOwners.add(token);
+  refreshDialogVisualStack();
   refreshBackgroundInertness();
   return token;
 }
@@ -108,9 +197,12 @@ export function registerEditorDialogRoot(
 export function unregisterEditorDialogRoot(token: EditorDialogToken) {
   const index = dialogStack.lastIndexOf(token);
   if (index >= 0) dialogStack.splice(index, 1);
+  restoreDialogVisualLayer(token);
   dialogRoots.delete(token);
+  dialogVisualLayers.delete(token);
   dialogBackgroundOwners.delete(token);
   dialogOwnershipGuards.delete(token);
+  refreshDialogVisualStack();
   notifyTopmostEditorDialog();
 }
 

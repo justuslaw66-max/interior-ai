@@ -467,8 +467,8 @@ assert.doesNotMatch(
 );
 assert.match(
   commandPaletteSource,
-  /data-testid="editor-command-palette"[\s\S]{0,1200}?designer-(?:dock|work-surface)/,
-  "The Pro command palette should use an opaque semantic surface."
+  /<EditorDialog[\s\S]{0,500}?testId="editor-command-palette"[\s\S]{0,700}?panelClassName=\{[\s\S]{0,300}?designer-(?:dock|work-surface)/,
+  "The shared Pro command-palette dialog should use an opaque semantic panel surface."
 );
 assert.match(
   planQualityReviewPanelSource,

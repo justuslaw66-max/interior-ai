@@ -1,5 +1,46 @@
 # Code health audit
 
+## CH-0015H accessible Command Palette lifecycle — 2026-08-11
+
+Starting from exact integration source
+`5ab9db530d4e4fcc8d1f8f678994e09ab7bb3e67` / tree
+`f646076854c0c76b69c80c9cada996e58d01b1b0`, this bounded batch classifies the
+Cmd/Ctrl+K Palette as a **MODAL_DIALOG**. The old custom overlay omitted modal
+state and registration, let Tab and action-focused Escape escape, exposed the
+editor background, had no semantic return or stale-scope cancellation, opened
+behind/above competing owners, and invoked domain behavior before closure.
+
+The Palette now delegates semantics, focus, dismissal, background isolation,
+and supersession to `EditorDialog`. The global shortcut is blocked by any
+active registered/external modal and retains editable/Preview suppression. A
+typed in-memory generation owns query, semantic opener, action consumption,
+cancellation, and route/requested+loaded design/project/Consumer-Pro/editor
+mode/Preview/unmount scope. Return resolves one current recognized editor
+action, then More, then Workspace, rejecting invalid or superseded targets.
+
+The action executor consumes once, clears query, and commits close before the
+unchanged callback. The registry now also owns direct-root visual stack order:
+it preserves the greatest participating base layer, assigns each newer token
+the next layer, and restores prior inline style at unregister. The Palette
+withdraws visually while superseded and restores on reclaim, covering newer
+Cart/Retailer owners trapped inside a lower ancestor stacking context. Static execution proves exact-once
+and close-before-action-created-dialog order; browser evidence proves ordinary
+Palette-over-editor and nested newer-dialog-over-Palette rendering and focus.
+
+Existing `ci.pro-visual-policy` adds five stable identities without a new gate
+or package-closure change. The focused Palette matrix passes 10/10 across
+Chromium/WebKit with zero retries/skips/filters/shards/timeout increase; the
+final canonical owner and the exactly-once Phase 8 clean-HEAD precondition
+failure are recorded in the handoff. No final performance measurement was
+produced or promoted. Derived inventory remains 26 gates / 376 sources and
+design cleanup remains 81 guards.
+All 14 command IDs and domain behavior, history, analytics, capability policy,
+Floor Plan Upload, schema, dependencies, and workflows remain unchanged.
+
+CH-0015 remains open only for Floor Plan Upload. Rollback is one focused revert
+plus Palette/Pro and affected shared-dialog owners, truthfulness, Phase 8, and
+strict build, with no database or external rollback.
+
 ## CH-0015G accessible Retailer Confirmation lifecycle — 2026-08-11
 
 Starting from exact integration source

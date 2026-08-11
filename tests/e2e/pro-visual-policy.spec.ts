@@ -754,8 +754,523 @@ async function navigateWithMountedAppRouter(page: Page, href: string) {
   }, href);
 }
 
+const COMMAND_PALETTE_NAME = "Command palette";
+const COMMAND_PALETTE_ACTION_IDS = [
+  "undo",
+  "redo",
+  "fit-plan",
+  "toggle-view",
+  "add-door",
+  "insert-default-door",
+  "add-window",
+  "delete-overlay",
+  "duplicate-room",
+  "delete-room",
+  "duplicate-item",
+  "delete-item",
+  "preset-presentation",
+  "preset-technical",
+] as const;
+
+async function prepareCommandPaletteEditor(
+  page: Page,
+  plan: "free" | "pro",
+  options: {
+    href?: string;
+    viewport?: { width: number; height: number };
+  } = {}
+) {
+  if (options.viewport) await page.setViewportSize(options.viewport);
+  await mockPlan(page, plan);
+  await page.addInitScript(() => {
+    localStorage.clear();
+    sessionStorage.clear();
+    localStorage.setItem("interior-ai:beta-start-dismissed", "1");
+  });
+  await page.goto(options.href ?? "/design", { waitUntil: "domcontentloaded" });
+  await expect(page.getByTestId("editor-command-bar")).toBeVisible({
+    timeout: 30_000,
+  });
+  await expect(page.getByTestId("scene-canvas")).toHaveAttribute(
+    "data-client-hydrated",
+    "true",
+    { timeout: 30_000 }
+  );
+  await dismissBlockingPrompt(page);
+}
+
+async function openCommandPalette(
+  page: Page,
+  shortcut: "Meta+K" | "Control+K",
+  opener: Locator
+) {
+  await expect(page.getByTestId("editor-command-palette")).toHaveCount(0);
+  await opener.focus();
+  await expect(opener).toBeFocused();
+  await page.keyboard.press(shortcut);
+  const dialog = page.getByRole("dialog", { name: COMMAND_PALETTE_NAME });
+  const input = page.getByTestId("editor-command-palette-input");
+  await expect(dialog).toBeVisible();
+  await expect(dialog).toHaveAttribute("aria-modal", "true");
+  await expect(dialog).toHaveAttribute("data-editor-dialog-focus-trap", "active");
+  await expect(input).toBeFocused();
+  return { dialog, input };
+}
+
+async function mockDelayedPaletteDesignLoad(page: Page, designId: string) {
+  const identity = await mockAuthenticatedPlan(page, "pro");
+  let markStarted!: () => void;
+  let releaseResponse!: () => void;
+  const started = new Promise<void>((resolve) => {
+    markStarted = resolve;
+  });
+  const responseGate = new Promise<void>((resolve) => {
+    releaseResponse = resolve;
+  });
+  await page.route(`**/api/designs/${designId}`, async (route) => {
+    markStarted();
+    await responseGate;
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        ...shareFallbackDesignPayload(designId),
+        title: "CH-0015H loaded Palette scope",
+        mode: "designer",
+      }),
+    });
+  });
+  return { ...identity, started, releaseResponse };
+}
+
 test.describe("Pro visual policy", () => {
   test.use({ viewport: { width: 2048, height: 1200 }, deviceScaleFactor: 1 });
+
+  test("gives Consumer Meta Command Palette complete modal and Enter execution ownership", async ({
+    page,
+  }) => {
+    await prepareCommandPaletteEditor(page, "free");
+    const workspace = page.getByTestId("editor-command-workspace");
+    let palette = await openCommandPalette(page, "Meta+K", workspace);
+    let { dialog, input } = palette;
+
+    await expect(dialog).toHaveCount(1);
+    const visualContract = await dialog.evaluate((element) => {
+      const panel = element.firstElementChild;
+      const commandBar = document.querySelector<HTMLElement>(
+        '[data-testid="editor-command-bar"]'
+      );
+      if (!(panel instanceof HTMLElement) || !commandBar) {
+        throw new Error("Palette visual owners are missing");
+      }
+      const panelRect = panel.getBoundingClientRect();
+      const commandBarRect = commandBar.getBoundingClientRect();
+      const topmostAtCommandBar = document.elementFromPoint(
+        commandBarRect.left + commandBarRect.width / 2,
+        commandBarRect.top + commandBarRect.height / 2
+      );
+      return {
+        panelWidth: panelRect.width,
+        panelPadding: getComputedStyle(panel).padding,
+        backdrop: getComputedStyle(element).backgroundColor,
+        paletteOwnsCommandBarPoint:
+          topmostAtCommandBar instanceof Node && element.contains(topmostAtCommandBar),
+      };
+    });
+    expect(visualContract.panelWidth).toBe(560);
+    expect(visualContract.panelPadding).toBe("0px");
+    expect(visualContract.backdrop).toMatch(/0\.3\)$/);
+    expect(visualContract.paletteOwnsCommandBarPoint).toBe(true);
+    expect(
+      await page.getByTestId("editor-command-bar").evaluate((element) =>
+        Boolean(element.closest('[inert][aria-hidden="true"]'))
+      )
+    ).toBe(true);
+    const accessibilitySnapshot = await page.locator("body").ariaSnapshot();
+    expect(accessibilitySnapshot).toContain("Command palette");
+    expect(accessibilitySnapshot).not.toContain('button "Save"');
+    expect(
+      await dialog
+        .locator('[data-testid^="editor-command-palette-action-"]')
+        .evaluateAll((elements) =>
+          elements.map((element) =>
+            element.getAttribute("data-testid")?.replace(
+              "editor-command-palette-action-",
+              ""
+            )
+          )
+        )
+    ).toEqual(COMMAND_PALETTE_ACTION_IDS);
+    await expect(page.getByTestId("editor-command-palette-action-undo")).toBeDisabled();
+    await expect(page.getByTestId("editor-command-palette-action-redo")).toBeDisabled();
+
+    await input.press("Enter");
+    await expect(page.getByTestId("editor-command-palette")).toHaveCount(0);
+    await expect(workspace).toBeFocused();
+
+    palette = await openCommandPalette(page, "Meta+K", workspace);
+    ({ dialog, input } = palette);
+
+    const enabledActions = dialog.locator("button:not(:disabled)");
+    const enabledCount = await enabledActions.count();
+    const lastEnabled = enabledActions.nth(enabledCount - 1);
+    await input.press("Shift+Tab");
+    await expect(lastEnabled).toBeFocused();
+    await page.keyboard.press("Tab");
+    await expect(input).toBeFocused();
+
+    await input.fill("switch to 2d");
+    await expect(page.getByTestId("editor-command-palette-action-toggle-view")).toBeVisible();
+    await expect(dialog.locator('[data-testid^="editor-command-palette-action-"]')).toHaveCount(1);
+    await input.press("Enter");
+    await expect(page.getByTestId("editor-command-palette")).toHaveCount(0);
+    await expect(page.getByTestId("editor-view-2d")).toHaveAttribute(
+      "aria-pressed",
+      "true"
+    );
+    await expect(workspace).toBeFocused();
+  });
+
+  test("gives Pro Control narrow Palette containment, semantic replacement, fallback, and backdrop dismissal", async ({
+    page,
+  }) => {
+    await prepareCommandPaletteEditor(page, "pro", {
+      href: "/design?mode=designer",
+      viewport: { width: 390, height: 844 },
+    });
+    const more = page.getByTestId("editor-command-overflow");
+    let palette = await openCommandPalette(page, "Control+K", more);
+    const generation = await palette.dialog.getAttribute(
+      "data-editor-dialog-generation"
+    );
+    const fit = page.getByTestId("editor-command-palette-action-fit-plan");
+    await fit.focus();
+    await page.keyboard.press("Control+K");
+    await expect(palette.dialog).toHaveCount(1);
+    await expect(palette.dialog).toHaveAttribute(
+      "data-editor-dialog-generation",
+      generation ?? ""
+    );
+
+    await more.evaluate((element) => element.replaceWith(element.cloneNode(true)));
+    await page.keyboard.press("Escape");
+    await expect(page.getByTestId("editor-command-palette")).toHaveCount(0);
+    const currentMore = page.getByTestId("editor-command-overflow");
+    await expect(currentMore).toBeFocused();
+
+    await page.evaluate(() => {
+      document.body.tabIndex = -1;
+      document.body.focus();
+    });
+    palette = await openCommandPalette(page, "Control+K", page.locator("body"));
+    await palette.input.press("Escape");
+    await expect(page.getByTestId("editor-command-palette")).toHaveCount(0);
+    await expect(currentMore).toBeFocused();
+
+    palette = await openCommandPalette(page, "Control+K", currentMore);
+    const geometry = await palette.dialog.evaluate((element) => {
+      const panel = element.firstElementChild;
+      if (!(panel instanceof HTMLElement)) throw new Error("Palette panel is missing");
+      const rect = panel.getBoundingClientRect();
+      return {
+        left: rect.left,
+        right: rect.right,
+        top: rect.top,
+        bottom: rect.bottom,
+        innerWidth,
+        innerHeight,
+        scrollWidth: document.documentElement.scrollWidth,
+      };
+    });
+    expect(geometry.left).toBeGreaterThanOrEqual(16);
+    expect(geometry.right).toBeLessThanOrEqual(geometry.innerWidth - 16);
+    expect(geometry.top).toBeGreaterThanOrEqual(16);
+    expect(geometry.bottom).toBeLessThanOrEqual(geometry.innerHeight);
+    expect(geometry.scrollWidth).toBeLessThanOrEqual(geometry.innerWidth);
+    await palette.dialog.click({ position: { x: 2, y: 2 } });
+    await expect(page.getByTestId("editor-command-palette")).toHaveCount(0);
+    await expect(currentMore).toBeFocused();
+  });
+
+  test("blocks Palette behind another modal and gives a newer registered dialog exclusive ownership", async ({
+    page,
+  }) => {
+    await prepareCommandPaletteEditor(page, "free");
+    const save = page.getByTestId("save-design");
+    await save.click();
+    const guest = page.getByRole("dialog", { name: "Save and sync this design?" });
+    await expect(guest).toBeVisible();
+    await page.keyboard.press("Meta+K");
+    await expect(page.getByTestId("editor-command-palette")).toHaveCount(0);
+    await guest.getByTestId("guest-save-prompt-close").click();
+    await expect(guest).toHaveCount(0);
+
+    const nested = await openPlansFromUpgrade(page, "pointer");
+    const plans = await expectPlansDialog(page);
+    await page.keyboard.press("Control+K");
+    await expect(page.getByTestId("editor-command-palette")).toHaveCount(0);
+    await plans.close.click();
+    await expectPlansClosed(page);
+    await expect(nested.plansAction).toBeFocused();
+    await nested.plansAction.press("Escape");
+    await expect(nested.upgrade).toHaveCount(0);
+
+    const more = page.getByTestId("editor-command-overflow");
+    const palette = await openCommandPalette(page, "Meta+K", more);
+    await save.evaluate((element) => element.click());
+    await expect(guest).toBeVisible();
+    await expect(guest.getByTestId("guest-save-prompt-close")).toBeFocused();
+    const supersededPalette = page.getByTestId("editor-command-palette");
+    await expect(supersededPalette).toHaveCount(1);
+    await page.evaluate(() => {
+      const guestRoot = document.querySelector<HTMLElement>(
+        '[data-testid="guest-save-prompt"]'
+      );
+      if (!guestRoot?.parentElement) throw new Error("Guest modal root is missing");
+      const stackingContext = document.createElement("div");
+      stackingContext.dataset.testid = "nested-dialog-stacking-context";
+      stackingContext.style.position = "relative";
+      stackingContext.style.zIndex = "20";
+      guestRoot.parentElement.insertBefore(stackingContext, guestRoot);
+      stackingContext.appendChild(guestRoot);
+    });
+    const registeredLayers = await page.evaluate(() => {
+      const paletteRoot = document.querySelector<HTMLElement>(
+        '[data-testid="editor-command-palette"]'
+      );
+      const guestRoot = document.querySelector<HTMLElement>(
+        '[data-testid="guest-save-prompt"]'
+      );
+      if (!paletteRoot || !guestRoot) {
+        throw new Error("Registered modal roots are missing");
+      }
+      return {
+        palette: Number(getComputedStyle(paletteRoot).zIndex),
+        guest: Number(getComputedStyle(guestRoot).zIndex),
+        paletteVisibility: getComputedStyle(paletteRoot).visibility,
+        nestedContext: Number(
+          getComputedStyle(guestRoot.parentElement as HTMLElement).zIndex
+        ),
+        paletteIndex: paletteRoot.dataset.editorDialogStackIndex,
+        guestIndex: guestRoot.dataset.editorDialogStackIndex,
+        paletteSuppressed:
+          paletteRoot.dataset.editorDialogVisuallySuppressed,
+      };
+    });
+    expect(registeredLayers.guest).toBeGreaterThan(registeredLayers.palette);
+    expect(registeredLayers.nestedContext).toBe(20);
+    expect(registeredLayers.paletteVisibility).toBe("hidden");
+    expect(registeredLayers.paletteSuppressed).toBe("true");
+    expect(registeredLayers.paletteIndex).toBe("0");
+    expect(registeredLayers.guestIndex).toBe("1");
+    expect(
+      await guest.evaluate((element) => {
+        const panel = element.firstElementChild;
+        if (!(panel instanceof HTMLElement)) return false;
+        const rect = panel.getBoundingClientRect();
+        const topmost = document.elementFromPoint(
+          rect.left + rect.width / 2,
+          rect.top + rect.height / 2
+        );
+        return topmost instanceof Node && element.contains(topmost);
+      })
+    ).toBe(true);
+    expect(
+      await supersededPalette.evaluate((element) =>
+        Boolean(element.closest('[inert][aria-hidden="true"]'))
+      )
+    ).toBe(true);
+    await page.evaluate(() => {
+      const stackingContext = document.querySelector<HTMLElement>(
+        '[data-testid="nested-dialog-stacking-context"]'
+      );
+      const guestRoot = stackingContext?.firstElementChild;
+      if (!stackingContext?.parentElement || !(guestRoot instanceof HTMLElement)) {
+        throw new Error("Nested Guest modal context is missing");
+      }
+      stackingContext.parentElement.insertBefore(guestRoot, stackingContext);
+      stackingContext.remove();
+    });
+    await page.keyboard.press("Escape");
+    await expect(guest).toHaveCount(0);
+    await expect(palette.dialog).toBeVisible();
+    await expect(palette.dialog).not.toHaveAttribute(
+      "data-editor-dialog-visually-suppressed",
+      "true"
+    );
+    await expect(palette.input).toBeFocused();
+    await palette.dialog.click({ position: { x: 2, y: 2 } });
+    await expect(page.getByTestId("editor-command-palette")).toHaveCount(0);
+    await expect(more).toBeFocused();
+  });
+
+  test("invalidates open Palette sessions on Client Preview, project scope, and unmount", async ({
+    page,
+  }) => {
+    await prepareCommandPaletteEditor(page, "pro", {
+      href: "/design?mode=designer",
+    });
+    const more = page.getByTestId("editor-command-overflow");
+    let palette = await openCommandPalette(page, "Meta+K", more);
+    await palette.input.fill("fit");
+    await page.getByTestId("editor-command-palette-action-fit-plan").focus();
+    await page.keyboard.press("p");
+    await expect(page.getByTestId("client-preview-exit")).toBeFocused();
+    await expect(page.getByTestId("editor-command-palette")).toHaveCount(0);
+    await page.keyboard.press("p");
+    await expect(page.getByTestId("client-preview-exit")).toHaveCount(0);
+    await expect(page.getByTestId("editor-command-palette")).toHaveCount(0);
+
+    palette = await openCommandPalette(page, "Meta+K", more);
+    await page.evaluate(() => {
+      document.body.dataset.paletteStaleReturnCount = "0";
+      document
+        .getElementById("editor-command-more-action")
+        ?.addEventListener("focus", () => {
+          document.body.dataset.paletteStaleReturnCount = String(
+            Number(document.body.dataset.paletteStaleReturnCount ?? "0") + 1
+          );
+        });
+    });
+    await page.evaluate(() => window.history.pushState(null, "", "/design"));
+    await expect(page).toHaveURL(/\/design$/);
+    await expect(page.getByTestId("editor-command-palette")).toHaveCount(0);
+    expect(
+      await page.evaluate(() => document.body.dataset.paletteStaleReturnCount)
+    ).toBe("0");
+    await page.evaluate(() =>
+      window.history.pushState(null, "", "/design?mode=designer")
+    );
+    await expect(page).toHaveURL(/mode=designer/);
+    await expect(page.getByTestId("editor-command-overflow")).toBeVisible();
+
+    palette = await openCommandPalette(
+      page,
+      "Meta+K",
+      page.getByTestId("editor-command-overflow")
+    );
+    await page
+      .getByTestId("editor-workflow-furnish")
+      .evaluate((element) => (element as HTMLButtonElement).click());
+    await expect(page.getByTestId("editor-command-palette")).toHaveCount(0);
+    await expect(page.getByTestId("editor-command-workspace")).toHaveAccessibleName(
+      "Workspace: Furnish"
+    );
+    await page
+      .getByTestId("editor-workflow-plan")
+      .evaluate((element) => (element as HTMLButtonElement).click());
+
+    palette = await openCommandPalette(
+      page,
+      "Meta+K",
+      page.getByTestId("editor-command-overflow")
+    );
+    await page.evaluate(() => {
+      document.body.dataset.paletteStaleReturnCount = "0";
+      window.history.pushState(
+        null,
+        "",
+        "/design?mode=designer&workspace=shop"
+      );
+    });
+    await expect(page).toHaveURL(/workspace=shop/);
+    await expect(page.getByTestId("editor-command-palette")).toHaveCount(0);
+    expect(
+      await page.evaluate(() => document.body.dataset.paletteStaleReturnCount)
+    ).toBe("0");
+
+    palette = await openCommandPalette(
+      page,
+      "Meta+K",
+      page.getByTestId("editor-command-overflow")
+    );
+    await page.evaluate(() => {
+      window.history.pushState(
+        null,
+        "",
+        "/design?designId=ch0015h-requested-design&mode=designer"
+      );
+    });
+    await expect(page).toHaveURL(/designId=ch0015h-requested-design/);
+    await expect(page.getByTestId("editor-command-palette")).toHaveCount(0);
+
+    const loadedDesignId = "ch0015h-palette-loaded-design";
+    const delayedLoad = await mockDelayedPaletteDesignLoad(page, loadedDesignId);
+    await prepareCommandPaletteEditor(page, "pro", {
+      href: `/design?designId=${loadedDesignId}&mode=designer`,
+    });
+    await delayedLoad.sessionReady;
+    await delayedLoad.started;
+    palette = await openCommandPalette(
+      page,
+      "Meta+K",
+      page.getByTestId("editor-command-overflow")
+    );
+    delayedLoad.releaseResponse();
+    await expect(page.getByTestId("qa-editor-cloud-design")).toHaveAttribute(
+      "data-design-id",
+      loadedDesignId
+    );
+    await expect(page.getByTestId("editor-command-palette")).toHaveCount(0);
+
+    palette = await openCommandPalette(
+      page,
+      "Meta+K",
+      page.getByTestId("editor-command-overflow")
+    );
+    await page.evaluate(() => {
+      document.body.dataset.paletteStaleReturnCount = "0";
+    });
+    await navigateWithMountedAppRouter(page, "/auth/error?error=AccessDenied");
+    await expect(page).toHaveURL(/\/auth\/error\?error=AccessDenied$/);
+    await expect(page.getByTestId("editor-command-palette")).toHaveCount(0);
+    expect(
+      await page.evaluate(() => document.body.dataset.paletteStaleReturnCount)
+    ).toBe("0");
+  });
+
+  test("preserves editable suppression and pointer action exact-once close ordering", async ({
+    page,
+  }) => {
+    await prepareCommandPaletteEditor(page, "free", {
+      href: "/design?debug_layout=1",
+    });
+    for (const kind of ["input", "textarea", "contenteditable"] as const) {
+      const editable = page.locator(`#palette-editable-${kind}`);
+      await page.evaluate((editableKind) => {
+        document.getElementById(`palette-editable-${editableKind}`)?.remove();
+        const element = document.createElement(
+          editableKind === "contenteditable" ? "div" : editableKind
+        );
+        element.id = `palette-editable-${editableKind}`;
+        if (editableKind === "contenteditable") element.contentEditable = "true";
+        document.body.append(element);
+        element.focus();
+      }, kind);
+      await expect(editable).toBeFocused();
+      await page.keyboard.press(kind === "textarea" ? "Control+K" : "Meta+K");
+      await expect(page.getByTestId("editor-command-palette")).toHaveCount(0);
+      await editable.evaluate((element) => element.remove());
+    }
+
+    const workspace = page.getByTestId("editor-command-workspace");
+    const historyDebug = page.getByTestId("qa-design-layout-debug-overlay");
+    await expect(historyDebug).toBeVisible();
+    const historyText = await historyDebug.textContent();
+    const undoCount = Number(historyText?.match(/Undo: (\d+)/)?.[1]);
+    expect(Number.isFinite(undoCount)).toBe(true);
+    const palette = await openCommandPalette(page, "Meta+K", workspace);
+    await palette.input.fill("insert default door");
+    await page
+      .getByTestId("editor-command-palette-action-insert-default-door")
+      .click();
+    await expect(page.getByTestId("editor-command-palette")).toHaveCount(0);
+    await expect(historyDebug).toContainText(`Undo: ${undoCount + 1}`);
+    await expect(page.getByTestId("command-undo")).toHaveAccessibleName(
+      "Undo Add door"
+    );
+    await expect(workspace).toBeFocused();
+  });
 
   test("gives Account pointer entry a complete Plans modal lifecycle", async ({
     page,

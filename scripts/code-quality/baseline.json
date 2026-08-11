@@ -725,7 +725,7 @@
       "limit": 400
     },
     "lib/useDesignPagePresentationQaFacade.ts": {
-      "lines": 509,
+      "lines": 508,
       "limit": 400
     },
     "lib/useDesignPageProductConfiguration.ts": {
@@ -1851,7 +1851,7 @@
     "components/editor/design-page/EditorCommandPalette.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 114
+        "maximum": 99
       }
     },
     "components/editor/design-page/ImportedFloorPlanWallEditor.tsx": {
@@ -2059,7 +2059,7 @@
     "components/editor/design-system/EditorDialog.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 106
+        "maximum": 104
       }
     },
     "components/editor/DesignControlsAiPanel.tsx": {
@@ -4509,7 +4509,7 @@
     "lib/useDesignPageCommandPalette.ts": {
       "overlongFunctions": {
         "count": 2,
-        "maximum": 231
+        "maximum": 197
       }
     },
     "lib/useDesignPageCommerceActions.ts": {
@@ -4871,7 +4871,7 @@
     "lib/useDesignPagePresentationQaFacade.ts": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 317
+        "maximum": 316
       }
     },
     "lib/useDesignPagePresentationWorkspaceRegistration.ts": {

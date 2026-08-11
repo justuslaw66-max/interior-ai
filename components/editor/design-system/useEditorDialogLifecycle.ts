@@ -25,7 +25,6 @@ import {
   resolveInitialFocusTarget,
   resolveReadyFocusTarget,
 } from "@/components/editor/design-system/editorDialogFocus";
-
 function cancelPendingRestoration(restoreFrameRef: MutableRefObject<number | null>) {
   if (restoreFrameRef.current === null) return;
   window.cancelAnimationFrame(restoreFrameRef.current);
@@ -39,19 +38,21 @@ type EditorDialogLifecycleOptions = {
   closeButtonRef: RefObject<HTMLButtonElement | null>;
   initialFocusRef?: { current: HTMLElement | null };
   returnFocusId?: string; returnFocusIds?: readonly string[];
-  cancelFocusRestorationOnUnmount: boolean; manageBackground: boolean;
+  focusRestorationEnabledRef?: { current: boolean };
+  hideWhenSuperseded: boolean; cancelFocusRestorationOnUnmount: boolean;
+  manageBackground: boolean;
   waitForEntryTransition: boolean;
   closeDisabled: boolean;
   onClose: () => void;
 };
-
 type DialogSessionOptions = Pick<
   EditorDialogLifecycleOptions,
   | "dialogRef"
   | "panelRef"
   | "closeButtonRef"
   | "initialFocusRef"
-  | "returnFocusId" | "returnFocusIds" | "manageBackground"
+  | "returnFocusId" | "returnFocusIds" | "focusRestorationEnabledRef" | "hideWhenSuperseded"
+  | "manageBackground"
   | "waitForEntryTransition"
 > & {
   generation: number;
@@ -69,7 +70,6 @@ const ENTRY_TRANSITION_EVENTS = [
   "transitionend",
   "transitioncancel",
 ] as const;
-
 function setDialogEntryState(
   dialog: HTMLElement,
   panel: HTMLElement,
@@ -78,7 +78,6 @@ function setDialogEntryState(
   dialog.dataset.editorDialogState = state;
   panel.dataset.editorDialogState = state;
 }
-
 function scheduleTrackedFrame(frames: Set<number>, callback: () => void) {
   const frame = window.requestAnimationFrame(() => {
     frames.delete(frame);
@@ -250,6 +249,7 @@ function scheduleFocusRestoration(
       options.unmountedRef.current ||
       options.generationRef.current !== options.generation ||
       !ownedTopmostFocus ||
+      options.focusRestorationEnabledRef?.current === false ||
       hasExternalEditorModal()
     ) return;
     const legacyTarget = options.returnFocusId
@@ -275,7 +275,9 @@ function registerDialogSession(options: DialogSessionOptions) {
   const panel = options.panelRef.current;
   if (!dialog || !panel) return;
   const opener = document.activeElement instanceof HTMLElement ? document.activeElement : null;
-  const token = registerEditorDialogRoot(dialog, options.manageBackground || options.waitForEntryTransition);
+  const token = registerEditorDialogRoot(dialog,
+    options.manageBackground || options.waitForEntryTransition,
+    options.hideWhenSuperseded);
   dialog.dataset.editorDialogGeneration = String(options.generation);
   dialog.dataset.editorDialogFocusTrap = "active";
   const handlers = createDialogInputHandlers(dialog, panel, token, options);
@@ -316,7 +318,8 @@ function useDialogSessionEffects(
 ) {
   const {
     open, dialogRef, panelRef, closeButtonRef, initialFocusRef,
-    returnFocusId, returnFocusIds, manageBackground, waitForEntryTransition,
+    returnFocusId, returnFocusIds, focusRestorationEnabledRef,
+    hideWhenSuperseded, manageBackground, waitForEntryTransition,
   } = options;
   const startSession = useCallback(() => {
     const generation = generationRef.current + 1;
@@ -324,13 +327,15 @@ function useDialogSessionEffects(
     cancelPendingRestoration(restoreFrameRef);
     return registerDialogSession({
       dialogRef, panelRef, closeButtonRef, initialFocusRef, returnFocusId,
-      returnFocusIds, manageBackground, waitForEntryTransition, generation, requestClose,
+      returnFocusIds, focusRestorationEnabledRef, hideWhenSuperseded, manageBackground,
+      waitForEntryTransition, generation, requestClose,
       closeDisabledRef, restoreFrameRef, generationRef, unmountedRef,
     });
   }, [
     closeButtonRef, closeDisabledRef, dialogRef, generationRef, initialFocusRef,
     panelRef, requestClose, restoreFrameRef, returnFocusId, returnFocusIds,
-    unmountedRef, manageBackground, waitForEntryTransition,
+    focusRestorationEnabledRef, unmountedRef, hideWhenSuperseded,
+    manageBackground, waitForEntryTransition,
   ]);
 
   useLayoutEffect(() => {
@@ -345,17 +350,10 @@ function useDialogSessionEffects(
 }
 
 export function useEditorDialogLifecycle({
-  open, dialogRef,
-  panelRef,
-  closeButtonRef,
-  initialFocusRef,
-  returnFocusId,
-  returnFocusIds,
-  cancelFocusRestorationOnUnmount,
-  manageBackground,
-  waitForEntryTransition,
-  closeDisabled,
-  onClose,
+  open, dialogRef, panelRef, closeButtonRef, initialFocusRef,
+  returnFocusId, returnFocusIds, focusRestorationEnabledRef, hideWhenSuperseded,
+  cancelFocusRestorationOnUnmount, manageBackground, waitForEntryTransition,
+  closeDisabled, onClose,
 }: EditorDialogLifecycleOptions) {
   const onCloseRef = useRef(onClose);
   const closeDisabledRef = useRef(closeDisabled);
@@ -375,7 +373,8 @@ export function useEditorDialogLifecycle({
   useDialogSessionEffects(
     {
       open, dialogRef, panelRef, closeButtonRef, initialFocusRef, returnFocusId,
-      returnFocusIds, cancelFocusRestorationOnUnmount, manageBackground,
+      returnFocusIds, focusRestorationEnabledRef, hideWhenSuperseded,
+      cancelFocusRestorationOnUnmount, manageBackground,
       waitForEntryTransition, closeDisabled,
       onClose,
     },

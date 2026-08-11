@@ -1,5 +1,36 @@
 # P0/P1 remediation queue
 
+## CH-0015H Command Palette accessibility — 2026-08-11
+
+- **Source/scope:** exact integration source
+  `5ab9db530d4e4fcc8d1f8f678994e09ab7bb3e67` / tree
+  `f646076854c0c76b69c80c9cada996e58d01b1b0`; branch
+  `fix/ch-0015-command-palette-accessibility`; only Cmd/Ctrl+K Palette session,
+  semantic return, shared modal/visual stack additions, focused owner, and
+  records.
+- **Disposition:** `PARTIALLY RESOLVED — CH-0015H LOCAL REMEDIATION COMPLETE`.
+  One named modal owns input entry, containment, topmost Escape/backdrop,
+  background isolation, semantic return, and scope cancellation. Another modal
+  blocks opening; a newer direct root receives the next visual layer, while a
+  superseded Palette withdraws visually across nested ancestor stacking
+  contexts. Actions consume/clear/close before unchanged behavior runs.
+- **Required owner:** existing `ci.pro-visual-policy` owns five stable Palette
+  identities in Chromium/WebKit; no gate, cadence, project, workflow, retry,
+  timeout, or Full E2E ownership changed. Inventory remains 26 gates / 376
+  classified sources; design cleanup remains 81 guards. The exactly-once final
+  Phase 8 invocation passed its contract characterization and then stopped at
+  the benchmark's clean-HEAD precondition, so final-source performance remains
+  unverified and must be run by the integrator from the clean commit.
+- **Behavior/rollback:** IDs, labels, hints, order, filtering, enabled
+  predicates, first-enabled Enter, pointer/domain/history behavior,
+  editable suppression, Preview exclusion, and Consumer/Pro capability policy
+  remain unchanged. Revert one focused commit and rerun Palette/Pro, affected
+  shared-dialog owners, truthfulness, Phase 8, and strict build; no data or
+  external rollback.
+- **Queue status:** CH-0015 remains `IN_PROGRESS` with exactly one required
+  batch: Floor Plan Upload. Public legacy Upgrade and selected-item preview
+  remain separate P2 work.
+
 ## CH-0015G Retailer Confirmation accessibility — 2026-08-11
 
 - **Source/scope:** exact integration source

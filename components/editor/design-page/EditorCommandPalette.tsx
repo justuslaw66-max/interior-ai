@@ -1,3 +1,9 @@
+"use client";
+
+import { useRef } from "react";
+
+import { EditorDialog } from "@/components/editor/design-system/EditorDialog";
+
 export interface EditorCommandPaletteAction {
   id: string;
   label: string;
@@ -11,8 +17,11 @@ export interface EditorCommandPaletteProps {
   query: string;
   actions: readonly EditorCommandPaletteAction[];
   designerTheme: boolean;
+  returnFocusIds: readonly string[];
+  focusRestorationEnabledRef: { current: boolean };
   onClose: () => void;
   onQueryChange: (query: string) => void;
+  onRunAction: (action: EditorCommandPaletteAction) => void;
 }
 
 export function EditorCommandPalette({
@@ -20,112 +29,97 @@ export function EditorCommandPalette({
   query,
   actions,
   designerTheme,
+  returnFocusIds,
+  focusRestorationEnabledRef,
   onClose,
   onQueryChange,
+  onRunAction,
 }: EditorCommandPaletteProps) {
-  if (!open) return null;
-
-  const runAction = (action: EditorCommandPaletteAction) => {
-    action.run();
-    onClose();
-    onQueryChange("");
-  };
+  const inputRef = useRef<HTMLInputElement | null>(null);
 
   return (
-    <div
-      data-testid="editor-command-palette"
-      className="fixed inset-0 z-[95] bg-black/30 px-4 pt-20 backdrop-blur-sm"
-      role="dialog"
-      aria-label="Command palette"
-      onMouseDown={(event) => {
-        if (event.target === event.currentTarget) onClose();
-      }}
+    <EditorDialog
+      open={open}
+      title="Command palette"
+      onClose={onClose}
+      showCloseButton={false}
+      testId="editor-command-palette"
+      initialFocusRef={inputRef}
+      returnFocusIds={returnFocusIds}
+      focusRestorationEnabledRef={focusRestorationEnabledRef}
+      hideWhenSuperseded manageBackground
+      cancelFocusRestorationOnUnmount
+      dark={designerTheme}
+      overlayClassName="z-[95] items-start !bg-black/30 px-4 pb-4 pt-20 backdrop-blur-sm"
+      panelClassName={
+        designerTheme
+          ? "designer-dock !max-w-[560px] overflow-hidden !rounded-xl !border-0 !p-0 text-neutral-100"
+          : "!max-w-[560px] overflow-hidden !rounded-xl border-neutral-200 bg-white !p-0 text-neutral-950"
+      }
+      headerClassName="sr-only"
+      contentClassName="!mt-0"
     >
-      <div
+      <input
+        ref={inputRef}
+        data-testid="editor-command-palette-input"
+        data-editor-dialog-initial-focus="true"
+        aria-label="Search commands"
+        value={query}
+        onChange={(event) => onQueryChange(event.currentTarget.value)}
+        onKeyDown={(event) => {
+          if (event.key !== "Enter") return;
+          const action = actions.find((entry) => entry.enabled);
+          if (!action) return;
+          event.preventDefault();
+          onRunAction(action);
+        }}
+        placeholder="Search commands"
         className={
           designerTheme
-            ? "designer-dock mx-auto w-[min(560px,100%)] overflow-hidden rounded-xl text-neutral-100"
-            : "mx-auto w-[min(560px,100%)] overflow-hidden rounded-xl border border-neutral-200 bg-white text-neutral-950 shadow-2xl"
+            ? "h-12 w-full border-b border-white/10 bg-transparent px-4 text-sm font-semibold outline-none placeholder:text-neutral-500 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400"
+            : "h-12 w-full border-b border-neutral-200 bg-transparent px-4 text-sm font-semibold outline-none placeholder:text-neutral-400 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-500"
         }
-      >
-        <input
-          data-testid="editor-command-palette-input"
-          autoFocus
-          value={query}
-          onChange={(event) => onQueryChange(event.currentTarget.value)}
-          onKeyDown={(event) => {
-            if (event.key === "Escape") {
-              event.preventDefault();
-              onClose();
-              return;
-            }
-            if (event.key === "Enter") {
-              const action = actions.find((entry) => entry.enabled);
-              if (!action) return;
-              event.preventDefault();
-              runAction(action);
-            }
-          }}
-          placeholder="Search commands"
-          className={
-            designerTheme
-              ? "h-12 w-full border-b border-white/10 bg-transparent px-4 text-sm font-semibold outline-none placeholder:text-neutral-500"
-              : "h-12 w-full border-b border-neutral-200 bg-transparent px-4 text-sm font-semibold outline-none placeholder:text-neutral-400"
-          }
-        />
-        <div className="max-h-[min(460px,60vh)] overflow-y-auto p-2">
-          {actions.length === 0 ? (
-            <div
+      />
+      <div className="max-h-[min(460px,60vh)] overflow-y-auto p-2">
+        {actions.length === 0 ? (
+          <div className="px-3 py-8 text-center text-sm text-neutral-500">
+            No commands found
+          </div>
+        ) : (
+          actions.map((action) => (
+            <button
+              key={action.id}
+              type="button"
+              data-testid={`editor-command-palette-action-${action.id}`}
+              disabled={!action.enabled}
               className={
                 designerTheme
-                  ? "px-3 py-8 text-center text-sm text-neutral-500"
-                  : "px-3 py-8 text-center text-sm text-neutral-500"
+                  ? "flex w-full items-center justify-between gap-3 rounded-lg px-3 py-2 text-left text-sm outline-none hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-blue-400 disabled:cursor-not-allowed disabled:opacity-40"
+                  : "flex w-full items-center justify-between gap-3 rounded-lg px-3 py-2 text-left text-sm outline-none hover:bg-neutral-100 focus-visible:ring-2 focus-visible:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-40"
               }
+              onClick={() => onRunAction(action)}
             >
-              No commands found
-            </div>
-          ) : (
-            actions.map((action) => (
-              <button
-                key={action.id}
-                type="button"
-                data-testid={`editor-command-palette-action-${action.id}`}
-                disabled={!action.enabled}
-                className={
-                  designerTheme
-                    ? "flex w-full items-center justify-between gap-3 rounded-lg px-3 py-2 text-left text-sm hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-40"
-                    : "flex w-full items-center justify-between gap-3 rounded-lg px-3 py-2 text-left text-sm hover:bg-neutral-100 disabled:cursor-not-allowed disabled:opacity-40"
-                }
-                onClick={() => runAction(action)}
-              >
-                <span className="min-w-0">
-                  <span className="block truncate font-semibold">{action.label}</span>
-                  <span
-                    className={
-                      designerTheme
-                        ? "block truncate text-xs text-neutral-500"
-                        : "block truncate text-xs text-neutral-500"
-                    }
-                  >
-                    {action.hint}
-                  </span>
+              <span className="min-w-0">
+                <span className="block truncate font-semibold">{action.label}</span>
+                <span className="block truncate text-xs text-neutral-500">
+                  {action.hint}
                 </span>
-                {!action.enabled ? (
-                  <span
-                    className={
-                      designerTheme
-                        ? "shrink-0 text-[11px] font-semibold text-neutral-600"
-                        : "shrink-0 text-[11px] font-semibold text-neutral-400"
-                    }
-                  >
-                    Unavailable
-                  </span>
-                ) : null}
-              </button>
-            ))
-          )}
-        </div>
+              </span>
+              {!action.enabled ? (
+                <span
+                  className={
+                    designerTheme
+                      ? "shrink-0 text-[11px] font-semibold text-neutral-600"
+                      : "shrink-0 text-[11px] font-semibold text-neutral-400"
+                  }
+                >
+                  Unavailable
+                </span>
+              ) : null}
+            </button>
+          ))
+        )}
       </div>
-    </div>
+    </EditorDialog>
   );
 }

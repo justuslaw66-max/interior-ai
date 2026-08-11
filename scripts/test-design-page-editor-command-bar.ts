@@ -2,6 +2,12 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
 
+import {
+  executeCommandPaletteAction,
+  type CommandPaletteSession,
+} from "@/lib/command-palette-session";
+import { resolveEditorDialogStackZIndexes } from "@/components/editor/design-system/editorDialogRegistry";
+
 const root = process.cwd();
 const workspaceSource = fs.readFileSync(
   path.join(
@@ -63,6 +69,46 @@ const editorChromeSource = fs.readFileSync(
 );
 const editorChromeControllerSource = fs.readFileSync(
   path.join(root, "lib/useDesignPageEditorChromeController.ts"),
+  "utf8"
+);
+const commandPaletteSource = fs.readFileSync(
+  path.join(
+    root,
+    "components",
+    "editor",
+    "design-page",
+    "EditorCommandPalette.tsx"
+  ),
+  "utf8"
+);
+const commandPaletteHookSource = fs.readFileSync(
+  path.join(root, "lib/useDesignPageCommandPalette.ts"),
+  "utf8"
+);
+const commandPaletteSessionPath = path.join(
+  root,
+  "lib",
+  "command-palette-session.ts"
+);
+assert.ok(
+  fs.existsSync(commandPaletteSessionPath),
+  "The Command Palette should have one typed generation and semantic-focus session owner."
+);
+const commandPaletteSessionSource = fs.existsSync(commandPaletteSessionPath)
+  ? fs.readFileSync(commandPaletteSessionPath, "utf8")
+  : "";
+const dialogRegistrySource = fs.readFileSync(
+  path.join(
+    root,
+    "components",
+    "editor",
+    "design-system",
+    "editorDialogRegistry.ts"
+  ),
+  "utf8"
+);
+const presentationQaFacadeSource = fs.readFileSync(
+  path.join(root, "lib/useDesignPagePresentationQaFacade.ts"),
   "utf8"
 );
 
@@ -298,6 +344,129 @@ assert.match(
   coreShellSource,
   /useClientPreviewBaseBoundary\([\s\S]*?searchParams\.get\("designId"\)[\s\S]*?designId/,
   "Preview focus scope should cancel on requested and loaded design identity changes."
+);
+
+assert.match(
+  commandPaletteSource,
+  /<EditorDialog[\s\S]*?title="Command palette"[\s\S]*?initialFocusRef=\{inputRef\}[\s\S]*?returnFocusIds=\{returnFocusIds\}[\s\S]*?hideWhenSuperseded[\s\S]*?manageBackground[\s\S]*?cancelFocusRestorationOnUnmount/,
+  "The Command Palette should compose the shared modal lifecycle with input entry, semantic return, visual supersession, background management, and unmount cancellation."
+);
+assert.match(
+  commandPaletteSource,
+  /overlayClassName="[^"]*z-\[95\][^"]*!bg-black\/30[^"]*"[\s\S]*?!max-w-\[560px\][\s\S]*?!p-0/,
+  "The shared dialog defaults should not change the Palette backdrop, width, or edge-to-edge panel."
+);
+assert.doesNotMatch(
+  commandPaletteSource,
+  /role="dialog"|aria-label="Command palette"|autoFocus|addEventListener|handleTab/,
+  "The Palette leaf should not recreate dialog semantics, autofocus, listeners, or a focus trap outside EditorDialog."
+);
+assert.deepEqual(resolveEditorDialogStackZIndexes([95]), [95]);
+assert.deepEqual(resolveEditorDialogStackZIndexes([95, 50]), [95, 96]);
+assert.deepEqual(resolveEditorDialogStackZIndexes([50, 95]), [95, 96]);
+assert.match(
+  dialogRegistrySource,
+  /refreshDialogVisualStack[\s\S]*?setProperty\("z-index"[\s\S]*?hideWhenSuperseded[\s\S]*?setProperty\("visibility", "hidden", "important"\)[\s\S]*?restoreDialogVisibility[\s\S]*?registerEditorDialogRoot[\s\S]*?refreshDialogVisualStack\(\)[\s\S]*?unregisterEditorDialogRoot[\s\S]*?restoreDialogVisualLayer[\s\S]*?refreshDialogVisualStack\(\)/,
+  "Registered dialogs should receive visual stack ownership while a superseded Palette withdraws across nested stacking contexts and restores on close."
+);
+assert.match(
+  commandPaletteHookSource,
+  /useEffect\(\(\) => \{[\s\S]*?unmountedRef\.current = false[\s\S]*?return \(\) => \{[\s\S]*?unmountedRef\.current = true/,
+  "The Palette hook should reset its unmount guard during Strict Mode effect setup before arming cleanup."
+);
+assert.match(
+  dialogRegistrySource,
+  /export function hasActiveEditorModal\(\)[\s\S]*?dialogStack\.length > 0[\s\S]*?hasExternalEditorModal\(\)/,
+  "The shared registry should expose one narrow active-modal query for global shortcut ownership."
+);
+for (const marker of [
+  "generation",
+  "scopeKey",
+  "query",
+  "actionConsumed",
+  "cancelled",
+  "semanticIdentity",
+  "returnFocusIds",
+] as const) {
+  assert.match(
+    commandPaletteSessionSource,
+    new RegExp(`\\b${marker}\\b`),
+    `The typed Palette session should retain ${marker}.`
+  );
+}
+assert.doesNotMatch(
+  commandPaletteSessionSource,
+  /querySelector|setTimeout|requestAnimationFrame|addEventListener/,
+  "The Palette session/focus helper should not create selector, timer, frame, or listener ownership."
+);
+assert.match(
+  commandPaletteHookSource,
+  /hasActiveEditorModal\(\)[\s\S]*?event\.preventDefault\(\)[\s\S]*?return/,
+  "Cmd/Ctrl+K should be consumed and ignored while another modal is active."
+);
+assert.match(
+  commandPaletteSessionSource,
+  /session\.actionConsumed = true;[\s\S]*?session\.query = "";/,
+  "Palette action consumption should synchronously freeze duplicate execution and clear the session query."
+);
+assert.match(
+  commandPaletteHookSource,
+  /executeCommandPaletteAction\([\s\S]*?focusRestorationEnabledRef\.current = false[\s\S]*?flushSync\(\(\) => setSession\(null\)\)[\s\S]*?action\.run\(\)/,
+  "Palette actions should consume once and synchronously close before running domain behavior."
+);
+const executionSession: CommandPaletteSession = {
+  generation: 1,
+  scopeKey: "palette-contract",
+  query: "fit",
+  opener: null,
+  returnFocusIds: [],
+  actionConsumed: false,
+  cancelled: false,
+};
+const executionLog: string[] = [];
+let paletteOpen = true;
+let actionDialogOpen = false;
+assert.equal(
+  executeCommandPaletteAction(
+    executionSession,
+    () => {
+      paletteOpen = false;
+      executionLog.push("palette-closed");
+    },
+    () => {
+      assert.equal(paletteOpen, false);
+      actionDialogOpen = true;
+      executionLog.push("action-dialog-opened");
+    }
+  ),
+  true
+);
+assert.deepEqual(executionLog, ["palette-closed", "action-dialog-opened"]);
+assert.equal(actionDialogOpen, true);
+assert.equal(executionSession.query, "");
+assert.equal(
+  executeCommandPaletteAction(
+    executionSession,
+    () => executionLog.push("duplicate-close"),
+    () => executionLog.push("duplicate-run")
+  ),
+  false
+);
+assert.deepEqual(executionLog, ["palette-closed", "action-dialog-opened"]);
+assert.match(
+  presentationQaFacadeSource,
+  /commandPaletteScopeKey[\s\S]*?returnFocusIds: commandPalette\.state\.returnFocusIds[\s\S]*?onRunAction: commandPalette\.actions\.runAction/,
+  "The presentation facade should wire lifecycle scope, semantic return, and owned execution to the Palette leaf."
+);
+assert.doesNotMatch(
+  presentationQaFacadeSource,
+  /open:\s*!state\.editor\.isClientPreview && commandPalette\.state\.open/,
+  "Client Preview should invalidate the Palette session instead of merely masking its rendering."
+);
+assert.match(
+  presentationWorkspaceSource,
+  /commandPaletteScopeKey:[\s\S]*?pathname[\s\S]*?searchParams\.get\("designId"\)[\s\S]*?designId[\s\S]*?urlWorkspace[\s\S]*?editorMode[\s\S]*?plan[\s\S]*?isClientPreview/,
+  "Palette scope should include route, requested/current design, project, editor mode, Consumer/Pro, and Preview ownership."
 );
 
 console.log("Design-page editor command-bar guardrails passed.");

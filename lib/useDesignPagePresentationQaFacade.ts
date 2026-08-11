@@ -108,7 +108,7 @@ export type UseDesignPagePresentationQaFacadeInput = {
     };
   };
   configuration: {
-    presentOpen: boolean;
+    commandPaletteScopeKey: string; presentOpen: boolean;
     designerTheme: boolean;
     canUseAdvancedPlanControls: boolean;
     canUseAdvancedExportStyles: boolean;
@@ -309,7 +309,7 @@ export function useDesignPagePresentationQaFacade({
   });
 
   const commandPalette = useDesignPageCommandPalette({
-    state: {
+    scopeKey: configuration.commandPaletteScopeKey, state: {
       isClientPreview: state.editor.isClientPreview,
       canUndo: state.editor.canUndo,
       canRedo: state.editor.canRedo,
@@ -467,8 +467,7 @@ export function useDesignPagePresentationQaFacade({
     },
   });
 
-  const { qaSnapshotFingerprint, qaScenePerformanceSnapshot, qaDesignLayoutSnapshot } =
-    qaReadModel.derived;
+  const { qaSnapshotFingerprint, qaScenePerformanceSnapshot, qaDesignLayoutSnapshot } = qaReadModel.derived;
   const presentationQaLayer: DesignPagePresentationQaLayerProps = {
     project: {
       snapshotFingerprint: qaSnapshotFingerprint,
@@ -488,22 +487,22 @@ export function useDesignPagePresentationQaFacade({
       history: state.qa.history,
     },
     commandPalette: {
-      open: !state.editor.isClientPreview && commandPalette.state.open,
+      open: commandPalette.state.open,
       query: commandPalette.state.query,
       actions: commandPalette.state.actions,
       designerTheme: configuration.designerTheme,
+      returnFocusIds: commandPalette.state.returnFocusIds,
+      focusRestorationEnabledRef: commandPalette.state.focusRestorationEnabledRef,
       onClose: commandPalette.actions.close,
       onQueryChange: commandPalette.actions.setQuery,
+      onRunAction: commandPalette.actions.runAction,
     },
   };
 
   return {
     state: { commandPalette: commandPalette.state },
     derived: { betaFeedbackContext, qa: qaReadModel.derived },
-    actions: {
-      commandPalette: commandPalette.actions,
-      planCanvas,
-    },
+    actions: { commandPalette: commandPalette.actions, planCanvas },
     regions: { presentExport, editorChrome, presentationQaLayer },
   };
 }

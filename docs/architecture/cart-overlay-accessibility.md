@@ -1,5 +1,57 @@
 # CH-0015 accessibility lifecycle and overlay inventory
 
+## CH-0015H Command Palette modal lifecycle — 2026-08-11
+
+Status: **CH-0015H LOCALLY REMEDIATED; CH-0015 REMAINS OPEN FOR FLOOR PLAN
+UPLOAD ONLY**.
+
+This bounded batch starts from exact integration source
+`5ab9db530d4e4fcc8d1f8f678994e09ab7bb3e67` / tree
+`f646076854c0c76b69c80c9cada996e58d01b1b0` on
+`fix/ch-0015-command-palette-accessibility`. Cmd/Ctrl+K is classified as one
+editor-scope **MODAL_DIALOG** shortcut. It opens only outside editable targets,
+outside Client Preview, and when no registered or external modal is active;
+otherwise the qualifying shortcut is consumed and ignored.
+
+The former Palette lacked `aria-modal`, registry/topmost ownership, complete
+Tab containment, action-focused Escape, inert/accessibility-hidden background,
+semantic return, and scope generations. It could open above another modal,
+ran a command before closing, and could reappear with a stale query after
+Preview. The remediated Palette composes `EditorDialog`, preserves its original
+30% backdrop and 560px edge-to-edge panel, and owns one named modal, input
+focus, Tab/Shift+Tab, topmost Escape/backdrop, and background isolation. The
+shared registry now assigns increasing direct-root visual layers in
+registration order and restores each root's prior inline layer on close. The
+Palette also withdraws visually while superseded, then restores its prior
+visibility, so a newer dialog inside the Cart/Retailer `z-20` stacking context
+cannot be covered by the Palette's higher sibling context.
+
+One typed session binds generation, query, semantic opener, action consumption,
+cancellation, and pathname/requested+current design/workspace/brief/editor
+mode/plan/audience/Preview scope. Ordinary close resolves the current semantic
+editor action, then More, then Workspace. Action execution re-resolves a
+currently filtered/enabled ID, consumes and clears once, synchronously commits
+Palette removal, then invokes unchanged behavior; a current or future
+action-created registered dialog therefore owns focus and the visible surface.
+Current production inventory contains no direct dialog-opening command, so the
+generic executor contract and real newer-dialog registry case jointly lock
+that ordering.
+
+Existing merge-required `ci.pro-visual-policy` remains the sole browser owner.
+Five stable identities execute in Chromium and WebKit for Consumer/Pro,
+desktop/390x844, Meta/Control, semantic return, modal blocking including Plans,
+registry supersession, requested/current design and mode/Preview/unmount scope,
+filtering/disabled/first-enabled Enter, pointer exact-once history, and overflow.
+The required inventory remains **26 gates / 376 classified sources**. Command
+IDs, labels, hints, order, predicates, matching, behavior, history, and
+Consumer/Pro capability policy are unchanged.
+
+Floor Plan Upload is the final required CH-0015 batch. Public legacy Upgrade
+and selected-item preview remain separate P2 work. Rollback is one focused
+commit revert followed by the Palette/Pro owner, directly affected shared
+dialog owners, truthfulness, Phase 8, and strict build; no data, schema,
+dependency, deployment, integration, or external-setting rollback is needed.
+
 ## CH-0015G Retailer Confirmation modal lifecycle — 2026-08-11
 
 Status: **CH-0015G LOCALLY REMEDIATED; CH-0015 REMAINS OPEN FOR TWO

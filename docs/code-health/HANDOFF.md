@@ -1,5 +1,117 @@
 # Code health audit handoff
 
+## CH-0015H accessible Command Palette handoff — 2026-08-11
+
+Branch `fix/ch-0015-command-palette-accessibility` starts exactly at
+integration SHA `5ab9db530d4e4fcc8d1f8f678994e09ab7bb3e67`, tree
+`f646076854c0c76b69c80c9cada996e58d01b1b0`. Entry worktree, index,
+untracked, tracked-ignored, and diff checks were clean; local and remote
+`integration/deep-clean-v1` were synchronized. Node was `v24.13.0` and npm
+`11.6.2`. No Git operation or repository-owned app/browser/test/benchmark
+process was active. The Homebrew PostgreSQL listener remained owned by
+`/opt/homebrew/var/postgresql@16`. Every later port-3000 listener was verified
+in `/Users/justus/Developer/interior-ai` and stopped. Integration was not
+modified.
+
+The Cmd/Ctrl+K Palette is a **MODAL_DIALOG**. Before remediation its custom
+overlay had no `aria-modal`, shared stack token, background inertness/tree
+isolation, contained Tab order, action-focused Escape, or semantic return.
+The global shortcut could open above Guest Save while that registered dialog
+still owned the page. Action callbacks ran before close/query clearing, and
+Preview only masked the Boolean-rendered Palette, allowing the stale `fit`
+query to reappear after exit. Direct Chromium reproduction also left ordinary
+close on `body` and let Shift+Tab escape the Palette.
+
+The Palette now composes `EditorDialog` and owns exactly one name/modal/stack
+lifecycle, search-input initial focus, deterministic Tab/Shift+Tab, topmost
+Escape/backdrop, and full editor inert/`aria-hidden` isolation. A narrow
+`hasActiveEditorModal()` query makes the editor-scope shortcut consume and
+ignore qualifying events behind another registered/external modal. Existing
+editable-element and Preview suppression remain. Repeated open cannot create a
+second session. Registry visual layering now derives direct-root layers from
+token order, retains the greatest participating base layer, gives newer roots
+successive layers, and restores prior inline style on unregister. The Palette
+also withdraws visually while a newer registered owner is active and restores
+its prior visibility when ownership returns. This explicitly covers a newer
+Cart/Retailer dialog inside the shopping dock's lower ancestor stacking
+context, where child z-index alone cannot escape.
+
+`CommandPaletteSession` binds generation, semantic opener, ordered return
+hierarchy, route/requested+current design/workspace/project/brief/editor mode,
+plan/audience/Preview scope, query, action consumption, and cancellation.
+Close resolves one current recognized editor action by semantic ID, then More,
+then Workspace. Missing, ambiguous, hidden, inert, disabled, disconnected,
+obscured, or clipped candidates are rejected. Scope, Preview, unmount, reopen,
+or a newer generation cannot restore stale focus.
+
+Action execution re-resolves the ID against the current filtered and enabled
+command list, consumes once, clears the query, suppresses normal dialog
+restoration, and commits Palette closure with `flushSync` before running the
+unchanged callback. A same-generation post-action frame restores only when the
+action left no valid focus and no modal exists. Consequently a registered
+dialog created synchronously by a current or future action owns stack and
+focus. No current production Palette command directly opens a registered
+dialog; a deterministic executor test proves close then synthetic dialog and
+duplicate rejection, while a real newer Guest Save case nested under a lower
+stacking context proves visual withdrawal, hit testing, focus, dismissal, and
+return. The existing 14
+IDs, labels, hints, order, enabled predicates, filter, disabled behavior,
+first-enabled Enter, pointer behavior, and absence of arrow navigation remain
+unchanged.
+
+Existing merge-required `ci.pro-visual-policy` remains the sole Palette browser
+owner. It adds five stable identities and passes **Chromium 18/18 + WebKit
+18/18 (36/36)** with zero retry, skip, annotation, flake, filter, shard,
+`.only`, force click, or timeout increase. The new Palette subset passes 5/5
+per engine and covers Meta/Control, Consumer/Pro, desktop/390x844, modal
+semantics, background isolation, Tab/Shift+Tab, input/action Escape, backdrop,
+semantic replacement/fallback, exact order/filter/disabled handling, Enter and
+pointer exact-once close ordering, editable suppression, repeat open,
+competing/newer modal, requested/current design, Preview/project/audience/
+editor-mode/unmount cancellation, and overflow.
+Package closure remains 1 script / SHA-256
+`e405cb73f95c111fb19dd7bbb4886c760841f8a08afcf0ba5bdb7e99482e3fa3`;
+the manifest remains **26 gates / 376 classified sources**.
+
+Because the additive shared registry/lifecycle path was touched, directly
+affected owners were rerun: Cart **16/16**, Retailer Confirmation **24/24**,
+Guest Save **16/16**, and My Designs **16/16**, all truthfully across Chromium
+and WebKit. My Designs used only disposable
+`ch0015h_palette_final_20260811`, received all 43 committed migrations, completed
+fixture cleanup, and was dropped. Plans, Share Link Fallback, and Client
+Preview remain covered inside the canonical Pro owner.
+
+The exactly-once final-source `npm run test:phase8-performance` invocation did
+not produce performance measurements. Its benchmark-contract characterization
+passed, then the project benchmark stopped at the clean-HEAD precondition
+because this requested one-commit batch was still an uncommitted final
+worktree. Per the no-rerun rule, the failed invocation was not repeated and no
+earlier/pre-final measurement is promoted as final evidence. CH-0015H's final-
+source Phase 8 acceptance therefore remains unverified; the integrator must run
+the owner once from the clean committed candidate.
+
+Focused rendered inspection at 1280x720 and 390x844 confirms query filtering,
+visible keyboard ring, contained opaque panel, zero horizontal overflow,
+blurred/inert background, action-focused Escape, backdrop close, and current
+More return. Hit-testing also proves the 560px/zero-padding/30% backdrop,
+Palette-over-editor, and newer-dialog-over-Palette contracts. Consumer and Pro
+intentionally share the same product theme; both
+capability projections pass the two-engine owner. Static Palette ownership,
+81/81 design cleanup, editor accessibility, critical-required, production-
+artifact contract, required truthfulness/direct manifest, strict catalog
+57/57 build, full zero-warning lint, typecheck, code quality with only lowered
+baselines, JSON/workflow syntax, diff hygiene, and tracked-ignored hygiene pass.
+Phase 8 has the clean-HEAD precondition blocker recorded above. Full E2E was
+intentionally not run.
+
+No command semantics, analytics, persistence, auth, entitlement, database
+schema/migration, catalog, Floor Plan Upload, dependency/lockfile, workflow,
+budget, deployment, integration branch, or external setting changed. Rollback
+is one local revert of the focused CH-0015H commit, followed by Palette/Pro and
+the directly affected shared-dialog owners, Phase 8, and strict build. After
+CH-0015H, Floor Plan Upload is the only remaining required CH-0015 overlay;
+public legacy Upgrade and selected-item preview remain separate P2 work.
+
 ## CH-0015G accessible Retailer Confirmation handoff — 2026-08-11
 
 Branch `fix/ch-0015-retailer-confirmation-accessibility` starts exactly at
