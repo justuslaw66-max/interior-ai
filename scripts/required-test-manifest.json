@@ -6,8 +6,8 @@
       "root": "scripts",
       "filePattern": "^test-.*\\.(?:js|mjs|ts)$",
       "classification": "risk-triggered",
-      "expectedFileCount": 253,
-      "expectedPathSha256": "4b3aac7e5b284060e26d4e62810494020c8b367b371cc27282a7fa0357a5b9e3"
+      "expectedFileCount": 254,
+      "expectedPathSha256": "701f57101d65eb50f58b72ae62432bcc59d7b180de61f094504a79386cf22985"
     },
     {
       "id": "browser-specs",
@@ -1002,6 +1002,105 @@
         "job": "stable-checks",
         "step": "Run required My Designs overlay accessibility matrix",
         "afterSteps": ["Build strict production-equivalent artifact evidence"]
+      }
+    },
+    {
+      "id": "ci.floor-plan-upload-accessibility",
+      "invariant": "The full-screen Floor Plan Upload workspace owns one accessible parent lifecycle across Consumer and Pro entry paths, workflow states, desktop and 390x844 presentation, topmost containment, semantic return, registered-child supersession, and stack-safe body-scroll ownership in Chromium and WebKit while preserving inline history confirmation policy.",
+      "cadence": "merge-required",
+      "blocking": true,
+      "command": "npm run test:floor-plan-upload-accessibility-required",
+      "packageScript": "test:floor-plan-upload-accessibility-required",
+      "packageClosure": { "expectedScriptCount": 2, "expectedSha256": "9886ed08fb4a74d67873494181be2ef5c4ea6963553eaf7dca76a32b48318d2f" },
+      "packagePrerequisites": ["test:floor-plan-upload-accessibility-static"],
+      "requiredEnvironment": {
+        "APP_ENV": "development",
+        "PLAYWRIGHT_USE_PRODUCTION_SERVER": "1"
+      },
+      "runner": "playwright",
+      "requiredSources": [
+        "scripts/test-floor-plan-upload-accessibility-static.ts",
+        "scripts/build-floor-plan-upload-browser-fixture.mjs",
+        "scripts/guest-save-overlay-ts-loader.mjs",
+        "tests/required/floor-plan-upload-accessibility.spec.ts",
+        "tests/required/fixtures/floor-plan-empty-entry-harness.tsx",
+        "tests/required/fixtures/floor-plan-upload-dialog-harness.tsx",
+        "tests/required/fixtures/next-navigation-browser-fixture.ts",
+        "playwright.floor-plan-upload.config.ts"
+      ],
+      "requiredTests": [
+        {
+          "id": "floor-plan-upload.consumer-pointer",
+          "file": "tests/required/floor-plan-upload-accessibility.spec.ts",
+          "title": "consumer pointer desktop owns containment and semantic return"
+        },
+        {
+          "id": "floor-plan-upload.consumer-keyboard",
+          "file": "tests/required/floor-plan-upload-accessibility.spec.ts",
+          "title": "consumer keyboard desktop owns containment and semantic return"
+        },
+        {
+          "id": "floor-plan-upload.pro-pointer",
+          "file": "tests/required/floor-plan-upload-accessibility.spec.ts",
+          "title": "pro pointer desktop preserves backdrop, close, and opener return"
+        },
+        {
+          "id": "floor-plan-upload.pro-keyboard",
+          "file": "tests/required/floor-plan-upload-accessibility.spec.ts",
+          "title": "pro keyboard desktop preserves backdrop, close, and opener return"
+        },
+        {
+          "id": "floor-plan-upload.mobile",
+          "file": "tests/required/floor-plan-upload-accessibility.spec.ts",
+          "title": "mobile 390x844 remains full-screen without overflow and survives responsive replacement"
+        },
+        {
+          "id": "floor-plan-upload.workflow-states",
+          "file": "tests/required/floor-plan-upload-accessibility.spec.ts",
+          "title": "state transitions focus page selection, calibration recovery, and review"
+        },
+        {
+          "id": "floor-plan-upload.ready-failure-upload",
+          "file": "tests/required/floor-plan-upload-accessibility.spec.ts",
+          "title": "state transitions focus ready, failure, and image upload"
+        },
+        {
+          "id": "floor-plan-upload.registered-child",
+          "file": "tests/required/floor-plan-upload-accessibility.spec.ts",
+          "title": "registered child supersedes, returns inside, and retains Strict Mode scroll ownership"
+        },
+        {
+          "id": "floor-plan-upload.history-policy",
+          "file": "tests/required/floor-plan-upload-accessibility.spec.ts",
+          "title": "history confirmation is unchanged and guards parent Escape while scope replacement cancels stale return"
+        },
+        {
+          "id": "floor-plan-upload.fallback-reopen",
+          "file": "tests/required/floor-plan-upload-accessibility.spec.ts",
+          "title": "removed opener falls back and reopen creates a new lifecycle generation"
+        }
+      ],
+      "requiredProjects": ["chromium", "webkit"],
+      "allowSkips": false,
+      "allowRetries": false,
+      "allowAnnotations": false,
+      "reportType": "required-test-evidence",
+      "reportPath": ".local/required-test-evidence/ci.floor-plan-upload-accessibility/evidence.json",
+      "maxAgeMinutes": 240,
+      "artifactBinding": "none",
+      "playwright": {
+        "config": "playwright.floor-plan-upload.config.ts",
+        "testRoot": "tests/required",
+        "args": ["playwright", "test", "--config=playwright.floor-plan-upload.config.ts"],
+        "exactConfigOnly": true
+      },
+      "ci": {
+        "job": "stable-checks",
+        "step": "Run required Floor Plan Upload accessibility matrix",
+        "afterSteps": [
+          "Apply database migrations",
+          "Build strict production-equivalent artifact evidence"
+        ]
       }
     },
     {

@@ -34,7 +34,7 @@ export type EditorDialogProps = {
   focusRestorationEnabledRef?: { current: boolean };
   hideWhenSuperseded?: boolean;
   cancelFocusRestorationOnUnmount?: boolean;
-  manageBackground?: boolean;
+  manageBackground?: boolean; lockBodyScroll?: boolean;
   waitForEntryTransition?: boolean;
   placement?: "center" | "right";
   overlayClassName?: string;
@@ -85,7 +85,7 @@ export function EditorDialog({
   closeButtonRef: providedCloseButtonRef,
   initialFocusRef,
   returnFocusId, returnFocusIds, focusRestorationEnabledRef, hideWhenSuperseded = false,
-  manageBackground = false,
+  manageBackground = false, lockBodyScroll = false,
   cancelFocusRestorationOnUnmount = false, waitForEntryTransition = false,
   placement = "center",
   overlayClassName = "",
@@ -102,7 +102,7 @@ export function EditorDialog({
   const requestClose = useEditorDialogLifecycle({
     open, dialogRef, panelRef, closeButtonRef, initialFocusRef,
     returnFocusId, returnFocusIds, focusRestorationEnabledRef, hideWhenSuperseded,
-    cancelFocusRestorationOnUnmount, manageBackground,
+    cancelFocusRestorationOnUnmount, manageBackground, lockBodyScroll,
     waitForEntryTransition,
     closeDisabled,
     onClose,

@@ -367,6 +367,9 @@ jobs:
       - name: Run required My Designs overlay accessibility matrix
         run: npm run test:my-designs-overlay-accessibility-required
 
+      - name: Run required Floor Plan Upload accessibility matrix
+        run: npm run test:floor-plan-upload-accessibility-required
+
       - name: Explain absent production evidence payload
         if: always() && !cancelled() && steps.stable-evidence.outputs.stable_evidence_ready != 'true' && steps.failure-diagnostics.outputs.safe_failure_diagnostics_ready != 'true'
         shell: bash

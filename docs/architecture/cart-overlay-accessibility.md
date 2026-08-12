@@ -1,5 +1,32 @@
 # CH-0015 accessibility lifecycle and overlay inventory
 
+## CH-0015I Floor Plan Upload full-screen modal lifecycle — 2026-08-12
+
+Status: **CH-0015I LOCALLY REMEDIATED; CH-0015 AWAITS THE EXACT-SOURCE
+CLOSURE AUDIT**.
+
+Starting from `2c567fd483877c7dcbd8fd23e3cd8cb316732c8c` / tree
+`50f9c5d6a6610990606fd9db9a27ba40200fca90`, the parent Floor Plan Upload
+surface is classified as a **FULL_SCREEN_MODAL_WORKSPACE**. Its existing
+mobile `100dvh` and viewport-contained desktop composition is preserved. The
+shared registry now owns its one dialog, inert/hidden background, focus entry
+and containment, topmost dismissal, semantic return, supersession, and
+reference-counted body-scroll lock. Stable identities cover Consumer, Pro,
+Surfaces, address, Import, launcher, and Plan fallback actions.
+
+Focused Chromium and WebKit results are **10/10 per engine** with Consumer/Pro
+pointer and keyboard entry, 390×844/desktop layout, state focus, remount and
+fallback return, registered-child supersession, and Strict Mode scroll
+ownership. The new sole owner is `ci.floor-plan-upload-accessibility`; derived
+inventory is **27 gates / 377 sources**. Floor Plan domain behavior is
+unchanged. Inline history single/bulk confirmations remain an explicit
+unresolved product decision; only parent dismissal is guarded while one is
+visible. Empty Surfaces retains its pre-existing integrated reachability
+contradiction and is covered through the exact production action; this batch
+does not expose that otherwise unreachable state. No required CH-0015
+implementation surface remains after this batch,
+subject to the separate exact-source closure audit.
+
 ## CH-0015H Command Palette modal lifecycle — 2026-08-11
 
 Status: **CH-0015H LOCALLY REMEDIATED; CH-0015 REMAINS OPEN FOR FLOOR PLAN

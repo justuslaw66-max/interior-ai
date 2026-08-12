@@ -56,8 +56,8 @@ export function buildDesignPagePanelWorkspaceRegistration({
         plan: base.state.access.plan,
         rooms: coreShell.state.document.designSnapshot.rooms,
         activeRoomId: coreShell.state.document.designSnapshot.activeRoomId,
-        catalogRoomNavigationRevision: snapshotDocument.state.catalogRoomNavigationRevision,
-        authenticated: Boolean(base.state.identity.session?.user),
+        catalogRoomNavigationRevision: snapshotDocument.state.catalogRoomNavigationRevision, authenticated: Boolean(base.state.identity.session?.user),
+        authScopeKey: base.state.identity.session?.user?.id ?? base.state.identity.session?.user?.email ?? "guest",
       },
       editor: {
         editorMode: viewportShell.state.editor.editorMode,

@@ -34,6 +34,16 @@ const assistant = [
   .map(read)
   .join("\n");
 const uploadPanel = read("components/editor/FloorPlanUploadPanel.tsx");
+const uploadDialog = read("components/editor/FloorPlanUploadWorkspaceDialog.tsx");
+const uploadDialogLifecycle = read(
+  "components/editor/useFloorPlanUploadDialogLifecycle.ts"
+);
+const dialogLifecycle = read(
+  "components/editor/design-system/useEditorDialogLifecycle.ts"
+);
+const dialogRegistry = read(
+  "components/editor/design-system/editorDialogRegistry.ts"
+);
 const importWorkspace = read("components/editor/FloorPlanImportWorkspace.tsx");
 const pageSelectionPanel = read("components/editor/FloorPlanPageSelectionPanel.tsx");
 const selectPageRoute = read(
@@ -165,7 +175,7 @@ assert.deepEqual(
 assert.deepEqual(groupFloorPlanSearchResults(facetFixtures).map((entry) => entry.projectName), ["Project A", "Project B"]);
 
 assert.match(
-  uploadPanel,
+  uploadDialog,
   /import FloorPlanImportWorkspace from "\.\/FloorPlanImportWorkspace"/,
   "The underlay upload panel should include the modular canonical import workspace."
 );
@@ -176,28 +186,38 @@ assert.doesNotMatch(
 );
 assert.match(
   uploadPanel,
-  /<FloorPlanImportWorkspace[\s\S]*?request=\{autoImportRequest\}[\s\S]*?trainingBenchmarkOptIn=\{trainingBenchmarkOptIn\}/,
+  /<FloorPlanUploadWorkspaceDialog[\s\S]*?request=\{autoImportRequest\}/,
+  "The selected source file should reach the full-screen workspace owner."
+);
+assert.match(
+  uploadDialog,
+  /<FloorPlanImportWorkspace request=\{request\}/,
   "The selected source file should reach the import assistant."
 );
 assert.match(
-  uploadPanel,
-  /createPortal\([\s\S]*?data-testid="floor-plan-import-dialog"[\s\S]*?role="dialog"[\s\S]*?document\.body/,
+  uploadDialog,
+  /createPortal\([\s\S]*?role="dialog"[\s\S]*?data-testid="floor-plan-import-dialog"[\s\S]*?document\.body/,
   "The consumer import workflow should render in a viewport-level dialog instead of the narrow editor panel."
 );
 assert.match(
-  uploadPanel,
+  uploadDialog,
   /aria-modal="true"[\s\S]*?h-\[100dvh\][\s\S]*?sm:max-w-\[1600px\]/,
   "The import dialog should use the full mobile viewport and a wide desktop workspace."
 );
 assert.match(
+  uploadDialogLifecycle,
+  /useEditorDialogLifecycle\(\{[\s\S]*?closeDisabled: historyConfirmationOpen/,
+  "The shared topmost lifecycle should own Escape without bypassing history confirmation."
+);
+assert.doesNotMatch(
   uploadPanel,
-  /event\.key !== "Escape"[\s\S]*?setImportWorkspaceOpen\(false\)/,
-  "The large import dialog should support Escape dismissal."
+  /window\.addEventListener\("keydown"/,
+  "The workspace must not retain an unconditional global Escape owner."
 );
 assert.match(
-  uploadPanel,
-  /document\.body\.style\.overflow = "hidden"[\s\S]*?document\.body\.style\.overflow = previousBodyOverflow/,
-  "The large import dialog should lock and restore background scrolling."
+  `${dialogLifecycle}\n${dialogRegistry}`,
+  /lockBodyScroll[\s\S]*?dialogBodyScrollOwners[\s\S]*?restoreBodyScroll/,
+  "The shared registry should own stack-safe background scrolling."
 );
 assert.match(
   importWorkspace,

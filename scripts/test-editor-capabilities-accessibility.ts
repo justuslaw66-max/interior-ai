@@ -91,17 +91,21 @@ const dialogLifecycle = read(
 const dialogFocus = read(
   "components/editor/design-system/editorDialogFocus.ts"
 );
+const dialogFocusRestoration = read(
+  "components/editor/design-system/editorDialogFocusRestoration.ts"
+);
 const dialogRegistry = read(
   "components/editor/design-system/editorDialogRegistry.ts"
 );
-const dialogLifecycleSources = `${dialogLifecycle}\n${dialogFocus}\n${dialogRegistry}`;
+const dialogLifecycleSources = `${dialogLifecycle}\n${dialogFocus}\n${dialogFocusRestoration}\n${dialogRegistry}`;
 for (const required of [
   'event.key === "Escape"',
   'event.key === "Tab"',
   "isTopmostEditorDialog(token)",
   "hasExternalEditorModal()",
   'element.closest(\'[hidden], [inert], [aria-hidden="true"]\')',
-  "document.getElementById(options.returnFocusId)",
+  "...(options.returnFocusId ? [options.returnFocusId] : [])",
+  ".map((id) => document.getElementById(id))",
   "target.focus({ preventScroll: true })",
   "window.requestAnimationFrame",
   "window.cancelAnimationFrame",
@@ -151,7 +155,7 @@ assert.match(
 );
 assert.match(
   dialogLifecycleSources,
-  /isElementInTopmostEditorDialog\(target\)/,
+  /isElementInTopmostEditorDialog\(candidate\)/,
   "nested focus return must remain inside the current topmost registry owner"
 );
 assert.match(

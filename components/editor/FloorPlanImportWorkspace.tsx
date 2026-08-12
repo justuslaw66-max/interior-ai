@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   readActiveFloorPlanImportId,
   writeActiveFloorPlanImportId,
@@ -14,28 +14,35 @@ type FloorPlanImportWorkspaceProps = {
   trainingBenchmarkOptIn: boolean;
   dark: boolean;
   disabled: boolean;
-  onChooseFile: () => void;
+  onChooseFile: () => void; onHistoryConfirmationOpenChange: (open: boolean) => void;
   onTrainingBenchmarkOptInChange: (value: boolean) => void;
 };
+
+function useHistoryConfirmationGuard(onChange: (open: boolean) => void) {
+  const [secondaryOptionsOpen, setSecondaryOptionsOpen] = useState(false);
+  const [historyConfirmationOpen, setHistoryConfirmationOpen] = useState(false);
+  useEffect(() => {
+    onChange(secondaryOptionsOpen && historyConfirmationOpen);
+    return () => onChange(false);
+  }, [historyConfirmationOpen, onChange, secondaryOptionsOpen]);
+  return { secondaryOptionsOpen, setSecondaryOptionsOpen, setHistoryConfirmationOpen };
+}
 
 export default function FloorPlanImportWorkspace({
   request,
   trainingBenchmarkOptIn,
   dark,
   disabled,
-  onChooseFile,
+  onChooseFile, onHistoryConfirmationOpenChange,
   onTrainingBenchmarkOptInChange,
 }: FloorPlanImportWorkspaceProps) {
-  const initialStoredJobId = () =>
-    typeof window === "undefined"
-      ? null
-      : readActiveFloorPlanImportId(window.localStorage);
+  const initialStoredJobId = () => typeof window === "undefined" ? null : readActiveFloorPlanImportId(window.localStorage);
   const [resumeJobId, setResumeJobId] = useState<string | null>(initialStoredJobId);
   const [activeImportJobId, setActiveImportJobId] = useState<string | null>(initialStoredJobId);
   const [ignoredRequest, setIgnoredRequest] = useState<typeof request>(null);
   const [historyRefreshKey, setHistoryRefreshKey] = useState(0);
-  const [activeJobSnapshot, setActiveJobSnapshot] =
-    useState<ConsumerFloorPlanImportJob | null>(null);
+  const [activeJobSnapshot, setActiveJobSnapshot] = useState<ConsumerFloorPlanImportJob | null>(null);
+  const { secondaryOptionsOpen, setSecondaryOptionsOpen, setHistoryConfirmationOpen } = useHistoryConfirmationGuard(onHistoryConfirmationOpenChange);
 
   const selectImportJob = useCallback((jobId: string | null) => {
     writeActiveFloorPlanImportId(window.localStorage, jobId);
@@ -86,7 +93,7 @@ export default function FloorPlanImportWorkspace({
                 ? "designer-recessed flex min-h-[420px] flex-col items-center justify-center rounded-2xl border border-white/10 p-6 text-center"
                 : "flex min-h-[420px] flex-col items-center justify-center rounded-2xl border border-neutral-200 bg-white p-6 text-center shadow-sm"
             }
-            data-testid="floor-plan-import-dialog-empty-state"
+            data-testid="floor-plan-import-dialog-empty-state" data-floor-plan-workspace-state="empty"
           >
             <div
               aria-hidden="true"
@@ -106,7 +113,7 @@ export default function FloorPlanImportWorkspace({
               and show it here at a readable size before creating anything.
             </p>
             <button
-              type="button"
+              type="button" data-editor-dialog-initial-focus="true" data-floor-plan-workspace-focus="primary"
               className={
                 dark
                   ? "designer-control-active mt-5 rounded-lg border px-4 py-2.5 text-sm font-semibold"
@@ -126,9 +133,11 @@ export default function FloorPlanImportWorkspace({
             ? "designer-recessed mt-4 rounded-xl p-3"
             : "mt-4 rounded-xl border border-neutral-200 bg-white p-3"
         }
-        data-testid="floor-plan-import-secondary-options"
+        data-testid="floor-plan-import-secondary-options" data-floor-plan-workspace-history="true"
+        open={secondaryOptionsOpen}
+        onToggle={(event) => setSecondaryOptionsOpen(event.currentTarget.open)}
       >
-        <summary className="cursor-pointer text-sm font-semibold">
+        <summary className="cursor-pointer text-sm font-semibold" data-floor-plan-workspace-focus="primary">
           Previous imports & privacy
         </summary>
         <p className={`mt-1 text-xs leading-5 ${subtle}`}>
@@ -177,6 +186,7 @@ export default function FloorPlanImportWorkspace({
             activeJobSnapshot={activeJobSnapshot}
             refreshKey={historyRefreshKey}
             onResume={selectImportJob}
+            onConfirmationOpenChange={setHistoryConfirmationOpen}
           />
         </div>
       </details>

@@ -13,6 +13,14 @@ import { resolveEditorCapabilities } from "../lib/editor-capabilities";
 
 const planPanelPath = path.join(process.cwd(), "components", "editor", "DesignControlsPlanPanel.tsx");
 const source = fs.readFileSync(planPanelPath, "utf8");
+const floorPlanWorkspaceOpenerSource = fs.readFileSync(
+  path.join(process.cwd(), "lib", "open-floor-plan-upload-workspace.ts"),
+  "utf8"
+);
+const floorPlanWorkspaceFocusSource = fs.readFileSync(
+  path.join(process.cwd(), "lib", "floor-plan-upload-dialog-focus.ts"),
+  "utf8"
+);
 const planToolComponentsSource = fs.readFileSync(
   path.join(
     process.cwd(),
@@ -355,14 +363,14 @@ assert.doesNotMatch(
 );
 
 assert.match(
-  source,
-  /const openFloorPlanUploadPicker = \(\) => \{[\s\S]*?flushSync\(\(\) => setPlanStartMode\("upload"\)\)[\s\S]*?getElementById\("floor-plan-upload"\)[\s\S]*?floor-plan-upload-input[\s\S]*?\.click\(\)/,
+  `${source}\n${floorPlanWorkspaceOpenerSource}\n${floorPlanWorkspaceFocusSource}`,
+  /openFloorPlanUploadWorkspace\([\s\S]*?flushSync\(selectUploadMode\)[\s\S]*?getElementById\("floor-plan-upload"\)[\s\S]*?floor-plan-upload-input[\s\S]*?forwardFloorPlanWorkspaceOpener[\s\S]*?target\.click\(\)/,
   "The import action should mount the upload panel and open its file picker within the same user gesture."
 );
 
 assert.match(
   source,
-  /testId: "plan-tool-import-2d"[\s\S]*?label: "Import 2D drawing"[\s\S]*?onClick: openFloorPlanUploadPicker/,
+  /testId: "plan-tool-import-2d"[\s\S]*?label: "Import 2D drawing"[\s\S]*?openFloorPlanUploadPicker\(FLOOR_PLAN_CONSUMER_IMPORT_ACTION_ID\)/,
   "The import tile should invoke the working file-picker flow."
 );
 

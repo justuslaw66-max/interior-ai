@@ -3,25 +3,87 @@ const MODAL_SELECTOR =
 
 export type EditorDialogToken = symbol;
 
-const dialogStack: EditorDialogToken[] = [];
-const dialogRoots = new Map<EditorDialogToken, HTMLElement>();
-const dialogVisualLayers = new Map<
-  EditorDialogToken,
-  {
+type DialogVisualLayer = {
     baseZIndex: number;
     inlineValue: string;
     inlinePriority: string;
     hideWhenSuperseded: boolean;
     visibilityValue: string;
     visibilityPriority: string;
+};
+type EditorDialogRegistryState = {
+  dialogStack: EditorDialogToken[];
+  dialogRoots: Map<EditorDialogToken, HTMLElement>;
+  dialogVisualLayers: Map<EditorDialogToken, DialogVisualLayer>;
+  dialogBackgroundOwners: Set<EditorDialogToken>;
+  dialogBodyScrollOwners: Set<EditorDialogToken>;
+  dialogOwnershipGuards: Map<EditorDialogToken, () => void>;
+  managedBackground: Map<
+    HTMLElement,
+    { inert: boolean; ariaHidden: string | null }
+  >;
+  bodyScrollSnapshot: { value: string; priority: string } | null;
+};
+type RegistryGlobal = typeof globalThis & {
+  __interiorAiEditorDialogRegistry?: EditorDialogRegistryState;
+};
+
+const registryGlobal = globalThis as RegistryGlobal;
+const emptyRegistryState: EditorDialogRegistryState = {
+  dialogStack: [],
+  dialogRoots: new Map(),
+  dialogVisualLayers: new Map(),
+  dialogBackgroundOwners: new Set(),
+  dialogBodyScrollOwners: new Set(),
+  dialogOwnershipGuards: new Map(),
+  managedBackground: new Map(),
+  bodyScrollSnapshot: null,
+};
+const registryState: EditorDialogRegistryState =
+  registryGlobal.__interiorAiEditorDialogRegistry ?? emptyRegistryState;
+registryGlobal.__interiorAiEditorDialogRegistry = registryState;
+
+const {
+  dialogStack,
+  dialogRoots,
+  dialogVisualLayers,
+  dialogBackgroundOwners,
+  dialogBodyScrollOwners,
+  dialogOwnershipGuards,
+  managedBackground,
+} = registryState;
+
+function acquireBodyScrollLock(token: EditorDialogToken) {
+  if (dialogBodyScrollOwners.has(token)) return;
+  if (dialogBodyScrollOwners.size === 0) {
+    registryState.bodyScrollSnapshot = {
+      value: document.body.style.getPropertyValue("overflow"),
+      priority: document.body.style.getPropertyPriority("overflow"),
+    };
+    document.body.style.setProperty("overflow", "hidden");
   }
->();
-const dialogBackgroundOwners = new Set<EditorDialogToken>();
-const dialogOwnershipGuards = new Map<EditorDialogToken, () => void>();
-const managedBackground = new Map<
-  HTMLElement,
-  { inert: boolean; ariaHidden: string | null }
->();
+  dialogBodyScrollOwners.add(token);
+}
+
+function restoreBodyScroll() {
+  const snapshot = registryState.bodyScrollSnapshot;
+  if (!snapshot) return;
+  if (snapshot.value) {
+    document.body.style.setProperty(
+      "overflow",
+      snapshot.value,
+      snapshot.priority
+    );
+  } else {
+    document.body.style.removeProperty("overflow");
+  }
+  registryState.bodyScrollSnapshot = null;
+}
+
+function releaseBodyScrollLock(token: EditorDialogToken) {
+  if (!dialogBodyScrollOwners.delete(token)) return;
+  if (dialogBodyScrollOwners.size === 0) restoreBodyScroll();
+}
 
 export function resolveEditorDialogStackZIndexes(
   baseZIndexes: readonly number[]
@@ -107,6 +169,10 @@ export function hasExternalEditorModal() {
   return Boolean(getExternalEditorModal());
 }
 
+export function hasTopmostEditorDialog() {
+  return dialogStack.length > 0;
+}
+
 export function hasActiveEditorModal() {
   return dialogStack.length > 0 || hasExternalEditorModal();
 }
@@ -122,7 +188,7 @@ export function isTopmostEditorDialog(token: EditorDialogToken) {
 export function isElementInTopmostEditorDialog(element: HTMLElement) {
   const token = dialogStack.at(-1);
   const root = token ? dialogRoots.get(token) : undefined;
-  return !root || root.contains(element);
+  return !hasExternalEditorModal() && (!root || root.contains(element));
 }
 
 function restoreManagedBackground() {
@@ -171,7 +237,8 @@ export function notifyTopmostEditorDialog() {
 export function registerEditorDialogRoot(
   dialog: HTMLElement,
   manageBackground: boolean,
-  hideWhenSuperseded = false
+  hideWhenSuperseded = false,
+  lockBodyScroll = false
 ) {
   const token = Symbol("editor-dialog");
   dialogStack.push(token);
@@ -189,6 +256,7 @@ export function registerEditorDialogRoot(
     visibilityPriority: dialog.style.getPropertyPriority("visibility"),
   });
   if (manageBackground) dialogBackgroundOwners.add(token);
+  if (lockBodyScroll) acquireBodyScrollLock(token);
   refreshDialogVisualStack();
   refreshBackgroundInertness();
   return token;
@@ -201,6 +269,7 @@ export function unregisterEditorDialogRoot(token: EditorDialogToken) {
   dialogRoots.delete(token);
   dialogVisualLayers.delete(token);
   dialogBackgroundOwners.delete(token);
+  releaseBodyScrollLock(token);
   dialogOwnershipGuards.delete(token);
   refreshDialogVisualStack();
   notifyTopmostEditorDialog();

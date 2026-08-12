@@ -106,8 +106,7 @@ export function PlanToolSection({
 }
 
 export function PlanToolTile({
-  dark,
-  testId,
+  dark, id, testId,
   icon,
   label,
   shortcut,
@@ -116,7 +115,7 @@ export function PlanToolTile({
   title,
   onClick,
 }: {
-  dark: boolean;
+  dark: boolean; id?: string;
   testId: string;
   icon: PlanToolIconName;
   label: string;
@@ -143,7 +142,7 @@ export function PlanToolTile({
 
   return (
     <button
-      type="button"
+      id={id} type="button"
       data-testid={testId}
       data-active={active ? "true" : "false"}
       data-disabled={disabled ? "true" : "false"}

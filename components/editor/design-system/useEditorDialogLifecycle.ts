@@ -9,8 +9,6 @@ import {
   type RefObject,
 } from "react";
 import {
-  hasExternalEditorModal,
-  isElementInTopmostEditorDialog,
   isEditorDialogBackgroundManaged,
   isTopmostEditorDialog,
   observeEditorDialogOwnership,
@@ -25,6 +23,7 @@ import {
   resolveInitialFocusTarget,
   resolveReadyFocusTarget,
 } from "@/components/editor/design-system/editorDialogFocus";
+import { scheduleEditorDialogFocusRestoration } from "@/components/editor/design-system/editorDialogFocusRestoration";
 function cancelPendingRestoration(restoreFrameRef: MutableRefObject<number | null>) {
   if (restoreFrameRef.current === null) return;
   window.cancelAnimationFrame(restoreFrameRef.current);
@@ -33,14 +32,15 @@ function cancelPendingRestoration(restoreFrameRef: MutableRefObject<number | nul
 
 type EditorDialogLifecycleOptions = {
   open: boolean;
-  dialogRef: RefObject<HTMLDivElement | null>;
-  panelRef: RefObject<HTMLDivElement | null>;
+  dialogRef: RefObject<HTMLElement | null>;
+  panelRef: RefObject<HTMLElement | null>;
   closeButtonRef: RefObject<HTMLButtonElement | null>;
   initialFocusRef?: { current: HTMLElement | null };
   returnFocusId?: string; returnFocusIds?: readonly string[];
   focusRestorationEnabledRef?: { current: boolean };
   hideWhenSuperseded: boolean; cancelFocusRestorationOnUnmount: boolean;
   manageBackground: boolean;
+  lockBodyScroll?: boolean;
   waitForEntryTransition: boolean;
   closeDisabled: boolean;
   onClose: () => void;
@@ -53,6 +53,7 @@ type DialogSessionOptions = Pick<
   | "initialFocusRef"
   | "returnFocusId" | "returnFocusIds" | "focusRestorationEnabledRef" | "hideWhenSuperseded"
   | "manageBackground"
+  | "lockBodyScroll"
   | "waitForEntryTransition"
 > & {
   generation: number;
@@ -238,38 +239,6 @@ function createDialogInputHandlers(
   return { keydown, focusin };
 }
 
-function scheduleFocusRestoration(
-  opener: HTMLElement | null,
-  ownedTopmostFocus: boolean,
-  options: DialogSessionOptions
-) {
-  options.restoreFrameRef.current = window.requestAnimationFrame(() => {
-    options.restoreFrameRef.current = null;
-    if (
-      options.unmountedRef.current ||
-      options.generationRef.current !== options.generation ||
-      !ownedTopmostFocus ||
-      options.focusRestorationEnabledRef?.current === false ||
-      hasExternalEditorModal()
-    ) return;
-    const legacyTarget = options.returnFocusId
-      ? document.getElementById(options.returnFocusId)
-      : null;
-    const semanticTargets = options.returnFocusIds?.map((id) =>
-      document.getElementById(id)
-    ) ?? [];
-    const hasSemanticAuthority =
-      Boolean(options.returnFocusId) || Boolean(options.returnFocusIds?.length);
-    const target = [...semanticTargets, legacyTarget].find(
-      (candidate): candidate is HTMLElement =>
-        candidate instanceof HTMLElement && isActionable(candidate)
-    ) ?? (hasSemanticAuthority ? null : opener);
-    if (target instanceof HTMLElement && isElementInTopmostEditorDialog(target) && isActionable(target)) {
-      target.focus({ preventScroll: true });
-    }
-  });
-}
-
 function registerDialogSession(options: DialogSessionOptions) {
   const dialog = options.dialogRef.current;
   const panel = options.panelRef.current;
@@ -277,7 +246,8 @@ function registerDialogSession(options: DialogSessionOptions) {
   const opener = document.activeElement instanceof HTMLElement ? document.activeElement : null;
   const token = registerEditorDialogRoot(dialog,
     options.manageBackground || options.waitForEntryTransition,
-    options.hideWhenSuperseded);
+    options.hideWhenSuperseded,
+    options.lockBodyScroll);
   dialog.dataset.editorDialogGeneration = String(options.generation);
   dialog.dataset.editorDialogFocusTrap = "active";
   const handlers = createDialogInputHandlers(dialog, panel, token, options);
@@ -304,7 +274,7 @@ function registerDialogSession(options: DialogSessionOptions) {
       document.removeEventListener("focusin", handlers.focusin);
     delete dialog.dataset.editorDialogFocusTrap;
     unregisterEditorDialogRoot(token);
-    scheduleFocusRestoration(opener, ownedTopmostFocus, options);
+    scheduleEditorDialogFocusRestoration(opener, ownedTopmostFocus, options);
   };
 }
 
@@ -320,6 +290,7 @@ function useDialogSessionEffects(
     open, dialogRef, panelRef, closeButtonRef, initialFocusRef,
     returnFocusId, returnFocusIds, focusRestorationEnabledRef,
     hideWhenSuperseded, manageBackground, waitForEntryTransition,
+    lockBodyScroll,
   } = options;
   const startSession = useCallback(() => {
     const generation = generationRef.current + 1;
@@ -328,7 +299,7 @@ function useDialogSessionEffects(
     return registerDialogSession({
       dialogRef, panelRef, closeButtonRef, initialFocusRef, returnFocusId,
       returnFocusIds, focusRestorationEnabledRef, hideWhenSuperseded, manageBackground,
-      waitForEntryTransition, generation, requestClose,
+      lockBodyScroll, waitForEntryTransition, generation, requestClose,
       closeDisabledRef, restoreFrameRef, generationRef, unmountedRef,
     });
   }, [
@@ -336,6 +307,7 @@ function useDialogSessionEffects(
     panelRef, requestClose, restoreFrameRef, returnFocusId, returnFocusIds,
     focusRestorationEnabledRef, unmountedRef, hideWhenSuperseded,
     manageBackground, waitForEntryTransition,
+    lockBodyScroll,
   ]);
 
   useLayoutEffect(() => {
@@ -353,6 +325,7 @@ export function useEditorDialogLifecycle({
   open, dialogRef, panelRef, closeButtonRef, initialFocusRef,
   returnFocusId, returnFocusIds, focusRestorationEnabledRef, hideWhenSuperseded,
   cancelFocusRestorationOnUnmount, manageBackground, waitForEntryTransition,
+  lockBodyScroll = false,
   closeDisabled, onClose,
 }: EditorDialogLifecycleOptions) {
   const onCloseRef = useRef(onClose);
@@ -375,7 +348,7 @@ export function useEditorDialogLifecycle({
       open, dialogRef, panelRef, closeButtonRef, initialFocusRef, returnFocusId,
       returnFocusIds, focusRestorationEnabledRef, hideWhenSuperseded,
       cancelFocusRestorationOnUnmount, manageBackground,
-      waitForEntryTransition, closeDisabled,
+      lockBodyScroll, waitForEntryTransition, closeDisabled,
       onClose,
     },
     closeDisabledRef,

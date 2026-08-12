@@ -1,5 +1,38 @@
 # Code health audit
 
+## CH-0015I accessible Floor Plan Upload lifecycle — 2026-08-12
+
+Starting from exact integration source
+`2c567fd483877c7dcbd8fd23e3cd8cb316732c8c` / tree
+`50f9c5d6a6610990606fd9db9a27ba40200fca90`, this bounded batch classifies
+the parent as a **FULL_SCREEN_MODAL_WORKSPACE**. The prior portal exposed
+partial ARIA semantics but was an external, unregistered modal with container
+focus, escaping Tab order, live background, unconditional window Escape, raw
+node return, and an independent non-stack-safe body overflow snapshot.
+
+The existing full-screen/mobile shell now consumes the shared lifecycle. One
+registry token owns background isolation, deterministic state focus, Tab and
+Shift+Tab, topmost Escape/backdrop, semantic current-DOM return, registered
+child supersession, and reference-counted scroll locking. Explicit opener IDs
+cover Consumer, Pro, Surfaces, address, Import, launcher, and Plan fallback;
+scope replacement and unmount cancel stale work. No second Floor Plan state
+owner, compact-dialog redesign, dependency, database/API/schema, geometry,
+vision, persistence, pricing, or analytics change was introduced.
+
+Focused results are Chromium **10/10** and WebKit **10/10**, zero retries,
+skips, filters, shards, or timeout increase. Static lifecycle and existing
+consumer-flow guardrails pass. The new sole browser owner is
+`ci.floor-plan-upload-accessibility`; derived inventory is **27 gates / 377
+classified sources**. Inline history confirmations are deliberately unchanged
+and still await a separate semantic product decision; only parent dismissal
+is guarded. The production Empty Surfaces action is covered through its exact
+component because its current integrated call sites are structurally
+unreachable (`hasRooms` outside, `!hasRooms` inside); CH-0015I does not alter
+that unrelated product reachability. No required CH-0015 implementation
+surface remains, subject to the
+exact-source closure audit. Phase 8 is recorded only after the clean candidate
+commit under its single-run source-bound contract.
+
 ## CH-0015H test-contract hardening — 2026-08-12
 
 Starting from `ee55098be7c750e8fa2a631978f3d4ebd956708c` / tree

@@ -37,6 +37,24 @@ Domain calculations must not depend on React, Three.js, Prisma, HTTP request obj
 
 Appoint one source of truth for each durable or interaction state. Do not mirror canonical document data into a second store or rebuild derived state through effects. React hooks should adapt explicit application/domain owners rather than conceal business policy.
 
+## Editor modal and background ownership
+
+- Every editor modal, including a full-screen modal workspace, registers with
+  the shared editor dialog registry. A custom full-screen shell may consume the
+  lifecycle hook, but it must not create a competing focus, Escape, background,
+  stacking, or scroll-lock framework.
+- The top registered owner alone controls focus containment and generic
+  dismissal. A newer owner makes the mounted parent inert and
+  accessibility-hidden; closing the child returns within the current parent
+  before the parent can resume input ownership.
+- Body-scroll locking is token-owned and reference-counted by the shared
+  registry. Original inline overflow is restored only after the final owning
+  token releases it, including nested close, unmount, and Strict Mode cleanup.
+- Return focus uses current semantic IDs and a documented visible fallback.
+  Retained DOM nodes are insufficient authority; hidden, disabled, inert,
+  disconnected, obscured, off-viewport until scrolled, stale-scope, and
+  superseded candidates must be rejected.
+
 Place `use client` at the narrowest interactive boundary. Browser-safe shared modules must not import Prisma, auth secrets, Node filesystem/process-only modules, non-public environment values, or privileged integrations. Server modules expose typed DTOs and commands, not internal records.
 
 ## Catalog and generation

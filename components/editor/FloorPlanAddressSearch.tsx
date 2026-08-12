@@ -24,7 +24,7 @@ import FloorPlanAddressFields from "./FloorPlanAddressFields";
 import FloorPlanCatalogResultList from "./FloorPlanCatalogResultList";
 import FloorPlanOptionalConfigurationPanel from "./FloorPlanOptionalConfigurationPanel";
 import { inspectFloorPlanOptionalConfigurations } from "@/lib/floor-plan-optional-configurations";
-
+import { FLOOR_PLAN_ADDRESS_UPLOAD_ACTION_ID } from "@/lib/floor-plan-upload-dialog-focus";
 type FloorPlanAddressSearchProps = {
   dark?: boolean;
   canEdit: boolean;
@@ -317,7 +317,7 @@ export default function FloorPlanAddressSearch({
             <button type="button" className={control} disabled={requestRecorded} onClick={recordMissingAddressRequest}>
               {requestRecorded ? "Request noted" : "Request this address"}
             </button>
-            <button type="button" className={control} onClick={requestUpload}>Upload a plan</button>
+            <button id={FLOOR_PLAN_ADDRESS_UPLOAD_ACTION_ID} type="button" className={control} onClick={requestUpload}>Upload a plan</button>
           </div>
         </div>
       ) : null}

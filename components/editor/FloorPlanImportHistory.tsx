@@ -7,6 +7,7 @@ import {
 } from "@/lib/floor-plan-import-client";
 import type { ConsumerFloorPlanImportSummary } from "./floor-plan-import-ui-types";
 import type { ConsumerFloorPlanImportJob } from "./floor-plan-import-ui-types";
+import { useFloorPlanHistoryConfirmationState } from "./useFloorPlanHistoryConfirmationState";
 
 type FloorPlanImportHistoryProps = {
   dark?: boolean;
@@ -14,7 +15,7 @@ type FloorPlanImportHistoryProps = {
   activeJobId: string | null;
   activeJobSnapshot: ConsumerFloorPlanImportJob | null;
   refreshKey: number;
-  onResume: (jobId: string | null) => void;
+  onResume: (jobId: string | null) => void; onConfirmationOpenChange: (open: boolean) => void;
 };
 
 type ImportListResponse = {
@@ -44,7 +45,7 @@ export default function FloorPlanImportHistory({
   activeJobId,
   activeJobSnapshot,
   refreshKey,
-  onResume,
+  onResume, onConfirmationOpenChange,
 }: FloorPlanImportHistoryProps) {
   const router = useRouter();
   const [jobs, setJobs] = useState<ConsumerFloorPlanImportSummary[]>([]);
@@ -52,9 +53,7 @@ export default function FloorPlanImportHistory({
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [actionJobId, setActionJobId] = useState<string | null>(null);
-  const [confirmDeleteJobId, setConfirmDeleteJobId] = useState<string | null>(
-    null
-  );
+  const [confirmDeleteJobId, setConfirmDeleteJobId] = useState<string | null>(null);
   const [selectedJobIds, setSelectedJobIds] = useState<Set<string>>(
     () => new Set()
   );
@@ -64,6 +63,7 @@ export default function FloorPlanImportHistory({
   const [bulkDeleting, setBulkDeleting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [historyOpen, setHistoryOpen] = useState(false);
+  useFloorPlanHistoryConfirmationState(confirmDeleteJobId, bulkDeleteScope, historyOpen, onConfirmationOpenChange);
 
   const load = useCallback(async (
     cursor: string | null,

@@ -1,5 +1,36 @@
 # P0/P1 remediation queue
 
+## CH-0015I Floor Plan Upload accessibility — 2026-08-12
+
+- **Source/scope:** exact integration source
+  `2c567fd483877c7dcbd8fd23e3cd8cb316732c8c` / tree
+  `50f9c5d6a6610990606fd9db9a27ba40200fca90`; branch
+  `fix/ch-0015-floor-plan-upload-accessibility`; parent full-screen workspace,
+  semantic opener wiring, shared lifecycle/registry additions, state-focus
+  annotations, focused owner, and records only.
+- **Disposition:** `REQUIRED IMPLEMENTATION SURFACE LOCALLY RESOLVED`.
+  The preserved full-screen shell owns one registered topmost modal,
+  background isolation, state-aware focus and containment, semantic return,
+  nested-dialog supersession, and token-owned body-scroll locking.
+- **Required owner:** new `ci.floor-plan-upload-accessibility` owns ten stable
+  identities in Chromium and WebKit; focused result is **10/10 per engine**,
+  zero retries/skips/filters/shards/timeout increase. Existing
+  `ci.floor-plan-required` remains the domain owner. Derived inventory is
+  **27 gates / 377 sources**.
+- **Behavior/rollback:** mobile `100dvh`, desktop composition, accepted files,
+  image/PDF/page/calibration/review/history/create behavior, Consumer/Pro,
+  persistence, APIs, schema, and analytics remain unchanged. Inline history
+  confirmation policy is not decided; the parent only blocks bypassing it.
+  Empty Surfaces is covered through its exact production action; its current
+  integrated `hasRooms`/`!hasRooms` reachability contradiction is recorded and
+  deliberately not changed by this accessibility batch.
+  Revert the one focused commit and rerun both Floor Plan owners plus affected
+  shared-dialog owners; no data or external rollback is required.
+- **Queue status:** no required CH-0015 implementation surface remains after
+  CH-0015I. CH-0015 itself remains `IN_PROGRESS` until the exact-source closure
+  audit passes. Public legacy Upgrade and selected-item Preview remain separate
+  P2 work.
+
 ## CH-0015H test-contract hardening — 2026-08-12
 
 - **Source/scope:** child of

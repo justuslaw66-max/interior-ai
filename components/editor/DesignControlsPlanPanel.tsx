@@ -1,7 +1,6 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
-import { flushSync } from "react-dom";
 import { track } from "@/lib/analytics";
 import type { RoomSizePresetId } from "@/lib/design-page-house-plan";
 import {
@@ -30,6 +29,11 @@ import {
   getRuntimeSurfaceMaterialById,
 } from "@/lib/surface-material-runtime";
 import { useSurfaceMaterialCatalog } from "@/lib/useSurfaceMaterialCatalog";
+import {
+  FLOOR_PLAN_ADDRESS_UPLOAD_ACTION_ID, FLOOR_PLAN_CONSUMER_IMPORT_ACTION_ID,
+  FLOOR_PLAN_WORKSPACE_FALLBACK_ACTION_ID,
+} from "@/lib/floor-plan-upload-dialog-focus";
+import { openFloorPlanUploadWorkspace } from "@/lib/open-floor-plan-upload-workspace";
 import {
   DEFAULT_FLOOR_JOINT_COLOR,
   DEFAULT_FLOOR_JOINT_SIZE_MM,
@@ -66,6 +70,10 @@ import {
   PlanToolTile,
   type CollapsiblePlanSection,
 } from "./design-controls-plan/PlanToolComponents";
+import {
+  EmptyFloorPlanProUploadAction,
+  EmptyFloorPlanSurfacesActions,
+} from "./design-controls-plan/EmptyFloorPlanSurfacesActions";
 import { WallPaintPicker } from "./design-controls-plan/WallPaintPicker";
 import { SurfaceMaterialCatalogBoundary } from "./design-controls-plan/SurfaceMaterialCatalogBoundary";
 import {
@@ -100,13 +108,14 @@ import {
   type WallSurfaceMode,
 } from "./design-controls-plan/surfaceCatalog";
 
-export type { PlanStartMode } from "./design-controls-plan/DesignControlsPlanPanel.types";
+export type { FloorPlanLifecycleIdentity, PlanStartMode } from "./design-controls-plan/DesignControlsPlanPanel.types";
 import type {
   DesignControlsPlanPanelProps,
   PlanStartMode,
 } from "./design-controls-plan/DesignControlsPlanPanel.types";
 
 export default function DesignControlsPlanPanel({
+  floorPlanLifecycleIdentity,
   dark,
   isClientPreview,
   isDesigner,
@@ -315,30 +324,14 @@ export default function DesignControlsPlanPanel({
     });
     setPlanStartMode("template");
   };
-  const openFloorPlanUploadPicker = () => {
-    track("launch_path_selected", {
-      path: "upload",
-      source: isDesigner ? "pro_plan_tools" : "consumer_room_setup",
-    });
-    flushSync(() => setPlanStartMode("upload"));
-    const uploadPanel = document.getElementById("floor-plan-upload");
-    const uploadInput = uploadPanel?.querySelector<HTMLInputElement>(
-      '[data-testid="floor-plan-upload-input"]'
+  const openFloorPlanUploadPicker = (semanticOpenerId?: string) => {
+    openFloorPlanUploadWorkspace(
+      semanticOpenerId, isDesigner, () => setPlanStartMode("upload")
     );
-    const importWorkspaceLauncher = uploadPanel?.querySelector<HTMLButtonElement>(
-      '[data-testid="floor-plan-import-workspace-launcher"]'
-    );
-    if (importWorkspaceLauncher) {
-      importWorkspaceLauncher.click();
-    } else {
-      uploadInput?.click();
-    }
-    window.requestAnimationFrame(() => {
-      uploadPanel?.scrollIntoView({ behavior: "smooth", block: "nearest" });
-    });
   };
   useEffect(() => {
-    const handleUploadRequest = () => openFloorPlanUploadPicker();
+    const handleUploadRequest = () =>
+      openFloorPlanUploadPicker(FLOOR_PLAN_ADDRESS_UPLOAD_ACTION_ID);
     window.addEventListener("floor-plan-upload-requested", handleUploadRequest);
     return () =>
       window.removeEventListener("floor-plan-upload-requested", handleUploadRequest);
@@ -796,6 +789,7 @@ export default function DesignControlsPlanPanel({
     );
   };
   const renderPlanToolTile = ({
+    id,
     testId,
     icon,
     label,
@@ -805,6 +799,7 @@ export default function DesignControlsPlanPanel({
     title,
     onClick,
   }: {
+    id?: string;
     testId: string;
     icon: PlanToolIconName;
     label: string;
@@ -816,6 +811,7 @@ export default function DesignControlsPlanPanel({
   }) => (
     <PlanToolTile
       dark={dark}
+      id={id}
       testId={testId}
       icon={icon}
       label={label}
@@ -1527,26 +1523,11 @@ export default function DesignControlsPlanPanel({
       className={dark ? "designer-raised mt-2 rounded-lg p-2" : "mt-2 rounded-lg border border-neutral-200 bg-neutral-50 p-2"}
     >
       {!hasRooms ? (
-        <div data-testid="surfaces-start-state" className={dark ? "designer-recessed rounded-lg p-3" : "rounded-lg border border-neutral-200 bg-white p-3"}>
-          <div className={dark ? "text-sm font-semibold text-neutral-100" : "text-sm font-semibold text-neutral-950"}>
-            Choose a room before applying finishes
-          </div>
-          <div className={progressMetaClass}>Start from a template, draw a room, or upload a plan.</div>
-          <div className="mt-3 grid grid-cols-2 gap-2">
-            <button type="button" className={progressActionClass} onClick={openTemplatePicker}>
-              Templates
-            </button>
-            <button type="button" className={progressSecondaryActionClass} onClick={startDrawRoomSetup}>
-              Draw room
-            </button>
-            <button type="button" className={progressSecondaryActionClass} onClick={openFloorPlanUploadPicker}>
-              Upload plan
-            </button>
-            <button type="button" className={progressSecondaryActionClass} onClick={onAddDesignerRoom}>
-              Blank room
-            </button>
-          </div>
-        </div>
+        <EmptyFloorPlanSurfacesActions dark={dark} isDesigner={isDesigner}
+          progressActionClass={progressActionClass} progressSecondaryActionClass={progressSecondaryActionClass}
+          progressMetaClass={progressMetaClass} onOpenTemplatePicker={openTemplatePicker}
+          onStartDrawRoomSetup={startDrawRoomSetup} onSelectUploadMode={() => setPlanStartMode("upload")}
+          onAddDesignerRoom={onAddDesignerRoom} />
       ) : null}
 
       <div className="flex items-start justify-between gap-3">
@@ -2278,6 +2259,7 @@ export default function DesignControlsPlanPanel({
                 )}
               </div>
               <button
+                id={FLOOR_PLAN_WORKSPACE_FALLBACK_ACTION_ID}
                 type="button"
                 data-testid="plan-section-toggle-floorPlan"
                 className={collapsedToggleClass}
@@ -2344,12 +2326,13 @@ export default function DesignControlsPlanPanel({
                 children: (
                   <div className={planToolGridClass}>
                     {renderPlanToolTile({
+                      id: FLOOR_PLAN_CONSUMER_IMPORT_ACTION_ID,
                       testId: "plan-tool-import-2d",
                       icon: "upload",
                       label: "Import 2D drawing",
                       active: planStartMode === "upload",
                       disabled: !canEdit,
-                      onClick: openFloorPlanUploadPicker,
+                      onClick: () => openFloorPlanUploadPicker(FLOOR_PLAN_CONSUMER_IMPORT_ACTION_ID),
                     })}
                   </div>
                 ),
@@ -2621,15 +2604,12 @@ export default function DesignControlsPlanPanel({
               >
                 Draw room
               </button>
-              <button
-                type="button"
-                data-testid="plan-start-upload"
+              <EmptyFloorPlanProUploadAction
+                isDesigner={isDesigner}
+                onSelectUploadMode={() => setPlanStartMode("upload")}
                 className={planStartButtonClass("upload")}
-                disabled={!canEdit}
-                onClick={openFloorPlanUploadPicker}
-              >
-                Upload plan
-              </button>
+                canEdit={canEdit}
+              />
               <button
                 type="button"
                 data-testid="plan-start-template"
@@ -3389,7 +3369,9 @@ export default function DesignControlsPlanPanel({
         </div>
       )}
       {showFloorPlanPanel && (
-        <FloorPlanUploadPanel
+        <FloorPlanUploadPanel lifecycleIdentity={floorPlanLifecycleIdentity}
+          isDesigner={isDesigner} canEdit={canEdit}
+          planRoomCount={planRoomCount} activeRoomId={activeRoomId}
           underlay={floorPlanUnderlay}
           canCalibrate={Boolean(floorPlanUnderlay?.mimeType.startsWith("image/"))}
           calibrationMode={floorPlanCalibrationMode}

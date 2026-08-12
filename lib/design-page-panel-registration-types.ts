@@ -46,6 +46,7 @@ export type BuildDesignPagePanelRegistrationInput = {
       activeRoomId: string;
       catalogRoomNavigationRevision: number;
       authenticated: boolean;
+      authScopeKey: string;
     };
     editor: {
       editorMode: RegionInput["state"]["editorMode"];
@@ -80,7 +81,7 @@ export type BuildDesignPagePanelRegistrationInput = {
     isClientPreview: boolean;
     canEdit: boolean;
     canUseCabinetryStudio: boolean;
-    canEditPlanGeometry: boolean;
+      canEditPlanGeometry: boolean;
     aiDesignEnabled: boolean;
   };
   actions: {

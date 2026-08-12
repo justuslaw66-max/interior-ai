@@ -4,6 +4,7 @@ const FOCUSABLE_SELECTOR = [
   "input:not([disabled])",
   "select:not([disabled])",
   "textarea:not([disabled])",
+  "summary",
   '[tabindex]:not([tabindex="-1"])',
 ].join(",");
 
@@ -20,6 +21,39 @@ export function isActionable(element: HTMLElement) {
   }
   const rect = element.getBoundingClientRect();
   return rect.width > 0 && rect.height > 0;
+}
+
+export function isValidReturnFocusTarget(element: HTMLElement) {
+  if (!isActionable(element)) return false;
+  const style = window.getComputedStyle(element);
+  const rect = element.getBoundingClientRect();
+  if (
+    Number(style.opacity) <= 0 ||
+    rect.left < 0 ||
+    rect.top < 0 ||
+    rect.right > window.innerWidth ||
+    rect.bottom > window.innerHeight
+  ) return false;
+  const insetX = Math.min(4, rect.width / 4);
+  const insetY = Math.min(4, rect.height / 4);
+  const points = [
+    [rect.left + rect.width / 2, rect.top + rect.height / 2],
+    [rect.left + insetX, rect.top + insetY],
+    [rect.right - insetX, rect.top + insetY],
+    [rect.left + insetX, rect.bottom - insetY],
+    [rect.right - insetX, rect.bottom - insetY],
+  ];
+  return points.some(([x, y]) => {
+    const point = document.elementFromPoint(x, y);
+    return point instanceof Element &&
+      (point === element || element.contains(point));
+  });
+}
+
+export function isEligibleReturnFocusTarget(element: HTMLElement) {
+  if (!isActionable(element)) return false;
+  const style = window.getComputedStyle(element);
+  return style.visibility !== "hidden" && Number(style.opacity) > 0;
 }
 
 function getFocusableElements(container: HTMLElement) {

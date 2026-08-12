@@ -1,5 +1,48 @@
 # Required-test truthfulness
 
+## CH-0015I Floor Plan Upload ownership
+
+`ci.floor-plan-upload-accessibility` is the sole merge-required browser owner
+for `tests/required/floor-plan-upload-accessibility.spec.ts` and
+`playwright.floor-plan-upload.config.ts`. Its two-script closure first builds
+the deterministic registered-child fixture and runs the focused static
+lifecycle prerequisite. The package closure SHA-256 is
+`9886ed08fb4a74d67873494181be2ef5c4ea6963553eaf7dca76a32b48318d2f`.
+
+Ten stable identities execute once in Chromium and WebKit: focused result
+**10/10 per engine**, one worker, zero retry, skip, annotation, flake, grep,
+filter, shard, `.only`, force click, or timeout increase. Coverage owns
+Consumer/Pro pointer and keyboard entry, desktop/390×844 full-screen geometry,
+one named modal and topmost owner, state focus, containment, background
+isolation, Escape/backdrop/close, semantic responsive/remounted return,
+fallback and scope cancellation, registered-child supersession, stack-safe
+Strict Mode body scroll, synthetic image/PDF/job behavior, and unchanged
+inline history confirmation characterization.
+
+The deterministic empty-plan fixture mounts the production
+`DesignControlsPlanPanel` for Pro and its real production workspace. The
+responsive identity remounts the extracted production Pro action without
+unmounting that workspace. Empty Surfaces mounts its exact production action
+and handler because its current integrated branch is structurally unreachable;
+the child-dialog fixture declares neither Pro nor Surfaces opener. The static
+prerequisite fails if any manufactured replacement is reintroduced or the
+production integration wiring is removed.
+
+The spec remains under the declared `tests/required` root and outside Full
+E2E. Its config requires Chromium and WebKit, zero retries, one worker, exact
+report metadata for canonical evidence, and a strict production server for
+required runs. Manifest critical requirements lock exact projects, titles,
+sources, reports, process exit, nonzero discovery, and static prerequisite;
+missing, renamed, skipped, retried, flaky, filtered, or duplicate ownership
+fails closed. Stable checks runs this owner after the strict build. Existing
+`ci.floor-plan-required` remains the sole Floor Plan domain umbrella.
+
+Direct discovery now derives **27 gates / 377 classified sources** with
+inventory path-set SHA-256
+`701f57101d65eb50f58b72ae62432bcc59d7b180de61f094504a79386cf22985`.
+Repository registration does not claim GitHub ruleset enforcement or an
+external exact-head workflow result; those remain separate evidence.
+
 ## CH-0015H bounded contract correction — 2026-08-12
 
 The CH-0015H child above
@@ -84,10 +127,10 @@ required and advisory gate classification. `package.json` remains the command
 owner; the manifest points to those commands and verifies their recursive test
 sources instead of duplicating their shell bodies.
 
-The manifest currently classifies 253 `scripts/test-*` files as risk-triggered
+The manifest currently classifies 254 `scripts/test-*` files as risk-triggered
 tests, 101 Playwright specs as release-only browser inventory, 14 imported
 cabinetry/multi-room browser modules, and 8 imported cabinetry script-test
-modules, for 376 classified sources in total. The sorted path-set hashes make a new,
+modules, for 377 classified sources in total. The sorted path-set hashes make a new,
 deleted, renamed, or moved test source a blocking manifest-review event. Static
 registration contracts additionally prove every split-suite registration is
 imported and invoked, so removing an import/call cannot silently exclude an
@@ -114,7 +157,7 @@ Repository-controlled cadence is explicit:
   conclusion and dishonest evidence remain visible and are never accepted as
   release certification.
 
-The 26-gate inventory includes the required Git-history secret scan, code
+The 27-gate inventory includes the required Git-history secret scan, code
 quality, CH-0016 artifact-contract and runtime smoke, authorization/security,
 database migration process, persistence, Stripe, Phase 14/15, Consumer/Pro
 capability boundaries, cabinetry unit/accessibility/performance and release
@@ -123,7 +166,8 @@ umbrella (including live progress), catalog/materials, asset availability,
 Chromium/WebKit Pro visual policy, the Chromium/WebKit responsive public-share
 gate, the Chromium/WebKit Selection Tray lifecycle gate, the Chromium/WebKit My
 Designs parent/nested-delete lifecycle gate, the Guest Save Prompt lifecycle
-gate, the Retailer Confirmation lifecycle gate, and final merge-result
+gate, the Retailer Confirmation lifecycle gate, the Floor Plan Upload
+lifecycle gate, and final merge-result
 aggregation. Gate A3 discovers all 101 current
 browser specs and separately locks the six repaired
 commerce/Kelsey requirement identities; cabinetry release evidence owns 23

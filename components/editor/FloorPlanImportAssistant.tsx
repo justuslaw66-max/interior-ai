@@ -475,7 +475,7 @@ export default function FloorPlanImportAssistant({
     return (
       <div
         className={`${surface} flex min-h-[440px] flex-col items-center justify-center text-center`}
-        data-testid="floor-plan-import-progress"
+        data-testid="floor-plan-import-progress" data-floor-plan-workspace-state="working"
       >
         <div className="relative h-14 w-14">
           <div className="absolute inset-0 rounded-full border-4 border-emerald-100" />
@@ -532,12 +532,12 @@ export default function FloorPlanImportAssistant({
 
   if (state.kind === "error") {
     return (
-      <div className={dark ? "designer-recessed rounded-lg border border-amber-400/20 p-3" : "rounded-lg border border-amber-200 bg-amber-50 p-3"} data-testid="floor-plan-import-error">
+      <div className={dark ? "designer-recessed rounded-lg border border-amber-400/20 p-3" : "rounded-lg border border-amber-200 bg-amber-50 p-3"} data-testid="floor-plan-import-error" data-floor-plan-workspace-state="failure">
         <div className="text-xs font-semibold">Auto-detection paused</div>
         <p className={`mt-1 text-xs leading-4 ${subtle}`}>{state.message}</p>
         {state.resumableJobId && !state.authenticationRequired ? (
           <button
-            type="button"
+            type="button" data-floor-plan-workspace-focus="primary"
             className={`${control} mt-3 font-semibold`}
             onClick={() => window.location.reload()}
           >
@@ -550,14 +550,14 @@ export default function FloorPlanImportAssistant({
 
   if (activeJob?.status === "failed") {
     return (
-      <div className={surface} data-testid="floor-plan-import-failed">
+      <div className={surface} data-testid="floor-plan-import-failed" data-floor-plan-workspace-state="failure">
         <div className="text-xs font-semibold">Could not read this drawing</div>
         <p className={`mt-1 text-xs ${subtle}`}>
           {activeJob.errorMessage ?? "Retry with a clearer drawing or start a new import."}
         </p>
         {!sourceContentDeleted && !sourceDeletionPending ? (
           <button
-            type="button"
+            type="button" data-floor-plan-workspace-focus="primary"
             className="mt-3 rounded-md bg-neutral-900 px-3 py-2 text-xs font-semibold text-white disabled:opacity-50"
             disabled={disabled || retryingDetection}
             onClick={() => void retryDetection()}
@@ -594,7 +594,7 @@ export default function FloorPlanImportAssistant({
 
   if (activeJob?.status === "ready") {
     return (
-      <div className={surface} data-testid="floor-plan-import-ready">
+      <div className={surface} data-testid="floor-plan-import-ready" data-floor-plan-workspace-state="ready">
         <div className="text-xs font-bold uppercase tracking-[0.14em] text-emerald-700">
           AI import complete
         </div>
@@ -633,7 +633,7 @@ export default function FloorPlanImportAssistant({
           />
         ) : null}
         <button
-          type="button"
+          type="button" data-floor-plan-workspace-focus="primary"
           className="mt-4 w-full rounded-lg bg-emerald-600 px-4 py-3 text-sm font-semibold text-white disabled:opacity-50"
           disabled={disabled || submitting}
           onClick={() => void createDesign()}
@@ -760,7 +760,7 @@ export default function FloorPlanImportAssistant({
   if (!activeJob || !candidate || !floor) return null;
 
   return (
-    <div className={surface} data-testid="floor-plan-import-review">
+    <div className={surface} data-testid="floor-plan-import-review" data-floor-plan-workspace-state="review">
       {reviewError ? (
         <p className="mb-3 rounded-md bg-red-50 p-2 text-xs text-red-700" role="alert">
           {reviewError}

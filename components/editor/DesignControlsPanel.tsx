@@ -37,7 +37,7 @@ import { useEffect, useRef, useState } from "react";
 import type { EditorViewMode } from "./EditorViewToggle";
 import DesignControlsAiPanel from "./DesignControlsAiPanel";
 import DesignControlsFurnishPanel from "./DesignControlsFurnishPanel";
-import DesignControlsPlanPanel, { type PlanStartMode } from "./DesignControlsPlanPanel";
+import DesignControlsPlanPanel, { type FloorPlanLifecycleIdentity, type PlanStartMode } from "./DesignControlsPlanPanel";
 import type { FloorPlanTool } from "./FloorPlanToolStrip";
 
 type Budget = "$" | "$$" | "$$$";
@@ -72,7 +72,7 @@ type SurfaceRoomSummary = {
 export type DesignControlsPanelProps = {
   dark: boolean;
   isClientPreview: boolean;
-  isAuthed: boolean;
+  isAuthed: boolean; floorPlanLifecycleIdentity: FloorPlanLifecycleIdentity;
   isDesigner: boolean;
   canEdit: boolean;
   canEditPlanGeometry: boolean;
@@ -292,7 +292,7 @@ export type DesignControlsPanelProps = {
 };
 
 export default function DesignControlsPanel({
-  dark,
+  dark, floorPlanLifecycleIdentity,
   isClientPreview,
   isDesigner,
   canEdit,
@@ -716,7 +716,7 @@ export default function DesignControlsPanel({
 
       <div className={panelClass}>
         {effectivePanelMode === "plan" && (
-          <DesignControlsPlanPanel
+          <DesignControlsPlanPanel floorPlanLifecycleIdentity={floorPlanLifecycleIdentity}
             dark={dark}
             isClientPreview={isClientPreview}
             isDesigner={isDesigner}

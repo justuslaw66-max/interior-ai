@@ -35,6 +35,11 @@ import type {
 } from "./surfaceCatalog";
 
 export type PlanStartMode = "start" | "draw" | "upload" | "template";
+export type FloorPlanLifecycleIdentity = {
+  authScopeKey: string;
+  currentDesignId: string | null;
+  subscriptionPlan: string;
+};
 
 type HouseRoomTemplate = {
   id: HouseRoomTemplateId;
@@ -46,6 +51,7 @@ type HouseRoomTemplate = {
 };
 
 export type DesignControlsPlanPanelProps = {
+  floorPlanLifecycleIdentity: FloorPlanLifecycleIdentity;
   dark: boolean;
   isClientPreview: boolean;
   isDesigner: boolean;
@@ -216,4 +222,3 @@ export type DesignControlsPlanPanelProps = {
     metrics: DesignPageOpeningMetricsPatch
   ) => void;
 };
-

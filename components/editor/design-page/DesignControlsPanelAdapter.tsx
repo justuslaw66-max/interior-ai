@@ -13,6 +13,7 @@ type DesignControlsPanelConfigurationKey =
   | "dark"
   | "isClientPreview"
   | "isAuthed"
+  | "floorPlanLifecycleIdentity"
   | "isDesigner"
   | "canEdit"
   | "canEditPlanGeometry"

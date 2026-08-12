@@ -1,5 +1,60 @@
 # Code health audit handoff
 
+## CH-0015I accessible Floor Plan Upload handoff — 2026-08-12
+
+Branch `fix/ch-0015-floor-plan-upload-accessibility` starts exactly at
+`2c567fd483877c7dcbd8fd23e3cd8cb316732c8c`, tree
+`50f9c5d6a6610990606fd9db9a27ba40200fca90`. The safety gate found a clean
+worktree/index, synchronized local/origin integration, no Git operation or
+repository-owned listener, and free required ports; Node was `v24.13.0` and
+npm `11.6.2`. Every development listener was verified by `lsof` in the
+canonical `/Users/justus/Developer/interior-ai` checkout and stopped after
+focused browser work.
+
+The Floor Plan parent remains a full-screen mobile/desktop workspace. It now
+uses one shared registry/lifecycle owner for modal semantics, inert/hidden
+background, state-aware entry and transition focus, Tab containment,
+topmost-only Escape/backdrop, semantic current-DOM return, child
+supersession, and reference-counted body scroll. Consumer, Pro, Surfaces,
+address, Import, launcher, and fallback actions have stable identities.
+Route, design/project, mode, plan, auth, responsive replacement, and unmount
+retire stale restoration; reopen creates a new generation.
+
+Focused final-candidate results are Chromium **10/10** and WebKit **10/10**
+with Consumer/Pro pointer and keyboard, desktop/390×844, all major state-focus
+families, background/containment, close paths, remount/fallback, child stack,
+Strict Mode lock release, and current inline history characterization. Pro
+uses the real production empty `DesignControlsPlanPanel`; responsive
+replacement uses its exact extracted production action while the production
+workspace stays mounted. Empty Surfaces uses its exact production action and
+handler because the integrated call sites are currently `hasRooms`-gated while
+the card requires `!hasRooms`; this batch records that pre-existing
+reachability limitation and does not change product availability. The child
+fixture contains no manufactured Pro or Surfaces opener. Static lifecycle and
+existing consumer-flow checks pass. Synthetic plan/job/assets replace
+external vision, private files, and database fixtures. No Floor Plan domain
+owner changed.
+
+`ci.floor-plan-upload-accessibility` is the sole focused browser owner and
+`ci.floor-plan-required` remains the domain umbrella. Manifest validation
+derives **27 gates / 377 sources**; inventory path-set SHA-256 is
+`701f57101d65eb50f58b72ae62432bcc59d7b180de61f094504a79386cf22985`
+and the new two-script package closure SHA-256 is
+`9886ed08fb4a74d67873494181be2ef5c4ea6963553eaf7dca76a32b48318d2f`.
+
+Inline history single/bulk prompts remain the explicit unresolved product
+decision between honest inline semantics and a registered child alertdialog.
+Their DOM/actions are unchanged; the parent only refuses close while one is
+visible. No required CH-0015 implementation surface remains after this batch,
+but CH-0015 must not be declared complete before an exact-source closure audit.
+
+Phase 8 must run exactly once after the one clean candidate commit. Its result,
+evidence location, and hashes are authoritative only for that committed tree
+and are reported with the final handoff rather than inferred before the commit.
+Rollback is one revert followed by both Floor Plan owners, all shared-dialog
+owners, truthfulness, Phase 8, and strict build; no schema, data, dependency,
+deployment, or external-control rollback is involved.
+
 ## CH-0015H test-contract hardening handoff — 2026-08-12
 
 This child begins at `ee55098be7c750e8fa2a631978f3d4ebd956708c` /

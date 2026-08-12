@@ -27,7 +27,7 @@ export default function FloorPlanPageSelectionPanel({
   const subtle = dark ? "text-neutral-400" : "text-neutral-600";
 
   return (
-    <section data-testid="floor-plan-page-selection">
+    <section data-testid="floor-plan-page-selection" data-floor-plan-workspace-state="page-selection">
       <div className="text-xs font-semibold">Choose the floor-plan page</div>
       <p className={`mt-1 text-xs leading-4 ${subtle}`}>
         We ranked the pages using architectural linework, room labels, and
@@ -35,19 +35,17 @@ export default function FloorPlanPageSelectionPanel({
       </p>
       <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
         {candidates.map((candidate) => {
-          const rendered = job.renderedPagesJson.find(
-            (page) => page.pageNumber === candidate.pageNumber
-          );
-          const selected = selectedPageNumber === candidate.pageNumber;
+          const rendered = job.renderedPagesJson.find((page) =>
+            page.pageNumber === candidate.pageNumber);
           return (
             <button
               key={candidate.pageNumber}
               type="button"
-              data-testid={`floor-plan-page-candidate-${candidate.pageNumber}`}
-              aria-pressed={selected}
+              data-testid={`floor-plan-page-candidate-${candidate.pageNumber}`} data-floor-plan-workspace-focus={selectedPageNumber === candidate.pageNumber ? "primary" : undefined}
+              aria-pressed={selectedPageNumber === candidate.pageNumber}
               className={[
                 "overflow-hidden rounded-lg border text-left transition disabled:opacity-50",
-                selected
+                selectedPageNumber === candidate.pageNumber
                   ? "border-emerald-500 ring-2 ring-emerald-500/25"
                   : dark
                     ? "border-white/10"
@@ -95,7 +93,9 @@ export default function FloorPlanPageSelectionPanel({
         })}
       </div>
       <button
-        type="button"
+        type="button" data-floor-plan-workspace-focus={
+          selectedPageNumber === null ? "primary" : undefined
+        }
         className="mt-3 w-full rounded-md bg-emerald-600 px-3 py-2 text-xs font-semibold text-white disabled:opacity-50"
         disabled={
           disabled ||

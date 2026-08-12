@@ -416,7 +416,7 @@ export default function FloorPlanImportReviewPanel({
           <div className="mt-3 flex flex-wrap gap-2">
             {onRetryDetection ? (
               <button
-                type="button"
+                type="button" data-floor-plan-workspace-focus="primary"
                 className={
                   dark
                     ? "designer-control-active rounded-lg border px-4 py-2 text-xs font-semibold"
@@ -758,7 +758,7 @@ export default function FloorPlanImportReviewPanel({
             not be changed.
           </p>
           <button
-            type="button"
+            type="button" data-floor-plan-workspace-focus="primary"
             className="mt-3 w-full rounded-lg bg-emerald-600 px-4 py-3 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50"
             disabled={disabled || submitting}
             onClick={confirmDetectedPlan}

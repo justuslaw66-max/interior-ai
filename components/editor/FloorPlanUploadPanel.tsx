@@ -1,8 +1,17 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { createPortal } from "react-dom";
-import FloorPlanImportWorkspace from "./FloorPlanImportWorkspace";
+import { useRef, useState } from "react";
+import { usePathname, useSearchParams } from "next/navigation";
+import { useFloorPlanUploadDialogLifecycle } from "./useFloorPlanUploadDialogLifecycle";
+import { FloorPlanUploadWorkspaceDialog } from "./FloorPlanUploadWorkspaceDialog";
+import type { FloorPlanLifecycleIdentity } from "./design-controls-plan/DesignControlsPlanPanel.types";
+import {
+  FLOOR_PLAN_FILE_INPUT_ACTION_ID,
+  FLOOR_PLAN_IMPORT_ACTION_ID,
+  FLOOR_PLAN_WORKSPACE_LAUNCH_ACTION_ID,
+  captureFloorPlanWorkspaceOpener,
+  getFloorPlanWorkspaceScopeKey,
+} from "@/lib/floor-plan-upload-dialog-focus";
 import type { RoomOpening2D } from "@/lib/editorScene";
 import type {
   FloorPlanDrawAngleLockMode,
@@ -18,6 +27,11 @@ type TraceRoomTypeOption = {
 };
 
 type FloorPlanUploadPanelProps = {
+  lifecycleIdentity: FloorPlanLifecycleIdentity;
+  isDesigner: boolean;
+  canEdit: boolean;
+  planRoomCount: number;
+  activeRoomId: string;
   underlay: FloorPlanUnderlay | null;
   canCalibrate?: boolean;
   calibrationMode?: boolean;
@@ -119,6 +133,11 @@ const ANGLE_LOCK_TOOLS: Array<{
 ];
 
 export default function FloorPlanUploadPanel({
+  lifecycleIdentity,
+  isDesigner,
+  canEdit,
+  planRoomCount,
+  activeRoomId,
   underlay,
   canCalibrate = false,
   calibrationMode = false,
@@ -164,10 +183,24 @@ export default function FloorPlanUploadPanel({
   onResetTraceOpeningPoints,
   onClear,
 }: FloorPlanUploadPanelProps) {
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const lifecycleScopeKey = getFloorPlanWorkspaceScopeKey({
+    pathname,
+    search: searchParams.toString(),
+    requestedDesignId: searchParams.get("designId"),
+    projectId: searchParams.get("projectId") ?? searchParams.get("project"),
+    ...lifecycleIdentity,
+    authScopeKey: lifecycleIdentity.authScopeKey || "guest",
+    mode: isDesigner ? "pro" : "consumer",
+    canEdit,
+    planRoomCount,
+    activeRoomId,
+    underlayId: underlay?.id,
+  });
   const inputRef = useRef<HTMLInputElement | null>(null);
-  const dialogRef = useRef<HTMLElement | null>(null);
   const [trainingBenchmarkOptIn, setTrainingBenchmarkOptIn] = useState(false);
-  const [importWorkspaceOpen, setImportWorkspaceOpen] = useState(false);
+  const dialog = useFloorPlanUploadDialogLifecycle(lifecycleScopeKey);
   const [autoImportRequest, setAutoImportRequest] = useState<{
     file: File;
     trainingBenchmarkOptIn: boolean;
@@ -232,28 +265,6 @@ export default function FloorPlanUploadPanel({
       onTraceRoomModeChange?.(true);
     }
   };
-  useEffect(() => {
-    if (!importWorkspaceOpen) return;
-    const previouslyFocused =
-      document.activeElement instanceof HTMLElement
-        ? document.activeElement
-        : null;
-    const previousBodyOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    dialogRef.current?.focus({ preventScroll: true });
-    const closeOnEscape = (event: KeyboardEvent) => {
-      if (event.key !== "Escape") return;
-      event.preventDefault();
-      setImportWorkspaceOpen(false);
-    };
-    window.addEventListener("keydown", closeOnEscape);
-    return () => {
-      window.removeEventListener("keydown", closeOnEscape);
-      document.body.style.overflow = previousBodyOverflow;
-      previouslyFocused?.focus({ preventScroll: true });
-    };
-  }, [importWorkspaceOpen]);
-
   return (
     <>
     <div id="floor-plan-upload" className={cardClass}>
@@ -267,10 +278,11 @@ export default function FloorPlanUploadPanel({
           )}
         </div>
         <button
+          id={FLOOR_PLAN_IMPORT_ACTION_ID}
           type="button"
           className={buttonClass}
           disabled={disabled}
-          onClick={() => setImportWorkspaceOpen(true)}
+          onClick={() => dialog.openWorkspace(FLOOR_PLAN_IMPORT_ACTION_ID)}
         >
           Import
         </button>
@@ -278,6 +290,7 @@ export default function FloorPlanUploadPanel({
 
       <input
         ref={inputRef}
+        id={FLOOR_PLAN_FILE_INPUT_ACTION_ID}
         type="file"
         data-testid="floor-plan-upload-input"
         aria-label="Choose a floor plan to import"
@@ -285,16 +298,21 @@ export default function FloorPlanUploadPanel({
         className="sr-only"
         onChange={(event) => {
           const file = event.target.files?.[0];
+          const openerId =
+            event.currentTarget.dataset.floorPlanWorkspaceOpener ??
+            captureFloorPlanWorkspaceOpener();
+          delete event.currentTarget.dataset.floorPlanWorkspaceOpener;
           event.target.value = "";
           if (file) {
             setAutoImportRequest({ file, trainingBenchmarkOptIn });
-            setImportWorkspaceOpen(true);
+            if (!dialog.open) dialog.openWorkspace(openerId);
           }
         }}
       />
 
       <div className="mt-3 space-y-3">
         <button
+          id={FLOOR_PLAN_WORKSPACE_LAUNCH_ACTION_ID}
           type="button"
           data-testid="floor-plan-import-workspace-launcher"
           className={
@@ -303,7 +321,14 @@ export default function FloorPlanUploadPanel({
               : "flex w-full items-center justify-between gap-3 rounded-lg bg-neutral-50 p-3 text-left hover:bg-neutral-100"
           }
           disabled={disabled}
-          onClick={() => setImportWorkspaceOpen(true)}
+          onClick={(event) => {
+            const forwardedOpener =
+              event.currentTarget.dataset.floorPlanWorkspaceOpener ?? null;
+            delete event.currentTarget.dataset.floorPlanWorkspaceOpener;
+            dialog.openWorkspace(
+              forwardedOpener ?? FLOOR_PLAN_WORKSPACE_LAUNCH_ACTION_ID
+            );
+          }}
         >
           <span className="min-w-0">
             <span
@@ -825,101 +850,12 @@ export default function FloorPlanUploadPanel({
         )}
       </div>
     </div>
-    {importWorkspaceOpen
-      ? createPortal(
-          <div
-            className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/60 p-0 backdrop-blur-sm sm:p-4"
-            data-testid="floor-plan-import-dialog-backdrop"
-            onMouseDown={(event) => {
-              if (event.target === event.currentTarget) {
-                setImportWorkspaceOpen(false);
-              }
-            }}
-          >
-            <section
-              ref={dialogRef}
-              aria-labelledby="floor-plan-import-dialog-title"
-              aria-modal="true"
-              className={
-                dark
-                  ? "flex h-[100dvh] w-full min-w-0 flex-col overflow-hidden bg-neutral-950 text-neutral-100 shadow-2xl outline-none sm:h-[calc(100dvh-2rem)] sm:max-w-[1600px] sm:rounded-2xl sm:border sm:border-white/10"
-                  : "flex h-[100dvh] w-full min-w-0 flex-col overflow-hidden bg-white text-neutral-950 shadow-2xl outline-none sm:h-[calc(100dvh-2rem)] sm:max-w-[1600px] sm:rounded-2xl sm:border sm:border-neutral-200"
-              }
-              data-testid="floor-plan-import-dialog"
-              role="dialog"
-              tabIndex={-1}
-            >
-              <header
-                className={
-                  dark
-                    ? "flex shrink-0 items-center justify-between gap-3 border-b border-white/10 bg-neutral-950/95 px-4 py-3 sm:px-6 sm:py-4"
-                    : "flex shrink-0 items-center justify-between gap-3 border-b border-neutral-200 bg-white/95 px-4 py-3 sm:px-6 sm:py-4"
-                }
-              >
-                <div className="min-w-0">
-                  <div
-                    className={
-                      dark
-                        ? "text-[10px] font-bold uppercase tracking-[0.16em] text-emerald-300"
-                        : "text-[10px] font-bold uppercase tracking-[0.16em] text-emerald-700"
-                    }
-                  >
-                    Import workspace
-                  </div>
-                  <h2
-                    id="floor-plan-import-dialog-title"
-                    className="truncate text-lg font-semibold sm:text-xl"
-                  >
-                    Import a floor plan
-                  </h2>
-                  <p className={`${subtleClass} hidden sm:block`}>
-                    Upload once. AI builds an editable 2D and 3D design.
-                  </p>
-                </div>
-                <div className="flex shrink-0 items-center gap-2">
-                  <button
-                    type="button"
-                    className={buttonClass}
-                    disabled={disabled}
-                    onClick={() => inputRef.current?.click()}
-                  >
-                    Choose file
-                  </button>
-                  <button
-                    type="button"
-                    aria-label="Close floor-plan import"
-                    className={
-                      dark
-                        ? "designer-control flex h-10 w-10 items-center justify-center rounded-full border text-xl text-neutral-100 hover:bg-white/10"
-                        : "flex h-10 w-10 items-center justify-center rounded-full border border-neutral-200 bg-white text-xl text-neutral-700 hover:bg-neutral-100"
-                    }
-                    onClick={() => setImportWorkspaceOpen(false)}
-                  >
-                    <span aria-hidden="true">×</span>
-                  </button>
-                </div>
-              </header>
-              <div
-                className={
-                  dark
-                    ? "min-h-0 flex-1 overflow-y-auto bg-neutral-950 p-3 sm:p-5 lg:p-6"
-                    : "min-h-0 flex-1 overflow-y-auto bg-neutral-100/70 p-3 sm:p-5 lg:p-6"
-                }
-              >
-                <FloorPlanImportWorkspace
-                  request={autoImportRequest}
-                  trainingBenchmarkOptIn={trainingBenchmarkOptIn}
-                  dark={dark}
-                  disabled={disabled}
-                  onChooseFile={() => inputRef.current?.click()}
-                  onTrainingBenchmarkOptInChange={setTrainingBenchmarkOptIn}
-                />
-              </div>
-            </section>
-          </div>,
-          document.body
-        )
-      : null}
+    <FloorPlanUploadWorkspaceDialog {...dialog} dark={dark} disabled={disabled}
+      buttonClass={buttonClass} subtleClass={subtleClass} request={autoImportRequest}
+      trainingBenchmarkOptIn={trainingBenchmarkOptIn} onClose={dialog.requestClose}
+      onChooseFile={() => inputRef.current?.click()}
+      onConfirmationOpenChange={dialog.setHistoryConfirmationOpen}
+      onTrainingBenchmarkOptInChange={setTrainingBenchmarkOptIn} />
     </>
   );
 }

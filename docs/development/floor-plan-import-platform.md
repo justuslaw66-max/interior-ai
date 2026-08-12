@@ -2,6 +2,31 @@
 
 This application treats a floor plan as evidence-backed geometry, not as an image that can be guessed into a room list. `FloorPlanDocumentV2` is the canonical source for editing, 2D rendering, 3D extrusion, persistence, address-library revisions, and export.
 
+## Upload workspace accessibility lifecycle
+
+The upload/import UI is a `FULL_SCREEN_MODAL_WORKSPACE`, not a compact dialog.
+Its existing mobile `100dvh` portal and desktop composition use the shared
+editor dialog registry for one modal owner, background isolation, contained
+Tab order, topmost Escape/backdrop, semantic return, registered-child
+supersession, and stack-safe body-scroll locking. Consumer import-2D, Pro
+start-upload, empty Surfaces, address library, Import, and workspace-launch
+actions have stable semantic identities; route/design/mode/plan/auth scope
+replacement cancels stale restoration.
+
+The production Empty Surfaces action has the same lifecycle wiring, although
+its existing integrated call sites are `hasRooms`-gated while its empty-state
+card requires `!hasRooms`. This batch does not make that otherwise unreachable
+product state visible. Required browser coverage mounts the exact production
+action and workspace deterministically, and the static owner locks its
+integration wiring.
+
+The import state machine remains owned below the shell. Empty selection, PDF
+page selection, processing, calibration/review, ready, failure/retry, and
+history states expose an intentional current focus target without becoming a
+second workflow store. Inline history delete confirmations remain under their
+existing behavior pending a separate product decision; the parent merely
+refuses generic close while a confirmation is visible.
+
 ## Accuracy contract
 
 - `needs_review` is the default for extracted and migrated geometry.

@@ -189,9 +189,9 @@ export function buildDesignPagePanelRegistration({
   });
   const designControlsPanelModel = buildDesignControlsPanelModel({
     access: {
-      dark: configuration.designerTheme,
-      isClientPreview: configuration.isClientPreview,
+      dark: configuration.designerTheme, isClientPreview: configuration.isClientPreview,
       isAuthed: state.document.authenticated,
+      floorPlanLifecycleIdentity: { authScopeKey: state.document.authScopeKey, currentDesignId: state.document.designId ?? null, subscriptionPlan: state.document.plan },
       isDesigner: configuration.isDesigner,
       canEdit: configuration.canEdit,
       canEditPlanGeometry: configuration.canEditPlanGeometry,
