@@ -44,8 +44,25 @@ export type GLBMainThreadTelemetryBootstrap = {
   events: GLBMainThreadBootstrapEvent[];
   counters: Record<GLBMainThreadCounter, number>;
 };
+export type GLBMainThreadCollectorImportState =
+  | "not-requested"
+  | "pending"
+  | "active"
+  | "failed";
+export type GLBMainThreadCollectorActivationMode =
+  | "hydrated-bootstrap"
+  | "direct-empty-bootstrap";
 
 export const GLB_MAIN_THREAD_TELEMETRY_CAPACITY = 96;
+
+export function countGLBMainThreadBootstrapRecords(
+  bootstrap: GLBMainThreadTelemetryBootstrap,
+) {
+  return GLB_MAIN_THREAD_COUNTERS.reduce(
+    (total, counter) => total + bootstrap.counters[counter],
+    bootstrap.events.length,
+  );
+}
 
 export function createGLBMainThreadTimingEntry(
   category: GLBMainThreadTimingCategory,

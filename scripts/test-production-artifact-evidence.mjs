@@ -64,6 +64,10 @@ import {
   captureImmediatePostReadinessSnapshot,
   runRuntimeSmokePostReadinessOperation,
 } from "./runtime-smoke-post-readiness.mjs";
+import {
+  RUNTIME_SMOKE_TELEMETRY_BOOTSTRAP_ATTACHMENT,
+  createRuntimeSmokeTelemetryBootstrapEvidence,
+} from "./runtime-smoke-telemetry-bootstrap-contract.mjs";
 import { createRuntimeSmokeReadinessObservation } from "./runtime-smoke-readiness-diagnostics.mjs";
 import {
   projectRuntimeSmokeBrowserCallbackMilestone,
@@ -1644,6 +1648,7 @@ async function fixture({ environmentOverrides = {}, publicArtifactText = "public
   for (const sourceName of [
     "runtime-smoke-operation-contracts.mjs",
     "runtime-smoke-operation-deadline.mjs",
+    "runtime-smoke-telemetry-bootstrap-contract.mjs",
   ]) {
     write(
       root,
@@ -1688,6 +1693,7 @@ async function fixture({ environmentOverrides = {}, publicArtifactText = "public
     "scripts/runtime-smoke-failure-evidence.mjs",
     "scripts/runtime-smoke-operation-contracts.mjs",
     "scripts/runtime-smoke-operation-deadline.mjs",
+    "scripts/runtime-smoke-telemetry-bootstrap-contract.mjs",
     "scripts/required-test-truthfulness.mjs",
     "scripts/required-test-manifest.json",
     "generated/runtime.ts",
@@ -1745,6 +1751,38 @@ async function fixture({ environmentOverrides = {}, publicArtifactText = "public
     },
   });
   await writeProductionEvidenceManifest({ repositoryRoot: root, manifestPath, manifest });
+  const telemetryEvidence = [1, 2, 3, 4].map((generation, index) => {
+    const queuedAtActivation = index === 0 ? 0 : index + 1;
+    return createRuntimeSmokeTelemetryBootstrapEvidence({
+      phaseName: index === 0 ? "initial-document" : `reload-${index}`,
+      expectedCollectorActivationGeneration: generation,
+      expectedReadyModelCount: 8,
+      observedReadyModelCount: 8,
+      telemetry: {
+        schema: "interior-ai.glb-main-thread-telemetry.v2",
+        snapshotHookPresent: true,
+        collectorImportState: "active",
+        collectorActivationMode:
+          queuedAtActivation === 0
+            ? "direct-empty-bootstrap"
+            : "hydrated-bootstrap",
+        collectorActivationGeneration: generation,
+        bootstrapRecordsQueuedAtActivation: queuedAtActivation,
+        bootstrapEventsFlushed: queuedAtActivation,
+        bootstrapFlushCompleted: true,
+        directModeActive: true,
+        directTelemetryObserved: true,
+        timingCount: 6,
+        counters: {
+          lifecycleTransitions: 8,
+          diagnosticStoreUpdates: 8,
+          reactRenders: 2,
+          sceneAttachments: 8,
+          rendererCalls: 12,
+        },
+      },
+    });
+  });
   const report = {
     config: {
       configFile: path.join(root, "playwright.config.ts"),
@@ -1794,7 +1832,16 @@ async function fixture({ environmentOverrides = {}, publicArtifactText = "public
                 projectName: "chromium",
                 status: "expected",
                 annotations: [],
-                results: [{ status: "passed", retry: 0, annotations: [] }],
+                results: [{
+                  status: "passed",
+                  retry: 0,
+                  annotations: [],
+                  attachments: telemetryEvidence.map((evidence) => ({
+                    name: RUNTIME_SMOKE_TELEMETRY_BOOTSTRAP_ATTACHMENT,
+                    contentType: "application/json",
+                    body: Buffer.from(JSON.stringify(evidence)).toString("base64"),
+                  })),
+                }],
               },
             ],
           },
@@ -2030,6 +2077,58 @@ async function expectRejected(context, expectedText) {
   assert.equal(result.valid, true);
   assert.equal(result.manifest.repositoryEvidence.status, "valid");
   assert.equal(result.manifest.repositoryEvidence.releaseReady, false);
+}
+
+{
+  const context = await fixture();
+  await rewriteFailurePair(context, ({ report }) => {
+    report.suites[0].specs[0].tests[0].results[0].attachments = [];
+  });
+  await expectRejected(
+    context,
+    "runtime telemetry observations do not cover the initial realm and three reloads",
+  );
+}
+
+{
+  const context = await fixture();
+  await rewriteFailurePair(context, ({ report }) => {
+    const attachment =
+      report.suites[0].specs[0].tests[0].results[0].attachments[0];
+    const evidence = JSON.parse(
+      Buffer.from(attachment.body, "base64").toString("utf8"),
+    );
+    evidence.telemetry.bootstrapRecordsQueuedAtActivation = 4;
+    evidence.telemetry.bootstrapEventsFlushed = 0;
+    attachment.body = Buffer.from(JSON.stringify(evidence)).toString("base64");
+  });
+  await expectRejected(context, "bootstrap.accounting");
+}
+
+{
+  const context = await fixture();
+  await rewriteFailurePair(context, ({ report }) => {
+    const attachment =
+      report.suites[0].specs[0].tests[0].results[0].attachments[0];
+    attachment.body = Buffer.from("{}").toString("base64");
+  });
+  await expectRejected(
+    context,
+    "runtime telemetry evidence fields are missing or unknown",
+  );
+}
+
+{
+  const context = await fixture();
+  await rewriteFailurePair(context, ({ report }) => {
+    const attachment =
+      report.suites[0].specs[0].tests[0].results[0].attachments[0];
+    attachment.path = "/tmp/non-portable-telemetry.json";
+  });
+  await expectRejected(
+    context,
+    "runtime telemetry report attachment is malformed or non-portable",
+  );
 }
 
 {
@@ -2607,6 +2706,7 @@ for (const mutate of [
     "scripts/runtime-smoke-failure-evidence.mjs",
     "scripts/runtime-smoke-operation-contracts.mjs",
     "scripts/runtime-smoke-operation-deadline.mjs",
+    "scripts/runtime-smoke-telemetry-bootstrap-contract.mjs",
     "scripts/required-test-truthfulness.mjs",
     "scripts/required-test-manifest.json",
     context.manifestPath,

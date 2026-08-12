@@ -59,7 +59,7 @@ const productionArtifactEvidence = productionEvidenceManifestPath
           "utf8"
         )
       );
-      if (manifest.schema !== "interior-ai.production-artifact-evidence.v1") {
+      if (manifest.schema !== "interior-ai.production-artifact-evidence.v2") {
         throw new Error("Unsupported production artifact evidence manifest.");
       }
       return {

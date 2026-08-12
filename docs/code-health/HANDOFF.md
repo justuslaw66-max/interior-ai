@@ -1,5 +1,53 @@
 # Code health audit handoff
 
+## CH-0015I inherited runtime-smoke contract correction — 2026-08-12
+
+Branch `fix/ch-0015i-runtime-smoke-bootstrap-contract` starts at the exact
+CH-0015I feature commit `78163d4ce125c6f1739dfb9256d8f8cbee655345`,
+tree `181f31ea83fb73a042932ee9ebaa909c5d13da06`, whose parent is exact integration
+base `2c567fd483877c7dcbd8fd23e3cd8cb316732c8c`. Entry status, index, untracked,
+tracked-ignored, diff, and Git-operation checks were clean. No repository-owned
+app, browser, build, smoke, benchmark, or database process was active; the
+unrelated local PostgreSQL listener was not owned by this checkout. Node was
+`v24.13.0` and npm `11.6.2`.
+
+The authoritative classification is **B — TEST_ASSERTION_DEFECT**. The original
+runtime smoke required `bootstrapEventsFlushed > 0`, but that field counts only
+the exact records retained while the lazy collector import is pending. A valid
+realm can resolve the collector with an empty batch and then record substantial
+activity directly. The preserved failed main report, production artifact, and
+Phase 8 evidence remain unchanged under SHA-256
+`bfda5462b825d71f0aea76b3142b598763d3afbf39a198352f7515ea0d0606c4`,
+`357a9cf29eb9bd429aeb89c41d65297429c617882e18afd74f1d7943fb45706b`,
+and `aff8cb9de736d6c77b76314ee206471fa45272723ca6ff10a48d4abe61f69250`.
+They prove collector liveness and direct telemetry, not record loss.
+
+Snapshot schema `interior-ai.glb-main-thread-telemetry.v2` adds import state,
+one-shot activation mode, current realm generation, exact records queued at
+activation, completed hydration, direct mode, and direct-activity provenance
+while retaining `bootstrapEventsFlushed`. `hydrated-bootstrap` requires a
+positive exact queued/flushed total; `direct-empty-bootstrap` requires both
+totals zero plus later direct activity. The snapshot hook becomes visible only
+after synchronous hydration completes. Import failure remains terminal with no
+hook and no retry; disabled production still makes zero requests and installs
+no hook.
+
+The initial document and three reloads use one pure validator and attach strict
+portable provenance to the Playwright report. Production-artifact evidence is
+explicitly versioned to v2 and revalidates the complete four-realm sequence,
+cross-field accounting, current generation, substantive timing/lifecycle/
+renderer activity, semantic readiness, and report/manifest summary binding.
+Deterministic loader injection covers empty, nonempty, lost, failure, pending,
+direct, inactive, bounded, fresh-realm, stable-snapshot, and malformed states
+without sleeps, retries, timeout changes, eager loading, or scheduler timing.
+
+This child changes no Floor Plan Upload implementation or domain behavior. No
+required CH-0015 implementation surface remains after CH-0015I. CH-0015I still
+requires separate integrator review, and CH-0015 remains open for its final
+exact-source closure audit; this correction does not begin that audit.
+Exact-head commit, validation, build, Phase 8, runtime-smoke, browser-owner,
+manifest, and evidence results are recorded only after the final clean commit.
+
 ## CH-0015I accessible Floor Plan Upload handoff — 2026-08-12
 
 Branch `fix/ch-0015-floor-plan-upload-accessibility` starts exactly at
@@ -2714,9 +2762,10 @@ the snapshot hook and records timing, lifecycle-transition, and renderer-call
 activity. A strictly bounded metadata-only bootstrap retains at most 96 fixed
 timing/gap events plus five fixed counters capped at 96 while the import is in
 flight. One monotonic scalar activation epoch preserves distinct relative start
-times when the buffer flushes; the flush count is reported. Required runtime smoke
-asserts a nonzero flush plus timing/lifecycle/render activity in the initial
-document and in each of three new reload realms. Renderer instrumentation uses
+times when the buffer flushes; the flush count is reported. At the CH-0029
+checkpoint, required runtime smoke asserted a nonzero flush plus timing/lifecycle/render
+activity in the initial document and in each of three new reload realms; the
+bounded CH-0015I correction above supersedes that assertion. Renderer instrumentation uses
 a `WeakSet` and retains no renderer or raw WebGL graph. Aborting the collector
 request left the scene canvas mounted, installed no snapshot hook, made no
 second request, emitted no page error, and did not change any

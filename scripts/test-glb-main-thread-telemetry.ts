@@ -121,6 +121,13 @@ const facadeSource = readFileSync(
   ),
   "utf8",
 );
+const facadeControllerSource = readFileSync(
+  path.join(
+    process.cwd(),
+    "components/scene/glb-scaled-model/glbMainThreadTelemetryFacadeController.ts",
+  ),
+  "utf8",
+);
 const coreSource = readFileSync(
   path.join(
     process.cwd(),
@@ -149,38 +156,41 @@ assert.match(
 assert.match(source, /observer\.observe\(\{ type: "longtask", buffered: true \}\)/);
 assert.match(source, /entry\.startTime < state\.startedAtMs/);
 assert.match(source, /Unsupported entry types must never affect model loading/);
-assert.match(source, /timingAggregates: emptyTimingAggregates\(\)/);
+assert.match(
+  source,
+  /timingAggregates: emptyGLBMainThreadTimingAggregates\(\)/,
+);
 assert.match(source, /aggregate\.maximumDurationMs = Math\.max/);
 assert.doesNotMatch(source, /renderInvalidations/);
 assert.doesNotMatch(source, /\b(?:url|path|geometry|material|texture|credential)\s*:/i);
 assert.match(
   facadeSource,
-  /void import\("\.\/glbMainThreadTelemetry"\)/,
+  /loadTelemetry: \(\) => import\("\.\/glbMainThreadTelemetry"\)/,
   "the complete QA telemetry collector must remain behind a dynamic import",
 );
 assert.match(
-  facadeSource,
+  `${facadeSource}\n${facadeControllerSource}`,
   /__INTERIOR_AI_ENABLE_GLB_DIAGNOSTICS__[\s\S]*loadTelemetryForDiagnostics/,
   "the lazy telemetry chunk must load only for the explicit diagnostics path",
 );
 assert.doesNotMatch(
-  facadeSource,
+  facadeControllerSource,
   /\.catch\([\s\S]*telemetryLoadStarted\s*=\s*false/,
   "a rejected diagnostics import must fail closed without retrying during lifecycle activity",
 );
 assert.match(
-  facadeSource,
-  /const BOOTSTRAP_EVENT_CAPACITY = 96/,
+  coreSource,
+  /GLB_MAIN_THREAD_TELEMETRY_CAPACITY = 96/,
   "bootstrap telemetry must use the same strict 96-entry capacity",
 );
 assert.match(
-  facadeSource,
-  /bootstrapEvents\.length === BOOTSTRAP_EVENT_CAPACITY[\s\S]*bootstrapEvents\.shift\(\)[\s\S]*bootstrapEvents\.push\(event\)/,
+  facadeControllerSource,
+  /bootstrapEvents\.length === GLB_MAIN_THREAD_TELEMETRY_CAPACITY[\s\S]*bootstrapEvents\.shift\(\)[\s\S]*bootstrapEvents\.push\(event\)/,
   "bootstrap events must evict at the fixed capacity",
 );
 assert.match(
-  facadeSource,
-  /bootstrapCounters\[counter\] = Math\.min\([\s\S]*BOOTSTRAP_EVENT_CAPACITY/,
+  facadeControllerSource,
+  /bootstrapCounters\[counter\] = Math\.min\([\s\S]*GLB_MAIN_THREAD_TELEMETRY_CAPACITY/,
   "fixed bootstrap counters must be capped",
 );
 assert.match(
@@ -189,39 +199,43 @@ assert.match(
   "renderer instrumentation must not retain a renderer strongly",
 );
 assert.doesNotMatch(
-  facadeSource,
+  `${facadeSource}\n${facadeControllerSource}`,
   /pendingRenderer|THREE\.WebGLRenderer \| null/,
   "lazy initialization must not retain a renderer or raw WebGL graph",
 );
 assert.doesNotMatch(
-  facadeSource,
+  `${facadeSource}\n${facadeControllerSource}`,
   /BoundedMetadataRing|PerformanceObserver|timingAggregates|heartbeatGaps|frameGaps|longTasks/,
   "the facade must not duplicate collector implementation",
 );
 assert.doesNotMatch(
-  facadeSource,
+  `${facadeSource}\n${facadeControllerSource}`,
   /\b(?:url|path|geometry|material|texture|credential|payload|data)\s*:/i,
   "bootstrap telemetry must remain metadata-only",
 );
 assert.doesNotMatch(
-  facadeSource,
+  `${facadeSource}\n${facadeControllerSource}`,
   /setTimeout|setInterval|Promise\.race|AbortController/,
   "telemetry activation must not add retries or timeout behavior",
 );
 assert.match(
-  facadeSource,
-  /if \(!telemetryEnabled\(\) \|\| telemetryLoadFailed\) return operation\(\)/,
+  facadeControllerSource,
+  /if \(!this\.dependencies\.telemetryEnabled\(\) \|\| this\.telemetryLoadFailed\)[\s\S]*return operation\(\)/,
   "disabled or failed telemetry must execute lifecycle operations directly",
 );
 assert.match(
   source,
-  /initializeGLBMainThreadTelemetry\(startedAtMs = nowMs\(\)\)[\s\S]*hydrateGLBMainThreadTelemetryBootstrap[\s\S]*state\.bootstrapEventsFlushed \+=/,
+  /initializeGLBMainThreadTelemetry\(startedAtMs = nowMs\(\)\)[\s\S]*hydrateGLBMainThreadTelemetryBootstrap[\s\S]*state\.bootstrapEventsFlushed \+= queuedRecordCount/,
   "the collector must hydrate and report bounded bootstrap metadata",
 );
 assert.match(
-  facadeSource,
-  /bootstrapStartedAtMs \?\?= nowMs\(\)[\s\S]*initializeGLBMainThreadTelemetry\(bootstrap\.startedAtMs\)/,
+  facadeControllerSource,
+  /bootstrapStartedAtMs \?\?= this\.dependencies\.nowMs\(\)/,
   "lazy hydration must preserve the pre-import monotonic telemetry epoch",
+);
+assert.match(
+  facadeControllerSource,
+  /initializeGLBMainThreadTelemetry\(bootstrap\.startedAtMs\)/,
 );
 assert.match(
   coreSource,
@@ -230,8 +244,18 @@ assert.match(
 );
 assert.match(
   runtimeSmokeSource,
-  /for \(let reloadIndex = 0; reloadIndex < 3; reloadIndex \+= 1\)[\s\S]*snapshot\.bootstrapEventsFlushed > 0[\s\S]*runtime-smoke-telemetry-bootstrap/,
-  "required runtime evidence must prove bootstrap hydration in every reload realm",
+  /recordTelemetryBootstrapEvidence[\s\S]*phaseName: "initial-document"[\s\S]*for \(let reloadIndex = 0; reloadIndex < 3; reloadIndex \+= 1\)[\s\S]*recordTelemetryBootstrapEvidence/,
+  "required runtime evidence must prove one coherent activation path in every realm",
+);
+assert.doesNotMatch(
+  runtimeSmokeSource,
+  /bootstrapEventsFlushed\s*>\s*0/,
+  "runtime smoke must not confuse empty bootstrap activation with event loss",
+);
+assert.match(
+  source,
+  /bootstrapRecordsQueuedAtActivation[\s\S]*bootstrapFlushCompleted[\s\S]*directModeActive[\s\S]*directTelemetryObserved/,
+  "collector snapshots must retain explicit activation and direct-mode provenance",
 );
 for (const importerPath of productionImporters) {
   const importerSource = readFileSync(path.join(process.cwd(), importerPath), "utf8");

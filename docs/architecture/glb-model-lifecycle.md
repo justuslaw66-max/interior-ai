@@ -141,6 +141,47 @@ browser admission without weakening the assertion. Relative timing retains
 host invocation/receipt and browser entry/exit/serialization separately;
 constrained-runner scheduling remains owned by CH-0029.
 
+## Runtime-smoke telemetry bootstrap activation contract
+
+The diagnostics facade is one realm-local state machine. `NOT_REQUESTED` means
+the lazy collector import has not begun. The first diagnostics call enters
+`IMPORT_PENDING`, records one monotonic epoch, makes exactly one import request,
+and may retain at most 96 fixed timing/gap events plus five counters capped at
+96. Rejection enters terminal `IMPORT_FAILED`: the bounded metadata is cleared,
+no snapshot hook is installed, and later lifecycle activity never retries.
+
+Successful import synchronously captures one exact event/counter batch before
+initializing and hydrating the collector. `bootstrapRecordsQueuedAtActivation`
+is the event count plus the exact captured counter totals. A positive batch
+selects `hydrated-bootstrap`; a zero batch explicitly selects
+`direct-empty-bootstrap`. Hydration sets `bootstrapEventsFlushed` to that exact
+captured total, then marks `bootstrapFlushCompleted`, `directModeActive`, and
+collector state `active`. The snapshot hook is installed only after those
+synchronous steps finish, so no browser callback can observe an initialized
+collector between batch capture and hydration. Activation is one-shot and a
+second hydration is rejected.
+
+After activation, facade calls enter `DIRECT_ACTIVE` and bypass the bootstrap
+buffer. `directTelemetryObserved` becomes true on the first later timing, gap,
+or counter record. `collectorActivationGeneration` binds the snapshot to the
+diagnostics reload generation; navigation creates a new JavaScript realm and
+therefore a new facade request, epoch, activation identity, and provenance.
+The collector snapshot schema is
+`interior-ai.glb-main-thread-telemetry.v2` and retains the legacy cumulative
+`bootstrapEventsFlushed` field.
+
+The furnished runtime smoke accepts exactly two healthy provenance paths. A
+nonempty path requires queued equals flushed, positive queued count,
+`hydrated-bootstrap`, completed hydration, and direct mode. An empty path
+requires queued equals flushed equals zero, `direct-empty-bootstrap`, completed
+hydration, direct mode, and later direct telemetry. Both require the current
+realm, the snapshot hook, active import state, timing plus lifecycle and
+renderer activity, and all eight semantic models ready. Pending/failed/stale,
+malformed, negative/nonfinite, mismatched, inactive, or contradictory states
+fail with a named invariant. No retry, sleep, timeout, poll, eager collector,
+renderer ownership, lifecycle/cache/refcount, or production-disabled behavior
+changes with this contract.
+
 ## CH-0029 hidden-frame scheduling and diagnostics
 
 CH-0029 remains **OPEN — POST-RESPONSE BROWSER/MAIN-THREAD STARVATION** pending

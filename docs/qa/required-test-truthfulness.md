@@ -1,5 +1,34 @@
 # Required-test truthfulness
 
+## CH-0015I inherited runtime-smoke contract correction
+
+The inherited `bootstrapEventsFlushed > 0` assertion is classified **B —
+TEST_ASSERTION_DEFECT**. The field counts only records captured while the lazy
+collector import is pending. A collector may activate with an exact empty batch
+and then record timing, lifecycle, store, React, attachment, and renderer
+activity directly; zero therefore does not prove loss.
+
+The furnished runtime identity now calls one shared pure validator for the
+initial document and each of three reload realms. It requires the hook, active
+one-request collector, completed hydration, direct mode, current activation
+generation, eight ready semantic models, timing plus lifecycle and renderer
+activity, and exactly one coherent bootstrap path: positive queued equals
+flushed with `hydrated-bootstrap`, or queued/flushed zero with
+`direct-empty-bootstrap` and direct activity. Pending/failed imports, stale
+realms, lost or mismatched records, empty mode with records, hydrated mode
+without records, zero direct activity, malformed fields, and unknown schema
+state fail closed with structured details.
+
+Deterministic facade tests inject only the lazy loader and monotonic clock. They
+control empty resolution, pending records, later direct activity, rejection,
+one-request/no-retry, 96-entry/counter bounds, and fresh realm state without a
+sleep or scheduler dependency. The test seam is not exported through the
+browser facade. Required-test discovery is now **27 gates / 379 classified
+sources**: 256 risk-triggered script tests, 101 Playwright specs, 14 imported
+browser modules, and 8 imported script-test modules. The script-test path-set
+SHA-256 is
+`97bfe892688803f8fedc14a4a1d1da7b84af7ca69456a9d9ac68f4fb564aa77e`.
+
 ## CH-0015I Floor Plan Upload ownership
 
 `ci.floor-plan-upload-accessibility` is the sole merge-required browser owner
@@ -37,7 +66,7 @@ missing, renamed, skipped, retried, flaky, filtered, or duplicate ownership
 fails closed. Stable checks runs this owner after the strict build. Existing
 `ci.floor-plan-required` remains the sole Floor Plan domain umbrella.
 
-Direct discovery now derives **27 gates / 377 classified sources** with
+Direct discovery at the CH-0015I feature handoff derived **27 gates / 377 classified sources** with
 inventory path-set SHA-256
 `701f57101d65eb50f58b72ae62432bcc59d7b180de61f094504a79386cf22985`.
 Repository registration does not claim GitHub ruleset enforcement or an
@@ -127,10 +156,10 @@ required and advisory gate classification. `package.json` remains the command
 owner; the manifest points to those commands and verifies their recursive test
 sources instead of duplicating their shell bodies.
 
-The manifest currently classifies 254 `scripts/test-*` files as risk-triggered
+The manifest currently classifies 256 `scripts/test-*` files as risk-triggered
 tests, 101 Playwright specs as release-only browser inventory, 14 imported
 cabinetry/multi-room browser modules, and 8 imported cabinetry script-test
-modules, for 377 classified sources in total. The sorted path-set hashes make a new,
+modules, for 379 classified sources in total. The sorted path-set hashes make a new,
 deleted, renamed, or moved test source a blocking manifest-review event. Static
 registration contracts additionally prove every split-suite registration is
 imported and invoked, so removing an import/call cannot silently exclude an

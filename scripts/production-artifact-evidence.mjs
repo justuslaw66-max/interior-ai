@@ -26,9 +26,14 @@ import {
 import {
   validateRuntimeSmokeFailureProvenance,
 } from "./runtime-smoke-failure-evidence.mjs";
+import {
+  RUNTIME_SMOKE_TELEMETRY_BOOTSTRAP_ATTACHMENT,
+  summarizeRuntimeSmokeTelemetryBootstrapEvidence,
+  validateRuntimeSmokeTelemetryBootstrapSequence,
+} from "./runtime-smoke-telemetry-bootstrap-contract.mjs";
 
 export const PRODUCTION_EVIDENCE_SCHEMA =
-  "interior-ai.production-artifact-evidence.v1";
+  "interior-ai.production-artifact-evidence.v2";
 export const PRODUCTION_EVIDENCE_SERVER_COMMAND =
   "npm run evidence:production:serve";
 
@@ -820,7 +825,7 @@ export async function createProductionEvidenceManifest(options) {
   }
   const manifest = {
     schema: PRODUCTION_EVIDENCE_SCHEMA,
-    validatorVersion: 1,
+    validatorVersion: 2,
     candidateIdentifier: options.candidateIdentifier.trim(),
     evidenceKind: "local-production-mode-artifact",
     source,
@@ -1033,6 +1038,92 @@ function readReport(repositoryRoot, test, issues, environment) {
     issues.push("required test report is not valid JSON");
     return null;
   }
+}
+
+function collectReportSpecs(suites, specs = []) {
+  for (const suite of Array.isArray(suites) ? suites : []) {
+    specs.push(...(Array.isArray(suite?.specs) ? suite.specs : []));
+    collectReportSpecs(suite?.suites, specs);
+  }
+  return specs;
+}
+
+function decodeRuntimeTelemetryAttachment(attachment, issues) {
+  if (
+    attachment?.name !== RUNTIME_SMOKE_TELEMETRY_BOOTSTRAP_ATTACHMENT ||
+    attachment?.contentType !== "application/json" ||
+    attachment?.path !== undefined ||
+    typeof attachment?.body !== "string" ||
+    attachment.body.length === 0 ||
+    attachment.body.length > 65_536 ||
+    !/^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/.test(
+      attachment.body,
+    )
+  ) {
+    issues.push("runtime telemetry report attachment is malformed or non-portable");
+    return null;
+  }
+  const bytes = Buffer.from(attachment.body, "base64");
+  if (bytes.toString("base64") !== attachment.body) {
+    issues.push("runtime telemetry report attachment is not canonical base64");
+    return null;
+  }
+  try {
+    const text = new TextDecoder("utf-8", { fatal: true }).decode(bytes);
+    return JSON.parse(text);
+  } catch {
+    issues.push("runtime telemetry report attachment is not strict JSON");
+    return null;
+  }
+}
+
+export function readRuntimeSmokeTelemetryBootstrapEvidence(
+  report,
+  { allowFailure = false } = {},
+) {
+  const issues = [];
+  const furnishedSpecs = collectReportSpecs(report?.suites).filter(
+    (spec) =>
+      spec?.file === "00-runtime-smoke.spec.ts" &&
+      spec?.title === "furnished template remains stable without a render loop",
+  );
+  if (furnishedSpecs.length !== 1) {
+    issues.push("runtime telemetry report owner is missing or duplicated");
+    return {
+      valid: false,
+      issues,
+      observations: [],
+      summary: summarizeRuntimeSmokeTelemetryBootstrapEvidence([]),
+    };
+  }
+  const tests = furnishedSpecs[0].tests;
+  const results = Array.isArray(tests) && tests.length === 1
+    ? tests[0]?.results
+    : null;
+  const finalResult = Array.isArray(results) ? results.at(-1) : null;
+  if (!finalResult) {
+    issues.push("runtime telemetry report has no furnished-template result");
+  }
+  const attachments = (Array.isArray(finalResult?.attachments)
+    ? finalResult.attachments
+    : []).filter(
+      (attachment) =>
+        attachment?.name === RUNTIME_SMOKE_TELEMETRY_BOOTSTRAP_ATTACHMENT,
+    );
+  const observations = attachments
+    .map((attachment) => decodeRuntimeTelemetryAttachment(attachment, issues))
+    .filter((observation) => observation !== null);
+  const sequence = validateRuntimeSmokeTelemetryBootstrapSequence(observations, {
+    requireComplete: !allowFailure,
+    requireValid: !allowFailure,
+  });
+  issues.push(...sequence.issues);
+  return {
+    valid: issues.length === 0,
+    issues,
+    observations,
+    summary: summarizeRuntimeSmokeTelemetryBootstrapEvidence(observations),
+  };
 }
 
 function readRuntimeSmokePhaseTimings(
@@ -1339,6 +1430,20 @@ function validateTestRecord(
   if (JSON.stringify(report.stats) !== JSON.stringify(test.stats)) {
     issues.push("recorded test counts do not match the test report");
   }
+  const telemetryBootstrap = readRuntimeSmokeTelemetryBootstrapEvidence(report, {
+    allowFailure: allowFailedRuntimeSmoke,
+  });
+  issues.push(
+    ...telemetryBootstrap.issues.map(
+      (entry) => `runtime telemetry bootstrap: ${entry}`,
+    ),
+  );
+  if (
+    JSON.stringify(test.telemetryBootstrap) !==
+    JSON.stringify(telemetryBootstrap.summary)
+  ) {
+    issues.push("recorded runtime telemetry bootstrap summary does not match the report");
+  }
   const identity = report.config?.metadata?.productionArtifactEvidence;
   if (
     identity?.schema !== PRODUCTION_EVIDENCE_SCHEMA ||
@@ -1379,7 +1484,7 @@ export async function validateProductionEvidence({
   const readResult = readProductionEvidenceManifest(root, manifestPath, issues);
   if (!readResult) return { valid: false, issues, manifest: null };
   const { manifest, bytes } = readResult;
-  if (manifest.schema !== PRODUCTION_EVIDENCE_SCHEMA || manifest.validatorVersion !== 1) {
+  if (manifest.schema !== PRODUCTION_EVIDENCE_SCHEMA || manifest.validatorVersion !== 2) {
     issues.push("unsupported production evidence schema or validator version");
   }
   const sensitiveKeys = sensitiveManifestKeys(manifest);
@@ -1780,6 +1885,12 @@ export async function recordProductionEvidenceTest({
       throw new Error([...truthfulness.issues, ...failureIssues].join("; "));
     }
   }
+  const telemetryBootstrap = readRuntimeSmokeTelemetryBootstrapEvidence(report, {
+    allowFailure: processExitCode !== 0,
+  });
+  if (!telemetryBootstrap.valid) {
+    throw new Error(telemetryBootstrap.issues.join("; "));
+  }
   const absolutePhaseTimingPath = resolveRepositoryPath(
     repositoryRoot,
     phaseTimingPath,
@@ -1839,6 +1950,7 @@ export async function recordProductionEvidenceTest({
         0,
       ),
     },
+    telemetryBootstrap: telemetryBootstrap.summary,
     stats,
     completedAt,
   };
@@ -2090,6 +2202,7 @@ export async function createProductionEvidenceBundle({
     "scripts/runtime-smoke-failure-evidence.mjs",
     "scripts/runtime-smoke-operation-contracts.mjs",
     "scripts/runtime-smoke-operation-deadline.mjs",
+    "scripts/runtime-smoke-telemetry-bootstrap-contract.mjs",
     "scripts/required-test-truthfulness.mjs",
     "scripts/required-test-manifest.json",
     manifestPath,

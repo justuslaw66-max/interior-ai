@@ -1,5 +1,32 @@
 # Code health audit
 
+## CH-0015I inherited runtime-smoke assertion defect — 2026-08-12
+
+The preserved CH-0015I furnished-template runtime failure is classified **B —
+TEST_ASSERTION_DEFECT**. `bootstrapEventsFlushed = 0` is coherent when the lazy
+collector activates before any event or counter enters its bounded bootstrap
+buffer and later production telemetry is recorded directly. The failure also
+showed nonzero timing, lifecycle, and renderer activity, a live snapshot hook,
+semantic readiness, and a successful import, so it did not establish loss.
+
+The bounded correction makes activation provenance explicit and fail closed.
+Snapshot v2 distinguishes not-requested/pending/active/failed import state,
+positive hydrated bootstrap from direct empty bootstrap, exact queued/flushed
+totals, completed hydration, direct mode/activity, and the realm generation.
+Runtime smoke requires current-realm collector liveness, eight ready models,
+substantive timing/lifecycle/renderer coherence, and exactly one valid
+activation path. It rejects lost/mismatched records, inactive empty activation,
+failed/pending import, stale generation, missing mode, and malformed or
+contradictory schema rather than weakening the old assertion to a nonnegative
+check.
+
+The lazy chunk, one-request/no-retry behavior, 96-entry/counter caps, renderer
+WeakSet, frameloop, GLB lifecycle/cache/refcounts, production-disabled zero
+request/no-hook behavior, Floor Plan Upload implementation, thresholds, and
+timeouts are unchanged. No required CH-0015 implementation surface remains;
+CH-0015I awaits separate integrator review and CH-0015 still awaits the final
+exact-source closure audit.
+
 ## CH-0015I accessible Floor Plan Upload lifecycle — 2026-08-12
 
 Starting from exact integration source

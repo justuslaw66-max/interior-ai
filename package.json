@@ -41,6 +41,8 @@
     "test:glb-model-lifecycle": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' -r tsconfig-paths/register scripts/check-glb-model-lifecycle.ts",
     "test:glb-resource-cache": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' -r tsconfig-paths/register scripts/check-glb-resource-cache.ts",
     "test:glb-main-thread-telemetry": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' -r tsconfig-paths/register scripts/test-glb-main-thread-telemetry.ts",
+    "test:glb-main-thread-telemetry-facade": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' -r tsconfig-paths/register scripts/test-glb-main-thread-telemetry-facade.ts",
+    "test:runtime-smoke-telemetry-bootstrap": "node scripts/test-runtime-smoke-telemetry-bootstrap-contract.mjs",
     "test:runtime-smoke-resource-isolation": "node scripts/test-runtime-smoke-resource-isolation.mjs",
     "test:design-scene-loading-frameloop": "node scripts/test-design-scene-loading-frameloop.mjs",
     "test:wall-paint-catalog": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' -r tsconfig-paths/register scripts/test-wall-paint-catalog.ts",

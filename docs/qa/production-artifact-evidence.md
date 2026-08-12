@@ -5,6 +5,30 @@ production-mode artifact evidence and required CI behavior. It does not describe
 or prove a Vercel deployment, stable staging, production, or external platform
 configuration.
 
+## Runtime telemetry provenance in schema v2
+
+`interior-ai.production-artifact-evidence.v2` / validator version 2 requires
+the furnished-template Playwright result to carry four bounded inline JSON
+attachments named `runtime-smoke-telemetry-bootstrap-evidence`: the initial
+document followed by reloads 1–3. Each
+`interior-ai.runtime-smoke-telemetry-bootstrap-evidence.v1` record has a strict
+key set, known collector/import enums, nonnegative safe integers, booleans,
+current activation generation, semantic ready-model counts, substantive timing
+and lifecycle/renderer counters, exact queued/flushed accounting, and the pure
+validator's `valid`/`issues` result.
+
+Successful evidence requires four valid records in consecutive fresh realm
+generations. The manifest stores a compact derived
+`interior-ai.runtime-smoke-telemetry-bootstrap-summary.v1`; validation decodes
+the canonical base64 attachments, rejects attachment paths and missing/extra or
+malformed provenance, recomputes every cross-field invariant, and requires the
+derived summary to match the report. A failed smoke may retain a partial or
+invalid observation sequence for diagnosis, but cannot turn it into valid
+repository evidence. Contradictory queued/flushed state remains in the bound
+report rather than being erased. The report and manifest retain the existing
+source commit, artifact SHA-256, BUILD_ID, phase-timing, process, and truthfulness
+bindings and record no machine path, environment value, credential, or payload.
+
 ## Claim supported
 
 The evidence proves that one exact clean commit was installed with

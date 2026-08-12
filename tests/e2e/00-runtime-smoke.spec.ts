@@ -25,7 +25,13 @@ import {
   projectRuntimeSmokeBrowserCallbackMilestone,
   projectRuntimeSmokeBrowserHeartbeat,
 } from "../../scripts/runtime-smoke-browser-diagnostics.mjs";
+import {
+  RUNTIME_SMOKE_TELEMETRY_BOOTSTRAP_ATTACHMENT,
+  createRuntimeSmokeTelemetryBootstrapEvidence,
+  validateRuntimeSmokeTelemetryBootstrapEvidence,
+} from "../../scripts/runtime-smoke-telemetry-bootstrap-contract.mjs";
 import type { GLBRequiredSnapshot } from "../../components/scene/glb-scaled-model/glbRequiredSnapshot";
+import type { GLBMainThreadTelemetrySnapshot } from "../../components/scene/glb-scaled-model/glbMainThreadTelemetry";
 import { calculateGLBRequiredSnapshotTransportTiming } from "../../components/scene/glb-scaled-model/glbSnapshotTiming";
 
 test.use({
@@ -91,7 +97,7 @@ const MODEL_FIXTURES = [
 ] as const;
 
 test.describe("00. Runtime smoke", () => {
-  test("furnished template remains stable without a render loop", async ({ page }) => {
+  test("furnished template remains stable without a render loop", async ({ page }, testInfo) => {
     test.setTimeout(RUNTIME_SMOKE_WHOLE_TEST_TIMEOUT_MS);
     let finalLifecycleState = "not-observed";
     const phaseRecorder = createRuntimeSmokePhaseRecorder({
@@ -207,6 +213,91 @@ test.describe("00. Runtime smoke", () => {
     let lastBodyStateObservation: BodyStateObservation | null = null;
     let lastMainThreadTelemetrySummary: MainThreadTelemetrySummary | null = null;
     const immediatePostReadinessSnapshots: GLBRequiredSnapshot[] = [];
+    const recordTelemetryBootstrapEvidence = async ({
+      phaseName,
+      expectedCollectorActivationGeneration,
+      observedReadyModelCount,
+    }: {
+      phaseName: string;
+      expectedCollectorActivationGeneration: number;
+      observedReadyModelCount: number;
+    }) => {
+      const telemetry = await page.evaluate(() => {
+        type TelemetryState = Pick<
+          GLBMainThreadTelemetrySnapshot,
+          | "schema"
+          | "collectorImportState"
+          | "collectorActivationMode"
+          | "collectorActivationGeneration"
+          | "bootstrapRecordsQueuedAtActivation"
+          | "bootstrapEventsFlushed"
+          | "bootstrapFlushCompleted"
+          | "directModeActive"
+          | "directTelemetryObserved"
+          | "timings"
+          | "counters"
+        >;
+        const telemetryGlobal = globalThis as typeof globalThis & {
+          __INTERIOR_AI_GLB_MAIN_THREAD_SNAPSHOT__?: () => TelemetryState;
+        };
+        const snapshotHook =
+          telemetryGlobal.__INTERIOR_AI_GLB_MAIN_THREAD_SNAPSHOT__;
+        const snapshot = snapshotHook?.();
+        return {
+          schema: snapshot?.schema ?? null,
+          snapshotHookPresent: typeof snapshotHook === "function",
+          collectorImportState:
+            snapshot?.collectorImportState ?? "not-requested",
+          collectorActivationMode: snapshot?.collectorActivationMode ?? null,
+          collectorActivationGeneration:
+            snapshot?.collectorActivationGeneration ?? 0,
+          bootstrapRecordsQueuedAtActivation:
+            snapshot?.bootstrapRecordsQueuedAtActivation ?? 0,
+          bootstrapEventsFlushed: snapshot?.bootstrapEventsFlushed ?? 0,
+          bootstrapFlushCompleted: snapshot?.bootstrapFlushCompleted ?? false,
+          directModeActive: snapshot?.directModeActive ?? false,
+          directTelemetryObserved:
+            snapshot?.directTelemetryObserved ?? false,
+          timingCount: snapshot?.timings.length ?? 0,
+          counters: {
+            lifecycleTransitions:
+              snapshot?.counters.lifecycleTransitions ?? 0,
+            diagnosticStoreUpdates:
+              snapshot?.counters.diagnosticStoreUpdates ?? 0,
+            reactRenders: snapshot?.counters.reactRenders ?? 0,
+            sceneAttachments: snapshot?.counters.sceneAttachments ?? 0,
+            rendererCalls: snapshot?.counters.rendererCalls ?? 0,
+          },
+        };
+      });
+      const evidence = createRuntimeSmokeTelemetryBootstrapEvidence({
+        phaseName,
+        expectedCollectorActivationGeneration,
+        expectedReadyModelCount: EXPECTED_ACTIVE_REQUIRED_MODEL_COUNT,
+        observedReadyModelCount,
+        telemetry,
+      });
+      await testInfo.attach(RUNTIME_SMOKE_TELEMETRY_BOOTSTRAP_ATTACHMENT, {
+        body: JSON.stringify(evidence),
+        contentType: "application/json",
+      });
+      const validation = validateRuntimeSmokeTelemetryBootstrapEvidence(
+        evidence,
+      );
+      console.info(
+        "[runtime-smoke-telemetry-bootstrap]",
+        JSON.stringify(evidence),
+      );
+      expect(
+        validation.valid,
+        JSON.stringify({
+          phaseName,
+          ...validation.contract.details,
+          issues: validation.issues,
+        }),
+      ).toBe(true);
+      return evidence;
+    };
     const recordBrowserSnapshotMilestone = (milestone: RequiredSnapshotMilestone) => {
       const checkpoint = requiredSnapshotMilestoneCheckpoint;
       if (!checkpoint) return;
@@ -1819,45 +1910,16 @@ test.describe("00. Runtime smoke", () => {
         )
       ).toBe(true);
       checkpoint("models-remounted", finalLifecycleState);
-      const telemetryBeforeFirstReload = await page.evaluate(() => {
-        const snapshot = (
-          globalThis as typeof globalThis & {
-            __INTERIOR_AI_GLB_MAIN_THREAD_SNAPSHOT__?: () => {
-              timings: Array<{ category: string; durationMs: number }>;
-              bootstrapEventsFlushed: number;
-              counters: {
-                lifecycleTransitions: number;
-                rendererCalls: number;
-              };
-            };
-          }
-        ).__INTERIOR_AI_GLB_MAIN_THREAD_SNAPSHOT__?.();
-        return snapshot
-          ? {
-              timingCount: snapshot.timings.length,
-              bootstrapEventsFlushed: snapshot.bootstrapEventsFlushed,
-              lifecycleTransitions: snapshot.counters.lifecycleTransitions,
-              rendererCalls: snapshot.counters.rendererCalls,
-            }
-          : null;
+      const remountGeneration =
+        remountedDiagnostics[0]?.diagnostic?.reloadGeneration ?? 0;
+      await recordTelemetryBootstrapEvidence({
+        phaseName: "initial-document",
+        expectedCollectorActivationGeneration: remountGeneration,
+        observedReadyModelCount: remountedDiagnostics.filter(
+          ({ diagnostic }) => diagnostic?.loadState === "ready",
+        ).length,
       });
-      expect(
-        telemetryBeforeFirstReload,
-        "QA telemetry must finish lazy initialization before reload 1 begins",
-      ).not.toBeNull();
-      expect(telemetryBeforeFirstReload?.timingCount ?? 0).toBeGreaterThan(0);
-      expect(
-        telemetryBeforeFirstReload?.bootstrapEventsFlushed ?? 0,
-      ).toBeGreaterThan(0);
-      expect(
-        telemetryBeforeFirstReload?.lifecycleTransitions ?? 0,
-      ).toBeGreaterThan(0);
-      expect(telemetryBeforeFirstReload?.rendererCalls ?? 0).toBeGreaterThan(0);
-      console.info(
-        "[runtime-smoke-telemetry-pre-reload]",
-        JSON.stringify(telemetryBeforeFirstReload),
-      );
-      checkpoint("telemetry-loaded-before-reload-1", finalLifecycleState);
+      checkpoint("telemetry-contract-valid-before-reload-1", finalLifecycleState);
     }, () => finalLifecycleState);
 
     for (let reloadIndex = 0; reloadIndex < 3; reloadIndex += 1) {
@@ -1884,62 +1946,6 @@ test.describe("00. Runtime smoke", () => {
             { timeout: bootstrapReadinessTimeoutMs },
           ),
         ]);
-        await page.waitForFunction(
-          () => {
-            const snapshot = (
-              globalThis as typeof globalThis & {
-                __INTERIOR_AI_GLB_MAIN_THREAD_SNAPSHOT__?: () => {
-                  timings: unknown[];
-                  bootstrapEventsFlushed: number;
-                  counters: {
-                    lifecycleTransitions: number;
-                    rendererCalls: number;
-                  };
-                };
-              }
-            ).__INTERIOR_AI_GLB_MAIN_THREAD_SNAPSHOT__?.();
-            return Boolean(
-              snapshot &&
-                snapshot.bootstrapEventsFlushed > 0 &&
-                snapshot.timings.length > 0 &&
-                snapshot.counters.lifecycleTransitions > 0 &&
-                snapshot.counters.rendererCalls > 0,
-            );
-          },
-          undefined,
-          { timeout: bootstrapReadinessTimeoutMs },
-        );
-        const reloadTelemetry = await page.evaluate(() => {
-          const snapshot = (
-            globalThis as typeof globalThis & {
-              __INTERIOR_AI_GLB_MAIN_THREAD_SNAPSHOT__?: () => {
-                timings: unknown[];
-                bootstrapEventsFlushed: number;
-                counters: {
-                  lifecycleTransitions: number;
-                  rendererCalls: number;
-                };
-              };
-            }
-          ).__INTERIOR_AI_GLB_MAIN_THREAD_SNAPSHOT__?.();
-          return snapshot
-            ? {
-                timingCount: snapshot.timings.length,
-                bootstrapEventsFlushed: snapshot.bootstrapEventsFlushed,
-                lifecycleTransitions: snapshot.counters.lifecycleTransitions,
-                rendererCalls: snapshot.counters.rendererCalls,
-              }
-            : null;
-        });
-        expect(
-          reloadTelemetry,
-          `QA telemetry must flush bounded bootstrap metadata in ${phaseName}`,
-        ).not.toBeNull();
-        console.info(
-          "[runtime-smoke-telemetry-bootstrap]",
-          JSON.stringify({ phaseName, ...reloadTelemetry }),
-        );
-        checkpoint("telemetry-bootstrap-flushed", "loading");
         const restoredIdentity = (await runRuntimeSmokeBoundedOperation({
           operationAttempt: runtimeSmokeOperationAttempt(
             createRuntimeSmokeOperationDeadline({
@@ -1990,6 +1996,16 @@ test.describe("00. Runtime smoke", () => {
           phaseName,
           checkpoint,
         });
+        const telemetryGeneration =
+          reloadDiagnostics[0]?.diagnostic?.reloadGeneration ?? 0;
+        await recordTelemetryBootstrapEvidence({
+          phaseName,
+          expectedCollectorActivationGeneration: telemetryGeneration,
+          observedReadyModelCount: reloadDiagnostics.filter(
+            ({ diagnostic }) => diagnostic?.loadState === "ready",
+          ).length,
+        });
+        checkpoint("telemetry-bootstrap-contract-valid", "ready");
         const responseTotal = MODEL_FIXTURES.reduce(
           (total, { modelPath }) =>
             total + (modelResponseCounts.get(modelPath) ?? 0),
