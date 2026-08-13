@@ -1,5 +1,32 @@
 # P0/P1 remediation queue
 
+## CH-0015I Playwright production-artifact schema v3 — 2026-08-13
+
+- **Classification:** `PRODUCTION_ARTIFACT_SCHEMA_CONSUMER_DRIFT`. The producer
+  emitted v3 and runtime smoke passed that manifest to a Playwright config whose
+  v2-only check failed before server startup or discovery.
+- **Correction/policy:** one shared contract owns v3, validator 3, journal v1,
+  and canonical commands. Current exact-head certification requires v3 and
+  rejects v2, unknown schemas, and future versions. Historical v2 is not
+  reinterpreted or silently admitted to current runtime smoke.
+- **Bindings/tests:** the Playwright loader requires the shared canonical journal
+  path, invokes the exact canonical validation-only CLI, then binds manifest
+  hash/sidecar, candidate, commit/tree, nonce/journal, commands/order, successful
+  build/inventory/completion, BUILD_ID, artifact SHA-256, and environment. A real
+  configuration-load test proves production server selection and nonzero
+  discovery; deterministic negatives and an anti-drift guard remain under
+  `ci.production-artifact-contract`.
+- **Scope/status:** inventory remains 27 gates / 379 sources. No product,
+  Floor Plan, telemetry, NFT, timestamp, archive-root, scanner, Phase 8,
+  dependency, database, workflow, or external-control semantics changed. No
+  required CH-0015 implementation surface remains. Exact-head certification,
+  integration, and the final closure audit remain pending.
+- **Rollback:** revert the single Playwright-schema correction commit, then rerun
+  production-artifact, required-test truthfulness, runtime configuration, lint,
+  typecheck, code-quality, and hygiene owners. This intentionally restores the
+  release-blocking v2/v3 mismatch and is emergency rollback only; no data or
+  external rollback is involved.
+
 ## CH-0015I artifact timestamp provenance correction — 2026-08-13
 
 - **Classification:** `D — CLOCK_SOURCE_OR_TIMESTAMP_CAPTURE_DEFECT`. The

@@ -1,6 +1,6 @@
 import { defineConfig, devices } from "@playwright/test";
-import { readFileSync } from "node:fs";
 import path from "node:path";
+import { loadProductionArtifactForPlaywright } from "./scripts/production-artifact-playwright.mjs";
 
 const localBaseURL = "http://127.0.0.1:3000";
 const releaseBaseURL = process.env.PLAYWRIGHT_RELEASE_BASE_URL?.trim().replace(
@@ -33,44 +33,14 @@ function repositoryPath(relativePath: string, description: string) {
 }
 
 const productionArtifactEvidence = productionEvidenceManifestPath
-  ? (() => {
-      if (!useProductionServer) {
-        throw new Error(
-          "Production artifact evidence requires PLAYWRIGHT_USE_PRODUCTION_SERVER=1."
-        );
-      }
-      if (releaseBaseURL) {
-        throw new Error(
-          "Local production artifact evidence cannot be presented as HTTPS deployment evidence."
-        );
-      }
-      if (!productionEvidenceReportPath) {
-        throw new Error(
-          "PLAYWRIGHT_JSON_OUTPUT_FILE is required for production artifact evidence."
-        );
-      }
-      repositoryPath(productionEvidenceReportPath, "Production evidence report path");
-      const manifest = JSON.parse(
-        readFileSync(
-          repositoryPath(
-            productionEvidenceManifestPath,
-            "Production evidence manifest path"
-          ),
-          "utf8"
-        )
-      );
-      if (manifest.schema !== "interior-ai.production-artifact-evidence.v2") {
-        throw new Error("Unsupported production artifact evidence manifest.");
-      }
-      return {
-        schema: manifest.schema,
-        sourceCommitSha: manifest.source?.commitSha,
-        artifactSha256: manifest.artifact?.sha256,
-        nextBuildId: manifest.build?.nextBuildId,
-        serverCommand: "npm run evidence:production:serve",
-        buildMode: manifest.build?.mode,
-      };
-    })()
+  ? loadProductionArtifactForPlaywright({
+      repositoryRoot: process.cwd(),
+      manifestPath: productionEvidenceManifestPath,
+      reportPath: productionEvidenceReportPath,
+      useProductionServer,
+      releaseBaseURL,
+      environment: process.env,
+    })
   : null;
 
 if (releaseBaseURL) {
@@ -150,7 +120,7 @@ export default defineConfig({
     : {
         webServer: {
           command: productionArtifactEvidence
-            ? "npm run evidence:production:serve"
+            ? productionArtifactEvidence.serverCommand
             : useProductionServer
               ? "npm run start"
               : "npm run dev",

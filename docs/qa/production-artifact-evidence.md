@@ -5,6 +5,57 @@ production-mode artifact evidence and required CI behavior. It does not describe
 or prove a Vercel deployment, stable staging, production, or external platform
 configuration.
 
+## CH-0015I Playwright schema-consumer compatibility
+
+Classification is **PRODUCTION_ARTIFACT_SCHEMA_CONSUMER_DRIFT**. The exact
+producer emitted `interior-ai.production-artifact-evidence.v3` while
+`playwright.config.ts` accepted only the former v2 schema literal. The canonical
+runtime-smoke owner supplied that v3 manifest through
+`PRODUCTION_EVIDENCE_MANIFEST`, so configuration loading failed before the
+production server or test discovery could begin.
+
+`scripts/production-artifact-contract.mjs` is now the side-effect-free canonical
+owner for the production schema, validator version, semantic-journal schema and
+version, wrapper version, and build/server command identities. The evidence
+writer/validator and `scripts/production-artifact-playwright.mjs` consume that
+owner; Playwright does not import or execute the evidence wrapper merely to read
+a version. The current exact-head certification policy accepts only schema v3 /
+validator version 3 with the v1 semantic journal. Historical v2 evidence remains
+historical/offline evidence and is rejected by the current runtime-smoke path.
+Unknown schemas and future versions fail closed.
+
+Before Playwright exposes a web-server command, the loader invokes the wrapper's
+validation-only CLI and its complete canonical preflight must succeed. Runtime
+smoke also supplies a SHA-256 of the exact canonical manifest plus the expected
+commit, tree, BUILD_ID, and artifact SHA-256. The loader rechecks that hash and
+sidecar, requires `PRODUCTION_EVIDENCE_JOURNAL_PATH` to equal the shared
+canonical journal path validated by that CLI, requires its v1 schema/version and
+completed same-run nonce, and cross-binds candidate,
+commit/tree, wrapper/process, commands, generated-source-before-build ordering,
+successful dependency/build/inventory outcomes, manifest completion, BUILD_ID,
+and artifact inventory/hash. It also requires the pre-runtime pending-tests
+state and the same staging/production APP/NEXT_PUBLIC/VERCEL environment
+contract. Errors are field-oriented and never include raw environment values.
+
+The accepted identity remains additive Playwright metadata. Server selection is
+unchanged: production artifact evidence selects
+`npm run evidence:production:serve`, disables listener reuse, and reaches the
+unchanged `npm run start`; non-evidence production-server and development-server
+paths retain their prior selection. Retry, worker, timeout, origin, cwd,
+readiness, and discovery semantics are unchanged. A configuration-only
+producer-to-consumer test passes a manifest written by the real producer through
+the real environment path and actual `playwright.config.ts`, proves the expected
+production command and exact bindings, and discovers the two runtime-smoke
+identities without starting a server. Deterministic negatives cover schema,
+version, journal, nonce, source/tree, BUILD_ID, artifact, ordering, process
+result, inventory/completion, JSON/path/mode, and safe-error failures.
+
+The standalone verifier archive retains its existing exact roots and scanning
+policy; its explicit verifier-source inventory includes the new imported
+contract module so the extracted validator remains executable. Artifact roots,
+mutable-path exclusions, compression, upload roots, and sensitive-value scanner
+policy are unchanged.
+
 ## CH-0015I semantic timestamp provenance
 
 The failed ca77 certification cycle retained at

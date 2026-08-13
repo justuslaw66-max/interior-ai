@@ -1,5 +1,35 @@
 # Code health audit
 
+## CH-0015I Playwright artifact-schema correction — 2026-08-13
+
+Classification is **PRODUCTION_ARTIFACT_SCHEMA_CONSUMER_DRIFT**. Candidate
+`63ae36e5d642e741c2c3f9f9e3592bcc710577b3` produced schema v3, including its
+semantic journal and timestamp provenance, while `playwright.config.ts` retained
+one v2-only literal and otherwise validated no manifest fields. Runtime smoke
+therefore stopped during configuration loading before server startup or test
+discovery.
+
+One side-effect-free contract module now owns the exact v3/v1 versions and
+canonical commands. The producer's full validator and a focused Playwright
+loader consume it. The loader requires the shared canonical journal path, first
+invokes the wrapper's validation-only CLI against that manifest/journal pair,
+then rechecks the exact manifest hash, commit/tree, BUILD_ID, artifact hash,
+sidecar, completed semantic journal/nonce, command and event ordering, successful
+build/inventory, manifest completion, and production environment. V2 and future
+versions fail closed in the current certification path. Playwright errors retain
+field-only safe diagnostics.
+
+The real producer-to-configuration test loads actual `playwright.config.ts`,
+selects the unchanged evidence server, retains every identity, and discovers
+runtime smoke without server execution. The existing production-artifact owner
+also covers the full negative matrix and anti-drift source guard. Inventory stays
+27 gates / 379 sources. No Floor Plan Upload, telemetry bootstrap, NFT tracing,
+timestamp semantics, artifact roots, scanner policy, product assertion, retry,
+timeout, Phase 8, database, dependency, workflow, or external-control behavior
+changes. No required CH-0015 implementation surface remains after this bounded
+correction; exact-head certification, integration, and the final closure audit
+remain pending.
+
 ## CH-0015I artifact timestamp provenance correction — 2026-08-13
 
 Classification is **D — CLOCK_SOURCE_OR_TIMESTAMP_CAPTURE_DEFECT**. Preserved

@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { execFileSync } from "node:child_process";
+import { execFileSync, spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import {
   existsSync,
@@ -10,6 +10,7 @@ import {
   readFileSync,
   readdirSync,
   readlinkSync,
+  realpathSync,
   rmSync,
   symlinkSync,
   writeFileSync,
@@ -19,12 +20,6 @@ import path from "node:path";
 
 import {
   FLOOR_PLAN_ROUTE_NFT_PATHS,
-  BUILD_COMMAND,
-  DEPENDENCY_INSTALL_COMMAND,
-  GENERATED_SOURCE_CHECK_COMMAND,
-  PRODUCTION_EVIDENCE_JOURNAL_SCHEMA,
-  PRODUCTION_EVIDENCE_SCHEMA,
-  PRODUCTION_EVIDENCE_SERVER_COMMAND,
   canonicalizeProductionEvidenceReport,
   comparePortablePaths,
   createProductionEvidenceBundle,
@@ -41,6 +36,18 @@ import {
   verifyRuntimeSmokeFailureEvidence,
   writeProductionEvidenceManifest,
 } from "./production-artifact-evidence.mjs";
+import {
+  BUILD_COMMAND,
+  CURRENT_PRODUCTION_EVIDENCE_VERSIONS,
+  DEPENDENCY_INSTALL_COMMAND,
+  GENERATED_SOURCE_CHECK_COMMAND,
+  PRODUCTION_EVIDENCE_JOURNAL_SCHEMA,
+  PRODUCTION_EVIDENCE_SCHEMA,
+  PRODUCTION_EVIDENCE_SERVER_COMMAND,
+  PRODUCTION_EVIDENCE_VALIDATOR_VERSION,
+  validateCurrentProductionEvidenceManifest,
+} from "./production-artifact-contract.mjs";
+import { loadProductionArtifactForPlaywright } from "./production-artifact-playwright.mjs";
 import { inspectGitTree } from "./vercel-output-manifest.mjs";
 import {
   GITLEAKS_ARCHIVE_ENTRIES,
@@ -1852,10 +1859,21 @@ async function semanticJournalFixture({
     "scripts/production-artifact-evidence.mjs",
     readFileSync(path.join(process.cwd(), "scripts/production-artifact-evidence.mjs"), "utf8"),
   );
+  write(
+    root,
+    "scripts/production-artifact-contract.mjs",
+    readFileSync(path.join(process.cwd(), "scripts/production-artifact-contract.mjs"), "utf8"),
+  );
   git(root, ["init", "-q"]);
   git(root, ["config", "user.name", "CH-0015I test"]);
   git(root, ["config", "user.email", "ch-0015i@example.test"]);
-  git(root, ["add", ".gitignore", "package.json", "scripts/production-artifact-evidence.mjs"]);
+  git(root, [
+    "add",
+    ".gitignore",
+    "package.json",
+    "scripts/production-artifact-contract.mjs",
+    "scripts/production-artifact-evidence.mjs",
+  ]);
   git(root, ["commit", "-qm", "semantic journal fixture"]);
   const source = {
     commitSha: git(root, ["rev-parse", "HEAD"]),
@@ -2213,6 +2231,7 @@ async function fixture({
   environmentOverrides = {},
   publicArtifactText = "public artifact\n",
   manifestFactory = createProductionEvidenceManifest,
+  recordRuntimeTest = true,
 } = {}) {
   const root = mkdtempSync(path.join(tmpdir(), "ch-0016-evidence-"));
   write(root, ".gitignore", ".next/\n.local/\nnode_modules/\n*.local.js\n");
@@ -2231,6 +2250,11 @@ async function fixture({
     root,
     "scripts/production-artifact-evidence.mjs",
     readFileSync(path.join(process.cwd(), "scripts/production-artifact-evidence.mjs"), "utf8"),
+  );
+  write(
+    root,
+    "scripts/production-artifact-contract.mjs",
+    readFileSync(path.join(process.cwd(), "scripts/production-artifact-contract.mjs"), "utf8"),
   );
   write(
     root,
@@ -2294,6 +2318,7 @@ async function fixture({
     ".nvmrc",
     "package.json",
     "package-lock.json",
+    "scripts/production-artifact-contract.mjs",
     "scripts/production-artifact-evidence.mjs",
     "scripts/runtime-smoke-phase-budget.mjs",
     "scripts/runtime-smoke-failure-evidence.mjs",
@@ -2390,6 +2415,9 @@ async function fixture({
       Date.parse(manifest.build.startedAt),
     "generated-source verification must complete before actual build dispatch",
   );
+  if (!recordRuntimeTest) {
+    return { root, manifestPath, reportPath, phaseTimingPath };
+  }
   const telemetryEvidence = [1, 2, 3, 4].map((generation, index) => {
     const queuedAtActivation = index === 0 ? 0 : index + 1;
     return createRuntimeSmokeTelemetryBootstrapEvidence({
@@ -2588,6 +2616,444 @@ async function rewritePhaseTimings(context, mutate) {
   await rewriteManifest(context.root, context.manifestPath, (manifest) => {
     manifest.tests[0].phaseTimings.sha256 = createHash("sha256").update(bytes).digest("hex");
   });
+}
+
+function playwrightContractEnvironment(context, overrides = {}) {
+  const manifestBytes = readFileSync(path.join(context.root, context.manifestPath));
+  const manifest = JSON.parse(manifestBytes.toString("utf8"));
+  return {
+    APP_ENV: manifest.build.applicationEnvironment,
+    NEXT_PUBLIC_APP_ENV: manifest.build.applicationEnvironment,
+    VERCEL_ENV: "",
+    PRODUCTION_EVIDENCE_JOURNAL_PATH:
+      ".local/production-artifact-evidence/semantic-event-journal.json",
+    PRODUCTION_EVIDENCE_EXPECTED_MANIFEST_SHA256: createHash("sha256")
+      .update(manifestBytes)
+      .digest("hex"),
+    PRODUCTION_EVIDENCE_EXPECTED_BUILD_ID: manifest.build.nextBuildId,
+    PRODUCTION_EVIDENCE_EXPECTED_ARTIFACT_SHA256: manifest.artifact.sha256,
+    PRODUCTION_EVIDENCE_EXPECTED_COMMIT_SHA: manifest.source.commitSha,
+    PRODUCTION_EVIDENCE_EXPECTED_TREE_SHA: manifest.source.treeSha,
+    ...overrides,
+  };
+}
+
+function validatePlaywrightContractMutation(context, { mutateManifest, mutateJournal, mutateExpected } = {}) {
+  const manifest = readManifest(context.root, context.manifestPath);
+  const journal = JSON.parse(
+    readFileSync(
+      path.join(
+        context.root,
+        ".local/production-artifact-evidence/semantic-event-journal.json",
+      ),
+      "utf8",
+    ),
+  );
+  const environment = playwrightContractEnvironment(context);
+  const expectedIdentity = {
+    sourceCommitSha: environment.PRODUCTION_EVIDENCE_EXPECTED_COMMIT_SHA,
+    sourceTreeSha: environment.PRODUCTION_EVIDENCE_EXPECTED_TREE_SHA,
+    nextBuildId: environment.PRODUCTION_EVIDENCE_EXPECTED_BUILD_ID,
+    artifactSha256: environment.PRODUCTION_EVIDENCE_EXPECTED_ARTIFACT_SHA256,
+  };
+  mutateManifest?.(manifest);
+  mutateJournal?.(journal);
+  mutateExpected?.(expectedIdentity);
+  return validateCurrentProductionEvidenceManifest({
+    manifest,
+    semanticJournal: journal,
+    expectedIdentity,
+    requirePendingTests: true,
+  });
+}
+
+function listedSpecCount(suites) {
+  return suites.reduce(
+    (total, suite) =>
+      total + (suite.specs?.length ?? 0) + listedSpecCount(suite.suites ?? []),
+    0,
+  );
+}
+
+{
+  const context = await fixture({ recordRuntimeTest: false });
+  assert.deepEqual(CURRENT_PRODUCTION_EVIDENCE_VERSIONS, [3]);
+  assert.equal(PRODUCTION_EVIDENCE_VALIDATOR_VERSION, 3);
+  const accepted = validatePlaywrightContractMutation(context);
+  assert.deepEqual(accepted.issues, []);
+  assert.equal(accepted.valid, true, "valid current v3 manifest must be accepted");
+
+  const negativeCases = [
+    [
+      "unknown schema",
+      { mutateManifest: (manifest) => { manifest.schema = "unknown.production-evidence.v3"; } },
+      "unsupported production evidence schema or validator version",
+    ],
+    [
+      "unknown future version",
+      { mutateManifest: (manifest) => { manifest.validatorVersion = 4; } },
+      "unsupported production evidence schema or validator version",
+    ],
+    [
+      "historical v2 current-certification manifest",
+      { mutateManifest: (manifest) => {
+        manifest.schema = "interior-ai.production-artifact-evidence.v2";
+        manifest.validatorVersion = 2;
+      } },
+      "unsupported production evidence schema or validator version",
+    ],
+    [
+      "secret-bearing manifest field",
+      { mutateManifest: (manifest) => { manifest.authSecret = "synthetic-never-print"; } },
+      "manifest contains prohibited secret-bearing fields",
+    ],
+    [
+      "filesystem timestamp semantic field",
+      { mutateManifest: (manifest) => { manifest.build.mtime = manifest.build.completedAt; } },
+      "filesystem timestamps cannot populate portable semantic evidence",
+    ],
+    [
+      "wrong journal schema/version",
+      { mutateJournal: (journal) => {
+        journal.schema = "interior-ai.production-artifact-semantic-event-journal.v2";
+        journal.version = 2;
+      } },
+      "unsupported semantic event journal schema or version",
+    ],
+    [
+      "missing nonce",
+      { mutateManifest: (manifest) => { delete manifest.execution.runNonce; } },
+      "manifest semantic journal nonce, owner, or command binding is invalid",
+    ],
+    [
+      "mismatched nonce",
+      { mutateManifest: (manifest) => {
+        manifest.execution.runNonce = "223e4567-e89b-42d3-a456-426614174000";
+      } },
+      "manifest semantic journal nonce, owner, or command binding is invalid",
+    ],
+    [
+      "candidate commit mismatch",
+      { mutateExpected: (expected) => { expected.sourceCommitSha = "f".repeat(40); } },
+      "manifest source identity does not match canonical preflight",
+    ],
+    [
+      "candidate tree mismatch",
+      { mutateExpected: (expected) => { expected.sourceTreeSha = "f".repeat(40); } },
+      "manifest source identity does not match canonical preflight",
+    ],
+    [
+      "Build ID mismatch",
+      { mutateExpected: (expected) => { expected.nextBuildId = "other-build"; } },
+      "manifest Build ID does not match canonical preflight",
+    ],
+    [
+      "artifact hash mismatch",
+      { mutateExpected: (expected) => { expected.artifactSha256 = "f".repeat(64); } },
+      "manifest artifact SHA-256 does not match canonical preflight",
+    ],
+    [
+      "generated-source/build ordering invalid",
+      { mutateJournal: (journal) => {
+        journal.events.generatedSourceCheck.completedAt = new Date(
+          Date.parse(journal.events.build.startedAt) + 1,
+        ).toISOString();
+      } },
+      "semantic event journal ordering is invalid",
+    ],
+    [
+      "build failed/nonzero",
+      { mutateJournal: (journal) => {
+        journal.events.build.status = "failed";
+        journal.events.build.exitCode = 17;
+        journal.events.build.failureKind = "child_exit";
+      } },
+      "semantic event journal does not record a complete successful build",
+    ],
+    [
+      "inventory incomplete",
+      { mutateJournal: (journal) => { journal.events.artifactInventory.status = "running"; } },
+      "semantic event journal does not record a complete successful build",
+    ],
+    [
+      "manifest incomplete",
+      { mutateJournal: (journal) => {
+        journal.manifest.status = "pending";
+        journal.manifest.createdAt = null;
+        journal.completionState = "artifact_inventory_succeeded";
+      } },
+      "semantic event journal does not record manifest completion",
+    ],
+  ];
+  for (const [name, mutation, expectedIssue] of negativeCases) {
+    const rejected = validatePlaywrightContractMutation(context, mutation);
+    assert.equal(rejected.valid, false, `${name} must fail closed`);
+    assert.ok(
+      rejected.issues.includes(expectedIssue),
+      `${name} rejection must include ${expectedIssue}`,
+    );
+  }
+
+  const load = (overrides = {}) =>
+    loadProductionArtifactForPlaywright({
+      repositoryRoot: context.root,
+      manifestPath: context.manifestPath,
+      reportPath: context.reportPath,
+      useProductionServer: true,
+      releaseBaseURL: "",
+      environment:
+        overrides.environment ?? playwrightContractEnvironment(context),
+      ...overrides,
+    });
+  assert.deepEqual(load(), accepted.identity);
+  assert.throws(() => load({ manifestPath: "" }), /manifest path is required/);
+  assert.throws(
+    () => load({ useProductionServer: false }),
+    /PLAYWRIGHT_USE_PRODUCTION_SERVER=1/,
+  );
+  assert.throws(
+    () => load({ releaseBaseURL: "https:\/\/release.example.test" }),
+    /cannot be presented as HTTPS deployment evidence/,
+  );
+  assert.throws(
+    () => load({
+      environment: playwrightContractEnvironment(context, {
+        NEXT_PUBLIC_APP_ENV: "production",
+      }),
+    }),
+    /environment identity is contradictory/,
+  );
+
+  const canonicalManifest = readManifest(context.root, context.manifestPath);
+  await rewriteManifest(context.root, context.manifestPath, (manifest) => {
+    delete manifest.evidenceKind;
+  });
+  const rejectedByCanonicalValidator = spawnSync(
+    process.execPath,
+    [
+      realpathSync(path.join(context.root, "scripts/production-artifact-evidence.mjs")),
+      "verify-preflight",
+    ],
+    {
+      cwd: context.root,
+      env: {
+        ...playwrightContractEnvironment(context),
+        PRODUCTION_EVIDENCE_MANIFEST: context.manifestPath,
+      },
+      encoding: "utf8",
+    },
+  );
+  assert.notEqual(
+    rejectedByCanonicalValidator.status,
+    0,
+    "the canonical validator must reject the divergence fixture",
+  );
+  assert.throws(
+    () => load(),
+    /canonical validation failed/,
+    "Playwright must reject a manifest that the canonical validator rejects",
+  );
+  await writeProductionEvidenceManifest({
+    repositoryRoot: context.root,
+    manifestPath: context.manifestPath,
+    manifest: canonicalManifest,
+  });
+
+  const alternateJournalPath =
+    ".local/production-artifact-evidence/alternate-semantic-event-journal.json";
+  const alternateJournal = JSON.parse(
+    readFileSync(
+      path.join(
+        context.root,
+        ".local/production-artifact-evidence/semantic-event-journal.json",
+      ),
+      "utf8",
+    ),
+  );
+  alternateJournal.noncanonicalField = true;
+  writeFileSync(
+    path.join(context.root, alternateJournalPath),
+    `${JSON.stringify(alternateJournal, null, 2)}\n`,
+  );
+  assert.throws(
+    () =>
+      load({
+        environment: playwrightContractEnvironment(context, {
+          PRODUCTION_EVIDENCE_JOURNAL_PATH: alternateJournalPath,
+        }),
+      }),
+    /semantic event journal path is not canonical/,
+    "Playwright must not validate a different journal than canonical preflight",
+  );
+
+  const canonicalJournalPath = path.join(
+    context.root,
+    ".local/production-artifact-evidence/semantic-event-journal.json",
+  );
+  const canonicalJournalBytes = readFileSync(canonicalJournalPath);
+  const noncanonicalJournal = JSON.parse(canonicalJournalBytes.toString("utf8"));
+  noncanonicalJournal.owner.wrapper.version = 999;
+  writeFileSync(canonicalJournalPath, `${JSON.stringify(noncanonicalJournal, null, 2)}\n`);
+  await rewriteManifest(context.root, context.manifestPath, (manifest) => {
+    manifest.execution.owner.wrapper.version = 999;
+  });
+  assert.throws(
+    () => load(),
+    /canonical validation failed/,
+    "matching but noncanonical wrapper fields must fail canonical validation",
+  );
+  writeFileSync(canonicalJournalPath, canonicalJournalBytes);
+  await writeProductionEvidenceManifest({
+    repositoryRoot: context.root,
+    manifestPath: context.manifestPath,
+    manifest: canonicalManifest,
+  });
+
+  const journalPath = path.join(
+    context.root,
+    ".local/production-artifact-evidence/semantic-event-journal.json",
+  );
+  const journalBytes = readFileSync(journalPath);
+  rmSync(journalPath);
+  assert.throws(() => load(), /canonical validation failed/);
+  writeFileSync(journalPath, journalBytes);
+
+  const manifestPath = path.join(context.root, context.manifestPath);
+  const manifestBytes = readFileSync(manifestPath);
+  const syntheticCredential = "synthetic-password-never-print";
+  const safeMalformedEnvironment = playwrightContractEnvironment(context);
+  writeFileSync(manifestPath, `{\"credential\":\"${syntheticCredential}\"`);
+  let malformedError;
+  try {
+    load({
+      environment: {
+        ...safeMalformedEnvironment,
+        DATABASE_URL: syntheticCredential,
+      },
+    });
+  } catch (error) {
+    malformedError = error;
+  }
+  assert.match(String(malformedError), /canonical validation failed/);
+  assert.doesNotMatch(String(malformedError), new RegExp(syntheticCredential));
+  writeFileSync(manifestPath, manifestBytes);
+
+  const mainRepositoryRoot = process.cwd();
+  const listReportPath = ".local/production-artifact-evidence/playwright-list.json";
+  const configEnvironment = {
+    ...process.env,
+    ...playwrightContractEnvironment(context),
+    CI: "true",
+    NODE_ENV: "production",
+    PLAYWRIGHT_USE_PRODUCTION_SERVER: "1",
+    PRODUCTION_EVIDENCE_MANIFEST: context.manifestPath,
+    PLAYWRIGHT_JSON_OUTPUT_FILE: listReportPath,
+    PLAYWRIGHT_RELEASE_BASE_URL: "",
+    REQUIRED_TEST_GATE_ID: "",
+    REQUIRED_TEST_REPORT_PATH: "",
+  };
+  execFileSync(
+    process.execPath,
+    [
+        path.join(mainRepositoryRoot, "node_modules/@playwright/test/cli.js"),
+        "test",
+        "tests/e2e/00-runtime-smoke.spec.ts",
+        "--config",
+        path.join(mainRepositoryRoot, "playwright.config.ts"),
+        "--project=chromium",
+        "--list",
+        "--reporter=json",
+    ],
+    { cwd: context.root, env: configEnvironment, encoding: "utf8" },
+  );
+  const report = JSON.parse(readFileSync(path.join(context.root, listReportPath), "utf8"));
+  const identity = report.config.metadata.productionArtifactEvidence;
+  assert.equal(identity.schema, PRODUCTION_EVIDENCE_SCHEMA);
+  assert.equal(identity.validatorVersion, PRODUCTION_EVIDENCE_VALIDATOR_VERSION);
+  assert.equal(identity.sourceCommitSha, accepted.identity.sourceCommitSha);
+  assert.equal(identity.sourceTreeSha, accepted.identity.sourceTreeSha);
+  assert.equal(identity.nextBuildId, accepted.identity.nextBuildId);
+  assert.equal(identity.artifactSha256, accepted.identity.artifactSha256);
+  assert.equal(identity.runNonce, accepted.identity.runNonce);
+  assert.equal(report.config.webServer.command, PRODUCTION_EVIDENCE_SERVER_COMMAND);
+  assert.equal(report.config.webServer.reuseExistingServer, false);
+  assert.equal(report.config.projects[0].retries, 0);
+  assert.ok(
+    listedSpecCount(report.suites) > 0,
+    "producer manifest passes real Playwright config with nonzero discovery",
+  );
+}
+
+{
+  const producerSource = readFileSync(
+    path.join(process.cwd(), "scripts/production-artifact-evidence.mjs"),
+    "utf8",
+  );
+  const configSource = readFileSync(path.join(process.cwd(), "playwright.config.ts"), "utf8");
+  const loaderSource = readFileSync(
+    path.join(process.cwd(), "scripts/production-artifact-playwright.mjs"),
+    "utf8",
+  );
+  const contractSource = readFileSync(
+    path.join(process.cwd(), "scripts/production-artifact-contract.mjs"),
+    "utf8",
+  );
+  const manifestOwner = JSON.parse(
+    readFileSync(path.join(process.cwd(), "scripts/required-test-manifest.json"), "utf8"),
+  ).gates.find((gate) => gate.id === "ci.production-artifact-contract");
+  assert.match(producerSource, /from "\.\/production-artifact-contract\.mjs"/);
+  assert.doesNotMatch(producerSource, /journal\.version\s*!==\s*1|\n\s*version:\s*1,\n/);
+  assert.match(configSource, /loadProductionArtifactForPlaywright/);
+  assert.match(loaderSource, /from "\.\/production-artifact-contract\.mjs"/);
+  assert.match(loaderSource, /verify-preflight/);
+  assert.doesNotMatch(configSource, /production-artifact-evidence\.v2|validatorVersion:\s*2/);
+  assert.equal(
+    [producerSource, configSource, loaderSource].some((source) =>
+      source.includes('"interior-ai.production-artifact-evidence.v3"'),
+    ),
+    false,
+    "runtime producer and consumers must not duplicate the canonical schema literal",
+  );
+  assert.match(contractSource, /CURRENT_PRODUCTION_EVIDENCE_VERSIONS/);
+  for (const requiredSource of [
+    "playwright.config.ts",
+    "scripts/production-artifact-contract.mjs",
+    "scripts/production-artifact-playwright.mjs",
+  ]) {
+    assert.ok(manifestOwner.requiredSources.includes(requiredSource));
+  }
+  assert.ok(
+    manifestOwner.requiredContributions.some(
+      (contribution) => contribution.id === "artifact.playwright-v3-producer-consumer",
+    ),
+  );
+  const smokeSource = producerSource.slice(
+    producerSource.indexOf("async function smokeEvidence"),
+    producerSource.indexOf("async function cli"),
+  );
+  const preflightIndex = smokeSource.indexOf(
+    "const preflight = await validateProductionEvidence",
+  );
+  const preflightRejectionIndex = smokeSource.indexOf(
+    "if (!preflight.valid) throw new Error",
+    preflightIndex,
+  );
+  const runtimeStartIndex = smokeSource.indexOf(
+    "const playwright = run(",
+    preflightIndex,
+  );
+  assert.ok(
+    smokeSource.length > 0 &&
+      preflightIndex >= 0 &&
+      preflightRejectionIndex > preflightIndex &&
+      runtimeStartIndex > preflightRejectionIndex,
+    "runtime smoke cannot start when manifest validation fails",
+  );
+  assert.ok(
+    configSource.indexOf("loadProductionArtifactForPlaywright") <
+      configSource.indexOf("export default defineConfig"),
+    "Playwright must reject invalid evidence before exposing a webServer command",
+  );
 }
 
 async function rewriteFailurePair(context, mutate) {
@@ -3425,6 +3891,7 @@ for (const mutate of [
     ".nvmrc",
     "package.json",
     "package-lock.json",
+    "scripts/production-artifact-contract.mjs",
     "scripts/production-artifact-evidence.mjs",
     "scripts/runtime-smoke-phase-budget.mjs",
     "scripts/runtime-smoke-failure-evidence.mjs",
@@ -3950,7 +4417,7 @@ const playwrightConfiguration = readFileSync(
 );
 assert.match(
   playwrightConfiguration,
-  /command: productionArtifactEvidence[\s\S]{0,160}"npm run evidence:production:serve"[\s\S]{0,160}useProductionServer[\s\S]{0,100}"npm run start"[\s\S]{0,100}"npm run dev"/,
+  /command: productionArtifactEvidence[\s\S]{0,160}productionArtifactEvidence\.serverCommand[\s\S]{0,160}useProductionServer[\s\S]{0,100}"npm run start"[\s\S]{0,100}"npm run dev"/,
   "production artifact evidence must select its verified server before any dev fallback",
 );
 assert.match(

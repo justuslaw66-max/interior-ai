@@ -1,5 +1,70 @@
 # Code health audit handoff
 
+## CH-0015I Playwright artifact-schema v3 handoff — 2026-08-13
+
+Branch `fix/ch-0015i-playwright-artifact-schema-v3` starts at exact candidate
+`63ae36e5d642e741c2c3f9f9e3592bcc710577b3`, tree
+`ba20b2a7b478d56fafdccdecd132efe40fc66924`, whose parent is
+`ca77e55ecf240205593a246703a935f8fcfed25f`. Integration local and remote remain
+`2c567fd483877c7dcbd8fd23e3cd8cb316732c8c`. Entry source/index/untracked/
+tracked-ignored/Git-operation checks were clean; no repository-owned app,
+build, browser, runtime-smoke, Phase 8, Prisma, or disposable-database process
+was active, and app ports were free. Node was `v24.13.0`; npm was `11.6.2`.
+
+The authoritative classification is
+**PRODUCTION_ARTIFACT_SCHEMA_CONSUMER_DRIFT**. The producer wrote schema v3 and
+the canonical runtime owner supplied it through `PRODUCTION_EVIDENCE_MANIFEST`,
+but Playwright accepted only schema v2 and failed before server startup or test
+discovery. Producer rollback, validation bypass, arbitrary-version admission,
+and dual v2/v3 current certification were rejected. Current certification now
+requires v3/validator 3 plus the completed v1 semantic journal; v2 remains
+historical evidence only and unknown/future versions fail closed.
+
+`scripts/production-artifact-contract.mjs` owns versions and command identities.
+The full producer validator and focused Playwright loader share its strict
+cross-binding. The loader requires the shared canonical journal path and invokes
+the exact wrapper validation-only CLI before it rechecks the canonical manifest
+hash and exact commit/tree/BUILD_ID/artifact identity, sidecar, candidate,
+journal/nonce, wrapper/process/commands,
+generated-before-build ordering, successful build/inventory, manifest
+completion, and environment before exposing
+`npm run evidence:production:serve`. Development/production server choice, cwd,
+origins, startup, discovery, zero retry, worker/timeouts, and product assertions
+are otherwise unchanged.
+
+The real producer-to-consumer contract writes v3 with the production owner,
+passes the exact bytes through the real environment path and actual Playwright
+config, preserves all metadata, selects the production evidence server, and
+discovers both runtime-smoke identities without starting a server. The negative
+matrix covers unknown/future/v2 versions, journal/nonce, commit/tree, BUILD_ID,
+artifact, event ordering, build/inventory/completion, JSON/path/mode, and safe
+errors. `ci.production-artifact-contract` remains the existing required owner;
+inventory remains 27 gates / 379 sources with no new test source, gate, script
+closure, project, retry, timeout, cadence, or workflow step.
+
+Focused production-artifact, truthfulness, runtime configuration, CH-0017/
+CH-0028 timing/readiness, zero-warning lint, typecheck, code-quality,
+tracked-hygiene, syntax, and diff checks pass. Strict build, runtime smoke,
+browser owners, Phase 8, and Full E2E were not run. Independent read-only review
+first found a caller-forgeable preflight marker that could let Playwright use a
+weaker validation result, a duplicated journal-version literal, and a
+false-positive-prone source guard. Rereview found that canonical preflight and
+the loader could still read different journal paths. The marker was removed,
+Playwright now invokes the exact canonical validation-only CLI, journal version
+and path have one shared owner, the source guard requires every boundary, and an
+alternate journal fails closed. A final complete-diff rereview returned
+**PASS — no actionable findings**; the reviewer made no edits. No Floor Plan
+Upload, telemetry-bootstrap, NFT, timestamp, artifact-root, scanner, benchmark,
+product, dependency, database, workflow, or external-control semantics changed.
+The candidate remains unintegrated. No required CH-0015 implementation surface
+remains after this bounded correction; CH-0015 still awaits exact-head
+certification and its final closure audit.
+
+Rollback is one focused commit revert, followed by the focused owners above.
+That deliberately restores the release-blocking schema mismatch and is not an
+acceptable steady state. Ignored local evidence is regenerated. No persisted
+data, deployment, integration branch, or external control requires rollback.
+
 ## CH-0015I artifact timestamp provenance handoff — 2026-08-13
 
 Branch `fix/ch-0015i-artifact-timestamp-provenance` starts at exact candidate

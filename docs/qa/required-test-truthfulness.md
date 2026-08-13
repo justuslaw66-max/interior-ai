@@ -1,5 +1,32 @@
 # Required-test truthfulness
 
+## CH-0015I Playwright artifact-v3 ownership — 2026-08-13
+
+`ci.production-artifact-contract` remains the sole merge-required contract owner
+for this correction. Its new
+`artifact.playwright-v3-producer-consumer` contribution executes inside the
+existing `test:production-artifact-evidence` source: the real producer writes a
+current v3 manifest, the actual `PRODUCTION_EVIDENCE_MANIFEST` path reaches the
+real Playwright configuration, configuration loading selects the canonical
+production server, exact commit/tree/BUILD_ID/artifact/nonce metadata survives,
+and nonzero runtime-smoke discovery is proven without starting a server.
+
+The same source owns deterministic rejection of unknown schema/future version,
+current-path v2, missing/wrong journal, missing/mismatched nonce, commit/tree,
+BUILD_ID and artifact mismatch, invalid generated/build ordering, nonzero build,
+incomplete inventory/manifest, malformed JSON, missing path, unsupported mode,
+and secret-free error output. Static guards require producer and consumer to
+import the shared contract, reject a stale v2 literal in Playwright, prevent a
+second runtime-smoke version owner, retain the real integration contribution,
+and keep validation before the web-server command.
+
+No new gate, test source, package-script closure, project, retry, timeout,
+browser, cadence, or workflow step is added. The final inventory remains **27
+gates / 379 classified test sources**. Stable-checks already invokes the owning
+contract before strict build/runtime smoke. Exact-head certification and the
+CH-0015 closure audit remain separate pending work; Full E2E is outside this
+batch.
+
 ## CH-0015I semantic artifact timestamp ownership — 2026-08-13
 
 `ci.production-artifact-contract` remains the sole merge-required owner; no new

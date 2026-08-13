@@ -37,18 +37,37 @@ import {
   summarizeRuntimeSmokeTelemetryBootstrapEvidence,
   validateRuntimeSmokeTelemetryBootstrapSequence,
 } from "./runtime-smoke-telemetry-bootstrap-contract.mjs";
+import {
+  BUILD_COMMAND,
+  DEPENDENCY_INSTALL_COMMAND,
+  GENERATED_SOURCE_CHECK_COMMAND,
+  PRODUCTION_EVIDENCE_JOURNAL_PATH,
+  PRODUCTION_EVIDENCE_JOURNAL_SCHEMA,
+  PRODUCTION_EVIDENCE_JOURNAL_VERSION,
+  PRODUCTION_EVIDENCE_SCHEMA,
+  PRODUCTION_EVIDENCE_SERVER_COMMAND,
+  PRODUCTION_EVIDENCE_UNDERLYING_SERVER_COMMAND as UNDERLYING_SERVER_COMMAND,
+  PRODUCTION_EVIDENCE_VALIDATOR_VERSION,
+  PRODUCTION_EVIDENCE_WRAPPER_VERSION,
+  validateCurrentProductionEvidenceManifest,
+} from "./production-artifact-contract.mjs";
 
-export const PRODUCTION_EVIDENCE_SCHEMA =
-  "interior-ai.production-artifact-evidence.v3";
-export const PRODUCTION_EVIDENCE_JOURNAL_SCHEMA =
-  "interior-ai.production-artifact-semantic-event-journal.v1";
-export const PRODUCTION_EVIDENCE_SERVER_COMMAND =
-  "npm run evidence:production:serve";
-export const PRODUCTION_EVIDENCE_WRAPPER_VERSION = 3;
+export {
+  BUILD_COMMAND,
+  DEPENDENCY_INSTALL_COMMAND,
+  GENERATED_SOURCE_CHECK_COMMAND,
+  PRODUCTION_EVIDENCE_JOURNAL_PATH,
+  PRODUCTION_EVIDENCE_JOURNAL_SCHEMA,
+  PRODUCTION_EVIDENCE_JOURNAL_VERSION,
+  PRODUCTION_EVIDENCE_SCHEMA,
+  PRODUCTION_EVIDENCE_SERVER_COMMAND,
+  PRODUCTION_EVIDENCE_VALIDATOR_VERSION,
+  PRODUCTION_EVIDENCE_WRAPPER_VERSION,
+} from "./production-artifact-contract.mjs";
 
 const DEFAULT_EVIDENCE_DIRECTORY = ".local/production-artifact-evidence";
 const DEFAULT_MANIFEST_PATH = `${DEFAULT_EVIDENCE_DIRECTORY}/manifest.json`;
-const DEFAULT_JOURNAL_PATH = `${DEFAULT_EVIDENCE_DIRECTORY}/semantic-event-journal.json`;
+const DEFAULT_JOURNAL_PATH = PRODUCTION_EVIDENCE_JOURNAL_PATH;
 const DEFAULT_INVENTORY_SNAPSHOT_PATH =
   `${DEFAULT_EVIDENCE_DIRECTORY}/artifact-inventory.json`;
 const DEFAULT_REPORT_PATH = `${DEFAULT_EVIDENCE_DIRECTORY}/runtime-smoke.json`;
@@ -56,11 +75,6 @@ const DEFAULT_PHASE_TIMINGS_PATH =
   `${DEFAULT_EVIDENCE_DIRECTORY}/runtime-smoke-phases.json`;
 const DEFAULT_UPLOAD_DIRECTORY = `${DEFAULT_EVIDENCE_DIRECTORY}/upload`;
 const DEFAULT_BUNDLE_PATH = `${DEFAULT_UPLOAD_DIRECTORY}/ch0016-ch0017-evidence-bundle.tar.gz`;
-export const GENERATED_SOURCE_CHECK_COMMAND =
-  "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' scripts/generate-surface-material-runtime.ts --check";
-export const BUILD_COMMAND = "npm run build";
-export const DEPENDENCY_INSTALL_COMMAND = "npm ci --include=dev";
-const UNDERLYING_SERVER_COMMAND = "npm run start";
 const RUNTIME_SMOKE_COMMAND =
   "npx playwright test tests/e2e/00-runtime-smoke.spec.ts --project=chromium";
 const EXPECTED_RUNTIME_FAILURE_ISSUE_PATTERNS = Object.freeze([
@@ -1081,7 +1095,10 @@ export function validateProductionEvidenceSemanticJournal(journal) {
   if (!exactKeys(journal, ["schema", "version", "runNonce", "candidateIdentifier", "source", "owner", "commands", "buildContract", "toolchain", "events", "bindings", "manifest", "completionState", "diagnostics"])) {
     return { valid: false, issues: ["semantic event journal shape is malformed"] };
   }
-  if (journal.schema !== PRODUCTION_EVIDENCE_JOURNAL_SCHEMA || journal.version !== 1) {
+  if (
+    journal.schema !== PRODUCTION_EVIDENCE_JOURNAL_SCHEMA ||
+    journal.version !== PRODUCTION_EVIDENCE_JOURNAL_VERSION
+  ) {
     issues.push("unsupported semantic event journal schema or version");
   }
   if (!/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(journal.runNonce ?? "")) {
@@ -1225,7 +1242,7 @@ export async function initializeProductionEvidenceSemanticJournal({
   }
   const journal = {
     schema: PRODUCTION_EVIDENCE_JOURNAL_SCHEMA,
-    version: 1,
+    version: PRODUCTION_EVIDENCE_JOURNAL_VERSION,
     runNonce: nonce,
     candidateIdentifier,
     source: { commitSha: source.commitSha, treeSha: source.treeSha },
@@ -1742,7 +1759,7 @@ export async function createProductionEvidenceManifest(options) {
   const requiredVariableNames = validateConfigurationShape(options.environment);
   const manifest = {
     schema: PRODUCTION_EVIDENCE_SCHEMA,
-    validatorVersion: 3,
+    validatorVersion: PRODUCTION_EVIDENCE_VALIDATOR_VERSION,
     candidateIdentifier: journal.candidateIdentifier,
     evidenceKind: "local-production-mode-artifact",
     source,
@@ -2502,8 +2519,23 @@ export async function validateProductionEvidence({
   const readResult = readProductionEvidenceManifest(root, manifestPath, issues);
   if (!readResult) return { valid: false, issues, manifest: null };
   const { manifest, bytes } = readResult;
-  if (manifest.schema !== PRODUCTION_EVIDENCE_SCHEMA || manifest.validatorVersion !== 3) {
+  if (
+    manifest.schema !== PRODUCTION_EVIDENCE_SCHEMA ||
+    manifest.validatorVersion !== PRODUCTION_EVIDENCE_VALIDATOR_VERSION
+  ) {
     issues.push("unsupported production evidence schema or validator version");
+  }
+  if (!standalone) {
+    try {
+      const semanticJournal = readProductionEvidenceSemanticJournal({ repositoryRoot: root });
+      const currentContract = validateCurrentProductionEvidenceManifest({
+        manifest,
+        semanticJournal,
+      });
+      issues.push(...currentContract.issues);
+    } catch (error) {
+      issues.push(error instanceof Error ? error.message : String(error));
+    }
   }
   const sensitiveKeys = sensitiveManifestKeys(manifest);
   if (sensitiveKeys.length > 0) {
@@ -3312,6 +3344,7 @@ export async function createProductionEvidenceBundle({
     ".nvmrc",
     "package.json",
     "package-lock.json",
+    "scripts/production-artifact-contract.mjs",
     "scripts/production-artifact-evidence.mjs",
     "scripts/runtime-smoke-phase-budget.mjs",
     "scripts/runtime-smoke-failure-evidence.mjs",
@@ -3422,14 +3455,20 @@ async function smokeEvidence(repositoryRoot, manifestPath, reportPath) {
     ...process.env,
     CI: "true",
     APP_ENV: manifest.build.applicationEnvironment,
+    NEXT_PUBLIC_APP_ENV: manifest.build.applicationEnvironment,
     CATALOG_STRICT_VALIDATION: "true",
     PLAYWRIGHT_USE_PRODUCTION_SERVER: "1",
     PRODUCTION_EVIDENCE_MANIFEST: manifestPath,
     PLAYWRIGHT_JSON_OUTPUT_FILE: reportPath,
     RUNTIME_SMOKE_PHASE_TIMINGS_PATH: DEFAULT_PHASE_TIMINGS_PATH,
+    PRODUCTION_EVIDENCE_JOURNAL_PATH: DEFAULT_JOURNAL_PATH,
+    PRODUCTION_EVIDENCE_EXPECTED_MANIFEST_SHA256: sha256(
+      readFileSync(resolveRepositoryPath(repositoryRoot, manifestPath, "manifest path")),
+    ),
     PRODUCTION_EVIDENCE_EXPECTED_BUILD_ID: manifest.build.nextBuildId,
     PRODUCTION_EVIDENCE_EXPECTED_ARTIFACT_SHA256: manifest.artifact.sha256,
     PRODUCTION_EVIDENCE_EXPECTED_COMMIT_SHA: manifest.source.commitSha,
+    PRODUCTION_EVIDENCE_EXPECTED_TREE_SHA: manifest.source.treeSha,
   };
   const playwright = run(
     process.platform === "win32" ? "npx.cmd" : "npx",
@@ -3494,6 +3533,15 @@ async function cli() {
     const result = inspectFloorPlanRouteNftContract(repositoryRoot);
     console.log(JSON.stringify(result, null, 2));
   }
+  else if (command === "verify-preflight") {
+    const result = await validateProductionEvidence({
+      repositoryRoot,
+      manifestPath,
+      requireTests: false,
+    });
+    if (!result.valid) throw new Error(result.issues.join("; "));
+    console.log("Production artifact canonical preflight valid.");
+  }
   else if (command === "serve") await serveEvidence(repositoryRoot, manifestPath);
   else if (command === "smoke") await smokeEvidence(repositoryRoot, manifestPath, reportPath);
   else if (command === "verify-runtime-failure") {
@@ -3536,7 +3584,7 @@ async function cli() {
     );
   } else {
     throw new Error(
-      "Usage: production-artifact-evidence.mjs build|recover|verify-floor-plan-traces|serve|smoke|verify-runtime-failure|bundle|verify|verify-standalone",
+      "Usage: production-artifact-evidence.mjs build|recover|verify-floor-plan-traces|verify-preflight|serve|smoke|verify-runtime-failure|bundle|verify|verify-standalone",
     );
   }
 }

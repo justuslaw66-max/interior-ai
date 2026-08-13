@@ -110,7 +110,7 @@
     },
     {
       "id": "ci.production-artifact-contract",
-      "invariant": "The CH-0016 source, semantic timestamp provenance, artifact, runtime, Floor Plan route-NFT, report, and external-claim evidence contract fails closed.",
+      "invariant": "The CH-0016 source, semantic timestamp provenance, artifact, Playwright schema-consumer, runtime, Floor Plan route-NFT, report, and external-claim evidence contract fails closed.",
       "cadence": "merge-required",
       "blocking": true,
       "command": "npm run test:production-artifact-evidence",
@@ -118,7 +118,10 @@
       "packageClosure": { "expectedScriptCount": 1, "expectedSha256": "2c72a65b5affbfbb1c5d94377bad6d0b2135181d25b5fcd56fac3c389a1cd5c7" },
       "runner": "node",
       "requiredSources": [
+        "playwright.config.ts",
+        "scripts/production-artifact-contract.mjs",
         "scripts/production-artifact-evidence.mjs",
+        "scripts/production-artifact-playwright.mjs",
         "scripts/runtime-smoke-failure-evidence.mjs",
         "scripts/runtime-smoke-operation-contracts.mjs",
         "scripts/runtime-smoke-operation-deadline.mjs",
@@ -130,6 +133,11 @@
           "id": "artifact.semantic-timestamp-provenance",
           "source": "scripts/test-production-artifact-evidence.mjs",
           "marker": "semantic start must be durable immediately before child dispatch"
+        },
+        {
+          "id": "artifact.playwright-v3-producer-consumer",
+          "source": "scripts/test-production-artifact-evidence.mjs",
+          "marker": "producer manifest passes real Playwright config with nonzero discovery"
         },
         {
           "id": "floor-plan.route-nft-fail-closed",
