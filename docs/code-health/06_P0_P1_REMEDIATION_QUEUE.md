@@ -1,5 +1,29 @@
 # P0/P1 remediation queue
 
+## CH-0015I artifact timestamp provenance correction — 2026-08-13
+
+- **Classification:** `D — CLOCK_SOURCE_OR_TIMESTAMP_CAPTURE_DEFECT`. The
+  executing wrapper's UTC event boundaries were correct but ephemeral; a later
+  recovery writer reconstructed generated/build fields from one log's
+  birthtime/mtime and created contradictory ordering.
+- **Correction:** schema v3 adds one atomic v1 semantic event journal owned by
+  the executing wrapper. It distinguishes wrapper start from actual build
+  dispatch, records child exit and inventory state, and binds nonce,
+  commit/tree, hashed worktree identity, process, commands, wrapper hash,
+  toolchain, BUILD_ID, and artifact hash. Explicit recovery accepts only that
+  same complete run and never falls back to filesystem timestamps.
+- **Invariant/status:** generated-source completion remains no later than actual
+  build dispatch; build completion precedes inventory, and inventory completion
+  precedes manifest creation. The retained ca77 cycle stays invalid and
+  untouched. No required CH-0015 implementation surface remains after this
+  correction; exact-head certification, integration, and final closure audit
+  remain pending.
+- **Scope/rollback:** no Floor Plan Upload, telemetry, NFT tracing, archive,
+  scanner, Phase 8, workflow, dependency, database, or external-control change.
+  Revert the single timestamp-provenance correction commit to restore schema v2
+  and remove journal/recovery behavior; then rerun production-artifact and
+  required-test truthfulness owners. Do not alter retained historical evidence.
+
 ## CH-0015I Floor Plan NFT overtrace correction — 2026-08-13
 
 - **Classification:** `B — NFT_OVERTRACE_PACKAGING_DEFECT`. Three Floor Plan

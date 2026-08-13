@@ -110,7 +110,7 @@
     },
     {
       "id": "ci.production-artifact-contract",
-      "invariant": "The CH-0016 source, artifact, runtime, Floor Plan route-NFT, report, and external-claim evidence contract fails closed.",
+      "invariant": "The CH-0016 source, semantic timestamp provenance, artifact, runtime, Floor Plan route-NFT, report, and external-claim evidence contract fails closed.",
       "cadence": "merge-required",
       "blocking": true,
       "command": "npm run test:production-artifact-evidence",
@@ -126,6 +126,11 @@
         "scripts/test-production-artifact-evidence.mjs"
       ],
       "requiredContributions": [
+        {
+          "id": "artifact.semantic-timestamp-provenance",
+          "source": "scripts/test-production-artifact-evidence.mjs",
+          "marker": "semantic start must be durable immediately before child dispatch"
+        },
         {
           "id": "floor-plan.route-nft-fail-closed",
           "source": "scripts/test-production-artifact-evidence.mjs",

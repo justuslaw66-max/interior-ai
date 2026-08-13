@@ -1,15 +1,21 @@
 import { spawn, spawnSync } from "node:child_process";
-import { createHash } from "node:crypto";
+import { createHash, randomUUID } from "node:crypto";
 import {
+  closeSync,
   createReadStream,
   existsSync,
+  fsyncSync,
   lstatSync,
+  mkdirSync,
+  openSync,
   readFileSync,
   readlinkSync,
   realpathSync,
   readdirSync,
+  renameSync,
   rmSync,
   statSync,
+  unlinkSync,
   writeFileSync,
 } from "node:fs";
 import { mkdir } from "node:fs/promises";
@@ -33,21 +39,27 @@ import {
 } from "./runtime-smoke-telemetry-bootstrap-contract.mjs";
 
 export const PRODUCTION_EVIDENCE_SCHEMA =
-  "interior-ai.production-artifact-evidence.v2";
+  "interior-ai.production-artifact-evidence.v3";
+export const PRODUCTION_EVIDENCE_JOURNAL_SCHEMA =
+  "interior-ai.production-artifact-semantic-event-journal.v1";
 export const PRODUCTION_EVIDENCE_SERVER_COMMAND =
   "npm run evidence:production:serve";
+export const PRODUCTION_EVIDENCE_WRAPPER_VERSION = 3;
 
 const DEFAULT_EVIDENCE_DIRECTORY = ".local/production-artifact-evidence";
 const DEFAULT_MANIFEST_PATH = `${DEFAULT_EVIDENCE_DIRECTORY}/manifest.json`;
+const DEFAULT_JOURNAL_PATH = `${DEFAULT_EVIDENCE_DIRECTORY}/semantic-event-journal.json`;
+const DEFAULT_INVENTORY_SNAPSHOT_PATH =
+  `${DEFAULT_EVIDENCE_DIRECTORY}/artifact-inventory.json`;
 const DEFAULT_REPORT_PATH = `${DEFAULT_EVIDENCE_DIRECTORY}/runtime-smoke.json`;
 const DEFAULT_PHASE_TIMINGS_PATH =
   `${DEFAULT_EVIDENCE_DIRECTORY}/runtime-smoke-phases.json`;
 const DEFAULT_UPLOAD_DIRECTORY = `${DEFAULT_EVIDENCE_DIRECTORY}/upload`;
 const DEFAULT_BUNDLE_PATH = `${DEFAULT_UPLOAD_DIRECTORY}/ch0016-ch0017-evidence-bundle.tar.gz`;
-const GENERATED_SOURCE_CHECK_COMMAND =
+export const GENERATED_SOURCE_CHECK_COMMAND =
   "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' scripts/generate-surface-material-runtime.ts --check";
-const BUILD_COMMAND = "npm run build";
-const DEPENDENCY_INSTALL_COMMAND = "npm ci --include=dev";
+export const BUILD_COMMAND = "npm run build";
+export const DEPENDENCY_INSTALL_COMMAND = "npm ci --include=dev";
 const UNDERLYING_SERVER_COMMAND = "npm run start";
 const RUNTIME_SMOKE_COMMAND =
   "npx playwright test tests/e2e/00-runtime-smoke.spec.ts --project=chromium";
@@ -274,8 +286,13 @@ export function inspectSourceIdentity(repositoryRoot) {
   if (!commitSha || !/^[0-9a-f]{40,64}$/i.test(commitSha)) {
     throw new Error("Unable to resolve the full source commit SHA.");
   }
+  const treeSha = git(repositoryRoot, ["rev-parse", "HEAD^{tree}"]);
+  if (!treeSha || !/^[0-9a-f]{40,64}$/i.test(treeSha)) {
+    throw new Error("Unable to resolve the full source tree SHA.");
+  }
   return {
     commitSha,
+    treeSha,
     branch: git(repositoryRoot, ["branch", "--show-current"]) || null,
     sourceRef: git(repositoryRoot, ["describe", "--always", "--exact-match", "--tags"], {
       allowFailure: true,
@@ -307,6 +324,7 @@ function sourceIssues(source, currentSource = source) {
   }
   if (!currentSource.submodulesClean) issues.push("submodule state is not clean and resolved");
   if (source.commitSha !== currentSource.commitSha) issues.push("source commit does not match HEAD");
+  if (source.treeSha !== currentSource.treeSha) issues.push("source tree does not match HEAD");
   return issues;
 }
 
@@ -842,6 +860,568 @@ function canonicalUtcTimestamp(value) {
   );
 }
 
+function canonicalJsonBytes(value) {
+  return Buffer.from(`${JSON.stringify(value, null, 2)}\n`);
+}
+
+function atomicWriteBytes(absolutePath, bytes) {
+  mkdirSync(path.dirname(absolutePath), { recursive: true });
+  const temporaryPath = `${absolutePath}.${process.pid}.${randomUUID()}.tmp`;
+  let descriptor;
+  try {
+    descriptor = openSync(temporaryPath, "wx", 0o600);
+    writeFileSync(descriptor, bytes);
+    fsyncSync(descriptor);
+    closeSync(descriptor);
+    descriptor = undefined;
+    renameSync(temporaryPath, absolutePath);
+    const directoryDescriptor = openSync(path.dirname(absolutePath), "r");
+    try {
+      fsyncSync(directoryDescriptor);
+    } finally {
+      closeSync(directoryDescriptor);
+    }
+  } catch (error) {
+    if (descriptor !== undefined) closeSync(descriptor);
+    if (existsSync(temporaryPath)) unlinkSync(temporaryPath);
+    throw error;
+  }
+}
+
+function semanticJournalPath(repositoryRoot, journalPath = DEFAULT_JOURNAL_PATH) {
+  return resolveRepositoryPath(repositoryRoot, journalPath, "semantic event journal path");
+}
+
+function worktreeIdentitySha256(repositoryRoot) {
+  return sha256(`interior-ai-worktree\0${realpathSync(repositoryRoot)}`);
+}
+
+async function productionEvidenceWrapperIdentity(repositoryRoot) {
+  const relativePath = "scripts/production-artifact-evidence.mjs";
+  return {
+    version: PRODUCTION_EVIDENCE_WRAPPER_VERSION,
+    path: relativePath,
+    sha256: await sha256File(path.join(repositoryRoot, relativePath)),
+  };
+}
+
+function pendingChildEvent() {
+  return {
+    status: "pending",
+    startedAt: null,
+    completedAt: null,
+    exitCode: null,
+    signal: null,
+    failureKind: null,
+  };
+}
+
+function pendingInventoryEvent() {
+  return {
+    status: "pending",
+    startedAt: null,
+    completedAt: null,
+    failureKind: null,
+  };
+}
+
+function exactKeys(value, expected) {
+  return (
+    value !== null &&
+    typeof value === "object" &&
+    !Array.isArray(value) &&
+    JSON.stringify(Object.keys(value)) === JSON.stringify(expected)
+  );
+}
+
+function childEventIssues(name, event) {
+  const issues = [];
+  if (!exactKeys(event, ["status", "startedAt", "completedAt", "exitCode", "signal", "failureKind"])) {
+    return [`semantic journal ${name} event shape is malformed`];
+  }
+  const terminal = event.status === "succeeded" || event.status === "failed";
+  if (!["pending", "running", "succeeded", "failed"].includes(event.status)) {
+    issues.push(`semantic journal ${name} status is invalid`);
+  }
+  if (event.status === "pending" && [event.startedAt, event.completedAt, event.exitCode, event.signal, event.failureKind].some((value) => value !== null)) {
+    issues.push(`semantic journal ${name} pending event contains false execution fields`);
+  }
+  if (event.status === "running" && (!canonicalUtcTimestamp(event.startedAt) || event.completedAt !== null || event.exitCode !== null || event.signal !== null || event.failureKind !== null)) {
+    issues.push(`semantic journal ${name} running event is incomplete or contradictory`);
+  }
+  if (terminal && (!canonicalUtcTimestamp(event.startedAt) || !canonicalUtcTimestamp(event.completedAt))) {
+    issues.push(`semantic journal ${name} terminal timestamps are invalid`);
+  }
+  if (event.status === "succeeded" && (event.exitCode !== 0 || event.signal !== null || event.failureKind !== null)) {
+    issues.push(`semantic journal ${name} success does not have exit code zero`);
+  }
+  if (event.status === "failed") {
+    const exitAvailable =
+      Number.isSafeInteger(event.exitCode) &&
+      event.exitCode !== 0 &&
+      event.signal === null &&
+      event.failureKind === "child_exit_nonzero";
+    const signalAvailable =
+      event.exitCode === null &&
+      typeof event.signal === "string" &&
+      /^SIG[A-Z0-9]+$/.test(event.signal) &&
+      event.failureKind === "child_signal";
+    const dispatchFailed =
+      event.exitCode === null &&
+      event.signal === null &&
+      event.failureKind === "dispatch_error";
+    if (!exitAvailable && !signalAvailable && !dispatchFailed) {
+      issues.push(`semantic journal ${name} failure does not retain truthful child status`);
+    }
+  }
+  return issues;
+}
+
+function inventoryEventIssues(event) {
+  if (!exactKeys(event, ["status", "startedAt", "completedAt", "failureKind"])) {
+    return ["semantic journal artifact inventory event shape is malformed"];
+  }
+  const issues = [];
+  if (!["pending", "running", "succeeded", "failed"].includes(event.status)) {
+    issues.push("semantic journal artifact inventory status is invalid");
+  }
+  if (event.status === "pending" && [event.startedAt, event.completedAt, event.failureKind].some((value) => value !== null)) {
+    issues.push("semantic journal pending artifact inventory contains false execution fields");
+  }
+  if (event.status === "running" && (!canonicalUtcTimestamp(event.startedAt) || event.completedAt !== null || event.failureKind !== null)) {
+    issues.push("semantic journal running artifact inventory is incomplete or contradictory");
+  }
+  if (["succeeded", "failed"].includes(event.status) && (!canonicalUtcTimestamp(event.startedAt) || !canonicalUtcTimestamp(event.completedAt))) {
+    issues.push("semantic journal artifact inventory terminal timestamps are invalid");
+  }
+  if (event.status === "succeeded" && event.failureKind !== null) {
+    issues.push("semantic journal successful artifact inventory records a failure");
+  }
+  if (event.status === "failed" && event.failureKind !== "inventory_error") {
+    issues.push("semantic journal artifact inventory failure kind is invalid");
+  }
+  return issues;
+}
+
+function expectedJournalCompletionState(journal) {
+  if (journal.manifest?.status === "created") return "manifest_created";
+  const inventoryStatus = journal.events?.artifactInventory?.status;
+  if (inventoryStatus !== "pending") return `artifact_inventory_${inventoryStatus}`;
+  const buildStatus = journal.events?.build?.status;
+  if (buildStatus !== "pending") return `build_${buildStatus}`;
+  const generatedStatus = journal.events?.generatedSourceCheck?.status;
+  if (generatedStatus !== "pending") return `generated_source_check_${generatedStatus}`;
+  const installStatus = journal.events?.dependencyInstall?.status;
+  if (installStatus !== "pending") return `dependency_install_${installStatus}`;
+  return "initialized";
+}
+
+function journalTimeline(journal) {
+  return [
+    ["cycleStartedAt", journal.events?.cycleStartedAt],
+    ["installStartedAt", journal.events?.dependencyInstall?.startedAt],
+    ["installCompletedAt", journal.events?.dependencyInstall?.completedAt],
+    ["generatedSourceCheckStartedAt", journal.events?.generatedSourceCheck?.startedAt],
+    ["generatedSourceCheckCompletedAt", journal.events?.generatedSourceCheck?.completedAt],
+    ["buildStartedAt", journal.events?.build?.startedAt],
+    ["buildCompletedAt", journal.events?.build?.completedAt],
+    ["artifactInventoryStartedAt", journal.events?.artifactInventory?.startedAt],
+    ["artifactInventoryCompletedAt", journal.events?.artifactInventory?.completedAt],
+    ["manifestCreatedAt", journal.manifest?.createdAt],
+  ].filter(([, value]) => value !== null && value !== undefined);
+}
+
+function journalBindingIssues(journal) {
+  const issues = [];
+  const binding = journal.bindings;
+  if (!exactKeys(binding, ["artifactInventory", "nextBuildId", "artifactSha256"])) {
+    return ["semantic journal output binding shape is malformed"];
+  }
+  if (journal.events.artifactInventory.status === "succeeded") {
+    if (
+      !exactKeys(binding.artifactInventory, ["path", "sha256"]) ||
+      binding.artifactInventory.path !== DEFAULT_INVENTORY_SNAPSHOT_PATH ||
+      !/^[0-9a-f]{64}$/.test(binding.artifactInventory.sha256 ?? "") ||
+      typeof binding.nextBuildId !== "string" ||
+      !binding.nextBuildId ||
+      !/^[0-9a-f]{64}$/.test(binding.artifactSha256 ?? "")
+    ) {
+      issues.push("semantic journal completed artifact inventory binding is malformed");
+    }
+  } else if (binding.artifactInventory !== null || binding.nextBuildId !== null || binding.artifactSha256 !== null) {
+    issues.push("semantic journal exposes artifact bindings before inventory completion");
+  }
+  return issues;
+}
+
+function journalDiagnosticsIssues(diagnostics) {
+  if (!exactKeys(diagnostics, ["filesystemMetadata"]) || !Array.isArray(diagnostics.filesystemMetadata)) {
+    return ["semantic journal diagnostic metadata shape is malformed"];
+  }
+  const issues = [];
+  for (const entry of diagnostics.filesystemMetadata) {
+    if (!exactKeys(entry, ["label", "birthtime", "ctime", "mtime"])) {
+      issues.push("semantic journal filesystem diagnostics are malformed");
+      continue;
+    }
+    if (!/^[a-z0-9][a-z0-9._-]{0,95}$/.test(entry.label ?? "")) {
+      issues.push("semantic journal filesystem diagnostic label is unsafe");
+    }
+    for (const value of [entry.birthtime, entry.ctime, entry.mtime]) {
+      if (value !== null && !canonicalUtcTimestamp(value)) {
+        issues.push("semantic journal filesystem diagnostic timestamp is invalid");
+      }
+    }
+  }
+  return issues;
+}
+
+export function validateProductionEvidenceSemanticJournal(journal) {
+  const issues = [];
+  if (!exactKeys(journal, ["schema", "version", "runNonce", "candidateIdentifier", "source", "owner", "commands", "buildContract", "toolchain", "events", "bindings", "manifest", "completionState", "diagnostics"])) {
+    return { valid: false, issues: ["semantic event journal shape is malformed"] };
+  }
+  if (journal.schema !== PRODUCTION_EVIDENCE_JOURNAL_SCHEMA || journal.version !== 1) {
+    issues.push("unsupported semantic event journal schema or version");
+  }
+  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(journal.runNonce ?? "")) {
+    issues.push("semantic event journal run nonce is malformed");
+  }
+  if (!/^[A-Za-z0-9._:-]{1,128}$/.test(journal.candidateIdentifier ?? "")) {
+    issues.push("semantic event journal candidate identity is malformed");
+  }
+  if (!exactKeys(journal.source, ["commitSha", "treeSha"]) || !/^[0-9a-f]{40,64}$/i.test(journal.source?.commitSha ?? "") || !/^[0-9a-f]{40,64}$/i.test(journal.source?.treeSha ?? "")) {
+    issues.push("semantic event journal source binding is malformed");
+  }
+  if (!exactKeys(journal.owner, ["process", "worktreeIdentitySha256", "wrapper"]) || !exactKeys(journal.owner?.process, ["pid", "parentPid"]) || !Number.isSafeInteger(journal.owner?.process?.pid) || journal.owner.process.pid <= 0 || !Number.isSafeInteger(journal.owner.process.parentPid) || journal.owner.process.parentPid < 0 || !/^[0-9a-f]{64}$/.test(journal.owner?.worktreeIdentitySha256 ?? "") || !exactKeys(journal.owner?.wrapper, ["version", "path", "sha256"]) || journal.owner.wrapper.version !== PRODUCTION_EVIDENCE_WRAPPER_VERSION || journal.owner.wrapper.path !== "scripts/production-artifact-evidence.mjs" || !/^[0-9a-f]{64}$/.test(journal.owner.wrapper.sha256 ?? "")) {
+    issues.push("semantic event journal owner binding is malformed");
+  }
+  if (!exactKeys(journal.commands, ["dependencyInstall", "generatedSourceCheck", "build"]) || journal.commands.dependencyInstall !== DEPENDENCY_INSTALL_COMMAND || journal.commands.generatedSourceCheck !== GENERATED_SOURCE_CHECK_COMMAND || journal.commands.build !== BUILD_COMMAND) {
+    issues.push("semantic event journal command binding is not canonical");
+  }
+  if (!exactKeys(journal.buildContract, ["applicationEnvironment", "catalogStrictValidation"]) || !PRODUCTION_ENVIRONMENTS.has(journal.buildContract?.applicationEnvironment) || journal.buildContract?.catalogStrictValidation !== true) {
+    issues.push("semantic event journal build contract is malformed");
+  }
+  if (!exactKeys(journal.toolchain, ["nodeVersion", "npmVersion"]) || typeof journal.toolchain.nodeVersion !== "string" || typeof journal.toolchain.npmVersion !== "string") {
+    issues.push("semantic event journal toolchain binding is malformed");
+  }
+  if (!exactKeys(journal.events, ["cycleStartedAt", "buildWrapperStartedAt", "dependencyInstall", "generatedSourceCheck", "build", "artifactInventory"]) || !canonicalUtcTimestamp(journal.events?.cycleStartedAt) || !canonicalUtcTimestamp(journal.events?.buildWrapperStartedAt)) {
+    issues.push("semantic event journal event envelope is malformed");
+  } else {
+    issues.push(...childEventIssues("dependency install", journal.events.dependencyInstall));
+    issues.push(...childEventIssues("generated-source check", journal.events.generatedSourceCheck));
+    issues.push(...childEventIssues("build", journal.events.build));
+    issues.push(...inventoryEventIssues(journal.events.artifactInventory));
+    if (Date.parse(journal.events.buildWrapperStartedAt) < Date.parse(journal.events.cycleStartedAt)) {
+      issues.push("build wrapper start predates the evidence cycle");
+    }
+    if (
+      canonicalUtcTimestamp(journal.events.build.startedAt) &&
+      Date.parse(journal.events.buildWrapperStartedAt) > Date.parse(journal.events.build.startedAt)
+    ) {
+      issues.push("build wrapper start follows actual build dispatch");
+    }
+  }
+  if (!exactKeys(journal.manifest, ["status", "createdAt"]) || !["pending", "created"].includes(journal.manifest?.status) || (journal.manifest.status === "pending" ? journal.manifest.createdAt !== null : !canonicalUtcTimestamp(journal.manifest.createdAt))) {
+    issues.push("semantic event journal manifest state is malformed");
+  }
+  if (journal.events?.generatedSourceCheck?.status !== "pending" && journal.events?.dependencyInstall?.status !== "succeeded") {
+    issues.push("generated-source check started before dependency installation succeeded");
+  }
+  if (journal.events?.build?.status !== "pending" && journal.events?.generatedSourceCheck?.status !== "succeeded") {
+    issues.push("build started before generated-source verification succeeded");
+  }
+  if (journal.events?.artifactInventory?.status !== "pending" && journal.events?.build?.status !== "succeeded") {
+    issues.push("artifact inventory started before the build succeeded");
+  }
+  if (journal.manifest?.status === "created" && journal.events?.artifactInventory?.status !== "succeeded") {
+    issues.push("manifest was claimed before artifact inventory succeeded");
+  }
+  issues.push(...journalBindingIssues(journal));
+  issues.push(...journalDiagnosticsIssues(journal.diagnostics));
+  const timeline = journalTimeline(journal);
+  if (timeline.some(([, value]) => !canonicalUtcTimestamp(value))) {
+    issues.push("semantic event journal timestamps must use valid UTC ISO 8601 values");
+  }
+  for (let index = 1; index < timeline.length; index += 1) {
+    if (Date.parse(timeline[index][1]) < Date.parse(timeline[index - 1][1])) {
+      issues.push(`${timeline[index][0]} predates ${timeline[index - 1][0]}`);
+    }
+  }
+  if (journal.completionState !== expectedJournalCompletionState(journal)) {
+    issues.push("semantic event journal completion state is contradictory");
+  }
+  return { valid: issues.length === 0, issues };
+}
+
+function assertValidSemanticJournal(journal) {
+  const validation = validateProductionEvidenceSemanticJournal(journal);
+  if (!validation.valid) throw new Error(validation.issues.join("; "));
+}
+
+export function readProductionEvidenceSemanticJournal({
+  repositoryRoot,
+  journalPath = DEFAULT_JOURNAL_PATH,
+}) {
+  const absolutePath = semanticJournalPath(repositoryRoot, journalPath);
+  if (!existsSync(absolutePath)) throw new Error("semantic event journal is missing");
+  const bytes = readFileSync(absolutePath);
+  let journal;
+  try {
+    journal = JSON.parse(bytes.toString("utf8"));
+  } catch {
+    throw new Error("semantic event journal is not valid JSON");
+  }
+  if (!bytes.equals(canonicalJsonBytes(journal))) {
+    throw new Error("semantic event journal is not in canonical JSON encoding");
+  }
+  assertValidSemanticJournal(journal);
+  return journal;
+}
+
+function writeSemanticJournal(repositoryRoot, journalPath, journal) {
+  assertValidSemanticJournal(journal);
+  atomicWriteBytes(semanticJournalPath(repositoryRoot, journalPath), canonicalJsonBytes(journal));
+}
+
+function updateSemanticJournal({
+  repositoryRoot,
+  journalPath,
+  expectedRunNonce,
+  expectedOwnerProcess,
+  mutate,
+}) {
+  const journal = readProductionEvidenceSemanticJournal({ repositoryRoot, journalPath });
+  if (journal.runNonce !== expectedRunNonce) {
+    throw new Error("semantic event journal run nonce mismatch");
+  }
+  if (
+    expectedOwnerProcess &&
+    JSON.stringify(journal.owner.process) !== JSON.stringify(expectedOwnerProcess)
+  ) {
+    throw new Error("semantic child event belongs to another executing process");
+  }
+  const updated = structuredClone(journal);
+  mutate(updated);
+  updated.completionState = expectedJournalCompletionState(updated);
+  writeSemanticJournal(repositoryRoot, journalPath, updated);
+  return updated;
+}
+
+export async function initializeProductionEvidenceSemanticJournal({
+  repositoryRoot,
+  journalPath = DEFAULT_JOURNAL_PATH,
+  candidateIdentifier,
+  source,
+  buildContract,
+  toolchain,
+  clock = () => new Date().toISOString(),
+  nonce = randomUUID(),
+  processIdentity = { pid: process.pid, parentPid: process.ppid },
+}) {
+  const absolutePath = semanticJournalPath(repositoryRoot, journalPath);
+  if (existsSync(absolutePath)) {
+    throw new Error("semantic event journal path is not pristine");
+  }
+  const journal = {
+    schema: PRODUCTION_EVIDENCE_JOURNAL_SCHEMA,
+    version: 1,
+    runNonce: nonce,
+    candidateIdentifier,
+    source: { commitSha: source.commitSha, treeSha: source.treeSha },
+    owner: {
+      process: processIdentity,
+      worktreeIdentitySha256: worktreeIdentitySha256(repositoryRoot),
+      wrapper: await productionEvidenceWrapperIdentity(repositoryRoot),
+    },
+    commands: {
+      dependencyInstall: DEPENDENCY_INSTALL_COMMAND,
+      generatedSourceCheck: GENERATED_SOURCE_CHECK_COMMAND,
+      build: BUILD_COMMAND,
+    },
+    buildContract,
+    toolchain,
+    events: {
+      cycleStartedAt: clock(),
+      buildWrapperStartedAt: clock(),
+      dependencyInstall: pendingChildEvent(),
+      generatedSourceCheck: pendingChildEvent(),
+      build: pendingChildEvent(),
+      artifactInventory: pendingInventoryEvent(),
+    },
+    bindings: { artifactInventory: null, nextBuildId: null, artifactSha256: null },
+    manifest: { status: "pending", createdAt: null },
+    completionState: "initialized",
+    diagnostics: { filesystemMetadata: [] },
+  };
+  writeSemanticJournal(repositoryRoot, journalPath, journal);
+  return journal;
+}
+
+const SEMANTIC_CHILD_ACTIONS = Object.freeze({
+  install: "dependencyInstall",
+  generatedSourceCheck: "generatedSourceCheck",
+  build: "build",
+});
+
+export function executeProductionEvidenceChild({
+  repositoryRoot,
+  journalPath = DEFAULT_JOURNAL_PATH,
+  expectedRunNonce,
+  action,
+  dispatch,
+  clock = () => new Date().toISOString(),
+}) {
+  const eventKey = SEMANTIC_CHILD_ACTIONS[action];
+  if (!eventKey) throw new Error(`unknown semantic child action: ${action}`);
+  const processIdentity = { pid: process.pid, parentPid: process.ppid };
+  updateSemanticJournal({
+    repositoryRoot,
+    journalPath,
+    expectedRunNonce,
+    expectedOwnerProcess: processIdentity,
+    mutate(journal) {
+      if (journal.events[eventKey].status !== "pending") {
+        throw new Error(`semantic child action ${action} was already started`);
+      }
+      journal.events[eventKey] = {
+        ...pendingChildEvent(),
+        status: "running",
+        startedAt: clock(),
+      };
+    },
+  });
+  let result;
+  try {
+    result = dispatch();
+  } catch (error) {
+    updateSemanticJournal({
+      repositoryRoot,
+      journalPath,
+      expectedRunNonce,
+      expectedOwnerProcess: processIdentity,
+      mutate(journal) {
+        journal.events[eventKey] = {
+          ...journal.events[eventKey],
+          status: "failed",
+          completedAt: clock(),
+          failureKind: "dispatch_error",
+        };
+      },
+    });
+    throw error;
+  }
+  const exitCode = Number.isSafeInteger(result?.status) ? result.status : null;
+  const signal = typeof result?.signal === "string" ? result.signal : null;
+  updateSemanticJournal({
+    repositoryRoot,
+    journalPath,
+    expectedRunNonce,
+    expectedOwnerProcess: processIdentity,
+    mutate(journal) {
+      journal.events[eventKey] = {
+        ...journal.events[eventKey],
+        status: exitCode === 0 && signal === null ? "succeeded" : "failed",
+        completedAt: clock(),
+        exitCode,
+        signal,
+        failureKind:
+          exitCode === 0 && signal === null
+            ? null
+            : signal
+              ? "child_signal"
+              : exitCode === null
+                ? "dispatch_error"
+                : "child_exit_nonzero",
+      };
+    },
+  });
+  if (exitCode !== 0 || signal !== null) {
+    const failure = new Error(
+      `semantic child action ${action} failed with ${signal ? `signal ${signal}` : `status ${exitCode ?? "unavailable"}`}`,
+    );
+    failure.exitCode = exitCode;
+    failure.signal = signal;
+    throw failure;
+  }
+  return result;
+}
+
+function startArtifactInventory({ repositoryRoot, journalPath, expectedRunNonce, clock }) {
+  return updateSemanticJournal({
+    repositoryRoot,
+    journalPath,
+    expectedRunNonce,
+    mutate(journal) {
+      if (journal.events.artifactInventory.status !== "pending") {
+        throw new Error("artifact inventory was already started");
+      }
+      journal.events.artifactInventory = {
+        ...pendingInventoryEvent(),
+        status: "running",
+        startedAt: clock(),
+      };
+    },
+  });
+}
+
+function completeArtifactInventory({ repositoryRoot, journalPath, expectedRunNonce, clock, binding }) {
+  return updateSemanticJournal({
+    repositoryRoot,
+    journalPath,
+    expectedRunNonce,
+    mutate(journal) {
+      if (journal.events.artifactInventory.status !== "running") {
+        throw new Error("artifact inventory is not running");
+      }
+      journal.events.artifactInventory = {
+        ...journal.events.artifactInventory,
+        status: "succeeded",
+        completedAt: clock(),
+      };
+      journal.bindings = binding;
+    },
+  });
+}
+
+function failArtifactInventory({ repositoryRoot, journalPath, expectedRunNonce, clock }) {
+  return updateSemanticJournal({
+    repositoryRoot,
+    journalPath,
+    expectedRunNonce,
+    mutate(journal) {
+      journal.events.artifactInventory = {
+        ...journal.events.artifactInventory,
+        status: "failed",
+        completedAt: clock(),
+        failureKind: "inventory_error",
+      };
+      journal.bindings = {
+        artifactInventory: null,
+        nextBuildId: null,
+        artifactSha256: null,
+      };
+    },
+  });
+}
+
+function recordManifestCreated({ repositoryRoot, journalPath, expectedRunNonce, createdAt }) {
+  return updateSemanticJournal({
+    repositoryRoot,
+    journalPath,
+    expectedRunNonce,
+    mutate(journal) {
+      if (journal.events.artifactInventory.status !== "succeeded") {
+        throw new Error("manifest cannot be created before artifact inventory succeeds");
+      }
+      if (journal.manifest.status === "created" && journal.manifest.createdAt !== createdAt) {
+        throw new Error("manifest creation timestamp is already bound to another value");
+      }
+      journal.manifest = { status: "created", createdAt };
+    },
+  });
+}
+
 function safeBuildFlags(environment = process.env) {
   return Object.fromEntries(
     DEVELOPMENT_ONLY_FLAGS.map((name) => [name, flagEnabled(environment[name])]),
@@ -927,6 +1507,17 @@ function sensitiveManifestKeys(value, currentPath = "manifest") {
   return issues;
 }
 
+function filesystemTimestampSemanticPaths(value, currentPath = "manifest") {
+  const issues = [];
+  if (!value || typeof value !== "object") return issues;
+  for (const [key, child] of Object.entries(value)) {
+    const childPath = `${currentPath}.${key}`;
+    if (/^(?:birthtime|ctime|mtime)$/i.test(key)) issues.push(childPath);
+    issues.push(...filesystemTimestampSemanticPaths(child, childPath));
+  }
+  return issues;
+}
+
 function leakedSensitiveEnvironmentValues(manifestBytes, environment = process.env) {
   const leaks = [];
   for (const [name, value] of Object.entries(environment)) {
@@ -962,62 +1553,230 @@ async function sensitiveArtifactEnvironmentValues(repositoryRoot, environment = 
   return [...leaks].sort(comparePortablePaths);
 }
 
-export async function createProductionEvidenceManifest(options) {
-  const repositoryRoot = path.resolve(options.repositoryRoot);
-  const source = inspectSourceIdentity(repositoryRoot);
-  const initialSourceIssues = sourceIssues(source);
-  if (initialSourceIssues.length > 0) throw new Error(initialSourceIssues.join("; "));
-  if (!options.candidateIdentifier?.trim()) {
-    throw new Error("PRODUCTION_EVIDENCE_CANDIDATE_ID is required.");
-  }
-  if (!/^[A-Za-z0-9._:-]{1,128}$/.test(options.candidateIdentifier.trim())) {
-    throw new Error("PRODUCTION_EVIDENCE_CANDIDATE_ID must use a safe immutable identifier.");
-  }
-  const developmentOnlyFlags = safeBuildFlags(options.environment);
-  assertBuildContract(options.build, developmentOnlyFlags);
-  const recordedEnvironmentIdentity = environmentIdentity(
-    options.environment,
-    options.build.applicationEnvironment,
-  );
-  const requiredVariableNames = validateConfigurationShape(options.environment);
-  if (options.generatedSourceCheck?.status !== "passed") {
-    throw new Error("generated-source drift check did not pass");
-  }
-  const [dependencies, artifact] = await Promise.all([
-    inspectDependencyIdentity(repositoryRoot),
-    inspectProductionArtifact(repositoryRoot),
-  ]);
-  const floorPlanRouteNftContract = inspectFloorPlanRouteNftContract(repositoryRoot);
+const ARTIFACT_INVENTORY_SNAPSHOT_SCHEMA =
+  "interior-ai.production-artifact-inventory.v1";
+
+function assertArtifactInventorySafe(artifact) {
   if (artifact.traceInventory.missingPaths.length > 0) {
     throw new Error("traced output contains missing files");
   }
   if (artifact.traceInventory.prohibitedPaths.length > 0) {
     throw new Error("traced output contains prohibited files");
   }
-  if (
-    artifact.traceInventory.traceFileCount <= 0 ||
-    artifact.traceInventory.referenceCount <= 0
-  ) {
+  if (artifact.traceInventory.traceFileCount <= 0 || artifact.traceInventory.referenceCount <= 0) {
     throw new Error("traced output inventory is empty");
   }
+}
+
+async function collectArtifactInventorySnapshot(repositoryRoot, journal) {
+  const [dependencies, artifact] = await Promise.all([
+    inspectDependencyIdentity(repositoryRoot),
+    inspectProductionArtifact(repositoryRoot),
+  ]);
+  assertArtifactInventorySafe(artifact);
+  return {
+    schema: ARTIFACT_INVENTORY_SNAPSHOT_SCHEMA,
+    runNonce: journal.runNonce,
+    source: structuredClone(journal.source),
+    dependencies,
+    artifact,
+    floorPlanRouteNftContract: inspectFloorPlanRouteNftContract(repositoryRoot),
+  };
+}
+
+function writeArtifactInventorySnapshot(repositoryRoot, snapshot) {
+  const absolutePath = resolveRepositoryPath(
+    repositoryRoot,
+    DEFAULT_INVENTORY_SNAPSHOT_PATH,
+    "artifact inventory snapshot path",
+  );
+  const bytes = canonicalJsonBytes(snapshot);
+  atomicWriteBytes(absolutePath, bytes);
+  return {
+    artifactInventory: {
+      path: DEFAULT_INVENTORY_SNAPSHOT_PATH,
+      sha256: sha256(bytes),
+    },
+    nextBuildId: snapshot.artifact.nextBuildId,
+    artifactSha256: snapshot.artifact.sha256,
+  };
+}
+
+function readArtifactInventorySnapshot(repositoryRoot, journal) {
+  const binding = journal.bindings.artifactInventory;
+  if (!binding) throw new Error("semantic event journal has no completed artifact inventory binding");
+  const absolutePath = resolveRepositoryPath(
+    repositoryRoot,
+    binding.path,
+    "artifact inventory snapshot path",
+  );
+  if (!existsSync(absolutePath)) throw new Error("bound artifact inventory snapshot is missing");
+  const bytes = readFileSync(absolutePath);
+  if (sha256(bytes) !== binding.sha256) {
+    throw new Error("bound artifact inventory snapshot SHA-256 mismatch");
+  }
+  let snapshot;
+  try {
+    snapshot = JSON.parse(bytes.toString("utf8"));
+  } catch {
+    throw new Error("bound artifact inventory snapshot is not valid JSON");
+  }
+  if (!bytes.equals(canonicalJsonBytes(snapshot))) {
+    throw new Error("bound artifact inventory snapshot is not canonical JSON");
+  }
+  if (
+    snapshot.schema !== ARTIFACT_INVENTORY_SNAPSHOT_SCHEMA ||
+    snapshot.runNonce !== journal.runNonce ||
+    JSON.stringify(snapshot.source) !== JSON.stringify(journal.source) ||
+    snapshot.artifact?.nextBuildId !== journal.bindings.nextBuildId ||
+    snapshot.artifact?.sha256 !== journal.bindings.artifactSha256
+  ) {
+    throw new Error("artifact inventory snapshot belongs to another run or artifact");
+  }
+  return snapshot;
+}
+
+async function assertCurrentInventoryMatchesSnapshot(repositoryRoot, snapshot) {
+  const [dependencies, artifact] = await Promise.all([
+    inspectDependencyIdentity(repositoryRoot),
+    inspectProductionArtifact(repositoryRoot),
+  ]);
+  assertArtifactInventorySafe(artifact);
+  const floorPlanRouteNftContract = inspectFloorPlanRouteNftContract(repositoryRoot);
+  if (
+    JSON.stringify({ dependencies, artifact, floorPlanRouteNftContract }) !==
+    JSON.stringify({
+      dependencies: snapshot.dependencies,
+      artifact: snapshot.artifact,
+      floorPlanRouteNftContract: snapshot.floorPlanRouteNftContract,
+    })
+  ) {
+    throw new Error("current dependency, Build ID, or artifact identity does not match the semantic journal");
+  }
+}
+
+async function assertRecoverableSemanticJournal({
+  repositoryRoot,
+  journal,
+  expectedRunNonce,
+  environment,
+  toolchain,
+}) {
+  if (!expectedRunNonce || journal.runNonce !== expectedRunNonce) {
+    throw new Error("semantic event journal run nonce mismatch");
+  }
+  const currentSource = inspectSourceIdentity(repositoryRoot);
+  const issues = sourceIssues(currentSource);
+  if (issues.length > 0) throw new Error(issues.join("; "));
+  if (
+    journal.source.commitSha !== currentSource.commitSha ||
+    journal.source.treeSha !== currentSource.treeSha
+  ) {
+    throw new Error("semantic event journal source commit or tree mismatch");
+  }
+  if (journal.owner.worktreeIdentitySha256 !== worktreeIdentitySha256(repositoryRoot)) {
+    throw new Error("semantic event journal belongs to another worktree");
+  }
+  const wrapper = await productionEvidenceWrapperIdentity(repositoryRoot);
+  if (JSON.stringify(wrapper) !== JSON.stringify(journal.owner.wrapper)) {
+    throw new Error("semantic event journal wrapper version or source hash mismatch");
+  }
+  if (JSON.stringify(toolchain) !== JSON.stringify(journal.toolchain)) {
+    throw new Error("semantic event journal toolchain mismatch");
+  }
+  const developmentOnlyFlags = safeBuildFlags(environment);
+  assertBuildContract(journal.buildContract, developmentOnlyFlags);
+  environmentIdentity(environment, journal.buildContract.applicationEnvironment);
+  validateConfigurationShape(environment);
+  for (const [name, event] of [
+    ["dependency installation", journal.events.dependencyInstall],
+    ["generated-source check", journal.events.generatedSourceCheck],
+    ["build", journal.events.build],
+  ]) {
+    if (event.status !== "succeeded" || event.exitCode !== 0) {
+      throw new Error(`semantic event journal ${name} is incomplete or failed`);
+    }
+  }
+  if (["running", "failed"].includes(journal.events.artifactInventory.status)) {
+    throw new Error("semantic event journal artifact inventory is incomplete or failed");
+  }
+}
+
+export async function createProductionEvidenceManifest(options) {
+  const repositoryRoot = path.resolve(options.repositoryRoot);
+  const source = inspectSourceIdentity(repositoryRoot);
+  const journal = options.semanticJournal;
+  const snapshot = options.inventorySnapshot;
+  assertValidSemanticJournal(journal);
+  const initialSourceIssues = sourceIssues(source);
+  if (initialSourceIssues.length > 0) throw new Error(initialSourceIssues.join("; "));
+  if (
+    source.commitSha !== journal.source.commitSha ||
+    source.treeSha !== journal.source.treeSha
+  ) {
+    throw new Error("manifest source commit or tree does not match the semantic journal");
+  }
+  if (
+    journal.events.dependencyInstall.status !== "succeeded" ||
+    journal.events.generatedSourceCheck.status !== "succeeded" ||
+    journal.events.build.status !== "succeeded" ||
+    journal.events.artifactInventory.status !== "succeeded"
+  ) {
+    throw new Error("manifest construction requires a complete successful semantic journal");
+  }
+  if (
+    !snapshot ||
+    snapshot.runNonce !== journal.runNonce ||
+    JSON.stringify(snapshot.source) !== JSON.stringify(journal.source) ||
+    snapshot.artifact?.nextBuildId !== journal.bindings.nextBuildId ||
+    snapshot.artifact?.sha256 !== journal.bindings.artifactSha256
+  ) {
+    throw new Error("manifest construction requires the bound semantic artifact inventory");
+  }
+  const developmentOnlyFlags = safeBuildFlags(options.environment);
+  assertBuildContract(journal.buildContract, developmentOnlyFlags);
+  const recordedEnvironmentIdentity = environmentIdentity(
+    options.environment,
+    journal.buildContract.applicationEnvironment,
+  );
+  const requiredVariableNames = validateConfigurationShape(options.environment);
   const manifest = {
     schema: PRODUCTION_EVIDENCE_SCHEMA,
-    validatorVersion: 2,
-    candidateIdentifier: options.candidateIdentifier.trim(),
+    validatorVersion: 3,
+    candidateIdentifier: journal.candidateIdentifier,
     evidenceKind: "local-production-mode-artifact",
     source,
     dependencies: {
-      ...dependencies,
-      installCommand: options.dependencyInstall.command,
-      installStartedAt: options.dependencyInstall.startedAt,
-      installCompletedAt: options.dependencyInstall.completedAt,
+      ...snapshot.dependencies,
+      installCommand: journal.commands.dependencyInstall,
+      installStartedAt: journal.events.dependencyInstall.startedAt,
+      installCompletedAt: journal.events.dependencyInstall.completedAt,
+      processExitCode: journal.events.dependencyInstall.exitCode,
+      processSignal: journal.events.dependencyInstall.signal,
     },
-    toolchain: options.toolchain,
-    generatedSourceCheck: options.generatedSourceCheck,
+    toolchain: journal.toolchain,
+    cycleStartedAt: journal.events.cycleStartedAt,
+    execution: {
+      runNonce: journal.runNonce,
+      semanticJournalSchema: journal.schema,
+      owner: {
+        process: structuredClone(journal.owner.process),
+        wrapper: structuredClone(journal.owner.wrapper),
+      },
+      commands: structuredClone(journal.commands),
+    },
+    generatedSourceCheck: {
+      command: journal.commands.generatedSourceCheck,
+      status: "passed",
+      startedAt: journal.events.generatedSourceCheck.startedAt,
+      completedAt: journal.events.generatedSourceCheck.completedAt,
+      processExitCode: journal.events.generatedSourceCheck.exitCode,
+      processSignal: journal.events.generatedSourceCheck.signal,
+    },
     build: {
       mode: "production",
-      applicationEnvironment: options.build.applicationEnvironment,
-      catalogStrictValidation: options.build.catalogStrictValidation,
+      applicationEnvironment: journal.buildContract.applicationEnvironment,
+      catalogStrictValidation: journal.buildContract.catalogStrictValidation,
       developmentOnlyFlags,
       featureFlags: safeFeatureFlags(options.environment),
       environmentConfiguration: {
@@ -1026,23 +1785,31 @@ export async function createProductionEvidenceManifest(options) {
         environmentValuesRecorded: false,
       },
       environmentIdentity: recordedEnvironmentIdentity,
-      command: options.build.command,
+      command: journal.commands.build,
       serverCommand: PRODUCTION_EVIDENCE_SERVER_COMMAND,
       underlyingServerCommand: UNDERLYING_SERVER_COMMAND,
-      startedAt: options.build.startedAt,
-      completedAt: options.build.completedAt,
-      nextBuildId: artifact.nextBuildId,
+      wrapperStartedAt: journal.events.buildWrapperStartedAt,
+      startedAt: journal.events.build.startedAt,
+      completedAt: journal.events.build.completedAt,
+      processExitCode: journal.events.build.exitCode,
+      processSignal: journal.events.build.signal,
+      nextBuildId: snapshot.artifact.nextBuildId,
     },
     artifact: {
-      roots: artifact.roots,
-      excludedMutablePaths: artifact.excludedMutablePaths,
-      hashAlgorithm: artifact.hashAlgorithm,
-      sha256: artifact.sha256,
-      fileCount: artifact.fileCount,
-      bytes: artifact.bytes,
-      files: artifact.files,
-      traceInventory: artifact.traceInventory,
-      floorPlanRouteNftContract,
+      roots: snapshot.artifact.roots,
+      excludedMutablePaths: snapshot.artifact.excludedMutablePaths,
+      hashAlgorithm: snapshot.artifact.hashAlgorithm,
+      sha256: snapshot.artifact.sha256,
+      fileCount: snapshot.artifact.fileCount,
+      bytes: snapshot.artifact.bytes,
+      files: snapshot.artifact.files,
+      traceInventory: snapshot.artifact.traceInventory,
+      floorPlanRouteNftContract: snapshot.floorPlanRouteNftContract,
+    },
+    artifactInventory: {
+      status: "completed",
+      startedAt: journal.events.artifactInventory.startedAt,
+      completedAt: journal.events.artifactInventory.completedAt,
     },
     tests: [],
     externalControls: structuredClone(EXTERNAL_CONTROLS),
@@ -1052,7 +1819,6 @@ export async function createProductionEvidenceManifest(options) {
       actualDeploymentVerified: false,
       statement: REPOSITORY_EVIDENCE_STATEMENT,
     },
-    createdAt: new Date().toISOString(),
   };
   const manifestText = canonicalManifestBytes(manifest).toString("utf8");
   const leaks = leakedSensitiveEnvironmentValues(manifestText, options.environment);
@@ -1062,16 +1828,90 @@ export async function createProductionEvidenceManifest(options) {
   return manifest;
 }
 
+export async function recoverProductionEvidenceFromSemanticJournal({
+  repositoryRoot,
+  manifestPath = DEFAULT_MANIFEST_PATH,
+  journalPath = DEFAULT_JOURNAL_PATH,
+  expectedRunNonce,
+  environment = process.env,
+  toolchain,
+  clock = () => new Date().toISOString(),
+  manifestFactory = createProductionEvidenceManifest,
+  manifestWriter = writeProductionEvidenceManifest,
+}) {
+  const root = path.resolve(repositoryRoot);
+  let journal = readProductionEvidenceSemanticJournal({ repositoryRoot: root, journalPath });
+  await assertRecoverableSemanticJournal({
+    repositoryRoot: root,
+    journal,
+    expectedRunNonce,
+    environment,
+    toolchain,
+  });
+  let snapshot;
+  if (journal.events.artifactInventory.status === "pending") {
+    startArtifactInventory({ repositoryRoot: root, journalPath, expectedRunNonce, clock });
+    try {
+      snapshot = await collectArtifactInventorySnapshot(root, journal);
+      const binding = writeArtifactInventorySnapshot(root, snapshot);
+      journal = completeArtifactInventory({
+        repositoryRoot: root,
+        journalPath,
+        expectedRunNonce,
+        clock,
+        binding,
+      });
+    } catch (error) {
+      failArtifactInventory({ repositoryRoot: root, journalPath, expectedRunNonce, clock });
+      throw error;
+    }
+  } else {
+    snapshot = readArtifactInventorySnapshot(root, journal);
+    await assertCurrentInventoryMatchesSnapshot(root, snapshot);
+  }
+  const manifestDraft = await manifestFactory({
+    repositoryRoot: root,
+    semanticJournal: journal,
+    inventorySnapshot: snapshot,
+    environment,
+  });
+  const createdAt = journal.manifest.status === "created" ? journal.manifest.createdAt : clock();
+  if (
+    !canonicalUtcTimestamp(createdAt) ||
+    Date.parse(createdAt) < Date.parse(journal.events.artifactInventory.completedAt)
+  ) {
+    throw new Error("manifest creation timestamp is invalid or predates artifact inventory");
+  }
+  const manifest = { ...manifestDraft, createdAt };
+  const manifestText = canonicalManifestBytes(manifest).toString("utf8");
+  const leaks = leakedSensitiveEnvironmentValues(manifestText, environment);
+  if (leaks.length > 0) {
+    throw new Error(`Sensitive environment values leaked into the manifest: ${leaks.join(", ")}`);
+  }
+  if (journal.manifest.status !== "created") {
+    journal = recordManifestCreated({
+      repositoryRoot: root,
+      journalPath,
+      expectedRunNonce,
+      createdAt,
+    });
+  }
+  await manifestWriter({ repositoryRoot: root, manifestPath, manifest });
+  return { manifest, journal };
+}
+
 export async function writeProductionEvidenceManifest({
   repositoryRoot,
   manifestPath,
   manifest,
 }) {
   const absolutePath = resolveRepositoryPath(repositoryRoot, manifestPath, "manifest path");
-  await mkdir(path.dirname(absolutePath), { recursive: true });
   const bytes = canonicalManifestBytes(manifest);
-  writeFileSync(absolutePath, bytes);
-  writeFileSync(`${absolutePath}.sha256`, `${sha256(bytes)}  ${path.basename(absolutePath)}\n`);
+  atomicWriteBytes(absolutePath, bytes);
+  atomicWriteBytes(
+    `${absolutePath}.sha256`,
+    Buffer.from(`${sha256(bytes)}  ${path.basename(absolutePath)}\n`),
+  );
 }
 
 function readProductionEvidenceManifest(repositoryRoot, manifestPath, issues) {
@@ -1662,12 +2502,18 @@ export async function validateProductionEvidence({
   const readResult = readProductionEvidenceManifest(root, manifestPath, issues);
   if (!readResult) return { valid: false, issues, manifest: null };
   const { manifest, bytes } = readResult;
-  if (manifest.schema !== PRODUCTION_EVIDENCE_SCHEMA || manifest.validatorVersion !== 2) {
+  if (manifest.schema !== PRODUCTION_EVIDENCE_SCHEMA || manifest.validatorVersion !== 3) {
     issues.push("unsupported production evidence schema or validator version");
   }
   const sensitiveKeys = sensitiveManifestKeys(manifest);
   if (sensitiveKeys.length > 0) {
     issues.push(`manifest contains prohibited secret-bearing fields: ${sensitiveKeys.join(", ")}`);
+  }
+  const filesystemTimestampPaths = filesystemTimestampSemanticPaths(manifest);
+  if (filesystemTimestampPaths.length > 0) {
+    issues.push(
+      `filesystem timestamps cannot populate portable semantic evidence: ${filesystemTimestampPaths.join(", ")}`,
+    );
   }
   const leaks = leakedSensitiveEnvironmentValues(bytes.toString("utf8"), environment);
   if (leaks.length > 0) issues.push(`manifest contains sensitive environment values: ${leaks.join(", ")}`);
@@ -1694,6 +2540,40 @@ export async function validateProductionEvidence({
   if (!/^[A-Za-z0-9._:-]{1,128}$/.test(manifest.candidateIdentifier ?? "")) {
     issues.push("release-candidate identity is missing or malformed");
   }
+  if (!/^[0-9a-f]{40,64}$/i.test(manifest.source?.treeSha ?? "")) {
+    issues.push("source tree binding is missing or malformed");
+  }
+  const execution = manifest.execution;
+  if (
+    !exactKeys(execution, ["runNonce", "semanticJournalSchema", "owner", "commands"]) ||
+    !/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(execution?.runNonce ?? "") ||
+    execution?.semanticJournalSchema !== PRODUCTION_EVIDENCE_JOURNAL_SCHEMA ||
+    !exactKeys(execution?.owner, ["process", "wrapper"]) ||
+    !exactKeys(execution?.owner?.process, ["pid", "parentPid"]) ||
+    !Number.isSafeInteger(execution?.owner?.process?.pid) ||
+    execution.owner.process.pid <= 0 ||
+    !Number.isSafeInteger(execution.owner.process.parentPid) ||
+    execution.owner.process.parentPid < 0 ||
+    !exactKeys(execution?.owner?.wrapper, ["version", "path", "sha256"]) ||
+    execution.owner.wrapper.version !== PRODUCTION_EVIDENCE_WRAPPER_VERSION ||
+    execution.owner.wrapper.path !== "scripts/production-artifact-evidence.mjs" ||
+    !/^[0-9a-f]{64}$/.test(execution.owner.wrapper.sha256 ?? "") ||
+    !exactKeys(execution?.commands, ["dependencyInstall", "generatedSourceCheck", "build"]) ||
+    execution.commands.dependencyInstall !== DEPENDENCY_INSTALL_COMMAND ||
+    execution.commands.generatedSourceCheck !== GENERATED_SOURCE_CHECK_COMMAND ||
+    execution.commands.build !== BUILD_COMMAND
+  ) {
+    issues.push("semantic execution binding is missing, malformed, or non-canonical");
+  } else {
+    try {
+      const wrapper = await productionEvidenceWrapperIdentity(root);
+      if (JSON.stringify(wrapper) !== JSON.stringify(execution.owner.wrapper)) {
+        issues.push("executing wrapper version or source hash mismatch");
+      }
+    } catch (error) {
+      issues.push(error instanceof Error ? error.message : String(error));
+    }
+  }
   if (manifest.evidenceKind !== "local-production-mode-artifact") {
     issues.push("evidence kind must identify a local production-mode artifact");
   }
@@ -1712,8 +2592,27 @@ export async function validateProductionEvidence({
   if (manifest.generatedSourceCheck?.status !== "passed") {
     issues.push("generated-source drift check did not pass");
   }
-  if (manifest.generatedSourceCheck?.command !== GENERATED_SOURCE_CHECK_COMMAND) {
+  if (
+    !exactKeys(manifest.generatedSourceCheck, ["command", "status", "startedAt", "completedAt", "processExitCode", "processSignal"]) ||
+    manifest.generatedSourceCheck?.command !== GENERATED_SOURCE_CHECK_COMMAND ||
+    manifest.generatedSourceCheck?.processExitCode !== 0 ||
+    manifest.generatedSourceCheck?.processSignal !== null
+  ) {
     issues.push("generated-source drift check command is not canonical");
+  }
+  if (
+    manifest.dependencies?.processExitCode !== 0 ||
+    manifest.dependencies?.processSignal !== null
+  ) {
+    issues.push("dependency installation did not complete successfully");
+  }
+  if (
+    manifest.build?.processExitCode !== 0 ||
+    manifest.build?.processSignal !== null ||
+    !exactKeys(manifest.artifactInventory, ["status", "startedAt", "completedAt"]) ||
+    manifest.artifactInventory?.status !== "completed"
+  ) {
+    issues.push("build or artifact inventory did not complete successfully");
   }
   if (
     manifest.build?.environmentConfiguration?.status !== "passed" ||
@@ -1871,11 +2770,15 @@ export async function validateProductionEvidence({
   }
 
   const timestamps = [
+    manifest.cycleStartedAt,
     manifest.dependencies?.installStartedAt,
     manifest.dependencies?.installCompletedAt,
+    manifest.generatedSourceCheck?.startedAt,
     manifest.generatedSourceCheck?.completedAt,
     manifest.build?.startedAt,
     manifest.build?.completedAt,
+    manifest.artifactInventory?.startedAt,
+    manifest.artifactInventory?.completedAt,
     manifest.createdAt,
   ];
   if (
@@ -1888,6 +2791,15 @@ export async function validateProductionEvidence({
     !timestamps.every((value, index) => index === 0 || Date.parse(value) >= Date.parse(timestamps[index - 1]))
   ) {
     issues.push("evidence timestamps are stale or contradictory");
+  }
+  if (
+    !canonicalUtcTimestamp(manifest.build?.wrapperStartedAt) ||
+    (canonicalUtcTimestamp(manifest.cycleStartedAt) &&
+      Date.parse(manifest.build.wrapperStartedAt) < Date.parse(manifest.cycleStartedAt)) ||
+    (canonicalUtcTimestamp(manifest.build?.startedAt) &&
+      Date.parse(manifest.build.wrapperStartedAt) > Date.parse(manifest.build.startedAt))
+  ) {
+    issues.push("build wrapper start is invalid or contradicts actual build dispatch");
   }
   const futureLimit = Date.now() + 5 * 60 * 1000;
   if (timestamps.some((value) => value && Date.parse(value) > futureLimit)) {
@@ -2252,14 +3164,22 @@ function npmVersion(repositoryRoot) {
   }).stdout.trim();
 }
 
-function runRequired(command, args, { repositoryRoot, environment }) {
-  const result = run(command, args, {
-    cwd: repositoryRoot,
-    env: environment,
-    stdio: "inherit",
-    allowFailure: true,
-  });
-  if (result.status !== 0) process.exit(result.status ?? 1);
+export function resolveProductionEvidenceToolchain({
+  repositoryRoot,
+  nodeVersion = process.version,
+  npmVersionReader = npmVersion,
+}) {
+  const packageManager = JSON.parse(
+    readFileSync(path.join(repositoryRoot, "package.json"), "utf8"),
+  ).packageManager;
+  if (!/^npm@\d+\.\d+\.\d+$/.test(packageManager ?? "")) {
+    throw new Error("package.json must declare an exact npm packageManager version");
+  }
+  const actualNpmVersion = npmVersionReader(repositoryRoot);
+  if (actualNpmVersion !== packageManager.split("@")[1]) {
+    throw new Error("executing npm version does not match the committed package manager identity");
+  }
+  return { nodeVersion, npmVersion: actualNpmVersion };
 }
 
 async function buildEvidence(repositoryRoot, manifestPath) {
@@ -2292,23 +3212,34 @@ async function buildEvidence(repositoryRoot, manifestPath) {
     CATALOG_STRICT_VALIDATION: "true",
     NODE_ENV: "production",
   };
-  const dependencyInstall = {
-    command: DEPENDENCY_INSTALL_COMMAND,
-    startedAt: new Date().toISOString(),
-    completedAt: null,
-  };
-  runRequired(process.platform === "win32" ? "npm.cmd" : "npm", ["ci", "--include=dev"], {
+  const toolchain = resolveProductionEvidenceToolchain({ repositoryRoot });
+  const journal = await initializeProductionEvidenceSemanticJournal({
     repositoryRoot,
-    environment,
+    candidateIdentifier,
+    source,
+    buildContract: { applicationEnvironment, catalogStrictValidation },
+    toolchain,
   });
-  dependencyInstall.completedAt = new Date().toISOString();
-
-  const generatedSourceCheck = {
-    command: GENERATED_SOURCE_CHECK_COMMAND,
-    status: "running",
-    completedAt: null,
-  };
-  runRequired(
+  console.log(`semantic_event_run_nonce=${journal.runNonce}`);
+  const execute = (action, command, args) =>
+    executeProductionEvidenceChild({
+      repositoryRoot,
+      expectedRunNonce: journal.runNonce,
+      action,
+      dispatch: () => run(command, args, {
+        cwd: repositoryRoot,
+        env: environment,
+        stdio: "inherit",
+        allowFailure: true,
+      }),
+    });
+  execute(
+    "install",
+    process.platform === "win32" ? "npm.cmd" : "npm",
+    ["ci", "--include=dev"],
+  );
+  execute(
+    "generatedSourceCheck",
     process.platform === "win32" ? "npx.cmd" : "npx",
     [
       "ts-node",
@@ -2318,40 +3249,24 @@ async function buildEvidence(repositoryRoot, manifestPath) {
       "scripts/generate-surface-material-runtime.ts",
       "--check",
     ],
-    { repositoryRoot, environment },
   );
-  generatedSourceCheck.status = "passed";
-  generatedSourceCheck.completedAt = new Date().toISOString();
-
-  const build = {
-    command: BUILD_COMMAND,
-    startedAt: new Date().toISOString(),
-    completedAt: null,
-    applicationEnvironment,
-    catalogStrictValidation,
-  };
-  runRequired(process.platform === "win32" ? "npm.cmd" : "npm", ["run", "build"], {
-    repositoryRoot,
-    environment,
-  });
-  const floorPlanRouteNftContract = inspectFloorPlanRouteNftContract(repositoryRoot);
-  console.log(
-    `Verified ${floorPlanRouteNftContract.targetCount} Floor Plan route NFT manifests with zero test-source edges.`,
+  execute(
+    "build",
+    process.platform === "win32" ? "npm.cmd" : "npm",
+    ["run", "build"],
   );
-  build.completedAt = new Date().toISOString();
-
-  const manifest = await createProductionEvidenceManifest({
+  const result = await recoverProductionEvidenceFromSemanticJournal({
     repositoryRoot,
-    candidateIdentifier,
-    dependencyInstall,
-    generatedSourceCheck,
-    build,
-    toolchain: { nodeVersion: process.version, npmVersion: npmVersion(repositoryRoot) },
+    manifestPath,
+    expectedRunNonce: journal.runNonce,
     environment,
+    toolchain,
   });
-  await writeProductionEvidenceManifest({ repositoryRoot, manifestPath, manifest });
   console.log(
-    `Recorded production artifact ${manifest.artifact.sha256} for ${manifest.source.commitSha}.`,
+    `Verified ${result.manifest.artifact.floorPlanRouteNftContract.targetCount} Floor Plan route NFT manifests with zero test-source edges.`,
+  );
+  console.log(
+    `Recorded production artifact ${result.manifest.artifact.sha256} for ${result.manifest.source.commitSha}.`,
   );
 }
 
@@ -2562,6 +3477,19 @@ async function cli() {
   const reportPath =
     process.env.PLAYWRIGHT_JSON_OUTPUT_FILE?.trim() || DEFAULT_REPORT_PATH;
   if (command === "build") await buildEvidence(repositoryRoot, manifestPath);
+  else if (command === "recover") {
+    const toolchain = resolveProductionEvidenceToolchain({ repositoryRoot });
+    const result = await recoverProductionEvidenceFromSemanticJournal({
+      repositoryRoot,
+      manifestPath,
+      expectedRunNonce: process.env.PRODUCTION_EVIDENCE_RUN_NONCE?.trim(),
+      environment: { ...process.env, NODE_ENV: "production" },
+      toolchain,
+    });
+    console.log(
+      `Recovered production artifact evidence ${result.manifest.artifact.sha256} from its semantic event journal.`,
+    );
+  }
   else if (command === "verify-floor-plan-traces") {
     const result = inspectFloorPlanRouteNftContract(repositoryRoot);
     console.log(JSON.stringify(result, null, 2));
@@ -2608,7 +3536,7 @@ async function cli() {
     );
   } else {
     throw new Error(
-      "Usage: production-artifact-evidence.mjs build|verify-floor-plan-traces|serve|smoke|verify-runtime-failure|bundle|verify|verify-standalone",
+      "Usage: production-artifact-evidence.mjs build|recover|verify-floor-plan-traces|serve|smoke|verify-runtime-failure|bundle|verify|verify-standalone",
     );
   }
 }

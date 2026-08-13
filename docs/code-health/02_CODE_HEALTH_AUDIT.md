@@ -1,5 +1,48 @@
 # Code health audit
 
+## CH-0015I artifact timestamp provenance correction — 2026-08-13
+
+Classification is **D — CLOCK_SOURCE_OR_TIMESTAMP_CAPTURE_DEFECT**. Preserved
+failed evidence at
+`ch0015i-final-integrator-ca77e55-20260813T120141Z` proved that the original
+executing wrapper captured correct generated-source and build boundaries with
+UTC `Date` values, then failed manifest construction because its environment
+lacked `NODE_ENV=production`. The later recovery writer replaced both event
+pairs with whole-build-log birthtime/mtime, and preflight correctly rejected
+generated-source completion after reconstructed build start. The failed cycle
+remains non-certified and unchanged.
+
+Schema v3 now separates cycle/wrapper start from actual build dispatch and uses
+one versioned atomic semantic journal. The executing process writes install,
+generated-source, and build start immediately before each child dispatch and
+completion/exit immediately after return. Artifact inventory has explicit
+start/completion/failure state and an atomic nonce/source/tree/BUILD_ID/artifact
+snapshot. The journal binds process, hashed local worktree, exact commands,
+wrapper version/source hash, safe build contract, and toolchain without paths,
+secrets, or environment values. Recovery requires the explicit same-run nonce
+and rejects missing/incomplete/malformed, cross-source/tree/command/wrapper,
+cross-worktree, and cross-artifact evidence. No filesystem time populates a
+semantic field; optional stat data is diagnostic only.
+
+The fail-closed order remains install, generated verification, actual build
+dispatch/return, inventory, and manifest creation. In particular,
+`generatedSourceCheckCompletedAt <= buildStartedAt` is retained, and wrapper
+start cannot substitute for actual build start. Generated/build/inventory and
+manifest failures remain truthful. The existing production-artifact required
+owner gains deterministic-clock and static truthfulness coverage; no new gate
+or classified source is added. Floor Plan Upload, telemetry bootstrap, NFT
+tracing, archive scope, scanner policy, Phase 8 thresholds, workflows, and
+external controls are unchanged. No required CH-0015 implementation surface
+remains, but exact-source certification, integration, and the final closure
+audit remain pending.
+
+Focused production-artifact, required-test truthfulness, CH-0017 timing,
+targeted lint, typecheck, code-quality, tracked-hygiene, syntax, and diff checks
+pass. Independent read-only review returned PASS after its event-boundary,
+process-binding, executable npm identity, and recovery-documentation findings
+were corrected. Build, runtime smoke, browser owners, Phase 8, and Full E2E
+remain intentionally unrun in this implementation batch.
+
 ## CH-0015I Floor Plan NFT overtrace correction — 2026-08-13
 
 Classification is **B — NFT_OVERTRACE_PACKAGING_DEFECT**. Preserved evidence

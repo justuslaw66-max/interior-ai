@@ -1,5 +1,28 @@
 # Required-test truthfulness
 
+## CH-0015I semantic artifact timestamp ownership — 2026-08-13
+
+`ci.production-artifact-contract` remains the sole merge-required owner; no new
+gate, cadence, project, retry, timeout, or browser owner was added. Its
+`artifact.semantic-timestamp-provenance` contribution binds deterministic-clock
+coverage to the executing wrapper's durable pre-dispatch and post-return event
+records. The same owner covers canonical ordering, wrapper-start versus actual
+build-start, generated-source and build failures, inventory and manifest
+failure state, successful recovery, missing/incomplete/cross-run journals,
+commit/tree/command/wrapper/BUILD_ID/artifact mismatches, invalid/nonmonotonic
+ISO timestamps, diagnostic-only filesystem metadata, and rejection of the
+historical filesystem-time reconstruction pattern.
+
+Static guards inspect semantic ownership without line numbers: start is
+persisted before child dispatch, completion follows child return, recovery does
+not read stat/birthtime/ctime/mtime, nonce/source/tree/command/wrapper and
+artifact bindings remain present, the generated-before-build ordering remains,
+and no ca77-specific exception exists. Stable-checks still invokes the existing
+production-artifact test and build steps. The final manifest inventory remains
+**27 gates / 379 classified sources** because this correction creates no test
+file and changes no package-script closure owned by a required gate. Full E2E
+is outside this bounded implementation batch.
+
 ## CH-0015I Floor Plan NFT ownership — 2026-08-13
 
 `ci.floor-plan-required` remains the sole Floor Plan domain umbrella and now

@@ -1,5 +1,71 @@
 # Code health audit handoff
 
+## CH-0015I artifact timestamp provenance handoff — 2026-08-13
+
+Branch `fix/ch-0015i-artifact-timestamp-provenance` starts at exact candidate
+`ca77e55ecf240205593a246703a935f8fcfed25f`, tree
+`8c4f7bdd9b815620f5d691f3eb365b2d3d24344a`, whose parent is
+`5c1446e16738418d9d2f42937fdf742c7934a34b`; integration local and remote
+remain `2c567fd483877c7dcbd8fd23e3cd8cb316732c8c`. Entry source/index/untracked/
+tracked-ignored/Git-operation checks were clean. No repository-owned app,
+build, browser, smoke, Phase 8, Prisma, or disposable database process was
+active, and required app ports were free. Node was `v24.13.0`; npm was `11.6.2`.
+
+The authoritative classification is **D —
+CLOCK_SOURCE_OR_TIMESTAMP_CAPTURE_DEFECT**. The preserved failed cycle
+`ch0015i-final-integrator-ca77e55-20260813T120141Z` remains non-certified and
+unchanged. Its original wrapper captured correct UTC generated-source and build
+boundaries, but its environment omitted `NODE_ENV=production` during manifest
+construction. The separate recovery writer then used one build log's birthtime
+and mtime for both event pairs, and extracted-artifact preflight correctly
+rejected generated-source completion after reconstructed build start.
+
+The committed evidence owner now emits schema v3 plus one atomic private v1
+semantic event journal before installation. It binds a run nonce, candidate,
+commit/tree, hashed worktree identity, process/parent, exact install/generated/
+build commands, wrapper version/path/hash, build contract, and toolchain. Start
+is persisted immediately before each child dispatch and completion/exit
+immediately after return. `buildWrapperStartedAt` is distinct from actual
+`buildStartedAt`. Inventory owns explicit start/completion/failure plus an
+atomic same-run snapshot bound to BUILD_ID and artifact hash. Manifest/evidence
+writer failure cannot erase prior semantic events.
+
+Explicit recovery requires `PRODUCTION_EVIDENCE_RUN_NONCE` and rejects missing,
+malformed, incomplete, cross-run, source/tree, command, wrapper, worktree,
+toolchain, BUILD_ID, or artifact mismatch. Birthtime, ctime, mtime, log times,
+directory times, and inferred values never populate semantic fields; optional
+filesystem timestamps are labelled diagnostics only. The full order remains
+install <= generated check <= actual build dispatch/return <= inventory <=
+manifest, including
+`generatedSourceCheckCompletedAt <= buildStartedAt`. Generated/build/inventory
+failures retain truthful state and cannot claim certification.
+
+The existing `ci.production-artifact-contract` owner contains deterministic
+clock, recovery, mismatch, failure, ISO/order, filesystem-prohibition, and
+source-level truthfulness guards. Required inventory remains 27 gates / 379
+classified sources. The stable-checks workflow and standalone bundle inputs
+remain unchanged; the private journal and inventory snapshot are not added to
+the portable archive. No Floor Plan Upload, telemetry bootstrap, NFT tracing,
+archive scope, scanner, Phase 8 threshold, database, dependency, external
+control, push, deploy, or Full E2E behavior changed.
+
+Focused validation passed the production-artifact evidence suite; required-test
+truthfulness suite and direct manifest check (27 gates / 379 sources); CH-0017
+phase-budget and monotonic deadline-boundary contracts; post-readiness and
+readiness-diagnostic contracts; targeted zero-warning ESLint; typecheck; code-
+quality ratchets; tracked-artifact hygiene; JSON, JavaScript, and workflow
+syntax; and `git diff --check`. A separate read-only reviewer inspected the
+complete diff, identified manifest-completion timing, child-process ownership,
+actual npm identity, and recovery-wording issues, and returned PASS after all
+four were corrected and the affected checks rerun. No strict build, runtime
+smoke, browser owner, Phase 8 benchmark, or Full E2E was run.
+
+Rollback is one focused revert of this correction, followed by the production-
+artifact and required-test truthfulness owners. The candidate remains
+unintegrated. No required CH-0015 implementation surface remains, but exact-
+source certification and the final CH-0015 closure audit remain pending and
+were not begun.
+
 ## CH-0015I Floor Plan NFT overtrace handoff — 2026-08-13
 
 Branch `fix/ch-0015i-floor-plan-nft-overtrace` starts at exact candidate

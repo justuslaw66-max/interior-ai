@@ -5,6 +5,82 @@ production-mode artifact evidence and required CI behavior. It does not describe
 or prove a Vercel deployment, stable staging, production, or external platform
 configuration.
 
+## CH-0015I semantic timestamp provenance
+
+The failed ca77 certification cycle retained at
+`interior-ai-release-evidence/ch0015i-final-integrator-ca77e55-20260813T120141Z`
+remains historical, non-certified evidence. Its primary classification is
+**D — CLOCK_SOURCE_OR_TIMESTAMP_CAPTURE_DEFECT**. The executing task-local
+wrapper used `new Date().toISOString()` immediately around the generated-source
+and build children, but manifest construction later rejected its missing
+`NODE_ENV=production`. A separate recovery writer then replaced both pairs of
+semantic boundaries with the entire build log's birthtime and mtime. The
+preflight correctly rejected the resulting
+`generatedSourceCheck.completedAt > build.startedAt` ordering. That evidence is
+not edited, relabelled, or rehabilitated.
+
+Portable evidence is now
+`interior-ai.production-artifact-evidence.v3` / validator version 3. One
+executing wrapper owns an atomic private journal with schema
+`interior-ai.production-artifact-semantic-event-journal.v1`. It is created
+before dependency installation and binds a UUID run nonce, candidate, commit,
+tree, hashed local worktree identity, wrapper version/path/SHA-256, process and
+parent identity, exact install/generated/build commands, safe build contract,
+and toolchain. It records only UTC wall-clock values produced by
+`new Date().toISOString()` at semantic boundaries. The portable manifest
+retains the nonce, source/tree, normalized wrapper identity, process identity,
+command identities, and final event fields; it does not disclose the worktree
+path or environment values.
+
+Only the journal-bound PID/parent PID may write install, generated-source, and
+build events. A child signal is recorded separately from a numeric exit code.
+The actual `npm --version` output must match the exact committed
+`packageManager` declaration; recovery repeats that executable check rather
+than trusting the declaration as observed toolchain provenance.
+
+The semantic sequence is fail-closed:
+
+```text
+cycleStartedAt
+<= installStartedAt <= installCompletedAt
+<= generatedSourceCheckStartedAt <= generatedSourceCheckCompletedAt
+<= buildStartedAt <= buildCompletedAt
+<= artifactInventoryStartedAt <= artifactInventoryCompletedAt
+<= manifestCreatedAt
+```
+
+`buildWrapperStartedAt` is a separate envelope field. It may precede the
+generated-source check and never substitutes for `buildStartedAt`, which is
+atomically persisted immediately before the wrapper dispatches the actual
+canonical `npm run build` child. `buildCompletedAt` is persisted immediately
+after that child returns, including a nonzero return, before NFT or artifact
+inspection. Generated-source start/completion and child exit are treated the
+same way. A generated-source failure leaves build state pending with no build
+timestamps; a build failure retains truthful start/completion/exit and cannot
+certify an artifact.
+
+After a successful build, artifact inventory has its own start/completion or
+failure state. Its canonical snapshot is atomically written and bound to the
+same nonce, commit/tree, Next.js BUILD_ID, and artifact SHA-256 before manifest
+construction. A later manifest or evidence-writer failure therefore cannot
+erase the semantic child boundaries. Recovery uses
+`PRODUCTION_EVIDENCE_RUN_NONCE='<recorded-uuid>' npm run evidence:production:recover`
+and accepts only a complete same-worktree journal whose source/tree, commands,
+wrapper version/hash, toolchain, inventory snapshot, BUILD_ID, and artifact hash
+still agree. Missing, malformed, incomplete, cross-run, cross-source,
+cross-command, cross-wrapper, or cross-artifact journals fail closed.
+
+Birthtime, ctime, mtime, log start/end, directory timestamps, and inferred
+times are prohibited as inputs to semantic fields. They may appear only in the
+journal's explicitly labelled optional diagnostic metadata and are never
+copied into `generatedSourceCheck.startedAt/completedAt` or
+`build.startedAt/completedAt`. The substantive
+`generatedSourceCheckCompletedAt <= buildStartedAt` guarantee remains; hashes
+and source identity complement rather than replace proof that drift checking
+completed before actual build dispatch. Archive roots, bundle inputs,
+compression, extraction, scanner policy, telemetry, Floor Plan behavior, NFT
+tracing, and Phase 8 contracts are unchanged.
+
 ## Floor Plan route NFT regression contract
 
 Every production evidence build now runs a fail-closed Floor Plan NFT check
@@ -53,9 +129,9 @@ archive or compression was created, and neither output tracing, executable
 archive scope, nor sensitive-scanner policy was weakened.
 The committed-head plan-only replay remains the authoritative result.
 
-## Runtime telemetry provenance in schema v2
+## Runtime telemetry provenance in schema v3
 
-`interior-ai.production-artifact-evidence.v2` / validator version 2 requires
+`interior-ai.production-artifact-evidence.v3` / validator version 3 requires
 the furnished-template Playwright result to carry four bounded inline JSON
 attachments named `runtime-smoke-telemetry-bootstrap-evidence`: the initial
 document followed by reloads 1–3. Each
@@ -111,6 +187,17 @@ npm run evidence:production:build
 npm run evidence:production:smoke
 npm run evidence:production:verify
 npm run evidence:production:bundle
+```
+
+If the build succeeds and inventory has not started, or inventory completes but
+later manifest/evidence writing fails, retain the private journal and emitted
+run nonce. An inventory that started and failed remains failed evidence; it is
+not retried or certified by recovery. Recovery is an explicit same-run
+operation, never an automatic filesystem-time fallback:
+
+```sh
+PRODUCTION_EVIDENCE_RUN_NONCE='<recorded-uuid>' \
+npm run evidence:production:recover
 ```
 
 `evidence:production:build` refuses a dirty tracked tree, any untracked source,
@@ -178,6 +265,10 @@ Generated output is written only under the ignored directory
 
 - `manifest.json`: canonical UTF-8 provenance manifest;
 - `manifest.json.sha256`: accidental-tamper sidecar for the exact manifest bytes;
+- `semantic-event-journal.json`: private atomic same-run event journal (not a
+  standalone bundle input);
+- `artifact-inventory.json`: private same-run inventory snapshot bound by the
+  journal (not a standalone bundle input);
 - `runtime-smoke.json`: Playwright JSON report bound to the manifest identity.
 - `runtime-smoke-phases.json`: strict portable per-phase timing and outcome
   evidence bound by path, SHA-256, phase count, elapsed total, and derived

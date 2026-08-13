@@ -31,6 +31,7 @@
     "test:e2e:runtime-smoke-ci": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' -r tsconfig-paths/register scripts/ci-auth-fixture.ts runtime-smoke-local",
     "evidence:gitleaks:prepare": "node scripts/gitleaks-artifact.mjs prepare",
     "evidence:production:build": "node scripts/production-artifact-evidence.mjs build",
+    "evidence:production:recover": "node scripts/production-artifact-evidence.mjs recover",
     "evidence:production:serve": "node scripts/production-artifact-evidence.mjs serve",
     "evidence:production:smoke": "node scripts/production-artifact-evidence.mjs smoke",
     "evidence:production:bundle": "node scripts/production-artifact-evidence.mjs bundle",

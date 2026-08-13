@@ -19,14 +19,24 @@ import path from "node:path";
 
 import {
   FLOOR_PLAN_ROUTE_NFT_PATHS,
+  BUILD_COMMAND,
+  DEPENDENCY_INSTALL_COMMAND,
+  GENERATED_SOURCE_CHECK_COMMAND,
+  PRODUCTION_EVIDENCE_JOURNAL_SCHEMA,
   PRODUCTION_EVIDENCE_SCHEMA,
   PRODUCTION_EVIDENCE_SERVER_COMMAND,
   canonicalizeProductionEvidenceReport,
   comparePortablePaths,
   createProductionEvidenceBundle,
   createProductionEvidenceManifest,
+  executeProductionEvidenceChild,
+  initializeProductionEvidenceSemanticJournal,
   inspectFloorPlanRouteNftContract,
+  readProductionEvidenceSemanticJournal,
   recordProductionEvidenceTest,
+  recoverProductionEvidenceFromSemanticJournal,
+  resolveProductionEvidenceToolchain,
+  validateProductionEvidenceSemanticJournal,
   validateProductionEvidence,
   verifyRuntimeSmokeFailureEvidence,
   writeProductionEvidenceManifest,
@@ -1606,6 +1616,16 @@ function write(root, relativePath, content) {
   writeFileSync(absolutePath, content);
 }
 
+function deterministicClock(values) {
+  let index = 0;
+  return () => {
+    const value = values[index];
+    index += 1;
+    if (!value) throw new Error("deterministic clock exhausted");
+    return value;
+  };
+}
+
 function git(root, args) {
   return execFileSync("git", args, { cwd: root, encoding: "utf8" }).trim();
 }
@@ -1727,6 +1747,54 @@ const artifactRoots = productionArtifactSource.match(/const ARTIFACT_ROOTS = \[[
 const artifactExclusions = productionArtifactSource.match(/const ARTIFACT_EXCLUSIONS = \[[\s\S]*?\n\];/)?.[0] ?? "";
 assert.equal(artifactRoots, 'const ARTIFACT_ROOTS = [".next", "public"];');
 assert.doesNotMatch(artifactExclusions, /scripts|tests|allowlist|exception/i);
+const executingWrapperSource = productionArtifactSource.match(
+  /export function executeProductionEvidenceChild\([\s\S]*?\n}\n\nfunction startArtifactInventory/,
+)?.[0] ?? "";
+assert.ok(executingWrapperSource, "the semantic child-process owner must remain inspectable");
+assert.match(
+  executingWrapperSource,
+  /status: "running",\n\s+startedAt: clock\(\),[\s\S]*?result = dispatch\(\);/,
+  "the executing wrapper must durably capture semantic start immediately before dispatch",
+);
+assert.match(
+  executingWrapperSource,
+  /result = dispatch\(\);[\s\S]*?completedAt: clock\(\),/,
+  "the executing wrapper must capture semantic completion immediately after child return",
+);
+const recoverySource = productionArtifactSource.match(
+  /export async function recoverProductionEvidenceFromSemanticJournal\([\s\S]*?\n}\n\nexport async function writeProductionEvidenceManifest/,
+)?.[0] ?? "";
+assert.ok(recoverySource, "the semantic recovery owner must remain inspectable");
+assert.doesNotMatch(
+  recoverySource,
+  /\b(?:statSync|birthtime|ctime|mtime)\b/,
+  "recovery must never derive semantic event fields from filesystem metadata",
+);
+for (const bindingMarker of [
+  "runNonce",
+  "commitSha",
+  "treeSha",
+  "generatedSourceCheck",
+  "commands.build",
+  "owner.wrapper",
+  "nextBuildId",
+  "artifactSha256",
+]) {
+  assert.ok(
+    productionArtifactSource.includes(bindingMarker),
+    `semantic evidence owner is missing binding marker ${bindingMarker}`,
+  );
+}
+assert.match(
+  productionArtifactSource,
+  /generatedSourceCheckCompletedAt[\s\S]*?buildStartedAt/,
+  "the generated-source-before-build ordering validator must remain",
+);
+assert.doesNotMatch(
+  productionArtifactSource,
+  /ca77e55|ch0015i-final-integrator-ca77/i,
+  "the failed historical ca77 cycle must not receive a source-level exception",
+);
 for (const policySource of [
   nextConfigSource,
   readFileSync(path.join(process.cwd(), "scripts/gitleaks-artifact.mjs"), "utf8"),
@@ -1739,7 +1807,413 @@ for (const policySource of [
   );
 }
 
-async function fixture({ environmentOverrides = {}, publicArtifactText = "public artifact\n" } = {}) {
+const semanticJournalEnvironment = Object.freeze({
+  APP_ENV: "staging",
+  NEXT_PUBLIC_APP_ENV: "staging",
+  NODE_ENV: "production",
+  CATALOG_STRICT_VALIDATION: "true",
+  DATABASE_URL: "postgresql://test:test@localhost:5432/semantic_journal_fixture",
+  OPENAI_API_KEY: "fixture-openai-placeholder",
+  SHOPIFY_STORE_DOMAIN: "fixture.myshopify.example",
+  SHOPIFY_STOREFRONT_TOKEN: "fixture-shopify-placeholder",
+  POSTHOG_KEY: "fixture-posthog-placeholder",
+  STRIPE_SECRET_KEY: "sk_test_fixture_placeholder",
+  STRIPE_WEBHOOK_SECRET: "whsec_fixture_placeholder",
+  STRIPE_PRICE_PRO_MONTHLY: "price_fixture_monthly",
+  STRIPE_PRICE_PRO_YEARLY: "price_fixture_yearly",
+  AUTH_SECRET: "fixture-auth-secret-at-least-32-characters",
+  GOOGLE_CLIENT_ID: "fixture.apps.googleusercontent.com",
+  GOOGLE_CLIENT_SECRET: "GOCSPX-fixture-placeholder",
+  APP_ORIGIN: "http://127.0.0.1:3000",
+  ADMIN_EMAILS: "fixture-admin@example.test",
+});
+const semanticJournalToolchain = Object.freeze({
+  nodeVersion: process.version,
+  npmVersion: "11.6.2",
+});
+const semanticJournalProcessIdentity = Object.freeze({
+  pid: process.pid,
+  parentPid: process.ppid,
+});
+
+async function semanticJournalFixture({
+  complete = false,
+  processIdentity = semanticJournalProcessIdentity,
+} = {}) {
+  const root = mkdtempSync(path.join(tmpdir(), "ch-0015i-semantic-journal-"));
+  write(root, ".gitignore", ".local/\n");
+  write(root, "package.json", `${JSON.stringify({
+    name: "semantic-journal-fixture",
+    private: true,
+    packageManager: "npm@11.6.2",
+  }, null, 2)}\n`);
+  write(
+    root,
+    "scripts/production-artifact-evidence.mjs",
+    readFileSync(path.join(process.cwd(), "scripts/production-artifact-evidence.mjs"), "utf8"),
+  );
+  git(root, ["init", "-q"]);
+  git(root, ["config", "user.name", "CH-0015I test"]);
+  git(root, ["config", "user.email", "ch-0015i@example.test"]);
+  git(root, ["add", ".gitignore", "package.json", "scripts/production-artifact-evidence.mjs"]);
+  git(root, ["commit", "-qm", "semantic journal fixture"]);
+  const source = {
+    commitSha: git(root, ["rev-parse", "HEAD"]),
+    treeSha: git(root, ["rev-parse", "HEAD^{tree}"]),
+  };
+  const journal = await initializeProductionEvidenceSemanticJournal({
+    repositoryRoot: root,
+    candidateIdentifier: "ch-0015i-semantic-journal",
+    source,
+    buildContract: { applicationEnvironment: "staging", catalogStrictValidation: true },
+    toolchain: semanticJournalToolchain,
+    nonce: "123e4567-e89b-42d3-a456-426614174000",
+    processIdentity,
+    clock: deterministicClock([
+      "2026-08-13T00:00:00.000Z",
+      "2026-08-13T00:00:00.001Z",
+    ]),
+  });
+  if (complete) {
+    const childClock = deterministicClock([
+      "2026-08-13T00:00:00.010Z",
+      "2026-08-13T00:00:00.020Z",
+      "2026-08-13T00:00:00.030Z",
+      "2026-08-13T00:00:00.040Z",
+      "2026-08-13T00:00:00.050Z",
+      "2026-08-13T00:00:00.060Z",
+    ]);
+    for (const action of ["install", "generatedSourceCheck", "build"]) {
+      executeProductionEvidenceChild({
+        repositoryRoot: root,
+        expectedRunNonce: journal.runNonce,
+        action,
+        dispatch: () => ({ status: 0 }),
+        clock: childClock,
+      });
+    }
+  }
+  return {
+    root,
+    source,
+    runNonce: journal.runNonce,
+    processIdentity,
+  };
+}
+
+function overwriteSemanticJournal(root, mutate) {
+  const journalPath = path.join(
+    root,
+    ".local/production-artifact-evidence/semantic-event-journal.json",
+  );
+  const journal = JSON.parse(readFileSync(journalPath, "utf8"));
+  mutate(journal);
+  writeFileSync(journalPath, `${JSON.stringify(journal, null, 2)}\n`);
+  return journal;
+}
+
+{
+  const context = await semanticJournalFixture();
+  assert.deepEqual(
+    resolveProductionEvidenceToolchain({
+      repositoryRoot: context.root,
+      nodeVersion: "v24.13.0",
+      npmVersionReader: () => "11.6.2",
+    }),
+    { nodeVersion: "v24.13.0", npmVersion: "11.6.2" },
+  );
+  assert.throws(
+    () =>
+      resolveProductionEvidenceToolchain({
+        repositoryRoot: context.root,
+        npmVersionReader: () => "11.7.0",
+      }),
+    /executing npm version does not match the committed package manager identity/,
+  );
+}
+
+{
+  const context = await semanticJournalFixture();
+  const clock = deterministicClock([
+    "2026-08-13T00:00:00.010Z",
+    "2026-08-13T00:00:00.020Z",
+  ]);
+  let observedDuringDispatch;
+  executeProductionEvidenceChild({
+    repositoryRoot: context.root,
+    expectedRunNonce: context.runNonce,
+    action: "install",
+    clock,
+    dispatch() {
+      observedDuringDispatch = readProductionEvidenceSemanticJournal({
+        repositoryRoot: context.root,
+      });
+      return { status: 0 };
+    },
+  });
+  assert.equal(observedDuringDispatch.events.dependencyInstall.status, "running");
+  assert.equal(
+    observedDuringDispatch.events.dependencyInstall.startedAt,
+    "2026-08-13T00:00:00.010Z",
+    "semantic start must be durable immediately before child dispatch",
+  );
+  assert.equal(observedDuringDispatch.events.dependencyInstall.completedAt, null);
+  const afterReturn = readProductionEvidenceSemanticJournal({ repositoryRoot: context.root });
+  assert.equal(afterReturn.events.dependencyInstall.status, "succeeded");
+  assert.equal(
+    afterReturn.events.dependencyInstall.completedAt,
+    "2026-08-13T00:00:00.020Z",
+    "semantic completion must be durable immediately after child return",
+  );
+}
+
+{
+  const context = await semanticJournalFixture({
+    processIdentity: { pid: 9999, parentPid: 99 },
+  });
+  assert.throws(
+    () =>
+      executeProductionEvidenceChild({
+        repositoryRoot: context.root,
+        expectedRunNonce: context.runNonce,
+        action: "install",
+        dispatch: () => ({ status: 0 }),
+      }),
+    /belongs to another executing process/,
+  );
+  const journal = readProductionEvidenceSemanticJournal({ repositoryRoot: context.root });
+  assert.equal(journal.events.dependencyInstall.status, "pending");
+  assert.equal(journal.events.dependencyInstall.startedAt, null);
+}
+
+{
+  const context = await semanticJournalFixture({ complete: true });
+  const journal = readProductionEvidenceSemanticJournal({ repositoryRoot: context.root });
+  assert.equal(validateProductionEvidenceSemanticJournal(journal).valid, true);
+  assert.equal(journal.schema, PRODUCTION_EVIDENCE_JOURNAL_SCHEMA);
+  assert.deepEqual(journal.commands, {
+    dependencyInstall: DEPENDENCY_INSTALL_COMMAND,
+    generatedSourceCheck: GENERATED_SOURCE_CHECK_COMMAND,
+    build: BUILD_COMMAND,
+  });
+  assert.ok(
+    Date.parse(journal.events.buildWrapperStartedAt) <
+      Date.parse(journal.events.generatedSourceCheck.startedAt),
+  );
+  assert.ok(
+    Date.parse(journal.events.generatedSourceCheck.completedAt) <=
+      Date.parse(journal.events.build.startedAt),
+  );
+
+  const lateGeneratedCheck = structuredClone(journal);
+  lateGeneratedCheck.events.generatedSourceCheck.completedAt = "2026-08-13T00:00:00.051Z";
+  assert.equal(validateProductionEvidenceSemanticJournal(lateGeneratedCheck).valid, false);
+  assert.ok(
+    validateProductionEvidenceSemanticJournal(lateGeneratedCheck).issues.some((issue) =>
+      issue.includes("buildStartedAt predates generatedSourceCheckCompletedAt"),
+    ),
+  );
+
+  const invalidIso = structuredClone(journal);
+  invalidIso.events.build.startedAt = "2026-08-13 00:00:00Z";
+  assert.equal(validateProductionEvidenceSemanticJournal(invalidIso).valid, false);
+
+  const diagnosticMetadata = structuredClone(journal);
+  diagnosticMetadata.diagnostics.filesystemMetadata.push({
+    label: "build-log",
+    birthtime: "2026-08-13T00:00:00.000Z",
+    ctime: "2026-08-13T00:00:00.001Z",
+    mtime: "2026-08-13T00:00:00.060Z",
+  });
+  assert.equal(
+    validateProductionEvidenceSemanticJournal(diagnosticMetadata).valid,
+    true,
+    "filesystem timestamps are permitted only in explicitly diagnostic metadata",
+  );
+
+  for (const [field, value, expected] of [
+    ["generatedSourceCheck", "not-the-generated-command", "command binding"],
+    ["build", "npm run dev", "command binding"],
+  ]) {
+    const mismatch = structuredClone(journal);
+    mismatch.commands[field] = value;
+    assert.ok(
+      validateProductionEvidenceSemanticJournal(mismatch).issues.some((issue) =>
+        issue.includes(expected),
+      ),
+    );
+  }
+}
+
+{
+  const context = await semanticJournalFixture();
+  executeProductionEvidenceChild({
+    repositoryRoot: context.root,
+    expectedRunNonce: context.runNonce,
+    action: "install",
+    dispatch: () => ({ status: 0 }),
+    clock: deterministicClock([
+      "2026-08-13T00:00:00.010Z",
+      "2026-08-13T00:00:00.020Z",
+    ]),
+  });
+  assert.throws(
+    () =>
+      executeProductionEvidenceChild({
+        repositoryRoot: context.root,
+        expectedRunNonce: context.runNonce,
+        action: "generatedSourceCheck",
+        dispatch: () => ({ status: 17 }),
+        clock: deterministicClock([
+          "2026-08-13T00:00:00.030Z",
+          "2026-08-13T00:00:00.040Z",
+        ]),
+      }),
+    /failed with status 17/,
+  );
+  const journal = readProductionEvidenceSemanticJournal({ repositoryRoot: context.root });
+  assert.equal(journal.events.generatedSourceCheck.status, "failed");
+  assert.equal(journal.events.generatedSourceCheck.exitCode, 17);
+  assert.equal(journal.events.build.status, "pending");
+  assert.equal(journal.events.build.startedAt, null, "generated-source failure must not invent build start");
+}
+
+{
+  const context = await semanticJournalFixture();
+  const childClock = deterministicClock([
+    "2026-08-13T00:00:00.010Z",
+    "2026-08-13T00:00:00.020Z",
+    "2026-08-13T00:00:00.030Z",
+    "2026-08-13T00:00:00.040Z",
+    "2026-08-13T00:00:00.050Z",
+    "2026-08-13T00:00:00.060Z",
+  ]);
+  for (const action of ["install", "generatedSourceCheck"]) {
+    executeProductionEvidenceChild({
+      repositoryRoot: context.root,
+      expectedRunNonce: context.runNonce,
+      action,
+      dispatch: () => ({ status: 0 }),
+      clock: childClock,
+    });
+  }
+  assert.throws(
+    () =>
+      executeProductionEvidenceChild({
+        repositoryRoot: context.root,
+        expectedRunNonce: context.runNonce,
+        action: "build",
+        dispatch: () => ({ status: 23 }),
+        clock: childClock,
+      }),
+    /failed with status 23/,
+  );
+  const journal = readProductionEvidenceSemanticJournal({ repositoryRoot: context.root });
+  assert.equal(journal.events.build.status, "failed");
+  assert.equal(journal.events.build.exitCode, 23);
+  assert.equal(journal.events.build.startedAt, "2026-08-13T00:00:00.050Z");
+  assert.equal(journal.events.build.completedAt, "2026-08-13T00:00:00.060Z");
+}
+
+{
+  const context = await semanticJournalFixture();
+  const childClock = deterministicClock([
+    "2026-08-13T00:00:00.010Z",
+    "2026-08-13T00:00:00.020Z",
+    "2026-08-13T00:00:00.030Z",
+    "2026-08-13T00:00:00.040Z",
+    "2026-08-13T00:00:00.050Z",
+    "2026-08-13T00:00:00.060Z",
+  ]);
+  for (const action of ["install", "generatedSourceCheck"]) {
+    executeProductionEvidenceChild({
+      repositoryRoot: context.root,
+      expectedRunNonce: context.runNonce,
+      action,
+      dispatch: () => ({ status: 0, signal: null }),
+      clock: childClock,
+    });
+  }
+  assert.throws(
+    () =>
+      executeProductionEvidenceChild({
+        repositoryRoot: context.root,
+        expectedRunNonce: context.runNonce,
+        action: "build",
+        dispatch: () => ({ status: null, signal: "SIGTERM" }),
+        clock: childClock,
+      }),
+    /failed with signal SIGTERM/,
+  );
+  const journal = readProductionEvidenceSemanticJournal({ repositoryRoot: context.root });
+  assert.equal(journal.events.build.exitCode, null);
+  assert.equal(journal.events.build.signal, "SIGTERM");
+  assert.equal(journal.events.build.failureKind, "child_signal");
+}
+
+{
+  const missingRoot = mkdtempSync(path.join(tmpdir(), "ch-0015i-missing-journal-"));
+  await assert.rejects(
+    () =>
+      recoverProductionEvidenceFromSemanticJournal({
+        repositoryRoot: missingRoot,
+        expectedRunNonce: "123e4567-e89b-42d3-a456-426614174000",
+        environment: semanticJournalEnvironment,
+        toolchain: semanticJournalToolchain,
+      }),
+    /semantic event journal is missing/,
+  );
+}
+
+{
+  const context = await semanticJournalFixture();
+  await assert.rejects(
+    () =>
+      recoverProductionEvidenceFromSemanticJournal({
+        repositoryRoot: context.root,
+        expectedRunNonce: context.runNonce,
+        environment: semanticJournalEnvironment,
+        toolchain: semanticJournalToolchain,
+      }),
+    /dependency installation is incomplete or failed/,
+  );
+  await assert.rejects(
+    () =>
+      recoverProductionEvidenceFromSemanticJournal({
+        repositoryRoot: context.root,
+        expectedRunNonce: "223e4567-e89b-42d3-a456-426614174000",
+        environment: semanticJournalEnvironment,
+        toolchain: semanticJournalToolchain,
+      }),
+    /run nonce mismatch/,
+  );
+}
+
+for (const [mutate, expected] of [
+  [(journal) => { journal.source.treeSha = "f".repeat(40); }, /source commit or tree mismatch/],
+  [(journal) => { journal.commands.generatedSourceCheck = "npx false"; }, /command binding is not canonical/],
+  [(journal) => { journal.commands.build = "npm run dev"; }, /command binding is not canonical/],
+  [(journal) => { journal.owner.wrapper.sha256 = "f".repeat(64); }, /wrapper version or source hash mismatch/],
+]) {
+  const context = await semanticJournalFixture({ complete: true });
+  overwriteSemanticJournal(context.root, mutate);
+  await assert.rejects(
+    () =>
+      recoverProductionEvidenceFromSemanticJournal({
+        repositoryRoot: context.root,
+        expectedRunNonce: context.runNonce,
+        environment: semanticJournalEnvironment,
+        toolchain: semanticJournalToolchain,
+      }),
+    expected,
+  );
+}
+
+async function fixture({
+  environmentOverrides = {},
+  publicArtifactText = "public artifact\n",
+  manifestFactory = createProductionEvidenceManifest,
+} = {}) {
   const root = mkdtempSync(path.join(tmpdir(), "ch-0016-evidence-"));
   write(root, ".gitignore", ".next/\n.local/\nnode_modules/\n*.local.js\n");
   write(root, "package.json", `${JSON.stringify({
@@ -1834,34 +2308,10 @@ async function fixture({ environmentOverrides = {}, publicArtifactText = "public
   ]);
   git(root, ["commit", "-qm", "fixture"]);
 
-  const evidenceDirectory = ".local/production-artifact-evidence";
-  const manifestPath = `${evidenceDirectory}/manifest.json`;
-  const reportPath = `${evidenceDirectory}/runtime-smoke.json`;
-  const phaseTimingPath = `${evidenceDirectory}/runtime-smoke-phases.json`;
-  const manifest = await createProductionEvidenceManifest({
-    repositoryRoot: root,
-    candidateIdentifier: "ch-0016-fixture",
-    evidenceDirectory,
-    dependencyInstall: {
-      command: "npm ci --include=dev",
-      startedAt: "2026-07-31T00:00:00.000Z",
-      completedAt: "2026-07-31T00:00:01.000Z",
-    },
-    generatedSourceCheck: {
-      command:
-        "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' scripts/generate-surface-material-runtime.ts --check",
-      status: "passed",
-      completedAt: "2026-07-31T00:00:02.000Z",
-    },
-    build: {
-      command: "npm run build",
-      startedAt: "2026-07-31T00:00:03.000Z",
-      completedAt: "2026-07-31T00:00:04.000Z",
-      applicationEnvironment: "staging",
-      catalogStrictValidation: true,
-    },
-    toolchain: { nodeVersion: "v24.13.0", npmVersion: "11.6.2" },
-    environment: {
+  const manifestPath = ".local/production-artifact-evidence/manifest.json";
+  const reportPath = ".local/production-artifact-evidence/runtime-smoke.json";
+  const phaseTimingPath = ".local/production-artifact-evidence/runtime-smoke-phases.json";
+  const environment = {
       APP_ENV: "staging",
       NEXT_PUBLIC_APP_ENV: "staging",
       NODE_ENV: "production",
@@ -1881,9 +2331,65 @@ async function fixture({ environmentOverrides = {}, publicArtifactText = "public
       APP_ORIGIN: "http://127.0.0.1:3000",
       ADMIN_EMAILS: "fixture-admin@example.test",
       ...environmentOverrides,
-    },
+  };
+  const toolchain = { nodeVersion: process.version, npmVersion: "11.6.2" };
+  const clock = deterministicClock([
+    "2026-07-31T00:00:00.000Z",
+    "2026-07-31T00:00:00.100Z",
+    "2026-07-31T00:00:00.200Z",
+    "2026-07-31T00:00:01.000Z",
+    "2026-07-31T00:00:01.100Z",
+    "2026-07-31T00:00:02.000Z",
+    "2026-07-31T00:00:03.000Z",
+    "2026-07-31T00:00:04.000Z",
+    "2026-07-31T00:00:04.100Z",
+    "2026-07-31T00:00:04.200Z",
+    "2026-07-31T00:00:04.300Z",
+  ]);
+  const source = {
+    commitSha: git(root, ["rev-parse", "HEAD"]),
+    treeSha: git(root, ["rev-parse", "HEAD^{tree}"]),
+  };
+  const journal = await initializeProductionEvidenceSemanticJournal({
+    repositoryRoot: root,
+    candidateIdentifier: "ch-0016-fixture",
+    source,
+    buildContract: { applicationEnvironment: "staging", catalogStrictValidation: true },
+    toolchain,
+    clock,
   });
-  await writeProductionEvidenceManifest({ repositoryRoot: root, manifestPath, manifest });
+  for (const action of ["install", "generatedSourceCheck", "build"]) {
+    executeProductionEvidenceChild({
+      repositoryRoot: root,
+      expectedRunNonce: journal.runNonce,
+      action,
+      dispatch: () => ({ status: 0 }),
+      clock,
+    });
+  }
+  const { manifest } = await recoverProductionEvidenceFromSemanticJournal({
+    repositoryRoot: root,
+    manifestPath,
+    expectedRunNonce: journal.runNonce,
+    environment,
+    toolchain,
+    clock,
+    manifestFactory,
+  });
+  assert.equal(manifest.schema, "interior-ai.production-artifact-evidence.v3");
+  assert.equal(manifest.validatorVersion, 3);
+  assert.equal(manifest.execution.runNonce, journal.runNonce);
+  assert.equal(manifest.source.treeSha, source.treeSha);
+  assert.ok(
+    Date.parse(manifest.build.wrapperStartedAt) <
+      Date.parse(manifest.generatedSourceCheck.startedAt),
+    "wrapper start may truthfully precede the generated-source check",
+  );
+  assert.ok(
+    Date.parse(manifest.generatedSourceCheck.completedAt) <=
+      Date.parse(manifest.build.startedAt),
+    "generated-source verification must complete before actual build dispatch",
+  );
   const telemetryEvidence = [1, 2, 3, 4].map((generation, index) => {
     const queuedAtActivation = index === 0 ? 0 : index + 1;
     return createRuntimeSmokeTelemetryBootstrapEvidence({
@@ -2210,6 +2716,70 @@ async function expectRejected(context, expectedText) {
   assert.equal(result.valid, true);
   assert.equal(result.manifest.repositoryEvidence.status, "valid");
   assert.equal(result.manifest.repositoryEvidence.releaseReady, false);
+}
+
+{
+  const context = await fixture();
+  const manifest = readManifest(context.root, context.manifestPath);
+  write(context.root, ".next/BUILD_ID", "cross-run-build-id\n");
+  await assert.rejects(
+    () =>
+      recoverProductionEvidenceFromSemanticJournal({
+        repositoryRoot: context.root,
+        manifestPath: context.manifestPath,
+        expectedRunNonce: manifest.execution.runNonce,
+        environment: semanticJournalEnvironment,
+        toolchain: semanticJournalToolchain,
+      }),
+    /current dependency, Build ID, or artifact identity does not match/,
+  );
+}
+
+{
+  let failedRoot;
+  await assert.rejects(
+    () =>
+      fixture({
+        manifestFactory: async (options) => {
+          failedRoot = options.repositoryRoot;
+          throw new Error("injected manifest construction failure");
+        },
+      }),
+    /injected manifest construction failure/,
+  );
+  const journal = readProductionEvidenceSemanticJournal({ repositoryRoot: failedRoot });
+  assert.equal(journal.events.build.status, "succeeded");
+  assert.equal(journal.events.build.exitCode, 0);
+  assert.equal(journal.events.artifactInventory.status, "succeeded");
+  assert.equal(journal.manifest.status, "pending");
+  assert.equal(
+    journal.completionState,
+    "artifact_inventory_succeeded",
+    "manifest failure must leave the completed semantic build and inventory durable",
+  );
+  let manifestConstructionCompleted = false;
+  const recovered = await recoverProductionEvidenceFromSemanticJournal({
+    repositoryRoot: failedRoot,
+    expectedRunNonce: journal.runNonce,
+    environment: semanticJournalEnvironment,
+    toolchain: semanticJournalToolchain,
+    manifestFactory: async (options) => {
+      const draft = await createProductionEvidenceManifest(options);
+      assert.equal(draft.createdAt, undefined);
+      manifestConstructionCompleted = true;
+      return draft;
+    },
+    clock: () => {
+      assert.equal(
+        manifestConstructionCompleted,
+        true,
+        "manifestCreatedAt must be captured after successful manifest construction",
+      );
+      return "2026-07-31T00:00:04.400Z";
+    },
+  });
+  assert.equal(recovered.manifest.createdAt, "2026-07-31T00:00:04.400Z");
+  assert.equal(recovered.journal.manifest.createdAt, "2026-07-31T00:00:04.400Z");
 }
 
 {
@@ -2991,6 +3561,32 @@ for (const mutate of [
   const context = await fixture();
   write(context.root, ".next/server/app.js", "tampered server output\n");
   await expectRejected(context, "artifact SHA-256 mismatch");
+}
+
+{
+  const context = await fixture();
+  write(context.root, ".next/BUILD_ID", "build-fixture-from-another-run\n");
+  await expectRejected(context, "Next.js BUILD_ID does not match the recorded build");
+}
+
+{
+  const context = await fixture();
+  await rewriteManifest(context.root, context.manifestPath, (manifest) => {
+    manifest.generatedSourceCheck.mtime = manifest.generatedSourceCheck.completedAt;
+    manifest.build.birthtime = manifest.build.startedAt;
+  });
+  await expectRejected(context, "filesystem timestamps cannot populate portable semantic evidence");
+}
+
+{
+  const context = await fixture();
+  await rewriteManifest(context.root, context.manifestPath, (manifest) => {
+    manifest.schema = "interior-ai.production-artifact-evidence.v2";
+    manifest.validatorVersion = 2;
+    manifest.generatedSourceCheck.completedAt = "2026-07-31T00:00:04.500Z";
+  });
+  await expectRejected(context, "unsupported production evidence schema or validator version");
+  await expectRejected(context, "evidence timestamps are stale or contradictory");
 }
 
 {
