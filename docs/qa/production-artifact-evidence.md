@@ -5,6 +5,54 @@ production-mode artifact evidence and required CI behavior. It does not describe
 or prove a Vercel deployment, stable staging, production, or external platform
 configuration.
 
+## Floor Plan route NFT regression contract
+
+Every production evidence build now runs a fail-closed Floor Plan NFT check
+against these exact generated manifests:
+
+- `.next/server/app/api/admin/floor-plan-imports/[id]/construction-sources/route.js.nft.json`;
+- `.next/server/app/api/admin/floor-plan-imports/[id]/supplementary-sources/route.js.nft.json`;
+- `.next/server/app/api/floor-plan-imports/[id]/process/route.js.nft.json`.
+
+The check requires each route chunk, safe contained raw references, zero missing
+or prohibited paths, at least one canonical
+`public/assets/floor-plans/**` reference, and zero lexical or resolved
+`scripts/test-*` and `tests/**` edges. It reports the exact source-relative
+NFT/path edge on failure. `artifact.floorPlanRouteNftContract` retains all three
+ordered NFT/chunk identities and their positive reference, unique-path, and
+public-asset counts. Checkout validation recomputes the contract; standalone
+validation fail-closes on missing, reordered, malformed, or implausible target
+summaries. No exact total reference count is a release invariant.
+
+CH-0015I preliminary tracer diagnostic evidence from a clean snapshot is
+stored outside the repository at
+`interior-ai-release-evidence/ch0015i-floor-plan-nft-overtrace-precommit-23cfa48-20260813T112112Z`.
+The build completed 57/57 pages with BUILD_ID
+`jO3szeGYAxDWICbI5COws`, retained 112 raw NFTs, and recorded artifact SHA-256
+`19a7382a0bf9af45158215ba1d2bd0e6fd7ebfc71488f611a0acff33227e2c9f`.
+Trace closure has 34,669 edges, 2,878 unique paths, zero missing/prohibited
+paths, and SHA-256
+`427255c15edd3888a10d5b26c51272c7dcad1887ca283cedd9fe144c84a113c2`.
+Each target fell from 3,307 broad references to 374, retained seven Floor Plan
+assets, and has zero script/test edges. Both previously rejected scripts have
+zero edges globally. This snapshot predates the later descriptor-identity
+hardening, so it proves the static trace formulation but is not promoted as
+final-candidate evidence; the exact committed-head build supersedes it.
+The authoritative committed-head capture is retained at
+`interior-ai-release-evidence/ch0015i-floor-plan-nft-overtrace-exact-head-20260813T114021Z`;
+its manifests and sidecars own the final source, artifact, NFT, trace, and plan
+hashes without copying machine-local evidence into Git.
+
+The recovered constructor was also replayed preliminarily in plan-only mode under the same
+evidence root. Its 69,874 planned files have 69,874 provenance rows, zero
+duplicates, zero missing inclusion reasons, and zero missing artifact,
+required-server, or NFT runtime paths. Both rejected scripts have zero
+`R5_NFT_NON_ARTIFACT_REFERENCE` selections and zero scanner matches. The
+unchanged exact-value scanner found zero matches and used zero exceptions. No
+archive or compression was created, and neither output tracing, executable
+archive scope, nor sensitive-scanner policy was weakened.
+The committed-head plan-only replay remains the authoritative result.
+
 ## Runtime telemetry provenance in schema v2
 
 `interior-ai.production-artifact-evidence.v2` / validator version 2 requires

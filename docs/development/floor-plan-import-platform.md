@@ -2,6 +2,47 @@
 
 This application treats a floor plan as evidence-backed geometry, not as an image that can be guessed into a room list. `FloorPlanDocumentV2` is the canonical source for editing, 2D rendering, 3D extrusion, persistence, address-library revisions, and export.
 
+## Catalog preview asset and output-tracing boundary
+
+Catalog draft matching reads a local preview only after an exact `/assets/`
+prefix is validated. `catalog-preview-asset.ts` is the sole path-resolution and
+read owner. It removes the first query or fragment boundary, decodes the asset
+portion exactly once, rejects malformed or residual percent encoding, NUL,
+backslashes, empty/dot/dot-dot segments, POSIX or Windows absolute paths, and
+drive-letter forms, then proves lexical and realpath containment beneath the
+canonical `process.cwd()/public/assets` root. A missing file remains a skipped
+catalog candidate, while an existing file read error still propagates. HTTP and
+HTTPS preview URLs remain outside this local-file path.
+
+The reader opens the statically bounded candidate with `O_NOFOLLOW`, compares
+the opened descriptor's device/inode with the post-open contained realpath, and
+reads only that descriptor. Final-component symlinks are intentionally rejected,
+including links whose current target is inside assets; catalog previews are
+canonical regular files, and accepting a mutable alias would weaken the
+exact-file guarantee. Symlinked parent components still must resolve inside the
+canonical root and identify the same opened object.
+
+Before CH-0015I, `catalog-draft-match.ts` resolved a dynamic suffix against
+`process.cwd()/public`; query/fragment text and percent escapes were treated as
+literal filename bytes, and `..` could normalize from `public/assets` to another
+location still beneath `public`. More importantly, output tracing observed a
+filesystem result without retaining the product's `/assets/` prefix, so three
+route NFTs conservatively captured repository-wide source. The correction
+keeps validation pure but constructs the actual read candidate immediately
+beside the filesystem operations as
+`path.join(process.cwd(), "public", "assets", relativeAssetPath)`. This is a
+static `public/assets/**` trace boundary, not an output-tracing exclusion.
+
+The affected generated owners are the admin construction-sources route, the
+admin supplementary-sources route, and the consumer process route. Their route,
+PDF raster, default-service, and worker behavior is unchanged. The strict
+preliminary tracer diagnostic retained seven canonical Floor Plan asset references in each
+target NFT and removed all `scripts/test-*` and `tests/**` references. No Floor
+Plan Upload, telemetry, vision, calibration, room generation, import history,
+authorization, persistence, schema, pricing, timeout, or retry behavior changed.
+That diagnostic predates the descriptor identity hardening above and is not
+exact-head evidence; the committed-head build remains the authoritative proof.
+
 ## Upload workspace accessibility lifecycle
 
 The upload/import UI is a `FULL_SCREEN_MODAL_WORKSPACE`, not a compact dialog.

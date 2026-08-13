@@ -71,6 +71,15 @@ const REQUIRED_ARTIFACT_PATHS = [
   ".next/static",
   "public",
 ];
+export const FLOOR_PLAN_ROUTE_NFT_PATHS = Object.freeze([
+  ".next/server/app/api/admin/floor-plan-imports/[id]/construction-sources/route.js.nft.json",
+  ".next/server/app/api/admin/floor-plan-imports/[id]/supplementary-sources/route.js.nft.json",
+  ".next/server/app/api/floor-plan-imports/[id]/process/route.js.nft.json",
+]);
+const REJECTED_FLOOR_PLAN_ROUTE_TRACE_SOURCES = Object.freeze([
+  "scripts/test-required-test-truthfulness.mjs",
+  "scripts/test-production-artifact-evidence.mjs",
+]);
 const PRODUCTION_ENVIRONMENTS = new Set(["staging", "production"]);
 const CANONICAL_UTC_TIMESTAMP = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/;
 const INFLUENTIAL_ENVIRONMENT_FILES = [
@@ -555,6 +564,173 @@ async function inspectTraceInventory(repositoryRoot, artifactFiles) {
   };
 }
 
+export function inspectFloorPlanRouteNftContract(repositoryRoot) {
+  const root = path.resolve(repositoryRoot);
+  const issues = [];
+  const rejectedSourceSet = new Set(REJECTED_FLOOR_PLAN_ROUTE_TRACE_SOURCES);
+  const targetResults = [];
+  const assetsRoot = path.join(root, "public", "assets");
+  if (!existsSync(assetsRoot) || !statSync(assetsRoot).isDirectory()) {
+    issues.push("public/assets: canonical runtime asset root is missing");
+  } else {
+    try {
+      containedRealPath(root, assetsRoot, "Floor Plan public asset root");
+    } catch (error) {
+      issues.push(error instanceof Error ? error.message : String(error));
+    }
+  }
+
+  for (const nftPath of FLOOR_PLAN_ROUTE_NFT_PATHS) {
+    const nftAbsolutePath = path.join(root, nftPath);
+    const routeChunkPath = nftPath.slice(0, -".nft.json".length);
+    const routeChunkAbsolutePath = path.join(root, routeChunkPath);
+    if (!existsSync(routeChunkAbsolutePath) || !statSync(routeChunkAbsolutePath).isFile()) {
+      issues.push(`${nftPath} -> ${routeChunkPath}: required generated route chunk is missing`);
+    } else {
+      try {
+        containedRealPath(root, routeChunkAbsolutePath, `Floor Plan route chunk ${routeChunkPath}`);
+      } catch (error) {
+        issues.push(error instanceof Error ? error.message : String(error));
+      }
+    }
+    if (!existsSync(nftAbsolutePath) || !statSync(nftAbsolutePath).isFile()) {
+      issues.push(`${nftPath}: required raw NFT manifest is missing`);
+      continue;
+    }
+    try {
+      containedRealPath(root, nftAbsolutePath, `Floor Plan raw NFT manifest ${nftPath}`);
+    } catch (error) {
+      issues.push(error instanceof Error ? error.message : String(error));
+      continue;
+    }
+
+    let manifest;
+    try {
+      manifest = JSON.parse(readFileSync(nftAbsolutePath, "utf8"));
+    } catch {
+      issues.push(`${nftPath}: raw NFT manifest is invalid JSON`);
+      continue;
+    }
+    if (!Array.isArray(manifest.files)) {
+      issues.push(`${nftPath}: raw NFT manifest files array is missing`);
+      continue;
+    }
+
+    let publicAssetReferenceCount = 0;
+    const normalizedPaths = new Set();
+    for (const reference of manifest.files) {
+      if (
+        typeof reference !== "string" ||
+        reference.includes("\0") ||
+        reference.includes("\\") ||
+        path.isAbsolute(reference) ||
+        path.win32.isAbsolute(reference)
+      ) {
+        issues.push(`${nftPath} -> <invalid-reference>: NFT path is malformed`);
+        continue;
+      }
+      const resolvedPath = path.resolve(root, path.dirname(nftPath), reference);
+      const relativePath = portableTracePath(root, resolvedPath);
+      const edge = `${nftPath} -> ${relativePath}`;
+      normalizedPaths.add(relativePath);
+      if (tracePathProhibited(relativePath)) {
+        issues.push(`${edge}: NFT path is outside the permitted repository closure`);
+        continue;
+      }
+      if (!existsSync(resolvedPath)) {
+        issues.push(`${edge}: NFT path is missing`);
+        continue;
+      }
+      let realRelativePath;
+      try {
+        const realPath = containedRealPath(root, resolvedPath, `Floor Plan NFT edge ${edge}`);
+        realRelativePath = portableTracePath(realpathSync(root), realPath);
+        const metadata = statSync(realPath);
+        if (!metadata.isFile() && !metadata.isDirectory()) {
+          issues.push(`${edge}: NFT path has an unsupported entry type`);
+          continue;
+        }
+      } catch (error) {
+        issues.push(error instanceof Error ? error.message : String(error));
+        continue;
+      }
+      if (
+        rejectedSourceSet.has(relativePath) ||
+        rejectedSourceSet.has(realRelativePath) ||
+        /^scripts\/test-[^/]+/.test(relativePath) ||
+        /^scripts\/test-[^/]+/.test(realRelativePath) ||
+        relativePath === "tests" ||
+        relativePath.startsWith("tests/") ||
+        realRelativePath === "tests" ||
+        realRelativePath.startsWith("tests/")
+      ) {
+        issues.push(
+          `${edge}${realRelativePath === relativePath ? "" : ` -> ${realRelativePath}`}: production route NFT references a test source`,
+        );
+      }
+      if (
+        relativePath.startsWith("public/assets/floor-plans/") &&
+        realRelativePath.startsWith("public/assets/floor-plans/")
+      ) {
+        publicAssetReferenceCount += 1;
+      } else if (relativePath.startsWith("public/assets/floor-plans/")) {
+        issues.push(`${edge} -> ${realRelativePath}: public asset resolves outside its canonical root`);
+      }
+    }
+    if (publicAssetReferenceCount === 0) {
+      issues.push(`${nftPath}: no canonical public/assets/floor-plans runtime input is referenced`);
+    }
+    targetResults.push({
+      nftPath,
+      routeChunkPath,
+      referenceCount: manifest.files.length,
+      uniqueNormalizedPathCount: normalizedPaths.size,
+      publicAssetReferenceCount,
+    });
+  }
+
+  if (issues.length > 0) {
+    throw new Error(`Floor Plan route NFT contract failed:\n${[...new Set(issues)].join("\n")}`);
+  }
+  return {
+    schema: "interior-ai.floor-plan-route-nft-contract.v1",
+    targetCount: targetResults.length,
+    rejectedSourceEdges: 0,
+    testSourceEdges: 0,
+    missingPaths: 0,
+    prohibitedPaths: 0,
+    targets: targetResults,
+  };
+}
+
+function recordedFloorPlanRouteNftContractSafe(contract) {
+  if (
+    contract?.schema !== "interior-ai.floor-plan-route-nft-contract.v1" ||
+    contract?.targetCount !== FLOOR_PLAN_ROUTE_NFT_PATHS.length ||
+    contract?.rejectedSourceEdges !== 0 ||
+    contract?.testSourceEdges !== 0 ||
+    contract?.missingPaths !== 0 ||
+    contract?.prohibitedPaths !== 0 ||
+    !Array.isArray(contract?.targets) ||
+    contract.targets.length !== FLOOR_PLAN_ROUTE_NFT_PATHS.length
+  ) {
+    return false;
+  }
+  return contract.targets.every((target, index) => {
+    const nftPath = FLOOR_PLAN_ROUTE_NFT_PATHS[index];
+    return target?.nftPath === nftPath &&
+      target?.routeChunkPath === nftPath.slice(0, -".nft.json".length) &&
+      Number.isSafeInteger(target?.referenceCount) &&
+      target.referenceCount > 0 &&
+      Number.isSafeInteger(target?.uniqueNormalizedPathCount) &&
+      target.uniqueNormalizedPathCount > 0 &&
+      target.uniqueNormalizedPathCount <= target.referenceCount &&
+      Number.isSafeInteger(target?.publicAssetReferenceCount) &&
+      target.publicAssetReferenceCount > 0 &&
+      target.publicAssetReferenceCount <= target.referenceCount;
+  });
+}
+
 export async function inspectProductionArtifact(
   repositoryRoot,
   { requireSymlinkTargets = true, inspectTraces = true } = {},
@@ -811,6 +987,7 @@ export async function createProductionEvidenceManifest(options) {
     inspectDependencyIdentity(repositoryRoot),
     inspectProductionArtifact(repositoryRoot),
   ]);
+  const floorPlanRouteNftContract = inspectFloorPlanRouteNftContract(repositoryRoot);
   if (artifact.traceInventory.missingPaths.length > 0) {
     throw new Error("traced output contains missing files");
   }
@@ -865,6 +1042,7 @@ export async function createProductionEvidenceManifest(options) {
       bytes: artifact.bytes,
       files: artifact.files,
       traceInventory: artifact.traceInventory,
+      floorPlanRouteNftContract,
     },
     tests: [],
     externalControls: structuredClone(EXTERNAL_CONTROLS),
@@ -1646,7 +1824,11 @@ export async function validateProductionEvidence({
       bytes: artifact.bytes,
       files: artifact.files,
     };
-    const { traceInventory: recordedTraceInventory, ...recordedArtifactCore } =
+    const {
+      traceInventory: recordedTraceInventory,
+      floorPlanRouteNftContract: recordedFloorPlanRouteNftContract,
+      ...recordedArtifactCore
+    } =
       manifest.artifact ?? {};
     if (JSON.stringify(recordedArtifactCore) !== JSON.stringify(currentArtifactCore)) {
       issues.push("artifact file inventory does not match the recorded manifest");
@@ -1661,11 +1843,25 @@ export async function validateProductionEvidence({
       ) {
         issues.push("recorded traced output inventory is incomplete or unsafe");
       }
+      if (!recordedFloorPlanRouteNftContractSafe(recordedFloorPlanRouteNftContract)) {
+        issues.push("recorded Floor Plan route NFT contract is incomplete or unsafe");
+      }
     } else {
       compareTraceInventory(recordedTraceInventory, artifact.traceInventory, issues);
+      const currentFloorPlanRouteNftContract = inspectFloorPlanRouteNftContract(root);
+      if (
+        JSON.stringify(recordedFloorPlanRouteNftContract) !==
+        JSON.stringify(currentFloorPlanRouteNftContract)
+      ) {
+        issues.push("Floor Plan route NFT contract does not match the recorded artifact");
+      }
       if (
         JSON.stringify(manifest.artifact) !==
-        JSON.stringify({ ...currentArtifactCore, traceInventory: artifact.traceInventory })
+        JSON.stringify({
+          ...currentArtifactCore,
+          traceInventory: artifact.traceInventory,
+          floorPlanRouteNftContract: currentFloorPlanRouteNftContract,
+        })
       ) {
         issues.push("artifact file inventory does not match the recorded manifest");
       }
@@ -2138,6 +2334,10 @@ async function buildEvidence(repositoryRoot, manifestPath) {
     repositoryRoot,
     environment,
   });
+  const floorPlanRouteNftContract = inspectFloorPlanRouteNftContract(repositoryRoot);
+  console.log(
+    `Verified ${floorPlanRouteNftContract.targetCount} Floor Plan route NFT manifests with zero test-source edges.`,
+  );
   build.completedAt = new Date().toISOString();
 
   const manifest = await createProductionEvidenceManifest({
@@ -2362,6 +2562,10 @@ async function cli() {
   const reportPath =
     process.env.PLAYWRIGHT_JSON_OUTPUT_FILE?.trim() || DEFAULT_REPORT_PATH;
   if (command === "build") await buildEvidence(repositoryRoot, manifestPath);
+  else if (command === "verify-floor-plan-traces") {
+    const result = inspectFloorPlanRouteNftContract(repositoryRoot);
+    console.log(JSON.stringify(result, null, 2));
+  }
   else if (command === "serve") await serveEvidence(repositoryRoot, manifestPath);
   else if (command === "smoke") await smokeEvidence(repositoryRoot, manifestPath, reportPath);
   else if (command === "verify-runtime-failure") {
@@ -2404,7 +2608,7 @@ async function cli() {
     );
   } else {
     throw new Error(
-      "Usage: production-artifact-evidence.mjs build|serve|smoke|verify-runtime-failure|bundle|verify|verify-standalone",
+      "Usage: production-artifact-evidence.mjs build|verify-floor-plan-traces|serve|smoke|verify-runtime-failure|bundle|verify|verify-standalone",
     );
   }
 }

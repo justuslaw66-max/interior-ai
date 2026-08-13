@@ -1,5 +1,47 @@
 # Code health audit
 
+## CH-0015I Floor Plan NFT overtrace correction — 2026-08-13
+
+Classification is **B — NFT_OVERTRACE_PACKAGING_DEFECT**. Preserved evidence
+proved that the construction-sources, supplementary-sources, and process route
+NFTs each held 3,307 references, including 260 `scripts/test-*` and 140
+`tests/**` sources. `scripts/test-required-test-truthfulness.mjs` and
+`scripts/test-production-artifact-evidence.mjs` entered executable staging only
+through `R5_NFT_NON_ARTIFACT_REFERENCE`; neither was required-server output,
+canonical `.next`/`public`, or a production import.
+
+The source owner resolved a dynamic suffix from the broad
+`process.cwd()/public` boundary, and the later filesystem read consumed a
+resolver result whose `/assets/` guarantee was no longer visible to Turbopack.
+The bounded helper now validates the relative asset portion once and constructs
+the read directly from the static `process.cwd()/public/assets` prefix. Lexical
+and realpath containment plus traversal, absolute-path, encoding, separator,
+NUL, and malformed-input rejection fail closed. Missing-file skip, existing
+read-error propagation, external URL behavior, and Floor Plan domain behavior
+are preserved. The file is opened with `O_NOFOLLOW`, the descriptor is bound to
+the post-open contained realpath by device/inode, and only the descriptor is
+read; final-component symlinks are intentionally rejected.
+
+The preliminary clean tracer snapshot built 57/57 pages with 112 NFTs and no whole-project
+trace warning. Each target now has 374 references, zero script/test edges, and
+seven canonical Floor Plan assets. The full trace has 34,669 edges / 2,878
+unique paths, zero missing/prohibited paths, and no new test-source manifest.
+Plan-only staging retained 69,874 files and provenance rows with zero duplicate,
+reason, artifact, required-server, NFT-runtime, scanner, or scanner-exception
+failure. No archive, compression, broad output exclusion, archive allowlist,
+scanner exception, UI/telemetry/design-load/Phase 8, threshold, dependency, or
+workflow change was made.
+That snapshot predates descriptor identity hardening and is not exact-head
+candidate evidence; committed-head validation supersedes it.
+
+`ci.floor-plan-required` now closes over 56 scripts at SHA-256
+`94276929fd43e144b2f23b037b63e28e15e1d2b385632a40e03b3347f12c465d`;
+inventory remains 27 gates / 379 sources. The only code-quality ratchet lowers
+`catalog-draft-match.ts` from 453 to 445 lines. Exact-head integration,
+release certification, Phase 8, runtime smoke, browser owners, executable
+archive creation, and the CH-0015 final exact-source closure audit remain
+separate integrator work.
+
 ## CH-0015I inherited runtime-smoke assertion defect — 2026-08-12
 
 The preserved CH-0015I furnished-template runtime failure is classified **B —

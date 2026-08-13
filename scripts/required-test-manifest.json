@@ -110,7 +110,7 @@
     },
     {
       "id": "ci.production-artifact-contract",
-      "invariant": "The CH-0016 source, artifact, runtime, report, and external-claim evidence contract fails closed.",
+      "invariant": "The CH-0016 source, artifact, runtime, Floor Plan route-NFT, report, and external-claim evidence contract fails closed.",
       "cadence": "merge-required",
       "blocking": true,
       "command": "npm run test:production-artifact-evidence",
@@ -125,6 +125,13 @@
         "scripts/runtime-smoke-phase-budget.mjs",
         "scripts/test-production-artifact-evidence.mjs"
       ],
+      "requiredContributions": [
+        {
+          "id": "floor-plan.route-nft-fail-closed",
+          "source": "scripts/test-production-artifact-evidence.mjs",
+          "marker": "production route NFT references a test source"
+        }
+      ],
       "requiredProjects": [],
       "allowSkips": false,
       "allowRetries": false,
@@ -134,7 +141,7 @@
     },
     {
       "id": "ci.production-artifact-build",
-      "invariant": "One strict clean-source production artifact is built and bound to its dependency and trace closure.",
+      "invariant": "One strict clean-source production artifact is built, its Floor Plan route NFTs contain no test sources, and it is bound to its dependency and trace closure.",
       "cadence": "merge-required",
       "blocking": true,
       "command": "npm run evidence:production:build",
@@ -317,14 +324,27 @@
       "blocking": true,
       "command": "npm run test:floor-plan-required",
       "packageScript": "test:floor-plan-required",
-      "packageClosure": { "expectedScriptCount": 55, "expectedSha256": "c7939de350af5aa1f7be49616ec6dbabde2f0fbe708a0a3b23d3faff57944cfa" },
+      "packageClosure": { "expectedScriptCount": 56, "expectedSha256": "94276929fd43e144b2f23b037b63e28e15e1d2b385632a40e03b3347f12c465d" },
       "runner": "npm-chain",
       "requiredSources": [
+        "scripts/test-floor-plan-catalog-draft-match.ts",
         "scripts/test-floor-plan-live-progress.ts",
         "scripts/test-floor-plan-multifloor-parity.ts",
         "scripts/test-floor-plan-render-parity.ts",
         "scripts/test-floor-plan-serving-integrity.ts",
         "scripts/test-floor-plan-private-source-retention.ts"
+      ],
+      "requiredContributions": [
+        {
+          "id": "floor-plan.preview-asset-static-root",
+          "source": "scripts/test-floor-plan-catalog-draft-match.ts",
+          "marker": "The trace-visible root must be statically bounded to public/assets."
+        },
+        {
+          "id": "floor-plan.preview-asset-security-negatives",
+          "source": "scripts/test-floor-plan-catalog-draft-match.ts",
+          "marker": "Unsafe preview path must be rejected:"
+        }
       ],
       "requiredProjects": [],
       "allowSkips": false,

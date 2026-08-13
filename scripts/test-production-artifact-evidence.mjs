@@ -18,12 +18,14 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 
 import {
+  FLOOR_PLAN_ROUTE_NFT_PATHS,
   PRODUCTION_EVIDENCE_SCHEMA,
   PRODUCTION_EVIDENCE_SERVER_COMMAND,
   canonicalizeProductionEvidenceReport,
   comparePortablePaths,
   createProductionEvidenceBundle,
   createProductionEvidenceManifest,
+  inspectFloorPlanRouteNftContract,
   recordProductionEvidenceTest,
   validateProductionEvidence,
   verifyRuntimeSmokeFailureEvidence,
@@ -1608,6 +1610,135 @@ function git(root, args) {
   return execFileSync("git", args, { cwd: root, encoding: "utf8" }).trim();
 }
 
+function writeFloorPlanRouteNftFixture(root) {
+  write(root, "public/assets/floor-plans/preview.webp", "preview\n");
+  for (const nftPath of FLOOR_PLAN_ROUTE_NFT_PATHS) {
+    const routeChunkPath = nftPath.slice(0, -".nft.json".length);
+    write(root, routeChunkPath, "route chunk\n");
+    const reference = path
+      .relative(path.dirname(path.join(root, nftPath)), path.join(root, "public/assets/floor-plans/preview.webp"))
+      .replaceAll(path.sep, "/");
+    write(root, nftPath, `${JSON.stringify({ version: 1, files: [reference] })}\n`);
+  }
+}
+
+function floorPlanRouteNftFixture() {
+  const root = mkdtempSync(path.join(tmpdir(), "ch-0015i-floor-plan-nft-"));
+  writeFloorPlanRouteNftFixture(root);
+  return root;
+}
+
+function appendFloorPlanNftReference(root, nftPath, sourcePath) {
+  const absoluteNftPath = path.join(root, nftPath);
+  const manifest = JSON.parse(readFileSync(absoluteNftPath, "utf8"));
+  manifest.files.push(
+    path.relative(path.dirname(absoluteNftPath), path.join(root, sourcePath)).replaceAll(path.sep, "/"),
+  );
+  write(root, nftPath, `${JSON.stringify(manifest)}\n`);
+}
+
+{
+  const root = floorPlanRouteNftFixture();
+  const result = inspectFloorPlanRouteNftContract(root);
+  assert.equal(result.targetCount, 3);
+  assert.equal(result.rejectedSourceEdges, 0);
+  assert.equal(result.testSourceEdges, 0);
+  assert.equal(result.targets.every((target) => target.publicAssetReferenceCount === 1), true);
+}
+
+for (const rejectedPath of [
+  "scripts/test-required-test-truthfulness.mjs",
+  "scripts/test-production-artifact-evidence.mjs",
+  "tests/required/floor-plan-security.spec.ts",
+]) {
+  const root = floorPlanRouteNftFixture();
+  write(root, rejectedPath, "test source\n");
+  appendFloorPlanNftReference(root, FLOOR_PLAN_ROUTE_NFT_PATHS[0], rejectedPath);
+  assert.throws(
+    () => inspectFloorPlanRouteNftContract(root),
+    new RegExp(`${rejectedPath.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}.*production route NFT references a test source`),
+  );
+}
+
+{
+  const root = floorPlanRouteNftFixture();
+  rmSync(path.join(root, FLOOR_PLAN_ROUTE_NFT_PATHS[0].slice(0, -".nft.json".length)));
+  assert.throws(
+    () => inspectFloorPlanRouteNftContract(root),
+    /required generated route chunk is missing/,
+  );
+}
+
+{
+  const root = floorPlanRouteNftFixture();
+  const nftPath = FLOOR_PLAN_ROUTE_NFT_PATHS[0];
+  write(root, nftPath, `${JSON.stringify({ version: 1, files: ["missing-runtime.webp"] })}\n`);
+  assert.throws(
+    () => inspectFloorPlanRouteNftContract(root),
+    /missing-runtime\.webp: NFT path is missing/,
+  );
+}
+
+{
+  const root = floorPlanRouteNftFixture();
+  write(root, "scripts/test-symlink-target.mjs", "test source\n");
+  const linkedAsset = "public/assets/floor-plans/linked-test.webp";
+  symlinkSync(
+    path.relative(
+      path.dirname(path.join(root, linkedAsset)),
+      path.join(root, "scripts/test-symlink-target.mjs"),
+    ),
+    path.join(root, linkedAsset),
+  );
+  appendFloorPlanNftReference(root, FLOOR_PLAN_ROUTE_NFT_PATHS[0], linkedAsset);
+  assert.throws(
+    () => inspectFloorPlanRouteNftContract(root),
+    /public\/assets\/floor-plans\/linked-test\.webp -> scripts\/test-symlink-target\.mjs: production route NFT references a test source/,
+  );
+}
+
+{
+  const root = floorPlanRouteNftFixture();
+  const nftPath = FLOOR_PLAN_ROUTE_NFT_PATHS[0];
+  write(
+    root,
+    nftPath,
+    `${JSON.stringify({
+      version: 1,
+      files: [path.join(root, "public/assets/floor-plans/preview.webp")],
+    })}\n`,
+  );
+  assert.throws(
+    () => inspectFloorPlanRouteNftContract(root),
+    /<invalid-reference>: NFT path is malformed/,
+  );
+}
+
+const nextConfigSource = readFileSync(path.join(process.cwd(), "next.config.ts"), "utf8");
+const outputTracingExclusions = nextConfigSource.match(/outputFileTracingExcludes:\s*\{[\s\S]*?\n\s*\},\n\s*turbopack:/)?.[0] ?? "";
+assert.ok(outputTracingExclusions, "The production tracing exclusion contract must remain inspectable.");
+assert.doesNotMatch(outputTracingExclusions, /scripts\/test-|tests\/|test-required-test-truthfulness|test-production-artifact-evidence/);
+assert.doesNotMatch(outputTracingExclusions, /"\.\/scripts\/\*\*\/\*"|"\.\/tests\/\*\*\/\*"/);
+const productionArtifactSource = readFileSync(
+  path.join(process.cwd(), "scripts/production-artifact-evidence.mjs"),
+  "utf8",
+);
+const artifactRoots = productionArtifactSource.match(/const ARTIFACT_ROOTS = \[[^;]+;/)?.[0] ?? "";
+const artifactExclusions = productionArtifactSource.match(/const ARTIFACT_EXCLUSIONS = \[[\s\S]*?\n\];/)?.[0] ?? "";
+assert.equal(artifactRoots, 'const ARTIFACT_ROOTS = [".next", "public"];');
+assert.doesNotMatch(artifactExclusions, /scripts|tests|allowlist|exception/i);
+for (const policySource of [
+  nextConfigSource,
+  readFileSync(path.join(process.cwd(), "scripts/gitleaks-artifact.mjs"), "utf8"),
+  readFileSync(path.join(process.cwd(), "scripts/required-test-truthfulness.mjs"), "utf8"),
+]) {
+  assert.doesNotMatch(
+    policySource,
+    /test-required-test-truthfulness|test-production-artifact-evidence/,
+    "Production exclusions, archive scope, and sensitive scanners must not contain file-specific exceptions.",
+  );
+}
+
 async function fixture({ environmentOverrides = {}, publicArtifactText = "public artifact\n" } = {}) {
   const root = mkdtempSync(path.join(tmpdir(), "ch-0016-evidence-"));
   write(root, ".gitignore", ".next/\n.local/\nnode_modules/\n*.local.js\n");
@@ -1672,6 +1803,7 @@ async function fixture({ environmentOverrides = {}, publicArtifactText = "public
     version: 1,
     files: ["../../package.json", "../../node_modules/.package-lock.json"],
   })}\n`);
+  writeFloorPlanRouteNftFixture(root);
   symlinkSync("../../public/asset.txt", path.join(root, ".next/server/public-asset-link"));
   write(root, ".next/cache/excluded.txt", "mutable cache\n");
   write(root, ".next/dev/excluded.txt", "development output\n");
@@ -1698,6 +1830,7 @@ async function fixture({ environmentOverrides = {}, publicArtifactText = "public
     "scripts/required-test-manifest.json",
     "generated/runtime.ts",
     "public/asset.txt",
+    "public/assets/floor-plans/preview.webp",
   ]);
   git(root, ["commit", "-qm", "fixture"]);
 
@@ -2087,6 +2220,27 @@ async function expectRejected(context, expectedText) {
   await expectRejected(
     context,
     "runtime telemetry observations do not cover the initial realm and three reloads",
+  );
+}
+
+{
+  const context = await fixture();
+  const manifest = readManifest(context.root, context.manifestPath);
+  await rewriteManifest(context.root, context.manifestPath, (candidate) => {
+    candidate.artifact.floorPlanRouteNftContract.targets = [];
+  });
+  rmSync(path.join(context.root, ".git"), { recursive: true, force: true });
+  rmSync(path.join(context.root, "node_modules"), { recursive: true, force: true });
+  const result = await validateProductionEvidence({
+    repositoryRoot: context.root,
+    manifestPath: context.manifestPath,
+    requireTests: true,
+    standalone: true,
+    expectedSourceCommitSha: manifest.source.commitSha,
+  });
+  assert.equal(result.valid, false);
+  assert.ok(
+    result.issues.includes("recorded Floor Plan route NFT contract is incomplete or unsafe"),
   );
 }
 
@@ -3104,7 +3258,12 @@ await assert.rejects(
 
 {
   const context = await fixture();
-  rmSync(path.join(context.root, ".next/server/app.js.nft.json"));
+  for (const nftPath of [
+    ".next/server/app.js.nft.json",
+    ...FLOOR_PLAN_ROUTE_NFT_PATHS,
+  ]) {
+    rmSync(path.join(context.root, nftPath));
+  }
   await expectRejected(context, "traced output inventory is empty");
 }
 

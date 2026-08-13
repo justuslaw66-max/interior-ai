@@ -1,5 +1,36 @@
 # P0/P1 remediation queue
 
+## CH-0015I Floor Plan NFT overtrace correction — 2026-08-13
+
+- **Classification:** `B — NFT_OVERTRACE_PACKAGING_DEFECT`. Three Floor Plan
+  route NFTs packaged broad repository source because the asset reader's
+  validated `/assets/` boundary was not preserved at the tracer-visible
+  filesystem operation.
+- **Correction:** the sole preview helper validates/decodes one relative path,
+  rejects traversal/absolute/separator/NUL/encoding attacks, proves lexical and
+  realpath containment, and reads from a direct static
+  `process.cwd()/public/assets` join through a descriptor bound by post-open
+  device/inode identity. Final-component symlinks fail closed. No trace
+  exclusion or test-name-specific production rule was added.
+- **Preliminary trace proof:** 57/57 diagnostic build; 112 NFTs; each target 3,307 -> 374
+  references; zero target script/test edges; seven Floor Plan assets per
+  target; zero missing/prohibited trace paths; both rejected scripts at zero
+  global NFT edges. Plan-only staging has 69,874 files/rows and zero duplicate,
+  missing-reason, runtime-closure, scanner, or exception result; it created no
+  archive and ran no compression.
+  This snapshot predates descriptor hardening; exact committed-head build and
+  plan replay are authoritative.
+- **Ownership/status:** `ci.floor-plan-required` now owns 56 scripts at closure
+  SHA-256 `94276929fd43e144b2f23b037b63e28e15e1d2b385632a40e03b3347f12c465d`;
+  the existing production-artifact owner enforces the post-build NFT contract.
+  No required CH-0015 implementation surface remains after this bounded child.
+  CH-0015 stays `IN_PROGRESS` until exact-head integration review and the final
+  exact-source closure audit; this child does not begin that audit.
+- **Rollback:** revert only this correction commit, then rerun the focused path
+  owner, production-artifact contract, Floor Plan required umbrella, strict
+  build/NFT guard, and plan-only constructor. No data, deployment, dependency,
+  scanner, archive-policy, or external-control rollback is required.
+
 ## CH-0015I inherited runtime-smoke contract correction — 2026-08-12
 
 - **Classification:** `B — TEST_ASSERTION_DEFECT`. The inherited unconditional

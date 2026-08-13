@@ -1,6 +1,4 @@
 import { createHash } from "node:crypto";
-import fs from "node:fs";
-import path from "node:path";
 import { catalogV1LayoutToFloorPlanDocumentV2 } from "@/lib/floor-plan-catalog-v1-adapter";
 import type {
   FloorPlanDimensionV2,
@@ -21,6 +19,7 @@ import type {
   PageSemanticEvidence,
   RegisteredPageEvidence,
 } from "./deterministic-evidence";
+import { readCatalogFloorPlanPreviewAsset } from "./catalog-preview-asset";
 import type {
   FloorPlanAdapterContext,
   StoredFloorPlanSource,
@@ -80,13 +79,6 @@ function sha256(bytes: Uint8Array) {
   return createHash("sha256").update(bytes).digest("hex");
 }
 
-function previewAssetPath(previewUrl: string) {
-  if (!previewUrl.startsWith("/assets/")) return null;
-  const publicRoot = path.resolve(process.cwd(), "public");
-  const candidate = path.resolve(publicRoot, previewUrl.slice(1));
-  return candidate.startsWith(`${publicRoot}${path.sep}`) ? candidate : null;
-}
-
 type PreviewCandidate = {
   catalog: FloorPlanLibraryCatalogEntry;
   layout: FloorPlanLibraryLayout;
@@ -96,12 +88,12 @@ type PreviewCandidate = {
 function loadPreviewCandidates(): PreviewCandidate[] {
   return getAllFloorPlanLibraryCatalogs().flatMap((catalog) =>
     catalog.layouts.flatMap((layout) => {
-      const assetPath = previewAssetPath(layout.preview_url);
-      if (!assetPath || !fs.existsSync(assetPath)) return [];
+      const bytes = readCatalogFloorPlanPreviewAsset(layout.preview_url);
+      if (!bytes) return [];
       return [{
         catalog,
         layout,
-        bytes: new Uint8Array(fs.readFileSync(assetPath)),
+        bytes,
       }];
     })
   );

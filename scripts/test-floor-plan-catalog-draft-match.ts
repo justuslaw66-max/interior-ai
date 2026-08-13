@@ -8,6 +8,10 @@ import {
   buildSourceBoundCatalogDraft,
   matchPrivateUploadToCatalogDraft,
 } from "@/lib/floor-plan-imports/catalog-draft-match";
+import {
+  readCatalogFloorPlanPreviewAsset,
+  resolveCatalogFloorPlanPreviewAssetPath,
+} from "@/lib/floor-plan-imports/catalog-preview-asset";
 import { collectFloorPlanImportReadinessIssues } from "@/lib/floor-plan-imports/readiness";
 import { isFloorPlanMvpBlockingIssue } from "@/lib/floor-plan-imports/types";
 import type { RegisteredPageEvidence } from "@/lib/floor-plan-imports/deterministic-evidence";
@@ -69,6 +73,120 @@ function contextFor(store: FloorPlanSourceStore): FloorPlanAdapterContext {
 }
 
 async function main() {
+const knownPreviewUrl = "/assets/floor-plans/sg/hdb/ping-yi-court/previews/2-room-flexi-type-1.webp";
+const knownPreviewPath = path.join(previewRoot, "2-room-flexi-type-1.webp");
+assert.equal(resolveCatalogFloorPlanPreviewAssetPath(knownPreviewUrl), knownPreviewPath);
+assert.equal(
+  resolveCatalogFloorPlanPreviewAssetPath(knownPreviewUrl.replace("2-room", "%32-room")),
+  knownPreviewPath,
+  "A single valid URL encoding must resolve to the intended local asset."
+);
+assert.equal(
+  resolveCatalogFloorPlanPreviewAssetPath(`${knownPreviewUrl}?revision=1`),
+  knownPreviewPath,
+  "A query string must not become part of the local asset file name."
+);
+assert.equal(
+  resolveCatalogFloorPlanPreviewAssetPath(`${knownPreviewUrl}#preview`),
+  knownPreviewPath,
+  "A fragment must not become part of the local asset file name."
+);
+assert.ok(readCatalogFloorPlanPreviewAsset(knownPreviewUrl)?.byteLength);
+
+const missingPreviewUrl = "/assets/floor-plans/sg/hdb/ping-yi-court/previews/missing.webp";
+assert.ok(resolveCatalogFloorPlanPreviewAssetPath(missingPreviewUrl)?.startsWith(previewRoot));
+assert.equal(
+  readCatalogFloorPlanPreviewAsset(missingPreviewUrl),
+  null,
+  "A missing catalog preview must preserve the existing skip/fallback behavior."
+);
+assert.equal(resolveCatalogFloorPlanPreviewAssetPath("/floor-plans/preview.webp"), null);
+assert.equal(resolveCatalogFloorPlanPreviewAssetPath("http://example.test/assets/preview.webp"), null);
+assert.equal(resolveCatalogFloorPlanPreviewAssetPath("https://example.test/assets/preview.webp"), null);
+
+for (const rejected of [
+  "/assets/../package.json",
+  "/assets/floor-plans/../../package.json",
+  "/assets/%2e%2e/package.json",
+  "/assets/%2E%2E%2Fpackage.json",
+  "/assets/%252e%252e%252fpackage.json",
+  "/assets/..\\package.json",
+  "/assets/%2e%2e%5cpackage.json",
+  "/assets//etc/passwd",
+  "/assets/C:/Windows/system.ini",
+  "/assets/C:\\Windows\\system.ini",
+  "/assets/preview\0.webp",
+  "/assets/preview%00.webp",
+  "/assets/preview%zz.webp",
+  "/assets/",
+]) {
+  assert.equal(
+    resolveCatalogFloorPlanPreviewAssetPath(rejected),
+    null,
+    `Unsafe preview path must be rejected: ${JSON.stringify(rejected)}`
+  );
+}
+
+const normalizedRelative = path.relative(
+  path.resolve(process.cwd(), "public", "assets"),
+  resolveCatalogFloorPlanPreviewAssetPath(knownPreviewUrl) ?? ""
+);
+assert.ok(normalizedRelative && !normalizedRelative.startsWith("..") && !path.isAbsolute(normalizedRelative));
+assert.throws(
+  () => readCatalogFloorPlanPreviewAsset("/assets/floor-plans"),
+  /EISDIR|illegal operation on a directory|is a directory/i,
+  "An existing unreadable asset candidate must preserve the existing read failure."
+);
+
+const symlinkFixtureRoot = fs.mkdtempSync(
+  path.join(process.cwd(), "public", "assets", ".ch0015i-symlink-")
+);
+const outsideLink = path.join(symlinkFixtureRoot, "outside-link");
+try {
+  fs.symlinkSync(path.join(process.cwd(), "package.json"), outsideLink);
+  assert.equal(
+    readCatalogFloorPlanPreviewAsset(`/assets/${path.basename(symlinkFixtureRoot)}/outside-link`),
+    null,
+    "A symlink must not escape the real public/assets root."
+  );
+} finally {
+  fs.rmSync(symlinkFixtureRoot, { recursive: true, force: true });
+}
+
+const resolverSource = fs.readFileSync(
+  path.join(process.cwd(), "lib/floor-plan-imports/catalog-preview-asset.ts"),
+  "utf8"
+);
+assert.match(
+  resolverSource,
+  /path\.join\(\s*process\.cwd\(\),\s*"public",\s*"assets",\s*relativeAssetPath\s*\)/,
+  "The trace-visible root must be statically bounded to public/assets."
+);
+assert.doesNotMatch(
+  resolverSource,
+  /path\.(?:resolve|join)\(process\.cwd\(\),\s*"public"\s*,?\s*\)/,
+  "The Floor Plan owner must not expose public or the repository root to a dynamic suffix."
+);
+assert.match(resolverSource, /previewUrl\.startsWith\(PREVIEW_ASSET_URL_PREFIX\)/);
+assert.match(resolverSource, /path\.relative\(root, candidate\)/);
+assert.match(resolverSource, /realRoot !== FLOOR_PLAN_PREVIEW_ASSET_ROOT/);
+assert.match(resolverSource, /openSync\(\s*candidate,/);
+assert.match(resolverSource, /fstatSync\(descriptor, \{ bigint: true \}\)/);
+assert.match(resolverSource, /realpathSync\(candidate\)/);
+assert.match(resolverSource, /statSync\(openedRealCandidate, \{ bigint: true \}\)/);
+assert.match(resolverSource, /openedIdentity\.dev !== validatedIdentity\.dev/);
+assert.match(resolverSource, /openedIdentity\.ino !== validatedIdentity\.ino/);
+assert.match(resolverSource, /readFileSync\(descriptor\)/);
+assert.match(resolverSource, /closeSync\(descriptor\)/);
+assert.doesNotMatch(resolverSource, /readFileSync\(candidate\)/);
+assert.doesNotMatch(resolverSource, /readFileSync\(realCandidate\)/);
+const matcherSource = fs.readFileSync(
+  path.join(process.cwd(), "lib/floor-plan-imports/catalog-draft-match.ts"),
+  "utf8"
+);
+assert.match(matcherSource, /readCatalogFloorPlanPreviewAsset\(layout\.preview_url\)/);
+assert.doesNotMatch(matcherSource, /process\.cwd\(\)|readFileSync|existsSync/);
+
 const typeOne = sourceFor("2-room-flexi-type-1.webp");
 const typeOneStore = storeFor(typeOne);
 const exactMatch = await matchPrivateUploadToCatalogDraft({

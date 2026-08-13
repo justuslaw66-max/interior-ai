@@ -1,5 +1,35 @@
 # Required-test truthfulness
 
+## CH-0015I Floor Plan NFT ownership — 2026-08-13
+
+`ci.floor-plan-required` remains the sole Floor Plan domain umbrella and now
+recursively owns `test:floor-plan-catalog-draft-match`. Its package closure is
+**56 scripts** with SHA-256
+`94276929fd43e144b2f23b037b63e28e15e1d2b385632a40e03b3347f12c465d`.
+The canonical inventory remains **27 gates / 379 classified test sources**;
+this change registers an already classified source instead of creating a gate
+or test file.
+
+The focused owner covers the exact `/assets/` contract, nested and encoded
+valid paths, query/fragment handling, missing-file fallback, external URLs,
+raw/encoded/double-encoded traversal, mixed/backslash separators, POSIX and
+Windows absolute paths, drive letters, NUL, malformed encoding, empty relative
+paths, containment, read failures, and symlink escape. The symlink negative uses
+a uniquely named fixture beneath the canonical trace root and removes only that
+fixture. Final-component symlinks are intentionally rejected; the reader binds
+the opened descriptor to the post-open contained path by device/inode and reads
+only that descriptor. Static assertions bind the local open to a direct
+`process.cwd()/public/assets` join and prevent a repository/public-root dynamic
+suffix or a regression to reading the unproved lexical/realpath string.
+
+The existing `ci.production-artifact-contract` separately owns generated NFT
+fixtures, unsafe raw references, lexical and realpath test-source edges,
+missing chunks/paths, exact retained target summaries, standalone tampering,
+and source guards against new output-tracing exclusions, archive allowlists, or
+sensitive-scanner exceptions. Required-test truthfulness owns registration and
+recursive reachability; the production-artifact owner owns post-build trace
+behavior. Full E2E is not part of this correction.
+
 ## CH-0015I inherited runtime-smoke contract correction
 
 The inherited `bootstrapEventsFlushed > 0` assertion is classified **B —
@@ -536,7 +566,7 @@ every failure removes both staging and canonical output.
 Process-only gates remain direct package commands or `&&`-chained umbrellas, so
 missing executable files and nonzero child results already stop the command.
 The manifest audit verifies a stable hash of every recursively reachable package
-script body—41 scripts for the critical-domain umbrella, 55 for floor-plan, and
+script body—41 scripts for the critical-domain umbrella, 56 for floor-plan, and
 8 for catalog/materials—so a nested child, fail-open operator, or scope-changing
 flag cannot silently disappear behind an edited umbrella.
 

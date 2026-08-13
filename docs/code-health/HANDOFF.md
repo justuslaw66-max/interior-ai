@@ -1,5 +1,92 @@
 # Code health audit handoff
 
+## CH-0015I Floor Plan NFT overtrace handoff — 2026-08-13
+
+Branch `fix/ch-0015i-floor-plan-nft-overtrace` starts at exact candidate
+`5c1446e16738418d9d2f42937fdf742c7934a34b`, tree
+`cefc833e6c3e029d27489f584f8c9a03d825fdd3`, whose parent is
+`78163d4ce125c6f1739dfb9256d8f8cbee655345`; integration remains
+`2c567fd483877c7dcbd8fd23e3cd8cb316732c8c`. Entry source/index/untracked/
+tracked-ignored/Git-operation checks were clean. No repository-owned app,
+build, browser, smoke, Phase 8, Prisma, or disposable database process was
+active; the Homebrew PostgreSQL listener was unrelated. Node was `v24.13.0`
+and npm `11.6.2`.
+
+The authoritative classification is **B — NFT_OVERTRACE_PACKAGING_DEFECT**.
+Preserved source evidence at
+`ch0015i-exact-source-trace-capture-5c1446e-20260813T101251Z` remains unchanged:
+112 NFTs, inventory SHA-256
+`98e12506892ef67b7184fd61029282e65f38165efb4f73c65d670aa2d6cbec89`,
+43,468 edges / 4,632 paths, and sanitized edge-ledger SHA-256
+`d0872b0ac6c953e03efc31221043d7dd171a10bb4e4ca10531db66182dd59b73`.
+The three target NFTs each had 3,307 references, including all 360 tracked
+scripts and 400/403 tracked tests. Both rejected scripts were direct NFT edges
+and reached staging only through `R5_NFT_NON_ARTIFACT_REFERENCE`.
+
+Root cause was the mismatch between the product's `/assets/` contract and the
+tracer-visible dynamic filesystem owner. The old resolver joined the suffix to
+`process.cwd()/public`, retained query/fragment and percent escapes as literal
+filename bytes, and allowed normalization from `public/assets` elsewhere under
+`public`; missing files skipped and existing read failures propagated. The new
+sole helper strips query/fragment, decodes exactly once, rejects residual
+encoding, traversal, mixed/backslash separators, absolute/drive paths, NUL,
+malformed encoding, and empty/dot segments, and proves lexical plus realpath
+containment. The read operation itself uses a direct static
+`process.cwd()/public/assets` prefix, which keeps the boundary visible to
+Turbopack. It opens with `O_NOFOLLOW`, binds the descriptor to the post-open
+contained path by device/inode, and reads only the descriptor. Final-component
+symlinks intentionally fail closed. Missing-file, read-error, and external
+HTTP(S) behavior are retained.
+
+The preliminary tracer evidence root is
+`ch0015i-floor-plan-nft-overtrace-precommit-23cfa48-20260813T112112Z`.
+Its clean tree `64668990946df3dd763b536435b539a6468b77ce` completed 57/57 pages
+with BUILD_ID `jO3szeGYAxDWICbI5COws`, artifact SHA-256
+`19a7382a0bf9af45158215ba1d2bd0e6fd7ebfc71488f611a0acff33227e2c9f`,
+112 raw NFTs and raw inventory SHA-256
+`f638a3c3482858398a6c809a82713a5ef9c7a5b7c2164c5acba81da9558e4ca1`.
+Trace closure is 34,669 edges / 2,878 unique paths with zero missing/prohibited
+paths and closure SHA-256
+`427255c15edd3888a10d5b26c51272c7dcad1887ca283cedd9fe144c84a113c2`.
+All three target NFTs now have 374 references, seven Floor Plan assets, and zero
+script/test/rejected edges; their SHA-256 values are respectively
+`d23fb81849be7e56622930599b9b7987d71047f31928f307dda312144c53932d`,
+`25638698d339c65ed9323abc9b12dc750f1d746f2b304f907c05c6980061fc36`,
+and `2bcd9bb9de54f6fb949398e5eedf3fec87becbca435c44ff6e7ec171bac211dd`.
+No new test-source manifest appeared elsewhere.
+This tree predates descriptor identity hardening and is not final-candidate
+proof. The exact committed-head build and raw NFT capture supersede it.
+The authoritative final capture is retained outside Git at
+`ch0015i-floor-plan-nft-overtrace-exact-head-20260813T114021Z`; its closed
+manifest records the exact correction commit/tree, build, raw NFTs, target
+summaries, trace closure, and plan-only constructor identities.
+
+The recovered constructor produced only a plan: 69,874 planned files and
+69,874 ledger rows, 1,685,449,986 bytes, zero duplicate destinations or missing
+reasons, and zero missing canonical artifact, required-server, or NFT runtime
+paths. Both rejected scripts have zero R5 selections and zero scanner matches;
+the unchanged exact-value scanner has zero matches and zero exceptions. No
+stage tree, executable archive, or compression was created. The provenance
+preliminary ledger SHA-256 is
+`1b9979bc7b5cee665bc02a38b02c30f4cf536724893d7eff0d6b38e4fe91566d`.
+The exact committed-head plan-only replay is authoritative.
+
+Required ownership is unchanged except that `ci.floor-plan-required` now
+recursively includes `test:floor-plan-catalog-draft-match`: 56 scripts, closure
+SHA-256 `94276929fd43e144b2f23b037b63e28e15e1d2b385632a40e03b3347f12c465d`.
+The existing production-artifact owner enforces generated NFT and standalone
+summary behavior. Inventory remains 27 gates / 379 sources. No Floor Plan
+route/PDF/default-service/worker, Upload UI, telemetry, design-load, Phase 8,
+archive scope, scanner, dependency, schema, database, timeout, workflow, or
+external control changed. Rollback is one focused revert and rerun of the path,
+artifact, Floor Plan, strict-build/NFT, and plan-only owners.
+
+No required CH-0015 implementation surface remains after this child. The
+candidate remains unintegrated. Exact-head integration review, Phase 8, runtime
+smoke, browser-owner recertification, executable archive/continuity, and the
+final CH-0015 exact-source closure audit remain pending; this correction does
+not claim or begin them.
+
 ## CH-0015I inherited runtime-smoke contract correction — 2026-08-12
 
 Branch `fix/ch-0015i-runtime-smoke-bootstrap-contract` starts at the exact
