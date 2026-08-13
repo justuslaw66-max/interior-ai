@@ -122,6 +122,7 @@
         "scripts/production-artifact-contract.mjs",
         "scripts/production-artifact-evidence.mjs",
         "scripts/production-artifact-playwright.mjs",
+        "scripts/playwright-report-path.mjs",
         "scripts/runtime-smoke-failure-evidence.mjs",
         "scripts/runtime-smoke-operation-contracts.mjs",
         "scripts/runtime-smoke-operation-deadline.mjs",
@@ -138,6 +139,11 @@
           "id": "artifact.playwright-v3-producer-consumer",
           "source": "scripts/test-production-artifact-evidence.mjs",
           "marker": "producer manifest passes real Playwright config with nonzero discovery"
+        },
+        {
+          "id": "artifact.playwright-external-report-producer-consumer",
+          "source": "scripts/test-production-artifact-evidence.mjs",
+          "marker": "real Playwright config must write to the exact external report path"
         },
         {
           "id": "floor-plan.route-nft-fail-closed",

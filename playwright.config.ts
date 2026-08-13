@@ -9,7 +9,7 @@ const releaseBaseURL = process.env.PLAYWRIGHT_RELEASE_BASE_URL?.trim().replace(
 );
 const useProductionServer = process.env.PLAYWRIGHT_USE_PRODUCTION_SERVER === "1";
 const productionEvidenceManifestPath = process.env.PRODUCTION_EVIDENCE_MANIFEST?.trim();
-const productionEvidenceReportPath = process.env.PLAYWRIGHT_JSON_OUTPUT_FILE?.trim();
+const productionEvidenceReportPath = process.env.PLAYWRIGHT_JSON_OUTPUT_FILE;
 const requiredTestGateId = process.env.REQUIRED_TEST_GATE_ID?.trim();
 const requiredTestReportPath = process.env.REQUIRED_TEST_REPORT_PATH?.trim();
 
@@ -32,7 +32,7 @@ function repositoryPath(relativePath: string, description: string) {
   return resolved;
 }
 
-const productionArtifactEvidence = productionEvidenceManifestPath
+const loadedProductionArtifactEvidence = productionEvidenceManifestPath
   ? loadProductionArtifactForPlaywright({
       repositoryRoot: process.cwd(),
       manifestPath: productionEvidenceManifestPath,
@@ -42,6 +42,9 @@ const productionArtifactEvidence = productionEvidenceManifestPath
       environment: process.env,
     })
   : null;
+const productionArtifactEvidence = loadedProductionArtifactEvidence?.identity ?? null;
+const productionEvidenceReportOutputPath =
+  loadedProductionArtifactEvidence?.reportDestination.outputPath;
 
 if (releaseBaseURL) {
   const parsedURL = new URL(releaseBaseURL);
@@ -77,7 +80,7 @@ export default defineConfig({
   reporter: productionArtifactEvidence
     ? [
         ["list"],
-        ["json", { outputFile: productionEvidenceReportPath }],
+        ["json", { outputFile: productionEvidenceReportOutputPath }],
       ]
     : requiredTestGateId
       ? [

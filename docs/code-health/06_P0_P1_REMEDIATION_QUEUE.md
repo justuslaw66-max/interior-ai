@@ -1,5 +1,34 @@
 # P0/P1 remediation queue
 
+## CH-0015I external Playwright report destination — 2026-08-14
+
+- **Classification:** `EXTERNAL_PLAYWRIGHT_REPORT_PATH_CONTRACT_DEFECT /
+  ABSOLUTE_EXTERNAL_REPORT_PATH_REJECTED`. The exact-head external path was
+  safe and correctly supplied, but the Playwright loader rejected it as not
+  repository-relative before reporter/server/discovery startup.
+- **Correction/policy:** the canonical resolver retains only the approved
+  ignored repository-relative production-evidence directory and adds one
+  absolute class gated by `PLAYWRIGHT_EXTERNAL_EVIDENCE_ROOT`. Normalization,
+  root/parent realpaths, all registered worktrees, writable-parent, absent JSON
+  target, containment, and symlink checks fail closed. No arbitrary absolute
+  path or overwrite is authorized, and no machine-local root enters portable
+  evidence.
+- **Ownership/proof:** `ci.production-artifact-contract` owns the resolver,
+  security negatives, anti-drift guards, repository-relative compatibility,
+  and a real Playwright config/list run that discovers exactly two specs and
+  creates/parses/hashes the report only at a temporary external destination.
+  Inventory remains 27 gates / 379 sources.
+- **Scope/status:** GitHub stable-checks retains `.local` report ownership; the
+  seven named product/required-test configs keep `REQUIRED_TEST_REPORT_PATH`.
+  Schema/journal, server, reporter identity, retries, timeouts, product, Floor
+  Plan, telemetry, NFT, timestamps, archive/scanner, Phase 8, dependency,
+  workflow, database, and external-control behavior are unchanged. No CH-0015
+  product/UI implementation surface remains. Exact-head recertification,
+  integration, and final closure audit remain pending.
+- **Rollback:** revert the single external-report correction commit and rerun
+  production-artifact plus required-test truthfulness owners. This restores the
+  known release blocker; it changes no persisted data or external system.
+
 ## CH-0015I Playwright production-artifact schema v3 — 2026-08-13
 
 - **Classification:** `PRODUCTION_ARTIFACT_SCHEMA_CONSUMER_DRIFT`. The producer

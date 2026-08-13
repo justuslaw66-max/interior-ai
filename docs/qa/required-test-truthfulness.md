@@ -1,5 +1,36 @@
 # Required-test truthfulness
 
+## CH-0015I external Playwright report-path ownership — 2026-08-14
+
+`ci.production-artifact-contract` remains the sole merge-required owner. It now
+requires `scripts/playwright-report-path.mjs` and the existing
+`scripts/test-production-artifact-evidence.mjs` contributes
+`artifact.playwright-external-report-producer-consumer`. No new gate, test
+source, package command, project, cadence, retry, timeout, browser, or workflow
+step is created; the inventory remains **27 gates / 379 classified test
+sources**.
+
+The owner preserves the repository-relative `.local/production-artifact-
+evidence` case used by stable-checks and adds the real external case through the
+same `PLAYWRIGHT_JSON_OUTPUT_FILE` path used by runtime smoke plus the explicit
+`PLAYWRIGHT_EXTERNAL_EVIDENCE_ROOT`. Actual Playwright config/list execution
+must exit zero, discover exactly two specs, and write a parseable, hashable JSON
+report only at the external destination. Static guards require the shared
+resolver in the loader, require the real config to consume its returned output,
+retain mandatory report-path and schema/journal preflight ordering, reject the
+old repository-relative-only check, prevent a `.local` fallback or arbitrary
+absolute authorization, and prevent the local root variable from entering the
+portable evidence writer.
+
+Deterministic negatives cover worktree and canonical-repository destinations,
+outside-root paths, traversal, NUL, missing/relative root, missing/unwritable
+parent, existing file, directory target, repository and outside-root symlinks,
+empty/malformed path, unknown policy, safe error text, invalid schema before
+path use, and missing `PLAYWRIGHT_JSON_OUTPUT_FILE`. Existing schema-v3,
+semantic-journal, server-selection, required-test, and report-truthfulness
+bindings are unchanged. Exact-head recertification and final CH-0015 closure
+remain pending; Full E2E is outside this batch.
+
 ## CH-0015I Playwright artifact-v3 ownership — 2026-08-13
 
 `ci.production-artifact-contract` remains the sole merge-required contract owner

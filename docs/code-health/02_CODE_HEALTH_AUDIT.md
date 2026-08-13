@@ -1,5 +1,37 @@
 # Code health audit
 
+## CH-0015I external Playwright report-path correction — 2026-08-14
+
+The retained exact-candidate failure is classified
+**EXTERNAL_PLAYWRIGHT_REPORT_PATH_CONTRACT_DEFECT /
+ABSOLUTE_EXTERNAL_REPORT_PATH_REJECTED**. The external target passed the
+integrator's filesystem preflight, but the v3 Playwright loader rejected every
+absolute report before reporter, server, or discovery startup. The focused
+test covered only `.local/production-artifact-evidence/playwright-list.json`,
+so it could not detect the certification contract mismatch.
+
+One side-effect-free resolver now distinguishes the existing approved ignored
+repository-relative class from an explicitly authorized external class. The
+external class requires `PLAYWRIGHT_EXTERNAL_EVIDENCE_ROOT`, proves normalized
+lexical and realpath containment, enumerates canonical/current Git worktrees,
+rejects repository overlap and symlink escape, requires an existing writable
+parent and an absent `.json`, and never creates or overwrites the target.
+Errors contain classifications rather than input values. The real config uses
+the returned absolute path without serializing it or the external root into
+portable artifact metadata.
+
+The existing production-artifact contract owns resolver negatives and both
+real Playwright list paths, including exact two-spec discovery, external report
+creation/parsing/hash, no repository fallback, secret absence, and safe cleanup.
+Schema v3/journal validation remains earlier than path use; server command,
+listener reuse, workers, retries, timeouts, origins, discovery, reporter
+identity, CI-local report ownership, and every named product/required-test
+config remain unchanged. Inventory remains 27 gates / 379 sources. No Floor
+Plan, telemetry, NFT tracing, timestamp, archive/scanner, Phase 8, dependency,
+database, workflow, or external-control behavior changed. The source correction
+does not leave CH-0015 product/UI implementation work, but exact-head
+certification, integration, and the final closure audit are still pending.
+
 ## CH-0015I Playwright artifact-schema correction — 2026-08-13
 
 Classification is **PRODUCTION_ARTIFACT_SCHEMA_CONSUMER_DRIFT**. Candidate

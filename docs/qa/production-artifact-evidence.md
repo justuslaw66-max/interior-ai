@@ -5,6 +5,76 @@ production-mode artifact evidence and required CI behavior. It does not describe
 or prove a Vercel deployment, stable staging, production, or external platform
 configuration.
 
+## CH-0015I external Playwright report destinations
+
+Classification is **EXTERNAL_PLAYWRIGHT_REPORT_PATH_CONTRACT_DEFECT /
+ABSOLUTE_EXTERNAL_REPORT_PATH_REJECTED**. Exact-head certification supplied a
+valid, absent, writable absolute `PLAYWRIGHT_JSON_OUTPUT_FILE` beneath its
+private evidence root, but `scripts/production-artifact-playwright.mjs` applied
+the manifest helper's repository-relative rule to the report. Playwright exited
+before reporter initialization, server startup, or discovery. The preserved
+failed integrator capture remains historical and is not relabelled or reused.
+
+The complete `PLAYWRIGHT_JSON_OUTPUT_FILE` inventory is:
+
+| Owner | Requirement and accepted class | Execution/parent ownership | Existing target and later use |
+| --- | --- | --- | --- |
+| `playwright.config.ts` | Required whenever `PRODUCTION_EVIDENCE_MANIFEST` activates production evidence; accepts the two validated classes below | GitHub/local CI and exact-head certification; Playwright's JSON reporter owns the final file | Existing targets reject in config preflight; Playwright writes the validated absolute destination |
+| `scripts/production-artifact-evidence.mjs` smoke environment | Produces the variable from its CLI report option/default; committed smoke remains repository-relative | Stable-checks/local CI; `.local/production-artifact-evidence` | The committed owner removes its prior task-owned report, then canonicalizes, hashes, binds, copies, and bundles the newly produced report |
+| `scripts/production-artifact-evidence.mjs` CLI default | Reads an optional value and otherwise selects `.local/production-artifact-evidence/runtime-smoke.json` | Same production-smoke owner | Delegates cleanup and later evidence handling to the smoke path above |
+| `scripts/test-production-artifact-evidence.mjs` | Supplies both a repository-relative compatibility path and an absolute external path/root | Focused local/CI contract; fixture-owned `.local` or task-owned temporary external root | Both start absent; reports are parsed and hashed, and the external root is removed after verification |
+
+No other source consumes this variable. The Floor Plan, Pro Visual, Guest Save,
+My Designs, Public Share, Cart, and Retailer configurations consume the separate
+`REQUIRED_TEST_REPORT_PATH`; their existing repository-relative CI/report upload
+contract is not part of this change.
+
+`scripts/playwright-report-path.mjs` now owns the report destination policy.
+Production evidence accepts exactly two classes:
+
+- `repository-relative` remains available for committed stable-checks and local
+  production-evidence ownership. It must be a normalized `.json` beneath
+  `.local/production-artifact-evidence`, remain inside the current worktree
+  after parent realpath resolution, have an existing writable parent, and name
+  an absent target.
+- `external-evidence-root` is the exact-head certification class. The report
+  and `PLAYWRIGHT_EXTERNAL_EVIDENCE_ROOT` must be normalized absolute paths.
+  The root must already exist as a real directory rather than a symlink; the
+  report parent must already exist and be writable; parent realpath and the
+  canonical target must remain beneath the root; and the root, parent, and
+  target must remain outside the current repository, canonical checkout, and
+  registered Git worktrees. The final `.json` must not already exist.
+
+Empty, malformed, NUL-bearing, traversing, unknown-policy, missing-root,
+relative-root, missing-parent, unwritable-parent, existing-target, directory-
+target, symlink-escape, repository, and outside-authorized-root destinations
+fail closed with value-free errors. The resolver performs no file creation and
+never precreates the report. It returns the canonical absolute output path to
+the real Playwright config; a valid external path is not rewritten into
+`.local`, `test-results`, or `playwright-report`.
+
+Schema-v3 manifest and v1 journal validation still complete before report-path
+resolution and before Playwright can expose the production web server. Reporter
+metadata remains the prior portable artifact identity: the machine-local
+external root and absolute report path are not serialized into the production
+manifest or report metadata. The production smoke wrapper and GitHub workflow
+retain their existing repository-relative cleanup, canonicalization, hashing,
+copy, and bundle ownership; the seven Floor Plan, Pro Visual, Guest Save, My
+Designs, Public Share, Cart, and Retailer required-test configs continue to use
+their separate repository-relative `REQUIRED_TEST_REPORT_PATH` contract.
+
+The existing production-artifact owner exercises both path classes. Its real
+external producer-to-consumer case creates a task-owned root outside the test
+repository, supplies the real v3 manifest/journal and both environment values,
+loads actual `playwright.config.ts` with `--list`, starts no server, discovers
+exactly the two committed runtime-smoke specs, writes/parses/hashes the report
+at the exact external path, proves no repository fallback, proves a synthetic
+secret is absent, and removes the temporary root. Schema, journal, server,
+worker, retry, timeout, origin, discovery, runtime-smoke assertion, artifact,
+archive, scanner, and product behavior are unchanged. Exact-head
+recertification, integration, and the final CH-0015 closure audit remain
+pending.
+
 ## CH-0015I Playwright schema-consumer compatibility
 
 Classification is **PRODUCTION_ARTIFACT_SCHEMA_CONSUMER_DRIFT**. The exact

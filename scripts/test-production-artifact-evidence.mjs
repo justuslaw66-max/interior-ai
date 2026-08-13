@@ -3,6 +3,7 @@ import { execFileSync, spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import {
   existsSync,
+  chmodSync,
   copyFileSync,
   lstatSync,
   mkdirSync,
@@ -48,6 +49,10 @@ import {
   validateCurrentProductionEvidenceManifest,
 } from "./production-artifact-contract.mjs";
 import { loadProductionArtifactForPlaywright } from "./production-artifact-playwright.mjs";
+import {
+  PLAYWRIGHT_EXTERNAL_EVIDENCE_ROOT,
+  resolvePlaywrightReportPath,
+} from "./playwright-report-path.mjs";
 import { inspectGitTree } from "./vercel-output-manifest.mjs";
 import {
   GITLEAKS_ARCHIVE_ENTRIES,
@@ -2676,6 +2681,270 @@ function listedSpecCount(suites) {
 }
 
 {
+  const repositoryRoot = mkdtempSync(
+    path.join(tmpdir(), "ch-0015i-report-path-repository-"),
+  );
+  const externalRoot = mkdtempSync(
+    path.join(tmpdir(), "ch-0015i-report-path-external-"),
+  );
+  const outsideRoot = mkdtempSync(
+    path.join(tmpdir(), "ch-0015i-report-path-outside-"),
+  );
+  const repositoryReportParent = path.join(
+    repositoryRoot,
+    ".local/production-artifact-evidence",
+  );
+  const externalReportParent = path.join(externalRoot, "playwright");
+  const outsideReportParent = path.join(outsideRoot, "playwright");
+  let unwritableParent = null;
+  try {
+    mkdirSync(repositoryReportParent, { recursive: true });
+    mkdirSync(externalReportParent, { recursive: true });
+    mkdirSync(outsideReportParent, { recursive: true });
+
+    const relativeReportPath =
+      ".local/production-artifact-evidence/playwright-list.json";
+    const relative = resolvePlaywrightReportPath({
+      requestedPath: relativeReportPath,
+      repositoryRoot,
+      additionalRepositoryRoots: [process.cwd()],
+    });
+    assert.equal(relative.destinationClass, "repository-relative");
+    assert.equal(
+      relative.outputPath,
+      path.join(repositoryRoot, relativeReportPath),
+    );
+    assert.equal(relative.displayPath, relativeReportPath);
+
+    const externalReportPath = path.join(
+      externalReportParent,
+      "playwright-list.json",
+    );
+    const external = resolvePlaywrightReportPath({
+      requestedPath: externalReportPath,
+      repositoryRoot,
+      authorizedExternalRoot: externalRoot,
+      additionalRepositoryRoots: [process.cwd()],
+    });
+    assert.equal(external.destinationClass, "external-evidence-root");
+    assert.equal(external.outputPath, externalReportPath);
+    assert.equal(external.displayPath, "<external-evidence-root>");
+    assert.equal(
+      resolvePlaywrightReportPath({
+        requestedPath: path.join(externalReportParent, "trailing-root.json"),
+        repositoryRoot,
+        authorizedExternalRoot: `${externalRoot}${path.sep}`,
+      }).destinationClass,
+      "external-evidence-root",
+    );
+    assert.throws(
+      () =>
+        resolvePlaywrightReportPath({
+          requestedPath: `${externalReportPath}${path.sep}`,
+          repositoryRoot,
+          authorizedExternalRoot: externalRoot,
+        }),
+      /malformed/,
+    );
+
+    assert.throws(
+      () =>
+        resolvePlaywrightReportPath({
+          requestedPath: path.join(repositoryReportParent, "inside-worktree.json"),
+          repositoryRoot,
+          authorizedExternalRoot: repositoryRoot,
+          additionalRepositoryRoots: [process.cwd()],
+        }),
+      /repository worktree/,
+    );
+    assert.throws(
+      () =>
+        resolvePlaywrightReportPath({
+          requestedPath: path.join(
+            process.cwd(),
+            "scripts/inside-canonical-repository.json",
+          ),
+          repositoryRoot,
+          authorizedExternalRoot: process.cwd(),
+          additionalRepositoryRoots: [process.cwd()],
+        }),
+      /repository worktree/,
+    );
+    assert.throws(
+      () =>
+        resolvePlaywrightReportPath({
+          requestedPath: path.join(outsideReportParent, "outside-root.json"),
+          repositoryRoot,
+          authorizedExternalRoot: externalRoot,
+          additionalRepositoryRoots: [process.cwd()],
+        }),
+      /beneath the authorized external evidence root/,
+    );
+    assert.throws(
+      () =>
+        resolvePlaywrightReportPath({
+          requestedPath:
+            ".local/production-artifact-evidence/../../traversal.json",
+          repositoryRoot,
+        }),
+      /normalized/,
+    );
+    assert.throws(
+      () =>
+        resolvePlaywrightReportPath({
+          requestedPath: `${externalReportPath}\0synthetic-secret`,
+          repositoryRoot,
+          authorizedExternalRoot: externalRoot,
+        }),
+      /malformed/,
+    );
+    assert.throws(
+      () =>
+        resolvePlaywrightReportPath({
+          requestedPath: externalReportPath,
+          repositoryRoot,
+        }),
+      /root is required/,
+    );
+    assert.throws(
+      () =>
+        resolvePlaywrightReportPath({
+          requestedPath: externalReportPath,
+          repositoryRoot,
+          authorizedExternalRoot: "relative-evidence-root",
+        }),
+      /root must be absolute/,
+    );
+    assert.throws(
+      () =>
+        resolvePlaywrightReportPath({
+          requestedPath: path.join(
+            externalRoot,
+            "missing-parent/report.json",
+          ),
+          repositoryRoot,
+          authorizedExternalRoot: externalRoot,
+        }),
+      /parent directory must already exist/,
+    );
+
+    unwritableParent = path.join(externalRoot, "unwritable");
+    mkdirSync(unwritableParent);
+    chmodSync(unwritableParent, 0o500);
+    assert.throws(
+      () =>
+        resolvePlaywrightReportPath({
+          requestedPath: path.join(unwritableParent, "report.json"),
+          repositoryRoot,
+          authorizedExternalRoot: externalRoot,
+        }),
+      /parent directory is not writable/,
+    );
+    chmodSync(unwritableParent, 0o700);
+    unwritableParent = null;
+
+    const existingTarget = path.join(externalReportParent, "existing.json");
+    writeFileSync(existingTarget, "{}\n");
+    assert.throws(
+      () =>
+        resolvePlaywrightReportPath({
+          requestedPath: existingTarget,
+          repositoryRoot,
+          authorizedExternalRoot: externalRoot,
+        }),
+      /must not already exist/,
+    );
+    const directoryTarget = path.join(externalReportParent, "directory.json");
+    mkdirSync(directoryTarget);
+    assert.throws(
+      () =>
+        resolvePlaywrightReportPath({
+          requestedPath: directoryTarget,
+          repositoryRoot,
+          authorizedExternalRoot: externalRoot,
+        }),
+      /cannot be a directory/,
+    );
+
+    const repositoryParentLink = path.join(externalRoot, "repository-parent");
+    symlinkSync(repositoryReportParent, repositoryParentLink);
+    assert.throws(
+      () =>
+        resolvePlaywrightReportPath({
+          requestedPath: path.join(repositoryParentLink, "symlink-report.json"),
+          repositoryRoot,
+          authorizedExternalRoot: externalRoot,
+        }),
+      /escapes the authorized external evidence root|repository worktree/,
+    );
+    const outsideParentLink = path.join(externalRoot, "outside-parent");
+    symlinkSync(outsideReportParent, outsideParentLink);
+    assert.throws(
+      () =>
+        resolvePlaywrightReportPath({
+          requestedPath: path.join(outsideParentLink, "escaped-report.json"),
+          repositoryRoot,
+          authorizedExternalRoot: externalRoot,
+        }),
+      /escapes the authorized external evidence root/,
+    );
+    const externalRootLink = path.join(outsideRoot, "external-root-link");
+    symlinkSync(externalRoot, externalRootLink);
+    assert.throws(
+      () =>
+        resolvePlaywrightReportPath({
+          requestedPath: path.join(
+            externalRootLink,
+            "playwright/symlink-root-report.json",
+          ),
+          repositoryRoot,
+          authorizedExternalRoot: externalRootLink,
+        }),
+      /root must be a directory|root cannot be a symlink/,
+    );
+
+    for (const malformedPath of [undefined, null, "", "report.txt"]) {
+      assert.throws(
+        () =>
+          resolvePlaywrightReportPath({
+            requestedPath: malformedPath,
+            repositoryRoot,
+          }),
+        /required|JSON file/,
+      );
+    }
+    assert.throws(
+      () =>
+        resolvePlaywrightReportPath({
+          requestedPath: relativeReportPath,
+          repositoryRoot,
+          pathPolicy: "unknown-report-policy",
+        }),
+      /Unknown Playwright report destination policy/,
+    );
+
+    const syntheticCredential = "synthetic-report-path-secret-never-print";
+    let safeError;
+    try {
+      resolvePlaywrightReportPath({
+        requestedPath: externalReportPath,
+        repositoryRoot,
+        authorizedExternalRoot: path.join(externalRoot, syntheticCredential),
+      });
+    } catch (error) {
+      safeError = error;
+    }
+    assert.ok(safeError);
+    assert.doesNotMatch(String(safeError), new RegExp(syntheticCredential));
+  } finally {
+    if (unwritableParent) chmodSync(unwritableParent, 0o700);
+    rmSync(repositoryRoot, { recursive: true, force: true });
+    rmSync(externalRoot, { recursive: true, force: true });
+    rmSync(outsideRoot, { recursive: true, force: true });
+  }
+}
+
+{
   const context = await fixture({ recordRuntimeTest: false });
   assert.deepEqual(CURRENT_PRODUCTION_EVIDENCE_VERSIONS, [3]);
   assert.equal(PRODUCTION_EVIDENCE_VALIDATOR_VERSION, 3);
@@ -2805,7 +3074,17 @@ function listedSpecCount(suites) {
         overrides.environment ?? playwrightContractEnvironment(context),
       ...overrides,
     });
-  assert.deepEqual(load(), accepted.identity);
+  const loaded = load();
+  assert.deepEqual(loaded.identity, accepted.identity);
+  assert.equal(loaded.reportDestination.destinationClass, "repository-relative");
+  assert.equal(
+    loaded.reportDestination.outputPath,
+    path.join(context.root, context.reportPath),
+  );
+  assert.throws(
+    () => load({ reportPath: undefined }),
+    /Production evidence report path is required/,
+  );
   assert.throws(() => load({ manifestPath: "" }), /manifest path is required/);
   assert.throws(
     () => load({ useProductionServer: false }),
@@ -2849,9 +3128,9 @@ function listedSpecCount(suites) {
     "the canonical validator must reject the divergence fixture",
   );
   assert.throws(
-    () => load(),
+    () => load({ reportPath: undefined }),
     /canonical validation failed/,
-    "Playwright must reject a manifest that the canonical validator rejects",
+    "invalid artifact schema must fail before report-path resolution",
   );
   await writeProductionEvidenceManifest({
     repositoryRoot: context.root,
@@ -2982,6 +3261,131 @@ function listedSpecCount(suites) {
     listedSpecCount(report.suites) > 0,
     "producer manifest passes real Playwright config with nonzero discovery",
   );
+  assert.equal(
+    listedSpecCount(report.suites),
+    2,
+    "repository-relative compatibility must discover both runtime-smoke specs",
+  );
+
+  const externalEvidenceRoot = mkdtempSync(
+    path.join(tmpdir(), "ch-0015i-playwright-external-evidence-"),
+  );
+  const externalReportParent = path.join(externalEvidenceRoot, "playwright");
+  const externalReportPath = path.join(
+    externalReportParent,
+    "runtime-smoke-list.json",
+  );
+  const syntheticExternalSecret =
+    "synthetic-external-playwright-secret-never-print";
+  try {
+    mkdirSync(externalReportParent);
+    const externalEnvironment = {
+      ...configEnvironment,
+      PLAYWRIGHT_JSON_OUTPUT_FILE: externalReportPath,
+      [PLAYWRIGHT_EXTERNAL_EVIDENCE_ROOT]: externalEvidenceRoot,
+      SYNTHETIC_EXTERNAL_REPORT_SECRET: syntheticExternalSecret,
+    };
+    execFileSync(
+      process.execPath,
+      [
+        path.join(mainRepositoryRoot, "node_modules/@playwright/test/cli.js"),
+        "test",
+        "tests/e2e/00-runtime-smoke.spec.ts",
+        "--config",
+        path.join(mainRepositoryRoot, "playwright.config.ts"),
+        "--project=chromium",
+        "--list",
+        "--reporter=json",
+      ],
+      { cwd: context.root, env: externalEnvironment, encoding: "utf8" },
+    );
+    assert.equal(
+      existsSync(externalReportPath),
+      true,
+      "real Playwright config must write to the exact external report path",
+    );
+    const externalReportBytes = readFileSync(externalReportPath);
+    const externalReportText = externalReportBytes.toString("utf8");
+    const externalReport = JSON.parse(externalReportText);
+    assert.equal(listedSpecCount(externalReport.suites), 2);
+    assert.equal(
+      externalReport.config.metadata.productionArtifactEvidence.schema,
+      PRODUCTION_EVIDENCE_SCHEMA,
+    );
+    assert.equal(
+      externalReport.config.webServer.command,
+      PRODUCTION_EVIDENCE_SERVER_COMMAND,
+    );
+    assert.equal(externalReport.config.projects[0].retries, 0);
+    const externalReportSha256 = createHash("sha256")
+      .update(externalReportBytes)
+      .digest("hex");
+    assert.match(
+      externalReportSha256,
+      /^[0-9a-f]{64}$/,
+      "external Playwright report content must have a recorded SHA-256",
+    );
+    assert.doesNotMatch(
+      externalReportText,
+      new RegExp(syntheticExternalSecret),
+    );
+    for (const unexpectedRepositoryReport of [
+      path.join(
+        context.root,
+        ".local/production-artifact-evidence/runtime-smoke-list.json",
+      ),
+      path.join(context.root, "test-results/runtime-smoke-list.json"),
+      path.join(context.root, "playwright-report/runtime-smoke-list.json"),
+    ]) {
+      assert.equal(
+        existsSync(unexpectedRepositoryReport),
+        false,
+        "external report must not be rewritten into repository-owned output",
+      );
+    }
+
+    const whitespaceTarget = path.join(
+      externalReportParent,
+      "whitespace-must-not-be-trimmed.json",
+    );
+    const malformedConfigResult = spawnSync(
+      process.execPath,
+      [
+        path.join(mainRepositoryRoot, "node_modules/@playwright/test/cli.js"),
+        "test",
+        "tests/e2e/00-runtime-smoke.spec.ts",
+        "--config",
+        path.join(mainRepositoryRoot, "playwright.config.ts"),
+        "--project=chromium",
+        "--list",
+        "--reporter=json",
+      ],
+      {
+        cwd: context.root,
+        env: {
+          ...externalEnvironment,
+          PLAYWRIGHT_JSON_OUTPUT_FILE: ` ${whitespaceTarget} `,
+        },
+        encoding: "utf8",
+      },
+    );
+    assert.notEqual(
+      malformedConfigResult.status,
+      0,
+      "real Playwright config must reject rather than trim a malformed report path",
+    );
+    assert.match(
+      `${malformedConfigResult.stdout}\n${malformedConfigResult.stderr}`,
+      /Production evidence report path is malformed/,
+    );
+    assert.equal(
+      existsSync(whitespaceTarget),
+      false,
+      "malformed report path must not create its trimmed target",
+    );
+  } finally {
+    rmSync(externalEvidenceRoot, { recursive: true, force: true });
+  }
 }
 
 {
@@ -2992,6 +3396,10 @@ function listedSpecCount(suites) {
   const configSource = readFileSync(path.join(process.cwd(), "playwright.config.ts"), "utf8");
   const loaderSource = readFileSync(
     path.join(process.cwd(), "scripts/production-artifact-playwright.mjs"),
+    "utf8",
+  );
+  const reportPathSource = readFileSync(
+    path.join(process.cwd(), "scripts/playwright-report-path.mjs"),
     "utf8",
   );
   const contractSource = readFileSync(
@@ -3005,7 +3413,24 @@ function listedSpecCount(suites) {
   assert.doesNotMatch(producerSource, /journal\.version\s*!==\s*1|\n\s*version:\s*1,\n/);
   assert.match(configSource, /loadProductionArtifactForPlaywright/);
   assert.match(loaderSource, /from "\.\/production-artifact-contract\.mjs"/);
+  assert.match(loaderSource, /from "\.\/playwright-report-path\.mjs"/);
+  assert.match(loaderSource, /PLAYWRIGHT_EXTERNAL_EVIDENCE_ROOT/);
   assert.match(loaderSource, /verify-preflight/);
+  assert.doesNotMatch(
+    loaderSource,
+    /reportPath,\s*"Production evidence report path"\s*\)/,
+    "Playwright loader must not retain the repository-relative-only report check",
+  );
+  assert.match(configSource, /reportDestination\.outputPath/);
+  assert.doesNotMatch(
+    configSource,
+    /PLAYWRIGHT_JSON_OUTPUT_FILE\?\.trim/,
+    "real Playwright config must preserve malformed input for fail-closed validation",
+  );
+  assert.match(reportPathSource, /external-evidence-root/);
+  assert.match(reportPathSource, /must not already exist/);
+  assert.match(reportPathSource, /authorized external evidence root/);
+  assert.doesNotMatch(producerSource, /PLAYWRIGHT_EXTERNAL_EVIDENCE_ROOT/);
   assert.doesNotMatch(configSource, /production-artifact-evidence\.v2|validatorVersion:\s*2/);
   assert.equal(
     [producerSource, configSource, loaderSource].some((source) =>
@@ -3019,12 +3444,20 @@ function listedSpecCount(suites) {
     "playwright.config.ts",
     "scripts/production-artifact-contract.mjs",
     "scripts/production-artifact-playwright.mjs",
+    "scripts/playwright-report-path.mjs",
   ]) {
     assert.ok(manifestOwner.requiredSources.includes(requiredSource));
   }
   assert.ok(
     manifestOwner.requiredContributions.some(
       (contribution) => contribution.id === "artifact.playwright-v3-producer-consumer",
+    ),
+  );
+  assert.ok(
+    manifestOwner.requiredContributions.some(
+      (contribution) =>
+        contribution.id ===
+        "artifact.playwright-external-report-producer-consumer",
     ),
   );
   const smokeSource = producerSource.slice(

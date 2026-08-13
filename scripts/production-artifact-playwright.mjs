@@ -7,6 +7,10 @@ import {
   PRODUCTION_EVIDENCE_JOURNAL_PATH,
   validateCurrentProductionEvidenceManifest,
 } from "./production-artifact-contract.mjs";
+import {
+  PLAYWRIGHT_EXTERNAL_EVIDENCE_ROOT,
+  resolvePlaywrightReportPath,
+} from "./playwright-report-path.mjs";
 
 function repositoryPath(repositoryRoot, relativePath, description) {
   if (typeof relativePath !== "string" || relativePath.length === 0) {
@@ -91,7 +95,6 @@ export function loadProductionArtifactForPlaywright({
       "Local production artifact evidence cannot be presented as HTTPS deployment evidence.",
     );
   }
-  repositoryPath(repositoryRoot, reportPath, "Production evidence report path");
   const journalPath = requiredExpectation(
     environment,
     "PRODUCTION_EVIDENCE_JOURNAL_PATH",
@@ -181,5 +184,13 @@ export function loadProductionArtifactForPlaywright({
     throw new Error(`Production artifact evidence manifest rejected: ${validation.issues.join("; ")}`);
   }
   validateEnvironmentMode(manifestRead.value, environment);
-  return validation.identity;
+  const reportDestination = resolvePlaywrightReportPath({
+    requestedPath: reportPath,
+    repositoryRoot,
+    authorizedExternalRoot: environment[PLAYWRIGHT_EXTERNAL_EVIDENCE_ROOT],
+  });
+  return Object.freeze({
+    identity: validation.identity,
+    reportDestination,
+  });
 }

@@ -1,5 +1,74 @@
 # Code health audit handoff
 
+## CH-0015I external Playwright report-path handoff — 2026-08-14
+
+Branch `fix/ch-0015i-external-playwright-report-path` starts at exact candidate
+`3a4272671cb316aca64733f7258e52228bbfd341`, tree
+`4116c07afc124f32b6ef19f18a38c5048ae691df`, whose parent is
+`63ae36e5d642e741c2c3f9f9e3592bcc710577b3`. Integration local and remote remain
+`2c567fd483877c7dcbd8fd23e3cd8cb316732c8c`. Entry source/index/untracked/
+tracked-ignored checks were clean; no repository-owned app, build, browser,
+runtime-smoke, Phase 8, Prisma, or disposable-database process was active.
+Node was `v24.13.0`; npm was `11.6.2`.
+
+The authoritative classification is
+**EXTERNAL_PLAYWRIGHT_REPORT_PATH_CONTRACT_DEFECT /
+ABSOLUTE_EXTERNAL_REPORT_PATH_REJECTED**. The preserved failure root
+`ch0015i-final-integrator-3a427267-20260813T165753Z-bed1c47a` remains unchanged.
+Its external target was valid, absent, writable, and outside every repository,
+but the real v3 list invocation stopped on `Production evidence report path
+must be repository-relative.` before reporter initialization, server startup,
+or discovery. Its failure-log SHA-256 remains
+`852a124197ba348a0fd26ae6d71838a82390b854f98997e192311adc24f64b4f`; the
+removed historical build and artifact are not reused.
+
+`scripts/playwright-report-path.mjs` is the single report destination owner.
+It preserves normalized absent JSON beneath the existing ignored `.local`
+production-evidence directory for stable-checks. Exact-head certification may
+instead supply a normalized absolute target plus
+`PLAYWRIGHT_EXTERNAL_EVIDENCE_ROOT`; the root and parent must exist, the parent
+must be writable, realpaths must remain contained, Git worktree/canonical roots
+must not overlap, symlink escape fails, and an existing file or directory is
+never overwritten. The resolver is read-only and returns a canonical absolute
+reporter path with only a safe destination classification.
+
+The v3 manifest/journal and exact artifact validation still occur before path
+resolution and server exposure. The real Playwright config consumes the
+validated output directly; it does not rewrite external output to `.local` or
+serialize the local root/path into metadata. GitHub stable-checks and the
+production smoke wrapper retain repository-relative cleanup/hash/archive flow.
+Floor Plan, Pro Visual, Guest Save, My Designs, Public Share, Cart, and Retailer
+configs retain their separate required-test report contract. Server command,
+BUILD_ID/source/tree/artifact bindings, workers, retries, timeouts, origins,
+discovery, and reporter identity are unchanged.
+
+`ci.production-artifact-contract` remains the sole required owner and inventory
+remains 27 gates / 379 sources. It covers the full path-security matrix and a
+real external producer-to-config/list run: real v3 manifest/journal, exit zero,
+exact two-spec discovery, exact external report, parse plus SHA-256, no
+repository fallback, no synthetic secret, and safe task-root cleanup. Focused
+production-artifact, truthfulness, runtime configuration, CH-0017/CH-0028
+timing/readiness, zero-warning lint, typecheck, code-quality, tracked-hygiene,
+syntax, manifest, workflow, and diff checks pass. Strict build, runtime smoke,
+browser owners, Phase 8, and Full E2E were not run.
+
+A separate read-only reviewer inspected the complete diff. It found one P1:
+`playwright.config.ts` trimmed `PLAYWRIGHT_JSON_OUTPUT_FILE`, while the
+CLI-selected reporter could consume the raw value, allowing validation and
+write targets to differ. The config now preserves the raw value; a real
+config/list negative proves whitespace-bearing input fails before output and
+does not create its trimmed target, and an anti-drift guard preserves that
+boundary. The affected owner passed again, and complete-diff rereview returned
+**PASS — no remaining actionable findings**. The reviewer made no edits.
+
+No Floor Plan Upload, telemetry bootstrap, NFT tracing, artifact timestamps,
+schema v3, archive/scanner, Phase 8, dependency, database, workflow, product,
+deployment, or external-control behavior changed. Rollback is one focused
+commit revert followed by production-artifact and truthfulness validation. The
+candidate remains unintegrated. No CH-0015 product/UI implementation surface
+remains; exact-head recertification and the final CH-0015 closure audit remain
+pending and were not begun.
+
 ## CH-0015I Playwright artifact-schema v3 handoff — 2026-08-13
 
 Branch `fix/ch-0015i-playwright-artifact-schema-v3` starts at exact candidate
