@@ -415,7 +415,7 @@ export function sourceValidationStageEvidence({
   const passed = failedCheckId === null && results.length === contract.checks.length;
   const evidence = sealSourceValidationEvidence({
     schema: PRODUCTION_CERTIFICATION_SOURCE_VALIDATION_SCHEMA,
-    version: 2,
+    version: 3,
     certificationId: state.certificationId,
     candidate: structuredClone(state.candidate),
     harness: structuredClone(state.harness),
@@ -526,7 +526,7 @@ export function validateSourceValidationEvidence({
   }
   const sourceAttempt = state.stages?.["source-validation"]?.attempts?.at(-1);
   if (
-    evidence?.version !== 2 ||
+    evidence?.version !== 3 ||
     evidence?.runNonce !== `${state.certificationId}:${sourceAttempt?.id}` ||
     evidence?.startedAt !== sourceAttempt?.startedAt ||
     !isCanonicalUtcTimestamp(evidence?.completedAt) ||

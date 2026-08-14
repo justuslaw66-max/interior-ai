@@ -204,6 +204,35 @@ Authenticated consumers can call `DELETE /api/floor-plan-imports/:id/source` onc
 
 Enhanced detection is controlled by `FLOOR_PLAN_IMPORT_ENHANCED_DETECTION`; set it to `0` for rollback. Semantic classification is separately optional and configured with `OPENAI_API_KEY` plus an optional `FLOOR_PLAN_VISION_MODEL`. It remains off unless `FLOOR_PLAN_VISION_ENABLED=1`. Ranked page previews use a low-detail semantic pass, while the confirmed plan crop uses original detail with structured output and `store: false`. Model labels, boxes and span endpoints remain proposals: deterministic source linework supplies scale and geometry, and unsupported observations return to review. Without a configured classifier, outlined text or weak scans correctly remain in review/guided-tracing fallback instead of being guessed.
 
+`floorPlanVisionRuntimeConfiguration` reads the enable flag, API-key presence,
+safety override, and model for every invocation; none is captured or cached at
+module import. `externalVisionEnabled` is exactly
+`FLOOR_PLAN_VISION_ENABLED === "1"`. A classification call additionally requires
+a nonempty `OPENAI_API_KEY`, no `FLOOR_PLAN_VISION_DISABLED=1`, and derivative
+read capability; the model defaults to `gpt-5.6`. `APP_ENV`,
+`NEXT_PUBLIC_APP_ENV`, `VERCEL_ENV`, `NODE_ENV`, `CI`, and local-OCR settings do
+not participate in that expression. The local-OCR source test imports the
+adapter normally and makes no environment mutation. Certification source check
+5 supplies its false fixture through stage-environment v2 before the child
+starts; build/runtime keep their deployment configuration.
+
+| Input | Owner/default and accepted behavior | Read/cache behavior | Source check 5 | Build/runtime | Secret/evidence |
+| --- | --- | --- | --- | --- | --- |
+| `FLOOR_PLAN_VISION_ENABLED` | PDF raster adapter; absent/`0`/other means disabled, exact `1` means enabled | Per extraction/classification; not import-cached | Check-owned exact `0` | Preserve validated `0` or `1` | No; safe `boolean:false/true` classification may be recorded |
+| `OPENAI_API_KEY` | Application deployment config; absent/empty means classifier unavailable, and presence alone cannot enable it | Per classification; not import-cached | Must be absent | Optional value preserved | Yes; only present/absent classification may be recorded |
+| `FLOOR_PLAN_VISION_DISABLED` | Classifier safety override; absent/`0` means no override, exact `1` blocks classification | Per classification; not import-cached | Must be absent because the primary false fixture owns disablement | Preserve validated `0` or `1` | No; safe enum classification may be recorded |
+| `FLOOR_PLAN_VISION_MODEL` | Classifier model selector; absent/empty defaults to `gpt-5.6`, otherwise uses the supplied nonempty identifier | Per classification; not import-cached | Must be absent | Optional nonempty value preserved | No; evidence records presence/class only, not the ambient value |
+| `context.store.readDerivative` | Adapter service capability; absent blocks classification | Per classification call; not cached | Present in the test fixture but irrelevant while vision is disabled | Service-owned | No environment evidence |
+| `FLOOR_PLAN_LOCAL_OCR_DISABLED` | Default local-OCR provider factory; exact `1` disables the default provider | Per factory call; not import-cached | Must be absent; the local-OCR test supplies its provider explicitly | Preserve validated `0` or `1` | No; safe enum classification may be recorded |
+
+`APP_ENV`, `NEXT_PUBLIC_APP_ENV`, `VERCEL_ENV`, `NODE_ENV`, `CI`, test/fixture
+mode flags, and prior source-check state are not inputs to
+`externalVisionEnabled`. Each source check is a separate child with a newly
+projected environment, so one check's `process.env` mutation cannot reach the
+next. The sealed CH-0015I failure retained only names and classifications, not
+raw application values; the historical flag value is provably exact `1` from
+the observed metric, while the model and secret values remain unknown.
+
 Share-token and public-catalog boundaries never return raw source manifests or private import lineage. Shared canonical documents receive a geometry-derived share ID, lose source job/address/underlay/reviewer metadata, and retain only sanitized room and structure display names. Catalog room summaries are derived from an allowlisted semantic room type with server-generated IDs; a malformed or uploader-defined type fails closed instead of exposing the manifest label.
 
 ## Canonical rendering and compatibility

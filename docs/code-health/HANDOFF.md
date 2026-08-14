@@ -1,5 +1,67 @@
 # Code health audit handoff
 
+## CH-0015I Floor Plan source-environment correction handoff — 2026-08-15
+
+Branch `fix/production-certification-floor-plan-source-env` starts at exact
+candidate `e39875191b0d444e258d26598c010b3f8eb412d1`, tree
+`5db8966723ea4fb9e1822217f5a39966cca33ebd`, above unchanged integration
+`2c567fd483877c7dcbd8fd23e3cd8cb316732c8c`, tree
+`50f9c5d6a6610990606fd9db9a27ba40200fca90`. Entry source/index/untracked/
+tracked-ignored/Git-lock checks were clean; no repository-owned build/test/Git/
+disposable-database process or listener on 3000/3317 was active. The unrelated
+system PostgreSQL listener remained outside repository ownership.
+
+Failed real certification `CH-0015I-final-20260815-e39875191b0d` for candidate
+`CH-0015I-e39875191b0d444e` remains immutable. Its four passed source checks,
+failed canonical check 5, stdout/stderr/result/evidence hashes,
+`SOURCE_CONTRACT_FAILURE`, `consumedSubstantiveGate=true`, doctor attempts, and
+all downstream invalidations were inspected read-only and were not resumed,
+rewritten, or rehabilitated. The retained mismatch is
+`externalVisionEnabled` expected `false`, actual `true`, at
+`scripts/test-floor-plan-local-ocr.ts:168`.
+
+The primary classification is
+`SOURCE_VALIDATION_APPLICATION_ENVIRONMENT_LEAKAGE_DEFECT`. Source-validation
+v1 preserved ordinary parent application variables, so check 5 received the
+names `FLOOR_PLAN_VISION_ENABLED`, `FLOOR_PLAN_VISION_MODEL`, and
+`OPENAI_API_KEY`. Raw model/key values were not retained and remain unknown.
+Because the adapter read the flag per extraction and the metric was true, the
+historical enable flag was exact `1`. The test never mutated `process.env`, each
+source check was a separate child, and the configuration was not import-cached;
+prior checks, application-stage classifiers, `NODE_ENV`/`CI`, and local-OCR
+flags were not causal.
+
+Stage-environment contract v2 now inventories the five relevant application
+inputs and binds per-profile value policies. Canonical source check 5 alone
+receives check-owned `FLOOR_PLAN_VISION_ENABLED=0`; the model, key, safety
+override, and local-OCR disable flag are absent. Other source checks receive all
+five absent. Build/runtime preserve validated deployment `0`/`1` flags, model,
+and optional secret, and reject source-fixture provenance. Source evidence v3
+binds the value-policy hash, safe effective classifications, validation result,
+stripped application names, and prohibited ambient-value absence; no secret
+value enters evidence or error output. Unknown ambient `FLOOR_PLAN_*` names are
+stripped and recorded.
+
+The exact `e398751…` runner/projector and canonical command reproduce the
+historical check-5 failure before correction. The corrected real-runner path
+runs all 19 checks with a realistic parent that has vision enabled, a model,
+synthetic OpenAI key, and disable flags; check 5 receives `boolean:false` and
+passes. Direct `npm run test:floor-plan-required`, local OCR/configuration,
+production-artifact evidence, certification harness/simulation, 27-gate/382-
+source truthfulness, critical-required, Floor Plan architecture, tracked
+hygiene, zero-warning lint, typecheck, and code-quality checks pass. The bounded
+qualifier returns `QUALIFIED_FOR_FINAL_CANDIDATE_CERTIFICATION`. No real build,
+Phase 8, runtime smoke, browser-owner matrix, Full E2E, certification, product/UI
+behavior, dependency, database schema, integration, push, or deployment runs or
+changes belong to this correction.
+
+Rollback is one focused commit revert. That restores source-profile ambient
+application inheritance and source evidence v2, so no real certification should
+run after rollback until a reviewed replacement owns deterministic Floor Plan
+source configuration. Build/runtime product configuration is otherwise
+unchanged. Exact-head real certification, stable-staging promotion, integration,
+and the final CH-0015 closure audit remain pending and separately authorized.
+
 ## CH-0015I Harness v1 stage-environment isolation handoff — 2026-08-14
 
 Branch `fix/production-certification-harness-v1-stage-env-isolation` starts at

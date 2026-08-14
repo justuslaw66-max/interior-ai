@@ -4,6 +4,7 @@ import path from "node:path";
 
 import {
   CERTIFICATION_EVIDENCE_ROOT_ENV,
+  CERTIFICATION_HARNESS_SOURCE_PATHS,
   CERTIFICATION_STAGE_COMMANDS,
   CERTIFICATION_STAGE_ORDER,
   PHASE8_EXTERNAL_EVIDENCE_ROOT_ENV,
@@ -371,7 +372,7 @@ function validateContracts(repositoryRoot) {
     journalSchema: "v1",
     verificationModes: ["verify-preflight", "verify-archive-preflight", "verify-standalone"],
     sourceValidation: {
-      schema: "interior-ai.production-certification-source-validation.v2",
+      schema: "interior-ai.production-certification-source-validation.v3",
       checkCount: source.checks.length,
       checkSetSha256: source.sha256,
       allCanonicalCommandsPresent: true,
@@ -421,6 +422,35 @@ function validateStageEnvironmentCapabilities(repositoryRoot, environment) {
   const phase8Profile = contract.profiles.phase8;
   const productionBrowser = contract.profiles["production-browser-owner"];
   const developmentBrowser = contract.profiles["development-browser-owner"];
+  const qualificationSourceProfile =
+    contract.profiles["source-validation-qualification"];
+  const floorPlanCheck = source.checks.find(
+    (entry) => entry.id === "floor-plan-required-closure",
+  );
+  const sourcePolicies = sourceProfile.valuePolicies;
+  const qualificationSourcePolicies = qualificationSourceProfile.valuePolicies;
+  const floorPlanLocalOcrTest = readFileSync(
+    path.join(repositoryRoot, "scripts/test-floor-plan-local-ocr.ts"),
+    "utf8",
+  );
+  const floorPlanAdapter = readFileSync(
+    path.join(repositoryRoot, "lib/floor-plan-imports/pdf-raster-adapter.ts"),
+    "utf8",
+  );
+  const floorPlanVisionConfiguration = readFileSync(
+    path.join(
+      repositoryRoot,
+      "lib/floor-plan-imports/vision-configuration.ts",
+    ),
+    "utf8",
+  );
+  const stageEnvironmentRegression = readFileSync(
+    path.join(
+      repositoryRoot,
+      "scripts/test-production-certification-stage-environment.mjs",
+    ),
+    "utf8",
+  );
   if (
     !sourceProfile.parentOnlyVariables.includes("CERTIFICATION_EVIDENCE_ROOT") ||
     sourceProfile.childVisibleVariables.includes("CERTIFICATION_EVIDENCE_ROOT") ||
@@ -444,7 +474,53 @@ function validateStageEnvironmentCapabilities(repositoryRoot, environment) {
     productionBrowser.fixedValues.PLAYWRIGHT_USE_PRODUCTION_SERVER !== "1" ||
     developmentBrowser.childVisibleVariables.includes(
       "PLAYWRIGHT_USE_PRODUCTION_SERVER",
-    )
+    ) ||
+    floorPlanCheck?.canonicalCommand !== "npm run test:floor-plan-required" ||
+    sourcePolicies.FLOOR_PLAN_VISION_ENABLED?.policy !==
+      "check-owned-fixture-value" ||
+    sourcePolicies.FLOOR_PLAN_VISION_ENABLED?.value !== "0" ||
+    sourcePolicies.FLOOR_PLAN_VISION_ENABLED?.valueType !== "boolean" ||
+    JSON.stringify(
+      sourcePolicies.FLOOR_PLAN_VISION_ENABLED?.ownerCheckIds,
+    ) !== JSON.stringify(["floor-plan-required-closure"]) ||
+    JSON.stringify(sourcePolicies) !==
+      JSON.stringify(qualificationSourcePolicies) ||
+    [
+      "FLOOR_PLAN_LOCAL_OCR_DISABLED",
+      "FLOOR_PLAN_VISION_DISABLED",
+      "FLOOR_PLAN_VISION_MODEL",
+      "OPENAI_API_KEY",
+    ].some((name) => sourcePolicies[name]?.policy !== "must-be-absent") ||
+    [contract.profiles.build, runtimeProfile].some(
+      (profile) =>
+        profile.valuePolicies.FLOOR_PLAN_VISION_ENABLED?.policy !==
+          "optional-non-secret-enum" ||
+        profile.valuePolicies.OPENAI_API_KEY?.policy !==
+          "optional-secret-value-not-recorded" ||
+        Object.values(profile.valuePolicies).some(
+          (policy) => policy.policy === "check-owned-fixture-value",
+        ),
+    ) ||
+    !CERTIFICATION_HARNESS_SOURCE_PATHS.includes(
+      "scripts/test-production-certification-stage-environment.mjs",
+    ) ||
+    !/module import before environment setup/i.test(stageEnvironmentRegression) ||
+    !/historical real-runner leakage reproduction/i.test(
+      stageEnvironmentRegression,
+    ) ||
+    !/externalVisionEnabled, false/.test(floorPlanLocalOcrTest) ||
+    /process\.env|delete\s+process\.env/.test(floorPlanLocalOcrTest) ||
+    !/externalVisionEnabled:\s*environment\.FLOOR_PLAN_VISION_ENABLED === "1"/.test(
+      floorPlanVisionConfiguration,
+    ) ||
+    !/const vision = floorPlanVisionRuntimeConfiguration\(\)/.test(
+      floorPlanAdapter,
+    ) ||
+    !/externalVisionEnabled: vision\.externalVisionEnabled/.test(
+      floorPlanAdapter,
+    ) ||
+    !/!vision\.externalVisionEnabled/.test(floorPlanAdapter) ||
+    !/!vision\.apiKeyConfigured/.test(floorPlanAdapter)
   ) {
     throw new Error(
       "runtime, browser-owner, Phase 8, or source-validation environment profiles are incoherent",
@@ -468,6 +544,11 @@ function validateStageEnvironmentCapabilities(repositoryRoot, environment) {
     profileCount: profileEntries.length,
     sourceCheckCount: source.checks.length,
     sourceEvidenceRootParentOnly: true,
+    floorPlanSourceConfigurationOwned: true,
+    valuePolicySha256: sourceProfile.valuePolicySha256,
+    importOrderRegressionRegistered: true,
+    historicalFloorPlanRegressionRegistered: true,
+    buildRuntimeVisionConfigurationPreserved: true,
     runtimeActivationExplicit: true,
     unknownControlPolicy: "fail-closed-in-doctor; strip-and-record-in-projector",
   };

@@ -46,7 +46,11 @@ import {
   validateSourceValidationEvidence,
   validateContinuityEvidence,
 } from "./production-certification-source-continuity.mjs";
-import { projectCertificationChildEnvironment } from "./production-certification-stage-environment.mjs";
+import {
+  certificationEnvironmentProfile,
+  projectCertificationChildEnvironment,
+  validateProjectedEnvironmentMetadata,
+} from "./production-certification-stage-environment.mjs";
 
 const SIMULATION_ID = "production-certification-v1-simulation";
 const FIXED_NONCE = "123e4567-e89b-42d3-a456-426614174001";
@@ -208,6 +212,10 @@ function simulationEnvironment(identity) {
     NODE_ENV: "production",
     CATALOG_STRICT_VALIDATION: "true",
     DATABASE_URL: "postgresql://simulation:simulation@127.0.0.1:5432/simulation",
+    FLOOR_PLAN_LOCAL_OCR_DISABLED: "1",
+    FLOOR_PLAN_VISION_DISABLED: "1",
+    FLOOR_PLAN_VISION_ENABLED: "1",
+    FLOOR_PLAN_VISION_MODEL: "simulation-floor-plan-model",
     OPENAI_API_KEY: "simulation-openai-placeholder",
     SHOPIFY_STORE_DOMAIN: "simulation.myshopify.example",
     SHOPIFY_STOREFRONT_TOKEN: "simulation-shopify-placeholder",
@@ -747,7 +755,7 @@ export async function runProductionCertificationSimulation() {
   ]);
   if (
     successfulSourceEvidence.schema !==
-      "interior-ai.production-certification-source-validation.v2" ||
+      "interior-ai.production-certification-source-validation.v3" ||
     successfulSourceEvidence.checks.length !== 19 ||
     successfulSourceEvidence.checks.some(
       (check) =>
@@ -764,6 +772,131 @@ export async function runProductionCertificationSimulation() {
     throw new Error(
       "simulation realistic parent environment leaked a later-stage capability into source validation",
     );
+  }
+  const floorPlanSourceCheck = successfulSourceEvidence.checks.find(
+    (check) => check.id === "floor-plan-required-closure",
+  );
+  if (
+    !floorPlanSourceCheck ||
+    !floorPlanSourceCheck.passed ||
+    !floorPlanSourceCheck.environment.environmentNames.includes(
+      "FLOOR_PLAN_VISION_ENABLED",
+    ) ||
+    floorPlanSourceCheck.environment.environmentNames.includes(
+      "OPENAI_API_KEY",
+    ) ||
+    floorPlanSourceCheck.environment.appliedValuePolicies.find(
+      (entry) => entry.name === "FLOOR_PLAN_VISION_ENABLED",
+    )?.effectiveValueClassification !== "boolean:false" ||
+    floorPlanSourceCheck.environment.prohibitedAmbientValueAbsence.passed !==
+      true ||
+    JSON.stringify(successfulSourceEvidence).includes(
+      environment.OPENAI_API_KEY,
+    )
+  ) {
+    throw new Error(
+      "simulation Floor Plan source check did not receive its deterministic value policy",
+    );
+  }
+  const projectProfile = (profileId, stage) => {
+    const profile = certificationEnvironmentProfile(fixtureRoot, profileId);
+    const stageInputs = Object.fromEntries(
+      profile.requiredVariables.map((name) => [
+        name,
+        profile.fixedValues[name] ?? `simulation-${stage}-${name}`,
+      ]),
+    );
+    return projectCertificationChildEnvironment({
+      repositoryRoot: fixtureRoot,
+      baseEnvironment: { ...process.env, ...environment },
+      stage,
+      profileId,
+      stageInputs,
+    });
+  };
+  const buildProjection = projectProfile("build", "build");
+  const runtimeProjection = projectProfile("runtime-smoke", "runtime-smoke");
+  for (const [profileId, stage, projection] of [
+    ["build", "build", buildProjection],
+    ["runtime-smoke", "runtime-smoke", runtimeProjection],
+  ]) {
+    if (
+      projection.environment.FLOOR_PLAN_VISION_ENABLED !== "1" ||
+      projection.environment.FLOOR_PLAN_VISION_MODEL !==
+        "simulation-floor-plan-model" ||
+      projection.environment.OPENAI_API_KEY !== environment.OPENAI_API_KEY ||
+      JSON.stringify(projection.metadata).includes(environment.OPENAI_API_KEY) ||
+      !validateProjectedEnvironmentMetadata({
+        repositoryRoot: fixtureRoot,
+        stage,
+        profileId,
+        metadata: projection.metadata,
+      }).valid
+    ) {
+      throw new Error(
+        `simulation ${profileId} profile did not preserve runtime Floor Plan configuration`,
+      );
+    }
+  }
+  const wrongValuePolicyHash = structuredClone(
+    floorPlanSourceCheck.environment,
+  );
+  wrongValuePolicyHash.valuePolicySha256 = "0".repeat(64);
+  const wrongValuePolicyHashRejected = !validateProjectedEnvironmentMetadata({
+    repositoryRoot: fixtureRoot,
+    stage: "source-validation",
+    checkId: "floor-plan-required-closure",
+    profileId: "source-validation-qualification",
+    requiredEnvironmentNames: ["DATABASE_URL"],
+    metadata: wrongValuePolicyHash,
+  }).valid;
+  const ambientFeatureLeak = structuredClone(floorPlanSourceCheck.environment);
+  ambientFeatureLeak.environmentNames.push("OPENAI_API_KEY");
+  ambientFeatureLeak.environmentNames.sort();
+  ambientFeatureLeak.environmentNamesSha256 = sha256Bytes(
+    canonicalJsonBytes(ambientFeatureLeak.environmentNames),
+  );
+  ambientFeatureLeak.prohibitedCertificationVariableAbsence.checkedNameCount =
+    ambientFeatureLeak.environmentNames.length;
+  const ambientFeatureFlagLeakageRejected =
+    !validateProjectedEnvironmentMetadata({
+      repositoryRoot: fixtureRoot,
+      stage: "source-validation",
+      checkId: "floor-plan-required-closure",
+      profileId: "source-validation-qualification",
+      requiredEnvironmentNames: ["DATABASE_URL"],
+      metadata: ambientFeatureLeak,
+    }).valid;
+  const buildFixtureLeak = structuredClone(buildProjection.metadata);
+  buildFixtureLeak.appliedValuePolicies.find(
+    (entry) => entry.name === "FLOOR_PLAN_VISION_ENABLED",
+  ).source = "check-owned-fixture";
+  const sourceFixtureLeakIntoBuildRuntimeRejected =
+    !validateProjectedEnvironmentMetadata({
+      repositoryRoot: fixtureRoot,
+      stage: "build",
+      profileId: "build",
+      metadata: buildFixtureLeak,
+    }).valid;
+  const importOrderDrift = structuredClone(floorPlanSourceCheck.environment);
+  importOrderDrift.appliedValuePolicies.find(
+    (entry) => entry.name === "FLOOR_PLAN_VISION_ENABLED",
+  ).effectiveValueClassification = "boolean:true";
+  const importOrderDriftRejected = !validateProjectedEnvironmentMetadata({
+    repositoryRoot: fixtureRoot,
+    stage: "source-validation",
+    checkId: "floor-plan-required-closure",
+    profileId: "source-validation-qualification",
+    requiredEnvironmentNames: ["DATABASE_URL"],
+    metadata: importOrderDrift,
+  }).valid;
+  if (
+    !wrongValuePolicyHashRejected ||
+    !ambientFeatureFlagLeakageRejected ||
+    !sourceFixtureLeakIntoBuildRuntimeRejected ||
+    !importOrderDriftRejected
+  ) {
+    throw new Error("simulation Floor Plan value-policy tamper cases were not rejected");
   }
   const wrongProfileEvidence = structuredClone(successfulSourceEvidence);
   wrongProfileEvidence.checks[0].environmentProfileId = "runtime-smoke";
@@ -1529,6 +1662,10 @@ export async function runProductionCertificationSimulation() {
       liveMutationDuringPhase8Rejected,
       wrongEnvironmentProfileRejected,
       leakedEnvironmentVariableRejected,
+      wrongValuePolicyHashRejected,
+      ambientFeatureFlagLeakageRejected,
+      sourceFixtureLeakIntoBuildRuntimeRejected,
+      importOrderDriftRejected,
     },
     simulationRoot,
     stateSha256: sha256Bytes(readFileSync(statePath)),

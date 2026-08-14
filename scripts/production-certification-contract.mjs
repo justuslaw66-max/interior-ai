@@ -20,7 +20,7 @@ export const PRODUCTION_CERTIFICATION_RUNTIME_EVIDENCE_SCHEMA =
 export const PRODUCTION_CERTIFICATION_BROWSER_EVIDENCE_SCHEMA =
   "interior-ai.production-certification-browser-owner-evidence.v1";
 export const PRODUCTION_CERTIFICATION_SOURCE_VALIDATION_SCHEMA =
-  "interior-ai.production-certification-source-validation.v2";
+  "interior-ai.production-certification-source-validation.v3";
 export const PRODUCTION_CERTIFICATION_ARTIFACT_SNAPSHOT_SCHEMA =
   "interior-ai.production-certification-artifact-snapshot.v1";
 export const PRODUCTION_CERTIFICATION_ARTIFACT_ROOT_SCHEMA =
@@ -183,6 +183,10 @@ export const CERTIFICATION_HARNESS_SOURCE_PATHS = Object.freeze([
   "scripts/production-certification-simulation.mjs",
   "scripts/production-certification-stage-environment.mjs",
   "scripts/test-production-certification-stage-environment.mjs",
+  "scripts/test-floor-plan-vision-configuration.ts",
+  "scripts/test-floor-plan-local-ocr.ts",
+  "lib/floor-plan-imports/pdf-raster-adapter.ts",
+  "lib/floor-plan-imports/vision-configuration.ts",
   "scripts/production-archive.mjs",
   "scripts/production-verifier-closure.mjs",
   "scripts/production-artifact-contract.mjs",
@@ -195,7 +199,7 @@ export const CERTIFICATION_HARNESS_SOURCE_PATHS = Object.freeze([
   "scripts/production-certification-regressions.json",
   "scripts/certification-playwright-start-reporter.mjs",
   "docs/qa/production-certification-contract.v1.json",
-  "docs/qa/production-certification-stage-environment.v1.json",
+  "docs/qa/production-certification-stage-environment.v2.json",
   "scripts/benchmark-phase8-projects.ts",
   "scripts/phase8-project-benchmark-contract.ts",
   "scripts/run-phase8-project-benchmark.ts",

@@ -86,22 +86,25 @@ The failed aggregate is still state-retained and validated as the exact
 canonical stopped prefix; if any earlier substantive check ran, a later
 non-substantive failure remains one-shot rather than becoming retryable.
 The sealed
-`interior-ai.production-certification-source-validation.v2` aggregate binds the
+`interior-ai.production-certification-source-validation.v3` aggregate binds the
 certification/candidate, harness and contract-matrix hashes, check-set hash,
 stage-environment contract hash, ordered per-check profile IDs and profile
-hashes, allowed/required environment-name-set hashes, the prohibited-variable
-absence result, attempt nonce, ordered IDs and commands, timestamps, every
+hashes, allowed/required environment-name-set hashes, value-policy hashes and
+safe effective classifications, the certification-control and ambient-value
+absence results, attempt nonce, ordered IDs and commands, timestamps, every
 retained file hash, completion marker, and aggregate SHA-256. State validation reparses this
 evidence and rehashes all files. A source identity descriptor alone is never
 accepted, and earlier qualification evidence is never imported as a substitute.
 
 ## Stage environment capability contract
 
-`docs/qa/production-certification-stage-environment.v1.json` is the canonical
+`docs/qa/production-certification-stage-environment.v2.json` is the canonical
 machine-readable owner for certification child-process capabilities. Its schema
-is `interior-ai.production-certification-stage-environment.v1`. It inventories
+is `interior-ai.production-certification-stage-environment.v2`. It inventories
 83 control names with canonical owner, classification, portability, secret
-classification, and presence/activation semantics. It defines profiles for
+classification, and presence/activation semantics. It separately inventories
+the five Floor Plan vision/local-OCR application inputs with accepted-value,
+default, secret, and read-timing semantics. It defines profiles for
 doctor, real and qualification source validation, build, each archive step,
 Phase 8, runtime smoke, production/development browser owners and discovery,
 final standalone, continuity, integration readiness, qualification, and
@@ -113,10 +116,24 @@ environment, strips all known certification controls and any unknown name under
 the declared control prefixes, then re-adds only explicit profile inputs. An
 unknown explicit control, prohibited input, wrong stage/profile, missing
 required input, or contradictory fixed activation fails before dispatch. The
-projector never mutates `process.env`, never records values, and emits sorted
-name inventories plus contract/profile/set hashes. Unknown parent controls are
+projector never mutates `process.env`. Secret values never enter evidence;
+non-secret booleans/enums are retained only as safe classifications. It emits
+sorted name inventories plus contract/profile/name-set/value-policy hashes.
+Unknown parent controls are
 stripped and recorded by the projector; doctor rejects them before source
 validation in a real certification.
+
+The real and qualification source profiles own the Floor Plan source-test
+configuration. Only check `floor-plan-required-closure` receives the
+check-owned fixture `FLOOR_PLAN_VISION_ENABLED=0`; ambient
+`FLOOR_PLAN_VISION_ENABLED`, `FLOOR_PLAN_VISION_MODEL`,
+`FLOOR_PLAN_VISION_DISABLED`, `FLOOR_PLAN_LOCAL_OCR_DISABLED`, and
+`OPENAI_API_KEY` cannot influence it. Other source checks receive those inputs
+absent. The build and runtime-smoke profiles instead preserve validated `0`/`1`
+feature values, the optional model, and the optional secret without recording
+the secret. Projected environments are fresh objects, so a child mutation
+cannot affect a later check. Unknown `FLOOR_PLAN_*` variables are stripped and
+recorded.
 
 `CERTIFICATION_EVIDENCE_ROOT` is parent orchestration context for source
 validation. The parent continues to write and seal check stdout, stderr,
@@ -168,8 +185,8 @@ artifact root to resolve to the canonical non-symlink
 - `interior-ai.production-certification-phase8-evidence.v1`
 - `interior-ai.production-certification-runtime-smoke-evidence.v1`
 - `interior-ai.production-certification-browser-owner-evidence.v1`
-- `interior-ai.production-certification-source-validation.v2`
-- `interior-ai.production-certification-stage-environment.v1`
+- `interior-ai.production-certification-source-validation.v3`
+- `interior-ai.production-certification-stage-environment.v2`
 - `interior-ai.production-certification-artifact-snapshot.v1`
 - `interior-ai.production-certification-artifact-root-private.v1`
 - `interior-ai.production-certification-continuity.v1`
@@ -448,14 +465,20 @@ continuity attempt is retained and a corrected second attempt uses a distinct
 evidence path before readiness. It supplies a realistic parent environment
 containing later Phase 8, runtime, and
 browser output paths, then proves all 19 fixture checks receive only their
-declared source profile. It rejects a wrong profile, profile/hash tampering, and
-a leaked runtime capability while retaining the parent-owned source evidence.
+declared source profile. The parent also has external Floor Plan vision enabled,
+a model selector, a synthetic OpenAI key, and both disable flags; check 5 still
+receives only its deterministic disabled fixture. It rejects a wrong profile,
+profile/hash/value-policy tampering, ambient application-feature leakage, a
+source fixture projected into build/runtime, import-order drift, and a leaked
+runtime capability while retaining the parent-owned source evidence.
 The production-artifact suite separately drives the real Playwright config
 with a source-validation parent root and no runtime marker, then proves the
 same config still fails closed when the explicit runtime stage omits its
 marker. `scripts/test-production-certification-stage-environment.mjs` also
 invokes the canonical source-stage executor in a clean temporary repository,
-runs the actual ordered 19-command source check set, and proves check 1 passes
+runs the exact historical `e39875191b0d…` runner/projector until canonical check
+5 reproduces `externalVisionEnabled` `true !== false`, then runs the corrected
+ordered 19-command source check set and proves check 1 passes
 through its real `npm run test:production-artifact-evidence` command without
 receiving the parent evidence root or any later-stage capability. The
 simulation starts no app, database, or browser and runs no real
@@ -463,6 +486,11 @@ build or benchmark. Its
 evidence is marked `deterministic-simulation` and cannot certify a real
 candidate.
 
+Doctor validates the Floor Plan check/policy owner, source/build/runtime policy
+separation, unchanged false assertion and production enable gate, per-call
+configuration reader, registered import-order regression, and exact historical
+real-runner coverage before source validation may begin. `certification:simulate`
+exercises all 19 fixture checks and the value-policy tamper matrix.
 `certification:qualify` may emit only `QUALIFIED_FOR_FINAL_CANDIDATE_CERTIFICATION`,
 `NOT_QUALIFIED_SOURCE_CONTRACT_DEFECT`, `NOT_QUALIFIED_ORCHESTRATION_GAP`, or
 `INCONCLUSIVE`. It performs deterministic doctor/simulation/regression/state,

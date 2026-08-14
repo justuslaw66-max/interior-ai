@@ -242,7 +242,7 @@ export function planProductionArchive({
       "certification-contract-matrix",
     ],
     [
-      "docs/qa/production-certification-stage-environment.v1.json",
+      "docs/qa/production-certification-stage-environment.v2.json",
       "certification-stage-environment-contract",
     ],
   ]) {

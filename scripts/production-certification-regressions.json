@@ -26,7 +26,8 @@
     { "id": 23, "defect": "tee-masks-producer-failure", "coverage": "direct spawn status/signal ownership guard" },
     { "id": 24, "defect": "partial-or-contradictory-test-evidence", "coverage": "Phase 8/runtime/browser exact inventory validators" },
     { "id": 25, "defect": "continuity-mismatch", "coverage": "six-point artifact equality validator" },
-    { "id": 26, "defect": "simulation-evidence-real-certification", "coverage": "execution classification anti-bypass guard" }
+    { "id": 26, "defect": "simulation-evidence-real-certification", "coverage": "execution classification anti-bypass guard" },
+    { "id": 27, "defect": "floor-plan-source-vision-ambient-value-leakage", "coverage": "exact e398751 real-runner reproduction, source check 5 check-owned value policy, doctor, simulation, and qualification" }
   ],
   "sourceValidationCases": [
     "identity-only-source-descriptor",
@@ -43,7 +44,15 @@
     "cross-commit-or-tree-evidence",
     "cross-harness-or-contract-evidence",
     "source-change-invalidates-successors",
-    "manual-stage-pass"
+    "manual-stage-pass",
+    "floor-plan-ambient-vision-enabled",
+    "floor-plan-synthetic-openai-key",
+    "floor-plan-value-policy-hash-mismatch",
+    "floor-plan-unknown-feature-flag",
+    "floor-plan-check-owned-value-missing",
+    "floor-plan-source-fixture-in-build-runtime",
+    "floor-plan-import-order-drift",
+    "floor-plan-child-environment-mutation-isolation"
   ],
   "continuityCases": [
     "copied-hash-six-labels",

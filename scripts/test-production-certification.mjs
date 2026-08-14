@@ -158,9 +158,33 @@ function stateFixture() {
 
 {
   const contract = stageEnvironmentContract(repositoryRoot);
-  assert.equal(contract.value.schema, "interior-ai.production-certification-stage-environment.v1");
+  assert.equal(contract.value.schema, "interior-ai.production-certification-stage-environment.v2");
   assert.equal(Object.keys(contract.variables).length, 83);
+  assert.equal(Object.keys(contract.applicationFeatureVariables).length, 5);
   assert.equal(Object.keys(contract.profiles).length, 20);
+  assert.deepEqual(
+    contract.profiles["source-validation"].valuePolicies
+      .FLOOR_PLAN_VISION_ENABLED,
+    {
+      policy: "check-owned-fixture-value",
+      valueType: "boolean",
+      value: "0",
+      ownerCheckIds: ["floor-plan-required-closure"],
+    },
+  );
+  assert.equal(
+    contract.profiles["source-validation"].valuePolicies.OPENAI_API_KEY
+      .policy,
+    "must-be-absent",
+  );
+  assert.equal(
+    contract.profiles.build.valuePolicies.FLOOR_PLAN_VISION_ENABLED.policy,
+    "optional-non-secret-enum",
+  );
+  assert.equal(
+    contract.profiles["runtime-smoke"].valuePolicies.OPENAI_API_KEY.policy,
+    "optional-secret-value-not-recorded",
+  );
   const legacyGateA3Controls = [
     "PLAYWRIGHT_ADMIN_EMAIL",
     "PLAYWRIGHT_ADMIN_SESSION_COOKIE",
@@ -815,7 +839,7 @@ function stateFixture() {
   );
   const stageEnvironmentMatrix = JSON.parse(
     readFileSync(
-      "docs/qa/production-certification-stage-environment.v1.json",
+      "docs/qa/production-certification-stage-environment.v2.json",
       "utf8",
     ),
   );
@@ -858,9 +882,15 @@ function stateFixture() {
   assert.match(realRunner, /stageChildEnvironment/);
   assert.match(projectorOwner, /strip-and-record/);
   assert.match(projectorOwner, /strippedUnknownCertificationControlVariables/);
+  assert.match(projectorOwner, /valuePolicySha256/);
+  assert.match(projectorOwner, /prohibitedAmbientValueAbsence/);
   assert.match(archiveOwner, /profileId: "archive-verifier"/);
   assert.match(artifactOwner, /profileId: "artifact-product-server"/);
   assert.match(stageEnvironmentRegressionOwner, /sourceValidationStageEvidence/);
+  assert.match(
+    stageEnvironmentRegressionOwner,
+    /Historical real-runner leakage reproduction passed/,
+  );
   assert.match(
     stageEnvironmentRegressionOwner,
     /npm run test:production-artifact-evidence/,
@@ -920,10 +950,10 @@ function stateFixture() {
   );
   mkdirSync(path.dirname(contractFixturePath), { recursive: true });
   cpSync(
-    "docs/qa/production-certification-stage-environment.v1.json",
+    "docs/qa/production-certification-stage-environment.v2.json",
     path.join(
       contractFixtureRoot,
-      "docs/qa/production-certification-stage-environment.v1.json",
+      "docs/qa/production-certification-stage-environment.v2.json",
     ),
   );
   const contractMatrix = JSON.parse(
@@ -1043,14 +1073,14 @@ function stateFixture() {
   const regressions = JSON.parse(
     readFileSync("scripts/production-certification-regressions.json", "utf8"),
   );
-  assert.equal(regressions.cases.length, 26);
+  assert.equal(regressions.cases.length, 27);
   assert.deepEqual(
     regressions.cases.map((entry) => entry.id),
-    Array.from({ length: 26 }, (_, index) => index + 1),
+    Array.from({ length: 27 }, (_, index) => index + 1),
   );
-  assert.equal(new Set(regressions.cases.map((entry) => entry.defect)).size, 26);
-  assert.equal(regressions.sourceValidationCases.length, 15);
-  assert.equal(new Set(regressions.sourceValidationCases).size, 15);
+  assert.equal(new Set(regressions.cases.map((entry) => entry.defect)).size, 27);
+  assert.equal(regressions.sourceValidationCases.length, 23);
+  assert.equal(new Set(regressions.sourceValidationCases).size, 23);
   assert.equal(regressions.continuityCases.length, 23);
   assert.equal(new Set(regressions.continuityCases).size, 23);
 }

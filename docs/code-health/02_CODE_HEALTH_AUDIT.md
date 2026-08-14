@@ -1189,6 +1189,15 @@ CH-0001, CH-0012, and CH-0016 are closed for repository-controlled remediation. 
 - **Validation and limits:** Three fresh production smokes passed 2/2 and all nine reloads in 10,192–11,354 ms with cumulative responses 6/9/12, 8 ready / 0 loading / 0 error, current generations, and coherent 8/13 parsed plus 12/7 prepared cache/refcount totals. Maxima were 6,858 ms heartbeat and 6,406 ms admitted callback, with every callback entering. Under two ~98% CPU workers, reloads were 12,725/11,859/12,048 ms; maximum heartbeat was 8,102 ms and admitted callback 7,168 ms, again with all invariants. The heartbeat reduction and elimination of no-entry are material; the admitted maximum is not numerically below the external 5,281 ms maximum, and the longest JavaScript task remains unattributed.
 - **Rollback:** Revert the one CH-0029 commit. This restores continuous hidden-Canvas frames and stable-smoke trace/video retention. No database, schema, cache-policy, timeout, external-control, PR, or deployment rollback exists.
 
+## CH-0015I — Floor Plan source-validation application environment leakage
+
+- **Severity/status:** P1 release harness; **LOCALLY REMEDIATED — EXACT-HEAD REAL CERTIFICATION PENDING**.
+- **Historical evidence:** Immutable certification `CH-0015I-final-20260815-e39875191b0d` stopped at canonical source check 5 with `externalVisionEnabled` actual `true`, expected `false`, and `SOURCE_CONTRACT_FAILURE`; the substantive gate remains consumed and downstream stages remain invalidated.
+- **Root cause:** `SOURCE_VALIDATION_APPLICATION_ENVIRONMENT_LEAKAGE_DEFECT`. Stage-environment v1 preserved ambient ordinary application variables, including the Floor Plan vision flag/model and OpenAI capability, while the local-OCR test truthfully asserted the disabled source contract. Configuration is read per call, not at import; neither the test nor an earlier child mutated the parent environment.
+- **Remediation:** Versioned stage-environment v2 owns check-5 `FLOOR_PLAN_VISION_ENABLED=0`, strips the other four relevant inputs, preserves validated build/runtime values, strips unknown `FLOOR_PLAN_*` inputs, and emits source-evidence v3 value-policy hashes and secret-safe classifications. The product enable gate, local OCR, UI, telemetry, archive, NFT/trace, Phase 8, database, and dependencies are unchanged.
+- **Coverage:** Exact historical runner reproduction; corrected canonical 19-check runner; absent/false/true flag matrix; synthetic secret; import-before/setup-before tests; child-mutation isolation; source/build/runtime cross-profile negatives; wrong policy hash; unknown ambient flag; missing fixture; secret redaction; doctor/simulation/qualification anti-bypass guards.
+- **Queue disposition:** No new application code-health debt or exception. The configuration reader moved to a cohesive small module, and the large PDF raster adapter remains at its accepted line baseline. Exact-head certification and the final CH-0015 closure audit stay open external release tasks.
+
 ## Positive controls worth preserving
 
 - Strict TypeScript production source showed no explicit `any` or suppression directives in targeted scans.

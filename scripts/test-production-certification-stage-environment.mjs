@@ -13,6 +13,7 @@ import {
 } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
+import { pathToFileURL } from "node:url";
 
 import {
   canonicalJsonBytes,
@@ -29,11 +30,422 @@ import {
   sourceValidationStageEvidence,
   validateSourceValidationEvidence,
 } from "./production-certification-source-continuity.mjs";
+import {
+  certificationEnvironmentProfile,
+  projectCertificationChildEnvironment,
+  stageEnvironmentContract,
+  validateProjectedEnvironmentMetadata,
+} from "./production-certification-stage-environment.mjs";
 
 const FIXED_GIT_DATE = "2026-08-14T00:00:00Z";
 const FIXTURE_DATABASE_URL =
   "postgresql://certification:certification@127.0.0.1:1/certification";
 const repositoryRoot = process.cwd();
+const SYNTHETIC_OPENAI_SECRET = "synthetic-floor-plan-source-secret";
+
+function stageInputs(profileId, stage, extra = {}) {
+  const profile = certificationEnvironmentProfile(repositoryRoot, profileId);
+  return Object.fromEntries(
+    profile.requiredVariables.map((name) => [
+      name,
+      extra[name] ?? profile.fixedValues[name] ?? `fixture-${stage}-${name}`,
+    ]),
+  );
+}
+
+function projected({
+  profileId,
+  stage,
+  checkId = null,
+  baseEnvironment = {},
+  requiredEnvironmentNames = [],
+}) {
+  const stageEnvironment = stageInputs(profileId, stage, {
+    CERTIFICATION_SOURCE_VALIDATION_CHECK_ID: checkId,
+  });
+  return projectCertificationChildEnvironment({
+    repositoryRoot,
+    baseEnvironment,
+    stage,
+    checkId,
+    profileId,
+    requiredEnvironmentNames,
+    stageInputs: stageEnvironment,
+  });
+}
+
+function assertProjectedMetadataValid({
+  projection,
+  profileId,
+  stage,
+  checkId = null,
+  requiredEnvironmentNames = [],
+}) {
+  assert.deepEqual(
+    validateProjectedEnvironmentMetadata({
+      repositoryRoot,
+      stage,
+      checkId,
+      profileId,
+      requiredEnvironmentNames,
+      metadata: projection.metadata,
+    }),
+    { valid: true, issues: [] },
+  );
+}
+
+function testFloorPlanValuePolicies() {
+  const checkId = "floor-plan-required-closure";
+  const relevantParent = {
+    DATABASE_URL: FIXTURE_DATABASE_URL,
+    FLOOR_PLAN_LOCAL_OCR_DISABLED: "1",
+    FLOOR_PLAN_VISION_DISABLED: "1",
+    FLOOR_PLAN_VISION_ENABLED: "1",
+    FLOOR_PLAN_VISION_MODEL: "synthetic-parent-model",
+    FLOOR_PLAN_UNDECLARED_AMBIENT_FLAG: "1",
+    OPENAI_API_KEY: SYNTHETIC_OPENAI_SECRET,
+  };
+  for (const ambientFlag of [undefined, "0", "1"]) {
+    const baseEnvironment = { ...relevantParent };
+    if (ambientFlag === undefined) delete baseEnvironment.FLOOR_PLAN_VISION_ENABLED;
+    else baseEnvironment.FLOOR_PLAN_VISION_ENABLED = ambientFlag;
+    const projection = projected({
+      profileId: "source-validation",
+      stage: "source-validation",
+      checkId,
+      baseEnvironment,
+      requiredEnvironmentNames: ["DATABASE_URL"],
+    });
+    assert.equal(projection.environment.FLOOR_PLAN_VISION_ENABLED, "0");
+    assert.equal(projection.environment.FLOOR_PLAN_VISION_MODEL, undefined);
+    assert.equal(projection.environment.FLOOR_PLAN_VISION_DISABLED, undefined);
+    assert.equal(projection.environment.FLOOR_PLAN_LOCAL_OCR_DISABLED, undefined);
+    assert.equal(projection.environment.OPENAI_API_KEY, undefined);
+    assert.equal(
+      projection.environment.FLOOR_PLAN_UNDECLARED_AMBIENT_FLAG,
+      undefined,
+    );
+    assert.equal(
+      projection.metadata.strippedUnknownApplicationFeatureVariables.includes(
+        "FLOOR_PLAN_UNDECLARED_AMBIENT_FLAG",
+      ),
+      true,
+    );
+    assert.equal(
+      projection.metadata.appliedValuePolicies.find(
+        (entry) => entry.name === "FLOOR_PLAN_VISION_ENABLED",
+      )?.effectiveValueClassification,
+      "boolean:false",
+    );
+    assert.equal(
+      projection.metadata.appliedValuePolicies.find(
+        (entry) => entry.name === "OPENAI_API_KEY",
+      )?.effectiveValueClassification,
+      "absent",
+    );
+    assert.equal(JSON.stringify(projection.metadata).includes(SYNTHETIC_OPENAI_SECRET), false);
+    assertProjectedMetadataValid({
+      projection,
+      profileId: "source-validation",
+      stage: "source-validation",
+      checkId,
+      requiredEnvironmentNames: ["DATABASE_URL"],
+    });
+  }
+
+  const nonOwner = projected({
+    profileId: "source-validation",
+    stage: "source-validation",
+    checkId: "production-artifact-evidence-contracts",
+    baseEnvironment: relevantParent,
+  });
+  assert.equal(nonOwner.environment.FLOOR_PLAN_VISION_ENABLED, undefined);
+
+  const firstChild = {
+    ...projected({
+      profileId: "source-validation",
+      stage: "source-validation",
+      checkId,
+      baseEnvironment: relevantParent,
+      requiredEnvironmentNames: ["DATABASE_URL"],
+    }).environment,
+  };
+  firstChild.FLOOR_PLAN_VISION_ENABLED = "1";
+  const laterChild = projected({
+    profileId: "source-validation",
+    stage: "source-validation",
+    checkId,
+    baseEnvironment: relevantParent,
+    requiredEnvironmentNames: ["DATABASE_URL"],
+  });
+  assert.equal(laterChild.environment.FLOOR_PLAN_VISION_ENABLED, "0");
+
+  for (const profileId of ["build", "runtime-smoke"]) {
+    const projection = projected({
+      profileId,
+      stage: profileId === "build" ? "build" : "runtime-smoke",
+      baseEnvironment: relevantParent,
+    });
+    assert.equal(projection.environment.FLOOR_PLAN_VISION_ENABLED, "1");
+    assert.equal(projection.environment.FLOOR_PLAN_VISION_MODEL, "synthetic-parent-model");
+    assert.equal(projection.environment.OPENAI_API_KEY, SYNTHETIC_OPENAI_SECRET);
+    assert.equal(
+      JSON.stringify(projection.metadata).includes(SYNTHETIC_OPENAI_SECRET),
+      false,
+    );
+    assertProjectedMetadataValid({
+      projection,
+      profileId,
+      stage: profileId === "build" ? "build" : "runtime-smoke",
+    });
+  }
+
+  const corrected = projected({
+    profileId: "source-validation",
+    stage: "source-validation",
+    checkId,
+    baseEnvironment: relevantParent,
+    requiredEnvironmentNames: ["DATABASE_URL"],
+  });
+  const wrongHash = structuredClone(corrected.metadata);
+  wrongHash.valuePolicySha256 = "0".repeat(64);
+  assert.equal(
+    validateProjectedEnvironmentMetadata({
+      repositoryRoot,
+      stage: "source-validation",
+      checkId,
+      profileId: "source-validation",
+      requiredEnvironmentNames: ["DATABASE_URL"],
+      metadata: wrongHash,
+    }).valid,
+    false,
+  );
+
+  const wrongProvenance = structuredClone(corrected.metadata);
+  wrongProvenance.appliedValuePolicies.find(
+    (entry) => entry.name === "OPENAI_API_KEY",
+  ).source = "ambient-secret-retained-without-value-evidence";
+  assert.equal(
+    validateProjectedEnvironmentMetadata({
+      repositoryRoot,
+      stage: "source-validation",
+      checkId,
+      profileId: "source-validation",
+      requiredEnvironmentNames: ["DATABASE_URL"],
+      metadata: wrongProvenance,
+    }).valid,
+    false,
+  );
+
+  const injectedMetadata = structuredClone(corrected.metadata);
+  injectedMetadata.rawSecretValue = SYNTHETIC_OPENAI_SECRET;
+  assert.equal(
+    validateProjectedEnvironmentMetadata({
+      repositoryRoot,
+      stage: "source-validation",
+      checkId,
+      profileId: "source-validation",
+      requiredEnvironmentNames: ["DATABASE_URL"],
+      metadata: injectedMetadata,
+    }).valid,
+    false,
+  );
+
+  const injectedNestedMetadata = structuredClone(corrected.metadata);
+  injectedNestedMetadata.prohibitedAmbientValueAbsence.rawSecretValue =
+    SYNTHETIC_OPENAI_SECRET;
+  assert.equal(
+    validateProjectedEnvironmentMetadata({
+      repositoryRoot,
+      stage: "source-validation",
+      checkId,
+      profileId: "source-validation",
+      requiredEnvironmentNames: ["DATABASE_URL"],
+      metadata: injectedNestedMetadata,
+    }).valid,
+    false,
+  );
+
+  const strippedProvenanceTamper = structuredClone(corrected.metadata);
+  strippedProvenanceTamper.ambientApplicationVariableNamesStripped =
+    strippedProvenanceTamper.ambientApplicationVariableNamesStripped.filter(
+      (name) => name !== "OPENAI_API_KEY",
+    );
+  strippedProvenanceTamper.appliedValuePolicies.find(
+    (entry) => entry.name === "OPENAI_API_KEY",
+  ).source = "ambient-absent";
+  assert.equal(
+    validateProjectedEnvironmentMetadata({
+      repositoryRoot,
+      stage: "source-validation",
+      checkId,
+      profileId: "source-validation",
+      requiredEnvironmentNames: ["DATABASE_URL"],
+      metadata: strippedProvenanceTamper,
+    }).valid,
+    false,
+  );
+
+  const sourceClassificationTamper = structuredClone(corrected.metadata);
+  sourceClassificationTamper.appliedValuePolicies.find(
+    (entry) => entry.name === "OPENAI_API_KEY",
+  ).source = "ambient-absent";
+  assert.equal(
+    validateProjectedEnvironmentMetadata({
+      repositoryRoot,
+      stage: "source-validation",
+      checkId,
+      profileId: "source-validation",
+      requiredEnvironmentNames: ["DATABASE_URL"],
+      metadata: sourceClassificationTamper,
+    }).valid,
+    false,
+  );
+
+  for (const field of [
+    "strippedKnownCertificationControlVariables",
+    "strippedUnknownCertificationControlVariables",
+  ]) {
+    const injectedNameInventory = structuredClone(corrected.metadata);
+    injectedNameInventory[field].push(SYNTHETIC_OPENAI_SECRET);
+    injectedNameInventory[field].sort();
+    assert.equal(
+      validateProjectedEnvironmentMetadata({
+        repositoryRoot,
+        stage: "source-validation",
+        checkId,
+        profileId: "source-validation",
+        requiredEnvironmentNames: ["DATABASE_URL"],
+        metadata: injectedNameInventory,
+      }).valid,
+      false,
+    );
+  }
+
+  const injectedEnvironmentName = structuredClone(corrected.metadata);
+  injectedEnvironmentName.environmentNames.push(SYNTHETIC_OPENAI_SECRET);
+  injectedEnvironmentName.environmentNames.sort();
+  injectedEnvironmentName.environmentNamesSha256 = sha256Bytes(
+    canonicalJsonBytes(injectedEnvironmentName.environmentNames),
+  );
+  injectedEnvironmentName.prohibitedCertificationVariableAbsence.checkedNameCount =
+    injectedEnvironmentName.environmentNames.length;
+  assert.equal(
+    validateProjectedEnvironmentMetadata({
+      repositoryRoot,
+      stage: "source-validation",
+      checkId,
+      profileId: "source-validation",
+      requiredEnvironmentNames: ["DATABASE_URL"],
+      metadata: injectedEnvironmentName,
+    }).valid,
+    false,
+  );
+
+  const emptyAmbientProjection = projected({
+    profileId: "source-validation",
+    stage: "source-validation",
+    checkId,
+    baseEnvironment: { OPENAI_API_KEY: "" },
+  });
+  const emptyAmbientRecord = emptyAmbientProjection.metadata.appliedValuePolicies.find(
+    (entry) => entry.name === "OPENAI_API_KEY",
+  );
+  assert.equal(emptyAmbientRecord.ambientValueClassification, "present-empty");
+  assert.equal(emptyAmbientRecord.source, "ambient-stripped");
+  assertProjectedMetadataValid({
+    projection: emptyAmbientProjection,
+    profileId: "source-validation",
+    stage: "source-validation",
+    checkId,
+  });
+
+  const readdedVisibleControl = projected({
+    profileId: "source-validation",
+    stage: "source-validation",
+    checkId,
+    baseEnvironment: {
+      CERTIFICATION_ENVIRONMENT_STAGE: "ambient-stage-value",
+      CERTIFICATION_SOURCE_VALIDATION_CHECK_ID: "ambient-check-value",
+    },
+  });
+  assert.equal(
+    readdedVisibleControl.metadata.strippedKnownCertificationControlVariables.includes(
+      "CERTIFICATION_ENVIRONMENT_STAGE",
+    ),
+    true,
+  );
+  assert.equal(
+    readdedVisibleControl.metadata.environmentNames.includes(
+      "CERTIFICATION_ENVIRONMENT_STAGE",
+    ),
+    true,
+  );
+  assertProjectedMetadataValid({
+    projection: readdedVisibleControl,
+    profileId: "source-validation",
+    stage: "source-validation",
+    checkId,
+  });
+
+  assert.throws(
+    () =>
+      projected({
+        profileId: "build",
+        stage: "build",
+        baseEnvironment: {
+          ...relevantParent,
+          FLOOR_PLAN_VISION_ENABLED: "true",
+        },
+      }),
+    /invalid enum for FLOOR_PLAN_VISION_ENABLED/,
+  );
+
+  const malformedRoot = mkdtempSync(
+    path.join(tmpdir(), "floor-plan-value-policy-malformed-"),
+  );
+  try {
+    const malformedContractPath = path.join(
+      malformedRoot,
+      "docs/qa/production-certification-stage-environment.v2.json",
+    );
+    mkdirSync(path.dirname(malformedContractPath), { recursive: true });
+    const malformedContract = JSON.parse(
+      readFileSync(
+        path.join(
+          repositoryRoot,
+          "docs/qa/production-certification-stage-environment.v2.json",
+        ),
+        "utf8",
+      ),
+    );
+    delete malformedContract.profiles["source-validation"].valuePolicies
+      .FLOOR_PLAN_VISION_ENABLED.value;
+    writeFileSync(
+      malformedContractPath,
+      canonicalJsonBytes(malformedContract),
+      { mode: 0o600 },
+    );
+    assert.throws(
+      () => stageEnvironmentContract(malformedRoot),
+      /check-owned value policy is malformed: FLOOR_PLAN_VISION_ENABLED/,
+    );
+  } finally {
+    rmSync(malformedRoot, { recursive: true, force: true });
+  }
+
+  // The module import before environment setup is harmless because projection is per invocation.
+  assert.equal(
+    projected({
+      profileId: "source-validation",
+      stage: "source-validation",
+      checkId,
+      baseEnvironment: relevantParent,
+      requiredEnvironmentNames: ["DATABASE_URL"],
+    }).environment.FLOOR_PLAN_VISION_ENABLED,
+    "0",
+  );
+}
 
 function run(command, args, cwd, environment = process.env) {
   const child = spawnSync(command, args, {
@@ -118,10 +530,136 @@ function diagnosticTail(filePath) {
     .join("\n");
 }
 
+async function reproduceHistoricalRealRunnerLeakage(regressionRoot) {
+  const historicalRoot = path.join(regressionRoot, "historical-source");
+  const historicalEvidenceRoot = path.join(regressionRoot, "historical-evidence");
+  const archivePath = path.join(regressionRoot, "historical-source.tar");
+  mkdirSync(historicalRoot, { recursive: true, mode: 0o700 });
+  mkdirSync(historicalEvidenceRoot, { recursive: true, mode: 0o700 });
+  run(
+    "git",
+    [
+      "archive",
+      "--format=tar",
+      "--output",
+      archivePath,
+      "e39875191b0d444e258d26598c010b3f8eb412d1",
+    ],
+    repositoryRoot,
+  );
+  run("tar", ["-xf", archivePath, "-C", historicalRoot], repositoryRoot);
+  symlinkSync(
+    path.join(repositoryRoot, "node_modules"),
+    path.join(historicalRoot, "node_modules"),
+    "dir",
+  );
+  const historicalIdentity = initializeGit(historicalRoot);
+  const moduleUrl = (relativePath) =>
+    `${pathToFileURL(path.join(historicalRoot, relativePath)).href}?historical=1`;
+  const historicalContract = await import(
+    moduleUrl("scripts/production-certification-contract.mjs")
+  );
+  const historicalState = await import(
+    moduleUrl("scripts/production-certification-state.mjs")
+  );
+  const historicalRunner = await import(
+    moduleUrl("scripts/production-certification-source-continuity.mjs")
+  );
+  const harness = historicalContract.harnessSourceIdentity(historicalRoot);
+  let state = historicalState.createCertificationState({
+    certificationId: "ch0015i-historical-floor-plan-source-leakage",
+    candidateId: "ch0015i-historical-floor-plan-source-leakage-candidate",
+    commitSha: historicalIdentity.commitSha,
+    treeSha: historicalIdentity.treeSha,
+    parentSha: historicalIdentity.parentSha,
+    harnessSourceSha256: harness.sha256,
+    executionClass: "real-candidate",
+    createdAt: "2026-08-14T00:00:00.000Z",
+  });
+  state = historicalState.startCertificationStage(state, {
+    stage: "doctor",
+    startedAt: "2026-08-14T00:00:01.000Z",
+  });
+  const doctorRelativePath = "doctor/historical.json";
+  const doctorBytes = historicalContract.canonicalJsonBytes({
+    schema: "interior-ai.production-certification-doctor-historical-fixture.v1",
+    valid: true,
+  });
+  const doctorPath = path.join(historicalEvidenceRoot, doctorRelativePath);
+  mkdirSync(path.dirname(doctorPath), { recursive: true, mode: 0o700 });
+  writeFileSync(doctorPath, doctorBytes, { mode: 0o600 });
+  const doctorSha256 = historicalContract.sha256Bytes(doctorBytes);
+  state = historicalState.completeCertificationStage(state, {
+    stage: "doctor",
+    passed: true,
+    completedAt: "2026-08-14T00:00:02.000Z",
+    exitCode: 0,
+    outputHashes: { doctor: doctorSha256 },
+    evidenceFiles: {
+      doctor: { path: doctorRelativePath, sha256: doctorSha256 },
+    },
+  });
+  state = historicalState.startCertificationStage(state, {
+    stage: "source-validation",
+    startedAt: "2026-08-14T00:00:03.000Z",
+  });
+  const result = historicalRunner.sourceValidationStageEvidence({
+    repositoryRoot: historicalRoot,
+    evidenceRoot: historicalEvidenceRoot,
+    state,
+    environment: {
+      ...process.env,
+      DATABASE_URL: FIXTURE_DATABASE_URL,
+      FLOOR_PLAN_LOCAL_OCR_DISABLED: "1",
+      FLOOR_PLAN_VISION_DISABLED: "1",
+      FLOOR_PLAN_VISION_ENABLED: "1",
+      FLOOR_PLAN_VISION_MODEL: "synthetic-historical-model",
+      OPENAI_API_KEY: SYNTHETIC_OPENAI_SECRET,
+    },
+  });
+  assert.equal(result.passed, false);
+  assert.equal(result.failedCheckId, "floor-plan-required-closure");
+  assert.equal(result.evidence.checks.length, 5);
+  assert.equal(result.evidence.checks.slice(0, 4).every((check) => check.passed), true);
+  const failed = result.evidence.checks[4];
+  assert.equal(failed.invocationMode, "canonical-real");
+  assert.equal(failed.invokedCommand, "npm run test:floor-plan-required");
+  assert.equal(failed.environmentProfileId, "source-validation");
+  assert.equal(
+    failed.environment.contractSha256,
+    "acb656a2da0d3de7b346b358087ea91908cc09cd22f2906075e9ffc56213799a",
+  );
+  assert.equal(
+    failed.environment.profileSha256,
+    "a8f3a3b5b240949b7205bed420c93f044e2c027ee71b091b6b06cfab53da40c1",
+  );
+  for (const name of [
+    "FLOOR_PLAN_VISION_ENABLED",
+    "FLOOR_PLAN_VISION_MODEL",
+    "OPENAI_API_KEY",
+  ]) {
+    assert.equal(failed.environment.environmentNames.includes(name), true);
+  }
+  const stderr = readFileSync(
+    path.join(historicalEvidenceRoot, failed.stderr.path),
+    "utf8",
+  );
+  assert.match(stderr, /true !== false/);
+  assert.match(stderr, /test-floor-plan-local-ocr\.ts:168/);
+  assert.equal(JSON.stringify(result.evidence).includes(SYNTHETIC_OPENAI_SECRET), false);
+  assert.equal(stderr.includes(SYNTHETIC_OPENAI_SECRET), false);
+  process.stdout.write(
+    "Historical real-runner leakage reproduction passed.\n",
+  );
+}
+
+testFloorPlanValuePolicies();
+
 const regressionRoot = mkdtempSync(
   path.join(tmpdir(), "production-certification-stage-environment-regression-"),
 );
 try {
+  await reproduceHistoricalRealRunnerLeakage(regressionRoot);
   const sourceRoot = path.join(regressionRoot, "source");
   const evidenceRoot = path.join(regressionRoot, "evidence");
   mkdirSync(sourceRoot, { recursive: true, mode: 0o700 });
@@ -195,6 +733,11 @@ try {
         "phase8/evidence.json",
       ),
       PHASE8_EXTERNAL_EVIDENCE_ROOT: evidenceRoot,
+      FLOOR_PLAN_LOCAL_OCR_DISABLED: "1",
+      FLOOR_PLAN_VISION_DISABLED: "1",
+      FLOOR_PLAN_VISION_ENABLED: "1",
+      FLOOR_PLAN_VISION_MODEL: "synthetic-corrected-model",
+      OPENAI_API_KEY: SYNTHETIC_OPENAI_SECRET,
       CERTIFICATION_BROWSER_FLOOR_PLAN_UPLOAD_REPORT_PATH: path.join(
         evidenceRoot,
         "browser/floor-plan-upload.json",
@@ -250,6 +793,38 @@ try {
   assert.equal(existsSync(path.join(evidenceRoot, first.stderr.path)), true);
   assert.equal(existsSync(path.join(evidenceRoot, result.descriptor.path)), true);
   assert.equal(JSON.stringify(result.evidence).includes(FIXTURE_DATABASE_URL), false);
+  assert.equal(JSON.stringify(result.evidence).includes(SYNTHETIC_OPENAI_SECRET), false);
+  const floorPlan = result.evidence.checks[4];
+  assert.equal(floorPlan.id, "floor-plan-required-closure");
+  assert.equal(floorPlan.invokedCommand, "npm run test:floor-plan-required");
+  assert.equal(floorPlan.passed, true);
+  assert.equal(
+    floorPlan.environment.environmentNames.includes(
+      "FLOOR_PLAN_VISION_ENABLED",
+    ),
+    true,
+  );
+  assert.equal(
+    floorPlan.environment.environmentNames.includes("OPENAI_API_KEY"),
+    false,
+  );
+  assert.equal(
+    floorPlan.environment.appliedValuePolicies.find(
+      (entry) => entry.name === "FLOOR_PLAN_VISION_ENABLED",
+    )?.effectiveValueClassification,
+    "boolean:false",
+  );
+  assert.equal(
+    floorPlan.environment.prohibitedAmbientValueAbsence.passed,
+    true,
+  );
+  for (const check of result.evidence.checks) {
+    assert.equal(check.environment.valuePolicyValidation.passed, true);
+    assert.equal(
+      check.environment.prohibitedAmbientValueAbsence.passed,
+      true,
+    );
+  }
   assert.equal(
     validateSourceValidationEvidence({
       evidence: result.evidence,

@@ -20,6 +20,7 @@ import type {
   FloorPlanReviewIssue,
 } from "./types";
 import { floorPlanMvpBlockingIssueIds } from "./types";
+import { floorPlanVisionRuntimeConfiguration } from "./vision-configuration";
 import {
   applySemanticEvidencePrior,
   multiplyMatrices,
@@ -946,17 +947,17 @@ async function extractPdfEvidence(
     await loadingTask.destroy();
   }
 }
-
 async function classifyRenderedPage(
   page: FloorPlanRenderedPage,
   context: FloorPlanAdapterContext,
   detail: "low" | "original",
   planCrop?: SemanticBoundingBox | null
 ): Promise<PageSemanticEvidence | null> {
+  const vision = floorPlanVisionRuntimeConfiguration();
   if (
-    process.env.FLOOR_PLAN_VISION_ENABLED !== "1" ||
-    !process.env.OPENAI_API_KEY ||
-    process.env.FLOOR_PLAN_VISION_DISABLED === "1" ||
+    !vision.externalVisionEnabled ||
+    !vision.apiKeyConfigured ||
+    vision.safetyOverrideEnabled ||
     !context.store.readDerivative
   ) {
     return null;
@@ -1027,7 +1028,7 @@ async function classifyRenderedPage(
       ? "Analyze the confirmed floor-plan crop exhaustively at original detail. Propose every visually closed architectural face, including small bathrooms, toilets, closets, washrooms, utility rooms, and unlabeled enclosed spaces. Detect recognizable plan symbols for toilets, bathtubs, showers, basins, kitchen sinks, stoves, washers, and dryers. Use a sanitary fixture cluster such as a toilet with a bathtub, shower, or basin to classify an unlabeled enclosed face as Bathroom with roomType toilet, and return that face boundary even when no room text is printed. Fixture symbols are semantic evidence only: they are never walls, openings, or furniture to create. When Family Room, Dining Area, and Kitchen share one undivided face, return one Open Plan boundary and keep all three printed labels. Follow visible architectural wall faces through supported door, window, and passage gaps, using the fewest vertices needed. A room polygon is only a proposal: deterministic source-line snapping will accept or reject every edge. Do not omit a closed face merely because its name is missing or ambiguous. Never treat furniture, fixtures, cabinetry, appliances, hatching, text boxes, dimension strokes, decoration, or editor UI as architecture. Never invent measurements, wall spans, or 3D heights."
       : "Classify floor-plan semantics for page ranking and crop location. Locate the main plan region and rotation, page unit system, room-label boxes, approximate architectural room boundaries, printed dimension labels with approximate extension endpoints, entrance, door/window/passage spans, and recognizable sanitary or appliance fixture symbols. Room polygons are non-authoritative proposals that will be checked against deterministic source linework. Fixtures provide room-type evidence but are never architecture or furniture to create. Never treat colored UI overlays, selection boxes, furniture, fixtures, cabinetry, text boxes, dimension lines, or decoration as room boundaries. Never invent measurements, widths, or 3D heights.";
   const response = await client.responses.parse({
-    model: process.env.FLOOR_PLAN_VISION_MODEL || "gpt-5.6",
+    model: vision.model,
     store: false,
     input: [
       {
@@ -2447,6 +2448,7 @@ export class PdfRasterFloorPlanSourceAdapter implements FloorPlanSourceAdapter {
     envelope.catalogDraftMatch = catalogDraftMatch
       ? catalogFloorPlanDraftMatchReference(catalogDraftMatch)
       : null;
+    const vision = floorPlanVisionRuntimeConfiguration();
     return {
       candidate: envelope as unknown as Record<string, unknown>,
       sourceManifest: {
@@ -2533,10 +2535,8 @@ export class PdfRasterFloorPlanSourceAdapter implements FloorPlanSourceAdapter {
           (total, entry) => total + entry.candidateCount,
           0
         ),
-        externalVisionEnabled: process.env.FLOOR_PLAN_VISION_ENABLED === "1",
-        visionAttempted:
-          process.env.FLOOR_PLAN_VISION_ENABLED === "1" &&
-          Boolean(process.env.OPENAI_API_KEY),
+        externalVisionEnabled: vision.externalVisionEnabled,
+        visionAttempted: vision.externalVisionEnabled && vision.apiKeyConfigured,
         visionSucceeded: pages.some((page) =>
           page.semantics.roomLabels.some(
             (entry) => entry.evidenceKind === "vision"

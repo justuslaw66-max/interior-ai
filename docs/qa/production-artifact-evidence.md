@@ -49,7 +49,7 @@ The correction makes the machine-readable certification contract the sole
 owner of the ordered source-check set. The real source stage now invokes every
 canonical command against the exact candidate, stops at the first required
 failure, retains stdout/stderr and result evidence outside the source tree, and
-seals `interior-ai.production-certification-source-validation.v2`. Identity-only,
+seals `interior-ai.production-certification-source-validation.v3`. Identity-only,
 missing, extra, duplicate, reordered, substituted, failed, stale, incomplete,
 or tampered evidence cannot pass state validation.
 

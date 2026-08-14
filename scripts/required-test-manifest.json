@@ -6,8 +6,8 @@
       "root": "scripts",
       "filePattern": "^test-.*\\.(?:js|mjs|ts)$",
       "classification": "risk-triggered",
-    "expectedFileCount": 258,
-    "expectedPathSha256": "fa591afd68253c812d70c250987201b8d73de1ad17b062ac886c0db21638c07e"
+    "expectedFileCount": 259,
+    "expectedPathSha256": "65b0e16fbbd9193ea718f0f443aacca2a7d25c581b7ed5347e25c2ad5d720323"
     },
     {
       "id": "browser-specs",
@@ -135,7 +135,7 @@
         "scripts/production-certification-stage-environment.mjs",
         "scripts/production-certification-regressions.json",
         "docs/qa/production-certification-contract.v1.json",
-        "docs/qa/production-certification-stage-environment.v1.json",
+        "docs/qa/production-certification-stage-environment.v2.json",
         "scripts/certification-playwright-start-reporter.mjs",
         "scripts/benchmark-phase8-projects.ts",
         "scripts/phase8-project-benchmark-contract.ts",
@@ -384,7 +384,7 @@
       "blocking": true,
       "command": "npm run test:floor-plan-required",
       "packageScript": "test:floor-plan-required",
-      "packageClosure": { "expectedScriptCount": 56, "expectedSha256": "94276929fd43e144b2f23b037b63e28e15e1d2b385632a40e03b3347f12c465d" },
+      "packageClosure": { "expectedScriptCount": 57, "expectedSha256": "dffa1c298a28463308882fa042bb3b6aae48b466adab0ad67f3f08e85f8eaa61" },
       "runner": "npm-chain",
       "requiredSources": [
         "scripts/test-floor-plan-catalog-draft-match.ts",
