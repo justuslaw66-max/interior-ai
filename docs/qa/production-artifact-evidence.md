@@ -5,6 +5,35 @@ production-mode artifact evidence and required CI behavior. It does not describe
 or prove a Vercel deployment, stable staging, production, or external platform
 configuration.
 
+## CH-0015I source-stage environment isolation correction
+
+Failed real certification `CH-0015I-final-20260814-c1826f884d67` for candidate
+`CH-0015I-8c0d52273227e887` remains preserved with its original
+`SOURCE_CONTRACT_FAILURE`, consumption flag, attempt numbering, state,
+stdout/stderr, child result, and independent review. No historical evidence is
+edited or rehabilitated. The additional root-cause classification recorded by
+this correction is `SOURCE_VALIDATION_STAGE_ENVIRONMENT_LEAKAGE_DEFECT`, under
+the capability-boundary class
+`CERTIFICATION_CONTROL_VARIABLE_CAPABILITY_BOUNDARY_DEFECT`.
+
+The parent source-validation runner legitimately owned
+`CERTIFICATION_EVIDENCE_ROOT`, but full parent-environment inheritance exposed
+that orchestration root to check 1. The real production-artifact test loaded
+the real Playwright configuration, which treated root presence as activation
+of the later runtime-smoke lifecycle and demanded its start marker before the
+build stage. The marker could not truthfully exist in source validation.
+
+The v1 stage-environment machine contract and canonical projector now make the
+root parent-only for real source checks, bind the projected profile to source
+evidence v2, and use `CERTIFICATION_ENVIRONMENT_STAGE=runtime-smoke` as the
+explicit runtime activation. Runtime still requires the real product-test
+start marker and fails closed without it. The exact regression loads the real
+manifest/journal and real `playwright.config.ts` under a source-validation
+parent root with no marker and requires discovery to pass; the paired runtime
+case requires the same config to reject the missing marker. No Playwright
+assertion, count, retry, skip, worker, timeout, origin, or discovery contract is
+changed.
+
 ## Harness v1 source-validation and measured-continuity correction
 
 The mandatory post-implementation integrator review classified two
@@ -20,7 +49,7 @@ The correction makes the machine-readable certification contract the sole
 owner of the ordered source-check set. The real source stage now invokes every
 canonical command against the exact candidate, stops at the first required
 failure, retains stdout/stderr and result evidence outside the source tree, and
-seals `interior-ai.production-certification-source-validation.v1`. Identity-only,
+seals `interior-ai.production-certification-source-validation.v2`. Identity-only,
 missing, extra, duplicate, reordered, substituted, failed, stale, incomplete,
 or tampered evidence cannot pass state validation.
 

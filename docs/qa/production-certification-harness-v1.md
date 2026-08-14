@@ -86,12 +86,61 @@ The failed aggregate is still state-retained and validated as the exact
 canonical stopped prefix; if any earlier substantive check ran, a later
 non-substantive failure remains one-shot rather than becoming retryable.
 The sealed
-`interior-ai.production-certification-source-validation.v1` aggregate binds the
+`interior-ai.production-certification-source-validation.v2` aggregate binds the
 certification/candidate, harness and contract-matrix hashes, check-set hash,
-attempt nonce, ordered IDs and commands, timestamps, every retained file hash,
-completion marker, and aggregate SHA-256. State validation reparses this
+stage-environment contract hash, ordered per-check profile IDs and profile
+hashes, allowed/required environment-name-set hashes, the prohibited-variable
+absence result, attempt nonce, ordered IDs and commands, timestamps, every
+retained file hash, completion marker, and aggregate SHA-256. State validation reparses this
 evidence and rehashes all files. A source identity descriptor alone is never
 accepted, and earlier qualification evidence is never imported as a substitute.
+
+## Stage environment capability contract
+
+`docs/qa/production-certification-stage-environment.v1.json` is the canonical
+machine-readable owner for certification child-process capabilities. Its schema
+is `interior-ai.production-certification-stage-environment.v1`. It inventories
+83 control names with canonical owner, classification, portability, secret
+classification, and presence/activation semantics. It defines profiles for
+doctor, real and qualification source validation, build, each archive step,
+Phase 8, runtime smoke, production/development browser owners and discovery,
+final standalone, continuity, integration readiness, qualification, and
+simulation control.
+
+`scripts/production-certification-stage-environment.mjs` is the only child
+environment projector. It starts from the ordinary OS/toolchain/application
+environment, strips all known certification controls and any unknown name under
+the declared control prefixes, then re-adds only explicit profile inputs. An
+unknown explicit control, prohibited input, wrong stage/profile, missing
+required input, or contradictory fixed activation fails before dispatch. The
+projector never mutates `process.env`, never records values, and emits sorted
+name inventories plus contract/profile/set hashes. Unknown parent controls are
+stripped and recorded by the projector; doctor rejects them before source
+validation in a real certification.
+
+`CERTIFICATION_EVIDENCE_ROOT` is parent orchestration context for source
+validation. The parent continues to write and seal check stdout, stderr,
+results, and aggregate evidence beneath that root, while no source child
+receives it. Qualification fixture controls use the separate
+`source-validation-qualification` profile and therefore cannot appear in a
+real source child. Per-check static requirements are folded into that check's
+allowed/required name-set hashes: the Floor Plan closure declares
+`DATABASE_URL`, which remains an ordinary preserved application variable and
+must exist before dispatch without its value entering evidence. Runtime smoke receives only the narrow
+`PLAYWRIGHT_EXTERNAL_EVIDENCE_ROOT`, exact report/timing/start-marker paths,
+manifest/journal identities, and
+`CERTIFICATION_ENVIRONMENT_STAGE=runtime-smoke`. Generic evidence-root
+ownership alone never activates runtime certification.
+
+Legacy Gate A3 base URL/port and authentication fixture controls, including
+all four session-cookie inputs, are inventoried but remain parent-only across
+all certification profiles. The cookie and admin-identity records are secret
+classified, so neither values nor derived value material enter environment
+evidence. The archive verifier and production artifact product server use
+separate nested profiles: only the archive verifier receives its validated
+candidate/closure identities, and only the product server receives the three
+internally derived `PRODUCTION_ARTIFACT_*` identities. Neither nested child
+inherits the surrounding stage's broader certification controls.
 
 ## Verification modes
 
@@ -119,7 +168,8 @@ artifact root to resolve to the canonical non-symlink
 - `interior-ai.production-certification-phase8-evidence.v1`
 - `interior-ai.production-certification-runtime-smoke-evidence.v1`
 - `interior-ai.production-certification-browser-owner-evidence.v1`
-- `interior-ai.production-certification-source-validation.v1`
+- `interior-ai.production-certification-source-validation.v2`
+- `interior-ai.production-certification-stage-environment.v1`
 - `interior-ai.production-certification-artifact-snapshot.v1`
 - `interior-ai.production-certification-artifact-root-private.v1`
 - `interior-ai.production-certification-continuity.v1`
@@ -157,6 +207,11 @@ result; because it is non-consuming, a corrected retry uses a new retained
 attempt path.
 The same contract explicitly declares that integration readiness requires
 source validation, final standalone, and measured continuity.
+Doctor also validates complete stage-profile coverage, all 19 source-check
+profile bindings, required/prohibited disjointness, source evidence-root
+parent ownership, explicit runtime activation and marker inputs, production vs
+development browser mode separation, the Phase 8 external-root capability, and
+fail-closed unknown-control handling.
 
 Real operation supplies named values without placing secrets in state:
 
@@ -342,6 +397,14 @@ dispatch do not. Phase 8 sampling, runtime product-test start, and browser
 discovery use child-owned, retained markers at their exact boundaries so a
 post-boundary process signal or evidence-adaptation failure cannot silently
 permit a retry.
+An environment profile/doctor rejection before a source child starts is a
+non-consuming precondition. Once a real required source command starts, its
+failure consumes source validation under the existing taxonomy. A missing
+runtime marker in the actual runtime stage is a runtime-stage failure; a
+runtime-marker demand during source validation is classified as
+`SOURCE_VALIDATION_STAGE_ENVIRONMENT_LEAKAGE_DEFECT`, an environment-contract
+source defect. Historical attempt state is never rewritten to apply this
+additional root-cause label.
 
 ## Historical regression matrix
 
@@ -365,6 +428,7 @@ The bounded source qualification is:
 
 ```sh
 npm run test:production-certification
+node scripts/test-production-certification-stage-environment.mjs
 npm run certification:simulate
 npm run test:production-artifact-evidence
 npm run test:required-test-truthfulness
@@ -381,8 +445,21 @@ real continuity CLI. It also proves a source-check failure blocks build, a
 physical artifact mutation blocks continuity/readiness, and copied hashes do
 not satisfy continuity. A staged-root mutation additionally proves a failed
 continuity attempt is retained and a corrected second attempt uses a distinct
-evidence path before readiness. It
-starts no app, database, or browser and runs no real build or benchmark. Its
+evidence path before readiness. It supplies a realistic parent environment
+containing later Phase 8, runtime, and
+browser output paths, then proves all 19 fixture checks receive only their
+declared source profile. It rejects a wrong profile, profile/hash tampering, and
+a leaked runtime capability while retaining the parent-owned source evidence.
+The production-artifact suite separately drives the real Playwright config
+with a source-validation parent root and no runtime marker, then proves the
+same config still fails closed when the explicit runtime stage omits its
+marker. `scripts/test-production-certification-stage-environment.mjs` also
+invokes the canonical source-stage executor in a clean temporary repository,
+runs the actual ordered 19-command source check set, and proves check 1 passes
+through its real `npm run test:production-artifact-evidence` command without
+receiving the parent evidence root or any later-stage capability. The
+simulation starts no app, database, or browser and runs no real
+build or benchmark. Its
 evidence is marked `deterministic-simulation` and cannot certify a real
 candidate.
 

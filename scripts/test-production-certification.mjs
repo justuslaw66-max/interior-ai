@@ -62,6 +62,11 @@ import {
   resolvePlaywrightReportPath,
   resolveRequiredTestReportPath,
 } from "./playwright-report-path.mjs";
+import {
+  projectCertificationChildEnvironment,
+  stageEnvironmentContract,
+  validateProjectedEnvironmentMetadata,
+} from "./production-certification-stage-environment.mjs";
 
 const repositoryRoot = process.cwd();
 const fixedTime = "2026-08-14T00:00:00.000Z";
@@ -149,6 +154,301 @@ function stateFixture() {
     executionClass: "deterministic-simulation",
     createdAt: fixedTime,
   });
+}
+
+{
+  const contract = stageEnvironmentContract(repositoryRoot);
+  assert.equal(contract.value.schema, "interior-ai.production-certification-stage-environment.v1");
+  assert.equal(Object.keys(contract.variables).length, 83);
+  assert.equal(Object.keys(contract.profiles).length, 20);
+  const legacyGateA3Controls = [
+    "PLAYWRIGHT_ADMIN_EMAIL",
+    "PLAYWRIGHT_ADMIN_SESSION_COOKIE",
+    "PLAYWRIGHT_BASE_URL",
+    "PLAYWRIGHT_EXPIRED_SESSION_COOKIE",
+    "PLAYWRIGHT_ORDINARY_SESSION_COOKIE",
+    "PLAYWRIGHT_PRO_SESSION_COOKIE",
+    "PLAYWRIGHT_WEB_SERVER_PORT",
+  ];
+  for (const name of legacyGateA3Controls) {
+    assert.ok(contract.variables[name], `${name} must be explicitly inventoried`);
+    assert.equal(
+      Object.values(contract.profiles).some((profile) =>
+        profile.childVisibleVariables.includes(name),
+      ),
+      false,
+      `${name} must remain parent-only across certification stage profiles`,
+    );
+  }
+  for (const name of [
+    "PLAYWRIGHT_ADMIN_EMAIL",
+    "PLAYWRIGHT_ADMIN_SESSION_COOKIE",
+    "PLAYWRIGHT_EXPIRED_SESSION_COOKIE",
+    "PLAYWRIGHT_ORDINARY_SESSION_COOKIE",
+    "PLAYWRIGHT_PRO_SESSION_COOKIE",
+  ]) {
+    assert.equal(contract.variables[name].secret, true);
+  }
+  for (const name of [
+    "PRODUCTION_ARTIFACT_BUILD_ID",
+    "PRODUCTION_ARTIFACT_COMMIT_SHA",
+    "PRODUCTION_ARTIFACT_SHA256",
+  ]) {
+    assert.ok(contract.variables[name], `${name} must be explicitly inventoried`);
+    assert.deepEqual(
+      Object.entries(contract.profiles)
+        .filter(([, profile]) => profile.childVisibleVariables.includes(name))
+        .map(([profileId]) => profileId),
+      ["artifact-product-server"],
+    );
+  }
+  assert.deepEqual(
+    Object.entries(contract.profiles)
+      .filter(([, profile]) =>
+        profile.childVisibleVariables.includes(
+          "PRODUCTION_EVIDENCE_EXPECTED_VERIFIER_SOURCE_CLOSURE_SHA256",
+        ),
+      )
+      .map(([profileId]) => profileId),
+    ["archive-verifier"],
+  );
+  const parentEvidenceRoot = "/external/certification-parent";
+  const syntheticSecret = "synthetic-projector-secret-never-print";
+  const source = projectCertificationChildEnvironment({
+    repositoryRoot,
+    baseEnvironment: {
+      PATH: process.env.PATH,
+      DATABASE_URL: syntheticSecret,
+      CERTIFICATION_EVIDENCE_ROOT: parentEvidenceRoot,
+      CERTIFICATION_RUNTIME_REPORT_PATH: "/external/runtime.json",
+      PHASE8_EXTERNAL_EVIDENCE_ROOT: "/external/phase8",
+      REQUIRED_TEST_REPORT_PATH: "/external/browser.json",
+      PLAYWRIGHT_ADMIN_SESSION_COOKIE: syntheticSecret,
+      PRODUCTION_ARTIFACT_SHA256: "e".repeat(64),
+      CERTIFICATION_UNKNOWN_FUTURE_CAPABILITY: "strip-me",
+    },
+    stage: "source-validation",
+    checkId: "production-artifact-evidence-contracts",
+    profileId: "source-validation",
+    requiredEnvironmentNames: ["DATABASE_URL"],
+    stageInputs: {
+      CERTIFICATION_ENVIRONMENT_STAGE: "source-validation",
+      CERTIFICATION_SOURCE_VALIDATION_CHECK_ID:
+        "production-artifact-evidence-contracts",
+    },
+  });
+  assert.equal(source.environment.CERTIFICATION_EVIDENCE_ROOT, undefined);
+  assert.equal(source.environment.CERTIFICATION_RUNTIME_REPORT_PATH, undefined);
+  assert.equal(source.environment.PHASE8_EXTERNAL_EVIDENCE_ROOT, undefined);
+  assert.equal(source.environment.REQUIRED_TEST_REPORT_PATH, undefined);
+  assert.equal(source.environment.PLAYWRIGHT_ADMIN_SESSION_COOKIE, undefined);
+  assert.equal(source.environment.PRODUCTION_ARTIFACT_SHA256, undefined);
+  assert.equal(source.environment.CERTIFICATION_UNKNOWN_FUTURE_CAPABILITY, undefined);
+  assert.equal(source.environment.DATABASE_URL, syntheticSecret);
+  assert.ok(
+    source.metadata.strippedUnknownCertificationControlVariables.includes(
+      "CERTIFICATION_UNKNOWN_FUTURE_CAPABILITY",
+    ),
+  );
+  assert.doesNotMatch(JSON.stringify(source.metadata), new RegExp(syntheticSecret));
+  assert.equal(
+    validateProjectedEnvironmentMetadata({
+      repositoryRoot,
+      stage: "source-validation",
+      checkId: "production-artifact-evidence-contracts",
+      profileId: "source-validation",
+      requiredEnvironmentNames: ["DATABASE_URL"],
+      metadata: source.metadata,
+    }).valid,
+    true,
+  );
+  for (const prohibitedInput of [
+    { CERTIFICATION_ENVIRONMENT_STAGE: "runtime-smoke" },
+    { REQUIRED_TEST_REPORT_PATH: "/external/browser.json" },
+    { PHASE8_EXTERNAL_EVIDENCE_ROOT: "/external/phase8" },
+    { CERTIFICATION_QUALIFICATION_MODE: "1" },
+  ]) {
+    assert.throws(
+      () =>
+        projectCertificationChildEnvironment({
+          repositoryRoot,
+          baseEnvironment: {},
+          stage: "source-validation",
+          checkId: "production-artifact-evidence-contracts",
+          profileId: "source-validation",
+          stageInputs: {
+            CERTIFICATION_ENVIRONMENT_STAGE: "source-validation",
+            CERTIFICATION_SOURCE_VALIDATION_CHECK_ID:
+              "production-artifact-evidence-contracts",
+            ...prohibitedInput,
+          },
+        }),
+      /prohibits stage input|requires fixed input/,
+    );
+  }
+  assert.throws(
+    () =>
+      projectCertificationChildEnvironment({
+        repositoryRoot,
+        baseEnvironment: {},
+        stage: "source-validation",
+        checkId: "production-artifact-evidence-contracts",
+        profileId: "runtime-smoke",
+        stageInputs: {},
+      }),
+    /cannot execute stage source-validation/,
+  );
+  assert.throws(
+    () =>
+      projectCertificationChildEnvironment({
+        repositoryRoot,
+        baseEnvironment: {},
+        stage: "source-validation",
+        checkId: "production-artifact-evidence-contracts",
+        profileId: "source-validation",
+        stageInputs: {
+          CERTIFICATION_ENVIRONMENT_STAGE: "source-validation",
+          CERTIFICATION_UNKNOWN_SECRET: syntheticSecret,
+        },
+      }),
+    (error) =>
+      /CERTIFICATION_UNKNOWN_SECRET/.test(String(error)) &&
+      !String(error).includes(syntheticSecret),
+  );
+  assert.throws(
+    () =>
+      projectCertificationChildEnvironment({
+        repositoryRoot,
+        baseEnvironment: {},
+        stage: "source-validation",
+        checkId: "production-artifact-evidence-contracts",
+        profileId: "source-validation",
+        requiredEnvironmentNames: ["DATABASE_URL"],
+        stageInputs: {
+          CERTIFICATION_ENVIRONMENT_STAGE: "source-validation",
+          CERTIFICATION_SOURCE_VALIDATION_CHECK_ID:
+            "production-artifact-evidence-contracts",
+        },
+      }),
+    /DATABASE_URL/,
+  );
+  assert.equal(
+    validateProjectedEnvironmentMetadata({
+      repositoryRoot,
+      stage: "source-validation",
+      checkId: "production-artifact-evidence-contracts",
+      profileId: "source-validation",
+      requiredEnvironmentNames: [],
+      metadata: source.metadata,
+    }).valid,
+    false,
+  );
+  assert.throws(
+    () =>
+      projectCertificationChildEnvironment({
+        repositoryRoot,
+        baseEnvironment: {},
+        stage: "source-validation",
+        checkId: "production-artifact-evidence-contracts",
+        profileId: "source-validation",
+        stageInputs: {
+          CERTIFICATION_ENVIRONMENT_STAGE: "source-validation",
+        },
+      }),
+    /CERTIFICATION_SOURCE_VALIDATION_CHECK_ID/,
+  );
+  const runtimeInputs = {
+    CERTIFICATION_ENVIRONMENT_STAGE: "runtime-smoke",
+    CERTIFICATION_RUNTIME_START_MARKER_PATH: "/external/start.json",
+    PLAYWRIGHT_EXTERNAL_EVIDENCE_ROOT: "/external",
+    PLAYWRIGHT_JSON_OUTPUT_FILE: "/external/report.json",
+    PLAYWRIGHT_USE_PRODUCTION_SERVER: "1",
+    PRODUCTION_EVIDENCE_CANDIDATE_ID: "candidate",
+    PRODUCTION_EVIDENCE_EXPECTED_ARTIFACT_SHA256: "a".repeat(64),
+    PRODUCTION_EVIDENCE_EXPECTED_BUILD_ID: "build",
+    PRODUCTION_EVIDENCE_EXPECTED_COMMIT_SHA: "b".repeat(40),
+    PRODUCTION_EVIDENCE_EXPECTED_MANIFEST_SHA256: "c".repeat(64),
+    PRODUCTION_EVIDENCE_EXPECTED_TREE_SHA: "d".repeat(40),
+    PRODUCTION_EVIDENCE_JOURNAL_PATH:
+      ".local/production-artifact-evidence/semantic-event-journal.json",
+    PRODUCTION_EVIDENCE_MANIFEST:
+      ".local/production-artifact-evidence/manifest.json",
+    RUNTIME_SMOKE_PHASE_TIMINGS_PATH: "/external/timings.json",
+  };
+  const runtime = projectCertificationChildEnvironment({
+    repositoryRoot,
+    baseEnvironment: { CERTIFICATION_EVIDENCE_ROOT: parentEvidenceRoot },
+    stage: "runtime-smoke",
+    profileId: "runtime-smoke",
+    stageInputs: runtimeInputs,
+  });
+  assert.equal(runtime.environment.CERTIFICATION_EVIDENCE_ROOT, undefined);
+  assert.equal(runtime.environment.CERTIFICATION_ENVIRONMENT_STAGE, "runtime-smoke");
+  assert.equal(
+    runtime.environment.CERTIFICATION_RUNTIME_START_MARKER_PATH,
+    "/external/start.json",
+  );
+  assert.equal(runtime.environment.PLAYWRIGHT_EXTERNAL_EVIDENCE_ROOT, "/external");
+  const tamperedMetadata = structuredClone(runtime.metadata);
+  tamperedMetadata.profileSha256 = "0".repeat(64);
+  assert.equal(
+    validateProjectedEnvironmentMetadata({
+      repositoryRoot,
+      stage: "runtime-smoke",
+      profileId: "runtime-smoke",
+      metadata: tamperedMetadata,
+    }).valid,
+    false,
+  );
+  assert.throws(
+    () =>
+      projectCertificationChildEnvironment({
+        repositoryRoot,
+        baseEnvironment: {},
+        stage: "browser-owners",
+        profileId: "development-browser-owner",
+        stageInputs: {
+          CERTIFICATION_ENVIRONMENT_STAGE: "browser-owners",
+          PLAYWRIGHT_USE_PRODUCTION_SERVER: "1",
+        },
+      }),
+    /prohibits stage input PLAYWRIGHT_USE_PRODUCTION_SERVER/,
+  );
+  assert.throws(
+    () =>
+      projectCertificationChildEnvironment({
+        repositoryRoot,
+        baseEnvironment: {},
+        stage: "browser-owners",
+        profileId: "production-browser-owner",
+        stageInputs: { CERTIFICATION_ENVIRONMENT_STAGE: "browser-owners" },
+      }),
+    /requires fixed input PLAYWRIGHT_USE_PRODUCTION_SERVER|missing required names/,
+  );
+  const mutationChild = spawnSync(
+    process.execPath,
+    ["-e", "process.env.CERTIFICATION_RUNTIME_START_MARKER_PATH='child-only'"],
+    { env: source.environment, encoding: "utf8" },
+  );
+  assert.equal(mutationChild.status, 0);
+  const nextSource = projectCertificationChildEnvironment({
+    repositoryRoot,
+    baseEnvironment: {
+      CERTIFICATION_EVIDENCE_ROOT: parentEvidenceRoot,
+      DATABASE_URL: syntheticSecret,
+    },
+    stage: "source-validation",
+    checkId: "certification-harness-contracts",
+    profileId: "source-validation",
+    stageInputs: {
+      CERTIFICATION_ENVIRONMENT_STAGE: "source-validation",
+      CERTIFICATION_SOURCE_VALIDATION_CHECK_ID: "certification-harness-contracts",
+    },
+  });
+  assert.equal(
+    nextSource.environment.CERTIFICATION_RUNTIME_START_MARKER_PATH,
+    undefined,
+  );
 }
 
 {
@@ -505,6 +805,21 @@ function stateFixture() {
     "scripts/production-certification-simulation.mjs",
     "utf8",
   );
+  const projectorOwner = readFileSync(
+    "scripts/production-certification-stage-environment.mjs",
+    "utf8",
+  );
+  const stageEnvironmentRegressionOwner = readFileSync(
+    "scripts/test-production-certification-stage-environment.mjs",
+    "utf8",
+  );
+  const stageEnvironmentMatrix = JSON.parse(
+    readFileSync(
+      "docs/qa/production-certification-stage-environment.v1.json",
+      "utf8",
+    ),
+  );
+  const playwrightOwner = readFileSync("playwright.config.ts", "utf8");
   assert.match(realRunner, /sourceValidationStageEvidence/);
   assert.match(realRunner, /captureArtifactSnapshot/);
   assert.match(realRunner, /measureFinalContinuity/);
@@ -538,6 +853,45 @@ function stateFixture() {
   assert.doesNotMatch(archiveOwner, /\btee\b|data:text\/javascript|\beval\s*\(/);
   assert.match(phase8Owner, /PHASE8_EXTERNAL_EVIDENCE_ROOT/);
   assert.match(phase8Owner, /CERTIFICATION_EVIDENCE_ROOT/);
+  assert.match(continuityOwner, /projectCertificationChildEnvironment/);
+  assert.match(continuityOwner, /environmentProfileHashes/);
+  assert.match(realRunner, /stageChildEnvironment/);
+  assert.match(projectorOwner, /strip-and-record/);
+  assert.match(projectorOwner, /strippedUnknownCertificationControlVariables/);
+  assert.match(archiveOwner, /profileId: "archive-verifier"/);
+  assert.match(artifactOwner, /profileId: "artifact-product-server"/);
+  assert.match(stageEnvironmentRegressionOwner, /sourceValidationStageEvidence/);
+  assert.match(
+    stageEnvironmentRegressionOwner,
+    /npm run test:production-artifact-evidence/,
+  );
+  assert.doesNotMatch(
+    `${realRunner}\n${continuityOwner}`,
+    /delete\s+process\.env\./,
+    "certification children must not use check-specific process.env deletion",
+  );
+  assert.equal(
+    stageEnvironmentMatrix.profiles["source-validation"].parentOnlyVariables.includes(
+      "CERTIFICATION_EVIDENCE_ROOT",
+    ),
+    true,
+  );
+  assert.equal(
+    stageEnvironmentMatrix.profiles["source-validation"].childVisibleVariables.includes(
+      "CERTIFICATION_EVIDENCE_ROOT",
+    ),
+    false,
+  );
+  assert.match(playwrightOwner, /certificationEnvironmentStage === "runtime-smoke"/);
+  assert.match(
+    playwrightOwner,
+    /certification runtime smoke requires its product-test start marker/,
+  );
+  assert.doesNotMatch(
+    playwrightOwner,
+    /productionArtifactEvidence\s*&&\s*process\.env\[CERTIFICATION_EVIDENCE_ROOT\]/,
+    "generic evidence-root ownership must not activate runtime smoke",
+  );
 
   let malformedArchiveOutputConsumed = false;
   assert.throws(
@@ -565,6 +919,13 @@ function stateFixture() {
     "docs/qa/production-certification-contract.v1.json",
   );
   mkdirSync(path.dirname(contractFixturePath), { recursive: true });
+  cpSync(
+    "docs/qa/production-certification-stage-environment.v1.json",
+    path.join(
+      contractFixtureRoot,
+      "docs/qa/production-certification-stage-environment.v1.json",
+    ),
+  );
   const contractMatrix = JSON.parse(
     readFileSync("docs/qa/production-certification-contract.v1.json", "utf8"),
   );
@@ -648,6 +1009,7 @@ function stateFixture() {
       cwd: repositoryRoot,
       encoding: "utf8",
     }).stdout.trim(),
+    CERTIFICATION_UNKNOWN_DOCTOR_CAPABILITY: "synthetic-doctor-secret-never-print",
   };
   const doctor = runCertificationDoctor({
     repositoryRoot,
@@ -655,9 +1017,13 @@ function stateFixture() {
   });
   assert.equal(doctor.valid, false);
   assert.ok(doctor.issues.length >= 5, "doctor must report every pre-consumption gap");
-  assert.doesNotMatch(JSON.stringify(doctor), /not-a-database-url|credential:\/\/unsafe/);
+  assert.doesNotMatch(
+    JSON.stringify(doctor),
+    /not-a-database-url|credential:\/\/unsafe|synthetic-doctor-secret-never-print/,
+  );
   assert.match(doctor.issues.join("\n"), /candidate-id/);
   assert.match(doctor.issues.join("\n"), /source tree does not match/);
+  assert.match(doctor.issues.join("\n"), /CERTIFICATION_UNKNOWN_DOCTOR_CAPABILITY/);
   coveredRegressionIds.add(1);
   coveredRegressionIds.add(2);
 }

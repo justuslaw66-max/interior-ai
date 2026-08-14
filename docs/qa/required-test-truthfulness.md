@@ -18,7 +18,7 @@ child commands, captures distinct live/staged/extracted roots, constructs a
 deterministic miniature archive, rehashes every root at continuity, and remains
 explicitly ineligible for real certification.
 
-Direct manifest validation reports **27 gates / 380 classified test sources**.
+Direct manifest validation reports **27 gates / 381 classified test sources**.
 The corrected bounded qualifier returned
 `QUALIFIED_FOR_FINAL_CANDIDATE_CERTIFICATION`; this supersedes the invalid prior
 source result without supplying any real-candidate evidence.
@@ -60,7 +60,7 @@ the final CH-0015 closure audit.
 
 The bounded source qualifier returned
 `QUALIFIED_FOR_FINAL_CANDIDATE_CERTIFICATION`; direct manifest validation reports
-**27 gates / 380 classified test sources**. The result authorizes a separately
+**27 gates / 381 classified test sources**. The result authorizes a separately
 approved real cycle but is not a browser, benchmark, artifact, or deployment
 result.
 
@@ -96,6 +96,30 @@ registration of the physical staged CLI test.
 The required owner does not claim exact-head certification or integration.
 Those remain pending with the final CH-0015 closure audit; Full E2E is outside
 this correction.
+
+## CH-0015I certification stage-environment ownership — 2026-08-14
+
+`ci.production-artifact-contract` now also requires the canonical stage
+environment projector and its machine-readable v1 contract. Its
+`artifact.certification-source-stage-environment-isolation` contribution owns
+the exact real-Playwright regression: a source-validation parent may retain an
+external evidence root without activating runtime smoke, while an explicit
+runtime-smoke stage still rejects a missing product-test start marker.
+The bounded certification qualifier directly requires the stronger
+real-runner regression and binds its source through the harness identity. It
+is deliberately not added to the artifact gate's package command: that command
+is canonical source check 1, so invoking the containing real-runner from it
+would recurse instead of proving the boundary.
+
+Required-test browser children receive the narrow
+`PLAYWRIGHT_EXTERNAL_EVIDENCE_ROOT` capability instead of inheriting the full
+parent certification root. The shared required-test path resolver rejects
+contradictory narrow/generic roots and retains the same containment, physical
+parent, absence, symlink, and repository-exclusion rules. Production-server
+and development-server browser owners use separate profiles; development
+cannot inherit production activation and production cannot omit it. No gate,
+test count, project, browser, assertion, retry, timeout, cadence, or workflow
+changes.
 
 ## CH-0015I external Playwright report-path ownership — 2026-08-14
 

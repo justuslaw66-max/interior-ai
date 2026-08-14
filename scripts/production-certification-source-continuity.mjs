@@ -31,6 +31,11 @@ import {
   sha256Bytes,
   sourceValidationCheckSet,
 } from "./production-certification-contract.mjs";
+import {
+  certificationEnvironmentProfile,
+  projectCertificationChildEnvironment,
+  validateProjectedEnvironmentMetadata,
+} from "./production-certification-stage-environment.mjs";
 import { deriveProductionVerifierClosure } from "./production-verifier-closure.mjs";
 
 const SOURCE_EVIDENCE_SEAL_DOMAIN =
@@ -202,6 +207,30 @@ function realInvocation(check) {
   };
 }
 
+function sourceValidationStageInputs(environment, state, check) {
+  const inputs = {
+    CERTIFICATION_ENVIRONMENT_STAGE: "source-validation",
+    CERTIFICATION_SOURCE_VALIDATION_CHECK_ID: check.id,
+  };
+  if (state.executionClass === "deterministic-simulation") {
+    inputs.CERTIFICATION_QUALIFICATION_MODE = "1";
+    for (const name of [
+      "CERTIFICATION_SOURCE_VALIDATION_FIXTURE_LOG",
+      "CERTIFICATION_SOURCE_VALIDATION_DIRTY_ID",
+      "CERTIFICATION_SOURCE_VALIDATION_FAIL_ID",
+    ]) {
+      if (environment[name]?.trim()) inputs[name] = environment[name];
+    }
+  }
+  return inputs;
+}
+
+function sourceValidationProfileId(state, check) {
+  return state.executionClass === "deterministic-simulation"
+    ? check.qualificationEnvironmentProfileId
+    : check.environmentProfileId;
+}
+
 function sourceValidationPayload(value) {
   const payload = structuredClone(value);
   delete payload.aggregateResultSha256;
@@ -270,6 +299,23 @@ export function sourceValidationStageEvidence({
   const results = [];
   let failedCheckId = null;
   for (const [index, check] of contract.checks.entries()) {
+    const projected = projectCertificationChildEnvironment({
+      repositoryRoot,
+      baseEnvironment: environment,
+      stage: "source-validation",
+      checkId: check.id,
+      profileId: sourceValidationProfileId(state, check),
+      requiredEnvironmentNames: check.requiredEnvironmentNames,
+      stageInputs: sourceValidationStageInputs(environment, state, check),
+    });
+    const missingCheckEnvironment = check.requiredEnvironmentNames.filter(
+      (name) => !projected.environment[name]?.trim(),
+    );
+    if (missingCheckEnvironment.length > 0) {
+      throw new Error(
+        `source-validation check ${check.id} is missing required environment names: ${missingCheckEnvironment.join(", ")}`,
+      );
+    }
     const sourceBefore = physicalSourceIdentity(repositoryRoot);
     assertExpectedSource(sourceBefore, state);
     const invocation = simulation ? fixtureInvocation(check) : realInvocation(check);
@@ -287,10 +333,7 @@ export function sourceValidationStageEvidence({
     try {
       child = spawnSync(invocation.executable, invocation.args, {
         cwd: repositoryRoot,
-        env: {
-          ...environment,
-          CERTIFICATION_SOURCE_VALIDATION_CHECK_ID: check.id,
-        },
+        env: projected.environment,
         stdio: ["ignore", stdout, stderr],
       });
     } finally {
@@ -306,6 +349,8 @@ export function sourceValidationStageEvidence({
       order: index + 1,
       canonicalCommand: check.canonicalCommand,
       commandOwner: check.commandOwner,
+      environmentProfileId: sourceValidationProfileId(state, check),
+      environment: projected.metadata,
       requiredEnvironmentNames: [...check.requiredEnvironmentNames],
       expectedEvidence: [...check.expectedEvidence],
       substantive: check.substantive,
@@ -370,12 +415,13 @@ export function sourceValidationStageEvidence({
   const passed = failedCheckId === null && results.length === contract.checks.length;
   const evidence = sealSourceValidationEvidence({
     schema: PRODUCTION_CERTIFICATION_SOURCE_VALIDATION_SCHEMA,
-    version: 1,
+    version: 2,
     certificationId: state.certificationId,
     candidate: structuredClone(state.candidate),
     harness: structuredClone(state.harness),
     contractMatrixSha256: contract.contractMatrixSha256,
     checkSetSha256: contract.sha256,
+    environmentContractSha256: contract.environmentContractSha256,
     runNonce: `${state.certificationId}:${attempt.id}`,
     executionClass: state.executionClass,
     simulation,
@@ -387,6 +433,16 @@ export function sourceValidationStageEvidence({
     },
     orderedCheckIds: contract.checks.map((check) => check.id),
     canonicalCommands: contract.checks.map((check) => check.canonicalCommand),
+    orderedEnvironmentProfileIds: contract.checks.map(
+      (check) => sourceValidationProfileId(state, check),
+    ),
+    environmentProfileHashes: contract.checks.map(
+      (check) =>
+        certificationEnvironmentProfile(
+          repositoryRoot,
+          sourceValidationProfileId(state, check),
+        ).sha256,
+    ),
     startedAt: attempt.startedAt,
     completedAt,
     checks: results,
@@ -448,12 +504,15 @@ export function validateSourceValidationEvidence({
       "harness",
       "contractMatrixSha256",
       "checkSetSha256",
+      "environmentContractSha256",
       "runNonce",
       "executionClass",
       "simulation",
       "workingDirectoryIdentity",
       "orderedCheckIds",
       "canonicalCommands",
+      "orderedEnvironmentProfileIds",
+      "environmentProfileHashes",
       "startedAt",
       "completedAt",
       "checks",
@@ -467,7 +526,7 @@ export function validateSourceValidationEvidence({
   }
   const sourceAttempt = state.stages?.["source-validation"]?.attempts?.at(-1);
   if (
-    evidence?.version !== 1 ||
+    evidence?.version !== 2 ||
     evidence?.runNonce !== `${state.certificationId}:${sourceAttempt?.id}` ||
     evidence?.startedAt !== sourceAttempt?.startedAt ||
     !isCanonicalUtcTimestamp(evidence?.completedAt) ||
@@ -486,7 +545,8 @@ export function validateSourceValidationEvidence({
   if (
     JSON.stringify(evidence?.harness) !== JSON.stringify(state.harness) ||
     evidence?.contractMatrixSha256 !== contract.contractMatrixSha256 ||
-    evidence?.checkSetSha256 !== contract.sha256
+    evidence?.checkSetSha256 !== contract.sha256 ||
+    evidence?.environmentContractSha256 !== contract.environmentContractSha256
   ) {
     issues.push("source-validation evidence belongs to another harness or contract matrix");
   }
@@ -513,6 +573,16 @@ export function validateSourceValidationEvidence({
     JSON.stringify(contract.checks.map((check) => check.canonicalCommand))
   ) {
     issues.push("source-validation canonical command inventory is incomplete");
+  }
+  if (
+    JSON.stringify(evidence?.orderedEnvironmentProfileIds) !==
+      JSON.stringify(
+        contract.checks.map((check) => sourceValidationProfileId(state, check)),
+      ) ||
+    !Array.isArray(evidence?.environmentProfileHashes) ||
+    evidence.environmentProfileHashes.length !== contract.checks.length
+  ) {
+    issues.push("source-validation environment profile inventory is incomplete");
   }
   if (requirePassed && JSON.stringify(observedIds) !== JSON.stringify(expectedIds)) {
     issues.push("source-validation check closure is missing or out of order");
@@ -551,6 +621,8 @@ export function validateSourceValidationEvidence({
         "order",
         "canonicalCommand",
         "commandOwner",
+        "environmentProfileId",
+        "environment",
         "requiredEnvironmentNames",
         "expectedEvidence",
         "substantive",
@@ -575,6 +647,7 @@ export function validateSourceValidationEvidence({
       result?.order !== index + 1 ||
       result?.canonicalCommand !== expected.canonicalCommand ||
       result?.commandOwner !== expected.commandOwner ||
+      result?.environmentProfileId !== sourceValidationProfileId(state, expected) ||
       JSON.stringify(result?.requiredEnvironmentNames) !==
         JSON.stringify(expected.requiredEnvironmentNames) ||
       JSON.stringify(result?.expectedEvidence) !==
@@ -593,6 +666,30 @@ export function validateSourceValidationEvidence({
     ) {
       issues.push(`source-validation command or order mismatch at check ${index + 1}`);
       continue;
+    }
+    const environmentValidation = validateProjectedEnvironmentMetadata({
+      repositoryRoot,
+      stage: "source-validation",
+      checkId: expected.id,
+      profileId: sourceValidationProfileId(state, expected),
+      requiredEnvironmentNames: expected.requiredEnvironmentNames,
+      metadata: result.environment,
+    });
+    if (!environmentValidation.valid) {
+      issues.push(
+        ...environmentValidation.issues.map(
+          (issue) => `source-validation environment ${expected.id}: ${issue}`,
+        ),
+      );
+    }
+    if (
+      evidence?.environmentProfileHashes?.[index] !==
+        result.environment?.profileSha256 ||
+      expected.requiredEnvironmentNames.some(
+        (name) => !result.environment?.environmentNames?.includes(name),
+      )
+    ) {
+      issues.push(`source-validation environment binding mismatch: ${expected.id}`);
     }
     const expectedInvocation =
       state.executionClass === "deterministic-simulation"

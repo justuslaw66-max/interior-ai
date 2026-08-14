@@ -7,6 +7,7 @@ import {
   CERTIFICATION_STATE_ENV,
 } from "./production-certification-contract.mjs";
 import { readCertificationState } from "./production-certification-state.mjs";
+import { projectCertificationChildEnvironment } from "./production-certification-stage-environment.mjs";
 import {
   initializeRealCertification,
   runArchivePreflightStage,
@@ -81,6 +82,10 @@ function qualificationCommand() {
       process.execPath,
       ["scripts/production-certification-source-continuity.mjs", "contract-check"],
     ],
+    [
+      process.execPath,
+      ["scripts/test-production-certification-stage-environment.mjs"],
+    ],
     ["npm", ["run", "certification:simulate"]],
     [process.execPath, ["scripts/test-production-certification.mjs"]],
     [process.execPath, ["scripts/test-production-artifact-evidence.mjs"]],
@@ -107,11 +112,21 @@ function qualificationCommand() {
       .map((relativePath) => [process.execPath, ["--check", relativePath]]),
   ];
   let sawInfrastructureFailure = false;
+  const qualificationEnvironment = projectCertificationChildEnvironment({
+    repositoryRoot: process.cwd(),
+    baseEnvironment: process.env,
+    stage: "qualification",
+    profileId: "qualification",
+    stageInputs: {
+      CERTIFICATION_ENVIRONMENT_STAGE: "qualification",
+      CERTIFICATION_QUALIFICATION_MODE: "1",
+    },
+  }).environment;
   for (const [command, args] of checks) {
     const child = spawnSync(command, args, {
       cwd: process.cwd(),
       encoding: "utf8",
-      env: { ...process.env, CERTIFICATION_QUALIFICATION_MODE: "1" },
+      env: qualificationEnvironment,
     });
     if (child.error) sawInfrastructureFailure = true;
     if (child.status !== 0 || child.signal) {

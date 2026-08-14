@@ -43,8 +43,10 @@ import {
   measureFinalContinuity,
   rootEvidenceName,
   snapshotEvidenceName,
+  validateSourceValidationEvidence,
   validateContinuityEvidence,
 } from "./production-certification-source-continuity.mjs";
+import { projectCertificationChildEnvironment } from "./production-certification-stage-environment.mjs";
 
 const SIMULATION_ID = "production-certification-v1-simulation";
 const FIXED_NONCE = "123e4567-e89b-42d3-a456-426614174001";
@@ -324,13 +326,20 @@ function runStateTransitionCli({ fixtureRoot, evidenceRoot, statePath, action, p
     process.execPath,
     ["scripts/production-certification-simulation.mjs", `state:${action}`],
     fixtureRoot,
-    {
-      ...process.env,
-      CERTIFICATION_QUALIFICATION_MODE: "1",
-      PRODUCTION_CERTIFICATION_STATE: statePath,
-      CERTIFICATION_EVIDENCE_ROOT: evidenceRoot,
-      CERTIFICATION_SIMULATION_STAGE_REQUEST: requestPath,
-    },
+    projectCertificationChildEnvironment({
+      repositoryRoot: fixtureRoot,
+      baseEnvironment: process.env,
+      stage: "simulation",
+      profileId: "simulation-control",
+      stageInputs: {
+        CERTIFICATION_ENVIRONMENT_STAGE: "simulation",
+        CERTIFICATION_EXECUTION_CLASS: "deterministic-simulation",
+        CERTIFICATION_QUALIFICATION_MODE: "1",
+        PRODUCTION_CERTIFICATION_STATE: statePath,
+        CERTIFICATION_EVIDENCE_ROOT: evidenceRoot,
+        CERTIFICATION_SIMULATION_STAGE_REQUEST: requestPath,
+      },
+    }).environment,
   );
   return readCertificationState(statePath);
 }
@@ -717,6 +726,75 @@ export async function runProductionCertificationSimulation() {
     throw new Error("simulation source-validation did not invoke the canonical check closure");
   }
   state = readCertificationState(statePath);
+  const successfulSourceEvidence = JSON.parse(
+    readFileSync(
+      path.join(
+        evidenceRoot,
+        state.evidenceFiles["source-validation"].path,
+      ),
+      "utf8",
+    ),
+  );
+  const prohibitedSourceNames = new Set([
+    "CERTIFICATION_EVIDENCE_ROOT",
+    "CERTIFICATION_RUNTIME_REPORT_PATH",
+    "CERTIFICATION_RUNTIME_PHASE_TIMINGS_PATH",
+    "CERTIFICATION_RUNTIME_EVIDENCE_PATH",
+    "CERTIFICATION_RUNTIME_START_MARKER_PATH",
+    "PHASE8_EXTERNAL_EVIDENCE_ROOT",
+    "PLAYWRIGHT_JSON_OUTPUT_FILE",
+    "REQUIRED_TEST_REPORT_PATH",
+  ]);
+  if (
+    successfulSourceEvidence.schema !==
+      "interior-ai.production-certification-source-validation.v2" ||
+    successfulSourceEvidence.checks.length !== 19 ||
+    successfulSourceEvidence.checks.some(
+      (check) =>
+        check.environmentProfileId !== "source-validation-qualification" ||
+        check.environment.prohibitedCertificationVariableAbsence.passed !== true ||
+        check.environment.environmentNames.some((name) =>
+          prohibitedSourceNames.has(name),
+        ),
+    ) ||
+    !existsSync(
+      path.join(evidenceRoot, state.evidenceFiles["source-validation"].path),
+    )
+  ) {
+    throw new Error(
+      "simulation realistic parent environment leaked a later-stage capability into source validation",
+    );
+  }
+  const wrongProfileEvidence = structuredClone(successfulSourceEvidence);
+  wrongProfileEvidence.checks[0].environmentProfileId = "runtime-smoke";
+  const wrongEnvironmentProfileRejected = !validateSourceValidationEvidence({
+    evidence: wrongProfileEvidence,
+    evidenceRoot,
+    state,
+    repositoryRoot: fixtureRoot,
+  }).valid;
+  const leakedEnvironmentEvidence = structuredClone(successfulSourceEvidence);
+  leakedEnvironmentEvidence.checks[0].environment.environmentNames.push(
+    "CERTIFICATION_RUNTIME_START_MARKER_PATH",
+  );
+  leakedEnvironmentEvidence.checks[0].environment.environmentNames.sort();
+  leakedEnvironmentEvidence.checks[0].environment.environmentNamesSha256 =
+    sha256Bytes(
+      canonicalJsonBytes(
+        leakedEnvironmentEvidence.checks[0].environment.environmentNames,
+      ),
+    );
+  leakedEnvironmentEvidence.checks[0].environment.prohibitedCertificationVariableAbsence.checkedNameCount =
+    leakedEnvironmentEvidence.checks[0].environment.environmentNames.length;
+  const leakedEnvironmentVariableRejected = !validateSourceValidationEvidence({
+    evidence: leakedEnvironmentEvidence,
+    evidenceRoot,
+    state,
+    repositoryRoot: fixtureRoot,
+  }).valid;
+  if (!wrongEnvironmentProfileRejected || !leakedEnvironmentVariableRejected) {
+    throw new Error("simulation environment-profile tamper cases were not rejected");
+  }
   if (
     state.stages.doctor.attempts.length !== 2 ||
     state.stages.doctor.attempts[0].status !== "failed" ||
@@ -731,12 +809,20 @@ export async function runProductionCertificationSimulation() {
       process.execPath,
       ["scripts/production-certification-simulation.mjs", "emit-production-evidence"],
       fixtureRoot,
-      {
-        ...process.env,
-        ...environment,
-        CERTIFICATION_QUALIFICATION_MODE: "1",
-        CERTIFICATION_SIMULATION_NPM_VERSION: identity.npmVersion,
-      },
+      projectCertificationChildEnvironment({
+        repositoryRoot: fixtureRoot,
+        baseEnvironment: { ...process.env, ...environment },
+        stage: "simulation",
+        profileId: "simulation-control",
+        stageInputs: {
+          CERTIFICATION_ENVIRONMENT_STAGE: "simulation",
+          CERTIFICATION_EXECUTION_CLASS: "deterministic-simulation",
+          CERTIFICATION_QUALIFICATION_MODE: "1",
+          CERTIFICATION_SIMULATION_NPM_VERSION: identity.npmVersion,
+          CERTIFICATION_EXPECTED_COMMIT_SHA: identity.commitSha,
+          CERTIFICATION_EXPECTED_TREE_SHA: identity.treeSha,
+        },
+      }).environment,
     ),
   );
   state = startSimulationStage({
@@ -1441,6 +1527,8 @@ export async function runProductionCertificationSimulation() {
       continuityFailureRetryRetained,
       liveMutationBeforePhase8Rejected,
       liveMutationDuringPhase8Rejected,
+      wrongEnvironmentProfileRejected,
+      leakedEnvironmentVariableRejected,
     },
     simulationRoot,
     stateSha256: sha256Bytes(readFileSync(statePath)),

@@ -7,6 +7,7 @@ import path from "node:path";
 import { loadProductionArtifactForPlaywright } from "./scripts/production-artifact-playwright.mjs";
 import {
   CERTIFICATION_EVIDENCE_ROOT,
+  PLAYWRIGHT_EXTERNAL_EVIDENCE_ROOT,
   resolvePlaywrightReportPath,
 } from "./scripts/playwright-report-path.mjs";
 
@@ -55,19 +56,43 @@ const productionEvidenceReportOutputPath =
   loadedProductionArtifactEvidence?.reportDestination.outputPath;
 const certificationRuntimeMarkerPath =
   process.env.CERTIFICATION_RUNTIME_START_MARKER_PATH;
+const certificationEnvironmentStage =
+  process.env.CERTIFICATION_ENVIRONMENT_STAGE?.trim();
+const certificationRuntimeActive =
+  certificationEnvironmentStage === "runtime-smoke";
+const certificationRoot = process.env[CERTIFICATION_EVIDENCE_ROOT];
+const playwrightExternalRoot =
+  process.env[PLAYWRIGHT_EXTERNAL_EVIDENCE_ROOT];
 if (
-  productionArtifactEvidence &&
-  process.env[CERTIFICATION_EVIDENCE_ROOT] &&
-  !certificationRuntimeMarkerPath
+  certificationRoot &&
+  playwrightExternalRoot &&
+  certificationRoot !== playwrightExternalRoot
+) {
+  throw new Error("Playwright certification evidence roots are contradictory.");
+}
+if (
+  certificationRuntimeMarkerPath &&
+  !certificationRuntimeActive
+) {
+  throw new Error(
+    "certification runtime start marker is prohibited outside runtime-smoke",
+  );
+}
+if (
+  certificationRuntimeActive &&
+  (!productionArtifactEvidence ||
+    !certificationRuntimeMarkerPath ||
+    !(playwrightExternalRoot || certificationRoot) ||
+    !useProductionServer)
 ) {
   throw new Error("certification runtime smoke requires its product-test start marker");
 }
 const certificationRuntimeMarker =
-  productionArtifactEvidence && certificationRuntimeMarkerPath
+  certificationRuntimeActive && certificationRuntimeMarkerPath
     ? resolvePlaywrightReportPath({
         requestedPath: certificationRuntimeMarkerPath,
         repositoryRoot: process.cwd(),
-        authorizedExternalRoot: process.env[CERTIFICATION_EVIDENCE_ROOT],
+        authorizedExternalRoot: playwrightExternalRoot || certificationRoot,
       }).outputPath
     : null;
 const productionArtifactReporters: ReporterDescription[] = [

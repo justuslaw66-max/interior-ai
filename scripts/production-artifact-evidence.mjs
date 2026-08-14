@@ -24,6 +24,7 @@ import process from "node:process";
 
 import { resolveRetainedExternalEvidenceFile } from "./playwright-report-path.mjs";
 import { deriveProductionVerifierClosure } from "./production-verifier-closure.mjs";
+import { projectCertificationChildEnvironment } from "./production-certification-stage-environment.mjs";
 
 const EXECUTING_REPOSITORY_ROOT = path.resolve(path.dirname(import.meta.filename), "..");
 export const PRODUCTION_EVIDENCE_VERIFIER_SOURCE_PATHS = Object.freeze(
@@ -3804,15 +3805,25 @@ async function serveEvidence(repositoryRoot, manifestPath) {
   const manifest = result.manifest;
   const port = "3000";
   const environment = {
-    ...process.env,
-    NODE_ENV: "production",
-    APP_ENV: manifest.build.applicationEnvironment,
-    NEXT_PUBLIC_APP_ENV: manifest.build.applicationEnvironment,
-    CATALOG_STRICT_VALIDATION: "true",
-    PRODUCTION_ARTIFACT_EVIDENCE: "1",
-    PRODUCTION_ARTIFACT_BUILD_ID: manifest.build.nextBuildId,
-    PRODUCTION_ARTIFACT_SHA256: manifest.artifact.sha256,
-    PRODUCTION_ARTIFACT_COMMIT_SHA: manifest.source.commitSha,
+    ...projectCertificationChildEnvironment({
+      repositoryRoot,
+      baseEnvironment: {
+        ...process.env,
+        NODE_ENV: "production",
+        APP_ENV: manifest.build.applicationEnvironment,
+        NEXT_PUBLIC_APP_ENV: manifest.build.applicationEnvironment,
+        CATALOG_STRICT_VALIDATION: "true",
+      },
+      stage: "artifact-product-server",
+      profileId: "artifact-product-server",
+      stageInputs: {
+        CERTIFICATION_ENVIRONMENT_STAGE: "artifact-product-server",
+        PRODUCTION_ARTIFACT_EVIDENCE: "1",
+        PRODUCTION_ARTIFACT_BUILD_ID: manifest.build.nextBuildId,
+        PRODUCTION_ARTIFACT_SHA256: manifest.artifact.sha256,
+        PRODUCTION_ARTIFACT_COMMIT_SHA: manifest.source.commitSha,
+      },
+    }).environment,
   };
   for (const name of [...SAFE_FEATURE_FLAGS, ...DEVELOPMENT_ONLY_FLAGS]) delete environment[name];
   for (const [name, enabled] of Object.entries(manifest.build.featureFlags)) {

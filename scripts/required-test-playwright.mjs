@@ -1,5 +1,6 @@
 import {
   CERTIFICATION_EVIDENCE_ROOT,
+  PLAYWRIGHT_EXTERNAL_EVIDENCE_ROOT,
   resolveRequiredTestReportPath,
 } from "./playwright-report-path.mjs";
 
@@ -27,6 +28,12 @@ export function requiredTestPlaywrightEvidence({
   expectedGateId,
   environment = process.env,
 }) {
+  const certificationRoot = environment[CERTIFICATION_EVIDENCE_ROOT]?.trim();
+  const playwrightRoot = environment[PLAYWRIGHT_EXTERNAL_EVIDENCE_ROOT]?.trim();
+  if (certificationRoot && playwrightRoot && certificationRoot !== playwrightRoot) {
+    throw new Error("Required-test certification evidence roots are contradictory.");
+  }
+  const authorizedExternalRoot = playwrightRoot || certificationRoot;
   const gateId = environment.REQUIRED_TEST_GATE_ID?.trim();
   const requestedPath = environment.REQUIRED_TEST_REPORT_PATH;
   if (!gateId) {
@@ -49,7 +56,7 @@ export function requiredTestPlaywrightEvidence({
     requestedPath,
     repositoryRoot,
     gateId,
-    authorizedExternalRoot: environment[CERTIFICATION_EVIDENCE_ROOT],
+    authorizedExternalRoot,
   });
   const requestedStartMarker = environment.REQUIRED_TEST_START_MARKER_PATH;
   const startMarker = requestedStartMarker
@@ -57,7 +64,7 @@ export function requiredTestPlaywrightEvidence({
         requestedPath: requestedStartMarker,
         repositoryRoot,
         gateId,
-        authorizedExternalRoot: environment[CERTIFICATION_EVIDENCE_ROOT],
+        authorizedExternalRoot,
       }).outputPath
     : null;
   const value = (name) => environment[name]?.trim() || null;

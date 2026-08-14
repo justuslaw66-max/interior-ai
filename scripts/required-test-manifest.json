@@ -6,8 +6,8 @@
       "root": "scripts",
       "filePattern": "^test-.*\\.(?:js|mjs|ts)$",
       "classification": "risk-triggered",
-      "expectedFileCount": 257,
-      "expectedPathSha256": "7dfa8f04982c9eaceb41e23b62f2a1ef508ea1e79d0c30133c236515e02c95af"
+    "expectedFileCount": 258,
+    "expectedPathSha256": "fa591afd68253c812d70c250987201b8d73de1ad17b062ac886c0db21638c07e"
     },
     {
       "id": "browser-specs",
@@ -132,8 +132,10 @@
         "scripts/production-certification-source-continuity.mjs",
         "scripts/production-certification.mjs",
         "scripts/production-certification-simulation.mjs",
+        "scripts/production-certification-stage-environment.mjs",
         "scripts/production-certification-regressions.json",
         "docs/qa/production-certification-contract.v1.json",
+        "docs/qa/production-certification-stage-environment.v1.json",
         "scripts/certification-playwright-start-reporter.mjs",
         "scripts/benchmark-phase8-projects.ts",
         "scripts/phase8-project-benchmark-contract.ts",
@@ -178,6 +180,11 @@
           "id": "artifact.production-certification-harness-v1",
           "source": "scripts/test-production-certification.mjs",
           "marker": "Production certification harness tests passed."
+        },
+        {
+          "id": "artifact.certification-source-stage-environment-isolation",
+          "source": "scripts/test-production-artifact-evidence.mjs",
+          "marker": "real source-validation Playwright config must not activate runtime smoke"
         },
         {
           "id": "floor-plan.route-nft-fail-closed",

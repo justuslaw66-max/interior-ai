@@ -3399,6 +3399,83 @@ function listedSpecCount(suites) {
     "repository-relative compatibility must discover both runtime-smoke specs",
   );
 
+  const leakageRegressionRoot = mkdtempSync(
+    path.join(tmpdir(), "ch-0015i-source-stage-leakage-regression-"),
+  );
+  try {
+    const sourceValidationReport =
+      ".local/production-artifact-evidence/source-validation-list.json";
+    const sourceValidationConfig = spawnSync(
+      process.execPath,
+      [
+        path.join(mainRepositoryRoot, "node_modules/@playwright/test/cli.js"),
+        "test",
+        "tests/e2e/00-runtime-smoke.spec.ts",
+        "--config",
+        path.join(mainRepositoryRoot, "playwright.config.ts"),
+        "--project=chromium",
+        "--list",
+        "--reporter=json",
+      ],
+      {
+        cwd: context.root,
+        env: {
+          ...configEnvironment,
+          CERTIFICATION_EVIDENCE_ROOT: leakageRegressionRoot,
+          CERTIFICATION_ENVIRONMENT_STAGE: "source-validation",
+          PLAYWRIGHT_JSON_OUTPUT_FILE: sourceValidationReport,
+        },
+        encoding: "utf8",
+      },
+    );
+    assert.equal(
+      sourceValidationConfig.status,
+      0,
+      `real source-validation Playwright config must not activate runtime smoke: ${sourceValidationConfig.stderr}`,
+    );
+    assert.equal(
+      listedSpecCount(
+        JSON.parse(
+          readFileSync(path.join(context.root, sourceValidationReport), "utf8"),
+        ).suites,
+      ),
+      2,
+      "the exact leakage regression must retain real Playwright discovery",
+    );
+    const runtimeWithoutMarker = spawnSync(
+      process.execPath,
+      [
+        path.join(mainRepositoryRoot, "node_modules/@playwright/test/cli.js"),
+        "test",
+        "tests/e2e/00-runtime-smoke.spec.ts",
+        "--config",
+        path.join(mainRepositoryRoot, "playwright.config.ts"),
+        "--project=chromium",
+        "--list",
+        "--reporter=json",
+      ],
+      {
+        cwd: context.root,
+        env: {
+          ...configEnvironment,
+          CERTIFICATION_EVIDENCE_ROOT: leakageRegressionRoot,
+          CERTIFICATION_ENVIRONMENT_STAGE: "runtime-smoke",
+          PLAYWRIGHT_JSON_OUTPUT_FILE:
+            ".local/production-artifact-evidence/runtime-marker-required.json",
+        },
+        encoding: "utf8",
+      },
+    );
+    assert.notEqual(runtimeWithoutMarker.status, 0);
+    assert.match(
+      `${runtimeWithoutMarker.stdout}\n${runtimeWithoutMarker.stderr}`,
+      /certification runtime smoke requires its product-test start marker/,
+      "explicit runtime-smoke activation must retain the fail-closed marker requirement",
+    );
+  } finally {
+    rmSync(leakageRegressionRoot, { recursive: true, force: true });
+  }
+
   const externalEvidenceRoot = mkdtempSync(
     path.join(tmpdir(), "ch-0015i-playwright-external-evidence-"),
   );

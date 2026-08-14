@@ -30,6 +30,7 @@ import {
   sha256Bytes,
 } from "./production-certification-contract.mjs";
 import { deriveProductionVerifierClosure } from "./production-verifier-closure.mjs";
+import { projectCertificationChildEnvironment } from "./production-certification-stage-environment.mjs";
 
 const DEFAULT_MANIFEST = ".local/production-artifact-evidence/manifest.json";
 const DEFAULT_JOURNAL =
@@ -240,6 +241,10 @@ export function planProductionArchive({
       "docs/qa/production-certification-contract.v1.json",
       "certification-contract-matrix",
     ],
+    [
+      "docs/qa/production-certification-stage-environment.v1.json",
+      "certification-stage-environment-contract",
+    ],
   ]) {
     for (const file of walkFiles(root, normalizedRelative(relativePath, "archive root input"))) {
       addInput(inputs, file, reason);
@@ -359,7 +364,7 @@ function plannedInputIssues(plan, sourceRoot) {
   return issues;
 }
 
-function verifierEnvironment(environment, closureSha256) {
+function verifierEnvironment(repositoryRoot, environment, closureSha256) {
   const required = [
     "PRODUCTION_EVIDENCE_EXPECTED_CANDIDATE_ID",
     "PRODUCTION_EVIDENCE_EXPECTED_COMMIT_SHA",
@@ -371,10 +376,17 @@ function verifierEnvironment(environment, closureSha256) {
   if (missing.length > 0) {
     throw new Error(`archive verification environment is incomplete: ${missing.join(", ")}`);
   }
-  return {
-    ...environment,
-    PRODUCTION_EVIDENCE_EXPECTED_VERIFIER_SOURCE_CLOSURE_SHA256: closureSha256,
-  };
+  return projectCertificationChildEnvironment({
+    repositoryRoot,
+    baseEnvironment: environment,
+    stage: "archive-verifier",
+    profileId: "archive-verifier",
+    stageInputs: {
+      CERTIFICATION_ENVIRONMENT_STAGE: "archive-verifier",
+      ...Object.fromEntries(required.map((name) => [name, environment[name]])),
+      PRODUCTION_EVIDENCE_EXPECTED_VERIFIER_SOURCE_CLOSURE_SHA256: closureSha256,
+    },
+  }).environment;
 }
 
 export function verifyProductionArchiveStage({ stageRoot, environment = process.env }) {
@@ -399,7 +411,7 @@ export function verifyProductionArchiveStage({ stageRoot, environment = process.
     ["scripts/production-artifact-evidence.mjs", "verify-archive-preflight"],
     {
       cwd: root,
-      env: verifierEnvironment(environment, closure.closureSha256),
+      env: verifierEnvironment(root, environment, closure.closureSha256),
       encoding: "utf8",
     },
   );

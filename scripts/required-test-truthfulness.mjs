@@ -2374,7 +2374,18 @@ export function runRequiredPlaywrightGate({
       "release.cabinetry-browser requires REQUIRED_TEST_RELEASE_CANDIDATE_ID and REQUIRED_TEST_RELEASE_ENVIRONMENT",
     );
   }
-  const certificationRoot = environment.CERTIFICATION_EVIDENCE_ROOT?.trim();
+  const parentCertificationRoot = environment.CERTIFICATION_EVIDENCE_ROOT?.trim();
+  const playwrightCertificationRoot =
+    environment.PLAYWRIGHT_EXTERNAL_EVIDENCE_ROOT?.trim();
+  if (
+    parentCertificationRoot &&
+    playwrightCertificationRoot &&
+    parentCertificationRoot !== playwrightCertificationRoot
+  ) {
+    throw new Error("required-test certification evidence roots are contradictory");
+  }
+  const certificationRoot =
+    playwrightCertificationRoot || parentCertificationRoot;
   let reportPath = reportPathForGate(gate);
   let evidencePath = gate.reportPath;
   let reportAbsolutePath;

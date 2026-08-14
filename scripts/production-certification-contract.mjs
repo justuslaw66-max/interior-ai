@@ -2,6 +2,8 @@ import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import path from "node:path";
 
+import { stageEnvironmentContract } from "./production-certification-stage-environment.mjs";
+
 export const PRODUCTION_CERTIFICATION_HARNESS_VERSION = 1;
 export const PRODUCTION_CERTIFICATION_STATE_SCHEMA =
   "interior-ai.production-certification-state.v1";
@@ -18,7 +20,7 @@ export const PRODUCTION_CERTIFICATION_RUNTIME_EVIDENCE_SCHEMA =
 export const PRODUCTION_CERTIFICATION_BROWSER_EVIDENCE_SCHEMA =
   "interior-ai.production-certification-browser-owner-evidence.v1";
 export const PRODUCTION_CERTIFICATION_SOURCE_VALIDATION_SCHEMA =
-  "interior-ai.production-certification-source-validation.v1";
+  "interior-ai.production-certification-source-validation.v2";
 export const PRODUCTION_CERTIFICATION_ARTIFACT_SNAPSHOT_SCHEMA =
   "interior-ai.production-certification-artifact-snapshot.v1";
 export const PRODUCTION_CERTIFICATION_ARTIFACT_ROOT_SCHEMA =
@@ -179,6 +181,8 @@ export const CERTIFICATION_HARNESS_SOURCE_PATHS = Object.freeze([
   "scripts/production-certification-source-continuity.mjs",
   "scripts/production-certification.mjs",
   "scripts/production-certification-simulation.mjs",
+  "scripts/production-certification-stage-environment.mjs",
+  "scripts/test-production-certification-stage-environment.mjs",
   "scripts/production-archive.mjs",
   "scripts/production-verifier-closure.mjs",
   "scripts/production-artifact-contract.mjs",
@@ -191,6 +195,7 @@ export const CERTIFICATION_HARNESS_SOURCE_PATHS = Object.freeze([
   "scripts/production-certification-regressions.json",
   "scripts/certification-playwright-start-reporter.mjs",
   "docs/qa/production-certification-contract.v1.json",
+  "docs/qa/production-certification-stage-environment.v1.json",
   "scripts/benchmark-phase8-projects.ts",
   "scripts/phase8-project-benchmark-contract.ts",
   "scripts/run-phase8-project-benchmark.ts",
@@ -241,6 +246,7 @@ export function productionCertificationContract(repositoryRoot) {
 
 export function sourceValidationCheckSet(repositoryRoot) {
   const contract = productionCertificationContract(repositoryRoot);
+  const environmentContract = stageEnvironmentContract(repositoryRoot);
   const checks = contract.value.sourceValidation.checks;
   const ids = [];
   if (!Array.isArray(checks) || checks.length === 0) {
@@ -271,6 +277,16 @@ export function sourceValidationCheckSet(repositoryRoot) {
         JSON.stringify(check.args) !== JSON.stringify(["diff", "--check"])) ||
       typeof check.commandOwner !== "string" ||
       !check.commandOwner ||
+      typeof check.environmentProfileId !== "string" ||
+      !environmentContract.profiles[check.environmentProfileId] ||
+      !environmentContract.profiles[check.environmentProfileId].stages.includes(
+        "source-validation",
+      ) ||
+      typeof check.qualificationEnvironmentProfileId !== "string" ||
+      !environmentContract.profiles[check.qualificationEnvironmentProfileId] ||
+      !environmentContract.profiles[
+        check.qualificationEnvironmentProfileId
+      ].stages.includes("source-validation") ||
       !Array.isArray(check.requiredEnvironmentNames) ||
       !Array.isArray(check.expectedEvidence) ||
       typeof check.substantive !== "boolean" ||
@@ -290,6 +306,7 @@ export function sourceValidationCheckSet(repositoryRoot) {
     stopOnFirstRequiredFailure:
       contract.value.sourceValidation.stopOnFirstRequiredFailure,
     fixtureCommandOwner: contract.value.sourceValidation.fixtureCommandOwner,
+    environmentContractSha256: environmentContract.sha256,
     checks,
   };
   if (

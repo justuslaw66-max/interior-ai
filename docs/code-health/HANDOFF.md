@@ -1,5 +1,68 @@
 # Code health audit handoff
 
+## CH-0015I Harness v1 stage-environment isolation handoff — 2026-08-14
+
+Branch `fix/production-certification-harness-v1-stage-env-isolation` starts at
+exact candidate `8c0d52273227e887a2b3a16e8d1c07ce3b684908`, tree
+`2f2fea0ca61e0492a11cbd146ce26629a4f410d1`, whose parent is
+`44f17a310c9d4fdb80c780bbb37158489de7da77`. Integration local, tracking, and
+actual remote remain `2c567fd483877c7dcbd8fd23e3cd8cb316732c8c`, tree
+`50f9c5d6a6610990606fd9db9a27ba40200fca90`. Entry source/index/untracked/
+tracked-ignored/diff/Git-operation checks were clean; no repository-owned
+prohibited process or listener on 3000/3317 was present.
+
+Real certification `CH-0015I-final-20260814-c1826f884d67` for candidate
+`CH-0015I-8c0d52273227e887` remains an immutable failed attempt with its
+original `SOURCE_CONTRACT_FAILURE`, consumed flag, attempt numbers, doctor
+records, source child result and streams, stage invalidation, stored evidence,
+and review. This correction records, only in new documentation, the root cause
+`SOURCE_VALIDATION_STAGE_ENVIRONMENT_LEAKAGE_DEFECT` / capability class
+`CERTIFICATION_CONTROL_VARIABLE_CAPABILITY_BOUNDARY_DEFECT`.
+
+The defect was full parent-environment inheritance. Check 1 received the
+parent-only `CERTIFICATION_EVIDENCE_ROOT`; the real production-artifact test
+loaded the real Playwright config; generic root presence was misread as later
+runtime-smoke activation; and the config truthfully required a marker that the
+source stage did not own. No fake marker, one-command unset, skipped source
+test, or runtime exception is used.
+
+The correction adds the machine-readable
+`interior-ai.production-certification-stage-environment.v1` inventory of 83
+controls and 20 profiles plus one side-effect-free projector. Every child starts from ordinary OS/toolchain/
+application context with all known and prefix-matched certification controls
+removed, then receives only explicit profile inputs. The contract defines real
+and qualification source, build, archive, Phase 8, runtime, production and
+development browser, final, continuity, readiness, qualification, and
+simulation profiles. Unknown parent controls are stripped/recorded by the
+projector and rejected by doctor; unknown or prohibited explicit inputs fail
+before dispatch. Values and secrets never enter environment evidence.
+
+Source evidence v2 binds the contract hash, ordered profile IDs and hashes,
+allowed/required name-set hashes, sorted observed environment names, and the
+prohibited-variable absence result for every one of the 19 checks. The generic
+root remains in the parent for streams/results but is absent from real source
+children. Runtime activation now requires
+`CERTIFICATION_ENVIRONMENT_STAGE=runtime-smoke`, the narrow Playwright root,
+manifest/journal identities, output paths, and the unchanged product-test start
+marker. Browser production/development profiles cannot cross-activate. Phase 8
+destination and benchmark semantics remain unchanged. Nested archive-verifier
+and artifact-product-server children also use narrow profiles. The Floor Plan
+closure's ordinary `DATABASE_URL` requirement is checked before dispatch and
+bound into its required-name-set hash without retaining the value.
+
+Focused validation passed: the exact canonical 19-check real-runner regression,
+production-artifact evidence suite, certification harness suite, required-test
+truthfulness, direct 27-gate/381-source manifest validation, deterministic
+simulation, syntax, typecheck, zero-warning lint, code-quality, source hygiene,
+and diff-check. The bounded qualifier returned
+`QUALIFIED_FOR_FINAL_CANDIDATE_CERTIFICATION`. Independent read-only review
+returned PASS with no remaining actionable defect after inspecting the full
+diff and all untracked sources. No real build, Phase 8, runtime smoke, browser-owner
+matrix, Full E2E, integration, push, deploy, migration, dependency, product/UI,
+Floor Plan, telemetry, NFT, timestamp, schema-v3/journal-v1, external-path
+security, or benchmark behavior belongs to this correction. Exact-head real
+certification and the final CH-0015 closure audit remain pending.
+
 ## CH-0015I Harness v1 source/continuity correction handoff — 2026-08-14
 
 Branch `fix/production-certification-harness-v1-source-continuity` starts at

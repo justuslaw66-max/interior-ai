@@ -5,6 +5,7 @@ import path from "node:path";
 import {
   CERTIFICATION_EVIDENCE_ROOT_ENV,
   CERTIFICATION_STAGE_COMMANDS,
+  CERTIFICATION_STAGE_ORDER,
   PHASE8_EXTERNAL_EVIDENCE_ROOT_ENV,
   PRODUCTION_CERTIFICATION_DOCTOR_SCHEMA,
   PRODUCTION_CERTIFICATION_HARNESS_VERSION,
@@ -17,6 +18,10 @@ import {
   sourceValidationCheckSet,
   sha256Bytes,
 } from "./production-certification-contract.mjs";
+import {
+  isCertificationControlVariableName,
+  stageEnvironmentContract,
+} from "./production-certification-stage-environment.mjs";
 import { deriveProductionVerifierClosure } from "./production-verifier-closure.mjs";
 import {
   resolveAuthorizedExternalEvidenceRoot,
@@ -366,7 +371,7 @@ function validateContracts(repositoryRoot) {
     journalSchema: "v1",
     verificationModes: ["verify-preflight", "verify-archive-preflight", "verify-standalone"],
     sourceValidation: {
-      schema: "interior-ai.production-certification-source-validation.v1",
+      schema: "interior-ai.production-certification-source-validation.v2",
       checkCount: source.checks.length,
       checkSetSha256: source.sha256,
       allCanonicalCommandsPresent: true,
@@ -380,6 +385,91 @@ function validateContracts(repositoryRoot) {
       syntheticCopiedHashAllowed: false,
       integrationReadyRequires: continuity.integrationReadyRequires,
     },
+  };
+}
+
+function validateStageEnvironmentCapabilities(repositoryRoot, environment) {
+  const contract = stageEnvironmentContract(repositoryRoot);
+  const profileEntries = Object.entries(contract.profiles);
+  const missingStages = CERTIFICATION_STAGE_ORDER.filter(
+    (stage) => !profileEntries.some(([, profile]) => profile.stages.includes(stage)),
+  );
+  if (missingStages.length > 0) {
+    throw new Error(
+      `certification stages are missing environment profiles: ${missingStages.join(", ")}`,
+    );
+  }
+  const source = sourceValidationCheckSet(repositoryRoot);
+  if (
+    source.checks.length !== 19 ||
+    source.checks.some(
+      (check) =>
+        !check.environmentProfileId ||
+        !contract.profiles[check.environmentProfileId]?.stages.includes(
+          "source-validation",
+        ) ||
+        !check.qualificationEnvironmentProfileId ||
+        !contract.profiles[
+          check.qualificationEnvironmentProfileId
+        ]?.stages.includes("source-validation"),
+    )
+  ) {
+    throw new Error("all 19 source checks must declare source-validation profiles");
+  }
+  const sourceProfile = contract.profiles["source-validation"];
+  const runtimeProfile = contract.profiles["runtime-smoke"];
+  const phase8Profile = contract.profiles.phase8;
+  const productionBrowser = contract.profiles["production-browser-owner"];
+  const developmentBrowser = contract.profiles["development-browser-owner"];
+  if (
+    !sourceProfile.parentOnlyVariables.includes("CERTIFICATION_EVIDENCE_ROOT") ||
+    sourceProfile.childVisibleVariables.includes("CERTIFICATION_EVIDENCE_ROOT") ||
+    sourceProfile.childVisibleVariables.some((name) =>
+      new Set([
+        "CERTIFICATION_RUNTIME_START_MARKER_PATH",
+        "PLAYWRIGHT_JSON_OUTPUT_FILE",
+        "PHASE8_EXTERNAL_EVIDENCE_ROOT",
+        "REQUIRED_TEST_GATE_ID",
+      ]).has(name),
+    ) ||
+    runtimeProfile.fixedValues.CERTIFICATION_ENVIRONMENT_STAGE !==
+      "runtime-smoke" ||
+    !runtimeProfile.requiredVariables.includes(
+      "CERTIFICATION_RUNTIME_START_MARKER_PATH",
+    ) ||
+    !runtimeProfile.requiredVariables.includes(
+      "PRODUCTION_EVIDENCE_MANIFEST",
+    ) ||
+    !phase8Profile.requiredVariables.includes("PHASE8_EXTERNAL_EVIDENCE_ROOT") ||
+    productionBrowser.fixedValues.PLAYWRIGHT_USE_PRODUCTION_SERVER !== "1" ||
+    developmentBrowser.childVisibleVariables.includes(
+      "PLAYWRIGHT_USE_PRODUCTION_SERVER",
+    )
+  ) {
+    throw new Error(
+      "runtime, browser-owner, Phase 8, or source-validation environment profiles are incoherent",
+    );
+  }
+  const unknownParentControls = Object.keys(environment)
+    .filter(
+      (name) =>
+        isCertificationControlVariableName(name, contract) &&
+        !Object.hasOwn(contract.variables, name),
+    )
+    .sort();
+  if (unknownParentControls.length > 0) {
+    throw new Error(
+      `unknown certification-control variables are prohibited: ${unknownParentControls.join(", ")}`,
+    );
+  }
+  return {
+    schema: contract.value.schema,
+    contractSha256: contract.sha256,
+    profileCount: profileEntries.length,
+    sourceCheckCount: source.checks.length,
+    sourceEvidenceRootParentOnly: true,
+    runtimeActivationExplicit: true,
+    unknownControlPolicy: "fail-closed-in-doctor; strip-and-record-in-projector",
   };
 }
 
@@ -417,6 +507,8 @@ export function runCertificationDoctor({
   check(checks, issues, "strict-build-target-absence", () =>
     validateBuildTargetsPristine(root));
   check(checks, issues, "schema-and-mode-compatibility", () => validateContracts(root));
+  check(checks, issues, "stage-environment-capabilities", () =>
+    validateStageEnvironmentCapabilities(root, environment));
   check(checks, issues, "archive-file-backed-owner", () =>
     assertFileBackedOwner(root, "scripts/production-archive.mjs"));
   check(checks, issues, "verifier-transitive-closure", () => {

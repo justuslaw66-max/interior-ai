@@ -55,6 +55,7 @@ import {
   sourceValidationStageEvidence,
   validateSourceValidationEvidence,
 } from "./production-certification-source-continuity.mjs";
+import { projectCertificationChildEnvironment } from "./production-certification-stage-environment.mjs";
 
 const DEFAULT_MANIFEST = ".local/production-artifact-evidence/manifest.json";
 const DEFAULT_JOURNAL =
@@ -223,6 +224,19 @@ function childResult(command, args, options = {}) {
     stdio: options.inherit ? "inherit" : undefined,
     maxBuffer: 16 * 1024 * 1024,
   });
+}
+
+function stageChildEnvironment(
+  context,
+  { stage, profileId = stage, stageInputs, baseEnvironment = context.environment },
+) {
+  return projectCertificationChildEnvironment({
+    repositoryRoot: context.repositoryRoot,
+    baseEnvironment,
+    stage,
+    profileId,
+    stageInputs,
+  }).environment;
 }
 
 export function assertCertificationChildPassed(
@@ -805,7 +819,13 @@ export async function runBuildStage({
   return managedStage(context, "build", async (state) => {
     const child = childResult("npm", ["run", "evidence:production:build"], {
       cwd: repositoryRoot,
-      env: environment,
+      env: stageChildEnvironment(context, {
+        stage: "build",
+        stageInputs: {
+          CERTIFICATION_ENVIRONMENT_STAGE: "build",
+          PRODUCTION_EVIDENCE_CANDIDATE_ID: state.candidate.id,
+        },
+      }),
       inherit: true,
     });
     if (child.status !== 0 || child.signal || child.error) {
@@ -888,36 +908,45 @@ export async function runBuildStage({
   });
 }
 
-function archiveEnvironment(context) {
-  return {
-    ...context.environment,
-    CERTIFICATION_EVIDENCE_ROOT: context.evidenceRoot,
-    PRODUCTION_ARCHIVE_SOURCE_ROOT: context.repositoryRoot,
-    PRODUCTION_ARCHIVE_PLAN: path.join(context.evidenceRoot, "archive/plan.json"),
-    PRODUCTION_ARCHIVE_STAGE_ROOT: path.join(context.evidenceRoot, "archive/stage"),
-    PRODUCTION_ARCHIVE_PATH: path.join(context.evidenceRoot, "archive/candidate.tar.gz"),
-    PRODUCTION_ARCHIVE_EXTRACTION_ROOT: path.join(
-      context.evidenceRoot,
-      "archive/extracted",
-    ),
-    PRODUCTION_EVIDENCE_EXPECTED_CANDIDATE_ID: context.state.candidate.id,
-    PRODUCTION_EVIDENCE_EXPECTED_COMMIT_SHA: context.state.candidate.commitSha,
-    PRODUCTION_EVIDENCE_EXPECTED_TREE_SHA: context.state.candidate.treeSha,
-    PRODUCTION_EVIDENCE_EXPECTED_BUILD_ID: context.state.bindings.nextBuildId,
-    PRODUCTION_EVIDENCE_EXPECTED_ARTIFACT_SHA256:
-      context.state.bindings.artifactSha256,
-  };
+function archiveEnvironment(context, stage) {
+  return stageChildEnvironment(context, {
+    stage,
+    stageInputs: {
+      CERTIFICATION_ENVIRONMENT_STAGE: stage,
+      CERTIFICATION_EVIDENCE_ROOT: context.evidenceRoot,
+      PRODUCTION_ARCHIVE_SOURCE_ROOT: context.repositoryRoot,
+      PRODUCTION_ARCHIVE_PLAN: path.join(context.evidenceRoot, "archive/plan.json"),
+      PRODUCTION_ARCHIVE_STAGE_ROOT: path.join(
+        context.evidenceRoot,
+        "archive/stage",
+      ),
+      PRODUCTION_ARCHIVE_PATH: path.join(
+        context.evidenceRoot,
+        "archive/candidate.tar.gz",
+      ),
+      PRODUCTION_ARCHIVE_EXTRACTION_ROOT: path.join(
+        context.evidenceRoot,
+        "archive/extracted",
+      ),
+      PRODUCTION_EVIDENCE_EXPECTED_CANDIDATE_ID: context.state.candidate.id,
+      PRODUCTION_EVIDENCE_EXPECTED_COMMIT_SHA: context.state.candidate.commitSha,
+      PRODUCTION_EVIDENCE_EXPECTED_TREE_SHA: context.state.candidate.treeSha,
+      PRODUCTION_EVIDENCE_EXPECTED_BUILD_ID: context.state.bindings.nextBuildId,
+      PRODUCTION_EVIDENCE_EXPECTED_ARTIFACT_SHA256:
+        context.state.bindings.artifactSha256,
+    },
+  });
 }
 
 function runArchiveCli(
   context,
   command,
-  { consumed = false, onConsumed = () => {} } = {},
+  { stage, consumed = false, onConsumed = () => {} } = {},
 ) {
   const child = childResult(
     process.execPath,
     ["scripts/production-archive.mjs", command],
-    { cwd: context.repositoryRoot, env: archiveEnvironment(context) },
+    { cwd: context.repositoryRoot, env: archiveEnvironment(context, stage) },
   );
   assertCertificationChildPassed(
     child,
@@ -945,8 +974,9 @@ export async function runArchivePreflightStage(options = {}) {
   let archivePreflightConsumed = false;
   return managedStage(context, "archive-preflight", async (state) => {
     const archiveRoot = safeEvidenceDirectory(context.evidenceRoot, "archive");
-    const plan = runArchiveCli(context, "plan");
+    const plan = runArchiveCli(context, "plan", { stage: "archive-preflight" });
     const verification = runArchiveCli(context, "verify", {
+      stage: "archive-preflight",
       consumed: true,
       onConsumed: () => {
         archivePreflightConsumed = true;
@@ -994,6 +1024,7 @@ export async function runArchiveStage(options = {}) {
   let archiveConsumed = false;
   return managedStage(context, "archive", async (state) => {
     const result = runArchiveCli(context, "create", {
+      stage: "archive",
       consumed: true,
       onConsumed: () => {
         archiveConsumed = true;
@@ -1070,6 +1101,7 @@ export async function runExtractedArchivePreflightStage(options = {}) {
   let extractionConsumed = false;
   return managedStage(context, "extracted-archive-preflight", async (state) => {
     const result = runArchiveCli(context, "extract-and-verify", {
+      stage: "extracted-archive-preflight",
       consumed: true,
       onConsumed: () => {
         extractionConsumed = true;
@@ -1166,11 +1198,14 @@ export async function runPhase8Stage(options = {}) {
     }
     const child = childResult("npm", ["run", "test:phase8-performance"], {
       cwd: context.repositoryRoot,
-      env: {
-        ...context.environment,
-        CERTIFICATION_EVIDENCE_ROOT: context.evidenceRoot,
-        PHASE8_EXTERNAL_EVIDENCE_ROOT: context.evidenceRoot,
-      },
+      env: stageChildEnvironment(context, {
+        stage: "phase8",
+        stageInputs: {
+          CERTIFICATION_ENVIRONMENT_STAGE: "phase8",
+          CERTIFICATION_EVIDENCE_ROOT: context.evidenceRoot,
+          PHASE8_EXTERNAL_EVIDENCE_ROOT: context.evidenceRoot,
+        },
+      }),
       inherit: true,
     });
     if (child.status !== 0 || child.signal || child.error) {
@@ -1284,6 +1319,8 @@ function runtimeIdentityEnvironment(state) {
     PRODUCTION_EVIDENCE_EXPECTED_TREE_SHA: state.candidate.treeSha,
     PRODUCTION_EVIDENCE_EXPECTED_BUILD_ID: state.bindings.nextBuildId,
     PRODUCTION_EVIDENCE_EXPECTED_ARTIFACT_SHA256: state.bindings.artifactSha256,
+    PRODUCTION_EVIDENCE_EXPECTED_MANIFEST_SHA256:
+      state.bindings.productionManifestSha256,
   };
 }
 
@@ -1345,18 +1382,21 @@ export async function runRuntimeSmokeStage(options = {}) {
       ["playwright", "test", "tests/e2e/00-runtime-smoke.spec.ts", "--project=chromium"],
       {
         cwd: context.repositoryRoot,
-        env: {
-          ...context.environment,
-          ...runtimeIdentityEnvironment(state),
-          CI: "true",
-          CERTIFICATION_EVIDENCE_ROOT: context.evidenceRoot,
-          PLAYWRIGHT_USE_PRODUCTION_SERVER: "1",
-          PRODUCTION_EVIDENCE_MANIFEST: DEFAULT_MANIFEST,
-          PRODUCTION_EVIDENCE_JOURNAL_PATH: DEFAULT_JOURNAL,
-          PLAYWRIGHT_JSON_OUTPUT_FILE: reportPath,
-          RUNTIME_SMOKE_PHASE_TIMINGS_PATH: timingPath,
-          CERTIFICATION_RUNTIME_START_MARKER_PATH: startMarkerPath,
-        },
+        env: stageChildEnvironment(context, {
+          stage: "runtime-smoke",
+          baseEnvironment: { ...context.environment, CI: "true" },
+          stageInputs: {
+            CERTIFICATION_ENVIRONMENT_STAGE: "runtime-smoke",
+            ...runtimeIdentityEnvironment(state),
+            PLAYWRIGHT_EXTERNAL_EVIDENCE_ROOT: context.evidenceRoot,
+            PLAYWRIGHT_USE_PRODUCTION_SERVER: "1",
+            PRODUCTION_EVIDENCE_MANIFEST: DEFAULT_MANIFEST,
+            PRODUCTION_EVIDENCE_JOURNAL_PATH: DEFAULT_JOURNAL,
+            PLAYWRIGHT_JSON_OUTPUT_FILE: reportPath,
+            RUNTIME_SMOKE_PHASE_TIMINGS_PATH: timingPath,
+            CERTIFICATION_RUNTIME_START_MARKER_PATH: startMarkerPath,
+          },
+        }),
         inherit: true,
       },
     );
@@ -1488,9 +1528,22 @@ export function browserEnvironment(
   evidencePath,
   startMarkerPath,
 ) {
-  const environment = {
+  const baseEnvironment = {
     ...context.environment,
-    CERTIFICATION_EVIDENCE_ROOT: context.evidenceRoot,
+    APP_ENV: owner.applicationEnvironment,
+    NEXT_PUBLIC_APP_ENV: owner.applicationEnvironment,
+    CI: "true",
+  };
+  delete baseEnvironment.VERCEL_ENV;
+  delete baseEnvironment.PLAYWRIGHT_RELEASE_BASE_URL;
+  if (owner.id === "public-share") {
+    baseEnvironment.CATALOG_STRICT_VALIDATION = "true";
+  } else {
+    delete baseEnvironment.CATALOG_STRICT_VALIDATION;
+  }
+  const stageInputs = {
+    CERTIFICATION_ENVIRONMENT_STAGE: "browser-owners",
+    PLAYWRIGHT_EXTERNAL_EVIDENCE_ROOT: context.evidenceRoot,
     REQUIRED_TEST_REPORT_PATH: reportPath,
     REQUIRED_TEST_EVIDENCE_PATH: evidencePath,
     REQUIRED_TEST_START_MARKER_PATH: startMarkerPath,
@@ -1504,58 +1557,47 @@ export function browserEnvironment(
     REQUIRED_TEST_SOURCE_COMMIT_SHA: state.candidate.commitSha,
     REQUIRED_TEST_SOURCE_TREE_SHA: state.candidate.treeSha,
   };
-  environment.APP_ENV = owner.applicationEnvironment;
-  environment.NEXT_PUBLIC_APP_ENV = owner.applicationEnvironment;
-  environment.CI = "true";
-  delete environment.VERCEL_ENV;
-  delete environment.PLAYWRIGHT_RELEASE_BASE_URL;
   if (owner.productionServer) {
-    environment.PLAYWRIGHT_USE_PRODUCTION_SERVER = "1";
-  } else {
-    delete environment.PLAYWRIGHT_USE_PRODUCTION_SERVER;
+    stageInputs.PLAYWRIGHT_USE_PRODUCTION_SERVER = "1";
   }
-  if (owner.id === "public-share") {
-    environment.CATALOG_STRICT_VALIDATION = "true";
-  } else {
-    delete environment.CATALOG_STRICT_VALIDATION;
-  }
-  return environment;
+  return stageChildEnvironment(context, {
+    stage: "browser-owners",
+    profileId: owner.productionServer
+      ? "production-browser-owner"
+      : "development-browser-owner",
+    baseEnvironment,
+    stageInputs,
+  });
 }
 
-function browserListEnvironment(environment, owner) {
-  const listEnvironment = { ...environment };
-  for (const name of [
-    "REQUIRED_TEST_GATE_ID",
-    "REQUIRED_TEST_REPORT_PATH",
-    "REQUIRED_TEST_EVIDENCE_PATH",
-    "REQUIRED_TEST_START_MARKER_PATH",
-    "REQUIRED_TEST_ARTIFACT_SHA256",
-    "REQUIRED_TEST_BUILD_ID",
-    "REQUIRED_TEST_RELEASE_CANDIDATE_ID",
-    "REQUIRED_TEST_HARNESS_VERSION",
-    "REQUIRED_TEST_HARNESS_SOURCE_SHA256",
-    "REQUIRED_TEST_RELEASE_ENVIRONMENT",
-    "REQUIRED_TEST_SOURCE_COMMIT_SHA",
-    "REQUIRED_TEST_SOURCE_TREE_SHA",
-  ]) {
-    delete listEnvironment[name];
-  }
-  listEnvironment.APP_ENV = owner.applicationEnvironment;
-  listEnvironment.NEXT_PUBLIC_APP_ENV = owner.applicationEnvironment;
-  listEnvironment.CI = "true";
-  delete listEnvironment.VERCEL_ENV;
-  delete listEnvironment.PLAYWRIGHT_RELEASE_BASE_URL;
+function browserListEnvironment(context, owner) {
+  const baseEnvironment = {
+    ...context.environment,
+    APP_ENV: owner.applicationEnvironment,
+    NEXT_PUBLIC_APP_ENV: owner.applicationEnvironment,
+    CI: "true",
+  };
+  delete baseEnvironment.VERCEL_ENV;
+  delete baseEnvironment.PLAYWRIGHT_RELEASE_BASE_URL;
+  const stageInputs = {
+    CERTIFICATION_ENVIRONMENT_STAGE: "browser-owners",
+  };
   if (owner.productionServer) {
-    listEnvironment.PLAYWRIGHT_USE_PRODUCTION_SERVER = "1";
-  } else {
-    delete listEnvironment.PLAYWRIGHT_USE_PRODUCTION_SERVER;
+    stageInputs.PLAYWRIGHT_USE_PRODUCTION_SERVER = "1";
   }
   if (owner.id === "public-share") {
-    listEnvironment.CATALOG_STRICT_VALIDATION = "true";
+    baseEnvironment.CATALOG_STRICT_VALIDATION = "true";
   } else {
-    delete listEnvironment.CATALOG_STRICT_VALIDATION;
+    delete baseEnvironment.CATALOG_STRICT_VALIDATION;
   }
-  return listEnvironment;
+  return stageChildEnvironment(context, {
+    stage: "browser-owners",
+    profileId: owner.productionServer
+      ? "production-browser-owner-discovery"
+      : "development-browser-owner-discovery",
+    baseEnvironment,
+    stageInputs,
+  });
 }
 
 function observedBrowserEvidence(owner, state, requiredEvidence, gate) {
@@ -1706,7 +1748,7 @@ export async function runBrowserOwnersStage(options = {}) {
         ["playwright", "test", "--config", owner.config, "--list"],
         {
           cwd: context.repositoryRoot,
-          env: browserListEnvironment(context.environment, owner),
+          env: browserListEnvironment(context, owner),
         },
       );
       assertCertificationChildPassed(
@@ -1889,12 +1931,19 @@ export async function runFinalStandaloneStage(options = {}) {
       ["scripts/production-artifact-evidence.mjs", "verify-standalone"],
       {
         cwd: extractionRoot,
-        env: {
-          ...context.environment,
-          PRODUCTION_CERTIFICATION_STATE: context.statePath,
-          CERTIFICATION_EVIDENCE_ROOT: context.evidenceRoot,
-          PRODUCTION_EVIDENCE_EXPECTED_COMMIT_SHA: context.state.candidate.commitSha,
-        },
+        env: stageChildEnvironment(context, {
+          stage: "final-standalone",
+          stageInputs: {
+            CERTIFICATION_ENVIRONMENT_STAGE: "final-standalone",
+            PRODUCTION_CERTIFICATION_STATE: context.statePath,
+            CERTIFICATION_EVIDENCE_ROOT: context.evidenceRoot,
+            PRODUCTION_EVIDENCE_EXPECTED_COMMIT_SHA:
+              context.state.candidate.commitSha,
+            ...(context.state.executionClass === "deterministic-simulation"
+              ? { CERTIFICATION_ALLOW_SIMULATION: "1" }
+              : {}),
+          },
+        }),
       },
     );
     assertCertificationChildPassed(
