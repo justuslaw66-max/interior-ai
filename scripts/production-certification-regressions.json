@@ -1,0 +1,31 @@
+{
+  "schema": "interior-ai.production-certification-regression-matrix.v1",
+  "cases": [
+    { "id": 1, "defect": "incorrect-expected-tree", "coverage": "doctor source identity and state candidate binding" },
+    { "id": 2, "defect": "missing-candidate-id", "coverage": "doctor candidate grammar" },
+    { "id": 3, "defect": "malformed-candidate-id", "coverage": "state constructor and doctor candidate grammar" },
+    { "id": 4, "defect": "missing-playwright-json-output", "coverage": "canonical required-owner resolver" },
+    { "id": 5, "defect": "safe-external-path-rejected", "coverage": "external resolver positive fixture" },
+    { "id": 6, "defect": "absolute-report-outside-root", "coverage": "external resolver containment negative" },
+    { "id": 7, "defect": "schema-v3-producer-v2-consumer", "coverage": "canonical production contract compatibility guard" },
+    { "id": 8, "defect": "missing-semantic-journal", "coverage": "archive preflight and final identity guard" },
+    { "id": 9, "defect": "filesystem-time-used-semantically", "coverage": "semantic timestamp owner guard" },
+    { "id": 10, "defect": "generated-source-after-build-dispatch", "coverage": "journal ordering and doctor contract guard" },
+    { "id": 11, "defect": "constructor-data-url-evaluation", "coverage": "doctor physical file-backed owner guard" },
+    { "id": 12, "defect": "two-argument-import-meta-resolve", "coverage": "recursive filesystem ESM resolver guard" },
+    { "id": 13, "defect": "missing-verifier-local-dependency", "coverage": "recursive verifier closure negative fixture" },
+    { "id": 14, "defect": "source-worktree-module-fallback", "coverage": "closure and staged bootstrap containment guard" },
+    { "id": 15, "defect": "missing-archive-preflight-mode", "coverage": "three-mode static guard and simulation" },
+    { "id": 16, "defect": "final-missing-phase8", "coverage": "final certification evidence binding guard" },
+    { "id": 17, "defect": "final-missing-runtime-smoke", "coverage": "final certification evidence binding guard" },
+    { "id": 18, "defect": "final-missing-browser-owner", "coverage": "seven-owner iteration and binding guard" },
+    { "id": 19, "defect": "browser-source-artifact-mismatch", "coverage": "complete identity equality guard" },
+    { "id": 20, "defect": "phase8-repository-contamination", "coverage": "direct external Phase 8 root contract" },
+    { "id": 21, "defect": "generated-command-mismatch", "coverage": "canonical artifact contract and state command guard" },
+    { "id": 22, "defect": "external-report-missing-or-stale", "coverage": "target absence and retained hash guard" },
+    { "id": 23, "defect": "tee-masks-producer-failure", "coverage": "direct spawn status/signal ownership guard" },
+    { "id": 24, "defect": "partial-or-contradictory-test-evidence", "coverage": "Phase 8/runtime/browser exact inventory validators" },
+    { "id": 25, "defect": "continuity-mismatch", "coverage": "six-point artifact equality validator" },
+    { "id": 26, "defect": "simulation-evidence-real-certification", "coverage": "execution classification anti-bypass guard" }
+  ]
+}

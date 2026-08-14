@@ -1,6 +1,7 @@
 import { mkdirSync, renameSync, writeFileSync } from "node:fs";
 import path from "node:path";
 
+import { resolvePlaywrightReportPath } from "./playwright-report-path.mjs";
 import {
   FURNISHED_TEMPLATE_PHASE_CONTRACTS,
 } from "./runtime-smoke-operation-contracts.mjs";
@@ -123,8 +124,15 @@ function safeLifecycleState(value) {
 }
 
 function resolveTimingPath(repositoryRoot, relativePath) {
-  if (!relativePath || path.isAbsolute(relativePath)) {
-    throw new Error("runtime-smoke phase timing path must be repository-relative");
+  if (!relativePath) {
+    throw new Error("runtime-smoke phase timing path is required");
+  }
+  if (path.isAbsolute(relativePath)) {
+    return resolvePlaywrightReportPath({
+      requestedPath: relativePath,
+      repositoryRoot,
+      authorizedExternalRoot: process.env.CERTIFICATION_EVIDENCE_ROOT,
+    }).outputPath;
   }
   const root = path.resolve(repositoryRoot);
   const resolved = path.resolve(root, relativePath);

@@ -8,6 +8,7 @@ import {
   validateCurrentProductionEvidenceManifest,
 } from "./production-artifact-contract.mjs";
 import {
+  CERTIFICATION_EVIDENCE_ROOT,
   PLAYWRIGHT_EXTERNAL_EVIDENCE_ROOT,
   resolvePlaywrightReportPath,
 } from "./playwright-report-path.mjs";
@@ -187,7 +188,9 @@ export function loadProductionArtifactForPlaywright({
   const reportDestination = resolvePlaywrightReportPath({
     requestedPath: reportPath,
     repositoryRoot,
-    authorizedExternalRoot: environment[PLAYWRIGHT_EXTERNAL_EVIDENCE_ROOT],
+    authorizedExternalRoot:
+      environment[CERTIFICATION_EVIDENCE_ROOT] ??
+      environment[PLAYWRIGHT_EXTERNAL_EVIDENCE_ROOT],
   });
   return Object.freeze({
     identity: validation.identity,

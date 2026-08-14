@@ -2299,6 +2299,13 @@ async function fixture({
     "scripts/required-test-manifest.json",
     readFileSync(path.join(process.cwd(), "scripts/required-test-manifest.json"), "utf8"),
   );
+  for (const relativePath of PRODUCTION_EVIDENCE_VERIFIER_SOURCE_PATHS) {
+    write(
+      root,
+      relativePath,
+      readFileSync(path.join(process.cwd(), relativePath)),
+    );
+  }
   write(root, "generated/runtime.ts", "export const generated = true;\n");
   write(root, "public/asset.txt", publicArtifactText);
   write(root, ".next/BUILD_ID", "build-fixture-001\n");
@@ -2336,6 +2343,7 @@ async function fixture({
     "scripts/runtime-smoke-telemetry-bootstrap-contract.mjs",
     "scripts/required-test-truthfulness.mjs",
     "scripts/required-test-manifest.json",
+    ...PRODUCTION_EVIDENCE_VERIFIER_SOURCE_PATHS,
     "generated/runtime.ts",
     "public/asset.txt",
     "public/assets/floor-plans/preview.webp",
@@ -3589,17 +3597,17 @@ function listedSpecCount(suites) {
   );
   assert.match(
     producerSource,
-    /ARCHIVE_PREFLIGHT[\s\S]{0,180}standalone:\s*true[\s\S]{0,120}requireTests:\s*false/,
+    /ARCHIVE_PREFLIGHT[\s\S]{0,180}standalone:\s*true[\s\S]{0,120}testPolicy:\s*"pre-runtime-optional"/,
     "archive preflight must remain explicitly standalone and pre-runtime",
   );
   assert.match(
     producerSource,
-    /STANDALONE_FINAL[\s\S]{0,180}standalone:\s*true[\s\S]{0,120}requireTests:\s*true/,
+    /STANDALONE_FINAL[\s\S]{0,180}standalone:\s*true[\s\S]{0,120}testPolicy:\s*"external-certification-required"/,
     "final standalone verification must continue to require tests",
   );
   assert.match(
     producerSource,
-    /REPOSITORY_PREFLIGHT[\s\S]{0,180}standalone:\s*false[\s\S]{0,120}requireTests:\s*false/,
+    /REPOSITORY_PREFLIGHT[\s\S]{0,180}standalone:\s*false[\s\S]{0,120}testPolicy:\s*"pre-runtime-optional"/,
     "repository preflight must remain repository-bound",
   );
   const validationSignature = producerSource.slice(
@@ -3610,7 +3618,7 @@ function listedSpecCount(suites) {
   );
   assert.doesNotMatch(
     validationSignature,
-    /requireTests|standalone|allowFailedRuntimeSmoke/,
+    /requireTests|standalone|allowFailedRuntimeSmoke|testPolicy/,
     "callers must select a closed verification mode rather than test-bypass flags",
   );
   assert.match(
@@ -4476,7 +4484,7 @@ for (const mutate of [
     assert.notEqual(finalStandalone.status, 0);
     assert.match(
       `${finalStandalone.stdout}\n${finalStandalone.stderr}`,
-      /required production runtime-smoke report is missing|approval-ready/,
+      /final standalone verification requires certification state and evidence root/,
     );
 
     const archivePreflight = runStagedVerifier(
@@ -4678,7 +4686,8 @@ for (const mutate of [
         mutate(root) {
           rmSync(path.join(root, "scripts/production-artifact-contract.mjs"));
         },
-        expected: /verifier source is missing: scripts\/production-artifact-contract\.mjs/,
+        expected:
+          /verifier local import is missing: scripts\/production-artifact-evidence\.mjs -> \.\/production-artifact-contract\.mjs/,
       },
       {
         name: "verifier import escapes staged archive",
@@ -4690,7 +4699,7 @@ for (const mutate of [
             target,
           );
         },
-        expected: /not a contained staged file/,
+        expected: /verifier source must be a physical regular file/,
       },
       {
         name: "contained verifier source tampering",
@@ -4848,8 +4857,11 @@ for (const mutate of [
       "verify-standalone",
       manifest,
     );
-    assert.equal(finalStandalone.status, 0);
-    assert.match(finalStandalone.stdout, /Standalone production artifact evidence valid/);
+    assert.notEqual(finalStandalone.status, 0);
+    assert.match(
+      `${finalStandalone.stdout}\n${finalStandalone.stderr}`,
+      /final standalone verification requires certification state and evidence root/,
+    );
 
     const archivePreflight = runStagedVerifier(
       stagedRoot,
@@ -4875,86 +4887,6 @@ for (const mutate of [
       0,
       "an archive-preflight result must not substitute for final standalone evidence",
     );
-
-    const finalNegativeCases = [
-      {
-        name: "missing runtime report",
-        mutate(root) {
-          rmSync(path.join(root, context.reportPath));
-        },
-        expected: /required test report is missing/,
-      },
-      {
-        name: "failed runtime report",
-        async mutate(root) {
-          await rewriteStagedManifest(root, (candidate) => {
-            candidate.tests[0].processExitCode = 1;
-            candidate.repositoryEvidence.status = "failed";
-          });
-        },
-        expected: /production smoke command exited nonzero|approval-ready/,
-      },
-      {
-        name: "incomplete test inventory",
-        async mutate(root) {
-          const report = readStagedJson(root, context.reportPath);
-          report.suites[0].specs.pop();
-          report.stats.expected = 1;
-          writeStagedJson(root, context.reportPath, report);
-          const reportBytes = readFileSync(path.join(root, context.reportPath));
-          await rewriteStagedManifest(root, (candidate) => {
-            candidate.tests[0].report.sha256 = createHash("sha256")
-              .update(reportBytes)
-              .digest("hex");
-            candidate.tests[0].stats = report.stats;
-          });
-        },
-        expected: /requirement runtime\.health-catalog-ready is missing/,
-      },
-      {
-        name: "mismatched report source or artifact",
-        async mutate(root) {
-          await rewriteStagedManifest(root, (candidate) => {
-            candidate.tests[0].artifactSha256 = "f".repeat(64);
-          });
-        },
-        expected: /test report is bound to another artifact/,
-      },
-      {
-        name: "missing runtime completion marker",
-        async mutate(root) {
-          const timing = readStagedJson(root, context.phaseTimingPath);
-          timing.complete = false;
-          writeStagedJson(root, context.phaseTimingPath, timing);
-          const timingBytes = readFileSync(path.join(root, context.phaseTimingPath));
-          await rewriteStagedManifest(root, (candidate) => {
-            candidate.tests[0].phaseTimings.sha256 = createHash("sha256")
-              .update(timingBytes)
-              .digest("hex");
-          });
-        },
-        expected: /phase timing contract is incomplete or non-canonical/,
-      },
-    ];
-    for (const testCase of finalNegativeCases) {
-      const negativeRoot = cloneStagedArchiveTree(stagedRoot);
-      try {
-        await testCase.mutate(negativeRoot);
-        const rejected = runStagedVerifier(
-          negativeRoot,
-          "verify-standalone",
-          manifest,
-        );
-        assert.notEqual(rejected.status, 0, `${testCase.name} must fail closed`);
-        assert.match(
-          `${rejected.stdout}\n${rejected.stderr}`,
-          testCase.expected,
-          testCase.name,
-        );
-      } finally {
-        rmSync(negativeRoot, { recursive: true, force: true });
-      }
-    }
   } finally {
     rmSync(stagedRoot, { recursive: true, force: true });
     rmSync(context.root, { recursive: true, force: true });
@@ -5014,15 +4946,7 @@ for (const mutate of [
     ".nvmrc",
     "package.json",
     "package-lock.json",
-    "scripts/production-artifact-contract.mjs",
-    "scripts/production-artifact-evidence.mjs",
-    "scripts/runtime-smoke-phase-budget.mjs",
-    "scripts/runtime-smoke-failure-evidence.mjs",
-    "scripts/runtime-smoke-operation-contracts.mjs",
-    "scripts/runtime-smoke-operation-deadline.mjs",
-    "scripts/runtime-smoke-telemetry-bootstrap-contract.mjs",
-    "scripts/required-test-truthfulness.mjs",
-    "scripts/required-test-manifest.json",
+    ...PRODUCTION_EVIDENCE_VERIFIER_SOURCE_PATHS,
     context.manifestPath,
     `${context.manifestPath}.sha256`,
     context.reportPath,
@@ -5055,7 +4979,7 @@ for (const mutate of [
   const extractedLink = path.join(extractedRoot, ".next/server/public-asset-link");
   assert.equal(lstatSync(extractedLink).isSymbolicLink(), true);
   assert.equal(readlinkSync(extractedLink), "../../public/asset.txt");
-  const standaloneOutput = execFileSync(
+  const standaloneResult = spawnSync(
     process.execPath,
     ["scripts/production-artifact-evidence.mjs", "verify-standalone"],
     {
@@ -5067,7 +4991,11 @@ for (const mutate of [
       },
     },
   );
-  assert.match(standaloneOutput, /Standalone production artifact evidence valid/);
+  assert.notEqual(standaloneResult.status, 0);
+  assert.match(
+    `${standaloneResult.stdout}\n${standaloneResult.stderr}`,
+    /final standalone verification requires certification state and evidence root/,
+  );
 }
 
 {

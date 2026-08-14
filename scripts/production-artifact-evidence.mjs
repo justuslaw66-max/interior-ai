@@ -22,17 +22,15 @@ import { mkdir } from "node:fs/promises";
 import path from "node:path";
 import process from "node:process";
 
-export const PRODUCTION_EVIDENCE_VERIFIER_SOURCE_PATHS = Object.freeze([
-  "scripts/production-artifact-contract.mjs",
-  "scripts/production-artifact-evidence.mjs",
-  "scripts/required-test-truthfulness.mjs",
-  "scripts/required-test-manifest.json",
-  "scripts/runtime-smoke-phase-budget.mjs",
-  "scripts/runtime-smoke-failure-evidence.mjs",
-  "scripts/runtime-smoke-operation-contracts.mjs",
-  "scripts/runtime-smoke-operation-deadline.mjs",
-  "scripts/runtime-smoke-telemetry-bootstrap-contract.mjs",
-]);
+import { resolveRetainedExternalEvidenceFile } from "./playwright-report-path.mjs";
+import { deriveProductionVerifierClosure } from "./production-verifier-closure.mjs";
+
+const EXECUTING_REPOSITORY_ROOT = path.resolve(path.dirname(import.meta.filename), "..");
+export const PRODUCTION_EVIDENCE_VERIFIER_SOURCE_PATHS = Object.freeze(
+  deriveProductionVerifierClosure(EXECUTING_REPOSITORY_ROOT).files.map(
+    (file) => file.path,
+  ),
+);
 
 const ARCHIVE_PREFLIGHT_COMMAND = "verify-archive-preflight";
 const ARCHIVE_PREFLIGHT_PROHIBITED_PATHS = Object.freeze([
@@ -67,30 +65,7 @@ function assertArchivePreflightBootstrap() {
       );
     }
   }
-  const closureRecords = [];
-  for (const relativePath of PRODUCTION_EVIDENCE_VERIFIER_SOURCE_PATHS) {
-    const absolutePath = path.join(stagedRoot, relativePath);
-    if (!existsSync(absolutePath)) {
-      throw new Error(`archive-preflight verifier source is missing: ${relativePath}`);
-    }
-    const metadata = lstatSync(absolutePath);
-    const resolvedPath = realpathSync(absolutePath);
-    if (
-      !metadata.isFile() ||
-      resolvedPath !== absolutePath ||
-      !resolvedPath.startsWith(`${stagedRoot}${path.sep}`)
-    ) {
-      throw new Error(
-        `archive-preflight verifier source is not a contained staged file: ${relativePath}`,
-      );
-    }
-    const bytes = readFileSync(absolutePath);
-    closureRecords.push({
-      path: relativePath,
-      bytes: bytes.byteLength,
-      sha256: sha256(bytes),
-    });
-  }
+  const closure = deriveProductionVerifierClosure(stagedRoot);
   const expectedClosureSha256 =
     process.env.PRODUCTION_EVIDENCE_EXPECTED_VERIFIER_SOURCE_CLOSURE_SHA256?.trim();
   if (!/^[0-9a-f]{64}$/.test(expectedClosureSha256 ?? "")) {
@@ -98,10 +73,7 @@ function assertArchivePreflightBootstrap() {
       "archive preflight requires an exact expected verifier source closure SHA-256",
     );
   }
-  const closureDigestInput = closureRecords
-    .map((file) => `${file.sha256}  ${file.bytes}  ${file.path}\n`)
-    .join("");
-  if (sha256(closureDigestInput) !== expectedClosureSha256) {
+  if (closure.closureSha256 !== expectedClosureSha256) {
     throw new Error("archive preflight verifier source closure SHA-256 mismatch");
   }
 }
@@ -272,32 +244,32 @@ const EXTERNAL_CONTROLS = [
 const VERIFICATION_MODE_CONFIG = Object.freeze({
   [PRODUCTION_EVIDENCE_VERIFICATION_MODES.REPOSITORY_PREFLIGHT]: Object.freeze({
     standalone: false,
-    requireTests: false,
+    testPolicy: "pre-runtime-optional",
     requireSemanticJournal: true,
     allowFailedRuntimeSmoke: false,
   }),
   [PRODUCTION_EVIDENCE_VERIFICATION_MODES.ARCHIVE_PREFLIGHT]: Object.freeze({
     standalone: true,
-    requireTests: false,
+    testPolicy: "pre-runtime-optional",
     requireSemanticJournal: true,
     allowFailedRuntimeSmoke: false,
   }),
   [PRODUCTION_EVIDENCE_VERIFICATION_MODES.REPOSITORY_FINAL]: Object.freeze({
     standalone: false,
-    requireTests: true,
+    testPolicy: "runtime-required",
     requireSemanticJournal: true,
     allowFailedRuntimeSmoke: false,
   }),
   [PRODUCTION_EVIDENCE_VERIFICATION_MODES.REPOSITORY_RUNTIME_FAILURE]:
     Object.freeze({
       standalone: false,
-      requireTests: true,
+      testPolicy: "runtime-failure-required",
       requireSemanticJournal: true,
       allowFailedRuntimeSmoke: true,
     }),
   [PRODUCTION_EVIDENCE_VERIFICATION_MODES.STANDALONE_FINAL]: Object.freeze({
     standalone: true,
-    requireTests: true,
+    testPolicy: "external-certification-required",
     requireSemanticJournal: false,
     allowFailedRuntimeSmoke: false,
   }),
@@ -399,41 +371,14 @@ function unsafeAbsolutePortableFields(value, currentPath = "evidence") {
 }
 
 async function inspectVerifierSourceClosure(repositoryRoot) {
-  const root = path.resolve(repositoryRoot);
-  const files = [];
-  for (const relativePath of PRODUCTION_EVIDENCE_VERIFIER_SOURCE_PATHS) {
-    const absolutePath = resolveRepositoryPath(
-      root,
-      relativePath,
-      "verifier source path",
-    );
-    if (!existsSync(absolutePath)) {
-      throw new Error(`archive-preflight verifier source is missing: ${relativePath}`);
-    }
-    const metadata = lstatSync(absolutePath);
-    if (
-      !metadata.isFile() ||
-      realpathSync(absolutePath) !== absolutePath ||
-      !realpathSync(absolutePath).startsWith(`${root}${path.sep}`)
-    ) {
-      throw new Error(
-        `archive-preflight verifier source is not a contained staged file: ${relativePath}`,
-      );
-    }
-    files.push({
-      path: relativePath,
-      bytes: metadata.size,
-      sha256: await sha256File(absolutePath),
-    });
-  }
-  const digestInput = files
-    .map((file) => `${file.sha256}  ${file.bytes}  ${file.path}\n`)
-    .join("");
+  const closure = deriveProductionVerifierClosure(path.resolve(repositoryRoot));
   return {
     hashAlgorithm: "sha256",
-    sha256: sha256(digestInput),
-    fileCount: files.length,
-    files,
+    sha256: closure.closureSha256,
+    edgeLedgerSha256: closure.edgeLedgerSha256,
+    fileCount: closure.files.length,
+    files: closure.files,
+    edges: closure.edges,
   };
 }
 
@@ -2323,11 +2268,31 @@ function replaceRepositoryPaths(value, repositoryRoots) {
   return value;
 }
 
-export function canonicalizeProductionEvidenceReport(repositoryRoot, reportPath) {
-  const absoluteReportPath = resolveRepositoryPath(
+function resolvedRetainedEvidencePath(
+  repositoryRoot,
+  filePath,
+  description,
+  authorizedExternalRoot,
+) {
+  return path.isAbsolute(filePath)
+    ? resolveRetainedExternalEvidenceFile({
+        filePath,
+        authorizedExternalRoot,
+        repositoryRoot,
+      }).absolutePath
+    : resolveRepositoryPath(repositoryRoot, filePath, description);
+}
+
+export function canonicalizeProductionEvidenceReport(
+  repositoryRoot,
+  reportPath,
+  authorizedExternalRoot,
+) {
+  const absoluteReportPath = resolvedRetainedEvidencePath(
     repositoryRoot,
     reportPath,
     "test report path",
+    authorizedExternalRoot,
   );
   const report = JSON.parse(readFileSync(absoluteReportPath, "utf8"));
   const repositoryRoots = [path.resolve(repositoryRoot), realpathSync(repositoryRoot)]
@@ -2343,16 +2308,19 @@ export function bindRuntimeSmokeFailureToReport(
   repositoryRoot,
   reportPath,
   phaseTimingPath = DEFAULT_PHASE_TIMINGS_PATH,
+  authorizedExternalRoot,
 ) {
-  const absoluteReportPath = resolveRepositoryPath(
+  const absoluteReportPath = resolvedRetainedEvidencePath(
     repositoryRoot,
     reportPath,
     "test report path",
+    authorizedExternalRoot,
   );
-  const absoluteTimingPath = resolveRepositoryPath(
+  const absoluteTimingPath = resolvedRetainedEvidencePath(
     repositoryRoot,
     phaseTimingPath,
     "runtime-smoke phase timing path",
+    authorizedExternalRoot,
   );
   const report = JSON.parse(readFileSync(absoluteReportPath, "utf8"));
   const timing = JSON.parse(readFileSync(absoluteTimingPath, "utf8"));
@@ -2487,19 +2455,19 @@ function readRuntimeSmokePhaseTimings(
   test,
   issues,
   environment,
-  { allowFailure = false, report = null } = {},
+  { allowFailure = false, report = null, absoluteTimingPath = null } = {},
 ) {
-  if (test.phaseTimings?.path !== DEFAULT_PHASE_TIMINGS_PATH) {
+  if (!absoluteTimingPath && test.phaseTimings?.path !== DEFAULT_PHASE_TIMINGS_PATH) {
     issues.push("runtime-smoke phase timing path is not canonical");
     return null;
   }
-  let timingPath;
+  let timingPath = absoluteTimingPath;
   try {
-    timingPath = resolveRepositoryPath(
-      repositoryRoot,
-      test.phaseTimings.path,
-      "runtime-smoke phase timing path",
-    );
+    timingPath ??= resolveRepositoryPath(
+        repositoryRoot,
+        test.phaseTimings.path,
+        "runtime-smoke phase timing path",
+      );
   } catch (error) {
     issues.push(error instanceof Error ? error.message : String(error));
     return null;
@@ -2700,6 +2668,24 @@ function readRuntimeSmokePhaseTimings(
   }
 }
 
+export function validateRetainedRuntimeSmokePhaseTimings({
+  repositoryRoot,
+  timingPath,
+  timingSha256,
+  report,
+  environment = {},
+}) {
+  const issues = [];
+  const timing = readRuntimeSmokePhaseTimings(
+    repositoryRoot,
+    { phaseTimings: { path: timingPath, sha256: timingSha256 } },
+    issues,
+    environment,
+    { report, absoluteTimingPath: timingPath },
+  );
+  return { valid: Boolean(timing) && issues.length === 0, issues, timing };
+}
+
 function validateTestRecord(
   manifest,
   test,
@@ -2846,10 +2832,13 @@ export async function validateProductionEvidence({
   }
   const {
     standalone,
-    requireTests,
+    testPolicy,
     requireSemanticJournal,
     allowFailedRuntimeSmoke,
   } = modeConfig;
+  const runtimeRequired =
+    testPolicy === "runtime-required" ||
+    testPolicy === "runtime-failure-required";
   const issues = [];
   let semanticJournal = null;
   let verifierSourceClosure = null;
@@ -3270,7 +3259,7 @@ export async function validateProductionEvidence({
   if (!Array.isArray(manifest.tests)) {
     issues.push("test evidence list is malformed");
   } else {
-    if (requireTests && !manifest.tests.some((test) => test.name === "runtime-smoke")) {
+    if (runtimeRequired && !manifest.tests.some((test) => test.name === "runtime-smoke")) {
       issues.push("required production runtime-smoke report is missing");
     }
     for (const test of manifest.tests) {
@@ -3299,14 +3288,14 @@ export async function validateProductionEvidence({
     }
   }
   if (
-    requireTests &&
+    runtimeRequired &&
     !allowFailedRuntimeSmoke &&
     manifest.repositoryEvidence?.status !== "valid"
   ) {
     issues.push("failed evidence validation cannot produce an approval-ready result");
   }
   if (
-    requireTests &&
+    runtimeRequired &&
     allowFailedRuntimeSmoke &&
     manifest.repositoryEvidence?.status !== "failed"
   ) {
@@ -3350,6 +3339,8 @@ export async function recordProductionEvidenceTest({
   command,
   processExitCode,
   completedAt = new Date().toISOString(),
+  environment = process.env,
+  persistManifest = true,
 }) {
   const preflight = await validateProductionEvidence({
     repositoryRoot,
@@ -3359,7 +3350,13 @@ export async function recordProductionEvidenceTest({
   });
   if (!preflight.valid) throw new Error(preflight.issues.join("; "));
   const manifest = preflight.manifest;
-  const absoluteReportPath = resolveRepositoryPath(repositoryRoot, reportPath, "test report path");
+  const authorizedExternalRoot = environment.CERTIFICATION_EVIDENCE_ROOT?.trim();
+  const absoluteReportPath = resolvedRetainedEvidencePath(
+    repositoryRoot,
+    reportPath,
+    "test report path",
+    authorizedExternalRoot,
+  );
   if (!existsSync(absoluteReportPath)) throw new Error("required test report is missing");
   const reportBytes = readFileSync(absoluteReportPath);
   const reportText = reportBytes.toString("utf8");
@@ -3371,7 +3368,7 @@ export async function recordProductionEvidenceTest({
   if (sensitiveKeys.length > 0) {
     throw new Error(`test report contains prohibited secret-bearing fields: ${sensitiveKeys.join(", ")}`);
   }
-  const leaks = leakedSensitiveEnvironmentValues(reportText);
+  const leaks = leakedSensitiveEnvironmentValues(reportText, environment);
   if (leaks.length > 0) {
     throw new Error(`test report contains sensitive environment values: ${leaks.join(", ")}`);
   }
@@ -3432,10 +3429,11 @@ export async function recordProductionEvidenceTest({
   if (!telemetryBootstrap.valid) {
     throw new Error(telemetryBootstrap.issues.join("; "));
   }
-  const absolutePhaseTimingPath = resolveRepositoryPath(
+  const absolutePhaseTimingPath = resolvedRetainedEvidencePath(
     repositoryRoot,
     phaseTimingPath,
     "runtime-smoke phase timing path",
+    authorizedExternalRoot,
   );
   if (!existsSync(absolutePhaseTimingPath)) {
     throw new Error("runtime-smoke phase timing record is missing");
@@ -3453,8 +3451,12 @@ export async function recordProductionEvidenceTest({
       },
     },
     phaseTimingIssues,
-    process.env,
-    { allowFailure: processExitCode !== 0, report },
+    environment,
+    {
+      allowFailure: processExitCode !== 0,
+      report,
+      absoluteTimingPath: absolutePhaseTimingPath,
+    },
   );
   if (!phaseTimings || phaseTimingIssues.length > 0) {
     throw new Error(phaseTimingIssues.join("; "));
@@ -3467,6 +3469,16 @@ export async function recordProductionEvidenceTest({
     stats.unexpected === 0 &&
     stats.flaky === 0 &&
     stats.skipped === 0;
+  const portableRecordedPath = (absolutePath) => {
+    const externalRoot = authorizedExternalRoot
+      ? path.resolve(authorizedExternalRoot)
+      : null;
+    const base =
+      externalRoot && absolutePath.startsWith(`${externalRoot}${path.sep}`)
+        ? externalRoot
+        : repositoryRoot;
+    return normalizeRelativePath(path.relative(base, absolutePath));
+  };
   const test = {
     name,
     command,
@@ -3476,13 +3488,11 @@ export async function recordProductionEvidenceTest({
     artifactSha256: manifest.artifact.sha256,
     nextBuildId: manifest.build.nextBuildId,
     report: {
-      path: normalizeRelativePath(path.relative(repositoryRoot, absoluteReportPath)),
+      path: portableRecordedPath(absoluteReportPath),
       sha256: sha256(reportBytes),
     },
     phaseTimings: {
-      path: normalizeRelativePath(
-        path.relative(repositoryRoot, absolutePhaseTimingPath),
-      ),
+      path: portableRecordedPath(absolutePhaseTimingPath),
       sha256: sha256(phaseTimingBytes),
       wholeTestTimeoutMs: phaseTimings.wholeTestTimeoutMs,
       phaseCount: phaseTimings.phases.length,
@@ -3495,6 +3505,9 @@ export async function recordProductionEvidenceTest({
     stats,
     completedAt,
   };
+  if (!persistManifest) {
+    return { manifest, test, report, phaseTimings, telemetryBootstrap, truthfulness };
+  }
   manifest.tests = [...manifest.tests.filter((entry) => entry.name !== name), test];
   manifest.repositoryEvidence.status = passed ? "valid" : "failed";
   manifest.repositoryEvidence.releaseReady = false;
@@ -3745,15 +3758,7 @@ export async function createProductionEvidenceBundle({
     ".nvmrc",
     "package.json",
     "package-lock.json",
-    "scripts/production-artifact-contract.mjs",
-    "scripts/production-artifact-evidence.mjs",
-    "scripts/runtime-smoke-phase-budget.mjs",
-    "scripts/runtime-smoke-failure-evidence.mjs",
-    "scripts/runtime-smoke-operation-contracts.mjs",
-    "scripts/runtime-smoke-operation-deadline.mjs",
-    "scripts/runtime-smoke-telemetry-bootstrap-contract.mjs",
-    "scripts/required-test-truthfulness.mjs",
-    "scripts/required-test-manifest.json",
+    ...PRODUCTION_EVIDENCE_VERIFIER_SOURCE_PATHS,
     manifestPath,
     `${manifestPath}.sha256`,
     reportPath,
@@ -3983,9 +3988,15 @@ async function cli() {
         process.env.PRODUCTION_EVIDENCE_EXPECTED_COMMIT_SHA?.trim(),
     });
     if (!result.valid) throw new Error(result.issues.join("; "));
-    console.log(
-      `Standalone production artifact evidence valid for ${result.manifest.source.commitSha} (${result.manifest.artifact.sha256}, ${result.manifest.build.nextBuildId}).`,
+    const { verifyFinalCertificationEvidence } = await import(
+      "./production-certification-evidence.mjs"
     );
+    const certification = verifyFinalCertificationEvidence({
+      artifactRoot: repositoryRoot,
+      manifestPath,
+      environment: process.env,
+    });
+    console.log(JSON.stringify(certification));
   } else if (command === "verify") {
     const result = await validateProductionEvidence({
       repositoryRoot,

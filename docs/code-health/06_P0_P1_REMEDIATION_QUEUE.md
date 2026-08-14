@@ -1,5 +1,38 @@
 # P0/P1 remediation queue
 
+## Production Certification Harness v1 — 2026-08-14
+
+- **Prior classification:** `B — NOT_QUALIFIED_SOURCE_CONTRACT_DEFECT`; another
+  real candidate cycle remains unauthorized until the bounded qualifier returns
+  `A — QUALIFIED_FOR_FINAL_CANDIDATE_CERTIFICATION`.
+- **Correction:** one versioned platform now owns the 28-contract baseline,
+  sealed doctor/state/attempt records, ordered 12-stage lifecycle, deterministic
+  archive and recursive verifier closure, safe external Phase 8 and seven-owner
+  reporting, final evidence and continuity, resume/invalidation, failure
+  taxonomy, 26-case regression matrix, deterministic simulation, and the
+  four-result source qualifier.
+- **Qualification correction:** an initial provisional A was withdrawn after
+  independent review. Real per-stage CLI ownership, raw report interpretation,
+  live source/artifact resume checks, state policy, archive/symlink safety,
+  canonical browser package commands, real config/list fixtures, and executable
+  negative regressions were added before the successful bounded rerun.
+- **Required final boundary:** exact identity plus successful Phase 8, 2/2
+  runtime smoke with telemetry provenance, every required browser identity and
+  project with zero retry/skip/flake, six-point artifact continuity, and
+  non-simulation state are mandatory. Archive preflight remains standalone and
+  explicitly non-final.
+- **Ownership/status:** `ci.production-artifact-contract` owns the change without
+  adding a gate. The bounded qualifier returned `A —
+  QUALIFIED_FOR_FINAL_CANDIDATE_CERTIFICATION`; real exact-head build/
+  certification, integration, and the final CH-0015 closure audit remain
+  pending. No known CH-0015 product/UI implementation is introduced or left by
+  this source-platform batch.
+- **Scope/rollback:** no product, Floor Plan, telemetry, NFT, timestamp,
+  assertion, benchmark, dependency/lockfile, database/migration, application
+  data, workflow, or deployment change. Revert the single harness commit and
+  rerun the production-artifact/truthfulness checks to restore the prior known
+  blocker; no data or external rollback is needed.
+
 ## CH-0015I staged archive-preflight verifier — 2026-08-14
 
 - **Classification:** `STAGED_ARCHIVE_PREFLIGHT_VERIFIER_CONTRACT_DEFECT /

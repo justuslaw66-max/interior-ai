@@ -21,6 +21,7 @@ import {
   PHASE8_PROJECT_BENCHMARK_EVIDENCE_SCHEMA,
   PHASE8_PROJECT_BENCHMARK_SCHEMA_VERSION,
   PHASE8_SAMPLE_COUNTS,
+  PHASE8_SAMPLING_STARTED_FILE,
   PHASE8_SCALE_ORDER,
   PHASE8_SUMMARY_TOLERANCE_MS,
   PHASE8_TIMER,
@@ -371,6 +372,13 @@ function main(): void {
     const argumentsValue = parseChildArguments();
     const startedAtUtc = new Date().toISOString();
     const monotonicStartedAt = performance.now();
+    atomicWriteJson(
+      path.join(argumentsValue.runDirectory, PHASE8_SAMPLING_STARTED_FILE),
+      {
+        schema: "interior-ai.phase8-project-benchmark-sampling-started.v1",
+        nonce: argumentsValue.nonce,
+      },
+    );
     const { measuredProjects, processObservations } = observeBenchmarkRun(
       runPhase8ProjectBenchmarks,
     );

@@ -6,8 +6,8 @@
       "root": "scripts",
       "filePattern": "^test-.*\\.(?:js|mjs|ts)$",
       "classification": "risk-triggered",
-      "expectedFileCount": 256,
-      "expectedPathSha256": "97bfe892688803f8fedc14a4a1d1da7b84af7ca69456a9d9ac68f4fb564aa77e"
+      "expectedFileCount": 257,
+      "expectedPathSha256": "7dfa8f04982c9eaceb41e23b62f2a1ef508ea1e79d0c30133c236515e02c95af"
     },
     {
       "id": "browser-specs",
@@ -115,19 +115,41 @@
       "blocking": true,
       "command": "npm run test:production-artifact-evidence",
       "packageScript": "test:production-artifact-evidence",
-      "packageClosure": { "expectedScriptCount": 1, "expectedSha256": "2c72a65b5affbfbb1c5d94377bad6d0b2135181d25b5fcd56fac3c389a1cd5c7" },
+      "packageClosure": { "expectedScriptCount": 1, "expectedSha256": "c6e9c540bcbe705e5105c967e21c8cb8efbee46e088f1ab876c7f643ff3a0d16" },
       "runner": "node",
       "requiredSources": [
         "playwright.config.ts",
         "scripts/production-artifact-contract.mjs",
         "scripts/production-artifact-evidence.mjs",
         "scripts/production-artifact-playwright.mjs",
+        "scripts/production-archive.mjs",
+        "scripts/production-verifier-closure.mjs",
+        "scripts/production-certification-contract.mjs",
+        "scripts/production-certification-state.mjs",
+        "scripts/production-certification-evidence.mjs",
+        "scripts/production-certification-doctor.mjs",
+        "scripts/production-certification-real.mjs",
+        "scripts/production-certification.mjs",
+        "scripts/production-certification-simulation.mjs",
+        "scripts/production-certification-regressions.json",
+        "scripts/certification-playwright-start-reporter.mjs",
+        "scripts/benchmark-phase8-projects.ts",
+        "scripts/phase8-project-benchmark-contract.ts",
+        "scripts/required-test-playwright.mjs",
         "scripts/playwright-report-path.mjs",
         "scripts/runtime-smoke-failure-evidence.mjs",
         "scripts/runtime-smoke-operation-contracts.mjs",
         "scripts/runtime-smoke-operation-deadline.mjs",
         "scripts/runtime-smoke-phase-budget.mjs",
-        "scripts/test-production-artifact-evidence.mjs"
+        "scripts/test-production-artifact-evidence.mjs",
+        "scripts/test-production-certification.mjs",
+        "playwright.floor-plan-upload.config.ts",
+        "playwright.pro-visual.config.ts",
+        "playwright.guest-save-overlay.config.ts",
+        "playwright.my-designs-overlay.config.ts",
+        "playwright.share-responsive.config.ts",
+        "playwright.cart-overlay.config.ts",
+        "playwright.retailer-confirmation.config.ts"
       ],
       "requiredContributions": [
         {
@@ -149,6 +171,11 @@
           "id": "artifact.staged-archive-preflight-cli",
           "source": "scripts/test-production-artifact-evidence.mjs",
           "marker": "actual staged archive-preflight CLI executes the physical staged verifier"
+        },
+        {
+          "id": "artifact.production-certification-harness-v1",
+          "source": "scripts/test-production-certification.mjs",
+          "marker": "Production certification harness tests passed."
         },
         {
           "id": "floor-plan.route-nft-fail-closed",

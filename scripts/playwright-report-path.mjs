@@ -11,6 +11,7 @@ import path from "node:path";
 
 export const PLAYWRIGHT_EXTERNAL_EVIDENCE_ROOT =
   "PLAYWRIGHT_EXTERNAL_EVIDENCE_ROOT";
+export const CERTIFICATION_EVIDENCE_ROOT = "CERTIFICATION_EVIDENCE_ROOT";
 export const PLAYWRIGHT_PRODUCTION_EVIDENCE_PATH_POLICY =
   "production-evidence";
 
@@ -265,6 +266,72 @@ function resolveExternalReport({
   });
 }
 
+export function resolveAuthorizedExternalEvidenceRoot({
+  authorizedExternalRoot,
+  repositoryRoot,
+  additionalRepositoryRoots = [],
+}) {
+  const externalRootInput = requiredNormalizedPath(
+    authorizedExternalRoot,
+    "Authorized external evidence root",
+  );
+  if (!path.isAbsolute(externalRootInput)) {
+    throw new Error("Authorized external evidence root must be absolute.");
+  }
+  const externalRoot = path.resolve(externalRootInput);
+  const entry = lstatSync(externalRoot);
+  if (entry.isSymbolicLink() || !entry.isDirectory()) {
+    throw new Error("Authorized external evidence root must be a physical directory.");
+  }
+  const externalRootRealpath = realpathSync(externalRoot);
+  const repositoryRoots = knownRepositoryRoots(
+    repositoryRoot,
+    additionalRepositoryRoots,
+  );
+  assertOutsideRepositories(
+    [externalRoot, externalRootRealpath],
+    repositoryRoots,
+    "Authorized external evidence root",
+  );
+  if (
+    repositoryRoots.some((root) =>
+      containedBy(externalRootRealpath, root, { allowRoot: true }),
+    )
+  ) {
+    throw new Error("Authorized external evidence root cannot contain a worktree.");
+  }
+  return Object.freeze({ externalRoot, externalRootRealpath });
+}
+
+export function resolveRetainedExternalEvidenceFile({
+  filePath,
+  authorizedExternalRoot,
+  repositoryRoot,
+}) {
+  const root = resolveAuthorizedExternalEvidenceRoot({
+    authorizedExternalRoot,
+    repositoryRoot,
+  });
+  if (typeof filePath !== "string" || !path.isAbsolute(filePath)) {
+    throw new Error("Retained external evidence file must be absolute.");
+  }
+  const absolutePath = path.resolve(filePath);
+  let entry;
+  try {
+    entry = lstatSync(absolutePath);
+  } catch {
+    throw new Error("Retained external evidence file is missing.");
+  }
+  if (entry.isSymbolicLink() || !entry.isFile()) {
+    throw new Error("Retained external evidence file must be a physical file.");
+  }
+  const real = realpathSync(absolutePath);
+  if (!real.startsWith(`${root.externalRootRealpath}${path.sep}`)) {
+    throw new Error("Retained external evidence file escapes its authorized root.");
+  }
+  return Object.freeze({ absolutePath, realpath: real });
+}
+
 export function resolvePlaywrightReportPath({
   requestedPath,
   repositoryRoot,
@@ -296,5 +363,84 @@ export function resolvePlaywrightReportPath({
   return resolveRepositoryRelativeReport({
     requestedPath: reportPath,
     repositoryRoot,
+  });
+}
+
+function certificationOutputDirectory(reportDestination, gateId) {
+  if (reportDestination.destinationClass === "repository-relative") {
+    return `.local/required-test-evidence/${gateId}/playwright-output`;
+  }
+  const outputDirectory = path.join(
+    path.dirname(reportDestination.outputPath),
+    `${gateId}-playwright-output`,
+  );
+  if (existsPath(outputDirectory)) {
+    throw new Error("Certification Playwright output directory must not already exist.");
+  }
+  return outputDirectory;
+}
+
+function existsPath(targetPath) {
+  try {
+    lstatSync(targetPath);
+    return true;
+  } catch (error) {
+    if (error?.code === "ENOENT") return false;
+    throw error;
+  }
+}
+
+export function resolveRequiredTestReportPath({
+  requestedPath,
+  repositoryRoot,
+  gateId,
+  authorizedExternalRoot,
+  additionalRepositoryRoots = [],
+}) {
+  if (typeof gateId !== "string" || !/^[a-z0-9][a-z0-9.-]+$/.test(gateId)) {
+    throw new Error("Required-test gate ID is invalid.");
+  }
+  const reportPath = requiredNormalizedPath(
+    requestedPath,
+    "Required-test evidence report path",
+  );
+  let destination;
+  if (path.isAbsolute(reportPath)) {
+    destination = resolveExternalReport({
+      requestedPath: reportPath,
+      repositoryRoot,
+      authorizedExternalRoot,
+      additionalRepositoryRoots,
+    });
+  } else {
+    if (reportPath.includes("\\")) {
+      throw new Error("Required-test evidence report path is malformed.");
+    }
+    const expectedPrefix = `.local/required-test-evidence/${gateId}/`;
+    if (!reportPath.startsWith(expectedPrefix)) {
+      throw new Error(
+        "Repository-relative required-test reports must use their owned ignored directory.",
+      );
+    }
+    const root = path.resolve(repositoryRoot);
+    const outputPath = path.resolve(root, reportPath);
+    if (!containedBy(root, outputPath)) {
+      throw new Error("Required-test evidence report path escapes the repository.");
+    }
+    requireAbsentJsonTarget(outputPath);
+    const parent = existingWritableParent(outputPath);
+    if (!containedBy(realpathSync(root), parent.parentRealpath, { allowRoot: true })) {
+      throw new Error("Required-test evidence report parent escapes the repository.");
+    }
+    destination = Object.freeze({
+      outputPath,
+      destinationClass: "repository-relative",
+      displayPath: reportPath,
+      parentRealpath: parent.parentRealpath,
+    });
+  }
+  return Object.freeze({
+    ...destination,
+    outputDirectory: certificationOutputDirectory(destination, gateId),
   });
 }

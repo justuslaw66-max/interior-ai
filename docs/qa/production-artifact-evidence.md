@@ -5,7 +5,41 @@ production-mode artifact evidence and required CI behavior. It does not describe
 or prove a Vercel deployment, stable staging, production, or external platform
 configuration.
 
-## CH-0015I staged archive preflight verification
+## Production Certification Harness v1 finalization
+
+Harness v1 supersedes the earlier runtime-only final lifecycle described in the
+chronological CH-0015I records below. The prior qualification was
+`NOT_QUALIFIED_SOURCE_CONTRACT_DEFECT`: final standalone verification did not
+require Phase 8, all seven browser-owner reports, continuity, or one complete
+candidate/artifact/harness identity.
+
+Final `verify-standalone` now additionally requires the sealed external
+certification state/root, complete Phase 8 raw evidence and budgets, runtime
+smoke 2/2 with telemetry provenance, the exact required identities/projects for
+Floor Plan Upload, Pro Visual, Guest Save, My Designs, Public Share, Cart, and
+Retailer with zero retry/skip/flake, six-point artifact continuity, and exact
+manifest/journal/closure/archive/harness bindings. Simulation-classified,
+missing, duplicated, partial, stale, contradictory, or cross-run evidence fails
+closed. `verify-archive-preflight` remains standalone and explicitly non-final.
+Real retained Phase 8 and Playwright reports are reparsed and compared with
+their certification summaries; merely relabelling a hash cannot pass.
+
+The committed archive owner derives the recursive local-ESM verifier closure
+from canonical entrypoints, retains its import-edge ledger and aggregate hash,
+stages physical contained bytes with per-file reasons, compresses
+deterministically with normalized ownership metadata, rejects escaping symlink
+targets before staged or extracted verification executes, and verifies
+extracted inventory externally. Phase 8 and all
+seven Playwright owners can write directly beneath one authorized external root
+without `.local` contamination or overwrite. The complete architecture and
+runbook are in `docs/qa/production-certification-harness-v1.md`.
+
+No real build, Phase 8, runtime smoke, browser-owner matrix, or Full E2E is run
+by source qualification. The bounded qualifier returned
+`QUALIFIED_FOR_FINAL_CANDIDATE_CERTIFICATION`; exact-head certification,
+integration, and the final CH-0015 closure audit remain pending.
+
+## CH-0015I staged archive preflight verification (historical predecessor)
 
 Classification is **STAGED_ARCHIVE_PREFLIGHT_VERIFIER_CONTRACT_DEFECT /
 MISSING_STANDALONE_PRE_RUNTIME_VERIFICATION_MODE**. The preserved certification

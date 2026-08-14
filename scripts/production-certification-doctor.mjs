@@ -1,0 +1,417 @@
+import { spawnSync } from "node:child_process";
+import { existsSync, lstatSync, readFileSync, realpathSync } from "node:fs";
+import path from "node:path";
+
+import {
+  CERTIFICATION_EVIDENCE_ROOT_ENV,
+  CERTIFICATION_STAGE_COMMANDS,
+  PHASE8_EXTERNAL_EVIDENCE_ROOT_ENV,
+  PRODUCTION_CERTIFICATION_DOCTOR_SCHEMA,
+  PRODUCTION_CERTIFICATION_HARNESS_VERSION,
+  REQUIRED_BROWSER_OWNERS,
+  canonicalJsonBytes,
+  harnessSourceIdentity,
+  isCandidateId,
+  isSourceSha,
+  sha256Bytes,
+} from "./production-certification-contract.mjs";
+import { deriveProductionVerifierClosure } from "./production-verifier-closure.mjs";
+import {
+  resolveAuthorizedExternalEvidenceRoot,
+  resolvePlaywrightReportPath,
+  resolveRequiredTestReportPath,
+} from "./playwright-report-path.mjs";
+
+const REQUIRED_APPLICATION_ENVIRONMENT_NAMES = Object.freeze([
+  "DATABASE_URL",
+  "OPENAI_API_KEY",
+  "SHOPIFY_STORE_DOMAIN",
+  "SHOPIFY_STOREFRONT_TOKEN|SHOPIFY_STOREFRONT_ACCESS_TOKEN",
+  "POSTHOG_KEY|NEXT_PUBLIC_POSTHOG_KEY",
+  "STRIPE_SECRET_KEY",
+  "STRIPE_WEBHOOK_SECRET",
+  "STRIPE_PRICE_PRO_MONTHLY",
+  "STRIPE_PRICE_PRO_YEARLY",
+  "AUTH_SECRET",
+  "GOOGLE_CLIENT_ID",
+  "GOOGLE_CLIENT_SECRET",
+  "APP_ORIGIN",
+  "ADMIN_EMAILS",
+]);
+const PORTS = Object.freeze([3000, 3317]);
+
+function run(command, args, cwd) {
+  return spawnSync(command, args, { cwd, encoding: "utf8" });
+}
+
+function git(repositoryRoot, args) {
+  const result = run("git", args, repositoryRoot);
+  return result.status === 0 ? result.stdout.trim() : null;
+}
+
+function check(checks, issues, id, action) {
+  try {
+    const details = action();
+    checks.push({ id, passed: true, details: details ?? null });
+  } catch (error) {
+    checks.push({ id, passed: false, details: null });
+    issues.push(`${id}: ${error instanceof Error ? error.message : String(error)}`);
+  }
+}
+
+function requiredAlternativesPresent(environment, alternatives) {
+  return alternatives.split("|").some((name) => environment[name]?.trim());
+}
+
+function validateDatabaseShape(environment) {
+  let url;
+  try {
+    url = new URL(environment.DATABASE_URL);
+  } catch {
+    throw new Error("DATABASE_URL shape is invalid");
+  }
+  if (
+    !["postgres:", "postgresql:"].includes(url.protocol) ||
+    !url.hostname ||
+    !url.username ||
+    !url.pathname.slice(1) ||
+    (url.port && !/^\d{2,5}$/.test(url.port))
+  ) {
+    throw new Error("database role/connectivity shape is incomplete");
+  }
+  return { protocol: url.protocol, hostPresent: true, rolePresent: true, databasePresent: true };
+}
+
+function validateNetworkShape(environment) {
+  let origin;
+  try {
+    origin = new URL(environment.APP_ORIGIN);
+  } catch {
+    throw new Error("APP_ORIGIN network shape is invalid");
+  }
+  if (!/^https?:$/.test(origin.protocol) || origin.username || origin.password) {
+    throw new Error("APP_ORIGIN network shape is unsafe");
+  }
+  return { protocol: origin.protocol, hostPresent: Boolean(origin.hostname) };
+}
+
+export function assertFileBackedOwner(repositoryRoot, relativePath) {
+  const absolutePath = path.join(repositoryRoot, relativePath);
+  const metadata = lstatSync(absolutePath);
+  if (!metadata.isFile() || metadata.isSymbolicLink()) {
+    throw new Error(`${relativePath} is not a physical source file`);
+  }
+  const source = readFileSync(absolutePath, "utf8");
+  if (/data:text\/javascript|\beval\s*\(|node\s+-|\/dev\/stdin/.test(source)) {
+    throw new Error(`${relativePath} permits data URL, eval, or stdin execution`);
+  }
+  return { sourceSha256: sha256Bytes(source) };
+}
+
+function validatePortsAndProcesses(repositoryRoot) {
+  const occupied = [];
+  for (const port of PORTS) {
+    const result = run("lsof", ["-nP", `-iTCP:${port}`, "-sTCP:LISTEN"], repositoryRoot);
+    if (result.status === 0 && result.stdout.trim()) occupied.push(port);
+  }
+  if (occupied.length > 0) {
+    throw new Error(`required certification ports are occupied: ${occupied.join(", ")}`);
+  }
+  const orchestrationPids = new Set([process.pid]);
+  let ancestor = process.pid;
+  for (let depth = 0; depth < 8; depth += 1) {
+    const parent = run("ps", ["-o", "ppid=", "-p", String(ancestor)], repositoryRoot);
+    const parentPid = Number(parent.stdout?.trim());
+    if (!Number.isSafeInteger(parentPid) || parentPid <= 1 || orchestrationPids.has(parentPid)) {
+      break;
+    }
+    orchestrationPids.add(parentPid);
+    ancestor = parentPid;
+  }
+  const processes = run("lsof", ["-nP", "-a", "-d", "cwd", "+D", repositoryRoot], repositoryRoot);
+  const prohibited = (processes.stdout ?? "")
+    .split("\n")
+    .filter(
+      (line) =>
+        !line.startsWith("COMMAND") &&
+        !orchestrationPids.has(Number(line.trim().split(/\s+/)[1])) &&
+        /\b(?:npm|node|next|playwright|prisma|benchmark)\b/i.test(line),
+    );
+  if (prohibited.length > 0) {
+    throw new Error("repository-owned application/build/test process is running");
+  }
+  return { ports: [...PORTS], repositoryOwnedProcesses: 0 };
+}
+
+function validateEvidenceDestinations(repositoryRoot, environment) {
+  const evidenceRoot = environment[CERTIFICATION_EVIDENCE_ROOT_ENV];
+  resolveAuthorizedExternalEvidenceRoot({
+    authorizedExternalRoot: evidenceRoot,
+    repositoryRoot,
+  });
+  if (environment[PHASE8_EXTERNAL_EVIDENCE_ROOT_ENV] !== evidenceRoot) {
+    throw new Error("Phase 8 and certification evidence roots must be identical");
+  }
+  const destinations = new Set();
+  const add = (value, name) => {
+    if (destinations.has(value)) throw new Error(`duplicate evidence target: ${name}`);
+    destinations.add(value);
+  };
+  const root = realpathSync(evidenceRoot);
+  const absentContainedTarget = (value, name, { directory = false } = {}) => {
+    if (!path.isAbsolute(value ?? "")) {
+      throw new Error(`${name} target must be absolute`);
+    }
+    const resolved = path.resolve(value);
+    let existingParent = path.dirname(resolved);
+    while (!existsSync(existingParent)) {
+      const next = path.dirname(existingParent);
+      if (next === existingParent) break;
+      existingParent = next;
+    }
+    const parent = realpathSync(existingParent);
+    if (parent !== root && !parent.startsWith(`${root}${path.sep}`)) {
+      throw new Error(`${name} target escapes its authorized root`);
+    }
+    if (lstatSync(existingParent).isSymbolicLink()) {
+      throw new Error(`${name} target parent must be physical`);
+    }
+    if (existsSync(resolved)) throw new Error(`${name} target must be absent`);
+    add(resolved, name);
+    return { path: resolved, kind: directory ? "directory" : "file" };
+  };
+  const runtime = resolvePlaywrightReportPath({
+    requestedPath: environment.CERTIFICATION_RUNTIME_REPORT_PATH,
+    repositoryRoot,
+    authorizedExternalRoot: evidenceRoot,
+  });
+  add(runtime.outputPath, "runtime-smoke");
+  for (const [variable, name] of [
+    ["CERTIFICATION_RUNTIME_PHASE_TIMINGS_PATH", "runtime phase timings"],
+    ["CERTIFICATION_RUNTIME_EVIDENCE_PATH", "runtime certification evidence"],
+  ]) {
+    const destination = resolvePlaywrightReportPath({
+      requestedPath: environment[variable],
+      repositoryRoot,
+      authorizedExternalRoot: evidenceRoot,
+    });
+    add(destination.outputPath, name);
+  }
+  for (const owner of REQUIRED_BROWSER_OWNERS) {
+    const variable = `CERTIFICATION_BROWSER_${owner.id.toUpperCase().replaceAll("-", "_")}_REPORT_PATH`;
+    const destination = resolveRequiredTestReportPath({
+      requestedPath: environment[variable],
+      repositoryRoot,
+      gateId: owner.gateId,
+      authorizedExternalRoot: evidenceRoot,
+    });
+    add(destination.outputPath, owner.id);
+  }
+  const phase8Path = resolvePlaywrightReportPath({
+    requestedPath: environment.CERTIFICATION_PHASE8_EVIDENCE_PATH,
+    repositoryRoot,
+    authorizedExternalRoot: evidenceRoot,
+  });
+  add(phase8Path.outputPath, "phase8 certification evidence");
+  absentContainedTarget(path.join(root, "phase8"), "Phase 8 raw evidence root", {
+    directory: true,
+  });
+  for (const [relativeTarget, name, directory] of [
+    ["archive/plan.json", "archive plan", false],
+    ["archive/stage", "archive stage", true],
+    ["archive/candidate.tar.gz", "compressed archive", false],
+    ["archive/extracted", "archive extraction", true],
+  ]) {
+    absentContainedTarget(path.join(root, relativeTarget), name, { directory });
+  }
+  const requestedStatePath = path.resolve(
+    environment.PRODUCTION_CERTIFICATION_STATE ?? "",
+  );
+  const statePath = path.join(
+    realpathSync(path.dirname(requestedStatePath)),
+    path.basename(requestedStatePath),
+  );
+  if (!statePath.startsWith(`${root}${path.sep}`)) {
+    throw new Error("certification state escapes its authorized root");
+  }
+  const stateMetadata = lstatSync(statePath);
+  if (!stateMetadata.isFile() || stateMetadata.isSymbolicLink()) {
+    throw new Error("certification state must be a physical file");
+  }
+  add(statePath, "certification state");
+  return { rootClass: "external", uniqueTargetCount: destinations.size };
+}
+
+function validateSource(repositoryRoot, environment) {
+  const commitSha = git(repositoryRoot, ["rev-parse", "HEAD"]);
+  const treeSha = git(repositoryRoot, ["rev-parse", "HEAD^{tree}"]);
+  const status = git(repositoryRoot, ["status", "--porcelain", "--untracked-files=all"]);
+  if (!isSourceSha(commitSha) || !isSourceSha(treeSha)) {
+    throw new Error("source SHA or tree cannot be resolved");
+  }
+  if (commitSha !== environment.CERTIFICATION_EXPECTED_COMMIT_SHA) {
+    throw new Error("source commit does not match the declared candidate");
+  }
+  if (treeSha !== environment.CERTIFICATION_EXPECTED_TREE_SHA) {
+    throw new Error("source tree does not match the declared candidate");
+  }
+  if (status !== "") throw new Error("source worktree or index is not clean");
+  const parent = git(repositoryRoot, ["rev-parse", "HEAD^"]);
+  if (!isSourceSha(environment.CERTIFICATION_EXPECTED_PARENT_SHA)) {
+    throw new Error("declared candidate parent SHA is missing or malformed");
+  }
+  if (parent !== environment.CERTIFICATION_EXPECTED_PARENT_SHA) {
+    throw new Error("candidate parentage is not exact");
+  }
+  return { commitSha, treeSha, parentSha: parent, trackedAndUntrackedClean: true };
+}
+
+function validateBuildTargetsPristine(repositoryRoot) {
+  const targets = [
+    ".next",
+    ".local/production-artifact-evidence/semantic-event-journal.json",
+    ".local/production-artifact-evidence/manifest.json",
+    ".local/production-artifact-evidence/artifact-inventory.json",
+  ];
+  const present = targets.filter((relativePath) =>
+    existsSync(path.join(repositoryRoot, relativePath)),
+  );
+  if (present.length > 0) {
+    throw new Error(`strict build targets are not pristine: ${present.join(", ")}`);
+  }
+  return { absentTargets: targets };
+}
+
+function validateContracts(repositoryRoot) {
+  const artifactContract = readFileSync(
+    path.join(repositoryRoot, "scripts/production-artifact-contract.mjs"),
+    "utf8",
+  );
+  const artifactOwner = readFileSync(
+    path.join(repositoryRoot, "scripts/production-artifact-evidence.mjs"),
+    "utf8",
+  );
+  const phase8Owner = readFileSync(
+    path.join(repositoryRoot, "scripts/run-phase8-project-benchmark.ts"),
+    "utf8",
+  );
+  for (const marker of [
+    "interior-ai.production-artifact-evidence.v3",
+    "interior-ai.production-artifact-semantic-event-journal.v1",
+    "ARCHIVE_PREFLIGHT",
+    "STANDALONE_FINAL",
+  ]) {
+    if (!artifactContract.includes(marker) && !artifactOwner.includes(marker)) {
+      throw new Error(`verification compatibility marker is missing: ${marker}`);
+    }
+  }
+  if (
+    !artifactOwner.includes('testPolicy: "external-certification-required"') ||
+    artifactOwner.includes("requireTests: false") ||
+    !phase8Owner.includes("PHASE8_EXTERNAL_EVIDENCE_ROOT")
+  ) {
+    throw new Error("verification mode or external Phase 8 policy is incomplete");
+  }
+  const generatedCompleted = artifactOwner.indexOf("generatedSourceCheck.completedAt");
+  const buildStarted = artifactOwner.indexOf("manifest.build.startedAt");
+  if (generatedCompleted < 0 || buildStarted < 0) {
+    throw new Error("generated-source/build ordering contract is missing");
+  }
+  if (
+    !artifactContract.includes(
+      "filesystem timestamps cannot populate portable semantic evidence",
+    )
+  ) {
+    throw new Error("semantic timestamp ownership rejection is missing");
+  }
+  return {
+    artifactSchema: "v3",
+    journalSchema: "v1",
+    verificationModes: ["verify-preflight", "verify-archive-preflight", "verify-standalone"],
+  };
+}
+
+export function runCertificationDoctor({
+  repositoryRoot = process.cwd(),
+  environment = process.env,
+}) {
+  const root = path.resolve(repositoryRoot);
+  const checks = [];
+  const issues = [];
+  check(checks, issues, "source-identity", () => validateSource(root, environment));
+  check(checks, issues, "candidate-id", () => {
+    if (!isCandidateId(environment.PRODUCTION_EVIDENCE_CANDIDATE_ID)) {
+      throw new Error("candidate ID is missing or malformed");
+    }
+    return { propagatedName: "PRODUCTION_EVIDENCE_CANDIDATE_ID" };
+  });
+  check(checks, issues, "environment-name-shape", () => {
+    const missing = REQUIRED_APPLICATION_ENVIRONMENT_NAMES.filter(
+      (name) => !requiredAlternativesPresent(environment, name),
+    );
+    if (missing.length > 0) throw new Error(`missing required names: ${missing.join(", ")}`);
+    return { requiredNameCount: REQUIRED_APPLICATION_ENVIRONMENT_NAMES.length };
+  });
+  check(checks, issues, "execution-classification", () => {
+    if (!new Set(["real-candidate", "deterministic-simulation"]).has(environment.CERTIFICATION_EXECUTION_CLASS)) {
+      throw new Error("execution classification is missing or unknown");
+    }
+    return { executionClass: environment.CERTIFICATION_EXECUTION_CLASS };
+  });
+  check(checks, issues, "database-shape", () => validateDatabaseShape(environment));
+  check(checks, issues, "network-shape", () => validateNetworkShape(environment));
+  check(checks, issues, "external-evidence-destinations", () =>
+    validateEvidenceDestinations(root, environment));
+  check(checks, issues, "strict-build-target-absence", () =>
+    validateBuildTargetsPristine(root));
+  check(checks, issues, "schema-and-mode-compatibility", () => validateContracts(root));
+  check(checks, issues, "archive-file-backed-owner", () =>
+    assertFileBackedOwner(root, "scripts/production-archive.mjs"));
+  check(checks, issues, "verifier-transitive-closure", () => {
+    const closure = deriveProductionVerifierClosure(root);
+    if (
+      closure.missingImports.length ||
+      closure.escapingImports.length ||
+      closure.destinationCollisions.length ||
+      closure.sourceWorktreeFallback ||
+      closure.globalModuleFallback
+    ) {
+      throw new Error("verifier source closure is incomplete or unsafe");
+    }
+    return {
+      fileCount: closure.files.length,
+      edgeCount: closure.edges.length,
+      closureSha256: closure.closureSha256,
+    };
+  });
+  check(checks, issues, "runtime-browser-inventory", () => ({
+    runtimeSmokeCount: 2,
+    browserOwners: REQUIRED_BROWSER_OWNERS.map((owner) => owner.id),
+  }));
+  check(checks, issues, "ports-and-processes", () => validatePortsAndProcesses(root));
+  const sourceIdentity = harnessSourceIdentity(root);
+  const payload = {
+    schema: PRODUCTION_CERTIFICATION_DOCTOR_SCHEMA,
+    harnessVersion: PRODUCTION_CERTIFICATION_HARNESS_VERSION,
+    harnessSourceSha256: sourceIdentity.sha256,
+    nonConsuming: true,
+    substantiveGateConsumed: false,
+    canonicalCommand: CERTIFICATION_STAGE_COMMANDS.doctor,
+    valid: issues.length === 0,
+    checks,
+    issues,
+  };
+  return {
+    ...payload,
+    seal: { algorithm: "sha256", sha256: sha256Bytes(canonicalJsonBytes(payload)) },
+  };
+}
+
+function cli() {
+  const repositoryRoot = process.env.CERTIFICATION_SOURCE_ROOT || process.cwd();
+  const result = runCertificationDoctor({ repositoryRoot });
+  process.stdout.write(canonicalJsonBytes(result));
+  if (!result.valid) process.exitCode = 1;
+}
+
+if (import.meta.url === new URL(process.argv[1], "file:").href) cli();

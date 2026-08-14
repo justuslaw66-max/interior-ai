@@ -1,26 +1,16 @@
 import { defineConfig, devices } from "@playwright/test";
-import path from "node:path";
+import { requiredTestPlaywrightEvidence } from "./scripts/required-test-playwright.mjs";
 
 const localBaseURL = "http://127.0.0.1:3000";
 const useProductionServer = process.env.PLAYWRIGHT_USE_PRODUCTION_SERVER === "1";
-const requiredTestGateId = process.env.REQUIRED_TEST_GATE_ID?.trim();
-const requiredTestReportPath = process.env.REQUIRED_TEST_REPORT_PATH?.trim();
+const requiredEvidence = requiredTestPlaywrightEvidence({
+  repositoryRoot: process.cwd(),
+  expectedGateId: "ci.public-share-responsive",
+});
+const requiredTestGateId = requiredEvidence.gateId;
 
-if (requiredTestGateId && !/^[a-z0-9][a-z0-9.-]+$/.test(requiredTestGateId)) {
-  throw new Error("REQUIRED_TEST_GATE_ID is invalid.");
-}
-if (requiredTestGateId && !requiredTestReportPath) {
-  throw new Error("REQUIRED_TEST_REPORT_PATH is required for required-test evidence.");
-}
 if (requiredTestGateId && !useProductionServer) {
   throw new Error("Required responsive evidence must use the strict production server.");
-}
-if (requiredTestReportPath) {
-  const root = process.cwd();
-  const resolved = path.resolve(root, requiredTestReportPath);
-  if (path.isAbsolute(requiredTestReportPath) || !resolved.startsWith(`${root}${path.sep}`)) {
-    throw new Error("REQUIRED_TEST_REPORT_PATH must remain repository-relative.");
-  }
 }
 
 export default defineConfig({
@@ -31,27 +21,13 @@ export default defineConfig({
   forbidOnly: true,
   retries: 0,
   workers: 1,
-  reporter: requiredTestGateId
-    ? [
-        ["list"],
-        ["json", { outputFile: requiredTestReportPath }],
-      ]
-    : [["list"]],
+  reporter: requiredEvidence.reporter,
   metadata: {
     gateA3ReleaseBaseURL: null,
-    requiredTestEvidence: requiredTestGateId
-      ? {
-          schema: "interior-ai.required-test-evidence.v1",
-          gateId: requiredTestGateId,
-          sourceCommitSha: process.env.REQUIRED_TEST_SOURCE_COMMIT_SHA?.trim() || null,
-          artifactSha256: null,
-          releaseCandidateId: null,
-          releaseEnvironment: null,
-        }
-      : null,
+    requiredTestEvidence: requiredEvidence.metadata,
   },
   outputDir: requiredTestGateId
-    ? `.local/required-test-evidence/${requiredTestGateId}/playwright-output`
+    ? requiredEvidence.outputDirectory
     : "test-results/share-responsive",
   use: {
     baseURL: localBaseURL,

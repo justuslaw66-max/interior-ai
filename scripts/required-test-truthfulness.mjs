@@ -13,6 +13,8 @@ import {
 import path from "node:path";
 import process from "node:process";
 
+import { resolveRequiredTestReportPath } from "./playwright-report-path.mjs";
+
 export const REQUIRED_TEST_MANIFEST_SCHEMA =
   "interior-ai.required-test-manifest.v1";
 export const REQUIRED_TEST_EVIDENCE_SCHEMA =
@@ -2083,10 +2085,27 @@ function canonicalizeReportValue(value, repositoryRoots) {
   return value;
 }
 
-export function canonicalizeRequiredTestReport(repositoryRoot, reportPath) {
-  const absolutePath = repositoryPath(repositoryRoot, reportPath, "required-test report path");
+export function canonicalizeRequiredTestReport(
+  repositoryRoot,
+  reportPath,
+  { authorizedExternalRoot } = {},
+) {
+  const absolutePath = path.isAbsolute(reportPath)
+    ? path.resolve(reportPath)
+    : repositoryPath(repositoryRoot, reportPath, "required-test report path");
+  if (path.isAbsolute(reportPath)) {
+    const externalRoot = path.resolve(authorizedExternalRoot ?? "");
+    if (
+      !authorizedExternalRoot ||
+      (absolutePath !== externalRoot &&
+        !absolutePath.startsWith(`${externalRoot}${path.sep}`))
+    ) {
+      throw new Error("required-test report path is outside its authorized external root");
+    }
+  }
   const report = readJson(absolutePath, "required-test report");
   const roots = [path.resolve(repositoryRoot)];
+  if (authorizedExternalRoot) roots.push(path.resolve(authorizedExternalRoot));
   const canonical = canonicalizeReportValue(report, roots);
   writeFileSync(absolutePath, `${JSON.stringify(canonical, null, 2)}\n`);
   return canonical;
@@ -2276,14 +2295,20 @@ function reportPathForGate(gate) {
     : `${evidenceDirectory}/playwright.json`;
 }
 
-export function removeUnsafeRequiredTestArtifacts({ repositoryRoot, gateId, reportPath }) {
-  const reportAbsolutePath = repositoryPath(
+export function removeUnsafeRequiredTestArtifacts({
+  repositoryRoot,
+  gateId,
+  reportPath,
+  reportAbsolutePath: validatedReportPath,
+  outputAbsolutePath: validatedOutputPath,
+}) {
+  const reportAbsolutePath = validatedReportPath ?? repositoryPath(
     repositoryRoot,
     reportPath,
     "unsafe required-test report path",
   );
   if (existsSync(reportAbsolutePath)) rmSync(reportAbsolutePath);
-  const outputPath = repositoryPath(
+  const outputPath = validatedOutputPath ?? repositoryPath(
     repositoryRoot,
     `.local/required-test-evidence/${gateId}/playwright-output`,
     "unsafe required-test output path",
@@ -2325,6 +2350,14 @@ export function runRequiredPlaywrightGate({
     assertCleanRequiredTestSource(root);
   }
   const sourceCommitSha = gitHead(root);
+  const sourceTreeResult = spawnSync("git", ["rev-parse", "HEAD^{tree}"], {
+    cwd: root,
+    encoding: "utf8",
+  });
+  if (sourceTreeResult.status !== 0) {
+    throw new Error("unable to resolve source tree for required-test evidence");
+  }
+  const sourceTreeSha = sourceTreeResult.stdout.trim();
   const artifactSha256 = environment.REQUIRED_TEST_ARTIFACT_SHA256?.trim() || null;
   if (gate.artifactBinding !== "none" && !/^[a-f0-9]{64}$/.test(artifactSha256 ?? "")) {
     throw new Error(`gate ${gateId} requires REQUIRED_TEST_ARTIFACT_SHA256`);
@@ -2341,12 +2374,53 @@ export function runRequiredPlaywrightGate({
       "release.cabinetry-browser requires REQUIRED_TEST_RELEASE_CANDIDATE_ID and REQUIRED_TEST_RELEASE_ENVIRONMENT",
     );
   }
-  const reportPath = reportPathForGate(gate);
-  const reportAbsolutePath = repositoryPath(root, reportPath, "required-test report path");
-  const evidenceAbsolutePath = repositoryPath(root, gate.reportPath, "required-test evidence path");
-  mkdirSync(path.dirname(reportAbsolutePath), { recursive: true });
-  if (existsSync(reportAbsolutePath)) rmSync(reportAbsolutePath);
-  if (existsSync(evidenceAbsolutePath)) rmSync(evidenceAbsolutePath);
+  const certificationRoot = environment.CERTIFICATION_EVIDENCE_ROOT?.trim();
+  let reportPath = reportPathForGate(gate);
+  let evidencePath = gate.reportPath;
+  let reportAbsolutePath;
+  let evidenceAbsolutePath;
+  let outputAbsolutePath;
+  if (certificationRoot) {
+    reportPath = environment.REQUIRED_TEST_REPORT_PATH;
+    evidencePath = environment.REQUIRED_TEST_EVIDENCE_PATH;
+    const reportDestination = resolveRequiredTestReportPath({
+      requestedPath: reportPath,
+      repositoryRoot: root,
+      gateId,
+      authorizedExternalRoot: certificationRoot,
+    });
+    const evidenceDestination = resolveRequiredTestReportPath({
+      requestedPath: evidencePath,
+      repositoryRoot: root,
+      gateId,
+      authorizedExternalRoot: certificationRoot,
+    });
+    reportAbsolutePath = reportDestination.outputPath;
+    evidenceAbsolutePath = evidenceDestination.outputPath;
+    outputAbsolutePath = reportDestination.outputDirectory;
+    for (const name of [
+      "REQUIRED_TEST_ARTIFACT_SHA256",
+      "REQUIRED_TEST_BUILD_ID",
+      "REQUIRED_TEST_RELEASE_CANDIDATE_ID",
+      "REQUIRED_TEST_HARNESS_VERSION",
+      "REQUIRED_TEST_HARNESS_SOURCE_SHA256",
+    ]) {
+      if (!environment[name]?.trim()) {
+        throw new Error(`certification browser owner requires ${name}`);
+      }
+    }
+  } else {
+    reportAbsolutePath = repositoryPath(root, reportPath, "required-test report path");
+    evidenceAbsolutePath = repositoryPath(root, evidencePath, "required-test evidence path");
+    outputAbsolutePath = repositoryPath(
+      root,
+      `.local/required-test-evidence/${gateId}/playwright-output`,
+      "required-test output path",
+    );
+    mkdirSync(path.dirname(reportAbsolutePath), { recursive: true });
+    if (existsSync(reportAbsolutePath)) rmSync(reportAbsolutePath);
+    if (existsSync(evidenceAbsolutePath)) rmSync(evidenceAbsolutePath);
+  }
   const startedAt = new Date().toISOString();
   const executable = process.platform === "win32" ? "npx.cmd" : "npx";
   const child = spawnSync(executable, gate.playwright.args, {
@@ -2356,6 +2430,7 @@ export function runRequiredPlaywrightGate({
       REQUIRED_TEST_GATE_ID: gateId,
       REQUIRED_TEST_REPORT_PATH: reportPath,
       REQUIRED_TEST_SOURCE_COMMIT_SHA: sourceCommitSha,
+      REQUIRED_TEST_SOURCE_TREE_SHA: sourceTreeSha,
       REQUIRED_TEST_ARTIFACT_SHA256: artifactSha256 ?? "",
     },
     stdio: "inherit",
@@ -2370,7 +2445,9 @@ export function runRequiredPlaywrightGate({
     validationIssues.push(`gate ${gateId} required report is missing`);
   } else {
     try {
-      report = canonicalizeRequiredTestReport(root, reportPath);
+      report = canonicalizeRequiredTestReport(root, reportPath, {
+        authorizedExternalRoot: certificationRoot,
+      });
       reportWasParsed = true;
       reportHash = sha256(readFileSync(reportAbsolutePath));
       const result = validateRequiredTestReport({
@@ -2384,13 +2461,20 @@ export function runRequiredPlaywrightGate({
         environment,
       });
       validationIssues.push(...result.issues);
+      report.validation = result;
     } catch (error) {
       validationIssues.push(error instanceof Error ? error.message : String(error));
     }
   }
   const unsafeReport = requiredTestArtifactsAreUnsafe({ reportWasParsed, validationIssues });
   if (unsafeReport) {
-    removeUnsafeRequiredTestArtifacts({ repositoryRoot: root, gateId, reportPath });
+    removeUnsafeRequiredTestArtifacts({
+      repositoryRoot: root,
+      gateId,
+      reportPath,
+      reportAbsolutePath,
+      outputAbsolutePath,
+    });
     report = null;
     reportHash = null;
   }
@@ -2399,11 +2483,33 @@ export function runRequiredPlaywrightGate({
     gateId,
     command: gate.command,
     sourceCommitSha,
+    sourceTreeSha,
     artifactSha256,
+    nextBuildId: environment.REQUIRED_TEST_BUILD_ID?.trim() || null,
+    candidateId:
+      environment.REQUIRED_TEST_RELEASE_CANDIDATE_ID?.trim() || null,
+    harnessVersion: environment.REQUIRED_TEST_HARNESS_VERSION?.trim() || null,
+    harnessSourceSha256:
+      environment.REQUIRED_TEST_HARNESS_SOURCE_SHA256?.trim() || null,
+    executionClass: certificationRoot ? "real-candidate" : "repository-gate",
     processExitCode,
     startedAt,
     completedAt,
-    report: { path: reportPath, sha256: reportHash },
+    report: {
+      path: certificationRoot
+        ? path.relative(certificationRoot, reportAbsolutePath).split(path.sep).join("/")
+        : reportPath,
+      sha256: reportHash,
+      stats: report?.stats ?? null,
+      testIdentities: report?.validation?.records?.map((record) => ({
+        file: record.file,
+        title: record.title,
+        project: record.project,
+        outcome: record.outcome,
+        retries: record.retries,
+      })) ?? [],
+    },
+    complete: validationIssues.length === 0,
     result: validationIssues.length === 0 ? "passed" : "failed",
     diagnostics: validationIssues,
   };

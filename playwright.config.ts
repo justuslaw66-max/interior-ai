@@ -1,6 +1,14 @@
-import { defineConfig, devices } from "@playwright/test";
+import {
+  defineConfig,
+  devices,
+  type ReporterDescription,
+} from "@playwright/test";
 import path from "node:path";
 import { loadProductionArtifactForPlaywright } from "./scripts/production-artifact-playwright.mjs";
+import {
+  CERTIFICATION_EVIDENCE_ROOT,
+  resolvePlaywrightReportPath,
+} from "./scripts/playwright-report-path.mjs";
 
 const localBaseURL = "http://127.0.0.1:3000";
 const releaseBaseURL = process.env.PLAYWRIGHT_RELEASE_BASE_URL?.trim().replace(
@@ -45,6 +53,37 @@ const loadedProductionArtifactEvidence = productionEvidenceManifestPath
 const productionArtifactEvidence = loadedProductionArtifactEvidence?.identity ?? null;
 const productionEvidenceReportOutputPath =
   loadedProductionArtifactEvidence?.reportDestination.outputPath;
+const certificationRuntimeMarkerPath =
+  process.env.CERTIFICATION_RUNTIME_START_MARKER_PATH;
+if (
+  productionArtifactEvidence &&
+  process.env[CERTIFICATION_EVIDENCE_ROOT] &&
+  !certificationRuntimeMarkerPath
+) {
+  throw new Error("certification runtime smoke requires its product-test start marker");
+}
+const certificationRuntimeMarker =
+  productionArtifactEvidence && certificationRuntimeMarkerPath
+    ? resolvePlaywrightReportPath({
+        requestedPath: certificationRuntimeMarkerPath,
+        repositoryRoot: process.cwd(),
+        authorizedExternalRoot: process.env[CERTIFICATION_EVIDENCE_ROOT],
+      }).outputPath
+    : null;
+const productionArtifactReporters: ReporterDescription[] = [
+  ["list"],
+  ["json", { outputFile: productionEvidenceReportOutputPath }],
+];
+if (certificationRuntimeMarker) {
+  productionArtifactReporters.push([
+    "./scripts/certification-playwright-start-reporter.mjs",
+    {
+      markerPath: certificationRuntimeMarker,
+      boundary: "test-begin",
+      gateId: "ci.production-runtime-smoke",
+    },
+  ]);
+}
 
 if (releaseBaseURL) {
   const parsedURL = new URL(releaseBaseURL);
@@ -78,10 +117,7 @@ export default defineConfig({
   retries: 0,
   workers: 1,
   reporter: productionArtifactEvidence
-    ? [
-        ["list"],
-        ["json", { outputFile: productionEvidenceReportOutputPath }],
-      ]
+      ? productionArtifactReporters
     : requiredTestGateId
       ? [
           ["list"],

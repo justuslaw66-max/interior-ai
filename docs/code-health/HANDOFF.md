@@ -1,5 +1,77 @@
 # Code health audit handoff
 
+## CH-0015I Production Certification Harness v1 handoff — 2026-08-14
+
+Branch `fix/production-certification-harness-v1` starts at exact candidate
+`5e956435c625cbb5be1887b3a20e9a947b43dce0`, tree
+`6b8b7177e778e6338c2ff3036ff42fdea8dd1930`, whose parent is
+`d22fbf06e118f7e09249feaa06944abb221bd6cf`. Exact parentage through the seven
+CH-0015I candidate commits and integration local/remote
+`2c567fd483877c7dcbd8fd23e3cd8cb316732c8c`, tree
+`50f9c5d6a6610990606fd9db9a27ba40200fca90`, were verified before branching.
+Entry worktree/index/untracked/tracked-ignored checks were clean, no Git
+operation or repository-owned app/build/benchmark/runtime/browser/Prisma/
+database process was active, and required ports were free.
+
+The prior read-only result was **B —
+NOT_QUALIFIED_SOURCE_CONTRACT_DEFECT**. It identified eight platform gaps: final
+verification omitted Phase 8 and the complete seven-owner inventory; complete
+candidate/artifact identity did not span all owners; external Playwright paths
+were incomplete; Phase 8 could write into a worktree; verifier closure and
+archive construction were incomplete/duplicated; and no sealed resumable state
+existed. Those findings are certification-platform defects, not product, Floor
+Plan, telemetry, NFT, timestamp, Playwright-assertion, benchmark, dependency,
+database, or application failures.
+
+Harness v1 adds the 28-stage-owner machine matrix, sealed 12-stage state and
+attempt model, non-consuming doctor, committed deterministic archive lifecycle,
+recursive local-ESM verifier closure/edge ledger, three explicit verification
+modes, direct external Phase 8 evidence, canonical external reports for all
+seven browser owners, complete final evidence/continuity validation,
+resume/invalidation, nine-class failure taxonomy, all 26 historical regressions,
+deterministic end-to-end simulation, and the bounded four-result
+`certification:qualify` owner. The architecture and operator contract are in
+`docs/qa/production-certification-harness-v1.md`.
+
+An initial provisional A was withdrawn after the independent reviewer found
+that the real lifecycle still lacked per-stage CLI ownership and that resume,
+raw evidence interpretation, browser command isolation, archive safety, and
+regression execution were incomplete. The corrected harness uses the real CLI
+for state initialization/advancement and physical archive steps, invokes each
+canonical browser package command, revalidates current Git and live artifact
+identity, reparses retained raw reports, and exercises the negative matrix plus
+all seven config/list paths before qualification.
+
+The simulation uses real committed CLI owners with miniature external bytes and
+is marked simulation-only; it starts no application, database, or browser and
+cannot be supplied to a real final verifier. The existing
+`ci.production-artifact-contract` required gate truthfully owns the new harness
+source and tests; no new merge-required gate is introduced. Final
+`verify-standalone` now requires Phase 8, 2/2 runtime smoke, every canonical
+browser owner, continuity, sealed state, and exact immutable identity. Legacy
+runtime-only archives remain non-final.
+
+The corrected bounded command `npm run certification:qualify` returned **A —
+QUALIFIED_FOR_FINAL_CANDIDATE_CERTIFICATION** after deterministic doctor/
+simulation/regression/state, production-artifact/truthfulness/direct-manifest,
+CH-0017/CH-0028 timing/readiness, architecture, typecheck, zero-warning lint,
+code-quality, tracked-artifact hygiene, syntax, and diff checks. This supersedes the prior
+B classification for the harness source only; it does not claim real candidate
+evidence.
+
+The required separate read-only reviewer inspected the complete final tracked
+and untracked diff, reran the bounded qualifier and focused contract suites, and
+returned **PASS** with no remaining actionable P0/P1 source-contract defect,
+scope drift, forbidden gate execution, or documentation mismatch.
+
+This batch runs no real strict build, Phase 8, runtime smoke, browser-owner
+matrix, or Full E2E. It does not integrate, push, deploy, access application
+data, begin a new CH-0015I candidate cycle, or begin the final CH-0015 closure
+audit. Real exact-head certification, integration, and closure audit remain
+pending even after source qualification. Rollback is one focused commit revert;
+external simulation fixtures are temporary and no persisted/external product
+state is changed.
+
 ## CH-0015I staged archive-preflight verifier handoff — 2026-08-14
 
 Branch `fix/ch-0015i-staged-archive-preflight-verifier` starts at exact candidate

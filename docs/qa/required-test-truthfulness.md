@@ -1,5 +1,40 @@
 # Required-test truthfulness
 
+## Production Certification Harness v1 ownership — 2026-08-14
+
+The existing `ci.production-artifact-contract` gate owns Harness v1. Its source
+inventory includes the certification contract/state/evidence/doctor/CLI/
+simulation, archive and recursive closure owners, Phase 8 external wrapper,
+shared Playwright resolver, all seven required-owner configurations, regression
+matrix, focused harness test, and production-artifact integration test. The
+package closure invokes both tests. No new required gate, workflow, browser,
+project, retry, timeout, assertion, selector, or cadence is introduced.
+
+Deterministic coverage proves the 28-owner matrix; sealed ordered state,
+attempts, resume and cascading invalidation; accumulating non-consuming doctor;
+physical staged/extracted archive execution; deterministic compression and
+inventory continuity; recursive import failure/escape rejection; explicit
+preflight/archive-preflight/final separation; direct external Phase 8 and all
+seven unique external reports; full final identity, Phase 8, 2/2 runtime,
+browser, continuity and non-simulation requirements; real `--list` execution
+for all seven distinct configs; retained raw-report revalidation; unknown-value
+fail-closed guards; and executable negatives for all 26 historical regressions.
+
+`certification:simulate` exercises physical committed CLI boundaries for
+journal/manifest production, every state transition, doctor, source advance,
+archive lifecycle, staged/extracted verification, and final verification
+outside the repository without app/server/database/browser/real-benchmark execution and is
+explicitly not acceptable for a real candidate. The required owner proves only
+the repository-controlled harness contract. It does not claim a real exact-head
+certification, integration, deployment, external platform state, Full E2E, or
+the final CH-0015 closure audit.
+
+The bounded source qualifier returned
+`QUALIFIED_FOR_FINAL_CANDIDATE_CERTIFICATION`; direct manifest validation reports
+**27 gates / 380 classified test sources**. The result authorizes a separately
+approved real cycle but is not a browser, benchmark, artifact, or deployment
+result.
+
 ## CH-0015I staged archive-preflight ownership — 2026-08-14
 
 `ci.production-artifact-contract` remains the sole merge-required owner. Its

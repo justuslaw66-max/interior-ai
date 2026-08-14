@@ -1,6 +1,6 @@
 import { spawnSync, execFileSync } from "node:child_process";
 import { randomBytes } from "node:crypto";
-import { existsSync, mkdirSync } from "node:fs";
+import { existsSync, lstatSync, mkdirSync, realpathSync } from "node:fs";
 import path from "node:path";
 
 import {
@@ -55,19 +55,96 @@ function safeTimestamp(date: Date): string {
   return date.toISOString().replace(/[-:.]/g, "");
 }
 
+function resolvePhase8ExternalEvidenceRoot(
+  configuredRoot: string,
+  repositoryRoot: string,
+): string {
+  if (
+    !path.isAbsolute(configuredRoot) ||
+    path.normalize(configuredRoot) !== configuredRoot
+  ) {
+    throw new Error("Phase 8 external evidence root must be normalized and absolute");
+  }
+  const entry = lstatSync(configuredRoot);
+  if (entry.isSymbolicLink() || !entry.isDirectory()) {
+    throw new Error("Phase 8 external evidence root must be a physical directory");
+  }
+  const root = path.resolve(configuredRoot);
+  const physicalRoot = realpathSync(root);
+  const worktreeList = execFileSync(
+    "git",
+    ["worktree", "list", "--porcelain"],
+    { cwd: repositoryRoot, encoding: "utf8" },
+  );
+  const worktrees = worktreeList
+    .split("\n")
+    .filter((line) => line.startsWith("worktree "))
+    .map((line) => line.slice("worktree ".length))
+    .flatMap((worktree) => {
+      const absolute = path.resolve(worktree);
+      try {
+        return [absolute, realpathSync(absolute)];
+      } catch {
+        return [absolute];
+      }
+    });
+  const containedBy = (parent: string, child: string) =>
+    child === parent || child.startsWith(`${parent}${path.sep}`);
+  if (
+    worktrees.some(
+      (worktree) =>
+        containedBy(worktree, root) ||
+        containedBy(worktree, physicalRoot) ||
+        containedBy(physicalRoot, worktree),
+    )
+  ) {
+    throw new Error("Phase 8 external evidence root must remain outside every worktree");
+  }
+  return root;
+}
+
 function createRunDirectory(repositoryRoot: string, nonce: string): {
   absolutePath: string;
   relativePath: string;
 } {
-  const evidenceRoot = path.join(repositoryRoot, ".local", "phase8-project-benchmark-evidence");
-  mkdirSync(evidenceRoot, { recursive: true, mode: 0o700 });
-  prunePhase8EvidenceRuns(evidenceRoot, PHASE8_MAX_RETAINED_RUN_DIRECTORIES - 1);
+  const configuredRoot = process.env.PHASE8_EXTERNAL_EVIDENCE_ROOT;
+  const certificationRoot = process.env.CERTIFICATION_EVIDENCE_ROOT;
+  if (configuredRoot && configuredRoot !== certificationRoot) {
+    throw new Error(
+      "Phase 8 external evidence root must equal the certification evidence root",
+    );
+  }
+  const externalRoot = configuredRoot
+    ? resolvePhase8ExternalEvidenceRoot(configuredRoot, repositoryRoot)
+    : null;
+  const evidenceRoot = externalRoot
+    ? path.join(externalRoot, "phase8")
+    : path.join(repositoryRoot, ".local", "phase8-project-benchmark-evidence");
+  if (externalRoot && existsSync(evidenceRoot)) {
+    const entry = lstatSync(evidenceRoot);
+    if (entry.isSymbolicLink() || !entry.isDirectory()) {
+      throw new Error("Phase 8 external evidence directory must be physical");
+    }
+  } else {
+    mkdirSync(evidenceRoot, { recursive: true, mode: 0o700 });
+  }
+  if (
+    externalRoot &&
+    !realpathSync(evidenceRoot).startsWith(`${realpathSync(externalRoot)}${path.sep}`)
+  ) {
+    throw new Error("Phase 8 external evidence directory escapes its authorized root");
+  }
+  if (!externalRoot) {
+    prunePhase8EvidenceRuns(evidenceRoot, PHASE8_MAX_RETAINED_RUN_DIRECTORIES - 1);
+  }
   const name = `${safeTimestamp(new Date())}-${process.pid}-${nonce.slice(0, 12)}`;
   const absolutePath = path.join(evidenceRoot, name);
   mkdirSync(absolutePath, { recursive: false, mode: 0o700 });
   return {
     absolutePath,
-    relativePath: path.relative(repositoryRoot, absolutePath).split(path.sep).join("/"),
+    relativePath: externalRoot
+      ? `<external-evidence-root>/${path.relative(externalRoot, absolutePath).split(path.sep).join("/")}`
+      : path.relative(repositoryRoot, absolutePath).split(path.sep).join("/"),
   };
 }
 
@@ -112,6 +189,14 @@ function replayChildOutput(stdout: Buffer, stderr: Buffer): void {
 
 function main(): void {
   const repositoryRoot = process.cwd();
+  if (process.argv.includes("--validate-evidence-destination-only")) {
+    const run = createRunDirectory(
+      repositoryRoot,
+      "00000000000000000000000000000000",
+    );
+    process.stdout.write(`${JSON.stringify({ evidenceDirectory: run.relativePath })}\n`);
+    return;
+  }
   const mode: Phase8BenchmarkMode = process.argv.includes("--check") ? "check" : "report";
   const jsonOutput = process.argv.includes("--json");
   const nonce = randomBytes(24).toString("hex");

@@ -27,6 +27,7 @@ export const PHASE8_CHILD_REPORT_FILE = "child-evidence.json";
 export const PHASE8_CHILD_COMPLETION_FILE = "child-complete.json";
 export const PHASE8_FINAL_REPORT_FILE = "evidence.json";
 export const PHASE8_FINAL_COMPLETION_FILE = "complete.json";
+export const PHASE8_SAMPLING_STARTED_FILE = "sampling-started.json";
 export const PHASE8_VALIDATION_FAILURE_FILE = "validation-failure.json";
 export const PHASE8_STDOUT_FILE = "child.stdout.txt";
 export const PHASE8_STDERR_FILE = "child.stderr.txt";

@@ -1,5 +1,48 @@
 # Code health audit
 
+## Production Certification Harness v1 — 2026-08-14
+
+The preceding qualification was **B —
+NOT_QUALIFIED_SOURCE_CONTRACT_DEFECT**. The final verifier required runtime smoke
+but not Phase 8 or the full seven-owner browser inventory; candidate/artifact
+identity was incomplete across owners; external Playwright and Phase 8 evidence
+were not end-to-end safe; verifier closure and archive construction were not one
+recursive committed owner; and certification had no hash-sealed resumable state.
+
+Harness v1 is a bounded certification-platform correction. It records the 28
+existing owner contracts in a machine-readable baseline, implements one sealed
+12-stage state/attempt model, a non-consuming accumulating doctor, deterministic
+archive plan/stage/compress/extract owners, recursive local-ESM closure and edge
+ledger, direct external Phase 8 output, shared external reporting for all seven
+browser configs, complete final evidence and six-point continuity, strict
+resume/invalidation, nine closed failure classifications, 26 historical
+regressions, and a real-CLI simulation that is explicitly ineligible for real
+certification. `verify-preflight`, standalone non-final
+`verify-archive-preflight`, and final `verify-standalone` remain separate. The
+real lifecycle has CLI wrappers for every state transition and physical archive
+step, and final verification reparses retained raw reports; no generic
+test-optional final bypass exists.
+
+`ci.production-artifact-contract` remains the truthful required owner and now
+includes the harness/closure/archive/config/test sources. The correction creates
+no new required gate and changes no product/UI, Floor Plan, telemetry, NFT,
+semantic timestamp, Playwright assertion/retry/worker/timeout/selector, Phase 8
+operation/fixture/sample/percentile/threshold/budget, dependency/lockfile,
+database/migration, application-data, workflow, or deployment behavior. The
+real build, Phase 8, runtime/browser matrices, and Full E2E are prohibited in
+this source-qualification batch. Exact-head certification, integration, and the
+final CH-0015 closure audit remain pending.
+
+The first provisional A was withdrawn after independent review exposed a
+non-executable real lifecycle and weak evidence/resume coverage. Those findings
+were corrected before rerunning the expanded executable regression suite. The
+bounded `npm run certification:qualify` result is **A —
+QUALIFIED_FOR_FINAL_CANDIDATE_CERTIFICATION**. It supersedes the prior B result
+for harness source readiness and authorizes a separately approved exact-head
+cycle; it is not real Phase 8/runtime/browser/final evidence.
+The separate final read-only review returned **PASS** on the complete tracked
+and untracked diff with no remaining actionable P0/P1 finding.
+
 ## CH-0015I external Playwright report-path correction — 2026-08-14
 
 The retained exact-candidate failure is classified
