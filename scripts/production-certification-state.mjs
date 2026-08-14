@@ -31,6 +31,13 @@ import {
   productionArchiveInventoryIssues,
   sha256Bytes,
 } from "./production-certification-contract.mjs";
+import {
+  readAndValidateContinuityEvidence,
+  readAndValidateSourceEvidence,
+  rootEvidenceName,
+  snapshotEvidenceName,
+  validateArtifactSnapshotEvidence,
+} from "./production-certification-source-continuity.mjs";
 
 const STATE_SEAL_DOMAIN = "interior-ai.production-certification-state-seal.v1\n";
 const COMPLETION_STATES = new Set(["incomplete", "passed", "failed", "invalidated"]);
@@ -55,7 +62,8 @@ const STAGE_BINDING_KEYS = Object.freeze({
   archive: ["archiveSha256", "archiveInventorySha256"],
   phase8: ["phase8EvidenceSha256"],
   "runtime-smoke": ["runtimeSmokeEvidenceSha256"],
-  "browser-owners": ["browserOwnerEvidenceSha256", "continuityEvidenceSha256"],
+  "browser-owners": ["browserOwnerEvidenceSha256"],
+  continuity: ["continuityEvidenceSha256"],
 });
 const BROWSER_EVIDENCE_KEYS = Object.freeze([
   ...REQUIRED_BROWSER_OWNERS.flatMap((owner) => [
@@ -63,23 +71,50 @@ const BROWSER_EVIDENCE_KEYS = Object.freeze([
     `browser-report:${owner.id}`,
     `browser-start:${owner.id}`,
   ]),
-  "continuity",
 ]);
 const STAGE_EVIDENCE_KEYS = Object.freeze({
   doctor: ["doctor"],
-  "source-validation": ["source"],
-  build: ["build"],
-  "archive-preflight": ["archive-plan", "archive-preflight"],
-  archive: ["archive", "archive-inventory"],
-  "extracted-archive-preflight": ["extracted-archive-preflight"],
-  phase8: ["phase8", "phase8-raw", "phase8-completion"],
+  "source-validation": ["source-validation"],
+  build: [
+    "build",
+    snapshotEvidenceName("immediateBuild"),
+    rootEvidenceName("immediateBuild"),
+  ],
+  "archive-preflight": [
+    "archive-plan",
+    "archive-preflight",
+    snapshotEvidenceName("stagedArchive"),
+    rootEvidenceName("stagedArchive"),
+  ],
+  archive: [
+    "archive",
+    "archive-inventory",
+    snapshotEvidenceName("compressedArchive"),
+    rootEvidenceName("compressedArchive"),
+  ],
+  "extracted-archive-preflight": [
+    "extracted-archive-preflight",
+    snapshotEvidenceName("extractedArchive"),
+    rootEvidenceName("extractedArchive"),
+  ],
+  phase8: [
+    "phase8",
+    "phase8-raw",
+    "phase8-completion",
+    snapshotEvidenceName("postPhase8Live"),
+    rootEvidenceName("postPhase8Live"),
+  ],
   "runtime-smoke": [
     "runtime-smoke",
     "runtime-report",
     "runtime-phase-timings",
     "runtime-start",
   ],
-  "browser-owners": BROWSER_EVIDENCE_KEYS,
+  "browser-owners": [
+    ...BROWSER_EVIDENCE_KEYS,
+    snapshotEvidenceName("postRuntimeBrowserLive"),
+    rootEvidenceName("postRuntimeBrowserLive"),
+  ],
   "final-standalone": ["final-standalone"],
   continuity: ["continuity"],
   "integration-ready": ["integration-ready"],
@@ -87,7 +122,7 @@ const STAGE_EVIDENCE_KEYS = Object.freeze({
 const EVIDENCE_OWNER_STAGE = Object.freeze(
   Object.fromEntries(
     Object.entries(STAGE_EVIDENCE_KEYS).flatMap(([stage, names]) =>
-      names.map((name) => [name, name === "continuity" ? "browser-owners" : stage]),
+      names.map((name) => [name, stage]),
     ),
   ),
 );
@@ -450,6 +485,7 @@ export function completeCertificationStage(
     Object.assign(next.bindings, bindingUpdates);
     Object.assign(next.evidenceFiles, evidenceFiles);
   } else {
+    Object.assign(next.evidenceFiles, evidenceFiles);
     const index = CERTIFICATION_STAGE_ORDER.indexOf(stage);
     for (const laterStage of CERTIFICATION_STAGE_ORDER.slice(index + 1)) {
       const later = next.stages[laterStage];
@@ -636,9 +672,20 @@ function requiredPassedStageIssues(state, stage) {
     }
   };
   if (stage === "doctor") requireEvidence("doctor");
-  if (stage === "source-validation") requireEvidence("source");
+  if (stage === "source-validation") requireEvidence("source-validation");
+  if (
+    stage === "source-validation" &&
+    state.stages[stage].outputHashes.sourceValidation !==
+      evidence["source-validation"]?.sha256
+  ) {
+    issues.push("passed source-validation output hash does not bind its aggregate");
+  }
   if (stage === "build") {
-    requireEvidence("build");
+    requireEvidence(
+      "build",
+      snapshotEvidenceName("immediateBuild"),
+      rootEvidenceName("immediateBuild"),
+    );
     for (const name of STAGE_BINDING_KEYS.build) {
       if (name === "semanticJournalNonce") {
         if (typeof bindings[name] !== "string" || !bindings[name]) {
@@ -654,13 +701,23 @@ function requiredPassedStageIssues(state, stage) {
     }
   }
   if (stage === "archive-preflight") {
-    requireEvidence("archive-plan", "archive-preflight");
+    requireEvidence(
+      "archive-plan",
+      "archive-preflight",
+      snapshotEvidenceName("stagedArchive"),
+      rootEvidenceName("stagedArchive"),
+    );
     if (!isSha256(bindings.verifierSourceClosureSha256)) {
       issues.push("passed archive preflight is missing verifier closure binding");
     }
   }
   if (stage === "archive") {
-    requireEvidence("archive", "archive-inventory");
+    requireEvidence(
+      "archive",
+      "archive-inventory",
+      snapshotEvidenceName("compressedArchive"),
+      rootEvidenceName("compressedArchive"),
+    );
     if (!isSha256(bindings.archiveSha256) || !isSha256(bindings.archiveInventorySha256)) {
       issues.push("passed archive is missing archive or inventory binding");
     }
@@ -669,10 +726,20 @@ function requiredPassedStageIssues(state, stage) {
     }
   }
   if (stage === "extracted-archive-preflight") {
-    requireEvidence("extracted-archive-preflight");
+    requireEvidence(
+      "extracted-archive-preflight",
+      snapshotEvidenceName("extractedArchive"),
+      rootEvidenceName("extractedArchive"),
+    );
   }
   if (stage === "phase8") {
-    requireEvidence("phase8", "phase8-raw", "phase8-completion");
+    requireEvidence(
+      "phase8",
+      "phase8-raw",
+      "phase8-completion",
+      snapshotEvidenceName("postPhase8Live"),
+      rootEvidenceName("postPhase8Live"),
+    );
     if (!isSha256(bindings.phase8EvidenceSha256)) {
       issues.push("passed Phase 8 is missing its evidence binding");
     }
@@ -695,7 +762,10 @@ function requiredPassedStageIssues(state, stage) {
     }
   }
   if (stage === "browser-owners") {
-    requireEvidence("continuity");
+    requireEvidence(
+      snapshotEvidenceName("postRuntimeBrowserLive"),
+      rootEvidenceName("postRuntimeBrowserLive"),
+    );
     for (const ownerId of REQUIRED_BROWSER_OWNERS.map((owner) => owner.id)) {
       requireEvidence(
         `browser:${ownerId}`,
@@ -712,16 +782,31 @@ function requiredPassedStageIssues(state, stage) {
         issues.push(`passed browser-owner summary does not match binding ${ownerId}`);
       }
     }
-    if (!isSha256(bindings.continuityEvidenceSha256)) {
-      issues.push("passed browser owners are missing continuity binding");
-    }
-    if (evidence.continuity?.sha256 !== bindings.continuityEvidenceSha256) {
-      issues.push("passed browser continuity does not match its state binding");
-    }
   }
   if (stage === "final-standalone") requireEvidence("final-standalone");
-  if (stage === "continuity") requireEvidence("continuity");
-  if (stage === "integration-ready") requireEvidence("integration-ready");
+  if (stage === "continuity") {
+    requireEvidence("continuity");
+    if (!isSha256(bindings.continuityEvidenceSha256)) {
+      issues.push("passed continuity is missing its evidence binding");
+    }
+    if (evidence.continuity?.sha256 !== bindings.continuityEvidenceSha256) {
+      issues.push("passed continuity evidence does not match its state binding");
+    }
+  }
+  if (stage === "integration-ready") {
+    requireEvidence("integration-ready");
+    if (
+      state.stages?.["source-validation"]?.status !== "passed" ||
+      state.stages?.["final-standalone"]?.status !== "passed" ||
+      state.stages?.continuity?.status !== "passed" ||
+      !evidence["source-validation"] ||
+      !evidence.continuity
+    ) {
+      issues.push(
+        "integration-ready requires sealed source validation, final standalone, and measured continuity",
+      );
+    }
+  }
   return issues;
 }
 
@@ -730,6 +815,8 @@ export function validateCertificationState({
   evidenceRoot,
   expectedCandidate,
   expectedHarnessSourceSha256,
+  repositoryRoot = process.cwd(),
+  verifyCurrentSource = true,
 }) {
   const issues = [
     ...certificationStateSealIssues(state),
@@ -914,6 +1001,102 @@ export function validateCertificationState({
     } catch (error) {
       issues.push(
         `evidence ${name} is unavailable: ${
+          error instanceof Error ? error.message : String(error)
+        }`,
+      );
+    }
+  }
+  if (
+    ["passed", "failed"].includes(
+      state?.stages?.["source-validation"]?.status,
+    ) &&
+    state.evidenceFiles?.["source-validation"]
+  ) {
+    try {
+      const descriptor = state.evidenceFiles?.["source-validation"];
+      const result = readAndValidateSourceEvidence({
+        descriptor,
+        evidenceRoot,
+        state,
+        repositoryRoot,
+        verifyPhysicalSource: verifyCurrentSource,
+        requirePassed:
+          state.stages["source-validation"].status === "passed",
+      });
+      issues.push(...result.validation.issues);
+    } catch (error) {
+      issues.push(
+        `source-validation evidence is invalid: ${
+          error instanceof Error ? error.message : String(error)
+        }`,
+      );
+    }
+  }
+  const lifecycleStages = [
+    ["build", "immediateBuild"],
+    ["archive-preflight", "stagedArchive"],
+    ["archive", "compressedArchive"],
+    ["extracted-archive-preflight", "extractedArchive"],
+    ["phase8", "postPhase8Live"],
+    ["browser-owners", "postRuntimeBrowserLive"],
+  ];
+  for (const [stage, position] of lifecycleStages) {
+    if (state?.stages?.[stage]?.status !== "passed") continue;
+    try {
+      const snapshotPath = resolvedEvidencePath(
+        evidenceRoot,
+        state.evidenceFiles?.[snapshotEvidenceName(position)]?.path,
+      );
+      const rootPath = resolvedEvidencePath(
+        evidenceRoot,
+        state.evidenceFiles?.[rootEvidenceName(position)]?.path,
+      );
+      const snapshotBytes = readFileSync(snapshotPath);
+      const rootBytes = readFileSync(rootPath);
+      const snapshot = JSON.parse(snapshotBytes.toString("utf8"));
+      const rootSidecar = JSON.parse(rootBytes.toString("utf8"));
+      if (
+        !snapshotBytes.equals(canonicalJsonBytes(snapshot)) ||
+        !rootBytes.equals(canonicalJsonBytes(rootSidecar))
+      ) {
+        issues.push(`artifact snapshot evidence is not canonical JSON: ${position}`);
+      }
+      const validation = validateArtifactSnapshotEvidence({
+        snapshot,
+        rootSidecar,
+        state,
+        repositoryRoot,
+        evidenceRoot,
+        position,
+        rehashPhysicalRoot:
+          verifyCurrentSource &&
+          state?.stages?.continuity?.status === "passed",
+      });
+      issues.push(...validation.issues);
+    } catch (error) {
+      issues.push(
+        `artifact snapshot evidence is invalid: ${position}: ${
+          error instanceof Error ? error.message : String(error)
+        }`,
+      );
+    }
+  }
+  if (
+    ["passed", "failed"].includes(state?.stages?.continuity?.status) &&
+    state.evidenceFiles?.continuity
+  ) {
+    try {
+      const result = readAndValidateContinuityEvidence({
+        descriptor: state.evidenceFiles?.continuity,
+        evidenceRoot,
+        state,
+        repositoryRoot,
+        requirePassed: state.stages.continuity.status === "passed",
+      });
+      issues.push(...result.validation.issues);
+    } catch (error) {
+      issues.push(
+        `continuity evidence is invalid: ${
           error instanceof Error ? error.message : String(error)
         }`,
       );

@@ -17,6 +17,12 @@ export const PRODUCTION_CERTIFICATION_RUNTIME_EVIDENCE_SCHEMA =
   "interior-ai.production-certification-runtime-smoke-evidence.v1";
 export const PRODUCTION_CERTIFICATION_BROWSER_EVIDENCE_SCHEMA =
   "interior-ai.production-certification-browser-owner-evidence.v1";
+export const PRODUCTION_CERTIFICATION_SOURCE_VALIDATION_SCHEMA =
+  "interior-ai.production-certification-source-validation.v1";
+export const PRODUCTION_CERTIFICATION_ARTIFACT_SNAPSHOT_SCHEMA =
+  "interior-ai.production-certification-artifact-snapshot.v1";
+export const PRODUCTION_CERTIFICATION_ARTIFACT_ROOT_SCHEMA =
+  "interior-ai.production-certification-artifact-root-private.v1";
 export const PRODUCTION_CERTIFICATION_CONTINUITY_SCHEMA =
   "interior-ai.production-certification-continuity.v1";
 export const PRODUCTION_ARCHIVE_PLAN_SCHEMA =
@@ -68,7 +74,7 @@ export const CERTIFICATION_FAILURE_CLASSIFICATIONS = Object.freeze([
 
 export const CERTIFICATION_STAGE_COMMANDS = Object.freeze({
   doctor: "npm run certification:doctor",
-  "source-validation": "npm run certification:state:validate",
+  "source-validation": "npm run certification:source-validation",
   build: "npm run certification:build",
   "archive-preflight": "npm run certification:archive-preflight",
   archive: "npm run certification:archive",
@@ -170,6 +176,7 @@ export const CERTIFICATION_HARNESS_SOURCE_PATHS = Object.freeze([
   "scripts/production-certification-evidence.mjs",
   "scripts/production-certification-doctor.mjs",
   "scripts/production-certification-real.mjs",
+  "scripts/production-certification-source-continuity.mjs",
   "scripts/production-certification.mjs",
   "scripts/production-certification-simulation.mjs",
   "scripts/production-archive.mjs",
@@ -183,6 +190,7 @@ export const CERTIFICATION_HARNESS_SOURCE_PATHS = Object.freeze([
   "scripts/required-test-manifest.json",
   "scripts/production-certification-regressions.json",
   "scripts/certification-playwright-start-reporter.mjs",
+  "docs/qa/production-certification-contract.v1.json",
   "scripts/benchmark-phase8-projects.ts",
   "scripts/phase8-project-benchmark-contract.ts",
   "scripts/run-phase8-project-benchmark.ts",
@@ -201,6 +209,159 @@ export function sha256Bytes(value) {
 
 export function canonicalJsonBytes(value) {
   return Buffer.from(`${JSON.stringify(value, null, 2)}\n`);
+}
+
+export function productionCertificationContract(repositoryRoot) {
+  const contractPath = path.join(
+    repositoryRoot,
+    "docs/qa/production-certification-contract.v1.json",
+  );
+  const bytes = readFileSync(contractPath);
+  let contract;
+  try {
+    contract = JSON.parse(bytes.toString("utf8"));
+  } catch {
+    throw new Error("production certification contract matrix is invalid JSON");
+  }
+  if (
+    contract?.schema !== "interior-ai.production-certification-contract-matrix.v1" ||
+    contract?.sourceValidation?.schema !==
+      "interior-ai.production-certification-source-check-set.v1" ||
+    contract?.continuity?.schema !==
+      "interior-ai.production-certification-continuity-contract.v1"
+  ) {
+    throw new Error("production certification contract matrix schema is unsupported");
+  }
+  return Object.freeze({
+    value: contract,
+    sha256: sha256Bytes(bytes),
+    path: "docs/qa/production-certification-contract.v1.json",
+  });
+}
+
+export function sourceValidationCheckSet(repositoryRoot) {
+  const contract = productionCertificationContract(repositoryRoot);
+  const checks = contract.value.sourceValidation.checks;
+  const ids = [];
+  if (!Array.isArray(checks) || checks.length === 0) {
+    throw new Error("source-validation check set is missing or empty");
+  }
+  for (const check of checks) {
+    if (
+      !check ||
+      typeof check.id !== "string" ||
+      !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(check.id) ||
+      typeof check.canonicalCommand !== "string" ||
+      !check.canonicalCommand ||
+      typeof check.executable !== "string" ||
+      !check.executable ||
+      !new Set(["npm", "node", "git"]).has(check.executable) ||
+      !Array.isArray(check.args) ||
+      check.args.some((argument) => typeof argument !== "string") ||
+      check.args.some(
+        (argument) => !/^[A-Za-z0-9._:/=@-]+$/.test(argument),
+      ) ||
+      [check.executable, ...check.args].join(" ") !== check.canonicalCommand ||
+      (check.executable === "npm" &&
+        (check.args[0] !== "run" || check.args.length < 2)) ||
+      (check.executable === "node" &&
+        (!check.args[0]?.startsWith("scripts/") ||
+          !check.args[0].endsWith(".mjs"))) ||
+      (check.executable === "git" &&
+        JSON.stringify(check.args) !== JSON.stringify(["diff", "--check"])) ||
+      typeof check.commandOwner !== "string" ||
+      !check.commandOwner ||
+      !Array.isArray(check.requiredEnvironmentNames) ||
+      !Array.isArray(check.expectedEvidence) ||
+      typeof check.substantive !== "boolean" ||
+      check.continueAfterFailure !== false
+    ) {
+      throw new Error("source-validation check contract is malformed");
+    }
+    ids.push(check.id);
+  }
+  if (new Set(ids).size !== ids.length) {
+    throw new Error("source-validation check IDs are duplicated");
+  }
+  const semantic = {
+    schema: contract.value.sourceValidation.schema,
+    workingDirectoryPolicy:
+      contract.value.sourceValidation.workingDirectoryPolicy,
+    stopOnFirstRequiredFailure:
+      contract.value.sourceValidation.stopOnFirstRequiredFailure,
+    fixtureCommandOwner: contract.value.sourceValidation.fixtureCommandOwner,
+    checks,
+  };
+  if (
+    semantic.workingDirectoryPolicy !== "exact-candidate-root" ||
+    semantic.stopOnFirstRequiredFailure !== true ||
+    semantic.fixtureCommandOwner !==
+      "scripts/production-certification-source-continuity.mjs"
+  ) {
+    throw new Error("source-validation execution policy is malformed");
+  }
+  return Object.freeze({
+    ...semantic,
+    checks: Object.freeze(checks.map((check) => Object.freeze({ ...check }))),
+    sha256: sha256Bytes(canonicalJsonBytes(semantic)),
+    contractMatrixSha256: contract.sha256,
+  });
+}
+
+export function continuityContract(repositoryRoot) {
+  const contract = productionCertificationContract(repositoryRoot);
+  const continuity = contract.value.continuity;
+  const positions = continuity.lifecyclePositions;
+  if (
+    continuity.syntheticCopiedHashAllowed !== false ||
+    continuity.retainPhysicalRootsUntilPassed !== true ||
+    JSON.stringify(continuity.integrationReadyRequires) !==
+      JSON.stringify(["source-validation", "final-standalone", "continuity"]) ||
+    !Array.isArray(positions) ||
+    positions.length !== 6 ||
+    new Set(positions.map((position) => position.id)).size !== positions.length ||
+    positions.some(
+      (position) =>
+        typeof position.id !== "string" ||
+        !CERTIFICATION_STAGE_ORDER.includes(position.stage) ||
+        typeof position.captureCommand !== "string" ||
+        !position.captureCommand ||
+        typeof position.rootClassification !== "string" ||
+        !position.rootClassification ||
+        !Array.isArray(position.scopes) ||
+        position.scopes.length === 0,
+    )
+  ) {
+    throw new Error("continuity lifecycle contract is incomplete or synthetic");
+  }
+  for (const scope of [
+    "canonicalApplicationArtifact",
+    "executableArchiveClosure",
+  ]) {
+    const comparison = continuity.comparisons?.[scope];
+    if (!Array.isArray(comparison) || comparison.length < 3) {
+      throw new Error(`continuity comparison scope is incomplete: ${scope}`);
+    }
+    for (const position of comparison) {
+      if (!positions.some((entry) => entry.id === position)) {
+        throw new Error(`continuity comparison references unknown position: ${position}`);
+      }
+    }
+  }
+  const semantic = {
+    schema: continuity.schema,
+    syntheticCopiedHashAllowed: continuity.syntheticCopiedHashAllowed,
+    retainPhysicalRootsUntilPassed: continuity.retainPhysicalRootsUntilPassed,
+    integrationReadyRequires: continuity.integrationReadyRequires,
+    scopes: continuity.scopes,
+    lifecyclePositions: positions,
+    comparisons: continuity.comparisons,
+  };
+  return Object.freeze({
+    ...semantic,
+    sha256: sha256Bytes(canonicalJsonBytes(semantic)),
+    contractMatrixSha256: contract.sha256,
+  });
 }
 
 export function productionArchiveInventoryIssues(inventory) {

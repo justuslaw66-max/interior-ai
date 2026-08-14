@@ -1,5 +1,34 @@
 # Required-test truthfulness
 
+## Harness v1 source/continuity correction ownership — 2026-08-14
+
+`ci.production-artifact-contract` remains the single required owner. Its source
+closure now includes the machine-readable source-check/continuity contract and
+the source-validation/physical-snapshot implementation; the focused Harness v1
+owner exercises the real runner and state/continuity CLI paths. No gate,
+workflow, browser project, retry, timeout, assertion, selector, or cadence is
+added.
+
+The previous source qualifier's A result was invalidated by
+`SOURCE_VALIDATION_STAGE_BYPASS_DEFECT` and
+`ARTIFACT_CONTINUITY_SELF_ASSERTION_DEFECT`. New deterministic coverage proves
+15 source anti-bypass cases, 23 physical-continuity/tamper cases, and preserves
+the original 26 historical regressions. Simulation executes deterministic
+child commands, captures distinct live/staged/extracted roots, constructs a
+deterministic miniature archive, rehashes every root at continuity, and remains
+explicitly ineligible for real certification.
+
+Direct manifest validation reports **27 gates / 380 classified test sources**.
+The corrected bounded qualifier returned
+`QUALIFIED_FOR_FINAL_CANDIDATE_CERTIFICATION`; this supersedes the invalid prior
+source result without supplying any real-candidate evidence.
+The final independent read-only review returned **PASS** after inspecting the
+real source runner, state bindings, physical lifecycle captures, continuity CLI
+tamper paths, simulation, doctor, qualification ownership, and complete diff.
+No real build, benchmark, runtime smoke, browser matrix, Full E2E, integration,
+or deployment is claimed. Exact-head certification and the final CH-0015
+closure audit remain pending.
+
 ## Production Certification Harness v1 ownership — 2026-08-14
 
 The existing `ci.production-artifact-contract` gate owns Harness v1. Its source

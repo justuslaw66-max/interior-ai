@@ -1,12 +1,13 @@
 # Production Certification Harness v1
 
-Status: **A — `QUALIFIED_FOR_FINAL_CANDIDATE_CERTIFICATION`** for source
-qualification only. The previous read-only qualification was **B —
-`NOT_QUALIFIED_SOURCE_CONTRACT_DEFECT`**. Harness v1 corrects that source
-contract and its bounded qualifier now authorizes a separately approved new
-exact-head cycle, but it does not itself certify a real candidate.
-The final separate read-only review returned **PASS** with no remaining
-actionable P0/P1 source-contract finding.
+Status: correction implemented for
+`SOURCE_VALIDATION_STAGE_BYPASS_DEFECT` and
+`ARTIFACT_CONTINUITY_SELF_ASSERTION_DEFECT`; the corrected bounded qualifier
+returned **A — `QUALIFIED_FOR_FINAL_CANDIDATE_CERTIFICATION`**. The final
+independent read-only review returned **PASS** with no remaining actionable
+finding. The prior A qualification was incorrect: it accepted an identity-only
+source stage and a continuity record synthesized from one stored artifact hash.
+No real candidate certification is performed by this correction.
 
 This batch changes certification-platform ownership only. It does not change
 product/UI behavior, Floor Plan Upload, GLB telemetry, NFT asset resolution,
@@ -41,7 +42,7 @@ Stages are ordered and fail closed:
 | Order | Stage | Canonical command |
 | ---: | --- | --- |
 | 1 | `doctor` | `npm run certification:doctor` |
-| 2 | `source-validation` | `npm run certification:state:validate` |
+| 2 | `source-validation` | `npm run certification:source-validation` |
 | 3 | `build` | `npm run certification:build` |
 | 4 | `archive-preflight` | `npm run certification:archive-preflight` |
 | 5 | `archive` | `npm run certification:archive` |
@@ -59,13 +60,46 @@ members are rejected. A stage cannot start until all predecessors pass and all
 bound hashes still rehash. Consumed substantive one-shot stages cannot be
 silently restarted.
 
+## Source validation
+
+The machine-readable `sourceValidation.checks` array in
+`docs/qa/production-certification-contract.v1.json` is the single ordered
+owner. Its 19 checks cover production-artifact and certification contracts,
+truthfulness and direct manifest validation, the complete Floor Plan required
+closure and Upload static owner, telemetry bootstrap, critical-required,
+design cleanup, zero-warning lint, TypeScript, quality ratchets,
+Design/Floor Plan/Cabinetry architecture, tracked-artifact hygiene,
+JavaScript/JSON/workflow/shell syntax, `git diff --check`, and Git source
+hygiene.
+
+`npm run certification:source-validation` directly spawns each canonical
+command in the exact candidate root. Before and after every invocation it
+rechecks commit, tree, and cleanliness. It retains stdout, stderr, and a
+process-result file outside the candidate source, records the direct child
+exit/signal without a pipe or wrapper, and stops on the first nonzero result.
+The contract validator requires the display command and executable arguments to
+be the same invocation and rejects weaker substitutions, shells, pipes, and
+`tee` wrappers. A child that exits zero after changing source is retained as a
+source-contract failure with its original child result and a nonzero stage
+result.
+The failed aggregate is still state-retained and validated as the exact
+canonical stopped prefix; if any earlier substantive check ran, a later
+non-substantive failure remains one-shot rather than becoming retryable.
+The sealed
+`interior-ai.production-certification-source-validation.v1` aggregate binds the
+certification/candidate, harness and contract-matrix hashes, check-set hash,
+attempt nonce, ordered IDs and commands, timestamps, every retained file hash,
+completion marker, and aggregate SHA-256. State validation reparses this
+evidence and rehashes all files. A source identity descriptor alone is never
+accepted, and earlier qualification evidence is never imported as a substitute.
+
 ## Verification modes
 
 | Mode | Context | Required evidence | Final? |
 | --- | --- | --- | --- |
 | `verify-preflight` | Canonical repository with Git/source context | Manifest v3, journal v1, clean source and complete built artifact | No |
 | `verify-archive-preflight` | Physical staged or extracted bytes; no `.git`, worktree, or global fallback | Manifest v3, journal v1, artifact inventory, NFT/trace safety, exact identity, recursive verifier closure | No; emits `certificationComplete=false` |
-| `verify-standalone` | Physical extracted artifact plus authorized external certification root and sealed state | Phase 8, 2/2 runtime smoke, all seven browser owners, continuity, and complete candidate/artifact/harness identity | Yes |
+| `verify-standalone` | Physical extracted artifact plus authorized external certification root and sealed state | Phase 8, 2/2 runtime smoke, all seven browser owners, and complete candidate/artifact/harness identity | Yes |
 
 There is no caller-controlled test-optional final mode. A legacy runtime-only
 bundle may still satisfy its artifact-level schema validator, but the final CLI
@@ -85,6 +119,9 @@ artifact root to resolve to the canonical non-symlink
 - `interior-ai.production-certification-phase8-evidence.v1`
 - `interior-ai.production-certification-runtime-smoke-evidence.v1`
 - `interior-ai.production-certification-browser-owner-evidence.v1`
+- `interior-ai.production-certification-source-validation.v1`
+- `interior-ai.production-certification-artifact-snapshot.v1`
+- `interior-ai.production-certification-artifact-root-private.v1`
 - `interior-ai.production-certification-continuity.v1`
 - `interior-ai.production-certification-final-evidence.v1`
 
@@ -110,11 +147,16 @@ candidate grammar/propagation, safe environment-name and execution-class,
 database/network shape, external roots and unique absent report targets,
 v3/v1 compatibility and semantic ownership, build ordering, physical archive
 owner, recursive closure, verification modes, Phase 8 destination, report
-inventory, and port/process checks. It also rejects a pre-existing `.next`,
+inventory, and port/process checks. It also validates that the source check set
+is non-empty and fully commanded, both sealed schemas are supported, all six
+physical capture commands and both comparison scopes are declared, staging and
+extraction are retained, and copied-hash continuity is prohibited. It rejects a pre-existing `.next`,
 semantic journal, manifest, or artifact inventory before the strict build can
 consume anything. A failed doctor emits its sealed JSON with a nonzero process
 result; because it is non-consuming, a corrected retry uses a new retained
 attempt path.
+The same contract explicitly declares that integration readiness requires
+source validation, final standalone, and measured continuity.
 
 Real operation supplies named values without placing secrets in state:
 
@@ -212,16 +254,50 @@ Final verification requires all of these, never aggregate counts alone:
 - the canonical expected identities, project ownership, and counts for every
   one of the seven browser owners, including Chromium/WebKit where owned, zero
   retry/skip/flake, unique report hashes, and completion;
-- equality of immediate, staged, compressed, extracted, post-Phase-8, and
-  post-runtime/browser artifact identities;
 - exact candidate ID, commit, tree, parent, Build ID, artifact, manifest,
   journal, journal nonce, verifier closure, physical archive, archive inventory,
   Phase 8 summary/raw/completion, runtime summary/raw/timing, seven browser
-  summaries/raw reports, runtime/browser start markers, continuity, harness
+  summaries/raw reports, runtime/browser start markers, harness
   version, and harness-source hashes.
 
 Missing, duplicated, partial, stale, cross-run, simulation-classified,
 contradictory, or mismatched evidence fails closed.
+
+## Physically measured continuity
+
+Continuity is a separate stage after final standalone. Six independently
+sealed `interior-ai.production-certification-artifact-snapshot.v1` records are
+captured at their real events: `immediateBuild`, `stagedArchive`,
+`compressedArchive`, `extractedArchive`, `postPhase8Live`, and
+`postRuntimeBrowserLive`. Every snapshot has a unique path and capture event;
+the portable record contains only a normalized root classification and relative
+inventories. Its private, state-bound root sidecar retains the machine-local
+realpath, device, inode, and physical kind so root replacement can be detected.
+
+The canonical application-artifact scope is the owned `.next` and `public`
+contract after its existing mutable exclusions. It must be byte-identical at
+immediate build, inside staging, inside extraction, after Phase 8, and after all
+runtime/browser owners. The executable archive-closure scope includes every
+staged executable, verifier, required-server, NFT-derived, dependency, public,
+and generated certification input; it must be identical in the staged tree,
+the independently inspected compressed archive, and the extracted tree. The
+compressed archive additionally binds its own bytes/size, deterministic
+constructor version/source hash, physical closure-inventory hash, and the
+archive constructor's separately sealed inventory hash.
+
+`npm run certification:continuity` does not trust stored summaries. It reopens
+and rehashes the live candidate root, staged tree, compressed archive, and
+extracted tree; rejects missing/replaced/symlink-fallback roots and staged/
+extracted realpath aliasing; revalidates every manifest and closure identity;
+and records every comparison and exact mismatch. Staging and extraction are
+retained until this succeeds. Only the resulting sealed continuity SHA can
+satisfy state and `integration-ready`.
+Deterministic physical mutations before and during the Phase 8 fixture boundary
+are separate cases; neither invokes the real Phase 8 owner.
+Failed continuity records use attempt-numbered paths and retain exact
+missing/extra/path/type/size/hash/identity/root details. Because comparison
+itself is non-consuming, a corrected physical root may be remeasured in a new
+attempt without overwriting the failed evidence.
 
 ## Resume and invalidation
 
@@ -231,7 +307,7 @@ every retained evidence hash, and completed raw evidence semantics. `npm run
 certification:resume` returns only the first
 eligible stage after performing the same checks. An input mismatch invalidates
 that stage and every successor; it never edits a pass into existence. A source
-change invalidates build onward. A build, Build ID, artifact, manifest, journal,
+change invalidates source-validation and every later stage. A build, Build ID, artifact, manifest, journal,
 or closure change invalidates archive, Phase 8, runtime, browsers, final,
 continuity, and readiness. All attempts remain in state; a non-consuming
 precondition may be corrected and retried as a separately recorded attempt.
@@ -244,7 +320,11 @@ descendant. Real operation supplies `CERTIFICATION_INTEGRATION_BRANCH_REF`,
 `CERTIFICATION_INTEGRATION_TRACKING_REF`,
 `CERTIFICATION_EXPECTED_INTEGRATION_COMMIT_SHA`, and
 `CERTIFICATION_EXPECTED_INTEGRATION_TREE_SHA`; the retained readiness record
-pins both observed refs. This check does not fetch, merge, or integrate.
+pins both observed refs plus source-validation, final-standalone, and measured
+continuity hashes. This check does not fetch, merge, or integrate.
+Before readiness advances, live state validation rehashes all retained physical
+roots and cross-binds every snapshot descriptor, nested identity, capture
+event, comparison position set, and continuity input hash.
 
 ## Failure taxonomy
 
@@ -265,8 +345,9 @@ permit a retry.
 
 ## Historical regression matrix
 
-`scripts/production-certification-regressions.json` records all 26 required
-historical failures. `scripts/test-production-certification.mjs` maps each entry
+`scripts/production-certification-regressions.json` retains all 26 required
+historical failures and adds 15 source-validation plus 23 physical-continuity
+anti-bypass cases. `scripts/test-production-certification.mjs` maps each entry
 to executable deterministic CLI coverage plus anti-bypass source guards:
 source/tree and candidate grammar;
 external report presence/containment/staleness; schema/journal/timestamp/build
@@ -294,8 +375,13 @@ npm run certification:qualify
 invokes physical committed CLIs for state initialization and transitions, a
 sealed failed-doctor/retry cycle, source validation, journal/manifest
 production, archive plan/stage/compress/extract, staged/extracted preflight,
-final verification, integration-readiness validation, and synthetic Phase
-8/runtime/seven-owner/continuity recording. It
+final verification, integration-readiness validation, deterministic Phase
+8/runtime/seven-owner evidence, six independent physical snapshots, and the
+real continuity CLI. It also proves a source-check failure blocks build, a
+physical artifact mutation blocks continuity/readiness, and copied hashes do
+not satisfy continuity. A staged-root mutation additionally proves a failed
+continuity attempt is retained and a corrected second attempt uses a distinct
+evidence path before readiness. It
 starts no app, database, or browser and runs no real build or benchmark. Its
 evidence is marked `deterministic-simulation` and cannot certify a real
 candidate.

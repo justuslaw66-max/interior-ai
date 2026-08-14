@@ -1,6 +1,7 @@
 import { spawnSync } from "node:child_process";
 import {
   chmodSync,
+  existsSync,
   mkdirSync,
   mkdtempSync,
   lstatSync,
@@ -23,12 +24,12 @@ import {
   CERTIFICATION_HARNESS_SOURCE_PATHS,
   PHASE8_SOURCE_BINDING_PATHS,
   PRODUCTION_CERTIFICATION_BROWSER_EVIDENCE_SCHEMA,
-  PRODUCTION_CERTIFICATION_CONTINUITY_SCHEMA,
   PRODUCTION_CERTIFICATION_PHASE8_EVIDENCE_SCHEMA,
   PRODUCTION_CERTIFICATION_RUNTIME_EVIDENCE_SCHEMA,
   REQUIRED_BROWSER_OWNERS,
   canonicalJsonBytes,
   sha256Bytes,
+  sourceValidationCheckSet,
 } from "./production-certification-contract.mjs";
 import {
   completeCertificationStage,
@@ -37,6 +38,13 @@ import {
   validateCertificationState,
   writeCertificationState,
 } from "./production-certification-state.mjs";
+import {
+  captureArtifactSnapshot,
+  measureFinalContinuity,
+  rootEvidenceName,
+  snapshotEvidenceName,
+  validateContinuityEvidence,
+} from "./production-certification-source-continuity.mjs";
 
 const SIMULATION_ID = "production-certification-v1-simulation";
 const FIXED_NONCE = "123e4567-e89b-42d3-a456-426614174001";
@@ -123,6 +131,8 @@ function writeFloorPlanNfts(root) {
 function writeMiniatureArtifact(root) {
   write(root, ".next/BUILD_ID", "simulation-build-001\n");
   write(root, ".next/build-manifest.json", "{}\n");
+  write(root, ".next/routes-manifest.json", "{}\n");
+  write(root, ".next/prerender-manifest.json", "{}\n");
   write(
     root,
     ".next/required-server-files.json",
@@ -427,29 +437,6 @@ function browserEvidence(state, owner, gate, reportSha256) {
   };
 }
 
-function continuityEvidence(state) {
-  const artifactSha256 = Object.fromEntries(
-    [
-      "immediateBuild",
-      "stagedArchive",
-      "compressedArchive",
-      "extractedArchive",
-      "postPhase8Live",
-      "postRuntimeBrowserLive",
-    ].map((name) => [name, state.bindings.artifactSha256]),
-  );
-  return {
-    schema: PRODUCTION_CERTIFICATION_CONTINUITY_SCHEMA,
-    identity: identityFromState(state),
-    executionClass: "deterministic-simulation",
-    simulation: true,
-    artifactSha256,
-    archiveSha256: state.bindings.archiveSha256,
-    archiveInventorySha256: state.bindings.archiveInventorySha256,
-    complete: true,
-  };
-}
-
 export async function runProductionCertificationSimulation() {
   const repositoryRoot = process.cwd();
   const simulationRoot = mkdtempSync(path.join(tmpdir(), "production-certification-v1-"));
@@ -543,17 +530,193 @@ export async function runProductionCertificationSimulation() {
       CERTIFICATION_STAGE_COMPLETED_AT: nextTimestamp(),
     },
   );
+  let state = readCertificationState(statePath);
+  const sourceChecks = sourceValidationCheckSet(fixtureRoot).checks;
+  const failedSourceCheckIndex = sourceChecks.length - 3;
+  const failedSourceCheck = sourceChecks[failedSourceCheckIndex];
+  const sourceFailureRoot = path.join(simulationRoot, "source-failure-evidence");
+  mkdirSync(sourceFailureRoot, { mode: 0o700 });
+  const failedSourceStatePath = path.join(
+    sourceFailureRoot,
+    "certification-state.json",
+  );
+  const doctorDescriptor = state.evidenceFiles.doctor;
+  const failedDoctorPath = path.join(sourceFailureRoot, doctorDescriptor.path);
+  mkdirSync(path.dirname(failedDoctorPath), { recursive: true, mode: 0o700 });
+  writeFileSync(
+    failedDoctorPath,
+    readFileSync(path.join(evidenceRoot, doctorDescriptor.path)),
+    { flag: "wx", mode: 0o600 },
+  );
+  writeCertificationState(failedSourceStatePath, state);
+  const failedSourceChild = spawnSync(
+    process.execPath,
+    ["scripts/production-certification.mjs", "source-validation"],
+    {
+      cwd: fixtureRoot,
+      encoding: "utf8",
+      env: {
+        ...doctorEnvironment,
+        CERTIFICATION_EVIDENCE_ROOT: sourceFailureRoot,
+        PRODUCTION_CERTIFICATION_STATE: failedSourceStatePath,
+        CERTIFICATION_STAGE_STARTED_AT: "2026-08-14T00:11:00.000Z",
+        CERTIFICATION_STAGE_COMPLETED_AT: "2026-08-14T00:11:00.500Z",
+        CERTIFICATION_SOURCE_VALIDATION_FIXTURE_LOG: path.join(
+          sourceFailureRoot,
+          "invocations.log",
+        ),
+        CERTIFICATION_SOURCE_VALIDATION_FAIL_ID: failedSourceCheck.id,
+      },
+    },
+  );
+  const failedSourceState = readCertificationState(failedSourceStatePath);
+  const failedSourceDescriptor =
+    failedSourceState.evidenceFiles["source-validation"];
+  const failedSourceEvidence = JSON.parse(
+    readFileSync(
+      path.join(sourceFailureRoot, failedSourceDescriptor.path),
+      "utf8",
+    ),
+  );
+  const failedSourceStateValidation = validateCertificationState({
+    state: failedSourceState,
+    evidenceRoot: sourceFailureRoot,
+    expectedCandidate: failedSourceState.candidate,
+    expectedHarnessSourceSha256: failedSourceState.harness.sourceSha256,
+    repositoryRoot: fixtureRoot,
+  });
+  let failedSourcePreventedBuild = false;
+  try {
+    startCertificationStage(failedSourceState, {
+      stage: "build",
+      startedAt: "2026-08-14T00:11:01.000Z",
+    });
+  } catch {
+    failedSourcePreventedBuild = true;
+  }
+  const failedInvocationIds = readFileSync(
+    path.join(sourceFailureRoot, "invocations.log"),
+    "utf8",
+  )
+    .trim()
+    .split("\n")
+    .filter(Boolean);
+  if (
+    failedSourceChild.status === 0 ||
+    failedSourceState.stages["source-validation"].status !== "failed" ||
+    failedSourceState.stages["source-validation"].exitCode !== 17 ||
+    failedSourceState.stages["source-validation"].consumedSubstantiveGate !==
+      true ||
+    failedSourceEvidence.passed !== false ||
+    failedSourceEvidence.failedCheckId !== failedSourceCheck.id ||
+    !failedSourceStateValidation.valid ||
+    JSON.stringify(failedInvocationIds) !==
+      JSON.stringify(
+        sourceChecks
+          .slice(0, failedSourceCheckIndex + 1)
+          .map((check) => check.id),
+      ) ||
+    !failedSourcePreventedBuild
+  ) {
+    throw new Error("simulation source-check failure did not stop or block build readiness");
+  }
+  const sourceDriftRoot = path.join(simulationRoot, "source-drift-evidence");
+  mkdirSync(sourceDriftRoot, { mode: 0o700 });
+  const driftDoctorPath = path.join(sourceDriftRoot, doctorDescriptor.path);
+  mkdirSync(path.dirname(driftDoctorPath), { recursive: true, mode: 0o700 });
+  writeFileSync(
+    driftDoctorPath,
+    readFileSync(path.join(evidenceRoot, doctorDescriptor.path)),
+    { flag: "wx", mode: 0o600 },
+  );
+  const sourceDriftStatePath = path.join(
+    sourceDriftRoot,
+    "certification-state.json",
+  );
+  writeCertificationState(sourceDriftStatePath, state);
+  const sourceDriftCheck = sourceChecks[1];
+  const dirtySourcePath = path.join(
+    fixtureRoot,
+    ".certification-source-validation-dirty-fixture",
+  );
+  const sourceDriftChild = spawnSync(
+    process.execPath,
+    ["scripts/production-certification.mjs", "source-validation"],
+    {
+      cwd: fixtureRoot,
+      encoding: "utf8",
+      env: {
+        ...doctorEnvironment,
+        CERTIFICATION_EVIDENCE_ROOT: sourceDriftRoot,
+        PRODUCTION_CERTIFICATION_STATE: sourceDriftStatePath,
+        CERTIFICATION_STAGE_STARTED_AT: "2026-08-14T00:11:01.000Z",
+        CERTIFICATION_STAGE_COMPLETED_AT: "2026-08-14T00:11:01.500Z",
+        CERTIFICATION_SOURCE_VALIDATION_FIXTURE_LOG: path.join(
+          sourceDriftRoot,
+          "invocations.log",
+        ),
+        CERTIFICATION_SOURCE_VALIDATION_DIRTY_ID: sourceDriftCheck.id,
+      },
+    },
+  );
+  if (existsSync(dirtySourcePath)) rmSync(dirtySourcePath);
+  const sourceDriftState = readCertificationState(sourceDriftStatePath);
+  const sourceDriftDescriptor =
+    sourceDriftState.evidenceFiles["source-validation"];
+  const sourceDriftEvidence = JSON.parse(
+    readFileSync(
+      path.join(sourceDriftRoot, sourceDriftDescriptor.path),
+      "utf8",
+    ),
+  );
+  const sourceDriftValidation = validateCertificationState({
+    state: sourceDriftState,
+    evidenceRoot: sourceDriftRoot,
+    expectedCandidate: sourceDriftState.candidate,
+    expectedHarnessSourceSha256: sourceDriftState.harness.sourceSha256,
+    repositoryRoot: fixtureRoot,
+  });
+  const sourceDriftAfterZeroExitRetained =
+    sourceDriftChild.status !== 0 &&
+    sourceDriftState.stages["source-validation"].status === "failed" &&
+    sourceDriftState.stages["source-validation"].exitCode === 1 &&
+    sourceDriftState.stages["source-validation"].consumedSubstantiveGate ===
+      true &&
+    sourceDriftEvidence.failedCheckId === sourceDriftCheck.id &&
+    sourceDriftEvidence.checks.at(-1).process.exitCode === 0 &&
+    sourceDriftEvidence.checks.at(-1).sourceAfter.clean === false &&
+    sourceDriftValidation.valid;
+  if (!sourceDriftAfterZeroExitRetained) {
+    throw new Error("zero-exit source drift was not retained as a truthful failure");
+  }
   run(
     process.execPath,
-    ["scripts/production-certification.mjs", "state:validate"],
+    ["scripts/production-certification.mjs", "source-validation"],
     fixtureRoot,
     {
       ...doctorEnvironment,
       CERTIFICATION_STAGE_STARTED_AT: nextTimestamp(),
       CERTIFICATION_STAGE_COMPLETED_AT: nextTimestamp(),
+      CERTIFICATION_SOURCE_VALIDATION_FIXTURE_LOG: path.join(
+        evidenceRoot,
+        "source-validation-invocations.log",
+      ),
     },
   );
-  let state = readCertificationState(statePath);
+  const sourceCheckIds = sourceValidationCheckSet(fixtureRoot).checks.map(
+    (check) => check.id,
+  );
+  const invokedSourceChecks = readFileSync(
+    path.join(evidenceRoot, "source-validation-invocations.log"),
+    "utf8",
+  )
+    .trim()
+    .split("\n")
+    .filter(Boolean);
+  if (JSON.stringify(invokedSourceChecks) !== JSON.stringify(sourceCheckIds)) {
+    throw new Error("simulation source-validation did not invoke the canonical check closure");
+  }
+  state = readCertificationState(statePath);
   if (
     state.stages.doctor.attempts.length !== 2 ||
     state.stages.doctor.attempts[0].status !== "failed" ||
@@ -592,6 +755,20 @@ export async function runProductionCertificationSimulation() {
     },
     complete: true,
   });
+  const buildBindings = {
+    semanticJournalNonce: FIXED_NONCE,
+    nextBuildId: production.manifest.build.nextBuildId,
+    artifactSha256: production.manifest.artifact.sha256,
+    productionManifestSha256: production.manifestSha256,
+    semanticJournalSha256: production.journalSha256,
+  };
+  const immediateSnapshot = captureArtifactSnapshot({
+    repositoryRoot: fixtureRoot,
+    evidenceRoot,
+    state,
+    position: "immediateBuild",
+    bindingOverrides: buildBindings,
+  });
   state = completeSimulationStage({
     fixtureRoot,
     evidenceRoot,
@@ -606,14 +783,13 @@ export async function runProductionCertificationSimulation() {
       journal: production.journalSha256,
       artifact: production.manifest.artifact.sha256,
     },
-    bindingUpdates: {
-      semanticJournalNonce: FIXED_NONCE,
-      nextBuildId: production.manifest.build.nextBuildId,
-      artifactSha256: production.manifest.artifact.sha256,
-      productionManifestSha256: production.manifestSha256,
-      semanticJournalSha256: production.journalSha256,
+    bindingUpdates: buildBindings,
+    evidenceFiles: {
+      build: buildDescriptor,
+      [snapshotEvidenceName("immediateBuild")]:
+        immediateSnapshot.snapshotDescriptor,
+      [rootEvidenceName("immediateBuild")]: immediateSnapshot.rootDescriptor,
     },
-    evidenceFiles: { build: buildDescriptor },
     },
   });
   const archiveEnvironment = {
@@ -667,6 +843,12 @@ export async function runProductionCertificationSimulation() {
     evidenceRoot,
     path.join(stageRoot, ".certification/archive-preflight.json"),
   );
+  const stagedSnapshot = captureArtifactSnapshot({
+    repositoryRoot: fixtureRoot,
+    evidenceRoot,
+    state,
+    position: "stagedArchive",
+  });
   state = completeSimulationStage({
     fixtureRoot,
     evidenceRoot,
@@ -680,7 +862,12 @@ export async function runProductionCertificationSimulation() {
     bindingUpdates: {
       verifierSourceClosureSha256: plan.verifierClosure.closureSha256,
     },
-    evidenceFiles: { "archive-plan": planDescriptor, "archive-preflight": preflightDescriptor },
+    evidenceFiles: {
+      "archive-plan": planDescriptor,
+      "archive-preflight": preflightDescriptor,
+      [snapshotEvidenceName("stagedArchive")]: stagedSnapshot.snapshotDescriptor,
+      [rootEvidenceName("stagedArchive")]: stagedSnapshot.rootDescriptor,
+    },
     },
   });
   state = startSimulationStage({
@@ -721,6 +908,16 @@ export async function runProductionCertificationSimulation() {
     evidenceRoot,
     path.join(stageRoot, ".certification/archive-inventory.json"),
   );
+  const compressedSnapshot = captureArtifactSnapshot({
+    repositoryRoot: fixtureRoot,
+    evidenceRoot,
+    state,
+    position: "compressedArchive",
+    bindingOverrides: {
+      archiveSha256: compressed.archiveSha256,
+      archiveInventorySha256: staged.inventorySha256,
+    },
+  });
   state = completeSimulationStage({
     fixtureRoot,
     evidenceRoot,
@@ -738,7 +935,13 @@ export async function runProductionCertificationSimulation() {
       archiveSha256: compressed.archiveSha256,
       archiveInventorySha256: staged.inventorySha256,
     },
-    evidenceFiles: { archive: archiveDescriptor, "archive-inventory": inventoryDescriptor },
+    evidenceFiles: {
+      archive: archiveDescriptor,
+      "archive-inventory": inventoryDescriptor,
+      [snapshotEvidenceName("compressedArchive")]:
+        compressedSnapshot.snapshotDescriptor,
+      [rootEvidenceName("compressedArchive")]: compressedSnapshot.rootDescriptor,
+    },
     consumedSubstantiveGate: true,
     },
   });
@@ -764,6 +967,12 @@ export async function runProductionCertificationSimulation() {
     evidenceRoot,
     path.join(extractionRoot, ".certification/archive-preflight.json"),
   );
+  const extractedSnapshot = captureArtifactSnapshot({
+    repositoryRoot: fixtureRoot,
+    evidenceRoot,
+    state,
+    position: "extractedArchive",
+  });
   state = completeSimulationStage({
     fixtureRoot,
     evidenceRoot,
@@ -774,8 +983,62 @@ export async function runProductionCertificationSimulation() {
     completedAt: nextTimestamp(),
     exitCode: 0,
     outputHashes: { extractedInventory: extracted.inventorySha256 },
-    evidenceFiles: { "extracted-archive-preflight": extractedDescriptor },
+    evidenceFiles: {
+      "extracted-archive-preflight": extractedDescriptor,
+      [snapshotEvidenceName("extractedArchive")]:
+        extractedSnapshot.snapshotDescriptor,
+      [rootEvidenceName("extractedArchive")]: extractedSnapshot.rootDescriptor,
     },
+    },
+  });
+  const phaseBoundaryArtifact = path.join(
+    fixtureRoot,
+    ".next/static/chunk.js",
+  );
+  const phaseBoundaryOriginal = readFileSync(phaseBoundaryArtifact);
+  const exercisePhaseBoundaryMutation = ({ name, mutateBeforeStart }) => {
+    const boundaryEvidenceRoot = path.join(
+      simulationRoot,
+      `phase-boundary-${name}`,
+    );
+    mkdirSync(boundaryEvidenceRoot, { mode: 0o700 });
+    if (mutateBeforeStart) {
+      writeFileSync(phaseBoundaryArtifact, `${name} mutation\n`);
+    }
+    const phaseBoundaryState = startCertificationStage(state, {
+      stage: "phase8",
+      startedAt: new Date(Date.parse(state.updatedAt) + 50).toISOString(),
+    });
+    if (!mutateBeforeStart) {
+      writeFileSync(phaseBoundaryArtifact, `${name} mutation\n`);
+    }
+    let rejected = false;
+    try {
+      captureArtifactSnapshot({
+        repositoryRoot: fixtureRoot,
+        evidenceRoot: boundaryEvidenceRoot,
+        state: phaseBoundaryState,
+        position: "postPhase8Live",
+      });
+    } catch (error) {
+      rejected = /physical artifact identity contradicts/.test(
+        error instanceof Error ? error.message : String(error),
+      );
+    } finally {
+      writeFileSync(phaseBoundaryArtifact, phaseBoundaryOriginal);
+    }
+    if (!rejected) {
+      throw new Error(`physical live artifact mutation was not rejected: ${name}`);
+    }
+    return true;
+  };
+  const liveMutationBeforePhase8Rejected = exercisePhaseBoundaryMutation({
+    name: "before-phase8",
+    mutateBeforeStart: true,
+  });
+  const liveMutationDuringPhase8Rejected = exercisePhaseBoundaryMutation({
+    name: "during-phase8",
+    mutateBeforeStart: false,
   });
   state = startSimulationStage({
     fixtureRoot,
@@ -804,6 +1067,12 @@ export async function runProductionCertificationSimulation() {
     "phase8/evidence.json",
     phase8Evidence(state, fixtureRoot, phase8RawDescriptor.sha256),
   );
+  const postPhase8Snapshot = captureArtifactSnapshot({
+    repositoryRoot: fixtureRoot,
+    evidenceRoot,
+    state,
+    position: "postPhase8Live",
+  });
   state = completeSimulationStage({
     fixtureRoot,
     evidenceRoot,
@@ -819,6 +1088,9 @@ export async function runProductionCertificationSimulation() {
       phase8: phase8Descriptor,
       "phase8-raw": phase8RawDescriptor,
       "phase8-completion": phase8CompletionDescriptor,
+      [snapshotEvidenceName("postPhase8Live")]:
+        postPhase8Snapshot.snapshotDescriptor,
+      [rootEvidenceName("postPhase8Live")]: postPhase8Snapshot.rootDescriptor,
     },
     consumedSubstantiveGate: true,
     },
@@ -921,11 +1193,12 @@ export async function runProductionCertificationSimulation() {
     browserDescriptors[`browser-start:${owner.id}`] = startDescriptor;
     browserHashes[owner.id] = ownerDescriptor.sha256;
   }
-  const continuityDescriptor = writeEvidence(
+  const postBrowserSnapshot = captureArtifactSnapshot({
+    repositoryRoot: fixtureRoot,
     evidenceRoot,
-    "continuity/evidence.json",
-    continuityEvidence(state),
-  );
+    state,
+    position: "postRuntimeBrowserLive",
+  });
   state = completeSimulationStage({
     fixtureRoot,
     evidenceRoot,
@@ -938,9 +1211,14 @@ export async function runProductionCertificationSimulation() {
       outputHashes: browserHashes,
       bindingUpdates: {
         browserOwnerEvidenceSha256: browserHashes,
-        continuityEvidenceSha256: continuityDescriptor.sha256,
       },
-      evidenceFiles: { ...browserDescriptors, continuity: continuityDescriptor },
+      evidenceFiles: {
+        ...browserDescriptors,
+        [snapshotEvidenceName("postRuntimeBrowserLive")]:
+          postBrowserSnapshot.snapshotDescriptor,
+        [rootEvidenceName("postRuntimeBrowserLive")]:
+          postBrowserSnapshot.rootDescriptor,
+      },
       consumedSubstantiveGate: true,
     },
   });
@@ -993,25 +1271,56 @@ export async function runProductionCertificationSimulation() {
       evidenceFiles: { "final-standalone": finalDescriptor },
     },
   });
-  state = startSimulationStage({
-    fixtureRoot,
+  const stagedRetryPath = path.join(
     evidenceRoot,
-    statePath,
-    payload: { stage: "continuity", startedAt: nextTimestamp() },
-  });
-  state = completeSimulationStage({
-    fixtureRoot,
-    evidenceRoot,
-    statePath,
-    payload: {
-      stage: "continuity",
-      passed: true,
-      completedAt: nextTimestamp(),
-      exitCode: 0,
-      outputHashes: { continuity: continuityDescriptor.sha256 },
-      evidenceFiles: { continuity: continuityDescriptor },
+    "archive/stage/package.json",
+  );
+  const stagedRetryBytes = readFileSync(stagedRetryPath);
+  writeFileSync(stagedRetryPath, "continuity retry mutation\n");
+  const failedContinuity = spawnSync(
+    process.execPath,
+    ["scripts/production-certification.mjs", "continuity"],
+    {
+      cwd: fixtureRoot,
+      encoding: "utf8",
+      env: {
+        ...doctorEnvironment,
+        CERTIFICATION_STAGE_STARTED_AT: nextTimestamp(),
+        CERTIFICATION_STAGE_COMPLETED_AT: nextTimestamp(),
+      },
     },
+  );
+  writeFileSync(stagedRetryPath, stagedRetryBytes);
+  const failedContinuityState = readCertificationState(statePath);
+  const failedContinuityDescriptor =
+    failedContinuityState.evidenceFiles.continuity;
+  const failedContinuityValidation = validateCertificationState({
+    state: failedContinuityState,
+    evidenceRoot,
+    expectedCandidate: failedContinuityState.candidate,
+    expectedHarnessSourceSha256:
+      failedContinuityState.harness.sourceSha256,
+    repositoryRoot: fixtureRoot,
   });
+  const continuityFailureRetryRetained =
+    failedContinuity.status !== 0 &&
+    failedContinuityState.stages.continuity.status === "failed" &&
+    failedContinuityState.stages.continuity.consumedSubstantiveGate === false &&
+    failedContinuityDescriptor.path === "continuity/attempt-001.json" &&
+    failedContinuityValidation.valid;
+  if (!continuityFailureRetryRetained) {
+    throw new Error("failed continuity attempt was not retained as retryable evidence");
+  }
+  run(
+    process.execPath,
+    ["scripts/production-certification.mjs", "continuity"],
+    fixtureRoot,
+    {
+      ...doctorEnvironment,
+      CERTIFICATION_STAGE_STARTED_AT: nextTimestamp(),
+      CERTIFICATION_STAGE_COMPLETED_AT: nextTimestamp(),
+    },
+  );
   run(
     process.execPath,
     ["scripts/production-certification.mjs", "state:validate"],
@@ -1028,13 +1337,90 @@ export async function runProductionCertificationSimulation() {
     },
   );
   state = readCertificationState(statePath);
+  if (
+    state.stages.continuity.attempts.length !== 2 ||
+    state.stages.continuity.attempts[0].status !== "failed" ||
+    state.stages.continuity.attempts[1].status !== "passed" ||
+    state.evidenceFiles.continuity.path !== "continuity/attempt-002.json" ||
+    !existsSync(path.join(evidenceRoot, "continuity/attempt-001.json"))
+  ) {
+    throw new Error("continuity retry did not retain two distinct physical attempts");
+  }
   const validation = validateCertificationState({
     state,
     evidenceRoot,
     expectedCandidate: state.candidate,
     expectedHarnessSourceSha256: state.harness.sourceSha256,
+    repositoryRoot: fixtureRoot,
   });
   if (!validation.valid) throw new Error(validation.issues.join("; "));
+  const continuityDescriptor = state.evidenceFiles.continuity;
+  const continuityValue = JSON.parse(
+    readFileSync(path.join(evidenceRoot, continuityDescriptor.path), "utf8"),
+  );
+  const copiedHashContinuity = structuredClone(continuityValue);
+  const copiedDigest = Object.values(copiedHashContinuity.inputSnapshots)[0];
+  for (const position of Object.keys(copiedHashContinuity.inputSnapshots)) {
+    copiedHashContinuity.inputSnapshots[position] = copiedDigest;
+  }
+  const copiedHashValidation = validateContinuityEvidence(
+    copiedHashContinuity,
+    state,
+    fixtureRoot,
+  );
+  if (
+    copiedHashValidation.valid ||
+    !copiedHashValidation.issues.some((issue) => /copied|duplicated/.test(issue))
+  ) {
+    throw new Error("simulation copied-hash continuity bypass was not rejected");
+  }
+  const mutableArtifactPath = path.join(fixtureRoot, ".next/static/chunk.js");
+  const originalArtifactBytes = readFileSync(mutableArtifactPath);
+  const tamperStatePath = path.join(evidenceRoot, "tamper-certification-state.json");
+  writeCertificationState(tamperStatePath, state);
+  writeFileSync(mutableArtifactPath, "mutated simulation artifact\n");
+  const physicalTamper = measureFinalContinuity({
+    repositoryRoot: fixtureRoot,
+    evidenceRoot,
+    state,
+    capturedAt: "2026-08-14T00:29:00.000Z",
+    writeEvidence: false,
+  });
+  const tamperValidation = spawnSync(
+    process.execPath,
+    ["scripts/production-certification.mjs", "state:validate"],
+    {
+      cwd: fixtureRoot,
+      encoding: "utf8",
+      env: {
+        ...doctorEnvironment,
+        PRODUCTION_CERTIFICATION_STATE: tamperStatePath,
+        CERTIFICATION_INVALIDATED_AT: "2026-08-14T00:30:00.000Z",
+      },
+    },
+  );
+  writeFileSync(mutableArtifactPath, originalArtifactBytes);
+  const tamperedState = readCertificationState(tamperStatePath);
+  rmSync(tamperStatePath);
+  const artifactMutationRejected =
+    physicalTamper.issues.some((issue) =>
+      /no longer matches snapshot|physical artifact identity contradicts/.test(issue),
+    ) &&
+    tamperValidation.status !== 0 &&
+    tamperedState.stages.build.status === "invalidated" &&
+    tamperedState.stages.continuity.status === "invalidated" &&
+    tamperedState.stages["integration-ready"].status === "invalidated";
+  if (!artifactMutationRejected) {
+    throw new Error(
+      `simulation artifact mutation did not block continuity and readiness: ${JSON.stringify({
+        issues: physicalTamper.issues,
+        status: tamperValidation.status,
+        build: tamperedState.stages.build.status,
+        continuity: tamperedState.stages.continuity.status,
+        readiness: tamperedState.stages["integration-ready"].status,
+      })}`,
+    );
+  }
   return {
     schema: "interior-ai.production-certification-simulation-result.v1",
     simulation: true,
@@ -1044,6 +1430,18 @@ export async function runProductionCertificationSimulation() {
     finalStandalone: "passed-simulation-only",
     integrationReady: state.stages["integration-ready"].status === "passed",
     archiveDeterministic: true,
+    sourceValidationCheckCount: sourceCheckIds.length,
+    lifecycleSnapshotCount: 6,
+    tamperCases: {
+      sourceCheckFailurePreventsBuild: failedSourcePreventedBuild,
+      failedSourceEvidenceRetained: true,
+      sourceDriftAfterZeroExitRetained,
+      artifactMutationPreventsContinuityAndReadiness: artifactMutationRejected,
+      copiedArtifactHashRejected: true,
+      continuityFailureRetryRetained,
+      liveMutationBeforePhase8Rejected,
+      liveMutationDuringPhase8Rejected,
+    },
     simulationRoot,
     stateSha256: sha256Bytes(readFileSync(statePath)),
   };

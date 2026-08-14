@@ -5,7 +5,6 @@ import {
   CERTIFICATION_EVIDENCE_ROOT_ENV,
   CERTIFICATION_STATE_ENV,
   PRODUCTION_CERTIFICATION_BROWSER_EVIDENCE_SCHEMA,
-  PRODUCTION_CERTIFICATION_CONTINUITY_SCHEMA,
   PRODUCTION_CERTIFICATION_FINAL_EVIDENCE_SCHEMA,
   PRODUCTION_CERTIFICATION_PHASE8_EVIDENCE_SCHEMA,
   PRODUCTION_CERTIFICATION_RUNTIME_EVIDENCE_SCHEMA,
@@ -387,32 +386,6 @@ function validateBrowserEvidence(evidence, owner, gate, state) {
   return issues;
 }
 
-function validateContinuityEvidence(evidence, state) {
-  const issues = [];
-  if (evidence?.schema !== PRODUCTION_CERTIFICATION_CONTINUITY_SCHEMA) {
-    issues.push("artifact continuity evidence schema is unsupported");
-  }
-  issues.push(...identityIssues(evidence?.identity, state));
-  validateExecutionClass(evidence, state, issues);
-  const artifactHashes = [
-    "immediateBuild",
-    "stagedArchive",
-    "compressedArchive",
-    "extractedArchive",
-    "postPhase8Live",
-    "postRuntimeBrowserLive",
-  ].map((name) => evidence?.artifactSha256?.[name]);
-  if (
-    artifactHashes.some((digest) => digest !== state.bindings.artifactSha256) ||
-    evidence?.archiveSha256 !== state.bindings.archiveSha256 ||
-    evidence?.archiveInventorySha256 !== state.bindings.archiveInventorySha256 ||
-    evidence?.complete !== true
-  ) {
-    issues.push("artifact continuity hashes are incomplete or contradictory");
-  }
-  return issues;
-}
-
 function validateRawPhase8Evidence(raw, evidence, state) {
   const issues = [];
   if (
@@ -574,6 +547,8 @@ export function verifyFinalCertificationEvidence({
     evidenceRoot,
     expectedCandidate: state.candidate,
     expectedHarnessSourceSha256: state.harness.sourceSha256,
+    repositoryRoot: root,
+    verifyCurrentSource: false,
   });
   const issues = [...stateValidation.issues];
   for (const stage of [
@@ -611,7 +586,6 @@ export function verifyFinalCertificationEvidence({
     evidenceRoot,
     "runtime-phase-timings",
   );
-  const continuity = boundEvidence(state, evidenceRoot, "continuity");
   const archiveInventory = boundEvidence(
     state,
     evidenceRoot,
@@ -625,7 +599,6 @@ export function verifyFinalCertificationEvidence({
       gateId: "ci.production-runtime-smoke",
     }),
   );
-  issues.push(...validateContinuityEvidence(continuity.value, state));
   issues.push(...productionArchiveInventoryIssues(archiveInventory.value));
   if (
     archiveInventory.value?.inventorySha256 !==
@@ -820,7 +793,6 @@ export function verifyFinalCertificationEvidence({
   for (const [binding, expected] of [
     ["phase8EvidenceSha256", phase8.sha256],
     ["runtimeSmokeEvidenceSha256", runtime.sha256],
-    ["continuityEvidenceSha256", continuity.sha256],
   ]) {
     if (state.bindings[binding] !== expected) {
       issues.push(`certification state ${binding} does not match retained evidence`);
@@ -855,7 +827,6 @@ export function verifyFinalCertificationEvidence({
       browserEvidenceSha256,
       browserReportSha256,
       browserStartSha256,
-      continuitySha256: continuity.sha256,
       harnessVersion: state.harness.version,
       harnessSourceSha256: state.harness.sourceSha256,
     },

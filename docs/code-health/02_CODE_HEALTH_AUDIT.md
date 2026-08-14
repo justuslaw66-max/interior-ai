@@ -1,5 +1,32 @@
 # Code health audit
 
+## Harness v1 source-validation and continuity defects — 2026-08-14
+
+Mandatory integrator review invalidated the prior Harness v1 source
+qualification with two release-blocking findings:
+`SOURCE_VALIDATION_STAGE_BYPASS_DEFECT` and
+`ARTIFACT_CONTINUITY_SELF_ASSERTION_DEFECT`. Source identity alone had been
+accepted as a passed source stage, and continuity had been derived from one
+already-stored artifact hash rather than the physical lifecycle roots.
+
+The bounded correction executes the contract-owned ordered 19-check source set
+and seals per-command streams, result evidence, exact source/harness/contract
+identity, completion, and an aggregate hash. It also captures independently
+sealed physical snapshots at all six lifecycle positions, separates canonical
+application-artifact equality from executable archive-closure equality,
+retains every required root, and rehashes those roots at final continuity.
+State and readiness reject identity-only, synthetic, partial, stale,
+cross-run, mutated, missing, or tampered evidence.
+
+The real runner, state validator, doctor, simulation, qualifier, 15-case source
+anti-bypass matrix, 23-case continuity tamper matrix, and original 26-case
+historical matrix share the same required owner. The change is certification
+infrastructure only; exact-head certification, integration, and the final
+CH-0015 closure audit remain pending.
+The corrected bounded qualifier returned **A —
+`QUALIFIED_FOR_FINAL_CANDIDATE_CERTIFICATION`**; that source-only result does
+not certify a build, benchmark, runtime, browser, archive, or candidate.
+
 ## Production Certification Harness v1 — 2026-08-14
 
 The preceding qualification was **B —

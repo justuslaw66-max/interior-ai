@@ -236,6 +236,10 @@ export function planProductionArchive({
     [`${manifestPath}.sha256`, "production-manifest-sidecar"],
     [journalPath, "semantic-journal-v1"],
     [artifactInventoryPath, "bound-artifact-inventory"],
+    [
+      "docs/qa/production-certification-contract.v1.json",
+      "certification-contract-matrix",
+    ],
   ]) {
     for (const file of walkFiles(root, normalizedRelative(relativePath, "archive root input"))) {
       addInput(inputs, file, reason);

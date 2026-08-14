@@ -1,5 +1,33 @@
 # P0/P1 remediation queue
 
+## Harness v1 source-validation and measured continuity — 2026-08-14
+
+- **Classification:** `SOURCE_VALIDATION_STAGE_BYPASS_DEFECT` and
+  `ARTIFACT_CONTINUITY_SELF_ASSERTION_DEFECT`; both are release-blocking source
+  contracts and invalidate the earlier Harness v1 qualification result.
+- **Source correction:** one machine-readable ordered 19-check set owns the
+  canonical commands. The real stage invokes them, stops on first failure,
+  retains sealed streams/results, verifies source stability, and cannot pass
+  with an identity descriptor or edited state.
+- **Continuity correction:** six lifecycle snapshots are independently measured
+  from retained physical roots. Canonical application-artifact equality and
+  complete executable archive-closure equality are separate, and final
+  continuity rehashes roots and archive bytes before readiness.
+- **Ownership/proof:** `ci.production-artifact-contract` owns 15 source
+  anti-bypass cases, 23 physical-continuity/tamper cases, the preserved 26
+  historical cases, doctor, deterministic simulation, and source qualification.
+  Direct manifest inventory is 27 gates / 380 sources. The corrected bounded
+  qualifier returned `A — QUALIFIED_FOR_FINAL_CANDIDATE_CERTIFICATION`; the
+  final independent read-only review returned `PASS` with no actionable finding.
+- **Scope/status:** no product/UI, Floor Plan, telemetry, NFT, timestamp,
+  schema/journal, Playwright product, Phase 8, dependency, database, workflow,
+  or deployment behavior changes. Real exact-head certification, integration,
+  and the final CH-0015 closure audit remain pending; no known CH-0015
+  product/UI implementation remains.
+- **Rollback:** revert the single focused correction commit and rerun the
+  production-artifact/truthfulness owners. This intentionally restores both
+  known certification blockers and changes no data or external system.
+
 ## Production Certification Harness v1 — 2026-08-14
 
 - **Prior classification:** `B — NOT_QUALIFIED_SOURCE_CONTRACT_DEFECT`; another

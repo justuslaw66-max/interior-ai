@@ -5,6 +5,44 @@ production-mode artifact evidence and required CI behavior. It does not describe
 or prove a Vercel deployment, stable staging, production, or external platform
 configuration.
 
+## Harness v1 source-validation and measured-continuity correction
+
+The mandatory post-implementation integrator review classified two
+release-blocking source defects:
+`SOURCE_VALIDATION_STAGE_BYPASS_DEFECT` and
+`ARTIFACT_CONTINUITY_SELF_ASSERTION_DEFECT`. The earlier Harness v1 source
+qualification was therefore incorrect: the real runner wrote only a source
+identity descriptor before marking `source-validation` passed, while the
+continuity record assigned one stored artifact hash to all six lifecycle
+positions instead of measuring their physical bytes.
+
+The correction makes the machine-readable certification contract the sole
+owner of the ordered source-check set. The real source stage now invokes every
+canonical command against the exact candidate, stops at the first required
+failure, retains stdout/stderr and result evidence outside the source tree, and
+seals `interior-ai.production-certification-source-validation.v1`. Identity-only,
+missing, extra, duplicate, reordered, substituted, failed, stale, incomplete,
+or tampered evidence cannot pass state validation.
+
+Continuity now seals independent
+`interior-ai.production-certification-artifact-snapshot.v1` measurements at
+immediate post-build, staged archive, compressed archive, extracted archive,
+post-Phase-8, and post-runtime/browser boundaries. Canonical `.next`/`public`
+artifact equality is distinct from full executable archive-closure equality.
+Staging, compressed, extraction, and live roots are retained through the final
+comparison, which re-reads the physical roots and archive bytes rather than
+trusting stored summaries. `integration-ready` requires both the real sealed
+source result and physically measured continuity.
+
+The correction changes only certification infrastructure. It does not change
+product/UI, Floor Plan Upload, telemetry bootstrap, NFT tracing, timestamp,
+schema-v3/journal-v1, Playwright product, Phase 8, dependency, database, or
+deployment behavior. The corrected bounded qualifier returned
+`QUALIFIED_FOR_FINAL_CANDIDATE_CERTIFICATION`; the final independent read-only
+review returned **PASS** with no remaining actionable finding. Exact-head
+certification, integration, and the final CH-0015 closure audit remain separate.
+No real candidate lifecycle is run by this correction.
+
 ## Production Certification Harness v1 finalization
 
 Harness v1 supersedes the earlier runtime-only final lifecycle described in the

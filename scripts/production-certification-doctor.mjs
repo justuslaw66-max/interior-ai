@@ -13,6 +13,8 @@ import {
   harnessSourceIdentity,
   isCandidateId,
   isSourceSha,
+  continuityContract,
+  sourceValidationCheckSet,
   sha256Bytes,
 } from "./production-certification-contract.mjs";
 import { deriveProductionVerifierClosure } from "./production-verifier-closure.mjs";
@@ -295,6 +297,17 @@ function validateContracts(repositoryRoot) {
     path.join(repositoryRoot, "scripts/run-phase8-project-benchmark.ts"),
     "utf8",
   );
+  const certificationRunner = readFileSync(
+    path.join(repositoryRoot, "scripts/production-certification-real.mjs"),
+    "utf8",
+  );
+  const sourceContinuityOwner = readFileSync(
+    path.join(
+      repositoryRoot,
+      "scripts/production-certification-source-continuity.mjs",
+    ),
+    "utf8",
+  );
   for (const marker of [
     "interior-ai.production-artifact-evidence.v3",
     "interior-ai.production-artifact-semantic-event-journal.v1",
@@ -324,10 +337,49 @@ function validateContracts(repositoryRoot) {
   ) {
     throw new Error("semantic timestamp ownership rejection is missing");
   }
+  const source = sourceValidationCheckSet(repositoryRoot);
+  const continuity = continuityContract(repositoryRoot);
+  if (
+    source.checks.length === 0 ||
+    source.checks.some(
+      (check) => !check.canonicalCommand || check.continueAfterFailure !== false,
+    ) ||
+    continuity.lifecyclePositions.length !== 6 ||
+    continuity.syntheticCopiedHashAllowed !== false ||
+    continuity.retainPhysicalRootsUntilPassed !== true ||
+    JSON.stringify(continuity.integrationReadyRequires) !==
+      JSON.stringify(["source-validation", "final-standalone", "continuity"]) ||
+    !certificationRunner.includes("sourceValidationStageEvidence") ||
+    !certificationRunner.includes("captureArtifactSnapshot") ||
+    !certificationRunner.includes("measureFinalContinuity") ||
+    !sourceContinuityOwner.includes("rehashPhysicalRoot: true") ||
+    /\.map\(\(name\) => \[name, state\.bindings\.artifactSha256\]\)/.test(
+      certificationRunner,
+    )
+  ) {
+    throw new Error(
+      "source-validation execution or measured continuity contract is incomplete",
+    );
+  }
   return {
     artifactSchema: "v3",
     journalSchema: "v1",
     verificationModes: ["verify-preflight", "verify-archive-preflight", "verify-standalone"],
+    sourceValidation: {
+      schema: "interior-ai.production-certification-source-validation.v1",
+      checkCount: source.checks.length,
+      checkSetSha256: source.sha256,
+      allCanonicalCommandsPresent: true,
+    },
+    continuity: {
+      schema: "interior-ai.production-certification-artifact-snapshot.v1",
+      lifecyclePositions: continuity.lifecyclePositions.map((entry) => entry.id),
+      captureCommandsDeclared: true,
+      comparisonScopes: Object.keys(continuity.comparisons),
+      retainedPhysicalRoots: true,
+      syntheticCopiedHashAllowed: false,
+      integrationReadyRequires: continuity.integrationReadyRequires,
+    },
   };
 }
 

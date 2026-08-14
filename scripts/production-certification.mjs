@@ -19,6 +19,7 @@ import {
   runFinalStandaloneStage,
   runPhase8Stage,
   runRuntimeSmokeStage,
+  runSourceValidationStage,
   validateAndAdvanceCertification,
 } from "./production-certification-real.mjs";
 
@@ -76,6 +77,10 @@ function qualificationCommand() {
     return "NOT_QUALIFIED_SOURCE_CONTRACT_DEFECT";
   }
   const checks = [
+    [
+      process.execPath,
+      ["scripts/production-certification-source-continuity.mjs", "contract-check"],
+    ],
     ["npm", ["run", "certification:simulate"]],
     [process.execPath, ["scripts/test-production-certification.mjs"]],
     [process.execPath, ["scripts/test-production-artifact-evidence.mjs"]],
@@ -87,6 +92,12 @@ function qualificationCommand() {
     ["npm", ["run", "test:runtime-smoke-readiness-diagnostics"]],
     ["npm", ["run", "check:floor-plan-architecture"]],
     ["npm", ["run", "check:cabinetry-architecture"]],
+    [process.execPath, ["scripts/check-design-page-architecture.mjs"]],
+    ["npm", ["run", "test:tracked-artifact-hygiene"]],
+    [
+      process.execPath,
+      ["scripts/production-certification-source-continuity.mjs", "source-syntax"],
+    ],
     ["npm", ["run", "typecheck"]],
     ["npm", ["run", "lint", "--", "--max-warnings=0"]],
     ["npm", ["run", "check:code-quality"]],
@@ -120,6 +131,9 @@ async function cli() {
   let result;
   if (command === "state:init") result = initializeRealCertification();
   else if (command === "doctor") result = await runDoctorStage();
+  else if (command === "source-validation") {
+    result = await runSourceValidationStage();
+  }
   else if (command === "state:validate") {
     result = await validateAndAdvanceCertification();
   } else if (command === "resume") result = await resumeCommand();
@@ -150,7 +164,7 @@ async function cli() {
     return;
   } else {
     throw new Error(
-      "usage: production-certification.mjs state:init|doctor|state:validate|resume|build|archive-preflight|archive|extracted-archive-preflight|phase8|runtime-smoke|browser-owners|final-standalone|continuity|simulate|qualify",
+      "usage: production-certification.mjs state:init|doctor|source-validation|state:validate|resume|build|archive-preflight|archive|extracted-archive-preflight|phase8|runtime-smoke|browser-owners|final-standalone|continuity|simulate|qualify",
     );
   }
   console.log(JSON.stringify(result));

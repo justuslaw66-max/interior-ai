@@ -6,6 +6,7 @@ import {
   mkdirSync,
   mkdtempSync,
   readFileSync,
+  renameSync,
   rmSync,
   symlinkSync,
   unlinkSync,
@@ -22,6 +23,7 @@ import {
   canonicalJsonBytes,
   harnessSourceIdentity,
   sha256Bytes,
+  sourceValidationCheckSet,
 } from "./production-certification-contract.mjs";
 import {
   assertFileBackedOwner,
@@ -44,7 +46,16 @@ import {
   assertCertificationChildPassed,
   browserEnvironment,
   certificationStageFailure,
+  parseCertificationChildJson,
 } from "./production-certification-real.mjs";
+import {
+  measureFinalContinuity,
+  rootEvidenceName,
+  snapshotEvidenceName,
+  validateArtifactSnapshotEvidence,
+  validateContinuityEvidence,
+  validateSourceValidationEvidence,
+} from "./production-certification-source-continuity.mjs";
 import { deriveProductionVerifierClosure } from "./production-verifier-closure.mjs";
 import CertificationPlaywrightStartReporter from "./certification-playwright-start-reporter.mjs";
 import {
@@ -400,6 +411,10 @@ function stateFixture() {
 
 {
   for (const [stage, classification] of [
+    ["build-snapshot", "BUILD_FAILURE"],
+    ["archive-preflight-snapshot", "ARCHIVE_FAILURE"],
+    ["archive-snapshot", "ARCHIVE_FAILURE"],
+    ["extracted-archive-snapshot", "ARCHIVE_FAILURE"],
     ["phase8", "PERFORMANCE_GATE_FAILURE"],
     ["runtime-smoke", "FINAL_EVIDENCE_FAILURE"],
     ["browser-owners", "FINAL_EVIDENCE_FAILURE"],
@@ -475,15 +490,110 @@ function stateFixture() {
   assert.match(artifactOwner, /testPolicy: "external-certification-required"/);
   assert.doesNotMatch(artifactOwner, /requireTests:\s*false/);
   assert.match(artifactOwner, /verifyFinalCertificationEvidence/);
-  for (const marker of ["phase8", "runtime-smoke", "browser:", "continuity"]) {
+  for (const marker of ["phase8", "runtime-smoke", "browser:"]) {
     assert.ok(finalOwner.includes(marker), `final verifier must bind ${marker}`);
   }
+  const continuityOwner = readFileSync(
+    "scripts/production-certification-source-continuity.mjs",
+    "utf8",
+  );
+  assert.match(continuityOwner, /rehashPhysicalRoot: true/);
+  assert.match(continuityOwner, /measureFinalContinuity/);
+  const realRunner = readFileSync("scripts/production-certification-real.mjs", "utf8");
+  const stateOwner = readFileSync("scripts/production-certification-state.mjs", "utf8");
+  const simulationOwner = readFileSync(
+    "scripts/production-certification-simulation.mjs",
+    "utf8",
+  );
+  assert.match(realRunner, /sourceValidationStageEvidence/);
+  assert.match(realRunner, /captureArtifactSnapshot/);
+  assert.match(realRunner, /measureFinalContinuity/);
+  for (const marker of [
+    "consumptionProbe: () => buildConsumed",
+    "consumptionProbe: () => archivePreflightConsumed",
+    "consumptionProbe: () => archiveConsumed",
+    "consumptionProbe: () => extractionConsumed",
+  ]) {
+    assert.ok(
+      realRunner.includes(marker),
+      `post-boundary snapshot adaptation must retain ${marker}`,
+    );
+  }
+  assert.doesNotMatch(realRunner, /production-certification-source-identity\.v1/);
+  assert.doesNotMatch(
+    realRunner,
+    /\.map\(\(name\) => \[name, state\.bindings\.artifactSha256\]\)/,
+  );
+  assert.match(stateOwner, /readAndValidateSourceEvidence/);
+  assert.match(stateOwner, /readAndValidateContinuityEvidence/);
+  assert.match(
+    realRunner,
+    /sourceValidationSha256:[\s\S]*finalStandaloneSha256:[\s\S]*continuitySha256:/,
+  );
+  assert.match(simulationOwner, /acceptedForRealCandidate: false/);
+  assert.doesNotMatch(stateOwner, /forcePass|manualPass|overridePass/);
   assert.match(finalOwner, /deterministic simulation evidence cannot certify a real candidate/);
   assert.match(archiveOwner, /verify-archive-preflight/);
   assert.match(archiveOwner, /deterministicArchive/);
   assert.doesNotMatch(archiveOwner, /\btee\b|data:text\/javascript|\beval\s*\(/);
   assert.match(phase8Owner, /PHASE8_EXTERNAL_EVIDENCE_ROOT/);
   assert.match(phase8Owner, /CERTIFICATION_EVIDENCE_ROOT/);
+
+  let malformedArchiveOutputConsumed = false;
+  assert.throws(
+    () =>
+      parseCertificationChildJson("not-json\n", "archive fixture", {
+        consumed: true,
+        onConsumed: () => {
+          malformedArchiveOutputConsumed = true;
+        },
+      }),
+    /did not emit sealed JSON/,
+    "a successful consumed child with malformed output must fail adaptation",
+  );
+  assert.equal(
+    malformedArchiveOutputConsumed,
+    true,
+    "consumption must be retained before successful child output is parsed",
+  );
+
+  const contractFixtureRoot = mkdtempSync(
+    path.join(tmpdir(), "certification-source-command-contract-"),
+  );
+  const contractFixturePath = path.join(
+    contractFixtureRoot,
+    "docs/qa/production-certification-contract.v1.json",
+  );
+  mkdirSync(path.dirname(contractFixturePath), { recursive: true });
+  const contractMatrix = JSON.parse(
+    readFileSync("docs/qa/production-certification-contract.v1.json", "utf8"),
+  );
+  const weakerInvocation = structuredClone(contractMatrix);
+  weakerInvocation.sourceValidation.checks[0].executable = "node";
+  weakerInvocation.sourceValidation.checks[0].args = [
+    "scripts/check-design-page-architecture.mjs",
+  ];
+  writeFileSync(contractFixturePath, JSON.stringify(weakerInvocation));
+  assert.throws(
+    () => sourceValidationCheckSet(contractFixtureRoot),
+    /check contract is malformed/,
+    "a strong displayed command cannot own weaker executable arguments",
+  );
+  const wrapperInvocation = structuredClone(contractMatrix);
+  wrapperInvocation.sourceValidation.checks[0].canonicalCommand =
+    "sh -c producer | tee output.log";
+  wrapperInvocation.sourceValidation.checks[0].executable = "sh";
+  wrapperInvocation.sourceValidation.checks[0].args = [
+    "-c",
+    "producer | tee output.log",
+  ];
+  writeFileSync(contractFixturePath, JSON.stringify(wrapperInvocation));
+  assert.throws(
+    () => sourceValidationCheckSet(contractFixtureRoot),
+    /check contract is malformed/,
+    "shell and tee wrappers cannot become the canonical source owner",
+  );
+  rmSync(contractFixtureRoot, { recursive: true, force: true });
 }
 
 {
@@ -573,6 +683,10 @@ function stateFixture() {
     Array.from({ length: 26 }, (_, index) => index + 1),
   );
   assert.equal(new Set(regressions.cases.map((entry) => entry.defect)).size, 26);
+  assert.equal(regressions.sourceValidationCases.length, 15);
+  assert.equal(new Set(regressions.sourceValidationCases).size, 15);
+  assert.equal(regressions.continuityCases.length, 23);
+  assert.equal(new Set(regressions.continuityCases).size, 23);
 }
 
 {
@@ -680,6 +794,618 @@ function stateFixture() {
     Object.keys(completeFinal.identity.browserReportSha256),
     REQUIRED_BROWSER_OWNERS.map((owner) => owner.id),
   );
+
+  const sourceRoot = path.join(base, "source");
+  const evidenceRoot = path.join(base, "evidence");
+  const completedState = readCertificationState(
+    path.join(evidenceRoot, "certification-state.json"),
+  );
+  const sourceDescriptor = completedState.evidenceFiles["source-validation"];
+  const sourceEvidence = JSON.parse(
+    readFileSync(path.join(evidenceRoot, sourceDescriptor.path), "utf8"),
+  );
+  const sourceCheckSet = sourceValidationCheckSet(sourceRoot);
+  const validateSourceMutation = (mutate) => {
+    const value = structuredClone(sourceEvidence);
+    mutate(value);
+    return validateSourceValidationEvidence({
+      evidence: value,
+      evidenceRoot,
+      state: completedState,
+      repositoryRoot: sourceRoot,
+    }).issues.join("\n");
+  };
+  assert.equal(
+    validateSourceValidationEvidence({
+      evidence: sourceEvidence,
+      evidenceRoot,
+      state: completedState,
+      repositoryRoot: sourceRoot,
+    }).valid,
+    true,
+    "all canonical source checks must execute and validate",
+  );
+  assert.equal(sourceEvidence.checks.length, sourceCheckSet.checks.length);
+  assert.deepEqual(
+    sourceEvidence.checks.map((check) => check.id),
+    sourceCheckSet.checks.map((check) => check.id),
+  );
+  assert.match(
+    validateSourceValidationEvidence({
+      evidence: {
+        schema: "interior-ai.production-certification-source-identity.v1",
+        candidate: completedState.candidate,
+        complete: true,
+      },
+      evidenceRoot,
+      state: completedState,
+      repositoryRoot: sourceRoot,
+    }).issues.join("\n"),
+    /schema is unsupported|check closure|completion marker/,
+    "an identity-only source descriptor must be rejected",
+  );
+  assert.match(
+    validateSourceMutation((value) => value.checks.splice(3, 1)),
+    /check closure is missing or out of order/,
+  );
+  assert.match(
+    validateSourceMutation((value) => value.checks.splice(3, 0, value.checks[2])),
+    /duplicate check/,
+  );
+  assert.match(
+    validateSourceMutation((value) => {
+      value.checks[2].id = "unknown-extra-check";
+    }),
+    /unknown check/,
+  );
+  assert.match(
+    validateSourceMutation((value) => {
+      value.checks[2].canonicalCommand = "node weaker-substitute.mjs";
+    }),
+    /command or order mismatch/,
+  );
+  assert.match(
+    validateSourceMutation((value) => {
+      value.checks[2].process.exitCode = 17;
+      value.checks[2].passed = false;
+    }),
+    /did not exit zero/,
+    "a prior nonzero result must not be masked by later successes",
+  );
+  assert.match(
+    validateSourceMutation((value) => {
+      value.checks[2].invokedCommand = "sh -c 'producer | tee output.log'";
+    }),
+    /invoked command mismatch/,
+    "a tee/wrapper substitution must not satisfy the canonical command",
+  );
+  assert.match(
+    validateSourceMutation((value) => {
+      delete value.checks[2].stdout.sha256;
+    }),
+    /stdout hash is missing/,
+  );
+  assert.match(
+    validateSourceMutation((value) => {
+      value.completionMarker = null;
+    }),
+    /completion marker is missing/,
+  );
+  assert.match(
+    validateSourceMutation((value) => {
+      value.candidate.commitSha = "0".repeat(40);
+      value.candidate.treeSha = "1".repeat(40);
+    }),
+    /another candidate or tree/,
+  );
+  assert.match(
+    validateSourceMutation((value) => {
+      value.harness.sourceSha256 = "0".repeat(64);
+      value.contractMatrixSha256 = "1".repeat(64);
+    }),
+    /another harness or contract matrix/,
+  );
+  {
+    const clone = cloneSimulation(base);
+    const cloneEvidenceRoot = path.join(clone, "evidence");
+    const cloneState = readCertificationState(
+      path.join(cloneEvidenceRoot, "certification-state.json"),
+    );
+    const stream = cloneState.evidenceFiles["source-validation"];
+    const aggregate = JSON.parse(
+      readFileSync(path.join(cloneEvidenceRoot, stream.path), "utf8"),
+    );
+    writeFileSync(
+      path.join(cloneEvidenceRoot, aggregate.checks[0].stdout.path),
+      "tampered source-check output\n",
+    );
+    const child = finalSimulationChild(clone);
+    assert.notEqual(child.status, 0);
+    assert.match(`${child.stdout}\n${child.stderr}`, /source-validation stdout.*hash mismatch/);
+    rmSync(path.dirname(clone), { recursive: true, force: true });
+  }
+  {
+    const manuallyPassed = structuredClone(completedState);
+    delete manuallyPassed.evidenceFiles["source-validation"];
+    const manualStatePath = path.join(evidenceRoot, "manual-pass-state.json");
+    writeCertificationState(manualStatePath, manuallyPassed);
+    const resealed = readCertificationState(manualStatePath);
+    const validation = validateCertificationState({
+      state: resealed,
+      evidenceRoot,
+      expectedCandidate: resealed.candidate,
+      expectedHarnessSourceSha256: resealed.harness.sourceSha256,
+      repositoryRoot: sourceRoot,
+    });
+    assert.equal(validation.valid, false);
+    assert.match(validation.issues.join("\n"), /missing evidence source-validation/);
+    rmSync(manualStatePath);
+  }
+
+  const measureContinuity = () =>
+    measureFinalContinuity({
+      repositoryRoot: sourceRoot,
+      evidenceRoot,
+      state: completedState,
+      capturedAt: "2026-08-14T00:40:00.000Z",
+      writeEvidence: false,
+    });
+  const matchingContinuity = measureContinuity();
+  assert.deepEqual(matchingContinuity.issues, []);
+  const continuityValue = JSON.parse(
+    readFileSync(
+      path.join(evidenceRoot, completedState.evidenceFiles.continuity.path),
+      "utf8",
+    ),
+  );
+  assert.equal(new Set(Object.values(continuityValue.inputSnapshots)).size, 6);
+  const copiedContinuity = structuredClone(continuityValue);
+  const copiedSnapshotHash = Object.values(copiedContinuity.inputSnapshots)[0];
+  for (const position of Object.keys(copiedContinuity.inputSnapshots)) {
+    copiedContinuity.inputSnapshots[position] = copiedSnapshotHash;
+  }
+  assert.match(
+    validateContinuityEvidence(
+      copiedContinuity,
+      completedState,
+      sourceRoot,
+    ).issues.join("\n"),
+    /copied, duplicated/,
+  );
+  const unboundContinuity = structuredClone(continuityValue);
+  unboundContinuity.inputSnapshots.immediateBuild = "f".repeat(64);
+  assert.match(
+    validateContinuityEvidence(
+      unboundContinuity,
+      completedState,
+      sourceRoot,
+    ).issues.join("\n"),
+    /unbound/,
+    "continuity inputs must bind to the state-owned snapshot descriptors",
+  );
+  const syntheticComparison = structuredClone(continuityValue);
+  syntheticComparison.comparisons[0].positions = ["immediateBuild"];
+  assert.match(
+    validateContinuityEvidence(
+      syntheticComparison,
+      completedState,
+      sourceRoot,
+    ).issues.join("\n"),
+    /partial, synthetic, or failed/,
+    "continuity comparison claims must retain the canonical position sets",
+  );
+  const captureEvents = [];
+  const snapshotPaths = [];
+  for (const position of [
+    "immediateBuild",
+    "stagedArchive",
+    "compressedArchive",
+    "extractedArchive",
+    "postPhase8Live",
+    "postRuntimeBrowserLive",
+  ]) {
+    const snapshotDescriptor = completedState.evidenceFiles[
+      snapshotEvidenceName(position)
+    ];
+    const rootDescriptor = completedState.evidenceFiles[rootEvidenceName(position)];
+    const snapshot = JSON.parse(
+      readFileSync(path.join(evidenceRoot, snapshotDescriptor.path), "utf8"),
+    );
+    const rootSidecar = JSON.parse(
+      readFileSync(path.join(evidenceRoot, rootDescriptor.path), "utf8"),
+    );
+    assert.equal(
+      validateArtifactSnapshotEvidence({
+        snapshot,
+        rootSidecar,
+        state: completedState,
+        repositoryRoot: sourceRoot,
+        evidenceRoot,
+        position,
+        rehashPhysicalRoot: true,
+      }).valid,
+      true,
+    );
+    captureEvents.push(snapshot.captureEventId);
+    snapshotPaths.push(snapshotDescriptor.path);
+  }
+  assert.equal(new Set(captureEvents).size, 6);
+  assert.equal(new Set(snapshotPaths).size, 6);
+  {
+    const position = "immediateBuild";
+    const snapshotDescriptor =
+      completedState.evidenceFiles[snapshotEvidenceName(position)];
+    const rootDescriptor = completedState.evidenceFiles[rootEvidenceName(position)];
+    const snapshot = JSON.parse(
+      readFileSync(path.join(evidenceRoot, snapshotDescriptor.path), "utf8"),
+    );
+    const rootSidecar = JSON.parse(
+      readFileSync(path.join(evidenceRoot, rootDescriptor.path), "utf8"),
+    );
+    snapshot.identity.nextBuildId = "synthetic-build-id";
+    assert.match(
+      validateArtifactSnapshotEvidence({
+        snapshot,
+        rootSidecar,
+        state: completedState,
+        repositoryRoot: sourceRoot,
+        evidenceRoot,
+        position,
+      }).issues.join("\n"),
+      /identity contradicts state/,
+      "nested snapshot identity must bind to certification state",
+    );
+  }
+
+  const statePath = path.join(evidenceRoot, "certification-state.json");
+  const retryEvidencePath = path.join(
+    evidenceRoot,
+    "continuity/attempt-003.json",
+  );
+  const continuityCliEnvironment = (startedAt, completedAt) => ({
+    ...process.env,
+    APP_ENV: "staging",
+    NEXT_PUBLIC_APP_ENV: "staging",
+    NODE_ENV: "production",
+    CATALOG_STRICT_VALIDATION: "true",
+    PRODUCTION_EVIDENCE_CANDIDATE_ID: completedState.candidate.id,
+    PRODUCTION_EVIDENCE_EXPECTED_COMMIT_SHA:
+      completedState.candidate.commitSha,
+    CERTIFICATION_EXECUTION_CLASS: "deterministic-simulation",
+    CERTIFICATION_QUALIFICATION_MODE: "1",
+    CERTIFICATION_ALLOW_SIMULATION: "1",
+    CERTIFICATION_EXPECTED_COMMIT_SHA: completedState.candidate.commitSha,
+    CERTIFICATION_EXPECTED_TREE_SHA: completedState.candidate.treeSha,
+    CERTIFICATION_EXPECTED_PARENT_SHA: completedState.candidate.parentSha,
+    PRODUCTION_CERTIFICATION_STATE: statePath,
+    CERTIFICATION_EVIDENCE_ROOT: evidenceRoot,
+    CERTIFICATION_STAGE_STARTED_AT: startedAt,
+    CERTIFICATION_STAGE_COMPLETED_AT: completedAt,
+    CERTIFICATION_INVALIDATED_AT: completedAt,
+  });
+  const runRealContinuityTamper = ({
+    name,
+    mutate,
+    expectedEvidenceMismatch = null,
+  }) => {
+    if (existsSync(retryEvidencePath)) unlinkSync(retryEvidencePath);
+    const invalidatedAt = new Date(
+      Date.parse(completedState.updatedAt) + 1_000,
+    ).toISOString();
+    const startedAt = new Date(Date.parse(invalidatedAt) + 100).toISOString();
+    const completedAt = new Date(Date.parse(invalidatedAt) + 200).toISOString();
+    writeCertificationState(
+      statePath,
+      invalidateCertificationState(completedState, {
+        stage: "continuity",
+        reason: `real CLI continuity tamper fixture: ${name}`,
+        invalidatedAt,
+      }),
+    );
+    const restore = mutate();
+    let child;
+    try {
+      child = spawnSync(
+        process.execPath,
+        ["scripts/production-certification.mjs", "continuity"],
+        {
+          cwd: sourceRoot,
+          env: continuityCliEnvironment(startedAt, completedAt),
+          encoding: "utf8",
+        },
+      );
+    } finally {
+      restore();
+    }
+    assert.notEqual(child.status, 0, `${name} must fail the real continuity CLI`);
+    const failedState = readCertificationState(statePath);
+    assert.notEqual(
+      failedState.stages["integration-ready"].status,
+      "passed",
+      `${name} must prevent integration readiness`,
+    );
+    if (failedState.stages.continuity.status === "failed") {
+      assert.equal(
+        failedState.evidenceFiles.continuity.path,
+        "continuity/attempt-003.json",
+      );
+      const failedEvidence = JSON.parse(
+        readFileSync(retryEvidencePath, "utf8"),
+      );
+      assert.equal(failedEvidence.passed, false);
+      assert.equal(failedEvidence.completionMarker.result, "failed");
+      assert.ok(failedEvidence.mismatches.length > 0);
+      if (expectedEvidenceMismatch) {
+        assert.ok(
+          failedEvidence.mismatches.some(expectedEvidenceMismatch),
+          `${name} must retain its exact physical mismatch`,
+        );
+      }
+      assert.equal(
+        validateCertificationState({
+          state: failedState,
+          evidenceRoot,
+          expectedCandidate: failedState.candidate,
+          expectedHarnessSourceSha256: failedState.harness.sourceSha256,
+          repositoryRoot: sourceRoot,
+        }).valid,
+        true,
+        `${name} failed evidence must remain a truthful sealed state`,
+      );
+    } else {
+      assert.ok(
+        CERTIFICATION_STAGE_ORDER.some(
+          (stage) => failedState.stages[stage].status === "invalidated",
+        ),
+        `${name} must invalidate state before continuity when detected earlier`,
+      );
+    }
+    writeCertificationState(statePath, completedState);
+    if (existsSync(retryEvidencePath)) unlinkSync(retryEvidencePath);
+  };
+  const mutateBytes = (filePath, replacement) => {
+    const original = readFileSync(filePath);
+    writeFileSync(filePath, replacement);
+    return () => writeFileSync(filePath, original);
+  };
+  const lifecycleSnapshotTamper = (position) => {
+    const descriptor = completedState.evidenceFiles[snapshotEvidenceName(position)];
+    return mutateBytes(
+      path.join(evidenceRoot, descriptor.path),
+      Buffer.concat([
+        readFileSync(path.join(evidenceRoot, descriptor.path)),
+        Buffer.from(" "),
+      ]),
+    );
+  };
+  for (const scenario of [
+    {
+      name: "immediate-post-build/pre-Phase-8 capture",
+      mutate: () => lifecycleSnapshotTamper("immediateBuild"),
+    },
+    {
+      name: "post-Phase-8 capture",
+      mutate: () => lifecycleSnapshotTamper("postPhase8Live"),
+    },
+    {
+      name: "post-runtime/browser live bytes",
+      mutate: () =>
+        mutateBytes(
+          path.join(sourceRoot, ".next/static/chunk.js"),
+          "post-browser live mutation\n",
+        ),
+    },
+    {
+      name: "staged archive file",
+      mutate: () =>
+        mutateBytes(
+          path.join(evidenceRoot, "archive/stage/package.json"),
+          "{\"stagedMutation\":true}\n",
+        ),
+      expectedEvidenceMismatch: (mismatch) => mismatch.path === "package.json",
+    },
+    {
+      name: "compressed archive bytes",
+      mutate: () => {
+        const archiveFile = path.join(
+          evidenceRoot,
+          "archive/candidate.tar.gz",
+        );
+        const original = readFileSync(archiveFile);
+        const changed = Buffer.from(original);
+        changed[0] ^= 0xff;
+        writeFileSync(archiveFile, changed);
+        return () => writeFileSync(archiveFile, original);
+      },
+      expectedEvidenceMismatch: (mismatch) =>
+        mismatch.scope === "compressedArchiveBytes" &&
+        mismatch.path === "archive/candidate.tar.gz",
+    },
+    {
+      name: "extracted archive file",
+      mutate: () =>
+        mutateBytes(
+          path.join(evidenceRoot, "archive/extracted/public/asset.txt"),
+          "extracted mutation\n",
+        ),
+    },
+    {
+      name: "missing staged physical root",
+      mutate: () => {
+        const root = path.join(evidenceRoot, "archive/stage");
+        const saved = path.join(evidenceRoot, "archive/stage.cli-saved");
+        renameSync(root, saved);
+        return () => renameSync(saved, root);
+      },
+      expectedEvidenceMismatch: (mismatch) =>
+        mismatch.lifecyclePosition === "stagedArchive" &&
+        mismatch.kind === "unavailable-root",
+    },
+  ]) {
+    runRealContinuityTamper(scenario);
+  }
+  writeCertificationState(statePath, completedState);
+
+  const mutateFileAndMeasure = (filePath, bytes, expected) => {
+    const original = readFileSync(filePath);
+    try {
+      writeFileSync(filePath, bytes);
+      const measured = measureContinuity();
+      assert.notEqual(measured.issues.length, 0);
+      assert.match(measured.issues.join("\n"), expected);
+    } finally {
+      writeFileSync(filePath, original);
+    }
+  };
+  const liveChunk = path.join(sourceRoot, ".next/static/chunk.js");
+  mutateFileAndMeasure(
+    liveChunk,
+    "changed before or during the live lifecycle\n",
+    /physical artifact identity contradicts|no longer matches snapshot/,
+  );
+  const stageRoot = path.join(evidenceRoot, "archive/stage");
+  mutateFileAndMeasure(
+    path.join(stageRoot, "package.json"),
+    "{\"changed\":true}\n",
+    /stagedArchive|no longer matches snapshot/,
+  );
+  const archivePath = path.join(evidenceRoot, "archive/candidate.tar.gz");
+  {
+    const original = readFileSync(archivePath);
+    const changed = Buffer.from(original);
+    changed[0] ^= 0xff;
+    try {
+      writeFileSync(archivePath, changed);
+      assert.match(
+        measureContinuity().issues.join("\n"),
+        /compressedArchive|compressed archive|incorrect header check/,
+      );
+    } finally {
+      writeFileSync(archivePath, original);
+    }
+  }
+  const extractedRoot = path.join(evidenceRoot, "archive/extracted");
+  mutateFileAndMeasure(
+    path.join(extractedRoot, "public/asset.txt"),
+    "changed extracted file\n",
+    /extractedArchive|physical artifact identity contradicts|no longer matches snapshot/,
+  );
+  {
+    const extraPath = path.join(extractedRoot, "archive-only-extra.txt");
+    try {
+      writeFileSync(extraPath, "extra extracted closure file\n");
+      assert.match(
+        measureContinuity().issues.join("\n"),
+        /extractedArchive|no longer matches snapshot/,
+      );
+    } finally {
+      rmSync(extraPath);
+    }
+  }
+  {
+    const missingPath = path.join(extractedRoot, "public/asset.txt");
+    const savedPath = path.join(evidenceRoot, "missing-extracted-asset.tmp");
+    renameSync(missingPath, savedPath);
+    try {
+      assert.match(
+        measureContinuity().issues.join("\n"),
+        /extractedArchive|physical artifact identity contradicts|no longer matches snapshot/,
+      );
+    } finally {
+      renameSync(savedPath, missingPath);
+    }
+  }
+  for (const [relativePath, expected] of [
+    [".next/BUILD_ID", /Build|physical artifact identity contradicts/],
+    [
+      ".local/production-artifact-evidence/manifest.json",
+      /manifest|physical artifact identity/,
+    ],
+    [
+      ".local/production-artifact-evidence/semantic-event-journal.json",
+      /journal|physical artifact identity/,
+    ],
+    [
+      ".next/server/app.js.nft.json",
+      /NFT|physical artifact identity|no longer matches snapshot/,
+    ],
+    [".next/required-server-files.json", /identity|no longer matches snapshot/],
+    [".next/build-manifest.json", /identity|no longer matches snapshot/],
+    [".next/routes-manifest.json", /identity|no longer matches snapshot/],
+    [".next/prerender-manifest.json", /identity|no longer matches snapshot/],
+  ]) {
+    mutateFileAndMeasure(
+      path.join(sourceRoot, relativePath),
+      `tampered ${relativePath}\n`,
+      expected,
+    );
+  }
+  mutateFileAndMeasure(
+    path.join(stageRoot, ".certification/verifier-source-closure.json"),
+    "{\"closureSha256\":\"bad\"}\n",
+    /verifier|stagedArchive|no longer matches snapshot/,
+  );
+  {
+    const extraPath = path.join(stageRoot, "archive-closure-only-extra.txt");
+    try {
+      writeFileSync(extraPath, "archive closure differs while app artifact matches\n");
+      assert.match(
+        measureContinuity().issues.join("\n"),
+        /stagedArchive|no longer matches snapshot/,
+      );
+    } finally {
+      rmSync(extraPath);
+    }
+  }
+  {
+    const extractedSaved = path.join(evidenceRoot, "archive/extracted.saved");
+    renameSync(extractedRoot, extractedSaved);
+    try {
+      assert.match(measureContinuity().issues.join("\n"), /missing|unavailable/);
+    } finally {
+      renameSync(extractedSaved, extractedRoot);
+    }
+  }
+  {
+    const extractedSaved = path.join(evidenceRoot, "archive/extracted.saved-alias");
+    renameSync(extractedRoot, extractedSaved);
+    symlinkSync(stageRoot, extractedRoot, "dir");
+    try {
+      assert.match(
+        measureContinuity().issues.join("\n"),
+        /alias|symlink|replaced after capture/,
+      );
+    } finally {
+      unlinkSync(extractedRoot);
+      renameSync(extractedSaved, extractedRoot);
+    }
+  }
+  {
+    const stageSaved = path.join(evidenceRoot, "archive/stage.saved-fallback");
+    renameSync(stageRoot, stageSaved);
+    symlinkSync(sourceRoot, stageRoot, "dir");
+    try {
+      assert.match(
+        measureContinuity().issues.join("\n"),
+        /source-worktree|canonical-checkout fallback/,
+      );
+    } finally {
+      unlinkSync(stageRoot);
+      renameSync(stageSaved, stageRoot);
+    }
+  }
+  {
+    const snapshotDescriptor =
+      completedState.evidenceFiles[snapshotEvidenceName("stagedArchive")];
+    const snapshotPath = path.join(evidenceRoot, snapshotDescriptor.path);
+    const original = readFileSync(snapshotPath);
+    try {
+      writeFileSync(snapshotPath, Buffer.concat([original, Buffer.from(" ")]));
+      assert.match(measureContinuity().issues.join("\n"), /snapshot.*hash mismatch/);
+    } finally {
+      writeFileSync(snapshotPath, original);
+    }
+  }
 
   {
     const child = finalSimulationChild(base, {
@@ -800,13 +1526,16 @@ function stateFixture() {
       clone,
       "continuity",
       (evidence) => {
-        evidence.artifactSha256.extractedArchive = "0".repeat(64);
+        evidence.inputSnapshots.extractedArchive = "0".repeat(64);
       },
       "continuityEvidenceSha256",
     );
     const child = finalSimulationChild(clone);
     assert.notEqual(child.status, 0);
-    assert.match(`${child.stdout}\n${child.stderr}`, /continuity hashes are incomplete or contradictory/);
+    assert.match(
+      `${child.stdout}\n${child.stderr}`,
+      /continuity input snapshots|continuity final seal/,
+    );
     rmSync(path.dirname(clone), { recursive: true, force: true });
     coveredRegressionIds.add(25);
   }
@@ -990,6 +1719,16 @@ function stateFixture() {
       invalidated.stages[target === "package.json" ? "source-validation" : "build"].status,
       "invalidated",
     );
+    if (target === "package.json") {
+      const sourceIndex = CERTIFICATION_STAGE_ORDER.indexOf("source-validation");
+      for (const stage of CERTIFICATION_STAGE_ORDER.slice(sourceIndex)) {
+        assert.equal(
+          invalidated.stages[stage].status,
+          "invalidated",
+          `source identity change must invalidate ${stage}`,
+        );
+      }
+    }
     rmSync(path.dirname(clone), { recursive: true, force: true });
   }
   {

@@ -15,7 +15,6 @@ import {
   CERTIFICATION_STATE_ENV,
   PHASE8_SOURCE_BINDING_PATHS,
   PRODUCTION_CERTIFICATION_BROWSER_EVIDENCE_SCHEMA,
-  PRODUCTION_CERTIFICATION_CONTINUITY_SCHEMA,
   PRODUCTION_CERTIFICATION_PHASE8_EVIDENCE_SCHEMA,
   PRODUCTION_CERTIFICATION_RUNTIME_EVIDENCE_SCHEMA,
   REQUIRED_BROWSER_OWNERS,
@@ -48,6 +47,14 @@ import {
   validateCertificationState,
   writeCertificationState,
 } from "./production-certification-state.mjs";
+import {
+  captureArtifactSnapshot,
+  measureFinalContinuity,
+  rootEvidenceName,
+  snapshotEvidenceName,
+  sourceValidationStageEvidence,
+  validateSourceValidationEvidence,
+} from "./production-certification-source-continuity.mjs";
 
 const DEFAULT_MANIFEST = ".local/production-artifact-evidence/manifest.json";
 const DEFAULT_JOURNAL =
@@ -60,7 +67,7 @@ class StageFailure extends Error {
     message,
     classification,
     consumed,
-    { exitCode = 1, signal = null, result = null } = {},
+    { exitCode = 1, signal = null, result = null, evidenceFiles = {} } = {},
   ) {
     super(message);
     this.classification = classification;
@@ -68,6 +75,7 @@ class StageFailure extends Error {
     this.exitCode = exitCode;
     this.signal = signal;
     this.certificationResult = result;
+    this.evidenceFiles = evidenceFiles;
   }
 }
 
@@ -269,6 +277,7 @@ async function validateLiveContext(context, { includeArtifact = true } = {}) {
     evidenceRoot: context.evidenceRoot,
     expectedCandidate: candidate,
     expectedHarnessSourceSha256: harness.sha256,
+    repositoryRoot: context.repositoryRoot,
   });
   const issues = [...stateValidation.issues];
   if (includeArtifact && context.state.stages.build.status === "passed") {
@@ -367,6 +376,12 @@ async function validateLiveContext(context, { includeArtifact = true } = {}) {
         readiness.tracking.treeSha !== trackingTreeSha ||
         localCommitSha !== trackingCommitSha ||
         localTreeSha !== trackingTreeSha ||
+        readiness.sourceValidationSha256 !==
+          context.state.evidenceFiles["source-validation"]?.sha256 ||
+        readiness.finalStandaloneSha256 !==
+          context.state.evidenceFiles["final-standalone"]?.sha256 ||
+        readiness.continuitySha256 !==
+          context.state.evidenceFiles.continuity?.sha256 ||
         readiness.fastForwardReady !== true ||
         readiness.complete !== true ||
         ancestry.status !== 0 ||
@@ -435,6 +450,7 @@ export function certificationStageFailure(
       exitCode: error.exitCode,
       signal: error.signal,
       result: error.certificationResult,
+      evidenceFiles: error.evidenceFiles,
     });
   }
   return new StageFailure(
@@ -506,6 +522,7 @@ async function managedStage(
       signal: failure.signal,
       failureClassification: failure.classification,
       consumedSubstantiveGate: failure.consumed,
+      evidenceFiles: failure.evidenceFiles,
     });
     writeCertificationState(context.statePath, state);
     throw failure;
@@ -597,22 +614,10 @@ export async function validateAndAdvanceCertification({
   environment = process.env,
 } = {}) {
   const context = stateContext(repositoryRoot, environment);
-  const validation = await requireLiveContext(context, { includeArtifact: true });
+  await requireLiveContext(context, { includeArtifact: true });
   const sourceStage = context.state.stages["source-validation"];
   if (sourceStage.status !== "passed") {
-    return managedStage(context, "source-validation", async () => {
-      const descriptor = writeEvidence(context.evidenceRoot, "source/identity.json", {
-        schema: "interior-ai.production-certification-source-identity.v1",
-        ...validation.candidate,
-        harnessSourceSha256: validation.harness.sha256,
-        complete: true,
-      });
-      return {
-        outputHashes: { source: descriptor.sha256 },
-        evidenceFiles: { source: descriptor },
-        result: { valid: true, advancedStage: "source-validation" },
-      };
-    });
+    return { valid: true, advancedStage: null };
   }
   const state = readCertificationState(context.statePath);
   if (
@@ -688,6 +693,10 @@ export async function validateAndAdvanceCertification({
           commitSha: trackingCommitSha,
           treeSha: trackingTreeSha,
         },
+        sourceValidationSha256:
+          state.evidenceFiles["source-validation"].sha256,
+        finalStandaloneSha256: state.evidenceFiles["final-standalone"].sha256,
+        continuitySha256: state.evidenceFiles.continuity.sha256,
         fastForwardReady: true,
         complete: true,
       };
@@ -710,12 +719,90 @@ export async function validateAndAdvanceCertification({
   return { valid: true, advancedStage: null };
 }
 
+export async function runSourceValidationStage({
+  repositoryRoot = process.cwd(),
+  environment = process.env,
+} = {}) {
+  const context = stateContext(repositoryRoot, environment);
+  let sourceConsumed = false;
+  return managedStage(
+    context,
+    "source-validation",
+    async (state) => {
+      const result = sourceValidationStageEvidence({
+        repositoryRoot: context.repositoryRoot,
+        evidenceRoot: context.evidenceRoot,
+        state,
+        environment: context.environment,
+        onCheckCompleted: (check) => {
+          sourceConsumed ||= check.substantive;
+        },
+      });
+      if (!result.passed) {
+        const failed = result.evidence.checks.at(-1);
+        throw new StageFailure(
+          `source-validation required check failed: ${result.failedCheckId}`,
+          "SOURCE_CONTRACT_FAILURE",
+          result.evidence.checks.some((check) => check.substantive),
+          {
+            exitCode:
+              failed?.process?.exitCode === 0
+                ? 1
+                : (failed?.process?.exitCode ?? 1),
+            signal: failed?.process?.signal ?? null,
+            result: {
+              failedCheckId: result.failedCheckId,
+              sourceValidationEvidenceSha256: result.descriptor.sha256,
+            },
+            evidenceFiles: { "source-validation": result.descriptor },
+          },
+        );
+      }
+      const validation = validateSourceValidationEvidence({
+        evidence: result.evidence,
+        evidenceRoot: context.evidenceRoot,
+        state,
+        repositoryRoot: context.repositoryRoot,
+      });
+      if (!validation.valid) {
+        throw new StageFailure(
+          `source-validation aggregate failed before stage completion: ${validation.issues.join("; ")}`,
+          "SOURCE_CONTRACT_FAILURE",
+          result.evidence.checks.some((check) => check.substantive),
+          {
+            result: {
+              issues: validation.issues,
+              sourceValidationEvidenceSha256: result.descriptor.sha256,
+            },
+            evidenceFiles: { "source-validation": result.descriptor },
+          },
+        );
+      }
+      return {
+        consumed: result.evidence.checks.some((check) => check.substantive),
+        outputHashes: { sourceValidation: result.descriptor.sha256 },
+        evidenceFiles: { "source-validation": result.descriptor },
+        result: {
+          valid: true,
+          checkCount: result.evidence.checks.length,
+          sourceValidationEvidenceSha256: result.descriptor.sha256,
+        },
+      };
+    },
+    {
+      consumptionProbe: () => sourceConsumed,
+      postBoundaryClassification: "SOURCE_CONTRACT_FAILURE",
+    },
+  );
+}
+
 export async function runBuildStage({
   repositoryRoot = process.cwd(),
   environment = process.env,
 } = {}) {
   const context = stateContext(repositoryRoot, environment);
-  return managedStage(context, "build", async () => {
+  let buildConsumed = false;
+  return managedStage(context, "build", async (state) => {
     const child = childResult("npm", ["run", "evidence:production:build"], {
       cwd: repositoryRoot,
       env: environment,
@@ -750,6 +837,7 @@ export async function runBuildStage({
         { exitCode: child.status },
       );
     }
+    buildConsumed = true;
     const validation = await validateProductionEvidence({
       repositoryRoot,
       manifestPath: DEFAULT_MANIFEST,
@@ -773,6 +861,13 @@ export async function runBuildStage({
       identity: { ...context.state.candidate, ...bindingUpdates },
       complete: true,
     });
+    const snapshot = captureArtifactSnapshot({
+      repositoryRoot: context.repositoryRoot,
+      evidenceRoot: context.evidenceRoot,
+      state,
+      position: "immediateBuild",
+      bindingOverrides: bindingUpdates,
+    });
     return {
       consumed: true,
       outputHashes: {
@@ -780,9 +875,16 @@ export async function runBuildStage({
         artifact: bindingUpdates.artifactSha256,
       },
       bindingUpdates,
-      evidenceFiles: { build: descriptor },
+      evidenceFiles: {
+        build: descriptor,
+        [snapshotEvidenceName("immediateBuild")]: snapshot.snapshotDescriptor,
+        [rootEvidenceName("immediateBuild")]: snapshot.rootDescriptor,
+      },
       result: bindingUpdates,
     };
+  }, {
+    consumptionProbe: () => buildConsumed,
+    postBoundaryClassification: "BUILD_FAILURE",
   });
 }
 
@@ -807,7 +909,11 @@ function archiveEnvironment(context) {
   };
 }
 
-function runArchiveCli(context, command, { consumed = false } = {}) {
+function runArchiveCli(
+  context,
+  command,
+  { consumed = false, onConsumed = () => {} } = {},
+) {
   const child = childResult(
     process.execPath,
     ["scripts/production-archive.mjs", command],
@@ -819,15 +925,33 @@ function runArchiveCli(context, command, { consumed = false } = {}) {
     "ARCHIVE_FAILURE",
     consumed,
   );
-  return parseLastJson(child.stdout, `archive ${command}`);
+  return parseCertificationChildJson(child.stdout, `archive ${command}`, {
+    consumed,
+    onConsumed,
+  });
+}
+
+export function parseCertificationChildJson(
+  stdout,
+  description,
+  { consumed = false, onConsumed = () => {} } = {},
+) {
+  if (consumed) onConsumed();
+  return parseLastJson(stdout, description);
 }
 
 export async function runArchivePreflightStage(options = {}) {
   const context = stateContext(options.repositoryRoot ?? process.cwd(), options.environment ?? process.env);
-  return managedStage(context, "archive-preflight", async () => {
+  let archivePreflightConsumed = false;
+  return managedStage(context, "archive-preflight", async (state) => {
     const archiveRoot = safeEvidenceDirectory(context.evidenceRoot, "archive");
     const plan = runArchiveCli(context, "plan");
-    const verification = runArchiveCli(context, "verify", { consumed: true });
+    const verification = runArchiveCli(context, "verify", {
+      consumed: true,
+      onConsumed: () => {
+        archivePreflightConsumed = true;
+      },
+    });
     if (verification.preflightPassed !== true) {
       throw new StageFailure("archive preflight did not pass", "ARCHIVE_FAILURE", true);
     }
@@ -839,6 +963,12 @@ export async function runArchivePreflightStage(options = {}) {
     const planValue = readJson(planPath, "archive plan");
     const planDescriptor = retainedDescriptor(context.evidenceRoot, planPath);
     const receiptDescriptor = retainedDescriptor(context.evidenceRoot, stagedReceipt);
+    const snapshot = captureArtifactSnapshot({
+      repositoryRoot: context.repositoryRoot,
+      evidenceRoot: context.evidenceRoot,
+      state,
+      position: "stagedArchive",
+    });
     return {
       consumed: true,
       outputHashes: { plan: planDescriptor.sha256, preflight: receiptDescriptor.sha256 },
@@ -848,16 +978,27 @@ export async function runArchivePreflightStage(options = {}) {
       evidenceFiles: {
         "archive-plan": planDescriptor,
         "archive-preflight": receiptDescriptor,
+        [snapshotEvidenceName("stagedArchive")]: snapshot.snapshotDescriptor,
+        [rootEvidenceName("stagedArchive")]: snapshot.rootDescriptor,
       },
       result: { ...plan, ...verification },
     };
+  }, {
+    consumptionProbe: () => archivePreflightConsumed,
+    postBoundaryClassification: "ARCHIVE_FAILURE",
   });
 }
 
 export async function runArchiveStage(options = {}) {
   const context = stateContext(options.repositoryRoot ?? process.cwd(), options.environment ?? process.env);
-  return managedStage(context, "archive", async () => {
-    const result = runArchiveCli(context, "create", { consumed: true });
+  let archiveConsumed = false;
+  return managedStage(context, "archive", async (state) => {
+    const result = runArchiveCli(context, "create", {
+      consumed: true,
+      onConsumed: () => {
+        archiveConsumed = true;
+      },
+    });
     const archive = retainedDescriptor(
       context.evidenceRoot,
       path.join(context.evidenceRoot, "archive/candidate.tar.gz"),
@@ -893,6 +1034,16 @@ export async function runArchiveStage(options = {}) {
         true,
       );
     }
+    const snapshot = captureArtifactSnapshot({
+      repositoryRoot: context.repositoryRoot,
+      evidenceRoot: context.evidenceRoot,
+      state,
+      position: "compressedArchive",
+      bindingOverrides: {
+        archiveSha256: result.archiveSha256,
+        archiveInventorySha256: result.inventorySha256,
+      },
+    });
     return {
       consumed: true,
       outputHashes: { archive: archive.sha256, inventory: inventory.sha256 },
@@ -900,16 +1051,30 @@ export async function runArchiveStage(options = {}) {
         archiveSha256: result.archiveSha256,
         archiveInventorySha256: result.inventorySha256,
       },
-      evidenceFiles: { archive, "archive-inventory": inventory },
+      evidenceFiles: {
+        archive,
+        "archive-inventory": inventory,
+        [snapshotEvidenceName("compressedArchive")]: snapshot.snapshotDescriptor,
+        [rootEvidenceName("compressedArchive")]: snapshot.rootDescriptor,
+      },
       result,
     };
+  }, {
+    consumptionProbe: () => archiveConsumed,
+    postBoundaryClassification: "ARCHIVE_FAILURE",
   });
 }
 
 export async function runExtractedArchivePreflightStage(options = {}) {
   const context = stateContext(options.repositoryRoot ?? process.cwd(), options.environment ?? process.env);
-  return managedStage(context, "extracted-archive-preflight", async () => {
-    const result = runArchiveCli(context, "extract-and-verify", { consumed: true });
+  let extractionConsumed = false;
+  return managedStage(context, "extracted-archive-preflight", async (state) => {
+    const result = runArchiveCli(context, "extract-and-verify", {
+      consumed: true,
+      onConsumed: () => {
+        extractionConsumed = true;
+      },
+    });
     if (result.preflightPassed !== true) {
       throw new StageFailure("extracted archive preflight did not pass", "ARCHIVE_FAILURE", true);
     }
@@ -927,12 +1092,25 @@ export async function runExtractedArchivePreflightStage(options = {}) {
         "archive/extracted/.certification/archive-preflight.json",
       ),
     );
+    const snapshot = captureArtifactSnapshot({
+      repositoryRoot: context.repositoryRoot,
+      evidenceRoot: context.evidenceRoot,
+      state,
+      position: "extractedArchive",
+    });
     return {
       consumed: true,
       outputHashes: { extractedPreflight: receipt.sha256 },
-      evidenceFiles: { "extracted-archive-preflight": receipt },
+      evidenceFiles: {
+        "extracted-archive-preflight": receipt,
+        [snapshotEvidenceName("extractedArchive")]: snapshot.snapshotDescriptor,
+        [rootEvidenceName("extractedArchive")]: snapshot.rootDescriptor,
+      },
       result,
     };
+  }, {
+    consumptionProbe: () => extractionConsumed,
+    postBoundaryClassification: "ARCHIVE_FAILURE",
   });
 }
 
@@ -1065,6 +1243,12 @@ export async function runPhase8Stage(options = {}) {
     };
     writeFileSync(outputPath, canonicalJsonBytes(evidence), { flag: "wx", mode: 0o600 });
     const descriptor = retainedDescriptor(context.evidenceRoot, outputPath);
+    const snapshot = captureArtifactSnapshot({
+      repositoryRoot: context.repositoryRoot,
+      evidenceRoot: context.evidenceRoot,
+      state,
+      position: "postPhase8Live",
+    });
     return {
       consumed: true,
       outputHashes: {
@@ -1077,6 +1261,8 @@ export async function runPhase8Stage(options = {}) {
         phase8: descriptor,
         "phase8-raw": rawDescriptor,
         "phase8-completion": completionDescriptor,
+        [snapshotEvidenceName("postPhase8Live")]: snapshot.snapshotDescriptor,
+        [rootEvidenceName("postPhase8Live")]: snapshot.rootDescriptor,
       },
       result: {
         evidenceSha256: descriptor.sha256,
@@ -1294,31 +1480,6 @@ function identityFromState(state) {
   };
 }
 
-function continuityInput(state) {
-  for (const stage of [
-    "build",
-    "archive-preflight",
-    "archive",
-    "extracted-archive-preflight",
-    "phase8",
-    "runtime-smoke",
-  ]) {
-    if (state.stages[stage].status !== "passed") {
-      throw new Error(`artifact continuity requires passed stage ${stage}`);
-    }
-  }
-  return Object.fromEntries(
-    [
-      "immediateBuild",
-      "stagedArchive",
-      "compressedArchive",
-      "extractedArchive",
-      "postPhase8Live",
-      "postRuntimeBrowserLive",
-    ].map((name) => [name, state.bindings.artifactSha256]),
-  );
-}
-
 export function browserEnvironment(
   context,
   state,
@@ -1471,7 +1632,6 @@ export async function runBrowserOwnersStage(options = {}) {
   );
   let consumed = false;
   return managedStage(context, "browser-owners", async (state) => {
-    const continuityHashes = continuityInput(state);
     const requiredManifest = readJson(
       path.join(context.repositoryRoot, "scripts/required-test-manifest.json"),
       "required-test manifest",
@@ -1652,29 +1812,24 @@ export async function runBrowserOwnersStage(options = {}) {
       descriptors[`browser-start:${input.owner.id}`] = startDescriptor;
       browserHashes[input.owner.id] = descriptor.sha256;
     }
-    const continuity = {
-      schema: PRODUCTION_CERTIFICATION_CONTINUITY_SCHEMA,
-      identity: identityFromState(state),
-      executionClass: state.executionClass,
-      simulation: false,
-      artifactSha256: continuityHashes,
-      archiveSha256: state.bindings.archiveSha256,
-      archiveInventorySha256: state.bindings.archiveInventorySha256,
-      complete: true,
-    };
-    const continuityDescriptor = writeEvidence(
-      context.evidenceRoot,
-      "continuity/evidence.json",
-      continuity,
-    );
+    const snapshot = captureArtifactSnapshot({
+      repositoryRoot: context.repositoryRoot,
+      evidenceRoot: context.evidenceRoot,
+      state,
+      position: "postRuntimeBrowserLive",
+    });
     return {
       consumed: true,
       outputHashes: browserHashes,
       bindingUpdates: {
         browserOwnerEvidenceSha256: browserHashes,
-        continuityEvidenceSha256: continuityDescriptor.sha256,
       },
-      evidenceFiles: { ...descriptors, continuity: continuityDescriptor },
+      evidenceFiles: {
+        ...descriptors,
+        [snapshotEvidenceName("postRuntimeBrowserLive")]:
+          snapshot.snapshotDescriptor,
+        [rootEvidenceName("postRuntimeBrowserLive")]: snapshot.rootDescriptor,
+      },
       result: { ownerCount: REQUIRED_BROWSER_OWNERS.length, browserHashes },
     };
   }, {
@@ -1772,26 +1927,36 @@ export async function runFinalStandaloneStage(options = {}) {
 export async function runContinuityStage(options = {}) {
   const context = stateContext(options.repositoryRoot ?? process.cwd(), options.environment ?? process.env);
   return managedStage(context, "continuity", async (state) => {
-    const descriptor = state.evidenceFiles.continuity;
-    const filePath = path.join(context.evidenceRoot, descriptor.path);
-    const value = readJson(filePath, "continuity evidence");
-    if (
-      sha256Bytes(readFileSync(filePath)) !== descriptor.sha256 ||
-      value.complete !== true ||
-      Object.values(value.artifactSha256 ?? {}).some(
-        (digest) => digest !== state.bindings.artifactSha256,
-      )
-    ) {
+    const capturedAt =
+      state.executionClass === "deterministic-simulation"
+        ? new Date(Date.parse(state.stages.continuity.startedAt) + 50).toISOString()
+        : new Date().toISOString();
+    const measured = measureFinalContinuity({
+      repositoryRoot: context.repositoryRoot,
+      evidenceRoot: context.evidenceRoot,
+      state,
+      capturedAt,
+    });
+    if (measured.issues.length > 0 || !measured.descriptor) {
       throw new StageFailure(
-        "artifact continuity evidence changed or contradicts the state",
+        `artifact continuity physical comparison failed: ${measured.issues.join("; ")}`,
         "ARTIFACT_CONTINUITY_FAILURE",
         false,
+        {
+          result: measured.evidence,
+          evidenceFiles: measured.descriptor
+            ? { continuity: measured.descriptor }
+            : {},
+        },
       );
     }
     return {
-      outputHashes: { continuity: descriptor.sha256 },
-      evidenceFiles: { continuity: descriptor },
-      result: descriptor,
+      outputHashes: { continuity: measured.descriptor.sha256 },
+      bindingUpdates: {
+        continuityEvidenceSha256: measured.descriptor.sha256,
+      },
+      evidenceFiles: { continuity: measured.descriptor },
+      result: measured.descriptor,
     };
   });
 }

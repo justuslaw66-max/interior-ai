@@ -1,5 +1,61 @@
 # Code health audit handoff
 
+## CH-0015I Harness v1 source/continuity correction handoff — 2026-08-14
+
+Branch `fix/production-certification-harness-v1-source-continuity` starts at
+exact candidate `44f17a310c9d4fdb80c780bbb37158489de7da77`, tree
+`221bb96744828d6184d6fc98cf9b8505209d10f8`, whose parent is
+`5e956435c625cbb5be1887b3a20e9a947b43dce0`. Exact candidate parentage and
+integration local/remote `2c567fd483877c7dcbd8fd23e3cd8cb316732c8c`, tree
+`50f9c5d6a6610990606fd9db9a27ba40200fca90`, were verified before branching.
+The entry worktree/index/untracked/tracked-ignored checks were clean; no Git
+operation, repository-owned prohibited process, or required-port listener was
+present.
+
+The authoritative classifications are
+`SOURCE_VALIDATION_STAGE_BYPASS_DEFECT` and
+`ARTIFACT_CONTINUITY_SELF_ASSERTION_DEFECT`. The earlier Harness v1
+qualification incorrectly returned A even though the real source stage ran no
+canonical source gates and the six-point continuity record copied one stored
+artifact hash. Those records are not accepted as candidate proof.
+
+The correction gives the machine contract one ordered 19-check source owner,
+executes each exact command at the real stage, binds source identity before and
+after every invocation, retains output/result bytes externally, and seals a
+complete aggregate. State validation rejects identity-only, incomplete,
+duplicated, substituted, failed, stale, manually promoted, or tampered source
+results and cascades source changes through all later stages.
+
+Continuity now captures six independent physical lifecycle measurements. It
+compares the canonical application artifact across live/staged/extracted/
+post-Phase-8/post-browser positions and separately compares the complete
+executable archive closure across staging/compression/extraction. Physical
+roots and archive bytes are retained until final continuity, which rehashes
+them and rejects missing, aliased, fallback, replaced, mutated, extra, or
+tampered inputs. Integration readiness requires the sealed source result,
+final standalone, and measured continuity.
+
+The existing `ci.production-artifact-contract` remains the required owner at
+27 gates / 380 sources. No product/UI, Floor Plan, telemetry, NFT, timestamp,
+schema/journal, Playwright product assertion, benchmark, dependency, database,
+workflow, or deployment behavior changes. No real build, Phase 8, runtime
+smoke, browser-owner matrix, or Full E2E belongs to this batch. Exact-head
+certification, integration, and the final CH-0015 closure audit remain pending;
+no known CH-0015 product/UI implementation remains.
+
+The corrected bounded `npm run certification:qualify` result is **A —
+`QUALIFIED_FOR_FINAL_CANDIDATE_CERTIFICATION`** after doctor, physical
+simulation, source/continuity anti-bypass, historical regressions, artifact,
+truthfulness, timing/readiness, architecture, hygiene, syntax, typecheck,
+zero-warning lint, code-quality, and diff validation. It authorizes only a
+separately approved exact-head cycle and is not candidate evidence.
+
+The final independent read-only review inspected the complete diff and the real
+runner/state/continuity CLI paths, including source command ownership,
+zero-exit source drift, post-boundary consumption, physical pre-/during-Phase-8
+mutation, retained continuity failure/retry, and readiness blocking. It returned
+**PASS** with no remaining actionable finding or product-scope drift.
+
 ## CH-0015I Production Certification Harness v1 handoff — 2026-08-14
 
 Branch `fix/production-certification-harness-v1` starts at exact candidate

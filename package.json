@@ -42,6 +42,7 @@
     "archive:production:extract-and-verify": "node scripts/production-archive.mjs extract-and-verify",
     "certification:state:init": "node scripts/production-certification.mjs state:init",
     "certification:doctor": "node scripts/production-certification.mjs doctor",
+    "certification:source-validation": "node scripts/production-certification.mjs source-validation",
     "certification:simulate": "node scripts/production-certification.mjs simulate",
     "certification:state:validate": "node scripts/production-certification.mjs state:validate",
     "certification:resume": "node scripts/production-certification.mjs resume",

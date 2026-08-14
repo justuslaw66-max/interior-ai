@@ -6,6 +6,55 @@
     "classification": "NOT_QUALIFIED_SOURCE_CONTRACT_DEFECT"
   },
   "recordedBeforeHarnessImplementation": true,
+  "sourceValidation": {
+    "schema": "interior-ai.production-certification-source-check-set.v1",
+    "workingDirectoryPolicy": "exact-candidate-root",
+    "stopOnFirstRequiredFailure": true,
+    "fixtureCommandOwner": "scripts/production-certification-source-continuity.mjs",
+    "checks": [
+      { "id": "production-artifact-evidence-contracts", "canonicalCommand": "npm run test:production-artifact-evidence", "executable": "npm", "args": ["run", "test:production-artifact-evidence"], "commandOwner": "package.json#scripts.test:production-artifact-evidence", "requiredEnvironmentNames": [], "expectedEvidence": ["process-result", "stdout", "stderr", "pre-source-identity", "post-source-identity"], "substantive": true, "continueAfterFailure": false },
+      { "id": "certification-harness-contracts", "canonicalCommand": "npm run test:production-certification", "executable": "npm", "args": ["run", "test:production-certification"], "commandOwner": "package.json#scripts.test:production-certification", "requiredEnvironmentNames": [], "expectedEvidence": ["process-result", "stdout", "stderr", "pre-source-identity", "post-source-identity"], "substantive": true, "continueAfterFailure": false },
+      { "id": "required-test-truthfulness", "canonicalCommand": "npm run test:required-test-truthfulness", "executable": "npm", "args": ["run", "test:required-test-truthfulness"], "commandOwner": "package.json#scripts.test:required-test-truthfulness", "requiredEnvironmentNames": [], "expectedEvidence": ["process-result", "stdout", "stderr", "pre-source-identity", "post-source-identity"], "substantive": true, "continueAfterFailure": false },
+      { "id": "required-test-manifest-direct", "canonicalCommand": "node scripts/required-test-truthfulness.mjs check", "executable": "node", "args": ["scripts/required-test-truthfulness.mjs", "check"], "commandOwner": "scripts/required-test-truthfulness.mjs", "requiredEnvironmentNames": [], "expectedEvidence": ["process-result", "stdout", "stderr", "pre-source-identity", "post-source-identity"], "substantive": true, "continueAfterFailure": false },
+      { "id": "floor-plan-required-closure", "canonicalCommand": "npm run test:floor-plan-required", "executable": "npm", "args": ["run", "test:floor-plan-required"], "commandOwner": "package.json#scripts.test:floor-plan-required", "requiredEnvironmentNames": [], "expectedEvidence": ["process-result", "stdout", "stderr", "pre-source-identity", "post-source-identity"], "substantive": true, "continueAfterFailure": false },
+      { "id": "floor-plan-upload-static-owner", "canonicalCommand": "npm run test:floor-plan-upload-accessibility-static", "executable": "npm", "args": ["run", "test:floor-plan-upload-accessibility-static"], "commandOwner": "package.json#scripts.test:floor-plan-upload-accessibility-static", "requiredEnvironmentNames": [], "expectedEvidence": ["process-result", "stdout", "stderr", "pre-source-identity", "post-source-identity"], "substantive": true, "continueAfterFailure": false },
+      { "id": "telemetry-bootstrap-contracts", "canonicalCommand": "npm run test:runtime-smoke-telemetry-bootstrap", "executable": "npm", "args": ["run", "test:runtime-smoke-telemetry-bootstrap"], "commandOwner": "package.json#scripts.test:runtime-smoke-telemetry-bootstrap", "requiredEnvironmentNames": [], "expectedEvidence": ["process-result", "stdout", "stderr", "pre-source-identity", "post-source-identity"], "substantive": true, "continueAfterFailure": false },
+      { "id": "critical-required", "canonicalCommand": "npm run test:critical-required", "executable": "npm", "args": ["run", "test:critical-required"], "commandOwner": "package.json#scripts.test:critical-required", "requiredEnvironmentNames": [], "expectedEvidence": ["process-result", "stdout", "stderr", "pre-source-identity", "post-source-identity"], "substantive": true, "continueAfterFailure": false },
+      { "id": "design-cleanup", "canonicalCommand": "npm run test:design-page-cleanup", "executable": "npm", "args": ["run", "test:design-page-cleanup"], "commandOwner": "package.json#scripts.test:design-page-cleanup", "requiredEnvironmentNames": [], "expectedEvidence": ["process-result", "stdout", "stderr", "pre-source-identity", "post-source-identity"], "substantive": true, "continueAfterFailure": false },
+      { "id": "zero-warning-lint", "canonicalCommand": "npm run lint -- --max-warnings=0", "executable": "npm", "args": ["run", "lint", "--", "--max-warnings=0"], "commandOwner": "package.json#scripts.lint", "requiredEnvironmentNames": [], "expectedEvidence": ["process-result", "stdout", "stderr", "pre-source-identity", "post-source-identity"], "substantive": true, "continueAfterFailure": false },
+      { "id": "typescript-typecheck", "canonicalCommand": "npm run typecheck", "executable": "npm", "args": ["run", "typecheck"], "commandOwner": "package.json#scripts.typecheck", "requiredEnvironmentNames": [], "expectedEvidence": ["process-result", "stdout", "stderr", "pre-source-identity", "post-source-identity"], "substantive": true, "continueAfterFailure": false },
+      { "id": "code-quality-ratchets", "canonicalCommand": "npm run check:code-quality", "executable": "npm", "args": ["run", "check:code-quality"], "commandOwner": "package.json#scripts.check:code-quality", "requiredEnvironmentNames": [], "expectedEvidence": ["process-result", "stdout", "stderr", "pre-source-identity", "post-source-identity"], "substantive": true, "continueAfterFailure": false },
+      { "id": "design-architecture", "canonicalCommand": "node scripts/check-design-page-architecture.mjs", "executable": "node", "args": ["scripts/check-design-page-architecture.mjs"], "commandOwner": "scripts/check-design-page-architecture.mjs", "requiredEnvironmentNames": [], "expectedEvidence": ["process-result", "stdout", "stderr", "pre-source-identity", "post-source-identity"], "substantive": true, "continueAfterFailure": false },
+      { "id": "floor-plan-architecture", "canonicalCommand": "npm run check:floor-plan-architecture", "executable": "npm", "args": ["run", "check:floor-plan-architecture"], "commandOwner": "package.json#scripts.check:floor-plan-architecture", "requiredEnvironmentNames": [], "expectedEvidence": ["process-result", "stdout", "stderr", "pre-source-identity", "post-source-identity"], "substantive": true, "continueAfterFailure": false },
+      { "id": "cabinetry-architecture", "canonicalCommand": "npm run check:cabinetry-architecture", "executable": "npm", "args": ["run", "check:cabinetry-architecture"], "commandOwner": "package.json#scripts.check:cabinetry-architecture", "requiredEnvironmentNames": [], "expectedEvidence": ["process-result", "stdout", "stderr", "pre-source-identity", "post-source-identity"], "substantive": true, "continueAfterFailure": false },
+      { "id": "tracked-artifact-hygiene", "canonicalCommand": "npm run test:tracked-artifact-hygiene", "executable": "npm", "args": ["run", "test:tracked-artifact-hygiene"], "commandOwner": "package.json#scripts.test:tracked-artifact-hygiene", "requiredEnvironmentNames": [], "expectedEvidence": ["process-result", "stdout", "stderr", "pre-source-identity", "post-source-identity"], "substantive": true, "continueAfterFailure": false },
+      { "id": "source-syntax", "canonicalCommand": "node scripts/production-certification-source-continuity.mjs source-syntax", "executable": "node", "args": ["scripts/production-certification-source-continuity.mjs", "source-syntax"], "commandOwner": "scripts/production-certification-source-continuity.mjs", "requiredEnvironmentNames": [], "expectedEvidence": ["process-result", "stdout", "stderr", "pre-source-identity", "post-source-identity"], "substantive": false, "continueAfterFailure": false },
+      { "id": "git-diff-check", "canonicalCommand": "git diff --check", "executable": "git", "args": ["diff", "--check"], "commandOwner": "git", "requiredEnvironmentNames": [], "expectedEvidence": ["process-result", "stdout", "stderr", "pre-source-identity", "post-source-identity"], "substantive": false, "continueAfterFailure": false },
+      { "id": "git-source-hygiene", "canonicalCommand": "node scripts/production-certification-source-continuity.mjs source-hygiene", "executable": "node", "args": ["scripts/production-certification-source-continuity.mjs", "source-hygiene"], "commandOwner": "scripts/production-certification-source-continuity.mjs", "requiredEnvironmentNames": [], "expectedEvidence": ["process-result", "stdout", "stderr", "pre-source-identity", "post-source-identity"], "substantive": false, "continueAfterFailure": false }
+    ]
+  },
+  "continuity": {
+    "schema": "interior-ai.production-certification-continuity-contract.v1",
+    "syntheticCopiedHashAllowed": false,
+    "retainPhysicalRootsUntilPassed": true,
+    "integrationReadyRequires": ["source-validation", "final-standalone", "continuity"],
+    "scopes": {
+      "canonicalApplicationArtifact": [".next", "public"],
+      "executableArchiveClosure": "complete production archive inventory excluding only its self-describing inventory file"
+    },
+    "lifecyclePositions": [
+      { "id": "immediateBuild", "stage": "build", "rootClassification": "live-final-artifact", "captureCommand": "npm run certification:build#capture:immediateBuild", "scopes": ["canonicalApplicationArtifact"] },
+      { "id": "stagedArchive", "stage": "archive-preflight", "rootClassification": "staged-archive-tree", "captureCommand": "npm run certification:archive-preflight#capture:stagedArchive", "scopes": ["canonicalApplicationArtifact", "executableArchiveClosure"] },
+      { "id": "compressedArchive", "stage": "archive", "rootClassification": "compressed-archive-file", "captureCommand": "npm run certification:archive#capture:compressedArchive", "scopes": ["executableArchiveClosure", "compressedArchiveBytes"] },
+      { "id": "extractedArchive", "stage": "extracted-archive-preflight", "rootClassification": "extracted-archive-tree", "captureCommand": "npm run certification:extracted-archive-preflight#capture:extractedArchive", "scopes": ["canonicalApplicationArtifact", "executableArchiveClosure"] },
+      { "id": "postPhase8Live", "stage": "phase8", "rootClassification": "live-final-artifact", "captureCommand": "npm run certification:phase8#capture:postPhase8Live", "scopes": ["canonicalApplicationArtifact"] },
+      { "id": "postRuntimeBrowserLive", "stage": "browser-owners", "rootClassification": "live-final-artifact", "captureCommand": "npm run certification:browser-owners#capture:postRuntimeBrowserLive", "scopes": ["canonicalApplicationArtifact"] }
+    ],
+    "comparisons": {
+      "canonicalApplicationArtifact": ["immediateBuild", "stagedArchive", "extractedArchive", "postPhase8Live", "postRuntimeBrowserLive"],
+      "executableArchiveClosure": ["stagedArchive", "compressedArchive", "extractedArchive"]
+    }
+  },
   "stages": [
     {
       "id": "source-identity-cleanliness",
@@ -421,39 +470,39 @@
       "stopCondition": "Standalone artifact/manifest/runtime evidence invalid or source commit mismatched.",
       "evidenceSchemaVersion": ["manifest v3"],
       "candidateArtifactIdentityFields": ["source.commitSha", "source.treeSha", "build.nextBuildId", "artifact.sha256"],
-      "baselineGap": "Does not require Phase 8, seven browser owners, continuity, full candidate identity, journal, archive, or harness bindings."
+      "baselineGap": "Historical pre-v1 gap. Harness v1 final standalone now requires Phase 8, runtime, seven browser owners, full candidate identity, journal, archive, and harness bindings; measured continuity follows as its own stage."
     },
     {
       "id": "artifact-continuity",
-      "canonicalCommandOrCli": "none",
-      "sourceOwner": [],
+      "canonicalCommandOrCli": "npm run certification:continuity",
+      "sourceOwner": ["scripts/production-certification-real.mjs", "scripts/production-certification-source-continuity.mjs", "scripts/production-certification-state.mjs"],
       "requiredEnvironmentNames": [],
       "requiredInputs": ["immediate build", "staged", "compressed", "extracted", "post-Phase-8 live", "post-runtime/browser live identities"],
-      "generatedOutputs": [],
+      "generatedOutputs": ["six sealed physical snapshots", "six private physical-root sidecars", "sealed continuity comparison evidence"],
       "repositoryBound": false,
       "preRuntime": false,
       "substantiveOneShot": false,
       "safelyResumable": false,
-      "stopCondition": "Not canonically defined.",
-      "evidenceSchemaVersion": ["none"],
-      "candidateArtifactIdentityFields": [],
-      "baselineGap": "No continuity schema or equality owner exists."
+      "stopCondition": "Any missing/replaced/aliased root, snapshot or root-sidecar tamper, application-artifact mismatch, archive-closure mismatch, archive-byte mismatch, or identity mismatch.",
+      "evidenceSchemaVersion": ["interior-ai.production-certification-artifact-snapshot.v1", "interior-ai.production-certification-continuity.v1"],
+      "candidateArtifactIdentityFields": ["candidate ID", "commit/tree", "Build ID", "artifact", "manifest", "journal/nonce", "verifier closure", "trace/NFT", "required-server/build/routes/prerender manifests"],
+      "baselineGap": "Historical pre-v1 gap corrected by the top-level continuity lifecycle contract and physical snapshot owner."
     },
     {
       "id": "local-fast-forward-readiness",
-      "canonicalCommandOrCli": "none",
-      "sourceOwner": [],
+      "canonicalCommandOrCli": "npm run certification:state:validate",
+      "sourceOwner": ["scripts/production-certification-real.mjs", "scripts/production-certification-state.mjs"],
       "requiredEnvironmentNames": [],
       "requiredInputs": ["passed final standalone and continuity evidence", "unchanged integration head/tree", "candidate exact ancestry"],
-      "generatedOutputs": [],
+      "generatedOutputs": ["sealed integration-readiness evidence binding source validation, final standalone, and continuity"],
       "repositoryBound": true,
       "preRuntime": false,
       "substantiveOneShot": false,
       "safelyResumable": false,
-      "stopCondition": "Not canonically defined.",
-      "evidenceSchemaVersion": ["none"],
-      "candidateArtifactIdentityFields": [],
-      "baselineGap": "No committed integration-ready owner or resumable certification state."
+      "stopCondition": "Source-validation, final-standalone, or measured continuity missing/stale; integration refs/tree/ancestry changed.",
+      "evidenceSchemaVersion": ["interior-ai.production-certification-integration-readiness.v1"],
+      "candidateArtifactIdentityFields": ["candidate commit/tree", "source-validation SHA", "final-standalone SHA", "continuity SHA", "integration local/tracking commit/tree"],
+      "baselineGap": "Historical pre-v1 gap corrected by sealed state and the integration-ready owner."
     }
   ]
 }
