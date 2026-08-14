@@ -16,6 +16,15 @@ export const PRODUCTION_EVIDENCE_JOURNAL_BASENAME =
   "semantic-event-journal.json";
 export const PRODUCTION_EVIDENCE_JOURNAL_PATH =
   ".local/production-artifact-evidence/semantic-event-journal.json";
+export const PRODUCTION_EVIDENCE_VERIFICATION_RESULT_SCHEMA =
+  "interior-ai.production-artifact-verification-result.v1";
+export const PRODUCTION_EVIDENCE_VERIFICATION_MODES = Object.freeze({
+  REPOSITORY_PREFLIGHT: "repository-preflight",
+  ARCHIVE_PREFLIGHT: "archive-preflight",
+  REPOSITORY_FINAL: "repository-final",
+  REPOSITORY_RUNTIME_FAILURE: "repository-runtime-failure",
+  STANDALONE_FINAL: "standalone-final",
+});
 export const CURRENT_PRODUCTION_EVIDENCE_VERSIONS = Object.freeze([
   PRODUCTION_EVIDENCE_VALIDATOR_VERSION,
 ]);

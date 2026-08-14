@@ -5,6 +5,7 @@ import {
   existsSync,
   chmodSync,
   copyFileSync,
+  cpSync,
   lstatSync,
   mkdirSync,
   mkdtempSync,
@@ -21,6 +22,7 @@ import path from "node:path";
 
 import {
   FLOOR_PLAN_ROUTE_NFT_PATHS,
+  PRODUCTION_EVIDENCE_VERIFIER_SOURCE_PATHS,
   canonicalizeProductionEvidenceReport,
   comparePortablePaths,
   createProductionEvidenceBundle,
@@ -46,6 +48,8 @@ import {
   PRODUCTION_EVIDENCE_SCHEMA,
   PRODUCTION_EVIDENCE_SERVER_COMMAND,
   PRODUCTION_EVIDENCE_VALIDATOR_VERSION,
+  PRODUCTION_EVIDENCE_VERIFICATION_MODES,
+  PRODUCTION_EVIDENCE_VERIFICATION_RESULT_SCHEMA,
   validateCurrentProductionEvidenceManifest,
 } from "./production-artifact-contract.mjs";
 import { loadProductionArtifactForPlaywright } from "./production-artifact-playwright.mjs";
@@ -2606,6 +2610,126 @@ function readManifest(root, manifestPath) {
   return JSON.parse(readFileSync(path.join(root, manifestPath), "utf8"));
 }
 
+function createStagedArchiveTree(context) {
+  const stagedRoot = mkdtempSync(
+    path.join(tmpdir(), "ch-0015i-staged-archive-preflight-"),
+  );
+  for (const relativePath of [
+    ".next",
+    "public",
+    ".nvmrc",
+    "package.json",
+    "package-lock.json",
+    ...PRODUCTION_EVIDENCE_VERIFIER_SOURCE_PATHS,
+    context.manifestPath,
+    `${context.manifestPath}.sha256`,
+    ".local/production-artifact-evidence/semantic-event-journal.json",
+    ".local/production-artifact-evidence/artifact-inventory.json",
+    ...(existsSync(path.join(context.root, context.reportPath))
+      ? [context.reportPath]
+      : []),
+    ...(existsSync(path.join(context.root, context.phaseTimingPath))
+      ? [context.phaseTimingPath]
+      : []),
+  ]) {
+    const sourcePath = path.join(context.root, relativePath);
+    const destinationPath = path.join(stagedRoot, relativePath);
+    mkdirSync(path.dirname(destinationPath), { recursive: true });
+    cpSync(sourcePath, destinationPath, {
+      recursive: true,
+      dereference: false,
+      preserveTimestamps: false,
+      verbatimSymlinks: true,
+    });
+  }
+  return stagedRoot;
+}
+
+function cloneStagedArchiveTree(stagedRoot) {
+  const cloneRoot = mkdtempSync(
+    path.join(tmpdir(), "ch-0015i-staged-archive-clone-"),
+  );
+  cpSync(stagedRoot, cloneRoot, {
+    recursive: true,
+    dereference: false,
+    preserveTimestamps: false,
+    verbatimSymlinks: true,
+  });
+  return cloneRoot;
+}
+
+function verifierSourceClosureSha256(root) {
+  const digestInput = PRODUCTION_EVIDENCE_VERIFIER_SOURCE_PATHS.map(
+    (relativePath) => {
+      const bytes = readFileSync(path.join(root, relativePath));
+      return `${createHash("sha256").update(bytes).digest("hex")}  ${bytes.byteLength}  ${relativePath}\n`;
+    },
+  ).join("");
+  return createHash("sha256").update(digestInput).digest("hex");
+}
+
+function archivePreflightEnvironment(manifest, stagedRoot, overrides = {}) {
+  const expectedVerifierSourceClosureSha256 =
+    overrides.PRODUCTION_EVIDENCE_EXPECTED_VERIFIER_SOURCE_CLOSURE_SHA256 ??
+    verifierSourceClosureSha256(stagedRoot);
+  return {
+    ...process.env,
+    PRODUCTION_EVIDENCE_EXPECTED_CANDIDATE_ID: manifest.candidateIdentifier,
+    PRODUCTION_EVIDENCE_EXPECTED_COMMIT_SHA: manifest.source.commitSha,
+    PRODUCTION_EVIDENCE_EXPECTED_TREE_SHA: manifest.source.treeSha,
+    PRODUCTION_EVIDENCE_EXPECTED_BUILD_ID: manifest.build.nextBuildId,
+    PRODUCTION_EVIDENCE_EXPECTED_ARTIFACT_SHA256: manifest.artifact.sha256,
+    PRODUCTION_EVIDENCE_EXPECTED_VERIFIER_SOURCE_CLOSURE_SHA256:
+      expectedVerifierSourceClosureSha256,
+    ...overrides,
+  };
+}
+
+function runStagedVerifier(
+  stagedRoot,
+  command,
+  expectedManifest = readManifest(
+    stagedRoot,
+    ".local/production-artifact-evidence/manifest.json",
+  ),
+  environmentOverrides = {},
+) {
+  const entryPoint = realpathSync(
+    path.join(stagedRoot, "scripts/production-artifact-evidence.mjs"),
+  );
+  return spawnSync(process.execPath, [entryPoint, command], {
+    cwd: stagedRoot,
+    env: archivePreflightEnvironment(
+      expectedManifest,
+      stagedRoot,
+      environmentOverrides,
+    ),
+    encoding: "utf8",
+  });
+}
+
+function readStagedJson(stagedRoot, relativePath) {
+  return JSON.parse(readFileSync(path.join(stagedRoot, relativePath), "utf8"));
+}
+
+function writeStagedJson(stagedRoot, relativePath, value) {
+  writeFileSync(
+    path.join(stagedRoot, relativePath),
+    `${JSON.stringify(value, null, 2)}\n`,
+  );
+}
+
+async function rewriteStagedManifest(stagedRoot, mutate) {
+  const manifestPath = ".local/production-artifact-evidence/manifest.json";
+  const manifest = readManifest(stagedRoot, manifestPath);
+  mutate(manifest);
+  await writeProductionEvidenceManifest({
+    repositoryRoot: stagedRoot,
+    manifestPath,
+    manifest,
+  });
+}
+
 async function rewriteManifest(root, manifestPath, mutate) {
   const manifest = readManifest(root, manifestPath);
   mutate(manifest);
@@ -3409,7 +3533,10 @@ function listedSpecCount(suites) {
   const manifestOwner = JSON.parse(
     readFileSync(path.join(process.cwd(), "scripts/required-test-manifest.json"), "utf8"),
   ).gates.find((gate) => gate.id === "ci.production-artifact-contract");
-  assert.match(producerSource, /from "\.\/production-artifact-contract\.mjs"/);
+  assert.match(
+    producerSource,
+    /await import\("\.\/production-artifact-contract\.mjs"\)/,
+  );
   assert.doesNotMatch(producerSource, /journal\.version\s*!==\s*1|\n\s*version:\s*1,\n/);
   assert.match(configSource, /loadProductionArtifactForPlaywright/);
   assert.match(loaderSource, /from "\.\/production-artifact-contract\.mjs"/);
@@ -3452,6 +3579,53 @@ function listedSpecCount(suites) {
     manifestOwner.requiredContributions.some(
       (contribution) => contribution.id === "artifact.playwright-v3-producer-consumer",
     ),
+  );
+  assert.ok(
+    manifestOwner.requiredContributions.some(
+      (contribution) =>
+        contribution.id === "artifact.staged-archive-preflight-cli" &&
+        contribution.source === "scripts/test-production-artifact-evidence.mjs",
+    ),
+  );
+  assert.match(
+    producerSource,
+    /ARCHIVE_PREFLIGHT[\s\S]{0,180}standalone:\s*true[\s\S]{0,120}requireTests:\s*false/,
+    "archive preflight must remain explicitly standalone and pre-runtime",
+  );
+  assert.match(
+    producerSource,
+    /STANDALONE_FINAL[\s\S]{0,180}standalone:\s*true[\s\S]{0,120}requireTests:\s*true/,
+    "final standalone verification must continue to require tests",
+  );
+  assert.match(
+    producerSource,
+    /REPOSITORY_PREFLIGHT[\s\S]{0,180}standalone:\s*false[\s\S]{0,120}requireTests:\s*false/,
+    "repository preflight must remain repository-bound",
+  );
+  const validationSignature = producerSource.slice(
+    producerSource.indexOf("export async function validateProductionEvidence({"),
+    producerSource.indexOf("}) {", producerSource.indexOf(
+      "export async function validateProductionEvidence({",
+    )),
+  );
+  assert.doesNotMatch(
+    validationSignature,
+    /requireTests|standalone|allowFailedRuntimeSmoke/,
+    "callers must select a closed verification mode rather than test-bypass flags",
+  );
+  assert.match(
+    producerSource,
+    /verificationMode:\s*PRODUCTION_EVIDENCE_VERIFICATION_MODES\.ARCHIVE_PREFLIGHT/,
+  );
+  assert.match(
+    producerSource,
+    /certificationComplete:\s*false[\s\S]{0,120}finalStandaloneVerificationRequired:\s*true/,
+    "archive preflight success must not be representable as final certification",
+  );
+  assert.doesNotMatch(
+    producerSource,
+    /ARCHIVE_PREFLIGHT[\s\S]{0,220}inspectSourceIdentity/,
+    "archive preflight must not fall back to Git or a source worktree",
   );
   assert.ok(
     manifestOwner.requiredContributions.some(
@@ -3595,7 +3769,7 @@ async function expectRejected(context, expectedText) {
   const result = await validateProductionEvidence({
     repositoryRoot: context.root,
     manifestPath: context.manifestPath,
-    requireTests: true,
+    verificationMode: PRODUCTION_EVIDENCE_VERIFICATION_MODES.REPOSITORY_FINAL,
   });
   assert.equal(result.valid, false, `expected rejection containing ${expectedText}`);
   assert.ok(
@@ -3609,7 +3783,7 @@ async function expectRejected(context, expectedText) {
   const result = await validateProductionEvidence({
     repositoryRoot: context.root,
     manifestPath: context.manifestPath,
-    requireTests: true,
+    verificationMode: PRODUCTION_EVIDENCE_VERIFICATION_MODES.REPOSITORY_FINAL,
   });
   assert.deepEqual(result.issues, []);
   assert.equal(result.valid, true);
@@ -3703,8 +3877,7 @@ async function expectRejected(context, expectedText) {
   const result = await validateProductionEvidence({
     repositoryRoot: context.root,
     manifestPath: context.manifestPath,
-    requireTests: true,
-    standalone: true,
+    verificationMode: PRODUCTION_EVIDENCE_VERIFICATION_MODES.STANDALONE_FINAL,
     expectedSourceCommitSha: manifest.source.commitSha,
   });
   assert.equal(result.valid, false);
@@ -3770,7 +3943,7 @@ async function expectRejected(context, expectedText) {
   const stableResult = await validateProductionEvidence({
     repositoryRoot: context.root,
     manifestPath: context.manifestPath,
-    requireTests: true,
+    verificationMode: PRODUCTION_EVIDENCE_VERIFICATION_MODES.REPOSITORY_FINAL,
   });
   assert.equal(stableResult.valid, false, "failed smoke must withhold stable evidence");
   assert.ok(
@@ -3815,7 +3988,7 @@ async function expectRejected(context, expectedText) {
   const stableResult = await validateProductionEvidence({
     repositoryRoot: context.root,
     manifestPath: context.manifestPath,
-    requireTests: true,
+    verificationMode: PRODUCTION_EVIDENCE_VERIFICATION_MODES.REPOSITORY_FINAL,
   });
   assert.equal(stableResult.valid, false, "forced failure must withhold stable evidence");
 
@@ -4270,6 +4443,525 @@ for (const mutate of [
 }
 
 {
+  const context = await fixture({ recordRuntimeTest: false });
+  const manifest = readManifest(context.root, context.manifestPath);
+  const expectedVerifierSourceClosureSha256 =
+    verifierSourceClosureSha256(context.root);
+  const stagedRoot = createStagedArchiveTree(context);
+  try {
+    assert.equal(existsSync(path.join(stagedRoot, ".git")), false);
+    assert.equal(existsSync(path.join(stagedRoot, context.reportPath)), false);
+    assert.equal(existsSync(path.join(stagedRoot, context.phaseTimingPath)), false);
+
+    const repositoryPreflight = runStagedVerifier(
+      stagedRoot,
+      "verify-preflight",
+      manifest,
+    );
+    assert.notEqual(
+      repositoryPreflight.status,
+      0,
+      `${repositoryPreflight.stdout}\n${repositoryPreflight.stderr}`,
+    );
+    assert.match(
+      `${repositoryPreflight.stdout}\n${repositoryPreflight.stderr}`,
+      /not a git repository|Unable to inspect the Git working tree/,
+    );
+
+    const finalStandalone = runStagedVerifier(
+      stagedRoot,
+      "verify-standalone",
+      manifest,
+    );
+    assert.notEqual(finalStandalone.status, 0);
+    assert.match(
+      `${finalStandalone.stdout}\n${finalStandalone.stderr}`,
+      /required production runtime-smoke report is missing|approval-ready/,
+    );
+
+    const archivePreflight = runStagedVerifier(
+      stagedRoot,
+      "verify-archive-preflight",
+      manifest,
+    );
+    assert.equal(
+      archivePreflight.status,
+      0,
+      `actual staged archive-preflight CLI executes the physical staged verifier\n${archivePreflight.stdout}\n${archivePreflight.stderr}`,
+    );
+    const result = JSON.parse(archivePreflight.stdout);
+    assert.deepEqual(
+      {
+        schema: result.schema,
+        verificationMode: result.verificationMode,
+        preflightPassed: result.preflightPassed,
+        certificationComplete: result.certificationComplete,
+        runtimeEvidenceRequired: result.runtimeEvidenceRequired,
+        finalStandaloneVerificationRequired:
+          result.finalStandaloneVerificationRequired,
+      },
+      {
+        schema: PRODUCTION_EVIDENCE_VERIFICATION_RESULT_SCHEMA,
+        verificationMode: PRODUCTION_EVIDENCE_VERIFICATION_MODES.ARCHIVE_PREFLIGHT,
+        preflightPassed: true,
+        certificationComplete: false,
+        runtimeEvidenceRequired: true,
+        finalStandaloneVerificationRequired: true,
+      },
+    );
+    assert.equal(result.candidateIdentifier, manifest.candidateIdentifier);
+    assert.equal(result.source.commitSha, manifest.source.commitSha);
+    assert.equal(result.source.treeSha, manifest.source.treeSha);
+    assert.equal(result.artifact.nextBuildId, manifest.build.nextBuildId);
+    assert.equal(result.artifact.sha256, manifest.artifact.sha256);
+    assert.equal(result.semanticJournal.runNonce, manifest.execution.runNonce);
+    assert.equal(
+      result.verifierSourceClosure.fileCount,
+      PRODUCTION_EVIDENCE_VERIFIER_SOURCE_PATHS.length,
+    );
+    const realStagedRoot = realpathSync(stagedRoot);
+    for (const relativePath of PRODUCTION_EVIDENCE_VERIFIER_SOURCE_PATHS) {
+      const stagedPath = realpathSync(path.join(stagedRoot, relativePath));
+      assert.ok(stagedPath.startsWith(`${realStagedRoot}${path.sep}`));
+      assert.notEqual(stagedPath, realpathSync(path.join(process.cwd(), relativePath)));
+    }
+
+    const archiveNegativeCases = [
+      {
+        name: "unknown mode",
+        command: "verify-archive-future",
+        expected: /Usage:/,
+      },
+      {
+        name: "missing manifest",
+        mutate(root) {
+          rmSync(path.join(root, context.manifestPath));
+        },
+        expected: /production evidence manifest is missing/,
+      },
+      {
+        name: "malformed manifest JSON",
+        mutate(root) {
+          writeFileSync(path.join(root, context.manifestPath), "{malformed\n");
+        },
+        expected: /not valid JSON/,
+      },
+      {
+        name: "schema v2 manifest",
+        async mutate(root) {
+          await rewriteStagedManifest(root, (candidate) => {
+            candidate.schema = "interior-ai.production-artifact-evidence.v2";
+            candidate.validatorVersion = 2;
+          });
+        },
+        expected: /unsupported production evidence schema/,
+      },
+      {
+        name: "future manifest schema",
+        async mutate(root) {
+          await rewriteStagedManifest(root, (candidate) => {
+            candidate.schema = "interior-ai.production-artifact-evidence.v99";
+            candidate.validatorVersion = 99;
+          });
+        },
+        expected: /unsupported production evidence schema/,
+      },
+      {
+        name: "missing journal",
+        mutate(root) {
+          rmSync(
+            path.join(
+              root,
+              ".local/production-artifact-evidence/semantic-event-journal.json",
+            ),
+          );
+        },
+        expected: /semantic event journal is missing/,
+      },
+      {
+        name: "wrong journal schema",
+        mutate(root) {
+          const journalPath =
+            ".local/production-artifact-evidence/semantic-event-journal.json";
+          const journal = readStagedJson(root, journalPath);
+          journal.schema =
+            "interior-ai.production-artifact-semantic-event-journal.v2";
+          journal.version = 2;
+          writeStagedJson(root, journalPath, journal);
+        },
+        expected: /unsupported semantic event journal schema or version/,
+      },
+      {
+        name: "candidate mismatch",
+        mutate(root) {
+          const journalPath =
+            ".local/production-artifact-evidence/semantic-event-journal.json";
+          const journal = readStagedJson(root, journalPath);
+          journal.candidateIdentifier = "another-candidate";
+          writeStagedJson(root, journalPath, journal);
+        },
+        expected: /candidate, commit, or tree does not match/,
+      },
+      {
+        name: "commit mismatch",
+        async mutate(root) {
+          await rewriteStagedManifest(root, (candidate) => {
+            candidate.source.commitSha = "f".repeat(40);
+          });
+        },
+        expected: /another source commit|candidate, commit, or tree does not match/,
+      },
+      {
+        name: "tree mismatch",
+        async mutate(root) {
+          await rewriteStagedManifest(root, (candidate) => {
+            candidate.source.treeSha = "f".repeat(40);
+          });
+        },
+        expected: /another source tree|candidate, commit, or tree does not match/,
+      },
+      {
+        name: "nonce mismatch",
+        async mutate(root) {
+          await rewriteStagedManifest(root, (candidate) => {
+            candidate.execution.runNonce =
+              "123e4567-e89b-42d3-a456-426614174000";
+          });
+        },
+        expected: /nonce, owner, or command binding is invalid/,
+      },
+      {
+        name: "Build ID mismatch",
+        async mutate(root) {
+          await rewriteStagedManifest(root, (candidate) => {
+            candidate.build.nextBuildId = "another-build-id";
+          });
+        },
+        expected: /another Build ID|Build ID does not match/,
+      },
+      {
+        name: "artifact hash mismatch",
+        async mutate(root) {
+          await rewriteStagedManifest(root, (candidate) => {
+            candidate.artifact.sha256 = "f".repeat(64);
+          });
+        },
+        expected: /another artifact|artifact SHA-256 mismatch/,
+      },
+      {
+        name: "artifact inventory mismatch",
+        mutate(root) {
+          const snapshotPath = path.join(
+            root,
+            ".local/production-artifact-evidence/artifact-inventory.json",
+          );
+          writeFileSync(snapshotPath, `${readFileSync(snapshotPath, "utf8")} `);
+        },
+        expected: /artifact inventory snapshot SHA-256 mismatch/,
+      },
+      {
+        name: "missing archived file",
+        mutate(root) {
+          rmSync(path.join(root, ".next/build-manifest.json"));
+        },
+        expected: /Required production artifact path is missing/,
+      },
+      {
+        name: "extra prohibited archived file",
+        mutate(root) {
+          write(root, ".git/config", "[core]\n");
+        },
+        expected: /contains prohibited path: \.git/,
+      },
+      {
+        name: "missing verifier contract module",
+        mutate(root) {
+          rmSync(path.join(root, "scripts/production-artifact-contract.mjs"));
+        },
+        expected: /verifier source is missing: scripts\/production-artifact-contract\.mjs/,
+      },
+      {
+        name: "verifier import escapes staged archive",
+        mutate(root) {
+          const target = path.join(root, "scripts/production-artifact-contract.mjs");
+          rmSync(target);
+          symlinkSync(
+            path.join(process.cwd(), "scripts/production-artifact-contract.mjs"),
+            target,
+          );
+        },
+        expected: /not a contained staged file/,
+      },
+      {
+        name: "contained verifier source tampering",
+        mutate(root) {
+          const target = path.join(
+            root,
+            "scripts/runtime-smoke-telemetry-bootstrap-contract.mjs",
+          );
+          writeFileSync(target, "process.exit(0);\n");
+        },
+        expected: /verifier source closure SHA-256 mismatch/,
+      },
+      {
+        name: "generated-source build ordering violation",
+        mutate(root) {
+          const journalPath =
+            ".local/production-artifact-evidence/semantic-event-journal.json";
+          const journal = readStagedJson(root, journalPath);
+          journal.events.generatedSourceCheck.completedAt =
+            "2026-07-31T00:00:02.500Z";
+          writeStagedJson(root, journalPath, journal);
+        },
+        expected: /predates|ordering is invalid|generated-source evidence is incomplete/,
+      },
+      {
+        name: "build failure",
+        mutate(root) {
+          const journalPath =
+            ".local/production-artifact-evidence/semantic-event-journal.json";
+          const journal = readStagedJson(root, journalPath);
+          journal.events.build.status = "failed";
+          journal.events.build.exitCode = 1;
+          journal.events.build.failureKind = "child_exit_nonzero";
+          writeStagedJson(root, journalPath, journal);
+        },
+        expected: /complete successful build|build evidence is incomplete|artifact inventory started before the build succeeded/,
+      },
+      {
+        name: "incomplete artifact inventory",
+        mutate(root) {
+          const journalPath =
+            ".local/production-artifact-evidence/semantic-event-journal.json";
+          const journal = readStagedJson(root, journalPath);
+          journal.events.artifactInventory.status = "running";
+          journal.events.artifactInventory.completedAt = null;
+          journal.bindings = {
+            artifactInventory: null,
+            nextBuildId: null,
+            artifactSha256: null,
+          };
+          writeStagedJson(root, journalPath, journal);
+        },
+        expected: /artifact inventory|manifest was claimed/,
+      },
+      {
+        name: "incomplete manifest",
+        mutate(root) {
+          const journalPath =
+            ".local/production-artifact-evidence/semantic-event-journal.json";
+          const journal = readStagedJson(root, journalPath);
+          journal.manifest = { status: "pending", createdAt: null };
+          writeStagedJson(root, journalPath, journal);
+        },
+        expected: /manifest completion|completion state is contradictory/,
+      },
+      {
+        name: "partial test evidence",
+        async mutate(root) {
+          await rewriteStagedManifest(root, (candidate) => {
+            candidate.tests = [{ name: "runtime-smoke" }];
+            candidate.repositoryEvidence.status = "failed";
+          });
+        },
+        expected: /required test report|runtime-smoke/,
+      },
+      {
+        name: "relative machine source fallback",
+        async mutate(root) {
+          await rewriteStagedManifest(root, (candidate) => {
+            candidate.source.sourceWorktreePath = "../canonical-checkout";
+          });
+        },
+        expected: /archive preflight source identity shape is malformed/,
+      },
+      {
+        name: "unsafe absolute portable path",
+        async mutate(root) {
+          await rewriteStagedManifest(root, (candidate) => {
+            candidate.execution.owner.wrapper.path =
+              "/tmp/production-artifact-evidence.mjs";
+          });
+        },
+        expected: /unsafe absolute portable fields/,
+      },
+    ];
+
+    for (const testCase of archiveNegativeCases) {
+      const negativeRoot = cloneStagedArchiveTree(stagedRoot);
+      try {
+        await testCase.mutate?.(negativeRoot);
+        const rejected = runStagedVerifier(
+          negativeRoot,
+          testCase.command ?? "verify-archive-preflight",
+          manifest,
+          {
+            PRODUCTION_EVIDENCE_EXPECTED_VERIFIER_SOURCE_CLOSURE_SHA256:
+              expectedVerifierSourceClosureSha256,
+          },
+        );
+        assert.notEqual(rejected.status, 0, `${testCase.name} must fail closed`);
+        assert.match(
+          `${rejected.stdout}\n${rejected.stderr}`,
+          testCase.expected,
+          testCase.name,
+        );
+      } finally {
+        rmSync(negativeRoot, { recursive: true, force: true });
+      }
+    }
+
+    const secretRoot = cloneStagedArchiveTree(stagedRoot);
+    const syntheticSecret = "synthetic-archive-preflight-secret-never-print";
+    try {
+      writeFileSync(
+        path.join(secretRoot, context.manifestPath),
+        `{"credential":"${syntheticSecret}"`,
+      );
+      const rejected = runStagedVerifier(
+        secretRoot,
+        "verify-archive-preflight",
+        manifest,
+        { SYNTHETIC_ARCHIVE_PREFLIGHT_SECRET: syntheticSecret },
+      );
+      assert.notEqual(rejected.status, 0);
+      assert.doesNotMatch(
+        `${rejected.stdout}\n${rejected.stderr}`,
+        new RegExp(syntheticSecret),
+      );
+    } finally {
+      rmSync(secretRoot, { recursive: true, force: true });
+    }
+  } finally {
+    rmSync(stagedRoot, { recursive: true, force: true });
+    rmSync(context.root, { recursive: true, force: true });
+  }
+}
+
+{
+  const context = await fixture();
+  const manifest = readManifest(context.root, context.manifestPath);
+  const stagedRoot = createStagedArchiveTree(context);
+  try {
+    const finalStandalone = runStagedVerifier(
+      stagedRoot,
+      "verify-standalone",
+      manifest,
+    );
+    assert.equal(finalStandalone.status, 0);
+    assert.match(finalStandalone.stdout, /Standalone production artifact evidence valid/);
+
+    const archivePreflight = runStagedVerifier(
+      stagedRoot,
+      "verify-archive-preflight",
+      manifest,
+    );
+    assert.equal(archivePreflight.status, 0);
+    const preflightResult = JSON.parse(archivePreflight.stdout);
+    assert.equal(preflightResult.preflightPassed, true);
+    assert.equal(preflightResult.certificationComplete, false);
+    assert.equal(preflightResult.finalStandaloneVerificationRequired, true);
+    const preflightResultPath =
+      ".local/production-artifact-evidence/archive-preflight-result.json";
+    writeStagedJson(stagedRoot, preflightResultPath, preflightResult);
+    const substitutedFinal = runStagedVerifier(
+      stagedRoot,
+      "verify-standalone",
+      manifest,
+      { PRODUCTION_EVIDENCE_MANIFEST: preflightResultPath },
+    );
+    assert.notEqual(
+      substitutedFinal.status,
+      0,
+      "an archive-preflight result must not substitute for final standalone evidence",
+    );
+
+    const finalNegativeCases = [
+      {
+        name: "missing runtime report",
+        mutate(root) {
+          rmSync(path.join(root, context.reportPath));
+        },
+        expected: /required test report is missing/,
+      },
+      {
+        name: "failed runtime report",
+        async mutate(root) {
+          await rewriteStagedManifest(root, (candidate) => {
+            candidate.tests[0].processExitCode = 1;
+            candidate.repositoryEvidence.status = "failed";
+          });
+        },
+        expected: /production smoke command exited nonzero|approval-ready/,
+      },
+      {
+        name: "incomplete test inventory",
+        async mutate(root) {
+          const report = readStagedJson(root, context.reportPath);
+          report.suites[0].specs.pop();
+          report.stats.expected = 1;
+          writeStagedJson(root, context.reportPath, report);
+          const reportBytes = readFileSync(path.join(root, context.reportPath));
+          await rewriteStagedManifest(root, (candidate) => {
+            candidate.tests[0].report.sha256 = createHash("sha256")
+              .update(reportBytes)
+              .digest("hex");
+            candidate.tests[0].stats = report.stats;
+          });
+        },
+        expected: /requirement runtime\.health-catalog-ready is missing/,
+      },
+      {
+        name: "mismatched report source or artifact",
+        async mutate(root) {
+          await rewriteStagedManifest(root, (candidate) => {
+            candidate.tests[0].artifactSha256 = "f".repeat(64);
+          });
+        },
+        expected: /test report is bound to another artifact/,
+      },
+      {
+        name: "missing runtime completion marker",
+        async mutate(root) {
+          const timing = readStagedJson(root, context.phaseTimingPath);
+          timing.complete = false;
+          writeStagedJson(root, context.phaseTimingPath, timing);
+          const timingBytes = readFileSync(path.join(root, context.phaseTimingPath));
+          await rewriteStagedManifest(root, (candidate) => {
+            candidate.tests[0].phaseTimings.sha256 = createHash("sha256")
+              .update(timingBytes)
+              .digest("hex");
+          });
+        },
+        expected: /phase timing contract is incomplete or non-canonical/,
+      },
+    ];
+    for (const testCase of finalNegativeCases) {
+      const negativeRoot = cloneStagedArchiveTree(stagedRoot);
+      try {
+        await testCase.mutate(negativeRoot);
+        const rejected = runStagedVerifier(
+          negativeRoot,
+          "verify-standalone",
+          manifest,
+        );
+        assert.notEqual(rejected.status, 0, `${testCase.name} must fail closed`);
+        assert.match(
+          `${rejected.stdout}\n${rejected.stderr}`,
+          testCase.expected,
+          testCase.name,
+        );
+      } finally {
+        rmSync(negativeRoot, { recursive: true, force: true });
+      }
+    }
+  } finally {
+    rmSync(stagedRoot, { recursive: true, force: true });
+    rmSync(context.root, { recursive: true, force: true });
+  }
+}
+
+{
   const context = await fixture();
   const manifest = readManifest(context.root, context.manifestPath);
   rmSync(path.join(context.root, ".git"), { recursive: true, force: true });
@@ -4277,8 +4969,7 @@ for (const mutate of [
   const result = await validateProductionEvidence({
     repositoryRoot: context.root,
     manifestPath: context.manifestPath,
-    requireTests: true,
-    standalone: true,
+    verificationMode: PRODUCTION_EVIDENCE_VERIFICATION_MODES.STANDALONE_FINAL,
     expectedSourceCommitSha: manifest.source.commitSha,
   });
   assert.deepEqual(result.issues, []);
@@ -4287,8 +4978,7 @@ for (const mutate of [
   const mismatched = await validateProductionEvidence({
     repositoryRoot: context.root,
     manifestPath: context.manifestPath,
-    requireTests: true,
-    standalone: true,
+    verificationMode: PRODUCTION_EVIDENCE_VERIFICATION_MODES.STANDALONE_FINAL,
     expectedSourceCommitSha: "f".repeat(40),
   });
   assert.equal(mismatched.valid, false);

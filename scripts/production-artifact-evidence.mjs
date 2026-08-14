@@ -21,23 +21,119 @@ import {
 import { mkdir } from "node:fs/promises";
 import path from "node:path";
 import process from "node:process";
-import { validateRequiredTestReport } from "./required-test-truthfulness.mjs";
-import {
+
+export const PRODUCTION_EVIDENCE_VERIFIER_SOURCE_PATHS = Object.freeze([
+  "scripts/production-artifact-contract.mjs",
+  "scripts/production-artifact-evidence.mjs",
+  "scripts/required-test-truthfulness.mjs",
+  "scripts/required-test-manifest.json",
+  "scripts/runtime-smoke-phase-budget.mjs",
+  "scripts/runtime-smoke-failure-evidence.mjs",
+  "scripts/runtime-smoke-operation-contracts.mjs",
+  "scripts/runtime-smoke-operation-deadline.mjs",
+  "scripts/runtime-smoke-telemetry-bootstrap-contract.mjs",
+]);
+
+const ARCHIVE_PREFLIGHT_COMMAND = "verify-archive-preflight";
+const ARCHIVE_PREFLIGHT_PROHIBITED_PATHS = Object.freeze([
+  ".git",
+  ".env",
+  ".env.local",
+  ".env.production",
+  ".env.production.local",
+  ".vercel",
+  "release-evidence-private",
+]);
+
+function assertArchivePreflightBootstrap() {
+  const stagedRoot = path.resolve(process.cwd());
+  const executingPath = path.resolve(import.meta.filename);
+  const stagedEntryPoint = path.join(
+    stagedRoot,
+    "scripts/production-artifact-evidence.mjs",
+  );
+  if (
+    !existsSync(stagedEntryPoint) ||
+    realpathSync(stagedEntryPoint) !== realpathSync(executingPath)
+  ) {
+    throw new Error(
+      "archive-preflight verifier must execute from the staged archive root",
+    );
+  }
+  for (const relativePath of ARCHIVE_PREFLIGHT_PROHIBITED_PATHS) {
+    if (existsSync(path.join(stagedRoot, relativePath))) {
+      throw new Error(
+        `archive-preflight staged tree contains prohibited path: ${relativePath}`,
+      );
+    }
+  }
+  const closureRecords = [];
+  for (const relativePath of PRODUCTION_EVIDENCE_VERIFIER_SOURCE_PATHS) {
+    const absolutePath = path.join(stagedRoot, relativePath);
+    if (!existsSync(absolutePath)) {
+      throw new Error(`archive-preflight verifier source is missing: ${relativePath}`);
+    }
+    const metadata = lstatSync(absolutePath);
+    const resolvedPath = realpathSync(absolutePath);
+    if (
+      !metadata.isFile() ||
+      resolvedPath !== absolutePath ||
+      !resolvedPath.startsWith(`${stagedRoot}${path.sep}`)
+    ) {
+      throw new Error(
+        `archive-preflight verifier source is not a contained staged file: ${relativePath}`,
+      );
+    }
+    const bytes = readFileSync(absolutePath);
+    closureRecords.push({
+      path: relativePath,
+      bytes: bytes.byteLength,
+      sha256: sha256(bytes),
+    });
+  }
+  const expectedClosureSha256 =
+    process.env.PRODUCTION_EVIDENCE_EXPECTED_VERIFIER_SOURCE_CLOSURE_SHA256?.trim();
+  if (!/^[0-9a-f]{64}$/.test(expectedClosureSha256 ?? "")) {
+    throw new Error(
+      "archive preflight requires an exact expected verifier source closure SHA-256",
+    );
+  }
+  const closureDigestInput = closureRecords
+    .map((file) => `${file.sha256}  ${file.bytes}  ${file.path}\n`)
+    .join("");
+  if (sha256(closureDigestInput) !== expectedClosureSha256) {
+    throw new Error("archive preflight verifier source closure SHA-256 mismatch");
+  }
+}
+
+if (process.argv[2] === ARCHIVE_PREFLIGHT_COMMAND) {
+  try {
+    assertArchivePreflightBootstrap();
+  } catch (error) {
+    console.error(error instanceof Error ? error.message : String(error));
+    process.exit(1);
+  }
+}
+
+const { validateRequiredTestReport } = await import(
+  "./required-test-truthfulness.mjs"
+);
+const {
   FURNISHED_TEMPLATE_PHASE_CONTRACTS,
   RUNTIME_SMOKE_OVERHEAD_BUDGETS,
   RUNTIME_SMOKE_PHASE_BUDGETS,
   RUNTIME_SMOKE_PHASE_TIMING_SCHEMA,
   RUNTIME_SMOKE_WHOLE_TEST_TIMEOUT_MS,
-} from "./runtime-smoke-phase-budget.mjs";
-import {
-  validateRuntimeSmokeFailureProvenance,
-} from "./runtime-smoke-failure-evidence.mjs";
-import {
+} = await import("./runtime-smoke-phase-budget.mjs");
+const { validateRuntimeSmokeFailureProvenance } = await import(
+  "./runtime-smoke-failure-evidence.mjs"
+);
+const {
   RUNTIME_SMOKE_TELEMETRY_BOOTSTRAP_ATTACHMENT,
   summarizeRuntimeSmokeTelemetryBootstrapEvidence,
   validateRuntimeSmokeTelemetryBootstrapSequence,
-} from "./runtime-smoke-telemetry-bootstrap-contract.mjs";
-import {
+} = await import("./runtime-smoke-telemetry-bootstrap-contract.mjs");
+const {
   BUILD_COMMAND,
   DEPENDENCY_INSTALL_COMMAND,
   GENERATED_SOURCE_CHECK_COMMAND,
@@ -46,11 +142,13 @@ import {
   PRODUCTION_EVIDENCE_JOURNAL_VERSION,
   PRODUCTION_EVIDENCE_SCHEMA,
   PRODUCTION_EVIDENCE_SERVER_COMMAND,
-  PRODUCTION_EVIDENCE_UNDERLYING_SERVER_COMMAND as UNDERLYING_SERVER_COMMAND,
+  PRODUCTION_EVIDENCE_UNDERLYING_SERVER_COMMAND: UNDERLYING_SERVER_COMMAND,
   PRODUCTION_EVIDENCE_VALIDATOR_VERSION,
+  PRODUCTION_EVIDENCE_VERIFICATION_MODES,
+  PRODUCTION_EVIDENCE_VERIFICATION_RESULT_SCHEMA,
   PRODUCTION_EVIDENCE_WRAPPER_VERSION,
   validateCurrentProductionEvidenceManifest,
-} from "./production-artifact-contract.mjs";
+} = await import("./production-artifact-contract.mjs");
 
 export {
   BUILD_COMMAND,
@@ -62,8 +160,10 @@ export {
   PRODUCTION_EVIDENCE_SCHEMA,
   PRODUCTION_EVIDENCE_SERVER_COMMAND,
   PRODUCTION_EVIDENCE_VALIDATOR_VERSION,
+  PRODUCTION_EVIDENCE_VERIFICATION_MODES,
+  PRODUCTION_EVIDENCE_VERIFICATION_RESULT_SCHEMA,
   PRODUCTION_EVIDENCE_WRAPPER_VERSION,
-} from "./production-artifact-contract.mjs";
+};
 
 const DEFAULT_EVIDENCE_DIRECTORY = ".local/production-artifact-evidence";
 const DEFAULT_MANIFEST_PATH = `${DEFAULT_EVIDENCE_DIRECTORY}/manifest.json`;
@@ -168,6 +268,227 @@ const EXTERNAL_CONTROLS = [
   status: "not_verified",
   reason,
 }));
+
+const VERIFICATION_MODE_CONFIG = Object.freeze({
+  [PRODUCTION_EVIDENCE_VERIFICATION_MODES.REPOSITORY_PREFLIGHT]: Object.freeze({
+    standalone: false,
+    requireTests: false,
+    requireSemanticJournal: true,
+    allowFailedRuntimeSmoke: false,
+  }),
+  [PRODUCTION_EVIDENCE_VERIFICATION_MODES.ARCHIVE_PREFLIGHT]: Object.freeze({
+    standalone: true,
+    requireTests: false,
+    requireSemanticJournal: true,
+    allowFailedRuntimeSmoke: false,
+  }),
+  [PRODUCTION_EVIDENCE_VERIFICATION_MODES.REPOSITORY_FINAL]: Object.freeze({
+    standalone: false,
+    requireTests: true,
+    requireSemanticJournal: true,
+    allowFailedRuntimeSmoke: false,
+  }),
+  [PRODUCTION_EVIDENCE_VERIFICATION_MODES.REPOSITORY_RUNTIME_FAILURE]:
+    Object.freeze({
+      standalone: false,
+      requireTests: true,
+      requireSemanticJournal: true,
+      allowFailedRuntimeSmoke: true,
+    }),
+  [PRODUCTION_EVIDENCE_VERIFICATION_MODES.STANDALONE_FINAL]: Object.freeze({
+    standalone: true,
+    requireTests: true,
+    requireSemanticJournal: false,
+    allowFailedRuntimeSmoke: false,
+  }),
+});
+
+function archivePreflightExpectedIdentity(environment) {
+  return {
+    candidateIdentifier:
+      environment.PRODUCTION_EVIDENCE_EXPECTED_CANDIDATE_ID?.trim(),
+    sourceCommitSha: environment.PRODUCTION_EVIDENCE_EXPECTED_COMMIT_SHA?.trim(),
+    sourceTreeSha: environment.PRODUCTION_EVIDENCE_EXPECTED_TREE_SHA?.trim(),
+    nextBuildId: environment.PRODUCTION_EVIDENCE_EXPECTED_BUILD_ID?.trim(),
+    artifactSha256:
+      environment.PRODUCTION_EVIDENCE_EXPECTED_ARTIFACT_SHA256?.trim(),
+    verifierSourceClosureSha256:
+      environment.PRODUCTION_EVIDENCE_EXPECTED_VERIFIER_SOURCE_CLOSURE_SHA256?.trim(),
+  };
+}
+
+function archivePreflightExpectedIdentityIssues(manifest, expectedIdentity) {
+  const issues = [];
+  if (!/^[A-Za-z0-9._:-]{1,128}$/.test(expectedIdentity?.candidateIdentifier ?? "")) {
+    issues.push("archive preflight requires an exact expected candidate identifier");
+  } else if (manifest.candidateIdentifier !== expectedIdentity.candidateIdentifier) {
+    issues.push("archive preflight evidence belongs to another candidate");
+  }
+  if (!/^[0-9a-f]{40,64}$/i.test(expectedIdentity?.sourceCommitSha ?? "")) {
+    issues.push("archive preflight requires an exact expected source commit SHA");
+  } else if (manifest.source?.commitSha !== expectedIdentity.sourceCommitSha) {
+    issues.push("archive preflight evidence belongs to another source commit");
+  }
+  if (!/^[0-9a-f]{40,64}$/i.test(expectedIdentity?.sourceTreeSha ?? "")) {
+    issues.push("archive preflight requires an exact expected source tree SHA");
+  } else if (manifest.source?.treeSha !== expectedIdentity.sourceTreeSha) {
+    issues.push("archive preflight evidence belongs to another source tree");
+  }
+  if (
+    typeof expectedIdentity?.nextBuildId !== "string" ||
+    expectedIdentity.nextBuildId.length === 0
+  ) {
+    issues.push("archive preflight requires an exact expected Build ID");
+  } else if (manifest.build?.nextBuildId !== expectedIdentity.nextBuildId) {
+    issues.push("archive preflight evidence belongs to another Build ID");
+  }
+  if (!/^[0-9a-f]{64}$/.test(expectedIdentity?.artifactSha256 ?? "")) {
+    issues.push("archive preflight requires an exact expected artifact SHA-256");
+  } else if (manifest.artifact?.sha256 !== expectedIdentity.artifactSha256) {
+    issues.push("archive preflight evidence belongs to another artifact");
+  }
+  if (
+    !/^[0-9a-f]{64}$/.test(
+      expectedIdentity?.verifierSourceClosureSha256 ?? "",
+    )
+  ) {
+    issues.push(
+      "archive preflight requires an exact expected verifier source closure SHA-256",
+    );
+  }
+  return issues;
+}
+
+function archivePreflightSourceIdentityIssues(source) {
+  return exactKeys(source, [
+    "commitSha",
+    "treeSha",
+    "branch",
+    "sourceRef",
+    "trackedClean",
+    "untrackedClean",
+    "trackedChanges",
+    "untrackedFiles",
+    "ignoredInfluentialFiles",
+    "influentialEnvironmentFiles",
+    "submodulesClean",
+    "submodules",
+  ])
+    ? []
+    : ["archive preflight source identity shape is malformed"];
+}
+
+function unsafeAbsolutePortableFields(value, currentPath = "evidence") {
+  if (typeof value === "string") {
+    return path.posix.isAbsolute(value) ||
+      path.win32.isAbsolute(value) ||
+      value.startsWith("~/") ||
+      value.startsWith("~\\")
+      ? [currentPath]
+      : [];
+  }
+  if (Array.isArray(value)) {
+    return value.flatMap((entry, index) =>
+      unsafeAbsolutePortableFields(entry, `${currentPath}[${index}]`),
+    );
+  }
+  if (value === null || typeof value !== "object") return [];
+  return Object.entries(value).flatMap(([key, nested]) =>
+    unsafeAbsolutePortableFields(nested, `${currentPath}.${key}`),
+  );
+}
+
+async function inspectVerifierSourceClosure(repositoryRoot) {
+  const root = path.resolve(repositoryRoot);
+  const files = [];
+  for (const relativePath of PRODUCTION_EVIDENCE_VERIFIER_SOURCE_PATHS) {
+    const absolutePath = resolveRepositoryPath(
+      root,
+      relativePath,
+      "verifier source path",
+    );
+    if (!existsSync(absolutePath)) {
+      throw new Error(`archive-preflight verifier source is missing: ${relativePath}`);
+    }
+    const metadata = lstatSync(absolutePath);
+    if (
+      !metadata.isFile() ||
+      realpathSync(absolutePath) !== absolutePath ||
+      !realpathSync(absolutePath).startsWith(`${root}${path.sep}`)
+    ) {
+      throw new Error(
+        `archive-preflight verifier source is not a contained staged file: ${relativePath}`,
+      );
+    }
+    files.push({
+      path: relativePath,
+      bytes: metadata.size,
+      sha256: await sha256File(absolutePath),
+    });
+  }
+  const digestInput = files
+    .map((file) => `${file.sha256}  ${file.bytes}  ${file.path}\n`)
+    .join("");
+  return {
+    hashAlgorithm: "sha256",
+    sha256: sha256(digestInput),
+    fileCount: files.length,
+    files,
+  };
+}
+
+function archiveInventoryBindingIssues(manifest, snapshot) {
+  const issues = [];
+  const manifestDependencies = {
+    packageManager: manifest.dependencies?.packageManager,
+    lockfile: manifest.dependencies?.lockfile,
+    installedLockfile: manifest.dependencies?.installedLockfile,
+  };
+  const {
+    floorPlanRouteNftContract: manifestFloorPlanRouteNftContract,
+    ...manifestArtifact
+  } = manifest.artifact ?? {};
+  const { nextBuildId: snapshotNextBuildId, ...snapshotArtifact } =
+    snapshot.artifact ?? {};
+  if (
+    JSON.stringify(manifestDependencies) !== JSON.stringify(snapshot.dependencies) ||
+    JSON.stringify(manifestArtifact) !== JSON.stringify(snapshotArtifact) ||
+    manifest.build?.nextBuildId !== snapshotNextBuildId ||
+    JSON.stringify(manifestFloorPlanRouteNftContract) !==
+      JSON.stringify(snapshot.floorPlanRouteNftContract)
+  ) {
+    issues.push("bound artifact inventory snapshot does not match the manifest");
+  }
+  return issues;
+}
+
+function archivePreflightVerificationResult(manifest, semanticJournal, verifierClosure) {
+  return {
+    schema: PRODUCTION_EVIDENCE_VERIFICATION_RESULT_SCHEMA,
+    verificationMode: PRODUCTION_EVIDENCE_VERIFICATION_MODES.ARCHIVE_PREFLIGHT,
+    preflightPassed: true,
+    certificationComplete: false,
+    runtimeEvidenceRequired: true,
+    finalStandaloneVerificationRequired: true,
+    candidateIdentifier: manifest.candidateIdentifier,
+    source: {
+      commitSha: manifest.source.commitSha,
+      treeSha: manifest.source.treeSha,
+    },
+    artifact: {
+      nextBuildId: manifest.build.nextBuildId,
+      sha256: manifest.artifact.sha256,
+      fileCount: manifest.artifact.fileCount,
+      bytes: manifest.artifact.bytes,
+    },
+    semanticJournal: {
+      schema: semanticJournal.schema,
+      version: semanticJournal.version,
+      runNonce: semanticJournal.runNonce,
+    },
+    verifierSourceClosure: verifierClosure,
+  };
+}
 
 function sha256(bytes) {
   return createHash("sha256").update(bytes).digest("hex");
@@ -2508,16 +2829,34 @@ function validateTestRecord(
 export async function validateProductionEvidence({
   repositoryRoot,
   manifestPath,
-  requireTests = true,
-  standalone = false,
+  verificationMode = PRODUCTION_EVIDENCE_VERIFICATION_MODES.REPOSITORY_FINAL,
   expectedSourceCommitSha,
+  expectedArchiveIdentity,
   environment = process.env,
-  allowFailedRuntimeSmoke = false,
 }) {
   const root = path.resolve(repositoryRoot);
+  const modeConfig = VERIFICATION_MODE_CONFIG[verificationMode];
+  if (!modeConfig) {
+    return {
+      valid: false,
+      issues: [`unknown production evidence verification mode: ${String(verificationMode)}`],
+      manifest: null,
+      verificationResult: null,
+    };
+  }
+  const {
+    standalone,
+    requireTests,
+    requireSemanticJournal,
+    allowFailedRuntimeSmoke,
+  } = modeConfig;
   const issues = [];
+  let semanticJournal = null;
+  let verifierSourceClosure = null;
   const readResult = readProductionEvidenceManifest(root, manifestPath, issues);
-  if (!readResult) return { valid: false, issues, manifest: null };
+  if (!readResult) {
+    return { valid: false, issues, manifest: null, verificationResult: null };
+  }
   const { manifest, bytes } = readResult;
   if (
     manifest.schema !== PRODUCTION_EVIDENCE_SCHEMA ||
@@ -2525,14 +2864,58 @@ export async function validateProductionEvidence({
   ) {
     issues.push("unsupported production evidence schema or validator version");
   }
-  if (!standalone) {
+  if (requireSemanticJournal) {
     try {
-      const semanticJournal = readProductionEvidenceSemanticJournal({ repositoryRoot: root });
+      semanticJournal = readProductionEvidenceSemanticJournal({ repositoryRoot: root });
       const currentContract = validateCurrentProductionEvidenceManifest({
         manifest,
         semanticJournal,
       });
       issues.push(...currentContract.issues);
+    } catch (error) {
+      issues.push(error instanceof Error ? error.message : String(error));
+    }
+  }
+  if (verificationMode === PRODUCTION_EVIDENCE_VERIFICATION_MODES.ARCHIVE_PREFLIGHT) {
+    issues.push(
+      ...archivePreflightExpectedIdentityIssues(manifest, expectedArchiveIdentity),
+      ...archivePreflightSourceIdentityIssues(manifest.source),
+    );
+    const unsafePortableFields = unsafeAbsolutePortableFields({
+      manifest,
+      semanticJournal,
+    });
+    if (unsafePortableFields.length > 0) {
+      issues.push(
+        `archive preflight evidence contains unsafe absolute portable fields: ${unsafePortableFields.join(", ")}`,
+      );
+    }
+    for (const relativePath of ARCHIVE_PREFLIGHT_PROHIBITED_PATHS) {
+      if (existsSync(path.join(root, relativePath))) {
+        issues.push(`archive preflight staged tree contains prohibited path: ${relativePath}`);
+      }
+    }
+    if (semanticJournal) {
+      try {
+        const snapshot = readArtifactInventorySnapshot(root, semanticJournal);
+        issues.push(...archiveInventoryBindingIssues(manifest, snapshot));
+      } catch (error) {
+        issues.push(error instanceof Error ? error.message : String(error));
+      }
+    }
+    try {
+      verifierSourceClosure = await inspectVerifierSourceClosure(root);
+      if (
+        /^[0-9a-f]{64}$/.test(
+          expectedArchiveIdentity?.verifierSourceClosureSha256 ?? "",
+        ) &&
+        verifierSourceClosure.sha256 !==
+          expectedArchiveIdentity.verifierSourceClosureSha256
+      ) {
+        issues.push(
+          "archive preflight verifier source closure SHA-256 mismatch",
+        );
+      }
     } catch (error) {
       issues.push(error instanceof Error ? error.message : String(error));
     }
@@ -2552,10 +2935,14 @@ export async function validateProductionEvidence({
 
   if (standalone) {
     issues.push(...sourceIssues(manifest.source));
-    if (!/^[0-9a-f]{40,64}$/i.test(expectedSourceCommitSha ?? "")) {
-      issues.push("standalone verification requires an exact expected source commit SHA");
-    } else if (manifest.source?.commitSha !== expectedSourceCommitSha) {
-      issues.push("standalone evidence belongs to another source commit");
+    if (
+      verificationMode === PRODUCTION_EVIDENCE_VERIFICATION_MODES.STANDALONE_FINAL
+    ) {
+      if (!/^[0-9a-f]{40,64}$/i.test(expectedSourceCommitSha ?? "")) {
+        issues.push("standalone verification requires an exact expected source commit SHA");
+      } else if (manifest.source?.commitSha !== expectedSourceCommitSha) {
+        issues.push("standalone evidence belongs to another source commit");
+      }
     }
   } else {
     try {
@@ -2925,7 +3312,20 @@ export async function validateProductionEvidence({
   ) {
     issues.push("runtime-smoke failure evidence does not remain fail-closed");
   }
-  return { valid: issues.length === 0, issues, manifest };
+  return {
+    valid: issues.length === 0,
+    issues,
+    manifest,
+    verificationResult:
+      issues.length === 0 &&
+      verificationMode === PRODUCTION_EVIDENCE_VERIFICATION_MODES.ARCHIVE_PREFLIGHT
+        ? archivePreflightVerificationResult(
+            manifest,
+            semanticJournal,
+            verifierSourceClosure,
+          )
+        : null,
+  };
 }
 
 function truthfulRuntimeSmokeFailureIssues(truthfulness) {
@@ -2954,7 +3354,8 @@ export async function recordProductionEvidenceTest({
   const preflight = await validateProductionEvidence({
     repositoryRoot,
     manifestPath,
-    requireTests: false,
+    verificationMode:
+      PRODUCTION_EVIDENCE_VERIFICATION_MODES.REPOSITORY_PREFLIGHT,
   });
   if (!preflight.valid) throw new Error(preflight.issues.join("; "));
   const manifest = preflight.manifest;
@@ -3113,9 +3514,9 @@ export async function verifyRuntimeSmokeFailureEvidence({
   const fullValidation = await validateProductionEvidence({
     repositoryRoot: root,
     manifestPath,
-    requireTests: true,
+    verificationMode:
+      PRODUCTION_EVIDENCE_VERIFICATION_MODES.REPOSITORY_RUNTIME_FAILURE,
     environment,
-    allowFailedRuntimeSmoke: true,
   });
   if (!fullValidation.valid) throw new Error(fullValidation.issues.join("; "));
   const manifest = fullValidation.manifest;
@@ -3327,7 +3728,7 @@ export async function createProductionEvidenceBundle({
   const result = await validateProductionEvidence({
     repositoryRoot: root,
     manifestPath,
-    requireTests: true,
+    verificationMode: PRODUCTION_EVIDENCE_VERIFICATION_MODES.REPOSITORY_FINAL,
     environment,
   });
   if (!result.valid) throw new Error(result.issues.join("; "));
@@ -3391,7 +3792,8 @@ async function serveEvidence(repositoryRoot, manifestPath) {
   const result = await validateProductionEvidence({
     repositoryRoot,
     manifestPath,
-    requireTests: false,
+    verificationMode:
+      PRODUCTION_EVIDENCE_VERIFICATION_MODES.REPOSITORY_PREFLIGHT,
   });
   if (!result.valid) throw new Error(result.issues.join("; "));
   const manifest = result.manifest;
@@ -3439,7 +3841,8 @@ async function smokeEvidence(repositoryRoot, manifestPath, reportPath) {
   const preflight = await validateProductionEvidence({
     repositoryRoot,
     manifestPath,
-    requireTests: false,
+    verificationMode:
+      PRODUCTION_EVIDENCE_VERIFICATION_MODES.REPOSITORY_PREFLIGHT,
   });
   if (!preflight.valid) throw new Error(preflight.issues.join("; "));
   const manifest = preflight.manifest;
@@ -3500,7 +3903,7 @@ async function smokeEvidence(repositoryRoot, manifestPath, reportPath) {
   const finalResult = await validateProductionEvidence({
     repositoryRoot,
     manifestPath,
-    requireTests: true,
+    verificationMode: PRODUCTION_EVIDENCE_VERIFICATION_MODES.REPOSITORY_FINAL,
   });
   if (!finalResult.valid) throw new Error(finalResult.issues.join("; "));
   console.log(
@@ -3537,7 +3940,8 @@ async function cli() {
     const result = await validateProductionEvidence({
       repositoryRoot,
       manifestPath,
-      requireTests: false,
+      verificationMode:
+        PRODUCTION_EVIDENCE_VERIFICATION_MODES.REPOSITORY_PREFLIGHT,
     });
     if (!result.valid) throw new Error(result.issues.join("; "));
     console.log("Production artifact canonical preflight valid.");
@@ -3559,12 +3963,22 @@ async function cli() {
       manifestPath,
       reportPath,
     });
+  } else if (command === ARCHIVE_PREFLIGHT_COMMAND) {
+    const result = await validateProductionEvidence({
+      repositoryRoot,
+      manifestPath,
+      verificationMode:
+        PRODUCTION_EVIDENCE_VERIFICATION_MODES.ARCHIVE_PREFLIGHT,
+      expectedArchiveIdentity: archivePreflightExpectedIdentity(process.env),
+    });
+    if (!result.valid) throw new Error(result.issues.join("; "));
+    console.log(JSON.stringify(result.verificationResult, null, 2));
   } else if (command === "verify-standalone") {
     const result = await validateProductionEvidence({
       repositoryRoot,
       manifestPath,
-      requireTests: true,
-      standalone: true,
+      verificationMode:
+        PRODUCTION_EVIDENCE_VERIFICATION_MODES.STANDALONE_FINAL,
       expectedSourceCommitSha:
         process.env.PRODUCTION_EVIDENCE_EXPECTED_COMMIT_SHA?.trim(),
     });
@@ -3576,7 +3990,7 @@ async function cli() {
     const result = await validateProductionEvidence({
       repositoryRoot,
       manifestPath,
-      requireTests: true,
+      verificationMode: PRODUCTION_EVIDENCE_VERIFICATION_MODES.REPOSITORY_FINAL,
     });
     if (!result.valid) throw new Error(result.issues.join("; "));
     console.log(
@@ -3584,7 +3998,7 @@ async function cli() {
     );
   } else {
     throw new Error(
-      "Usage: production-artifact-evidence.mjs build|recover|verify-floor-plan-traces|verify-preflight|serve|smoke|verify-runtime-failure|bundle|verify|verify-standalone",
+      "Usage: production-artifact-evidence.mjs build|recover|verify-floor-plan-traces|verify-preflight|verify-archive-preflight|serve|smoke|verify-runtime-failure|bundle|verify|verify-standalone",
     );
   }
 }

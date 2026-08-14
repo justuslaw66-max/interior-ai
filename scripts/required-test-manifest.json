@@ -146,6 +146,11 @@
           "marker": "real Playwright config must write to the exact external report path"
         },
         {
+          "id": "artifact.staged-archive-preflight-cli",
+          "source": "scripts/test-production-artifact-evidence.mjs",
+          "marker": "actual staged archive-preflight CLI executes the physical staged verifier"
+        },
+        {
           "id": "floor-plan.route-nft-fail-closed",
           "source": "scripts/test-production-artifact-evidence.mjs",
           "marker": "production route NFT references a test source"

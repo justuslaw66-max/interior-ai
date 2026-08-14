@@ -1,5 +1,38 @@
 # Required-test truthfulness
 
+## CH-0015I staged archive-preflight ownership — 2026-08-14
+
+`ci.production-artifact-contract` remains the sole merge-required owner. Its
+existing `scripts/test-production-artifact-evidence.mjs` source now contributes
+`artifact.staged-archive-preflight-cli`; no new gate, test source, package
+command, workflow step, project, browser, retry, timeout, or cadence is added.
+The final inventory remains **27 gates / 379 classified test sources**.
+
+The contribution creates a task-owned staged tree outside every repository,
+copies the complete canonical verifier closure, omits `.git` and runtime/browser
+evidence, and invokes the physical staged `production-artifact-evidence.mjs`.
+It proves `verify-preflight` remains Git-bound, `verify-standalone` continues to
+require complete runtime evidence, and `verify-archive-preflight` alone accepts
+the pre-runtime staged contract while returning explicit non-final JSON. A
+second staged case adds valid runtime evidence and proves final standalone then
+passes while archive preflight remains non-final.
+
+The same owner covers unknown modes; missing/malformed/future manifest and
+journal forms; candidate/commit/tree/nonce/Build ID/artifact mismatches;
+inventory, artifact-file, verifier-closure/import, ordering, build, inventory,
+manifest, partial-test, source-fallback, portable-path, and safe-error failures;
+the closure digest is externally identity-bound and the standalone source shape
+rejects both absolute and relative worktree-fallback fields;
+and final standalone rejection of missing, failed, incomplete, mismatched, or
+uncompleted runtime evidence. Static guards preserve explicit mode semantics,
+one shared canonical validator, mandatory final tests, repository-bound legacy
+preflight, no generic caller-controlled `requireTests=false`, and required-owner
+registration of the physical staged CLI test.
+
+The required owner does not claim exact-head certification or integration.
+Those remain pending with the final CH-0015 closure audit; Full E2E is outside
+this correction.
+
 ## CH-0015I external Playwright report-path ownership — 2026-08-14
 
 `ci.production-artifact-contract` remains the sole merge-required owner. It now

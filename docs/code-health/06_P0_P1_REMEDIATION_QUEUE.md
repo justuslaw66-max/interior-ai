@@ -1,5 +1,33 @@
 # P0/P1 remediation queue
 
+## CH-0015I staged archive-preflight verifier — 2026-08-14
+
+- **Classification:** `STAGED_ARCHIVE_PREFLIGHT_VERIFIER_CONTRACT_DEFECT /
+  MISSING_STANDALONE_PRE_RUNTIME_VERIFICATION_MODE`. The preserved disposition
+  is `STOPPED_NOT_CERTIFIED_NOT_INTEGRATED`: repository preflight required
+  excluded Git state, while standalone final verification required runtime
+  evidence unavailable at the staged pre-runtime gate.
+- **Correction/policy:** add the explicit standalone, non-final
+  `verify-archive-preflight` mode under the canonical production-artifact owner.
+  It requires manifest v3, journal v1, bound inventory snapshot, external exact
+  candidate/source/tree/Build ID/artifact identity, successful semantic build
+  ordering, complete artifact rehash, trace/NFT safety, and contained verifier
+  closure bound to the staging owner's expected SHA-256. `.git`, source fallback,
+  unsafe portable paths, partial evidence, and unknown modes fail closed.
+- **Separation/proof:** repository `verify-preflight` remains Git-bound;
+  `verify-standalone` remains the sole final extracted-artifact mode and still
+  requires complete runtime evidence. A real task-owned staged CLI fixture plus
+  deterministic negatives is registered under `ci.production-artifact-contract`.
+  Inventory remains 27 gates / 379 sources; no server or database is started.
+- **Scope/status:** no runtime reordering, copied Git, archive/scanner/inclusion,
+  schema/journal meaning, report path, Phase 8, Floor Plan, telemetry, NFT,
+  timestamp, product, dependency, workflow, database, deployment, or external
+  control change. Exact-head certification, integration, and the final CH-0015
+  closure audit remain pending; no product/UI implementation surface is added.
+- **Rollback:** revert the single staged-preflight correction commit and rerun
+  production-artifact plus required-test truthfulness. This restores the known
+  certification blocker and changes no persisted data or external system.
+
 ## CH-0015I external Playwright report destination — 2026-08-14
 
 - **Classification:** `EXTERNAL_PLAYWRIGHT_REPORT_PATH_CONTRACT_DEFECT /

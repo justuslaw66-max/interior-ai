@@ -5,6 +5,75 @@ production-mode artifact evidence and required CI behavior. It does not describe
 or prove a Vercel deployment, stable staging, production, or external platform
 configuration.
 
+## CH-0015I staged archive preflight verification
+
+Classification is **STAGED_ARCHIVE_PREFLIGHT_VERIFIER_CONTRACT_DEFECT /
+MISSING_STANDALONE_PRE_RUNTIME_VERIFICATION_MODE**. The preserved certification
+disposition is **STOPPED_NOT_CERTIFIED_NOT_INTEGRATED**. The prior staged gate
+was impossible to satisfy: repository `verify-preflight` allowed pending tests
+but required intentionally excluded Git metadata, while `verify-standalone`
+worked after extraction but correctly required runtime-smoke evidence that did
+not exist before Phase 8 or runtime/browser certification. The failure remains
+a production-evidence lifecycle defect, not an archive-file, module-resolution,
+candidate-identity, Playwright, Phase 8, runtime-smoke, Floor Plan, or telemetry
+failure.
+
+The production-artifact owner now exposes three separate lifecycle modes:
+
+| CLI mode | Repository/Git | Manifest/journal and artifact checks | Runtime/browser evidence | Result / lifecycle |
+| --- | --- | --- | --- | --- |
+| `verify-preflight` | Repository-bound; Git, exact checkout, and clean source are required | v3 manifest, v1 journal, generated-source/build ordering, Build ID, artifact inventory, trace/NFT closure, and current checkout are revalidated | Not required | Existing non-final repository pre-runtime check |
+| `verify-archive-preflight` | Standalone; `.git` is prohibited and no checkout fallback is accepted | v3 manifest and sidecar, v1 journal, bound inventory snapshot, nonce/candidate/commit/tree, commands, toolchain, wrapper, Build ID, artifact SHA-256, every `.next`/`public` file, trace/NFT safety, verifier-source closure, and expected external identity are revalidated | Not required; absent evidence passes only here, while partial or contradictory evidence fails | Explicit `archive-preflight` JSON with `preflightPassed=true`, `certificationComplete=false`, `runtimeEvidenceRequired=true`, and `finalStandaloneVerificationRequired=true` |
+| `verify-standalone` | Standalone; no Git or `node_modules` required | Existing extracted artifact, lockfile, wrapper, manifest sidecar, Build ID, inventory, trace/NFT, report, and timing bindings remain | Required; missing, failed, skipped, flaky, incomplete, stale, or mismatched runtime evidence fails | Existing final standalone artifact verification after runtime smoke |
+
+Run the staged pre-runtime verifier from the physical staged root before
+compression and before Phase 8/runtime smoke:
+
+```sh
+PRODUCTION_EVIDENCE_EXPECTED_CANDIDATE_ID='<candidate-id>' \
+PRODUCTION_EVIDENCE_EXPECTED_COMMIT_SHA='<candidate-commit>' \
+PRODUCTION_EVIDENCE_EXPECTED_TREE_SHA='<candidate-tree>' \
+PRODUCTION_EVIDENCE_EXPECTED_BUILD_ID='<next-build-id>' \
+PRODUCTION_EVIDENCE_EXPECTED_ARTIFACT_SHA256='<artifact-sha256>' \
+PRODUCTION_EVIDENCE_EXPECTED_VERIFIER_SOURCE_CLOSURE_SHA256='<closure-sha256>' \
+node scripts/production-artifact-evidence.mjs verify-archive-preflight
+```
+
+The staged tree must carry the canonical manifest plus sidecar, semantic journal,
+bound artifact-inventory snapshot, `.next`, `public`, package/lockfile identity,
+and the complete nine-file verifier closure. Relative ESM dependencies must be
+regular files contained in that same staged tree, and their aggregate SHA-256
+must equal the staging owner's external expected identity. Missing closure files,
+symlink/import escape, `.git`, environment files, Vercel/private evidence,
+machine-local portable paths, cross-run bindings, incomplete build/inventory/
+manifest events, unsafe artifact paths, and any identity mismatch fail closed.
+The verifier requires no environment file and prints no raw environment value.
+
+Runtime-smoke reports, browser-owner evidence, Phase 8 outcomes, and a final
+certification outcome are intentionally excluded from the required preflight
+evidence. Complete test evidence may be revalidated if already present, but it
+never changes the preflight result into certification. Only the unchanged
+`verify-standalone` final mode can satisfy the standalone post-runtime contract;
+its tests were not made optional and a preflight result is not a promotion or
+integration input. Unknown modes fail closed.
+
+The focused owner constructs a task-owned staged tree outside the repository,
+copies the real verifier closure, excludes `.git` and runtime/browser evidence,
+and executes the physical staged entry point. It proves repository preflight
+fails without Git, final standalone fails without runtime evidence, archive
+preflight succeeds and remains non-final, every import resolves to staged bytes,
+and the fixture is removed. The same physical fixture passes final standalone
+only after valid runtime evidence is present. Deterministic negatives cover
+schema/journal/identity/inventory/artifact/closure/order/completion/path/secret
+boundaries and the existing final runtime failure matrix.
+
+No Git metadata is copied, runtime smoke is not reordered, and the existing
+archive constructor, scanner, file-inclusion policy, compression, upload paths,
+schema-v3 field meanings, journal-v1 field meanings, timestamp ordering,
+Playwright external report paths, Phase 8 budgets, product behavior, Floor Plan,
+telemetry, and NFT tracing are unchanged. Exact-head certification, integration,
+and the final CH-0015 closure audit remain pending.
+
 ## CH-0015I external Playwright report destinations
 
 Classification is **EXTERNAL_PLAYWRIGHT_REPORT_PATH_CONTRACT_DEFECT /

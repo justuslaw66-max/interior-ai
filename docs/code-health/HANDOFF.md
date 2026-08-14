@@ -1,5 +1,62 @@
 # Code health audit handoff
 
+## CH-0015I staged archive-preflight verifier handoff — 2026-08-14
+
+Branch `fix/ch-0015i-staged-archive-preflight-verifier` starts at exact candidate
+`d22fbf06e118f7e09249feaa06944abb221bd6cf`, tree
+`5c8d7ac85a6cf20ce303d31ed5b3ba93ab2d48d8`, whose parent is
+`3a4272671cb316aca64733f7258e52228bbfd341`. Integration local and remote remain
+`2c567fd483877c7dcbd8fd23e3cd8cb316732c8c`. Entry worktree/index/untracked/
+tracked-ignored checks were clean; no repository Git, app, build, browser,
+runtime-smoke, Phase 8, Prisma, or disposable-database process was active. Node
+was `v24.13.0`; npm was `11.6.2`.
+
+The authoritative classification is
+**STAGED_ARCHIVE_PREFLIGHT_VERIFIER_CONTRACT_DEFECT /
+MISSING_STANDALONE_PRE_RUNTIME_VERIFICATION_MODE**. The retained disposition is
+**STOPPED_NOT_CERTIFIED_NOT_INTEGRATED**. Repository `verify-preflight` required
+excluded Git metadata, and extracted `verify-standalone` required runtime-smoke
+evidence unavailable before Phase 8/runtime/browser certification. No compliant
+staged command existed; the finding is not relabelled as an archive, import,
+candidate, Playwright, Phase 8, runtime-smoke, product, Floor Plan, or telemetry
+failure.
+
+One canonical `verify-archive-preflight` mode now reuses the existing strict
+validator under explicit closed mode configuration. It is standalone and
+pre-runtime, requires manifest v3 plus sidecar, journal v1, bound inventory
+snapshot, expected candidate/commit/tree/Build ID/artifact identity, complete
+successful generated-source/build/inventory/manifest ordering, lock/toolchain/
+wrapper identity, every staged artifact file, trace/NFT safety, and a contained
+nine-file verifier-source closure whose aggregate hash must match the staging
+owner's external expected identity. It prohibits `.git`, environment/private
+paths, machine-source fallback, absolute portable fields, missing files,
+symlink/import escape, cross-run evidence, and partial or contradictory tests.
+It returns verification-result v1 with `archive-preflight`, passed preflight,
+incomplete certification, runtime still required, and final standalone still
+required.
+
+The existing modes retain their boundaries. `verify-preflight` is still
+repository/Git-bound and non-final. `verify-standalone` still requires complete
+successful runtime/test evidence and is the sole final extracted-artifact mode;
+missing tests remain fail-closed. Runtime smoke was not moved before archive
+preflight, no `.git` is copied, and no caller can select a generic
+`requireTests=false` bypass.
+
+`ci.production-artifact-contract` remains the sole required owner at 27 gates /
+379 sources. Its real external staged CLI fixture executes only staged bytes,
+starts no server or database, cleans its roots, proves the three-mode separation,
+and covers the complete deterministic negative matrix. Production-artifact and
+required-test truthfulness suites pass. Exact-head certification, integration,
+and the final CH-0015 closure audit remain pending; Full E2E, build, Phase 8,
+runtime smoke, and browser matrices were not run for this source correction.
+
+No Floor Plan Upload, telemetry bootstrap, NFT tracing, semantic timestamps,
+schema-v3 or journal-v1 field meaning, Playwright/report-path behavior, archive
+constructor/scanner/inclusion policy, benchmark, dependency, database, workflow,
+product, deployment, or external control changed. Rollback is one focused commit
+revert followed by production-artifact and truthfulness validation; it restores
+the known staged verification gap and changes no persisted or external state.
+
 ## CH-0015I external Playwright report-path handoff — 2026-08-14
 
 Branch `fix/ch-0015i-external-playwright-report-path` starts at exact candidate
