@@ -59,6 +59,13 @@ import {
   projectCertificationChildEnvironment,
   validateProjectedEnvironmentMetadata,
 } from "./production-certification-stage-environment.mjs";
+import {
+  RUNTIME_SMOKE_PHASE_BUDGETS,
+  createRuntimeSmokePhaseRecorder,
+  resolveRuntimeSmokeTimingDestination,
+} from "./runtime-smoke-phase-budget.mjs";
+import { validateRuntimeEvidence } from "./production-certification-evidence.mjs";
+import { preflightRuntimeSmokeEvidenceOutputs } from "./production-certification-real.mjs";
 
 const SIMULATION_ID = "production-certification-v1-simulation";
 const FIXED_NONCE = "123e4567-e89b-42d3-a456-426614174001";
@@ -420,7 +427,13 @@ function phase8Evidence(state, fixtureRoot, rawEvidenceSha256) {
   };
 }
 
-function runtimeEvidence(state, reportSha256, phaseTimingsSha256) {
+function runtimeEvidence(
+  state,
+  reportSha256,
+  phaseTimingsSha256,
+  phaseTimings,
+  stageEnvironment,
+) {
   return {
     schema: PRODUCTION_CERTIFICATION_RUNTIME_EVIDENCE_SCHEMA,
     identity: identityFromState(state),
@@ -428,6 +441,23 @@ function runtimeEvidence(state, reportSha256, phaseTimingsSha256) {
     simulation: true,
     reportSha256,
     phaseTimingsSha256,
+    phaseTimings: {
+      sha256: phaseTimingsSha256,
+      complete: phaseTimings.complete,
+      completionMarker: phaseTimings.evidenceBinding.completionMarker,
+      rootContract: phaseTimings.evidenceBinding.rootContract,
+      identity: phaseTimings.evidenceBinding.identity,
+    },
+    stageEnvironment: {
+      profileId: stageEnvironment.profileId,
+      profileSha256: stageEnvironment.profileSha256,
+      contractSchema: stageEnvironment.contractSchema,
+      contractSha256: stageEnvironment.contractSha256,
+      environmentNames: stageEnvironment.environmentNames,
+      environmentNamesSha256: stageEnvironment.environmentNamesSha256,
+      allowedVariableNamesSha256: stageEnvironment.allowedVariableNamesSha256,
+      requiredVariableNamesSha256: stageEnvironment.requiredVariableNamesSha256,
+    },
     stats: { expected: 2, passed: 2, unexpected: 0, skipped: 0, flaky: 0, retries: 0 },
     tests: [
       { id: "runtime.template-stability", outcome: "passed", retries: 0, skipped: false },
@@ -506,9 +536,8 @@ export async function runProductionCertificationSimulation({
   for (const owner of REQUIRED_BROWSER_OWNERS) {
     mkdirSync(path.join(evidenceRoot, "browser-targets", owner.id), { recursive: true });
   }
-  mkdirSync(path.join(evidenceRoot, "runtime-target"), { recursive: true });
+  mkdirSync(path.join(evidenceRoot, "runtime-smoke"), { recursive: true });
   mkdirSync(path.join(evidenceRoot, "phase8-target"), { recursive: true });
-  mkdirSync(path.join(evidenceRoot, "runtime-evidence-target"), { recursive: true });
   const doctorEnvironment = {
     ...process.env,
     ...environment,
@@ -521,15 +550,15 @@ export async function runProductionCertificationSimulation({
     CERTIFICATION_CREATED_AT: nextTimestamp(),
     CERTIFICATION_RUNTIME_REPORT_PATH: path.join(
       evidenceRoot,
-      "runtime-target/playwright.json",
+      "runtime-smoke/playwright-report.json",
     ),
     CERTIFICATION_RUNTIME_PHASE_TIMINGS_PATH: path.join(
       evidenceRoot,
-      "runtime-target/phase-timings.json",
+      "runtime-smoke/phase-timings.json",
     ),
     CERTIFICATION_RUNTIME_EVIDENCE_PATH: path.join(
       evidenceRoot,
-      "runtime-evidence-target/evidence.json",
+      "runtime-smoke/evidence.json",
     ),
     CERTIFICATION_PHASE8_EVIDENCE_PATH: path.join(
       evidenceRoot,
@@ -1409,16 +1438,108 @@ export async function runProductionCertificationSimulation({
     statePath,
     payload: { stage: "runtime-smoke", startedAt: nextTimestamp() },
   });
+  const runtimeReportPath = path.join(
+    evidenceRoot,
+    "runtime-smoke/playwright-report.json",
+  );
+  const runtimeTimingPath = path.join(
+    evidenceRoot,
+    "runtime-smoke/phase-timings.json",
+  );
+  const runtimeStartPath = path.join(
+    evidenceRoot,
+    "runtime-smoke/product-test-start.json",
+  );
+  const runtimeSummaryPath = path.join(
+    evidenceRoot,
+    "runtime-smoke/evidence.json",
+  );
+  mkdirSync(path.join(evidenceRoot, "runtime-smoke"), { recursive: true });
+  const simulationRuntimeProfile = certificationEnvironmentProfile(
+    fixtureRoot,
+    "runtime-smoke",
+  );
+  const simulationRuntimeProjection = projectCertificationChildEnvironment({
+    repositoryRoot: fixtureRoot,
+    baseEnvironment: {
+      ...process.env,
+      ...environment,
+      CERTIFICATION_EVIDENCE_ROOT: evidenceRoot,
+    },
+    stage: "runtime-smoke",
+    profileId: "runtime-smoke",
+    stageInputs: {
+      CERTIFICATION_ENVIRONMENT_STAGE: "runtime-smoke",
+      CERTIFICATION_RUNTIME_START_MARKER_PATH: runtimeStartPath,
+      CERTIFICATION_STAGE_ENVIRONMENT_CONTRACT_SHA256:
+        simulationRuntimeProfile.contract.sha256,
+      CERTIFICATION_STAGE_ENVIRONMENT_PROFILE_ID: "runtime-smoke",
+      CERTIFICATION_STAGE_ENVIRONMENT_PROFILE_SHA256:
+        simulationRuntimeProfile.sha256,
+      PLAYWRIGHT_EXTERNAL_EVIDENCE_ROOT: evidenceRoot,
+      PLAYWRIGHT_JSON_OUTPUT_FILE: runtimeReportPath,
+      PLAYWRIGHT_USE_PRODUCTION_SERVER: "1",
+      PRODUCTION_CERTIFICATION_ID: state.certificationId,
+      PRODUCTION_EVIDENCE_CANDIDATE_ID: state.candidate.id,
+      PRODUCTION_EVIDENCE_EXPECTED_ARTIFACT_SHA256:
+        state.bindings.artifactSha256,
+      PRODUCTION_EVIDENCE_EXPECTED_BUILD_ID: state.bindings.nextBuildId,
+      PRODUCTION_EVIDENCE_EXPECTED_COMMIT_SHA: state.candidate.commitSha,
+      PRODUCTION_EVIDENCE_EXPECTED_JOURNAL_NONCE:
+        state.bindings.semanticJournalNonce,
+      PRODUCTION_EVIDENCE_EXPECTED_JOURNAL_SHA256:
+        state.bindings.semanticJournalSha256,
+      PRODUCTION_EVIDENCE_EXPECTED_MANIFEST_SHA256:
+        state.bindings.productionManifestSha256,
+      PRODUCTION_EVIDENCE_EXPECTED_TREE_SHA: state.candidate.treeSha,
+      PRODUCTION_EVIDENCE_JOURNAL_PATH:
+        ".local/production-artifact-evidence/semantic-event-journal.json",
+      PRODUCTION_EVIDENCE_MANIFEST:
+        ".local/production-artifact-evidence/manifest.json",
+      RUNTIME_SMOKE_PHASE_TIMINGS_PATH: runtimeTimingPath,
+    },
+  });
+  if (
+    simulationRuntimeProjection.environment.CERTIFICATION_EVIDENCE_ROOT !==
+    undefined
+  ) {
+    throw new Error("simulation runtime child inherited the parent-only evidence root");
+  }
+  const simulationRuntimeDestinations = preflightRuntimeSmokeEvidenceOutputs({
+    repositoryRoot: fixtureRoot,
+    evidenceRoot,
+    reportPath: runtimeReportPath,
+    timingPath: runtimeTimingPath,
+    summaryPath: runtimeSummaryPath,
+    startMarkerPath: runtimeStartPath,
+  });
   const runtimeReportDescriptor = writeEvidence(
     evidenceRoot,
     "runtime-smoke/playwright-report.json",
     { schema: "interior-ai.simulated-playwright-report.v1", owner: "runtime-smoke" },
   );
-  const runtimeTimingsDescriptor = writeEvidence(
-    evidenceRoot,
-    "runtime-smoke/phase-timings.json",
-    { schema: "interior-ai.simulated-runtime-phase-timings.v1", complete: true },
+  let simulationRuntimeClock = 0;
+  const simulationRuntimeRecorder = createRuntimeSmokePhaseRecorder({
+    repositoryRoot: fixtureRoot,
+    timingPath: runtimeTimingPath,
+    environment: simulationRuntimeProjection.environment,
+    now: () => simulationRuntimeClock++,
+  });
+  if (
+    simulationRuntimeRecorder.destination?.outputPath !==
+      simulationRuntimeDestinations.timings.outputPath ||
+    simulationRuntimeRecorder.destination?.rootContractSha256 !==
+      simulationRuntimeDestinations.timings.rootContractSha256
+  ) {
+    throw new Error("simulation runner preflight and timing writer diverged");
+  }
+  for (const phase of RUNTIME_SMOKE_PHASE_BUDGETS) {
+    await simulationRuntimeRecorder.run(phase.name, async () => undefined);
+  }
+  const simulatedPhaseTimings = JSON.parse(
+    readFileSync(runtimeTimingPath, "utf8"),
   );
+  const runtimeTimingsDescriptor = descriptor(evidenceRoot, runtimeTimingPath);
   const runtimeStartDescriptor = writeEvidence(
     evidenceRoot,
     "runtime-smoke/product-test-start.json",
@@ -1431,15 +1552,96 @@ export async function runProductionCertificationSimulation({
       retry: 0,
     },
   );
+  const simulatedRuntimeEvidence = runtimeEvidence(
+    state,
+    runtimeReportDescriptor.sha256,
+    runtimeTimingsDescriptor.sha256,
+    simulatedPhaseTimings,
+    simulationRuntimeProjection.metadata,
+  );
   const runtimeDescriptor = writeEvidence(
     evidenceRoot,
-    "runtime-smoke/evidence.json",
-    runtimeEvidence(
-      state,
-      runtimeReportDescriptor.sha256,
-      runtimeTimingsDescriptor.sha256,
-    ),
+    path.relative(evidenceRoot, runtimeSummaryPath),
+    simulatedRuntimeEvidence,
   );
+  const runtimeValidationState = structuredClone(state);
+  runtimeValidationState.evidenceFiles["runtime-phase-timings"] =
+    runtimeTimingsDescriptor;
+  const baselineRuntimeIssues = validateRuntimeEvidence(
+    simulatedRuntimeEvidence,
+    runtimeValidationState,
+    fixtureRoot,
+  );
+  if (baselineRuntimeIssues.length > 0) {
+    throw new Error(
+      `simulation runtime evidence baseline is invalid: ${baselineRuntimeIssues.join("; ")}`,
+    );
+  }
+  const rejectsRuntimeMutation = (mutate) => {
+    const changed = structuredClone(simulatedRuntimeEvidence);
+    mutate(changed);
+    return validateRuntimeEvidence(
+      changed,
+      runtimeValidationState,
+      fixtureRoot,
+    ).length > 0;
+  };
+  const wrongRuntimeRoot = path.join(simulationRoot, "wrong-runtime-root");
+  mkdirSync(wrongRuntimeRoot);
+  const wrongRuntimeTimingPath = path.join(wrongRuntimeRoot, "phase-timings.json");
+  const runtimePathRejected = (environmentOverride, timingPath) => {
+    try {
+      resolveRuntimeSmokeTimingDestination({
+        repositoryRoot: fixtureRoot,
+        timingPath,
+        environment: {
+          ...simulationRuntimeProjection.environment,
+          ...environmentOverride,
+        },
+      });
+      return false;
+    } catch {
+      return true;
+    }
+  };
+  const runtimeRootTamperCases = Object.freeze({
+    missingRuntimeRootRejected: runtimePathRejected(
+      { PLAYWRIGHT_EXTERNAL_EVIDENCE_ROOT: "" },
+      runtimeTimingPath,
+    ),
+    wrongRuntimeRootRejected: runtimePathRejected(
+      { PLAYWRIGHT_EXTERNAL_EVIDENCE_ROOT: wrongRuntimeRoot },
+      runtimeTimingPath,
+    ),
+    runtimePathOutsideRootRejected: runtimePathRejected(
+      { PLAYWRIGHT_EXTERNAL_EVIDENCE_ROOT: evidenceRoot },
+      wrongRuntimeTimingPath,
+    ),
+    runtimeArtifactMismatchRejected: rejectsRuntimeMutation((evidence) => {
+      evidence.phaseTimings.identity.artifactSha256 = "f".repeat(64);
+    }),
+    runtimeCertificationMismatchRejected: rejectsRuntimeMutation((evidence) => {
+      evidence.phaseTimings.identity.certificationId = "another-certification";
+    }),
+    runtimeRootContractMismatchRejected: rejectsRuntimeMutation((evidence) => {
+      evidence.phaseTimings.rootContract.sha256 = "e".repeat(64);
+    }),
+    runtimeCompletionMissingRejected: rejectsRuntimeMutation((evidence) => {
+      delete evidence.phaseTimings.completionMarker;
+    }),
+    sourceRuntimeProfileRejected: rejectsRuntimeMutation((evidence) => {
+      evidence.phaseTimings.identity.runtimeStageProfileId = "source-validation";
+      evidence.stageEnvironment.profileId = "source-validation";
+    }),
+    developmentRuntimeProfileRejected: rejectsRuntimeMutation((evidence) => {
+      evidence.phaseTimings.identity.runtimeStageProfileId =
+        "development-browser-owner";
+      evidence.stageEnvironment.profileId = "development-browser-owner";
+    }),
+  });
+  if (Object.values(runtimeRootTamperCases).some((passed) => !passed)) {
+    throw new Error("simulation runtime evidence-root tamper matrix did not fail closed");
+  }
   state = completeSimulationStage({
     fixtureRoot,
     evidenceRoot,
@@ -1919,6 +2121,7 @@ export async function runProductionCertificationSimulation({
       copiedIgnoredWorktreeInputRejected,
       wrongWorktreeIdentityRejected,
       prematureWorktreeRemovalRejected,
+      ...runtimeRootTamperCases,
     },
     simulationRoot,
     stateSha256: sha256Bytes(readFileSync(statePath)),

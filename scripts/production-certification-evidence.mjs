@@ -28,6 +28,18 @@ import {
   readCertificationState,
   validateCertificationState,
 } from "./production-certification-state.mjs";
+import { certificationEnvironmentProfile } from "./production-certification-stage-environment.mjs";
+import {
+  PLAYWRIGHT_EXTERNAL_EVIDENCE_ROOT,
+  RUNTIME_SMOKE_EVIDENCE_DESTINATION_CLASS,
+  RUNTIME_SMOKE_EVIDENCE_ROOT_CONTRACT_SCHEMA,
+  RUNTIME_SMOKE_EVIDENCE_ROOT_CONTRACT_SHA256,
+  RUNTIME_SMOKE_EVIDENCE_ROOT_CONTRACT_VERSION,
+} from "./playwright-report-path.mjs";
+import {
+  RUNTIME_SMOKE_TIMING_COMPLETION_MARKER,
+  RUNTIME_SMOKE_TIMING_EVIDENCE_BINDING_SCHEMA,
+} from "./runtime-smoke-phase-budget.mjs";
 
 const PHASE8_SCALES = Object.freeze(["small", "medium", "large"]);
 const PHASE8_OPERATIONS = Object.freeze([
@@ -279,7 +291,7 @@ function validatePhase8Evidence(evidence, state, artifactRoot) {
   return issues;
 }
 
-function validateRuntimeEvidence(evidence, state) {
+export function validateRuntimeEvidence(evidence, state, artifactRoot) {
   const issues = [];
   if (evidence?.schema !== PRODUCTION_CERTIFICATION_RUNTIME_EVIDENCE_SCHEMA) {
     issues.push("runtime-smoke certification evidence schema is unsupported");
@@ -330,6 +342,77 @@ function validateRuntimeEvidence(evidence, state) {
     evidence?.complete !== true
   ) {
     issues.push("runtime-smoke raw hashes or completion marker are missing");
+  }
+  let runtimeProfile;
+  try {
+    runtimeProfile = certificationEnvironmentProfile(artifactRoot, "runtime-smoke");
+  } catch (error) {
+    issues.push(error instanceof Error ? error.message : String(error));
+  }
+  const timing = evidence?.phaseTimings;
+  const rootContract = timing?.rootContract;
+  const timingIdentity = timing?.identity;
+  const stageEnvironment = evidence?.stageEnvironment;
+  const expectedRuntimeAllowedNamesSha256 = runtimeProfile
+    ? sha256Bytes(
+        canonicalJsonBytes(
+          [
+            ...new Set([
+              ...runtimeProfile.childVisibleVariables,
+              ...Object.keys(runtimeProfile.valuePolicies),
+            ]),
+          ].sort(),
+        ),
+      )
+    : null;
+  if (
+    timing?.sha256 !== evidence?.phaseTimingsSha256 ||
+    timing?.complete !== true ||
+    timing?.completionMarker !== RUNTIME_SMOKE_TIMING_COMPLETION_MARKER ||
+    rootContract?.schema !== RUNTIME_SMOKE_EVIDENCE_ROOT_CONTRACT_SCHEMA ||
+    rootContract?.version !== RUNTIME_SMOKE_EVIDENCE_ROOT_CONTRACT_VERSION ||
+    rootContract?.sha256 !== RUNTIME_SMOKE_EVIDENCE_ROOT_CONTRACT_SHA256 ||
+    rootContract?.rootVariableName !== PLAYWRIGHT_EXTERNAL_EVIDENCE_ROOT ||
+    rootContract?.destinationClass !== RUNTIME_SMOKE_EVIDENCE_DESTINATION_CLASS ||
+    rootContract?.relativePath !==
+      state.evidenceFiles?.["runtime-phase-timings"]?.path
+  ) {
+    issues.push("runtime-smoke timing root contract or completion binding is invalid");
+  }
+  if (
+    timingIdentity?.certificationId !== state.certificationId ||
+    timingIdentity?.candidateId !== state.candidate.id ||
+    timingIdentity?.commitSha !== state.candidate.commitSha ||
+    timingIdentity?.treeSha !== state.candidate.treeSha ||
+    timingIdentity?.nextBuildId !== state.bindings.nextBuildId ||
+    timingIdentity?.artifactSha256 !== state.bindings.artifactSha256 ||
+    timingIdentity?.productionManifestSha256 !==
+      state.bindings.productionManifestSha256 ||
+    timingIdentity?.semanticJournalSha256 !== state.bindings.semanticJournalSha256 ||
+    timingIdentity?.semanticJournalNonce !== state.bindings.semanticJournalNonce ||
+    timingIdentity?.runtimeStage !== "runtime-smoke" ||
+    timingIdentity?.runtimeStageProfileId !== "runtime-smoke" ||
+    timingIdentity?.runtimeStageProfileSha256 !== runtimeProfile?.sha256 ||
+    timingIdentity?.stageEnvironmentContractSha256 !== runtimeProfile?.contract.sha256
+  ) {
+    issues.push("runtime-smoke timing evidence is cross-run or cross-artifact");
+  }
+  if (
+    stageEnvironment?.profileId !== "runtime-smoke" ||
+    stageEnvironment?.profileSha256 !== runtimeProfile?.sha256 ||
+    stageEnvironment?.contractSchema !== runtimeProfile?.contract.value.schema ||
+    stageEnvironment?.contractSha256 !== runtimeProfile?.contract.sha256 ||
+    !Array.isArray(stageEnvironment?.environmentNames) ||
+    !stageEnvironment.environmentNames.includes(PLAYWRIGHT_EXTERNAL_EVIDENCE_ROOT) ||
+    stageEnvironment.environmentNames.includes(CERTIFICATION_EVIDENCE_ROOT_ENV) ||
+    stageEnvironment.environmentNamesSha256 !==
+      sha256Bytes(canonicalJsonBytes(stageEnvironment.environmentNames)) ||
+    stageEnvironment.allowedVariableNamesSha256 !==
+      expectedRuntimeAllowedNamesSha256 ||
+    stageEnvironment.requiredVariableNamesSha256 !==
+      runtimeProfile?.requiredVariableNamesSha256
+  ) {
+    issues.push("runtime-smoke stage-environment profile binding is invalid");
   }
   return issues;
 }
@@ -598,13 +681,27 @@ export function verifyFinalCertificationEvidence({
     "archive-inventory",
   );
   issues.push(...validatePhase8Evidence(phase8.value, state, root));
-  issues.push(...validateRuntimeEvidence(runtime.value, state));
+  issues.push(...validateRuntimeEvidence(runtime.value, state, root));
   issues.push(
     ...startMarkerIssues(runtimeStart.value, {
       boundary: "test-begin",
       gateId: "ci.production-runtime-smoke",
     }),
   );
+  const retainedTimingBinding = rawRuntimeTimings.value?.evidenceBinding;
+  if (
+    retainedTimingBinding?.schema !== RUNTIME_SMOKE_TIMING_EVIDENCE_BINDING_SCHEMA ||
+    retainedTimingBinding?.completionMarker !== RUNTIME_SMOKE_TIMING_COMPLETION_MARKER ||
+    rawRuntimeTimings.value?.complete !== true ||
+    JSON.stringify(retainedTimingBinding?.rootContract) !==
+      JSON.stringify(runtime.value?.phaseTimings?.rootContract) ||
+    JSON.stringify(retainedTimingBinding?.identity) !==
+      JSON.stringify(runtime.value?.phaseTimings?.identity)
+  ) {
+    issues.push(
+      "runtime-smoke retained timing file contradicts its root, identity, or completion binding",
+    );
+  }
   issues.push(...productionArchiveInventoryIssues(archiveInventory.value));
   if (
     archiveInventory.value?.inventorySha256 !==

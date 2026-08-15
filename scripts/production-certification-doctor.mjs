@@ -28,6 +28,7 @@ import {
   resolveAuthorizedExternalEvidenceRoot,
   resolvePlaywrightReportPath,
   resolveRequiredTestReportPath,
+  resolveRuntimeSmokeEvidencePath,
 } from "./playwright-report-path.mjs";
 import { readCertificationState } from "./production-certification-state.mjs";
 import {
@@ -194,23 +195,35 @@ function validateEvidenceDestinations(repositoryRoot, environment) {
     add(resolved, name);
     return { path: resolved, kind: directory ? "directory" : "file" };
   };
-  const runtime = resolvePlaywrightReportPath({
-    requestedPath: environment.CERTIFICATION_RUNTIME_REPORT_PATH,
+  for (const [variable, name, outputRole] of [
+    ["CERTIFICATION_RUNTIME_REPORT_PATH", "runtime-smoke", "report"],
+    ["CERTIFICATION_RUNTIME_PHASE_TIMINGS_PATH", "runtime phase timings", "timings"],
+    ["CERTIFICATION_RUNTIME_EVIDENCE_PATH", "runtime certification evidence", "summary"],
+  ]) {
+    try {
+      const destination = resolveRuntimeSmokeEvidencePath({
+        requestedPath: environment[variable],
+        repositoryRoot,
+        authorizedExternalRoot: evidenceRoot,
+        outputRole,
+      });
+      add(destination.outputPath, name);
+    } catch (error) {
+      throw new Error(
+        `${name}: ${error instanceof Error ? error.message : String(error)}`,
+      );
+    }
+  }
+  const runtimeStart = resolveRuntimeSmokeEvidencePath({
+    requestedPath: path.join(
+      path.resolve(evidenceRoot),
+      "runtime-smoke/product-test-start.json",
+    ),
     repositoryRoot,
     authorizedExternalRoot: evidenceRoot,
+    outputRole: "startMarker",
   });
-  add(runtime.outputPath, "runtime-smoke");
-  for (const [variable, name] of [
-    ["CERTIFICATION_RUNTIME_PHASE_TIMINGS_PATH", "runtime phase timings"],
-    ["CERTIFICATION_RUNTIME_EVIDENCE_PATH", "runtime certification evidence"],
-  ]) {
-    const destination = resolvePlaywrightReportPath({
-      requestedPath: environment[variable],
-      repositoryRoot,
-      authorizedExternalRoot: evidenceRoot,
-    });
-    add(destination.outputPath, name);
-  }
+  add(runtimeStart.outputPath, "runtime start marker");
   for (const owner of REQUIRED_BROWSER_OWNERS) {
     const variable = `CERTIFICATION_BROWSER_${owner.id.toUpperCase().replaceAll("-", "_")}_REPORT_PATH`;
     const destination = resolveRequiredTestReportPath({
@@ -527,6 +540,14 @@ function validateStageEnvironmentCapabilities(repositoryRoot, environment) {
     ),
     "utf8",
   );
+  const runtimeTimingWriter = readFileSync(
+    path.join(repositoryRoot, "scripts/runtime-smoke-phase-budget.mjs"),
+    "utf8",
+  );
+  const certificationRunner = readFileSync(
+    path.join(repositoryRoot, "scripts/production-certification-real.mjs"),
+    "utf8",
+  );
   if (
     !sourceProfile.parentOnlyVariables.includes("CERTIFICATION_EVIDENCE_ROOT") ||
     sourceProfile.childVisibleVariables.includes("CERTIFICATION_EVIDENCE_ROOT") ||
@@ -546,6 +567,27 @@ function validateStageEnvironmentCapabilities(repositoryRoot, environment) {
     !runtimeProfile.requiredVariables.includes(
       "PRODUCTION_EVIDENCE_MANIFEST",
     ) ||
+    !runtimeProfile.parentOnlyVariables.includes("CERTIFICATION_EVIDENCE_ROOT") ||
+    runtimeProfile.childVisibleVariables.includes("CERTIFICATION_EVIDENCE_ROOT") ||
+    !runtimeProfile.requiredVariables.includes(
+      "PLAYWRIGHT_EXTERNAL_EVIDENCE_ROOT",
+    ) ||
+    !runtimeProfile.requiredVariables.includes("RUNTIME_SMOKE_PHASE_TIMINGS_PATH") ||
+    !runtimeProfile.requiredVariables.includes(
+      "CERTIFICATION_STAGE_ENVIRONMENT_PROFILE_SHA256",
+    ) ||
+    sourceProfile.childVisibleVariables.includes(
+      "PLAYWRIGHT_EXTERNAL_EVIDENCE_ROOT",
+    ) ||
+    sourceProfile.childVisibleVariables.includes("RUNTIME_SMOKE_PHASE_TIMINGS_PATH") ||
+    developmentBrowser.childVisibleVariables.includes(
+      "RUNTIME_SMOKE_PHASE_TIMINGS_PATH",
+    ) ||
+    runtimeTimingWriter.includes("CERTIFICATION_EVIDENCE_ROOT") ||
+    !runtimeTimingWriter.includes("resolveRuntimeSmokeEvidencePath") ||
+    !runtimeTimingWriter.includes("PLAYWRIGHT_EXTERNAL_EVIDENCE_ROOT") ||
+    !certificationRunner.includes("preflightRuntimeSmokeEvidenceOutputs") ||
+    !certificationRunner.includes("createRuntimeSmokeTimingEvidenceBinding") ||
     !phase8Profile.requiredVariables.includes("PHASE8_EXTERNAL_EVIDENCE_ROOT") ||
     productionBrowser.fixedValues.PLAYWRIGHT_USE_PRODUCTION_SERVER !== "1" ||
     developmentBrowser.childVisibleVariables.includes(
@@ -626,6 +668,9 @@ function validateStageEnvironmentCapabilities(repositoryRoot, environment) {
     historicalFloorPlanRegressionRegistered: true,
     buildRuntimeVisionConfigurationPreserved: true,
     runtimeActivationExplicit: true,
+    runtimeTimingRootOwner: "PLAYWRIGHT_EXTERNAL_EVIDENCE_ROOT",
+    runtimeTimingTargetPreflight: true,
+    runtimeTimingWriterContractShared: true,
     unknownControlPolicy: "fail-closed-in-doctor; strip-and-record-in-projector",
   };
 }

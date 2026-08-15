@@ -43,6 +43,25 @@
     "privateBindingPolicy": "physical paths and hashes are retained only in private evidence-root sidecars",
     "cleanupPolicy": "explicit cleanup owner after continuity or terminal abort; remove only task-owned roots"
   },
+  "runtimeSmokeEvidenceRoot": {
+    "classification": "PLAYWRIGHT_EXTERNAL_ROOT_OWNS_ALL_RUNTIME_OUTPUTS",
+    "schema": "interior-ai.runtime-smoke-evidence-root-contract.v1",
+    "version": 1,
+    "destinationClass": "playwright-external-evidence-root",
+    "canonicalOwner": "scripts/playwright-report-path.mjs",
+    "parentOnlyRootNames": ["CERTIFICATION_EVIDENCE_ROOT"],
+    "childVisibleRootNames": ["PLAYWRIGHT_EXTERNAL_EVIDENCE_ROOT"],
+    "requiredOutputPaths": {
+      "report": { "environmentName": "PLAYWRIGHT_JSON_OUTPUT_FILE", "relativePath": "runtime-smoke/playwright-report.json", "writer": "Playwright JSON reporter", "finalRequired": true },
+      "phaseTimings": { "environmentName": "RUNTIME_SMOKE_PHASE_TIMINGS_PATH", "relativePath": "runtime-smoke/phase-timings.json", "writer": "scripts/runtime-smoke-phase-budget.mjs", "finalRequired": true },
+      "startMarker": { "environmentName": "CERTIFICATION_RUNTIME_START_MARKER_PATH", "relativePath": "runtime-smoke/product-test-start.json", "writer": "scripts/certification-playwright-start-reporter.mjs", "finalRequired": true },
+      "summary": { "environmentName": "CERTIFICATION_RUNTIME_EVIDENCE_PATH", "relativePath": "runtime-smoke/evidence.json", "writer": "scripts/production-certification-real.mjs", "finalRequired": true }
+    },
+    "diagnosticsPolicy": "readiness, post-readiness, browser, and failure diagnostics are embedded report/timing content; safe stdout/stderr and server logs are non-portable parent streams",
+    "pathPolicy": ["explicit absolute root", "explicit absolute output", "exact role filename", "outside every repository and stage worktree", "lexical and physical containment", "non-symlink existing writable parent", "absent final target", "no repository-local fallback", "no generic-root fallback"],
+    "portableBinding": ["contract schema/version/hash", "destination class", "root-relative output path", "file sha256", "completion marker", "certification/candidate/commit/tree/Build-ID/artifact/manifest/journal identity", "runtime profile ID/hash"],
+    "machineLocalRootInPortableEvidence": false
+  },
   "sourceValidation": {
     "schema": "interior-ai.production-certification-source-check-set.v1",
     "workingDirectoryPolicy": "exact-candidate-root",
@@ -145,18 +164,18 @@
     {
       "id": "external-evidence-root-validation",
       "canonicalCommandOrCli": "Production runtime-smoke Playwright config load",
-      "sourceOwner": ["scripts/playwright-report-path.mjs", "scripts/production-artifact-playwright.mjs"],
-      "requiredEnvironmentNames": ["PLAYWRIGHT_EXTERNAL_EVIDENCE_ROOT"],
-      "requiredInputs": ["absolute existing non-symlink directory outside every registered worktree"],
-      "generatedOutputs": ["resolved runtime-smoke destination descriptor"],
+      "sourceOwner": ["scripts/playwright-report-path.mjs", "scripts/production-certification-real.mjs", "scripts/runtime-smoke-phase-budget.mjs", "scripts/production-artifact-playwright.mjs"],
+      "requiredEnvironmentNames": ["PLAYWRIGHT_EXTERNAL_EVIDENCE_ROOT", "PLAYWRIGHT_JSON_OUTPUT_FILE", "RUNTIME_SMOKE_PHASE_TIMINGS_PATH", "CERTIFICATION_RUNTIME_START_MARKER_PATH", "CERTIFICATION_RUNTIME_EVIDENCE_PATH"],
+      "requiredInputs": ["explicit absolute external root", "explicit absolute report/timing/start/summary paths", "exact role filenames", "existing writable non-symlink parents", "absent targets", "complete registered repository/worktree roots"],
+      "generatedOutputs": ["four resolved runtime-smoke destination descriptors", "portable root-contract binding"],
       "repositoryBound": false,
       "preRuntime": true,
       "substantiveOneShot": false,
       "safelyResumable": false,
-      "stopCondition": "Missing/relative/symlink/repository-containing/unwritable authorized root.",
-      "evidenceSchemaVersion": ["none; validation-only"],
-      "candidateArtifactIdentityFields": [],
-      "baselineGap": "Policy is runtime-smoke-only; no shared root contract for seven owners or Phase 8."
+      "stopCondition": "Missing/relative/malformed root or output, wrong filename, collision, symlink escape, repository/worktree containment, missing/unwritable parent, or existing target.",
+      "evidenceSchemaVersion": ["interior-ai.runtime-smoke-evidence-root-contract.v1"],
+      "candidateArtifactIdentityFields": ["portable destination class", "root-relative output path", "root-contract SHA-256"],
+      "baselineGap": "Closed for the runtime bundle: runner, reporter, marker, timing writer, doctor, simulation, and final consumer share the versioned contract."
     },
     {
       "id": "external-playwright-report-resolution",
@@ -369,18 +388,18 @@
     {
       "id": "runtime-smoke",
       "canonicalCommandOrCli": "npm run evidence:production:smoke",
-      "sourceOwner": ["scripts/production-artifact-evidence.mjs", "scripts/production-artifact-playwright.mjs", "playwright.config.ts", "tests/e2e/00-runtime-smoke.spec.ts"],
-      "requiredEnvironmentNames": ["PRODUCTION_EVIDENCE_MANIFEST", "PRODUCTION_EVIDENCE_JOURNAL_PATH", "PLAYWRIGHT_JSON_OUTPUT_FILE", "PLAYWRIGHT_EXTERNAL_EVIDENCE_ROOT", "PRODUCTION_EVIDENCE_EXPECTED_MANIFEST_SHA256", "PRODUCTION_EVIDENCE_EXPECTED_COMMIT_SHA", "PRODUCTION_EVIDENCE_EXPECTED_TREE_SHA", "PRODUCTION_EVIDENCE_EXPECTED_BUILD_ID", "PRODUCTION_EVIDENCE_EXPECTED_ARTIFACT_SHA256"],
-      "requiredInputs": ["repository preflight", "running immutable artifact", "two canonical Chromium tests"],
-      "generatedOutputs": ["runtime-smoke Playwright JSON", "runtime-smoke phase timings", "manifest.tests runtime-smoke record"],
+      "sourceOwner": ["scripts/production-certification-real.mjs", "scripts/playwright-report-path.mjs", "scripts/runtime-smoke-phase-budget.mjs", "scripts/production-artifact-evidence.mjs", "scripts/production-artifact-playwright.mjs", "playwright.config.ts", "tests/e2e/00-runtime-smoke.spec.ts"],
+      "requiredEnvironmentNames": ["CERTIFICATION_ENVIRONMENT_STAGE", "CERTIFICATION_STAGE_ENVIRONMENT_CONTRACT_SHA256", "CERTIFICATION_STAGE_ENVIRONMENT_PROFILE_ID", "CERTIFICATION_STAGE_ENVIRONMENT_PROFILE_SHA256", "PRODUCTION_CERTIFICATION_ID", "PRODUCTION_EVIDENCE_CANDIDATE_ID", "PRODUCTION_EVIDENCE_MANIFEST", "PRODUCTION_EVIDENCE_JOURNAL_PATH", "PLAYWRIGHT_JSON_OUTPUT_FILE", "PLAYWRIGHT_EXTERNAL_EVIDENCE_ROOT", "RUNTIME_SMOKE_PHASE_TIMINGS_PATH", "CERTIFICATION_RUNTIME_START_MARKER_PATH", "PRODUCTION_EVIDENCE_EXPECTED_MANIFEST_SHA256", "PRODUCTION_EVIDENCE_EXPECTED_JOURNAL_SHA256", "PRODUCTION_EVIDENCE_EXPECTED_JOURNAL_NONCE", "PRODUCTION_EVIDENCE_EXPECTED_COMMIT_SHA", "PRODUCTION_EVIDENCE_EXPECTED_TREE_SHA", "PRODUCTION_EVIDENCE_EXPECTED_BUILD_ID", "PRODUCTION_EVIDENCE_EXPECTED_ARTIFACT_SHA256"],
+      "requiredInputs": ["repository preflight", "prevalidated versioned external runtime destinations", "running immutable artifact", "two canonical Chromium tests", "exact certification/candidate/artifact/manifest/journal/profile identity"],
+      "generatedOutputs": ["externally retained Playwright JSON", "externally retained terminal phase timings with portable root/identity binding", "child-owned start marker", "parent runtime result envelope", "manifest.tests runtime-smoke record"],
       "repositoryBound": true,
       "preRuntime": false,
       "substantiveOneShot": true,
       "safelyResumable": false,
       "stopCondition": "Server/readiness/test/report/timing/telemetry/retry/skip/flake/source/artifact mismatch.",
-      "evidenceSchemaVersion": ["Playwright JSON", "manifest v3 embedded test record"],
-      "candidateArtifactIdentityFields": ["sourceCommitSha", "artifactSha256", "nextBuildId"],
-      "baselineGap": "Final mode requires runtime smoke, but no standalone external runtime evidence object or certification-state binding exists."
+      "evidenceSchemaVersion": ["Playwright JSON", "interior-ai.runtime-smoke-phase-timings.v3", "interior-ai.runtime-smoke-timing-evidence-binding.v1", "interior-ai.runtime-smoke-evidence-root-contract.v1", "manifest v3 embedded test record"],
+      "candidateArtifactIdentityFields": ["certificationId", "candidateIdentifier", "sourceCommitSha", "sourceTreeSha", "artifactSha256", "nextBuildId", "manifestSha256", "journalSha256", "journalNonce", "runtime profile ID/hash", "timing SHA-256/completion/root-relative path"],
+      "baselineGap": "Closed by external timing retention, state/runtime-summary binding, raw-file rehash, and final standalone root/profile/cross-run verification."
     },
     {
       "id": "browser-owner-floor-plan-upload",

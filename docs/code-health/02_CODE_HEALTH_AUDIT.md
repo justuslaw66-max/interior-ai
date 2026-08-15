@@ -1,5 +1,38 @@
 # Code health audit
 
+## Runtime-smoke timing evidence-root ownership — 2026-08-15
+
+Mandatory source review of exact candidate
+`d449afd0ff693ad8bd03932d13b768b961dceab4`, tree
+`2af0f9c22cff576663174903494f904bdd4c4960`, proved
+`RUNTIME_SMOKE_TIMING_EVIDENCE_ROOT_CONTRACT_DEFECT` and
+`STAGE_ENVIRONMENT_OUTPUT_CAPABILITY_OWNER_MISMATCH`. The real runtime runner
+and isolated profile supplied a Playwright external root plus timing path while
+correctly stripping parent-only `CERTIFICATION_EVIDENCE_ROOT`; the timing
+writer authorized against that absent parent variable. Review stopped before
+IDs, state, evidence root, doctor, or substantive stages, so this is not a
+runtime-smoke test failure and caused no mutation.
+
+The correction classifies the Playwright external root as owner of the retained
+runtime bundle and uses one versioned explicit root/path resolver for report,
+phase timings, start marker, and runtime summary. Runner and writer share that
+resolver; the projector exposes only the runtime capability; no `.local`,
+generic-root, inferred-root, overwrite, repository/worktree, or symlink escape
+path exists. Portable timing evidence binds its safe relative path, contract,
+terminal completion, full candidate/artifact/manifest/journal identity, and
+runtime profile. Final standalone rehashes the raw file and fails closed on
+root, identity, profile, completion, or content mismatch.
+
+The deterministic real-writer regression and simulation require the external
+timing flow without starting an app or browser. Doctor checks the ownership
+contract before source validation. Phase names, boundaries, deadlines, budgets,
+duration measurement, readiness/failure behavior, and product assertions are
+unchanged. The exact clean-commit qualifier returns
+`QUALIFIED_FOR_FINAL_CANDIDATE_CERTIFICATION`; real exact-head certification,
+integration, and the final CH-0015 closure audit remain pending. Independent
+read-only review returned `PASS` with no remaining actionable finding after
+requiring the simulation to invoke the real four-output runner preflight.
+
 ## Transactional certification state and stage-worktree isolation — 2026-08-15
 
 The historical `CH-0015I-final-20260815-cd2d42690091` attempt exposed

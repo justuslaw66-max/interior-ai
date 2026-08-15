@@ -8,7 +8,7 @@ import { loadProductionArtifactForPlaywright } from "./scripts/production-artifa
 import {
   CERTIFICATION_EVIDENCE_ROOT,
   PLAYWRIGHT_EXTERNAL_EVIDENCE_ROOT,
-  resolvePlaywrightReportPath,
+  resolveRuntimeSmokeEvidencePath,
 } from "./scripts/playwright-report-path.mjs";
 
 const localBaseURL = "http://127.0.0.1:3000";
@@ -82,17 +82,18 @@ if (
   certificationRuntimeActive &&
   (!productionArtifactEvidence ||
     !certificationRuntimeMarkerPath ||
-    !(playwrightExternalRoot || certificationRoot) ||
+    !playwrightExternalRoot ||
     !useProductionServer)
 ) {
   throw new Error("certification runtime smoke requires its product-test start marker");
 }
 const certificationRuntimeMarker =
   certificationRuntimeActive && certificationRuntimeMarkerPath
-    ? resolvePlaywrightReportPath({
+    ? resolveRuntimeSmokeEvidencePath({
         requestedPath: certificationRuntimeMarkerPath,
         repositoryRoot: process.cwd(),
-        authorizedExternalRoot: playwrightExternalRoot || certificationRoot,
+        authorizedExternalRoot: playwrightExternalRoot,
+        outputRole: "startMarker",
       }).outputPath
     : null;
 const productionArtifactReporters: ReporterDescription[] = [

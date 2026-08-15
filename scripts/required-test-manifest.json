@@ -196,6 +196,11 @@
           "marker": "real source-validation Playwright config must not activate runtime smoke"
         },
         {
+          "id": "artifact.certification-runtime-evidence-root-regression",
+          "source": "scripts/test-production-certification.mjs",
+          "marker": "Production certification runtime evidence-root regression passed"
+        },
+        {
           "id": "floor-plan.route-nft-fail-closed",
           "source": "scripts/test-production-artifact-evidence.mjs",
           "marker": "production route NFT references a test source"

@@ -36,6 +36,13 @@ import {
   stageEnvironmentContract,
   validateProjectedEnvironmentMetadata,
 } from "./production-certification-stage-environment.mjs";
+import { preflightRuntimeSmokeEvidenceOutputs } from "./production-certification-real.mjs";
+import {
+  RUNTIME_SMOKE_TIMING_COMPLETION_MARKER,
+  createRuntimeSmokePhaseRecorder,
+  createRuntimeSmokeTimingEvidenceBinding,
+  resolveRuntimeSmokeTimingDestination,
+} from "./runtime-smoke-phase-budget.mjs";
 
 const FIXED_GIT_DATE = "2026-08-14T00:00:00Z";
 const FIXTURE_DATABASE_URL =
@@ -840,4 +847,244 @@ try {
   );
 } finally {
   rmSync(regressionRoot, { recursive: true, force: true });
+}
+
+{
+  const runtimeRoot = mkdtempSync(
+    path.join(tmpdir(), "certification-runtime-evidence-root-"),
+  );
+  try {
+    const evidenceRoot = path.join(runtimeRoot, "evidence");
+    const runtimeDirectory = path.join(evidenceRoot, "runtime-smoke");
+    const sourceValidationRoot = path.join(runtimeRoot, "source-validation");
+    const finalArtifactRoot = path.join(runtimeRoot, "final-artifact");
+    const outsideRoot = path.join(runtimeRoot, "outside");
+    for (const directory of [
+      runtimeDirectory,
+      sourceValidationRoot,
+      finalArtifactRoot,
+      outsideRoot,
+    ]) {
+      mkdirSync(directory, { recursive: true, mode: 0o700 });
+    }
+    const reportPath = path.join(runtimeDirectory, "playwright-report.json");
+    const timingPath = path.join(runtimeDirectory, "phase-timings.json");
+    const summaryPath = path.join(runtimeDirectory, "evidence.json");
+    const startMarkerPath = path.join(
+      runtimeDirectory,
+      "product-test-start.json",
+    );
+    const runtimeProfile = certificationEnvironmentProfile(
+      repositoryRoot,
+      "runtime-smoke",
+    );
+    const secret = "runtime-root-regression-secret";
+    const projection = projectCertificationChildEnvironment({
+      repositoryRoot,
+      baseEnvironment: {
+        CERTIFICATION_EVIDENCE_ROOT: evidenceRoot,
+        OPENAI_API_KEY: secret,
+      },
+      stage: "runtime-smoke",
+      profileId: "runtime-smoke",
+      stageInputs: {
+        CERTIFICATION_ENVIRONMENT_STAGE: "runtime-smoke",
+        CERTIFICATION_RUNTIME_START_MARKER_PATH: startMarkerPath,
+        CERTIFICATION_STAGE_ENVIRONMENT_CONTRACT_SHA256:
+          runtimeProfile.contract.sha256,
+        CERTIFICATION_STAGE_ENVIRONMENT_PROFILE_ID: "runtime-smoke",
+        CERTIFICATION_STAGE_ENVIRONMENT_PROFILE_SHA256: runtimeProfile.sha256,
+        PLAYWRIGHT_EXTERNAL_EVIDENCE_ROOT: evidenceRoot,
+        PLAYWRIGHT_JSON_OUTPUT_FILE: reportPath,
+        PLAYWRIGHT_USE_PRODUCTION_SERVER: "1",
+        PRODUCTION_CERTIFICATION_ID: "runtime-root-regression",
+        PRODUCTION_EVIDENCE_CANDIDATE_ID: "runtime-root-candidate",
+        PRODUCTION_EVIDENCE_EXPECTED_ARTIFACT_SHA256: "a".repeat(64),
+        PRODUCTION_EVIDENCE_EXPECTED_BUILD_ID: "runtime-root-build",
+        PRODUCTION_EVIDENCE_EXPECTED_COMMIT_SHA: "b".repeat(40),
+        PRODUCTION_EVIDENCE_EXPECTED_JOURNAL_NONCE:
+          "123e4567-e89b-42d3-a456-426614174001",
+        PRODUCTION_EVIDENCE_EXPECTED_JOURNAL_SHA256: "c".repeat(64),
+        PRODUCTION_EVIDENCE_EXPECTED_MANIFEST_SHA256: "d".repeat(64),
+        PRODUCTION_EVIDENCE_EXPECTED_TREE_SHA: "e".repeat(40),
+        PRODUCTION_EVIDENCE_JOURNAL_PATH:
+          ".local/production-artifact-evidence/semantic-event-journal.json",
+        PRODUCTION_EVIDENCE_MANIFEST:
+          ".local/production-artifact-evidence/manifest.json",
+        RUNTIME_SMOKE_PHASE_TIMINGS_PATH: timingPath,
+      },
+    });
+    assert.equal(projection.environment.CERTIFICATION_EVIDENCE_ROOT, undefined);
+    assert.equal(
+      projection.environment.PLAYWRIGHT_EXTERNAL_EVIDENCE_ROOT,
+      evidenceRoot,
+    );
+    const destinations = preflightRuntimeSmokeEvidenceOutputs({
+      repositoryRoot,
+      evidenceRoot,
+      reportPath,
+      timingPath,
+      summaryPath,
+      startMarkerPath,
+    });
+    assert.equal(
+      destinations.timings.portableRelativePath,
+      "runtime-smoke/phase-timings.json",
+    );
+    const recorder = createRuntimeSmokePhaseRecorder({
+      repositoryRoot,
+      timingPath,
+      environment: projection.environment,
+      now: (() => {
+        let value = 0;
+        return () => value++;
+      })(),
+      phaseBudgets: [{ name: "writer-regression", timeoutMs: 100 }],
+      phaseContracts: {},
+    });
+    await recorder.run("writer-regression", async () => undefined);
+    const timingBytes = readFileSync(timingPath);
+    const timing = JSON.parse(timingBytes.toString("utf8"));
+    assert.equal(timing.complete, true);
+    assert.equal(
+      timing.evidenceBinding.completionMarker,
+      RUNTIME_SMOKE_TIMING_COMPLETION_MARKER,
+    );
+    assert.equal(
+      timing.evidenceBinding.rootContract.relativePath,
+      "runtime-smoke/phase-timings.json",
+    );
+    assert.equal(timing.evidenceBinding.identity.artifactSha256, "a".repeat(64));
+    assert.equal(sha256Bytes(timingBytes), sha256Bytes(readFileSync(timingPath)));
+    assert.equal(timingBytes.includes(Buffer.from(secret)), false);
+    assert.equal(existsSync(reportPath), false);
+    assert.equal(existsSync(summaryPath), false);
+    assert.equal(existsSync(startMarkerPath), false);
+
+    assert.throws(
+      () =>
+        resolveRuntimeSmokeTimingDestination({
+          repositoryRoot,
+          timingPath: path.join(outsideRoot, "phase-timings.json"),
+          environment: projection.environment,
+        }),
+      /beneath the authorized external evidence root/,
+    );
+    assert.throws(
+      () =>
+        resolveRuntimeSmokeTimingDestination({
+          repositoryRoot,
+          timingPath: path.join(repositoryRoot, "scripts/phase-timings.json"),
+          environment: projection.environment,
+        }),
+      /beneath the authorized external evidence root|outside every repository/,
+    );
+    for (const worktreeRoot of [sourceValidationRoot, finalArtifactRoot]) {
+      assert.throws(
+        () =>
+          resolveRuntimeSmokeTimingDestination({
+            repositoryRoot,
+            timingPath: path.join(worktreeRoot, "phase-timings.json"),
+            environment: {
+              ...projection.environment,
+              PLAYWRIGHT_EXTERNAL_EVIDENCE_ROOT: runtimeRoot,
+            },
+            additionalRepositoryRoots: [sourceValidationRoot, finalArtifactRoot],
+          }),
+        /contain a repository worktree|outside every repository worktree/,
+      );
+    }
+    const linkedParent = path.join(evidenceRoot, "linked-runtime");
+    symlinkSync(outsideRoot, linkedParent);
+    assert.throws(
+      () =>
+        resolveRuntimeSmokeTimingDestination({
+          repositoryRoot,
+          timingPath: path.join(linkedParent, "phase-timings.json"),
+          environment: projection.environment,
+        }),
+      /escapes the authorized external evidence root/,
+    );
+    assert.throws(
+      () =>
+        resolveRuntimeSmokeTimingDestination({
+          repositoryRoot,
+          timingPath,
+          environment: projection.environment,
+        }),
+      /must not already exist/,
+    );
+    assert.throws(
+      () =>
+        resolveRuntimeSmokeTimingDestination({
+          repositoryRoot,
+          timingPath: path.join(
+            evidenceRoot,
+            "missing-parent/phase-timings.json",
+          ),
+          environment: projection.environment,
+        }),
+      /parent directory must already exist/,
+    );
+    assert.throws(
+      () =>
+        resolveRuntimeSmokeTimingDestination({
+          repositoryRoot,
+          timingPath: "phase-timings.json",
+          environment: projection.environment,
+        }),
+      /must use its authorized external root|approved ignored evidence directory/,
+    );
+    assert.throws(
+      () =>
+        resolveRuntimeSmokeTimingDestination({
+          repositoryRoot,
+          timingPath: path.join(outsideRoot, "phase-timings.json"),
+          environment: {
+            ...projection.environment,
+            PLAYWRIGHT_EXTERNAL_EVIDENCE_ROOT: "relative-root",
+          },
+        }),
+      /must be absolute/,
+    );
+    assert.throws(
+      () =>
+        resolveRuntimeSmokeTimingDestination({
+          repositoryRoot,
+          timingPath: path.join(outsideRoot, "phase-timings.json"),
+          environment: Object.fromEntries(
+            Object.entries(projection.environment).filter(
+              ([name]) => name !== "PLAYWRIGHT_EXTERNAL_EVIDENCE_ROOT",
+            ),
+          ),
+        }),
+      /is required/,
+    );
+    const anotherRun = {
+      ...projection.environment,
+      PRODUCTION_CERTIFICATION_ID: "another-certification",
+    };
+    assert.notEqual(
+      createRuntimeSmokeTimingEvidenceBinding({
+        environment: anotherRun,
+        destination: destinations.timings,
+      }).identity.certificationId,
+      timing.evidenceBinding.identity.certificationId,
+    );
+    assert.equal(
+      certificationEnvironmentProfile(repositoryRoot, "source-validation")
+        .childVisibleVariables.includes("RUNTIME_SMOKE_PHASE_TIMINGS_PATH"),
+      false,
+    );
+    assert.equal(
+      certificationEnvironmentProfile(repositoryRoot, "development-browser-owner")
+        .childVisibleVariables.includes("RUNTIME_SMOKE_PHASE_TIMINGS_PATH"),
+      false,
+    );
+    process.stdout.write(
+      "Production certification runtime evidence-root regression passed.\n",
+    );
+  } finally {
+    rmSync(runtimeRoot, { recursive: true, force: true });
+  }
 }

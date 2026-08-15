@@ -1,5 +1,71 @@
 # Production Certification Harness v1
 
+## Runtime-smoke evidence-root correction — 2026-08-15
+
+The exact candidate `d449afd0ff693ad8bd03932d13b768b961dceab4`, tree
+`2af0f9c22cff576663174903494f904bdd4c4960`, was stopped by mandatory
+read-only source review before any certification resource was created. No
+certification ID, candidate ID, state, or evidence root exists for that review;
+doctor and substantive stages did not run, and no source, Git, database,
+build, archive, benchmark, runtime, browser, or integration mutation occurred.
+It is a pre-certification source blocker, not a runtime-smoke test failure.
+
+The blocker classifications are
+`RUNTIME_SMOKE_TIMING_EVIDENCE_ROOT_CONTRACT_DEFECT` and
+`STAGE_ENVIRONMENT_OUTPUT_CAPABILITY_OWNER_MISMATCH`. The runtime projector
+correctly withheld parent-only `CERTIFICATION_EVIDENCE_ROOT`, but the timing
+writer incorrectly required that absent parent capability even though the real
+runner supplied the stage-owned `PLAYWRIGHT_EXTERNAL_EVIDENCE_ROOT` and an
+absolute timing destination.
+
+The selected owner classification is
+`A — PLAYWRIGHT_EXTERNAL_ROOT_OWNS_ALL_RUNTIME_OUTPUTS`. The smallest coherent
+source-owned bundle consists of the Playwright report, phase timings,
+child-owned product-test start marker, and parent runtime summary beneath one
+authorized external runtime directory. Readiness, post-readiness, browser, and
+failure diagnostics are embedded in the report/timing evidence; inherited safe
+stdout/stderr and server output are streams, not separately retained portable
+files. Playwright's configured output directory remains transient execution
+state and is not a final standalone input.
+
+| Output | Canonical writer | Exact path input | Authorization | Portable retention | Creation/final rule |
+| --- | --- | --- | --- | --- | --- |
+| Playwright JSON report and embedded readiness/browser/failure diagnostics | Playwright JSON reporter | `PLAYWRIGHT_JSON_OUTPUT_FILE` | child-visible `PLAYWRIGHT_EXTERNAL_EVIDENCE_ROOT`; parent certification root is absent | `runtime-smoke/playwright-report.json` plus SHA-256 | Existing parent, absent target; required by final standalone |
+| Phase budgets, completion, and timing identity | `scripts/runtime-smoke-phase-budget.mjs` | `RUNTIME_SMOKE_PHASE_TIMINGS_PATH` | same child-visible external root and canonical v1 resolver | `runtime-smoke/phase-timings.json` plus SHA-256/binding | Existing writable parent, absent target, atomic single finalization; required and incomplete/absent invalidates runtime |
+| Product-test start marker | `scripts/certification-playwright-start-reporter.mjs` | `CERTIFICATION_RUNTIME_START_MARKER_PATH` | same child-visible external root and canonical v1 resolver | `runtime-smoke/product-test-start.json` plus SHA-256 | Existing parent, absent target; required after actual runtime discovery |
+| Runtime result envelope | `scripts/production-certification-real.mjs` | `CERTIFICATION_RUNTIME_EVIDENCE_PATH` | parent-owned certification lifecycle, prevalidated against the same physical external runtime root | `runtime-smoke/evidence.json` plus SHA-256 | Existing parent, absent target; required by state/final standalone |
+| Safe stdout/stderr and product-server logs | parent process stream owner | no retained file path | parent orchestration | machine-local stream only | Not an independent final input; report/timing diagnostics remain authoritative |
+
+`scripts/playwright-report-path.mjs` owns the side-effect-free
+`interior-ai.runtime-smoke-evidence-root-contract.v1`. It validates an explicit
+absolute stage root and explicit absolute output, exact output role/filename,
+lexical and realpath containment, repository/worktree exclusion, physical
+non-symlink parent, writability, and absent target. It returns the canonical
+path, destination class, safe root-relative path, and contract/version hash;
+portable evidence never serializes the machine-local absolute root.
+
+The real runner preflights report, timing, marker, and summary destinations
+before Playwright. The committed runtime profile passes only the external root,
+exact paths, complete candidate/artifact/manifest/journal identity, and its
+profile ID/hash. The timing writer uses that same contract, has no generic-root
+or `.local` fallback, and cannot overwrite a final target. Final standalone
+rehashes the timing file and requires its terminal marker, root contract,
+portable path, certification/candidate/commit/tree/Build-ID/artifact/manifest/
+journal identity, and runtime profile binding. Cross-run, cross-artifact,
+wrong-root, wrong-profile, missing, incomplete, or tampered timing evidence is
+rejected.
+
+Phase names, phase boundaries, deadlines, runtime-duration measurement,
+readiness/post-readiness behavior, budgets, and product assertions are
+unchanged. Deterministic qualification exercises the real projector, real
+runner preflight, and real timing writer without launching a browser, then
+feeds the external timing evidence to final standalone. The exact clean-commit
+qualifier result is `QUALIFIED_FOR_FINAL_CANDIDATE_CERTIFICATION`; this is
+source-platform qualification, not real candidate evidence. Exact-head real
+certification and the final CH-0015 closure audit remain pending. Independent
+read-only review returned `PASS` with no remaining actionable finding after its
+simulation-preflight coverage finding was corrected and rechecked.
+
 Status: transactional state-validation and pristine stage-worktree correction
 implemented on the exact child of candidate
 `cd2d426900916a1096fd0dab9380020db1c62671`, tree
@@ -134,7 +200,7 @@ accepted, and earlier qualification evidence is never imported as a substitute.
 `docs/qa/production-certification-stage-environment.v2.json` is the canonical
 machine-readable owner for certification child-process capabilities. Its schema
 is `interior-ai.production-certification-stage-environment.v2`. It inventories
-83 control names with canonical owner, classification, portability, secret
+91 control names with canonical owner, classification, portability, secret
 classification, and presence/activation semantics. It separately inventories
 the five Floor Plan vision/local-OCR application inputs with accepted-value,
 default, secret, and read-timing semantics. It defines profiles for
@@ -178,7 +244,8 @@ allowed/required name-set hashes: the Floor Plan closure declares
 `DATABASE_URL`, which remains an ordinary preserved application variable and
 must exist before dispatch without its value entering evidence. Runtime smoke receives only the narrow
 `PLAYWRIGHT_EXTERNAL_EVIDENCE_ROOT`, exact report/timing/start-marker paths,
-manifest/journal identities, and
+manifest/journal/certification/candidate/artifact identities, runtime profile
+ID/hash, and
 `CERTIFICATION_ENVIRONMENT_STAGE=runtime-smoke`. Generic evidence-root
 ownership alone never activates runtime certification.
 
@@ -352,6 +419,12 @@ outside all repositories, absent/unique, and non-escaping. No copy/delete shim
 is the canonical owner, and no benchmark operation, fixture, sample, percentile,
 threshold, boundary, or budget changes.
 
+Runtime smoke uses the same external policy through the stricter runtime v1
+contract above. `CERTIFICATION_EVIDENCE_ROOT` remains parent-only. The child
+must receive `PLAYWRIGHT_EXTERNAL_EVIDENCE_ROOT` plus each exact output path;
+neither runner nor writer may infer authorization from a destination, fall back
+to a repository path, or create the external evidence tree.
+
 ## Final standalone requirements
 
 Final verification requires all of these, never aggregate counts alone:
@@ -482,7 +555,7 @@ additional root-cause label.
 
 ## Historical regression matrix
 
-`scripts/production-certification-regressions.json` retains all 27 required
+`scripts/production-certification-regressions.json` retains all 28 required
 historical failures and adds source-validation, physical-continuity, and
 transactional state/worktree-isolation
 anti-bypass cases. `scripts/test-production-certification.mjs` maps each entry
@@ -496,6 +569,14 @@ simulation rejection. Case 22 physically removes a retained raw browser report
 and requires final rejection; case 23 sends a producer exit 17 through the same
 child-status adapter used by the lifecycle and requires exact propagation.
 Unknown inventory or classification fails closed.
+Case 28 preserves the exact pre-runtime timing/root mismatch. Its focused
+real-runner fixture projects the committed runtime profile, proves the generic
+root is absent, invokes the production destination preflight and real timing
+writer, and requires the external terminal timing record to rehash with no
+secret or repository-local output. The paired A–U matrix rejects missing,
+relative, escaping, repository/worktree, symlink, stale, cross-certification,
+cross-artifact, wrong-profile, incomplete, or tampered evidence while retaining
+the actual-runtime start-marker boundary.
 
 ## Qualification and operational runbook
 
@@ -550,10 +631,20 @@ build or benchmark. Its
 evidence is marked `deterministic-simulation` and cannot certify a real
 candidate.
 
-Doctor validates the Floor Plan check/policy owner, source/build/runtime policy
-separation, unchanged false assertion and production enable gate, per-call
-configuration reader, registered import-order regression, and exact historical
-real-runner coverage before source validation may begin. `certification:simulate`
+The simulated runtime stage uses the committed runtime projector and real
+phase-budget writer. It preflights the four canonical destinations, proves the
+parent-only root is stripped, writes terminal timing evidence externally, and
+passes that exact file through final standalone and integration readiness.
+Final-evidence regressions separately tamper the root/path contract, identity,
+artifact, profile, completion marker, and bytes.
+
+Doctor validates the runtime root owner/path, destination uniqueness,
+runner/writer contract identity, profile capability boundaries, and final
+consumer before source validation may begin. It also validates the Floor Plan
+check/policy owner, source/build/runtime policy separation, unchanged false
+assertion and production enable gate, per-call configuration reader, registered
+import-order regression, and exact historical real-runner coverage.
+`certification:simulate`
 exercises all 19 fixture checks and the value-policy tamper matrix.
 `certification:qualify` may emit only `QUALIFIED_FOR_FINAL_CANDIDATE_CERTIFICATION`,
 `NOT_QUALIFIED_SOURCE_CONTRACT_DEFECT`, `NOT_QUALIFIED_ORCHESTRATION_GAP`, or

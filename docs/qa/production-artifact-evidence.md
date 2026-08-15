@@ -5,6 +5,51 @@ production-mode artifact evidence and required CI behavior. It does not describe
 or prove a Vercel deployment, stable staging, production, or external platform
 configuration.
 
+## CH-0015I runtime timing external-root correction
+
+Mandatory read-only review stopped exact candidate
+`d449afd0ff693ad8bd03932d13b768b961dceab4`, tree
+`2af0f9c22cff576663174903494f904bdd4c4960`, before certification-resource
+creation. It created no certification/candidate ID, state, or evidence root;
+doctor and substantive stages never ran. No source or external state changed,
+and the result is not a runtime-smoke failure.
+
+The source blocker is
+`RUNTIME_SMOKE_TIMING_EVIDENCE_ROOT_CONTRACT_DEFECT` /
+`STAGE_ENVIRONMENT_OUTPUT_CAPABILITY_OWNER_MISMATCH`. The isolated runtime
+child correctly received `PLAYWRIGHT_EXTERNAL_EVIDENCE_ROOT` and an absolute
+timing path but not parent-only `CERTIFICATION_EVIDENCE_ROOT`; the timing writer
+authorized against the absent parent root.
+
+Classification `PLAYWRIGHT_EXTERNAL_ROOT_OWNS_ALL_RUNTIME_OUTPUTS` now makes
+the runtime bundle coherent. One versioned resolver validates the explicit
+external root and exact report, timing, product-test marker, and runtime-summary
+destinations before Playwright. It enforces external lexical/physical
+containment, repository/worktree exclusion, non-symlink existing writable
+parent, absent target, and role filename. The phase writer consumes only that
+explicit root/path, creates no evidence tree, has no `.local` or generic-root
+fallback, and atomically finalizes an absent target.
+
+Portable phase-timing evidence binds the root-contract schema/version/hash,
+destination class, safe relative path, terminal completion marker, file hash,
+certification/candidate/commit/tree/Build-ID/artifact/manifest/journal identity,
+and runtime profile ID/hash. It excludes the machine-local absolute root and
+secrets. Final standalone rehashes the raw timing file and rejects root/path,
+profile, cross-run, cross-artifact, completion, or byte tampering. Readiness,
+post-readiness, browser, and failure diagnostics remain embedded in report/
+timing evidence; safe child streams are not independent portable artifacts.
+
+The focused regression uses the real runtime projector, production runner
+preflight, and phase writer without launching Playwright. Simulation carries
+the produced external timing file into final standalone and integration
+readiness. Phase names, deadlines, budgets, readiness contracts, measurement,
+failure behavior, and runtime product assertions are unchanged. The exact
+clean-commit qualifier returns
+`QUALIFIED_FOR_FINAL_CANDIDATE_CERTIFICATION`; no real build, Phase 8, runtime,
+browser matrix, Full E2E, integration, or push was performed. Exact-head real
+certification and the final CH-0015 closure audit remain pending. Independent
+read-only review returned `PASS` with no remaining actionable finding.
+
 ## CH-0015I source-stage environment isolation correction
 
 Failed real certification `CH-0015I-final-20260814-c1826f884d67` for candidate

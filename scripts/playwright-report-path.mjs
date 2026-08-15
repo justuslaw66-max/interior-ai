@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import {
   constants,
   accessSync,
@@ -14,6 +15,34 @@ export const PLAYWRIGHT_EXTERNAL_EVIDENCE_ROOT =
 export const CERTIFICATION_EVIDENCE_ROOT = "CERTIFICATION_EVIDENCE_ROOT";
 export const PLAYWRIGHT_PRODUCTION_EVIDENCE_PATH_POLICY =
   "production-evidence";
+export const RUNTIME_SMOKE_EVIDENCE_ROOT_CONTRACT_SCHEMA =
+  "interior-ai.runtime-smoke-evidence-root-contract.v1";
+export const RUNTIME_SMOKE_EVIDENCE_ROOT_CONTRACT_VERSION = 1;
+export const RUNTIME_SMOKE_EVIDENCE_DESTINATION_CLASS =
+  "playwright-external-evidence-root";
+
+export const RUNTIME_SMOKE_EVIDENCE_OUTPUTS = Object.freeze({
+  report: Object.freeze({ filename: "playwright-report.json" }),
+  timings: Object.freeze({ filename: "phase-timings.json" }),
+  summary: Object.freeze({ filename: "evidence.json" }),
+  startMarker: Object.freeze({ filename: "product-test-start.json" }),
+});
+
+const RUNTIME_SMOKE_EVIDENCE_ROOT_CONTRACT = Object.freeze({
+  schema: RUNTIME_SMOKE_EVIDENCE_ROOT_CONTRACT_SCHEMA,
+  version: RUNTIME_SMOKE_EVIDENCE_ROOT_CONTRACT_VERSION,
+  rootVariableName: PLAYWRIGHT_EXTERNAL_EVIDENCE_ROOT,
+  destinationClass: RUNTIME_SMOKE_EVIDENCE_DESTINATION_CLASS,
+  requestedPath: "normalized-absolute-json-file",
+  containment: "beneath-physical-authorized-root-outside-all-worktrees",
+  parentPolicy: "existing-physical-writable-directory",
+  targetPolicy: "absent-single-writer",
+  portablePath: "relative-to-authorized-root",
+});
+
+export const RUNTIME_SMOKE_EVIDENCE_ROOT_CONTRACT_SHA256 = createHash("sha256")
+  .update(`${JSON.stringify(RUNTIME_SMOKE_EVIDENCE_ROOT_CONTRACT, null, 2)}\n`)
+  .digest("hex");
 
 const REPOSITORY_REPORT_DIRECTORY =
   ".local/production-artifact-evidence";
@@ -363,6 +392,56 @@ export function resolvePlaywrightReportPath({
   return resolveRepositoryRelativeReport({
     requestedPath: reportPath,
     repositoryRoot,
+  });
+}
+
+export function resolveRuntimeSmokeEvidencePath({
+  requestedPath,
+  repositoryRoot,
+  authorizedExternalRoot,
+  outputRole,
+  additionalRepositoryRoots = [],
+}) {
+  const output = RUNTIME_SMOKE_EVIDENCE_OUTPUTS[outputRole];
+  if (!output) {
+    throw new Error("Runtime-smoke evidence output role is unknown.");
+  }
+  const destination = resolvePlaywrightReportPath({
+    requestedPath,
+    repositoryRoot,
+    authorizedExternalRoot,
+    additionalRepositoryRoots,
+  });
+  if (destination.destinationClass !== "external-evidence-root") {
+    throw new Error("Runtime-smoke evidence must use its authorized external root.");
+  }
+  if (path.basename(destination.outputPath) !== output.filename) {
+    throw new Error(
+      `Runtime-smoke ${outputRole} output must use filename ${output.filename}.`,
+    );
+  }
+  const externalRoot = path.resolve(authorizedExternalRoot);
+  const portableRelativePath = path
+    .relative(externalRoot, destination.outputPath)
+    .split(path.sep)
+    .join("/");
+  if (
+    !portableRelativePath ||
+    portableRelativePath === ".." ||
+    portableRelativePath.startsWith("../") ||
+    path.isAbsolute(portableRelativePath)
+  ) {
+    throw new Error("Runtime-smoke portable evidence path is invalid.");
+  }
+  return Object.freeze({
+    ...destination,
+    outputRole,
+    destinationClass: RUNTIME_SMOKE_EVIDENCE_DESTINATION_CLASS,
+    portableRelativePath,
+    rootVariableName: PLAYWRIGHT_EXTERNAL_EVIDENCE_ROOT,
+    rootContractSchema: RUNTIME_SMOKE_EVIDENCE_ROOT_CONTRACT_SCHEMA,
+    rootContractVersion: RUNTIME_SMOKE_EVIDENCE_ROOT_CONTRACT_VERSION,
+    rootContractSha256: RUNTIME_SMOKE_EVIDENCE_ROOT_CONTRACT_SHA256,
   });
 }
 

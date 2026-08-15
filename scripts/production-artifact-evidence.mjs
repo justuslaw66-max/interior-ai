@@ -96,8 +96,23 @@ const {
   RUNTIME_SMOKE_OVERHEAD_BUDGETS,
   RUNTIME_SMOKE_PHASE_BUDGETS,
   RUNTIME_SMOKE_PHASE_TIMING_SCHEMA,
+  RUNTIME_SMOKE_TIMING_COMPLETION_MARKER,
+  RUNTIME_SMOKE_TIMING_EVIDENCE_BINDING_SCHEMA,
   RUNTIME_SMOKE_WHOLE_TEST_TIMEOUT_MS,
+  resolveRuntimeSmokeTimingDestination,
 } = await import("./runtime-smoke-phase-budget.mjs");
+const {
+  RUNTIME_SMOKE_EVIDENCE_DESTINATION_CLASS,
+  RUNTIME_SMOKE_EVIDENCE_ROOT_CONTRACT_SCHEMA,
+  RUNTIME_SMOKE_EVIDENCE_ROOT_CONTRACT_SHA256,
+  RUNTIME_SMOKE_EVIDENCE_ROOT_CONTRACT_VERSION,
+} = await import("./playwright-report-path.mjs");
+const RUNTIME_SMOKE_EXTERNAL_ROOT_NAME = [
+  "PLAYWRIGHT",
+  "EXTERNAL",
+  "EVIDENCE",
+  "ROOT",
+].join("_");
 const { validateRuntimeSmokeFailureProvenance } = await import(
   "./runtime-smoke-failure-evidence.mjs"
 );
@@ -2451,6 +2466,70 @@ export function readRuntimeSmokeTelemetryBootstrapEvidence(
   };
 }
 
+function runtimeSmokeTimingEvidenceBindingIssues(binding) {
+  const issues = [];
+  const exactKeys = (value, expected) =>
+    value !== null &&
+    typeof value === "object" &&
+    !Array.isArray(value) &&
+    JSON.stringify(Object.keys(value).sort()) === JSON.stringify([...expected].sort());
+  if (
+    !exactKeys(binding, ["schema", "rootContract", "identity", "completionMarker"]) ||
+    binding?.schema !== RUNTIME_SMOKE_TIMING_EVIDENCE_BINDING_SCHEMA ||
+    binding?.completionMarker !== RUNTIME_SMOKE_TIMING_COMPLETION_MARKER
+  ) {
+    issues.push("runtime-smoke timing evidence binding or completion marker is invalid");
+    return issues;
+  }
+  const rootContract = binding.rootContract;
+  if (
+    !exactKeys(rootContract, [
+      "schema",
+      "version",
+      "sha256",
+      "rootVariableName",
+      "destinationClass",
+      "relativePath",
+    ]) ||
+    rootContract.schema !== RUNTIME_SMOKE_EVIDENCE_ROOT_CONTRACT_SCHEMA ||
+    rootContract.version !== RUNTIME_SMOKE_EVIDENCE_ROOT_CONTRACT_VERSION ||
+    rootContract.sha256 !== RUNTIME_SMOKE_EVIDENCE_ROOT_CONTRACT_SHA256 ||
+    rootContract.rootVariableName !== RUNTIME_SMOKE_EXTERNAL_ROOT_NAME ||
+    rootContract.destinationClass !== RUNTIME_SMOKE_EVIDENCE_DESTINATION_CLASS ||
+    typeof rootContract.relativePath !== "string" ||
+    path.posix.basename(rootContract.relativePath) !== "phase-timings.json" ||
+    rootContract.relativePath.includes("\\") ||
+    path.posix.isAbsolute(rootContract.relativePath) ||
+    rootContract.relativePath.split("/").includes("..")
+  ) {
+    issues.push("runtime-smoke timing root contract is invalid");
+  }
+  const identityKeys = [
+    "certificationId",
+    "candidateId",
+    "commitSha",
+    "treeSha",
+    "nextBuildId",
+    "artifactSha256",
+    "productionManifestSha256",
+    "semanticJournalSha256",
+    "semanticJournalNonce",
+    "runtimeStage",
+    "runtimeStageProfileId",
+    "runtimeStageProfileSha256",
+    "stageEnvironmentContractSha256",
+  ];
+  if (
+    !exactKeys(binding.identity, identityKeys) ||
+    Object.values(binding.identity ?? {}).some(
+      (value) => value !== null && (typeof value !== "string" || !value),
+    )
+  ) {
+    issues.push("runtime-smoke timing identity binding is malformed");
+  }
+  return issues;
+}
+
 function readRuntimeSmokePhaseTimings(
   repositoryRoot,
   test,
@@ -2506,19 +2585,21 @@ function readRuntimeSmokePhaseTimings(
     const recordedPhaseNames = Array.isArray(timing.phases)
       ? timing.phases.map((phase) => phase.name)
       : [];
+    const timingEnvelopeKeys = [
+      "schema",
+      "testIdentity",
+      "wholeTestTimeoutMs",
+      "sequentialPhaseBudgetMs",
+      "overheadBudgets",
+      "phaseBudgets",
+      "phases",
+      "failure",
+      "complete",
+      ...(Object.hasOwn(timing, "evidenceBinding") ? ["evidenceBinding"] : []),
+    ];
     if (
       text !== canonicalText ||
-      !exactKeys(timing, [
-        "schema",
-        "testIdentity",
-        "wholeTestTimeoutMs",
-        "sequentialPhaseBudgetMs",
-        "overheadBudgets",
-        "phaseBudgets",
-        "phases",
-        "failure",
-        "complete",
-      ]) ||
+      !exactKeys(timing, timingEnvelopeKeys) ||
       timing.schema !== RUNTIME_SMOKE_PHASE_TIMING_SCHEMA ||
       timing.testIdentity !== "runtime.template-stability" ||
       timing.wholeTestTimeoutMs !== RUNTIME_SMOKE_WHOLE_TEST_TIMEOUT_MS ||
@@ -2536,6 +2617,9 @@ function readRuntimeSmokePhaseTimings(
       (allowFailure ? timing.failure === null : timing.failure !== null)
     ) {
       issues.push("runtime-smoke phase timing contract is incomplete or non-canonical");
+    }
+    if (Object.hasOwn(timing, "evidenceBinding")) {
+      issues.push(...runtimeSmokeTimingEvidenceBindingIssues(timing.evidenceBinding));
     }
     const phases = Array.isArray(timing.phases) ? timing.phases : [];
     const failurePhases = phases.filter((phase) => phase.failure !== null);
@@ -3351,7 +3435,9 @@ export async function recordProductionEvidenceTest({
   });
   if (!preflight.valid) throw new Error(preflight.issues.join("; "));
   const manifest = preflight.manifest;
-  const authorizedExternalRoot = environment.CERTIFICATION_EVIDENCE_ROOT?.trim();
+  const authorizedExternalRoot =
+    environment.CERTIFICATION_EVIDENCE_ROOT?.trim() ||
+    environment[RUNTIME_SMOKE_EXTERNAL_ROOT_NAME]?.trim();
   const absoluteReportPath = resolvedRetainedEvidencePath(
     repositoryRoot,
     reportPath,
@@ -3864,12 +3950,18 @@ async function smokeEvidence(repositoryRoot, manifestPath, reportPath) {
   const manifest = preflight.manifest;
   const absoluteReportPath = resolveRepositoryPath(repositoryRoot, reportPath, "test report path");
   if (existsSync(absoluteReportPath)) rmSync(absoluteReportPath);
-  const absolutePhaseTimingPath = resolveRepositoryPath(
+  const requestedTimingPath =
+    process.env.RUNTIME_SMOKE_PHASE_TIMINGS_PATH?.trim() ||
+    DEFAULT_PHASE_TIMINGS_PATH;
+  const timingDestination = resolveRuntimeSmokeTimingDestination({
     repositoryRoot,
-    DEFAULT_PHASE_TIMINGS_PATH,
-    "runtime-smoke phase timing path",
-  );
-  if (existsSync(absolutePhaseTimingPath)) rmSync(absolutePhaseTimingPath);
+    timingPath: requestedTimingPath,
+    environment: process.env,
+  });
+  const externalTimingRoot = timingDestination.rootVariableName
+    ? process.env[timingDestination.rootVariableName]?.trim()
+    : null;
+  const absolutePhaseTimingPath = timingDestination.outputPath;
   const environment = {
     ...process.env,
     CI: "true",
@@ -3877,9 +3969,12 @@ async function smokeEvidence(repositoryRoot, manifestPath, reportPath) {
     NEXT_PUBLIC_APP_ENV: manifest.build.applicationEnvironment,
     CATALOG_STRICT_VALIDATION: "true",
     PLAYWRIGHT_USE_PRODUCTION_SERVER: "1",
+    ...(timingDestination.rootVariableName
+      ? { [timingDestination.rootVariableName]: externalTimingRoot }
+      : {}),
     PRODUCTION_EVIDENCE_MANIFEST: manifestPath,
     PLAYWRIGHT_JSON_OUTPUT_FILE: reportPath,
-    RUNTIME_SMOKE_PHASE_TIMINGS_PATH: DEFAULT_PHASE_TIMINGS_PATH,
+    RUNTIME_SMOKE_PHASE_TIMINGS_PATH: requestedTimingPath,
     PRODUCTION_EVIDENCE_JOURNAL_PATH: DEFAULT_JOURNAL_PATH,
     PRODUCTION_EVIDENCE_EXPECTED_MANIFEST_SHA256: sha256(
       readFileSync(resolveRepositoryPath(repositoryRoot, manifestPath, "manifest path")),
@@ -3904,16 +3999,18 @@ async function smokeEvidence(repositoryRoot, manifestPath, reportPath) {
   bindRuntimeSmokeFailureToReport(
     repositoryRoot,
     reportPath,
-    DEFAULT_PHASE_TIMINGS_PATH,
+    absolutePhaseTimingPath,
+    externalTimingRoot,
   );
   await recordProductionEvidenceTest({
     repositoryRoot,
     manifestPath,
     reportPath,
-    phaseTimingPath: DEFAULT_PHASE_TIMINGS_PATH,
+    phaseTimingPath: absolutePhaseTimingPath,
     name: "runtime-smoke",
     command: RUNTIME_SMOKE_COMMAND,
     processExitCode: playwright.status ?? 1,
+    environment,
   });
   if (playwright.status !== 0) process.exit(playwright.status ?? 1);
   const finalResult = await validateProductionEvidence({

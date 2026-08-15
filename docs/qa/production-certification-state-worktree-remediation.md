@@ -1,5 +1,26 @@
 # Production certification state/worktree remediation
 
+## Successor runtime-output capability correction
+
+Read-only review of exact successor candidate
+`d449afd0ff693ad8bd03932d13b768b961dceab4`, tree
+`2af0f9c22cff576663174903494f904bdd4c4960`, stopped before any certification
+ID, candidate ID, state, evidence root, doctor, or substantive stage existed.
+No mutation occurred; it is not a runtime execution result. The preserved
+source classifications are `RUNTIME_SMOKE_TIMING_EVIDENCE_ROOT_CONTRACT_DEFECT`
+and `STAGE_ENVIRONMENT_OUTPUT_CAPABILITY_OWNER_MISMATCH`.
+
+The successor correction retains this document's state/worktree boundaries.
+`CERTIFICATION_EVIDENCE_ROOT` remains parent-only. Runtime smoke receives the
+explicit stage-owned `PLAYWRIGHT_EXTERNAL_EVIDENCE_ROOT` and exact report,
+timing, start-marker, and summary paths, all prevalidated outside the canonical
+checkout and all three stage worktrees. The timing writer uses the same
+versioned path contract as the real runner and cannot infer a root, fall back
+to `.local`, create the external tree, or overwrite a final target. Portable
+evidence records only the safe relative path and contract/identity hashes.
+Phase-budget semantics and product behavior are unchanged. Exact-head real
+certification and the final CH-0015 closure audit remain pending.
+
 Status: bounded certification-platform correction on 2026-08-15. Real
 exact-head certification and the final CH-0015 closure audit remain pending.
 The authoritative state classification is

@@ -27,7 +27,31 @@
     { "id": 24, "defect": "partial-or-contradictory-test-evidence", "coverage": "Phase 8/runtime/browser exact inventory validators" },
     { "id": 25, "defect": "continuity-mismatch", "coverage": "six-point artifact equality validator" },
     { "id": 26, "defect": "simulation-evidence-real-certification", "coverage": "execution classification anti-bypass guard" },
-    { "id": 27, "defect": "floor-plan-source-vision-ambient-value-leakage", "coverage": "exact e398751 real-runner reproduction, source check 5 check-owned value policy, doctor, simulation, and qualification" }
+    { "id": 27, "defect": "floor-plan-source-vision-ambient-value-leakage", "coverage": "exact e398751 real-runner reproduction, source check 5 check-owned value policy, doctor, simulation, and qualification" },
+    { "id": 28, "defect": "runtime-smoke-timing-parent-evidence-root-mismatch", "coverage": "real runtime-stage projector, production runner preflight, real phase-budget writer, external root isolation matrix, final standalone tamper guards, doctor, simulation, and qualification" }
+  ],
+  "runtimeEvidenceRootCases": [
+    "valid-runtime-stage-root-and-path",
+    "parent-certification-root-not-inherited",
+    "child-stage-root-writes-timing",
+    "missing-stage-root-rejected-pre-browser",
+    "output-outside-root-rejected",
+    "candidate-repository-output-rejected",
+    "source-validation-worktree-output-rejected",
+    "final-artifact-worktree-output-rejected",
+    "symlink-parent-escape-rejected",
+    "existing-target-rejected",
+    "missing-parent-rejected",
+    "relative-root-rejected",
+    "relative-output-rejected",
+    "cross-certification-timing-rejected",
+    "report-timing-artifact-mismatch-rejected",
+    "wrong-stage-profile-rejected",
+    "source-profile-runtime-capability-rejected",
+    "development-profile-runtime-activation-rejected",
+    "actual-runtime-start-marker-required",
+    "generic-parent-root-does-not-require-start-marker",
+    "secret-values-absent"
   ],
   "sourceValidationCases": [
     "identity-only-source-descriptor",

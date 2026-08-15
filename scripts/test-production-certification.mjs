@@ -159,7 +159,7 @@ function stateFixture() {
 {
   const contract = stageEnvironmentContract(repositoryRoot);
   assert.equal(contract.value.schema, "interior-ai.production-certification-stage-environment.v2");
-  assert.equal(Object.keys(contract.variables).length, 86);
+  assert.equal(Object.keys(contract.variables).length, 91);
   assert.equal(Object.keys(contract.applicationFeatureVariables).length, 5);
   assert.equal(Object.keys(contract.profiles).length, 20);
   assert.deepEqual(
@@ -382,15 +382,24 @@ function stateFixture() {
     /CERTIFICATION_SOURCE_VALIDATION_CHECK_ID/,
   );
   const runtimeInputs = {
+    CERTIFICATION_STAGE_ENVIRONMENT_CONTRACT_SHA256:
+      stageEnvironmentContract(repositoryRoot).sha256,
+    CERTIFICATION_STAGE_ENVIRONMENT_PROFILE_ID: "runtime-smoke",
+    CERTIFICATION_STAGE_ENVIRONMENT_PROFILE_SHA256:
+      stageEnvironmentContract(repositoryRoot).profiles["runtime-smoke"].sha256,
     CERTIFICATION_ENVIRONMENT_STAGE: "runtime-smoke",
     CERTIFICATION_RUNTIME_START_MARKER_PATH: "/external/start.json",
     PLAYWRIGHT_EXTERNAL_EVIDENCE_ROOT: "/external",
     PLAYWRIGHT_JSON_OUTPUT_FILE: "/external/report.json",
     PLAYWRIGHT_USE_PRODUCTION_SERVER: "1",
+    PRODUCTION_CERTIFICATION_ID: "certification-test-id",
     PRODUCTION_EVIDENCE_CANDIDATE_ID: "candidate",
     PRODUCTION_EVIDENCE_EXPECTED_ARTIFACT_SHA256: "a".repeat(64),
     PRODUCTION_EVIDENCE_EXPECTED_BUILD_ID: "build",
     PRODUCTION_EVIDENCE_EXPECTED_COMMIT_SHA: "b".repeat(40),
+    PRODUCTION_EVIDENCE_EXPECTED_JOURNAL_NONCE:
+      "123e4567-e89b-42d3-a456-426614174001",
+    PRODUCTION_EVIDENCE_EXPECTED_JOURNAL_SHA256: "e".repeat(64),
     PRODUCTION_EVIDENCE_EXPECTED_MANIFEST_SHA256: "c".repeat(64),
     PRODUCTION_EVIDENCE_EXPECTED_TREE_SHA: "d".repeat(40),
     PRODUCTION_EVIDENCE_JOURNAL_PATH:
@@ -893,6 +902,13 @@ function stateFixture() {
   );
   assert.match(
     stageEnvironmentRegressionOwner,
+    /Production certification runtime evidence-root regression passed/,
+    "Production certification runtime evidence-root regression passed",
+  );
+  assert.match(realRunner, /preflightRuntimeSmokeEvidenceOutputs/);
+  assert.match(realRunner, /createRuntimeSmokeTimingEvidenceBinding/);
+  assert.match(
+    stageEnvironmentRegressionOwner,
     /npm run test:production-artifact-evidence/,
   );
   assert.doesNotMatch(
@@ -1073,12 +1089,14 @@ function stateFixture() {
   const regressions = JSON.parse(
     readFileSync("scripts/production-certification-regressions.json", "utf8"),
   );
-  assert.equal(regressions.cases.length, 27);
+  assert.equal(regressions.cases.length, 28);
   assert.deepEqual(
     regressions.cases.map((entry) => entry.id),
-    Array.from({ length: 27 }, (_, index) => index + 1),
+    Array.from({ length: 28 }, (_, index) => index + 1),
   );
-  assert.equal(new Set(regressions.cases.map((entry) => entry.defect)).size, 27);
+  assert.equal(new Set(regressions.cases.map((entry) => entry.defect)).size, 28);
+  assert.equal(regressions.runtimeEvidenceRootCases.length, 21);
+  assert.equal(new Set(regressions.runtimeEvidenceRootCases).size, 21);
   assert.equal(regressions.sourceValidationCases.length, 23);
   assert.equal(new Set(regressions.sourceValidationCases).size, 23);
   assert.equal(regressions.continuityCases.length, 23);
@@ -1929,6 +1947,98 @@ function stateFixture() {
     rmSync(path.dirname(clone), { recursive: true, force: true });
   }
   coveredRegressionIds.add(24);
+
+  for (const mutation of [
+    {
+      name: "root-contract-hash",
+      mutate(evidence) {
+        evidence.phaseTimings.rootContract.sha256 = "0".repeat(64);
+      },
+      expected: /timing root contract|retained timing file contradicts/,
+    },
+    {
+      name: "path-outside-root",
+      mutate(evidence) {
+        evidence.phaseTimings.rootContract.relativePath = "../phase-timings.json";
+      },
+      expected: /timing root contract|retained timing file contradicts/,
+    },
+    {
+      name: "artifact-mismatch",
+      mutate(evidence) {
+        evidence.phaseTimings.identity.artifactSha256 = "0".repeat(64);
+      },
+      expected: /cross-run or cross-artifact|retained timing file contradicts/,
+    },
+    {
+      name: "cross-certification-timing",
+      mutate(evidence) {
+        evidence.phaseTimings.identity.certificationId = "another-certification";
+      },
+      expected: /cross-run or cross-artifact|retained timing file contradicts/,
+    },
+    {
+      name: "missing-completion-marker",
+      mutate(evidence) {
+        delete evidence.phaseTimings.completionMarker;
+      },
+      expected: /completion binding|retained timing file contradicts/,
+    },
+    {
+      name: "wrong-runtime-profile",
+      mutate(evidence) {
+        evidence.stageEnvironment.profileId = "source-validation";
+      },
+      expected: /stage-environment profile binding/,
+    },
+  ]) {
+    const clone = cloneSimulation(base);
+    mutateBoundEvidence(
+      clone,
+      "runtime-smoke",
+      mutation.mutate,
+      "runtimeSmokeEvidenceSha256",
+    );
+    const child = finalSimulationChild(clone);
+    assert.notEqual(child.status, 0, `${mutation.name} must fail final standalone`);
+    assert.match(`${child.stdout}\n${child.stderr}`, mutation.expected);
+    rmSync(path.dirname(clone), { recursive: true, force: true });
+  }
+
+  for (const mutation of [
+    {
+      name: "missing-runtime-root-binding",
+      mutate(timing) {
+        delete timing.evidenceBinding;
+      },
+    },
+    {
+      name: "timing-completion-false",
+      mutate(timing) {
+        timing.complete = false;
+      },
+    },
+  ]) {
+    const clone = cloneSimulation(base);
+    const cloneEvidenceRoot = path.join(clone, "evidence");
+    const cloneState = readCertificationState(
+      path.join(cloneEvidenceRoot, "certification-state.json"),
+    );
+    const timingPath = path.join(
+      cloneEvidenceRoot,
+      cloneState.evidenceFiles["runtime-phase-timings"].path,
+    );
+    const timing = JSON.parse(readFileSync(timingPath, "utf8"));
+    mutation.mutate(timing);
+    writeFileSync(timingPath, canonicalJsonBytes(timing));
+    const child = finalSimulationChild(clone);
+    assert.notEqual(child.status, 0, `${mutation.name} must fail final standalone`);
+    assert.match(
+      `${child.stdout}\n${child.stderr}`,
+      /hash mismatch|retained timing file contradicts/,
+    );
+    rmSync(path.dirname(clone), { recursive: true, force: true });
+  }
 
   {
     const clone = cloneSimulation(base);

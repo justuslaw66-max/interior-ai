@@ -1,5 +1,63 @@
 # Code health audit handoff
 
+## CH-0015I runtime-smoke evidence-root handoff — 2026-08-15
+
+Branch `fix/production-certification-runtime-evidence-root` starts at exact
+candidate `d449afd0ff693ad8bd03932d13b768b961dceab4`, tree
+`2af0f9c22cff576663174903494f904bdd4c4960`, above unchanged integration local,
+tracking, and remote `2c567fd483877c7dcbd8fd23e3cd8cb316732c8c`, tree
+`50f9c5d6a6610990606fd9db9a27ba40200fca90`. Entry ancestry, subjects, source/
+index cleanliness, untracked and ignored inventory, active Git operations,
+repository-owned processes, and ports 3000/3317 were checked before branching;
+no intended-edit/running-process mismatch existed.
+
+Mandatory read-only integrator review of the starting candidate stopped before
+certification-resource creation. No certification ID, candidate ID, state, or
+evidence root was created; doctor and substantive stages did not run; no
+source, Git, database, build, archive, benchmark, runtime, browser, or
+integration mutation occurred. That preserved result is a source blocker, not
+a runtime-smoke failure.
+
+The classifications are
+`RUNTIME_SMOKE_TIMING_EVIDENCE_ROOT_CONTRACT_DEFECT` and
+`STAGE_ENVIRONMENT_OUTPUT_CAPABILITY_OWNER_MISMATCH`. The selected owner is
+`A — PLAYWRIGHT_EXTERNAL_ROOT_OWNS_ALL_RUNTIME_OUTPUTS`: report, terminal phase
+timings, product-test start marker, and runtime summary share the external
+runtime bundle. Embedded readiness/post-readiness/browser/failure diagnostics
+and non-portable safe process streams do not require a second root.
+
+`scripts/playwright-report-path.mjs` now exposes the versioned canonical runtime
+resolver. The real runner preflights every output; the runtime profile passes
+only the Playwright external root, exact paths, complete identity, and profile
+bindings; parent-only `CERTIFICATION_EVIDENCE_ROOT` stays absent. The timing
+writer consumes that same explicit root/path, rejects repository/worktree,
+relative, escaping, symlink, missing-parent, stale-target, and ambiguous paths,
+and atomically finalizes without fallback or overwrite. Its portable binding
+includes the root contract, relative path, completion, certification/candidate/
+commit/tree/Build-ID/artifact/manifest/journal identity, and runtime profile.
+Final standalone rehashes and rejects root, profile, cross-run, cross-artifact,
+completion, or byte mismatch.
+
+Focused proof uses the real projector, runner preflight, and timing writer
+without launching a browser. The A–U isolation matrix, doctor, deterministic
+simulation through integration readiness, final tamper matrix, state/worktree/
+source/continuity and historical regressions, production-artifact owner,
+27-gate/383-source truthfulness inventory, phase/deadline/readiness contracts,
+typecheck, zero-warning lint, quality, architecture, hygiene, syntax, and diff
+checks pass. The exact clean-commit qualifier returns
+`QUALIFIED_FOR_FINAL_CANDIDATE_CERTIFICATION`; independent read-only review
+returned `PASS` with no remaining actionable finding after correcting its one P1:
+simulation now invokes the real four-output runner preflight under the real
+runtime profile and verifies writer/preflight descriptor agreement.
+
+No product/UI, Floor Plan, vision, telemetry, NFT, timestamp, runtime product
+assertion, Phase 8 semantic/budget, dependency/lockfile, database/migration,
+workflow, or deployment behavior changes. No real build, Phase 8, runtime,
+browser-owner matrix, Full E2E, integration, push, or deployment belongs to
+this correction. Exact-head real certification and the final CH-0015 closure
+audit remain pending. Rollback is one focused commit revert and restores the
+known release blocker without external/data rollback.
+
 ## CH-0015I transactional state/worktree isolation handoff — 2026-08-15
 
 The authoritative classifications are

@@ -1,7 +1,17 @@
-import { mkdirSync, renameSync, writeFileSync } from "node:fs";
+import {
+  linkSync,
+  lstatSync,
+  mkdirSync,
+  unlinkSync,
+  writeFileSync,
+} from "node:fs";
 import path from "node:path";
 
-import { resolvePlaywrightReportPath } from "./playwright-report-path.mjs";
+import {
+  PLAYWRIGHT_EXTERNAL_EVIDENCE_ROOT,
+  resolvePlaywrightReportPath,
+  resolveRuntimeSmokeEvidencePath,
+} from "./playwright-report-path.mjs";
 import {
   FURNISHED_TEMPLATE_PHASE_CONTRACTS,
 } from "./runtime-smoke-operation-contracts.mjs";
@@ -33,6 +43,10 @@ export {
 
 export const RUNTIME_SMOKE_PHASE_TIMING_SCHEMA =
   "interior-ai.runtime-smoke-phase-timings.v3";
+export const RUNTIME_SMOKE_TIMING_EVIDENCE_BINDING_SCHEMA =
+  "interior-ai.runtime-smoke-timing-evidence-binding.v1";
+export const RUNTIME_SMOKE_TIMING_COMPLETION_MARKER =
+  "timing-file-finalized";
 
 export function deriveFurnishedTemplatePhaseTimeout(contract) {
   return sumNonNegativeIntegers(
@@ -123,28 +137,154 @@ function safeLifecycleState(value) {
     : "not-observed";
 }
 
-function resolveTimingPath(repositoryRoot, relativePath) {
-  if (!relativePath) {
+const CERTIFICATION_RUNTIME_IDENTITY_NAMES = Object.freeze([
+  "PRODUCTION_CERTIFICATION_ID",
+  "PRODUCTION_EVIDENCE_CANDIDATE_ID",
+  "PRODUCTION_EVIDENCE_EXPECTED_COMMIT_SHA",
+  "PRODUCTION_EVIDENCE_EXPECTED_TREE_SHA",
+  "PRODUCTION_EVIDENCE_EXPECTED_BUILD_ID",
+  "PRODUCTION_EVIDENCE_EXPECTED_ARTIFACT_SHA256",
+  "PRODUCTION_EVIDENCE_EXPECTED_MANIFEST_SHA256",
+  "PRODUCTION_EVIDENCE_EXPECTED_JOURNAL_SHA256",
+  "PRODUCTION_EVIDENCE_EXPECTED_JOURNAL_NONCE",
+  "CERTIFICATION_STAGE_ENVIRONMENT_PROFILE_ID",
+  "CERTIFICATION_STAGE_ENVIRONMENT_PROFILE_SHA256",
+  "CERTIFICATION_STAGE_ENVIRONMENT_CONTRACT_SHA256",
+]);
+
+function optionalEnvironmentValue(environment, name) {
+  const value = environment[name]?.trim();
+  return value || null;
+}
+
+function runtimeTimingIdentity(environment) {
+  if (environment.CERTIFICATION_ENVIRONMENT_STAGE === "runtime-smoke") {
+    const missing = CERTIFICATION_RUNTIME_IDENTITY_NAMES.filter(
+      (name) => !environment[name]?.trim(),
+    );
+    if (missing.length > 0) {
+      throw new Error(
+        `runtime-smoke timing identity is missing required names: ${missing.join(", ")}`,
+      );
+    }
+  }
+  return Object.freeze({
+    certificationId: optionalEnvironmentValue(
+      environment,
+      "PRODUCTION_CERTIFICATION_ID",
+    ),
+    candidateId: optionalEnvironmentValue(
+      environment,
+      "PRODUCTION_EVIDENCE_CANDIDATE_ID",
+    ),
+    commitSha: optionalEnvironmentValue(
+      environment,
+      "PRODUCTION_EVIDENCE_EXPECTED_COMMIT_SHA",
+    ),
+    treeSha: optionalEnvironmentValue(
+      environment,
+      "PRODUCTION_EVIDENCE_EXPECTED_TREE_SHA",
+    ),
+    nextBuildId: optionalEnvironmentValue(
+      environment,
+      "PRODUCTION_EVIDENCE_EXPECTED_BUILD_ID",
+    ),
+    artifactSha256: optionalEnvironmentValue(
+      environment,
+      "PRODUCTION_EVIDENCE_EXPECTED_ARTIFACT_SHA256",
+    ),
+    productionManifestSha256: optionalEnvironmentValue(
+      environment,
+      "PRODUCTION_EVIDENCE_EXPECTED_MANIFEST_SHA256",
+    ),
+    semanticJournalSha256: optionalEnvironmentValue(
+      environment,
+      "PRODUCTION_EVIDENCE_EXPECTED_JOURNAL_SHA256",
+    ),
+    semanticJournalNonce: optionalEnvironmentValue(
+      environment,
+      "PRODUCTION_EVIDENCE_EXPECTED_JOURNAL_NONCE",
+    ),
+    runtimeStage: optionalEnvironmentValue(
+      environment,
+      "CERTIFICATION_ENVIRONMENT_STAGE",
+    ),
+    runtimeStageProfileId: optionalEnvironmentValue(
+      environment,
+      "CERTIFICATION_STAGE_ENVIRONMENT_PROFILE_ID",
+    ),
+    runtimeStageProfileSha256: optionalEnvironmentValue(
+      environment,
+      "CERTIFICATION_STAGE_ENVIRONMENT_PROFILE_SHA256",
+    ),
+    stageEnvironmentContractSha256: optionalEnvironmentValue(
+      environment,
+      "CERTIFICATION_STAGE_ENVIRONMENT_CONTRACT_SHA256",
+    ),
+  });
+}
+
+export function createRuntimeSmokeTimingEvidenceBinding({
+  environment,
+  destination,
+}) {
+  return Object.freeze({
+    schema: RUNTIME_SMOKE_TIMING_EVIDENCE_BINDING_SCHEMA,
+    rootContract: Object.freeze({
+      schema: destination.rootContractSchema,
+      version: destination.rootContractVersion,
+      sha256: destination.rootContractSha256,
+      rootVariableName: destination.rootVariableName,
+      destinationClass: destination.destinationClass,
+      relativePath: destination.portableRelativePath,
+    }),
+    identity: runtimeTimingIdentity(environment),
+    completionMarker: RUNTIME_SMOKE_TIMING_COMPLETION_MARKER,
+  });
+}
+
+export function resolveRuntimeSmokeTimingDestination({
+  repositoryRoot,
+  timingPath,
+  environment = process.env,
+  additionalRepositoryRoots = [],
+}) {
+  if (!timingPath) {
     throw new Error("runtime-smoke phase timing path is required");
   }
-  if (path.isAbsolute(relativePath)) {
-    return resolvePlaywrightReportPath({
-      requestedPath: relativePath,
-      repositoryRoot,
-      authorizedExternalRoot: process.env.CERTIFICATION_EVIDENCE_ROOT,
-    }).outputPath;
+  if (environment.CERTIFICATION_ENVIRONMENT_STAGE !== "runtime-smoke") {
+    if (path.isAbsolute(timingPath)) {
+      return resolvePlaywrightReportPath({
+        requestedPath: timingPath,
+        repositoryRoot,
+        authorizedExternalRoot: environment[PLAYWRIGHT_EXTERNAL_EVIDENCE_ROOT],
+        additionalRepositoryRoots,
+      });
+    }
+    const root = path.resolve(repositoryRoot);
+    const outputPath = path.resolve(root, timingPath);
+    if (!outputPath.startsWith(`${root}${path.sep}`)) {
+      throw new Error("runtime-smoke phase timing path must remain inside the repository");
+    }
+    return Object.freeze({
+      outputPath,
+      destinationClass: "repository-relative-runtime-timing",
+    });
   }
-  const root = path.resolve(repositoryRoot);
-  const resolved = path.resolve(root, relativePath);
-  if (!resolved.startsWith(`${root}${path.sep}`)) {
-    throw new Error("runtime-smoke phase timing path must remain inside the repository");
-  }
-  return resolved;
+  return resolveRuntimeSmokeEvidencePath({
+    requestedPath: timingPath,
+    repositoryRoot,
+    authorizedExternalRoot: environment[PLAYWRIGHT_EXTERNAL_EVIDENCE_ROOT],
+    outputRole: "timings",
+    additionalRepositoryRoots,
+  });
 }
 
 export function createRuntimeSmokePhaseRecorder({
   repositoryRoot,
   timingPath,
+  environment = process.env,
+  additionalRepositoryRoots = [],
   now = Date.now,
   setTimer = setTimeout,
   clearTimer = clearTimeout,
@@ -155,9 +295,27 @@ export function createRuntimeSmokePhaseRecorder({
   const testStartedAt = now();
   const records = [];
   const completedNames = new Set();
-  const absoluteTimingPath = timingPath
-    ? resolveTimingPath(repositoryRoot, timingPath)
+  const timingDestination = timingPath
+    ? resolveRuntimeSmokeTimingDestination({
+        repositoryRoot,
+        timingPath,
+        environment,
+        additionalRepositoryRoots,
+      })
     : null;
+  const absoluteTimingPath = timingDestination?.outputPath ?? null;
+  const stagingPath = absoluteTimingPath ? `${absoluteTimingPath}.staging` : null;
+  const evidenceBinding = timingDestination?.rootContractSchema
+    ? createRuntimeSmokeTimingEvidenceBinding({ environment, destination: timingDestination })
+    : null;
+  if (stagingPath) {
+    try {
+      lstatSync(stagingPath);
+      throw new Error("runtime-smoke phase timing staging path must not already exist");
+    } catch (error) {
+      if (error?.code !== "ENOENT") throw error;
+    }
+  }
 
   const write = () => {
     if (!absoluteTimingPath) return;
@@ -175,11 +333,19 @@ export function createRuntimeSmokePhaseRecorder({
       failure: records.find((record) => record.failure !== null)?.failure ?? null,
       complete: records.length === phaseBudgets.length &&
         records.every((record) => record.outcome === "passed"),
+      ...(evidenceBinding ? { evidenceBinding } : {}),
     };
-    mkdirSync(path.dirname(absoluteTimingPath), { recursive: true });
-    const stagingPath = `${absoluteTimingPath}.staging`;
-    writeFileSync(stagingPath, `${JSON.stringify(payload, null, 2)}\n`);
-    renameSync(stagingPath, absoluteTimingPath);
+    if (timingDestination.destinationClass === "repository-relative-runtime-timing") {
+      mkdirSync(path.dirname(absoluteTimingPath), { recursive: true });
+    }
+    writeFileSync(stagingPath, `${JSON.stringify(payload, null, 2)}\n`, {
+      flag: records.length === 1 ? "wx" : "w",
+      mode: 0o600,
+    });
+    if (payload.complete || payload.failure !== null) {
+      linkSync(stagingPath, absoluteTimingPath);
+      unlinkSync(stagingPath);
+    }
   };
 
   return {
@@ -307,5 +473,6 @@ export function createRuntimeSmokePhaseRecorder({
       }
     },
     records,
+    destination: timingDestination,
   };
 }

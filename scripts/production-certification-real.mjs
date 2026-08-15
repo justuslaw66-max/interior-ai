@@ -39,7 +39,9 @@ import {
   resolvePlaywrightReportPath,
   resolveRequiredTestReportPath,
   resolveRetainedExternalEvidenceFile,
+  resolveRuntimeSmokeEvidencePath,
 } from "./playwright-report-path.mjs";
+import { createRuntimeSmokeTimingEvidenceBinding } from "./runtime-smoke-phase-budget.mjs";
 import {
   completeCertificationStage,
   certificationStateSha256,
@@ -64,6 +66,7 @@ import {
   validateSourceValidationEvidence,
 } from "./production-certification-source-continuity.mjs";
 import {
+  certificationEnvironmentProfile,
   isCertificationControlVariableName,
   projectCertificationChildEnvironment,
   stageEnvironmentContract,
@@ -1813,8 +1816,57 @@ export async function runPhase8Stage(options = {}) {
   });
 }
 
+export function preflightRuntimeSmokeEvidenceOutputs({
+  repositoryRoot,
+  evidenceRoot,
+  reportPath,
+  timingPath,
+  summaryPath,
+  startMarkerPath,
+  additionalRepositoryRoots = [],
+}) {
+  const destinations = Object.freeze({
+    report: resolveRuntimeSmokeEvidencePath({
+      requestedPath: reportPath,
+      repositoryRoot,
+      authorizedExternalRoot: evidenceRoot,
+      outputRole: "report",
+      additionalRepositoryRoots,
+    }),
+    timings: resolveRuntimeSmokeEvidencePath({
+      requestedPath: timingPath,
+      repositoryRoot,
+      authorizedExternalRoot: evidenceRoot,
+      outputRole: "timings",
+      additionalRepositoryRoots,
+    }),
+    summary: resolveRuntimeSmokeEvidencePath({
+      requestedPath: summaryPath,
+      repositoryRoot,
+      authorizedExternalRoot: evidenceRoot,
+      outputRole: "summary",
+      additionalRepositoryRoots,
+    }),
+    startMarker: resolveRuntimeSmokeEvidencePath({
+      requestedPath: startMarkerPath,
+      repositoryRoot,
+      authorizedExternalRoot: evidenceRoot,
+      outputRole: "startMarker",
+      additionalRepositoryRoots,
+    }),
+  });
+  const outputPaths = Object.values(destinations).map(
+    (destination) => destination.outputPath,
+  );
+  if (new Set(outputPaths).size !== outputPaths.length) {
+    throw new Error("runtime-smoke evidence destinations are not unique");
+  }
+  return destinations;
+}
+
 function runtimeIdentityEnvironment(state) {
   return {
+    PRODUCTION_CERTIFICATION_ID: state.certificationId,
     PRODUCTION_EVIDENCE_CANDIDATE_ID: state.candidate.id,
     PRODUCTION_EVIDENCE_EXPECTED_COMMIT_SHA: state.candidate.commitSha,
     PRODUCTION_EVIDENCE_EXPECTED_TREE_SHA: state.candidate.treeSha,
@@ -1822,6 +1874,10 @@ function runtimeIdentityEnvironment(state) {
     PRODUCTION_EVIDENCE_EXPECTED_ARTIFACT_SHA256: state.bindings.artifactSha256,
     PRODUCTION_EVIDENCE_EXPECTED_MANIFEST_SHA256:
       state.bindings.productionManifestSha256,
+    PRODUCTION_EVIDENCE_EXPECTED_JOURNAL_SHA256:
+      state.bindings.semanticJournalSha256,
+    PRODUCTION_EVIDENCE_EXPECTED_JOURNAL_NONCE:
+      state.bindings.semanticJournalNonce,
   };
 }
 
@@ -1857,20 +1913,17 @@ export async function runRuntimeSmokeStage(options = {}) {
         false,
       );
     }
-    const runtimeTargets = new Set();
     safeEvidenceDirectory(context.evidenceRoot, "runtime-smoke");
+    let runtimeDestinations;
     try {
-      for (const target of [reportPath, timingPath, outputPath, startMarkerPath]) {
-        const resolved = resolvePlaywrightReportPath({
-          requestedPath: target,
-          repositoryRoot: context.repositoryRoot,
-          authorizedExternalRoot: context.evidenceRoot,
-        });
-        if (runtimeTargets.has(resolved.outputPath)) {
-          throw new Error("runtime-smoke evidence destinations are not unique");
-        }
-        runtimeTargets.add(resolved.outputPath);
-      }
+      runtimeDestinations = preflightRuntimeSmokeEvidenceOutputs({
+        repositoryRoot: context.repositoryRoot,
+        evidenceRoot: context.evidenceRoot,
+        reportPath,
+        timingPath,
+        summaryPath: outputPath,
+        startMarkerPath,
+      });
     } catch (error) {
       throw new StageFailure(
         error instanceof Error ? error.message : String(error),
@@ -1878,26 +1931,41 @@ export async function runRuntimeSmokeStage(options = {}) {
         false,
       );
     }
+    const runtimeProfile = certificationEnvironmentProfile(
+      context.repositoryRoot,
+      "runtime-smoke",
+    );
+    const childProjection = projectCertificationChildEnvironment({
+      repositoryRoot: context.repositoryRoot,
+      baseEnvironment: { ...context.environment, CI: "true" },
+      stage: "runtime-smoke",
+      profileId: "runtime-smoke",
+      stageInputs: {
+        CERTIFICATION_ENVIRONMENT_STAGE: "runtime-smoke",
+        CERTIFICATION_STAGE_ENVIRONMENT_CONTRACT_SHA256:
+          runtimeProfile.contract.sha256,
+        CERTIFICATION_STAGE_ENVIRONMENT_PROFILE_ID: runtimeProfile.id,
+        CERTIFICATION_STAGE_ENVIRONMENT_PROFILE_SHA256: runtimeProfile.sha256,
+        ...runtimeIdentityEnvironment(state),
+        PLAYWRIGHT_EXTERNAL_EVIDENCE_ROOT: context.evidenceRoot,
+        PLAYWRIGHT_USE_PRODUCTION_SERVER: "1",
+        PRODUCTION_EVIDENCE_MANIFEST: DEFAULT_MANIFEST,
+        PRODUCTION_EVIDENCE_JOURNAL_PATH: DEFAULT_JOURNAL,
+        PLAYWRIGHT_JSON_OUTPUT_FILE: reportPath,
+        RUNTIME_SMOKE_PHASE_TIMINGS_PATH: timingPath,
+        CERTIFICATION_RUNTIME_START_MARKER_PATH: startMarkerPath,
+      },
+    });
+    const expectedTimingBinding = createRuntimeSmokeTimingEvidenceBinding({
+      environment: childProjection.environment,
+      destination: runtimeDestinations.timings,
+    });
     const child = childResult(
       process.platform === "win32" ? "npx.cmd" : "npx",
       ["playwright", "test", "tests/e2e/00-runtime-smoke.spec.ts", "--project=chromium"],
       {
         cwd: context.repositoryRoot,
-        env: stageChildEnvironment(context, {
-          stage: "runtime-smoke",
-          baseEnvironment: { ...context.environment, CI: "true" },
-          stageInputs: {
-            CERTIFICATION_ENVIRONMENT_STAGE: "runtime-smoke",
-            ...runtimeIdentityEnvironment(state),
-            PLAYWRIGHT_EXTERNAL_EVIDENCE_ROOT: context.evidenceRoot,
-            PLAYWRIGHT_USE_PRODUCTION_SERVER: "1",
-            PRODUCTION_EVIDENCE_MANIFEST: DEFAULT_MANIFEST,
-            PRODUCTION_EVIDENCE_JOURNAL_PATH: DEFAULT_JOURNAL,
-            PLAYWRIGHT_JSON_OUTPUT_FILE: reportPath,
-            RUNTIME_SMOKE_PHASE_TIMINGS_PATH: timingPath,
-            CERTIFICATION_RUNTIME_START_MARKER_PATH: startMarkerPath,
-          },
-        }),
+        env: childProjection.environment,
         inherit: true,
       },
     );
@@ -1944,6 +2012,17 @@ export async function runRuntimeSmokeStage(options = {}) {
       startMarkerPath,
     );
     const records = validation.truthfulness.records;
+    if (
+      validation.phaseTimings?.complete !== true ||
+      JSON.stringify(validation.phaseTimings?.evidenceBinding) !==
+        JSON.stringify(expectedTimingBinding)
+    ) {
+      throw new StageFailure(
+        "runtime-smoke timing evidence root or identity binding is invalid",
+        "FINAL_EVIDENCE_FAILURE",
+        true,
+      );
+    }
     const evidence = {
       schema: PRODUCTION_CERTIFICATION_RUNTIME_EVIDENCE_SCHEMA,
       identity: identityFromState(state),
@@ -1951,6 +2030,25 @@ export async function runRuntimeSmokeStage(options = {}) {
       simulation: false,
       reportSha256: reportDescriptor.sha256,
       phaseTimingsSha256: timingDescriptor.sha256,
+      phaseTimings: {
+        sha256: timingDescriptor.sha256,
+        complete: validation.phaseTimings.complete,
+        completionMarker: validation.phaseTimings.evidenceBinding.completionMarker,
+        rootContract: validation.phaseTimings.evidenceBinding.rootContract,
+        identity: validation.phaseTimings.evidenceBinding.identity,
+      },
+      stageEnvironment: {
+        profileId: childProjection.metadata.profileId,
+        profileSha256: childProjection.metadata.profileSha256,
+        contractSchema: childProjection.metadata.contractSchema,
+        contractSha256: childProjection.metadata.contractSha256,
+        environmentNames: childProjection.metadata.environmentNames,
+        environmentNamesSha256: childProjection.metadata.environmentNamesSha256,
+        allowedVariableNamesSha256:
+          childProjection.metadata.allowedVariableNamesSha256,
+        requiredVariableNamesSha256:
+          childProjection.metadata.requiredVariableNamesSha256,
+      },
       stats: {
         expected: 2,
         passed: records.filter((record) => record.outcome === "passed").length,
@@ -1990,7 +2088,11 @@ export async function runRuntimeSmokeStage(options = {}) {
     const descriptor = retainedDescriptor(context.evidenceRoot, outputPath);
     return {
       consumed: true,
-      outputHashes: { runtime: descriptor.sha256, report: reportDescriptor.sha256 },
+      outputHashes: {
+        runtime: descriptor.sha256,
+        report: reportDescriptor.sha256,
+        timings: timingDescriptor.sha256,
+      },
       bindingUpdates: { runtimeSmokeEvidenceSha256: descriptor.sha256 },
       evidenceFiles: {
         "runtime-smoke": descriptor,
@@ -1998,7 +2100,11 @@ export async function runRuntimeSmokeStage(options = {}) {
         "runtime-phase-timings": timingDescriptor,
         "runtime-start": startDescriptor,
       },
-      result: { evidenceSha256: descriptor.sha256, reportSha256: reportDescriptor.sha256 },
+      result: {
+        evidenceSha256: descriptor.sha256,
+        reportSha256: reportDescriptor.sha256,
+        timingSha256: timingDescriptor.sha256,
+      },
     };
   }, {
     consumptionProbe: () =>

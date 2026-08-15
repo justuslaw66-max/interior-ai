@@ -1,5 +1,40 @@
 # P0/P1 remediation queue
 
+## Runtime-smoke external timing ownership — 2026-08-15
+
+- **Classification:** `RUNTIME_SMOKE_TIMING_EVIDENCE_ROOT_CONTRACT_DEFECT` and
+  `STAGE_ENVIRONMENT_OUTPUT_CAPABILITY_OWNER_MISMATCH`; release-blocking
+  certification-platform source defect.
+- **Preserved blocker:** read-only review stopped candidate
+  `d449afd0ff693ad8bd03932d13b768b961dceab4` / tree
+  `2af0f9c22cff576663174903494f904bdd4c4960` before IDs, state, evidence root,
+  doctor, or substantive stages. No mutation occurred and the result is not a
+  runtime-smoke execution failure.
+- **Owner/correction:** classification
+  `PLAYWRIGHT_EXTERNAL_ROOT_OWNS_ALL_RUNTIME_OUTPUTS`. A versioned resolver
+  prevalidates explicit external root plus report, timing, start-marker, and
+  runtime-summary destinations. `CERTIFICATION_EVIDENCE_ROOT` stays
+  parent-only; the timing writer consumes only the projected Playwright root
+  and exact path, with no inference, fallback, tree creation, or overwrite.
+- **Final binding:** portable timing evidence records the safe relative path,
+  root-contract/profile/identity hashes, terminal marker, and complete
+  certification/candidate/artifact/manifest/journal identity. Final standalone
+  rehashes it and rejects wrong root/profile/run/artifact/completion/content.
+- **Proof/status:** exact real-writer preflight regression, A–U isolation
+  negatives, phase/deadline/readiness/failure guards, doctor, simulation through
+  final/integration readiness, final tamper tests, historical/state/worktree/
+  source/continuity matrices, artifact/truthfulness owners, and source-quality
+  checks. The exact clean-commit qualifier returns
+  `QUALIFIED_FOR_FINAL_CANDIDATE_CERTIFICATION`. Independent read-only review
+  returned `PASS` with no remaining actionable finding after its simulation
+  preflight coverage finding was fixed and rechecked. Real exact-head
+  certification and final CH-0015 audit remain pending.
+- **Scope/rollback:** certification/runtime-evidence infrastructure and docs
+  only; no product, Floor Plan, vision, telemetry, NFT, timestamp, Playwright
+  product assertion, Phase 8 semantic/budget, dependency/lockfile, database,
+  workflow, deployment, or real-gate change. Revert the single focused commit;
+  this restores the known source blocker and changes no external data.
+
 ## Transactional certification state and pristine worktrees — 2026-08-15
 
 - **Classification:** `CERTIFICATION_STATE_PRECONDITION_MUTATION_DEFECT` and
