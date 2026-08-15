@@ -34,6 +34,8 @@ import {
   validateProductionEvidence,
 } from "./production-artifact-evidence.mjs";
 import {
+  PRODUCTION_EVIDENCE_JOURNAL_SCHEMA,
+  PRODUCTION_EVIDENCE_JOURNAL_VERSION,
   PRODUCTION_EVIDENCE_VERIFICATION_MODES,
   certificationPreparedBuildJournalIssues,
 } from "./production-artifact-contract.mjs";
@@ -2386,6 +2388,12 @@ export async function runRuntimeSmokeStage(options = {}) {
     const evidence = {
       schema: PRODUCTION_CERTIFICATION_RUNTIME_EVIDENCE_SCHEMA,
       identity: identityFromState(state),
+      journalIdentity: {
+        schema: PRODUCTION_EVIDENCE_JOURNAL_SCHEMA,
+        version: PRODUCTION_EVIDENCE_JOURNAL_VERSION,
+        sha256: state.bindings.semanticJournalSha256,
+        runNonce: state.bindings.semanticJournalNonce,
+      },
       executionClass: state.executionClass,
       simulation: false,
       reportSha256: reportDescriptor.sha256,

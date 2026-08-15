@@ -89,39 +89,261 @@ function validProcessIdentity(value) {
   );
 }
 
+function childEventIssues(name, event) {
+  if (
+    !exactKeys(event, [
+      "status",
+      "startedAt",
+      "completedAt",
+      "exitCode",
+      "signal",
+      "failureKind",
+    ])
+  ) {
+    return [`semantic event journal ${name} event shape is malformed`];
+  }
+  const issues = [];
+  const terminal = event.status === "succeeded" || event.status === "failed";
+  if (!new Set(["pending", "running", "succeeded", "failed"]).has(event.status)) {
+    issues.push(`semantic event journal ${name} status is invalid`);
+  }
+  if (
+    event.status === "pending" &&
+    [event.startedAt, event.completedAt, event.exitCode, event.signal, event.failureKind]
+      .some((value) => value !== null)
+  ) {
+    issues.push(`semantic event journal ${name} pending state is contradictory`);
+  }
+  if (
+    event.status === "running" &&
+    (!canonicalUtcTimestamp(event.startedAt) ||
+      event.completedAt !== null ||
+      event.exitCode !== null ||
+      event.signal !== null ||
+      event.failureKind !== null)
+  ) {
+    issues.push(`semantic event journal ${name} running state is contradictory`);
+  }
+  if (
+    terminal &&
+    (!canonicalUtcTimestamp(event.startedAt) ||
+      !canonicalUtcTimestamp(event.completedAt))
+  ) {
+    issues.push(`semantic event journal ${name} terminal timestamps are invalid`);
+  }
+  if (
+    event.status === "succeeded" &&
+    (event.exitCode !== 0 || event.signal !== null || event.failureKind !== null)
+  ) {
+    issues.push(`semantic event journal ${name} success is contradictory`);
+  }
+  if (event.status === "failed") {
+    const childExit =
+      Number.isSafeInteger(event.exitCode) &&
+      event.exitCode !== 0 &&
+      event.signal === null &&
+      event.failureKind === "child_exit_nonzero";
+    const childSignal =
+      event.exitCode === null &&
+      typeof event.signal === "string" &&
+      /^SIG[A-Z0-9]+$/.test(event.signal) &&
+      event.failureKind === "child_signal";
+    const dispatchFailure =
+      event.exitCode === null &&
+      event.signal === null &&
+      event.failureKind === "dispatch_error";
+    if (!childExit && !childSignal && !dispatchFailure) {
+      issues.push(`semantic event journal ${name} failure status is malformed`);
+    }
+  }
+  return issues;
+}
+
+function inventoryEventIssues(event) {
+  if (!exactKeys(event, ["status", "startedAt", "completedAt", "failureKind"])) {
+    return ["semantic event journal artifact inventory shape is malformed"];
+  }
+  const issues = [];
+  if (!new Set(["pending", "running", "succeeded", "failed"]).has(event.status)) {
+    issues.push("semantic event journal artifact inventory status is invalid");
+  }
+  if (
+    event.status === "pending" &&
+    [event.startedAt, event.completedAt, event.failureKind].some(
+      (value) => value !== null,
+    )
+  ) {
+    issues.push("semantic event journal pending artifact inventory is contradictory");
+  }
+  if (
+    event.status === "running" &&
+    (!canonicalUtcTimestamp(event.startedAt) ||
+      event.completedAt !== null ||
+      event.failureKind !== null)
+  ) {
+    issues.push("semantic event journal running artifact inventory is contradictory");
+  }
+  if (
+    new Set(["succeeded", "failed"]).has(event.status) &&
+    (!canonicalUtcTimestamp(event.startedAt) ||
+      !canonicalUtcTimestamp(event.completedAt))
+  ) {
+    issues.push("semantic event journal artifact inventory timestamps are invalid");
+  }
+  if (event.status === "succeeded" && event.failureKind !== null) {
+    issues.push("semantic event journal successful artifact inventory is contradictory");
+  }
+  if (event.status === "failed" && event.failureKind !== "inventory_error") {
+    issues.push("semantic event journal artifact inventory failure is malformed");
+  }
+  return issues;
+}
+
+function expectedJournalCompletionState(journal) {
+  if (journal.manifest?.status === "created") return "manifest_created";
+  const inventoryStatus = journal.events?.artifactInventory?.status;
+  if (inventoryStatus !== "pending") return `artifact_inventory_${inventoryStatus}`;
+  const buildStatus = journal.events?.build?.status;
+  if (buildStatus !== "pending") return `build_${buildStatus}`;
+  const generatedStatus = journal.events?.generatedSourceCheck?.status;
+  if (generatedStatus !== "pending") return `generated_source_check_${generatedStatus}`;
+  const installStatus = journal.events?.dependencyInstall?.status;
+  if (installStatus !== "pending") return `dependency_install_${installStatus}`;
+  return "initialized";
+}
+
+function journalTimeline(journal) {
+  return [
+    ["cycleStartedAt", journal.events?.cycleStartedAt],
+    ["installStartedAt", journal.events?.dependencyInstall?.startedAt],
+    ["installCompletedAt", journal.events?.dependencyInstall?.completedAt],
+    ...(Array.isArray(journal.owner?.processHandoffs)
+      ? journal.owner.processHandoffs.map((handoff, index) => [
+          `processHandoff${index + 1}At`,
+          handoff?.completedAt,
+        ])
+      : []),
+    [
+      "generatedSourceCheckStartedAt",
+      journal.events?.generatedSourceCheck?.startedAt,
+    ],
+    [
+      "generatedSourceCheckCompletedAt",
+      journal.events?.generatedSourceCheck?.completedAt,
+    ],
+    ["buildStartedAt", journal.events?.build?.startedAt],
+    ["buildCompletedAt", journal.events?.build?.completedAt],
+    ["artifactInventoryStartedAt", journal.events?.artifactInventory?.startedAt],
+    [
+      "artifactInventoryCompletedAt",
+      journal.events?.artifactInventory?.completedAt,
+    ],
+    ["manifestCreatedAt", journal.manifest?.createdAt],
+  ].filter(([, value]) => value !== null && value !== undefined);
+}
+
+function journalBindingIssues(journal) {
+  const binding = journal.bindings;
+  if (!exactKeys(binding, ["artifactInventory", "nextBuildId", "artifactSha256"])) {
+    return ["semantic event journal output binding shape is malformed"];
+  }
+  if (journal.events?.artifactInventory?.status === "succeeded") {
+    if (
+      !exactKeys(binding.artifactInventory, ["path", "sha256"]) ||
+      binding.artifactInventory.path !==
+        ".local/production-artifact-evidence/artifact-inventory.json" ||
+      !SHA_256.test(binding.artifactInventory.sha256 ?? "") ||
+      typeof binding.nextBuildId !== "string" ||
+      binding.nextBuildId.length === 0 ||
+      !SHA_256.test(binding.artifactSha256 ?? "")
+    ) {
+      return ["semantic event journal completed output binding is malformed"];
+    }
+  } else if (
+    binding.artifactInventory !== null ||
+    binding.nextBuildId !== null ||
+    binding.artifactSha256 !== null
+  ) {
+    return ["semantic event journal exposes output bindings before completion"];
+  }
+  return [];
+}
+
+function journalDiagnosticsIssues(diagnostics) {
+  if (
+    !exactKeys(diagnostics, ["filesystemMetadata"]) ||
+    !Array.isArray(diagnostics.filesystemMetadata)
+  ) {
+    return ["semantic event journal diagnostic metadata shape is malformed"];
+  }
+  const issues = [];
+  for (const entry of diagnostics.filesystemMetadata) {
+    if (!exactKeys(entry, ["label", "birthtime", "ctime", "mtime"])) {
+      issues.push("semantic event journal filesystem diagnostics are malformed");
+      continue;
+    }
+    if (!/^[a-z0-9][a-z0-9._-]{0,95}$/.test(entry.label ?? "")) {
+      issues.push("semantic event journal filesystem diagnostic label is unsafe");
+    }
+    for (const value of [entry.birthtime, entry.ctime, entry.mtime]) {
+      if (value !== null && !canonicalUtcTimestamp(value)) {
+        issues.push("semantic event journal filesystem diagnostic timestamp is invalid");
+      }
+    }
+  }
+  return issues;
+}
+
 function semanticJournalIssues(journal) {
+  if (
+    !exactKeys(journal, [
+      "schema",
+      "version",
+      "runNonce",
+      "candidateIdentifier",
+      "source",
+      "owner",
+      "commands",
+      "buildContract",
+      "toolchain",
+      "events",
+      "bindings",
+      "manifest",
+      "completionState",
+      "diagnostics",
+    ])
+  ) {
+    return ["semantic event journal shape is malformed"];
+  }
   const issues = [];
   if (
-    journal?.schema !== PRODUCTION_EVIDENCE_JOURNAL_SCHEMA ||
-    journal?.version !== PRODUCTION_EVIDENCE_JOURNAL_VERSION
+    journal.schema !== PRODUCTION_EVIDENCE_JOURNAL_SCHEMA ||
+    journal.version !== PRODUCTION_EVIDENCE_JOURNAL_VERSION
   ) {
     issues.push("unsupported semantic event journal schema or version");
   }
-  if (!RUN_NONCE.test(journal?.runNonce ?? "")) {
+  if (!RUN_NONCE.test(journal.runNonce ?? "")) {
     issues.push("semantic event journal run nonce is malformed");
   }
+  if (!/^[A-Za-z0-9._:-]{1,128}$/.test(journal.candidateIdentifier ?? "")) {
+    issues.push("semantic event journal candidate identity is malformed");
+  }
   if (
-    !SOURCE_SHA.test(journal?.source?.commitSha ?? "") ||
-    !SOURCE_SHA.test(journal?.source?.treeSha ?? "")
+    !exactKeys(journal.source, ["commitSha", "treeSha"]) ||
+    !SOURCE_SHA.test(journal.source?.commitSha ?? "") ||
+    !SOURCE_SHA.test(journal.source?.treeSha ?? "")
   ) {
     issues.push("semantic event journal source binding is malformed");
   }
+  const handoffs = journal.owner?.processHandoffs;
   if (
-    journal?.commands?.dependencyInstall !== DEPENDENCY_INSTALL_COMMAND ||
-    journal?.commands?.generatedSourceCheck !== GENERATED_SOURCE_CHECK_COMMAND ||
-    journal?.commands?.build !== BUILD_COMMAND
-  ) {
-    issues.push("semantic event journal command binding is not canonical");
-  }
-  const handoffs = journal?.owner?.processHandoffs;
-  if (
-    !exactKeys(journal?.owner, [
+    !exactKeys(journal.owner, [
       "process",
       "processHandoffs",
       "worktreeIdentitySha256",
       "wrapper",
     ]) ||
-    !validProcessIdentity(journal?.owner?.process) ||
+    !validProcessIdentity(journal.owner?.process) ||
     !Array.isArray(handoffs) ||
     handoffs.length > 1 ||
     handoffs.some(
@@ -130,19 +352,154 @@ function semanticJournalIssues(journal) {
         !validProcessIdentity(handoff?.from) ||
         !validProcessIdentity(handoff?.to) ||
         same(handoff.from, handoff.to) ||
-        handoff?.boundary !==
-          "post-dependency-install-pre-generated-source" ||
-        !canonicalUtcTimestamp(handoff?.completedAt),
+        handoff.boundary !== "post-dependency-install-pre-generated-source" ||
+        !canonicalUtcTimestamp(handoff.completedAt),
     ) ||
-    (handoffs.length > 0 &&
-      (!same(handoffs.at(-1).to, journal?.owner?.process) ||
-        Date.parse(handoffs[0].completedAt) <
-          Date.parse(journal?.events?.dependencyInstall?.completedAt ?? "") ||
-        Date.parse(handoffs[0].completedAt) >
-          Date.parse(journal?.events?.generatedSourceCheck?.startedAt ?? "")))
+    (handoffs.length > 0 && !same(handoffs.at(-1).to, journal.owner?.process)) ||
+    !SHA_256.test(journal.owner?.worktreeIdentitySha256 ?? "") ||
+    !exactKeys(journal.owner?.wrapper, ["version", "path", "sha256"]) ||
+    journal.owner?.wrapper?.version !== PRODUCTION_EVIDENCE_WRAPPER_VERSION ||
+    journal.owner?.wrapper?.path !== "scripts/production-artifact-evidence.mjs" ||
+    !SHA_256.test(journal.owner?.wrapper?.sha256 ?? "")
   ) {
-    issues.push("semantic event journal process handoff is malformed");
+    issues.push("semantic event journal owner binding is malformed");
   }
+  if (
+    !exactKeys(journal.commands, [
+      "dependencyInstall",
+      "generatedSourceCheck",
+      "build",
+    ]) ||
+    journal.commands?.dependencyInstall !== DEPENDENCY_INSTALL_COMMAND ||
+    journal.commands?.generatedSourceCheck !== GENERATED_SOURCE_CHECK_COMMAND ||
+    journal.commands?.build !== BUILD_COMMAND
+  ) {
+    issues.push("semantic event journal command binding is not canonical");
+  }
+  if (
+    !exactKeys(journal.buildContract, [
+      "applicationEnvironment",
+      "catalogStrictValidation",
+    ]) ||
+    !PRODUCTION_ENVIRONMENTS.has(journal.buildContract?.applicationEnvironment) ||
+    journal.buildContract?.catalogStrictValidation !== true
+  ) {
+    issues.push("semantic event journal build contract is malformed");
+  }
+  if (
+    !exactKeys(journal.toolchain, ["nodeVersion", "npmVersion"]) ||
+    typeof journal.toolchain?.nodeVersion !== "string" ||
+    journal.toolchain.nodeVersion.length === 0 ||
+    typeof journal.toolchain?.npmVersion !== "string" ||
+    journal.toolchain.npmVersion.length === 0
+  ) {
+    issues.push("semantic event journal toolchain binding is malformed");
+  }
+  if (
+    !exactKeys(journal.events, [
+      "cycleStartedAt",
+      "buildWrapperStartedAt",
+      "dependencyInstall",
+      "generatedSourceCheck",
+      "build",
+      "artifactInventory",
+    ]) ||
+    !canonicalUtcTimestamp(journal.events?.cycleStartedAt) ||
+    !canonicalUtcTimestamp(journal.events?.buildWrapperStartedAt)
+  ) {
+    issues.push("semantic event journal event envelope is malformed");
+  } else {
+    issues.push(
+      ...childEventIssues("dependency install", journal.events.dependencyInstall),
+      ...childEventIssues(
+        "generated-source check",
+        journal.events.generatedSourceCheck,
+      ),
+      ...childEventIssues("build", journal.events.build),
+      ...inventoryEventIssues(journal.events.artifactInventory),
+    );
+    if (
+      Date.parse(journal.events.buildWrapperStartedAt) <
+      Date.parse(journal.events.cycleStartedAt)
+    ) {
+      issues.push("semantic event journal build wrapper start is out of order");
+    }
+    if (
+      canonicalUtcTimestamp(journal.events.build.startedAt) &&
+      Date.parse(journal.events.buildWrapperStartedAt) >
+        Date.parse(journal.events.build.startedAt)
+    ) {
+      issues.push("semantic event journal build dispatch is out of order");
+    }
+  }
+  if (
+    !exactKeys(journal.manifest, ["status", "createdAt"]) ||
+    !new Set(["pending", "created"]).has(journal.manifest?.status) ||
+    (journal.manifest?.status === "pending"
+      ? journal.manifest.createdAt !== null
+      : !canonicalUtcTimestamp(journal.manifest?.createdAt))
+  ) {
+    issues.push("semantic event journal manifest state is malformed");
+  }
+  if (
+    journal.events?.generatedSourceCheck?.status !== "pending" &&
+    journal.events?.dependencyInstall?.status !== "succeeded"
+  ) {
+    issues.push("generated-source check started before dependency installation succeeded");
+  }
+  const handoff = handoffs?.[0];
+  if (
+    handoff &&
+    (journal.events?.dependencyInstall?.status !== "succeeded" ||
+      Date.parse(handoff.completedAt) <
+        Date.parse(journal.events.dependencyInstall.completedAt) ||
+      (canonicalUtcTimestamp(journal.events?.generatedSourceCheck?.startedAt) &&
+        Date.parse(handoff.completedAt) >
+          Date.parse(journal.events.generatedSourceCheck.startedAt)))
+  ) {
+    issues.push("semantic process handoff boundary is malformed or out of order");
+  }
+  if (
+    journal.events?.build?.status !== "pending" &&
+    journal.events?.generatedSourceCheck?.status !== "succeeded"
+  ) {
+    issues.push("build started before generated-source verification succeeded");
+  }
+  if (
+    journal.events?.artifactInventory?.status !== "pending" &&
+    journal.events?.build?.status !== "succeeded"
+  ) {
+    issues.push("artifact inventory started before the build succeeded");
+  }
+  if (
+    journal.manifest?.status === "created" &&
+    journal.events?.artifactInventory?.status !== "succeeded"
+  ) {
+    issues.push("manifest was claimed before artifact inventory succeeded");
+  }
+  issues.push(
+    ...journalBindingIssues(journal),
+    ...journalDiagnosticsIssues(journal.diagnostics),
+  );
+  const timeline = journalTimeline(journal);
+  if (timeline.some(([, value]) => !canonicalUtcTimestamp(value))) {
+    issues.push("semantic event journal timestamps are invalid");
+  }
+  for (let index = 1; index < timeline.length; index += 1) {
+    if (Date.parse(timeline[index][1]) < Date.parse(timeline[index - 1][1])) {
+      issues.push(
+        `semantic event journal ${timeline[index][0]} predates ${timeline[index - 1][0]}`,
+      );
+    }
+  }
+  if (journal.completionState !== expectedJournalCompletionState(journal)) {
+    issues.push("semantic event journal completion state is contradictory");
+  }
+  return issues;
+}
+
+function completedSemanticJournalIssues(journal) {
+  const issues = semanticJournalIssues(journal);
   if (
     !successfulEvent(journal?.events?.dependencyInstall) ||
     !successfulEvent(journal?.events?.generatedSourceCheck) ||
@@ -152,45 +509,22 @@ function semanticJournalIssues(journal) {
   ) {
     issues.push("semantic event journal does not record a complete successful build");
   }
-  const timeline = [
-    journal?.events?.cycleStartedAt,
-    journal?.events?.dependencyInstall?.startedAt,
-    journal?.events?.dependencyInstall?.completedAt,
-    ...(handoffs ?? []).map((handoff) => handoff.completedAt),
-    journal?.events?.generatedSourceCheck?.startedAt,
-    journal?.events?.generatedSourceCheck?.completedAt,
-    journal?.events?.build?.startedAt,
-    journal?.events?.build?.completedAt,
-    journal?.events?.artifactInventory?.startedAt,
-    journal?.events?.artifactInventory?.completedAt,
-    journal?.manifest?.createdAt,
-  ];
-  if (
-    timeline.some((value) => !canonicalUtcTimestamp(value)) ||
-    timeline.some(
-      (value, index) => index > 0 && Date.parse(value) < Date.parse(timeline[index - 1]),
-    )
-  ) {
-    issues.push("semantic event journal ordering is invalid");
-  }
   if (
     journal?.manifest?.status !== "created" ||
     journal?.completionState !== "manifest_created"
   ) {
     issues.push("semantic event journal does not record manifest completion");
   }
-  if (
-    typeof journal?.bindings?.nextBuildId !== "string" ||
-    journal.bindings.nextBuildId.length === 0 ||
-    !SHA_256.test(journal?.bindings?.artifactSha256 ?? "")
-  ) {
-    issues.push("semantic event journal artifact binding is malformed");
-  }
   return issues;
 }
 
-export function certificationPreparedBuildJournalIssues(journal) {
+export function validateCurrentProductionEvidenceSemanticJournal(journal) {
   const issues = semanticJournalIssues(journal);
+  return { valid: issues.length === 0, issues };
+}
+
+export function certificationPreparedBuildJournalIssues(journal) {
+  const issues = completedSemanticJournalIssues(journal);
   if (journal?.owner?.processHandoffs?.length !== 1) {
     issues.push(
       "certification prepared build requires exactly one process handoff",
@@ -402,7 +736,7 @@ export function validateCurrentProductionEvidenceManifest({
   }
   const issues = [
     ...manifestSchemaIssues(manifest),
-    ...semanticJournalIssues(semanticJournal),
+    ...completedSemanticJournalIssues(semanticJournal),
     ...manifestJournalBindingIssues(manifest, semanticJournal),
     ...manifestBuildIssues(manifest, semanticJournal),
     ...manifestArtifactIssues(manifest, semanticJournal),

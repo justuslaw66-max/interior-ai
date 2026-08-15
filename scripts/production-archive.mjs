@@ -235,7 +235,7 @@ export function planProductionArchive({
     ["package-lock.json", "immutable-dependency-identity"],
     [manifestPath, "production-manifest-v3"],
     [`${manifestPath}.sha256`, "production-manifest-sidecar"],
-    [journalPath, "semantic-journal-v1"],
+    [journalPath, "semantic-journal-v2"],
     [artifactInventoryPath, "bound-artifact-inventory"],
     [
       "docs/qa/production-certification-contract.v1.json",

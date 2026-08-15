@@ -8,6 +8,10 @@ import {
 import path from "node:path";
 
 import {
+  PRODUCTION_EVIDENCE_JOURNAL_SCHEMA,
+  PRODUCTION_EVIDENCE_JOURNAL_VERSION,
+} from "./production-artifact-contract.mjs";
+import {
   PLAYWRIGHT_EXTERNAL_EVIDENCE_ROOT,
   resolvePlaywrightReportPath,
   resolveRuntimeSmokeEvidencePath,
@@ -205,6 +209,8 @@ function runtimeTimingIdentity(environment) {
       environment,
       "PRODUCTION_EVIDENCE_EXPECTED_JOURNAL_NONCE",
     ),
+    semanticJournalSchema: PRODUCTION_EVIDENCE_JOURNAL_SCHEMA,
+    semanticJournalVersion: PRODUCTION_EVIDENCE_JOURNAL_VERSION,
     runtimeStage: optionalEnvironmentValue(
       environment,
       "CERTIFICATION_ENVIRONMENT_STAGE",

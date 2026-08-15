@@ -130,6 +130,29 @@
   rerun the production-artifact/truthfulness checks to restore the prior known
   blocker; no data or external rollback is needed.
 
+## CH-0015I current journal-v2 final-consumer alignment — 2026-08-16
+
+- **Classification:** `FINAL_RUNTIME_EVIDENCE_JOURNAL_SCHEMA_DRIFT /
+  CANONICAL_JOURNAL_VERSION_CONSUMER_MISMATCH`. Candidate `73d5c541…`, tree
+  `be98410f…`, was stopped by read-only review before resources or substantive
+  gates; runtime smoke was never invoked.
+- **Correction/policy:** current certification requires state v3, manifest
+  v3/validator 3, and strict journal v2 from one canonical contract owner. Raw
+  report, timing, runtime envelope, archive, final standalone, and continuity
+  bind one nonce/artifact and reject v1, unknown/future, missing/malformed, and
+  incomplete versions. Historical v1 remains offline-only and unchanged.
+- **Ownership/proof:** existing owner `ci.production-artifact-contract` covers
+  the physical positive final path, version-drift negatives, anti-drift guards,
+  doctor, simulation tamper cases, historical boundary, and qualification. No
+  new required gate is added.
+- **Scope/status:** no product/UI, Floor Plan, telemetry, NFT, Playwright
+  product spec, benchmark, dependency/lockfile, database/migration, workflow,
+  deployment, or external change. Qualification returns
+  `QUALIFIED_FOR_FINAL_CANDIDATE_CERTIFICATION`; real certification,
+  integration, and final closure audit remain pending.
+- **Rollback:** revert the one focused correction commit. This restores the
+  known final-consumer blocker and requires no data or external rollback.
+
 ## CH-0015I staged archive-preflight verifier — 2026-08-14
 
 - **Classification:** `STAGED_ARCHIVE_PREFLIGHT_VERIFIER_CONTRACT_DEFECT /

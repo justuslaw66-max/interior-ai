@@ -25,11 +25,16 @@ import {
   recoverProductionEvidenceFromSemanticJournal,
 } from "./production-artifact-evidence.mjs";
 import {
+  PRODUCTION_EVIDENCE_JOURNAL_SCHEMA,
+  PRODUCTION_EVIDENCE_JOURNAL_VERSION,
+} from "./production-artifact-contract.mjs";
+import {
   CERTIFICATION_HARNESS_SOURCE_PATHS,
   PHASE8_SOURCE_BINDING_PATHS,
   PRODUCTION_CERTIFICATION_BROWSER_EVIDENCE_SCHEMA,
   PRODUCTION_CERTIFICATION_PHASE8_EVIDENCE_SCHEMA,
   PRODUCTION_CERTIFICATION_RUNTIME_EVIDENCE_SCHEMA,
+  PRODUCTION_CERTIFICATION_STATE_SCHEMA_V2,
   REQUIRED_BROWSER_OWNERS,
   canonicalJsonBytes,
   sha256Bytes,
@@ -401,6 +406,107 @@ function identityFromState(state) {
   };
 }
 
+function runtimeArtifactIdentity(state) {
+  return {
+    candidateIdentifier: state.candidate.id,
+    sourceCommitSha: state.candidate.commitSha,
+    sourceTreeSha: state.candidate.treeSha,
+    artifactSha256: state.bindings.artifactSha256,
+    nextBuildId: state.bindings.nextBuildId,
+    runNonce: state.bindings.semanticJournalNonce,
+    semanticJournalSchema: PRODUCTION_EVIDENCE_JOURNAL_SCHEMA,
+    semanticJournalVersion: PRODUCTION_EVIDENCE_JOURNAL_VERSION,
+    serverCommand: "npm run evidence:production:serve",
+    buildMode: "production",
+  };
+}
+
+function simulatedRuntimePlaywrightReport(state) {
+  const runtimeFile = "00-runtime-smoke.spec.ts";
+  const result = {
+    status: "passed",
+    retry: 0,
+    annotations: [],
+  };
+  return {
+    config: {
+      configFile: "<repository-root>/playwright.config.ts",
+      rootDir: "<repository-root>/tests/e2e",
+      forbidOnly: true,
+      grep: {},
+      grepInvert: null,
+      shard: null,
+      projects: [
+        {
+          name: "chromium",
+          retries: 0,
+          repeatEach: 1,
+          outputDir: path.join(
+            "<repository-root>",
+            ".local/production-artifact-evidence/playwright-output",
+          ),
+          testDir: "<repository-root>/tests/e2e",
+          snapshotDir: null,
+        },
+      ],
+      webServer: {
+        command: "npm run evidence:production:serve",
+        url: "http://127.0.0.1:3000",
+        reuseExistingServer: false,
+      },
+      metadata: {
+        productionArtifactEvidence: runtimeArtifactIdentity(state),
+      },
+    },
+    suites: [
+      {
+        title: runtimeFile,
+        file: runtimeFile,
+        specs: [
+          {
+            title: "furnished template remains stable without a render loop",
+            file: runtimeFile,
+            ok: true,
+            tests: [
+              {
+                projectId: "chromium",
+                projectName: "chromium",
+                status: "expected",
+                annotations: [],
+                results: [result],
+              },
+            ],
+          },
+          {
+            title: "health and catalog endpoints report ready",
+            file: runtimeFile,
+            ok: true,
+            tests: [
+              {
+                projectId: "chromium",
+                projectName: "chromium",
+                status: "expected",
+                annotations: [],
+                results: [result],
+              },
+            ],
+          },
+        ],
+      },
+    ],
+    errors: [],
+    runtimeSmokeFailure: null,
+    stats: {
+      startTime: "2026-08-14T00:20:00.000Z",
+      duration: 400,
+      expected: 2,
+      skipped: 0,
+      unexpected: 0,
+      flaky: 0,
+    },
+  };
+}
+
 function descriptor(evidenceRoot, filePath) {
   return {
     path: path.relative(evidenceRoot, filePath).split(path.sep).join("/"),
@@ -588,6 +694,12 @@ function runtimeEvidence(
   return {
     schema: PRODUCTION_CERTIFICATION_RUNTIME_EVIDENCE_SCHEMA,
     identity: identityFromState(state),
+    journalIdentity: {
+      schema: PRODUCTION_EVIDENCE_JOURNAL_SCHEMA,
+      version: PRODUCTION_EVIDENCE_JOURNAL_VERSION,
+      sha256: state.bindings.semanticJournalSha256,
+      runNonce: state.bindings.semanticJournalNonce,
+    },
     executionClass: "deterministic-simulation",
     simulation: true,
     reportSha256,
@@ -2565,7 +2677,7 @@ export async function runProductionCertificationSimulation({
   const runtimeReportDescriptor = writeEvidence(
     evidenceRoot,
     "runtime-smoke/playwright-report.json",
-    { schema: "interior-ai.simulated-playwright-report.v1", owner: "runtime-smoke" },
+    simulatedRuntimePlaywrightReport(state),
   );
   let simulationRuntimeClock = 0;
   const simulationRuntimeRecorder = createRuntimeSmokePhaseRecorder({
@@ -2668,6 +2780,20 @@ export async function runProductionCertificationSimulation({
     ),
     runtimeArtifactMismatchRejected: rejectsRuntimeMutation((evidence) => {
       evidence.phaseTimings.identity.artifactSha256 = "f".repeat(64);
+    }),
+    runtimeTimingJournalV1Rejected: rejectsRuntimeMutation((evidence) => {
+      evidence.phaseTimings.identity.semanticJournalSchema =
+        "interior-ai.production-artifact-semantic-event-journal.v1";
+      evidence.phaseTimings.identity.semanticJournalVersion = 1;
+    }),
+    runtimeEnvelopeJournalV1Rejected: rejectsRuntimeMutation((evidence) => {
+      evidence.journalIdentity.schema =
+        "interior-ai.production-artifact-semantic-event-journal.v1";
+      evidence.journalIdentity.version = 1;
+    }),
+    runtimeJournalNonceMismatchRejected: rejectsRuntimeMutation((evidence) => {
+      evidence.journalIdentity.runNonce =
+        "123e4567-e89b-42d3-a456-426614174099";
     }),
     runtimeCertificationMismatchRejected: rejectsRuntimeMutation((evidence) => {
       evidence.phaseTimings.identity.certificationId = "another-certification";
@@ -3001,6 +3127,100 @@ export async function runProductionCertificationSimulation({
     },
     quarantineCreated: false,
   });
+  const invokeFinalStandalone = (candidateStatePath = statePath) =>
+    spawnSync(
+      process.execPath,
+      ["scripts/production-artifact-evidence.mjs", "verify-standalone"],
+      {
+        cwd: extractionRoot,
+        encoding: "utf8",
+        env: {
+          ...process.env,
+          PRODUCTION_CERTIFICATION_STATE: candidateStatePath,
+          CERTIFICATION_EVIDENCE_ROOT: evidenceRoot,
+          CERTIFICATION_ALLOW_SIMULATION: "1",
+          PRODUCTION_EVIDENCE_EXPECTED_COMMIT_SHA: identity.commitSha,
+        },
+      },
+    );
+  const finalFailureText = (child) =>
+    `${String(child.stdout ?? "")}\n${String(child.stderr ?? "")}`;
+  const runtimeReportBytes = readFileSync(runtimeReportPath);
+  const runtimeReportV1 = JSON.parse(runtimeReportBytes.toString("utf8"));
+  Object.assign(
+    runtimeReportV1.config.metadata.productionArtifactEvidence,
+    {
+      semanticJournalSchema:
+        "interior-ai.production-artifact-semantic-event-journal.v1",
+      semanticJournalVersion: 1,
+    },
+  );
+  writeFileSync(runtimeReportPath, canonicalJsonBytes(runtimeReportV1));
+  const runtimeReportV1StatePath = path.join(
+    evidenceRoot,
+    "simulation/runtime-report-v1-state.json",
+  );
+  const runtimeReportV1State = structuredClone(state);
+  runtimeReportV1State.evidenceFiles["runtime-report"].sha256 = sha256Bytes(
+    readFileSync(runtimeReportPath),
+  );
+  writeCertificationState(runtimeReportV1StatePath, runtimeReportV1State);
+  const runtimeReportV1Final = invokeFinalStandalone(runtimeReportV1StatePath);
+  const rawRuntimeReportJournalV1Rejected =
+    runtimeReportV1Final.status !== 0 &&
+    /runtime-smoke raw report does not identify the certified artifact/.test(
+      finalFailureText(runtimeReportV1Final),
+    );
+  writeFileSync(runtimeReportPath, runtimeReportBytes);
+  rmSync(runtimeReportV1StatePath);
+
+  const extractedJournalPath = path.join(
+    extractionRoot,
+    ".local/production-artifact-evidence/semantic-event-journal.json",
+  );
+  const extractedJournalBytes = readFileSync(extractedJournalPath);
+  const extractedJournalV1 = JSON.parse(extractedJournalBytes.toString("utf8"));
+  extractedJournalV1.schema =
+    "interior-ai.production-artifact-semantic-event-journal.v1";
+  extractedJournalV1.version = 1;
+  writeFileSync(extractedJournalPath, canonicalJsonBytes(extractedJournalV1));
+  const archivedJournalV1Final = invokeFinalStandalone();
+  const archivedPhysicalJournalV1Rejected =
+    archivedJournalV1Final.status !== 0 &&
+    /semantic journal|manifest\/journal contract/.test(
+      finalFailureText(archivedJournalV1Final),
+    );
+  writeFileSync(extractedJournalPath, extractedJournalBytes);
+
+  const historicalStatePath = path.join(
+    evidenceRoot,
+    "simulation/historical-state-v2-substitution.json",
+  );
+  writeCertificationState(historicalStatePath, {
+    ...structuredClone(state),
+    schema: PRODUCTION_CERTIFICATION_STATE_SCHEMA_V2,
+    version: 2,
+  });
+  const historicalStateFinal = invokeFinalStandalone(historicalStatePath);
+  const historicalStateSubstitutionRejected =
+    historicalStateFinal.status !== 0 &&
+    /final standalone certification state schema is unsupported/.test(
+      finalFailureText(historicalStateFinal),
+    );
+  rmSync(historicalStatePath);
+  if (
+    !rawRuntimeReportJournalV1Rejected ||
+    !archivedPhysicalJournalV1Rejected ||
+    !historicalStateSubstitutionRejected
+  ) {
+    throw new Error(
+      `simulation current/historical journal-v2 tamper matrix did not fail closed: ${JSON.stringify({
+        rawRuntimeReportJournalV1Rejected,
+        archivedPhysicalJournalV1Rejected,
+        historicalStateSubstitutionRejected,
+      })}`,
+    );
+  }
   state = startSimulationStage({
     fixtureRoot,
     evidenceRoot,
@@ -3010,21 +3230,7 @@ export async function runProductionCertificationSimulation({
       startedAt: nextTimestamp(),
     },
   });
-  const final = spawnSync(
-    process.execPath,
-    ["scripts/production-artifact-evidence.mjs", "verify-standalone"],
-    {
-      cwd: extractionRoot,
-      encoding: "utf8",
-      env: {
-        ...process.env,
-        PRODUCTION_CERTIFICATION_STATE: statePath,
-        CERTIFICATION_EVIDENCE_ROOT: evidenceRoot,
-        CERTIFICATION_ALLOW_SIMULATION: "1",
-        PRODUCTION_EVIDENCE_EXPECTED_COMMIT_SHA: identity.commitSha,
-      },
-    },
-  );
+  const final = invokeFinalStandalone();
   if (final.status !== 0 || final.signal) {
     throw new Error(`simulation final standalone failed: ${String(final.stderr).trim()}`);
   }
@@ -3559,6 +3765,9 @@ export async function runProductionCertificationSimulation({
       roleEvidenceSwapRejected,
       removedWorktreeEvidenceReuseRejected,
       cleanedDependencyReceiptDeletionRejected,
+      rawRuntimeReportJournalV1Rejected,
+      archivedPhysicalJournalV1Rejected,
+      historicalStateSubstitutionRejected,
       ...runtimeRootTamperCases,
     },
     simulationRoot,

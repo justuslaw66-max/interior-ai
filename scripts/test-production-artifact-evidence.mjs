@@ -1761,6 +1761,10 @@ const productionArtifactSource = readFileSync(
   path.join(process.cwd(), "scripts/production-artifact-evidence.mjs"),
   "utf8",
 );
+const productionArtifactContractSource = readFileSync(
+  path.join(process.cwd(), "scripts/production-artifact-contract.mjs"),
+  "utf8",
+);
 const artifactRoots = productionArtifactSource.match(/const ARTIFACT_ROOTS = \[[^;]+;/)?.[0] ?? "";
 const artifactExclusions = productionArtifactSource.match(/const ARTIFACT_EXCLUSIONS = \[[\s\S]*?\n\];/)?.[0] ?? "";
 assert.equal(artifactRoots, 'const ARTIFACT_ROOTS = [".next", "public"];');
@@ -1804,7 +1808,7 @@ for (const bindingMarker of [
   );
 }
 assert.match(
-  productionArtifactSource,
+  productionArtifactContractSource,
   /generatedSourceCheckCompletedAt[\s\S]*?buildStartedAt/,
   "the generated-source-before-build ordering validator must remain",
 );
@@ -3198,6 +3202,35 @@ function listedSpecCount(suites) {
       "unsupported semantic event journal schema or version",
     ],
     [
+      "unknown journal schema",
+      { mutateJournal: (journal) => {
+        journal.schema = "interior-ai.production-artifact-semantic-event-journal.unknown";
+      } },
+      "unsupported semantic event journal schema or version",
+    ],
+    [
+      "future journal version",
+      { mutateJournal: (journal) => { journal.version = 3; } },
+      "unsupported semantic event journal schema or version",
+    ],
+    [
+      "missing journal version",
+      { mutateJournal: (journal) => { delete journal.version; } },
+      "semantic event journal shape is malformed",
+    ],
+    [
+      "malformed journal version",
+      { mutateJournal: (journal) => { journal.version = "2"; } },
+      "unsupported semantic event journal schema or version",
+    ],
+    [
+      "missing journal-v2 worktree binding",
+      { mutateJournal: (journal) => {
+        delete journal.owner.worktreeIdentitySha256;
+      } },
+      "semantic event journal owner binding is malformed",
+    ],
+    [
       "coherently bound handoff with unknown fields",
       {
         mutateManifest: (manifest) => {
@@ -3227,7 +3260,7 @@ function listedSpecCount(suites) {
           journal.owner.processHandoffs = [handoff];
         },
       },
-      "semantic event journal process handoff is malformed",
+      "semantic event journal owner binding is malformed",
     ],
     [
       "coherently bound out-of-order process handoff",
@@ -3261,7 +3294,7 @@ function listedSpecCount(suites) {
           }];
         },
       },
-      "semantic event journal process handoff is malformed",
+      "semantic process handoff boundary is malformed or out of order",
     ],
     [
       "missing nonce",
@@ -3302,7 +3335,7 @@ function listedSpecCount(suites) {
           Date.parse(journal.events.build.startedAt) + 1,
         ).toISOString();
       } },
-      "semantic event journal ordering is invalid",
+      "semantic event journal buildStartedAt predates generatedSourceCheckCompletedAt",
     ],
     [
       "build failed/nonzero",

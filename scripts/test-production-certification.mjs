@@ -16,8 +16,14 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 
 import {
+  PRODUCTION_EVIDENCE_JOURNAL_SCHEMA,
+  PRODUCTION_EVIDENCE_JOURNAL_VERSION,
+  PRODUCTION_EVIDENCE_SCHEMA,
+} from "./production-artifact-contract.mjs";
+import {
   CERTIFICATION_FAILURE_CLASSIFICATIONS,
   CERTIFICATION_STAGE_ORDER,
+  PRODUCTION_CERTIFICATION_STATE_SCHEMA,
   PRODUCTION_CERTIFICATION_STATE_SCHEMA_V1,
   REQUIRED_BROWSER_OWNERS,
   canonicalJsonBytes,
@@ -69,6 +75,8 @@ import {
 } from "./production-certification-stage-environment.mjs";
 
 const repositoryRoot = process.cwd();
+const CURRENT_JOURNAL_V2_FINAL_POSITIVE_PATH =
+  "state-v3/manifest-v3/journal-v2/physical-final-standalone";
 const fixedTime = "2026-08-14T00:00:00.000Z";
 const candidate = {
   id: "certification-test-candidate",
@@ -140,6 +148,66 @@ function mutateExtractedManifest(simulationRoot, mutate) {
   writeFileSync(
     `${manifestPath}.sha256`,
     `${sha256Bytes(readFileSync(manifestPath))}  manifest.json\n`,
+  );
+}
+
+function mutateExtractedJournal(simulationRoot, mutate) {
+  const evidenceRoot = path.join(simulationRoot, "evidence");
+  const statePath = path.join(evidenceRoot, "certification-state.json");
+  const journalPath = path.join(
+    evidenceRoot,
+    "archive/extracted/.local/production-artifact-evidence/semantic-event-journal.json",
+  );
+  const journal = JSON.parse(readFileSync(journalPath, "utf8"));
+  mutate(journal);
+  writeFileSync(journalPath, canonicalJsonBytes(journal));
+  const state = readCertificationState(statePath);
+  state.bindings.semanticJournalSha256 = sha256Bytes(readFileSync(journalPath));
+  writeCertificationState(statePath, state);
+}
+
+function mutateRuntimeReportIdentity(simulationRoot, mutate) {
+  mutateBoundEvidence(simulationRoot, "runtime-report", (report) => {
+    mutate(report.config.metadata.productionArtifactEvidence);
+  });
+  const evidenceRoot = path.join(simulationRoot, "evidence");
+  const state = readCertificationState(
+    path.join(evidenceRoot, "certification-state.json"),
+  );
+  mutateBoundEvidence(
+    simulationRoot,
+    "runtime-smoke",
+    (evidence) => {
+      evidence.reportSha256 = state.evidenceFiles["runtime-report"].sha256;
+    },
+    "runtimeSmokeEvidenceSha256",
+  );
+}
+
+function mutateRuntimeTimingIdentity(simulationRoot, mutate) {
+  mutateBoundEvidence(simulationRoot, "runtime-phase-timings", (timing) => {
+    mutate(timing.evidenceBinding.identity);
+  });
+  const evidenceRoot = path.join(simulationRoot, "evidence");
+  const state = readCertificationState(
+    path.join(evidenceRoot, "certification-state.json"),
+  );
+  const timingPath = path.join(
+    evidenceRoot,
+    state.evidenceFiles["runtime-phase-timings"].path,
+  );
+  const timing = JSON.parse(readFileSync(timingPath, "utf8"));
+  mutateBoundEvidence(
+    simulationRoot,
+    "runtime-smoke",
+    (evidence) => {
+      evidence.phaseTimingsSha256 =
+        state.evidenceFiles["runtime-phase-timings"].sha256;
+      evidence.phaseTimings.sha256 =
+        state.evidenceFiles["runtime-phase-timings"].sha256;
+      evidence.phaseTimings.identity = timing.evidenceBinding.identity;
+    },
+    "runtimeSmokeEvidenceSha256",
   );
 }
 
@@ -817,9 +885,39 @@ function stateFixture() {
   const artifactOwner = readFileSync("scripts/production-artifact-evidence.mjs", "utf8");
   const archiveOwner = readFileSync("scripts/production-archive.mjs", "utf8");
   const finalOwner = readFileSync("scripts/production-certification-evidence.mjs", "utf8");
+  const historicalFinalOwner = readFileSync(
+    "scripts/production-certification-historical-evidence.mjs",
+    "utf8",
+  );
+  const timingOwner = readFileSync("scripts/runtime-smoke-phase-budget.mjs", "utf8");
   const phase8Owner = readFileSync("scripts/run-phase8-project-benchmark.ts", "utf8");
   assert.match(artifactContract, /production-artifact-evidence\.v3/);
   assert.doesNotMatch(artifactContract, /production-artifact-evidence\.v2/);
+  assert.match(
+    artifactContract,
+    /validateCurrentProductionEvidenceSemanticJournal/,
+  );
+  assert.match(
+    artifactOwner,
+    /validateCurrentProductionEvidenceSemanticJournal/,
+  );
+  assert.match(finalOwner, /validateCurrentProductionEvidenceManifest/);
+  assert.match(finalOwner, /PRODUCTION_EVIDENCE_JOURNAL_VERSION/);
+  assert.doesNotMatch(finalOwner, /semanticJournalVersion\s*!==\s*1/);
+  assert.doesNotMatch(finalOwner, /journalIdentity\?\.version\s*!==\s*1/);
+  assert.doesNotMatch(
+    finalOwner,
+    /HISTORICAL_PRODUCTION_EVIDENCE_JOURNAL_VERSION/,
+  );
+  assert.match(
+    historicalFinalOwner,
+    /HISTORICAL_PRODUCTION_EVIDENCE_JOURNAL_VERSION = 1/,
+  );
+  assert.match(
+    timingOwner,
+    /semanticJournalVersion: PRODUCTION_EVIDENCE_JOURNAL_VERSION/,
+  );
+  assert.doesNotMatch(archiveOwner, /semantic-journal-v1/);
   assert.match(artifactOwner, /testPolicy: "external-certification-required"/);
   assert.doesNotMatch(artifactOwner, /requireTests:\s*false/);
   assert.match(artifactOwner, /verifyFinalCertificationEvidence/);
@@ -854,6 +952,8 @@ function stateFixture() {
   );
   const playwrightOwner = readFileSync("playwright.config.ts", "utf8");
   assert.match(realRunner, /sourceValidationStageEvidence/);
+  assert.match(realRunner, /schema: PRODUCTION_EVIDENCE_JOURNAL_SCHEMA/);
+  assert.match(realRunner, /version: PRODUCTION_EVIDENCE_JOURNAL_VERSION/);
   assert.match(realRunner, /captureArtifactSnapshot/);
   assert.match(realRunner, /measureFinalContinuity/);
   for (const marker of [
@@ -1089,12 +1189,12 @@ function stateFixture() {
   const regressions = JSON.parse(
     readFileSync("scripts/production-certification-regressions.json", "utf8"),
   );
-  assert.equal(regressions.cases.length, 29);
+  assert.equal(regressions.cases.length, 30);
   assert.deepEqual(
     regressions.cases.map((entry) => entry.id),
-    Array.from({ length: 29 }, (_, index) => index + 1),
+    Array.from({ length: 30 }, (_, index) => index + 1),
   );
-  assert.equal(new Set(regressions.cases.map((entry) => entry.defect)).size, 29);
+  assert.equal(new Set(regressions.cases.map((entry) => entry.defect)).size, 30);
   assert.equal(regressions.dependencyLifecycleCases.length, 26);
   assert.equal(new Set(regressions.dependencyLifecycleCases).size, 26);
   assert.equal(regressions.runtimeEvidenceRootCases.length, 21);
@@ -1202,11 +1302,21 @@ function stateFixture() {
     cleanupWorktrees: false,
   });
   const base = simulation.simulationRoot;
+  assert.equal(
+    CURRENT_JOURNAL_V2_FINAL_POSITIVE_PATH,
+    "state-v3/manifest-v3/journal-v2/physical-final-standalone",
+  );
   assert.equal(simulation.integrationReady, true);
   assert.equal(simulation.tamperCases.ambientFeatureFlagLeakageRejected, true);
   coveredRegressionIds.add(27);
   assert.equal(simulation.tamperCases.runtimeRootContractMismatchRejected, true);
   assert.equal(simulation.tamperCases.runtimePathOutsideRootRejected, true);
+  assert.equal(simulation.tamperCases.runtimeTimingJournalV1Rejected, true);
+  assert.equal(simulation.tamperCases.runtimeEnvelopeJournalV1Rejected, true);
+  assert.equal(simulation.tamperCases.runtimeJournalNonceMismatchRejected, true);
+  assert.equal(simulation.tamperCases.rawRuntimeReportJournalV1Rejected, true);
+  assert.equal(simulation.tamperCases.archivedPhysicalJournalV1Rejected, true);
+  assert.equal(simulation.tamperCases.historicalStateSubstitutionRejected, true);
   coveredRegressionIds.add(28);
   assert.equal(simulation.tamperCases.exactStaleNullOrderingRegressionPassed, true);
   assert.equal(simulation.tamperCases.sourcePostCheckDependencyDriftRejected, true);
@@ -1235,6 +1345,76 @@ function stateFixture() {
   );
   assert.equal(simulation.tamperCases.certificationProcessHandoffRetained, true);
   coveredRegressionIds.add(29);
+  const currentEvidenceRoot = path.join(base, "evidence");
+  const currentState = readCertificationState(
+    path.join(currentEvidenceRoot, "certification-state.json"),
+  );
+  const extractedArtifactRoot = path.join(
+    currentEvidenceRoot,
+    "archive/extracted",
+  );
+  const currentManifest = JSON.parse(
+    readFileSync(
+      path.join(
+        extractedArtifactRoot,
+        ".local/production-artifact-evidence/manifest.json",
+      ),
+      "utf8",
+    ),
+  );
+  const currentJournal = JSON.parse(
+    readFileSync(
+      path.join(
+        extractedArtifactRoot,
+        ".local/production-artifact-evidence/semantic-event-journal.json",
+      ),
+      "utf8",
+    ),
+  );
+  const currentRawRuntime = JSON.parse(
+    readFileSync(
+      path.join(
+        currentEvidenceRoot,
+        currentState.evidenceFiles["runtime-report"].path,
+      ),
+      "utf8",
+    ),
+  );
+  const currentRuntimeTiming = JSON.parse(
+    readFileSync(
+      path.join(
+        currentEvidenceRoot,
+        currentState.evidenceFiles["runtime-phase-timings"].path,
+      ),
+      "utf8",
+    ),
+  );
+  const currentRuntimeEnvelope = JSON.parse(
+    readFileSync(
+      path.join(
+        currentEvidenceRoot,
+        currentState.evidenceFiles["runtime-smoke"].path,
+      ),
+      "utf8",
+    ),
+  );
+  assert.equal(currentState.schema, PRODUCTION_CERTIFICATION_STATE_SCHEMA);
+  assert.equal(currentManifest.schema, PRODUCTION_EVIDENCE_SCHEMA);
+  assert.equal(currentJournal.schema, PRODUCTION_EVIDENCE_JOURNAL_SCHEMA);
+  assert.equal(currentJournal.version, PRODUCTION_EVIDENCE_JOURNAL_VERSION);
+  assert.equal(
+    currentRawRuntime.config.metadata.productionArtifactEvidence
+      .semanticJournalVersion,
+    PRODUCTION_EVIDENCE_JOURNAL_VERSION,
+  );
+  assert.equal(
+    currentRuntimeTiming.evidenceBinding.identity.semanticJournalVersion,
+    PRODUCTION_EVIDENCE_JOURNAL_VERSION,
+  );
+  assert.equal(
+    currentRuntimeEnvelope.journalIdentity.version,
+    PRODUCTION_EVIDENCE_JOURNAL_VERSION,
+  );
   const completeFinalChild = finalSimulationChild(base);
   assert.equal(completeFinalChild.status, 0);
   const completeFinal = JSON.parse(completeFinalChild.stdout.trim());
@@ -1244,6 +1424,181 @@ function stateFixture() {
     Object.keys(completeFinal.identity.browserReportSha256),
     REQUIRED_BROWSER_OWNERS.map((owner) => owner.id),
   );
+
+  const assertFinalMutationRejected = (name, mutate, expected) => {
+    const clone = cloneSimulation(base);
+    try {
+      mutate(clone);
+      const child = finalSimulationChild(clone);
+      assert.notEqual(child.status, 0, `${name} must fail current final standalone`);
+      assert.match(`${child.stdout}\n${child.stderr}`, expected, name);
+      return `${child.stdout}\n${child.stderr}`;
+    } finally {
+      rmSync(path.dirname(clone), { recursive: true, force: true });
+    }
+  };
+
+  assertFinalMutationRejected(
+    "current state with historical journal v1",
+    (clone) =>
+      mutateExtractedJournal(clone, (journal) => {
+        journal.schema =
+          "interior-ai.production-artifact-semantic-event-journal.v1";
+        journal.version = 1;
+      }),
+    /unsupported semantic event journal schema or version/,
+  );
+  assertFinalMutationRejected(
+    "current journal missing a v2-required worktree binding",
+    (clone) =>
+      mutateExtractedJournal(clone, (journal) => {
+        delete journal.owner.worktreeIdentitySha256;
+      }),
+    /owner binding is malformed|journal shape is malformed/,
+  );
+  assertFinalMutationRejected(
+    "current journal nonce mismatch",
+    (clone) =>
+      mutateExtractedJournal(clone, (journal) => {
+        journal.runNonce = "123e4567-e89b-42d3-a456-426614174099";
+      }),
+    /nonce|complete candidate identity/,
+  );
+  assertFinalMutationRejected(
+    "manifest v1 with runtime journal v2",
+    (clone) =>
+      mutateExtractedManifest(clone, (manifest) => {
+        manifest.schema = "interior-ai.production-artifact-evidence.v1";
+        manifest.validatorVersion = 1;
+      }),
+    /unsupported production evidence schema or validator version/,
+  );
+  assertFinalMutationRejected(
+    "wrong semantic journal SHA",
+    (clone) => {
+      const statePath = path.join(
+        clone,
+        "evidence/certification-state.json",
+      );
+      const state = readCertificationState(statePath);
+      state.bindings.semanticJournalSha256 = "0".repeat(64);
+      writeCertificationState(statePath, state);
+    },
+    /journal|semantic/i,
+  );
+
+  for (const mutation of [
+    {
+      name: "runtime raw report journal v1",
+      mutate(identity) {
+        identity.semanticJournalSchema =
+          "interior-ai.production-artifact-semantic-event-journal.v1";
+        identity.semanticJournalVersion = 1;
+      },
+    },
+    {
+      name: "runtime raw report unknown journal schema",
+      mutate(identity) {
+        identity.semanticJournalSchema = "interior-ai.unknown-journal";
+      },
+    },
+    {
+      name: "runtime raw report future journal version",
+      mutate(identity) {
+        identity.semanticJournalVersion = PRODUCTION_EVIDENCE_JOURNAL_VERSION + 1;
+      },
+    },
+    {
+      name: "runtime raw report missing journal version",
+      mutate(identity) {
+        delete identity.semanticJournalVersion;
+      },
+    },
+    {
+      name: "runtime raw report malformed journal version",
+      mutate(identity) {
+        identity.semanticJournalVersion = "2";
+      },
+    },
+    {
+      name: "runtime raw report wrong nonce",
+      mutate(identity) {
+        identity.runNonce = "123e4567-e89b-42d3-a456-426614174099";
+      },
+    },
+    {
+      name: "runtime raw report wrong candidate commit",
+      mutate(identity) {
+        identity.sourceCommitSha = "f".repeat(40);
+      },
+    },
+    {
+      name: "runtime raw report wrong candidate tree",
+      mutate(identity) {
+        identity.sourceTreeSha = "e".repeat(40);
+      },
+    },
+    {
+      name: "runtime raw report wrong Build ID",
+      mutate(identity) {
+        identity.nextBuildId = "another-build";
+      },
+    },
+    {
+      name: "runtime raw report cross-artifact SHA",
+      mutate(identity) {
+        identity.artifactSha256 = "d".repeat(64);
+      },
+    },
+    {
+      name: "runtime raw report cross-candidate",
+      mutate(identity) {
+        identity.candidateIdentifier = "another-candidate";
+      },
+    },
+  ]) {
+    assertFinalMutationRejected(
+      mutation.name,
+      (clone) => mutateRuntimeReportIdentity(clone, mutation.mutate),
+      /runtime-smoke raw report does not identify the certified artifact/,
+    );
+  }
+
+  assertFinalMutationRejected(
+    "runtime timing evidence journal v1",
+    (clone) =>
+      mutateRuntimeTimingIdentity(clone, (identity) => {
+        identity.semanticJournalSchema =
+          "interior-ai.production-artifact-semantic-event-journal.v1";
+        identity.semanticJournalVersion = 1;
+      }),
+    /timing evidence is cross-run or cross-artifact/,
+  );
+  assertFinalMutationRejected(
+    "runtime envelope journal v1",
+    (clone) =>
+      mutateBoundEvidence(
+        clone,
+        "runtime-smoke",
+        (evidence) => {
+          evidence.journalIdentity.schema =
+            "interior-ai.production-artifact-semantic-event-journal.v1";
+          evidence.journalIdentity.version = 1;
+        },
+        "runtimeSmokeEvidenceSha256",
+      ),
+    /runtime-smoke envelope journal identity is invalid/,
+  );
+  const secretOutput = assertFinalMutationRejected(
+    "secret-safe runtime journal error",
+    (clone) =>
+      mutateRuntimeReportIdentity(clone, (identity) => {
+        identity.runNonce = "credential://raw-secret-must-not-print";
+      }),
+    /runtime-smoke raw report does not identify the certified artifact/,
+  );
+  assert.doesNotMatch(secretOutput, /raw-secret-must-not-print/);
+  coveredRegressionIds.add(30);
 
   const canonicalRoot = path.join(base, "source");
   const sourceValidationRoot = path.join(
@@ -2369,7 +2724,7 @@ function stateFixture() {
 
 assert.deepEqual(
   [...coveredRegressionIds].sort((left, right) => left - right),
-  Array.from({ length: 29 }, (_, index) => index + 1),
+  Array.from({ length: 30 }, (_, index) => index + 1),
   "every documented regression must be exercised by an executable assertion",
 );
 

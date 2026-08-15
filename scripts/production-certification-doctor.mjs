@@ -3,6 +3,10 @@ import { existsSync, lstatSync, readFileSync, realpathSync, statfsSync } from "n
 import path from "node:path";
 
 import {
+  PRODUCTION_EVIDENCE_JOURNAL_SCHEMA,
+  PRODUCTION_EVIDENCE_JOURNAL_VERSION,
+} from "./production-artifact-contract.mjs";
+import {
   CERTIFICATION_EVIDENCE_ROOT_ENV,
   CERTIFICATION_HARNESS_SOURCE_PATHS,
   CERTIFICATION_STAGE_COMMANDS,
@@ -364,6 +368,33 @@ function validateContracts(repositoryRoot) {
     path.join(repositoryRoot, "scripts/production-artifact-evidence.mjs"),
     "utf8",
   );
+  const playwrightOwner = readFileSync(
+    path.join(repositoryRoot, "scripts/production-artifact-playwright.mjs"),
+    "utf8",
+  );
+  const finalOwner = readFileSync(
+    path.join(repositoryRoot, "scripts/production-certification-evidence.mjs"),
+    "utf8",
+  );
+  const historicalOwner = readFileSync(
+    path.join(
+      repositoryRoot,
+      "scripts/production-certification-historical-evidence.mjs",
+    ),
+    "utf8",
+  );
+  const timingOwner = readFileSync(
+    path.join(repositoryRoot, "scripts/runtime-smoke-phase-budget.mjs"),
+    "utf8",
+  );
+  const archiveOwner = readFileSync(
+    path.join(repositoryRoot, "scripts/production-archive.mjs"),
+    "utf8",
+  );
+  const simulationOwner = readFileSync(
+    path.join(repositoryRoot, "scripts/production-certification-simulation.mjs"),
+    "utf8",
+  );
   const phase8Owner = readFileSync(
     path.join(repositoryRoot, "scripts/run-phase8-project-benchmark.ts"),
     "utf8",
@@ -396,6 +427,15 @@ function validateContracts(repositoryRoot) {
       "utf8",
     ),
   );
+  const requiredTestManifest = JSON.parse(
+    readFileSync(
+      path.join(repositoryRoot, "scripts/required-test-manifest.json"),
+      "utf8",
+    ),
+  );
+  const artifactGate = requiredTestManifest.gates?.find(
+    (gate) => gate.id === "ci.production-artifact-contract",
+  );
   for (const marker of [
     "interior-ai.production-artifact-evidence.v3",
     "interior-ai.production-artifact-semantic-event-journal.v2",
@@ -405,6 +445,57 @@ function validateContracts(repositoryRoot) {
     if (!artifactContract.includes(marker) && !artifactOwner.includes(marker)) {
       throw new Error(`verification compatibility marker is missing: ${marker}`);
     }
+  }
+  const currentJournalImports = [
+    artifactOwner,
+    playwrightOwner,
+    finalOwner,
+    timingOwner,
+    certificationRunner,
+    sourceContinuityOwner,
+  ];
+  if (
+    PRODUCTION_EVIDENCE_JOURNAL_SCHEMA !==
+      "interior-ai.production-artifact-semantic-event-journal.v2" ||
+    PRODUCTION_EVIDENCE_JOURNAL_VERSION !== 2 ||
+    !artifactContract.includes("validateCurrentProductionEvidenceSemanticJournal") ||
+    !artifactOwner.includes("validateCurrentProductionEvidenceSemanticJournal") ||
+    currentJournalImports.some(
+      (sourceText) => !sourceText.includes("production-artifact-contract.mjs"),
+    ) ||
+    !playwrightOwner.includes("validateCurrentProductionEvidenceManifest") ||
+    !finalOwner.includes("validateCurrentProductionEvidenceManifest") ||
+    !finalOwner.includes(
+      "identity?.semanticJournalVersion !== PRODUCTION_EVIDENCE_JOURNAL_VERSION",
+    ) ||
+    !finalOwner.includes(
+      "evidence?.journalIdentity?.version !== PRODUCTION_EVIDENCE_JOURNAL_VERSION",
+    ) ||
+    /semanticJournalVersion\s*!==\s*1/.test(finalOwner) ||
+    /journalIdentity\?\.version\s*!==\s*1/.test(finalOwner) ||
+    !timingOwner.includes("semanticJournalVersion: PRODUCTION_EVIDENCE_JOURNAL_VERSION") ||
+    !certificationRunner.includes(
+      "schema: PRODUCTION_EVIDENCE_JOURNAL_SCHEMA",
+    ) ||
+    !certificationRunner.includes(
+      "version: PRODUCTION_EVIDENCE_JOURNAL_VERSION",
+    ) ||
+    archiveOwner.includes("semantic-journal-v1") ||
+    !sourceContinuityOwner.includes("certificationPreparedBuildJournalIssues") ||
+    !simulationOwner.includes("runtimeArtifactIdentity(state)") ||
+    !simulationOwner.includes("journalIdentity") ||
+    !artifactGate?.requiredSources?.includes(
+      "scripts/test-production-certification.mjs",
+    ) ||
+    !historicalOwner.includes("HISTORICAL_PRODUCTION_EVIDENCE_JOURNAL_VERSION") ||
+    finalOwner.includes("HISTORICAL_PRODUCTION_EVIDENCE_JOURNAL_VERSION") ||
+    contractMatrix.stages?.some?.(
+      (stage) => stage.id === "semantic-journal-v1",
+    )
+  ) {
+    throw new Error(
+      "current journal-v2 producer, runtime, archive, continuity, final, or historical boundary is incoherent",
+    );
   }
   if (
     !artifactOwner.includes('testPolicy: "external-certification-required"') ||
@@ -459,6 +550,14 @@ function validateContracts(repositoryRoot) {
   return {
     artifactSchema: "v3",
     journalSchema: "v2",
+    journalCoherence: {
+      schema: PRODUCTION_EVIDENCE_JOURNAL_SCHEMA,
+      version: PRODUCTION_EVIDENCE_JOURNAL_VERSION,
+      canonicalOwner: "scripts/production-artifact-contract.mjs",
+      producerAndCurrentConsumersAligned: true,
+      historicalV1Isolated: true,
+      currentPositiveFixtureRegistered: true,
+    },
     verificationModes: ["verify-preflight", "verify-archive-preflight", "verify-standalone"],
     sourceValidation: {
       schema: "interior-ai.production-certification-source-validation.v4",

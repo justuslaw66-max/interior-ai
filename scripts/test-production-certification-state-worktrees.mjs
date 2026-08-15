@@ -25,9 +25,15 @@ import {
 import {
   finalCertificationManifestIdentityIssues,
   finalRuntimeArtifactIdentityIssues,
-  finalSemanticJournalSchemaForStateSchema,
   isFinalCertificationStateSchemaSupported,
 } from "./production-certification-evidence.mjs";
+import {
+  HISTORICAL_PRODUCTION_EVIDENCE_JOURNAL_SCHEMA,
+  HISTORICAL_PRODUCTION_EVIDENCE_JOURNAL_VERSION,
+  historicalCertificationManifestIdentityIssues,
+  historicalRuntimeArtifactIdentityIssues,
+  isHistoricalCertificationStateSchemaSupported,
+} from "./production-certification-historical-evidence.mjs";
 import { runProductionCertificationSimulation } from "./production-certification-simulation.mjs";
 import { validateSourceValidationEvidence } from "./production-certification-source-continuity.mjs";
 import { projectCertificationChildEnvironment } from "./production-certification-stage-environment.mjs";
@@ -51,8 +57,8 @@ import {
 
 const repositoryRoot = process.cwd();
 
-assert.equal(isFinalCertificationStateSchemaSupported(PRODUCTION_CERTIFICATION_STATE_SCHEMA_V1), true);
-assert.equal(isFinalCertificationStateSchemaSupported(PRODUCTION_CERTIFICATION_STATE_SCHEMA_V2), true);
+assert.equal(isFinalCertificationStateSchemaSupported(PRODUCTION_CERTIFICATION_STATE_SCHEMA_V1), false);
+assert.equal(isFinalCertificationStateSchemaSupported(PRODUCTION_CERTIFICATION_STATE_SCHEMA_V2), false);
 assert.equal(isFinalCertificationStateSchemaSupported(PRODUCTION_CERTIFICATION_STATE_SCHEMA), true);
 assert.equal(
   isFinalCertificationStateSchemaSupported(
@@ -61,16 +67,16 @@ assert.equal(
   false,
 );
 assert.equal(
-  finalSemanticJournalSchemaForStateSchema(PRODUCTION_CERTIFICATION_STATE_SCHEMA_V1),
-  "interior-ai.production-artifact-semantic-event-journal.v1",
+  isHistoricalCertificationStateSchemaSupported(PRODUCTION_CERTIFICATION_STATE_SCHEMA_V1),
+  true,
 );
 assert.equal(
-  finalSemanticJournalSchemaForStateSchema(PRODUCTION_CERTIFICATION_STATE_SCHEMA_V2),
-  "interior-ai.production-artifact-semantic-event-journal.v1",
+  isHistoricalCertificationStateSchemaSupported(PRODUCTION_CERTIFICATION_STATE_SCHEMA_V2),
+  true,
 );
 assert.equal(
-  finalSemanticJournalSchemaForStateSchema(PRODUCTION_CERTIFICATION_STATE_SCHEMA),
-  "interior-ai.production-artifact-semantic-event-journal.v2",
+  isHistoricalCertificationStateSchemaSupported(PRODUCTION_CERTIFICATION_STATE_SCHEMA),
+  false,
 );
 
 for (const [schema, version] of [
@@ -83,7 +89,7 @@ for (const [schema, version] of [
     const evidenceRoot = path.join(owner, "evidence");
     const runNonce = `historical-state-v${version}-journal`;
     const journal = {
-      schema: "interior-ai.production-artifact-semantic-event-journal.v1",
+      schema: HISTORICAL_PRODUCTION_EVIDENCE_JOURNAL_SCHEMA,
       runNonce,
     };
     const journalBytes = canonicalJsonBytes(journal);
@@ -119,10 +125,9 @@ for (const [schema, version] of [
       },
     };
     assert.deepEqual(
-      finalCertificationManifestIdentityIssues(
+      historicalCertificationManifestIdentityIssues(
         { value: manifest, sha256: sha256Bytes(manifestBytes) },
         artifactRoot,
-        evidenceRoot,
         state,
       ),
       [],
@@ -136,13 +141,13 @@ for (const [schema, version] of [
       nextBuildId: state.bindings.nextBuildId,
       runNonce,
       semanticJournalSchema: journal.schema,
-      semanticJournalVersion: 1,
+      semanticJournalVersion: HISTORICAL_PRODUCTION_EVIDENCE_JOURNAL_VERSION,
       serverCommand: "npm run evidence:production:serve",
       buildMode: "production",
     };
-    assert.deepEqual(finalRuntimeArtifactIdentityIssues(runtimeIdentity, state), []);
+    assert.deepEqual(historicalRuntimeArtifactIdentityIssues(runtimeIdentity, state), []);
     assert.match(
-      finalRuntimeArtifactIdentityIssues(
+      historicalRuntimeArtifactIdentityIssues(
         {
           ...runtimeIdentity,
           semanticJournalSchema:
@@ -150,7 +155,18 @@ for (const [schema, version] of [
         },
         state,
       ).join("\n"),
-      /does not identify the certified artifact/,
+      /historical runtime report identity is invalid/,
+    );
+    assert.notDeepEqual(finalRuntimeArtifactIdentityIssues(runtimeIdentity, state), []);
+    assert.notDeepEqual(
+      finalCertificationManifestIdentityIssues(
+        { value: manifest, sha256: sha256Bytes(manifestBytes) },
+        artifactRoot,
+        evidenceRoot,
+        state,
+      ),
+      [],
+      `current final standalone must reject historical state v${version}`,
     );
   } finally {
     rmSync(owner, { recursive: true, force: true });

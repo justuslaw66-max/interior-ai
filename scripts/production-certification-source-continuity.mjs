@@ -19,6 +19,11 @@ import path from "node:path";
 import { gunzipSync } from "node:zlib";
 
 import {
+  PRODUCTION_EVIDENCE_JOURNAL_SCHEMA,
+  PRODUCTION_EVIDENCE_JOURNAL_VERSION,
+  certificationPreparedBuildJournalIssues,
+} from "./production-artifact-contract.mjs";
+import {
   PRODUCTION_CERTIFICATION_ARTIFACT_ROOT_SCHEMA,
   PRODUCTION_CERTIFICATION_ARTIFACT_SNAPSHOT_SCHEMA,
   PRODUCTION_CERTIFICATION_CONTINUITY_SCHEMA,
@@ -1669,6 +1674,10 @@ function artifactIdentity(root, rootClassification, state, bindingOverrides = {}
   const applicationArtifact = inventoryCanonicalApplicationArtifact(root);
   const manifest = manifestRead.value;
   const journal = journalRead.value;
+  const journalIssues = certificationPreparedBuildJournalIssues(journal);
+  if (journalIssues.length > 0) {
+    throw new Error(`physical semantic journal is invalid: ${journalIssues.join("; ")}`);
+  }
   const buildId = readFileSync(path.join(root, ".next/BUILD_ID"), "utf8").trim();
   const trace = traceIdentities(root, applicationArtifact);
   const expected = { ...state.bindings, ...bindingOverrides };
@@ -1677,6 +1686,8 @@ function artifactIdentity(root, rootClassification, state, bindingOverrides = {}
     manifest.source?.treeSha !== state.candidate.treeSha ||
     manifest.build?.nextBuildId !== buildId ||
     manifest.artifact?.sha256 !== applicationArtifact.artifactSha256 ||
+    journal.schema !== PRODUCTION_EVIDENCE_JOURNAL_SCHEMA ||
+    journal.version !== PRODUCTION_EVIDENCE_JOURNAL_VERSION ||
     (expected.nextBuildId && expected.nextBuildId !== buildId) ||
     (expected.artifactSha256 &&
       expected.artifactSha256 !== applicationArtifact.artifactSha256) ||

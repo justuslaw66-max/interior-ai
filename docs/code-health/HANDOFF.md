@@ -1,5 +1,50 @@
 # Code health audit handoff
 
+## CH-0015I journal-v2 final-consumer handoff — 2026-08-16
+
+Branch `fix/production-certification-runtime-journal-v2` starts at exact
+candidate `73d5c541c4171bf6c05b168e6bd29853b03ea011`, tree
+`be98410f071a71a62311929a67cb2589783774e4`, above unchanged integration local
+and tracking `2c567fd483877c7dcbd8fd23e3cd8cb316732c8c`, tree
+`50f9c5d6a6610990606fd9db9a27ba40200fca90`. Entry ancestry, subjects, clean
+index/worktree, untracked/ignored inventory, Git operations, repository-owned
+processes, and ports 3000/3317 were verified before branching.
+
+The preserved read-only disposition created no certification/candidate ID,
+state, evidence root, worktree, dependencies, database, doctor, build, archive,
+benchmark, runtime, browser, continuity, integration, or Full E2E evidence and
+consumed no substantive gate. It found
+`FINAL_RUNTIME_EVIDENCE_JOURNAL_SCHEMA_DRIFT` /
+`CANONICAL_JOURNAL_VERSION_CONSUMER_MISMATCH`: producer, doctor, matrix, and
+Playwright required journal v2 while the final runtime raw-report consumer
+still required version 1. Runtime smoke never ran, so the stop is not a runtime
+failure.
+
+The correction makes `scripts/production-artifact-contract.mjs` the strict
+current schema/version owner and aligns producer, Playwright, raw report,
+timing, runtime envelope, archive, final standalone, and continuity to journal
+v2. Current final standalone accepts only state v3 + manifest v3/validator 3 +
+complete journal v2. Historical state v1/v2 + journal v1 remains unchanged and
+readable only through the separate offline historical owner. The actual
+physical final CLI passes the deterministic current positive path and rejects
+v1, future/unknown/missing/malformed versions, incomplete v2, journal hash,
+nonce, commit/tree, Build-ID, artifact, candidate, timing, envelope, and
+historical substitutions with secret-safe errors. Doctor, simulation, and
+qualification cover the exact regression; qualification returns
+`QUALIFIED_FOR_FINAL_CANDIDATE_CERTIFICATION`.
+
+Independent read-only review returned `PASS` after restoring the original
+historical `{schema, runNonce}` shape and adding physical Simulation tampering
+for raw-report v1, post-archive journal v1, and historical state substitution.
+
+No product/UI, CH-0015 implementation, Floor Plan, telemetry, NFT, Playwright
+product spec, Phase 8 semantic/budget, dependency/lockfile, database/migration,
+workflow, integration, push, or deployment change is included. No real build,
+Phase 8, runtime, browser-owner matrix, or Full E2E ran. Rollback is one focused
+commit revert and restores the known source blocker; no data/external rollback
+is required. Exact-head real certification and the final CH-0015 closure audit
+remain pending.
+
 ## CH-0015I runtime-smoke evidence-root handoff — 2026-08-15
 
 Branch `fix/production-certification-runtime-evidence-root` starts at exact

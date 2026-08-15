@@ -9,8 +9,6 @@ import {
   PRODUCTION_CERTIFICATION_PHASE8_EVIDENCE_SCHEMA,
   PRODUCTION_CERTIFICATION_RUNTIME_EVIDENCE_SCHEMA,
   PRODUCTION_CERTIFICATION_STATE_SCHEMA,
-  PRODUCTION_CERTIFICATION_STATE_SCHEMA_V1,
-  PRODUCTION_CERTIFICATION_STATE_SCHEMA_V2,
   PHASE8_SOURCE_BINDING_PATHS,
   REQUIRED_BROWSER_OWNERS,
   canonicalJsonBytes,
@@ -25,7 +23,14 @@ import {
   readRuntimeSmokeTelemetryBootstrapEvidence,
   validateRetainedRuntimeSmokePhaseTimings,
 } from "./production-artifact-evidence.mjs";
-import { certificationPreparedBuildJournalIssues } from "./production-artifact-contract.mjs";
+import {
+  PRODUCTION_EVIDENCE_JOURNAL_SCHEMA,
+  PRODUCTION_EVIDENCE_JOURNAL_VERSION,
+  PRODUCTION_EVIDENCE_SCHEMA,
+  PRODUCTION_EVIDENCE_VALIDATOR_VERSION,
+  certificationPreparedBuildJournalIssues,
+  validateCurrentProductionEvidenceManifest,
+} from "./production-artifact-contract.mjs";
 import {
   readCertificationState,
   validateCertificationState,
@@ -57,29 +62,8 @@ const RUNTIME_TEST_IDS = Object.freeze([
 ]);
 const PLAYWRIGHT_START_SCHEMA =
   "interior-ai.production-certification-playwright-start.v1";
-const FINAL_STANDALONE_STATE_SCHEMAS = new Set([
-  PRODUCTION_CERTIFICATION_STATE_SCHEMA_V1,
-  PRODUCTION_CERTIFICATION_STATE_SCHEMA_V2,
-  PRODUCTION_CERTIFICATION_STATE_SCHEMA,
-]);
-
 export function isFinalCertificationStateSchemaSupported(schema) {
-  return FINAL_STANDALONE_STATE_SCHEMAS.has(schema);
-}
-
-export function finalSemanticJournalSchemaForStateSchema(schema) {
-  if (
-    new Set([
-      PRODUCTION_CERTIFICATION_STATE_SCHEMA_V1,
-      PRODUCTION_CERTIFICATION_STATE_SCHEMA_V2,
-    ]).has(schema)
-  ) {
-    return "interior-ai.production-artifact-semantic-event-journal.v1";
-  }
-  if (schema === PRODUCTION_CERTIFICATION_STATE_SCHEMA) {
-    return "interior-ai.production-artifact-semantic-event-journal.v2";
-  }
-  return null;
+  return schema === PRODUCTION_CERTIFICATION_STATE_SCHEMA;
 }
 
 function startMarkerIssues(marker, { boundary, gateId }) {
@@ -323,6 +307,14 @@ export function validateRuntimeEvidence(evidence, state, artifactRoot) {
     issues.push("runtime-smoke certification evidence schema is unsupported");
   }
   issues.push(...identityIssues(evidence?.identity, state));
+  if (
+    evidence?.journalIdentity?.schema !== PRODUCTION_EVIDENCE_JOURNAL_SCHEMA ||
+    evidence?.journalIdentity?.version !== PRODUCTION_EVIDENCE_JOURNAL_VERSION ||
+    evidence?.journalIdentity?.sha256 !== state.bindings.semanticJournalSha256 ||
+    evidence?.journalIdentity?.runNonce !== state.bindings.semanticJournalNonce
+  ) {
+    issues.push("runtime-smoke envelope journal identity is invalid");
+  }
   validateExecutionClass(evidence, state, issues);
   const stats = evidence?.stats;
   if (
@@ -416,6 +408,8 @@ export function validateRuntimeEvidence(evidence, state, artifactRoot) {
       state.bindings.productionManifestSha256 ||
     timingIdentity?.semanticJournalSha256 !== state.bindings.semanticJournalSha256 ||
     timingIdentity?.semanticJournalNonce !== state.bindings.semanticJournalNonce ||
+    timingIdentity?.semanticJournalSchema !== PRODUCTION_EVIDENCE_JOURNAL_SCHEMA ||
+    timingIdentity?.semanticJournalVersion !== PRODUCTION_EVIDENCE_JOURNAL_VERSION ||
     timingIdentity?.runtimeStage !== "runtime-smoke" ||
     timingIdentity?.runtimeStageProfileId !== "runtime-smoke" ||
     timingIdentity?.runtimeStageProfileSha256 !== runtimeProfile?.sha256 ||
@@ -571,9 +565,8 @@ export function finalRuntimeArtifactIdentityIssues(identity, state) {
     identity?.artifactSha256 !== state.bindings.artifactSha256 ||
     identity?.nextBuildId !== state.bindings.nextBuildId ||
     identity?.runNonce !== state.bindings.semanticJournalNonce ||
-    identity?.semanticJournalSchema !==
-      finalSemanticJournalSchemaForStateSchema(state.schema) ||
-    identity?.semanticJournalVersion !== 1 ||
+    identity?.semanticJournalSchema !== PRODUCTION_EVIDENCE_JOURNAL_SCHEMA ||
+    identity?.semanticJournalVersion !== PRODUCTION_EVIDENCE_JOURNAL_VERSION ||
     identity?.serverCommand !== "npm run evidence:production:serve" ||
     identity?.buildMode !== "production"
   ) {
@@ -590,11 +583,9 @@ export function finalCertificationManifestIdentityIssues(
 ) {
   const issues = [];
   const manifest = manifestRead.value;
-  const expectedJournalSchema = finalSemanticJournalSchemaForStateSchema(
-    state.schema,
-  );
   if (
-    manifest?.schema !== "interior-ai.production-artifact-evidence.v3" ||
+    manifest?.schema !== PRODUCTION_EVIDENCE_SCHEMA ||
+    manifest?.validatorVersion !== PRODUCTION_EVIDENCE_VALIDATOR_VERSION ||
     manifest?.candidateIdentifier !== state.candidate.id ||
     manifest?.source?.commitSha !== state.candidate.commitSha ||
     manifest?.source?.treeSha !== state.candidate.treeSha ||
@@ -610,50 +601,62 @@ export function finalCertificationManifestIdentityIssues(
       artifactRoot,
       ".local/production-artifact-evidence/semantic-event-journal.json",
     ),
-    `semantic journal ${expectedJournalSchema?.split(".").at(-1) ?? "unknown"}`,
+    `semantic journal v${PRODUCTION_EVIDENCE_JOURNAL_VERSION}`,
+  );
+  const currentContract = validateCurrentProductionEvidenceManifest({
+    manifest,
+    semanticJournal: journalRead.value,
+    expectedIdentity: {
+      sourceCommitSha: state.candidate.commitSha,
+      sourceTreeSha: state.candidate.treeSha,
+      nextBuildId: state.bindings.nextBuildId,
+      artifactSha256: state.bindings.artifactSha256,
+    },
+  });
+  issues.push(
+    ...currentContract.issues.map(
+      (issue) => `current manifest/journal contract: ${issue}`,
+    ),
   );
   if (
-    journalRead.value?.schema !== expectedJournalSchema ||
+    journalRead.value?.schema !== PRODUCTION_EVIDENCE_JOURNAL_SCHEMA ||
+    journalRead.value?.version !== PRODUCTION_EVIDENCE_JOURNAL_VERSION ||
     journalRead.value?.runNonce !== state.bindings.semanticJournalNonce ||
     journalRead.sha256 !== state.bindings.semanticJournalSha256
   ) {
     issues.push("semantic journal does not match the complete candidate identity");
   }
-  if (state.version === 3) {
-    issues.push(...certificationPreparedBuildJournalIssues(journalRead.value));
-  }
-  if (state.version === 3) {
-    try {
-      const buildDescriptor = state.evidenceFiles?.build;
-      const buildResultPath = path.resolve(
-        evidenceRoot,
-        buildDescriptor?.path ?? "",
-      );
-      if (!buildResultPath.startsWith(`${path.resolve(evidenceRoot)}${path.sep}`)) {
-        throw new Error("build result escapes the certification evidence root");
-      }
-      const buildResult = readCanonicalJson(
-        buildResultPath,
-        "certification build result",
-      );
-      const handoff = journalRead.value?.owner?.processHandoffs?.[0];
-      if (
-        buildResult.sha256 !== buildDescriptor?.sha256 ||
-        buildResult.value?.schema !==
-          "interior-ai.production-certification-build-result.v1" ||
-        JSON.stringify(
-          buildResult.value?.dependencyLifecycle?.semanticProcessHandoff,
-        ) !== JSON.stringify(handoff) ||
-        JSON.stringify(manifest?.execution?.owner?.processHandoffs?.[0]) !==
-          JSON.stringify(handoff)
-      ) {
-        issues.push(
-          "certification build result does not bind its required process handoff",
-        );
-      }
-    } catch (error) {
-      issues.push(error instanceof Error ? error.message : String(error));
+  issues.push(...certificationPreparedBuildJournalIssues(journalRead.value));
+  try {
+    const buildDescriptor = state.evidenceFiles?.build;
+    const buildResultPath = path.resolve(
+      evidenceRoot,
+      buildDescriptor?.path ?? "",
+    );
+    if (!buildResultPath.startsWith(`${path.resolve(evidenceRoot)}${path.sep}`)) {
+      throw new Error("build result escapes the certification evidence root");
     }
+    const buildResult = readCanonicalJson(
+      buildResultPath,
+      "certification build result",
+    );
+    const handoff = journalRead.value?.owner?.processHandoffs?.[0];
+    if (
+      buildResult.sha256 !== buildDescriptor?.sha256 ||
+      buildResult.value?.schema !==
+        "interior-ai.production-certification-build-result.v1" ||
+      JSON.stringify(
+        buildResult.value?.dependencyLifecycle?.semanticProcessHandoff,
+      ) !== JSON.stringify(handoff) ||
+      JSON.stringify(manifest?.execution?.owner?.processHandoffs?.[0]) !==
+        JSON.stringify(handoff)
+    ) {
+      issues.push(
+        "certification build result does not bind its required process handoff",
+      );
+    }
+  } catch (error) {
+    issues.push(error instanceof Error ? error.message : String(error));
   }
   return issues;
 }
@@ -751,6 +754,12 @@ export function verifyFinalCertificationEvidence({
     evidenceRoot,
     "runtime-phase-timings",
   );
+  issues.push(
+    ...finalRuntimeArtifactIdentityIssues(
+      rawRuntime.value?.config?.metadata?.productionArtifactEvidence,
+      state,
+    ),
+  );
   const archiveInventory = boundEvidence(
     state,
     evidenceRoot,
@@ -764,6 +773,14 @@ export function verifyFinalCertificationEvidence({
       gateId: "ci.production-runtime-smoke",
     }),
   );
+  const rawRuntimeValidation = validateRawPlaywrightReport({
+    report: rawRuntime.value,
+    gateId: "ci.production-runtime-smoke",
+    artifactRoot: root,
+    state,
+    requireMetadata: false,
+  });
+  issues.push(...rawRuntimeValidation.issues);
   const retainedTimingBinding = rawRuntimeTimings.value?.evidenceBinding;
   if (
     retainedTimingBinding?.schema !== RUNTIME_SMOKE_TIMING_EVIDENCE_BINDING_SCHEMA ||
@@ -817,15 +834,6 @@ export function verifyFinalCertificationEvidence({
   }
   if (state.executionClass === "real-candidate") {
     issues.push(...validateRawPhase8Evidence(rawPhase8.value, phase8.value, state));
-    issues.push(
-      ...validateRawPlaywrightReport({
-        report: rawRuntime.value,
-        gateId: "ci.production-runtime-smoke",
-        artifactRoot: root,
-        state,
-        requireMetadata: false,
-      }).issues,
-    );
     const telemetry = readRuntimeSmokeTelemetryBootstrapEvidence(rawRuntime.value);
     issues.push(...telemetry.issues.map((issue) => `runtime telemetry: ${issue}`));
     const observedTelemetry = telemetry.observations.map((observation) => ({

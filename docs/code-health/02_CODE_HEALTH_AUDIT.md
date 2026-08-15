@@ -1,5 +1,28 @@
 # Code health audit
 
+## Final runtime-evidence journal schema alignment — 2026-08-16
+
+Read-only review of candidate `73d5c541c4171bf6c05b168e6bd29853b03ea011`
+and tree `be98410f071a71a62311929a67cb2589783774e4` proved
+`FINAL_RUNTIME_EVIDENCE_JOURNAL_SCHEMA_DRIFT` and
+`CANONICAL_JOURNAL_VERSION_CONSUMER_MISMATCH`: the current producer contract,
+doctor/matrix, and Playwright path were v2, while final raw-runtime identity
+validation still hardcoded version 1. The review stopped before resource
+creation or gate consumption and is not a runtime-smoke failure.
+
+The strict current journal validator now lives with the side-effect-free v2
+schema/version owner. All current producers and consumers use it or its
+constants, and final standalone requires state v3, manifest v3/validator 3,
+complete journal v2, one nonce/artifact, and coherent raw/timing/envelope/
+archive/continuity identity. Unknown, future, v1, missing, malformed, incomplete,
+cross-run, and cross-artifact records fail closed. Historical v1 remains under
+an offline-only owner and is rejected by current final standalone. Focused
+physical final tests, doctor, deterministic simulation, historical regressions,
+and qualification pass. No application, product/UI, Floor Plan, telemetry,
+NFT, Playwright product assertion, Phase 8, dependency, database, workflow, or
+external-system behavior changes. Exact-head certification and closure audit
+remain pending.
+
 ## Runtime-smoke timing evidence-root ownership — 2026-08-15
 
 Mandatory source review of exact candidate

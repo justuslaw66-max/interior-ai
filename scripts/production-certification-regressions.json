@@ -29,7 +29,8 @@
     { "id": 26, "defect": "simulation-evidence-real-certification", "coverage": "execution classification anti-bypass guard" },
     { "id": 27, "defect": "floor-plan-source-vision-ambient-value-leakage", "coverage": "exact e398751 real-runner reproduction, source check 5 check-owned value policy, doctor, simulation, and qualification" },
     { "id": 28, "defect": "runtime-smoke-timing-parent-evidence-root-mismatch", "coverage": "real runtime-stage projector, production runner preflight, real phase-budget writer, external root isolation matrix, final standalone tamper guards, doctor, simulation, and qualification" },
-    { "id": 29, "defect": "post-install-dependency-identity-binding-order", "coverage": "real source runner, state v3 lifecycle matrix, sealed dependency binding evidence, atomic bind CAS, three-role ordering, post-stage drift checks, doctor, simulation, and qualification" }
+    { "id": 29, "defect": "post-install-dependency-identity-binding-order", "coverage": "real source runner, state v3 lifecycle matrix, sealed dependency binding evidence, atomic bind CAS, three-role ordering, post-stage drift checks, doctor, simulation, and qualification" },
+    { "id": 30, "defect": "final-runtime-journal-v2-consumer-drift", "coverage": "canonical strict journal owner, physical current final positive path, raw/timing/envelope drift matrix, historical-v1 isolation, doctor, simulation, and qualification" }
   ],
   "dependencyLifecycleCases": [
     "initial-not-installed-null-valid",

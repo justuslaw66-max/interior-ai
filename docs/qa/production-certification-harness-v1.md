@@ -1,5 +1,41 @@
 # Production Certification Harness v1
 
+## Current semantic-journal compatibility policy — 2026-08-16
+
+The current real certification path accepts exactly
+`interior-ai.production-certification-state.v3`,
+`interior-ai.production-artifact-evidence.v3` with validator 3, and
+`interior-ai.production-artifact-semantic-event-journal.v2` with version 2.
+`scripts/production-artifact-contract.mjs` owns the schema/version constants and
+strict journal validator. The executing producer delegates to that validator;
+Playwright propagates its returned identity; runtime raw report, timing,
+envelope, archive preflight, final standalone, and continuity all verify the
+same current identity. Journal v1, unknown/future versions, missing or
+non-integer versions, extra/missing v2 fields, incomplete lifecycle state, and
+nonce/candidate/commit/tree/Build-ID/artifact/hash mismatches fail closed.
+
+The physical final-standalone CLI supports current state v3 only. Historical
+state v1/v2 and journal v1 remain unchanged and are handled solely by the
+explicit offline module
+`scripts/production-certification-historical-evidence.mjs`; that compatibility
+does not flow into current certification. The deterministic current positive
+fixture invokes the actual standalone CLI over an extracted physical artifact
+and completes state-v3/manifest-v3/journal-v2, raw runtime report, timing,
+runtime envelope, archive inventory, seven browser-owner summaries, and final
+identity checks. Simulation also tampers raw/timing/envelope versions, archive
+journal identity, nonce, and historical substitution.
+
+The read-only blocker that led to this correction was found at candidate
+`73d5c541c4171bf6c05b168e6bd29853b03ea011`, tree
+`be98410f071a71a62311929a67cb2589783774e4`, before any certification resource
+or gate was consumed. Its classifications are
+`FINAL_RUNTIME_EVIDENCE_JOURNAL_SCHEMA_DRIFT` and
+`CANONICAL_JOURNAL_VERSION_CONSUMER_MISMATCH`, not runtime-smoke failure.
+Qualification returns `QUALIFIED_FOR_FINAL_CANDIDATE_CERTIFICATION`. No real
+build, Phase 8, runtime smoke, browser matrix, Full E2E, integration, push, or
+deployment is part of the correction. Exact-head certification and the final
+CH-0015 closure audit remain pending.
+
 ## Runtime-smoke evidence-root correction — 2026-08-15
 
 The exact candidate `d449afd0ff693ad8bd03932d13b768b961dceab4`, tree

@@ -5,6 +5,46 @@ production-mode artifact evidence and required CI behavior. It does not describe
 or prove a Vercel deployment, stable staging, production, or external platform
 configuration.
 
+## Current journal-v2 final-consumer alignment — 2026-08-16
+
+Mandatory read-only review stopped exact candidate
+`73d5c541c4171bf6c05b168e6bd29853b03ea011`, tree
+`be98410f071a71a62311929a67cb2589783774e4`, before creating any
+certification ID, candidate ID, evidence root, state, worktree, dependency
+installation, database, doctor result, build, archive, benchmark, runtime,
+browser, continuity, integration, or Full E2E evidence. No substantive gate was
+consumed. The stop is classified
+`FINAL_RUNTIME_EVIDENCE_JOURNAL_SCHEMA_DRIFT` /
+`CANONICAL_JOURNAL_VERSION_CONSUMER_MISMATCH`; it is not a runtime-smoke
+failure because runtime smoke never started.
+
+Current exact-head certification now has one fail-closed compatibility policy:
+state schema v3, production manifest schema v3 with validator 3, and semantic
+journal schema/version v2. `scripts/production-artifact-contract.mjs` is the
+side-effect-free canonical owner of the journal identifier, version, and strict
+lifecycle validator. The producer, Playwright loader, runtime raw-report
+consumer, timing writer, runtime envelope, archive preflight, final standalone,
+and continuity consumer derive current identity from that owner. They require
+candidate/commit/tree, nonce, worktree/process handoff, wrapper and canonical
+commands, semantic timestamps/order, completion, Build ID, artifact SHA-256,
+manifest binding, and retained journal hash to agree. Journal v1, unknown or
+future versions, missing/malformed versions, incomplete v2 records, and
+cross-run/cross-artifact substitutions are rejected.
+
+Historical journal-v1 fixtures are not rewritten or promoted. State v1/v2 plus
+journal v1 is readable only through
+`scripts/production-certification-historical-evidence.mjs`, an explicitly
+offline compatibility owner. The current physical final-standalone verifier
+accepts state v3 only and rejects the same historical fixture. Deterministic
+simulation produces manifest v3/journal v2 and binds v2 in the raw report,
+timing evidence, runtime envelope, archive, final standalone, continuity, and
+integration-readiness path. Qualification returns
+`QUALIFIED_FOR_FINAL_CANDIDATE_CERTIFICATION`; this is source-platform proof,
+not real candidate evidence. No product/UI, Floor Plan, telemetry, NFT,
+Playwright product assertion, benchmark, dependency/lockfile, database,
+migration, workflow, or deployment behavior changes. Exact-head real
+certification and the final CH-0015 closure audit remain pending.
+
 ## CH-0015I runtime timing external-root correction
 
 Mandatory read-only review stopped exact candidate

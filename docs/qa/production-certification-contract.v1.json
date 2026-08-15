@@ -266,7 +266,7 @@
       "baselineGap": "Build result is not represented in a certification state machine."
     },
     {
-      "id": "semantic-journal-v1",
+      "id": "semantic-journal-v2",
       "canonicalCommandOrCli": "npm run evidence:production:build; PRODUCTION_EVIDENCE_RUN_NONCE=... npm run evidence:production:recover",
       "sourceOwner": ["scripts/production-artifact-evidence.mjs", "scripts/production-artifact-contract.mjs"],
       "requiredEnvironmentNames": ["PRODUCTION_EVIDENCE_RUN_NONCE (recovery only)"],
@@ -540,18 +540,18 @@
     {
       "id": "final-standalone-verification",
       "canonicalCommandOrCli": "node scripts/production-artifact-evidence.mjs verify-standalone",
-      "sourceOwner": ["scripts/production-artifact-evidence.mjs", "scripts/production-artifact-contract.mjs"],
-      "requiredEnvironmentNames": ["PRODUCTION_EVIDENCE_MANIFEST", "PRODUCTION_EVIDENCE_EXPECTED_COMMIT_SHA"],
-      "requiredInputs": ["standalone artifact", "manifest v3 and sidecar", "runtime-smoke report/timing record"],
+      "sourceOwner": ["scripts/production-artifact-evidence.mjs", "scripts/production-artifact-contract.mjs", "scripts/production-certification-evidence.mjs"],
+      "requiredEnvironmentNames": ["PRODUCTION_EVIDENCE_MANIFEST", "PRODUCTION_EVIDENCE_EXPECTED_COMMIT_SHA", "PRODUCTION_CERTIFICATION_STATE", "CERTIFICATION_EVIDENCE_ROOT"],
+      "requiredInputs": ["current certification state v3", "standalone artifact", "manifest v3 and sidecar", "complete semantic journal v2", "runtime-smoke raw report/timing/envelope", "archive inventory", "Phase 8 and seven browser-owner evidence"],
       "generatedOutputs": ["success console record only"],
       "repositoryBound": false,
       "preRuntime": false,
       "substantiveOneShot": false,
       "safelyResumable": false,
-      "stopCondition": "Standalone artifact/manifest/runtime evidence invalid or source commit mismatched.",
-      "evidenceSchemaVersion": ["manifest v3"],
-      "candidateArtifactIdentityFields": ["source.commitSha", "source.treeSha", "build.nextBuildId", "artifact.sha256"],
-      "baselineGap": "Historical pre-v1 gap. Harness v1 final standalone now requires Phase 8, runtime, seven browser owners, full candidate identity, journal, archive, and harness bindings; measured continuity follows as its own stage."
+      "stopCondition": "Current state/manifest/journal, raw/timing/envelope runtime identity, archive, browser, Phase 8, nonce, hash, or candidate/artifact binding is missing, malformed, historical, unknown, future, or mismatched.",
+      "evidenceSchemaVersion": ["state v3", "manifest v3 / validator 3", "semantic journal v2", "final evidence v1"],
+      "candidateArtifactIdentityFields": ["certificationId", "candidate ID", "source.commitSha", "source.treeSha", "runNonce", "journal schema/version/hash", "build.nextBuildId", "artifact.sha256", "manifest SHA-256"],
+      "baselineGap": "Closed for current certification: physical final standalone accepts only state v3 plus manifest v3/journal v2 and rejects historical v1, unknown/future versions, and raw/timing/envelope drift. Historical v1 remains offline-only; measured continuity follows as its own stage."
     },
     {
       "id": "artifact-continuity",
