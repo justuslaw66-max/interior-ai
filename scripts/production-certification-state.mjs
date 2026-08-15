@@ -18,7 +18,10 @@ import {
   CERTIFICATION_STAGE_ORDER,
   PRODUCTION_CERTIFICATION_HARNESS_VERSION,
   PRODUCTION_CERTIFICATION_ATTEMPT_SCHEMA,
+  PRODUCTION_CERTIFICATION_INVALIDATION_PLAN_SCHEMA,
   PRODUCTION_CERTIFICATION_STATE_SCHEMA,
+  PRODUCTION_CERTIFICATION_STATE_SCHEMA_V1,
+  PRODUCTION_CERTIFICATION_STATE_VALIDATION_SCHEMA,
   REQUIRED_BROWSER_OWNERS,
   assertKnownFailureClassification,
   assertKnownStage,
@@ -32,6 +35,11 @@ import {
   sha256Bytes,
 } from "./production-certification-contract.mjs";
 import {
+  CERTIFICATION_WORKTREE_ROLES,
+  PRODUCTION_CERTIFICATION_WORKTREE_SCHEMA,
+  certificationWorktreeIssues,
+} from "./production-certification-worktrees.mjs";
+import {
   readAndValidateContinuityEvidence,
   readAndValidateSourceEvidence,
   rootEvidenceName,
@@ -40,6 +48,10 @@ import {
 } from "./production-certification-source-continuity.mjs";
 
 const STATE_SEAL_DOMAIN = "interior-ai.production-certification-state-seal.v1\n";
+const VALIDATION_SEAL_DOMAIN =
+  "interior-ai.production-certification-state-validation-seal.v1\n";
+const INVALIDATION_PLAN_SEAL_DOMAIN =
+  "interior-ai.production-certification-invalidation-plan-seal.v1\n";
 const COMPLETION_STATES = new Set(["incomplete", "passed", "failed", "invalidated"]);
 const EXECUTION_CLASSES = new Set(["real-candidate", "deterministic-simulation"]);
 const BINDING_KEYS = Object.freeze([
@@ -158,6 +170,167 @@ export function sealCertificationState(state) {
   };
 }
 
+export function certificationStateSha256(state) {
+  return sha256Bytes(canonicalJsonBytes(state));
+}
+
+function sealPayload(value, domain) {
+  const payload = structuredClone(value);
+  delete payload.seal;
+  return {
+    ...payload,
+    seal: {
+      algorithm: "sha256",
+      sha256: sha256Bytes(
+        Buffer.concat([Buffer.from(domain), canonicalJsonBytes(payload)]),
+      ),
+    },
+  };
+}
+
+export function sealCertificationInvalidationPlan(plan) {
+  return sealPayload(plan, INVALIDATION_PLAN_SEAL_DOMAIN);
+}
+
+export function sealCertificationValidationReport(report) {
+  return sealPayload(report, VALIDATION_SEAL_DOMAIN);
+}
+
+function sealedValueIssues(value, domain, description) {
+  if (value?.seal?.algorithm !== "sha256" || !isSha256(value?.seal?.sha256)) {
+    return [`${description} seal is missing or malformed`];
+  }
+  const expected = sealPayload(value, domain).seal.sha256;
+  return value.seal.sha256 === expected
+    ? []
+    : [`${description} seal mismatch`];
+}
+
+export function certificationInvalidationPlanIssues(plan) {
+  const issues = sealedValueIssues(
+    plan,
+    INVALIDATION_PLAN_SEAL_DOMAIN,
+    "certification invalidation plan",
+  );
+  if (
+    !exactKeys(plan, [
+      "schema",
+      "command",
+      "stateSha256",
+      "canonicalCandidate",
+      "stage",
+      "reason",
+      "issues",
+      "provenRetainedInputMismatch",
+      "cascadingStages",
+      "seal",
+    ]) ||
+    plan?.schema !== PRODUCTION_CERTIFICATION_INVALIDATION_PLAN_SCHEMA ||
+    plan?.command !== "state:reconcile" ||
+    !isSha256(plan?.stateSha256) ||
+    !CERTIFICATION_STAGE_ORDER.includes(plan?.stage) ||
+    typeof plan?.reason !== "string" ||
+    !plan.reason ||
+    !Array.isArray(plan?.issues) ||
+    plan.issues.some((issue) => typeof issue !== "string" || !issue) ||
+    plan?.provenRetainedInputMismatch !== true ||
+    JSON.stringify(plan?.cascadingStages) !==
+      JSON.stringify(
+        CERTIFICATION_STAGE_ORDER.slice(
+          CERTIFICATION_STAGE_ORDER.indexOf(plan?.stage),
+        ),
+      )
+  ) {
+    issues.push("certification invalidation plan is malformed or incomplete");
+  }
+  return issues;
+}
+
+export function createCertificationInvalidationPlan({
+  state,
+  stage,
+  reason,
+  issues,
+}) {
+  assertKnownStage(stage);
+  return sealCertificationInvalidationPlan({
+    schema: PRODUCTION_CERTIFICATION_INVALIDATION_PLAN_SCHEMA,
+    command: "state:reconcile",
+    stateSha256: certificationStateSha256(state),
+    canonicalCandidate: structuredClone(state.candidate),
+    stage,
+    reason,
+    issues: [...issues],
+    provenRetainedInputMismatch: true,
+    cascadingStages: CERTIFICATION_STAGE_ORDER.slice(
+      CERTIFICATION_STAGE_ORDER.indexOf(stage),
+    ),
+  });
+}
+
+export function createCertificationValidationReport({
+  state,
+  command,
+  valid,
+  classification = null,
+  issues = [],
+  expectedComparators = {},
+  invalidationPlan = null,
+}) {
+  return sealCertificationValidationReport({
+    schema: PRODUCTION_CERTIFICATION_STATE_VALIDATION_SCHEMA,
+    command,
+    mode: "read-only",
+    valid: Boolean(valid),
+    classification,
+    consumedSubstantiveGate: false,
+    stateSha256: certificationStateSha256(state),
+    canonicalIdentity: {
+      certificationId: state.certificationId,
+      candidate: structuredClone(state.candidate),
+    },
+    expectedComparators: structuredClone(expectedComparators),
+    issues: [...issues],
+    invalidationPlan,
+  });
+}
+
+export function certificationValidationReportIssues(report) {
+  const issues = sealedValueIssues(
+    report,
+    VALIDATION_SEAL_DOMAIN,
+    "certification state-validation report",
+  );
+  if (
+    !exactKeys(report, [
+      "schema",
+      "command",
+      "mode",
+      "valid",
+      "classification",
+      "consumedSubstantiveGate",
+      "stateSha256",
+      "canonicalIdentity",
+      "expectedComparators",
+      "issues",
+      "invalidationPlan",
+      "seal",
+    ]) ||
+    report?.schema !== PRODUCTION_CERTIFICATION_STATE_VALIDATION_SCHEMA ||
+    report?.mode !== "read-only" ||
+    typeof report?.valid !== "boolean" ||
+    report?.consumedSubstantiveGate !== false ||
+    !isSha256(report?.stateSha256) ||
+    !Array.isArray(report?.issues)
+  ) {
+    issues.push("certification state-validation report is malformed");
+  }
+  if (report?.invalidationPlan) {
+    issues.push(...certificationInvalidationPlanIssues(report.invalidationPlan));
+  }
+  return issues;
+}
+
 export function certificationStateSealIssues(state) {
   if (state?.seal?.algorithm !== "sha256" || !isSha256(state?.seal?.sha256)) {
     return ["certification state seal is missing or malformed"];
@@ -196,9 +369,42 @@ function atomicWrite(filePath, bytes) {
   }
 }
 
-export function writeCertificationState(statePath, state) {
+export function writeCertificationState(
+  statePath,
+  state,
+  { expectedCurrentSha256 = null, requireAbsent = false } = {},
+) {
   const sealed = sealCertificationState(state);
-  atomicWrite(path.resolve(statePath), canonicalJsonBytes(sealed));
+  const resolvedStatePath = path.resolve(statePath);
+  mkdirSync(path.dirname(resolvedStatePath), { recursive: true, mode: 0o700 });
+  const lockPath = `${resolvedStatePath}.lock`;
+  let lockDescriptor = null;
+  try {
+    lockDescriptor = openSync(lockPath, "wx", 0o600);
+    if (requireAbsent && existsSync(resolvedStatePath)) {
+      throw new Error("certification state target is no longer absent");
+    }
+    if (expectedCurrentSha256 !== null) {
+      if (!isSha256(expectedCurrentSha256)) {
+        throw new Error("certification state CAS expectation is malformed");
+      }
+      let currentBytes;
+      try {
+        currentBytes = readFileSync(resolvedStatePath);
+      } catch {
+        throw new Error("certification state changed before atomic replacement");
+      }
+      if (sha256Bytes(currentBytes) !== expectedCurrentSha256) {
+        throw new Error("certification state changed before atomic replacement");
+      }
+    }
+    atomicWrite(resolvedStatePath, canonicalJsonBytes(sealed));
+  } finally {
+    if (lockDescriptor !== null) {
+      closeSync(lockDescriptor);
+      if (existsSync(lockPath)) unlinkSync(lockPath);
+    }
+  }
   return sealed;
 }
 
@@ -249,6 +455,7 @@ export function createCertificationState({
   harnessSourceSha256,
   executionClass,
   createdAt,
+  worktrees = null,
 }) {
   if (!isCandidateId(certificationId) || !isCandidateId(candidateId)) {
     throw new Error("certification ID and candidate ID must use canonical grammar");
@@ -265,9 +472,16 @@ export function createCertificationState({
   if (!isCanonicalUtcTimestamp(createdAt)) {
     throw new Error("certification state creation time is not canonical UTC");
   }
+  if (
+    worktrees !== null &&
+    (worktrees?.schema !== PRODUCTION_CERTIFICATION_WORKTREE_SCHEMA ||
+      !exactKeys(worktrees?.roles, CERTIFICATION_WORKTREE_ROLES))
+  ) {
+    throw new Error("certification stage-worktree bindings are malformed");
+  }
   return sealCertificationState({
-    schema: PRODUCTION_CERTIFICATION_STATE_SCHEMA,
-    version: 1,
+    schema: worktrees ? PRODUCTION_CERTIFICATION_STATE_SCHEMA : PRODUCTION_CERTIFICATION_STATE_SCHEMA_V1,
+    version: worktrees ? 2 : 1,
     certificationId,
     executionClass,
     candidate: { id: candidateId, commitSha, treeSha, parentSha },
@@ -290,6 +504,7 @@ export function createCertificationState({
       continuityEvidenceSha256: null,
     },
     evidenceFiles: {},
+    ...(worktrees ? { worktrees: structuredClone(worktrees) } : {}),
     stages: Object.fromEntries(
       CERTIFICATION_STAGE_ORDER.map((stage) => [stage, emptyStage(stage)]),
     ),
@@ -536,8 +751,57 @@ export function invalidateCertificationState(state, { stage, reason, invalidated
   return sealCertificationState(next);
 }
 
+export function reconcileCertificationState(
+  state,
+  { plan, expectedStateSha256, invalidatedAt },
+) {
+  const planIssues = certificationInvalidationPlanIssues(plan);
+  if (planIssues.length > 0) throw new Error(planIssues.join("; "));
+  const currentStateSha256 = certificationStateSha256(state);
+  if (!isSha256(expectedStateSha256)) {
+    throw new Error("state reconciliation requires an expected state SHA-256");
+  }
+  if (
+    plan.stateSha256 !== currentStateSha256 ||
+    expectedStateSha256 !== currentStateSha256
+  ) {
+    throw new Error("certification state changed after invalidation plan creation");
+  }
+  if (JSON.stringify(plan.canonicalCandidate) !== JSON.stringify(state.candidate)) {
+    throw new Error("certification invalidation plan belongs to another candidate");
+  }
+  return invalidateCertificationState(state, {
+    stage: plan.stage,
+    reason: plan.reason,
+    invalidatedAt,
+  });
+}
+
+export function updateCertificationWorktreeBinding(state, { role, binding }) {
+  if (!CERTIFICATION_WORKTREE_ROLES.includes(role) || state?.version !== 2) {
+    throw new Error("certification worktree binding update is unsupported");
+  }
+  const next = structuredClone(statePayload(state));
+  next.worktrees.roles[role] = structuredClone(binding);
+  return sealCertificationState(next);
+}
+
+export function replaceCertificationWorktrees(state, worktrees) {
+  if (
+    state?.version !== 2 ||
+    worktrees?.schema !== PRODUCTION_CERTIFICATION_WORKTREE_SCHEMA ||
+    !exactKeys(worktrees?.roles, CERTIFICATION_WORKTREE_ROLES)
+  ) {
+    throw new Error("certification worktree replacement is malformed");
+  }
+  const next = structuredClone(statePayload(state));
+  next.worktrees = structuredClone(worktrees);
+  return sealCertificationState(next);
+}
+
 function stateShapeIssues(state) {
   const issues = [];
+  const versionTwo = state?.version === 2;
   if (
     !exactKeys(state, [
       "schema",
@@ -548,6 +812,7 @@ function stateShapeIssues(state) {
       "harness",
       "bindings",
       "evidenceFiles",
+      ...(versionTwo ? ["worktrees"] : []),
       "stages",
       "createdAt",
       "updatedAt",
@@ -560,7 +825,12 @@ function stateShapeIssues(state) {
   ) {
     issues.push("certification state fields are missing or unknown");
   }
-  if (state?.schema !== PRODUCTION_CERTIFICATION_STATE_SCHEMA || state?.version !== 1) {
+  if (
+    !(
+      (state?.schema === PRODUCTION_CERTIFICATION_STATE_SCHEMA_V1 && state?.version === 1) ||
+      (state?.schema === PRODUCTION_CERTIFICATION_STATE_SCHEMA && state?.version === 2)
+    )
+  ) {
     issues.push("unsupported certification state schema or version");
   }
   if (!isCandidateId(state?.certificationId) || !isCandidateId(state?.candidate?.id)) {
@@ -816,12 +1086,24 @@ export function validateCertificationState({
   expectedCandidate,
   expectedHarnessSourceSha256,
   repositoryRoot = process.cwd(),
+  sourceValidationRoot = repositoryRoot,
+  artifactRoot = repositoryRoot,
   verifyCurrentSource = true,
 }) {
   const issues = [
     ...certificationStateSealIssues(state),
     ...stateShapeIssues(state),
   ];
+  if (state?.version === 2) {
+    issues.push(
+      ...certificationWorktreeIssues({
+        state,
+        evidenceRoot,
+        canonicalRoot: repositoryRoot,
+        requirePhysical: verifyCurrentSource,
+      }),
+    );
+  }
   if (
     expectedCandidate &&
     JSON.stringify(state?.candidate) !== JSON.stringify(expectedCandidate)
@@ -1018,7 +1300,7 @@ export function validateCertificationState({
         descriptor,
         evidenceRoot,
         state,
-        repositoryRoot,
+        repositoryRoot: sourceValidationRoot,
         verifyPhysicalSource: verifyCurrentSource,
         requirePassed:
           state.stages["source-validation"].status === "passed",
@@ -1065,12 +1347,16 @@ export function validateCertificationState({
         snapshot,
         rootSidecar,
         state,
-        repositoryRoot,
+        repositoryRoot: artifactRoot,
         evidenceRoot,
         position,
         rehashPhysicalRoot:
           verifyCurrentSource &&
-          state?.stages?.continuity?.status === "passed",
+          state?.stages?.continuity?.status === "passed" &&
+          (state?.version !== 2 ||
+            Object.values(state.worktrees.roles).every(
+              (binding) => binding.lifecycleStatus === "active",
+            )),
       });
       issues.push(...validation.issues);
     } catch (error) {
@@ -1090,7 +1376,7 @@ export function validateCertificationState({
         descriptor: state.evidenceFiles?.continuity,
         evidenceRoot,
         state,
-        repositoryRoot,
+        repositoryRoot: artifactRoot,
         requirePassed: state.stages.continuity.status === "passed",
       });
       issues.push(...result.validation.issues);

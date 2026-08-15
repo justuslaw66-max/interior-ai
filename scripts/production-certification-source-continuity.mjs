@@ -270,6 +270,7 @@ export function sourceValidationStageEvidence({
   state,
   environment = process.env,
   onCheckCompleted = () => {},
+  worktreeIdentity = null,
 }) {
   const contract = sourceValidationCheckSet(repositoryRoot);
   const attempt = state.stages["source-validation"].attempts.at(-1);
@@ -431,6 +432,21 @@ export function sourceValidationStageEvidence({
       commitSha: state.candidate.commitSha,
       treeSha: state.candidate.treeSha,
     },
+    ...(state.version === 2
+      ? {
+          stageWorktree: {
+            role: "source-validation",
+            identitySha256: sha256Bytes(canonicalJsonBytes(worktreeIdentity)),
+            realpathClassification: "private-sidecar-bound",
+            candidateCommitSha: worktreeIdentity?.candidateCommitSha,
+            candidateTreeSha: worktreeIdentity?.candidateTreeSha,
+            privateRealpathSha256: worktreeIdentity?.privateRealpathSha256,
+            dependencyIdentitySha256:
+              worktreeIdentity?.dependencyIdentitySha256 ?? null,
+            evidenceRootSha256: sha256Bytes(realpathSync(evidenceRoot)),
+          },
+        }
+      : {}),
     orderedCheckIds: contract.checks.map((check) => check.id),
     canonicalCommands: contract.checks.map((check) => check.canonicalCommand),
     orderedEnvironmentProfileIds: contract.checks.map(
@@ -509,6 +525,7 @@ export function validateSourceValidationEvidence({
       "executionClass",
       "simulation",
       "workingDirectoryIdentity",
+      ...(state.version === 2 ? ["stageWorktree"] : []),
       "orderedCheckIds",
       "canonicalCommands",
       "orderedEnvironmentProfileIds",
@@ -610,6 +627,52 @@ export function validateSourceValidationEvidence({
     evidence.workingDirectoryIdentity.treeSha !== state.candidate.treeSha
   ) {
     issues.push("source-validation aggregate working directory is invalid");
+  }
+  if (state.version === 2) {
+    const binding = state.worktrees?.roles?.["source-validation"];
+    const portableBinding = binding
+      ? Object.fromEntries(
+          [
+            "role",
+            "certificationId",
+            "candidateCommitSha",
+            "candidateTreeSha",
+            "gitCommonDirSha256",
+            "gitCommonDirFilesystemIdentitySha256",
+            "privateRealpathSha256",
+            "filesystemIdentitySha256",
+            "cleanStateSha256",
+            "ignoredPathInventory",
+            "dependencyIdentitySha256",
+          ].map((name) => [name, binding[name]]),
+        )
+      : null;
+    if (
+      !exactKeys(evidence?.stageWorktree, [
+        "role",
+        "identitySha256",
+        "realpathClassification",
+        "candidateCommitSha",
+        "candidateTreeSha",
+        "privateRealpathSha256",
+        "dependencyIdentitySha256",
+        "evidenceRootSha256",
+      ]) ||
+      evidence.stageWorktree.role !== "source-validation" ||
+      !isSha256(evidence.stageWorktree.identitySha256) ||
+      evidence.stageWorktree.identitySha256 !==
+        sha256Bytes(canonicalJsonBytes(portableBinding)) ||
+      evidence.stageWorktree.realpathClassification !== "private-sidecar-bound" ||
+      evidence.stageWorktree.candidateCommitSha !== state.candidate.commitSha ||
+      evidence.stageWorktree.candidateTreeSha !== state.candidate.treeSha ||
+      evidence.stageWorktree.privateRealpathSha256 !== binding?.privateRealpathSha256 ||
+      evidence.stageWorktree.dependencyIdentitySha256 !==
+        binding?.dependencyIdentitySha256 ||
+      evidence.stageWorktree.evidenceRootSha256 !==
+        sha256Bytes(realpathSync(evidenceRoot))
+    ) {
+      issues.push("source-validation stage-worktree identity is missing or stale");
+    }
   }
   let priorCheckCompletedAt = evidence?.startedAt;
   for (const [index, result] of observed.entries()) {

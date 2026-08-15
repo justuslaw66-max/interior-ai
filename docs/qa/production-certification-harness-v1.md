@@ -1,13 +1,13 @@
 # Production Certification Harness v1
 
-Status: correction implemented for
-`SOURCE_VALIDATION_STAGE_BYPASS_DEFECT` and
-`ARTIFACT_CONTINUITY_SELF_ASSERTION_DEFECT`; the corrected bounded qualifier
-returned **A — `QUALIFIED_FOR_FINAL_CANDIDATE_CERTIFICATION`**. The final
-independent read-only review returned **PASS** with no remaining actionable
-finding. The prior A qualification was incorrect: it accepted an identity-only
-source stage and a continuity record synthesized from one stored artifact hash.
-No real candidate certification is performed by this correction.
+Status: transactional state-validation and pristine stage-worktree correction
+implemented on the exact child of candidate
+`cd2d426900916a1096fd0dab9380020db1c62671`, tree
+`f783e8affd82c8fc6f933650b5cb59dedbbfea49`. The earlier CH-0015I
+certification attempt remains invalidated and is neither repaired nor reused.
+No real build, Phase 8 run, runtime/browser suite, or candidate certification is
+performed by this correction. The bounded qualifier returned **A —
+`QUALIFIED_FOR_FINAL_CANDIDATE_CERTIFICATION`**.
 
 This batch changes certification-platform ownership only. It does not change
 product/UI behavior, Floor Plan Upload, GLB telemetry, NFT asset resolution,
@@ -28,14 +28,17 @@ schema, identity fields, and pre-v1 gap. The baseline is bound to candidate
 
 ## State and identity
 
-`interior-ai.production-certification-state.v1` is the only resumable state
-shape. It is atomically replaced and sealed with its own SHA-256. It binds the
+Historical `interior-ai.production-certification-state.v1` records remain
+readable and unchanged. New cycles use
+`interior-ai.production-certification-state.v2`, atomically replaced and sealed
+with its own SHA-256. It binds the
 certification ID, immutable candidate ID, commit/tree/exact parent, harness version and
 source hash, journal nonce, Build ID, artifact, manifest, journal, verifier
 closure, archive, inventory, Phase 8, runtime, seven browser-owner, continuity,
 prior-stage input, command, attempt, exit/signal, classification, one-shot
-consumption, and completion fields. Credentials and raw environment values are
-never state fields.
+consumption, completion, and three stage-worktree identity records. Credentials,
+raw environment values, and machine-local worktree paths are never portable
+state fields.
 
 Stages are ordered and fail closed:
 
@@ -52,13 +55,43 @@ Stages are ordered and fail closed:
 | 9 | `browser-owners` | `npm run certification:browser-owners` |
 | 10 | `final-standalone` | `npm run certification:final-standalone` |
 | 11 | `continuity` | `npm run certification:continuity` |
-| 12 | `integration-ready` | `npm run certification:state:validate` |
+| 12 | `integration-ready` | `npm run certification:integration-ready` |
 
 Every stage is exactly one of `pending`, `running`, `passed`, `failed`, or
 `invalidated`. Unknown stages, statuses, classifications, schemas, or evidence
 members are rejected. A stage cannot start until all predecessors pass and all
 bound hashes still rehash. Consumed substantive one-shot stages cannot be
 silently restarted.
+
+## Pristine stage-owned worktrees
+
+Every new certification cycle creates exactly three fresh detached Git
+worktrees at the sealed candidate commit and tree:
+
+| Role | Exclusive owners |
+| --- | --- |
+| `source-validation` | source checks and source-continuity evidence |
+| `final-artifact` | install, build, archive, Phase 8, production runtime/browser owners, final standalone, and continuity |
+| `development-browser` | cart and retailer development-server browser owners |
+
+All three roots must be distinct physical directories outside the canonical
+checkout, resolve to the same Git common directory, match the sealed candidate
+commit/tree, contain zero ignored influential paths before use, and use
+distinct physical `node_modules` directories. A canonical checkout, symlink,
+realpath alias, wrong commit/tree, missing root, shared dependency tree, or root
+bound to another certification ID is rejected before dispatch. The portable
+state stores stable role/identity hashes; private evidence-root sidecars retain
+machine-local realpath, filesystem, and dependency identities.
+
+The canonical checkout is orchestration source only. Existing ignored files,
+including `.env*`, `.local`, `.vercel`, reports, caches, and external-target
+symlinks, are never inspected, copied, moved, deleted, or used by a stage. No
+`git clean` operation is part of certification. Cleanup is an explicit owner
+that removes only the three task-created worktrees after continuity. A terminal
+abort retains the roots and private identities for separately authorized safe
+operator cleanup. Cleanup is retryable after an interruption: a task-owned root
+already removed by the interrupted cleanup is finalized from its sealed private
+binding, while any surviving root is revalidated before removal.
 
 ## Source validation
 
@@ -73,7 +106,7 @@ JavaScript/JSON/workflow/shell syntax, `git diff --check`, and Git source
 hygiene.
 
 `npm run certification:source-validation` directly spawns each canonical
-command in the exact candidate root. Before and after every invocation it
+command in the pristine `source-validation` worktree. Before and after every invocation it
 rechecks commit, tree, and cleanliness. It retains stdout, stderr, and a
 process-result file outside the candidate source, records the direct child
 exit/signal without a pipe or wrapper, and stops on the first nonzero result.
@@ -178,6 +211,10 @@ artifact root to resolve to the canonical non-symlink
 
 - `interior-ai.production-certification-doctor.v1`
 - `interior-ai.production-certification-state.v1`
+- `interior-ai.production-certification-state.v2`
+- `interior-ai.production-certification-state-validation.v1`
+- `interior-ai.production-certification-invalidation-plan.v1`
+- `interior-ai.production-certification-worktrees.v1`
 - `interior-ai.production-certification-attempt.v1`
 - `interior-ai.production-archive-plan.v1`
 - `interior-ai.production-archive-inventory.v1`
@@ -214,8 +251,11 @@ candidate grammar/propagation, safe environment-name and execution-class,
 database/network shape, external roots and unique absent report targets,
 v3/v1 compatibility and semantic ownership, build ordering, physical archive
 owner, recursive closure, verification modes, Phase 8 destination, report
-inventory, and port/process checks. It also validates that the source check set
-is non-empty and fully commanded, both sealed schemas are supported, all six
+inventory, and port/process checks. It also validates all three physical
+stage-worktree bindings, distinct roots and dependencies, exact candidate
+identity, zero ignored influential paths, filesystem capacity, and absence of
+canonical-root, alias, symlink, or cross-certification reuse. It validates that
+the source check set is non-empty and fully commanded, both sealed schemas are supported, all six
 physical capture commands and both comparison scopes are declared, staging and
 extraction are retained, and copied-hash continuity is prohibited. It rejects a pre-existing `.next`,
 semantic journal, manifest, or artifact inventory before the strict build can
@@ -234,6 +274,8 @@ Real operation supplies named values without placing secrets in state:
 
 - `PRODUCTION_CERTIFICATION_ID`, `PRODUCTION_CERTIFICATION_STATE`, and an
   initial `npm run certification:state:init` before doctor;
+- `CERTIFICATION_WORKTREE_ROOT`, used only as the parent for three newly created
+  detached stage roots;
 - `CERTIFICATION_SOURCE_ROOT`, `CERTIFICATION_EXPECTED_COMMIT_SHA`,
   `CERTIFICATION_EXPECTED_TREE_SHA`, and mandatory
   `CERTIFICATION_EXPECTED_PARENT_SHA`;
@@ -371,21 +413,36 @@ missing/extra/path/type/size/hash/identity/root details. Because comparison
 itself is non-consuming, a corrected physical root may be remeasured in a new
 attempt without overwriting the failed evidence.
 
-## Resume and invalidation
+## Transactional validation, resume, and invalidation
 
-`npm run certification:state:validate` revalidates current Git HEAD/tree and
-cleanliness, live manifest/journal/Build ID/artifact identity, the state seal,
-every retained evidence hash, and completed raw evidence semantics. `npm run
-certification:resume` returns only the first
-eligible stage after performing the same checks. An input mismatch invalidates
-that stage and every successor; it never edits a pass into existence. A source
-change invalidates source-validation and every later stage. A build, Build ID, artifact, manifest, journal,
-or closure change invalidates archive, Phase 8, runtime, browsers, final,
-continuity, and readiness. All attempts remain in state; a non-consuming
-precondition may be corrected and retried as a separately recorded attempt.
+`npm run certification:state:validate` revalidates the stage-owned roots, live
+manifest/journal/Build ID/artifact identity, the state seal, every retained
+evidence hash, and completed raw evidence semantics. `npm run
+certification:resume` returns only the first eligible stage after the same
+read-only validation. `npm run certification:build:eligibility` is also
+read-only and validates its complete mode-specific invocation before reading
+state.
 
-After continuity passes, the same state-validation CLI can produce
-`integration-ready` only when the supplied canonical local branch and
+These commands never initialize, rewrite, reconcile, invalidate, or advance
+state. Missing or malformed candidate ID, malformed mode, wrong expected
+commit/tree/parent comparator, missing state, unknown environment control,
+missing source comparator, wrong worktree, or any other precondition failure is
+`PRECONDITION_ORCHESTRATION_FAILURE`, `consumed=false`, and leaves the exact
+state bytes, SHA-256, attempt history, and stage statuses unchanged. Canonical
+identity always comes from the sealed state; caller values are comparators only.
+
+A proven retained-input mismatch produces a sealed
+`interior-ai.production-certification-invalidation-plan.v1` without changing
+state. Only `npm run certification:state:reconcile`, supplied the plan path and
+the exact pre-mutation state SHA-256, may atomically invalidate the first
+affected stage and its successors. A stale plan, different state hash, or
+unproven mismatch is rejected without mutation. Normal stage-transition owners
+remain the only other state writers. Validation cannot create an attempt merely
+by failing.
+
+After continuity passes, the distinct `npm run
+certification:integration-ready` mutating owner can produce readiness only when
+the supplied canonical local branch and
 remote-tracking refs still equal the separately declared integration commit and
 tree and `git merge-base --is-ancestor` proves the candidate is a fast-forward
 descendant. Real operation supplies `CERTIFICATION_INTEGRATION_BRANCH_REF`,
@@ -425,8 +482,9 @@ additional root-cause label.
 
 ## Historical regression matrix
 
-`scripts/production-certification-regressions.json` retains all 26 required
-historical failures and adds 15 source-validation plus 23 physical-continuity
+`scripts/production-certification-regressions.json` retains all 27 required
+historical failures and adds source-validation, physical-continuity, and
+transactional state/worktree-isolation
 anti-bypass cases. `scripts/test-production-certification.mjs` maps each entry
 to executable deterministic CLI coverage plus anti-bypass source guards:
 source/tree and candidate grammar;
@@ -445,6 +503,7 @@ The bounded source qualification is:
 
 ```sh
 npm run test:production-certification
+node scripts/test-production-certification-state-worktrees.mjs
 node scripts/test-production-certification-stage-environment.mjs
 npm run certification:simulate
 npm run test:production-artifact-evidence
@@ -452,11 +511,13 @@ npm run test:required-test-truthfulness
 npm run certification:qualify
 ```
 
-`certification:simulate` builds a miniature fixture outside the repository and
-invokes physical committed CLIs for state initialization and transitions, a
+`certification:simulate` builds a miniature Git repository plus three real
+detached worktrees outside the application repository and invokes physical
+committed CLIs for state initialization and transitions, a
 sealed failed-doctor/retry cycle, source validation, journal/manifest
 production, archive plan/stage/compress/extract, staged/extracted preflight,
-final verification, integration-readiness validation, deterministic Phase
+final verification, read-only validation, explicit reconciliation,
+integration-readiness ownership, deterministic Phase
 8/runtime/seven-owner evidence, six independent physical snapshots, and the
 real continuity CLI. It also proves a source-check failure blocks build, a
 physical artifact mutation blocks continuity/readiness, and copied hashes do
@@ -481,7 +542,10 @@ runs the exact historical `e39875191b0d…` runner/projector until canonical che
 ordered 19-command source check set and proves check 1 passes
 through its real `npm run test:production-artifact-evidence` command without
 receiving the parent evidence root or any later-stage capability. The
-simulation starts no app, database, or browser and runs no real
+simulation also proves canonical ignored bytes and an external-target symlink
+remain unchanged, every stage uses only its assigned root, cross-role or
+cross-certification reuse fails, and default cleanup removes only the three
+task-created worktrees. It starts no app, database, or browser and runs no real
 build or benchmark. Its
 evidence is marked `deterministic-simulation` and cannot certify a real
 candidate.
@@ -496,7 +560,11 @@ exercises all 19 fixture checks and the value-policy tamper matrix.
 `INCONCLUSIVE`. It performs deterministic doctor/simulation/regression/state,
 production-artifact/truthfulness, type, zero-warning lint, code-quality,
 tracked-artifact hygiene, syntax, and diff checks without consuming the real
-gates.
+gates. It may emit `QUALIFIED_FOR_FINAL_CANDIDATE_CERTIFICATION` only when the
+ordinary tracked and untracked Git status is completely clean. Projected child
+environments and both stage-owned dependency installations strip
+`NODE_PATH`/`NODE_OPTIONS`. State mutation uses an exclusive sidecar lock and
+expected-current-byte SHA-256 comparison before atomic replacement.
 
 After an `A` result, a separately authorized exact-head real cycle must use a
 clean immutable checkout and external roots, run doctor before any consuming

@@ -18,7 +18,7 @@ import path from "node:path";
 import {
   CERTIFICATION_FAILURE_CLASSIFICATIONS,
   CERTIFICATION_STAGE_ORDER,
-  PRODUCTION_CERTIFICATION_STATE_SCHEMA,
+  PRODUCTION_CERTIFICATION_STATE_SCHEMA_V1,
   REQUIRED_BROWSER_OWNERS,
   canonicalJsonBytes,
   harnessSourceIdentity,
@@ -159,7 +159,7 @@ function stateFixture() {
 {
   const contract = stageEnvironmentContract(repositoryRoot);
   assert.equal(contract.value.schema, "interior-ai.production-certification-stage-environment.v2");
-  assert.equal(Object.keys(contract.variables).length, 83);
+  assert.equal(Object.keys(contract.variables).length, 86);
   assert.equal(Object.keys(contract.applicationFeatureVariables).length, 5);
   assert.equal(Object.keys(contract.profiles).length, 20);
   assert.deepEqual(
@@ -477,7 +477,7 @@ function stateFixture() {
 
 {
   const state = stateFixture();
-  assert.equal(state.schema, PRODUCTION_CERTIFICATION_STATE_SCHEMA);
+  assert.equal(state.schema, PRODUCTION_CERTIFICATION_STATE_SCHEMA_V1);
   assert.deepEqual(Object.keys(state.stages), CERTIFICATION_STAGE_ORDER);
   assert.throws(
     () => startCertificationStage(state, { stage: "build", startedAt: fixedTime }),
@@ -1178,7 +1178,9 @@ function stateFixture() {
 }
 
 {
-  const simulation = await runProductionCertificationSimulation();
+  const simulation = await runProductionCertificationSimulation({
+    cleanupWorktrees: false,
+  });
   const base = simulation.simulationRoot;
   assert.equal(simulation.integrationReady, true);
   const completeFinalChild = finalSimulationChild(base);
@@ -1191,7 +1193,15 @@ function stateFixture() {
     REQUIRED_BROWSER_OWNERS.map((owner) => owner.id),
   );
 
-  const sourceRoot = path.join(base, "source");
+  const canonicalRoot = path.join(base, "source");
+  const sourceValidationRoot = path.join(
+    base,
+    "stage-worktrees/production-certification-v1-simulation/source-validation",
+  );
+  const sourceRoot = path.join(
+    base,
+    "stage-worktrees/production-certification-v1-simulation/final-artifact",
+  );
   const evidenceRoot = path.join(base, "evidence");
   const completedState = readCertificationState(
     path.join(evidenceRoot, "certification-state.json"),
@@ -1200,7 +1210,7 @@ function stateFixture() {
   const sourceEvidence = JSON.parse(
     readFileSync(path.join(evidenceRoot, sourceDescriptor.path), "utf8"),
   );
-  const sourceCheckSet = sourceValidationCheckSet(sourceRoot);
+  const sourceCheckSet = sourceValidationCheckSet(sourceValidationRoot);
   const validateSourceMutation = (mutate) => {
     const value = structuredClone(sourceEvidence);
     mutate(value);
@@ -1208,7 +1218,7 @@ function stateFixture() {
       evidence: value,
       evidenceRoot,
       state: completedState,
-      repositoryRoot: sourceRoot,
+      repositoryRoot: sourceValidationRoot,
     }).issues.join("\n");
   };
   assert.equal(
@@ -1216,7 +1226,7 @@ function stateFixture() {
       evidence: sourceEvidence,
       evidenceRoot,
       state: completedState,
-      repositoryRoot: sourceRoot,
+      repositoryRoot: sourceValidationRoot,
     }).valid,
     true,
     "all canonical source checks must execute and validate",
@@ -1235,7 +1245,7 @@ function stateFixture() {
       },
       evidenceRoot,
       state: completedState,
-      repositoryRoot: sourceRoot,
+      repositoryRoot: sourceValidationRoot,
     }).issues.join("\n"),
     /schema is unsupported|check closure|completion marker/,
     "an identity-only source descriptor must be rejected",
@@ -1331,7 +1341,9 @@ function stateFixture() {
       evidenceRoot,
       expectedCandidate: resealed.candidate,
       expectedHarnessSourceSha256: resealed.harness.sourceSha256,
-      repositoryRoot: sourceRoot,
+      repositoryRoot: canonicalRoot,
+      sourceValidationRoot,
+      artifactRoot: sourceRoot,
     });
     assert.equal(validation.valid, false);
     assert.match(validation.issues.join("\n"), /missing evidence source-validation/);
@@ -1505,7 +1517,7 @@ function stateFixture() {
         process.execPath,
         ["scripts/production-certification.mjs", "continuity"],
         {
-          cwd: sourceRoot,
+          cwd: canonicalRoot,
           env: continuityCliEnvironment(startedAt, completedAt),
           encoding: "utf8",
         },
@@ -1543,7 +1555,9 @@ function stateFixture() {
           evidenceRoot,
           expectedCandidate: failedState.candidate,
           expectedHarnessSourceSha256: failedState.harness.sourceSha256,
-          repositoryRoot: sourceRoot,
+          repositoryRoot: canonicalRoot,
+          sourceValidationRoot,
+          artifactRoot: sourceRoot,
         }).valid,
         true,
         `${name} failed evidence must remain a truthful sealed state`,
@@ -2084,55 +2098,58 @@ function stateFixture() {
   }
 
   for (const target of ["package.json", ".next/BUILD_ID"]) {
-    const clone = cloneSimulation(base);
-    const sourceRoot = path.join(clone, "source");
-    const statePath = path.join(clone, "evidence/certification-state.json");
-    const state = readCertificationState(statePath);
-    writeFileSync(path.join(sourceRoot, target), `changed-${target}\n`);
-    const child = spawnSync(
-      process.execPath,
-      ["scripts/production-certification.mjs", "state:validate"],
-      {
-        cwd: sourceRoot,
-        env: {
-          ...process.env,
-          PRODUCTION_CERTIFICATION_STATE: statePath,
-          CERTIFICATION_EVIDENCE_ROOT: path.join(clone, "evidence"),
-          PRODUCTION_EVIDENCE_CANDIDATE_ID: state.candidate.id,
-          CERTIFICATION_EXPECTED_COMMIT_SHA: state.candidate.commitSha,
-          CERTIFICATION_EXPECTED_TREE_SHA: state.candidate.treeSha,
-          CERTIFICATION_EXPECTED_PARENT_SHA: state.candidate.parentSha,
-          CERTIFICATION_EXECUTION_CLASS: "deterministic-simulation",
-          CERTIFICATION_QUALIFICATION_MODE: "1",
-          CERTIFICATION_INVALIDATED_AT: "2026-08-14T00:20:00.000Z",
-        },
-        encoding: "utf8",
-      },
-    );
-    assert.notEqual(child.status, 0);
-    const invalidated = readCertificationState(statePath);
-    assert.equal(
-      invalidated.stages[target === "package.json" ? "source-validation" : "build"].status,
-      "invalidated",
-    );
-    if (target === "package.json") {
-      const sourceIndex = CERTIFICATION_STAGE_ORDER.indexOf("source-validation");
-      for (const stage of CERTIFICATION_STAGE_ORDER.slice(sourceIndex)) {
-        assert.equal(
-          invalidated.stages[stage].status,
-          "invalidated",
-          `source identity change must invalidate ${stage}`,
-        );
-      }
-    }
-    rmSync(path.dirname(clone), { recursive: true, force: true });
-  }
-  {
-    const clone = cloneSimulation(base);
-    const sourceRoot = path.join(clone, "source");
-    const evidenceRoot = path.join(clone, "evidence");
     const statePath = path.join(evidenceRoot, "certification-state.json");
     const state = readCertificationState(statePath);
+    const stateBytes = readFileSync(statePath);
+    const mutationPath = path.join(
+      target === "package.json" ? canonicalRoot : sourceRoot,
+      target,
+    );
+    const original = readFileSync(mutationPath);
+    let child;
+    try {
+      writeFileSync(mutationPath, `changed-${target}\n`);
+      child = spawnSync(
+        process.execPath,
+        ["scripts/production-certification.mjs", "state:validate"],
+        {
+          cwd: canonicalRoot,
+          env: {
+            ...process.env,
+            PRODUCTION_CERTIFICATION_STATE: statePath,
+            CERTIFICATION_EVIDENCE_ROOT: evidenceRoot,
+            PRODUCTION_EVIDENCE_CANDIDATE_ID: state.candidate.id,
+            CERTIFICATION_EXPECTED_COMMIT_SHA: state.candidate.commitSha,
+            CERTIFICATION_EXPECTED_TREE_SHA: state.candidate.treeSha,
+            CERTIFICATION_EXPECTED_PARENT_SHA: state.candidate.parentSha,
+            CERTIFICATION_EXECUTION_CLASS: "deterministic-simulation",
+            CERTIFICATION_QUALIFICATION_MODE: "1",
+            CERTIFICATION_INVALIDATED_AT: "2026-08-14T00:20:00.000Z",
+          },
+          encoding: "utf8",
+        },
+      );
+    } finally {
+      writeFileSync(mutationPath, original);
+    }
+    assert.notEqual(child.status, 0);
+    const report = JSON.parse(child.stdout.trim());
+    assert.equal(
+      report.invalidationPlan.stage,
+      target === "package.json" ? "source-validation" : "build",
+    );
+    assert.equal(readFileSync(statePath).equals(stateBytes), true);
+    assert.equal(readCertificationState(statePath).completionState, "passed");
+  }
+  {
+    const statePath = path.join(evidenceRoot, "certification-state.json");
+    const state = readCertificationState(statePath);
+    const stateBytes = readFileSync(statePath);
+    const originalTracking = spawnSync(
+      "git",
+      ["rev-parse", "refs/remotes/origin/integration"],
+      { cwd: canonicalRoot, encoding: "utf8" },
+    ).stdout.trim();
     const movedTracking = spawnSync(
       "git",
       [
@@ -2140,38 +2157,69 @@ function stateFixture() {
         "refs/remotes/origin/integration",
         state.candidate.commitSha,
       ],
-      { cwd: sourceRoot, encoding: "utf8" },
+      { cwd: canonicalRoot, encoding: "utf8" },
     );
     assert.equal(movedTracking.status, 0);
-    const child = spawnSync(
-      process.execPath,
-      ["scripts/production-certification.mjs", "state:validate"],
-      {
-        cwd: sourceRoot,
-        env: {
-          ...process.env,
-          PRODUCTION_CERTIFICATION_STATE: statePath,
-          CERTIFICATION_EVIDENCE_ROOT: evidenceRoot,
-          PRODUCTION_EVIDENCE_CANDIDATE_ID: state.candidate.id,
-          CERTIFICATION_EXPECTED_COMMIT_SHA: state.candidate.commitSha,
-          CERTIFICATION_EXPECTED_TREE_SHA: state.candidate.treeSha,
-          CERTIFICATION_EXPECTED_PARENT_SHA: state.candidate.parentSha,
-          CERTIFICATION_EXECUTION_CLASS: "deterministic-simulation",
-          CERTIFICATION_QUALIFICATION_MODE: "1",
-          CERTIFICATION_INVALIDATED_AT: "2026-08-14T00:30:00.000Z",
+    let child;
+    try {
+      child = spawnSync(
+        process.execPath,
+        ["scripts/production-certification.mjs", "state:validate"],
+        {
+          cwd: canonicalRoot,
+          env: {
+            ...process.env,
+            PRODUCTION_CERTIFICATION_STATE: statePath,
+            CERTIFICATION_EVIDENCE_ROOT: evidenceRoot,
+            PRODUCTION_EVIDENCE_CANDIDATE_ID: state.candidate.id,
+            CERTIFICATION_EXPECTED_COMMIT_SHA: state.candidate.commitSha,
+            CERTIFICATION_EXPECTED_TREE_SHA: state.candidate.treeSha,
+            CERTIFICATION_EXPECTED_PARENT_SHA: state.candidate.parentSha,
+            CERTIFICATION_EXECUTION_CLASS: "deterministic-simulation",
+            CERTIFICATION_QUALIFICATION_MODE: "1",
+            CERTIFICATION_INVALIDATED_AT: "2026-08-14T00:30:00.000Z",
+          },
+          encoding: "utf8",
         },
-        encoding: "utf8",
-      },
-    );
+      );
+    } finally {
+      spawnSync(
+        "git",
+        ["update-ref", "refs/remotes/origin/integration", originalTracking],
+        { cwd: canonicalRoot, encoding: "utf8" },
+      );
+    }
     assert.notEqual(child.status, 0);
     assert.match(`${child.stdout}\n${child.stderr}`, /integration readiness/);
     assert.equal(
       readCertificationState(statePath).stages["integration-ready"].status,
-      "invalidated",
+      "passed",
     );
-    rmSync(path.dirname(clone), { recursive: true, force: true });
+    assert.equal(readFileSync(statePath).equals(stateBytes), true);
   }
 
+  const cleanupStatePath = path.join(evidenceRoot, "certification-state.json");
+  const cleanupState = readCertificationState(cleanupStatePath);
+  const cleanup = spawnSync(
+    process.execPath,
+    ["scripts/production-certification.mjs", "worktrees:cleanup"],
+    {
+      cwd: canonicalRoot,
+      env: {
+        ...process.env,
+        PRODUCTION_CERTIFICATION_STATE: cleanupStatePath,
+        CERTIFICATION_EVIDENCE_ROOT: evidenceRoot,
+        PRODUCTION_EVIDENCE_CANDIDATE_ID: cleanupState.candidate.id,
+        CERTIFICATION_EXPECTED_COMMIT_SHA: cleanupState.candidate.commitSha,
+        CERTIFICATION_EXPECTED_TREE_SHA: cleanupState.candidate.treeSha,
+        CERTIFICATION_EXPECTED_PARENT_SHA: cleanupState.candidate.parentSha,
+        CERTIFICATION_EXECUTION_CLASS: "deterministic-simulation",
+        CERTIFICATION_QUALIFICATION_MODE: "1",
+      },
+      encoding: "utf8",
+    },
+  );
+  assert.equal(cleanup.status, 0, `${cleanup.stdout}\n${cleanup.stderr}`);
   rmSync(base, { recursive: true, force: true });
 }
 

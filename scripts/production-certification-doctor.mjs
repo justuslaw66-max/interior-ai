@@ -1,5 +1,5 @@
 import { spawnSync } from "node:child_process";
-import { existsSync, lstatSync, readFileSync, realpathSync } from "node:fs";
+import { existsSync, lstatSync, readFileSync, realpathSync, statfsSync } from "node:fs";
 import path from "node:path";
 
 import {
@@ -29,6 +29,12 @@ import {
   resolvePlaywrightReportPath,
   resolveRequiredTestReportPath,
 } from "./playwright-report-path.mjs";
+import { readCertificationState } from "./production-certification-state.mjs";
+import {
+  CERTIFICATION_WORKTREE_ROLES,
+  certificationWorktreeIssues,
+  resolveCertificationStageWorktree,
+} from "./production-certification-worktrees.mjs";
 
 const REQUIRED_APPLICATION_ENVIRONMENT_NAMES = Object.freeze([
   "DATABASE_URL",
@@ -290,6 +296,52 @@ function validateBuildTargetsPristine(repositoryRoot) {
   return { absentTargets: targets };
 }
 
+function validateStageWorktreeIsolation(repositoryRoot, environment) {
+  const statePath = environment.PRODUCTION_CERTIFICATION_STATE?.trim();
+  const evidenceRoot = environment.CERTIFICATION_EVIDENCE_ROOT?.trim();
+  if (!statePath || !evidenceRoot) {
+    throw new Error("stage-worktree validation requires state and evidence roots");
+  }
+  const state = readCertificationState(statePath);
+  const issues = certificationWorktreeIssues({
+    state,
+    evidenceRoot,
+    canonicalRoot: repositoryRoot,
+    requirePhysical: true,
+  });
+  if (issues.length > 0) throw new Error(issues.join("; "));
+  const roots = [];
+  for (const role of CERTIFICATION_WORKTREE_ROLES) {
+    const resolved = resolveCertificationStageWorktree({
+      state,
+      evidenceRoot,
+      canonicalRoot: repositoryRoot,
+      role,
+      phase: "pristine",
+    });
+    const capacity = statfsSync(resolved.root);
+    if (Number(capacity.bavail) * Number(capacity.bsize) < 1024 ** 3) {
+      throw new Error(`stage worktree filesystem capacity is below policy: ${role}`);
+    }
+    roots.push(resolved.root);
+  }
+  if (new Set(roots).size !== CERTIFICATION_WORKTREE_ROLES.length) {
+    throw new Error("stage worktree roles are not physically distinct");
+  }
+  return {
+    roles: [...CERTIFICATION_WORKTREE_ROLES],
+    pathsOutsideCanonicalCheckout: true,
+    pathsOutsideEvidenceRoot: true,
+    symlinkAliasesRejected: true,
+    exactCandidateAvailable: true,
+    creationPermissionsProven: true,
+    filesystemCapacityPolicyBytes: 1024 ** 3,
+    pristineIgnoredPathCount: 0,
+    canonicalIgnoredArtifactsInArtifactContract: false,
+    quarantineRequired: false,
+  };
+}
+
 function validateContracts(repositoryRoot) {
   const artifactContract = readFileSync(
     path.join(repositoryRoot, "scripts/production-artifact-contract.mjs"),
@@ -313,6 +365,23 @@ function validateContracts(repositoryRoot) {
       "scripts/production-certification-source-continuity.mjs",
     ),
     "utf8",
+  );
+  const worktreeOwner = readFileSync(
+    path.join(repositoryRoot, "scripts/production-certification-worktrees.mjs"),
+    "utf8",
+  );
+  const worktreeRegressionOwner = readFileSync(
+    path.join(
+      repositoryRoot,
+      "scripts/test-production-certification-state-worktrees.mjs",
+    ),
+    "utf8",
+  );
+  const contractMatrix = JSON.parse(
+    readFileSync(
+      path.join(repositoryRoot, "docs/qa/production-certification-contract.v1.json"),
+      "utf8",
+    ),
   );
   for (const marker of [
     "interior-ai.production-artifact-evidence.v3",
@@ -359,6 +428,13 @@ function validateContracts(repositoryRoot) {
     !certificationRunner.includes("captureArtifactSnapshot") ||
     !certificationRunner.includes("measureFinalContinuity") ||
     !sourceContinuityOwner.includes("rehashPhysicalRoot: true") ||
+    contractMatrix.transactionalStateValidation?.canonicalIdentitySource !==
+      "sealed certification state" ||
+    contractMatrix.stageWorktrees?.minimumDistinctPhysicalRoots !== 3 ||
+    !worktreeOwner.includes("CERTIFICATION_WORKTREE_ROLES") ||
+    !worktreeRegressionOwner.includes('name: "missing-candidate-id"') ||
+    !worktreeRegressionOwner.includes("canonical-checkout-as-stage-root-rejected") ||
+    /git\s+clean|clean\s+-x/.test(`${certificationRunner}\n${worktreeOwner}`) ||
     /\.map\(\(name\) => \[name, state\.bindings\.artifactSha256\]\)/.test(
       certificationRunner,
     )
@@ -585,8 +661,19 @@ export function runCertificationDoctor({
   check(checks, issues, "network-shape", () => validateNetworkShape(environment));
   check(checks, issues, "external-evidence-destinations", () =>
     validateEvidenceDestinations(root, environment));
-  check(checks, issues, "strict-build-target-absence", () =>
-    validateBuildTargetsPristine(root));
+  check(checks, issues, "stage-worktree-isolation", () =>
+    validateStageWorktreeIsolation(root, environment));
+  check(checks, issues, "strict-build-target-absence", () => {
+    const state = readCertificationState(environment.PRODUCTION_CERTIFICATION_STATE);
+    const finalArtifact = resolveCertificationStageWorktree({
+      state,
+      evidenceRoot: environment.CERTIFICATION_EVIDENCE_ROOT,
+      canonicalRoot: root,
+      role: "final-artifact",
+      phase: "pristine",
+    });
+    return validateBuildTargetsPristine(finalArtifact.root);
+  });
   check(checks, issues, "schema-and-mode-compatibility", () => validateContracts(root));
   check(checks, issues, "stage-environment-capabilities", () =>
     validateStageEnvironmentCapabilities(root, environment));

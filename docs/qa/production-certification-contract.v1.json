@@ -6,9 +6,47 @@
     "classification": "NOT_QUALIFIED_SOURCE_CONTRACT_DEFECT"
   },
   "recordedBeforeHarnessImplementation": true,
+  "transactionalStateValidation": {
+    "validationReportSchema": "interior-ai.production-certification-state-validation.v1",
+    "invalidationPlanSchema": "interior-ai.production-certification-invalidation-plan.v1",
+    "readOnlyCommands": ["state:validate", "build:eligibility", "resume"],
+    "stateMutatingOwners": ["state:reconcile", "integration-ready", "stage-transition owners", "worktrees:cleanup"],
+    "preconditionFailureClassification": "PRECONDITION_ORCHESTRATION_FAILURE",
+    "preconditionFailureConsumesSubstantiveGate": false,
+    "canonicalIdentitySource": "sealed certification state",
+    "invocationIdentityRole": "expected comparator",
+    "atomicMutationRequires": [
+      "explicit mutating owner",
+      "valid mode-specific invocation",
+      "sealed invalidation plan",
+      "matching pre-mutation state SHA-256",
+      "proven mismatch in retained stage inputs"
+    ],
+    "stalePlanPolicy": "reject without changing state",
+    "missingOrMalformedStatePolicy": "fail without creating or rewriting state"
+  },
+  "stageWorktrees": {
+    "schema": "interior-ai.production-certification-worktrees.v1",
+    "requiredRoles": {
+      "source-validation": "source checks and source-continuity evidence",
+      "final-artifact": "dependency install, build, archive, Phase 8, runtime smoke, final standalone, and continuity",
+      "development-browser": "cart and retailer development-server browser owners"
+    },
+    "creation": "three fresh stage-owned detached Git worktrees at the exact candidate commit and tree",
+    "minimumDistinctPhysicalRoots": 3,
+    "canonicalCheckoutMayBeStageRoot": false,
+    "symlinkOrAliasMayBeStageRoot": false,
+    "sharedPhysicalNodeModulesAllowed": false,
+    "ignoredInfluentialPathPolicy": "zero before stage use",
+    "canonicalIgnoredArtifactPolicy": "non-influential, uninspected by stage owners, and byte-for-byte untouched",
+    "crossCertificationReuseAllowed": false,
+    "privateBindingPolicy": "physical paths and hashes are retained only in private evidence-root sidecars",
+    "cleanupPolicy": "explicit cleanup owner after continuity or terminal abort; remove only task-owned roots"
+  },
   "sourceValidation": {
     "schema": "interior-ai.production-certification-source-check-set.v1",
     "workingDirectoryPolicy": "exact-candidate-root",
+    "stageWorktreeRole": "source-validation",
     "stopOnFirstRequiredFailure": true,
     "fixtureCommandOwner": "scripts/production-certification-source-continuity.mjs",
     "checks": [
@@ -490,7 +528,7 @@
     },
     {
       "id": "local-fast-forward-readiness",
-      "canonicalCommandOrCli": "npm run certification:state:validate",
+      "canonicalCommandOrCli": "npm run certification:integration-ready",
       "sourceOwner": ["scripts/production-certification-real.mjs", "scripts/production-certification-state.mjs"],
       "requiredEnvironmentNames": [],
       "requiredInputs": ["passed final standalone and continuity evidence", "unchanged integration head/tree", "candidate exact ancestry"],
@@ -502,7 +540,7 @@
       "stopCondition": "Source-validation, final-standalone, or measured continuity missing/stale; integration refs/tree/ancestry changed.",
       "evidenceSchemaVersion": ["interior-ai.production-certification-integration-readiness.v1"],
       "candidateArtifactIdentityFields": ["candidate commit/tree", "source-validation SHA", "final-standalone SHA", "continuity SHA", "integration local/tracking commit/tree"],
-      "baselineGap": "Historical pre-v1 gap corrected by sealed state and the integration-ready owner."
+      "baselineGap": "Historical pre-v1 gap corrected by the distinct mutating integration-ready owner; state:validate remains read-only."
     }
   ]
 }

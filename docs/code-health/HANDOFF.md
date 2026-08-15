@@ -1,5 +1,74 @@
 # Code health audit handoff
 
+## CH-0015I transactional state/worktree isolation handoff — 2026-08-15
+
+The authoritative classifications are
+`CERTIFICATION_STATE_PRECONDITION_MUTATION_DEFECT` and
+`CERTIFICATION_STAGE_WORKTREE_ISOLATION_DEFECT`.
+
+Branch `fix/production-certification-state-worktree-isolation` starts at exact
+candidate `cd2d426900916a1096fd0dab9380020db1c62671`, tree
+`f783e8affd82c8fc6f933650b5cb59dedbbfea49`, above unchanged integration local,
+tracking, and remote `2c567fd483877c7dcbd8fd23e3cd8cb316732c8c`, tree
+`50f9c5d6a6610990606fd9db9a27ba40200fca90`. Exact ancestry and subjects were
+verified before branching. Entry tracked/index/untracked state was clean, and
+no Interior AI application listener existed, so the intended checkout and a
+running process did not conflict.
+
+Historical certification `CH-0015I-final-20260815-cd2d42690091` / candidate
+`CH-0015I-cd2d426900916a10` remains invalidated and ineligible for reuse. The
+missing `PRODUCTION_EVIDENCE_CANDIDATE_ID` invocation, validator-triggered state
+invalidation, doctor attempts 001–003, passed 19/19 source stage, failed
+non-consuming build attempt, quarantine-preflight discrepancy, state seal,
+attempt history, and successor invalidations were not repaired or rewritten.
+The canonical ignored inventory had 1,305 paths with aggregate
+`8ad720847565da6d586f2881e674d51100b70da27335eedee4deee8814fb50af`; the
+corrected lifecycle neither uses nor moves those user-owned files.
+
+Validation is now transactional. `state:validate`, `resume`, and
+`build:eligibility` validate the complete invocation first, load sealed state
+read-only, treat caller identities as comparators, and emit sealed reports or
+plans without mutation. Missing/malformed candidate values, wrong comparators,
+missing state, malformed modes, missing source comparators, unknown controls,
+and stale state hashes are non-consuming preconditions that leave bytes, seal,
+attempts, and stage statuses unchanged. Only `state:reconcile`, with a sealed
+plan and the exact pre-mutation state SHA-256, can atomically apply a proven
+retained-input invalidation. All state mutations hold an exclusive sidecar lock
+and compare the expected current byte hash before atomic replacement, so stale
+or concurrent writers fail closed. `integration-ready` is a separate mutating
+owner.
+
+Every new real cycle creates three distinct detached exact-candidate
+worktrees: `source-validation`, `final-artifact`, and `development-browser`.
+The state and private sidecars bind role, commit/tree, clean/ignored proof,
+physical realpath/filesystem/dependency identity, lifecycle, and cleanup. The
+owner rejects canonical-root use, symlink/realpath aliasing, wrong identity,
+copied ignored paths, shared dependencies, missing roots, premature removal,
+and cross-certification reuse. Source checks run only in the source root;
+install/build/archive/Phase 8/production runtime/final continuity use the final
+root; Cart/Retailer development owners use the development root. Explicit
+cleanup removes only task-created worktrees after their last required event.
+Every projected stage child strips and records `NODE_PATH`/`NODE_OPTIONS`; both
+stage-owned dependency installations strip them as well as certification
+controls before invoking npm.
+
+The focused transactional/worktree matrix, historical harness matrix,
+three-worktree simulation, stage-environment regression, production-artifact
+owner, direct 27-gate/383-source truthfulness inventory, typecheck, zero-warning
+lint, timing/readiness, architecture, hygiene, syntax, and diff checks pass.
+The dirty pre-commit qualifier returned
+`NOT_QUALIFIED_SOURCE_CONTRACT_DEFECT`; the final handoff records the sole
+bounded qualifier result from the exact clean correction commit. Independent
+read-only review returned `PASS` with no actionable finding. This
+batch changes certification infrastructure only: no product/UI, Floor Plan,
+telemetry, NFT, benchmark semantics, dependencies/lockfile, database,
+migration, workflow, deployment, real build, Phase 8, runtime/browser matrix,
+Full E2E, integration, or push belongs to it. A future certification requires a
+new certification/candidate ID, state, evidence root, worktrees, and stage
+sequence. Exact-head real certification and the final CH-0015 closure audit
+remain pending. Rollback is one focused commit revert and restores both known
+certification blockers.
+
 ## CH-0015I Floor Plan source-environment correction handoff — 2026-08-15
 
 Branch `fix/production-certification-floor-plan-source-env` starts at exact

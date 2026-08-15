@@ -5,8 +5,14 @@ import path from "node:path";
 import { stageEnvironmentContract } from "./production-certification-stage-environment.mjs";
 
 export const PRODUCTION_CERTIFICATION_HARNESS_VERSION = 1;
-export const PRODUCTION_CERTIFICATION_STATE_SCHEMA =
+export const PRODUCTION_CERTIFICATION_STATE_SCHEMA_V1 =
   "interior-ai.production-certification-state.v1";
+export const PRODUCTION_CERTIFICATION_STATE_SCHEMA =
+  "interior-ai.production-certification-state.v2";
+export const PRODUCTION_CERTIFICATION_STATE_VALIDATION_SCHEMA =
+  "interior-ai.production-certification-state-validation.v1";
+export const PRODUCTION_CERTIFICATION_INVALIDATION_PLAN_SCHEMA =
+  "interior-ai.production-certification-invalidation-plan.v1";
 export const PRODUCTION_CERTIFICATION_DOCTOR_SCHEMA =
   "interior-ai.production-certification-doctor.v1";
 export const PRODUCTION_CERTIFICATION_ATTEMPT_SCHEMA =
@@ -87,7 +93,7 @@ export const CERTIFICATION_STAGE_COMMANDS = Object.freeze({
   "browser-owners": "npm run certification:browser-owners",
   "final-standalone": "npm run certification:final-standalone",
   continuity: "npm run certification:continuity",
-  "integration-ready": "npm run certification:state:validate",
+  "integration-ready": "npm run certification:integration-ready",
 });
 
 export const PHASE8_SOURCE_BINDING_PATHS = Object.freeze([
@@ -182,6 +188,8 @@ export const CERTIFICATION_HARNESS_SOURCE_PATHS = Object.freeze([
   "scripts/production-certification.mjs",
   "scripts/production-certification-simulation.mjs",
   "scripts/production-certification-stage-environment.mjs",
+  "scripts/production-certification-worktrees.mjs",
+  "scripts/test-production-certification-state-worktrees.mjs",
   "scripts/test-production-certification-stage-environment.mjs",
   "scripts/test-floor-plan-vision-configuration.ts",
   "scripts/test-floor-plan-local-ocr.ts",
@@ -200,6 +208,8 @@ export const CERTIFICATION_HARNESS_SOURCE_PATHS = Object.freeze([
   "scripts/certification-playwright-start-reporter.mjs",
   "docs/qa/production-certification-contract.v1.json",
   "docs/qa/production-certification-stage-environment.v2.json",
+  "docs/qa/production-certification-harness-v1.md",
+  "docs/qa/production-certification-state-worktree-remediation.md",
   "scripts/benchmark-phase8-projects.ts",
   "scripts/phase8-project-benchmark-contract.ts",
   "scripts/run-phase8-project-benchmark.ts",

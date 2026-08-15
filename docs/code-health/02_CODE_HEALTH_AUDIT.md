@@ -1,5 +1,40 @@
 # Code health audit
 
+## Transactional certification state and stage-worktree isolation — 2026-08-15
+
+The historical `CH-0015I-final-20260815-cd2d42690091` attempt exposed
+`CERTIFICATION_STATE_PRECONDITION_MUTATION_DEFECT` and
+`CERTIFICATION_STAGE_WORKTREE_ISOLATION_DEFECT`. A build-eligibility validator omitted
+`PRODUCTION_EVIDENCE_CANDIDATE_ID`, then treated that invocation precondition as
+source drift and invalidated a passed substantive stage. Build preflight also
+inspected the normal checkout, making 1,305 ignored user paths and an
+external-target symlink appear to require quarantine even though they were not
+artifact inputs.
+
+The bounded correction separates read-only validation from mutation and uses
+sealed discrepancy reports/invalidation plans. Caller identities are
+comparators to sealed state; precondition failures are non-consuming and cannot
+change state. Explicit reconciliation requires the exact pre-mutation state
+hash; an exclusive sidecar lock plus under-lock byte-hash comparison rejects
+stale and concurrent writers before atomic replacement. Real lifecycle
+ownership is split across three
+fresh detached exact-candidate worktrees for source validation, final artifact,
+and Cart/Retailer development-browser execution. State/private sidecars bind
+physical identity and lifecycle; doctor and qualification reject aliasing,
+ignored inputs, shared dependencies, wrong/cross-certification roots, premature
+removal, canonical-root use, and canonical ignored-file influence.
+Projected children and both stage-owned dependency installers strip
+`NODE_PATH` and `NODE_OPTIONS`, preventing parent or canonical module injection.
+
+The historical state remains invalidated, unchanged, and unusable by future
+cycles. The correction changes certification infrastructure only. Real
+exact-head certification, integration, and the final CH-0015 closure audit
+remain pending. The bounded qualifier returned
+`NOT_QUALIFIED_SOURCE_CONTRACT_DEFECT` while this pre-commit worktree was dirty,
+as required. The final handoff records the sole clean-commit result; either
+source result is not real build, benchmark, runtime, browser, archive, or
+candidate evidence.
+
 ## Harness v1 source-validation and continuity defects — 2026-08-14
 
 Mandatory integrator review invalidated the prior Harness v1 source

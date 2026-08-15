@@ -17,6 +17,10 @@ const VALUE_POLICY_KINDS = Object.freeze([
   "optional-non-secret-enum",
   "optional-non-secret-value",
 ]);
+const PROCESS_MODULE_INFLUENCE_NAMES = Object.freeze([
+  "NODE_OPTIONS",
+  "NODE_PATH",
+]);
 
 function canonicalJsonBytes(value) {
   return Buffer.from(`${JSON.stringify(value, null, 2)}\n`);
@@ -201,7 +205,9 @@ export function stageEnvironmentContract(repositoryRoot = process.cwd()) {
     value?.baseEnvironmentPolicy?.applicationFeatureVariablesDefaultVisibility !==
       "preserve-unless-profile-policy" ||
     value?.baseEnvironmentPolicy?.profileValuePolicies !==
-      "strip-ambient-before-applying-declared-policy"
+      "strip-ambient-before-applying-declared-policy" ||
+    value?.baseEnvironmentPolicy?.processModuleInfluenceVariables !==
+      "strip-and-record"
   ) {
     throw new Error("certification stage environment base policy is unsupported");
   }
@@ -571,6 +577,9 @@ export function projectCertificationChildEnvironment({
   );
   if (
     staticRequiredNames.some((name) => !/^[A-Z][A-Z0-9_]+$/.test(name)) ||
+    staticRequiredNames.some((name) =>
+      PROCESS_MODULE_INFLUENCE_NAMES.includes(name),
+    ) ||
     staticRequiredNames.some(
       (name) =>
         isCertificationControlVariableName(name, profile.contract) &&
@@ -601,9 +610,14 @@ export function projectCertificationChildEnvironment({
   const strippedKnown = [];
   const strippedUnknown = [];
   const strippedUnknownApplicationFeatures = [];
+  const strippedProcessModuleInfluence = [];
   for (const name of Object.keys(baseEnvironment).sort()) {
     const value = baseEnvironment[name];
     if (value === undefined) continue;
+    if (PROCESS_MODULE_INFLUENCE_NAMES.includes(name)) {
+      strippedProcessModuleInfluence.push(name);
+      continue;
+    }
     if (Object.hasOwn(profile.contract.variables, name)) {
       strippedKnown.push(name);
       continue;
@@ -709,6 +723,8 @@ export function projectCertificationChildEnvironment({
     strippedUnknownCertificationControlVariables: strippedUnknown.sort(),
     strippedUnknownApplicationFeatureVariables:
       strippedUnknownApplicationFeatures.sort(),
+    strippedProcessModuleInfluenceVariables:
+      strippedProcessModuleInfluence.sort(),
     prohibitedCertificationVariableAbsence: Object.freeze({
       passed: true,
       checkedNameCount: environmentNames.length,
@@ -917,6 +933,7 @@ export function validateProjectedEnvironmentMetadata({
       "strippedKnownCertificationControlVariables",
       "strippedUnknownCertificationControlVariables",
       "strippedUnknownApplicationFeatureVariables",
+      "strippedProcessModuleInfluenceVariables",
       "prohibitedCertificationVariableAbsence",
     ])
   ) {
@@ -1065,6 +1082,22 @@ export function validateProjectedEnvironmentMetadata({
     )
   ) {
     issues.push("unknown application-feature stripping inventory is malformed");
+  }
+  const strippedProcessModuleInfluence =
+    metadata?.strippedProcessModuleInfluenceVariables;
+  if (
+    !Array.isArray(strippedProcessModuleInfluence) ||
+    JSON.stringify(strippedProcessModuleInfluence) !==
+      JSON.stringify(
+        [...new Set(strippedProcessModuleInfluence ?? [])].sort(),
+      ) ||
+    strippedProcessModuleInfluence.some(
+      (name) =>
+        !PROCESS_MODULE_INFLUENCE_NAMES.includes(name) ||
+        (metadata?.environmentNames ?? []).includes(name),
+    )
+  ) {
+    issues.push("process module-influence stripping inventory is malformed");
   }
   return { valid: issues.length === 0, issues };
 }

@@ -10,6 +10,8 @@ import { readCertificationState } from "./production-certification-state.mjs";
 import { projectCertificationChildEnvironment } from "./production-certification-stage-environment.mjs";
 import {
   initializeRealCertification,
+  cleanupCertificationWorktrees,
+  reconcileCertificationValidation,
   runArchivePreflightStage,
   runArchiveStage,
   runBrowserOwnersStage,
@@ -21,7 +23,9 @@ import {
   runPhase8Stage,
   runRuntimeSmokeStage,
   runSourceValidationStage,
-  validateAndAdvanceCertification,
+  runIntegrationReadyStage,
+  validateBuildEligibility,
+  validateCertificationReadOnly,
 } from "./production-certification-real.mjs";
 
 function requiredEnvironment(name) {
@@ -31,7 +35,8 @@ function requiredEnvironment(name) {
 }
 
 async function resumeCommand() {
-  await validateAndAdvanceCertification();
+  const validation = await validateCertificationReadOnly();
+  if (!validation.valid) return validation;
   const state = readCertificationState(requiredEnvironment(CERTIFICATION_STATE_ENV));
   const nextStage = CERTIFICATION_STAGE_ORDER.find(
     (stage) => state.stages[stage].status !== "passed",
@@ -65,6 +70,9 @@ function qualificationCommand() {
   if (tracked.status !== 0 || status.status !== 0) {
     return "NOT_QUALIFIED_ORCHESTRATION_GAP";
   }
+  if (status.stdout !== "") {
+    return "NOT_QUALIFIED_SOURCE_CONTRACT_DEFECT";
+  }
   const trackedArtifacts = tracked.stdout
     .split("\0")
     .filter(Boolean)
@@ -85,6 +93,10 @@ function qualificationCommand() {
     [
       process.execPath,
       ["scripts/test-production-certification-stage-environment.mjs"],
+    ],
+    [
+      process.execPath,
+      ["scripts/test-production-certification-state-worktrees.mjs"],
     ],
     ["npm", ["run", "certification:simulate"]],
     [process.execPath, ["scripts/test-production-certification.mjs"]],
@@ -149,9 +161,10 @@ async function cli() {
   else if (command === "source-validation") {
     result = await runSourceValidationStage();
   }
-  else if (command === "state:validate") {
-    result = await validateAndAdvanceCertification();
-  } else if (command === "resume") result = await resumeCommand();
+  else if (command === "state:validate") result = await validateCertificationReadOnly();
+  else if (command === "build:eligibility") result = await validateBuildEligibility();
+  else if (command === "state:reconcile") result = await reconcileCertificationValidation();
+  else if (command === "resume") result = await resumeCommand();
   else if (command === "build") result = await runBuildStage();
   else if (command === "archive-preflight") result = await runArchivePreflightStage();
   else if (command === "archive") result = await runArchiveStage();
@@ -162,6 +175,8 @@ async function cli() {
   else if (command === "browser-owners") result = await runBrowserOwnersStage();
   else if (command === "final-standalone") result = await runFinalStandaloneStage();
   else if (command === "continuity") result = await runContinuityStage();
+  else if (command === "integration-ready") result = await runIntegrationReadyStage();
+  else if (command === "worktrees:cleanup") result = await cleanupCertificationWorktrees();
   else if (command === "simulate") {
     const { runProductionCertificationSimulation } = await import(
       "./production-certification-simulation.mjs"
@@ -178,11 +193,15 @@ async function cli() {
     }
     return;
   } else {
-    throw new Error(
-      "usage: production-certification.mjs state:init|doctor|source-validation|state:validate|resume|build|archive-preflight|archive|extracted-archive-preflight|phase8|runtime-smoke|browser-owners|final-standalone|continuity|simulate|qualify",
-    );
+    result = {
+      valid: false,
+      classification: "PRECONDITION_ORCHESTRATION_FAILURE",
+      consumedSubstantiveGate: false,
+      issues: ["certification invocation mode is missing or malformed"],
+    };
   }
   console.log(JSON.stringify(result));
+  if (result?.valid === false) process.exitCode = 1;
 }
 
 if (import.meta.url === new URL(process.argv[1], "file:").href) {

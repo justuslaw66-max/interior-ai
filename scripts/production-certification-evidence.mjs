@@ -9,6 +9,7 @@ import {
   PRODUCTION_CERTIFICATION_PHASE8_EVIDENCE_SCHEMA,
   PRODUCTION_CERTIFICATION_RUNTIME_EVIDENCE_SCHEMA,
   PRODUCTION_CERTIFICATION_STATE_SCHEMA,
+  PRODUCTION_CERTIFICATION_STATE_SCHEMA_V1,
   PHASE8_SOURCE_BINDING_PATHS,
   REQUIRED_BROWSER_OWNERS,
   canonicalJsonBytes,
@@ -533,7 +534,12 @@ export function verifyFinalCertificationEvidence({
     );
   }
   const state = readCertificationState(statePath);
-  if (state.schema !== PRODUCTION_CERTIFICATION_STATE_SCHEMA) {
+  if (
+    !new Set([
+      PRODUCTION_CERTIFICATION_STATE_SCHEMA_V1,
+      PRODUCTION_CERTIFICATION_STATE_SCHEMA,
+    ]).has(state.schema)
+  ) {
     throw new Error("final standalone certification state schema is unsupported");
   }
   if (

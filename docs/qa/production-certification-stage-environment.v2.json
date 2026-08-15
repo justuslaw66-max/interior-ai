@@ -10,7 +10,8 @@
     "unknownCertificationControlVariablesFromStageInputs": "reject",
     "mutateProcessEnvironment": false,
     "applicationFeatureVariablesDefaultVisibility": "preserve-unless-profile-policy",
-    "profileValuePolicies": "strip-ambient-before-applying-declared-policy"
+    "profileValuePolicies": "strip-ambient-before-applying-declared-policy",
+    "processModuleInfluenceVariables": "strip-and-record"
   },
   "applicationFeaturePrefixes": [
     "FLOOR_PLAN_"
@@ -43,10 +44,12 @@
     "CERTIFICATION_EXPECTED_INTEGRATION_COMMIT_SHA": { "owner": "integration-readiness parent", "classification": "candidate-identity", "portable": true, "secret": false, "presenceChangesBehavior": false },
     "CERTIFICATION_EXPECTED_INTEGRATION_TREE_SHA": { "owner": "integration-readiness parent", "classification": "candidate-identity", "portable": true, "secret": false, "presenceChangesBehavior": false },
     "CERTIFICATION_EXPECTED_PARENT_SHA": { "owner": "certification parent runner", "classification": "candidate-identity", "portable": true, "secret": false, "presenceChangesBehavior": false },
+    "CERTIFICATION_EXPECTED_STATE_SHA256": { "owner": "certification validation/reconciliation parent", "classification": "state-identity-comparator", "portable": true, "secret": false, "presenceChangesBehavior": false },
     "CERTIFICATION_EXPECTED_TREE_SHA": { "owner": "certification parent runner", "classification": "candidate-identity", "portable": true, "secret": false, "presenceChangesBehavior": false },
     "CERTIFICATION_INTEGRATION_BRANCH_REF": { "owner": "integration-readiness parent", "classification": "parent-orchestration-ref", "portable": true, "secret": false, "presenceChangesBehavior": false },
     "CERTIFICATION_INTEGRATION_TRACKING_REF": { "owner": "integration-readiness parent", "classification": "parent-orchestration-ref", "portable": true, "secret": false, "presenceChangesBehavior": false },
     "CERTIFICATION_INVALIDATED_AT": { "owner": "certification state transition", "classification": "simulation-clock", "portable": true, "secret": false, "presenceChangesBehavior": true },
+    "CERTIFICATION_INVALIDATION_PLAN": { "owner": "explicit certification reconciliation parent", "classification": "sealed-plan-path", "portable": false, "secret": false, "presenceChangesBehavior": true },
     "CERTIFICATION_PHASE8_EVIDENCE_PATH": { "owner": "Phase 8 certification parent", "classification": "parent-output-path", "portable": false, "secret": false, "presenceChangesBehavior": false },
     "CERTIFICATION_QUALIFICATION_MODE": { "owner": "certification qualifier", "classification": "qualification-activation", "portable": true, "secret": false, "presenceChangesBehavior": true },
     "CERTIFICATION_RUNTIME_EVIDENCE_PATH": { "owner": "runtime-smoke certification parent", "classification": "parent-output-path", "portable": false, "secret": false, "presenceChangesBehavior": false },
@@ -62,6 +65,7 @@
     "CERTIFICATION_SOURCE_VALIDATION_FIXTURE_LOG": { "owner": "certification qualification", "classification": "qualification-fixture-output", "portable": false, "secret": false, "presenceChangesBehavior": true },
     "CERTIFICATION_STAGE_COMPLETED_AT": { "owner": "certification state transition", "classification": "simulation-clock", "portable": true, "secret": false, "presenceChangesBehavior": true },
     "CERTIFICATION_STAGE_STARTED_AT": { "owner": "certification state transition", "classification": "simulation-clock", "portable": true, "secret": false, "presenceChangesBehavior": true },
+    "CERTIFICATION_WORKTREE_ROOT": { "owner": "certification stage-worktree owner", "classification": "parent-physical-root", "portable": false, "secret": false, "presenceChangesBehavior": true },
     "PHASE8_BASE_URL": { "owner": "Phase 8 browser benchmark", "classification": "phase8-activation-input", "portable": true, "secret": false, "presenceChangesBehavior": true },
     "PHASE8_EXTERNAL_EVIDENCE_ROOT": { "owner": "Phase 8 evidence writer", "classification": "phase8-output-root", "portable": false, "secret": false, "presenceChangesBehavior": true },
     "PLAYWRIGHT_ADMIN_EMAIL": { "owner": "Gate A3 browser authentication fixture", "classification": "browser-authentication-identity", "portable": true, "secret": true, "presenceChangesBehavior": true },

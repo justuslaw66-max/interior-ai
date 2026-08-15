@@ -1,12 +1,14 @@
 import { spawnSync } from "node:child_process";
 import {
   chmodSync,
+  cpSync,
   existsSync,
   mkdirSync,
   mkdtempSync,
   lstatSync,
   readFileSync,
   realpathSync,
+  renameSync,
   rmSync,
   symlinkSync,
   writeFileSync,
@@ -35,9 +37,15 @@ import {
   completeCertificationStage,
   readCertificationState,
   startCertificationStage,
+  updateCertificationWorktreeBinding,
   validateCertificationState,
   writeCertificationState,
 } from "./production-certification-state.mjs";
+import {
+  CERTIFICATION_WORKTREE_ROLES,
+  certificationWorktreeIssues,
+  refreshCertificationStageWorktreeBinding,
+} from "./production-certification-worktrees.mjs";
 import {
   captureArtifactSnapshot,
   measureFinalContinuity,
@@ -158,7 +166,11 @@ function writeMiniatureArtifact(root) {
 
 function initializeFixture(repositoryRoot, fixtureRoot) {
   const npmVersion = run("npm", ["--version"], repositoryRoot);
-  write(fixtureRoot, ".gitignore", ".next/\n.local/\nnode_modules/\n");
+  write(
+    fixtureRoot,
+    ".gitignore",
+    ".env\n.env.local\n.next/\n.local/\n.vercel/\nnode_modules/\ntest-results/\nplaywright-report/\nfinal-component\n",
+  );
   write(
     fixtureRoot,
     "package.json",
@@ -454,14 +466,40 @@ function browserEvidence(state, owner, gate, reportSha256) {
   };
 }
 
-export async function runProductionCertificationSimulation() {
+export async function runProductionCertificationSimulation({
+  cleanupWorktrees = true,
+} = {}) {
   const repositoryRoot = process.cwd();
   const simulationRoot = mkdtempSync(path.join(tmpdir(), "production-certification-v1-"));
-  const fixtureRoot = path.join(simulationRoot, "source");
+  const canonicalRoot = path.join(simulationRoot, "source");
+  let fixtureRoot = canonicalRoot;
   const evidenceRoot = path.join(simulationRoot, "evidence");
+  const worktreeOwnerRoot = path.join(simulationRoot, "stage-worktrees");
   mkdirSync(fixtureRoot, { recursive: true, mode: 0o700 });
   mkdirSync(evidenceRoot, { recursive: true, mode: 0o700 });
+  mkdirSync(worktreeOwnerRoot, { recursive: true, mode: 0o700 });
   const identity = initializeFixture(repositoryRoot, fixtureRoot);
+  const externalFinalComponent = path.join(simulationRoot, "external-final-component");
+  write(fixtureRoot, ".env", "canonical-user-env\n");
+  write(fixtureRoot, ".env.local", "canonical-user-local-env\n");
+  write(fixtureRoot, ".local/user-evidence.txt", "canonical-user-evidence\n");
+  write(fixtureRoot, ".vercel/project.json", "{\"user\":true}\n");
+  write(fixtureRoot, "test-results/user-output.txt", "canonical-user-output\n");
+  write(externalFinalComponent, "component.txt", "external-user-component\n");
+  symlinkSync(externalFinalComponent, path.join(fixtureRoot, "final-component"));
+  const canonicalIgnoredSnapshot = Object.fromEntries(
+    [
+      ".env",
+      ".env.local",
+      ".local/user-evidence.txt",
+      ".vercel/project.json",
+      "test-results/user-output.txt",
+    ].map((relativePath) => [
+      relativePath,
+      sha256Bytes(readFileSync(path.join(fixtureRoot, relativePath))),
+    ]),
+  );
+  const finalComponentTarget = realpathSync(path.join(fixtureRoot, "final-component"));
   const environment = simulationEnvironment(identity);
   const nextTimestamp = stateClock();
   const statePath = path.join(evidenceRoot, "certification-state.json");
@@ -477,6 +515,7 @@ export async function runProductionCertificationSimulation() {
     PRODUCTION_CERTIFICATION_ID: SIMULATION_ID,
     PRODUCTION_CERTIFICATION_STATE: statePath,
     CERTIFICATION_EVIDENCE_ROOT: evidenceRoot,
+    CERTIFICATION_WORKTREE_ROOT: worktreeOwnerRoot,
     PHASE8_EXTERNAL_EVIDENCE_ROOT: evidenceRoot,
     CERTIFICATION_QUALIFICATION_MODE: "1",
     CERTIFICATION_CREATED_AT: nextTimestamp(),
@@ -508,6 +547,30 @@ export async function runProductionCertificationSimulation() {
     fixtureRoot,
     doctorEnvironment,
   );
+  const sourceWorktreeRoot = path.join(
+    worktreeOwnerRoot,
+    SIMULATION_ID,
+    "source-validation",
+  );
+  const artifactWorktreeRoot = path.join(
+    worktreeOwnerRoot,
+    SIMULATION_ID,
+    "final-artifact",
+  );
+  const developmentWorktreeRoot = path.join(
+    worktreeOwnerRoot,
+    SIMULATION_ID,
+    "development-browser",
+  );
+  for (const root of [
+    sourceWorktreeRoot,
+    artifactWorktreeRoot,
+    developmentWorktreeRoot,
+  ]) {
+    if (!existsSync(root) || realpathSync(root) === realpathSync(canonicalRoot)) {
+      throw new Error("simulation did not create three distinct detached stage worktrees");
+    }
+  }
   const invalidDoctorEnvironment = {
     ...doctorEnvironment,
     CERTIFICATION_STAGE_STARTED_AT: nextTimestamp(),
@@ -518,7 +581,7 @@ export async function runProductionCertificationSimulation() {
     process.execPath,
     ["scripts/production-certification.mjs", "doctor"],
     {
-      cwd: fixtureRoot,
+      cwd: canonicalRoot,
       env: invalidDoctorEnvironment,
       encoding: "utf8",
     },
@@ -535,12 +598,16 @@ export async function runProductionCertificationSimulation() {
     invalidDoctorResult?.valid !== false ||
     invalidDoctorResult?.seal?.algorithm !== "sha256"
   ) {
-    throw new Error("invalid doctor CLI did not emit sealed JSON and fail nonzero");
+    throw new Error(
+      `invalid doctor CLI did not emit sealed JSON and fail nonzero: ${String(
+        invalidDoctor.stderr || invalidDoctor.stdout,
+      ).trim()}`,
+    );
   }
   run(
     process.execPath,
     ["scripts/production-certification.mjs", "doctor"],
-    fixtureRoot,
+    canonicalRoot,
     {
       ...doctorEnvironment,
       CERTIFICATION_STAGE_STARTED_AT: nextTimestamp(),
@@ -553,6 +620,11 @@ export async function runProductionCertificationSimulation() {
   const failedSourceCheck = sourceChecks[failedSourceCheckIndex];
   const sourceFailureRoot = path.join(simulationRoot, "source-failure-evidence");
   mkdirSync(sourceFailureRoot, { mode: 0o700 });
+  cpSync(
+    path.join(evidenceRoot, "worktrees"),
+    path.join(sourceFailureRoot, "worktrees"),
+    { recursive: true },
+  );
   const failedSourceStatePath = path.join(
     sourceFailureRoot,
     "certification-state.json",
@@ -639,6 +711,11 @@ export async function runProductionCertificationSimulation() {
   }
   const sourceDriftRoot = path.join(simulationRoot, "source-drift-evidence");
   mkdirSync(sourceDriftRoot, { mode: 0o700 });
+  cpSync(
+    path.join(evidenceRoot, "worktrees"),
+    path.join(sourceDriftRoot, "worktrees"),
+    { recursive: true },
+  );
   const driftDoctorPath = path.join(sourceDriftRoot, doctorDescriptor.path);
   mkdirSync(path.dirname(driftDoctorPath), { recursive: true, mode: 0o700 });
   writeFileSync(
@@ -653,7 +730,7 @@ export async function runProductionCertificationSimulation() {
   writeCertificationState(sourceDriftStatePath, state);
   const sourceDriftCheck = sourceChecks[1];
   const dirtySourcePath = path.join(
-    fixtureRoot,
+    sourceWorktreeRoot,
     ".certification-source-validation-dirty-fixture",
   );
   const sourceDriftChild = spawnSync(
@@ -936,6 +1013,7 @@ export async function runProductionCertificationSimulation() {
   ) {
     throw new Error("doctor non-consuming retry attempts were not physically retained");
   }
+  fixtureRoot = artifactWorktreeRoot;
   writeMiniatureArtifact(fixtureRoot);
   const production = JSON.parse(
     run(
@@ -1011,6 +1089,17 @@ export async function runProductionCertificationSimulation() {
     },
     },
   });
+  state = updateCertificationWorktreeBinding(state, {
+    role: "final-artifact",
+    binding: refreshCertificationStageWorktreeBinding({
+      state,
+      evidenceRoot,
+      canonicalRoot,
+      role: "final-artifact",
+      phase: "active",
+    }),
+  });
+  writeCertificationState(statePath, state);
   const archiveEnvironment = {
     ...process.env,
     ...environment,
@@ -1371,19 +1460,35 @@ export async function runProductionCertificationSimulation() {
     consumedSubstantiveGate: true,
     },
   });
+  write(
+    developmentWorktreeRoot,
+    "node_modules/.package-lock.json",
+    readFileSync(path.join(developmentWorktreeRoot, "package-lock.json")),
+  );
   state = startSimulationStage({
     fixtureRoot,
     evidenceRoot,
     statePath,
     payload: { stage: "browser-owners", startedAt: nextTimestamp() },
   });
-  const requiredManifest = JSON.parse(
-    readFileSync(path.join(fixtureRoot, "scripts/required-test-manifest.json"), "utf8"),
-  );
   const browserDescriptors = {};
   const browserHashes = {};
+  const browserExecutionRoots = {};
   for (const owner of REQUIRED_BROWSER_OWNERS) {
-    const gate = requiredManifest.gates.find((entry) => entry.id === owner.gateId);
+    const ownerExecutionRoot = new Set(["cart", "retailer"]).has(owner.id)
+      ? developmentWorktreeRoot
+      : fixtureRoot;
+    const ownerManifest = JSON.parse(
+      readFileSync(
+        path.join(ownerExecutionRoot, "scripts/required-test-manifest.json"),
+        "utf8",
+      ),
+    );
+    const gate = ownerManifest.gates.find((entry) => entry.id === owner.gateId);
+    browserExecutionRoots[owner.id] =
+      ownerExecutionRoot === developmentWorktreeRoot
+        ? "development-browser"
+        : "final-artifact";
     const reportDescriptor = writeEvidence(
       evidenceRoot,
       `browser-owners/${owner.id}/playwright-report.json`,
@@ -1440,6 +1545,24 @@ export async function runProductionCertificationSimulation() {
       },
       consumedSubstantiveGate: true,
     },
+  });
+  state = updateCertificationWorktreeBinding(state, {
+    role: "development-browser",
+    binding: refreshCertificationStageWorktreeBinding({
+      state,
+      evidenceRoot,
+      canonicalRoot,
+      role: "development-browser",
+      phase: "active",
+    }),
+  });
+  writeCertificationState(statePath, state);
+  writeEvidence(evidenceRoot, "simulation/worktree-execution.json", {
+    schema: "interior-ai.production-certification-worktree-simulation.v1",
+    sourceValidation: "source-validation",
+    artifactLifecycle: "final-artifact",
+    browserOwners: browserExecutionRoots,
+    quarantineCreated: false,
   });
   state = startSimulationStage({
     fixtureRoot,
@@ -1500,7 +1623,7 @@ export async function runProductionCertificationSimulation() {
     process.execPath,
     ["scripts/production-certification.mjs", "continuity"],
     {
-      cwd: fixtureRoot,
+      cwd: canonicalRoot,
       encoding: "utf8",
       env: {
         ...doctorEnvironment,
@@ -1519,7 +1642,9 @@ export async function runProductionCertificationSimulation() {
     expectedCandidate: failedContinuityState.candidate,
     expectedHarnessSourceSha256:
       failedContinuityState.harness.sourceSha256,
-    repositoryRoot: fixtureRoot,
+    repositoryRoot: canonicalRoot,
+    sourceValidationRoot: sourceWorktreeRoot,
+    artifactRoot: fixtureRoot,
   });
   const continuityFailureRetryRetained =
     failedContinuity.status !== 0 &&
@@ -1533,7 +1658,7 @@ export async function runProductionCertificationSimulation() {
   run(
     process.execPath,
     ["scripts/production-certification.mjs", "continuity"],
-    fixtureRoot,
+    canonicalRoot,
     {
       ...doctorEnvironment,
       CERTIFICATION_STAGE_STARTED_AT: nextTimestamp(),
@@ -1543,7 +1668,22 @@ export async function runProductionCertificationSimulation() {
   run(
     process.execPath,
     ["scripts/production-certification.mjs", "state:validate"],
-    fixtureRoot,
+    canonicalRoot,
+    {
+      ...doctorEnvironment,
+      CERTIFICATION_STAGE_STARTED_AT: nextTimestamp(),
+      CERTIFICATION_STAGE_COMPLETED_AT: nextTimestamp(),
+      CERTIFICATION_INTEGRATION_BRANCH_REF: "refs/heads/integration",
+      CERTIFICATION_INTEGRATION_TRACKING_REF: "refs/remotes/origin/integration",
+      CERTIFICATION_EXPECTED_INTEGRATION_COMMIT_SHA:
+        identity.integrationCommitSha,
+      CERTIFICATION_EXPECTED_INTEGRATION_TREE_SHA: identity.integrationTreeSha,
+    },
+  );
+  run(
+    process.execPath,
+    ["scripts/production-certification.mjs", "integration-ready"],
+    canonicalRoot,
     {
       ...doctorEnvironment,
       CERTIFICATION_STAGE_STARTED_AT: nextTimestamp(),
@@ -1570,7 +1710,9 @@ export async function runProductionCertificationSimulation() {
     evidenceRoot,
     expectedCandidate: state.candidate,
     expectedHarnessSourceSha256: state.harness.sourceSha256,
-    repositoryRoot: fixtureRoot,
+    repositoryRoot: canonicalRoot,
+    sourceValidationRoot: sourceWorktreeRoot,
+    artifactRoot: fixtureRoot,
   });
   if (!validation.valid) throw new Error(validation.issues.join("; "));
   const continuityDescriptor = state.evidenceFiles.continuity;
@@ -1597,6 +1739,7 @@ export async function runProductionCertificationSimulation() {
   const originalArtifactBytes = readFileSync(mutableArtifactPath);
   const tamperStatePath = path.join(evidenceRoot, "tamper-certification-state.json");
   writeCertificationState(tamperStatePath, state);
+  const tamperStateBytesBefore = readFileSync(tamperStatePath);
   writeFileSync(mutableArtifactPath, "mutated simulation artifact\n");
   const physicalTamper = measureFinalContinuity({
     repositoryRoot: fixtureRoot,
@@ -1609,7 +1752,7 @@ export async function runProductionCertificationSimulation() {
     process.execPath,
     ["scripts/production-certification.mjs", "state:validate"],
     {
-      cwd: fixtureRoot,
+      cwd: canonicalRoot,
       encoding: "utf8",
       env: {
         ...doctorEnvironment,
@@ -1618,6 +1761,33 @@ export async function runProductionCertificationSimulation() {
       },
     },
   );
+  const tamperStateBytesAfterValidation = readFileSync(tamperStatePath);
+  let tamperValidationReport = null;
+  try {
+    tamperValidationReport = JSON.parse(tamperValidation.stdout.trim());
+  } catch {
+    // The assertion below reports a single transactional-validation failure.
+  }
+  const tamperPlanPath = path.join(evidenceRoot, "tamper-invalidation-plan.json");
+  if (tamperValidationReport?.invalidationPlan) {
+    writeFileSync(
+      tamperPlanPath,
+      canonicalJsonBytes(tamperValidationReport.invalidationPlan),
+      { flag: "wx", mode: 0o600 },
+    );
+    run(
+      process.execPath,
+      ["scripts/production-certification.mjs", "state:reconcile"],
+      canonicalRoot,
+      {
+        ...doctorEnvironment,
+        PRODUCTION_CERTIFICATION_STATE: tamperStatePath,
+        CERTIFICATION_INVALIDATION_PLAN: tamperPlanPath,
+        CERTIFICATION_EXPECTED_STATE_SHA256: sha256Bytes(tamperStateBytesBefore),
+        CERTIFICATION_INVALIDATED_AT: "2026-08-14T00:30:00.000Z",
+      },
+    );
+  }
   writeFileSync(mutableArtifactPath, originalArtifactBytes);
   const tamperedState = readCertificationState(tamperStatePath);
   rmSync(tamperStatePath);
@@ -1626,6 +1796,7 @@ export async function runProductionCertificationSimulation() {
       /no longer matches snapshot|physical artifact identity contradicts/.test(issue),
     ) &&
     tamperValidation.status !== 0 &&
+    tamperStateBytesBefore.equals(tamperStateBytesAfterValidation) &&
     tamperedState.stages.build.status === "invalidated" &&
     tamperedState.stages.continuity.status === "invalidated" &&
     tamperedState.stages["integration-ready"].status === "invalidated";
@@ -1640,6 +1811,79 @@ export async function runProductionCertificationSimulation() {
       })}`,
     );
   }
+  const worktreeTamperState = readCertificationState(statePath);
+  const roleAliasState = structuredClone(worktreeTamperState);
+  roleAliasState.worktrees.roles["development-browser"] = structuredClone(
+    roleAliasState.worktrees.roles["source-validation"],
+  );
+  roleAliasState.worktrees.roles["development-browser"].role =
+    "development-browser";
+  const roleAliasingRejected = certificationWorktreeIssues({
+    state: roleAliasState,
+    evidenceRoot,
+    canonicalRoot,
+  }).some((issue) => /cross-role|alias/.test(issue));
+
+  write(sourceWorktreeRoot, ".env", "copied-simulation-input\n");
+  const copiedIgnoredWorktreeInputRejected = certificationWorktreeIssues({
+    state: worktreeTamperState,
+    evidenceRoot,
+    canonicalRoot,
+  }).some((issue) => /ignored influential paths/.test(issue));
+  rmSync(path.join(sourceWorktreeRoot, ".env"));
+
+  git(sourceWorktreeRoot, ["checkout", "--detach", identity.parentSha]);
+  const wrongWorktreeIdentityRejected = certificationWorktreeIssues({
+    state: worktreeTamperState,
+    evidenceRoot,
+    canonicalRoot,
+  }).some((issue) => /exact candidate commit\/tree|binding changed/.test(issue));
+  git(sourceWorktreeRoot, ["checkout", "--detach", identity.commitSha]);
+
+  const temporarilyRemovedDevelopmentRoot = `${developmentWorktreeRoot}-premature`;
+  renameSync(developmentWorktreeRoot, temporarilyRemovedDevelopmentRoot);
+  const prematureWorktreeRemovalRejected = certificationWorktreeIssues({
+    state: worktreeTamperState,
+    evidenceRoot,
+    canonicalRoot,
+  }).some((issue) => /development-browser is invalid|missing|ENOENT/.test(issue));
+  renameSync(temporarilyRemovedDevelopmentRoot, developmentWorktreeRoot);
+
+  if (
+    !roleAliasingRejected ||
+    !copiedIgnoredWorktreeInputRejected ||
+    !wrongWorktreeIdentityRejected ||
+    !prematureWorktreeRemovalRejected
+  ) {
+    throw new Error("simulation stage-worktree tamper matrix did not fail closed");
+  }
+  for (const [relativePath, digest] of Object.entries(canonicalIgnoredSnapshot)) {
+    if (sha256Bytes(readFileSync(path.join(canonicalRoot, relativePath))) !== digest) {
+      throw new Error(`canonical ignored artifact changed during simulation: ${relativePath}`);
+    }
+  }
+  if (realpathSync(path.join(canonicalRoot, "final-component")) !== finalComponentTarget) {
+    throw new Error("canonical external-target final-component symlink changed");
+  }
+  if (cleanupWorktrees) {
+    run(
+      process.execPath,
+      ["scripts/production-certification.mjs", "worktrees:cleanup"],
+      canonicalRoot,
+      doctorEnvironment,
+    );
+    state = readCertificationState(statePath);
+    if (
+      CERTIFICATION_WORKTREE_ROLES.some(
+        (role) => state.worktrees.roles[role].cleanupStatus !== "removed",
+      ) ||
+      [sourceWorktreeRoot, artifactWorktreeRoot, developmentWorktreeRoot].some(
+        (root) => existsSync(root),
+      )
+    ) {
+      throw new Error("simulation cleanup did not remove only the three task worktrees");
+    }
+  }
   return {
     schema: "interior-ai.production-certification-simulation-result.v1",
     simulation: true,
@@ -1651,6 +1895,11 @@ export async function runProductionCertificationSimulation() {
     archiveDeterministic: true,
     sourceValidationCheckCount: sourceCheckIds.length,
     lifecycleSnapshotCount: 6,
+    worktreeRoles: [...CERTIFICATION_WORKTREE_ROLES],
+    canonicalIgnoredArtifactsUnchanged: true,
+    externalFinalComponentSymlinkUnchanged: true,
+    quarantineCreated: false,
+    worktreesCleaned: cleanupWorktrees,
     tamperCases: {
       sourceCheckFailurePreventsBuild: failedSourcePreventedBuild,
       failedSourceEvidenceRetained: true,
@@ -1666,6 +1915,10 @@ export async function runProductionCertificationSimulation() {
       ambientFeatureFlagLeakageRejected,
       sourceFixtureLeakIntoBuildRuntimeRejected,
       importOrderDriftRejected,
+      roleAliasingRejected,
+      copiedIgnoredWorktreeInputRejected,
+      wrongWorktreeIdentityRejected,
+      prematureWorktreeRemovalRejected,
     },
     simulationRoot,
     stateSha256: sha256Bytes(readFileSync(statePath)),

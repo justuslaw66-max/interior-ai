@@ -6,8 +6,8 @@
       "root": "scripts",
       "filePattern": "^test-.*\\.(?:js|mjs|ts)$",
       "classification": "risk-triggered",
-    "expectedFileCount": 259,
-    "expectedPathSha256": "65b0e16fbbd9193ea718f0f443aacca2a7d25c581b7ed5347e25c2ad5d720323"
+    "expectedFileCount": 260,
+    "expectedPathSha256": "1ac122ef25836297957a815746b4315c8e7f86d31f5375b0f8fcf9d4db60ab7a"
     },
     {
       "id": "browser-specs",
@@ -115,7 +115,7 @@
       "blocking": true,
       "command": "npm run test:production-artifact-evidence",
       "packageScript": "test:production-artifact-evidence",
-      "packageClosure": { "expectedScriptCount": 1, "expectedSha256": "c6e9c540bcbe705e5105c967e21c8cb8efbee46e088f1ab876c7f643ff3a0d16" },
+      "packageClosure": { "expectedScriptCount": 1, "expectedSha256": "2c815b5cb950006b1238b97ebb6b8fe56673e8b53055283f142718a927d696f7" },
       "runner": "node",
       "requiredSources": [
         "playwright.config.ts",
@@ -133,9 +133,12 @@
         "scripts/production-certification.mjs",
         "scripts/production-certification-simulation.mjs",
         "scripts/production-certification-stage-environment.mjs",
+        "scripts/production-certification-worktrees.mjs",
         "scripts/production-certification-regressions.json",
         "docs/qa/production-certification-contract.v1.json",
         "docs/qa/production-certification-stage-environment.v2.json",
+        "docs/qa/production-certification-harness-v1.md",
+        "docs/qa/production-certification-state-worktree-remediation.md",
         "scripts/certification-playwright-start-reporter.mjs",
         "scripts/benchmark-phase8-projects.ts",
         "scripts/phase8-project-benchmark-contract.ts",
@@ -147,6 +150,7 @@
         "scripts/runtime-smoke-phase-budget.mjs",
         "scripts/test-production-artifact-evidence.mjs",
         "scripts/test-production-certification.mjs",
+        "scripts/test-production-certification-state-worktrees.mjs",
         "playwright.floor-plan-upload.config.ts",
         "playwright.pro-visual.config.ts",
         "playwright.guest-save-overlay.config.ts",
@@ -176,11 +180,16 @@
           "source": "scripts/test-production-artifact-evidence.mjs",
           "marker": "actual staged archive-preflight CLI executes the physical staged verifier"
         },
-        {
-          "id": "artifact.production-certification-harness-v1",
-          "source": "scripts/test-production-certification.mjs",
-          "marker": "Production certification harness tests passed."
-        },
+      {
+        "id": "artifact.production-certification-harness-v1",
+        "source": "scripts/test-production-certification.mjs",
+        "marker": "Production certification harness tests passed."
+      },
+      {
+        "id": "artifact.production-certification-transactional-state-worktrees",
+        "source": "scripts/test-production-certification-state-worktrees.mjs",
+        "marker": "production certification transactional state/worktree isolation tests passed"
+      },
         {
           "id": "artifact.certification-source-stage-environment-isolation",
           "source": "scripts/test-production-artifact-evidence.mjs",

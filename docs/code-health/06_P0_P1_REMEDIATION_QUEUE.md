@@ -1,5 +1,39 @@
 # P0/P1 remediation queue
 
+## Transactional certification state and pristine worktrees — 2026-08-15
+
+- **Classification:** `CERTIFICATION_STATE_PRECONDITION_MUTATION_DEFECT` and
+  `CERTIFICATION_STAGE_WORKTREE_ISOLATION_DEFECT`. The retained historical
+  attempt is failed/invalidated and must not be repaired or reused.
+- **State correction:** validate complete invocation context before state read;
+  use sealed state as canonical identity; make validation/resume/build
+  eligibility read-only; emit sealed discrepancy/plan records; require an
+  explicit reconciliation owner plus exact state hash for atomic invalidation.
+  Every state write holds an exclusive sidecar lock and compares the expected
+  current byte hash before atomic replacement. Precondition failures remain
+  `consumed=false` and byte-identical; concurrent/stale writers fail closed.
+- **Execution correction:** create distinct detached `source-validation`,
+  `final-artifact`, and `development-browser` worktrees at the exact candidate.
+  Bind physical/dependency/lifecycle identity, reject canonical/alias/symlink/
+  wrong/cross-certification roots and ignored influence, strip `NODE_PATH` and
+  `NODE_OPTIONS` from stage children and dependency installers, retain roots
+  through continuity, and clean up only task-owned roots explicitly.
+- **Canonical checkout:** its 1,305 ignored user paths, aggregate
+  `8ad720847565da6d586f2881e674d51100b70da27335eedee4deee8814fb50af`, and
+  external-target symlink are non-inputs. No quarantine, restoration, copying,
+  ignored-file deletion, or `git clean` belongs to certification.
+- **Proof/status:** the new transactional/worktree matrix, real Git-worktree
+  fixtures, doctor, simulation, historical regressions, qualification, and
+  independent read-only review own closure. The pre-commit dirty-tree qualifier
+  returned `NOT_QUALIFIED_SOURCE_CONTRACT_DEFECT`; the final handoff records
+  the sole post-commit qualifier result from the exact clean commit. Real
+  exact-head certification, integration, and the final CH-0015 closure audit
+  remain pending.
+- **Scope/rollback:** certification infrastructure and documentation only; no
+  product/UI, Floor Plan, telemetry, NFT, benchmark, dependency/lockfile,
+  database/migration/data, workflow, deployment, or real-gate behavior. Revert
+  the single focused commit to roll back; this restores the known blockers.
+
 ## Harness v1 source-validation and measured continuity — 2026-08-14
 
 - **Classification:** `SOURCE_VALIDATION_STAGE_BYPASS_DEFECT` and
