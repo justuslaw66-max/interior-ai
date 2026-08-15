@@ -25,6 +25,7 @@ import process from "node:process";
 import { resolveRetainedExternalEvidenceFile } from "./playwright-report-path.mjs";
 import { deriveProductionVerifierClosure } from "./production-verifier-closure.mjs";
 import { projectCertificationChildEnvironment } from "./production-certification-stage-environment.mjs";
+import { certificationDependencyInstallationEnvironment } from "./production-certification-dependencies.mjs";
 
 const EXECUTING_REPOSITORY_ROOT = path.resolve(path.dirname(import.meta.filename), "..");
 export const PRODUCTION_EVIDENCE_VERIFIER_SOURCE_PATHS = Object.freeze(
@@ -1317,6 +1318,10 @@ function journalTimeline(journal) {
     ["cycleStartedAt", journal.events?.cycleStartedAt],
     ["installStartedAt", journal.events?.dependencyInstall?.startedAt],
     ["installCompletedAt", journal.events?.dependencyInstall?.completedAt],
+    ...((journal.owner?.processHandoffs ?? []).map((handoff, index) => [
+      `processHandoff${index + 1}At`,
+      handoff.completedAt,
+    ])),
     ["generatedSourceCheckStartedAt", journal.events?.generatedSourceCheck?.startedAt],
     ["generatedSourceCheckCompletedAt", journal.events?.generatedSourceCheck?.completedAt],
     ["buildStartedAt", journal.events?.build?.startedAt],
@@ -1392,7 +1397,7 @@ export function validateProductionEvidenceSemanticJournal(journal) {
   if (!exactKeys(journal.source, ["commitSha", "treeSha"]) || !/^[0-9a-f]{40,64}$/i.test(journal.source?.commitSha ?? "") || !/^[0-9a-f]{40,64}$/i.test(journal.source?.treeSha ?? "")) {
     issues.push("semantic event journal source binding is malformed");
   }
-  if (!exactKeys(journal.owner, ["process", "worktreeIdentitySha256", "wrapper"]) || !exactKeys(journal.owner?.process, ["pid", "parentPid"]) || !Number.isSafeInteger(journal.owner?.process?.pid) || journal.owner.process.pid <= 0 || !Number.isSafeInteger(journal.owner.process.parentPid) || journal.owner.process.parentPid < 0 || !/^[0-9a-f]{64}$/.test(journal.owner?.worktreeIdentitySha256 ?? "") || !exactKeys(journal.owner?.wrapper, ["version", "path", "sha256"]) || journal.owner.wrapper.version !== PRODUCTION_EVIDENCE_WRAPPER_VERSION || journal.owner.wrapper.path !== "scripts/production-artifact-evidence.mjs" || !/^[0-9a-f]{64}$/.test(journal.owner.wrapper.sha256 ?? "")) {
+  if (!exactKeys(journal.owner, ["process", "processHandoffs", "worktreeIdentitySha256", "wrapper"]) || !exactKeys(journal.owner?.process, ["pid", "parentPid"]) || !Number.isSafeInteger(journal.owner?.process?.pid) || journal.owner.process.pid <= 0 || !Number.isSafeInteger(journal.owner.process.parentPid) || journal.owner.process.parentPid < 0 || !Array.isArray(journal.owner?.processHandoffs) || journal.owner.processHandoffs.some((handoff) => !exactKeys(handoff, ["from", "to", "boundary", "completedAt"]) || !exactKeys(handoff.from, ["pid", "parentPid"]) || !exactKeys(handoff.to, ["pid", "parentPid"]) || !Number.isSafeInteger(handoff.from.pid) || handoff.from.pid <= 0 || !Number.isSafeInteger(handoff.from.parentPid) || handoff.from.parentPid < 0 || !Number.isSafeInteger(handoff.to.pid) || handoff.to.pid <= 0 || !Number.isSafeInteger(handoff.to.parentPid) || handoff.to.parentPid < 0 || handoff.boundary !== "post-dependency-install-pre-generated-source" || !canonicalUtcTimestamp(handoff.completedAt)) || (journal.owner.processHandoffs.length > 0 && JSON.stringify(journal.owner.processHandoffs.at(-1).to) !== JSON.stringify(journal.owner.process)) || !/^[0-9a-f]{64}$/.test(journal.owner?.worktreeIdentitySha256 ?? "") || !exactKeys(journal.owner?.wrapper, ["version", "path", "sha256"]) || journal.owner.wrapper.version !== PRODUCTION_EVIDENCE_WRAPPER_VERSION || journal.owner.wrapper.path !== "scripts/production-artifact-evidence.mjs" || !/^[0-9a-f]{64}$/.test(journal.owner.wrapper.sha256 ?? "")) {
     issues.push("semantic event journal owner binding is malformed");
   }
   if (!exactKeys(journal.commands, ["dependencyInstall", "generatedSourceCheck", "build"]) || journal.commands.dependencyInstall !== DEPENDENCY_INSTALL_COMMAND || journal.commands.generatedSourceCheck !== GENERATED_SOURCE_CHECK_COMMAND || journal.commands.build !== BUILD_COMMAND) {
@@ -1426,6 +1431,19 @@ export function validateProductionEvidenceSemanticJournal(journal) {
   }
   if (journal.events?.generatedSourceCheck?.status !== "pending" && journal.events?.dependencyInstall?.status !== "succeeded") {
     issues.push("generated-source check started before dependency installation succeeded");
+  }
+  const handoff = journal.owner?.processHandoffs?.[0];
+  if (
+    (journal.owner?.processHandoffs?.length ?? 0) > 1 ||
+    (handoff &&
+      (journal.events?.dependencyInstall?.status !== "succeeded" ||
+        Date.parse(handoff.completedAt) <
+          Date.parse(journal.events.dependencyInstall.completedAt) ||
+        (canonicalUtcTimestamp(journal.events?.generatedSourceCheck?.startedAt) &&
+          Date.parse(handoff.completedAt) >
+            Date.parse(journal.events.generatedSourceCheck.startedAt))))
+  ) {
+    issues.push("semantic process handoff boundary is malformed or out of order");
   }
   if (journal.events?.build?.status !== "pending" && journal.events?.generatedSourceCheck?.status !== "succeeded") {
     issues.push("build started before generated-source verification succeeded");
@@ -1507,6 +1525,44 @@ function updateSemanticJournal({
   return updated;
 }
 
+export function handoffProductionEvidenceSemanticJournal({
+  repositoryRoot,
+  journalPath = DEFAULT_JOURNAL_PATH,
+  expectedRunNonce,
+  expectedOwnerProcess,
+  nextOwnerProcess = { pid: process.pid, parentPid: process.ppid },
+  clock = () => new Date().toISOString(),
+}) {
+  return updateSemanticJournal({
+    repositoryRoot,
+    journalPath,
+    expectedRunNonce,
+    expectedOwnerProcess,
+    mutate(journal) {
+      if (
+        journal.owner.processHandoffs.length !== 0 ||
+        journal.events.dependencyInstall.status !== "succeeded" ||
+        journal.events.generatedSourceCheck.status !== "pending" ||
+        journal.events.build.status !== "pending" ||
+        journal.events.artifactInventory.status !== "pending" ||
+        journal.manifest.status !== "pending" ||
+        JSON.stringify(expectedOwnerProcess) === JSON.stringify(nextOwnerProcess)
+      ) {
+        throw new Error(
+          "semantic process handoff requires one completed install and a distinct pristine completion owner",
+        );
+      }
+      journal.owner.processHandoffs.push({
+        from: structuredClone(expectedOwnerProcess),
+        to: structuredClone(nextOwnerProcess),
+        boundary: "post-dependency-install-pre-generated-source",
+        completedAt: clock(),
+      });
+      journal.owner.process = structuredClone(nextOwnerProcess);
+    },
+  });
+}
+
 export async function initializeProductionEvidenceSemanticJournal({
   repositoryRoot,
   journalPath = DEFAULT_JOURNAL_PATH,
@@ -1530,6 +1586,7 @@ export async function initializeProductionEvidenceSemanticJournal({
     source: { commitSha: source.commitSha, treeSha: source.treeSha },
     owner: {
       process: processIdentity,
+      processHandoffs: [],
       worktreeIdentitySha256: worktreeIdentitySha256(repositoryRoot),
       wrapper: await productionEvidenceWrapperIdentity(repositoryRoot),
     },
@@ -1570,10 +1627,10 @@ export function executeProductionEvidenceChild({
   action,
   dispatch,
   clock = () => new Date().toISOString(),
+  processIdentity = { pid: process.pid, parentPid: process.ppid },
 }) {
   const eventKey = SEMANTIC_CHILD_ACTIONS[action];
   if (!eventKey) throw new Error(`unknown semantic child action: ${action}`);
-  const processIdentity = { pid: process.pid, parentPid: process.ppid };
   updateSemanticJournal({
     repositoryRoot,
     journalPath,
@@ -2060,6 +2117,7 @@ export async function createProductionEvidenceManifest(options) {
       semanticJournalSchema: journal.schema,
       owner: {
         process: structuredClone(journal.owner.process),
+        processHandoffs: structuredClone(journal.owner.processHandoffs),
         wrapper: structuredClone(journal.owner.wrapper),
       },
       commands: structuredClone(journal.commands),
@@ -3041,12 +3099,21 @@ export async function validateProductionEvidence({
     !exactKeys(execution, ["runNonce", "semanticJournalSchema", "owner", "commands"]) ||
     !/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(execution?.runNonce ?? "") ||
     execution?.semanticJournalSchema !== PRODUCTION_EVIDENCE_JOURNAL_SCHEMA ||
-    !exactKeys(execution?.owner, ["process", "wrapper"]) ||
+    !exactKeys(execution?.owner, ["process", "processHandoffs", "wrapper"]) ||
     !exactKeys(execution?.owner?.process, ["pid", "parentPid"]) ||
     !Number.isSafeInteger(execution?.owner?.process?.pid) ||
     execution.owner.process.pid <= 0 ||
     !Number.isSafeInteger(execution.owner.process.parentPid) ||
     execution.owner.process.parentPid < 0 ||
+    !Array.isArray(execution.owner.processHandoffs) ||
+    execution.owner.processHandoffs.some(
+      (handoff) =>
+        !exactKeys(handoff, ["from", "to", "boundary", "completedAt"]) ||
+        !exactKeys(handoff.from, ["pid", "parentPid"]) ||
+        !exactKeys(handoff.to, ["pid", "parentPid"]) ||
+        handoff.boundary !== "post-dependency-install-pre-generated-source" ||
+        !canonicalUtcTimestamp(handoff.completedAt),
+    ) ||
     !exactKeys(execution?.owner?.wrapper, ["version", "path", "sha256"]) ||
     execution.owner.wrapper.version !== PRODUCTION_EVIDENCE_WRAPPER_VERSION ||
     execution.owner.wrapper.path !== "scripts/production-artifact-evidence.mjs" ||
@@ -3715,7 +3782,7 @@ export function resolveProductionEvidenceToolchain({
   return { nodeVersion, npmVersion: actualNpmVersion };
 }
 
-async function buildEvidence(repositoryRoot, manifestPath) {
+function productionBuildExecutionContext(repositoryRoot) {
   const candidateIdentifier = process.env.PRODUCTION_EVIDENCE_CANDIDATE_ID?.trim();
   const applicationEnvironment = process.env.APP_ENV?.trim();
   const catalogStrictValidation = process.env.CATALOG_STRICT_VALIDATION === "true";
@@ -3746,14 +3813,84 @@ async function buildEvidence(repositoryRoot, manifestPath) {
     NODE_ENV: "production",
   };
   const toolchain = resolveProductionEvidenceToolchain({ repositoryRoot });
-  const journal = await initializeProductionEvidenceSemanticJournal({
-    repositoryRoot,
+  return {
     candidateIdentifier,
     source,
     buildContract: { applicationEnvironment, catalogStrictValidation },
+    environment,
     toolchain,
+  };
+}
+
+async function prepareBuildEvidence(repositoryRoot) {
+  const context = productionBuildExecutionContext(repositoryRoot);
+  const journal = await initializeProductionEvidenceSemanticJournal({
+    repositoryRoot,
+    candidateIdentifier: context.candidateIdentifier,
+    source: context.source,
+    buildContract: context.buildContract,
+    toolchain: context.toolchain,
   });
   console.log(`semantic_event_run_nonce=${journal.runNonce}`);
+  executeProductionEvidenceChild({
+    repositoryRoot,
+    expectedRunNonce: journal.runNonce,
+    action: "install",
+    dispatch: () => run(
+      process.platform === "win32" ? "npm.cmd" : "npm",
+      ["ci", "--include=dev"],
+      {
+        cwd: repositoryRoot,
+        env: certificationDependencyInstallationEnvironment(context.environment),
+        stdio: "inherit",
+        allowFailure: true,
+      },
+    ),
+  });
+  return { ...context, journal };
+}
+
+async function completePreparedBuildEvidence(
+  repositoryRoot,
+  manifestPath,
+  expectedRunNonce,
+  { requireProcessHandoff = false } = {},
+) {
+  const context = productionBuildExecutionContext(repositoryRoot);
+  let journal = readProductionEvidenceSemanticJournal({ repositoryRoot });
+  if (
+    journal.runNonce !== expectedRunNonce ||
+    journal.events.dependencyInstall.status !== "succeeded" ||
+    journal.events.generatedSourceCheck.status !== "pending" ||
+    journal.events.build.status !== "pending" ||
+    journal.manifest.status !== "pending"
+  ) {
+    throw new Error(
+      "prepared production build is missing its successful dependency-install boundary",
+    );
+  }
+  const completingProcess = { pid: process.pid, parentPid: process.ppid };
+  if (
+    requireProcessHandoff &&
+    JSON.stringify(journal.owner.process) === JSON.stringify(completingProcess)
+  ) {
+    throw new Error(
+      "certification prepared build requires a distinct completion-process handoff",
+    );
+  }
+  if (JSON.stringify(journal.owner.process) !== JSON.stringify(completingProcess)) {
+    journal = handoffProductionEvidenceSemanticJournal({
+      repositoryRoot,
+      expectedRunNonce: journal.runNonce,
+      expectedOwnerProcess: journal.owner.process,
+      nextOwnerProcess: completingProcess,
+    });
+  }
+  if (requireProcessHandoff && journal.owner.processHandoffs.length !== 1) {
+    throw new Error(
+      "certification prepared build requires exactly one process handoff",
+    );
+  }
   const execute = (action, command, args) =>
     executeProductionEvidenceChild({
       repositoryRoot,
@@ -3761,16 +3898,11 @@ async function buildEvidence(repositoryRoot, manifestPath) {
       action,
       dispatch: () => run(command, args, {
         cwd: repositoryRoot,
-        env: environment,
+        env: context.environment,
         stdio: "inherit",
         allowFailure: true,
       }),
     });
-  execute(
-    "install",
-    process.platform === "win32" ? "npm.cmd" : "npm",
-    ["ci", "--include=dev"],
-  );
   execute(
     "generatedSourceCheck",
     process.platform === "win32" ? "npx.cmd" : "npx",
@@ -3792,14 +3924,24 @@ async function buildEvidence(repositoryRoot, manifestPath) {
     repositoryRoot,
     manifestPath,
     expectedRunNonce: journal.runNonce,
-    environment,
-    toolchain,
+    environment: context.environment,
+    toolchain: context.toolchain,
   });
   console.log(
     `Verified ${result.manifest.artifact.floorPlanRouteNftContract.targetCount} Floor Plan route NFT manifests with zero test-source edges.`,
   );
   console.log(
     `Recorded production artifact ${result.manifest.artifact.sha256} for ${result.manifest.source.commitSha}.`,
+  );
+  return result;
+}
+
+async function buildEvidence(repositoryRoot, manifestPath) {
+  const prepared = await prepareBuildEvidence(repositoryRoot);
+  return completePreparedBuildEvidence(
+    repositoryRoot,
+    manifestPath,
+    prepared.journal.runNonce,
   );
 }
 
@@ -4032,6 +4174,27 @@ async function cli() {
   const reportPath =
     process.env.PLAYWRIGHT_JSON_OUTPUT_FILE?.trim() || DEFAULT_REPORT_PATH;
   if (command === "build") await buildEvidence(repositoryRoot, manifestPath);
+  else if (command === "prepare-certification-build") {
+    const prepared = await prepareBuildEvidence(repositoryRoot);
+    console.log(JSON.stringify({
+      prepared: true,
+      runNonce: prepared.journal.runNonce,
+      dependencyInstall: readProductionEvidenceSemanticJournal({ repositoryRoot })
+        .events.dependencyInstall,
+    }));
+  }
+  else if (command === "complete-certification-build") {
+    const expectedRunNonce = process.argv[3]?.trim();
+    if (!expectedRunNonce) {
+      throw new Error("prepared certification build requires its semantic journal nonce");
+    }
+    await completePreparedBuildEvidence(
+      repositoryRoot,
+      manifestPath,
+      expectedRunNonce,
+      { requireProcessHandoff: true },
+    );
+  }
   else if (command === "recover") {
     const toolchain = resolveProductionEvidenceToolchain({ repositoryRoot });
     const result = await recoverProductionEvidenceFromSemanticJournal({

@@ -8,6 +8,8 @@ export const PRODUCTION_CERTIFICATION_HARNESS_VERSION = 1;
 export const PRODUCTION_CERTIFICATION_STATE_SCHEMA_V1 =
   "interior-ai.production-certification-state.v1";
 export const PRODUCTION_CERTIFICATION_STATE_SCHEMA =
+  "interior-ai.production-certification-state.v3";
+export const PRODUCTION_CERTIFICATION_STATE_SCHEMA_V2 =
   "interior-ai.production-certification-state.v2";
 export const PRODUCTION_CERTIFICATION_STATE_VALIDATION_SCHEMA =
   "interior-ai.production-certification-state-validation.v1";
@@ -26,6 +28,8 @@ export const PRODUCTION_CERTIFICATION_RUNTIME_EVIDENCE_SCHEMA =
 export const PRODUCTION_CERTIFICATION_BROWSER_EVIDENCE_SCHEMA =
   "interior-ai.production-certification-browser-owner-evidence.v1";
 export const PRODUCTION_CERTIFICATION_SOURCE_VALIDATION_SCHEMA =
+  "interior-ai.production-certification-source-validation.v4";
+export const PRODUCTION_CERTIFICATION_SOURCE_VALIDATION_SCHEMA_V3 =
   "interior-ai.production-certification-source-validation.v3";
 export const PRODUCTION_CERTIFICATION_ARTIFACT_SNAPSHOT_SCHEMA =
   "interior-ai.production-certification-artifact-snapshot.v1";
@@ -183,6 +187,7 @@ export const CERTIFICATION_HARNESS_SOURCE_PATHS = Object.freeze([
   "scripts/production-certification-state.mjs",
   "scripts/production-certification-evidence.mjs",
   "scripts/production-certification-doctor.mjs",
+  "scripts/production-certification-dependencies.mjs",
   "scripts/production-certification-real.mjs",
   "scripts/production-certification-source-continuity.mjs",
   "scripts/production-certification.mjs",
@@ -190,6 +195,7 @@ export const CERTIFICATION_HARNESS_SOURCE_PATHS = Object.freeze([
   "scripts/production-certification-stage-environment.mjs",
   "scripts/production-certification-worktrees.mjs",
   "scripts/test-production-certification-state-worktrees.mjs",
+  "scripts/test-production-certification-dependency-lifecycle.mjs",
   "scripts/test-production-certification-stage-environment.mjs",
   "scripts/test-floor-plan-vision-configuration.ts",
   "scripts/test-floor-plan-local-ocr.ts",

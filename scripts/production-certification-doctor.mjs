@@ -398,7 +398,7 @@ function validateContracts(repositoryRoot) {
   );
   for (const marker of [
     "interior-ai.production-artifact-evidence.v3",
-    "interior-ai.production-artifact-semantic-event-journal.v1",
+    "interior-ai.production-artifact-semantic-event-journal.v2",
     "ARCHIVE_PREFLIGHT",
     "STANDALONE_FINAL",
   ]) {
@@ -458,10 +458,10 @@ function validateContracts(repositoryRoot) {
   }
   return {
     artifactSchema: "v3",
-    journalSchema: "v1",
+    journalSchema: "v2",
     verificationModes: ["verify-preflight", "verify-archive-preflight", "verify-standalone"],
     sourceValidation: {
-      schema: "interior-ai.production-certification-source-validation.v3",
+      schema: "interior-ai.production-certification-source-validation.v4",
       checkCount: source.checks.length,
       checkSetSha256: source.sha256,
       allCanonicalCommandsPresent: true,
@@ -475,6 +475,121 @@ function validateContracts(repositoryRoot) {
       syntheticCopiedHashAllowed: false,
       integrationReadyRequires: continuity.integrationReadyRequires,
     },
+  };
+}
+
+function validateDependencyLifecycleContracts(repositoryRoot) {
+  const read = (relativePath) =>
+    readFileSync(path.join(repositoryRoot, relativePath), "utf8");
+  const dependencyOwner = read(
+    "scripts/production-certification-dependencies.mjs",
+  );
+  const stateOwner = read("scripts/production-certification-state.mjs");
+  const worktreeOwner = read("scripts/production-certification-worktrees.mjs");
+  const realRunner = read("scripts/production-certification-real.mjs");
+  const sourceOwner = read(
+    "scripts/production-certification-source-continuity.mjs",
+  );
+  const regressionOwner = read(
+    "scripts/test-production-certification-dependency-lifecycle.mjs",
+  );
+  const matrix = JSON.parse(
+    read("docs/qa/production-certification-contract.v1.json"),
+  );
+  const sourceStage = realRunner.slice(
+    realRunner.indexOf("export async function runSourceValidationStage"),
+    realRunner.indexOf("export async function runBuildStage"),
+  );
+  const buildStage = realRunner.slice(
+    realRunner.indexOf("export async function runBuildStage"),
+    realRunner.indexOf("function archiveEnvironment"),
+  );
+  const browserStage = realRunner.slice(
+    realRunner.indexOf("export async function runBrowserOwnersStage"),
+    realRunner.indexOf("export async function runFinalStandaloneStage"),
+  );
+  const ordered = (source, first, second) =>
+    source.indexOf(first) >= 0 &&
+    source.indexOf(second) > source.indexOf(first);
+  const postStageRevalidation =
+    buildStage.includes("postBuildDependencyRevalidation") &&
+    buildStage.includes('boundary: "post-build"') &&
+    buildStage.includes('"FINAL_EVIDENCE_FAILURE"') &&
+    browserStage.includes("finalArtifactDependencyRevalidation") &&
+    browserStage.includes("developmentBrowserDependencyRevalidation") &&
+    [...browserStage.matchAll(/boundary: "post-browser-owners"/g)].length >= 2 &&
+    browserStage.includes("finalArtifactPreOwnerRevalidation") &&
+    browserStage.includes("developmentBrowserPreOwnerRevalidation");
+  if (
+    !dependencyOwner.includes(
+      "interior-ai.production-certification-worktree-dependency-binding.v1",
+    ) ||
+    !dependencyOwner.includes("not-installed") ||
+    !dependencyOwner.includes("installed") ||
+    !dependencyOwner.includes("removed") ||
+    !dependencyOwner.includes("physicalContentInventory") ||
+    !dependencyOwner.includes("nodeModuleSearchPathProof") ||
+    !dependencyOwner.includes("certificationDependencyInstallationEnvironment") ||
+    !dependencyOwner.includes("dependency-binding evidence shape is not exact") ||
+    !stateOwner.includes("bindCertificationWorktreeDependencies") ||
+    !stateOwner.includes("transitionCertificationState") ||
+    !stateOwner.includes("expectedCurrentSha256") ||
+    !stateOwner.includes("beforeFinalDependencyMeasurement") ||
+    !stateOwner.includes("changed between binding validation and atomic state commit") ||
+    !worktreeOwner.includes("dependencyStatus: \"not-installed\"") ||
+    !ordered(
+      sourceStage,
+      "installAndBindRoleDependencies",
+      "sourceValidationStageEvidence",
+    ) ||
+    !ordered(
+      sourceStage,
+      "sourceValidationStageEvidence",
+      "validateSourceValidationEvidence",
+    ) ||
+    !ordered(
+      buildStage,
+      "installAndBindRoleDependencies",
+      "complete-certification-build",
+    ) ||
+    !ordered(
+      browserStage,
+      "installAndBindRoleDependencies",
+      '"--list"',
+    ) ||
+    [...realRunner.matchAll(/installAndBindRoleDependencies\(\{/g)].length !== 4 ||
+    sourceOwner.includes("bindCertificationWorktreeDependencies") ||
+    sourceOwner.includes("writeCertificationState") ||
+    !sourceOwner.includes("preCheckRevalidation") ||
+    !sourceOwner.includes("postCheckRevalidation") ||
+    !sourceOwner.includes("bindingStateEvidence") ||
+    !sourceOwner.includes("dependencyBindingStateReceiptIssues") ||
+    !postStageRevalidation ||
+    !regressionOwner.includes("already-bound dependencies cannot be overwritten") &&
+      !regressionOwner.includes("cannot be overwritten") ||
+    matrix.dependencyLifecycle?.schema !==
+      "interior-ai.production-certification-worktree-dependency-lifecycle.v1" ||
+    matrix.dependencyLifecycle?.bindingTransition !==
+      "worktree-dependencies:bind"
+  ) {
+    throw new Error(
+      "dependency lifecycle, durable binding order, or anti-bypass contract is incomplete",
+    );
+  }
+  return {
+    schema:
+      "interior-ai.production-certification-worktree-dependency-lifecycle.v1",
+    evidenceSchema:
+      "interior-ai.production-certification-worktree-dependency-binding.v1",
+    stateSchema: "interior-ai.production-certification-state.v3",
+    roles: [...CERTIFICATION_WORKTREE_ROLES],
+    initialStatus: "not-installed",
+    bindingTransition: "worktree-dependencies:bind",
+    sourceBindBeforeChecksAndAggregateValidation: true,
+    finalArtifactBindBeforeGeneratedSourceAndBuild: true,
+    developmentBrowserBindBeforeDiscoveryAndOwners: true,
+    postStageRevalidation,
+    crossWorktreeAndGlobalResolutionRejected: true,
   };
 }
 
@@ -720,6 +835,8 @@ export function runCertificationDoctor({
     return validateBuildTargetsPristine(finalArtifact.root);
   });
   check(checks, issues, "schema-and-mode-compatibility", () => validateContracts(root));
+  check(checks, issues, "dependency-lifecycle-order", () =>
+    validateDependencyLifecycleContracts(root));
   check(checks, issues, "stage-environment-capabilities", () =>
     validateStageEnvironmentCapabilities(root, environment));
   check(checks, issues, "archive-file-backed-owner", () =>

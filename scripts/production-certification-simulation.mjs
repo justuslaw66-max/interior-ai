@@ -7,6 +7,7 @@ import {
   mkdtempSync,
   lstatSync,
   readFileSync,
+  readdirSync,
   realpathSync,
   renameSync,
   rmSync,
@@ -19,6 +20,7 @@ import path from "node:path";
 import {
   createProductionEvidenceManifest,
   executeProductionEvidenceChild,
+  handoffProductionEvidenceSemanticJournal,
   initializeProductionEvidenceSemanticJournal,
   recoverProductionEvidenceFromSemanticJournal,
 } from "./production-artifact-evidence.mjs";
@@ -34,22 +36,27 @@ import {
   sourceValidationCheckSet,
 } from "./production-certification-contract.mjs";
 import {
+  bindCertificationWorktreeDependencies,
   completeCertificationStage,
   readCertificationState,
+  sealCertificationState,
   startCertificationStage,
-  updateCertificationWorktreeBinding,
   validateCertificationState,
   writeCertificationState,
 } from "./production-certification-state.mjs";
 import {
   CERTIFICATION_WORKTREE_ROLES,
   certificationWorktreeIssues,
-  refreshCertificationStageWorktreeBinding,
 } from "./production-certification-worktrees.mjs";
+import {
+  installCertificationWorktreeDependencies,
+  readAndValidateCertificationDependencyBindingEvidence,
+} from "./production-certification-dependencies.mjs";
 import {
   captureArtifactSnapshot,
   measureFinalContinuity,
   rootEvidenceName,
+  sealSourceValidationEvidence,
   snapshotEvidenceName,
   validateSourceValidationEvidence,
   validateContinuityEvidence,
@@ -65,7 +72,12 @@ import {
   resolveRuntimeSmokeTimingDestination,
 } from "./runtime-smoke-phase-budget.mjs";
 import { validateRuntimeEvidence } from "./production-certification-evidence.mjs";
-import { preflightRuntimeSmokeEvidenceOutputs } from "./production-certification-real.mjs";
+import {
+  preflightRuntimeSmokeEvidenceOutputs,
+  runBrowserOwnersStage,
+  runBuildStage,
+  runSourceValidationStage,
+} from "./production-certification-real.mjs";
 
 const SIMULATION_ID = "production-certification-v1-simulation";
 const FIXED_NONCE = "123e4567-e89b-42d3-a456-426614174001";
@@ -120,7 +132,9 @@ function copyHarnessSources(repositoryRoot, fixtureRoot) {
     "scripts/runtime-smoke-operation-deadline.mjs",
     "scripts/runtime-smoke-telemetry-bootstrap-contract.mjs",
   ]);
-  for (const relativePath of paths) {
+  for (const relativePath of [...paths].filter(
+    (relativePath) => !new Set(["package.json", "package-lock.json"]).has(relativePath),
+  )) {
     write(fixtureRoot, relativePath, readFileSync(path.join(repositoryRoot, relativePath)));
   }
 }
@@ -168,7 +182,6 @@ function writeMiniatureArtifact(root) {
   );
   writeFloorPlanNfts(root);
   symlinkSync("../../public/asset.txt", path.join(root, ".next/server/public-link"));
-  write(root, "node_modules/.package-lock.json", "simulation installed identity\n");
 }
 
 function initializeFixture(repositoryRoot, fixtureRoot) {
@@ -183,18 +196,66 @@ function initializeFixture(repositoryRoot, fixtureRoot) {
     "package.json",
     `${JSON.stringify({
       name: "production-certification-simulation",
+      version: "1.0.0",
       private: true,
       packageManager: `npm@${npmVersion}`,
+      scripts: {
+        build: "node scripts/production-certification-simulation.mjs fixture-build",
+      },
+      dependencies: {
+        "simulation-fixture": "file:simulation-fixture-1.0.0.tgz",
+        "ts-node": "file:ts-node-0.0.0.tgz",
+      },
     }, null, 2)}\n`,
   );
   write(
     fixtureRoot,
-    "package-lock.json",
+    "simulation-fixture/package.json",
+    '{"name":"simulation-fixture","version":"1.0.0","main":"index.js"}\n',
+  );
+  write(
+    fixtureRoot,
+    "simulation-fixture/index.js",
+    "module.exports = 'simulation-fixture';\n",
+  );
+  write(
+    fixtureRoot,
+    "simulation-ts-node/package.json",
     `${JSON.stringify({
-      name: "production-certification-simulation",
-      lockfileVersion: 3,
-      packages: {},
-    }, null, 2)}\n`,
+      name: "ts-node",
+      version: "0.0.0",
+      bin: { "ts-node": "bin.js" },
+    })}\n`,
+  );
+  write(
+    fixtureRoot,
+    "simulation-ts-node/bin.js",
+    "#!/usr/bin/env node\nprocess.exitCode = 0;\n",
+  );
+  chmodSync(path.join(fixtureRoot, "simulation-ts-node/bin.js"), 0o755);
+  const npmEnvironment = {
+    ...process.env,
+    NODE_OPTIONS: "",
+    NODE_PATH: "",
+    NPM_CONFIG_CACHE: path.join(path.dirname(fixtureRoot), "npm-cache"),
+  };
+  run(
+    "npm",
+    ["pack", "./simulation-fixture", "--pack-destination", "."],
+    fixtureRoot,
+    npmEnvironment,
+  );
+  run(
+    "npm",
+    ["pack", "./simulation-ts-node", "--pack-destination", "."],
+    fixtureRoot,
+    npmEnvironment,
+  );
+  run(
+    "npm",
+    ["install", "--package-lock-only", "--ignore-scripts"],
+    fixtureRoot,
+    npmEnvironment,
   );
   write(fixtureRoot, ".nvmrc", `${process.version.slice(1)}\n`);
   copyHarnessSources(repositoryRoot, fixtureRoot);
@@ -269,11 +330,30 @@ async function emitProductionEvidence(fixtureRoot, identity, environment) {
     nonce: FIXED_NONCE,
     clock,
   });
-  for (const action of ["install", "generatedSourceCheck", "build"]) {
+  executeProductionEvidenceChild({
+    repositoryRoot: fixtureRoot,
+    expectedRunNonce: journal.runNonce,
+    action: "install",
+    dispatch: () => ({ status: 0, signal: null }),
+    clock,
+  });
+  const completingProcess = {
+    pid: process.pid + 100000,
+    parentPid: process.pid,
+  };
+  handoffProductionEvidenceSemanticJournal({
+    repositoryRoot: fixtureRoot,
+    expectedRunNonce: journal.runNonce,
+    expectedOwnerProcess: journal.owner.process,
+    nextOwnerProcess: completingProcess,
+    clock,
+  });
+  for (const action of ["generatedSourceCheck", "build"]) {
     executeProductionEvidenceChild({
       repositoryRoot: fixtureRoot,
       expectedRunNonce: journal.runNonce,
       action,
+      processIdentity: completingProcess,
       dispatch: () => ({ status: 0, signal: null }),
       clock,
     });
@@ -377,6 +457,77 @@ function startSimulationStage(options) {
 
 function completeSimulationStage(options) {
   return runStateTransitionCli({ ...options, action: "complete" });
+}
+
+function installAndBindSimulationRole({
+  canonicalRoot,
+  repositoryRoot,
+  evidenceRoot,
+  statePath,
+  state,
+  role,
+  stage,
+}) {
+  const environment = { ...process.env };
+  delete environment.NODE_OPTIONS;
+  delete environment.NODE_PATH;
+  environment.NPM_CONFIG_CACHE = path.join(path.dirname(canonicalRoot), "npm-cache");
+  const installation = installCertificationWorktreeDependencies({
+    repositoryRoot,
+    evidenceRoot,
+    state,
+    role,
+    environment,
+    attemptNumber: state.stages[stage].attempts.at(-1)?.number ?? 1,
+  });
+  if (!installation.passed) {
+    throw new Error(`simulation dependency installation failed: ${role}`);
+  }
+  return bindCertificationWorktreeDependencies({
+    statePath,
+    expectedCurrentSha256: sha256Bytes(readFileSync(statePath)),
+    evidenceRoot,
+    canonicalRoot,
+    role,
+    dependencyBindingEvidence: installation.bindingEvidenceDescriptor,
+  }).state;
+}
+
+function revalidateSimulationRoleDependencies({
+  repositoryRoot,
+  evidenceRoot,
+  state,
+  role,
+  boundary,
+}) {
+  const binding = state.worktrees.roles[role];
+  const retained = readAndValidateCertificationDependencyBindingEvidence({
+    evidenceRoot,
+    descriptor: binding.dependencyBindingEvidence,
+    state,
+    role,
+    repositoryRoot,
+    remeasure: true,
+  });
+  if (!retained.validation.valid) {
+    throw new Error(
+      `${role} simulation dependency drift at ${boundary}: ${retained.validation.issues.join("; ")}`,
+    );
+  }
+  return {
+    role,
+    boundary,
+    dependencyIdentitySha256: retained.evidence.dependencyIdentitySha256,
+    bindingEvidenceSha256: binding.dependencyBindingEvidence.sha256,
+    passed: true,
+  };
+}
+
+function dependencyInstallationAttemptCount(evidenceRoot, role) {
+  const root = path.join(evidenceRoot, "worktree-dependencies", role);
+  return existsSync(root)
+    ? readdirSync(root).filter((name) => /^attempt-\d{3}$/.test(name)).length
+    : 0;
 }
 
 function phase8Evidence(state, fixtureRoot, rawEvidenceSha256) {
@@ -541,6 +692,7 @@ export async function runProductionCertificationSimulation({
   const doctorEnvironment = {
     ...process.env,
     ...environment,
+    NPM_CONFIG_CACHE: path.join(simulationRoot, "npm-cache"),
     PRODUCTION_CERTIFICATION_ID: SIMULATION_ID,
     PRODUCTION_CERTIFICATION_STATE: statePath,
     CERTIFICATION_EVIDENCE_ROOT: evidenceRoot,
@@ -645,6 +797,444 @@ export async function runProductionCertificationSimulation({
   );
   let state = readCertificationState(statePath);
   const sourceChecks = sourceValidationCheckSet(fixtureRoot).checks;
+  const sourcePreconditionRoot = path.join(
+    simulationRoot,
+    "source-precondition-evidence",
+  );
+  mkdirSync(sourcePreconditionRoot, { mode: 0o700 });
+  cpSync(
+    path.join(evidenceRoot, "worktrees"),
+    path.join(sourcePreconditionRoot, "worktrees"),
+    { recursive: true },
+  );
+  const sourcePreconditionStatePath = path.join(
+    sourcePreconditionRoot,
+    "certification-state.json",
+  );
+  const doctorDescriptor = state.evidenceFiles.doctor;
+  const preconditionDoctorPath = path.join(
+    sourcePreconditionRoot,
+    doctorDescriptor.path,
+  );
+  mkdirSync(path.dirname(preconditionDoctorPath), {
+    recursive: true,
+    mode: 0o700,
+  });
+  writeFileSync(
+    preconditionDoctorPath,
+    readFileSync(path.join(evidenceRoot, doctorDescriptor.path)),
+    { flag: "wx", mode: 0o600 },
+  );
+  writeCertificationState(sourcePreconditionStatePath, state);
+  mkdirSync(
+    path.join(
+      sourcePreconditionRoot,
+      "worktree-dependencies/source-validation/attempt-001",
+    ),
+    { recursive: true, mode: 0o700 },
+  );
+  const sourcePreconditionChild = spawnSync(
+    process.execPath,
+    ["scripts/production-certification.mjs", "source-validation"],
+    {
+      cwd: fixtureRoot,
+      encoding: "utf8",
+      env: {
+        ...doctorEnvironment,
+        CERTIFICATION_EVIDENCE_ROOT: sourcePreconditionRoot,
+        PRODUCTION_CERTIFICATION_STATE: sourcePreconditionStatePath,
+        CERTIFICATION_STAGE_STARTED_AT: nextTimestamp(),
+        CERTIFICATION_STAGE_COMPLETED_AT: nextTimestamp(),
+        CERTIFICATION_SOURCE_VALIDATION_FIXTURE_LOG: path.join(
+          sourcePreconditionRoot,
+          "invocations.log",
+        ),
+      },
+    },
+  );
+  const sourcePreconditionState = readCertificationState(
+    sourcePreconditionStatePath,
+  );
+  const sourcePreconditionClassified =
+    sourcePreconditionChild.status !== 0 &&
+    sourcePreconditionState.stages["source-validation"].status === "failed" &&
+    sourcePreconditionState.stages["source-validation"]
+      .failureClassification === "PRECONDITION_ORCHESTRATION_FAILURE" &&
+    sourcePreconditionState.stages["source-validation"]
+      .consumedSubstantiveGate === false &&
+    sourcePreconditionState.worktrees.roles["source-validation"]
+      .dependencyStatus === "not-installed" &&
+    !existsSync(path.join(sourcePreconditionRoot, "invocations.log"));
+  if (!sourcePreconditionClassified) {
+    throw new Error(
+      "source dependency precondition failure taxonomy was not retained",
+    );
+  }
+  rmSync(
+    path.join(
+      sourcePreconditionRoot,
+      "worktree-dependencies/source-validation/attempt-001",
+    ),
+    { recursive: true, force: true },
+  );
+  const sourcePreconditionRetry = spawnSync(
+    process.execPath,
+    ["scripts/production-certification.mjs", "source-validation"],
+    {
+      cwd: fixtureRoot,
+      encoding: "utf8",
+      env: {
+        ...doctorEnvironment,
+        CERTIFICATION_EVIDENCE_ROOT: sourcePreconditionRoot,
+        PRODUCTION_CERTIFICATION_STATE: sourcePreconditionStatePath,
+        CERTIFICATION_STAGE_STARTED_AT: nextTimestamp(),
+        CERTIFICATION_STAGE_COMPLETED_AT: nextTimestamp(),
+        CERTIFICATION_SOURCE_VALIDATION_FIXTURE_LOG: path.join(
+          sourcePreconditionRoot,
+          "retry-invocations.log",
+        ),
+      },
+    },
+  );
+  const sourcePreconditionRetryState = readCertificationState(
+    sourcePreconditionStatePath,
+  );
+  const sourcePreconditionRetryValidation = validateCertificationState({
+    state: sourcePreconditionRetryState,
+    evidenceRoot: sourcePreconditionRoot,
+    expectedCandidate: sourcePreconditionRetryState.candidate,
+    expectedHarnessSourceSha256:
+      sourcePreconditionRetryState.harness.sourceSha256,
+    repositoryRoot: fixtureRoot,
+  });
+  if (
+    sourcePreconditionRetry.status !== 0 ||
+    sourcePreconditionRetryState.stages["source-validation"].status !==
+      "passed" ||
+    sourcePreconditionRetryState.stages["source-validation"].attempts.length !==
+      2 ||
+    sourcePreconditionRetryState.worktrees.roles["source-validation"]
+      .dependencyStatus !== "installed" ||
+    !sourcePreconditionRetryValidation.valid
+  ) {
+    const retryEvidenceDescriptor =
+      sourcePreconditionRetryState.evidenceFiles["source-validation"];
+    const retryEvidence = retryEvidenceDescriptor
+      ? JSON.parse(
+          readFileSync(
+            path.join(sourcePreconditionRoot, retryEvidenceDescriptor.path),
+            "utf8",
+          ),
+        )
+      : null;
+    throw new Error(
+      `source precondition retry did not bind and validate successfully: ${JSON.stringify({
+        childStatus: sourcePreconditionRetry.status,
+        childStderr: sourcePreconditionRetry.stderr,
+        validationIssues: sourcePreconditionRetryValidation.issues,
+        gitStatus: git(sourceWorktreeRoot, [
+          "status",
+          "--porcelain=v1",
+          "--untracked-files=all",
+        ]),
+        lastCheck: retryEvidence?.checks?.at(-1),
+      })}`,
+    );
+  }
+  rmSync(path.join(sourceWorktreeRoot, "node_modules"), {
+    recursive: true,
+    force: true,
+  });
+
+  const sourceEvidenceSymlinkRoot = path.join(
+    simulationRoot,
+    "source-evidence-symlink-root",
+  );
+  const sourceEvidenceOutsideRoot = path.join(
+    simulationRoot,
+    "source-evidence-symlink-outside",
+  );
+  mkdirSync(sourceEvidenceSymlinkRoot, { mode: 0o700 });
+  mkdirSync(sourceEvidenceOutsideRoot, { mode: 0o700 });
+  cpSync(
+    path.join(evidenceRoot, "worktrees"),
+    path.join(sourceEvidenceSymlinkRoot, "worktrees"),
+    { recursive: true },
+  );
+  const sourceEvidenceSymlinkDoctorPath = path.join(
+    sourceEvidenceSymlinkRoot,
+    doctorDescriptor.path,
+  );
+  mkdirSync(path.dirname(sourceEvidenceSymlinkDoctorPath), {
+    recursive: true,
+    mode: 0o700,
+  });
+  writeFileSync(
+    sourceEvidenceSymlinkDoctorPath,
+    readFileSync(path.join(evidenceRoot, doctorDescriptor.path)),
+    { flag: "wx", mode: 0o600 },
+  );
+  const sourceEvidenceSymlinkStatePath = path.join(
+    sourceEvidenceSymlinkRoot,
+    "certification-state.json",
+  );
+  writeCertificationState(sourceEvidenceSymlinkStatePath, state);
+  symlinkSync(
+    sourceEvidenceOutsideRoot,
+    path.join(sourceEvidenceSymlinkRoot, "source-validation"),
+  );
+  let sourceEvidenceSymlinkFailure = null;
+  try {
+    await runSourceValidationStage({
+      repositoryRoot: fixtureRoot,
+      environment: {
+        ...doctorEnvironment,
+        CERTIFICATION_EVIDENCE_ROOT: sourceEvidenceSymlinkRoot,
+        PRODUCTION_CERTIFICATION_STATE: sourceEvidenceSymlinkStatePath,
+        CERTIFICATION_STAGE_STARTED_AT: nextTimestamp(),
+        CERTIFICATION_STAGE_COMPLETED_AT: nextTimestamp(),
+      },
+    });
+  } catch (error) {
+    sourceEvidenceSymlinkFailure = error;
+  }
+  const sourceEvidenceIntermediateSymlinkRejectedWithoutWrite =
+    sourceEvidenceSymlinkFailure?.classification ===
+      "SOURCE_CONTRACT_FAILURE" &&
+    sourceEvidenceSymlinkFailure?.consumed === false &&
+    readdirSync(sourceEvidenceOutsideRoot).length === 0;
+  if (!sourceEvidenceIntermediateSymlinkRejectedWithoutWrite) {
+    throw new Error(
+      "source evidence intermediate symlink was followed before containment validation",
+    );
+  }
+  rmSync(path.join(sourceWorktreeRoot, "node_modules"), {
+    recursive: true,
+    force: true,
+  });
+
+  const sourceAlreadyBoundRetryRoot = path.join(
+    simulationRoot,
+    "source-already-bound-retry-evidence",
+  );
+  mkdirSync(sourceAlreadyBoundRetryRoot, { mode: 0o700 });
+  cpSync(
+    path.join(evidenceRoot, "worktrees"),
+    path.join(sourceAlreadyBoundRetryRoot, "worktrees"),
+    { recursive: true },
+  );
+  const alreadyBoundDoctorPath = path.join(
+    sourceAlreadyBoundRetryRoot,
+    doctorDescriptor.path,
+  );
+  mkdirSync(path.dirname(alreadyBoundDoctorPath), {
+    recursive: true,
+    mode: 0o700,
+  });
+  writeFileSync(
+    alreadyBoundDoctorPath,
+    readFileSync(path.join(evidenceRoot, doctorDescriptor.path)),
+    { flag: "wx", mode: 0o600 },
+  );
+  const sourceAlreadyBoundRetryStatePath = path.join(
+    sourceAlreadyBoundRetryRoot,
+    "certification-state.json",
+  );
+  writeCertificationState(sourceAlreadyBoundRetryStatePath, state);
+  let sourceAlreadyBoundFirstFailure = null;
+  try {
+    await runSourceValidationStage({
+      repositoryRoot: fixtureRoot,
+      environment: {
+        ...doctorEnvironment,
+        CERTIFICATION_EVIDENCE_ROOT: sourceAlreadyBoundRetryRoot,
+        PRODUCTION_CERTIFICATION_STATE: sourceAlreadyBoundRetryStatePath,
+        CERTIFICATION_STAGE_STARTED_AT: nextTimestamp(),
+        CERTIFICATION_STAGE_COMPLETED_AT: nextTimestamp(),
+      },
+      testHooks: {
+        afterDependencyBinding() {
+          throw new Error("qualification post-bind source precondition");
+        },
+      },
+    });
+  } catch (error) {
+    sourceAlreadyBoundFirstFailure = error;
+  }
+  await runSourceValidationStage({
+    repositoryRoot: fixtureRoot,
+    environment: {
+      ...doctorEnvironment,
+      CERTIFICATION_EVIDENCE_ROOT: sourceAlreadyBoundRetryRoot,
+      PRODUCTION_CERTIFICATION_STATE: sourceAlreadyBoundRetryStatePath,
+      CERTIFICATION_STAGE_STARTED_AT: nextTimestamp(),
+      CERTIFICATION_STAGE_COMPLETED_AT: nextTimestamp(),
+      CERTIFICATION_SOURCE_VALIDATION_FIXTURE_LOG: path.join(
+        sourceAlreadyBoundRetryRoot,
+        "retry-invocations.log",
+      ),
+    },
+  });
+  const sourceAlreadyBoundRetryState = readCertificationState(
+    sourceAlreadyBoundRetryStatePath,
+  );
+  const sourceAlreadyBoundRetryValidation = validateCertificationState({
+    state: sourceAlreadyBoundRetryState,
+    evidenceRoot: sourceAlreadyBoundRetryRoot,
+    expectedCandidate: sourceAlreadyBoundRetryState.candidate,
+    expectedHarnessSourceSha256:
+      sourceAlreadyBoundRetryState.harness.sourceSha256,
+    repositoryRoot: fixtureRoot,
+  });
+  const sourceAlreadyBoundRetryWithoutReinstall =
+    sourceAlreadyBoundFirstFailure?.classification ===
+      "SOURCE_CONTRACT_FAILURE" &&
+    sourceAlreadyBoundFirstFailure?.consumed === false &&
+    sourceAlreadyBoundRetryState.stages["source-validation"].status ===
+      "passed" &&
+    sourceAlreadyBoundRetryState.stages["source-validation"].attempts.length ===
+      2 &&
+    sourceAlreadyBoundRetryState.worktrees.roles["source-validation"]
+      .dependencyStatus === "installed" &&
+    dependencyInstallationAttemptCount(
+      sourceAlreadyBoundRetryRoot,
+      "source-validation",
+    ) === 1 &&
+    sourceAlreadyBoundRetryValidation.valid;
+  if (!sourceAlreadyBoundRetryWithoutReinstall) {
+    throw new Error(
+      "already-bound source retry did not use read-only dependency revalidation",
+    );
+  }
+  rmSync(path.join(sourceWorktreeRoot, "node_modules"), {
+    recursive: true,
+    force: true,
+  });
+
+  const sourceBindingRaceRoot = path.join(
+    simulationRoot,
+    "source-binding-race-evidence",
+  );
+  mkdirSync(sourceBindingRaceRoot, { mode: 0o700 });
+  cpSync(
+    path.join(evidenceRoot, "worktrees"),
+    path.join(sourceBindingRaceRoot, "worktrees"),
+    { recursive: true },
+  );
+  const bindingRaceDoctorPath = path.join(
+    sourceBindingRaceRoot,
+    doctorDescriptor.path,
+  );
+  mkdirSync(path.dirname(bindingRaceDoctorPath), {
+    recursive: true,
+    mode: 0o700,
+  });
+  writeFileSync(
+    bindingRaceDoctorPath,
+    readFileSync(path.join(evidenceRoot, doctorDescriptor.path)),
+    { flag: "wx", mode: 0o600 },
+  );
+  const sourceBindingRaceStatePath = path.join(
+    sourceBindingRaceRoot,
+    "certification-state.json",
+  );
+  writeCertificationState(sourceBindingRaceStatePath, state);
+  const sourceBindingRaceLog = path.join(
+    sourceBindingRaceRoot,
+    "invocations.log",
+  );
+  let sourceBindingRaceFailure = null;
+  try {
+    await runSourceValidationStage({
+      repositoryRoot: fixtureRoot,
+      environment: {
+        ...doctorEnvironment,
+        CERTIFICATION_EVIDENCE_ROOT: sourceBindingRaceRoot,
+        PRODUCTION_CERTIFICATION_STATE: sourceBindingRaceStatePath,
+        CERTIFICATION_STAGE_STARTED_AT: nextTimestamp(),
+        CERTIFICATION_STAGE_COMPLETED_AT: nextTimestamp(),
+        CERTIFICATION_SOURCE_VALIDATION_FIXTURE_LOG: sourceBindingRaceLog,
+      },
+      testHooks: {
+        beforeFinalDependencyMeasurement({ repositoryRoot }) {
+          writeFileSync(
+            path.join(
+              repositoryRoot,
+              "node_modules/simulation-fixture/index.js",
+            ),
+            "module.exports = 'binding-race';\n",
+          );
+        },
+      },
+    });
+  } catch (error) {
+    sourceBindingRaceFailure = error;
+  }
+  writeFileSync(
+    path.join(sourceWorktreeRoot, "node_modules/simulation-fixture/index.js"),
+    "module.exports = 'simulation-fixture';\n",
+  );
+  const sourceBindingRaceState = readCertificationState(
+    sourceBindingRaceStatePath,
+  );
+  let sourceBindingRaceRetryFailure = null;
+  try {
+    await runSourceValidationStage({
+      repositoryRoot: fixtureRoot,
+      environment: {
+        ...doctorEnvironment,
+        CERTIFICATION_EVIDENCE_ROOT: sourceBindingRaceRoot,
+        PRODUCTION_CERTIFICATION_STATE: sourceBindingRaceStatePath,
+        CERTIFICATION_STAGE_STARTED_AT: nextTimestamp(),
+        CERTIFICATION_STAGE_COMPLETED_AT: nextTimestamp(),
+        CERTIFICATION_SOURCE_VALIDATION_FIXTURE_LOG: sourceBindingRaceLog,
+      },
+    });
+  } catch (error) {
+    sourceBindingRaceRetryFailure = error;
+  }
+  const sourceBindingRaceRetryState = readCertificationState(
+    sourceBindingRaceStatePath,
+  );
+  const sourceBindingRaceRejectedWithoutReinstall =
+    sourceBindingRaceFailure?.classification === "SOURCE_CONTRACT_FAILURE" &&
+    sourceBindingRaceFailure?.consumed === false &&
+    sourceBindingRaceState.worktrees.roles["source-validation"]
+      .dependencyStatus === "failed" &&
+    sourceBindingRaceState.worktrees.roles["source-validation"]
+      .dependencyInstallation?.result === "binding-failed" &&
+    sourceBindingRaceRetryFailure?.classification ===
+      "SOURCE_CONTRACT_FAILURE" &&
+    sourceBindingRaceRetryFailure?.consumed === false &&
+    sourceBindingRaceRetryState.worktrees.roles["source-validation"]
+      .dependencyStatus === "failed" &&
+    dependencyInstallationAttemptCount(
+      sourceBindingRaceRoot,
+      "source-validation",
+    ) === 1 &&
+    !existsSync(sourceBindingRaceLog);
+  if (!sourceBindingRaceRejectedWithoutReinstall) {
+    throw new Error(
+      `source bind race was not retained terminally without reinstall: ${JSON.stringify({
+        first: sourceBindingRaceFailure?.message,
+        retry: sourceBindingRaceRetryFailure?.message,
+        status:
+          sourceBindingRaceRetryState.worktrees.roles["source-validation"]
+            .dependencyStatus,
+        result:
+          sourceBindingRaceRetryState.worktrees.roles["source-validation"]
+            .dependencyInstallation?.result,
+        attempts: dependencyInstallationAttemptCount(
+          sourceBindingRaceRoot,
+          "source-validation",
+        ),
+      })}`,
+    );
+  }
+  rmSync(path.join(sourceWorktreeRoot, "node_modules"), {
+    recursive: true,
+    force: true,
+  });
   const failedSourceCheckIndex = sourceChecks.length - 3;
   const failedSourceCheck = sourceChecks[failedSourceCheckIndex];
   const sourceFailureRoot = path.join(simulationRoot, "source-failure-evidence");
@@ -658,7 +1248,6 @@ export async function runProductionCertificationSimulation({
     sourceFailureRoot,
     "certification-state.json",
   );
-  const doctorDescriptor = state.evidenceFiles.doctor;
   const failedDoctorPath = path.join(sourceFailureRoot, doctorDescriptor.path);
   mkdirSync(path.dirname(failedDoctorPath), { recursive: true, mode: 0o700 });
   writeFileSync(
@@ -677,8 +1266,8 @@ export async function runProductionCertificationSimulation({
         ...doctorEnvironment,
         CERTIFICATION_EVIDENCE_ROOT: sourceFailureRoot,
         PRODUCTION_CERTIFICATION_STATE: failedSourceStatePath,
-        CERTIFICATION_STAGE_STARTED_AT: "2026-08-14T00:11:00.000Z",
-        CERTIFICATION_STAGE_COMPLETED_AT: "2026-08-14T00:11:00.500Z",
+        CERTIFICATION_STAGE_STARTED_AT: nextTimestamp(),
+        CERTIFICATION_STAGE_COMPLETED_AT: nextTimestamp(),
         CERTIFICATION_SOURCE_VALIDATION_FIXTURE_LOG: path.join(
           sourceFailureRoot,
           "invocations.log",
@@ -736,8 +1325,22 @@ export async function runProductionCertificationSimulation({
       ) ||
     !failedSourcePreventedBuild
   ) {
-    throw new Error("simulation source-check failure did not stop or block build readiness");
+    throw new Error(
+      `simulation source-check failure did not stop or block build readiness: ${JSON.stringify({
+        childStatus: failedSourceChild.status,
+        stage: failedSourceState.stages["source-validation"],
+        evidencePassed: failedSourceEvidence.passed,
+        failedCheckId: failedSourceEvidence.failedCheckId,
+        validationIssues: failedSourceStateValidation.issues,
+        failedInvocationIds,
+        failedSourcePreventedBuild,
+      })}`,
+    );
   }
+  rmSync(path.join(sourceWorktreeRoot, "node_modules"), {
+    recursive: true,
+    force: true,
+  });
   const sourceDriftRoot = path.join(simulationRoot, "source-drift-evidence");
   mkdirSync(sourceDriftRoot, { mode: 0o700 });
   cpSync(
@@ -762,6 +1365,14 @@ export async function runProductionCertificationSimulation({
     sourceWorktreeRoot,
     ".certification-source-validation-dirty-fixture",
   );
+  const preDriftStatus = git(sourceWorktreeRoot, [
+    "status",
+    "--porcelain=v1",
+    "--untracked-files=all",
+  ]);
+  if (preDriftStatus) {
+    throw new Error(`simulation source worktree drifted before tamper: ${preDriftStatus}`);
+  }
   const sourceDriftChild = spawnSync(
     process.execPath,
     ["scripts/production-certification.mjs", "source-validation"],
@@ -772,8 +1383,8 @@ export async function runProductionCertificationSimulation({
         ...doctorEnvironment,
         CERTIFICATION_EVIDENCE_ROOT: sourceDriftRoot,
         PRODUCTION_CERTIFICATION_STATE: sourceDriftStatePath,
-        CERTIFICATION_STAGE_STARTED_AT: "2026-08-14T00:11:01.000Z",
-        CERTIFICATION_STAGE_COMPLETED_AT: "2026-08-14T00:11:01.500Z",
+        CERTIFICATION_STAGE_STARTED_AT: nextTimestamp(),
+        CERTIFICATION_STAGE_COMPLETED_AT: nextTimestamp(),
         CERTIFICATION_SOURCE_VALIDATION_FIXTURE_LOG: path.join(
           sourceDriftRoot,
           "invocations.log",
@@ -786,6 +1397,13 @@ export async function runProductionCertificationSimulation({
   const sourceDriftState = readCertificationState(sourceDriftStatePath);
   const sourceDriftDescriptor =
     sourceDriftState.evidenceFiles["source-validation"];
+  if (!sourceDriftDescriptor) {
+    throw new Error(
+      `simulation source-drift runner did not retain aggregate evidence: ${String(
+        sourceDriftChild.stderr || sourceDriftChild.stdout,
+      ).trim()}`,
+    );
+  }
   const sourceDriftEvidence = JSON.parse(
     readFileSync(
       path.join(sourceDriftRoot, sourceDriftDescriptor.path),
@@ -811,6 +1429,113 @@ export async function runProductionCertificationSimulation({
     sourceDriftValidation.valid;
   if (!sourceDriftAfterZeroExitRetained) {
     throw new Error("zero-exit source drift was not retained as a truthful failure");
+  }
+  rmSync(path.join(sourceWorktreeRoot, "node_modules"), {
+    recursive: true,
+    force: true,
+  });
+  const sourceDependencyDriftRoot = path.join(
+    simulationRoot,
+    "source-dependency-drift-evidence",
+  );
+  cpSync(evidenceRoot, sourceDependencyDriftRoot, { recursive: true });
+  const sourceDependencyDriftStatePath = path.join(
+    sourceDependencyDriftRoot,
+    "certification-state.json",
+  );
+  const sourceDependencyDriftLog = path.join(
+    sourceDependencyDriftRoot,
+    "invocations.log",
+  );
+  let sourceDependencyStageFailure = null;
+  try {
+    await runSourceValidationStage({
+      repositoryRoot: fixtureRoot,
+      environment: {
+        ...doctorEnvironment,
+        CERTIFICATION_EVIDENCE_ROOT: sourceDependencyDriftRoot,
+        PRODUCTION_CERTIFICATION_STATE: sourceDependencyDriftStatePath,
+        CERTIFICATION_STAGE_STARTED_AT: nextTimestamp(),
+        CERTIFICATION_STAGE_COMPLETED_AT: nextTimestamp(),
+        CERTIFICATION_SOURCE_VALIDATION_FIXTURE_LOG:
+          sourceDependencyDriftLog,
+      },
+      testHooks: {
+        beforePostCheckDependencyRevalidation({ repositoryRoot }) {
+          writeFileSync(
+            path.join(
+              repositoryRoot,
+              "node_modules/simulation-fixture/index.js",
+            ),
+            "module.exports = 'source-post-check-drift';\n",
+          );
+        },
+      },
+    });
+  } catch (error) {
+    sourceDependencyStageFailure = error;
+  }
+  writeFileSync(
+    path.join(sourceWorktreeRoot, "node_modules/simulation-fixture/index.js"),
+    "module.exports = 'simulation-fixture';\n",
+  );
+  const sourceDependencyDriftState = readCertificationState(
+    sourceDependencyDriftStatePath,
+  );
+  let sourceDependencyDriftBlockedBuild = false;
+  try {
+    startCertificationStage(sourceDependencyDriftState, {
+      stage: "build",
+      startedAt: nextTimestamp(),
+    });
+  } catch {
+    sourceDependencyDriftBlockedBuild = true;
+  }
+  const sourceDependencyDriftInvocationIds = readFileSync(
+    sourceDependencyDriftLog,
+    "utf8",
+  )
+    .trim()
+    .split("\n")
+    .filter(Boolean);
+  const sourcePostCheckDependencyDriftRejected =
+    sourceDependencyStageFailure?.classification ===
+      "SOURCE_CONTRACT_FAILURE" &&
+    sourceDependencyStageFailure?.consumed === true &&
+    sourceDependencyDriftState.stages["source-validation"].status ===
+      "failed" &&
+    sourceDependencyDriftState.stages["source-validation"]
+      .consumedSubstantiveGate === true &&
+    sourceDependencyDriftState.worktrees.roles["source-validation"]
+      .dependencyStatus === "installed" &&
+    JSON.stringify(sourceDependencyDriftInvocationIds) ===
+      JSON.stringify(sourceChecks.map((check) => check.id)) &&
+    dependencyInstallationAttemptCount(
+      sourceDependencyDriftRoot,
+      "source-validation",
+    ) === 1 &&
+    sourceDependencyDriftBlockedBuild;
+  if (!sourcePostCheckDependencyDriftRejected) {
+    throw new Error(
+      "real source stage did not reject post-check dependency drift and block build",
+    );
+  }
+  rmSync(path.join(sourceWorktreeRoot, "node_modules"), {
+    recursive: true,
+    force: true,
+  });
+  const successfulSourceInitialState = readCertificationState(statePath);
+  if (
+    successfulSourceInitialState.worktrees.roles["source-validation"]
+      .dependencyStatus !== "not-installed" ||
+    successfulSourceInitialState.worktrees.roles["source-validation"]
+      .dependencyIdentitySha256 !== null ||
+    successfulSourceInitialState.worktrees.roles["source-validation"]
+      .dependencyBindingEvidence !== null
+  ) {
+    throw new Error(
+      "exact source real-runner regression did not begin from stale-null state",
+    );
   }
   run(
     process.execPath,
@@ -840,6 +1565,19 @@ export async function runProductionCertificationSimulation({
     throw new Error("simulation source-validation did not invoke the canonical check closure");
   }
   state = readCertificationState(statePath);
+  const successfulSourceBinding =
+    state.worktrees.roles["source-validation"];
+  if (
+    successfulSourceBinding.dependencyStatus !== "installed" ||
+    !successfulSourceBinding.dependencyIdentitySha256 ||
+    !successfulSourceBinding.dependencyBindingEvidence ||
+    !successfulSourceBinding.dependencyInstallation ||
+    state.stages["source-validation"].status !== "passed"
+  ) {
+    throw new Error(
+      "exact source real-runner regression did not physically install, bind, and pass",
+    );
+  }
   const successfulSourceEvidence = JSON.parse(
     readFileSync(
       path.join(
@@ -849,6 +1587,126 @@ export async function runProductionCertificationSimulation({
       "utf8",
     ),
   );
+  const correctedSourceAggregateValidation = validateSourceValidationEvidence({
+    evidence: successfulSourceEvidence,
+    evidenceRoot,
+    state,
+    repositoryRoot: sourceWorktreeRoot,
+  });
+  const staleNullAggregateState = structuredClone(state);
+  staleNullAggregateState.worktrees.roles[
+    "source-validation"
+  ].dependencyIdentitySha256 = null;
+  const staleNullAggregateValidation = validateSourceValidationEvidence({
+    evidence: successfulSourceEvidence,
+    evidenceRoot,
+    state: staleNullAggregateState,
+    repositoryRoot: sourceWorktreeRoot,
+  });
+  const exactStaleNullOrderingRegressionPassed =
+    correctedSourceAggregateValidation.valid &&
+    !staleNullAggregateValidation.valid &&
+    staleNullAggregateValidation.issues.some((issue) =>
+      /dependency lifecycle|stage-worktree identity/.test(issue),
+    );
+  if (!exactStaleNullOrderingRegressionPassed) {
+    throw new Error(
+      "simulation did not close the exact stale-null aggregate ordering regression",
+    );
+  }
+  const staleBindingStateReceiptEvidence = sealSourceValidationEvidence({
+    ...successfulSourceEvidence,
+    dependencyLifecycle: {
+      ...successfulSourceEvidence.dependencyLifecycle,
+      stateShaImmediatelyAfterBinding: "f".repeat(64),
+    },
+  });
+  const staleBindingStateReceiptValidation = validateSourceValidationEvidence({
+    evidence: staleBindingStateReceiptEvidence,
+    evidenceRoot,
+    state,
+    repositoryRoot: sourceWorktreeRoot,
+  });
+  const staleBindingStateReceiptRejected =
+    !staleBindingStateReceiptValidation.valid &&
+    staleBindingStateReceiptValidation.issues.some((issue) =>
+      /binding-state receipt/.test(issue),
+    );
+  if (!staleBindingStateReceiptRejected) {
+    throw new Error("stale source dependency binding-state receipt was accepted");
+  }
+  const sourceBindingStateReceipt = JSON.parse(
+    readFileSync(
+      path.join(
+        evidenceRoot,
+        successfulSourceEvidence.dependencyLifecycle.bindingStateEvidence.path,
+      ),
+      "utf8",
+    ),
+  );
+  sourceBindingStateReceipt.worktrees.roles[
+    "source-validation"
+  ].dependencyInstallation = null;
+  const contradictoryBindingStateReceipt = sealCertificationState(
+    sourceBindingStateReceipt,
+  );
+  const contradictoryBindingStateDescriptor = writeEvidence(
+    evidenceRoot,
+    "source-validation/contradictory-binding-state.json",
+    contradictoryBindingStateReceipt,
+  );
+  const contradictoryBindingStateSourceEvidence =
+    sealSourceValidationEvidence({
+      ...successfulSourceEvidence,
+      dependencyLifecycle: {
+        ...successfulSourceEvidence.dependencyLifecycle,
+        stateShaImmediatelyAfterBinding:
+          contradictoryBindingStateDescriptor.sha256,
+        bindingStateEvidence: contradictoryBindingStateDescriptor,
+      },
+    });
+  const contradictoryBindingStateValidation =
+    validateSourceValidationEvidence({
+      evidence: contradictoryBindingStateSourceEvidence,
+      evidenceRoot,
+      state,
+      repositoryRoot: sourceWorktreeRoot,
+    });
+  const contradictoryBindingStateReceiptRejected =
+    !contradictoryBindingStateValidation.valid &&
+    contradictoryBindingStateValidation.issues.some((issue) =>
+      /binding-state receipt/.test(issue),
+    );
+  if (!contradictoryBindingStateReceiptRejected) {
+    throw new Error("contradictory source binding-state receipt was accepted");
+  }
+  const fabricatedSourceRevalidationEvidence = sealSourceValidationEvidence({
+    ...successfulSourceEvidence,
+    dependencyLifecycle: {
+      ...successfulSourceEvidence.dependencyLifecycle,
+      preCheckRevalidation: {
+        ...successfulSourceEvidence.dependencyLifecycle.preCheckRevalidation,
+        boundary: "fabricated-boundary",
+        packageLockSha256: "f".repeat(64),
+        unexpected: true,
+      },
+    },
+  });
+  const fabricatedSourceRevalidationValidation =
+    validateSourceValidationEvidence({
+      evidence: fabricatedSourceRevalidationEvidence,
+      evidenceRoot,
+      state,
+      repositoryRoot: sourceWorktreeRoot,
+    });
+  const sourceDependencyRevalidationTamperRejected =
+    !fabricatedSourceRevalidationValidation.valid &&
+    fabricatedSourceRevalidationValidation.issues.some((issue) =>
+      /exactly bound/.test(issue),
+    );
+  if (!sourceDependencyRevalidationTamperRejected) {
+    throw new Error("fabricated source dependency revalidation was accepted");
+  }
   const prohibitedSourceNames = new Set([
     "CERTIFICATION_EVIDENCE_ROOT",
     "CERTIFICATION_RUNTIME_REPORT_PATH",
@@ -861,7 +1719,7 @@ export async function runProductionCertificationSimulation({
   ]);
   if (
     successfulSourceEvidence.schema !==
-      "interior-ai.production-certification-source-validation.v3" ||
+      "interior-ai.production-certification-source-validation.v4" ||
     successfulSourceEvidence.checks.length !== 19 ||
     successfulSourceEvidence.checks.some(
       (check) =>
@@ -1042,7 +1900,190 @@ export async function runProductionCertificationSimulation({
   ) {
     throw new Error("doctor non-consuming retry attempts were not physically retained");
   }
+  const buildAlreadyBoundRetryRoot = evidenceRoot;
+  const buildAlreadyBoundRetryStatePath = path.join(
+    evidenceRoot,
+    "build-already-bound-retry-state.json",
+  );
+  writeCertificationState(buildAlreadyBoundRetryStatePath, state);
+  const buildAlreadyBoundFailures = [];
+  const buildRetryClock = Date.now();
+  for (let attempt = 0; attempt < 2; attempt += 1) {
+    try {
+      await runBuildStage({
+        repositoryRoot: canonicalRoot,
+        environment: {
+          ...doctorEnvironment,
+          CERTIFICATION_EVIDENCE_ROOT: buildAlreadyBoundRetryRoot,
+          PRODUCTION_CERTIFICATION_STATE: buildAlreadyBoundRetryStatePath,
+          CERTIFICATION_STAGE_STARTED_AT: new Date(
+            buildRetryClock + attempt * 4_000 - (attempt === 0 ? 1_000 : 0),
+          ).toISOString(),
+          CERTIFICATION_STAGE_COMPLETED_AT: new Date(
+            buildRetryClock + attempt * 4_000 + 2_000,
+          ).toISOString(),
+        },
+        testHooks: {
+          suppressBuildChildOutput: true,
+          afterDependencyBinding() {
+            throw new Error("qualification post-bind build precondition");
+          },
+        },
+      });
+    } catch (error) {
+      buildAlreadyBoundFailures.push(error);
+    }
+  }
+  const buildAlreadyBoundRetryState = readCertificationState(
+    buildAlreadyBoundRetryStatePath,
+  );
+  const buildAlreadyBoundRetryWithoutReinstall =
+    buildAlreadyBoundFailures.length === 2 &&
+    buildAlreadyBoundFailures.every(
+      (error) =>
+        error?.classification === "SOURCE_CONTRACT_FAILURE" &&
+        error?.consumed === false,
+    ) &&
+    buildAlreadyBoundRetryState.stages.build.attempts.length === 2 &&
+    buildAlreadyBoundRetryState.worktrees.roles["final-artifact"]
+      .dependencyStatus === "installed" &&
+    dependencyInstallationAttemptCount(
+      buildAlreadyBoundRetryRoot,
+      "final-artifact",
+    ) === 1;
+  if (!buildAlreadyBoundRetryWithoutReinstall) {
+    throw new Error(
+      `already-bound build retry did not use read-only dependency revalidation: ${JSON.stringify({
+        failures: buildAlreadyBoundFailures.map((error) => ({
+          message: error?.message,
+          classification: error?.classification,
+          consumed: error?.consumed,
+        })),
+        stage: buildAlreadyBoundRetryState.stages.build,
+        dependencyStatus:
+          buildAlreadyBoundRetryState.worktrees.roles["final-artifact"]
+            .dependencyStatus,
+        installationAttempts: dependencyInstallationAttemptCount(
+          buildAlreadyBoundRetryRoot,
+          "final-artifact",
+        ),
+      })}`,
+    );
+  }
+  for (const relativePath of ["node_modules", ".local", ".next"]) {
+    rmSync(path.join(artifactWorktreeRoot, relativePath), {
+      recursive: true,
+      force: true,
+    });
+  }
+  rmSync(
+    path.join(evidenceRoot, "worktree-dependencies/final-artifact"),
+    { recursive: true, force: true },
+  );
+  rmSync(buildAlreadyBoundRetryStatePath);
+  const buildDependencyDriftStatePath = path.join(
+    evidenceRoot,
+    "build-dependency-drift-state.json",
+  );
+  writeCertificationState(buildDependencyDriftStatePath, state);
+  let buildDependencyStageFailure = null;
+  try {
+    await runBuildStage({
+      repositoryRoot: canonicalRoot,
+      environment: {
+        ...doctorEnvironment,
+        CERTIFICATION_EVIDENCE_ROOT: evidenceRoot,
+        PRODUCTION_CERTIFICATION_STATE: buildDependencyDriftStatePath,
+        CERTIFICATION_STAGE_STARTED_AT: nextTimestamp(),
+        CERTIFICATION_STAGE_COMPLETED_AT: "2099-08-14T00:00:00.000Z",
+      },
+      testHooks: {
+        suppressBuildChildOutput: true,
+        beforePostBuildDependencyRevalidation({ repositoryRoot }) {
+          writeFileSync(
+            path.join(
+              repositoryRoot,
+              "node_modules/simulation-fixture/index.js",
+            ),
+            "module.exports = 'post-build-stage-drift';\n",
+          );
+        },
+      },
+    });
+  } catch (error) {
+    buildDependencyStageFailure = error;
+  }
+  const buildDependencyDriftState = readCertificationState(
+    buildDependencyDriftStatePath,
+  );
+  let buildDependencyDriftBlockedArchive = false;
+  try {
+    startCertificationStage(buildDependencyDriftState, {
+      stage: "archive-preflight",
+      startedAt: nextTimestamp(),
+    });
+  } catch {
+    buildDependencyDriftBlockedArchive = true;
+  }
+  const postBuildStageDependencyDriftRejected =
+    buildDependencyStageFailure?.classification === "FINAL_EVIDENCE_FAILURE" &&
+    buildDependencyStageFailure?.consumed === true &&
+    buildDependencyDriftState.stages.build.status === "failed" &&
+    buildDependencyDriftState.stages.build.failureClassification ===
+      "FINAL_EVIDENCE_FAILURE" &&
+    buildDependencyDriftState.stages.build.consumedSubstantiveGate === true &&
+    buildDependencyDriftState.worktrees.roles["final-artifact"]
+      .dependencyStatus === "installed" &&
+    dependencyInstallationAttemptCount(evidenceRoot, "final-artifact") === 1 &&
+    buildDependencyDriftBlockedArchive;
+  if (!postBuildStageDependencyDriftRejected) {
+    throw new Error(
+      `real build stage did not reject post-build dependency drift and block archive: ${JSON.stringify({
+        message: buildDependencyStageFailure?.message,
+        classification: buildDependencyStageFailure?.classification,
+        consumed: buildDependencyStageFailure?.consumed,
+        stage: buildDependencyDriftState.stages.build,
+        dependencyStatus:
+          buildDependencyDriftState.worktrees.roles["final-artifact"]
+            .dependencyStatus,
+        blocked: buildDependencyDriftBlockedArchive,
+      })}`,
+    );
+  }
+  writeFileSync(
+    path.join(
+      artifactWorktreeRoot,
+      "node_modules/simulation-fixture/index.js",
+    ),
+    "module.exports = 'simulation-fixture';\n",
+  );
+  for (const relativePath of ["node_modules", ".next", ".local"]) {
+    rmSync(path.join(artifactWorktreeRoot, relativePath), {
+      recursive: true,
+      force: true,
+    });
+  }
+  rmSync(
+    path.join(evidenceRoot, "worktree-dependencies/final-artifact"),
+    { recursive: true, force: true },
+  );
+  rmSync(buildDependencyDriftStatePath);
   fixtureRoot = artifactWorktreeRoot;
+  state = startSimulationStage({
+    fixtureRoot,
+    evidenceRoot,
+    statePath,
+    payload: { stage: "build", startedAt: nextTimestamp() },
+  });
+  state = installAndBindSimulationRole({
+    canonicalRoot,
+    repositoryRoot: fixtureRoot,
+    evidenceRoot,
+    statePath,
+    state,
+    role: "final-artifact",
+    stage: "build",
+  });
   writeMiniatureArtifact(fixtureRoot);
   const production = JSON.parse(
     run(
@@ -1065,12 +2106,23 @@ export async function runProductionCertificationSimulation({
       }).environment,
     ),
   );
-  state = startSimulationStage({
-    fixtureRoot,
-    evidenceRoot,
-    statePath,
-    payload: { stage: "build", startedAt: nextTimestamp() },
-  });
+  const finalArtifactPostBuildRevalidation =
+    revalidateSimulationRoleDependencies({
+      repositoryRoot: fixtureRoot,
+      evidenceRoot,
+      state,
+      role: "final-artifact",
+      boundary: "post-build",
+    });
+  const postBuildDependencyDriftRejected =
+    postBuildStageDependencyDriftRejected;
+  const certificationProcessHandoffRetained =
+    production.manifest.execution.owner.processHandoffs.length === 1 &&
+    production.manifest.execution.owner.processHandoffs[0].boundary ===
+      "post-dependency-install-pre-generated-source";
+  if (!certificationProcessHandoffRetained) {
+    throw new Error("simulation certification build omitted its required process handoff");
+  }
   const buildDescriptor = writeEvidence(evidenceRoot, "build/result.json", {
     schema: "interior-ai.production-certification-build-result.v1",
     identity: {
@@ -1078,6 +2130,14 @@ export async function runProductionCertificationSimulation({
       semanticJournalNonce: FIXED_NONCE,
       productionManifestSha256: production.manifestSha256,
       semanticJournalSha256: production.journalSha256,
+    },
+    dependencyLifecycle: {
+      status: "installed",
+      bindingEvidence:
+        state.worktrees.roles["final-artifact"].dependencyBindingEvidence,
+      semanticProcessHandoff:
+        production.manifest.execution.owner.processHandoffs[0],
+      postBuildRevalidation: finalArtifactPostBuildRevalidation,
     },
     complete: true,
   });
@@ -1118,17 +2178,6 @@ export async function runProductionCertificationSimulation({
     },
     },
   });
-  state = updateCertificationWorktreeBinding(state, {
-    role: "final-artifact",
-    binding: refreshCertificationStageWorktreeBinding({
-      state,
-      evidenceRoot,
-      canonicalRoot,
-      role: "final-artifact",
-      phase: "active",
-    }),
-  });
-  writeCertificationState(statePath, state);
   const archiveEnvironment = {
     ...process.env,
     ...environment,
@@ -1659,20 +2708,193 @@ export async function runProductionCertificationSimulation({
       "runtime-phase-timings": runtimeTimingsDescriptor,
       "runtime-start": runtimeStartDescriptor,
     },
-    consumedSubstantiveGate: true,
+      consumedSubstantiveGate: true,
     },
   });
-  write(
-    developmentWorktreeRoot,
-    "node_modules/.package-lock.json",
-    readFileSync(path.join(developmentWorktreeRoot, "package-lock.json")),
+  const browserAlreadyBoundRetryStatePath = path.join(
+    evidenceRoot,
+    "browser-already-bound-retry-state.json",
   );
+  writeCertificationState(browserAlreadyBoundRetryStatePath, state);
+  const browserAlreadyBoundFailures = [];
+  for (let attempt = 0; attempt < 2; attempt += 1) {
+    try {
+      await runBrowserOwnersStage({
+        repositoryRoot: canonicalRoot,
+        environment: {
+          ...doctorEnvironment,
+          CERTIFICATION_EVIDENCE_ROOT: evidenceRoot,
+          PRODUCTION_CERTIFICATION_STATE: browserAlreadyBoundRetryStatePath,
+          CERTIFICATION_STAGE_STARTED_AT: nextTimestamp(),
+          CERTIFICATION_STAGE_COMPLETED_AT: nextTimestamp(),
+        },
+        testHooks: {
+          afterDependencyBinding() {
+            throw new Error("qualification post-bind browser precondition");
+          },
+        },
+      });
+    } catch (error) {
+      browserAlreadyBoundFailures.push(error);
+    }
+  }
+  const browserAlreadyBoundRetryState = readCertificationState(
+    browserAlreadyBoundRetryStatePath,
+  );
+  const browserAlreadyBoundRetryWithoutReinstall =
+    browserAlreadyBoundFailures.length === 2 &&
+    browserAlreadyBoundFailures.every(
+      (error) =>
+        error?.classification === "SOURCE_CONTRACT_FAILURE" &&
+        error?.consumed === false,
+    ) &&
+    browserAlreadyBoundRetryState.stages["browser-owners"].attempts.length ===
+      2 &&
+    browserAlreadyBoundRetryState.worktrees.roles["development-browser"]
+      .dependencyStatus === "installed" &&
+    dependencyInstallationAttemptCount(
+      evidenceRoot,
+      "development-browser",
+    ) === 1;
+  if (!browserAlreadyBoundRetryWithoutReinstall) {
+    throw new Error(
+      `already-bound browser retry did not use read-only dependency revalidation: ${JSON.stringify({
+        failures: browserAlreadyBoundFailures.map((error) => ({
+          message: error?.message,
+          classification: error?.classification,
+          consumed: error?.consumed,
+        })),
+        stage: browserAlreadyBoundRetryState.stages["browser-owners"],
+        dependencyStatus:
+          browserAlreadyBoundRetryState.worktrees.roles["development-browser"]
+            .dependencyStatus,
+        installationAttempts: dependencyInstallationAttemptCount(
+          evidenceRoot,
+          "development-browser",
+        ),
+      })}`,
+    );
+  }
+  rmSync(path.join(developmentWorktreeRoot, "node_modules"), {
+    recursive: true,
+    force: true,
+  });
+  rmSync(
+    path.join(evidenceRoot, "worktree-dependencies/development-browser"),
+    { recursive: true, force: true },
+  );
+  rmSync(browserAlreadyBoundRetryStatePath);
+  const browserDependencyDriftStatePath = path.join(
+    evidenceRoot,
+    "browser-dependency-drift-state.json",
+  );
+  writeCertificationState(browserDependencyDriftStatePath, state);
+  let browserDependencyStageFailure = null;
+  try {
+    await runBrowserOwnersStage({
+      repositoryRoot: canonicalRoot,
+      environment: {
+        ...doctorEnvironment,
+        CERTIFICATION_EVIDENCE_ROOT: evidenceRoot,
+        PRODUCTION_CERTIFICATION_STATE: browserDependencyDriftStatePath,
+        CERTIFICATION_STAGE_STARTED_AT: nextTimestamp(),
+        CERTIFICATION_STAGE_COMPLETED_AT: nextTimestamp(),
+      },
+      testHooks: {
+        beforePreOwnerDependencyRevalidation({ developmentBrowserRoot }) {
+          writeFileSync(
+            path.join(
+              developmentBrowserRoot,
+              "node_modules/simulation-fixture/index.js",
+            ),
+            "module.exports = 'pre-browser-stage-drift';\n",
+          );
+        },
+      },
+    });
+  } catch (error) {
+    browserDependencyStageFailure = error;
+  }
+  const browserDependencyDriftState = readCertificationState(
+    browserDependencyDriftStatePath,
+  );
+  let browserDependencyDriftBlockedFinal = false;
+  try {
+    startCertificationStage(browserDependencyDriftState, {
+      stage: "final-standalone",
+      startedAt: nextTimestamp(),
+    });
+  } catch {
+    browserDependencyDriftBlockedFinal = true;
+  }
+  const preBrowserDependencyDriftRejected =
+    browserDependencyStageFailure?.classification ===
+      "FINAL_EVIDENCE_FAILURE" &&
+    browserDependencyStageFailure?.consumed === false &&
+    browserDependencyDriftState.stages["browser-owners"].status === "failed" &&
+    browserDependencyDriftState.stages["browser-owners"]
+      .failureClassification === "FINAL_EVIDENCE_FAILURE" &&
+    browserDependencyDriftState.stages["browser-owners"]
+      .consumedSubstantiveGate === false &&
+    browserDependencyDriftState.worktrees.roles["development-browser"]
+      .dependencyStatus === "installed" &&
+    dependencyInstallationAttemptCount(
+      evidenceRoot,
+      "development-browser",
+    ) === 1 &&
+    browserDependencyDriftBlockedFinal;
+  if (!preBrowserDependencyDriftRejected) {
+    throw new Error(
+      "real browser stage did not reject pre-owner dependency drift and block downstream stages",
+    );
+  }
+  writeFileSync(
+    path.join(
+      developmentWorktreeRoot,
+      "node_modules/simulation-fixture/index.js",
+    ),
+    "module.exports = 'simulation-fixture';\n",
+  );
+  rmSync(path.join(developmentWorktreeRoot, "node_modules"), {
+    recursive: true,
+    force: true,
+  });
+  rmSync(
+    path.join(evidenceRoot, "worktree-dependencies/development-browser"),
+    { recursive: true, force: true },
+  );
+  rmSync(browserDependencyDriftStatePath);
   state = startSimulationStage({
     fixtureRoot,
     evidenceRoot,
     statePath,
     payload: { stage: "browser-owners", startedAt: nextTimestamp() },
   });
+  state = installAndBindSimulationRole({
+    canonicalRoot,
+    repositoryRoot: developmentWorktreeRoot,
+    evidenceRoot,
+    statePath,
+    state,
+    role: "development-browser",
+    stage: "browser-owners",
+  });
+  const developmentBrowserPreOwnerRevalidation =
+    revalidateSimulationRoleDependencies({
+      repositoryRoot: developmentWorktreeRoot,
+      evidenceRoot,
+      state,
+      role: "development-browser",
+      boundary: "pre-browser-owners",
+    });
+  const finalArtifactPreOwnerRevalidation =
+    revalidateSimulationRoleDependencies({
+      repositoryRoot: fixtureRoot,
+      evidenceRoot,
+      state,
+      role: "final-artifact",
+      boundary: "pre-browser-owners",
+    });
   const browserDescriptors = {};
   const browserHashes = {};
   const browserExecutionRoots = {};
@@ -1719,6 +2941,22 @@ export async function runProductionCertificationSimulation({
     browserDescriptors[`browser-start:${owner.id}`] = startDescriptor;
     browserHashes[owner.id] = ownerDescriptor.sha256;
   }
+  const developmentBrowserPostOwnerRevalidation =
+    revalidateSimulationRoleDependencies({
+      repositoryRoot: developmentWorktreeRoot,
+      evidenceRoot,
+      state,
+      role: "development-browser",
+      boundary: "post-browser-owners",
+    });
+  const finalArtifactPostBrowserRevalidation =
+    revalidateSimulationRoleDependencies({
+      repositoryRoot: fixtureRoot,
+      evidenceRoot,
+      state,
+      role: "final-artifact",
+      boundary: "post-browser-owners",
+    });
   const postBrowserSnapshot = captureArtifactSnapshot({
     repositoryRoot: fixtureRoot,
     evidenceRoot,
@@ -1748,22 +2986,19 @@ export async function runProductionCertificationSimulation({
       consumedSubstantiveGate: true,
     },
   });
-  state = updateCertificationWorktreeBinding(state, {
-    role: "development-browser",
-    binding: refreshCertificationStageWorktreeBinding({
-      state,
-      evidenceRoot,
-      canonicalRoot,
-      role: "development-browser",
-      phase: "active",
-    }),
-  });
-  writeCertificationState(statePath, state);
   writeEvidence(evidenceRoot, "simulation/worktree-execution.json", {
     schema: "interior-ai.production-certification-worktree-simulation.v1",
     sourceValidation: "source-validation",
     artifactLifecycle: "final-artifact",
     browserOwners: browserExecutionRoots,
+    dependencyRevalidations: {
+      finalArtifactPostBuild: finalArtifactPostBuildRevalidation,
+      finalArtifactPreOwners: finalArtifactPreOwnerRevalidation,
+      developmentBrowserPreOwners:
+        developmentBrowserPreOwnerRevalidation,
+      developmentBrowserPostOwners: developmentBrowserPostOwnerRevalidation,
+      finalArtifactPostBrowser: finalArtifactPostBrowserRevalidation,
+    },
     quarantineCreated: false,
   });
   state = startSimulationStage({
@@ -2067,6 +3302,128 @@ export async function runProductionCertificationSimulation({
   if (realpathSync(path.join(canonicalRoot, "final-component")) !== finalComponentTarget) {
     throw new Error("canonical external-target final-component symlink changed");
   }
+  const dependencyLifecycleBeforeCleanup = Object.fromEntries(
+    CERTIFICATION_WORKTREE_ROLES.map((role) => [
+      role,
+      {
+        status: worktreeTamperState.worktrees.roles[role].dependencyStatus,
+        identitySha256:
+          worktreeTamperState.worktrees.roles[role]
+            .dependencyIdentitySha256,
+        evidenceSha256:
+          worktreeTamperState.worktrees.roles[role]
+            .dependencyBindingEvidence?.sha256 ?? null,
+      },
+    ]),
+  );
+  if (
+    Object.values(dependencyLifecycleBeforeCleanup).some(
+      (entry) =>
+        entry.status !== "installed" ||
+        !entry.identitySha256 ||
+        !entry.evidenceSha256,
+    )
+  ) {
+    throw new Error("simulation did not bind all three dependency lifecycles");
+  }
+  const sourceDependencyEvidenceBeforeCleanup = structuredClone(
+    worktreeTamperState.worktrees.roles["source-validation"]
+      .dependencyBindingEvidence,
+  );
+  const postAggregateStateBytes = readFileSync(statePath);
+  const sameIdentityAfterAggregate = bindCertificationWorktreeDependencies({
+    statePath,
+    expectedCurrentSha256: sha256Bytes(postAggregateStateBytes),
+    evidenceRoot,
+    canonicalRoot,
+    role: "source-validation",
+    dependencyBindingEvidence: sourceDependencyEvidenceBeforeCleanup,
+  });
+  const postAggregateStateMutationRejected =
+    sameIdentityAfterAggregate.mutated === false &&
+    readFileSync(statePath).equals(postAggregateStateBytes);
+  let differentIdentityOverwriteRejected = false;
+  try {
+    bindCertificationWorktreeDependencies({
+      statePath,
+      expectedCurrentSha256: sha256Bytes(postAggregateStateBytes),
+      evidenceRoot,
+      canonicalRoot,
+      role: "source-validation",
+      dependencyBindingEvidence: {
+        ...sourceDependencyEvidenceBeforeCleanup,
+        sha256: "f".repeat(64),
+      },
+    });
+  } catch {
+    differentIdentityOverwriteRejected =
+      readFileSync(statePath).equals(postAggregateStateBytes);
+  }
+  const staleNullDependencyState = structuredClone(worktreeTamperState);
+  staleNullDependencyState.worktrees.roles[
+    "source-validation"
+  ].dependencyIdentitySha256 = null;
+  const staleNullDependencyRejected = certificationWorktreeIssues({
+    state: staleNullDependencyState,
+    evidenceRoot,
+    canonicalRoot,
+  }).some((issue) => /require identity|dependency/.test(issue));
+  const validationBeforeBindingState = structuredClone(worktreeTamperState);
+  Object.assign(validationBeforeBindingState.worktrees.roles["source-validation"], {
+    dependencyStatus: "not-installed",
+    dependencyIdentitySha256: null,
+    dependencyBindingEvidence: null,
+    dependencyInstallation: null,
+  });
+  const validationBeforeBindingRejected = certificationWorktreeIssues({
+    state: validationBeforeBindingState,
+    evidenceRoot,
+    canonicalRoot,
+  }).some((issue) => /unbound dependencies|pristine|node_modules/.test(issue));
+  const roleEvidenceSwapState = structuredClone(worktreeTamperState);
+  roleEvidenceSwapState.worktrees.roles[
+    "development-browser"
+  ].dependencyBindingEvidence = structuredClone(
+    roleEvidenceSwapState.worktrees.roles["source-validation"]
+      .dependencyBindingEvidence,
+  );
+  const roleEvidenceSwapRejected = certificationWorktreeIssues({
+    state: roleEvidenceSwapState,
+    evidenceRoot,
+    canonicalRoot,
+  }).some((issue) => /another role|worktree|hash mismatch/.test(issue));
+  const driftedDependencyImplementation = path.join(
+    artifactWorktreeRoot,
+    "node_modules/simulation-fixture/index.js",
+  );
+  const originalDependencyImplementation = readFileSync(
+    driftedDependencyImplementation,
+  );
+  writeFileSync(
+    driftedDependencyImplementation,
+    "module.exports = 'post-bind-byte-drift';\n",
+  );
+  const postBindDependencyDriftRejected = certificationWorktreeIssues({
+    state: worktreeTamperState,
+    evidenceRoot,
+    canonicalRoot,
+  }).some((issue) => /drift|dependency|inventory/.test(issue));
+  writeFileSync(
+    driftedDependencyImplementation,
+    originalDependencyImplementation,
+  );
+  if (
+    !staleNullDependencyRejected ||
+    !validationBeforeBindingRejected ||
+    !differentIdentityOverwriteRejected ||
+    !postAggregateStateMutationRejected ||
+    !roleEvidenceSwapRejected ||
+    !postBindDependencyDriftRejected
+  ) {
+    throw new Error("simulation dependency lifecycle tamper matrix did not fail closed");
+  }
+  let removedWorktreeEvidenceReuseRejected = !cleanupWorktrees;
+  let cleanedDependencyReceiptDeletionRejected = !cleanupWorktrees;
   if (cleanupWorktrees) {
     run(
       process.execPath,
@@ -2085,6 +3442,43 @@ export async function runProductionCertificationSimulation({
     ) {
       throw new Error("simulation cleanup did not remove only the three task worktrees");
     }
+    const removedStateBytes = readFileSync(statePath);
+    try {
+      bindCertificationWorktreeDependencies({
+        statePath,
+        expectedCurrentSha256: sha256Bytes(removedStateBytes),
+        evidenceRoot,
+        canonicalRoot,
+        role: "source-validation",
+        dependencyBindingEvidence: sourceDependencyEvidenceBeforeCleanup,
+      });
+    } catch {
+      removedWorktreeEvidenceReuseRejected =
+        readFileSync(statePath).equals(removedStateBytes);
+    }
+    if (!removedWorktreeEvidenceReuseRejected) {
+      throw new Error("removed worktree dependency evidence was reusable");
+    }
+    cleanedDependencyReceiptDeletionRejected = CERTIFICATION_WORKTREE_ROLES.every(
+      (role) => {
+        const missingReceipt = structuredClone(state);
+        Object.assign(missingReceipt.worktrees.roles[role], {
+          dependencyIdentitySha256: null,
+          dependencyBindingEvidence: null,
+          dependencyInstallation: null,
+        });
+        const resealed = sealCertificationState(missingReceipt);
+        return !validateCertificationState({
+          state: resealed,
+          evidenceRoot,
+          repositoryRoot: canonicalRoot,
+          verifyCurrentSource: false,
+        }).valid;
+      },
+    );
+    if (!cleanedDependencyReceiptDeletionRejected) {
+      throw new Error("cleaned dependency receipts were discardable");
+    }
   }
   return {
     schema: "interior-ai.production-certification-simulation-result.v1",
@@ -2102,8 +3496,41 @@ export async function runProductionCertificationSimulation({
     externalFinalComponentSymlinkUnchanged: true,
     quarantineCreated: false,
     worktreesCleaned: cleanupWorktrees,
+    dependencyLifecycle: {
+      schema:
+        "interior-ai.production-certification-worktree-dependency-lifecycle.v1",
+      roles: dependencyLifecycleBeforeCleanup,
+      finalStatuses: Object.fromEntries(
+        CERTIFICATION_WORKTREE_ROLES.map((role) => [
+          role,
+          state.worktrees.roles[role].dependencyStatus,
+        ]),
+      ),
+      physicalFixtureInstallation: true,
+      atomicBinding: true,
+      postStageRevalidation:
+        finalArtifactPostBuildRevalidation.passed === true &&
+        finalArtifactPreOwnerRevalidation.passed === true &&
+        developmentBrowserPreOwnerRevalidation.passed === true &&
+        developmentBrowserPostOwnerRevalidation.passed === true &&
+        finalArtifactPostBrowserRevalidation.passed === true,
+    },
     tamperCases: {
+      sourceInstallPreconditionClassified: sourcePreconditionClassified,
+      sourcePreconditionRetryPassed:
+        sourcePreconditionRetryState.stages["source-validation"].status ===
+        "passed",
+      sourceAlreadyBoundRetryWithoutReinstall,
+      sourceEvidenceIntermediateSymlinkRejectedWithoutWrite,
+      sourceBindingRaceRejectedWithoutReinstall,
+      buildAlreadyBoundRetryWithoutReinstall,
+      browserAlreadyBoundRetryWithoutReinstall,
+      certificationProcessHandoffRetained,
       sourceCheckFailurePreventsBuild: failedSourcePreventedBuild,
+      exactStaleNullOrderingRegressionPassed,
+      staleBindingStateReceiptRejected,
+      contradictoryBindingStateReceiptRejected,
+      sourceDependencyRevalidationTamperRejected,
       failedSourceEvidenceRetained: true,
       sourceDriftAfterZeroExitRetained,
       artifactMutationPreventsContinuityAndReadiness: artifactMutationRejected,
@@ -2121,6 +3548,17 @@ export async function runProductionCertificationSimulation({
       copiedIgnoredWorktreeInputRejected,
       wrongWorktreeIdentityRejected,
       prematureWorktreeRemovalRejected,
+      validationBeforeBindingRejected,
+      staleNullDependencyRejected,
+      differentIdentityOverwriteRejected,
+      postAggregateStateMutationRejected,
+      postBindDependencyDriftRejected,
+      sourcePostCheckDependencyDriftRejected,
+      postBuildDependencyDriftRejected,
+      preBrowserDependencyDriftRejected,
+      roleEvidenceSwapRejected,
+      removedWorktreeEvidenceReuseRejected,
+      cleanedDependencyReceiptDeletionRejected,
       ...runtimeRootTamperCases,
     },
     simulationRoot,
@@ -2153,6 +3591,17 @@ function containedSimulationWorkerPath(filePath, root, description) {
 
 async function simulationCli() {
   const command = process.argv[2];
+  if (command === "fixture-build") {
+    if (
+      process.env.PRODUCTION_EVIDENCE_CANDIDATE_ID !== SIMULATION_ID ||
+      JSON.parse(readFileSync(path.join(process.cwd(), "package.json"), "utf8"))
+        .name !== "production-certification-simulation"
+    ) {
+      throw new Error("miniature fixture build is restricted to simulation");
+    }
+    writeMiniatureArtifact(process.cwd());
+    return;
+  }
   if (command === "emit-production-evidence") {
     requiredSimulationQualification();
     const identity = {

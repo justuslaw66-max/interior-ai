@@ -33,7 +33,10 @@ import {
   recordProductionEvidenceTest,
   validateProductionEvidence,
 } from "./production-artifact-evidence.mjs";
-import { PRODUCTION_EVIDENCE_VERIFICATION_MODES } from "./production-artifact-contract.mjs";
+import {
+  PRODUCTION_EVIDENCE_VERIFICATION_MODES,
+  certificationPreparedBuildJournalIssues,
+} from "./production-artifact-contract.mjs";
 import {
   resolveAuthorizedExternalEvidenceRoot,
   resolvePlaywrightReportPath,
@@ -44,19 +47,25 @@ import {
 import { createRuntimeSmokeTimingEvidenceBinding } from "./runtime-smoke-phase-budget.mjs";
 import {
   completeCertificationStage,
+  bindCertificationWorktreeDependencies,
   certificationStateSha256,
   certificationInvalidationPlanIssues,
   createCertificationInvalidationPlan,
   createCertificationValidationReport,
   createCertificationState,
+  failCertificationWorktreeDependencyBinding,
+  failCertificationWorktreeDependencyInstallation,
   readCertificationState,
   reconcileCertificationState,
   replaceCertificationWorktrees,
   startCertificationStage,
-  updateCertificationWorktreeBinding,
   validateCertificationState,
   writeCertificationState,
 } from "./production-certification-state.mjs";
+import {
+  installCertificationWorktreeDependencies,
+  readAndValidateCertificationDependencyBindingEvidence,
+} from "./production-certification-dependencies.mjs";
 import {
   captureArtifactSnapshot,
   measureFinalContinuity,
@@ -76,7 +85,6 @@ import {
   CERTIFICATION_WORKTREE_ROLES,
   cleanupCertificationStageWorktrees,
   createCertificationStageWorktrees,
-  refreshCertificationStageWorktreeBinding,
   resolveCertificationStageWorktree,
   stageWorktreeRole,
 } from "./production-certification-worktrees.mjs";
@@ -294,15 +302,24 @@ function stateContext(
   let repositoryRoot = canonicalRoot;
     if (role) {
       const roleBinding = state.worktrees?.roles?.[role];
+      if (roleBinding?.dependencyStatus === "failed") {
+        throw new StageFailure(
+          `${role} dependency lifecycle is terminally failed`,
+          "SOURCE_CONTRACT_FAILURE",
+          false,
+        );
+      }
       repositoryRoot = resolveCertificationStageWorktree({
         state,
         evidenceRoot,
         canonicalRoot,
         role,
         phase:
-          roleBinding?.dependencyIdentitySha256 === null
-            ? "pristine"
-            : "active",
+          roleBinding?.dependencyStatus === "installed" ||
+          (roleBinding?.dependencyStatus === undefined &&
+            roleBinding?.dependencyIdentitySha256 !== null)
+            ? "active"
+            : "pristine",
       }).root;
   }
     return {
@@ -315,7 +332,9 @@ function stateContext(
       state,
     };
   } catch (error) {
-    if (error instanceof InvocationFailure) throw error;
+    if (error instanceof InvocationFailure || error instanceof StageFailure) {
+      throw error;
+    }
     throw new InvocationFailure(error instanceof Error ? error.message : String(error));
   }
 }
@@ -430,6 +449,236 @@ function dependencyInstallationEnvironment(context) {
   );
 }
 
+function dependencyRevalidationRecord({ context, state, role, boundary }) {
+  const binding = state.worktrees.roles[role];
+  const retained = readAndValidateCertificationDependencyBindingEvidence({
+    evidenceRoot: context.evidenceRoot,
+    descriptor: binding.dependencyBindingEvidence,
+    state,
+    role,
+    repositoryRoot: context.repositoryRoot,
+    remeasure: true,
+  });
+  if (!retained.validation.valid) {
+    throw new Error(
+      `${role} dependency revalidation failed at ${boundary}: ${retained.validation.issues.join("; ")}`,
+    );
+  }
+  const evidence = retained.evidence;
+  return {
+    role,
+    boundary,
+    dependencyIdentitySha256: evidence.dependencyIdentitySha256,
+    bindingEvidenceSha256: binding.dependencyBindingEvidence.sha256,
+    packageLockSha256: evidence.packageLockSha256,
+    packageManifestSha256: evidence.packageManifestSha256,
+    nodeModulesRootIdentitySha256:
+      evidence.physicalNodeModulesProof.nodeModulesRootIdentitySha256,
+    nodeModulesFilesystemIdentitySha256:
+      evidence.physicalNodeModulesProof.nodeModulesFilesystemIdentitySha256,
+    dependencyInventorySha256: evidence.dependencyInventory.sha256,
+    topLevelPackageResolutionSha256:
+      evidence.topLevelPackageResolutionProof.sha256,
+    nodeSearchPathProofSha256: evidence.nodeSearchPathProof.sha256,
+    isolationPassed: evidence.isolation.passed === true,
+    equalToBoundIdentity:
+      evidence.dependencyIdentitySha256 === binding.dependencyIdentitySha256,
+  };
+}
+
+export function classifyCertificationDependencyInstallationFailure(
+  installation,
+) {
+  if (!installation?.installationAttempted) {
+    return {
+      classification: "PRECONDITION_ORCHESTRATION_FAILURE",
+      exitCode: 1,
+      signal: null,
+    };
+  }
+  if (installation.failurePhase === "measurement") {
+    return {
+      classification: "SOURCE_CONTRACT_FAILURE",
+      exitCode: 1,
+      signal: null,
+    };
+  }
+  const evidence = installation.installation;
+  const child =
+    evidence?.completionMarker?.result === "wrapper-failed"
+      ? evidence.dispatch
+      : evidence?.child;
+  const infrastructureFailure = Boolean(child?.spawnError || child?.signal);
+  return {
+    classification: infrastructureFailure
+      ? "INFRASTRUCTURE_TRANSIENT"
+      : "SOURCE_CONTRACT_FAILURE",
+    exitCode: child?.signal ? null : (child?.exitCode ?? 1),
+    signal: child?.signal ?? null,
+  };
+}
+
+function runQualificationDependencyTestHook(context, hook, payload) {
+  if (typeof hook !== "function") return;
+  if (
+    context.state.executionClass !== "deterministic-simulation" ||
+    context.environment.CERTIFICATION_QUALIFICATION_MODE !== "1"
+  ) {
+    throw new StageFailure(
+      "dependency mutation hooks are restricted to deterministic qualification",
+      "PRECONDITION_ORCHESTRATION_FAILURE",
+      false,
+    );
+  }
+  hook(payload);
+}
+
+function installAndBindRoleDependencies({
+  context,
+  state,
+  role,
+  dispatch = null,
+  beforeFinalDependencyMeasurement = null,
+}) {
+  const binding = state.worktrees?.roles?.[role];
+  if (binding?.dependencyStatus === "installed") {
+    dependencyRevalidationRecord({
+      context,
+      state,
+      role,
+      boundary: "already-bound-pre-stage",
+    });
+    return state;
+  }
+  if (binding?.dependencyStatus !== "not-installed") {
+    throw new StageFailure(
+      `${role} dependency lifecycle is not installable`,
+      "SOURCE_CONTRACT_FAILURE",
+      false,
+    );
+  }
+  if (existsSync(path.join(context.repositoryRoot, "node_modules"))) {
+    throw new StageFailure(
+      `${role} has unbound physical dependencies and cannot run a second installation`,
+      "SOURCE_CONTRACT_FAILURE",
+      false,
+    );
+  }
+  const stage =
+    role === "source-validation"
+      ? "source-validation"
+      : role === "final-artifact"
+        ? "build"
+        : "browser-owners";
+  let installation;
+  try {
+    installation = installCertificationWorktreeDependencies({
+      repositoryRoot: context.repositoryRoot,
+      evidenceRoot: context.evidenceRoot,
+      state,
+      role,
+      environment: dependencyInstallationEnvironment(context),
+      attemptNumber: state.stages[stage].attempts.at(-1).number,
+      dispatch,
+    });
+  } catch (error) {
+    throw new StageFailure(
+      `${role} dependency installation could not begin: ${
+        error instanceof Error ? error.message : String(error)
+      }`,
+      "PRECONDITION_ORCHESTRATION_FAILURE",
+      false,
+    );
+  }
+  if (!installation.passed) {
+    const failure = classifyCertificationDependencyInstallationFailure(
+      installation,
+    );
+    if (installation.installationAttempted) {
+      failCertificationWorktreeDependencyInstallation({
+        statePath: context.statePath,
+        expectedCurrentSha256: certificationStateSha256(state),
+        evidenceRoot: context.evidenceRoot,
+        canonicalRoot: context.canonicalRoot,
+        role,
+        installationEvidence: installation.installationDescriptor,
+        installation: installation.installation,
+      });
+    }
+    throw new StageFailure(
+      `${role} dependency installation failed${
+        installation.measurementError ? `: ${installation.measurementError}` : ""
+      }`,
+      failure.classification,
+      false,
+      {
+        exitCode: failure.exitCode,
+        signal: failure.signal,
+      },
+    );
+  }
+  let transition;
+  try {
+    transition = bindCertificationWorktreeDependencies({
+      statePath: context.statePath,
+      expectedCurrentSha256: certificationStateSha256(state),
+      evidenceRoot: context.evidenceRoot,
+      canonicalRoot: context.canonicalRoot,
+      role,
+      dependencyBindingEvidence: installation.bindingEvidenceDescriptor,
+      beforeFinalDependencyMeasurement:
+        typeof beforeFinalDependencyMeasurement === "function"
+          ? () =>
+              runQualificationDependencyTestHook(
+                { ...context, state },
+                beforeFinalDependencyMeasurement,
+                { repositoryRoot: context.repositoryRoot, state },
+              )
+          : null,
+    });
+  } catch (error) {
+    try {
+      const current = readCertificationState(context.statePath);
+      if (
+        certificationStateSha256(current) === certificationStateSha256(state) &&
+        current.worktrees?.roles?.[role]?.dependencyStatus === "not-installed"
+      ) {
+        failCertificationWorktreeDependencyBinding({
+          statePath: context.statePath,
+          expectedCurrentSha256: certificationStateSha256(current),
+          evidenceRoot: context.evidenceRoot,
+          canonicalRoot: context.canonicalRoot,
+          role,
+          dependencyBindingEvidence: installation.bindingEvidenceDescriptor,
+        });
+      }
+    } catch {
+      // Preserve the original bind failure. A retained node_modules root still
+      // prevents a second install if a concurrent state writer won the CAS.
+    }
+    throw new StageFailure(
+      `${role} dependency binding failed: ${
+        error instanceof Error ? error.message : String(error)
+      }`,
+      "SOURCE_CONTRACT_FAILURE",
+      false,
+    );
+  }
+  const rebound = readCertificationState(context.statePath);
+  if (
+    transition.stateSha256 !== certificationStateSha256(rebound) ||
+    rebound.worktrees.roles[role].dependencyIdentitySha256 !==
+      installation.bindingEvidence.dependencyIdentitySha256
+  ) {
+    throw new StageFailure(
+      `${role} dependency binding was not durably committed`,
+      "SOURCE_CONTRACT_FAILURE",
+      false,
+    );
+  }
+  return rebound;
+}
+
 export function assertCertificationChildPassed(
   child,
   message,
@@ -501,12 +750,12 @@ async function validateLiveContext(
   let sourceValidationRoot = context.repositoryRoot;
   let artifactRoot = context.repositoryRoot;
   const worktreesCleaned =
-    context.state.version === 2 &&
+    new Set([2, 3]).has(context.state.version) &&
     Object.values(context.state.worktrees.roles).every(
       (binding) => binding.lifecycleStatus === "cleaned",
     );
   const worktreesUnavailable = worktreesCleaned || !verifyPhysicalWorktrees;
-  if (context.state.version === 2 && !worktreesUnavailable) {
+  if (new Set([2, 3]).has(context.state.version) && !worktreesUnavailable) {
     try {
       sourceValidationRoot = resolveCertificationStageWorktree({
         state: context.state,
@@ -514,10 +763,14 @@ async function validateLiveContext(
         canonicalRoot: context.canonicalRoot,
         role: "source-validation",
         phase:
-          context.state.worktrees.roles["source-validation"]
-            .dependencyIdentitySha256 === null
-            ? "pristine"
-            : "active",
+          context.state.worktrees.roles["source-validation"].dependencyStatus ===
+            "installed" ||
+          (context.state.worktrees.roles["source-validation"]
+            .dependencyStatus === undefined &&
+            context.state.worktrees.roles["source-validation"]
+              .dependencyIdentitySha256 !== null)
+            ? "active"
+            : "pristine",
       }).root;
       artifactRoot = resolveCertificationStageWorktree({
         state: context.state,
@@ -525,10 +778,14 @@ async function validateLiveContext(
         canonicalRoot: context.canonicalRoot,
         role: "final-artifact",
         phase:
-          context.state.worktrees.roles["final-artifact"]
-            .dependencyIdentitySha256 === null
-            ? "pristine"
-            : "active",
+          context.state.worktrees.roles["final-artifact"].dependencyStatus ===
+            "installed" ||
+          (context.state.worktrees.roles["final-artifact"].dependencyStatus ===
+            undefined &&
+            context.state.worktrees.roles["final-artifact"]
+              .dependencyIdentitySha256 !== null)
+            ? "active"
+            : "pristine",
       }).root;
     } catch (error) {
       retainedInputIssues.push(error instanceof Error ? error.message : String(error));
@@ -554,7 +811,7 @@ async function validateLiveContext(
     const journalPath = path.join(artifactRoot, DEFAULT_JOURNAL);
     try {
       const manifest = readJson(manifestPath, "production manifest v3");
-      const journal = readJson(journalPath, "semantic journal v1");
+      const journal = readJson(journalPath, "semantic journal v2");
       if (
         sha256Bytes(readFileSync(manifestPath)) !==
           context.state.bindings.productionManifestSha256 ||
@@ -783,19 +1040,12 @@ async function managedStage(
     stage,
     startedAt: certificationTimestamp(context.environment, "STAGE_STARTED_AT"),
   });
-  const runningStateSha256 = certificationStateSha256(runningState);
   writeCertificationState(context.statePath, runningState, {
     expectedCurrentSha256: priorStateSha256,
   });
   try {
     const result = await action(runningState);
-    let validationState = context.state;
-    for (const [role, binding] of Object.entries(result.worktreeBindings ?? {})) {
-      validationState = updateCertificationWorktreeBinding(validationState, {
-        role,
-        binding,
-      });
-    }
+    const validationState = readCertificationState(context.statePath);
     const postAction = await validateLiveContext({
       ...context,
       state: validationState,
@@ -811,7 +1061,8 @@ async function managedStage(
         result.consumed === true,
       );
     }
-    let completedState = completeCertificationStage(runningState, {
+    const durableActionState = readCertificationState(context.statePath);
+    let completedState = completeCertificationStage(durableActionState, {
       stage,
       passed: true,
       completedAt: certificationTimestamp(context.environment, "STAGE_COMPLETED_AT"),
@@ -821,14 +1072,8 @@ async function managedStage(
       evidenceFiles: result.evidenceFiles ?? {},
       consumedSubstantiveGate: result.consumed === true,
     });
-    for (const [role, binding] of Object.entries(result.worktreeBindings ?? {})) {
-      completedState = updateCertificationWorktreeBinding(completedState, {
-        role,
-        binding,
-      });
-    }
     writeCertificationState(context.statePath, completedState, {
-      expectedCurrentSha256: runningStateSha256,
+      expectedCurrentSha256: certificationStateSha256(durableActionState),
     });
     return result.result ?? result;
   } catch (error) {
@@ -844,7 +1089,8 @@ async function managedStage(
         ? postBoundaryClassification
         : "SOURCE_CONTRACT_FAILURE",
     });
-    const failedState = completeCertificationStage(runningState, {
+    const durableFailureState = readCertificationState(context.statePath);
+    const failedState = completeCertificationStage(durableFailureState, {
       stage,
       passed: false,
       completedAt: certificationTimestamp(context.environment, "STAGE_COMPLETED_AT"),
@@ -855,7 +1101,7 @@ async function managedStage(
       evidenceFiles: failure.evidenceFiles,
     });
     writeCertificationState(context.statePath, failedState, {
-      expectedCurrentSha256: runningStateSha256,
+      expectedCurrentSha256: certificationStateSha256(durableFailureState),
     });
     throw failure;
   }
@@ -1194,6 +1440,7 @@ export async function runIntegrationReadyStage({
 export async function runSourceValidationStage({
   repositoryRoot = process.cwd(),
   environment = process.env,
+  testHooks = null,
 } = {}) {
   const context = stateContext(repositoryRoot, environment, {
     command: "source-validation",
@@ -1204,24 +1451,20 @@ export async function runSourceValidationStage({
     context,
     "source-validation",
     async (state) => {
-      if (
-        state.executionClass !== "deterministic-simulation" &&
-        !existsSync(path.join(context.repositoryRoot, "node_modules"))
-      ) {
-        const install = childResult("npm", ["ci", "--include=dev"], {
-          cwd: context.repositoryRoot,
-          env: dependencyInstallationEnvironment(context),
-          inherit: true,
-        });
-        assertCertificationChildPassed(
-          install,
-          "source-validation dependency installation failed",
-          "PRECONDITION_ORCHESTRATION_FAILURE",
-          false,
-        );
-      }
-      const sourceWorktree = resolveCertificationStageWorktree({
+      const boundState = installAndBindRoleDependencies({
+        context,
         state,
+        role: "source-validation",
+        beforeFinalDependencyMeasurement:
+          testHooks?.beforeFinalDependencyMeasurement,
+      });
+      runQualificationDependencyTestHook(
+        { ...context, state: boundState },
+        testHooks?.afterDependencyBinding,
+        { repositoryRoot: context.repositoryRoot, state: boundState },
+      );
+      const sourceWorktree = resolveCertificationStageWorktree({
+        state: boundState,
         evidenceRoot: context.evidenceRoot,
         canonicalRoot: context.canonicalRoot,
         role: "source-validation",
@@ -1230,12 +1473,28 @@ export async function runSourceValidationStage({
       const result = sourceValidationStageEvidence({
         repositoryRoot: context.repositoryRoot,
         evidenceRoot: context.evidenceRoot,
-        state,
+        state: boundState,
         environment: context.environment,
         onCheckCompleted: (check) => {
           sourceConsumed ||= check.substantive;
         },
         worktreeIdentity: sourceWorktree.portable,
+        dependencyBindingStateSha256: certificationStateSha256(boundState),
+        dependencyRevalidate: (boundary) => {
+          if (boundary === "post-check") {
+            runQualificationDependencyTestHook(
+              { ...context, state: boundState },
+              testHooks?.beforePostCheckDependencyRevalidation,
+              { repositoryRoot: sourceWorktree.root, state: boundState },
+            );
+          }
+          return dependencyRevalidationRecord({
+            context,
+            state: boundState,
+            role: "source-validation",
+            boundary,
+          });
+        },
       });
       if (!result.passed) {
         const failed = result.evidence.checks.at(-1);
@@ -1260,7 +1519,7 @@ export async function runSourceValidationStage({
       const validation = validateSourceValidationEvidence({
         evidence: result.evidence,
         evidenceRoot: context.evidenceRoot,
-        state,
+        state: boundState,
         repositoryRoot: context.repositoryRoot,
       });
       if (!validation.valid) {
@@ -1277,18 +1536,10 @@ export async function runSourceValidationStage({
           },
         );
       }
-      const worktreeBinding = refreshCertificationStageWorktreeBinding({
-        state,
-        evidenceRoot: context.evidenceRoot,
-        canonicalRoot: context.canonicalRoot,
-        role: "source-validation",
-        phase: "active",
-      });
       return {
         consumed: result.evidence.checks.some((check) => check.substantive),
         outputHashes: { sourceValidation: result.descriptor.sha256 },
         evidenceFiles: { "source-validation": result.descriptor },
-        worktreeBindings: { "source-validation": worktreeBinding },
         result: {
           valid: true,
           checkCount: result.evidence.checks.length,
@@ -1306,6 +1557,7 @@ export async function runSourceValidationStage({
 export async function runBuildStage({
   repositoryRoot = process.cwd(),
   environment = process.env,
+  testHooks = null,
 } = {}) {
   const context = stateContext(repositoryRoot, environment, {
     command: "build",
@@ -1313,23 +1565,101 @@ export async function runBuildStage({
   });
   let buildConsumed = false;
   return managedStage(context, "build", async (state) => {
-    const child = childResult("npm", ["run", "evidence:production:build"], {
-      cwd: context.repositoryRoot,
-      env: stageChildEnvironment(context, {
-        stage: "build",
-        stageInputs: {
-          CERTIFICATION_ENVIRONMENT_STAGE: "build",
-          PRODUCTION_EVIDENCE_CANDIDATE_ID: state.candidate.id,
-        },
-      }),
-      inherit: true,
+    const buildEnvironment = stageChildEnvironment(context, {
+      stage: "build",
+      stageInputs: {
+        CERTIFICATION_ENVIRONMENT_STAGE: "build",
+        PRODUCTION_EVIDENCE_CANDIDATE_ID: state.candidate.id,
+      },
     });
+    let preparedRunNonce =
+      state.worktrees.roles["final-artifact"].dependencyStatus === "installed"
+        ? readJson(
+            path.join(context.repositoryRoot, DEFAULT_JOURNAL),
+            "prepared production semantic journal",
+          ).runNonce
+        : null;
+    const boundState = installAndBindRoleDependencies({
+      context,
+      state,
+      role: "final-artifact",
+      beforeFinalDependencyMeasurement:
+        testHooks?.beforeFinalDependencyMeasurement,
+      dispatch: () => {
+        const prepared = childResult(
+          process.execPath,
+          [
+            "scripts/production-artifact-evidence.mjs",
+            "prepare-certification-build",
+          ],
+          {
+            cwd: context.repositoryRoot,
+            env: buildEnvironment,
+          },
+        );
+        if (!prepared.error && !prepared.signal && prepared.status === 0) {
+          const output = parseLastJson(
+            prepared.stdout,
+            "prepared production dependency installation",
+          );
+          preparedRunNonce = output.runNonce;
+          return {
+            ...prepared,
+            installationEvent: output.dependencyInstall,
+            installationAttempted: true,
+          };
+        }
+        let installationEvent = null;
+        try {
+          installationEvent = readJson(
+            path.join(context.repositoryRoot, DEFAULT_JOURNAL),
+            "prepared production semantic journal",
+          ).events?.dependencyInstall;
+        } catch {
+          // A wrapper precondition can fail before npm installation begins.
+        }
+        const installationAttempted = Boolean(
+          installationEvent?.startedAt &&
+            installationEvent?.status !== "pending",
+        );
+        return {
+          ...prepared,
+          ...(installationAttempted ? { installationEvent } : {}),
+          installationAttempted,
+        };
+      },
+    });
+    runQualificationDependencyTestHook(
+      { ...context, state: boundState },
+      testHooks?.afterDependencyBinding,
+      { repositoryRoot: context.repositoryRoot, state: boundState },
+    );
+    if (!preparedRunNonce) {
+      throw new StageFailure(
+        "production build dependency preparation did not retain its run nonce",
+        "SOURCE_CONTRACT_FAILURE",
+        false,
+      );
+    }
+    const child = childResult(
+      process.execPath,
+      [
+        "scripts/production-artifact-evidence.mjs",
+        "complete-certification-build",
+        preparedRunNonce,
+      ],
+      {
+        cwd: context.repositoryRoot,
+        env: buildEnvironment,
+        inherit: testHooks?.suppressBuildChildOutput !== true,
+      },
+    );
     if (child.status !== 0 || child.signal || child.error) {
       let consumed = false;
       try {
         const journal = readJson(
           path.join(context.repositoryRoot, DEFAULT_JOURNAL),
-          "semantic journal v1",
+          "semantic journal v2",
         );
         consumed = Boolean(journal.events?.build?.startedAt);
       } catch {
@@ -1364,7 +1694,15 @@ export async function runBuildStage({
     }
     const manifestPath = path.join(context.repositoryRoot, DEFAULT_MANIFEST);
     const journalPath = path.join(context.repositoryRoot, DEFAULT_JOURNAL);
-    const journal = readJson(journalPath, "semantic journal v1");
+    const journal = readJson(journalPath, "semantic journal v2");
+    const handoffIssues = certificationPreparedBuildJournalIssues(journal);
+    if (handoffIssues.length > 0) {
+      throw new StageFailure(
+        handoffIssues.join("; "),
+        "FINAL_EVIDENCE_FAILURE",
+        true,
+      );
+    }
     const bindingUpdates = {
       semanticJournalNonce: journal.runNonce,
       nextBuildId: validation.manifest.build.nextBuildId,
@@ -1372,24 +1710,47 @@ export async function runBuildStage({
       productionManifestSha256: sha256Bytes(readFileSync(manifestPath)),
       semanticJournalSha256: sha256Bytes(readFileSync(journalPath)),
     };
+    runQualificationDependencyTestHook(
+      { ...context, state: boundState },
+      testHooks?.beforePostBuildDependencyRevalidation,
+      { repositoryRoot: context.repositoryRoot, state: boundState },
+    );
+    let postBuildDependencyRevalidation;
+    try {
+      postBuildDependencyRevalidation = dependencyRevalidationRecord({
+        context,
+        state: boundState,
+        role: "final-artifact",
+        boundary: "post-build",
+      });
+    } catch (error) {
+      throw new StageFailure(
+        error instanceof Error ? error.message : String(error),
+        "FINAL_EVIDENCE_FAILURE",
+        true,
+      );
+    }
     const descriptor = writeEvidence(context.evidenceRoot, "build/result.json", {
       schema: "interior-ai.production-certification-build-result.v1",
-      identity: { ...context.state.candidate, ...bindingUpdates },
+      identity: { ...boundState.candidate, ...bindingUpdates },
+      dependencyLifecycle: {
+        status: "installed",
+        bindingEvidence:
+          boundState.worktrees.roles["final-artifact"]
+            .dependencyBindingEvidence,
+        semanticProcessHandoff: structuredClone(
+          journal.owner.processHandoffs[0],
+        ),
+        postBuildRevalidation: postBuildDependencyRevalidation,
+      },
       complete: true,
     });
     const snapshot = captureArtifactSnapshot({
       repositoryRoot: context.repositoryRoot,
       evidenceRoot: context.evidenceRoot,
-      state,
+      state: boundState,
       position: "immediateBuild",
       bindingOverrides: bindingUpdates,
-    });
-    const worktreeBinding = refreshCertificationStageWorktreeBinding({
-      state,
-      evidenceRoot: context.evidenceRoot,
-      canonicalRoot: context.canonicalRoot,
-      role: "final-artifact",
-      phase: "active",
     });
     return {
       consumed: true,
@@ -1403,7 +1764,6 @@ export async function runBuildStage({
         [snapshotEvidenceName("immediateBuild")]: snapshot.snapshotDescriptor,
         [rootEvidenceName("immediateBuild")]: snapshot.rootDescriptor,
       },
-      worktreeBindings: { "final-artifact": worktreeBinding },
       result: bindingUpdates,
     };
   }, {
@@ -2281,33 +2641,74 @@ export async function runBrowserOwnersStage(options = {}) {
   );
   let consumed = false;
   return managedStage(context, "browser-owners", async (state) => {
-    const finalArtifactRoot = resolveCertificationStageWorktree({
+    const pristineDevelopmentBrowserRoot = resolveCertificationStageWorktree({
       state,
+      evidenceRoot: context.evidenceRoot,
+      canonicalRoot: context.canonicalRoot,
+      role: "development-browser",
+      phase: "pristine",
+    }).root;
+    const developmentContext = {
+      ...context,
+      repositoryRoot: pristineDevelopmentBrowserRoot,
+    };
+    const boundState = installAndBindRoleDependencies({
+      context: developmentContext,
+      state,
+      role: "development-browser",
+      beforeFinalDependencyMeasurement:
+        options.testHooks?.beforeFinalDependencyMeasurement,
+    });
+    runQualificationDependencyTestHook(
+      { ...developmentContext, state: boundState },
+      options.testHooks?.afterDependencyBinding,
+      {
+        repositoryRoot: developmentContext.repositoryRoot,
+        state: boundState,
+      },
+    );
+    const finalArtifactRoot = resolveCertificationStageWorktree({
+      state: boundState,
       evidenceRoot: context.evidenceRoot,
       canonicalRoot: context.canonicalRoot,
       role: "final-artifact",
       phase: "active",
     }).root;
     const developmentBrowserRoot = resolveCertificationStageWorktree({
-      state,
+      state: boundState,
       evidenceRoot: context.evidenceRoot,
       canonicalRoot: context.canonicalRoot,
       role: "development-browser",
       phase: "active",
     }).root;
-    if (
-      state.executionClass !== "deterministic-simulation" &&
-      !existsSync(path.join(developmentBrowserRoot, "node_modules"))
-    ) {
-      const install = childResult("npm", ["ci", "--include=dev"], {
-        cwd: developmentBrowserRoot,
-        env: dependencyInstallationEnvironment(context),
-        inherit: true,
+    runQualificationDependencyTestHook(
+      { ...context, state: boundState },
+      options.testHooks?.beforePreOwnerDependencyRevalidation,
+      {
+        finalArtifactRoot,
+        developmentBrowserRoot,
+        state: boundState,
+      },
+    );
+    let finalArtifactPreOwnerRevalidation;
+    let developmentBrowserPreOwnerRevalidation;
+    try {
+      finalArtifactPreOwnerRevalidation = dependencyRevalidationRecord({
+        context: { ...context, repositoryRoot: finalArtifactRoot },
+        state: boundState,
+        role: "final-artifact",
+        boundary: "pre-browser-owners",
       });
-      assertCertificationChildPassed(
-        install,
-        "development-browser dependency installation failed",
-        "PRECONDITION_ORCHESTRATION_FAILURE",
+      developmentBrowserPreOwnerRevalidation = dependencyRevalidationRecord({
+        context: { ...context, repositoryRoot: developmentBrowserRoot },
+        state: boundState,
+        role: "development-browser",
+        boundary: "pre-browser-owners",
+      });
+    } catch (error) {
+      throw new StageFailure(
+        error instanceof Error ? error.message : String(error),
+        "FINAL_EVIDENCE_FAILURE",
         false,
       );
     }
@@ -2419,7 +2820,7 @@ export async function runBrowserOwnersStage(options = {}) {
           cwd: input.repositoryRoot,
           env: browserEnvironment(
             input.context,
-            state,
+            boundState,
             input.owner,
             input.reportPath,
             input.evidencePath,
@@ -2461,7 +2862,7 @@ export async function runBrowserOwnersStage(options = {}) {
         );
         certificationEvidence = observedBrowserEvidence(
           input.owner,
-          state,
+          boundState,
           requiredEvidence,
           gate,
         );
@@ -2500,25 +2901,22 @@ export async function runBrowserOwnersStage(options = {}) {
     const snapshot = captureArtifactSnapshot({
       repositoryRoot: finalArtifactRoot,
       evidenceRoot: context.evidenceRoot,
-      state,
+      state: boundState,
       position: "postRuntimeBrowserLive",
     });
-    const worktreeBindings = {
-      "final-artifact": refreshCertificationStageWorktreeBinding({
-        state,
-        evidenceRoot: context.evidenceRoot,
-        canonicalRoot: context.canonicalRoot,
-        role: "final-artifact",
-        phase: "active",
-      }),
-      "development-browser": refreshCertificationStageWorktreeBinding({
-        state,
-        evidenceRoot: context.evidenceRoot,
-        canonicalRoot: context.canonicalRoot,
+    const finalArtifactDependencyRevalidation = dependencyRevalidationRecord({
+      context: { ...context, repositoryRoot: finalArtifactRoot },
+      state: boundState,
+      role: "final-artifact",
+      boundary: "post-browser-owners",
+    });
+    const developmentBrowserDependencyRevalidation =
+      dependencyRevalidationRecord({
+        context: developmentContext,
+        state: boundState,
         role: "development-browser",
-        phase: "active",
-      }),
-    };
+        boundary: "post-browser-owners",
+      });
     return {
       consumed: true,
       outputHashes: browserHashes,
@@ -2531,8 +2929,17 @@ export async function runBrowserOwnersStage(options = {}) {
           snapshot.snapshotDescriptor,
         [rootEvidenceName("postRuntimeBrowserLive")]: snapshot.rootDescriptor,
       },
-      worktreeBindings,
-      result: { ownerCount: REQUIRED_BROWSER_OWNERS.length, browserHashes },
+      result: {
+        ownerCount: REQUIRED_BROWSER_OWNERS.length,
+        browserHashes,
+        dependencyRevalidation: {
+          finalArtifactPreOwners: finalArtifactPreOwnerRevalidation,
+          developmentBrowserPreOwners:
+            developmentBrowserPreOwnerRevalidation,
+          finalArtifact: finalArtifactDependencyRevalidation,
+          developmentBrowser: developmentBrowserDependencyRevalidation,
+        },
+      },
     };
   }, {
     consumptionProbe: () =>

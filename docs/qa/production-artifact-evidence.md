@@ -94,7 +94,7 @@ The correction makes the machine-readable certification contract the sole
 owner of the ordered source-check set. The real source stage now invokes every
 canonical command against the exact candidate, stops at the first required
 failure, retains stdout/stderr and result evidence outside the source tree, and
-seals `interior-ai.production-certification-source-validation.v3`. Identity-only,
+seals `interior-ai.production-certification-source-validation.v4`. Identity-only,
 missing, extra, duplicate, reordered, substituted, failed, stale, incomplete,
 or tampered evidence cannot pass state validation.
 
@@ -356,9 +356,9 @@ preflight correctly rejected the resulting
 not edited, relabelled, or rehabilitated.
 
 Portable evidence is now
-`interior-ai.production-artifact-evidence.v3` / validator version 3. One
+`interior-ai.production-artifact-evidence.v3` / validator version 3. The
 executing wrapper owns an atomic private journal with schema
-`interior-ai.production-artifact-semantic-event-journal.v1`. It is created
+`interior-ai.production-artifact-semantic-event-journal.v2`. It is created
 before dependency installation and binds a UUID run nonce, candidate, commit,
 tree, hashed local worktree identity, wrapper version/path/SHA-256, process and
 parent identity, exact install/generated/build commands, safe build contract,
@@ -368,8 +368,17 @@ retains the nonce, source/tree, normalized wrapper identity, process identity,
 command identities, and final event fields; it does not disclose the worktree
 path or environment values.
 
-Only the journal-bound PID/parent PID may write install, generated-source, and
-build events. A child signal is recorded separately from a numeric exit code.
+Only the journal-bound PID/parent PID may write an event. Certification may
+cross the required atomic dependency-binding boundary by recording one exact
+`post-dependency-install-pre-generated-source` process handoff. The handoff
+binds the prior and next PID/parent PID plus its UTC completion time; only the
+new process may then write generated-source and build events. Unrecorded owner
+impersonation, a second handoff, or a handoff outside that boundary fails
+closed. Certification requires exactly one handoff, binds it in the
+certification build result, and rechecks the same record from the retained
+journal and manifest during final standalone verification; the generic
+single-process build command may still have none. A child signal is recorded
+separately from a numeric exit code.
 The actual `npm --version` output must match the exact committed
 `packageManager` declaration; recovery repeats that executable check rather
 than trusting the declaration as observed toolchain provenance.
@@ -379,6 +388,7 @@ The semantic sequence is fail-closed:
 ```text
 cycleStartedAt
 <= installStartedAt <= installCompletedAt
+<= optional processHandoffCompletedAt
 <= generatedSourceCheckStartedAt <= generatedSourceCheckCompletedAt
 <= buildStartedAt <= buildCompletedAt
 <= artifactInventoryStartedAt <= artifactInventoryCompletedAt

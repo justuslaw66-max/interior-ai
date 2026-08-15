@@ -23,6 +23,7 @@ import {
   PRODUCTION_CERTIFICATION_ARTIFACT_SNAPSHOT_SCHEMA,
   PRODUCTION_CERTIFICATION_CONTINUITY_SCHEMA,
   PRODUCTION_CERTIFICATION_SOURCE_VALIDATION_SCHEMA,
+  PRODUCTION_CERTIFICATION_SOURCE_VALIDATION_SCHEMA_V3,
   canonicalJsonBytes,
   continuityContract,
   isCanonicalUtcTimestamp,
@@ -37,9 +38,19 @@ import {
   validateProjectedEnvironmentMetadata,
 } from "./production-certification-stage-environment.mjs";
 import { deriveProductionVerifierClosure } from "./production-verifier-closure.mjs";
+import {
+  dependencyLifecycleIssues,
+  readAndValidateCertificationDependencyBindingEvidence,
+} from "./production-certification-dependencies.mjs";
+import {
+  CERTIFICATION_WORKTREE_ROLES,
+  PRODUCTION_CERTIFICATION_WORKTREE_PRIVATE_SCHEMA,
+} from "./production-certification-worktrees.mjs";
 
 const SOURCE_EVIDENCE_SEAL_DOMAIN =
   "interior-ai.production-certification-source-validation-seal.v1\n";
+const CERTIFICATION_STATE_SEAL_DOMAIN =
+  "interior-ai.production-certification-state-seal.v1\n";
 const SNAPSHOT_SEAL_DOMAIN =
   "interior-ai.production-certification-artifact-snapshot-seal.v1\n";
 const ROOT_SEAL_DOMAIN =
@@ -94,9 +105,68 @@ function canonicalRead(filePath, description) {
   return { bytes, value, sha256: sha256Bytes(bytes) };
 }
 
-function writeCanonicalExclusive(filePath, value) {
-  mkdirSync(path.dirname(filePath), { recursive: true, mode: 0o700 });
-  writeFileSync(filePath, canonicalJsonBytes(value), { flag: "wx", mode: 0o600 });
+function containedPhysicalEvidenceDirectory(
+  evidenceRoot,
+  relativeDirectory,
+  { requireAbsent = false } = {},
+) {
+  if (
+    path.isAbsolute(relativeDirectory) ||
+    relativeDirectory.includes("\\") ||
+    path.normalize(relativeDirectory) !== relativeDirectory ||
+    relativeDirectory === ".." ||
+    relativeDirectory.startsWith(`..${path.sep}`)
+  ) {
+    throw new Error("certification evidence directory is not contained");
+  }
+  const root = realpathSync(evidenceRoot);
+  let current = root;
+  const components = relativeDirectory.split(path.sep).filter(Boolean);
+  for (const [index, component] of components.entries()) {
+    current = path.join(current, component);
+    const final = index === components.length - 1;
+    if (existsSync(current)) {
+      if (final && requireAbsent) {
+        throw new Error("certification evidence directory target must be absent");
+      }
+      const metadata = lstatSync(current);
+      if (
+        !metadata.isDirectory() ||
+        metadata.isSymbolicLink() ||
+        realpathSync(current) !== current
+      ) {
+        throw new Error("certification evidence directory is not physical");
+      }
+    } else {
+      mkdirSync(current, { mode: 0o700 });
+    }
+  }
+  if (current !== root && !current.startsWith(`${root}${path.sep}`)) {
+    throw new Error("certification evidence directory escapes its root");
+  }
+  return current;
+}
+
+function writeCanonicalExclusive(evidenceRoot, filePath, value) {
+  const root = realpathSync(evidenceRoot);
+  const lexicalRoot = path.resolve(evidenceRoot);
+  const lexicalRequested = path.resolve(filePath);
+  const requested = lexicalRequested.startsWith(`${root}${path.sep}`)
+    ? lexicalRequested
+    : lexicalRequested.startsWith(`${lexicalRoot}${path.sep}`)
+      ? path.join(root, path.relative(lexicalRoot, lexicalRequested))
+      : null;
+  if (requested === null || !requested.startsWith(`${root}${path.sep}`)) {
+    throw new Error("certification evidence file escapes its root");
+  }
+  containedPhysicalEvidenceDirectory(
+    root,
+    path.relative(root, path.dirname(requested)),
+  );
+  if (existsSync(requested)) {
+    throw new Error("certification evidence file target must be absent");
+  }
+  writeFileSync(requested, canonicalJsonBytes(value), { flag: "wx", mode: 0o600 });
 }
 
 function evidenceDescriptor(evidenceRoot, filePath) {
@@ -178,7 +248,7 @@ function assertExpectedSource(identity, state) {
 
 function deterministicTimestamp(state, offset) {
   const startedAt = state.stages["source-validation"].startedAt;
-  return new Date(Date.parse(startedAt) + offset).toISOString();
+  return new Date(Date.parse(startedAt) + 10 + offset).toISOString();
 }
 
 function nowForExecution(state, offset) {
@@ -237,7 +307,7 @@ function sourceValidationPayload(value) {
   return payload;
 }
 
-function sealSourceValidationEvidence(value) {
+export function sealSourceValidationEvidence(value) {
   const payload = sourceValidationPayload(value);
   return {
     ...payload,
@@ -248,6 +318,339 @@ function sealSourceValidationEvidence(value) {
       ]),
     ),
   };
+}
+
+function certificationStateSealValid(state) {
+  if (
+    !exactKeys(state?.seal, ["algorithm", "sha256"]) ||
+    state.seal.algorithm !== "sha256" ||
+    !isSha256(state.seal.sha256)
+  ) {
+    return false;
+  }
+  const payload = structuredClone(state);
+  delete payload.seal;
+  return (
+    state.seal.sha256 ===
+    sha256Bytes(
+      Buffer.concat([
+        Buffer.from(CERTIFICATION_STATE_SEAL_DOMAIN),
+        canonicalJsonBytes(payload),
+      ]),
+    )
+  );
+}
+
+function dependencyBindingStateReceiptIssues({ lifecycle, evidenceRoot, state }) {
+  const issues = [];
+  try {
+    const retained = resolvedEvidenceFile(
+      evidenceRoot,
+      lifecycle?.bindingStateEvidence,
+      "source-validation dependency binding-state receipt",
+    );
+    const receipt = JSON.parse(retained.bytes.toString("utf8"));
+    const sourceAttempt = state.stages?.["source-validation"]?.attempts?.at(-1);
+    const receiptAttempt =
+      receipt.stages?.["source-validation"]?.attempts?.at(-1);
+    const currentBinding = state.worktrees?.roles?.["source-validation"];
+    const receiptBinding = receipt.worktrees?.roles?.["source-validation"];
+    const receiptRoles = receipt.worktrees?.roles;
+    const currentRoles = state.worktrees?.roles;
+    const expectedBindingKeys = Object.keys(state.bindings ?? {});
+    const downstreamStages = Object.keys(state.stages ?? {}).filter(
+      (stage) => !new Set(["doctor", "source-validation"]).has(stage),
+    );
+    const bindingsArePristine =
+      exactKeys(receipt.bindings, expectedBindingKeys) &&
+      expectedBindingKeys.every((name) =>
+        name === "browserOwnerEvidenceSha256"
+          ? exactKeys(receipt.bindings[name], [])
+          : receipt.bindings[name] === null,
+      );
+    const downstreamStagesArePristine = downstreamStages.every((stage) => {
+      const record = receipt.stages?.[stage];
+      return (
+        exactKeys(record, Object.keys(state.stages[stage])) &&
+        record.status === "pending" &&
+        record.canonicalCommand === state.stages[stage].canonicalCommand &&
+        record.inputFingerprint === null &&
+        record.startedAt === null &&
+        record.completedAt === null &&
+        record.exitCode === null &&
+        record.signal === null &&
+        record.failureClassification === null &&
+        record.consumedSubstantiveGate === false &&
+        exactKeys(record.outputHashes, []) &&
+        Array.isArray(record.attempts) &&
+        record.attempts.length === 0 &&
+        record.invalidationReason === null
+      );
+    });
+    const immutableWorktreeFields = [
+      "role",
+      "certificationId",
+      "candidateCommitSha",
+      "candidateTreeSha",
+      "gitCommonDirSha256",
+      "gitCommonDirFilesystemIdentitySha256",
+      "privateRealpathSha256",
+      "filesystemIdentitySha256",
+      "cleanStateSha256",
+      "creationEvent",
+    ];
+    const worktreeSnapshotsAreExact = CERTIFICATION_WORKTREE_ROLES.every(
+      (role) => {
+        const receiptRole = receiptRoles?.[role];
+        const currentRole = currentRoles?.[role];
+        if (
+          receiptRole?.lifecycleStatus !== "active" ||
+          receiptRole?.cleanupStatus !== "pending" ||
+          immutableWorktreeFields.some(
+            (field) =>
+              JSON.stringify(receiptRole?.[field]) !==
+              JSON.stringify(currentRole?.[field]),
+          ) ||
+          (role === "source-validation"
+            ? JSON.stringify(receiptRole?.ignoredPathInventory) !==
+              JSON.stringify(currentRole?.ignoredPathInventory)
+            : receiptRole?.ignoredPathInventory?.count !== 0 ||
+              receiptRole?.ignoredPathInventory?.sha256 !== sha256Bytes(""))
+        ) {
+          return false;
+        }
+        try {
+          const sidecarFile = resolvedEvidenceFile(
+            evidenceRoot,
+            receiptRole?.privateSidecar,
+            `source binding-state ${role} private sidecar`,
+          );
+          const sidecar = JSON.parse(sidecarFile.bytes.toString("utf8"));
+          return (
+            sidecarFile.bytes.equals(canonicalJsonBytes(sidecar)) &&
+            exactKeys(sidecar, [
+              "schema",
+              "certificationId",
+              "role",
+              "realpath",
+              "gitCommonDirRealpath",
+              "filesystem",
+              "dependency",
+            ]) &&
+            sidecar.schema === PRODUCTION_CERTIFICATION_WORKTREE_PRIVATE_SCHEMA &&
+            sidecar.certificationId === state.certificationId &&
+            sidecar.role === role &&
+            sha256Bytes(sidecar.realpath) === receiptRole.privateRealpathSha256 &&
+            sha256Bytes(sidecar.gitCommonDirRealpath) ===
+              receiptRole.gitCommonDirSha256 &&
+            sha256Bytes(
+              `${sidecar.filesystem?.device}:${sidecar.filesystem?.inode}`,
+            ) === receiptRole.filesystemIdentitySha256 &&
+            (role === "source-validation"
+              ? sidecar.dependency !== null &&
+                JSON.stringify(receiptRole.privateSidecar) ===
+                  JSON.stringify(currentRole.privateSidecar)
+              : sidecar.dependency === null)
+          );
+        } catch {
+          return false;
+        }
+      },
+    );
+    const receiptAttempts = receipt.stages?.["source-validation"]?.attempts;
+    const currentAttempts = state.stages?.["source-validation"]?.attempts;
+    const priorAttemptsAreExact =
+      Array.isArray(receiptAttempts) &&
+      Array.isArray(currentAttempts) &&
+      receiptAttempts.length === currentAttempts.length &&
+      receiptAttempts
+        .slice(0, -1)
+        .every(
+          (attempt, index) =>
+            JSON.stringify(attempt) === JSON.stringify(currentAttempts[index]),
+        );
+    const installationStartedAt =
+      receiptBinding?.dependencyInstallation?.startedAt;
+    const installationCompletedAt =
+      receiptBinding?.dependencyInstallation?.completedAt;
+    const bindingAttempts = (receiptAttempts ?? []).filter(
+      (attempt) =>
+        Date.parse(installationStartedAt ?? "") >=
+          Date.parse(attempt?.startedAt ?? "") &&
+        Date.parse(installationCompletedAt ?? "") <=
+          Date.parse(attempt?.completedAt ?? receipt.updatedAt ?? ""),
+    );
+    const bindingAttemptIsLatest = bindingAttempts[0]?.id === receiptAttempt?.id;
+    const expectedReceiptUpdatedAt = bindingAttemptIsLatest
+      ? installationCompletedAt
+      : receiptAttempt?.startedAt;
+    if (
+      !retained.bytes.equals(canonicalJsonBytes(receipt)) ||
+      !exactKeys(receipt, Object.keys(state)) ||
+      lifecycle?.bindingStateEvidence?.sha256 !==
+        lifecycle?.stateShaImmediatelyAfterBinding ||
+      retained.bytes.length === 0 ||
+      sha256Bytes(retained.bytes) !== lifecycle?.stateShaImmediatelyAfterBinding ||
+      !certificationStateSealValid(receipt) ||
+      receipt.schema !== state.schema ||
+      receipt.version !== 3 ||
+      receipt.certificationId !== state.certificationId ||
+      JSON.stringify(receipt.candidate) !== JSON.stringify(state.candidate) ||
+      JSON.stringify(receipt.harness) !== JSON.stringify(state.harness) ||
+      receipt.executionClass !== state.executionClass ||
+      receipt.createdAt !== state.createdAt ||
+      receipt.completionState !== "incomplete" ||
+      !bindingsArePristine ||
+      !exactKeys(receipt.evidenceFiles, ["doctor"]) ||
+      JSON.stringify(receipt.evidenceFiles.doctor) !==
+        JSON.stringify(state.evidenceFiles.doctor) ||
+      receipt.worktrees?.schema !== state.worktrees?.schema ||
+      !exactKeys(receiptRoles, Object.keys(state.worktrees?.roles ?? {})) ||
+      dependencyLifecycleIssues(receiptBinding).length > 0 ||
+      dependencyLifecycleIssues(receiptRoles?.["final-artifact"]).length > 0 ||
+      dependencyLifecycleIssues(receiptRoles?.["development-browser"]).length > 0 ||
+      receiptRoles?.["final-artifact"]?.dependencyStatus !== "not-installed" ||
+      receiptRoles?.["development-browser"]?.dependencyStatus !==
+        "not-installed" ||
+      !worktreeSnapshotsAreExact ||
+      !exactKeys(receipt.stages, Object.keys(state.stages ?? {})) ||
+      JSON.stringify(receipt.stages?.doctor) !==
+        JSON.stringify(state.stages?.doctor) ||
+      receipt.stages?.["source-validation"]?.status !== "running" ||
+      !exactKeys(
+        receipt.stages?.["source-validation"],
+        Object.keys(state.stages?.["source-validation"] ?? {}),
+      ) ||
+      receipt.stages["source-validation"].canonicalCommand !==
+        state.stages?.["source-validation"]?.canonicalCommand ||
+      receipt.stages["source-validation"].inputFingerprint !==
+        state.stages?.["source-validation"]?.inputFingerprint ||
+      receipt.stages["source-validation"].completedAt !== null ||
+      receipt.stages["source-validation"].exitCode !== null ||
+      receipt.stages["source-validation"].signal !== null ||
+      receipt.stages["source-validation"].failureClassification !== null ||
+      receipt.stages["source-validation"].consumedSubstantiveGate !== false ||
+      !exactKeys(receipt.stages["source-validation"].outputHashes, []) ||
+      receipt.stages["source-validation"].invalidationReason !== null ||
+      !priorAttemptsAreExact ||
+      !exactKeys(receiptAttempt, Object.keys(sourceAttempt ?? {})) ||
+      receiptAttempt?.status !== "running" ||
+      receiptAttempt?.id !== sourceAttempt?.id ||
+      receiptAttempt?.number !== sourceAttempt?.number ||
+      receiptAttempt?.startedAt !== sourceAttempt?.startedAt ||
+      receiptAttempt?.completedAt !== null ||
+      receiptAttempt?.exitCode !== null ||
+      receiptAttempt?.signal !== null ||
+      receiptAttempt?.failureClassification !== null ||
+      receiptAttempt?.consumedSubstantiveGate !== false ||
+      receipt.evidenceFiles?.["source-validation"] !== undefined ||
+      !downstreamStagesArePristine ||
+      receiptBinding?.dependencyStatus !== "installed" ||
+      receiptBinding?.dependencyIdentitySha256 !==
+        lifecycle?.dependencyIdentitySha256 ||
+      JSON.stringify(receiptBinding?.dependencyBindingEvidence) !==
+        JSON.stringify(lifecycle?.bindingEvidence) ||
+      JSON.stringify(receiptBinding?.dependencyInstallation) !==
+        JSON.stringify(currentBinding?.dependencyInstallation) ||
+      bindingAttempts.length !== 1 ||
+      receipt.updatedAt !== expectedReceiptUpdatedAt
+    ) {
+      issues.push(
+        `source-validation dependency binding-state receipt is stale or contradictory (${JSON.stringify({
+          worktreeSnapshotsAreExact,
+          priorAttemptsAreExact,
+          bindingAttemptCount: bindingAttempts.length,
+          expectedReceiptUpdatedAt,
+          observedReceiptUpdatedAt: receipt.updatedAt,
+          receiptSourceStatus:
+            receipt.stages?.["source-validation"]?.status,
+          receiptSourceAttemptCount: receiptAttempts?.length,
+          currentSourceAttemptCount: currentAttempts?.length,
+        })})`,
+      );
+    }
+  } catch (error) {
+    issues.push(error instanceof Error ? error.message : String(error));
+  }
+  return issues;
+}
+
+function sourceDependencyRevalidationIssues({
+  lifecycle,
+  evidenceRoot,
+  binding,
+  state,
+  repositoryRoot,
+}) {
+  const issues = [];
+  try {
+    const retained =
+      readAndValidateCertificationDependencyBindingEvidence({
+        evidenceRoot,
+        descriptor: lifecycle?.bindingEvidence,
+        state,
+        role: "source-validation",
+        repositoryRoot,
+        remeasure: false,
+      });
+    if (!retained.validation.valid) {
+      issues.push(...retained.validation.issues);
+      return issues;
+    }
+    const bindingEvidence = retained.evidence;
+    const expected = {
+      role: "source-validation",
+      dependencyIdentitySha256: bindingEvidence.dependencyIdentitySha256,
+      bindingEvidenceSha256: binding?.dependencyBindingEvidence?.sha256,
+      packageLockSha256: bindingEvidence.packageLockSha256,
+      packageManifestSha256: bindingEvidence.packageManifestSha256,
+      nodeModulesRootIdentitySha256:
+        bindingEvidence.physicalNodeModulesProof?.nodeModulesRootIdentitySha256,
+      nodeModulesFilesystemIdentitySha256:
+        bindingEvidence.physicalNodeModulesProof
+          ?.nodeModulesFilesystemIdentitySha256,
+      dependencyInventorySha256: bindingEvidence.dependencyInventory?.sha256,
+      topLevelPackageResolutionSha256:
+        bindingEvidence.topLevelPackageResolutionProof?.sha256,
+      nodeSearchPathProofSha256: bindingEvidence.nodeSearchPathProof?.sha256,
+      isolationPassed: true,
+      equalToBoundIdentity: true,
+    };
+    for (const [name, boundary] of [
+      ["preCheckRevalidation", "pre-check"],
+      ["postCheckRevalidation", "post-check"],
+    ]) {
+      const observed = lifecycle?.[name];
+      if (
+        !exactKeys(observed, [
+          "role",
+          "boundary",
+          "dependencyIdentitySha256",
+          "bindingEvidenceSha256",
+          "packageLockSha256",
+          "packageManifestSha256",
+          "nodeModulesRootIdentitySha256",
+          "nodeModulesFilesystemIdentitySha256",
+          "dependencyInventorySha256",
+          "topLevelPackageResolutionSha256",
+          "nodeSearchPathProofSha256",
+          "isolationPassed",
+          "equalToBoundIdentity",
+        ]) ||
+        observed.boundary !== boundary ||
+        Object.entries(expected).some(
+          ([field, value]) => observed[field] !== value,
+        )
+      ) {
+        issues.push(
+          `source-validation ${name} is not exactly bound to the sealed dependency evidence`,
+        );
+      }
+    }
+  } catch (error) {
+    issues.push(error instanceof Error ? error.message : String(error));
+  }
+  return issues;
 }
 
 export function sourceValidationEvidenceNames() {
@@ -271,6 +674,8 @@ export function sourceValidationStageEvidence({
   environment = process.env,
   onCheckCompleted = () => {},
   worktreeIdentity = null,
+  dependencyBindingStateSha256 = null,
+  dependencyRevalidate = null,
 }) {
   const contract = sourceValidationCheckSet(repositoryRoot);
   const attempt = state.stages["source-validation"].attempts.at(-1);
@@ -281,6 +686,19 @@ export function sourceValidationStageEvidence({
   if (simulation && environment.CERTIFICATION_QUALIFICATION_MODE !== "1") {
     throw new Error("source-validation fixture execution is restricted to qualification");
   }
+  if (
+    state.version === 3 &&
+    (state.worktrees?.roles?.["source-validation"]?.dependencyStatus !==
+      "installed" ||
+      !isSha256(dependencyBindingStateSha256) ||
+      typeof dependencyRevalidate !== "function")
+  ) {
+    throw new Error(
+      "source-validation requires an installed, durably bound dependency lifecycle",
+    );
+  }
+  const preCheckDependencyRevalidation =
+    state.version === 3 ? dependencyRevalidate("pre-check") : null;
   const missingEnvironment = [
     ...new Set(
       contract.checks.flatMap((check) => check.requiredEnvironmentNames),
@@ -292,11 +710,28 @@ export function sourceValidationStageEvidence({
     );
   }
   const relativeRoot = `source-validation/attempt-${String(attempt.number).padStart(3, "0")}`;
-  const absoluteRoot = path.join(evidenceRoot, relativeRoot);
-  if (existsSync(absoluteRoot)) {
-    throw new Error("source-validation attempt evidence target must be absent");
+  const absoluteRoot = containedPhysicalEvidenceDirectory(
+    evidenceRoot,
+    relativeRoot,
+    { requireAbsent: true },
+  );
+  let dependencyBindingStateEvidence = null;
+  if (state.version === 3) {
+    const bindingStatePath = path.join(
+      absoluteRoot,
+      "dependency-binding-state.json",
+    );
+    writeCanonicalExclusive(evidenceRoot, bindingStatePath, state);
+    dependencyBindingStateEvidence = evidenceDescriptor(
+      evidenceRoot,
+      bindingStatePath,
+    );
+    if (dependencyBindingStateEvidence.sha256 !== dependencyBindingStateSha256) {
+      throw new Error(
+        "source-validation binding-state receipt differs from the durable state SHA",
+      );
+    }
   }
-  mkdirSync(absoluteRoot, { recursive: true, mode: 0o700 });
   const results = [];
   let failedCheckId = null;
   for (const [index, check] of contract.checks.entries()) {
@@ -324,7 +759,11 @@ export function sourceValidationStageEvidence({
       absoluteRoot,
       `${String(index + 1).padStart(3, "0")}-${check.id}`,
     );
-    mkdirSync(checkRoot, { recursive: true, mode: 0o700 });
+    containedPhysicalEvidenceDirectory(
+      evidenceRoot,
+      path.relative(realpathSync(evidenceRoot), checkRoot),
+      { requireAbsent: true },
+    );
     const stdoutPath = path.join(checkRoot, "stdout.log");
     const stderrPath = path.join(checkRoot, "stderr.log");
     const stdout = openSync(stdoutPath, "wx", 0o600);
@@ -397,7 +836,7 @@ export function sourceValidationStageEvidence({
         sourceAfter.clean === true,
     };
     const resultPath = path.join(checkRoot, "result.json");
-    writeCanonicalExclusive(resultPath, result);
+    writeCanonicalExclusive(evidenceRoot, resultPath, result);
     const resultDescriptor = evidenceDescriptor(evidenceRoot, resultPath);
     result.resultEvidence = resultDescriptor;
     result.generatedEvidence = [
@@ -413,10 +852,15 @@ export function sourceValidationStageEvidence({
     }
   }
   const completedAt = nowForExecution(state, contract.checks.length * 4 + 3);
+  const postCheckDependencyRevalidation =
+    state.version === 3 ? dependencyRevalidate("post-check") : null;
   const passed = failedCheckId === null && results.length === contract.checks.length;
   const evidence = sealSourceValidationEvidence({
-    schema: PRODUCTION_CERTIFICATION_SOURCE_VALIDATION_SCHEMA,
-    version: 3,
+    schema:
+      state.version === 3
+        ? PRODUCTION_CERTIFICATION_SOURCE_VALIDATION_SCHEMA
+        : PRODUCTION_CERTIFICATION_SOURCE_VALIDATION_SCHEMA_V3,
+    version: state.version === 3 ? 4 : 3,
     certificationId: state.certificationId,
     candidate: structuredClone(state.candidate),
     harness: structuredClone(state.harness),
@@ -432,7 +876,7 @@ export function sourceValidationStageEvidence({
       commitSha: state.candidate.commitSha,
       treeSha: state.candidate.treeSha,
     },
-    ...(state.version === 2
+    ...(new Set([2, 3]).has(state.version)
       ? {
           stageWorktree: {
             role: "source-validation",
@@ -444,6 +888,41 @@ export function sourceValidationStageEvidence({
             dependencyIdentitySha256:
               worktreeIdentity?.dependencyIdentitySha256 ?? null,
             evidenceRootSha256: sha256Bytes(realpathSync(evidenceRoot)),
+          },
+        }
+      : {}),
+    ...(state.version === 3
+      ? {
+          dependencyLifecycle: {
+            schema:
+              state.worktrees.roles["source-validation"]
+                .dependencyLifecycleSchema,
+            version: 1,
+            status: "installed",
+            bindingEvidenceSchema:
+              "interior-ai.production-certification-worktree-dependency-binding.v1",
+            dependencyIdentitySha256:
+              state.worktrees.roles["source-validation"]
+                .dependencyIdentitySha256,
+            bindingEvidence: structuredClone(
+              state.worktrees.roles["source-validation"]
+                .dependencyBindingEvidence,
+            ),
+            stateShaImmediatelyAfterBinding: dependencyBindingStateSha256,
+            bindingStateEvidence: dependencyBindingStateEvidence,
+            preCheckRevalidation: preCheckDependencyRevalidation,
+            postCheckRevalidation: postCheckDependencyRevalidation,
+            aggregateEquality: {
+              stateDependencyIdentitySha256:
+                state.worktrees.roles["source-validation"]
+                  .dependencyIdentitySha256,
+              aggregateDependencyIdentitySha256:
+                worktreeIdentity?.dependencyIdentitySha256 ?? null,
+              equal:
+                state.worktrees.roles["source-validation"]
+                  .dependencyIdentitySha256 ===
+                worktreeIdentity?.dependencyIdentitySha256,
+            },
           },
         }
       : {}),
@@ -471,7 +950,7 @@ export function sourceValidationStageEvidence({
     },
   });
   const aggregatePath = path.join(absoluteRoot, "evidence.json");
-  writeCanonicalExclusive(aggregatePath, evidence);
+  writeCanonicalExclusive(evidenceRoot, aggregatePath, evidence);
   return Object.freeze({
     passed,
     failedCheckId,
@@ -508,7 +987,11 @@ export function validateSourceValidationEvidence({
       issues: [error instanceof Error ? error.message : String(error)],
     };
   }
-  if (evidence?.schema !== PRODUCTION_CERTIFICATION_SOURCE_VALIDATION_SCHEMA) {
+  const expectedSchema =
+    state.version === 3
+      ? PRODUCTION_CERTIFICATION_SOURCE_VALIDATION_SCHEMA
+      : PRODUCTION_CERTIFICATION_SOURCE_VALIDATION_SCHEMA_V3;
+  if (evidence?.schema !== expectedSchema) {
     issues.push("source-validation evidence schema is unsupported");
   }
   if (
@@ -525,7 +1008,8 @@ export function validateSourceValidationEvidence({
       "executionClass",
       "simulation",
       "workingDirectoryIdentity",
-      ...(state.version === 2 ? ["stageWorktree"] : []),
+      ...(new Set([2, 3]).has(state.version) ? ["stageWorktree"] : []),
+      ...(state.version === 3 ? ["dependencyLifecycle"] : []),
       "orderedCheckIds",
       "canonicalCommands",
       "orderedEnvironmentProfileIds",
@@ -543,7 +1027,7 @@ export function validateSourceValidationEvidence({
   }
   const sourceAttempt = state.stages?.["source-validation"]?.attempts?.at(-1);
   if (
-    evidence?.version !== 3 ||
+    evidence?.version !== (state.version === 3 ? 4 : 3) ||
     evidence?.runNonce !== `${state.certificationId}:${sourceAttempt?.id}` ||
     evidence?.startedAt !== sourceAttempt?.startedAt ||
     !isCanonicalUtcTimestamp(evidence?.completedAt) ||
@@ -628,7 +1112,7 @@ export function validateSourceValidationEvidence({
   ) {
     issues.push("source-validation aggregate working directory is invalid");
   }
-  if (state.version === 2) {
+  if (new Set([2, 3]).has(state.version)) {
     const binding = state.worktrees?.roles?.["source-validation"];
     const portableBinding = binding
       ? Object.fromEntries(
@@ -672,6 +1156,66 @@ export function validateSourceValidationEvidence({
         sha256Bytes(realpathSync(evidenceRoot))
     ) {
       issues.push("source-validation stage-worktree identity is missing or stale");
+    }
+  }
+  if (state.version === 3) {
+    const binding = state.worktrees?.roles?.["source-validation"];
+    const lifecycle = evidence?.dependencyLifecycle;
+    const stateSha256 = sha256Bytes(canonicalJsonBytes(state));
+    issues.push(
+      ...dependencyBindingStateReceiptIssues({
+        lifecycle,
+        evidenceRoot,
+        state,
+      }),
+      ...sourceDependencyRevalidationIssues({
+        lifecycle,
+        evidenceRoot,
+        binding,
+        state,
+        repositoryRoot,
+      }),
+    );
+    if (
+      !exactKeys(lifecycle, [
+        "schema",
+        "version",
+        "status",
+        "bindingEvidenceSchema",
+        "dependencyIdentitySha256",
+        "bindingEvidence",
+        "stateShaImmediatelyAfterBinding",
+        "bindingStateEvidence",
+        "preCheckRevalidation",
+        "postCheckRevalidation",
+        "aggregateEquality",
+      ]) ||
+      lifecycle.schema !== binding?.dependencyLifecycleSchema ||
+      lifecycle.version !== 1 ||
+      lifecycle.status !== "installed" ||
+      lifecycle.bindingEvidenceSchema !==
+        "interior-ai.production-certification-worktree-dependency-binding.v1" ||
+      lifecycle.dependencyIdentitySha256 !==
+        binding?.dependencyIdentitySha256 ||
+      JSON.stringify(lifecycle.bindingEvidence) !==
+        JSON.stringify(binding?.dependencyBindingEvidence) ||
+      (!isSha256(lifecycle.stateShaImmediatelyAfterBinding) ||
+        (state.stages?.["source-validation"]?.status === "running" &&
+          lifecycle.stateShaImmediatelyAfterBinding !== stateSha256)) ||
+      !exactKeys(lifecycle.aggregateEquality, [
+        "stateDependencyIdentitySha256",
+        "aggregateDependencyIdentitySha256",
+        "equal",
+      ]) ||
+      lifecycle.aggregateEquality?.stateDependencyIdentitySha256 !==
+        binding?.dependencyIdentitySha256 ||
+      lifecycle.aggregateEquality?.aggregateDependencyIdentitySha256 !==
+        binding?.dependencyIdentitySha256 ||
+      lifecycle.aggregateEquality?.equal !== true
+    ) {
+      issues.push(
+        "source-validation dependency lifecycle, revalidation, or aggregate equality is stale",
+      );
     }
   }
   let priorCheckCompletedAt = evidence?.startedAt;
@@ -1120,7 +1664,7 @@ function artifactIdentity(root, rootClassification, state, bindingOverrides = {}
   );
   const journalRead = canonicalRead(
     path.join(root, DEFAULT_JOURNAL),
-    "semantic journal v1",
+    "semantic journal v2",
   );
   const applicationArtifact = inventoryCanonicalApplicationArtifact(root);
   const manifest = manifestRead.value;
@@ -1362,7 +1906,7 @@ export function captureArtifactSnapshot({
     "continuity/private",
     `${position}.json`,
   );
-  writeCanonicalExclusive(rootPathEvidence, rootSidecar);
+  writeCanonicalExclusive(evidenceRoot, rootPathEvidence, rootSidecar);
   const rootDescriptor = evidenceDescriptor(evidenceRoot, rootPathEvidence);
   let measured;
   let archive = null;
@@ -1436,7 +1980,7 @@ export function captureArtifactSnapshot({
     "continuity/snapshots",
     `${position}.json`,
   );
-  writeCanonicalExclusive(snapshotPath, snapshot);
+  writeCanonicalExclusive(evidenceRoot, snapshotPath, snapshot);
   return Object.freeze({
     snapshot,
     snapshotDescriptor: evidenceDescriptor(evidenceRoot, snapshotPath),
@@ -2302,7 +2846,7 @@ export function measureFinalContinuity({
     "continuity",
     `attempt-${String(attempt.number).padStart(3, "0")}.json`,
   );
-  writeCanonicalExclusive(filePath, completed);
+  writeCanonicalExclusive(evidenceRoot, filePath, completed);
   return {
     evidence: completed,
     descriptor: evidenceDescriptor(evidenceRoot, filePath),

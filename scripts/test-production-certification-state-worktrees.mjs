@@ -15,10 +15,19 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 
 import {
+  PRODUCTION_CERTIFICATION_STATE_SCHEMA,
+  PRODUCTION_CERTIFICATION_STATE_SCHEMA_V1,
+  PRODUCTION_CERTIFICATION_STATE_SCHEMA_V2,
   canonicalJsonBytes,
   harnessSourceIdentity,
   sha256Bytes,
 } from "./production-certification-contract.mjs";
+import {
+  finalCertificationManifestIdentityIssues,
+  finalRuntimeArtifactIdentityIssues,
+  finalSemanticJournalSchemaForStateSchema,
+  isFinalCertificationStateSchemaSupported,
+} from "./production-certification-evidence.mjs";
 import { runProductionCertificationSimulation } from "./production-certification-simulation.mjs";
 import { validateSourceValidationEvidence } from "./production-certification-source-continuity.mjs";
 import { projectCertificationChildEnvironment } from "./production-certification-stage-environment.mjs";
@@ -41,6 +50,112 @@ import {
 } from "./production-certification-worktrees.mjs";
 
 const repositoryRoot = process.cwd();
+
+assert.equal(isFinalCertificationStateSchemaSupported(PRODUCTION_CERTIFICATION_STATE_SCHEMA_V1), true);
+assert.equal(isFinalCertificationStateSchemaSupported(PRODUCTION_CERTIFICATION_STATE_SCHEMA_V2), true);
+assert.equal(isFinalCertificationStateSchemaSupported(PRODUCTION_CERTIFICATION_STATE_SCHEMA), true);
+assert.equal(
+  isFinalCertificationStateSchemaSupported(
+    "interior-ai.production-certification-state.unknown",
+  ),
+  false,
+);
+assert.equal(
+  finalSemanticJournalSchemaForStateSchema(PRODUCTION_CERTIFICATION_STATE_SCHEMA_V1),
+  "interior-ai.production-artifact-semantic-event-journal.v1",
+);
+assert.equal(
+  finalSemanticJournalSchemaForStateSchema(PRODUCTION_CERTIFICATION_STATE_SCHEMA_V2),
+  "interior-ai.production-artifact-semantic-event-journal.v1",
+);
+assert.equal(
+  finalSemanticJournalSchemaForStateSchema(PRODUCTION_CERTIFICATION_STATE_SCHEMA),
+  "interior-ai.production-artifact-semantic-event-journal.v2",
+);
+
+for (const [schema, version] of [
+  [PRODUCTION_CERTIFICATION_STATE_SCHEMA_V1, 1],
+  [PRODUCTION_CERTIFICATION_STATE_SCHEMA_V2, 2],
+]) {
+  const owner = mkdtempSync(path.join(tmpdir(), "historical-final-journal-"));
+  try {
+    const artifactRoot = path.join(owner, "archive/extracted");
+    const evidenceRoot = path.join(owner, "evidence");
+    const runNonce = `historical-state-v${version}-journal`;
+    const journal = {
+      schema: "interior-ai.production-artifact-semantic-event-journal.v1",
+      runNonce,
+    };
+    const journalBytes = canonicalJsonBytes(journal);
+    write(
+      artifactRoot,
+      ".local/production-artifact-evidence/semantic-event-journal.json",
+      journalBytes,
+    );
+    mkdirSync(evidenceRoot, { recursive: true });
+    const manifest = {
+      schema: "interior-ai.production-artifact-evidence.v3",
+      candidateIdentifier: `historical-state-v${version}`,
+      source: { commitSha: "a".repeat(40), treeSha: "b".repeat(40) },
+      build: { nextBuildId: `historical-build-v${version}` },
+      artifact: { sha256: "c".repeat(64) },
+      execution: { runNonce },
+    };
+    const manifestBytes = canonicalJsonBytes(manifest);
+    const state = {
+      schema,
+      version,
+      candidate: {
+        id: manifest.candidateIdentifier,
+        commitSha: manifest.source.commitSha,
+        treeSha: manifest.source.treeSha,
+      },
+      bindings: {
+        nextBuildId: manifest.build.nextBuildId,
+        artifactSha256: manifest.artifact.sha256,
+        semanticJournalNonce: runNonce,
+        semanticJournalSha256: sha256Bytes(journalBytes),
+        productionManifestSha256: sha256Bytes(manifestBytes),
+      },
+    };
+    assert.deepEqual(
+      finalCertificationManifestIdentityIssues(
+        { value: manifest, sha256: sha256Bytes(manifestBytes) },
+        artifactRoot,
+        evidenceRoot,
+        state,
+      ),
+      [],
+      `historical state v${version} must retain semantic journal v1 final identity`,
+    );
+    const runtimeIdentity = {
+      candidateIdentifier: state.candidate.id,
+      sourceCommitSha: state.candidate.commitSha,
+      sourceTreeSha: state.candidate.treeSha,
+      artifactSha256: state.bindings.artifactSha256,
+      nextBuildId: state.bindings.nextBuildId,
+      runNonce,
+      semanticJournalSchema: journal.schema,
+      semanticJournalVersion: 1,
+      serverCommand: "npm run evidence:production:serve",
+      buildMode: "production",
+    };
+    assert.deepEqual(finalRuntimeArtifactIdentityIssues(runtimeIdentity, state), []);
+    assert.match(
+      finalRuntimeArtifactIdentityIssues(
+        {
+          ...runtimeIdentity,
+          semanticJournalSchema:
+            "interior-ai.production-artifact-semantic-event-journal.v2",
+        },
+        state,
+      ).join("\n"),
+      /does not identify the certified artifact/,
+    );
+  } finally {
+    rmSync(owner, { recursive: true, force: true });
+  }
+}
 
 function run(command, args, cwd, environment = process.env, allowFailure = false) {
   const child = spawnSync(command, args, {
@@ -399,6 +514,33 @@ function invokeCertification(cwd, command, environment) {
 
 async function transactionalValidationMatrix() {
   const simulation = await runProductionCertificationSimulation();
+  for (const name of [
+    "sourceInstallPreconditionClassified",
+    "exactStaleNullOrderingRegressionPassed",
+    "staleBindingStateReceiptRejected",
+    "contradictoryBindingStateReceiptRejected",
+    "sourceDependencyRevalidationTamperRejected",
+    "validationBeforeBindingRejected",
+    "staleNullDependencyRejected",
+    "differentIdentityOverwriteRejected",
+    "postAggregateStateMutationRejected",
+    "postBindDependencyDriftRejected",
+    "sourcePostCheckDependencyDriftRejected",
+    "postBuildDependencyDriftRejected",
+    "preBrowserDependencyDriftRejected",
+    "roleEvidenceSwapRejected",
+    "removedWorktreeEvidenceReuseRejected",
+    "cleanedDependencyReceiptDeletionRejected",
+  ]) {
+    assert.equal(
+      simulation.tamperCases[name],
+      true,
+      `simulation dependency behavior must pass: ${name}`,
+    );
+  }
+  assert.equal(simulation.dependencyLifecycle.physicalFixtureInstallation, true);
+  assert.equal(simulation.dependencyLifecycle.atomicBinding, true);
+  assert.equal(simulation.dependencyLifecycle.postStageRevalidation, true);
   const canonicalRoot = path.join(simulation.simulationRoot, "source");
   const { statePath, state, environment } = cliEnvironment(simulation.simulationRoot);
   assert.equal(state.stages.doctor.status, "passed");
@@ -639,13 +781,12 @@ const sourceStageOwner = realSource.slice(
   realSource.indexOf("export async function runSourceValidationStage"),
   realSource.indexOf("export async function runBuildStage"),
 );
-assert.match(sourceStageOwner, /cwd: context\.repositoryRoot/);
+assert.match(sourceStageOwner, /repositoryRoot: context\.repositoryRoot/);
 assert.doesNotMatch(sourceStageOwner, /ownerRepositoryRoot/);
 assert.doesNotMatch(sourceStageOwner, /env: context\.environment/);
 assert.equal(
-  [...realSource.matchAll(/env: dependencyInstallationEnvironment\(context\)/g)]
-    .length,
-  2,
+  [...realSource.matchAll(/installAndBindRoleDependencies\(\{/g)].length,
+  4,
 );
 assert.match(
   realSource,

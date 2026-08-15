@@ -1089,12 +1089,14 @@ function stateFixture() {
   const regressions = JSON.parse(
     readFileSync("scripts/production-certification-regressions.json", "utf8"),
   );
-  assert.equal(regressions.cases.length, 28);
+  assert.equal(regressions.cases.length, 29);
   assert.deepEqual(
     regressions.cases.map((entry) => entry.id),
-    Array.from({ length: 28 }, (_, index) => index + 1),
+    Array.from({ length: 29 }, (_, index) => index + 1),
   );
-  assert.equal(new Set(regressions.cases.map((entry) => entry.defect)).size, 28);
+  assert.equal(new Set(regressions.cases.map((entry) => entry.defect)).size, 29);
+  assert.equal(regressions.dependencyLifecycleCases.length, 26);
+  assert.equal(new Set(regressions.dependencyLifecycleCases).size, 26);
   assert.equal(regressions.runtimeEvidenceRootCases.length, 21);
   assert.equal(new Set(regressions.runtimeEvidenceRootCases).size, 21);
   assert.equal(regressions.sourceValidationCases.length, 23);
@@ -1201,6 +1203,38 @@ function stateFixture() {
   });
   const base = simulation.simulationRoot;
   assert.equal(simulation.integrationReady, true);
+  assert.equal(simulation.tamperCases.ambientFeatureFlagLeakageRejected, true);
+  coveredRegressionIds.add(27);
+  assert.equal(simulation.tamperCases.runtimeRootContractMismatchRejected, true);
+  assert.equal(simulation.tamperCases.runtimePathOutsideRootRejected, true);
+  coveredRegressionIds.add(28);
+  assert.equal(simulation.tamperCases.exactStaleNullOrderingRegressionPassed, true);
+  assert.equal(simulation.tamperCases.sourcePostCheckDependencyDriftRejected, true);
+  assert.equal(simulation.tamperCases.postBuildDependencyDriftRejected, true);
+  assert.equal(simulation.tamperCases.preBrowserDependencyDriftRejected, true);
+  assert.equal(simulation.tamperCases.sourcePreconditionRetryPassed, true);
+  assert.equal(
+    simulation.tamperCases.sourceAlreadyBoundRetryWithoutReinstall,
+    true,
+  );
+  assert.equal(
+    simulation.tamperCases.sourceBindingRaceRejectedWithoutReinstall,
+    true,
+  );
+  assert.equal(
+    simulation.tamperCases.sourceEvidenceIntermediateSymlinkRejectedWithoutWrite,
+    true,
+  );
+  assert.equal(
+    simulation.tamperCases.buildAlreadyBoundRetryWithoutReinstall,
+    true,
+  );
+  assert.equal(
+    simulation.tamperCases.browserAlreadyBoundRetryWithoutReinstall,
+    true,
+  );
+  assert.equal(simulation.tamperCases.certificationProcessHandoffRetained, true);
+  coveredRegressionIds.add(29);
   const completeFinalChild = finalSimulationChild(base);
   assert.equal(completeFinalChild.status, 0);
   const completeFinal = JSON.parse(completeFinalChild.stdout.trim());
@@ -2077,7 +2111,7 @@ function stateFixture() {
     );
     const child = finalSimulationChild(clone);
     assert.notEqual(child.status, 0);
-    assert.match(`${child.stdout}\n${child.stderr}`, /semantic journal v1 is missing/);
+    assert.match(`${child.stdout}\n${child.stderr}`, /semantic journal v2 is missing/);
     rmSync(path.dirname(clone), { recursive: true, force: true });
     coveredRegressionIds.add(8);
   }
@@ -2335,7 +2369,7 @@ function stateFixture() {
 
 assert.deepEqual(
   [...coveredRegressionIds].sort((left, right) => left - right),
-  Array.from({ length: 26 }, (_, index) => index + 1),
+  Array.from({ length: 29 }, (_, index) => index + 1),
   "every documented regression must be exercised by an executable assertion",
 );
 

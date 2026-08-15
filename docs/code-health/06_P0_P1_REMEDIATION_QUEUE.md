@@ -1631,3 +1631,18 @@ count and the integration hold.
   desktop toolbar spec, design cleanup, required-test truthfulness, code quality,
   lint, typecheck, critical-required, Phase 8, strict build, and the clean-source
   responsive public-share required gate. No data or external rollback is needed.
+
+### Production certification dependency lifecycle — 2026-08-15
+
+- **Disposition:** bounded harness defect corrected on
+  `fix/production-certification-dependency-binding-order`; it is not a product
+  P0/P1 and does not change the existing product queue.
+- **Closed platform gap:** physical role dependencies now move from
+  `not-installed` to `installed` only through sealed evidence and the atomic
+  `worktree-dependencies:bind` state transition. Source checks, build dispatch,
+  and development-browser discovery cannot precede binding. Drift fails closed.
+- **Preserved evidence:** `CH-0015I-final-20260815T105213Z-cd21d61f` remains
+  failed and unchanged. A new exact-head certification and final CH-0015
+  closure audit remain pending after authorized integration.
+- **Rollback:** revert the single focused harness commit. Do not repair or reuse
+  the historical state/evidence root.

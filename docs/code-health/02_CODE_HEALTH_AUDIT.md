@@ -1373,3 +1373,26 @@ started. CH-0030 commit `d7a50698707153b43df0a982766288060c24b997`
 remains excluded: its remote branch exists, but no PR, check, or workflow-run
 evidence was found. Integration planning remains blocked on the bounded
 archival corrections and subsequent exact-artifact certification.
+
+## 2026-08-15 certification dependency lifecycle audit
+
+The certification harness, not product code, had one proven ordering defect:
+post-install source evidence was compared with a pre-install null state before
+the later role refresh could execute. The same lifecycle pattern was latent in
+final-artifact build preparation and development-browser discovery. The audit
+classifies these as
+`POST_INSTALL_DEPENDENCY_IDENTITY_BINDING_ORDER_DEFECT` and
+`CERTIFICATION_WORKTREE_DEPENDENCY_STATE_LIFECYCLE_DEFECT`.
+
+The remediation adds a single shared, versioned dependency lifecycle and
+sealed evidence owner; atomic lock-held binding; all-three-role pre-use order;
+physical isolation/resolution proof; and post-stage drift checks. Historical
+state v1/v2 and the failed CH-0015I record remain unmodified. This is a bounded
+certification-infrastructure correction and adds no product or benchmark debt.
+Exact-head certification remains an external follow-up.
+
+The retained contracts also exact-validate source pre/post revalidation fields,
+failed-install child semantics and state receipts, journal v2 process handoffs,
+and cleaned-role evidence. Qualification-only physical drift injection now
+traverses the actual source, build, and browser stage owners and proves their
+failure taxonomy, downstream block, and absence of a second installation.

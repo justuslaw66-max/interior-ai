@@ -1,5 +1,67 @@
 # Production certification state/worktree remediation
 
+## CH-0015I post-install dependency-binding-order correction
+
+The preserved failed certification is
+`CH-0015I-final-20260815T105213Z-cd21d61f`; its candidate is
+`CH-0015I-20260815T105213Z-cd21d61f` at
+`cd21d61fe0b0581144b3ce77aa091789ac915393`, tree
+`566da9faccd85d7c8cc10bbe2c79a7ab25713f85`. Its physical source install
+succeeded, all 19 source commands exited zero, and its aggregate measured the
+dependency identity beginning `65dd2bef`, but state still contained null when
+the aggregate validator ran. The later in-memory refresh was unreachable.
+`SOURCE_CONTRACT_FAILURE` and `consumedSubstantiveGate=true` remain truthful in
+that historical state and are not changed.
+
+The separate root cause is classified as
+`POST_INSTALL_DEPENDENCY_IDENTITY_BINDING_ORDER_DEFECT` plus
+`CERTIFICATION_WORKTREE_DEPENDENCY_STATE_LIFECYCLE_DEFECT`. State v3 and
+worktrees v2 now initialize all roles as `not-installed`/null/no evidence. A
+single shared physical-install owner writes sealed dependency-installation and
+binding evidence, then `worktree-dependencies:bind` acquires the state lock,
+rereads and rehashes state, validates the exact certification, candidate,
+commit/tree, role, worktree, private/filesystem identity, package/lock/toolchain,
+node_modules/inventory/implementation-byte/resolution/isolation proof, performs
+a final in-lock remeasurement, and atomically seals the
+installed identity into state. Same-identity revalidation is read-only; a
+different identity cannot overwrite the binding.
+The isolation proof enumerates and hashes the exact ancestor and global Node
+module search roots and rejects any present external root or `NODE_PATH`.
+Binding-time drift is retained as terminal `binding-failed` evidence before a
+retry can reinstall; non-consuming post-bind retries use only same-identity
+read-only revalidation. Install/bind timestamps must belong to exactly one
+retained owner attempt and durable state time is monotonic. Nested npm child and
+outer wrapper results are separate, preserving a wrapper signal even when npm
+itself completed successfully.
+
+Source validation binds and retains the sealed transition-state receipt before
+its 19 checks and v4 aggregate comparison. The final-artifact wrapper pauses
+after its one install so binding and an explicit journal v2 process handoff
+precede generated-source validation and build dispatch. Development-browser binding
+precedes Cart/Retailer discovery and launch, with both browser dependency
+identities revalidated before discovery and after their owners. Each role
+revalidates after its last dependency-using boundary; drift fails rather than
+reinstalling or refreshing. Dependency installs receive a minimal
+credential-free environment with global and user npm configuration disabled.
+Cleaned roles retain and revalidate their sealed semantic evidence.
+Certification build evidence and final standalone verification require and
+cross-bind exactly one prepare-to-complete process handoff. Evidence writers
+authorize every intermediate directory as a contained physical non-symlink
+component before writing; an intermediate symlink produces no outside file.
+Doctor, deterministic physical-install simulation, qualification,
+and the 26-case lifecycle matrix enforce this order. No product/UI, Floor Plan,
+telemetry, NFT, Playwright product assertion, Phase 8 semantic, dependency,
+lockfile, schema, migration, or external-service behavior changes.
+
+The exact clean correction commit must return, and the final handoff records,
+`QUALIFIED_FOR_FINAL_CANDIDATE_CERTIFICATION`; that source-platform result is
+not real candidate evidence. Independent review is also recorded there. No
+real build, Phase 8, runtime smoke,
+browser-owner matrix, Full E2E, integration, push, or deployment is part of this
+correction. Exact-head certification and the final CH-0015 closure audit remain
+pending. Rollback is one focused commit revert; the preserved failed
+certification is never a rollback target.
+
 ## Successor runtime-output capability correction
 
 Read-only review of exact successor candidate

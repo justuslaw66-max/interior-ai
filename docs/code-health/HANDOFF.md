@@ -6211,3 +6211,42 @@ or infer trust while rolling back. Historical rows are not deleted. CH-0013,
 CH-0015, product-decision/dependency P1s, GitHub/Vercel/OAuth/database-service/
 scheduler controls, deployment, promotion, push, and integration remain
 separate and unauthorized.
+
+## Production Certification Harness v1 dependency binding — 2026-08-15
+
+- **Preserved failure:** `CH-0015I-final-20260815T105213Z-cd21d61f` /
+  `CH-0015I-20260815T105213Z-cd21d61f` remains failed at `cd21d61f`, tree
+  `566da9fa`. Its state identity remains null, aggregate identity remains the
+  measured `65dd2bef…`, all 19 child results remain zero, and
+  `SOURCE_CONTRACT_FAILURE` / `consumedSubstantiveGate=true` is unchanged.
+- **Classification:** `POST_INSTALL_DEPENDENCY_IDENTITY_BINDING_ORDER_DEFECT`
+  and `CERTIFICATION_WORKTREE_DEPENDENCY_STATE_LIFECYCLE_DEFECT`.
+- **Correction:** state v3/worktrees v2 add explicit not-installed, installed,
+  failed, and removed semantics; sealed dependency-binding evidence; one
+  lock-held `worktree-dependencies:bind` compare-and-swap transition; source,
+  final-artifact, and development-browser pre-execution binding; and post-stage
+  drift revalidation without reinstall or silent refresh.
+- **Fail-closed hardening:** dependency identity includes recursive
+  implementation bytes and an exact ancestor/global Node search-root proof;
+  retained cleaned evidence cannot erase or reseal that proof. Install and
+  wrapper child results are separate, bind-race failure is terminal and
+  retry-safe, and owner-attempt timestamps are monotonic. Source/install
+  evidence directory components are checked as physical non-symlinks before
+  writes. Certification build and final standalone evidence cross-bind exactly
+  one prepare-to-complete process handoff.
+- **Evidence:** the exact deterministic real source runner now performs a
+  physical miniature install and durable bind before the 19 checks. Its v4
+  aggregate passes against bound state; the same aggregate deterministically
+  fails against a stale-null clone. Source, miniature-build, and pre-discovery
+  browser drift are injected through the real exported stage owners and retain
+  the exact current-stage classification, downstream block, and one-install
+  receipt. Cleaned final state continues validating every retained dependency
+  record. The exact clean correction commit qualifier
+  result is `QUALIFIED_FOR_FINAL_CANDIDATE_CERTIFICATION`. Doctor, simulation, required
+  ownership, complete validation commands, independent review, correction
+  commit/tree, and clean status are recorded in the final task response.
+- **Scope/next:** no product, benchmark, dependency, lockfile, migration,
+  external service, real build, real Phase 8, real runtime/browser owner matrix,
+  Full E2E, push, deploy, or integration. Exact-head certification and the final
+  CH-0015 closure audit remain pending. Rollback is the focused correction
+  commit only; never modify the preserved failed certification.

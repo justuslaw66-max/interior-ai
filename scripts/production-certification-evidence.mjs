@@ -10,6 +10,7 @@ import {
   PRODUCTION_CERTIFICATION_RUNTIME_EVIDENCE_SCHEMA,
   PRODUCTION_CERTIFICATION_STATE_SCHEMA,
   PRODUCTION_CERTIFICATION_STATE_SCHEMA_V1,
+  PRODUCTION_CERTIFICATION_STATE_SCHEMA_V2,
   PHASE8_SOURCE_BINDING_PATHS,
   REQUIRED_BROWSER_OWNERS,
   canonicalJsonBytes,
@@ -24,6 +25,7 @@ import {
   readRuntimeSmokeTelemetryBootstrapEvidence,
   validateRetainedRuntimeSmokePhaseTimings,
 } from "./production-artifact-evidence.mjs";
+import { certificationPreparedBuildJournalIssues } from "./production-artifact-contract.mjs";
 import {
   readCertificationState,
   validateCertificationState,
@@ -55,6 +57,30 @@ const RUNTIME_TEST_IDS = Object.freeze([
 ]);
 const PLAYWRIGHT_START_SCHEMA =
   "interior-ai.production-certification-playwright-start.v1";
+const FINAL_STANDALONE_STATE_SCHEMAS = new Set([
+  PRODUCTION_CERTIFICATION_STATE_SCHEMA_V1,
+  PRODUCTION_CERTIFICATION_STATE_SCHEMA_V2,
+  PRODUCTION_CERTIFICATION_STATE_SCHEMA,
+]);
+
+export function isFinalCertificationStateSchemaSupported(schema) {
+  return FINAL_STANDALONE_STATE_SCHEMAS.has(schema);
+}
+
+export function finalSemanticJournalSchemaForStateSchema(schema) {
+  if (
+    new Set([
+      PRODUCTION_CERTIFICATION_STATE_SCHEMA_V1,
+      PRODUCTION_CERTIFICATION_STATE_SCHEMA_V2,
+    ]).has(schema)
+  ) {
+    return "interior-ai.production-artifact-semantic-event-journal.v1";
+  }
+  if (schema === PRODUCTION_CERTIFICATION_STATE_SCHEMA) {
+    return "interior-ai.production-artifact-semantic-event-journal.v2";
+  }
+  return null;
+}
 
 function startMarkerIssues(marker, { boundary, gateId }) {
   const issues = [];
@@ -513,21 +539,7 @@ function validateRawPlaywrightReport({
   const issues = [...truthfulness.issues];
   if (gateId === "ci.production-runtime-smoke") {
     const identity = report?.config?.metadata?.productionArtifactEvidence;
-    if (
-      identity?.candidateIdentifier !== state.candidate.id ||
-      identity?.sourceCommitSha !== state.candidate.commitSha ||
-      identity?.sourceTreeSha !== state.candidate.treeSha ||
-      identity?.artifactSha256 !== state.bindings.artifactSha256 ||
-      identity?.nextBuildId !== state.bindings.nextBuildId ||
-      identity?.runNonce !== state.bindings.semanticJournalNonce ||
-      identity?.semanticJournalSchema !==
-        "interior-ai.production-artifact-semantic-event-journal.v1" ||
-      identity?.semanticJournalVersion !== 1 ||
-      identity?.serverCommand !== "npm run evidence:production:serve" ||
-      identity?.buildMode !== "production"
-    ) {
-      issues.push("runtime-smoke raw report does not identify the certified artifact");
-    }
+    issues.push(...finalRuntimeArtifactIdentityIssues(identity, state));
   } else {
     const metadata = report?.config?.metadata?.requiredTestEvidence;
     const owner = REQUIRED_BROWSER_OWNERS.find(
@@ -551,9 +563,36 @@ function validateRawPlaywrightReport({
   return { issues, truthfulness };
 }
 
-function manifestIdentityIssues(manifestRead, artifactRoot, state) {
+export function finalRuntimeArtifactIdentityIssues(identity, state) {
+  if (
+    identity?.candidateIdentifier !== state.candidate.id ||
+    identity?.sourceCommitSha !== state.candidate.commitSha ||
+    identity?.sourceTreeSha !== state.candidate.treeSha ||
+    identity?.artifactSha256 !== state.bindings.artifactSha256 ||
+    identity?.nextBuildId !== state.bindings.nextBuildId ||
+    identity?.runNonce !== state.bindings.semanticJournalNonce ||
+    identity?.semanticJournalSchema !==
+      finalSemanticJournalSchemaForStateSchema(state.schema) ||
+    identity?.semanticJournalVersion !== 1 ||
+    identity?.serverCommand !== "npm run evidence:production:serve" ||
+    identity?.buildMode !== "production"
+  ) {
+    return ["runtime-smoke raw report does not identify the certified artifact"];
+  }
+  return [];
+}
+
+export function finalCertificationManifestIdentityIssues(
+  manifestRead,
+  artifactRoot,
+  evidenceRoot,
+  state,
+) {
   const issues = [];
   const manifest = manifestRead.value;
+  const expectedJournalSchema = finalSemanticJournalSchemaForStateSchema(
+    state.schema,
+  );
   if (
     manifest?.schema !== "interior-ai.production-artifact-evidence.v3" ||
     manifest?.candidateIdentifier !== state.candidate.id ||
@@ -571,15 +610,50 @@ function manifestIdentityIssues(manifestRead, artifactRoot, state) {
       artifactRoot,
       ".local/production-artifact-evidence/semantic-event-journal.json",
     ),
-    "semantic journal v1",
+    `semantic journal ${expectedJournalSchema?.split(".").at(-1) ?? "unknown"}`,
   );
   if (
-    journalRead.value?.schema !==
-      "interior-ai.production-artifact-semantic-event-journal.v1" ||
+    journalRead.value?.schema !== expectedJournalSchema ||
     journalRead.value?.runNonce !== state.bindings.semanticJournalNonce ||
     journalRead.sha256 !== state.bindings.semanticJournalSha256
   ) {
     issues.push("semantic journal does not match the complete candidate identity");
+  }
+  if (state.version === 3) {
+    issues.push(...certificationPreparedBuildJournalIssues(journalRead.value));
+  }
+  if (state.version === 3) {
+    try {
+      const buildDescriptor = state.evidenceFiles?.build;
+      const buildResultPath = path.resolve(
+        evidenceRoot,
+        buildDescriptor?.path ?? "",
+      );
+      if (!buildResultPath.startsWith(`${path.resolve(evidenceRoot)}${path.sep}`)) {
+        throw new Error("build result escapes the certification evidence root");
+      }
+      const buildResult = readCanonicalJson(
+        buildResultPath,
+        "certification build result",
+      );
+      const handoff = journalRead.value?.owner?.processHandoffs?.[0];
+      if (
+        buildResult.sha256 !== buildDescriptor?.sha256 ||
+        buildResult.value?.schema !==
+          "interior-ai.production-certification-build-result.v1" ||
+        JSON.stringify(
+          buildResult.value?.dependencyLifecycle?.semanticProcessHandoff,
+        ) !== JSON.stringify(handoff) ||
+        JSON.stringify(manifest?.execution?.owner?.processHandoffs?.[0]) !==
+          JSON.stringify(handoff)
+      ) {
+        issues.push(
+          "certification build result does not bind its required process handoff",
+        );
+      }
+    } catch (error) {
+      issues.push(error instanceof Error ? error.message : String(error));
+    }
   }
   return issues;
 }
@@ -617,12 +691,7 @@ export function verifyFinalCertificationEvidence({
     );
   }
   const state = readCertificationState(statePath);
-  if (
-    !new Set([
-      PRODUCTION_CERTIFICATION_STATE_SCHEMA_V1,
-      PRODUCTION_CERTIFICATION_STATE_SCHEMA,
-    ]).has(state.schema)
-  ) {
+  if (!isFinalCertificationStateSchemaSupported(state.schema)) {
     throw new Error("final standalone certification state schema is unsupported");
   }
   if (
@@ -659,7 +728,14 @@ export function verifyFinalCertificationEvidence({
     path.resolve(root, manifestPath),
     "production manifest v3",
   );
-  issues.push(...manifestIdentityIssues(manifestRead, root, state));
+  issues.push(
+    ...finalCertificationManifestIdentityIssues(
+      manifestRead,
+      root,
+      evidenceRoot,
+      state,
+    ),
+  );
   const phase8 = boundEvidence(state, evidenceRoot, "phase8");
   const rawPhase8 = boundEvidence(state, evidenceRoot, "phase8-raw");
   const phase8Completion = boundEvidence(

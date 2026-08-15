@@ -81,6 +81,26 @@ semantic timestamp meaning, Playwright assertions/retries/workers/timeouts/
 selectors, Phase 8 operations/samples/percentiles/thresholds/budgets,
 dependencies, the lockfile, database schema, migrations, or application data.
 
+## Preserved CH-0015I dependency-order failure
+
+Certification `CH-0015I-final-20260815T105213Z-cd21d61f` and candidate
+`CH-0015I-20260815T105213Z-cd21d61f` remain failed and preserved at candidate
+commit `cd21d61fe0b0581144b3ce77aa091789ac915393`, tree
+`566da9faccd85d7c8cc10bbe2c79a7ab25713f85`. Its state retains a null
+source-validation dependency identity, while the post-install aggregate retains
+the measured identity beginning `65dd2bef`. All 19 source children exited zero;
+the stale comparison correctly produced `SOURCE_CONTRACT_FAILURE` with
+`consumedSubstantiveGate=true` and downstream invalidation.
+
+That evidence, state, doctor, child results, aggregate, review, retained
+worktrees, and cleanup status are not repaired, resumed, rerun, or reused. The
+new root-cause classifications are
+`POST_INSTALL_DEPENDENCY_IDENTITY_BINDING_ORDER_DEFECT` and
+`CERTIFICATION_WORKTREE_DEPENDENCY_STATE_LIFECYCLE_DEFECT`. A later exact-head
+certification must use a new certification ID, candidate ID, state, evidence
+root, and worktrees. Exact-head certification and the final CH-0015 closure
+audit remain pending.
+
 ## Contract inventory
 
 The machine-readable baseline is
@@ -94,9 +114,9 @@ schema, identity fields, and pre-v1 gap. The baseline is bound to candidate
 
 ## State and identity
 
-Historical `interior-ai.production-certification-state.v1` records remain
-readable and unchanged. New cycles use
-`interior-ai.production-certification-state.v2`, atomically replaced and sealed
+Historical `interior-ai.production-certification-state.v1` and `.v2` records
+remain readable and unchanged. New cycles use
+`interior-ai.production-certification-state.v3`, atomically replaced and sealed
 with its own SHA-256. It binds the
 certification ID, immutable candidate ID, commit/tree/exact parent, harness version and
 source hash, journal nonce, Build ID, artifact, manifest, journal, verifier
@@ -159,6 +179,85 @@ operator cleanup. Cleanup is retryable after an interruption: a task-owned root
 already removed by the interrupted cleanup is finalized from its sealed private
 binding, while any surviving root is revalidated before removal.
 
+## Worktree dependency lifecycle and atomic binding
+
+New state v3 cycles give each role an explicit
+`interior-ai.production-certification-worktree-dependency-lifecycle.v1` status:
+`not-installed`, transient `installing`, `installed`, `failed`, or `removed`.
+Initialization is exactly `not-installed` with a null identity and no install or
+binding evidence. `installed` is valid only with a non-null identity, successful
+completion record, and sealed
+`interior-ai.production-certification-worktree-dependency-binding.v1` evidence.
+Cleanup changes the role to `removed`; removed evidence cannot make a worktree
+usable again. Historical state v1/v2 is validated under its historical schema
+and is never silently reinterpreted as this lifecycle.
+
+The shared installer records the canonical `npm ci --include=dev` child,
+started/completed times, exit/signal, stdout/stderr hashes, Node/npm and npm
+executable identities, package and lock hashes, a physical role-local
+`node_modules` identity, full installed-package inventory, a recursive
+implementation-file byte hash, top-level package resolution,
+and a sealed exact proof of every ancestor/global Node module search root plus
+the absence of `NODE_PATH`, symlink, cross-worktree, or ambient resolution.
+Absolute paths remain in
+private sidecars; portable evidence contains only stable identity hashes and
+evidence-root-relative descriptors. Installation receives a minimal allowlisted
+environment with npm global configuration locked to the platform null device,
+user configuration resolved to a nonexistent child of that device, and
+credentials, certification controls, `NODE_PATH`, and `NODE_OPTIONS` absent,
+so retained child logs cannot disclose ambient certification secrets.
+
+`worktree-dependencies:bind` is the sole durable binding owner. It requires the
+caller's current state SHA-256, acquires the existing exclusive state lock,
+rereads and rehashes state under the lock, validates every evidence and
+certification/candidate/role/worktree binding, requires `not-installed`, and
+performs a final physical remeasurement before it atomically replaces the
+sealed state. The exact same installed identity may be
+revalidated read-only. A different identity can never overwrite the binding.
+Aggregate validators have no state-mutation authority.
+Installation and binding receipts must fall within exactly one retained stage
+attempt and no state transition may move durable time backward. A bind-time
+remeasure race is atomically retained as terminal `binding-failed`; a later
+invocation fails from that lifecycle before physical worktree inspection and
+cannot run a second install. A non-consuming failure after a successful bind
+may retry only through same-identity read-only revalidation; the complete prior
+attempt remains and never-run downstream invalidations return to pending.
+Direct npm-child identity and an enclosing wrapper failure are recorded
+separately, so an outer signal after a successful nested install remains an
+exact infrastructure failure rather than a contradictory child result.
+
+The enforced role orders are:
+
+1. Source validation installs, measures, seals evidence, binds state, rereads,
+   retains the exact sealed binding-state receipt, revalidates, runs all 19
+   checks, revalidates again, writes the v4 aggregate, and only then compares
+   the aggregate identity with bound state. Retained passed or failed evidence
+   must resolve that receipt and its exact state SHA.
+2. Final-artifact preparation stops immediately after its one physical install;
+   the harness binds state, records the journal v2 process handoff, and only
+   then permits generated-source validation, build dispatch, artifact inventory,
+   archive, Phase 8, or runtime/browser stages.
+3. Development-browser installs and binds before Cart/Retailer Playwright
+   discovery or server launch. Final-artifact and development-browser
+   identities are revalidated immediately before discovery.
+
+Source dependencies are remeasured after the checks, final-artifact dependencies
+after the build and before and after production browser owners, and development
+dependencies before and after Cart/Retailer. Root, lock, manifest, implementation bytes,
+inventory, top-level
+resolution, symlink, and isolation drift fails the current stage without a
+second install or identity refresh.
+
+The deterministic negative matrix injects implementation-byte changes through
+the exported source, build, and browser stage owners and proves current-stage
+classification, downstream blocking, and exactly one installation attempt.
+Cleanup removes the physical roots, but final-state validation continues to
+verify retained binding or failed-install evidence without remeasurement.
+Retained search-root proofs are recomputed from the private worktree sidecar,
+so empty, duplicate, or resealed proofs remain invalid after cleanup. Evidence
+directory components are authorized as physical non-symlink directories before
+any installer, binding-state receipt, check stream, or aggregate write.
+
 ## Source validation
 
 The machine-readable `sourceValidation.checks` array in
@@ -185,7 +284,7 @@ The failed aggregate is still state-retained and validated as the exact
 canonical stopped prefix; if any earlier substantive check ran, a later
 non-substantive failure remains one-shot rather than becoming retryable.
 The sealed
-`interior-ai.production-certification-source-validation.v3` aggregate binds the
+`interior-ai.production-certification-source-validation.v4` aggregate binds the
 certification/candidate, harness and contract-matrix hashes, check-set hash,
 stage-environment contract hash, ordered per-check profile IDs and profile
 hashes, allowed/required environment-name-set hashes, value-policy hashes and
@@ -263,8 +362,8 @@ inherits the surrounding stage's broader certification controls.
 
 | Mode | Context | Required evidence | Final? |
 | --- | --- | --- | --- |
-| `verify-preflight` | Canonical repository with Git/source context | Manifest v3, journal v1, clean source and complete built artifact | No |
-| `verify-archive-preflight` | Physical staged or extracted bytes; no `.git`, worktree, or global fallback | Manifest v3, journal v1, artifact inventory, NFT/trace safety, exact identity, recursive verifier closure | No; emits `certificationComplete=false` |
+| `verify-preflight` | Canonical repository with Git/source context | Manifest v3, journal v2, clean source and complete built artifact | No |
+| `verify-archive-preflight` | Physical staged or extracted bytes; no `.git`, worktree, or global fallback | Manifest v3, journal v2, artifact inventory, NFT/trace safety, exact identity, recursive verifier closure | No; emits `certificationComplete=false` |
 | `verify-standalone` | Physical extracted artifact plus authorized external certification root and sealed state | Phase 8, 2/2 runtime smoke, all seven browser owners, and complete candidate/artifact/harness identity | Yes |
 
 There is no caller-controlled test-optional final mode. A legacy runtime-only
@@ -279,9 +378,14 @@ artifact root to resolve to the canonical non-symlink
 - `interior-ai.production-certification-doctor.v1`
 - `interior-ai.production-certification-state.v1`
 - `interior-ai.production-certification-state.v2`
+- `interior-ai.production-certification-state.v3`
 - `interior-ai.production-certification-state-validation.v1`
 - `interior-ai.production-certification-invalidation-plan.v1`
-- `interior-ai.production-certification-worktrees.v1`
+- `interior-ai.production-certification-worktrees.v1` (historical)
+- `interior-ai.production-certification-worktrees.v2`
+- `interior-ai.production-certification-worktree-dependency-lifecycle.v1`
+- `interior-ai.production-certification-worktree-dependency-installation.v1`
+- `interior-ai.production-certification-worktree-dependency-binding.v1`
 - `interior-ai.production-certification-attempt.v1`
 - `interior-ai.production-archive-plan.v1`
 - `interior-ai.production-archive-inventory.v1`
@@ -289,14 +393,15 @@ artifact root to resolve to the canonical non-symlink
 - `interior-ai.production-certification-phase8-evidence.v1`
 - `interior-ai.production-certification-runtime-smoke-evidence.v1`
 - `interior-ai.production-certification-browser-owner-evidence.v1`
-- `interior-ai.production-certification-source-validation.v3`
+- `interior-ai.production-certification-source-validation.v3` (historical)
+- `interior-ai.production-certification-source-validation.v4`
 - `interior-ai.production-certification-stage-environment.v2`
 - `interior-ai.production-certification-artifact-snapshot.v1`
 - `interior-ai.production-certification-artifact-root-private.v1`
 - `interior-ai.production-certification-continuity.v1`
 - `interior-ai.production-certification-final-evidence.v1`
 
-Production manifest v3 and semantic journal v1 remain authoritative and are not
+Production manifest v3 and semantic journal v2 remain authoritative and are not
 weakened. Final evidence rehashes each retained file and requires one exact
 identity across state, manifest, journal, artifact, archive/inventory, raw and
 adapted reports, and harness source. For real candidates it reparses the retained

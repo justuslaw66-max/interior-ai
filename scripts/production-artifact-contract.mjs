@@ -2,8 +2,8 @@ export const PRODUCTION_EVIDENCE_SCHEMA =
   "interior-ai.production-artifact-evidence.v3";
 export const PRODUCTION_EVIDENCE_VALIDATOR_VERSION = 3;
 export const PRODUCTION_EVIDENCE_JOURNAL_SCHEMA =
-  "interior-ai.production-artifact-semantic-event-journal.v1";
-export const PRODUCTION_EVIDENCE_JOURNAL_VERSION = 1;
+  "interior-ai.production-artifact-semantic-event-journal.v2";
+export const PRODUCTION_EVIDENCE_JOURNAL_VERSION = 2;
 export const PRODUCTION_EVIDENCE_SERVER_COMMAND =
   "npm run evidence:production:serve";
 export const PRODUCTION_EVIDENCE_UNDERLYING_SERVER_COMMAND = "npm run start";
@@ -49,6 +49,15 @@ function same(left, right) {
   return JSON.stringify(left) === JSON.stringify(right);
 }
 
+function exactKeys(value, keys) {
+  return (
+    value !== null &&
+    typeof value === "object" &&
+    !Array.isArray(value) &&
+    Object.keys(value).sort().join("\n") === [...keys].sort().join("\n")
+  );
+}
+
 function containsMatchingKey(value, pattern) {
   if (Array.isArray(value)) {
     return value.some((entry) => containsMatchingKey(entry, pattern));
@@ -67,6 +76,16 @@ function successfulEvent(event) {
     event.exitCode === 0 &&
     event.signal === null &&
     event.failureKind === null
+  );
+}
+
+function validProcessIdentity(value) {
+  return (
+    exactKeys(value, ["pid", "parentPid"]) &&
+    Number.isSafeInteger(value.pid) &&
+    value.pid > 0 &&
+    Number.isSafeInteger(value.parentPid) &&
+    value.parentPid >= 0
   );
 }
 
@@ -94,6 +113,36 @@ function semanticJournalIssues(journal) {
   ) {
     issues.push("semantic event journal command binding is not canonical");
   }
+  const handoffs = journal?.owner?.processHandoffs;
+  if (
+    !exactKeys(journal?.owner, [
+      "process",
+      "processHandoffs",
+      "worktreeIdentitySha256",
+      "wrapper",
+    ]) ||
+    !validProcessIdentity(journal?.owner?.process) ||
+    !Array.isArray(handoffs) ||
+    handoffs.length > 1 ||
+    handoffs.some(
+      (handoff) =>
+        !exactKeys(handoff, ["from", "to", "boundary", "completedAt"]) ||
+        !validProcessIdentity(handoff?.from) ||
+        !validProcessIdentity(handoff?.to) ||
+        same(handoff.from, handoff.to) ||
+        handoff?.boundary !==
+          "post-dependency-install-pre-generated-source" ||
+        !canonicalUtcTimestamp(handoff?.completedAt),
+    ) ||
+    (handoffs.length > 0 &&
+      (!same(handoffs.at(-1).to, journal?.owner?.process) ||
+        Date.parse(handoffs[0].completedAt) <
+          Date.parse(journal?.events?.dependencyInstall?.completedAt ?? "") ||
+        Date.parse(handoffs[0].completedAt) >
+          Date.parse(journal?.events?.generatedSourceCheck?.startedAt ?? "")))
+  ) {
+    issues.push("semantic event journal process handoff is malformed");
+  }
   if (
     !successfulEvent(journal?.events?.dependencyInstall) ||
     !successfulEvent(journal?.events?.generatedSourceCheck) ||
@@ -107,6 +156,7 @@ function semanticJournalIssues(journal) {
     journal?.events?.cycleStartedAt,
     journal?.events?.dependencyInstall?.startedAt,
     journal?.events?.dependencyInstall?.completedAt,
+    ...(handoffs ?? []).map((handoff) => handoff.completedAt),
     journal?.events?.generatedSourceCheck?.startedAt,
     journal?.events?.generatedSourceCheck?.completedAt,
     journal?.events?.build?.startedAt,
@@ -135,6 +185,16 @@ function semanticJournalIssues(journal) {
     !SHA_256.test(journal?.bindings?.artifactSha256 ?? "")
   ) {
     issues.push("semantic event journal artifact binding is malformed");
+  }
+  return issues;
+}
+
+export function certificationPreparedBuildJournalIssues(journal) {
+  const issues = semanticJournalIssues(journal);
+  if (journal?.owner?.processHandoffs?.length !== 1) {
+    issues.push(
+      "certification prepared build requires exactly one process handoff",
+    );
   }
   return issues;
 }
@@ -183,6 +243,10 @@ function manifestJournalBindingIssues(manifest, journal) {
     manifest?.execution?.runNonce !== journal?.runNonce ||
     manifest?.execution?.semanticJournalSchema !== PRODUCTION_EVIDENCE_JOURNAL_SCHEMA ||
     !same(manifest?.execution?.owner?.process, journal?.owner?.process) ||
+    !same(
+      manifest?.execution?.owner?.processHandoffs,
+      journal?.owner?.processHandoffs,
+    ) ||
     !same(manifest?.execution?.owner?.wrapper, journal?.owner?.wrapper) ||
     !same(manifest?.execution?.commands, journal?.commands)
   ) {

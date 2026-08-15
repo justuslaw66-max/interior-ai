@@ -98,6 +98,10 @@ function qualificationCommand() {
       process.execPath,
       ["scripts/test-production-certification-state-worktrees.mjs"],
     ],
+    [
+      process.execPath,
+      ["scripts/test-production-certification-dependency-lifecycle.mjs"],
+    ],
     ["npm", ["run", "certification:simulate"]],
     [process.execPath, ["scripts/test-production-certification.mjs"]],
     [process.execPath, ["scripts/test-production-artifact-evidence.mjs"]],

@@ -6,8 +6,8 @@
       "root": "scripts",
       "filePattern": "^test-.*\\.(?:js|mjs|ts)$",
       "classification": "risk-triggered",
-    "expectedFileCount": 260,
-    "expectedPathSha256": "1ac122ef25836297957a815746b4315c8e7f86d31f5375b0f8fcf9d4db60ab7a"
+    "expectedFileCount": 261,
+    "expectedPathSha256": "7db55e14bf077cebe4a9b580aee13f26c1abdd4690a4c028a3ac00bb2bc599f0"
     },
     {
       "id": "browser-specs",
@@ -115,7 +115,7 @@
       "blocking": true,
       "command": "npm run test:production-artifact-evidence",
       "packageScript": "test:production-artifact-evidence",
-      "packageClosure": { "expectedScriptCount": 1, "expectedSha256": "2c815b5cb950006b1238b97ebb6b8fe56673e8b53055283f142718a927d696f7" },
+      "packageClosure": { "expectedScriptCount": 1, "expectedSha256": "fa1fdaca629ff447292441c814a9216f129396f0ad82172bbcf4ad0b8b861a9a" },
       "runner": "node",
       "requiredSources": [
         "playwright.config.ts",
@@ -128,6 +128,7 @@
         "scripts/production-certification-state.mjs",
         "scripts/production-certification-evidence.mjs",
         "scripts/production-certification-doctor.mjs",
+        "scripts/production-certification-dependencies.mjs",
         "scripts/production-certification-real.mjs",
         "scripts/production-certification-source-continuity.mjs",
         "scripts/production-certification.mjs",
@@ -150,6 +151,7 @@
         "scripts/runtime-smoke-phase-budget.mjs",
         "scripts/test-production-artifact-evidence.mjs",
         "scripts/test-production-certification.mjs",
+        "scripts/test-production-certification-dependency-lifecycle.mjs",
         "scripts/test-production-certification-state-worktrees.mjs",
         "playwright.floor-plan-upload.config.ts",
         "playwright.pro-visual.config.ts",

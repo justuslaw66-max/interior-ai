@@ -20,9 +20,18 @@ import {
   isSourceSha,
   sha256Bytes,
 } from "./production-certification-contract.mjs";
+import {
+  PRODUCTION_CERTIFICATION_DEPENDENCY_LIFECYCLE_SCHEMA,
+  dependencyLifecycleIssues,
+  measureCertificationWorktreeDependencies,
+  readAndValidateCertificationDependencyBindingEvidence,
+  readAndValidateCertificationDependencyInstallationEvidence,
+} from "./production-certification-dependencies.mjs";
 
 export const CERTIFICATION_WORKTREE_ROOT_ENV = "CERTIFICATION_WORKTREE_ROOT";
 export const PRODUCTION_CERTIFICATION_WORKTREE_SCHEMA =
+  "interior-ai.production-certification-worktrees.v2";
+export const PRODUCTION_CERTIFICATION_WORKTREE_SCHEMA_V1 =
   "interior-ai.production-certification-worktrees.v1";
 export const PRODUCTION_CERTIFICATION_WORKTREE_PRIVATE_SCHEMA =
   "interior-ai.production-certification-worktree-private.v1";
@@ -95,7 +104,6 @@ function physicalDirectory(directoryPath, description) {
 }
 
 function atomicWrite(filePath, bytes) {
-  mkdirSync(path.dirname(filePath), { recursive: true, mode: 0o700 });
   const temporaryPath = `${filePath}.tmp-${process.pid}`;
   try {
     writeFileSync(temporaryPath, bytes, { flag: "wx", mode: 0o600 });
@@ -104,6 +112,38 @@ function atomicWrite(filePath, bytes) {
     if (existsSync(temporaryPath)) unlinkSync(temporaryPath);
     throw error;
   }
+}
+
+function containedPrivateSidecarDirectory(
+  evidenceRoot,
+  role,
+  { create = false } = {},
+) {
+  validateRole(role);
+  const physicalEvidenceRoot = physicalDirectory(
+    evidenceRoot,
+    "certification evidence root",
+  );
+  let current = physicalEvidenceRoot;
+  for (const component of ["worktrees", "private", ROLE_DIRECTORY[role]]) {
+    const next = path.join(current, component);
+    if (!existsSync(next)) {
+      if (!create) {
+        throw new Error("stage worktree private sidecar parent is missing");
+      }
+      mkdirSync(next, { mode: 0o700 });
+    }
+    current = physicalDirectory(
+      next,
+      "stage worktree private sidecar parent",
+    );
+    if (!pathInside(physicalEvidenceRoot, current)) {
+      throw new Error(
+        "stage worktree private sidecar parent escapes the evidence root",
+      );
+    }
+  }
+  return { physicalEvidenceRoot, directory: current };
 }
 
 function normalizedInventory(values) {
@@ -146,32 +186,7 @@ function ignoredPathAllowed(role, relativePath, phase) {
 function dependencyIdentity(repositoryRoot) {
   const dependencyRoot = path.join(repositoryRoot, "node_modules");
   if (!existsSync(dependencyRoot)) return null;
-  const metadata = lstatSync(dependencyRoot);
-  const physicalRoot = realpathSync(dependencyRoot);
-  if (
-    !metadata.isDirectory() ||
-    metadata.isSymbolicLink() ||
-    !pathInside(repositoryRoot, physicalRoot)
-  ) {
-    throw new Error("stage worktree node_modules must be a physical local directory");
-  }
-  const installedLockPath = path.join(dependencyRoot, ".package-lock.json");
-  if (!existsSync(installedLockPath) || !lstatSync(installedLockPath).isFile()) {
-    throw new Error("stage worktree node_modules is missing its physical installed-lock identity");
-  }
-  const rootStat = statSync(dependencyRoot);
-  const packageLockPath = path.join(repositoryRoot, "package-lock.json");
-  const payload = {
-    packageLockSha256: sha256Bytes(readFileSync(packageLockPath)),
-    installedLockSha256: sha256Bytes(readFileSync(installedLockPath)),
-    physicalRootSha256: sha256Bytes(physicalRoot),
-    filesystemIdentitySha256: sha256Bytes(`${rootStat.dev}:${rootStat.ino}`),
-  };
-  return {
-    ...payload,
-    identitySha256: sha256Bytes(canonicalJsonBytes(payload)),
-    private: { realpath: physicalRoot, device: rootStat.dev, inode: rootStat.ino },
-  };
+  return measureCertificationWorktreeDependencies({ repositoryRoot });
 }
 
 function commonDirectoryIdentity(repositoryRoot) {
@@ -330,7 +345,7 @@ export function inspectCertificationStageWorktree({
   }
   const rootStat = statSync(root);
   const common = commonDirectoryIdentity(root);
-  const dependency = dependencyIdentity(root);
+  const dependency = phase === "failed" ? null : dependencyIdentity(root);
   if (phase === "pristine" && dependency) {
     throw new Error("pristine stage worktree must not contain node_modules");
   }
@@ -369,18 +384,70 @@ export function inspectCertificationStageWorktree({
 function writePrivateSidecar(evidenceRoot, role, sidecar) {
   const bytes = canonicalJsonBytes(sidecar);
   const digest = sha256Bytes(bytes);
-  const filePath = path.join(
-    evidenceRoot,
-    "worktrees",
-    "private",
-    role,
-    `${digest}.json`,
-  );
-  if (!existsSync(filePath)) atomicWrite(filePath, bytes);
+  const { directory } = containedPrivateSidecarDirectory(evidenceRoot, role, {
+    create: true,
+  });
+  const filePath = path.join(directory, `${digest}.json`);
+  if (existsSync(filePath)) {
+    const metadata = lstatSync(filePath);
+    if (
+      metadata.isSymbolicLink() ||
+      !metadata.isFile() ||
+      !readFileSync(filePath).equals(bytes)
+    ) {
+      throw new Error(
+        "stage worktree private sidecar target is not the exact canonical physical file",
+      );
+    }
+  } else {
+    atomicWrite(filePath, bytes);
+  }
   return {
-    path: path.relative(evidenceRoot, filePath).split(path.sep).join("/"),
+    path: ["worktrees", "private", ROLE_DIRECTORY[role], `${digest}.json`].join(
+      "/",
+    ),
     sha256: digest,
   };
+}
+
+function physicalPrivateSidecarFile(binding, evidenceRoot) {
+  const descriptor = binding?.privateSidecar;
+  const role = binding?.role;
+  if (
+    !exactKeys(descriptor, ["path", "sha256"]) ||
+    !isSha256(descriptor?.sha256) ||
+    !ROLE_DIRECTORY[role]
+  ) {
+    throw new Error("stage worktree private sidecar descriptor is malformed");
+  }
+  if (
+    descriptor.path !==
+    [
+      "worktrees",
+      "private",
+      ROLE_DIRECTORY[role],
+      `${descriptor.sha256}.json`,
+    ].join("/")
+  ) {
+    throw new Error(
+      "stage worktree private sidecar descriptor is cross-role or noncanonical",
+    );
+  }
+  const { physicalEvidenceRoot, directory } = containedPrivateSidecarDirectory(
+    evidenceRoot,
+    role,
+  );
+  const filePath = path.join(directory, `${descriptor.sha256}.json`);
+  const metadata = lstatSync(filePath);
+  const physical = realpathSync(filePath);
+  if (
+    metadata.isSymbolicLink() ||
+    !metadata.isFile() ||
+    !pathInside(physicalEvidenceRoot, physical)
+  ) {
+    throw new Error("stage worktree private sidecar escapes the evidence root");
+  }
+  return physical;
 }
 
 function bindingFromInspection(inspection, descriptor, createdAt) {
@@ -389,6 +456,11 @@ function bindingFromInspection(inspection, descriptor, createdAt) {
     creationEvent: { owner: "state:init", createdAt },
     lifecycleStatus: "active",
     cleanupStatus: "pending",
+    dependencyLifecycleSchema:
+      PRODUCTION_CERTIFICATION_DEPENDENCY_LIFECYCLE_SCHEMA,
+    dependencyStatus: "not-installed",
+    dependencyBindingEvidence: null,
+    dependencyInstallation: null,
     privateSidecar: descriptor,
   };
 }
@@ -471,19 +543,7 @@ export function createCertificationStageWorktrees({
 
 function readPrivateSidecar(binding, evidenceRoot) {
   const descriptor = binding?.privateSidecar;
-  if (
-    !exactKeys(descriptor, ["path", "sha256"]) ||
-    typeof descriptor.path !== "string" ||
-    path.isAbsolute(descriptor.path) ||
-    path.normalize(descriptor.path) !== descriptor.path ||
-    !isSha256(descriptor.sha256)
-  ) {
-    throw new Error("stage worktree private sidecar descriptor is malformed");
-  }
-  const filePath = path.resolve(evidenceRoot, descriptor.path);
-  if (!pathInside(evidenceRoot, filePath) || !lstatSync(filePath).isFile()) {
-    throw new Error("stage worktree private sidecar escapes the evidence root");
-  }
+  const filePath = physicalPrivateSidecarFile(binding, evidenceRoot);
   const bytes = readFileSync(filePath);
   if (sha256Bytes(bytes) !== descriptor.sha256) {
     throw new Error("stage worktree private sidecar hash mismatch");
@@ -528,7 +588,15 @@ export function resolveCertificationStageWorktree({
     role,
     certificationId: state.certificationId,
     candidate: state.candidate,
-    phase,
+    phase:
+      binding.dependencyStatus === "installed" ||
+      (binding.dependencyStatus === undefined &&
+        binding.dependencyIdentitySha256 !== null) ||
+      phase === "binding"
+        ? "active"
+        : binding.dependencyStatus === "failed"
+          ? "failed"
+        : phase,
   });
   for (const name of [
     "candidateCommitSha",
@@ -544,13 +612,24 @@ export function resolveCertificationStageWorktree({
     }
   }
   if (
-    binding.dependencyIdentitySha256 !== null &&
+    (binding.dependencyStatus === "installed" ||
+      (binding.dependencyStatus === undefined &&
+        binding.dependencyIdentitySha256 !== null)) &&
     (inspection.portable.dependencyIdentitySha256 !==
       binding.dependencyIdentitySha256 ||
-      JSON.stringify(inspection.portable.ignoredPathInventory) !==
-        JSON.stringify(binding.ignoredPathInventory))
+      (binding.dependencyStatus === undefined &&
+        JSON.stringify(inspection.portable.ignoredPathInventory) !==
+          JSON.stringify(binding.ignoredPathInventory)))
   ) {
     throw new Error(`stage worktree ${role} dependency or ignored-path identity changed`);
+  }
+  if (
+    binding.dependencyStatus !== undefined &&
+    phase !== "binding" &&
+    binding.dependencyStatus !== "installed" &&
+    inspection.portable.dependencyIdentitySha256 !== null
+  ) {
+    throw new Error(`stage worktree ${role} contains unbound dependencies`);
   }
   if (
     phase === "pristine" &&
@@ -569,6 +648,22 @@ export function refreshCertificationStageWorktreeBinding({
   role,
   phase = "active",
 }) {
+  const current = state?.worktrees?.roles?.[role];
+  if (current?.dependencyLifecycleSchema) {
+    if (current.dependencyStatus !== "installed") {
+      throw new Error(
+        `worktree dependency refresh cannot bind lifecycle state: ${role}`,
+      );
+    }
+    const resolved = resolveCertificationStageWorktree({
+      state,
+      evidenceRoot,
+      canonicalRoot,
+      role,
+      phase,
+    });
+    return structuredClone(resolved.binding);
+  }
   const resolved = resolveCertificationStageWorktree({
     state,
     evidenceRoot,
@@ -588,6 +683,119 @@ export function refreshCertificationStageWorktreeBinding({
   };
 }
 
+export function createInstalledCertificationStageWorktreeBinding({
+  state,
+  evidenceRoot,
+  canonicalRoot,
+  role,
+  dependencyBindingEvidence,
+  dependencyInstallation,
+  resolvedWorktree = null,
+}) {
+  const current = state?.worktrees?.roles?.[role];
+  if (
+    current?.dependencyLifecycleSchema !==
+      PRODUCTION_CERTIFICATION_DEPENDENCY_LIFECYCLE_SCHEMA ||
+    current?.dependencyStatus !== "not-installed"
+  ) {
+    throw new Error(`worktree dependencies cannot be bound from current state: ${role}`);
+  }
+  const resolved = resolvedWorktree ?? resolveCertificationStageWorktree({
+    state,
+    evidenceRoot,
+    canonicalRoot,
+    role,
+    phase: "binding",
+  });
+  if (
+    resolved.binding?.privateSidecar?.sha256 !== current.privateSidecar.sha256 ||
+    resolved.binding?.privateSidecar?.path !== current.privateSidecar.path
+  ) {
+    throw new Error(`resolved worktree differs from the bound role: ${role}`);
+  }
+  if (!isSha256(resolved.portable.dependencyIdentitySha256)) {
+    throw new Error(`worktree dependency identity is missing after installation: ${role}`);
+  }
+  const privateSidecar = writePrivateSidecar(
+    evidenceRoot,
+    role,
+    resolved.privateSidecar,
+  );
+  return {
+    ...current,
+    ...resolved.portable,
+    dependencyLifecycleSchema:
+      PRODUCTION_CERTIFICATION_DEPENDENCY_LIFECYCLE_SCHEMA,
+    dependencyStatus: "installed",
+    dependencyBindingEvidence: structuredClone(dependencyBindingEvidence),
+    dependencyInstallation: structuredClone(dependencyInstallation),
+    privateSidecar,
+  };
+}
+
+export function createFailedCertificationStageWorktreeBinding({
+  state,
+  evidenceRoot = null,
+  role,
+  dependencyInstallation,
+  resolvedWorktree = null,
+}) {
+  const current = state?.worktrees?.roles?.[role];
+  if (
+    current?.dependencyLifecycleSchema !==
+      PRODUCTION_CERTIFICATION_DEPENDENCY_LIFECYCLE_SCHEMA ||
+    current?.dependencyStatus !== "not-installed"
+  ) {
+    throw new Error(`worktree dependency failure cannot be recorded: ${role}`);
+  }
+  const failedInspection = resolvedWorktree
+    ? {
+        ...resolvedWorktree.portable,
+        privateSidecar: writePrivateSidecar(
+          evidenceRoot,
+          role,
+          resolvedWorktree.privateSidecar,
+        ),
+      }
+    : {};
+  return {
+    ...current,
+    ...failedInspection,
+    dependencyStatus: "failed",
+    dependencyIdentitySha256: null,
+    dependencyBindingEvidence: null,
+    dependencyInstallation: structuredClone(dependencyInstallation),
+  };
+}
+
+function dependencyOwnerStage(role) {
+  if (role === "source-validation") return "source-validation";
+  if (role === "final-artifact") return "build";
+  return "browser-owners";
+}
+
+function dependencyInstallationChronologyIssues(state, role, binding) {
+  if (!binding?.dependencyInstallation) return [];
+  const stage = state.stages?.[dependencyOwnerStage(role)];
+  const startedAt = binding.dependencyInstallation.startedAt;
+  const completedAt = binding.dependencyInstallation.completedAt;
+  const owningAttempts = (stage?.attempts ?? []).filter(
+    (attempt) =>
+      Date.parse(startedAt ?? "") >= Date.parse(attempt.startedAt ?? "") &&
+      Date.parse(completedAt ?? "") <=
+        Date.parse(attempt.completedAt ?? state.updatedAt ?? ""),
+  );
+  if (
+    owningAttempts.length !== 1 ||
+    Date.parse(completedAt ?? "") < Date.parse(startedAt ?? "")
+  ) {
+    return [
+      `${role}: dependency installation interval is outside its owning stage attempt`,
+    ];
+  }
+  return [];
+}
+
 export function certificationWorktreeIssues({
   state,
   evidenceRoot,
@@ -596,7 +804,10 @@ export function certificationWorktreeIssues({
 }) {
   const issues = [];
   if (
-    state?.worktrees?.schema !== PRODUCTION_CERTIFICATION_WORKTREE_SCHEMA ||
+    !new Set([
+      PRODUCTION_CERTIFICATION_WORKTREE_SCHEMA,
+      PRODUCTION_CERTIFICATION_WORKTREE_SCHEMA_V1,
+    ]).has(state?.worktrees?.schema) ||
     !exactKeys(state?.worktrees?.roles, CERTIFICATION_WORKTREE_ROLES)
   ) {
     return ["certification stage-worktree binding inventory is missing or malformed"];
@@ -624,6 +835,26 @@ export function certificationWorktreeIssues({
       issues.push(`certification worktree binding is malformed: ${role}`);
       continue;
     }
+    if (
+      !(
+        (binding.lifecycleStatus === "active" &&
+          binding.cleanupStatus === "pending") ||
+        (binding.lifecycleStatus === "cleaned" &&
+          binding.cleanupStatus === "removed")
+      )
+    ) {
+      issues.push(
+        `certification worktree lifecycle/cleanup status pair is invalid: ${role}`,
+      );
+    }
+    if (state.worktrees.schema === PRODUCTION_CERTIFICATION_WORKTREE_SCHEMA) {
+      issues.push(
+        ...dependencyLifecycleIssues(binding, {
+          active: binding.lifecycleStatus === "active",
+        }).map((issue) => `${role}: ${issue}`),
+        ...dependencyInstallationChronologyIssues(state, role, binding),
+      );
+    }
     try {
       const { sidecar } = readPrivateSidecar(binding, evidenceRoot);
       if (
@@ -643,21 +874,208 @@ export function certificationWorktreeIssues({
       );
       if (sidecar.dependency?.realpath) dependencyRoots.push(sidecar.dependency.realpath);
       if (binding.lifecycleStatus === "active" && requirePhysical) {
-        resolveCertificationStageWorktree({
+        const resolved = resolveCertificationStageWorktree({
           state,
           evidenceRoot,
           canonicalRoot,
           role,
           phase:
-            binding.dependencyIdentitySha256 === null
-              ? "pristine"
-              : "active",
+            binding.dependencyStatus === "failed"
+              ? "failed"
+              : binding.dependencyStatus === "installed" ||
+            (binding.dependencyStatus === undefined &&
+              binding.dependencyIdentitySha256 !== null)
+              ? "active"
+              : "pristine",
         });
+        if (
+          state.worktrees.schema === PRODUCTION_CERTIFICATION_WORKTREE_SCHEMA &&
+          binding.dependencyStatus === "installed"
+        ) {
+          const retained =
+            readAndValidateCertificationDependencyBindingEvidence({
+              evidenceRoot,
+              descriptor: binding.dependencyBindingEvidence,
+              state,
+              role,
+              repositoryRoot: resolved.root,
+              remeasure: true,
+            });
+          if (!retained.validation.valid) {
+            throw new Error(retained.validation.issues.join("; "));
+          }
+          const installation = binding.dependencyInstallation;
+          if (
+            retained.evidence.dependencyIdentitySha256 !==
+              binding.dependencyIdentitySha256 ||
+            retained.evidence.aggregateEvidenceSha256 !==
+              installation?.aggregateEvidenceSha256 ||
+            retained.evidence.installationStartedAt !==
+              installation?.startedAt ||
+            retained.evidence.installationCompletedAt !==
+              installation?.completedAt ||
+            retained.evidence.child?.exitCode !== installation?.exitCode ||
+            retained.evidence.child?.signal !== installation?.signal
+          ) {
+            throw new Error(
+              "dependency lifecycle state contradicts its sealed binding evidence",
+            );
+          }
+        }
+        if (
+          state.worktrees.schema === PRODUCTION_CERTIFICATION_WORKTREE_SCHEMA &&
+          binding.dependencyStatus === "failed"
+        ) {
+          if (binding.dependencyInstallation?.result === "binding-failed") {
+            const retained =
+              readAndValidateCertificationDependencyBindingEvidence({
+                evidenceRoot,
+                descriptor: binding.dependencyInstallation.bindingEvidence,
+                state,
+                role,
+                repositoryRoot: resolved.root,
+                remeasure: false,
+              });
+            if (
+              !retained.validation.valid ||
+              retained.evidence.installationStartedAt !==
+                binding.dependencyInstallation.startedAt ||
+              retained.evidence.installationCompletedAt !==
+                binding.dependencyInstallation.completedAt ||
+              retained.evidence.child?.exitCode !==
+                binding.dependencyInstallation.exitCode ||
+              retained.evidence.child?.signal !==
+                binding.dependencyInstallation.signal ||
+              retained.evidence.child?.spawnError !==
+                binding.dependencyInstallation.spawnError ||
+              JSON.stringify(retained.evidence.installationEvidence) !==
+                JSON.stringify(binding.dependencyInstallation.evidence)
+            ) {
+              throw new Error(
+                "failed dependency binding state contradicts its sealed evidence",
+              );
+            }
+          } else {
+          const retained =
+            readAndValidateCertificationDependencyInstallationEvidence({
+              evidenceRoot,
+              descriptor: binding.dependencyInstallation?.evidence,
+              state,
+              role,
+              expectedResult: [
+                "failed",
+                "measurement-failed",
+                "wrapper-failed",
+              ],
+            });
+          const retainedProcess =
+            retained.evidence.completionMarker?.result === "wrapper-failed"
+              ? retained.evidence.dispatch
+              : retained.evidence.child;
+          if (!retained.validation.valid) {
+            throw new Error(retained.validation.issues.join("; "));
+          }
+          if (
+            retained.evidence.installationStartedAt !==
+              binding.dependencyInstallation?.startedAt ||
+            retained.evidence.installationCompletedAt !==
+              binding.dependencyInstallation?.completedAt ||
+            retainedProcess?.exitCode !==
+              binding.dependencyInstallation?.exitCode ||
+            retainedProcess?.signal !==
+              binding.dependencyInstallation?.signal ||
+            retainedProcess?.spawnError !==
+              binding.dependencyInstallation?.spawnError ||
+            retained.evidence.completionMarker?.result !==
+              binding.dependencyInstallation?.result
+          ) {
+            throw new Error(
+              "failed dependency lifecycle state contradicts its sealed installation evidence",
+            );
+          }
+          }
+        }
       } else if (
         binding.lifecycleStatus === "cleaned" &&
         (binding.cleanupStatus !== "removed" || existsSync(sidecar.realpath))
       ) {
         throw new Error("cleaned worktree still exists or lacks removed status");
+      }
+      if (
+        state.worktrees.schema === PRODUCTION_CERTIFICATION_WORKTREE_SCHEMA &&
+        binding.lifecycleStatus === "cleaned"
+      ) {
+        if (binding.dependencyBindingEvidence !== null) {
+          const retained =
+            readAndValidateCertificationDependencyBindingEvidence({
+              evidenceRoot,
+              descriptor: binding.dependencyBindingEvidence,
+              state,
+              role,
+              repositoryRoot: canonicalRoot,
+              remeasure: false,
+            });
+          if (!retained.validation.valid) {
+            throw new Error(retained.validation.issues.join("; "));
+          }
+          if (
+            retained.evidence.dependencyIdentitySha256 !==
+              binding.dependencyIdentitySha256 ||
+            retained.evidence.aggregateEvidenceSha256 !==
+              binding.dependencyInstallation?.aggregateEvidenceSha256 ||
+            retained.evidence.installationStartedAt !==
+              binding.dependencyInstallation?.startedAt ||
+            retained.evidence.installationCompletedAt !==
+              binding.dependencyInstallation?.completedAt ||
+            retained.evidence.child?.exitCode !==
+              binding.dependencyInstallation?.exitCode ||
+            retained.evidence.child?.signal !==
+              binding.dependencyInstallation?.signal ||
+            retained.evidence.child?.spawnError !==
+              binding.dependencyInstallation?.spawnError ||
+            binding.dependencyInstallation?.result !== "succeeded"
+          ) {
+            throw new Error(
+              "removed dependency lifecycle state contradicts its sealed binding evidence",
+            );
+          }
+        } else if (binding.dependencyInstallation !== null) {
+          const retained =
+            readAndValidateCertificationDependencyInstallationEvidence({
+              evidenceRoot,
+              descriptor: binding.dependencyInstallation.evidence,
+              state,
+              role,
+              expectedResult: [
+                "failed",
+                "measurement-failed",
+                "wrapper-failed",
+              ],
+            });
+          const retainedProcess =
+            retained.evidence.completionMarker?.result === "wrapper-failed"
+              ? retained.evidence.dispatch
+              : retained.evidence.child;
+          if (
+            !retained.validation.valid ||
+            retained.evidence.installationStartedAt !==
+              binding.dependencyInstallation.startedAt ||
+            retained.evidence.installationCompletedAt !==
+              binding.dependencyInstallation.completedAt ||
+            retainedProcess?.exitCode !==
+              binding.dependencyInstallation.exitCode ||
+            retainedProcess?.signal !==
+              binding.dependencyInstallation.signal ||
+            retainedProcess?.spawnError !==
+              binding.dependencyInstallation.spawnError ||
+            retained.evidence.completionMarker?.result !==
+              binding.dependencyInstallation.result
+          ) {
+            throw new Error(
+              "removed failed dependency lifecycle evidence is invalid or contradictory",
+            );
+          }
+        }
       }
     } catch (error) {
       issues.push(
@@ -747,8 +1165,11 @@ export function cleanupCertificationStageWorktrees({
       ...binding,
       lifecycleStatus: "cleaned",
       cleanupStatus: "removed",
+      ...(binding.dependencyLifecycleSchema
+        ? { dependencyStatus: "removed" }
+        : {}),
       privateSidecar: descriptor,
     };
   }
-  return { schema: PRODUCTION_CERTIFICATION_WORKTREE_SCHEMA, roles };
+  return { schema: state.worktrees.schema, roles };
 }

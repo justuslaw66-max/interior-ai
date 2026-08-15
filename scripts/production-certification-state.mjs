@@ -21,6 +21,7 @@ import {
   PRODUCTION_CERTIFICATION_INVALIDATION_PLAN_SCHEMA,
   PRODUCTION_CERTIFICATION_STATE_SCHEMA,
   PRODUCTION_CERTIFICATION_STATE_SCHEMA_V1,
+  PRODUCTION_CERTIFICATION_STATE_SCHEMA_V2,
   PRODUCTION_CERTIFICATION_STATE_VALIDATION_SCHEMA,
   REQUIRED_BROWSER_OWNERS,
   assertKnownFailureClassification,
@@ -37,8 +38,18 @@ import {
 import {
   CERTIFICATION_WORKTREE_ROLES,
   PRODUCTION_CERTIFICATION_WORKTREE_SCHEMA,
+  PRODUCTION_CERTIFICATION_WORKTREE_SCHEMA_V1,
   certificationWorktreeIssues,
+  createFailedCertificationStageWorktreeBinding,
+  createInstalledCertificationStageWorktreeBinding,
+  resolveCertificationStageWorktree,
 } from "./production-certification-worktrees.mjs";
+import {
+  PRODUCTION_CERTIFICATION_DEPENDENCY_BINDING_SCHEMA,
+  PRODUCTION_CERTIFICATION_DEPENDENCY_INSTALLATION_SCHEMA,
+  readAndValidateCertificationDependencyBindingEvidence,
+  readAndValidateCertificationDependencyInstallationEvidence,
+} from "./production-certification-dependencies.mjs";
 import {
   readAndValidateContinuityEvidence,
   readAndValidateSourceEvidence,
@@ -429,6 +440,369 @@ export function readCertificationState(statePath) {
   return state;
 }
 
+function transitionCertificationState(
+  statePath,
+  expectedCurrentSha256,
+  transition,
+) {
+  if (!isSha256(expectedCurrentSha256)) {
+    throw new Error("certification state transition requires an expected state SHA-256");
+  }
+  const resolvedStatePath = path.resolve(statePath);
+  const lockPath = `${resolvedStatePath}.lock`;
+  let lockDescriptor = null;
+  try {
+    lockDescriptor = openSync(lockPath, "wx", 0o600);
+    const currentBytes = readFileSync(resolvedStatePath);
+    if (sha256Bytes(currentBytes) !== expectedCurrentSha256) {
+      throw new Error("certification state changed before atomic transition");
+    }
+    const current = readCertificationState(resolvedStatePath);
+    const transitioned = transition(current);
+    const next = sealCertificationState(transitioned);
+    if (Date.parse(next.updatedAt) < Date.parse(current.updatedAt)) {
+      throw new Error("certification state transition cannot move durable time backward");
+    }
+    const nextBytes = canonicalJsonBytes(next);
+    if (!currentBytes.equals(nextBytes)) {
+      atomicWrite(resolvedStatePath, nextBytes);
+    }
+    return {
+      state: next,
+      stateSha256: certificationStateSha256(next),
+      mutated:
+        !currentBytes.equals(nextBytes),
+    };
+  } finally {
+    if (lockDescriptor !== null) {
+      closeSync(lockDescriptor);
+      if (existsSync(lockPath)) unlinkSync(lockPath);
+    }
+  }
+}
+
+function dependencyOwnerStage(role) {
+  if (role === "source-validation") return "source-validation";
+  if (role === "final-artifact") return "build";
+  if (role === "development-browser") return "browser-owners";
+  throw new Error(`unknown dependency worktree role: ${String(role)}`);
+}
+
+function assertInstallationWithinRunningStage(state, role, evidence) {
+  const stageName = dependencyOwnerStage(role);
+  const stage = state.stages?.[stageName];
+  const attempt = stage?.attempts?.at(-1);
+  if (
+    stage?.status !== "running" ||
+    attempt?.status !== "running" ||
+    Date.parse(evidence?.installationStartedAt ?? "") <
+      Date.parse(attempt?.startedAt ?? "") ||
+    Date.parse(evidence?.installationCompletedAt ?? "") <
+      Date.parse(evidence?.installationStartedAt ?? "") ||
+    Date.parse(evidence?.installationCompletedAt ?? "") <
+      Date.parse(state.updatedAt ?? "")
+  ) {
+    throw new Error(
+      `${role} dependency installation interval is outside its running stage attempt`,
+    );
+  }
+}
+
+export function bindCertificationWorktreeDependencies({
+  statePath,
+  expectedCurrentSha256,
+  evidenceRoot,
+  canonicalRoot,
+  role,
+  dependencyBindingEvidence,
+  beforeFinalDependencyMeasurement = null,
+}) {
+  return transitionCertificationState(
+    statePath,
+    expectedCurrentSha256,
+    (state) => {
+      if (state.version !== 3) {
+        throw new Error("dependency binding requires certification state v3");
+      }
+      const current = state.worktrees?.roles?.[role];
+      if (current?.dependencyStatus === "installed") {
+        if (
+          current.dependencyBindingEvidence?.sha256 !==
+            dependencyBindingEvidence?.sha256 ||
+          current.dependencyBindingEvidence?.path !==
+            dependencyBindingEvidence?.path
+        ) {
+          throw new Error("already-bound dependencies cannot be overwritten");
+        }
+        const resolved = resolveCertificationStageWorktree({
+          state,
+          evidenceRoot,
+          canonicalRoot,
+          role,
+          phase: "active",
+        });
+        const retained = readAndValidateCertificationDependencyBindingEvidence({
+          evidenceRoot,
+          descriptor: dependencyBindingEvidence,
+          state,
+          role,
+          repositoryRoot: resolved.root,
+          remeasure: true,
+        });
+        if (!retained.validation.valid) {
+          throw new Error(retained.validation.issues.join("; "));
+        }
+        return state;
+      }
+      if (current?.dependencyStatus !== "not-installed") {
+        throw new Error(
+          `worktree dependency lifecycle cannot bind from ${String(current?.dependencyStatus)}`,
+        );
+      }
+      const resolved = resolveCertificationStageWorktree({
+        state,
+        evidenceRoot,
+        canonicalRoot,
+        role,
+        phase: "binding",
+      });
+      const retained = readAndValidateCertificationDependencyBindingEvidence({
+        evidenceRoot,
+        descriptor: dependencyBindingEvidence,
+        state,
+        role,
+        repositoryRoot: resolved.root,
+        remeasure: true,
+      });
+      if (!retained.validation.valid) {
+        throw new Error(retained.validation.issues.join("; "));
+      }
+      const evidence = retained.evidence;
+      assertInstallationWithinRunningStage(state, role, evidence);
+      if (
+        evidence.schema !== PRODUCTION_CERTIFICATION_DEPENDENCY_BINDING_SCHEMA ||
+        evidence.dependencyIdentitySha256 !==
+          resolved.portable.dependencyIdentitySha256
+      ) {
+        throw new Error("measured dependency identity differs from binding evidence");
+      }
+      if (beforeFinalDependencyMeasurement) {
+        beforeFinalDependencyMeasurement();
+      }
+      const finalResolved = resolveCertificationStageWorktree({
+        state,
+        evidenceRoot,
+        canonicalRoot,
+        role,
+        phase: "binding",
+      });
+      if (
+        finalResolved.portable.dependencyIdentitySha256 !==
+        evidence.dependencyIdentitySha256
+      ) {
+        throw new Error(
+          "dependencies changed between binding validation and atomic state commit",
+        );
+      }
+      const binding = createInstalledCertificationStageWorktreeBinding({
+        state,
+        evidenceRoot,
+        canonicalRoot,
+        role,
+        dependencyBindingEvidence,
+        dependencyInstallation: {
+          owner: "worktree-dependencies:bind",
+          canonicalCommand: evidence.canonicalInstallationCommand,
+          startedAt: evidence.installationStartedAt,
+          completedAt: evidence.installationCompletedAt,
+          exitCode: evidence.child.exitCode,
+          signal: evidence.child.signal,
+          spawnError: evidence.child.spawnError,
+          result: "succeeded",
+          completionMarker: "installed-and-bound",
+          aggregateEvidenceSha256: evidence.aggregateEvidenceSha256,
+        },
+        resolvedWorktree: finalResolved,
+      });
+      if (
+        binding.dependencyStatus !== "installed" ||
+        binding.dependencyIdentitySha256 !== evidence.dependencyIdentitySha256 ||
+        binding.dependencyBindingEvidence?.path !==
+          dependencyBindingEvidence.path ||
+        binding.dependencyBindingEvidence?.sha256 !==
+          dependencyBindingEvidence.sha256
+      ) {
+        throw new Error(
+          "atomic dependency binding result differs from the validated evidence",
+        );
+      }
+      const next = structuredClone(statePayload(state));
+      next.worktrees.roles[role] = binding;
+      next.updatedAt = evidence.installationCompletedAt;
+      return next;
+    },
+  );
+}
+
+export function failCertificationWorktreeDependencyInstallation({
+  statePath,
+  expectedCurrentSha256,
+  evidenceRoot,
+  canonicalRoot = null,
+  role,
+  installationEvidence,
+  installation,
+}) {
+  return transitionCertificationState(
+    statePath,
+    expectedCurrentSha256,
+    (state) => {
+      if (
+        state.version !== 3 ||
+        state.worktrees?.roles?.[role]?.dependencyStatus !== "not-installed" ||
+        installation?.schema !==
+          PRODUCTION_CERTIFICATION_DEPENDENCY_INSTALLATION_SCHEMA ||
+        !new Set(["failed", "measurement-failed", "wrapper-failed"]).has(
+          installation?.completionMarker?.result,
+        ) ||
+        !isSha256(installationEvidence?.sha256)
+      ) {
+        throw new Error("dependency installation failure transition is malformed");
+      }
+      const retained =
+        readAndValidateCertificationDependencyInstallationEvidence({
+          evidenceRoot,
+          descriptor: installationEvidence,
+          state,
+          role,
+          expectedResult: [
+            "failed",
+            "measurement-failed",
+            "wrapper-failed",
+          ],
+        });
+      if (
+        !retained.validation.valid ||
+        JSON.stringify(retained.evidence) !== JSON.stringify(installation)
+      ) {
+        throw new Error(
+          `dependency installation failure evidence is invalid or contradictory: ${retained.validation.issues.join("; ")}`,
+        );
+      }
+      const sealedInstallation = retained.evidence;
+      assertInstallationWithinRunningStage(state, role, sealedInstallation);
+      const retainedProcess =
+        sealedInstallation.completionMarker.result === "wrapper-failed"
+          ? sealedInstallation.dispatch
+          : sealedInstallation.child;
+      const next = structuredClone(statePayload(state));
+      const failedWorktree = canonicalRoot
+        ? resolveCertificationStageWorktree({
+            state,
+            evidenceRoot,
+            canonicalRoot,
+            role,
+            phase: "failed",
+          })
+        : null;
+      next.worktrees.roles[role] = createFailedCertificationStageWorktreeBinding({
+        state,
+        evidenceRoot,
+        role,
+        resolvedWorktree: failedWorktree,
+        dependencyInstallation: {
+          owner: "worktree-dependencies:fail",
+          canonicalCommand: sealedInstallation.canonicalInstallationCommand,
+          startedAt: sealedInstallation.installationStartedAt,
+          completedAt: sealedInstallation.installationCompletedAt,
+          exitCode: retainedProcess.exitCode,
+          signal: retainedProcess.signal,
+          spawnError: retainedProcess.spawnError,
+          result: sealedInstallation.completionMarker.result,
+          completionMarker: "failed",
+          evidence: structuredClone(installationEvidence),
+        },
+      });
+      next.updatedAt = sealedInstallation.installationCompletedAt;
+      return next;
+    },
+  );
+}
+
+export function failCertificationWorktreeDependencyBinding({
+  statePath,
+  expectedCurrentSha256,
+  evidenceRoot,
+  canonicalRoot,
+  role,
+  dependencyBindingEvidence,
+}) {
+  return transitionCertificationState(
+    statePath,
+    expectedCurrentSha256,
+    (state) => {
+      if (
+        state.version !== 3 ||
+        state.worktrees?.roles?.[role]?.dependencyStatus !== "not-installed"
+      ) {
+        throw new Error("dependency binding failure transition is not permitted");
+      }
+      const resolved = resolveCertificationStageWorktree({
+        state,
+        evidenceRoot,
+        canonicalRoot,
+        role,
+        phase: "binding",
+      });
+      const retained = readAndValidateCertificationDependencyBindingEvidence({
+        evidenceRoot,
+        descriptor: dependencyBindingEvidence,
+        state,
+        role,
+        repositoryRoot: resolved.root,
+        remeasure: false,
+      });
+      if (!retained.validation.valid) {
+        throw new Error(
+          `dependency binding failure evidence is invalid: ${retained.validation.issues.join("; ")}`,
+        );
+      }
+      const evidence = retained.evidence;
+      assertInstallationWithinRunningStage(state, role, evidence);
+      const failedWorktree = resolveCertificationStageWorktree({
+        state,
+        evidenceRoot,
+        canonicalRoot,
+        role,
+        phase: "failed",
+      });
+      const next = structuredClone(statePayload(state));
+      next.worktrees.roles[role] =
+        createFailedCertificationStageWorktreeBinding({
+          state,
+          evidenceRoot,
+          role,
+          resolvedWorktree: failedWorktree,
+          dependencyInstallation: {
+            owner: "worktree-dependencies:fail",
+            canonicalCommand: evidence.canonicalInstallationCommand,
+            startedAt: evidence.installationStartedAt,
+            completedAt: evidence.installationCompletedAt,
+            exitCode: evidence.child.exitCode,
+            signal: evidence.child.signal,
+            spawnError: evidence.child.spawnError,
+            result: "binding-failed",
+            completionMarker: "failed",
+            evidence: structuredClone(evidence.installationEvidence),
+            bindingEvidence: structuredClone(dependencyBindingEvidence),
+          },
+        });
+      next.updatedAt = evidence.installationCompletedAt;
+      return next;
+    },
+  );
+}
+
 function emptyStage(stage) {
   return {
     status: "pending",
@@ -474,14 +848,27 @@ export function createCertificationState({
   }
   if (
     worktrees !== null &&
-    (worktrees?.schema !== PRODUCTION_CERTIFICATION_WORKTREE_SCHEMA ||
+    (!new Set([
+      PRODUCTION_CERTIFICATION_WORKTREE_SCHEMA,
+      PRODUCTION_CERTIFICATION_WORKTREE_SCHEMA_V1,
+    ]).has(worktrees?.schema) ||
       !exactKeys(worktrees?.roles, CERTIFICATION_WORKTREE_ROLES))
   ) {
     throw new Error("certification stage-worktree bindings are malformed");
   }
+  const version = worktrees
+    ? worktrees.schema === PRODUCTION_CERTIFICATION_WORKTREE_SCHEMA
+      ? 3
+      : 2
+    : 1;
   return sealCertificationState({
-    schema: worktrees ? PRODUCTION_CERTIFICATION_STATE_SCHEMA : PRODUCTION_CERTIFICATION_STATE_SCHEMA_V1,
-    version: worktrees ? 2 : 1,
+    schema:
+      version === 3
+        ? PRODUCTION_CERTIFICATION_STATE_SCHEMA
+        : version === 2
+          ? PRODUCTION_CERTIFICATION_STATE_SCHEMA_V2
+          : PRODUCTION_CERTIFICATION_STATE_SCHEMA_V1,
+    version,
     certificationId,
     executionClass,
     candidate: { id: candidateId, commitSha, treeSha, parentSha },
@@ -557,6 +944,26 @@ export function startCertificationStage(state, { stage, startedAt }) {
     (record.status === "failed" && previousAttempt?.consumedSubstantiveGate)
   ) {
     throw new Error(`stage ${stage} cannot be restarted from ${record.status}`);
+  }
+  if (record.status === "failed") {
+    const retriedStages = new Set(CERTIFICATION_STAGE_ORDER.slice(index));
+    for (const laterStage of CERTIFICATION_STAGE_ORDER.slice(index + 1)) {
+      if (next.stages[laterStage].status === "invalidated") {
+        next.stages[laterStage] = emptyStage(laterStage);
+      }
+    }
+    for (const [ownerStage, keys] of Object.entries(STAGE_BINDING_KEYS)) {
+      if (!retriedStages.has(ownerStage)) continue;
+      for (const key of keys) {
+        next.bindings[key] =
+          key === "browserOwnerEvidenceSha256" ? {} : null;
+      }
+    }
+    for (const [name] of Object.entries(next.evidenceFiles)) {
+      if (retriedStages.has(EVIDENCE_OWNER_STAGE[name])) {
+        delete next.evidenceFiles[name];
+      }
+    }
   }
   const number = record.attempts.length + 1;
   const inputFingerprint = cumulativeInputFingerprint(next, index);
@@ -778,7 +1185,10 @@ export function reconcileCertificationState(
 }
 
 export function updateCertificationWorktreeBinding(state, { role, binding }) {
-  if (!CERTIFICATION_WORKTREE_ROLES.includes(role) || state?.version !== 2) {
+  if (
+    !CERTIFICATION_WORKTREE_ROLES.includes(role) ||
+    !new Set([2, 3]).has(state?.version)
+  ) {
     throw new Error("certification worktree binding update is unsupported");
   }
   const next = structuredClone(statePayload(state));
@@ -788,8 +1198,11 @@ export function updateCertificationWorktreeBinding(state, { role, binding }) {
 
 export function replaceCertificationWorktrees(state, worktrees) {
   if (
-    state?.version !== 2 ||
-    worktrees?.schema !== PRODUCTION_CERTIFICATION_WORKTREE_SCHEMA ||
+    !new Set([2, 3]).has(state?.version) ||
+    !new Set([
+      PRODUCTION_CERTIFICATION_WORKTREE_SCHEMA,
+      PRODUCTION_CERTIFICATION_WORKTREE_SCHEMA_V1,
+    ]).has(worktrees?.schema) ||
     !exactKeys(worktrees?.roles, CERTIFICATION_WORKTREE_ROLES)
   ) {
     throw new Error("certification worktree replacement is malformed");
@@ -801,7 +1214,7 @@ export function replaceCertificationWorktrees(state, worktrees) {
 
 function stateShapeIssues(state) {
   const issues = [];
-  const versionTwo = state?.version === 2;
+  const hasWorktrees = new Set([2, 3]).has(state?.version);
   if (
     !exactKeys(state, [
       "schema",
@@ -812,7 +1225,7 @@ function stateShapeIssues(state) {
       "harness",
       "bindings",
       "evidenceFiles",
-      ...(versionTwo ? ["worktrees"] : []),
+      ...(hasWorktrees ? ["worktrees"] : []),
       "stages",
       "createdAt",
       "updatedAt",
@@ -828,7 +1241,9 @@ function stateShapeIssues(state) {
   if (
     !(
       (state?.schema === PRODUCTION_CERTIFICATION_STATE_SCHEMA_V1 && state?.version === 1) ||
-      (state?.schema === PRODUCTION_CERTIFICATION_STATE_SCHEMA && state?.version === 2)
+      (state?.schema === PRODUCTION_CERTIFICATION_STATE_SCHEMA_V2 &&
+        state?.version === 2) ||
+      (state?.schema === PRODUCTION_CERTIFICATION_STATE_SCHEMA && state?.version === 3)
     )
   ) {
     issues.push("unsupported certification state schema or version");
@@ -1094,7 +1509,7 @@ export function validateCertificationState({
     ...certificationStateSealIssues(state),
     ...stateShapeIssues(state),
   ];
-  if (state?.version === 2) {
+  if (new Set([2, 3]).has(state?.version)) {
     issues.push(
       ...certificationWorktreeIssues({
         state,
@@ -1353,7 +1768,7 @@ export function validateCertificationState({
         rehashPhysicalRoot:
           verifyCurrentSource &&
           state?.stages?.continuity?.status === "passed" &&
-          (state?.version !== 2 ||
+          (!new Set([2, 3]).has(state?.version) ||
             Object.values(state.worktrees.roles).every(
               (binding) => binding.lifecycleStatus === "active",
             )),

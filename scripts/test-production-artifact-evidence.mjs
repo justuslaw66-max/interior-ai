@@ -28,6 +28,7 @@ import {
   createProductionEvidenceBundle,
   createProductionEvidenceManifest,
   executeProductionEvidenceChild,
+  handoffProductionEvidenceSemanticJournal,
   initializeProductionEvidenceSemanticJournal,
   inspectFloorPlanRouteNftContract,
   readProductionEvidenceSemanticJournal,
@@ -50,6 +51,7 @@ import {
   PRODUCTION_EVIDENCE_VALIDATOR_VERSION,
   PRODUCTION_EVIDENCE_VERIFICATION_MODES,
   PRODUCTION_EVIDENCE_VERIFICATION_RESULT_SCHEMA,
+  certificationPreparedBuildJournalIssues,
   validateCurrentProductionEvidenceManifest,
 } from "./production-artifact-contract.mjs";
 import { loadProductionArtifactForPlaywright } from "./production-artifact-playwright.mjs";
@@ -1960,6 +1962,27 @@ function overwriteSemanticJournal(root, mutate) {
 }
 
 {
+  const context = await semanticJournalFixture({ complete: true });
+  const journal = readProductionEvidenceSemanticJournal({
+    repositoryRoot: context.root,
+  });
+  assert.ok(
+    certificationPreparedBuildJournalIssues(journal).includes(
+      "certification prepared build requires exactly one process handoff",
+    ),
+    "certification prepare/complete must reject a missing process handoff",
+  );
+  const artifactOwnerSource = readFileSync(
+    path.join(process.cwd(), "scripts/production-artifact-evidence.mjs"),
+    "utf8",
+  );
+  assert.match(
+    artifactOwnerSource,
+    /complete-certification-build[\s\S]*requireProcessHandoff: true/,
+  );
+}
+
+{
   const context = await semanticJournalFixture();
   const clock = deterministicClock([
     "2026-08-13T00:00:00.010Z",
@@ -2011,6 +2034,59 @@ function overwriteSemanticJournal(root, mutate) {
   const journal = readProductionEvidenceSemanticJournal({ repositoryRoot: context.root });
   assert.equal(journal.events.dependencyInstall.status, "pending");
   assert.equal(journal.events.dependencyInstall.startedAt, null);
+}
+
+{
+  const preparingProcess = { pid: 9998, parentPid: 98 };
+  const completingProcess = { pid: process.pid, parentPid: process.ppid };
+  const context = await semanticJournalFixture({ processIdentity: preparingProcess });
+  executeProductionEvidenceChild({
+    repositoryRoot: context.root,
+    expectedRunNonce: context.runNonce,
+    action: "install",
+    processIdentity: preparingProcess,
+    dispatch: () => ({ status: 0 }),
+    clock: deterministicClock([
+      "2026-08-13T00:00:00.010Z",
+      "2026-08-13T00:00:00.020Z",
+    ]),
+  });
+  const handedOff = handoffProductionEvidenceSemanticJournal({
+    repositoryRoot: context.root,
+    expectedRunNonce: context.runNonce,
+    expectedOwnerProcess: preparingProcess,
+    nextOwnerProcess: completingProcess,
+    clock: () => "2026-08-13T00:00:00.025Z",
+  });
+  assert.deepEqual(handedOff.owner.process, completingProcess);
+  assert.deepEqual(handedOff.owner.processHandoffs, [
+    {
+      from: preparingProcess,
+      to: completingProcess,
+      boundary: "post-dependency-install-pre-generated-source",
+      completedAt: "2026-08-13T00:00:00.025Z",
+    },
+  ]);
+  executeProductionEvidenceChild({
+    repositoryRoot: context.root,
+    expectedRunNonce: context.runNonce,
+    action: "generatedSourceCheck",
+    dispatch: () => ({ status: 0 }),
+    clock: deterministicClock([
+      "2026-08-13T00:00:00.030Z",
+      "2026-08-13T00:00:00.040Z",
+    ]),
+  });
+  assert.throws(
+    () =>
+      handoffProductionEvidenceSemanticJournal({
+        repositoryRoot: context.root,
+        expectedRunNonce: context.runNonce,
+        expectedOwnerProcess: completingProcess,
+        nextOwnerProcess: preparingProcess,
+      }),
+    /requires one completed install/,
+  );
 }
 
 {
@@ -3116,10 +3192,76 @@ function listedSpecCount(suites) {
     [
       "wrong journal schema/version",
       { mutateJournal: (journal) => {
-        journal.schema = "interior-ai.production-artifact-semantic-event-journal.v2";
-        journal.version = 2;
+        journal.schema = "interior-ai.production-artifact-semantic-event-journal.v1";
+        journal.version = 1;
       } },
       "unsupported semantic event journal schema or version",
+    ],
+    [
+      "coherently bound handoff with unknown fields",
+      {
+        mutateManifest: (manifest) => {
+          const from = structuredClone(manifest.execution.owner.process);
+          const to = { pid: from.pid + 100000, parentPid: from.pid };
+          const handoff = {
+            from,
+            to,
+            boundary: "post-dependency-install-pre-generated-source",
+            completedAt: manifest.dependencies.installCompletedAt,
+            unexpected: true,
+          };
+          manifest.execution.owner.process = to;
+          manifest.execution.owner.processHandoffs = [handoff];
+        },
+        mutateJournal: (journal) => {
+          const from = structuredClone(journal.owner.process);
+          const to = { pid: from.pid + 100000, parentPid: from.pid };
+          const handoff = {
+            from,
+            to,
+            boundary: "post-dependency-install-pre-generated-source",
+            completedAt: journal.events.dependencyInstall.completedAt,
+            unexpected: true,
+          };
+          journal.owner.process = to;
+          journal.owner.processHandoffs = [handoff];
+        },
+      },
+      "semantic event journal process handoff is malformed",
+    ],
+    [
+      "coherently bound out-of-order process handoff",
+      {
+        mutateManifest: (manifest) => {
+          const from = structuredClone(manifest.execution.owner.process);
+          const to = { pid: from.pid + 100001, parentPid: from.pid };
+          const completedAt = new Date(
+            Date.parse(manifest.dependencies.installStartedAt) - 1,
+          ).toISOString();
+          manifest.execution.owner.process = to;
+          manifest.execution.owner.processHandoffs = [{
+            from,
+            to,
+            boundary: "post-dependency-install-pre-generated-source",
+            completedAt,
+          }];
+        },
+        mutateJournal: (journal) => {
+          const from = structuredClone(journal.owner.process);
+          const to = { pid: from.pid + 100001, parentPid: from.pid };
+          const completedAt = new Date(
+            Date.parse(journal.events.dependencyInstall.startedAt) - 1,
+          ).toISOString();
+          journal.owner.process = to;
+          journal.owner.processHandoffs = [{
+            from,
+            to,
+            boundary: "post-dependency-install-pre-generated-source",
+            completedAt,
+          }];
+        },
+      },
+      "semantic event journal process handoff is malformed",
     ],
     [
       "missing nonce",
@@ -4670,8 +4812,8 @@ for (const mutate of [
             ".local/production-artifact-evidence/semantic-event-journal.json";
           const journal = readStagedJson(root, journalPath);
           journal.schema =
-            "interior-ai.production-artifact-semantic-event-journal.v2";
-          journal.version = 2;
+            "interior-ai.production-artifact-semantic-event-journal.v1";
+          journal.version = 1;
           writeStagedJson(root, journalPath, journal);
         },
         expected: /unsupported semantic event journal schema or version/,
