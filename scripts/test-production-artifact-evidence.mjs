@@ -2385,6 +2385,7 @@ async function fixture({
     readFileSync(path.join(process.cwd(), "scripts/required-test-manifest.json"), "utf8"),
   );
   for (const relativePath of [
+    "scripts/test-production-archive-plan-evidence.mjs",
     "scripts/test-production-trace-archive-policy.mjs",
   ]) {
     write(
@@ -2437,6 +2438,7 @@ async function fixture({
     "scripts/runtime-smoke-telemetry-bootstrap-contract.mjs",
     "scripts/required-test-truthfulness.mjs",
     "scripts/required-test-manifest.json",
+    "scripts/test-production-archive-plan-evidence.mjs",
     "scripts/test-production-trace-archive-policy.mjs",
     ...PRODUCTION_EVIDENCE_VERIFIER_SOURCE_PATHS,
     "generated/runtime.ts",

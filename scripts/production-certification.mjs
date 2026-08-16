@@ -115,6 +115,8 @@ function qualificationCommand() {
       process.execPath,
       ["scripts/test-production-certification-dependency-lifecycle.mjs"],
     ],
+    [process.execPath, ["scripts/test-production-trace-archive-policy.mjs"]],
+    [process.execPath, ["scripts/test-production-archive-plan-evidence.mjs"]],
     ["npm", ["run", "certification:simulate"]],
     [process.execPath, ["scripts/test-production-certification.mjs"]],
     [process.execPath, ["scripts/test-production-artifact-evidence.mjs"]],

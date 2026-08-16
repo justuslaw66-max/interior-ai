@@ -6,8 +6,8 @@
       "root": "scripts",
       "filePattern": "^test-.*\\.(?:js|mjs|ts)$",
       "classification": "risk-triggered",
-      "expectedFileCount": 265,
-      "expectedPathSha256": "838330fab486474d8f231e4f67e8f5d825a4f2ac631de42264ac768881a84c17"
+      "expectedFileCount": 266,
+      "expectedPathSha256": "b1ca59ac98146218c9efbaf3479b09027cd24a6779d5d4991e7a055fc057eb9c"
     },
     {
       "id": "browser-specs",
@@ -115,7 +115,7 @@
       "blocking": true,
       "command": "npm run test:production-artifact-evidence",
       "packageScript": "test:production-artifact-evidence",
-      "packageClosure": { "expectedScriptCount": 1, "expectedSha256": "439efc2ac80289d96ebb2bbb941cd927e868acf5326f3a62401148b1cb0cb95e" },
+      "packageClosure": { "expectedScriptCount": 1, "expectedSha256": "f76e1db6fdf04f4954b94d262566bd4034ac3093a4d82c76d697de6496d900fd" },
       "runner": "node",
       "requiredSources": [
         "playwright.config.ts",
@@ -123,6 +123,7 @@
         "scripts/production-artifact-evidence.mjs",
         "scripts/production-artifact-playwright.mjs",
         "scripts/production-archive.mjs",
+        "scripts/production-archive-plan-evidence.mjs",
         "scripts/production-trace-archive-policy.mjs",
         "scripts/production-verifier-closure.mjs",
         "scripts/production-certification-contract.mjs",
@@ -152,6 +153,7 @@
         "scripts/runtime-smoke-operation-deadline.mjs",
         "scripts/runtime-smoke-phase-budget.mjs",
         "scripts/test-production-artifact-evidence.mjs",
+        "scripts/test-production-archive-plan-evidence.mjs",
         "scripts/test-production-certification.mjs",
         "scripts/test-production-certification-dependency-lifecycle.mjs",
         "scripts/test-production-certification-state-worktrees.mjs",
@@ -214,6 +216,11 @@
           "id": "artifact.trace-archive-policy-parity",
           "source": "scripts/test-production-trace-archive-policy.mjs",
           "marker": "Production trace/archive policy tests passed."
+        },
+        {
+          "id": "artifact.archive-plan-failure-evidence",
+          "source": "scripts/test-production-archive-plan-evidence.mjs",
+          "marker": "Archive plan policy rejection survives parent adaptation."
         }
       ],
       "requiredProjects": [],

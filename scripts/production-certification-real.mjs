@@ -95,6 +95,11 @@ import {
   resolveCertificationStageWorktree,
   stageWorktreeRole,
 } from "./production-certification-worktrees.mjs";
+import {
+  archivePlanStreamDescriptor,
+  createArchivePlanChildEvidence,
+  redactArchivePlanStream,
+} from "./production-archive-plan-evidence.mjs";
 
 const DEFAULT_MANIFEST = ".local/production-artifact-evidence/manifest.json";
 const DEFAULT_JOURNAL =
@@ -1835,9 +1840,12 @@ export async function runBuildStage({
   });
 }
 
-function archiveEnvironment(context, stage) {
-  return stageChildEnvironment(context, {
+export function archiveEnvironmentProjection(context, stage) {
+  return projectCertificationChildEnvironment({
+    repositoryRoot: context.repositoryRoot,
+    baseEnvironment: context.environment,
     stage,
+    profileId: stage,
     stageInputs: {
       CERTIFICATION_ENVIRONMENT_STAGE: stage,
       CERTIFICATION_EVIDENCE_ROOT: context.evidenceRoot,
@@ -1865,16 +1873,118 @@ function archiveEnvironment(context, stage) {
   });
 }
 
+function archiveAttemptDirectory(context, stage) {
+  const attemptNumber = context.state.stages[stage].attempts.length + 1;
+  return `archive/attempt-${String(attemptNumber).padStart(3, "0")}`;
+}
+
+function writeArchivePlanStream(context, relativePath, contents) {
+  const filePath = absentEvidenceTarget(context.evidenceRoot, relativePath);
+  writeFileSync(filePath, contents, { flag: "wx", mode: 0o600 });
+  const expected = archivePlanStreamDescriptor(relativePath, contents);
+  const retained = retainedDescriptor(context.evidenceRoot, filePath);
+  if (retained.sha256 !== expected.sha256) {
+    throw new Error("archive planner stream changed while retaining evidence");
+  }
+  return expected;
+}
+
+function archivePlanFailureMessage(evidence) {
+  const failure = evidence.failure;
+  return [
+    "archive plan failed",
+    failure.code,
+    failure.policyReason,
+    failure.rejectedRelativePath,
+  ].filter(Boolean).join(": ");
+}
+
+export function retainArchivePlanChild(context, stage, child, projection) {
+  const attemptDirectory = archiveAttemptDirectory(context, stage);
+  const redaction = {
+    privatePaths: [
+      context.canonicalRoot,
+      context.repositoryRoot,
+      context.evidenceRoot,
+      process.execPath,
+    ],
+    environment: projection.environment,
+  };
+  const stdout = redactArchivePlanStream(child.stdout, redaction);
+  const stderr = redactArchivePlanStream(child.stderr, redaction);
+  const stdoutDescriptor = writeArchivePlanStream(
+    context,
+    `${attemptDirectory}/plan-stdout.log`,
+    stdout,
+  );
+  const stderrDescriptor = writeArchivePlanStream(
+    context,
+    `${attemptDirectory}/plan-stderr.log`,
+    stderr,
+  );
+  const evidence = createArchivePlanChildEvidence({
+    child,
+    stderr,
+    stdoutDescriptor,
+    stderrDescriptor,
+    environmentProfileMetadata: projection.metadata,
+    workingDirectory: {
+      classification: "exact-candidate-root",
+      commitSha: context.state.candidate.commitSha,
+      treeSha: context.state.candidate.treeSha,
+    },
+  });
+  const descriptor = writeEvidence(
+    context.evidenceRoot,
+    `${attemptDirectory}/plan-result.json`,
+    evidence,
+  );
+  return { evidence, descriptor };
+}
+
+export function archivePlanStageFailure(child, retained) {
+  const infrastructureFailure = Boolean(child.error || child.signal);
+  const message = archivePlanFailureMessage(retained.evidence);
+  return new StageFailure(
+    message,
+    infrastructureFailure ? "INFRASTRUCTURE_TRANSIENT" : "ARCHIVE_FAILURE",
+    false,
+    {
+      exitCode: child.signal
+        ? null
+        : (retained.evidence.process.exitStatus ?? 1),
+      signal: child.signal ?? null,
+      result: {
+        valid: false,
+        classification: infrastructureFailure
+          ? "INFRASTRUCTURE_TRANSIENT"
+          : "ARCHIVE_FAILURE",
+        consumedSubstantiveGate: false,
+        issues: [message],
+        archivePlanEvidence: retained.descriptor,
+      },
+      evidenceFiles: { "archive-plan": retained.descriptor },
+    },
+  );
+}
+
 function runArchiveCli(
   context,
   command,
   { stage, consumed = false, onConsumed = () => {} } = {},
 ) {
+  const projection = archiveEnvironmentProjection(context, stage);
   const child = childResult(
     process.execPath,
     ["scripts/production-archive.mjs", command],
-    { cwd: context.repositoryRoot, env: archiveEnvironment(context, stage) },
+    { cwd: context.repositoryRoot, env: projection.environment },
   );
+  if (command === "plan") {
+    const retained = retainArchivePlanChild(context, stage, child, projection);
+    if (retained.evidence.completionMarker.result === "failed") {
+      throw archivePlanStageFailure(child, retained);
+    }
+  }
   assertCertificationChildPassed(
     child,
     `archive ${command} failed`,

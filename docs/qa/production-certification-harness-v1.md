@@ -617,6 +617,7 @@ artifact root to resolve to the canonical non-symlink
 - `interior-ai.production-certification-worktree-dependency-binding.v1`
 - `interior-ai.production-certification-attempt.v1`
 - `interior-ai.production-archive-plan.v1`
+- `interior-ai.production-archive-plan-child-result.v1`
 - `interior-ai.production-archive-inventory.v1`
 - `interior-ai.production-verifier-source-closure.v1`
 - `interior-ai.production-certification-phase8-evidence.v1`
@@ -707,6 +708,18 @@ Every path has one or more explicit inclusion reasons. Missing/escaping imports,
 symlinks where physical files are required, destination collisions, source or
 global fallback, broad tests/scripts inclusion, prohibited private paths, and
 historically rejected test sources fail before certification.
+
+The archive-preflight parent retains every planner invocation beneath the
+current `archive/attempt-NNN` directory. Redacted stdout and stderr are physical
+files with byte counts and SHA-256 identities, and `plan-result.json` binds the
+canonical child command, exact-candidate working-directory classification,
+environment-profile contract/profile/value-policy/name hashes, child PID, exit
+status, signal, spawn-error classification, structured safe failure code,
+rejected normalized relative path and policy decision/reason, plus a terminal
+completion marker. On failure, certification state references that result via
+the existing `archive-plan` evidence slot. Raw environment values, credentials,
+machine-private path values, and unredacted source contents are never portable
+fields; stream output is redacted before its retained hash is computed.
 
 The staged verifier runs from staged bytes. Compression uses a sorted file list,
 normalized timestamps, regular-file modes, uid/gid/owner metadata, and a zero

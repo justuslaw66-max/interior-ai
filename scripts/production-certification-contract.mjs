@@ -228,6 +228,7 @@ export const CERTIFICATION_HARNESS_SOURCE_PATHS = Object.freeze([
   "lib/floor-plan-imports/pdf-raster-adapter.ts",
   "lib/floor-plan-imports/vision-configuration.ts",
   "scripts/production-archive.mjs",
+  "scripts/production-archive-plan-evidence.mjs",
   "scripts/production-trace-archive-policy.mjs",
   "scripts/fixtures/production-trace/glb-optimizer-post-correction.nft.json",
   "scripts/fixtures/production-trace/glb-optimizer-retained-overtrace.nft.json",
