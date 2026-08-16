@@ -284,6 +284,8 @@
       "runner": "ts-node",
       "requiredSources": [
         "lib/auth-env.ts",
+        "lib/auth-fixture-network.ts",
+        "lib/auth.ts",
         "scripts/ci-auth-fixture.json",
         "scripts/ci-auth-fixture.ts",
         "scripts/test-auth-env-hardening.ts",

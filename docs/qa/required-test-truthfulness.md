@@ -914,6 +914,16 @@ or `ClientFetchError` signatures. Unit coverage retains trimming policy while
 rejecting absent, quoted, whitespace-only, truncated, malformed, mismatched,
 implicit, and production fixture use.
 
+The exact synthetic pair also installs a provider-local Auth.js `customFetch`
+boundary. It serves only Google's canonical discovery document from inert
+in-memory metadata and rejects every other provider request; normal Google OAuth
+continues to use Auth.js discovery unchanged. The real advisory launcher disables
+Next telemetry, requires exactly one value-free inert-discovery marker after the
+providers/CSRF/sign-out/Google-sign-in route sequence, and fails if either raw
+generated fixture value enters server output. Focused tests prove the discovery
+shape, marker, blocked token/non-GET requests, exact-pair activation, and
+non-activation for normal Google credentials.
+
 The run's flooring error context was the exact optional file rejected for
 prohibited environment output; no diagnostic contents were copied into this
 record. It is now omitted without discarding the mandatory failing report. The

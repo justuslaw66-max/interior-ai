@@ -8,6 +8,18 @@ type AuthEnv = {
   googleClientSecret: string;
 };
 
+export function isSyntheticCiOAuthFixture(authEnv: AuthEnv): boolean {
+  const client = authEnv.googleClientId.match(
+    /^[0-9]+-gate-a3-ci-([a-f0-9]{32})\.apps\.googleusercontent\.com$/i,
+  );
+  const secret = authEnv.googleClientSecret.match(
+    /^GOCSPX[-_]gate-a3-ci-([a-f0-9]{32})$/i,
+  );
+  return Boolean(
+    client && secret && client[1]?.toLowerCase() === secret[1]?.toLowerCase(),
+  );
+}
+
 const REQUIRED_AUTH_KEYS: RequiredAuthEnvKey[] = [
   "GOOGLE_CLIENT_ID",
   "GOOGLE_CLIENT_SECRET",
@@ -112,11 +124,7 @@ function validateSyntheticCiFixtureScopeOrThrow(authEnv: AuthEnv): void {
     syntheticClientId || syntheticClientSecret;
   if (!usesSyntheticFixture) return;
 
-  const exactFixture = Boolean(
-    syntheticClientId &&
-      syntheticClientSecret &&
-      syntheticClientId[1]?.toLowerCase() === syntheticClientSecret[1]?.toLowerCase()
-  );
+  const exactFixture = isSyntheticCiOAuthFixture(authEnv);
   const explicitlyEnabled = process.env.CI_AUTH_FIXTURE_ACTIVE === "1";
   const githubCi = process.env.CI === "true" && process.env.GITHUB_ACTIONS === "true";
   const localPreflight = process.env.CI_AUTH_FIXTURE_LOCAL_TEST === "1";

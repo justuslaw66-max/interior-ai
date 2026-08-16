@@ -12,6 +12,7 @@ import { spawn, spawnSync, type ChildProcess } from "node:child_process";
 
 import { getAuthEnvOrThrow } from "../lib/auth-env";
 import { getApplicationEnvironment } from "../lib/config";
+import { SYNTHETIC_CI_GOOGLE_DISCOVERY_MARKER } from "../lib/auth-fixture-network";
 
 type SyntheticCiOAuthFixture = Readonly<{
   googleClientId: string;
@@ -131,6 +132,15 @@ function localFixtureEnvironment(): NodeJS.ProcessEnv {
       process.env.DATABASE_URL ??
       "postgresql://test:test@127.0.0.1:5432/interior_ai_preflight",
   });
+}
+
+export function authPreflightServerEnvironment(
+  environment: NodeJS.ProcessEnv,
+): NodeJS.ProcessEnv {
+  return {
+    ...environment,
+    NEXT_TELEMETRY_DISABLED: "1",
+  };
 }
 
 function isPathInside(parentPath: string, candidatePath: string): boolean {
@@ -421,13 +431,15 @@ async function preflightAuthSession(environment: NodeJS.ProcessEnv): Promise<voi
     ["dev", "--webpack", "--hostname", PREFLIGHT_HOST, "--port", String(PREFLIGHT_PORT)],
     {
       cwd: process.cwd(),
-      env: environment,
+      env: authPreflightServerEnvironment(environment),
       stdio: ["ignore", "pipe", "pipe"],
     },
   );
   let outputCategory = "clean";
+  let serverOutput = "";
   const inspectOutput = (chunk: Buffer): void => {
     const text = chunk.toString("utf8");
+    serverOutput += text;
     if (/ClientFetchError|Unexpected token\s+['\"]?</.test(text)) {
       outputCategory = "auth-client-html-error";
     } else if (/auth module initialization|Missing required environment variable/.test(text)) {
@@ -470,6 +482,20 @@ async function preflightAuthSession(environment: NodeJS.ProcessEnv): Promise<voi
       throw new Error("Advisory auth session endpoint returned an unexpected JSON shape");
     }
     await assertAuthInteractionCompatibility(authEnvironment.googleClientId);
+    const inertDiscoveryCount = serverOutput.split(
+      SYNTHETIC_CI_GOOGLE_DISCOVERY_MARKER,
+    ).length - 1;
+    if (inertDiscoveryCount !== 1) {
+      throw new Error(
+        "Advisory auth preflight did not prove exactly one inert Google discovery",
+      );
+    }
+    if (
+      serverOutput.includes(authEnvironment.googleClientId) ||
+      serverOutput.includes(authEnvironment.googleClientSecret)
+    ) {
+      throw new Error("Advisory auth preflight detected raw fixture value leakage");
+    }
     if (outputCategory !== "clean") {
       throw new Error(`Advisory auth preflight detected ${outputCategory}`);
     }

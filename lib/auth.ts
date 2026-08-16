@@ -1,8 +1,12 @@
-import NextAuth from "next-auth";
+import NextAuth, { customFetch } from "next-auth";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import { prisma } from "@/lib/prisma";
 import Google from "next-auth/providers/google";
-import { getAuthEnvOrThrow } from "@/lib/auth-env";
+import {
+  getAuthEnvOrThrow,
+  isSyntheticCiOAuthFixture,
+} from "@/lib/auth-env";
+import { syntheticCiGoogleFetch } from "@/lib/auth-fixture-network";
 
 const authEnv = getAuthEnvOrThrow();
 
@@ -14,6 +18,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       clientId: authEnv.googleClientId,
       clientSecret: authEnv.googleClientSecret,
       allowDangerousEmailAccountLinking: true,
+      ...(isSyntheticCiOAuthFixture(authEnv)
+        ? { [customFetch]: syntheticCiGoogleFetch }
+        : {}),
     }),
   ],
   session: { 

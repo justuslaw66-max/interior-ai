@@ -11,7 +11,14 @@ import {
 import { tmpdir } from "node:os";
 import path from "node:path";
 
-import { getAuthEnvOrThrow } from "../lib/auth-env";
+import {
+  getAuthEnvOrThrow,
+  isSyntheticCiOAuthFixture,
+} from "../lib/auth-env";
+import {
+  SYNTHETIC_CI_GOOGLE_DISCOVERY_MARKER,
+  syntheticCiGoogleFetch,
+} from "../lib/auth-fixture-network";
 const SYNTHETIC_CI_OAUTH_FIXTURE_POLICY = JSON.parse(
   readFileSync(path.join(process.cwd(), "scripts", "ci-auth-fixture.json"), "utf8"),
 ) as Readonly<{
@@ -111,9 +118,28 @@ function expectThrow(fn: () => void, contains: string): void {
   assert(threw, `Expected function to throw with message containing '${contains}'`);
 }
 
+async function expectReject(
+  fn: () => Promise<unknown>,
+  contains: string,
+): Promise<void> {
+  let rejected = false;
+  try {
+    await fn();
+  } catch (error) {
+    rejected = true;
+    const message = error instanceof Error ? error.message : String(error);
+    assert(
+      message.includes(contains),
+      `Expected error containing '${contains}', got '${message}'`,
+    );
+  }
+  assert(rejected, `Expected promise to reject with message containing '${contains}'`);
+}
+
 async function run(): Promise<void> {
   const {
     assertLogSafeFixtureTransportOrder,
+    authPreflightServerEnvironment,
     exportFixtureToGitHubEnvironment,
     serializeGitHubEnvironmentAssignments,
     validateFixtureEnvironment,
@@ -137,6 +163,9 @@ async function run(): Promise<void> {
           }
       >,
     ) => void;
+    authPreflightServerEnvironment: (
+      environment: NodeJS.ProcessEnv,
+    ) => NodeJS.ProcessEnv;
     exportFixtureToGitHubEnvironment: (options: {
       environment: NodeJS.ProcessEnv;
       fixtureFactory?: () => Readonly<{
@@ -160,6 +189,65 @@ async function run(): Promise<void> {
     !authSource.includes(SYNTHETIC_CI_OAUTH_FIXTURE.googleClientId) &&
       !authSource.includes(SYNTHETIC_CI_OAUTH_FIXTURE.googleClientSecret),
     "Synthetic fixture values must stay outside the application build graph"
+  );
+
+  const ambientServerEnvironment: NodeJS.ProcessEnv = {
+    NODE_ENV: "test",
+    NEXT_TELEMETRY_DISABLED: "0",
+    ORDINARY_TOOLCHAIN_INPUT: "preserved",
+  };
+  const serverEnvironment = authPreflightServerEnvironment(
+    ambientServerEnvironment,
+  );
+  assert(
+    serverEnvironment.NEXT_TELEMETRY_DISABLED === "1" &&
+      serverEnvironment.ORDINARY_TOOLCHAIN_INPUT === "preserved",
+    "Every auth preflight server entry must disable telemetry and preserve ordinary inputs",
+  );
+  assert(
+    ambientServerEnvironment.NEXT_TELEMETRY_DISABLED === "0",
+    "Auth preflight server projection must not mutate its caller environment",
+  );
+
+  const discoveryMessages: string[] = [];
+  const originalDiscoveryLog = console.log;
+  console.log = (message?: unknown) => discoveryMessages.push(String(message));
+  let discoveryResponse: Response;
+  try {
+    discoveryResponse = await syntheticCiGoogleFetch(
+      "https://accounts.google.com/.well-known/openid-configuration",
+    );
+  } finally {
+    console.log = originalDiscoveryLog;
+  }
+  const discovery = (await discoveryResponse.json()) as Record<string, unknown>;
+  assert(discoveryResponse.status === 200, "Inert Google discovery must return HTTP 200");
+  assert(
+    discovery.issuer === "https://accounts.google.com" &&
+      discovery.authorization_endpoint === "https://accounts.google.com/o/oauth2/v2/auth",
+    "Inert Google discovery must preserve the canonical issuer and authorization endpoint",
+  );
+  assert(
+    discoveryMessages.length === 1 &&
+      discoveryMessages[0] === SYNTHETIC_CI_GOOGLE_DISCOVERY_MARKER,
+    "Inert Google discovery must emit exactly one value-free proof marker",
+  );
+  assert(
+    !discoveryMessages.join("\n").includes(SYNTHETIC_CI_OAUTH_FIXTURE.googleClientId) &&
+      !discoveryMessages.join("\n").includes(SYNTHETIC_CI_OAUTH_FIXTURE.googleClientSecret),
+    "Inert Google discovery proof must not log fixture values",
+  );
+  await expectReject(
+    () => syntheticCiGoogleFetch("https://oauth2.googleapis.com/token"),
+    "blocked an external provider request",
+  );
+  await expectReject(
+    () =>
+      syntheticCiGoogleFetch(
+        "https://accounts.google.com/.well-known/openid-configuration",
+        { method: "POST" },
+      ),
+    "blocked an external provider request",
   );
   assert(
     SYNTHETIC_CI_OAUTH_FIXTURE_POLICY.schema ===
@@ -364,6 +452,10 @@ async function run(): Promise<void> {
     () => {
       const fixture = getAuthEnvOrThrow();
       assert(
+        isSyntheticCiOAuthFixture(fixture),
+        "Expected the canonical synthetic OAuth pair to retain its exact identity",
+      );
+      assert(
         fixture.googleClientSecret === SYNTHETIC_CI_OAUTH_FIXTURE.googleClientSecret,
         "Expected the canonical synthetic OAuth fixture to pass structural validation"
       );
@@ -401,6 +493,10 @@ async function run(): Promise<void> {
     },
     () => {
       const valid = getAuthEnvOrThrow();
+      assert(
+        !isSyntheticCiOAuthFixture(valid),
+        "Normal Google OAuth credentials must not activate the synthetic fixture boundary",
+      );
       assert(valid.authSecret === "1234567890abcdef", "Expected AUTH_SECRET to be preserved");
       assert(
         valid.googleClientId === "123456789012-testclient.apps.googleusercontent.com",
