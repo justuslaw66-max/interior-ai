@@ -19,7 +19,7 @@
     "release:vercel:promote": "node scripts/vercel-prebuilt-release.mjs promote",
     "test:required-test-truthfulness": "node scripts/test-required-test-truthfulness.mjs",
     "evidence:required-tests:prepare-upload": "node scripts/required-test-truthfulness.mjs prepare-upload",
-    "test:production-artifact-evidence": "node scripts/test-production-artifact-evidence.mjs && node scripts/test-production-certification.mjs && node scripts/test-production-certification-dependency-lifecycle.mjs && node scripts/test-production-certification-state-worktrees.mjs",
+    "test:production-artifact-evidence": "node scripts/test-production-trace-archive-policy.mjs && node scripts/test-production-artifact-evidence.mjs && node scripts/test-production-certification.mjs && node scripts/test-production-certification-dependency-lifecycle.mjs && node scripts/test-production-certification-state-worktrees.mjs",
     "test:runtime-smoke-phase-budget": "node scripts/test-production-artifact-evidence.mjs --phase-budget-contract-only",
     "test:runtime-smoke-deadline-boundary": "node scripts/test-production-artifact-evidence.mjs --deadline-boundary-contract-only",
     "test:runtime-smoke-post-readiness": "node scripts/test-production-artifact-evidence.mjs --post-readiness-contract-only",

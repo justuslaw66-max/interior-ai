@@ -26,6 +26,12 @@ import { resolveRetainedExternalEvidenceFile } from "./playwright-report-path.mj
 import { deriveProductionVerifierClosure } from "./production-verifier-closure.mjs";
 import { projectCertificationChildEnvironment } from "./production-certification-stage-environment.mjs";
 import { certificationDependencyInstallationEnvironment } from "./production-certification-dependencies.mjs";
+import {
+  decideNftTraceArchiveInclusion,
+  decideNftTraceReferenceInclusion,
+  formatTraceArchivePolicyRejection,
+  prohibitedTraceArchivePath,
+} from "./production-trace-archive-policy.mjs";
 
 const EXECUTING_REPOSITORY_ROOT = path.resolve(path.dirname(import.meta.filename), "..");
 export const PRODUCTION_EVIDENCE_VERIFIER_SOURCE_PATHS = Object.freeze(
@@ -771,27 +777,15 @@ async function hashContainedDirectory(repositoryRoot, directoryPath) {
 
 function tracePathProhibited(relativePath) {
   if (relativePath === "<outside-repository>") return true;
-  return (
-    relativePath === ".git" ||
-    relativePath.startsWith(".git/") ||
-    relativePath === ".local" ||
-    relativePath.startsWith(".local/") ||
-    relativePath === ".vercel" ||
-    relativePath.startsWith(".vercel/") ||
-    relativePath === "release-evidence-private" ||
-    relativePath.startsWith("release-evidence-private/") ||
-    relativePath === "test-results" ||
-    relativePath.startsWith("test-results/") ||
-    relativePath === ".env" ||
-    relativePath.startsWith(".env.")
-  );
+  return prohibitedTraceArchivePath(relativePath);
 }
 
-async function inspectTraceInventory(repositoryRoot, artifactFiles) {
+export async function inspectTraceInventory(repositoryRoot, artifactFiles) {
   const traceFiles = artifactFiles.filter((file) => file.path.endsWith(".nft.json"));
   let referenceCount = 0;
   const missingPaths = new Set();
   const prohibitedPaths = new Set();
+  const policyRejections = new Set();
   const closureFiles = new Map();
   const rootCounts = { artifact: 0, public: 0, nodeModules: 0, repository: 0 };
   for (const traceFile of traceFiles) {
@@ -808,16 +802,18 @@ async function inspectTraceInventory(repositoryRoot, artifactFiles) {
     }
     for (const reference of data.files) {
       referenceCount += 1;
-      if (typeof reference !== "string" || reference.includes("\0")) {
-        prohibitedPaths.add(`${traceFile.path}:invalid-reference`);
+      const policy = decideNftTraceReferenceInclusion({
+        nftManifestPath: traceFile.path,
+        reference,
+      });
+      if (policy.decision === "reject") {
+        const rejection = formatTraceArchivePolicyRejection(policy);
+        policyRejections.add(rejection);
+        prohibitedPaths.add(rejection);
         continue;
       }
-      const resolvedPath = path.resolve(
-        repositoryRoot,
-        path.dirname(traceFile.path),
-        reference,
-      );
-      const relativePath = portableTracePath(repositoryRoot, resolvedPath);
+      const relativePath = policy.relativePath;
+      const resolvedPath = path.join(repositoryRoot, relativePath);
       if (!existsSync(resolvedPath)) missingPaths.add(relativePath);
       if (tracePathProhibited(relativePath)) prohibitedPaths.add(relativePath);
       if (existsSync(resolvedPath) && !tracePathProhibited(relativePath)) {
@@ -872,6 +868,7 @@ async function inspectTraceInventory(repositoryRoot, artifactFiles) {
     referenceCount,
     missingPaths: [...missingPaths].sort(),
     prohibitedPaths: [...prohibitedPaths].sort(),
+    policyRejections: [...policyRejections].sort(),
     referencedRootCounts: rootCounts,
     closureSha256: sha256(closureDigestInput),
     closureEntryCount: closure.length,
@@ -935,20 +932,18 @@ export function inspectFloorPlanRouteNftContract(repositoryRoot) {
     let publicAssetReferenceCount = 0;
     const normalizedPaths = new Set();
     for (const reference of manifest.files) {
-      if (
-        typeof reference !== "string" ||
-        reference.includes("\0") ||
-        reference.includes("\\") ||
-        path.isAbsolute(reference) ||
-        path.win32.isAbsolute(reference)
-      ) {
-        issues.push(`${nftPath} -> <invalid-reference>: NFT path is malformed`);
+      const tracePolicy = decideNftTraceReferenceInclusion({
+        nftManifestPath: nftPath,
+        reference,
+      });
+      const relativePath = tracePolicy.relativePath;
+      const edge = `${nftPath} -> ${relativePath}`;
+      if (tracePolicy.decision === "reject") {
+        issues.push(`${edge}: ${formatTraceArchivePolicyRejection(tracePolicy)}`);
         continue;
       }
-      const resolvedPath = path.resolve(root, path.dirname(nftPath), reference);
-      const relativePath = portableTracePath(root, resolvedPath);
-      const edge = `${nftPath} -> ${relativePath}`;
       normalizedPaths.add(relativePath);
+      const resolvedPath = path.join(root, relativePath);
       if (tracePathProhibited(relativePath)) {
         issues.push(`${edge}: NFT path is outside the permitted repository closure`);
         continue;
@@ -970,18 +965,17 @@ export function inspectFloorPlanRouteNftContract(repositoryRoot) {
         issues.push(error instanceof Error ? error.message : String(error));
         continue;
       }
+      const physicalTracePolicy = decideNftTraceArchiveInclusion({
+        relativePath: realRelativePath,
+        nftManifestPath: nftPath,
+      });
       if (
         rejectedSourceSet.has(relativePath) ||
         rejectedSourceSet.has(realRelativePath) ||
-        /^scripts\/test-[^/]+/.test(relativePath) ||
-        /^scripts\/test-[^/]+/.test(realRelativePath) ||
-        relativePath === "tests" ||
-        relativePath.startsWith("tests/") ||
-        realRelativePath === "tests" ||
-        realRelativePath.startsWith("tests/")
+        physicalTracePolicy.decision === "reject"
       ) {
         issues.push(
-          `${edge}${realRelativePath === relativePath ? "" : ` -> ${realRelativePath}`}: production route NFT references a test source`,
+          `${edge}${realRelativePath === relativePath ? "" : ` -> ${realRelativePath}`}: ${formatTraceArchivePolicyRejection(physicalTracePolicy)}`,
         );
       }
       if (
@@ -3076,7 +3070,8 @@ export async function validateProductionEvidence({
         recordedTraceInventory.traceFileCount <= 0 ||
         recordedTraceInventory.referenceCount <= 0 ||
         recordedTraceInventory.missingPaths?.length !== 0 ||
-        recordedTraceInventory.prohibitedPaths?.length !== 0
+        recordedTraceInventory.prohibitedPaths?.length !== 0 ||
+        recordedTraceInventory.policyRejections?.length !== 0
       ) {
         issues.push("recorded traced output inventory is incomplete or unsafe");
       }

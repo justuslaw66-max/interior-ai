@@ -31,6 +31,13 @@ import {
 } from "./production-certification-contract.mjs";
 import { deriveProductionVerifierClosure } from "./production-verifier-closure.mjs";
 import { projectCertificationChildEnvironment } from "./production-certification-stage-environment.mjs";
+import {
+  MUTABLE_ARTIFACT_ROOTS,
+  TRACE_INPUT_PROVENANCE,
+  decideNftTraceReferenceInclusion,
+  decideProductionTraceArchiveInclusion,
+  formatTraceArchivePolicyRejection,
+} from "./production-trace-archive-policy.mjs";
 
 const DEFAULT_MANIFEST = ".local/production-artifact-evidence/manifest.json";
 const DEFAULT_JOURNAL =
@@ -141,11 +148,12 @@ function physicalSource(repositoryRoot, relativePath) {
   return { absolutePath, metadata };
 }
 
-function walkFiles(root, relativePath, records = []) {
+function walkFiles(root, relativePath, records = [], prune = () => false) {
+  if (prune(portable(relativePath))) return records;
   const { absolutePath, metadata } = physicalSource(root, relativePath);
   if (metadata.isDirectory()) {
     for (const entry of readdirSync(absolutePath).sort()) {
-      walkFiles(root, path.join(relativePath, entry), records);
+      walkFiles(root, path.join(relativePath, entry), records, prune);
     }
     return records;
   }
@@ -173,6 +181,16 @@ function addInput(inputMap, relativePath, reason) {
   else inputMap.set(normalized, new Set([reason]));
 }
 
+function mutableArtifactPath(relativePath) {
+  return MUTABLE_ARTIFACT_ROOTS.some(
+    (root) => relativePath === root || relativePath.startsWith(`${root}/`),
+  );
+}
+
+export function immutableNextArtifactFiles(repositoryRoot) {
+  return walkFiles(repositoryRoot, ".next", [], mutableArtifactPath);
+}
+
 function requiredServerInputs(repositoryRoot) {
   const requiredFilesPath = path.join(
     repositoryRoot,
@@ -186,37 +204,56 @@ function requiredServerInputs(repositoryRoot) {
     : [];
 }
 
-function nftDerivedInputs(repositoryRoot) {
-  const nftPaths = walkFiles(repositoryRoot, ".next").filter((entry) =>
+export class ProductionArchivePolicyError extends Error {
+  constructor(decision) {
+    super(formatTraceArchivePolicyRejection(decision));
+    this.code = "ARCHIVE_TRACE_POLICY_REJECTION";
+    this.rejectedRelativePath = decision.relativePath;
+    this.policyDecision = decision.decision;
+    this.policyReason = decision.reason;
+  }
+}
+
+export function nftDerivedInputs(repositoryRoot) {
+  const nftPaths = immutableNextArtifactFiles(repositoryRoot).filter((entry) =>
     entry.endsWith(".nft.json"),
   );
   const inputs = [];
   for (const nftPath of nftPaths) {
     const nft = readJson(path.join(repositoryRoot, nftPath), `NFT manifest ${nftPath}`);
     if (!Array.isArray(nft.files)) throw new Error(`NFT manifest files are invalid: ${nftPath}`);
-    const nftDirectory = path.dirname(nftPath);
     for (const reference of nft.files) {
-      if (typeof reference !== "string") {
-        throw new Error(`NFT manifest reference is invalid: ${nftPath}`);
+      const policy = decideNftTraceReferenceInclusion({
+        nftManifestPath: nftPath,
+        reference,
+      });
+      if (policy.decision === "reject") {
+        throw new ProductionArchivePolicyError(policy);
       }
-      const resolved = portable(path.normalize(path.join(nftDirectory, reference)));
-      if (resolved === ".." || resolved.startsWith("../")) {
-        throw new Error(`NFT manifest reference escapes source: ${nftPath}`);
+      const resolved = policy.relativePath;
+      const absoluteResolved = path.join(repositoryRoot, resolved);
+      if (!existsSync(absoluteResolved)) {
+        throw new Error(`NFT manifest reference is missing: ${resolved}`);
       }
-      if (existsSync(path.join(repositoryRoot, resolved))) inputs.push(resolved);
+      inputs.push(resolved);
     }
   }
   return [...new Set(inputs)].sort();
 }
 
-function prohibitedArchivePath(relativePath) {
-  return (
-    PROHIBITED_PATHS.some(
-      (entry) => relativePath === entry || relativePath.startsWith(`${entry}/`),
-    ) ||
-    /^scripts\/test-/.test(relativePath) ||
-    relativePath.includes("\n")
-  );
+function prohibitedArchivePath(relativePath, reasons) {
+  const certificationEvidence = [
+    "production-manifest-v3",
+    "production-manifest-sidecar",
+    "semantic-journal-v2",
+    "bound-artifact-inventory",
+  ].some((reason) => reasons.has(reason));
+  return decideProductionTraceArchiveInclusion({
+    relativePath,
+    provenance: certificationEvidence
+      ? TRACE_INPUT_PROVENANCE.CERTIFICATION_EVIDENCE
+      : TRACE_INPUT_PROVENANCE.MANUAL,
+  });
 }
 
 export function planProductionArchive({
@@ -246,7 +283,14 @@ export function planProductionArchive({
       "certification-stage-environment-contract",
     ],
   ]) {
-    for (const file of walkFiles(root, normalizedRelative(relativePath, "archive root input"))) {
+    const normalizedInput = normalizedRelative(
+      relativePath,
+      "archive root input",
+    );
+    const files = relativePath === ".next"
+      ? immutableNextArtifactFiles(root)
+      : walkFiles(root, normalizedInput);
+    for (const file of files) {
       addInput(inputs, file, reason);
     }
   }
@@ -270,9 +314,10 @@ export function planProductionArchive({
     addInput(inputs, relativePath, "phase8-source-binding");
   }
   const files = [...inputs.entries()].sort(([left], [right]) => left.localeCompare(right));
-  for (const [relativePath] of files) {
-    if (prohibitedArchivePath(relativePath)) {
-      throw new Error(`archive inclusion policy rejects ${relativePath}`);
+  for (const [relativePath, reasons] of files) {
+    const policy = prohibitedArchivePath(relativePath, reasons);
+    if (policy.decision === "reject") {
+      throw new ProductionArchivePolicyError(policy);
     }
   }
   const inventory = files.map(([relativePath, reasons]) => {
@@ -309,6 +354,18 @@ export function planProductionArchive({
   return Object.freeze({
     ...plan,
     planSha256: sha256Bytes(canonicalJsonBytes(plan)),
+  });
+}
+
+export function structuredProductionArchiveFailure(error) {
+  const policyFailure = error instanceof ProductionArchivePolicyError;
+  return Object.freeze({
+    schema: "interior-ai.production-archive-failure.v1",
+    failureCode: policyFailure ? error.code : "ARCHIVE_OPERATION_FAILURE",
+    rejectedRelativePath: policyFailure ? error.rejectedRelativePath : null,
+    policyDecision: policyFailure ? error.policyDecision : null,
+    policyReason: policyFailure ? error.policyReason : null,
+    completionMarker: "failed",
   });
 }
 
@@ -731,6 +788,7 @@ if (import.meta.url === new URL(process.argv[1], "file:").href) {
     cli();
   } catch (error) {
     console.error(error instanceof Error ? error.message : String(error));
+    console.error(JSON.stringify(structuredProductionArchiveFailure(error)));
     process.exitCode = 1;
   }
 }

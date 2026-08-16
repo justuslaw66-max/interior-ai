@@ -6,8 +6,8 @@
       "root": "scripts",
       "filePattern": "^test-.*\\.(?:js|mjs|ts)$",
       "classification": "risk-triggered",
-      "expectedFileCount": 264,
-      "expectedPathSha256": "403050babe473d84ac408f92c7b03b8c8880aab2a954ba474cd8c7aa59401133"
+      "expectedFileCount": 265,
+      "expectedPathSha256": "838330fab486474d8f231e4f67e8f5d825a4f2ac631de42264ac768881a84c17"
     },
     {
       "id": "browser-specs",
@@ -110,12 +110,12 @@
     },
     {
       "id": "ci.production-artifact-contract",
-      "invariant": "The CH-0016 source, semantic timestamp provenance, artifact, Playwright schema-consumer, runtime, Floor Plan route-NFT, report, and external-claim evidence contract fails closed.",
+      "invariant": "The CH-0016 source, semantic timestamp provenance, artifact, Playwright schema-consumer, runtime, canonical trace/archive inclusion, Floor Plan route-NFT, report, and external-claim evidence contract fails closed.",
       "cadence": "merge-required",
       "blocking": true,
       "command": "npm run test:production-artifact-evidence",
       "packageScript": "test:production-artifact-evidence",
-      "packageClosure": { "expectedScriptCount": 1, "expectedSha256": "fa1fdaca629ff447292441c814a9216f129396f0ad82172bbcf4ad0b8b861a9a" },
+      "packageClosure": { "expectedScriptCount": 1, "expectedSha256": "439efc2ac80289d96ebb2bbb941cd927e868acf5326f3a62401148b1cb0cb95e" },
       "runner": "node",
       "requiredSources": [
         "playwright.config.ts",
@@ -123,6 +123,7 @@
         "scripts/production-artifact-evidence.mjs",
         "scripts/production-artifact-playwright.mjs",
         "scripts/production-archive.mjs",
+        "scripts/production-trace-archive-policy.mjs",
         "scripts/production-verifier-closure.mjs",
         "scripts/production-certification-contract.mjs",
         "scripts/production-certification-state.mjs",
@@ -154,6 +155,7 @@
         "scripts/test-production-certification.mjs",
         "scripts/test-production-certification-dependency-lifecycle.mjs",
         "scripts/test-production-certification-state-worktrees.mjs",
+        "scripts/test-production-trace-archive-policy.mjs",
         "playwright.floor-plan-upload.config.ts",
         "playwright.pro-visual.config.ts",
         "playwright.guest-save-overlay.config.ts",
@@ -206,7 +208,12 @@
         {
           "id": "floor-plan.route-nft-fail-closed",
           "source": "scripts/test-production-artifact-evidence.mjs",
-          "marker": "production route NFT references a test source"
+          "marker": "production trace/archive policy rejects"
+        },
+        {
+          "id": "artifact.trace-archive-policy-parity",
+          "source": "scripts/test-production-trace-archive-policy.mjs",
+          "marker": "Production trace/archive policy tests passed."
         }
       ],
       "requiredProjects": [],

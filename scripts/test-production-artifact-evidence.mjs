@@ -1694,7 +1694,7 @@ for (const rejectedPath of [
   appendFloorPlanNftReference(root, FLOOR_PLAN_ROUTE_NFT_PATHS[0], rejectedPath);
   assert.throws(
     () => inspectFloorPlanRouteNftContract(root),
-    new RegExp(`${rejectedPath.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}.*production route NFT references a test source`),
+    new RegExp(`${rejectedPath.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}.*production trace/archive policy rejects`),
   );
 }
 
@@ -1731,7 +1731,7 @@ for (const rejectedPath of [
   appendFloorPlanNftReference(root, FLOOR_PLAN_ROUTE_NFT_PATHS[0], linkedAsset);
   assert.throws(
     () => inspectFloorPlanRouteNftContract(root),
-    /public\/assets\/floor-plans\/linked-test\.webp -> scripts\/test-symlink-target\.mjs: production route NFT references a test source/,
+    /public\/assets\/floor-plans\/linked-test\.webp -> scripts\/test-symlink-target\.mjs: UNKNOWN_RUNTIME_NECESSITY_REJECTED: production trace\/archive policy rejects/,
   );
 }
 
@@ -1748,14 +1748,19 @@ for (const rejectedPath of [
   );
   assert.throws(
     () => inspectFloorPlanRouteNftContract(root),
-    /<invalid-reference>: NFT path is malformed/,
+    /MALFORMED_NFT_REFERENCE_REJECTED: production trace\/archive policy rejects <invalid-relative-path>/,
   );
 }
 
 const nextConfigSource = readFileSync(path.join(process.cwd(), "next.config.ts"), "utf8");
 const outputTracingExclusions = nextConfigSource.match(/outputFileTracingExcludes:\s*\{[\s\S]*?\n\s*\},\n\s*turbopack:/)?.[0] ?? "";
 assert.ok(outputTracingExclusions, "The production tracing exclusion contract must remain inspectable.");
-assert.doesNotMatch(outputTracingExclusions, /scripts\/test-|tests\/|test-required-test-truthfulness|test-production-artifact-evidence/);
+assert.match(
+  outputTracingExclusions,
+  /"\/api\/tools\/glb-optimizer": \["\.\/scripts\/test-\*"\]/,
+);
+assert.doesNotMatch(outputTracingExclusions, /"\/\*":\s*\[[^\]]*scripts\/test-/);
+assert.doesNotMatch(outputTracingExclusions, /tests\/|test-required-test-truthfulness|test-production-artifact-evidence/);
 assert.doesNotMatch(outputTracingExclusions, /"\.\/scripts\/\*\*\/\*"|"\.\/tests\/\*\*\/\*"/);
 const productionArtifactSource = readFileSync(
   path.join(process.cwd(), "scripts/production-artifact-evidence.mjs"),
@@ -2379,6 +2384,15 @@ async function fixture({
     "scripts/required-test-manifest.json",
     readFileSync(path.join(process.cwd(), "scripts/required-test-manifest.json"), "utf8"),
   );
+  for (const relativePath of [
+    "scripts/test-production-trace-archive-policy.mjs",
+  ]) {
+    write(
+      root,
+      relativePath,
+      readFileSync(path.join(process.cwd(), relativePath), "utf8"),
+    );
+  }
   for (const relativePath of PRODUCTION_EVIDENCE_VERIFIER_SOURCE_PATHS) {
     write(
       root,
@@ -2423,6 +2437,7 @@ async function fixture({
     "scripts/runtime-smoke-telemetry-bootstrap-contract.mjs",
     "scripts/required-test-truthfulness.mjs",
     "scripts/required-test-manifest.json",
+    "scripts/test-production-trace-archive-policy.mjs",
     ...PRODUCTION_EVIDENCE_VERIFIER_SOURCE_PATHS,
     "generated/runtime.ts",
     "public/asset.txt",
@@ -5617,7 +5632,7 @@ await assert.rejects(
   const context = await fixture();
   write(context.root, ".next/server/app.js.nft.json", `${JSON.stringify({
     version: 1,
-    files: ["../../../missing-runtime-file"],
+    files: ["../../missing-runtime-file"],
   })}\n`);
   await expectRejected(context, "traced output contains missing files");
 }

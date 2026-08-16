@@ -5,6 +5,43 @@ production-mode artifact evidence and required CI behavior. It does not describe
 or prove a Vercel deployment, stable staging, production, or external platform
 configuration.
 
+## Canonical trace/archive inclusion policy
+
+`scripts/production-trace-archive-policy.mjs` is the side-effect-free decision
+owner shared by production artifact NFT validation and production archive
+planning. It binds a normalized relative path to its provenance, NFT manifest
+and route owner, runtime-necessity classification, prohibited-path decision,
+and sensitive-scan requirement. Unknown provenance and unknown test-source
+necessity fail closed. Environment files, Git data, private evidence, mutable
+Next.js caches, and other prohibited paths remain rejected, and accepted inputs
+remain subject to the existing sensitive-value scan.
+
+The retained 2026-08-16 failed-rehearsal NFT identifies exactly eight
+`scripts/test-*` references, all owned only by
+`.next/server/app/api/tools/glb-optimizer/route.js.nft.json`:
+
+- `scripts/test-floor-plan-construction-sources.ts`;
+- `scripts/test-floor-plan-private-source-retention.ts`;
+- `scripts/test-floor-plan-source-observation-governance.ts`;
+- `scripts/test-floor-plan-source-overlay-residuals.ts`;
+- `scripts/test-floor-plan-supplementary-sources.ts`;
+- `scripts/test-production-certification-resources.mjs`;
+- `scripts/test-production-certification-source-generated-outputs.mjs`;
+- `scripts/test-runtime-smoke-resource-isolation.mjs`.
+
+The production route and its `normalizeModel` / `optimizeModel` dependency chain
+neither import nor open those files. The set is therefore classified
+`B — PROVEN_NFT_OVERTRACE`. The GLB optimizer route owns a route-scoped tracing
+exclusion for the filename class; the policy contains no eight-name allowlist,
+and manually supplied or unrelated test sources remain rejected. Both artifact
+validation and archive planning return `reject` with
+`PROVEN_NFT_OVERTRACE_REJECTED` for the retained eight-path fixture. The
+regression derives those paths from the retained raw NFT references in
+`scripts/fixtures/production-trace/glb-optimizer-retained-overtrace.nft.json`
+and verifies the post-correction route fixture contains zero test-source
+references. Malformed or escaping NFT references are rejected by the same
+canonical policy reason in both consumers.
+
 ## Current journal-v2 final-consumer alignment — 2026-08-16
 
 Mandatory read-only review stopped exact candidate

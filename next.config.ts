@@ -44,6 +44,7 @@ const nextConfig: NextConfig = {
       "./public/pbr/**/*",
       "./public/swatches/**/*",
     ],
+    "/api/tools/glb-optimizer": ["./scripts/test-*"],
   },
   turbopack: {
     root: process.cwd(),
