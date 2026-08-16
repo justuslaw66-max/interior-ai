@@ -8,15 +8,23 @@ export const PRODUCTION_CERTIFICATION_HARNESS_VERSION = 1;
 export const PRODUCTION_CERTIFICATION_STATE_SCHEMA_V1 =
   "interior-ai.production-certification-state.v1";
 export const PRODUCTION_CERTIFICATION_STATE_SCHEMA =
-  "interior-ai.production-certification-state.v3";
+  "interior-ai.production-certification-state.v4";
 export const PRODUCTION_CERTIFICATION_STATE_SCHEMA_V2 =
   "interior-ai.production-certification-state.v2";
+export const PRODUCTION_CERTIFICATION_STATE_SCHEMA_V3 =
+  "interior-ai.production-certification-state.v3";
 export const PRODUCTION_CERTIFICATION_STATE_VALIDATION_SCHEMA =
   "interior-ai.production-certification-state-validation.v1";
 export const PRODUCTION_CERTIFICATION_INVALIDATION_PLAN_SCHEMA =
   "interior-ai.production-certification-invalidation-plan.v1";
 export const PRODUCTION_CERTIFICATION_DOCTOR_SCHEMA =
   "interior-ai.production-certification-doctor.v1";
+export const PRODUCTION_CERTIFICATION_RESOURCE_PLAN_SCHEMA =
+  "interior-ai.production-certification-resource-plan.v1";
+export const PRODUCTION_CERTIFICATION_RESOURCE_PREPARATION_CONTRACT_SCHEMA =
+  "interior-ai.production-certification-resource-preparation-contract.v1";
+export const PRODUCTION_CERTIFICATION_RESOURCE_PREPARATION_EVIDENCE_SCHEMA =
+  "interior-ai.production-certification-resource-preparation-evidence.v1";
 export const PRODUCTION_CERTIFICATION_ATTEMPT_SCHEMA =
   "interior-ai.production-certification-attempt.v1";
 export const PRODUCTION_CERTIFICATION_FINAL_EVIDENCE_SCHEMA =
@@ -192,6 +200,9 @@ export const CERTIFICATION_HARNESS_SOURCE_PATHS = Object.freeze([
   "scripts/production-certification-evidence.mjs",
   "scripts/production-certification-historical-evidence.mjs",
   "scripts/production-certification-doctor.mjs",
+  "scripts/production-certification-resource-evidence.mjs",
+  "scripts/production-certification-resource-plan.mjs",
+  "scripts/production-certification-resources.mjs",
   "scripts/production-certification-dependencies.mjs",
   "scripts/production-certification-build-generated-output.mjs",
   "scripts/production-certification-real.mjs",
@@ -208,6 +219,7 @@ export const CERTIFICATION_HARNESS_SOURCE_PATHS = Object.freeze([
   "scripts/test-production-certification-build-generated-output.mjs",
   "scripts/test-production-certification-stage-environment.mjs",
   "scripts/test-production-certification-source-generated-outputs.mjs",
+  "scripts/test-production-certification-resources.mjs",
   "scripts/test-floor-plan-vision-configuration.ts",
   "scripts/test-floor-plan-local-ocr.ts",
   "tests/required/fixtures/floor-plan-empty-entry-harness.tsx",
@@ -269,6 +281,8 @@ export function productionCertificationContract(repositoryRoot) {
       "interior-ai.production-certification-source-check-set.v1" ||
     contract?.buildGeneratedOutputLifecycle?.schema !==
       "interior-ai.production-certification-build-generated-output-lifecycle.v1" ||
+    contract?.resourcePreparation?.schema !==
+      PRODUCTION_CERTIFICATION_RESOURCE_PREPARATION_CONTRACT_SCHEMA ||
     contract?.continuity?.schema !==
       "interior-ai.production-certification-continuity-contract.v1"
   ) {
@@ -278,6 +292,146 @@ export function productionCertificationContract(repositoryRoot) {
     value: contract,
     sha256: sha256Bytes(bytes),
     path: "docs/qa/production-certification-contract.v1.json",
+  });
+}
+
+function resourceDestinationEntryIssues(entry) {
+  const issues = [];
+  const keys = [
+    "id",
+    "resolver",
+    "environmentName",
+    "relativePath",
+    "outputRole",
+    "gateId",
+    "lifecycleStage",
+    "targetType",
+    "expectedSuffix",
+    "canonicalPathOwner",
+    "externalRootOwner",
+    "parentDirectoryOwner",
+    "targetMustRemainAbsent",
+    "siblingAtomicWriteProbeRequired",
+    "portable",
+    "cleanupOwner",
+  ];
+  if (
+    !entry ||
+    Object.keys(entry).sort().join("\n") !== [...keys].sort().join("\n") ||
+    typeof entry.id !== "string" ||
+    !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(entry.id) ||
+    !new Set([
+      "runtime-smoke",
+      "playwright-report",
+      "required-test-report",
+      "external-relative",
+    ]).has(entry.resolver) ||
+    !new Set(["file", "directory"]).has(entry.targetType) ||
+    !CERTIFICATION_STAGE_ORDER.includes(entry.lifecycleStage) ||
+    entry.canonicalPathOwner !== "scripts/playwright-report-path.mjs" ||
+    entry.externalRootOwner !== "state:init/operator" ||
+    entry.parentDirectoryOwner !== "certification:prepare-resources" ||
+    entry.targetMustRemainAbsent !== true ||
+    entry.siblingAtomicWriteProbeRequired !== true ||
+    entry.portable !== true ||
+    typeof entry.cleanupOwner !== "string" ||
+    !entry.cleanupOwner
+  ) {
+    issues.push(`resource destination entry is malformed: ${String(entry?.id)}`);
+    return issues;
+  }
+  const hasEnvironment = typeof entry.environmentName === "string";
+  const hasRelativePath = typeof entry.relativePath === "string";
+  if (hasEnvironment === hasRelativePath) {
+    issues.push(`resource destination path source is ambiguous: ${entry.id}`);
+  }
+  if (
+    hasRelativePath &&
+    (path.isAbsolute(entry.relativePath) ||
+      entry.relativePath.includes("\\") ||
+      path.posix.normalize(entry.relativePath) !== entry.relativePath ||
+      entry.relativePath.split("/").some((part) => !part || part === "." || part === ".."))
+  ) {
+    issues.push(`resource destination relative path is malformed: ${entry.id}`);
+  }
+  if (
+    !new Set([null, ".json", ".tar.gz"]).has(entry.expectedSuffix) ||
+    (entry.targetType === "directory" && entry.expectedSuffix !== null) ||
+    (entry.targetType === "file" && entry.expectedSuffix === null)
+  ) {
+    issues.push(`resource destination type contract is malformed: ${entry.id}`);
+  }
+  if (
+    entry.resolver === "runtime-smoke" &&
+    !new Set(["report", "timings", "summary", "startMarker"]).has(entry.outputRole)
+  ) {
+    issues.push(`runtime resource destination role is malformed: ${entry.id}`);
+  }
+  if (
+    entry.resolver !== "runtime-smoke" &&
+    entry.outputRole !== null
+  ) {
+    issues.push(`non-runtime resource destination declares an output role: ${entry.id}`);
+  }
+  if (
+    (entry.resolver === "required-test-report") !==
+    (typeof entry.gateId === "string")
+  ) {
+    issues.push(`required-test resource gate binding is malformed: ${entry.id}`);
+  }
+  return issues;
+}
+
+export function resourcePreparationContract(repositoryRoot) {
+  const matrix = productionCertificationContract(repositoryRoot);
+  const value = matrix.value.resourcePreparation;
+  const destinations = Array.isArray(value?.destinations) ? value.destinations : [];
+  const issues = destinations.flatMap(resourceDestinationEntryIssues);
+  const ids = destinations.map((entry) => entry?.id);
+  if (
+    value?.schema !== PRODUCTION_CERTIFICATION_RESOURCE_PREPARATION_CONTRACT_SCHEMA ||
+    value?.version !== 1 ||
+    value?.statePlanSchema !== PRODUCTION_CERTIFICATION_RESOURCE_PLAN_SCHEMA ||
+    value?.evidenceSchema !==
+      PRODUCTION_CERTIFICATION_RESOURCE_PREPARATION_EVIDENCE_SCHEMA ||
+    value?.canonicalCommand !== "npm run certification:prepare-resources" ||
+    JSON.stringify(value?.lifecycleOrder) !==
+      JSON.stringify(["state:init", "certification:prepare-resources", "doctor"]) ||
+    destinations.length !== 17 ||
+    new Set(ids).size !== destinations.length
+  ) {
+    issues.push("resource preparation contract header or inventory is malformed");
+  }
+  const browserEntries = destinations.filter(
+    (entry) => entry?.resolver === "required-test-report",
+  );
+  if (
+    JSON.stringify(browserEntries.map((entry) => [entry.id, entry.gateId])) !==
+    JSON.stringify(
+      REQUIRED_BROWSER_OWNERS.map((owner) => [
+        `browser-${owner.id}-report`,
+        owner.gateId,
+      ]),
+    )
+  ) {
+    issues.push("resource preparation browser destinations drifted from their owners");
+  }
+  if (issues.length > 0) throw new Error(issues.join("; "));
+  return Object.freeze({
+    value,
+    destinations: Object.freeze(
+      destinations.map((entry) => Object.freeze({ ...entry })),
+    ),
+    matrixSha256: matrix.sha256,
+    sha256: sha256Bytes(canonicalJsonBytes(value)),
+    destinationContractSha256: Object.freeze(
+      Object.fromEntries(
+        destinations.map((entry) => [
+          entry.id,
+          sha256Bytes(canonicalJsonBytes(entry)),
+        ]),
+      ),
+    ),
   });
 }
 

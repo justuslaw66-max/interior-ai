@@ -18,6 +18,7 @@ import {
   PRODUCTION_CERTIFICATION_STATE_SCHEMA,
   PRODUCTION_CERTIFICATION_STATE_SCHEMA_V1,
   PRODUCTION_CERTIFICATION_STATE_SCHEMA_V2,
+  PRODUCTION_CERTIFICATION_STATE_SCHEMA_V3,
   canonicalJsonBytes,
   harnessSourceIdentity,
   sha256Bytes,
@@ -59,6 +60,7 @@ const repositoryRoot = process.cwd();
 
 assert.equal(isFinalCertificationStateSchemaSupported(PRODUCTION_CERTIFICATION_STATE_SCHEMA_V1), false);
 assert.equal(isFinalCertificationStateSchemaSupported(PRODUCTION_CERTIFICATION_STATE_SCHEMA_V2), false);
+assert.equal(isFinalCertificationStateSchemaSupported(PRODUCTION_CERTIFICATION_STATE_SCHEMA_V3), false);
 assert.equal(isFinalCertificationStateSchemaSupported(PRODUCTION_CERTIFICATION_STATE_SCHEMA), true);
 assert.equal(
   isFinalCertificationStateSchemaSupported(
@@ -73,6 +75,10 @@ assert.equal(
 assert.equal(
   isHistoricalCertificationStateSchemaSupported(PRODUCTION_CERTIFICATION_STATE_SCHEMA_V2),
   true,
+);
+assert.equal(
+  isHistoricalCertificationStateSchemaSupported(PRODUCTION_CERTIFICATION_STATE_SCHEMA_V3),
+  false,
 );
 assert.equal(
   isHistoricalCertificationStateSchemaSupported(PRODUCTION_CERTIFICATION_STATE_SCHEMA),

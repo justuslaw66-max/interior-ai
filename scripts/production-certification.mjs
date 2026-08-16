@@ -8,6 +8,7 @@ import {
 } from "./production-certification-contract.mjs";
 import { readCertificationState } from "./production-certification-state.mjs";
 import { projectCertificationChildEnvironment } from "./production-certification-stage-environment.mjs";
+import { runCertificationResourcePreparation } from "./production-certification-resources.mjs";
 import {
   initializeRealCertification,
   cleanupCertificationWorktrees,
@@ -109,6 +110,7 @@ function qualificationCommand() {
       process.execPath,
       ["scripts/test-production-certification-state-worktrees.mjs"],
     ],
+    [process.execPath, ["scripts/test-production-certification-resources.mjs"]],
     [
       process.execPath,
       ["scripts/test-production-certification-dependency-lifecycle.mjs"],
@@ -172,6 +174,9 @@ async function cli() {
   const command = process.argv[2];
   let result;
   if (command === "state:init") result = initializeRealCertification();
+  else if (command === "prepare-resources") {
+    result = runCertificationResourcePreparation();
+  }
   else if (command === "doctor") result = await runDoctorStage();
   else if (command === "source-validation") {
     result = await runSourceValidationStage();

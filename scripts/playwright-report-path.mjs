@@ -192,6 +192,116 @@ function assertOutsideRepositories(candidatePaths, repositoryRoots, description)
   }
 }
 
+function pathEntry(filePath) {
+  try {
+    return lstatSync(filePath);
+  } catch (error) {
+    if (error?.code === "ENOENT" || error?.code === "ENOTDIR") return null;
+    throw error;
+  }
+}
+
+export function resolveCertificationExternalDestination({
+  requestedPath,
+  repositoryRoot,
+  authorizedExternalRoot,
+  additionalRepositoryRoots = [],
+  targetType,
+  expectedSuffix,
+  requireExistingParent = false,
+}) {
+  const normalized = requiredNormalizedPath(
+    requestedPath,
+    "Certification external destination path",
+  );
+  if (!path.isAbsolute(normalized) || path.win32.isAbsolute(normalized) !== path.isAbsolute(normalized)) {
+    throw new Error("Certification external destination path must be absolute.");
+  }
+  if (!new Set(["file", "directory"]).has(targetType)) {
+    throw new Error("Certification external destination type is malformed.");
+  }
+  if (
+    (targetType === "directory" && expectedSuffix !== null) ||
+    (targetType === "file" &&
+      (typeof expectedSuffix !== "string" || !normalized.endsWith(expectedSuffix)))
+  ) {
+    throw new Error("Certification external destination type or suffix is invalid.");
+  }
+  const root = resolveAuthorizedExternalEvidenceRoot({
+    authorizedExternalRoot,
+    repositoryRoot,
+    additionalRepositoryRoots,
+  });
+  const absolutePath = path.resolve(normalized);
+  if (!containedBy(root.externalRoot, absolutePath)) {
+    throw new Error(
+      "Certification external destination must remain beneath its authorized root.",
+    );
+  }
+  const repositoryRoots = knownRepositoryRoots(
+    repositoryRoot,
+    additionalRepositoryRoots,
+  );
+  assertOutsideRepositories(
+    [absolutePath],
+    repositoryRoots,
+    "Certification external destination",
+  );
+  const targetEntry = pathEntry(absolutePath);
+  if (targetEntry !== null) {
+    throw new Error("Certification external destination target must remain absent.");
+  }
+  const parentPath = path.dirname(absolutePath);
+  const relativeParent = path.relative(root.externalRoot, parentPath);
+  let current = root.externalRoot;
+  let parentExists = true;
+  for (const component of relativeParent.split(path.sep).filter(Boolean)) {
+    current = path.join(current, component);
+    const entry = pathEntry(current);
+    if (entry === null) {
+      parentExists = false;
+      continue;
+    }
+    if (entry.isSymbolicLink() || !entry.isDirectory()) {
+      throw new Error(
+        "Certification external destination parent chain must contain only physical directories.",
+      );
+    }
+    const physical = realpathSync(current);
+    if (!containedBy(root.externalRootRealpath, physical, { allowRoot: true })) {
+      throw new Error("Certification external destination parent escapes its authorized root.");
+    }
+    assertOutsideRepositories(
+      [physical],
+      repositoryRoots,
+      "Certification external destination parent",
+    );
+  }
+  let parentRealpath = null;
+  if (parentExists) {
+    const parent = existingWritableParent(absolutePath);
+    parentRealpath = parent.parentRealpath;
+    if (!containedBy(root.externalRootRealpath, parentRealpath, { allowRoot: true })) {
+      throw new Error("Certification external destination parent escapes its authorized root.");
+    }
+  } else if (requireExistingParent) {
+    throw new Error("Certification external destination parent directory must already exist.");
+  }
+  const portableRelativePath = path
+    .relative(root.externalRoot, absolutePath)
+    .split(path.sep)
+    .join("/");
+  return Object.freeze({
+    outputPath: absolutePath,
+    parentPath,
+    parentExists,
+    parentRealpath,
+    destinationClass: "certification-external-evidence-root",
+    portableRelativePath,
+    targetType,
+  });
+}
+
 function resolveRepositoryRelativeReport({ requestedPath, repositoryRoot }) {
   if (path.isAbsolute(requestedPath) || path.win32.isAbsolute(requestedPath)) {
     throw new Error("Production evidence report path class is contradictory.");

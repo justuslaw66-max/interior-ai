@@ -1,5 +1,32 @@
 # P0/P1 remediation queue
 
+## Certification report-parent preparation owner — 2026-08-16
+
+- **Classification:** `CERTIFICATION_REPORT_PARENT_PREPARATION_OWNER_MISSING`
+  and `DOCTOR_RESOURCE_LIFECYCLE_CONTRACT_GAP`; bounded release-certification
+  platform defect.
+- **Preserved failure:** the `...20260816T131707Z-16ae9ed` rehearsal remains
+  failed/non-consuming with its original state, doctor attempt 001, three
+  worktrees, path/process observations, invalidations, and cleanup records. It
+  is not resumed, relabeled, or reused; no replacement rehearsal ran.
+- **Correction:** state v4 seals all 17 canonical external destinations;
+  `certification:prepare-resources` is the only parent owner and performs
+  locked path rederivation, physical-parent creation, removable atomic sibling
+  probes, absent-target proof, sealed portable evidence, and one-time binding.
+  Doctor validates and never mutates that contract.
+- **Proof/status:** focused resource/path/transaction tests, exact real-doctor
+  missing-parent regression, preparation tamper simulation, existing lifecycle
+  matrices, historical regressions, artifact/truthfulness, lint, type, quality,
+  architecture, hygiene, and exact-head qualification. Result:
+  `QUALIFIED_FOR_FINAL_CANDIDATE_CERTIFICATION`. Fresh rehearsal/final
+  certification and CH-0015 closure remain pending.
+- **Process disposition:** `A — CONTROL_PLANE_RECOGNIZED_CORRECTLY`; no process
+  policy change. Narrow names, helper-name exclusions, fail-open status, and
+  exact-PID issue detail remain deferred hardening debt.
+- **Scope:** no product/UI, Floor Plan, telemetry, NFT, Playwright product,
+  Phase 8, dependency/lockfile, database/migration, workflow, push, deployment,
+  or real-gate behavior. Rollback is the focused certification-source commit.
+
 ## Runtime-smoke external timing ownership — 2026-08-15
 
 - **Classification:** `RUNTIME_SMOKE_TIMING_EVIDENCE_ROOT_CONTRACT_DEFECT` and
@@ -136,7 +163,7 @@
   CANONICAL_JOURNAL_VERSION_CONSUMER_MISMATCH`. Candidate `73d5c541…`, tree
   `be98410f…`, was stopped by read-only review before resources or substantive
   gates; runtime smoke was never invoked.
-- **Correction/policy:** current certification requires state v3, manifest
+- **Correction/policy:** current certification requires state v4, manifest
   v3/validator 3, and strict journal v2 from one canonical contract owner. Raw
   report, timing, runtime envelope, archive, final standalone, and continuity
   bind one nonce/artifact and reject v1, unknown/future, missing/malformed, and

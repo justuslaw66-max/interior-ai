@@ -456,8 +456,12 @@ function dependencyBindingStateReceiptIssues({ lifecycle, evidenceRoot, state })
       expectedBindingKeys.every((name) =>
         name === "browserOwnerEvidenceSha256"
           ? exactKeys(receipt.bindings[name], [])
+          : name === "resourcePreparationSha256"
+            ? receipt.bindings[name] === state.bindings[name]
           : receipt.bindings[name] === null,
       );
+    const expectedReceiptEvidenceKeys =
+      state.version === 4 ? ["doctor", "resource-preparation"] : ["doctor"];
     const downstreamStagesArePristine = downstreamStages.every((stage) => {
       const record = receipt.stages?.[stage];
       return (
@@ -583,7 +587,7 @@ function dependencyBindingStateReceiptIssues({ lifecycle, evidenceRoot, state })
       sha256Bytes(retained.bytes) !== lifecycle?.stateShaImmediatelyAfterBinding ||
       !certificationStateSealValid(receipt) ||
       receipt.schema !== state.schema ||
-      receipt.version !== 3 ||
+      receipt.version !== state.version ||
       receipt.certificationId !== state.certificationId ||
       JSON.stringify(receipt.candidate) !== JSON.stringify(state.candidate) ||
       JSON.stringify(receipt.harness) !== JSON.stringify(state.harness) ||
@@ -591,9 +595,12 @@ function dependencyBindingStateReceiptIssues({ lifecycle, evidenceRoot, state })
       receipt.createdAt !== state.createdAt ||
       receipt.completionState !== "incomplete" ||
       !bindingsArePristine ||
-      !exactKeys(receipt.evidenceFiles, ["doctor"]) ||
-      JSON.stringify(receipt.evidenceFiles.doctor) !==
-        JSON.stringify(state.evidenceFiles.doctor) ||
+      !exactKeys(receipt.evidenceFiles, expectedReceiptEvidenceKeys) ||
+      expectedReceiptEvidenceKeys.some(
+        (name) =>
+          JSON.stringify(receipt.evidenceFiles[name]) !==
+          JSON.stringify(state.evidenceFiles[name]),
+      ) ||
       receipt.worktrees?.schema !== state.worktrees?.schema ||
       !exactKeys(receiptRoles, Object.keys(state.worktrees?.roles ?? {})) ||
       dependencyLifecycleIssues(receiptBinding).length > 0 ||
@@ -778,7 +785,7 @@ export function sourceValidationStageEvidence({
     throw new Error("source-validation fixture execution is restricted to qualification");
   }
   if (
-    state.version === 3 &&
+    new Set([3, 4]).has(state.version) &&
     (state.worktrees?.roles?.["source-validation"]?.dependencyStatus !==
       "installed" ||
       !isSha256(dependencyBindingStateSha256) ||
@@ -789,7 +796,9 @@ export function sourceValidationStageEvidence({
     );
   }
   const preCheckDependencyRevalidation =
-    state.version === 3 ? dependencyRevalidate("pre-check") : null;
+    new Set([3, 4]).has(state.version)
+      ? dependencyRevalidate("pre-check")
+      : null;
   const missingEnvironment = [
     ...new Set(
       contract.checks.flatMap((check) => check.requiredEnvironmentNames),
@@ -807,7 +816,7 @@ export function sourceValidationStageEvidence({
     { requireAbsent: true },
   );
   let dependencyBindingStateEvidence = null;
-  if (state.version === 3) {
+  if (new Set([3, 4]).has(state.version)) {
     const bindingStatePath = path.join(
       absoluteRoot,
       "dependency-binding-state.json",
@@ -824,7 +833,7 @@ export function sourceValidationStageEvidence({
     }
   }
   const generatedOutputLifecycle =
-    state.version === 3
+    new Set([3, 4]).has(state.version)
       ? new SourceGeneratedOutputLifecycle({
           repositoryRoot,
           canonicalRoot,
@@ -938,7 +947,7 @@ export function sourceValidationStageEvidence({
         ...stderrDescriptor,
         bytes: statSync(stderrPath).size,
       },
-      ...(state.version === 3
+      ...(new Set([3, 4]).has(state.version)
         ? {
             generatedOutputs: {
               preCheck: generatedOutputPreCheck,
@@ -974,7 +983,9 @@ export function sourceValidationStageEvidence({
   }
   const completedAt = nowForExecution(state, contract.checks.length * 4 + 3);
   const postCheckDependencyRevalidation =
-    state.version === 3 ? dependencyRevalidate("post-check") : null;
+    new Set([3, 4]).has(state.version)
+      ? dependencyRevalidate("post-check")
+      : null;
   const passed = failedCheckId === null && results.length === contract.checks.length;
   const generatedOutputSummary = generatedOutputLifecycle
     ? passed
@@ -983,10 +994,10 @@ export function sourceValidationStageEvidence({
     : null;
   const evidence = sealSourceValidationEvidence({
     schema:
-      state.version === 3
+      new Set([3, 4]).has(state.version)
         ? PRODUCTION_CERTIFICATION_SOURCE_VALIDATION_SCHEMA
         : PRODUCTION_CERTIFICATION_SOURCE_VALIDATION_SCHEMA_V3,
-    version: state.version === 3 ? 4 : 3,
+    version: new Set([3, 4]).has(state.version) ? 4 : 3,
     certificationId: state.certificationId,
     candidate: structuredClone(state.candidate),
     harness: structuredClone(state.harness),
@@ -1002,7 +1013,7 @@ export function sourceValidationStageEvidence({
       commitSha: state.candidate.commitSha,
       treeSha: state.candidate.treeSha,
     },
-    ...(new Set([2, 3]).has(state.version)
+    ...(new Set([2, 3, 4]).has(state.version)
       ? {
           stageWorktree: {
             role: "source-validation",
@@ -1017,7 +1028,7 @@ export function sourceValidationStageEvidence({
           },
         }
       : {}),
-    ...(state.version === 3
+    ...(new Set([3, 4]).has(state.version)
       ? {
           dependencyLifecycle: {
             schema:
@@ -1120,7 +1131,7 @@ export function validateSourceValidationEvidence({
     };
   }
   const expectedSchema =
-    state.version === 3
+    new Set([3, 4]).has(state.version)
       ? PRODUCTION_CERTIFICATION_SOURCE_VALIDATION_SCHEMA
       : PRODUCTION_CERTIFICATION_SOURCE_VALIDATION_SCHEMA_V3;
   if (evidence?.schema !== expectedSchema) {
@@ -1140,8 +1151,8 @@ export function validateSourceValidationEvidence({
       "executionClass",
       "simulation",
       "workingDirectoryIdentity",
-      ...(new Set([2, 3]).has(state.version) ? ["stageWorktree"] : []),
-      ...(state.version === 3
+      ...(new Set([2, 3, 4]).has(state.version) ? ["stageWorktree"] : []),
+      ...(new Set([3, 4]).has(state.version)
         ? [
             "dependencyLifecycle",
             "generatedOutputContract",
@@ -1168,7 +1179,7 @@ export function validateSourceValidationEvidence({
   }
   const sourceAttempt = state.stages?.["source-validation"]?.attempts?.at(-1);
   if (
-    evidence?.version !== (state.version === 3 ? 4 : 3) ||
+    evidence?.version !== (new Set([3, 4]).has(state.version) ? 4 : 3) ||
     evidence?.runNonce !== `${state.certificationId}:${sourceAttempt?.id}` ||
     evidence?.startedAt !== sourceAttempt?.startedAt ||
     !isCanonicalUtcTimestamp(evidence?.completedAt) ||
@@ -1253,7 +1264,7 @@ export function validateSourceValidationEvidence({
   ) {
     issues.push("source-validation aggregate working directory is invalid");
   }
-  if (new Set([2, 3]).has(state.version)) {
+  if (new Set([2, 3, 4]).has(state.version)) {
     const binding = state.worktrees?.roles?.["source-validation"];
     const portableBinding = binding
       ? Object.fromEntries(
@@ -1299,7 +1310,7 @@ export function validateSourceValidationEvidence({
       issues.push("source-validation stage-worktree identity is missing or stale");
     }
   }
-  if (state.version === 3) {
+  if (new Set([3, 4]).has(state.version)) {
     const binding = state.worktrees?.roles?.["source-validation"];
     const lifecycle = evidence?.dependencyLifecycle;
     const stateSha256 = sha256Bytes(canonicalJsonBytes(state));
@@ -1373,7 +1384,7 @@ export function validateSourceValidationEvidence({
     );
   }
   const generatedOutputEvidenceById = new Map();
-  if (state.version === 3) {
+  if (new Set([3, 4]).has(state.version)) {
     for (const summary of evidence?.generatedOutputEvidence ?? []) {
       try {
         const retained = resolvedEvidenceFile(
@@ -1418,7 +1429,7 @@ export function validateSourceValidationEvidence({
         "process",
         "stdout",
         "stderr",
-        ...(state.version === 3 ? ["generatedOutputs"] : []),
+        ...(new Set([3, 4]).has(state.version) ? ["generatedOutputs"] : []),
         "generatedEvidence",
         "passed",
         "resultEvidence",
@@ -1448,7 +1459,7 @@ export function validateSourceValidationEvidence({
       issues.push(`source-validation command or order mismatch at check ${index + 1}`);
       continue;
     }
-    if (state.version === 3) {
+    if (new Set([3, 4]).has(state.version)) {
       const policy = contract.generatedOutputs.value.checkPolicies[index];
       const generated = result.generatedOutputs;
       const outputEntries = contract.generatedOutputs.value.outputs;
@@ -1678,7 +1689,7 @@ export function validateSourceValidationEvidence({
       expectedFailure && sourceAfterInvalid;
     const generatedOutputFailure =
       expectedFailure &&
-      state.version === 3 &&
+      new Set([3, 4]).has(state.version) &&
       result.generatedOutputs?.postCheck?.passed === false &&
       Array.isArray(result.generatedOutputs.postCheck.issues) &&
       result.generatedOutputs.postCheck.issues.length > 0;
@@ -1778,7 +1789,7 @@ export function validateSourceValidationEvidence({
     }
     priorCheckCompletedAt = result.completedAt;
   }
-  if (state.version === 3) {
+  if (new Set([3, 4]).has(state.version)) {
     for (const output of contract.generatedOutputs.value.outputs) {
       const outputEvidence = generatedOutputEvidenceById.get(output.id);
       if (!outputEvidence) continue;
@@ -1816,7 +1827,7 @@ export function validateSourceValidationEvidence({
     }
   }
   const expectedCompletionResult = requirePassed ? "passed" : "failed";
-  if (state.version === 3) {
+  if (new Set([3, 4]).has(state.version)) {
     const checkGeneratedOutputEvidence = observed.flatMap(
       (result) => result.generatedOutputs?.postCheck?.generatedOutputEvidence ?? [],
     );

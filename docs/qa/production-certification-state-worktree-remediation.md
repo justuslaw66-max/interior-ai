@@ -1,5 +1,29 @@
 # Production certification state/worktree remediation
 
+## Successor report-parent preparation binding
+
+The `...CERT-20260816T131707Z-16ae9ed` failed rehearsal remains read-only and
+unreused. Its doctor correctly failed before any substantive gate because the
+runtime, Phase 8, and browser report parents were absent; simulation and tests
+had supplied those parents ad hoc. State v4 now seals the current contract
+matrix, external-root identity hash, ordered portable destinations, per-path
+contract hashes, and aggregate destination-set hash at `state:init`.
+
+`certification:prepare-resources` uses the existing state lock and expected
+state SHA to bind one sealed preparation record before doctor. It permits only
+a pending doctor or a retryable non-consuming doctor failure, never mutates a
+passed substantive stage, and refuses a stale state/contract/path/candidate,
+another rehearsal's evidence, partial/manual binding, or duplicate identity.
+Parent creation and atomic sibling probes are side-effect bounded; final
+reports and evidence roots remain absent for their existing stage writers.
+Doctor revalidates the same contract read-only.
+
+The process observation is separately disposed as
+`A — CONTROL_PLANE_RECOGNIZED_CORRECTLY`; no process filtering or ownership
+logic changes here. Exact-head source qualification is
+`QUALIFIED_FOR_FINAL_CANDIDATE_CERTIFICATION`. A fresh rehearsal, final
+certification, integration, and CH-0015 closure audit remain pending.
+
 ## CH-0015I post-install dependency-binding-order correction
 
 The preserved failed certification is
@@ -15,7 +39,7 @@ that historical state and are not changed.
 
 The separate root cause is classified as
 `POST_INSTALL_DEPENDENCY_IDENTITY_BINDING_ORDER_DEFECT` plus
-`CERTIFICATION_WORKTREE_DEPENDENCY_STATE_LIFECYCLE_DEFECT`. State v3 and
+`CERTIFICATION_WORKTREE_DEPENDENCY_STATE_LIFECYCLE_DEFECT`. State v4 and
 worktrees v2 now initialize all roles as `not-installed`/null/no evidence. A
 single shared physical-install owner writes sealed dependency-installation and
 binding evidence, then `worktree-dependencies:bind` acquires the state lock,
@@ -207,7 +231,7 @@ therefore empty and cleanup occurs immediately after check 6 completes.
 The paired real-runner regression first runs all 19 canonical commands under
 the legacy strict terminal validator, proves all exit zero, and records exactly
 the four fixture files plus `tsconfig.tsbuildinfo` as prohibited. A fresh
-physical state-v3 source worktree then runs all 19 through the corrected
+physical state-v4 source worktree then runs all 19 through the corrected
 lifecycle, validates the source aggregate against running and completed state,
 validates the certification state, preserves dependency identity, and reaches
 the node_modules-only terminal state. The exact clean committed-tree qualifier

@@ -78,7 +78,7 @@ import {
 
 const repositoryRoot = process.cwd();
 const CURRENT_JOURNAL_V2_FINAL_POSITIVE_PATH =
-  "state-v3/manifest-v3/journal-v2/physical-final-standalone";
+  "state-v4/manifest-v3/journal-v2/physical-final-standalone";
 const GENERATED_OUTPUT_AGGREGATE_SEAL_DOMAIN =
   "interior-ai.production-certification-source-generated-output-aggregate-seal.v1\n";
 const fixedTime = "2026-08-14T00:00:00.000Z";
@@ -1310,7 +1310,7 @@ function stateFixture() {
   const base = simulation.simulationRoot;
   assert.equal(
     CURRENT_JOURNAL_V2_FINAL_POSITIVE_PATH,
-    "state-v3/manifest-v3/journal-v2/physical-final-standalone",
+    "state-v4/manifest-v3/journal-v2/physical-final-standalone",
   );
   assert.equal(simulation.integrationReady, true);
   assert.equal(simulation.generatedOutputLifecycle.declaredOutputCount, 2);

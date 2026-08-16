@@ -35,6 +35,7 @@ import {
   resolveRuntimeSmokeEvidencePath,
 } from "./playwright-report-path.mjs";
 import { readCertificationState } from "./production-certification-state.mjs";
+import { validateCertificationResourcePreparation } from "./production-certification-resources.mjs";
 import {
   CERTIFICATION_WORKTREE_ROLES,
   certificationWorktreeIssues,
@@ -270,7 +271,19 @@ function validateEvidenceDestinations(repositoryRoot, environment) {
     throw new Error("certification state must be a physical file");
   }
   add(statePath, "certification state");
-  return { rootClass: "external", uniqueTargetCount: destinations.size };
+  const state = readCertificationState(statePath);
+  const preparation = validateCertificationResourcePreparation({
+    repositoryRoot,
+    evidenceRoot,
+    environment,
+    state,
+  });
+  return {
+    rootClass: "external",
+    uniqueTargetCount: destinations.size,
+    resourcePreparationValid: preparation.valid,
+    preparedDestinationCount: preparation.destinationCount,
+  };
 }
 
 function validateSource(repositoryRoot, environment) {
@@ -680,7 +693,7 @@ function validateDependencyLifecycleContracts(repositoryRoot) {
       "interior-ai.production-certification-worktree-dependency-lifecycle.v1",
     evidenceSchema:
       "interior-ai.production-certification-worktree-dependency-binding.v1",
-    stateSchema: "interior-ai.production-certification-state.v3",
+    stateSchema: "interior-ai.production-certification-state.v4",
     roles: [...CERTIFICATION_WORKTREE_ROLES],
     initialStatus: "not-installed",
     bindingTransition: "worktree-dependencies:bind",

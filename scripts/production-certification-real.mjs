@@ -68,6 +68,7 @@ import {
   validateCertificationState,
   writeCertificationState,
 } from "./production-certification-state.mjs";
+import { createCertificationResourcePlan } from "./production-certification-resource-plan.mjs";
 import {
   installCertificationWorktreeDependencies,
   readAndValidateCertificationDependencyBindingEvidence,
@@ -756,12 +757,12 @@ async function validateLiveContext(
   let sourceValidationRoot = context.repositoryRoot;
   let artifactRoot = context.repositoryRoot;
   const worktreesCleaned =
-    new Set([2, 3]).has(context.state.version) &&
+    new Set([2, 3, 4]).has(context.state.version) &&
     Object.values(context.state.worktrees.roles).every(
       (binding) => binding.lifecycleStatus === "cleaned",
     );
   const worktreesUnavailable = worktreesCleaned || !verifyPhysicalWorktrees;
-  if (new Set([2, 3]).has(context.state.version) && !worktreesUnavailable) {
+  if (new Set([2, 3, 4]).has(context.state.version) && !worktreesUnavailable) {
     try {
       sourceValidationRoot = resolveCertificationStageWorktree({
         state: context.state,
@@ -1171,6 +1172,11 @@ export function initializeRealCertification({
     candidate,
     createdAt,
   });
+  const resourcePlan = createCertificationResourcePlan({
+    repositoryRoot,
+    evidenceRoot: path.resolve(evidenceRoot),
+    environment,
+  });
   const state = createCertificationState({
     certificationId,
     candidateId: candidate.id,
@@ -1181,9 +1187,17 @@ export function initializeRealCertification({
     executionClass,
     createdAt,
     worktrees,
+    resourcePlan,
   });
   writeCertificationState(statePath, state, { requireAbsent: true });
-  return { statePath, certificationId, candidate, harness };
+  return {
+    statePath,
+    stateSha256: certificationStateSha256(state),
+    certificationId,
+    candidate,
+    harness,
+    destinationSetSha256: resourcePlan.destinationSetSha256,
+  };
 }
 
 export async function runDoctorStage({

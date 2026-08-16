@@ -1,5 +1,118 @@
 # Production Certification Harness v1
 
+## Canonical report-parent preparation owner — 2026-08-16
+
+The preserved rehearsal
+`REHEARSAL_ONLY-NOT_RELEASE_CERTIFICATION-NOT_VALID_FOR_INTEGRATION-CERT-20260816T131707Z-16ae9ed`
+and candidate
+`REHEARSAL_ONLY-NOT_RELEASE_CERTIFICATION-NOT_VALID_FOR_INTEGRATION-CANDIDATE-20260816T131707Z-16ae9ed`
+remain failed, read-only, and ineligible for resume or reuse. State, doctor
+attempt 001, all three stage-worktree identities, the missing report-parent
+issue, the separately observed process-ownership issue, downstream
+invalidations, storage, and cleanup records are unchanged. The doctor result
+remains `PRECONDITION_ORCHESTRATION_FAILURE` /
+`CERTIFICATION_REHEARSAL_FAILED_CLOSED` with
+`consumedSubstantiveGate=false`. The host diagnostic disposition is
+`A — CONTROL_PLANE_RECOGNIZED_CORRECTLY`; this correction does not change
+process ownership, names, ancestry, helper exclusions, `ps`, `lsof`, or ports.
+
+`state:init` now seals the complete v1 resource plan from the current contract
+matrix and canonical path resolvers without creating any report target or
+parent. `npm run certification:prepare-resources` is the single committed
+parent owner. Under the existing state lock and caller-supplied state SHA it
+rederives the same path set, creates only missing physical parents, runs an
+atomic write/fsync/rename/read/unlink sibling probe for every destination,
+proves both probe names removed, proves every final target absent, writes one
+sealed portable preparation record, and atomically binds it into state v4. A
+second invocation validates the same identity without writing a duplicate.
+Changed state, candidate, contract, root, path set, target, parent type,
+symlink chain, destination ownership, evidence identity, or seal fails closed.
+
+The lifecycle is now:
+
+`state:init` → `certification:prepare-resources` → preparation validation →
+`doctor` → substantive stages.
+
+Doctor remains read-only. It still applies the canonical destination resolvers
+and absent-target checks, then requires the preparation evidence to match the
+same state, candidate, contract matrix, path-contract hashes, external-root
+identity, and destination-set hash. It never creates or repairs resources.
+
+### Complete pre-doctor destination ownership matrix
+
+All rows use external-root owner `state:init/operator`, parent owner
+`certification:prepare-resources`, canonical path owner
+`scripts/playwright-report-path.mjs`, require an absent final target and atomic
+sibling probe, and retain only portable root-relative classifications. Runtime
+rows share `runtime-smoke/`; browser rows may use distinct configured parents;
+archive rows share `archive/`. Physical roots never enter portable evidence.
+
+| Stable destination ID | Required stage | Type / path source | Shared parent | Cleanup or retention owner |
+| --- | --- | --- | --- | --- |
+| `runtime-smoke-report` | `runtime-smoke` | JSON / `CERTIFICATION_RUNTIME_REPORT_PATH` | runtime bundle | runtime smoke / final standalone |
+| `runtime-smoke-phase-timings` | `runtime-smoke` | JSON / `CERTIFICATION_RUNTIME_PHASE_TIMINGS_PATH` | runtime bundle | runtime smoke / final standalone |
+| `runtime-smoke-start-marker` | `runtime-smoke` | JSON / canonical `runtime-smoke/product-test-start.json` | runtime bundle | runtime smoke / final standalone |
+| `runtime-smoke-summary` | `runtime-smoke` | JSON / `CERTIFICATION_RUNTIME_EVIDENCE_PATH` | runtime bundle | runtime smoke / final standalone |
+| `phase8-summary` | `phase8` | JSON / `CERTIFICATION_PHASE8_EVIDENCE_PATH` | configured parent | Phase 8 / final standalone |
+| `phase8-raw-root` | `phase8` | directory / canonical `phase8` | external root | Phase 8 / final standalone |
+| `browser-floor-plan-upload-report` | `browser-owners` | JSON / owner environment path | configured browser parent | browser owners / final standalone |
+| `browser-pro-visual-report` | `browser-owners` | JSON / owner environment path | configured browser parent | browser owners / final standalone |
+| `browser-guest-save-report` | `browser-owners` | JSON / owner environment path | configured browser parent | browser owners / final standalone |
+| `browser-my-designs-report` | `browser-owners` | JSON / owner environment path | configured browser parent | browser owners / final standalone |
+| `browser-public-share-report` | `browser-owners` | JSON / owner environment path | configured browser parent | browser owners / final standalone |
+| `browser-cart-report` | `browser-owners` | JSON / owner environment path | configured browser parent | browser owners / final standalone |
+| `browser-retailer-report` | `browser-owners` | JSON / owner environment path | configured browser parent | browser owners / final standalone |
+| `archive-plan` | `archive-preflight` | JSON / canonical `archive/plan.json` | archive parent | archive preflight / final standalone |
+| `archive-stage-root` | `archive-preflight` | directory / canonical `archive/stage` | archive parent | archive / final standalone |
+| `archive-compressed` | `archive` | tar+gzip / canonical `archive/candidate.tar.gz` | archive parent | archive / final standalone |
+| `archive-extracted-root` | `extracted-archive-preflight` | directory / canonical `archive/extracted` | archive parent | final standalone / worktree cleanup |
+
+The state file is not a preparation target: `state:init` owns its existing
+physical file. Doctor, source-validation, build, continuity, and final
+aggregates remain stage-owned retained evidence and are not pre-doctor report
+destinations. Preparation evidence schema
+`interior-ai.production-certification-resource-preparation-evidence.v1` binds
+the certification/candidate/commit/tree, pre-mutation state SHA, harness,
+contract and per-path hashes, ordered IDs, destination aggregate, portable
+paths/classes, parent existence/creation and realpath class, containment,
+target absence, writability, probe result/hash/removal, timestamps, completion,
+aggregate digest, and self-seal. No credential, raw environment value, or
+machine-local absolute root is retained.
+
+The deterministic simulation begins with all 17 parents absent, proves direct
+doctor failure on the actual missing-parent resolver, invokes the canonical
+preparer, proves targets/probes absent, validates the preparation, retries the
+actual doctor successfully, and continues through integration readiness. It
+also invokes the actual doctor with present parents but omitted preparation,
+and with a target created after preparation; both fail closed before the
+successful retry. The focused resource suite adds outside-root,
+repository/worktree, relative/malformed,
+symlink, file/unwritable parent, duplicate/type-conflict, stale-state/contract,
+cross-rehearsal evidence, manual edit, and leftover-probe cases. Qualification
+requires that suite plus the existing state/worktree/dependency/source-output/
+continuity/runtime/journal/historical/artifact/truthfulness/lint/type/quality/
+architecture/hygiene checks.
+
+The focused required-test owner is
+`npm run test:production-certification-resources`, backed by
+`scripts/test-production-certification-resources.mjs`; the qualifier invokes
+that source directly before simulation. The truthfulness manifest classifies
+it in the risk-triggered `script-tests` inventory. That inventory is now 264
+sorted paths with SHA-256
+`403050babe473d84ac408f92c7b03b8c8880aab2a954ba474cd8c7aa59401133`;
+direct manifest validation reports 27 gates and 387 classified sources. No
+gate owner, required/advisory policy, skip/retry allowance, or workflow changed.
+
+No product/UI, Floor Plan, telemetry, NFT tracing, browser product assertion,
+Phase 8 semantic, dependency/lockfile, migration, database, workflow, Git
+history, deployment, or external-system behavior changes. A fresh rehearsal,
+real build, real Phase 8, runtime smoke, browser-owner matrix, final
+certification, integration, and CH-0015 closure audit remain pending. Deferred
+process hardening debt is recorded separately: narrow considered names,
+name-based helper exclusions, fail-open command-status handling, and generic
+issues without exact PID. The next rehearsal must use the same host-capable
+inspection context as diagnostic A.
+
 ## Build generated-output lifecycle correction — 2026-08-16
 
 Rehearsal `CH-0015I-rehearsal-20260816T091554Z-238b1fa` remains failed and
@@ -37,7 +150,7 @@ pending.
 ## Current semantic-journal compatibility policy — 2026-08-16
 
 The current real certification path accepts exactly
-`interior-ai.production-certification-state.v3`,
+`interior-ai.production-certification-state.v4`,
 `interior-ai.production-artifact-evidence.v3` with validator 3, and
 `interior-ai.production-artifact-semantic-event-journal.v2` with version 2.
 `scripts/production-artifact-contract.mjs` owns the schema/version constants and
@@ -48,13 +161,14 @@ same current identity. Journal v1, unknown/future versions, missing or
 non-integer versions, extra/missing v2 fields, incomplete lifecycle state, and
 nonce/candidate/commit/tree/Build-ID/artifact/hash mismatches fail closed.
 
-The physical final-standalone CLI supports current state v3 only. Historical
+The physical final-standalone CLI supports current state v4 only. Historical
 state v1/v2 and journal v1 remain unchanged and are handled solely by the
 explicit offline module
 `scripts/production-certification-historical-evidence.mjs`; that compatibility
-does not flow into current certification. The deterministic current positive
+does not flow into current certification. Sealed state v3 is a predecessor and
+is not accepted by the current final path. The deterministic current positive
 fixture invokes the actual standalone CLI over an extracted physical artifact
-and completes state-v3/manifest-v3/journal-v2, raw runtime report, timing,
+and completes state-v4/manifest-v3/journal-v2, raw runtime report, timing,
 runtime envelope, archive inventory, seven browser-owner summaries, and final
 identity checks. Simulation also tampers raw/timing/envelope versions, archive
 journal identity, nonce, and historical substitution.
@@ -186,7 +300,7 @@ schema, identity fields, and pre-v1 gap. The baseline is bound to candidate
 
 Historical `interior-ai.production-certification-state.v1` and `.v2` records
 remain readable and unchanged. New cycles use
-`interior-ai.production-certification-state.v3`, atomically replaced and sealed
+`interior-ai.production-certification-state.v4`, atomically replaced and sealed
 with its own SHA-256. It binds the
 certification ID, immutable candidate ID, commit/tree/exact parent, harness version and
 source hash, journal nonce, Build ID, artifact, manifest, journal, verifier
@@ -251,7 +365,7 @@ binding, while any surviving root is revalidated before removal.
 
 ## Worktree dependency lifecycle and atomic binding
 
-New state v3 cycles give each role an explicit
+New state v4 cycles give each role an explicit
 `interior-ai.production-certification-worktree-dependency-lifecycle.v1` status:
 `not-installed`, transient `installing`, `installed`, `failed`, or `removed`.
 Initialization is exactly `not-installed` with a null identity and no install or
@@ -493,6 +607,7 @@ artifact root to resolve to the canonical non-symlink
 - `interior-ai.production-certification-state.v1`
 - `interior-ai.production-certification-state.v2`
 - `interior-ai.production-certification-state.v3`
+- `interior-ai.production-certification-state.v4`
 - `interior-ai.production-certification-state-validation.v1`
 - `interior-ai.production-certification-invalidation-plan.v1`
 - `interior-ai.production-certification-worktrees.v1` (historical)
@@ -855,7 +970,7 @@ proves check 1 passes
 through its real `npm run test:production-artifact-evidence` command without
 receiving the parent evidence root or any later-stage capability. The
 `--real-producers` generated-output regression separately repeats the canonical
-producer failure and then creates a fresh physical state-v3 worktree, durably
+producer failure and then creates a fresh physical state-v4 worktree, durably
 binds its local dependency identity, runs the complete corrected 19-command
 closure, validates its running/completed source aggregate and certification
 state, and proves exact cleanup plus a node_modules-only terminal inventory. The

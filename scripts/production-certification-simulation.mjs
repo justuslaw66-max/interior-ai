@@ -42,6 +42,7 @@ import {
 } from "./production-certification-contract.mjs";
 import {
   bindCertificationWorktreeDependencies,
+  certificationStateSha256,
   completeCertificationStage,
   readCertificationState,
   sealCertificationState,
@@ -49,6 +50,7 @@ import {
   validateCertificationState,
   writeCertificationState,
 } from "./production-certification-state.mjs";
+import { createCertificationResourcePlan } from "./production-certification-resource-plan.mjs";
 import {
   CERTIFICATION_WORKTREE_ROLES,
   certificationWorktreeIssues,
@@ -90,6 +92,7 @@ import {
   runBuildStage,
   runSourceValidationStage,
 } from "./production-certification-real.mjs";
+import { validateCertificationResourcePreparation } from "./production-certification-resources.mjs";
 
 const SIMULATION_ID = "production-certification-v1-simulation";
 const FIXED_NONCE = "123e4567-e89b-42d3-a456-426614174001";
@@ -100,6 +103,10 @@ function write(root, relativePath, value) {
   const filePath = path.join(root, relativePath);
   mkdirSync(path.dirname(filePath), { recursive: true });
   writeFileSync(filePath, value);
+}
+
+function copyRetainedEvidence(sourceRoot, targetRoot, descriptor) {
+  write(targetRoot, descriptor.path, readFileSync(path.join(sourceRoot, descriptor.path)));
 }
 
 function run(command, args, cwd, environment = process.env) {
@@ -812,11 +819,6 @@ export async function runProductionCertificationSimulation({
   const environment = simulationEnvironment(identity);
   const nextTimestamp = stateClock();
   const statePath = path.join(evidenceRoot, "certification-state.json");
-  for (const owner of REQUIRED_BROWSER_OWNERS) {
-    mkdirSync(path.join(evidenceRoot, "browser-targets", owner.id), { recursive: true });
-  }
-  mkdirSync(path.join(evidenceRoot, "runtime-smoke"), { recursive: true });
-  mkdirSync(path.join(evidenceRoot, "phase8-target"), { recursive: true });
   const doctorEnvironment = {
     ...process.env,
     ...environment,
@@ -850,6 +852,11 @@ export async function runProductionCertificationSimulation({
       `CERTIFICATION_BROWSER_${owner.id.toUpperCase().replaceAll("-", "_")}_REPORT_PATH`
     ] = path.join(evidenceRoot, "browser-targets", owner.id, "playwright.json");
   }
+  createCertificationResourcePlan({
+    repositoryRoot: fixtureRoot,
+    evidenceRoot,
+    environment: doctorEnvironment,
+  });
   run(
     process.execPath,
     ["scripts/production-certification.mjs", "state:init"],
@@ -880,38 +887,189 @@ export async function runProductionCertificationSimulation({
       throw new Error("simulation did not create three distinct detached stage worktrees");
     }
   }
-  const invalidDoctorEnvironment = {
+  const missingParentDoctorEnvironment = {
     ...doctorEnvironment,
     CERTIFICATION_STAGE_STARTED_AT: nextTimestamp(),
     CERTIFICATION_STAGE_COMPLETED_AT: nextTimestamp(),
   };
-  delete invalidDoctorEnvironment.OPENAI_API_KEY;
-  const invalidDoctor = spawnSync(
+  const missingParentDoctor = spawnSync(
     process.execPath,
     ["scripts/production-certification.mjs", "doctor"],
     {
       cwd: canonicalRoot,
-      env: invalidDoctorEnvironment,
+      env: missingParentDoctorEnvironment,
       encoding: "utf8",
     },
   );
-  let invalidDoctorResult = null;
+  let missingParentDoctorResult = null;
   try {
-    invalidDoctorResult = JSON.parse(invalidDoctor.stdout.trim());
+    missingParentDoctorResult = JSON.parse(missingParentDoctor.stdout.trim());
   } catch {
     // The assertion below reports one canonical retry-contract failure.
   }
   if (
-    invalidDoctor.status === 0 ||
-    invalidDoctor.signal ||
-    invalidDoctorResult?.valid !== false ||
-    invalidDoctorResult?.seal?.algorithm !== "sha256"
+    missingParentDoctor.status === 0 ||
+    missingParentDoctor.signal ||
+    missingParentDoctorResult?.valid !== false ||
+    missingParentDoctorResult?.seal?.algorithm !== "sha256" ||
+    !missingParentDoctorResult.issues.some((issue) =>
+      issue.includes("parent directory must already exist"),
+    )
   ) {
     throw new Error(
-      `invalid doctor CLI did not emit sealed JSON and fail nonzero: ${String(
-        invalidDoctor.stderr || invalidDoctor.stdout,
+      `missing-parent doctor regression did not fail closed: ${String(
+        missingParentDoctor.stderr || missingParentDoctor.stdout,
       ).trim()}`,
     );
+  }
+  const failedDoctorState = readCertificationState(statePath);
+  const preparationEnvironment = {
+    ...doctorEnvironment,
+    CERTIFICATION_EXPECTED_STATE_SHA256:
+      certificationStateSha256(failedDoctorState),
+    CERTIFICATION_RESOURCE_PREPARATION_STARTED_AT: nextTimestamp(),
+    CERTIFICATION_RESOURCE_PREPARATION_COMPLETED_AT: nextTimestamp(),
+  };
+  const preparation = JSON.parse(
+    run(
+      process.execPath,
+      ["scripts/production-certification.mjs", "prepare-resources"],
+      canonicalRoot,
+      preparationEnvironment,
+    ),
+  );
+  const preparedState = readCertificationState(statePath);
+  if (
+    preparation.valid !== true ||
+    preparation.idempotent !== false ||
+    preparedState.resourcePreparation === null ||
+    preparedState.resourcePlan.destinations.some((destination) => {
+      const target = path.join(evidenceRoot, destination.portableRelativePath);
+      return !existsSync(path.dirname(target)) || existsSync(target);
+    }) ||
+    readdirSync(evidenceRoot, { recursive: true }).some((entry) =>
+      String(entry).includes(".certification-resource-") &&
+      String(entry).includes(".probe"),
+    )
+  ) {
+    throw new Error("canonical resource preparation did not retain absent targets");
+  }
+  const idempotentPreparation = JSON.parse(
+    run(
+      process.execPath,
+      ["scripts/production-certification.mjs", "prepare-resources"],
+      canonicalRoot,
+      {
+        ...doctorEnvironment,
+        CERTIFICATION_EXPECTED_STATE_SHA256:
+          certificationStateSha256(preparedState),
+      },
+    ),
+  );
+  if (
+    idempotentPreparation.idempotent !== true ||
+    idempotentPreparation.evidence.sha256 !== preparation.evidence.sha256
+  ) {
+    throw new Error("canonical resource preparation is not idempotent");
+  }
+  const omittedPreparationRoot = path.join(
+    simulationRoot,
+    "omitted-preparation-evidence",
+  );
+  cpSync(evidenceRoot, omittedPreparationRoot, { recursive: true });
+  const omittedPreparationStatePath = path.join(
+    omittedPreparationRoot,
+    "certification-state.json",
+  );
+  writeFileSync(
+    omittedPreparationStatePath,
+    canonicalJsonBytes(failedDoctorState),
+  );
+  const omittedPreparationEnvironment = Object.fromEntries(
+    Object.entries(doctorEnvironment).map(([name, value]) => [
+      name,
+      typeof value === "string" &&
+      (value === evidenceRoot || value.startsWith(`${evidenceRoot}${path.sep}`))
+        ? path.join(
+            omittedPreparationRoot,
+            path.relative(evidenceRoot, value),
+          )
+        : value,
+    ]),
+  );
+  omittedPreparationEnvironment.PRODUCTION_CERTIFICATION_STATE =
+    omittedPreparationStatePath;
+  omittedPreparationEnvironment.CERTIFICATION_STAGE_STARTED_AT = nextTimestamp();
+  omittedPreparationEnvironment.CERTIFICATION_STAGE_COMPLETED_AT = nextTimestamp();
+  const omittedPreparationDoctor = spawnSync(
+    process.execPath,
+    ["scripts/production-certification.mjs", "doctor"],
+    {
+      cwd: canonicalRoot,
+      env: omittedPreparationEnvironment,
+      encoding: "utf8",
+    },
+  );
+  const omittedPreparationResult = JSON.parse(
+    omittedPreparationDoctor.stdout.trim(),
+  );
+  const omittedPreparationRejected =
+    omittedPreparationDoctor.status !== 0 &&
+    omittedPreparationResult.valid === false &&
+    omittedPreparationResult.issues.some((issue) =>
+      issue.includes("resource preparation evidence is missing"),
+    ) &&
+    !omittedPreparationResult.issues.some((issue) =>
+      issue.includes("parent directory must already exist"),
+    );
+  if (!omittedPreparationRejected) {
+    throw new Error("doctor did not independently reject omitted preparation");
+  }
+  let changedPreparationPathRejected = false;
+  try {
+    validateCertificationResourcePreparation({
+      repositoryRoot: canonicalRoot,
+      evidenceRoot,
+      environment: {
+        ...doctorEnvironment,
+        CERTIFICATION_PHASE8_EVIDENCE_PATH: path.join(
+          evidenceRoot,
+          "phase8-target/changed.json",
+        ),
+      },
+      state: preparedState,
+    });
+  } catch {
+    changedPreparationPathRejected = true;
+  }
+  const precreatedTarget = path.join(
+    evidenceRoot,
+    preparedState.resourcePlan.destinations[0].portableRelativePath,
+  );
+  writeFileSync(precreatedTarget, "{}\n", { flag: "wx" });
+  const staleTargetDoctor = spawnSync(
+    process.execPath,
+    ["scripts/production-certification.mjs", "doctor"],
+    {
+      cwd: canonicalRoot,
+      env: {
+        ...doctorEnvironment,
+        CERTIFICATION_STAGE_STARTED_AT: nextTimestamp(),
+        CERTIFICATION_STAGE_COMPLETED_AT: nextTimestamp(),
+      },
+      encoding: "utf8",
+    },
+  );
+  const staleTargetResult = JSON.parse(staleTargetDoctor.stdout.trim());
+  const targetAfterPreparationRejected =
+    staleTargetDoctor.status !== 0 &&
+    staleTargetResult.valid === false &&
+    staleTargetResult.issues.some((issue) =>
+      /must (?:not already exist|remain absent)/.test(issue),
+    );
+  rmSync(precreatedTarget);
+  if (!changedPreparationPathRejected || !targetAfterPreparationRejected) {
+    throw new Error("resource preparation tamper cases did not fail closed");
   }
   run(
     process.execPath,
@@ -952,6 +1110,11 @@ export async function runProductionCertificationSimulation({
     preconditionDoctorPath,
     readFileSync(path.join(evidenceRoot, doctorDescriptor.path)),
     { flag: "wx", mode: 0o600 },
+  );
+  copyRetainedEvidence(
+    evidenceRoot,
+    sourcePreconditionRoot,
+    state.evidenceFiles["resource-preparation"],
   );
   writeCertificationState(sourcePreconditionStatePath, state);
   mkdirSync(
@@ -1106,6 +1269,11 @@ export async function runProductionCertificationSimulation({
     sourceEvidenceSymlinkRoot,
     "certification-state.json",
   );
+  copyRetainedEvidence(
+    evidenceRoot,
+    sourceEvidenceSymlinkRoot,
+    state.evidenceFiles["resource-preparation"],
+  );
   writeCertificationState(sourceEvidenceSymlinkStatePath, state);
   symlinkSync(
     sourceEvidenceOutsideRoot,
@@ -1167,6 +1335,11 @@ export async function runProductionCertificationSimulation({
   const sourceAlreadyBoundRetryStatePath = path.join(
     sourceAlreadyBoundRetryRoot,
     "certification-state.json",
+  );
+  copyRetainedEvidence(
+    evidenceRoot,
+    sourceAlreadyBoundRetryRoot,
+    state.evidenceFiles["resource-preparation"],
   );
   writeCertificationState(sourceAlreadyBoundRetryStatePath, state);
   let sourceAlreadyBoundFirstFailure = null;
@@ -1265,6 +1438,11 @@ export async function runProductionCertificationSimulation({
   const sourceBindingRaceStatePath = path.join(
     sourceBindingRaceRoot,
     "certification-state.json",
+  );
+  copyRetainedEvidence(
+    evidenceRoot,
+    sourceBindingRaceRoot,
+    state.evidenceFiles["resource-preparation"],
   );
   writeCertificationState(sourceBindingRaceStatePath, state);
   const sourceBindingRaceLog = path.join(
@@ -1383,6 +1561,11 @@ export async function runProductionCertificationSimulation({
     readFileSync(path.join(evidenceRoot, doctorDescriptor.path)),
     { flag: "wx", mode: 0o600 },
   );
+  copyRetainedEvidence(
+    evidenceRoot,
+    sourceFailureRoot,
+    state.evidenceFiles["resource-preparation"],
+  );
   writeCertificationState(failedSourceStatePath, state);
   const failedSourceChild = spawnSync(
     process.execPath,
@@ -1486,6 +1669,11 @@ export async function runProductionCertificationSimulation({
   const sourceDriftStatePath = path.join(
     sourceDriftRoot,
     "certification-state.json",
+  );
+  copyRetainedEvidence(
+    evidenceRoot,
+    sourceDriftRoot,
+    state.evidenceFiles["resource-preparation"],
   );
   writeCertificationState(sourceDriftStatePath, state);
   const sourceDriftCheck = sourceChecks[1];
@@ -2056,10 +2244,12 @@ export async function runProductionCertificationSimulation({
     throw new Error("simulation environment-profile tamper cases were not rejected");
   }
   if (
-    state.stages.doctor.attempts.length !== 2 ||
+    state.stages.doctor.attempts.length !== 3 ||
     state.stages.doctor.attempts[0].status !== "failed" ||
     state.stages.doctor.attempts[0].consumedSubstantiveGate ||
-    state.stages.doctor.attempts[1].status !== "passed"
+    state.stages.doctor.attempts[1].status !== "failed" ||
+    state.stages.doctor.attempts[1].consumedSubstantiveGate ||
+    state.stages.doctor.attempts[2].status !== "passed"
   ) {
     throw new Error("doctor non-consuming retry attempts were not physically retained");
   }
@@ -2506,7 +2696,6 @@ export async function runProductionCertificationSimulation({
     PRODUCTION_EVIDENCE_EXPECTED_BUILD_ID: production.manifest.build.nextBuildId,
     PRODUCTION_EVIDENCE_EXPECTED_ARTIFACT_SHA256: production.manifest.artifact.sha256,
   };
-  mkdirSync(path.join(evidenceRoot, "archive"), { mode: 0o700 });
   run(
     process.execPath,
     ["scripts/production-archive.mjs", "plan"],
@@ -2816,7 +3005,6 @@ export async function runProductionCertificationSimulation({
     evidenceRoot,
     "runtime-smoke/evidence.json",
   );
-  mkdirSync(path.join(evidenceRoot, "runtime-smoke"), { recursive: true });
   const simulationRuntimeProfile = certificationEnvironmentProfile(
     fixtureRoot,
     "runtime-smoke",
@@ -3984,6 +4172,9 @@ export async function runProductionCertificationSimulation({
       rawRuntimeReportJournalV1Rejected,
       archivedPhysicalJournalV1Rejected,
       historicalStateSubstitutionRejected,
+      omittedPreparationRejected,
+      changedPreparationPathRejected,
+      targetAfterPreparationRejected,
       ...runtimeRootTamperCases,
     },
     simulationRoot,

@@ -1,5 +1,66 @@
 # Code health audit handoff
 
+## CH-0015I report-parent preparation handoff — 2026-08-16
+
+Branch `fix/production-certification-report-parent-preparation` starts at exact
+candidate `16ae9edf076aba9ac85837858eb0f1c1b741127a`, tree
+`c90425c315c9f966531490e99fff1a590aa172b7`, above unchanged integration base
+`2c567fd483877c7dcbd8fd23e3cd8cb316732c8c`, tree
+`50f9c5d6a6610990606fd9db9a27ba40200fca90`. Entry ancestry, subjects, clean
+index/worktree, absent Git operation, listeners, ports 3000/3317, and registered
+failed-rehearsal worktrees were verified before editing; no running application
+checkout mismatch existed.
+
+The immutable failed rehearsal/candidate IDs beginning
+`REHEARSAL_ONLY-NOT_RELEASE_CERTIFICATION-NOT_VALID_FOR_INTEGRATION-...-20260816T131707Z-16ae9ed`
+remain unchanged with state, doctor attempt 001, three worktree identities,
+report-parent/process issues, downstream invalidations, storage, and cleanup.
+Its non-consuming precondition classification remains truthful. Host diagnosis
+is `A — CONTROL_PLANE_RECOGNIZED_CORRECTLY`; process policy is unchanged.
+
+State v4 now seals a 17-destination portable resource plan. The sole committed
+owner `npm run certification:prepare-resources` rederives that plan under the
+state lock, creates only missing external parents, atomically probes and removes
+sibling files, preserves absent final targets, seals preparation evidence, and
+binds it exactly once. Idempotent validation writes no duplicate. Doctor stays
+read-only and rejects omitted, stale, cross-state, changed-path, symlinked,
+colliding, precreated-target, or tampered preparation.
+
+The deterministic real-path regression and simulation prove missing-parent
+doctor failure, canonical preparation, target/probe absence, actual doctor
+success, preparation tamper rejection, and integration readiness. Focused path
+safety and transaction tests cover the full negative matrix. Qualification on
+the exact clean committed head is recorded as
+`QUALIFIED_FOR_FINAL_CANDIDATE_CERTIFICATION`; this is source-platform
+qualification, not a rehearsal or final certification.
+
+The new focused test owner is
+`npm run test:production-certification-resources`; qualification directly runs
+its backing `scripts/test-production-certification-resources.mjs`. Required-test
+truthfulness classifies that source in the risk-triggered `script-tests`
+inventory, now 264 paths at
+`403050babe473d84ac408f92c7b03b8c8880aab2a954ba474cd8c7aa59401133`.
+The direct manifest result is 27 gates and 387 classified sources; no existing
+required owner, cadence, workflow, retry, skip, or advisory policy changed.
+
+Independent read-only review initially found that post-bind validation failure
+could delete already-bound evidence, raw filesystem errors could expose private
+paths, and omitted/stale preparation needed isolated actual-doctor coverage.
+The final code retains evidence after any committed transition, conservatively
+rereads state before orphan cleanup, sanitizes filesystem failures, and runs
+actual doctor cases for omitted preparation with present parents and a target
+created after preparation. Explicit state-v3 predecessor rejection was also
+added. The same reviewer rechecked every correction and returned `PASS` with no
+remaining actionable finding.
+
+No product/UI, Floor Plan, telemetry, NFT, browser product assertion, Phase 8,
+dependency/lockfile, migration/database, workflow, process-policy, integration,
+push, or deployment change is included. No real build, Phase 8, runtime smoke,
+browser-owner matrix, final certification, or Full E2E ran. A fresh rehearsal
+and CH-0015 closure audit remain pending. Deferred process debt is limited to
+narrow process-name scope, name-based helper exclusions, fail-open command
+status handling, and generic issue text without exact PID.
+
 ## CH-0015I journal-v2 final-consumer handoff — 2026-08-16
 
 Branch `fix/production-certification-runtime-journal-v2` starts at exact
@@ -23,7 +84,7 @@ failure.
 The correction makes `scripts/production-artifact-contract.mjs` the strict
 current schema/version owner and aligns producer, Playwright, raw report,
 timing, runtime envelope, archive, final standalone, and continuity to journal
-v2. Current final standalone accepts only state v3 + manifest v3/validator 3 +
+v2. Current final standalone accepts only state v4 + manifest v3/validator 3 +
 complete journal v2. Historical state v1/v2 + journal v1 remains unchanged and
 readable only through the separate offline historical owner. The actual
 physical final CLI passes the deterministic current positive path and rejects

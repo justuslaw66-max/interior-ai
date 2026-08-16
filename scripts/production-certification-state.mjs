@@ -22,6 +22,7 @@ import {
   PRODUCTION_CERTIFICATION_STATE_SCHEMA,
   PRODUCTION_CERTIFICATION_STATE_SCHEMA_V1,
   PRODUCTION_CERTIFICATION_STATE_SCHEMA_V2,
+  PRODUCTION_CERTIFICATION_STATE_SCHEMA_V3,
   PRODUCTION_CERTIFICATION_STATE_VALIDATION_SCHEMA,
   REQUIRED_BROWSER_OWNERS,
   assertKnownFailureClassification,
@@ -35,6 +36,7 @@ import {
   productionArchiveInventoryIssues,
   sha256Bytes,
 } from "./production-certification-contract.mjs";
+import { certificationResourcePlanIssues } from "./production-certification-resource-plan.mjs";
 import {
   CERTIFICATION_WORKTREE_ROLES,
   PRODUCTION_CERTIFICATION_WORKTREE_SCHEMA,
@@ -78,6 +80,14 @@ const BINDING_KEYS = Object.freeze([
   "runtimeSmokeEvidenceSha256",
   "browserOwnerEvidenceSha256",
   "continuityEvidenceSha256",
+]);
+const RESOURCE_BINDING_KEY = "resourcePreparationSha256";
+const RESOURCE_PREPARATION_KEYS = Object.freeze([
+  "stateShaBeforePreparation",
+  "contractMatrixSha256",
+  "destinationSetSha256",
+  "completedAt",
+  "evidence",
 ]);
 const STAGE_BINDING_KEYS = Object.freeze({
   build: BINDING_KEYS.slice(0, 5),
@@ -481,6 +491,82 @@ function transitionCertificationState(
   }
 }
 
+export function transitionCertificationResourcePreparation({
+  statePath,
+  expectedCurrentSha256,
+  prepare,
+}) {
+  if (typeof prepare !== "function") {
+    throw new Error("certification resource preparation action is missing");
+  }
+  return transitionCertificationState(
+    statePath,
+    expectedCurrentSha256,
+    (state) => {
+      if (
+        state.version !== 4 ||
+        certificationResourcePlanIssues(state.resourcePlan).length > 0
+      ) {
+        throw new Error("certification state has no current resource plan");
+      }
+      const existing = state.resourcePreparation;
+      if (existing !== null) {
+        prepare({ state, stateSha256: expectedCurrentSha256, existing: true });
+        return state;
+      }
+      const doctor = state.stages?.doctor;
+      const doctorRetryable =
+        doctor?.status === "pending" ||
+        (doctor?.status === "failed" &&
+          doctor.attempts.length > 0 &&
+          doctor.attempts.every(
+            (attempt) => attempt.consumedSubstantiveGate === false,
+          ));
+      const laterUnconsumed = CERTIFICATION_STAGE_ORDER.slice(1).every(
+        (stage) =>
+          new Set(["pending", "invalidated"]).has(state.stages?.[stage]?.status) &&
+          state.stages[stage].attempts.length === 0,
+      );
+      if (!doctorRetryable || !laterUnconsumed) {
+        throw new Error(
+          "certification resources can only be prepared before substantive stages",
+        );
+      }
+      const result = prepare({
+        state,
+        stateSha256: expectedCurrentSha256,
+        existing: false,
+      });
+      if (
+        !result ||
+        !exactKeys(result.evidence, ["path", "sha256"]) ||
+        result.evidence.path !== "preparation/resources.json" ||
+        !isSha256(result.evidence.sha256) ||
+        result.contractMatrixSha256 !== state.resourcePlan.contractMatrixSha256 ||
+        result.destinationSetSha256 !== state.resourcePlan.destinationSetSha256 ||
+        !isCanonicalUtcTimestamp(result.completedAt) ||
+        Date.parse(result.completedAt) < Date.parse(state.updatedAt)
+      ) {
+        throw new Error("certification resource preparation binding is malformed");
+      }
+      const next = structuredClone(statePayload(state));
+      next.bindings[RESOURCE_BINDING_KEY] = result.evidence.sha256;
+      next.evidenceFiles["resource-preparation"] = structuredClone(
+        result.evidence,
+      );
+      next.resourcePreparation = {
+        stateShaBeforePreparation: expectedCurrentSha256,
+        contractMatrixSha256: result.contractMatrixSha256,
+        destinationSetSha256: result.destinationSetSha256,
+        completedAt: result.completedAt,
+        evidence: structuredClone(result.evidence),
+      };
+      next.updatedAt = result.completedAt;
+      return next;
+    },
+  );
+}
+
 function dependencyOwnerStage(role) {
   if (role === "source-validation") return "source-validation";
   if (role === "final-artifact") return "build";
@@ -521,8 +607,8 @@ export function bindCertificationWorktreeDependencies({
     statePath,
     expectedCurrentSha256,
     (state) => {
-      if (state.version !== 3) {
-        throw new Error("dependency binding requires certification state v3");
+      if (!new Set([3, 4]).has(state.version)) {
+        throw new Error("dependency binding requires a current certification state");
       }
       const current = state.worktrees?.roles?.[role];
       if (current?.dependencyStatus === "installed") {
@@ -658,7 +744,7 @@ export function failCertificationWorktreeDependencyInstallation({
     expectedCurrentSha256,
     (state) => {
       if (
-        state.version !== 3 ||
+        !new Set([3, 4]).has(state.version) ||
         state.worktrees?.roles?.[role]?.dependencyStatus !== "not-installed" ||
         installation?.schema !==
           PRODUCTION_CERTIFICATION_DEPENDENCY_INSTALLATION_SCHEMA ||
@@ -742,7 +828,7 @@ export function failCertificationWorktreeDependencyBinding({
     expectedCurrentSha256,
     (state) => {
       if (
-        state.version !== 3 ||
+        !new Set([3, 4]).has(state.version) ||
         state.worktrees?.roles?.[role]?.dependencyStatus !== "not-installed"
       ) {
         throw new Error("dependency binding failure transition is not permitted");
@@ -830,6 +916,7 @@ export function createCertificationState({
   executionClass,
   createdAt,
   worktrees = null,
+  resourcePlan = null,
 }) {
   if (!isCandidateId(certificationId) || !isCandidateId(candidateId)) {
     throw new Error("certification ID and candidate ID must use canonical grammar");
@@ -847,6 +934,12 @@ export function createCertificationState({
     throw new Error("certification state creation time is not canonical UTC");
   }
   if (
+    resourcePlan !== null &&
+    (worktrees === null || certificationResourcePlanIssues(resourcePlan).length > 0)
+  ) {
+    throw new Error("certification resource plan is malformed");
+  }
+  if (
     worktrees !== null &&
     (!new Set([
       PRODUCTION_CERTIFICATION_WORKTREE_SCHEMA,
@@ -856,15 +949,19 @@ export function createCertificationState({
   ) {
     throw new Error("certification stage-worktree bindings are malformed");
   }
-  const version = worktrees
-    ? worktrees.schema === PRODUCTION_CERTIFICATION_WORKTREE_SCHEMA
-      ? 3
+  const version = resourcePlan
+    ? 4
+    : worktrees
+      ? worktrees.schema === PRODUCTION_CERTIFICATION_WORKTREE_SCHEMA
+        ? 3
       : 2
     : 1;
   return sealCertificationState({
     schema:
-      version === 3
+      version === 4
         ? PRODUCTION_CERTIFICATION_STATE_SCHEMA
+        : version === 3
+          ? PRODUCTION_CERTIFICATION_STATE_SCHEMA_V3
         : version === 2
           ? PRODUCTION_CERTIFICATION_STATE_SCHEMA_V2
           : PRODUCTION_CERTIFICATION_STATE_SCHEMA_V1,
@@ -889,9 +986,16 @@ export function createCertificationState({
       runtimeSmokeEvidenceSha256: null,
       browserOwnerEvidenceSha256: {},
       continuityEvidenceSha256: null,
+      ...(version === 4 ? { [RESOURCE_BINDING_KEY]: null } : {}),
     },
     evidenceFiles: {},
     ...(worktrees ? { worktrees: structuredClone(worktrees) } : {}),
+    ...(resourcePlan
+      ? {
+          resourcePlan: structuredClone(resourcePlan),
+          resourcePreparation: null,
+        }
+      : {}),
     stages: Object.fromEntries(
       CERTIFICATION_STAGE_ORDER.map((stage) => [stage, emptyStage(stage)]),
     ),
@@ -1187,7 +1291,7 @@ export function reconcileCertificationState(
 export function updateCertificationWorktreeBinding(state, { role, binding }) {
   if (
     !CERTIFICATION_WORKTREE_ROLES.includes(role) ||
-    !new Set([2, 3]).has(state?.version)
+    !new Set([2, 3, 4]).has(state?.version)
   ) {
     throw new Error("certification worktree binding update is unsupported");
   }
@@ -1198,7 +1302,7 @@ export function updateCertificationWorktreeBinding(state, { role, binding }) {
 
 export function replaceCertificationWorktrees(state, worktrees) {
   if (
-    !new Set([2, 3]).has(state?.version) ||
+    !new Set([2, 3, 4]).has(state?.version) ||
     !new Set([
       PRODUCTION_CERTIFICATION_WORKTREE_SCHEMA,
       PRODUCTION_CERTIFICATION_WORKTREE_SCHEMA_V1,
@@ -1214,7 +1318,11 @@ export function replaceCertificationWorktrees(state, worktrees) {
 
 function stateShapeIssues(state) {
   const issues = [];
-  const hasWorktrees = new Set([2, 3]).has(state?.version);
+  const hasWorktrees = new Set([2, 3, 4]).has(state?.version);
+  const hasResources = state?.version === 4;
+  const bindingKeys = hasResources
+    ? [...BINDING_KEYS, RESOURCE_BINDING_KEY]
+    : BINDING_KEYS;
   if (
     !exactKeys(state, [
       "schema",
@@ -1226,6 +1334,7 @@ function stateShapeIssues(state) {
       "bindings",
       "evidenceFiles",
       ...(hasWorktrees ? ["worktrees"] : []),
+      ...(hasResources ? ["resourcePlan", "resourcePreparation"] : []),
       "stages",
       "createdAt",
       "updatedAt",
@@ -1234,7 +1343,7 @@ function stateShapeIssues(state) {
     ]) ||
     !exactKeys(state?.candidate, ["id", "commitSha", "treeSha", "parentSha"]) ||
     !exactKeys(state?.harness, ["version", "sourceSha256"]) ||
-    !exactKeys(state?.bindings, BINDING_KEYS)
+    !exactKeys(state?.bindings, bindingKeys)
   ) {
     issues.push("certification state fields are missing or unknown");
   }
@@ -1243,7 +1352,9 @@ function stateShapeIssues(state) {
       (state?.schema === PRODUCTION_CERTIFICATION_STATE_SCHEMA_V1 && state?.version === 1) ||
       (state?.schema === PRODUCTION_CERTIFICATION_STATE_SCHEMA_V2 &&
         state?.version === 2) ||
-      (state?.schema === PRODUCTION_CERTIFICATION_STATE_SCHEMA && state?.version === 3)
+      (state?.schema === PRODUCTION_CERTIFICATION_STATE_SCHEMA_V3 &&
+        state?.version === 3) ||
+      (state?.schema === PRODUCTION_CERTIFICATION_STATE_SCHEMA && state?.version === 4)
     )
   ) {
     issues.push("unsupported certification state schema or version");
@@ -1293,7 +1404,37 @@ function stateShapeIssues(state) {
   ) {
     issues.push("certification browser-owner binding inventory is malformed");
   }
-  const allowedEvidence = new Set(Object.values(STAGE_EVIDENCE_KEYS).flat());
+  if (hasResources) {
+    issues.push(...certificationResourcePlanIssues(state.resourcePlan));
+    const preparation = state.resourcePreparation;
+    const preparationBinding = state.bindings?.[RESOURCE_BINDING_KEY];
+    const preparationEvidence = state.evidenceFiles?.["resource-preparation"];
+    if (preparation === null) {
+      if (preparationBinding !== null || preparationEvidence !== undefined) {
+        issues.push("certification resource preparation binding is partial");
+      }
+    } else if (
+      !exactKeys(preparation, RESOURCE_PREPARATION_KEYS) ||
+      !isSha256(preparation?.stateShaBeforePreparation) ||
+      preparation?.contractMatrixSha256 !==
+        state.resourcePlan?.contractMatrixSha256 ||
+      preparation?.destinationSetSha256 !==
+        state.resourcePlan?.destinationSetSha256 ||
+      !isCanonicalUtcTimestamp(preparation?.completedAt) ||
+      !exactKeys(preparation?.evidence, ["path", "sha256"]) ||
+      preparation?.evidence?.path !== "preparation/resources.json" ||
+      !isSha256(preparation?.evidence?.sha256) ||
+      preparationBinding !== preparation?.evidence?.sha256 ||
+      JSON.stringify(preparationEvidence) !==
+        JSON.stringify(preparation?.evidence)
+    ) {
+      issues.push("certification resource preparation binding is malformed");
+    }
+  }
+  const allowedEvidence = new Set([
+    ...Object.values(STAGE_EVIDENCE_KEYS).flat(),
+    ...(hasResources ? ["resource-preparation"] : []),
+  ]);
   for (const [name, descriptor] of Object.entries(state?.evidenceFiles ?? {})) {
     if (
       !allowedEvidence.has(name) ||
@@ -1509,7 +1650,7 @@ export function validateCertificationState({
     ...certificationStateSealIssues(state),
     ...stateShapeIssues(state),
   ];
-  if (new Set([2, 3]).has(state?.version)) {
+  if (new Set([2, 3, 4]).has(state?.version)) {
     issues.push(
       ...certificationWorktreeIssues({
         state,
@@ -1768,7 +1909,7 @@ export function validateCertificationState({
         rehashPhysicalRoot:
           verifyCurrentSource &&
           state?.stages?.continuity?.status === "passed" &&
-          (!new Set([2, 3]).has(state?.version) ||
+          (!new Set([2, 3, 4]).has(state?.version) ||
             Object.values(state.worktrees.roles).every(
               (binding) => binding.lifecycleStatus === "active",
             )),

@@ -1,5 +1,38 @@
 # Code health audit
 
+## Certification report-parent lifecycle gap — 2026-08-16
+
+The preserved `...CERT-20260816T131707Z-16ae9ed` rehearsal proved
+`CERTIFICATION_REPORT_PARENT_PREPARATION_OWNER_MISSING` and
+`DOCTOR_RESOURCE_LIFECYCLE_CONTRACT_GAP`: state and contract declared external
+targets, doctor correctly required physical writable parents, but no committed
+pre-doctor owner created them. Simulation had hidden the defect with ad hoc
+directories. The failed state, attempt, worktrees, invalidations, and cleanup
+remain immutable; no new rehearsal was created.
+
+State v4 binds the canonical 17-destination contract at initialization. A
+single locked, idempotent preparation command creates only parents, probes
+atomic sibling writes, removes probes, keeps final targets absent, seals
+portable evidence, and binds the exact state/candidate/contract/path identity.
+Doctor remains read-only and requires that current evidence before substantive
+work. The exact missing-parent regression and path-safety/transaction/tamper
+matrix now use the real resolvers and doctor. Process diagnostic disposition
+`A — CONTROL_PLANE_RECOGNIZED_CORRECTLY` is preserved with no safety-policy
+change; its hardening observations remain deferred debt.
+
+The preparation regression has one focused package owner,
+`test:production-certification-resources`, and is an explicit qualification
+check. Required-test inventory synchronization adds only that test path: 264
+script-test paths at
+`403050babe473d84ac408f92c7b03b8c8880aab2a954ba474cd8c7aa59401133`;
+direct validation retains 27 gates and reports 387 classified sources.
+
+This is certification infrastructure only. No product, Floor Plan, telemetry,
+NFT, browser assertion, Phase 8, dependency, database, workflow, or external
+behavior changes. Exact-head qualification is
+`QUALIFIED_FOR_FINAL_CANDIDATE_CERTIFICATION`; a fresh rehearsal, final
+certification, integration, and CH-0015 closure audit remain pending.
+
 ## Final runtime-evidence journal schema alignment — 2026-08-16
 
 Read-only review of candidate `73d5c541c4171bf6c05b168e6bd29853b03ea011`
@@ -12,7 +45,7 @@ creation or gate consumption and is not a runtime-smoke failure.
 
 The strict current journal validator now lives with the side-effect-free v2
 schema/version owner. All current producers and consumers use it or its
-constants, and final standalone requires state v3, manifest v3/validator 3,
+constants, and final standalone requires state v4, manifest v3/validator 3,
 complete journal v2, one nonce/artifact, and coherent raw/timing/envelope/
 archive/continuity identity. Unknown, future, v1, missing, malformed, incomplete,
 cross-run, and cross-artifact records fail closed. Historical v1 remains under

@@ -337,7 +337,11 @@ function copyCurrentTrackedSource(destination) {
   if (tracked.status !== 0) throw new Error("unable to enumerate tracked real-runner source");
   const developmentAdditions = [
     "docs/qa/production-certification-source-generated-outputs.v1.json",
+    "scripts/production-certification-resource-evidence.mjs",
+    "scripts/production-certification-resource-plan.mjs",
+    "scripts/production-certification-resources.mjs",
     "scripts/production-certification-source-generated-outputs.mjs",
+    "scripts/test-production-certification-resources.mjs",
     "scripts/test-production-certification-source-generated-outputs.mjs",
   ];
   const paths = new Set([
