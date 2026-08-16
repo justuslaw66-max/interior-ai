@@ -176,6 +176,61 @@ function ordinaryStatus(repositoryRoot) {
   return output.split("\0").filter(Boolean);
 }
 
+function generatedOutputPathMatches(relativePath, declaration) {
+  return declaration.pathType === "directory"
+    ? relativePath === declaration.relativePath ||
+        relativePath.startsWith(`${declaration.relativePath}/`)
+    : relativePath === declaration.relativePath;
+}
+
+export function sourceValidationWorktreeOutputState({
+  repositoryRoot,
+  activeGeneratedOutputs = [],
+}) {
+  const duplicatePaths = activeGeneratedOutputs.filter(
+    (entry, index, entries) =>
+      entries.findIndex((candidate) => candidate.relativePath === entry.relativePath) !==
+      index,
+  );
+  if (
+    duplicatePaths.length > 0 ||
+    activeGeneratedOutputs.some(
+      (entry) =>
+        !entry ||
+        typeof entry.relativePath !== "string" ||
+        !new Set(["file", "directory"]).has(entry.pathType),
+    )
+  ) {
+    throw new Error("active source generated-output declaration is malformed");
+  }
+  const status = ordinaryStatus(repositoryRoot).sort();
+  const ignored = ignoredPaths(repositoryRoot);
+  const persistentIgnoredPaths = [];
+  const declaredGeneratedPaths = [];
+  const undeclaredIgnoredPaths = [];
+  for (const relativePath of ignored) {
+    if (relativePath === "node_modules" || relativePath.startsWith("node_modules/")) {
+      persistentIgnoredPaths.push(relativePath);
+      continue;
+    }
+    const owner = activeGeneratedOutputs.find((entry) =>
+      generatedOutputPathMatches(relativePath, entry),
+    );
+    if (owner) declaredGeneratedPaths.push(relativePath);
+    else undeclaredIgnoredPaths.push(relativePath);
+  }
+  return {
+    trackedAndOrdinaryUntrackedClean: status.length === 0,
+    ordinaryStatus: status,
+    persistentIgnoredInventory: normalizedInventory(persistentIgnoredPaths),
+    declaredGeneratedInventory: normalizedInventory(declaredGeneratedPaths),
+    undeclaredIgnoredInventory: normalizedInventory(undeclaredIgnoredPaths),
+    undeclaredIgnoredPaths,
+    activeGeneratedOutputIds: activeGeneratedOutputs.map((entry) => entry.id).sort(),
+    valid: status.length === 0 && undeclaredIgnoredPaths.length === 0,
+  };
+}
+
 function ignoredPathAllowed(role, relativePath, phase) {
   if (phase === "pristine") return false;
   return ROLE_ALLOWED_IGNORED_ROOTS[role].some(

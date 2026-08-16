@@ -179,3 +179,36 @@ E2E, integration, push, or deployment belongs to this correction.
 Rollback is one focused commit revert. A rollback restores both known
 certification blockers, so no real certification should run until a reviewed
 replacement owns transactional validation and pristine stage worktrees.
+
+## Source-validation generated-output remediation
+
+The source-validation role remains strict at terminal state: dependency-bound
+`node_modules` is the only persistent ignored root. The Floor Plan Upload
+browser fixture directory and `tsconfig.tsbuildinfo` are not allowlisted.
+Instead, their versioned contract requires pre-owner absence, exact owner
+attribution, no-follow physical classification, closed SHA-256 inventories,
+consumer-lifetime rehashing, exact hash-matched cleanup inside the disposable
+source worktree, sealed cleanup/absence evidence, and terminal revalidation.
+
+The preserved failed certification
+`CH-0015I-final-20260816T032201Z-d2d062f` / candidate
+`CH-0015I-20260816T032201Z-d2d062f` is not resumed, rewritten, cleaned, or
+reused. Its 19 zero-exit child results, five prohibited ignored outputs,
+`SOURCE_CONTRACT_FAILURE`, `consumedSubstantiveGate=true`, downstream
+invalidations, and dependency/worktree/database records remain historical.
+Any future real cycle requires new certification/candidate IDs, evidence/state
+roots, and stage worktrees.
+
+The Floor Plan fixture has no source-validation consumer after its owner
+command: the static assertion process does not read the emitted bundle, and the
+later browser owner rebuilds in another worktree. Its permitted-consumer set is
+therefore empty and cleanup occurs immediately after check 6 completes.
+
+The paired real-runner regression first runs all 19 canonical commands under
+the legacy strict terminal validator, proves all exit zero, and records exactly
+the four fixture files plus `tsconfig.tsbuildinfo` as prohibited. A fresh
+physical state-v3 source worktree then runs all 19 through the corrected
+lifecycle, validates the source aggregate against running and completed state,
+validates the certification state, preserves dependency identity, and reaches
+the node_modules-only terminal state. The exact clean committed-tree qualifier
+result is `QUALIFIED_FOR_FINAL_CANDIDATE_CERTIFICATION`.

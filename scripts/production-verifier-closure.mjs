@@ -14,6 +14,7 @@ export const PRODUCTION_VERIFIER_ENTRYPOINTS = Object.freeze([
 
 export const PRODUCTION_VERIFIER_DATA_INPUTS = Object.freeze([
   "scripts/required-test-manifest.json",
+  "docs/qa/production-certification-source-generated-outputs.v1.json",
 ]);
 
 const IMPORT_PATTERNS = Object.freeze([

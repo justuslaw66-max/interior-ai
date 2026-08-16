@@ -1474,6 +1474,7 @@ export async function runSourceValidationStage({
       });
       const result = sourceValidationStageEvidence({
         repositoryRoot: context.repositoryRoot,
+        canonicalRoot: context.canonicalRoot,
         evidenceRoot: context.evidenceRoot,
         state: boundState,
         environment: context.environment,

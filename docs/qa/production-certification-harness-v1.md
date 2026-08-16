@@ -330,6 +330,50 @@ retained file hash, completion marker, and aggregate SHA-256. State validation r
 evidence and rehashes all files. A source identity descriptor alone is never
 accepted, and earlier qualification evidence is never imported as a substitute.
 
+### Source generated-output ownership
+
+`docs/qa/production-certification-source-generated-outputs.v1.json` is the
+machine-readable fail-closed owner. Every check declares expected tracked
+modifications `none`. Unless the table names an output, expected ignored output,
+producer, consumer, retention, cleanup, portable output bytes, and later-stage
+influence are all `none`/not applicable. Output bytes never belong to a later
+stage; the separate Floor Plan browser-owner prerequisite rebuilds its fixture
+in that owner's assigned worktree.
+
+| # | Check ID | Canonical command | Declared ignored output and lifecycle |
+| --- | --- | --- | --- |
+| 1 | `production-artifact-evidence-contracts` | `npm run test:production-artifact-evidence` | none |
+| 2 | `certification-harness-contracts` | `npm run test:production-certification` | none |
+| 3 | `required-test-truthfulness` | `npm run test:required-test-truthfulness` | none |
+| 4 | `required-test-manifest-direct` | `node scripts/required-test-truthfulness.mjs check` | none |
+| 5 | `floor-plan-required-closure` | `npm run test:floor-plan-required` | none |
+| 6 | `floor-plan-upload-static-owner` | `npm run test:floor-plan-upload-accessibility-static` | `.next/cache/floor-plan-upload-browser-fixture`, directory; first producer and cleanup owner check 6; no source-check consumer reads the bundle and the later browser owner rebuilds it in another worktree; retain through the producer's closed stdout manifest and clean immediately after the owner command completes; file bytes, sizes, hashes, inventory, builder/config/source hashes, and cleanup proof are portable evidence |
+| 7 | `telemetry-bootstrap-contracts` | `npm run test:runtime-smoke-telemetry-bootstrap` | none |
+| 8 | `critical-required` | `npm run test:critical-required` | none |
+| 9 | `design-cleanup` | `npm run test:design-page-cleanup` | none |
+| 10 | `zero-warning-lint` | `npm run lint -- --max-warnings=0` | none |
+| 11 | `typescript-typecheck` | `npm run typecheck` | `tsconfig.tsbuildinfo`, regular file; first producer canonical incremental `tsc`; no later consumer; owner/last lifetime/cleanup owner check 11; hash and size are portable evidence; clean immediately after check 11 |
+| 12 | `code-quality-ratchets` | `npm run check:code-quality` | none |
+| 13 | `design-architecture` | `node scripts/check-design-page-architecture.mjs` | none |
+| 14 | `floor-plan-architecture` | `npm run check:floor-plan-architecture` | none |
+| 15 | `cabinetry-architecture` | `npm run check:cabinetry-architecture` | none |
+| 16 | `tracked-artifact-hygiene` | `npm run test:tracked-artifact-hygiene` | none |
+| 17 | `source-syntax` | `node scripts/production-certification-source-continuity.mjs source-syntax` | none |
+| 18 | `git-diff-check` | `git diff --check` | none |
+| 19 | `git-source-hygiene` | `node scripts/production-certification-source-continuity.mjs source-hygiene` | none |
+
+Before each owner, the exact path must be physically absent. After the direct
+child, the runner inventories with `lstat`/no-follow semantics, compares the
+Floor Plan directory to its single producer-emitted closed manifest, rejects
+unknown ignored or ordinary-untracked paths, and seals
+`interior-ai.production-certification-source-generated-output-evidence.v1`.
+Cleanup verifies the current closed inventory against the sealed hashes, uses
+only exact regular-file unlink plus exact empty-directory removal, and proves
+absence. It never uses `git clean`, recursive cache deletion, the canonical
+checkout, or `node_modules`. The terminal validator again permits only the
+dependency-bound `node_modules` root and requires zero declared or undeclared
+generated output.
+
 ## Stage environment capability contract
 
 `docs/qa/production-certification-stage-environment.v2.json` is the canonical
@@ -431,6 +475,8 @@ artifact root to resolve to the canonical non-symlink
 - `interior-ai.production-certification-browser-owner-evidence.v1`
 - `interior-ai.production-certification-source-validation.v3` (historical)
 - `interior-ai.production-certification-source-validation.v4`
+- `interior-ai.production-certification-source-generated-outputs.v1`
+- `interior-ai.production-certification-source-generated-output-evidence.v1`
 - `interior-ai.production-certification-stage-environment.v2`
 - `interior-ai.production-certification-artifact-snapshot.v1`
 - `interior-ai.production-certification-artifact-root-private.v1`
@@ -696,7 +742,7 @@ additional root-cause label.
 
 ## Historical regression matrix
 
-`scripts/production-certification-regressions.json` retains all 28 required
+`scripts/production-certification-regressions.json` retains all 31 required
 historical failures and adds source-validation, physical-continuity, and
 transactional state/worktree-isolation
 anti-bypass cases. `scripts/test-production-certification.mjs` maps each entry
@@ -725,6 +771,8 @@ The bounded source qualification is:
 
 ```sh
 npm run test:production-certification
+node scripts/test-production-certification-source-generated-outputs.mjs
+node scripts/test-production-certification-source-generated-outputs.mjs --real-producers
 node scripts/test-production-certification-state-worktrees.mjs
 node scripts/test-production-certification-stage-environment.mjs
 npm run certification:simulate
@@ -761,9 +809,16 @@ marker. `scripts/test-production-certification-stage-environment.mjs` also
 invokes the canonical source-stage executor in a clean temporary repository,
 runs the exact historical `e39875191b0d…` runner/projector until canonical check
 5 reproduces `externalVisionEnabled` `true !== false`, then runs the corrected
-ordered 19-command source check set and proves check 1 passes
+ordered 19-command source check set under the legacy strict terminal policy,
+proves all children exit zero, records the exact five generated paths, and
+proves check 1 passes
 through its real `npm run test:production-artifact-evidence` command without
 receiving the parent evidence root or any later-stage capability. The
+`--real-producers` generated-output regression separately repeats the canonical
+producer failure and then creates a fresh physical state-v3 worktree, durably
+binds its local dependency identity, runs the complete corrected 19-command
+closure, validates its running/completed source aggregate and certification
+state, and proves exact cleanup plus a node_modules-only terminal inventory. The
 simulation also proves canonical ignored bytes and an external-target symlink
 remain unchanged, every stage uses only its assigned root, cross-role or
 cross-certification reuse fails, and default cleanup removes only the three

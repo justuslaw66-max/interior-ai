@@ -37,6 +37,7 @@ import {
   validateProjectedEnvironmentMetadata,
 } from "./production-certification-stage-environment.mjs";
 import { preflightRuntimeSmokeEvidenceOutputs } from "./production-certification-real.mjs";
+import { sourceValidationWorktreeOutputState } from "./production-certification-worktrees.mjs";
 import {
   RUNTIME_SMOKE_TIMING_COMPLETION_MARKER,
   createRuntimeSmokePhaseRecorder,
@@ -773,6 +774,17 @@ try {
     );
   }
   assert.equal(result.evidence.checks.length, 19);
+  const historicalGeneratedOutputState = sourceValidationWorktreeOutputState({
+    repositoryRoot: sourceRoot,
+  });
+  assert.equal(historicalGeneratedOutputState.valid, false);
+  assert.deepEqual(historicalGeneratedOutputState.undeclaredIgnoredPaths, [
+    ".next/cache/floor-plan-upload-browser-fixture/612.chunk.js",
+    ".next/cache/floor-plan-upload-browser-fixture/901.chunk.js",
+    ".next/cache/floor-plan-upload-browser-fixture/bundle.js",
+    ".next/cache/floor-plan-upload-browser-fixture/empty-entry.js",
+    "tsconfig.tsbuildinfo",
+  ]);
   const first = result.evidence.checks[0];
   assert.equal(first.id, "production-artifact-evidence-contracts");
   assert.equal(first.invocationMode, "canonical-real");

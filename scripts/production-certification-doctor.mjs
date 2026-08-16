@@ -692,6 +692,123 @@ function validateDependencyLifecycleContracts(repositoryRoot) {
   };
 }
 
+function validateSourceGeneratedOutputContracts(repositoryRoot) {
+  const source = sourceValidationCheckSet(repositoryRoot);
+  const generated = source.generatedOutputs;
+  const byId = Object.fromEntries(
+    generated.value.outputs.map((entry) => [entry.id, entry]),
+  );
+  const worktreeOwner = readFileSync(
+    path.join(repositoryRoot, "scripts/production-certification-worktrees.mjs"),
+    "utf8",
+  );
+  const lifecycleOwner = readFileSync(
+    path.join(
+      repositoryRoot,
+      "scripts/production-certification-source-generated-outputs.mjs",
+    ),
+    "utf8",
+  );
+  const sourceOwner = readFileSync(
+    path.join(
+      repositoryRoot,
+      "scripts/production-certification-source-continuity.mjs",
+    ),
+    "utf8",
+  );
+  const qualificationOwner = readFileSync(
+    path.join(repositoryRoot, "scripts/production-certification.mjs"),
+    "utf8",
+  );
+  const regressionOwner = readFileSync(
+    path.join(
+      repositoryRoot,
+      "scripts/test-production-certification-source-generated-outputs.mjs",
+    ),
+    "utf8",
+  );
+  const regressionMatrix = JSON.parse(
+    readFileSync(
+      path.join(repositoryRoot, "scripts/production-certification-regressions.json"),
+      "utf8",
+    ),
+  );
+  if (
+    source.checks.length !== 19 ||
+    generated.value.checkPolicies.length !== 19 ||
+    generated.value.outputs.length !== 2 ||
+    generated.value.unknownGeneratedOutputPolicy !== "fail-closed" ||
+    JSON.stringify(generated.value.terminalPersistentIgnoredRoots) !==
+      JSON.stringify(["node_modules"]) ||
+    byId["floor-plan-upload-browser-fixture"]?.relativePath !==
+      ".next/cache/floor-plan-upload-browser-fixture" ||
+    byId["floor-plan-upload-browser-fixture"]?.ownerCheckId !==
+      "floor-plan-upload-static-owner" ||
+    JSON.stringify(
+      byId["floor-plan-upload-browser-fixture"]?.permittedConsumerCheckIds,
+    ) !== "[]" ||
+    byId["floor-plan-upload-browser-fixture"]?.inventoryPolicy?.kind !==
+      "producer-stdout-manifest" ||
+    byId["typescript-build-info"]?.relativePath !== "tsconfig.tsbuildinfo" ||
+    byId["typescript-build-info"]?.ownerCheckId !== "typescript-typecheck" ||
+    generated.value.outputs.some(
+      (entry) =>
+        entry.relativePath === ".next" ||
+        entry.relativePath === ".next/cache" ||
+        /[*?\[\]{}]/.test(entry.relativePath) ||
+        entry.symlinkPolicy !== "prohibited" ||
+        entry.evidenceInventoryRequired !== true ||
+        entry.cleanupDeadline?.kind !== "immediately-after-check",
+    ) ||
+    !worktreeOwner.includes('"source-validation": ["node_modules"]') ||
+    worktreeOwner.includes('"source-validation": ["node_modules", ".next') ||
+    worktreeOwner.includes('"source-validation": ["node_modules", "tsconfig.tsbuildinfo') ||
+    !sourceOwner.includes("generatedOutputLifecycle?.beforeCheck") ||
+    !sourceOwner.includes("generatedOutputLifecycle?.afterCheck") ||
+    !sourceOwner.includes("validateSourceGeneratedOutputAggregate") ||
+    !sourceOwner.includes("generatedOutputBoundaryIssues") ||
+    !lifecycleOwner.includes("preCheckAbsenceProof") ||
+    !lifecycleOwner.includes("closedRelativeInventory") ||
+    !lifecycleOwner.includes("postCleanupAbsenceProof") ||
+    !lifecycleOwner.includes("unlinkSync") ||
+    !lifecycleOwner.includes("rmdirSync") ||
+    lifecycleOwner.includes("rmSync") ||
+    /git\s+clean|rm\s+-rf/.test(lifecycleOwner) ||
+    !lifecycleOwner.includes("exact disposable source-validation worktree") ||
+    !qualificationOwner.includes(
+      "test-production-certification-source-generated-outputs.mjs",
+    ) ||
+    !qualificationOwner.includes('"--real-producers"') ||
+    !regressionOwner.includes("additional fixture file") ||
+    !regressionOwner.includes("canonical checkout can never be a cleanup target") ||
+    !regressionOwner.includes("runCorrectedRealRunnerRegression") ||
+    !regressionOwner.includes("sourceValidationStageEvidence") ||
+    !regressionOwner.includes("validateCertificationState") ||
+    !regressionOwner.includes(
+      "Corrected 19-check real source-validation generated-output regression passed.",
+    ) ||
+    !regressionMatrix.cases.some(
+      (entry) => entry.defect === "source-validation-generated-output-ownership",
+    ) ||
+    !Array.isArray(regressionMatrix.generatedOutputCases) ||
+    regressionMatrix.generatedOutputCases.length !== 26
+  ) {
+    throw new Error(
+      "source generated-output ownership, evidence, cleanup, or qualification contract is incomplete",
+    );
+  }
+  return {
+    schema: generated.value.schema,
+    contractSha256: generated.sha256,
+    checkPolicyCount: generated.value.checkPolicies.length,
+    outputCount: generated.value.outputs.length,
+    terminalPersistentIgnoredRoots:
+      generated.value.terminalPersistentIgnoredRoots,
+    cleanupPolicy: "exact-hash-matched-no-follow",
+    regressionCaseCount: regressionMatrix.generatedOutputCases.length,
+  };
+}
+
 function validateStageEnvironmentCapabilities(repositoryRoot, environment) {
   const contract = stageEnvironmentContract(repositoryRoot);
   const profileEntries = Object.entries(contract.profiles);
@@ -936,6 +1053,8 @@ export function runCertificationDoctor({
   check(checks, issues, "schema-and-mode-compatibility", () => validateContracts(root));
   check(checks, issues, "dependency-lifecycle-order", () =>
     validateDependencyLifecycleContracts(root));
+  check(checks, issues, "source-generated-output-contract", () =>
+    validateSourceGeneratedOutputContracts(root));
   check(checks, issues, "stage-environment-capabilities", () =>
     validateStageEnvironmentCapabilities(root, environment));
   check(checks, issues, "archive-file-backed-owner", () =>

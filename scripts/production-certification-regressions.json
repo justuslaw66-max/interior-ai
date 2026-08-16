@@ -30,7 +30,8 @@
     { "id": 27, "defect": "floor-plan-source-vision-ambient-value-leakage", "coverage": "exact e398751 real-runner reproduction, source check 5 check-owned value policy, doctor, simulation, and qualification" },
     { "id": 28, "defect": "runtime-smoke-timing-parent-evidence-root-mismatch", "coverage": "real runtime-stage projector, production runner preflight, real phase-budget writer, external root isolation matrix, final standalone tamper guards, doctor, simulation, and qualification" },
     { "id": 29, "defect": "post-install-dependency-identity-binding-order", "coverage": "real source runner, state v3 lifecycle matrix, sealed dependency binding evidence, atomic bind CAS, three-role ordering, post-stage drift checks, doctor, simulation, and qualification" },
-    { "id": 30, "defect": "final-runtime-journal-v2-consumer-drift", "coverage": "canonical strict journal owner, physical current final positive path, raw/timing/envelope drift matrix, historical-v1 isolation, doctor, simulation, and qualification" }
+    { "id": 30, "defect": "final-runtime-journal-v2-consumer-drift", "coverage": "canonical strict journal owner, physical current final positive path, raw/timing/envelope drift matrix, historical-v1 isolation, doctor, simulation, and qualification" },
+    { "id": 31, "defect": "source-validation-generated-output-ownership", "coverage": "exact Floor Plan fixture directory and TypeScript build-info ownership, sealed inventories, no-follow cleanup, terminal worktree validation, doctor, simulation, and qualification" }
   ],
   "dependencyLifecycleCases": [
     "initial-not-installed-null-valid",
@@ -107,6 +108,34 @@
     "floor-plan-source-fixture-in-build-runtime",
     "floor-plan-import-order-drift",
     "floor-plan-child-environment-mutation-isolation"
+  ],
+  "generatedOutputCases": [
+    "declared-output-produced-and-cleaned",
+    "pre-existing-owner-output-rejected",
+    "undeclared-output-rejected",
+    "wrong-check-owner-rejected",
+    "missing-required-output-rejected",
+    "retained-output-mutated-before-consumer-rejected",
+    "output-mutated-before-cleanup-rejected",
+    "cleanup-deadline-survival-rejected",
+    "output-evidence-tamper-rejected",
+    "cleanup-marker-missing-rejected",
+    "symlink-output-rejected",
+    "symlink-descendant-rejected",
+    "worktree-path-escape-rejected",
+    "broad-next-cache-contract-rejected",
+    "unrelated-next-cache-output-rejected",
+    "fixture-additional-file-rejected",
+    "typescript-build-info-pre-existing-rejected",
+    "typescript-build-info-wrong-type-rejected",
+    "cleanup-does-not-remove-undeclared-path",
+    "cleanup-changed-hash-rejected",
+    "canonical-checkout-cleanup-rejected",
+    "node-modules-transient-ownership-rejected",
+    "cross-certification-evidence-swap-rejected",
+    "cross-worktree-role-evidence-swap-rejected",
+    "terminal-worktree-contamination-rejected",
+    "dependency-drift-after-output-lifecycle-rejected"
   ],
   "transactionalStateAndWorktreeCases": [
     "missing-candidate-id-state-immutability",

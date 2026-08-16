@@ -92,6 +92,13 @@
     "stageWorktreeRole": "source-validation",
     "stopOnFirstRequiredFailure": true,
     "fixtureCommandOwner": "scripts/production-certification-source-continuity.mjs",
+    "generatedOutputContract": {
+      "schema": "interior-ai.production-certification-source-generated-outputs.v1",
+      "path": "docs/qa/production-certification-source-generated-outputs.v1.json",
+      "unknownOutputPolicy": "fail-closed",
+      "terminalPersistentIgnoredRoots": ["node_modules"],
+      "evidenceSchema": "interior-ai.production-certification-source-generated-output-evidence.v1"
+    },
     "checks": [
       { "id": "production-artifact-evidence-contracts", "environmentProfileId": "source-validation", "qualificationEnvironmentProfileId": "source-validation-qualification", "canonicalCommand": "npm run test:production-artifact-evidence", "executable": "npm", "args": ["run", "test:production-artifact-evidence"], "commandOwner": "package.json#scripts.test:production-artifact-evidence", "requiredEnvironmentNames": [], "expectedEvidence": ["process-result", "stdout", "stderr", "pre-source-identity", "post-source-identity"], "substantive": true, "continueAfterFailure": false },
       { "id": "certification-harness-contracts", "environmentProfileId": "source-validation", "qualificationEnvironmentProfileId": "source-validation-qualification", "canonicalCommand": "npm run test:production-certification", "executable": "npm", "args": ["run", "test:production-certification"], "commandOwner": "package.json#scripts.test:production-certification", "requiredEnvironmentNames": [], "expectedEvidence": ["process-result", "stdout", "stderr", "pre-source-identity", "post-source-identity"], "substantive": true, "continueAfterFailure": false },

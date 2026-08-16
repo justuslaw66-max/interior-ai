@@ -31,6 +31,10 @@ export const PRODUCTION_CERTIFICATION_SOURCE_VALIDATION_SCHEMA =
   "interior-ai.production-certification-source-validation.v4";
 export const PRODUCTION_CERTIFICATION_SOURCE_VALIDATION_SCHEMA_V3 =
   "interior-ai.production-certification-source-validation.v3";
+export const PRODUCTION_CERTIFICATION_SOURCE_GENERATED_OUTPUT_CONTRACT_SCHEMA =
+  "interior-ai.production-certification-source-generated-outputs.v1";
+export const PRODUCTION_CERTIFICATION_SOURCE_GENERATED_OUTPUT_EVIDENCE_SCHEMA =
+  "interior-ai.production-certification-source-generated-output-evidence.v1";
 export const PRODUCTION_CERTIFICATION_ARTIFACT_SNAPSHOT_SCHEMA =
   "interior-ai.production-certification-artifact-snapshot.v1";
 export const PRODUCTION_CERTIFICATION_ARTIFACT_ROOT_SCHEMA =
@@ -191,6 +195,9 @@ export const CERTIFICATION_HARNESS_SOURCE_PATHS = Object.freeze([
   "scripts/production-certification-dependencies.mjs",
   "scripts/production-certification-real.mjs",
   "scripts/production-certification-source-continuity.mjs",
+  "scripts/production-certification-source-generated-outputs.mjs",
+  "scripts/build-floor-plan-upload-browser-fixture.mjs",
+  "scripts/guest-save-overlay-ts-loader.mjs",
   "scripts/production-certification.mjs",
   "scripts/production-certification-simulation.mjs",
   "scripts/production-certification-stage-environment.mjs",
@@ -198,8 +205,12 @@ export const CERTIFICATION_HARNESS_SOURCE_PATHS = Object.freeze([
   "scripts/test-production-certification-state-worktrees.mjs",
   "scripts/test-production-certification-dependency-lifecycle.mjs",
   "scripts/test-production-certification-stage-environment.mjs",
+  "scripts/test-production-certification-source-generated-outputs.mjs",
   "scripts/test-floor-plan-vision-configuration.ts",
   "scripts/test-floor-plan-local-ocr.ts",
+  "tests/required/fixtures/floor-plan-empty-entry-harness.tsx",
+  "tests/required/fixtures/floor-plan-upload-dialog-harness.tsx",
+  "tests/required/fixtures/next-navigation-browser-fixture.ts",
   "lib/floor-plan-imports/pdf-raster-adapter.ts",
   "lib/floor-plan-imports/vision-configuration.ts",
   "scripts/production-archive.mjs",
@@ -214,6 +225,7 @@ export const CERTIFICATION_HARNESS_SOURCE_PATHS = Object.freeze([
   "scripts/production-certification-regressions.json",
   "scripts/certification-playwright-start-reporter.mjs",
   "docs/qa/production-certification-contract.v1.json",
+  "docs/qa/production-certification-source-generated-outputs.v1.json",
   "docs/qa/production-certification-stage-environment.v2.json",
   "docs/qa/production-certification-harness-v1.md",
   "docs/qa/production-certification-state-worktree-remediation.md",
@@ -262,6 +274,178 @@ export function productionCertificationContract(repositoryRoot) {
     value: contract,
     sha256: sha256Bytes(bytes),
     path: "docs/qa/production-certification-contract.v1.json",
+  });
+}
+
+function safeGeneratedOutputRelativePath(relativePath) {
+  return (
+    typeof relativePath === "string" &&
+    relativePath.length > 0 &&
+    !path.isAbsolute(relativePath) &&
+    !relativePath.includes("\\") &&
+    !/[?*\[\]{}]/.test(relativePath) &&
+    relativePath.split("/").every((component) => component && component !== "." && component !== "..") &&
+    path.posix.normalize(relativePath) === relativePath &&
+    !new Set([".next", ".next/cache", "node_modules"]).has(relativePath)
+  );
+}
+
+export function validateSourceGeneratedOutputContractValue(
+  value,
+  expectedCheckIds = null,
+) {
+  const issues = [];
+  const policies = Array.isArray(value?.checkPolicies) ? value.checkPolicies : [];
+  const outputs = Array.isArray(value?.outputs) ? value.outputs : [];
+  const policyIds = policies.map((entry) => entry?.checkId);
+  const outputIds = outputs.map((entry) => entry?.id);
+  const checkIds = expectedCheckIds ?? policyIds;
+  const checkIndex = new Map(checkIds.map((id, index) => [id, index]));
+  if (
+    value?.schema !==
+      PRODUCTION_CERTIFICATION_SOURCE_GENERATED_OUTPUT_CONTRACT_SCHEMA ||
+    value?.version !== 1 ||
+    value?.unknownGeneratedOutputPolicy !== "fail-closed" ||
+    JSON.stringify(value?.terminalPersistentIgnoredRoots) !==
+      JSON.stringify(["node_modules"])
+  ) {
+    issues.push("generated-output contract header or terminal policy is invalid");
+  }
+  if (
+    policies.length !== checkIds.length ||
+    new Set(policyIds).size !== policyIds.length ||
+    JSON.stringify(policyIds) !== JSON.stringify(checkIds)
+  ) {
+    issues.push("every source check must have one ordered generated-output policy");
+  }
+  if (new Set(outputIds).size !== outputIds.length) {
+    issues.push("generated-output IDs are duplicated");
+  }
+  const referencedOutputs = [];
+  for (const policy of policies) {
+    if (
+      !policy ||
+      !checkIndex.has(policy.checkId) ||
+      policy.expectedTrackedModifications !== "none" ||
+      !Array.isArray(policy.generatedOutputIds) ||
+      policy.generatedOutputIds.some((id) => !outputIds.includes(id))
+    ) {
+      issues.push(`generated-output check policy is malformed: ${String(policy?.checkId)}`);
+      continue;
+    }
+    referencedOutputs.push(...policy.generatedOutputIds);
+  }
+  if (
+    referencedOutputs.length !== outputs.length ||
+    new Set(referencedOutputs).size !== referencedOutputs.length ||
+    outputs.some((entry) => !referencedOutputs.includes(entry.id))
+  ) {
+    issues.push("every generated output must have exactly one check-policy owner");
+  }
+  for (const output of outputs) {
+    const ownerIndex = checkIndex.get(output?.ownerCheckId);
+    const consumerIds = output?.permittedConsumerCheckIds;
+    const lastConsumerId = output?.retentionLifetime?.lastConsumerCheckId;
+    const lastConsumerIndex = checkIndex.get(lastConsumerId);
+    const policy = policies.find((entry) => entry?.checkId === output?.ownerCheckId);
+    const inventory = output?.inventoryPolicy;
+    if (
+      !output ||
+      typeof output.id !== "string" ||
+      !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(output.id) ||
+      !safeGeneratedOutputRelativePath(output.relativePath) ||
+      !new Set(["file", "directory"]).has(output.pathType) ||
+      output.productionTiming !== "during-check" ||
+      !Number.isSafeInteger(ownerIndex) ||
+      !Array.isArray(consumerIds) ||
+      consumerIds.some((id) => !checkIndex.has(id)) ||
+      consumerIds.some((id) => checkIndex.get(id) <= ownerIndex) ||
+      output.expectedPreCheckState !== "absent" ||
+      output.retentionLifetime?.kind !== "through-last-consumer" ||
+      !Number.isSafeInteger(lastConsumerIndex) ||
+      lastConsumerIndex < ownerIndex ||
+      (consumerIds.length > 0 &&
+        Math.max(...consumerIds.map((id) => checkIndex.get(id))) !==
+          lastConsumerIndex) ||
+      (consumerIds.length === 0 && lastConsumerId !== output.ownerCheckId) ||
+      output.cleanupOwnerCheckId !== lastConsumerId ||
+      output.cleanupDeadline?.kind !== "immediately-after-check" ||
+      output.cleanupDeadline?.checkId !== lastConsumerId ||
+      !Number.isSafeInteger(output.maximumPathCount) ||
+      output.maximumPathCount < 1 ||
+      output.symlinkPolicy !== "prohibited" ||
+      output.evidenceInventoryRequired !== true ||
+      output.emptyOutputPermitted !== false ||
+      output.affectsLaterCertificationStage !== false ||
+      !policy?.generatedOutputIds.includes(output.id)
+    ) {
+      issues.push(`generated-output entry is malformed: ${String(output?.id)}`);
+      continue;
+    }
+    if (
+      output.pathType === "file" &&
+      (output.maximumPathCount !== 1 || inventory?.kind !== "sealed-single-file")
+    ) {
+      issues.push(`generated file inventory policy is invalid: ${output.id}`);
+    }
+    if (output.pathType === "directory") {
+      if (
+        inventory?.kind !== "producer-stdout-manifest" ||
+        typeof inventory.schema !== "string" ||
+        !inventory.schema ||
+        typeof inventory.stdoutPrefix !== "string" ||
+        !inventory.stdoutPrefix ||
+        !Array.isArray(inventory.requiredFiles) ||
+        inventory.requiredFiles.length === 0 ||
+        inventory.requiredFiles.some((name) => !safeGeneratedOutputRelativePath(name)) ||
+        !Array.isArray(inventory.producerSourcePaths) ||
+        inventory.producerSourcePaths.length === 0 ||
+        inventory.producerSourcePaths.some((name) => !safeGeneratedOutputRelativePath(name))
+      ) {
+        issues.push(`generated directory inventory policy is invalid: ${output.id}`);
+      }
+    }
+  }
+  for (const [index, left] of outputs.entries()) {
+    for (const right of outputs.slice(index + 1)) {
+      if (
+        left.relativePath === right.relativePath ||
+        left.relativePath.startsWith(`${right.relativePath}/`) ||
+        right.relativePath.startsWith(`${left.relativePath}/`)
+      ) {
+        issues.push(`generated-output paths overlap: ${left.id}, ${right.id}`);
+      }
+    }
+  }
+  return { valid: issues.length === 0, issues };
+}
+
+export function sourceGeneratedOutputContract(repositoryRoot) {
+  const contractPath = path.join(
+    repositoryRoot,
+    "docs/qa/production-certification-source-generated-outputs.v1.json",
+  );
+  const bytes = readFileSync(contractPath);
+  let value;
+  try {
+    value = JSON.parse(bytes.toString("utf8"));
+  } catch {
+    throw new Error("source generated-output contract is invalid JSON");
+  }
+  const validation = validateSourceGeneratedOutputContractValue(value);
+  if (!validation.valid) {
+    throw new Error(validation.issues.join("; "));
+  }
+  return Object.freeze({
+    value,
+    path: "docs/qa/production-certification-source-generated-outputs.v1.json",
+    sha256: sha256Bytes(bytes),
+    entrySha256: Object.fromEntries(
+      value.outputs.map((entry) => [entry.id, sha256Bytes(canonicalJsonBytes(entry))]),
+    ),
+    policySha256: Object.fromEntries(
+      value.checkPolicies.map((entry) => [entry.checkId, sha256Bytes(canonicalJsonBytes(entry))]),
+    ),
   });
 }
 
@@ -320,6 +504,28 @@ export function sourceValidationCheckSet(repositoryRoot) {
   if (new Set(ids).size !== ids.length) {
     throw new Error("source-validation check IDs are duplicated");
   }
+  const generatedOutputs = sourceGeneratedOutputContract(repositoryRoot);
+  const generatedOutputValidation = validateSourceGeneratedOutputContractValue(
+    generatedOutputs.value,
+    ids,
+  );
+  const generatedOutputMatrix = contract.value.sourceValidation.generatedOutputContract;
+  if (
+    !generatedOutputValidation.valid ||
+    generatedOutputMatrix?.schema !== generatedOutputs.value.schema ||
+    generatedOutputMatrix?.path !== generatedOutputs.path ||
+    generatedOutputMatrix?.unknownOutputPolicy !== "fail-closed" ||
+    JSON.stringify(generatedOutputMatrix?.terminalPersistentIgnoredRoots) !==
+      JSON.stringify(["node_modules"]) ||
+    generatedOutputMatrix?.evidenceSchema !==
+      PRODUCTION_CERTIFICATION_SOURCE_GENERATED_OUTPUT_EVIDENCE_SCHEMA
+  ) {
+    throw new Error(
+      generatedOutputValidation.issues.length > 0
+        ? generatedOutputValidation.issues.join("; ")
+        : "source generated-output contract matrix binding is invalid",
+    );
+  }
   const semantic = {
     schema: contract.value.sourceValidation.schema,
     workingDirectoryPolicy:
@@ -328,6 +534,7 @@ export function sourceValidationCheckSet(repositoryRoot) {
       contract.value.sourceValidation.stopOnFirstRequiredFailure,
     fixtureCommandOwner: contract.value.sourceValidation.fixtureCommandOwner,
     environmentContractSha256: environmentContract.sha256,
+    generatedOutputContractSha256: generatedOutputs.sha256,
     checks,
   };
   if (
@@ -341,6 +548,7 @@ export function sourceValidationCheckSet(repositoryRoot) {
   return Object.freeze({
     ...semantic,
     checks: Object.freeze(checks.map((check) => Object.freeze({ ...check }))),
+    generatedOutputs,
     sha256: sha256Bytes(canonicalJsonBytes(semantic)),
     contractMatrixSha256: contract.sha256,
   });

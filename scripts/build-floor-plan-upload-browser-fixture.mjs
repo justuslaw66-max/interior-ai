@@ -1,4 +1,5 @@
-import { existsSync } from "node:fs";
+import { createHash } from "node:crypto";
+import { existsSync, lstatSync, readFileSync, readdirSync } from "node:fs";
 import path from "node:path";
 import webpack from "webpack";
 
@@ -12,6 +13,16 @@ const outputPath = path.join(
 const outputFiles = ["bundle.js", "empty-entry.js"].map((file) =>
   path.join(outputPath, file)
 );
+const outputRelativePath = ".next/cache/floor-plan-upload-browser-fixture";
+const producerSourcePaths = [
+  "scripts/build-floor-plan-upload-browser-fixture.mjs",
+  "scripts/guest-save-overlay-ts-loader.mjs",
+  "tests/required/fixtures/floor-plan-empty-entry-harness.tsx",
+  "tests/required/fixtures/floor-plan-upload-dialog-harness.tsx",
+  "tests/required/fixtures/next-navigation-browser-fixture.ts",
+];
+const sha256 = (bytes) => createHash("sha256").update(bytes).digest("hex");
+const canonicalJsonBytes = (value) => Buffer.from(`${JSON.stringify(value, null, 2)}\n`);
 
 const compiler = webpack({
   mode: "production",
@@ -90,4 +101,39 @@ if (details.errors?.length) {
 if (outputFiles.some((file) => !existsSync(file))) {
   throw new Error("Floor Plan Upload browser fixture bundle is missing");
 }
+const files = readdirSync(outputPath)
+  .sort()
+  .map((name) => {
+    const filePath = path.join(outputPath, name);
+    const metadata = lstatSync(filePath);
+    if (!metadata.isFile() || metadata.isSymbolicLink()) {
+      throw new Error(`Floor Plan Upload browser fixture contains a non-file: ${name}`);
+    }
+    const bytes = readFileSync(filePath);
+    return { path: name, size: bytes.byteLength, sha256: sha256(bytes) };
+  });
+const closedInventory = files.map((file) => ({
+  path: `${outputRelativePath}/${file.path}`,
+  type: "file",
+  size: file.size,
+  sha256: file.sha256,
+}));
+const manifest = {
+  schema: "interior-ai.floor-plan-upload-browser-fixture-manifest.v1",
+  outputPath: outputRelativePath,
+  files,
+  producerSources: producerSourcePaths.map((relativePath) => ({
+    path: relativePath,
+    sha256: sha256(readFileSync(path.join(root, relativePath))),
+  })),
+  inventorySha256: sha256(
+    Buffer.concat([
+      Buffer.from(
+        "interior-ai.production-certification-source-generated-output-inventory-seal.v1\n"
+      ),
+      canonicalJsonBytes(closedInventory),
+    ])
+  ),
+};
+console.log(`INTERIOR_AI_FLOOR_PLAN_FIXTURE_MANIFEST ${JSON.stringify(manifest)}`);
 console.log("Floor Plan Upload browser fixture bundle prepared.");

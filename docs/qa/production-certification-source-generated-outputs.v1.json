@@ -1,0 +1,96 @@
+{
+  "schema": "interior-ai.production-certification-source-generated-outputs.v1",
+  "version": 1,
+  "unknownGeneratedOutputPolicy": "fail-closed",
+  "terminalPersistentIgnoredRoots": [
+    "node_modules"
+  ],
+  "checkPolicies": [
+    { "checkId": "production-artifact-evidence-contracts", "expectedTrackedModifications": "none", "generatedOutputIds": [] },
+    { "checkId": "certification-harness-contracts", "expectedTrackedModifications": "none", "generatedOutputIds": [] },
+    { "checkId": "required-test-truthfulness", "expectedTrackedModifications": "none", "generatedOutputIds": [] },
+    { "checkId": "required-test-manifest-direct", "expectedTrackedModifications": "none", "generatedOutputIds": [] },
+    { "checkId": "floor-plan-required-closure", "expectedTrackedModifications": "none", "generatedOutputIds": [] },
+    { "checkId": "floor-plan-upload-static-owner", "expectedTrackedModifications": "none", "generatedOutputIds": ["floor-plan-upload-browser-fixture"] },
+    { "checkId": "telemetry-bootstrap-contracts", "expectedTrackedModifications": "none", "generatedOutputIds": [] },
+    { "checkId": "critical-required", "expectedTrackedModifications": "none", "generatedOutputIds": [] },
+    { "checkId": "design-cleanup", "expectedTrackedModifications": "none", "generatedOutputIds": [] },
+    { "checkId": "zero-warning-lint", "expectedTrackedModifications": "none", "generatedOutputIds": [] },
+    { "checkId": "typescript-typecheck", "expectedTrackedModifications": "none", "generatedOutputIds": ["typescript-build-info"] },
+    { "checkId": "code-quality-ratchets", "expectedTrackedModifications": "none", "generatedOutputIds": [] },
+    { "checkId": "design-architecture", "expectedTrackedModifications": "none", "generatedOutputIds": [] },
+    { "checkId": "floor-plan-architecture", "expectedTrackedModifications": "none", "generatedOutputIds": [] },
+    { "checkId": "cabinetry-architecture", "expectedTrackedModifications": "none", "generatedOutputIds": [] },
+    { "checkId": "tracked-artifact-hygiene", "expectedTrackedModifications": "none", "generatedOutputIds": [] },
+    { "checkId": "source-syntax", "expectedTrackedModifications": "none", "generatedOutputIds": [] },
+    { "checkId": "git-diff-check", "expectedTrackedModifications": "none", "generatedOutputIds": [] },
+    { "checkId": "git-source-hygiene", "expectedTrackedModifications": "none", "generatedOutputIds": [] }
+  ],
+  "outputs": [
+    {
+      "id": "floor-plan-upload-browser-fixture",
+      "relativePath": ".next/cache/floor-plan-upload-browser-fixture",
+      "pathType": "directory",
+      "productionTiming": "during-check",
+      "ownerCheckId": "floor-plan-upload-static-owner",
+      "permittedConsumerCheckIds": [],
+      "expectedPreCheckState": "absent",
+      "retentionLifetime": {
+        "kind": "through-last-consumer",
+        "lastConsumerCheckId": "floor-plan-upload-static-owner"
+      },
+      "cleanupOwnerCheckId": "floor-plan-upload-static-owner",
+      "cleanupDeadline": {
+        "kind": "immediately-after-check",
+        "checkId": "floor-plan-upload-static-owner"
+      },
+      "maximumPathCount": 16,
+      "symlinkPolicy": "prohibited",
+      "evidenceInventoryRequired": true,
+      "emptyOutputPermitted": false,
+      "affectsLaterCertificationStage": false,
+      "inventoryPolicy": {
+        "kind": "producer-stdout-manifest",
+        "schema": "interior-ai.floor-plan-upload-browser-fixture-manifest.v1",
+        "stdoutPrefix": "INTERIOR_AI_FLOOR_PLAN_FIXTURE_MANIFEST ",
+        "requiredFiles": [
+          "bundle.js",
+          "empty-entry.js"
+        ],
+        "producerSourcePaths": [
+          "scripts/build-floor-plan-upload-browser-fixture.mjs",
+          "scripts/guest-save-overlay-ts-loader.mjs",
+          "tests/required/fixtures/floor-plan-empty-entry-harness.tsx",
+          "tests/required/fixtures/floor-plan-upload-dialog-harness.tsx",
+          "tests/required/fixtures/next-navigation-browser-fixture.ts"
+        ]
+      }
+    },
+    {
+      "id": "typescript-build-info",
+      "relativePath": "tsconfig.tsbuildinfo",
+      "pathType": "file",
+      "productionTiming": "during-check",
+      "ownerCheckId": "typescript-typecheck",
+      "permittedConsumerCheckIds": [],
+      "expectedPreCheckState": "absent",
+      "retentionLifetime": {
+        "kind": "through-last-consumer",
+        "lastConsumerCheckId": "typescript-typecheck"
+      },
+      "cleanupOwnerCheckId": "typescript-typecheck",
+      "cleanupDeadline": {
+        "kind": "immediately-after-check",
+        "checkId": "typescript-typecheck"
+      },
+      "maximumPathCount": 1,
+      "symlinkPolicy": "prohibited",
+      "evidenceInventoryRequired": true,
+      "emptyOutputPermitted": false,
+      "affectsLaterCertificationStage": false,
+      "inventoryPolicy": {
+        "kind": "sealed-single-file"
+      }
+    }
+  ]
+}

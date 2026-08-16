@@ -194,7 +194,7 @@ function initializeFixture(repositoryRoot, fixtureRoot) {
   write(
     fixtureRoot,
     ".gitignore",
-    ".env\n.env.local\n.next/\n.local/\n.vercel/\nnode_modules/\ntest-results/\nplaywright-report/\nfinal-component\n",
+    ".env\n.env.local\n.next/\n.local/\n.vercel/\nnode_modules/\n*.tsbuildinfo\ntest-results/\nplaywright-report/\nfinal-component\n",
   );
   write(
     fixtureRoot,
@@ -763,6 +763,11 @@ export async function runProductionCertificationSimulation({
   cleanupWorktrees = true,
 } = {}) {
   const repositoryRoot = process.cwd();
+  run(
+    process.execPath,
+    ["scripts/test-production-certification-source-generated-outputs.mjs"],
+    repositoryRoot,
+  );
   const simulationRoot = mkdtempSync(path.join(tmpdir(), "production-certification-v1-"));
   const canonicalRoot = path.join(simulationRoot, "source");
   let fixtureRoot = canonicalRoot;
@@ -1705,6 +1710,41 @@ export async function runProductionCertificationSimulation({
     state,
     repositoryRoot: sourceWorktreeRoot,
   });
+  const floorPlanGeneratedOutput = successfulSourceEvidence.generatedOutputEvidence.find(
+    (entry) => entry.outputId === "floor-plan-upload-browser-fixture",
+  );
+  const typeScriptGeneratedOutput = successfulSourceEvidence.generatedOutputEvidence.find(
+    (entry) => entry.outputId === "typescript-build-info",
+  );
+  const floorPlanGeneratedEvidence = JSON.parse(
+    readFileSync(path.join(evidenceRoot, floorPlanGeneratedOutput.evidence.path), "utf8"),
+  );
+  const typeScriptGeneratedEvidence = JSON.parse(
+    readFileSync(path.join(evidenceRoot, typeScriptGeneratedOutput.evidence.path), "utf8"),
+  );
+  const generatedOutputLifecyclePassed =
+    successfulSourceEvidence.generatedOutputContract.schema ===
+      "interior-ai.production-certification-source-generated-outputs.v1" &&
+    successfulSourceEvidence.generatedOutputEvidence.length === 2 &&
+    floorPlanGeneratedEvidence.closedRelativeInventory.length === 4 &&
+    floorPlanGeneratedEvidence.closedRelativeInventory.every((entry) =>
+      new Set([
+        ".next/cache/floor-plan-upload-browser-fixture/612.chunk.js",
+        ".next/cache/floor-plan-upload-browser-fixture/901.chunk.js",
+        ".next/cache/floor-plan-upload-browser-fixture/bundle.js",
+        ".next/cache/floor-plan-upload-browser-fixture/empty-entry.js",
+      ]).has(entry.path),
+    ) &&
+    typeScriptGeneratedEvidence.closedRelativeInventory.length === 1 &&
+    typeScriptGeneratedEvidence.closedRelativeInventory[0].path ===
+      "tsconfig.tsbuildinfo" &&
+    floorPlanGeneratedEvidence.completionMarker.result === "cleaned" &&
+    typeScriptGeneratedEvidence.completionMarker.result === "cleaned" &&
+    successfulSourceEvidence.terminalWorktree.generatedOutputsRemaining.length === 0 &&
+    successfulSourceEvidence.terminalWorktree.undeclaredIgnoredInventory.count === 0;
+  if (!generatedOutputLifecyclePassed) {
+    throw new Error("simulation source generated-output lifecycle did not seal and clean");
+  }
   const staleNullAggregateState = structuredClone(state);
   staleNullAggregateState.worktrees.roles[
     "source-validation"
@@ -3696,6 +3736,14 @@ export async function runProductionCertificationSimulation({
     integrationReady: state.stages["integration-ready"].status === "passed",
     archiveDeterministic: true,
     sourceValidationCheckCount: sourceCheckIds.length,
+    generatedOutputLifecycle: {
+      schema:
+        "interior-ai.production-certification-source-generated-outputs.v1",
+      declaredOutputCount: 2,
+      exactFailedOutputCount: 5,
+      terminalNodeModulesOnly: true,
+      negativeCaseCount: 26,
+    },
     lifecycleSnapshotCount: 6,
     worktreeRoles: [...CERTIFICATION_WORKTREE_ROLES],
     canonicalIgnoredArtifactsUnchanged: true,

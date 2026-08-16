@@ -57,6 +57,7 @@ import {
 import {
   measureFinalContinuity,
   rootEvidenceName,
+  sealSourceValidationEvidence,
   snapshotEvidenceName,
   validateArtifactSnapshotEvidence,
   validateContinuityEvidence,
@@ -77,6 +78,8 @@ import {
 const repositoryRoot = process.cwd();
 const CURRENT_JOURNAL_V2_FINAL_POSITIVE_PATH =
   "state-v3/manifest-v3/journal-v2/physical-final-standalone";
+const GENERATED_OUTPUT_AGGREGATE_SEAL_DOMAIN =
+  "interior-ai.production-certification-source-generated-output-aggregate-seal.v1\n";
 const fixedTime = "2026-08-14T00:00:00.000Z";
 const candidate = {
   id: "certification-test-candidate",
@@ -1189,18 +1192,20 @@ function stateFixture() {
   const regressions = JSON.parse(
     readFileSync("scripts/production-certification-regressions.json", "utf8"),
   );
-  assert.equal(regressions.cases.length, 30);
+  assert.equal(regressions.cases.length, 31);
   assert.deepEqual(
     regressions.cases.map((entry) => entry.id),
-    Array.from({ length: 30 }, (_, index) => index + 1),
+    Array.from({ length: 31 }, (_, index) => index + 1),
   );
-  assert.equal(new Set(regressions.cases.map((entry) => entry.defect)).size, 30);
+  assert.equal(new Set(regressions.cases.map((entry) => entry.defect)).size, 31);
   assert.equal(regressions.dependencyLifecycleCases.length, 26);
   assert.equal(new Set(regressions.dependencyLifecycleCases).size, 26);
   assert.equal(regressions.runtimeEvidenceRootCases.length, 21);
   assert.equal(new Set(regressions.runtimeEvidenceRootCases).size, 21);
   assert.equal(regressions.sourceValidationCases.length, 23);
   assert.equal(new Set(regressions.sourceValidationCases).size, 23);
+  assert.equal(regressions.generatedOutputCases.length, 26);
+  assert.equal(new Set(regressions.generatedOutputCases).size, 26);
   assert.equal(regressions.continuityCases.length, 23);
   assert.equal(new Set(regressions.continuityCases).size, 23);
 }
@@ -1718,6 +1723,196 @@ function stateFixture() {
     }),
     /another harness or contract matrix/,
   );
+  const validateResealedSourceResultMutation = (mutate) => {
+    const value = structuredClone(sourceEvidence);
+    const result = value.checks.find(
+      (check) => check.id === "floor-plan-upload-static-owner",
+    );
+    mutate(result);
+    const resultPath = path.join(evidenceRoot, result.resultEvidence.path);
+    const retainedResultBytes = readFileSync(resultPath);
+    try {
+      const retainedResult = structuredClone(result);
+      delete retainedResult.resultEvidence;
+      retainedResult.generatedEvidence = result.generatedEvidence.slice(0, 2);
+      const resultBytes = canonicalJsonBytes(retainedResult);
+      writeFileSync(resultPath, resultBytes);
+      result.resultEvidence.sha256 = sha256Bytes(resultBytes);
+      result.generatedEvidence[2] = structuredClone(result.resultEvidence);
+      const sealed = sealSourceValidationEvidence(value);
+      return validateSourceValidationEvidence({
+        evidence: sealed,
+        evidenceRoot,
+        state: completedState,
+        repositoryRoot: sourceValidationRoot,
+      }).issues.join("\n");
+    } finally {
+      writeFileSync(resultPath, retainedResultBytes);
+    }
+  };
+  assert.match(
+    validateResealedSourceResultMutation((result) => {
+      result.generatedOutputs.postCheck.producedBoundary.declaredGeneratedInventory = {
+        count: 999,
+        sha256: "f".repeat(64),
+      };
+    }),
+    /boundary contradicts its lifecycle position/,
+  );
+  assert.match(
+    validateResealedSourceResultMutation((result) => {
+      result.generatedOutputs.postCheck.producedBoundary.persistentIgnoredInventory = {
+        count: 999,
+        sha256: "e".repeat(64),
+      };
+    }),
+    /boundary contradicts its lifecycle position/,
+  );
+  assert.match(
+    validateResealedSourceResultMutation((result) => {
+      result.generatedOutputs.postCheck.issues = ["false passed-boundary claim"];
+    }),
+    /generated-output boundary mismatch/,
+  );
+  assert.match(
+    validateResealedSourceResultMutation((result) => {
+      result.startedAt = new Date(Date.parse(result.startedAt) + 1).toISOString();
+    }),
+    /check-boundary timestamps are contradictory/,
+  );
+  for (const failure of [
+    {
+      name: "zero-exit lifecycle failure",
+      processExitCode: 0,
+      lifecycleFailure: true,
+      stateExitCode: 1,
+    },
+    {
+      name: "nonzero owner-process failure",
+      processExitCode: 17,
+      lifecycleFailure: false,
+      stateExitCode: 17,
+    },
+  ]) {
+    const typecheckIndex = sourceEvidence.checks.findIndex(
+      (check) => check.id === "typescript-typecheck",
+    );
+    const failedEvidence = structuredClone(sourceEvidence);
+    failedEvidence.checks = failedEvidence.checks.slice(0, typecheckIndex + 1);
+    const failedCheck = failedEvidence.checks.at(-1);
+    const emptyInventory = { count: 0, sha256: sha256Bytes("") };
+    const cleanBoundary = {
+      trackedAndOrdinaryUntrackedClean: true,
+      ordinaryStatusInventory: emptyInventory,
+      persistentIgnoredInventory:
+        failedCheck.generatedOutputs.postCheck.terminalBoundary
+          .persistentIgnoredInventory,
+      declaredGeneratedInventory: emptyInventory,
+      undeclaredIgnoredInventory: emptyInventory,
+      activeGeneratedOutputIds: [],
+    };
+    failedCheck.process.exitCode = failure.processExitCode;
+    failedCheck.generatedOutputs.postCheck = {
+      ...failedCheck.generatedOutputs.postCheck,
+      generatedOutputEvidence: [],
+      producedBoundary: structuredClone(cleanBoundary),
+      terminalBoundary: structuredClone(cleanBoundary),
+      passed: !failure.lifecycleFailure,
+      issues: failure.lifecycleFailure
+        ? ["required generated output is missing: tsconfig.tsbuildinfo"]
+        : [],
+    };
+    failedCheck.passed = false;
+    const resultPath = path.join(
+      evidenceRoot,
+      failedCheck.resultEvidence.path,
+    );
+    const aggregatePath = path.join(evidenceRoot, sourceDescriptor.path);
+    const retainedResultBytes = readFileSync(resultPath);
+    const retainedAggregateBytes = readFileSync(aggregatePath);
+    try {
+      const retainedResult = structuredClone(failedCheck);
+      delete retainedResult.resultEvidence;
+      retainedResult.generatedEvidence = failedCheck.generatedEvidence.slice(0, 2);
+      const failedResultBytes = canonicalJsonBytes(retainedResult);
+      writeFileSync(resultPath, failedResultBytes);
+      failedCheck.resultEvidence.sha256 = sha256Bytes(failedResultBytes);
+      failedCheck.generatedEvidence[2] = structuredClone(
+        failedCheck.resultEvidence,
+      );
+      failedEvidence.generatedOutputEvidence =
+        failedEvidence.generatedOutputEvidence.filter(
+          (entry) => entry.outputId === "floor-plan-upload-browser-fixture",
+        );
+      failedEvidence.aggregateGeneratedOutputEvidenceSha256 = sha256Bytes(
+        Buffer.concat([
+          Buffer.from(GENERATED_OUTPUT_AGGREGATE_SEAL_DOMAIN),
+          canonicalJsonBytes(failedEvidence.generatedOutputEvidence),
+        ]),
+      );
+      failedEvidence.passed = false;
+      failedEvidence.failedCheckId = failedCheck.id;
+      failedEvidence.completionMarker = {
+        complete: true,
+        result: "failed",
+        completedCheckCount: failedEvidence.checks.length,
+      };
+      const sealedFailedEvidence = sealSourceValidationEvidence(failedEvidence);
+      const aggregateBytes = canonicalJsonBytes(sealedFailedEvidence);
+      writeFileSync(aggregatePath, aggregateBytes);
+      const failedDescriptor = {
+        path: sourceDescriptor.path,
+        sha256: sha256Bytes(aggregateBytes),
+      };
+      const bindingReceipt = JSON.parse(
+        readFileSync(
+          path.join(
+            evidenceRoot,
+            sealedFailedEvidence.dependencyLifecycle.bindingStateEvidence.path,
+          ),
+          "utf8",
+        ),
+      );
+      const failedState = completeCertificationStage(bindingReceipt, {
+        stage: "source-validation",
+        passed: false,
+        completedAt: sealedFailedEvidence.completedAt,
+        exitCode: failure.stateExitCode,
+        failureClassification: "SOURCE_CONTRACT_FAILURE",
+        consumedSubstantiveGate: true,
+        evidenceFiles: { "source-validation": failedDescriptor },
+      });
+      assert.deepEqual(
+        validateSourceValidationEvidence({
+          evidence: sealedFailedEvidence,
+          evidenceRoot,
+          state: failedState,
+          repositoryRoot: sourceValidationRoot,
+          requirePassed: false,
+          verifyPhysicalSource: false,
+        }).issues,
+        [],
+        `${failure.name} must remain valid failed evidence`,
+      );
+      const failedStateValidation = validateCertificationState({
+        state: failedState,
+        evidenceRoot,
+        expectedCandidate: failedState.candidate,
+        expectedHarnessSourceSha256: failedState.harness.sourceSha256,
+        repositoryRoot: canonicalRoot,
+        sourceValidationRoot,
+        verifyCurrentSource: false,
+      });
+      assert.deepEqual(
+        failedStateValidation.issues,
+        [],
+        `the state validator must accept the preserved ${failure.name}`,
+      );
+    } finally {
+      writeFileSync(resultPath, retainedResultBytes);
+      writeFileSync(aggregatePath, retainedAggregateBytes);
+    }
+  }
   {
     const clone = cloneSimulation(base);
     const cloneEvidenceRoot = path.join(clone, "evidence");

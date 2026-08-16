@@ -6295,3 +6295,41 @@ separate and unauthorized.
   Full E2E, push, deploy, or integration. Exact-head certification and the final
   CH-0015 closure audit remain pending. Rollback is the focused correction
   commit only; never modify the preserved failed certification.
+
+## Production Certification Harness v1 source generated-output ownership — 2026-08-16
+
+- **Preserved failure:** `CH-0015I-final-20260816T032201Z-d2d062f` /
+  `CH-0015I-20260816T032201Z-d2d062f` remains failed and read-only. Its exact
+  19/19 zero-exit source children, four Floor Plan fixture bundle files,
+  `tsconfig.tsbuildinfo`, `SOURCE_CONTRACT_FAILURE`, and
+  `consumedSubstantiveGate=true` are not reclassified or repaired.
+- **Classification:** `SOURCE_VALIDATION_GENERATED_OUTPUT_OWNERSHIP_DEFECT` and
+  `POST_CHECK_WORKTREE_CLEANLINESS_CONTRACT_MISMATCH`.
+- **Correction:** a versioned exact-path contract assigns the Floor Plan
+  directory to check 6 and TypeScript build info to check 11. Per-check
+  no-follow inventories, producer/source hashes, exact
+  cleanup, post-cleanup absence, aggregate evidence, terminal node_modules-only
+  validation, doctor, simulation, qualification, and A–Z negative coverage all
+  fail closed. The fixture has no source-check consumer: its owner command
+  completes the build/static assertion sequence, then cleans immediately; the
+  later browser owner rebuilds in its separate worktree.
+- **Exact real-runner regression:** the legacy strict validator runs all 19
+  canonical commands, observes every child exit zero, and rejects exactly the
+  four fixture files plus `tsconfig.tsbuildinfo`. A fresh physical state-v3
+  source worktree then installs and durably binds dependencies, runs the same
+  19-command closure through the corrected owner, seals both output records,
+  cleans their exact paths, validates running/completed source aggregates and
+  certification state, retains dependency identity, and ends node_modules-only.
+- **Independent review:** the first read-only complete-diff pass found and the
+  correction now closes five issues: zero-exit lifecycle-failure state
+  acceptance, nested evidence/boundary semantic validation, intermediate
+  evidence-path symlinks, the full state-v3 real-runner path, and the false
+  same-check consumer declaration. Publicly recomputed seals cannot substitute
+  false inventory, observation, or cleanup claims.
+- **Qualification:** the exact clean committed-tree result for this correction
+  is `QUALIFIED_FOR_FINAL_CANDIDATE_CERTIFICATION`; exact-head candidate
+  certification and the final CH-0015 closure audit remain pending.
+- **Scope:** certification/test infrastructure and documentation only. No
+  product/Floor Plan behavior, telemetry, NFT tracing, Playwright assertions,
+  Phase 8 semantics, dependency/lockfile, migration, workflow, real build,
+  runtime/browser matrix, Full E2E, integration, or push is included.

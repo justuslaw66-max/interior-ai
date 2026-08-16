@@ -96,6 +96,17 @@ function qualificationCommand() {
     ],
     [
       process.execPath,
+      ["scripts/test-production-certification-source-generated-outputs.mjs"],
+    ],
+    [
+      process.execPath,
+      [
+        "scripts/test-production-certification-source-generated-outputs.mjs",
+        "--real-producers",
+      ],
+    ],
+    [
+      process.execPath,
       ["scripts/test-production-certification-state-worktrees.mjs"],
     ],
     [

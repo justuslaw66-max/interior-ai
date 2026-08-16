@@ -51,6 +51,10 @@ import {
   CERTIFICATION_WORKTREE_ROLES,
   PRODUCTION_CERTIFICATION_WORKTREE_PRIVATE_SCHEMA,
 } from "./production-certification-worktrees.mjs";
+import {
+  SourceGeneratedOutputLifecycle,
+  validateSourceGeneratedOutputAggregate,
+} from "./production-certification-source-generated-outputs.mjs";
 
 const SOURCE_EVIDENCE_SEAL_DOMAIN =
   "interior-ai.production-certification-source-validation-seal.v1\n";
@@ -94,6 +98,87 @@ function exactKeys(value, keys) {
     !Array.isArray(value) &&
     Object.keys(value).sort().join("\n") === [...keys].sort().join("\n")
   );
+}
+
+function generatedOutputBoundaryIssues(
+  boundary,
+  {
+    expectedActiveOutputIds,
+    expectedDeclaredInventory,
+    expectedPersistentInventory,
+    requireClean,
+  },
+) {
+  const issues = [];
+  const inventoryNames = [
+    "ordinaryStatusInventory",
+    "persistentIgnoredInventory",
+    "declaredGeneratedInventory",
+    "undeclaredIgnoredInventory",
+  ];
+  if (
+    !exactKeys(boundary, [
+      "trackedAndOrdinaryUntrackedClean",
+      ...inventoryNames,
+      "activeGeneratedOutputIds",
+    ]) ||
+    typeof boundary.trackedAndOrdinaryUntrackedClean !== "boolean" ||
+    !Array.isArray(boundary.activeGeneratedOutputIds) ||
+    new Set(boundary.activeGeneratedOutputIds).size !==
+      boundary.activeGeneratedOutputIds.length ||
+    JSON.stringify(boundary.activeGeneratedOutputIds) !==
+      JSON.stringify([...boundary.activeGeneratedOutputIds].sort())
+  ) {
+    return ["generated-output worktree boundary shape is malformed"];
+  }
+  for (const name of inventoryNames) {
+    const inventory = boundary[name];
+    if (
+      !exactKeys(inventory, ["count", "sha256"]) ||
+      !Number.isSafeInteger(inventory.count) ||
+      inventory.count < 0 ||
+      !isSha256(inventory.sha256) ||
+      (inventory.count === 0 && inventory.sha256 !== sha256Bytes(""))
+    ) {
+      issues.push(`generated-output worktree boundary ${name} is malformed`);
+    }
+  }
+  if (
+    requireClean &&
+    (boundary.trackedAndOrdinaryUntrackedClean !== true ||
+      boundary.ordinaryStatusInventory?.count !== 0 ||
+      boundary.undeclaredIgnoredInventory?.count !== 0 ||
+      JSON.stringify(boundary.persistentIgnoredInventory) !==
+        JSON.stringify(expectedPersistentInventory) ||
+      JSON.stringify(boundary.activeGeneratedOutputIds) !==
+        JSON.stringify(expectedActiveOutputIds) ||
+      JSON.stringify(boundary.declaredGeneratedInventory) !==
+        JSON.stringify(expectedDeclaredInventory))
+  ) {
+    issues.push("generated-output worktree boundary contradicts its lifecycle position");
+  }
+  return issues;
+}
+
+function normalizedPathInventory(paths) {
+  const ordered = [...paths].sort();
+  return {
+    count: ordered.length,
+    sha256: sha256Bytes(ordered.map((value) => `${value}\n`).join("")),
+  };
+}
+
+function declaredInventoryForOutputIds(outputEvidenceById, outputIds) {
+  const paths = outputIds.flatMap((outputId) => {
+    const outputEvidence = outputEvidenceById.get(outputId);
+    if (!outputEvidence) {
+      throw new Error(
+        `generated-output boundary is missing sealed output evidence: ${outputId}`,
+      );
+    }
+    return outputEvidence.closedRelativeInventory.map((entry) => entry.path);
+  });
+  return normalizedPathInventory(paths);
 }
 
 function canonicalRead(filePath, description) {
@@ -674,6 +759,7 @@ export function rootEvidenceName(position) {
 
 export function sourceValidationStageEvidence({
   repositoryRoot,
+  canonicalRoot = repositoryRoot,
   evidenceRoot,
   state,
   environment = process.env,
@@ -737,6 +823,17 @@ export function sourceValidationStageEvidence({
       );
     }
   }
+  const generatedOutputLifecycle =
+    state.version === 3
+      ? new SourceGeneratedOutputLifecycle({
+          repositoryRoot,
+          canonicalRoot,
+          evidenceRoot,
+          evidenceRelativeRoot: relativeRoot,
+          state,
+          worktreeIdentity,
+        })
+      : null;
   const results = [];
   let failedCheckId = null;
   for (const [index, check] of contract.checks.entries()) {
@@ -769,11 +866,15 @@ export function sourceValidationStageEvidence({
       path.relative(realpathSync(evidenceRoot), checkRoot),
       { requireAbsent: true },
     );
+    const startedAt = nowForExecution(state, index * 4 + 1);
+    const generatedOutputPreCheck = generatedOutputLifecycle?.beforeCheck(
+      check.id,
+      startedAt,
+    );
     const stdoutPath = path.join(checkRoot, "stdout.log");
     const stderrPath = path.join(checkRoot, "stderr.log");
     const stdout = openSync(stdoutPath, "wx", 0o600);
     const stderr = openSync(stderrPath, "wx", 0o600);
-    const startedAt = nowForExecution(state, index * 4 + 1);
     let child;
     try {
       child = spawnSync(invocation.executable, invocation.args, {
@@ -786,6 +887,12 @@ export function sourceValidationStageEvidence({
       closeSync(stderr);
     }
     const completedAt = nowForExecution(state, index * 4 + 2);
+    const generatedOutputPostCheck = generatedOutputLifecycle?.afterCheck({
+      checkId: check.id,
+      observedAt: completedAt,
+      stdoutPath,
+      commandSucceeded: !child.error && !child.signal && child.status === 0,
+    });
     const sourceAfter = physicalSourceIdentity(repositoryRoot);
     const stdoutDescriptor = evidenceDescriptor(evidenceRoot, stdoutPath);
     const stderrDescriptor = evidenceDescriptor(evidenceRoot, stderrPath);
@@ -831,11 +938,20 @@ export function sourceValidationStageEvidence({
         ...stderrDescriptor,
         bytes: statSync(stderrPath).size,
       },
+      ...(state.version === 3
+        ? {
+            generatedOutputs: {
+              preCheck: generatedOutputPreCheck,
+              postCheck: generatedOutputPostCheck,
+            },
+          }
+        : {}),
       generatedEvidence: [stdoutDescriptor, stderrDescriptor],
       passed:
         !child.error &&
         !child.signal &&
         child.status === 0 &&
+        (generatedOutputPostCheck?.passed ?? true) &&
         sourceAfter.commitSha === sourceBefore.commitSha &&
         sourceAfter.treeSha === sourceBefore.treeSha &&
         sourceAfter.clean === true,
@@ -860,6 +976,11 @@ export function sourceValidationStageEvidence({
   const postCheckDependencyRevalidation =
     state.version === 3 ? dependencyRevalidate("post-check") : null;
   const passed = failedCheckId === null && results.length === contract.checks.length;
+  const generatedOutputSummary = generatedOutputLifecycle
+    ? passed
+      ? generatedOutputLifecycle.finalize()
+      : generatedOutputLifecycle.snapshot()
+    : null;
   const evidence = sealSourceValidationEvidence({
     schema:
       state.version === 3
@@ -929,6 +1050,12 @@ export function sourceValidationStageEvidence({
                 worktreeIdentity?.dependencyIdentitySha256,
             },
           },
+          generatedOutputContract: generatedOutputSummary.contract,
+          declaredGeneratedOutputIds: generatedOutputSummary.declaredOutputIds,
+          generatedOutputEvidence: generatedOutputSummary.evidenceEntries,
+          aggregateGeneratedOutputEvidenceSha256:
+            generatedOutputSummary.aggregateGeneratedOutputEvidenceSha256,
+          terminalWorktree: generatedOutputSummary.terminalWorktree,
         }
       : {}),
     orderedCheckIds: contract.checks.map((check) => check.id),
@@ -1014,7 +1141,16 @@ export function validateSourceValidationEvidence({
       "simulation",
       "workingDirectoryIdentity",
       ...(new Set([2, 3]).has(state.version) ? ["stageWorktree"] : []),
-      ...(state.version === 3 ? ["dependencyLifecycle"] : []),
+      ...(state.version === 3
+        ? [
+            "dependencyLifecycle",
+            "generatedOutputContract",
+            "declaredGeneratedOutputIds",
+            "generatedOutputEvidence",
+            "aggregateGeneratedOutputEvidenceSha256",
+            "terminalWorktree",
+          ]
+        : []),
       "orderedCheckIds",
       "canonicalCommands",
       "orderedEnvironmentProfileIds",
@@ -1222,6 +1358,38 @@ export function validateSourceValidationEvidence({
         "source-validation dependency lifecycle, revalidation, or aggregate equality is stale",
       );
     }
+    const generatedOutputValidation = validateSourceGeneratedOutputAggregate({
+      aggregate: evidence,
+      evidenceRoot,
+      state,
+      repositoryRoot,
+      verifyPhysical: verifyPhysicalSource,
+      requireComplete: requirePassed,
+    });
+    issues.push(
+      ...generatedOutputValidation.issues.map(
+        (issue) => `source-validation generated output: ${issue}`,
+      ),
+    );
+  }
+  const generatedOutputEvidenceById = new Map();
+  if (state.version === 3) {
+    for (const summary of evidence?.generatedOutputEvidence ?? []) {
+      try {
+        const retained = resolvedEvidenceFile(
+          evidenceRoot,
+          summary.evidence,
+          `source-validation generated-output boundary evidence ${String(summary.outputId)}`,
+        );
+        const value = JSON.parse(retained.bytes.toString("utf8"));
+        if (!retained.bytes.equals(canonicalJsonBytes(value))) {
+          throw new Error("generated-output boundary evidence is not canonical JSON");
+        }
+        generatedOutputEvidenceById.set(summary.outputId, value);
+      } catch (error) {
+        issues.push(error instanceof Error ? error.message : String(error));
+      }
+    }
   }
   let priorCheckCompletedAt = evidence?.startedAt;
   for (const [index, result] of observed.entries()) {
@@ -1250,6 +1418,7 @@ export function validateSourceValidationEvidence({
         "process",
         "stdout",
         "stderr",
+        ...(state.version === 3 ? ["generatedOutputs"] : []),
         "generatedEvidence",
         "passed",
         "resultEvidence",
@@ -1278,6 +1447,156 @@ export function validateSourceValidationEvidence({
     ) {
       issues.push(`source-validation command or order mismatch at check ${index + 1}`);
       continue;
+    }
+    if (state.version === 3) {
+      const policy = contract.generatedOutputs.value.checkPolicies[index];
+      const generated = result.generatedOutputs;
+      const outputEntries = contract.generatedOutputs.value.outputs;
+      const retainedBeforeIds = outputEntries
+        .filter((output) => {
+          const ownerIndex = contract.checks.findIndex(
+            (check) => check.id === output.ownerCheckId,
+          );
+          const lastConsumerIndex = contract.checks.findIndex(
+            (check) =>
+              check.id === output.retentionLifetime.lastConsumerCheckId,
+          );
+          return ownerIndex < index && index <= lastConsumerIndex;
+        })
+        .map((output) => output.id)
+        .sort();
+      const producedIds = [
+        ...new Set([
+          ...retainedBeforeIds,
+          ...policy.generatedOutputIds.filter(
+            (outputId) =>
+              (result.process?.exitCode === 0 &&
+                result.process?.signal === null &&
+                result.process?.spawnError === null) ||
+              generatedOutputEvidenceById.has(outputId),
+          ),
+        ]),
+      ].sort();
+      const terminalIds = producedIds
+        .filter(
+          (outputId) =>
+            outputEntries.find((output) => output.id === outputId)
+              ?.cleanupDeadline.checkId !== expected.id,
+        )
+        .sort();
+      const cleanedIds = outputEntries
+        .filter(
+          (output) =>
+            output.cleanupDeadline.checkId === expected.id &&
+            producedIds.includes(output.id),
+        )
+        .map((output) => output.id);
+      if (
+        !exactKeys(generated, ["preCheck", "postCheck"]) ||
+        !exactKeys(generated.preCheck, [
+          "checkId",
+          "policySha256",
+          "expectedTrackedModifications",
+          "declaredOutputIds",
+          "boundary",
+          "passed",
+        ]) ||
+        generated.preCheck.checkId !== expected.id ||
+        generated.preCheck.policySha256 !==
+          contract.generatedOutputs.policySha256[expected.id] ||
+        generated.preCheck.expectedTrackedModifications !== "none" ||
+        JSON.stringify(generated.preCheck.declaredOutputIds) !==
+          JSON.stringify(policy.generatedOutputIds) ||
+        generated.preCheck.passed !== true ||
+        !exactKeys(generated.postCheck, [
+          "checkId",
+          "policySha256",
+          "declaredOutputIds",
+          "generatedOutputEvidence",
+          "producedBoundary",
+          "terminalBoundary",
+          "passed",
+          "issues",
+        ]) ||
+        generated.postCheck.checkId !== expected.id ||
+        generated.postCheck.policySha256 !==
+          contract.generatedOutputs.policySha256[expected.id] ||
+        JSON.stringify(generated.postCheck.declaredOutputIds) !==
+          JSON.stringify(policy.generatedOutputIds) ||
+        !Array.isArray(generated.postCheck.generatedOutputEvidence) ||
+        !Array.isArray(generated.postCheck.issues) ||
+        (generated.postCheck.passed === true
+          ? generated.postCheck.issues.length !== 0
+          : generated.postCheck.issues.length === 0) ||
+        (generated.postCheck.passed !== true && !expectedFailure)
+      ) {
+        issues.push(`source-validation generated-output boundary mismatch: ${expected.id}`);
+      } else {
+        const expectedPersistentInventory =
+          state.worktrees.roles["source-validation"].ignoredPathInventory;
+        let preDeclaredInventory = normalizedPathInventory([]);
+        let producedDeclaredInventory = normalizedPathInventory([]);
+        let terminalDeclaredInventory = normalizedPathInventory([]);
+        try {
+          preDeclaredInventory = declaredInventoryForOutputIds(
+            generatedOutputEvidenceById,
+            retainedBeforeIds,
+          );
+          if (generated.postCheck.passed === true) {
+            producedDeclaredInventory = declaredInventoryForOutputIds(
+              generatedOutputEvidenceById,
+              producedIds,
+            );
+            terminalDeclaredInventory = declaredInventoryForOutputIds(
+              generatedOutputEvidenceById,
+              terminalIds,
+            );
+          }
+        } catch (error) {
+          issues.push(error instanceof Error ? error.message : String(error));
+        }
+        issues.push(
+          ...generatedOutputBoundaryIssues(generated.preCheck.boundary, {
+            expectedActiveOutputIds: retainedBeforeIds,
+            expectedDeclaredInventory: preDeclaredInventory,
+            expectedPersistentInventory,
+            requireClean: true,
+          }).map(
+            (issue) =>
+              `source-validation generated-output pre-check ${expected.id}: ${issue}`,
+          ),
+          ...generatedOutputBoundaryIssues(generated.postCheck.producedBoundary, {
+            expectedActiveOutputIds: producedIds,
+            expectedDeclaredInventory: producedDeclaredInventory,
+            expectedPersistentInventory,
+            requireClean: generated.postCheck.passed === true,
+          }).map(
+            (issue) =>
+              `source-validation generated-output produced ${expected.id}: ${issue}`,
+          ),
+          ...generatedOutputBoundaryIssues(generated.postCheck.terminalBoundary, {
+            expectedActiveOutputIds: terminalIds,
+            expectedDeclaredInventory: terminalDeclaredInventory,
+            expectedPersistentInventory,
+            requireClean: generated.postCheck.passed === true,
+          }).map(
+            (issue) =>
+              `source-validation generated-output terminal ${expected.id}: ${issue}`,
+          ),
+        );
+        if (
+          generated.postCheck.passed === true &&
+          JSON.stringify(
+            generated.postCheck.generatedOutputEvidence.map(
+              (entry) => entry?.outputId,
+            ),
+          ) !== JSON.stringify(cleanedIds)
+        ) {
+          issues.push(
+            `source-validation generated-output cleanup evidence mismatch: ${expected.id}`,
+          );
+        }
+      }
     }
     const environmentValidation = validateProjectedEnvironmentMetadata({
       repositoryRoot,
@@ -1357,11 +1676,17 @@ export function validateSourceValidationEvidence({
         result.process.spawnError);
     const sourceDriftFailure =
       expectedFailure && sourceAfterInvalid;
+    const generatedOutputFailure =
+      expectedFailure &&
+      state.version === 3 &&
+      result.generatedOutputs?.postCheck?.passed === false &&
+      Array.isArray(result.generatedOutputs.postCheck.issues) &&
+      result.generatedOutputs.postCheck.issues.length > 0;
     const failedStageRecord = state.stages?.["source-validation"];
     const failedAsExpected =
       expectedFailure &&
       result.passed === false &&
-      (realFailedProcess || sourceDriftFailure) &&
+      (realFailedProcess || sourceDriftFailure || generatedOutputFailure) &&
       failedStageRecord?.status === "failed" &&
       failedStageRecord.exitCode ===
         (result.process.exitCode === 0 ? 1 : (result.process.exitCode ?? 1)) &&
@@ -1453,7 +1778,57 @@ export function validateSourceValidationEvidence({
     }
     priorCheckCompletedAt = result.completedAt;
   }
+  if (state.version === 3) {
+    for (const output of contract.generatedOutputs.value.outputs) {
+      const outputEvidence = generatedOutputEvidenceById.get(output.id);
+      if (!outputEvidence) continue;
+      const ownerResult = observed.find(
+        (result) => result.id === output.ownerCheckId,
+      );
+      const cleanupResult = observed.find(
+        (result) => result.id === output.cleanupDeadline.checkId,
+      );
+      const consumerResults = output.permittedConsumerCheckIds.map((checkId) =>
+        observed.find((result) => result.id === checkId),
+      );
+      if (
+        !ownerResult ||
+        !cleanupResult ||
+        consumerResults.some((result) => !result) ||
+        outputEvidence.preCheckAbsenceProof?.observedAt !==
+          ownerResult.startedAt ||
+        outputEvidence.creationObservation?.observedAt !==
+          ownerResult.completedAt ||
+        outputEvidence.cleanupEvent?.completedAt !==
+          cleanupResult.completedAt ||
+        outputEvidence.postCleanupAbsenceProof?.observedAt !==
+          cleanupResult.completedAt ||
+        !Array.isArray(outputEvidence.consumerObservations) ||
+        JSON.stringify(
+          outputEvidence.consumerObservations.map((entry) => entry.observedAt),
+        ) !==
+          JSON.stringify(consumerResults.map((result) => result.startedAt))
+      ) {
+        issues.push(
+          `source-validation generated-output check-boundary timestamps are contradictory: ${output.id}`,
+        );
+      }
+    }
+  }
   const expectedCompletionResult = requirePassed ? "passed" : "failed";
+  if (state.version === 3) {
+    const checkGeneratedOutputEvidence = observed.flatMap(
+      (result) => result.generatedOutputs?.postCheck?.generatedOutputEvidence ?? [],
+    );
+    if (
+      JSON.stringify(checkGeneratedOutputEvidence) !==
+      JSON.stringify(evidence.generatedOutputEvidence)
+    ) {
+      issues.push(
+        "source-validation generated-output check evidence contradicts the aggregate",
+      );
+    }
+  }
   if (
     !exactKeys(evidence?.completionMarker, [
       "complete",
@@ -3126,6 +3501,68 @@ function runSourceHygiene(repositoryRoot) {
   return { clean: true, activeGitOperations: 0 };
 }
 
+function emitQualificationGeneratedOutputs(checkId) {
+  const source = sourceValidationCheckSet(process.cwd());
+  const outputContract = source.generatedOutputs;
+  const policy = outputContract.value.checkPolicies.find(
+    (entry) => entry.checkId === checkId,
+  );
+  for (const outputId of policy?.generatedOutputIds ?? []) {
+    const output = outputContract.value.outputs.find((entry) => entry.id === outputId);
+    if (output.id === "typescript-build-info") {
+      writeFileSync(
+        path.join(process.cwd(), output.relativePath),
+        `${JSON.stringify({ version: "qualification-fixture", checkId })}\n`,
+        { flag: "wx", mode: 0o600 },
+      );
+      continue;
+    }
+    const outputRoot = path.join(process.cwd(), ...output.relativePath.split("/"));
+    mkdirSync(outputRoot, { recursive: true, mode: 0o700 });
+    for (const name of ["612.chunk.js", "901.chunk.js", "bundle.js", "empty-entry.js"]) {
+      writeFileSync(
+        path.join(outputRoot, name),
+        `qualification Floor Plan fixture: ${name}\n`,
+        { flag: "wx", mode: 0o600 },
+      );
+    }
+    const files = readdirSync(outputRoot)
+      .sort()
+      .map((name) => {
+        const bytes = readFileSync(path.join(outputRoot, name));
+        return { path: name, size: bytes.byteLength, sha256: sha256Bytes(bytes) };
+      });
+    const closedInventory = files.map((file) => ({
+      path: `${output.relativePath}/${file.path}`,
+      type: "file",
+      size: file.size,
+      sha256: file.sha256,
+    }));
+    const manifest = {
+      schema: output.inventoryPolicy.schema,
+      outputPath: output.relativePath,
+      files,
+      producerSources: output.inventoryPolicy.producerSourcePaths.map(
+        (relativePath) => ({
+          path: relativePath,
+          sha256: sha256Bytes(readFileSync(path.join(process.cwd(), relativePath))),
+        }),
+      ),
+      inventorySha256: sha256Bytes(
+        Buffer.concat([
+          Buffer.from(
+            "interior-ai.production-certification-source-generated-output-inventory-seal.v1\n",
+          ),
+          canonicalJsonBytes(closedInventory),
+        ]),
+      ),
+    };
+    process.stdout.write(
+      `${output.inventoryPolicy.stdoutPrefix}${JSON.stringify(manifest)}\n`,
+    );
+  }
+}
+
 async function cli() {
   const command = process.argv[2];
   if (command === "fixture-check") {
@@ -3145,6 +3582,7 @@ async function cli() {
         { flag: "wx", mode: 0o600 },
       );
     }
+    emitQualificationGeneratedOutputs(id);
     if (process.env.CERTIFICATION_SOURCE_VALIDATION_FAIL_ID === id) {
       process.exitCode = 17;
     }
