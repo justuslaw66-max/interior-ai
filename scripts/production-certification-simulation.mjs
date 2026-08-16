@@ -78,6 +78,13 @@ import {
 } from "./runtime-smoke-phase-budget.mjs";
 import { validateRuntimeEvidence } from "./production-certification-evidence.mjs";
 import {
+  NEXT_BUILD_GENERATED_TYPE_DECLARATION_BYTES,
+  PRODUCTION_CERTIFICATION_BUILD_GENERATED_OUTPUT_SCHEMA,
+  certificationBuildGeneratedOutputIssues,
+  finalizeCertificationBuildGeneratedOutput,
+  preflightCertificationBuildGeneratedOutput,
+} from "./production-certification-build-generated-output.mjs";
+import {
   preflightRuntimeSmokeEvidenceOutputs,
   runBrowserOwnersStage,
   runBuildStage,
@@ -194,7 +201,7 @@ function initializeFixture(repositoryRoot, fixtureRoot) {
   write(
     fixtureRoot,
     ".gitignore",
-    ".env\n.env.local\n.next/\n.local/\n.vercel/\nnode_modules/\n*.tsbuildinfo\ntest-results/\nplaywright-report/\nfinal-component\n",
+    ".env\n.env.local\n.next/\n.local/\n.vercel/\nnode_modules/\nnext-env.d.ts\n*.tsbuildinfo\ntest-results/\nplaywright-report/\nfinal-component\n",
   );
   write(
     fixtureRoot,
@@ -781,6 +788,8 @@ export async function runProductionCertificationSimulation({
   write(fixtureRoot, ".env", "canonical-user-env\n");
   write(fixtureRoot, ".env.local", "canonical-user-local-env\n");
   write(fixtureRoot, ".local/user-evidence.txt", "canonical-user-evidence\n");
+  write(fixtureRoot, ".next/user-artifact.txt", "canonical-user-artifact\n");
+  write(fixtureRoot, "next-env.d.ts", "canonical-user-next-env\n");
   write(fixtureRoot, ".vercel/project.json", "{\"user\":true}\n");
   write(fixtureRoot, "test-results/user-output.txt", "canonical-user-output\n");
   write(externalFinalComponent, "component.txt", "external-user-component\n");
@@ -790,6 +799,8 @@ export async function runProductionCertificationSimulation({
       ".env",
       ".env.local",
       ".local/user-evidence.txt",
+      ".next/user-artifact.txt",
+      "next-env.d.ts",
       ".vercel/project.json",
       "test-results/user-output.txt",
     ].map((relativePath) => [
@@ -2122,7 +2133,126 @@ export async function runProductionCertificationSimulation({
       })}`,
     );
   }
-  for (const relativePath of ["node_modules", ".local", ".next"]) {
+  const dependencyIdentityBeforeSuccessfulBuild =
+    buildAlreadyBoundRetryState.worktrees.roles["final-artifact"]
+      .dependencyIdentitySha256;
+  const successfulBuildResult = await runBuildStage({
+    repositoryRoot: canonicalRoot,
+    environment: {
+      ...doctorEnvironment,
+      CERTIFICATION_EVIDENCE_ROOT: buildAlreadyBoundRetryRoot,
+      PRODUCTION_CERTIFICATION_STATE: buildAlreadyBoundRetryStatePath,
+      CERTIFICATION_STAGE_STARTED_AT: new Date(
+        buildRetryClock + 8_000,
+      ).toISOString(),
+      CERTIFICATION_STAGE_COMPLETED_AT: new Date(
+        buildRetryClock + 10_000,
+      ).toISOString(),
+    },
+    testHooks: { suppressBuildChildOutput: true },
+  });
+  const successfulBuildState = readCertificationState(
+    buildAlreadyBoundRetryStatePath,
+  );
+  const successfulBuildDescriptor = successfulBuildState.evidenceFiles.build;
+  const successfulBuildEvidence = JSON.parse(
+    readFileSync(
+      path.join(evidenceRoot, successfulBuildDescriptor.path),
+      "utf8",
+    ),
+  );
+  const successfulBuildLifecycleIssues =
+    certificationBuildGeneratedOutputIssues(
+      successfulBuildEvidence.generatedOutputLifecycle,
+      {
+        certificationId: successfulBuildState.certificationId,
+        candidateId: successfulBuildState.candidate.id,
+        commitSha: successfulBuildState.candidate.commitSha,
+        treeSha: successfulBuildState.candidate.treeSha,
+        nextBuildId: successfulBuildState.bindings.nextBuildId,
+        artifactSha256: successfulBuildState.bindings.artifactSha256,
+        productionManifestSha256:
+          successfulBuildState.bindings.productionManifestSha256,
+        semanticJournalSha256:
+          successfulBuildState.bindings.semanticJournalSha256,
+        semanticJournalNonce:
+          successfulBuildState.bindings.semanticJournalNonce,
+      },
+    );
+  const successfulBuildWorktreeIssues = certificationWorktreeIssues({
+    state: successfulBuildState,
+    evidenceRoot,
+    canonicalRoot,
+  });
+  const immediateBuildSnapshotDescriptor =
+    successfulBuildState.evidenceFiles[
+      snapshotEvidenceName("immediateBuild")
+    ];
+  const immediateBuildRootDescriptor =
+    successfulBuildState.evidenceFiles[rootEvidenceName("immediateBuild")];
+  const canonicalIgnoredBuildInputsUnchanged = Object.entries(
+    canonicalIgnoredSnapshot,
+  ).every(
+    ([relativePath, digest]) =>
+      sha256Bytes(readFileSync(path.join(canonicalRoot, relativePath))) ===
+      digest,
+  );
+  const realBuildGeneratedOutputLifecyclePassed =
+    successfulBuildState.stages.build.status === "passed" &&
+    successfulBuildState.stages.build.attempts.length === 3 &&
+    successfulBuildLifecycleIssues.length === 0 &&
+    successfulBuildWorktreeIssues.length === 0 &&
+    successfulBuildState.worktrees.roles["final-artifact"]
+      .dependencyIdentitySha256 === dependencyIdentityBeforeSuccessfulBuild &&
+    successfulBuildResult.artifactSha256 ===
+      successfulBuildState.bindings.artifactSha256 &&
+    !existsSync(path.join(artifactWorktreeRoot, "next-env.d.ts")) &&
+    existsSync(path.join(artifactWorktreeRoot, ".next/BUILD_ID")) &&
+    Boolean(immediateBuildSnapshotDescriptor?.sha256) &&
+    Boolean(immediateBuildRootDescriptor?.sha256) &&
+    canonicalIgnoredBuildInputsUnchanged;
+  if (!realBuildGeneratedOutputLifecyclePassed) {
+    throw new Error(
+      `real build generated-output lifecycle did not pass its post-action boundary: ${JSON.stringify({
+        stage: successfulBuildState.stages.build,
+        lifecycleIssues: successfulBuildLifecycleIssues,
+        worktreeIssues: successfulBuildWorktreeIssues,
+        dependencyIdentityBeforeSuccessfulBuild,
+        dependencyIdentityAfterSuccessfulBuild:
+          successfulBuildState.worktrees.roles["final-artifact"]
+            .dependencyIdentitySha256,
+        nextEnvironmentPresent: existsSync(
+          path.join(artifactWorktreeRoot, "next-env.d.ts"),
+        ),
+        immediateBuildSnapshotDescriptor,
+        immediateBuildRootDescriptor,
+        canonicalIgnoredBuildInputsUnchanged,
+      })}`,
+    );
+  }
+  write(artifactWorktreeRoot, ".env", "arbitrary-ignored-build-input\n");
+  const arbitraryIgnoredBuildInputRejected = certificationWorktreeIssues({
+    state: successfulBuildState,
+    evidenceRoot,
+    canonicalRoot,
+  }).some((issue) => /ignored influential paths: \.env/.test(issue));
+  rmSync(path.join(artifactWorktreeRoot, ".env"));
+  if (!arbitraryIgnoredBuildInputRejected) {
+    throw new Error("real build worktree accepted an arbitrary ignored input");
+  }
+  for (const descriptorToRemove of [
+    successfulBuildDescriptor,
+    immediateBuildSnapshotDescriptor,
+    immediateBuildRootDescriptor,
+  ]) {
+    rmSync(path.join(evidenceRoot, descriptorToRemove.path));
+  }
+  for (const relativePath of [
+    "node_modules",
+    ".local",
+    ".next",
+    "next-env.d.ts",
+  ]) {
     rmSync(path.join(artifactWorktreeRoot, relativePath), {
       recursive: true,
       force: true,
@@ -2209,7 +2339,12 @@ export async function runProductionCertificationSimulation({
     ),
     "module.exports = 'simulation-fixture';\n",
   );
-  for (const relativePath of ["node_modules", ".next", ".local"]) {
+  for (const relativePath of [
+    "node_modules",
+    ".next",
+    ".local",
+    "next-env.d.ts",
+  ]) {
     rmSync(path.join(artifactWorktreeRoot, relativePath), {
       recursive: true,
       force: true,
@@ -2236,7 +2371,16 @@ export async function runProductionCertificationSimulation({
     role: "final-artifact",
     stage: "build",
   });
+  const simulatedBuildGeneratedOutputPreflight =
+    preflightCertificationBuildGeneratedOutput({
+      repositoryRoot: fixtureRoot,
+    });
   writeMiniatureArtifact(fixtureRoot);
+  writeFileSync(
+    path.join(fixtureRoot, "next-env.d.ts"),
+    NEXT_BUILD_GENERATED_TYPE_DECLARATION_BYTES,
+    { flag: "wx" },
+  );
   const production = JSON.parse(
     run(
       process.execPath,
@@ -2258,14 +2402,6 @@ export async function runProductionCertificationSimulation({
       }).environment,
     ),
   );
-  const finalArtifactPostBuildRevalidation =
-    revalidateSimulationRoleDependencies({
-      repositoryRoot: fixtureRoot,
-      evidenceRoot,
-      state,
-      role: "final-artifact",
-      boundary: "post-build",
-    });
   const postBuildDependencyDriftRejected =
     postBuildStageDependencyDriftRejected;
   const certificationProcessHandoffRetained =
@@ -2275,6 +2411,37 @@ export async function runProductionCertificationSimulation({
   if (!certificationProcessHandoffRetained) {
     throw new Error("simulation certification build omitted its required process handoff");
   }
+  const buildBindings = {
+    semanticJournalNonce: FIXED_NONCE,
+    nextBuildId: production.manifest.build.nextBuildId,
+    artifactSha256: production.manifest.artifact.sha256,
+    productionManifestSha256: production.manifestSha256,
+    semanticJournalSha256: production.journalSha256,
+  };
+  const simulatedBuildGeneratedOutputLifecycle =
+    finalizeCertificationBuildGeneratedOutput({
+      repositoryRoot: fixtureRoot,
+      preflight: simulatedBuildGeneratedOutputPreflight,
+      identity: {
+        certificationId: state.certificationId,
+        candidateId: state.candidate.id,
+        commitSha: state.candidate.commitSha,
+        treeSha: state.candidate.treeSha,
+        nextBuildId: buildBindings.nextBuildId,
+        artifactSha256: buildBindings.artifactSha256,
+        productionManifestSha256: buildBindings.productionManifestSha256,
+        semanticJournalSha256: buildBindings.semanticJournalSha256,
+        semanticJournalNonce: buildBindings.semanticJournalNonce,
+      },
+    });
+  const finalArtifactPostBuildRevalidation =
+    revalidateSimulationRoleDependencies({
+      repositoryRoot: fixtureRoot,
+      evidenceRoot,
+      state,
+      role: "final-artifact",
+      boundary: "post-build",
+    });
   const buildDescriptor = writeEvidence(evidenceRoot, "build/result.json", {
     schema: "interior-ai.production-certification-build-result.v1",
     identity: {
@@ -2291,15 +2458,9 @@ export async function runProductionCertificationSimulation({
         production.manifest.execution.owner.processHandoffs[0],
       postBuildRevalidation: finalArtifactPostBuildRevalidation,
     },
+    generatedOutputLifecycle: simulatedBuildGeneratedOutputLifecycle,
     complete: true,
   });
-  const buildBindings = {
-    semanticJournalNonce: FIXED_NONCE,
-    nextBuildId: production.manifest.build.nextBuildId,
-    artifactSha256: production.manifest.artifact.sha256,
-    productionManifestSha256: production.manifestSha256,
-    semanticJournalSha256: production.journalSha256,
-  };
   const immediateSnapshot = captureArtifactSnapshot({
     repositoryRoot: fixtureRoot,
     evidenceRoot,
@@ -3744,6 +3905,13 @@ export async function runProductionCertificationSimulation({
       terminalNodeModulesOnly: true,
       negativeCaseCount: 26,
     },
+    buildGeneratedOutputLifecycle: {
+      schema: PRODUCTION_CERTIFICATION_BUILD_GENERATED_OUTPUT_SCHEMA,
+      realRunnerPassed: realBuildGeneratedOutputLifecyclePassed,
+      arbitraryIgnoredInputRejected: arbitraryIgnoredBuildInputRejected,
+      canonicalIgnoredArtifactsUnchanged:
+        canonicalIgnoredBuildInputsUnchanged,
+    },
     lifecycleSnapshotCount: 6,
     worktreeRoles: [...CERTIFICATION_WORKTREE_ROLES],
     canonicalIgnoredArtifactsUnchanged: true,
@@ -3857,6 +4025,11 @@ async function simulationCli() {
       throw new Error("miniature fixture build is restricted to simulation");
     }
     writeMiniatureArtifact(process.cwd());
+    writeFileSync(
+      path.join(process.cwd(), "next-env.d.ts"),
+      NEXT_BUILD_GENERATED_TYPE_DECLARATION_BYTES,
+      { flag: "wx" },
+    );
     return;
   }
   if (command === "emit-production-evidence") {

@@ -59,13 +59,28 @@
     "atomicRequirements": ["caller-supplied current state SHA-256", "lock-held state reread and rehash", "sealed binding evidence", "exact certification/candidate/role/worktree identity", "not-installed pre-state", "final in-lock physical dependency remeasurement", "atomic sealed state replacement"],
     "roleOrder": {
       "source-validation": ["install", "measure", "seal evidence", "bind state", "reread state", "retain sealed binding-state receipt", "pre-check revalidate", "19 checks", "post-check revalidate", "aggregate", "aggregate validation"],
-      "final-artifact": ["prepare wrapper", "install", "measure", "seal evidence", "bind state", "validated process handoff", "generated-source validation", "build", "post-build revalidate"],
+      "final-artifact": ["prepare wrapper", "install", "measure", "seal evidence", "bind state", "next-env.d.ts absence proof", "validated process handoff", "generated-source validation", "build", "next-env.d.ts no-follow inventory and exact cleanup", "post-build revalidate", "immediate artifact snapshot", "managed-stage post-action validation"],
       "development-browser": ["install", "measure", "seal evidence", "bind state", "pre-owner revalidate", "Playwright discovery", "Cart and Retailer", "post-owner revalidate"]
     },
     "alreadyBoundPolicy": "same identity may be revalidated read-only; a different identity cannot overwrite state",
     "driftPolicy": "hash installed implementation bytes; fail the current stage and invalidate dependent stages without reinstall or refresh",
     "installationEnvironmentPolicy": "minimal allowlist with no certification controls, credentials, NODE_PATH, NODE_OPTIONS, global or user npm configuration, or raw environment evidence",
     "resolutionPolicy": "physical role-local node_modules only; reject root symlinks, external dependency symlinks, cross-worktree resolution, NODE_PATH, and global resolution"
+  },
+  "buildGeneratedOutputLifecycle": {
+    "schema": "interior-ai.production-certification-build-generated-output-lifecycle.v1",
+    "stage": "build",
+    "worktreeRole": "final-artifact",
+    "producerCommand": "npm run build",
+    "exactOutputPath": "next-env.d.ts",
+    "preProducerPolicy": "the literal ignored and untracked path must have no filesystem entry before Next build dispatch",
+    "postProducerPolicy": "the literal path must be a no-follow physical regular file with the exact current production type-declaration bytes and SHA-256",
+    "retentionBoundary": "retain through production artifact and journal validation within the build command",
+    "cleanupPolicy": "unlink only the literal hash-validated file and prove no filesystem entry remains before dependency revalidation, the immediate artifact snapshot, and managed-stage post-action worktree validation",
+    "portableEvidence": ["certification/candidate/commit/tree identity", "Build ID", "artifact/manifest/journal hashes", "journal nonce", "exact path/type/size/hash/content-contract", "pre-build absence", "exact unlink", "post-cleanup absence", "self-seal"],
+    "broadIgnoredPathAllowance": false,
+    "canonicalCheckoutMutationAllowed": false,
+    "failurePolicy": "preexisting output is non-consuming precondition failure; missing, substituted, symlinked, non-file, or byte-mismatched producer output is consumed artifact-continuity failure"
   },
   "runtimeSmokeEvidenceRoot": {
     "classification": "PLAYWRIGHT_EXTERNAL_ROOT_OWNS_ALL_RUNTIME_OUTPUTS",
@@ -259,17 +274,17 @@
     {
       "id": "strict-build",
       "canonicalCommandOrCli": "npm run evidence:production:build -> npm run build",
-      "sourceOwner": ["scripts/production-artifact-evidence.mjs", "package.json"],
+      "sourceOwner": ["scripts/production-artifact-evidence.mjs", "scripts/production-certification-build-generated-output.mjs", "scripts/production-certification-real.mjs", "package.json"],
       "requiredEnvironmentNames": ["APP_ENV", "NEXT_PUBLIC_APP_ENV", "CATALOG_STRICT_VALIDATION", "NODE_ENV", "required application configuration names", "safe feature flags"],
-      "requiredInputs": ["successful dependency install", "successful generated-source check", "clean source", "absent .next"],
-      "generatedOutputs": [".next", "journal build event", "artifact inventory snapshot", "manifest v3"],
+      "requiredInputs": ["successful dependency install", "successful generated-source check", "clean source", "absent .next", "absent literal next-env.d.ts"],
+      "generatedOutputs": [".next", "transient exact-owned next-env.d.ts", "sealed next-env.d.ts lifecycle evidence", "journal build event", "artifact inventory snapshot", "manifest v3"],
       "repositoryBound": true,
       "preRuntime": true,
       "substantiveOneShot": true,
       "safelyResumable": false,
-      "stopCondition": "Build child exits/signals nonzero, generated ordering contradicts, inventory/NFT validation fails, or manifest creation fails.",
-      "evidenceSchemaVersion": ["journal v2", "manifest v3"],
-      "candidateArtifactIdentityFields": ["source.commitSha", "source.treeSha", "build.nextBuildId", "artifact.sha256"],
+      "stopCondition": "Build child exits/signals nonzero, generated ordering contradicts, exact next-env.d.ts lifecycle validation or cleanup fails, inventory/NFT validation fails, or manifest creation fails.",
+      "evidenceSchemaVersion": ["journal v2", "manifest v3", "interior-ai.production-certification-build-generated-output-lifecycle.v1"],
+      "candidateArtifactIdentityFields": ["source.commitSha", "source.treeSha", "build.nextBuildId", "artifact.sha256", "productionManifestSha256", "semanticJournalSha256", "semanticJournalNonce"],
       "baselineGap": "Build result is not represented in a certification state machine."
     },
     {

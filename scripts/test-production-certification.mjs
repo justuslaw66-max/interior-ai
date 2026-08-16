@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import "./test-production-certification-build-generated-output.mjs";
 import { spawnSync } from "node:child_process";
 import {
   cpSync,
@@ -1192,12 +1193,12 @@ function stateFixture() {
   const regressions = JSON.parse(
     readFileSync("scripts/production-certification-regressions.json", "utf8"),
   );
-  assert.equal(regressions.cases.length, 31);
+  assert.equal(regressions.cases.length, 32);
   assert.deepEqual(
     regressions.cases.map((entry) => entry.id),
-    Array.from({ length: 31 }, (_, index) => index + 1),
+    Array.from({ length: 32 }, (_, index) => index + 1),
   );
-  assert.equal(new Set(regressions.cases.map((entry) => entry.defect)).size, 31);
+  assert.equal(new Set(regressions.cases.map((entry) => entry.defect)).size, 32);
   assert.equal(regressions.dependencyLifecycleCases.length, 26);
   assert.equal(new Set(regressions.dependencyLifecycleCases).size, 26);
   assert.equal(regressions.runtimeEvidenceRootCases.length, 21);
@@ -1312,6 +1313,22 @@ function stateFixture() {
     "state-v3/manifest-v3/journal-v2/physical-final-standalone",
   );
   assert.equal(simulation.integrationReady, true);
+  assert.equal(simulation.generatedOutputLifecycle.declaredOutputCount, 2);
+  assert.equal(simulation.generatedOutputLifecycle.terminalNodeModulesOnly, true);
+  coveredRegressionIds.add(31);
+  assert.equal(
+    simulation.buildGeneratedOutputLifecycle.realRunnerPassed,
+    true,
+  );
+  assert.equal(
+    simulation.buildGeneratedOutputLifecycle.arbitraryIgnoredInputRejected,
+    true,
+  );
+  assert.equal(
+    simulation.buildGeneratedOutputLifecycle
+      .canonicalIgnoredArtifactsUnchanged,
+    true,
+  );
   assert.equal(simulation.tamperCases.ambientFeatureFlagLeakageRejected, true);
   coveredRegressionIds.add(27);
   assert.equal(simulation.tamperCases.runtimeRootContractMismatchRejected, true);
@@ -1422,6 +1439,28 @@ function stateFixture() {
   );
   const completeFinalChild = finalSimulationChild(base);
   assert.equal(completeFinalChild.status, 0);
+
+  {
+    const clone = cloneSimulation(base);
+    mutateBoundEvidence(
+      clone,
+      "build",
+      (evidence) => {
+        evidence.generatedOutputLifecycle.cleanup.postCleanupAbsenceProof =
+          false;
+        const { seal, ...payload } = evidence.generatedOutputLifecycle;
+        seal.sha256 = sha256Bytes(canonicalJsonBytes(payload));
+      },
+    );
+    const child = finalSimulationChild(clone);
+    assert.notEqual(child.status, 0);
+    assert.match(
+      `${child.stdout}\n${child.stderr}`,
+      /build generated-output lifecycle:.*cleanup evidence is invalid/,
+    );
+    rmSync(path.dirname(clone), { recursive: true, force: true });
+    coveredRegressionIds.add(32);
+  }
   const completeFinal = JSON.parse(completeFinalChild.stdout.trim());
   assert.match(completeFinal.identity.archiveInventorySha256, /^[0-9a-f]{64}$/);
   assert.match(completeFinal.identity.phase8CompletionSha256, /^[0-9a-f]{64}$/);
@@ -2919,7 +2958,7 @@ function stateFixture() {
 
 assert.deepEqual(
   [...coveredRegressionIds].sort((left, right) => left - right),
-  Array.from({ length: 30 }, (_, index) => index + 1),
+  Array.from({ length: 32 }, (_, index) => index + 1),
   "every documented regression must be exercised by an executable assertion",
 );
 

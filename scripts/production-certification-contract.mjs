@@ -193,6 +193,7 @@ export const CERTIFICATION_HARNESS_SOURCE_PATHS = Object.freeze([
   "scripts/production-certification-historical-evidence.mjs",
   "scripts/production-certification-doctor.mjs",
   "scripts/production-certification-dependencies.mjs",
+  "scripts/production-certification-build-generated-output.mjs",
   "scripts/production-certification-real.mjs",
   "scripts/production-certification-source-continuity.mjs",
   "scripts/production-certification-source-generated-outputs.mjs",
@@ -204,6 +205,7 @@ export const CERTIFICATION_HARNESS_SOURCE_PATHS = Object.freeze([
   "scripts/production-certification-worktrees.mjs",
   "scripts/test-production-certification-state-worktrees.mjs",
   "scripts/test-production-certification-dependency-lifecycle.mjs",
+  "scripts/test-production-certification-build-generated-output.mjs",
   "scripts/test-production-certification-stage-environment.mjs",
   "scripts/test-production-certification-source-generated-outputs.mjs",
   "scripts/test-floor-plan-vision-configuration.ts",
@@ -265,6 +267,8 @@ export function productionCertificationContract(repositoryRoot) {
     contract?.schema !== "interior-ai.production-certification-contract-matrix.v1" ||
     contract?.sourceValidation?.schema !==
       "interior-ai.production-certification-source-check-set.v1" ||
+    contract?.buildGeneratedOutputLifecycle?.schema !==
+      "interior-ai.production-certification-build-generated-output-lifecycle.v1" ||
     contract?.continuity?.schema !==
       "interior-ai.production-certification-continuity-contract.v1"
   ) {

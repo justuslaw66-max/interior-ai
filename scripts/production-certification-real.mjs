@@ -29,6 +29,10 @@ import {
 import { runCertificationDoctor } from "./production-certification-doctor.mjs";
 import { verifyFinalCertificationEvidence } from "./production-certification-evidence.mjs";
 import {
+  finalizeCertificationBuildGeneratedOutput,
+  preflightCertificationBuildGeneratedOutput,
+} from "./production-certification-build-generated-output.mjs";
+import {
   canonicalizeProductionEvidenceReport,
   recordProductionEvidenceTest,
   validateProductionEvidence,
@@ -1644,6 +1648,20 @@ export async function runBuildStage({
         false,
       );
     }
+    let generatedOutputPreflight;
+    try {
+      generatedOutputPreflight = preflightCertificationBuildGeneratedOutput({
+        repositoryRoot: context.repositoryRoot,
+      });
+    } catch (error) {
+      throw new StageFailure(
+        `strict build generated-output preflight failed: ${
+          error instanceof Error ? error.message : String(error)
+        }`,
+        "PRECONDITION_ORCHESTRATION_FAILURE",
+        false,
+      );
+    }
     const child = childResult(
       process.execPath,
       [
@@ -1713,6 +1731,33 @@ export async function runBuildStage({
       productionManifestSha256: sha256Bytes(readFileSync(manifestPath)),
       semanticJournalSha256: sha256Bytes(readFileSync(journalPath)),
     };
+    let generatedOutputLifecycle;
+    try {
+      generatedOutputLifecycle = finalizeCertificationBuildGeneratedOutput({
+        repositoryRoot: context.repositoryRoot,
+        preflight: generatedOutputPreflight,
+        identity: {
+          certificationId: boundState.certificationId,
+          candidateId: boundState.candidate.id,
+          commitSha: boundState.candidate.commitSha,
+          treeSha: boundState.candidate.treeSha,
+          nextBuildId: bindingUpdates.nextBuildId,
+          artifactSha256: bindingUpdates.artifactSha256,
+          productionManifestSha256:
+            bindingUpdates.productionManifestSha256,
+          semanticJournalSha256: bindingUpdates.semanticJournalSha256,
+          semanticJournalNonce: bindingUpdates.semanticJournalNonce,
+        },
+      });
+    } catch (error) {
+      throw new StageFailure(
+        `strict build generated-output lifecycle failed: ${
+          error instanceof Error ? error.message : String(error)
+        }`,
+        "ARTIFACT_CONTINUITY_FAILURE",
+        true,
+      );
+    }
     runQualificationDependencyTestHook(
       { ...context, state: boundState },
       testHooks?.beforePostBuildDependencyRevalidation,
@@ -1746,6 +1791,7 @@ export async function runBuildStage({
         ),
         postBuildRevalidation: postBuildDependencyRevalidation,
       },
+      generatedOutputLifecycle,
       complete: true,
     });
     const snapshot = captureArtifactSnapshot({

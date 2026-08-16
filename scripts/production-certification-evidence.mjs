@@ -18,6 +18,7 @@ import {
 } from "./production-certification-contract.mjs";
 import { inventoryProductionArchiveTree } from "./production-archive.mjs";
 import { deriveProductionVerifierClosure } from "./production-verifier-closure.mjs";
+import { certificationBuildGeneratedOutputIssues } from "./production-certification-build-generated-output.mjs";
 import { validateRequiredTestReport } from "./required-test-truthfulness.mjs";
 import {
   readRuntimeSmokeTelemetryBootstrapEvidence,
@@ -641,6 +642,25 @@ export function finalCertificationManifestIdentityIssues(
       "certification build result",
     );
     const handoff = journalRead.value?.owner?.processHandoffs?.[0];
+    const generatedOutputIssues = certificationBuildGeneratedOutputIssues(
+      buildResult.value?.generatedOutputLifecycle,
+      {
+        certificationId: state.certificationId,
+        candidateId: state.candidate.id,
+        commitSha: state.candidate.commitSha,
+        treeSha: state.candidate.treeSha,
+        nextBuildId: state.bindings.nextBuildId,
+        artifactSha256: state.bindings.artifactSha256,
+        productionManifestSha256: state.bindings.productionManifestSha256,
+        semanticJournalSha256: state.bindings.semanticJournalSha256,
+        semanticJournalNonce: state.bindings.semanticJournalNonce,
+      },
+    );
+    issues.push(
+      ...generatedOutputIssues.map(
+        (issue) => `certification build generated-output lifecycle: ${issue}`,
+      ),
+    );
     if (
       buildResult.sha256 !== buildDescriptor?.sha256 ||
       buildResult.value?.schema !==
