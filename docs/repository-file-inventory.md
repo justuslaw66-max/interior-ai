@@ -1,0 +1,3912 @@
+# Repository File Inventory
+
+> Generated repository reference for source commit `765476686d40469ded173151f86cb5d613f02844` (tree `607f80562e6edbab5b3af6a7fbe992a443ba60cc`). This is a descriptive navigation aid, not a certification contract or an architecture source of truth. It is a snapshot that may become stale after later commits; Git and the current repository source remain authoritative.
+>
+> Future Codex sessions should search this file by repository-relative path or section and read only the relevant ranges instead of loading the entire large document into context.
+
+## Repository identity
+
+| Field | Value |
+|---|---|
+| Reference status | Generated snapshot |
+| Originating task | Completed, separately owned Codex repository-file-inventory task |
+| Source branch at generation | `fix/production-certification-archive-trace-policy` |
+| Source commit | `765476686d40469ded173151f86cb5d613f02844` |
+| Source tree | `607f80562e6edbab5b3af6a7fbe992a443ba60cc` |
+| Worktree clean before report creation | Yes |
+| Modified/staged/deleted/renamed files before report creation | 0 |
+| Untracked, non-ignored files before report creation | 0 |
+| Inventory document included in source snapshot | No |
+
+The report itself did not exist in the bound source commit/tree. After generation, `docs/repository-file-inventory.md` was the sole expected untracked artifact and is intentionally excluded from the categorized inventory and pre-generation counts.
+
+## Scope and method
+
+- The originating task used Git metadata and repository file inspection; Git was authoritative. At the bound source commit, `git ls-files` returned 3,673 tracked paths and `git ls-files --others --exclude-standard` returned 0 pre-existing untracked paths.
+- The inventory covers 3,556 selected tracked paths after the exclusions below. Every included path is repository-relative and appears exactly once in the categorized inventory.
+- 117 tracked paths were intentionally excluded by the originating task's generated/report/evidence rules.
+  - 7 — excluded directory: evidence.
+  - 2 — excluded directory: generated.
+  - 105 — excluded directory: reports.
+  - 3 — generated screenshot snapshot.
+- Ignored and untracked files are outside the inventory scope. Dependency contents, build output, local/private evidence, report and Playwright output, database data, and temporary files are also excluded; examples include `node_modules`, `.next`, `.local`, and `.vercel`.
+- Tracked binary assets may be represented by repository-relative path and description, but their payloads are not embedded here. Secret files and excluded generated/evidence/report output were not read into or summarized in this report.
+- The document itself is excluded because it is not present in the bound source tree. A later regeneration may include it only if the regenerated scope explicitly says so and all counts are updated consistently.
+- Entries are grouped into numbered categories. Their existing within-category order is part of this snapshot but is not a guaranteed deterministic sort order.
+- Descriptions use file contents, route exports, Markdown headings, data labels, source exports, and path context. Any unresolved role is explicitly marked for manual confirmation.
+
+## Regeneration
+
+No committed deterministic generator is associated with this snapshot. To refresh it safely, start from a clean checkout of the intended source commit, record `git rev-parse HEAD` and `git rev-parse HEAD^{tree}`, enumerate tracked paths with `git ls-files -z`, apply the exclusions above, choose and document a stable path-ordering rule, and revalidate counts, duplicates, path normalization, privacy, and Markdown structure. Update the source binding and snapshot claims in the same change. Do not read or summarize private environment, evidence, dependency, build, database, or temporary contents merely to regenerate this reference.
+
+## Categorized inventory
+
+### 1. Application routes and pages (15)
+
+- `app/auth/error/page.tsx` — Next.js page for route /auth/error.
+- `app/billing/cancel/page.tsx` — Next.js page for route /billing/cancel.
+- `app/billing/success/page.tsx` — Next.js page for route /billing/success.
+- `app/checkout/success/page.tsx` — Next.js page for route /checkout/success.
+- `app/d/[token]/page.tsx` — Next.js page for route /d/[token].
+- `app/dashboard/page.tsx` — Next.js page for route /dashboard.
+- `app/design/[id]/page.tsx` — Next.js page for route /design/[id].
+- `app/design/page.tsx` — Next.js page for route /design.
+- `app/hugg-test/page.tsx` — Next.js page for route /hugg-test.
+- `app/lighting-reference/page.tsx` — Next.js page for route /lighting-reference.
+- `app/models-test/page.tsx` — Next.js page for route /models-test.
+- `app/page.tsx` — Next.js page for route /.
+- `app/share/[shareToken]/export/page.tsx` — Next.js page for route /share/[shareToken]/export.
+- `app/share/[shareToken]/page.tsx` — Next.js page for route /share/[shareToken].
+- `app/tools/glb-optimizer/page.tsx` — Next.js page for route /tools/glb-optimizer.
+
+### 2. Layouts, loading states, error states, and route metadata (7)
+
+- `app/error.tsx` — Error boundary UI for route subtree /.
+- `app/favicon.ico` — Browser favicon for the web application.
+- `app/icon.svg` — Vector application icon used by Next.js route metadata.
+- `app/layout.tsx` — Next.js layout for route subtree /.
+- `app/share/[shareToken]/error.tsx` — Error boundary UI for route subtree /share/[shareToken].
+- `app/share/[shareToken]/loading.tsx` — Loading state for route subtree /share/[shareToken].
+- `app/tools/layout.tsx` — Next.js layout for route subtree /tools.
+
+### 3. React UI components (29)
+
+- `app/globals.css` — Styles globals UI and layout.
+- `app/hugg-test/HuggTestClient.tsx` — Implements `HuggTestClient` for Hugg Test Client.
+- `app/lighting-reference/LightingReferenceClient.tsx` — Implements `LightingReferenceClient` for Lighting Reference Client.
+- `app/share/[shareToken]/ShareTracking.tsx` — Implements `ShareTracking` for Share Tracking.
+- `app/tools/tools-tailwind.css` — Styles tools tailwind UI and layout.
+- `components/BetaFeedbackWidget.tsx` — Defines `BetaFeedbackWidget`, `BetaFeedbackContext`, `BetaFeedbackWidgetProps` for Beta Feedback Widget.
+- `components/common/LazyImage.tsx` — Implements `LazyImage` for Lazy Image.
+- `components/common/PlaceholderImage.tsx` — Implements `PlaceholderImage` for Placeholder Image.
+- `components/ConfirmDialog.tsx` — Implements `ConfirmDialog` for Confirm Dialog.
+- `components/CopyFallbackDialog.tsx` — Implements `CopyFallbackDialog` for Copy Fallback Dialog.
+- `components/DeleteAllDesignsButton.tsx` — Implements `DeleteAllDesignsButton` for Delete All Designs Button.
+- `components/DeleteDesignButton.tsx` — Implements `DeleteDesignButton` for Delete Design Button.
+- `components/DesignsListWithSelection.tsx` — Implements `DesignsListWithSelection` for Designs List With Selection.
+- `components/DuplicateDesignButton.tsx` — Implements `DuplicateDesignButton` for Duplicate Design Button.
+- `components/EmptyDesignsState.tsx` — Implements `EmptyDesignsState` for Empty Designs State.
+- `components/GoogleAddressAutocomplete.tsx` — Implements `GoogleAddressAutocomplete` for Google Address Autocomplete.
+- `components/InviteCopyButton.tsx` — Implements `InviteCopyButton` for Invite Copy Button.
+- `components/InviteLinkInline.tsx` — Implements `InviteLinkInline` for Invite Link Inline.
+- `components/OnboardingChecklist.tsx` — Implements `OnboardingChecklist` for Onboarding Checklist.
+- `components/public-share/PublicShareClientBoundary.tsx` — Provides Public Share Client Boundary logic for react ui components.
+- `components/public-share/PublicShareClientBoundaryImpl.tsx` — Implements `PublicShareClientBoundaryImpl` for Public Share Client Boundary Impl.
+- `components/public-share/PublicShareRoomSchedule.tsx` — Defines `PublicShareRoomSchedule`, `PublicShareRoomScheduleItem` for Public Share Room Schedule.
+- `components/public-share/PublicShareRootLifecycle.tsx` — Defines `PublicShareResolvedRoot`, `PublicShareLoadingState`, `PublicShareInvalidView` for Public Share Root Lifecycle.
+- `components/public-share/PublicShareRootStateReporter.tsx` — Defines `PublicShareRootStateReporter`, `PublicShareRootState` for Public Share Root State Reporter.
+- `components/public-share/PublicShareShell.tsx` — Defines `PublicShareShell`, `usePublicShareLayout` for Public Share Shell.
+- `components/RecentClicksTable.tsx` — Implements `RecentClicksTable` for Recent Clicks Table.
+- `components/RoomSwitcher.tsx` — Defines `RoomSwitcher`, `RoomSwitcherVertical` for Room Switcher.
+- `components/ShareFooterCTA.tsx` — Implements `ShareFooterCTA` for Share Footer CTA.
+- `components/SharePageActions.tsx` — Implements `SharePageActions` for Share Page Actions.
+
+### 4. Design editor UI (56)
+
+- `components/editor/design-page/AuburnConfigurationSelector.tsx` — Defines `AuburnConfigurationSelector`, `AuburnConfigurationSelectorState`, `AuburnConfigurationSelectorActions`, `AuburnConfigurationSelectorProps` for Auburn Configuration Selector.
+- `components/editor/design-page/BetaStartPanel.tsx` — Defines `BetaStartPanel`, `BetaStartPanelProps` for Beta Start Panel.
+- `components/editor/design-page/CabinetryStudioDialog.tsx` — Implements `CabinetryStudioDialog` for Cabinetry Studio Dialog.
+- `components/editor/design-page/CabinetryStudioOverlay.tsx` — Defines `CabinetryStudioOverlay`, `CabinetryStudioOverlayState`, `CabinetryStudioOverlayProps` for Cabinetry Studio Overlay.
+- `components/editor/design-page/castleryConfigurationIcons.ts` — Defines `getCastleryConfigurationIconDescriptor`, `CASTLERY_CONFIGURATION_ICON_BY_PRODUCT_ID`, `CASTLERY_CONFIGURATION_ICON_FALLBACK`, `CastleryConfigurationIconDescriptor` for castlery Configuration Icons.
+- `components/editor/design-page/CirculationHeatmapOverlay.tsx` — Defines `CirculationHeatmapOverlay`, `CirculationHeatmapOverlayProps` for Circulation Heatmap Overlay.
+- `components/editor/design-page/CloudSaveConflictDialog.tsx` — Defines `CloudSaveConflictDialog`, `CloudSaveConflictDialogProps` for Cloud Save Conflict Dialog.
+- `components/editor/design-page/DesignControlsPanelAdapter.tsx` — Defines `DesignControlsPanelAdapter`, `DesignControlsPanelAdapterConfiguration`, `DesignControlsPanelAdapterState`, `DesignControlsPanelAdapterActions`, and related exports for Design Controls Panel Adapter.
+- `components/editor/design-page/DesignPageComposition.tsx` — Implements `DesignPageComposition` for Design Page Composition.
+- `components/editor/design-page/DesignPageDialogLayer.tsx` — Defines `DesignPageDialogLayer`, `DesignPageDialogLayerDialogs`, `DesignPageDialogLayerOverlays`, `DesignPageDialogLayerProps` for Design Page Dialog Layer.
+- `components/editor/design-page/DesignPageEditorChrome.tsx` — Defines `DesignPageEditorChrome`, `DesignPageEditorChromeState`, `DesignPageEditorChromeConfiguration`, `DesignPageEditorChromeActions`, and related exports for Design Page Editor Chrome.
+- `components/editor/design-page/DesignPageEditorCommandBar.tsx` — Defines `DesignPageEditorCommandBar`, `DesignPageEditorCommandBarState`, `DesignPageEditorCommandBarConfiguration`, `DesignPageEditorCommandBarActions` for Design Page Editor Command Bar.
+- `components/editor/design-page/DesignPagePanelRegion.tsx` — Defines `DesignPagePanelRegion`, `DesignPageShoppingDockContract`, `DesignPagePanelRegionState`, `DesignPagePanelRegionConfiguration`, and related exports for Design Page Panel Region.
+- `components/editor/design-page/DesignPagePresentationQaLayer.tsx` — Defines `DesignPagePresentationQaLayer`, `DesignPagePresentationQaLayerProps` for Design Page Presentation Qa Layer.
+- `components/editor/design-page/DesignPageQaMarkers.tsx` — Defines `DesignPageProjectQaMarkers`, `DesignPageRuntimeQaMarkers`, `DesignPageScenePerformanceQaSnapshot`, `DesignPageLayoutQaSnapshot`, and related exports for Design Page Qa Markers.
+- `components/editor/design-page/DesignPageToasts.tsx` — Defines `DesignPageToasts`, `DesignPageToastsProps` for Design Page Toasts.
+- `components/editor/design-page/DesignPageViewportOverlayLayer.tsx` — Defines `DesignPageViewportOverlayLayer`, `DesignPageViewportOverlayLayerState`, `DesignPageViewportOverlayLayerConfiguration`, `DesignPageViewportOverlayLayerReferences`, and related exports for Design Page Viewport Overlay Layer.
+- `components/editor/design-page/DesignPageWorkspace.tsx` — Implements `DesignPageWorkspace` for Design Page Workspace.
+- `components/editor/design-page/DesignToolsRestoreButton.tsx` — Implements `DesignToolsRestoreButton` for Design Tools Restore Button.
+- `components/editor/design-page/DesignValidationFeedback.tsx` — Defines `DesignValidationFeedback`, `DesignValidationFeedbackProps` for Design Validation Feedback.
+- `components/editor/design-page/EditorCommandPalette.tsx` — Defines `EditorCommandPalette`, `EditorCommandPaletteAction`, `EditorCommandPaletteProps` for Editor Command Palette.
+- `components/editor/design-page/JaronConfigurationSelector.tsx` — Defines `JaronConfigurationSelector`, `JaronConfigurationSelectorState`, `JaronConfigurationSelectorActions`, `JaronConfigurationSelectorProps` for Jaron Configuration Selector.
+- `components/editor/design-page/LocalBackupRecoveryDialog.tsx` — Implements `LocalBackupRecoveryDialog` for Local Backup Recovery Dialog.
+- `components/editor/design-page/MyDesignsDialog.tsx` — Defines `MyDesignsDialog`, `SavedDesignSummary`, `PendingSavedDesignDelete`, `MyDesignsDialogProps` for My Designs Dialog.
+- `components/editor/design-page/PlacedCabinetAssetMarkers.tsx` — Defines `PlacedCabinetAssetMarkers`, `PlacedCabinetAssetMarkersProps` for Placed Cabinet Asset Markers.
+- `components/editor/design-page/PlanManualQuickActions.tsx` — Implements `PlanManualQuickActions` for Plan Manual Quick Actions.
+- `components/editor/design-page/PlansDialog.tsx` — Defines `PlansDialog`, `PlansDialogState`, `PlansDialogActions`, `PlansDialogProps` for Plans Dialog.
+- `components/editor/design-page/RoomRenameDialog.tsx` — Defines `RoomRenameDialog`, `RoomRenameDialogProps` for Room Rename Dialog.
+- `components/editor/design-page/SelectedCabinetPanel.tsx` — Defines `SelectedCabinetPanel`, `SelectedCabinetDocumentation`, `SelectedCabinetPanelProps` for Selected Cabinet Panel.
+- `components/editor/design-page/SelectedItemPanel.tsx` — Defines `SelectedItemPanel`, `SelectedItemPanelDetailsState`, `SelectedItemPanelDetailsActions`, `SelectedItemPanelRotationState`, and related exports for Selected Item Panel.
+- `components/editor/design-page/SelectedSurfaceInspector.tsx` — Defines `SelectedSurfaceInspector`, `SelectedSurfaceInspectorState`, `SelectedSurfaceInspectorActions` for Selected Surface Inspector.
+- `components/editor/design-page/SelectedZoneToolbar.tsx` — Implements `SelectedZoneToolbar` for Selected Zone Toolbar.
+- `components/editor/design-page/ShareLinkFallbackDialog.tsx` — Defines `ShareLinkFallbackDialog`, `ShareLinkFallbackDialogProps` for Share Link Fallback Dialog.
+- `components/editor/design-page/SurfacePatternPreview.tsx` — Defines `SurfacePatternPreview`, `SurfacePatternPreviewProps` for Surface Pattern Preview.
+- `components/editor/design-system/EditorDialog.tsx` — Defines `EditorDialog`, `EditorDialogActions`, `EditorDialogButton`, `EditorDialogProps` for Editor Dialog.
+- `components/editor/design-system/editorDialogFocus.ts` — Defines `isActionable`, `isValidReturnFocusTarget`, `isEligibleReturnFocusTarget`, `handleTab`, and related exports for editor Dialog Focus.
+- `components/editor/design-system/editorDialogFocusRestoration.ts` — Implements `scheduleEditorDialogFocusRestoration` for editor Dialog Focus Restoration.
+- `components/editor/design-system/editorDialogRegistry.ts` — Defines `resolveEditorDialogStackZIndexes`, `hasExternalEditorModal`, `hasTopmostEditorDialog`, `hasActiveEditorModal`, and related exports for editor Dialog Registry.
+- `components/editor/DesignControlsFurnishPanel.tsx` — Implements `DesignControlsFurnishPanel` for Design Controls Furnish Panel.
+- `components/editor/DesignControlsPanel.tsx` — Defines `DesignControlsPanel`, `DesignControlsPanelProps` for Design Controls Panel.
+- `components/editor/EditorCommandBar.tsx` — Defines `EditorCommandBar`, `EditorSaveStatus` for Editor Command Bar.
+- `components/editor/EditorHistoryFeedback.tsx` — Implements `EditorHistoryFeedback` for Editor History Feedback.
+- `components/editor/EditorToolRail.tsx` — Defines `EditorToolRail`, `EditorToolRailMode` for Editor Tool Rail.
+- `components/editor/EditorViewToggle.tsx` — Defines `EditorViewToggle`, `EditorViewMode` for Editor View Toggle.
+- `components/editor/RoomConnectionChecklist.tsx` — Implements `RoomConnectionChecklist` for Room Connection Checklist.
+- `components/editor/RoomPanNavigator.tsx` — Implements `RoomPanNavigator` for Room Pan Navigator.
+- `components/editor/RoomPlanStatusBar.tsx` — Implements `RoomPlanStatusBar` for Room Plan Status Bar.
+- `components/editor/SelectedItemDetailsPanel.tsx` — Implements `SelectedItemDetailsPanel` for Selected Item Details Panel.
+- `components/editor/ShoppingOverviewPanel.tsx` — Defines `ShoppingOverviewPanel`, `ShoppingOverviewPanelProps` for Shopping Overview Panel.
+- `components/editor/workspaceMenuKeyboard.ts` — Implements `handleWorkspaceMenuKeyDown` for workspace Menu Keyboard.
+- `lib/design-page-controls-panel-model.ts` — Defines `buildDesignControlsPanelModel`, `DesignControlsPanelCallbacks`, `BuildDesignControlsPanelModelInput` for design page controls panel model.
+- `lib/design-page-dialog-layer-model.ts` — Defines `buildDesignPageDialogLayerModel`, `BuildDesignPageDialogLayerModelInput` for design page dialog layer model.
+- `lib/design-page-selection-panel-model.ts` — Defines `buildDesignPageSelectionPanelModels`, `BuildDesignPageSelectionPanelModelsInput`, `DesignPageSelectionPanelModels` for design page selection panel model.
+- `lib/design-page-shopping-panel-model.ts` — Defines `buildDesignPageShoppingPanelModel`, `BuildDesignPageShoppingPanelModelInput` for design page shopping panel model.
+- `lib/design-page-viewport-region-model.ts` — Defines `buildDesignPageViewportRegionModel`, `composeDesignPageSceneRegionModel`, `DesignPageViewportRegionModel`, `BuildDesignPageViewportRegionModelInput`, and related exports for design page viewport region model.
+- `lib/design-page-viewport-workspace-read-model.ts` — Defines `buildDesignPageViewportWorkspaceReadModel`, `DesignPageViewportWorkspaceReadModel`, `BuildDesignPageViewportWorkspaceReadModelInput` for design page viewport workspace read model.
+
+### 5. 2D floor-plan editor (100)
+
+- `components/editor/design-controls-plan/DesignControlsPlanPanel.types.ts` — Defines `PlanStartMode`, `FloorPlanLifecycleIdentity`, `DesignControlsPlanPanelProps` for Design Controls Plan Panel.types.
+- `components/editor/design-controls-plan/EmptyFloorPlanSurfacesActions.tsx` — Defines `EmptyFloorPlanProUploadAction`, `EmptyFloorPlanSurfacesActions` for Empty Floor Plan Surfaces Actions.
+- `components/editor/design-controls-plan/PlanToolComponents.tsx` — Defines `CollapsiblePlanHeader`, `PlanToolSection`, `PlanToolTile`, `CollapsiblePlanSection` for Plan Tool Components.
+- `components/editor/design-controls-plan/PlanToolIcon.tsx` — Defines `PlanToolIcon`, `PlanToolIconName` for Plan Tool Icon.
+- `components/editor/design-page/DesignPagePlanCanvasOverlays.tsx` — Defines `DesignPagePlanCanvasOverlays`, `DesignPagePlanCanvasOverlaysState`, `DesignPagePlanCanvasOverlaysActions` for Design Page Plan Canvas Overlays.
+- `components/editor/design-page/EmptyPlanCanvasPrompt.tsx` — Implements `EmptyPlanCanvasPrompt` for Empty Plan Canvas Prompt.
+- `components/editor/design-page/FloorStackControl.tsx` — Defines `FloorStackControl`, `FloorStackControlItem` for Floor Stack Control.
+- `components/editor/design-page/ImportedFloorPlanWallEditor.tsx` — Defines `ImportedFloorPlanWallEditor`, `ImportedFloorPlanWallEditorProps` for Imported Floor Plan Wall Editor.
+- `components/editor/design-page/PlanAnnotationDialog.tsx` — Defines `PlanAnnotationDialog`, `PlanAnnotationDialogProps` for Plan Annotation Dialog.
+- `components/editor/design-page/PlanCanvasFocusControl.tsx` — Defines `PlanCanvasFocusControl`, `PlanCanvasFocusMode` for Plan Canvas Focus Control.
+- `components/editor/design-page/PlanCanvasGuidance.tsx` — Defines `PlanCanvasGuidance`, `PlanCanvasGuidancePrimaryAction` for Plan Canvas Guidance.
+- `components/editor/design-page/PlanGuidedActionsChoice.tsx` — Implements `PlanGuidedActionsChoice` for Plan Guided Actions Choice.
+- `components/editor/design-page/PlanGuidedActionsToggle.tsx` — Implements `PlanGuidedActionsToggle` for Plan Guided Actions Toggle.
+- `components/editor/design-page/PlanQualityHintOverlay.tsx` — Defines `PlanQualityHintOverlay`, `PlanQualityHintOverlayProps` for Plan Quality Hint Overlay.
+- `components/editor/design-page/PlanQualityReviewPanel.tsx` — Implements `PlanQualityReviewPanel` for Plan Quality Review Panel.
+- `components/editor/design-page/PlanRoomSummaryCard.tsx` — Defines `PlanRoomSummaryCard`, `PlanRoomSummaryCardState`, `PlanRoomSummaryCardConfiguration`, `PlanRoomSummaryCardActions` for Plan Room Summary Card.
+- `components/editor/design-page/PlanTemplateChoiceDialog.tsx` — Defines `PlanTemplateChoiceDialog`, `PlanTemplateChoiceDialogProps` for Plan Template Choice Dialog.
+- `components/editor/design-page/SelectedPlanOpeningActions.tsx` — Implements `SelectedPlanOpeningActions` for Selected Plan Opening Actions.
+- `components/editor/DesignControlsPlanPanel.tsx` — Implements `DesignControlsPlanPanel` for Design Controls Plan Panel.
+- `components/editor/floor-plan-import-review/FloorPlanDimensionCorrectionFields.tsx` — Implements `FloorPlanDimensionCorrectionFields` for Floor Plan Dimension Correction Fields.
+- `components/editor/floor-plan-import-review/FloorPlanImportReviewPanel.tsx` — Implements `FloorPlanImportReviewPanel` for Floor Plan Import Review Panel.
+- `components/editor/floor-plan-import-review/FloorPlanOpeningAddFields.tsx` — Implements `FloorPlanOpeningAddFields` for Floor Plan Opening Add Fields.
+- `components/editor/floor-plan-import-review/FloorPlanOpeningCorrectionFields.tsx` — Implements `FloorPlanOpeningCorrectionFields` for Floor Plan Opening Correction Fields.
+- `components/editor/floor-plan-import-review/FloorPlanOpeningTracePanel.tsx` — Implements `FloorPlanOpeningTracePanel` for Floor Plan Opening Trace Panel.
+- `components/editor/floor-plan-import-review/FloorPlanOrientationReviewPanel.tsx` — Implements `FloorPlanOrientationReviewPanel` for Floor Plan Orientation Review Panel.
+- `components/editor/floor-plan-import-review/FloorPlanRoomTracePanel.tsx` — Implements `FloorPlanRoomTracePanel` for Floor Plan Room Trace Panel.
+- `components/editor/floor-plan-import-review/FloorPlanScaleReviewPanel.tsx` — Implements `FloorPlanScaleReviewPanel` for Floor Plan Scale Review Panel.
+- `components/editor/floor-plan-import-review/FloorPlanSourceReviewCanvas.tsx` — Implements `FloorPlanSourceReviewCanvas` for Floor Plan Source Review Canvas.
+- `components/editor/floor-plan-import-review/FloorPlanStructureCorrectionFields.tsx` — Implements `FloorPlanStructureCorrectionFields` for Floor Plan Structure Correction Fields.
+- `components/editor/floor-plan-import-review/FloorPlanTopologyCorrectionPanel.tsx` — Implements `FloorPlanTopologyCorrectionPanel` for Floor Plan Topology Correction Panel.
+- `components/editor/floor-plan-import-review/FloorPlanVisualReviewTools.tsx` — Implements `FloorPlanVisualReviewTools` for Floor Plan Visual Review Tools.
+- `components/editor/floor-plan-import-review/FloorPlanWallCorrectionFields.tsx` — Implements `FloorPlanWallCorrectionFields` for Floor Plan Wall Correction Fields.
+- `components/editor/floor-plan-import-ui-types.ts` — Defines `ConsumerFloorPlanImportProgressEstimate`, `ConsumerFloorPlanImportJob`, `ConsumerFloorPlanImportSummary` for floor plan import UI types.
+- `components/editor/FloorPlanAddressFields.tsx` — Implements `FloorPlanAddressFields` for Floor Plan Address Fields.
+- `components/editor/FloorPlanAddressSearch.tsx` — Implements `FloorPlanAddressSearch` for Floor Plan Address Search.
+- `components/editor/FloorPlanCatalogResultList.tsx` — Implements `FloorPlanCatalogResultList` for Floor Plan Catalog Result List.
+- `components/editor/FloorPlanImportAssistant.tsx` — Implements `FloorPlanImportAssistant` for Floor Plan Import Assistant.
+- `components/editor/FloorPlanImportHistory.tsx` — Implements `FloorPlanImportHistory` for Floor Plan Import History.
+- `components/editor/FloorPlanImportWorkspace.tsx` — Implements `FloorPlanImportWorkspace` for Floor Plan Import Workspace.
+- `components/editor/FloorPlanOptionalConfigurationPanel.tsx` — Implements `FloorPlanOptionalConfigurationPanel` for Floor Plan Optional Configuration Panel.
+- `components/editor/FloorPlanPageSelectionPanel.tsx` — Implements `FloorPlanPageSelectionPanel` for Floor Plan Page Selection Panel.
+- `components/editor/FloorPlanPropertyEvidenceControl.tsx` — Implements `FloorPlanPropertyEvidenceControl` for Floor Plan Property Evidence Control.
+- `components/editor/FloorPlanToolStrip.tsx` — Defines `FloorPlanToolStrip`, `FloorPlanTool` for Floor Plan Tool Strip.
+- `components/editor/FloorPlanUploadPanel.tsx` — Implements `FloorPlanUploadPanel` for Floor Plan Upload Panel.
+- `components/editor/FloorPlanUploadWorkspaceDialog.tsx` — Implements `FloorPlanUploadWorkspaceDialog` for Floor Plan Upload Workspace Dialog.
+- `components/editor/FloorPlanWorkspaceOpener.tsx` — Implements `FloorPlanWorkspaceOpener` for Floor Plan Workspace Opener.
+- `components/editor/FloorPropertiesPanel.tsx` — Defines `FloorPropertiesPanel`, `FloorCreationMode`, `FloorPropertiesPanelProps` for Floor Properties Panel.
+- `components/editor/MeasurementField.tsx` — Implements `MeasurementField` for Measurement Field.
+- `components/editor/PlanOpeningInspector.tsx` — Implements `PlanOpeningInspector` for Plan Opening Inspector.
+- `components/editor/renderers/ItemRenderer2D.tsx` — Implements `ItemRenderer2D` for Item Renderer2 D.
+- `components/editor/renderers/PlanUnderlayRenderer2D.tsx` — Implements `PlanUnderlayRenderer2D` for Plan Underlay Renderer2 D.
+- `components/editor/renderers/RoomRenderer2D.tsx` — Implements `RoomRenderer2D` for Room Renderer2 D.
+- `components/ShareFloorPlanPreview.tsx` — Implements `ShareFloorPlanPreview` for Share Floor Plan Preview.
+- `lib/design-page-floor-plan-utils.ts` — Defines `clampEditorOpacity`, `clampRoomHeightMeters`, `clampSlabThicknessMeters`, `clampWallThicknessMeters`, and related exports for design page floor plan utils.
+- `lib/design-page-opening-metrics.ts` — Defines `normalizeDesignPageOpeningMetrics`, `getDesignPageOpeningMetricsHistoryLabel`, `DesignPageOpeningMetricsPatch`, `NormalizeDesignPageOpeningMetricsInput` for design page opening metrics.
+- `lib/design-page-plan-scene.ts` — Defines `buildEditorScene2D`, `createPlanAnnotation` for design page plan scene.
+- `lib/design-page-wall-descriptors.ts` — Defines `buildRoomWallDescriptors`, `DEFAULT_WALL_LONG_SIDE_CLEARANCE_METERS`, `BuildRoomWallDescriptorsInput`, `RoomWallDescriptors` for design page wall descriptors.
+- `lib/design-page-zone-layout.ts` — Defines `normalizeItemsToRoom`, `computeZoneAnchor`, `normalizeZones`, `zonesEqual`, and related exports for design page zone layout.
+- `lib/design-page-zone-orchestration.ts` — Defines `canAutoCreateSeatingZoneForEditor`, `buildManualZoneFromSelection`, `buildAutoSeatingZone`, `reconcileZonesForItems`, and related exports for design page zone orchestration.
+- `lib/floor-plan-address-search.ts` — Defines `parseFloorPlanUnitNumber`, `normalizeFloorPlanAddress`, `searchReviewOnlyFloorPlanLibrary`, `browseReviewOnlyFloorPlanLibrary`, and related exports for floor plan address search.
+- `lib/floor-plan-admin-review-draft.ts` — Defines `fingerprintFloorPlanAdminReviewDraft`, `decideFloorPlanAdminReviewReload`, `FloorPlanAdminReviewDraftInput`, `FloorPlanAdminReviewReloadDecision` for floor plan admin review draft.
+- `lib/floor-plan-admin-review-events.ts` — Defines `notifyFloorPlanAdminJobUpdated`, `requestFloorPlanAdminJobMutation`, `cancelFloorPlanAdminJobMutation`, `subscribeToFloorPlanAdminJobUpdates`, and related exports for floor plan admin review events.
+- `lib/floor-plan-authored-variant-admin.ts` — Implements `loadFloorPlanAuthoredVariantRevisionSnapshots` for floor plan authored variant admin.
+- `lib/floor-plan-authored-variant-links.ts` — Defines `parseFloorPlanAuthoredVariantApprovalRequest`, `validateFloorPlanAuthoredVariantApproval`, `projectPublicFloorPlanAuthoredVariantGroups`, `FloorPlanAuthoredVariantApprovalRequest`, and related exports for floor plan authored variant links.
+- `lib/floor-plan-calibration.ts` — Defines `measureFloorPlanPointDistanceMeters`, `mapUnderlayWorldPointToPixels`, `applyFloorPlanScaleCalibration` for floor plan calibration.
+- `lib/floor-plan-compiler-v2.ts` — Defines `validateFloorPlanDocumentV2`, `canonicalizeFloorPlanGeometryV2`, `hashFloorPlanGeometryV2`, `compileFloorPlanDocumentV2`, and related exports for floor plan compiler v2.
+- `lib/floor-plan-design-reference.ts` — Defines `extractFloorPlanDesignReference`, `syncFloorPlanDesignReference`, `FloorPlanDesignReferenceSyncError`, `FloorPlanDesignReferenceCandidate`, and related exports for floor plan design reference.
+- `lib/floor-plan-document-v2.ts` — Defines `FloorPlanVerificationTierV2`, `FloorPlanSourceKindV2`, `FloorPlanEvidenceBasisV2`, `FloorPlanReviewActionV2`, and related exports for floor plan document v2.
+- `lib/floor-plan-legacy-adapters.ts` — Defines `migrateLegacyWallSurfaceFacesToCanonical`, `applyFloorPlanAddressTransformV2`, `canonicalFloorPlanToDesignSnapshot`, `CanonicalDesignAdapterResult` for floor plan legacy adapters.
+- `lib/floor-plan-library-schema.ts` — Defines `floorPlanLibraryCatalogSchema`, `FloorPlanLibraryCatalog`, `FloorPlanLibraryLayout` for floor plan library schema.
+- `lib/floor-plan-library-yaml.ts` — Defines `getFloorPlanLibraryRoot`, `getAllFloorPlanLibraryFiles`, `readFloorPlanLibraryCatalog`, `getAllFloorPlanLibraryCatalogs`, and related exports for floor plan library yaml.
+- `lib/floor-plan-measured-property-mutations.ts` — Defines `applyFloorPlanMeasuredPropertyMutationV2`, `floorPlanPropertyEvidenceLabel`, `floorPlanPropertyEvidenceIsEditable`, `FloorPlanMeasuredPropertyMutationErrorV2`, and related exports for floor plan measured property mutations.
+- `lib/floor-plan-opening-primitives.ts` — Defines `buildCanonicalOpeningSymbolLinesV2`, `getCanonicalOpeningRenderIdentityV2`, `CanonicalOpeningSymbolRole`, `CanonicalOpeningSymbolLineV2`, and related exports for floor plan opening primitives.
+- `lib/floor-plan-optional-configurations.ts` — Defines `validateFloorPlanConfigurationGroup`, `resolveFloorPlanAuthoredConfiguration`, `inspectFloorPlanOptionalConfigurations`, `FloorPlanAuthoredConfigurationVariant`, and related exports for floor plan optional configurations.
+- `lib/floor-plan-planar-union.ts` — Defines `signedPlanarRingAreaSquareMm`, `isPointInPlanarRing`, `buildPlanarUnionPolygons`, `PlanarRegionMm`, and related exports for floor plan planar union.
+- `lib/floor-plan-quality.ts` — Defines `buildFloorPlanQualityReport`, `FloorPlanQualityLabel`, `FloorPlanQualityCategory`, `FloorPlanQualityAction`, and related exports for floor plan quality.
+- `lib/floor-plan-render-model.ts` — Defines `resolveCanonicalFloorPlan2DActiveFloor`, `buildCanonicalFloorPlanRenderModel`, `compileCanonicalFloorPlanRenderModel`, `CanonicalFloorPlanLineSegment`, and related exports for floor plan render model.
+- `lib/floor-plan-review-structure-rectangle.ts` — Defines `nextFloorPlanReviewEntityId`, `getStructureRectangleBounds`, `buildStructureRectangleVertices`, `FloorPlanStructureRectangleMm` for floor plan review structure rectangle.
+- `lib/floor-plan-room-labels.ts` — Defines `resolveFloorPlanRoomIdentities`, `FloorPlanSourceRoom`, `ResolvedFloorPlanRoomIdentity` for floor plan room labels.
+- `lib/floor-plan-seeds/ping-yi-court-review-intake.ts` — Defines `loadPingYiCourtV2ReviewSeedBundle`, `evaluatePingYiCourtReviewSeedEligibility`, `rewriteFloorPlanPrimarySourceForReview`, `rewritePingYiCourtOfficialBrochureForReview`, and related exports for ping yi court review intake.
+- `lib/floor-plan-seeds/ping-yi-court-review-source.ts` — Implements `downloadPingYiCourtReviewSource` for ping yi court review source.
+- `lib/floor-plan-seeds/ping-yi-court-v2.ts` — Defines `generatePingYiCourtV2ReviewSeedBundle`, `serializePingYiCourtV2ReviewSeedBundle`, `PingYiCourtManifestLayoutV2`, `PingYiCourtSourceManifestV2`, and related exports for ping yi court v2.
+- `lib/floor-plan-structure-dimension-mutations.ts` — Defines `mutateFloorPlanOpeningV2`, `mutateFloorPlanStructureV2`, `mutateFloorPlanDimensionV2`, `FloorPlanEntityMutationServicesV2` for floor plan structure dimension mutations.
+- `lib/floor-plan-topology-editor.ts` — Defines `projectCanonicalOpeningToStraightWallV2`, `projectLegacyOpeningGestureToCanonicalWallV2`, `buildCanonicalOpeningUpdateMutationV2`, `commitCanonicalTopologyMutationToSnapshotV2`, and related exports for floor plan topology editor.
+- `lib/floor-plan-topology-mutation-support.ts` — Defines `topologyMutationFail`, `assertTopologyInteger`, `assertUnusedGlobalEntityId`, `demoteTopologyProvenance`, and related exports for floor plan topology mutation support.
+- `lib/floor-plan-topology-mutation-types.ts` — Defines `FloorPlanTopologyMutationErrorV2`, `FloorPlanTopologyMutationContextV2`, `FloorPlanOpeningDraftV2`, `FloorPlanOpeningChangesV2`, and related exports for floor plan topology mutation types.
+- `lib/floor-plan-topology-mutations.ts` — Defines `applyFloorPlanTopologyMutationsV2`, `applyFloorPlanTopologyMutationV2` for floor plan topology mutations.
+- `lib/floor-plan-tracing.ts` — Defines `resolveTracedRoomRectangle`, `snapFloorPlanPointToGrid`, `snapFloorPlanPointToRoomEdges`, `snapFloorPlanPointToRoomCorners`, and related exports for floor plan tracing.
+- `lib/floor-plan-types.ts` — Defines `buildFloorPlanRoomPolygon`, `calculateFloorPlanPolygonAreaSqm`, `buildFloorPlanFromRooms`, `buildFloorPlanFromDesignSnapshot`, and related exports for floor plan types.
+- `lib/floor-plan-upload-dialog-focus.ts` — Defines `captureFloorPlanWorkspaceOpener`, `getFloorPlanWorkspaceReturnFocusIds`, `forwardFloorPlanWorkspaceOpener`, `getFloorPlanWorkspaceScopeKey`, and related exports for floor plan upload dialog focus.
+- `lib/open-floor-plan-upload-workspace.ts` — Implements `openFloorPlanUploadWorkspace` for open floor plan upload workspace.
+- `lib/plan-room-summary.ts` — Defines `resolvePlanRoomSelection`, `buildPlanRoomSummary`, `PlanRoomMetric`, `PlanRoomSummary`, and related exports for plan room summary.
+- `lib/room-budget-recommendations.ts` — Defines `buildRoomBudgetRecommendations`, `RoomBudgetRecommendation`, `BuildRoomBudgetRecommendationsParams` for room budget recommendations.
+- `lib/room-fix-preview.ts` — Defines `buildRoomFixPreviewFromRecommendations`, `RoomFixPreview` for room fix preview.
+- `lib/room-health-summary.ts` — Defines `resolveDesignPageRoomHealthReviewTarget`, `buildRoomHealthSummary`, `RoomHealthLevel`, `RoomHealthSummary`, and related exports for room health summary.
+- `lib/room-plan-shape.ts` — Defines `buildRoomPlanShape`, `RoomPlanShapePoint` for room plan shape.
+- `lib/room-present-mode.ts` — Defines `createPresentModeState`, `getPresentModeRoom`, `getPresentModeSavedView`, `getPresentModeRooms`, and related exports for room present mode.
+- `lib/room-renderer-2d-walls.ts` — Defines `buildInnerFloorGeometry2D`, `buildRoomWallSegments2D`, `mergeSharedWallSegments2D`, `buildWallBandCornerCaps2D`, and related exports for room renderer 2D walls.
+- `lib/room-shopping.ts` — Defines `summarizeShoppingRooms`, `summarizeWholeHomeShopping`, `countRoomCategories`, `countRoomProductQuantities`, and related exports for room shopping.
+- `lib/room-types.ts` — Defines `createRoom`, `migrateToV3`, `getActiveRoom`, `updateRoom`, and related exports for room types.
+
+### 6. Three.js, React Three Fiber, and 3D rendering (57)
+
+- `components/CanvasErrorBoundary.tsx` — Implements `CanvasErrorBoundary` for Canvas Error Boundary.
+- `components/DesignerCanvas.tsx` — Implements `DesignerCanvas` for Designer Canvas.
+- `components/FPSMeter.tsx` — Implements `FPSMeter` for FPSMeter.
+- `components/editor/design-page/DesignPageSceneRegion.tsx` — Defines `DesignPageSceneRegion`, `DesignPageSceneRegionState`, `DesignPageSceneRegionConfiguration`, `DesignPageSceneRegionReferences`, and related exports for Design Page Scene Region.
+- `components/editor/design-page/DesignSceneCanvas.tsx` — Implements `DesignSceneCanvas` for Design Scene Canvas.
+- `components/editor/design-page/DesignSceneGuidanceLayer.tsx` — Defines `DesignSceneGuidanceLayer`, `DesignSceneGuidanceLayerState`, `DesignSceneGuidanceLayerConfiguration`, `DesignSceneGuidanceLayerResolvers`, and related exports for Design Scene Guidance Layer.
+- `components/editor/design-page/DesignScenePreviewLayer.tsx` — Defines `DesignScenePreviewLayer`, `DesignScenePreviewLayerState`, `DesignScenePreviewLayerConfiguration`, `DesignScenePreviewLayerActions`, and related exports for Design Scene Preview Layer.
+- `components/editor/design-page/DesignSceneStructureLayer.tsx` — Defines `DesignSceneStructureLayer`, `DesignSceneStructureLayerState`, `DesignSceneStructureLayerConfiguration`, `DesignSceneStructureLayerActions` for Design Scene Structure Layer.
+- `components/editor/design-page/SceneItemsLayer.tsx` — Defines `SceneItemsLayer`, `SceneItemDimensionsMm`, `SceneItemMoveContext`, `SceneItemDragEndContext` for Scene Items Layer.
+- `components/editor/design-page/SceneReadyVeil.tsx` — Implements `SceneReadyVeil` for Scene Ready Veil.
+- `components/editor/renderers/canonical-floor-plan/geometry.ts` — Defines `segmentTransform`, `wallSolidShape`, `appendPlanarRing`, `planarUnionShapes`, and related exports for geometry.
+- `components/editor/renderers/CanonicalFloorPlanStructure.tsx` — Defines `CanonicalFloorPlanWalls2D`, `CanonicalFloorPlanWalls3D` for Canonical Floor Plan Structure.
+- `components/editor/renderers/house-plan-3d/geometry.ts` — Defines `isWallSurfacePanelCutawayEligible`, `resolveAtomicWallCutawayRenderState`, `getSelectableWallFacePanelId`, `getLogicalWallPanelForPart`, and related exports for geometry.
+- `components/editor/renderers/house-plan-3d/materials.ts` — Defines `createFloorMaterialTexture`, `getSurfaceMaterialFallbackColor`, `useSurfaceMaterialSourceTexture` for materials.
+- `components/editor/renderers/house-plan-3d/surfaceMeshes.tsx` — Defines `LegacyFloorSlabMesh`, `LegacyWallBandMesh`, `RoomFloorMesh`, `RoomCeilingCapMesh` for surface Meshes.
+- `components/editor/renderers/house-plan-3d/wallAndOpeningMeshes.tsx` — Defines `CutawayWallMesh`, `WallSurfacePanelMesh`, `OpeningThresholdMesh` for wall And Opening Meshes.
+- `components/editor/renderers/HousePlanRenderer3D.tsx` — Implements `HousePlanRenderer3D` for House Plan Renderer3 D.
+- `components/public-share/ShareScene.tsx` — Implements `ShareScene` for Share Scene.
+- `components/ReadOnlyViewer.tsx` — Implements `ReadOnlyViewer` for Read Only Viewer.
+- `components/scene/DesignerGrid.tsx` — Defines `DesignerGrid`, `DesignerGridCoverage` for Designer Grid.
+- `components/scene/furniture/FurnitureProps.ts` — Implements `FurnitureProps` for Furniture Props.
+- `components/scene/furniture/FurnitureSelectionOutline.tsx` — Defines `FurnitureSelectionOutline`, `SELECTION_BOX_SIDE_PADDING_METERS`, `SELECTION_BOX_TOP_PADDING_METERS`, `SELECTION_BOX_BOTTOM_INSET_METERS` for Furniture Selection Outline.
+- `components/scene/furniture/resolveFurnitureModelAppearance.ts` — Implements `resolveFurnitureModelAppearance` for resolve Furniture Model Appearance.
+- `components/scene/FurnitureItem.tsx` — Implements `Furniture` for Furniture Item.
+- `components/scene/glb-scaled-model/glbMainThreadTelemetry.ts` — Defines `createGLBMainThreadTelemetryContext`, `initializeGLBMainThreadTelemetry`, `recordGLBMainThreadTiming`, `measureGLBMainThreadWork`, and related exports for GLB Main Thread Telemetry.
+- `components/scene/glb-scaled-model/glbMainThreadTelemetryCore.ts` — Defines `countGLBMainThreadBootstrapRecords`, `createGLBMainThreadTimingEntry`, `attributeGLBLongTaskCategory`, `BoundedMetadataRing`, and related exports for GLB Main Thread Telemetry Core.
+- `components/scene/glb-scaled-model/glbMainThreadTelemetryFacade.ts` — Defines `initializeGLBMainThreadTelemetry`, `measureGLBMainThreadWork`, `recordGLBMainThreadTiming`, `recordGLBEventLoopGap`, and related exports for GLB Main Thread Telemetry Facade.
+- `components/scene/glb-scaled-model/glbMainThreadTelemetryFacadeController.ts` — Defines `createGLBMainThreadTelemetryFacadeController`, `GLBMainThreadCollectorModule`, `GLBMainThreadTelemetryFacadeState` for GLB Main Thread Telemetry Facade Controller.
+- `components/scene/glb-scaled-model/glbMainThreadTelemetrySnapshot.ts` — Defines `emptyGLBMainThreadTimingAggregates`, `copyGLBMainThreadTimingAggregates`, `copyGLBMainThreadLongTasks`, `createEmptyGLBMainThreadTelemetrySnapshot`, and related exports for GLB Main Thread Telemetry Snapshot.
+- `components/scene/glb-scaled-model/GLBModelAttachmentBoundary.tsx` — Implements `GLBModelAttachmentBoundary` for GLBModel Attachment Boundary.
+- `components/scene/glb-scaled-model/glbModelResourceResolution.ts` — Defines `normalizeResource`, `boundsForResource`, `GLBModelResult`, `GLBBoundsResult` for GLB Model Resource Resolution.
+- `components/scene/glb-scaled-model/glbModelResources.ts` — Defines `snapshotGLBResourceCaches`, `ensureGLBResourceCleanup`, `acquireParsedGLB`, `acquirePreparedGLB`, and related exports for GLB Model Resources.
+- `components/scene/glb-scaled-model/glbResourceCache.ts` — Defines `createGLBResourceCache`, `GLBResourceCacheStatus`, `GLBResourceCacheInspection`, `GLBResourceLease` for GLB Resource Cache.
+- `components/scene/glb-scaled-model/glbResourceCacheMetadata.ts` — Defines `safeGLBResourceCacheInspection`, `GLBResourceCacheMetadataSnapshot`, `GLBResourceCachesMetadataSnapshot` for GLB Resource Cache Metadata.
+- `components/scene/glb-scaled-model/glbResourcePageLifecycle.ts` — Implements `applyGLBResourcePageHidePolicy` for GLB Resource Page Lifecycle.
+- `components/scene/glb-scaled-model/glbSafeReadinessSummary.ts` — Defines `createGLBSafeReadinessSummary`, `GLBSafeRequiredModelSummary`, `GLBSafeReadinessSummary` for GLB Safe Readiness Summary.
+- `components/scene/glb-scaled-model/glbSceneAttachmentTelemetry.ts` — Implements `reportGLBSceneAttachmentReady` for GLB Scene Attachment Telemetry.
+- `components/scene/glb-scaled-model/glbSceneResourceOwnership.ts` — Defines `disposeObjectGeometryAndMaterials`, `clonePreparedGLBForMount`, `disposeObjectTextures` for GLB Scene Resource Ownership.
+- `components/scene/glb-scaled-model/glbSourceLoadError.ts` — Defines `categorizeGLBBoundsFailure`, `GLBSourceLoadError` for GLB Source Load Error.
+- `components/scene/glb-scaled-model/huggMaterial.ts` — Implements `createHuggTopTint` for hugg Material.
+- `components/scene/glb-scaled-model/modelDiagnosticRuntime.ts` — Defines `transitionTimestampMs`, `getReloadGeneration`, `getDiagnosticStore`, `nextMountInstanceId`, and related exports for model Diagnostic Runtime.
+- `components/scene/glb-scaled-model/modelDiagnostics.ts` — Defines `recordGLBModelMount`, `recordGLBModelUnmount`, `recordGLBModelMetadata`, `recordGLBModelRender`, and related exports for model Diagnostics.
+- `components/scene/glb-scaled-model/modelLifecycleTypes.ts` — Defines `GLBModelLoadState`, `GLBModelCacheStatus`, `GLBModelCacheAcquisitionStatus`, `GLBModelPipelineState`, and related exports for model Lifecycle Types.
+- `components/scene/glb-scaled-model/modelReadiness.ts` — Implements `evaluateRequiredGLBModelReadiness` for model Readiness.
+- `components/scene/glb-scaled-model/normalizeGLBScene.ts` — Defines `applyUpperUpholsteryConnectedComponentMask`, `normalizeGLBScene`, `GLBUpholsteryTextures`, `NormalizeGLBSceneInput` for normalize GLBScene.
+- `components/scene/GLBScaledModel.tsx` — Defines `GLBScaledModel`, `GLBScaledModelProps` for GLBScaled Model.
+- `components/scene/LoadingOverlay.tsx` — Implements `LoadingOverlay` for Loading Overlay.
+- `components/scene/RoomSkeleton.tsx` — Implements `RoomSkeleton` for Room Skeleton.
+- `components/scene/ScenePerformanceBridge.tsx` — Defines `ScenePerformanceBridge`, `ScenePerformanceBridgeProps` for Scene Performance Bridge.
+- `components/scene/SceneProgressBridge.tsx` — Implements `SceneProgressBridge` for Scene Progress Bridge.
+- `components/scene/ZoneOutline.tsx` — Defines `ZoneOutline`, `ZoneOutlineBounds` for Zone Outline.
+- `components/ShareViewer.tsx` — Implements `ShareViewer` for Share Viewer.
+- `lib/design-page-scene-domain.ts` — Defines `resolveSceneItemViewContinuity`, `buildDesignPageSceneRoomItems`, `resolveSceneItemCanonicalTransform`, `resolveSceneItemLocalPosition`, and related exports for design page scene domain.
+- `lib/design-page-scene-projection.ts` — Defines `projectSceneRoomItem`, `removeSceneProjectionElevation`, `SceneProjection`, `SceneItemProjection` for design page scene projection.
+- `lib/design-page-scene-region-adapter.ts` — Defines `buildDesignPageSceneRegionAdapter`, `BuildDesignPageSceneRegionAdapterInput` for design page scene region adapter.
+- `lib/design-page-scene-region-model.ts` — Defines `buildDesignPageSceneCanvasRegionModel`, `DesignPageSceneCanvasRegionModel`, `BuildDesignPageSceneCanvasRegionModelInput` for design page scene region model.
+- `lib/scene-performance-metrics.ts` — Defines `EMPTY_SCENE_RENDERER_METRICS`, `SceneRendererMetrics` for scene performance metrics.
+
+### 7. Scene objects, placement, snapping, collision, and transforms (33)
+
+- `components/editor/design-page/CatalogPlacementConfirmPanel.tsx` — Defines `CatalogPlacementConfirmPanel`, `CatalogPlacementConfirmPanelState`, `CatalogPlacementConfirmPanelConfiguration`, `CatalogPlacementConfirmPanelActions`, and related exports for Catalog Placement Confirm Panel.
+- `components/editor/design-page/CrossRoomDragTarget.tsx` — Implements `CrossRoomDragTarget` for Cross Room Drag Target.
+- `components/editor/design-page/DesignPageSelectionInspector.tsx` — Implements `DesignPageSelectionInspector` for Design Page Selection Inspector.
+- `components/editor/design-page/DesignPageViewportSelectionControls.tsx` — Defines `DesignPageViewportSelectionControls`, `DesignPageViewportSelectionControlsState`, `DesignPageViewportSelectionControlsConfiguration`, `DesignPageViewportSelectionControlsActions` for Design Page Viewport Selection Controls.
+- `components/editor/design-page/MultiSelectionToolbar.tsx` — Implements `MultiSelectionToolbar` for Multi Selection Toolbar.
+- `components/editor/DraggableFloatingPanel.tsx` — Implements `DraggableFloatingPanel` for Draggable Floating Panel.
+- `components/editor/renderers/canonical-floor-plan/openingDrag.ts` — Defines `useCanonicalOpeningDrag`, `CanonicalOpeningDragMetricsV2`, `CanonicalOpeningDragMode` for opening Drag.
+- `components/editor/SceneAdjustmentToolbar.tsx` — Implements `SceneAdjustmentToolbar` for Scene Adjustment Toolbar.
+- `components/editor/SelectedItemRotationControls.tsx` — Implements `SelectedItemRotationControls` for Selected Item Rotation Controls.
+- `components/Measurements.tsx` — Implements `Measurements` for Measurements.
+- `components/scene/glb-scaled-model/createModelDiagnosticSnapshot.ts` — Defines `safeGLBResourceHash`, `createModelDiagnosticSnapshot` for create Model Diagnostic Snapshot.
+- `components/scene/glb-scaled-model/glbRequiredSnapshot.ts` — Defines `createGLBRequiredSnapshot`, `GLBRequiredModelSnapshot`, `GLBRequiredSnapshot` for GLB Required Snapshot.
+- `components/scene/glb-scaled-model/glbSnapshotTiming.ts` — Defines `calculateGLBRequiredSnapshotTransportTiming`, `GLBRequiredSnapshotTransportTiming` for GLB Snapshot Timing.
+- `components/scene/glb-scaled-model/localRenderBounds.ts` — Defines `copyGLBLocalRenderBounds`, `isValidGLBLocalRenderBounds`, `areGLBLocalRenderBoundsEquivalent`, `createGLBLocalRenderBoundsTracker`, and related exports for local Render Bounds.
+- `components/scene/glb-scaled-model/measureGLBLocalRenderBounds.ts` — Implements `measureGLBLocalRenderBounds` for measure GLBLocal Render Bounds.
+- `components/SnapGuides.tsx` — Implements `SnapGuides` for Snap Guides.
+- `lib/catalog-placement-policy.ts` — Defines `scoreCatalogPlacementCandidate`, `isCatalogPlacementScoreHardInvalid`, `isCatalogPlacementTargetAcceptable`, `findSmartCatalogPlacement`, and related exports for catalog placement policy.
+- `lib/circulation-analysis.ts` — Defines `computeCirculationAnalysis`, `CirculationHeatCell`, `CirculationAnalysis` for circulation analysis.
+- `lib/constraints/evaluate.ts` — Defines `evaluateConstraints`, `ConstraintLevel`, `ConstraintResult` for evaluate.
+- `lib/design-page-geometry.ts` — Defines `getFurnitureWallInset`, `isAabbWithinPadding`, `resolveAxisAlignedRoomItemBounds`, `resolvePointerRotationRadians`, and related exports for design page geometry.
+- `lib/design-page-object-placement.ts` — Defines `buildNearbyDuplicateOffsets`, `PlacementOffset` for design page object placement.
+- `lib/design-page-placement-target-policy.ts` — Defines `resolvePlacementAwareRoomSelectionDecision`, `resolveDesignPageSurfaceBrushAction`, `PlacementAwareRoomSelectionDecision`, `DesignPageSurfaceBrushAction` for design page placement target policy.
+- `lib/design-page-shopping-item-replacement.ts` — Defines `replaceShoppingItemWithRecommendation`, `DesignPageShoppingItemReplacement` for design page shopping item replacement.
+- `lib/design-page-viewport-selection-controls.ts` — Defines `resolveDesignPageViewportSelectionControlsState`, `DesignPageViewportSelectionControlsState`, `DesignPageViewportSelectionControlsInput` for design page viewport selection controls.
+- `lib/editor-geometry-tolerances.ts` — Defines `isWithinEditorTolerance`, `EDITOR_GEOMETRY_TOLERANCES`, `HOUSE_PLAN_RENDERED_WALL_THICKNESS_METERS` for editor geometry tolerances.
+- `lib/editorScene.ts` — Defines `metersToMm`, `mmToMeters`, `radiansToDeg`, `degToRadians`, and related exports for editor Scene.
+- `lib/floor-plan-geometry-validation.ts` — Defines `floorPlanPointOnLineSegment`, `floorPlanLineSegmentsIntersect`, `findPotentialLineIntersectionPairs`, `findCanonicalWallIntersectionProblems`, and related exports for floor plan geometry validation.
+- `lib/floor-plan-scene-elevation.ts` — Defines `resolveCanonicalFloorElevationMeters`, `resolveFloorUndersideCutawayElevationMeters`, `resolveCameraViewForFloorWorldY`, `addFloorElevationToItemPosition`, and related exports for floor plan scene elevation.
+- `lib/floor-plan-watertight-geometry.ts` — Defines `buildCanonicalFloorSlabPolygons`, `buildCanonicalWallUnionBands`, `CanonicalWallUnionBand` for floor plan watertight geometry.
+- `lib/manual-placement-scoring.ts` — Defines `scoreManualPlacement`, `ManualPlacementScoreKind`, `ManualPlacementAction`, `ManualPlacementScore` for manual placement scoring.
+- `lib/placement-recommendations.ts` — Defines `rankPlacementRecommendations`, `getPrimaryPlacementRecommendation`, `PlacementRecommendationKind`, `PlacementRecommendation` for placement recommendations.
+- `lib/shopping-replacements.ts` — Defines `buildShoppingReplacementSuggestions`, `ShoppingReplacementSuggestion` for shopping replacements.
+- `lib/snap-types.ts` — Implements `AABB` for snap types.
+
+### 8. Lighting, cameras, controls, shaders, and visual effects (25)
+
+- `components/editor/camera/EditorCamera2D.tsx` — Defines `resolvePlan2DViewFit`, `EditorCamera2D`, `WHOLE_HOME_FIT_ZOOM_SCALE`, `Plan2DViewOrientation`, and related exports for Editor Camera2 D.
+- `components/editor/camera/Plan2DCameraInvariantGuard.tsx` — Defines `Plan2DCameraInvariantGuard`, `Plan2DCameraDiagnostics`, `Plan2DCameraInvariantGuardProps` for Plan2 DCamera Invariant Guard.
+- `components/editor/design-page/lighting/ContactShadowController.tsx` — Implements `ContactShadowController` for Contact Shadow Controller.
+- `components/editor/design-page/lighting/EnvironmentController.tsx` — Implements `EnvironmentController` for Environment Controller.
+- `components/editor/design-page/lighting/ExposureController.tsx` — Implements `ExposureController` for Exposure Controller.
+- `components/editor/design-page/lighting/index.ts` — Provides index logic for lighting, cameras, controls, shaders, and visual effects.
+- `components/editor/design-page/lighting/lightingPresets.ts` — Defines `resolveLightingMode`, `resolvePersistedLightingPreset`, `resolveLightingQuality`, `resolveEditorLighting`, and related exports for lighting Presets.
+- `components/editor/design-page/lighting/LightingSystem.tsx` — Implements `LightingSystem` for Lighting System.
+- `components/editor/design-page/lighting/lightingTypes.ts` — Defines `LightingMode`, `LightingQuality`, `LightingShadowQuality`, `LightingColor`, and related exports for lighting Types.
+- `components/editor/design-page/lighting/ShadowBudgetManager.ts` — Defines `resolveObjectShadowEligibility`, `ObjectShadowPolicyInput` for Shadow Budget Manager.
+- `components/editor/design-page/lighting/SunController.tsx` — Implements `SunController` for Sun Controller.
+- `components/editor/design-page/lighting/ViewerLighting.tsx` — Implements `ViewerLighting` for Viewer Lighting.
+- `components/editor/design-page/lighting/WindowLightManager.tsx` — Defines `selectWindowLightBudget`, `WindowLightManager` for Window Light Manager.
+- `components/editor/design-page/LightingSettingsControls.tsx` — Implements `LightingSettingsControls` for Lighting Settings Controls.
+- `components/editor/design-page/LightingSettingsDrawer.tsx` — Implements `LightingSettingsDrawer` for Lighting Settings Drawer.
+- `components/LightingPresetsUI.tsx` — Implements `LightingPresetsUI` for Lighting Presets UI.
+- `components/scene/furniture/CameraCapture.tsx` — Implements `CameraCapture` for Camera Capture.
+- `components/scene/RoomEnvironment.tsx` — Defines `Room`, `ROOM_FLOOR_SURFACE_OFFSET` for Room Environment.
+- `lib/design-lighting-settings.ts` — Defines `resolveDesignLightingSettings`, `updateDesignLightingSettings` for design lighting settings.
+- `lib/design-page-wall-cutaway.ts` — Defines `isWallFacingCamera`, `resolveDominantCameraCutawayWall`, `isWallBetweenCameraAndTarget`, `isWallOnCameraSideOfTarget`, and related exports for design page wall cutaway.
+- `lib/floor-plan-camera-cutaway.ts` — Defines `canonicalWallCutawayKey`, `deriveCanonicalWallBoundaryRoles`, `resolveCanonicalCameraCutawayWallKeys`, `CanonicalCutawayTarget`, and related exports for floor plan camera cutaway.
+- `lib/lightingPresets.ts` — Defines `isLightingPreset`, `DEFAULT_DESIGN_LIGHTING_SETTINGS`, `LIGHTING_PRESETS`, `LightingPreset`, and related exports for lighting Presets.
+- `lib/pendant-light-adjustment.ts` — Defines `clampPendantHeightCm`, `getAdjustablePendantHeight`, `calculatePendantCableDeformation`, `PendantCableAdjustment`, and related exports for pendant light adjustment.
+- `lib/plan-camera-2d.ts` — Defines `applyPlan2DCameraInvariant`, `getPlan2DCameraInvariantStatus`, `isPlan2DCameraDegenerate`, `recoverPlan2DCameraIfNeeded`, and related exports for plan camera 2D.
+- `lib/resolve-lighting-scene.ts` — Defines `cctKelvinToLinearSrgb`, `lumensToCandela`, `resolveLightingQualityBudget`, `resolveFixturePhotometrics`, and related exports for resolve lighting scene.
+
+### 9. State management (2)
+
+- `lib/design-page-config-state.ts` — Defines `buildItemPlanningBoundsByInstanceId`, `useDesignPageConfigState` for design page config state.
+- `lib/historyManager.ts` — Defines `HistoryManager`, `DEFAULT_HISTORY_MAX_ENTRIES`, `Snapshot`, `HistoryEntry`, and related exports for history Manager.
+
+### 10. Design persistence, revisions, autosave, recovery, and cloud synchronization (15)
+
+- `lib/design-item-product-snapshot.ts` — Defines `createPersistedProductSnapshot`, `enrichDesignItemProductSnapshot`, `enrichDesignSnapshotProductSnapshots`, `resolveDesignItemVisualProduct` for design item product snapshot.
+- `lib/design-page-cloud-baseline.ts` — Defines `createDetachedCloudBaseline`, `beginCloudBaselineLoad`, `installPendingCloudBaseline`, `cancelCloudBaselineLoad`, and related exports for design page cloud baseline.
+- `lib/design-page-cloud-write-execution.ts` — Defines `executeDesignPageCloudWrite`, `DesignPageCloudWriteResult` for design page cloud write execution.
+- `lib/design-page-cloud-write-queue.ts` — Defines `createDesignPageCloudWriteQueue`, `DesignPageCloudWriteQueue`, `DesignPageCloudWriteKind`, `DesignPageCloudWriteContext`, and related exports for design page cloud write queue.
+- `lib/design-page-local-backup-recovery.ts` — Defines `getLastKnownValidLocalBackupKey`, `getLocalBackupSourceVersion`, `assertLocalBackupWithinSizeLimit`, `assertCurrentDesignDocument`, and related exports for design page local backup recovery.
+- `lib/design-page-local-backup.ts` — Defines `normalizeDesignPageLocalBackup`, `NormalizeDesignPageLocalBackupInput`, `NormalizedDesignPageLocalBackup` for design page local backup.
+- `lib/design-page-persistence-projection.ts` — Defines `projectCanonicalDesignPersistence`, `normalizeLoadedCloudDesign`, `DesignPageCloudNormalizationError` for design page persistence projection.
+- `lib/design-page-save-status.ts` — Defines `getDesignPageSaveStatus`, `DesignPageSaveStatusInput` for design page save status.
+- `lib/design-snapshot-v3-floor-plan-adapter.ts` — Defines `designSnapshotV3ToFloorPlanDocumentV2`, `DesignSnapshotV3FloorPlanAdapterOptions`, `DesignSnapshotV3FloorPlanAdapterResult` for design snapshot v3 floor plan adapter.
+- `lib/floor-plan-imports/revision-retirement.ts` — Defines `retirePublishedFloorPlanRevisionForSupersede`, `retireFloorPlanRevisionWithoutReplacement`, `StandaloneFloorPlanRevisionForRetirement`, `PublishedFloorPlanRevisionForRetirement` for revision retirement.
+- `lib/floor-plan-imports/revision-supersede.ts` — Defines `findUncoveredFloorPlanSupersedeBindings`, `assertFloorPlanSupersedeCoverage` for revision supersede.
+- `lib/floor-plan-revision-updates.ts` — Defines `isSameFloorPlanAddressBinding`, `floorPlanBindingCoversSavedUnit`, `findLatestFloorPlanRevisionUpdate`, `compareFloorPlanRevisions`, and related exports for floor plan revision updates.
+- `lib/room-persistence.ts` — Defines `isPersistableFloorPlanAssetUrl`, `isStoredDesign`, `sanitizeStoredDesign`, `snapshotToStored`, and related exports for room persistence.
+- `lib/shared-design-snapshot.ts` — Defines `projectSharedDesignSnapshot`, `projectSharedStoredDesign`, `projectSharedDesignTransport`, `SharedDesignTransportProjection`, and related exports for shared design snapshot.
+- `lib/snapshot-fingerprint.ts` — Defines `canonicalizeDesignSnapshot`, `serializeDesignSnapshotFingerprint`, `fingerprintDesignSnapshot` for snapshot fingerprint.
+
+### 11. Hooks (145)
+
+- `components/catalog/useCatalogDrawerFocusRestoration.ts` — Defines `getCatalogDrawerFocusAttributes`, `createCatalogDrawerFocusRestorationRequest`, `useCatalogDrawerPreviewFocus`, `shouldCloseCatalogDrawerForUnavailableContent`, and related exports for use Catalog Drawer Focus Restoration.
+- `components/editor/design-system/useEditorDialogLifecycle.ts` — Implements `useEditorDialogLifecycle` for use Editor Dialog Lifecycle.
+- `components/editor/renderers/canonical-floor-plan/useCameraCutaway.ts` — Implements `useCanonicalCameraCutawayWallKeys` for use Camera Cutaway.
+- `components/editor/renderers/useSurfaceMaterialTexture.ts` — Defines `getSurfacePatternRowOffsetForTest`, `getSurfacePatternColumnOffsetForTest`, `getHerringbonePlankSizeForTest`, `getHerringboneBasisVectorsForTest`, and related exports for use Surface Material Texture.
+- `components/editor/useConsumerFloorPlanImportSession.ts` — Defines `parseFloorPlanImportDocument`, `parseFloorPlanImportIssues`, `floorPlanImportResponseJson`, `loadConsumerFloorPlanImportJob`, and related exports for use Consumer Floor Plan Import Session.
+- `components/editor/useFloorPlanHistoryConfirmationState.ts` — Implements `useFloorPlanHistoryConfirmationState` for use Floor Plan History Confirmation State.
+- `components/editor/useFloorPlanUploadDialogLifecycle.ts` — Implements `useFloorPlanUploadDialogLifecycle` for use Floor Plan Upload Dialog Lifecycle.
+- `components/editor/useFloorPlanWorkspaceFocus.ts` — Implements `useFloorPlanWorkspaceFocus` for use Floor Plan Workspace Focus.
+- `components/scene/glb-scaled-model/useGLBLoadedResource.ts` — Implements `useGLBLoadedResource` for use GLBLoaded Resource.
+- `components/scene/glb-scaled-model/useGLBMaterials.ts` — Implements `useGLBMaterials` for use GLBMaterials.
+- `components/scene/glb-scaled-model/useGLBModelLifecycle.ts` — Implements `useGLBModelLifecycle` for use GLBModel Lifecycle.
+- `hooks/useEditorMode.ts` — Implements `useEditorMode` for use Editor Mode.
+- `hooks/useMe.ts` — Implements `useMe` for use Me.
+- `hooks/useUndoRedo.ts` — Implements `useUndoRedo` for use Undo Redo.
+- `hooks/useUndoRedoHotkeys.ts` — Implements `useUndoRedoHotkeys` for use Undo Redo Hotkeys.
+- `lib/room-hooks.ts` — Defines `useActiveRoom`, `useActiveRoomId`, `useActiveRoomItems`, `useActiveRoomZones`, and related exports for room hooks.
+- `lib/useClientPreviewCommandBarFocus.ts` — Defines `guardHiddenCommandAction`, `useClientPreviewCommandBarFocus`, `CLIENT_PREVIEW_COMMAND_BAR_ID`, `CLIENT_PREVIEW_FALLBACK_ACTION_ID`, and related exports for use Client Preview Command Bar Focus.
+- `lib/useDesignPageAiLayout.ts` — Defines `useDesignPageAiLayout`, `UseDesignPageAiLayoutParams` for use Design Page AI Layout.
+- `lib/useDesignPageAiNotes.ts` — Implements `useDesignPageAiNotes` for use Design Page AI Notes.
+- `lib/useDesignPageAiPanelRegistrationFacade.ts` — Defines `useDesignPageAiPanelRegistrationFacade`, `UseDesignPageAiPanelRegistrationFacadeInput`, `DesignPageAiPanelRegistrationFacade` for use Design Page AI Panel Registration Facade.
+- `lib/useDesignPageAiWorkspaceRegistration.ts` — Defines `useDesignPageAiWorkspaceRegistration`, `UseDesignPageAiWorkspaceRegistrationInput`, `DesignPageAiWorkspaceRegistration` for use Design Page AI Workspace Registration.
+- `lib/useDesignPageBetaStartController.ts` — Defines `useDesignPageBetaStartController`, `BETA_START_DISMISSED_STORAGE_KEY`, `UseDesignPageBetaStartControllerInput`, `DesignPageBetaStartController` for use Design Page Beta Start Controller.
+- `lib/useDesignPageBilling.ts` — Implements `useDesignPageBilling` for use Design Page Billing.
+- `lib/useDesignPageCabinetryRegistrationFacade.ts` — Defines `useDesignPageCabinetryRegistrationFacade`, `UseDesignPageCabinetryRegistrationFacadeInput`, `DesignPageCabinetryRegistration` for use Design Page Cabinetry Registration Facade.
+- `lib/useDesignPageCabinetryWorkspaceRegistration.ts` — Defines `useDesignPageCabinetryWorkspaceRegistration`, `UseDesignPageCabinetryWorkspaceRegistrationInput`, `DesignPageCabinetryWorkspaceRegistration` for use Design Page Cabinetry Workspace Registration.
+- `lib/useDesignPageCameraBridgeController.ts` — Defines `useDesignPageCameraBridgeController`, `UseDesignPageCameraBridgeControllerInput`, `DesignPageCameraBridgeNavigationActions`, `DesignPageCameraBridgeController` for use Design Page Camera Bridge Controller.
+- `lib/useDesignPageCameraNavigation.ts` — Defines `useDesignPageCameraNavigation`, `DesignPageCameraNavigationRefs`, `DesignPageCameraNavigationState`, `DesignPageCameraNavigationConfiguration`, and related exports for use Design Page Camera Navigation.
+- `lib/useDesignPageCameraWorkspaceFacade.ts` — Defines `useDesignPageCameraWorkspaceFacade`, `UseDesignPageCameraWorkspaceFacadeInput` for use Design Page Camera Workspace Facade.
+- `lib/useDesignPageCanonicalTopologyController.ts` — Defines `useDesignPageCanonicalTopologyController`, `UseDesignPageCanonicalTopologyControllerInput`, `CanonicalOpeningDeleteResultV2`, `DesignPageCanonicalTopologyActions` for use Design Page Canonical Topology Controller.
+- `lib/useDesignPageCanvasInteractionController.ts` — Defines `useDesignPageCanvasInteractionController`, `UseDesignPageCanvasInteractionControllerInput` for use Design Page Canvas Interaction Controller.
+- `lib/useDesignPageCartHoverCameraFocus.ts` — Defines `useDesignPageCartHoverCameraFocus`, `DEFAULT_DESIGN_PAGE_CART_HOVER_CAMERA_FOCUS_CONFIGURATION`, `DesignPageCartHoverCameraFocusConfiguration`, `UseDesignPageCartHoverCameraFocusInput` for use Design Page Cart Hover Camera Focus.
+- `lib/useDesignPageCatalogPlacement.ts` — Defines `useDesignPageCatalogPlacement`, `DesignPageCatalogPlacementState`, `DesignPageCatalogPlacementConfiguration`, `CatalogPlacementTargetResult`, and related exports for use Design Page Catalog Placement.
+- `lib/useDesignPageCatalogPlacementRecommendationModel.ts` — Defines `useDesignPageCatalogPlacementRecommendationModel`, `UseDesignPageCatalogPlacementRecommendationModelInput`, `DesignPageCatalogPlacementRecommendationModel` for use Design Page Catalog Placement Recommendation Model.
+- `lib/useDesignPageCatalogPlacementRegistrationFacade.ts` — Defines `getCatalogPlacementItemDisplayName`, `resolveCatalogPlacementPreviewTarget`, `resolveCatalogPlacementTargetRoomId`, `useDesignPageCatalogPlacementRegistrationFacade`, and related exports for use Design Page Catalog Placement Registration Facade.
+- `lib/useDesignPageCloudBaselineController.ts` — Defines `useDesignPageCloudBaselineController`, `DesignPageCloudBaselineController` for use Design Page Cloud Baseline Controller.
+- `lib/useDesignPageCloudConflictCopyController.ts` — Defines `useDesignPageCloudConflictCopyController`, `DesignPageCloudSaveConflictState` for use Design Page Cloud Conflict Copy Controller.
+- `lib/useDesignPageCloudLoadController.ts` — Defines `resolveDesignPageCloudPresentation`, `sanitizeDesignPageSavedViews`, `useDesignPageCloudLoadController` for use Design Page Cloud Load Controller.
+- `lib/useDesignPageCommandPalette.ts` — Defines `useDesignPageCommandPalette`, `DesignPageCommandPaletteState`, `DesignPageCommandPaletteActions`, `UseDesignPageCommandPaletteOptions` for use Design Page Command Palette.
+- `lib/useDesignPageCommerceActions.ts` — Defines `useDesignPageCommerceActions`, `UseDesignPageCommerceActionsInput`, `DesignPageCommerceActions` for use Design Page Commerce Actions.
+- `lib/useDesignPageCommerceOnboardingRegistration.ts` — Defines `useDesignPageCommerceOnboardingRegistration`, `UseDesignPageCommerceOnboardingRegistrationInput`, `DesignPageCommerceOnboardingRegistration` for use Design Page Commerce Onboarding Registration.
+- `lib/useDesignPageCoreShellBaseRegistration.ts` — Implements `useDesignPageCoreShellBaseRegistration` for use Design Page Core Shell Base Registration.
+- `lib/useDesignPageCoreShellRegistration.ts` — Defines `useDesignPageCoreShellRegistration`, `UseDesignPageCoreShellRegistrationInput`, `DesignPageCoreShellRegistration` for use Design Page Core Shell Registration.
+- `lib/useDesignPageCrossRoomItemTransfer.ts` — Defines `transferDesignPageItemToRoom`, `useDesignPageCrossRoomItemTransfer`, `TransferDesignPageItemToRoom` for use Design Page Cross Room Item Transfer.
+- `lib/useDesignPageDocumentHistoryController.ts` — Defines `useDesignPageHistoryRevision`, `useDesignPageDocumentHistoryController`, `useDesignPageHistoryShortcuts`, `UseDesignPageDocumentHistoryControllerInput`, and related exports for use Design Page Document History Controller.
+- `lib/useDesignPageDocumentHistoryWorkspace.ts` — Defines `useDesignPageDocumentHistoryWorkspace`, `UseDesignPageDocumentHistoryWorkspaceInput`, `DesignPageDocumentHistoryWorkspace` for use Design Page Document History Workspace.
+- `lib/useDesignPageDocumentRoomRegistration.ts` — Defines `useDesignPageDocumentRoomRegistration`, `UseDesignPageDocumentRoomRegistrationInput`, `DesignPageDocumentRoomRegistration` for use Design Page Document Room Registration.
+- `lib/useDesignPageDocumentSelectionRegistrationFacade.ts` — Defines `useDesignPageDocumentSelectionRegistrationFacade`, `UseDesignPageDocumentSelectionRegistrationFacadeInput`, `DesignPageDocumentSelectionRegistrationFacade` for use Design Page Document Selection Registration Facade.
+- `lib/useDesignPageDocumentStateController.ts` — Defines `useDesignPagePlanDocumentState`, `useDesignPageFloorPlanDocumentState`, `useDesignPageSnapshotDocumentState`, `useDesignPageDocumentRefSynchronization`, and related exports for use Design Page Document State Controller.
+- `lib/useDesignPageEditorChromeController.ts` — Defines `useDesignPageEditorChromeController`, `UseDesignPageEditorChromeControllerInput` for use Design Page Editor Chrome Controller.
+- `lib/useDesignPageEditorClientLifecycle.ts` — Defines `useDesignPageEditorClientLifecycle`, `UseDesignPageEditorClientLifecycleInput` for use Design Page Editor Client Lifecycle.
+- `lib/useDesignPageEditorInteractionRegistration.ts` — Defines `useDesignPageEditorInteractionRegistration`, `UseDesignPageEditorInteractionRegistrationInput`, `DesignPageEditorInteractionRegistration` for use Design Page Editor Interaction Registration.
+- `lib/useDesignPageEditorShellRuntime.ts` — Defines `useDesignPageEditorShellRuntime`, `UseDesignPageEditorShellRuntimeInput` for use Design Page Editor Shell Runtime.
+- `lib/useDesignPageExplicitCloudSaveController.ts` — Defines `useDesignPageManualCloudSave`, `useDesignPagePreserveCloudSave`, `PreserveCurrentDesignResult` for use Design Page Explicit Cloud Save Controller.
+- `lib/useDesignPageExport.ts` — Defines `countExportedSurfaceMaterials`, `useDesignPageExport` for use Design Page Export.
+- `lib/useDesignPageFloorPlanAssets.ts` — Implements `useDesignPageFloorPlanAssets` for use Design Page Floor Plan Assets.
+- `lib/useDesignPageFloorPlanLifecycleRegistration.ts` — Defines `useDesignPageFloorPlanLifecycleRegistration`, `UseDesignPageFloorPlanLifecycleRegistrationInput`, `DesignPageFloorPlanLifecycleRegistration` for use Design Page Floor Plan Lifecycle Registration.
+- `lib/useDesignPageFloorPlanTracing.ts` — Defines `useDesignPageFloorPlanTracing`, `ConsumerPlanCompletionSignal` for use Design Page Floor Plan Tracing.
+- `lib/useDesignPageFloorPlanTracingKeyboard.ts` — Defines `handleFloorPlanTracingKeyDown`, `bindDesignPageFloorPlanTracingKeyboard`, `useDesignPageFloorPlanTracingKeyboard`, `UseDesignPageFloorPlanTracingKeyboardInput`, and related exports for use Design Page Floor Plan Tracing Keyboard.
+- `lib/useDesignPageFloorPlanUnderlayController.ts` — Defines `useDesignPageFloorPlanUnderlayController`, `PendingPlanTemplateReplacement` for use Design Page Floor Plan Underlay Controller.
+- `lib/useDesignPageFloorPlanWorkflowState.ts` — Defines `useDesignPageFloorPlanWorkflowState`, `FloorPlanActiveTool` for use Design Page Floor Plan Workflow State.
+- `lib/useDesignPageHistory.ts` — Defines `useDesignPageHistory`, `DesignPageHistorySnapshot`, `UseDesignPageHistoryInput` for use Design Page History.
+- `lib/useDesignPageHousePlanState.ts` — Implements `useDesignPageHousePlanState` for use Design Page House Plan State.
+- `lib/useDesignPageImportedModels.ts` — Defines `buildFurnishCatalogItems`, `useDesignPageImportedModels`, `ImportedFamilyOption` for use Design Page Imported Models.
+- `lib/useDesignPageImportedWallEditingController.ts` — Defines `useDesignPageImportedWallEditingController`, `ImportedWallEditingState`, `ImportedWallEditingActions`, `DesignPageImportedWallEditingController`, and related exports for use Design Page Imported Wall Editing Controller.
+- `lib/useDesignPageItemDocumentController.ts` — Defines `reconcileDesignPageItems`, `useDesignPageItemDocumentController`, `DesignPageItemUpdater`, `CommitDesignPageItemsToRoomOptions`, and related exports for use Design Page Item Document Controller.
+- `lib/useDesignPageItemGeometry.ts` — Defines `useDesignPageItemGeometry`, `DesignPageSelectionBounds`, `ResolveDesignPagePlanningDimensions`, `DesignPageItemGeometryConfiguration`, and related exports for use Design Page Item Geometry.
+- `lib/useDesignPageItemInteractionFacade.ts` — Defines `useDesignPageItemInteractionFacade`, `UseDesignPageItemInteractionFacadeInput` for use Design Page Item Interaction Facade.
+- `lib/useDesignPageItemSelectionController.ts` — Defines `useDesignPageItemSelectionController`, `DesignPageItemSelectionControllerState`, `DesignPageItemSelectionControllerActions`, `UseDesignPageItemSelectionControllerInput`, and related exports for use Design Page Item Selection Controller.
+- `lib/useDesignPageLateBoundRef.ts` — Implements `useDesignPageLateBoundRef` for use Design Page Late Bound Ref.
+- `lib/useDesignPageLayoutVersionsController.ts` — Defines `useDesignPageLayoutVersionsController`, `DesignPageLayoutVersionsRefs`, `DesignPageLayoutVersionsActions`, `UseDesignPageLayoutVersionsControllerParams` for use Design Page Layout Versions Controller.
+- `lib/useDesignPageLiveCatalog.ts` — Implements `useDesignPageLiveCatalog` for use Design Page Live Catalog.
+- `lib/useDesignPageLocalBackupHydration.ts` — Defines `useDesignPageLocalBackupHydration`, `DESIGN_PAGE_LOCAL_BACKUP_STORAGE_KEY`, `UseDesignPageLocalBackupHydrationInput`, `DesignPageLocalBackupRecoveryState`, and related exports for use Design Page Local Backup Hydration.
+- `lib/useDesignPageNamedCameraViewsController.ts` — Defines `buildDesignPageSavedCameraView`, `mapDesignPageSavedCameraViewsToLegacy`, `appendDesignPageSavedCameraView`, `removeDesignPageSavedCameraView`, and related exports for use Design Page Named Camera Views Controller.
+- `lib/useDesignPageNewPlanController.ts` — Defines `executeSaveCurrentAndStartNewPlan`, `useDesignPageNewPlanController`, `DesignPageNewPlanControllerState`, `DesignPageNewPlanControllerActions`, and related exports for use Design Page New Plan Controller.
+- `lib/useDesignPageOnboarding.ts` — Defines `useDesignPageOnboarding`, `DesignPageOnboardingState`, `DesignPageOnboardingActions`, `DesignPageOnboardingConfiguration`, and related exports for use Design Page Onboarding.
+- `lib/useDesignPageOnboardingRegistrationFacade.ts` — Defines `useDesignPageOnboardingRegistrationFacade`, `UseDesignPageOnboardingRegistrationFacadeInput`, `DesignPageOnboardingRegistration` for use Design Page Onboarding Registration Facade.
+- `lib/useDesignPagePanelActions.ts` — Defines `resolveDesignPageActiveWallFaceId`, `useDesignPagePanelActions`, `DesignPagePanelActionsState`, `DesignPagePanelActionAdapters`, and related exports for use Design Page Panel Actions.
+- `lib/useDesignPagePanelMode.ts` — Defines `resolveDesignControlsPanelMode`, `isDesignControlsPanelMode`, `useDesignPagePanelMode`, `DesignPageEditorMode`, and related exports for use Design Page Panel Mode.
+- `lib/useDesignPagePaywallRegistrationFacade.ts` — Defines `useDesignPagePaywallTelemetryRegistration`, `useDesignPageWorkspacePaywallRegistration`, `useDesignPageDeferredPaywallLifecycle`, `useDesignPageWorkspaceDeferredPaywallRegistration`, and related exports for use Design Page Paywall Registration Facade.
+- `lib/useDesignPagePaywallTelemetryController.ts` — Defines `buildDesignPageUpgradeDialogCopy`, `useDesignPagePaywallTelemetryController`, `DesignPageUpgradeReason`, `UseDesignPagePaywallTelemetryControllerInput`, and related exports for use Design Page Paywall Telemetry Controller.
+- `lib/useDesignPagePaywallTelemetryLifecycle.ts` — Defines `useDesignPagePaywallTelemetryLifecycle`, `UseDesignPagePaywallTelemetryLifecycleInput` for use Design Page Paywall Telemetry Lifecycle.
+- `lib/useDesignPagePersistence.ts` — Defines `useDesignPagePersistence`, `SavedDesignSummary`, `PendingSavedDesignDelete`, `UseDesignPagePersistenceParams` for use Design Page Persistence.
+- `lib/useDesignPagePersistenceNewPlanFacade.ts` — Defines `useDesignPagePersistenceNewPlanFacade`, `UseDesignPagePersistenceNewPlanFacadeInput` for use Design Page Persistence New Plan Facade.
+- `lib/useDesignPagePersistenceRegistration.ts` — Defines `useDesignPagePersistenceRegistration`, `UseDesignPagePersistenceRegistrationInput` for use Design Page Persistence Registration.
+- `lib/useDesignPagePersistenceWorkspaceRegistration.ts` — Defines `createGuestPromptScopeKey`, `useDesignPagePersistenceWorkspaceRegistration`, `UseDesignPagePersistenceWorkspaceRegistrationInput`, `DesignPagePersistenceWorkspaceRegistration` for use Design Page Persistence Workspace Registration.
+- `lib/useDesignPagePlacementRoomQueries.ts` — Defines `clampToPlacementRoom`, `placementCollidesInRoom`, `findPlacementBlockerInRoom`, `isPlacementContainedInRoom`, and related exports for use Design Page Placement Room Queries.
+- `lib/useDesignPagePlacementSelectionWorkspaceFacade.ts` — Defines `useDesignPagePlacementSelectionWorkspaceFacade`, `UseDesignPagePlacementSelectionWorkspaceFacadeInput` for use Design Page Placement Selection Workspace Facade.
+- `lib/useDesignPagePlacementTargetController.ts` — Defines `useDesignPagePlacementTargetController`, `UseDesignPagePlacementTargetControllerInput` for use Design Page Placement Target Controller.
+- `lib/useDesignPagePlacementWorkspaceRegistration.ts` — Defines `useDesignPagePlacementWorkspaceRegistration`, `UseDesignPagePlacementWorkspaceRegistrationInput`, `DesignPagePlacementWorkspaceRegistration` for use Design Page Placement Workspace Registration.
+- `lib/useDesignPagePlanActions.ts` — Defines `useDesignPagePlanActions`, `PlanOverlayCommandId` for use Design Page Plan Actions.
+- `lib/useDesignPagePlanAuthoringRegistration.ts` — Defines `useDesignPagePlanAuthoringRegistration`, `UseDesignPagePlanAuthoringRegistrationInput`, `DesignPagePlanAuthoringRegistration` for use Design Page Plan Authoring Registration.
+- `lib/useDesignPagePlanCanvasActionsController.ts` — Defines `useDesignPagePlanCanvasActionsController`, `UseDesignPagePlanCanvasActionsControllerInput`, `DesignPagePlanCanvasActionsController` for use Design Page Plan Canvas Actions Controller.
+- `lib/useDesignPagePlanEditingFacade.ts` — Defines `useDesignPagePlanEditingFacade`, `UseDesignPagePlanEditingFacadeInput` for use Design Page Plan Editing Facade.
+- `lib/useDesignPagePlanOverlayController.ts` — Defines `useDesignPagePlanOverlayController`, `DesignPagePlanOverlayControllerState`, `DesignPagePlanOverlayControllerConfiguration`, `DesignPagePlanOverlayControllerRefs`, and related exports for use Design Page Plan Overlay Controller.
+- `lib/useDesignPagePlanPresentationModel.ts` — Defines `resolveDesignPageViewportLayout`, `useDesignPagePlanPresentationModel`, `ResolveDesignPageViewportLayoutInput`, `UseDesignPagePlanPresentationModelInput` for use Design Page Plan Presentation Model.
+- `lib/useDesignPagePlanQualityController.ts` — Defines `useDesignPagePlanQualityController`, `DesignPagePlanQualityState`, `DesignPagePlanQualityConfiguration`, `DesignPagePlanQualityActions`, and related exports for use Design Page Plan Quality Controller.
+- `lib/useDesignPagePlanState.ts` — Defines `useDesignPagePlanState`, `PlanTheme`, `ExportStylePreset`, `PlanLayers` for use Design Page Plan State.
+- `lib/useDesignPagePlanViewportRuntime.ts` — Defines `useDesignPagePlanViewportRuntime`, `UseDesignPagePlanViewportRuntimeInput` for use Design Page Plan Viewport Runtime.
+- `lib/useDesignPagePlanWorkspaceFacade.ts` — Defines `useDesignPagePlanWorkspaceFacade`, `useDesignPagePlanUnderlayFacade`, `useDesignPagePlanTracingFacade`, `UseDesignPagePlanWorkspaceFacadeInput` for use Design Page Plan Workspace Facade.
+- `lib/useDesignPagePlanWorkspaceRegistrationFacade.ts` — Defines `buildDesignPagePlanWorkspaceRegistrationInput`, `useDesignPagePlanWorkspaceRegistrationFacade`, `UseDesignPagePlanWorkspaceRegistrationFacadeInput` for use Design Page Plan Workspace Registration Facade.
+- `lib/useDesignPagePresentationBackupRegistrationFacade.ts` — Defines `useDesignPagePresentationBackupRegistrationFacade`, `UseDesignPagePresentationBackupRegistrationFacadeInput`, `DesignPagePresentationBackupRegistrationFacade` for use Design Page Presentation Backup Registration Facade.
+- `lib/useDesignPagePresentationExportRuntime.ts` — Defines `useDesignPagePresentationExportRuntime`, `UseDesignPagePresentationExportRuntimeInput`, `DesignPagePresentationExportRuntime` for use Design Page Presentation Export Runtime.
+- `lib/useDesignPagePresentationLightingRegistration.ts` — Defines `buildDesignPagePresentationLightingState`, `useDesignPagePresentationLightingRegistration`, `DesignPagePresentationLightingState`, `UseDesignPagePresentationLightingRegistrationInput` for use Design Page Presentation Lighting Registration.
+- `lib/useDesignPagePresentationQaFacade.ts` — Defines `useDesignPagePresentationQaFacade`, `UseDesignPagePresentationQaFacadeInput`, `DesignPagePresentationQaFacade` for use Design Page Presentation Qa Facade.
+- `lib/useDesignPagePresentationStateRegistration.ts` — Defines `useDesignPagePresentationStateRegistration`, `UseDesignPagePresentationStateRegistrationInput` for use Design Page Presentation State Registration.
+- `lib/useDesignPagePresentationWorkspaceRegistration.ts` — Defines `useDesignPagePresentationWorkspaceRegistration`, `UseDesignPagePresentationWorkspaceRegistrationInput`, `DesignPagePresentationWorkspaceRegistration` for use Design Page Presentation Workspace Registration.
+- `lib/useDesignPagePresentExportController.ts` — Defines `useDesignPagePresentExportController`, `DesignPagePresentExportControllerState`, `DesignPagePresentExportControllerConfiguration`, `DesignPagePresentExportControllerActions`, and related exports for use Design Page Present Export Controller.
+- `lib/useDesignPageProductConfiguration.ts` — Defines `normalizeProductVariantKey`, `useDesignPageProductConfiguration` for use Design Page Product Configuration.
+- `lib/useDesignPageProductInspectionController.ts` — Defines `useDesignPageProductInspectionController`, `DesignPageRotationSnapPresetDegrees`, `DesignPageProductInspectionControllerState`, `DesignPageProductInspectionControllerConfiguration`, and related exports for use Design Page Product Inspection Controller.
+- `lib/useDesignPageProductSelectorState.ts` — Defines `useDesignPageProductSelectorState`, `StructuredVariantEntry` for use Design Page Product Selector State.
+- `lib/useDesignPageQaReadModel.ts` — Defines `buildDesignPageScenePerformanceQaSnapshot`, `buildDesignPageLayoutQaSnapshot`, `useDesignPageQaReadModel`, `DesignPagePlanDebugMetrics`, and related exports for use Design Page Qa Read Model.
+- `lib/useDesignPageRequestedDesignWorkspaceRegistration.ts` — Defines `resolveRequestedDesignLoadDecision`, `resolveRequestedDesignLoadCompletion`, `useDesignPageRequestedDesignWorkspaceRegistration`, `RequestedDesignLoadDecision`, and related exports for use Design Page Requested Design Workspace Registration.
+- `lib/useDesignPageRoomFloorWorkspace.ts` — Defines `useDesignPageRoomFloorWorkspace`, `UseDesignPageRoomFloorWorkspaceInput` for use Design Page Room Floor Workspace.
+- `lib/useDesignPageRoomGeometry.ts` — Implements `useDesignPageRoomGeometry` for use Design Page Room Geometry.
+- `lib/useDesignPageRoomPlanController.ts` — Defines `useDesignPageRoomPlanController`, `DesignPageRoomPlanControllerState`, `DesignPageRoomPlanControllerConfiguration`, `DesignPageRoomPlanControllerRefs`, and related exports for use Design Page Room Plan Controller.
+- `lib/useDesignPageRoomReadModel.ts` — Defines `useDesignPageRoomReadModel`, `UseDesignPageRoomReadModelInput` for use Design Page Room Read Model.
+- `lib/useDesignPageSceneItemDrag.ts` — Implements `useDesignPageSceneItemDrag` for use Design Page Scene Item Drag.
+- `lib/useDesignPageScenePerformance.ts` — Defines `useDesignPageScenePerformance`, `ScenePerformanceMode`, `SceneRenderQuality` for use Design Page Scene Performance.
+- `lib/useDesignPageSceneReadModel.ts` — Defines `reconcileDesignPageSceneReadiness`, `useDesignPageSceneReadModel`, `UseDesignPageSceneReadModelInput` for use Design Page Scene Read Model.
+- `lib/useDesignPageSceneRegionWorkspaceRegistration.ts` — Defines `useDesignPageSceneRegionWorkspaceRegistration`, `UseDesignPageSceneRegionWorkspaceRegistrationInput`, `DesignPageSceneRegionWorkspaceRegistration` for use Design Page Scene Region Workspace Registration.
+- `lib/useDesignPageSceneRoomReadFacade.ts` — Defines `useDesignPageSceneRoomReadFacade`, `UseDesignPageSceneRoomReadFacadeInput`, `DesignPageSceneRoomReadFacade` for use Design Page Scene Room Read Facade.
+- `lib/useDesignPageSceneRoomReadRegistration.ts` — Defines `useDesignPageSceneRoomReadRegistration`, `UseDesignPageSceneRoomReadRegistrationInput`, `DesignPageSceneRoomReadRegistration` for use Design Page Scene Room Read Registration.
+- `lib/useDesignPageSelectedItemPanelController.ts` — Defines `getDesignPageSelectedItemLockLabel`, `getDesignPageSelectedItemCommerceType`, `getDesignPageSelectedItemCommerceTarget`, `useDesignPageSelectedItemPanelController`, and related exports for use Design Page Selected Item Panel Controller.
+- `lib/useDesignPageSelectionCoordinator.ts` — Defines `useDesignPageSelectionCoordinator`, `DesignPageSelectionCoordinatorState`, `DesignPageSelectionCoordinatorConfiguration`, `DesignPageSelectionCoordinatorRefs`, and related exports for use Design Page Selection Coordinator.
+- `lib/useDesignPageSelectionInspectionRuntime.ts` — Defines `useDesignPageSelectionInspectionRuntime`, `UseDesignPageSelectionInspectionRuntimeInput`, `DesignPageSelectionInspectionRuntime` for use Design Page Selection Inspection Runtime.
+- `lib/useDesignPageSelectionInspectorModel.ts` — Defines `buildDesignPageSelectionInspectorSummary`, `isDesignPageSelectionInspectorVisible`, `useDesignPageSelectionInspectorModel`, `DesignPageSelectionInspectorSummary`, and related exports for use Design Page Selection Inspector Model.
+- `lib/useDesignPageSelectionKeyboard.ts` — Defines `useDesignPageDeleteSelectionShortcut`, `useDesignPageSelectionKeyboardController`, `DesignPageDeleteSelectionShortcutState`, `DesignPageDeleteSelectionShortcutConfiguration`, and related exports for use Design Page Selection Keyboard.
+- `lib/useDesignPageSelectionTransforms.ts` — Defines `useDesignPageSelectionTransforms`, `ApplySelectionRotationOptions`, `DesignPageSelectionTransformState`, `DesignPageSelectionTransformConfiguration`, and related exports for use Design Page Selection Transforms.
+- `lib/useDesignPageSelectionWorkspaceRegistration.ts` — Defines `useDesignPageSelectionWorkspaceRegistration`, `UseDesignPageSelectionWorkspaceRegistrationInput`, `DesignPageSelectionWorkspaceRegistration` for use Design Page Selection Workspace Registration.
+- `lib/useDesignPageShoppingCatalogRuntime.ts` — Defines `useDesignPageShoppingCatalogRuntime`, `UseDesignPageShoppingCatalogRuntimeInput`, `DesignPageShoppingCatalogRuntime` for use Design Page Shopping Catalog Runtime.
+- `lib/useDesignPageSurfaceActions.ts` — Defines `useDesignPageSurfaceActions`, `SurfaceTargetMode`, `SelectedWallSurfaceTarget`, `RendererSurfaceTarget`, and related exports for use Design Page Surface Actions.
+- `lib/useDesignPageSurfaceInspector.ts` — Defines `useDesignPageSurfaceInspectorContext`, `useDesignPageSurfaceInspector`, `DesignPageSurfaceInspectorContext`, `DesignPageSurfaceInspectorUiActions` for use Design Page Surface Inspector.
+- `lib/useDesignPageSurfaceStateController.ts` — Defines `useDesignPageSurfaceStateController`, `DesignPageSurfaceState`, `DesignPageSurfaceStateActions` for use Design Page Surface State Controller.
+- `lib/useDesignPageSurfaceTargetingFacade.ts` — Defines `useDesignPageSurfaceTargetingFacade`, `UseDesignPageSurfaceTargetingFacadeInput` for use Design Page Surface Targeting Facade.
+- `lib/useDesignPageSurfaceWorkspaceFacade.ts` — Defines `useDesignPageSurfaceWorkspaceFacade`, `UseDesignPageSurfaceWorkspaceFacadeInput`, `DesignPageSurfaceWorkspaceActions` for use Design Page Surface Workspace Facade.
+- `lib/useDesignPageTransientFeedback.ts` — Implements `useDesignPageTransientFeedback` for use Design Page Transient Feedback.
+- `lib/useDesignPageViewportShellRegistration.ts` — Defines `useDesignPageViewportShellRegistration`, `UseDesignPageViewportShellRegistrationInput` for use Design Page Viewport Shell Registration.
+- `lib/useDesignPageZoneController.ts` — Defines `useDesignPageZoneController`, `DesignPageZoneControllerState`, `DesignPageZoneControllerConfiguration`, `DesignPageZoneControllerRefs`, and related exports for use Design Page Zone Controller.
+- `lib/useFloorManager.ts` — Defines `useFloorManager`, `FloorActionAdapters` for use Floor Manager.
+- `lib/useFloorPlanRoomCreation.ts` — Implements `useFloorPlanRoomCreation` for use Floor Plan Room Creation.
+- `lib/useFloorPlanRoomDrawing.ts` — Implements `useFloorPlanRoomDrawing` for use Floor Plan Room Drawing.
+- `lib/useGuestSavePromptController.ts` — Defines `useGuestSavePromptController`, `GuestSavePromptController` for use Guest Save Prompt Controller.
+- `lib/useShopifyCheckoutLock.ts` — Implements `useShopifyCheckoutLock` for use Shopify Checkout Lock.
+- `lib/useSurfaceMaterialCatalog.ts` — Implements `useSurfaceMaterialCatalog` for use Surface Material Catalog.
+- `lib/useSynchronizedFloorPlanTraceMode.ts` — Implements `useSynchronizedFloorPlanTraceMode` for use Synchronized Floor Plan Trace Mode.
+
+### 12. Context providers (2)
+
+- `app/providers/IdentifyGate.tsx` — Implements `IdentifyGate` for Identify Gate.
+- `app/providers/PostHogProvider.tsx` — Implements `PostHogProvider` for Post Hog Provider.
+
+### 13. Libraries, helpers, and shared utilities (101)
+
+- `instrumentation-client.ts` — Implements `onRouterTransitionStart` for instrumentation client.
+- `instrumentation.ts` — Defines `register`, `onRequestError` for instrumentation.
+- `lib/admin-api/update-validation.ts` — Defines `isPlainObject`, `hasOwn`, `pickDefinedFields`, `normalizeStringArray`, and related exports for update validation.
+- `lib/admin.ts` — Defines `isAdminEmail`, `canAccessAdmin`, `requireAdmin` for admin.
+- `lib/anon.ts` — Implements `getAnonId` for anon.
+- `lib/api-boundary.ts` — Defines `createOperationId`, `readJsonRequest`, `apiErrorResponse`, `apiSuccessHeaders`, and related exports for API boundary.
+- `lib/app-event-operations.ts` — Defines `browserAnalyticsWhere`, `trustedWebhookFailureWhere`, `OperationsAppEventWhere`, `OperationsAppEventClient` for app event operations.
+- `lib/app-events.ts` — Defines `recordBrowserAnalyticsEvent`, `recordServerAnalyticsEvent`, `recordInternalDiagnosticEvent`, `BrowserAnalyticsEventPayload`, and related exports for app events.
+- `lib/asset-pipeline/build-qa-report.ts` — Implements `buildAssetQaReport` for build qa report.
+- `lib/asset-pipeline/extract-metadata.ts` — Implements `extractModelMetadata` for extract metadata.
+- `lib/asset-pipeline/generate-thumbnail.ts` — Defines `createPngPlaceholder`, `generateModelThumbnail` for generate thumbnail.
+- `lib/asset-pipeline/normalize.ts` — Implements `normalizeModel` for normalize.
+- `lib/asset-pipeline/optimize.ts` — Implements `optimizeModel` for optimize.
+- `lib/asset-pipeline/types.ts` — Defines `AssetPipelineCheck`, `ModelInspectStats`, `PipelineStepResult`, `AssetQaStatus`, and related exports for types.
+- `lib/assetQuality.ts` — Defines `computeAssetQuality`, `getTaggedValue`, `upsertTaggedValue`, `QUALITY_TAG_PREFIX`, and related exports for asset Quality.
+- `lib/beta-feedback-triage.ts` — Defines `buildBetaFeedbackTriage`, `BetaFeedbackSeverity`, `BetaFeedbackRoute`, `BetaFeedbackTriage` for beta feedback triage.
+- `lib/beta-launch-readiness.ts` — Defines `buildBetaLaunchReadinessSummary`, `BetaLaunchReadinessStatus`, `BetaLaunchReadinessSummary` for beta launch readiness.
+- `lib/beta-staging-evidence.ts` — Defines `buildStagingSmokeEvidenceBundle`, `stagingSmokeEvidenceToCsv`, `stagingSmokeEvidenceToMarkdown`, `stagingSmokeEvidenceToJson`, and related exports for beta staging evidence.
+- `lib/bounded-request-body.ts` — Defines `readBoundedRequestBody`, `readBoundedJsonObject`, `RequestBodyTooLargeError`, `InvalidRequestJsonObjectError` for bounded request body.
+- `lib/browser-app-event-ingestion.ts` — Defines `ingestBrowserAppEvent`, `BrowserAppEventRecordInput`, `BrowserAppEventActor`, `BrowserAppEventIngestionDependencies`, and related exports for browser app event ingestion.
+- `lib/bulkSwap.ts` — Implements `bulkSwapItems` for bulk Swap.
+- `lib/command-palette-session.ts` — Defines `captureCommandPaletteSemanticOpener`, `createCommandPaletteSession`, `prepareCommandPaletteReturnTarget`, `cancelCommandPaletteSession`, and related exports for command palette session.
+- `lib/config.ts` — Defines `getApplicationEnvironment`, `validateDeploymentEnvironmentOrThrow`, `validateEnvOrThrow`, `config`, and related exports for config.
+- `lib/design-api-client.ts` — Defines `DesignApiError`, `designApi`, `DesignApiErrorKind`, `SavedDesignTransport`, and related exports for design API client.
+- `lib/design-document-contract.ts` — Defines `validateStoredDesignDocument`, `getSerializedDesignDocumentByteLength`, `isStoredDesignDocument`, `DESIGN_DOCUMENT_VERSION`, and related exports for design document contract.
+- `lib/design-document-migrations.ts` — Defines `migrateDesignDocument`, `DesignDocumentMigrationStep`, `DesignDocumentMigrationFailure`, `DesignDocumentMigrationResult` for design document migrations.
+- `lib/design-duplication.ts` — Defines `buildDuplicateTitle`, `buildDuplicatedDesignData`, `DuplicateDesignSource` for design duplication.
+- `lib/design-editor-url.ts` — Defines `buildDesignEditorUrl`, `DesignEditorMode`, `DesignEditorView`, `DesignEditorWorkspace`, and related exports for design editor url.
+- `lib/design-page-beta-feedback.ts` — Defines `buildDesignPageBetaFeedbackContext`, `DesignPageBetaFeedbackInput` for design page beta feedback.
+- `lib/design-page-calibration.ts` — Defines `getModelCalibration`, `STANDARD_IMPORTED_CASTLERY_SOFA_CALIBRATION`, `GLB_CALIBRATION_BY_PRODUCT_ID`, `GLBCalibration` for design page calibration.
+- `lib/design-page-config-resolvers.ts` — Defines `dimsFromBoundsCm`, `resolveItemConfigurationCode`, `resolveItemConfigurationEntry`, `resolveConfiguredVisualDimsMm`, and related exports for design page config resolvers.
+- `lib/design-page-contracts.ts` — Provides design page contracts logic for libraries, helpers, and shared utilities.
+- `lib/design-page-dialog-layer-adapter.ts` — Defines `buildDesignPageDialogLayerAdapter`, `BuildDesignPageDialogLayerAdapterInput` for design page dialog layer adapter.
+- `lib/design-page-editor-client-preferences.ts` — Defines `parseDesignPagePlacementAddMode`, `DesignPagePlacementAddMode` for design page editor client preferences.
+- `lib/design-page-editor-configuration.ts` — Defines `resolveEditorInitial3DFitKey`, `DEFAULT_EDITOR_CAMERA_VIEW`, `EDITOR_3D_MIN_CAMERA_DISTANCE`, `EDITOR_3D_MIN_POLAR_ANGLE`, and related exports for design page editor configuration.
+- `lib/design-page-editor-shell-metrics.ts` — Defines `mergeDesignPagePlanMetrics`, `mergeDesignPageCameraDiagnostics`, `DesignPagePlanMetricUpdate` for design page editor shell metrics.
+- `lib/design-page-house-plan.ts` — Defines `resolveHouseRoomFloorElevationMeters`, `resolveFloorPlanDrawCancelDecision`, `resolveFloorPlanOpeningCancelDecision`, `clampRoomDimension`, and related exports for design page house plan.
+- `lib/design-page-item-commands.ts` — Defines `rollbackInterruptedSceneItemDrag`, `applyReplaceRoomItemsCommand`, `applyMoveItemsBetweenRoomsCommand`, `applyDesignItemTransformPatches`, and related exports for design page item commands.
+- `lib/design-page-keyboard-context.ts` — Defines `createDesignPageKeyboardOwnership`, `bindDesignPageKeyboardOwnership`, `isFloorPlanRectangleWallShortcut`, `resolveDesignPageHigherPriorityKeyboardOwner`, and related exports for design page keyboard context.
+- `lib/design-page-panel-region-adapter.ts` — Defines `buildDesignPagePanelRegionAdapter`, `BuildDesignPagePanelRegionAdapterInput` for design page panel region adapter.
+- `lib/design-page-panel-registration-types.ts` — Implements `BuildDesignPagePanelRegistrationInput` for design page panel registration types.
+- `lib/design-page-panel-registration.ts` — Implements `buildDesignPagePanelRegistration` for design page panel registration.
+- `lib/design-page-panel-workspace-registration.ts` — Defines `buildDesignPagePanelWorkspaceRegistration`, `BuildDesignPagePanelWorkspaceRegistrationInput`, `DesignPagePanelWorkspaceRegistration` for design page panel workspace registration.
+- `lib/design-page-plan-canvas-overlays.ts` — Defines `resolveDesignPagePlanCanvasOverlaysState`, `DesignPagePlanCanvasOverlaysState`, `DesignPagePlanCanvasOverlaysInput` for design page plan canvas overlays.
+- `lib/design-page-plan-overlays.ts` — Defines `getPlanOpeningWallSpanMeters`, `clampPlanOpeningMetrics`, `updatePlanOpeningMetrics`, `mapPlanOpeningsToRoomRenderer`, and related exports for design page plan overlays.
+- `lib/design-page-presentation-hotkey.ts` — Defines `resolveDesignPagePresentHotkey`, `DesignPagePresentHotkeyCommand` for design page presentation hotkey.
+- `lib/design-page-refresh-zoom.ts` — Defines `resolveDesignPageRefreshZoomTransform`, `DESIGN_PAGE_REFRESH_ZOOM_EPSILON`, `DesignPageRefreshZoomTransform` for design page refresh zoom.
+- `lib/design-page-requested-design-load-coordinator.ts` — Defines `createDesignPageLoadRequestCoordinator`, `isSupersededDesignPageLoadError`, `DesignPageLoadRequest` for design page requested design load coordinator.
+- `lib/design-page-rug-sizing.ts` — Implements `pickBestRugForSofa` for design page rug sizing.
+- `lib/design-page-selection-context.ts` — Defines `buildDesignSelectionContext`, `DesignSelectionContext` for design page selection context.
+- `lib/design-page-selection-keyboard-commands.ts` — Defines `resolvePendingPlacementKeyboardCommand`, `resolveSelectedItemKeyboardCommand`, `resolveSelectedPlanKeyboardCommand`, `isDesignPageSelectionShortcutBlocked`, and related exports for design page selection keyboard commands.
+- `lib/design-page-template-furnishings.ts` — Defines `resolveTemplateFurnishingProduct`, `isTemplateFurnishingNearDoorway`, `shouldConfirmPlanTemplateReplacement` for design page template furnishings.
+- `lib/design-page-types.ts` — Defines `STYLES`, `PLAN_LAYER_PRESETS`, `Style`, `CameraView`, and related exports for design page types.
+- `lib/design-page-utils.ts` — Defines `getItemPrice`, `getDimensions`, `parseVariantLabel`, `formatMoney`, and related exports for design page utils.
+- `lib/design-page-viewport-region-adapter.ts` — Defines `buildDesignPageViewportRegionAdapter`, `BuildDesignPageViewportRegionAdapterInput` for design page viewport region adapter.
+- `lib/design-page-viewport-workspace-registration.ts` — Defines `buildDesignPageViewportWorkspaceRegistration`, `BuildDesignPageViewportWorkspaceRegistrationInput`, `DesignPageViewportWorkspaceRegistration` for design page viewport workspace registration.
+- `lib/design-route-payload.ts` — Defines `parseDesignCreatePayload`, `parseDesignClaimPayload`, `buildDesignUpdatePayload`, `DesignPayloadResult`, and related exports for design route payload.
+- `lib/first-run-activation.ts` — Defines `buildFirstRunActivationState`, `FirstRunActivationStepId`, `FirstRunActivationStep`, `FirstRunActivationState` for first run activation.
+- `lib/floor-manager-logic.ts` — Defines `formatFloorLevel`, `getFloorAccentColor`, `resolveActiveFloorLevel`, `resolveFloorOptions`, and related exports for floor manager logic.
+- `lib/google-address-types.ts` — Defines `GoogleAddressSuggestion`, `GoogleResolvedAddress`, `GoogleAddressAutocompleteResponse`, `GoogleAddressResolveResponse` for google address types.
+- `lib/google-places-address.ts` — Defines `isGoogleMapsAddressConfigured`, `normalizeGoogleCountryCode`, `normalizeGoogleSessionToken`, `normalizeGooglePlaceId`, and related exports for google places address.
+- `lib/guest-save-prompt.ts` — Defines `getGuestPromptReturnFocusIds`, `createGuestPromptSession`, `consumeGuestPromptSession`, `GUEST_SAVE_OPENER_ID`, and related exports for guest save prompt.
+- `lib/guestDesigns.ts` — Defines `loadGuestDesigns`, `saveGuestDesign`, `markGuestDesignClaimed`, `clearGuestDesigns`, and related exports for guest Designs.
+- `lib/identify.ts` — Implements `identifyUser` for identify.
+- `lib/init-env.ts` — Defines `initializeEnvironment`, `initializeCatalog` for init env.
+- `lib/layout-versions.ts` — Defines `createLayoutVersion`, `appendLayoutVersion`, `compareLayoutVersion`, `summarizeLayoutVersionComparison`, and related exports for layout versions.
+- `lib/measurements.ts` — Defines `computeGapBetween`, `computeWalkwayClearance`, `generateMeasurements`, `Measure` for measurements.
+- `lib/monetization-tracking.ts` — Defines `trackMonetization`, `MonetizationEvent` for monetization tracking.
+- `lib/my-designs-command-focus.ts` — Defines `MY_DESIGNS_COMMAND_ACTION_ID`, `MY_DESIGNS_FALLBACK_ACTION_ID`, `MY_DESIGNS_RETURN_FOCUS_IDS` for my designs command focus.
+- `lib/my-designs-dialog-focus.ts` — Defines `getMyDesignsOpenActionId`, `getMyDesignsDeleteActionId`, `getMyDesignsDeleteReturnFocusIds`, `MY_DESIGNS_CLOSE_ACTION_ID`, and related exports for my designs dialog focus.
+- `lib/observability.ts` — Defines `sanitizeObservabilityMeta`, `logOperationalEvent`, `OperationalLog` for observability.
+- `lib/onboarding.ts` — Defines `getOnboardingProgress`, `isOnboardingEligible`, `checkActivation`, `getEmptyStateCoaching`, and related exports for onboarding.
+- `lib/onboardingActions.ts` — Implements `autoCompleteStep` for onboarding Actions.
+- `lib/performance-monitor.ts` — Implements `PerformanceMonitor` for performance monitor.
+- `lib/phase15-release-evidence.ts` — Defines `createPhase15HumanEvidenceTemplate`, `canonicalizePhase15ReleaseManifest`, `validatePhase15HumanEvidence`, `productOwnerPublicKeyFingerprint`, and related exports for phase15 release evidence.
+- `lib/plan-canvas-guidance.ts` — Defines `resolvePlanCanvasGuidance`, `PlanCanvasGuidanceTone`, `PlanCanvasGuidanceAction`, `PlanCanvasGuidance` for plan canvas guidance.
+- `lib/plan.ts` — Defines `isPro`, `Plan` for plan.
+- `lib/plans-dialog-focus.ts` — Defines `getPlansReturnFocusIds`, `PLANS_ACCOUNT_OPENER_ID`, `PLANS_DIRECT_FALLBACK_ID`, `PLANS_UPGRADE_OPENER_ID` for plans dialog focus.
+- `lib/preloadAssets.ts` — Implements `preloadCoreAssets` for preload Assets.
+- `lib/public-design-projection-identity.ts` — Defines `canonicalizePublicDesignProjection`, `serializePublicDesignProjectionIdentity`, `buildPublicProjectionContentIdentity`, `PUBLIC_PROJECTION_CONTENT_IDENTITY_VERSION` for public design projection identity.
+- `lib/public-share-layout.ts` — Defines `resolvePublicShareLayoutMode`, `resolvePublicShareSelectedRoomId`, `buildPublicShareLayoutKey`, `buildPublicShareLayoutGeneration`, and related exports for public share layout.
+- `lib/public-share-saved-views.ts` — Defines `normalizePublicShareSavedView`, `resolvePublicShareSavedViews`, `PublicShareCameraView` for public share saved views.
+- `lib/qa.ts` — Implements `isQaEnabled` for qa.
+- `lib/rateLimit.ts` — Implements `rateLimit` for rate Limit.
+- `lib/referral.ts` — Defines `readReferral`, `getStoredReferral`, `clearStoredReferral`, `setInvitedBy`, and related exports for referral.
+- `lib/referralCode.ts` — Implements `generateReferralCode` for referral Code.
+- `lib/retailer-confirmation.ts` — Defines `canonicalRetailerGroupIdentity`, `getRetailerGroupOpenerId`, `getRetailerConfirmationReturnFocusIds`, `countRetailerTabs`, and related exports for retailer confirmation.
+- `lib/revenue-funnel.ts` — Defines `formatPercent`, `computeRevenueFunnelMetrics`, `RevenueFunnelCounts`, `RevenueFunnelMetrics` for revenue funnel.
+- `lib/sentry-browser-noop.ts` — Defines `setContext`, `setUser`, `captureException` for sentry browser noop.
+- `lib/sentry-context.ts` — Defines `setSentryContext`, `captureDesignError`, `captureWebGLError`, `captureCanvasBoundaryError` for sentry context.
+- `lib/sentry.ts` — Implements `initSentry` for sentry.
+- `lib/share-link-fallback-dialog-focus.ts` — Defines `PRESENT_EXPORT_CREATE_SHARE_ACTION_ID`, `PRESENT_EXPORT_CLOSE_ACTION_ID`, `SHARE_LINK_FALLBACK_CLOSE_ACTION_ID`, `SHARE_LINK_FALLBACK_COPY_ACTION_ID`, and related exports for share link fallback dialog focus.
+- `lib/share-shopping-csv.ts` — Defines `getCheckoutStatusLabel`, `getCheckoutSourceLabel`, `buildCheckoutReadinessRows`, `buildShareCheckoutLines`, and related exports for share shopping csv.
+- `lib/shared-design-projection-schema.ts` — Defines `resolveSharedDesignPresentation`, `assertSharedDesignInput`, `removeLegacySharedDesignRootFields`, `assertSharedDesignSnapshotPublic`, and related exports for shared design projection schema.
+- `lib/shopping-readiness.ts` — Defines `getShoppingReadinessFlags`, `getShoppingReadinessBadges`, `matchesShoppingReadinessFilter`, `summarizeShoppingReadinessItems`, and related exports for shopping readiness.
+- `lib/snapGuides.ts` — Defines `computeAABB`, `computeSnapCandidates`, `getActiveSnaps`, `pickGuides`, and related exports for snap Guides.
+- `lib/style-consistency.ts` — Defines `evaluateStyleConsistency`, `StyleConsistencyStatus`, `StyleConsistencyFinding`, `StyleConsistencyAlternative`, and related exports for style consistency.
+- `lib/swap.ts` — Implements `findSwapOptions` for swap.
+- `lib/trusted-app-event-core.ts` — Defines `buildTrustedLifecycleEventData`, `persistTrustedLifecycleEventWith`, `claimTrustedLifecycleEventWith`, `TrustedLifecycleEventPayload` for trusted app event core.
+- `lib/trusted-app-events.ts` — Defines `recordTrustedLifecycleEvent`, `recordTrustedLifecycleEventInTransaction`, `claimTrustedLifecycleEventInTransaction`, `claimTrustedLifecycleEvent` for trusted app events.
+- `lib/wallSnap.ts` — Defines `detectWallSnapModes`, `pickBestWallSnap`, `getModeDescription`, `WallSnapMode`, and related exports for wall Snap.
+
+### 14. API routes (74)
+
+- `app/api/address-autocomplete/route.ts` — Next.js API endpoint for /api/address-autocomplete; handles GET, POST.
+- `app/api/admin/audit/route.ts` — Next.js API endpoint for /api/admin/audit; handles GET.
+- `app/api/admin/catalog/[catalogItemId]/route.ts` — Next.js API endpoint for /api/admin/catalog/[catalogItemId]; handles PATCH.
+- `app/api/admin/catalog/media-health/route.ts` — Next.js API endpoint for /api/admin/catalog/media-health; handles GET.
+- `app/api/admin/clicks.csv/route.ts` — Next.js API endpoint for /api/admin/clicks.csv; handles GET.
+- `app/api/admin/floor-plan-imports/[id]/approve/route.ts` — Next.js API endpoint for /api/admin/floor-plan-imports/[id]/approve; handles POST.
+- `app/api/admin/floor-plan-imports/[id]/assets/[assetId]/route.ts` — Next.js API endpoint for /api/admin/floor-plan-imports/[id]/assets/[assetId]; handles GET.
+- `app/api/admin/floor-plan-imports/[id]/construction-sources/[sourceId]/route.ts` — Next.js API endpoint for /api/admin/floor-plan-imports/[id]/construction-sources/[sourceId]; handles DELETE.
+- `app/api/admin/floor-plan-imports/[id]/construction-sources/route.ts` — Next.js API endpoint for /api/admin/floor-plan-imports/[id]/construction-sources; handles POST.
+- `app/api/admin/floor-plan-imports/[id]/publish/route.ts` — Next.js API endpoint for /api/admin/floor-plan-imports/[id]/publish; handles POST.
+- `app/api/admin/floor-plan-imports/[id]/retire/route.ts` — Next.js API endpoint for /api/admin/floor-plan-imports/[id]/retire; handles POST.
+- `app/api/admin/floor-plan-imports/[id]/review-seed/route.ts` — Next.js API endpoint for /api/admin/floor-plan-imports/[id]/review-seed; handles GET, POST.
+- `app/api/admin/floor-plan-imports/[id]/route.ts` — Next.js API endpoint for /api/admin/floor-plan-imports/[id]; handles GET, PATCH.
+- `app/api/admin/floor-plan-imports/[id]/source-observations/route.ts` — Next.js API endpoint for /api/admin/floor-plan-imports/[id]/source-observations; handles PUT.
+- `app/api/admin/floor-plan-imports/[id]/supplementary-sources/[sourceId]/route.ts` — Next.js API endpoint for /api/admin/floor-plan-imports/[id]/supplementary-sources/[sourceId]; handles POST, DELETE.
+- `app/api/admin/floor-plan-imports/[id]/supplementary-sources/route.ts` — Next.js API endpoint for /api/admin/floor-plan-imports/[id]/supplementary-sources; handles POST.
+- `app/api/admin/floor-plan-imports/review-seeds/route.ts` — Next.js API endpoint for /api/admin/floor-plan-imports/review-seeds; handles POST.
+- `app/api/admin/floor-plan-imports/route.ts` — Next.js API endpoint for /api/admin/floor-plan-imports; handles GET.
+- `app/api/admin/floor-plan-variant-groups/[id]/route.ts` — Next.js API endpoint for /api/admin/floor-plan-variant-groups/[id]; handles POST, DELETE.
+- `app/api/admin/floor-plan-variant-groups/route.ts` — Next.js API endpoint for /api/admin/floor-plan-variant-groups; handles POST.
+- `app/api/admin/imports/[id]/link-catalog/route.ts` — Next.js API endpoint for /api/admin/imports/[id]/link-catalog; handles POST.
+- `app/api/admin/imports/[id]/route.ts` — Next.js API endpoint for /api/admin/imports/[id]; handles GET, PATCH.
+- `app/api/admin/imports/bulk/route.ts` — Next.js API endpoint for /api/admin/imports/bulk; handles PATCH.
+- `app/api/admin/imports/route.ts` — Next.js API endpoint for /api/admin/imports; handles GET, POST.
+- `app/api/admin/models/[id]/route.ts` — Next.js API endpoint for /api/admin/models/[id]; handles GET, PATCH.
+- `app/api/admin/models/route.ts` — Next.js API endpoint for /api/admin/models; handles GET.
+- `app/api/ai/design-notes/route.ts` — Next.js API endpoint for /api/ai/design-notes; handles POST.
+- `app/api/ai/layout/route.ts` — Next.js API endpoint for /api/ai/layout; handles POST.
+- `app/api/auth/[...nextauth]/route.ts` — Next.js API endpoint for /api/auth/[...nextauth].
+- `app/api/catalog/live/route.ts` — Next.js API endpoint for /api/catalog/live; handles GET.
+- `app/api/catalog/presets/route.ts` — Next.js API endpoint for /api/catalog/presets; handles GET.
+- `app/api/catalog/products/[productId]/live/route.ts` — Next.js API endpoint for /api/catalog/products/[productId]/live; handles GET.
+- `app/api/catalog/route.ts` — Next.js API endpoint for /api/catalog; handles GET.
+- `app/api/designs/[id]/duplicate/route.ts` — Next.js API endpoint for /api/designs/[id]/duplicate; handles POST.
+- `app/api/designs/[id]/floor-plan-update/route.ts` — Next.js API endpoint for /api/designs/[id]/floor-plan-update; handles GET, POST.
+- `app/api/designs/[id]/route.ts` — Next.js API endpoint for /api/designs/[id]; handles GET, PUT, DELETE.
+- `app/api/designs/[id]/share/route.ts` — Next.js API endpoint for /api/designs/[id]/share; handles POST, DELETE.
+- `app/api/designs/bulk-delete/route.ts` — Next.js API endpoint for /api/designs/bulk-delete; handles POST.
+- `app/api/designs/claim/route.ts` — Next.js API endpoint for /api/designs/claim; handles POST.
+- `app/api/designs/import/route.ts` — Next.js API endpoint for /api/designs/import; handles POST.
+- `app/api/designs/merge/route.ts` — Next.js API endpoint for /api/designs/merge; handles POST.
+- `app/api/designs/route.ts` — Next.js API endpoint for /api/designs; handles GET, POST, DELETE.
+- `app/api/export/pdf/route.ts` — Next.js API endpoint for /api/export/pdf; handles POST.
+- `app/api/floor-plan-imports/[id]/assets/[assetId]/route.ts` — Next.js API endpoint for /api/floor-plan-imports/[id]/assets/[assetId]; handles GET.
+- `app/api/floor-plan-imports/[id]/cancel/route.ts` — Next.js API endpoint for /api/floor-plan-imports/[id]/cancel; handles POST.
+- `app/api/floor-plan-imports/[id]/candidate/route.ts` — Next.js API endpoint for /api/floor-plan-imports/[id]/candidate.
+- `app/api/floor-plan-imports/[id]/confirm/route.ts` — Next.js API endpoint for /api/floor-plan-imports/[id]/confirm; handles POST.
+- `app/api/floor-plan-imports/[id]/process/route.ts` — Next.js API endpoint for /api/floor-plan-imports/[id]/process; handles POST.
+- `app/api/floor-plan-imports/[id]/retry-detection/route.ts` — Next.js API endpoint for /api/floor-plan-imports/[id]/retry-detection; handles POST.
+- `app/api/floor-plan-imports/[id]/retry/route.ts` — Next.js API endpoint for /api/floor-plan-imports/[id]/retry; handles POST.
+- `app/api/floor-plan-imports/[id]/route.ts` — Next.js API endpoint for /api/floor-plan-imports/[id]; handles GET, PATCH, DELETE.
+- `app/api/floor-plan-imports/[id]/select-page/route.ts` — Next.js API endpoint for /api/floor-plan-imports/[id]/select-page; handles POST.
+- `app/api/floor-plan-imports/[id]/source/route.ts` — Next.js API endpoint for /api/floor-plan-imports/[id]/source; handles DELETE.
+- `app/api/floor-plan-imports/route.ts` — Next.js API endpoint for /api/floor-plan-imports; handles GET, POST, DELETE.
+- `app/api/floor-plans/revisions/[id]/route.ts` — Next.js API endpoint for /api/floor-plans/revisions/[id]; handles GET.
+- `app/api/floor-plans/revisions/route.ts` — Next.js API endpoint for /api/floor-plans/revisions; handles GET.
+- `app/api/floor-plans/route.ts` — Next.js API endpoint for /api/floor-plans; handles GET.
+- `app/api/health/route.ts` — Next.js API endpoint for /api/health; handles GET.
+- `app/api/me/route.ts` — Next.js API endpoint for /api/me; handles GET.
+- `app/api/models/debug/route.ts` — Next.js API endpoint for /api/models/debug; handles GET.
+- `app/api/models/imported/route.ts` — Next.js API endpoint for /api/models/imported; handles GET.
+- `app/api/referral/claim/route.ts` — Next.js API endpoint for /api/referral/claim; handles POST.
+- `app/api/share/[shareToken]/duplicate/route.ts` — Next.js API endpoint for /api/share/[shareToken]/duplicate; handles POST.
+- `app/api/shopify/checkout/route.ts` — Next.js API endpoint for /api/shopify/checkout; handles POST.
+- `app/api/shopify/confirm/route.ts` — Next.js API endpoint for /api/shopify/confirm; handles POST.
+- `app/api/stripe/billing-portal/route.ts` — Next.js API endpoint for /api/stripe/billing-portal.
+- `app/api/stripe/checkout-pro/route.ts` — Next.js API endpoint for /api/stripe/checkout-pro.
+- `app/api/stripe/checkout/route.ts` — Next.js API endpoint for /api/stripe/checkout; handles POST.
+- `app/api/stripe/portal/route.ts` — Next.js API endpoint for /api/stripe/portal; handles POST.
+- `app/api/stripe/webhook/route.ts` — Next.js API endpoint for /api/stripe/webhook; handles POST.
+- `app/api/tools/glb-optimizer/route.ts` — Next.js API endpoint for /api/tools/glb-optimizer; handles POST.
+- `app/api/track/app-event/route.ts` — Next.js API endpoint for /api/track/app-event; handles POST.
+- `app/api/track/click/route.ts` — Next.js API endpoint for /api/track/click; handles POST.
+- `app/api/track/event/route.ts` — Next.js API endpoint for /api/track/event; handles POST.
+
+### 15. Server-side services and backend logic (14)
+
+- `lib/email.ts` — Implements `sendShareLinkEmail` for email.
+- `lib/floor-plan-catalog-prisma.ts` — Implements `prismaPublishedFloorPlanRevisionDataSource` for floor plan catalog prisma.
+- `lib/floor-plan-catalog-repository.ts` — Defines `mapPublishedFloorPlanRevisionRows`, `ReviewOnlyYamlFloorPlanCatalogRepository`, `PublishedRevisionFloorPlanCatalogRepository`, `FloorPlanCatalogSearchOptions`, and related exports for floor plan catalog repository.
+- `lib/floor-plan-imports/object-storage-config.ts` — Defines `resolveFloorPlanObjectStorageConfig`, `FloorPlanDatabaseStorageConfig`, `FloorPlanS3StorageConfig`, `FloorPlanObjectStorageConfig` for object storage config.
+- `lib/floor-plan-imports/object-storage-factory.ts` — Defines `createFloorPlanObjectStorage`, `createFloorPlanObjectStorageFromEnv` for object storage factory.
+- `lib/floor-plan-imports/object-storage-s3.ts` — Implements `S3CompatibleFloorPlanObjectStorage` for object storage s3.
+- `lib/floor-plan-imports/object-storage-sigv4.ts` — Implements `signFloorPlanS3Request` for object storage sigv4.
+- `lib/floor-plan-imports/object-storage.ts` — Defines `assertFloorPlanObjectSha256`, `assertSafeFloorPlanObjectKey`, `createOpaqueFloorPlanObjectKey`, `sha256Hex`, and related exports for object storage.
+- `lib/floor-plan-imports/prisma-repository.ts` — Implements `PrismaFloorPlanImportJobRepository` for prisma repository.
+- `lib/floor-plan-imports/prisma-source-write.ts` — Defines `preparePrismaFloorPlanSourceWrite`, `PrismaFloorPlanSourceAssetRow`, `PrismaFloorPlanSourceAssetClient`, `PendingFloorPlanBytes`, and related exports for prisma source write.
+- `lib/floor-plan-imports/prisma-store.ts` — Defines `PrismaFloorPlanSourceStore`, `PrismaFloorPlanSourceStoreOptions` for prisma store.
+- `lib/floor-plan-imports/progress-estimate-server.ts` — Implements `buildFloorPlanProgressEstimate` for progress estimate server.
+- `lib/floor-plan-imports/worker.ts` — Defines `createFloorPlanWorkerId`, `processFloorPlanImportJob`, `processNextFloorPlanImportJob`, `FloorPlanImportWorkerResult` for worker.
+- `lib/prisma.ts` — Implements `prisma` for prisma.
+
+### 16. Authentication and authorization (6)
+
+- `components/AuthButtons.tsx` — Implements `AuthButtons` for Auth Buttons.
+- `components/AuthProvider.tsx` — Implements `AuthProvider` for Auth Provider.
+- `lib/anonymousId.ts` — Implements `getAnonymousId` for anonymous Id.
+- `lib/auth-env.ts` — Defines `isSyntheticCiOAuthFixture`, `getAuthEnvOrThrow` for auth env.
+- `lib/auth.ts` — Provides auth logic for authentication and authorization.
+- `proxy.ts` — Implements the Next.js request proxy boundary, including access-related request handling.
+
+### 17. Security, permissions, governance, and audit logic (20)
+
+- `lib/app-event-provenance.ts` — Defines `parseBrowserAnalyticsEventInput`, `buildTrustedLifecycleProvenance`, `isVerifiedStripeEventId`, `hasCurrentTrustedLifecycleProvenance`, and related exports for app event provenance.
+- `lib/catalog-audit.ts` — Defines `findCatalogFiles`, `finalizeDraftAudit`, `getRelativeCatalogPath`, `runCatalogQualityAudit`, and related exports for catalog audit.
+- `lib/catalog/variant-audit.ts` — Defines `runVariantResolutionAudit`, `VariantAuditIssue`, `VariantAuditSummary` for variant audit.
+- `lib/floor-plan-imports/candidate-mutation-rate-limit.ts` — Defines `takeFloorPlanCandidateMutationAllowance`, `FLOOR_PLAN_CANDIDATE_MUTATION_RATE_LIMIT`, `FLOOR_PLAN_CANDIDATE_MUTATION_RATE_WINDOW_MS`, `FloorPlanCandidateMutationAllowance` for candidate mutation rate limit.
+- `lib/floor-plan-imports/privacy.ts` — Defines `floorPlanPrivateSourceRetentionDays`, `floorPlanSourceRetentionDeadline`, `parseFloorPlanTrainingBenchmarkOptIn`, `floorPlanImportPrivacyForUpload`, and related exports for privacy.
+- `lib/floor-plan-imports/publication-governance.ts` — Defines `canReviewPublicFloorPlans`, `canPublishPublicFloorPlans`, `requireFloorPlanReviewer`, `requireFloorPlanPublisher`, and related exports for publication governance.
+- `lib/floor-plan-imports/retention-manifest.ts` — Implements `scrubRetainedFloorPlanSourceManifest` for retention manifest.
+- `lib/floor-plan-imports/retention-outbox-runner.ts` — Defines `processNextFloorPlanObjectDeletion`, `processFloorPlanObjectDeletionBatch`, `FloorPlanObjectDeletionWorkerResult` for retention outbox runner.
+- `lib/floor-plan-imports/retention-outbox-worker.ts` — Defines `createFloorPlanObjectDeletionWorkerId`, `PrismaFloorPlanObjectDeletionLeaseService`, `DEFAULT_FLOOR_PLAN_DELETION_LEASE_MS`, `FloorPlanObjectDeletionLease` for retention outbox worker.
+- `lib/floor-plan-imports/retention-outbox.ts` — Defines `floorPlanObjectDeletionErrorMessage`, `floorPlanObjectDeletionRetryDelayMs`, `floorPlanContentDeletionPatch`, `floorPlanSourceContentDeletionPatch`, and related exports for retention outbox.
+- `lib/floor-plan-imports/retention-underlay.ts` — Defines `savedFloorPlanUnderlaySourceLink`, `scrubPrivateFloorPlanUnderlayFromSnapshot`, `FloorPlanSavedUnderlayScrubResult`, `FloorPlanSavedUnderlaySourceLink` for retention underlay.
+- `lib/floor-plan-imports/retention.ts` — Defines `sanitizePrivateFloorPlanUnderlayForSave`, `FloorPlanRetentionError`, `PrismaFloorPlanRetentionService`, `FloorPlanRetentionPurgeResult`, and related exports for retention.
+- `lib/floor-plan-imports/revision-audit.ts` — Defines `snapshotFloorPlanAddressBindings`, `buildFloorPlanRevisionAuditRecord`, `assertFloorPlanAddressBindingMutationAllowed`, `FloorPlanRevisionAuditEventType`, and related exports for revision audit.
+- `lib/floor-plan-imports/revision-immutability.ts` — Defines `assertFloorPlanRevisionMutationAllowed`, `FloorPlanRevisionLifecycleStatus`, `FloorPlanRevisionMutation` for revision immutability.
+- `lib/floor-plan-imports/serving-integrity.ts` — Defines `assessFloorPlanServingIntegrity`, `FloorPlanServingIntegrityIssue`, `FloorPlanServingIntegrityInput` for serving integrity.
+- `lib/floor-plan-imports/source-observation-integrity.ts` — Defines `collectFloorPlanCanonicalObservationTargets`, `validateFloorPlanObservationTargetIntegrity`, `FloorPlanCanonicalObservationTarget` for source observation integrity.
+- `lib/floor-plan-imports/source-observation-manifest.ts` — Defines `validateFloorPlanSourceObservationBounds`, `evaluateFloorPlanSourceObservationCompleteness`, `stampFloorPlanSourceObservationManifest`, `assertFloorPlanSourceObservationsComplete`, and related exports for source observation manifest.
+- `lib/importQaPolicy.ts` — Defines `resolveImportQaLimits`, `bytesToMiB`, `DEFAULT_IMPORT_QA_LIMITS`, `ImportQaLimits` for import Qa Policy.
+- `lib/shared-rate-limit.ts` — Defines `takeSharedRateLimit`, `cleanupSharedRateLimitBuckets`, `SharedRateLimitResult` for shared rate limit.
+- `lib/surface-material-audit.ts` — Defines `getMissingSurfaceMaterialAssetLabels`, `getMissingSurfaceMaterialSpecLabels`, `auditSurfaceMaterialEntry`, `buildSurfaceMaterialAdminAuditSummaries`, and related exports for surface material audit.
+
+### 18. Prisma schema, migrations, seeds, and database utilities (47)
+
+- `check_tables.sql` — SQL utility for checking expected database tables.
+- `prisma.config.ts` — Configures Prisma CLI schema and migration behavior.
+- `prisma/migrations/20260211091605_init/migration.sql` — Prisma SQL migration for 20260211091605 init.
+- `prisma/migrations/20260211101201_auth/migration.sql` — Prisma SQL migration for 20260211101201 auth.
+- `prisma/migrations/20260211150315_add_user_to_design/migration.sql` — Prisma SQL migration for 20260211150315 add user to design.
+- `prisma/migrations/20260212033441_add_share_token/migration.sql` — Prisma SQL migration for 20260212033441 add share token.
+- `prisma/migrations/20260212090857_product_clicks/migration.sql` — Prisma SQL migration for 20260212090857 product clicks.
+- `prisma/migrations/20260213120000_analytics_upgrade/migration.sql` — Prisma SQL migration for 20260213120000 analytics upgrade.
+- `prisma/migrations/20260214090743_design_mode/migration.sql` — Prisma SQL migration for 20260214090743 design mode.
+- `prisma/migrations/20260215062311_shopify_orders/migration.sql` — Prisma SQL migration for 20260215062311 shopify orders.
+- `prisma/migrations/20260215062337_user_plan/migration.sql` — Prisma SQL migration for 20260215062337 user plan.
+- `prisma/migrations/20260217113847_add_anonymous_id/migration.sql` — Prisma SQL migration for 20260217113847 add anonymous id.
+- `prisma/migrations/20260217153833_add_referral_fields/migration.sql` — Prisma SQL migration for 20260217153833 add referral fields.
+- `prisma/migrations/20260217160000_add_zones_field/migration.sql` — Prisma SQL migration for 20260217160000 add zones field.
+- `prisma/migrations/20260220080024_add_stripe_fields/migration.sql` — Prisma SQL migration for 20260220080024 add stripe fields.
+- `prisma/migrations/20260221080740_add_ai_design_notes_cache/migration.sql` — Prisma SQL migration for 20260221080740 add AI design notes cache.
+- `prisma/migrations/20260221110000_add_saved_views/migration.sql` — Prisma SQL migration for 20260221110000 add saved views.
+- `prisma/migrations/20260307073900_add_catalog_core_tables/migration.sql` — Prisma SQL migration for 20260307073900 add catalog core tables.
+- `prisma/migrations/20260307074000_add_finish_mapping_tables/migration.sql` — Prisma SQL migration for 20260307074000 add finish mapping tables.
+- `prisma/migrations/20260307121500_add_import_job_tables/migration.sql` — Prisma SQL migration for 20260307121500 add import job tables.
+- `prisma/migrations/20260307124500_add_model_asset_and_app_event_baseline/migration.sql` — Prisma SQL migration for 20260307124500 add model asset and app event baseline.
+- `prisma/migrations/20260307125500_normalize_variantfinishmapping_index_name/migration.sql` — Prisma SQL migration for 20260307125500 normalize variantfinishmapping index name.
+- `prisma/migrations/20260425120000_add_workflow_fields_to_import_job/migration.sql` — Prisma SQL migration for 20260425120000 add workflow fields to import job.
+- `prisma/migrations/20260610180000_add_design_snapshot/migration.sql` — Prisma SQL migration for 20260610180000 add design snapshot.
+- `prisma/migrations/20260716144000_add_floor_plan_import_platform/migration.sql` — Prisma SQL migration for 20260716144000 add floor plan import platform.
+- `prisma/migrations/20260716173000_harden_floor_plan_revision_lifecycle/migration.sql` — Prisma SQL migration for 20260716173000 harden floor plan revision lifecycle.
+- `prisma/migrations/20260716181500_audit_floor_plan_address_bindings/migration.sql` — Prisma SQL migration for 20260716181500 audit floor plan address bindings.
+- `prisma/migrations/20260716190000_add_floor_plan_import_job_leases/migration.sql` — Prisma SQL migration for 20260716190000 add floor plan import job leases.
+- `prisma/migrations/20260716201500_add_floor_plan_private_source_retention/migration.sql` — Prisma SQL migration for 20260716201500 add floor plan private source retention.
+- `prisma/migrations/20260716213000_add_shared_api_rate_limit/migration.sql` — Prisma SQL migration for 20260716213000 add shared API rate limit.
+- `prisma/migrations/20260716223000_add_floor_plan_supplementary_sources/migration.sql` — Prisma SQL migration for 20260716223000 add floor plan supplementary sources.
+- `prisma/migrations/20260717013000_add_source_observation_governance/migration.sql` — Prisma SQL migration for 20260717013000 add source observation governance.
+- `prisma/migrations/20260717024500_add_floor_plan_object_deletion_outbox/migration.sql` — Prisma SQL migration for 20260717024500 add floor plan object deletion outbox.
+- `prisma/migrations/20260717033000_add_floor_plan_lineage_and_stage_events/migration.sql` — Prisma SQL migration for 20260717033000 add floor plan lineage and stage events.
+- `prisma/migrations/20260717043000_add_floor_plan_authored_variant_links/migration.sql` — Prisma SQL migration for 20260717043000 add floor plan authored variant links.
+- `prisma/migrations/20260717050000_fix_floor_plan_authored_variant_lifecycle/migration.sql` — Prisma SQL migration for 20260717050000 fix floor plan authored variant lifecycle.
+- `prisma/migrations/20260717063000_add_floor_plan_construction_sources/migration.sql` — Prisma SQL migration for 20260717063000 add floor plan construction sources.
+- `prisma/migrations/20260717064500_require_floor_plan_construction_source_authorizer/migration.sql` — Prisma SQL migration for 20260717064500 require floor plan construction source authorizer.
+- `prisma/migrations/20260717070000_preserve_external_construction_source_cleanup/migration.sql` — Prisma SQL migration for 20260717070000 preserve external construction source cleanup.
+- `prisma/migrations/20260717073000_add_floor_plan_public_display_metadata/migration.sql` — Prisma SQL migration for 20260717073000 add floor plan public display metadata.
+- `prisma/migrations/20260731010000_add_floor_plan_page_selection/migration.sql` — Prisma SQL migration for 20260731010000 add floor plan page selection.
+- `prisma/migrations/20260731083500_add_floor_plan_import_history_deletion/migration.sql` — Prisma SQL migration for 20260731083500 add floor plan import history deletion.
+- `prisma/migrations/20260731180000_add_floor_plan_live_progress/migration.sql` — Prisma SQL migration for 20260731180000 add floor plan live progress.
+- `prisma/migrations/20260731183000_add_floor_plan_eta_calibration/migration.sql` — Prisma SQL migration for 20260731183000 add floor plan eta calibration.
+- `prisma/migrations/20260807090000_add_app_event_provenance/migration.sql` — Prisma SQL migration for 20260807090000 add app event provenance.
+- `prisma/migrations/migration_lock.toml` — Records the Prisma migration provider lock.
+- `prisma/schema.prisma` — Defines the Prisma datasource, generator, database models, relations, and indexes.
+
+### 19. Product catalog (72)
+
+- `catalog/floor-plans/_templates/catalog.yaml.example` — Configuration template for catalog.yaml.
+- `components/catalog/CatalogActiveFilterChips.tsx` — Implements `CatalogActiveFilterChips` for Catalog Active Filter Chips.
+- `components/catalog/CatalogCard.tsx` — Implements `CatalogCard` for Catalog Card.
+- `components/catalog/CatalogCardBadges.tsx` — Implements `CatalogCardBadges` for Catalog Card Badges.
+- `components/catalog/CatalogCardSwatches.tsx` — Implements `CatalogCardSwatches` for Catalog Card Swatches.
+- `components/catalog/CatalogCategoryTabs.tsx` — Implements `CatalogCategoryTabs` for Catalog Category Tabs.
+- `components/catalog/CatalogComfortProfile.tsx` — Implements `CatalogComfortProfile` for Catalog Comfort Profile.
+- `components/catalog/CatalogCompareTray.tsx` — Implements `CatalogCompareTray` for Catalog Compare Tray.
+- `components/catalog/CatalogFilterDrawer.tsx` — Implements `CatalogFilterDrawer` for Catalog Filter Drawer.
+- `components/catalog/CatalogFiltersBar.tsx` — Implements `CatalogFiltersBar` for Catalog Filters Bar.
+- `components/catalog/CatalogGrid.tsx` — Implements `CatalogGrid` for Catalog Grid.
+- `components/catalog/CatalogItemDrawer.tsx` — Defines `CatalogItemDrawer`, `CatalogConfigurationOption` for Catalog Item Drawer.
+- `components/catalog/CatalogItemFinishPicker.tsx` — Implements `CatalogItemFinishPicker` for Catalog Item Finish Picker.
+- `components/catalog/CatalogItemGallery.tsx` — Implements `CatalogItemGallery` for Catalog Item Gallery.
+- `components/catalog/CatalogItemRelatedList.tsx` — Implements `CatalogItemRelatedList` for Catalog Item Related List.
+- `components/catalog/CatalogItemSpecs.tsx` — Implements `CatalogItemSpecs` for Catalog Item Specs.
+- `components/catalog/CatalogPanel.tsx` — Implements `CatalogPanel` for Catalog Panel.
+- `components/catalog/CatalogPlacementHint.tsx` — Implements `CatalogPlacementHint` for Catalog Placement Hint.
+- `components/catalog/CatalogRoomFitBadge.tsx` — Implements `CatalogRoomFitBadge` for Catalog Room Fit Badge.
+- `components/catalog/CatalogSearchInput.tsx` — Implements `CatalogSearchInput` for Catalog Search Input.
+- `components/editor/design-page/ProductModelVariantControls.tsx` — Defines `ProductModelVariantControls`, `ProductModelVariantControlsState`, `ProductModelVariantControlsActions` for Product Model Variant Controls.
+- `lib/canonical-product-contract.ts` — Defines `buildCanonicalProductContract`, `validateCanonicalProductContract`, `CANONICAL_PRODUCT_CONTRACT_VERSION`, `CANONICAL_DIMENSION_UNIT`, and related exports for canonical product contract.
+- `lib/catalog-init.ts` — Implements `initializeCatalog` for catalog init.
+- `lib/catalog-live.ts` — Defines `buildLiveCatalogPayload`, `LiveCatalogPayload` for catalog live.
+- `lib/catalog-ops/blockers.ts` — Provides blockers logic for product catalog.
+- `lib/catalog-ops/build-catalog-ops-row.ts` — Provides build catalog ops row logic for product catalog.
+- `lib/catalog-ops/build-completeness-report.ts` — Provides build completeness report logic for product catalog.
+- `lib/catalog-ops/duplicate-detection.ts` — Provides duplicate detection logic for product catalog.
+- `lib/catalog-ops/index.ts` — Defines `buildDuplicateContext`, `buildBlockers`, `buildCompleteness`, `buildCatalogOpsRow`, and related exports for index.
+- `lib/catalog-placement.ts` — Defines `isSurfaceOnlyCatalogItem`, `isCeilingOnlyCatalogItem`, `getCeilingMountedItemBaseY`, `findCatalogSurfacePlacement`, and related exports for catalog placement.
+- `lib/catalog-presets/index.ts` — Defines `getCatalogPreset`, `getValueAtPath`, `applyPresetDefaults`, `getMissingRequiredFields`, and related exports for index.
+- `lib/catalog-publication.ts` — Defines `getCatalogPublicationStatus`, `isDraftCatalogEntry`, `isLiveCatalogEntry`, `summarizeCatalogPublication`, and related exports for catalog publication.
+- `lib/catalog-registry.ts` — Defines `getSurfaceMaterials`, `getFlooringMaterials`, `getPublishedFlooringMaterials`, `getDraftFlooringMaterialsForAdmin`, and related exports for catalog registry.
+- `lib/catalog-runtime.ts` — Implements `validateCatalogOrThrow` for catalog runtime.
+- `lib/catalog-schema.ts` — Defines `getCategoryDefaults`, `validateCatalogItem`, `CATEGORY_DEFAULTS`, `ProductCategory`, and related exports for catalog schema.
+- `lib/catalog-validation.ts` — Defines `resolveCommerceMapping`, `getEffectivePlacementRules`, `getEffectiveClearanceRules`, `getDimensionsMeters`, and related exports for catalog validation.
+- `lib/catalog-variant-color.ts` — Defines `normalizeVariantColorHex`, `hasMultipleDistinctVariantColors`, `shouldApplyVariantColorTint`, `VariantTintProductInput` for catalog variant color.
+- `lib/catalog-yaml.ts` — Defines `getCatalogYamlMap`, `getFreshCatalogYamlMap`, `getAllCatalogYamlEntries`, `invalidateCatalogYamlCache`, and related exports for catalog yaml.
+- `lib/catalog.ts` — Provides catalog logic for product catalog.
+- `lib/catalog/castlery-retailer-links.ts` — Implements `resolveCastleryVariantAffiliateUrl` for castlery retailer links.
+- `lib/catalog/category-defaults.ts` — Defines `CATEGORY_PLACEMENT_DEFAULTS`, `CATEGORY_CLEARANCE_DEFAULTS` for category defaults.
+- `lib/catalog/category-taxonomy.ts` — Defines `getCatalogMainGroup`, `getCatalogMainGroupForCategory`, `getCatalogMainGroupCategories`, `CATALOG_MAIN_GROUPS`, and related exports for category taxonomy.
+- `lib/catalog/compare.ts` — Defines `resolveCatalogCompareItems`, `CatalogCompareProductId`, `CatalogCompareVariantSelection`, `CatalogCompareItem` for compare.
+- `lib/catalog/data.ts` — Defines `buildAveryUpholsteryVariants`, `DALTON_STANDARD_QUEEN_THUMB_URL`, `CATALOG` for data.
+- `lib/catalog/family-grouping.ts` — Defines `cleanCatalogFamilyTitle`, `getCatalogFamilyKey`, `groupCatalogItems`, `getCatalogConfigurationLabel`, and related exports for family grouping.
+- `lib/catalog/filter-navigation.ts` — Defines `hasCatalogRoomNavigationChanged`, `clearInapplicableCatalogFilters`, `useCatalogCategoryNavigation`, `useCatalogFilterNavigation` for filter navigation.
+- `lib/catalog/get-item.ts` — Defines `getCatalogItem`, `getCatalogItemSafe` for get item.
+- `lib/catalog/media-policy.ts` — Defines `getCatalogMediaImageClass`, `normalizeCatalogMediaPresentationMode`, `isLikelyFrontShotImage`, `selectPreferredCatalogThumbnail`, and related exports for media policy.
+- `lib/catalog/normalize.ts` — Implements `buildCatalogItem` for normalize.
+- `lib/catalog/product-types.ts` — Defines `Variant`, `ProductCategory`, `Product` for product types.
+- `lib/catalog/recommendations.ts` — Defines `buildCatalogRoomGuidance`, `getSimilarItems`, `getCheaperAlternatives`, `getPremiumAlternatives`, and related exports for recommendations.
+- `lib/catalog/registry.ts` — Defines `CATALOG_ITEMS`, `CATALOG_ITEMS_MAP` for registry.
+- `lib/catalog/types.ts` — Defines `CatalogCategory`, `MmDims`, `AabbBounds`, `PivotSpec`, and related exports for types.
+- `lib/catalog/validate.ts` — Implements `validateCatalogEntries` for validate.
+- `lib/catalog/variant-normalization.ts` — Defines `sentenceCaseLabel`, `getHighResolutionSwatchUrl`, `getMaterialDisplayLabel`, `normalizeLabelToken`, and related exports for variant normalization.
+- `lib/catalog/variant-observability.ts` — Implements `trackVariantIssues` for variant observability.
+- `lib/catalog/variant-resolver.ts` — Defines `resolveCatalogVariant`, `assertStrictVariantResolution`, `ResolvedVariantCommerce`, `ResolvedCatalogVariant` for variant resolver.
+- `lib/catalog/view-builders.ts` — Defines `getPriceLabel`, `getPrimarySwatches`, `getWidthBand`, `mapToTopCategory`, and related exports for view builders.
+- `lib/design-page-equivalent-variant.ts` — Defines `resolveEquivalentVariant`, `EQUIVALENT_VARIANT_RULE_ORDERS`, `EquivalentVariantRule`, `EquivalentVariantRuleOrder` for design page equivalent variant.
+- `lib/design-page-model-maps.ts` — Defines `JARON_CONFIGURATION_PRODUCT_IDS`, `AUBURN_CONFIGURATION_PRODUCT_IDS`, `JARON_CONFIGURATION_GROUPS`, `AUBURN_CONFIGURATION_GROUPS`, and related exports for design page model maps.
+- `lib/design-page-product-data.ts` — Defines `getSloaneBenchOptionFromProductId`, `getSloaneBenchProductId`, `resolveFabricDetailProfile`, `IMPORTED_VARIANT_BY_PRODUCT_ID`, and related exports for design page product data.
+- `lib/design-page-product-info.ts` — Defines `buildProductDetailDimensionRows`, `buildProductInfoSections`, `ProductInfoRow`, `ProductInfoSections` for design page product info.
+- `lib/floor-plan-catalog-client.ts` — Defines `isCanonicalFloorPlanCatalogResult`, `buildCanonicalFloorPlanTemplateForAuthoredVariant`, `buildCanonicalFloorPlanTemplate` for floor plan catalog client.
+- `lib/floor-plan-catalog-cursor.ts` — Defines `encodeFloorPlanCatalogCursor`, `decodeFloorPlanCatalogCursor`, `FloorPlanCatalogCursorScope` for floor plan catalog cursor.
+- `lib/floor-plan-catalog-v1-adapter.ts` — Defines `catalogV1LayoutToFloorPlanDocumentV2`, `catalogV1ToFloorPlanDocumentV2Fixtures`, `CatalogV1FloorPlanAdapterOptions`, `CatalogV1FloorPlanAdapterResult` for floor plan catalog v1 adapter.
+- `lib/live-catalog.ts` — Defines `hasRequiredAssetMetadata`, `getLiveGateEvaluations`, `getRejectedLiveGateAssets`, `getLiveCatalogAssetIds`, and related exports for live catalog.
+- `lib/nippon-paint-catalog.ts` — Defines `NIPPON_PAINT_FAMILIES`, `NIPPON_PAINT_SOURCE_URL`, `NIPPON_PAINT_COLOUR_COUNT`, `NIPPON_PAINT_IMPORTED_AT`, and related exports for nippon paint catalog.
+- `lib/pro-plan-catalog.ts` — Defines `parseProBillingInterval`, `PRO_PLAN_PRICING`, `PRO_YEARLY_SAVINGS_LABEL`, `ProBillingInterval` for pro plan catalog.
+- `lib/product-asset-inspector.ts` — Defines `inspectProductModelAsset`, `ProductAssetInspection` for product asset inspector.
+- `lib/product-asset-validation.ts` — Defines `validateProductAsset`, `PRODUCT_ASSET_VALIDATOR_VERSION`, `ProductAssetValidationInput`, `ProductAssetValidationReport` for product asset validation.
+- `lib/product-metrics.ts` — Defines `PRODUCT_METRIC_DEFINITIONS`, `EDITOR_PERFORMANCE_METRIC_DEFINITIONS`, `ProductMetricDefinition`, `EditorPerformanceMetricDefinition` for product metrics.
+- `lib/surface-material-catalog-loader.ts` — Defines `createSurfaceMaterialCatalogLoader`, `surfaceMaterialCatalogLoader`, `loadSurfaceMaterialCatalog`, `retrySurfaceMaterialCatalog`, and related exports for surface material catalog loader.
+
+### 20. Furniture assets and GLB-related logic (227)
+
+- `incoming/test_sofa.glb` — Binary GLB 3D model asset for test sofa.
+- `lib/model-assets.ts` — Defines `getModelAsset`, `isValidAsset`, `getAssetIds`, `getAssetCount`, and related exports for model assets.
+- `lib/modelAssetStatus.ts` — Defines `getModelAssetStatus`, `ModelAssetLike`, `ModelAssetStatus` for model Asset Status.
+- `public/assets/models/accessory-real-castlery-blanc-arched-table-lamp.glb` — Binary GLB 3D model asset for accessory real castlery blanc arched table lamp.
+- `public/assets/models/accessory-real-castlery-cedric-floor-lamp-with-table.glb` — Binary GLB 3D model asset for accessory real castlery cedric floor lamp with table.
+- `public/assets/models/accessory-real-castlery-cedric-floor-lamp.glb` — Binary GLB 3D model asset for accessory real castlery cedric floor lamp.
+- `public/assets/models/accessory-real-castlery-cedric-table-lamp-28-8cm-curved.glb` — Binary GLB 3D model asset for accessory real castlery cedric table lamp 28 8cm curved.
+- `public/assets/models/accessory-real-castlery-cedric-table-lamp-53cm-curved.glb` — Binary GLB 3D model asset for accessory real castlery cedric table lamp 53cm curved.
+- `public/assets/models/accessory-real-castlery-edgar-duo-bulb-table-lamp.glb` — Binary GLB 3D model asset for accessory real castlery edgar duo bulb table lamp.
+- `public/assets/models/accessory-real-castlery-faro-sculptural-floor-lamp.glb` — Binary GLB 3D model asset for accessory real castlery faro sculptural floor lamp.
+- `public/assets/models/accessory-real-castlery-faro-table-lamp.glb` — Binary GLB 3D model asset for accessory real castlery faro table lamp.
+- `public/assets/models/armchair-real-castlery-arden-performance-swivel-armchair.glb` — Binary GLB 3D model asset for armchair real castlery arden performance swivel armchair.
+- `public/assets/models/armchair-real-castlery-avery-performance-armchair-with-ottoman.glb` — Binary GLB 3D model asset for armchair real castlery avery performance armchair with ottoman.
+- `public/assets/models/armchair-real-castlery-avery-performance-armchair.glb` — Binary GLB 3D model asset for armchair real castlery avery performance armchair.
+- `public/assets/models/armchair-real-castlery-avery-performance-swivel-armchair-with-ottoman.glb` — Binary GLB 3D model asset for armchair real castlery avery performance swivel armchair with ottoman.
+- `public/assets/models/armchair-real-castlery-avery-performance-swivel-armchair.glb` — Binary GLB 3D model asset for armchair real castlery avery performance swivel armchair.
+- `public/assets/models/armchair-real-castlery-cammy-armchair.glb` — Binary GLB 3D model asset for armchair real castlery cammy armchair.
+- `public/assets/models/armchair-real-castlery-jaron-recliner-armchair-slim-arm-closed.glb` — Binary GLB 3D model asset for armchair real castlery jaron recliner armchair slim arm closed.
+- `public/assets/models/armchair-real-castlery-jaron-recliner-armchair-slim-arm-open.glb` — Binary GLB 3D model asset for armchair real castlery jaron recliner armchair slim arm open.
+- `public/assets/models/armchair-real-castlery-jaron-recliner-armchair-wide-arm-closed.glb` — Binary GLB 3D model asset for armchair real castlery jaron recliner armchair wide arm closed.
+- `public/assets/models/armchair-real-castlery-jaron-recliner-armchair-wide-arm-open.glb` — Binary GLB 3D model asset for armchair real castlery jaron recliner armchair wide arm open.
+- `public/assets/models/armchair-real-castlery-lena-leather-armchair-cocoa-black-legs.glb` — Binary GLB 3D model asset for armchair real castlery lena leather armchair cocoa black legs.
+- `public/assets/models/armchair-real-castlery-lena-leather-armchair-cocoa-brass-legs.glb` — Binary GLB 3D model asset for armchair real castlery lena leather armchair cocoa brass legs.
+- `public/assets/models/armchair-real-castlery-madison-armchair.glb` — Binary GLB 3D model asset for armchair real castlery madison armchair.
+- `public/assets/models/armchair-real-castlery-sacha-performance-boucle-armchair.glb` — Binary GLB 3D model asset for armchair real castlery sacha performance boucle armchair.
+- `public/assets/models/armchair-real-castlery-solange-performance-boucle-chair-black-legs.glb` — Binary GLB 3D model asset for armchair real castlery solange performance boucle chair black legs.
+- `public/assets/models/armchair-real-castlery-solange-performance-boucle-chair-white-wash-legs.glb` — Binary GLB 3D model asset for armchair real castlery solange performance boucle chair white wash legs.
+- `public/assets/models/armchair-real-castlery-winora-armchair.glb` — Binary GLB 3D model asset for armchair real castlery winora armchair.
+- `public/assets/models/armchairs/armchair-real-castlery-hamilton-round-swivel-1-5-seater-armchair.glb` — Binary GLB 3D model asset for armchair real castlery hamilton round swivel 1 5 seater armchair.
+- `public/assets/models/armchairs/armchair-real-castlery-hamilton-round-swivel-armchair.glb` — Binary GLB 3D model asset for armchair real castlery hamilton round swivel armchair.
+- `public/assets/models/armchairs/armchair-real-castlery-mori-performance-fabric-armchair-natural-wood.glb` — Binary GLB 3D model asset for armchair real castlery mori performance fabric armchair natural wood.
+- `public/assets/models/armchairs/armchair-real-castlery-mori-performance-fabric-armchair-walnut-wood.glb` — Binary GLB 3D model asset for armchair real castlery mori performance fabric armchair walnut wood.
+- `public/assets/models/armchairs/armchair-real-castlery-owen-armchair-natural-wood.glb` — Binary GLB 3D model asset for armchair real castlery owen armchair natural wood.
+- `public/assets/models/armchairs/armchair-real-castlery-owen-armchair-walnut-wood.glb` — Binary GLB 3D model asset for armchair real castlery owen armchair walnut wood.
+- `public/assets/models/bed-real-castlery-claude-extended-headboard-king-performance-dune.glb` — Binary GLB 3D model asset for bed real castlery claude extended headboard king performance dune.
+- `public/assets/models/bed-real-castlery-claude-extended-headboard-queen-performance-dune.glb` — Binary GLB 3D model asset for bed real castlery claude extended headboard queen performance dune.
+- `public/assets/models/bed-real-castlery-claude-standard-king-performance-dune.glb` — Binary GLB 3D model asset for bed real castlery claude standard king performance dune.
+- `public/assets/models/bed-real-castlery-claude-standard-queen-performance-dune.glb` — Binary GLB 3D model asset for bed real castlery claude standard queen performance dune.
+- `public/assets/models/bed-real-castlery-dalton-standard-king-beach-linen.glb` — Binary GLB 3D model asset for bed real castlery dalton standard king beach linen.
+- `public/assets/models/bed-real-castlery-dalton-standard-queen-beach-linen.glb` — Binary GLB 3D model asset for bed real castlery dalton standard queen beach linen.
+- `public/assets/models/bed-real-castlery-dalton-storage-king-beach-linen.glb` — Binary GLB 3D model asset for bed real castlery dalton storage king beach linen.
+- `public/assets/models/bed-real-castlery-dalton-storage-queen-beach-linen.glb` — Binary GLB 3D model asset for bed real castlery dalton storage queen beach linen.
+- `public/assets/models/bed-real-castlery-dalton-storage-single-beach-linen.glb` — Binary GLB 3D model asset for bed real castlery dalton storage single beach linen.
+- `public/assets/models/bed-real-castlery-dalton-storage-super-single-beach-linen.glb` — Binary GLB 3D model asset for bed real castlery dalton storage super single beach linen.
+- `public/assets/models/bed-real-castlery-dawson-standard-king-beach-linen.glb` — Binary GLB 3D model asset for bed real castlery dawson standard king beach linen.
+- `public/assets/models/bed-real-castlery-dawson-standard-queen-beach-linen.glb` — Binary GLB 3D model asset for bed real castlery dawson standard queen beach linen.
+- `public/assets/models/bed-real-castlery-joseph-boucle-king-snow.glb` — Binary GLB 3D model asset for bed real castlery joseph boucle king snow.
+- `public/assets/models/bed-real-castlery-joseph-boucle-queen-snow.glb` — Binary GLB 3D model asset for bed real castlery joseph boucle queen snow.
+- `public/assets/models/bed-real-castlery-joseph-boucle-set-king-snow.glb` — Binary GLB 3D model asset for bed real castlery joseph boucle set king snow.
+- `public/assets/models/bed-real-castlery-joseph-boucle-set-queen-snow.glb` — Binary GLB 3D model asset for bed real castlery joseph boucle set queen snow.
+- `public/assets/models/bed-real-castlery-joseph-fabric-king-ivory-beige.glb` — Binary GLB 3D model asset for bed real castlery joseph fabric king ivory beige.
+- `public/assets/models/bed-real-castlery-joseph-fabric-king-stone-grey.glb` — Binary GLB 3D model asset for bed real castlery joseph fabric king stone grey.
+- `public/assets/models/bed-real-castlery-joseph-fabric-queen-ivory-beige.glb` — Binary GLB 3D model asset for bed real castlery joseph fabric queen ivory beige.
+- `public/assets/models/bed-real-castlery-joseph-fabric-queen-stone-grey.glb` — Binary GLB 3D model asset for bed real castlery joseph fabric queen stone grey.
+- `public/assets/models/bed-real-castlery-joseph-fabric-set-king-ivory-beige.glb` — Binary GLB 3D model asset for bed real castlery joseph fabric set king ivory beige.
+- `public/assets/models/bed-real-castlery-joseph-fabric-set-king-stone-grey.glb` — Binary GLB 3D model asset for bed real castlery joseph fabric set king stone grey.
+- `public/assets/models/bed-real-castlery-joseph-fabric-set-queen-ivory-beige.glb` — Binary GLB 3D model asset for bed real castlery joseph fabric set queen ivory beige.
+- `public/assets/models/bed-real-castlery-joseph-fabric-set-queen-stone-grey.glb` — Binary GLB 3D model asset for bed real castlery joseph fabric set queen stone grey.
+- `public/assets/models/bed-real-castlery-joseph-walnut-king.glb` — Binary GLB 3D model asset for bed real castlery joseph walnut king.
+- `public/assets/models/bed-real-castlery-joseph-walnut-queen.glb` — Binary GLB 3D model asset for bed real castlery joseph walnut queen.
+- `public/assets/models/bed-real-castlery-joseph-walnut-set-king.glb` — Binary GLB 3D model asset for bed real castlery joseph walnut set king.
+- `public/assets/models/bed-real-castlery-joseph-walnut-set-queen.glb` — Binary GLB 3D model asset for bed real castlery joseph walnut set queen.
+- `public/assets/models/bed-real-castlery-lexi-tufted-king-frost-white.glb` — Binary GLB 3D model asset for bed real castlery lexi tufted king frost white.
+- `public/assets/models/bed-real-castlery-lexi-tufted-king-light-blush.glb` — Binary GLB 3D model asset for bed real castlery lexi tufted king light blush.
+- `public/assets/models/bed-real-castlery-lexi-tufted-king-nickel-grey.glb` — Binary GLB 3D model asset for bed real castlery lexi tufted king nickel grey.
+- `public/assets/models/bed-real-castlery-lexi-tufted-queen-frost-white.glb` — Binary GLB 3D model asset for bed real castlery lexi tufted queen frost white.
+- `public/assets/models/bed-real-castlery-lexi-tufted-queen-light-blush.glb` — Binary GLB 3D model asset for bed real castlery lexi tufted queen light blush.
+- `public/assets/models/bed-real-castlery-lexi-tufted-queen-nickel-grey.glb` — Binary GLB 3D model asset for bed real castlery lexi tufted queen nickel grey.
+- `public/assets/models/bed-real-castlery-rochelle-standard-king-white-quartz-boucle.glb` — Binary GLB 3D model asset for bed real castlery rochelle standard king white quartz boucle.
+- `public/assets/models/bed-real-castlery-rochelle-standard-queen-white-quartz-boucle.glb` — Binary GLB 3D model asset for bed real castlery rochelle standard queen white quartz boucle.
+- `public/assets/models/bed-real-castlery-rochelle-storage-king-white-quartz-boucle.glb` — Binary GLB 3D model asset for bed real castlery rochelle storage king white quartz boucle.
+- `public/assets/models/bed-real-castlery-rochelle-storage-queen-white-quartz-boucle.glb` — Binary GLB 3D model asset for bed real castlery rochelle storage queen white quartz boucle.
+- `public/assets/models/bed-real-castlery-rochelle-storage-super-single-white-quartz-boucle.glb` — Binary GLB 3D model asset for bed real castlery rochelle storage super single white quartz boucle.
+- `public/assets/models/bed-real-castlery-seb-king-performance-creamy-white.glb` — Binary GLB 3D model asset for bed real castlery seb king performance creamy white.
+- `public/assets/models/bed-real-castlery-seb-king-single-table-performance-creamy-white.glb` — Binary GLB 3D model asset for bed real castlery seb king single table performance creamy white.
+- `public/assets/models/bed-real-castlery-seb-king-two-tables-performance-creamy-white.glb` — Binary GLB 3D model asset for bed real castlery seb king two tables performance creamy white.
+- `public/assets/models/bed-real-castlery-seb-queen-performance-creamy-white.glb` — Binary GLB 3D model asset for bed real castlery seb queen performance creamy white.
+- `public/assets/models/bed-real-castlery-seb-queen-single-table-performance-creamy-white.glb` — Binary GLB 3D model asset for bed real castlery seb queen single table performance creamy white.
+- `public/assets/models/bed-real-castlery-seb-queen-two-tables-performance-creamy-white.glb` — Binary GLB 3D model asset for bed real castlery seb queen two tables performance creamy white.
+- `public/assets/models/bed-real-castlery-seb-super-single-performance-creamy-white.glb` — Binary GLB 3D model asset for bed real castlery seb super single performance creamy white.
+- `public/assets/models/bed-real-castlery-seb-super-single-single-table-performance-creamy-white.glb` — Binary GLB 3D model asset for bed real castlery seb super single single table performance creamy white.
+- `public/assets/models/bed-real-castlery-seb-super-single-two-tables-performance-creamy-white.glb` — Binary GLB 3D model asset for bed real castlery seb super single two tables performance creamy white.
+- `public/assets/models/ceiling-real-castlery-cedric-pendant-20cm.glb` — Binary GLB 3D model asset for ceiling real castlery cedric pendant 20cm.
+- `public/assets/models/ceiling-real-castlery-cedric-pendant-30cm.glb` — Binary GLB 3D model asset for ceiling real castlery cedric pendant 30cm.
+- `public/assets/models/coffee-real-castlery-arcadia-coffee-table.glb` — Binary GLB 3D model asset for coffee real castlery arcadia coffee table.
+- `public/assets/models/coffee-real-castlery-bristol-coffee-table-set-walnut.glb` — Binary GLB 3D model asset for coffee real castlery bristol coffee table set walnut.
+- `public/assets/models/coffee-real-castlery-harper-marble-rectangular-120.glb` — Binary GLB 3D model asset for coffee real castlery harper marble rectangular 120.
+- `public/assets/models/coffee-real-castlery-harper-marble-round-915.glb` — Binary GLB 3D model asset for coffee real castlery harper marble round 915.
+- `public/assets/models/coffee-real-castlery-hugg-nesting-rectangular-performance-basalt-closed.glb` — Binary GLB 3D model asset for coffee real castlery hugg nesting rectangular performance basalt closed.
+- `public/assets/models/coffee-real-castlery-hugg-nesting-rectangular-performance-basalt-opened.glb` — Binary GLB 3D model asset for coffee real castlery hugg nesting rectangular performance basalt opened.
+- `public/assets/models/coffee-real-castlery-hugg-nesting-rectangular-performance-dune-closed.glb` — Binary GLB 3D model asset for coffee real castlery hugg nesting rectangular performance dune closed.
+- `public/assets/models/coffee-real-castlery-hugg-nesting-rectangular-performance-dune-opened.glb` — Binary GLB 3D model asset for coffee real castlery hugg nesting rectangular performance dune opened.
+- `public/assets/models/coffee-real-castlery-hugg-nesting-side-table-performance-basalt-closed.glb` — Binary GLB 3D model asset for coffee real castlery hugg nesting side table performance basalt closed.
+- `public/assets/models/coffee-real-castlery-hugg-nesting-side-table-performance-basalt-opened.glb` — Binary GLB 3D model asset for coffee real castlery hugg nesting side table performance basalt opened.
+- `public/assets/models/coffee-real-castlery-hugg-nesting-side-table-performance-dune-closed.glb` — Binary GLB 3D model asset for coffee real castlery hugg nesting side table performance dune closed.
+- `public/assets/models/coffee-real-castlery-hugg-nesting-side-table-performance-dune-opened.glb` — Binary GLB 3D model asset for coffee real castlery hugg nesting side table performance dune opened.
+- `public/assets/models/coffee-real-castlery-hugg-nesting-square-performance-basalt-closed.glb` — Binary GLB 3D model asset for coffee real castlery hugg nesting square performance basalt closed.
+- `public/assets/models/coffee-real-castlery-hugg-nesting-square-performance-basalt-opened.glb` — Binary GLB 3D model asset for coffee real castlery hugg nesting square performance basalt opened.
+- `public/assets/models/coffee-real-castlery-hugg-nesting-square-performance-dune-closed.glb` — Binary GLB 3D model asset for coffee real castlery hugg nesting square performance dune closed.
+- `public/assets/models/coffee-real-castlery-hugg-nesting-square-performance-dune-opened.glb` — Binary GLB 3D model asset for coffee real castlery hugg nesting square performance dune opened.
+- `public/assets/models/coffee-real-castlery-peri-120.glb` — Binary GLB 3D model asset for coffee real castlery peri 120.
+- `public/assets/models/coffee-real-castlery-seb-lift-top-large-closed.glb` — Binary GLB 3D model asset for coffee real castlery seb lift top large closed.
+- `public/assets/models/coffee-real-castlery-seb-lift-top-large-open.glb` — Binary GLB 3D model asset for coffee real castlery seb lift top large open.
+- `public/assets/models/coffee-real-castlery-seb-lift-top-small-closed.glb` — Binary GLB 3D model asset for coffee real castlery seb lift top small closed.
+- `public/assets/models/coffee-real-castlery-seb-lift-top-small-open.glb` — Binary GLB 3D model asset for coffee real castlery seb lift top small open.
+- `public/assets/models/coffee-real-castlery-seb-storage-120.glb` — Binary GLB 3D model asset for coffee real castlery seb storage 120.
+- `public/assets/models/coffee-real-castlery-seb-storage-90.glb` — Binary GLB 3D model asset for coffee real castlery seb storage 90.
+- `public/assets/models/coffee-real-castlery-vento-coffee-table-120.glb` — Binary GLB 3D model asset for coffee real castlery vento coffee table 120.
+- `public/assets/models/coffee-real-castlery-vincent-coffee-table-set-walnut.glb` — Binary GLB 3D model asset for coffee real castlery vincent coffee table set walnut.
+- `public/assets/models/dining-real-castlery-brighton-oval-180.glb` — Binary GLB 3D model asset for dining real castlery brighton oval 180.
+- `public/assets/models/dining-real-castlery-forma-oval-150.glb` — Binary GLB 3D model asset for dining real castlery forma oval 150.
+- `public/assets/models/dining-real-castlery-forma-round-120.glb` — Binary GLB 3D model asset for dining real castlery forma round 120.
+- `public/assets/models/dining-real-castlery-forma-round-90.glb` — Binary GLB 3D model asset for dining real castlery forma round 90.
+- `public/assets/models/dining-real-castlery-kelsey-marble-160-dark-walnut.glb` — Binary GLB 3D model asset for dining real castlery kelsey marble 160 dark walnut.
+- `public/assets/models/dining-real-castlery-kelsey-marble-160-white-wash.glb` — Binary GLB 3D model asset for dining real castlery kelsey marble 160 white wash.
+- `public/assets/models/dining-real-castlery-kelsey-marble-160.glb` — Binary GLB 3D model asset for dining real castlery kelsey marble 160.
+- `public/assets/models/dining-real-castlery-kelsey-marble-180-dark-walnut.glb` — Binary GLB 3D model asset for dining real castlery kelsey marble 180 dark walnut.
+- `public/assets/models/dining-real-castlery-kelsey-marble-180-white-wash.glb` — Binary GLB 3D model asset for dining real castlery kelsey marble 180 white wash.
+- `public/assets/models/dining-real-castlery-kelsey-marble-180.glb` — Binary GLB 3D model asset for dining real castlery kelsey marble 180.
+- `public/assets/models/dining-real-castlery-seb-dining-table-150.glb` — Binary GLB 3D model asset for dining real castlery seb dining table 150.
+- `public/assets/models/dining-real-castlery-seb-dining-table-180.glb` — Binary GLB 3D model asset for dining real castlery seb dining table 180.
+- `public/assets/models/dining-real-castlery-sloane-bench-150-leather-cushion.glb` — Binary GLB 3D model asset for dining real castlery sloane bench 150 leather cushion.
+- `public/assets/models/dining-real-castlery-sloane-bench-150-no-cushion.glb` — Binary GLB 3D model asset for dining real castlery sloane bench 150 no cushion.
+- `public/assets/models/dining-real-castlery-sloane-bench-180-leather-cushion.glb` — Binary GLB 3D model asset for dining real castlery sloane bench 180 leather cushion.
+- `public/assets/models/dining-real-castlery-sloane-bench-180-no-cushion.glb` — Binary GLB 3D model asset for dining real castlery sloane bench 180 no cushion.
+- `public/assets/models/dining-real-castlery-sloane-dining-table-180.glb` — Binary GLB 3D model asset for dining real castlery sloane dining table 180.
+- `public/assets/models/dining-real-castlery-sloane-dining-table-225.glb` — Binary GLB 3D model asset for dining real castlery sloane dining table 225.
+- `public/assets/models/dining-real-castlery-sloane-travertine-180.glb` — Binary GLB 3D model asset for dining real castlery sloane travertine 180.
+- `public/assets/models/dining-real-castlery-sloane-travertine-225.glb` — Binary GLB 3D model asset for dining real castlery sloane travertine 225.
+- `public/assets/models/sofa-real-castlery-auburn-performance-fabric-3-seater-sofa-with-ottoman.glb` — Binary GLB 3D model asset for sofa real castlery auburn performance fabric 3 seater sofa with ottoman.
+- `public/assets/models/sofa-real-castlery-auburn-performance-fabric-3-seater-sofa.glb` — Binary GLB 3D model asset for sofa real castlery auburn performance fabric 3 seater sofa.
+- `public/assets/models/sofa-real-castlery-auburn-performance-fabric-armless-curve-3-seater-sofa-with-ottoman.glb` — Binary GLB 3D model asset for sofa real castlery auburn performance fabric armless curve 3 seater sofa with ottoman.
+- `public/assets/models/sofa-real-castlery-auburn-performance-fabric-armless-curve-3-seater-sofa.glb` — Binary GLB 3D model asset for sofa real castlery auburn performance fabric armless curve 3 seater sofa.
+- `public/assets/models/sofa-real-castlery-auburn-performance-fabric-chaise-sectional-left-with-ottoman.glb` — Binary GLB 3D model asset for sofa real castlery auburn performance fabric chaise sectional left with ottoman.
+- `public/assets/models/sofa-real-castlery-auburn-performance-fabric-chaise-sectional-left.glb` — Binary GLB 3D model asset for sofa real castlery auburn performance fabric chaise sectional left.
+- `public/assets/models/sofa-real-castlery-auburn-performance-fabric-chaise-sectional-right-with-ottoman.glb` — Binary GLB 3D model asset for sofa real castlery auburn performance fabric chaise sectional right with ottoman.
+- `public/assets/models/sofa-real-castlery-auburn-performance-fabric-chaise-sectional-right.glb` — Binary GLB 3D model asset for sofa real castlery auburn performance fabric chaise sectional right.
+- `public/assets/models/sofa-real-castlery-auburn-performance-fabric-curve-3-seater-sofa-with-ottoman.glb` — Binary GLB 3D model asset for sofa real castlery auburn performance fabric curve 3 seater sofa with ottoman.
+- `public/assets/models/sofa-real-castlery-auburn-performance-fabric-curve-3-seater-sofa.glb` — Binary GLB 3D model asset for sofa real castlery auburn performance fabric curve 3 seater sofa.
+- `public/assets/models/sofa-real-castlery-auburn-performance-fabric-curve-l-shape-sectional-sofa-with-ottoman.glb` — Binary GLB 3D model asset for sofa real castlery auburn performance fabric curve l shape sectional sofa with ottoman.
+- `public/assets/models/sofa-real-castlery-auburn-performance-fabric-curve-l-shape-sectional-sofa.glb` — Binary GLB 3D model asset for sofa real castlery auburn performance fabric curve l shape sectional sofa.
+- `public/assets/models/sofa-real-castlery-auburn-performance-fabric-extended-3-seater-sofa-with-ottoman.glb` — Binary GLB 3D model asset for sofa real castlery auburn performance fabric extended 3 seater sofa with ottoman.
+- `public/assets/models/sofa-real-castlery-auburn-performance-fabric-extended-3-seater-sofa.glb` — Binary GLB 3D model asset for sofa real castlery auburn performance fabric extended 3 seater sofa.
+- `public/assets/models/sofa-real-castlery-auburn-performance-fabric-l-shape-sectional-sofa-with-ottoman.glb` — Binary GLB 3D model asset for sofa real castlery auburn performance fabric l shape sectional sofa with ottoman.
+- `public/assets/models/sofa-real-castlery-auburn-performance-fabric-l-shape-sectional-sofa.glb` — Binary GLB 3D model asset for sofa real castlery auburn performance fabric l shape sectional sofa.
+- `public/assets/models/sofa-real-castlery-auburn-performance-fabric-sectional-sofa-with-ottoman.glb` — Binary GLB 3D model asset for sofa real castlery auburn performance fabric sectional sofa with ottoman.
+- `public/assets/models/sofa-real-castlery-auburn-performance-fabric-sectional-sofa.glb` — Binary GLB 3D model asset for sofa real castlery auburn performance fabric sectional sofa.
+- `public/assets/models/sofa-real-castlery-dawson-3s.glb` — Binary GLB 3D model asset for sofa real castlery dawson 3s.
+- `public/assets/models/sofa-real-castlery-dawson-chaise-sectional-left.glb` — Binary GLB 3D model asset for sofa real castlery dawson chaise sectional left.
+- `public/assets/models/sofa-real-castlery-dawson-chaise-sectional-right.glb` — Binary GLB 3D model asset for sofa real castlery dawson chaise sectional right.
+- `public/assets/models/sofa-real-castlery-dawson-extended-sofa.glb` — Binary GLB 3D model asset for sofa real castlery dawson extended sofa.
+- `public/assets/models/sofa-real-castlery-dawson-ottoman-114.glb` — Binary GLB 3D model asset for sofa real castlery dawson ottoman 114.
+- `public/assets/models/sofa-real-castlery-dawson-ottoman.glb` — Binary GLB 3D model asset for sofa real castlery dawson ottoman.
+- `public/assets/models/sofa-real-castlery-dawson-pit-sectional.glb` — Binary GLB 3D model asset for sofa real castlery dawson pit sectional.
+- `public/assets/models/sofa-real-castlery-dawson-storage-ottoman-114-closed.glb` — Binary GLB 3D model asset for sofa real castlery dawson storage ottoman 114 closed.
+- `public/assets/models/sofa-real-castlery-dawson-storage-ottoman-114-open.glb` — Binary GLB 3D model asset for sofa real castlery dawson storage ottoman 114 open.
+- `public/assets/models/sofa-real-castlery-dawson-storage-ottoman-closed.glb` — Binary GLB 3D model asset for sofa real castlery dawson storage ottoman closed.
+- `public/assets/models/sofa-real-castlery-dawson-storage-ottoman-open.glb` — Binary GLB 3D model asset for sofa real castlery dawson storage ottoman open.
+- `public/assets/models/sofa-real-castlery-dawson-swivel-armchair.glb` — Binary GLB 3D model asset for sofa real castlery dawson swivel armchair.
+- `public/assets/models/sofa-real-castlery-dawson-wide-chaise-sectional-left.glb` — Binary GLB 3D model asset for sofa real castlery dawson wide chaise sectional left.
+- `public/assets/models/sofa-real-castlery-dawson-wide-chaise-sectional.glb` — Binary GLB 3D model asset for sofa real castlery dawson wide chaise sectional.
+- `public/assets/models/sofa-real-castlery-jaron-3s-cocoa.glb` — Binary GLB 3D model asset for sofa real castlery jaron 3s cocoa.
+- `public/assets/models/sofa-real-castlery-jaron-3s-wide-arm-cocoa.glb` — Binary GLB 3D model asset for sofa real castlery jaron 3s wide arm cocoa.
+- `public/assets/models/sofa-real-castlery-jaron-3s-wide-arm.glb` — Binary GLB 3D model asset for sofa real castlery jaron 3s wide arm.
+- `public/assets/models/sofa-real-castlery-jaron-3s.glb` — Binary GLB 3D model asset for sofa real castlery jaron 3s.
+- `public/assets/models/sofa-real-castlery-jaron-chaise-sectional-wide-arm.glb` — Binary GLB 3D model asset for sofa real castlery jaron chaise sectional wide arm.
+- `public/assets/models/sofa-real-castlery-jaron-chaise-sectional.glb` — Binary GLB 3D model asset for sofa real castlery jaron chaise sectional.
+- `public/assets/models/sofa-real-castlery-jaron-extended-3s-cocoa.glb` — Binary GLB 3D model asset for sofa real castlery jaron extended 3s cocoa.
+- `public/assets/models/sofa-real-castlery-jaron-extended-3s-ivory.glb` — Binary GLB 3D model asset for sofa real castlery jaron extended 3s ivory.
+- `public/assets/models/sofa-real-castlery-jaron-extended-3s-wide-arm-cocoa.glb` — Binary GLB 3D model asset for sofa real castlery jaron extended 3s wide arm cocoa.
+- `public/assets/models/sofa-real-castlery-jaron-extended-3s-wide-arm.glb` — Binary GLB 3D model asset for sofa real castlery jaron extended 3s wide arm.
+- `public/assets/models/sofa-real-castlery-jaron-extended-3s.glb` — Binary GLB 3D model asset for sofa real castlery jaron extended 3s.
+- `public/assets/models/sofa-real-castlery-jaron-l-shaped-sectional-wide-arm.glb` — Binary GLB 3D model asset for sofa real castlery jaron l shaped sectional wide arm.
+- `public/assets/models/sofa-real-castlery-jaron-l-shaped-sectional.glb` — Binary GLB 3D model asset for sofa real castlery jaron l shaped sectional.
+- `public/assets/models/sofa-real-castlery-madison-2s.glb` — Binary GLB 3D model asset for sofa real castlery madison 2s.
+- `public/assets/models/sofa-real-castlery-madison-3s.glb` — Binary GLB 3D model asset for sofa real castlery madison 3s.
+- `public/assets/models/sofa-real-castlery-madison-ottoman.glb` — Binary GLB 3D model asset for sofa real castlery madison ottoman.
+- `public/assets/models/sofa-real-castlery-ollie-storage-ottoman-closed.glb` — Binary GLB 3D model asset for sofa real castlery ollie storage ottoman closed.
+- `public/assets/models/sofa-real-castlery-ollie-storage-ottoman-open.glb` — Binary GLB 3D model asset for sofa real castlery ollie storage ottoman open.
+- `public/assets/models/sofa-real-castlery-ollie-storage-ottoman.glb` — Binary GLB 3D model asset for sofa real castlery ollie storage ottoman.
+- `public/assets/models/sofas/sofa-real-castlery-hamilton-2-seater-with-storage-ottoman.glb` — Binary GLB 3D model asset for sofa real castlery hamilton 2 seater with storage ottoman.
+- `public/assets/models/sofas/sofa-real-castlery-hamilton-2-seater.glb` — Binary GLB 3D model asset for sofa real castlery hamilton 2 seater.
+- `public/assets/models/sofas/sofa-real-castlery-hamilton-3-seater-sofa-bed-closed.glb` — Binary GLB 3D model asset for sofa real castlery hamilton 3 seater sofa bed closed.
+- `public/assets/models/sofas/sofa-real-castlery-hamilton-3-seater-sofa-bed-open.glb` — Binary GLB 3D model asset for sofa real castlery hamilton 3 seater sofa bed open.
+- `public/assets/models/sofas/sofa-real-castlery-hamilton-3-seater-with-storage-ottoman.glb` — Binary GLB 3D model asset for sofa real castlery hamilton 3 seater with storage ottoman.
+- `public/assets/models/sofas/sofa-real-castlery-hamilton-3-seater.glb` — Binary GLB 3D model asset for sofa real castlery hamilton 3 seater.
+- `public/assets/models/sofas/sofa-real-castlery-hamilton-chaise-sectional-left.glb` — Binary GLB 3D model asset for sofa real castlery hamilton chaise sectional left.
+- `public/assets/models/sofas/sofa-real-castlery-hamilton-chaise-sectional-right.glb` — Binary GLB 3D model asset for sofa real castlery hamilton chaise sectional right.
+- `public/assets/models/sofas/sofa-real-castlery-hamilton-chaise-sectional-sofa-bed-left-closed.glb` — Binary GLB 3D model asset for sofa real castlery hamilton chaise sectional sofa bed left closed.
+- `public/assets/models/sofas/sofa-real-castlery-hamilton-chaise-sectional-sofa-bed-left-open.glb` — Binary GLB 3D model asset for sofa real castlery hamilton chaise sectional sofa bed left open.
+- `public/assets/models/sofas/sofa-real-castlery-hamilton-chaise-sectional-sofa-bed-right-closed.glb` — Binary GLB 3D model asset for sofa real castlery hamilton chaise sectional sofa bed right closed.
+- `public/assets/models/sofas/sofa-real-castlery-hamilton-chaise-sectional-sofa-bed-right-open.glb` — Binary GLB 3D model asset for sofa real castlery hamilton chaise sectional sofa bed right open.
+- `public/assets/models/sofas/sofa-real-castlery-hamilton-chaise-sectional-with-storage-ottoman-left.glb` — Binary GLB 3D model asset for sofa real castlery hamilton chaise sectional with storage ottoman left.
+- `public/assets/models/sofas/sofa-real-castlery-hamilton-chaise-sectional-with-storage-ottoman-right.glb` — Binary GLB 3D model asset for sofa real castlery hamilton chaise sectional with storage ottoman right.
+- `public/assets/models/sofas/sofa-real-castlery-hamilton-round-chaise-sectional-left.glb` — Binary GLB 3D model asset for sofa real castlery hamilton round chaise sectional left.
+- `public/assets/models/sofas/sofa-real-castlery-hamilton-round-chaise-sectional-right.glb` — Binary GLB 3D model asset for sofa real castlery hamilton round chaise sectional right.
+- `public/assets/models/sofas/sofa-real-castlery-owen-3-seater-haze-natural.glb` — Binary GLB 3D model asset for sofa real castlery owen 3 seater haze natural.
+- `public/assets/models/sofas/sofa-real-castlery-owen-3-seater-haze-walnut.glb` — Binary GLB 3D model asset for sofa real castlery owen 3 seater haze walnut.
+- `public/assets/models/sofas/sofa-real-castlery-owen-3-seater-opal-beige-natural.glb` — Binary GLB 3D model asset for sofa real castlery owen 3 seater opal beige natural.
+- `public/assets/models/sofas/sofa-real-castlery-owen-3-seater-opal-beige-walnut.glb` — Binary GLB 3D model asset for sofa real castlery owen 3 seater opal beige walnut.
+- `public/assets/models/sofas/sofa-real-castlery-owen-3-seater-pearl-beige-natural.glb` — Binary GLB 3D model asset for sofa real castlery owen 3 seater pearl beige natural.
+- `public/assets/models/sofas/sofa-real-castlery-owen-3-seater-pearl-beige-walnut.glb` — Binary GLB 3D model asset for sofa real castlery owen 3 seater pearl beige walnut.
+- `public/assets/models/sofas/sofa-real-castlery-owen-chaise-sectional-left-haze-natural.glb` — Binary GLB 3D model asset for sofa real castlery owen chaise sectional left haze natural.
+- `public/assets/models/sofas/sofa-real-castlery-owen-chaise-sectional-left-haze-walnut.glb` — Binary GLB 3D model asset for sofa real castlery owen chaise sectional left haze walnut.
+- `public/assets/models/sofas/sofa-real-castlery-owen-chaise-sectional-left-opal-beige-natural.glb` — Binary GLB 3D model asset for sofa real castlery owen chaise sectional left opal beige natural.
+- `public/assets/models/sofas/sofa-real-castlery-owen-chaise-sectional-left-opal-beige-walnut.glb` — Binary GLB 3D model asset for sofa real castlery owen chaise sectional left opal beige walnut.
+- `public/assets/models/sofas/sofa-real-castlery-owen-chaise-sectional-left-pearl-beige-natural.glb` — Binary GLB 3D model asset for sofa real castlery owen chaise sectional left pearl beige natural.
+- `public/assets/models/sofas/sofa-real-castlery-owen-chaise-sectional-left-pearl-beige-walnut.glb` — Binary GLB 3D model asset for sofa real castlery owen chaise sectional left pearl beige walnut.
+- `public/assets/models/sofas/sofa-real-castlery-owen-chaise-sectional-right-haze-natural.glb` — Binary GLB 3D model asset for sofa real castlery owen chaise sectional right haze natural.
+- `public/assets/models/sofas/sofa-real-castlery-owen-chaise-sectional-right-haze-walnut.glb` — Binary GLB 3D model asset for sofa real castlery owen chaise sectional right haze walnut.
+- `public/assets/models/sofas/sofa-real-castlery-owen-chaise-sectional-right-opal-beige-natural.glb` — Binary GLB 3D model asset for sofa real castlery owen chaise sectional right opal beige natural.
+- `public/assets/models/sofas/sofa-real-castlery-owen-chaise-sectional-right-opal-beige-walnut.glb` — Binary GLB 3D model asset for sofa real castlery owen chaise sectional right opal beige walnut.
+- `public/assets/models/sofas/sofa-real-castlery-owen-chaise-sectional-right-pearl-beige-natural.glb` — Binary GLB 3D model asset for sofa real castlery owen chaise sectional right pearl beige natural.
+- `public/assets/models/sofas/sofa-real-castlery-owen-chaise-sectional-right-pearl-beige-walnut.glb` — Binary GLB 3D model asset for sofa real castlery owen chaise sectional right pearl beige walnut.
+- `public/assets/models/storage-real-castlery-sawyer-sideboard-180cm.glb` — Binary GLB 3D model asset for storage real castlery sawyer sideboard 180cm.
+- `public/assets/models/storage-real-castlery-sloane-sideboard-150cm.glb` — Binary GLB 3D model asset for storage real castlery sloane sideboard 150cm.
+- `public/assets/models/storage-real-castlery-sloane-sideboard-180cm.glb` — Binary GLB 3D model asset for storage real castlery sloane sideboard 180cm.
+- `public/assets/models/tv-real-castlery-casa-tv-console-150.glb` — Binary GLB 3D model asset for tv real castlery casa tv console 150.
+- `public/assets/models/tv-real-castlery-casa-tv-console-200.glb` — Binary GLB 3D model asset for tv real castlery casa tv console 200.
+- `public/assets/models/tv-real-castlery-sawyer-tv-console-200.glb` — Binary GLB 3D model asset for tv real castlery sawyer tv console 200.
+- `public/assets/models/tv-real-castlery-seb-tv-console-150.glb` — Binary GLB 3D model asset for tv real castlery seb tv console 150.
+- `public/assets/models/tv-real-castlery-seb-tv-console-200.glb` — Binary GLB 3D model asset for tv real castlery seb tv console 200.
+- `public/assets/models/tv-real-castlery-sloane-tv-console-150.glb` — Binary GLB 3D model asset for tv real castlery sloane tv console 150.
+- `public/assets/models/tv-real-castlery-sloane-tv-console-200.glb` — Binary GLB 3D model asset for tv real castlery sloane tv console 200.
+- `public/draco/draco_decoder.js` — Provides draco decoder logic for furniture assets and glb-related logic.
+- `public/draco/draco_decoder.wasm` — WebAssembly runtime asset for browser-side Draco mesh decoding.
+- `public/draco/draco_wasm_wrapper.js` — Provides draco wasm wrapper logic for furniture assets and glb-related logic.
+
+### 21. Materials, finishes, flooring, paint, and textures (233)
+
+- `components/editor/design-controls-plan/surfaceCatalog.ts` — Defines `getFloorMaterialSwatchStyle`, `formatSurfaceMaterialValue`, `getSurfaceMaterialSupplierLabel`, `getSurfaceMaterialCollectionLabel`, and related exports for surface Catalog.
+- `components/editor/design-controls-plan/SurfaceMaterialCatalogBoundary.tsx` — Implements `SurfaceMaterialCatalogBoundary` for Surface Material Catalog Boundary.
+- `components/editor/design-controls-plan/WallPaintPicker.tsx` — Implements `WallPaintPicker` for Wall Paint Picker.
+- `components/editor/design-page/ProductFinishControls.tsx` — Defines `ProductFinishControls`, `ProductFinishControlsState`, `ProductFinishControlsActions` for Product Finish Controls.
+- `components/editor/renderers/canonical-floor-plan/surfaceMaterials.ts` — Defines `surfaceMaterialFallbackColor`, `resolveRoomSurfaceAssignments`, `WALL_SURFACE_TEXTURE_RESOLUTION` for surface Materials.
+- `lib/design-page-material-props.ts` — Defines `resolveMaterialProps`, `MaterialProps` for design page material props.
+- `lib/design-page-surface-inspector.ts` — Defines `formatFlooringInspectorValue`, `getFlooringInspectorSurfaceSwatchStyle`, `getFlooringInspectorProductName`, `getFlooringInspectorSizeLabel`, and related exports for design page surface inspector.
+- `lib/finish-gate.ts` — Defines `parseVariantIds`, `evaluateCatalogFinishCoverage`, `isCatalogFinishPublishReady`, `CatalogItemForFinishGate`, and related exports for finish gate.
+- `lib/finish-taxonomy.ts` — Defines `validateVariantForPublish`, `validateCatalogItemFinishMappings`, `isFinishMappingReady`, `MATERIAL_FAMILIES`, and related exports for finish taxonomy.
+- `lib/floor-materials.ts` — Defines `getFloorMaterialById`, `getRecommendedFloorMaterials`, `normalizeFloorRotationDeg`, `clampFloorPatternScale`, and related exports for floor materials.
+- `lib/materialPresets.ts` — Defines `getPresetsForCategory`, `getPresetById`, `getDefaultPreset`, `getPresetsByTone`, and related exports for material Presets.
+- `lib/nippon-paint-colours.ts` — Defines `NIPPON_PAINT_COLOURS`, `NipponPaintColour` for nippon paint colours.
+- `lib/surface-material-bom.ts` — Defines `getRoomSurfaceAssignments`, `buildRoomSurfaceMaterialBomRows`, `SurfaceMaterialBomRow` for surface material bom.
+- `lib/surface-material-runtime-types.ts` — Defines `SurfaceMaterialRenderRecord`, `SurfaceMaterialCatalogMetadata`, `SurfaceMaterialCatalogRecord`, `SurfaceMaterialRenderTuple`, and related exports for surface material runtime types.
+- `lib/surface-material-runtime.ts` — Defines `decodeSurfaceMaterialRenderTuple`, `getRuntimeSurfaceMaterialById`, `getSurfaceMaterialTextureSource`, `shouldUseSingleSurfaceSwatch`, and related exports for surface material runtime.
+- `lib/surface-material-schema.ts` — Defines `SURFACE_MATERIAL_VOCABULARY`, `SurfaceCategory`, `FlooringMaterialFamily`, `SurfaceMaterialFamily`, and related exports for surface material schema.
+- `lib/surface-material-texture-repeat.ts` — Defines `resolveSurfaceTextureRepeat`, `SurfaceTextureRepeat` for surface material texture repeat.
+- `lib/surface-material-yaml.ts` — Defines `getSurfaceMaterialCatalogRoot`, `getAllSurfaceMaterialFiles`, `readSurfaceMaterialYamlFile`, `getAllSurfaceMaterialYamlEntries`, and related exports for surface material yaml.
+- `lib/surface-settings.ts` — Defines `normalizeFloorPattern`, `getFloorPatternOptionsForIds`, `normalizeFloorPatternOffset`, `normalizeFloorJointSizeMm`, and related exports for surface settings.
+- `lib/wall-paint-rendering.ts` — Defines `getWallPaintColorFidelityFillIntensity`, `resolveWallSurfaceColorFillIntensity`, `WALL_PAINT_COLOR_FIDELITY_MIN_FILL_INTENSITY`, `WALL_PAINT_COLOR_FIDELITY_MAX_FILL_INTENSITY` for wall paint rendering.
+- `lib/wall-paint.ts` — Defines `createNipponWallPaintSwatches`, `normalizeWallPaintColorHex`, `normalizeWallPaintName`, `getWallPaintSwatchById`, and related exports for wall paint.
+- `public/assets/catalog/surface-materials/flooring/goodrich/geff-nova-dryback/gnd-001-grey-anthracite-swatch.jpg` — Static JPG asset for gnd 001 grey anthracite swatch.
+- `public/assets/catalog/surface-materials/flooring/goodrich/geff-nova-dryback/gnd-002-cold-cement-swatch.jpg` — Static JPG asset for gnd 002 cold cement swatch.
+- `public/assets/catalog/surface-materials/flooring/goodrich/geff-nova-dryback/gnd-003-ash-grey-swatch.jpg` — Static JPG asset for gnd 003 ash grey swatch.
+- `public/assets/catalog/surface-materials/flooring/goodrich/geff-nova-dryback/gnd-004-oak-swatch.jpg` — Static JPG asset for gnd 004 oak swatch.
+- `public/assets/catalog/surface-materials/flooring/goodrich/geff-nova-dryback/gnd-005-maple-swatch.jpg` — Static JPG asset for gnd 005 maple swatch.
+- `public/assets/catalog/surface-materials/flooring/goodrich/geff-nova-dryback/gnd-006-sunbleached-swatch.jpg` — Static JPG asset for gnd 006 sunbleached swatch.
+- `public/assets/catalog/surface-materials/flooring/goodrich/geff-nova-dryback/gnd-007-galaxy-swatch.jpg` — Static JPG asset for gnd 007 galaxy swatch.
+- `public/assets/catalog/surface-materials/flooring/goodrich/geff-nova-dryback/gnd-008-terrazzo-swatch.jpg` — Static JPG asset for gnd 008 terrazzo swatch.
+- `public/assets/catalog/surface-materials/flooring/goodrich/geff-novaclick/gnv-001-ivory-oak-swatch.jpg` — Static JPG asset for gnv 001 ivory oak swatch.
+- `public/assets/catalog/surface-materials/flooring/goodrich/geff-novaclick/gnv-002-silver-oak-swatch.jpg` — Static JPG asset for gnv 002 silver oak swatch.
+- `public/assets/catalog/surface-materials/flooring/goodrich/geff-novaclick/gnv-003-ash-oak-swatch.jpg` — Static JPG asset for gnv 003 ash oak swatch.
+- `public/assets/catalog/surface-materials/flooring/goodrich/geff-novaclick/gnv-004-american-chestnut-swatch.jpg` — Static JPG asset for gnv 004 american chestnut swatch.
+- `public/assets/catalog/surface-materials/flooring/goodrich/geff-novaclick/gnv-005-vintage-oak-swatch.jpg` — Static JPG asset for gnv 005 vintage oak swatch.
+- `public/assets/catalog/surface-materials/flooring/goodrich/geff-novaclick/gnv-006-artisian-parquet-swatch.jpg` — Static JPG asset for gnv 006 artisian parquet swatch.
+- `public/assets/catalog/surface-materials/flooring/goodrich/geff-novaclick/gnv-007-french-maple-swatch.jpg` — Static JPG asset for gnv 007 french maple swatch.
+- `public/assets/catalog/surface-materials/flooring/goodrich/geff-novaclick/gnv-008-premier-oak-swatch.jpg` — Static JPG asset for gnv 008 premier oak swatch.
+- `public/assets/catalog/surface-materials/flooring/goodrich/geff-novaclick/gnv-010-weathered-timberland-swatch.jpg` — Static JPG asset for gnv 010 weathered timberland swatch.
+- `public/assets/catalog/surface-materials/flooring/goodrich/geff-novaclick/gnv-011-european-oak-swatch.jpg` — Static JPG asset for gnv 011 european oak swatch.
+- `public/assets/catalog/surface-materials/flooring/goodrich/geff-novaclick/gnv-012-classic-walnut-swatch.jpg` — Static JPG asset for gnv 012 classic walnut swatch.
+- `public/assets/catalog/surface-materials/flooring/goodrich/geff-novaclick/gnv-013-pewter-oak-swatch.jpg` — Static JPG asset for gnv 013 pewter oak swatch.
+- `public/assets/catalog/surface-materials/flooring/goodrich/geff-novaclick/gnv-014-light-pine-swatch.jpg` — Static JPG asset for gnv 014 light pine swatch.
+- `public/assets/catalog/surface-materials/flooring/goodrich/geff-novaclick/gnv-015-smoke-grey-swatch.jpg` — Static JPG asset for gnv 015 smoke grey swatch.
+- `public/assets/catalog/surface-materials/flooring/goodrich/geff-novaclick/gnv-016-limewash-swatch.jpg` — Static JPG asset for gnv 016 limewash swatch.
+- `public/assets/catalog/surface-materials/flooring/goodrich/geff-novaclick/gnv-017-greystone-swatch.jpg` — Static JPG asset for gnv 017 greystone swatch.
+- `public/assets/catalog/surface-materials/flooring/goodrich/geff-novaclick/gnv-018-grand-marble-swatch.jpg` — Static JPG asset for gnv 018 grand marble swatch.
+- `public/assets/catalog/surface-materials/gardenia/anima/0006056.webp` — Static WEBP asset for 0006056.
+- `public/assets/catalog/surface-materials/gardenia/anima/0006057.webp` — Static WEBP asset for 0006057.
+- `public/assets/catalog/surface-materials/gardenia/anima/0006058.webp` — Static WEBP asset for 0006058.
+- `public/assets/catalog/surface-materials/gardenia/anima/0006059.webp` — Static WEBP asset for 0006059.
+- `public/assets/catalog/surface-materials/gardenia/anima/0007921.webp` — Static WEBP asset for 0007921.
+- `public/assets/catalog/surface-materials/gardenia/anima/0007922.webp` — Static WEBP asset for 0007922.
+- `public/assets/catalog/surface-materials/gardenia/bon-ton/pf60020774.webp` — Static WEBP asset for pf60020774.
+- `public/assets/catalog/surface-materials/gardenia/bon-ton/pf60020775.webp` — Static WEBP asset for pf60020775.
+- `public/assets/catalog/surface-materials/gardenia/bon-ton/pf60020776.webp` — Static WEBP asset for pf60020776.
+- `public/assets/catalog/surface-materials/gardenia/bon-ton/pf60020777.webp` — Static WEBP asset for pf60020777.
+- `public/assets/catalog/surface-materials/gardenia/bon-ton/pf60020782.webp` — Static WEBP asset for pf60020782.
+- `public/assets/catalog/surface-materials/gardenia/bon-ton/pf60020783.webp` — Static WEBP asset for pf60020783.
+- `public/assets/catalog/surface-materials/gardenia/bon-ton/pf60020784.webp` — Static WEBP asset for pf60020784.
+- `public/assets/catalog/surface-materials/gardenia/bon-ton/pf60020798.webp` — Static WEBP asset for pf60020798.
+- `public/assets/catalog/surface-materials/gardenia/bon-ton/pf60020799.webp` — Static WEBP asset for pf60020799.
+- `public/assets/catalog/surface-materials/gardenia/bon-ton/pf60020800.webp` — Static WEBP asset for pf60020800.
+- `public/assets/catalog/surface-materials/gardenia/bon-ton/pf60020801.webp` — Static WEBP asset for pf60020801.
+- `public/assets/catalog/surface-materials/gardenia/dorica/0010004.webp` — Static WEBP asset for 0010004.
+- `public/assets/catalog/surface-materials/gardenia/dorica/0010005.webp` — Static WEBP asset for 0010005.
+- `public/assets/catalog/surface-materials/gardenia/dorica/0010006.webp` — Static WEBP asset for 0010006.
+- `public/assets/catalog/surface-materials/gardenia/dorica/0010087.webp` — Static WEBP asset for 0010087.
+- `public/assets/catalog/surface-materials/gardenia/falaise/0010804.webp` — Static WEBP asset for 0010804.
+- `public/assets/catalog/surface-materials/gardenia/falaise/0017525.webp` — Static WEBP asset for 0017525.
+- `public/assets/catalog/surface-materials/gardenia/falaise/0017526.webp` — Static WEBP asset for 0017526.
+- `public/assets/catalog/surface-materials/gardenia/falaise/0017527.webp` — Static WEBP asset for 0017527.
+- `public/assets/catalog/surface-materials/gardenia/falaise/0017607.webp` — Static WEBP asset for 0017607.
+- `public/assets/catalog/surface-materials/gardenia/falaise/0017756.webp` — Static WEBP asset for 0017756.
+- `public/assets/catalog/surface-materials/gardenia/gioia/00202274.webp` — Static WEBP asset for 00202274.
+- `public/assets/catalog/surface-materials/gardenia/gioia/00202275.webp` — Static WEBP asset for 00202275.
+- `public/assets/catalog/surface-materials/gardenia/gioia/00202276.webp` — Static WEBP asset for 00202276.
+- `public/assets/catalog/surface-materials/gardenia/gioia/00202277.webp` — Static WEBP asset for 00202277.
+- `public/assets/catalog/surface-materials/gardenia/gioia/00202278.webp` — Static WEBP asset for 00202278.
+- `public/assets/catalog/surface-materials/gardenia/gioia/pf60008228.webp` — Static WEBP asset for pf60008228.
+- `public/assets/catalog/surface-materials/gardenia/gioia/pf60008230.webp` — Static WEBP asset for pf60008230.
+- `public/assets/catalog/surface-materials/gardenia/gioia/pf60008232.webp` — Static WEBP asset for pf60008232.
+- `public/assets/catalog/surface-materials/gardenia/gioia/pf60008233.webp` — Static WEBP asset for pf60008233.
+- `public/assets/catalog/surface-materials/gardenia/gioia/pf60008234.webp` — Static WEBP asset for pf60008234.
+- `public/assets/catalog/surface-materials/gardenia/gioia/pf60008235.webp` — Static WEBP asset for pf60008235.
+- `public/assets/catalog/surface-materials/gardenia/gioia/pf60009646.webp` — Static WEBP asset for pf60009646.
+- `public/assets/catalog/surface-materials/gardenia/gioia/pf60009647.webp` — Static WEBP asset for pf60009647.
+- `public/assets/catalog/surface-materials/gardenia/gioia/pf60009648.webp` — Static WEBP asset for pf60009648.
+- `public/assets/catalog/surface-materials/gardenia/gioia/pf60009655.webp` — Static WEBP asset for pf60009655.
+- `public/assets/catalog/surface-materials/gardenia/gioia/pf60010527.webp` — Static WEBP asset for pf60010527.
+- `public/assets/catalog/surface-materials/gardenia/i-pigmenti/0016961.webp` — Static WEBP asset for 0016961.
+- `public/assets/catalog/surface-materials/gardenia/i-pigmenti/0016962.webp` — Static WEBP asset for 0016962.
+- `public/assets/catalog/surface-materials/gardenia/i-pigmenti/0016963.webp` — Static WEBP asset for 0016963.
+- `public/assets/catalog/surface-materials/gardenia/i-pigmenti/0016964.webp` — Static WEBP asset for 0016964.
+- `public/assets/catalog/surface-materials/gardenia/i-pigmenti/0016969.webp` — Static WEBP asset for 0016969.
+- `public/assets/catalog/surface-materials/gardenia/i-pigmenti/0016970.webp` — Static WEBP asset for 0016970.
+- `public/assets/catalog/surface-materials/gardenia/i-pigmenti/0016972.webp` — Static WEBP asset for 0016972.
+- `public/assets/catalog/surface-materials/gardenia/i-pigmenti/0016973.webp` — Static WEBP asset for 0016973.
+- `public/assets/catalog/surface-materials/gardenia/i-pigmenti/0016974.webp` — Static WEBP asset for 0016974.
+- `public/assets/catalog/surface-materials/gardenia/i-pigmenti/0016975.webp` — Static WEBP asset for 0016975.
+- `public/assets/catalog/surface-materials/gardenia/i-pigmenti/pf60014511.webp` — Static WEBP asset for pf60014511.
+- `public/assets/catalog/surface-materials/gardenia/i-pigmenti/pf60014512.webp` — Static WEBP asset for pf60014512.
+- `public/assets/catalog/surface-materials/gardenia/i-pigmenti/pf60014514.webp` — Static WEBP asset for pf60014514.
+- `public/assets/catalog/surface-materials/gardenia/i-pigmenti/pf60017597.webp` — Static WEBP asset for pf60017597.
+- `public/assets/catalog/surface-materials/gardenia/i-pigmenti/pf60017598.webp` — Static WEBP asset for pf60017598.
+- `public/assets/catalog/surface-materials/gardenia/i-pigmenti/pf60017599.webp` — Static WEBP asset for pf60017599.
+- `public/assets/catalog/surface-materials/gardenia/i-pigmenti/pf60017600.webp` — Static WEBP asset for pf60017600.
+- `public/assets/catalog/surface-materials/gardenia/i-pigmenti/pf60017601.webp` — Static WEBP asset for pf60017601.
+- `public/assets/catalog/surface-materials/gardenia/i-pigmenti/pf60017602.webp` — Static WEBP asset for pf60017602.
+- `public/assets/catalog/surface-materials/gardenia/i-pigmenti/pf60017603.webp` — Static WEBP asset for pf60017603.
+- `public/assets/catalog/surface-materials/gardenia/i-pigmenti/pf60017604.webp` — Static WEBP asset for pf60017604.
+- `public/assets/catalog/surface-materials/gardenia/i-pigmenti/pf60017605.webp` — Static WEBP asset for pf60017605.
+- `public/assets/catalog/surface-materials/gardenia/i-pigmenti/pf60017606.webp` — Static WEBP asset for pf60017606.
+- `public/assets/catalog/surface-materials/gardenia/la-geoteca/pf60011726.webp` — Static WEBP asset for pf60011726.
+- `public/assets/catalog/surface-materials/gardenia/la-geoteca/pf60011729.webp` — Static WEBP asset for pf60011729.
+- `public/assets/catalog/surface-materials/gardenia/la-geoteca/pf60011731.webp` — Static WEBP asset for pf60011731.
+- `public/assets/catalog/surface-materials/gardenia/la-geoteca/pf60011732.webp` — Static WEBP asset for pf60011732.
+- `public/assets/catalog/surface-materials/gardenia/la-geoteca/pf60011775.webp` — Static WEBP asset for pf60011775.
+- `public/assets/catalog/surface-materials/gardenia/la-geoteca/pf60013116.webp` — Static WEBP asset for pf60013116.
+- `public/assets/catalog/surface-materials/gardenia/la-geoteca/pf60016057.webp` — Static WEBP asset for pf60016057.
+- `public/assets/catalog/surface-materials/gardenia/la-geoteca/pf60016058.webp` — Static WEBP asset for pf60016058.
+- `public/assets/catalog/surface-materials/gardenia/la-geoteca/pf60016136.webp` — Static WEBP asset for pf60016136.
+- `public/assets/catalog/surface-materials/gardenia/la-geoteca/pf60016137.webp` — Static WEBP asset for pf60016137.
+- `public/assets/catalog/surface-materials/gardenia/la-geoteca/pf60016140.webp` — Static WEBP asset for pf60016140.
+- `public/assets/catalog/surface-materials/gardenia/la-geoteca/pf60016141.webp` — Static WEBP asset for pf60016141.
+- `public/assets/catalog/surface-materials/gardenia/la-geoteca/pf60016634.webp` — Static WEBP asset for pf60016634.
+- `public/assets/catalog/surface-materials/gardenia/la-marmoteca/0005359.webp` — Static WEBP asset for 0005359.
+- `public/assets/catalog/surface-materials/gardenia/la-marmoteca/0006902.webp` — Static WEBP asset for 0006902.
+- `public/assets/catalog/surface-materials/gardenia/la-marmoteca/0009167.webp` — Static WEBP asset for 0009167.
+- `public/assets/catalog/surface-materials/gardenia/la-marmoteca/0011497.webp` — Static WEBP asset for 0011497.
+- `public/assets/catalog/surface-materials/gardenia/la-marmoteca/0012247.webp` — Static WEBP asset for 0012247.
+- `public/assets/catalog/surface-materials/gardenia/la-marmoteca/g0027010.webp` — Static WEBP asset for g0027010.
+- `public/assets/catalog/surface-materials/gardenia/la-marmoteca/g0027011.webp` — Static WEBP asset for g0027011.
+- `public/assets/catalog/surface-materials/gardenia/la-marmoteca/g0027012.webp` — Static WEBP asset for g0027012.
+- `public/assets/catalog/surface-materials/gardenia/la-marmoteca/g0027050.webp` — Static WEBP asset for g0027050.
+- `public/assets/catalog/surface-materials/gardenia/la-marmoteca/g0027051.webp` — Static WEBP asset for g0027051.
+- `public/assets/catalog/surface-materials/gardenia/la-marmoteca/g0027052.webp` — Static WEBP asset for g0027052.
+- `public/assets/catalog/surface-materials/gardenia/la-marmoteca/g0027053.webp` — Static WEBP asset for g0027053.
+- `public/assets/catalog/surface-materials/gardenia/la-marmoteca/g0027055.webp` — Static WEBP asset for g0027055.
+- `public/assets/catalog/surface-materials/gardenia/la-marmoteca/g0027057.webp` — Static WEBP asset for g0027057.
+- `public/assets/catalog/surface-materials/gardenia/la-marmoteca/g27005-g27035.webp` — Static WEBP asset for g27005 g27035.
+- `public/assets/catalog/surface-materials/gardenia/la-marmoteca/g27006-g27036.webp` — Static WEBP asset for g27006 g27036.
+- `public/assets/catalog/surface-materials/gardenia/la-marmoteca/g27007-g27037.webp` — Static WEBP asset for g27007 g27037.
+- `public/assets/catalog/surface-materials/gardenia/la-marmoteca/pf60012777.webp` — Static WEBP asset for pf60012777.
+- `public/assets/catalog/surface-materials/gardenia/la-marmoteca/pf60014463.webp` — Static WEBP asset for pf60014463.
+- `public/assets/catalog/surface-materials/gardenia/la-marmoteca/pf60014464.webp` — Static WEBP asset for pf60014464.
+- `public/assets/catalog/surface-materials/gardenia/la-marmoteca/pf60014678.webp` — Static WEBP asset for pf60014678.
+- `public/assets/catalog/surface-materials/gardenia/la-marmoteca/pf60014686-pf60014687.webp` — Static WEBP asset for pf60014686 pf60014687.
+- `public/assets/catalog/surface-materials/gardenia/make/g0073040.webp` — Static WEBP asset for g0073040.
+- `public/assets/catalog/surface-materials/gardenia/make/g0073041.webp` — Static WEBP asset for g0073041.
+- `public/assets/catalog/surface-materials/gardenia/make/g0073042.webp` — Static WEBP asset for g0073042.
+- `public/assets/catalog/surface-materials/gardenia/make/g0073043.webp` — Static WEBP asset for g0073043.
+- `public/assets/catalog/surface-materials/gardenia/make/g0073044.webp` — Static WEBP asset for g0073044.
+- `public/assets/catalog/surface-materials/gardenia/make/g0073045.webp` — Static WEBP asset for g0073045.
+- `public/assets/catalog/surface-materials/gardenia/make/g0073250.webp` — Static WEBP asset for g0073250.
+- `public/assets/catalog/surface-materials/gardenia/make/g0073251.webp` — Static WEBP asset for g0073251.
+- `public/assets/catalog/surface-materials/gardenia/make/g0073252.webp` — Static WEBP asset for g0073252.
+- `public/assets/catalog/surface-materials/gardenia/make/g0073253.webp` — Static WEBP asset for g0073253.
+- `public/assets/catalog/surface-materials/gardenia/make/g0073254.webp` — Static WEBP asset for g0073254.
+- `public/assets/catalog/surface-materials/gardenia/make/g0073255.webp` — Static WEBP asset for g0073255.
+- `public/assets/catalog/surface-materials/gardenia/orosei/pf60021697.webp` — Static WEBP asset for pf60021697.
+- `public/assets/catalog/surface-materials/gardenia/orosei/pf60021698.webp` — Static WEBP asset for pf60021698.
+- `public/assets/catalog/surface-materials/gardenia/orosei/pf60021733.webp` — Static WEBP asset for pf60021733.
+- `public/assets/catalog/surface-materials/gardenia/orosei/pf60021734.webp` — Static WEBP asset for pf60021734.
+- `public/assets/catalog/surface-materials/gardenia/orosei/pf60021735.webp` — Static WEBP asset for pf60021735.
+- `public/assets/catalog/surface-materials/gardenia/orosei/pf60021736.webp` — Static WEBP asset for pf60021736.
+- `public/assets/catalog/surface-materials/gardenia/orosei/pf60021737.webp` — Static WEBP asset for pf60021737.
+- `public/assets/catalog/surface-materials/gardenia/oxide/g69310.webp` — Static WEBP asset for g69310.
+- `public/assets/catalog/surface-materials/gardenia/oxide/g69311.webp` — Static WEBP asset for g69311.
+- `public/assets/catalog/surface-materials/gardenia/oxide/g69312.webp` — Static WEBP asset for g69312.
+- `public/assets/catalog/surface-materials/gardenia/oxide/g69313.webp` — Static WEBP asset for g69313.
+- `public/assets/catalog/surface-materials/gardenia/oxide/g69314.webp` — Static WEBP asset for g69314.
+- `public/assets/catalog/surface-materials/gardenia/pietra-viva/0012254.webp` — Static WEBP asset for 0012254.
+- `public/assets/catalog/surface-materials/gardenia/pietra-viva/0012258.webp` — Static WEBP asset for 0012258.
+- `public/assets/catalog/surface-materials/gardenia/pietra-viva/0012260.webp` — Static WEBP asset for 0012260.
+- `public/assets/catalog/surface-materials/gardenia/pietra-viva/0012921.webp` — Static WEBP asset for 0012921.
+- `public/assets/catalog/surface-materials/gardenia/pietra-viva/0012922.webp` — Static WEBP asset for 0012922.
+- `public/assets/catalog/surface-materials/gardenia/pietra-viva/0014181.webp` — Static WEBP asset for 0014181.
+- `public/assets/catalog/surface-materials/gardenia/pietra-viva/0014182.webp` — Static WEBP asset for 0014182.
+- `public/assets/catalog/surface-materials/gardenia/tabulae/pf60021106.webp` — Static WEBP asset for pf60021106.
+- `public/assets/catalog/surface-materials/gardenia/tabulae/pf60021107.webp` — Static WEBP asset for pf60021107.
+- `public/assets/catalog/surface-materials/gardenia/tabulae/pf60021108.webp` — Static WEBP asset for pf60021108.
+- `public/assets/catalog/surface-materials/gardenia/tabulae/pf60021109.webp` — Static WEBP asset for pf60021109.
+- `public/assets/catalog/surface-materials/gardenia/tabulae/pf60021110-par-dx-sx.webp` — Static WEBP asset for pf60021110 par dx sx.
+- `public/assets/catalog/surface-materials/gardenia/tabulae/pf60021111-par-dx-sx.webp` — Static WEBP asset for pf60021111 par dx sx.
+- `public/assets/catalog/surface-materials/gardenia/tabulae/pf60021112-par-dx-sx.webp` — Static WEBP asset for pf60021112 par dx sx.
+- `public/assets/catalog/surface-materials/gardenia/tabulae/pf60021113-par-dx-sx.webp` — Static WEBP asset for pf60021113 par dx sx.
+- `public/assets/catalog/surface-materials/gardenia/tabulae/pf60021151.webp` — Static WEBP asset for pf60021151.
+- `public/assets/catalog/surface-materials/gardenia/tabulae/pf60021152.webp` — Static WEBP asset for pf60021152.
+- `public/assets/catalog/surface-materials/gardenia/tabulae/pf60021153.webp` — Static WEBP asset for pf60021153.
+- `public/assets/catalog/surface-materials/gardenia/tabulae/pf60021154.webp` — Static WEBP asset for pf60021154.
+- `public/materials/dawson/indigo-blue-closeup.jpg` — Static JPG asset for material texture indigo blue closeup.
+- `public/materials/dawson/infinity-boucle-ginger-closeup.jpg` — Static JPG asset for material texture infinity boucle ginger closeup.
+- `public/materials/dawson/infinity-boucle-white-quartz-closeup.jpg` — Static JPG asset for material texture infinity boucle white quartz closeup.
+- `public/materials/dawson/marcel-brilliant-white-closeup.jpg` — Static JPG asset for material texture marcel brilliant white closeup.
+- `public/materials/dawson/marcel-smoke-grey-closeup.jpg` — Static JPG asset for material texture marcel smoke grey closeup.
+- `public/materials/dawson/navagio-seagull-closeup.jpg` — Static JPG asset for material texture navagio seagull closeup.
+- `public/materials/dawson/performance-creamy-white-closeup.jpg` — Static JPG asset for material texture performance creamy white closeup.
+- `public/materials/dawson/peyton-cumin-closeup.jpg` — Static JPG asset for material texture peyton cumin closeup.
+- `public/materials/dawson/peyton-dove-grey-closeup.jpg` — Static JPG asset for material texture peyton dove grey closeup.
+- `public/materials/dawson/peyton-ivory-closeup.jpg` — Static JPG asset for material texture peyton ivory closeup.
+- `public/materials/dawson/peyton-moss-closeup.jpg` — Static JPG asset for material texture peyton moss closeup.
+- `public/pbr/dawson/indigo-blue/basecolor.jpg` — Static JPG asset for PBR texture basecolor.
+- `public/pbr/dawson/infinity-boucle-ginger/basecolor.jpg` — Static JPG asset for PBR texture basecolor.
+- `public/pbr/dawson/infinity-boucle-white-quartz/basecolor.jpg` — Static JPG asset for PBR texture basecolor.
+- `public/pbr/dawson/marcel-brilliant-white/basecolor.jpg` — Static JPG asset for PBR texture basecolor.
+- `public/pbr/dawson/marcel-smoke-grey/basecolor.jpg` — Static JPG asset for PBR texture basecolor.
+- `public/pbr/dawson/navagio-seagull/basecolor.jpg` — Static JPG asset for PBR texture basecolor.
+- `public/pbr/dawson/performance-creamy-white/basecolor.jpg` — Static JPG asset for PBR texture basecolor.
+- `public/pbr/dawson/peyton-cumin/basecolor.jpg` — Static JPG asset for PBR texture basecolor.
+- `public/pbr/dawson/peyton-dove-grey/basecolor.jpg` — Static JPG asset for PBR texture basecolor.
+- `public/pbr/dawson/peyton-ivory/basecolor.jpg` — Static JPG asset for PBR texture basecolor.
+- `public/pbr/dawson/peyton-moss/basecolor.jpg` — Static JPG asset for PBR texture basecolor.
+- `public/pbr/fabrics/infinity-boucle/normal.jpg` — Static JPG asset for PBR texture normal.
+- `public/pbr/fabrics/infinity-boucle/roughness.jpg` — Static JPG asset for PBR texture roughness.
+- `public/pbr/fabrics/linen-slub-weave/normal.jpg` — Static JPG asset for PBR texture normal.
+- `public/pbr/fabrics/linen-slub-weave/roughness.jpg` — Static JPG asset for PBR texture roughness.
+- `public/pbr/fabrics/performance-fleece/normal.jpg` — Static JPG asset for PBR texture normal.
+- `public/pbr/fabrics/performance-fleece/roughness.jpg` — Static JPG asset for PBR texture roughness.
+- `public/pbr/fabrics/textured-plain-weave/normal.jpg` — Static JPG asset for PBR texture normal.
+- `public/pbr/fabrics/textured-plain-weave/roughness.jpg` — Static JPG asset for PBR texture roughness.
+- `public/pbr/fabrics/twill/normal.jpg` — Static JPG asset for PBR texture normal.
+- `public/pbr/fabrics/twill/roughness.jpg` — Static JPG asset for PBR texture roughness.
+- `public/swatches/dawson/indigo-blue.jpg` — Static JPG asset for material swatch indigo blue.
+- `public/swatches/dawson/infinity-boucle-ginger.jpg` — Static JPG asset for material swatch infinity boucle ginger.
+- `public/swatches/dawson/infinity-boucle-white-quartz.jpg` — Static JPG asset for material swatch infinity boucle white quartz.
+- `public/swatches/dawson/marcel-brilliant-white.jpg` — Static JPG asset for material swatch marcel brilliant white.
+- `public/swatches/dawson/marcel-smoke-grey.jpg` — Static JPG asset for material swatch marcel smoke grey.
+- `public/swatches/dawson/navagio-seagull.jpg` — Static JPG asset for material swatch navagio seagull.
+- `public/swatches/dawson/performance-creamy-white.jpg` — Static JPG asset for material swatch performance creamy white.
+- `public/swatches/dawson/peyton-cumin.jpg` — Static JPG asset for material swatch peyton cumin.
+- `public/swatches/dawson/peyton-dove-grey.jpg` — Static JPG asset for material swatch peyton dove grey.
+- `public/swatches/dawson/peyton-ivory.jpg` — Static JPG asset for material swatch peyton ivory.
+- `public/swatches/dawson/peyton-moss.jpg` — Static JPG asset for material swatch peyton moss.
+
+### 22. Commerce, Shopify, cart, pricing, and affiliate integrations (24)
+
+- `app/billing/success/CheckoutCompletedTracking.tsx` — Implements `CheckoutCompletedTracking` for Checkout Completed Tracking.
+- `app/billing/success/RefreshPlanButton.tsx` — Implements `RefreshPlanButton` for Refresh Plan Button.
+- `app/checkout/success/confirm-client.tsx` — Implements `ConfirmOrderClient` for confirm client.
+- `app/checkout/success/InviteFriendCTA.tsx` — Implements `InviteFriendCTA` for Invite Friend CTA.
+- `app/share/[shareToken]/export/ShopLink.tsx` — Implements `ShopLink` for Shop Link.
+- `app/share/[shareToken]/export/ShoppingCsvDownload.tsx` — Implements `ShoppingCsvDownload` for Shopping Csv Download.
+- `app/share/[shareToken]/export/ShoppingList.tsx` — Implements `ShoppingList` for Shopping List.
+- `components/admin/PaywallPerformancePanel.tsx` — Implements `PaywallPerformancePanel` for Paywall Performance Panel.
+- `components/CartSidebar.tsx` — Defines `CartSidebar`, `CartSidebarPlacedItem`, `CartSidebarProps` for Cart Sidebar.
+- `components/editor/design-page/UpgradeDialog.tsx` — Defines `UpgradeDialog`, `UpgradeDialogState`, `UpgradeDialogActions`, `UpgradeDialogProps` for Upgrade Dialog.
+- `components/ItemCartDrawer.tsx` — Defines `runCartMutationWithFocus`, `ItemCartDrawer`, `ItemCartDrawerItem`, `ItemCartDrawerProps` for Item Cart Drawer.
+- `components/RetailerConfirmationDialog.tsx` — Defines `RetailerConfirmationDialog`, `RetailerConfirmationDialogProps` for Retailer Confirmation Dialog.
+- `components/ShareShoppingCheckout.tsx` — Implements `ShareShoppingCheckout` for Share Shopping Checkout.
+- `components/UpgradeModal.tsx` — Implements `UpgradeModal` for Upgrade Modal.
+- `lib/beta-checkout-boundary.ts` — Defines `isBetaCheckoutBoundary`, `resolveCheckoutBoundaryDiagnostics`, `buildCheckoutBoundaryResponsePayload`, `buildProviderFailureBoundaryDiagnostics`, and related exports for beta checkout boundary.
+- `lib/cart/reconcile.ts` — Defines `reconcileCart`, `CartLine`, `ReconciledCartLine` for reconcile.
+- `lib/catalog-commerce-readiness.ts` — Defines `buildCatalogCommerceReadiness`, `CatalogCommerceIssueKind`, `CatalogCommerceIssue`, `CatalogCommerceReadinessSummary` for catalog commerce readiness.
+- `lib/catalog/commerce.ts` — Implements `normalizeCommerce` for commerce.
+- `lib/commerce-helpers.ts` — Defines `validateCartItem`, `reconcileCart`, `canAddToCart`, `getCartVisibleItems`, and related exports for commerce helpers.
+- `lib/design-page-item-cart.ts` — Defines `removeDesignPageItemCartProduct`, `updateDesignPageItemCartQuantity`, `getDesignPageItemCartQuantity`, `DesignPageItemCartEntry` for design page item cart.
+- `lib/design-page-paywall.ts` — Defines `ANNUAL_PLAN_SAVINGS_LABEL`, `hashStringToVariant`, `normalizeUpgradeVariant`, `normalizeExperimentSlot`, and related exports for design page paywall.
+- `lib/paywall-performance.ts` — Defines `computePaywallPerformanceSummary`, `PaywallEventLike`, `PaywallVariantRow`, `PaywallPerformanceSummary` for paywall performance.
+- `lib/stripe-pro-billing.ts` — Defines `resolveProPriceCatalog`, `resolveProCheckoutSelection`, `managedIntervalForPriceId`, `subscriptionUsesManagedProPrice`, and related exports for stripe pro billing.
+- `lib/stripe-webhook-transaction.ts` — Defines `applyVerifiedStripeEntitlementOnce`, `verifyStripeWebhookEnvelope`, `StripeEntitlementDecision`, `StripeEntitlementUser`, and related exports for stripe webhook transaction.
+
+### 23. Custom cabinetry and millwork (138)
+
+- `features/cabinetry/antiTipAnchorLayout.ts` — Defines `hasCabinetAntiTipAnchors`, `getCabinetAntiTipAnchorCount`, `getCabinetAntiTipAnchorHeight`, `getCabinetAntiTipAnchorInsetFromSides`, and related exports for anti Tip Anchor Layout.
+- `features/cabinetry/automation.ts` — Defines `cabinetModuleParameterPath`, `cabinetModuleWidthParameterPath`, `createCabinetAutomationState`, `getCabinetAutomationState`, and related exports for automation.
+- `features/cabinetry/cabinetry-tailwind.css` — Styles cabinetry tailwind UI and layout.
+- `features/cabinetry/catalog/hardware.ts` — Defines `getCabinetHardwareRole`, `isCabinetFrontHardwareType`, `getCabinetHardwareCatalogItem`, `CABINET_HARDWARE_ROLE_BY_TYPE`, and related exports for hardware.
+- `features/cabinetry/catalog/materials.ts` — Defines `CABINET_MATERIALS`, `CabinetMaterialCatalogItem` for materials.
+- `features/cabinetry/ceilingBeamLayout.ts` — Defines `isCabinetCeilingBeamArray`, `isCabinetCofferedCeilingGrid`, `isCabinetCeilingComponent`, `getCabinetCeilingBeamCount`, and related exports for ceiling Beam Layout.
+- `features/cabinetry/components/CabinetAssemblyInspector.tsx` — Defines `CabinetAssemblyInspector`, `CabinetAssemblyInspectorProps` for Cabinet Assembly Inspector.
+- `features/cabinetry/components/CabinetChoicePreviews.tsx` — Defines `CabinetDoorStylePreview`, `CabinetHandleTypePreview`, `CABINET_DOOR_STYLE_LABELS`, `CABINET_FRONT_HARDWARE_LABELS`, and related exports for Cabinet Choice Previews.
+- `features/cabinetry/components/CabinetConfigurationPreviews.tsx` — Defines `CabinetDrawerConfigurationPreview`, `CabinetWallPanelPatternPreview`, `CabinetWallBedConfigurationPreview`, `CabinetWallPanelPatternPreviewProps`, and related exports for Cabinet Configuration Previews.
+- `features/cabinetry/components/CabinetContextualOnboarding.tsx` — Implements `CabinetContextualOnboarding` for Cabinet Contextual Onboarding.
+- `features/cabinetry/components/CabinetDesignItemPlan2D.tsx` — Implements `CabinetDesignItemPlan2D` for Cabinet Design Item Plan2 D.
+- `features/cabinetry/components/CabinetDesignItemRenderer.contract.ts` — Implements `CabinetDesignItemRendererProps` for Cabinet Design Item Renderer.contract.
+- `features/cabinetry/components/CabinetDesignItemSpatial3D.tsx` — Implements `CabinetDesignItemSpatial3D` for Cabinet Design Item Spatial3 D.
+- `features/cabinetry/components/CabinetGuidedActionFooter.tsx` — Defines `CabinetGuidedActionFooter`, `CabinetGuidedActionFooterProps` for Cabinet Guided Action Footer.
+- `features/cabinetry/components/CabinetGuidedPreviewPanel.tsx` — Defines `CabinetGuidedPreviewPanel`, `CabinetGuidedPreviewPanelProps` for Cabinet Guided Preview Panel.
+- `features/cabinetry/components/CabinetGuidedReviewPanel.tsx` — Defines `CabinetGuidedReviewPanel`, `CabinetGuidedReviewPanelProps` for Cabinet Guided Review Panel.
+- `features/cabinetry/components/CabinetGuidedStepNavigation.tsx` — Defines `CabinetGuidedStepNavigation`, `CABINET_GUIDED_STEPS` for Cabinet Guided Step Navigation.
+- `features/cabinetry/components/CabinetMeasurementUnitContext.tsx` — Defines `CabinetMeasurementUnitProvider`, `useCabinetMeasurementUnit` for Cabinet Measurement Unit Context.
+- `features/cabinetry/components/CabinetModuleDividerHandles.tsx` — Defines `CabinetModuleDividerHandles`, `CabinetModuleDividerHandle`, `CabinetModuleDividerPreview`, `CabinetModuleDividerHandlesProps` for Cabinet Module Divider Handles.
+- `features/cabinetry/components/CabinetNumberField.tsx` — Defines `CabinetNumberField`, `CabinetNumberFieldExternalIssue`, `CabinetNumberFieldProps` for Cabinet Number Field.
+- `features/cabinetry/components/CabinetOutputTabs.tsx` — Defines `getCabinetOutputTabForKey`, `CabinetOutputTabs`, `CABINET_OUTPUT_TABS`, `CabinetOutputTab` for Cabinet Output Tabs.
+- `features/cabinetry/components/CabinetOverallDimensionHandles.tsx` — Defines `CabinetOverallDimensionHandles`, `CABINET_DEFAULT_OVERALL_DIMENSION_LIMITS`, `CabinetOverallDimensionField`, `CabinetDimensionPreview`, and related exports for Cabinet Overall Dimension Handles.
+- `features/cabinetry/components/CabinetPartInspector.tsx` — Defines `CabinetPartInspector`, `CabinetPartMaterialTarget`, `CabinetPartInspectorProps` for Cabinet Part Inspector.
+- `features/cabinetry/components/CabinetPreview3D.tsx` — Defines `useCabinetDesktopPreviewActive`, `CabinetPreview3D`, `CabinetPreview3DProps` for Cabinet Preview3 D.
+- `features/cabinetry/components/CabinetPreviewCameraController.tsx` — Defines `resolveCabinetPreviewCameraPose`, `CabinetPreviewCameraController`, `CabinetPreviewViewSelector`, `CabinetPreviewView`, and related exports for Cabinet Preview Camera Controller.
+- `features/cabinetry/components/CabinetPreviewRenderer3D.tsx` — Defines `CabinetPreviewRenderer3D`, `CabinetPreviewRenderer3DProps` for Cabinet Preview Renderer3 D.
+- `features/cabinetry/components/CabinetPreviewScene3D.tsx` — Defines `CabinetPreviewScene3D`, `CabinetPreviewScene3DProps` for Cabinet Preview Scene3 D.
+- `features/cabinetry/components/CabinetProductionOutputs.tsx` — Defines `CabinetProductionOutputs`, `CabinetProductionOutputsProps` for Cabinet Production Outputs.
+- `features/cabinetry/components/CabinetryStudio.calculations.ts` — Defines `roundToIncrement`, `resizeCabinetDefinition` for Cabinetry Studio.calculations.
+- `features/cabinetry/components/CabinetryStudio.config.ts` — Defines `CABINET_GUIDED_DIMENSION_INCREMENT_MM`, `CABINET_RESIZE_MINIMUM_MODULE_HEIGHT_MM`, `CABINET_RESIZE_MINIMUM_MODULE_DEPTH_MM`, `frontTypes`, and related exports for Cabinetry Studio.config.
+- `features/cabinetry/components/CabinetryStudio.contract.ts` — Implements `CabinetryStudioProps` for Cabinetry Studio.contract.
+- `features/cabinetry/components/CabinetryStudio.selectors.ts` — Defines `cabinetPresetIdFromDefinition`, `getSpecialtyNumberFields`, `getSpecialtyNumberValue`, `guidedFrontPatch` for Cabinetry Studio.selectors.
+- `features/cabinetry/components/CabinetryStudio.tsx` — Implements `CabinetryStudio` for Cabinetry Studio.
+- `features/cabinetry/components/CabinetryStudio.types.ts` — Defines `SpecialtyNumberFieldDefinition`, `SavedCabinetTemplate` for Cabinetry Studio.types.
+- `features/cabinetry/components/CabinetryStudioDetailedView.tsx` — Defines `CabinetryStudioDetailedView`, `CabinetryStudioDetailedViewBindings` for Cabinetry Studio Detailed View.
+- `features/cabinetry/components/CabinetryStudioGuidedView.tsx` — Defines `CabinetryStudioGuidedView`, `CabinetryStudioGuidedViewBindings` for Cabinetry Studio Guided View.
+- `features/cabinetry/components/CabinetSceneItem.tsx` — Implements `CabinetSceneItem` for Cabinet Scene Item.
+- `features/cabinetry/components/CabinetSceneItem.types.ts` — Defines `CABINET_DRAG_START_DISTANCE_M`, `CabinetDragState`, `CabinetSemanticSelectionScope`, `CabinetSemanticSelection`, and related exports for Cabinet Scene Item.types.
+- `features/cabinetry/components/cabinetScenePreviewEdges.ts` — Defines `resolveCabinetPreviewFrontEdgeStyle`, `createCabinetPreviewFrontEdgePositions`, `createCabinetPreviewFrontEdgeGroup`, `CABINET_PREVIEW_FRONT_EDGE_OFFSET_M` for cabinet Scene Preview Edges.
+- `features/cabinetry/components/cabinetSceneSemanticSelection.ts` — Implements `resolveSemanticSelection` for cabinet Scene Semantic Selection.
+- `features/cabinetry/components/CabinetSemanticEditOverlays.tsx` — Defines `CabinetSemanticEditOverlays`, `CabinetSemanticEditOverlaysProps`, `CabinetSemanticEditPreview` for Cabinet Semantic Edit Overlays.
+- `features/cabinetry/components/CabinetShelfMarkerHandles.tsx` — Defines `CabinetShelfMarkerHandles`, `CabinetShelfMarkerHandle`, `CabinetShelfMarkerPreview`, `CabinetShelfMarkerHandlesProps` for Cabinet Shelf Marker Handles.
+- `features/cabinetry/components/CabinetStudioDetailedPreviews.tsx` — Defines `CabinetDetailedCompactPreview`, `CabinetDetailedPreviewPanel`, `CabinetDetailedCompactPreviewProps`, `CabinetDetailedPreviewPanelProps` for Cabinet Studio Detailed Previews.
+- `features/cabinetry/components/CabinetStudioFormPrimitives.tsx` — Defines `selectClass`, `sectionTitle`, `Field`, `CabinetModuleOptionGroup`, and related exports for Cabinet Studio Form Primitives.
+- `features/cabinetry/components/CabinetStudioHeader.tsx` — Defines `CabinetStudioHeader`, `CabinetStudioHeaderProps` for Cabinet Studio Header.
+- `features/cabinetry/components/CabinetStudioNavigator.tsx` — Defines `CabinetStudioNavigator`, `CabinetStudioNavigatorProps` for Cabinet Studio Navigator.
+- `features/cabinetry/components/CabinetStudioOutputsPanel.tsx` — Defines `CabinetStudioOutputsPanel`, `CabinetStudioBusyAction`, `CabinetStudioOutputsPanelProps` for Cabinet Studio Outputs Panel.
+- `features/cabinetry/components/CabinetStudioPreviewInteractionController.tsx` — Defines `CabinetStudioPreviewInteractionController`, `CabinetStudioPreviewInteractionControllerProps` for Cabinet Studio Preview Interaction Controller.
+- `features/cabinetry/components/CabinetTemplateDiagrams.tsx` — Defines `CabinetTemplateDiagram`, `CabinetWardrobeArrangementDiagram` for Cabinet Template Diagrams.
+- `features/cabinetry/components/CabinetValidationFeedback.tsx` — Defines `ValidationIssueCard`, `ModuleIssueBadges`, `ValidationFixPreview` for Cabinet Validation Feedback.
+- `features/cabinetry/convertibleLayout.ts` — Defines `isCabinetWallBedPanel`, `isCabinetFoldDownWorksurface`, `isCabinetConvertibleComponent`, `getCabinetWallBedMattressSize`, and related exports for convertible Layout.
+- `features/cabinetry/createCabinetThreeGroup.ts` — Implements `createCabinetThreeGroup` for create Cabinet Three Group.
+- `features/cabinetry/designItemAdapters.ts` — Defines `isParametricCabinetItem`, `getCabinetPlanningDimsMm`, `getCabinetRotationY`, `buildCabinetTransformMetadata`, and related exports for design Item Adapters.
+- `features/cabinetry/designPageFeatureFlags.ts` — Implements `CABINETRY_STUDIO_FEATURE_ENABLED` for design Page Feature Flags.
+- `features/cabinetry/doorHingeLayout.ts` — Defines `hasCabinetDoorHinges`, `getCabinetDoorHingeCountPerDoor`, `getCabinetDoorHingeInsetFromTopBottom`, `getCabinetDoorHingeLocalYPositions`, and related exports for door Hinge Layout.
+- `features/cabinetry/drawerBoxLayout.ts` — Defines `hasCabinetDrawerBoxes`, `getCabinetDrawerBoxSideThickness`, `getCabinetDrawerBoxBottomThickness`, `getCabinetDrawerBoxHeightClearance`, and related exports for drawer Box Layout.
+- `features/cabinetry/drawerSlideLayout.ts` — Defines `hasCabinetDrawerSlides`, `getCabinetDrawerSlideLength`, `getCabinetDrawerSlideClearance`, `getCabinetDrawerFrontLayouts`, and related exports for drawer Slide Layout.
+- `features/cabinetry/exportCabinetFabricationDxf.ts` — Defines `buildCabinetFabricationDxfFileName`, `buildCabinetFabricationDxf`, `downloadCabinetFabricationDxf` for export Cabinet Fabrication Dxf.
+- `features/cabinetry/exportCabinetGlb.ts` — Defines `exportCabinetAsGlb`, `downloadCabinetGlb` for export Cabinet GLB.
+- `features/cabinetry/exportCabinetShopDrawingSvg.ts` — Defines `buildCabinetShopDrawingSvgFileName`, `buildCabinetShopDrawingSvg`, `downloadCabinetShopDrawingSvg` for export Cabinet Shop Drawing Svg.
+- `features/cabinetry/fabricationSemantics.ts` — Defines `getCabinetPartCutFace`, `getCabinetAutomaticEdgeBandingMm`, `resolveCabinetModuleExposedFaces`, `resolveCabinetPartFabricationSpec` for fabrication Semantics.
+- `features/cabinetry/faceFrameLayout.ts` — Defines `hasCabinetFaceFrame`, `isCabinetFaceFrameEligibleModule`, `getCabinetFaceFrameStileWidth`, `getCabinetFaceFrameRailHeight`, and related exports for face Frame Layout.
+- `features/cabinetry/fitSegments.ts` — Defines `getCabinetAvailableSegments`, `chooseCabinetFitSegment` for fit Segments.
+- `features/cabinetry/fitToSpace.ts` — Defines `mapCabinetCardinalOpeningsToPolygonWalls`, `createCabinetRoomWallSpaces`, `createCabinetPolygonWallSpaces`, `fitCabinetToSpace`, and related exports for fit To Space.
+- `features/cabinetry/formatCabinetLabel.ts` — Implements `formatCabinetLabel` for format Cabinet Label.
+- `features/cabinetry/frontBehavior.ts` — Defines `getCabinetDoorLayoutMode`, `getCabinetRecommendedDoorCount`, `getCabinetEffectiveDoorCount`, `setCabinetDoorLayoutMode`, and related exports for front Behavior.
+- `features/cabinetry/generateCabinetBOM.ts` — Implements `generateCabinetBOM` for generate Cabinet BOM.
+- `features/cabinetry/generateCabinetDocumentation.ts` — Defines `buildCabinetSourceDefinitionFingerprint`, `generateCabinetCutList`, `generateCabinetMaterialSchedule`, `generateCabinetEdgeBandingSchedule`, and related exports for generate Cabinet Documentation.
+- `features/cabinetry/generateCabinetParts.ts` — Implements `generateCabinetParts` for generate Cabinet Parts.
+- `features/cabinetry/hamperPullOutLayout.ts` — Defines `hasCabinetHamperPullOut`, `getCabinetHamperBasketCount`, `getCabinetHamperBasketDepth`, `getCabinetHamperBasketHeight`, and related exports for hamper Pull Out Layout.
+- `features/cabinetry/hangingRodLayout.ts` — Defines `getCabinetHangingRodCount`, `getCabinetHangingRodHeight`, `getCabinetHangingRodSpacing`, `getCabinetHangingRodCenterHeights`, and related exports for hanging Rod Layout.
+- `features/cabinetry/hardwareCompatibility.ts` — Defines `getCabinetModuleFrontEnvelope`, `resolveCabinetHardwareCompatibility`, `getCompatibleCabinetFrontHardware`, `getRecommendedCompatibleCabinetFrontHardware`, and related exports for hardware Compatibility.
+- `features/cabinetry/hooks/useCabinetModuleReorderDrag.ts` — Defines `canCabinetModuleDragOver`, `resolveCabinetModuleDropSource`, `useCabinetModuleReorderDrag`, `CabinetModuleReorderDragController` for use Cabinet Module Reorder Drag.
+- `features/cabinetry/hooks/useCabinetSceneResourceOwnership.ts` — Defines `disposeCabinetObject3DResources`, `disposeCabinetOwnedTextures`, `useCabinetSceneResourceOwnership`, `CabinetSceneResourceOwnership` for use Cabinet Scene Resource Ownership.
+- `features/cabinetry/hooks/useCabinetStudioCustomSpaces.ts` — Defines `useCabinetStudioCustomSpaces`, `CabinetStudioCustomSpacesController` for use Cabinet Studio Custom Spaces.
+- `features/cabinetry/hooks/useCabinetStudioMeasurementDrafts.ts` — Defines `convertCabinetMeasurementDraftUnit`, `useCabinetStudioMeasurementDrafts`, `CabinetCustomSpaceDraft` for use Cabinet Studio Measurement Drafts.
+- `features/cabinetry/hooks/useCabinetStudioPreferences.ts` — Defines `useCabinetStudioPreferences`, `CabinetStudioPreferencesController` for use Cabinet Studio Preferences.
+- `features/cabinetry/hooks/useCabinetStudioPropertyFocus.ts` — Implements `useCabinetStudioPropertyFocus` for use Cabinet Studio Property Focus.
+- `features/cabinetry/hooks/useCabinetStudioSelectionController.ts` — Defines `reconcileCabinetStudioSelection`, `useCabinetStudioSelectionController`, `CabinetStudioSelectionController` for use Cabinet Studio Selection Controller.
+- `features/cabinetry/hooks/useCabinetStudioValidationExposure.ts` — Implements `useCabinetStudioValidationExposure` for use Cabinet Studio Validation Exposure.
+- `features/cabinetry/hostCompatibility.ts` — Defines `getCabinetSpaceSupportedTemplateHosts`, `resolveCabinetTemplateHostCompatibility`, `CabinetTemplateHostCompatibilityStatus`, `CabinetTemplateHostCompatibility` for host Compatibility.
+- `features/cabinetry/importPolicy.ts` — Defines `validateCabinetSourceImportFile`, `CABINET_SOURCE_IMPORT_LIMITS`, `CabinetSourceImportFileInfo` for import Policy.
+- `features/cabinetry/infrastructure/CabinetStudioAnalytics.ts` — Defines `emitCabinetStudioAnalytics`, `CabinetStudioAnalyticsContext`, `CabinetStudioAnalyticsTracker` for Cabinet Studio Analytics.
+- `features/cabinetry/infrastructure/CabinetStudioDocumentIO.ts` — Defines `getCabinetStudioExportDescriptor`, `downloadCabinetStudioArtifact`, `readCabinetStudioSourceDefinition`, `createCabinetStudioPlacementPayload`, and related exports for Cabinet Studio Document IO.
+- `features/cabinetry/installationCleatLayout.ts` — Defines `hasCabinetInstallationCleat`, `getCabinetInstallationCleatHeight`, `getCabinetInstallationCleatThickness`, `getCabinetInstallationCleatInsetFromTop`, and related exports for installation Cleat Layout.
+- `features/cabinetry/islandSeatingLayout.ts` — Defines `hasCabinetIslandSeating`, `getCabinetIslandSeatingOverhangDepth`, `getCabinetIslandSupportPanelCount`, `getCabinetIslandSupportPanelThickness`, and related exports for island Seating Layout.
+- `features/cabinetry/laundryApplianceLayout.ts` — Defines `hasCabinetLaundryApplianceBay`, `getCabinetLaundryApplianceKind`, `getCabinetLaundryApplianceCount`, `getCabinetLaundryApplianceWidth`, and related exports for laundry Appliance Layout.
+- `features/cabinetry/layout.ts` — Defines `getCabinetModuleRunWidth`, `getCabinetModuleRunDepth`, `getCabinetModuleRunHeight`, `getCabinetLeftFillerWidth`, and related exports for layout.
+- `features/cabinetry/levelingFootLayout.ts` — Defines `hasCabinetLevelingFeet`, `isCabinetLevelingFootEligibleModule`, `getCabinetLevelingFootCount`, `getCabinetLevelingFootHeight`, and related exports for leveling Foot Layout.
+- `features/cabinetry/libraryLadderLayout.ts` — Defines `hasCabinetLibraryLadderRail`, `getCabinetLibraryLadderRailHeight`, `getCabinetLibraryLadderRailDiameter`, `getCabinetLibraryLadderRailProjection`, and related exports for library Ladder Layout.
+- `features/cabinetry/lifestyleInsertLayout.ts` — Defines `hasCabinetLifestyleInsert`, `getCabinetLifestyleInsertKind`, `getCabinetLifestyleInsertCount`, `getCabinetLifestyleInsertDepth`, and related exports for lifestyle Insert Layout.
+- `features/cabinetry/lightingLayout.ts` — Defines `hasCabinetLightingChannels`, `getCabinetLightingChannelCount`, `getCabinetLightingChannelDepth`, `getCabinetLightingChannelHeight`, and related exports for lighting Layout.
+- `features/cabinetry/measurementUnits.ts` — Defines `getCabinetMillimetresPerDisplayUnit`, `getCabinetDisplayDecimalPlaces`, `getCabinetDisplayDraftStep`, `getCabinetDisplayResolutionMm`, and related exports for measurement Units.
+- `features/cabinetry/mediaWallLayout.ts` — Defines `hasCabinetMediaWallDetails`, `getCabinetMediaTvOpeningWidth`, `getCabinetMediaTvOpeningHeight`, `getCabinetMediaTvMountHeight`, and related exports for media Wall Layout.
+- `features/cabinetry/moduleOptionGroups.ts` — Defines `isCabinetModuleOptionGroupApplicable`, `getVisibleCabinetModuleOptionGroupIds`, `getCabinetModuleOptionGroupIdForControlTestId`, `CABINET_MODULE_OPTION_GROUP_IDS`, and related exports for module Option Groups.
+- `features/cabinetry/moduleSizingReconciliation.ts` — Defines `reconcileCabinetModuleSizing`, `CabinetModuleChangeOperation`, `CabinetModuleSizingReconciliationRequest`, `CabinetModuleSizingReconciliationIssueCode`, and related exports for module Sizing Reconciliation.
+- `features/cabinetry/moduleWidthConstraints.ts` — Defines `getCabinetOverallWidthLimits`, `CabinetOverallWidthLimits` for module Width Constraints.
+- `features/cabinetry/moduleWidthRules.ts` — Defines `getCabinetMinimumModuleWidthMm`, `CABINET_MIN_MODULE_WIDTH_MM`, `CABINET_MAX_MODULE_WIDTH_MM` for module Width Rules.
+- `features/cabinetry/mudroomLayout.ts` — Defines `hasCabinetMudroomHooks`, `hasCabinetShoeCubbies`, `getCabinetMudroomHookCount`, `getCabinetMudroomHookRailHeight`, and related exports for mudroom Layout.
+- `features/cabinetry/numericInput.ts` — Defines `validateCabinetNumberDraft`, `findCabinetNonFiniteNumbers`, `hasCabinetNonFiniteNumbers`, `assertCabinetFiniteNumberIntegrity`, and related exports for numeric Input.
+- `features/cabinetry/officeWorkstationLayout.ts` — Defines `hasCabinetOfficeWorkstation`, `getCabinetOfficeWorksurfaceThickness`, `getCabinetOfficeWorksurfaceDepth`, `getCabinetOfficeWorksurfaceOverhangFront`, and related exports for office Workstation Layout.
+- `features/cabinetry/panelLayout.ts` — Defines `hasCabinetPanelFrame`, `getCabinetPanelColumnCount`, `getCabinetPanelRowCount`, `getCabinetPanelFrameWidth`, and related exports for panel Layout.
+- `features/cabinetry/pantryPullOutLayout.ts` — Defines `hasCabinetPantryPullOuts`, `getCabinetPantryPullOutTrayCount`, `getCabinetPantryPullOutTrayDepth`, `getCabinetPantryPullOutTrayFrontHeight`, and related exports for pantry Pull Out Layout.
+- `features/cabinetry/platformBedLayout.ts` — Defines `hasCabinetPlatformDeck`, `getCabinetPlatformDeckThickness`, `getCabinetPlatformDeckOverhangFront`, `getCabinetPlatformDeckOverhangBack`, and related exports for platform Bed Layout.
+- `features/cabinetry/presetData.ts` — Defines `names`, `unitTypeByPreset`, `DEFAULT_PRESET_TOE_KICK_HEIGHT_MM`, `presets`, and related exports for preset Data.
+- `features/cabinetry/presets.ts` — Defines `getCabinetPresetSearchText`, `cabinetPresetMatchesCatalogFilters`, `createCabinetPreset`, `getCabinetPresetMillworkAssemblyType`, and related exports for presets.
+- `features/cabinetry/previewParts.ts` — Implements `getCabinetVisiblePreviewParts` for preview Parts.
+- `features/cabinetry/previewRegenerationIndicator.ts` — Defines `reduceCabinetPreviewIndicator`, `useDelayedCabinetPreviewRegenerationIndicator`, `CABINET_PREVIEW_REGENERATION_INDICATOR_DELAY_MS`, `INITIAL_CABINET_PREVIEW_INDICATOR_STATE`, and related exports for preview Regeneration Indicator.
+- `features/cabinetry/propertyRegistry.ts` — Defines `isCabinetPropertyApplicable`, `getCabinetPropertiesForContext`, `filterCabinetProperties`, `getCabinetPropertyById`, and related exports for property Registry.
+- `features/cabinetry/roomDividerLayout.ts` — Defines `hasCabinetRoomDividerDetails`, `hasCabinetRoomDividerFinishedBack`, `getCabinetRoomDividerBackPanelCount`, `getCabinetRoomDividerBackPanelThickness`, and related exports for room Divider Layout.
+- `features/cabinetry/seatingLayout.ts` — Defines `hasCabinetSeatingDetails`, `hasCabinetSeatBack`, `getCabinetSeatDeckThickness`, `getCabinetSeatCushionThickness`, and related exports for seating Layout.
+- `features/cabinetry/selectedCabinetExportFeedback.ts` — Defines `SELECTED_CABINET_EXPORT_FEEDBACK`, `SelectedCabinetExportKind` for selected Cabinet Export Feedback.
+- `features/cabinetry/semanticPreviewParts.ts` — Implements `applyCabinetSemanticPreviewToParts` for semantic Preview Parts.
+- `features/cabinetry/shelfLayout.ts` — Defines `cabinetShelfLayoutParameterPath`, `getCabinetShelfSpacingMode`, `getCabinetEvenShelfCenterHeights`, `getCabinetShelfCenterHeights`, and related exports for shelf Layout.
+- `features/cabinetry/shelfPinLayout.ts` — Defines `hasCabinetShelfPinRows`, `getCabinetShelfPinRowPairCount`, `getCabinetShelfPinHoleCount`, `getCabinetShelfPinHoleSpacing`, and related exports for shelf Pin Layout.
+- `features/cabinetry/slatLayout.ts` — Defines `getCabinetSlatCount`, `getCabinetSlatWidth`, `getCabinetSlatDepth`, `getCabinetSlatSpacing`, and related exports for slat Layout.
+- `features/cabinetry/stairScribeLayout.ts` — Defines `hasCabinetStairScribe`, `getCabinetStairScribeStepCount`, `getCabinetStairScribeDepth`, `getCabinetStairScribeHighHeight`, and related exports for stair Scribe Layout.
+- `features/cabinetry/state/CabinetStudioDefinitionCommands.ts` — Defines `applyCabinetModulePatchCommand`, `CabinetStudioDefinitionCommandResult` for Cabinet Studio Definition Commands.
+- `features/cabinetry/state/CabinetStudioHistory.ts` — Defines `createCabinetStudioHistory`, `createCabinetHistoryEntry`, `recordCabinetStudioHistory`, `undoCabinetStudioHistory`, and related exports for Cabinet Studio History.
+- `features/cabinetry/stemwareRackLayout.ts` — Defines `hasCabinetStemwareRack`, `getCabinetStemwareRackLaneCount`, `getCabinetStemwareRackDepth`, `getCabinetStemwareRackRailWidth`, and related exports for stemware Rack Layout.
+- `features/cabinetry/storage/CabinetAssetStorage.ts` — Defines `SaveGeneratedGlbInput`, `SaveGeneratedGlbResult`, `DeleteGeneratedGlbInput`, `CabinetAssetStorage` for Cabinet Asset Storage.
+- `features/cabinetry/storage/CabinetStudioLocalStorage.ts` — Defines `isStoredCabinetCustomSpaceKind`, `parseStoredCabinetCustomSpace`, `writeStoredCabinetCustomSpaces`, `readStoredCabinetCustomSpaces`, and related exports for Cabinet Studio Local Storage.
+- `features/cabinetry/storage/LocalCabinetAssetStorage.ts` — Implements `LocalCabinetAssetStorage` for Local Cabinet Asset Storage.
+- `features/cabinetry/studioOnboarding.ts` — Defines `getCabinetOnboardingActionsForStep`, `isCabinetOnboardingDismissed`, `dismissCabinetOnboarding`, `readCabinetExperiencePreference`, and related exports for studio Onboarding.
+- `features/cabinetry/templateRecommendations.ts` — Implements `getCabinetTemplateRoomTerms` for template Recommendations.
+- `features/cabinetry/trimLayout.ts` — Defines `isCabinetTrimRun`, `isCabinetFireplaceSurroundFrame`, `isCabinetTrimComponent`, `getCabinetTrimMemberCount`, and related exports for trim Layout.
+- `features/cabinetry/types.ts` — Defines `CabinetUnitType`, `CabinetFrontType`, `DoorStyle`, `CabinetGrainDirection`, and related exports for types.
+- `features/cabinetry/useDesignPageCabinetry.ts` — Defines `buildCabinetryAvailableSpaces`, `buildSelectedCabinetDocumentation`, `buildSelectedCabinetAssetManifest`, `useDesignPageCabinetry`, and related exports for use Design Page Cabinetry.
+- `features/cabinetry/validation.ts` — Implements `validateCabinetDefinition` for validation.
+- `features/cabinetry/validationIssueAnalytics.ts` — Defines `getCabinetValidationIssueExposureKey`, `collectCabinetValidationIssueExposures`, `cabinetStudioElapsedMs`, `CabinetValidationIssueExposure`, and related exports for validation Issue Analytics.
+- `features/cabinetry/validationIssues.ts` — Implements `finalizeCabinetValidationIssues` for validation Issues.
+- `features/cabinetry/vanityServiceLayout.ts` — Defines `hasCabinetSinkCutout`, `hasCabinetPlumbingChase`, `getCabinetSinkCutoutWidth`, `getCabinetSinkCutoutDepth`, and related exports for vanity Service Layout.
+- `features/cabinetry/wardrobeArrangements.ts` — Defines `applyCabinetWardrobeArrangement`, `getMatchingCabinetWardrobeArrangementId`, `CABINET_WARDROBE_ARRANGEMENTS`, `CabinetWardrobeArrangementId`, and related exports for wardrobe Arrangements.
+- `features/cabinetry/wineRackLayout.ts` — Defines `hasCabinetWineRack`, `getCabinetWineRackColumnCount`, `getCabinetWineRackRowCount`, `getCabinetWineRackDividerThickness`, and related exports for wine Rack Layout.
+- `features/millwork/assemblyProfiles.ts` — Implements `getMillworkAssemblyProfile` for assembly Profiles.
+- `features/millwork/buildMillworkAssetManifest.ts` — Implements `buildMillworkAssetManifest` for build Millwork Asset Manifest.
+- `features/millwork/createCabinetMillworkDefinition.ts` — Defines `getCabinetMillworkAssemblyType`, `getCabinetMillworkFamily`, `createCabinetMillworkDefinition` for create Cabinet Millwork Definition.
+- `features/millwork/types.ts` — Defines `MillworkFamily`, `MillworkAssemblyType`, `MillworkSourceType`, `MillworkAssetType`, and related exports for types.
+
+### 24. Consumer-mode features (5)
+
+- `components/editor/ConsumerRoomSetupCard.tsx` — Defines `ConsumerRoomSetupCard`, `ConsumerRoomSetupCardProps` for Consumer Room Setup Card.
+- `components/editor/design-page/GuestSavePromptDialog.tsx` — Defines `GuestSavePromptDialog`, `GuestSavePromptDialogProps` for Guest Save Prompt Dialog.
+- `lib/floor-plan-consumer-orientation.ts` — Defines `inverseFloorPlanAddressTransform`, `reorientConsumerFloorPlanDesign`, `FLOOR_PLAN_CONSUMER_ORIENTATION_OPTIONS` for floor plan consumer orientation.
+- `lib/floor-plan-consumer-search.ts` — Defines `buildStructuredFloorPlanAddressQuery`, `floorPlanSearchFacets`, `filterFloorPlanSearchResults`, `groupFloorPlanSearchResults`, and related exports for floor plan consumer search.
+- `lib/floor-plan-consumer-wall-edit.ts` — Defines `isConsumerWallEditLocalForkV2`, `applyConfirmedConsumerWallEditV2`, `ConsumerWallEditErrorV2`, `CONSUMER_WALL_EDIT_CONFIRMATION_COPY`, and related exports for floor plan consumer wall edit.
+
+### 25. Pro/designer-mode features (2)
+
+- `components/DesignerGridOverlay.tsx` — Implements `DesignerGridOverlay` for Designer Grid Overlay.
+- `lib/editor-capabilities.ts` — Defines `resolveEditorCapabilities`, `getEditorPlanLabel`, `EditorCapabilities` for editor capabilities.
+
+### 26. Artificial-intelligence features and OpenAI integrations (9)
+
+- `components/editor/design-page/AiLayoutPreviewBanner.tsx` — Implements `AiLayoutPreviewBanner` for AI Layout Preview Banner.
+- `components/editor/design-page/AiNotesDialog.tsx` — Defines `AiNotesDialog`, `AiNotesDialogProps` for AI Notes Dialog.
+- `components/editor/DesignControlsAiPanel.tsx` — Implements `DesignControlsAiPanel` for Design Controls AI Panel.
+- `lib/ai/applySuggestion.ts` — Defines `applyAISuggestionAction`, `AISuggestionAction` for apply Suggestion.
+- `lib/ai/design-notes-contract.ts` — Defines `parseDesignNotesInput`, `parseDesignNotesOutput`, `DESIGN_NOTES_MAX_BODY_BYTES`, `DesignNotesInput`, and related exports for design notes contract.
+- `lib/ai/layout-planner.ts` — Defines `normalizeAiLayoutRoomType`, `catalogMatchesAiLayoutRole`, `buildDeterministicLivingRoomLayoutPlan`, `buildDeterministicLayoutPlan`, and related exports for layout planner.
+- `lib/design-page-ai-layout-preview.ts` — Defines `buildAiLayoutPreviewFootprints`, `AiLayoutPreviewFootprint` for design page AI layout preview.
+- `lib/design-page-ai-layout-proposal.ts` — Defines `collectAiLayoutValidationSummary`, `mergeAiLayoutFitRisk`, `buildPendingAiLayoutProposal`, `PendingAiLayoutProposal` for design page AI layout proposal.
+- `lib/design-page-ai-layout.ts` — Defines `getRandomAiLayoutSeed`, `buildAiLayoutCatalogEntries`, `getRequiredAiLayoutCatalogCounts`, `describeAiStarterValidationIssues`, and related exports for design page AI layout.
+
+### 27. Analytics and PostHog (6)
+
+- `lib/analytics.ts` — Defines `setClientAnalyticsDisabled`, `isClientAnalyticsDisabled`, `track`, `trackProductEvent`, and related exports for analytics.
+- `lib/floor-plan-imports/telemetry.ts` — Defines `safeFloorPlanStageMetrics`, `projectFloorPlanImportStageEvent`, `createFloorPlanImportTelemetryObserver`, `createPrismaFloorPlanImportTelemetryObserver`, and related exports for telemetry.
+- `lib/posthog-config.ts` — Implements `isUsablePostHogKey` for posthog config.
+- `lib/posthog-server.ts` — Defines `getPostHogClient`, `shutdownPostHog` for posthog server.
+- `lib/product-telemetry.ts` — Defines `sanitizeProductTelemetryProperties`, `sanitizeProductPerformanceObservation`, `PRODUCT_TELEMETRY_EVENTS`, `PRODUCT_PERFORMANCE_METRICS`, and related exports for product telemetry.
+- `lib/server-analytics.ts` — Implements `trackServerEvent` for server analytics.
+
+### 28. Import and export workflows (69)
+
+- `lib/catalog/imported-model-assembly.ts` — Defines `normalizeImportedFamilyName`, `buildImportedModelOptions`, `shouldRefreshImportedCatalogItem`, `buildImportedCatalogItem`, and related exports for imported model assembly.
+- `lib/catalog/imported-models-payload.ts` — Implements `buildImportedModelsPayload` for imported models payload.
+- `lib/catalog/imported-variant-normalization.ts` — Defines `normalizeImportedVariants`, `ImportedUpholsteryOptionLike`, `ImportedPurchaseOptionLike`, `ImportedVariantEntryLike`, and related exports for imported variant normalization.
+- `lib/design-page-export-readiness.ts` — Defines `buildExportReadinessItems`, `getExportReadinessScore`, `ExportReadinessStylePreset`, `ExportReadinessItem` for design page export readiness.
+- `lib/export-capabilities.ts` — Defines `getExportCapabilities`, `isProPlan`, `getPlanDisplayName`, `PRO_FEATURES`, and related exports for export capabilities.
+- `lib/floor-plan-import-client.ts` — Defines `isPausedFloorPlanImportStatus`, `startAndPollFloorPlanImport`, `pollFloorPlanImportJobUntilPaused`, `isResumableFloorPlanImportStatus`, and related exports for floor plan import client.
+- `lib/floor-plan-import-review-geometry.ts` — Defines `projectReviewSourcePointToPlan`, `analyzeSourceOpeningSpan`, `analyzePointScale`, `applyPointScaleCalibration`, and related exports for floor plan import review geometry.
+- `lib/floor-plan-import-review-overlay.ts` — Defines `snapReviewSourcePoint`, `buildReviewOverlay`, `buildThumbnailPaths`, `ReviewSourcePoint`, and related exports for floor plan import review overlay.
+- `lib/floor-plan-imports/address-binding-conflicts.ts` — Defines `floorPlanAddressBindingsOverlap`, `findFloorPlanAddressBindingConflicts`, `assertNoFloorPlanAddressBindingConflicts`, `ComparableFloorPlanAddressBinding`, and related exports for address binding conflicts.
+- `lib/floor-plan-imports/address-binding-evidence.ts` — Defines `validateFloorPlanAddressBindingEvidence`, `FloorPlanAddressBindingEvidenceError`, `FLOOR_PLAN_ADDRESS_TRANSFORMS`, `floorPlanAddressBindingEvidenceSchema`, and related exports for address binding evidence.
+- `lib/floor-plan-imports/admin-queue.ts` — Defines `adminFloorPlanQueueThresholds`, `parseAdminFloorPlanQueueFilter`, `buildAdminFloorPlanQueueWhere`, `floorPlanQueueAttention`, and related exports for admin queue.
+- `lib/floor-plan-imports/admin-review.ts` — Defines `asFloorPlanDocumentV2`, `collectFloorPlanCriticalEntityIds`, `collectFloorPlanPrintedDimensionIds`, `buildFloorPlanAdminSourceOverlay`, and related exports for admin review.
+- `lib/floor-plan-imports/cad-document-builder.ts` — Defines `manifestCadEvidence`, `buildCadDocument`, `buildCadReviewIssues` for cad document builder.
+- `lib/floor-plan-imports/cad-preview.ts` — Defines `computeCadPreviewLayout`, `cadPointToPreview`, `renderCadPreviewPng`, `CadPreviewLayout` for cad preview.
+- `lib/floor-plan-imports/cad-source-adapter.ts` — Defines `RegisteredCadSourceAdapter`, `CadAdapterConfig` for cad source adapter.
+- `lib/floor-plan-imports/cad-types.ts` — Defines `assertCadSourceByteBound`, `assertCadCoordinate`, `CadSourceLimitError`, `CadSourceParseError`, and related exports for cad types.
+- `lib/floor-plan-imports/catalog-draft-match.ts` — Defines `catalogFloorPlanDraftMatchReference`, `resolveCatalogFloorPlanDraftMatch`, `floorPlanRasterSignatureDifference`, `matchPrivateUploadToCatalogDraft`, and related exports for catalog draft match.
+- `lib/floor-plan-imports/catalog-preview-asset.ts` — Defines `resolveCatalogFloorPlanPreviewAssetPath`, `readCatalogFloorPlanPreviewAsset` for catalog preview asset.
+- `lib/floor-plan-imports/construction-evidence.ts` — Defines `collectConstructionCriticalEntityIds`, `collectConstructionCriticalPositionClaims`, `collectConstructionCriticalScalarClaims`, `assertFloorPlanConstructionEvidence`, and related exports for construction evidence.
+- `lib/floor-plan-imports/construction-sources.ts` — Defines `isFloorPlanConstructionEvidenceKind`, `assertFloorPlanConstructionSourceFormat`, `parseAttachedFloorPlanConstructionSources`, `attachFloorPlanConstructionSource`, and related exports for construction sources.
+- `lib/floor-plan-imports/construction-vertical-evidence.ts` — Defines `collectFloorPlanConstructionVerticalProperties`, `floorPlanConstructionBasisForKind`, `floorPlanConstructionPropertyEvidenceForKind`, `floorPlanVerticalPropertyHasDirectConstructionEvidence`, and related exports for construction vertical evidence.
+- `lib/floor-plan-imports/default-services.ts` — Implements `createDefaultFloorPlanSourceAdapterRegistry` for default services.
+- `lib/floor-plan-imports/deterministic-evidence.ts` — Defines `semanticEvidencePrior`, `applySemanticEvidencePrior`, `multiplyMatrices`, `transformSourcePoint`, and related exports for deterministic evidence.
+- `lib/floor-plan-imports/dwg-source-adapter.ts` — Defines `DwgFloorPlanSourceAdapter`, `DWG_MIME_TYPES`, `DwgConversionResult`, `DwgConversionProvider` for dwg source adapter.
+- `lib/floor-plan-imports/dxf-parser.ts` — Defines `parseAsciiDxf`, `DXF_PARSER_VERSION` for dxf parser.
+- `lib/floor-plan-imports/dxf-source-adapter.ts` — Defines `DxfFloorPlanSourceAdapter`, `DXF_MIME_TYPES` for dxf source adapter.
+- `lib/floor-plan-imports/eta-calibration.ts` — Defines `recordFloorPlanEtaPrediction`, `completeFloorPlanEtaPredictions` for eta calibration.
+- `lib/floor-plan-imports/ifc-parser.ts` — Defines `splitIfcArguments`, `parseIfcStep`, `IFC_PARSER_VERSION` for ifc parser.
+- `lib/floor-plan-imports/ifc-source-adapter.ts` — Defines `IfcFloorPlanSourceAdapter`, `IFC_MIME_TYPES` for ifc source adapter.
+- `lib/floor-plan-imports/json.ts` — Defines `canonicalJson`, `hashCanonicalJson`, `hashFloorPlanSource` for json.
+- `lib/floor-plan-imports/lease.ts` — Defines `floorPlanLeaseGuard`, `PrismaFloorPlanImportLeaseService`, `FLOOR_PLAN_PROCESSABLE_STATUSES`, `DEFAULT_FLOOR_PLAN_LEASE_MS`, and related exports for lease.
+- `lib/floor-plan-imports/local-ocr.ts` — Defines `createDefaultFloorPlanLocalOcrProvider`, `TesseractFloorPlanLocalOcrProvider`, `FloorPlanLocalOcrCandidate`, `FloorPlanLocalOcrPage`, and related exports for local ocr.
+- `lib/floor-plan-imports/opening-gap-evidence.ts` — Defines `detectRegisteredOpeningGaps`, `RegisteredOpeningGapEvidence`, `OpeningGapDiagnostics`, `RegisteredOpeningGapResult` for opening gap evidence.
+- `lib/floor-plan-imports/opening-symbol-evidence.ts` — Defines `findRegisteredSourceOpeningSupport`, `RegisteredOpeningSpanCandidate`, `RegisteredSourceOpeningSupport`, `RegisteredSourceOpeningSupportResult` for opening symbol evidence.
+- `lib/floor-plan-imports/page-selection.ts` — Defines `isEnhancedFloorPlanImportEnabled`, `readFloorPlanPageSelection`, `selectFloorPlanImportPage`, `markSelectedFloorPlanManifestPage`, and related exports for page selection.
+- `lib/floor-plan-imports/pipeline.ts` — Defines `runFloorPlanImportPipeline`, `resumeFloorPlanImportValidation`, `FloorPlanImportJobPatch`, `FloorPlanImportLeaseGuard`, and related exports for pipeline.
+- `lib/floor-plan-imports/planar-face-evidence.ts` — Defines `assembleRegisteredPlanarFaces`, `assessRegisteredTopologyCompleteness`, `RegisteredPlanarFaceEdge`, `RegisteredPlanarFaceEvidence`, and related exports for planar face evidence.
+- `lib/floor-plan-imports/processing-mode.ts` — Defines `resolveFloorPlanProcessingMode`, `FloorPlanProcessingMode` for processing mode.
+- `lib/floor-plan-imports/progress-estimate.ts` — Defines `floorPlanStageRange`, `estimateFloorPlanImportProgress`, `formatFloorPlanRemainingTime`, `FLOOR_PLAN_IMPORT_STAGE_LABELS`, and related exports for progress estimate.
+- `lib/floor-plan-imports/progress-timing-cache.ts` — Defines `floorPlanTimingProfileCacheKey`, `readFloorPlanTimingProfileCache`, `writeFloorPlanTimingProfileCache`, `invalidateFloorPlanTimingProfile` for progress timing cache.
+- `lib/floor-plan-imports/public-display-metadata.ts` — Defines `projectFloorPlanPublicDisplayMetadata`, `assertFloorPlanPublicMetadataApprovalIntegrity`, `floorPlanPublicDisplayMetadataSchema`, `FloorPlanPublicDisplayMetadata` for public display metadata.
+- `lib/floor-plan-imports/public-document.ts` — Defines `publicFloorPlanRoomDisplayName`, `projectPublicFloorPlanDocumentV2`, `buildPublicFloorPlanRevisionPayload`, `PublicFloorPlanRevisionRow` for public document.
+- `lib/floor-plan-imports/public-entity-ids.ts` — Defines `assertPublicFloorPlanEntityIdsOpaque`, `FloorPlanPublicEntityIdError` for public entity ids.
+- `lib/floor-plan-imports/publication-evidence.ts` — Implements `hasPublicFloorPlanPublicationEvidence` for publication evidence.
+- `lib/floor-plan-imports/publication.ts` — Defines `hasAuthoritativeCadCoordinateEvidence`, `stampFloorPlanApproval`, `computeFloorPlanPublicationChecks`, `assertFloorPlanPublicationChecks`, and related exports for publication.
+- `lib/floor-plan-imports/queue-health.ts` — Defines `assessFloorPlanQueueHealth`, `FloorPlanQueueSnapshot`, `FloorPlanQueueHealth` for queue health.
+- `lib/floor-plan-imports/raster-linework.ts` — Defines `normalizeRasterForLinework`, `extractRasterLinework`, `RasterLineworkDiagnostics`, `RasterLineworkResult`, and related exports for raster linework.
+- `lib/floor-plan-imports/readiness.ts` — Defines `collectFloorPlanImportReadinessIssues`, `reconcileFloorPlanImportReadinessIssues` for readiness.
+- `lib/floor-plan-imports/review.ts` — Defines `validateReviewIssueResolution`, `applyConsumerFloorPlanCorrection` for review.
+- `lib/floor-plan-imports/room-topology-completeness.ts` — Defines `assessRegisteredRoomCoverage`, `assessRegisteredDirectPathCompleteness`, `RegisteredRoomTopologyCompleteness` for room topology completeness.
+- `lib/floor-plan-imports/source-adapter.ts` — Defines `FloorPlanSourceAdapterRegistry`, `StoredFloorPlanSource`, `StoreFloorPlanSourceInput`, `StoreFloorPlanDerivativeInput`, and related exports for source adapter.
+- `lib/floor-plan-imports/source-evidence-bounds.ts` — Defines `validateFloorPlanSourceEvidenceBounds`, `FloorPlanSourceEvidenceBoundsIssue` for source evidence bounds.
+- `lib/floor-plan-imports/source-overlay-residuals.ts` — Defines `buildFloorPlanSourceProjection`, `evaluateFloorPlanSourceOverlayResiduals`, `FLOOR_PLAN_SOURCE_OVERLAY_TOLERANCE_PX`, `FloorPlanSourceProjection`, and related exports for source overlay residuals.
+- `lib/floor-plan-imports/staged-object-write.ts` — Defines `stageFloorPlanObjectWrite`, `FloorPlanStagedObjectWrite`, `FloorPlanStagedObjectWriteOptions` for staged object write.
+- `lib/floor-plan-imports/status.ts` — Defines `canTransitionFloorPlanImport`, `assertFloorPlanImportTransition`, `isTerminalFloorPlanImportStatus`, `FLOOR_PLAN_IMPORT_PROGRESS` for status.
+- `lib/floor-plan-imports/supplementary-sources.ts` — Defines `isFloorPlanSupplementarySourceMimeType`, `parseAttachedFloorPlanSupplementarySources`, `parseSupplementaryRenderedPages`, `attachFloorPlanSupplementarySource`, and related exports for supplementary sources.
+- `lib/floor-plan-imports/topology-evidence.ts` — Defines `detectRegisteredWallFootprintBands`, `RegisteredWallFootprintBand` for topology evidence.
+- `lib/floor-plan-imports/types.ts` — Defines `isFloorPlanMvpSuggestionIssue`, `isFloorPlanMvpBlockingIssue`, `floorPlanMvpIssueLevel`, `floorPlanMvpBlockingIssueIds`, and related exports for types.
+- `lib/floor-plan-imports/validation.ts` — Defines `normalizeFloorPlanMimeType`, `hasExpectedFloorPlanSignature`, `sanitizeFloorPlanFileName`, `parseReviewIssues`, and related exports for validation.
+- `lib/floor-plan-imports/vision-configuration.ts` — Implements `floorPlanVisionRuntimeConfiguration` for vision configuration.
+- `lib/floor-plan-imports/vision-guided-topology.ts` — Defines `inferRoomIdentityFromFixtures`, `registerVisionGuidedRoomBoundaries`, `VisionGuidedTopologyResult` for vision guided topology.
+- `lib/floor-plan-imports/wall-centerline-evidence.ts` — Defines `deriveRegisteredWallCenterlines`, `RegisteredWallCenterlineEvidence`, `WallCenterlineDiagnostics`, `RegisteredWallCenterlineResult` for wall centerline evidence.
+- `lib/import-jobs/admin-workflow-shared.ts` — Defines `getPrimaryImportWorkflowQueue`, `getImportJobValidationBlockers`, `AdminImportWorkflowJob`, `ImportWorkflowQueueKey` for admin workflow shared.
+- `lib/import-jobs/admin-workflow.ts` — Defines `getAdminImportWorkflowData`, `ImportWorkflowQueue`, `ImportWorkflowBlockerJob`, `AdminImportWorkflowData` for admin workflow.
+- `lib/import-jobs/build-import-job-report.ts` — Defines `buildImportJobReport`, `ImportCheckLike`, `ImportMetricsLike` for build import job report.
+- `lib/import-jobs/create-import-job.ts` — Defines `createImportJob`, `CreateImportJobInput` for create import job.
+- `lib/import-jobs/status.ts` — Defines `isTerminalImportStatus`, `canTransitionImportStatus`, `IMPORT_JOB_STATUS_SEQUENCE` for status.
+- `lib/import-jobs/types.ts` — Defines `ImportJobStatus`, `CatalogWorkflowStage`, `DimensionsVerificationStatus`, `ImportJobReport`, and related exports for types.
+- `lib/import-jobs/update-import-job-status.ts` — Defines `updateImportJobStatus`, `ImportJobUpdateValidationError` for update import job status.
+
+### 29. PDF, image, GLB, presentation, or documentation exports (14)
+
+- `app/models-test/ModelDownloadCell.tsx` — Implements `ModelDownloadCell` for Model Download Cell.
+- `app/share/[shareToken]/export/ExportTracking.tsx` — Implements `ExportTracking` for Export Tracking.
+- `app/share/[shareToken]/export/pdf/route.ts` — Next.js PDF export endpoint for /share/[shareToken]/export/pdf; handles GET.
+- `app/share/[shareToken]/export/PlanSvgDownload.tsx` — Implements `PlanSvgDownload` for Plan Svg Download.
+- `app/share/[shareToken]/export/PrintButton.tsx` — Implements `PrintButton` for Print Button.
+- `components/editor/design-page/PresentExportDialog.tsx` — Defines `PresentExportDialog`, `PresentExportDialogProps` for Present Export Dialog.
+- `components/editor/design-page/PresentExportProfessionalPlanControls.tsx` — Defines `PresentExportProfessionalPlanControls`, `PresentExportProfessionalPlanControlsProps` for Present Export Professional Plan Controls.
+- `components/editor/ExportReadinessPreview.tsx` — Implements `ExportReadinessPreview` for Export Readiness Preview.
+- `components/ExportWatermark.tsx` — Implements `ExportWatermark` for Export Watermark.
+- `components/PDFDownloadButton.tsx` — Implements `PDFDownloadButton` for PDFDownload Button.
+- `lib/floor-plan-imports/pdf-raster-adapter.ts` — Defines `rankFloorPlanSemanticPages`, `sourceTextEvidenceFromLocalOcr`, `registerSupportedPageTopology`, `PdfRasterFloorPlanSourceAdapter`, and related exports for PDF raster adapter.
+- `lib/floor-plan-imports/pdf-vector-evidence.ts` — Defines `parsePdfDrawPathEvidence`, `PdfDrawPathEvidenceOptions` for PDF vector evidence.
+- `lib/floor-plan-wall-footprints.ts` — Defines `buildRectangularWallFootprint`, `applyCanonicalWallFootprintJoins`, `CanonicalFloorPlanWallFootprint` for floor plan wall footprints.
+- `lib/share-export-fidelity.ts` — Defines `buildShareExportFidelitySummary`, `ShareExportFidelitySummary` for share export fidelity.
+
+### 30. Admin pages and admin tools (55)
+
+- `app/admin/admin-tailwind.css` — Styles admin tailwind UI and layout.
+- `app/admin/audit/AuditActions.tsx` — Implements `AuditActions` for Audit Actions.
+- `app/admin/audit/page.tsx` — Next.js page for route /admin/audit.
+- `app/admin/catalog/[catalogItemId]/CatalogAuthoringEditor.tsx` — Implements `CatalogAuthoringEditor` for Catalog Authoring Editor.
+- `app/admin/catalog/[catalogItemId]/commerce/CommerceEditor.tsx` — Implements `CommerceEditor` for Commerce Editor.
+- `app/admin/catalog/[catalogItemId]/page.tsx` — Next.js page for route /admin/catalog/[catalogItemId].
+- `app/admin/catalog/inbox/page.tsx` — Next.js page for route /admin/catalog/inbox.
+- `app/admin/catalog/review/page.tsx` — Next.js page for route /admin/catalog/review.
+- `app/admin/clicks/page.tsx` — Next.js page for route /admin/clicks.
+- `app/admin/error.tsx` — Error boundary UI for route subtree /admin.
+- `app/admin/floor-plans/[id]/AddressBindingEditor.tsx` — Implements `AddressBindingEditor` for Address Binding Editor.
+- `app/admin/floor-plans/[id]/ApprovedRevisionPanel.tsx` — Implements `ApprovedRevisionPanel` for Approved Revision Panel.
+- `app/admin/floor-plans/[id]/ConstructionEvidenceEditor.tsx` — Implements `ConstructionEvidenceEditor` for Construction Evidence Editor.
+- `app/admin/floor-plans/[id]/FloorPlanApprovalPanel.tsx` — Implements `FloorPlanApprovalPanel` for Floor Plan Approval Panel.
+- `app/admin/floor-plans/[id]/FloorPlanCandidateReviewPanel.tsx` — Implements `FloorPlanCandidateReviewPanel` for Floor Plan Candidate Review Panel.
+- `app/admin/floor-plans/[id]/FloorPlanJobSummary.tsx` — Implements `FloorPlanJobSummary` for Floor Plan Job Summary.
+- `app/admin/floor-plans/[id]/FloorPlanMvpChecklist.tsx` — Implements `FloorPlanMvpChecklist` for Floor Plan Mvp Checklist.
+- `app/admin/floor-plans/[id]/FloorPlanReviewAuditPanels.tsx` — Implements `FloorPlanReviewAuditPanels` for Floor Plan Review Audit Panels.
+- `app/admin/floor-plans/[id]/FloorPlanReviewIssuesPanel.tsx` — Implements `FloorPlanReviewIssuesPanel` for Floor Plan Review Issues Panel.
+- `app/admin/floor-plans/[id]/floorPlanReviewModel.ts` — Defines `emptyBinding`, `createAddressBindingEvidenceDraft`, `isRecord`, `getRenderedPages`, and related exports for floor Plan Review Model.
+- `app/admin/floor-plans/[id]/floorPlanReviewRequests.ts` — Defines `loadFloorPlanAdminJob`, `saveFloorPlanCandidate`, `approveFloorPlanRevision`, `publishFloorPlanRevision`, and related exports for floor Plan Review Requests.
+- `app/admin/floor-plans/[id]/floorPlanReviewTypes.ts` — Defines `ReviewIssue`, `RenderedPage`, `AddressBinding`, `RevisionAuditEvent`, and related exports for floor Plan Review Types.
+- `app/admin/floor-plans/[id]/FloorPlanReviewWorkspace.tsx` — Implements `FloorPlanReviewWorkspace` for Floor Plan Review Workspace.
+- `app/admin/floor-plans/[id]/FloorPlanSourceOverlayPanel.tsx` — Implements `FloorPlanSourceOverlayPanel` for Floor Plan Source Overlay Panel.
+- `app/admin/floor-plans/[id]/page.tsx` — Next.js page for route /admin/floor-plans/[id].
+- `app/admin/floor-plans/[id]/PingYiReviewSeedIntake.tsx` — Implements `PingYiReviewSeedIntake` for Ping Yi Review Seed Intake.
+- `app/admin/floor-plans/[id]/PublicDisplayMetadataEditor.tsx` — Implements `PublicDisplayMetadataEditor` for Public Display Metadata Editor.
+- `app/admin/floor-plans/[id]/SourceObservationManifestEditor.tsx` — Implements `SourceObservationManifestEditor` for Source Observation Manifest Editor.
+- `app/admin/floor-plans/[id]/SupplementarySourceEvidencePanel.tsx` — Implements `SupplementarySourceEvidencePanel` for Supplementary Source Evidence Panel.
+- `app/admin/floor-plans/[id]/useFloorPlanReviewDraftGuard.ts` — Implements `useFloorPlanReviewDraftGuard` for use Floor Plan Review Draft Guard.
+- `app/admin/floor-plans/[id]/useFloorPlanReviewWorkspace.ts` — Implements `useFloorPlanReviewWorkspace` for use Floor Plan Review Workspace.
+- `app/admin/floor-plans/AdminFloorPlanIntakeForm.tsx` — Implements `AdminFloorPlanIntakeForm` for Admin Floor Plan Intake Form.
+- `app/admin/floor-plans/AdminFloorPlanQueueTable.tsx` — Implements `AdminFloorPlanQueueTable` for Admin Floor Plan Queue Table.
+- `app/admin/floor-plans/page.tsx` — Next.js page for route /admin/floor-plans.
+- `app/admin/floor-plans/PingYiReviewJobButton.tsx` — Implements `PingYiReviewJobButton` for Ping Yi Review Job Button.
+- `app/admin/imports/[id]/ImportJobActions.tsx` — Implements `ImportJobActions` for Import Job Actions.
+- `app/admin/imports/[id]/page.tsx` — Next.js page for route /admin/imports/[id].
+- `app/admin/imports/batches/[id]/page.tsx` — Next.js page for route /admin/imports/batches/[id].
+- `app/admin/imports/batches/page.tsx` — Next.js page for route /admin/imports/batches.
+- `app/admin/imports/page.tsx` — Next.js page for route /admin/imports.
+- `app/admin/layout.tsx` — Next.js layout for route subtree /admin.
+- `app/admin/loading.tsx` — Loading state for route subtree /admin.
+- `app/admin/models/[id]/model-edit-form.tsx` — Implements `ModelEditForm` for model edit form.
+- `app/admin/models/[id]/page.tsx` — Next.js page for route /admin/models/[id].
+- `app/admin/models/[id]/viewer.tsx` — Implements `ModelViewer` for viewer.
+- `app/admin/models/page.tsx` — Next.js page for route /admin/models.
+- `app/admin/operations-dashboard.module.css` — Styles operations dashboard.module UI and layout.
+- `app/admin/operations-data.ts` — Defines `loadOperationsDashboardData`, `StatusTone`, `AttentionItemData`, `HealthServiceData`, and related exports for operations data.
+- `app/admin/OperationsDashboard.tsx` — Implements `OperationsDashboard` for Operations Dashboard.
+- `app/admin/page.tsx` — Next.js page for route /admin.
+- `components/admin/BulkImportsTable.tsx` — Implements `BulkImportsTable` for Bulk Imports Table.
+- `components/admin/InboxFiltersUI.tsx` — Implements `InboxFiltersUI` for Inbox Filters UI.
+- `components/admin/RevenueFunnelPanel.tsx` — Implements `RevenueFunnelPanel` for Revenue Funnel Panel.
+- `components/admin/StagingSmokeEvidencePanel.tsx` — Implements `StagingSmokeEvidencePanel` for Staging Smoke Evidence Panel.
+- `components/AdminTestPanel.tsx` — Implements `AdminTestPanel` for Admin Test Panel.
+
+### 31. Tests (128)
+
+- `public/assets/test/surface-materials/test-flooring-base-color.svg` — Automated coverage for test flooring base color.
+- `public/assets/test/surface-materials/test-flooring-swatch.svg` — Automated coverage for test flooring swatch.
+- `tests/e2e/00-beta-smoke.spec.ts` — Playwright/end-to-end coverage for 00 beta smoke.spec.
+- `tests/e2e/00-runtime-smoke.spec.ts` — Playwright/end-to-end coverage for 00 runtime smoke.spec.
+- `tests/e2e/01-onboarding.spec.ts` — Playwright/end-to-end coverage for 01 onboarding.spec.
+- `tests/e2e/02-editor.spec.ts` — Playwright/end-to-end coverage for 02 editor.spec.
+- `tests/e2e/03-persistence.spec.ts` — Playwright/end-to-end coverage for 03 persistence.spec.
+- `tests/e2e/04-share.spec.ts` — Playwright/end-to-end coverage for 04 share.spec.
+- `tests/e2e/05-buy.spec.ts` — Playwright/end-to-end coverage for 05 buy.spec.
+- `tests/e2e/06-catalog-compare.spec.ts` — Playwright/end-to-end coverage for 06 catalog compare.spec.
+- `tests/e2e/07-kelsey-variants.spec.ts` — Playwright/end-to-end coverage for 07 kelsey variants.spec.
+- `tests/e2e/08-jaron-madison-variants.spec.ts` — Playwright/end-to-end coverage for 08 jaron madison variants.spec.
+- `tests/e2e/09-sloane-bench-variants.spec.ts` — Playwright/end-to-end coverage for 09 sloane bench variants.spec.
+- `tests/e2e/10-visual-regression.spec.ts` — Playwright/end-to-end coverage for 10 visual regression.spec.
+- `tests/e2e/100-hugg-smoke.spec.ts` — Playwright/end-to-end coverage for 100 hugg smoke.spec.
+- `tests/e2e/101-hugg-rectangular-smoke.spec.ts` — Playwright/end-to-end coverage for 101 hugg rectangular smoke.spec.
+- `tests/e2e/101-ollie-swatch-textures.spec.ts` — Playwright/end-to-end coverage for 101 ollie swatch textures.spec.
+- `tests/e2e/102-hugg-side-table-smoke.spec.ts` — Playwright/end-to-end coverage for 102 hugg side table smoke.spec.
+- `tests/e2e/103-hugg-model-quick-links.spec.ts` — Playwright/end-to-end coverage for 103 hugg model quick links.spec.
+- `tests/e2e/104-arcadia-coffee-table-smoke.spec.ts` — Playwright/end-to-end coverage for 104 arcadia coffee table smoke.spec.
+- `tests/e2e/105-product-info-panel-generic.spec.ts` — Playwright/end-to-end coverage for 105 product info panel generic.spec.
+- `tests/e2e/106-madison-product-details.spec.ts` — Playwright/end-to-end coverage for 106 madison product details.spec.
+- `tests/e2e/107-dawson-product-details.spec.ts` — Playwright/end-to-end coverage for 107 dawson product details.spec.
+- `tests/e2e/108-madison-comfort-profile.spec.ts` — Playwright/end-to-end coverage for 108 madison comfort profile.spec.
+- `tests/e2e/109-madison-swatch-textures.spec.ts` — Playwright/end-to-end coverage for 109 madison swatch textures.spec.
+- `tests/e2e/11-rotation-shortcuts.spec.ts` — Playwright/end-to-end coverage for 11 rotation shortcuts.spec.
+- `tests/e2e/110-dawson-product-info.spec.ts` — Playwright/end-to-end coverage for 110 dawson product info.spec.
+- `tests/e2e/111-dawson-comfort-profile.spec.ts` — Playwright/end-to-end coverage for 111 dawson comfort profile.spec.
+- `tests/e2e/112-dawson-extended-product-info.spec.ts` — Playwright/end-to-end coverage for 112 dawson extended product info.spec.
+- `tests/e2e/113-dawson-chaise-product-info.spec.ts` — Playwright/end-to-end coverage for 113 dawson chaise product info.spec.
+- `tests/e2e/114-dawson-wide-chaise-product-info.spec.ts` — Playwright/end-to-end coverage for 114 dawson wide chaise product info.spec.
+- `tests/e2e/115-dawson-pit-product-info.spec.ts` — Playwright/end-to-end coverage for 115 dawson pit product info.spec.
+- `tests/e2e/116-jaron-3s-product-info.spec.ts` — Playwright/end-to-end coverage for 116 jaron 3s product info.spec.
+- `tests/e2e/117-jaron-wide-arm-product-info.spec.ts` — Playwright/end-to-end coverage for 117 jaron wide arm product info.spec.
+- `tests/e2e/118-jaron-extended-slim-product-info.spec.ts` — Playwright/end-to-end coverage for 118 jaron extended slim product info.spec.
+- `tests/e2e/119-jaron-extended-wide-product-info.spec.ts` — Playwright/end-to-end coverage for 119 jaron extended wide product info.spec.
+- `tests/e2e/12-variant-identity.spec.ts` — Playwright/end-to-end coverage for 12 variant identity.spec.
+- `tests/e2e/120-dawson-ottoman-product-info.spec.ts` — Playwright/end-to-end coverage for 120 dawson ottoman product info.spec.
+- `tests/e2e/121-dawson-storage-ottoman-product-info.spec.ts` — Playwright/end-to-end coverage for 121 dawson storage ottoman product info.spec.
+- `tests/e2e/122-ollie-storage-ottoman-product-info.spec.ts` — Playwright/end-to-end coverage for 122 ollie storage ottoman product info.spec.
+- `tests/e2e/123-arcadia-coffee-table-product-info.spec.ts` — Playwright/end-to-end coverage for 123 arcadia coffee table product info.spec.
+- `tests/e2e/124-harper-rectangular-product-info.spec.ts` — Playwright/end-to-end coverage for 124 harper rectangular product info.spec.
+- `tests/e2e/125-harper-round-product-info.spec.ts` — Playwright/end-to-end coverage for 125 harper round product info.spec.
+- `tests/e2e/126-hugg-rectangular-product-info.spec.ts` — Playwright/end-to-end coverage for 126 hugg rectangular product info.spec.
+- `tests/e2e/127-hugg-side-table-product-info.spec.ts` — Playwright/end-to-end coverage for 127 hugg side table product info.spec.
+- `tests/e2e/128-hugg-square-product-info.spec.ts` — Playwright/end-to-end coverage for 128 hugg square product info.spec.
+- `tests/e2e/129-peri-coffee-table-product-info.spec.ts` — Playwright/end-to-end coverage for 129 peri coffee table product info.spec.
+- `tests/e2e/13-admin-variant-audit.spec.ts` — Playwright/end-to-end coverage for 13 admin variant audit.spec.
+- `tests/e2e/130-seb-coffee-table-product-info.spec.ts` — Playwright/end-to-end coverage for 130 seb coffee table product info.spec.
+- `tests/e2e/131-vento-coffee-table-product-info.spec.ts` — Playwright/end-to-end coverage for 131 vento coffee table product info.spec.
+- `tests/e2e/132-sloane-travertine-180-product-info.spec.ts` — Playwright/end-to-end coverage for 132 sloane travertine 180 product info.spec.
+- `tests/e2e/133-kelsey-marble-product-info.spec.ts` — Playwright/end-to-end coverage for 133 kelsey marble product info.spec.
+- `tests/e2e/134-forma-round-product-info.spec.ts` — Playwright/end-to-end coverage for 134 forma round product info.spec.
+- `tests/e2e/135-forma-oval-product-info.spec.ts` — Playwright/end-to-end coverage for 135 forma oval product info.spec.
+- `tests/e2e/136-brighton-oval-product-info.spec.ts` — Playwright/end-to-end coverage for 136 brighton oval product info.spec.
+- `tests/e2e/137-sloane-dining-bench-product-info.spec.ts` — Playwright/end-to-end coverage for 137 sloane dining bench product info.spec.
+- `tests/e2e/138-sloane-tv-console-product-info.spec.ts` — Playwright/end-to-end coverage for 138 sloane tv console product info.spec.
+- `tests/e2e/139-seb-tv-console-product-info.spec.ts` — Playwright/end-to-end coverage for 139 seb tv console product info.spec.
+- `tests/e2e/14-phase-a-revenue-smoke.spec.ts` — Playwright/end-to-end coverage for 14 phase a revenue smoke.spec.
+- `tests/e2e/140-sawyer-tv-console-product-info.spec.ts` — Playwright/end-to-end coverage for 140 sawyer tv console product info.spec.
+- `tests/e2e/141-casa-tv-console-product-info.spec.ts` — Playwright/end-to-end coverage for 141 casa tv console product info.spec.
+- `tests/e2e/142-sawyer-sideboard-product-info.spec.ts` — Playwright/end-to-end coverage for 142 sawyer sideboard product info.spec.
+- `tests/e2e/143-seb-lift-top-small-product-info.spec.ts` — Playwright/end-to-end coverage for 143 seb lift top small product info.spec.
+- `tests/e2e/144-seb-lift-top-large-product-info.spec.ts` — Playwright/end-to-end coverage for 144 seb lift top large product info.spec.
+- `tests/e2e/145-sloane-dining-table-product-info.spec.ts` — Playwright/end-to-end coverage for 145 sloane dining table product info.spec.
+- `tests/e2e/147-bristol-coffee-table-product-info.spec.ts` — Playwright/end-to-end coverage for 147 bristol coffee table product info.spec.
+- `tests/e2e/148-sloane-sideboard-product-info.spec.ts` — Playwright/end-to-end coverage for 148 sloane sideboard product info.spec.
+- `tests/e2e/149-vincent-coffee-table-product-info.spec.ts` — Playwright/end-to-end coverage for 149 vincent coffee table product info.spec.
+- `tests/e2e/15-phase-b-blocker-enforcement.spec.ts` — Playwright/end-to-end coverage for 15 phase b blocker enforcement.spec.
+- `tests/e2e/150-jaron-chaise-sectional-product-info.spec.ts` — Playwright/end-to-end coverage for 150 jaron chaise sectional product info.spec.
+- `tests/e2e/151-jaron-l-shaped-sectional-product-info.spec.ts` — Playwright/end-to-end coverage for 151 jaron l shaped sectional product info.spec.
+- `tests/e2e/151-seb-dining-table-product-info.spec.ts` — Playwright/end-to-end coverage for 151 seb dining table product info.spec.
+- `tests/e2e/152-material-swatch-hover-preview.spec.ts` — Playwright/end-to-end coverage for 152 material swatch hover preview.spec.
+- `tests/e2e/153-hamilton-sofa-bed-product-info.spec.ts` — Playwright/end-to-end coverage for 153 hamilton sofa bed product info.spec.
+- `tests/e2e/16-share-duplicate-smoke.spec.ts` — Playwright/end-to-end coverage for 16 share duplicate smoke.spec.
+- `tests/e2e/17-retailer-links.spec.ts` — Playwright/end-to-end coverage for 17 retailer links.spec.
+- `tests/e2e/17-smart-placement-smoke.spec.ts` — Playwright/end-to-end coverage for 17 smart placement smoke.spec.
+- `tests/e2e/18-multi-room-whole-home.spec.ts` — Playwright/end-to-end coverage for 18 multi room whole home.spec.
+- `tests/e2e/19-staging-signoff.spec.ts` — Playwright/end-to-end coverage for 19 staging signoff.spec.
+- `tests/e2e/20-mobile-plan-mode.spec.ts` — Playwright/end-to-end coverage for 20 mobile plan mode.spec.
+- `tests/e2e/21-selected-item-actions.spec.ts` — Playwright/end-to-end coverage for 21 selected item actions.spec.
+- `tests/e2e/22-zone-persistence.spec.ts` — Playwright/end-to-end coverage for 22 zone persistence.spec.
+- `tests/e2e/23-consumer-room-setup.spec.ts` — Playwright/end-to-end coverage for 23 consumer room setup.spec.
+- `tests/e2e/24-consumer-object-placement.spec.ts` — Playwright/end-to-end coverage for 24 consumer object placement.spec.
+- `tests/e2e/25-consumer-view-continuity.spec.ts` — Playwright/end-to-end coverage for 25 consumer view continuity.spec.
+- `tests/e2e/26-phase14-product-flow.spec.ts` — Playwright/end-to-end coverage for 26 phase14 product flow.spec.
+- `tests/e2e/98-dawson-variant-selector.spec.ts` — Playwright/end-to-end coverage for 98 dawson variant selector.spec.
+- `tests/e2e/99-dawson-3s-smoke.spec.ts` — Playwright/end-to-end coverage for 99 dawson 3s smoke.spec.
+- `tests/e2e/beta-seed.ts` — Playwright/end-to-end coverage for beta seed.
+- `tests/e2e/cabinetry-studio.spec.ts` — Playwright/end-to-end coverage for cabinetry studio.spec.
+- `tests/e2e/cabinetry-studio/detailed.ts` — Playwright/end-to-end coverage for detailed.
+- `tests/e2e/cabinetry-studio/export.ts` — Playwright/end-to-end coverage for export.
+- `tests/e2e/cabinetry-studio/guided.ts` — Playwright/end-to-end coverage for guided.
+- `tests/e2e/cabinetry-studio/helpers.ts` — Playwright/end-to-end coverage for helpers.
+- `tests/e2e/cabinetry-studio/placement.ts` — Playwright/end-to-end coverage for placement.
+- `tests/e2e/cabinetry-studio/selection.ts` — Playwright/end-to-end coverage for selection.
+- `tests/e2e/catalog-category-layout.spec.ts` — Playwright/end-to-end coverage for catalog category layout.spec.
+- `tests/e2e/catalog-drawer-focus.spec.ts` — Playwright/end-to-end coverage for catalog drawer focus.spec.
+- `tests/e2e/client-preview-focus-recorder.ts` — Playwright/end-to-end coverage for client preview focus recorder.
+- `tests/e2e/command-bar-touch-target.spec.ts` — Playwright/end-to-end coverage for command bar touch target.spec.
+- `tests/e2e/compact-toolbar-layout.spec.ts` — Playwright/end-to-end coverage for compact toolbar layout.spec.
+- `tests/e2e/design-editor-routing.spec.ts` — Playwright/end-to-end coverage for design editor routing.spec.
+- `tests/e2e/design-local-backup-recovery.spec.ts` — Playwright/end-to-end coverage for design local backup recovery.spec.
+- `tests/e2e/design-sidebar.spec.ts` — Playwright/end-to-end coverage for design sidebar.spec.
+- `tests/e2e/flooring-surface-materials.spec.ts` — Playwright/end-to-end coverage for flooring surface materials.spec.
+- `tests/e2e/lighting-reference.spec.ts` — Playwright/end-to-end coverage for lighting reference.spec.
+- `tests/e2e/lighting-settings.spec.ts` — Playwright/end-to-end coverage for lighting settings.spec.
+- `tests/e2e/multi-room/drawing.ts` — Playwright/end-to-end coverage for drawing.
+- `tests/e2e/multi-room/editing.ts` — Playwright/end-to-end coverage for editing.
+- `tests/e2e/multi-room/helpers.ts` — Playwright/end-to-end coverage for helpers.
+- `tests/e2e/multi-room/start-and-floors.ts` — Playwright/end-to-end coverage for start and floors.
+- `tests/e2e/multi-room/templates.ts` — Playwright/end-to-end coverage for templates.
+- `tests/e2e/multi-room/upload.ts` — Playwright/end-to-end coverage for upload.
+- `tests/e2e/multi-room/viewport-navigation.ts` — Playwright/end-to-end coverage for viewport navigation.
+- `tests/e2e/multi-room/workspace.ts` — Playwright/end-to-end coverage for workspace.
+- `tests/e2e/plan-template-test-utils.ts` — Playwright/end-to-end coverage for plan template test utils.
+- `tests/e2e/pro-upgrade.spec.ts` — Playwright/end-to-end coverage for pro upgrade.spec.
+- `tests/e2e/pro-visual-policy.spec.ts` — Playwright/end-to-end coverage for pro visual policy.spec.
+- `tests/e2e/public-projection-assertion.ts` — Playwright/end-to-end coverage for public projection assertion.
+- `tests/e2e/release-environment.ts` — Playwright/end-to-end coverage for release environment.
+- `tests/e2e/share-responsive.spec.ts` — Playwright/end-to-end coverage for share responsive.spec.
+- `tests/e2e/studio-wall-panels.spec.ts` — Playwright/end-to-end coverage for studio wall panels.spec.
+- `tests/e2e/variant-test-utils.ts` — Playwright/end-to-end coverage for variant test utils.
+- `tests/required/cart-overlay-accessibility.spec.ts` — Playwright/end-to-end coverage for cart overlay accessibility.spec.
+- `tests/required/floor-plan-upload-accessibility.spec.ts` — Playwright/end-to-end coverage for floor plan upload accessibility.spec.
+- `tests/required/guest-save-overlay-accessibility.spec.ts` — Playwright/end-to-end coverage for guest save overlay accessibility.spec.
+- `tests/required/my-designs-overlay-accessibility.spec.ts` — Playwright/end-to-end coverage for my designs overlay accessibility.spec.
+- `tests/required/retailer-confirmation-accessibility.spec.ts` — Playwright/end-to-end coverage for retailer confirmation accessibility.spec.
+
+### 32. Test fixtures, mocks, helpers, and test data (29)
+
+- `app/admin/floor-plans/AdminFloorPlanFixturePanel.tsx` — Test fixture or harness for Admin Floor Plan Fixture Panel.
+- `components/editor/design-page/lighting/FixtureLightManager.tsx` — Test fixture or harness for Fixture Light Manager.
+- `docs/qa/production-certification-harness-v1.md` — Documentation: Production Certification Harness v1.
+- `lib/auth-fixture-network.ts` — Test fixture or harness for auth fixture network.
+- `lib/fixture-lighting-defaults.ts` — Test fixture or harness for fixture lighting defaults.
+- `scripts/build-floor-plan-upload-browser-fixture.mjs` — Test fixture or harness for build floor plan upload browser fixture.
+- `scripts/build-guest-save-overlay-browser-fixture.mjs` — Test fixture or harness for build guest save overlay browser fixture.
+- `scripts/build-retailer-confirmation-browser-fixture.mjs` — Test fixture or harness for build retailer confirmation browser fixture.
+- `scripts/ci-auth-fixture.json` — Structured JSON input, manifest, or baseline data for ci auth fixture.
+- `scripts/ci-auth-fixture.ts` — Test fixture or harness for ci auth fixture.
+- `scripts/fixtures/floor-plan-cad/room-mm.dxf` — Test fixture containing DXF floor-plan/CAD input data.
+- `scripts/fixtures/floor-plan-cad/room-mm.ifc` — Test fixture containing IFC floor-plan/CAD input data.
+- `scripts/fixtures/production-trace/glb-optimizer-post-correction.nft.json` — Test fixture or harness for GLB optimizer post correction.nft.
+- `scripts/fixtures/production-trace/glb-optimizer-retained-overtrace.nft.json` — Test fixture or harness for GLB optimizer retained overtrace.nft.
+- `scripts/fixtures/public-share-projection-identity-collision.json` — Test fixture or harness for public share projection identity collision.
+- `scripts/test-design-duplication-fixtures.ts` — Test fixture or harness for test design duplication fixtures.
+- `scripts/test-imported-variant-normalization-fixtures.ts` — Test fixture or harness for test imported variant normalization fixtures.
+- `scripts/test-phase-c-module-fixtures.ts` — Test fixture or harness for test phase c module fixtures.
+- `tests/e2e/fixtures.ts` — Test fixture or harness for fixtures.
+- `tests/fixtures/cabinetry/legacy-design-snapshot-v3-cabinet-v1.json` — Test fixture or harness for legacy design snapshot v3 cabinet v1.
+- `tests/fixtures/design-documents/legacy-v1-basic.json` — Test fixture or harness for legacy v1 basic.
+- `tests/fixtures/design-documents/legacy-v2-product.json` — Test fixture or harness for legacy v2 product.
+- `tests/fixtures/surface-material-runtime.generated.ts` — Test fixture or harness for surface material runtime.generated.
+- `tests/fixtures/surface-materials/flooring/test-only/test-published-flooring/catalog.yaml` — Test fixture or harness for catalog.
+- `tests/required/fixtures/floor-plan-empty-entry-harness.tsx` — Test fixture or harness for floor plan empty entry harness.
+- `tests/required/fixtures/floor-plan-upload-dialog-harness.tsx` — Test fixture or harness for floor plan upload dialog harness.
+- `tests/required/fixtures/guest-save-checkout-harness.tsx` — Test fixture or harness for guest save checkout harness.
+- `tests/required/fixtures/next-navigation-browser-fixture.ts` — Test fixture or harness for next navigation browser fixture.
+- `tests/required/fixtures/retailer-confirmation-harness.tsx` — Test fixture or harness for retailer confirmation harness.
+
+### 33. Playwright and end-to-end test infrastructure (10)
+
+- `playwright.cart-overlay.config.ts` — Playwright configuration for cart overlay.
+- `playwright.command-bar-accessibility.config.ts` — Playwright configuration for command bar accessibility.
+- `playwright.config.ts` — Playwright configuration for config.
+- `playwright.drawer-focus.config.ts` — Playwright configuration for drawer focus.
+- `playwright.floor-plan-upload.config.ts` — Playwright configuration for floor plan upload.
+- `playwright.guest-save-overlay.config.ts` — Playwright configuration for guest save overlay.
+- `playwright.my-designs-overlay.config.ts` — Playwright configuration for my designs overlay.
+- `playwright.pro-visual.config.ts` — Playwright configuration for pro visual.
+- `playwright.retailer-confirmation.config.ts` — Playwright configuration for retailer confirmation.
+- `playwright.share-responsive.config.ts` — Playwright configuration for share responsive.
+
+### 34. Scripts and command-line tools (391)
+
+- `query-catalog.js` — Command-line script for query catalog.
+- `QUICKSTART.sh` — Command-line script for QUICKSTART.
+- `scripts/asset-inventory.mjs` — Command-line script for asset inventory.
+- `scripts/audit-floor-plan-serving-integrity.ts` — Command-line script for audit floor plan serving integrity.
+- `scripts/backup-db.sh` — Command-line script for backup db.
+- `scripts/backup-workspace.mjs` — Command-line script for backup workspace.
+- `scripts/benchmark-phase8-browser.ts` — Command-line script for benchmark phase8 browser.
+- `scripts/benchmark-phase8-projects.ts` — Command-line script for benchmark phase8 projects.
+- `scripts/build-dawson-comparison.mjs` — Command-line script for build dawson comparison.
+- `scripts/cabinetry-release-evidence.ts` — Command-line script for cabinetry release evidence.
+- `scripts/cabinetry-tests/architectural-preset-contracts.ts` — Command-line script for architectural preset contracts.
+- `scripts/cabinetry-tests/core-rendering-contracts.ts` — Command-line script for core rendering contracts.
+- `scripts/cabinetry-tests/export-behavior.ts` — Command-line script for export behavior.
+- `scripts/cabinetry-tests/fabrication-contracts.ts` — Command-line script for fabrication contracts.
+- `scripts/cabinetry-tests/helpers.ts` — Command-line script for helpers.
+- `scripts/cabinetry-tests/layout-validation.ts` — Command-line script for layout validation.
+- `scripts/cabinetry-tests/preset-contracts.ts` — Command-line script for preset contracts.
+- `scripts/cabinetry-tests/specialty-preset-contracts.ts` — Command-line script for specialty preset contracts.
+- `scripts/capture-dawson-inapp.mjs` — Command-line script for capture dawson inapp.
+- `scripts/castlery-capture-dawson-collection-heroes.mjs` — Command-line script for castlery capture dawson collection heroes.
+- `scripts/castlery-capture-dawson-heroes.mjs` — Command-line script for castlery capture dawson heroes.
+- `scripts/castlery-capture-dawson-leather-heroes.mjs` — Command-line script for castlery capture dawson leather heroes.
+- `scripts/castlery-list-swatches.mjs` — Command-line script for castlery list swatches.
+- `scripts/castlery-probe.mjs` — Command-line script for castlery probe.
+- `scripts/catalog-placement-policy-test-utils.ts` — Command-line script for catalog placement policy test utils.
+- `scripts/certification-playwright-start-reporter.mjs` — Command-line script for certification playwright start reporter.
+- `scripts/check-beta-release-worktree.ts` — Command-line script for check beta release worktree.
+- `scripts/check-cabinetry-release-evidence.ts` — Command-line script for check cabinetry release evidence.
+- `scripts/check-cabinetry-studio-architecture.mjs` — Command-line script for check cabinetry studio architecture.
+- `scripts/check-design-page-architecture.mjs` — Command-line script for check design page architecture.
+- `scripts/check-floor-plan-architecture.mjs` — Command-line script for check floor plan architecture.
+- `scripts/check-glb-model-lifecycle.ts` — Command-line script for check GLB model lifecycle.
+- `scripts/check-glb-resource-cache.ts` — Command-line script for check GLB resource cache.
+- `scripts/check-phase15-release-evidence.ts` — Command-line script for check phase15 release evidence.
+- `scripts/code-quality/baseline.json` — Machine-readable baseline for repository code-quality ratchets.
+- `scripts/code-quality/check.mjs` — Command-line script for check.
+- `scripts/code-quality/exceptions.json` — Structured JSON input, manifest, or baseline data for exceptions.
+- `scripts/code-quality/policy.mjs` — Command-line script for policy.
+- `scripts/code-quality/tracked-artifact-policy.mjs` — Command-line script for tracked artifact policy.
+- `scripts/create-phase15-human-evidence-template.ts` — Command-line script for create phase15 human evidence template.
+- `scripts/dev-background.mjs` — Command-line script for dev background.
+- `scripts/dev-doctor.mjs` — Command-line script for dev doctor.
+- `scripts/dev-preflight.mjs` — Command-line script for dev preflight.
+- `scripts/dev-smoke.mjs` — Command-line script for dev smoke.
+- `scripts/dev-stripe.mjs` — Command-line script for dev stripe.
+- `scripts/generate-catalog-thumbs.ts` — Command-line script for generate catalog thumbs.
+- `scripts/generate-dawson-textures.mjs` — Command-line script for generate dawson textures.
+- `scripts/generate-ping-yi-court-v2-review-seeds.ts` — Command-line script for generate ping yi court v2 review seeds.
+- `scripts/generate-surface-material-runtime.ts` — Command-line script for generate surface material runtime.
+- `scripts/gitleaks-artifact.mjs` — Command-line script for gitleaks artifact.
+- `scripts/guest-save-overlay-ts-loader.mjs` — Command-line script for guest save overlay ts loader.
+- `scripts/import-example.json` — Structured JSON input, manifest, or baseline data for import example.
+- `scripts/import-gardenia-surface-materials.ts` — Command-line script for import gardenia surface materials.
+- `scripts/import-model.ts` — Command-line script for import model.
+- `scripts/link-castlery-models.sh` — Command-line script for link castlery models.
+- `scripts/measure-phase8-bundle.mjs` — Command-line script for measure phase8 bundle.
+- `scripts/new-feature-branch.sh` — Command-line script for new feature branch.
+- `scripts/phase8-project-benchmark-context.ts` — Command-line script for phase8 project benchmark context.
+- `scripts/phase8-project-benchmark-contract-tests.ts` — Command-line script for phase8 project benchmark contract tests.
+- `scripts/phase8-project-benchmark-contract.ts` — Command-line script for phase8 project benchmark contract.
+- `scripts/phase8-project-benchmark-evidence-io.ts` — Command-line script for phase8 project benchmark evidence io.
+- `scripts/phase8-project-benchmark-validator.ts` — Command-line script for phase8 project benchmark validator.
+- `scripts/phase8-representative-projects.ts` — Command-line script for phase8 representative projects.
+- `scripts/playwright-report-path.mjs` — Command-line script for playwright report path.
+- `scripts/postcss-strip-scoped-tailwind-properties.cjs` — Command-line script for postcss strip scoped tailwind properties.
+- `scripts/prisma-generate.mjs` — Command-line script for prisma generate.
+- `scripts/process-ottoman-thumbs.py` — Command-line script for process ottoman thumbs.
+- `scripts/production-archive-plan-evidence.mjs` — Command-line script for production archive plan evidence.
+- `scripts/production-archive.mjs` — Command-line script for production archive.
+- `scripts/production-artifact-contract.mjs` — Command-line script for production artifact contract.
+- `scripts/production-artifact-evidence.mjs` — Command-line script for production artifact evidence.
+- `scripts/production-artifact-playwright.mjs` — Command-line script for production artifact playwright.
+- `scripts/production-certification-build-generated-output.mjs` — Command-line script for production certification build generated output.
+- `scripts/production-certification-contract.mjs` — Command-line script for production certification contract.
+- `scripts/production-certification-dependencies.mjs` — Command-line script for production certification dependencies.
+- `scripts/production-certification-doctor.mjs` — Command-line script for production certification doctor.
+- `scripts/production-certification-evidence.mjs` — Command-line script for production certification evidence.
+- `scripts/production-certification-historical-evidence.mjs` — Command-line script for production certification historical evidence.
+- `scripts/production-certification-real.mjs` — Command-line script for production certification real.
+- `scripts/production-certification-regressions.json` — Structured JSON input, manifest, or baseline data for production certification regressions.
+- `scripts/production-certification-resource-evidence.mjs` — Command-line script for production certification resource evidence.
+- `scripts/production-certification-resource-plan.mjs` — Command-line script for production certification resource plan.
+- `scripts/production-certification-resources.mjs` — Command-line script for production certification resources.
+- `scripts/production-certification-simulation.mjs` — Command-line script for production certification simulation.
+- `scripts/production-certification-source-continuity.mjs` — Command-line script for production certification source continuity.
+- `scripts/production-certification-source-generated-outputs.mjs` — Command-line script for production certification source generated outputs.
+- `scripts/production-certification-stage-environment.mjs` — Command-line script for production certification stage environment.
+- `scripts/production-certification-state.mjs` — Command-line script for production certification state.
+- `scripts/production-certification-worktrees.mjs` — Command-line script for production certification worktrees.
+- `scripts/production-certification.mjs` — Command-line script for production certification.
+- `scripts/production-trace-archive-policy.mjs` — Command-line script for production trace archive policy.
+- `scripts/production-verifier-closure.mjs` — Command-line script for production verifier closure.
+- `scripts/provision-gate-a3-database.mjs` — Command-line script for provision gate a3 database.
+- `scripts/required-test-manifest.json` — Machine-readable manifest of required test commands, ownership, and certification metadata.
+- `scripts/required-test-playwright.mjs` — Command-line script for required test playwright.
+- `scripts/required-test-truthfulness.mjs` — Command-line script for required test truthfulness.
+- `scripts/restore-db.sh` — Command-line script for restore db.
+- `scripts/restore-model-assets.ts` — Command-line script for restore model assets.
+- `scripts/run-design-page-cleanup-tests.mjs` — Command-line script for run design page cleanup tests.
+- `scripts/run-floor-plan-deletion-worker.ts` — Command-line script for run floor plan deletion worker.
+- `scripts/run-floor-plan-import-worker.ts` — Command-line script for run floor plan import worker.
+- `scripts/run-floor-plan-retention-cleanup.ts` — Command-line script for run floor plan retention cleanup.
+- `scripts/run-phase8-project-benchmark.ts` — Command-line script for run phase8 project benchmark.
+- `scripts/runtime-smoke-browser-diagnostics.mjs` — Command-line script for runtime smoke browser diagnostics.
+- `scripts/runtime-smoke-failure-evidence.mjs` — Command-line script for runtime smoke failure evidence.
+- `scripts/runtime-smoke-operation-contracts.mjs` — Command-line script for runtime smoke operation contracts.
+- `scripts/runtime-smoke-operation-deadline.mjs` — Command-line script for runtime smoke operation deadline.
+- `scripts/runtime-smoke-phase-budget.mjs` — Command-line script for runtime smoke phase budget.
+- `scripts/runtime-smoke-post-readiness.mjs` — Command-line script for runtime smoke post readiness.
+- `scripts/runtime-smoke-readiness-diagnostics.mjs` — Command-line script for runtime smoke readiness diagnostics.
+- `scripts/runtime-smoke-telemetry-bootstrap-contract.mjs` — Command-line script for runtime smoke telemetry bootstrap contract.
+- `scripts/seed-test-data.js` — Command-line script for seed test data.
+- `scripts/seed-test-data.ts` — Command-line script for seed test data.
+- `scripts/sync-catalog-model-assets.ts` — Command-line script for sync catalog model assets.
+- `scripts/sync-dawson-lifestyle-galleries.mjs` — Command-line script for sync dawson lifestyle galleries.
+- `scripts/sync-madison-lifestyle-galleries.mjs` — Command-line script for sync madison lifestyle galleries.
+- `scripts/sync-orphan-model-assets.ts` — Command-line script for sync orphan model assets.
+- `scripts/test-admin-authorization.ts` — Command-line script for test admin authorization.
+- `scripts/test-ai-layout-planner.ts` — Command-line script for test AI layout planner.
+- `scripts/test-ai-layout-preview.ts` — Command-line script for test AI layout preview.
+- `scripts/test-auburn-public-catalog.ts` — Command-line script for test auburn public catalog.
+- `scripts/test-auth-env-hardening.ts` — Command-line script for test auth env hardening.
+- `scripts/test-beta-feedback-widget.ts` — Command-line script for test beta feedback widget.
+- `scripts/test-beta-readiness-upgrades.ts` — Command-line script for test beta readiness upgrades.
+- `scripts/test-beta-release-handoff.ts` — Command-line script for test beta release handoff.
+- `scripts/test-beta-staging-artifacts.ts` — Command-line script for test beta staging artifacts.
+- `scripts/test-beta-staging-checklist.ts` — Command-line script for test beta staging checklist.
+- `scripts/test-beta-staging-evidence.ts` — Command-line script for test beta staging evidence.
+- `scripts/test-cabinetry-accessibility.ts` — Command-line script for test cabinetry accessibility.
+- `scripts/test-cabinetry-guided-step-navigation.ts` — Command-line script for test cabinetry guided step navigation.
+- `scripts/test-cabinetry-hardware-autofix.ts` — Command-line script for test cabinetry hardware autofix.
+- `scripts/test-cabinetry-legacy-persistence.ts` — Command-line script for test cabinetry legacy persistence.
+- `scripts/test-cabinetry-module-option-groups.ts` — Command-line script for test cabinetry module option groups.
+- `scripts/test-cabinetry-numeric-input.ts` — Command-line script for test cabinetry numeric input.
+- `scripts/test-cabinetry-onboarding.ts` — Command-line script for test cabinetry onboarding.
+- `scripts/test-cabinetry-output-tabs.ts` — Command-line script for test cabinetry output tabs.
+- `scripts/test-cabinetry-performance.ts` — Command-line script for test cabinetry performance.
+- `scripts/test-cabinetry-polygon-hosts.ts` — Command-line script for test cabinetry polygon hosts.
+- `scripts/test-cabinetry-preview-analytics.ts` — Command-line script for test cabinetry preview analytics.
+- `scripts/test-cabinetry-preview-renderer.ts` — Command-line script for test cabinetry preview renderer.
+- `scripts/test-cabinetry-release-evidence.ts` — Command-line script for test cabinetry release evidence.
+- `scripts/test-cabinetry-semantic-preview.ts` — Command-line script for test cabinetry semantic preview.
+- `scripts/test-cabinetry-studio-composition.ts` — Command-line script for test cabinetry studio composition.
+- `scripts/test-cabinetry-studio-controllers.ts` — Command-line script for test cabinetry studio controllers.
+- `scripts/test-cabinetry-studio-form-primitives.ts` — Command-line script for test cabinetry studio form primitives.
+- `scripts/test-cabinetry-studio-header.ts` — Command-line script for test cabinetry studio header.
+- `scripts/test-cabinetry-studio-infrastructure.ts` — Command-line script for test cabinetry studio infrastructure.
+- `scripts/test-cabinetry-studio-pure-logic.ts` — Command-line script for test cabinetry studio pure logic.
+- `scripts/test-cabinetry-studio-runtime-boundary.ts` — Command-line script for test cabinetry studio runtime boundary.
+- `scripts/test-cabinetry-studio-state.ts` — Command-line script for test cabinetry studio state.
+- `scripts/test-cabinetry-studio-static-boundaries.ts` — Command-line script for test cabinetry studio static boundaries.
+- `scripts/test-cabinetry-studio-storage.ts` — Command-line script for test cabinetry studio storage.
+- `scripts/test-cabinetry-studio-ui-components.ts` — Command-line script for test cabinetry studio UI components.
+- `scripts/test-cabinetry-template-catalog.ts` — Command-line script for test cabinetry template catalog.
+- `scripts/test-cabinetry-template-recommendations.ts` — Command-line script for test cabinetry template recommendations.
+- `scripts/test-cabinetry-validation-feedback.ts` — Command-line script for test cabinetry validation feedback.
+- `scripts/test-cabinetry-wardrobe-arrangements.ts` — Command-line script for test cabinetry wardrobe arrangements.
+- `scripts/test-cabinetry.ts` — Command-line script for test cabinetry.
+- `scripts/test-cart-overlay-static.tsx` — Command-line script for test cart overlay static.
+- `scripts/test-castlery-retailer-variant-coverage.ts` — Command-line script for test castlery retailer variant coverage.
+- `scripts/test-catalog-asset-availability.ts` — Command-line script for test catalog asset availability.
+- `scripts/test-catalog-draft-gate.ts` — Command-line script for test catalog draft gate.
+- `scripts/test-catalog-editor-coverage.ts` — Command-line script for test catalog editor coverage.
+- `scripts/test-catalog-family-grouping.ts` — Command-line script for test catalog family grouping.
+- `scripts/test-catalog-governance-validations.ts` — Command-line script for test catalog governance validations.
+- `scripts/test-catalog-item-finish-picker.ts` — Command-line script for test catalog item finish picker.
+- `scripts/test-catalog-live-gate.ts` — Command-line script for test catalog live gate.
+- `scripts/test-catalog-media-health.ts` — Command-line script for test catalog media health.
+- `scripts/test-catalog-panel-logic.ts` — Command-line script for test catalog panel logic.
+- `scripts/test-catalog-placement.ts` — Command-line script for test catalog placement.
+- `scripts/test-catalog-publication-summary.ts` — Command-line script for test catalog publication summary.
+- `scripts/test-catalog-quality-audit.ts` — Command-line script for test catalog quality audit.
+- `scripts/test-catalog-registry-sync.ts` — Command-line script for test catalog registry sync.
+- `scripts/test-catalog-route-hardening.ts` — Command-line script for test catalog route hardening.
+- `scripts/test-catalog-variant-color.ts` — Command-line script for test catalog variant color.
+- `scripts/test-cedric-lamp-calibration.ts` — Command-line script for test cedric lamp calibration.
+- `scripts/test-circulation-analysis.ts` — Command-line script for test circulation analysis.
+- `scripts/test-code-quality-ratchet.mjs` — Command-line script for test code quality ratchet.
+- `scripts/test-command-bar-save-status.ts` — Command-line script for test command bar save status.
+- `scripts/test-dalton-catalog-media.ts` — Command-line script for test dalton catalog media.
+- `scripts/test-dawson-retailer-links.ts` — Command-line script for test dawson retailer links.
+- `scripts/test-design-document-compatibility.ts` — Command-line script for test design document compatibility.
+- `scripts/test-design-editor-routing.ts` — Command-line script for test design editor routing.
+- `scripts/test-design-page-ai-layout-controller.ts` — Command-line script for test design page AI layout controller.
+- `scripts/test-design-page-ai-layout-proposal.ts` — Command-line script for test design page AI layout proposal.
+- `scripts/test-design-page-ai-panel-registration.ts` — Command-line script for test design page AI panel registration.
+- `scripts/test-design-page-cabinetry-controller.ts` — Command-line script for test design page cabinetry controller.
+- `scripts/test-design-page-catalog-placement-registration.ts` — Command-line script for test design page catalog placement registration.
+- `scripts/test-design-page-commerce-actions.ts` — Command-line script for test design page commerce actions.
+- `scripts/test-design-page-core-shell-registration.ts` — Command-line script for test design page core shell registration.
+- `scripts/test-design-page-document-selection-registration.ts` — Command-line script for test design page document selection registration.
+- `scripts/test-design-page-editor-command-bar.ts` — Command-line script for test design page editor command bar.
+- `scripts/test-design-page-editor-registration.ts` — Command-line script for test design page editor registration.
+- `scripts/test-design-page-equivalent-variant.ts` — Command-line script for test design page equivalent variant.
+- `scripts/test-design-page-feature-registration.ts` — Command-line script for test design page feature registration.
+- `scripts/test-design-page-floor-plan-lifecycle-registration.ts` — Command-line script for test design page floor plan lifecycle registration.
+- `scripts/test-design-page-history-controller.ts` — Command-line script for test design page history controller.
+- `scripts/test-design-page-house-plan.ts` — Command-line script for test design page house plan.
+- `scripts/test-design-page-layout-versions-and-views-controller.ts` — Command-line script for test design page layout versions and views controller.
+- `scripts/test-design-page-live-catalog.ts` — Command-line script for test design page live catalog.
+- `scripts/test-design-page-local-backup-recovery.ts` — Command-line script for test design page local backup recovery.
+- `scripts/test-design-page-local-backup.ts` — Command-line script for test design page local backup.
+- `scripts/test-design-page-new-plan-controller.ts` — Command-line script for test design page new plan controller.
+- `scripts/test-design-page-panel-mode.ts` — Command-line script for test design page panel mode.
+- `scripts/test-design-page-panel-workspace-registration.ts` — Command-line script for test design page panel workspace registration.
+- `scripts/test-design-page-paywall.ts` — Command-line script for test design page paywall.
+- `scripts/test-design-page-persistence-ai-workspace-registration.ts` — Command-line script for test design page persistence AI workspace registration.
+- `scripts/test-design-page-persistence-controller.ts` — Command-line script for test design page persistence controller.
+- `scripts/test-design-page-persistence-presentation-registration.ts` — Command-line script for test design page persistence presentation registration.
+- `scripts/test-design-page-placement-workspace-registration.ts` — Command-line script for test design page placement workspace registration.
+- `scripts/test-design-page-plan-canvas-overlays.ts` — Command-line script for test design page plan canvas overlays.
+- `scripts/test-design-page-plan-overlay-controller.ts` — Command-line script for test design page plan overlay controller.
+- `scripts/test-design-page-plan-quality-controller.ts` — Command-line script for test design page plan quality controller.
+- `scripts/test-design-page-presentation-export-runtime.ts` — Command-line script for test design page presentation export runtime.
+- `scripts/test-design-page-presentation-workspace-registration.ts` — Command-line script for test design page presentation workspace registration.
+- `scripts/test-design-page-refresh-zoom.ts` — Command-line script for test design page refresh zoom.
+- `scripts/test-design-page-requested-design-workspace-registration.ts` — Command-line script for test design page requested design workspace registration.
+- `scripts/test-design-page-room-placement-operations.ts` — Command-line script for test design page room placement operations.
+- `scripts/test-design-page-room-plan-controller.ts` — Command-line script for test design page room plan controller.
+- `scripts/test-design-page-save-status.ts` — Command-line script for test design page save status.
+- `scripts/test-design-page-scene-domain-boundaries.ts` — Command-line script for test design page scene domain boundaries.
+- `scripts/test-design-page-scene-layers.ts` — Command-line script for test design page scene layers.
+- `scripts/test-design-page-scene-region-workspace-registration.ts` — Command-line script for test design page scene region workspace registration.
+- `scripts/test-design-page-selected-item-panel-controller.ts` — Command-line script for test design page selected item panel controller.
+- `scripts/test-design-page-selected-item-panel.ts` — Command-line script for test design page selected item panel.
+- `scripts/test-design-page-selection-inspector-model.ts` — Command-line script for test design page selection inspector model.
+- `scripts/test-design-page-selection-transforms.ts` — Command-line script for test design page selection transforms.
+- `scripts/test-design-page-selection-workspace-registration.ts` — Command-line script for test design page selection workspace registration.
+- `scripts/test-design-page-view-continuity.ts` — Command-line script for test design page view continuity.
+- `scripts/test-design-page-viewport-overlay-layer.ts` — Command-line script for test design page viewport overlay layer.
+- `scripts/test-design-page-viewport-selection-controls.ts` — Command-line script for test design page viewport selection controls.
+- `scripts/test-design-page-viewport-workspace-read-model.ts` — Command-line script for test design page viewport workspace read model.
+- `scripts/test-design-page-viewport-workspace-registration.ts` — Command-line script for test design page viewport workspace registration.
+- `scripts/test-design-page-wall-descriptors.ts` — Command-line script for test design page wall descriptors.
+- `scripts/test-design-page-zone-controller.ts` — Command-line script for test design page zone controller.
+- `scripts/test-design-route-payload.ts` — Command-line script for test design route payload.
+- `scripts/test-design-scene-loading-frameloop.mjs` — Command-line script for test design scene loading frameloop.
+- `scripts/test-design-snapshot-v3-floor-plan-adapter.ts` — Command-line script for test design snapshot v3 floor plan adapter.
+- `scripts/test-designer-theme-contrast.ts` — Command-line script for test designer theme contrast.
+- `scripts/test-editor-3d-floor-cutaway.ts` — Command-line script for test editor 3D floor cutaway.
+- `scripts/test-editor-capabilities-accessibility.ts` — Command-line script for test editor capabilities accessibility.
+- `scripts/test-editor-command-history.ts` — Command-line script for test editor command history.
+- `scripts/test-editor-floating-overlay-layout.ts` — Command-line script for test editor floating overlay layout.
+- `scripts/test-floor-manager-logic.ts` — Command-line script for test floor manager logic.
+- `scripts/test-floor-plan-address-binding-audit.ts` — Command-line script for test floor plan address binding audit.
+- `scripts/test-floor-plan-address-binding-evidence.ts` — Command-line script for test floor plan address binding evidence.
+- `scripts/test-floor-plan-admin-queue.ts` — Command-line script for test floor plan admin queue.
+- `scripts/test-floor-plan-admin-review-workspace.ts` — Command-line script for test floor plan admin review workspace.
+- `scripts/test-floor-plan-admin-review.ts` — Command-line script for test floor plan admin review.
+- `scripts/test-floor-plan-asset-route-storage.ts` — Command-line script for test floor plan asset route storage.
+- `scripts/test-floor-plan-authored-variant-links.ts` — Command-line script for test floor plan authored variant links.
+- `scripts/test-floor-plan-cad-adapters.ts` — Command-line script for test floor plan cad adapters.
+- `scripts/test-floor-plan-canonical-finishes-openings.ts` — Command-line script for test floor plan canonical finishes openings.
+- `scripts/test-floor-plan-catalog-client.ts` — Command-line script for test floor plan catalog client.
+- `scripts/test-floor-plan-catalog-draft-match.ts` — Command-line script for test floor plan catalog draft match.
+- `scripts/test-floor-plan-catalog-repository.ts` — Command-line script for test floor plan catalog repository.
+- `scripts/test-floor-plan-catalog-v1-adapter.ts` — Command-line script for test floor plan catalog v1 adapter.
+- `scripts/test-floor-plan-construction-evidence.ts` — Command-line script for test floor plan construction evidence.
+- `scripts/test-floor-plan-construction-sources.ts` — Command-line script for test floor plan construction sources.
+- `scripts/test-floor-plan-consumer-auto-extraction.ts` — Command-line script for test floor plan consumer auto extraction.
+- `scripts/test-floor-plan-consumer-flow.ts` — Command-line script for test floor plan consumer flow.
+- `scripts/test-floor-plan-design-reference-persistence.ts` — Command-line script for test floor plan design reference persistence.
+- `scripts/test-floor-plan-design-reference.ts` — Command-line script for test floor plan design reference.
+- `scripts/test-floor-plan-detection-evidence.ts` — Command-line script for test floor plan detection evidence.
+- `scripts/test-floor-plan-document-v2.ts` — Command-line script for test floor plan document v2.
+- `scripts/test-floor-plan-durable-telemetry.ts` — Command-line script for test floor plan durable telemetry.
+- `scripts/test-floor-plan-foundation.ts` — Command-line script for test floor plan foundation.
+- `scripts/test-floor-plan-geometry-validation.ts` — Command-line script for test floor plan geometry validation.
+- `scripts/test-floor-plan-import-platform.ts` — Command-line script for test floor plan import platform.
+- `scripts/test-floor-plan-import-review-geometry.ts` — Command-line script for test floor plan import review geometry.
+- `scripts/test-floor-plan-import-telemetry.ts` — Command-line script for test floor plan import telemetry.
+- `scripts/test-floor-plan-import-worker-recovery.ts` — Command-line script for test floor plan import worker recovery.
+- `scripts/test-floor-plan-library.ts` — Command-line script for test floor plan library.
+- `scripts/test-floor-plan-live-progress.ts` — Command-line script for test floor plan live progress.
+- `scripts/test-floor-plan-local-ocr.ts` — Command-line script for test floor plan local ocr.
+- `scripts/test-floor-plan-measured-property-mutations.ts` — Command-line script for test floor plan measured property mutations.
+- `scripts/test-floor-plan-multifloor-parity.ts` — Command-line script for test floor plan multifloor parity.
+- `scripts/test-floor-plan-object-storage.ts` — Command-line script for test floor plan object storage.
+- `scripts/test-floor-plan-object-store-compensation.ts` — Command-line script for test floor plan object store compensation.
+- `scripts/test-floor-plan-optional-configurations.ts` — Command-line script for test floor plan optional configurations.
+- `scripts/test-floor-plan-private-source-retention.ts` — Command-line script for test floor plan private source retention.
+- `scripts/test-floor-plan-processing-mode.ts` — Command-line script for test floor plan processing mode.
+- `scripts/test-floor-plan-public-display-metadata.ts` — Command-line script for test floor plan public display metadata.
+- `scripts/test-floor-plan-public-document.ts` — Command-line script for test floor plan public document.
+- `scripts/test-floor-plan-quality.ts` — Command-line script for test floor plan quality.
+- `scripts/test-floor-plan-queue-health.ts` — Command-line script for test floor plan queue health.
+- `scripts/test-floor-plan-raster-linework.ts` — Command-line script for test floor plan raster linework.
+- `scripts/test-floor-plan-registered-wall-topology.ts` — Command-line script for test floor plan registered wall topology.
+- `scripts/test-floor-plan-render-parity.ts` — Command-line script for test floor plan render parity.
+- `scripts/test-floor-plan-request-hardening.ts` — Command-line script for test floor plan request hardening.
+- `scripts/test-floor-plan-retention-outbox.ts` — Command-line script for test floor plan retention outbox.
+- `scripts/test-floor-plan-revision-copy.ts` — Command-line script for test floor plan revision copy.
+- `scripts/test-floor-plan-revision-retirement.ts` — Command-line script for test floor plan revision retirement.
+- `scripts/test-floor-plan-revision-supersede.ts` — Command-line script for test floor plan revision supersede.
+- `scripts/test-floor-plan-room-holes.ts` — Command-line script for test floor plan room holes.
+- `scripts/test-floor-plan-serving-integrity.ts` — Command-line script for test floor plan serving integrity.
+- `scripts/test-floor-plan-shared-rate-limit.ts` — Command-line script for test floor plan shared rate limit.
+- `scripts/test-floor-plan-source-observation-governance.ts` — Command-line script for test floor plan source observation governance.
+- `scripts/test-floor-plan-source-overlay-residuals.ts` — Command-line script for test floor plan source overlay residuals.
+- `scripts/test-floor-plan-supplementary-sources.ts` — Command-line script for test floor plan supplementary sources.
+- `scripts/test-floor-plan-topology-editor.ts` — Command-line script for test floor plan topology editor.
+- `scripts/test-floor-plan-topology-mutations.ts` — Command-line script for test floor plan topology mutations.
+- `scripts/test-floor-plan-upload-accessibility-static.ts` — Command-line script for test floor plan upload accessibility static.
+- `scripts/test-floor-plan-upload-ingress.ts` — Command-line script for test floor plan upload ingress.
+- `scripts/test-floor-plan-verification-hardening.ts` — Command-line script for test floor plan verification hardening.
+- `scripts/test-floor-plan-vision-configuration.ts` — Command-line script for test floor plan vision configuration.
+- `scripts/test-furnish-full-catalog.ts` — Command-line script for test furnish full catalog.
+- `scripts/test-glb-local-render-bounds.ts` — Command-line script for test GLB local render bounds.
+- `scripts/test-glb-main-thread-telemetry-facade.ts` — Command-line script for test GLB main thread telemetry facade.
+- `scripts/test-glb-main-thread-telemetry.ts` — Command-line script for test GLB main thread telemetry.
+- `scripts/test-google-address-autocomplete.ts` — Command-line script for test google address autocomplete.
+- `scripts/test-guest-save-overlay-static.tsx` — Command-line script for test guest save overlay static.
+- `scripts/test-hamilton-sofa-bed-import.ts` — Command-line script for test hamilton sofa bed import.
+- `scripts/test-house-plan-wall-rendering.ts` — Command-line script for test house plan wall rendering.
+- `scripts/test-import-route-hardening.ts` — Command-line script for test import route hardening.
+- `scripts/test-imported-variant-normalization.ts` — Command-line script for test imported variant normalization.
+- `scripts/test-layout-version-ui-polish.ts` — Command-line script for test layout version UI polish.
+- `scripts/test-layout-versions.ts` — Command-line script for test layout versions.
+- `scripts/test-legacy-floor-plan-watertight-rendering.ts` — Command-line script for test legacy floor plan watertight rendering.
+- `scripts/test-lighting-settings.ts` — Command-line script for test lighting settings.
+- `scripts/test-load-design-delete-modal.ts` — Command-line script for test load design delete modal.
+- `scripts/test-manual-placement-scoring.ts` — Command-line script for test manual placement scoring.
+- `scripts/test-model-route-hardening.ts` — Command-line script for test model route hardening.
+- `scripts/test-my-designs-overlay-static.tsx` — Command-line script for test my designs overlay static.
+- `scripts/test-next-steps-live.ts` — Command-line script for test next steps live.
+- `scripts/test-paywall-performance.ts` — Command-line script for test paywall performance.
+- `scripts/test-pendant-light-adjustment.ts` — Command-line script for test pendant light adjustment.
+- `scripts/test-phase13-batch5-sharing.ts` — Command-line script for test phase13 batch5 sharing.
+- `scripts/test-phase14-product-flow.ts` — Command-line script for test phase14 product flow.
+- `scripts/test-phase15.ts` — Command-line script for test phase15.
+- `scripts/test-phase7-security-boundaries.ts` — Command-line script for test phase7 security boundaries.
+- `scripts/test-phase8-performance-boundaries.ts` — Command-line script for test phase8 performance boundaries.
+- `scripts/test-ping-yi-court-review-seed-intake.ts` — Command-line script for test ping yi court review seed intake.
+- `scripts/test-ping-yi-court-v2-review-seeds.ts` — Command-line script for test ping yi court v2 review seeds.
+- `scripts/test-placement-best-option.ts` — Command-line script for test placement best option.
+- `scripts/test-placement-best-room.ts` — Command-line script for test placement best room.
+- `scripts/test-placement-improvement-action.ts` — Command-line script for test placement improvement action.
+- `scripts/test-placement-keyboard-shortcuts.ts` — Command-line script for test placement keyboard shortcuts.
+- `scripts/test-placement-score-aware-status.ts` — Command-line script for test placement score aware status.
+- `scripts/test-placement-smart-confirm.ts` — Command-line script for test placement smart confirm.
+- `scripts/test-placement-target-validity.ts` — Command-line script for test placement target validity.
+- `scripts/test-placement-valid-restore.ts` — Command-line script for test placement valid restore.
+- `scripts/test-plan-camera-2d-invariant.ts` — Command-line script for test plan camera 2D invariant.
+- `scripts/test-plan-camera-navigation-visibility.ts` — Command-line script for test plan camera navigation visibility.
+- `scripts/test-plan-room-summary.ts` — Command-line script for test plan room summary.
+- `scripts/test-plan-template-access.ts` — Command-line script for test plan template access.
+- `scripts/test-preset-approval-flow.ts` — Command-line script for test preset approval flow.
+- `scripts/test-pro-billing-local.mjs` — Command-line script for test pro billing local.
+- `scripts/test-pro-billing-ui.ts` — Command-line script for test pro billing UI.
+- `scripts/test-pro-tools-toggle-copy.ts` — Command-line script for test pro tools toggle copy.
+- `scripts/test-production-archive-plan-evidence.mjs` — Command-line script for test production archive plan evidence.
+- `scripts/test-production-artifact-evidence.mjs` — Command-line script for test production artifact evidence.
+- `scripts/test-production-certification-build-generated-output.mjs` — Command-line script for test production certification build generated output.
+- `scripts/test-production-certification-dependency-lifecycle.mjs` — Command-line script for test production certification dependency lifecycle.
+- `scripts/test-production-certification-resources.mjs` — Command-line script for test production certification resources.
+- `scripts/test-production-certification-source-generated-outputs.mjs` — Command-line script for test production certification source generated outputs.
+- `scripts/test-production-certification-stage-environment.mjs` — Command-line script for test production certification stage environment.
+- `scripts/test-production-certification-state-worktrees.mjs` — Command-line script for test production certification state worktrees.
+- `scripts/test-production-certification.mjs` — Command-line script for test production certification.
+- `scripts/test-production-trace-archive-policy.mjs` — Command-line script for test production trace archive policy.
+- `scripts/test-public-catalog-placeholder-gate.ts` — Command-line script for test public catalog placeholder gate.
+- `scripts/test-public-catalog-placeholders.ts` — Command-line script for test public catalog placeholders.
+- `scripts/test-public-catalog-swatch-textures.ts` — Command-line script for test public catalog swatch textures.
+- `scripts/test-public-share-responsive.ts` — Command-line script for test public share responsive.
+- `scripts/test-required-test-truthfulness.mjs` — Command-line script for test required test truthfulness.
+- `scripts/test-retailer-confirmation-static.tsx` — Command-line script for test retailer confirmation static.
+- `scripts/test-revenue-funnel-metrics.ts` — Command-line script for test revenue funnel metrics.
+- `scripts/test-revenue-funnel-panel.ts` — Command-line script for test revenue funnel panel.
+- `scripts/test-room-budget-recommendations.ts` — Command-line script for test room budget recommendations.
+- `scripts/test-room-floor-rendering.ts` — Command-line script for test room floor rendering.
+- `scripts/test-room-plan-status-bar-layout.ts` — Command-line script for test room plan status bar layout.
+- `scripts/test-room-resize-handle-style.ts` — Command-line script for test room resize handle style.
+- `scripts/test-room-shopping-catalog-refresh.ts` — Command-line script for test room shopping catalog refresh.
+- `scripts/test-runtime-smoke-resource-isolation.mjs` — Command-line script for test runtime smoke resource isolation.
+- `scripts/test-runtime-smoke-telemetry-bootstrap-contract.mjs` — Command-line script for test runtime smoke telemetry bootstrap contract.
+- `scripts/test-shopping-readiness-polish.ts` — Command-line script for test shopping readiness polish.
+- `scripts/test-stripe-pro-billing.ts` — Command-line script for test stripe pro billing.
+- `scripts/test-style-consistency.ts` — Command-line script for test style consistency.
+- `scripts/test-surface-material-browser-semantics.ts` — Command-line script for test surface material browser semantics.
+- `scripts/test-surface-material-schema.ts` — Command-line script for test surface material schema.
+- `scripts/test-tap-target-placement.ts` — Command-line script for test tap target placement.
+- `scripts/test-touch-placement-polish.ts` — Command-line script for test touch placement polish.
+- `scripts/test-tracked-artifact-hygiene.mjs` — Command-line script for test tracked artifact hygiene.
+- `scripts/test-wall-paint-catalog.ts` — Command-line script for test wall paint catalog.
+- `scripts/validate-dawson-references.mjs` — Command-line script for validate dawson references.
+- `scripts/validate-product-assets.ts` — Command-line script for validate product assets.
+- `scripts/vercel-output-manifest.mjs` — Command-line script for vercel output manifest.
+- `scripts/vercel-prebuilt-release.mjs` — Command-line script for vercel prebuilt release.
+- `start-studio.sh` — Command-line script for start studio.
+- `verify-db.sh` — Command-line script for verify db.
+- `verify-tables.js` — Command-line script for verify tables.
+
+### 35. CI/CD and GitHub Actions (2)
+
+- `.github/workflows/ci.yml` — GitHub Actions workflow for CI - Test & Build.
+- `.github/workflows/full-advisory-e2e.yml` — GitHub Actions workflow for Full E2E (informational).
+
+### 36. Vercel and deployment configuration (2)
+
+- `.vercelignore` — Defines files omitted from Vercel deployment uploads.
+- `vercel.json` — Configures Vercel deployment and runtime settings.
+
+### 37. Linting, formatting, TypeScript, and build configuration (16)
+
+- `.env.example` — Example environment-variable contract; contains placeholders rather than local secrets.
+- `.env.staging.template` — Template for staging environment-variable configuration; values require deployment-specific substitution.
+- `.gitattributes` — Defines Git path attributes and repository text/binary handling.
+- `.gitignore` — Defines files and directories Git must ignore.
+- `.gitleaks.toml` — Configures secret-scanning rules for the repository.
+- `.node-version` — Pins the Node.js runtime version for compatible version managers.
+- `.nvmrc` — Pins the Node.js runtime version for NVM.
+- `config/phase15-quality-budgets.json` — Quality-budget thresholds for Phase 15 validation.
+- `config/phase8-performance-budgets.json` — Performance-budget thresholds for Phase 8 validation.
+- `eslint.config.mjs` — Configures repository linting rules and file scopes.
+- `next.config.ts` — Configures the Next.js application build and runtime behavior.
+- `package-lock.json` — Locks the exact npm dependency graph for reproducible installs.
+- `package.json` — Declares package metadata, scripts, runtime dependencies, and development dependencies.
+- `postcss.config.mjs` — Configures PostCSS processing for application styles.
+- `tailwind.config.ts` — Configures Tailwind CSS content discovery and theme extensions.
+- `tsconfig.json` — Configures TypeScript compilation, path aliases, and framework integration.
+
+### 38. Catalog data, YAML, JSON, schemas, and validation files (1,143)
+
+- `catalog/floor-plans/sg/hdb/ping-yi-court/catalog.yaml` — Canonical floor-plan catalog record for 810A and 811A-811D Chai Chee Street floor plans.
+- `catalog/floor-plans/sg/hdb/ping-yi-court/source-manifest.json` — Canonical floor-plan catalog record for ping yi court.
+- `catalog/furniture/_templates/canonical/bed_queen.example.yaml` — Authoring template or controlled vocabulary for Canonical Queen Bed.
+- `catalog/furniture/_templates/canonical/lighting_pendant.example.yaml` — Authoring template or controlled vocabulary for Canonical Pendant.
+- `catalog/furniture/_templates/canonical/outdoor_sofa.example.yaml` — Authoring template or controlled vocabulary for Canonical Outdoor Sofa.
+- `catalog/furniture/_templates/canonical/storage_nightstand.example.yaml` — Authoring template or controlled vocabulary for Canonical Nightstand.
+- `catalog/furniture/_templates/controlled_vocabularies.yaml` — Authoring template or controlled vocabulary for templates.
+- `catalog/furniture/_templates/master_catalog.yaml` — Authoring template or controlled vocabulary for templates.
+- `catalog/furniture/_upholstery_libraries/auburn.yaml` — Upholstery library data for upholstery libraries.
+- `catalog/furniture/_upholstery_libraries/dawson.yaml` — Upholstery library data for upholstery libraries.
+- `catalog/furniture/_upholstery_libraries/hamilton.yaml` — Upholstery library data for upholstery libraries.
+- `catalog/furniture/_upholstery_libraries/jaron.yaml` — Upholstery library data for upholstery libraries.
+- `catalog/furniture/accessories/blanc_arched_table_lamp/catalog.yaml` — Canonical furniture catalog record for Blanc Arched Table Lamp.
+- `catalog/furniture/accessories/cedric_floor_lamp_with_table/catalog.yaml` — Canonical furniture catalog record for Cedric Floor Lamp with Table.
+- `catalog/furniture/accessories/cedric_floor_lamp/catalog.yaml` — Canonical furniture catalog record for Cedric Floor Lamp.
+- `catalog/furniture/accessories/cedric_table_lamp_28_8cm_curved/catalog.yaml` — Canonical furniture catalog record for Cedric Table Lamp 28.8cm.
+- `catalog/furniture/accessories/cedric_table_lamp_53cm_curved/catalog.yaml` — Canonical furniture catalog record for Cedric Table Lamp 53cm.
+- `catalog/furniture/accessories/edgar_duo_bulb_table_lamp/catalog.yaml` — Canonical furniture catalog record for Edgar Duo Bulb Table Lamp.
+- `catalog/furniture/accessories/faro_sculptural_floor_lamp/catalog.yaml` — Canonical furniture catalog record for Faro Sculptural Floor Lamp.
+- `catalog/furniture/accessories/faro_table_lamp/catalog.yaml` — Canonical furniture catalog record for Faro Table Lamp.
+- `catalog/furniture/beds/claude_performance_fabric_bed/catalog.yaml` — Canonical furniture catalog record for Claude Performance Fabric Bed.
+- `catalog/furniture/beds/dalton_bed/catalog.yaml` — Canonical furniture catalog record for Dalton Bed.
+- `catalog/furniture/beds/dawson_bed/catalog.yaml` — Canonical furniture catalog record for Dawson Bed.
+- `catalog/furniture/beds/joseph_bed/catalog.yaml` — Canonical furniture catalog record for Joseph Bed.
+- `catalog/furniture/beds/lexi_tufted_bed/catalog.yaml` — Canonical furniture catalog record for Lexi Tufted Bed.
+- `catalog/furniture/beds/rochelle_boucle_bed/catalog.yaml` — Canonical furniture catalog record for Rochelle Performance Boucle Bed.
+- `catalog/furniture/beds/seb_bed/catalog.yaml` — Canonical furniture catalog record for Seb Bed.
+- `catalog/furniture/ceiling_lights/cedric_pendant_20cm/catalog.yaml` — Canonical furniture catalog record for Cedric Pendant 20cm.
+- `catalog/furniture/ceiling_lights/cedric_pendant_30cm/catalog.yaml` — Canonical furniture catalog record for Cedric Pendant 30cm.
+- `catalog/furniture/coffee_tables/arcadia_coffee_table/catalog.yaml` — Canonical furniture catalog record for Arcadia Coffee Table.
+- `catalog/furniture/coffee_tables/bristol_coffee_table_set_walnut/catalog.yaml` — Canonical furniture catalog record for Bristol Coffee Table Set, Walnut.
+- `catalog/furniture/coffee_tables/harper_marble_coffee_table_rectangular_120/catalog.yaml` — Canonical furniture catalog record for Harper Marble Coffee Table Rectangular.
+- `catalog/furniture/coffee_tables/harper_marble_coffee_table_round_915/catalog.yaml` — Canonical furniture catalog record for Harper Marble Coffee Table Round.
+- `catalog/furniture/coffee_tables/hugg_nesting_rectangular_coffee_table_performance_basalt_opened/catalog.yaml` — Canonical furniture catalog record for Hugg Nesting Rectangular Coffee Table.
+- `catalog/furniture/coffee_tables/hugg_nesting_rectangular_coffee_table_performance_dune_closed/catalog.yaml` — Canonical furniture catalog record for Hugg Nesting Rectangular Coffee Table.
+- `catalog/furniture/coffee_tables/hugg_nesting_rectangular_coffee_table_performance_dune_opened/catalog.yaml` — Canonical furniture catalog record for Hugg Nesting Rectangular Coffee Table.
+- `catalog/furniture/coffee_tables/hugg_nesting_rectangular_coffee_table/catalog.yaml` — Canonical furniture catalog record for Hugg Nesting Rectangular Coffee Table.
+- `catalog/furniture/coffee_tables/hugg_nesting_side_table_performance_basalt_opened/catalog.yaml` — Canonical furniture catalog record for Hugg Nesting Side Table.
+- `catalog/furniture/coffee_tables/hugg_nesting_side_table_performance_dune_closed/catalog.yaml` — Canonical furniture catalog record for Hugg Nesting Side Table.
+- `catalog/furniture/coffee_tables/hugg_nesting_side_table_performance_dune_opened/catalog.yaml` — Canonical furniture catalog record for Hugg Nesting Side Table.
+- `catalog/furniture/coffee_tables/hugg_nesting_side_table/catalog.yaml` — Canonical furniture catalog record for Hugg Nesting Side Table.
+- `catalog/furniture/coffee_tables/hugg_nesting_square_coffee_table_performance_basalt_opened/catalog.yaml` — Canonical furniture catalog record for Hugg Nesting Square Coffee Table.
+- `catalog/furniture/coffee_tables/hugg_nesting_square_coffee_table_performance_dune_closed/catalog.yaml` — Canonical furniture catalog record for Hugg Nesting Square Coffee Table.
+- `catalog/furniture/coffee_tables/hugg_nesting_square_coffee_table_performance_dune_opened/catalog.yaml` — Canonical furniture catalog record for Hugg Nesting Square Coffee Table.
+- `catalog/furniture/coffee_tables/hugg_nesting_square_coffee_table/catalog.yaml` — Canonical furniture catalog record for Hugg Nesting Square Coffee Table.
+- `catalog/furniture/coffee_tables/peri_coffee_table_120/catalog.yaml` — Canonical furniture catalog record for Peri Coffee Table.
+- `catalog/furniture/coffee_tables/seb_coffee_table_storage_120/catalog.yaml` — Canonical furniture catalog record for Seb Coffee Table with Storage.
+- `catalog/furniture/coffee_tables/seb_coffee_table_storage_90/catalog.yaml` — Canonical furniture catalog record for Seb Coffee Table with Storage.
+- `catalog/furniture/coffee_tables/seb_lift_top_coffee_table_large/catalog.yaml` — Canonical furniture catalog record for Seb Lift Top Coffee Table, Large.
+- `catalog/furniture/coffee_tables/seb_lift_top_coffee_table_small/catalog.yaml` — Canonical furniture catalog record for Seb Lift Top Coffee Table, Small.
+- `catalog/furniture/coffee_tables/vento_coffee_table_120/catalog.yaml` — Canonical furniture catalog record for Vento Coffee Table.
+- `catalog/furniture/coffee_tables/vincent_coffee_table_set_walnut/catalog.yaml` — Canonical furniture catalog record for Vincent Coffee Table Set, Walnut.
+- `catalog/furniture/dining_benches/sloane_bench_150_leather_cushion/catalog.yaml` — Canonical furniture catalog record for Sloane Dining Bench.
+- `catalog/furniture/dining_benches/sloane_bench_150_no_cushion/catalog.yaml` — Canonical furniture catalog record for Sloane Dining Bench.
+- `catalog/furniture/dining_benches/sloane_bench_180_leather_cushion/catalog.yaml` — Canonical furniture catalog record for Sloane Dining Bench.
+- `catalog/furniture/dining_benches/sloane_bench_180_no_cushion/catalog.yaml` — Canonical furniture catalog record for Sloane Dining Bench.
+- `catalog/furniture/dining_tables/brighton_oval_180/catalog.yaml` — Canonical furniture catalog record for Brighton Oval Dining Table.
+- `catalog/furniture/dining_tables/forma_oval_150/catalog.yaml` — Canonical furniture catalog record for Forma Oval Dining Table.
+- `catalog/furniture/dining_tables/forma_round_120/catalog.yaml` — Canonical furniture catalog record for Forma Round Dining Table.
+- `catalog/furniture/dining_tables/forma_round_90/catalog.yaml` — Canonical furniture catalog record for Forma Round Dining Table.
+- `catalog/furniture/dining_tables/kelsey_marble_160/catalog.yaml` — Canonical furniture catalog record for Kelsey Marble Dining Table.
+- `catalog/furniture/dining_tables/kelsey_marble_180/catalog.yaml` — Canonical furniture catalog record for Kelsey Marble Dining Table.
+- `catalog/furniture/dining_tables/seb_dining_table_150/catalog.yaml` — Canonical furniture catalog record for Seb Dining Table.
+- `catalog/furniture/dining_tables/seb_dining_table_180/catalog.yaml` — Canonical furniture catalog record for Seb Dining Table.
+- `catalog/furniture/dining_tables/sloane_dining_table_180/catalog.yaml` — Canonical furniture catalog record for Sloane Dining Table.
+- `catalog/furniture/dining_tables/sloane_dining_table_225/catalog.yaml` — Canonical furniture catalog record for Sloane Dining Table.
+- `catalog/furniture/dining_tables/sloane_travertine_180/catalog.yaml` — Canonical furniture catalog record for Sloane Travertine Dining Table.
+- `catalog/furniture/dining_tables/sloane_travertine/catalog.yaml` — Canonical furniture catalog record for Sloane Travertine Dining Table.
+- `catalog/furniture/sideboards/sloane_sideboard_150/catalog.yaml` — Canonical furniture catalog record for Sloane Sideboard 150cm.
+- `catalog/furniture/sideboards/sloane_sideboard_180/catalog.yaml` — Canonical furniture catalog record for Sloane Sideboard 180cm.
+- `catalog/furniture/sofas/arden_performance_swivel_armchair/catalog.yaml` — Canonical furniture catalog record for Arden Performance Swivel Armchair.
+- `catalog/furniture/sofas/auburn_performance_fabric_3_seater_sofa_with_ottoman/catalog.yaml` — Canonical furniture catalog record for Auburn Performance Fabric 3 Seater Sofa With Ottoman.
+- `catalog/furniture/sofas/auburn_performance_fabric_3_seater_sofa/catalog.yaml` — Canonical furniture catalog record for Auburn Performance Fabric 3 Seater Sofa.
+- `catalog/furniture/sofas/auburn_performance_fabric_armless_curve_3_seater_sofa_with_ottoman/catalog.yaml` — Canonical furniture catalog record for Auburn Performance Fabric Armless Curve 3 Seater Sofa With Ottoman.
+- `catalog/furniture/sofas/auburn_performance_fabric_armless_curve_3_seater_sofa/catalog.yaml` — Canonical furniture catalog record for Auburn Performance Fabric Armless Curve 3 Seater Sofa.
+- `catalog/furniture/sofas/auburn_performance_fabric_chaise_sectional_left_with_ottoman/catalog.yaml` — Canonical furniture catalog record for Auburn Performance Fabric Chaise Sectional Left With Ottoman.
+- `catalog/furniture/sofas/auburn_performance_fabric_chaise_sectional_left/catalog.yaml` — Canonical furniture catalog record for Auburn Performance Fabric Chaise Sectional Left.
+- `catalog/furniture/sofas/auburn_performance_fabric_chaise_sectional_right_with_ottoman/catalog.yaml` — Canonical furniture catalog record for Auburn Performance Fabric Chaise Sectional Right With Ottoman.
+- `catalog/furniture/sofas/auburn_performance_fabric_chaise_sectional_right/catalog.yaml` — Canonical furniture catalog record for Auburn Performance Fabric Chaise Sectional Right.
+- `catalog/furniture/sofas/auburn_performance_fabric_curve_3_seater_sofa_with_ottoman/catalog.yaml` — Canonical furniture catalog record for Auburn Performance Fabric Curve 3 Seater Sofa With Ottoman.
+- `catalog/furniture/sofas/auburn_performance_fabric_curve_3_seater_sofa/catalog.yaml` — Canonical furniture catalog record for Auburn Performance Fabric Curve 3 Seater Sofa.
+- `catalog/furniture/sofas/auburn_performance_fabric_curve_l_shape_sectional_sofa_with_ottoman/catalog.yaml` — Canonical furniture catalog record for Auburn Performance Fabric Curve L Shape Sectional Sofa With Ottoman.
+- `catalog/furniture/sofas/auburn_performance_fabric_curve_l_shape_sectional_sofa/catalog.yaml` — Canonical furniture catalog record for Auburn Performance Fabric Curve L Shape Sectional Sofa.
+- `catalog/furniture/sofas/auburn_performance_fabric_extended_3_seater_sofa_with_ottoman/catalog.yaml` — Canonical furniture catalog record for Auburn Performance Fabric Extended 3 Seater Sofa With Ottoman.
+- `catalog/furniture/sofas/auburn_performance_fabric_extended_3_seater_sofa/catalog.yaml` — Canonical furniture catalog record for Auburn Performance Fabric Extended 3 Seater Sofa.
+- `catalog/furniture/sofas/auburn_performance_fabric_l_shape_sectional_sofa_with_ottoman/catalog.yaml` — Canonical furniture catalog record for Auburn Performance Fabric L Shape Sectional Sofa With Ottoman.
+- `catalog/furniture/sofas/auburn_performance_fabric_l_shape_sectional_sofa/catalog.yaml` — Canonical furniture catalog record for Auburn Performance Fabric L Shape Sectional Sofa.
+- `catalog/furniture/sofas/auburn_performance_fabric_sectional_sofa_with_ottoman/catalog.yaml` — Canonical furniture catalog record for Auburn Performance Fabric Sectional Sofa With Ottoman.
+- `catalog/furniture/sofas/auburn_performance_fabric_sectional_sofa/catalog.yaml` — Canonical furniture catalog record for Auburn Performance Fabric Sectional Sofa.
+- `catalog/furniture/sofas/avery_performance_armchair_with_ottoman/catalog.yaml` — Canonical furniture catalog record for Avery Performance Boucle Armchair with Ottoman.
+- `catalog/furniture/sofas/avery_performance_armchair/catalog.yaml` — Canonical furniture catalog record for Avery Performance Boucle Armchair.
+- `catalog/furniture/sofas/avery_performance_swivel_armchair_with_ottoman/catalog.yaml` — Canonical furniture catalog record for Avery Performance Boucle Swivel Armchair with Ottoman.
+- `catalog/furniture/sofas/avery_performance_swivel_armchair/catalog.yaml` — Canonical furniture catalog record for Avery Performance Boucle Swivel Armchair.
+- `catalog/furniture/sofas/cammy_armchair/catalog.yaml` — Canonical furniture catalog record for Cammy Armchair.
+- `catalog/furniture/sofas/dawson_3s/catalog.yaml` — Canonical furniture catalog record for Dawson 3 Seater Sofa.
+- `catalog/furniture/sofas/dawson_chaise_sectional_left/catalog.yaml` — Canonical furniture catalog record for Dawson Chaise Sectional Sofa (Left Facing).
+- `catalog/furniture/sofas/dawson_chaise_sectional/catalog.yaml` — Canonical furniture catalog record for Dawson Chaise Sectional Sofa (Right Facing).
+- `catalog/furniture/sofas/dawson_extended_sofa/catalog.yaml` — Canonical furniture catalog record for Dawson Extended Sofa.
+- `catalog/furniture/sofas/dawson_ottoman/catalog.yaml` — Canonical furniture catalog record for Dawson Ottoman.
+- `catalog/furniture/sofas/dawson_pit_sectional/catalog.yaml` — Canonical furniture catalog record for Dawson Pit-Sectional Sofa.
+- `catalog/furniture/sofas/dawson_storage_ottoman/catalog.yaml` — Canonical furniture catalog record for Dawson Storage Ottoman.
+- `catalog/furniture/sofas/dawson_swivel_armchair/catalog.yaml` — Canonical furniture catalog record for Dawson Swivel Armchair.
+- `catalog/furniture/sofas/dawson_wide_chaise_sectional_left/catalog.yaml` — Canonical furniture catalog record for Dawson Wide Chaise Sectional Sofa (Left Facing).
+- `catalog/furniture/sofas/dawson_wide_chaise_sectional/catalog.yaml` — Canonical furniture catalog record for Dawson Wide Chaise Sectional Sofa (Right Facing).
+- `catalog/furniture/sofas/hamilton_2_seater_with_storage_ottoman/catalog.yaml` — Canonical furniture catalog record for Hamilton 2 Seater Sofa with Storage Ottoman.
+- `catalog/furniture/sofas/hamilton_2_seater/catalog.yaml` — Canonical furniture catalog record for Hamilton 2 Seater Sofa.
+- `catalog/furniture/sofas/hamilton_3_seater_sofa_bed/catalog.yaml` — Canonical furniture catalog record for Hamilton 3 Seater Sofa Bed.
+- `catalog/furniture/sofas/hamilton_3_seater_with_storage_ottoman/catalog.yaml` — Canonical furniture catalog record for Hamilton 3 Seater Sofa with Storage Ottoman.
+- `catalog/furniture/sofas/hamilton_3_seater/catalog.yaml` — Canonical furniture catalog record for Hamilton 3 Seater Sofa.
+- `catalog/furniture/sofas/hamilton_chaise_sectional_left/catalog.yaml` — Canonical furniture catalog record for Hamilton Chaise Sectional Sofa.
+- `catalog/furniture/sofas/hamilton_chaise_sectional_right/catalog.yaml` — Canonical furniture catalog record for Hamilton Chaise Sectional Sofa.
+- `catalog/furniture/sofas/hamilton_chaise_sectional_sofa_bed_left/catalog.yaml` — Canonical furniture catalog record for Hamilton Chaise Sectional Sofa Bed.
+- `catalog/furniture/sofas/hamilton_chaise_sectional_sofa_bed_right/catalog.yaml` — Canonical furniture catalog record for Hamilton Chaise Sectional Sofa Bed.
+- `catalog/furniture/sofas/hamilton_chaise_sectional_with_storage_ottoman_left/catalog.yaml` — Canonical furniture catalog record for Hamilton Chaise Sectional Sofa with Storage Ottoman.
+- `catalog/furniture/sofas/hamilton_chaise_sectional_with_storage_ottoman_right/catalog.yaml` — Canonical furniture catalog record for Hamilton Chaise Sectional Sofa with Storage Ottoman.
+- `catalog/furniture/sofas/hamilton_round_chaise_sectional_left/catalog.yaml` — Canonical furniture catalog record for Hamilton Round Chaise Sectional Sofa.
+- `catalog/furniture/sofas/hamilton_round_chaise_sectional_right/catalog.yaml` — Canonical furniture catalog record for Hamilton Round Chaise Sectional Sofa.
+- `catalog/furniture/sofas/hamilton_round_swivel_1_5_seater_armchair/catalog.yaml` — Canonical furniture catalog record for Hamilton Round Swivel 1.5 Seater Armchair.
+- `catalog/furniture/sofas/hamilton_round_swivel_armchair/catalog.yaml` — Canonical furniture catalog record for Hamilton Round Swivel Armchair.
+- `catalog/furniture/sofas/jaron_3s_wide_arm/catalog.yaml` — Canonical furniture catalog record for Jaron Recliner Sofa.
+- `catalog/furniture/sofas/jaron_3s/catalog.yaml` — Canonical furniture catalog record for Jaron Recliner Sofa.
+- `catalog/furniture/sofas/jaron_chaise_sectional_wide_arm/catalog.yaml` — Canonical furniture catalog record for Jaron Recliner Chaise Sectional Sofa.
+- `catalog/furniture/sofas/jaron_chaise_sectional/catalog.yaml` — Canonical furniture catalog record for Jaron Recliner Chaise Sectional Sofa.
+- `catalog/furniture/sofas/jaron_extended_3s_wide_arm/catalog.yaml` — Canonical furniture catalog record for Jaron Recliner Sofa.
+- `catalog/furniture/sofas/jaron_extended_3s/catalog.yaml` — Canonical furniture catalog record for Jaron Recliner Sofa.
+- `catalog/furniture/sofas/jaron_l_shaped_sectional_wide_arm/catalog.yaml` — Canonical furniture catalog record for Jaron Leather Recliner L-Shaped Sectional Sofa.
+- `catalog/furniture/sofas/jaron_l_shaped_sectional/catalog.yaml` — Canonical furniture catalog record for Jaron Leather Recliner L-Shaped Sectional Sofa.
+- `catalog/furniture/sofas/jaron_recliner_armchair_wide_arm/catalog.yaml` — Canonical furniture catalog record for Jaron Recliner Armchair.
+- `catalog/furniture/sofas/jaron_recliner_armchair/catalog.yaml` — Canonical furniture catalog record for Jaron Recliner Armchair.
+- `catalog/furniture/sofas/lena_armchair/catalog.yaml` — Canonical furniture catalog record for Lena Armchair.
+- `catalog/furniture/sofas/madison_2s/catalog.yaml` — Canonical furniture catalog record for Madison Sofa.
+- `catalog/furniture/sofas/madison_3s/catalog.yaml` — Canonical furniture catalog record for Madison Sofa.
+- `catalog/furniture/sofas/madison_armchair/catalog.yaml` — Canonical furniture catalog record for Madison Armchair.
+- `catalog/furniture/sofas/madison_ottoman/catalog.yaml` — Canonical furniture catalog record for Madison Ottoman.
+- `catalog/furniture/sofas/mori_performance_fabric_armchair/catalog.yaml` — Canonical furniture catalog record for Mori Performance Fabric Armchair.
+- `catalog/furniture/sofas/ollie_storage_ottoman/catalog.yaml` — Canonical furniture catalog record for Ollie Storage Ottoman.
+- `catalog/furniture/sofas/owen_3_seater/catalog.yaml` — Canonical furniture catalog record for Owen 3 Seater Sofa.
+- `catalog/furniture/sofas/owen_armchair/catalog.yaml` — Canonical furniture catalog record for Owen Armchair.
+- `catalog/furniture/sofas/owen_chaise_sectional_left/catalog.yaml` — Canonical furniture catalog record for Owen Chaise Sectional Sofa.
+- `catalog/furniture/sofas/owen_chaise_sectional_right/catalog.yaml` — Canonical furniture catalog record for Owen Chaise Sectional Sofa.
+- `catalog/furniture/sofas/sacha_performance_boucle_armchair/catalog.yaml` — Canonical furniture catalog record for Sacha Performance Boucle Armchair.
+- `catalog/furniture/sofas/solange_performance_boucle_chair/catalog.yaml` — Canonical furniture catalog record for Solange Performance Boucle Chair.
+- `catalog/furniture/sofas/winora_armchair/catalog.yaml` — Canonical furniture catalog record for Winora Armchair.
+- `catalog/furniture/tv_consoles/casa_tv_console_150/catalog.yaml` — Canonical furniture catalog record for Casa TV Console.
+- `catalog/furniture/tv_consoles/casa_tv_console_200/catalog.yaml` — Canonical furniture catalog record for Casa TV Console.
+- `catalog/furniture/tv_consoles/harper_marble_tv_console/catalog.yaml` — Canonical furniture catalog record for Harper Marble TV Console.
+- `catalog/furniture/tv_consoles/harper_tv_console_150/catalog.yaml` — Canonical furniture catalog record for Harper TV Console.
+- `catalog/furniture/tv_consoles/harper_tv_console_200/catalog.yaml` — Canonical furniture catalog record for Harper TV Console.
+- `catalog/furniture/tv_consoles/panes_glass_tv_console_clear/catalog.yaml` — Canonical furniture catalog record for Panes Clear Glass TV Console.
+- `catalog/furniture/tv_consoles/panes_glass_tv_console_fluted/catalog.yaml` — Canonical furniture catalog record for Panes Fluted Glass TV Console.
+- `catalog/furniture/tv_consoles/sawyer_sideboard_180cm/catalog.yaml` — Canonical furniture catalog record for Sawyer Sideboard.
+- `catalog/furniture/tv_consoles/sawyer_tv_console_200/catalog.yaml` — Canonical furniture catalog record for Sawyer TV Console.
+- `catalog/furniture/tv_consoles/seb_tv_console_150/catalog.yaml` — Canonical furniture catalog record for Seb TV Console.
+- `catalog/furniture/tv_consoles/seb_tv_console_200/catalog.yaml` — Canonical furniture catalog record for Seb TV Console.
+- `catalog/furniture/tv_consoles/sloane_tv_console_150/catalog.yaml` — Canonical furniture catalog record for Sloane TV Console.
+- `catalog/furniture/tv_consoles/sloane_tv_console_200/catalog.yaml` — Canonical furniture catalog record for Sloane TV Console.
+- `catalog/surface-materials/_templates/controlled_vocabularies.yaml` — Authoring template or controlled vocabulary for templates.
+- `catalog/surface-materials/_templates/master_surface_material.yaml` — Authoring template or controlled vocabulary for templates.
+- `catalog/surface-materials/flooring/gardenia/anima/gardenia-flooring-anima-beige-0006044-120x120-196214-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Anima Beige 120x120.
+- `catalog/surface-materials/flooring/gardenia/anima/gardenia-flooring-anima-beige-0006048-60x120-196217-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Anima Beige 60x120.
+- `catalog/surface-materials/flooring/gardenia/anima/gardenia-flooring-anima-beige-0006056-60x60-196221-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Anima Beige 60x60.
+- `catalog/surface-materials/flooring/gardenia/anima/gardenia-flooring-anima-beige-0007809-80x80-196231-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Anima Beige 80x80.
+- `catalog/surface-materials/flooring/gardenia/anima/gardenia-flooring-anima-fango-0006049-60x120-196218-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Anima Fango 60x120.
+- `catalog/surface-materials/flooring/gardenia/anima/gardenia-flooring-anima-fango-0006057-60x60-196222-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Anima Fango 60x60.
+- `catalog/surface-materials/flooring/gardenia/anima/gardenia-flooring-anima-fumo-0006047-120x120-196216-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Anima Fumo 120x120.
+- `catalog/surface-materials/flooring/gardenia/anima/gardenia-flooring-anima-fumo-0006051-60x120-196220-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Anima Fumo 60x120.
+- `catalog/surface-materials/flooring/gardenia/anima/gardenia-flooring-anima-fumo-0006059-60x60-196224-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Anima Fumo 60x60.
+- `catalog/surface-materials/flooring/gardenia/anima/gardenia-flooring-anima-fumo-0007812-80x80-196233-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Anima Fumo 80x80.
+- `catalog/surface-materials/flooring/gardenia/anima/gardenia-flooring-anima-ghiaia-beige-0007919-60x120-196234-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Anima Ghiaia Beige 60x120.
+- `catalog/surface-materials/flooring/gardenia/anima/gardenia-flooring-anima-ghiaia-beige-0007921-60x60-196236-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Anima Ghiaia Beige 60x60.
+- `catalog/surface-materials/flooring/gardenia/anima/gardenia-flooring-anima-ghiaia-grigio-0007920-60x120-196235-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Anima Ghiaia Grigio 60x120.
+- `catalog/surface-materials/flooring/gardenia/anima/gardenia-flooring-anima-ghiaia-grigio-0007922-60x60-196237-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Anima Ghiaia Grigio 60x60.
+- `catalog/surface-materials/flooring/gardenia/anima/gardenia-flooring-anima-grigio-0006046-120x120-196215-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Anima Grigio 120x120.
+- `catalog/surface-materials/flooring/gardenia/anima/gardenia-flooring-anima-grigio-0006050-60x120-196219-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Anima Grigio 60x120.
+- `catalog/surface-materials/flooring/gardenia/anima/gardenia-flooring-anima-grigio-0006058-60x60-196223-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Anima Grigio 60x60.
+- `catalog/surface-materials/flooring/gardenia/anima/gardenia-flooring-anima-grigio-0007811-80x80-196232-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Anima Grigio 80x80.
+- `catalog/surface-materials/flooring/gardenia/anima/gardenia-flooring-anima-grigio-0008672-120x280-nat-196238-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Anima Grigio 120x280 Nat.
+- `catalog/surface-materials/flooring/gardenia/bon-ton/gardenia-flooring-bon-ton-biancone-pf60020776-120x120-196249-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Bon Ton Biancone 120x120.
+- `catalog/surface-materials/flooring/gardenia/bon-ton/gardenia-flooring-bon-ton-biancone-pf60020780-60x120-196253-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Bon Ton Biancone 60x120.
+- `catalog/surface-materials/flooring/gardenia/bon-ton/gardenia-flooring-bon-ton-biancone-pf60020800-120x120-nat-196260-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Bon Ton Biancone 120x120 Nat.
+- `catalog/surface-materials/flooring/gardenia/bon-ton/gardenia-flooring-bon-ton-biancone-pf60020804-60x120-nat-196264-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Bon Ton Biancone 60x120 Nat.
+- `catalog/surface-materials/flooring/gardenia/bon-ton/gardenia-flooring-bon-ton-biancone-pf60020848-5x120-197635-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Bon Ton Biancone 5x120.
+- `catalog/surface-materials/flooring/gardenia/bon-ton/gardenia-flooring-bon-ton-botticino-pf60020774-120x120-196247-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Bon Ton Botticino 120x120.
+- `catalog/surface-materials/flooring/gardenia/bon-ton/gardenia-flooring-bon-ton-botticino-pf60020778-60x120-196251-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Bon Ton Botticino 60x120.
+- `catalog/surface-materials/flooring/gardenia/bon-ton/gardenia-flooring-bon-ton-botticino-pf60020798-120x120-nat-196258-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Bon Ton Botticino 120x120 Nat.
+- `catalog/surface-materials/flooring/gardenia/bon-ton/gardenia-flooring-bon-ton-botticino-pf60020802-60x120-nat-196262-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Bon Ton Botticino 60x120 Nat.
+- `catalog/surface-materials/flooring/gardenia/bon-ton/gardenia-flooring-bon-ton-botticino-pf60020846-5x120-197633-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Bon Ton Botticino 5x120.
+- `catalog/surface-materials/flooring/gardenia/bon-ton/gardenia-flooring-bon-ton-carrara-pf60020775-120x120-196248-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Bon Ton Carrara 120x120.
+- `catalog/surface-materials/flooring/gardenia/bon-ton/gardenia-flooring-bon-ton-carrara-pf60020779-60x120-196252-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Bon Ton Carrara 60x120.
+- `catalog/surface-materials/flooring/gardenia/bon-ton/gardenia-flooring-bon-ton-carrara-pf60020799-120x120-nat-196259-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Bon Ton Carrara 120x120 Nat.
+- `catalog/surface-materials/flooring/gardenia/bon-ton/gardenia-flooring-bon-ton-carrara-pf60020803-60x120-nat-196263-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Bon Ton Carrara 60x120 Nat.
+- `catalog/surface-materials/flooring/gardenia/bon-ton/gardenia-flooring-bon-ton-carrara-pf60020847-5x120-197634-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Bon Ton Carrara 5x120.
+- `catalog/surface-materials/flooring/gardenia/bon-ton/gardenia-flooring-bon-ton-network-pf60020782-60x120-196255-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Bon Ton Network 60x120.
+- `catalog/surface-materials/flooring/gardenia/bon-ton/gardenia-flooring-bon-ton-octagon-pf60020783-60x120-196256-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Bon Ton Octagon 60x120.
+- `catalog/surface-materials/flooring/gardenia/bon-ton/gardenia-flooring-bon-ton-perlino-pf60020777-120x120-196250-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Bon Ton Perlino 120x120.
+- `catalog/surface-materials/flooring/gardenia/bon-ton/gardenia-flooring-bon-ton-perlino-pf60020781-60x120-196254-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Bon Ton Perlino 60x120.
+- `catalog/surface-materials/flooring/gardenia/bon-ton/gardenia-flooring-bon-ton-perlino-pf60020801-120x120-nat-196261-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Bon Ton Perlino 120x120 Nat.
+- `catalog/surface-materials/flooring/gardenia/bon-ton/gardenia-flooring-bon-ton-perlino-pf60020805-60x120-nat-196265-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Bon Ton Perlino 60x120 Nat.
+- `catalog/surface-materials/flooring/gardenia/bon-ton/gardenia-flooring-bon-ton-perlino-pf60020849-5x120-197636-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Bon Ton Perlino 5x120.
+- `catalog/surface-materials/flooring/gardenia/bon-ton/gardenia-flooring-bon-ton-tricot-pf60020784-60x120-196257-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Bon Ton Tricot 60x120.
+- `catalog/surface-materials/flooring/gardenia/dorica/gardenia-flooring-dorica-avorio-0009999-120x280-nat-196266-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Dorica Avorio 120x280 Nat.
+- `catalog/surface-materials/flooring/gardenia/dorica/gardenia-flooring-dorica-avorio-0010005-120x120-nat-196269-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Dorica Avorio 120x120 Nat.
+- `catalog/surface-materials/flooring/gardenia/dorica/gardenia-flooring-dorica-avorio-0010008-60x120-nat-196272-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Dorica Avorio 60x120 Nat.
+- `catalog/surface-materials/flooring/gardenia/dorica/gardenia-flooring-dorica-avorio-0010147-60x120-196275-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Dorica Avorio 60x120.
+- `catalog/surface-materials/flooring/gardenia/dorica/gardenia-flooring-dorica-avorio-0010518-20x120-nat-196277-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Dorica Avorio 20x120 Nat.
+- `catalog/surface-materials/flooring/gardenia/dorica/gardenia-flooring-dorica-crema-0010000-120x280-nat-196267-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Dorica Crema 120x280 Nat.
+- `catalog/surface-materials/flooring/gardenia/dorica/gardenia-flooring-dorica-crema-0010006-120x120-nat-196270-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Dorica Crema 120x120 Nat.
+- `catalog/surface-materials/flooring/gardenia/dorica/gardenia-flooring-dorica-crema-0010009-60x120-nat-196273-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Dorica Crema 60x120 Nat.
+- `catalog/surface-materials/flooring/gardenia/dorica/gardenia-flooring-dorica-crema-0010148-60x120-196276-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Dorica Crema 60x120.
+- `catalog/surface-materials/flooring/gardenia/dorica/gardenia-flooring-dorica-crema-0010519-20x120-nat-196278-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Dorica Crema 20x120 Nat.
+- `catalog/surface-materials/flooring/gardenia/dorica/gardenia-flooring-dorica-degrade-0010087-60x120-196274-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Dorica Degrade.
+- `catalog/surface-materials/flooring/gardenia/dorica/gardenia-flooring-dorica-greige-0010004-120x120-nat-196268-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Dorica Greige 120x120 Nat.
+- `catalog/surface-materials/flooring/gardenia/dorica/gardenia-flooring-dorica-greige-0010007-60x120-nat-196271-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Dorica Greige 60x120 Nat.
+- `catalog/surface-materials/flooring/gardenia/falaise/gardenia-flooring-falaise-beige-0017197-120x120-nat-196286-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Falaise Beige 120x120 Nat.
+- `catalog/surface-materials/flooring/gardenia/falaise/gardenia-flooring-falaise-beige-0017200-60x120-nat-196289-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Falaise Beige 60x120 Nat.
+- `catalog/surface-materials/flooring/gardenia/falaise/gardenia-flooring-falaise-beige-0017203-80x80-nat-196292-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Falaise Beige 80x80 Nat.
+- `catalog/surface-materials/flooring/gardenia/falaise/gardenia-flooring-falaise-beige-0017526-60x60-nat-196296-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Falaise Beige 60x60 Nat.
+- `catalog/surface-materials/flooring/gardenia/falaise/gardenia-flooring-falaise-beige-0017583-60x120-196298-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Falaise Beige 60x120.
+- `catalog/surface-materials/flooring/gardenia/falaise/gardenia-flooring-falaise-beige-0017586-60x60-196299-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Falaise Beige 60x60.
+- `catalog/surface-materials/flooring/gardenia/falaise/gardenia-flooring-falaise-grey-0017198-120x120-nat-196287-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Falaise Grey 120x120 Nat.
+- `catalog/surface-materials/flooring/gardenia/falaise/gardenia-flooring-falaise-grey-0017201-60x120-nat-196290-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Falaise Grey 60x120 Nat.
+- `catalog/surface-materials/flooring/gardenia/falaise/gardenia-flooring-falaise-grey-0017204-80x80-nat-196293-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Falaise Grey 80x80 Nat.
+- `catalog/surface-materials/flooring/gardenia/falaise/gardenia-flooring-falaise-grey-0017527-60x60-nat-196297-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Falaise Grey 60x60 Nat.
+- `catalog/surface-materials/flooring/gardenia/falaise/gardenia-flooring-falaise-mint-0017754-120x120-nat-196303-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Falaise Mint 120x120 Nat.
+- `catalog/surface-materials/flooring/gardenia/falaise/gardenia-flooring-falaise-mint-0017755-60x120-nat-196304-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Falaise Mint 60x120 Nat.
+- `catalog/surface-materials/flooring/gardenia/falaise/gardenia-flooring-falaise-mint-0017756-60x60-nat-196305-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Falaise Mint 60x60 Nat.
+- `catalog/surface-materials/flooring/gardenia/falaise/gardenia-flooring-falaise-mint-0017758-80x80-nat-196306-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Falaise Mint 80x80 Nat.
+- `catalog/surface-materials/flooring/gardenia/falaise/gardenia-flooring-falaise-mint-0017767-60x120-196307-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Falaise Mint 60x120.
+- `catalog/surface-materials/flooring/gardenia/falaise/gardenia-flooring-falaise-mint-0017768-60x60-196308-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Falaise Mint 60x60.
+- `catalog/surface-materials/flooring/gardenia/falaise/gardenia-flooring-falaise-white-0017196-120x120-nat-196285-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Falaise White 120x120 Nat.
+- `catalog/surface-materials/flooring/gardenia/falaise/gardenia-flooring-falaise-white-0017199-60x120-nat-196288-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Falaise White 60x120 Nat.
+- `catalog/surface-materials/flooring/gardenia/falaise/gardenia-flooring-falaise-white-0017202-80x80-nat-196291-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Falaise White 80x80 Nat.
+- `catalog/surface-materials/flooring/gardenia/falaise/gardenia-flooring-falaise-white-0017338-120x280-nat-196294-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Falaise White 120x280 Nat.
+- `catalog/surface-materials/flooring/gardenia/falaise/gardenia-flooring-falaise-white-0017525-60x60-nat-196295-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Falaise White 60x60 Nat.
+- `catalog/surface-materials/flooring/gardenia/falaise/gardenia-flooring-falaise-white-0017716-60x120-196301-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Falaise White 60x120.
+- `catalog/surface-materials/flooring/gardenia/falaise/gardenia-flooring-falaise-white-0017717-120x120-196302-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Falaise White 120x120.
+- `catalog/surface-materials/flooring/gardenia/gioia/gardenia-flooring-gioia-majorelle-00202274-60x120-139925-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Gioia Majorelle 60x120.
+- `catalog/surface-materials/flooring/gardenia/gioia/gardenia-flooring-gioia-ombrelle-00202275-60x120-139926-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Gioia Ombrelle 60x120.
+- `catalog/surface-materials/flooring/gardenia/gioia/gardenia-flooring-gioia-palma-00202277-60x120-139928-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Gioia Palma 60x120.
+- `catalog/surface-materials/flooring/gardenia/gioia/gardenia-flooring-gioia-papilio-00202278-60x120-139929-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Gioia Papilio 60x120.
+- `catalog/surface-materials/flooring/gardenia/gioia/gardenia-flooring-gioia-rossignol-00202276-60x120-139927-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Gioia Rossignol 60x120.
+- `catalog/surface-materials/flooring/gardenia/i-pigmenti/gardenia-flooring-i-pigmenti-ash-0016429-60x120-nat-90282-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia I Pigmenti Ash 60x120 Nat.
+- `catalog/surface-materials/flooring/gardenia/i-pigmenti/gardenia-flooring-i-pigmenti-ash-0016439-20x120-nat-90292-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia I Pigmenti Ash 20x120 Nat.
+- `catalog/surface-materials/flooring/gardenia/i-pigmenti/gardenia-flooring-i-pigmenti-ash-0016449-60x60-nat-90302-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia I Pigmenti Ash 60x60 Nat.
+- `catalog/surface-materials/flooring/gardenia/i-pigmenti/gardenia-flooring-i-pigmenti-ash-0016459-10x60-nat-90312-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia I Pigmenti Ash 10x60 Nat.
+- `catalog/surface-materials/flooring/gardenia/i-pigmenti/gardenia-flooring-i-pigmenti-ash-0016605-30x30-nat-90322-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia I Pigmenti Ash 30x30 Nat.
+- `catalog/surface-materials/flooring/gardenia/i-pigmenti/gardenia-flooring-i-pigmenti-ash-0016961-120x120-nat-90331-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia I Pigmenti Ash 120x120 Nat.
+- `catalog/surface-materials/flooring/gardenia/i-pigmenti/gardenia-flooring-i-pigmenti-ash-0016997-120x280-nat-90341-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia I Pigmenti Ash 120x280 Nat.
+- `catalog/surface-materials/flooring/gardenia/i-pigmenti/gardenia-flooring-i-pigmenti-bark-0016432-60x120-nat-90285-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia I Pigmenti Bark 60x120 Nat.
+- `catalog/surface-materials/flooring/gardenia/i-pigmenti/gardenia-flooring-i-pigmenti-bark-0016442-20x120-nat-90295-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia I Pigmenti Bark 20x120 Nat.
+- `catalog/surface-materials/flooring/gardenia/i-pigmenti/gardenia-flooring-i-pigmenti-bark-0016452-60x60-nat-90305-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia I Pigmenti Bark 60x60 Nat.
+- `catalog/surface-materials/flooring/gardenia/i-pigmenti/gardenia-flooring-i-pigmenti-bark-0016462-10x60-nat-90315-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia I Pigmenti Bark 10x60 Nat.
+- `catalog/surface-materials/flooring/gardenia/i-pigmenti/gardenia-flooring-i-pigmenti-bark-0016608-30x30-nat-90325-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia I Pigmenti Bark 30x30 Nat.
+- `catalog/surface-materials/flooring/gardenia/i-pigmenti/gardenia-flooring-i-pigmenti-bark-0016970-120x120-nat-90336-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia I Pigmenti Bark 120x120 Nat.
+- `catalog/surface-materials/flooring/gardenia/i-pigmenti/gardenia-flooring-i-pigmenti-bark-0016998-120x280-nat-90342-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia I Pigmenti Bark 120x280 Nat.
+- `catalog/surface-materials/flooring/gardenia/i-pigmenti/gardenia-flooring-i-pigmenti-clay-0016431-60x120-nat-90284-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia I Pigmenti Clay 60x120 Nat.
+- `catalog/surface-materials/flooring/gardenia/i-pigmenti/gardenia-flooring-i-pigmenti-clay-0016441-20x120-nat-90294-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia I Pigmenti Clay 20x120 Nat.
+- `catalog/surface-materials/flooring/gardenia/i-pigmenti/gardenia-flooring-i-pigmenti-clay-0016451-60x60-nat-90304-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia I Pigmenti Clay 60x60 Nat.
+- `catalog/surface-materials/flooring/gardenia/i-pigmenti/gardenia-flooring-i-pigmenti-clay-0016461-10x60-nat-90314-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia I Pigmenti Clay 10x60 Nat.
+- `catalog/surface-materials/flooring/gardenia/i-pigmenti/gardenia-flooring-i-pigmenti-clay-0016607-30x30-nat-90324-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia I Pigmenti Clay 30x30 Nat.
+- `catalog/surface-materials/flooring/gardenia/i-pigmenti/gardenia-flooring-i-pigmenti-clay-0016964-120x120-nat-90334-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia I Pigmenti Clay 120x120 Nat.
+- `catalog/surface-materials/flooring/gardenia/i-pigmenti/gardenia-flooring-i-pigmenti-clay-0016999-120x280-nat-90343-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia I Pigmenti Clay 120x280 Nat.
+- `catalog/surface-materials/flooring/gardenia/i-pigmenti/gardenia-flooring-i-pigmenti-concrete-0016437-60x120-nat-90290-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia I Pigmenti Concrete 60x120 Nat.
+- `catalog/surface-materials/flooring/gardenia/i-pigmenti/gardenia-flooring-i-pigmenti-concrete-0016447-20x120-nat-90300-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia I Pigmenti Concrete 20x120 Nat.
+- `catalog/surface-materials/flooring/gardenia/i-pigmenti/gardenia-flooring-i-pigmenti-concrete-0016457-60x60-nat-90310-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia I Pigmenti Concrete 60x60 Nat.
+- `catalog/surface-materials/flooring/gardenia/i-pigmenti/gardenia-flooring-i-pigmenti-concrete-0016467-10x60-nat-90320-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia I Pigmenti Concrete 10x60 Nat.
+- `catalog/surface-materials/flooring/gardenia/i-pigmenti/gardenia-flooring-i-pigmenti-concrete-0016613-30x30-nat-90330-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia I Pigmenti Concrete 30x30 Nat.
+- `catalog/surface-materials/flooring/gardenia/i-pigmenti/gardenia-flooring-i-pigmenti-concrete-0016974-120x120-nat-90339-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia I Pigmenti Concrete 120x120 Nat.
+- `catalog/surface-materials/flooring/gardenia/i-pigmenti/gardenia-flooring-i-pigmenti-concrete-0017000-120x280-nat-90344-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia I Pigmenti Concrete 120x280 Nat.
+- `catalog/surface-materials/flooring/gardenia/i-pigmenti/gardenia-flooring-i-pigmenti-cotto-0016434-60x120-nat-90287-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia I Pigmenti Cotto 60x120 Nat.
+- `catalog/surface-materials/flooring/gardenia/i-pigmenti/gardenia-flooring-i-pigmenti-cotto-0016444-20x120-nat-90297-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia I Pigmenti Cotto 20x120 Nat.
+- `catalog/surface-materials/flooring/gardenia/i-pigmenti/gardenia-flooring-i-pigmenti-cotto-0016454-60x60-nat-90307-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia I Pigmenti Cotto 60x60 Nat.
+- `catalog/surface-materials/flooring/gardenia/i-pigmenti/gardenia-flooring-i-pigmenti-cotto-0016464-10x60-nat-90317-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia I Pigmenti Cotto 10x60 Nat.
+- `catalog/surface-materials/flooring/gardenia/i-pigmenti/gardenia-flooring-i-pigmenti-cotto-0016610-30x30-nat-90327-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia I Pigmenti Cotto 30x30 Nat.
+- `catalog/surface-materials/flooring/gardenia/i-pigmenti/gardenia-flooring-i-pigmenti-cotto-0016969-120x120-nat-90335-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia I Pigmenti Cotto 120x120 Nat.
+- `catalog/surface-materials/flooring/gardenia/i-pigmenti/gardenia-flooring-i-pigmenti-cotto-0017001-120x280-nat-90345-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia I Pigmenti Cotto 120x280 Nat.
+- `catalog/surface-materials/flooring/gardenia/i-pigmenti/gardenia-flooring-i-pigmenti-cream-0016433-60x120-nat-90286-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia I Pigmenti Cream 60x120 Nat.
+- `catalog/surface-materials/flooring/gardenia/i-pigmenti/gardenia-flooring-i-pigmenti-cream-0016443-20x120-nat-90296-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia I Pigmenti Cream 20x120 Nat.
+- `catalog/surface-materials/flooring/gardenia/i-pigmenti/gardenia-flooring-i-pigmenti-cream-0016453-60x60-nat-90306-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia I Pigmenti Cream 60x60 Nat.
+- `catalog/surface-materials/flooring/gardenia/i-pigmenti/gardenia-flooring-i-pigmenti-cream-0016463-10x60-nat-90316-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia I Pigmenti Cream 10x60 Nat.
+- `catalog/surface-materials/flooring/gardenia/i-pigmenti/gardenia-flooring-i-pigmenti-cream-0016609-30x30-nat-90326-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia I Pigmenti Cream 30x30 Nat.
+- `catalog/surface-materials/flooring/gardenia/i-pigmenti/gardenia-flooring-i-pigmenti-cream-0016975-120x120-nat-90340-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia I Pigmenti Cream 120x120 Nat.
+- `catalog/surface-materials/flooring/gardenia/i-pigmenti/gardenia-flooring-i-pigmenti-cream-0017002-120x280-nat-90346-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia I Pigmenti Cream 120x280 Nat.
+- `catalog/surface-materials/flooring/gardenia/i-pigmenti/gardenia-flooring-i-pigmenti-crocini-pf60014514-60x120-nat-90359-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia I Pigmenti Crocini 60x120 Nat.
+- `catalog/surface-materials/flooring/gardenia/i-pigmenti/gardenia-flooring-i-pigmenti-milk-0016428-60x120-nat-90281-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia I Pigmenti Milk 60x120 Nat.
+- `catalog/surface-materials/flooring/gardenia/i-pigmenti/gardenia-flooring-i-pigmenti-milk-0016438-20x120-nat-90291-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia I Pigmenti Milk 20x120 Nat.
+- `catalog/surface-materials/flooring/gardenia/i-pigmenti/gardenia-flooring-i-pigmenti-milk-0016448-60x60-nat-90301-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia I Pigmenti Milk 60x60 Nat.
+- `catalog/surface-materials/flooring/gardenia/i-pigmenti/gardenia-flooring-i-pigmenti-milk-0016458-10x60-nat-90311-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia I Pigmenti Milk 10x60 Nat.
+- `catalog/surface-materials/flooring/gardenia/i-pigmenti/gardenia-flooring-i-pigmenti-milk-0016604-30x30-nat-90321-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia I Pigmenti Milk 30x30 Nat.
+- `catalog/surface-materials/flooring/gardenia/i-pigmenti/gardenia-flooring-i-pigmenti-milk-0016962-120x120-nat-90332-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia I Pigmenti Milk 120x120 Nat.
+- `catalog/surface-materials/flooring/gardenia/i-pigmenti/gardenia-flooring-i-pigmenti-milk-0017003-120x280-nat-90347-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia I Pigmenti Milk 120x280 Nat.
+- `catalog/surface-materials/flooring/gardenia/i-pigmenti/gardenia-flooring-i-pigmenti-mos-confet-ash-pf60017598-29-3x33-3-nat-90361-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia I Pigmenti Mos Confet Ash 29,3x33,3 Nat.
+- `catalog/surface-materials/flooring/gardenia/i-pigmenti/gardenia-flooring-i-pigmenti-mos-confet-bark-pf60017601-29-3x33-3-nat-90364-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia I Pigmenti Mos Confet Bark 29,3x33,3 Nat.
+- `catalog/surface-materials/flooring/gardenia/i-pigmenti/gardenia-flooring-i-pigmenti-mos-confet-clay-pf60017600-29-3x33-3-nat-90363-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia I Pigmenti Mos Confet Clay 29,3x33,3 Nat.
+- `catalog/surface-materials/flooring/gardenia/i-pigmenti/gardenia-flooring-i-pigmenti-mos-confet-concr-pf60017606-29-3x33-3-nat-90369-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia I Pigmenti Mos Confet Concr 29,3x33,3 Nat.
+- `catalog/surface-materials/flooring/gardenia/i-pigmenti/gardenia-flooring-i-pigmenti-mos-confet-cotto-pf60017603-29-3x33-3-nat-90366-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia I Pigmenti Mos Confet Cotto 29,3x33,3 Nat.
+- `catalog/surface-materials/flooring/gardenia/i-pigmenti/gardenia-flooring-i-pigmenti-mos-confet-cream-pf60017602-29-3x33-3-nat-90365-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia I Pigmenti Mos Confet Cream 29,3x33,3 Nat.
+- `catalog/surface-materials/flooring/gardenia/i-pigmenti/gardenia-flooring-i-pigmenti-mos-confet-milk-pf60017597-29-3x33-3-nat-90360-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia I Pigmenti Mos Confet Milk 29,3x33,3 Nat.
+- `catalog/surface-materials/flooring/gardenia/i-pigmenti/gardenia-flooring-i-pigmenti-mos-confet-mou-pf60017604-29-3x33-3-nat-90367-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia I Pigmenti Mos Confet Mou 29,3x33,3 Nat.
+- `catalog/surface-materials/flooring/gardenia/i-pigmenti/gardenia-flooring-i-pigmenti-mos-confet-mud-pf60017605-29-3x33-3-nat-90368-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia I Pigmenti Mos Confet Mud 29,3x33,3 Nat.
+- `catalog/surface-materials/flooring/gardenia/i-pigmenti/gardenia-flooring-i-pigmenti-mos-confet-sand-pf60017599-29-3x33-3-nat-90362-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia I Pigmenti Mos Confet Sand 29,3x33,3 Nat.
+- `catalog/surface-materials/flooring/gardenia/i-pigmenti/gardenia-flooring-i-pigmenti-mou-0016435-60x120-nat-90288-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia I Pigmenti Mou 60x120 Nat.
+- `catalog/surface-materials/flooring/gardenia/i-pigmenti/gardenia-flooring-i-pigmenti-mou-0016445-20x120-nat-90298-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia I Pigmenti Mou 20x120 Nat.
+- `catalog/surface-materials/flooring/gardenia/i-pigmenti/gardenia-flooring-i-pigmenti-mou-0016455-60x60-nat-90308-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia I Pigmenti Mou 60x60 Nat.
+- `catalog/surface-materials/flooring/gardenia/i-pigmenti/gardenia-flooring-i-pigmenti-mou-0016465-10x60-nat-90318-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia I Pigmenti Mou 10x60 Nat.
+- `catalog/surface-materials/flooring/gardenia/i-pigmenti/gardenia-flooring-i-pigmenti-mou-0016611-30x30-nat-90328-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia I Pigmenti Mou 30x30 Nat.
+- `catalog/surface-materials/flooring/gardenia/i-pigmenti/gardenia-flooring-i-pigmenti-mou-0016973-120x120-nat-90338-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia I Pigmenti Mou 120x120 Nat.
+- `catalog/surface-materials/flooring/gardenia/i-pigmenti/gardenia-flooring-i-pigmenti-mou-0017004-120x280-nat-90348-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia I Pigmenti Mou 120x280 Nat.
+- `catalog/surface-materials/flooring/gardenia/i-pigmenti/gardenia-flooring-i-pigmenti-mud-0016436-60x120-nat-90289-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia I Pigmenti Mud 60x120 Nat.
+- `catalog/surface-materials/flooring/gardenia/i-pigmenti/gardenia-flooring-i-pigmenti-mud-0016446-20x120-nat-90299-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia I Pigmenti Mud 20x120 Nat.
+- `catalog/surface-materials/flooring/gardenia/i-pigmenti/gardenia-flooring-i-pigmenti-mud-0016456-60x60-nat-90309-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia I Pigmenti Mud 60x60 Nat.
+- `catalog/surface-materials/flooring/gardenia/i-pigmenti/gardenia-flooring-i-pigmenti-mud-0016466-10x60-nat-90319-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia I Pigmenti Mud 10x60 Nat.
+- `catalog/surface-materials/flooring/gardenia/i-pigmenti/gardenia-flooring-i-pigmenti-mud-0016612-30x30-nat-90329-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia I Pigmenti Mud 30x30 Nat.
+- `catalog/surface-materials/flooring/gardenia/i-pigmenti/gardenia-flooring-i-pigmenti-mud-0016972-120x120-nat-90337-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia I Pigmenti Mud 120x120 Nat.
+- `catalog/surface-materials/flooring/gardenia/i-pigmenti/gardenia-flooring-i-pigmenti-mud-0017005-120x280-nat-90349-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia I Pigmenti Mud 120x280 Nat.
+- `catalog/surface-materials/flooring/gardenia/i-pigmenti/gardenia-flooring-i-pigmenti-pillole-pf60014511-60x120-nat-90357-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia I Pigmenti Pillole 60x120 Nat.
+- `catalog/surface-materials/flooring/gardenia/i-pigmenti/gardenia-flooring-i-pigmenti-rattan-pf60014512-60x120-nat-90358-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia I Pigmenti Rattan 60x120 Nat.
+- `catalog/surface-materials/flooring/gardenia/i-pigmenti/gardenia-flooring-i-pigmenti-sand-0016430-60x120-nat-90283-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia I Pigmenti Sand 60x120 Nat.
+- `catalog/surface-materials/flooring/gardenia/i-pigmenti/gardenia-flooring-i-pigmenti-sand-0016440-20x120-nat-90293-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia I Pigmenti Sand 20x120 Nat.
+- `catalog/surface-materials/flooring/gardenia/i-pigmenti/gardenia-flooring-i-pigmenti-sand-0016450-60x60-nat-90303-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia I Pigmenti Sand 60x60 Nat.
+- `catalog/surface-materials/flooring/gardenia/i-pigmenti/gardenia-flooring-i-pigmenti-sand-0016460-10x60-nat-90313-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia I Pigmenti Sand 10x60 Nat.
+- `catalog/surface-materials/flooring/gardenia/i-pigmenti/gardenia-flooring-i-pigmenti-sand-0016606-30x30-nat-90323-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia I Pigmenti Sand 30x30 Nat.
+- `catalog/surface-materials/flooring/gardenia/i-pigmenti/gardenia-flooring-i-pigmenti-sand-0016963-120x120-nat-90333-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia I Pigmenti Sand 120x120 Nat.
+- `catalog/surface-materials/flooring/gardenia/i-pigmenti/gardenia-flooring-i-pigmenti-sand-0017006-120x280-nat-90350-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia I Pigmenti Sand 120x280 Nat.
+- `catalog/surface-materials/flooring/gardenia/la-geoteca/gardenia-flooring-la-geoteca-bourgogne-beige-pf60016026-80x80-90431-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Geoteca Bourgogne Beige 80x80.
+- `catalog/surface-materials/flooring/gardenia/la-geoteca/gardenia-flooring-la-geoteca-bourgogne-beige-pf60016055-120x280-nat-90433-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Geoteca Bourgogne Beige 120x280 Nat.
+- `catalog/surface-materials/flooring/gardenia/la-geoteca/gardenia-flooring-la-geoteca-bourgogne-beige-pf60016057-120x120-nat-90435-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Geoteca Bourgogne Beige 120x120 Nat.
+- `catalog/surface-materials/flooring/gardenia/la-geoteca/gardenia-flooring-la-geoteca-bourgogne-beige-pf60016059-60x120-nat-90437-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Geoteca Bourgogne Beige 60x120 Nat.
+- `catalog/surface-materials/flooring/gardenia/la-geoteca/gardenia-flooring-la-geoteca-bourgogne-beige-pf60016061-80x80-nat-90439-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Geoteca Bourgogne Beige 80x80 Nat.
+- `catalog/surface-materials/flooring/gardenia/la-geoteca/gardenia-flooring-la-geoteca-bourgogne-silver-pf60016027-80x80-90432-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Geoteca Bourgogne Silver 80x80.
+- `catalog/surface-materials/flooring/gardenia/la-geoteca/gardenia-flooring-la-geoteca-bourgogne-silver-pf60016056-120x280-nat-90434-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Geoteca Bourgogne Silver 120x280 Nat.
+- `catalog/surface-materials/flooring/gardenia/la-geoteca/gardenia-flooring-la-geoteca-bourgogne-silver-pf60016058-120x120-nat-90436-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Geoteca Bourgogne Silver 120x120 Nat.
+- `catalog/surface-materials/flooring/gardenia/la-geoteca/gardenia-flooring-la-geoteca-bourgogne-silver-pf60016060-60x120-nat-90438-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Geoteca Bourgogne Silver 60x120 Nat.
+- `catalog/surface-materials/flooring/gardenia/la-geoteca/gardenia-flooring-la-geoteca-bourgogne-silver-pf60016062-80x80-nat-90440-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Geoteca Bourgogne Silver 80x80 Nat.
+- `catalog/surface-materials/flooring/gardenia/la-geoteca/gardenia-flooring-la-geoteca-brennero-pf60011721-120x280-nat-90385-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Geoteca Brennero 120x280 Nat.
+- `catalog/surface-materials/flooring/gardenia/la-geoteca/gardenia-flooring-la-geoteca-brennero-pf60011729-120x120-nat-90392-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Geoteca Brennero 120x120 Nat.
+- `catalog/surface-materials/flooring/gardenia/la-geoteca/gardenia-flooring-la-geoteca-brennero-pf60011738-60x120-nat-90399-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Geoteca Brennero 60x120 Nat.
+- `catalog/surface-materials/flooring/gardenia/la-geoteca/gardenia-flooring-la-geoteca-brennero-pf60012079-80x80-nat-90410-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Geoteca Brennero 80x80 Nat.
+- `catalog/surface-materials/flooring/gardenia/la-geoteca/gardenia-flooring-la-geoteca-brennero-pf60012085-80x80-90415-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Geoteca Brennero 80x80.
+- `catalog/surface-materials/flooring/gardenia/la-geoteca/gardenia-flooring-la-geoteca-ceppo-di-gre-pf60008674-120x280-nat-90380-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Geoteca Ceppo Di Gre.
+- `catalog/surface-materials/flooring/gardenia/la-geoteca/gardenia-flooring-la-geoteca-ceppo-di-gre-pf60013072-80x80-90428-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Geoteca Ceppo Di Gre.
+- `catalog/surface-materials/flooring/gardenia/la-geoteca/gardenia-flooring-la-geoteca-ceppo-di-gre-pf60013116-120x120-nat-90429-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Geoteca Ceppo Di Gre.
+- `catalog/surface-materials/flooring/gardenia/la-geoteca/gardenia-flooring-la-geoteca-ceppo-di-gre-pf60013117-60x120-nat-90430-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Geoteca Ceppo Di Gre.
+- `catalog/surface-materials/flooring/gardenia/la-geoteca/gardenia-flooring-la-geoteca-dec-plis-bou-bei-pf60016141-60x120-nat-90447-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Geoteca Dec Plis Bou Bei 60x120 Nat.
+- `catalog/surface-materials/flooring/gardenia/la-geoteca/gardenia-flooring-la-geoteca-dec-pliss-serena-pf60016634-60x120-nat-90451-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Geoteca Dec Pliss Serena 60x120 Nat.
+- `catalog/surface-materials/flooring/gardenia/la-geoteca/gardenia-flooring-la-geoteca-dec-plisse-limes-pf60016140-60x120-nat-90446-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Geoteca Dec Plissè Limes 60x120 Nat.
+- `catalog/surface-materials/flooring/gardenia/la-geoteca/gardenia-flooring-la-geoteca-limestone-pf60011763-120x280-nat-90402-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Geoteca Limestone 120x280 Nat.
+- `catalog/surface-materials/flooring/gardenia/la-geoteca/gardenia-flooring-la-geoteca-limestone-pf60011775-120x120-nat-90403-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Geoteca Limestone 120x120 Nat.
+- `catalog/surface-materials/flooring/gardenia/la-geoteca/gardenia-flooring-la-geoteca-limestone-pf60011776-60x120-nat-90404-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Geoteca Limestone 60x120 Nat.
+- `catalog/surface-materials/flooring/gardenia/la-geoteca/gardenia-flooring-la-geoteca-limestone-pf60012080-80x80-nat-90411-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Geoteca Limestone 80x80 Nat.
+- `catalog/surface-materials/flooring/gardenia/la-geoteca/gardenia-flooring-la-geoteca-limestone-pf60012086-80x80-90416-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Geoteca Limestone 80x80.
+- `catalog/surface-materials/flooring/gardenia/la-geoteca/gardenia-flooring-la-geoteca-marfil-pf60011724-120x280-nat-90387-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Geoteca Marfil 120x280 Nat.
+- `catalog/surface-materials/flooring/gardenia/la-geoteca/gardenia-flooring-la-geoteca-marfil-pf60011732-120x120-nat-90394-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Geoteca Marfil 120x120 Nat.
+- `catalog/surface-materials/flooring/gardenia/la-geoteca/gardenia-flooring-la-geoteca-marfil-pf60011741-60x120-nat-90401-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Geoteca Marfil 60x120 Nat.
+- `catalog/surface-materials/flooring/gardenia/la-geoteca/gardenia-flooring-la-geoteca-marfil-pf60012156-80x80-nat-90419-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Geoteca Marfil 80x80 Nat.
+- `catalog/surface-materials/flooring/gardenia/la-geoteca/gardenia-flooring-la-geoteca-negresco-pf60011723-120x280-nat-90386-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Geoteca Negresco 120x280 Nat.
+- `catalog/surface-materials/flooring/gardenia/la-geoteca/gardenia-flooring-la-geoteca-negresco-pf60011731-120x120-nat-90393-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Geoteca Negresco 120x120 Nat.
+- `catalog/surface-materials/flooring/gardenia/la-geoteca/gardenia-flooring-la-geoteca-negresco-pf60011740-60x120-nat-90400-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Geoteca Negresco 60x120 Nat.
+- `catalog/surface-materials/flooring/gardenia/la-geoteca/gardenia-flooring-la-geoteca-negresco-pf60012155-80x80-nat-90418-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Geoteca Negresco 80x80 Nat.
+- `catalog/surface-materials/flooring/gardenia/la-geoteca/gardenia-flooring-la-geoteca-serena-pf60011718-120x280-nat-90382-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Geoteca Serena 120x280 Nat.
+- `catalog/surface-materials/flooring/gardenia/la-geoteca/gardenia-flooring-la-geoteca-serena-pf60011726-120x120-nat-90389-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Geoteca Serena 120x120 Nat.
+- `catalog/surface-materials/flooring/gardenia/la-geoteca/gardenia-flooring-la-geoteca-serena-pf60011735-60x120-nat-90396-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Geoteca Serena 60x120 Nat.
+- `catalog/surface-materials/flooring/gardenia/la-geoteca/gardenia-flooring-la-geoteca-serena-pf60012077-80x80-nat-90408-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Geoteca Serena 80x80 Nat.
+- `catalog/surface-materials/flooring/gardenia/la-geoteca/gardenia-flooring-la-geoteca-serena-pf60012083-80x80-90413-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Geoteca Serena 80x80.
+- `catalog/surface-materials/flooring/gardenia/la-geoteca/gardenia-flooring-la-geoteca-trav-ivory-cross-pf60016135-120x280-nat-90441-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Geoteca Trav Ivory Cross 120x280 Nat.
+- `catalog/surface-materials/flooring/gardenia/la-geoteca/gardenia-flooring-la-geoteca-trav-ivory-cross-pf60016136-120x120-nat-90442-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Geoteca Trav Ivory Cross 120x120 Nat.
+- `catalog/surface-materials/flooring/gardenia/la-geoteca/gardenia-flooring-la-geoteca-trav-ivory-cross-pf60016138-60x120-nat-90444-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Geoteca Trav Ivory Cross 60x120 Nat.
+- `catalog/surface-materials/flooring/gardenia/la-geoteca/gardenia-flooring-la-geoteca-trav-ivory-cross-pf60016144-80x80-nat-90448-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Geoteca Trav Ivory Cross 80x80 Nat.
+- `catalog/surface-materials/flooring/gardenia/la-geoteca/gardenia-flooring-la-geoteca-trav-ivory-cross-pf60016183-80x80-90449-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Geoteca Trav Ivory Cross 80x80.
+- `catalog/surface-materials/flooring/gardenia/la-geoteca/gardenia-flooring-la-geoteca-trav-ivory-vein-pf60012720-120x280-nat-90420-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Geoteca Trav Ivory Vein 120x280 Nat.
+- `catalog/surface-materials/flooring/gardenia/la-geoteca/gardenia-flooring-la-geoteca-trav-ivory-vein-pf60016137-120x120-nat-90443-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Geoteca Trav Ivory Vein 120x120 Nat.
+- `catalog/surface-materials/flooring/gardenia/la-geoteca/gardenia-flooring-la-geoteca-trav-ivory-vein-pf60016139-60x120-nat-90445-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Geoteca Trav Ivory Vein 60x120 Nat.
+- `catalog/surface-materials/flooring/gardenia/la-marmoteca/gardenia-flooring-la-marmoteca-anti-brown-g0027050-120x120-lux-90495-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Anti Brown 120x120 Lux.
+- `catalog/surface-materials/flooring/gardenia/la-marmoteca/gardenia-flooring-la-marmoteca-anti-brown-g0027060-60x120-lux-90502-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Anti Brown 60x120 Lux.
+- `catalog/surface-materials/flooring/gardenia/la-marmoteca/gardenia-flooring-la-marmoteca-anti-brown-pf60009718-120x280-lux-90528-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Anti Brown 120x280 Lux.
+- `catalog/surface-materials/flooring/gardenia/la-marmoteca/gardenia-flooring-la-marmoteca-anti-brown-pf60009726-120x280-soft-90534-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Anti Brown 120x280 Soft.
+- `catalog/surface-materials/flooring/gardenia/la-marmoteca/gardenia-flooring-la-marmoteca-anti-brown-pf60010680-120x120-soft-90549-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Anti Brown 120x120 Soft.
+- `catalog/surface-materials/flooring/gardenia/la-marmoteca/gardenia-flooring-la-marmoteca-anti-brown-pf60010681-60x120-soft-90550-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Anti Brown 60x120 Soft.
+- `catalog/surface-materials/flooring/gardenia/la-marmoteca/gardenia-flooring-la-marmoteca-blue-denim-g0027012-120x120-lux-90487-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Blue Denim 120x120 Lux.
+- `catalog/surface-materials/flooring/gardenia/la-marmoteca/gardenia-flooring-la-marmoteca-blue-denim-g0027022-60x120-lux-90492-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Blue Denim 60x120 Lux.
+- `catalog/surface-materials/flooring/gardenia/la-marmoteca/gardenia-flooring-la-marmoteca-blue-denim-g27002-120x280-lux-90513-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Blue Denim 120x280 Lux.
+- `catalog/surface-materials/flooring/gardenia/la-marmoteca/gardenia-flooring-la-marmoteca-calacat-elegance-g0027051-120x120-lux-90496-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Calacat Elegance 120x120 Lux.
+- `catalog/surface-materials/flooring/gardenia/la-marmoteca/gardenia-flooring-la-marmoteca-calacat-elegance-g0027061-60x120-lux-90503-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Calacat Elegance 60x120 Lux.
+- `catalog/surface-materials/flooring/gardenia/la-marmoteca/gardenia-flooring-la-marmoteca-calacat-elegance-g0027071-40x120-lux-90509-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Calacat Elegance 40x120 Lux.
+- `catalog/surface-materials/flooring/gardenia/la-marmoteca/gardenia-flooring-la-marmoteca-calacat-elegance-pf60010391-120x120-nat-90535-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Calacat Elegance 120x120 Nat.
+- `catalog/surface-materials/flooring/gardenia/la-marmoteca/gardenia-flooring-la-marmoteca-calacat-elegance-pf60010396-60x120-nat-90537-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Calacat Elegance 60x120 Nat.
+- `catalog/surface-materials/flooring/gardenia/la-marmoteca/gardenia-flooring-la-marmoteca-calacat-elegance-pf60010597-120x280-lux-90539-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Calacat Elegance 120x280 Lux.
+- `catalog/surface-materials/flooring/gardenia/la-marmoteca/gardenia-flooring-la-marmoteca-calacat-elegance-pf60010601-120x280-soft-90541-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Calacat Elegance 120x280 Soft.
+- `catalog/surface-materials/flooring/gardenia/la-marmoteca/gardenia-flooring-la-marmoteca-calacatta-0008839-120x280-lux-139930-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Calacatta 120x280 Lux.
+- `catalog/surface-materials/flooring/gardenia/la-marmoteca/gardenia-flooring-la-marmoteca-calacatta-0009112-120x120-lux-139931-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Calacatta 120x120 Lux.
+- `catalog/surface-materials/flooring/gardenia/la-marmoteca/gardenia-flooring-la-marmoteca-calacatta-0009118-60x120-lux-139932-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Calacatta 60x120 Lux.
+- `catalog/surface-materials/flooring/gardenia/la-marmoteca/gardenia-flooring-la-marmoteca-calacatta-0009158-120x280-soft-139934-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Calacatta 120x280 Soft.
+- `catalog/surface-materials/flooring/gardenia/la-marmoteca/gardenia-flooring-la-marmoteca-calacatta-0009167-120x120-nat-139935-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Calacatta 120x120 Nat.
+- `catalog/surface-materials/flooring/gardenia/la-marmoteca/gardenia-flooring-la-marmoteca-calacatta-0009170-60x120-nat-139936-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Calacatta 60x120 Nat.
+- `catalog/surface-materials/flooring/gardenia/la-marmoteca/gardenia-flooring-la-marmoteca-cosmic-ivory-g0027011-120x120-lux-90486-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Cosmic Ivory 120x120 Lux.
+- `catalog/surface-materials/flooring/gardenia/la-marmoteca/gardenia-flooring-la-marmoteca-cosmic-ivory-g0027021-60x120-lux-90491-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Cosmic Ivory 60x120 Lux.
+- `catalog/surface-materials/flooring/gardenia/la-marmoteca/gardenia-flooring-la-marmoteca-cosmic-ivory-g27001-120x280-lux-90512-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Cosmic Ivory 120x280 Lux.
+- `catalog/surface-materials/flooring/gardenia/la-marmoteca/gardenia-flooring-la-marmoteca-dreami-rose-a-b-g27007-g27037-120x280-lux-90595-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Dreami Rose.
+- `catalog/surface-materials/flooring/gardenia/la-marmoteca/gardenia-flooring-la-marmoteca-emera-quartz-a-b-g27006-g27036-120x280-lux-90598-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Emera Quartz A+b 120x280 Lux.
+- `catalog/surface-materials/flooring/gardenia/la-marmoteca/gardenia-flooring-la-marmoteca-emerald-green-0005359-120x120-lux-139954-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Emerald Green 120x120 Lux.
+- `catalog/surface-materials/flooring/gardenia/la-marmoteca/gardenia-flooring-la-marmoteca-emerald-green-0005362-60x120-lux-139955-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Emerald Green 60x120 Lux.
+- `catalog/surface-materials/flooring/gardenia/la-marmoteca/gardenia-flooring-la-marmoteca-emerald-green-0008685-120x280-lux-139961-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Emerald Green 120x280 Lux.
+- `catalog/surface-materials/flooring/gardenia/la-marmoteca/gardenia-flooring-la-marmoteca-frozen-pf60014453-120x280-lux-90563-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Frozen 120x280 Lux.
+- `catalog/surface-materials/flooring/gardenia/la-marmoteca/gardenia-flooring-la-marmoteca-frozen-pf60014463-120x120-lux-90567-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Frozen 120x120 Lux.
+- `catalog/surface-materials/flooring/gardenia/la-marmoteca/gardenia-flooring-la-marmoteca-frozen-pf60014471-60x120-lux-90571-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Frozen 60x120 Lux.
+- `catalog/surface-materials/flooring/gardenia/la-marmoteca/gardenia-flooring-la-marmoteca-frozen-pf60014711-120x280-soft-90586-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Frozen 120x280 Soft.
+- `catalog/surface-materials/flooring/gardenia/la-marmoteca/gardenia-flooring-la-marmoteca-frozen-pf60014712-120x120-soft-90587-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Frozen 120x120 Soft.
+- `catalog/surface-materials/flooring/gardenia/la-marmoteca/gardenia-flooring-la-marmoteca-frozen-pf60014713-60x120-soft-90588-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Frozen 60x120 Soft.
+- `catalog/surface-materials/flooring/gardenia/la-marmoteca/gardenia-flooring-la-marmoteca-gold-carbon-g0027010-120x120-lux-90485-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Gold Carbon 120x120 Lux.
+- `catalog/surface-materials/flooring/gardenia/la-marmoteca/gardenia-flooring-la-marmoteca-gold-carbon-g0027020-60x120-lux-90490-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Gold Carbon 60x120 Lux.
+- `catalog/surface-materials/flooring/gardenia/la-marmoteca/gardenia-flooring-la-marmoteca-gold-carbon-g27000-120x280-lux-90511-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Gold Carbon 120x280 Lux.
+- `catalog/surface-materials/flooring/gardenia/la-marmoteca/gardenia-flooring-la-marmoteca-gold-carbon-pf60010684-120x280-soft-90552-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Gold Carbon 120x280 Soft.
+- `catalog/surface-materials/flooring/gardenia/la-marmoteca/gardenia-flooring-la-marmoteca-gold-carbon-pf60010687-120x120-soft-90555-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Gold Carbon 120x120 Soft.
+- `catalog/surface-materials/flooring/gardenia/la-marmoteca/gardenia-flooring-la-marmoteca-gold-carbon-pf60010690-60x120-soft-90558-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Gold Carbon 60x120 Soft.
+- `catalog/surface-materials/flooring/gardenia/la-marmoteca/gardenia-flooring-la-marmoteca-grey-stone-g0027052-120x120-lux-90497-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Grey Stone 120x120 Lux.
+- `catalog/surface-materials/flooring/gardenia/la-marmoteca/gardenia-flooring-la-marmoteca-grey-stone-g0027062-60x120-lux-90504-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Grey Stone 60x120 Lux.
+- `catalog/surface-materials/flooring/gardenia/la-marmoteca/gardenia-flooring-la-marmoteca-grey-stone-pf60006319-120x120-nat-90522-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Grey Stone 120x120 Nat.
+- `catalog/surface-materials/flooring/gardenia/la-marmoteca/gardenia-flooring-la-marmoteca-grey-stone-pf60006322-60x120-nat-90523-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Grey Stone 60x120 Nat.
+- `catalog/surface-materials/flooring/gardenia/la-marmoteca/gardenia-flooring-la-marmoteca-grey-stone-pf60008677-120x280-soft-90524-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Grey Stone 120x280 Soft.
+- `catalog/surface-materials/flooring/gardenia/la-marmoteca/gardenia-flooring-la-marmoteca-grey-stone-pf60008688-120x280-lux-90525-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Grey Stone 120x280 Lux.
+- `catalog/surface-materials/flooring/gardenia/la-marmoteca/gardenia-flooring-la-marmoteca-grey-wonder-a-b-pf60014686-pf60014687-120x280-lux-90596-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Grey Wonder A+b 120x280 Lux.
+- `catalog/surface-materials/flooring/gardenia/la-marmoteca/gardenia-flooring-la-marmoteca-grey-wonder-pf60014616-120x280-soft-90575-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Grey Wonder 120x280 Soft.
+- `catalog/surface-materials/flooring/gardenia/la-marmoteca/gardenia-flooring-la-marmoteca-grey-wonder-pf60014675-120x280-lux-90577-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Grey Wonder 120x280 Lux.
+- `catalog/surface-materials/flooring/gardenia/la-marmoteca/gardenia-flooring-la-marmoteca-grey-wonder-pf60014677-120x120-lux-90579-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Grey Wonder 120x120 Lux.
+- `catalog/surface-materials/flooring/gardenia/la-marmoteca/gardenia-flooring-la-marmoteca-grey-wonder-pf60014678-120x120-soft-90580-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Grey Wonder 120x120 Soft.
+- `catalog/surface-materials/flooring/gardenia/la-marmoteca/gardenia-flooring-la-marmoteca-grey-wonder-pf60014679-60x120-soft-90581-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Grey Wonder 60x120 Soft.
+- `catalog/surface-materials/flooring/gardenia/la-marmoteca/gardenia-flooring-la-marmoteca-grey-wonder-pf60014681-60x120-lux-90583-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Grey Wonder 60x120 Lux.
+- `catalog/surface-materials/flooring/gardenia/la-marmoteca/gardenia-flooring-la-marmoteca-marquinia-black-g0027063-60x120-lux-90505-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Marquinia Black 60x120 Lux.
+- `catalog/surface-materials/flooring/gardenia/la-marmoteca/gardenia-flooring-la-marmoteca-marquinia-black-pf60009721-120x280-lux-90530-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Marquinia Black 120x280 Lux.
+- `catalog/surface-materials/flooring/gardenia/la-marmoteca/gardenia-flooring-la-marmoteca-marquinia-black-pf60009722-120x280-soft-90531-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Marquinia Black 120x280 Soft.
+- `catalog/surface-materials/flooring/gardenia/la-marmoteca/gardenia-flooring-la-marmoteca-marquinia-black-pf60010672-120x120-nat-90543-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Marquinia Black 120x120 Nat.
+- `catalog/surface-materials/flooring/gardenia/la-marmoteca/gardenia-flooring-la-marmoteca-marquinia-black-pf60010673-60x120-nat-90544-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Marquinia Black 60x120 Nat.
+- `catalog/surface-materials/flooring/gardenia/la-marmoteca/gardenia-flooring-la-marmoteca-montblanc-0006899-120x120-lux-139956-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Montblanc 120x120 Lux.
+- `catalog/surface-materials/flooring/gardenia/la-marmoteca/gardenia-flooring-la-marmoteca-montblanc-0006900-60x120-lux-139957-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Montblanc 60x120 Lux.
+- `catalog/surface-materials/flooring/gardenia/la-marmoteca/gardenia-flooring-la-marmoteca-montblanc-0006902-120x120-139958-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Montblanc 120x120.
+- `catalog/surface-materials/flooring/gardenia/la-marmoteca/gardenia-flooring-la-marmoteca-montblanc-0006903-60x120-139959-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Montblanc 60x120.
+- `catalog/surface-materials/flooring/gardenia/la-marmoteca/gardenia-flooring-la-marmoteca-montblanc-0008678-120x280-soft-139960-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Montblanc 120x280 Soft.
+- `catalog/surface-materials/flooring/gardenia/la-marmoteca/gardenia-flooring-la-marmoteca-montblanc-0008689-120x280-lux-139962-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Montblanc 120x280 Lux.
+- `catalog/surface-materials/flooring/gardenia/la-marmoteca/gardenia-flooring-la-marmoteca-onyx-bronxe-a-b-g27005-g27035-120x280-lux-90597-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Onyx Bronxe A+b 120x280 Lux.
+- `catalog/surface-materials/flooring/gardenia/la-marmoteca/gardenia-flooring-la-marmoteca-patagoni-emerald-pf60012774-120x280-lux-90560-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Patagoni Emerald 120x280 Lux.
+- `catalog/surface-materials/flooring/gardenia/la-marmoteca/gardenia-flooring-la-marmoteca-patagoni-emerald-pf60012777-120x120-lux-90561-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Patagoni Emerald 120x120 Lux.
+- `catalog/surface-materials/flooring/gardenia/la-marmoteca/gardenia-flooring-la-marmoteca-patagoni-emerald-pf60012778-60x120-lux-90562-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Patagoni Emerald 60x120 Lux.
+- `catalog/surface-materials/flooring/gardenia/la-marmoteca/gardenia-flooring-la-marmoteca-port-noir-0010994-120x280-lux-139938-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Port Noir 120x280 Lux.
+- `catalog/surface-materials/flooring/gardenia/la-marmoteca/gardenia-flooring-la-marmoteca-port-noir-0010995-120x280-soft-139939-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Port Noir 120x280 Soft.
+- `catalog/surface-materials/flooring/gardenia/la-marmoteca/gardenia-flooring-la-marmoteca-port-noir-0011000-60x120-nat-139940-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Port Noir 60x120 Nat.
+- `catalog/surface-materials/flooring/gardenia/la-marmoteca/gardenia-flooring-la-marmoteca-port-noir-0011003-60x120-lux-139941-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Port Noir 60x120 Lux.
+- `catalog/surface-materials/flooring/gardenia/la-marmoteca/gardenia-flooring-la-marmoteca-port-noir-0011496-120x120-lux-139942-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Port Noir 120x120 Lux.
+- `catalog/surface-materials/flooring/gardenia/la-marmoteca/gardenia-flooring-la-marmoteca-port-noir-0011497-120x120-nat-139943-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Port Noir 120x120 Nat.
+- `catalog/surface-materials/flooring/gardenia/la-marmoteca/gardenia-flooring-la-marmoteca-pure-onyx-pf60014454-120x280-lux-90564-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Pure Onyx 120x280 Lux.
+- `catalog/surface-materials/flooring/gardenia/la-marmoteca/gardenia-flooring-la-marmoteca-pure-onyx-pf60014457-120x280-soft-90566-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Pure Onyx 120x280 Soft.
+- `catalog/surface-materials/flooring/gardenia/la-marmoteca/gardenia-flooring-la-marmoteca-pure-onyx-pf60014464-120x120-lux-90568-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Pure Onyx 120x120 Lux.
+- `catalog/surface-materials/flooring/gardenia/la-marmoteca/gardenia-flooring-la-marmoteca-pure-onyx-pf60014467-120x120-soft-90570-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Pure Onyx 120x120 Soft.
+- `catalog/surface-materials/flooring/gardenia/la-marmoteca/gardenia-flooring-la-marmoteca-pure-onyx-pf60014472-60x120-lux-90572-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Pure Onyx 60x120 Lux.
+- `catalog/surface-materials/flooring/gardenia/la-marmoteca/gardenia-flooring-la-marmoteca-pure-onyx-pf60014475-60x120-soft-90574-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Pure Onyx 60x120 Soft.
+- `catalog/surface-materials/flooring/gardenia/la-marmoteca/gardenia-flooring-la-marmoteca-sahara-white-g0027057-120x120-lux-90501-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Sahara White 120x120 Lux.
+- `catalog/surface-materials/flooring/gardenia/la-marmoteca/gardenia-flooring-la-marmoteca-sahara-white-g0027067-60x120-lux-90508-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Sahara White 60x120 Lux.
+- `catalog/surface-materials/flooring/gardenia/la-marmoteca/gardenia-flooring-la-marmoteca-sahara-white-pf60009717-120x280-lux-90527-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Sahara White 120x280 Lux.
+- `catalog/surface-materials/flooring/gardenia/la-marmoteca/gardenia-flooring-la-marmoteca-sahara-white-pf60009725-120x280-soft-90533-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Sahara White 120x280 Soft.
+- `catalog/surface-materials/flooring/gardenia/la-marmoteca/gardenia-flooring-la-marmoteca-sahara-white-pf60010674-120x120-soft-90545-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Sahara White 120x120 Soft.
+- `catalog/surface-materials/flooring/gardenia/la-marmoteca/gardenia-flooring-la-marmoteca-sahara-white-pf60010675-60x120-soft-90546-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Sahara White 60x120 Soft.
+- `catalog/surface-materials/flooring/gardenia/la-marmoteca/gardenia-flooring-la-marmoteca-sand-flower-0012068-60x120-nat-139944-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Sand Flower 60x120 Nat.
+- `catalog/surface-materials/flooring/gardenia/la-marmoteca/gardenia-flooring-la-marmoteca-sand-flower-0012190-120x120-lux-139946-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Sand Flower 120x120 Lux.
+- `catalog/surface-materials/flooring/gardenia/la-marmoteca/gardenia-flooring-la-marmoteca-sand-flower-0012245-120x280-soft-139950-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Sand Flower 120x280 Soft.
+- `catalog/surface-materials/flooring/gardenia/la-marmoteca/gardenia-flooring-la-marmoteca-sand-flower-0012246-120x280-lux-139951-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Sand Flower 120x280 Lux.
+- `catalog/surface-materials/flooring/gardenia/la-marmoteca/gardenia-flooring-la-marmoteca-sand-flower-0012247-120x120-nat-139952-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Sand Flower 120x120 Nat.
+- `catalog/surface-materials/flooring/gardenia/la-marmoteca/gardenia-flooring-la-marmoteca-statuari-premium-g0027055-120x120-lux-90499-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Statuari Premium 120x120 Lux.
+- `catalog/surface-materials/flooring/gardenia/la-marmoteca/gardenia-flooring-la-marmoteca-statuari-premium-g0027065-60x120-lux-90506-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Statuari Premium 60x120 Lux.
+- `catalog/surface-materials/flooring/gardenia/la-marmoteca/gardenia-flooring-la-marmoteca-statuari-premium-g0027075-40x120-lux-90510-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Statuari Premium 40x120 Lux.
+- `catalog/surface-materials/flooring/gardenia/la-marmoteca/gardenia-flooring-la-marmoteca-statuari-premium-pf60010392-120x120-nat-90536-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Statuari Premium 120x120 Nat.
+- `catalog/surface-materials/flooring/gardenia/la-marmoteca/gardenia-flooring-la-marmoteca-statuari-premium-pf60010397-60x120-nat-90538-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Statuari Premium 60x120 Nat.
+- `catalog/surface-materials/flooring/gardenia/la-marmoteca/gardenia-flooring-la-marmoteca-statuari-premium-pf60010598-120x280-lux-90540-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Statuari Premium 120x280 Lux.
+- `catalog/surface-materials/flooring/gardenia/la-marmoteca/gardenia-flooring-la-marmoteca-statuari-premium-pf60010602-120x280-soft-90542-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Statuari Premium 120x280 Soft.
+- `catalog/surface-materials/flooring/gardenia/make/gardenia-flooring-make-antr-corten-g0073024-80x80-90777-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Make Antr Corten 80x80.
+- `catalog/surface-materials/flooring/gardenia/make/gardenia-flooring-make-antr-corten-g0073044-100x100-90783-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Make Antr Corten 100x100.
+- `catalog/surface-materials/flooring/gardenia/make/gardenia-flooring-make-antr-corten-g0073214-60x60-90803-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Make Antr Corten 60x60.
+- `catalog/surface-materials/flooring/gardenia/make/gardenia-flooring-make-antr-corten-g0073224-60x120-90809-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Make Antr Corten 60x120.
+- `catalog/surface-materials/flooring/gardenia/make/gardenia-flooring-make-ash-g0073022-80x80-90775-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Make Ash 80x80.
+- `catalog/surface-materials/flooring/gardenia/make/gardenia-flooring-make-ash-g0073042-100x100-90781-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Make Ash 100x100.
+- `catalog/surface-materials/flooring/gardenia/make/gardenia-flooring-make-ash-g0073212-60x60-90801-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Make Ash 60x60.
+- `catalog/surface-materials/flooring/gardenia/make/gardenia-flooring-make-ash-g0073222-60x120-90807-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Make Ash 60x120.
+- `catalog/surface-materials/flooring/gardenia/make/gardenia-flooring-make-bianco-g0073020-80x80-90773-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Make Bianco 80x80.
+- `catalog/surface-materials/flooring/gardenia/make/gardenia-flooring-make-bianco-g0073040-100x100-90779-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Make Bianco 100x100.
+- `catalog/surface-materials/flooring/gardenia/make/gardenia-flooring-make-bianco-g0073210-60x60-90799-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Make Bianco 60x60.
+- `catalog/surface-materials/flooring/gardenia/make/gardenia-flooring-make-bianco-g0073220-60x120-90805-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Make Bianco 60x120.
+- `catalog/surface-materials/flooring/gardenia/make/gardenia-flooring-make-corda-g0073021-80x80-90774-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Make Corda 80x80.
+- `catalog/surface-materials/flooring/gardenia/make/gardenia-flooring-make-corda-g0073041-100x100-90780-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Make Corda 100x100.
+- `catalog/surface-materials/flooring/gardenia/make/gardenia-flooring-make-corda-g0073211-60x60-90800-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Make Corda 60x60.
+- `catalog/surface-materials/flooring/gardenia/make/gardenia-flooring-make-corda-g0073221-60x120-90806-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Make Corda 60x120.
+- `catalog/surface-materials/flooring/gardenia/make/gardenia-flooring-make-grigio-corten-g0073025-80x80-90778-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Make Grigio Corten 80x80.
+- `catalog/surface-materials/flooring/gardenia/make/gardenia-flooring-make-grigio-corten-g0073045-100x100-90784-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Make Grigio Corten 100x100.
+- `catalog/surface-materials/flooring/gardenia/make/gardenia-flooring-make-grigio-corten-g0073215-60x60-90804-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Make Grigio Corten 60x60.
+- `catalog/surface-materials/flooring/gardenia/make/gardenia-flooring-make-grigio-corten-g0073225-60x120-90810-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Make Grigio Corten 60x120.
+- `catalog/surface-materials/flooring/gardenia/make/gardenia-flooring-make-mos-t36-antr-cor-g0073254-33-3x33-3-90815-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Make Mos.t36 Antr Cor 33,3x33,3.
+- `catalog/surface-materials/flooring/gardenia/make/gardenia-flooring-make-mos-t36-ash-g0073252-33-3x33-3-90813-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Make Mos.t36 Ash 33,3x33,3.
+- `catalog/surface-materials/flooring/gardenia/make/gardenia-flooring-make-mos-t36-bianco-g0073250-33-3x33-3-90811-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Make Mos.t36 Bianco 33,3x33,3.
+- `catalog/surface-materials/flooring/gardenia/make/gardenia-flooring-make-mos-t36-corda-g0073251-33-3x33-3-90812-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Make Mos.t36 Corda 33,3x33,3.
+- `catalog/surface-materials/flooring/gardenia/make/gardenia-flooring-make-mos-t36-grig-cor-g0073255-33-3x33-3-90816-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Make Mos.t36 Grig Cor 33,3x33,3.
+- `catalog/surface-materials/flooring/gardenia/make/gardenia-flooring-make-mos-t36-nero-cor-g0073253-33-3x33-3-90814-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Make Mos.t36 Nero Cor 33,3x33,3.
+- `catalog/surface-materials/flooring/gardenia/make/gardenia-flooring-make-nero-corten-g0073023-80x80-90776-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Make Nero Corten 80x80.
+- `catalog/surface-materials/flooring/gardenia/make/gardenia-flooring-make-nero-corten-g0073043-100x100-90782-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Make Nero Corten 100x100.
+- `catalog/surface-materials/flooring/gardenia/make/gardenia-flooring-make-nero-corten-g0073213-60x60-90802-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Make Nero Corten 60x60.
+- `catalog/surface-materials/flooring/gardenia/make/gardenia-flooring-make-nero-corten-g0073223-60x120-90808-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Make Nero Corten 60x120.
+- `catalog/surface-materials/flooring/gardenia/orosei/gardenia-flooring-orosei-bone-pf60021692-120x120-197531-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Orosei Bone 120x120.
+- `catalog/surface-materials/flooring/gardenia/orosei/gardenia-flooring-orosei-bone-pf60021699-60x120-197538-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Orosei Bone 60x120.
+- `catalog/surface-materials/flooring/gardenia/orosei/gardenia-flooring-orosei-bone-pf60021723-120x280-nat-197543-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Orosei Bone 120x280 Nat.
+- `catalog/surface-materials/flooring/gardenia/orosei/gardenia-flooring-orosei-bone-pf60021733-120x120-nat-197548-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Orosei Bone 120x120 Nat.
+- `catalog/surface-materials/flooring/gardenia/orosei/gardenia-flooring-orosei-bone-pf60021738-60x120-nat-197553-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Orosei Bone 60x120 Nat.
+- `catalog/surface-materials/flooring/gardenia/orosei/gardenia-flooring-orosei-bone-pf60030223-60x60-nat-197558-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Orosei Bone 60x60 Nat.
+- `catalog/surface-materials/flooring/gardenia/orosei/gardenia-flooring-orosei-bone-pf60030228-80x80-nat-197563-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Orosei Bone 80x80 Nat.
+- `catalog/surface-materials/flooring/gardenia/orosei/gardenia-flooring-orosei-cream-pf60021694-120x120-197533-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Orosei Cream 120x120.
+- `catalog/surface-materials/flooring/gardenia/orosei/gardenia-flooring-orosei-cream-pf60021701-60x120-197540-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Orosei Cream 60x120.
+- `catalog/surface-materials/flooring/gardenia/orosei/gardenia-flooring-orosei-cream-pf60021725-120x280-nat-197545-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Orosei Cream 120x280 Nat.
+- `catalog/surface-materials/flooring/gardenia/orosei/gardenia-flooring-orosei-cream-pf60021735-120x120-nat-197550-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Orosei Cream 120x120 Nat.
+- `catalog/surface-materials/flooring/gardenia/orosei/gardenia-flooring-orosei-cream-pf60021740-60x120-nat-197555-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Orosei Cream 60x120 Nat.
+- `catalog/surface-materials/flooring/gardenia/orosei/gardenia-flooring-orosei-cream-pf60030225-60x60-nat-197560-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Orosei Cream 60x60 Nat.
+- `catalog/surface-materials/flooring/gardenia/orosei/gardenia-flooring-orosei-cream-pf60030231-80x80-nat-197565-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Orosei Cream 80x80 Nat.
+- `catalog/surface-materials/flooring/gardenia/orosei/gardenia-flooring-orosei-ecru-pf60021696-120x120-197535-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Orosei Ecru 120x120.
+- `catalog/surface-materials/flooring/gardenia/orosei/gardenia-flooring-orosei-ecru-pf60021703-60x120-197542-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Orosei Ecru 60x120.
+- `catalog/surface-materials/flooring/gardenia/orosei/gardenia-flooring-orosei-ecru-pf60021727-120x280-nat-197547-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Orosei Ecru 120x280 Nat.
+- `catalog/surface-materials/flooring/gardenia/orosei/gardenia-flooring-orosei-ecru-pf60021737-120x120-nat-197552-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Orosei Ecru 120x120 Nat.
+- `catalog/surface-materials/flooring/gardenia/orosei/gardenia-flooring-orosei-ecru-pf60021742-60x120-nat-197557-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Orosei Ecru 60x120 Nat.
+- `catalog/surface-materials/flooring/gardenia/orosei/gardenia-flooring-orosei-ecru-pf60030227-60x60-nat-197562-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Orosei Ecru 60x60 Nat.
+- `catalog/surface-materials/flooring/gardenia/orosei/gardenia-flooring-orosei-ecru-pf60030233-80x80-nat-197567-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Orosei Ecru 80x80 Nat.
+- `catalog/surface-materials/flooring/gardenia/orosei/gardenia-flooring-orosei-ecru-tessera-pf60021698-120x120-197537-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Orosei Ecru Tessera 120x120.
+- `catalog/surface-materials/flooring/gardenia/orosei/gardenia-flooring-orosei-ecru-tessera-pf60030241-60x120-197575-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Orosei Ecru Tessera 60x120.
+- `catalog/surface-materials/flooring/gardenia/orosei/gardenia-flooring-orosei-rope-pf60021695-120x120-197534-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Orosei Rope 120x120.
+- `catalog/surface-materials/flooring/gardenia/orosei/gardenia-flooring-orosei-rope-pf60021702-60x120-197541-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Orosei Rope 60x120.
+- `catalog/surface-materials/flooring/gardenia/orosei/gardenia-flooring-orosei-rope-pf60021726-120x280-nat-197546-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Orosei Rope 120x280 Nat.
+- `catalog/surface-materials/flooring/gardenia/orosei/gardenia-flooring-orosei-rope-pf60021736-120x120-nat-197551-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Orosei Rope 120x120 Nat.
+- `catalog/surface-materials/flooring/gardenia/orosei/gardenia-flooring-orosei-rope-pf60021741-60x120-nat-197556-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Orosei Rope 60x120 Nat.
+- `catalog/surface-materials/flooring/gardenia/orosei/gardenia-flooring-orosei-rope-pf60030226-60x60-nat-197561-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Orosei Rope 60x60 Nat.
+- `catalog/surface-materials/flooring/gardenia/orosei/gardenia-flooring-orosei-rope-pf60030232-80x80-nat-197566-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Orosei Rope 80x80 Nat.
+- `catalog/surface-materials/flooring/gardenia/orosei/gardenia-flooring-orosei-vanilla-pf60021693-120x120-197532-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Orosei Vanilla 120x120.
+- `catalog/surface-materials/flooring/gardenia/orosei/gardenia-flooring-orosei-vanilla-pf60021700-60x120-197539-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Orosei Vanilla 60x120.
+- `catalog/surface-materials/flooring/gardenia/orosei/gardenia-flooring-orosei-vanilla-pf60021724-120x280-nat-197544-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Orosei Vanilla 120x280 Nat.
+- `catalog/surface-materials/flooring/gardenia/orosei/gardenia-flooring-orosei-vanilla-pf60021734-120x120-nat-197549-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Orosei Vanilla 120x120 Nat.
+- `catalog/surface-materials/flooring/gardenia/orosei/gardenia-flooring-orosei-vanilla-pf60021739-60x120-nat-197554-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Orosei Vanilla 60x120 Nat.
+- `catalog/surface-materials/flooring/gardenia/orosei/gardenia-flooring-orosei-vanilla-pf60030224-60x60-nat-197559-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Orosei Vanilla 60x60 Nat.
+- `catalog/surface-materials/flooring/gardenia/orosei/gardenia-flooring-orosei-vanilla-pf60030230-80x80-nat-197564-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Orosei Vanilla 80x80 Nat.
+- `catalog/surface-materials/flooring/gardenia/orosei/gardenia-flooring-orosei-vanilla-tessera-pf60021697-120x120-197536-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Orosei Vanilla Tessera 120x120.
+- `catalog/surface-materials/flooring/gardenia/orosei/gardenia-flooring-orosei-vanilla-tessera-pf60030240-60x120-197574-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Orosei Vanilla Tessera 60x120.
+- `catalog/surface-materials/flooring/gardenia/oxide/gardenia-flooring-oxide-alluminum-g69300-120x280-90833-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Oxide Alluminum 120x280.
+- `catalog/surface-materials/flooring/gardenia/oxide/gardenia-flooring-oxide-alluminum-g69310-120x120-90838-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Oxide Alluminum 120x120.
+- `catalog/surface-materials/flooring/gardenia/oxide/gardenia-flooring-oxide-alluminum-g69320-60x120-90843-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Oxide Alluminum 60x120.
+- `catalog/surface-materials/flooring/gardenia/oxide/gardenia-flooring-oxide-alluminum-g69330-80x80-90848-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Oxide Alluminum 80x80.
+- `catalog/surface-materials/flooring/gardenia/oxide/gardenia-flooring-oxide-brass-g69304-120x280-90837-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Oxide Brass 120x280.
+- `catalog/surface-materials/flooring/gardenia/oxide/gardenia-flooring-oxide-brass-g69314-120x120-90842-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Oxide Brass 120x120.
+- `catalog/surface-materials/flooring/gardenia/oxide/gardenia-flooring-oxide-brass-g69324-60x120-90847-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Oxide Brass 60x120.
+- `catalog/surface-materials/flooring/gardenia/oxide/gardenia-flooring-oxide-brass-g69334-80x80-90852-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Oxide Brass 80x80.
+- `catalog/surface-materials/flooring/gardenia/oxide/gardenia-flooring-oxide-green-g69303-120x280-90836-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Oxide Green 120x280.
+- `catalog/surface-materials/flooring/gardenia/oxide/gardenia-flooring-oxide-green-g69313-120x120-90841-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Oxide Green 120x120.
+- `catalog/surface-materials/flooring/gardenia/oxide/gardenia-flooring-oxide-green-g69323-60x120-90846-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Oxide Green 60x120.
+- `catalog/surface-materials/flooring/gardenia/oxide/gardenia-flooring-oxide-green-g69333-80x80-90851-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Oxide Green 80x80.
+- `catalog/surface-materials/flooring/gardenia/oxide/gardenia-flooring-oxide-iron-g69302-120x280-90835-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Oxide Iron 120x280.
+- `catalog/surface-materials/flooring/gardenia/oxide/gardenia-flooring-oxide-iron-g69312-120x120-90840-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Oxide Iron 120x120.
+- `catalog/surface-materials/flooring/gardenia/oxide/gardenia-flooring-oxide-iron-g69322-60x120-90845-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Oxide Iron 60x120.
+- `catalog/surface-materials/flooring/gardenia/oxide/gardenia-flooring-oxide-iron-g69332-80x80-90850-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Oxide Iron 80x80.
+- `catalog/surface-materials/flooring/gardenia/oxide/gardenia-flooring-oxide-steel-g69311-120x120-90839-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Oxide Steel 120x120.
+- `catalog/surface-materials/flooring/gardenia/oxide/gardenia-flooring-oxide-steel-g69321-60x120-90844-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Oxide Steel 60x120.
+- `catalog/surface-materials/flooring/gardenia/oxide/gardenia-flooring-oxide-steel-g69331-80x80-90849-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Oxide Steel 80x80.
+- `catalog/surface-materials/flooring/gardenia/pietra-viva/gardenia-flooring-pietra-viva-aude-beige-0011974-60x120-90906-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Pietra Viva Aude Beige 60x120.
+- `catalog/surface-materials/flooring/gardenia/pietra-viva/gardenia-flooring-pietra-viva-aude-beige-0012260-120x120-90910-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Pietra Viva Aude Beige 120x120.
+- `catalog/surface-materials/flooring/gardenia/pietra-viva/gardenia-flooring-pietra-viva-aude-beige-0012267-80x80-nat-90916-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Pietra Viva Aude Beige 80x80 Nat.
+- `catalog/surface-materials/flooring/gardenia/pietra-viva/gardenia-flooring-pietra-viva-aude-beige-0012911-120x120-nat-90920-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Pietra Viva Aude Beige 120x120 Nat.
+- `catalog/surface-materials/flooring/gardenia/pietra-viva/gardenia-flooring-pietra-viva-aude-beige-0012915-60x120-nat-90924-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Pietra Viva Aude Beige 60x120 Nat.
+- `catalog/surface-materials/flooring/gardenia/pietra-viva/gardenia-flooring-pietra-viva-aude-beige-0014862-120x280-90925-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Pietra Viva Aude Beige 120x280.
+- `catalog/surface-materials/flooring/gardenia/pietra-viva/gardenia-flooring-pietra-viva-aude-grey-0011118-60x120-90903-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Pietra Viva Aude Grey 60x120.
+- `catalog/surface-materials/flooring/gardenia/pietra-viva/gardenia-flooring-pietra-viva-aude-grey-0012254-120x120-90907-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Pietra Viva Aude Grey 120x120.
+- `catalog/surface-materials/flooring/gardenia/pietra-viva/gardenia-flooring-pietra-viva-aude-grey-0012266-80x80-nat-90915-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Pietra Viva Aude Grey 80x80 Nat.
+- `catalog/surface-materials/flooring/gardenia/pietra-viva/gardenia-flooring-pietra-viva-aude-grey-0012908-120x120-nat-90917-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Pietra Viva Aude Grey 120x120 Nat.
+- `catalog/surface-materials/flooring/gardenia/pietra-viva/gardenia-flooring-pietra-viva-aude-grey-0012912-60x120-nat-90921-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Pietra Viva Aude Grey 60x120 Nat.
+- `catalog/surface-materials/flooring/gardenia/pietra-viva/gardenia-flooring-pietra-viva-aude-ivory-0011973-60x120-90905-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Pietra Viva Aude Ivory 60x120.
+- `catalog/surface-materials/flooring/gardenia/pietra-viva/gardenia-flooring-pietra-viva-aude-ivory-0012258-120x120-90909-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Pietra Viva Aude Ivory 120x120.
+- `catalog/surface-materials/flooring/gardenia/pietra-viva/gardenia-flooring-pietra-viva-aude-ivory-0012264-80x80-nat-90913-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Pietra Viva Aude Ivory 80x80 Nat.
+- `catalog/surface-materials/flooring/gardenia/pietra-viva/gardenia-flooring-pietra-viva-aude-ivory-0012910-120x120-nat-90919-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Pietra Viva Aude Ivory 120x120 Nat.
+- `catalog/surface-materials/flooring/gardenia/pietra-viva/gardenia-flooring-pietra-viva-aude-ivory-0012914-60x120-nat-90923-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Pietra Viva Aude Ivory 60x120 Nat.
+- `catalog/surface-materials/flooring/gardenia/pietra-viva/gardenia-flooring-pietra-viva-aude-ivory-0014863-120x280-90926-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Pietra Viva Aude Ivory 120x280.
+- `catalog/surface-materials/flooring/gardenia/pietra-viva/gardenia-flooring-pietra-viva-camargue-beige-0014182-120x120-nat-139965-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Pietra Viva Camargue Beige 120x120 Nat.
+- `catalog/surface-materials/flooring/gardenia/pietra-viva/gardenia-flooring-pietra-viva-camargue-beige-0014184-120x120-139967-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Pietra Viva Camargue Beige 120x120.
+- `catalog/surface-materials/flooring/gardenia/pietra-viva/gardenia-flooring-pietra-viva-camargue-beige-0014188-60x120-139971-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Pietra Viva Camargue Beige 60x120.
+- `catalog/surface-materials/flooring/gardenia/pietra-viva/gardenia-flooring-pietra-viva-camargue-beige-0014325-60x120-nat-139972-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Pietra Viva Camargue Beige 60x120 Nat.
+- `catalog/surface-materials/flooring/gardenia/pietra-viva/gardenia-flooring-pietra-viva-camargue-beige-0014671-80x160-nat-139976-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Pietra Viva Camargue Beige 80x160 Nat.
+- `catalog/surface-materials/flooring/gardenia/pietra-viva/gardenia-flooring-pietra-viva-camargue-beige-0016100-80x80-nat-139986-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Pietra Viva Camargue Beige 80x80 Nat.
+- `catalog/surface-materials/flooring/gardenia/pietra-viva/gardenia-flooring-pietra-viva-camargue-ivory-0014180-120x280-nat-139989-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Pietra Viva Camargue Ivory 120x280 Nat.
+- `catalog/surface-materials/flooring/gardenia/pietra-viva/gardenia-flooring-pietra-viva-camargue-ivory-0014181-120x120-nat-139988-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Pietra Viva Camargue Ivory 120x120 Nat.
+- `catalog/surface-materials/flooring/gardenia/pietra-viva/gardenia-flooring-pietra-viva-camargue-ivory-0014183-120x120-139966-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Pietra Viva Camargue Ivory 120x120.
+- `catalog/surface-materials/flooring/gardenia/pietra-viva/gardenia-flooring-pietra-viva-camargue-ivory-0014187-60x120-139970-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Pietra Viva Camargue Ivory 60x120.
+- `catalog/surface-materials/flooring/gardenia/pietra-viva/gardenia-flooring-pietra-viva-camargue-ivory-0014670-80x160-nat-139975-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Pietra Viva Camargue Ivory 80x160 Nat.
+- `catalog/surface-materials/flooring/gardenia/pietra-viva/gardenia-flooring-pietra-viva-camargue-ivory-0016099-60x120-nat-139985-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Pietra Viva Camargue Ivory 60x120 Nat.
+- `catalog/surface-materials/flooring/gardenia/pietra-viva/gardenia-flooring-pietra-viva-camargue-ivory-0016102-80x80-nat-139987-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Pietra Viva Camargue Ivory 80x80 Nat.
+- `catalog/surface-materials/flooring/gardenia/pietra-viva/gardenia-flooring-pietra-viva-limoges-sand-0012293-80x80-nat-140000-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Pietra Viva Limoges Sand 80x80 Nat.
+- `catalog/surface-materials/flooring/gardenia/pietra-viva/gardenia-flooring-pietra-viva-limoges-sand-0012318-60x120-139996-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Pietra Viva Limoges Sand 60x120.
+- `catalog/surface-materials/flooring/gardenia/pietra-viva/gardenia-flooring-pietra-viva-limoges-sand-0012322-120x120-139992-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Pietra Viva Limoges Sand 120x120.
+- `catalog/surface-materials/flooring/gardenia/pietra-viva/gardenia-flooring-pietra-viva-limoges-sand-0012921-120x120-nat-139990-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Pietra Viva Limoges Sand 120x120 Nat.
+- `catalog/surface-materials/flooring/gardenia/pietra-viva/gardenia-flooring-pietra-viva-limoges-sand-0012926-60x120-nat-139994-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Pietra Viva Limoges Sand 60x120 Nat.
+- `catalog/surface-materials/flooring/gardenia/pietra-viva/gardenia-flooring-pietra-viva-limoges-sand-0014672-80x160-nat-139963-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Pietra Viva Limoges Sand 80x160 Nat.
+- `catalog/surface-materials/flooring/gardenia/pietra-viva/gardenia-flooring-pietra-viva-limoges-white-0012319-60x120-139997-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Pietra Viva Limoges White 60x120.
+- `catalog/surface-materials/flooring/gardenia/pietra-viva/gardenia-flooring-pietra-viva-limoges-white-0012324-120x120-139993-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Pietra Viva Limoges White 120x120.
+- `catalog/surface-materials/flooring/gardenia/pietra-viva/gardenia-flooring-pietra-viva-limoges-white-0012329-120x280-nat-140005-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Pietra Viva Limoges White 120x280 Nat.
+- `catalog/surface-materials/flooring/gardenia/pietra-viva/gardenia-flooring-pietra-viva-limoges-white-0012332-80x80-nat-139999-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Pietra Viva Limoges White 80x80 Nat.
+- `catalog/surface-materials/flooring/gardenia/pietra-viva/gardenia-flooring-pietra-viva-limoges-white-0012922-120x120-nat-139991-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Pietra Viva Limoges White 120x120 Nat.
+- `catalog/surface-materials/flooring/gardenia/pietra-viva/gardenia-flooring-pietra-viva-limoges-white-0012927-60x120-nat-139995-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Pietra Viva Limoges White 60x120 Nat.
+- `catalog/surface-materials/flooring/gardenia/pietra-viva/gardenia-flooring-pietra-viva-limoges-white-0014673-80x160-nat-139964-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Pietra Viva Limoges White 80x160 Nat.
+- `catalog/surface-materials/flooring/gardenia/tabulae/gardenia-flooring-tabulae-chevron-fieno-pf60021112-15x85-nat-92343-par-dx-sx/catalog.yaml` — Canonical surface-material catalog record for Gardenia Tabulae Chevron Fieno 15x85 Nat.
+- `catalog/surface-materials/flooring/gardenia/tabulae/gardenia-flooring-tabulae-chevron-havana-pf60021111-15x85-nat-92342-par-dx-sx/catalog.yaml` — Canonical surface-material catalog record for Gardenia Tabulae Chevron Havana 15x85 Nat.
+- `catalog/surface-materials/flooring/gardenia/tabulae/gardenia-flooring-tabulae-chevron-miele-pf60021113-15x85-nat-92344-par-dx-sx/catalog.yaml` — Canonical surface-material catalog record for Gardenia Tabulae Chevron Miele 15x85 Nat.
+- `catalog/surface-materials/flooring/gardenia/tabulae/gardenia-flooring-tabulae-chevron-sabbia-pf60021110-15x85-nat-92341-par-dx-sx/catalog.yaml` — Canonical surface-material catalog record for Gardenia Tabulae Chevron Sabbia 15x85 Nat.
+- `catalog/surface-materials/flooring/gardenia/tabulae/gardenia-flooring-tabulae-genuine-combo-3d-pf60021151-60x60-nat-92262-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Tabulae Genuine Combo 3D 60x60 Nat.
+- `catalog/surface-materials/flooring/gardenia/tabulae/gardenia-flooring-tabulae-genuine-hav-pf60021107-23-4x148-nat-92249-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Tabulae Genuine Hav 23,4x148 Nat.
+- `catalog/surface-materials/flooring/gardenia/tabulae/gardenia-flooring-tabulae-genuine-hav-pf60021141-20x120-nat-92253-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Tabulae Genuine Hav 20x120 Nat.
+- `catalog/surface-materials/flooring/gardenia/tabulae/gardenia-flooring-tabulae-genuine-hav-pf60021145-10x60-nat-92257-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Tabulae Genuine Hav 10x60 Nat.
+- `catalog/surface-materials/flooring/gardenia/tabulae/gardenia-flooring-tabulae-genuine-hav-pf60021156-20x120-92267-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Tabulae Genuine Hav 20x120.
+- `catalog/surface-materials/flooring/gardenia/tabulae/gardenia-flooring-tabulae-genuine-hav-pf60021253-30x120-92270-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Tabulae Genuine Hav 30x120.
+- `catalog/surface-materials/flooring/gardenia/tabulae/gardenia-flooring-tabulae-genuine-sab-nat-pf60021106-23-4x148-nat-92248-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Tabulae Genuine Sab Nat 23,4x148 Nat.
+- `catalog/surface-materials/flooring/gardenia/tabulae/gardenia-flooring-tabulae-genuine-sab-nat-pf60021140-20x120-nat-92252-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Tabulae Genuine Sab Nat 20x120 Nat.
+- `catalog/surface-materials/flooring/gardenia/tabulae/gardenia-flooring-tabulae-genuine-sab-nat-pf60021144-10x60-nat-92256-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Tabulae Genuine Sab Nat 10x60 Nat.
+- `catalog/surface-materials/flooring/gardenia/tabulae/gardenia-flooring-tabulae-genuine-sab-nat-pf60021155-20x120-92266-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Tabulae Genuine Sab Nat 20x120.
+- `catalog/surface-materials/flooring/gardenia/tabulae/gardenia-flooring-tabulae-genuine-sticks-3d-pf60021153-60x120-nat-92264-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Tabulae Genuine Sticks 3D 60x120 Nat.
+- `catalog/surface-materials/flooring/gardenia/tabulae/gardenia-flooring-tabulae-refined-fieno-pf60021108-23-4x148-nat-92250-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Tabulae Refined Fieno 23,4x148 Nat.
+- `catalog/surface-materials/flooring/gardenia/tabulae/gardenia-flooring-tabulae-refined-fieno-pf60021142-20x120-nat-92254-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Tabulae Refined Fieno 20x120 Nat.
+- `catalog/surface-materials/flooring/gardenia/tabulae/gardenia-flooring-tabulae-refined-fieno-pf60021146-10x60-nat-92258-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Tabulae Refined Fieno 10x60 Nat.
+- `catalog/surface-materials/flooring/gardenia/tabulae/gardenia-flooring-tabulae-refined-fieno-pf60021148-5x120-nat-92260-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Tabulae Refined Fieno 5x120 Nat.
+- `catalog/surface-materials/flooring/gardenia/tabulae/gardenia-flooring-tabulae-refined-fieno-pf60021157-20x120-92268-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Tabulae Refined Fieno 20x120.
+- `catalog/surface-materials/flooring/gardenia/tabulae/gardenia-flooring-tabulae-refined-marble-3d-pf60021154-60x120-nat-92265-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Tabulae Refined Marble 3D 60x120 Nat.
+- `catalog/surface-materials/flooring/gardenia/tabulae/gardenia-flooring-tabulae-refined-mesh-3d-pf60021152-60x60-nat-92263-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Tabulae Refined Mesh 3D 60x60 Nat.
+- `catalog/surface-materials/flooring/gardenia/tabulae/gardenia-flooring-tabulae-refined-miele-nat-pf60021109-23-4x148-nat-92251-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Tabulae Refined Miele Nat 23,4x148 Nat.
+- `catalog/surface-materials/flooring/gardenia/tabulae/gardenia-flooring-tabulae-refined-miele-nat-pf60021143-20x120-nat-92255-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Tabulae Refined Miele Nat 20x120 Nat.
+- `catalog/surface-materials/flooring/gardenia/tabulae/gardenia-flooring-tabulae-refined-miele-nat-pf60021147-10x60-nat-92259-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Tabulae Refined Miele Nat 10x60 Nat.
+- `catalog/surface-materials/flooring/gardenia/tabulae/gardenia-flooring-tabulae-refined-miele-nat-pf60021149-5x120-nat-92261-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Tabulae Refined Miele Nat 5x120 Nat.
+- `catalog/surface-materials/flooring/gardenia/tabulae/gardenia-flooring-tabulae-refined-miele-nat-pf60021158-20x120-92269-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Tabulae Refined Miele Nat 20x120.
+- `catalog/surface-materials/flooring/gardenia/tabulae/gardenia-flooring-tabulae-refined-miele-nat-pf60021254-30x120-92271-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Tabulae Refined Miele Nat 30x120.
+- `catalog/surface-materials/flooring/goodrich/geff-novaclick-gnv-001-ivory-oak/catalog.yaml` — Canonical surface-material catalog record for GEFF NovaClick GNV-001 Ivory Oak.
+- `catalog/surface-materials/flooring/goodrich/geff-novaclick-gnv-002-silver-oak/catalog.yaml` — Canonical surface-material catalog record for GEFF NovaClick GNV-002 Silver Oak.
+- `catalog/surface-materials/flooring/goodrich/geff-novaclick-gnv-003-ash-oak/catalog.yaml` — Canonical surface-material catalog record for GEFF NovaClick GNV-003 Ash Oak.
+- `catalog/surface-materials/flooring/goodrich/geff-novaclick-gnv-004-american-chestnut/catalog.yaml` — Canonical surface-material catalog record for GEFF NovaClick GNV-004 American Chestnut.
+- `catalog/surface-materials/flooring/goodrich/geff-novaclick-gnv-005-vintage-oak/catalog.yaml` — Canonical surface-material catalog record for GEFF NovaClick GNV-005 Vintage Oak.
+- `catalog/surface-materials/flooring/goodrich/geff-novaclick-gnv-006-artisian-parquet/catalog.yaml` — Canonical surface-material catalog record for GEFF NovaClick GNV-006 Artisian Parquet.
+- `catalog/surface-materials/flooring/goodrich/geff-novaclick-gnv-007-french-maple/catalog.yaml` — Canonical surface-material catalog record for GEFF NovaClick GNV-007 French Maple.
+- `catalog/surface-materials/flooring/goodrich/geff-novaclick-gnv-008-premier-oak/catalog.yaml` — Canonical surface-material catalog record for GEFF NovaClick GNV-008 Premier Oak.
+- `catalog/surface-materials/flooring/goodrich/geff-novaclick-gnv-010-weathered-timberland/catalog.yaml` — Canonical surface-material catalog record for GEFF NovaClick GNV-010 Weathered Timberland.
+- `catalog/surface-materials/flooring/goodrich/geff-novaclick-gnv-011-european-oak/catalog.yaml` — Canonical surface-material catalog record for GEFF NovaClick GNV-011 European Oak.
+- `catalog/surface-materials/flooring/goodrich/geff-novaclick-gnv-012-classic-walnut/catalog.yaml` — Canonical surface-material catalog record for GEFF NovaClick GNV-012 Classic Walnut.
+- `catalog/surface-materials/flooring/goodrich/geff-novaclick-gnv-013-pewter-oak/catalog.yaml` — Canonical surface-material catalog record for GEFF NovaClick GNV-013 Pewter Oak.
+- `catalog/surface-materials/flooring/goodrich/geff-novaclick-gnv-014-light-pine/catalog.yaml` — Canonical surface-material catalog record for GEFF NovaClick GNV-014 Light Pine.
+- `catalog/surface-materials/flooring/goodrich/geff-novaclick-gnv-015-smoke-grey/catalog.yaml` — Canonical surface-material catalog record for GEFF NovaClick GNV-015 Smoke Grey.
+- `catalog/surface-materials/flooring/goodrich/geff-novaclick-gnv-016-limewash/catalog.yaml` — Canonical surface-material catalog record for GEFF NovaClick GNV-016 Limewash.
+- `catalog/surface-materials/flooring/goodrich/geff-novaclick-gnv-017-greystone/catalog.yaml` — Canonical surface-material catalog record for GEFF NovaClick GNV-017 Greystone.
+- `catalog/surface-materials/flooring/goodrich/geff-novaclick-gnv-018-grand-marble/catalog.yaml` — Canonical surface-material catalog record for GEFF NovaClick GNV-018 Grand Marble.
+- `catalog/surface-materials/flooring/goodrich/goodrich-geff-nova-dryback-gnd-001-grey-anthracite/catalog.yaml` — Canonical surface-material catalog record for GEFF Nova Dryback GND-001 Grey Anthracite.
+- `catalog/surface-materials/flooring/goodrich/goodrich-geff-nova-dryback-gnd-002-cold-cement/catalog.yaml` — Canonical surface-material catalog record for GEFF Nova Dryback GND-002 Cold Cement.
+- `catalog/surface-materials/flooring/goodrich/goodrich-geff-nova-dryback-gnd-003-ash-grey/catalog.yaml` — Canonical surface-material catalog record for GEFF Nova Dryback GND-003 Ash Grey.
+- `catalog/surface-materials/flooring/goodrich/goodrich-geff-nova-dryback-gnd-004-oak/catalog.yaml` — Canonical surface-material catalog record for GEFF Nova Dryback GND-004 Oak.
+- `catalog/surface-materials/flooring/goodrich/goodrich-geff-nova-dryback-gnd-005-maple/catalog.yaml` — Canonical surface-material catalog record for GEFF Nova Dryback GND-005 Maple.
+- `catalog/surface-materials/flooring/goodrich/goodrich-geff-nova-dryback-gnd-006-sunbleached/catalog.yaml` — Canonical surface-material catalog record for GEFF Nova Dryback GND-006 Sunbleached.
+- `catalog/surface-materials/flooring/goodrich/goodrich-geff-nova-dryback-gnd-007-galaxy/catalog.yaml` — Canonical surface-material catalog record for GEFF Nova Dryback GND-007 Galaxy.
+- `catalog/surface-materials/flooring/goodrich/goodrich-geff-nova-dryback-gnd-008-terrazzo/catalog.yaml` — Canonical surface-material catalog record for GEFF Nova Dryback GND-008 Terrazzo.
+- `catalog/surface-materials/wall_tile/gardenia/anima/gardenia-wall-tile-anima-beige-0006044-120x120-196214-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Anima Beige 120x120.
+- `catalog/surface-materials/wall_tile/gardenia/anima/gardenia-wall-tile-anima-beige-0006048-60x120-196217-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Anima Beige 60x120.
+- `catalog/surface-materials/wall_tile/gardenia/anima/gardenia-wall-tile-anima-beige-0006056-60x60-196221-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Anima Beige 60x60.
+- `catalog/surface-materials/wall_tile/gardenia/anima/gardenia-wall-tile-anima-beige-0007809-80x80-196231-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Anima Beige 80x80.
+- `catalog/surface-materials/wall_tile/gardenia/anima/gardenia-wall-tile-anima-fango-0006057-60x60-196222-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Anima Fango 60x60.
+- `catalog/surface-materials/wall_tile/gardenia/anima/gardenia-wall-tile-anima-fango-0007195-60x120-196229-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Anima Fango 60x120.
+- `catalog/surface-materials/wall_tile/gardenia/anima/gardenia-wall-tile-anima-fumo-0006047-120x120-196216-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Anima Fumo 120x120.
+- `catalog/surface-materials/wall_tile/gardenia/anima/gardenia-wall-tile-anima-fumo-0006051-60x120-196220-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Anima Fumo 60x120.
+- `catalog/surface-materials/wall_tile/gardenia/anima/gardenia-wall-tile-anima-fumo-0006059-60x60-196224-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Anima Fumo 60x60.
+- `catalog/surface-materials/wall_tile/gardenia/anima/gardenia-wall-tile-anima-fumo-0007812-80x80-196233-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Anima Fumo 80x80.
+- `catalog/surface-materials/wall_tile/gardenia/anima/gardenia-wall-tile-anima-ghiaia-beige-0007919-60x120-196234-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Anima Ghiaia Beige 60x120.
+- `catalog/surface-materials/wall_tile/gardenia/anima/gardenia-wall-tile-anima-ghiaia-beige-0007921-60x60-196236-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Anima Ghiaia Beige 60x60.
+- `catalog/surface-materials/wall_tile/gardenia/anima/gardenia-wall-tile-anima-ghiaia-grigio-0007920-60x120-196235-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Anima Ghiaia Grigio 60x120.
+- `catalog/surface-materials/wall_tile/gardenia/anima/gardenia-wall-tile-anima-ghiaia-grigio-0007922-60x60-196237-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Anima Ghiaia Grigio 60x60.
+- `catalog/surface-materials/wall_tile/gardenia/anima/gardenia-wall-tile-anima-grigio-0006046-120x120-196215-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Anima Grigio 120x120.
+- `catalog/surface-materials/wall_tile/gardenia/anima/gardenia-wall-tile-anima-grigio-0006058-60x60-196223-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Anima Grigio 60x60.
+- `catalog/surface-materials/wall_tile/gardenia/anima/gardenia-wall-tile-anima-grigio-0007196-60x120-196230-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Anima Grigio 60x120.
+- `catalog/surface-materials/wall_tile/gardenia/anima/gardenia-wall-tile-anima-grigio-0007811-80x80-196232-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Anima Grigio 80x80.
+- `catalog/surface-materials/wall_tile/gardenia/anima/gardenia-wall-tile-anima-grigio-0008672-120x280-nat-196238-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Anima Grigio 120x280 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/bon-ton/gardenia-wall-tile-bon-ton-biancone-pf60020759-120x280-lux-196241-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Bon Ton Biancone 120x280 Lux.
+- `catalog/surface-materials/wall_tile/gardenia/bon-ton/gardenia-wall-tile-bon-ton-biancone-pf60020767-120x280-soft-196245-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Bon Ton Biancone 120x280 Soft.
+- `catalog/surface-materials/wall_tile/gardenia/bon-ton/gardenia-wall-tile-bon-ton-biancone-pf60020776-120x120-196249-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Bon Ton Biancone 120x120.
+- `catalog/surface-materials/wall_tile/gardenia/bon-ton/gardenia-wall-tile-bon-ton-biancone-pf60020780-60x120-196253-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Bon Ton Biancone 60x120.
+- `catalog/surface-materials/wall_tile/gardenia/bon-ton/gardenia-wall-tile-bon-ton-biancone-pf60020800-120x120-nat-196260-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Bon Ton Biancone 120x120 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/bon-ton/gardenia-wall-tile-bon-ton-biancone-pf60020804-60x120-nat-196264-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Bon Ton Biancone 60x120 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/bon-ton/gardenia-wall-tile-bon-ton-biancone-pf60020848-5x120-197635-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Bon Ton Biancone 5x120.
+- `catalog/surface-materials/wall_tile/gardenia/bon-ton/gardenia-wall-tile-bon-ton-botticino-pf60020757-120x280-lux-196239-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Bon Ton Botticino 120x280 Lux.
+- `catalog/surface-materials/wall_tile/gardenia/bon-ton/gardenia-wall-tile-bon-ton-botticino-pf60020765-120x280-soft-196243-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Bon Ton Botticino 120x280 Soft.
+- `catalog/surface-materials/wall_tile/gardenia/bon-ton/gardenia-wall-tile-bon-ton-botticino-pf60020774-120x120-196247-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Bon Ton Botticino 120x120.
+- `catalog/surface-materials/wall_tile/gardenia/bon-ton/gardenia-wall-tile-bon-ton-botticino-pf60020778-60x120-196251-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Bon Ton Botticino 60x120.
+- `catalog/surface-materials/wall_tile/gardenia/bon-ton/gardenia-wall-tile-bon-ton-botticino-pf60020798-120x120-nat-196258-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Bon Ton Botticino 120x120 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/bon-ton/gardenia-wall-tile-bon-ton-botticino-pf60020802-60x120-nat-196262-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Bon Ton Botticino 60x120 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/bon-ton/gardenia-wall-tile-bon-ton-botticino-pf60020846-5x120-197633-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Bon Ton Botticino 5x120.
+- `catalog/surface-materials/wall_tile/gardenia/bon-ton/gardenia-wall-tile-bon-ton-carrara-pf60020758-120x280-soft-196240-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Bon Ton Carrara 120x280 Soft.
+- `catalog/surface-materials/wall_tile/gardenia/bon-ton/gardenia-wall-tile-bon-ton-carrara-pf60020775-120x120-196248-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Bon Ton Carrara 120x120.
+- `catalog/surface-materials/wall_tile/gardenia/bon-ton/gardenia-wall-tile-bon-ton-carrara-pf60020779-60x120-196252-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Bon Ton Carrara 60x120.
+- `catalog/surface-materials/wall_tile/gardenia/bon-ton/gardenia-wall-tile-bon-ton-carrara-pf60020799-120x120-nat-196259-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Bon Ton Carrara 120x120 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/bon-ton/gardenia-wall-tile-bon-ton-carrara-pf60020803-60x120-nat-196263-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Bon Ton Carrara 60x120 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/bon-ton/gardenia-wall-tile-bon-ton-carrara-pf60020847-5x120-197634-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Bon Ton Carrara 5x120.
+- `catalog/surface-materials/wall_tile/gardenia/bon-ton/gardenia-wall-tile-bon-ton-network-pf60020782-60x120-196255-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Bon Ton Network 60x120.
+- `catalog/surface-materials/wall_tile/gardenia/bon-ton/gardenia-wall-tile-bon-ton-octagon-pf60020783-60x120-196256-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Bon Ton Octagon 60x120.
+- `catalog/surface-materials/wall_tile/gardenia/bon-ton/gardenia-wall-tile-bon-ton-perlino-pf60020760-120x280-lux-196242-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Bon Ton Perlino 120x280 Lux.
+- `catalog/surface-materials/wall_tile/gardenia/bon-ton/gardenia-wall-tile-bon-ton-perlino-pf60020768-120x280-soft-196246-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Bon Ton Perlino 120x280 Soft.
+- `catalog/surface-materials/wall_tile/gardenia/bon-ton/gardenia-wall-tile-bon-ton-perlino-pf60020777-120x120-196250-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Bon Ton Perlino 120x120.
+- `catalog/surface-materials/wall_tile/gardenia/bon-ton/gardenia-wall-tile-bon-ton-perlino-pf60020781-60x120-196254-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Bon Ton Perlino 60x120.
+- `catalog/surface-materials/wall_tile/gardenia/bon-ton/gardenia-wall-tile-bon-ton-perlino-pf60020801-120x120-nat-196261-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Bon Ton Perlino 120x120 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/bon-ton/gardenia-wall-tile-bon-ton-perlino-pf60020805-60x120-nat-196265-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Bon Ton Perlino 60x120 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/bon-ton/gardenia-wall-tile-bon-ton-perlino-pf60020849-5x120-197636-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Bon Ton Perlino 5x120.
+- `catalog/surface-materials/wall_tile/gardenia/bon-ton/gardenia-wall-tile-bon-ton-tricot-pf60020784-60x120-196257-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Bon Ton Tricot 60x120.
+- `catalog/surface-materials/wall_tile/gardenia/dorica/gardenia-wall-tile-dorica-avorio-0009999-120x280-nat-196266-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Dorica Avorio 120x280 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/dorica/gardenia-wall-tile-dorica-avorio-0010005-120x120-nat-196269-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Dorica Avorio 120x120 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/dorica/gardenia-wall-tile-dorica-avorio-0010008-60x120-nat-196272-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Dorica Avorio 60x120 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/dorica/gardenia-wall-tile-dorica-avorio-0010518-20x120-nat-196277-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Dorica Avorio 20x120 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/dorica/gardenia-wall-tile-dorica-crema-0010000-120x280-nat-196267-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Dorica Crema 120x280 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/dorica/gardenia-wall-tile-dorica-crema-0010006-120x120-nat-196270-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Dorica Crema 120x120 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/dorica/gardenia-wall-tile-dorica-crema-0010009-60x120-nat-196273-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Dorica Crema 60x120 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/dorica/gardenia-wall-tile-dorica-crema-0010519-20x120-nat-196278-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Dorica Crema 20x120 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/dorica/gardenia-wall-tile-dorica-degrade-0010087-60x120-196274-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Dorica Degrade.
+- `catalog/surface-materials/wall_tile/gardenia/dorica/gardenia-wall-tile-dorica-greige-0010004-120x120-nat-196268-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Dorica Greige 120x120 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/dorica/gardenia-wall-tile-dorica-greige-0010007-60x120-nat-196271-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Dorica Greige 60x120 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/falaise/gardenia-wall-tile-falaise-art-beige-0010804-60x120-196284-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Falaise Art Beige 60x120.
+- `catalog/surface-materials/wall_tile/gardenia/falaise/gardenia-wall-tile-falaise-art-grey-0017607-60x120-196300-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Falaise Art Grey 60x120.
+- `catalog/surface-materials/wall_tile/gardenia/falaise/gardenia-wall-tile-falaise-beige-0017197-120x120-nat-196286-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Falaise Beige 120x120 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/falaise/gardenia-wall-tile-falaise-beige-0017200-60x120-nat-196289-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Falaise Beige 60x120 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/falaise/gardenia-wall-tile-falaise-beige-0017203-80x80-nat-196292-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Falaise Beige 80x80 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/falaise/gardenia-wall-tile-falaise-beige-0017526-60x60-nat-196296-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Falaise Beige 60x60 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/falaise/gardenia-wall-tile-falaise-grey-0017198-120x120-nat-196287-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Falaise Grey 120x120 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/falaise/gardenia-wall-tile-falaise-grey-0017201-60x120-nat-196290-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Falaise Grey 60x120 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/falaise/gardenia-wall-tile-falaise-grey-0017204-80x80-nat-196293-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Falaise Grey 80x80 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/falaise/gardenia-wall-tile-falaise-grey-0017527-60x60-nat-196297-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Falaise Grey 60x60 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/falaise/gardenia-wall-tile-falaise-mint-0017754-120x120-nat-196303-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Falaise Mint 120x120 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/falaise/gardenia-wall-tile-falaise-mint-0017755-60x120-nat-196304-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Falaise Mint 60x120 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/falaise/gardenia-wall-tile-falaise-mint-0017756-60x60-nat-196305-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Falaise Mint 60x60 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/falaise/gardenia-wall-tile-falaise-mint-0017758-80x80-nat-196306-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Falaise Mint 80x80 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/falaise/gardenia-wall-tile-falaise-white-0017196-120x120-nat-196285-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Falaise White 120x120 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/falaise/gardenia-wall-tile-falaise-white-0017199-60x120-nat-196288-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Falaise White 60x120 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/falaise/gardenia-wall-tile-falaise-white-0017202-80x80-nat-196291-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Falaise White 80x80 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/falaise/gardenia-wall-tile-falaise-white-0017338-120x280-nat-196294-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Falaise White 120x280 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/falaise/gardenia-wall-tile-falaise-white-0017525-60x60-nat-196295-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Falaise White 60x60 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/falaise/gardenia-wall-tile-falaise-white-0017716-60x120-196301-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Falaise White 60x120.
+- `catalog/surface-materials/wall_tile/gardenia/falaise/gardenia-wall-tile-falaise-white-0017717-120x120-196302-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Falaise White 120x120.
+- `catalog/surface-materials/wall_tile/gardenia/gioia/gardenia-wall-tile-gioia-beige-pf60008230-60x120-90227-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Gioia Beige 60x120.
+- `catalog/surface-materials/wall_tile/gardenia/gioia/gardenia-wall-tile-gioia-bosco-pf60009648-60x120-90234-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Gioia Bosco 60x120.
+- `catalog/surface-materials/wall_tile/gardenia/gioia/gardenia-wall-tile-gioia-cenere-pf60009646-60x120-90232-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Gioia Cenere 60x120.
+- `catalog/surface-materials/wall_tile/gardenia/gioia/gardenia-wall-tile-gioia-cielo-pf60008233-60x120-90229-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Gioia Cielo 60x120.
+- `catalog/surface-materials/wall_tile/gardenia/gioia/gardenia-wall-tile-gioia-cipria-pf60008235-60x120-90231-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Gioia Cipria 60x120.
+- `catalog/surface-materials/wall_tile/gardenia/gioia/gardenia-wall-tile-gioia-corteccia-pf60009647-60x120-90233-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Gioia Corteccia 60x120.
+- `catalog/surface-materials/wall_tile/gardenia/gioia/gardenia-wall-tile-gioia-latte-pf60008228-60x120-90226-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Gioia Latte 60x120.
+- `catalog/surface-materials/wall_tile/gardenia/gioia/gardenia-wall-tile-gioia-majorelle-00202274-60x120-139925-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Gioia Majorelle 60x120.
+- `catalog/surface-materials/wall_tile/gardenia/gioia/gardenia-wall-tile-gioia-martinica-pf60009655-60x120-90240-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Gioia Martinica 60x120.
+- `catalog/surface-materials/wall_tile/gardenia/gioia/gardenia-wall-tile-gioia-oceano-pf60008234-60x120-90230-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Gioia Oceano 60x120.
+- `catalog/surface-materials/wall_tile/gardenia/gioia/gardenia-wall-tile-gioia-ombrelle-00202275-60x120-139926-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Gioia Ombrelle 60x120.
+- `catalog/surface-materials/wall_tile/gardenia/gioia/gardenia-wall-tile-gioia-palma-00202277-60x120-139928-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Gioia Palma 60x120.
+- `catalog/surface-materials/wall_tile/gardenia/gioia/gardenia-wall-tile-gioia-papilio-00202278-60x120-139929-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Gioia Papilio 60x120.
+- `catalog/surface-materials/wall_tile/gardenia/gioia/gardenia-wall-tile-gioia-primavera-pf60010527-60x120-90243-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Gioia Primavera 60x120.
+- `catalog/surface-materials/wall_tile/gardenia/gioia/gardenia-wall-tile-gioia-rossignol-00202276-60x120-139927-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Gioia Rossignol 60x120.
+- `catalog/surface-materials/wall_tile/gardenia/gioia/gardenia-wall-tile-gioia-salvia-pf60008232-60x120-90228-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Gioia Salvia 60x120.
+- `catalog/surface-materials/wall_tile/gardenia/i-pigmenti/gardenia-wall-tile-i-pigmenti-ash-0016429-60x120-nat-90282-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia I Pigmenti Ash 60x120 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/i-pigmenti/gardenia-wall-tile-i-pigmenti-ash-0016439-20x120-nat-90292-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia I Pigmenti Ash 20x120 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/i-pigmenti/gardenia-wall-tile-i-pigmenti-ash-0016449-60x60-nat-90302-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia I Pigmenti Ash 60x60 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/i-pigmenti/gardenia-wall-tile-i-pigmenti-ash-0016459-10x60-nat-90312-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia I Pigmenti Ash 10x60 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/i-pigmenti/gardenia-wall-tile-i-pigmenti-ash-0016605-30x30-nat-90322-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia I Pigmenti Ash 30x30 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/i-pigmenti/gardenia-wall-tile-i-pigmenti-ash-0016961-120x120-nat-90331-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia I Pigmenti Ash 120x120 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/i-pigmenti/gardenia-wall-tile-i-pigmenti-ash-0016997-120x280-nat-90341-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia I Pigmenti Ash 120x280 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/i-pigmenti/gardenia-wall-tile-i-pigmenti-bark-0016432-60x120-nat-90285-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia I Pigmenti Bark 60x120 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/i-pigmenti/gardenia-wall-tile-i-pigmenti-bark-0016442-20x120-nat-90295-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia I Pigmenti Bark 20x120 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/i-pigmenti/gardenia-wall-tile-i-pigmenti-bark-0016452-60x60-nat-90305-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia I Pigmenti Bark 60x60 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/i-pigmenti/gardenia-wall-tile-i-pigmenti-bark-0016462-10x60-nat-90315-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia I Pigmenti Bark 10x60 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/i-pigmenti/gardenia-wall-tile-i-pigmenti-bark-0016608-30x30-nat-90325-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia I Pigmenti Bark 30x30 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/i-pigmenti/gardenia-wall-tile-i-pigmenti-bark-0016970-120x120-nat-90336-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia I Pigmenti Bark 120x120 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/i-pigmenti/gardenia-wall-tile-i-pigmenti-bark-0016998-120x280-nat-90342-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia I Pigmenti Bark 120x280 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/i-pigmenti/gardenia-wall-tile-i-pigmenti-clay-0016431-60x120-nat-90284-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia I Pigmenti Clay 60x120 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/i-pigmenti/gardenia-wall-tile-i-pigmenti-clay-0016441-20x120-nat-90294-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia I Pigmenti Clay 20x120 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/i-pigmenti/gardenia-wall-tile-i-pigmenti-clay-0016451-60x60-nat-90304-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia I Pigmenti Clay 60x60 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/i-pigmenti/gardenia-wall-tile-i-pigmenti-clay-0016461-10x60-nat-90314-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia I Pigmenti Clay 10x60 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/i-pigmenti/gardenia-wall-tile-i-pigmenti-clay-0016607-30x30-nat-90324-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia I Pigmenti Clay 30x30 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/i-pigmenti/gardenia-wall-tile-i-pigmenti-clay-0016964-120x120-nat-90334-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia I Pigmenti Clay 120x120 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/i-pigmenti/gardenia-wall-tile-i-pigmenti-clay-0016999-120x280-nat-90343-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia I Pigmenti Clay 120x280 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/i-pigmenti/gardenia-wall-tile-i-pigmenti-concrete-0016437-60x120-nat-90290-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia I Pigmenti Concrete 60x120 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/i-pigmenti/gardenia-wall-tile-i-pigmenti-concrete-0016447-20x120-nat-90300-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia I Pigmenti Concrete 20x120 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/i-pigmenti/gardenia-wall-tile-i-pigmenti-concrete-0016457-60x60-nat-90310-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia I Pigmenti Concrete 60x60 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/i-pigmenti/gardenia-wall-tile-i-pigmenti-concrete-0016467-10x60-nat-90320-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia I Pigmenti Concrete 10x60 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/i-pigmenti/gardenia-wall-tile-i-pigmenti-concrete-0016613-30x30-nat-90330-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia I Pigmenti Concrete 30x30 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/i-pigmenti/gardenia-wall-tile-i-pigmenti-concrete-0016974-120x120-nat-90339-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia I Pigmenti Concrete 120x120 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/i-pigmenti/gardenia-wall-tile-i-pigmenti-concrete-0017000-120x280-nat-90344-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia I Pigmenti Concrete 120x280 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/i-pigmenti/gardenia-wall-tile-i-pigmenti-cotto-0016434-60x120-nat-90287-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia I Pigmenti Cotto 60x120 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/i-pigmenti/gardenia-wall-tile-i-pigmenti-cotto-0016444-20x120-nat-90297-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia I Pigmenti Cotto 20x120 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/i-pigmenti/gardenia-wall-tile-i-pigmenti-cotto-0016454-60x60-nat-90307-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia I Pigmenti Cotto 60x60 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/i-pigmenti/gardenia-wall-tile-i-pigmenti-cotto-0016464-10x60-nat-90317-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia I Pigmenti Cotto 10x60 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/i-pigmenti/gardenia-wall-tile-i-pigmenti-cotto-0016610-30x30-nat-90327-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia I Pigmenti Cotto 30x30 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/i-pigmenti/gardenia-wall-tile-i-pigmenti-cotto-0016969-120x120-nat-90335-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia I Pigmenti Cotto 120x120 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/i-pigmenti/gardenia-wall-tile-i-pigmenti-cotto-0017001-120x280-nat-90345-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia I Pigmenti Cotto 120x280 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/i-pigmenti/gardenia-wall-tile-i-pigmenti-cream-0016433-60x120-nat-90286-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia I Pigmenti Cream 60x120 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/i-pigmenti/gardenia-wall-tile-i-pigmenti-cream-0016443-20x120-nat-90296-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia I Pigmenti Cream 20x120 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/i-pigmenti/gardenia-wall-tile-i-pigmenti-cream-0016453-60x60-nat-90306-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia I Pigmenti Cream 60x60 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/i-pigmenti/gardenia-wall-tile-i-pigmenti-cream-0016463-10x60-nat-90316-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia I Pigmenti Cream 10x60 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/i-pigmenti/gardenia-wall-tile-i-pigmenti-cream-0016609-30x30-nat-90326-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia I Pigmenti Cream 30x30 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/i-pigmenti/gardenia-wall-tile-i-pigmenti-cream-0016975-120x120-nat-90340-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia I Pigmenti Cream 120x120 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/i-pigmenti/gardenia-wall-tile-i-pigmenti-cream-0017002-120x280-nat-90346-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia I Pigmenti Cream 120x280 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/i-pigmenti/gardenia-wall-tile-i-pigmenti-crocini-pf60014514-60x120-nat-90359-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia I Pigmenti Crocini 60x120 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/i-pigmenti/gardenia-wall-tile-i-pigmenti-milk-0016428-60x120-nat-90281-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia I Pigmenti Milk 60x120 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/i-pigmenti/gardenia-wall-tile-i-pigmenti-milk-0016438-20x120-nat-90291-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia I Pigmenti Milk 20x120 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/i-pigmenti/gardenia-wall-tile-i-pigmenti-milk-0016448-60x60-nat-90301-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia I Pigmenti Milk 60x60 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/i-pigmenti/gardenia-wall-tile-i-pigmenti-milk-0016458-10x60-nat-90311-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia I Pigmenti Milk 10x60 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/i-pigmenti/gardenia-wall-tile-i-pigmenti-milk-0016604-30x30-nat-90321-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia I Pigmenti Milk 30x30 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/i-pigmenti/gardenia-wall-tile-i-pigmenti-milk-0016962-120x120-nat-90332-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia I Pigmenti Milk 120x120 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/i-pigmenti/gardenia-wall-tile-i-pigmenti-milk-0017003-120x280-nat-90347-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia I Pigmenti Milk 120x280 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/i-pigmenti/gardenia-wall-tile-i-pigmenti-mos-confet-ash-pf60017598-29-3x33-3-nat-90361-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia I Pigmenti Mos Confet Ash 29,3x33,3 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/i-pigmenti/gardenia-wall-tile-i-pigmenti-mos-confet-bark-pf60017601-29-3x33-3-nat-90364-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia I Pigmenti Mos Confet Bark 29,3x33,3 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/i-pigmenti/gardenia-wall-tile-i-pigmenti-mos-confet-clay-pf60017600-29-3x33-3-nat-90363-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia I Pigmenti Mos Confet Clay 29,3x33,3 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/i-pigmenti/gardenia-wall-tile-i-pigmenti-mos-confet-concr-pf60017606-29-3x33-3-nat-90369-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia I Pigmenti Mos Confet Concr 29,3x33,3 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/i-pigmenti/gardenia-wall-tile-i-pigmenti-mos-confet-cotto-pf60017603-29-3x33-3-nat-90366-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia I Pigmenti Mos Confet Cotto 29,3x33,3 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/i-pigmenti/gardenia-wall-tile-i-pigmenti-mos-confet-cream-pf60017602-29-3x33-3-nat-90365-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia I Pigmenti Mos Confet Cream 29,3x33,3 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/i-pigmenti/gardenia-wall-tile-i-pigmenti-mos-confet-milk-pf60017597-29-3x33-3-nat-90360-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia I Pigmenti Mos Confet Milk 29,3x33,3 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/i-pigmenti/gardenia-wall-tile-i-pigmenti-mos-confet-mou-pf60017604-29-3x33-3-nat-90367-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia I Pigmenti Mos Confet Mou 29,3x33,3 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/i-pigmenti/gardenia-wall-tile-i-pigmenti-mos-confet-mud-pf60017605-29-3x33-3-nat-90368-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia I Pigmenti Mos Confet Mud 29,3x33,3 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/i-pigmenti/gardenia-wall-tile-i-pigmenti-mos-confet-sand-pf60017599-29-3x33-3-nat-90362-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia I Pigmenti Mos Confet Sand 29,3x33,3 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/i-pigmenti/gardenia-wall-tile-i-pigmenti-mou-0016435-60x120-nat-90288-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia I Pigmenti Mou 60x120 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/i-pigmenti/gardenia-wall-tile-i-pigmenti-mou-0016445-20x120-nat-90298-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia I Pigmenti Mou 20x120 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/i-pigmenti/gardenia-wall-tile-i-pigmenti-mou-0016455-60x60-nat-90308-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia I Pigmenti Mou 60x60 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/i-pigmenti/gardenia-wall-tile-i-pigmenti-mou-0016465-10x60-nat-90318-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia I Pigmenti Mou 10x60 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/i-pigmenti/gardenia-wall-tile-i-pigmenti-mou-0016611-30x30-nat-90328-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia I Pigmenti Mou 30x30 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/i-pigmenti/gardenia-wall-tile-i-pigmenti-mou-0016973-120x120-nat-90338-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia I Pigmenti Mou 120x120 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/i-pigmenti/gardenia-wall-tile-i-pigmenti-mou-0017004-120x280-nat-90348-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia I Pigmenti Mou 120x280 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/i-pigmenti/gardenia-wall-tile-i-pigmenti-mud-0016436-60x120-nat-90289-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia I Pigmenti Mud 60x120 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/i-pigmenti/gardenia-wall-tile-i-pigmenti-mud-0016446-20x120-nat-90299-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia I Pigmenti Mud 20x120 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/i-pigmenti/gardenia-wall-tile-i-pigmenti-mud-0016456-60x60-nat-90309-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia I Pigmenti Mud 60x60 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/i-pigmenti/gardenia-wall-tile-i-pigmenti-mud-0016466-10x60-nat-90319-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia I Pigmenti Mud 10x60 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/i-pigmenti/gardenia-wall-tile-i-pigmenti-mud-0016612-30x30-nat-90329-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia I Pigmenti Mud 30x30 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/i-pigmenti/gardenia-wall-tile-i-pigmenti-mud-0016972-120x120-nat-90337-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia I Pigmenti Mud 120x120 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/i-pigmenti/gardenia-wall-tile-i-pigmenti-mud-0017005-120x280-nat-90349-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia I Pigmenti Mud 120x280 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/i-pigmenti/gardenia-wall-tile-i-pigmenti-pillole-pf60014511-60x120-nat-90357-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia I Pigmenti Pillole 60x120 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/i-pigmenti/gardenia-wall-tile-i-pigmenti-rattan-pf60014512-60x120-nat-90358-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia I Pigmenti Rattan 60x120 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/i-pigmenti/gardenia-wall-tile-i-pigmenti-sand-0016430-60x120-nat-90283-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia I Pigmenti Sand 60x120 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/i-pigmenti/gardenia-wall-tile-i-pigmenti-sand-0016440-20x120-nat-90293-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia I Pigmenti Sand 20x120 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/i-pigmenti/gardenia-wall-tile-i-pigmenti-sand-0016450-60x60-nat-90303-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia I Pigmenti Sand 60x60 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/i-pigmenti/gardenia-wall-tile-i-pigmenti-sand-0016460-10x60-nat-90313-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia I Pigmenti Sand 10x60 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/i-pigmenti/gardenia-wall-tile-i-pigmenti-sand-0016606-30x30-nat-90323-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia I Pigmenti Sand 30x30 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/i-pigmenti/gardenia-wall-tile-i-pigmenti-sand-0016963-120x120-nat-90333-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia I Pigmenti Sand 120x120 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/i-pigmenti/gardenia-wall-tile-i-pigmenti-sand-0017006-120x280-nat-90350-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia I Pigmenti Sand 120x280 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/la-geoteca/gardenia-wall-tile-la-geoteca-bourgogne-beige-pf60016026-80x80-90431-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Geoteca Bourgogne Beige 80x80.
+- `catalog/surface-materials/wall_tile/gardenia/la-geoteca/gardenia-wall-tile-la-geoteca-bourgogne-beige-pf60016055-120x280-nat-90433-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Geoteca Bourgogne Beige 120x280 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/la-geoteca/gardenia-wall-tile-la-geoteca-bourgogne-beige-pf60016057-120x120-nat-90435-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Geoteca Bourgogne Beige 120x120 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/la-geoteca/gardenia-wall-tile-la-geoteca-bourgogne-beige-pf60016059-60x120-nat-90437-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Geoteca Bourgogne Beige 60x120 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/la-geoteca/gardenia-wall-tile-la-geoteca-bourgogne-beige-pf60016061-80x80-nat-90439-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Geoteca Bourgogne Beige 80x80 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/la-geoteca/gardenia-wall-tile-la-geoteca-bourgogne-silver-pf60016027-80x80-90432-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Geoteca Bourgogne Silver 80x80.
+- `catalog/surface-materials/wall_tile/gardenia/la-geoteca/gardenia-wall-tile-la-geoteca-bourgogne-silver-pf60016056-120x280-nat-90434-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Geoteca Bourgogne Silver 120x280 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/la-geoteca/gardenia-wall-tile-la-geoteca-bourgogne-silver-pf60016058-120x120-nat-90436-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Geoteca Bourgogne Silver 120x120 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/la-geoteca/gardenia-wall-tile-la-geoteca-bourgogne-silver-pf60016060-60x120-nat-90438-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Geoteca Bourgogne Silver 60x120 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/la-geoteca/gardenia-wall-tile-la-geoteca-bourgogne-silver-pf60016062-80x80-nat-90440-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Geoteca Bourgogne Silver 80x80 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/la-geoteca/gardenia-wall-tile-la-geoteca-brennero-pf60011721-120x280-nat-90385-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Geoteca Brennero 120x280 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/la-geoteca/gardenia-wall-tile-la-geoteca-brennero-pf60011729-120x120-nat-90392-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Geoteca Brennero 120x120 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/la-geoteca/gardenia-wall-tile-la-geoteca-brennero-pf60011738-60x120-nat-90399-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Geoteca Brennero 60x120 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/la-geoteca/gardenia-wall-tile-la-geoteca-brennero-pf60012079-80x80-nat-90410-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Geoteca Brennero 80x80 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/la-geoteca/gardenia-wall-tile-la-geoteca-ceppo-di-gre-pf60008674-120x280-nat-90380-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Geoteca Ceppo Di Gre.
+- `catalog/surface-materials/wall_tile/gardenia/la-geoteca/gardenia-wall-tile-la-geoteca-ceppo-di-gre-pf60013116-120x120-nat-90429-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Geoteca Ceppo Di Gre.
+- `catalog/surface-materials/wall_tile/gardenia/la-geoteca/gardenia-wall-tile-la-geoteca-ceppo-di-gre-pf60013117-60x120-nat-90430-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Geoteca Ceppo Di Gre.
+- `catalog/surface-materials/wall_tile/gardenia/la-geoteca/gardenia-wall-tile-la-geoteca-dec-plis-bou-bei-pf60016141-60x120-nat-90447-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Geoteca Dec Plis Bou Bei 60x120 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/la-geoteca/gardenia-wall-tile-la-geoteca-dec-pliss-serena-pf60016634-60x120-nat-90451-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Geoteca Dec Pliss Serena 60x120 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/la-geoteca/gardenia-wall-tile-la-geoteca-dec-plisse-limes-pf60016140-60x120-nat-90446-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Geoteca Dec Plissè Limes 60x120 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/la-geoteca/gardenia-wall-tile-la-geoteca-limestone-pf60011763-120x280-nat-90402-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Geoteca Limestone 120x280 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/la-geoteca/gardenia-wall-tile-la-geoteca-limestone-pf60011775-120x120-nat-90403-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Geoteca Limestone 120x120 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/la-geoteca/gardenia-wall-tile-la-geoteca-limestone-pf60011776-60x120-nat-90404-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Geoteca Limestone 60x120 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/la-geoteca/gardenia-wall-tile-la-geoteca-limestone-pf60012080-80x80-nat-90411-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Geoteca Limestone 80x80 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/la-geoteca/gardenia-wall-tile-la-geoteca-marfil-pf60011724-120x280-nat-90387-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Geoteca Marfil 120x280 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/la-geoteca/gardenia-wall-tile-la-geoteca-marfil-pf60011732-120x120-nat-90394-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Geoteca Marfil 120x120 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/la-geoteca/gardenia-wall-tile-la-geoteca-marfil-pf60011741-60x120-nat-90401-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Geoteca Marfil 60x120 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/la-geoteca/gardenia-wall-tile-la-geoteca-marfil-pf60012156-80x80-nat-90419-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Geoteca Marfil 80x80 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/la-geoteca/gardenia-wall-tile-la-geoteca-negresco-pf60011723-120x280-nat-90386-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Geoteca Negresco 120x280 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/la-geoteca/gardenia-wall-tile-la-geoteca-negresco-pf60011731-120x120-nat-90393-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Geoteca Negresco 120x120 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/la-geoteca/gardenia-wall-tile-la-geoteca-negresco-pf60011740-60x120-nat-90400-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Geoteca Negresco 60x120 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/la-geoteca/gardenia-wall-tile-la-geoteca-negresco-pf60012155-80x80-nat-90418-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Geoteca Negresco 80x80 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/la-geoteca/gardenia-wall-tile-la-geoteca-serena-pf60011718-120x280-nat-90382-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Geoteca Serena 120x280 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/la-geoteca/gardenia-wall-tile-la-geoteca-serena-pf60011726-120x120-nat-90389-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Geoteca Serena 120x120 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/la-geoteca/gardenia-wall-tile-la-geoteca-serena-pf60011735-60x120-nat-90396-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Geoteca Serena 60x120 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/la-geoteca/gardenia-wall-tile-la-geoteca-serena-pf60012077-80x80-nat-90408-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Geoteca Serena 80x80 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/la-geoteca/gardenia-wall-tile-la-geoteca-trav-ivory-cross-pf60016135-120x280-nat-90441-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Geoteca Trav Ivory Cross 120x280 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/la-geoteca/gardenia-wall-tile-la-geoteca-trav-ivory-cross-pf60016136-120x120-nat-90442-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Geoteca Trav Ivory Cross 120x120 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/la-geoteca/gardenia-wall-tile-la-geoteca-trav-ivory-cross-pf60016138-60x120-nat-90444-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Geoteca Trav Ivory Cross 60x120 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/la-geoteca/gardenia-wall-tile-la-geoteca-trav-ivory-cross-pf60016144-80x80-nat-90448-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Geoteca Trav Ivory Cross 80x80 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/la-geoteca/gardenia-wall-tile-la-geoteca-trav-ivory-cross-pf60016183-80x80-90449-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Geoteca Trav Ivory Cross 80x80.
+- `catalog/surface-materials/wall_tile/gardenia/la-geoteca/gardenia-wall-tile-la-geoteca-trav-ivory-vein-pf60012720-120x280-nat-90420-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Geoteca Trav Ivory Vein 120x280 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/la-geoteca/gardenia-wall-tile-la-geoteca-trav-ivory-vein-pf60016137-120x120-nat-90443-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Geoteca Trav Ivory Vein 120x120 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/la-geoteca/gardenia-wall-tile-la-geoteca-trav-ivory-vein-pf60016139-60x120-nat-90445-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Geoteca Trav Ivory Vein 60x120 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/la-marmoteca/gardenia-wall-tile-la-marmoteca-anti-brown-g0027050-120x120-lux-90495-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Anti Brown 120x120 Lux.
+- `catalog/surface-materials/wall_tile/gardenia/la-marmoteca/gardenia-wall-tile-la-marmoteca-anti-brown-g0027060-60x120-lux-90502-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Anti Brown 60x120 Lux.
+- `catalog/surface-materials/wall_tile/gardenia/la-marmoteca/gardenia-wall-tile-la-marmoteca-anti-brown-pf60009718-120x280-lux-90528-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Anti Brown 120x280 Lux.
+- `catalog/surface-materials/wall_tile/gardenia/la-marmoteca/gardenia-wall-tile-la-marmoteca-anti-brown-pf60009726-120x280-soft-90534-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Anti Brown 120x280 Soft.
+- `catalog/surface-materials/wall_tile/gardenia/la-marmoteca/gardenia-wall-tile-la-marmoteca-anti-brown-pf60010680-120x120-soft-90549-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Anti Brown 120x120 Soft.
+- `catalog/surface-materials/wall_tile/gardenia/la-marmoteca/gardenia-wall-tile-la-marmoteca-anti-brown-pf60010681-60x120-soft-90550-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Anti Brown 60x120 Soft.
+- `catalog/surface-materials/wall_tile/gardenia/la-marmoteca/gardenia-wall-tile-la-marmoteca-blue-denim-g0027012-120x120-lux-90487-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Blue Denim 120x120 Lux.
+- `catalog/surface-materials/wall_tile/gardenia/la-marmoteca/gardenia-wall-tile-la-marmoteca-blue-denim-g0027022-60x120-lux-90492-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Blue Denim 60x120 Lux.
+- `catalog/surface-materials/wall_tile/gardenia/la-marmoteca/gardenia-wall-tile-la-marmoteca-blue-denim-g27002-120x280-lux-90513-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Blue Denim 120x280 Lux.
+- `catalog/surface-materials/wall_tile/gardenia/la-marmoteca/gardenia-wall-tile-la-marmoteca-calacat-elegance-g0027051-120x120-lux-90496-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Calacat Elegance 120x120 Lux.
+- `catalog/surface-materials/wall_tile/gardenia/la-marmoteca/gardenia-wall-tile-la-marmoteca-calacat-elegance-g0027061-60x120-lux-90503-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Calacat Elegance 60x120 Lux.
+- `catalog/surface-materials/wall_tile/gardenia/la-marmoteca/gardenia-wall-tile-la-marmoteca-calacat-elegance-g0027071-40x120-lux-90509-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Calacat Elegance 40x120 Lux.
+- `catalog/surface-materials/wall_tile/gardenia/la-marmoteca/gardenia-wall-tile-la-marmoteca-calacat-elegance-pf60010391-120x120-nat-90535-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Calacat Elegance 120x120 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/la-marmoteca/gardenia-wall-tile-la-marmoteca-calacat-elegance-pf60010396-60x120-nat-90537-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Calacat Elegance 60x120 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/la-marmoteca/gardenia-wall-tile-la-marmoteca-calacat-elegance-pf60010597-120x280-lux-90539-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Calacat Elegance 120x280 Lux.
+- `catalog/surface-materials/wall_tile/gardenia/la-marmoteca/gardenia-wall-tile-la-marmoteca-calacat-elegance-pf60010601-120x280-soft-90541-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Calacat Elegance 120x280 Soft.
+- `catalog/surface-materials/wall_tile/gardenia/la-marmoteca/gardenia-wall-tile-la-marmoteca-calacatta-0008839-120x280-lux-139930-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Calacatta 120x280 Lux.
+- `catalog/surface-materials/wall_tile/gardenia/la-marmoteca/gardenia-wall-tile-la-marmoteca-calacatta-0009112-120x120-lux-139931-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Calacatta 120x120 Lux.
+- `catalog/surface-materials/wall_tile/gardenia/la-marmoteca/gardenia-wall-tile-la-marmoteca-calacatta-0009118-60x120-lux-139932-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Calacatta 60x120 Lux.
+- `catalog/surface-materials/wall_tile/gardenia/la-marmoteca/gardenia-wall-tile-la-marmoteca-calacatta-0009158-120x280-soft-139934-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Calacatta 120x280 Soft.
+- `catalog/surface-materials/wall_tile/gardenia/la-marmoteca/gardenia-wall-tile-la-marmoteca-calacatta-0009167-120x120-nat-139935-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Calacatta 120x120 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/la-marmoteca/gardenia-wall-tile-la-marmoteca-calacatta-0009170-60x120-nat-139936-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Calacatta 60x120 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/la-marmoteca/gardenia-wall-tile-la-marmoteca-cosmic-ivory-g0027011-120x120-lux-90486-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Cosmic Ivory 120x120 Lux.
+- `catalog/surface-materials/wall_tile/gardenia/la-marmoteca/gardenia-wall-tile-la-marmoteca-cosmic-ivory-g0027021-60x120-lux-90491-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Cosmic Ivory 60x120 Lux.
+- `catalog/surface-materials/wall_tile/gardenia/la-marmoteca/gardenia-wall-tile-la-marmoteca-cosmic-ivory-g27001-120x280-lux-90512-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Cosmic Ivory 120x280 Lux.
+- `catalog/surface-materials/wall_tile/gardenia/la-marmoteca/gardenia-wall-tile-la-marmoteca-dreami-rose-a-b-g27007-g27037-120x280-lux-90595-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Dreami Rose.
+- `catalog/surface-materials/wall_tile/gardenia/la-marmoteca/gardenia-wall-tile-la-marmoteca-emera-quartz-a-b-g27006-g27036-120x280-lux-90598-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Emera Quartz A+b 120x280 Lux.
+- `catalog/surface-materials/wall_tile/gardenia/la-marmoteca/gardenia-wall-tile-la-marmoteca-emerald-green-0005359-120x120-lux-139954-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Emerald Green 120x120 Lux.
+- `catalog/surface-materials/wall_tile/gardenia/la-marmoteca/gardenia-wall-tile-la-marmoteca-emerald-green-0005362-60x120-lux-139955-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Emerald Green 60x120 Lux.
+- `catalog/surface-materials/wall_tile/gardenia/la-marmoteca/gardenia-wall-tile-la-marmoteca-emerald-green-0008685-120x280-lux-139961-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Emerald Green 120x280 Lux.
+- `catalog/surface-materials/wall_tile/gardenia/la-marmoteca/gardenia-wall-tile-la-marmoteca-frozen-pf60014453-120x280-lux-90563-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Frozen 120x280 Lux.
+- `catalog/surface-materials/wall_tile/gardenia/la-marmoteca/gardenia-wall-tile-la-marmoteca-frozen-pf60014463-120x120-lux-90567-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Frozen 120x120 Lux.
+- `catalog/surface-materials/wall_tile/gardenia/la-marmoteca/gardenia-wall-tile-la-marmoteca-frozen-pf60014471-60x120-lux-90571-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Frozen 60x120 Lux.
+- `catalog/surface-materials/wall_tile/gardenia/la-marmoteca/gardenia-wall-tile-la-marmoteca-frozen-pf60014711-120x280-soft-90586-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Frozen 120x280 Soft.
+- `catalog/surface-materials/wall_tile/gardenia/la-marmoteca/gardenia-wall-tile-la-marmoteca-frozen-pf60014712-120x120-soft-90587-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Frozen 120x120 Soft.
+- `catalog/surface-materials/wall_tile/gardenia/la-marmoteca/gardenia-wall-tile-la-marmoteca-frozen-pf60014713-60x120-soft-90588-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Frozen 60x120 Soft.
+- `catalog/surface-materials/wall_tile/gardenia/la-marmoteca/gardenia-wall-tile-la-marmoteca-gold-carbon-g0027010-120x120-lux-90485-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Gold Carbon 120x120 Lux.
+- `catalog/surface-materials/wall_tile/gardenia/la-marmoteca/gardenia-wall-tile-la-marmoteca-gold-carbon-g0027020-60x120-lux-90490-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Gold Carbon 60x120 Lux.
+- `catalog/surface-materials/wall_tile/gardenia/la-marmoteca/gardenia-wall-tile-la-marmoteca-gold-carbon-g27000-120x280-lux-90511-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Gold Carbon 120x280 Lux.
+- `catalog/surface-materials/wall_tile/gardenia/la-marmoteca/gardenia-wall-tile-la-marmoteca-gold-carbon-pf60010684-120x280-soft-90552-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Gold Carbon 120x280 Soft.
+- `catalog/surface-materials/wall_tile/gardenia/la-marmoteca/gardenia-wall-tile-la-marmoteca-gold-carbon-pf60010687-120x120-soft-90555-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Gold Carbon 120x120 Soft.
+- `catalog/surface-materials/wall_tile/gardenia/la-marmoteca/gardenia-wall-tile-la-marmoteca-gold-carbon-pf60010690-60x120-soft-90558-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Gold Carbon 60x120 Soft.
+- `catalog/surface-materials/wall_tile/gardenia/la-marmoteca/gardenia-wall-tile-la-marmoteca-grey-stone-g0027052-120x120-lux-90497-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Grey Stone 120x120 Lux.
+- `catalog/surface-materials/wall_tile/gardenia/la-marmoteca/gardenia-wall-tile-la-marmoteca-grey-stone-g0027062-60x120-lux-90504-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Grey Stone 60x120 Lux.
+- `catalog/surface-materials/wall_tile/gardenia/la-marmoteca/gardenia-wall-tile-la-marmoteca-grey-stone-pf60006319-120x120-nat-90522-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Grey Stone 120x120 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/la-marmoteca/gardenia-wall-tile-la-marmoteca-grey-stone-pf60006322-60x120-nat-90523-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Grey Stone 60x120 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/la-marmoteca/gardenia-wall-tile-la-marmoteca-grey-stone-pf60008677-120x280-soft-90524-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Grey Stone 120x280 Soft.
+- `catalog/surface-materials/wall_tile/gardenia/la-marmoteca/gardenia-wall-tile-la-marmoteca-grey-stone-pf60008688-120x280-lux-90525-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Grey Stone 120x280 Lux.
+- `catalog/surface-materials/wall_tile/gardenia/la-marmoteca/gardenia-wall-tile-la-marmoteca-grey-wonder-a-b-pf60014686-pf60014687-120x280-lux-90596-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Grey Wonder A+b 120x280 Lux.
+- `catalog/surface-materials/wall_tile/gardenia/la-marmoteca/gardenia-wall-tile-la-marmoteca-grey-wonder-pf60014616-120x280-soft-90575-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Grey Wonder 120x280 Soft.
+- `catalog/surface-materials/wall_tile/gardenia/la-marmoteca/gardenia-wall-tile-la-marmoteca-grey-wonder-pf60014675-120x280-lux-90577-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Grey Wonder 120x280 Lux.
+- `catalog/surface-materials/wall_tile/gardenia/la-marmoteca/gardenia-wall-tile-la-marmoteca-grey-wonder-pf60014677-120x120-lux-90579-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Grey Wonder 120x120 Lux.
+- `catalog/surface-materials/wall_tile/gardenia/la-marmoteca/gardenia-wall-tile-la-marmoteca-grey-wonder-pf60014678-120x120-soft-90580-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Grey Wonder 120x120 Soft.
+- `catalog/surface-materials/wall_tile/gardenia/la-marmoteca/gardenia-wall-tile-la-marmoteca-grey-wonder-pf60014679-60x120-soft-90581-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Grey Wonder 60x120 Soft.
+- `catalog/surface-materials/wall_tile/gardenia/la-marmoteca/gardenia-wall-tile-la-marmoteca-grey-wonder-pf60014681-60x120-lux-90583-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Grey Wonder 60x120 Lux.
+- `catalog/surface-materials/wall_tile/gardenia/la-marmoteca/gardenia-wall-tile-la-marmoteca-marquinia-black-g0027063-60x120-lux-90505-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Marquinia Black 60x120 Lux.
+- `catalog/surface-materials/wall_tile/gardenia/la-marmoteca/gardenia-wall-tile-la-marmoteca-marquinia-black-pf60009721-120x280-lux-90530-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Marquinia Black 120x280 Lux.
+- `catalog/surface-materials/wall_tile/gardenia/la-marmoteca/gardenia-wall-tile-la-marmoteca-marquinia-black-pf60009722-120x280-soft-90531-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Marquinia Black 120x280 Soft.
+- `catalog/surface-materials/wall_tile/gardenia/la-marmoteca/gardenia-wall-tile-la-marmoteca-marquinia-black-pf60010672-120x120-nat-90543-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Marquinia Black 120x120 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/la-marmoteca/gardenia-wall-tile-la-marmoteca-marquinia-black-pf60010673-60x120-nat-90544-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Marquinia Black 60x120 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/la-marmoteca/gardenia-wall-tile-la-marmoteca-montblanc-0006899-120x120-lux-139956-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Montblanc 120x120 Lux.
+- `catalog/surface-materials/wall_tile/gardenia/la-marmoteca/gardenia-wall-tile-la-marmoteca-montblanc-0006900-60x120-lux-139957-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Montblanc 60x120 Lux.
+- `catalog/surface-materials/wall_tile/gardenia/la-marmoteca/gardenia-wall-tile-la-marmoteca-montblanc-0006902-120x120-139958-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Montblanc 120x120.
+- `catalog/surface-materials/wall_tile/gardenia/la-marmoteca/gardenia-wall-tile-la-marmoteca-montblanc-0006903-60x120-139959-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Montblanc 60x120.
+- `catalog/surface-materials/wall_tile/gardenia/la-marmoteca/gardenia-wall-tile-la-marmoteca-montblanc-0008678-120x280-soft-139960-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Montblanc 120x280 Soft.
+- `catalog/surface-materials/wall_tile/gardenia/la-marmoteca/gardenia-wall-tile-la-marmoteca-montblanc-0008689-120x280-lux-139962-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Montblanc 120x280 Lux.
+- `catalog/surface-materials/wall_tile/gardenia/la-marmoteca/gardenia-wall-tile-la-marmoteca-onyx-bronxe-a-b-g27005-g27035-120x280-lux-90597-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Onyx Bronxe A+b 120x280 Lux.
+- `catalog/surface-materials/wall_tile/gardenia/la-marmoteca/gardenia-wall-tile-la-marmoteca-patagoni-emerald-pf60012774-120x280-lux-90560-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Patagoni Emerald 120x280 Lux.
+- `catalog/surface-materials/wall_tile/gardenia/la-marmoteca/gardenia-wall-tile-la-marmoteca-patagoni-emerald-pf60012777-120x120-lux-90561-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Patagoni Emerald 120x120 Lux.
+- `catalog/surface-materials/wall_tile/gardenia/la-marmoteca/gardenia-wall-tile-la-marmoteca-patagoni-emerald-pf60012778-60x120-lux-90562-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Patagoni Emerald 60x120 Lux.
+- `catalog/surface-materials/wall_tile/gardenia/la-marmoteca/gardenia-wall-tile-la-marmoteca-port-noir-0010994-120x280-lux-139938-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Port Noir 120x280 Lux.
+- `catalog/surface-materials/wall_tile/gardenia/la-marmoteca/gardenia-wall-tile-la-marmoteca-port-noir-0010995-120x280-soft-139939-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Port Noir 120x280 Soft.
+- `catalog/surface-materials/wall_tile/gardenia/la-marmoteca/gardenia-wall-tile-la-marmoteca-port-noir-0011000-60x120-nat-139940-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Port Noir 60x120 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/la-marmoteca/gardenia-wall-tile-la-marmoteca-port-noir-0011003-60x120-lux-139941-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Port Noir 60x120 Lux.
+- `catalog/surface-materials/wall_tile/gardenia/la-marmoteca/gardenia-wall-tile-la-marmoteca-port-noir-0011496-120x120-lux-139942-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Port Noir 120x120 Lux.
+- `catalog/surface-materials/wall_tile/gardenia/la-marmoteca/gardenia-wall-tile-la-marmoteca-port-noir-0011497-120x120-nat-139943-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Port Noir 120x120 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/la-marmoteca/gardenia-wall-tile-la-marmoteca-pure-onyx-pf60014454-120x280-lux-90564-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Pure Onyx 120x280 Lux.
+- `catalog/surface-materials/wall_tile/gardenia/la-marmoteca/gardenia-wall-tile-la-marmoteca-pure-onyx-pf60014457-120x280-soft-90566-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Pure Onyx 120x280 Soft.
+- `catalog/surface-materials/wall_tile/gardenia/la-marmoteca/gardenia-wall-tile-la-marmoteca-pure-onyx-pf60014464-120x120-lux-90568-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Pure Onyx 120x120 Lux.
+- `catalog/surface-materials/wall_tile/gardenia/la-marmoteca/gardenia-wall-tile-la-marmoteca-pure-onyx-pf60014467-120x120-soft-90570-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Pure Onyx 120x120 Soft.
+- `catalog/surface-materials/wall_tile/gardenia/la-marmoteca/gardenia-wall-tile-la-marmoteca-pure-onyx-pf60014472-60x120-lux-90572-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Pure Onyx 60x120 Lux.
+- `catalog/surface-materials/wall_tile/gardenia/la-marmoteca/gardenia-wall-tile-la-marmoteca-pure-onyx-pf60014475-60x120-soft-90574-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Pure Onyx 60x120 Soft.
+- `catalog/surface-materials/wall_tile/gardenia/la-marmoteca/gardenia-wall-tile-la-marmoteca-sahara-white-g0027057-120x120-lux-90501-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Sahara White 120x120 Lux.
+- `catalog/surface-materials/wall_tile/gardenia/la-marmoteca/gardenia-wall-tile-la-marmoteca-sahara-white-g0027067-60x120-lux-90508-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Sahara White 60x120 Lux.
+- `catalog/surface-materials/wall_tile/gardenia/la-marmoteca/gardenia-wall-tile-la-marmoteca-sahara-white-pf60009717-120x280-lux-90527-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Sahara White 120x280 Lux.
+- `catalog/surface-materials/wall_tile/gardenia/la-marmoteca/gardenia-wall-tile-la-marmoteca-sahara-white-pf60009725-120x280-soft-90533-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Sahara White 120x280 Soft.
+- `catalog/surface-materials/wall_tile/gardenia/la-marmoteca/gardenia-wall-tile-la-marmoteca-sahara-white-pf60010674-120x120-soft-90545-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Sahara White 120x120 Soft.
+- `catalog/surface-materials/wall_tile/gardenia/la-marmoteca/gardenia-wall-tile-la-marmoteca-sahara-white-pf60010675-60x120-soft-90546-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Sahara White 60x120 Soft.
+- `catalog/surface-materials/wall_tile/gardenia/la-marmoteca/gardenia-wall-tile-la-marmoteca-sand-flower-0012068-60x120-nat-139944-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Sand Flower 60x120 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/la-marmoteca/gardenia-wall-tile-la-marmoteca-sand-flower-0012069-60x120-lux-139945-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Sand Flower 60x120 Lux.
+- `catalog/surface-materials/wall_tile/gardenia/la-marmoteca/gardenia-wall-tile-la-marmoteca-sand-flower-0012190-120x120-lux-139946-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Sand Flower 120x120 Lux.
+- `catalog/surface-materials/wall_tile/gardenia/la-marmoteca/gardenia-wall-tile-la-marmoteca-sand-flower-0012245-120x280-soft-139950-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Sand Flower 120x280 Soft.
+- `catalog/surface-materials/wall_tile/gardenia/la-marmoteca/gardenia-wall-tile-la-marmoteca-sand-flower-0012246-120x280-lux-139951-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Sand Flower 120x280 Lux.
+- `catalog/surface-materials/wall_tile/gardenia/la-marmoteca/gardenia-wall-tile-la-marmoteca-sand-flower-0012247-120x120-nat-139952-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Sand Flower 120x120 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/la-marmoteca/gardenia-wall-tile-la-marmoteca-statuari-premium-g0027055-120x120-lux-90499-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Statuari Premium 120x120 Lux.
+- `catalog/surface-materials/wall_tile/gardenia/la-marmoteca/gardenia-wall-tile-la-marmoteca-statuari-premium-g0027065-60x120-lux-90506-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Statuari Premium 60x120 Lux.
+- `catalog/surface-materials/wall_tile/gardenia/la-marmoteca/gardenia-wall-tile-la-marmoteca-statuari-premium-g0027075-40x120-lux-90510-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Statuari Premium 40x120 Lux.
+- `catalog/surface-materials/wall_tile/gardenia/la-marmoteca/gardenia-wall-tile-la-marmoteca-statuari-premium-pf60010392-120x120-nat-90536-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Statuari Premium 120x120 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/la-marmoteca/gardenia-wall-tile-la-marmoteca-statuari-premium-pf60010397-60x120-nat-90538-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Statuari Premium 60x120 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/la-marmoteca/gardenia-wall-tile-la-marmoteca-statuari-premium-pf60010598-120x280-lux-90540-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Statuari Premium 120x280 Lux.
+- `catalog/surface-materials/wall_tile/gardenia/la-marmoteca/gardenia-wall-tile-la-marmoteca-statuari-premium-pf60010602-120x280-soft-90542-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia La Marmoteca Statuari Premium 120x280 Soft.
+- `catalog/surface-materials/wall_tile/gardenia/make/gardenia-wall-tile-make-antr-corten-g0073024-80x80-90777-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Make Antr Corten 80x80.
+- `catalog/surface-materials/wall_tile/gardenia/make/gardenia-wall-tile-make-antr-corten-g0073044-100x100-90783-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Make Antr Corten 100x100.
+- `catalog/surface-materials/wall_tile/gardenia/make/gardenia-wall-tile-make-antr-corten-g0073214-60x60-90803-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Make Antr Corten 60x60.
+- `catalog/surface-materials/wall_tile/gardenia/make/gardenia-wall-tile-make-antr-corten-g0073224-60x120-90809-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Make Antr Corten 60x120.
+- `catalog/surface-materials/wall_tile/gardenia/make/gardenia-wall-tile-make-ash-g0073022-80x80-90775-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Make Ash 80x80.
+- `catalog/surface-materials/wall_tile/gardenia/make/gardenia-wall-tile-make-ash-g0073042-100x100-90781-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Make Ash 100x100.
+- `catalog/surface-materials/wall_tile/gardenia/make/gardenia-wall-tile-make-ash-g0073212-60x60-90801-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Make Ash 60x60.
+- `catalog/surface-materials/wall_tile/gardenia/make/gardenia-wall-tile-make-ash-g0073222-60x120-90807-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Make Ash 60x120.
+- `catalog/surface-materials/wall_tile/gardenia/make/gardenia-wall-tile-make-bianco-g0073020-80x80-90773-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Make Bianco 80x80.
+- `catalog/surface-materials/wall_tile/gardenia/make/gardenia-wall-tile-make-bianco-g0073040-100x100-90779-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Make Bianco 100x100.
+- `catalog/surface-materials/wall_tile/gardenia/make/gardenia-wall-tile-make-bianco-g0073210-60x60-90799-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Make Bianco 60x60.
+- `catalog/surface-materials/wall_tile/gardenia/make/gardenia-wall-tile-make-bianco-g0073220-60x120-90805-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Make Bianco 60x120.
+- `catalog/surface-materials/wall_tile/gardenia/make/gardenia-wall-tile-make-corda-g0073021-80x80-90774-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Make Corda 80x80.
+- `catalog/surface-materials/wall_tile/gardenia/make/gardenia-wall-tile-make-corda-g0073041-100x100-90780-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Make Corda 100x100.
+- `catalog/surface-materials/wall_tile/gardenia/make/gardenia-wall-tile-make-corda-g0073211-60x60-90800-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Make Corda 60x60.
+- `catalog/surface-materials/wall_tile/gardenia/make/gardenia-wall-tile-make-corda-g0073221-60x120-90806-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Make Corda 60x120.
+- `catalog/surface-materials/wall_tile/gardenia/make/gardenia-wall-tile-make-grigio-corten-g0073025-80x80-90778-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Make Grigio Corten 80x80.
+- `catalog/surface-materials/wall_tile/gardenia/make/gardenia-wall-tile-make-grigio-corten-g0073045-100x100-90784-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Make Grigio Corten 100x100.
+- `catalog/surface-materials/wall_tile/gardenia/make/gardenia-wall-tile-make-grigio-corten-g0073215-60x60-90804-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Make Grigio Corten 60x60.
+- `catalog/surface-materials/wall_tile/gardenia/make/gardenia-wall-tile-make-grigio-corten-g0073225-60x120-90810-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Make Grigio Corten 60x120.
+- `catalog/surface-materials/wall_tile/gardenia/make/gardenia-wall-tile-make-mos-t36-antr-cor-g0073254-33-3x33-3-90815-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Make Mos.t36 Antr Cor 33,3x33,3.
+- `catalog/surface-materials/wall_tile/gardenia/make/gardenia-wall-tile-make-mos-t36-ash-g0073252-33-3x33-3-90813-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Make Mos.t36 Ash 33,3x33,3.
+- `catalog/surface-materials/wall_tile/gardenia/make/gardenia-wall-tile-make-mos-t36-bianco-g0073250-33-3x33-3-90811-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Make Mos.t36 Bianco 33,3x33,3.
+- `catalog/surface-materials/wall_tile/gardenia/make/gardenia-wall-tile-make-mos-t36-corda-g0073251-33-3x33-3-90812-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Make Mos.t36 Corda 33,3x33,3.
+- `catalog/surface-materials/wall_tile/gardenia/make/gardenia-wall-tile-make-mos-t36-grig-cor-g0073255-33-3x33-3-90816-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Make Mos.t36 Grig Cor 33,3x33,3.
+- `catalog/surface-materials/wall_tile/gardenia/make/gardenia-wall-tile-make-mos-t36-nero-cor-g0073253-33-3x33-3-90814-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Make Mos.t36 Nero Cor 33,3x33,3.
+- `catalog/surface-materials/wall_tile/gardenia/make/gardenia-wall-tile-make-nero-corten-g0073023-80x80-90776-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Make Nero Corten 80x80.
+- `catalog/surface-materials/wall_tile/gardenia/make/gardenia-wall-tile-make-nero-corten-g0073043-100x100-90782-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Make Nero Corten 100x100.
+- `catalog/surface-materials/wall_tile/gardenia/make/gardenia-wall-tile-make-nero-corten-g0073213-60x60-90802-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Make Nero Corten 60x60.
+- `catalog/surface-materials/wall_tile/gardenia/make/gardenia-wall-tile-make-nero-corten-g0073223-60x120-90808-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Make Nero Corten 60x120.
+- `catalog/surface-materials/wall_tile/gardenia/orosei/gardenia-wall-tile-orosei-bone-pf60021692-120x120-197531-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Orosei Bone 120x120.
+- `catalog/surface-materials/wall_tile/gardenia/orosei/gardenia-wall-tile-orosei-bone-pf60021699-60x120-197538-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Orosei Bone 60x120.
+- `catalog/surface-materials/wall_tile/gardenia/orosei/gardenia-wall-tile-orosei-bone-pf60021723-120x280-nat-197543-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Orosei Bone 120x280 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/orosei/gardenia-wall-tile-orosei-bone-pf60021733-120x120-nat-197548-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Orosei Bone 120x120 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/orosei/gardenia-wall-tile-orosei-bone-pf60021738-60x120-nat-197553-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Orosei Bone 60x120 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/orosei/gardenia-wall-tile-orosei-bone-pf60030223-60x60-nat-197558-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Orosei Bone 60x60 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/orosei/gardenia-wall-tile-orosei-bone-pf60030228-80x80-nat-197563-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Orosei Bone 80x80 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/orosei/gardenia-wall-tile-orosei-cream-pf60021694-120x120-197533-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Orosei Cream 120x120.
+- `catalog/surface-materials/wall_tile/gardenia/orosei/gardenia-wall-tile-orosei-cream-pf60021701-60x120-197540-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Orosei Cream 60x120.
+- `catalog/surface-materials/wall_tile/gardenia/orosei/gardenia-wall-tile-orosei-cream-pf60021725-120x280-nat-197545-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Orosei Cream 120x280 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/orosei/gardenia-wall-tile-orosei-cream-pf60021735-120x120-nat-197550-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Orosei Cream 120x120 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/orosei/gardenia-wall-tile-orosei-cream-pf60021740-60x120-nat-197555-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Orosei Cream 60x120 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/orosei/gardenia-wall-tile-orosei-cream-pf60030225-60x60-nat-197560-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Orosei Cream 60x60 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/orosei/gardenia-wall-tile-orosei-cream-pf60030231-80x80-nat-197565-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Orosei Cream 80x80 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/orosei/gardenia-wall-tile-orosei-ecru-pf60021696-120x120-197535-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Orosei Ecru 120x120.
+- `catalog/surface-materials/wall_tile/gardenia/orosei/gardenia-wall-tile-orosei-ecru-pf60021703-60x120-197542-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Orosei Ecru 60x120.
+- `catalog/surface-materials/wall_tile/gardenia/orosei/gardenia-wall-tile-orosei-ecru-pf60021727-120x280-nat-197547-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Orosei Ecru 120x280 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/orosei/gardenia-wall-tile-orosei-ecru-pf60021737-120x120-nat-197552-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Orosei Ecru 120x120 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/orosei/gardenia-wall-tile-orosei-ecru-pf60021742-60x120-nat-197557-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Orosei Ecru 60x120 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/orosei/gardenia-wall-tile-orosei-ecru-pf60030227-60x60-nat-197562-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Orosei Ecru 60x60 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/orosei/gardenia-wall-tile-orosei-ecru-pf60030233-80x80-nat-197567-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Orosei Ecru 80x80 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/orosei/gardenia-wall-tile-orosei-ecru-tessera-pf60021698-120x120-197537-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Orosei Ecru Tessera 120x120.
+- `catalog/surface-materials/wall_tile/gardenia/orosei/gardenia-wall-tile-orosei-ecru-tessera-pf60030241-60x120-197575-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Orosei Ecru Tessera 60x120.
+- `catalog/surface-materials/wall_tile/gardenia/orosei/gardenia-wall-tile-orosei-rope-pf60021695-120x120-197534-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Orosei Rope 120x120.
+- `catalog/surface-materials/wall_tile/gardenia/orosei/gardenia-wall-tile-orosei-rope-pf60021702-60x120-197541-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Orosei Rope 60x120.
+- `catalog/surface-materials/wall_tile/gardenia/orosei/gardenia-wall-tile-orosei-rope-pf60021726-120x280-nat-197546-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Orosei Rope 120x280 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/orosei/gardenia-wall-tile-orosei-rope-pf60021736-120x120-nat-197551-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Orosei Rope 120x120 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/orosei/gardenia-wall-tile-orosei-rope-pf60021741-60x120-nat-197556-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Orosei Rope 60x120 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/orosei/gardenia-wall-tile-orosei-rope-pf60030226-60x60-nat-197561-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Orosei Rope 60x60 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/orosei/gardenia-wall-tile-orosei-rope-pf60030232-80x80-nat-197566-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Orosei Rope 80x80 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/orosei/gardenia-wall-tile-orosei-vanilla-pf60021693-120x120-197532-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Orosei Vanilla 120x120.
+- `catalog/surface-materials/wall_tile/gardenia/orosei/gardenia-wall-tile-orosei-vanilla-pf60021700-60x120-197539-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Orosei Vanilla 60x120.
+- `catalog/surface-materials/wall_tile/gardenia/orosei/gardenia-wall-tile-orosei-vanilla-pf60021724-120x280-nat-197544-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Orosei Vanilla 120x280 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/orosei/gardenia-wall-tile-orosei-vanilla-pf60021734-120x120-nat-197549-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Orosei Vanilla 120x120 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/orosei/gardenia-wall-tile-orosei-vanilla-pf60021739-60x120-nat-197554-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Orosei Vanilla 60x120 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/orosei/gardenia-wall-tile-orosei-vanilla-pf60030224-60x60-nat-197559-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Orosei Vanilla 60x60 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/orosei/gardenia-wall-tile-orosei-vanilla-pf60030230-80x80-nat-197564-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Orosei Vanilla 80x80 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/orosei/gardenia-wall-tile-orosei-vanilla-tessera-pf60021697-120x120-197536-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Orosei Vanilla Tessera 120x120.
+- `catalog/surface-materials/wall_tile/gardenia/orosei/gardenia-wall-tile-orosei-vanilla-tessera-pf60030240-60x120-197574-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Orosei Vanilla Tessera 60x120.
+- `catalog/surface-materials/wall_tile/gardenia/oxide/gardenia-wall-tile-oxide-alluminum-g69300-120x280-90833-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Oxide Alluminum 120x280.
+- `catalog/surface-materials/wall_tile/gardenia/oxide/gardenia-wall-tile-oxide-alluminum-g69310-120x120-90838-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Oxide Alluminum 120x120.
+- `catalog/surface-materials/wall_tile/gardenia/oxide/gardenia-wall-tile-oxide-alluminum-g69320-60x120-90843-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Oxide Alluminum 60x120.
+- `catalog/surface-materials/wall_tile/gardenia/oxide/gardenia-wall-tile-oxide-alluminum-g69330-80x80-90848-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Oxide Alluminum 80x80.
+- `catalog/surface-materials/wall_tile/gardenia/oxide/gardenia-wall-tile-oxide-brass-g69304-120x280-90837-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Oxide Brass 120x280.
+- `catalog/surface-materials/wall_tile/gardenia/oxide/gardenia-wall-tile-oxide-brass-g69314-120x120-90842-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Oxide Brass 120x120.
+- `catalog/surface-materials/wall_tile/gardenia/oxide/gardenia-wall-tile-oxide-brass-g69324-60x120-90847-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Oxide Brass 60x120.
+- `catalog/surface-materials/wall_tile/gardenia/oxide/gardenia-wall-tile-oxide-brass-g69334-80x80-90852-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Oxide Brass 80x80.
+- `catalog/surface-materials/wall_tile/gardenia/oxide/gardenia-wall-tile-oxide-green-g69303-120x280-90836-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Oxide Green 120x280.
+- `catalog/surface-materials/wall_tile/gardenia/oxide/gardenia-wall-tile-oxide-green-g69313-120x120-90841-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Oxide Green 120x120.
+- `catalog/surface-materials/wall_tile/gardenia/oxide/gardenia-wall-tile-oxide-green-g69323-60x120-90846-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Oxide Green 60x120.
+- `catalog/surface-materials/wall_tile/gardenia/oxide/gardenia-wall-tile-oxide-green-g69333-80x80-90851-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Oxide Green 80x80.
+- `catalog/surface-materials/wall_tile/gardenia/oxide/gardenia-wall-tile-oxide-iron-g69302-120x280-90835-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Oxide Iron 120x280.
+- `catalog/surface-materials/wall_tile/gardenia/oxide/gardenia-wall-tile-oxide-iron-g69312-120x120-90840-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Oxide Iron 120x120.
+- `catalog/surface-materials/wall_tile/gardenia/oxide/gardenia-wall-tile-oxide-iron-g69322-60x120-90845-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Oxide Iron 60x120.
+- `catalog/surface-materials/wall_tile/gardenia/oxide/gardenia-wall-tile-oxide-iron-g69332-80x80-90850-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Oxide Iron 80x80.
+- `catalog/surface-materials/wall_tile/gardenia/oxide/gardenia-wall-tile-oxide-steel-g69311-120x120-90839-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Oxide Steel 120x120.
+- `catalog/surface-materials/wall_tile/gardenia/oxide/gardenia-wall-tile-oxide-steel-g69321-60x120-90844-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Oxide Steel 60x120.
+- `catalog/surface-materials/wall_tile/gardenia/oxide/gardenia-wall-tile-oxide-steel-g69331-80x80-90849-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Oxide Steel 80x80.
+- `catalog/surface-materials/wall_tile/gardenia/pietra-viva/gardenia-wall-tile-pietra-viva-aude-beige-0011974-60x120-90906-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Pietra Viva Aude Beige 60x120.
+- `catalog/surface-materials/wall_tile/gardenia/pietra-viva/gardenia-wall-tile-pietra-viva-aude-beige-0012260-120x120-90910-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Pietra Viva Aude Beige 120x120.
+- `catalog/surface-materials/wall_tile/gardenia/pietra-viva/gardenia-wall-tile-pietra-viva-aude-beige-0012265-80x80-nat-90914-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Pietra Viva Aude Beige 80x80 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/pietra-viva/gardenia-wall-tile-pietra-viva-aude-beige-0012911-120x120-nat-90920-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Pietra Viva Aude Beige 120x120 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/pietra-viva/gardenia-wall-tile-pietra-viva-aude-beige-0012915-60x120-nat-90924-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Pietra Viva Aude Beige 60x120 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/pietra-viva/gardenia-wall-tile-pietra-viva-aude-beige-0014862-120x280-90925-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Pietra Viva Aude Beige 120x280.
+- `catalog/surface-materials/wall_tile/gardenia/pietra-viva/gardenia-wall-tile-pietra-viva-aude-grey-0011118-60x120-90903-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Pietra Viva Aude Grey 60x120.
+- `catalog/surface-materials/wall_tile/gardenia/pietra-viva/gardenia-wall-tile-pietra-viva-aude-grey-0012254-120x120-90907-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Pietra Viva Aude Grey 120x120.
+- `catalog/surface-materials/wall_tile/gardenia/pietra-viva/gardenia-wall-tile-pietra-viva-aude-grey-0012262-80x80-nat-90911-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Pietra Viva Aude Grey 80x80 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/pietra-viva/gardenia-wall-tile-pietra-viva-aude-grey-0012908-120x120-nat-90917-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Pietra Viva Aude Grey 120x120 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/pietra-viva/gardenia-wall-tile-pietra-viva-aude-grey-0012912-60x120-nat-90921-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Pietra Viva Aude Grey 60x120 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/pietra-viva/gardenia-wall-tile-pietra-viva-aude-ivory-0011973-60x120-90905-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Pietra Viva Aude Ivory 60x120.
+- `catalog/surface-materials/wall_tile/gardenia/pietra-viva/gardenia-wall-tile-pietra-viva-aude-ivory-0012258-120x120-90909-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Pietra Viva Aude Ivory 120x120.
+- `catalog/surface-materials/wall_tile/gardenia/pietra-viva/gardenia-wall-tile-pietra-viva-aude-ivory-0012264-80x80-nat-90913-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Pietra Viva Aude Ivory 80x80 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/pietra-viva/gardenia-wall-tile-pietra-viva-aude-ivory-0012910-120x120-nat-90919-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Pietra Viva Aude Ivory 120x120 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/pietra-viva/gardenia-wall-tile-pietra-viva-aude-ivory-0012914-60x120-nat-90923-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Pietra Viva Aude Ivory 60x120 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/pietra-viva/gardenia-wall-tile-pietra-viva-aude-ivory-0014863-120x280-90926-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Pietra Viva Aude Ivory 120x280.
+- `catalog/surface-materials/wall_tile/gardenia/pietra-viva/gardenia-wall-tile-pietra-viva-camargue-beige-0014182-120x120-nat-139965-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Pietra Viva Camargue Beige 120x120 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/pietra-viva/gardenia-wall-tile-pietra-viva-camargue-beige-0014184-120x120-139967-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Pietra Viva Camargue Beige 120x120.
+- `catalog/surface-materials/wall_tile/gardenia/pietra-viva/gardenia-wall-tile-pietra-viva-camargue-beige-0014186-60x120-nat-139969-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Pietra Viva Camargue Beige 60x120 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/pietra-viva/gardenia-wall-tile-pietra-viva-camargue-beige-0014188-60x120-139971-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Pietra Viva Camargue Beige 60x120.
+- `catalog/surface-materials/wall_tile/gardenia/pietra-viva/gardenia-wall-tile-pietra-viva-camargue-beige-0014669-80x80-nat-139974-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Pietra Viva Camargue Beige 80x80 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/pietra-viva/gardenia-wall-tile-pietra-viva-camargue-beige-0014671-80x160-nat-139976-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Pietra Viva Camargue Beige 80x160 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/pietra-viva/gardenia-wall-tile-pietra-viva-camargue-ivory-0014180-120x280-nat-139989-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Pietra Viva Camargue Ivory 120x280 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/pietra-viva/gardenia-wall-tile-pietra-viva-camargue-ivory-0014181-120x120-nat-139988-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Pietra Viva Camargue Ivory 120x120 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/pietra-viva/gardenia-wall-tile-pietra-viva-camargue-ivory-0014183-120x120-139966-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Pietra Viva Camargue Ivory 120x120.
+- `catalog/surface-materials/wall_tile/gardenia/pietra-viva/gardenia-wall-tile-pietra-viva-camargue-ivory-0014185-60x120-nat-139968-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Pietra Viva Camargue Ivory 60x120 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/pietra-viva/gardenia-wall-tile-pietra-viva-camargue-ivory-0014187-60x120-139970-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Pietra Viva Camargue Ivory 60x120.
+- `catalog/surface-materials/wall_tile/gardenia/pietra-viva/gardenia-wall-tile-pietra-viva-camargue-ivory-0014668-80x80-nat-139973-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Pietra Viva Camargue Ivory 80x80 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/pietra-viva/gardenia-wall-tile-pietra-viva-camargue-ivory-0014670-80x160-nat-139975-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Pietra Viva Camargue Ivory 80x160 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/pietra-viva/gardenia-wall-tile-pietra-viva-limoges-sand-0012318-60x120-139996-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Pietra Viva Limoges Sand 60x120.
+- `catalog/surface-materials/wall_tile/gardenia/pietra-viva/gardenia-wall-tile-pietra-viva-limoges-sand-0012322-120x120-139992-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Pietra Viva Limoges Sand 120x120.
+- `catalog/surface-materials/wall_tile/gardenia/pietra-viva/gardenia-wall-tile-pietra-viva-limoges-sand-0012331-80x80-nat-139998-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Pietra Viva Limoges Sand 80x80 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/pietra-viva/gardenia-wall-tile-pietra-viva-limoges-sand-0012921-120x120-nat-139990-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Pietra Viva Limoges Sand 120x120 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/pietra-viva/gardenia-wall-tile-pietra-viva-limoges-sand-0012926-60x120-nat-139994-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Pietra Viva Limoges Sand 60x120 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/pietra-viva/gardenia-wall-tile-pietra-viva-limoges-sand-0014672-80x160-nat-139963-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Pietra Viva Limoges Sand 80x160 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/pietra-viva/gardenia-wall-tile-pietra-viva-limoges-white-0012319-60x120-139997-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Pietra Viva Limoges White 60x120.
+- `catalog/surface-materials/wall_tile/gardenia/pietra-viva/gardenia-wall-tile-pietra-viva-limoges-white-0012324-120x120-139993-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Pietra Viva Limoges White 120x120.
+- `catalog/surface-materials/wall_tile/gardenia/pietra-viva/gardenia-wall-tile-pietra-viva-limoges-white-0012329-120x280-nat-140005-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Pietra Viva Limoges White 120x280 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/pietra-viva/gardenia-wall-tile-pietra-viva-limoges-white-0012332-80x80-nat-139999-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Pietra Viva Limoges White 80x80 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/pietra-viva/gardenia-wall-tile-pietra-viva-limoges-white-0012922-120x120-nat-139991-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Pietra Viva Limoges White 120x120 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/pietra-viva/gardenia-wall-tile-pietra-viva-limoges-white-0012927-60x120-nat-139995-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Pietra Viva Limoges White 60x120 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/pietra-viva/gardenia-wall-tile-pietra-viva-limoges-white-0014673-80x160-nat-139964-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Pietra Viva Limoges White 80x160 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/tabulae/gardenia-wall-tile-tabulae-chevron-fieno-pf60021112-15x85-nat-92343-par-dx-sx/catalog.yaml` — Canonical surface-material catalog record for Gardenia Tabulae Chevron Fieno 15x85 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/tabulae/gardenia-wall-tile-tabulae-chevron-havana-pf60021111-15x85-nat-92342-par-dx-sx/catalog.yaml` — Canonical surface-material catalog record for Gardenia Tabulae Chevron Havana 15x85 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/tabulae/gardenia-wall-tile-tabulae-chevron-miele-pf60021113-15x85-nat-92344-par-dx-sx/catalog.yaml` — Canonical surface-material catalog record for Gardenia Tabulae Chevron Miele 15x85 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/tabulae/gardenia-wall-tile-tabulae-chevron-sabbia-pf60021110-15x85-nat-92341-par-dx-sx/catalog.yaml` — Canonical surface-material catalog record for Gardenia Tabulae Chevron Sabbia 15x85 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/tabulae/gardenia-wall-tile-tabulae-genuine-combo-3d-pf60021151-60x60-nat-92262-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Tabulae Genuine Combo 3D 60x60 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/tabulae/gardenia-wall-tile-tabulae-genuine-hav-pf60021107-23-4x148-nat-92249-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Tabulae Genuine Hav 23,4x148 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/tabulae/gardenia-wall-tile-tabulae-genuine-hav-pf60021141-20x120-nat-92253-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Tabulae Genuine Hav 20x120 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/tabulae/gardenia-wall-tile-tabulae-genuine-hav-pf60021145-10x60-nat-92257-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Tabulae Genuine Hav 10x60 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/tabulae/gardenia-wall-tile-tabulae-genuine-hav-pf60021156-20x120-92267-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Tabulae Genuine Hav 20x120.
+- `catalog/surface-materials/wall_tile/gardenia/tabulae/gardenia-wall-tile-tabulae-genuine-sab-nat-pf60021106-23-4x148-nat-92248-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Tabulae Genuine Sab Nat 23,4x148 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/tabulae/gardenia-wall-tile-tabulae-genuine-sab-nat-pf60021140-20x120-nat-92252-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Tabulae Genuine Sab Nat 20x120 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/tabulae/gardenia-wall-tile-tabulae-genuine-sab-nat-pf60021144-10x60-nat-92256-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Tabulae Genuine Sab Nat 10x60 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/tabulae/gardenia-wall-tile-tabulae-genuine-sab-nat-pf60021155-20x120-92266-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Tabulae Genuine Sab Nat 20x120.
+- `catalog/surface-materials/wall_tile/gardenia/tabulae/gardenia-wall-tile-tabulae-genuine-sticks-3d-pf60021153-60x120-nat-92264-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Tabulae Genuine Sticks 3D 60x120 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/tabulae/gardenia-wall-tile-tabulae-refined-fieno-pf60021108-23-4x148-nat-92250-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Tabulae Refined Fieno 23,4x148 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/tabulae/gardenia-wall-tile-tabulae-refined-fieno-pf60021142-20x120-nat-92254-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Tabulae Refined Fieno 20x120 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/tabulae/gardenia-wall-tile-tabulae-refined-fieno-pf60021146-10x60-nat-92258-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Tabulae Refined Fieno 10x60 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/tabulae/gardenia-wall-tile-tabulae-refined-fieno-pf60021148-5x120-nat-92260-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Tabulae Refined Fieno 5x120 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/tabulae/gardenia-wall-tile-tabulae-refined-fieno-pf60021157-20x120-92268-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Tabulae Refined Fieno 20x120.
+- `catalog/surface-materials/wall_tile/gardenia/tabulae/gardenia-wall-tile-tabulae-refined-marble-3d-pf60021154-60x120-nat-92265-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Tabulae Refined Marble 3D 60x120 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/tabulae/gardenia-wall-tile-tabulae-refined-mesh-3d-pf60021152-60x60-nat-92263-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Tabulae Refined Mesh 3D 60x60 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/tabulae/gardenia-wall-tile-tabulae-refined-miele-nat-pf60021109-23-4x148-nat-92251-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Tabulae Refined Miele Nat 23,4x148 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/tabulae/gardenia-wall-tile-tabulae-refined-miele-nat-pf60021143-20x120-nat-92255-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Tabulae Refined Miele Nat 20x120 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/tabulae/gardenia-wall-tile-tabulae-refined-miele-nat-pf60021147-10x60-nat-92259-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Tabulae Refined Miele Nat 10x60 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/tabulae/gardenia-wall-tile-tabulae-refined-miele-nat-pf60021149-5x120-nat-92261-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Tabulae Refined Miele Nat 5x120 Nat.
+- `catalog/surface-materials/wall_tile/gardenia/tabulae/gardenia-wall-tile-tabulae-refined-miele-nat-pf60021158-20x120-92269-0/catalog.yaml` — Canonical surface-material catalog record for Gardenia Tabulae Refined Miele Nat 20x120.
+- `incoming/dawson_storage_ottoman/dawson_storage_ottoman_import.yaml` — Incoming import-source data for Dawson Storage Ottoman.
+- `incoming/hugg-imports/hugg-basalt-closed.json` — Incoming import-source data for hugg imports.
+- `incoming/hugg-imports/hugg-basalt-opened.json` — Incoming import-source data for hugg imports.
+- `incoming/hugg-imports/hugg-dune-closed.json` — Incoming import-source data for hugg imports.
+- `incoming/hugg-imports/hugg-dune-opened.json` — Incoming import-source data for hugg imports.
+
+### 39. Public/static assets (126)
+
+- `hero.jpg` — Purpose requires manual confirmation; root-level image stored as PNG data despite its .jpg filename.
+- `incoming/dawson-ottoman/originals/hero.jpg` — Static JPG asset for incoming source reference hero.
+- `incoming/dawson-ottoman/originals/studio.jpg` — Static JPG asset for incoming source reference studio.
+- `incoming/dawson-reference/originals/indigo-blue.jpg` — Static JPG asset for incoming source reference indigo blue.
+- `incoming/dawson-reference/originals/infinity-boucle-ginger.jpg` — Static JPG asset for incoming source reference infinity boucle ginger.
+- `incoming/dawson-reference/originals/infinity-boucle-white-quartz.jpg` — Static JPG asset for incoming source reference infinity boucle white quartz.
+- `incoming/dawson-reference/originals/marcel-brilliant-white.jpg` — Static JPG asset for incoming source reference marcel brilliant white.
+- `incoming/dawson-reference/originals/marcel-smoke-grey.jpg` — Static JPG asset for incoming source reference marcel smoke grey.
+- `incoming/dawson-reference/originals/navagio-seagull.jpg` — Static JPG asset for incoming source reference navagio seagull.
+- `incoming/dawson-reference/originals/performance-creamy-white.jpg` — Static JPG asset for incoming source reference performance creamy white.
+- `incoming/dawson-reference/originals/peyton-cumin.jpg` — Static JPG asset for incoming source reference peyton cumin.
+- `incoming/dawson-reference/originals/peyton-dove-grey.jpg` — Static JPG asset for incoming source reference peyton dove grey.
+- `incoming/dawson-reference/originals/peyton-ivory.jpg` — Static JPG asset for incoming source reference peyton ivory.
+- `incoming/dawson-reference/originals/peyton-moss.jpg` — Static JPG asset for incoming source reference peyton moss.
+- `incoming/dawson-reference/README.md` — Documentation: Dawson Reference Intake.
+- `public/assets/configuration-icons/castlery/armchair-wide.svg` — Static SVG asset for product configuration icon armchair wide.
+- `public/assets/configuration-icons/castlery/armchair.svg` — Static SVG asset for product configuration icon armchair.
+- `public/assets/configuration-icons/castlery/chaise-left.svg` — Static SVG asset for product configuration icon chaise left.
+- `public/assets/configuration-icons/castlery/chaise-storage-ottoman-left.svg` — Static SVG asset for product configuration icon chaise storage ottoman left.
+- `public/assets/configuration-icons/castlery/hamilton/2-seater-with-ottoman.avif` — Static AVIF asset for product configuration icon 2 seater with ottoman.
+- `public/assets/configuration-icons/castlery/hamilton/2-seater.avif` — Static AVIF asset for product configuration icon 2 seater.
+- `public/assets/configuration-icons/castlery/hamilton/3-seater-sofa-bed.avif` — Static AVIF asset for product configuration icon 3 seater sofa bed.
+- `public/assets/configuration-icons/castlery/hamilton/3-seater-with-ottoman.avif` — Static AVIF asset for product configuration icon 3 seater with ottoman.
+- `public/assets/configuration-icons/castlery/hamilton/3-seater.avif` — Static AVIF asset for product configuration icon 3 seater.
+- `public/assets/configuration-icons/castlery/hamilton/chaise-left.avif` — Static AVIF asset for product configuration icon chaise left.
+- `public/assets/configuration-icons/castlery/hamilton/chaise-sofa-bed-left.avif` — Static AVIF asset for product configuration icon chaise sofa bed left.
+- `public/assets/configuration-icons/castlery/hamilton/chaise-with-ottoman-left.avif` — Static AVIF asset for product configuration icon chaise with ottoman left.
+- `public/assets/configuration-icons/castlery/hamilton/round-chaise-left.avif` — Static AVIF asset for product configuration icon round chaise left.
+- `public/assets/configuration-icons/castlery/hamilton/round-swivel-1-5-seater.avif` — Static AVIF asset for product configuration icon round swivel 1 5 seater.
+- `public/assets/configuration-icons/castlery/hamilton/round-swivel-armchair.avif` — Static AVIF asset for product configuration icon round swivel armchair.
+- `public/assets/configuration-icons/castlery/ottoman.svg` — Static SVG asset for product configuration icon ottoman.
+- `public/assets/configuration-icons/castlery/pit-sectional.svg` — Static SVG asset for product configuration icon pit sectional.
+- `public/assets/configuration-icons/castlery/round-chaise-left.svg` — Static SVG asset for product configuration icon round chaise left.
+- `public/assets/configuration-icons/castlery/sofa-2-seat-ottoman.svg` — Static SVG asset for product configuration icon sofa 2 seat ottoman.
+- `public/assets/configuration-icons/castlery/sofa-2-seat.svg` — Static SVG asset for product configuration icon sofa 2 seat.
+- `public/assets/configuration-icons/castlery/sofa-3-seat-ottoman.svg` — Static SVG asset for product configuration icon sofa 3 seat ottoman.
+- `public/assets/configuration-icons/castlery/sofa-3-seat.svg` — Static SVG asset for product configuration icon sofa 3 seat.
+- `public/assets/configuration-icons/castlery/sofa-extended-4-seat.svg` — Static SVG asset for product configuration icon sofa extended 4 seat.
+- `public/assets/configuration-icons/castlery/storage-ottoman.svg` — Static SVG asset for product configuration icon storage ottoman.
+- `public/assets/configuration-icons/castlery/wide-chaise-left.svg` — Static SVG asset for product configuration icon wide chaise left.
+- `public/assets/floor-plans/sg/hdb/ping-yi-court/previews/2-room-flexi-type-1.webp` — Static WEBP asset for 2 room flexi type 1.
+- `public/assets/floor-plans/sg/hdb/ping-yi-court/previews/2-room-flexi-type-2-open.webp` — Static WEBP asset for 2 room flexi type 2 open.
+- `public/assets/floor-plans/sg/hdb/ping-yi-court/previews/2-room-flexi-type-2-partitioned.webp` — Static WEBP asset for 2 room flexi type 2 partitioned.
+- `public/assets/floor-plans/sg/hdb/ping-yi-court/previews/3-room.webp` — Static WEBP asset for 3 room.
+- `public/assets/floor-plans/sg/hdb/ping-yi-court/previews/3gen.webp` — Static WEBP asset for 3gen.
+- `public/assets/floor-plans/sg/hdb/ping-yi-court/previews/4-room.webp` — Static WEBP asset for 4 room.
+- `public/assets/floor-plans/sg/hdb/ping-yi-court/previews/5-room.webp` — Static WEBP asset for 5 room.
+- `public/assets/thumbs/accessory-real-castlery-blanc-arched-table-lamp.png` — Static PNG asset for catalog thumbnail accessory real castlery blanc arched table lamp.
+- `public/assets/thumbs/armchair-real-castlery-hamilton-round-swivel-1-5-seater-armchair.png` — Static PNG asset for catalog thumbnail armchair real castlery hamilton round swivel 1 5 seater armchair.
+- `public/assets/thumbs/armchair-real-castlery-hamilton-round-swivel-armchair.png` — Static PNG asset for catalog thumbnail armchair real castlery hamilton round swivel armchair.
+- `public/assets/thumbs/armchair-real-castlery-owen-armchair-natural-wood.png` — Static PNG asset for catalog thumbnail armchair real castlery owen armchair natural wood.
+- `public/assets/thumbs/armchair-real-castlery-owen-armchair-walnut-wood.png` — Static PNG asset for catalog thumbnail armchair real castlery owen armchair walnut wood.
+- `public/assets/thumbs/armchair-real-castlery-owen-armchair.png` — Static PNG asset for catalog thumbnail armchair real castlery owen armchair.
+- `public/assets/thumbs/armchair-real-castlery-sacha-performance-boucle-armchair.png` — Static PNG asset for catalog thumbnail armchair real castlery sacha performance boucle armchair.
+- `public/assets/thumbs/armchair-real-castlery-winora-armchair.png` — Static PNG asset for catalog thumbnail armchair real castlery winora armchair.
+- `public/assets/thumbs/coffee-real-castlery-harper-marble-rectangular-120.png` — Static PNG asset for catalog thumbnail coffee real castlery harper marble rectangular 120.
+- `public/assets/thumbs/coffee-real-castlery-harper-marble-round-915.png` — Static PNG asset for catalog thumbnail coffee real castlery harper marble round 915.
+- `public/assets/thumbs/coffee-real-castlery-hugg-nesting-square-performance-basalt-closed.png` — Static PNG asset for catalog thumbnail coffee real castlery hugg nesting square performance basalt closed.
+- `public/assets/thumbs/coffee-real-castlery-hugg-nesting-square-performance-basalt-opened.png` — Static PNG asset for catalog thumbnail coffee real castlery hugg nesting square performance basalt opened.
+- `public/assets/thumbs/coffee-real-castlery-hugg-nesting-square-performance-dune-closed.png` — Static PNG asset for catalog thumbnail coffee real castlery hugg nesting square performance dune closed.
+- `public/assets/thumbs/coffee-real-castlery-hugg-nesting-square-performance-dune-opened.png` — Static PNG asset for catalog thumbnail coffee real castlery hugg nesting square performance dune opened.
+- `public/assets/thumbs/coffee-real-castlery-peri-120.png` — Static PNG asset for catalog thumbnail coffee real castlery peri 120.
+- `public/assets/thumbs/coffee-real-castlery-seb-storage-120.png` — Static PNG asset for catalog thumbnail coffee real castlery seb storage 120.
+- `public/assets/thumbs/coffee-real-castlery-seb-storage-90.png` — Static PNG asset for catalog thumbnail coffee real castlery seb storage 90.
+- `public/assets/thumbs/coffee-real-castlery-vento-coffee-table-120.png` — Static PNG asset for catalog thumbnail coffee real castlery vento coffee table 120.
+- `public/assets/thumbs/dining-real-castlery-brighton-oval-180.png` — Static PNG asset for catalog thumbnail dining real castlery brighton oval 180.
+- `public/assets/thumbs/dining-real-castlery-forma-oval-150.png` — Static PNG asset for catalog thumbnail dining real castlery forma oval 150.
+- `public/assets/thumbs/dining-real-castlery-forma-round-120.png` — Static PNG asset for catalog thumbnail dining real castlery forma round 120.
+- `public/assets/thumbs/dining-real-castlery-forma-round-90.png` — Static PNG asset for catalog thumbnail dining real castlery forma round 90.
+- `public/assets/thumbs/dining-real-castlery-kelsey-marble-160.png` — Static PNG asset for catalog thumbnail dining real castlery kelsey marble 160.
+- `public/assets/thumbs/dining-real-castlery-kelsey-marble-180.png` — Static PNG asset for catalog thumbnail dining real castlery kelsey marble 180.
+- `public/assets/thumbs/dining-real-castlery-sloane-bench-150-leather-cushion.png` — Static PNG asset for catalog thumbnail dining real castlery sloane bench 150 leather cushion.
+- `public/assets/thumbs/dining-real-castlery-sloane-bench-150-no-cushion.png` — Static PNG asset for catalog thumbnail dining real castlery sloane bench 150 no cushion.
+- `public/assets/thumbs/dining-real-castlery-sloane-bench-180-leather-cushion.png` — Static PNG asset for catalog thumbnail dining real castlery sloane bench 180 leather cushion.
+- `public/assets/thumbs/dining-real-castlery-sloane-bench-180-no-cushion.png` — Static PNG asset for catalog thumbnail dining real castlery sloane bench 180 no cushion.
+- `public/assets/thumbs/dining-real-castlery-sloane-travertine-180.png` — Static PNG asset for catalog thumbnail dining real castlery sloane travertine 180.
+- `public/assets/thumbs/sofa-real-castlery-dawson-3s-hero.png` — Static PNG asset for catalog thumbnail sofa real castlery dawson 3s hero.
+- `public/assets/thumbs/sofa-real-castlery-dawson-3s.png` — Static PNG asset for catalog thumbnail sofa real castlery dawson 3s.
+- `public/assets/thumbs/sofa-real-castlery-dawson-extended-sofa-hero.png` — Static PNG asset for catalog thumbnail sofa real castlery dawson extended sofa hero.
+- `public/assets/thumbs/sofa-real-castlery-dawson-extended-sofa.png` — Static PNG asset for catalog thumbnail sofa real castlery dawson extended sofa.
+- `public/assets/thumbs/sofa-real-castlery-dawson-ottoman-hero.png` — Static PNG asset for catalog thumbnail sofa real castlery dawson ottoman hero.
+- `public/assets/thumbs/sofa-real-castlery-dawson-ottoman.png` — Static PNG asset for catalog thumbnail sofa real castlery dawson ottoman.
+- `public/assets/thumbs/sofa-real-castlery-dawson-pit-sectional-hero.png` — Static PNG asset for catalog thumbnail sofa real castlery dawson pit sectional hero.
+- `public/assets/thumbs/sofa-real-castlery-dawson-pit-sectional.png` — Static PNG asset for catalog thumbnail sofa real castlery dawson pit sectional.
+- `public/assets/thumbs/sofa-real-castlery-dawson-swivel-armchair-hero.png` — Static PNG asset for catalog thumbnail sofa real castlery dawson swivel armchair hero.
+- `public/assets/thumbs/sofa-real-castlery-dawson-swivel-armchair.png` — Static PNG asset for catalog thumbnail sofa real castlery dawson swivel armchair.
+- `public/assets/thumbs/sofa-real-castlery-dawson-wide-chaise-sectional-hero.png` — Static PNG asset for catalog thumbnail sofa real castlery dawson wide chaise sectional hero.
+- `public/assets/thumbs/sofa-real-castlery-dawson-wide-chaise-sectional-left.png` — Static PNG asset for catalog thumbnail sofa real castlery dawson wide chaise sectional left.
+- `public/assets/thumbs/sofa-real-castlery-dawson-wide-chaise-sectional.png` — Static PNG asset for catalog thumbnail sofa real castlery dawson wide chaise sectional.
+- `public/assets/thumbs/sofa-real-castlery-madison-ottoman-hero.png` — Static PNG asset for catalog thumbnail sofa real castlery madison ottoman hero.
+- `public/assets/thumbs/sofa-real-castlery-madison-ottoman.png` — Static PNG asset for catalog thumbnail sofa real castlery madison ottoman.
+- `public/assets/thumbs/storage-real-castlery-sawyer-sideboard-180cm-hero-v2.png` — Static PNG asset for catalog thumbnail storage real castlery sawyer sideboard 180cm hero v2.
+- `public/assets/thumbs/storage-real-castlery-sawyer-sideboard-180cm-hero.png` — Static PNG asset for catalog thumbnail storage real castlery sawyer sideboard 180cm hero.
+- `public/assets/thumbs/storage-real-castlery-sawyer-sideboard-180cm-v2.png` — Static PNG asset for catalog thumbnail storage real castlery sawyer sideboard 180cm v2.
+- `public/assets/thumbs/storage-real-castlery-sawyer-sideboard-180cm.png` — Static PNG asset for catalog thumbnail storage real castlery sawyer sideboard 180cm.
+- `public/assets/thumbs/tv-real-castlery-casa-tv-console-150-hero.jpg` — Static JPG asset for catalog thumbnail tv real castlery casa tv console 150 hero.
+- `public/assets/thumbs/tv-real-castlery-casa-tv-console-150-hero.png` — Static PNG asset for catalog thumbnail tv real castlery casa tv console 150 hero.
+- `public/assets/thumbs/tv-real-castlery-casa-tv-console-150.jpg` — Static JPG asset for catalog thumbnail tv real castlery casa tv console 150.
+- `public/assets/thumbs/tv-real-castlery-casa-tv-console-150.png` — Static PNG asset for catalog thumbnail tv real castlery casa tv console 150.
+- `public/assets/thumbs/tv-real-castlery-casa-tv-console-200-hero.jpg` — Static JPG asset for catalog thumbnail tv real castlery casa tv console 200 hero.
+- `public/assets/thumbs/tv-real-castlery-casa-tv-console-200-hero.png` — Static PNG asset for catalog thumbnail tv real castlery casa tv console 200 hero.
+- `public/assets/thumbs/tv-real-castlery-casa-tv-console-200.jpg` — Static JPG asset for catalog thumbnail tv real castlery casa tv console 200.
+- `public/assets/thumbs/tv-real-castlery-casa-tv-console-200.png` — Static PNG asset for catalog thumbnail tv real castlery casa tv console 200.
+- `public/assets/thumbs/tv-real-castlery-sawyer-tv-console-200.png` — Static PNG asset for catalog thumbnail tv real castlery sawyer tv console 200.
+- `public/assets/thumbs/tv-real-castlery-seb-tv-console-150-hero.jpg` — Static JPG asset for catalog thumbnail tv real castlery seb tv console 150 hero.
+- `public/assets/thumbs/tv-real-castlery-seb-tv-console-150-hero.png` — Static PNG asset for catalog thumbnail tv real castlery seb tv console 150 hero.
+- `public/assets/thumbs/tv-real-castlery-seb-tv-console-150.jpg` — Static JPG asset for catalog thumbnail tv real castlery seb tv console 150.
+- `public/assets/thumbs/tv-real-castlery-seb-tv-console-150.png` — Static PNG asset for catalog thumbnail tv real castlery seb tv console 150.
+- `public/assets/thumbs/tv-real-castlery-seb-tv-console-200-hero.jpg` — Static JPG asset for catalog thumbnail tv real castlery seb tv console 200 hero.
+- `public/assets/thumbs/tv-real-castlery-seb-tv-console-200-hero.png` — Static PNG asset for catalog thumbnail tv real castlery seb tv console 200 hero.
+- `public/assets/thumbs/tv-real-castlery-seb-tv-console-200.jpg` — Static JPG asset for catalog thumbnail tv real castlery seb tv console 200.
+- `public/assets/thumbs/tv-real-castlery-seb-tv-console-200.png` — Static PNG asset for catalog thumbnail tv real castlery seb tv console 200.
+- `public/assets/thumbs/tv-real-castlery-sloane-tv-console-150-hero.jpg` — Static JPG asset for catalog thumbnail tv real castlery sloane tv console 150 hero.
+- `public/assets/thumbs/tv-real-castlery-sloane-tv-console-150-hero.png` — Static PNG asset for catalog thumbnail tv real castlery sloane tv console 150 hero.
+- `public/assets/thumbs/tv-real-castlery-sloane-tv-console-150.jpg` — Static JPG asset for catalog thumbnail tv real castlery sloane tv console 150.
+- `public/assets/thumbs/tv-real-castlery-sloane-tv-console-150.png` — Static PNG asset for catalog thumbnail tv real castlery sloane tv console 150.
+- `public/assets/thumbs/tv-real-castlery-sloane-tv-console-200-hero.jpg` — Static JPG asset for catalog thumbnail tv real castlery sloane tv console 200 hero.
+- `public/assets/thumbs/tv-real-castlery-sloane-tv-console-200-hero.png` — Static PNG asset for catalog thumbnail tv real castlery sloane tv console 200 hero.
+- `public/assets/thumbs/tv-real-castlery-sloane-tv-console-200.jpg` — Static JPG asset for catalog thumbnail tv real castlery sloane tv console 200.
+- `public/assets/thumbs/tv-real-castlery-sloane-tv-console-200.png` — Static PNG asset for catalog thumbnail tv real castlery sloane tv console 200.
+- `public/file.svg` — Static SVG asset for file.
+- `public/globe.svg` — Static SVG asset for globe.
+- `public/next.svg` — Static SVG asset for next.
+- `public/vercel.svg` — Static SVG asset for vercel.
+- `public/window.svg` — Static SVG asset for window.
+- `studio.jpg` — Purpose requires manual confirmation; root-level image stored as PNG data despite its .jpg filename.
+
+### 40. Documentation (98)
+
+- `AGENTS.md` — Defines repository-specific engineering guardrails and working instructions for coding agents.
+- `CATALOG_FILES_MANIFEST.md` — Documentation: Catalog System - File Inventory & Quick Links.
+- `CATALOG_IMPORT_CHECKLIST.md` — Documentation: Catalog Import Checklist.
+- `CATALOG_INTEGRATION.md` — Documentation: Catalog System - Quick Integration Guide.
+- `CATALOG_README.md` — Documentation: 📦 Catalog System - Complete Implementation.
+- `CATALOG_SYSTEM.md` — Documentation: Catalog Schema & System Documentation.
+- `catalog/floor-plans/README.md` — Documentation: Floor-plan library.
+- `catalog/IMPORT_GOLD_STANDARD_CHECKLIST.md` — Documentation: Catalog Import Gold Standard Checklist.
+- `catalog/IMPORT_OPERATING_RULE.md` — Documentation: Import Operating Rule (Current Wave).
+- `catalog/README.md` — Documentation: Catalog Authoring.
+- `CONTRIBUTING.md` — Documentation: Contributing.
+- `DEPLOYMENT_CHECKLIST.md` — Documentation: Catalog System - Deployment & Integration Checklist.
+- `DEPLOYMENT_PROGRESS.md` — Documentation: Deployment Checklist - Steps Progress.
+- `docs/architecture/3d-asset-performance-policy.md` — Documentation: 3D asset performance and delivery policy.
+- `docs/architecture/adr-0001-cabinetry-studio-composition-boundaries.md` — Documentation: ADR 0001: Cabinetry Studio composition boundaries.
+- `docs/architecture/api-security-observability.md` — Documentation: API security, error, and observability boundaries.
+- `docs/architecture/cabinetry-phase1-risk-backlog.md` — Documentation: Cabinetry Phase 1 Risk Backlog.
+- `docs/architecture/cabinetry-phase10-final-report.md` — Documentation: Cabinetry Studio Phase 10 final report.
+- `docs/architecture/cabinetry-post-phase10-remediation.md` — Documentation: Cabinetry Studio post-Phase 10 remediation.
+- `docs/architecture/cabinetry-studio-decomposition.md` — Documentation: Cabinetry Studio Decomposition.
+- `docs/architecture/cart-overlay-accessibility.md` — Documentation: CH-0015 accessibility lifecycle and overlay inventory.
+- `docs/architecture/catalog-compare-identity.md` — Documentation: Catalog comparison identity.
+- `docs/architecture/catalog-drawer-focus.md` — Documentation: Catalog drawer focus restoration.
+- `docs/architecture/command-palette-lifecycle.md` — Documentation: Command Palette modal lifecycle.
+- `docs/architecture/design-document-contract.md` — Documentation: Design document persistence contract.
+- `docs/architecture/design-lighting-audit.md` — Documentation: Central lighting audit and implementation.
+- `docs/architecture/design-page-decomposition.md` — Documentation: Design Page Decomposition.
+- `docs/architecture/editor-capability-accessibility.md` — Documentation: Editor capability, mode, and accessibility policy.
+- `docs/architecture/editor-state-command-ownership.md` — Documentation: Editor state, command, and history ownership.
+- `docs/architecture/floor-plan-upload-workspace-lifecycle.md` — Documentation: Floor Plan Upload workspace lifecycle.
+- `docs/architecture/glb-model-lifecycle.md` — Documentation: GLB model lifecycle and reload readiness.
+- `docs/architecture/guest-save-prompt-lifecycle.md` — Documentation: Guest Save Prompt continuation and dialog lifecycle.
+- `docs/architecture/phase8-css-ownership.md` — Documentation: Phase 8 CSS ownership.
+- `docs/architecture/phase8-performance-baseline-and-budgets.md` — Documentation: Phase 8 performance baseline and budgets.
+- `docs/architecture/phase8-project-benchmark-evidence.md` — Documentation: Phase 8 project benchmark evidence.
+- `docs/architecture/public-design-projection.md` — Documentation: Public design projection and fingerprint contract.
+- `docs/architecture/public-share-responsive-layout.md` — Documentation: Responsive public-share presentation.
+- `docs/architecture/retailer-confirmation-lifecycle.md` — Documentation: Retailer confirmation lifecycle.
+- `docs/architecture/scene-domain-renderer-boundaries.md` — Documentation: Scene domain and renderer boundaries.
+- `docs/architecture/surface-material-runtime-boundary.md` — Documentation: Surface-material runtime boundary.
+- `docs/code-health/00_SAFETY_AND_BASELINE.md` — Documentation: Safety and baseline.
+- `docs/code-health/01_REPOSITORY_INVENTORY.md` — Documentation: Repository inventory.
+- `docs/code-health/02_CODE_HEALTH_AUDIT.md` — Documentation: Code health audit.
+- `docs/code-health/03_TARGET_ARCHITECTURE.md` — Documentation: Target architecture.
+- `docs/code-health/04_REFACTOR_ROADMAP.md` — Documentation: Refactor roadmap.
+- `docs/code-health/05_QUALITY_GATES_PLAN.md` — Documentation: Quality gates plan.
+- `docs/code-health/06_P0_P1_REMEDIATION_QUEUE.md` — Documentation: P0/P1 remediation queue.
+- `docs/code-health/07_RC47_RC55_ARCHIVAL_DISPOSITION.md` — Documentation: RC47-RC55 archival commit-disposition audit.
+- `docs/code-health/HANDOFF.md` — Documentation: Code health audit handoff.
+- `docs/development/asset-storage.md` — Documentation: Asset Storage.
+- `docs/development/floor-plan-import-platform.md` — Documentation: Floor-plan import platform.
+- `docs/development/stripe-pro-testing.md` — Documentation: Stripe Pro testing.
+- `docs/development/workspace-reliability.md` — Documentation: Workspace Reliability.
+- `docs/engineering/ARCHITECTURE_RULES.md` — Documentation: Architecture rules.
+- `docs/engineering/CODE_REVIEW.md` — Documentation: Code review.
+- `docs/engineering/ENGINEERING_STANDARDS.md` — Documentation: Engineering standards.
+- `docs/handoffs/2026-07-27-cabinetry-module-shelf-selection-handoff.md` — Documentation: Current objective.
+- `docs/product/golden-path-v1.md` — Documentation: Launch golden path v1.
+- `docs/product/launch-product-v1.md` — Documentation: Interior AI launch product v1.
+- `docs/product/phase15-telemetry-release-evidence.md` — Documentation: Phase 15 telemetry and release evidence.
+- `docs/product/product-decision-log.md` — Documentation: Product decision log.
+- `docs/product/README.md` — Documentation: Product documentation.
+- `docs/product/release-entry-criteria-v1.md` — Documentation: Alpha, beta, and launch entry criteria v1.
+- `docs/qa/cabinetry-phase2-behavior-map.md` — Documentation: Cabinetry Studio Phase 2 behavior map.
+- `docs/qa/cabinetry-studio-mvp.md` — Documentation: Custom Millwork Studio MVP QA.
+- `docs/qa/production-artifact-evidence.md` — Documentation: Production-equivalent artifact evidence.
+- `docs/qa/production-certification-contract.v1.json` — Structured JSON data for production certification contract.v1.
+- `docs/qa/production-certification-source-generated-outputs.v1.json` — Structured JSON data for production certification source generated outputs.v1.
+- `docs/qa/production-certification-stage-environment.v2.json` — Structured JSON data for production certification stage environment.v2.
+- `docs/qa/production-certification-state-worktree-remediation.md` — Documentation: Production certification state/worktree remediation.
+- `docs/qa/required-test-truthfulness.md` — Documentation: Required-test truthfulness.
+- `docs/qa/vercel-prebuilt-release.md` — Documentation: Exact-artifact Vercel release workflow.
+- `docs/security/CH-0001_AUTHORIZATION_MATRIX.md` — Documentation: CH-0001 authorization matrix.
+- `docs/security/CH-0001_EXTERNAL_CONTROLS_CHECKLIST.md` — Documentation: CH-0001 external controls checklist.
+- `docs/security/CH-0004_TRUSTED_EVENT_PROVENANCE.md` — Documentation: CH-0004 trusted event provenance.
+- `docs/security/CH-0013_SURFACE_MATERIAL_REQUIRED_OWNERSHIP.md` — Documentation: CH-0013 surface-material required ownership.
+- `docs/security/P1_DEPENDENCY_AUTH_NEXT_COMPATIBILITY.md` — Documentation: P1 Next.js/Auth.js dependency security compatibility record.
+- `ENV_SETUP.md` — Documentation: Environment Setup for Testing & Error Reporting.
+- `IMPLEMENTATION_STATUS.md` — Documentation: 🎉 Phase 5 Complete - Summary & Status.
+- `IMPLEMENTATION_SUMMARY.md` — Documentation: Catalog System Implementation - Complete Summary.
+- `MULTI_ROOM_ARCHITECTURE.md` — Documentation: Multi-Room Architecture Diagram.
+- `MULTI_ROOM_DELIVERY.md` — Documentation: Multi-Room Foundation - Delivery Summary.
+- `MULTI_ROOM_INTEGRATION.md` — Documentation: Multi-Room Foundation - Integration Guide.
+- `MULTI_ROOM_QUICK_REF.md` — Documentation: Multi-Room API Quick Reference.
+- `PHASE_6_OPERATIONS.md` — Documentation: Phase 6: Operations Readiness - Complete Implementation Guide.
+- `PHASE_7_EXPORT_TIERING.md` — Documentation: Phase 7: Export Tiering Implementation.
+- `PHASE2_IMPLEMENTATION_SUMMARY.md` — Documentation: Phase 2: Single Source of Truth - Implementation Summary.
+- `PHASE5_CHECKLIST.md` — Documentation: Phase 5 Implementation Checklist.
+- `PHASE5_SUMMARY.md` — Documentation: 🎯 Phase 5 Complete: Quality Gates & Error Handling.
+- `posthog-setup-report.md` — Documentation: PostHog post-wizard report.
+- `PRISMA_STUDIO_FIX.md` — Documentation: Prisma Studio Port Binding Fix.
+- `QUICK_REFERENCE.md` — Documentation: Catalog System - Quick Reference Card.
+- `README.md` — Project README covering local setup, development workflow, and Next.js resources.
+- `STAGING_DEPLOY_GUIDE.md` — Documentation: Staging Deployment Guide.
+- `TEST_IDS.md` — Documentation: Test IDs Reference.
+- `TESTING_QUALITY_GATES.md` — Documentation: Phase 5: Quality Gates & Error Handling.
+- `VERCEL_DEPLOYMENT.md` — Documentation: Vercel Staging Deployment - Step by Step.
+- `VERIFY_TABLES_REPORT.md` — Documentation for VERIFY TABLES REPORT.
+
+### 41. Developer tooling (9)
+
+- `.claude/skills/posthog-integration-nextjs-app-router/references/basic-integration-1.0-begin.md` — Developer-skill instructions or reference material for the PostHog Next.js integration.
+- `.claude/skills/posthog-integration-nextjs-app-router/references/basic-integration-1.1-edit.md` — Developer-skill instructions or reference material for the PostHog Next.js integration.
+- `.claude/skills/posthog-integration-nextjs-app-router/references/basic-integration-1.2-revise.md` — Developer-skill instructions or reference material for the PostHog Next.js integration.
+- `.claude/skills/posthog-integration-nextjs-app-router/references/basic-integration-1.3-conclude.md` — Claude/Codex developer-skill documentation: PostHog post-wizard report.
+- `.claude/skills/posthog-integration-nextjs-app-router/references/EXAMPLE.md` — Claude/Codex developer-skill documentation: PostHog Next.js App Router Example Project.
+- `.claude/skills/posthog-integration-nextjs-app-router/references/identify-users.md` — Claude/Codex developer-skill documentation: Identify users - Docs.
+- `.claude/skills/posthog-integration-nextjs-app-router/references/next-js.md` — Claude/Codex developer-skill documentation: Next.js - Docs.
+- `.claude/skills/posthog-integration-nextjs-app-router/SKILL.md` — Claude/Codex developer-skill documentation: PostHog integration for Next.js App Router.
+- `.github/pull_request_template.md` — Template for consistent GitHub pull-request descriptions and reviewer context.
+
+### 42. Other files (0)
+
+_No files assigned to this category._
+
+## A. Directory overview
+
+Excluded and generated directories are intentionally absent.
+
+```text
+.
+├── .claude/skills/                         # Local developer-skill instructions
+├── .github/workflows/                     # CI and advisory E2E workflows
+├── app/                                   # Next.js App Router pages and API endpoints
+│   ├── admin/                             # Operations, catalog, imports, models, and audit UI
+│   ├── api/                               # HTTP route handlers
+│   ├── design/[id]/                       # Main design editor route
+│   └── share/[shareToken]/                # Public share and export routes
+├── catalog/                               # Authored floor-plan, furniture, and surface data
+│   ├── floor-plans/
+│   ├── furniture/
+│   └── surface-materials/
+├── components/                            # Shared, editor, scene, catalog, and admin React UI
+│   ├── editor/
+│   └── scene/
+├── config/                                # Application configuration modules
+├── docs/                                  # Architecture, engineering, product, QA, and security docs
+├── features/
+│   ├── cabinetry/                         # Cabinet Studio domain and UI
+│   └── millwork/                          # Millwork measurement/export features
+├── hooks/                                 # Shared React hooks
+├── incoming/                              # Checked-in import inputs and source references
+├── lib/                                   # Domain, persistence, server, catalog, and utility modules
+│   ├── ai/
+│   ├── catalog/
+│   └── floor-plan-imports/
+├── prisma/
+│   └── migrations/                        # Ordered database migrations
+├── public/                                # Browser-served models, images, textures, and Draco runtime
+├── scripts/                               # Validation, generation, maintenance, and test CLIs
+└── tests/                                 # E2E, required accessibility, fixtures, and test support
+```
+
+## B. File count summary
+
+| Measure | Count |
+|---|---:|
+| Total tracked files reported by Git | 3,673 |
+| Total pre-existing untracked files reported by Git | 0 |
+| Excluded tracked files | 117 |
+| Total files inventoried | 3,556 |
+
+### Counts by category
+
+| # | Category | Files |
+|---:|---|---:|
+| 1 | Application routes and pages | 15 |
+| 2 | Layouts, loading states, error states, and route metadata | 7 |
+| 3 | React UI components | 29 |
+| 4 | Design editor UI | 56 |
+| 5 | 2D floor-plan editor | 100 |
+| 6 | Three.js, React Three Fiber, and 3D rendering | 57 |
+| 7 | Scene objects, placement, snapping, collision, and transforms | 33 |
+| 8 | Lighting, cameras, controls, shaders, and visual effects | 25 |
+| 9 | State management | 2 |
+| 10 | Design persistence, revisions, autosave, recovery, and cloud synchronization | 15 |
+| 11 | Hooks | 145 |
+| 12 | Context providers | 2 |
+| 13 | Libraries, helpers, and shared utilities | 101 |
+| 14 | API routes | 74 |
+| 15 | Server-side services and backend logic | 14 |
+| 16 | Authentication and authorization | 6 |
+| 17 | Security, permissions, governance, and audit logic | 20 |
+| 18 | Prisma schema, migrations, seeds, and database utilities | 47 |
+| 19 | Product catalog | 72 |
+| 20 | Furniture assets and GLB-related logic | 227 |
+| 21 | Materials, finishes, flooring, paint, and textures | 233 |
+| 22 | Commerce, Shopify, cart, pricing, and affiliate integrations | 24 |
+| 23 | Custom cabinetry and millwork | 138 |
+| 24 | Consumer-mode features | 5 |
+| 25 | Pro/designer-mode features | 2 |
+| 26 | Artificial-intelligence features and OpenAI integrations | 9 |
+| 27 | Analytics and PostHog | 6 |
+| 28 | Import and export workflows | 69 |
+| 29 | PDF, image, GLB, presentation, or documentation exports | 14 |
+| 30 | Admin pages and admin tools | 55 |
+| 31 | Tests | 128 |
+| 32 | Test fixtures, mocks, helpers, and test data | 29 |
+| 33 | Playwright and end-to-end test infrastructure | 10 |
+| 34 | Scripts and command-line tools | 391 |
+| 35 | CI/CD and GitHub Actions | 2 |
+| 36 | Vercel and deployment configuration | 2 |
+| 37 | Linting, formatting, TypeScript, and build configuration | 16 |
+| 38 | Catalog data, YAML, JSON, schemas, and validation files | 1,143 |
+| 39 | Public/static assets | 126 |
+| 40 | Documentation | 98 |
+| 41 | Developer tooling | 9 |
+| 42 | Other files | 0 |
+
+### Counts by extension
+
+| Extension group | Files |
+|---|---:|
+| `.ts` | 1,211 |
+| `.tsx` | 342 |
+| `.js` | 5 |
+| `.json` | 26 |
+| `.yaml` | 1,139 |
+| `.yml` | 2 |
+| `.css` | 5 |
+| `.md` | 106 |
+| `.sql` | 44 |
+| `.prisma` | 1 |
+| `.glb` | 222 |
+| `Image formats` | 341 |
+| `Other formats` | 107 |
+| `[no extension]` | 5 |
+
+Other-format breakdown: `.mjs` 90; `.sh` 7; `.example` 2; `.toml` 2; `.cjs` 1; `.dxf` 1; `.ifc` 1; `.py` 1; `.template` 1; `.wasm` 1.
+
+## C. Modified files
+
+None. The source worktree had no modified, deleted, renamed, or staged files at snapshot collection time.
+
+## D. Untracked files
+
+None before report creation.
+
+Post-generation note: `docs/repository-file-inventory.md` | repository file-location inventory | likely intentional (this requested report).
+
+## E. Largest source files
+
+Line counts cover source-controlled text files after exclusions. The responsibility/refactoring observations are structural triage signals, not refactoring directives.
+
+| # | Relative path | Lines | Responsibility | Multiple unrelated responsibilities? | Refactoring candidate? |
+|---:|---|---:|---|---|---|
+| 1 | `package-lock.json` | 11,106 | Locks the exact npm dependency graph for reproducible installs. | No — appears to be one cohesive data, schema, style, or documentation artifact | No — size alone is not evidence |
+| 2 | `features/cabinetry/generateCabinetDocumentation.ts` | 8,372 | Defines `buildCabinetSourceDefinitionFingerprint`, `generateCabinetCutList`, `generateCabinetMaterialSchedule`, `generateCabinetEdgeBandingSchedule`, and related exports for generate Cabinet Documentation. | Possible — contains 153 named functions/classes | Review candidate; confirm cohesion before splitting |
+| 3 | `docs/code-health/HANDOFF.md` | 6,396 | Documentation: Code health audit handoff. | No — appears to be one cohesive data, schema, style, or documentation artifact | No — size alone is not evidence |
+| 4 | `scripts/test-production-artifact-evidence.mjs` | 5,799 | Command-line script for test production artifact evidence. | Possible — contains 41 named functions/classes | Review candidate; confirm cohesion before splitting |
+| 5 | `components/editor/renderers/RoomRenderer2D.tsx` | 5,636 | Implements `RoomRenderer2D` for Room Renderer2 D. | Possible — contains 111 named functions/classes | Review candidate; confirm cohesion before splitting |
+| 6 | `scripts/code-quality/baseline.json` | 5,161 | Machine-readable baseline for repository code-quality ratchets. | No — appears to be one cohesive data, schema, style, or documentation artifact | No — size alone is not evidence |
+| 7 | `scripts/production-certification-simulation.mjs` | 4,280 | Command-line script for production certification simulation. | Possible — contains 36 named functions/classes | Review candidate; confirm cohesion before splitting |
+| 8 | `scripts/production-artifact-evidence.mjs` | 4,066 | Command-line script for production artifact evidence. | Possible — contains 111 named functions/classes | Review candidate; confirm cohesion before splitting |
+| 9 | `components/editor/DesignControlsPlanPanel.tsx` | 3,893 | Implements `DesignControlsPlanPanel` for Design Controls Plan Panel. | Possible — contains 41 named functions/classes | Review candidate; confirm cohesion before splitting |
+| 10 | `features/cabinetry/validation.ts` | 3,842 | Implements `validateCabinetDefinition` for validation. | No clear signal from structure | No clear refactoring signal |
+| 11 | `scripts/production-certification-source-continuity.mjs` | 3,635 | Command-line script for production certification source continuity. | Possible — contains 72 named functions/classes | Review candidate; confirm cohesion before splitting |
+| 12 | `features/cabinetry/components/CabinetryStudioDetailedView.tsx` | 3,375 | Defines `CabinetryStudioDetailedView`, `CabinetryStudioDetailedViewBindings` for Cabinetry Studio Detailed View. | No clear signal from structure | No clear refactoring signal |
+| 13 | `catalog/furniture/sofas/solange_performance_boucle_chair/catalog.yaml` | 3,322 | Canonical furniture catalog record for Solange Performance Boucle Chair. | No — appears to be one cohesive data, schema, style, or documentation artifact | No — size alone is not evidence |
+| 14 | `scripts/production-certification-real.mjs` | 3,257 | Command-line script for production certification real. | Possible — contains 61 named functions/classes | Review candidate; confirm cohesion before splitting |
+| 15 | `scripts/test-production-certification.mjs` | 2,983 | Command-line script for test production certification. | Possible — contains 17 named functions/classes | Potential candidate, subject to manual cohesion review |
+| 16 | `lib/design-page-house-plan.ts` | 2,912 | Defines `resolveHouseRoomFloorElevationMeters`, `resolveFloorPlanDrawCancelDecision`, `resolveFloorPlanOpeningCancelDecision`, `clampRoomDimension`, and related exports for design page house plan. | Possible — contains 46 named functions/classes | Review candidate; confirm cohesion before splitting |
+| 17 | `lib/floor-plan-imports/pdf-raster-adapter.ts` | 2,871 | Defines `rankFloorPlanSemanticPages`, `sourceTextEvidenceFromLocalOcr`, `registerSupportedPageTopology`, `PdfRasterFloorPlanSourceAdapter`, and related exports for PDF raster adapter. | Possible — contains 43 named functions/classes | Review candidate; confirm cohesion before splitting |
+| 18 | `catalog/furniture/sofas/lena_armchair/catalog.yaml` | 2,849 | Canonical furniture catalog record for Lena Armchair. | No — appears to be one cohesive data, schema, style, or documentation artifact | No — size alone is not evidence |
+| 19 | `features/cabinetry/generateCabinetParts.ts` | 2,775 | Implements `generateCabinetParts` for generate Cabinet Parts. | Possible — contains 22 named functions/classes | Review candidate; confirm cohesion before splitting |
+| 20 | `catalog/furniture/sofas/mori_performance_fabric_armchair/catalog.yaml` | 2,757 | Canonical furniture catalog record for Mori Performance Fabric Armchair. | No — appears to be one cohesive data, schema, style, or documentation artifact | No — size alone is not evidence |
+| 21 | `features/cabinetry/components/CabinetryStudio.tsx` | 2,696 | Implements `CabinetryStudio` for Cabinetry Studio. | Possible — contains 87 named functions/classes | Review candidate; confirm cohesion before splitting |
+| 22 | `components/editor/renderers/house-plan-3d/geometry.ts` | 2,661 | Defines `isWallSurfacePanelCutawayEligible`, `resolveAtomicWallCutawayRenderState`, `getSelectableWallFacePanelId`, `getLogicalWallPanelForPart`, and related exports for geometry. | Possible — contains 92 named functions/classes | Review candidate; confirm cohesion before splitting |
+| 23 | `scripts/required-test-truthfulness.mjs` | 2,581 | Command-line script for required test truthfulness. | Possible — contains 71 named functions/classes | Review candidate; confirm cohesion before splitting |
+| 24 | `scripts/cabinetry-tests/export-behavior.ts` | 2,572 | Command-line script for export behavior. | No clear signal from structure | No clear refactoring signal |
+| 25 | `lib/nippon-paint-colours.ts` | 2,516 | Defines `NIPPON_PAINT_COLOURS`, `NipponPaintColour` for nippon paint colours. | No clear signal from structure | No clear refactoring signal |
+| 26 | `scripts/test-required-test-truthfulness.mjs` | 2,476 | Command-line script for test required test truthfulness. | Possible — contains 17 named functions/classes | Potential candidate, subject to manual cohesion review |
+| 27 | `tests/e2e/pro-visual-policy.spec.ts` | 2,474 | Playwright/end-to-end coverage for pro visual policy.spec. | No clear signal — multiple cases may belong to one suite | Only if test concerns prove unrelated |
+| 28 | `lib/catalog/data.ts` | 2,413 | Defines `buildAveryUpholsteryVariants`, `DALTON_STANDARD_QUEEN_THUMB_URL`, `CATALOG` for data. | No clear signal from structure | No clear refactoring signal |
+| 29 | `features/cabinetry/types.ts` | 2,228 | Defines `CabinetUnitType`, `CabinetFrontType`, `DoorStyle`, `CabinetGrainDirection`, and related exports for types. | No clear signal from structure | No clear refactoring signal |
+| 30 | `tests/e2e/00-runtime-smoke.spec.ts` | 2,188 | Playwright/end-to-end coverage for 00 runtime smoke.spec. | No clear signal — multiple cases may belong to one suite | Only if test concerns prove unrelated |
+| 31 | `lib/useDesignPageCatalogPlacement.ts` | 2,103 | Defines `useDesignPageCatalogPlacement`, `DesignPageCatalogPlacementState`, `DesignPageCatalogPlacementConfiguration`, `CatalogPlacementTargetResult`, and related exports for use Design Page Catalog Placement. | No clear signal from structure | No clear refactoring signal |
+| 32 | `scripts/cabinetry-release-evidence.ts` | 2,061 | Command-line script for cabinetry release evidence. | Possible — contains 34 named functions/classes | Review candidate; confirm cohesion before splitting |
+| 33 | `scripts/production-certification-state.mjs` | 1,969 | Command-line script for production certification state. | Possible — contains 38 named functions/classes | Review candidate; confirm cohesion before splitting |
+| 34 | `features/cabinetry/presetData.ts` | 1,930 | Defines `names`, `unitTypeByPreset`, `DEFAULT_PRESET_TOE_KICK_HEIGHT_MM`, `presets`, and related exports for preset Data. | No clear signal from structure | No clear refactoring signal |
+| 35 | `features/cabinetry/components/CabinetryStudioGuidedView.tsx` | 1,896 | Defines `CabinetryStudioGuidedView`, `CabinetryStudioGuidedViewBindings` for Cabinetry Studio Guided View. | No clear signal from structure | No clear refactoring signal |
+| 36 | `lib/useDesignPageProductConfiguration.ts` | 1,824 | Defines `normalizeProductVariantKey`, `useDesignPageProductConfiguration` for use Design Page Product Configuration. | Possible — contains 13 named functions/classes | Potential candidate, subject to manual cohesion review |
+| 37 | `docs/code-health/06_P0_P1_REMEDIATION_QUEUE.md` | 1,698 | Documentation: P0/P1 remediation queue. | No — appears to be one cohesive data, schema, style, or documentation artifact | No — size alone is not evidence |
+| 38 | `lib/floor-plan-compiler-v2.ts` | 1,682 | Defines `validateFloorPlanDocumentV2`, `canonicalizeFloorPlanGeometryV2`, `hashFloorPlanGeometryV2`, `compileFloorPlanDocumentV2`, and related exports for floor plan compiler v2. | Possible — contains 56 named functions/classes | Review candidate; confirm cohesion before splitting |
+| 39 | `scripts/cabinetry-tests/specialty-preset-contracts.ts` | 1,677 | Command-line script for specialty preset contracts. | No clear signal from structure | No clear refactoring signal |
+| 40 | `lib/useDesignPageSurfaceActions.ts` | 1,623 | Defines `useDesignPageSurfaceActions`, `SurfaceTargetMode`, `SelectedWallSurfaceTarget`, `RendererSurfaceTarget`, and related exports for use Design Page Surface Actions. | Possible — contains 16 named functions/classes | Potential candidate, subject to manual cohesion review |
+| 41 | `features/cabinetry/exportCabinetShopDrawingSvg.ts` | 1,611 | Defines `buildCabinetShopDrawingSvgFileName`, `buildCabinetShopDrawingSvg`, `downloadCabinetShopDrawingSvg` for export Cabinet Shop Drawing Svg. | Possible — contains 19 named functions/classes | Review candidate; confirm cohesion before splitting |
+| 42 | `scripts/cabinetry-tests/core-rendering-contracts.ts` | 1,600 | Command-line script for core rendering contracts. | No clear signal from structure | No clear refactoring signal |
+| 43 | `scripts/production-certification-dependencies.mjs` | 1,592 | Command-line script for production certification dependencies. | Possible — contains 39 named functions/classes | Review candidate; confirm cohesion before splitting |
+| 44 | `app/share/[shareToken]/export/page.tsx` | 1,585 | Next.js page for route /share/[shareToken]/export. | Possible — contains 33 named functions/classes | Review candidate; confirm cohesion before splitting |
+| 45 | `app/admin/operations-dashboard.module.css` | 1,511 | Styles operations dashboard.module UI and layout. | No — appears to be one cohesive data, schema, style, or documentation artifact | No — size alone is not evidence |
+| 46 | `scripts/test-surface-material-schema.ts` | 1,483 | Command-line script for test surface material schema. | No clear signal from structure | No clear refactoring signal |
+| 47 | `docs/code-health/02_CODE_HEALTH_AUDIT.md` | 1,454 | Documentation: Code health audit. | No — appears to be one cohesive data, schema, style, or documentation artifact | No — size alone is not evidence |
+| 48 | `scripts/cabinetry-tests/layout-validation.ts` | 1,453 | Command-line script for layout validation. | No clear signal from structure | No clear refactoring signal |
+| 49 | `scripts/required-test-manifest.json` | 1,430 | Machine-readable manifest of required test commands, ownership, and certification metadata. | No — appears to be one cohesive data, schema, style, or documentation artifact | No — size alone is not evidence |
+| 50 | `features/cabinetry/useDesignPageCabinetry.ts` | 1,379 | Defines `buildCabinetryAvailableSpaces`, `buildSelectedCabinetDocumentation`, `buildSelectedCabinetAssetManifest`, `useDesignPageCabinetry`, and related exports for use Design Page Cabinetry. | No clear signal from structure | No clear refactoring signal |
+
+## F. Files with unclear ownership or purpose
+
+- `hero.jpg` — Purpose requires manual confirmation; root-level image stored as PNG data despite its `.jpg` filename.
+- `studio.jpg` — Purpose requires manual confirmation; root-level image stored as PNG data despite its `.jpg` filename.
