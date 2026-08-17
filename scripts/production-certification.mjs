@@ -149,6 +149,10 @@ function qualificationCommand() {
   const checks = [
     [
       process.execPath,
+      ["scripts/test-production-certification-stage-order.mjs"],
+    ],
+    [
+      process.execPath,
       ["scripts/production-certification-source-continuity.mjs", "contract-check"],
     ],
     [

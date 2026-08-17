@@ -1,5 +1,34 @@
 # Production Certification Harness v1
 
+## Real-runner stage-order import regression
+
+The canonical stage-order owner is the frozen string array
+`CERTIFICATION_STAGE_ORDER` exported by
+`scripts/production-certification-contract.mjs`. State, transition validation,
+doctor, simulation, the CLI/qualification owner, and the committed real runner
+must import that same binding; no runner-local list or fallback is permitted.
+The real runner's contract import is acyclic because the canonical contract's
+transitive import graph does not reach the real runner.
+
+`scripts/test-production-certification-stage-order.mjs` owns the exact dispatch
+regression. It loads an instrumented copy of the committed real runner rather
+than a helper-only substitute, supplies a task-owned sealed state-v4 fixture,
+and stops at the database stage-binding boundary before dependency installation
+or a substantive source check. The historical
+`ec56e6e7d680ac768624f565cee422d091a78642` source must fail there with
+`CERTIFICATION_STAGE_ORDER is not defined`; the corrected source must resolve
+`source-validation` at canonical index 1, after passed `doctor`, and reach the
+canonical database dispatch with the source attempt still zero. No production
+build, server, browser, or full dependency installation is part of this test.
+
+Doctor and deterministic simulation use the same import/export coherence
+guard. It proves one exporting owner, canonical imports in doctor, simulation,
+qualification, state, and real runner, identical order hash, complete known
+runner-stage inventory, no import cycle, and registration in the historical
+matrix and committed qualifier. Tamper coverage rejects missing import, copied
+list, reorder, omission, duplicate, and unknown stage. These checks do not
+change the 12 canonical stage names or order.
+
 ## Repository-owned disposable database lifecycle — 2026-08-17
 
 The harness now has one high-level database owner:

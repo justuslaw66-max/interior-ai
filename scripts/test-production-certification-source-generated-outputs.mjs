@@ -348,6 +348,7 @@ function copyCurrentTrackedSource(destination) {
     "scripts/test-production-certification-resources.mjs",
     "scripts/test-production-certification-database-lifecycle.mjs",
     "scripts/test-production-certification-source-generated-outputs.mjs",
+    "scripts/test-production-certification-stage-order.mjs",
   ];
   const paths = new Set([
     ...tracked.stdout.split("\0").filter(Boolean),
@@ -550,7 +551,21 @@ function runCorrectedRealRunnerRegression() {
           boundary,
         }),
     });
-    assert.equal(sourceResult.passed, true);
+    const failedSourceCheck = sourceResult.evidence.checks.at(-1);
+    assert.equal(
+      sourceResult.passed,
+      true,
+      JSON.stringify({
+        failedCheckId: sourceResult.failedCheckId,
+        process: failedSourceCheck?.process,
+        stdout: failedSourceCheck
+          ? readFileSync(path.join(evidenceRoot, failedSourceCheck.stdout.path), "utf8")
+          : null,
+        stderr: failedSourceCheck
+          ? readFileSync(path.join(evidenceRoot, failedSourceCheck.stderr.path), "utf8")
+          : null,
+      }),
+    );
     assert.equal(sourceResult.evidence.checks.length, 19);
     assert.deepEqual(
       sourceResult.evidence.generatedOutputEvidence.map((entry) => entry.outputId),

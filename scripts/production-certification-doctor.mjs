@@ -1,5 +1,12 @@
 import { spawnSync } from "node:child_process";
-import { existsSync, lstatSync, readFileSync, realpathSync, statfsSync } from "node:fs";
+import {
+  existsSync,
+  lstatSync,
+  readFileSync,
+  readdirSync,
+  realpathSync,
+  statfsSync,
+} from "node:fs";
 import path from "node:path";
 
 import {
@@ -762,6 +769,224 @@ function validateDependencyLifecycleContracts(repositoryRoot) {
   };
 }
 
+function namedImportsFromCanonicalContract(source) {
+  const names = new Map();
+  const pattern =
+    /import\s*\{([^}]*)\}\s*from\s*["']\.\/production-certification-contract\.mjs["']/g;
+  for (const match of source.matchAll(pattern)) {
+    for (const entry of match[1].split(",")) {
+      const [imported, local = imported] = entry.trim().split(/\s+as\s+/);
+      if (imported) names.set(imported, local);
+    }
+  }
+  return names;
+}
+
+function stringArrayLiteral(value) {
+  const stages = [];
+  const remainder = value.replace(
+    /(["'])([a-z0-9]+(?:-[a-z0-9]+)*)\1/g,
+    (_match, _quote, stage) => {
+      stages.push(stage);
+      return "";
+    },
+  );
+  return /^[\s\[\],]*$/.test(remainder) ? stages : null;
+}
+
+function literalStageOrder(source) {
+  const match = source.match(
+    /export\s+const\s+CERTIFICATION_STAGE_ORDER\s*=\s*Object\.freeze\(\s*(\[[\s\S]*?\])\s*\);/,
+  );
+  if (!match) {
+    throw new Error("canonical certification stage-order export is missing");
+  }
+  const order = stringArrayLiteral(match[1]);
+  if (order === null) {
+    throw new Error("canonical certification stage-order export is not a literal array");
+  }
+  if (
+    !Array.isArray(order) ||
+    order.some((stage) => typeof stage !== "string" || !stage) ||
+    new Set(order).size !== order.length
+  ) {
+    throw new Error("canonical certification stage order is malformed or duplicated");
+  }
+  return order;
+}
+
+function copiedStageOrderNames(source) {
+  const names = [];
+  const declaration =
+    /^(?:export\s+)?(?:const|let|var)\s+([A-Za-z_$][\w$]*)\s*=\s*(?:Object\.freeze\(\s*)?(\[[\s\S]*?\])\s*\)?;/gm;
+  for (const match of source.matchAll(declaration)) {
+    if (match[1] === "CERTIFICATION_STAGE_ORDER") continue;
+    const value = stringArrayLiteral(match[2]);
+    if (
+      value !== null &&
+      value.length === CERTIFICATION_STAGE_ORDER.length &&
+      value.every((stage) => CERTIFICATION_STAGE_ORDER.includes(stage))
+    ) {
+      names.push(match[1]);
+    }
+  }
+  return names;
+}
+
+export function validateCertificationStageOrderContracts(
+  repositoryRoot,
+  { sourceOverrides = {} } = {},
+) {
+  const read = (relativePath) =>
+    Object.hasOwn(sourceOverrides, relativePath)
+      ? sourceOverrides[relativePath]
+      : readFileSync(path.join(repositoryRoot, relativePath), "utf8");
+  const canonicalOwner = "scripts/production-certification-contract.mjs";
+  const expectedConsumers = [
+    "scripts/production-certification-state.mjs",
+    "scripts/production-certification-real.mjs",
+    "scripts/production-certification-doctor.mjs",
+    "scripts/production-certification-simulation.mjs",
+    "scripts/production-certification.mjs",
+    "scripts/test-production-certification-stage-order.mjs",
+  ];
+  const canonicalSource = read(canonicalOwner);
+  const sourceOrder = literalStageOrder(canonicalSource);
+  if (JSON.stringify(sourceOrder) !== JSON.stringify(CERTIFICATION_STAGE_ORDER)) {
+    throw new Error("canonical certification stage-order source and runtime identity differ");
+  }
+  if (
+    Object.keys(CERTIFICATION_STAGE_COMMANDS).join("\n") !==
+    CERTIFICATION_STAGE_ORDER.join("\n")
+  ) {
+    throw new Error("certification stage commands and canonical order differ");
+  }
+
+  const scriptPaths = readdirSync(path.join(repositoryRoot, "scripts"))
+    .filter((name) => name.endsWith(".mjs"))
+    .map((name) => `scripts/${name}`)
+    .sort();
+  const sources = Object.fromEntries(scriptPaths.map((name) => [name, read(name)]));
+  const importGraph = Object.fromEntries(
+    Object.entries(sources).map(([name, source]) => [
+      name,
+      [...source.matchAll(/(?:from\s*|import\s*\(\s*)["'](\.\/[^"']+)["']/g)]
+        .map((match) =>
+          path.posix.normalize(path.posix.join(path.posix.dirname(name), match[1])),
+        )
+        .filter((target) => Object.hasOwn(sources, target)),
+    ]),
+  );
+  const reachesRealRunner = (start) => {
+    const pending = [start];
+    const visited = new Set();
+    while (pending.length > 0) {
+      const name = pending.pop();
+      if (name === "scripts/production-certification-real.mjs") return true;
+      if (visited.has(name)) continue;
+      visited.add(name);
+      pending.push(...(importGraph[name] ?? []));
+    }
+    return false;
+  };
+  if (reachesRealRunner(canonicalOwner)) {
+    throw new Error("canonical certification stage-order import creates a cycle");
+  }
+  const definitions = Object.entries(sources)
+    .filter(([, source]) =>
+      /^(?:export\s+)?(?:const|let|var)\s+CERTIFICATION_STAGE_ORDER\b/m.test(
+        source,
+      ),
+    )
+    .map(([name]) => name);
+  if (JSON.stringify(definitions) !== JSON.stringify([canonicalOwner])) {
+    throw new Error("certification stage order has a missing or duplicate owner");
+  }
+
+  const consumers = Object.entries(sources)
+    .filter(
+      ([name, source]) =>
+        name !== canonicalOwner && source.includes("CERTIFICATION_STAGE_ORDER"),
+    )
+    .map(([name, source]) => {
+      if (
+        namedImportsFromCanonicalContract(source).get(
+          "CERTIFICATION_STAGE_ORDER",
+        ) !== "CERTIFICATION_STAGE_ORDER"
+      ) {
+        throw new Error(`${name} does not import the canonical certification stage order`);
+      }
+      const copied = copiedStageOrderNames(source);
+      if (copied.length > 0) {
+        throw new Error(
+          `${name} copies the canonical certification stage order as ${copied.join(", ")}`,
+        );
+      }
+      return name;
+    });
+  for (const consumer of expectedConsumers) {
+    if (!consumers.includes(consumer)) {
+      throw new Error(`${consumer} does not resolve the canonical certification stage order`);
+    }
+  }
+
+  const realRunner = sources["scripts/production-certification-real.mjs"];
+  const runnerStages = [
+    ...realRunner.matchAll(
+      /(?:managedStage|bindDatabaseForStage)\s*\(\s*(?:context|refreshed),\s*["']([^"']+)["']/g,
+    ),
+    ...realRunner.matchAll(/\.stages\s*\[\s*["']([^"']+)["']\s*\]/g),
+  ].map((match) => match[1]);
+  const unknownRunnerStages = [...new Set(runnerStages)].filter(
+    (stage) => !CERTIFICATION_STAGE_ORDER.includes(stage),
+  );
+  const missingRunnerStages = CERTIFICATION_STAGE_ORDER.filter(
+    (stage) => !runnerStages.includes(stage),
+  );
+  if (unknownRunnerStages.length > 0 || missingRunnerStages.length > 0) {
+    throw new Error(
+      `real runner stage inventory differs from canonical order: unknown=${unknownRunnerStages.join(",")}; missing=${missingRunnerStages.join(",")}`,
+    );
+  }
+
+  const qualificationOwner = sources["scripts/production-certification.mjs"];
+  const harnessTestOwner = sources["scripts/test-production-certification.mjs"];
+  const regressionMatrix = JSON.parse(
+    read("scripts/production-certification-regressions.json"),
+  );
+  if (
+    !CERTIFICATION_HARNESS_SOURCE_PATHS.includes(
+      "scripts/test-production-certification-stage-order.mjs",
+    ) ||
+    !qualificationOwner.includes(
+      '"scripts/test-production-certification-stage-order.mjs"',
+    ) ||
+    !harnessTestOwner.includes(
+      'import "./test-production-certification-stage-order.mjs"',
+    ) ||
+    !regressionMatrix.cases.some(
+      (entry) => entry.defect === "real-runner-stage-order-missing-import",
+    )
+  ) {
+    throw new Error(
+      "real-runner stage-order dispatch regression is not registered in qualification",
+    );
+  }
+
+  return {
+    canonicalOwner,
+    stageCount: CERTIFICATION_STAGE_ORDER.length,
+    stageOrderSha256: sha256Bytes(canonicalJsonBytes(CERTIFICATION_STAGE_ORDER)),
+    consumers,
+    realRunnerStages: CERTIFICATION_STAGE_ORDER.filter((stage) =>
+      runnerStages.includes(stage),
+    ),
+    duplicateOwner: false,
+    circularDependency: false,
+    dispatchRegressionRegistered: true,
+  };
+}
+
 function validateSourceGeneratedOutputContracts(repositoryRoot) {
   const source = sourceValidationCheckSet(repositoryRoot);
   const generated = source.generatedOutputs;
@@ -1141,6 +1366,8 @@ export async function runCertificationDoctor({
     return validateBuildTargetsPristine(finalArtifact.root);
   });
   check(checks, issues, "schema-and-mode-compatibility", () => validateContracts(root));
+  check(checks, issues, "stage-order-import-coherence", () =>
+    validateCertificationStageOrderContracts(root));
   check(checks, issues, "dependency-lifecycle-order", () =>
     validateDependencyLifecycleContracts(root));
   check(checks, issues, "source-generated-output-contract", () =>

@@ -1,5 +1,67 @@
 # Code health audit handoff
 
+## CH-0015I real-runner stage-order import correction — 2026-08-18
+
+Branch `fix/production-certification-stage-order-import` starts at exact commit
+`ec56e6e7d680ac768624f565cee422d091a78642`, tree
+`4752a76b1c436faaed5d02383c1cbce6afbd61f5`, direct parent
+`738bd61b84a4bfb08d6ef514cddb96d354ddcc7e`. Integration local and tracking
+remain `2c567fd483877c7dcbd8fd23e3cd8cb316732c8c`, tree
+`50f9c5d6a6610990606fd9db9a27ba40200fca90`. The classifications are
+`CERTIFICATION_REAL_RUNNER_STAGE_ORDER_IMPORT_DEFECT` and
+`REAL_RUNNER_DISPATCH_COVERAGE_GAP`.
+
+The preserved rehearsal is
+`CH-0015I-rehearsal-20260817T160749Z-0618f273`, certification
+`REHEARSAL_ONLY-NOT_RELEASE_CERTIFICATION-NOT_VALID_FOR_INTEGRATION-CERT-20260817T160749Z-0618f273`,
+and candidate
+`REHEARSAL_ONLY-NOT_RELEASE_CERTIFICATION-NOT_VALID_FOR_INTEGRATION-CANDIDATE-20260817T160749Z-0618f273`.
+It remains `CERTIFICATION_REHEARSAL_FAILED_CLOSED` /
+`PRECONDITION_ORCHESTRATION_FAILURE` with
+`consumedSubstantiveGate=false`. Resource preparation, doctor, disposable
+database provision, all 43 migrations, and initial emptiness passed. The real
+runner then emitted exactly `CERTIFICATION_STAGE_ORDER is not defined` before
+dependency installation or source-check dispatch. Source validation remains
+pending with zero attempts and every later stage retains its historical state.
+The preserved summary final-state SHA-256 is
+`4b1562beb5f03f5130a25ffa7a5900dfc4adba21f922163f93e9e5881207192b`;
+the post-abort physical `evidence/state.json` SHA-256 is
+`7734b3c6f74f451d903bb5680a608ea449bb20639e6a2481eeaf863bf9c90dce`.
+Canonical abort cleanup reached `abort-absence-verified`, proving the database
+lifecycle behaved correctly. The rehearsal was not resumed, repaired,
+reconciled, reused, or reclassified.
+
+`scripts/production-certification-contract.mjs` remains the sole owner of the
+frozen string-array `CERTIFICATION_STAGE_ORDER`. The correction adds that named
+import to `scripts/production-certification-real.mjs`; it copies no array,
+changes no stage name/order/transition/retry/consumption rule, and creates no
+circular dependency. The focused regression instruments the actual private
+real-runner database-stage dispatch with a task-owned sealed state-v4 fixture.
+It reproduces the exact ReferenceError from the starting source, proves the
+corrected source reaches the canonical `source-validation` dispatch at index 1
+after passed `doctor`, and proves the source attempt stays zero until
+`managedStage` owns the start. Coherence guards reject a missing import, local
+copy, reorder, omission, duplicate, or unknown runner stage. Doctor validates
+the owner, consumer graph, cycle absence, real-runner inventory, regression
+registration, and common stage-order SHA-256. Simulation runs the same guard
+and tamper matrix; qualification directly requires the focused regression in
+addition to the existing complete bounded source-platform inventory. The prior
+qualification coverage missed the defect because deterministic simulation uses
+an execution class that returns before real-candidate database-stage binding,
+so it never evaluated the missing identifier. The exact clean committed-head
+qualification result for this correction is
+`QUALIFIED_FOR_FINAL_CANDIDATE_CERTIFICATION`.
+
+This is certification-harness infrastructure only. It changes no product/UI,
+Floor Plan, telemetry, NFT tracing, archive policy, database lifecycle, Phase 8
+semantics, Playwright product tests, dependency, lockfile, Prisma schema,
+migration, or workflow. No real build, rehearsal, Phase 8, runtime smoke,
+browser-owner matrix, final certification, or Full E2E belongs to this task.
+Rollback is one focused correction-commit revert; it restores the known
+pre-source-dispatch blocker and requires no product, data, or database rollback.
+A fresh rehearsal, final candidate certification, and CH-0015 closure audit
+remain pending. The correction remains unintegrated and unpushed.
+
 ## CH-0015I report-parent preparation handoff — 2026-08-16
 
 Branch `fix/production-certification-report-parent-preparation` starts at exact

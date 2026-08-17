@@ -30,6 +30,7 @@ import {
 } from "./production-artifact-contract.mjs";
 import {
   CERTIFICATION_HARNESS_SOURCE_PATHS,
+  CERTIFICATION_STAGE_ORDER,
   PHASE8_SOURCE_BINDING_PATHS,
   PRODUCTION_CERTIFICATION_BROWSER_EVIDENCE_SCHEMA,
   PRODUCTION_CERTIFICATION_PHASE8_EVIDENCE_SCHEMA,
@@ -92,6 +93,7 @@ import {
   runBuildStage,
   runSourceValidationStage,
 } from "./production-certification-real.mjs";
+import { validateCertificationStageOrderContracts } from "./production-certification-doctor.mjs";
 import { validateCertificationResourcePreparation } from "./production-certification-resources.mjs";
 
 const SIMULATION_ID = "production-certification-v1-simulation";
@@ -107,6 +109,70 @@ function write(root, relativePath, value) {
 
 function copyRetainedEvidence(sourceRoot, targetRoot, descriptor) {
   write(targetRoot, descriptor.path, readFileSync(path.join(sourceRoot, descriptor.path)));
+}
+
+function stageOrderTamperRejected(repositoryRoot, relativePath, mutate) {
+  const original = readFileSync(path.join(repositoryRoot, relativePath), "utf8");
+  const tampered = mutate(original);
+  if (tampered === original) {
+    throw new Error(`stage-order tamper did not change ${relativePath}`);
+  }
+  try {
+    validateCertificationStageOrderContracts(repositoryRoot, {
+      sourceOverrides: { [relativePath]: tampered },
+    });
+    return false;
+  } catch {
+    return true;
+  }
+}
+
+function certificationStageOrderTamperCases(repositoryRoot) {
+  const realRunner = "scripts/production-certification-real.mjs";
+  const canonicalOwner = "scripts/production-certification-contract.mjs";
+  return {
+    missingRealRunnerImportRejected: stageOrderTamperRejected(
+      repositoryRoot,
+      realRunner,
+      (source) => source.replace(/^  CERTIFICATION_STAGE_ORDER,\n/m, ""),
+    ),
+    copiedStageListRejected: stageOrderTamperRejected(
+      repositoryRoot,
+      realRunner,
+      (source) =>
+        `${source}\nconst COPIED_CERTIFICATION_STAGES = Object.freeze([\n${CERTIFICATION_STAGE_ORDER.map(
+          (stage) => `  ${JSON.stringify(stage)},`,
+        ).join("\n")}\n]);\n`,
+    ),
+    reorderedStageListRejected: stageOrderTamperRejected(
+      repositoryRoot,
+      canonicalOwner,
+      (source) =>
+        source.replace(
+          '  "doctor",\n  "source-validation",',
+          '  "source-validation",\n  "doctor",',
+        ),
+    ),
+    omittedStageRejected: stageOrderTamperRejected(
+      repositoryRoot,
+      canonicalOwner,
+      (source) => source.replace('  "continuity",\n', ""),
+    ),
+    unknownStageRejected: stageOrderTamperRejected(
+      repositoryRoot,
+      realRunner,
+      (source) =>
+        source.replace(
+          'bindDatabaseForStage(context, "source-validation")',
+          'bindDatabaseForStage(context, "unknown-stage")',
+        ),
+    ),
+    duplicateStageRejected: stageOrderTamperRejected(
+      repositoryRoot,
+      canonicalOwner,
+      (source) => source.replace('  "doctor",\n', '  "doctor",\n  "doctor",\n'),
+    ),
+  };
 }
 
 function run(command, args, cwd, environment = process.env) {
@@ -796,6 +862,11 @@ export async function runProductionCertificationSimulation({
   mkdirSync(evidenceRoot, { recursive: true, mode: 0o700 });
   mkdirSync(worktreeOwnerRoot, { recursive: true, mode: 0o700 });
   const identity = initializeFixture(repositoryRoot, fixtureRoot);
+  const stageOrderContracts = validateCertificationStageOrderContracts(fixtureRoot);
+  const stageOrderTamperCases = certificationStageOrderTamperCases(fixtureRoot);
+  if (Object.values(stageOrderTamperCases).some((rejected) => rejected !== true)) {
+    throw new Error("certification stage-order tamper matrix did not fail closed");
+  }
   const externalFinalComponent = path.join(simulationRoot, "external-final-component");
   write(fixtureRoot, ".env", "canonical-user-env\n");
   write(fixtureRoot, ".env.local", "canonical-user-local-env\n");
@@ -4088,6 +4159,14 @@ export async function runProductionCertificationSimulation({
     completionState: state.completionState,
     finalStandalone: "passed-simulation-only",
     integrationReady: state.stages["integration-ready"].status === "passed",
+    stageOrder: {
+      canonicalOwner: stageOrderContracts.canonicalOwner,
+      stageOrderSha256: stageOrderContracts.stageOrderSha256,
+      stageCount: stageOrderContracts.stageCount,
+      identicalToCanonical:
+        stageOrderContracts.stageOrderSha256 ===
+        sha256Bytes(canonicalJsonBytes(CERTIFICATION_STAGE_ORDER)),
+    },
     archiveDeterministic: true,
     sourceValidationCheckCount: sourceCheckIds.length,
     generatedOutputLifecycle: {
@@ -4192,6 +4271,7 @@ export async function runProductionCertificationSimulation({
       omittedPreparationRejected,
       changedPreparationPathRejected,
       targetAfterPreparationRejected,
+      ...stageOrderTamperCases,
       ...runtimeRootTamperCases,
     },
     simulationRoot,

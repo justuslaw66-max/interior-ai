@@ -12,6 +12,7 @@ import path from "node:path";
 
 import {
   CERTIFICATION_EVIDENCE_ROOT_ENV,
+  CERTIFICATION_STAGE_ORDER,
   CERTIFICATION_STATE_ENV,
   PHASE8_SOURCE_BINDING_PATHS,
   PRODUCTION_CERTIFICATION_BROWSER_EVIDENCE_SCHEMA,
@@ -492,6 +493,9 @@ async function bindDatabaseForStage(context, stage) {
   if (context.state.executionClass !== "real-candidate") return context;
   requireDatabaseLifecycleBinding(context, ["active"]);
   const stageIndex = CERTIFICATION_STAGE_ORDER.indexOf(stage);
+  if (stageIndex < 0) {
+    throw new InvocationFailure(`database stage binding is unknown: ${stage}`);
+  }
   const incompletePrior = CERTIFICATION_STAGE_ORDER.slice(0, stageIndex).find(
     (prior) => context.state.stages[prior]?.status !== "passed",
   );

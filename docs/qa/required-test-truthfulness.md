@@ -1,5 +1,22 @@
 # Required-test truthfulness
 
+## Real-runner stage-order regression inventory — 2026-08-18
+
+The bounded stage-order correction adds
+`scripts/test-production-certification-stage-order.mjs` to the existing
+risk-triggered `script-tests` inventory. The canonical manifest now records
+268 script tests at path-set SHA-256
+`c6b8867d20b48d74d08943b263c9cf617197dbfcdb4b8704fd17280a9253f253`.
+Direct validation remains **27 gates / 391 classified test sources**. No gate,
+workflow, cadence, browser project, retry, skip, or advisory classification is
+added or changed.
+
+The existing `ci.production-artifact-contract` owner reaches the new regression
+through `test:production-artifact-evidence` and the certification harness. The
+committed qualifier also invokes the focused file directly, so a missing real
+runner import, copied/reordered/omitted/duplicated stage list, or unknown runner
+stage cannot be hidden by helper-only or module-load-only coverage.
+
 ## Harness v1 source/continuity correction ownership — 2026-08-14
 
 `ci.production-artifact-contract` remains the single required owner. Its source

@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import "./test-production-certification-build-generated-output.mjs";
+import "./test-production-certification-stage-order.mjs";
 import { spawnSync } from "node:child_process";
 import {
   cpSync,
@@ -1193,12 +1194,12 @@ function stateFixture() {
   const regressions = JSON.parse(
     readFileSync("scripts/production-certification-regressions.json", "utf8"),
   );
-  assert.equal(regressions.cases.length, 32);
+  assert.equal(regressions.cases.length, 33);
   assert.deepEqual(
     regressions.cases.map((entry) => entry.id),
-    Array.from({ length: 32 }, (_, index) => index + 1),
+    Array.from({ length: 33 }, (_, index) => index + 1),
   );
-  assert.equal(new Set(regressions.cases.map((entry) => entry.defect)).size, 32);
+  assert.equal(new Set(regressions.cases.map((entry) => entry.defect)).size, 33);
   assert.equal(regressions.dependencyLifecycleCases.length, 26);
   assert.equal(new Set(regressions.dependencyLifecycleCases).size, 26);
   assert.equal(regressions.runtimeEvidenceRootCases.length, 21);
@@ -1313,6 +1314,23 @@ function stateFixture() {
     "state-v4/manifest-v3/journal-v2/physical-final-standalone",
   );
   assert.equal(simulation.integrationReady, true);
+  assert.equal(
+    simulation.stageOrder.canonicalOwner,
+    "scripts/production-certification-contract.mjs",
+  );
+  assert.equal(simulation.stageOrder.stageCount, CERTIFICATION_STAGE_ORDER.length);
+  assert.equal(simulation.stageOrder.identicalToCanonical, true);
+  for (const tamperCase of [
+    "missingRealRunnerImportRejected",
+    "copiedStageListRejected",
+    "reorderedStageListRejected",
+    "omittedStageRejected",
+    "unknownStageRejected",
+    "duplicateStageRejected",
+  ]) {
+    assert.equal(simulation.tamperCases[tamperCase], true, tamperCase);
+  }
+  coveredRegressionIds.add(33);
   assert.equal(simulation.generatedOutputLifecycle.declaredOutputCount, 2);
   assert.equal(simulation.generatedOutputLifecycle.terminalNodeModulesOnly, true);
   coveredRegressionIds.add(31);
@@ -2958,7 +2976,7 @@ function stateFixture() {
 
 assert.deepEqual(
   [...coveredRegressionIds].sort((left, right) => left - right),
-  Array.from({ length: 32 }, (_, index) => index + 1),
+  Array.from({ length: 33 }, (_, index) => index + 1),
   "every documented regression must be exercised by an executable assertion",
 );
 
