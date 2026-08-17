@@ -59,6 +59,10 @@ import {
   snapshotEvidenceName,
   validateArtifactSnapshotEvidence,
 } from "./production-certification-source-continuity.mjs";
+import {
+  PRODUCTION_CERTIFICATION_DATABASE_BINDING_SCHEMA,
+  PRODUCTION_CERTIFICATION_DATABASE_STATES,
+} from "./production-certification-database-contract.mjs";
 
 const STATE_SEAL_DOMAIN = "interior-ai.production-certification-state-seal.v1\n";
 const VALIDATION_SEAL_DOMAIN =
@@ -917,6 +921,7 @@ export function createCertificationState({
   createdAt,
   worktrees = null,
   resourcePlan = null,
+  databaseLifecycle = null,
 }) {
   if (!isCandidateId(certificationId) || !isCandidateId(candidateId)) {
     throw new Error("certification ID and candidate ID must use canonical grammar");
@@ -948,6 +953,15 @@ export function createCertificationState({
       !exactKeys(worktrees?.roles, CERTIFICATION_WORKTREE_ROLES))
   ) {
     throw new Error("certification stage-worktree bindings are malformed");
+  }
+  if (databaseLifecycle !== null) {
+    const issues = certificationDatabaseLifecycleBindingIssues(
+      databaseLifecycle,
+      { certificationId, candidateId, commitSha, treeSha },
+    );
+    if (issues.length > 0 || resourcePlan === null) {
+      throw new Error("certification database lifecycle binding is malformed");
+    }
   }
   const version = resourcePlan
     ? 4
@@ -995,6 +1009,9 @@ export function createCertificationState({
           resourcePlan: structuredClone(resourcePlan),
           resourcePreparation: null,
         }
+      : {}),
+    ...(databaseLifecycle
+      ? { databaseLifecycle: structuredClone(databaseLifecycle) }
       : {}),
     stages: Object.fromEntries(
       CERTIFICATION_STAGE_ORDER.map((stage) => [stage, emptyStage(stage)]),
@@ -1320,6 +1337,7 @@ function stateShapeIssues(state) {
   const issues = [];
   const hasWorktrees = new Set([2, 3, 4]).has(state?.version);
   const hasResources = state?.version === 4;
+  const hasDatabaseLifecycle = Object.hasOwn(state ?? {}, "databaseLifecycle");
   const bindingKeys = hasResources
     ? [...BINDING_KEYS, RESOURCE_BINDING_KEY]
     : BINDING_KEYS;
@@ -1335,6 +1353,7 @@ function stateShapeIssues(state) {
       "evidenceFiles",
       ...(hasWorktrees ? ["worktrees"] : []),
       ...(hasResources ? ["resourcePlan", "resourcePreparation"] : []),
+      ...(hasDatabaseLifecycle ? ["databaseLifecycle"] : []),
       "stages",
       "createdAt",
       "updatedAt",
@@ -1431,6 +1450,16 @@ function stateShapeIssues(state) {
       issues.push("certification resource preparation binding is malformed");
     }
   }
+  if (hasDatabaseLifecycle) {
+    issues.push(
+      ...certificationDatabaseLifecycleBindingIssues(state.databaseLifecycle, {
+        certificationId: state.certificationId,
+        candidateId: state.candidate?.id,
+        commitSha: state.candidate?.commitSha,
+        treeSha: state.candidate?.treeSha,
+      }),
+    );
+  }
   const allowedEvidence = new Set([
     ...Object.values(STAGE_EVIDENCE_KEYS).flat(),
     ...(hasResources ? ["resource-preparation"] : []),
@@ -1459,6 +1488,57 @@ function stateShapeIssues(state) {
     issues.push("certification stage inventory or order is not canonical");
   }
   return issues;
+}
+
+function certificationDatabaseLifecycleBindingIssues(binding, identity) {
+  const issues = [];
+  if (
+    !exactKeys(binding, [
+      "schema",
+      "certificationId",
+      "candidateId",
+      "candidateCommitSha",
+      "candidateTreeSha",
+      "databaseName",
+      "databaseNameSha256",
+      "databaseIdentitySha256",
+      "lifecycleState",
+      "evidence",
+      "updatedAt",
+    ]) ||
+    binding?.schema !== PRODUCTION_CERTIFICATION_DATABASE_BINDING_SCHEMA ||
+    binding?.certificationId !== identity.certificationId ||
+    binding?.candidateId !== identity.candidateId ||
+    binding?.candidateCommitSha !== identity.commitSha ||
+    binding?.candidateTreeSha !== identity.treeSha ||
+    typeof binding?.databaseName !== "string" ||
+    !isSha256(binding?.databaseNameSha256) ||
+    !isSha256(binding?.databaseIdentitySha256) ||
+    !PRODUCTION_CERTIFICATION_DATABASE_STATES.includes(binding?.lifecycleState) ||
+    !exactKeys(binding?.evidence, ["path", "sha256"]) ||
+    typeof binding?.evidence?.path !== "string" ||
+    !isSha256(binding?.evidence?.sha256) ||
+    !isCanonicalUtcTimestamp(binding?.updatedAt)
+  ) {
+    issues.push("certification database lifecycle state binding is malformed");
+  }
+  return issues;
+}
+
+export function replaceCertificationDatabaseLifecycle(state, binding) {
+  const issues = certificationDatabaseLifecycleBindingIssues(binding, {
+    certificationId: state.certificationId,
+    candidateId: state.candidate.id,
+    commitSha: state.candidate.commitSha,
+    treeSha: state.candidate.treeSha,
+  });
+  if (issues.length > 0) throw new Error(issues.join("; "));
+  const next = structuredClone(statePayload(state));
+  next.databaseLifecycle = structuredClone(binding);
+  if (Date.parse(binding.updatedAt) > Date.parse(next.updatedAt)) {
+    next.updatedAt = binding.updatedAt;
+  }
+  return sealCertificationState(next);
 }
 
 function resolvedEvidencePath(evidenceRoot, relativePath) {

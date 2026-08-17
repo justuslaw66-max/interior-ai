@@ -1452,3 +1452,28 @@ failed-install child semantics and state receipts, journal v2 process handoffs,
 and cleaned-role evidence. Qualification-only physical drift injection now
 traverses the actual source, build, and browser stage owners and proves their
 failure taxonomy, downstream block, and absence of a second installation.
+
+## 2026-08-17 certification database lifecycle audit
+
+The bounded preflight finding is confirmed as
+`CERTIFICATION_DATABASE_LIFECYCLE_OWNER_MISSING` /
+`DATABASE_PROVISIONING_CLEANUP_CONTRACT_GAP`. `gate:a3:db` owned only a broad
+caller-selected/reusable migration target. Certification state, doctor, real
+runner, simulation, qualification, and terminal cleanup owned no generated
+identity, initial/final row proof, exact session release, drop, absence proof,
+or abort path.
+
+The correction registers one high-level versioned lifecycle with a generated
+certification/candidate-bound name, non-mutating absence plan, exact 43-migration
+target proof, catalog-derived initial/final inventories, same-identity stage
+projection, exact-session release, exact drop/absence, and failure-preserving
+abort cleanup. A pre-create authorization plus duplicate-response revocation
+recovers only an ambiguous successful create; semantic history validation,
+sealed revision-chain state reconciliation, live doctor absence, serialized
+signal cleanup, failure redaction, and checkpointed abort retry fail closed. It
+performs no generic row deletion and cannot drop a target without durable
+same-lifecycle authorization/creation evidence. The preserved preflight remains
+non-consuming and unchanged. This closes a harness/control-plane gap only; it
+adds no product, schema, migration, dependency, Floor Plan, telemetry, trace,
+archive, performance, or Playwright-product debt. Fresh rehearsal and final
+closure evidence remain pending.

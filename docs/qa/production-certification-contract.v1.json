@@ -10,7 +10,7 @@
     "validationReportSchema": "interior-ai.production-certification-state-validation.v1",
     "invalidationPlanSchema": "interior-ai.production-certification-invalidation-plan.v1",
     "readOnlyCommands": ["state:validate", "build:eligibility", "resume"],
-    "stateMutatingOwners": ["state:reconcile", "integration-ready", "stage-transition owners", "worktrees:cleanup"],
+    "stateMutatingOwners": ["state:reconcile", "integration-ready", "database lifecycle transition owners", "stage-transition owners", "worktrees:cleanup"],
     "preconditionFailureClassification": "PRECONDITION_ORCHESTRATION_FAILURE",
     "preconditionFailureConsumesSubstantiveGate": false,
     "canonicalIdentitySource": "sealed certification state",
@@ -24,6 +24,24 @@
     ],
     "stalePlanPolicy": "reject without changing state",
     "missingOrMalformedStatePolicy": "fail without creating or rewriting state"
+  },
+  "databaseLifecycle": {
+    "schema": "interior-ai.production-certification-database-lifecycle.v1",
+    "bindingSchema": "interior-ai.production-certification-database-lifecycle-binding.v1",
+    "canonicalOwner": "scripts/production-certification-database-lifecycle.mjs",
+    "postgresAdapter": "scripts/production-certification-database-adapter.mjs",
+    "policyOwner": "scripts/production-certification-database-contract.mjs",
+    "lifecycleOrder": ["database:plan", "environment-envelope-seal", "state:init", "certification:prepare-resources", "doctor", "database:provision", "database:verify-initial", "source-validation-through-browser-owners", "database:verify-final", "database:drop", "database:verify-absent", "final-standalone", "continuity"],
+    "states": ["planned", "create-authorized", "provisioned", "migrated", "initial-empty-verified", "active", "final-empty-verified", "sessions-cleared", "dropped", "absence-verified", "failed", "abort-cleanup-in-progress", "abort-dropped", "abort-absence-verified"],
+    "namePolicy": "fixed lowercase interior_ai_gate_a3_test_cert_ prefix plus a 32-hex SHA-256 prefix bound to certification ID, candidate ID, candidate commit, disposable classification, and owner-generated 128-bit nonce; maximum 63 bytes; no caller-selected final name",
+    "serverPolicy": "explicit 127.0.0.1 or ::1, port 5432, postgres admin database, PostgreSQL 14 or newer, createdb or local-superuser role",
+    "absencePolicy": "plan is database-non-mutating and provision repeats absence just in time; an existing target always fails closed and is never reused",
+    "migrationPolicy": "exact current 43 repository migrations through Prisma migrate deploy, followed by exact target migration-name verification",
+    "rowPolicy": "catalog-derived public application tables excluding only _prisma_migrations must have zero rows initially and finally; no generic DELETE or leak-hiding cleanup is permitted",
+    "sessionPolicy": "inventory exact target sessions; normal final verification requires zero; normal/abort cleanup may terminate only exact target sessions while excluding the admin session",
+    "dropPolicy": "drop only the generated owned target after exact session release and prove catalog absence; no server restart or broad process termination",
+    "abortPolicy": "retain original failure and consumed status, capture rows/sessions, never fabricate final-empty PASS, drop the disposable target, prove absence, and never rehabilitate the failed run",
+    "portableEvidencePolicy": "retain safe database name/hash, policy/generator/owner hashes, server and role classifications, event/inventory/session/drop/absence results, timestamps, aggregate SHA-256 and seal; never retain passwords or raw URLs"
   },
   "stageWorktrees": {
     "schema": "interior-ai.production-certification-worktrees.v2",

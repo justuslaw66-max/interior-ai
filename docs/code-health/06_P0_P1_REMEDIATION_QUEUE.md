@@ -1696,3 +1696,25 @@ count and the integration hold.
   closure audit remain pending after authorized integration.
 - **Rollback:** revert the single focused harness commit. Do not repair or reuse
   the historical state/evidence root.
+
+### Production certification disposable database lifecycle — 2026-08-17
+
+- **Disposition:** bounded certification-infrastructure correction implemented;
+  this is not a product P0/P1 and does not change the product queue.
+- **Closed gap:** a sealed generated-target lifecycle now owns plan, provision,
+  43 migrations, initial/final zero-row and zero-session proof, stage identity,
+  exact release/drop/absence, and terminal-abort cleanup. Durable pre-create
+  authorization recovers an ambiguous successful response; a duplicate
+  response revokes ownership, so a foreign collision is never reused or
+  dropped. Semantic history validation, sealed state-binding reconciliation,
+  live doctor absence, serialized signal cleanup, redaction, and checkpointed
+  abort retry close the independent-review failure paths.
+- **Preserved evidence:** the failed preflight remains
+  `PRECONDITION_ORCHESTRATION_FAILURE` /
+  `COMMITTED_DATABASE_LIFECYCLE_OWNER_ABSENT`, non-consuming, unmodified, and
+  ineligible for resume.
+- **Remaining:** a fresh rehearsal, final candidate certification, integration,
+  and the CH-0015 closure audit remain separate pending owners.
+- **Rollback:** abort-clean any active exact generated disposable target, retain
+  its absence proof, then revert the focused correction commit. Never modify a
+  normal development/staging/production or foreign database.

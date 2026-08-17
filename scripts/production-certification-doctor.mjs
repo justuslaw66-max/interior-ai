@@ -37,13 +37,21 @@ import {
 import { readCertificationState } from "./production-certification-state.mjs";
 import { validateCertificationResourcePreparation } from "./production-certification-resources.mjs";
 import {
+  certificationDatabaseStatus,
+  certificationDatabaseTargetUrl,
+  databaseLifecycleCliErrorMessage,
+  readCertificationDatabaseLifecycle,
+  redactDatabaseLifecycleFailure,
+} from "./production-certification-database-lifecycle.mjs";
+import {
   CERTIFICATION_WORKTREE_ROLES,
   certificationWorktreeIssues,
   resolveCertificationStageWorktree,
 } from "./production-certification-worktrees.mjs";
 
 const REQUIRED_APPLICATION_ENVIRONMENT_NAMES = Object.freeze([
-  "DATABASE_URL",
+  "CERTIFICATION_DATABASE_ADMIN_URL",
+  "CERTIFICATION_DATABASE_LIFECYCLE_PATH",
   "OPENAI_API_KEY",
   "SHOPIFY_STORE_DOMAIN",
   "SHOPIFY_STOREFRONT_TOKEN|SHOPIFY_STOREFRONT_ACCESS_TOKEN",
@@ -83,23 +91,72 @@ function requiredAlternativesPresent(environment, alternatives) {
   return alternatives.split("|").some((name) => environment[name]?.trim());
 }
 
-function validateDatabaseShape(environment) {
-  let url;
-  try {
-    url = new URL(environment.DATABASE_URL);
-  } catch {
-    throw new Error("DATABASE_URL shape is invalid");
+export async function validateCertificationDatabaseDoctorShape(
+  repositoryRoot,
+  environment,
+  { statusOwner = certificationDatabaseStatus } = {},
+) {
+  if (environment.CERTIFICATION_EXECUTION_CLASS === "deterministic-simulation") {
+    return { simulation: true, realDatabaseMutation: false };
   }
+  const state = readCertificationState(environment.PRODUCTION_CERTIFICATION_STATE);
+  const current = readCertificationDatabaseLifecycle({ repositoryRoot, environment });
+  const live = await statusOwner({ repositoryRoot, environment });
   if (
-    !["postgres:", "postgresql:"].includes(url.protocol) ||
-    !url.hostname ||
-    !url.username ||
-    !url.pathname.slice(1) ||
-    (url.port && !/^\d{2,5}$/.test(url.port))
+    current.evidence.currentState !== "planned" ||
+    current.evidence.preflight?.policyPassed !== true ||
+    current.evidence.preflight?.targetAbsent !== true ||
+    current.evidence.preflight?.adminConnectionUsable !== true ||
+    current.evidence.server?.canCreateDatabase !== true ||
+    current.evidence.server?.hostClassification !== "explicit-loopback" ||
+    current.evidence.server?.port !== 5432 ||
+    JSON.stringify(current.binding) !== JSON.stringify(state.databaseLifecycle) ||
+    live.targetExists !== false ||
+    live.canCreateDatabase !== true ||
+    live.hostClassification !== "explicit-loopback" ||
+    live.port !== 5432
   ) {
-    throw new Error("database role/connectivity shape is incomplete");
+    throw new Error("database lifecycle plan, absence, capability, or state binding is invalid");
   }
-  return { protocol: url.protocol, hostPresent: true, rolePresent: true, databasePresent: true };
+  if (Date.now() - Date.parse(current.evidence.preflight.checkedAt) > 30 * 60 * 1000) {
+    throw new Error("database lifecycle plan absence proof is stale");
+  }
+  if (!certificationDatabaseTargetUrl(environment, current.binding)) {
+    throw new Error("database lifecycle target URL cannot be constructed privately");
+  }
+  for (const relativePath of [
+    "scripts/production-certification-database-lifecycle.mjs",
+    "scripts/production-certification-database-adapter.mjs",
+    "scripts/production-certification-database-contract.mjs",
+  ]) {
+    assertFileBackedOwner(repositoryRoot, relativePath);
+  }
+  const owner = readFileSync(
+    path.join(repositoryRoot, "scripts/production-certification-database-lifecycle.mjs"),
+    "utf8",
+  );
+  for (const marker of [
+    "provisionCertificationDatabase",
+    "verifyInitialCertificationDatabase",
+    "verifyFinalCertificationDatabase",
+    "dropCertificationDatabase",
+    "verifyCertificationDatabaseAbsent",
+    "abortCertificationDatabase",
+  ]) {
+    if (!owner.includes(marker)) throw new Error(`database lifecycle owner is missing ${marker}`);
+  }
+  return {
+    lifecycleState: "planned",
+    databaseNameSha256: current.evidence.database.nameSha256,
+    databaseIdentitySha256: current.evidence.database.identitySha256,
+    hostClassification: current.evidence.server.hostClassification,
+    port: current.evidence.server.port,
+    serverVersion: current.evidence.server.serverVersion,
+    roleClassification: current.evidence.server.roleClassification,
+    targetAbsent: true,
+    liveCatalogAbsenceChecked: true,
+    cleanupOwnersRegistered: true,
+  };
 }
 
 function validateNetworkShape(environment) {
@@ -1019,9 +1076,10 @@ function validateStageEnvironmentCapabilities(repositoryRoot, environment) {
   };
 }
 
-export function runCertificationDoctor({
+export async function runCertificationDoctor({
   repositoryRoot = process.cwd(),
   environment = process.env,
+  databaseStatusOwner = certificationDatabaseStatus,
 }) {
   const root = path.resolve(repositoryRoot);
   const checks = [];
@@ -1034,11 +1092,17 @@ export function runCertificationDoctor({
     return { propagatedName: "PRODUCTION_EVIDENCE_CANDIDATE_ID" };
   });
   check(checks, issues, "environment-name-shape", () => {
-    const missing = REQUIRED_APPLICATION_ENVIRONMENT_NAMES.filter(
+    const requiredNames =
+      environment.CERTIFICATION_EXECUTION_CLASS === "deterministic-simulation"
+        ? REQUIRED_APPLICATION_ENVIRONMENT_NAMES.filter(
+            (name) => !name.startsWith("CERTIFICATION_DATABASE_"),
+          )
+        : REQUIRED_APPLICATION_ENVIRONMENT_NAMES;
+    const missing = requiredNames.filter(
       (name) => !requiredAlternativesPresent(environment, name),
     );
     if (missing.length > 0) throw new Error(`missing required names: ${missing.join(", ")}`);
-    return { requiredNameCount: REQUIRED_APPLICATION_ENVIRONMENT_NAMES.length };
+    return { requiredNameCount: requiredNames.length };
   });
   check(checks, issues, "execution-classification", () => {
     if (!new Set(["real-candidate", "deterministic-simulation"]).has(environment.CERTIFICATION_EXECUTION_CLASS)) {
@@ -1046,7 +1110,20 @@ export function runCertificationDoctor({
     }
     return { executionClass: environment.CERTIFICATION_EXECUTION_CLASS };
   });
-  check(checks, issues, "database-shape", () => validateDatabaseShape(environment));
+  try {
+    checks.push({
+      id: "database-lifecycle",
+      passed: true,
+      details: await validateCertificationDatabaseDoctorShape(root, environment, {
+        statusOwner: databaseStatusOwner,
+      }),
+    });
+  } catch (error) {
+    checks.push({ id: "database-lifecycle", passed: false, details: null });
+    issues.push(
+      `database-lifecycle: ${redactDatabaseLifecycleFailure(error)}`,
+    );
+  }
   check(checks, issues, "network-shape", () => validateNetworkShape(environment));
   check(checks, issues, "external-evidence-destinations", () =>
     validateEvidenceDestinations(root, environment));
@@ -1112,11 +1189,16 @@ export function runCertificationDoctor({
   };
 }
 
-function cli() {
+async function cli() {
   const repositoryRoot = process.env.CERTIFICATION_SOURCE_ROOT || process.cwd();
-  const result = runCertificationDoctor({ repositoryRoot });
+  const result = await runCertificationDoctor({ repositoryRoot });
   process.stdout.write(canonicalJsonBytes(result));
   if (!result.valid) process.exitCode = 1;
 }
 
-if (import.meta.url === new URL(process.argv[1], "file:").href) cli();
+if (import.meta.url === new URL(process.argv[1], "file:").href) {
+  cli().catch((error) => {
+    console.error(databaseLifecycleCliErrorMessage(error));
+    process.exitCode = 1;
+  });
+}

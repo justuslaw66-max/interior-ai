@@ -200,6 +200,9 @@ export const CERTIFICATION_HARNESS_SOURCE_PATHS = Object.freeze([
   "scripts/production-certification-evidence.mjs",
   "scripts/production-certification-historical-evidence.mjs",
   "scripts/production-certification-doctor.mjs",
+  "scripts/production-certification-database-contract.mjs",
+  "scripts/production-certification-database-adapter.mjs",
+  "scripts/production-certification-database-lifecycle.mjs",
   "scripts/production-certification-resource-evidence.mjs",
   "scripts/production-certification-resource-plan.mjs",
   "scripts/production-certification-resources.mjs",
@@ -220,6 +223,7 @@ export const CERTIFICATION_HARNESS_SOURCE_PATHS = Object.freeze([
   "scripts/test-production-certification-stage-environment.mjs",
   "scripts/test-production-certification-source-generated-outputs.mjs",
   "scripts/test-production-certification-resources.mjs",
+  "scripts/test-production-certification-database-lifecycle.mjs",
   "scripts/test-floor-plan-vision-configuration.ts",
   "scripts/test-floor-plan-local-ocr.ts",
   "tests/required/fixtures/floor-plan-empty-entry-harness.tsx",
@@ -246,6 +250,7 @@ export const CERTIFICATION_HARNESS_SOURCE_PATHS = Object.freeze([
   "docs/qa/production-certification-source-generated-outputs.v1.json",
   "docs/qa/production-certification-stage-environment.v2.json",
   "docs/qa/production-certification-harness-v1.md",
+  "docs/qa/production-certification-database-lifecycle-v1.md",
   "docs/qa/production-certification-state-worktree-remediation.md",
   "scripts/benchmark-phase8-projects.ts",
   "scripts/phase8-project-benchmark-contract.ts",
@@ -287,6 +292,10 @@ export function productionCertificationContract(repositoryRoot) {
       "interior-ai.production-certification-build-generated-output-lifecycle.v1" ||
     contract?.resourcePreparation?.schema !==
       PRODUCTION_CERTIFICATION_RESOURCE_PREPARATION_CONTRACT_SCHEMA ||
+    contract?.databaseLifecycle?.schema !==
+      "interior-ai.production-certification-database-lifecycle.v1" ||
+    contract?.databaseLifecycle?.canonicalOwner !==
+      "scripts/production-certification-database-lifecycle.mjs" ||
     contract?.continuity?.schema !==
       "interior-ai.production-certification-continuity-contract.v1"
   ) {

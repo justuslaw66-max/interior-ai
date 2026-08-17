@@ -64,10 +64,23 @@ import {
   readCertificationState,
   reconcileCertificationState,
   replaceCertificationWorktrees,
+  replaceCertificationDatabaseLifecycle,
   startCertificationStage,
   validateCertificationState,
   writeCertificationState,
 } from "./production-certification-state.mjs";
+import {
+  abortCertificationDatabase,
+  bindCertificationDatabaseStage,
+  certificationDatabaseStatus,
+  certificationDatabaseTargetUrl,
+  dropCertificationDatabase,
+  provisionCertificationDatabase,
+  readCertificationDatabaseLifecycle,
+  verifyCertificationDatabaseAbsent,
+  verifyFinalCertificationDatabase,
+  verifyInitialCertificationDatabase,
+} from "./production-certification-database-lifecycle.mjs";
 import { createCertificationResourcePlan } from "./production-certification-resource-plan.mjs";
 import {
   installCertificationWorktreeDependencies,
@@ -179,6 +192,13 @@ function currentCandidate(repositoryRoot, canonicalCandidate, environment) {
 }
 
 const INVOCATION_COMMANDS = new Set([
+  "database:provision",
+  "database:verify-initial",
+  "database:verify-final",
+  "database:drop",
+  "database:verify-absent",
+  "database:abort-cleanup",
+  "database:status",
   "doctor",
   "source-validation",
   "state:validate",
@@ -351,6 +371,143 @@ function stateContext(
   }
 }
 
+function databaseLifecycleBindingIsPredecessor(current, binding) {
+  if (
+    binding?.certificationId !== current.binding.certificationId ||
+    binding?.candidateId !== current.binding.candidateId ||
+    binding?.candidateCommitSha !== current.binding.candidateCommitSha ||
+    binding?.candidateTreeSha !== current.binding.candidateTreeSha ||
+    binding?.databaseNameSha256 !== current.binding.databaseNameSha256 ||
+    binding?.databaseIdentitySha256 !== current.binding.databaseIdentitySha256 ||
+    binding?.evidence?.path !== current.binding.evidence.path
+  ) {
+    return false;
+  }
+  return current.evidence.bindingHistory.some(
+    (entry) =>
+      entry.fileSha256 === binding.evidence.sha256 &&
+      entry.lifecycleState === binding.lifecycleState,
+  );
+}
+
+export function reconcileCertificationDatabaseLifecycleState({ statePath, current }) {
+  let state = readCertificationState(statePath);
+  if (JSON.stringify(current.binding) === JSON.stringify(state.databaseLifecycle)) {
+    return state;
+  }
+  if (!databaseLifecycleBindingIsPredecessor(current, state.databaseLifecycle)) {
+    throw new InvocationFailure(
+      "certification database lifecycle evidence cannot be reconciled from the sealed state binding",
+    );
+  }
+  const next = replaceCertificationDatabaseLifecycle(state, current.binding);
+  writeCertificationState(statePath, next, {
+    expectedCurrentSha256: certificationStateSha256(state),
+  });
+  state = readCertificationState(statePath);
+  if (JSON.stringify(current.binding) !== JSON.stringify(state.databaseLifecycle)) {
+    throw new InvocationFailure(
+      "certification database lifecycle reconciliation was not durably committed",
+    );
+  }
+  return state;
+}
+
+function reconcileDatabaseLifecycleBinding(context, current) {
+  context.state = reconcileCertificationDatabaseLifecycleState({
+    statePath: context.statePath,
+    current,
+  });
+  return current;
+}
+
+function requireDatabaseLifecycleBinding(
+  context,
+  allowedStates = null,
+  { reconcile = true } = {},
+) {
+  if (context.state.executionClass !== "real-candidate") return null;
+  if (!context.state.databaseLifecycle) {
+    throw new InvocationFailure("certification database lifecycle state binding is missing");
+  }
+  const current = readCertificationDatabaseLifecycle({
+    repositoryRoot: context.canonicalRoot,
+    environment: context.environment,
+  });
+  if (JSON.stringify(current.binding) !== JSON.stringify(context.state.databaseLifecycle)) {
+    if (!reconcile) {
+      throw new InvocationFailure(
+        "certification database lifecycle evidence or state binding is stale",
+      );
+    }
+    reconcileDatabaseLifecycleBinding(context, current);
+  }
+  if (
+    allowedStates &&
+    !allowedStates.includes(current.evidence.currentState)
+  ) {
+    throw new InvocationFailure(
+      `certification database lifecycle state is not permitted: ${current.evidence.currentState}`,
+    );
+  }
+  return current;
+}
+
+function bindDatabaseLifecycleResult(context, result) {
+  const currentState = readCertificationState(context.statePath);
+  const next = replaceCertificationDatabaseLifecycle(currentState, result.binding);
+  writeCertificationState(context.statePath, next, {
+    expectedCurrentSha256: certificationStateSha256(currentState),
+  });
+  return { ...context, state: next };
+}
+
+async function runDatabaseLifecycleTransition(context, transition) {
+  requireDatabaseLifecycleBinding(context);
+  let result;
+  try {
+    result = await transition();
+  } catch (error) {
+    if (error?.databaseLifecycleResult) {
+      try {
+        bindDatabaseLifecycleResult(context, error.databaseLifecycleResult);
+      } catch (bindingError) {
+        bindingError.databaseLifecycleResult = error.databaseLifecycleResult;
+        bindingError.cause = error;
+        throw bindingError;
+      }
+    }
+    throw error;
+  }
+  try {
+    bindDatabaseLifecycleResult(context, result);
+  } catch (error) {
+    error.databaseLifecycleResult = result;
+    throw error;
+  }
+  return result;
+}
+
+async function bindDatabaseForStage(context, stage) {
+  if (context.state.executionClass !== "real-candidate") return context;
+  requireDatabaseLifecycleBinding(context, ["active"]);
+  const stageIndex = CERTIFICATION_STAGE_ORDER.indexOf(stage);
+  const incompletePrior = CERTIFICATION_STAGE_ORDER.slice(0, stageIndex).find(
+    (prior) => context.state.stages[prior]?.status !== "passed",
+  );
+  if (incompletePrior) {
+    throw new InvocationFailure(
+      `database stage binding ${stage} requires passed prior stage ${incompletePrior}`,
+    );
+  }
+  const result = await bindCertificationDatabaseStage({
+    repositoryRoot: context.canonicalRoot,
+    environment: context.environment,
+    stage,
+  });
+  return bindDatabaseLifecycleResult(context, result);
+}
+
 function safeEvidenceDirectory(evidenceRoot, relativeDirectory) {
   const root = realpathSync(evidenceRoot);
   const normalized = path.normalize(relativeDirectory);
@@ -441,9 +598,25 @@ function stageChildEnvironment(
   context,
   { stage, profileId = stage, stageInputs, baseEnvironment = context.environment },
 ) {
+  const lifecycle = context.state?.databaseLifecycle;
+  const databaseActive = new Set([
+    "active",
+    "final-empty-verified",
+  ]).has(lifecycle?.lifecycleState);
+  const projectedBase =
+    databaseActive &&
+    ["source-validation", "build", "phase8", "runtime-smoke", "browser-owners"].includes(stage)
+      ? {
+          ...baseEnvironment,
+          DATABASE_URL: certificationDatabaseTargetUrl(
+            context.environment,
+            lifecycle,
+          ),
+        }
+      : baseEnvironment;
   return projectCertificationChildEnvironment({
     repositoryRoot: context.repositoryRoot,
-    baseEnvironment,
+    baseEnvironment: projectedBase,
     stage,
     profileId,
     stageInputs,
@@ -728,6 +901,9 @@ async function validateLiveContext(
   context,
   { includeArtifact = true, verifyPhysicalWorktrees = true } = {},
 ) {
+  if (context.state.executionClass === "real-candidate") {
+    requireDatabaseLifecycleBinding(context, null, { reconcile: false });
+  }
   let candidate;
   let harness;
   const comparatorIssues = [];
@@ -1182,6 +1358,17 @@ export function initializeRealCertification({
     evidenceRoot: path.resolve(evidenceRoot),
     environment,
   });
+  let databaseLifecycle = null;
+  if (executionClass === "real-candidate") {
+    const plannedDatabase = readCertificationDatabaseLifecycle({
+      repositoryRoot,
+      environment,
+    });
+    if (plannedDatabase.evidence.currentState !== "planned") {
+      throw new Error("state initialization requires a fresh planned database lifecycle");
+    }
+    databaseLifecycle = plannedDatabase.binding;
+  }
   const state = createCertificationState({
     certificationId,
     candidateId: candidate.id,
@@ -1193,6 +1380,7 @@ export function initializeRealCertification({
     createdAt,
     worktrees,
     resourcePlan,
+    databaseLifecycle,
   });
   writeCertificationState(statePath, state, { requireAbsent: true });
   return {
@@ -1211,7 +1399,7 @@ export async function runDoctorStage({
 } = {}) {
   const context = stateContext(repositoryRoot, environment, { command: "doctor" });
   return managedStage(context, "doctor", async (state) => {
-    const doctor = runCertificationDoctor({ repositoryRoot, environment });
+    const doctor = await runCertificationDoctor({ repositoryRoot, environment });
     const attemptNumber = state.stages.doctor.attempts.at(-1).number;
     const descriptor = writeEvidence(
       context.evidenceRoot,
@@ -1232,6 +1420,152 @@ export async function runDoctorStage({
       result: doctor,
     };
   });
+}
+
+export async function runDatabaseProvision({
+  repositoryRoot = process.cwd(),
+  environment = process.env,
+} = {}) {
+  const context = stateContext(repositoryRoot, environment, {
+    command: "database:provision",
+  });
+  requireDatabaseLifecycleBinding(context, ["planned"]);
+  if (context.state.stages.doctor.status !== "passed") {
+    throw new InvocationFailure("database provision requires a passed doctor stage");
+  }
+  const result = await runDatabaseLifecycleTransition(context, () =>
+    provisionCertificationDatabase({ repositoryRoot, environment }),
+  );
+  return {
+    valid: true,
+    lifecycleState: result.evidence.currentState,
+    databaseNameSha256: result.evidence.database.nameSha256,
+    migrationCount: result.evidence.migration.count,
+    evidenceSha256: result.descriptor.sha256,
+  };
+}
+
+export async function runDatabaseVerifyInitial({
+  repositoryRoot = process.cwd(),
+  environment = process.env,
+} = {}) {
+  const context = stateContext(repositoryRoot, environment, {
+    command: "database:verify-initial",
+  });
+  requireDatabaseLifecycleBinding(context, ["migrated"]);
+  const result = await runDatabaseLifecycleTransition(context, () =>
+    verifyInitialCertificationDatabase({ repositoryRoot, environment }),
+  );
+  return {
+    valid: true,
+    lifecycleState: result.evidence.currentState,
+    applicationTableCount:
+      result.evidence.inventories.initial.applicationTableCount,
+    totalRows: result.evidence.inventories.initial.totalRows,
+    sessionCount: result.evidence.sessions.initial.count,
+    evidenceSha256: result.descriptor.sha256,
+  };
+}
+
+export async function runDatabaseVerifyFinal({
+  repositoryRoot = process.cwd(),
+  environment = process.env,
+} = {}) {
+  const context = stateContext(repositoryRoot, environment, {
+    command: "database:verify-final",
+  });
+  requireDatabaseLifecycleBinding(context, ["active"]);
+  if (context.state.stages["browser-owners"].status !== "passed") {
+    throw new InvocationFailure(
+      "final database verification requires passed browser owners",
+    );
+  }
+  const result = await runDatabaseLifecycleTransition(context, () =>
+    verifyFinalCertificationDatabase({ repositoryRoot, environment }),
+  );
+  return {
+    valid: true,
+    lifecycleState: result.evidence.currentState,
+    totalRows: result.evidence.inventories.final.totalRows,
+    sessionCount: result.evidence.sessions.final.count,
+    evidenceSha256: result.descriptor.sha256,
+  };
+}
+
+export async function runDatabaseDrop({
+  repositoryRoot = process.cwd(),
+  environment = process.env,
+} = {}) {
+  const context = stateContext(repositoryRoot, environment, {
+    command: "database:drop",
+  });
+  requireDatabaseLifecycleBinding(context, ["final-empty-verified"]);
+  const result = await runDatabaseLifecycleTransition(context, () =>
+    dropCertificationDatabase({ repositoryRoot, environment }),
+  );
+  return {
+    valid: true,
+    lifecycleState: result.evidence.currentState,
+    terminatedSessionCount:
+      result.evidence.sessions.release.matchedSessionCount,
+    evidenceSha256: result.descriptor.sha256,
+  };
+}
+
+export async function runDatabaseVerifyAbsent({
+  repositoryRoot = process.cwd(),
+  environment = process.env,
+} = {}) {
+  const context = stateContext(repositoryRoot, environment, {
+    command: "database:verify-absent",
+  });
+  requireDatabaseLifecycleBinding(context, ["dropped"]);
+  const result = await runDatabaseLifecycleTransition(context, () =>
+    verifyCertificationDatabaseAbsent({ repositoryRoot, environment }),
+  );
+  return {
+    valid: true,
+    lifecycleState: result.evidence.currentState,
+    targetAbsent: true,
+    evidenceSha256: result.descriptor.sha256,
+  };
+}
+
+export async function runDatabaseAbortCleanup({
+  repositoryRoot = process.cwd(),
+  environment = process.env,
+  originalFailure = null,
+} = {}) {
+  const context = stateContext(repositoryRoot, environment, {
+    command: "database:abort-cleanup",
+  });
+  requireDatabaseLifecycleBinding(context);
+  const result = await runDatabaseLifecycleTransition(context, () =>
+    abortCertificationDatabase({
+      repositoryRoot,
+      environment,
+      originalFailure,
+    }),
+  );
+  return {
+    valid: false,
+    lifecycleState: result.evidence.currentState,
+    originalFailureRetained: true,
+    failedRunRehabilitated: false,
+    targetAbsent: true,
+    evidenceSha256: result.descriptor.sha256,
+  };
+}
+
+export async function runDatabaseStatus({
+  repositoryRoot = process.cwd(),
+  environment = process.env,
+} = {}) {
+  const context = stateContext(repositoryRoot, environment, {
+    command: "database:status",
+  });
+  requireDatabaseLifecycleBinding(context, null, { reconcile: false });
+  return certificationDatabaseStatus({ repositoryRoot, environment });
 }
 
 export async function validateCertificationReadOnly({
@@ -1467,10 +1801,11 @@ export async function runSourceValidationStage({
   environment = process.env,
   testHooks = null,
 } = {}) {
-  const context = stateContext(repositoryRoot, environment, {
+  let context = stateContext(repositoryRoot, environment, {
     command: "source-validation",
     role: "source-validation",
   });
+  context = await bindDatabaseForStage(context, "source-validation");
   let sourceConsumed = false;
   return managedStage(
     context,
@@ -1585,10 +1920,11 @@ export async function runBuildStage({
   environment = process.env,
   testHooks = null,
 } = {}) {
-  const context = stateContext(repositoryRoot, environment, {
+  let context = stateContext(repositoryRoot, environment, {
     command: "build",
     role: "final-artifact",
   });
+  context = await bindDatabaseForStage(context, "build");
   let buildConsumed = false;
   return managedStage(context, "build", async (state) => {
     const buildEnvironment = stageChildEnvironment(context, {
@@ -2202,7 +2538,8 @@ function phase8SamplingStarted(evidenceRoot, before) {
 }
 
 export async function runPhase8Stage(options = {}) {
-  const context = stateContext(options.repositoryRoot ?? process.cwd(), options.environment ?? process.env, { command: "phase8", role: "final-artifact" });
+  let context = stateContext(options.repositoryRoot ?? process.cwd(), options.environment ?? process.env, { command: "phase8", role: "final-artifact" });
+  context = await bindDatabaseForStage(context, "phase8");
   const rawRoot = path.join(context.evidenceRoot, "phase8");
   const before = new Set(existsSync(rawRoot) ? readdirSync(rawRoot) : []);
   let childCompleted = false;
@@ -2415,7 +2752,8 @@ function runtimeIdentityEnvironment(state) {
 }
 
 export async function runRuntimeSmokeStage(options = {}) {
-  const context = stateContext(options.repositoryRoot ?? process.cwd(), options.environment ?? process.env, { command: "runtime-smoke", role: "final-artifact" });
+  let context = stateContext(options.repositoryRoot ?? process.cwd(), options.environment ?? process.env, { command: "runtime-smoke", role: "final-artifact" });
+  context = await bindDatabaseForStage(context, "runtime-smoke");
   const startMarkerPath = path.join(
     context.evidenceRoot,
     "runtime-smoke/product-test-start.json",
@@ -2807,7 +3145,8 @@ function observedBrowserEvidence(owner, state, requiredEvidence, gate) {
 }
 
 export async function runBrowserOwnersStage(options = {}) {
-  const context = stateContext(options.repositoryRoot ?? process.cwd(), options.environment ?? process.env, { command: "browser-owners" });
+  let context = stateContext(options.repositoryRoot ?? process.cwd(), options.environment ?? process.env, { command: "browser-owners" });
+  context = await bindDatabaseForStage(context, "browser-owners");
   const preexistingStartMarkers = new Set(
     REQUIRED_BROWSER_OWNERS.map((owner) =>
       path.join(
@@ -3167,6 +3506,9 @@ export function assertCanonicalExtractedArchiveRoot(
 
 export async function runFinalStandaloneStage(options = {}) {
   const context = stateContext(options.repositoryRoot ?? process.cwd(), options.environment ?? process.env, { command: "final-standalone", role: "final-artifact" });
+  if (context.state.executionClass === "real-candidate") {
+    requireDatabaseLifecycleBinding(context, ["absence-verified"]);
+  }
   return managedStage(context, "final-standalone", async () => {
     const extractionRoot = assertCanonicalExtractedArchiveRoot(
       context.evidenceRoot,

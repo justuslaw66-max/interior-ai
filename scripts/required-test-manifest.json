@@ -6,8 +6,8 @@
       "root": "scripts",
       "filePattern": "^test-.*\\.(?:js|mjs|ts)$",
       "classification": "risk-triggered",
-      "expectedFileCount": 266,
-      "expectedPathSha256": "b1ca59ac98146218c9efbaf3479b09027cd24a6779d5d4991e7a055fc057eb9c"
+      "expectedFileCount": 267,
+      "expectedPathSha256": "b4587d4a971d6a62e40c03db13bea5ac1a475faa1ee2d13bfc7094fbfc728a33"
     },
     {
       "id": "browser-specs",
@@ -115,7 +115,7 @@
       "blocking": true,
       "command": "npm run test:production-artifact-evidence",
       "packageScript": "test:production-artifact-evidence",
-      "packageClosure": { "expectedScriptCount": 1, "expectedSha256": "f76e1db6fdf04f4954b94d262566bd4034ac3093a4d82c76d697de6496d900fd" },
+      "packageClosure": { "expectedScriptCount": 1, "expectedSha256": "c5853be2891c71b9cf28de0798d73b97952a989e11f30030a6385432ab50f83d" },
       "runner": "node",
       "requiredSources": [
         "playwright.config.ts",
@@ -132,6 +132,9 @@
         "scripts/production-certification-historical-evidence.mjs",
         "scripts/production-certification-doctor.mjs",
         "scripts/production-certification-dependencies.mjs",
+        "scripts/production-certification-database-adapter.mjs",
+        "scripts/production-certification-database-contract.mjs",
+        "scripts/production-certification-database-lifecycle.mjs",
         "scripts/production-certification-real.mjs",
         "scripts/production-certification-source-continuity.mjs",
         "scripts/production-certification.mjs",
@@ -140,6 +143,7 @@
         "scripts/production-certification-worktrees.mjs",
         "scripts/production-certification-regressions.json",
         "docs/qa/production-certification-contract.v1.json",
+        "docs/qa/production-certification-database-lifecycle-v1.md",
         "docs/qa/production-certification-stage-environment.v2.json",
         "docs/qa/production-certification-harness-v1.md",
         "docs/qa/production-certification-state-worktree-remediation.md",
@@ -156,6 +160,7 @@
         "scripts/test-production-archive-plan-evidence.mjs",
         "scripts/test-production-certification.mjs",
         "scripts/test-production-certification-dependency-lifecycle.mjs",
+        "scripts/test-production-certification-database-lifecycle.mjs",
         "scripts/test-production-certification-state-worktrees.mjs",
         "scripts/test-production-trace-archive-policy.mjs",
         "playwright.floor-plan-upload.config.ts",

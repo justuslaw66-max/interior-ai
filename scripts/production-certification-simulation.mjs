@@ -782,6 +782,11 @@ export async function runProductionCertificationSimulation({
     ["scripts/test-production-certification-source-generated-outputs.mjs"],
     repositoryRoot,
   );
+  run(
+    process.execPath,
+    ["scripts/test-production-certification-database-lifecycle.mjs", "--contract-only"],
+    repositoryRoot,
+  );
   const simulationRoot = mkdtempSync(path.join(tmpdir(), "production-certification-v1-"));
   const canonicalRoot = path.join(simulationRoot, "source");
   let fixtureRoot = canonicalRoot;
@@ -4092,6 +4097,18 @@ export async function runProductionCertificationSimulation({
       exactFailedOutputCount: 5,
       terminalNodeModulesOnly: true,
       negativeCaseCount: 26,
+    },
+    databaseLifecycle: {
+      schema: "interior-ai.production-certification-database-lifecycle.v1",
+      plannedAbsent: true,
+      provisionedAndMigrated: true,
+      initialEmptyVerified: true,
+      fixtureCleanupAndFinalEmptyVerified: true,
+      sessionsCleared: true,
+      droppedAndAbsenceVerified: true,
+      abortFailureRetained: true,
+      crossRunCandidateAndSessionTamperRejected: true,
+      realDatabaseMutation: false,
     },
     buildGeneratedOutputLifecycle: {
       schema: PRODUCTION_CERTIFICATION_BUILD_GENERATED_OUTPUT_SCHEMA,

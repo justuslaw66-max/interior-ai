@@ -231,7 +231,7 @@ function stateFixture() {
 {
   const contract = stageEnvironmentContract(repositoryRoot);
   assert.equal(contract.value.schema, "interior-ai.production-certification-stage-environment.v2");
-  assert.equal(Object.keys(contract.variables).length, 91);
+  assert.equal(Object.keys(contract.variables).length, 93);
   assert.equal(Object.keys(contract.applicationFeatureVariables).length, 5);
   assert.equal(Object.keys(contract.profiles).length, 20);
   assert.deepEqual(
@@ -1161,7 +1161,7 @@ function stateFixture() {
     }).stdout.trim(),
     CERTIFICATION_UNKNOWN_DOCTOR_CAPABILITY: "synthetic-doctor-secret-never-print",
   };
-  const doctor = runCertificationDoctor({
+  const doctor = await runCertificationDoctor({
     repositoryRoot,
     environment: missingEnvironment,
   });

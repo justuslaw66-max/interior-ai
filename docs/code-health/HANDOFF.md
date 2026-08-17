@@ -6394,3 +6394,71 @@ separate and unauthorized.
   product/Floor Plan behavior, telemetry, NFT tracing, Playwright assertions,
   Phase 8 semantics, dependency/lockfile, migration, workflow, real build,
   runtime/browser matrix, Full E2E, integration, or push is included.
+
+## CH-0015I Production Certification Harness v1 database lifecycle — 2026-08-17
+
+- **Preserved preflight:** the stopped database preflight remains
+  `PRECONDITION_ORCHESTRATION_FAILURE` /
+  `COMMITTED_DATABASE_LIFECYCLE_OWNER_ABSENT`, with
+  `consumedSubstantiveGate=false`. Its source/owner/implementation/host/storage
+  evidence, proof that no name/database was created, historical operator-name
+  failure, and all earlier certification/rehearsal evidence are unchanged. It
+  is neither a PostgreSQL/application failure nor resumable.
+- **Classification:** `CERTIFICATION_DATABASE_LIFECYCLE_OWNER_MISSING` and
+  `DATABASE_PROVISIONING_CLEANUP_CONTRACT_GAP`.
+- **Correction:** `scripts/production-certification-database-lifecycle.mjs` is
+  the sole high-level owner. A certification/candidate/commit/disposable-class/
+  128-bit-nonce digest generates the fixed, <=63-byte `gate_a3_test` name;
+  plan proves exact loopback:5432 server/role capability and absence without
+  database mutation. State atomically binds the sealed v1 lifecycle descriptor,
+  and the runner privately projects only the generated target into every
+  database-using stage.
+- **Crash/CAS truthfulness:** plan seals the authorization identity before
+  creation. A lost successful create response is recoverable from that exact
+  durable authorization; an explicit duplicate response revokes ownership and
+  abort refuses the colliding database. Every physical lifecycle replacement
+  extends a sealed revision chain, so state may reconcile an injected CAS loss
+  only from its exact predecessor binding. Semantic validation rejects illegal
+  state histories and missing migration/row/session/drop/absence invariants,
+  including a caller-resealed `planned -> absence-verified` fabrication.
+- **Rows/sessions/drop:** all migrated `public` application tables except
+  `_prisma_migrations` must be zero initially and finally. Test owners retain
+  scoped fixture cleanup; no generic deletion hides leaks. Normal cleanup
+  releases only exact-target sessions, drops only the generated owned database,
+  and proves absence. Abort preserves the original failure/consumption and row/
+  session inventories, never fabricates final-empty, drops the disposable target,
+  proves absence, and records that the failed run was not rehabilitated.
+- **Doctor/failure paths:** doctor performs a fresh live catalog
+  absence/capability query. Resume orders resource preparation and doctor before
+  provision. Terminal signals wait for the active owner before cleanup; abort
+  checkpoints inventory, release, drop, and absence facts for truthful retry,
+  retains a prior final-empty proof on late failures, and redacts injected raw
+  database URLs/password values before evidence or CLI output.
+- **Coverage:** deterministic generation/protected/remote/existing/race/tamper/
+  state-hash/secret tests pass. The focused real fixture applied all 43 current
+  migrations, proved 33 application tables initially empty, detected one
+  fixture row and one exact target session, preserved the final failure,
+  terminated only that target session, preserved an unrelated `postgres`
+  session, dropped the target, and proved absence. Simulation includes the
+  database contract matrix and remains ineligible for certification.
+- **Independent review:** the first separate read-only pass failed the draft on
+  semantic-history tamper, resume ordering, state/evidence CAS recovery,
+  signal/create races, late-abort truth, partial cleanup retention, live doctor
+  absence, and credential-bearing errors. The next pass found missing exact
+  stage-binding semantics, an overwritten abort drop receipt, incomplete outer
+  redaction, and a premature qualification claim. The final retry probe then
+  found and closed drop-success/absence-query-failure recovery. All findings
+  have focused regressions. The terminal independent read-only disposition is
+  **PASS — no remaining database-lifecycle blocker**.
+- **Qualification/scope:** the exact clean committed-head qualifier remains
+  pending until this correction is committed; its terminal result must be
+  recorded without anticipating success. No product/UI, Floor Plan,
+  telemetry, NFT trace/archive, performance budget, Playwright product spec,
+  dependency/lockfile, Prisma schema/migration, production build, Phase 8,
+  runtime smoke, browser-owner matrix, Full E2E, rehearsal, integration, push,
+  or final certification is included. A fresh rehearsal, final certification,
+  and CH-0015 closure audit remain pending.
+- **Rollback:** first use the exact abort-cleanup owner for any active generated
+  disposable target and retain absence proof, then revert the one focused
+  correction commit. Never drop a foreign/caller-selected database or modify
+  the preserved failed preflight.

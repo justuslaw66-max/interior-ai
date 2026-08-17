@@ -37,6 +37,8 @@
     "CERTIFICATION_BROWSER_PUBLIC_SHARE_REPORT_PATH": { "owner": "certification browser-owner parent", "classification": "parent-output-path", "portable": false, "secret": false, "presenceChangesBehavior": false },
     "CERTIFICATION_BROWSER_RETAILER_REPORT_PATH": { "owner": "certification browser-owner parent", "classification": "parent-output-path", "portable": false, "secret": false, "presenceChangesBehavior": false },
     "CERTIFICATION_CREATED_AT": { "owner": "certification state initializer", "classification": "simulation-clock", "portable": true, "secret": false, "presenceChangesBehavior": true },
+    "CERTIFICATION_DATABASE_ADMIN_URL": { "owner": "production certification database lifecycle", "classification": "parent-database-admin-credential", "portable": false, "secret": true, "presenceChangesBehavior": true },
+    "CERTIFICATION_DATABASE_LIFECYCLE_PATH": { "owner": "production certification database lifecycle", "classification": "parent-output-path", "portable": false, "secret": false, "presenceChangesBehavior": true },
     "CERTIFICATION_ENVIRONMENT_STAGE": { "owner": "stage environment projector", "classification": "stage-activation", "portable": true, "secret": false, "presenceChangesBehavior": true },
     "CERTIFICATION_EVIDENCE_ROOT": { "owner": "certification parent runner", "classification": "parent-orchestration-root", "portable": false, "secret": false, "presenceChangesBehavior": true },
     "CERTIFICATION_EXECUTION_CLASS": { "owner": "certification state initializer", "classification": "harness-mode", "portable": true, "secret": false, "presenceChangesBehavior": true },

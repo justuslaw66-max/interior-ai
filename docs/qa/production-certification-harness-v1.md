@@ -1,5 +1,34 @@
 # Production Certification Harness v1
 
+## Repository-owned disposable database lifecycle — 2026-08-17
+
+The harness now has one high-level database owner:
+`scripts/production-certification-database-lifecycle.mjs`. The complete
+versioned contract and operator runbook are in
+`docs/qa/production-certification-database-lifecycle-v1.md`.
+
+The preserved preflight remains `PRECONDITION_ORCHESTRATION_FAILURE` /
+`COMMITTED_DATABASE_LIFECYCLE_OWNER_ABSENT`, non-consuming, unchanged, and not
+resumable. `gate:a3:db` remains only the lower-level merge-required migration
+primitive; certification never uses its broad caller-selected/reusable target
+contract as lifecycle authority.
+
+The canonical order is database plan → environment envelope → state init →
+resource preparation → doctor → exact generated database provision and 43
+migrations → initial-empty proof → bound source/build/Phase 8/runtime/browser
+stages → final-empty proof → exact session release/drop/absence → final
+standalone/continuity. Normal and abort paths seal the same
+`interior-ai.production-certification-database-lifecycle.v1` evidence. Initial
+or final row leakage is recorded and fails closed; no generic deletion makes it
+pass. A durable pre-create authorization closes ambiguous-success recovery,
+while an observed duplicate revokes ownership and is never dropped. Semantic
+transition/invariant validation rejects resealed impossible histories. Sealed
+revision ancestry lets state recover only an exact stale lifecycle binding
+after a CAS loss. Doctor repeats live catalog absence; signal and failure
+cleanup serialize after the active owner and checkpoint partial cleanup facts.
+Abort cannot rehabilitate a failed run or erase a previously proved
+final-empty result.
+
 ## Canonical report-parent preparation owner — 2026-08-16
 
 The preserved rehearsal
@@ -943,6 +972,7 @@ node scripts/test-production-certification-source-generated-outputs.mjs
 node scripts/test-production-certification-source-generated-outputs.mjs --real-producers
 node scripts/test-production-certification-state-worktrees.mjs
 node scripts/test-production-certification-stage-environment.mjs
+node scripts/test-production-certification-database-lifecycle.mjs
 npm run certification:simulate
 npm run test:production-artifact-evidence
 npm run test:required-test-truthfulness
@@ -994,6 +1024,19 @@ task-created worktrees. It starts no app, database, or browser and runs no real
 build or benchmark. Its
 evidence is marked `deterministic-simulation` and cannot certify a real
 candidate.
+
+The simulation also runs the contract-only database lifecycle matrix: planned
+absence, provision/migration, initial/final emptiness, fixture cleanup, exact
+session release, normal drop/absence, abort retention, and cross-run/candidate/
+session tamper rejection. It does not connect to PostgreSQL. Qualification
+separately runs the real generated disposable-database fixture and requires its
+post-drop absence proof.
+
+The matrix also covers resume ordering through resource preparation and doctor,
+live doctor absence failure, semantic-history tamper, state-binding CAS
+reconciliation, signal-during-owner serialization, foreign create collision,
+ambiguous create-response recovery, late-abort truth, partial abort retry, and
+credential-bearing error redaction.
 
 The simulated runtime stage uses the committed runtime projector and real
 phase-budget writer. It preflights the four canonical destinations, proves the

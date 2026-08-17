@@ -9,8 +9,16 @@ import {
 import { readCertificationState } from "./production-certification-state.mjs";
 import { projectCertificationChildEnvironment } from "./production-certification-stage-environment.mjs";
 import { runCertificationResourcePreparation } from "./production-certification-resources.mjs";
+import { redactDatabaseLifecycleFailure } from "./production-certification-database-lifecycle.mjs";
 import {
   initializeRealCertification,
+  runDatabaseAbortCleanup,
+  runDatabaseDrop,
+  runDatabaseProvision,
+  runDatabaseStatus,
+  runDatabaseVerifyAbsent,
+  runDatabaseVerifyFinal,
+  runDatabaseVerifyInitial,
   cleanupCertificationWorktrees,
   reconcileCertificationValidation,
   runArchivePreflightStage,
@@ -39,6 +47,58 @@ async function resumeCommand() {
   const validation = await validateCertificationReadOnly();
   if (!validation.valid) return validation;
   const state = readCertificationState(requiredEnvironment(CERTIFICATION_STATE_ENV));
+  return nextCertificationCommand(state);
+}
+
+export function nextCertificationCommand(state) {
+  if (state.executionClass === "real-candidate" && state.databaseLifecycle) {
+    if (
+      state.resourcePreparation === null ||
+      state.resourcePreparation === undefined
+    ) {
+      return {
+        complete: false,
+        nextStage: "resource-preparation",
+        canonicalCommand: "npm run certification:prepare-resources",
+      };
+    }
+    if (state.stages.doctor.status !== "passed") {
+      return {
+        complete: false,
+        nextStage: "doctor",
+        canonicalCommand: state.stages.doctor.canonicalCommand,
+      };
+    }
+    const lifecycleCommands = {
+      planned: "npm run certification:database:provision",
+      "create-authorized": "npm run certification:database:abort-cleanup",
+      provisioned: "npm run certification:database:abort-cleanup",
+      migrated: "npm run certification:database:verify-initial",
+      "final-empty-verified": "npm run certification:database:drop",
+      "sessions-cleared": "npm run certification:database:abort-cleanup",
+      dropped: "npm run certification:database:verify-absent",
+      failed: "npm run certification:database:abort-cleanup",
+      "abort-cleanup-in-progress": "npm run certification:database:abort-cleanup",
+      "abort-dropped": "npm run certification:database:abort-cleanup",
+    };
+    if (lifecycleCommands[state.databaseLifecycle.lifecycleState]) {
+      return {
+        complete: false,
+        nextStage: `database:${state.databaseLifecycle.lifecycleState}`,
+        canonicalCommand: lifecycleCommands[state.databaseLifecycle.lifecycleState],
+      };
+    }
+    if (
+      state.stages["browser-owners"].status === "passed" &&
+      state.databaseLifecycle.lifecycleState === "active"
+    ) {
+      return {
+        complete: false,
+        nextStage: "database:verify-final",
+        canonicalCommand: "npm run certification:database:verify-final",
+      };
+    }
+  }
   const nextStage = CERTIFICATION_STAGE_ORDER.find(
     (stage) => state.stages[stage].status !== "passed",
   );
@@ -113,6 +173,10 @@ function qualificationCommand() {
     [process.execPath, ["scripts/test-production-certification-resources.mjs"]],
     [
       process.execPath,
+      ["scripts/test-production-certification-database-lifecycle.mjs"],
+    ],
+    [
+      process.execPath,
       ["scripts/test-production-certification-dependency-lifecycle.mjs"],
     ],
     [process.execPath, ["scripts/test-production-trace-archive-policy.mjs"]],
@@ -180,6 +244,15 @@ async function cli() {
     result = runCertificationResourcePreparation();
   }
   else if (command === "doctor") result = await runDoctorStage();
+  else if (command === "database:provision") result = await runDatabaseProvision();
+  else if (command === "database:verify-initial") {
+    result = await runDatabaseVerifyInitial();
+  }
+  else if (command === "database:verify-final") result = await runDatabaseVerifyFinal();
+  else if (command === "database:drop") result = await runDatabaseDrop();
+  else if (command === "database:verify-absent") result = await runDatabaseVerifyAbsent();
+  else if (command === "database:abort-cleanup") result = await runDatabaseAbortCleanup();
+  else if (command === "database:status") result = await runDatabaseStatus();
   else if (command === "source-validation") {
     result = await runSourceValidationStage();
   }
@@ -226,13 +299,84 @@ async function cli() {
   if (result?.valid === false) process.exitCode = 1;
 }
 
+export function createSerializedTerminalLifecycle({ runAbortCleanup }) {
+  let terminalSignal = null;
+  return {
+    requestSignal(signal) {
+      if (!terminalSignal) terminalSignal = signal;
+    },
+    async execute(runCommand) {
+      let commandError = null;
+      let cleanupError = null;
+      try {
+        await runCommand();
+      } catch (error) {
+        commandError = error;
+      }
+      if (terminalSignal || commandError) {
+        try {
+          await runAbortCleanup({ terminalSignal, commandError });
+        } catch (error) {
+          cleanupError = error;
+        }
+      }
+      return { terminalSignal, commandError, cleanupError };
+    },
+  };
+}
+
 if (import.meta.url === new URL(process.argv[1], "file:").href) {
-  cli().catch((error) => {
-    if (error?.certificationResult) {
-      console.log(JSON.stringify(error.certificationResult));
-    } else {
-      console.error(error instanceof Error ? error.message : String(error));
+  const command = process.argv[2] ?? "unknown";
+  const terminal = createSerializedTerminalLifecycle({
+    runAbortCleanup: async ({ terminalSignal, commandError }) => {
+      if (
+        process.env.CERTIFICATION_EXECUTION_CLASS !== "real-candidate" ||
+        !process.env.PRODUCTION_CERTIFICATION_STATE ||
+        !process.env.CERTIFICATION_DATABASE_LIFECYCLE_PATH ||
+        command === "database:abort-cleanup" ||
+        command === "database:status"
+      ) {
+        return;
+      }
+      await runDatabaseAbortCleanup({
+        originalFailure: {
+          classification: terminalSignal
+            ? "INFRASTRUCTURE_TRANSIENT"
+            : commandError?.classification ??
+              commandError?.certificationResult?.classification ??
+              "PRECONDITION_ORCHESTRATION_FAILURE",
+          consumedSubstantiveGate: terminalSignal
+            ? false
+            : commandError?.consumed ??
+              commandError?.certificationResult?.consumedSubstantiveGate ??
+              false,
+          stage: terminalSignal
+            ? `terminal-${terminalSignal.toLowerCase()}`
+            : command,
+        },
+      });
+    },
+  });
+  process.once("SIGINT", () => terminal.requestSignal("SIGINT"));
+  process.once("SIGTERM", () => terminal.requestSignal("SIGTERM"));
+  terminal.execute(cli).then(({ terminalSignal, commandError, cleanupError }) => {
+    if (cleanupError) {
+      console.error(
+        `database abort cleanup failed without replacing the original failure: ${redactDatabaseLifecycleFailure(cleanupError)}`,
+      );
     }
+    if (commandError?.certificationResult) {
+      console.log(JSON.stringify(commandError.certificationResult));
+    } else if (commandError) {
+      console.error(redactDatabaseLifecycleFailure(commandError));
+    }
+    if (terminalSignal) {
+      process.exitCode = terminalSignal === "SIGINT" ? 130 : 143;
+    } else if (commandError) {
+      process.exitCode = 1;
+    }
+  }).catch((error) => {
+    console.error(redactDatabaseLifecycleFailure(error));
     process.exitCode = 1;
   });
 }
