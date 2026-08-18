@@ -69,6 +69,7 @@ jobs:
     env:
       CI: "true"
       CI_AUTH_FIXTURE_MODE: "1"
+      CI_AUTH_FIXTURE_RESULT_ROOT: ${{ runner.temp }}/interior-ai-auth-results
       APP_ENV: development
       DATABASE_URL: postgresql://test:test@localhost:5432/interior_ai_test
       AUTH_SECRET: ci-only-auth-secret-at-least-32-characters
@@ -109,10 +110,29 @@ jobs:
         run: npm ci
 
       - name: Configure synthetic CI OAuth fixture
-        run: npm run ci:auth-fixture:export
+        env:
+          CI_AUTH_FIXTURE_RESULT_PATH: ${{ runner.temp }}/interior-ai-auth-results/stable-export.json
+          CI_AUTH_FIXTURE_RESULT_NONCE: ${{ github.run_id }}-${{ github.run_attempt }}-stable-export
+          CI_AUTH_FIXTURE_EXPECTED_COMMAND_ID: ci:auth-fixture:export
+          CI_AUTH_FIXTURE_EXPECTED_MODE: provider-fixture-export
+        run: |
+          mkdir -p "$CI_AUTH_FIXTURE_RESULT_ROOT"
+          export CI_AUTH_FIXTURE_CANDIDATE_COMMIT_SHA="$(git rev-parse HEAD)"
+          export CI_AUTH_FIXTURE_CANDIDATE_TREE_SHA="$(git rev-parse 'HEAD^{tree}')"
+          npm run ci:auth-fixture:export
+          npm run ci:auth-fixture:result:validate
 
       - name: Validate synthetic CI OAuth fixture
-        run: npm run ci:auth-fixture:validate
+        env:
+          CI_AUTH_FIXTURE_RESULT_PATH: ${{ runner.temp }}/interior-ai-auth-results/stable-validate.json
+          CI_AUTH_FIXTURE_RESULT_NONCE: ${{ github.run_id }}-${{ github.run_attempt }}-stable-validate
+          CI_AUTH_FIXTURE_EXPECTED_COMMAND_ID: ci:auth-fixture:validate
+          CI_AUTH_FIXTURE_EXPECTED_MODE: auth-environment-validation
+        run: |
+          export CI_AUTH_FIXTURE_CANDIDATE_COMMIT_SHA="$(git rev-parse HEAD)"
+          export CI_AUTH_FIXTURE_CANDIDATE_TREE_SHA="$(git rev-parse 'HEAD^{tree}')"
+          npm run ci:auth-fixture:validate
+          npm run ci:auth-fixture:result:validate
 
       - name: Apply database migrations
         env:
@@ -405,6 +425,7 @@ jobs:
     env:
       CI: "true"
       CI_AUTH_FIXTURE_MODE: "1"
+      CI_AUTH_FIXTURE_RESULT_ROOT: ${{ runner.temp }}/interior-ai-auth-results
       APP_ENV: development
       DATABASE_URL: postgresql://test:test@localhost:5432/interior_ai_test
       AUTH_SECRET: ci-only-auth-secret-at-least-32-characters
@@ -445,10 +466,29 @@ jobs:
         run: npm ci
 
       - name: Configure synthetic CI OAuth fixture
-        run: npm run ci:auth-fixture:export
+        env:
+          CI_AUTH_FIXTURE_RESULT_PATH: ${{ runner.temp }}/interior-ai-auth-results/advisory-contract-export.json
+          CI_AUTH_FIXTURE_RESULT_NONCE: ${{ github.run_id }}-${{ github.run_attempt }}-advisory-export
+          CI_AUTH_FIXTURE_EXPECTED_COMMAND_ID: ci:auth-fixture:export
+          CI_AUTH_FIXTURE_EXPECTED_MODE: provider-fixture-export
+        run: |
+          mkdir -p "$CI_AUTH_FIXTURE_RESULT_ROOT"
+          export CI_AUTH_FIXTURE_CANDIDATE_COMMIT_SHA="$(git rev-parse HEAD)"
+          export CI_AUTH_FIXTURE_CANDIDATE_TREE_SHA="$(git rev-parse 'HEAD^{tree}')"
+          npm run ci:auth-fixture:export
+          npm run ci:auth-fixture:result:validate
 
       - name: Validate synthetic CI OAuth fixture
-        run: npm run ci:auth-fixture:validate
+        env:
+          CI_AUTH_FIXTURE_RESULT_PATH: ${{ runner.temp }}/interior-ai-auth-results/advisory-contract-validate.json
+          CI_AUTH_FIXTURE_RESULT_NONCE: ${{ github.run_id }}-${{ github.run_attempt }}-advisory-validate
+          CI_AUTH_FIXTURE_EXPECTED_COMMAND_ID: ci:auth-fixture:validate
+          CI_AUTH_FIXTURE_EXPECTED_MODE: auth-environment-validation
+        run: |
+          export CI_AUTH_FIXTURE_CANDIDATE_COMMIT_SHA="$(git rev-parse HEAD)"
+          export CI_AUTH_FIXTURE_CANDIDATE_TREE_SHA="$(git rev-parse 'HEAD^{tree}')"
+          npm run ci:auth-fixture:validate
+          npm run ci:auth-fixture:result:validate
 
       - name: Apply database migrations
         env:
@@ -459,7 +499,16 @@ jobs:
         run: npm run test:auth-env-hardening
 
       - name: Preflight advisory authentication environment
-        run: npm run ci:auth-fixture:preflight
+        env:
+          CI_AUTH_FIXTURE_RESULT_PATH: ${{ runner.temp }}/interior-ai-auth-results/advisory-contract-preflight.json
+          CI_AUTH_FIXTURE_RESULT_NONCE: ${{ github.run_id }}-${{ github.run_attempt }}-advisory-preflight
+          CI_AUTH_FIXTURE_EXPECTED_COMMAND_ID: ci:auth-fixture:preflight
+          CI_AUTH_FIXTURE_EXPECTED_MODE: auth-session-preflight
+        run: |
+          export CI_AUTH_FIXTURE_CANDIDATE_COMMIT_SHA="$(git rev-parse HEAD)"
+          export CI_AUTH_FIXTURE_CANDIDATE_TREE_SHA="$(git rev-parse 'HEAD^{tree}')"
+          npm run ci:auth-fixture:preflight
+          npm run ci:auth-fixture:result:validate
 
       - name: Verify lightweight advisory evidence contract
         run: npm run test:required-test-truthfulness

@@ -6,8 +6,8 @@
       "root": "scripts",
       "filePattern": "^test-.*\\.(?:js|mjs|ts)$",
       "classification": "risk-triggered",
-      "expectedFileCount": 269,
-      "expectedPathSha256": "e60d2b091eb334b92c9438e1e7dfc10548e1d819d6b3f13f5eaf9ba04cce630e"
+      "expectedFileCount": 270,
+      "expectedPathSha256": "238999ddeb79b855888f4a5764842617828d7e30190619c1e0131751815f95a4"
     },
     {
       "id": "browser-specs",
@@ -294,19 +294,22 @@
     },
     {
       "id": "ci.authorization-boundaries",
-      "invariant": "Deployment classification and every inventoried admin/security boundary deny invalid or unauthorized access.",
+      "invariant": "Deployment classification and every inventoried admin/security boundary deny invalid or unauthorized access, while auth validation, production misuse, and session preflight retain canonical structured results.",
       "cadence": "merge-required",
       "blocking": true,
       "command": "npm run test:auth-env-hardening",
       "packageScript": "test:auth-env-hardening",
-      "packageClosure": { "expectedScriptCount": 1, "expectedSha256": "d2a92b4f2ee3191abb9d4fc30f5d8497b9da0b1c59dfc1d6333101fb9d398e84" },
+      "packageClosure": { "expectedScriptCount": 2, "expectedSha256": "dc728be72c7ab3fab844c7072038f4316fdd9c7b88a7623917c01b7421d089a9" },
       "runner": "ts-node",
       "requiredSources": [
         "lib/auth-env.ts",
         "lib/auth-fixture-network.ts",
         "lib/auth.ts",
         "scripts/ci-auth-fixture.json",
+        "scripts/ci-auth-fixture-result-contract.cjs",
+        "scripts/ci-auth-fixture-result-contract.d.cts",
         "scripts/ci-auth-fixture.ts",
+        "scripts/test-ci-auth-fixture-results.ts",
         "scripts/test-auth-env-hardening.ts",
         "scripts/test-admin-authorization.ts"
       ],

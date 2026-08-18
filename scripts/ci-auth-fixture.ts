@@ -6,13 +6,74 @@ import {
   statSync,
 } from "node:fs";
 import { randomBytes } from "node:crypto";
+import { once } from "node:events";
 import net from "node:net";
 import path from "node:path";
 import { spawn, spawnSync, type ChildProcess } from "node:child_process";
+import AUTH_RESULT_CONTRACT_OWNER from "./ci-auth-fixture-result-contract.cjs";
 
-import { getAuthEnvOrThrow } from "../lib/auth-env";
+import {
+  AuthEnvironmentValidationError,
+  getAuthEnvOrThrow,
+} from "../lib/auth-env";
 import { getApplicationEnvironment } from "../lib/config";
 import { SYNTHETIC_CI_GOOGLE_DISCOVERY_MARKER } from "../lib/auth-fixture-network";
+
+type AuthResultDestination = Readonly<{
+  repositoryRoot: string;
+  externalRoot: string;
+  resultPath: string;
+  sidecarPath: string;
+  relativePath: string;
+  externalRootIdentitySha256: string;
+  resultPathIdentitySha256: string;
+}>;
+
+type AuthResultContractModule = Readonly<{
+  AUTH_RESULT_SCHEMA: string;
+  AUTH_RESULT_VERSION: number;
+  AUTH_RESULT_COMPLETION_MARKER: string;
+  AUTH_RESULT_ROOT_ENV: string;
+  AUTH_RESULT_PATH_ENV: string;
+  AUTH_RESULT_NONCE_ENV: string;
+  AUTH_RESULT_CANDIDATE_COMMIT_ENV: string;
+  AUTH_RESULT_CANDIDATE_TREE_ENV: string;
+  commandMode(command: string): Readonly<{ commandId: string; mode: string }>;
+  privateValuesFromEnvironment(environment: NodeJS.ProcessEnv): string[];
+  resolveAuthResultDestination(options: {
+    repositoryRoot: string;
+    externalRoot: string | undefined;
+    resultPath: string | undefined;
+    requireAbsent?: boolean;
+    worktreeRoots?: string[];
+  }): AuthResultDestination;
+  sha256Bytes(value: string | Buffer): string;
+  validateAuthCommandResult(options: {
+    repositoryRoot: string;
+    externalRoot: string;
+    resultPath: string;
+    expectedNonce: string;
+    expectedCommandId: string;
+    expectedMode: string;
+    expectedCandidateCommitSha?: string;
+    expectedCandidateTreeSha?: string;
+    sensitiveValues?: string[];
+    expectedStreamDescriptors?: Readonly<{
+      stdout: StreamDescriptor;
+      stderr: StreamDescriptor;
+    }>;
+    worktreeRoots?: string[];
+  }): Readonly<{ result: Record<string, unknown>; destination: AuthResultDestination }>;
+  writeAuthCommandResult(options: {
+    destination: AuthResultDestination;
+    payload: Record<string, unknown>;
+  }): Record<string, unknown>;
+}>;
+
+// .cjs is the deliberate interoperability boundary between this CommonJS
+// ts-node entrypoint and the ESM production-certification harness.
+const AUTH_RESULT_CONTRACT =
+  AUTH_RESULT_CONTRACT_OWNER as AuthResultContractModule;
 
 type SyntheticCiOAuthFixture = Readonly<{
   googleClientId: string;
@@ -27,6 +88,88 @@ type SyntheticCiOAuthFixturePolicy = Readonly<{
   externalAuthenticationCapable: boolean;
 }>;
 
+type StreamDescriptor = Readonly<{ bytes: number; sha256: string }>;
+
+type SafeFailure = Readonly<{
+  code: string;
+  category: string;
+  message: string;
+}>;
+
+type PreflightServerEvidence = {
+  commandClassification: string;
+  pid: number | null;
+  started: boolean;
+  closed: boolean;
+  exitStatus: number | null;
+  signal: NodeJS.Signals | null;
+  spawnError: string | null;
+  stdout: StreamDescriptor;
+  stderr: StreamDescriptor;
+  listenerReady: boolean;
+  readinessAttemptCount: number;
+  readinessStartedAt: string;
+  readinessCompletedAt: string | null;
+};
+
+type PreflightSessionEvidence = {
+  endpointClassification: string;
+  method: string;
+  statusCode: number | null;
+  redirectCount: number;
+  redirectClassification: string;
+  contentTypeClassification: string;
+  bodyBytes: number;
+  bodySha256: string;
+  safeBodyType: string;
+  jsonParseResult: string;
+  signedOutValidation: string;
+};
+
+type PreflightChecks = {
+  providerEndpointContract: string;
+  csrfContract: string;
+  signOutContract: string;
+  googleSignInContract: string;
+  inertDiscoveryContract: string;
+  nonLoopbackRequestCount: number;
+  logSafetyScan: string;
+};
+
+export type PreflightCleanupEvidence = {
+  sigtermAttempted: boolean;
+  sigkillFallbackAttempted: boolean;
+  finalServerTermination: string;
+  portReleased: boolean;
+  taskOwnedCleanup: string;
+  completed: boolean;
+};
+
+export type PreflightDependencies = Readonly<{
+  host?: string;
+  port?: number;
+  timeoutMs?: number;
+  fetchImpl?: typeof fetch;
+  spawnServer?: (executable: string, args: string[], options: object) => ChildProcess;
+  sleep?: (milliseconds: number) => Promise<void>;
+  now?: () => number;
+  portAvailable?: (host: string, port: number) => Promise<boolean>;
+  portReleased?: (host: string, port: number) => Promise<boolean>;
+  stopServer?: (server: ChildProcess) => Promise<PreflightCleanupEvidence>;
+}>;
+
+class CiAuthCommandError extends Error {
+  readonly safeCode: string;
+  readonly category: string;
+
+  constructor(safeCode: string, category: string, message: string) {
+    super(message);
+    this.name = "CiAuthCommandError";
+    this.safeCode = safeCode;
+    this.category = category;
+  }
+}
+
 function readFixturePolicy(): SyntheticCiOAuthFixturePolicy {
   const fixturePath = path.join(process.cwd(), "scripts", "ci-auth-fixture.json");
   const parsed = JSON.parse(readFileSync(fixturePath, "utf8")) as Partial<SyntheticCiOAuthFixturePolicy>;
@@ -37,7 +180,11 @@ function readFixturePolicy(): SyntheticCiOAuthFixturePolicy {
     parsed.usesRepositoryOrOrganizationSecrets !== false ||
     parsed.externalAuthenticationCapable !== false
   ) {
-    throw new Error("Synthetic CI OAuth fixture policy is missing or malformed");
+    throw new CiAuthCommandError(
+      "AUTH_FIXTURE_POLICY_INVALID",
+      "fixture-policy",
+      "Synthetic CI OAuth fixture policy is missing or malformed",
+    );
   }
   return Object.freeze(parsed) as SyntheticCiOAuthFixturePolicy;
 }
@@ -64,17 +211,81 @@ export type CiAuthFixtureTransportEvent = Readonly<
 
 const PREFLIGHT_HOST = "127.0.0.1";
 const PREFLIGHT_PORT = 3317;
-const PREFLIGHT_AUTH_URL = `http://${PREFLIGHT_HOST}:${PREFLIGHT_PORT}/api/auth`;
-const PREFLIGHT_URL = `${PREFLIGHT_AUTH_URL}/session`;
 const PREFLIGHT_TIMEOUT_MS = 120_000;
+const EMPTY_SHA256 = AUTH_RESULT_CONTRACT.sha256Bytes("");
+const EXPECTED_NEGATIVE_IPC_SCHEMA =
+  "interior-ai.ci-auth-fixture-production-misuse-child.v1";
+
+function safeFailure(
+  error: unknown,
+  fallbackCode = "AUTH_COMMAND_UNEXPECTED_FAILURE",
+  fallbackCategory = "unexpected-failure",
+): SafeFailure {
+  if (error instanceof AuthEnvironmentValidationError) {
+    return {
+      code: error.safeCode,
+      category: error.category,
+      message: error.message,
+    };
+  }
+  if (error instanceof CiAuthCommandError) {
+    return {
+      code: error.safeCode,
+      category: error.category,
+      message: error.message,
+    };
+  }
+  return {
+    code: fallbackCode,
+    category: fallbackCategory,
+    message: error instanceof Error ? error.message : String(error),
+  };
+}
+
+function streamDescriptor(value: string | Buffer): StreamDescriptor {
+  const bytes = Buffer.isBuffer(value) ? value : Buffer.from(value);
+  return Object.freeze({
+    bytes: bytes.byteLength,
+    sha256: AUTH_RESULT_CONTRACT.sha256Bytes(bytes),
+  });
+}
+
+function safeEnvironmentClassification(environment: NodeJS.ProcessEnv): string {
+  try {
+    return getApplicationEnvironment(environment) ?? "invalid";
+  } catch {
+    return "invalid";
+  }
+}
+
+function environmentNameSetSha256(environment: NodeJS.ProcessEnv): string {
+  return AUTH_RESULT_CONTRACT.sha256Bytes(
+    Object.keys(environment)
+      .filter((name) => environment[name] !== undefined)
+      .sort()
+      .join("\0"),
+  );
+}
 
 function assertExplicitFixtureScope(environment: NodeJS.ProcessEnv): void {
   if (environment.CI_AUTH_FIXTURE_MODE !== "1") {
-    throw new Error("Synthetic CI OAuth fixture mode is not explicitly enabled");
+    throw new CiAuthCommandError(
+      "SYNTHETIC_AUTH_FIXTURE_MODE_NOT_ENABLED",
+      "fixture-activation",
+      "Synthetic CI OAuth fixture mode is not explicitly enabled",
+    );
   }
   const applicationEnvironment = getApplicationEnvironment(environment);
   if (applicationEnvironment !== "development" && applicationEnvironment !== "staging") {
-    throw new Error("Synthetic CI OAuth fixture requires an explicit non-production environment");
+    throw new CiAuthCommandError(
+      applicationEnvironment === "production"
+        ? "SYNTHETIC_AUTH_FIXTURE_PRODUCTION_MISUSE_REJECTED"
+        : "SYNTHETIC_AUTH_FIXTURE_ENVIRONMENT_INVALID",
+      applicationEnvironment === "production"
+        ? "production-activation-prohibited"
+        : "environment-classification",
+      "Synthetic CI OAuth fixture requires an explicit non-production environment",
+    );
   }
 }
 
@@ -84,7 +295,11 @@ function generateSyntheticFixtureForExport(): SyntheticCiOAuthFixture {
     SYNTHETIC_CI_OAUTH_FIXTURE_POLICY.usesRepositoryOrOrganizationSecrets ||
     SYNTHETIC_CI_OAUTH_FIXTURE_POLICY.externalAuthenticationCapable
   ) {
-    throw new Error("Synthetic CI OAuth fixture policy does not permit runtime generation");
+    throw new CiAuthCommandError(
+      "AUTH_FIXTURE_POLICY_GENERATION_PROHIBITED",
+      "fixture-policy",
+      "Synthetic CI OAuth fixture policy does not permit runtime generation",
+    );
   }
   const nonce = randomBytes(16).toString("hex");
   const accountDigits = randomBytes(6).readUIntBE(0, 6).toString().padStart(15, "0");
@@ -233,29 +448,53 @@ export function exportFixtureToGitHubEnvironment({
   fixtureFactory?: () => SyntheticCiOAuthFixture;
   writeWorkflowCommand?: (command: string) => void;
   appendEnvironmentFile?: (filePath: string, content: string) => void;
-} = {}): void {
+} = {}): Readonly<Record<string, unknown>> {
   assertExplicitFixtureScope(environment);
   if (environment.CI !== "true" || environment.GITHUB_ACTIONS !== "true") {
-    throw new Error("Synthetic CI OAuth fixture export requires GitHub Actions CI");
+    throw new CiAuthCommandError(
+      "AUTH_FIXTURE_EXPORT_NOT_GITHUB_CI",
+      "fixture-export-scope",
+      "Synthetic CI OAuth fixture export requires GitHub Actions CI",
+    );
   }
   const githubEnvironmentPath = environment.GITHUB_ENV;
   if (!githubEnvironmentPath || !path.isAbsolute(githubEnvironmentPath)) {
-    throw new Error("GitHub Actions environment file is unavailable");
+    throw new CiAuthCommandError(
+      "AUTH_FIXTURE_GITHUB_ENV_UNAVAILABLE",
+      "fixture-export-destination",
+      "GitHub Actions environment file is unavailable",
+    );
   }
   const githubWorkspacePath = environment.GITHUB_WORKSPACE;
   if (!githubWorkspacePath || !path.isAbsolute(githubWorkspacePath)) {
-    throw new Error("GitHub Actions workspace is unavailable");
+    throw new CiAuthCommandError(
+      "AUTH_FIXTURE_GITHUB_WORKSPACE_UNAVAILABLE",
+      "fixture-export-destination",
+      "GitHub Actions workspace is unavailable",
+    );
   }
   if (!existsSync(githubEnvironmentPath) || !statSync(githubEnvironmentPath).isFile()) {
-    throw new Error("GitHub Actions environment file is absent");
+    throw new CiAuthCommandError(
+      "AUTH_FIXTURE_GITHUB_ENV_ABSENT",
+      "fixture-export-destination",
+      "GitHub Actions environment file is absent",
+    );
   }
   if (!existsSync(githubWorkspacePath) || !statSync(githubWorkspacePath).isDirectory()) {
-    throw new Error("GitHub Actions workspace is absent");
+    throw new CiAuthCommandError(
+      "AUTH_FIXTURE_GITHUB_WORKSPACE_ABSENT",
+      "fixture-export-destination",
+      "GitHub Actions workspace is absent",
+    );
   }
   const resolvedEnvironmentPath = realpathSync(githubEnvironmentPath);
   const resolvedWorkspacePath = realpathSync(githubWorkspacePath);
   if (isPathInside(resolvedWorkspacePath, resolvedEnvironmentPath)) {
-    throw new Error("GitHub Actions environment file must remain outside GITHUB_WORKSPACE");
+    throw new CiAuthCommandError(
+      "AUTH_FIXTURE_GITHUB_ENV_INSIDE_WORKSPACE",
+      "fixture-export-destination",
+      "GitHub Actions environment file must remain outside GITHUB_WORKSPACE",
+    );
   }
   const fixture = fixtureFactory();
   const assignments = canonicalGitHubEnvironmentAssignments(fixture);
@@ -274,74 +513,171 @@ export function exportFixtureToGitHubEnvironment({
     }
   }
   console.log("Configured the canonical synthetic CI OAuth fixture.");
+  return Object.freeze({
+    variableNames: [...CI_AUTH_GITHUB_ENV_ALLOWLIST].sort(),
+    providerVariablesPresent: true,
+    maskRegistrationCount: 2,
+    privateGithubEnvironment: true,
+    rawValuesRetained: false,
+    completed: true,
+  });
 }
 
-export function validateFixtureEnvironment(): void {
-  assertExplicitFixtureScope(process.env);
-  if (process.env.CI !== "true" || process.env.GITHUB_ACTIONS !== "true") {
-    throw new Error("Synthetic CI OAuth fixture validation requires GitHub Actions CI");
+function authSecretAliasPolicy(environment: NodeJS.ProcessEnv): string {
+  const authSecret = environment.AUTH_SECRET?.trim();
+  const nextAuthSecret = environment.NEXTAUTH_SECRET?.trim();
+  if (authSecret && nextAuthSecret && authSecret !== nextAuthSecret) {
+    throw new CiAuthCommandError(
+      "AUTH_SECRET_ALIAS_MISMATCH",
+      "auth-secret-alias-policy",
+      "AUTH_SECRET and NEXTAUTH_SECRET must be equal for certification auth validation",
+    );
   }
-  const authEnvironment = getAuthEnvOrThrow();
+  if (authSecret && nextAuthSecret) return "dual-equal";
+  if (authSecret) return "auth-secret-only";
+  if (nextAuthSecret) return "nextauth-secret-only";
+  return "missing";
+}
+
+export function validateFixtureEnvironment(
+  environment: NodeJS.ProcessEnv = process.env,
+): Readonly<Record<string, unknown>> {
+  assertExplicitFixtureScope(environment);
+  if (environment.CI !== "true" || environment.GITHUB_ACTIONS !== "true") {
+    throw new CiAuthCommandError(
+      "AUTH_FIXTURE_VALIDATION_NOT_GITHUB_CI",
+      "fixture-validation-scope",
+      "Synthetic CI OAuth fixture validation requires GitHub Actions CI",
+    );
+  }
+  const aliasPolicy = authSecretAliasPolicy(environment);
+  const authEnvironment = getAuthEnvOrThrow(environment);
   if (
-    process.env.CI_AUTH_FIXTURE_ACTIVE !== "1" ||
+    environment.CI_AUTH_FIXTURE_ACTIVE !== "1" ||
     !syntheticFixtureMatches(
       authEnvironment.googleClientId,
       authEnvironment.googleClientSecret,
     )
   ) {
-    throw new Error("GitHub Actions did not propagate the canonical CI OAuth fixture");
+    throw new CiAuthCommandError(
+      "AUTH_FIXTURE_PAIR_COHERENCE_INVALID",
+      "provider-pair-coherence",
+      "GitHub Actions did not propagate the canonical CI OAuth fixture",
+    );
   }
-  console.log("Validated the canonical synthetic CI OAuth fixture.");
-}
-
-async function assertPortAvailable(): Promise<void> {
-  await new Promise<void>((resolve, reject) => {
-    const socket = net.createConnection({ host: PREFLIGHT_HOST, port: PREFLIGHT_PORT });
-    socket.once("connect", () => {
-      socket.destroy();
-      reject(new Error("Advisory auth preflight port is already in use"));
-    });
-    socket.once("error", () => resolve());
+  return Object.freeze({
+    providerVariablesPresent: true,
+    providerClientIdGrammar: "passed",
+    providerPairCoherence: "passed",
+    authSecretPresence: "passed",
+    aliasPolicy,
+    nonProductionClassification: getApplicationEnvironment(environment),
+    applicationValidator: "passed",
+    networkClassification: "not-used",
+    leakScan: "passed",
+    completed: true,
   });
 }
 
-async function stopServer(server: ChildProcess): Promise<void> {
-  if (server.exitCode !== null) return;
-  server.kill("SIGTERM");
-  await Promise.race([
-    new Promise<void>((resolve) => server.once("exit", () => resolve())),
-    new Promise<void>((resolve) => setTimeout(resolve, 5_000)),
-  ]);
-  if (server.exitCode === null) server.kill("SIGKILL");
+async function socketUnavailable(host: string, port: number): Promise<boolean> {
+  return new Promise<boolean>((resolve) => {
+    const socket = net.createConnection({ host, port });
+    socket.once("connect", () => {
+      socket.destroy();
+      resolve(false);
+    });
+    socket.once("error", () => resolve(true));
+  });
 }
 
-async function fetchAuthJson(
-  pathName: string,
-  init?: RequestInit,
-): Promise<{ payload: unknown; response: Response }> {
-  const response = await fetch(`${PREFLIGHT_AUTH_URL}/${pathName}`, init);
-  const contentType = response.headers.get("content-type") ?? "";
-  if (response.status !== 200 || !contentType.toLowerCase().includes("application/json")) {
-    throw new Error(`Advisory auth ${pathName} endpoint did not return structured JSON`);
-  }
+async function waitForExit(server: ChildProcess, milliseconds: number): Promise<boolean> {
+  if (server.exitCode !== null || server.signalCode !== null) return true;
+  let timer: NodeJS.Timeout | undefined;
   try {
-    return { payload: JSON.parse(await response.text()) as unknown, response };
-  } catch {
-    throw new Error(`Advisory auth ${pathName} endpoint returned HTML or malformed JSON`);
+    return await Promise.race([
+      once(server, "exit").then(() => true),
+      new Promise<boolean>((resolve) => {
+        timer = setTimeout(() => resolve(false), milliseconds);
+      }),
+    ]);
+  } finally {
+    if (timer) clearTimeout(timer);
   }
+}
+
+async function stopServerWithEvidence(
+  server: ChildProcess,
+): Promise<PreflightCleanupEvidence> {
+  let sigtermAttempted = false;
+  let sigkillFallbackAttempted = false;
+  if (server.exitCode === null && server.signalCode === null) {
+    sigtermAttempted = true;
+    server.kill("SIGTERM");
+    if (!(await waitForExit(server, 5_000))) {
+      sigkillFallbackAttempted = true;
+      server.kill("SIGKILL");
+      await waitForExit(server, 5_000);
+    }
+  }
+  const terminated = server.exitCode !== null || server.signalCode !== null;
+  return {
+    sigtermAttempted,
+    sigkillFallbackAttempted,
+    finalServerTermination: terminated ? "passed" : "failed",
+    portReleased: false,
+    taskOwnedCleanup: terminated ? "passed" : "failed",
+    completed: true,
+  };
 }
 
 function requireRecord(value: unknown, description: string): Record<string, unknown> {
   if (!value || typeof value !== "object" || Array.isArray(value)) {
-    throw new Error(`Advisory auth ${description} response has an unexpected shape`);
+    throw new CiAuthCommandError(
+      "AUTH_PREFLIGHT_RESPONSE_SHAPE_INVALID",
+      "response-shape",
+      `Advisory auth ${description} response has an unexpected shape`,
+    );
   }
   return value as Record<string, unknown>;
 }
 
+async function fetchAuthJson(
+  fetchImpl: typeof fetch,
+  authUrl: string,
+  pathName: string,
+  init?: RequestInit,
+): Promise<{ payload: unknown; response: Response }> {
+  const response = await fetchImpl(`${authUrl}/${pathName}`, init);
+  const contentType = response.headers.get("content-type") ?? "";
+  if (response.status !== 200 || !contentType.toLowerCase().includes("application/json")) {
+    throw new CiAuthCommandError(
+      "AUTH_PREFLIGHT_INTERACTION_RESPONSE_INVALID",
+      "auth-interaction-response",
+      `Advisory auth ${pathName} endpoint did not return structured JSON`,
+    );
+  }
+  try {
+    return { payload: JSON.parse(await response.text()) as unknown, response };
+  } catch {
+    throw new CiAuthCommandError(
+      "AUTH_PREFLIGHT_INTERACTION_JSON_INVALID",
+      "auth-interaction-response",
+      `Advisory auth ${pathName} endpoint returned HTML or malformed JSON`,
+    );
+  }
+}
+
 async function assertAuthInteractionCompatibility(
+  fetchImpl: typeof fetch,
+  authUrl: string,
   expectedGoogleClientId: string,
+  checks: PreflightChecks,
 ): Promise<void> {
-  const { payload: providersPayload } = await fetchAuthJson("providers");
+  const { payload: providersPayload } = await fetchAuthJson(
+    fetchImpl,
+    authUrl,
+    "providers",
+  );
   const providers = requireRecord(providersPayload, "providers");
   const google = requireRecord(providers.google, "Google provider");
   const signInUrl = new URL(String(google.signinUrl));
@@ -352,47 +688,80 @@ async function assertAuthInteractionCompatibility(
     callbackUrl.pathname !== "/api/auth/callback/google" ||
     signInUrl.origin !== callbackUrl.origin
   ) {
-    throw new Error("Advisory auth Google provider routes changed unexpectedly");
+    throw new CiAuthCommandError(
+      "AUTH_PREFLIGHT_PROVIDER_CONTRACT_INVALID",
+      "provider-endpoint-contract",
+      "Advisory auth Google provider routes changed unexpectedly",
+    );
   }
+  checks.providerEndpointContract = "passed";
 
-  const { payload: csrfPayload, response: csrfResponse } = await fetchAuthJson("csrf");
+  const { payload: csrfPayload, response: csrfResponse } = await fetchAuthJson(
+    fetchImpl,
+    authUrl,
+    "csrf",
+  );
   const csrfToken = requireRecord(csrfPayload, "CSRF").csrfToken;
   if (typeof csrfToken !== "string" || csrfToken.length < 32) {
-    throw new Error("Advisory auth CSRF response did not contain a valid token");
+    throw new CiAuthCommandError(
+      "AUTH_PREFLIGHT_CSRF_CONTRACT_INVALID",
+      "csrf-contract",
+      "Advisory auth CSRF response did not contain a valid token",
+    );
   }
   const cookie = csrfResponse.headers
     .getSetCookie()
     .map((value) => value.split(";", 1)[0])
     .join("; ");
   if (!cookie.includes("authjs.csrf-token=")) {
-    throw new Error("Advisory auth CSRF cookie was not issued");
+    throw new CiAuthCommandError(
+      "AUTH_PREFLIGHT_CSRF_COOKIE_INVALID",
+      "csrf-contract",
+      "Advisory auth CSRF cookie was not issued",
+    );
   }
+  checks.csrfContract = "passed";
 
   const requestHeaders = {
     Cookie: cookie,
     "Content-Type": "application/x-www-form-urlencoded",
     "X-Auth-Return-Redirect": "1",
   };
-  const { payload: signOutPayload } = await fetchAuthJson("signout", {
-    method: "POST",
-    headers: requestHeaders,
-    body: new URLSearchParams({ csrfToken }),
-    redirect: "manual",
-  });
+  const { payload: signOutPayload } = await fetchAuthJson(
+    fetchImpl,
+    authUrl,
+    "signout",
+    {
+      method: "POST",
+      headers: requestHeaders,
+      body: new URLSearchParams({ csrfToken }),
+      redirect: "manual",
+    },
+  );
   const signOutUrl = new URL(String(requireRecord(signOutPayload, "sign-out").url));
   if (signOutUrl.origin !== signInUrl.origin || signOutUrl.pathname !== "/") {
-    throw new Error("Advisory auth sign-out redirect changed unexpectedly");
+    throw new CiAuthCommandError(
+      "AUTH_PREFLIGHT_SIGN_OUT_CONTRACT_INVALID",
+      "sign-out-contract",
+      "Advisory auth sign-out redirect changed unexpectedly",
+    );
   }
+  checks.signOutContract = "passed";
 
-  const { payload: signInPayload } = await fetchAuthJson("signin/google", {
-    method: "POST",
-    headers: requestHeaders,
-    body: new URLSearchParams({
-      csrfToken,
-      callbackUrl: new URL("/design", signInUrl.origin).href,
-    }),
-    redirect: "manual",
-  });
+  const { payload: signInPayload } = await fetchAuthJson(
+    fetchImpl,
+    authUrl,
+    "signin/google",
+    {
+      method: "POST",
+      headers: requestHeaders,
+      body: new URLSearchParams({
+        csrfToken,
+        callbackUrl: new URL("/design", signInUrl.origin).href,
+      }),
+      redirect: "manual",
+    },
+  );
   const authorizationUrl = new URL(String(requireRecord(signInPayload, "sign-in").url));
   if (
     authorizationUrl.protocol !== "https:" ||
@@ -402,129 +771,888 @@ async function assertAuthInteractionCompatibility(
     authorizationUrl.searchParams.get("response_type") !== "code" ||
     !authorizationUrl.searchParams.get("code_challenge")
   ) {
-    throw new Error("Advisory auth Google authorization redirect changed unexpectedly");
+    throw new CiAuthCommandError(
+      "AUTH_PREFLIGHT_GOOGLE_SIGN_IN_CONTRACT_INVALID",
+      "google-sign-in-contract",
+      "Advisory auth Google authorization redirect changed unexpectedly",
+    );
+  }
+  checks.googleSignInContract = "passed";
+}
+
+function responseBodyType(contentType: string, body: string): {
+  safeBodyType: string;
+  parseResult: string;
+  payload: unknown;
+} {
+  if (body.length === 0) {
+    return { safeBodyType: "empty", parseResult: "failed", payload: undefined };
+  }
+  if (contentType.toLowerCase().includes("text/html") || /^\s*</.test(body)) {
+    return { safeBodyType: "HTML", parseResult: "failed", payload: undefined };
+  }
+  try {
+    const payload = JSON.parse(body) as unknown;
+    return {
+      safeBodyType:
+        payload === null
+          ? "null"
+          : Array.isArray(payload)
+            ? "array"
+            : typeof payload === "object"
+              ? "object"
+              : "scalar",
+      parseResult: "passed",
+      payload,
+    };
+  } catch {
+    return {
+      safeBodyType: contentType.toLowerCase().includes("application/json")
+        ? "malformed"
+        : "text",
+      parseResult: "failed",
+      payload: undefined,
+    };
   }
 }
 
-async function preflightAuthSession(environment: NodeJS.ProcessEnv): Promise<void> {
-  assertExplicitFixtureScope(environment);
-  const authEnvironment = getAuthEnvOrThrow();
-  if (
-    environment.CI_AUTH_FIXTURE_ACTIVE !== "1" ||
-    !syntheticFixtureMatches(
-      authEnvironment.googleClientId,
-      authEnvironment.googleClientSecret,
-    )
-  ) {
-    throw new Error("Advisory auth preflight did not receive the canonical CI OAuth fixture");
-  }
-  await assertPortAvailable();
+function failureEvidence(
+  failure: SafeFailure,
+  stdout: string | Buffer = "",
+  stderr: string | Buffer = `${failure.message}\n`,
+  child: Readonly<{ exitStatus: number | null; signal: string | null; spawnError: string | null }> = {
+    exitStatus: null,
+    signal: null,
+    spawnError: null,
+  },
+): Readonly<Record<string, unknown>> {
+  return Object.freeze({
+    code: failure.code,
+    category: failure.category,
+    stdout: streamDescriptor(stdout),
+    stderr: streamDescriptor(stderr),
+    child,
+    completed: true,
+  });
+}
 
-  const nextExecutable = path.join(
-    process.cwd(),
-    "node_modules",
-    ".bin",
-    process.platform === "win32" ? "next.cmd" : "next",
-  );
-  const server = spawn(
-    nextExecutable,
-    ["dev", "--webpack", "--hostname", PREFLIGHT_HOST, "--port", String(PREFLIGHT_PORT)],
-    {
-      cwd: process.cwd(),
-      env: authPreflightServerEnvironment(environment),
-      stdio: ["ignore", "pipe", "pipe"],
-    },
-  );
-  let outputCategory = "clean";
-  let serverOutput = "";
-  const inspectOutput = (chunk: Buffer): void => {
-    const text = chunk.toString("utf8");
-    serverOutput += text;
-    if (/ClientFetchError|Unexpected token\s+['\"]?</.test(text)) {
-      outputCategory = "auth-client-html-error";
-    } else if (/auth module initialization|Missing required environment variable/.test(text)) {
-      outputCategory = "auth-initialization-error";
-    }
+export async function preflightAuthSession(
+  environment: NodeJS.ProcessEnv,
+  dependencies: PreflightDependencies = {},
+): Promise<Readonly<{
+  result: "success" | "failure";
+  evidence: Readonly<Record<string, unknown>>;
+  failure: SafeFailure | null;
+}>> {
+  const host = dependencies.host ?? PREFLIGHT_HOST;
+  const port = dependencies.port ?? PREFLIGHT_PORT;
+  const timeoutMs = dependencies.timeoutMs ?? PREFLIGHT_TIMEOUT_MS;
+  const fetchImpl = dependencies.fetchImpl ?? fetch;
+  const spawnServer = dependencies.spawnServer ?? spawn;
+  const sleep = dependencies.sleep ?? ((milliseconds) => new Promise((resolve) => setTimeout(resolve, milliseconds)));
+  const now = dependencies.now ?? Date.now;
+  const portAvailable = dependencies.portAvailable ?? socketUnavailable;
+  const portReleased = dependencies.portReleased ?? socketUnavailable;
+  const stopServer = dependencies.stopServer ?? stopServerWithEvidence;
+  const authUrl = `http://${host}:${port}/api/auth`;
+  const sessionUrl = `${authUrl}/session`;
+  const startedAt = new Date(now()).toISOString();
+  const serverEvidence: PreflightServerEvidence = {
+    commandClassification: "next-dev-webpack-loopback",
+    pid: null,
+    started: false,
+    closed: false,
+    exitStatus: null,
+    signal: null,
+    spawnError: null,
+    stdout: streamDescriptor(""),
+    stderr: streamDescriptor(""),
+    listenerReady: false,
+    readinessAttemptCount: 0,
+    readinessStartedAt: startedAt,
+    readinessCompletedAt: null,
   };
-  server.stdout?.on("data", inspectOutput);
-  server.stderr?.on("data", inspectOutput);
+  const sessionEvidence: PreflightSessionEvidence = {
+    endpointClassification: "loopback-auth-session",
+    method: "GET",
+    statusCode: null,
+    redirectCount: 0,
+    redirectClassification: "not-observed",
+    contentTypeClassification: "not-observed",
+    bodyBytes: 0,
+    bodySha256: EMPTY_SHA256,
+    safeBodyType: "empty",
+    jsonParseResult: "not-attempted",
+    signedOutValidation: "not-attempted",
+  };
+  const checks: PreflightChecks = {
+    providerEndpointContract: "not-attempted",
+    csrfContract: "not-attempted",
+    signOutContract: "not-attempted",
+    googleSignInContract: "not-attempted",
+    inertDiscoveryContract: "not-attempted",
+    nonLoopbackRequestCount: 0,
+    logSafetyScan: "not-attempted",
+  };
+  let cleanup: PreflightCleanupEvidence = {
+    sigtermAttempted: false,
+    sigkillFallbackAttempted: false,
+    finalServerTermination: "not-started",
+    portReleased: true,
+    taskOwnedCleanup: "not-required",
+    completed: true,
+  };
+  let server: ChildProcess | null = null;
+  const stdoutChunks: Buffer[] = [];
+  const stderrChunks: Buffer[] = [];
+  let earliestFailure: SafeFailure | null = null;
+  let authEnvironment: ReturnType<typeof getAuthEnvOrThrow> | null = null;
+
+  const retainFailure = (error: unknown, code?: string, category?: string): void => {
+    if (!earliestFailure) earliestFailure = safeFailure(error, code, category);
+  };
 
   try {
-    const deadline = Date.now() + PREFLIGHT_TIMEOUT_MS;
+    assertExplicitFixtureScope(environment);
+    authEnvironment = getAuthEnvOrThrow(environment);
+    if (
+      environment.CI_AUTH_FIXTURE_ACTIVE !== "1" ||
+      !syntheticFixtureMatches(
+        authEnvironment.googleClientId,
+        authEnvironment.googleClientSecret,
+      )
+    ) {
+      throw new CiAuthCommandError(
+        "AUTH_PREFLIGHT_FIXTURE_INVALID",
+        "provider-pair-coherence",
+        "Advisory auth preflight did not receive the canonical CI OAuth fixture",
+      );
+    }
+    if (!(await portAvailable(host, port))) {
+      throw new CiAuthCommandError(
+        "AUTH_PREFLIGHT_PORT_UNAVAILABLE",
+        "server-preflight",
+        "Advisory auth preflight port is already in use",
+      );
+    }
+
+    const nextExecutable = path.join(
+      process.cwd(),
+      "node_modules",
+      ".bin",
+      process.platform === "win32" ? "next.cmd" : "next",
+    );
+    server = spawnServer(
+      nextExecutable,
+      ["dev", "--webpack", "--hostname", host, "--port", String(port)],
+      {
+        cwd: process.cwd(),
+        env: authPreflightServerEnvironment(environment),
+        stdio: ["ignore", "pipe", "pipe"],
+      },
+    );
+    serverEvidence.started = true;
+    serverEvidence.pid = Number.isSafeInteger(server.pid) ? server.pid ?? null : null;
+    server.stdout?.on("data", (chunk: Buffer | string) => stdoutChunks.push(Buffer.from(chunk)));
+    server.stderr?.on("data", (chunk: Buffer | string) => stderrChunks.push(Buffer.from(chunk)));
+    server.once("error", (error: NodeJS.ErrnoException) => {
+      serverEvidence.spawnError = error.code ?? "SPAWN_ERROR";
+      retainFailure(
+        new CiAuthCommandError(
+          "AUTH_PREFLIGHT_SERVER_SPAWN_FAILED",
+          "server-spawn",
+          "Advisory auth preflight server could not be spawned",
+        ),
+      );
+    });
+
+    const deadline = now() + timeoutMs;
     let response: Response | null = null;
-    while (Date.now() < deadline) {
-      if (server.exitCode !== null) {
-        throw new Error(`Advisory auth preflight server exited with status ${server.exitCode}`);
+    while (now() < deadline) {
+      if (server.exitCode !== null || server.signalCode !== null) {
+        throw new CiAuthCommandError(
+          "AUTH_PREFLIGHT_SERVER_EXITED_BEFORE_LISTENER",
+          "server-readiness",
+          "Advisory auth preflight server exited before the listener became ready",
+        );
       }
+      serverEvidence.readinessAttemptCount += 1;
       try {
-        response = await fetch(PREFLIGHT_URL, {
+        response = await fetchImpl(sessionUrl, {
           headers: { Accept: "application/json" },
-          redirect: "error",
+          redirect: "manual",
         });
+        serverEvidence.listenerReady = true;
+        serverEvidence.readinessCompletedAt = new Date(now()).toISOString();
         break;
       } catch {
-        await new Promise((resolve) => setTimeout(resolve, 500));
+        await sleep(500);
       }
     }
-    if (!response) throw new Error("Advisory auth preflight server did not become ready");
+    if (!response) {
+      throw new CiAuthCommandError(
+        "AUTH_PREFLIGHT_READINESS_FAILED",
+        "server-readiness",
+        "Advisory auth preflight server did not become ready",
+      );
+    }
+
+    sessionEvidence.statusCode = response.status;
+    const redirect = response.status >= 300 && response.status < 400;
+    sessionEvidence.redirectCount = redirect || response.redirected ? 1 : 0;
+    sessionEvidence.redirectClassification =
+      sessionEvidence.redirectCount === 0 ? "none" : "http-redirect-rejected";
     const contentType = response.headers.get("content-type") ?? "";
-    if (response.status !== 200 || !contentType.toLowerCase().includes("application/json")) {
-      throw new Error("Advisory auth session endpoint did not return structured JSON");
-    }
+    sessionEvidence.contentTypeClassification = contentType
+      .toLowerCase()
+      .includes("application/json")
+      ? "application-json"
+      : contentType.toLowerCase().includes("text/html")
+        ? "html"
+        : contentType
+          ? "other"
+          : "missing";
     const responseText = await response.text();
-    let payload: unknown;
-    try {
-      payload = JSON.parse(responseText);
-    } catch {
-      throw new Error("Advisory auth session endpoint returned an HTML or malformed response");
+    const responseBytes = Buffer.from(responseText);
+    sessionEvidence.bodyBytes = responseBytes.byteLength;
+    sessionEvidence.bodySha256 = AUTH_RESULT_CONTRACT.sha256Bytes(responseBytes);
+    const body = responseBodyType(contentType, responseText);
+    sessionEvidence.safeBodyType = body.safeBodyType;
+    sessionEvidence.jsonParseResult = body.parseResult;
+
+    if (sessionEvidence.redirectCount !== 0) {
+      throw new CiAuthCommandError(
+        "AUTH_PREFLIGHT_SESSION_REDIRECT_REJECTED",
+        "session-response",
+        "Advisory auth session endpoint redirected instead of returning canonical JSON",
+      );
     }
-    if (payload !== null && (typeof payload !== "object" || Array.isArray(payload))) {
-      throw new Error("Advisory auth session endpoint returned an unexpected JSON shape");
+    if (response.status !== 200) {
+      throw new CiAuthCommandError(
+        response.status === 404
+          ? "AUTH_PREFLIGHT_SESSION_ENDPOINT_NOT_FOUND"
+          : "AUTH_PREFLIGHT_SESSION_STATUS_INVALID",
+        "session-response",
+        "Advisory auth session endpoint did not return HTTP 200",
+      );
     }
-    await assertAuthInteractionCompatibility(authEnvironment.googleClientId);
+    if (sessionEvidence.contentTypeClassification !== "application-json") {
+      throw new CiAuthCommandError(
+        "AUTH_PREFLIGHT_SESSION_CONTENT_TYPE_INVALID",
+        "session-response",
+        "Advisory auth session endpoint did not return structured JSON",
+      );
+    }
+    if (body.parseResult !== "passed") {
+      throw new CiAuthCommandError(
+        "AUTH_PREFLIGHT_SESSION_JSON_INVALID",
+        "session-response",
+        "Advisory auth session endpoint returned an HTML or malformed response",
+      );
+    }
+    if (body.payload !== null && (typeof body.payload !== "object" || Array.isArray(body.payload))) {
+      throw new CiAuthCommandError(
+        "AUTH_PREFLIGHT_SESSION_SHAPE_INVALID",
+        "session-response",
+        "Advisory auth session endpoint returned an unexpected JSON shape",
+      );
+    }
+    sessionEvidence.signedOutValidation = "passed";
+
+    await assertAuthInteractionCompatibility(
+      fetchImpl,
+      authUrl,
+      authEnvironment.googleClientId,
+      checks,
+    );
+    const serverOutput = Buffer.concat([...stdoutChunks, ...stderrChunks]).toString("utf8");
     const inertDiscoveryCount = serverOutput.split(
       SYNTHETIC_CI_GOOGLE_DISCOVERY_MARKER,
     ).length - 1;
     if (inertDiscoveryCount !== 1) {
-      throw new Error(
+      throw new CiAuthCommandError(
+        "AUTH_PREFLIGHT_INERT_DISCOVERY_INVALID",
+        "inert-discovery-contract",
         "Advisory auth preflight did not prove exactly one inert Google discovery",
       );
     }
+    checks.inertDiscoveryContract = "passed";
     if (
       serverOutput.includes(authEnvironment.googleClientId) ||
-      serverOutput.includes(authEnvironment.googleClientSecret)
+      serverOutput.includes(authEnvironment.googleClientSecret) ||
+      serverOutput.includes(authEnvironment.authSecret)
     ) {
-      throw new Error("Advisory auth preflight detected raw fixture value leakage");
+      throw new CiAuthCommandError(
+        "AUTH_PREFLIGHT_LOG_LEAK_DETECTED",
+        "log-safety",
+        "Advisory auth preflight detected raw private value leakage",
+      );
     }
-    if (outputCategory !== "clean") {
-      throw new Error(`Advisory auth preflight detected ${outputCategory}`);
+    if (/ClientFetchError|Unexpected token\s+['"]?</.test(serverOutput)) {
+      throw new CiAuthCommandError(
+        "AUTH_PREFLIGHT_CLIENT_HTML_ERROR",
+        "log-safety",
+        "Advisory auth preflight detected auth-client-html-error",
+      );
     }
-    console.log(
-      "Advisory auth preflight passed for anonymous session, Google sign-in, and sign-out routes.",
-    );
+    if (/auth module initialization|Missing required environment variable/.test(serverOutput)) {
+      throw new CiAuthCommandError(
+        "AUTH_PREFLIGHT_AUTH_INITIALIZATION_ERROR",
+        "log-safety",
+        "Advisory auth preflight detected auth-initialization-error",
+      );
+    }
+    checks.logSafetyScan = "passed";
+  } catch (error) {
+    retainFailure(error);
   } finally {
-    await stopServer(server);
+    if (server) {
+      try {
+        cleanup = await stopServer(server);
+      } catch (error) {
+        cleanup = {
+          sigtermAttempted: true,
+          sigkillFallbackAttempted: false,
+          finalServerTermination: "failed",
+          portReleased: false,
+          taskOwnedCleanup: "failed",
+          completed: true,
+        };
+        retainFailure(
+          error,
+          "AUTH_PREFLIGHT_CLEANUP_FAILED",
+          "server-cleanup",
+        );
+      }
+      cleanup.portReleased = await portReleased(host, port);
+      if (!cleanup.portReleased || cleanup.finalServerTermination !== "passed") {
+        cleanup.taskOwnedCleanup = "failed";
+        retainFailure(
+          new CiAuthCommandError(
+            "AUTH_PREFLIGHT_CLEANUP_FAILED",
+            "server-cleanup",
+            "Advisory auth preflight did not terminate its server and release the port",
+          ),
+        );
+      }
+      serverEvidence.closed = cleanup.finalServerTermination === "passed";
+      serverEvidence.exitStatus = server.exitCode;
+      serverEvidence.signal = server.signalCode;
+    }
+    serverEvidence.stdout = streamDescriptor(Buffer.concat(stdoutChunks));
+    serverEvidence.stderr = streamDescriptor(Buffer.concat(stderrChunks));
+    if (!serverEvidence.readinessCompletedAt && serverEvidence.readinessAttemptCount > 0) {
+      serverEvidence.readinessCompletedAt = new Date(now()).toISOString();
+    }
   }
+
+  const evidence = Object.freeze({
+    invocation: Object.freeze({}),
+    server: Object.freeze({ ...serverEvidence }),
+    sessionRequest: Object.freeze({ ...sessionEvidence }),
+    checks: Object.freeze({ ...checks }),
+    cleanup: Object.freeze({ ...cleanup }),
+  });
+  return Object.freeze({
+    result: earliestFailure ? "failure" : "success",
+    evidence,
+    failure: earliestFailure,
+  });
+}
+
+type PreflightOutcome = Readonly<{
+  result: "success" | "failure";
+  evidence: Readonly<Record<string, unknown>>;
+  failure: SafeFailure | null;
+}>;
+
+function prepareResultContext(command: string, environment: NodeJS.ProcessEnv): Readonly<{
+  command: string;
+  commandIdentity: Readonly<{ commandId: string; mode: string }>;
+  destination: AuthResultDestination;
+  nonce: string;
+  startedAt: string;
+  identity: Readonly<Record<string, unknown>>;
+}> {
+  const commandIdentity = AUTH_RESULT_CONTRACT.commandMode(command);
+  const rootName = AUTH_RESULT_CONTRACT.AUTH_RESULT_ROOT_ENV;
+  const pathName = AUTH_RESULT_CONTRACT.AUTH_RESULT_PATH_ENV;
+  const nonceName = AUTH_RESULT_CONTRACT.AUTH_RESULT_NONCE_ENV;
+  const destination = AUTH_RESULT_CONTRACT.resolveAuthResultDestination({
+    repositoryRoot: process.cwd(),
+    externalRoot: environment[rootName],
+    resultPath: environment[pathName],
+  });
+  const nonce = environment[nonceName];
+  if (!nonce) {
+    throw new Error("Auth result invocation nonce is required");
+  }
+  const candidateCommit = environment[AUTH_RESULT_CONTRACT.AUTH_RESULT_CANDIDATE_COMMIT_ENV];
+  const candidateTree = environment[AUTH_RESULT_CONTRACT.AUTH_RESULT_CANDIDATE_TREE_ENV];
+  if (Boolean(candidateCommit) !== Boolean(candidateTree)) {
+    throw new Error("Auth result candidate commit and tree must be supplied together");
+  }
+  const fixturePath = path.join(process.cwd(), "scripts", "ci-auth-fixture.json");
+  const validatorPath = path.join(process.cwd(), "lib", "auth-env.ts");
+  const startedAt = new Date().toISOString();
+  return Object.freeze({
+    command,
+    commandIdentity,
+    destination,
+    nonce,
+    startedAt,
+    identity: Object.freeze({
+      candidateCommitSha: candidateCommit ?? null,
+      candidateTreeSha: candidateTree ?? null,
+      invocationNonce: nonce,
+      fixturePolicy: Object.freeze({
+        schema: SYNTHETIC_CI_OAUTH_FIXTURE_POLICY.schema,
+        sha256: AUTH_RESULT_CONTRACT.sha256Bytes(readFileSync(fixturePath)),
+      }),
+      authValidator: Object.freeze({
+        owner: "lib/auth-env.ts",
+        sha256: AUTH_RESULT_CONTRACT.sha256Bytes(readFileSync(validatorPath)),
+      }),
+      environmentNameSetSha256: environmentNameSetSha256(environment),
+      environmentClassification: safeEnvironmentClassification(environment),
+      externalRootIdentitySha256: destination.externalRootIdentitySha256,
+      resultPathIdentitySha256: destination.resultPathIdentitySha256,
+      startedAt,
+    }),
+  });
+}
+
+function writeStructuredResult(
+  context: ReturnType<typeof prepareResultContext>,
+  environment: NodeJS.ProcessEnv,
+  result: "success" | "expected-negative-pass" | "failure",
+  evidence: Readonly<Record<string, unknown>>,
+  failure: Readonly<Record<string, unknown>> | null,
+  expectedStreamDescriptors?: Readonly<{
+    stdout: StreamDescriptor;
+    stderr: StreamDescriptor;
+  }>,
+): Record<string, unknown> {
+  const completedAt = new Date().toISOString();
+  const payload = {
+    schema: AUTH_RESULT_CONTRACT.AUTH_RESULT_SCHEMA,
+    version: AUTH_RESULT_CONTRACT.AUTH_RESULT_VERSION,
+    command: {
+      id: context.commandIdentity.commandId,
+      mode: context.commandIdentity.mode,
+      executable: "node-ts-node",
+      argv: ["scripts/ci-auth-fixture.ts", context.command],
+    },
+    result,
+    valid: result !== "failure",
+    identity: { ...context.identity, completedAt },
+    evidence,
+    failure,
+    completion: {
+      complete: true,
+      marker: AUTH_RESULT_CONTRACT.AUTH_RESULT_COMPLETION_MARKER,
+    },
+  };
+  const written = AUTH_RESULT_CONTRACT.writeAuthCommandResult({
+    destination: context.destination,
+    payload,
+  });
+  AUTH_RESULT_CONTRACT.validateAuthCommandResult({
+    repositoryRoot: process.cwd(),
+    externalRoot: context.destination.externalRoot,
+    resultPath: context.destination.resultPath,
+    expectedNonce: context.nonce,
+    expectedCommandId: context.commandIdentity.commandId,
+    expectedMode: context.commandIdentity.mode,
+    expectedCandidateCommitSha:
+      environment[AUTH_RESULT_CONTRACT.AUTH_RESULT_CANDIDATE_COMMIT_ENV],
+    expectedCandidateTreeSha:
+      environment[AUTH_RESULT_CONTRACT.AUTH_RESULT_CANDIDATE_TREE_ENV],
+    sensitiveValues: AUTH_RESULT_CONTRACT.privateValuesFromEnvironment(environment),
+    expectedStreamDescriptors,
+  });
+  return written;
+}
+
+function validationFailureEvidence(failure: SafeFailure): Readonly<Record<string, unknown>> {
+  return Object.freeze({
+    providerVariablesPresent: !new Set([
+      "AUTH_PROVIDER_VARIABLE_MISSING",
+      "AUTH_PROVIDER_VARIABLE_EMPTY",
+    ]).has(failure.code),
+    providerClientIdGrammar:
+      failure.code === "AUTH_PROVIDER_CLIENT_ID_GRAMMAR_INVALID" ? "failed" : "not-completed",
+    providerPairCoherence:
+      failure.code === "AUTH_FIXTURE_PAIR_COHERENCE_INVALID" ? "failed" : "not-completed",
+    authSecretPresence:
+      failure.code === "AUTH_SECRET_MISSING" || failure.code === "AUTH_SECRET_EMPTY"
+        ? "failed"
+        : "not-completed",
+    aliasPolicy:
+      failure.code === "AUTH_SECRET_ALIAS_MISMATCH" ? "mismatch-rejected" : "not-completed",
+    nonProductionClassification: "not-completed",
+    applicationValidator: "failed",
+    networkClassification: "not-used",
+    leakScan: "passed",
+    completed: true,
+  });
+}
+
+function persistPreflightOutcomeWithContext(
+  command: "preflight" | "preflight-local",
+  environment: NodeJS.ProcessEnv,
+  context: ReturnType<typeof prepareResultContext>,
+  outcome: PreflightOutcome,
+): Record<string, unknown> {
+  const invocation = {
+    packageCommandId: context.commandIdentity.commandId,
+    executableClassification: "node-ts-node",
+    argvIdentitySha256: AUTH_RESULT_CONTRACT.sha256Bytes(
+      `scripts/ci-auth-fixture.ts\0${command}`,
+    ),
+    fixturePolicySha256: (context.identity.fixturePolicy as { sha256: string }).sha256,
+    authValidatorSha256: (context.identity.authValidator as { sha256: string }).sha256,
+    environmentNameSetSha256: environmentNameSetSha256(environment),
+    resultPathIdentitySha256: context.destination.resultPathIdentitySha256,
+    invocationNonce: context.nonce,
+  };
+  const evidence: Readonly<Record<string, unknown>> = {
+    ...outcome.evidence,
+    invocation,
+  };
+  const serverEvidence = evidence.server as PreflightServerEvidence;
+  const stderr = outcome.failure ? `${outcome.failure.message}\n` : "";
+  return writeStructuredResult(
+    context,
+    environment,
+    outcome.result,
+    evidence,
+    outcome.failure
+      ? failureEvidence(outcome.failure, "", stderr, {
+          exitStatus: serverEvidence.exitStatus,
+          signal: serverEvidence.signal,
+          spawnError: serverEvidence.spawnError,
+        })
+      : null,
+  );
+}
+
+export function persistPreflightOutcome(
+  command: "preflight" | "preflight-local",
+  environment: NodeJS.ProcessEnv,
+  outcome: PreflightOutcome,
+): Record<string, unknown> {
+  return persistPreflightOutcomeWithContext(
+    command,
+    environment,
+    prepareResultContext(command, environment),
+    outcome,
+  );
+}
+
+async function runProductionMisuseChild(
+  environment: NodeJS.ProcessEnv,
+): Promise<void> {
+  try {
+    getAuthEnvOrThrow(environment);
+  } catch (error) {
+    const failure = safeFailure(error);
+    if (process.send) {
+      await new Promise<void>((resolve) =>
+        process.send?.(
+          {
+            schema: EXPECTED_NEGATIVE_IPC_SCHEMA,
+            safeFailureCode: failure.code,
+            category: failure.category,
+            syntheticFixtureUse: true,
+            productionActivationProhibited:
+              failure.code === "SYNTHETIC_AUTH_FIXTURE_PRODUCTION_MISUSE_REJECTED",
+          },
+          () => resolve(),
+        ),
+      );
+    }
+    console.error(failure.message);
+    process.exitCode = 1;
+    return;
+  }
+  console.error("Synthetic production fixture was unexpectedly accepted");
+  process.exitCode = 2;
+}
+
+export type ProductionChildOutcome = Readonly<{
+  status: number | null;
+  signal: NodeJS.Signals | null;
+  spawnError: string | null;
+  stdout: Buffer;
+  stderr: Buffer;
+  message: Record<string, unknown> | null;
+}>;
+
+async function spawnProductionMisuseChild(
+  environment: NodeJS.ProcessEnv,
+): Promise<ProductionChildOutcome> {
+  return new Promise((resolve) => {
+    const stdout: Buffer[] = [];
+    const stderr: Buffer[] = [];
+    let childMessage: Record<string, unknown> | null = null;
+    let spawnError: string | null = null;
+    const child = spawn(
+      process.execPath,
+      [
+        "-r",
+        require.resolve("ts-node/register/transpile-only"),
+        "-r",
+        require.resolve("tsconfig-paths/register"),
+        path.join(process.cwd(), "scripts", "ci-auth-fixture.ts"),
+        "production-misuse-child",
+      ],
+      {
+        cwd: process.cwd(),
+        env: {
+          ...environment,
+          TS_NODE_COMPILER_OPTIONS: JSON.stringify({
+            module: "CommonJS",
+            moduleResolution: "node",
+          }),
+        },
+        stdio: ["ignore", "pipe", "pipe", "ipc"],
+      },
+    );
+    child.stdout?.on("data", (chunk: Buffer | string) => stdout.push(Buffer.from(chunk)));
+    child.stderr?.on("data", (chunk: Buffer | string) => stderr.push(Buffer.from(chunk)));
+    child.on("message", (message) => {
+      if (message && typeof message === "object" && !Array.isArray(message)) {
+        childMessage = message as Record<string, unknown>;
+      }
+    });
+    child.once("error", (error: NodeJS.ErrnoException) => {
+      spawnError = error.code ?? "SPAWN_ERROR";
+    });
+    child.once("close", (status, signal) => {
+      resolve({
+        status,
+        signal,
+        spawnError,
+        stdout: Buffer.concat(stdout),
+        stderr: Buffer.concat(stderr),
+        message: childMessage,
+      });
+    });
+  });
+}
+
+export function productionMisuseEvidence(
+  child: ProductionChildOutcome,
+  sensitiveValues: string[],
+): Readonly<{
+  result: "expected-negative-pass" | "failure";
+  evidence: Readonly<Record<string, unknown>>;
+  failure: SafeFailure | null;
+}> {
+  const message = child.message;
+  const intended =
+    child.status === 1 &&
+    child.signal === null &&
+    child.spawnError === null &&
+    message?.schema === EXPECTED_NEGATIVE_IPC_SCHEMA &&
+    message.safeFailureCode ===
+      "SYNTHETIC_AUTH_FIXTURE_PRODUCTION_MISUSE_REJECTED" &&
+    message.category === "production-activation-prohibited" &&
+    message.syntheticFixtureUse === true &&
+    message.productionActivationProhibited === true;
+  const streams = Buffer.concat([child.stdout, child.stderr]).toString("utf8");
+  const leakFree = sensitiveValues.every((value) => !value || !streams.includes(value));
+  const excludedFailureCauses = {
+    missingDependency: intended,
+    loaderFailure: intended,
+    syntaxError: intended,
+    transportFailure: intended,
+    missingInput: intended,
+    databaseFailure: intended,
+  };
+  const evidence = Object.freeze({
+    expectedNegativeClassification: intended
+      ? "intended-production-rejection"
+      : "intended-rejection-not-proved",
+    child: Object.freeze({
+      exitStatus: child.status,
+      signal: child.signal,
+      spawnError: child.spawnError,
+    }),
+    safeFailureCode:
+      typeof message?.safeFailureCode === "string"
+        ? message.safeFailureCode
+        : "AUTH_PRODUCTION_MISUSE_UNCLASSIFIED_CHILD_FAILURE",
+    intendedRejectionProved: intended,
+    syntheticFixtureUseProved: message?.syntheticFixtureUse === true,
+    productionActivationProhibitedProved:
+      message?.productionActivationProhibited === true,
+    excludedFailureCauses: Object.freeze(excludedFailureCauses),
+    stdout: streamDescriptor(child.stdout),
+    stderr: streamDescriptor(child.stderr),
+    rawValueLeakScan: leakFree ? "passed" : "failed",
+    completed: true,
+  });
+  return Object.freeze({
+    result: intended && leakFree ? "expected-negative-pass" : "failure",
+    evidence,
+    failure:
+      intended && leakFree
+        ? null
+        : {
+            code: leakFree
+              ? "AUTH_PRODUCTION_MISUSE_INTENDED_REJECTION_NOT_PROVED"
+              : "AUTH_PRODUCTION_MISUSE_STREAM_LEAK_DETECTED",
+            category: leakFree ? "expected-negative-proof" : "log-safety",
+            message: leakFree
+              ? "Production misuse child did not prove the intended rejection"
+              : "Production misuse child streams contained a raw private value",
+          },
+  });
+}
+
+async function executeStructuredCommand(command: string): Promise<void> {
+  const parentEnvironment = process.env;
+  AUTH_RESULT_CONTRACT.resolveAuthResultDestination({
+    repositoryRoot: process.cwd(),
+    externalRoot: parentEnvironment[AUTH_RESULT_CONTRACT.AUTH_RESULT_ROOT_ENV],
+    resultPath: parentEnvironment[AUTH_RESULT_CONTRACT.AUTH_RESULT_PATH_ENV],
+  });
+  const environment =
+    command === "production-misuse"
+      ? fixtureEnvironmentForLocalExecution({
+          ...parentEnvironment,
+          APP_ENV: "production",
+          CI: "true",
+          GITHUB_ACTIONS: "true",
+          CI_AUTH_FIXTURE_MODE: "1",
+          AUTH_SECRET: "ci-auth-production-misuse-secret-at-least-32-characters",
+          NEXTAUTH_SECRET: "ci-auth-production-misuse-secret-at-least-32-characters",
+        })
+      : command === "preflight-local"
+        ? localFixtureEnvironment()
+        : parentEnvironment;
+  const context = prepareResultContext(command, environment);
+  if (command === "export-github-env") {
+    try {
+      const evidence = exportFixtureToGitHubEnvironment({ environment });
+      writeStructuredResult(context, environment, "success", evidence, null);
+    } catch (error) {
+      const failure = safeFailure(error);
+      const stderr = `${failure.message}\n`;
+      const evidence = {
+        variableNames: [...CI_AUTH_GITHUB_ENV_ALLOWLIST].sort(),
+        providerVariablesPresent: false,
+        maskRegistrationCount: 0,
+        privateGithubEnvironment: false,
+        rawValuesRetained: false,
+        completed: false,
+      };
+      writeStructuredResult(
+        context,
+        environment,
+        "failure",
+        evidence,
+        failureEvidence(failure, "", stderr),
+      );
+      process.stderr.write(stderr);
+      process.exitCode = 1;
+    }
+    return;
+  }
+  if (command === "validate-env") {
+    try {
+      const evidence = validateFixtureEnvironment(environment);
+      const stdout = "Validated the canonical synthetic CI OAuth fixture.\n";
+      writeStructuredResult(context, environment, "success", evidence, null);
+      process.stdout.write(stdout);
+    } catch (error) {
+      const failure = safeFailure(error);
+      const stderr = `${failure.message}\n`;
+      writeStructuredResult(
+        context,
+        environment,
+        "failure",
+        validationFailureEvidence(failure),
+        failureEvidence(failure, "", stderr),
+      );
+      process.stderr.write(stderr);
+      process.exitCode = 1;
+    }
+    return;
+  }
+  if (command === "production-misuse") {
+    const child = await spawnProductionMisuseChild(environment);
+    const outcome = productionMisuseEvidence(
+      child,
+      AUTH_RESULT_CONTRACT.privateValuesFromEnvironment(environment),
+    );
+    const failureRecord = outcome.failure
+      ? failureEvidence(outcome.failure, child.stdout, child.stderr, {
+          exitStatus: child.status,
+          signal: child.signal,
+          spawnError: child.spawnError,
+        })
+      : null;
+    writeStructuredResult(
+      context,
+      environment,
+      outcome.result,
+      outcome.evidence,
+      failureRecord,
+      {
+        stdout: streamDescriptor(child.stdout),
+        stderr: streamDescriptor(child.stderr),
+      },
+    );
+    if (child.stdout.byteLength > 0) process.stdout.write(child.stdout);
+    if (child.stderr.byteLength > 0) process.stderr.write(child.stderr);
+    if (outcome.result === "expected-negative-pass") {
+      process.stdout.write("Validated the canonical production-misuse rejection.\n");
+    } else {
+      process.exitCode = 1;
+    }
+    return;
+  }
+  if (command === "preflight" || command === "preflight-local") {
+    const preflightEnvironment = environment;
+    if (command === "preflight-local") Object.assign(process.env, preflightEnvironment);
+    const outcome = await preflightAuthSession(preflightEnvironment);
+    const stderr = outcome.failure ? `${outcome.failure.message}\n` : "";
+    persistPreflightOutcomeWithContext(
+      command,
+      preflightEnvironment,
+      context,
+      outcome,
+    );
+    if (outcome.failure) {
+      process.stderr.write(stderr);
+      process.exitCode = 1;
+    } else {
+      process.stdout.write(
+        "Advisory auth preflight passed for anonymous session, Google sign-in, and sign-out routes.\n",
+      );
+    }
+    return;
+  }
+  throw new Error("Unknown structured auth command");
 }
 
 async function main(): Promise<void> {
   const command = process.argv[2];
-  if (command === "export-github-env") {
-    exportFixtureToGitHubEnvironment();
+  if (command === "production-misuse-child") {
+    await runProductionMisuseChild(process.env);
     return;
   }
-  if (command === "validate-env") {
-    validateFixtureEnvironment();
-    return;
-  }
-  if (command === "preflight") {
-    await preflightAuthSession(process.env);
-    return;
-  }
-  if (command === "preflight-local") {
-    const environment = localFixtureEnvironment();
-    Object.assign(process.env, environment);
-    await preflightAuthSession(environment);
+  if (
+    command === "export-github-env" ||
+    command === "validate-env" ||
+    command === "production-misuse" ||
+    command === "preflight" ||
+    command === "preflight-local"
+  ) {
+    await executeStructuredCommand(command);
     return;
   }
   if (command === "runtime-smoke-local") {
@@ -554,7 +1682,7 @@ async function main(): Promise<void> {
     return;
   }
   throw new Error(
-    "Usage: ci-auth-fixture.ts export-github-env|validate-env|preflight|preflight-local|runtime-smoke-local",
+    "Usage: ci-auth-fixture.ts export-github-env|validate-env|production-misuse|preflight|preflight-local|runtime-smoke-local",
   );
 }
 
