@@ -109,7 +109,7 @@ async function run() {
     assert.equal(evidence.sessionRequest.statusCode, 200);
     assert.equal(evidence.sessionRequest.contentTypeClassification, "application-json");
     assert.equal(evidence.sessionRequest.redirectCount, 0);
-    assert.ok(["null", "object"].includes(evidence.sessionRequest.safeBodyType));
+    assert.equal(evidence.sessionRequest.safeBodyType, "null");
     assert.equal(evidence.sessionRequest.signedOutValidation, "passed");
     assert.equal(evidence.cleanup.finalServerTermination, "passed");
     assert.equal(evidence.cleanup.portReleased, true);

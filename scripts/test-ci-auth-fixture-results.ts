@@ -367,7 +367,8 @@ async function persistPreflightCase({
   sleep,
   stopServer,
   expectedCode,
-  expectValidatorRejection = false,
+  validatorRejectionPattern,
+  portReleasedAfterCleanup = true,
 }: Readonly<{
   prefix: string;
   fetchImpl: typeof fetch;
@@ -377,7 +378,8 @@ async function persistPreflightCase({
   sleep?: (milliseconds: number) => Promise<void>;
   stopServer?: (server: ChildProcess) => Promise<PreflightCleanupEvidence>;
   expectedCode?: string;
-  expectValidatorRejection?: boolean;
+  validatorRejectionPattern?: RegExp;
+  portReleasedAfterCleanup?: boolean;
 }>): Promise<Readonly<{
   outcome: PreflightOutcome;
   target: ReturnType<typeof destination>;
@@ -392,24 +394,19 @@ async function persistPreflightCase({
     sleep,
     stopServer,
     portAvailable: async () => true,
-    portReleased: async () => !expectValidatorRejection,
+    portReleased: async () => portReleasedAfterCleanup,
   });
   if (expectedCode) {
     assert.equal(outcome.result, "failure");
     assert.equal(outcome.failure?.code, expectedCode);
   }
-  if (expectValidatorRejection) {
+  if (validatorRejectionPattern) {
     expectRejected(
       () => authFixture().persistPreflightOutcome("preflight", environment, outcome),
-      /failed server cleanup/,
+      validatorRejectionPattern,
     );
     const raw = JSON.parse(readFileSync(target.resultPath, "utf8")) as Record<string, unknown>;
     assert.equal(raw.result, "failure");
-    assert.equal(
-      ((raw.evidence as Record<string, unknown>).cleanup as Record<string, unknown>)
-        .taskOwnedCleanup,
-      "failed",
-    );
   } else {
     authFixture().persistPreflightOutcome("preflight", environment, outcome);
     const result = validateResult(
@@ -643,6 +640,34 @@ async function run(): Promise<void> {
     /failure evidence is incomplete/,
   );
 
+  const unsafeSpawnErrorTarget = destination("unsafe-spawn-error");
+  cpSync(missingProvider.target.resultPath, unsafeSpawnErrorTarget.resultPath);
+  cpSync(
+    `${missingProvider.target.resultPath}.sha256`,
+    `${unsafeSpawnErrorTarget.resultPath}.sha256`,
+  );
+  resealResult(unsafeSpawnErrorTarget, (payload) => {
+    const identity = payload.identity as Record<string, unknown>;
+    identity.externalRootIdentitySha256 = contract.sha256Bytes(
+      unsafeSpawnErrorTarget.root,
+    );
+    identity.resultPathIdentitySha256 = contract.sha256Bytes(
+      `${unsafeSpawnErrorTarget.root}\0results/result.json`,
+    );
+    const failure = payload.failure as Record<string, unknown>;
+    (failure.child as Record<string, unknown>).spawnError = "unsafe free-form text";
+  });
+  expectRejected(
+    () =>
+      validateResult(
+        unsafeSpawnErrorTarget,
+        "ci:auth-fixture:validate",
+        "auth-environment-validation",
+        { nonce: missingProvider.target.nonce },
+      ),
+    /child process evidence is malformed/,
+  );
+
   const missingDestination = runPackage("ci:auth-fixture:validate", {
     ...validationEnvironment,
     [contract.AUTH_RESULT_ROOT_ENV]: undefined,
@@ -650,6 +675,22 @@ async function run(): Promise<void> {
   });
   assert.notEqual(missingDestination.status, 0);
   assert.match(missingDestination.stderr, /explicit absolute paths/);
+
+  const ancestorRoot = realpathSync(path.dirname(repositoryRoot));
+  const repositoryLocalResult = path.join(
+    repositoryRoot,
+    ".ci-auth-result-must-remain-absent.json",
+  );
+  expectRejected(
+    () =>
+      contract.resolveAuthResultDestination({
+        repositoryRoot,
+        externalRoot: ancestorRoot,
+        resultPath: repositoryLocalResult,
+      }),
+    /outside the repository and every worktree/,
+  );
+  assert.equal(existsSync(repositoryLocalResult), false);
 
   const symlinkTarget = destination("symlink-root-target");
   const symlinkParent = mkdtempSync(path.join(tmpdir(), "ci-auth-result-symlink-parent-"));
@@ -1088,6 +1129,20 @@ async function run(): Promise<void> {
       ),
     /failure child evidence is inconsistent/,
   );
+  resealResult(nonLoopback.target, (payload) => {
+    const serverEvidence = (payload.evidence as Record<string, unknown>)
+      .server as Record<string, unknown>;
+    serverEvidence.signal = "SIGKILL";
+  });
+  expectRejected(
+    () =>
+      validateResult(
+        nonLoopback.target,
+        "ci:auth-fixture:preflight",
+        "auth-session-preflight",
+      ),
+    /cleanup signal evidence is inconsistent/,
+  );
 
   await persistPreflightCase({
     prefix: "server-signal",
@@ -1191,9 +1246,32 @@ async function run(): Promise<void> {
     fetchImpl: successfulFetchQueue(),
     server: wrongSignalServer,
     expectedCode: "AUTH_PREFLIGHT_CLEANUP_SIGNAL_MISMATCH",
+    validatorRejectionPattern: /failed server cleanup/,
   });
 
+  const earlierFailureWrongSignalServer = fakeServer();
+  const earlierFailureWrongSignalState =
+    earlierFailureWrongSignalServer as unknown as {
+      signalCode: NodeJS.Signals | null;
+      kill: (signal?: NodeJS.Signals | number) => boolean;
+    };
+  earlierFailureWrongSignalState.kill = () => {
+    earlierFailureWrongSignalState.signalCode = "SIGKILL";
+    queueMicrotask(() => {
+      earlierFailureWrongSignalServer.emit("exit", null, "SIGKILL");
+      earlierFailureWrongSignalServer.emit("close", null, "SIGKILL");
+    });
+    return true;
+  };
   await persistPreflightCase({
+    prefix: "endpoint-failure-cleanup-signal-mismatch",
+    fetchImpl: (async () => jsonResponse(null, { status: 500 })) as typeof fetch,
+    server: earlierFailureWrongSignalServer,
+    expectedCode: "AUTH_PREFLIGHT_SESSION_STATUS_INVALID",
+    validatorRejectionPattern: /failed server cleanup/,
+  });
+
+  const cleanupFailure = await persistPreflightCase({
     prefix: "cleanup-failure",
     fetchImpl: successfulFetchQueue(),
     server: fakeServer({ stdout: `${SYNTHETIC_CI_GOOGLE_DISCOVERY_MARKER}\n` }),
@@ -1206,11 +1284,20 @@ async function run(): Promise<void> {
       completed: true,
     }),
     expectedCode: "AUTH_PREFLIGHT_CLEANUP_FAILED",
-    expectValidatorRejection: true,
+    validatorRejectionPattern: /failed server cleanup/,
+    portReleasedAfterCleanup: false,
   });
+  assert.equal(
+    ((cleanupFailure.outcome.evidence.cleanup as Record<string, unknown>)
+      .taskOwnedCleanup),
+    "failed",
+  );
 
   const rawPayloadTarget = destination("prepublication-raw-payload");
-  const rawPayloadEnvironment = resultEnvironment(rawPayloadTarget);
+  const rawPayloadEnvironment = resultEnvironment(rawPayloadTarget, {
+    AUTH_SECRET: `  ${authSecret}  `,
+    NEXTAUTH_SECRET: `  ${authSecret}  `,
+  });
   const rawPayloadOutcome: PreflightOutcome = {
     ...preflightSuccess.outcome,
     evidence: {

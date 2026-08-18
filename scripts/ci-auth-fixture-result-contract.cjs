@@ -63,6 +63,7 @@ const SAFE_ENVIRONMENT_CLASSIFICATIONS = new Set([
 const SHA256_PATTERN = /^[a-f0-9]{64}$/;
 const SOURCE_SHA_PATTERN = /^[a-f0-9]{40}$/;
 const NONCE_PATTERN = /^[A-Za-z0-9][A-Za-z0-9._:-]{7,127}$/;
+const PROCESS_ERROR_CODE_PATTERN = /^[A-Z][A-Z0-9_]{1,63}$/;
 const RESOLVED_AUTH_RESULT_DESTINATIONS = new WeakSet();
 const AUTH_VALIDATION_FAILURE_CATEGORIES = Object.freeze({
   SYNTHETIC_AUTH_FIXTURE_MODE_NOT_ENABLED: "fixture-activation",
@@ -169,12 +170,19 @@ function resolveAuthResultDestination({
   const repositoryWorktrees = (worktreeRoots || discoverGitWorktrees(repository)).map((entry) =>
     realpathSync(entry),
   );
-  if (repositoryWorktrees.some((worktree) => isInside(worktree, root))) {
+  if (
+    repositoryWorktrees.some(
+      (worktree) => isInside(worktree, root) || isInside(root, worktree),
+    )
+  ) {
     throw new Error("Auth result root must remain outside the repository and every worktree");
   }
   const requested = path.resolve(resultPath);
   if (!isInside(root, requested) || requested === root) {
     throw new Error("Auth result path must remain beneath the authorized external root");
+  }
+  if (repositoryWorktrees.some((worktree) => isInside(worktree, requested))) {
+    throw new Error("Auth result path must remain outside every repository worktree");
   }
   if (path.extname(requested) !== ".json") {
     throw new Error("Auth result path must use a .json target");
@@ -614,7 +622,7 @@ function assertModeEvidence(result, allowNonConsumableFailure = false) {
       (evidence.server.signal !== null &&
         !new Set(["SIGTERM", "SIGKILL"]).has(evidence.server.signal)) ||
       (evidence.server.spawnError !== null &&
-        typeof evidence.server.spawnError !== "string") ||
+        !PROCESS_ERROR_CODE_PATTERN.test(evidence.server.spawnError)) ||
       typeof evidence.server.listenerReady !== "boolean" ||
       !Number.isSafeInteger(evidence.server.readinessAttemptCount) ||
       evidence.server.readinessAttemptCount < 0 ||
@@ -737,6 +745,23 @@ function assertModeEvidence(result, allowNonConsumableFailure = false) {
     ) {
       throw new Error("Auth preflight lifecycle or network evidence is invalid");
     }
+    const taskOwnedSignalConsistent =
+      evidence.cleanup.taskOwnedCleanup !== "passed" ||
+      (evidence.cleanup.sigtermAttempted === true &&
+        (evidence.cleanup.sigkillFallbackAttempted === true
+          ? evidence.server.signal === "SIGKILL"
+          : evidence.server.signal === "SIGTERM" ||
+            (evidence.server.signal === null &&
+              Number.isSafeInteger(evidence.server.exitStatus))));
+    if (
+      (evidence.cleanup.sigkillFallbackAttempted === true &&
+        evidence.cleanup.sigtermAttempted !== true) ||
+      !taskOwnedSignalConsistent
+    ) {
+      if (!(allowNonConsumableFailure && result.result === "failure")) {
+        throw new Error("Auth preflight cleanup signal evidence is inconsistent");
+      }
+    }
     if (
       evidence.cleanup.finalServerTermination === "failed" ||
       evidence.cleanup.portReleased !== true ||
@@ -803,15 +828,18 @@ function assertModeEvidence(result, allowNonConsumableFailure = false) {
 }
 
 function privateValuesFromEnvironment(environment) {
-  return [
+  const values = [
     "AUTH_SECRET",
     "NEXTAUTH_SECRET",
     "GOOGLE_CLIENT_ID",
     "GOOGLE_CLIENT_SECRET",
     "DATABASE_URL",
-  ]
-    .map((name) => environment?.[name])
-    .filter((value) => typeof value === "string" && value.length >= 4);
+  ].flatMap((name) => {
+    const raw = environment?.[name];
+    if (typeof raw !== "string") return [];
+    return [raw, raw.trim()].filter((value) => value.length >= 4);
+  });
+  return [...new Set(values)];
 }
 
 function assertNoRawPrivateValues(bytes, sensitiveValues = []) {
@@ -977,7 +1005,7 @@ function validateAuthCommandResultValue({
       (result.failure.child.signal !== null &&
         typeof result.failure.child.signal !== "string") ||
       (result.failure.child.spawnError !== null &&
-        typeof result.failure.child.spawnError !== "string")
+        !PROCESS_ERROR_CODE_PATTERN.test(result.failure.child.spawnError))
     ) {
       throw new Error("Auth failure child process evidence is malformed");
     }

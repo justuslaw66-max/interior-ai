@@ -219,6 +219,10 @@ export function validateAuthResultContracts(repositoryRoot) {
     path.join(repositoryRoot, "scripts/ci-auth-fixture-result-contract.cjs"),
     "utf8",
   );
+  const realPreflightSource = readFileSync(
+    path.join(repositoryRoot, "scripts/run-ci-auth-fixture-real-preflight.mjs"),
+    "utf8",
+  );
   const qualificationSource = readFileSync(
     path.join(repositoryRoot, "scripts/production-certification.mjs"),
     "utf8",
@@ -261,6 +265,9 @@ export function validateAuthResultContracts(repositoryRoot) {
     "parent identity changed during publication",
     "observeChildClose",
     "AUTH_PREFLIGHT_CLEANUP_SIGNAL_MISMATCH",
+    "Auth preflight cleanup signal evidence is inconsistent",
+    "isInside(root, worktree)",
+    "raw.trim()",
     'safeBodyType !== "null"',
     "productionMisuseEvidence",
     "SYNTHETIC_AUTH_FIXTURE_PRODUCTION_MISUSE_REJECTED",
@@ -282,6 +289,9 @@ export function validateAuthResultContracts(repositoryRoot) {
     !contractSource.includes("Auth preflight success lacks canonical session-response proof") ||
     !contractSource.includes("Production-misuse intended rejection proof is incomplete") ||
     !contractSource.includes("Auth result contains a raw private value") ||
+    !realPreflightSource.includes(
+      'assert.equal(evidence.sessionRequest.safeBodyType, "null")',
+    ) ||
     !qualificationSource.includes('"test:auth-env-hardening"') ||
     !qualificationSource.includes('"test:ci-auth-fixture-real-preflight"')
   ) {

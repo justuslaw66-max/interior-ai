@@ -1187,7 +1187,6 @@ export async function preflightAuthSession(
         );
       }
       if (
-        !earliestFailure &&
         cleanup.taskOwnedCleanup === "passed" &&
         (cleanup.sigkillFallbackAttempted
           ? server.signalCode !== "SIGKILL"
@@ -1197,6 +1196,7 @@ export async function preflightAuthSession(
                 Number.isSafeInteger(server.exitCode))
             ))
       ) {
+        cleanup.taskOwnedCleanup = "failed";
         retainFailure(
           new CiAuthCommandError(
             "AUTH_PREFLIGHT_CLEANUP_SIGNAL_MISMATCH",

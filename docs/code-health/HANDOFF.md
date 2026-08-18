@@ -33,9 +33,10 @@ and unexpected pre-cleanup termination or a cleanup-signal contradiction
 fails. The canonical reader cross-binds nested invocation, command, identity,
 failure-child, stream, server, session, and cleanup evidence. Before either
 file is published, the sealed canonical bytes pass the same schema, binding,
-and raw-private-value scan used by the reader. Exclusive hard-link publication
-accepts only resolver-issued destinations, cannot overwrite a concurrently
-appearing target, and revalidates its exact paths and physical parent. Workflow
+and raw-plus-trimmed-private-value scan used by the reader. Exclusive hard-link
+publication accepts only resolver-issued destinations whose root is disjoint
+from every worktree, cannot overwrite a concurrently appearing target, and
+revalidates its exact paths and physical parent. Workflow
 readers consume success and failure sidecars, bind them to the captured process
 status, and then propagate failure. Raw OAuth values, secrets, cookies,
 sessions, CSRF values, response bodies, passwords, database URLs, private

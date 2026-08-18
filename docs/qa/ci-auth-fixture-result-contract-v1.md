@@ -53,8 +53,9 @@ safe environment classification, start/completion timestamps, the closed
 completion marker, and an aggregate SHA-256.
 
 The sealed canonical result passes the schema, identity/binding, and
-raw-private-value validator before either result artifact is published, and is
-validated again after publication. The result never stores OAuth values, auth secrets, cookies, session or CSRF
+raw-plus-trimmed-private-value validator before either result artifact is
+published, and is validated again after publication. The result never stores
+OAuth values, auth secrets, cookies, session or CSRF
 contents, passwords, provider tokens, raw database URLs, raw private
 environment, response bodies, or private machine paths.
 
@@ -68,7 +69,8 @@ Each structured command requires all three explicit inputs:
 
 The root and target must be absolute canonical physical paths outside the
 repository and every Git worktree. The root and parent must already exist; no
-symlink component, repository-local fallback, or `.local` fallback is allowed.
+root/worktree overlap in either direction, symlink component, repository-local
+fallback, or `.local` fallback is allowed.
 The result and `<result>.sha256` must both be absent. Each file is written to a
 mode-0600 same-parent temporary file, fsynced, published through an exclusive
 same-filesystem hard link, and followed by a parent-directory fsync. The writer
