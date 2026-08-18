@@ -1,6 +1,6 @@
 "use strict";
 
-const { createHash, randomBytes } = require("node:crypto");
+const { createHash, randomBytes } = module.require("node:crypto");
 const {
   accessSync,
   closeSync,
@@ -14,9 +14,9 @@ const {
   renameSync,
   unlinkSync,
   writeFileSync,
-} = require("node:fs");
-const path = require("node:path");
-const { spawnSync } = require("node:child_process");
+} = module.require("node:fs");
+const path = module.require("node:path");
+const { spawnSync } = module.require("node:child_process");
 
 const AUTH_RESULT_SCHEMA = "interior-ai.ci-auth-fixture-command-result.v1";
 const AUTH_RESULT_VERSION = 1;
