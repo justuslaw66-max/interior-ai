@@ -12,6 +12,13 @@ function quotedIdentifier(value) {
   return `"${value.replaceAll('"', '""')}"`;
 }
 
+function quotedStageRole(value) {
+  if (!/^interior_ai_cert_stage_[a-f0-9]{32}$/.test(value)) {
+    throw new Error("certification database stage role is malformed");
+  }
+  return `"${value}"`;
+}
+
 function safeSession(row) {
   return {
     pid: Number(row.pid),
@@ -115,6 +122,138 @@ export class CertificationPostgresAdapter {
         throw new Error("generated certification database creation was not observed");
       }
       return { created: true };
+    });
+  }
+
+  async createStageRole({ databaseName, roleName, password }) {
+    const databaseIdentifier = quotedIdentifier(databaseName);
+    const roleIdentifier = quotedStageRole(roleName);
+    if (!/^[a-f0-9]{64}$/.test(password)) {
+      throw new Error("certification database stage credential is malformed");
+    }
+    try {
+      await withClient(this.adminUrl, async (client) => {
+        const existing = await client.query(
+          "SELECT 1 FROM pg_roles WHERE rolname = $1",
+          [roleName],
+        );
+        if (existing.rowCount !== 0) {
+          throw Object.assign(
+            new Error("certification database stage role already exists"),
+            { stageRoleCreateOutcome: "not-created" },
+          );
+        }
+        await client.query(
+          `CREATE ROLE ${roleIdentifier} LOGIN PASSWORD '${password}' NOSUPERUSER NOCREATEDB NOCREATEROLE NOINHERIT NOREPLICATION NOBYPASSRLS`,
+        );
+        await client.query(`GRANT CONNECT ON DATABASE ${databaseIdentifier} TO ${roleIdentifier}`);
+      });
+    } catch (error) {
+      if (error?.code === "42710" && !error.stageRoleCreateOutcome) {
+        error.stageRoleCreateOutcome = "not-created";
+      }
+      throw error;
+    }
+    await withClient(this.targetUrl(databaseName), async (client) => {
+      await client.query(`GRANT USAGE ON SCHEMA public TO ${roleIdentifier}`);
+      await client.query(
+        `GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO ${roleIdentifier}`,
+      );
+      await client.query(
+        `GRANT USAGE, SELECT, UPDATE ON ALL SEQUENCES IN SCHEMA public TO ${roleIdentifier}`,
+      );
+    });
+    const scopedUrl = new URL(this.targetUrl(databaseName));
+    scopedUrl.username = roleName;
+    scopedUrl.password = password;
+    const verified = await withClient(scopedUrl.toString(), async (client) => {
+      const result = await client.query(
+        `SELECT current_user AS role, rolsuper, rolcreatedb, rolcreaterole,
+                rolreplication, rolbypassrls
+           FROM pg_roles
+          WHERE rolname = current_user`,
+      );
+      return result.rows[0];
+    });
+    if (
+      verified?.role !== roleName ||
+      verified?.rolsuper !== false ||
+      verified?.rolcreatedb !== false ||
+      verified?.rolcreaterole !== false ||
+      verified?.rolreplication !== false ||
+      verified?.rolbypassrls !== false
+    ) {
+      throw new Error("certification database stage role retained admin capability");
+    }
+    return {
+      created: true,
+      classification: "stage-login-no-admin",
+      adminCapabilities: false,
+    };
+  }
+
+  async inspectStageRole(roleName) {
+    quotedStageRole(roleName);
+    return withClient(this.adminUrl, async (client) => {
+      const result = await client.query(
+        `SELECT rolsuper, rolcreatedb, rolcreaterole, rolreplication, rolbypassrls
+           FROM pg_roles
+          WHERE rolname = $1`,
+        [roleName],
+      );
+      const row = result.rows[0];
+      return {
+        exists: result.rowCount === 1,
+        adminCapabilities: row
+          ? row.rolsuper === true ||
+            row.rolcreatedb === true ||
+            row.rolcreaterole === true ||
+            row.rolreplication === true ||
+            row.rolbypassrls === true
+          : false,
+      };
+    });
+  }
+
+  async dropStageRole(roleName) {
+    const roleIdentifier = quotedStageRole(roleName);
+    return withClient(this.adminUrl, async (client) => {
+      const existing = await client.query(
+        "SELECT 1 FROM pg_roles WHERE rolname = $1",
+        [roleName],
+      );
+      if (existing.rowCount === 0) return { dropped: false, alreadyAbsent: true };
+      await client.query(`DROP ROLE ${roleIdentifier}`);
+      return { dropped: true, alreadyAbsent: false };
+    });
+  }
+
+  async inspectStageConnection({ databaseUrl, databaseName, roleName }) {
+    assertUnprotectedDatabaseName(databaseName);
+    quotedStageRole(roleName);
+    return withClient(databaseUrl, async (client) => {
+      const result = await client.query(
+        `SELECT current_user AS role,
+                current_database() AS database,
+                rolsuper,
+                rolcreatedb,
+                rolcreaterole,
+                rolreplication,
+                rolbypassrls
+           FROM pg_roles
+          WHERE rolname = current_user`,
+      );
+      const row = result.rows[0];
+      return {
+        exactTarget: row?.database === databaseName,
+        exactRole: row?.role === roleName,
+        adminCapabilities:
+          row?.rolsuper === true ||
+          row?.rolcreatedb === true ||
+          row?.rolcreaterole === true ||
+          row?.rolreplication === true ||
+          row?.rolbypassrls === true,
+      };
     });
   }
 

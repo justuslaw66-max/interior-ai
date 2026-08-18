@@ -1,7 +1,13 @@
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import { randomUUID } from "node:crypto";
-import { mkdtempSync, readFileSync, rmSync } from "node:fs";
+import {
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from "node:fs";
 import { tmpdir, userInfo } from "node:os";
 import path from "node:path";
 
@@ -71,6 +77,9 @@ class FakeDatabaseAdapter {
     createFailureOutcome = "ambiguous",
     failFirstPostDropInspection = false,
     releaseFailure = null,
+    foreignStageRole = false,
+    stageRoleCollisionOnCreate = false,
+    onCreateStageRole = null,
   } = {}) {
     this.exists = exists;
     this.migrated = false;
@@ -83,6 +92,11 @@ class FakeDatabaseAdapter {
     this.createFailureOutcome = createFailureOutcome;
     this.releaseFailure = releaseFailure;
     this.failFirstPostDropInspection = failFirstPostDropInspection;
+    this.stageRole = null;
+    this.foreignStageRole = foreignStageRole;
+    this.stageRoleCollisionOnCreate = stageRoleCollisionOnCreate;
+    this.onCreateStageRole = onCreateStageRole;
+    this.stageRoleDropCount = 0;
   }
 
   async inspectAdmin() {
@@ -124,6 +138,43 @@ class FakeDatabaseAdapter {
     return this.migrated ? migrationNames : [];
   }
 
+  async createStageRole({ roleName, password }) {
+    assert.match(roleName, /^interior_ai_cert_stage_[a-f0-9]{32}$/);
+    assert.match(password, /^[a-f0-9]{64}$/);
+    if (this.stageRoleCollisionOnCreate) {
+      this.stageRole = roleName;
+      throw Object.assign(
+        new Error("certification database stage role already exists"),
+        { stageRoleCreateOutcome: "not-created" },
+      );
+    }
+    this.stageRole = roleName;
+    this.onCreateStageRole?.();
+    return {
+      created: true,
+      classification: "stage-login-no-admin",
+      adminCapabilities: false,
+    };
+  }
+
+  async inspectStageRole(roleName) {
+    if (this.foreignStageRole && this.stageRole === null) {
+      this.stageRole = roleName;
+    }
+    return {
+      exists: this.stageRole !== null,
+      adminCapabilities: this.foreignStageRole,
+    };
+  }
+
+  async inspectStageConnection({ roleName }) {
+    return {
+      exactTarget: this.exists,
+      exactRole: this.stageRole === roleName,
+      adminCapabilities: false,
+    };
+  }
+
   async applicationRows() {
     return structuredClone(this.rows);
   }
@@ -152,6 +203,13 @@ class FakeDatabaseAdapter {
     this.dropped = wasPresent;
     return { dropped: wasPresent, alreadyAbsent: !wasPresent };
   }
+
+  async dropStageRole() {
+    this.stageRoleDropCount += 1;
+    const dropped = this.stageRole !== null;
+    this.stageRole = null;
+    return { dropped, alreadyAbsent: !dropped };
+  }
 }
 
 function fixture({ id, adminUrl = "postgresql://owner:raw-secret@127.0.0.1:5432/postgres" }) {
@@ -161,6 +219,7 @@ function fixture({ id, adminUrl = "postgresql://owner:raw-secret@127.0.0.1:5432/
     CERTIFICATION_EVIDENCE_ROOT: root,
     CERTIFICATION_DATABASE_LIFECYCLE_PATH: lifecyclePath,
     CERTIFICATION_DATABASE_ADMIN_URL: adminUrl,
+    CERTIFICATION_WORKTREE_ROOT: root,
     CERTIFICATION_QUALIFICATION_MODE: "1",
     PRODUCTION_CERTIFICATION_ID: `certification-${id}`,
     PRODUCTION_EVIDENCE_CANDIDATE_ID: `candidate-${id}`,
@@ -303,6 +362,312 @@ async function deterministicContractCoverage() {
     assert.equal(collisionAdapter.dropped, false);
   } finally {
     rmSync(collisionFixture.root, { recursive: true, force: true });
+  }
+
+  const roleCollisionFixture = fixture({ id: "stage-role-collision" });
+  const roleCollisionAdapter = new FakeDatabaseAdapter({
+    foreignStageRole: true,
+  });
+  try {
+    await planCertificationDatabase({
+      repositoryRoot,
+      environment: roleCollisionFixture.environment,
+      adapter: roleCollisionAdapter,
+      nonce: "e".repeat(32),
+      qualificationFixture: true,
+    });
+    await assert.rejects(
+      provisionCertificationDatabase({
+        repositoryRoot,
+        environment: roleCollisionFixture.environment,
+        adapter: roleCollisionAdapter,
+      }),
+      /stage role must be absent before create authorization/,
+    );
+    const failedRoleCollision = readCertificationDatabaseLifecycle({
+      repositoryRoot,
+      environment: roleCollisionFixture.environment,
+    });
+    assert.equal(failedRoleCollision.evidence.privateBinding, null);
+    const roleCollisionAbort = await abortCertificationDatabase({
+      repositoryRoot,
+      environment: roleCollisionFixture.environment,
+      adapter: roleCollisionAdapter,
+    });
+    assert.equal(roleCollisionAbort.evidence.currentState, "abort-absence-verified");
+    assert.equal(roleCollisionAbort.evidence.privateBinding, null);
+    assert.equal(roleCollisionAdapter.stageRoleDropCount, 0);
+    assert.notEqual(roleCollisionAdapter.stageRole, null);
+  } finally {
+    rmSync(roleCollisionFixture.root, { recursive: true, force: true });
+  }
+
+  const roleRaceFixture = fixture({ id: "stage-role-create-race" });
+  const roleRaceAdapter = new FakeDatabaseAdapter({
+    stageRoleCollisionOnCreate: true,
+  });
+  try {
+    await planCertificationDatabase({
+      repositoryRoot,
+      environment: roleRaceFixture.environment,
+      adapter: roleRaceAdapter,
+      nonce: "f".repeat(32),
+      qualificationFixture: true,
+    });
+    await assert.rejects(
+      provisionCertificationDatabase({
+        repositoryRoot,
+        environment: roleRaceFixture.environment,
+        adapter: roleRaceAdapter,
+      }),
+      /stage role already exists/,
+    );
+    const failedRoleRace = readCertificationDatabaseLifecycle({
+      repositoryRoot,
+      environment: roleRaceFixture.environment,
+    });
+    assert.equal(failedRoleRace.evidence.privateBinding.status, "foreign-collision");
+    assert.equal(
+      failedRoleRace.evidence.privateBinding.roleCreation
+        .roleAbsentImmediatelyBeforeCreate,
+      true,
+    );
+    const roleRaceAbort = await abortCertificationDatabase({
+      repositoryRoot,
+      environment: roleRaceFixture.environment,
+      adapter: roleRaceAdapter,
+    });
+    assert.equal(roleRaceAbort.evidence.privateBinding.status, "foreign-preserved");
+    assert.equal(roleRaceAdapter.stageRoleDropCount, 0);
+    assert.notEqual(roleRaceAdapter.stageRole, null);
+  } finally {
+    rmSync(roleRaceFixture.root, { recursive: true, force: true });
+  }
+
+  const sidecarCollisionFixture = fixture({ id: "private-sidecar-collision" });
+  const sidecarCollisionAdapter = new FakeDatabaseAdapter();
+  let foreignSidecarPath;
+  try {
+    const plan = await planCertificationDatabase({
+      repositoryRoot,
+      environment: sidecarCollisionFixture.environment,
+      adapter: sidecarCollisionAdapter,
+      nonce: "1".repeat(32),
+      qualificationFixture: true,
+    });
+    foreignSidecarPath = path.join(
+      sidecarCollisionFixture.root,
+      ".database-bindings",
+      sidecarCollisionFixture.environment.PRODUCTION_CERTIFICATION_ID,
+      `${plan.evidence.database.identitySha256}.json`,
+    );
+    sidecarCollisionAdapter.onCreateStageRole = () => {
+      mkdirSync(path.dirname(foreignSidecarPath), {
+        recursive: true,
+        mode: 0o700,
+      });
+      writeFileSync(foreignSidecarPath, "foreign private sidecar\n", {
+        mode: 0o600,
+      });
+    };
+    await assert.rejects(
+      provisionCertificationDatabase({
+        repositoryRoot,
+        environment: sidecarCollisionFixture.environment,
+        adapter: sidecarCollisionAdapter,
+      }),
+      /private connection sidecar already exists/,
+    );
+    const failedSidecarCollision = readCertificationDatabaseLifecycle({
+      repositoryRoot,
+      environment: sidecarCollisionFixture.environment,
+    });
+    assert.equal(
+      failedSidecarCollision.evidence.privateBinding.status,
+      "foreign-sidecar-collision",
+    );
+    assert.equal(
+      failedSidecarCollision.evidence.privateBinding.sidecarCreation
+        .ownershipRecoverable,
+      false,
+    );
+    const sidecarCollisionAbort = await abortCertificationDatabase({
+      repositoryRoot,
+      environment: sidecarCollisionFixture.environment,
+      adapter: sidecarCollisionAdapter,
+    });
+    assert.equal(
+      sidecarCollisionAbort.evidence.privateBinding.status,
+      "role-removed-foreign-sidecar-preserved",
+    );
+    assert.equal(sidecarCollisionAdapter.stageRoleDropCount, 1);
+    assert.equal(readFileSync(foreignSidecarPath, "utf8"), "foreign private sidecar\n");
+  } finally {
+    rmSync(sidecarCollisionFixture.root, { recursive: true, force: true });
+  }
+
+  const sidecarPublishRaceFixture = fixture({
+    id: "private-sidecar-publish-race",
+  });
+  const sidecarPublishRaceAdapter = new FakeDatabaseAdapter();
+  let racedForeignSidecarPath;
+  try {
+    await planCertificationDatabase({
+      repositoryRoot,
+      environment: sidecarPublishRaceFixture.environment,
+      adapter: sidecarPublishRaceAdapter,
+      nonce: "4".repeat(32),
+      qualificationFixture: true,
+    });
+    await assert.rejects(
+      provisionCertificationDatabase({
+        repositoryRoot,
+        environment: sidecarPublishRaceFixture.environment,
+        adapter: sidecarPublishRaceAdapter,
+        testHooks: {
+          beforePrivateSidecarPublish({ filePath }) {
+            racedForeignSidecarPath = filePath;
+            writeFileSync(filePath, "raced foreign private sidecar\n", {
+              mode: 0o600,
+            });
+          },
+        },
+      }),
+      /target already exists/,
+    );
+    const failedSidecarPublishRace = readCertificationDatabaseLifecycle({
+      repositoryRoot,
+      environment: sidecarPublishRaceFixture.environment,
+    });
+    assert.equal(
+      failedSidecarPublishRace.evidence.privateBinding.status,
+      "foreign-sidecar-collision",
+    );
+    assert.equal(
+      failedSidecarPublishRace.evidence.privateBinding.sidecarCreation
+        .sidecarAbsentImmediatelyBeforeCreate,
+      true,
+    );
+    assert.equal(
+      failedSidecarPublishRace.evidence.privateBinding.sidecarCreation
+        .ownershipRecoverable,
+      false,
+    );
+    const sidecarPublishRaceAbort = await abortCertificationDatabase({
+      repositoryRoot,
+      environment: sidecarPublishRaceFixture.environment,
+      adapter: sidecarPublishRaceAdapter,
+    });
+    assert.equal(
+      sidecarPublishRaceAbort.evidence.privateBinding.status,
+      "role-removed-foreign-sidecar-preserved",
+    );
+    assert.equal(sidecarPublishRaceAdapter.stageRoleDropCount, 1);
+    assert.equal(
+      readFileSync(racedForeignSidecarPath, "utf8"),
+      "raced foreign private sidecar\n",
+    );
+  } finally {
+    rmSync(sidecarPublishRaceFixture.root, {
+      recursive: true,
+      force: true,
+    });
+  }
+
+  const sidecarCrashFixture = fixture({ id: "private-sidecar-crash" });
+  const sidecarCrashAdapter = new FakeDatabaseAdapter();
+  let ownedSidecarPath;
+  try {
+    await planCertificationDatabase({
+      repositoryRoot,
+      environment: sidecarCrashFixture.environment,
+      adapter: sidecarCrashAdapter,
+      nonce: "2".repeat(32),
+      qualificationFixture: true,
+    });
+    await assert.rejects(
+      provisionCertificationDatabase({
+        repositoryRoot,
+        environment: sidecarCrashFixture.environment,
+        adapter: sidecarCrashAdapter,
+        testHooks: {
+          afterPrivateSidecarWrite({ filePath }) {
+            ownedSidecarPath = filePath;
+            throw new Error("simulated crash after private sidecar write");
+          },
+        },
+      }),
+      /simulated crash after private sidecar write/,
+    );
+    const failedSidecarCrash = readCertificationDatabaseLifecycle({
+      repositoryRoot,
+      environment: sidecarCrashFixture.environment,
+    });
+    assert.equal(
+      failedSidecarCrash.evidence.privateBinding.status,
+      "sidecar-authorized",
+    );
+    assert.equal(exists(ownedSidecarPath), true);
+    const sidecarCrashAbort = await abortCertificationDatabase({
+      repositoryRoot,
+      environment: sidecarCrashFixture.environment,
+      adapter: sidecarCrashAdapter,
+    });
+    assert.equal(sidecarCrashAbort.evidence.privateBinding.status, "removed");
+    assert.equal(exists(ownedSidecarPath), false);
+    assert.equal(sidecarCrashAdapter.stageRoleDropCount, 1);
+  } finally {
+    rmSync(sidecarCrashFixture.root, { recursive: true, force: true });
+  }
+
+  const activeSidecarTamperFixture = fixture({
+    id: "active-private-sidecar-tamper",
+  });
+  const activeSidecarTamperAdapter = new FakeDatabaseAdapter();
+  let replacedActiveSidecarPath;
+  try {
+    const plan = await planCertificationDatabase({
+      repositoryRoot,
+      environment: activeSidecarTamperFixture.environment,
+      adapter: activeSidecarTamperAdapter,
+      nonce: "3".repeat(32),
+      qualificationFixture: true,
+    });
+    await provisionCertificationDatabase({
+      repositoryRoot,
+      environment: activeSidecarTamperFixture.environment,
+      adapter: activeSidecarTamperAdapter,
+    });
+    replacedActiveSidecarPath = path.join(
+      activeSidecarTamperFixture.root,
+      ".database-bindings",
+      activeSidecarTamperFixture.environment.PRODUCTION_CERTIFICATION_ID,
+      `${plan.evidence.database.identitySha256}.json`,
+    );
+    writeFileSync(replacedActiveSidecarPath, "foreign replacement sidecar\n");
+    const tamperedSidecarAbort = await abortCertificationDatabase({
+      repositoryRoot,
+      environment: activeSidecarTamperFixture.environment,
+      adapter: activeSidecarTamperAdapter,
+    });
+    assert.equal(
+      tamperedSidecarAbort.evidence.privateBinding.status,
+      "role-removed-foreign-sidecar-preserved",
+    );
+    assert.equal(
+      tamperedSidecarAbort.evidence.cleanup.privateSidecar.foreignPreserved,
+      true,
+    );
+    assert.equal(activeSidecarTamperAdapter.stageRoleDropCount, 1);
+    assert.equal(
+      readFileSync(replacedActiveSidecarPath, "utf8"),
+      "foreign replacement sidecar\n",
+    );
+  } finally {
+    rmSync(activeSidecarTamperFixture.root, {
+      recursive: true,
+      force: true,
+    });
   }
 
   const ambiguousCreateFixture = fixture({ id: "ambiguous-create" });

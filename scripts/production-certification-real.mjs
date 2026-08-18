@@ -74,10 +74,10 @@ import {
   abortCertificationDatabase,
   bindCertificationDatabaseStage,
   certificationDatabaseStatus,
-  certificationDatabaseTargetUrl,
   dropCertificationDatabase,
   provisionCertificationDatabase,
   readCertificationDatabaseLifecycle,
+  resolveCertificationDatabaseStageEnvironment,
   verifyCertificationDatabaseAbsent,
   verifyFinalCertificationDatabase,
   verifyInitialCertificationDatabase,
@@ -489,7 +489,7 @@ async function runDatabaseLifecycleTransition(context, transition) {
   return result;
 }
 
-async function bindDatabaseForStage(context, stage) {
+async function bindDatabaseForStage(context, stage, adapter = null) {
   if (context.state.executionClass !== "real-candidate") return context;
   requireDatabaseLifecycleBinding(context, ["active"]);
   const stageIndex = CERTIFICATION_STAGE_ORDER.indexOf(stage);
@@ -507,6 +507,7 @@ async function bindDatabaseForStage(context, stage) {
   const result = await bindCertificationDatabaseStage({
     repositoryRoot: context.canonicalRoot,
     environment: context.environment,
+    adapter,
     stage,
   });
   return bindDatabaseLifecycleResult(context, result);
@@ -598,33 +599,48 @@ function childResult(command, args, options = {}) {
   });
 }
 
-function stageChildEnvironment(
+function stageChildProjection(
   context,
   { stage, profileId = stage, stageInputs, baseEnvironment = context.environment },
 ) {
-  const lifecycle = context.state?.databaseLifecycle;
-  const databaseActive = new Set([
-    "active",
-    "final-empty-verified",
-  ]).has(lifecycle?.lifecycleState);
-  const projectedBase =
-    databaseActive &&
-    ["source-validation", "build", "phase8", "runtime-smoke", "browser-owners"].includes(stage)
-      ? {
-          ...baseEnvironment,
-          DATABASE_URL: certificationDatabaseTargetUrl(
-            context.environment,
-            lifecycle,
-          ),
-        }
-      : baseEnvironment;
+  const profile = certificationEnvironmentProfile(
+    context.repositoryRoot,
+    profileId,
+  );
+  const ownsDatabaseCapability =
+    profile.childVisibleVariables.includes("DATABASE_URL");
+  if (Object.hasOwn(stageInputs ?? {}, "DATABASE_URL")) {
+    throw new Error("DATABASE_URL is owned by the private stage projector");
+  }
+  let privateDatabaseEnvironment = {};
+  if (ownsDatabaseCapability) {
+    if (
+      context.state.executionClass === "deterministic-simulation" &&
+      context.environment.CERTIFICATION_QUALIFICATION_MODE === "1"
+    ) {
+      privateDatabaseEnvironment = {
+        DATABASE_URL: requiredEnvironment(context.environment, "DATABASE_URL"),
+      };
+    } else {
+      privateDatabaseEnvironment = resolveCertificationDatabaseStageEnvironment({
+        repositoryRoot: context.canonicalRoot,
+        environment: context.environment,
+        state: context.state,
+        stage,
+      }).environment;
+    }
+  }
   return projectCertificationChildEnvironment({
     repositoryRoot: context.repositoryRoot,
-    baseEnvironment: projectedBase,
+    baseEnvironment,
     stage,
     profileId,
-    stageInputs,
-  }).environment;
+    stageInputs: { ...stageInputs, ...privateDatabaseEnvironment },
+  });
+}
+
+function stageChildEnvironment(context, options) {
+  return stageChildProjection(context, options).environment;
 }
 
 function dependencyInstallationEnvironment(context) {
@@ -1809,7 +1825,11 @@ export async function runSourceValidationStage({
     command: "source-validation",
     role: "source-validation",
   });
-  context = await bindDatabaseForStage(context, "source-validation");
+  context = await bindDatabaseForStage(
+    context,
+    "source-validation",
+    testHooks?.databaseAdapter ?? null,
+  );
   let sourceConsumed = false;
   return managedStage(
     context,
@@ -1834,12 +1854,48 @@ export async function runSourceValidationStage({
         role: "source-validation",
         phase: "active",
       });
+      const qualificationSource =
+        boundState.executionClass === "deterministic-simulation" &&
+        context.environment.CERTIFICATION_QUALIFICATION_MODE === "1";
+      const sourceEnvironment = stageChildEnvironment(
+        { ...context, state: boundState },
+        {
+          stage: "source-validation",
+          profileId: qualificationSource
+            ? "source-validation-qualification"
+            : "source-validation",
+          stageInputs: {
+            CERTIFICATION_ENVIRONMENT_STAGE: "source-validation",
+            CERTIFICATION_SOURCE_VALIDATION_CHECK_ID:
+              "source-validation-dispatch",
+            ...(qualificationSource
+              ? Object.fromEntries(
+                  [
+                    ["CERTIFICATION_QUALIFICATION_MODE", "1"],
+                    [
+                      "CERTIFICATION_SOURCE_VALIDATION_FIXTURE_LOG",
+                      context.environment.CERTIFICATION_SOURCE_VALIDATION_FIXTURE_LOG,
+                    ],
+                    [
+                      "CERTIFICATION_SOURCE_VALIDATION_DIRTY_ID",
+                      context.environment.CERTIFICATION_SOURCE_VALIDATION_DIRTY_ID,
+                    ],
+                    [
+                      "CERTIFICATION_SOURCE_VALIDATION_FAIL_ID",
+                      context.environment.CERTIFICATION_SOURCE_VALIDATION_FAIL_ID,
+                    ],
+                  ].filter(([, value]) => value?.trim()),
+                )
+              : {}),
+          },
+        },
+      );
       const result = sourceValidationStageEvidence({
         repositoryRoot: context.repositoryRoot,
         canonicalRoot: context.canonicalRoot,
         evidenceRoot: context.evidenceRoot,
         state: boundState,
-        environment: context.environment,
+        environment: sourceEnvironment,
         onCheckCompleted: (check) => {
           sourceConsumed ||= check.substantive;
         },
@@ -1886,6 +1942,7 @@ export async function runSourceValidationStage({
         evidenceRoot: context.evidenceRoot,
         state: boundState,
         repositoryRoot: context.repositoryRoot,
+        databaseUrl: sourceEnvironment.DATABASE_URL,
       });
       if (!validation.valid) {
         throw new StageFailure(
@@ -2068,6 +2125,7 @@ export async function runBuildStage({
       repositoryRoot: context.repositoryRoot,
       manifestPath: DEFAULT_MANIFEST,
       verificationMode: PRODUCTION_EVIDENCE_VERIFICATION_MODES.REPOSITORY_PREFLIGHT,
+      environment: buildEnvironment,
     });
     if (!validation.valid) {
       throw new StageFailure(validation.issues.join("; "), "BUILD_FAILURE", true);
@@ -2810,8 +2868,7 @@ export async function runRuntimeSmokeStage(options = {}) {
       context.repositoryRoot,
       "runtime-smoke",
     );
-    const childProjection = projectCertificationChildEnvironment({
-      repositoryRoot: context.repositoryRoot,
+    const childProjection = stageChildProjection({ ...context, state }, {
       baseEnvironment: { ...context.environment, CI: "true" },
       stage: "runtime-smoke",
       profileId: "runtime-smoke",
@@ -3048,7 +3105,7 @@ export function browserEnvironment(
   if (owner.productionServer) {
     stageInputs.PLAYWRIGHT_USE_PRODUCTION_SERVER = "1";
   }
-  return stageChildEnvironment(context, {
+  return stageChildEnvironment({ ...context, state }, {
     stage: "browser-owners",
     profileId: owner.productionServer
       ? "production-browser-owner"

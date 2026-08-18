@@ -1,11 +1,9 @@
 import { spawnSync } from "node:child_process";
 import {
-  closeSync,
   existsSync,
   lstatSync,
   mkdirSync,
   mkdtempSync,
-  openSync,
   readFileSync,
   readlinkSync,
   readdirSync,
@@ -371,6 +369,7 @@ function sourceValidationStageInputs(environment, state, check) {
   const inputs = {
     CERTIFICATION_ENVIRONMENT_STAGE: "source-validation",
     CERTIFICATION_SOURCE_VALIDATION_CHECK_ID: check.id,
+    DATABASE_URL: environment.DATABASE_URL,
   };
   if (state.executionClass === "deterministic-simulation") {
     inputs.CERTIFICATION_QUALIFICATION_MODE = "1";
@@ -383,6 +382,64 @@ function sourceValidationStageInputs(environment, state, check) {
     }
   }
   return inputs;
+}
+
+function sourceValidationDatabaseSecrets(databaseUrl) {
+  const passwordValues = [];
+  if (databaseUrl) {
+    try {
+      const encodedPassword = new URL(databaseUrl).password;
+      if (encodedPassword) {
+        passwordValues.push(encodedPassword);
+        const decodedPassword = decodeURIComponent(encodedPassword);
+        if (decodedPassword !== encodedPassword) passwordValues.push(decodedPassword);
+      }
+    } catch {
+      // The stage projector owns URL validation; retain generic URL redaction here.
+    }
+  }
+  return passwordValues;
+}
+
+function containsRawSourceValidationDatabaseMaterial(value, databaseUrl) {
+  return Boolean(
+    (databaseUrl && value.includes(databaseUrl)) ||
+    sourceValidationDatabaseSecrets(databaseUrl).some((password) =>
+      value.includes(password),
+    ) ||
+    /postgres(?:ql)?:\/\/[^\s"'<>]+/i.test(value)
+  );
+}
+
+function sanitizeSourceValidationDatabaseOutput(original, databaseUrl) {
+  const passwordValues = sourceValidationDatabaseSecrets(databaseUrl);
+  const rawDatabaseConnectionDetected =
+    (databaseUrl && original.includes(databaseUrl)) ||
+    passwordValues.some((password) => original.includes(password)) ||
+    /postgres(?:ql)?:\/\/[^\s"'<>]+/i.test(original);
+  if (!rawDatabaseConnectionDetected) {
+    return {
+      retained: original,
+      rawDatabaseConnectionDetected: false,
+      retainedRawDatabaseConnection: false,
+    };
+  }
+  let redacted = databaseUrl
+    ? original.split(databaseUrl).join("[REDACTED_DATABASE_URL]")
+    : original;
+  redacted = redacted
+    .replace(/postgres(?:ql)?:\/\/[^\s"'<>]+/gi, "[REDACTED_DATABASE_URL]")
+    .replace(/:\/\/([^\s"'/:]+):([^\s"'@/]+)@/g, "://$1:[REDACTED]@");
+  for (const password of passwordValues) {
+    redacted = redacted
+      .split(password)
+      .join("[REDACTED_DATABASE_PASSWORD]");
+  }
+  return {
+    retained: redacted,
+    rawDatabaseConnectionDetected: true,
+    retainedRawDatabaseConnection: false,
+  };
 }
 
 function sourceValidationProfileId(state, check) {
@@ -882,19 +939,35 @@ export function sourceValidationStageEvidence({
     );
     const stdoutPath = path.join(checkRoot, "stdout.log");
     const stderrPath = path.join(checkRoot, "stderr.log");
-    const stdout = openSync(stdoutPath, "wx", 0o600);
-    const stderr = openSync(stderrPath, "wx", 0o600);
-    let child;
-    try {
-      child = spawnSync(invocation.executable, invocation.args, {
-        cwd: repositoryRoot,
-        env: projected.environment,
-        stdio: ["ignore", stdout, stderr],
-      });
-    } finally {
-      closeSync(stdout);
-      closeSync(stderr);
-    }
+    const child = spawnSync(invocation.executable, invocation.args, {
+      cwd: repositoryRoot,
+      env: projected.environment,
+      encoding: "utf8",
+      maxBuffer: 32 * 1024 * 1024,
+      stdio: ["ignore", "pipe", "pipe"],
+    });
+    const stdoutSecurity = sanitizeSourceValidationDatabaseOutput(
+      String(child.stdout ?? ""),
+      projected.environment.DATABASE_URL,
+    );
+    const stderrSecurity = sanitizeSourceValidationDatabaseOutput(
+      String(child.stderr ?? ""),
+      projected.environment.DATABASE_URL,
+    );
+    writeFileSync(stdoutPath, stdoutSecurity.retained, {
+      flag: "wx",
+      mode: 0o600,
+    });
+    writeFileSync(stderrPath, stderrSecurity.retained, {
+      flag: "wx",
+      mode: 0o600,
+    });
+    const outputSecurity = {
+      rawDatabaseConnectionDetected:
+        stdoutSecurity.rawDatabaseConnectionDetected ||
+        stderrSecurity.rawDatabaseConnectionDetected,
+      retainedRawDatabaseConnection: false,
+    };
     const completedAt = nowForExecution(state, index * 4 + 2);
     const generatedOutputPostCheck = generatedOutputLifecycle?.afterCheck({
       checkId: check.id,
@@ -947,6 +1020,7 @@ export function sourceValidationStageEvidence({
         ...stderrDescriptor,
         bytes: statSync(stderrPath).size,
       },
+      outputSecurity,
       ...(new Set([3, 4]).has(state.version)
         ? {
             generatedOutputs: {
@@ -960,6 +1034,7 @@ export function sourceValidationStageEvidence({
         !child.error &&
         !child.signal &&
         child.status === 0 &&
+        outputSecurity.rawDatabaseConnectionDetected === false &&
         (generatedOutputPostCheck?.passed ?? true) &&
         sourceAfter.commitSha === sourceBefore.commitSha &&
         sourceAfter.treeSha === sourceBefore.treeSha &&
@@ -1119,6 +1194,7 @@ export function validateSourceValidationEvidence({
   repositoryRoot,
   requirePassed = true,
   verifyPhysicalSource = true,
+  databaseUrl = null,
 }) {
   const issues = [];
   let contract;
@@ -1429,6 +1505,7 @@ export function validateSourceValidationEvidence({
         "process",
         "stdout",
         "stderr",
+        "outputSecurity",
         ...(new Set([3, 4]).has(state.version) ? ["generatedOutputs"] : []),
         "generatedEvidence",
         "passed",
@@ -1679,6 +1756,13 @@ export function validateSourceValidationEvidence({
       (result.process.spawnError === null ||
         (typeof result.process.spawnError === "string" &&
           result.process.spawnError));
+    const outputSecurityValid =
+      exactKeys(result.outputSecurity, [
+        "rawDatabaseConnectionDetected",
+        "retainedRawDatabaseConnection",
+      ]) &&
+      typeof result.outputSecurity.rawDatabaseConnectionDetected === "boolean" &&
+      result.outputSecurity.retainedRawDatabaseConnection === false;
     const realFailedProcess =
       (Number.isSafeInteger(result.process?.exitCode) &&
         result.process.exitCode !== 0) ||
@@ -1693,11 +1777,18 @@ export function validateSourceValidationEvidence({
       result.generatedOutputs?.postCheck?.passed === false &&
       Array.isArray(result.generatedOutputs.postCheck.issues) &&
       result.generatedOutputs.postCheck.issues.length > 0;
+    const outputSecurityFailure =
+      expectedFailure &&
+      outputSecurityValid &&
+      result.outputSecurity.rawDatabaseConnectionDetected === true;
     const failedStageRecord = state.stages?.["source-validation"];
     const failedAsExpected =
       expectedFailure &&
       result.passed === false &&
-      (realFailedProcess || sourceDriftFailure || generatedOutputFailure) &&
+      (realFailedProcess ||
+        sourceDriftFailure ||
+        generatedOutputFailure ||
+        outputSecurityFailure) &&
       failedStageRecord?.status === "failed" &&
       failedStageRecord.exitCode ===
         (result.process.exitCode === 0 ? 1 : (result.process.exitCode ?? 1)) &&
@@ -1707,8 +1798,14 @@ export function validateSourceValidationEvidence({
       result.process?.exitCode === 0 &&
       result.process?.signal === null &&
       result.process?.spawnError === null &&
+      outputSecurityValid &&
+      result.outputSecurity.rawDatabaseConnectionDetected === false &&
       result.passed === true;
-    if (!processShapeValid || (!failedAsExpected && !passedAsExpected)) {
+    if (
+      !processShapeValid ||
+      !outputSecurityValid ||
+      (!failedAsExpected && !passedAsExpected)
+    ) {
       issues.push(`source-validation required check did not exit zero: ${expected.id}`);
     }
     for (const stream of ["stdout", "stderr"]) {
@@ -1735,6 +1832,16 @@ export function validateSourceValidationEvidence({
         );
         if (retained.bytes.byteLength !== streamDescriptor.bytes) {
           issues.push(`source-validation ${stream} size mismatch: ${expected.id}`);
+        }
+        if (
+          containsRawSourceValidationDatabaseMaterial(
+            retained.bytes.toString("utf8"),
+            databaseUrl,
+          )
+        ) {
+          issues.push(
+            `source-validation ${stream} contains raw database material: ${expected.id}`,
+          );
         }
       } catch (error) {
         issues.push(error instanceof Error ? error.message : String(error));

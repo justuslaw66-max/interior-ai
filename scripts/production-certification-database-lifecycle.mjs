@@ -1,13 +1,17 @@
 import { spawnSync } from "node:child_process";
+import { randomBytes } from "node:crypto";
 import {
   closeSync,
   existsSync,
   fsyncSync,
+  linkSync,
   lstatSync,
+  mkdirSync,
   openSync,
   readFileSync,
   realpathSync,
   renameSync,
+  rmSync,
   unlinkSync,
   writeFileSync,
 } from "node:fs";
@@ -108,7 +112,11 @@ function descriptor(evidenceRoot, absolutePath) {
   return { path: relativePath, sha256: sha256(readFileSync(absolutePath)) };
 }
 
-function atomicWrite(filePath, value, { requireAbsent = false } = {}) {
+function atomicWrite(
+  filePath,
+  value,
+  { requireAbsent = false, beforePublish } = {},
+) {
   if (requireAbsent && existsSync(filePath)) {
     throw new Error("database lifecycle evidence target already exists");
   }
@@ -121,11 +129,176 @@ function atomicWrite(filePath, value, { requireAbsent = false } = {}) {
     fsyncSync(handle);
     closeSync(handle);
     handle = undefined;
-    renameSync(temporary, filePath);
+    beforePublish?.({ filePath, temporaryPath: temporary });
+    if (requireAbsent) {
+      try {
+        linkSync(temporary, filePath);
+      } catch (error) {
+        if (error?.code === "EEXIST") {
+          throw new Error("database lifecycle evidence target already exists", {
+            cause: error,
+          });
+        }
+        throw error;
+      }
+    } else {
+      renameSync(temporary, filePath);
+    }
   } finally {
     if (handle !== undefined) closeSync(handle);
     if (existsSync(temporary)) unlinkSync(temporary);
   }
+}
+
+function stageRoleName(evidence) {
+  return `interior_ai_cert_stage_${evidence.database.identitySha256.slice(0, 32)}`;
+}
+
+function privateBindingPath(environment, evidence, { createParent = false } = {}) {
+  const ownerRoot = realpathSync(
+    required(environment, "CERTIFICATION_WORKTREE_ROOT"),
+  );
+  if (!lstatSync(ownerRoot).isDirectory() || lstatSync(ownerRoot).isSymbolicLink()) {
+    throw new Error("certification database private binding root is not physical");
+  }
+  const parent = path.join(
+    ownerRoot,
+    ".database-bindings",
+    evidence.identity.certificationId,
+  );
+  if (createParent) mkdirSync(parent, { recursive: true, mode: 0o700 });
+  if (!existsSync(parent)) {
+    throw new Error("certification database private connection sidecar is missing");
+  }
+  const physicalParent = realpathSync(parent);
+  if (
+    (!physicalParent.startsWith(`${ownerRoot}${path.sep}`) &&
+      physicalParent !== ownerRoot) ||
+    !lstatSync(physicalParent).isDirectory() ||
+    lstatSync(physicalParent).isSymbolicLink()
+  ) {
+    throw new Error("certification database private binding parent is not physical");
+  }
+  return path.join(
+    physicalParent,
+    `${evidence.database.identitySha256}.json`,
+  );
+}
+
+function stageDatabaseUrl(adminUrl, databaseName, roleName, password) {
+  const target = new URL(targetDatabaseUrl(adminUrl, databaseName));
+  target.username = roleName;
+  target.password = password;
+  return target.toString();
+}
+
+function preparePrivateDatabaseBinding(environment, evidence, password) {
+  const roleName = stageRoleName(evidence);
+  const targetUrl = stageDatabaseUrl(
+    required(environment, "CERTIFICATION_DATABASE_ADMIN_URL"),
+    evidence.database.name,
+    roleName,
+    password,
+  );
+  const sidecar = {
+    schema: "interior-ai.production-certification-database-private-binding.v1",
+    certificationId: evidence.identity.certificationId,
+    candidateId: evidence.identity.candidateId,
+    candidateCommitSha: evidence.identity.candidateCommitSha,
+    candidateTreeSha: evidence.identity.candidateTreeSha,
+    databaseIdentitySha256: evidence.database.identitySha256,
+    databaseNameSha256: evidence.database.nameSha256,
+    roleName,
+    targetUrl,
+  };
+  return {
+    filePath: privateBindingPath(environment, evidence, { createParent: true }),
+    sidecar,
+    sidecarSha256: sha256(canonicalJsonBytes(sidecar)),
+  };
+}
+
+function readPrivateDatabaseBinding(environment, evidence) {
+  const filePath = privateBindingPath(environment, evidence);
+  if (!existsSync(filePath)) {
+    throw new Error("certification database private connection sidecar is missing");
+  }
+  const metadata = lstatSync(filePath);
+  if (
+    !metadata.isFile() ||
+    metadata.isSymbolicLink() ||
+    (metadata.mode & 0o077) !== 0
+  ) {
+    throw new Error("certification database private connection sidecar is invalid");
+  }
+  const bytes = readFileSync(filePath);
+  let sidecar;
+  try {
+    sidecar = JSON.parse(bytes.toString("utf8"));
+  } catch {
+    throw new Error("certification database private connection sidecar is invalid");
+  }
+  const roleName = stageRoleName(evidence);
+  if (
+    !bytes.equals(canonicalJsonBytes(sidecar)) ||
+    evidence.privateBinding?.status !== "active" ||
+    evidence.privateBinding?.classification !== "private-stage-login-no-admin" ||
+    evidence.privateBinding?.roleNameSha256 !== sha256(roleName) ||
+    evidence.privateBinding?.sidecarSha256 !== sha256(bytes) ||
+    sidecar.schema !==
+      "interior-ai.production-certification-database-private-binding.v1" ||
+    sidecar.certificationId !== evidence.identity.certificationId ||
+    sidecar.candidateId !== evidence.identity.candidateId ||
+    sidecar.candidateCommitSha !== evidence.identity.candidateCommitSha ||
+    sidecar.candidateTreeSha !== evidence.identity.candidateTreeSha ||
+    sidecar.databaseIdentitySha256 !== evidence.database.identitySha256 ||
+    sidecar.databaseNameSha256 !== evidence.database.nameSha256 ||
+    sidecar.roleName !== roleName ||
+    typeof sidecar.targetUrl !== "string"
+  ) {
+    throw new Error(
+      "certification database private connection sidecar is stale or foreign",
+    );
+  }
+  return { filePath, sidecar };
+}
+
+function inspectPrivateDatabaseBindingFile(environment, evidence) {
+  let filePath;
+  try {
+    filePath = privateBindingPath(environment, evidence);
+  } catch (error) {
+    if (evidence.privateBinding === null) {
+      return { status: "absent", filePath: null };
+    }
+    throw error;
+  }
+  if (!existsSync(filePath)) return { status: "absent", filePath };
+  const metadata = lstatSync(filePath);
+  if (!metadata.isFile() || metadata.isSymbolicLink()) {
+    return { status: "foreign", filePath };
+  }
+  return {
+    status:
+      sha256(readFileSync(filePath)) === evidence.privateBinding?.sidecarSha256
+        ? "owned"
+        : "foreign",
+    filePath,
+  };
+}
+
+function removePrivateDatabaseBinding(environment, evidence) {
+  const inspected = inspectPrivateDatabaseBindingFile(environment, evidence);
+  if (inspected.status === "foreign") {
+    throw new Error(
+      "certification database private connection sidecar is foreign",
+    );
+  }
+  if (inspected.status === "owned") rmSync(inspected.filePath);
+  return {
+    removed: inspected.status === "owned",
+    alreadyAbsent: inspected.status === "absent",
+  };
 }
 
 function readEvidence(filePath) {
@@ -354,6 +527,7 @@ export async function planCertificationDatabase({
       checkedAt: createdAt,
     },
     migration: null,
+    privateBinding: null,
     provisioning: {
       outcome: "not-attempted",
       ownershipRecoverable: false,
@@ -451,7 +625,7 @@ export function readCertificationDatabaseLifecycle({
 }
 
 export async function provisionCertificationDatabase(options = {}) {
-  return mutateLifecycle({ ...options, mode: "provision" }, async ({ evidence, adapter, repositoryRoot, checkpoint }) => {
+  return mutateLifecycle({ ...options, mode: "provision" }, async ({ evidence, adapter, repositoryRoot, environment, checkpoint }) => {
     if (evidence.currentState !== "planned") {
       throw new Error("database provision requires a planned absent target");
     }
@@ -492,7 +666,159 @@ export async function provisionCertificationDatabase(options = {}) {
       ) {
         throw new Error("target database did not receive the exact 43 migrations");
       }
+      const roleName = stageRoleName(evidence);
+      const password = randomBytes(32).toString("hex");
+      const stageRolePreflight = await adapter.inspectStageRole(roleName);
+      if (stageRolePreflight.exists) {
+        throw new Error(
+          "certification database stage role must be absent before create authorization",
+        );
+      }
+      current = structuredClone(current);
+      current.privateBinding = {
+        classification: "private-stage-login-no-admin",
+        roleNameSha256: sha256(roleName),
+        sidecarSha256: null,
+        status: "create-authorized",
+        roleCreation: {
+          outcome: "authorized",
+          ownershipRecoverable: true,
+          roleAbsentImmediatelyBeforeCreate: true,
+        },
+        sidecarCreation: null,
+      };
+      current = checkpoint(current);
+      let stageRole;
+      try {
+        stageRole = await adapter.createStageRole({
+          databaseName: evidence.database.name,
+          roleName,
+          password,
+        });
+      } catch (error) {
+        if (error?.stageRoleCreateOutcome === "not-created") {
+          current = structuredClone(current);
+          current.privateBinding = {
+            ...current.privateBinding,
+            status: "foreign-collision",
+            roleCreation: {
+              outcome: "foreign-collision",
+              ownershipRecoverable: false,
+              roleAbsentImmediatelyBeforeCreate: true,
+            },
+          };
+          throw error;
+        }
+        const inspectedRole = await adapter.inspectStageRole(roleName);
+        if (inspectedRole.exists) {
+          current = structuredClone(current);
+          current.privateBinding = {
+            ...current.privateBinding,
+            status: "role-created",
+            roleCreation: {
+              outcome: "ambiguous-create-recovered",
+              ownershipRecoverable: true,
+              roleAbsentImmediatelyBeforeCreate: true,
+            },
+          };
+          current = checkpoint(current);
+        }
+        throw error;
+      }
+      current = structuredClone(current);
+      current.privateBinding = {
+        ...current.privateBinding,
+        status: "role-created",
+        roleCreation: {
+          outcome: "created",
+          ownershipRecoverable: true,
+          roleAbsentImmediatelyBeforeCreate: true,
+        },
+      };
+      current = checkpoint(current);
+      if (
+        stageRole?.created !== true ||
+        stageRole?.classification !== "stage-login-no-admin" ||
+        stageRole?.adminCapabilities !== false
+      ) {
+        throw new Error("certification database stage role was not created safely");
+      }
+      const preparedSidecar = preparePrivateDatabaseBinding(
+        environment,
+        current,
+        password,
+      );
+      if (existsSync(preparedSidecar.filePath)) {
+        current = structuredClone(current);
+        current.privateBinding = {
+          ...current.privateBinding,
+          sidecarSha256: preparedSidecar.sidecarSha256,
+          status: "foreign-sidecar-collision",
+          sidecarCreation: {
+            outcome: "foreign-collision",
+            ownershipRecoverable: false,
+            sidecarAbsentImmediatelyBeforeCreate: false,
+          },
+        };
+        throw new Error(
+          "certification database private connection sidecar already exists",
+        );
+      }
+      current = structuredClone(current);
+      current.privateBinding = {
+        ...current.privateBinding,
+        sidecarSha256: preparedSidecar.sidecarSha256,
+        status: "sidecar-authorized",
+        sidecarCreation: {
+          outcome: "authorized",
+          ownershipRecoverable: true,
+          sidecarAbsentImmediatelyBeforeCreate: true,
+        },
+      };
+      current = checkpoint(current);
+      try {
+        atomicWrite(preparedSidecar.filePath, preparedSidecar.sidecar, {
+          requireAbsent: true,
+          beforePublish: ({ filePath, temporaryPath }) =>
+            options.testHooks?.beforePrivateSidecarPublish?.({
+              filePath,
+              temporaryPath,
+              sidecarSha256: preparedSidecar.sidecarSha256,
+            }),
+        });
+      } catch (error) {
+        const inspectedSidecar = inspectPrivateDatabaseBindingFile(
+          environment,
+          current,
+        );
+        if (inspectedSidecar.status === "foreign") {
+          current = structuredClone(current);
+          current.privateBinding = {
+            ...current.privateBinding,
+            status: "foreign-sidecar-collision",
+            sidecarCreation: {
+              outcome: "foreign-collision",
+              ownershipRecoverable: false,
+              sidecarAbsentImmediatelyBeforeCreate: true,
+            },
+          };
+        }
+        throw error;
+      }
+      await options.testHooks?.afterPrivateSidecarWrite?.({
+        filePath: preparedSidecar.filePath,
+        sidecarSha256: preparedSidecar.sidecarSha256,
+      });
       const next = structuredClone(current);
+      next.privateBinding = {
+        ...current.privateBinding,
+        status: "active",
+        sidecarCreation: {
+          outcome: "created",
+          ownershipRecoverable: true,
+          sidecarAbsentImmediatelyBeforeCreate: true,
+        },
+      };
       next.migration = {
         owner: "prisma-migrate-deploy",
         count: migrations.count,
@@ -585,13 +911,28 @@ export async function verifyInitialCertificationDatabase(options = {}) {
 }
 
 export async function bindCertificationDatabaseStage(options = {}) {
-  return mutateLifecycle({ ...options, mode: "bind-stage" }, async ({ evidence }) => {
+  return mutateLifecycle({ ...options, mode: "bind-stage" }, async ({ evidence, adapter, environment }) => {
     const stage = options.stage;
     if (
       evidence.currentState !== "active" ||
       !PRODUCTION_CERTIFICATION_DATABASE_STAGE_BINDINGS.includes(stage)
     ) {
       throw new Error("database stage binding is not permitted in the current lifecycle state");
+    }
+    const privateBinding = readPrivateDatabaseBinding(environment, evidence);
+    const live = await adapter.inspectStageConnection({
+      databaseUrl: privateBinding.sidecar.targetUrl,
+      databaseName: evidence.database.name,
+      roleName: stageRoleName(evidence),
+    });
+    if (
+      live.exactTarget !== true ||
+      live.exactRole !== true ||
+      live.adminCapabilities !== false
+    ) {
+      throw new Error(
+        "database stage binding did not prove the exact non-admin live target",
+      );
     }
     const existing = evidence.stageBindings.observed.find(
       (binding) => binding.stage === stage,
@@ -654,7 +995,7 @@ export async function verifyFinalCertificationDatabase(options = {}) {
 }
 
 export async function dropCertificationDatabase(options = {}) {
-  return mutateLifecycle({ ...options, mode: "drop" }, async ({ evidence, adapter, checkpoint }) => {
+  return mutateLifecycle({ ...options, mode: "drop" }, async ({ evidence, adapter, environment, checkpoint }) => {
     if (evidence.currentState !== "final-empty-verified") {
       throw new Error("normal database drop requires truthful final-empty verification");
     }
@@ -669,8 +1010,22 @@ export async function dropCertificationDatabase(options = {}) {
     if (dropped.dropped !== true) {
       throw new Error("normal database drop did not remove the owned target");
     }
+    const stageRole = await adapter.dropStageRole(stageRoleName(evidence));
+    if (stageRole.dropped !== true) {
+      throw new Error("normal database drop did not remove the private stage role");
+    }
+    removePrivateDatabaseBinding(environment, evidence);
     const after = structuredClone(cleared);
-    after.cleanup = { mode: "normal", drop: dropped, originalFailureRetained: false };
+    after.privateBinding = {
+      ...after.privateBinding,
+      status: "removed",
+    };
+    after.cleanup = {
+      mode: "normal",
+      drop: dropped,
+      stageRole,
+      originalFailureRetained: false,
+    };
     return advance(after, "drop", ["dropped"], dropped);
   });
 }
@@ -692,7 +1047,7 @@ export async function verifyCertificationDatabaseAbsent(options = {}) {
 }
 
 export async function abortCertificationDatabase(options = {}) {
-  return mutateLifecycle({ ...options, mode: "abort-cleanup" }, async ({ evidence, adapter, checkpoint }) => {
+  return mutateLifecycle({ ...options, mode: "abort-cleanup" }, async ({ evidence, adapter, environment, checkpoint }) => {
     if (evidence.currentState === "abort-absence-verified") return evidence;
     let next = structuredClone(evidence);
     let inspected = await adapter.inspectAdmin(evidence.database.name);
@@ -784,6 +1139,58 @@ export async function abortCertificationDatabase(options = {}) {
         failedRunRehabilitated: false,
       };
     }
+    const ownsStageRole =
+      next.privateBinding?.roleCreation?.ownershipRecoverable === true;
+    const stageRole = ownsStageRole
+      ? await adapter.dropStageRole(stageRoleName(evidence))
+      : {
+          dropped: false,
+          alreadyAbsent: false,
+          foreignPreserved: true,
+        };
+    if (
+      ownsStageRole &&
+      stageRole.dropped !== true &&
+      stageRole.alreadyAbsent !== true
+    ) {
+      throw new Error("abort cleanup did not remove the private stage role");
+    }
+    let sidecarCleanup = {
+      removed: false,
+      alreadyAbsent: true,
+      foreignPreserved: false,
+    };
+    if (typeof next.privateBinding?.sidecarSha256 === "string") {
+      const inspectedSidecar = inspectPrivateDatabaseBindingFile(
+        environment,
+        next,
+      );
+      if (inspectedSidecar.status === "foreign") {
+        sidecarCleanup = {
+          removed: false,
+          alreadyAbsent: false,
+          foreignPreserved: true,
+        };
+      } else {
+        sidecarCleanup = {
+          ...removePrivateDatabaseBinding(environment, next),
+          foreignPreserved: false,
+        };
+      }
+    }
+    next.privateBinding = next.privateBinding
+      ? {
+          ...next.privateBinding,
+          status: !ownsStageRole
+            ? "foreign-preserved"
+            : sidecarCleanup.foreignPreserved
+              ? "role-removed-foreign-sidecar-preserved"
+              : typeof next.privateBinding.sidecarSha256 === "string"
+                ? "removed"
+                : "role-removed-no-sidecar",
+        }
+      : null;
+    next.cleanup = { ...next.cleanup, stageRole, privateSidecar: sidecarCleanup };
     next = advance(next, "abort-cleanup", ["abort-dropped"], {
       targetWasPresent: inspected.targetExists,
       successfulDropReceiptRetained: next.cleanup?.drop?.dropped === true,
@@ -842,6 +1249,119 @@ export async function certificationDatabaseStatus(options = {}) {
     canCreateDatabase: inspected.canCreateDatabase,
     evidenceSha256: current.descriptor.sha256,
   };
+}
+
+function assertDatabaseProjectionReadiness(evidence, stage) {
+  const requiredStates = [
+    "provisioned",
+    "migrated",
+    "initial-empty-verified",
+    "active",
+  ];
+  if (
+    evidence.currentState !== "active" ||
+    requiredStates.some(
+      (state) => !evidence.events.some((entry) => entry.state === state),
+    ) ||
+    evidence.inventories.initial?.totalRows !== 0 ||
+    evidence.sessions.initial?.count !== 0
+  ) {
+    throw new Error(
+      "certification database is not ready for private stage projection",
+    );
+  }
+  const observed = evidence.stageBindings.observed.find(
+    (binding) => binding.stage === stage,
+  );
+  if (
+    !observed ||
+    observed.databaseIdentitySha256 !== evidence.database.identitySha256 ||
+    observed.databaseNameSha256 !== evidence.database.nameSha256
+  ) {
+    throw new Error(
+      "certification database stage binding is missing or foreign",
+    );
+  }
+}
+
+function assertDatabaseProjectionStateBinding(state, current) {
+  const binding = current.binding;
+  if (
+    state.executionClass !== "real-candidate" ||
+    state.certificationId !== binding.certificationId ||
+    state.candidate?.id !== binding.candidateId ||
+    state.candidate?.commitSha !== binding.candidateCommitSha ||
+    state.candidate?.treeSha !== binding.candidateTreeSha ||
+    JSON.stringify(state.databaseLifecycle) !== JSON.stringify(binding)
+  ) {
+    throw new Error(
+      "certification database private projection binding is stale or foreign",
+    );
+  }
+}
+
+export function resolveCertificationDatabaseStageEnvironment({
+  repositoryRoot = process.cwd(),
+  environment = process.env,
+  state,
+  stage,
+}) {
+  if (!PRODUCTION_CERTIFICATION_DATABASE_STAGE_BINDINGS.includes(stage)) {
+    throw new Error("certification database stage projection is not permitted");
+  }
+  const current = readCertificationDatabaseLifecycle({
+    repositoryRoot,
+    environment,
+  });
+  assertDatabaseProjectionStateBinding(state, current);
+  assertDatabaseProjectionReadiness(current.evidence, stage);
+  const privateBinding = readPrivateDatabaseBinding(
+    environment,
+    current.evidence,
+  );
+  const databaseUrl = privateBinding.sidecar.targetUrl;
+  let target;
+  try {
+    target = new URL(databaseUrl);
+  } catch {
+    throw new Error("certification database private target is malformed");
+  }
+  if (
+    !new Set(["postgres:", "postgresql:"]).has(target.protocol) ||
+    !new Set(["127.0.0.1", "[::1]", "::1"]).has(target.hostname) ||
+    (target.port || "5432") !== "5432" ||
+    decodeURIComponent(target.pathname.replace(/^\//, "")) !==
+      current.binding.databaseName ||
+    decodeURIComponent(target.username) !== stageRoleName(current.evidence) ||
+    !target.password ||
+    decodeURIComponent(target.username) === current.evidence.server.role ||
+    target.search !== "" ||
+    target.hash !== "" ||
+    current.binding.databaseNameSha256 !==
+      current.evidence.database.nameSha256 ||
+    current.binding.databaseIdentitySha256 !==
+      current.evidence.database.identitySha256
+  ) {
+    throw new Error(
+      "certification database private target differs from the lifecycle binding",
+    );
+  }
+  const ambientDatabaseUrl = environment.DATABASE_URL?.trim();
+  if (ambientDatabaseUrl && ambientDatabaseUrl !== databaseUrl) {
+    throw new Error(
+      "ambient DATABASE_URL cannot override the certification database binding",
+    );
+  }
+  return Object.freeze({
+    environment: Object.freeze({ DATABASE_URL: databaseUrl }),
+    identity: Object.freeze({
+      databaseNameSha256: current.binding.databaseNameSha256,
+      databaseIdentitySha256: current.binding.databaseIdentitySha256,
+      lifecycleEvidenceSha256: current.binding.evidence.sha256,
+      lifecycleState: current.binding.lifecycleState,
+      stage,
+    }),
+  });
 }
 
 export function certificationDatabaseTargetUrl(environment, binding) {

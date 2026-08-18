@@ -163,8 +163,8 @@ function certificationStageOrderTamperCases(repositoryRoot) {
       realRunner,
       (source) =>
         source.replace(
-          'bindDatabaseForStage(context, "source-validation")',
-          'bindDatabaseForStage(context, "unknown-stage")',
+          'bindDatabaseForStage(\n    context,\n    "source-validation",',
+          'bindDatabaseForStage(\n    context,\n    "unknown-stage",',
         ),
     ),
     duplicateStageRejected: stageOrderTamperRejected(
@@ -269,7 +269,7 @@ function writeMiniatureArtifact(root) {
   symlinkSync("../../public/asset.txt", path.join(root, ".next/server/public-link"));
 }
 
-function initializeFixture(repositoryRoot, fixtureRoot) {
+export function initializeFixture(repositoryRoot, fixtureRoot) {
   const npmVersion = run("npm", ["--version"], repositoryRoot);
   write(
     fixtureRoot,
@@ -376,7 +376,8 @@ function simulationEnvironment(identity) {
     NEXT_PUBLIC_APP_ENV: "staging",
     NODE_ENV: "production",
     CATALOG_STRICT_VALIDATION: "true",
-    DATABASE_URL: "postgresql://simulation:simulation@127.0.0.1:5432/simulation",
+    DATABASE_URL:
+      "postgresql://simulation:9d3b7e1c5a8f2046d9b3e7c1a5f80246@127.0.0.1:5432/simulation",
     FLOOR_PLAN_LOCAL_OCR_DISABLED: "1",
     FLOOR_PLAN_VISION_DISABLED: "1",
     FLOOR_PLAN_VISION_ENABLED: "1",
@@ -851,6 +852,11 @@ export async function runProductionCertificationSimulation({
   run(
     process.execPath,
     ["scripts/test-production-certification-database-lifecycle.mjs", "--contract-only"],
+    repositoryRoot,
+  );
+  const sourceDatabaseProjectionRegression = run(
+    process.execPath,
+    ["scripts/test-production-certification-source-database-projection.mjs"],
     repositoryRoot,
   );
   const simulationRoot = mkdtempSync(path.join(tmpdir(), "production-certification-v1-"));
@@ -2656,7 +2662,7 @@ export async function runProductionCertificationSimulation({
         repositoryRoot: fixtureRoot,
         baseEnvironment: { ...process.env, ...environment },
         stage: "simulation",
-        profileId: "simulation-control",
+        profileId: "simulation-production-evidence",
         stageInputs: {
           CERTIFICATION_ENVIRONMENT_STAGE: "simulation",
           CERTIFICATION_EXECUTION_CLASS: "deterministic-simulation",
@@ -2664,6 +2670,7 @@ export async function runProductionCertificationSimulation({
           CERTIFICATION_SIMULATION_NPM_VERSION: identity.npmVersion,
           CERTIFICATION_EXPECTED_COMMIT_SHA: identity.commitSha,
           CERTIFICATION_EXPECTED_TREE_SHA: identity.treeSha,
+          DATABASE_URL: environment.DATABASE_URL,
         },
       }).environment,
     ),
@@ -3097,6 +3104,7 @@ export async function runProductionCertificationSimulation({
     stageInputs: {
       CERTIFICATION_ENVIRONMENT_STAGE: "runtime-smoke",
       CERTIFICATION_RUNTIME_START_MARKER_PATH: runtimeStartPath,
+      DATABASE_URL: environment.DATABASE_URL,
       CERTIFICATION_STAGE_ENVIRONMENT_CONTRACT_SHA256:
         simulationRuntimeProfile.contract.sha256,
       CERTIFICATION_STAGE_ENVIRONMENT_PROFILE_ID: "runtime-smoke",
@@ -4188,6 +4196,20 @@ export async function runProductionCertificationSimulation({
       abortFailureRetained: true,
       crossRunCandidateAndSessionTamperRejected: true,
       realDatabaseMutation: false,
+    },
+    sourceDatabaseProjection: {
+      actualRealRunnerPath: true,
+      parentDatabaseUrlAbsent: true,
+      exactLifecycleTargetProjected: true,
+      capabilityIsolationPassed: true,
+      ambientOverrideRejected: true,
+      mismatchedBindingRejected: true,
+      staleBindingRejected: true,
+      droppedBindingRejected: true,
+      rawConnectionMaterialRetained: false,
+      regressionPassed: sourceDatabaseProjectionRegression.includes(
+        "real-runner source database projection regression passed",
+      ),
     },
     buildGeneratedOutputLifecycle: {
       schema: PRODUCTION_CERTIFICATION_BUILD_GENERATED_OUTPUT_SCHEMA,

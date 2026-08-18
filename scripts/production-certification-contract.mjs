@@ -226,6 +226,7 @@ export const CERTIFICATION_HARNESS_SOURCE_PATHS = Object.freeze([
   "scripts/test-production-certification-source-generated-outputs.mjs",
   "scripts/test-production-certification-resources.mjs",
   "scripts/test-production-certification-database-lifecycle.mjs",
+  "scripts/test-production-certification-source-database-projection.mjs",
   "scripts/test-floor-plan-vision-configuration.ts",
   "scripts/test-floor-plan-local-ocr.ts",
   "tests/required/fixtures/floor-plan-empty-entry-harness.tsx",

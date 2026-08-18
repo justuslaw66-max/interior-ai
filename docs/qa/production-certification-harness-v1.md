@@ -1,5 +1,81 @@
 # Production Certification Harness v1
 
+## Source-validation database environment projection — 2026-08-18
+
+The retained failed source-projection rehearsal remains closed as
+`CERTIFICATION_REHEARSAL_FAILED_CLOSED` / `SOURCE_CONTRACT_FAILURE`, with zero
+source child attempts and `consumedSubstantiveGate=false`. Resource
+preparation, all 18 doctor checks, exact disposable database planning,
+provisioning, 43 migrations, 33 initially empty application tables, dependency
+installation/binding, abort cleanup, database absence, state-SHA continuity,
+downstream invalidations, and the terminal physical state remain historical
+facts. This correction does not resume, reconcile, reuse, or mark that
+rehearsal passed.
+
+`resolveCertificationDatabaseStageEnvironment` in
+`scripts/production-certification-database-lifecycle.mjs` is the canonical
+private database-binding resolver. It rereads and validates the sealed
+lifecycle evidence, exact certification/candidate commit/tree, current state
+binding and evidence hash, generated database identity, active lifecycle with
+provision/migration/initial-empty history, exact stage binding, approved
+loopback target, and canonical target database. Provisioning creates a
+lifecycle-scoped login with `NOSUPERUSER`, `NOCREATEDB`, and `NOCREATEROLE`;
+the raw target is retained only in a mode-0600 private worktree-root sidecar,
+whose hash is sealed into lifecycle evidence. Stage binding also connects with
+that role and proves the live exact target and absence of admin capability. A
+stale, foreign, failed,
+dropped, non-loopback, cross-database, or ambient-override binding fails before
+a source child starts. Durable role-creation receipts authorize cleanup of only
+task-created or ambiguously task-created roles; a pre-existing same-name role
+is retained as a foreign collision. Only the stage projector receives the raw target URL;
+portable state, metadata, errors, and evidence retain names, classifications,
+and hashes, never raw URLs or passwords. Source stdout/stderr are captured only
+in parent memory, sanitized before exclusive evidence writes, then scanned again
+by the evidence validator; detecting a raw URL or the exact private password
+makes an otherwise-successful zero-exit check fail closed.
+
+The real source runner now validates/binds the database, installs and atomically
+binds source dependencies, resolves the private database capability, applies
+the `source-validation` profile, and passes the projected environment to
+`sourceValidationStageEvidence`. It no longer passes `context.environment`.
+`DATABASE_URL` is an inventoried, non-portable secret capability: the database
+profiles below receive it through stage inputs owned by the projector, while
+database-free profiles strip and record an ambient occurrence. Parent-only
+`CERTIFICATION_DATABASE_ADMIN_URL` and lifecycle/drop controls never enter a
+child environment, and the child credential itself has no create-database,
+create-role, superuser, session-cleanup, or database-drop authority. The nested
+artifact server accepts it only from the certified runtime projection and
+rejects ordinary developer-shell database URLs.
+
+| Stage/profile | Database lifecycle | Private binding owner | Projection owner | Expected identity | Portable evidence |
+|---|---|---|---|---|---|
+| `source-validation` / qualification profile | active after provision, 43 migrations, initial-empty verification, exact source stage binding | database lifecycle owner | real runner `stageChildProjection` plus per-check projector | state-bound certification, candidate, commit/tree, database name/identity and lifecycle evidence hashes | profile/contract hashes and environment-name inventory only |
+| `build` | active and exact build stage binding | same | `stageChildProjection` | same lifecycle identity | names/hashes only |
+| `phase8` | active and exact Phase 8 binding | same | `stageChildProjection` | same lifecycle identity | names/hashes only |
+| `runtime-smoke` and nested `artifact-product-server` | active and exact runtime binding | same | runner projection, then the artifact server profile | same lifecycle identity | names/hashes only |
+| production/development browser owner and discovery profiles | active and exact browser-owner binding | same | `stageChildProjection` | same lifecycle identity | names/hashes only |
+| deterministic `simulation-production-evidence` | qualification-only synthetic build evidence | simulation fixture owner | dedicated simulation projector | synthetic fixture database identity only | names/hashes only |
+| doctor, archive, final-standalone, continuity, integration-ready, qualification control | no child database capability | parent lifecycle only where applicable | stage projector strips `DATABASE_URL` | no child database identity | stripped-name inventory only |
+
+`scripts/test-production-certification-source-database-projection.mjs`
+constructs the current real state and lifecycle shapes with a task-owned private
+database fixture, omits parent `DATABASE_URL`, and invokes the actual
+`runSourceValidationStage` path. An instrumented historical copy restores only
+the old `context.environment` handoff and proves the missing-name failure occurs
+before check 1 with zero consumption. The corrected probe proves check 1 receives the exact
+lifecycle target and neither admin nor lifecycle controls; one intentional
+check failure proves truthful attempt/consumption accounting. It also rejects
+unprovisioned, incomplete-migration, missing-initial-verification, failed,
+dropped, stale, cross-certification/candidate/commit/tree/database, missing or
+foreign private-connection, non-loopback, descriptor-hash, and ambient foreign
+URL states before another source child can start. The stage-environment matrix
+proves every database-free profile strips the capability and that only the eleven
+declared database profiles require it. The probe deliberately prints its URL;
+retained stdout/stderr contain only the redaction marker, and state/evidence/
+errors are scanned for raw connection material. Regression case 34, doctor, deterministic
+simulation, and committed-head qualification all register this owner. No
+handwritten task-driver `DATABASE_URL` is required.
+
 ## Real-runner stage-order import regression
 
 The canonical stage-order owner is the frozen string array

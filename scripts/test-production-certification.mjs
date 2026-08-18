@@ -232,9 +232,9 @@ function stateFixture() {
 {
   const contract = stageEnvironmentContract(repositoryRoot);
   assert.equal(contract.value.schema, "interior-ai.production-certification-stage-environment.v2");
-  assert.equal(Object.keys(contract.variables).length, 93);
+  assert.equal(Object.keys(contract.variables).length, 94);
   assert.equal(Object.keys(contract.applicationFeatureVariables).length, 5);
-  assert.equal(Object.keys(contract.profiles).length, 20);
+  assert.equal(Object.keys(contract.profiles).length, 21);
   assert.deepEqual(
     contract.profiles["source-validation"].valuePolicies
       .FLOOR_PLAN_VISION_ENABLED,
@@ -332,6 +332,7 @@ function stateFixture() {
       CERTIFICATION_ENVIRONMENT_STAGE: "source-validation",
       CERTIFICATION_SOURCE_VALIDATION_CHECK_ID:
         "production-artifact-evidence-contracts",
+      DATABASE_URL: syntheticSecret,
     },
   });
   assert.equal(source.environment.CERTIFICATION_EVIDENCE_ROOT, undefined);
@@ -435,7 +436,10 @@ function stateFixture() {
       stage: "source-validation",
       checkId: "production-artifact-evidence-contracts",
       profileId: "source-validation",
-      requiredEnvironmentNames: [],
+      requiredEnvironmentNames: [
+        "DATABASE_URL",
+        "CERTIFICATION_EVIDENCE_ROOT",
+      ],
       metadata: source.metadata,
     }).valid,
     false,
@@ -462,6 +466,7 @@ function stateFixture() {
       stageEnvironmentContract(repositoryRoot).profiles["runtime-smoke"].sha256,
     CERTIFICATION_ENVIRONMENT_STAGE: "runtime-smoke",
     CERTIFICATION_RUNTIME_START_MARKER_PATH: "/external/start.json",
+    DATABASE_URL: syntheticSecret,
     PLAYWRIGHT_EXTERNAL_EVIDENCE_ROOT: "/external",
     PLAYWRIGHT_JSON_OUTPUT_FILE: "/external/report.json",
     PLAYWRIGHT_USE_PRODUCTION_SERVER: "1",
@@ -549,6 +554,7 @@ function stateFixture() {
     stageInputs: {
       CERTIFICATION_ENVIRONMENT_STAGE: "source-validation",
       CERTIFICATION_SOURCE_VALIDATION_CHECK_ID: "certification-harness-contracts",
+      DATABASE_URL: syntheticSecret,
     },
   });
   assert.equal(
@@ -1123,12 +1129,16 @@ function stateFixture() {
   const environment = browserEnvironment(
     {
       environment: {
+        CERTIFICATION_QUALIFICATION_MODE: "1",
+        DATABASE_URL:
+          "postgresql://fixture:a6e2c8f4b9d10573a6e2c8f4b9d10573@127.0.0.1:5432/fixture",
         REQUIRED_TEST_SOURCE_COMMIT_SHA: "0".repeat(40),
         REQUIRED_TEST_SOURCE_TREE_SHA: "1".repeat(40),
       },
       evidenceRoot: "/external/certification-evidence",
     },
     {
+      executionClass: "deterministic-simulation",
       candidate,
       harness: { version: 1, sourceSha256: "c".repeat(64) },
       bindings: {
@@ -1194,12 +1204,12 @@ function stateFixture() {
   const regressions = JSON.parse(
     readFileSync("scripts/production-certification-regressions.json", "utf8"),
   );
-  assert.equal(regressions.cases.length, 33);
+  assert.equal(regressions.cases.length, 34);
   assert.deepEqual(
     regressions.cases.map((entry) => entry.id),
-    Array.from({ length: 33 }, (_, index) => index + 1),
+    Array.from({ length: 34 }, (_, index) => index + 1),
   );
-  assert.equal(new Set(regressions.cases.map((entry) => entry.defect)).size, 33);
+  assert.equal(new Set(regressions.cases.map((entry) => entry.defect)).size, 34);
   assert.equal(regressions.dependencyLifecycleCases.length, 26);
   assert.equal(new Set(regressions.dependencyLifecycleCases).size, 26);
   assert.equal(regressions.runtimeEvidenceRootCases.length, 21);
@@ -1235,7 +1245,8 @@ function stateFixture() {
     environment.CI = "true";
     delete environment.VERCEL_ENV;
     delete environment.PLAYWRIGHT_RELEASE_BASE_URL;
-    environment.DATABASE_URL ||= "postgresql://list:list@127.0.0.1:5432/list";
+    environment.DATABASE_URL ||=
+      "postgresql://list:b5f1d7a3c9e60482b5f1d7a3c9e60482@127.0.0.1:5432/list";
     if (owner.productionServer) environment.PLAYWRIGHT_USE_PRODUCTION_SERVER = "1";
     else delete environment.PLAYWRIGHT_USE_PRODUCTION_SERVER;
     if (owner.id === "public-share") environment.CATALOG_STRICT_VALIDATION = "true";
@@ -1331,6 +1342,19 @@ function stateFixture() {
     assert.equal(simulation.tamperCases[tamperCase], true, tamperCase);
   }
   coveredRegressionIds.add(33);
+  assert.deepEqual(simulation.sourceDatabaseProjection, {
+    actualRealRunnerPath: true,
+    parentDatabaseUrlAbsent: true,
+    exactLifecycleTargetProjected: true,
+    capabilityIsolationPassed: true,
+    ambientOverrideRejected: true,
+    mismatchedBindingRejected: true,
+    staleBindingRejected: true,
+    droppedBindingRejected: true,
+    rawConnectionMaterialRetained: false,
+    regressionPassed: true,
+  });
+  coveredRegressionIds.add(34);
   assert.equal(simulation.generatedOutputLifecycle.declaredOutputCount, 2);
   assert.equal(simulation.generatedOutputLifecycle.terminalNodeModulesOnly, true);
   coveredRegressionIds.add(31);
@@ -2976,7 +3000,7 @@ function stateFixture() {
 
 assert.deepEqual(
   [...coveredRegressionIds].sort((left, right) => left - right),
-  Array.from({ length: 33 }, (_, index) => index + 1),
+  Array.from({ length: 34 }, (_, index) => index + 1),
   "every documented regression must be exercised by an executable assertion",
 );
 

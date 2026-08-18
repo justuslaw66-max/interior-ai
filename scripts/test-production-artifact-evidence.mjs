@@ -24,6 +24,7 @@ import {
   FLOOR_PLAN_ROUTE_NFT_PATHS,
   PRODUCTION_EVIDENCE_VERIFIER_SOURCE_PATHS,
   canonicalizeProductionEvidenceReport,
+  certifiedNestedDatabaseUrl,
   comparePortablePaths,
   createProductionEvidenceBundle,
   createProductionEvidenceManifest,
@@ -116,6 +117,33 @@ const boundsPhaseBudgets = RUNTIME_SMOKE_PHASE_BUDGETS.filter(
 );
 assert.equal(boundsPhaseBudgets.length, 1, "bounds-verification must have one canonical budget");
 assert.equal(boundsPhaseBudgets[0]?.timeoutMs, 103_000);
+
+{
+  const lifecycleIdentity = "a".repeat(32);
+  const runtimeEnvironment = {
+    CERTIFICATION_ENVIRONMENT_STAGE: "runtime-smoke",
+    CERTIFICATION_STAGE_ENVIRONMENT_PROFILE_ID: "runtime-smoke",
+    PRODUCTION_CERTIFICATION_ID: "certification-nested-database-test",
+    PRODUCTION_EVIDENCE_CANDIDATE_ID: "candidate-nested-database-test",
+    DATABASE_URL:
+      `postgresql://interior_ai_cert_stage_${lifecycleIdentity}:c4a8e2f6b0d93571c4a8e2f6b0d93571@127.0.0.1:5432/interior_ai_gate_a3_test_cert_${lifecycleIdentity}`,
+  };
+  assert.equal(
+    certifiedNestedDatabaseUrl(runtimeEnvironment),
+    runtimeEnvironment.DATABASE_URL,
+  );
+  assert.throws(
+    () =>
+      certifiedNestedDatabaseUrl({
+        ...runtimeEnvironment,
+        DATABASE_URL: runtimeEnvironment.DATABASE_URL.replace(
+          `interior_ai_cert_stage_${lifecycleIdentity}`,
+          `interior_ai_cert_stage_${"b".repeat(32)}`,
+        ),
+      }),
+    /not lifecycle scoped/,
+  );
+}
 
 {
   const safeReadinessSummary = {
@@ -1839,7 +1867,8 @@ const semanticJournalEnvironment = Object.freeze({
   NEXT_PUBLIC_APP_ENV: "staging",
   NODE_ENV: "production",
   CATALOG_STRICT_VALIDATION: "true",
-  DATABASE_URL: "postgresql://test:test@localhost:5432/semantic_journal_fixture",
+  DATABASE_URL:
+    "postgresql://test:e3b7d1f5a9c20468e3b7d1f5a9c20468@localhost:5432/semantic_journal_fixture",
   OPENAI_API_KEY: "fixture-openai-placeholder",
   SHOPIFY_STORE_DOMAIN: "fixture.myshopify.example",
   SHOPIFY_STOREFRONT_TOKEN: "fixture-shopify-placeholder",
@@ -2455,7 +2484,8 @@ async function fixture({
       NEXT_PUBLIC_APP_ENV: "staging",
       NODE_ENV: "production",
       CATALOG_STRICT_VALIDATION: "true",
-      DATABASE_URL: "postgresql://test:test@localhost:5432/evidence_fixture",
+      DATABASE_URL:
+        "postgresql://test:f2a6c0e4b8d19357f2a6c0e4b8d19357@localhost:5432/evidence_fixture",
       OPENAI_API_KEY: "fixture-openai-placeholder",
       SHOPIFY_STORE_DOMAIN: "fixture.myshopify.example",
       SHOPIFY_STOREFRONT_TOKEN: "fixture-shopify-placeholder",

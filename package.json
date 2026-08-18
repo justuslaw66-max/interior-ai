@@ -71,6 +71,7 @@
     "certification:qualify": "node scripts/production-certification.mjs qualify",
     "test:production-certification": "node scripts/test-production-certification.mjs",
     "test:production-certification-database-lifecycle": "node scripts/test-production-certification-database-lifecycle.mjs",
+    "test:production-certification-source-database-projection": "node scripts/test-production-certification-source-database-projection.mjs",
     "test:production-certification-state-worktrees": "node scripts/test-production-certification-state-worktrees.mjs",
     "test:production-certification-resources": "node scripts/test-production-certification-resources.mjs",
     "test:production-certification-dependency-lifecycle": "node scripts/test-production-certification-dependency-lifecycle.mjs",

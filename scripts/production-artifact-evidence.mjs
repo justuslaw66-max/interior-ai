@@ -3795,6 +3795,49 @@ export async function createProductionEvidenceBundle({
   return { bundlePath, bundleSha256, manifest: result.manifest };
 }
 
+export function certifiedNestedDatabaseUrl(environment) {
+  if (
+    environment.CERTIFICATION_ENVIRONMENT_STAGE !== "runtime-smoke" ||
+    environment.CERTIFICATION_STAGE_ENVIRONMENT_PROFILE_ID !== "runtime-smoke" ||
+    !environment.PRODUCTION_CERTIFICATION_ID?.trim() ||
+    !environment.PRODUCTION_EVIDENCE_CANDIDATE_ID?.trim()
+  ) {
+    throw new Error(
+      "artifact product server requires the certified runtime database projection",
+    );
+  }
+  let target;
+  try {
+    target = new URL(environment.DATABASE_URL);
+  } catch {
+    throw new Error(
+      "artifact product server database projection is missing or malformed",
+    );
+  }
+  const databaseName = decodeURIComponent(target.pathname.replace(/^\//, ""));
+  const roleName = decodeURIComponent(target.username);
+  const databaseIdentity = databaseName.match(
+    /^interior_ai_gate_a3_test_cert_([a-f0-9]{32})$/,
+  )?.[1];
+  const roleIdentity = roleName.match(
+    /^interior_ai_cert_stage_([a-f0-9]{32})$/,
+  )?.[1];
+  if (
+    !new Set(["postgres:", "postgresql:"]).has(target.protocol) ||
+    !new Set(["127.0.0.1", "[::1]", "::1"]).has(target.hostname) ||
+    (target.port || "5432") !== "5432" ||
+    !databaseIdentity ||
+    !roleIdentity ||
+    databaseIdentity !== roleIdentity ||
+    !target.password
+  ) {
+    throw new Error(
+      "artifact product server database projection is not lifecycle scoped",
+    );
+  }
+  return environment.DATABASE_URL;
+}
+
 async function serveEvidence(repositoryRoot, manifestPath) {
   const result = await validateProductionEvidence({
     repositoryRoot,
@@ -3819,6 +3862,7 @@ async function serveEvidence(repositoryRoot, manifestPath) {
       profileId: "artifact-product-server",
       stageInputs: {
         CERTIFICATION_ENVIRONMENT_STAGE: "artifact-product-server",
+        DATABASE_URL: certifiedNestedDatabaseUrl(process.env),
         PRODUCTION_ARTIFACT_EVIDENCE: "1",
         PRODUCTION_ARTIFACT_BUILD_ID: manifest.build.nextBuildId,
         PRODUCTION_ARTIFACT_SHA256: manifest.artifact.sha256,

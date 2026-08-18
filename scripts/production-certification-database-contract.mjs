@@ -372,6 +372,87 @@ function semanticEvidenceIssues(evidence) {
   ) {
     issues.push("database lifecycle provision authorization is incoherent");
   }
+  const privateBinding = evidence.privateBinding;
+  const privateBindingRequired = hasState(evidence, "migrated");
+  const privateBindingRemoved =
+    hasState(evidence, "dropped") || hasState(evidence, "abort-dropped");
+  const privateRoleStatuses = new Set([
+    "create-authorized",
+    "role-created",
+    "foreign-collision",
+    "sidecar-authorized",
+    "foreign-sidecar-collision",
+    "active",
+    "removed",
+    "foreign-preserved",
+    "role-removed-no-sidecar",
+    "role-removed-foreign-sidecar-preserved",
+  ]);
+  const roleCreationOutcomes = new Set([
+    "authorized",
+    "created",
+    "ambiguous-create-recovered",
+    "foreign-collision",
+  ]);
+  const sidecarCreationOutcomes = new Set([
+    "authorized",
+    "created",
+    "foreign-collision",
+  ]);
+  const sidecarReceiptRequired = new Set([
+    "sidecar-authorized",
+    "foreign-sidecar-collision",
+    "active",
+    "removed",
+    "role-removed-foreign-sidecar-preserved",
+  ]).has(privateBinding?.status);
+  const sidecarReceiptValid = sidecarReceiptRequired
+    ? isSha256(privateBinding?.sidecarSha256) &&
+      sidecarCreationOutcomes.has(privateBinding?.sidecarCreation?.outcome) &&
+      typeof privateBinding?.sidecarCreation?.ownershipRecoverable === "boolean" &&
+      typeof privateBinding?.sidecarCreation
+        ?.sidecarAbsentImmediatelyBeforeCreate === "boolean"
+    : privateBinding?.sidecarSha256 === null &&
+      privateBinding?.sidecarCreation === null;
+  const privateRoleShapeValid =
+    privateBinding === null ||
+    (privateBinding?.classification === "private-stage-login-no-admin" &&
+      isSha256(privateBinding?.roleNameSha256) &&
+      privateRoleStatuses.has(privateBinding?.status) &&
+      roleCreationOutcomes.has(privateBinding?.roleCreation?.outcome) &&
+      typeof privateBinding?.roleCreation?.ownershipRecoverable === "boolean" &&
+      privateBinding?.roleCreation?.roleAbsentImmediatelyBeforeCreate === true &&
+      sidecarReceiptValid);
+  const activeBindingValid =
+    privateBindingRequired &&
+    (privateBindingRemoved
+      ? new Set([
+          "removed",
+          "role-removed-foreign-sidecar-preserved",
+        ]).has(privateBinding?.status)
+      : privateBinding?.status === "active") &&
+    privateBinding?.roleCreation?.ownershipRecoverable === true &&
+    privateBinding?.sidecarCreation?.ownershipRecoverable === true;
+  const preMigrationBindingValid =
+    !privateBindingRequired &&
+    (privateBinding === null ||
+      new Set([
+        "create-authorized",
+        "role-created",
+        "foreign-collision",
+        "sidecar-authorized",
+        "foreign-sidecar-collision",
+        "removed",
+        "foreign-preserved",
+        "role-removed-no-sidecar",
+        "role-removed-foreign-sidecar-preserved",
+      ]).has(privateBinding?.status));
+  if (
+    !privateRoleShapeValid ||
+    (!activeBindingValid && !preMigrationBindingValid)
+  ) {
+    issues.push("database lifecycle private stage binding is incoherent");
+  }
   const requiredStages = evidence.stageBindings?.requiredStages;
   const observedStages = evidence.stageBindings?.observed;
   if (

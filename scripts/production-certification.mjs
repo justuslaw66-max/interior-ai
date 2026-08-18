@@ -161,6 +161,10 @@ function qualificationCommand() {
     ],
     [
       process.execPath,
+      ["scripts/test-production-certification-source-database-projection.mjs"],
+    ],
+    [
+      process.execPath,
       ["scripts/test-production-certification-source-generated-outputs.mjs"],
     ],
     [

@@ -348,6 +348,7 @@ function copyCurrentTrackedSource(destination) {
     "scripts/test-production-certification-resources.mjs",
     "scripts/test-production-certification-database-lifecycle.mjs",
     "scripts/test-production-certification-source-generated-outputs.mjs",
+    "scripts/test-production-certification-source-database-projection.mjs",
     "scripts/test-production-certification-stage-order.mjs",
   ];
   const paths = new Set([
@@ -536,7 +537,7 @@ function runCorrectedRealRunnerRegression() {
       environment: {
         ...process.env,
         DATABASE_URL:
-          "postgresql://certification:certification@127.0.0.1:1/certification",
+          "postgresql://certification:8c1e5a7d3f9b2c604e8a1d7f5b3c9e26@127.0.0.1:1/certification",
         FLOOR_PLAN_LOCAL_OCR_DISABLED: "1",
         FLOOR_PLAN_VISION_DISABLED: "1",
         FLOOR_PLAN_VISION_ENABLED: "0",

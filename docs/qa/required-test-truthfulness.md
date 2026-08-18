@@ -2,12 +2,12 @@
 
 ## Real-runner stage-order regression inventory — 2026-08-18
 
-The bounded stage-order correction adds
-`scripts/test-production-certification-stage-order.mjs` to the existing
+The bounded source-validation database projection correction adds
+`scripts/test-production-certification-source-database-projection.mjs` to the existing
 risk-triggered `script-tests` inventory. The canonical manifest now records
-268 script tests at path-set SHA-256
-`c6b8867d20b48d74d08943b263c9cf617197dbfcdb4b8704fd17280a9253f253`.
-Direct validation remains **27 gates / 391 classified test sources**. No gate,
+269 script tests at path-set SHA-256
+`e60d2b091eb334b92c9438e1e7dfc10548e1d819d6b3f13f5eaf9ba04cce630e`.
+Direct validation remains **27 gates / 392 classified test sources**. No gate,
 workflow, cadence, browser project, retry, skip, or advisory classification is
 added or changed.
 

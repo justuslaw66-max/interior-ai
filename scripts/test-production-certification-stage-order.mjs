@@ -153,6 +153,7 @@ function instrumentRealRunner(runnerSource, name, databaseBinding) {
     stubPath,
     `const binding = ${JSON.stringify(databaseBinding)};\n` +
       `export function readCertificationDatabaseLifecycle() { return { binding, evidence: { currentState: "active" } }; }\n` +
+      `export function resolveCertificationDatabaseStageEnvironment() { return { environment: {} }; }\n` +
       `export async function bindCertificationDatabaseStage({ stage }) { throw new Error(\`STAGE_DISPATCH_REACHED:\${stage}\`); }\n` +
       `export function abortCertificationDatabase() {}\n` +
       `export function certificationDatabaseStatus() {}\n` +
@@ -238,8 +239,8 @@ try {
     realRunnerPath,
     (value) =>
       value.replace(
-        'bindDatabaseForStage(context, "source-validation")',
-        'bindDatabaseForStage(context, "unknown-stage")',
+        'bindDatabaseForStage(\n    context,\n    "source-validation",',
+        'bindDatabaseForStage(\n    context,\n    "unknown-stage",',
       ),
     /real runner stage inventory differs from canonical order/,
   );

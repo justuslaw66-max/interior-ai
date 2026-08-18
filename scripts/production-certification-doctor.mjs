@@ -1139,6 +1139,26 @@ function validateStageEnvironmentCapabilities(repositoryRoot, environment) {
   const developmentBrowser = contract.profiles["development-browser-owner"];
   const qualificationSourceProfile =
     contract.profiles["source-validation-qualification"];
+  const databaseVariable = contract.variables.DATABASE_URL;
+  const expectedDatabaseProfiles = [
+    "artifact-product-server",
+    "build",
+    "development-browser-owner",
+    "development-browser-owner-discovery",
+    "phase8",
+    "production-browser-owner",
+    "production-browser-owner-discovery",
+    "runtime-smoke",
+    "simulation-production-evidence",
+    "source-validation",
+    "source-validation-qualification",
+  ];
+  const actualDatabaseProfiles = Object.entries(contract.profiles)
+    .filter(([, profile]) =>
+      profile.childVisibleVariables.includes("DATABASE_URL"),
+    )
+    .map(([profileId]) => profileId)
+    .sort();
   const floorPlanCheck = source.checks.find(
     (entry) => entry.id === "floor-plan-required-closure",
   );
@@ -1166,6 +1186,19 @@ function validateStageEnvironmentCapabilities(repositoryRoot, environment) {
     ),
     "utf8",
   );
+  const sourceDatabaseProjectionRegression = readFileSync(
+    path.join(
+      repositoryRoot,
+      "scripts/test-production-certification-source-database-projection.mjs",
+    ),
+    "utf8",
+  );
+  const regressionMatrix = JSON.parse(
+    readFileSync(
+      path.join(repositoryRoot, "scripts/production-certification-regressions.json"),
+      "utf8",
+    ),
+  );
   const runtimeTimingWriter = readFileSync(
     path.join(repositoryRoot, "scripts/runtime-smoke-phase-budget.mjs"),
     "utf8",
@@ -1174,6 +1207,96 @@ function validateStageEnvironmentCapabilities(repositoryRoot, environment) {
     path.join(repositoryRoot, "scripts/production-certification-real.mjs"),
     "utf8",
   );
+  const sourceRunnerDispatch = certificationRunner.slice(
+    certificationRunner.indexOf("export async function runSourceValidationStage"),
+    certificationRunner.indexOf("export async function runBuildStage"),
+  );
+  const databaseLifecycleOwner = readFileSync(
+    path.join(
+      repositoryRoot,
+      "scripts/production-certification-database-lifecycle.mjs",
+    ),
+    "utf8",
+  );
+  const databaseAdapterOwner = readFileSync(
+    path.join(
+      repositoryRoot,
+      "scripts/production-certification-database-adapter.mjs",
+    ),
+    "utf8",
+  );
+  const sourceContinuityOwner = readFileSync(
+    path.join(
+      repositoryRoot,
+      "scripts/production-certification-source-continuity.mjs",
+    ),
+    "utf8",
+  );
+  const artifactEvidenceOwner = readFileSync(
+    path.join(repositoryRoot, "scripts/production-artifact-evidence.mjs"),
+    "utf8",
+  );
+  if (
+    !sourceProfile.requiredVariables.includes("DATABASE_URL") ||
+    !sourceProfile.childVisibleVariables.includes("DATABASE_URL") ||
+    databaseVariable?.owner !==
+      "production certification private database-binding projector" ||
+    databaseVariable?.classification !== "private-stage-database-connection" ||
+    databaseVariable?.portable !== false ||
+    databaseVariable?.secret !== true ||
+    JSON.stringify(actualDatabaseProfiles) !==
+      JSON.stringify(expectedDatabaseProfiles) ||
+    actualDatabaseProfiles.some(
+      (profileId) =>
+        !contract.profiles[profileId].requiredVariables.includes("DATABASE_URL"),
+    ) ||
+    contract.profiles.doctor.childVisibleVariables.includes("DATABASE_URL")
+  ) {
+    throw new Error("database stage capability ownership is incoherent");
+  }
+  if (
+    !certificationRunner.includes(
+      "resolveCertificationDatabaseStageEnvironment",
+    ) ||
+    !certificationRunner.includes("environment: sourceEnvironment") ||
+    sourceRunnerDispatch.indexOf("bindDatabaseForStage") < 0 ||
+    sourceRunnerDispatch.indexOf("const sourceEnvironment") <
+      sourceRunnerDispatch.indexOf("bindDatabaseForStage") ||
+    sourceRunnerDispatch.indexOf("sourceValidationStageEvidence") <
+      sourceRunnerDispatch.indexOf("const sourceEnvironment") ||
+    certificationRunner.includes(
+      "sourceValidationStageEvidence({\n        repositoryRoot: context.repositoryRoot,\n        canonicalRoot: context.canonicalRoot,\n        evidenceRoot: context.evidenceRoot,\n        state: boundState,\n        environment: context.environment",
+    )
+  ) {
+    throw new Error("source-validation database projection order is incoherent");
+  }
+  if (
+    !databaseLifecycleOwner.includes("readPrivateDatabaseBinding") ||
+    !databaseLifecycleOwner.includes("private-stage-login-no-admin") ||
+    !databaseLifecycleOwner.includes("inspectStageConnection") ||
+    !databaseLifecycleOwner.includes("ownershipRecoverable") ||
+    !databaseLifecycleOwner.includes("foreignPreserved") ||
+    !databaseLifecycleOwner.includes("linkSync(temporary, filePath)") ||
+    !databaseLifecycleOwner.includes("beforePrivateSidecarPublish") ||
+    !databaseAdapterOwner.includes("NOSUPERUSER NOCREATEDB NOCREATEROLE") ||
+    !databaseAdapterOwner.includes("stageRoleCreateOutcome") ||
+    !databaseAdapterOwner.includes("adminCapabilities: false") ||
+    !sourceContinuityOwner.includes(
+      "sanitizeSourceValidationDatabaseOutput",
+    ) ||
+    !sourceContinuityOwner.includes(
+      "containsRawSourceValidationDatabaseMaterial",
+    ) ||
+    !sourceContinuityOwner.includes('stdio: ["ignore", "pipe", "pipe"]') ||
+    !sourceContinuityOwner.includes("retainedRawDatabaseConnection: false") ||
+    !sourceContinuityOwner.includes("[REDACTED_DATABASE_URL]") ||
+    !sourceDatabaseProjectionRegression.includes("retainedLog") ||
+    !sourceDatabaseProjectionRegression.includes("privateStagePassword") ||
+    !artifactEvidenceOwner.includes("certifiedNestedDatabaseUrl") ||
+    artifactEvidenceOwner.includes("DATABASE_URL: process.env.DATABASE_URL")
+  ) {
+    throw new Error("database private-binding or output-redaction boundary is missing");
+  }
   if (
     !sourceProfile.parentOnlyVariables.includes("CERTIFICATION_EVIDENCE_ROOT") ||
     sourceProfile.childVisibleVariables.includes("CERTIFICATION_EVIDENCE_ROOT") ||
@@ -1252,6 +1375,23 @@ function validateStageEnvironmentCapabilities(repositoryRoot, environment) {
     !/historical real-runner leakage reproduction/i.test(
       stageEnvironmentRegression,
     ) ||
+    !sourceDatabaseProjectionRegression.includes("runSourceValidationStage") ||
+    !sourceDatabaseProjectionRegression.includes(
+      "Object.hasOwn(environment, \"DATABASE_URL\")",
+    ) ||
+    !sourceDatabaseProjectionRegression.includes(
+      "resolveCertificationDatabaseStageEnvironment",
+    ) ||
+    !sourceDatabaseProjectionRegression.includes(
+      "adminCredentialPresent, false",
+    ) ||
+    !CERTIFICATION_HARNESS_SOURCE_PATHS.includes(
+      "scripts/test-production-certification-source-database-projection.mjs",
+    ) ||
+    !regressionMatrix.cases.some(
+      (entry) =>
+        entry.defect === "source-validation-database-environment-projection",
+    ) ||
     !/externalVisionEnabled, false/.test(floorPlanLocalOcrTest) ||
     /process\.env|delete\s+process\.env/.test(floorPlanLocalOcrTest) ||
     !/externalVisionEnabled:\s*environment\.FLOOR_PLAN_VISION_ENABLED === "1"/.test(
@@ -1289,6 +1429,11 @@ function validateStageEnvironmentCapabilities(repositoryRoot, environment) {
     sourceCheckCount: source.checks.length,
     sourceEvidenceRootParentOnly: true,
     floorPlanSourceConfigurationOwned: true,
+    sourceDatabaseProjectionOwner:
+      "resolveCertificationDatabaseStageEnvironment",
+    sourceDatabaseProjectionRegressionRegistered: true,
+    databaseCapabilityIsolation: true,
+    databaseCapableProfiles: actualDatabaseProfiles,
     valuePolicySha256: sourceProfile.valuePolicySha256,
     importOrderRegressionRegistered: true,
     historicalFloorPlanRegressionRegistered: true,

@@ -41,6 +41,8 @@
     "sessionPolicy": "inventory exact target sessions; normal final verification requires zero; normal/abort cleanup may terminate only exact target sessions while excluding the admin session",
     "dropPolicy": "drop only the generated owned target after exact session release and prove catalog absence; no server restart or broad process termination",
     "abortPolicy": "retain original failure and consumed status, capture rows/sessions, never fabricate final-empty PASS, drop the disposable target, prove absence, and never rehabilitate the failed run",
+    "privateStageEnvironmentResolver": "scripts/production-certification-database-lifecycle.mjs#resolveCertificationDatabaseStageEnvironment",
+    "stageProjectionPolicy": "provision a lifecycle-scoped NOSUPERUSER/NOCREATEDB/NOCREATEROLE stage login; retain its raw target only in a mode-0600 private worktree-root sidecar whose hash is sealed into lifecycle evidence; require the exact live target/non-admin role before stage binding; reject ambient override, stale/foreign/dropped identity, missing readiness, sidecar tamper, or missing stage binding; expose raw target only to the declared database-capable stage projector and redact any child stdout/stderr occurrence",
     "portableEvidencePolicy": "retain safe database name/hash, policy/generator/owner hashes, server and role classifications, event/inventory/session/drop/absence results, timestamps, aggregate SHA-256 and seal; never retain passwords or raw URLs"
   },
   "stageWorktrees": {

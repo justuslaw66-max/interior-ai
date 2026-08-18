@@ -209,6 +209,36 @@ reported with the focused correction commit.
 
 ## CH-0015I handoff and rollback
 
+The 2026-08-18 source-validation projection correction is classified
+`SOURCE_VALIDATION_DATABASE_ENVIRONMENT_PROJECTION_DEFECT` and
+`CERTIFICATION_DATABASE_BINDING_HANDOFF_DEFECT`. The failed rehearsal remains
+failed closed with zero source child attempts; its database lifecycle and abort
+absence evidence are unchanged. The lifecycle owner now exposes one private
+`resolveCertificationDatabaseStageEnvironment` handoff that requires the exact
+active, provisioned, migrated, initial-empty, state-bound, loopback database and
+observed stage identity. Provisioning creates one lifecycle-scoped non-admin
+stage login and mode-0600 private sidecar outside portable evidence; the sealed
+lifecycle retains only sidecar/role hashes. Every stage bind proves that login
+still reaches the exact live target with no admin capability, and normal/abort
+cleanup removes both the generated database and scoped role/sidecar. A durable
+pre-create/created role receipt makes ambiguous task-owned creation recoverable;
+an explicit or raced foreign role collision is recorded non-owned and abort
+cleanup proves it was preserved rather than dropping it. The private sidecar
+uses the same two-phase absent/expected-hash receipt: crash-after-write cleanup
+removes only the exact owned bytes, while a foreign collision or replacement is
+retained and recorded rather than unlinked. Its final publish is an exclusive
+same-filesystem no-replace operation, so a foreign sidecar raced into the
+authorized publish window is preserved and ownership is downgraded.
+`production-certification-real.mjs` supplies that capability to the canonical
+projector and never constructs a URL or copies a parent `DATABASE_URL`.
+
+The correction changes no product/UI, Floor Plan behavior, telemetry, tracing,
+archive semantics, Prisma schema, migration, dependency, lockfile, workflow, or
+Playwright product assertion. The exact real-runner regression, capability
+isolation matrix, database lifecycle matrix, doctor, simulation, and
+committed-head qualification own validation. A fresh rehearsal, final
+certification, and CH-0015 closure audit remain pending.
+
 This correction is certification infrastructure only. It ran no production
 build, Phase 8, runtime smoke, browser-owner matrix, Full E2E, rehearsal, final
 certification, integration, deployment, or push. It changed no product, schema,

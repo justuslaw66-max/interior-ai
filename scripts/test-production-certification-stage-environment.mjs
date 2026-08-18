@@ -47,7 +47,7 @@ import {
 
 const FIXED_GIT_DATE = "2026-08-14T00:00:00Z";
 const FIXTURE_DATABASE_URL =
-  "postgresql://certification:certification@127.0.0.1:1/certification";
+  "postgresql://certification:7f4a2c9e6b1d8f305e7a4c2b9d6f1e8a@127.0.0.1:1/certification";
 const repositoryRoot = process.cwd();
 const SYNTHETIC_OPENAI_SECRET = "synthetic-floor-plan-source-secret";
 
@@ -100,6 +100,54 @@ function assertProjectedMetadataValid({
     }),
     { valid: true, issues: [] },
   );
+}
+
+function testDatabaseCapabilityIsolation() {
+  const contract = stageEnvironmentContract(repositoryRoot);
+  const expectedDatabaseProfiles = [
+    "artifact-product-server",
+    "build",
+    "development-browser-owner",
+    "development-browser-owner-discovery",
+    "phase8",
+    "production-browser-owner",
+    "production-browser-owner-discovery",
+    "runtime-smoke",
+    "simulation-production-evidence",
+    "source-validation",
+    "source-validation-qualification",
+  ];
+  const actualDatabaseProfiles = Object.entries(contract.profiles)
+    .filter(([, profile]) =>
+      profile.childVisibleVariables.includes("DATABASE_URL"),
+    )
+    .map(([profileId]) => profileId)
+    .sort();
+  assert.deepEqual(actualDatabaseProfiles, expectedDatabaseProfiles);
+  for (const [profileId, profile] of Object.entries(contract.profiles)) {
+    const stage = profile.stages[0];
+    const projection = projected({
+      profileId,
+      stage,
+      baseEnvironment: { DATABASE_URL: FIXTURE_DATABASE_URL },
+    });
+    if (expectedDatabaseProfiles.includes(profileId)) {
+      assert.equal(typeof projection.environment.DATABASE_URL, "string");
+      assert.equal(profile.requiredVariables.includes("DATABASE_URL"), true);
+    } else {
+      assert.equal(projection.environment.DATABASE_URL, undefined);
+      assert.equal(
+        projection.metadata.strippedKnownCertificationControlVariables.includes(
+          "DATABASE_URL",
+        ),
+        true,
+      );
+    }
+    assert.equal(
+      JSON.stringify(projection.metadata).includes(FIXTURE_DATABASE_URL),
+      false,
+    );
+  }
 }
 
 function testFloorPlanValuePolicies() {
@@ -661,6 +709,7 @@ async function reproduceHistoricalRealRunnerLeakage(regressionRoot) {
   );
 }
 
+testDatabaseCapabilityIsolation();
 testFloorPlanValuePolicies();
 
 const regressionRoot = mkdtempSync(
@@ -902,6 +951,7 @@ try {
       stageInputs: {
         CERTIFICATION_ENVIRONMENT_STAGE: "runtime-smoke",
         CERTIFICATION_RUNTIME_START_MARKER_PATH: startMarkerPath,
+        DATABASE_URL: FIXTURE_DATABASE_URL,
         CERTIFICATION_STAGE_ENVIRONMENT_CONTRACT_SHA256:
           runtimeProfile.contract.sha256,
         CERTIFICATION_STAGE_ENVIRONMENT_PROFILE_ID: "runtime-smoke",
