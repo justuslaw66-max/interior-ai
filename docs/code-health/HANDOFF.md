@@ -55,6 +55,11 @@ cleanup/write failures, stale/cross-run/manual/schema tamper, and no-leak
 behavior. Doctor, simulation, required-test ownership, and committed-head
 qualification register the correction; qualification also owns one exact-head
 real local preflight with a unique disposable loopback PostgreSQL database.
+Exact clean code head `ac0f981993deae1d0783eb17da4e5e5cfa554ae9`, tree
+`0d597321c4f2f6744287b1807836858ef230564c`, returned
+`QUALIFIED_FOR_FINAL_CANDIDATE_CERTIFICATION`. The terminal independent
+read-only review disposition is **PASS — no actionable findings**. This is
+source qualification only, not a rehearsal or final certification.
 The complete contract and pre-edit command matrix are in
 `docs/qa/ci-auth-fixture-result-contract-v1.md`.
 

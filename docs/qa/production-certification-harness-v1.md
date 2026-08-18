@@ -35,6 +35,12 @@ task-owned preflight with a disposable loopback database. The complete command
 matrix, schema, destination lifecycle, and rejection policy are in
 `docs/qa/ci-auth-fixture-result-contract-v1.md`.
 
+Exact clean code head `ac0f981993deae1d0783eb17da4e5e5cfa554ae9`, tree
+`0d597321c4f2f6744287b1807836858ef230564c`, returned
+`QUALIFIED_FOR_FINAL_CANDIDATE_CERTIFICATION`. Independent terminal read-only
+review passed with no actionable findings. This remains source qualification,
+not rehearsal or final-certification authority.
+
 Database-plan JSON remains on stdout from its existing lifecycle owner.
 Certification-stage result routing remains wrapper plus sealed physical
 state/evidence. No rehearsal was resumed or started. A fresh rehearsal,
