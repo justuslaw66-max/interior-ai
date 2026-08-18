@@ -566,6 +566,37 @@ function semanticEvidenceIssues(evidence) {
   ) {
     issues.push("database lifecycle abort evidence lost the original failure");
   }
+  if (evidence.failure?.originalStage === "runtime-smoke") {
+    const references = evidence.failure.evidenceReferences;
+    const consumedRuntimeFailure =
+      evidence.failure.consumedSubstantiveGate === true;
+    if (
+      (consumedRuntimeFailure &&
+        (!Number.isSafeInteger(evidence.failure.attempt) ||
+          evidence.failure.attempt < 1 ||
+          !isSha256(evidence.failure.failedStateSha256) ||
+          typeof evidence.failure.classification !== "string" ||
+          !evidence.failure.classification ||
+          !references?.["runtime-start"])) ||
+      (references !== undefined &&
+        (!references ||
+          typeof references !== "object" ||
+          Array.isArray(references) ||
+          Object.values(references).some(
+            (descriptor) =>
+              typeof descriptor?.path !== "string" ||
+              path.isAbsolute(descriptor.path) ||
+              descriptor.path.includes("\\") ||
+              descriptor.path === ".." ||
+              descriptor.path.startsWith("../") ||
+              !isSha256(descriptor.sha256),
+          )))
+    ) {
+      issues.push(
+        "database lifecycle runtime failure attribution is incomplete",
+      );
+    }
+  }
   const abortDropped = evidence.events.filter(
     (entry) => entry.state === "abort-dropped",
   );

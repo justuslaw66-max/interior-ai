@@ -38,6 +38,7 @@ import {
   runCertificationDoctor,
 } from "./production-certification-doctor.mjs";
 import {
+  certificationStateSha256,
   certificationStateSealIssues,
   completeCertificationStage,
   createCertificationState,
@@ -55,7 +56,9 @@ import {
   browserEnvironment,
   certificationStageFailure,
   parseCertificationChildJson,
+  persistManagedCertificationStageFailure,
 } from "./production-certification-real.mjs";
+import { createCertificationAbortCleanupRequest } from "./production-certification.mjs";
 import {
   measureFinalContinuity,
   rootEvidenceName,
@@ -620,6 +623,199 @@ function stateFixture() {
   });
   assert.equal(invalidated.stages.build.status, "invalidated");
   assert.equal(invalidated.stages.phase8.status, "invalidated");
+}
+
+{
+  const root = mkdtempSync(
+    path.join(tmpdir(), "certification-runtime-failed-state-"),
+  );
+  const statePath = path.join(root, "certification-state.json");
+  const digest = "e".repeat(64);
+  const descriptors = (names) =>
+    Object.fromEntries(
+      names.map((name) => [
+        name,
+        {
+          path: `${name.replaceAll(":", "-")}.json`,
+          sha256: digest,
+        },
+      ]),
+    );
+  const passed = [
+    ["doctor", ["doctor"], {}],
+    ["source-validation", ["source-validation"], {}],
+    [
+      "build",
+      [
+        "build",
+        "artifact-snapshot:immediateBuild",
+        "artifact-root:immediateBuild",
+      ],
+      {
+        semanticJournalNonce: "123e4567-e89b-42d3-a456-426614174001",
+        nextBuildId: "runtime-failed-state-build",
+        artifactSha256: digest,
+        productionManifestSha256: digest,
+        semanticJournalSha256: digest,
+      },
+    ],
+    [
+      "archive-preflight",
+      [
+        "archive-plan",
+        "archive-preflight",
+        "artifact-snapshot:stagedArchive",
+        "artifact-root:stagedArchive",
+      ],
+      { verifierSourceClosureSha256: digest },
+    ],
+    [
+      "archive",
+      [
+        "archive",
+        "archive-inventory",
+        "artifact-snapshot:compressedArchive",
+        "artifact-root:compressedArchive",
+      ],
+      { archiveSha256: digest, archiveInventorySha256: digest },
+    ],
+    [
+      "extracted-archive-preflight",
+      [
+        "extracted-archive-preflight",
+        "artifact-snapshot:extractedArchive",
+        "artifact-root:extractedArchive",
+      ],
+      {},
+    ],
+    [
+      "phase8",
+      [
+        "phase8",
+        "phase8-raw",
+        "phase8-completion",
+        "artifact-snapshot:postPhase8Live",
+        "artifact-root:postPhase8Live",
+      ],
+      { phase8EvidenceSha256: digest },
+    ],
+  ];
+  try {
+    let state = stateFixture();
+    for (const [index, [stage, evidenceNames, bindingUpdates]] of passed.entries()) {
+      const second = String(index).padStart(2, "0");
+      state = startCertificationStage(state, {
+        stage,
+        startedAt: `2026-08-14T00:00:${second}.000Z`,
+      });
+      state = completeCertificationStage(state, {
+        stage,
+        passed: true,
+        completedAt: `2026-08-14T00:00:${second}.100Z`,
+        exitCode: 0,
+        bindingUpdates,
+        evidenceFiles: descriptors(evidenceNames),
+      });
+    }
+    const preRuntimeStateSha256 = certificationStateSha256(state);
+    state = startCertificationStage(state, {
+      stage: "runtime-smoke",
+      startedAt: "2026-08-14T00:00:07.000Z",
+    });
+    const runningStateSha256 = certificationStateSha256(state);
+    writeCertificationState(statePath, state);
+    const evidenceFiles = descriptors([
+      "runtime-report",
+      "runtime-phase-timings",
+      "runtime-start",
+    ]);
+    const failure = certificationStageFailure(
+      new Error("runtime product assertion fixture"),
+      {
+        consumed: true,
+        classification: "PRODUCT_ASSERTION_FAILURE",
+      },
+    );
+    failure.evidenceFiles = evidenceFiles;
+    const returnedFailure = persistManagedCertificationStageFailure({
+      statePath,
+      stage: "runtime-smoke",
+      failure,
+      completedAt: "2026-08-14T00:00:07.100Z",
+    });
+    const physicalFailedState = readCertificationState(statePath);
+    const physicalFailedStateSha256 =
+      certificationStateSha256(physicalFailedState);
+    assert.notEqual(runningStateSha256, physicalFailedStateSha256);
+    assert.notEqual(preRuntimeStateSha256, physicalFailedStateSha256);
+    assert.equal(returnedFailure.failedStateSha256, physicalFailedStateSha256);
+    assert.equal(returnedFailure.stage, "runtime-smoke");
+    assert.equal(returnedFailure.stageAttempt, 1);
+    assert.equal(
+      physicalFailedState.stages["runtime-smoke"].attempts.at(-1).status,
+      "failed",
+    );
+    assert.equal(
+      physicalFailedState.stages["runtime-smoke"].consumedSubstantiveGate,
+      true,
+    );
+
+    const cleanup = createCertificationAbortCleanupRequest({
+      command: "runtime-smoke",
+      terminalSignal: null,
+      commandError: returnedFailure,
+      environment: {
+        PRODUCTION_CERTIFICATION_STATE: statePath,
+        CERTIFICATION_EXPECTED_STATE_SHA256: preRuntimeStateSha256,
+      },
+    });
+    assert.equal(
+      cleanup.environment.CERTIFICATION_EXPECTED_STATE_SHA256,
+      physicalFailedStateSha256,
+    );
+    assert.deepEqual(cleanup.originalFailure, {
+      classification: "PRODUCT_ASSERTION_FAILURE",
+      consumedSubstantiveGate: true,
+      stage: "runtime-smoke",
+      attempt: 1,
+      failedStateSha256: physicalFailedStateSha256,
+      evidenceReferences: evidenceFiles,
+    });
+
+    assert.throws(
+      () =>
+        createCertificationAbortCleanupRequest({
+          command: "runtime-smoke",
+          terminalSignal: null,
+          commandError: {
+            classification: "PRODUCT_ASSERTION_FAILURE",
+            consumed: true,
+            stage: "runtime-smoke",
+            stageAttempt: 1,
+            evidenceFiles,
+          },
+          environment: { PRODUCTION_CERTIFICATION_STATE: statePath },
+        }),
+      /missing its authoritative failed-state SHA/,
+      "a task driver may not discard the returned failed-state SHA",
+    );
+    assert.throws(
+      () =>
+        createCertificationAbortCleanupRequest({
+          command: "runtime-smoke",
+          terminalSignal: null,
+          commandError: {
+            ...returnedFailure,
+            failedStateSha256: preRuntimeStateSha256,
+          },
+          environment: { PRODUCTION_CERTIFICATION_STATE: statePath },
+        }),
+      /does not match the physical certification state/,
+      "the pre-runtime comparator must be rejected as stale",
+    );
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
 }
 
 {

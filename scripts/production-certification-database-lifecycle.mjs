@@ -418,6 +418,32 @@ function finalEmptyWasVerified(evidence) {
   );
 }
 
+function portableOriginalEvidenceReferences(value) {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return {};
+  const references = {};
+  for (const [name, descriptor] of Object.entries(value)) {
+    if (
+      !/^[a-z0-9][a-z0-9:-]*$/.test(name) ||
+      !descriptor ||
+      typeof descriptor !== "object" ||
+      Array.isArray(descriptor) ||
+      Object.keys(descriptor).sort().join("\n") !== "path\nsha256" ||
+      typeof descriptor.path !== "string" ||
+      path.isAbsolute(descriptor.path) ||
+      descriptor.path.includes("\\") ||
+      path.normalize(descriptor.path) !== descriptor.path ||
+      descriptor.path === ".." ||
+      descriptor.path.startsWith(`..${path.sep}`) ||
+      typeof descriptor.sha256 !== "string" ||
+      !/^[0-9a-f]{64}$/.test(descriptor.sha256)
+    ) {
+      throw new Error("original failure evidence references are malformed");
+    }
+    references[name] = { path: descriptor.path, sha256: descriptor.sha256 };
+  }
+  return references;
+}
+
 function assertIdentity(evidence, environment) {
   const expected = {
     certificationId: required(environment, "PRODUCTION_CERTIFICATION_ID"),
@@ -1086,7 +1112,12 @@ export async function abortCertificationDatabase(options = {}) {
       mode: "abort-cleanup",
       classification: options.originalFailure?.classification ?? "CERTIFICATION_ABORTED",
       originalStage: options.originalFailure?.stage ?? null,
+      attempt: options.originalFailure?.attempt ?? null,
       consumedSubstantiveGate: options.originalFailure?.consumedSubstantiveGate ?? false,
+      failedStateSha256: options.originalFailure?.failedStateSha256 ?? null,
+      evidenceReferences: portableOriginalEvidenceReferences(
+        options.originalFailure?.evidenceReferences,
+      ),
       reason: "original certification failure retained",
       at: new Date().toISOString(),
     };

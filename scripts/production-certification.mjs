@@ -6,7 +6,10 @@ import {
   CERTIFICATION_STAGE_ORDER,
   CERTIFICATION_STATE_ENV,
 } from "./production-certification-contract.mjs";
-import { readCertificationState } from "./production-certification-state.mjs";
+import {
+  certificationStateSha256,
+  readCertificationState,
+} from "./production-certification-state.mjs";
 import { projectCertificationChildEnvironment } from "./production-certification-stage-environment.mjs";
 import { runCertificationResourcePreparation } from "./production-certification-resources.mjs";
 import { redactDatabaseLifecycleFailure } from "./production-certification-database-lifecycle.mjs";
@@ -333,6 +336,75 @@ export function createSerializedTerminalLifecycle({ runAbortCleanup }) {
   };
 }
 
+export function createCertificationAbortCleanupRequest({
+  command,
+  terminalSignal,
+  commandError,
+  environment = process.env,
+}) {
+  const statePath = environment.PRODUCTION_CERTIFICATION_STATE?.trim();
+  if (!statePath) {
+    throw new Error(
+      "database abort cleanup requires the physical certification state",
+    );
+  }
+  const physicalState = readCertificationState(statePath);
+  const physicalStateSha256 = certificationStateSha256(physicalState);
+  const failedStateSha256 = commandError?.failedStateSha256 ?? null;
+  const consumedSubstantiveGate = terminalSignal
+    ? false
+    : commandError?.consumed ??
+      commandError?.certificationResult?.consumedSubstantiveGate ??
+      false;
+  const originalStage = terminalSignal
+    ? `terminal-${terminalSignal.toLowerCase()}`
+    : commandError?.stage ?? command;
+  if (
+    consumedSubstantiveGate &&
+    CERTIFICATION_STAGE_ORDER.includes(originalStage) &&
+    !failedStateSha256
+  ) {
+    throw new Error(
+      "consumed stage failure is missing its authoritative failed-state SHA",
+    );
+  }
+  if (
+    failedStateSha256 &&
+    failedStateSha256 !== physicalStateSha256
+  ) {
+    throw new Error(
+      "returned failed-state SHA does not match the physical certification state",
+    );
+  }
+  if (
+    failedStateSha256 &&
+    (!Number.isSafeInteger(commandError?.stageAttempt) ||
+      commandError.stageAttempt < 1)
+  ) {
+    throw new Error(
+      "returned failed-state SHA is missing its stage attempt identity",
+    );
+  }
+  return {
+    environment: {
+      ...environment,
+      CERTIFICATION_EXPECTED_STATE_SHA256: physicalStateSha256,
+    },
+    originalFailure: {
+      classification: terminalSignal
+        ? "INFRASTRUCTURE_TRANSIENT"
+        : commandError?.classification ??
+          commandError?.certificationResult?.classification ??
+          "PRECONDITION_ORCHESTRATION_FAILURE",
+      consumedSubstantiveGate,
+      stage: originalStage,
+      attempt: terminalSignal ? null : commandError?.stageAttempt ?? null,
+      failedStateSha256,
+      evidenceReferences: structuredClone(commandError?.evidenceFiles ?? {}),
+    },
+  };
+}
+
 if (import.meta.url === new URL(process.argv[1], "file:").href) {
   const command = process.argv[2] ?? "unknown";
   const terminal = createSerializedTerminalLifecycle({
@@ -346,22 +418,14 @@ if (import.meta.url === new URL(process.argv[1], "file:").href) {
       ) {
         return;
       }
+      const cleanup = createCertificationAbortCleanupRequest({
+        command,
+        terminalSignal,
+        commandError,
+      });
       await runDatabaseAbortCleanup({
-        originalFailure: {
-          classification: terminalSignal
-            ? "INFRASTRUCTURE_TRANSIENT"
-            : commandError?.classification ??
-              commandError?.certificationResult?.classification ??
-              "PRECONDITION_ORCHESTRATION_FAILURE",
-          consumedSubstantiveGate: terminalSignal
-            ? false
-            : commandError?.consumed ??
-              commandError?.certificationResult?.consumedSubstantiveGate ??
-              false,
-          stage: terminalSignal
-            ? `terminal-${terminalSignal.toLowerCase()}`
-            : command,
-        },
+        environment: cleanup.environment,
+        originalFailure: cleanup.originalFailure,
       });
     },
   });

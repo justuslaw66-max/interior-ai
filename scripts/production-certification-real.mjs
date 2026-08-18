@@ -127,7 +127,15 @@ class StageFailure extends Error {
     message,
     classification,
     consumed,
-    { exitCode = 1, signal = null, result = null, evidenceFiles = {} } = {},
+    {
+      exitCode = 1,
+      signal = null,
+      result = null,
+      evidenceFiles = {},
+      stage = null,
+      stageAttempt = null,
+      failedStateSha256 = null,
+    } = {},
   ) {
     super(message);
     this.classification = classification;
@@ -136,6 +144,9 @@ class StageFailure extends Error {
     this.signal = signal;
     this.certificationResult = result;
     this.evidenceFiles = evidenceFiles;
+    this.stage = stage;
+    this.stageAttempt = stageAttempt;
+    this.failedStateSha256 = failedStateSha256;
   }
 }
 
@@ -1225,6 +1236,9 @@ export function certificationStageFailure(
       signal: error.signal,
       result: error.certificationResult,
       evidenceFiles: error.evidenceFiles,
+      stage: error.stage,
+      stageAttempt: error.stageAttempt,
+      failedStateSha256: error.failedStateSha256,
     });
   }
   return new StageFailure(
@@ -1232,6 +1246,43 @@ export function certificationStageFailure(
     classification,
     consumed,
   );
+}
+
+export function persistManagedCertificationStageFailure({
+  statePath,
+  stage,
+  failure,
+  completedAt,
+}) {
+  const durableFailureState = readCertificationState(statePath);
+  const attempt = durableFailureState.stages[stage]?.attempts.at(-1);
+  if (attempt?.status !== "running" || attempt.number < 1) {
+    throw new Error("managed stage failure is not bound to a running attempt");
+  }
+  const failedState = completeCertificationStage(durableFailureState, {
+    stage,
+    passed: false,
+    completedAt,
+    exitCode: failure.exitCode,
+    signal: failure.signal,
+    failureClassification: failure.classification,
+    consumedSubstantiveGate: failure.consumed,
+    evidenceFiles: failure.evidenceFiles,
+  });
+  const failedStateSha256 = certificationStateSha256(failedState);
+  writeCertificationState(statePath, failedState, {
+    expectedCurrentSha256: certificationStateSha256(durableFailureState),
+  });
+  const physicalFailedState = readCertificationState(statePath);
+  if (certificationStateSha256(physicalFailedState) !== failedStateSha256) {
+    throw new Error(
+      "managed stage failed-state SHA does not match the physical state",
+    );
+  }
+  failure.stage = stage;
+  failure.stageAttempt = attempt.number;
+  failure.failedStateSha256 = failedStateSha256;
+  return failure;
 }
 
 async function managedStage(
@@ -1298,21 +1349,15 @@ async function managedStage(
         ? postBoundaryClassification
         : "SOURCE_CONTRACT_FAILURE",
     });
-    const durableFailureState = readCertificationState(context.statePath);
-    const failedState = completeCertificationStage(durableFailureState, {
+    throw persistManagedCertificationStageFailure({
+      statePath: context.statePath,
       stage,
-      passed: false,
-      completedAt: certificationTimestamp(context.environment, "STAGE_COMPLETED_AT"),
-      exitCode: failure.exitCode,
-      signal: failure.signal,
-      failureClassification: failure.classification,
-      consumedSubstantiveGate: failure.consumed,
-      evidenceFiles: failure.evidenceFiles,
+      failure,
+      completedAt: certificationTimestamp(
+        context.environment,
+        "STAGE_COMPLETED_AT",
+      ),
     });
-    writeCertificationState(context.statePath, failedState, {
-      expectedCurrentSha256: certificationStateSha256(durableFailureState),
-    });
-    throw failure;
   }
 }
 
@@ -2921,12 +2966,32 @@ export async function runRuntimeSmokeStage(options = {}) {
     );
     if (child.status !== 0 || child.signal || child.error) {
       const substantiveStarted = existsSync(startMarkerPath);
+      const evidenceFiles = {};
+      for (const [name, filePath] of [
+        ["runtime-report", reportPath],
+        ["runtime-phase-timings", timingPath],
+        ["runtime-start", startMarkerPath],
+      ]) {
+        if (!existsSync(filePath)) continue;
+        try {
+          evidenceFiles[name] = retainedDescriptor(
+            context.evidenceRoot,
+            filePath,
+          );
+        } catch {
+          // Invalid output cannot become an authoritative evidence reference.
+        }
+      }
       if (child.error || child.signal) {
         throw new StageFailure(
           "runtime-smoke infrastructure failed",
           "INFRASTRUCTURE_TRANSIENT",
           substantiveStarted,
-          { exitCode: child.signal ? null : 1, signal: child.signal ?? null },
+          {
+            exitCode: child.signal ? null : 1,
+            signal: child.signal ?? null,
+            evidenceFiles,
+          },
         );
       }
       throw new StageFailure(
@@ -2935,7 +3000,7 @@ export async function runRuntimeSmokeStage(options = {}) {
           ? "PRODUCT_ASSERTION_FAILURE"
           : "PRECONDITION_ORCHESTRATION_FAILURE",
         substantiveStarted,
-        { exitCode: child.status },
+        { exitCode: child.status, evidenceFiles },
       );
     }
     childCompleted = true;

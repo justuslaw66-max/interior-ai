@@ -1057,6 +1057,92 @@ async function deterministicContractCoverage() {
     rmSync(failureFixture.root, { recursive: true, force: true });
   }
 
+  const runtimeFailureFixture = fixture({ id: "runtime-abort-attribution" });
+  const runtimeFailureAdapter = new FakeDatabaseAdapter();
+  try {
+    await planCertificationDatabase({
+      repositoryRoot,
+      environment: runtimeFailureFixture.environment,
+      adapter: runtimeFailureAdapter,
+      nonce: "7".repeat(32),
+      qualificationFixture: true,
+    });
+    await provisionCertificationDatabase({
+      repositoryRoot,
+      environment: runtimeFailureFixture.environment,
+      adapter: runtimeFailureAdapter,
+    });
+    await verifyInitialCertificationDatabase({
+      repositoryRoot,
+      environment: runtimeFailureFixture.environment,
+      adapter: runtimeFailureAdapter,
+    });
+    await bindAllStages(runtimeFailureFixture.environment, runtimeFailureAdapter);
+    runtimeFailureAdapter.rows[0].count = 3;
+    runtimeFailureAdapter.sessions = [
+      {
+        pid: 7201,
+        role: "runtime_owner",
+        applicationName: "runtime-fixture",
+        clientAddress: "127.0.0.1",
+        state: "idle",
+        backendStartedAt: "2026-08-17T00:00:00.000Z",
+      },
+    ];
+    const failedStateSha256 = "f".repeat(64);
+    const evidenceReferences = {
+      "runtime-report": {
+        path: "runtime-smoke/playwright-report.json",
+        sha256: "a".repeat(64),
+      },
+      "runtime-phase-timings": {
+        path: "runtime-smoke/phase-timings.json",
+        sha256: "b".repeat(64),
+      },
+      "runtime-start": {
+        path: "runtime-smoke/product-test-start.json",
+        sha256: "c".repeat(64),
+      },
+    };
+    const aborted = await abortCertificationDatabase({
+      repositoryRoot,
+      environment: runtimeFailureFixture.environment,
+      adapter: runtimeFailureAdapter,
+      originalFailure: {
+        classification: "PRODUCT_ASSERTION_FAILURE",
+        consumedSubstantiveGate: true,
+        stage: "runtime-smoke",
+        attempt: 1,
+        failedStateSha256,
+        evidenceReferences,
+      },
+    });
+    assert.equal(aborted.evidence.currentState, "abort-absence-verified");
+    assert.equal(aborted.evidence.complete, true);
+    assert.equal(aborted.evidence.cleanup.targetAbsent, true);
+    assert.equal(aborted.evidence.cleanup.finalEmptyVerified, false);
+    assert.equal(aborted.evidence.cleanup.failedRunRehabilitated, false);
+    assert.equal(aborted.evidence.inventories.abort.totalRows, 3);
+    assert.equal(aborted.evidence.sessions.abort.count, 1);
+    assert.deepEqual(aborted.evidence.failure, {
+      mode: "abort-cleanup",
+      classification: "PRODUCT_ASSERTION_FAILURE",
+      originalStage: "runtime-smoke",
+      attempt: 1,
+      consumedSubstantiveGate: true,
+      failedStateSha256,
+      evidenceReferences,
+      reason: "original certification failure retained",
+      at: aborted.evidence.failure.at,
+    });
+    assert.deepEqual(databaseLifecycleEvidenceIssues(aborted.evidence), []);
+    const serialized = JSON.stringify(aborted.evidence);
+    assert.equal(serialized.includes("raw-secret"), false);
+    assert.equal(serialized.includes("postgresql://"), false);
+  } finally {
+    rmSync(runtimeFailureFixture.root, { recursive: true, force: true });
+  }
+
   const checkpointFixture = fixture({ id: "abort-checkpoint" });
   const checkpointAdapter = new FakeDatabaseAdapter({
     releaseFailure: "release failed with password=checkpoint-secret",
