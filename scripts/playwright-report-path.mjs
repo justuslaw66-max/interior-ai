@@ -7,6 +7,7 @@ import {
   readdirSync,
   realpathSync,
   statSync,
+  writeFileSync,
 } from "node:fs";
 import path from "node:path";
 
@@ -20,6 +21,8 @@ export const RUNTIME_SMOKE_EVIDENCE_ROOT_CONTRACT_SCHEMA =
 export const RUNTIME_SMOKE_EVIDENCE_ROOT_CONTRACT_VERSION = 1;
 export const RUNTIME_SMOKE_EVIDENCE_DESTINATION_CLASS =
   "playwright-external-evidence-root";
+export const RUNTIME_SMOKE_REPORT_AUTHORIZATION_SCHEMA =
+  "interior-ai.runtime-smoke-report-authorization.v1";
 
 export const RUNTIME_SMOKE_EVIDENCE_OUTPUTS = Object.freeze({
   report: Object.freeze({ filename: "playwright-report.json" }),
@@ -552,6 +555,148 @@ export function resolveRuntimeSmokeEvidencePath({
     rootContractSchema: RUNTIME_SMOKE_EVIDENCE_ROOT_CONTRACT_SCHEMA,
     rootContractVersion: RUNTIME_SMOKE_EVIDENCE_ROOT_CONTRACT_VERSION,
     rootContractSha256: RUNTIME_SMOKE_EVIDENCE_ROOT_CONTRACT_SHA256,
+  });
+}
+
+function runtimeReportIdentityValue(environment, name) {
+  const value = environment?.[name];
+  if (
+    typeof value !== "string" ||
+    value !== value.trim() ||
+    !/^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$/.test(value)
+  ) {
+    throw new Error(`Runtime-smoke report authorization is missing ${name}.`);
+  }
+  return value;
+}
+
+function runtimeReportAuthorizationIdentity({
+  destination,
+  externalRootRealpath,
+  environment,
+}) {
+  const runtimeStageAttempt = runtimeReportIdentityValue(
+    environment,
+    "CERTIFICATION_RUNTIME_STAGE_ATTEMPT",
+  );
+  if (!/^[1-9]\d*$/.test(runtimeStageAttempt)) {
+    throw new Error("Runtime-smoke report stage attempt is invalid.");
+  }
+  const runNonce = runtimeReportIdentityValue(
+    environment,
+    "PRODUCTION_EVIDENCE_EXPECTED_JOURNAL_NONCE",
+  );
+  if (
+    !/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
+      runNonce,
+    )
+  ) {
+    throw new Error("Runtime-smoke report run nonce is invalid.");
+  }
+  return Object.freeze({
+    schema: RUNTIME_SMOKE_REPORT_AUTHORIZATION_SCHEMA,
+    certificationId: runtimeReportIdentityValue(
+      environment,
+      "PRODUCTION_CERTIFICATION_ID",
+    ),
+    candidateId: runtimeReportIdentityValue(
+      environment,
+      "PRODUCTION_EVIDENCE_CANDIDATE_ID",
+    ),
+    runtimeStage: "runtime-smoke",
+    runtimeStageAttempt: Number(runtimeStageAttempt),
+    runNonce,
+    reportRelativePath: destination.portableRelativePath,
+    evidenceRootIdentitySha256: createHash("sha256")
+      .update(externalRootRealpath)
+      .digest("hex"),
+  });
+}
+
+function readRuntimeReportAuthorization(authorizationPath) {
+  let entry;
+  let bytes;
+  try {
+    entry = lstatSync(authorizationPath);
+    bytes = readFileSync(authorizationPath);
+  } catch {
+    throw new Error(
+      "Runtime-smoke report authorization sidecar is missing or unreadable.",
+    );
+  }
+  if (entry.isSymbolicLink() || !entry.isFile()) {
+    throw new Error(
+      "Runtime-smoke report authorization sidecar must be a physical file.",
+    );
+  }
+  let value;
+  try {
+    value = JSON.parse(bytes.toString("utf8"));
+  } catch {
+    throw new Error("Runtime-smoke report authorization sidecar is invalid.");
+  }
+  const canonicalBytes = Buffer.from(`${JSON.stringify(value, null, 2)}\n`);
+  if (!bytes.equals(canonicalBytes)) {
+    throw new Error(
+      "Runtime-smoke report authorization sidecar is not canonical JSON.",
+    );
+  }
+  return value;
+}
+
+export function authorizeRuntimeSmokeReportPath({
+  requestedPath,
+  repositoryRoot,
+  authorizedExternalRoot,
+  environment,
+  additionalRepositoryRoots = [],
+}) {
+  const destination = resolveRuntimeSmokeEvidencePath({
+    requestedPath,
+    repositoryRoot,
+    authorizedExternalRoot,
+    outputRole: "report",
+    additionalRepositoryRoots,
+  });
+  const root = resolveAuthorizedExternalEvidenceRoot({
+    authorizedExternalRoot,
+    repositoryRoot,
+    additionalRepositoryRoots,
+  });
+  const authorization = runtimeReportAuthorizationIdentity({
+    destination,
+    externalRootRealpath: root.externalRootRealpath,
+    environment,
+  });
+  const authorizationPath = `${destination.outputPath}.owner.json`;
+  const authorizationBytes = Buffer.from(
+    `${JSON.stringify(authorization, null, 2)}\n`,
+  );
+  let authorizationStatus = "initial";
+  try {
+    writeFileSync(authorizationPath, authorizationBytes, {
+      flag: "wx",
+      mode: 0o600,
+    });
+  } catch (error) {
+    if (error?.code !== "EEXIST") throw error;
+    authorizationStatus = "same-run-reentry";
+    const existing = readRuntimeReportAuthorization(authorizationPath);
+    if (JSON.stringify(existing) !== JSON.stringify(authorization)) {
+      throw new Error(
+        "Runtime-smoke report path is owned by another run, attempt, destination, or evidence root.",
+      );
+    }
+  }
+  return Object.freeze({
+    ...destination,
+    authorization: Object.freeze({
+      schema: authorization.schema,
+      status: authorizationStatus,
+      reportRelativePath: authorization.reportRelativePath,
+      evidenceRootIdentitySha256:
+        authorization.evidenceRootIdentitySha256,
+    }),
   });
 }
 

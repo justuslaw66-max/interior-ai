@@ -3840,8 +3840,15 @@ function listedSpecCount(suites) {
           ...configEnvironment,
           CERTIFICATION_EVIDENCE_ROOT: leakageRegressionRoot,
           CERTIFICATION_ENVIRONMENT_STAGE: "runtime-smoke",
-          PLAYWRIGHT_JSON_OUTPUT_FILE:
-            ".local/production-artifact-evidence/runtime-marker-required.json",
+          CERTIFICATION_RUNTIME_STAGE_ATTEMPT: "1",
+          PLAYWRIGHT_EXTERNAL_EVIDENCE_ROOT: leakageRegressionRoot,
+          PRODUCTION_CERTIFICATION_ID: "certification-marker-test",
+          PRODUCTION_EVIDENCE_CANDIDATE_ID: "candidate-marker-test",
+          PRODUCTION_EVIDENCE_EXPECTED_JOURNAL_NONCE: identity.runNonce,
+          PLAYWRIGHT_JSON_OUTPUT_FILE: path.join(
+            leakageRegressionRoot,
+            "playwright-report.json",
+          ),
         },
         encoding: "utf8",
       },

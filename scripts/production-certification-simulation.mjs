@@ -3103,6 +3103,9 @@ export async function runProductionCertificationSimulation({
     profileId: "runtime-smoke",
     stageInputs: {
       CERTIFICATION_ENVIRONMENT_STAGE: "runtime-smoke",
+      CERTIFICATION_RUNTIME_STAGE_ATTEMPT: String(
+        state.stages["runtime-smoke"].attempts.at(-1).number,
+      ),
       CERTIFICATION_RUNTIME_START_MARKER_PATH: runtimeStartPath,
       DATABASE_URL: environment.DATABASE_URL,
       CERTIFICATION_STAGE_ENVIRONMENT_CONTRACT_SHA256:

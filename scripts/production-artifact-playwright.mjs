@@ -10,6 +10,7 @@ import {
 import {
   CERTIFICATION_EVIDENCE_ROOT,
   PLAYWRIGHT_EXTERNAL_EVIDENCE_ROOT,
+  authorizeRuntimeSmokeReportPath,
   resolvePlaywrightReportPath,
 } from "./playwright-report-path.mjs";
 
@@ -185,13 +186,22 @@ export function loadProductionArtifactForPlaywright({
     throw new Error(`Production artifact evidence manifest rejected: ${validation.issues.join("; ")}`);
   }
   validateEnvironmentMode(manifestRead.value, environment);
-  const reportDestination = resolvePlaywrightReportPath({
-    requestedPath: reportPath,
-    repositoryRoot,
-    authorizedExternalRoot:
-      environment[CERTIFICATION_EVIDENCE_ROOT] ??
-      environment[PLAYWRIGHT_EXTERNAL_EVIDENCE_ROOT],
-  });
+  const authorizedExternalRoot =
+    environment[CERTIFICATION_EVIDENCE_ROOT] ??
+    environment[PLAYWRIGHT_EXTERNAL_EVIDENCE_ROOT];
+  const reportDestination =
+    environment.CERTIFICATION_ENVIRONMENT_STAGE === "runtime-smoke"
+      ? authorizeRuntimeSmokeReportPath({
+          requestedPath: reportPath,
+          repositoryRoot,
+          authorizedExternalRoot,
+          environment,
+        })
+      : resolvePlaywrightReportPath({
+          requestedPath: reportPath,
+          repositoryRoot,
+          authorizedExternalRoot,
+        });
   return Object.freeze({
     identity: validation.identity,
     reportDestination,

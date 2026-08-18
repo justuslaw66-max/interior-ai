@@ -387,6 +387,7 @@ const sensitiveShapedFixtures = GLB_OPTIMIZER_CURRENT_TEST_OVERTRACE_PATHS.filte
 assert.deepEqual(sensitiveShapedFixtures, [
   "scripts/test-production-certification-resources.mjs",
   "scripts/test-production-certification-source-generated-outputs.mjs",
+  "scripts/test-runtime-smoke-resource-isolation.mjs",
 ]);
 
 console.log("Production trace/archive policy tests passed.");

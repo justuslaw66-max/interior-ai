@@ -950,6 +950,7 @@ try {
       profileId: "runtime-smoke",
       stageInputs: {
         CERTIFICATION_ENVIRONMENT_STAGE: "runtime-smoke",
+        CERTIFICATION_RUNTIME_STAGE_ATTEMPT: "1",
         CERTIFICATION_RUNTIME_START_MARKER_PATH: startMarkerPath,
         DATABASE_URL: FIXTURE_DATABASE_URL,
         CERTIFICATION_STAGE_ENVIRONMENT_CONTRACT_SHA256:

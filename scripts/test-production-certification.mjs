@@ -232,7 +232,7 @@ function stateFixture() {
 {
   const contract = stageEnvironmentContract(repositoryRoot);
   assert.equal(contract.value.schema, "interior-ai.production-certification-stage-environment.v2");
-  assert.equal(Object.keys(contract.variables).length, 94);
+  assert.equal(Object.keys(contract.variables).length, 95);
   assert.equal(Object.keys(contract.applicationFeatureVariables).length, 5);
   assert.equal(Object.keys(contract.profiles).length, 21);
   assert.deepEqual(
@@ -465,6 +465,7 @@ function stateFixture() {
     CERTIFICATION_STAGE_ENVIRONMENT_PROFILE_SHA256:
       stageEnvironmentContract(repositoryRoot).profiles["runtime-smoke"].sha256,
     CERTIFICATION_ENVIRONMENT_STAGE: "runtime-smoke",
+    CERTIFICATION_RUNTIME_STAGE_ATTEMPT: "1",
     CERTIFICATION_RUNTIME_START_MARKER_PATH: "/external/start.json",
     DATABASE_URL: syntheticSecret,
     PLAYWRIGHT_EXTERNAL_EVIDENCE_ROOT: "/external",

@@ -45,6 +45,7 @@ import {
   certificationPreparedBuildJournalIssues,
 } from "./production-artifact-contract.mjs";
 import {
+  authorizeRuntimeSmokeReportPath,
   resolveAuthorizedExternalEvidenceRoot,
   resolvePlaywrightReportPath,
   resolveRequiredTestReportPath,
@@ -2874,6 +2875,9 @@ export async function runRuntimeSmokeStage(options = {}) {
       profileId: "runtime-smoke",
       stageInputs: {
         CERTIFICATION_ENVIRONMENT_STAGE: "runtime-smoke",
+        CERTIFICATION_RUNTIME_STAGE_ATTEMPT: String(
+          state.stages["runtime-smoke"].attempts.at(-1).number,
+        ),
         CERTIFICATION_STAGE_ENVIRONMENT_CONTRACT_SHA256:
           runtimeProfile.contract.sha256,
         CERTIFICATION_STAGE_ENVIRONMENT_PROFILE_ID: runtimeProfile.id,
@@ -2888,6 +2892,20 @@ export async function runRuntimeSmokeStage(options = {}) {
         CERTIFICATION_RUNTIME_START_MARKER_PATH: startMarkerPath,
       },
     });
+    try {
+      authorizeRuntimeSmokeReportPath({
+        requestedPath: reportPath,
+        repositoryRoot: context.repositoryRoot,
+        authorizedExternalRoot: context.evidenceRoot,
+        environment: childProjection.environment,
+      });
+    } catch (error) {
+      throw new StageFailure(
+        error instanceof Error ? error.message : String(error),
+        "PRECONDITION_ORCHESTRATION_FAILURE",
+        false,
+      );
+    }
     const expectedTimingBinding = createRuntimeSmokeTimingEvidenceBinding({
       environment: childProjection.environment,
       destination: runtimeDestinations.timings,
