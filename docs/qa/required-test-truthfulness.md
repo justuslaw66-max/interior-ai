@@ -941,6 +941,17 @@ generated fixture value enters server output. Focused tests prove the discovery
 shape, marker, blocked token/non-GET requests, exact-pair activation, and
 non-activation for normal Google credentials.
 
+The merge-required authorization boundary now also includes the focused
+`interior-ai.ci-auth-fixture-command-result.v1` regression owner. Every export,
+validation, production-misuse, and preflight command requires an explicit
+runner-temp result root/path/nonce and a canonical checksum-closed sidecar;
+stdout/stderr are human logs only. Validation retains safe classifications,
+production misuse requires the exact structured production-prohibition proof,
+and preflight retains safe session/server/cleanup evidence without bodies,
+cookies, sessions, CSRF values, credentials, database URLs, or private paths.
+The required workflow validates each result with the shared reader. Database
+plan stdout and certification-stage result routing are unchanged.
+
 The run's flooring error context was the exact optional file rejected for
 prohibited environment output; no diagnostic contents were copied into this
 record. It is now omitted without discarding the mandatory failing report. The

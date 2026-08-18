@@ -1,5 +1,57 @@
 # Code health audit handoff
 
+## Production certification auth result channel — 2026-08-19
+
+Branch `fix/production-certification-auth-result-channel` starts from exact
+commit `0dda7c85cf3d8f8078a6db779fdf5661e6874180`, tree
+`faf99ae2435bc6493e84206d23e61d7174ba067b`, above unchanged integration
+`2c567fd483877c7dcbd8fd23e3cd8cb316732c8c`, tree
+`50f9c5d6a6610990606fd9db9a27ba40200fca90`. Direct ancestry through
+`cd3b53c`, `461f844d`, `dc989a55`, `51f2a058`, and `f830758f` was verified
+before the focused branch was created.
+
+The preserved read-only channel mapping remains exactly
+`COMMITTED_RESULT_CHANNEL_INCONCLUSIVE`. Its missing machine-result findings
+are corrected under `COMMITTED_AUTH_RESULT_CHANNEL_MISSING`,
+`AUTH_PREFLIGHT_STRUCTURED_EVIDENCE_CONTRACT_GAP`, and
+`AUTH_SESSION_PREFLIGHT_FAILURE_EVIDENCE_CONTRACT_DEFECT`.
+
+`scripts/ci-auth-fixture-result-contract.cjs` owns
+`interior-ai.ci-auth-fixture-command-result.v1`, its explicit external
+root/path/nonce contract, mode-0600 fsynced atomic result and checksum writer,
+and canonical reader. Validation sidecars retain only safe provider/secret
+presence, grammar, coherence, alias, environment, application-validator,
+no-network, and no-leak classifications. Production misuse passes only from
+the exact IPC-bound
+`SYNTHETIC_AUTH_FIXTURE_PRODUCTION_MISUSE_REJECTED` proof; arbitrary nonzero,
+loader, dependency, syntax, transport, missing-input, and database failures do
+not pass. Preflight sidecars retain invocation, server lifecycle/stream,
+readiness, safe session request/response descriptors, remaining route checks,
+and cleanup/port-release evidence. Raw OAuth values, secrets, cookies,
+sessions, CSRF values, response bodies, passwords, database URLs, private
+environment, and machine paths are excluded.
+
+Stable and advisory workflow auth invocations now use runner-temp destinations
+and invoke the canonical validator. `GITHUB_ENV` remains the only raw provider
+transport. Stdout/stderr remain human logs only. Database planning remains
+canonical JSON on stdout, and certification stages remain wrapper plus sealed
+physical state/evidence bound.
+
+Focused deterministic coverage includes validation success/failures,
+production expected-negative and unrelated failures, stream binding,
+preflight success plus server/readiness/status/content/JSON/redirect/signal/
+cleanup/write failures, stale/cross-run/manual/schema tamper, and no-leak
+behavior. Doctor, simulation, required-test ownership, and committed-head
+qualification register the correction; qualification also owns one exact-head
+real local preflight with a unique disposable loopback PostgreSQL database.
+The complete contract and pre-edit command matrix are in
+`docs/qa/ci-auth-fixture-result-contract-v1.md`.
+
+No production build, rehearsal, Phase 8 acceptance, runtime smoke,
+browser-owner matrix, Full E2E, final certification, deployment, integration,
+or push is part of this correction. A fresh rehearsal, immutable final
+certification, integration, and the CH-0015 closure audit remain pending.
+
 ## CH-0015I bounded runtime-smoke failure correction — 2026-08-18
 
 Branch `fix/production-certification-runtime-smoke-readiness` starts from exact

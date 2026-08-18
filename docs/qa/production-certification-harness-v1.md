@@ -1,11 +1,44 @@
 # Production Certification Harness v1
 
+## Canonical auth command result channel — 2026-08-19
+
+The preserved channel-mapping result remains exactly
+`COMMITTED_RESULT_CHANNEL_INCONCLUSIVE`. The certification-infrastructure
+classifications are `COMMITTED_AUTH_RESULT_CHANNEL_MISSING`,
+`AUTH_PREFLIGHT_STRUCTURED_EVIDENCE_CONTRACT_GAP`, and
+`AUTH_SESSION_PREFLIGHT_FAILURE_EVIDENCE_CONTRACT_DEFECT`.
+
+`scripts/ci-auth-fixture-result-contract.cjs` now owns the versioned
+`interior-ai.ci-auth-fixture-command-result.v1` schema, explicit authorized
+external destination, exclusive atomic writer/checksum, and canonical reader.
+Provider export keeps raw values only in private `GITHUB_ENV`; its sidecar is
+safe completion metadata. Environment validation no longer relies on prose.
+Production misuse requires the exact safe production-prohibition code and
+structured child proof rather than any nonzero exit. Local/CI auth-session
+preflight retains safe server lifecycle/stream, session status/content
+type/body hash and shape, remaining route-contract, no-network/no-leak, and
+termination/port-release evidence before discarding private process memory.
+Stdout/stderr remain human logs only.
+
+Doctor registers the owner and reader; deterministic simulation exercises
+success, failure, expected-negative, stale/cross-run/tamper, cleanup, and leak
+cases; committed-head qualification includes the focused matrix and one real
+task-owned preflight with a disposable loopback database. The complete command
+matrix, schema, destination lifecycle, and rejection policy are in
+`docs/qa/ci-auth-fixture-result-contract-v1.md`.
+
+Database-plan JSON remains on stdout from its existing lifecycle owner.
+Certification-stage result routing remains wrapper plus sealed physical
+state/evidence. No rehearsal was resumed or started. A fresh rehearsal,
+immutable final certification, integration, and CH-0015 closure audit remain
+pending.
+
 ## Source-validation database environment projection — 2026-08-18
 
 The retained failed source-projection rehearsal remains closed as
 `CERTIFICATION_REHEARSAL_FAILED_CLOSED` / `SOURCE_CONTRACT_FAILURE`, with zero
 source child attempts and `consumedSubstantiveGate=false`. Resource
-preparation, all 18 doctor checks, exact disposable database planning,
+preparation, all 19 doctor checks, exact disposable database planning,
 provisioning, 43 migrations, 33 initially empty application tables, dependency
 installation/binding, abort cleanup, database absence, state-SHA continuity,
 downstream invalidations, and the terminal physical state remain historical

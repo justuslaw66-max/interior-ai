@@ -55,6 +55,7 @@ import {
   certificationWorktreeIssues,
   resolveCertificationStageWorktree,
 } from "./production-certification-worktrees.mjs";
+import authResultContract from "./ci-auth-fixture-result-contract.cjs";
 
 const REQUIRED_APPLICATION_ENVIRONMENT_NAMES = Object.freeze([
   "CERTIFICATION_DATABASE_ADMIN_URL",
@@ -190,6 +191,103 @@ export function assertFileBackedOwner(repositoryRoot, relativePath) {
     throw new Error(`${relativePath} permits data URL, eval, or stdin execution`);
   }
   return { sourceSha256: sha256Bytes(source) };
+}
+
+export function validateAuthResultContracts(repositoryRoot) {
+  const ownerPaths = [
+    "scripts/ci-auth-fixture-result-contract.cjs",
+    "scripts/ci-auth-fixture-result-contract.d.cts",
+    "scripts/ci-auth-fixture.ts",
+    "scripts/run-ci-auth-fixture-real-preflight.mjs",
+    "scripts/test-ci-auth-fixture-results.ts",
+    "lib/auth-env.ts",
+  ];
+  const ownerHashes = Object.fromEntries(
+    ownerPaths.map((relativePath) => [
+      relativePath,
+      assertFileBackedOwner(repositoryRoot, relativePath).sourceSha256,
+    ]),
+  );
+  const packageJson = JSON.parse(
+    readFileSync(path.join(repositoryRoot, "package.json"), "utf8"),
+  );
+  const fixtureSource = readFileSync(
+    path.join(repositoryRoot, "scripts/ci-auth-fixture.ts"),
+    "utf8",
+  );
+  const contractSource = readFileSync(
+    path.join(repositoryRoot, "scripts/ci-auth-fixture-result-contract.cjs"),
+    "utf8",
+  );
+  const qualificationSource = readFileSync(
+    path.join(repositoryRoot, "scripts/production-certification.mjs"),
+    "utf8",
+  );
+  const requiredScripts = {
+    "ci:auth-fixture:export": "export-github-env",
+    "ci:auth-fixture:validate": "validate-env",
+    "ci:auth-fixture:production-misuse": "production-misuse",
+    "ci:auth-fixture:preflight": "preflight",
+    "test:advisory-auth-preflight": "preflight-local",
+    "test:ci-auth-fixture-real-preflight":
+      "run-ci-auth-fixture-real-preflight.mjs",
+    "ci:auth-fixture:result:validate":
+      "ci-auth-fixture-result-contract.cjs validate",
+    "test:ci-auth-fixture-results": "test-ci-auth-fixture-results.ts",
+  };
+  for (const [scriptId, marker] of Object.entries(requiredScripts)) {
+    if (!packageJson.scripts?.[scriptId]?.includes(marker)) {
+      throw new Error(`canonical auth result command ${scriptId} is not registered`);
+    }
+  }
+  for (const marker of [
+    "CI_AUTH_FIXTURE_RESULT_ROOT",
+    "CI_AUTH_FIXTURE_RESULT_PATH",
+    "CI_AUTH_FIXTURE_RESULT_NONCE",
+    "writeStructuredResult",
+    "validateAuthCommandResult",
+    "productionMisuseEvidence",
+    "SYNTHETIC_AUTH_FIXTURE_PRODUCTION_MISUSE_REJECTED",
+    "sessionRequest",
+    "readinessAttemptCount",
+    "taskOwnedCleanup",
+  ]) {
+    if (!fixtureSource.includes(marker) && !contractSource.includes(marker)) {
+      throw new Error(`auth result ownership is missing ${marker}`);
+    }
+  }
+  if (
+    authResultContract.AUTH_RESULT_SCHEMA !==
+      "interior-ai.ci-auth-fixture-command-result.v1" ||
+    authResultContract.AUTH_RESULT_VERSION !== 1 ||
+    typeof authResultContract.validateAuthCommandResult !== "function" ||
+    typeof authResultContract.writeAuthCommandResult !== "function" ||
+    !contractSource.includes("Auth preflight success lacks canonical session-response proof") ||
+    !contractSource.includes("Production-misuse intended rejection proof is incomplete") ||
+    !contractSource.includes("Auth result contains a raw private value") ||
+    !qualificationSource.includes('"test:auth-env-hardening"') ||
+    !qualificationSource.includes('"test:ci-auth-fixture-real-preflight"')
+  ) {
+    throw new Error("canonical auth result schema, validator, or no-leak policy is incomplete");
+  }
+  if (
+    !fixtureSource.includes("process.stdout.write(stdout)") ||
+    !fixtureSource.includes("process.stderr.write(stderr)") ||
+    !fixtureSource.includes("writeStructuredResult(context")
+  ) {
+    throw new Error("auth stdout/stderr logs or structured result ownership are ambiguous");
+  }
+  return {
+    schema: authResultContract.AUTH_RESULT_SCHEMA,
+    version: authResultContract.AUTH_RESULT_VERSION,
+    explicitExternalDestination: true,
+    canonicalValidatorRegistered: true,
+    proseSuccessAuthority: false,
+    arbitraryNonzeroExpectedNegativeAccepted: false,
+    sessionServerResponseEvidenceRetained: true,
+    rawAuthMaterialPortable: false,
+    ownerHashes,
+  };
 }
 
 function validatePortsAndProcesses(repositoryRoot) {
@@ -1511,6 +1609,8 @@ export async function runCertificationDoctor({
     return validateBuildTargetsPristine(finalArtifact.root);
   });
   check(checks, issues, "schema-and-mode-compatibility", () => validateContracts(root));
+  check(checks, issues, "auth-result-contract", () =>
+    validateAuthResultContracts(root));
   check(checks, issues, "stage-order-import-coherence", () =>
     validateCertificationStageOrderContracts(root));
   check(checks, issues, "dependency-lifecycle-order", () =>

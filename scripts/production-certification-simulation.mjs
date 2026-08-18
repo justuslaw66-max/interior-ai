@@ -286,6 +286,22 @@ export function initializeFixture(repositoryRoot, fixtureRoot) {
       packageManager: `npm@${npmVersion}`,
       scripts: {
         build: "node scripts/production-certification-simulation.mjs fixture-build",
+        "ci:auth-fixture:export":
+          "npx ts-node scripts/ci-auth-fixture.ts export-github-env",
+        "ci:auth-fixture:validate":
+          "npx ts-node scripts/ci-auth-fixture.ts validate-env",
+        "ci:auth-fixture:production-misuse":
+          "npx ts-node scripts/ci-auth-fixture.ts production-misuse",
+        "ci:auth-fixture:preflight":
+          "npx ts-node scripts/ci-auth-fixture.ts preflight",
+        "test:advisory-auth-preflight":
+          "npx ts-node scripts/ci-auth-fixture.ts preflight-local",
+        "test:ci-auth-fixture-real-preflight":
+          "node scripts/run-ci-auth-fixture-real-preflight.mjs",
+        "ci:auth-fixture:result:validate":
+          "node scripts/ci-auth-fixture-result-contract.cjs validate",
+        "test:ci-auth-fixture-results":
+          "npx ts-node scripts/test-ci-auth-fixture-results.ts",
       },
       dependencies: {
         "simulation-fixture": "file:simulation-fixture-1.0.0.tgz",
@@ -844,6 +860,11 @@ export async function runProductionCertificationSimulation({
   cleanupWorktrees = true,
 } = {}) {
   const repositoryRoot = process.cwd();
+  const authResultRegression = run(
+    "npm",
+    ["run", "test:ci-auth-fixture-results"],
+    repositoryRoot,
+  );
   run(
     process.execPath,
     ["scripts/test-production-certification-source-generated-outputs.mjs"],
@@ -4199,6 +4220,17 @@ export async function runProductionCertificationSimulation({
       abortFailureRetained: true,
       crossRunCandidateAndSessionTamperRejected: true,
       realDatabaseMutation: false,
+    },
+    authResultContract: {
+      schema: "interior-ai.ci-auth-fixture-command-result.v1",
+      validationSuccessAndFailures: true,
+      productionExpectedNegative: true,
+      preflightSuccessAndFailures: true,
+      staleCrossRunAndTamperRejected: true,
+      cleanupAndNoLeakEvidence: true,
+      regressionPassed: authResultRegression.includes(
+        "CI auth fixture structured-result tests passed",
+      ),
     },
     sourceDatabaseProjection: {
       actualRealRunnerPath: true,
