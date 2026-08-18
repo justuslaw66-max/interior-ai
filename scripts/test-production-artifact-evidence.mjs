@@ -102,6 +102,7 @@ import {
 import {
   createRuntimeSmokeReadinessObservation,
   evaluateRuntimeSmokeActiveRequiredModels,
+  runtimeSmokeRequiredRegistryReady,
 } from "./runtime-smoke-readiness-diagnostics.mjs";
 import {
   projectRuntimeSmokeBrowserCallbackMilestone,
@@ -290,6 +291,43 @@ assert.equal(boundsPhaseBudgets[0]?.timeoutMs, 103_000);
       ({ key }) => key === foreignGeneration.key,
     ),
     false,
+  );
+
+  const canonicalConsumerSnapshot = snapshot(
+    readyModels.concat(stale, foreignGeneration),
+    activeRequiredModelIds.concat(stale.key, foreignGeneration.key),
+  );
+  const canonicalConsumerEvaluation =
+    evaluateRuntimeSmokeActiveRequiredModels({
+      snapshot: canonicalConsumerSnapshot,
+      expectedModelCount: 8,
+    });
+  const canonicalConsumerDiagnostics = explicitFixtureKeys.map((key) => ({
+    key,
+    registrySize: canonicalConsumerSnapshot.models.length,
+    activeRequiredKeys:
+      canonicalConsumerEvaluation.observedActiveRequiredKeys,
+  }));
+  assert.equal(
+    runtimeSmokeRequiredRegistryReady({
+      diagnostics: canonicalConsumerDiagnostics,
+      diagnosticKeys: explicitFixtureKeys,
+      activeRequiredEvaluation: canonicalConsumerEvaluation,
+    }),
+    true,
+    "the actual wait consumer must accept eight current models when canonical top-level IDs also contain stale and foreign generations",
+  );
+  assert.equal(
+    runtimeSmokeRequiredRegistryReady({
+      diagnostics: canonicalConsumerDiagnostics.map((entry) => ({
+        ...entry,
+        activeRequiredKeys: canonicalConsumerSnapshot.activeRequiredModelIds,
+      })),
+      diagnosticKeys: explicitFixtureKeys,
+      activeRequiredEvaluation: canonicalConsumerEvaluation,
+    }),
+    false,
+    "the regression must reproduce the old raw top-level key comparison",
   );
 
   const identityMismatch = evaluateRuntimeSmokeActiveRequiredModels({
@@ -1380,6 +1418,39 @@ assert.doesNotMatch(
   runtimeSmokeSource,
   /observedReadyModelCount:\s*remountedDiagnostics\.filter/,
   "the remount checkpoint must not count only explicit fixture diagnostics",
+);
+const runtimeReadinessConsumerSource = runtimeSmokeSource.slice(
+  runtimeSmokeSource.indexOf("const readModelDiagnostics ="),
+  runtimeSmokeSource.indexOf("const readModelDiagnosticsWithin ="),
+);
+assert.match(
+  runtimeReadinessConsumerSource,
+  /activeRequiredKeys:\s*activeRequiredEvaluation\.observedActiveRequiredKeys/,
+  "the actual wait must consume filtered current-generation keys",
+);
+assert.match(
+  runtimeReadinessConsumerSource,
+  /runtimeSmokeRequiredRegistryReady\(\{/,
+  "the actual wait must use the executable shared registry consumer",
+);
+assert.doesNotMatch(
+  runtimeReadinessConsumerSource,
+  /activeRequiredKeys:\s*snapshot\.activeRequiredModelIds/,
+  "the actual wait must not compare against raw broad snapshot keys",
+);
+const runtimeSnapshotProofSource = runtimeSmokeSource.slice(
+  runtimeSmokeSource.indexOf("const recordRequiredSnapshotProof ="),
+  runtimeSmokeSource.indexOf("const waitForModelDiagnosticsReady ="),
+);
+assert.match(
+  runtimeSnapshotProofSource,
+  /activeRequiredEvaluation\.activeRequiredDiagnostics/,
+  "snapshot proof must use the same filtered current-generation diagnostics",
+);
+assert.doesNotMatch(
+  runtimeSnapshotProofSource,
+  /expect\(snapshot\.activeRequiredCount\)\.toBe\(\s*EXPECTED_ACTIVE_REQUIRED_MODEL_COUNT/,
+  "snapshot proof must not treat the broad top-level count as the current-generation total",
 );
 assert.match(
   runtimeSmokeSource,

@@ -139,6 +139,41 @@ export function evaluateRuntimeSmokeActiveRequiredModels({
   };
 }
 
+export function runtimeSmokeRequiredRegistryReady({
+  diagnostics,
+  diagnosticKeys,
+  activeRequiredEvaluation,
+  expectedLifecycleRegistrySize = null,
+  expectedActiveRequiredKeys = null,
+}) {
+  if (!Array.isArray(diagnostics) || !Array.isArray(diagnosticKeys)) {
+    return false;
+  }
+  const observedRegistrySize = diagnostics[0]?.registrySize ?? 0;
+  const observedActiveRequiredKeys =
+    activeRequiredEvaluation?.observedActiveRequiredKeys ?? [];
+  const activeRequiredDiagnostics =
+    activeRequiredEvaluation?.activeRequiredDiagnostics ?? [];
+  return (
+    diagnostics.length === diagnosticKeys.length &&
+    observedRegistrySize >= diagnosticKeys.length &&
+    activeRequiredDiagnostics.length === observedActiveRequiredKeys.length &&
+    activeRequiredEvaluation?.ready === true &&
+    diagnosticKeys.every((key) => observedActiveRequiredKeys.includes(key)) &&
+    (expectedLifecycleRegistrySize === null ||
+      observedRegistrySize === expectedLifecycleRegistrySize) &&
+    (expectedActiveRequiredKeys === null ||
+      JSON.stringify(observedActiveRequiredKeys) ===
+        JSON.stringify(expectedActiveRequiredKeys)) &&
+    diagnostics.every(
+      ({ registrySize, activeRequiredKeys }) =>
+        registrySize === observedRegistrySize &&
+        JSON.stringify(activeRequiredKeys) ===
+          JSON.stringify(observedActiveRequiredKeys),
+    )
+  );
+}
+
 function safeCheckpointValue(value) {
   return value === null || value === undefined
     ? "na"

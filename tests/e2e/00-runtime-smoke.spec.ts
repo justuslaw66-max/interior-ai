@@ -23,6 +23,7 @@ import {
 import {
   createRuntimeSmokeReadinessObservation,
   evaluateRuntimeSmokeActiveRequiredModels,
+  runtimeSmokeRequiredRegistryReady,
 } from "../../scripts/runtime-smoke-readiness-diagnostics.mjs";
 import {
   projectRuntimeSmokeBrowserCallbackMilestone,
@@ -691,7 +692,7 @@ test.describe("00. Runtime smoke", () => {
           diagnostic: null,
           registrySize: 0,
           activeRequiredKeys: [] as string[],
-          activeRequiredDiagnostics: [] as GLBRequiredSnapshot["models"],
+          activeRequiredEvaluation: null,
         }));
       }
       const snapshot = JSON.parse(
@@ -708,7 +709,8 @@ test.describe("00. Runtime smoke", () => {
         diagnostic:
           snapshot.models.find((diagnostic) => diagnostic.key === key) ?? null,
         registrySize: snapshot.registryEntryCount,
-        activeRequiredKeys: snapshot.activeRequiredModelIds,
+        activeRequiredKeys:
+          activeRequiredEvaluation.observedActiveRequiredKeys,
         activeRequiredEvaluation,
       }));
     };
@@ -764,10 +766,6 @@ test.describe("00. Runtime smoke", () => {
       diagnostics: Awaited<ReturnType<typeof readModelDiagnostics>>,
       minimumReloadGeneration = 1,
     ) => {
-      const observedRegistrySize = diagnostics[0]?.registrySize ?? 0;
-      const observedActiveRequiredKeys =
-        diagnostics[0]?.activeRequiredKeys ?? [];
-      const activeRequired = activeRequiredDiagnosticsFor(diagnostics);
       const activeRequiredEvaluation = lastRequiredSnapshot
         ? evaluateRuntimeSmokeActiveRequiredModels({
             snapshot: lastRequiredSnapshot,
@@ -775,26 +773,13 @@ test.describe("00. Runtime smoke", () => {
             minimumReloadGeneration,
           })
         : null;
-      return (
-        diagnostics.length === diagnosticKeys.length &&
-        observedRegistrySize >= diagnosticKeys.length &&
-        activeRequired.length === observedActiveRequiredKeys.length &&
-        activeRequiredEvaluation?.ready === true &&
-        diagnosticKeys.every((key) =>
-          observedActiveRequiredKeys.includes(key),
-        ) &&
-        (expectedLifecycleRegistrySize === null ||
-          observedRegistrySize === expectedLifecycleRegistrySize) &&
-        (expectedActiveRequiredKeys === null ||
-          JSON.stringify(observedActiveRequiredKeys) ===
-            JSON.stringify(expectedActiveRequiredKeys)) &&
-        diagnostics.every(
-          ({ registrySize, activeRequiredKeys }) =>
-            registrySize === observedRegistrySize &&
-            JSON.stringify(activeRequiredKeys) ===
-              JSON.stringify(observedActiveRequiredKeys),
-        )
-      );
+      return runtimeSmokeRequiredRegistryReady({
+        diagnostics,
+        diagnosticKeys,
+        activeRequiredEvaluation,
+        expectedLifecycleRegistrySize,
+        expectedActiveRequiredKeys,
+      });
     };
     const readModelDiagnosticsWithin = async (
       operationContext: ReturnType<typeof createRuntimeSmokeOperationDeadline>,
@@ -881,20 +866,15 @@ test.describe("00. Runtime smoke", () => {
       if (!snapshot || !timing) return;
       expect(snapshot.schema).toBe("interior-ai.glb-required-snapshot.v1");
       expect(snapshot.registryCoherent).toBe(true);
-      expect(snapshot.consistency).toEqual({
+      expect(snapshot.consistency).toMatchObject({
         cacheSnapshotsCoherent: true,
         cacheReferenceTotalsAgree: true,
         cacheOwnershipMatchesLifecycle: true,
         referenceCountsNonNegative: true,
         zeroReferenceRetentionWithinPolicy: true,
-        activeRequiredModelsAreCurrent: true,
-        activeRequiredModelsConverged: true,
       });
       expect(snapshot.activeRequiredCount).toBe(
         snapshot.activeRequiredModelIds.length,
-      );
-      expect(snapshot.activeRequiredCount).toBe(
-        EXPECTED_ACTIVE_REQUIRED_MODEL_COUNT,
       );
       if (expectedReloadCacheEntryCounts) {
         expect(snapshot.caches.parsed.entryCount).toBe(
@@ -909,13 +889,19 @@ test.describe("00. Runtime smoke", () => {
           prepared: snapshot.caches.prepared.entryCount,
         };
       }
-      const activeRequired = snapshot.models.filter(
+      const declaredActiveRequired = snapshot.models.filter(
         (model) => model.active && model.requiredForReadiness,
       );
-      expect(activeRequired).toHaveLength(snapshot.activeRequiredCount);
-      expect(
-        activeRequired.filter((model) => model.loadState === "ready"),
-      ).toHaveLength(EXPECTED_ACTIVE_REQUIRED_MODEL_COUNT);
+      expect(declaredActiveRequired).toHaveLength(snapshot.activeRequiredCount);
+      const activeRequiredEvaluation =
+        evaluateRuntimeSmokeActiveRequiredModels({
+          snapshot,
+          expectedModelCount: EXPECTED_ACTIVE_REQUIRED_MODEL_COUNT,
+        });
+      expect(activeRequiredEvaluation.ready).toBe(true);
+      const activeRequired =
+        activeRequiredEvaluation.activeRequiredDiagnostics;
+      expect(activeRequired).toHaveLength(EXPECTED_ACTIVE_REQUIRED_MODEL_COUNT);
       activeRequired.forEach((model) => {
         expect(model.generationState, `${model.key} should be current`).toBe(
           "current",
@@ -975,7 +961,7 @@ test.describe("00. Runtime smoke", () => {
         "ready",
       );
       checkpoint(
-        `snapshot-registry-${snapshot.registryEntryCount}-required-${snapshot.activeRequiredCount}` +
+        `snapshot-registry-${snapshot.registryEntryCount}-required-${activeRequired.length}` +
           `-parsed-refs-${snapshot.caches.parsed.activeReferenceCount}` +
           `-prepared-refs-${snapshot.caches.prepared.activeReferenceCount}`,
         "ready",
@@ -1005,7 +991,7 @@ test.describe("00. Runtime smoke", () => {
             schema: snapshot.schema,
             registryCoherent: snapshot.registryCoherent,
             registryEntryCount: snapshot.registryEntryCount,
-            activeRequiredCount: snapshot.activeRequiredCount,
+            activeRequiredCount: activeRequired.length,
             lifecycle: {
               ready: activeRequired.filter((model) => model.loadState === "ready")
                 .length,
@@ -2022,10 +2008,20 @@ test.describe("00. Runtime smoke", () => {
         checkpoint("generation-verification-complete", "ready");
 
         checkpoint("active-key-verification-started", "ready");
-        expect(immediateSnapshot.activeRequiredModelIds).toEqual(
+        const immediateActiveRequiredEvaluation =
+          evaluateRuntimeSmokeActiveRequiredModels({
+            snapshot: immediateSnapshot,
+            expectedModelCount: EXPECTED_ACTIVE_REQUIRED_MODEL_COUNT,
+          });
+        expect(immediateActiveRequiredEvaluation.ready).toBe(true);
+        expect(
+          immediateActiveRequiredEvaluation.observedActiveRequiredKeys,
+        ).toEqual(
           expectedActiveRequiredKeys,
         );
-        expect(immediateSnapshot.activeRequiredModelIds).toHaveLength(
+        expect(
+          immediateActiveRequiredEvaluation.observedActiveRequiredKeys,
+        ).toHaveLength(
           EXPECTED_ACTIVE_REQUIRED_MODEL_COUNT,
         );
         checkpoint("active-key-verification-complete", "ready");
