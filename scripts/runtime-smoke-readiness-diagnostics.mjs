@@ -59,17 +59,32 @@ export function evaluateRuntimeSmokeActiveRequiredModels({
     throw new Error("Runtime-smoke active-required snapshot is malformed");
   }
 
-  const expectedActiveRequiredKeys = [...snapshot.activeRequiredModelIds];
-  const expectedKeySet = new Set(expectedActiveRequiredKeys);
-  const currentActiveRequired = snapshot.models.filter(
+  const declaredActiveRequiredKeys = [...snapshot.activeRequiredModelIds];
+  const declaredKeySet = new Set(declaredActiveRequiredKeys);
+  const activeRequired = snapshot.models.filter(
     (model) =>
-      model?.active === true &&
-      model.requiredForReadiness === true &&
+      model?.active === true && model.requiredForReadiness === true,
+  );
+  const activeRequiredByKey = new Map(
+    activeRequired.map((model) => [model.key, model]),
+  );
+  const observedDeclaredKeys = activeRequired.map((model) => model.key);
+  const missingActiveRequiredKeys = declaredActiveRequiredKeys.filter(
+    (key) => !activeRequiredByKey.has(key),
+  );
+  const unexpectedActiveRequiredKeys = observedDeclaredKeys.filter(
+    (key) => !declaredKeySet.has(key),
+  );
+  const currentActiveRequired = activeRequired.filter(
+    (model) =>
       model.generationState === "current" &&
       model.reloadGeneration === snapshot.reloadGeneration,
   );
   const currentByKey = new Map(
     currentActiveRequired.map((model) => [model.key, model]),
+  );
+  const expectedActiveRequiredKeys = declaredActiveRequiredKeys.filter((key) =>
+    currentByKey.has(key),
   );
   const activeRequiredDiagnostics = expectedActiveRequiredKeys.flatMap((key) => {
     const model = currentByKey.get(key);
@@ -78,21 +93,20 @@ export function evaluateRuntimeSmokeActiveRequiredModels({
   const observedActiveRequiredKeys = currentActiveRequired.map(
     (model) => model.key,
   );
-  const missingActiveRequiredKeys = expectedActiveRequiredKeys.filter(
-    (key) => !currentByKey.has(key),
-  );
-  const unexpectedActiveRequiredKeys = observedActiveRequiredKeys.filter(
-    (key) => !expectedKeySet.has(key),
-  );
+  const duplicateActiveRequiredModelKeys =
+    new Set(observedDeclaredKeys).size !== observedDeclaredKeys.length;
   const duplicateObservedKeys =
-    new Set(observedActiveRequiredKeys).size !== observedActiveRequiredKeys.length;
+    new Set(observedActiveRequiredKeys).size !==
+    observedActiveRequiredKeys.length;
   const identityMatches =
+    !duplicateActiveRequiredModelKeys &&
     !duplicateObservedKeys &&
     missingActiveRequiredKeys.length === 0 &&
     unexpectedActiveRequiredKeys.length === 0 &&
     observedActiveRequiredKeys.length === expectedActiveRequiredKeys.length;
   const countMatches =
-    snapshot.activeRequiredCount === expectedActiveRequiredKeys.length &&
+    snapshot.activeRequiredCount === declaredActiveRequiredKeys.length &&
+    declaredActiveRequiredKeys.length === activeRequired.length &&
     expectedActiveRequiredKeys.length === expectedModelCount &&
     activeRequiredDiagnostics.length === expectedModelCount;
   const unreadyModelKeys = activeRequiredDiagnostics
@@ -109,6 +123,7 @@ export function evaluateRuntimeSmokeActiveRequiredModels({
 
   return {
     activeRequiredDiagnostics,
+    declaredActiveRequiredKeys,
     expectedActiveRequiredKeys,
     observedActiveRequiredKeys,
     missingActiveRequiredKeys,

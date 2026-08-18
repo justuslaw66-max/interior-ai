@@ -1,5 +1,35 @@
 # Production certification database lifecycle v1
 
+## Runtime failed-state CAS and abort attribution correction — 2026-08-18
+
+The retained rehearsal ending `20260818T075947Z-5755043309d7` remains failed at
+consumed `runtime-smoke:001` with `PRODUCT_ASSERTION_FAILURE`; its runtime,
+state, database, and abort evidence is byte-identical. Outer cleanup success is
+not runtime success and does not rehabilitate the run.
+
+A managed stage now persists running→failed under compare-and-swap, rereads the
+physical state, verifies its SHA-256, and returns that exact failed-state SHA
+with stage and attempt. Automatic abort cleanup replaces any pre-stage expected
+SHA with the physical post-failure SHA. Before cleanup it resolves the physical
+failed stage and latest attempt, then requires exact caller agreement on stage,
+attempt, classification, consumed flag, and the complete retained stage-evidence
+set. Missing returned SHA, stale pre-stage SHA, or attribution drift is rejected.
+
+For runtime failure, canonical database abort therefore retains
+`originalStage=runtime-smoke`, the current attempt,
+`PRODUCT_ASSERTION_FAILURE`, `consumedSubstantiveGate=true`, the failed-state
+SHA, and runtime report/timing/start references. It captures current row/session
+inventories and may successfully release sessions, drop the exact disposable
+database, and prove absence while still recording `finalEmptyVerified=false`
+when that normal checkpoint was never reached,
+`failedRunRehabilitated=false`, and intentional `valid:false`. Raw database
+URLs and passwords remain excluded. Successful lifecycle behavior is unchanged.
+
+Deterministic state/CAS and database-abort regressions plus exact source
+qualification return `QUALIFIED_FOR_FINAL_CANDIDATE_CERTIFICATION`; no real
+database, rehearsal, runtime, Phase 8, or final certification was run for this
+correction.
+
 ## Scope and preserved preflight
 
 This is the repository-owned lifecycle contract for disposable databases used

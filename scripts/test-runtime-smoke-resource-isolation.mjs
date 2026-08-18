@@ -91,6 +91,12 @@ assert.match(
     PRODUCTION_EVIDENCE_CANDIDATE_ID: "candidate-runtime-owner",
     PRODUCTION_EVIDENCE_EXPECTED_JOURNAL_NONCE:
       "123e4567-e89b-42d3-a456-426614174001",
+    PRODUCTION_EVIDENCE_EXPECTED_COMMIT_SHA: "a".repeat(40),
+    PRODUCTION_EVIDENCE_EXPECTED_TREE_SHA: "b".repeat(40),
+    PRODUCTION_EVIDENCE_EXPECTED_BUILD_ID: "runtime-owner-build",
+    PRODUCTION_EVIDENCE_EXPECTED_ARTIFACT_SHA256: "c".repeat(64),
+    PRODUCTION_EVIDENCE_EXPECTED_MANIFEST_SHA256: "d".repeat(64),
+    PRODUCTION_EVIDENCE_EXPECTED_JOURNAL_SHA256: "e".repeat(64),
     DATABASE_URL: secret,
   };
   try {
@@ -124,6 +130,12 @@ assert.match(
       ],
       ["PRODUCTION_EVIDENCE_CANDIDATE_ID", "candidate-runtime-foreign"],
       ["PRODUCTION_CERTIFICATION_ID", "certification-runtime-foreign"],
+      ["PRODUCTION_EVIDENCE_EXPECTED_COMMIT_SHA", "1".repeat(40)],
+      ["PRODUCTION_EVIDENCE_EXPECTED_TREE_SHA", "2".repeat(40)],
+      ["PRODUCTION_EVIDENCE_EXPECTED_BUILD_ID", "foreign-build"],
+      ["PRODUCTION_EVIDENCE_EXPECTED_ARTIFACT_SHA256", "3".repeat(64)],
+      ["PRODUCTION_EVIDENCE_EXPECTED_MANIFEST_SHA256", "4".repeat(64)],
+      ["PRODUCTION_EVIDENCE_EXPECTED_JOURNAL_SHA256", "5".repeat(64)],
     ]) {
       assert.throws(
         () =>

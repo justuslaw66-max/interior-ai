@@ -782,6 +782,40 @@ function stateFixture() {
       evidenceReferences: evidenceFiles,
     });
 
+    for (const [description, mutation] of [
+      ["stage", { stage: "phase8" }],
+      ["attempt", { stageAttempt: 2 }],
+      [
+        "classification",
+        { classification: "PRECONDITION_ORCHESTRATION_FAILURE" },
+      ],
+      ["consumption", { consumed: false }],
+      [
+        "evidence",
+        {
+          evidenceFiles: {
+            ...evidenceFiles,
+            "runtime-report": {
+              ...evidenceFiles["runtime-report"],
+              sha256: "0".repeat(64),
+            },
+          },
+        },
+      ],
+    ]) {
+      assert.throws(
+        () =>
+          createCertificationAbortCleanupRequest({
+            command: "runtime-smoke",
+            terminalSignal: null,
+            commandError: { ...returnedFailure, ...mutation },
+            environment: { PRODUCTION_CERTIFICATION_STATE: statePath },
+          }),
+        /does not match the physical failed attempt/,
+        `cleanup must reject caller-supplied ${description} attribution drift`,
+      );
+    }
+
     assert.throws(
       () =>
         createCertificationAbortCleanupRequest({

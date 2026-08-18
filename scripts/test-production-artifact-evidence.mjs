@@ -239,10 +239,18 @@ assert.equal(boundsPhaseBudgets[0]?.timeoutMs, 103_000);
     reloadGeneration: 1,
   });
   const withoutStale = evaluateRuntimeSmokeActiveRequiredModels({
-    snapshot: snapshot(readyModels.concat(stale)),
+    snapshot: snapshot(
+      readyModels.concat(stale),
+      activeRequiredModelIds.concat(stale.key),
+    ),
     expectedModelCount: 8,
   });
   assert.equal(withoutStale.ready, true);
+  assert.equal(
+    withoutStale.declaredActiveRequiredKeys.includes(stale.key),
+    true,
+    "the stale exclusion fixture must match the canonical top-level snapshot shape",
+  );
   assert.equal(
     withoutStale.activeRequiredDiagnostics.some(({ key }) => key === stale.key),
     false,
@@ -264,10 +272,19 @@ assert.equal(boundsPhaseBudgets[0]?.timeoutMs, 103_000);
     generationState: "stale",
   });
   const withoutForeignGeneration = evaluateRuntimeSmokeActiveRequiredModels({
-    snapshot: snapshot(readyModels.concat(foreignGeneration)),
+    snapshot: snapshot(
+      readyModels.concat(foreignGeneration),
+      activeRequiredModelIds.concat(foreignGeneration.key),
+    ),
     expectedModelCount: 8,
   });
   assert.equal(withoutForeignGeneration.ready, true);
+  assert.equal(
+    withoutForeignGeneration.declaredActiveRequiredKeys.includes(
+      foreignGeneration.key,
+    ),
+    true,
+  );
   assert.equal(
     withoutForeignGeneration.activeRequiredDiagnostics.some(
       ({ key }) => key === foreignGeneration.key,
@@ -3845,6 +3862,9 @@ function listedSpecCount(suites) {
           PRODUCTION_CERTIFICATION_ID: "certification-marker-test",
           PRODUCTION_EVIDENCE_CANDIDATE_ID: "candidate-marker-test",
           PRODUCTION_EVIDENCE_EXPECTED_JOURNAL_NONCE: identity.runNonce,
+          PRODUCTION_EVIDENCE_EXPECTED_JOURNAL_SHA256: createHash("sha256")
+            .update(journalBytes)
+            .digest("hex"),
           PLAYWRIGHT_JSON_OUTPUT_FILE: path.join(
             leakageRegressionRoot,
             "playwright-report.json",

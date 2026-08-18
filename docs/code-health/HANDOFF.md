@@ -1,5 +1,75 @@
 # Code health audit handoff
 
+## CH-0015I bounded runtime-smoke failure correction — 2026-08-18
+
+Branch `fix/production-certification-runtime-smoke-readiness` starts from exact
+commit `f830758fa75f01549a52ad68f8b491acc1d2d088`, tree
+`743baa3b5cec690fd2c22d26bb17ffb45322c1d7`, direct parent
+`bd807ec8b4373b7e27f1cc5ee609a46b9b0a51ef`, above unchanged integration
+`2c567fd483877c7dcbd8fd23e3cd8cb316732c8c`, tree
+`50f9c5d6a6610990606fd9db9a27ba40200fca90`.
+
+The retained certification
+`REHEARSAL_ONLY-NOT_RELEASE_CERTIFICATION-20260818T075947Z-5755043309d7`
+and candidate
+`REHEARSAL_ONLY-NOT_VALID_FOR_INTEGRATION-20260818T075947Z-5755043309d7`
+remain byte-for-byte preserved. Their authoritative outcome remains
+`PRODUCT_ASSERTION_FAILURE`, `runtime-smoke:001`,
+`consumedSubstantiveGate=true`, and
+`CERTIFICATION_REHEARSAL_FAILED_CLOSED`. The state, report, phase timings,
+start marker, production artifact/manifest/journal, archive/extraction, Phase 8,
+runtime failure, database lifecycle/abort records, and checksums were not
+rewritten, resumed, reused, or reclassified.
+
+The primary classification is `RUNTIME_SMOKE_READINESS_CONTRACT_DEFECT`. All
+eight active-required models were semantically ready after the 2D→3D remount;
+the failed assertion counted only the three explicitly created
+`runtime-smoke-model-1..3` diagnostics and compared 3 with the authoritative
+expected total of 8. `evaluateRuntimeSmokeActiveRequiredModels` now owns the
+single current-generation active-required projection used by the wait and
+remount count. It validates the broader top-level snapshot identity while
+excluding stale, inactive, deleted, superseded, and foreign-generation entries.
+The exact deterministic regression reports observed count 8 for eight ready
+models with three explicit fixtures and retains stable-identity failures for an
+unready template or fixture.
+
+Secondary classifications are `RETRY_REPORT_PATH_OWNERSHIP_DEFECT`,
+`OPERATOR_RUNTIME_FAILED_STATE_SHA_PROPAGATION_DEFECT`,
+`RUNTIME_CLEANUP_STATE_CAS_DEFECT`, and
+`DATABASE_ABORT_FAILURE_ATTRIBUTION_DEFECT`. Playwright remains at zero retries.
+An adjacent atomic authorization sidecar now distinguishes initial ownership
+from same-run configuration/reporter re-entry and binds certification,
+candidate, stage attempt, UUID nonce, report destination, physical evidence
+root identity, commit/tree, Build ID, artifact SHA, manifest SHA, and journal
+SHA. Existing, completed, stale, cross-attempt, cross-run, cross-root, or
+cross-artifact targets remain rejected; the final report is never overwritten.
+
+Managed stage failure persists running→failed with compare-and-swap, rereads
+the physical state, and returns its exact SHA plus stage/attempt. Automatic
+abort cleanup replaces the stale pre-stage comparator with that physical SHA
+and verifies stage status, latest attempt, classification, consumption, and
+retained evidence against the sealed failed state before constructing original
+failure attribution. Database cleanup may physically drop and prove absence of
+the disposable database, but retains `originalStage=runtime-smoke`, the current
+attempt, `PRODUCT_ASSERTION_FAILURE`, `consumedSubstantiveGate=true`, runtime
+evidence references, `finalEmptyVerified=false` when unreached, and
+`failedRunRehabilitated=false`; its intentional result remains `valid:false`.
+
+Focused deterministic runtime-readiness, model-lifecycle, report-ownership,
+state/CAS, database cleanup, stage-order, source projection/output, resource,
+artifact, archive/final fixture, Phase 8 contract, doctor, simulation,
+historical, truthfulness/direct-manifest, lint/type/quality/architecture,
+hygiene, and syntax checks are the bounded validation surface. Exact clean-head
+qualification is `QUALIFIED_FOR_FINAL_CANDIDATE_CERTIFICATION`; this is source
+qualification only. The required-test inventory remains 27 gates and 392
+classified sources. No product, asset, semantic-readiness definition, timeout,
+wait budget, sleep, retry, database-success lifecycle, browser assertion, or
+workflow was changed. No real build, rehearsal, Phase 8 acceptance, runtime
+smoke, browser-owner matrix, Full E2E, final certification, push, or integration
+ran. A fresh rehearsal, immutable final candidate certification, and the final
+CH-0015 closure audit remain pending. Rollback is the task commits in reverse
+order; it requires no product, evidence, or database rollback.
+
 ## CH-0015I real-runner stage-order import correction — 2026-08-18
 
 Branch `fix/production-certification-stage-order-import` starts at exact commit

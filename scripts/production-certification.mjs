@@ -7,6 +7,7 @@ import {
   CERTIFICATION_STATE_ENV,
 } from "./production-certification-contract.mjs";
 import {
+  certificationStageEvidenceFiles,
   certificationStateSha256,
   readCertificationState,
 } from "./production-certification-state.mjs";
@@ -351,57 +352,109 @@ export function createCertificationAbortCleanupRequest({
   const physicalState = readCertificationState(statePath);
   const physicalStateSha256 = certificationStateSha256(physicalState);
   const failedStateSha256 = commandError?.failedStateSha256 ?? null;
-  const consumedSubstantiveGate = terminalSignal
-    ? false
-    : commandError?.consumed ??
-      commandError?.certificationResult?.consumedSubstantiveGate ??
-      false;
-  const originalStage = terminalSignal
-    ? `terminal-${terminalSignal.toLowerCase()}`
-    : commandError?.stage ?? command;
-  if (
-    consumedSubstantiveGate &&
-    CERTIFICATION_STAGE_ORDER.includes(originalStage) &&
-    !failedStateSha256
-  ) {
-    throw new Error(
-      "consumed stage failure is missing its authoritative failed-state SHA",
-    );
+  const failedStages = CERTIFICATION_STAGE_ORDER.filter(
+    (stage) => physicalState.stages?.[stage]?.status === "failed",
+  );
+  if (failedStages.length > 1) {
+    throw new Error("physical certification state has multiple failed stages");
   }
-  if (
-    failedStateSha256 &&
-    failedStateSha256 !== physicalStateSha256
-  ) {
-    throw new Error(
-      "returned failed-state SHA does not match the physical certification state",
+  const physicalFailedStage = failedStages[0] ?? null;
+  let originalFailure;
+  if (physicalFailedStage) {
+    if (!failedStateSha256) {
+      throw new Error(
+        "stage failure is missing its authoritative failed-state SHA",
+      );
+    }
+    if (failedStateSha256 !== physicalStateSha256) {
+      throw new Error(
+        "returned failed-state SHA does not match the physical certification state",
+      );
+    }
+    const record = physicalState.stages[physicalFailedStage];
+    const attempt = record.attempts.at(-1);
+    const callerClassification =
+      commandError?.classification ??
+      commandError?.certificationResult?.classification ??
+      null;
+    const callerConsumed =
+      commandError?.consumed ??
+      commandError?.certificationResult?.consumedSubstantiveGate;
+    const callerHasEvidence = Object.hasOwn(
+      commandError ?? {},
+      "evidenceFiles",
     );
-  }
-  if (
-    failedStateSha256 &&
-    (!Number.isSafeInteger(commandError?.stageAttempt) ||
-      commandError.stageAttempt < 1)
-  ) {
-    throw new Error(
-      "returned failed-state SHA is missing its stage attempt identity",
+    const callerEvidence = commandError?.evidenceFiles ?? {};
+    const physicalEvidence = certificationStageEvidenceFiles(
+      physicalState,
+      physicalFailedStage,
     );
+    const evidenceMatches =
+      Object.keys(callerEvidence).sort().join("\n") ===
+        Object.keys(physicalEvidence).sort().join("\n") &&
+      Object.keys(physicalEvidence).every(
+        (name) =>
+          callerEvidence[name]?.path === physicalEvidence[name].path &&
+          callerEvidence[name]?.sha256 === physicalEvidence[name].sha256,
+      );
+    if (
+      attempt?.status !== "failed" ||
+      record.failureClassification !== attempt.failureClassification ||
+      record.consumedSubstantiveGate !== attempt.consumedSubstantiveGate
+    ) {
+      throw new Error(
+        "physical certification failed stage attribution is contradictory",
+      );
+    }
+    if (
+      command !== physicalFailedStage ||
+      commandError?.stage !== physicalFailedStage ||
+      commandError?.stageAttempt !== attempt.number ||
+      callerClassification !== attempt.failureClassification ||
+      typeof callerConsumed !== "boolean" ||
+      callerConsumed !== attempt.consumedSubstantiveGate ||
+      !callerHasEvidence ||
+      !evidenceMatches
+    ) {
+      throw new Error(
+        "returned stage failure attribution does not match the physical failed attempt",
+      );
+    }
+    originalFailure = {
+      classification: attempt.failureClassification,
+      consumedSubstantiveGate: attempt.consumedSubstantiveGate,
+      stage: physicalFailedStage,
+      attempt: attempt.number,
+      failedStateSha256: physicalStateSha256,
+      evidenceReferences: physicalEvidence,
+    };
+  } else {
+    if (failedStateSha256) {
+      throw new Error(
+        "returned failed-state SHA does not identify a physical failed stage",
+      );
+    }
+    originalFailure = {
+      classification: terminalSignal
+        ? "INFRASTRUCTURE_TRANSIENT"
+        : commandError?.classification ??
+          commandError?.certificationResult?.classification ??
+          "PRECONDITION_ORCHESTRATION_FAILURE",
+      consumedSubstantiveGate: false,
+      stage: terminalSignal
+        ? `terminal-${terminalSignal.toLowerCase()}`
+        : commandError?.stage ?? command,
+      attempt: null,
+      failedStateSha256: null,
+      evidenceReferences: {},
+    };
   }
   return {
     environment: {
       ...environment,
       CERTIFICATION_EXPECTED_STATE_SHA256: physicalStateSha256,
     },
-    originalFailure: {
-      classification: terminalSignal
-        ? "INFRASTRUCTURE_TRANSIENT"
-        : commandError?.classification ??
-          commandError?.certificationResult?.classification ??
-          "PRECONDITION_ORCHESTRATION_FAILURE",
-      consumedSubstantiveGate,
-      stage: originalStage,
-      attempt: terminalSignal ? null : commandError?.stageAttempt ?? null,
-      failedStateSha256,
-      evidenceReferences: structuredClone(commandError?.evidenceFiles ?? {}),
-    },
+    originalFailure,
   };
 }
 

@@ -1,5 +1,29 @@
 # Production-equivalent artifact evidence
 
+## Runtime report re-entry ownership correction — 2026-08-18
+
+The preserved rehearsal ending `20260818T075947Z-5755043309d7` did not execute
+a Playwright retry: the second evaluation was configuration/replacement-worker
+re-entry at retry 0. Its report and all other evidence remain immutable, and
+the failure remains consumed `PRODUCT_ASSERTION_FAILURE` rather than success.
+
+Runtime report authorization now uses an adjacent canonical v2 owner sidecar.
+The initial target and sidecar must both be absent; the sidecar is atomically
+created before Playwright. Re-entry is permitted only when certification ID,
+candidate ID, runtime stage/attempt, journal nonce, portable report path,
+physical evidence-root identity hash, source commit/tree, Build ID, artifact
+SHA-256, production-manifest SHA-256, and semantic-journal SHA-256 all match.
+An existing report is always rejected, including for the owning run, so no
+completed report can be overwritten. Unowned, stale, cross-attempt, cross-run,
+cross-root, cross-destination, and cross-artifact claims fail closed. The
+sidecar retains only portable non-secret identity; raw machine paths and
+credentials are absent. Playwright `retries` remains exactly `0`.
+
+This correction changes no browser product assertion, runtime wait, timeout,
+or evidence payload. Exact source qualification is
+`QUALIFIED_FOR_FINAL_CANDIDATE_CERTIFICATION`; a fresh rehearsal and immutable
+final certification remain pending.
+
 Status: repository-controlled CH-0016 contract. This document describes local
 production-mode artifact evidence and required CI behavior. It does not describe
 or prove a Vercel deployment, stable staging, production, or external platform

@@ -1,5 +1,29 @@
 # GLB model lifecycle and reload readiness
 
+## Runtime-smoke active-required projection correction — 2026-08-18
+
+The failed rehearsal ending `20260818T075947Z-5755043309d7` proved a test
+projection defect, not a model lifecycle defect. All eight active-required
+models completed response, parse/decode, material, bounds, attachment, semantic
+readiness, initial mount, and remount before the assertion. The top-level
+explicit-fixture projection held only `runtime-smoke-model-1..3`, producing the
+false 3-versus-8 comparison.
+
+`evaluateRuntimeSmokeActiveRequiredModels` is the authoritative test-contract
+owner for current active-required diagnostics. It checks top-level snapshot
+coherence, applies one active/required/current/document-reload-generation
+predicate, and returns the same validated diagnostic set to the readiness wait
+and remount count. Explicit fixtures remain available only for fixture-specific
+assertions. Stale, inactive, deleted, superseded, and foreign-generation models
+are excluded, while identity mismatch or a semantically unready active-required
+model fails with its stable key. The deterministic regression now observes 8
+ready models while retaining the historical three-fixture projection.
+
+No component, renderer, GLB, cache, asset, readiness definition, timeout, sleep,
+retry, or wait budget changed. Exact source qualification is
+`QUALIFIED_FOR_FINAL_CANDIDATE_CERTIFICATION`; fresh rehearsal and final
+certification remain pending.
+
 ## Canonical ownership
 
 `GLBScaledModel` owns the rendered instance. `useGLBModelLifecycle` owns its

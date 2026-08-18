@@ -164,6 +164,18 @@ const EVIDENCE_OWNER_STAGE = Object.freeze(
   ),
 );
 
+export function certificationStageEvidenceFiles(state, stage) {
+  assertKnownStage(stage);
+  return Object.fromEntries(
+    (STAGE_EVIDENCE_KEYS[stage] ?? []).flatMap((name) => {
+      const descriptor = state?.evidenceFiles?.[name];
+      return descriptor === undefined
+        ? []
+        : [[name, structuredClone(descriptor)]];
+    }),
+  );
+}
+
 function exactKeys(value, keys) {
   return (
     value &&

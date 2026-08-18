@@ -1,5 +1,39 @@
 # P0/P1 remediation queue
 
+## Runtime-smoke readiness and failure-evidence regression — 2026-08-18
+
+- **Classification:** primary `RUNTIME_SMOKE_READINESS_CONTRACT_DEFECT`;
+  secondary `RETRY_REPORT_PATH_OWNERSHIP_DEFECT`,
+  `OPERATOR_RUNTIME_FAILED_STATE_SHA_PROPAGATION_DEFECT`,
+  `RUNTIME_CLEANUP_STATE_CAS_DEFECT`, and
+  `DATABASE_ABORT_FAILURE_ATTRIBUTION_DEFECT`.
+- **Preserved failure:** rehearsal/candidate suffix
+  `20260818T075947Z-5755043309d7` remains byte-identical,
+  `PRODUCT_ASSERTION_FAILURE`, `runtime-smoke:001`, consumed, and failed closed.
+  All eight models were ready; the incorrect explicit-fixture projection
+  contained three. Nothing was resumed, repaired, reused, or rehabilitated.
+- **Regression owner:** the shared current-generation active-required evaluator
+  supplies the readiness wait and remount total. Its eight deterministic cases
+  include the exact 3-versus-8 result, stable template/fixture failures,
+  stale/inactive/foreign exclusion, identity mismatch, and shared checkpoint
+  ownership.
+- **Evidence ownership:** Playwright retries remain zero. The atomic report
+  sidecar binds the complete run, target/root, source, build, artifact,
+  manifest, and journal identity; only exact same-attempt re-entry is accepted.
+  Managed failure returns the verified physical failed-state SHA, and abort
+  cleanup requires that exact CAS plus physical stage/attempt/classification/
+  consumption/evidence attribution.
+- **Proof/status:** permitted focused suites, doctor, deterministic simulation,
+  historical matrix, truthfulness/direct manifest, quality/architecture/
+  hygiene/syntax checks, and clean-head qualification return
+  `QUALIFIED_FOR_FINAL_CANDIDATE_CERTIFICATION`. No real gate ran. Fresh
+  rehearsal, final certification, integration, and CH-0015 closure remain
+  pending.
+- **Scope/rollback:** certification test/evidence/state/database contracts and
+  applicable records only; no product, asset, timeout, sleep, retry, database
+  success path, or workflow correction. Revert the task commits in reverse
+  order; retained rehearsal evidence and external data require no rollback.
+
 ## Certification report-parent preparation owner — 2026-08-16
 
 - **Classification:** `CERTIFICATION_REPORT_PARENT_PREPARATION_OWNER_MISSING`

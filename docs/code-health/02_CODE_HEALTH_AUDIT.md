@@ -1,5 +1,41 @@
 # Code health audit
 
+## Bounded runtime-smoke readiness and failed-state audit — 2026-08-18
+
+The immutable failed rehearsal
+`REHEARSAL_ONLY-NOT_RELEASE_CERTIFICATION-20260818T075947Z-5755043309d7` /
+`REHEARSAL_ONLY-NOT_VALID_FOR_INTEGRATION-20260818T075947Z-5755043309d7`
+remains `PRODUCT_ASSERTION_FAILURE`, `runtime-smoke:001`, consumed, and failed
+closed. Its retained state, runtime/Phase 8/build/archive evidence, database
+abort record, and checksums were not modified or reused.
+
+The proven primary cause is `RUNTIME_SMOKE_READINESS_CONTRACT_DEFECT`: all eight
+active-required models were ready before the remount assertion, but the
+top-level explicit-fixture projection contained only three and was incorrectly
+used as the total. The shared readiness evaluator now owns expected identity,
+current document/reload generation, semantic readiness, and observed count.
+The 3-versus-8 regression passes with observed 8; stale, inactive, deleted,
+superseded, and foreign-generation diagnostics are excluded; divergent active
+identities and stable unready identities fail closed. Product, asset,
+readiness semantics, and timing remain unchanged.
+
+The secondary source defects are `RETRY_REPORT_PATH_OWNERSHIP_DEFECT`,
+`OPERATOR_RUNTIME_FAILED_STATE_SHA_PROPAGATION_DEFECT`,
+`RUNTIME_CLEANUP_STATE_CAS_DEFECT`, and
+`DATABASE_ABORT_FAILURE_ATTRIBUTION_DEFECT`. The report authorization is now an
+absent-target, atomic, full run-and-artifact identity claim with narrowly
+permitted same-attempt re-entry and zero retries. Managed failure owns the
+physical failed-state SHA; cleanup uses that SHA as its CAS comparator and
+derives exact stage/attempt/classification/consumption/evidence attribution from
+the physical failed state. Successful disposable-database drop/absence cannot
+turn the certification valid or claim final-empty verification.
+
+The exact clean source head qualifies as
+`QUALIFIED_FOR_FINAL_CANDIDATE_CERTIFICATION`. This bounded result ran no real
+build, rehearsal, Phase 8, runtime smoke, browser-owner matrix, Full E2E, or
+final certification. Fresh rehearsal, immutable certification, integration,
+and CH-0015 closure audit remain pending.
+
 ## Certification report-parent lifecycle gap — 2026-08-16
 
 The preserved `...CERT-20260816T131707Z-16ae9ed` rehearsal proved

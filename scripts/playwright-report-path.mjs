@@ -22,7 +22,7 @@ export const RUNTIME_SMOKE_EVIDENCE_ROOT_CONTRACT_VERSION = 1;
 export const RUNTIME_SMOKE_EVIDENCE_DESTINATION_CLASS =
   "playwright-external-evidence-root";
 export const RUNTIME_SMOKE_REPORT_AUTHORIZATION_SCHEMA =
-  "interior-ai.runtime-smoke-report-authorization.v1";
+  "interior-ai.runtime-smoke-report-authorization.v2";
 
 export const RUNTIME_SMOKE_EVIDENCE_OUTPUTS = Object.freeze({
   report: Object.freeze({ filename: "playwright-report.json" }),
@@ -570,6 +570,14 @@ function runtimeReportIdentityValue(environment, name) {
   return value;
 }
 
+function runtimeReportHexIdentityValue(environment, name, length) {
+  const value = runtimeReportIdentityValue(environment, name);
+  if (!new RegExp(`^[a-f0-9]{${length}}$`).test(value)) {
+    throw new Error(`Runtime-smoke report authorization has invalid ${name}.`);
+  }
+  return value;
+}
+
 function runtimeReportAuthorizationIdentity({
   destination,
   externalRootRealpath,
@@ -602,6 +610,35 @@ function runtimeReportAuthorizationIdentity({
     candidateId: runtimeReportIdentityValue(
       environment,
       "PRODUCTION_EVIDENCE_CANDIDATE_ID",
+    ),
+    sourceCommitSha: runtimeReportHexIdentityValue(
+      environment,
+      "PRODUCTION_EVIDENCE_EXPECTED_COMMIT_SHA",
+      40,
+    ),
+    sourceTreeSha: runtimeReportHexIdentityValue(
+      environment,
+      "PRODUCTION_EVIDENCE_EXPECTED_TREE_SHA",
+      40,
+    ),
+    buildId: runtimeReportIdentityValue(
+      environment,
+      "PRODUCTION_EVIDENCE_EXPECTED_BUILD_ID",
+    ),
+    artifactSha256: runtimeReportHexIdentityValue(
+      environment,
+      "PRODUCTION_EVIDENCE_EXPECTED_ARTIFACT_SHA256",
+      64,
+    ),
+    productionManifestSha256: runtimeReportHexIdentityValue(
+      environment,
+      "PRODUCTION_EVIDENCE_EXPECTED_MANIFEST_SHA256",
+      64,
+    ),
+    semanticJournalSha256: runtimeReportHexIdentityValue(
+      environment,
+      "PRODUCTION_EVIDENCE_EXPECTED_JOURNAL_SHA256",
+      64,
     ),
     runtimeStage: "runtime-smoke",
     runtimeStageAttempt: Number(runtimeStageAttempt),
