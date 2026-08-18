@@ -27,7 +27,13 @@ the exact IPC-bound
 loader, dependency, syntax, transport, missing-input, and database failures do
 not pass. Preflight sidecars retain invocation, server lifecycle/stream,
 readiness, safe session request/response descriptors, remaining route checks,
-and cleanup/port-release evidence. Raw OAuth values, secrets, cookies,
+and post-close cleanup/port-release evidence. Only canonical signed-out `null`
+passes; final drained logs are rescanned, non-loopback requests are observed,
+and unexpected pre-cleanup termination fails. Exclusive hard-link publication
+cannot overwrite a concurrently appearing target and revalidates its physical
+parent. Workflow readers consume success and failure sidecars, bind them to the
+captured process status, and then propagate failure. Raw OAuth values, secrets,
+cookies,
 sessions, CSRF values, response bodies, passwords, database URLs, private
 environment, and machine paths are excluded.
 

@@ -24,6 +24,9 @@ type AuthResultDestination = Readonly<{
   externalRoot: string;
   resultPath: string;
   sidecarPath: string;
+  parentPath: string;
+  parentDevice: number;
+  parentInode: number;
   relativePath: string;
   externalRootIdentitySha256: string;
   resultPathIdentitySha256: string;
@@ -156,6 +159,11 @@ export type PreflightDependencies = Readonly<{
   portAvailable?: (host: string, port: number) => Promise<boolean>;
   portReleased?: (host: string, port: number) => Promise<boolean>;
   stopServer?: (server: ChildProcess) => Promise<PreflightCleanupEvidence>;
+}>;
+
+type ChildCloseObservation = Readonly<{
+  observed: () => boolean;
+  wait: (milliseconds: number) => Promise<boolean>;
 }>;
 
 class CiAuthCommandError extends Error {
@@ -590,36 +598,51 @@ async function socketUnavailable(host: string, port: number): Promise<boolean> {
   });
 }
 
-async function waitForExit(server: ChildProcess, milliseconds: number): Promise<boolean> {
-  if (server.exitCode !== null || server.signalCode !== null) return true;
-  let timer: NodeJS.Timeout | undefined;
-  try {
-    return await Promise.race([
-      once(server, "exit").then(() => true),
-      new Promise<boolean>((resolve) => {
-        timer = setTimeout(() => resolve(false), milliseconds);
-      }),
-    ]);
-  } finally {
-    if (timer) clearTimeout(timer);
-  }
+function observeChildClose(server: ChildProcess): ChildCloseObservation {
+  let closed = false;
+  const closePromise = once(server, "close").then(() => {
+    closed = true;
+    return true;
+  });
+  return Object.freeze({
+    observed: () => closed,
+    wait: async (milliseconds: number) => {
+      if (closed) return true;
+      let timer: NodeJS.Timeout | undefined;
+      try {
+        return await Promise.race([
+          closePromise,
+          new Promise<boolean>((resolve) => {
+            timer = setTimeout(() => resolve(false), milliseconds);
+          }),
+        ]);
+      } finally {
+        if (timer) clearTimeout(timer);
+      }
+    },
+  });
 }
 
 async function stopServerWithEvidence(
   server: ChildProcess,
+  closeObservation: ChildCloseObservation,
 ): Promise<PreflightCleanupEvidence> {
   let sigtermAttempted = false;
   let sigkillFallbackAttempted = false;
   if (server.exitCode === null && server.signalCode === null) {
     sigtermAttempted = true;
     server.kill("SIGTERM");
-    if (!(await waitForExit(server, 5_000))) {
+    if (!(await closeObservation.wait(5_000))) {
       sigkillFallbackAttempted = true;
       server.kill("SIGKILL");
-      await waitForExit(server, 5_000);
+      await closeObservation.wait(5_000);
     }
+  } else {
+    await closeObservation.wait(5_000);
   }
-  const terminated = server.exitCode !== null || server.signalCode !== null;
+  const terminated =
+    closeObservation.observed() &&
+    (server.exitCode !== null || server.signalCode !== null);
   return {
     sigtermAttempted,
     sigkillFallbackAttempted,
@@ -673,86 +696,90 @@ async function assertAuthInteractionCompatibility(
   expectedGoogleClientId: string,
   checks: PreflightChecks,
 ): Promise<void> {
-  const { payload: providersPayload } = await fetchAuthJson(
-    fetchImpl,
-    authUrl,
-    "providers",
-  );
-  const providers = requireRecord(providersPayload, "providers");
-  const google = requireRecord(providers.google, "Google provider");
-  const signInUrl = new URL(String(google.signinUrl));
-  const callbackUrl = new URL(String(google.callbackUrl));
-  if (
-    google.id !== "google" ||
-    signInUrl.pathname !== "/api/auth/signin/google" ||
-    callbackUrl.pathname !== "/api/auth/callback/google" ||
-    signInUrl.origin !== callbackUrl.origin
-  ) {
-    throw new CiAuthCommandError(
-      "AUTH_PREFLIGHT_PROVIDER_CONTRACT_INVALID",
-      "provider-endpoint-contract",
-      "Advisory auth Google provider routes changed unexpectedly",
-    );
+  let signInUrl: URL;
+  let callbackUrl: URL;
+  try {
+    const { payload } = await fetchAuthJson(fetchImpl, authUrl, "providers");
+    const providers = requireRecord(payload, "providers");
+    const google = requireRecord(providers.google, "Google provider");
+    signInUrl = new URL(String(google.signinUrl));
+    callbackUrl = new URL(String(google.callbackUrl));
+    if (
+      google.id !== "google" ||
+      signInUrl.pathname !== "/api/auth/signin/google" ||
+      callbackUrl.pathname !== "/api/auth/callback/google" ||
+      signInUrl.origin !== callbackUrl.origin
+    ) {
+      throw new CiAuthCommandError(
+        "AUTH_PREFLIGHT_PROVIDER_CONTRACT_INVALID",
+        "provider-endpoint-contract",
+        "Advisory auth Google provider routes changed unexpectedly",
+      );
+    }
+    checks.providerEndpointContract = "passed";
+  } catch (error) {
+    checks.providerEndpointContract = "failed";
+    throw error;
   }
-  checks.providerEndpointContract = "passed";
 
-  const { payload: csrfPayload, response: csrfResponse } = await fetchAuthJson(
-    fetchImpl,
-    authUrl,
-    "csrf",
-  );
-  const csrfToken = requireRecord(csrfPayload, "CSRF").csrfToken;
-  if (typeof csrfToken !== "string" || csrfToken.length < 32) {
-    throw new CiAuthCommandError(
-      "AUTH_PREFLIGHT_CSRF_CONTRACT_INVALID",
-      "csrf-contract",
-      "Advisory auth CSRF response did not contain a valid token",
-    );
+  let csrfToken: string;
+  let cookie: string;
+  try {
+    const { payload, response } = await fetchAuthJson(fetchImpl, authUrl, "csrf");
+    const token = requireRecord(payload, "CSRF").csrfToken;
+    if (typeof token !== "string" || token.length < 32) {
+      throw new CiAuthCommandError(
+        "AUTH_PREFLIGHT_CSRF_CONTRACT_INVALID",
+        "csrf-contract",
+        "Advisory auth CSRF response did not contain a valid token",
+      );
+    }
+    csrfToken = token;
+    cookie = response.headers
+      .getSetCookie()
+      .map((value) => value.split(";", 1)[0])
+      .join("; ");
+    if (!cookie.includes("authjs.csrf-token=")) {
+      throw new CiAuthCommandError(
+        "AUTH_PREFLIGHT_CSRF_COOKIE_INVALID",
+        "csrf-contract",
+        "Advisory auth CSRF cookie was not issued",
+      );
+    }
+    checks.csrfContract = "passed";
+  } catch (error) {
+    checks.csrfContract = "failed";
+    throw error;
   }
-  const cookie = csrfResponse.headers
-    .getSetCookie()
-    .map((value) => value.split(";", 1)[0])
-    .join("; ");
-  if (!cookie.includes("authjs.csrf-token=")) {
-    throw new CiAuthCommandError(
-      "AUTH_PREFLIGHT_CSRF_COOKIE_INVALID",
-      "csrf-contract",
-      "Advisory auth CSRF cookie was not issued",
-    );
-  }
-  checks.csrfContract = "passed";
 
   const requestHeaders = {
     Cookie: cookie,
     "Content-Type": "application/x-www-form-urlencoded",
     "X-Auth-Return-Redirect": "1",
   };
-  const { payload: signOutPayload } = await fetchAuthJson(
-    fetchImpl,
-    authUrl,
-    "signout",
-    {
+  try {
+    const { payload } = await fetchAuthJson(fetchImpl, authUrl, "signout", {
       method: "POST",
       headers: requestHeaders,
       body: new URLSearchParams({ csrfToken }),
       redirect: "manual",
-    },
-  );
-  const signOutUrl = new URL(String(requireRecord(signOutPayload, "sign-out").url));
-  if (signOutUrl.origin !== signInUrl.origin || signOutUrl.pathname !== "/") {
-    throw new CiAuthCommandError(
-      "AUTH_PREFLIGHT_SIGN_OUT_CONTRACT_INVALID",
-      "sign-out-contract",
-      "Advisory auth sign-out redirect changed unexpectedly",
-    );
+    });
+    const signOutUrl = new URL(String(requireRecord(payload, "sign-out").url));
+    if (signOutUrl.origin !== signInUrl.origin || signOutUrl.pathname !== "/") {
+      throw new CiAuthCommandError(
+        "AUTH_PREFLIGHT_SIGN_OUT_CONTRACT_INVALID",
+        "sign-out-contract",
+        "Advisory auth sign-out redirect changed unexpectedly",
+      );
+    }
+    checks.signOutContract = "passed";
+  } catch (error) {
+    checks.signOutContract = "failed";
+    throw error;
   }
-  checks.signOutContract = "passed";
 
-  const { payload: signInPayload } = await fetchAuthJson(
-    fetchImpl,
-    authUrl,
-    "signin/google",
-    {
+  try {
+    const { payload } = await fetchAuthJson(fetchImpl, authUrl, "signin/google", {
       method: "POST",
       headers: requestHeaders,
       body: new URLSearchParams({
@@ -760,24 +787,27 @@ async function assertAuthInteractionCompatibility(
         callbackUrl: new URL("/design", signInUrl.origin).href,
       }),
       redirect: "manual",
-    },
-  );
-  const authorizationUrl = new URL(String(requireRecord(signInPayload, "sign-in").url));
-  if (
-    authorizationUrl.protocol !== "https:" ||
-    authorizationUrl.hostname !== "accounts.google.com" ||
-    authorizationUrl.searchParams.get("client_id") !== expectedGoogleClientId ||
-    authorizationUrl.searchParams.get("redirect_uri") !== callbackUrl.href ||
-    authorizationUrl.searchParams.get("response_type") !== "code" ||
-    !authorizationUrl.searchParams.get("code_challenge")
-  ) {
-    throw new CiAuthCommandError(
-      "AUTH_PREFLIGHT_GOOGLE_SIGN_IN_CONTRACT_INVALID",
-      "google-sign-in-contract",
-      "Advisory auth Google authorization redirect changed unexpectedly",
-    );
+    });
+    const authorizationUrl = new URL(String(requireRecord(payload, "sign-in").url));
+    if (
+      authorizationUrl.protocol !== "https:" ||
+      authorizationUrl.hostname !== "accounts.google.com" ||
+      authorizationUrl.searchParams.get("client_id") !== expectedGoogleClientId ||
+      authorizationUrl.searchParams.get("redirect_uri") !== callbackUrl.href ||
+      authorizationUrl.searchParams.get("response_type") !== "code" ||
+      !authorizationUrl.searchParams.get("code_challenge")
+    ) {
+      throw new CiAuthCommandError(
+        "AUTH_PREFLIGHT_GOOGLE_SIGN_IN_CONTRACT_INVALID",
+        "google-sign-in-contract",
+        "Advisory auth Google authorization redirect changed unexpectedly",
+      );
+    }
+    checks.googleSignInContract = "passed";
+  } catch (error) {
+    checks.googleSignInContract = "failed";
+    throw error;
   }
-  checks.googleSignInContract = "passed";
 }
 
 function responseBodyType(contentType: string, body: string): {
@@ -853,7 +883,6 @@ export async function preflightAuthSession(
   const now = dependencies.now ?? Date.now;
   const portAvailable = dependencies.portAvailable ?? socketUnavailable;
   const portReleased = dependencies.portReleased ?? socketUnavailable;
-  const stopServer = dependencies.stopServer ?? stopServerWithEvidence;
   const authUrl = `http://${host}:${port}/api/auth`;
   const sessionUrl = `${authUrl}/session`;
   const startedAt = new Date(now()).toISOString();
@@ -894,6 +923,23 @@ export async function preflightAuthSession(
     nonLoopbackRequestCount: 0,
     logSafetyScan: "not-attempted",
   };
+  const observedFetch = (async (
+    input: string | URL | Request,
+    init?: RequestInit,
+  ): Promise<Response> => {
+    const requestUrl = new URL(
+      input instanceof Request ? input.url : String(input),
+    );
+    if (
+      requestUrl.protocol !== "http:" ||
+      !new Set(["127.0.0.1", "localhost", "[::1]"]).has(
+        requestUrl.hostname.toLowerCase(),
+      )
+    ) {
+      checks.nonLoopbackRequestCount += 1;
+    }
+    return fetchImpl(input, init);
+  }) as typeof fetch;
   let cleanup: PreflightCleanupEvidence = {
     sigtermAttempted: false,
     sigkillFallbackAttempted: false,
@@ -903,6 +949,7 @@ export async function preflightAuthSession(
     completed: true,
   };
   let server: ChildProcess | null = null;
+  let closeObservation: ChildCloseObservation | null = null;
   const stdoutChunks: Buffer[] = [];
   const stderrChunks: Buffer[] = [];
   let earliestFailure: SafeFailure | null = null;
@@ -953,6 +1000,7 @@ export async function preflightAuthSession(
     );
     serverEvidence.started = true;
     serverEvidence.pid = Number.isSafeInteger(server.pid) ? server.pid ?? null : null;
+    closeObservation = observeChildClose(server);
     server.stdout?.on("data", (chunk: Buffer | string) => stdoutChunks.push(Buffer.from(chunk)));
     server.stderr?.on("data", (chunk: Buffer | string) => stderrChunks.push(Buffer.from(chunk)));
     server.once("error", (error: NodeJS.ErrnoException) => {
@@ -978,7 +1026,7 @@ export async function preflightAuthSession(
       }
       serverEvidence.readinessAttemptCount += 1;
       try {
-        response = await fetchImpl(sessionUrl, {
+        response = await observedFetch(sessionUrl, {
           headers: { Accept: "application/json" },
           redirect: "manual",
         });
@@ -1019,6 +1067,7 @@ export async function preflightAuthSession(
     const body = responseBodyType(contentType, responseText);
     sessionEvidence.safeBodyType = body.safeBodyType;
     sessionEvidence.jsonParseResult = body.parseResult;
+    sessionEvidence.signedOutValidation = "failed";
 
     if (sessionEvidence.redirectCount !== 0) {
       throw new CiAuthCommandError(
@@ -1050,65 +1099,36 @@ export async function preflightAuthSession(
         "Advisory auth session endpoint returned an HTML or malformed response",
       );
     }
-    if (body.payload !== null && (typeof body.payload !== "object" || Array.isArray(body.payload))) {
+    if (body.payload !== null) {
       throw new CiAuthCommandError(
         "AUTH_PREFLIGHT_SESSION_SHAPE_INVALID",
         "session-response",
-        "Advisory auth session endpoint returned an unexpected JSON shape",
+        "Advisory auth session endpoint did not return the canonical signed-out null response",
       );
     }
     sessionEvidence.signedOutValidation = "passed";
 
     await assertAuthInteractionCompatibility(
-      fetchImpl,
+      observedFetch,
       authUrl,
       authEnvironment.googleClientId,
       checks,
     );
-    const serverOutput = Buffer.concat([...stdoutChunks, ...stderrChunks]).toString("utf8");
-    const inertDiscoveryCount = serverOutput.split(
-      SYNTHETIC_CI_GOOGLE_DISCOVERY_MARKER,
-    ).length - 1;
-    if (inertDiscoveryCount !== 1) {
+    if (checks.nonLoopbackRequestCount !== 0) {
       throw new CiAuthCommandError(
-        "AUTH_PREFLIGHT_INERT_DISCOVERY_INVALID",
-        "inert-discovery-contract",
-        "Advisory auth preflight did not prove exactly one inert Google discovery",
+        "AUTH_PREFLIGHT_NON_LOOPBACK_REQUEST_DETECTED",
+        "network-safety",
+        "Advisory auth preflight attempted a non-loopback request",
       );
     }
-    checks.inertDiscoveryContract = "passed";
-    if (
-      serverOutput.includes(authEnvironment.googleClientId) ||
-      serverOutput.includes(authEnvironment.googleClientSecret) ||
-      serverOutput.includes(authEnvironment.authSecret)
-    ) {
-      throw new CiAuthCommandError(
-        "AUTH_PREFLIGHT_LOG_LEAK_DETECTED",
-        "log-safety",
-        "Advisory auth preflight detected raw private value leakage",
-      );
-    }
-    if (/ClientFetchError|Unexpected token\s+['"]?</.test(serverOutput)) {
-      throw new CiAuthCommandError(
-        "AUTH_PREFLIGHT_CLIENT_HTML_ERROR",
-        "log-safety",
-        "Advisory auth preflight detected auth-client-html-error",
-      );
-    }
-    if (/auth module initialization|Missing required environment variable/.test(serverOutput)) {
-      throw new CiAuthCommandError(
-        "AUTH_PREFLIGHT_AUTH_INITIALIZATION_ERROR",
-        "log-safety",
-        "Advisory auth preflight detected auth-initialization-error",
-      );
-    }
-    checks.logSafetyScan = "passed";
   } catch (error) {
     retainFailure(error);
   } finally {
-    if (server) {
+    if (server && closeObservation) {
       try {
-        cleanup = await stopServer(server);
+        cleanup = dependencies.stopServer
+          ? await dependencies.stopServer(server)
+          : await stopServerWithEvidence(server, closeObservation);
       } catch (error) {
         cleanup = {
           sigtermAttempted: true,
@@ -1124,6 +1144,23 @@ export async function preflightAuthSession(
           "server-cleanup",
         );
       }
+      if (
+        cleanup.finalServerTermination === "passed" &&
+        !closeObservation.observed() &&
+        !(await closeObservation.wait(5_000))
+      ) {
+        cleanup.finalServerTermination = "failed";
+        cleanup.taskOwnedCleanup = "failed";
+      }
+      if (!earliestFailure && cleanup.sigtermAttempted !== true) {
+        retainFailure(
+          new CiAuthCommandError(
+            "AUTH_PREFLIGHT_SERVER_EXITED_BEFORE_CLEANUP",
+            "server-lifecycle",
+            "Advisory auth preflight server terminated before task-owned cleanup",
+          ),
+        );
+      }
       cleanup.portReleased = await portReleased(host, port);
       if (!cleanup.portReleased || cleanup.finalServerTermination !== "passed") {
         cleanup.taskOwnedCleanup = "failed";
@@ -1135,12 +1172,63 @@ export async function preflightAuthSession(
           ),
         );
       }
-      serverEvidence.closed = cleanup.finalServerTermination === "passed";
+      serverEvidence.closed = closeObservation.observed();
       serverEvidence.exitStatus = server.exitCode;
       serverEvidence.signal = server.signalCode;
     }
     serverEvidence.stdout = streamDescriptor(Buffer.concat(stdoutChunks));
     serverEvidence.stderr = streamDescriptor(Buffer.concat(stderrChunks));
+    if (server && authEnvironment) {
+      const serverOutput = Buffer.concat([
+        ...stdoutChunks,
+        ...stderrChunks,
+      ]).toString("utf8");
+      const inertDiscoveryCount = serverOutput.split(
+        SYNTHETIC_CI_GOOGLE_DISCOVERY_MARKER,
+      ).length - 1;
+      if (inertDiscoveryCount === 1) {
+        checks.inertDiscoveryContract = "passed";
+      } else {
+        checks.inertDiscoveryContract = "failed";
+        retainFailure(
+          new CiAuthCommandError(
+            "AUTH_PREFLIGHT_INERT_DISCOVERY_INVALID",
+            "inert-discovery-contract",
+            "Advisory auth preflight did not prove exactly one inert Google discovery",
+          ),
+        );
+      }
+      let logFailure: CiAuthCommandError | null = null;
+      if (
+        serverOutput.includes(authEnvironment.googleClientId) ||
+        serverOutput.includes(authEnvironment.googleClientSecret) ||
+        serverOutput.includes(authEnvironment.authSecret)
+      ) {
+        logFailure = new CiAuthCommandError(
+          "AUTH_PREFLIGHT_LOG_LEAK_DETECTED",
+          "log-safety",
+          "Advisory auth preflight detected raw private value leakage",
+        );
+      } else if (/ClientFetchError|Unexpected token\s+['"]?</.test(serverOutput)) {
+        logFailure = new CiAuthCommandError(
+          "AUTH_PREFLIGHT_CLIENT_HTML_ERROR",
+          "log-safety",
+          "Advisory auth preflight detected auth-client-html-error",
+        );
+      } else if (
+        /auth module initialization|Missing required environment variable/.test(
+          serverOutput,
+        )
+      ) {
+        logFailure = new CiAuthCommandError(
+          "AUTH_PREFLIGHT_AUTH_INITIALIZATION_ERROR",
+          "log-safety",
+          "Advisory auth preflight detected auth-initialization-error",
+        );
+      }
+      checks.logSafetyScan = logFailure ? "failed" : "passed";
+      if (logFailure) retainFailure(logFailure);
+    }
     if (!serverEvidence.readinessCompletedAt && serverEvidence.readinessAttemptCount > 0) {
       serverEvidence.readinessCompletedAt = new Date(now()).toISOString();
     }

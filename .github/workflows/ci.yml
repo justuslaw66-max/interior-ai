@@ -119,8 +119,14 @@ jobs:
           mkdir -p "$CI_AUTH_FIXTURE_RESULT_ROOT"
           export CI_AUTH_FIXTURE_CANDIDATE_COMMIT_SHA="$(git rev-parse HEAD)"
           export CI_AUTH_FIXTURE_CANDIDATE_TREE_SHA="$(git rev-parse 'HEAD^{tree}')"
+          set +e
           npm run ci:auth-fixture:export
-          npm run ci:auth-fixture:result:validate
+          auth_command_status=$?
+          set -e
+          CI_AUTH_FIXTURE_ACTUAL_EXIT_STATUS="$auth_command_status" npm run ci:auth-fixture:result:validate
+          if [ "$auth_command_status" -ne 0 ]; then
+            exit "$auth_command_status"
+          fi
 
       - name: Validate synthetic CI OAuth fixture
         env:
@@ -131,8 +137,14 @@ jobs:
         run: |
           export CI_AUTH_FIXTURE_CANDIDATE_COMMIT_SHA="$(git rev-parse HEAD)"
           export CI_AUTH_FIXTURE_CANDIDATE_TREE_SHA="$(git rev-parse 'HEAD^{tree}')"
+          set +e
           npm run ci:auth-fixture:validate
-          npm run ci:auth-fixture:result:validate
+          auth_command_status=$?
+          set -e
+          CI_AUTH_FIXTURE_ACTUAL_EXIT_STATUS="$auth_command_status" npm run ci:auth-fixture:result:validate
+          if [ "$auth_command_status" -ne 0 ]; then
+            exit "$auth_command_status"
+          fi
 
       - name: Apply database migrations
         env:
@@ -475,8 +487,14 @@ jobs:
           mkdir -p "$CI_AUTH_FIXTURE_RESULT_ROOT"
           export CI_AUTH_FIXTURE_CANDIDATE_COMMIT_SHA="$(git rev-parse HEAD)"
           export CI_AUTH_FIXTURE_CANDIDATE_TREE_SHA="$(git rev-parse 'HEAD^{tree}')"
+          set +e
           npm run ci:auth-fixture:export
-          npm run ci:auth-fixture:result:validate
+          auth_command_status=$?
+          set -e
+          CI_AUTH_FIXTURE_ACTUAL_EXIT_STATUS="$auth_command_status" npm run ci:auth-fixture:result:validate
+          if [ "$auth_command_status" -ne 0 ]; then
+            exit "$auth_command_status"
+          fi
 
       - name: Validate synthetic CI OAuth fixture
         env:
@@ -487,8 +505,14 @@ jobs:
         run: |
           export CI_AUTH_FIXTURE_CANDIDATE_COMMIT_SHA="$(git rev-parse HEAD)"
           export CI_AUTH_FIXTURE_CANDIDATE_TREE_SHA="$(git rev-parse 'HEAD^{tree}')"
+          set +e
           npm run ci:auth-fixture:validate
-          npm run ci:auth-fixture:result:validate
+          auth_command_status=$?
+          set -e
+          CI_AUTH_FIXTURE_ACTUAL_EXIT_STATUS="$auth_command_status" npm run ci:auth-fixture:result:validate
+          if [ "$auth_command_status" -ne 0 ]; then
+            exit "$auth_command_status"
+          fi
 
       - name: Apply database migrations
         env:
@@ -507,8 +531,14 @@ jobs:
         run: |
           export CI_AUTH_FIXTURE_CANDIDATE_COMMIT_SHA="$(git rev-parse HEAD)"
           export CI_AUTH_FIXTURE_CANDIDATE_TREE_SHA="$(git rev-parse 'HEAD^{tree}')"
+          set +e
           npm run ci:auth-fixture:preflight
-          npm run ci:auth-fixture:result:validate
+          auth_command_status=$?
+          set -e
+          CI_AUTH_FIXTURE_ACTUAL_EXIT_STATUS="$auth_command_status" npm run ci:auth-fixture:result:validate
+          if [ "$auth_command_status" -ne 0 ]; then
+            exit "$auth_command_status"
+          fi
 
       - name: Verify lightweight advisory evidence contract
         run: npm run test:required-test-truthfulness

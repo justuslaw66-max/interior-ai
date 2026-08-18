@@ -68,11 +68,14 @@ The root and target must be absolute canonical physical paths outside the
 repository and every Git worktree. The root and parent must already exist; no
 symlink component, repository-local fallback, or `.local` fallback is allowed.
 The result and `<result>.sha256` must both be absent. Each file is written to a
-mode-0600 same-parent temporary file, fsynced, renamed once, and followed by a
-parent-directory fsync. Existing targets are never intentionally overwritten.
-Failure to complete either file fails the command closed. GitHub workflows use
-runner-temp roots and validate each sidecar with the canonical reader before
-continuing.
+mode-0600 same-parent temporary file, fsynced, published through an exclusive
+same-filesystem hard link, and followed by a parent-directory fsync. The writer
+revalidates the physical parent device/inode around publication; a target that
+appears concurrently cannot be overwritten. Failure to complete either file
+fails the command closed. GitHub workflows use runner-temp roots, capture the
+auth command status without short-circuiting, validate each success or failure
+sidecar with the canonical reader, bind its classification to that status, and
+only then propagate a failure.
 
 Stdout and stderr remain human log streams. They are not semantic result
 channels.
@@ -97,22 +100,25 @@ Auth-session preflight retains portable invocation identity; server PID,
 lifecycle, exit/signal/spawn classification, stream descriptors, listener and
 readiness attempts/timestamps; and the session request's loopback/method,
 status, redirect, content type, body byte/hash, safe body type, JSON parse, and
-signed-out classifications. It also retains provider, CSRF, sign-out, Google
-sign-in, inert-discovery, non-loopback-request-count, and log-safety results.
-Cleanup records SIGTERM, SIGKILL fallback, final termination, port release,
-task ownership, and completion. Response bodies, cookies, CSRF values, and
-session contents remain process-private and are discarded after their safe
-descriptors/classifications are sealed.
+exact signed-out `null` classifications. It also retains provider, CSRF,
+sign-out, Google sign-in, inert-discovery, observed non-loopback-request-count,
+and log-safety results.
+Cleanup records SIGTERM, SIGKILL fallback, final termination, observed process
+close/stdio drain, port release, task ownership, and completion. Final stream
+descriptors and the log-safety scan are computed after close. Response bodies,
+cookies, CSRF values, and session contents remain process-private and are
+discarded after their safe descriptors/classifications are sealed.
 
 ## Canonical validation
 
 The importable reader and `ci:auth-fixture:result:validate` CLI reject unknown
 or future schema, noncanonical JSON, missing completion, invalid result/mode,
 stale or cross-run nonce, candidate or command mismatch, another external root,
-mode evidence gaps, arbitrary expected-negative exits, preflight success
-without signed-out session proof, failed server cleanup, aggregate or checksum
-mismatch, stream descriptor mismatch, manual editing, and raw private-value
-leakage.
+exact argv or mode-evidence gaps, arbitrary expected-negative exits, preflight
+success without signed-out session proof, failed server cleanup, aggregate or
+checksum mismatch, stream descriptor mismatch, manual editing, raw
+private-value leakage, and disagreement between the captured command exit and
+the sidecar classification.
 
 Focused coverage is owned by `scripts/test-ci-auth-fixture-results.ts` and is
 included in `test:auth-env-hardening`, deterministic certification simulation,

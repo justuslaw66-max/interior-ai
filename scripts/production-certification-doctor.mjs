@@ -223,6 +223,14 @@ export function validateAuthResultContracts(repositoryRoot) {
     path.join(repositoryRoot, "scripts/production-certification.mjs"),
     "utf8",
   );
+  const workflowSource = [
+    ".github/workflows/ci.yml",
+    ".github/workflows/full-advisory-e2e.yml",
+  ]
+    .map((relativePath) =>
+      readFileSync(path.join(repositoryRoot, relativePath), "utf8"),
+    )
+    .join("\n");
   const requiredScripts = {
     "ci:auth-fixture:export": "export-github-env",
     "ci:auth-fixture:validate": "validate-env",
@@ -244,8 +252,13 @@ export function validateAuthResultContracts(repositoryRoot) {
     "CI_AUTH_FIXTURE_RESULT_ROOT",
     "CI_AUTH_FIXTURE_RESULT_PATH",
     "CI_AUTH_FIXTURE_RESULT_NONCE",
+    "CI_AUTH_FIXTURE_ACTUAL_EXIT_STATUS",
     "writeStructuredResult",
     "validateAuthCommandResult",
+    "linkSync",
+    "parent identity changed during publication",
+    "observeChildClose",
+    'safeBodyType !== "null"',
     "productionMisuseEvidence",
     "SYNTHETIC_AUTH_FIXTURE_PRODUCTION_MISUSE_REJECTED",
     "sessionRequest",
@@ -277,6 +290,27 @@ export function validateAuthResultContracts(repositoryRoot) {
   ) {
     throw new Error("auth stdout/stderr logs or structured result ownership are ambiguous");
   }
+  const workflowCommandCount =
+    workflowSource.match(
+      /npm run ci:auth-fixture:(?:export|validate|preflight)(?:\s|$)/g,
+    )?.length ?? 0;
+  const workflowValidatorCount =
+    workflowSource.match(/npm run ci:auth-fixture:result:validate(?:\s|$)/g)
+      ?.length ?? 0;
+  const workflowStatusBindingCount =
+    workflowSource.match(/CI_AUTH_FIXTURE_ACTUAL_EXIT_STATUS=/g)?.length ?? 0;
+  const workflowFailureCaptureCount =
+    workflowSource.match(/^\s+set \+e$/gm)?.length ?? 0;
+  if (
+    workflowCommandCount !== 8 ||
+    workflowValidatorCount !== workflowCommandCount ||
+    workflowStatusBindingCount !== workflowCommandCount ||
+    workflowFailureCaptureCount !== workflowCommandCount
+  ) {
+    throw new Error(
+      "auth workflow results are not validated for both success and failure exits",
+    );
+  }
   return {
     schema: authResultContract.AUTH_RESULT_SCHEMA,
     version: authResultContract.AUTH_RESULT_VERSION,
@@ -285,6 +319,7 @@ export function validateAuthResultContracts(repositoryRoot) {
     proseSuccessAuthority: false,
     arbitraryNonzeroExpectedNegativeAccepted: false,
     sessionServerResponseEvidenceRetained: true,
+    workflowFailureResultsValidated: true,
     rawAuthMaterialPortable: false,
     ownerHashes,
   };
