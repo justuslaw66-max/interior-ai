@@ -492,6 +492,16 @@ async function run(): Promise<void> {
     "AUTH_SECRET_MISSING",
   );
   runValidationCase(
+    "empty-auth-secret",
+    { AUTH_SECRET: "    ", NEXTAUTH_SECRET: undefined },
+    "AUTH_SECRET_EMPTY",
+  );
+  runValidationCase(
+    "empty-provider",
+    { GOOGLE_CLIENT_ID: "    " },
+    "AUTH_PROVIDER_VARIABLE_EMPTY",
+  );
+  runValidationCase(
     "alias-mismatch",
     { NEXTAUTH_SECRET: `${authSecret}-different` },
     "AUTH_SECRET_ALIAS_MISMATCH",

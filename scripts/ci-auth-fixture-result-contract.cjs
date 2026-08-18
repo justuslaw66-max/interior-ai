@@ -837,7 +837,9 @@ function privateValuesFromEnvironment(environment) {
   ].flatMap((name) => {
     const raw = environment?.[name];
     if (typeof raw !== "string") return [];
-    return [raw, raw.trim()].filter((value) => value.length >= 4);
+    const normalized = raw.trim();
+    if (normalized.length < 4) return [];
+    return [raw, normalized];
   });
   return [...new Set(values)];
 }
