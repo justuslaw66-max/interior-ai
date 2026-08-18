@@ -20,7 +20,10 @@ import {
   captureImmediatePostReadinessSnapshot,
   runRuntimeSmokePostReadinessOperation,
 } from "../../scripts/runtime-smoke-post-readiness.mjs";
-import { createRuntimeSmokeReadinessObservation } from "../../scripts/runtime-smoke-readiness-diagnostics.mjs";
+import {
+  createRuntimeSmokeReadinessObservation,
+  evaluateRuntimeSmokeActiveRequiredModels,
+} from "../../scripts/runtime-smoke-readiness-diagnostics.mjs";
 import {
   projectRuntimeSmokeBrowserCallbackMilestone,
   projectRuntimeSmokeBrowserHeartbeat,
@@ -695,17 +698,18 @@ test.describe("00. Runtime smoke", () => {
         serializedSnapshot,
       ) as GLBRequiredSnapshot;
       lastRequiredSnapshot = snapshot;
-      const activeRequiredDiagnostics = snapshot.models.filter(
-        (diagnostic) =>
-          diagnostic.active && diagnostic.requiredForReadiness,
-      );
+      const activeRequiredEvaluation =
+        evaluateRuntimeSmokeActiveRequiredModels({
+          snapshot,
+          expectedModelCount: EXPECTED_ACTIVE_REQUIRED_MODEL_COUNT,
+        });
       return diagnosticKeys.map((key) => ({
         key,
         diagnostic:
           snapshot.models.find((diagnostic) => diagnostic.key === key) ?? null,
         registrySize: snapshot.registryEntryCount,
         activeRequiredKeys: snapshot.activeRequiredModelIds,
-        activeRequiredDiagnostics,
+        activeRequiredEvaluation,
       }));
     };
     let expectedLifecycleRegistrySize: number | null = null;
@@ -754,43 +758,8 @@ test.describe("00. Runtime smoke", () => {
     };
     const activeRequiredDiagnosticsFor = (
       diagnostics: Awaited<ReturnType<typeof readModelDiagnostics>>,
-    ) => diagnostics[0]?.activeRequiredDiagnostics ?? [];
-    const completeActiveRequiredReady = (
-      diagnostics: Awaited<ReturnType<typeof readModelDiagnostics>>,
-      minimumReloadGeneration = 1,
-    ) => {
-      const activeRequired = activeRequiredDiagnosticsFor(diagnostics);
-      const generations = new Set(
-        activeRequired.map((diagnostic) => diagnostic.reloadGeneration),
-      );
-      return (
-        activeRequired.length === EXPECTED_ACTIVE_REQUIRED_MODEL_COUNT &&
-        generations.size === 1 &&
-        activeRequired.every(
-          (diagnostic) =>
-            diagnostic.active &&
-            diagnostic.requiredForReadiness &&
-            diagnostic.sceneItemId === diagnostic.key &&
-            Boolean(diagnostic.readinessKey) &&
-            /^fnv1a-[a-f0-9]{8}$/.test(diagnostic.urlHash) &&
-            /^g\d+:m\d+$/.test(diagnostic.mountInstanceId) &&
-            diagnostic.reloadGeneration >= minimumReloadGeneration &&
-            diagnostic.loadState === "ready" &&
-            diagnostic.pendingStage === null &&
-            diagnostic.requestStarted &&
-            diagnostic.responseCompleted &&
-            diagnostic.cacheStatus !== "unknown" &&
-            diagnostic.parseDecodeState === "complete" &&
-            diagnostic.normalizationState === "complete" &&
-            diagnostic.materialState === "complete" &&
-            diagnostic.boundsState === "complete" &&
-            diagnostic.sceneAttachmentState === "complete" &&
-            diagnostic.cancellationState === "active" &&
-            diagnostic.terminalErrorCategory === null &&
-            diagnostic.loadErrorCode === null,
-        )
-      );
-    };
+    ) =>
+      diagnostics[0]?.activeRequiredEvaluation?.activeRequiredDiagnostics ?? [];
     const exactRequiredRegistryReady = (
       diagnostics: Awaited<ReturnType<typeof readModelDiagnostics>>,
       minimumReloadGeneration = 1,
@@ -799,11 +768,18 @@ test.describe("00. Runtime smoke", () => {
       const observedActiveRequiredKeys =
         diagnostics[0]?.activeRequiredKeys ?? [];
       const activeRequired = activeRequiredDiagnosticsFor(diagnostics);
+      const activeRequiredEvaluation = lastRequiredSnapshot
+        ? evaluateRuntimeSmokeActiveRequiredModels({
+            snapshot: lastRequiredSnapshot,
+            expectedModelCount: EXPECTED_ACTIVE_REQUIRED_MODEL_COUNT,
+            minimumReloadGeneration,
+          })
+        : null;
       return (
         diagnostics.length === diagnosticKeys.length &&
         observedRegistrySize >= diagnosticKeys.length &&
         activeRequired.length === observedActiveRequiredKeys.length &&
-        completeActiveRequiredReady(diagnostics, minimumReloadGeneration) &&
+        activeRequiredEvaluation?.ready === true &&
         diagnosticKeys.every((key) =>
           observedActiveRequiredKeys.includes(key),
         ) &&
@@ -1117,7 +1093,10 @@ test.describe("00. Runtime smoke", () => {
         }
         if (diagnosticsReady) {
           finalLifecycleState = "ready";
-          return lastDiagnostics;
+          return {
+            fixtureDiagnostics: lastDiagnostics,
+            activeRequiredDiagnostics: activeRequired,
+          };
         }
         finalLifecycleState = "loading";
         await page.waitForTimeout(
@@ -1825,11 +1804,12 @@ test.describe("00. Runtime smoke", () => {
         checkpoint,
       });
       completedReloadGeneration =
-        semanticDiagnostics[0]?.diagnostic?.reloadGeneration ?? 0;
+        semanticDiagnostics.fixtureDiagnostics[0]?.diagnostic
+          ?.reloadGeneration ?? 0;
       expectedLifecycleRegistrySize =
-        semanticDiagnostics[0]?.registrySize ?? null;
+        semanticDiagnostics.fixtureDiagnostics[0]?.registrySize ?? null;
       expectedActiveRequiredKeys =
-        semanticDiagnostics[0]?.activeRequiredKeys ?? null;
+        semanticDiagnostics.fixtureDiagnostics[0]?.activeRequiredKeys ?? null;
       if (lastRequiredSnapshot) {
         checkpoint(
           `cache-baseline-parsed-${lastRequiredSnapshot.caches.parsed.entryCount}` +
@@ -1900,23 +1880,23 @@ test.describe("00. Runtime smoke", () => {
         timeout: phaseOperationTimeout("remount", "verify-selection"),
       });
       checkpoint("view-3d-selection-restored");
-      const remountedDiagnostics = await waitForModelDiagnosticsReady({
+      const remountedReadiness = await waitForModelDiagnosticsReady({
         minimumMountCount: 2,
         phaseName: "remount",
       });
       expect(
-        remountedDiagnostics.every(
+        remountedReadiness.fixtureDiagnostics.every(
           ({ diagnostic }) => (diagnostic?.unmountCount ?? 0) >= 1
         )
       ).toBe(true);
       checkpoint("models-remounted", finalLifecycleState);
       const remountGeneration =
-        remountedDiagnostics[0]?.diagnostic?.reloadGeneration ?? 0;
+        remountedReadiness.activeRequiredDiagnostics[0]?.reloadGeneration ?? 0;
       await recordTelemetryBootstrapEvidence({
         phaseName: "initial-document",
         expectedCollectorActivationGeneration: remountGeneration,
-        observedReadyModelCount: remountedDiagnostics.filter(
-          ({ diagnostic }) => diagnostic?.loadState === "ready",
+        observedReadyModelCount: remountedReadiness.activeRequiredDiagnostics.filter(
+          (diagnostic) => diagnostic.loadState === "ready",
         ).length,
       });
       checkpoint("telemetry-contract-valid-before-reload-1", finalLifecycleState);

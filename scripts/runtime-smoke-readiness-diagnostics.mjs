@@ -1,5 +1,129 @@
 const SAFE_ID = /^[a-z0-9][a-z0-9-]{0,95}$/;
 
+function exactStringArray(value) {
+  return (
+    Array.isArray(value) &&
+    value.every((entry) => typeof entry === "string" && entry.length > 0) &&
+    new Set(value).size === value.length
+  );
+}
+
+export function runtimeSmokeModelSemanticallyReady(
+  model,
+  { minimumReloadGeneration = 1, reloadGeneration } = {},
+) {
+  return Boolean(
+    model?.active === true &&
+      model.requiredForReadiness === true &&
+      model.generationState === "current" &&
+      model.reloadGeneration === reloadGeneration &&
+      model.reloadGeneration >= minimumReloadGeneration &&
+      model.sceneItemId === model.key &&
+      Boolean(model.readinessKey) &&
+      /^fnv1a-[a-f0-9]{8}$/.test(model.urlHash) &&
+      /^g\d+:m\d+$/.test(model.mountInstanceId) &&
+      model.loadState === "ready" &&
+      model.pendingStage === null &&
+      model.requestStarted === true &&
+      model.responseCompleted === true &&
+      model.cacheStatus !== "unknown" &&
+      model.parseDecodeState === "complete" &&
+      model.normalizationState === "complete" &&
+      model.materialState === "complete" &&
+      model.boundsState === "complete" &&
+      model.sceneAttachmentState === "complete" &&
+      model.cancellationState === "active" &&
+      model.terminalErrorCategory === null &&
+      model.loadErrorCode === null
+  );
+}
+
+export function evaluateRuntimeSmokeActiveRequiredModels({
+  snapshot,
+  expectedModelCount,
+  minimumReloadGeneration = 1,
+}) {
+  if (
+    snapshot?.schema !== "interior-ai.glb-required-snapshot.v1" ||
+    !Number.isSafeInteger(snapshot.reloadGeneration) ||
+    snapshot.reloadGeneration < 0 ||
+    !Number.isSafeInteger(snapshot.activeRequiredCount) ||
+    snapshot.activeRequiredCount < 0 ||
+    !exactStringArray(snapshot.activeRequiredModelIds) ||
+    !Array.isArray(snapshot.models) ||
+    !Number.isSafeInteger(expectedModelCount) ||
+    expectedModelCount < 0 ||
+    !Number.isSafeInteger(minimumReloadGeneration) ||
+    minimumReloadGeneration < 0
+  ) {
+    throw new Error("Runtime-smoke active-required snapshot is malformed");
+  }
+
+  const expectedActiveRequiredKeys = [...snapshot.activeRequiredModelIds];
+  const expectedKeySet = new Set(expectedActiveRequiredKeys);
+  const currentActiveRequired = snapshot.models.filter(
+    (model) =>
+      model?.active === true &&
+      model.requiredForReadiness === true &&
+      model.generationState === "current" &&
+      model.reloadGeneration === snapshot.reloadGeneration,
+  );
+  const currentByKey = new Map(
+    currentActiveRequired.map((model) => [model.key, model]),
+  );
+  const activeRequiredDiagnostics = expectedActiveRequiredKeys.flatMap((key) => {
+    const model = currentByKey.get(key);
+    return model ? [model] : [];
+  });
+  const observedActiveRequiredKeys = currentActiveRequired.map(
+    (model) => model.key,
+  );
+  const missingActiveRequiredKeys = expectedActiveRequiredKeys.filter(
+    (key) => !currentByKey.has(key),
+  );
+  const unexpectedActiveRequiredKeys = observedActiveRequiredKeys.filter(
+    (key) => !expectedKeySet.has(key),
+  );
+  const duplicateObservedKeys =
+    new Set(observedActiveRequiredKeys).size !== observedActiveRequiredKeys.length;
+  const identityMatches =
+    !duplicateObservedKeys &&
+    missingActiveRequiredKeys.length === 0 &&
+    unexpectedActiveRequiredKeys.length === 0 &&
+    observedActiveRequiredKeys.length === expectedActiveRequiredKeys.length;
+  const countMatches =
+    snapshot.activeRequiredCount === expectedActiveRequiredKeys.length &&
+    expectedActiveRequiredKeys.length === expectedModelCount &&
+    activeRequiredDiagnostics.length === expectedModelCount;
+  const unreadyModelKeys = activeRequiredDiagnostics
+    .filter(
+      (model) =>
+        !runtimeSmokeModelSemanticallyReady(model, {
+          minimumReloadGeneration,
+          reloadGeneration: snapshot.reloadGeneration,
+        }),
+    )
+    .map((model) => model.key);
+  const observedReadyCount =
+    activeRequiredDiagnostics.length - unreadyModelKeys.length;
+
+  return {
+    activeRequiredDiagnostics,
+    expectedActiveRequiredKeys,
+    observedActiveRequiredKeys,
+    missingActiveRequiredKeys,
+    unexpectedActiveRequiredKeys,
+    identityMatches,
+    countMatches,
+    observedReadyCount,
+    unreadyModelKeys,
+    ready:
+      identityMatches &&
+      countMatches &&
+      unreadyModelKeys.length === 0,
+  };
+}
+
 function safeCheckpointValue(value) {
   return value === null || value === undefined
     ? "na"

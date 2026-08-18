@@ -99,7 +99,10 @@ import {
   RUNTIME_SMOKE_TELEMETRY_BOOTSTRAP_ATTACHMENT,
   createRuntimeSmokeTelemetryBootstrapEvidence,
 } from "./runtime-smoke-telemetry-bootstrap-contract.mjs";
-import { createRuntimeSmokeReadinessObservation } from "./runtime-smoke-readiness-diagnostics.mjs";
+import {
+  createRuntimeSmokeReadinessObservation,
+  evaluateRuntimeSmokeActiveRequiredModels,
+} from "./runtime-smoke-readiness-diagnostics.mjs";
 import {
   projectRuntimeSmokeBrowserCallbackMilestone,
   projectRuntimeSmokeBrowserHeartbeat,
@@ -143,6 +146,151 @@ assert.equal(boundsPhaseBudgets[0]?.timeoutMs, 103_000);
       }),
     /not lifecycle scoped/,
   );
+}
+
+{
+  const readyModel = (key, overrides = {}) => ({
+    key,
+    sceneItemId: key,
+    readinessKey: `g2:${key}:product:variant:standard`,
+    active: true,
+    requiredForReadiness: true,
+    generationState: "current",
+    reloadGeneration: 2,
+    urlHash: "fnv1a-1234abcd",
+    mountInstanceId: "g2:m1",
+    loadState: "ready",
+    pendingStage: null,
+    requestStarted: true,
+    responseCompleted: true,
+    cacheStatus: "network",
+    parseDecodeState: "complete",
+    normalizationState: "complete",
+    materialState: "complete",
+    boundsState: "complete",
+    sceneAttachmentState: "complete",
+    cancellationState: "active",
+    terminalErrorCategory: null,
+    loadErrorCode: null,
+    ...overrides,
+  });
+  const explicitFixtureKeys = [
+    "runtime-smoke-model-1",
+    "runtime-smoke-model-2",
+    "runtime-smoke-model-3",
+  ];
+  const templateKeys = Array.from(
+    { length: 5 },
+    (_, index) => `template-model-${index + 1}`,
+  );
+  const activeRequiredModelIds = [...explicitFixtureKeys, ...templateKeys];
+  const snapshot = (models, ids = activeRequiredModelIds) => ({
+    schema: "interior-ai.glb-required-snapshot.v1",
+    reloadGeneration: 2,
+    activeRequiredCount: ids.length,
+    activeRequiredModelIds: ids,
+    models,
+  });
+  const readyModels = activeRequiredModelIds.map((key) => readyModel(key));
+
+  const complete = evaluateRuntimeSmokeActiveRequiredModels({
+    snapshot: snapshot(readyModels),
+    expectedModelCount: 8,
+  });
+  assert.equal(
+    readyModels.filter(
+      (model) => explicitFixtureKeys.includes(model.key) && model.loadState === "ready",
+    ).length,
+    3,
+    "the historical explicit-fixture projection reproduces the observed 3",
+  );
+  assert.equal(complete.ready, true);
+  assert.equal(complete.observedReadyCount, 8);
+  assert.equal(complete.activeRequiredDiagnostics.length, 8);
+
+  const templateUnready = evaluateRuntimeSmokeActiveRequiredModels({
+    snapshot: snapshot(
+      readyModels.map((model) =>
+        model.key === "template-model-4"
+          ? { ...model, loadState: "loading", pendingStage: "bounds" }
+          : model,
+      ),
+    ),
+    expectedModelCount: 8,
+  });
+  assert.equal(templateUnready.ready, false);
+  assert.deepEqual(templateUnready.unreadyModelKeys, ["template-model-4"]);
+
+  const explicitUnready = evaluateRuntimeSmokeActiveRequiredModels({
+    snapshot: snapshot(
+      readyModels.map((model) =>
+        model.key === "runtime-smoke-model-2"
+          ? { ...model, loadState: "loading", pendingStage: "materials" }
+          : model,
+      ),
+    ),
+    expectedModelCount: 8,
+  });
+  assert.equal(explicitUnready.ready, false);
+  assert.deepEqual(explicitUnready.unreadyModelKeys, ["runtime-smoke-model-2"]);
+
+  const stale = readyModel("stale-model", {
+    generationState: "stale",
+    reloadGeneration: 1,
+  });
+  const withoutStale = evaluateRuntimeSmokeActiveRequiredModels({
+    snapshot: snapshot(readyModels.concat(stale)),
+    expectedModelCount: 8,
+  });
+  assert.equal(withoutStale.ready, true);
+  assert.equal(
+    withoutStale.activeRequiredDiagnostics.some(({ key }) => key === stale.key),
+    false,
+  );
+
+  const inactive = readyModel("deleted-model", { active: false });
+  const withoutInactive = evaluateRuntimeSmokeActiveRequiredModels({
+    snapshot: snapshot(readyModels.concat(inactive)),
+    expectedModelCount: 8,
+  });
+  assert.equal(withoutInactive.ready, true);
+  assert.equal(
+    withoutInactive.activeRequiredDiagnostics.some(({ key }) => key === inactive.key),
+    false,
+  );
+
+  const foreignGeneration = readyModel("foreign-document-model", {
+    reloadGeneration: 99,
+    generationState: "stale",
+  });
+  const withoutForeignGeneration = evaluateRuntimeSmokeActiveRequiredModels({
+    snapshot: snapshot(readyModels.concat(foreignGeneration)),
+    expectedModelCount: 8,
+  });
+  assert.equal(withoutForeignGeneration.ready, true);
+  assert.equal(
+    withoutForeignGeneration.activeRequiredDiagnostics.some(
+      ({ key }) => key === foreignGeneration.key,
+    ),
+    false,
+  );
+
+  const identityMismatch = evaluateRuntimeSmokeActiveRequiredModels({
+    snapshot: snapshot(
+      readyModels,
+      activeRequiredModelIds.with(7, "missing-template-model"),
+    ),
+    expectedModelCount: 8,
+  });
+  assert.equal(identityMismatch.ready, false);
+  assert.equal(identityMismatch.identityMatches, false);
+  assert.deepEqual(identityMismatch.missingActiveRequiredKeys, [
+    "missing-template-model",
+  ]);
+  assert.deepEqual(identityMismatch.unexpectedActiveRequiredKeys, [
+    "template-model-5",
+  ]);
+
 }
 
 {
@@ -1205,6 +1353,16 @@ assert.equal(
 const runtimeSmokeSource = readFileSync(
   path.join(process.cwd(), "tests/e2e/00-runtime-smoke.spec.ts"),
   "utf8",
+);
+assert.match(
+  runtimeSmokeSource,
+  /observedReadyModelCount:\s*remountedReadiness\.activeRequiredDiagnostics\.filter/,
+  "the remount checkpoint must count the full set returned by the readiness wait",
+);
+assert.doesNotMatch(
+  runtimeSmokeSource,
+  /observedReadyModelCount:\s*remountedDiagnostics\.filter/,
+  "the remount checkpoint must not count only explicit fixture diagnostics",
 );
 assert.match(
   runtimeSmokeSource,
