@@ -63,6 +63,7 @@ const SAFE_ENVIRONMENT_CLASSIFICATIONS = new Set([
 const SHA256_PATTERN = /^[a-f0-9]{64}$/;
 const SOURCE_SHA_PATTERN = /^[a-f0-9]{40}$/;
 const NONCE_PATTERN = /^[A-Za-z0-9][A-Za-z0-9._:-]{7,127}$/;
+const RESOLVED_AUTH_RESULT_DESTINATIONS = new WeakSet();
 const AUTH_VALIDATION_FAILURE_CATEGORIES = Object.freeze({
   SYNTHETIC_AUTH_FIXTURE_MODE_NOT_ENABLED: "fixture-activation",
   SYNTHETIC_AUTH_FIXTURE_PRODUCTION_MISUSE_REJECTED:
@@ -187,7 +188,7 @@ function resolveAuthResultDestination({
     throw new Error("Auth result and checksum targets must be absent before invocation");
   }
   const relativePath = path.relative(root, requested).split(path.sep).join("/");
-  return Object.freeze({
+  const destination = Object.freeze({
     repositoryRoot: repository,
     externalRoot: root,
     resultPath: requested,
@@ -199,6 +200,8 @@ function resolveAuthResultDestination({
     externalRootIdentitySha256: sha256Bytes(root),
     resultPathIdentitySha256: sha256Bytes(`${root}\0${relativePath}`),
   });
+  RESOLVED_AUTH_RESULT_DESTINATIONS.add(destination);
+  return destination;
 }
 
 function assertDestinationParentIdentity(destination) {
@@ -212,6 +215,27 @@ function assertDestinationParentIdentity(destination) {
   }
 }
 
+function assertDestinationPathBindings(destination) {
+  if (
+    !RESOLVED_AUTH_RESULT_DESTINATIONS.has(destination) ||
+    destination.sidecarPath !== `${destination.resultPath}.sha256` ||
+    path.dirname(destination.resultPath) !== destination.parentPath ||
+    path.dirname(destination.sidecarPath) !== destination.parentPath ||
+    !isInside(destination.externalRoot, destination.resultPath) ||
+    destination.resultPath === destination.externalRoot ||
+    destination.relativePath !==
+      path.relative(destination.externalRoot, destination.resultPath)
+        .split(path.sep)
+        .join("/") ||
+    destination.externalRootIdentitySha256 !==
+      sha256Bytes(destination.externalRoot) ||
+    destination.resultPathIdentitySha256 !==
+      sha256Bytes(`${destination.externalRoot}\0${destination.relativePath}`)
+  ) {
+    throw new Error("Auth result destination path bindings are inconsistent");
+  }
+}
+
 function writeAtomicFile(destination, filePath, bytes) {
   const parent = path.dirname(filePath);
   const stagingPath = path.join(
@@ -220,6 +244,14 @@ function writeAtomicFile(destination, filePath, bytes) {
   );
   let descriptor;
   try {
+    assertDestinationPathBindings(destination);
+    if (
+      (filePath !== destination.resultPath &&
+        filePath !== destination.sidecarPath) ||
+      parent !== destination.parentPath
+    ) {
+      throw new Error("Auth result writer target is not bound to its verified parent");
+    }
     assertDestinationParentIdentity(destination);
     descriptor = openSync(stagingPath, "wx", 0o600);
     writeFileSync(descriptor, bytes);
@@ -250,6 +282,7 @@ function sealAuthCommandResult(payload) {
 }
 
 function writeAuthCommandResult({ destination, payload }) {
+  assertDestinationPathBindings(destination);
   if (lstatOrNull(destination.resultPath) || lstatOrNull(destination.sidecarPath)) {
     throw new Error("Auth result writer refuses to overwrite an existing result");
   }
@@ -281,7 +314,7 @@ function assertDescriptor(value, description) {
   }
 }
 
-function assertModeEvidence(result) {
+function assertModeEvidence(result, allowNonConsumableFailure = false) {
   const evidence = result.evidence;
   if (result.command.mode === "provider-fixture-export") {
     assertExactKeys(
@@ -348,17 +381,28 @@ function assertModeEvidence(result) {
       }
     } else if (
       typeof evidence.providerVariablesPresent !== "boolean" ||
-      !new Set(["failed", "not-completed"]).has(
+      !new Set(["passed", "failed", "not-completed"]).has(
         evidence.providerClientIdGrammar,
       ) ||
-      !new Set(["failed", "not-completed"]).has(
+      !new Set(["passed", "failed", "not-completed"]).has(
         evidence.providerPairCoherence,
       ) ||
-      !new Set(["failed", "not-completed"]).has(evidence.authSecretPresence) ||
-      !new Set(["mismatch-rejected", "not-completed"]).has(
+      !new Set(["passed", "failed"]).has(evidence.authSecretPresence) ||
+      !new Set([
+        "dual-equal",
+        "mismatch-rejected",
+        "auth-secret-only",
+        "nextauth-secret-only",
+        "missing",
+      ]).has(
         evidence.aliasPolicy,
       ) ||
-      evidence.nonProductionClassification !== "not-completed" ||
+      !new Set([
+        "development",
+        "staging",
+        "production-rejected",
+        "invalid",
+      ]).has(evidence.nonProductionClassification) ||
       evidence.applicationValidator !== "failed" ||
       evidence.networkClassification !== "not-used" ||
       evidence.leakScan !== "passed" ||
@@ -406,6 +450,33 @@ function assertModeEvidence(result) {
         evidence.aliasPolicy !== "mismatch-rejected"
       ) {
         throw new Error("Auth validation alias evidence is inconsistent");
+      }
+      if (
+        evidence.providerPairCoherence === "passed" &&
+        (evidence.providerVariablesPresent !== true ||
+          evidence.providerClientIdGrammar !== "passed")
+      ) {
+        throw new Error("Auth validation provider evidence is contradictory");
+      }
+      if (
+        evidence.aliasPolicy === "mismatch-rejected" &&
+        evidence.authSecretPresence !== "passed"
+      ) {
+        throw new Error("Auth validation alias/secret evidence is contradictory");
+      }
+      if (
+        result.failure.code ===
+          "SYNTHETIC_AUTH_FIXTURE_PRODUCTION_MISUSE_REJECTED" &&
+        evidence.nonProductionClassification !== "production-rejected"
+      ) {
+        throw new Error("Auth validation production evidence is inconsistent");
+      }
+      if (
+        result.failure.child.exitStatus !== null ||
+        result.failure.child.signal !== null ||
+        result.failure.child.spawnError !== null
+      ) {
+        throw new Error("Auth validation failure has contradictory child evidence");
       }
     }
     return;
@@ -464,6 +535,14 @@ function assertModeEvidence(result) {
     ) {
       throw new Error("Production-misuse intended rejection proof is incomplete");
     }
+    if (
+      result.result === "failure" &&
+      (JSON.stringify(result.failure.child) !== JSON.stringify(evidence.child) ||
+        JSON.stringify(result.failure.stdout) !== JSON.stringify(evidence.stdout) ||
+        JSON.stringify(result.failure.stderr) !== JSON.stringify(evidence.stderr))
+    ) {
+      throw new Error("Production-misuse failure child or stream evidence is inconsistent");
+    }
     return;
   }
   if (result.command.mode === "auth-session-preflight") {
@@ -486,6 +565,23 @@ function assertModeEvidence(result) {
       ],
       "Auth preflight invocation",
     );
+    if (
+      evidence.invocation.packageCommandId !== result.command.id ||
+      evidence.invocation.executableClassification !== result.command.executable ||
+      evidence.invocation.argvIdentitySha256 !==
+        sha256Bytes(`${result.command.argv[0]}\0${result.command.argv[1]}`) ||
+      evidence.invocation.fixturePolicySha256 !==
+        result.identity.fixturePolicy.sha256 ||
+      evidence.invocation.authValidatorSha256 !==
+        result.identity.authValidator.sha256 ||
+      evidence.invocation.environmentNameSetSha256 !==
+        result.identity.environmentNameSetSha256 ||
+      evidence.invocation.resultPathIdentitySha256 !==
+        result.identity.resultPathIdentitySha256 ||
+      evidence.invocation.invocationNonce !== result.identity.invocationNonce
+    ) {
+      throw new Error("Auth preflight invocation evidence is not identity-bound");
+    }
     assertExactKeys(
       evidence.server,
       [
@@ -507,6 +603,27 @@ function assertModeEvidence(result) {
     );
     assertDescriptor(evidence.server.stdout, "Auth preflight server stdout");
     assertDescriptor(evidence.server.stderr, "Auth preflight server stderr");
+    if (
+      evidence.server.commandClassification !== "next-dev-webpack-loopback" ||
+      (evidence.server.pid !== null &&
+        (!Number.isSafeInteger(evidence.server.pid) || evidence.server.pid <= 0)) ||
+      typeof evidence.server.started !== "boolean" ||
+      typeof evidence.server.closed !== "boolean" ||
+      (evidence.server.exitStatus !== null &&
+        !Number.isSafeInteger(evidence.server.exitStatus)) ||
+      (evidence.server.signal !== null &&
+        !new Set(["SIGTERM", "SIGKILL"]).has(evidence.server.signal)) ||
+      (evidence.server.spawnError !== null &&
+        typeof evidence.server.spawnError !== "string") ||
+      typeof evidence.server.listenerReady !== "boolean" ||
+      !Number.isSafeInteger(evidence.server.readinessAttemptCount) ||
+      evidence.server.readinessAttemptCount < 0 ||
+      !Number.isFinite(Date.parse(evidence.server.readinessStartedAt)) ||
+      (evidence.server.readinessCompletedAt !== null &&
+        !Number.isFinite(Date.parse(evidence.server.readinessCompletedAt)))
+    ) {
+      throw new Error("Auth preflight server evidence is malformed");
+    }
     assertExactKeys(
       evidence.sessionRequest,
       [
@@ -549,6 +666,53 @@ function assertModeEvidence(result) {
       ],
       "Auth preflight cleanup",
     );
+    if (
+      evidence.sessionRequest.endpointClassification !== "loopback-auth-session" ||
+      evidence.sessionRequest.method !== "GET" ||
+      (evidence.sessionRequest.statusCode !== null &&
+        (!Number.isSafeInteger(evidence.sessionRequest.statusCode) ||
+          evidence.sessionRequest.statusCode < 100 ||
+          evidence.sessionRequest.statusCode > 599)) ||
+      !Number.isSafeInteger(evidence.sessionRequest.redirectCount) ||
+      evidence.sessionRequest.redirectCount < 0 ||
+      !new Set(["not-observed", "none", "http-redirect-rejected"]).has(
+        evidence.sessionRequest.redirectClassification,
+      ) ||
+      !new Set(["not-observed", "application-json", "html", "other", "missing"]).has(
+        evidence.sessionRequest.contentTypeClassification,
+      ) ||
+      !Number.isSafeInteger(evidence.sessionRequest.bodyBytes) ||
+      evidence.sessionRequest.bodyBytes < 0 ||
+      !SHA256_PATTERN.test(evidence.sessionRequest.bodySha256) ||
+      !new Set([
+        "null",
+        "object",
+        "array",
+        "scalar",
+        "HTML",
+        "text",
+        "empty",
+        "malformed",
+      ]).has(evidence.sessionRequest.safeBodyType) ||
+      !new Set(["not-attempted", "passed", "failed"]).has(
+        evidence.sessionRequest.jsonParseResult,
+      ) ||
+      !new Set(["not-attempted", "passed", "failed"]).has(
+        evidence.sessionRequest.signedOutValidation,
+      ) ||
+      typeof evidence.cleanup.sigtermAttempted !== "boolean" ||
+      typeof evidence.cleanup.sigkillFallbackAttempted !== "boolean" ||
+      !new Set(["not-started", "passed", "failed"]).has(
+        evidence.cleanup.finalServerTermination,
+      ) ||
+      !new Set(["not-required", "passed", "failed"]).has(
+        evidence.cleanup.taskOwnedCleanup,
+      ) ||
+      typeof evidence.cleanup.portReleased !== "boolean" ||
+      evidence.cleanup.completed !== true
+    ) {
+      throw new Error("Auth preflight request or cleanup evidence is malformed");
+    }
     for (const checkName of [
       "providerEndpointContract",
       "csrfContract",
@@ -579,19 +743,42 @@ function assertModeEvidence(result) {
       evidence.cleanup.taskOwnedCleanup === "failed" ||
       evidence.cleanup.completed !== true
     ) {
-      throw new Error("Auth preflight result reports failed server cleanup");
+      if (!(allowNonConsumableFailure && result.result === "failure")) {
+        throw new Error("Auth preflight result reports failed server cleanup");
+      }
     }
     if (
       evidence.server.started === true &&
       (evidence.server.closed !== true ||
-        evidence.cleanup.finalServerTermination !== "passed" ||
-        evidence.cleanup.taskOwnedCleanup !== "passed")
+        evidence.cleanup.finalServerTermination !== "passed")
     ) {
-      throw new Error("Auth preflight started a server without completed cleanup");
+      if (!(allowNonConsumableFailure && result.result === "failure")) {
+        throw new Error("Auth preflight started a server without completed cleanup");
+      }
+    }
+    if (
+      result.result === "failure" &&
+      (result.failure.child.exitStatus !== evidence.server.exitStatus ||
+        result.failure.child.signal !== evidence.server.signal ||
+        result.failure.child.spawnError !== evidence.server.spawnError)
+    ) {
+      throw new Error("Auth preflight failure child evidence is inconsistent");
     }
     if (result.result === "success") {
       if (
+        evidence.server.started !== true ||
+        evidence.server.closed !== true ||
+        evidence.server.spawnError !== null ||
         evidence.server.listenerReady !== true ||
+        evidence.cleanup.sigtermAttempted !== true ||
+        evidence.cleanup.taskOwnedCleanup !== "passed" ||
+        (evidence.cleanup.sigkillFallbackAttempted === true
+          ? evidence.server.signal !== "SIGKILL"
+          : !(
+              evidence.server.signal === "SIGTERM" ||
+              (evidence.server.signal === null &&
+                Number.isSafeInteger(evidence.server.exitStatus))
+            )) ||
         evidence.sessionRequest.endpointClassification !== "loopback-auth-session" ||
         evidence.sessionRequest.method !== "GET" ||
         evidence.sessionRequest.statusCode !== 200 ||
@@ -644,10 +831,9 @@ function assertNoRawPrivateValues(bytes, sensitiveValues = []) {
   }
 }
 
-function validateAuthCommandResult({
-  repositoryRoot,
-  externalRoot,
-  resultPath,
+function validateAuthCommandResultValue({
+  result,
+  destination,
   expectedNonce,
   expectedCommandId,
   expectedMode,
@@ -655,35 +841,10 @@ function validateAuthCommandResult({
   expectedCandidateTreeSha,
   sensitiveValues = [],
   expectedStreamDescriptors,
-  worktreeRoots,
+  allowNonConsumableFailure = false,
 }) {
-  const destination = resolveAuthResultDestination({
-    repositoryRoot,
-    externalRoot,
-    resultPath,
-    requireAbsent: false,
-    worktreeRoots,
-  });
-  const resultMetadata = lstatSync(destination.resultPath);
-  const sidecarMetadata = lstatSync(destination.sidecarPath);
-  if (
-    resultMetadata.isSymbolicLink() ||
-    !resultMetadata.isFile() ||
-    sidecarMetadata.isSymbolicLink() ||
-    !sidecarMetadata.isFile()
-  ) {
-    throw new Error("Auth result and checksum must be physical files");
-  }
-  const bytes = readFileSync(destination.resultPath);
-  let result;
-  try {
-    result = JSON.parse(bytes.toString("utf8"));
-  } catch {
-    throw new Error("Auth result is not valid JSON");
-  }
-  if (!bytes.equals(canonicalJsonBytes(result))) {
-    throw new Error("Auth result is not canonical JSON");
-  }
+  const bytes = canonicalJsonBytes(result);
+  assertNoRawPrivateValues(bytes, sensitiveValues);
   assertExactKeys(
     result,
     [
@@ -810,10 +971,20 @@ function validateAuthCommandResult({
     assertDescriptor(result.failure.stdout, "Auth failure stdout");
     assertDescriptor(result.failure.stderr, "Auth failure stderr");
     assertExactKeys(result.failure.child, ["exitStatus", "signal", "spawnError"], "Auth failure child");
+    if (
+      (result.failure.child.exitStatus !== null &&
+        !Number.isSafeInteger(result.failure.child.exitStatus)) ||
+      (result.failure.child.signal !== null &&
+        typeof result.failure.child.signal !== "string") ||
+      (result.failure.child.spawnError !== null &&
+        typeof result.failure.child.spawnError !== "string")
+    ) {
+      throw new Error("Auth failure child process evidence is malformed");
+    }
   } else if (result.failure !== null) {
     throw new Error("Successful auth result must not contain failure evidence");
   }
-  assertModeEvidence(result);
+  assertModeEvidence(result, allowNonConsumableFailure);
   if (expectedStreamDescriptors) {
     if (result.command.mode !== "production-misuse-validation") {
       throw new Error("Auth stream binding is only valid for production-misuse results");
@@ -836,12 +1007,66 @@ function validateAuthCommandResult({
   if (sha256Bytes(canonicalJsonBytes(payload)) !== aggregateSha256) {
     throw new Error("Auth result aggregate hash mismatch indicates manual editing");
   }
-  const expectedSidecar = `${aggregateSha256}  ${path.basename(destination.resultPath)}\n`;
+  assertNoRawPrivateValues(bytes, sensitiveValues);
+  return Object.freeze({ result, destination });
+}
+
+function validateAuthCommandResult({
+  repositoryRoot,
+  externalRoot,
+  resultPath,
+  expectedNonce,
+  expectedCommandId,
+  expectedMode,
+  expectedCandidateCommitSha,
+  expectedCandidateTreeSha,
+  sensitiveValues = [],
+  expectedStreamDescriptors,
+  worktreeRoots,
+}) {
+  const destination = resolveAuthResultDestination({
+    repositoryRoot,
+    externalRoot,
+    resultPath,
+    requireAbsent: false,
+    worktreeRoots,
+  });
+  const resultMetadata = lstatSync(destination.resultPath);
+  const sidecarMetadata = lstatSync(destination.sidecarPath);
+  if (
+    resultMetadata.isSymbolicLink() ||
+    !resultMetadata.isFile() ||
+    sidecarMetadata.isSymbolicLink() ||
+    !sidecarMetadata.isFile()
+  ) {
+    throw new Error("Auth result and checksum must be physical files");
+  }
+  const bytes = readFileSync(destination.resultPath);
+  let result;
+  try {
+    result = JSON.parse(bytes.toString("utf8"));
+  } catch {
+    throw new Error("Auth result is not valid JSON");
+  }
+  if (!bytes.equals(canonicalJsonBytes(result))) {
+    throw new Error("Auth result is not canonical JSON");
+  }
+  const validated = validateAuthCommandResultValue({
+    result,
+    destination,
+    expectedNonce,
+    expectedCommandId,
+    expectedMode,
+    expectedCandidateCommitSha,
+    expectedCandidateTreeSha,
+    sensitiveValues,
+    expectedStreamDescriptors,
+  });
+  const expectedSidecar = `${result.aggregateSha256}  ${path.basename(destination.resultPath)}\n`;
   if (readFileSync(destination.sidecarPath, "utf8") !== expectedSidecar) {
     throw new Error("Auth result checksum sidecar does not close the result digest");
   }
-  assertNoRawPrivateValues(bytes, sensitiveValues);
-  return Object.freeze({ result, destination });
+  return validated;
 }
 
 function commandMode(command) {
@@ -901,6 +1126,7 @@ module.exports = Object.freeze({
   sealAuthCommandResult,
   sha256Bytes,
   validateAuthCommandResult,
+  validateAuthCommandResultValue,
   writeAuthCommandResult,
 });
 

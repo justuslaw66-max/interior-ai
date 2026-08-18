@@ -52,7 +52,9 @@ policy schema/hash, `lib/auth-env.ts` owner/hash, environment-name-set hash,
 safe environment classification, start/completion timestamps, the closed
 completion marker, and an aggregate SHA-256.
 
-The result never stores OAuth values, auth secrets, cookies, session or CSRF
+The sealed canonical result passes the schema, identity/binding, and
+raw-private-value validator before either result artifact is published, and is
+validated again after publication. The result never stores OAuth values, auth secrets, cookies, session or CSRF
 contents, passwords, provider tokens, raw database URLs, raw private
 environment, response bodies, or private machine paths.
 
@@ -70,10 +72,12 @@ symlink component, repository-local fallback, or `.local` fallback is allowed.
 The result and `<result>.sha256` must both be absent. Each file is written to a
 mode-0600 same-parent temporary file, fsynced, published through an exclusive
 same-filesystem hard link, and followed by a parent-directory fsync. The writer
-revalidates the physical parent device/inode around publication; a target that
-appears concurrently cannot be overwritten. Failure to complete either file
-fails the command closed. GitHub workflows use runner-temp roots, capture the
-auth command status without short-circuiting, validate each success or failure
+accepts only the exact destination object issued by the resolver and
+revalidates its result/sidecar/root/relative-path/hash bindings plus the
+physical parent device/inode around publication; a target that appears
+concurrently cannot be overwritten. Failure to complete either file fails the
+command closed. GitHub workflows use runner-temp roots, capture the auth
+command status without short-circuiting, validate each success or failure
 sidecar with the canonical reader, bind its classification to that status, and
 only then propagate a failure.
 
@@ -107,16 +111,21 @@ Cleanup records SIGTERM, SIGKILL fallback, final termination, observed process
 close/stdio drain, port release, task ownership, and completion. Final stream
 descriptors and the log-safety scan are computed after close. Response bodies,
 cookies, CSRF values, and session contents remain process-private and are
-discarded after their safe descriptors/classifications are sealed.
+discarded after their safe descriptors/classifications are sealed. A cleanup
+signal must be accepted by the child-process API before it is task-owned, and
+the final signal/exit evidence must agree with the attempted SIGTERM/SIGKILL
+path; an exit in the check-to-kill race cannot become a successful cleanup.
 
 ## Canonical validation
 
 The importable reader and `ci:auth-fixture:result:validate` CLI reject unknown
 or future schema, noncanonical JSON, missing completion, invalid result/mode,
 stale or cross-run nonce, candidate or command mismatch, another external root,
-exact argv or mode-evidence gaps, arbitrary expected-negative exits, preflight
-success without signed-out session proof, failed server cleanup, aggregate or
-checksum mismatch, stream descriptor mismatch, manual editing, raw
+exact argv or mode-evidence gaps, nested invocation/identity mismatch,
+failure-child or stream disagreement, malformed server/session/cleanup values,
+arbitrary expected-negative exits, preflight success without signed-out session
+proof, failed or contradictory server cleanup, aggregate or checksum mismatch,
+stream descriptor mismatch, manual editing, raw
 private-value leakage, and disagreement between the captured command exit and
 the sidecar classification.
 

@@ -378,7 +378,10 @@ async function persistPreflightCase({
   stopServer?: (server: ChildProcess) => Promise<PreflightCleanupEvidence>;
   expectedCode?: string;
   expectValidatorRejection?: boolean;
-}>): Promise<Readonly<{ outcome: PreflightOutcome; resultPath: string }>> {
+}>): Promise<Readonly<{
+  outcome: PreflightOutcome;
+  target: ReturnType<typeof destination>;
+}>> {
   const target = destination(prefix);
   const environment = resultEnvironment(target);
   const outcome = await authFixture().preflightAuthSession(environment, {
@@ -417,7 +420,7 @@ async function persistPreflightCase({
     );
     assert.equal(result.result, outcome.result);
   }
-  return { outcome, resultPath: target.resultPath };
+  return { outcome, target };
 }
 
 async function run(): Promise<void> {
@@ -500,6 +503,34 @@ async function run(): Promise<void> {
     "production-contradiction",
     { APP_ENV: "production" },
     "SYNTHETIC_AUTH_FIXTURE_PRODUCTION_MISUSE_REJECTED",
+  );
+  const productionMissingProvider = runValidationCase(
+    "production-missing-provider",
+    { APP_ENV: "production", GOOGLE_CLIENT_ID: undefined },
+    "SYNTHETIC_AUTH_FIXTURE_PRODUCTION_MISUSE_REJECTED",
+  );
+  assert.equal(
+    (productionMissingProvider.result.evidence as Record<string, unknown>)
+      .providerVariablesPresent,
+    false,
+  );
+  assert.equal(
+    (productionMissingProvider.result.evidence as Record<string, unknown>)
+      .nonProductionClassification,
+    "production-rejected",
+  );
+  const aliasMismatchMissingProvider = runValidationCase(
+    "alias-mismatch-missing-provider",
+    {
+      GOOGLE_CLIENT_ID: undefined,
+      NEXTAUTH_SECRET: `${authSecret}-different`,
+    },
+    "AUTH_SECRET_ALIAS_MISMATCH",
+  );
+  assert.equal(
+    (aliasMismatchMissingProvider.result.evidence as Record<string, unknown>)
+      .providerVariablesPresent,
+    false,
   );
 
   const validationCliEnvironment = {
@@ -794,6 +825,23 @@ async function run(): Promise<void> {
     externalRoot: parentIdentityTarget.root,
     resultPath: parentIdentityTarget.resultPath,
   });
+  const forgedResultPath = path.join(
+    parentIdentityTarget.root,
+    "forged-result.json",
+  );
+  expectRejected(
+    () =>
+      contract.writeAuthCommandResult({
+        destination: {
+          ...resolvedParentIdentity,
+          resultPath: forgedResultPath,
+          sidecarPath: `${forgedResultPath}.sha256`,
+        },
+        payload: { testOnly: true },
+      }),
+    /destination path bindings are inconsistent/,
+  );
+  assert.equal(existsSync(forgedResultPath), false);
   const parentPath = path.dirname(parentIdentityTarget.resultPath);
   const displacedParent = `${parentPath}-displaced`;
   renameSync(parentPath, displacedParent);
@@ -1000,6 +1048,20 @@ async function run(): Promise<void> {
       .providerEndpointContract),
     "failed",
   );
+  resealResult(providerFailure.target, (payload) => {
+    const invocation = (payload.evidence as Record<string, unknown>)
+      .invocation as Record<string, unknown>;
+    invocation.invocationNonce = "contradictory-preflight-invocation";
+  });
+  expectRejected(
+    () =>
+      validateResult(
+        providerFailure.target,
+        "ci:auth-fixture:preflight",
+        "auth-session-preflight",
+      ),
+    /invocation evidence is not identity-bound/,
+  );
 
   const nonLoopback = await persistPreflightCase({
     prefix: "non-loopback-request-observation",
@@ -1012,6 +1074,19 @@ async function run(): Promise<void> {
     ((nonLoopback.outcome.evidence.checks as Record<string, unknown>)
       .nonLoopbackRequestCount),
     5,
+  );
+  resealResult(nonLoopback.target, (payload) => {
+    const failure = payload.failure as Record<string, unknown>;
+    (failure.child as Record<string, unknown>).signal = "SIGKILL";
+  });
+  expectRejected(
+    () =>
+      validateResult(
+        nonLoopback.target,
+        "ci:auth-fixture:preflight",
+        "auth-session-preflight",
+      ),
+    /failure child evidence is inconsistent/,
   );
 
   await persistPreflightCase({
@@ -1068,6 +1143,56 @@ async function run(): Promise<void> {
     "failed",
   );
 
+  const killFalseServer = fakeServer({
+    stdout: `${SYNTHETIC_CI_GOOGLE_DISCOVERY_MARKER}\n`,
+  });
+  const killFalseState = killFalseServer as unknown as {
+    exitCode: number | null;
+    signalCode: NodeJS.Signals | null;
+    kill: (signal?: NodeJS.Signals | number) => boolean;
+  };
+  killFalseState.kill = () => {
+    killFalseState.signalCode = "SIGTERM";
+    queueMicrotask(() => {
+      killFalseServer.emit("exit", null, "SIGTERM");
+      killFalseServer.emit("close", null, "SIGTERM");
+    });
+    return false;
+  };
+  const killFalse = await persistPreflightCase({
+    prefix: "server-kill-false-race",
+    fetchImpl: successfulFetchQueue(),
+    server: killFalseServer,
+    expectedCode: "AUTH_PREFLIGHT_SERVER_EXITED_BEFORE_CLEANUP",
+  });
+  assert.equal(
+    ((killFalse.outcome.evidence.cleanup as Record<string, unknown>)
+      .taskOwnedCleanup),
+    "not-required",
+  );
+
+  const wrongSignalServer = fakeServer({
+    stdout: `${SYNTHETIC_CI_GOOGLE_DISCOVERY_MARKER}\n`,
+  });
+  const wrongSignalState = wrongSignalServer as unknown as {
+    signalCode: NodeJS.Signals | null;
+    kill: (signal?: NodeJS.Signals | number) => boolean;
+  };
+  wrongSignalState.kill = () => {
+    wrongSignalState.signalCode = "SIGKILL";
+    queueMicrotask(() => {
+      wrongSignalServer.emit("exit", null, "SIGKILL");
+      wrongSignalServer.emit("close", null, "SIGKILL");
+    });
+    return true;
+  };
+  await persistPreflightCase({
+    prefix: "server-cleanup-signal-mismatch",
+    fetchImpl: successfulFetchQueue(),
+    server: wrongSignalServer,
+    expectedCode: "AUTH_PREFLIGHT_CLEANUP_SIGNAL_MISMATCH",
+  });
+
   await persistPreflightCase({
     prefix: "cleanup-failure",
     fetchImpl: successfulFetchQueue(),
@@ -1083,6 +1208,30 @@ async function run(): Promise<void> {
     expectedCode: "AUTH_PREFLIGHT_CLEANUP_FAILED",
     expectValidatorRejection: true,
   });
+
+  const rawPayloadTarget = destination("prepublication-raw-payload");
+  const rawPayloadEnvironment = resultEnvironment(rawPayloadTarget);
+  const rawPayloadOutcome: PreflightOutcome = {
+    ...preflightSuccess.outcome,
+    evidence: {
+      ...preflightSuccess.outcome.evidence,
+      server: {
+        ...(preflightSuccess.outcome.evidence.server as Record<string, unknown>),
+        commandClassification: authSecret,
+      },
+    },
+  };
+  expectRejected(
+    () =>
+      authFixture().persistPreflightOutcome(
+        "preflight",
+        rawPayloadEnvironment,
+        rawPayloadOutcome,
+      ),
+    /contains a raw private value/,
+  );
+  assert.equal(existsSync(rawPayloadTarget.resultPath), false);
+  assert.equal(existsSync(`${rawPayloadTarget.resultPath}.sha256`), false);
 
   const resultWriteBase = destination("result-write-failure");
   const resultWriteTarget = {

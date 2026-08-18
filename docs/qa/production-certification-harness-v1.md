@@ -18,9 +18,13 @@ structured child proof rather than any nonzero exit. Local/CI auth-session
 preflight retains safe server lifecycle/stream, session status/content
 type/body hash and exact signed-out `null`, remaining route-contract,
 observed-network/no-leak, and post-close termination/port-release evidence
-before discarding private process memory. External publication is exclusive
-and revalidates its physical parent; workflow readers consume both success and
-failure sidecars before propagating the captured command status.
+before discarding private process memory. Nested invocation, process, session,
+failure, and cleanup evidence is cross-bound to the command and top-level
+identity; rejected or contradictory kill/close outcomes cannot pass. Sealed
+canonical bytes are schema- and leak-validated before publication. External
+publication accepts only resolver-issued destinations, is exclusive, and
+revalidates its exact paths and physical parent; workflow readers consume both
+success and failure sidecars before propagating the captured command status.
 Stdout/stderr remain human logs only.
 
 Doctor registers the owner and reader; deterministic simulation exercises

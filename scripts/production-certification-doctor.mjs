@@ -254,10 +254,13 @@ export function validateAuthResultContracts(repositoryRoot) {
     "CI_AUTH_FIXTURE_RESULT_NONCE",
     "CI_AUTH_FIXTURE_ACTUAL_EXIT_STATUS",
     "writeStructuredResult",
+    "validateAuthCommandResultValue",
     "validateAuthCommandResult",
+    "RESOLVED_AUTH_RESULT_DESTINATIONS",
     "linkSync",
     "parent identity changed during publication",
     "observeChildClose",
+    "AUTH_PREFLIGHT_CLEANUP_SIGNAL_MISMATCH",
     'safeBodyType !== "null"',
     "productionMisuseEvidence",
     "SYNTHETIC_AUTH_FIXTURE_PRODUCTION_MISUSE_REJECTED",
@@ -273,6 +276,7 @@ export function validateAuthResultContracts(repositoryRoot) {
     authResultContract.AUTH_RESULT_SCHEMA !==
       "interior-ai.ci-auth-fixture-command-result.v1" ||
     authResultContract.AUTH_RESULT_VERSION !== 1 ||
+    typeof authResultContract.validateAuthCommandResultValue !== "function" ||
     typeof authResultContract.validateAuthCommandResult !== "function" ||
     typeof authResultContract.writeAuthCommandResult !== "function" ||
     !contractSource.includes("Auth preflight success lacks canonical session-response proof") ||

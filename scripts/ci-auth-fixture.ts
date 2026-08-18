@@ -51,6 +51,22 @@ type AuthResultContractModule = Readonly<{
     worktreeRoots?: string[];
   }): AuthResultDestination;
   sha256Bytes(value: string | Buffer): string;
+  sealAuthCommandResult(payload: Record<string, unknown>): Record<string, unknown>;
+  validateAuthCommandResultValue(options: {
+    result: Record<string, unknown>;
+    destination: AuthResultDestination;
+    expectedNonce: string;
+    expectedCommandId: string;
+    expectedMode: string;
+    expectedCandidateCommitSha?: string;
+    expectedCandidateTreeSha?: string;
+    sensitiveValues?: string[];
+    allowNonConsumableFailure?: boolean;
+    expectedStreamDescriptors?: Readonly<{
+      stdout: StreamDescriptor;
+      stderr: StreamDescriptor;
+    }>;
+  }): Readonly<{ result: Record<string, unknown>; destination: AuthResultDestination }>;
   validateAuthCommandResult(options: {
     repositoryRoot: string;
     externalRoot: string;
@@ -629,12 +645,13 @@ async function stopServerWithEvidence(
 ): Promise<PreflightCleanupEvidence> {
   let sigtermAttempted = false;
   let sigkillFallbackAttempted = false;
+  let terminationSignalDelivered = false;
   if (server.exitCode === null && server.signalCode === null) {
     sigtermAttempted = true;
-    server.kill("SIGTERM");
+    terminationSignalDelivered = server.kill("SIGTERM");
     if (!(await closeObservation.wait(5_000))) {
       sigkillFallbackAttempted = true;
-      server.kill("SIGKILL");
+      terminationSignalDelivered = server.kill("SIGKILL");
       await closeObservation.wait(5_000);
     }
   } else {
@@ -648,7 +665,11 @@ async function stopServerWithEvidence(
     sigkillFallbackAttempted,
     finalServerTermination: terminated ? "passed" : "failed",
     portReleased: false,
-    taskOwnedCleanup: terminated ? "passed" : "failed",
+    taskOwnedCleanup: terminated
+      ? terminationSignalDelivered
+        ? "passed"
+        : "not-required"
+      : "failed",
     completed: true,
   };
 }
@@ -1152,12 +1173,35 @@ export async function preflightAuthSession(
         cleanup.finalServerTermination = "failed";
         cleanup.taskOwnedCleanup = "failed";
       }
-      if (!earliestFailure && cleanup.sigtermAttempted !== true) {
+      if (
+        !earliestFailure &&
+        cleanup.finalServerTermination === "passed" &&
+        cleanup.taskOwnedCleanup !== "passed"
+      ) {
         retainFailure(
           new CiAuthCommandError(
             "AUTH_PREFLIGHT_SERVER_EXITED_BEFORE_CLEANUP",
             "server-lifecycle",
             "Advisory auth preflight server terminated before task-owned cleanup",
+          ),
+        );
+      }
+      if (
+        !earliestFailure &&
+        cleanup.taskOwnedCleanup === "passed" &&
+        (cleanup.sigkillFallbackAttempted
+          ? server.signalCode !== "SIGKILL"
+          : !(
+              server.signalCode === "SIGTERM" ||
+              (server.signalCode === null &&
+                Number.isSafeInteger(server.exitCode))
+            ))
+      ) {
+        retainFailure(
+          new CiAuthCommandError(
+            "AUTH_PREFLIGHT_CLEANUP_SIGNAL_MISMATCH",
+            "server-cleanup",
+            "Advisory auth preflight server termination did not match task-owned cleanup",
           ),
         );
       }
@@ -1341,14 +1385,7 @@ function writeStructuredResult(
       marker: AUTH_RESULT_CONTRACT.AUTH_RESULT_COMPLETION_MARKER,
     },
   };
-  const written = AUTH_RESULT_CONTRACT.writeAuthCommandResult({
-    destination: context.destination,
-    payload,
-  });
-  AUTH_RESULT_CONTRACT.validateAuthCommandResult({
-    repositoryRoot: process.cwd(),
-    externalRoot: context.destination.externalRoot,
-    resultPath: context.destination.resultPath,
+  const validationOptions = {
     expectedNonce: context.nonce,
     expectedCommandId: context.commandIdentity.commandId,
     expectedMode: context.commandIdentity.mode,
@@ -1358,27 +1395,68 @@ function writeStructuredResult(
       environment[AUTH_RESULT_CONTRACT.AUTH_RESULT_CANDIDATE_TREE_ENV],
     sensitiveValues: AUTH_RESULT_CONTRACT.privateValuesFromEnvironment(environment),
     expectedStreamDescriptors,
+  };
+  AUTH_RESULT_CONTRACT.validateAuthCommandResultValue({
+    ...validationOptions,
+    destination: context.destination,
+    result: AUTH_RESULT_CONTRACT.sealAuthCommandResult(payload),
+    allowNonConsumableFailure: result === "failure",
+  });
+  const written = AUTH_RESULT_CONTRACT.writeAuthCommandResult({
+    destination: context.destination,
+    payload,
+  });
+  AUTH_RESULT_CONTRACT.validateAuthCommandResult({
+    repositoryRoot: process.cwd(),
+    externalRoot: context.destination.externalRoot,
+    resultPath: context.destination.resultPath,
+    ...validationOptions,
   });
   return written;
 }
 
-function validationFailureEvidence(failure: SafeFailure): Readonly<Record<string, unknown>> {
+function validationFailureEvidence(
+  environment: NodeJS.ProcessEnv,
+): Readonly<Record<string, unknown>> {
+  const providerClientId = environment.GOOGLE_CLIENT_ID?.trim() ?? "";
+  const providerClientSecret = environment.GOOGLE_CLIENT_SECRET?.trim() ?? "";
+  const providerVariablesPresent = Boolean(
+    providerClientId && providerClientSecret,
+  );
+  const authSecret = environment.AUTH_SECRET?.trim() ?? "";
+  const nextAuthSecret = environment.NEXTAUTH_SECRET?.trim() ?? "";
+  const authSecretPresence = Boolean(authSecret || nextAuthSecret);
+  const aliasPolicy =
+    authSecret && nextAuthSecret
+      ? authSecret === nextAuthSecret
+        ? "dual-equal"
+        : "mismatch-rejected"
+      : authSecret
+        ? "auth-secret-only"
+        : nextAuthSecret
+          ? "nextauth-secret-only"
+          : "missing";
+  const environmentClassification = safeEnvironmentClassification(environment);
   return Object.freeze({
-    providerVariablesPresent: !new Set([
-      "AUTH_PROVIDER_VARIABLE_MISSING",
-      "AUTH_PROVIDER_VARIABLE_EMPTY",
-    ]).has(failure.code),
-    providerClientIdGrammar:
-      failure.code === "AUTH_PROVIDER_CLIENT_ID_GRAMMAR_INVALID" ? "failed" : "not-completed",
-    providerPairCoherence:
-      failure.code === "AUTH_FIXTURE_PAIR_COHERENCE_INVALID" ? "failed" : "not-completed",
-    authSecretPresence:
-      failure.code === "AUTH_SECRET_MISSING" || failure.code === "AUTH_SECRET_EMPTY"
-        ? "failed"
-        : "not-completed",
-    aliasPolicy:
-      failure.code === "AUTH_SECRET_ALIAS_MISMATCH" ? "mismatch-rejected" : "not-completed",
-    nonProductionClassification: "not-completed",
+    providerVariablesPresent,
+    providerClientIdGrammar: providerClientId
+      ? /^[0-9]+-[a-z0-9-]+\.apps\.googleusercontent\.com$/i.test(
+          providerClientId,
+        )
+        ? "passed"
+        : "failed"
+      : "not-completed",
+    providerPairCoherence: providerVariablesPresent
+      ? syntheticFixtureMatches(providerClientId, providerClientSecret)
+        ? "passed"
+        : "failed"
+      : "not-completed",
+    authSecretPresence: authSecretPresence ? "passed" : "failed",
+    aliasPolicy,
+    nonProductionClassification:
+      environmentClassification === "production"
+        ? "production-rejected"
+        : environmentClassification,
     applicationValidator: "failed",
     networkClassification: "not-used",
     leakScan: "passed",
@@ -1662,7 +1740,7 @@ async function executeStructuredCommand(command: string): Promise<void> {
         context,
         environment,
         "failure",
-        validationFailureEvidence(failure),
+        validationFailureEvidence(environment),
         failureEvidence(failure, "", stderr),
       );
       process.stderr.write(stderr);
