@@ -189,6 +189,10 @@ function qualificationCommand() {
     ],
     [
       process.execPath,
+      ["scripts/test-production-certification-auth-preflight-database.mjs"],
+    ],
+    [
+      process.execPath,
       ["scripts/test-production-certification-dependency-lifecycle.mjs"],
     ],
     [process.execPath, ["scripts/test-production-trace-archive-policy.mjs"]],

@@ -15,21 +15,26 @@ import {
   unlinkSync,
   writeFileSync,
 } from "node:fs";
+import { userInfo } from "node:os";
 import path from "node:path";
 
 import { CertificationPostgresAdapter } from "./production-certification-database-adapter.mjs";
 import {
+  AUTH_SESSION_PREFLIGHT_DATABASE_CLASSIFICATIONS,
+  AUTH_SESSION_PREFLIGHT_DATABASE_STAGE,
   PRODUCTION_CERTIFICATION_DATABASE_CONTRACT_VERSION,
   PRODUCTION_CERTIFICATION_DATABASE_LIFECYCLE_SCHEMA,
   PRODUCTION_CERTIFICATION_DATABASE_STAGE_BINDINGS,
   canonicalDatabaseNonce,
   canonicalJsonBytes,
   createDatabaseLifecycleBinding,
+  databaseLifecycleRequiredStages,
   databaseAdminPolicy,
   databaseLifecycleEvidenceIssues,
   generateCertificationDatabaseName,
   generateProvisionAuthorizationSha256,
   isCanonicalIdentity,
+  isSha256,
   isSourceSha,
   migrationInventory,
   sealDatabaseLifecycleEvidence,
@@ -152,6 +157,45 @@ function atomicWrite(
 
 function stageRoleName(evidence) {
   return `interior_ai_cert_stage_${evidence.database.identitySha256.slice(0, 32)}`;
+}
+
+function authPreflightInvocationNonceSha256(value) {
+  if (
+    typeof value !== "string" ||
+    !/^[A-Za-z0-9][A-Za-z0-9._:-]{7,127}$/.test(value)
+  ) {
+    throw new Error("auth-session preflight invocation nonce is malformed");
+  }
+  return sha256(value);
+}
+
+function databaseLifecycleProfile({
+  profile = "release-certification",
+  authPreflightInvocationNonce = null,
+} = {}) {
+  if (profile === "release-certification") {
+    if (authPreflightInvocationNonce !== null) {
+      throw new Error("release database lifecycle cannot bind an auth-preflight nonce");
+    }
+    return {
+      classification: "RELEASE_CERTIFICATION_DATABASE",
+      authPreflightInvocationNonceSha256: null,
+    };
+  }
+  if (profile !== AUTH_SESSION_PREFLIGHT_DATABASE_STAGE) {
+    throw new Error("database lifecycle profile is unknown or unsupported");
+  }
+  return {
+    classification: AUTH_SESSION_PREFLIGHT_DATABASE_CLASSIFICATIONS.lifecycle,
+    rehearsalClassification:
+      AUTH_SESSION_PREFLIGHT_DATABASE_CLASSIFICATIONS.rehearsal,
+    releaseCertificationClassification:
+      AUTH_SESSION_PREFLIGHT_DATABASE_CLASSIFICATIONS.releaseCertification,
+    integrationClassification:
+      AUTH_SESSION_PREFLIGHT_DATABASE_CLASSIFICATIONS.integration,
+    authPreflightInvocationNonceSha256:
+      authPreflightInvocationNonceSha256(authPreflightInvocationNonce),
+  };
 }
 
 function privateBindingPath(environment, evidence, { createParent = false } = {}) {
@@ -480,6 +524,8 @@ export async function planCertificationDatabase({
   adapter = null,
   nonce = null,
   qualificationFixture = false,
+  profile = "release-certification",
+  authPreflightInvocationNonce = null,
 } = {}) {
   const paths = containedEvidencePath(repositoryRoot, environment);
   if (existsSync(paths.absolutePath)) {
@@ -510,6 +556,10 @@ export async function planCertificationDatabase({
     throw new Error("database lifecycle plan source is not the exact clean candidate");
   }
   const generatorNonce = canonicalDatabaseNonce(nonce ?? undefined);
+  const lifecycleProfile = databaseLifecycleProfile({
+    profile,
+    authPreflightInvocationNonce,
+  });
   const database = generateCertificationDatabaseName({
     certificationId: identity.certificationId,
     candidateId: identity.candidateId,
@@ -528,6 +578,7 @@ export async function planCertificationDatabase({
     schema: PRODUCTION_CERTIFICATION_DATABASE_LIFECYCLE_SCHEMA,
     version: PRODUCTION_CERTIFICATION_DATABASE_CONTRACT_VERSION,
     identity,
+    lifecycleProfile,
     contract: implementation,
     database: {
       classification: "disposable-production-certification-test-database",
@@ -561,7 +612,11 @@ export async function planCertificationDatabase({
     inventories: { initial: null, final: null, abort: null },
     sessions: { initial: null, final: null, release: null, abort: null },
     stageBindings: {
-      requiredStages: [...PRODUCTION_CERTIFICATION_DATABASE_STAGE_BINDINGS],
+      requiredStages:
+        lifecycleProfile.classification ===
+        AUTH_SESSION_PREFLIGHT_DATABASE_CLASSIFICATIONS.lifecycle
+          ? [AUTH_SESSION_PREFLIGHT_DATABASE_STAGE]
+          : [...PRODUCTION_CERTIFICATION_DATABASE_STAGE_BINDINGS],
       observed: [],
     },
     cleanup: null,
@@ -939,9 +994,19 @@ export async function verifyInitialCertificationDatabase(options = {}) {
 export async function bindCertificationDatabaseStage(options = {}) {
   return mutateLifecycle({ ...options, mode: "bind-stage" }, async ({ evidence, adapter, environment }) => {
     const stage = options.stage;
+    const requiredStages = databaseLifecycleRequiredStages(evidence);
+    const authNonceSha256 =
+      stage === AUTH_SESSION_PREFLIGHT_DATABASE_STAGE
+        ? authPreflightInvocationNonceSha256(
+            options.authPreflightInvocationNonce,
+          )
+        : null;
     if (
       evidence.currentState !== "active" ||
-      !PRODUCTION_CERTIFICATION_DATABASE_STAGE_BINDINGS.includes(stage)
+      !requiredStages.includes(stage) ||
+      (stage === AUTH_SESSION_PREFLIGHT_DATABASE_STAGE &&
+        authNonceSha256 !==
+          evidence.lifecycleProfile?.authPreflightInvocationNonceSha256)
     ) {
       throw new Error("database stage binding is not permitted in the current lifecycle state");
     }
@@ -970,6 +1035,9 @@ export async function bindCertificationDatabaseStage(options = {}) {
       stage,
       databaseIdentitySha256: evidence.database.identitySha256,
       databaseNameSha256: evidence.database.nameSha256,
+      ...(stage === AUTH_SESSION_PREFLIGHT_DATABASE_STAGE
+        ? { authPreflightInvocationNonceSha256: authNonceSha256 }
+        : {}),
       boundAt,
     });
     next.stageBindings.observed.sort((left, right) => left.stage.localeCompare(right.stage));
@@ -977,6 +1045,9 @@ export async function bindCertificationDatabaseStage(options = {}) {
       stage,
       databaseIdentitySha256: evidence.database.identitySha256,
       databaseNameSha256: evidence.database.nameSha256,
+      ...(stage === AUTH_SESSION_PREFLIGHT_DATABASE_STAGE
+        ? { authPreflightInvocationNonceSha256: authNonceSha256 }
+        : {}),
     }, boundAt);
   });
 }
@@ -1247,6 +1318,307 @@ export async function abortCertificationDatabase(options = {}) {
   });
 }
 
+export function createAuthSessionPreflightDatabaseEnvironment({
+  baseEnvironment = process.env,
+  lifecycleRoot,
+  candidateCommitSha,
+  candidateTreeSha,
+  authPreflightInvocationNonce,
+} = {}) {
+  if (
+    typeof lifecycleRoot !== "string" ||
+    !path.isAbsolute(lifecycleRoot) ||
+    !isSourceSha(candidateCommitSha) ||
+    !isSourceSha(candidateTreeSha)
+  ) {
+    throw new Error("auth-session preflight database context is malformed");
+  }
+  const invocationNonceSha256 = authPreflightInvocationNonceSha256(
+    authPreflightInvocationNonce,
+  );
+  mkdirSync(lifecycleRoot, { recursive: true, mode: 0o700 });
+  const root = realpathSync(lifecycleRoot);
+  const evidenceRoot = path.join(root, "database-evidence");
+  const worktreeRoot = path.join(root, "database-private");
+  mkdirSync(evidenceRoot, { recursive: true, mode: 0o700 });
+  mkdirSync(worktreeRoot, { recursive: true, mode: 0o700 });
+  let adminUrl = baseEnvironment.CERTIFICATION_TEST_DATABASE_ADMIN_URL?.trim();
+  if (!adminUrl) {
+    const local = new URL("postgresql://127.0.0.1:5432/postgres");
+    local.username = userInfo().username;
+    adminUrl = local.toString();
+  }
+  databaseAdminPolicy(adminUrl);
+  const environment = {
+    ...baseEnvironment,
+    CERTIFICATION_DATABASE_ADMIN_URL: adminUrl,
+    CERTIFICATION_DATABASE_LIFECYCLE_PATH: path.join(
+      evidenceRoot,
+      "auth-session-preflight-database-lifecycle.json",
+    ),
+    CERTIFICATION_EVIDENCE_ROOT: evidenceRoot,
+    CERTIFICATION_EXPECTED_COMMIT_SHA: candidateCommitSha,
+    CERTIFICATION_EXPECTED_TREE_SHA: candidateTreeSha,
+    CERTIFICATION_WORKTREE_ROOT: worktreeRoot,
+    PRODUCTION_CERTIFICATION_ID: `auth-session-preflight-${invocationNonceSha256.slice(0, 24)}`,
+    PRODUCTION_EVIDENCE_CANDIDATE_ID: `auth-session-preflight-candidate-${candidateCommitSha.slice(0, 16)}`,
+  };
+  delete environment.DATABASE_URL;
+  return Object.freeze(environment);
+}
+
+export async function prepareAuthSessionPreflightDatabaseLifecycle({
+  repositoryRoot = process.cwd(),
+  baseEnvironment = process.env,
+  lifecycleRoot,
+  candidateCommitSha,
+  candidateTreeSha,
+  authPreflightInvocationNonce,
+  databaseNonce = null,
+  adapter = null,
+  qualificationFixture = false,
+  testHooks = null,
+} = {}) {
+  const environment = createAuthSessionPreflightDatabaseEnvironment({
+    baseEnvironment,
+    lifecycleRoot,
+    candidateCommitSha,
+    candidateTreeSha,
+    authPreflightInvocationNonce,
+  });
+  try {
+    await planCertificationDatabase({
+      repositoryRoot,
+      environment,
+      adapter,
+      nonce: databaseNonce,
+      qualificationFixture,
+      profile: AUTH_SESSION_PREFLIGHT_DATABASE_STAGE,
+      authPreflightInvocationNonce,
+    });
+    await provisionCertificationDatabase({
+      repositoryRoot,
+      environment,
+      adapter,
+      testHooks,
+    });
+    await verifyInitialCertificationDatabase({
+      repositoryRoot,
+      environment,
+      adapter,
+    });
+    await bindCertificationDatabaseStage({
+      repositoryRoot,
+      environment,
+      adapter,
+      stage: AUTH_SESSION_PREFLIGHT_DATABASE_STAGE,
+      authPreflightInvocationNonce,
+    });
+  } catch (error) {
+    if (existsSync(environment.CERTIFICATION_DATABASE_LIFECYCLE_PATH)) {
+      try {
+        await abortCertificationDatabase({
+          repositoryRoot,
+          environment,
+          adapter,
+          originalFailure: {
+            classification: "AUTH_SESSION_PREFLIGHT_DATABASE_PREREQUISITE_FAILURE",
+            stage: AUTH_SESSION_PREFLIGHT_DATABASE_STAGE,
+            consumedSubstantiveGate: false,
+          },
+        });
+      } catch (cleanupError) {
+        error.authPreflightDatabaseCleanupFailure =
+          redactDatabaseLifecycleFailure(cleanupError);
+      }
+    }
+    throw error;
+  }
+  const current = readCertificationDatabaseLifecycle({
+    repositoryRoot,
+    environment,
+  });
+  const preflightLifecycleBinding =
+    createAuthSessionPreflightDatabaseBinding({
+      current,
+      authPreflightInvocationNonce,
+    });
+  const projection = resolveCertificationDatabaseStageEnvironment({
+    repositoryRoot,
+    environment,
+    stage: AUTH_SESSION_PREFLIGHT_DATABASE_STAGE,
+    preflightLifecycleBinding,
+    authPreflightInvocationNonce,
+  });
+  return Object.freeze({
+    environment,
+    current,
+    preflightLifecycleBinding,
+    projection,
+  });
+}
+
+function authSessionPreflightDatabaseEvidence({
+  current,
+  preflightLifecycleBinding,
+  authSessionServerPreflight,
+  cleanupMode,
+}) {
+  const evidence = current.evidence;
+  const normal = cleanupMode === "normal";
+  const targetAbsent = normal
+    ? evidence.currentState === "absence-verified"
+    : evidence.currentState === "abort-absence-verified";
+  return Object.freeze({
+    schema:
+      "interior-ai.ci-auth-fixture-database-prerequisite-evidence.v1",
+    classification: AUTH_SESSION_PREFLIGHT_DATABASE_CLASSIFICATIONS.lifecycle,
+    rehearsalClassification:
+      AUTH_SESSION_PREFLIGHT_DATABASE_CLASSIFICATIONS.rehearsal,
+    releaseCertificationClassification:
+      AUTH_SESSION_PREFLIGHT_DATABASE_CLASSIFICATIONS.releaseCertification,
+    integrationClassification:
+      AUTH_SESSION_PREFLIGHT_DATABASE_CLASSIFICATIONS.integration,
+    stage: AUTH_SESSION_PREFLIGHT_DATABASE_STAGE,
+    lifecycleIdentitySha256: sha256(
+      canonicalJsonBytes({
+        identity: evidence.identity,
+        lifecycleProfile: evidence.lifecycleProfile,
+      }),
+    ),
+    databaseIdentitySha256: evidence.database.identitySha256,
+    databaseNameSha256: evidence.database.nameSha256,
+    authPreflightInvocationNonceSha256:
+      evidence.lifecycleProfile.authPreflightInvocationNonceSha256,
+    projectionLifecycleEvidenceSha256:
+      preflightLifecycleBinding.lifecycleEvidenceSha256,
+    completionLifecycleEvidenceSha256: current.descriptor.sha256,
+    planResult: evidence.events.some((entry) => entry.state === "planned")
+      ? "passed"
+      : "failed",
+    provisionResult: evidence.events.some(
+      (entry) => entry.state === "provisioned",
+    )
+      ? "passed"
+      : "failed",
+    migrationResult: evidence.events.some((entry) => entry.state === "migrated")
+      ? "passed"
+      : "failed",
+    initialVerificationResult: evidence.events.some(
+      (entry) => entry.state === "initial-empty-verified",
+    )
+      ? "passed"
+      : "failed",
+    scopedRoleClassification:
+      preflightLifecycleBinding.scopedRoleClassification,
+    scopedRoleIdentitySha256:
+      preflightLifecycleBinding.scopedRoleIdentitySha256,
+    connectionProjectionResult: "passed",
+    adminCapabilities: false,
+    authSessionServerPreflight,
+    finalInspectionResult: normal
+      ? evidence.events.some((entry) => entry.state === "final-empty-verified")
+        ? "passed"
+        : "failed"
+      : evidence.inventories.abort || evidence.cleanup?.drop?.alreadyAbsent
+        ? "abort-inspected"
+        : "failed",
+    cleanupMode,
+    scopedRoleRemovalResult:
+      evidence.cleanup?.stageRole?.dropped === true ||
+      evidence.cleanup?.stageRole?.alreadyAbsent === true
+        ? "passed"
+        : "failed",
+    dropResult:
+      evidence.cleanup?.drop?.dropped === true ||
+      evidence.cleanup?.drop?.alreadyAbsent === true
+        ? "passed"
+        : "failed",
+    absenceResult: targetAbsent && evidence.cleanup?.targetAbsent !== false
+      ? "passed"
+      : "failed",
+    originalFailureRetained: normal
+      ? false
+      : evidence.cleanup?.originalFailureRetained === true,
+    failedPreflightRehabilitated:
+      evidence.cleanup?.failedRunRehabilitated === true,
+    completionMarker: targetAbsent
+      ? "AUTH_SESSION_PREFLIGHT_DATABASE_LIFECYCLE_COMPLETE"
+      : "AUTH_SESSION_PREFLIGHT_DATABASE_LIFECYCLE_INCOMPLETE",
+  });
+}
+
+export async function completeAuthSessionPreflightDatabaseLifecycle({
+  repositoryRoot = process.cwd(),
+  environment,
+  adapter = null,
+  preflightLifecycleBinding,
+} = {}) {
+  await verifyFinalCertificationDatabase({
+    repositoryRoot,
+    environment,
+    adapter,
+  });
+  await dropCertificationDatabase({ repositoryRoot, environment, adapter });
+  await verifyCertificationDatabaseAbsent({
+    repositoryRoot,
+    environment,
+    adapter,
+  });
+  const current = readCertificationDatabaseLifecycle({
+    repositoryRoot,
+    environment,
+  });
+  return Object.freeze({
+    current,
+    evidence: authSessionPreflightDatabaseEvidence({
+      current,
+      preflightLifecycleBinding,
+      authSessionServerPreflight: "passed",
+      cleanupMode: "normal",
+    }),
+  });
+}
+
+export async function abortAuthSessionPreflightDatabaseLifecycle({
+  repositoryRoot = process.cwd(),
+  environment,
+  adapter = null,
+  preflightLifecycleBinding,
+  originalFailure = null,
+  authSessionServerPreflight = "failed",
+} = {}) {
+  if (!new Set(["passed", "failed"]).has(authSessionServerPreflight)) {
+    throw new Error(
+      "Auth-session preflight cleanup requires an explicit server outcome",
+    );
+  }
+  await abortCertificationDatabase({
+    repositoryRoot,
+    environment,
+    adapter,
+    originalFailure: {
+      classification:
+        originalFailure?.classification ?? "AUTH_SESSION_PREFLIGHT_FAILURE",
+      stage: AUTH_SESSION_PREFLIGHT_DATABASE_STAGE,
+      consumedSubstantiveGate: false,
+    },
+  });
+  const current = readCertificationDatabaseLifecycle({
+    repositoryRoot,
+    environment,
+  });
+  return Object.freeze({
+    current,
+    evidence: authSessionPreflightDatabaseEvidence({
+      current,
+      preflightLifecycleBinding,
+      authSessionServerPreflight,
+      cleanupMode: "abort",
+    }),
+  });
+}
+
 export async function certificationDatabaseStatus(options = {}) {
   const current = readCertificationDatabaseLifecycle(options);
   const adapter = adapterFor(
@@ -1282,7 +1654,11 @@ export async function certificationDatabaseStatus(options = {}) {
   };
 }
 
-function assertDatabaseProjectionReadiness(evidence, stage) {
+function assertDatabaseProjectionReadiness(
+  evidence,
+  stage,
+  authPreflightInvocationNonce = null,
+) {
   const requiredStates = [
     "provisioned",
     "migrated",
@@ -1307,10 +1683,81 @@ function assertDatabaseProjectionReadiness(evidence, stage) {
   if (
     !observed ||
     observed.databaseIdentitySha256 !== evidence.database.identitySha256 ||
-    observed.databaseNameSha256 !== evidence.database.nameSha256
+    observed.databaseNameSha256 !== evidence.database.nameSha256 ||
+    (stage === AUTH_SESSION_PREFLIGHT_DATABASE_STAGE &&
+      (observed.authPreflightInvocationNonceSha256 !==
+        authPreflightInvocationNonceSha256(authPreflightInvocationNonce) ||
+        observed.authPreflightInvocationNonceSha256 !==
+          evidence.lifecycleProfile?.authPreflightInvocationNonceSha256))
   ) {
     throw new Error(
       "certification database stage binding is missing or foreign",
+    );
+  }
+}
+
+export function createAuthSessionPreflightDatabaseBinding({
+  current,
+  authPreflightInvocationNonce,
+}) {
+  const nonceSha256 = authPreflightInvocationNonceSha256(
+    authPreflightInvocationNonce,
+  );
+  const evidence = current?.evidence;
+  if (
+    current?.binding?.lifecycleState !== "active" ||
+    evidence?.lifecycleProfile?.classification !==
+      AUTH_SESSION_PREFLIGHT_DATABASE_CLASSIFICATIONS.lifecycle ||
+    evidence.lifecycleProfile.authPreflightInvocationNonceSha256 !==
+      nonceSha256 ||
+    !isSourceSha(current.binding.candidateCommitSha) ||
+    !isSourceSha(current.binding.candidateTreeSha) ||
+    !isSha256(current.binding.databaseNameSha256) ||
+    !isSha256(current.binding.databaseIdentitySha256) ||
+    !isSha256(current.binding.evidence?.sha256) ||
+    !isSha256(evidence.privateBinding?.sidecarSha256) ||
+    !isSha256(evidence.privateBinding?.roleNameSha256)
+  ) {
+    throw new Error("auth-session preflight database binding is not active or complete");
+  }
+  return Object.freeze({
+    schema:
+      "interior-ai.production-certification-auth-preflight-database-binding.v1",
+    classification: AUTH_SESSION_PREFLIGHT_DATABASE_CLASSIFICATIONS.lifecycle,
+    rehearsalClassification:
+      AUTH_SESSION_PREFLIGHT_DATABASE_CLASSIFICATIONS.rehearsal,
+    releaseCertificationClassification:
+      AUTH_SESSION_PREFLIGHT_DATABASE_CLASSIFICATIONS.releaseCertification,
+    integrationClassification:
+      AUTH_SESSION_PREFLIGHT_DATABASE_CLASSIFICATIONS.integration,
+    stage: AUTH_SESSION_PREFLIGHT_DATABASE_STAGE,
+    authPreflightInvocationNonceSha256: nonceSha256,
+    candidateCommitSha: current.binding.candidateCommitSha,
+    candidateTreeSha: current.binding.candidateTreeSha,
+    databaseNameSha256: current.binding.databaseNameSha256,
+    databaseIdentitySha256: current.binding.databaseIdentitySha256,
+    lifecycleEvidenceSha256: current.binding.evidence.sha256,
+    privateSidecarSha256: evidence.privateBinding.sidecarSha256,
+    scopedRoleIdentitySha256: evidence.privateBinding.roleNameSha256,
+    scopedRoleClassification: evidence.privateBinding.classification,
+    hostClassification: evidence.server.hostClassification,
+    serverRoleClassification: evidence.server.roleClassification,
+    lifecycleState: current.binding.lifecycleState,
+  });
+}
+
+function assertDatabaseProjectionPreflightBinding({
+  binding,
+  current,
+  authPreflightInvocationNonce,
+}) {
+  const expected = createAuthSessionPreflightDatabaseBinding({
+    current,
+    authPreflightInvocationNonce,
+  });
+  if (JSON.stringify(binding) !== JSON.stringify(expected)) {
+    throw new Error(
+      "auth-session preflight database projection binding is stale or foreign",
     );
   }
 }
@@ -1334,18 +1781,45 @@ function assertDatabaseProjectionStateBinding(state, current) {
 export function resolveCertificationDatabaseStageEnvironment({
   repositoryRoot = process.cwd(),
   environment = process.env,
-  state,
+  state = null,
   stage,
+  preflightLifecycleBinding = null,
+  authPreflightInvocationNonce = null,
 }) {
-  if (!PRODUCTION_CERTIFICATION_DATABASE_STAGE_BINDINGS.includes(stage)) {
+  const knownStage =
+    PRODUCTION_CERTIFICATION_DATABASE_STAGE_BINDINGS.includes(stage) ||
+    stage === AUTH_SESSION_PREFLIGHT_DATABASE_STAGE;
+  if (!knownStage) {
     throw new Error("certification database stage projection is not permitted");
   }
   const current = readCertificationDatabaseLifecycle({
     repositoryRoot,
     environment,
   });
-  assertDatabaseProjectionStateBinding(state, current);
-  assertDatabaseProjectionReadiness(current.evidence, stage);
+  if (stage === AUTH_SESSION_PREFLIGHT_DATABASE_STAGE) {
+    if (state !== null) {
+      throw new Error(
+        "auth-session preflight database projection cannot consume rehearsal state",
+      );
+    }
+    assertDatabaseProjectionPreflightBinding({
+      binding: preflightLifecycleBinding,
+      current,
+      authPreflightInvocationNonce,
+    });
+  } else {
+    if (preflightLifecycleBinding !== null || authPreflightInvocationNonce !== null) {
+      throw new Error(
+        "rehearsal database projection cannot consume auth-preflight bindings",
+      );
+    }
+    assertDatabaseProjectionStateBinding(state, current);
+  }
+  assertDatabaseProjectionReadiness(
+    current.evidence,
+    stage,
+    authPreflightInvocationNonce,
+  );
   const privateBinding = readPrivateDatabaseBinding(
     environment,
     current.evidence,
@@ -1390,6 +1864,16 @@ export function resolveCertificationDatabaseStageEnvironment({
       databaseIdentitySha256: current.binding.databaseIdentitySha256,
       lifecycleEvidenceSha256: current.binding.evidence.sha256,
       lifecycleState: current.binding.lifecycleState,
+      privateSidecarSha256: current.evidence.privateBinding.sidecarSha256,
+      scopedRoleIdentitySha256:
+        current.evidence.privateBinding.roleNameSha256,
+      scopedRoleClassification:
+        current.evidence.privateBinding.classification,
+      authPreflightInvocationNonceSha256:
+        stage === AUTH_SESSION_PREFLIGHT_DATABASE_STAGE
+          ? current.evidence.lifecycleProfile
+              .authPreflightInvocationNonceSha256
+          : null,
       stage,
     }),
   });

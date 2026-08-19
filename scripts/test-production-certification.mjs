@@ -237,7 +237,7 @@ function stateFixture() {
   assert.equal(contract.value.schema, "interior-ai.production-certification-stage-environment.v2");
   assert.equal(Object.keys(contract.variables).length, 95);
   assert.equal(Object.keys(contract.applicationFeatureVariables).length, 5);
-  assert.equal(Object.keys(contract.profiles).length, 21);
+  assert.equal(Object.keys(contract.profiles).length, 22);
   assert.deepEqual(
     contract.profiles["source-validation"].valuePolicies
       .FLOOR_PLAN_VISION_ENABLED,
@@ -1435,12 +1435,15 @@ function stateFixture() {
   const regressions = JSON.parse(
     readFileSync("scripts/production-certification-regressions.json", "utf8"),
   );
-  assert.equal(regressions.cases.length, 34);
+  assert.equal(regressions.cases.length, 35);
   assert.deepEqual(
     regressions.cases.map((entry) => entry.id),
-    Array.from({ length: 34 }, (_, index) => index + 1),
+    Array.from({ length: 35 }, (_, index) => index + 1),
   );
-  assert.equal(new Set(regressions.cases.map((entry) => entry.defect)).size, 34);
+  assert.equal(new Set(regressions.cases.map((entry) => entry.defect)).size, 35);
+  assert.equal(regressions.authPreflightDatabaseCases.length, 27);
+  assert.equal(new Set(regressions.authPreflightDatabaseCases).size, 27);
+  coveredRegressionIds.add(35);
   assert.equal(regressions.dependencyLifecycleCases.length, 26);
   assert.equal(new Set(regressions.dependencyLifecycleCases).size, 26);
   assert.equal(regressions.runtimeEvidenceRootCases.length, 21);
@@ -3231,7 +3234,7 @@ function stateFixture() {
 
 assert.deepEqual(
   [...coveredRegressionIds].sort((left, right) => left - right),
-  Array.from({ length: 34 }, (_, index) => index + 1),
+  Array.from({ length: 35 }, (_, index) => index + 1),
   "every documented regression must be exercised by an executable assertion",
 );
 

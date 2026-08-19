@@ -200,6 +200,7 @@ export function validateAuthResultContracts(repositoryRoot) {
     "scripts/ci-auth-fixture.ts",
     "scripts/run-ci-auth-fixture-real-preflight.mjs",
     "scripts/test-ci-auth-fixture-results.ts",
+    "scripts/test-production-certification-auth-preflight-database.mjs",
     "lib/auth-env.ts",
   ];
   const ownerHashes = Object.fromEntries(
@@ -223,6 +224,20 @@ export function validateAuthResultContracts(repositoryRoot) {
     path.join(repositoryRoot, "scripts/run-ci-auth-fixture-real-preflight.mjs"),
     "utf8",
   );
+  const databaseLifecycleSource = readFileSync(
+    path.join(
+      repositoryRoot,
+      "scripts/production-certification-database-lifecycle.mjs",
+    ),
+    "utf8",
+  );
+  const authDatabaseRegressionSource = readFileSync(
+    path.join(
+      repositoryRoot,
+      "scripts/test-production-certification-auth-preflight-database.mjs",
+    ),
+    "utf8",
+  );
   const qualificationSource = readFileSync(
     path.join(repositoryRoot, "scripts/production-certification.mjs"),
     "utf8",
@@ -243,6 +258,10 @@ export function validateAuthResultContracts(repositoryRoot) {
     "test:advisory-auth-preflight": "preflight-local",
     "test:ci-auth-fixture-real-preflight":
       "run-ci-auth-fixture-real-preflight.mjs",
+    "certification:auth-session-preflight":
+      "run-ci-auth-fixture-real-preflight.mjs",
+    "test:production-certification-auth-preflight-database":
+      "test-production-certification-auth-preflight-database.mjs",
     "ci:auth-fixture:result:validate":
       "ci-auth-fixture-result-contract.cjs validate",
     "test:ci-auth-fixture-results": "test-ci-auth-fixture-results.ts",
@@ -292,8 +311,44 @@ export function validateAuthResultContracts(repositoryRoot) {
     !realPreflightSource.includes(
       'assert.equal(evidence.sessionRequest.safeBodyType, "null")',
     ) ||
+    /\b(?:SELECT|INSERT|UPDATE|DELETE|CREATE|ALTER|DROP|GRANT|REVOKE|TRUNCATE|VACUUM|REINDEX)\b/i.test(
+      realPreflightSource,
+    ) ||
+    /\b(?:psql|createdb|dropdb|pg_dump|pg_restore)\b|\.(?:query|execute)\s*\(|\bsql\s*`|(?:from|require\s*\()\s*["'](?:pg|postgres|postgres\.js)["']/i.test(
+      realPreflightSource,
+    ) ||
+    /pg_terminate_backend|\bDATABASE_URL\b|postgres(?:ql)?:\/\/|\bnew\s+URL\s*\(|\bURL\.(?:parse|canParse)\s*\(|\burl\.(?:parse|format|resolve)\s*\(|\.(?:href|hostname|pathname|password|username|protocol)\s*=/i.test(
+      realPreflightSource,
+    ) ||
+    !realPreflightSource.includes(
+      "prepareAuthSessionPreflightDatabaseLifecycle",
+    ) ||
+    !realPreflightSource.includes(
+      "completeAuthSessionPreflightDatabaseLifecycle",
+    ) ||
+    !realPreflightSource.includes(
+      "abortAuthSessionPreflightDatabaseLifecycle",
+    ) ||
+    !realPreflightSource.includes("projectCertificationChildEnvironment") ||
+    !databaseLifecycleSource.includes(
+      "AUTH_SESSION_PREFLIGHT_DATABASE_CLASSIFICATIONS",
+    ) ||
+    !databaseLifecycleSource.includes(
+      "createAuthSessionPreflightDatabaseBinding",
+    ) ||
+    !databaseLifecycleSource.includes(
+      "resolveCertificationDatabaseStageEnvironment",
+    ) ||
+    !contractSource.includes(
+      "Auth preflight success lacks complete database prerequisite and cleanup proof",
+    ) ||
+    !authDatabaseRegressionSource.includes("scoped role collision") ||
+    !authDatabaseRegressionSource.includes("beforePrivateSidecarPublish") ||
     !qualificationSource.includes('"test:auth-env-hardening"') ||
-    !qualificationSource.includes('"test:ci-auth-fixture-real-preflight"')
+    !qualificationSource.includes('"test:ci-auth-fixture-real-preflight"') ||
+    !qualificationSource.includes(
+      '"scripts/test-production-certification-auth-preflight-database.mjs"',
+    )
   ) {
     throw new Error("canonical auth result schema, validator, or no-leak policy is incomplete");
   }
@@ -333,6 +388,11 @@ export function validateAuthResultContracts(repositoryRoot) {
     proseSuccessAuthority: false,
     arbitraryNonzeroExpectedNegativeAccepted: false,
     sessionServerResponseEvidenceRetained: true,
+    authPreflightDatabaseLifecycleCanonical: true,
+    authPreflightScopedRoleAdminCapabilities: false,
+    authPreflightPortableRawDatabaseValues: false,
+    authPreflightDatabaseDroppedBeforeSuccess: true,
+    rehearsalDatabaseIndependent: true,
     workflowFailureResultsValidated: true,
     rawAuthMaterialPortable: false,
     ownerHashes,
@@ -1280,6 +1340,7 @@ function validateStageEnvironmentCapabilities(repositoryRoot, environment) {
     throw new Error("all 19 source checks must declare source-validation profiles");
   }
   const sourceProfile = contract.profiles["source-validation"];
+  const authPreflightProfile = contract.profiles["auth-session-preflight"];
   const runtimeProfile = contract.profiles["runtime-smoke"];
   const phase8Profile = contract.profiles.phase8;
   const productionBrowser = contract.profiles["production-browser-owner"];
@@ -1289,6 +1350,7 @@ function validateStageEnvironmentCapabilities(repositoryRoot, environment) {
   const databaseVariable = contract.variables.DATABASE_URL;
   const expectedDatabaseProfiles = [
     "artifact-product-server",
+    "auth-session-preflight",
     "build",
     "development-browser-owner",
     "development-browser-owner-discovery",
@@ -1447,6 +1509,18 @@ function validateStageEnvironmentCapabilities(repositoryRoot, environment) {
   if (
     !sourceProfile.parentOnlyVariables.includes("CERTIFICATION_EVIDENCE_ROOT") ||
     sourceProfile.childVisibleVariables.includes("CERTIFICATION_EVIDENCE_ROOT") ||
+    JSON.stringify(authPreflightProfile?.stages) !==
+      JSON.stringify(["auth-session-preflight"]) ||
+    JSON.stringify(authPreflightProfile?.childVisibleVariables) !==
+      JSON.stringify(["DATABASE_URL"]) ||
+    JSON.stringify(authPreflightProfile?.requiredVariables) !==
+      JSON.stringify(["DATABASE_URL"]) ||
+    !authPreflightProfile?.parentOnlyVariables.includes(
+      "CERTIFICATION_DATABASE_ADMIN_URL",
+    ) ||
+    !authPreflightProfile?.parentOnlyVariables.includes(
+      "CERTIFICATION_DATABASE_LIFECYCLE_PATH",
+    ) ||
     sourceProfile.childVisibleVariables.some((name) =>
       new Set([
         "CERTIFICATION_RUNTIME_START_MARKER_PATH",
@@ -1535,10 +1609,18 @@ function validateStageEnvironmentCapabilities(repositoryRoot, environment) {
     !CERTIFICATION_HARNESS_SOURCE_PATHS.includes(
       "scripts/test-production-certification-source-database-projection.mjs",
     ) ||
+    !CERTIFICATION_HARNESS_SOURCE_PATHS.includes(
+      "scripts/test-production-certification-auth-preflight-database.mjs",
+    ) ||
     !regressionMatrix.cases.some(
       (entry) =>
         entry.defect === "source-validation-database-environment-projection",
     ) ||
+    !regressionMatrix.cases.some(
+      (entry) =>
+        entry.defect === "auth-session-preflight-database-lifecycle-bridge",
+    ) ||
+    regressionMatrix.authPreflightDatabaseCases?.length !== 27 ||
     !/externalVisionEnabled, false/.test(floorPlanLocalOcrTest) ||
     /process\.env|delete\s+process\.env/.test(floorPlanLocalOcrTest) ||
     !/externalVisionEnabled:\s*environment\.FLOOR_PLAN_VISION_ENABLED === "1"/.test(

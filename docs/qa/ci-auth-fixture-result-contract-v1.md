@@ -1,5 +1,39 @@
 # CI Auth Fixture Command Result Contract v1
 
+## Auth-preflight database prerequisite binding
+
+The real canonical `auth-session-preflight` result now adds safe
+`interior-ai.ci-auth-fixture-database-prerequisite-evidence.v1` evidence. It
+contains only lifecycle/database/nonce/sidecar/role hashes, the explicit
+preflight-only classifications, plan/provision/migration/initial-verification
+results, scoped-role classification, projection/admin-capability result,
+auth-server result, final inspection, normal-or-abort cleanup, role removal,
+drop, absence, original-failure retention, non-rehabilitation, and completion.
+It never stores a raw database name, URL, password, admin connection, sidecar
+path, SQL, cookie, or session value.
+
+The real result is composed only after the inner auth command result is
+validated and the database lifecycle reaches normal `absence-verified` or
+failure-preserving `abort-absence-verified`. Success requires the database
+prerequisite, scoped projection, signed-out auth response, server cleanup,
+final empty inspection, scoped-role removal, exact drop, and absence proof all
+to pass. The standalone helper no longer generates database names, executes
+database SQL, terminates sessions, constructs `DATABASE_URL`, or chooses drop
+policy; source guards enforce that ownership boundary.
+
+Failure results are equally fail-closed: they validate only with abort cleanup,
+the original failure retained, `failedPreflightRehabilitated=false`, role
+removal, exact drop, final absence, and the complete lifecycle marker. The
+auth-server outcome remains independent, so a passed auth preflight followed
+by database-cleanup failure is not falsely relabeled as an auth failure. If
+canonical abort cannot prove absence, private recovery evidence is retained
+and no portable completion result is claimed.
+
+For this bounded database-lifecycle correction, final independent read-only
+review passed and exact clean committed-head qualification returned
+`QUALIFIED_FOR_FINAL_CANDIDATE_CERTIFICATION`. No rehearsal or final
+certification was run.
+
 ## Scope and preserved mapping
 
 This bounded correction is classified as

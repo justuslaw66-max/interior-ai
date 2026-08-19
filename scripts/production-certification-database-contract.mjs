@@ -34,6 +34,14 @@ export const PRODUCTION_CERTIFICATION_DATABASE_STAGE_BINDINGS = Object.freeze([
   "runtime-smoke",
   "browser-owners",
 ]);
+export const AUTH_SESSION_PREFLIGHT_DATABASE_STAGE =
+  "auth-session-preflight";
+export const AUTH_SESSION_PREFLIGHT_DATABASE_CLASSIFICATIONS = Object.freeze({
+  lifecycle: "AUTH_SESSION_PREFLIGHT_ONLY",
+  rehearsal: "NOT_REHEARSAL_DATABASE",
+  releaseCertification: "NOT_RELEASE_CERTIFICATION",
+  integration: "NOT_VALID_FOR_INTEGRATION",
+});
 
 const PROTECTED_DATABASE_NAMES = new Set([
   "postgres",
@@ -248,6 +256,38 @@ function hasState(evidence, state) {
   return evidence.events.some((entry) => entry.state === state);
 }
 
+export function databaseLifecycleRequiredStages(evidence) {
+  return evidence?.lifecycleProfile?.classification ===
+    AUTH_SESSION_PREFLIGHT_DATABASE_CLASSIFICATIONS.lifecycle
+    ? [AUTH_SESSION_PREFLIGHT_DATABASE_STAGE]
+    : [...PRODUCTION_CERTIFICATION_DATABASE_STAGE_BINDINGS];
+}
+
+function lifecycleProfileIssues(evidence) {
+  const profile = evidence.lifecycleProfile;
+  if (profile === undefined) return [];
+  if (
+    profile?.classification === "RELEASE_CERTIFICATION_DATABASE" &&
+    profile?.authPreflightInvocationNonceSha256 === null
+  ) {
+    return [];
+  }
+  if (
+    profile?.classification !==
+      AUTH_SESSION_PREFLIGHT_DATABASE_CLASSIFICATIONS.lifecycle ||
+    profile?.rehearsalClassification !==
+      AUTH_SESSION_PREFLIGHT_DATABASE_CLASSIFICATIONS.rehearsal ||
+    profile?.releaseCertificationClassification !==
+      AUTH_SESSION_PREFLIGHT_DATABASE_CLASSIFICATIONS.releaseCertification ||
+    profile?.integrationClassification !==
+      AUTH_SESSION_PREFLIGHT_DATABASE_CLASSIFICATIONS.integration ||
+    !isSha256(profile?.authPreflightInvocationNonceSha256)
+  ) {
+    return ["database lifecycle profile or auth-preflight invocation binding is malformed"];
+  }
+  return [];
+}
+
 function validRowInventory(inventory, { requireEmpty = false } = {}) {
   if (
     !inventory ||
@@ -288,6 +328,7 @@ function validSessionInventory(inventory, { requireEmpty = false } = {}) {
 
 function semanticEvidenceIssues(evidence) {
   const issues = [];
+  issues.push(...lifecycleProfileIssues(evidence));
   if (evidence.events[0]?.state !== "planned") {
     issues.push("database lifecycle must begin with planned");
   }
@@ -455,17 +496,23 @@ function semanticEvidenceIssues(evidence) {
   }
   const requiredStages = evidence.stageBindings?.requiredStages;
   const observedStages = evidence.stageBindings?.observed;
+  const expectedStages = databaseLifecycleRequiredStages(evidence);
+  const authPreflightNonceSha256 =
+    evidence.lifecycleProfile?.authPreflightInvocationNonceSha256 ?? null;
   if (
     JSON.stringify(requiredStages) !==
-      JSON.stringify(PRODUCTION_CERTIFICATION_DATABASE_STAGE_BINDINGS) ||
+      JSON.stringify(expectedStages) ||
     !Array.isArray(observedStages) ||
     new Set(observedStages?.map((binding) => binding?.stage)).size !==
       observedStages?.length ||
     observedStages?.some(
       (binding) =>
-        !PRODUCTION_CERTIFICATION_DATABASE_STAGE_BINDINGS.includes(binding?.stage) ||
+        !expectedStages.includes(binding?.stage) ||
         binding?.databaseIdentitySha256 !== evidence.database.identitySha256 ||
         binding?.databaseNameSha256 !== evidence.database.nameSha256 ||
+        (binding?.stage === AUTH_SESSION_PREFLIGHT_DATABASE_STAGE &&
+          binding?.authPreflightInvocationNonceSha256 !==
+            authPreflightNonceSha256) ||
         typeof binding?.boundAt !== "string" ||
         !Number.isFinite(Date.parse(binding.boundAt)),
     )
@@ -485,6 +532,9 @@ function semanticEvidenceIssues(evidence) {
               entry.details?.databaseIdentitySha256 ===
                 evidence.database.identitySha256 &&
               entry.details?.databaseNameSha256 === evidence.database.nameSha256 &&
+              (binding.stage !== AUTH_SESSION_PREFLIGHT_DATABASE_STAGE ||
+                entry.details?.authPreflightInvocationNonceSha256 ===
+                  authPreflightNonceSha256) &&
               entry.at === binding.boundAt,
           ),
       )

@@ -1,5 +1,60 @@
 # Production certification database lifecycle v1
 
+## Auth-session preflight-only lifecycle bridge
+
+The preserved failed preflight remains exactly
+`PRECONDITION_ORCHESTRATION_FAILURE` with
+`consumedSubstantiveGate=false`. It created no auth sidecar, database, state,
+worktree, build, archive, Phase 8, runtime, or browser evidence and is not
+resumed or reused. Its certification-infrastructure classifications are
+`AUTH_SESSION_PREFLIGHT_DATABASE_LIFECYCLE_BRIDGE_MISSING`,
+`AUTH_PREFLIGHT_DATABASE_STAGE_PROJECTION_OWNER_MISSING`, and
+`AUTH_PREFLIGHT_HANDWRITTEN_SQL_OWNERSHIP_DEFECT`.
+
+`auth-session-preflight` is now an explicit canonical database stage and
+lifecycle profile. Its lifecycle is classified `AUTH_SESSION_PREFLIGHT_ONLY`,
+`NOT_REHEARSAL_DATABASE`, `NOT_RELEASE_CERTIFICATION`, and
+`NOT_VALID_FOR_INTEGRATION`. The profile binds the auth invocation nonce hash,
+candidate commit/tree, generated database identity, lifecycle evidence,
+private sidecar hash, scoped-role hash/classification, and exact active stage.
+It cannot consume rehearsal state, and rehearsal stages cannot consume its
+preflight binding.
+
+`prepareAuthSessionPreflightDatabaseLifecycle` owns plan, live absence proof,
+exact provision, all current Prisma migrations, initial row/session
+verification, scoped non-admin role creation, private sidecar publication,
+stage binding, and validated projection. The server environment is then built
+through `projectCertificationChildEnvironment`; its sole database capability
+is the lifecycle-owned `DATABASE_URL`. Admin URL, lifecycle controls, role
+administration, session termination, and drop capabilities remain parent-only.
+Ambient `DATABASE_URL`, non-loopback, stale, cross-run, foreign, mismatched, or
+dropped projections fail closed.
+
+After the auth server stops, normal completion inspects final rows/sessions,
+removes the scoped role and sidecar, drops the exact target, and proves
+absence. Any auth, projection, publication, inspection, or normal-cleanup
+failure routes through the existing canonical abort owner, retains the
+original failure, records `failedRunRehabilitated=false`, terminates only exact
+target sessions, drops only the owned target, and proves absence. The later
+rehearsal database has a separate certification/candidate invocation and
+database identity and cannot be planned from this preflight lifecycle.
+
+The production helper and deterministic regression share the same exported
+orchestration sequence. The registered 27-case matrix drives
+server-before-listener, readiness, invalid-session, structured-result
+publication, active-session, normal-cleanup, and repeated-abort failures
+through that sequence. A database-cleanup failure after a successful auth
+response records the auth server as passed while still failing the overall
+result. Failed portable results require abort mode, original-failure retention,
+non-rehabilitation, scoped-role removal, exact drop, and terminal absence.
+When repeated abort cleanup cannot prove absence, the helper retains its
+private recovery root instead of deleting the lifecycle identity and sidecar;
+it removes that root only after terminal absence is verified.
+
+Final independent read-only review passed. Exact clean committed-head
+qualification returned `QUALIFIED_FOR_FINAL_CANDIDATE_CERTIFICATION`; a fresh
+rehearsal and immutable final certification remain pending.
+
 ## Runtime failed-state CAS and abort attribution correction — 2026-08-18
 
 The retained rehearsal ending `20260818T075947Z-5755043309d7` remains failed at

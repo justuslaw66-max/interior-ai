@@ -6,8 +6,8 @@
       "root": "scripts",
       "filePattern": "^test-.*\\.(?:js|mjs|ts)$",
       "classification": "risk-triggered",
-      "expectedFileCount": 270,
-      "expectedPathSha256": "238999ddeb79b855888f4a5764842617828d7e30190619c1e0131751815f95a4"
+      "expectedFileCount": 271,
+      "expectedPathSha256": "38590c4ebb388527f9b7235de5a98922edde78be03e41bdd5d7ad4f40aa6db58"
     },
     {
       "id": "browser-specs",
@@ -115,7 +115,7 @@
       "blocking": true,
       "command": "npm run test:production-artifact-evidence",
       "packageScript": "test:production-artifact-evidence",
-      "packageClosure": { "expectedScriptCount": 1, "expectedSha256": "c5853be2891c71b9cf28de0798d73b97952a989e11f30030a6385432ab50f83d" },
+      "packageClosure": { "expectedScriptCount": 1, "expectedSha256": "e8c6c6e65fb68a38ef412930c562b29a3f007ab653208c85e0b7bdaa9a7810e3" },
       "runner": "node",
       "requiredSources": [
         "playwright.config.ts",
@@ -161,6 +161,7 @@
         "scripts/test-production-certification.mjs",
         "scripts/test-production-certification-dependency-lifecycle.mjs",
         "scripts/test-production-certification-database-lifecycle.mjs",
+        "scripts/test-production-certification-auth-preflight-database.mjs",
         "scripts/test-production-certification-state-worktrees.mjs",
         "scripts/test-production-trace-archive-policy.mjs",
         "playwright.floor-plan-upload.config.ts",

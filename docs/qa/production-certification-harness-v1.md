@@ -1,5 +1,46 @@
 # Production Certification Harness v1
 
+## Auth-session preflight database correction
+
+The pre-correction stop remains
+`PRECONDITION_ORCHESTRATION_FAILURE` / `consumedSubstantiveGate=false` and is
+not repaired, reconciled, resumed, or reused. The bounded correction adds the
+explicit `auth-session-preflight` database stage, preflight-only invocation and
+database identity, canonical plan/provision/migrate/initial-verify/project/
+final-inspect/drop/absence orchestration, structured auth-result database
+evidence, and normal/abort cleanup. The auth helper retains auth sequencing and
+result ownership but contains no handwritten database SQL or connection URL.
+
+The exact helper orchestration path owns a 27-case fail-closed matrix,
+including server-before-listener, readiness, invalid-session,
+structured-result publication, active-session termination, normal-cleanup,
+and repeated-abort failures. Simulation parses the exact named-case result
+rather than inferring those claims from a generic success marker. Failure
+evidence requires original-failure retention, non-rehabilitation, role/drop/
+absence proof, and recovery-root retention whenever terminal absence cannot be
+proved.
+
+The focused regression owner is
+`test:production-certification-auth-preflight-database`; the focused real owner
+and canonical orchestration command are respectively
+`test:ci-auth-fixture-real-preflight` and
+`certification:auth-session-preflight`. Doctor, deterministic simulation, the
+production-certification contract gate, and committed-head qualification all
+register the bridge. Simulation remains ineligible for real certification and
+proves a distinct later rehearsal database identity. Required-test inventory
+is 27 gates and 394 classified sources.
+
+Final independent read-only review passed with no actionable finding. Exact
+clean committed-head qualification returned
+`QUALIFIED_FOR_FINAL_CANDIDATE_CERTIFICATION`; this is source qualification
+only and does not certify or promote an immutable release artifact.
+
+No product/auth endpoint behavior, Prisma schema/migration, dependency,
+lockfile, workflow, Phase 8 threshold, browser product assertion, runtime
+readiness, archive policy, or Floor Plan behavior changes. A fresh rehearsal,
+immutable final certification, integration, push, deployment, and CH-0015
+closure audit remain pending.
+
 ## Canonical auth command result channel — 2026-08-19
 
 The preserved channel-mapping result remains exactly

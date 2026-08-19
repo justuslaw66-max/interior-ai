@@ -298,6 +298,10 @@ export function initializeFixture(repositoryRoot, fixtureRoot) {
           "npx ts-node scripts/ci-auth-fixture.ts preflight-local",
         "test:ci-auth-fixture-real-preflight":
           "node scripts/run-ci-auth-fixture-real-preflight.mjs",
+        "certification:auth-session-preflight":
+          "node scripts/run-ci-auth-fixture-real-preflight.mjs",
+        "test:production-certification-auth-preflight-database":
+          "node scripts/test-production-certification-auth-preflight-database.mjs",
         "ci:auth-fixture:result:validate":
           "node scripts/ci-auth-fixture-result-contract.cjs validate",
         "test:ci-auth-fixture-results":
@@ -875,6 +879,43 @@ export async function runProductionCertificationSimulation({
     ["scripts/test-production-certification-database-lifecycle.mjs", "--contract-only"],
     repositoryRoot,
   );
+  const authPreflightDatabaseRegression = run(
+    process.execPath,
+    ["scripts/test-production-certification-auth-preflight-database.mjs"],
+    repositoryRoot,
+  );
+  const authPreflightDatabaseRegressionLine =
+    authPreflightDatabaseRegression
+      .split("\n")
+      .find((line) =>
+        line.startsWith("AUTH_PREFLIGHT_DATABASE_REGRESSION_RESULT "),
+      );
+  if (!authPreflightDatabaseRegressionLine) {
+    throw new Error("auth-preflight database regression result is missing");
+  }
+  const authPreflightDatabaseRegressionResult = JSON.parse(
+    authPreflightDatabaseRegressionLine.slice(
+      "AUTH_PREFLIGHT_DATABASE_REGRESSION_RESULT ".length,
+    ),
+  );
+  const expectedAuthPreflightDatabaseCases = JSON.parse(
+    readFileSync(
+      path.join(
+        repositoryRoot,
+        "scripts/production-certification-regressions.json",
+      ),
+      "utf8",
+    ),
+  ).authPreflightDatabaseCases;
+  if (
+    authPreflightDatabaseRegressionResult.schema !==
+      "interior-ai.production-certification-auth-preflight-database-regression.v1" ||
+    authPreflightDatabaseRegressionResult.passed !== true ||
+    JSON.stringify(authPreflightDatabaseRegressionResult.passedCases) !==
+      JSON.stringify(expectedAuthPreflightDatabaseCases)
+  ) {
+    throw new Error("auth-preflight database regression matrix is incomplete");
+  }
   const sourceDatabaseProjectionRegression = run(
     process.execPath,
     ["scripts/test-production-certification-source-database-projection.mjs"],
@@ -4231,6 +4272,29 @@ export async function runProductionCertificationSimulation({
       regressionPassed: authResultRegression.includes(
         "CI auth fixture structured-result tests passed",
       ),
+    },
+    authPreflightDatabaseLifecycle: {
+      classification: "AUTH_SESSION_PREFLIGHT_ONLY",
+      rehearsalClassification: "NOT_REHEARSAL_DATABASE",
+      releaseCertificationClassification: "NOT_RELEASE_CERTIFICATION",
+      integrationClassification: "NOT_VALID_FOR_INTEGRATION",
+      plannedAbsent: true,
+      provisionedMigratedAndInitialEmptyVerified: true,
+      scopedProjectionPassed: true,
+      normalDropAndAbsencePassed: true,
+      abortDropAndAbsencePassed: true,
+      helperFailureOrchestrationPassed:
+        authPreflightDatabaseRegressionResult.passedCases.filter((entry) =>
+          entry.startsWith("helper-"),
+        ).length === 9,
+      failureEvidenceFailClosed:
+        authPreflightDatabaseRegressionResult.passedCases.includes(
+          "failure-result-contract-tamper-rejected",
+        ),
+      crossRunDatabaseSidecarAndCapabilityTamperRejected: true,
+      separateLaterRehearsalDatabaseIdentity: true,
+      eligibleForRealCertification: false,
+      regressionPassed: authPreflightDatabaseRegressionResult.passed === true,
     },
     sourceDatabaseProjection: {
       actualRealRunnerPath: true,

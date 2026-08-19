@@ -106,6 +106,7 @@ function testDatabaseCapabilityIsolation() {
   const contract = stageEnvironmentContract(repositoryRoot);
   const expectedDatabaseProfiles = [
     "artifact-product-server",
+    "auth-session-preflight",
     "build",
     "development-browser-owner",
     "development-browser-owner-discovery",
@@ -124,6 +125,16 @@ function testDatabaseCapabilityIsolation() {
     .map(([profileId]) => profileId)
     .sort();
   assert.deepEqual(actualDatabaseProfiles, expectedDatabaseProfiles);
+  const authPreflight = contract.profiles["auth-session-preflight"];
+  assert.deepEqual(authPreflight.stages, ["auth-session-preflight"]);
+  assert.deepEqual(authPreflight.childVisibleVariables, ["DATABASE_URL"]);
+  assert.deepEqual(authPreflight.requiredVariables, ["DATABASE_URL"]);
+  assert.equal(
+    authPreflight.parentOnlyVariables.includes(
+      "CERTIFICATION_DATABASE_ADMIN_URL",
+    ),
+    true,
+  );
   for (const [profileId, profile] of Object.entries(contract.profiles)) {
     const stage = profile.stages[0];
     const projection = projected({

@@ -51,6 +51,10 @@ const COMMAND_MODES = Object.freeze({
     commandId: "test:advisory-auth-preflight",
     mode: "auth-session-preflight",
   }),
+  "real-preflight": Object.freeze({
+    commandId: "test:ci-auth-fixture-real-preflight",
+    mode: "auth-session-preflight",
+  }),
 });
 
 const RESULT_VALUES = new Set(["success", "expected-negative-pass", "failure"]);
@@ -322,6 +326,128 @@ function assertDescriptor(value, description) {
   }
 }
 
+function assertAuthPreflightDatabaseEvidence(evidence, resultClassification) {
+  assertExactKeys(
+    evidence,
+    [
+      "schema",
+      "classification",
+      "rehearsalClassification",
+      "releaseCertificationClassification",
+      "integrationClassification",
+      "stage",
+      "lifecycleIdentitySha256",
+      "databaseIdentitySha256",
+      "databaseNameSha256",
+      "authPreflightInvocationNonceSha256",
+      "projectionLifecycleEvidenceSha256",
+      "completionLifecycleEvidenceSha256",
+      "planResult",
+      "provisionResult",
+      "migrationResult",
+      "initialVerificationResult",
+      "scopedRoleClassification",
+      "scopedRoleIdentitySha256",
+      "connectionProjectionResult",
+      "adminCapabilities",
+      "authSessionServerPreflight",
+      "finalInspectionResult",
+      "cleanupMode",
+      "scopedRoleRemovalResult",
+      "dropResult",
+      "absenceResult",
+      "originalFailureRetained",
+      "failedPreflightRehabilitated",
+      "completionMarker",
+    ],
+    "Auth preflight database prerequisite",
+  );
+  const digestNames = [
+    "lifecycleIdentitySha256",
+    "databaseIdentitySha256",
+    "databaseNameSha256",
+    "authPreflightInvocationNonceSha256",
+    "projectionLifecycleEvidenceSha256",
+    "completionLifecycleEvidenceSha256",
+    "scopedRoleIdentitySha256",
+  ];
+  if (
+    evidence.schema !==
+      "interior-ai.ci-auth-fixture-database-prerequisite-evidence.v1" ||
+    evidence.classification !== "AUTH_SESSION_PREFLIGHT_ONLY" ||
+    evidence.rehearsalClassification !== "NOT_REHEARSAL_DATABASE" ||
+    evidence.releaseCertificationClassification !==
+      "NOT_RELEASE_CERTIFICATION" ||
+    evidence.integrationClassification !== "NOT_VALID_FOR_INTEGRATION" ||
+    evidence.stage !== "auth-session-preflight" ||
+    digestNames.some((name) => !SHA256_PATTERN.test(evidence[name])) ||
+    !new Set(["passed", "failed"]).has(evidence.planResult) ||
+    !new Set(["passed", "failed"]).has(evidence.provisionResult) ||
+    !new Set(["passed", "failed"]).has(evidence.migrationResult) ||
+    !new Set(["passed", "failed"]).has(evidence.initialVerificationResult) ||
+    evidence.scopedRoleClassification !== "private-stage-login-no-admin" ||
+    evidence.connectionProjectionResult !== "passed" ||
+    evidence.adminCapabilities !== false ||
+    !new Set(["passed", "failed"]).has(evidence.authSessionServerPreflight) ||
+    !new Set(["passed", "failed", "abort-inspected"]).has(
+      evidence.finalInspectionResult,
+    ) ||
+    !new Set(["normal", "abort"]).has(evidence.cleanupMode) ||
+    !new Set(["passed", "failed"]).has(evidence.scopedRoleRemovalResult) ||
+    !new Set(["passed", "failed"]).has(evidence.dropResult) ||
+    !new Set(["passed", "failed"]).has(evidence.absenceResult) ||
+    typeof evidence.originalFailureRetained !== "boolean" ||
+    typeof evidence.failedPreflightRehabilitated !== "boolean" ||
+    !new Set([
+      "AUTH_SESSION_PREFLIGHT_DATABASE_LIFECYCLE_COMPLETE",
+      "AUTH_SESSION_PREFLIGHT_DATABASE_LIFECYCLE_INCOMPLETE",
+    ]).has(evidence.completionMarker)
+  ) {
+    throw new Error("Auth preflight database prerequisite evidence is malformed");
+  }
+  if (
+    resultClassification === "success" &&
+    (evidence.planResult !== "passed" ||
+      evidence.provisionResult !== "passed" ||
+      evidence.migrationResult !== "passed" ||
+      evidence.initialVerificationResult !== "passed" ||
+      evidence.authSessionServerPreflight !== "passed" ||
+      evidence.finalInspectionResult !== "passed" ||
+      evidence.cleanupMode !== "normal" ||
+      evidence.scopedRoleRemovalResult !== "passed" ||
+      evidence.dropResult !== "passed" ||
+      evidence.absenceResult !== "passed" ||
+      evidence.originalFailureRetained !== false ||
+      evidence.failedPreflightRehabilitated !== false ||
+      evidence.completionMarker !==
+        "AUTH_SESSION_PREFLIGHT_DATABASE_LIFECYCLE_COMPLETE")
+  ) {
+    throw new Error(
+      "Auth preflight success lacks complete database prerequisite and cleanup proof",
+    );
+  }
+  if (
+    resultClassification === "failure" &&
+    (evidence.planResult !== "passed" ||
+      evidence.provisionResult !== "passed" ||
+      evidence.migrationResult !== "passed" ||
+      evidence.initialVerificationResult !== "passed" ||
+      evidence.cleanupMode !== "abort" ||
+      evidence.finalInspectionResult !== "abort-inspected" ||
+      evidence.scopedRoleRemovalResult !== "passed" ||
+      evidence.dropResult !== "passed" ||
+      evidence.absenceResult !== "passed" ||
+      evidence.originalFailureRetained !== true ||
+      evidence.failedPreflightRehabilitated !== false ||
+      evidence.completionMarker !==
+        "AUTH_SESSION_PREFLIGHT_DATABASE_LIFECYCLE_COMPLETE")
+  ) {
+    throw new Error(
+      "Auth preflight failure lacks retained failure and complete abort cleanup proof",
+    );
+  }
+}
+
 function assertModeEvidence(result, allowNonConsumableFailure = false) {
   const evidence = result.evidence;
   if (result.command.mode === "provider-fixture-export") {
@@ -554,9 +680,18 @@ function assertModeEvidence(result, allowNonConsumableFailure = false) {
     return;
   }
   if (result.command.mode === "auth-session-preflight") {
+    const realDatabasePreflight =
+      result.command.id === "test:ci-auth-fixture-real-preflight";
     assertExactKeys(
       evidence,
-      ["invocation", "server", "sessionRequest", "checks", "cleanup"],
+      [
+        "invocation",
+        "server",
+        "sessionRequest",
+        "checks",
+        "cleanup",
+        ...(realDatabasePreflight ? ["databasePrerequisite"] : []),
+      ],
       "Auth preflight evidence",
     );
     assertExactKeys(
@@ -577,7 +712,7 @@ function assertModeEvidence(result, allowNonConsumableFailure = false) {
       evidence.invocation.packageCommandId !== result.command.id ||
       evidence.invocation.executableClassification !== result.command.executable ||
       evidence.invocation.argvIdentitySha256 !==
-        sha256Bytes(`${result.command.argv[0]}\0${result.command.argv[1]}`) ||
+        sha256Bytes(result.command.argv.join("\0")) ||
       evidence.invocation.fixturePolicySha256 !==
         result.identity.fixturePolicy.sha256 ||
       evidence.invocation.authValidatorSha256 !==
@@ -822,6 +957,12 @@ function assertModeEvidence(result, allowNonConsumableFailure = false) {
         throw new Error("Auth preflight success lacks canonical session-response proof");
       }
     }
+    if (realDatabasePreflight) {
+      assertAuthPreflightDatabaseEvidence(
+        evidence.databasePrerequisite,
+        result.result,
+      );
+    }
     return;
   }
   throw new Error("Auth result mode is unknown or unsupported");
@@ -906,12 +1047,15 @@ function validateAuthCommandResultValue({
   ) {
     throw new Error("Auth result command or mode does not match this invocation");
   }
+  const realDatabasePreflight = commandEntry[0] === "real-preflight";
+  const expectedExecutable = realDatabasePreflight ? "node" : "node-ts-node";
+  const expectedArgv = realDatabasePreflight
+    ? ["scripts/run-ci-auth-fixture-real-preflight.mjs"]
+    : ["scripts/ci-auth-fixture.ts", commandEntry[0]];
   if (
-    result.command.executable !== "node-ts-node" ||
+    result.command.executable !== expectedExecutable ||
     !Array.isArray(result.command.argv) ||
-    result.command.argv.length !== 2 ||
-    result.command.argv[0] !== "scripts/ci-auth-fixture.ts" ||
-    result.command.argv[1] !== commandEntry[0]
+    JSON.stringify(result.command.argv) !== JSON.stringify(expectedArgv)
   ) {
     throw new Error("Auth result executable or argv identity is invalid");
   }
@@ -1157,6 +1301,7 @@ module.exports = Object.freeze({
   sha256Bytes,
   validateAuthCommandResult,
   validateAuthCommandResultValue,
+  validateAuthPreflightDatabaseEvidence: assertAuthPreflightDatabaseEvidence,
   writeAuthCommandResult,
 });
 

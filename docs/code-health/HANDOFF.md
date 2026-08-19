@@ -1,5 +1,67 @@
 # Code health audit handoff
 
+## Production certification auth-preflight database lifecycle — 2026-08-19
+
+Branch `fix/production-certification-auth-preflight-database-lifecycle` starts
+at exact commit `5267f9ddc8878a717ca8ea23dd62a057fe4f49fa`, tree
+`76dea6552540cef37bffef835ded655869979d21`, above unchanged local and tracking
+integration `2c567fd483877c7dcbd8fd23e3cd8cb316732c8c`, tree
+`50f9c5d6a6610990606fd9db9a27ba40200fca90`.
+
+The latest attempt remains exactly `PRECONDITION_ORCHESTRATION_FAILURE` with
+`consumedSubstantiveGate=false`; no artifact from it is resumed or reused. Its
+source classifications are
+`AUTH_SESSION_PREFLIGHT_DATABASE_LIFECYCLE_BRIDGE_MISSING`,
+`AUTH_PREFLIGHT_DATABASE_STAGE_PROJECTION_OWNER_MISSING`, and
+`AUTH_PREFLIGHT_HANDWRITTEN_SQL_OWNERSHIP_DEFECT`.
+
+The database contract now owns explicit `auth-session-preflight` and the four
+preflight-only/non-release classifications. The existing lifecycle/adapter
+owns absence, provision, all migrations, initial/final row and session
+inspection, scoped no-admin role, private binding, exact session release,
+role/sidecar removal, drop, absence, and abort cleanup. Its projection is bound
+to auth invocation nonce, commit/tree, lifecycle/database identity, sidecar and
+role hashes, loopback server classification, and active state. The auth server
+receives only the scoped database capability through the canonical stage
+projector; ambient/developer database values and admin lifecycle controls do
+not reach it.
+
+The real auth helper now delegates all database ownership and composes the v1
+structured auth result only after auth/server and database cleanup. Success
+requires final inspection, scoped-role removal, exact drop, and absence.
+Failures retain their original classification and cannot be rehabilitated by
+abort cleanup. Deterministic coverage includes stage/readiness, cross-run,
+candidate/database/sidecar/non-loopback/ambient/admin tampering, role collision,
+sidecar race, normal cleanup failure, exact-only abort, separate rehearsal
+identity, no-secret result validation, and helper SQL/URL source guards. The
+focused real test uses one task-owned local PostgreSQL database and always
+routes cleanup through the canonical lifecycle.
+
+Independent review found and the branch corrected five fail-closed gaps before
+commit: recovery evidence deletion after abort failure, permissive failed-result
+validation, incorrect auth-failed attribution after a passed auth response,
+unbound helper failure claims, and a spelling-specific URL guard. The helper's
+shared orchestration path now covers the exact 27 registered cases; simulation
+requires that complete case inventory. Repeated abort failure retains the
+private lifecycle root until exact absence can be recovered, and failed
+portable results require abort cleanup, original-failure retention,
+non-rehabilitation, role removal, drop, and absence.
+
+Final independent read-only review passed with no actionable finding. The
+exact clean committed head returned
+`QUALIFIED_FOR_FINAL_CANDIDATE_CERTIFICATION`; this remains source
+qualification only. A fresh rehearsal, immutable final certification,
+integration, push, deployment, and CH-0015 closure audit remain pending.
+
+Doctor, simulation, 27-gate/394-source truthfulness, auth-result, lifecycle,
+state/worktree/dependency, generated-output, archive/final, runtime-readiness,
+Phase 8, lint, typecheck, quality, architecture, syntax, and hygiene remain the
+qualification surface. This source qualification is not a rehearsal or final
+certification. No real production build, rehearsal, Phase 8 acceptance,
+runtime smoke, browser-owner matrix, Full E2E, final certification, integration,
+push, or deployment is authorized. A fresh rehearsal, immutable certification,
+integration, and CH-0015 closure audit remain pending.
+
 ## Production certification auth result channel — 2026-08-19
 
 Branch `fix/production-certification-auth-result-channel` starts from exact
