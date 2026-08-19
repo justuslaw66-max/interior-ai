@@ -72,7 +72,11 @@ database provisioning, Prisma, migration, dependency, lockfile, or workflow
 behavior is changed; only abort-result failure attribution is strengthened.
 Fresh rehearsal, immutable final certification, integration, push,
 deployment, and CH-0015 closure audit remain pending. Exact clean committed-
-head qualification is pending until this correction is committed.
+head qualification on implementation commit
+`fc75748cbe181e75fa2393bb161c76126f15cf53`, tree
+`2dd7c0da34e8ae7ab8bf68d2ccf9d5ece21bc355`, returned
+`QUALIFIED_FOR_FINAL_CANDIDATE_CERTIFICATION`; this documentation-only
+follow-up requires the same exact-head rerun before handoff.
 Independent read-only review returned **PASS** after verifying physical
 cleanup/spawn bindings, the producer privacy boundary, and unchanged
 auth/database result-channel owners.

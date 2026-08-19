@@ -30,9 +30,12 @@ product, Floor Plan, authentication endpoint, telemetry, model, archive,
 performance, runtime-readiness, database, Prisma, dependency, workflow, or
 Playwright product semantics. The named failed rehearsal remains immutable
 and unused. Independent read-only review returned **PASS** after its findings
-were corrected and rechecked. Clean committed-head qualification, fresh
-rehearsal, immutable final certification, integration, and CH-0015 closure
-audit remain pending.
+were corrected and rechecked. Clean committed-head qualification on
+`fc75748cbe181e75fa2393bb161c76126f15cf53` returned
+`QUALIFIED_FOR_FINAL_CANDIDATE_CERTIFICATION`; the documentation-only follow-up
+must receive the same exact-head rerun before handoff. Fresh rehearsal,
+immutable final certification, integration, and CH-0015 closure audit remain
+pending.
 
 ## Bounded runtime-smoke readiness and failed-state audit — 2026-08-18
 

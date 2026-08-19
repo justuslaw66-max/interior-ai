@@ -19,7 +19,10 @@ runtime-readiness, state/worktree/dependency, generated-output, archive/final,
 Phase 8, continuity, historical regression, code-quality, architecture,
 typecheck, zero-warning lint, tracked-artifact, and syntax/hygiene ownership
 remain in the existing qualification inventory. Exact clean committed-head
-qualification is pending until the correction is committed.
+qualification on implementation commit
+`fc75748cbe181e75fa2393bb161c76126f15cf53` returned
+`QUALIFIED_FOR_FINAL_CANDIDATE_CERTIFICATION`; the documentation-only follow-up
+requires the same exact-head rerun before handoff.
 The final independent read-only review returned **PASS** after all reported
 stage-result authority, privacy, process-binding, and database-ownership
 findings were corrected.
