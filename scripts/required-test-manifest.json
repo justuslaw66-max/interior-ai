@@ -6,8 +6,8 @@
       "root": "scripts",
       "filePattern": "^test-.*\\.(?:js|mjs|ts)$",
       "classification": "risk-triggered",
-      "expectedFileCount": 271,
-      "expectedPathSha256": "38590c4ebb388527f9b7235de5a98922edde78be03e41bdd5d7ad4f40aa6db58"
+      "expectedFileCount": 272,
+      "expectedPathSha256": "5ad10674bb500e3f7328d12847cee2f64921bbda9523334afb5ccecb83069456"
     },
     {
       "id": "browser-specs",
@@ -115,7 +115,7 @@
       "blocking": true,
       "command": "npm run test:production-artifact-evidence",
       "packageScript": "test:production-artifact-evidence",
-      "packageClosure": { "expectedScriptCount": 1, "expectedSha256": "e8c6c6e65fb68a38ef412930c562b29a3f007ab653208c85e0b7bdaa9a7810e3" },
+      "packageClosure": { "expectedScriptCount": 1, "expectedSha256": "6e916f61423606a6327c1d3829e063e27f405e3e3ab314a856b26dc8a56559a8" },
       "runner": "node",
       "requiredSources": [
         "playwright.config.ts",
@@ -137,6 +137,8 @@
         "scripts/production-certification-database-lifecycle.mjs",
         "scripts/production-certification-real.mjs",
         "scripts/production-certification-source-continuity.mjs",
+        "scripts/production-certification-stage-result-contract.mjs",
+        "scripts/production-certification-stage-result-consumer.mjs",
         "scripts/production-certification.mjs",
         "scripts/production-certification-simulation.mjs",
         "scripts/production-certification-stage-environment.mjs",
@@ -159,6 +161,7 @@
         "scripts/test-production-artifact-evidence.mjs",
         "scripts/test-production-archive-plan-evidence.mjs",
         "scripts/test-production-certification.mjs",
+        "scripts/test-production-certification-stage-result.mjs",
         "scripts/test-production-certification-dependency-lifecycle.mjs",
         "scripts/test-production-certification-database-lifecycle.mjs",
         "scripts/test-production-certification-auth-preflight-database.mjs",
@@ -197,6 +200,11 @@
         "id": "artifact.production-certification-harness-v1",
         "source": "scripts/test-production-certification.mjs",
         "marker": "Production certification harness tests passed."
+      },
+      {
+        "id": "artifact.production-certification-stage-result-consumer",
+        "source": "scripts/test-production-certification-stage-result.mjs",
+        "marker": "Production certification stage-result consumer tests passed."
       },
       {
         "id": "artifact.production-certification-transactional-state-worktrees",

@@ -1,5 +1,39 @@
 # Code health audit
 
+## Certification wrapper result framing contract gap — 2026-08-19
+
+The committed audit classification
+`COMMITTED_CERTIFICATION_STAGE_RESULT_CONSUMER_NOT_EXPOSED` is preserved. Its
+certification-infrastructure source defect is
+`CERTIFICATION_WRAPPER_RESULT_FRAMING_CONTRACT_GAP`: wrapper stdout mixed
+nested human/npm/Prisma logs with an unframed final JSON object and exposed no
+canonical committed parser. Backward searching for any parsable JSON could
+accept stale, competing, or malformed-tail output and is not a safe fix.
+
+The correction selects one versioned final stdout frame and one schema owner,
+plus an importable close-aware consumer and validation-only CLI. The consumer
+requires one final record, validates its aggregate and invocation identity,
+independently hashes the physical state and evidence, invokes the canonical
+state validator, and requires exact stage/attempt/status/classification/
+consumed/process agreement before returning the post-state SHA. The actual
+source-validation wrapper is exercised under deterministic qualification with
+the historical noisy prefix, all 19 checks, cleanup, and a pending build
+boundary. Failure and cleanup remain non-rehabilitating. Explicit cleanup
+returns the lifecycle-bound original failure rather than a retryable fallback;
+validation details are redacted and resealed before producer-side schema and
+privacy validation; non-stage and stage-precondition process/consumption
+fields are bound and re-aggregated tampering is rejected.
+
+Auth sidecars/private export and database-plan stdout ownership are unchanged;
+the archive child parser remains bounded to archive children. This changes no
+product, Floor Plan, authentication endpoint, telemetry, model, archive,
+performance, runtime-readiness, database, Prisma, dependency, workflow, or
+Playwright product semantics. The named failed rehearsal remains immutable
+and unused. Independent read-only review returned **PASS** after its findings
+were corrected and rechecked. Clean committed-head qualification, fresh
+rehearsal, immutable final certification, integration, and CH-0015 closure
+audit remain pending.
+
 ## Bounded runtime-smoke readiness and failed-state audit — 2026-08-18
 
 The immutable failed rehearsal

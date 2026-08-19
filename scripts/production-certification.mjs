@@ -12,6 +12,14 @@ import {
   readCertificationState,
 } from "./production-certification-state.mjs";
 import { projectCertificationChildEnvironment } from "./production-certification-stage-environment.mjs";
+import {
+  captureCertificationStageResultInvocation,
+  certificationStageResultSensitiveValues,
+  createCertificationStageCommandResult,
+  formatCertificationStageResult,
+  isCertificationStageResultCommand,
+  redactCertificationStageResultDiagnostic,
+} from "./production-certification-stage-result-contract.mjs";
 import { runCertificationResourcePreparation } from "./production-certification-resources.mjs";
 import { redactDatabaseLifecycleFailure } from "./production-certification-database-lifecycle.mjs";
 import {
@@ -154,6 +162,10 @@ function qualificationCommand() {
     [
       process.execPath,
       ["scripts/test-production-certification-stage-order.mjs"],
+    ],
+    [
+      process.execPath,
+      ["scripts/test-production-certification-stage-result.mjs"],
     ],
     [
       process.execPath,
@@ -313,8 +325,43 @@ async function cli() {
       issues: ["certification invocation mode is missing or malformed"],
     };
   }
-  console.log(JSON.stringify(result));
+  if (!isCertificationStageResultCommand(command)) {
+    console.log(JSON.stringify(result));
+  }
   if (result?.valid === false) process.exitCode = 1;
+  return result;
+}
+
+function emitQualificationNoisyOutputFixture(command) {
+  const fixture =
+    process.env.CERTIFICATION_STAGE_RESULT_NOISY_OUTPUT_FIXTURE?.trim();
+  if (!fixture) return;
+  if (
+    fixture !== "historical-source-validation-npm-prisma" ||
+    command !== "source-validation" ||
+    process.env.CERTIFICATION_EXECUTION_CLASS !== "deterministic-simulation" ||
+    process.env.CERTIFICATION_QUALIFICATION_MODE !== "1"
+  ) {
+    throw new Error(
+      "certification stage-result noisy-output fixture is restricted to source-validation qualification",
+    );
+  }
+  process.stdout.write(
+    [
+      "> interior-ai@0.1.0 certification:source-validation",
+      "> node scripts/production-certification.mjs source-validation",
+      "Prisma schema loaded from prisma/schema.prisma",
+      "Datasource db: PostgreSQL database certification_fixture",
+      "",
+    ].join("\n"),
+  );
+}
+
+function safeStageResultDiagnostic(error) {
+  return redactCertificationStageResultDiagnostic(
+    redactDatabaseLifecycleFailure(error),
+    certificationStageResultSensitiveValues(process.env),
+  );
 }
 
 export function createSerializedTerminalLifecycle({ runAbortCleanup }) {
@@ -326,8 +373,9 @@ export function createSerializedTerminalLifecycle({ runAbortCleanup }) {
     async execute(runCommand) {
       let commandError = null;
       let cleanupError = null;
+      let commandResult = null;
       try {
-        await runCommand();
+        commandResult = await runCommand();
       } catch (error) {
         commandError = error;
       }
@@ -338,7 +386,7 @@ export function createSerializedTerminalLifecycle({ runAbortCleanup }) {
           cleanupError = error;
         }
       }
-      return { terminalSignal, commandError, cleanupError };
+      return { terminalSignal, commandError, cleanupError, commandResult };
     },
   };
 }
@@ -466,6 +514,9 @@ export function createCertificationAbortCleanupRequest({
 
 if (import.meta.url === new URL(process.argv[1], "file:").href) {
   const command = process.argv[2] ?? "unknown";
+  const stageResultInvocation = captureCertificationStageResultInvocation({
+    command,
+  });
   const terminal = createSerializedTerminalLifecycle({
     runAbortCleanup: async ({ terminalSignal, commandError }) => {
       if (
@@ -490,24 +541,46 @@ if (import.meta.url === new URL(process.argv[1], "file:").href) {
   });
   process.once("SIGINT", () => terminal.requestSignal("SIGINT"));
   process.once("SIGTERM", () => terminal.requestSignal("SIGTERM"));
-  terminal.execute(cli).then(({ terminalSignal, commandError, cleanupError }) => {
+  emitQualificationNoisyOutputFixture(command);
+  terminal.execute(cli).then(({
+    terminalSignal,
+    commandError,
+    cleanupError,
+    commandResult,
+  }) => {
     if (cleanupError) {
       console.error(
-        `database abort cleanup failed without replacing the original failure: ${redactDatabaseLifecycleFailure(cleanupError)}`,
+        `database abort cleanup failed without replacing the original failure: ${safeStageResultDiagnostic(cleanupError)}`,
       );
     }
-    if (commandError?.certificationResult) {
-      console.log(JSON.stringify(commandError.certificationResult));
-    } else if (commandError) {
-      console.error(redactDatabaseLifecycleFailure(commandError));
+    if (commandError) {
+      console.error(safeStageResultDiagnostic(commandError));
     }
     if (terminalSignal) {
       process.exitCode = terminalSignal === "SIGINT" ? 130 : 143;
     } else if (commandError) {
       process.exitCode = 1;
     }
+    if (stageResultInvocation) {
+      try {
+        const result = createCertificationStageCommandResult({
+          invocation: stageResultInvocation,
+          commandResult,
+          commandError,
+          terminalSignal,
+          wrapperExitCode: process.exitCode ?? 0,
+          evidenceRoot: process.env.CERTIFICATION_EVIDENCE_ROOT,
+          sensitiveValues:
+            certificationStageResultSensitiveValues(process.env),
+        });
+        process.stdout.write(formatCertificationStageResult(result));
+      } catch (error) {
+        console.error(safeStageResultDiagnostic(error));
+        process.exitCode = 1;
+      }
+    }
   }).catch((error) => {
-    console.error(redactDatabaseLifecycleFailure(error));
+    console.error(safeStageResultDiagnostic(error));
     process.exitCode = 1;
   });
 }

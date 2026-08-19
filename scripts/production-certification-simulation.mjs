@@ -95,6 +95,13 @@ import {
 } from "./production-certification-real.mjs";
 import { validateCertificationStageOrderContracts } from "./production-certification-doctor.mjs";
 import { validateCertificationResourcePreparation } from "./production-certification-resources.mjs";
+import {
+  runCertificationStageCommand,
+} from "./production-certification-stage-result-consumer.mjs";
+import {
+  certificationStageResultContractIdentity,
+  parseCertificationStageResult,
+} from "./production-certification-stage-result-contract.mjs";
 
 const SIMULATION_ID = "production-certification-v1-simulation";
 const FIXED_NONCE = "123e4567-e89b-42d3-a456-426614174001";
@@ -306,6 +313,10 @@ export function initializeFixture(repositoryRoot, fixtureRoot) {
           "node scripts/ci-auth-fixture-result-contract.cjs validate",
         "test:ci-auth-fixture-results":
           "npx ts-node scripts/test-ci-auth-fixture-results.ts",
+        "test:production-certification-stage-result":
+          "node scripts/test-production-certification-stage-result.mjs",
+        "certification:stage-result:validate":
+          "node scripts/production-certification-stage-result-consumer.mjs validate",
       },
       dependencies: {
         "simulation-fixture": "file:simulation-fixture-1.0.0.tgz",
@@ -864,6 +875,24 @@ export async function runProductionCertificationSimulation({
   cleanupWorktrees = true,
 } = {}) {
   const repositoryRoot = process.cwd();
+  const stageResultRegression = run(
+    process.execPath,
+    ["scripts/test-production-certification-stage-result.mjs"],
+    repositoryRoot,
+  );
+  const stageResultRegressionLine = stageResultRegression
+    .split("\n")
+    .find((line) =>
+      line.startsWith("CERTIFICATION_STAGE_RESULT_REGRESSION_RESULT "),
+    );
+  if (!stageResultRegressionLine) {
+    throw new Error("certification stage-result regression result is missing");
+  }
+  const stageResultRegressionValue = JSON.parse(
+    stageResultRegressionLine.slice(
+      "CERTIFICATION_STAGE_RESULT_REGRESSION_RESULT ".length,
+    ),
+  );
   const authResultRegression = run(
     "npm",
     ["run", "test:ci-auth-fixture-results"],
@@ -1047,16 +1076,29 @@ export async function runProductionCertificationSimulation({
   );
   let missingParentDoctorResult = null;
   try {
-    missingParentDoctorResult = JSON.parse(missingParentDoctor.stdout.trim());
+    missingParentDoctorResult = parseCertificationStageResult(
+      missingParentDoctor.stdout,
+    );
   } catch {
     // The assertion below reports one canonical retry-contract failure.
   }
+  const failedDoctorState = readCertificationState(statePath);
+  const missingParentDoctorEvidence = JSON.parse(
+    readFileSync(
+      path.join(
+        evidenceRoot,
+        failedDoctorState.evidenceFiles.doctor?.path ?? "missing-doctor-evidence",
+      ),
+      "utf8",
+    ),
+  );
   if (
     missingParentDoctor.status === 0 ||
     missingParentDoctor.signal ||
-    missingParentDoctorResult?.valid !== false ||
-    missingParentDoctorResult?.seal?.algorithm !== "sha256" ||
-    !missingParentDoctorResult.issues.some((issue) =>
+    missingParentDoctorResult?.result !== "failed" ||
+    missingParentDoctorEvidence?.valid !== false ||
+    missingParentDoctorEvidence?.seal?.algorithm !== "sha256" ||
+    !missingParentDoctorEvidence.issues.some((issue) =>
       issue.includes("parent directory must already exist"),
     )
   ) {
@@ -1066,7 +1108,6 @@ export async function runProductionCertificationSimulation({
       ).trim()}`,
     );
   }
-  const failedDoctorState = readCertificationState(statePath);
   const preparationEnvironment = {
     ...doctorEnvironment,
     CERTIFICATION_EXPECTED_STATE_SHA256:
@@ -1074,7 +1115,7 @@ export async function runProductionCertificationSimulation({
     CERTIFICATION_RESOURCE_PREPARATION_STARTED_AT: nextTimestamp(),
     CERTIFICATION_RESOURCE_PREPARATION_COMPLETED_AT: nextTimestamp(),
   };
-  const preparation = JSON.parse(
+  const preparation = parseCertificationStageResult(
     run(
       process.execPath,
       ["scripts/production-certification.mjs", "prepare-resources"],
@@ -1085,7 +1126,7 @@ export async function runProductionCertificationSimulation({
   const preparedState = readCertificationState(statePath);
   if (
     preparation.valid !== true ||
-    preparation.idempotent !== false ||
+    preparation.details.idempotent !== false ||
     preparedState.resourcePreparation === null ||
     preparedState.resourcePlan.destinations.some((destination) => {
       const target = path.join(evidenceRoot, destination.portableRelativePath);
@@ -1098,7 +1139,7 @@ export async function runProductionCertificationSimulation({
   ) {
     throw new Error("canonical resource preparation did not retain absent targets");
   }
-  const idempotentPreparation = JSON.parse(
+  const idempotentPreparation = parseCertificationStageResult(
     run(
       process.execPath,
       ["scripts/production-certification.mjs", "prepare-resources"],
@@ -1111,8 +1152,11 @@ export async function runProductionCertificationSimulation({
     ),
   );
   if (
-    idempotentPreparation.idempotent !== true ||
-    idempotentPreparation.evidence.sha256 !== preparation.evidence.sha256
+    idempotentPreparation.details.idempotent !== true ||
+    idempotentPreparation.details.evidence.sha256 !==
+      preparation.details.evidence.sha256 ||
+    idempotentPreparation.transition.preStateSha256 !==
+      idempotentPreparation.transition.postStateSha256
   ) {
     throw new Error("canonical resource preparation is not idempotent");
   }
@@ -1154,11 +1198,24 @@ export async function runProductionCertificationSimulation({
       encoding: "utf8",
     },
   );
+  const omittedPreparationFrame = parseCertificationStageResult(
+    omittedPreparationDoctor.stdout,
+  );
+  const omittedPreparationState = readCertificationState(
+    omittedPreparationStatePath,
+  );
   const omittedPreparationResult = JSON.parse(
-    omittedPreparationDoctor.stdout.trim(),
+    readFileSync(
+      path.join(
+        omittedPreparationRoot,
+        omittedPreparationState.evidenceFiles.doctor.path,
+      ),
+      "utf8",
+    ),
   );
   const omittedPreparationRejected =
     omittedPreparationDoctor.status !== 0 &&
+    omittedPreparationFrame.result === "failed" &&
     omittedPreparationResult.valid === false &&
     omittedPreparationResult.issues.some((issue) =>
       issue.includes("resource preparation evidence is missing"),
@@ -1204,9 +1261,22 @@ export async function runProductionCertificationSimulation({
       encoding: "utf8",
     },
   );
-  const staleTargetResult = JSON.parse(staleTargetDoctor.stdout.trim());
+  const staleTargetFrame = parseCertificationStageResult(
+    staleTargetDoctor.stdout,
+  );
+  const staleTargetState = readCertificationState(statePath);
+  const staleTargetResult = JSON.parse(
+    readFileSync(
+      path.join(
+        evidenceRoot,
+        staleTargetState.evidenceFiles.doctor.path,
+      ),
+      "utf8",
+    ),
+  );
   const targetAfterPreparationRejected =
     staleTargetDoctor.status !== 0 &&
+    staleTargetFrame.result === "failed" &&
     staleTargetResult.valid === false &&
     staleTargetResult.issues.some((issue) =>
       /must (?:not already exist|remain absent)/.test(issue),
@@ -1997,12 +2067,15 @@ export async function runProductionCertificationSimulation({
       "exact source real-runner regression did not begin from stale-null state",
     );
   }
-  run(
-    process.execPath,
-    ["scripts/production-certification.mjs", "source-validation"],
-    fixtureRoot,
-    {
+  const successfulSourceConsumption = await runCertificationStageCommand({
+    command: "source-validation",
+    repositoryRoot: fixtureRoot,
+    environment: {
       ...doctorEnvironment,
+      CERTIFICATION_STAGE_RESULT_NONCE:
+        "simulation-source-stage-result-0001",
+      CERTIFICATION_STAGE_RESULT_NOISY_OUTPUT_FIXTURE:
+        "historical-source-validation-npm-prisma",
       CERTIFICATION_STAGE_STARTED_AT: nextTimestamp(),
       CERTIFICATION_STAGE_COMPLETED_AT: nextTimestamp(),
       CERTIFICATION_SOURCE_VALIDATION_FIXTURE_LOG: path.join(
@@ -2010,7 +2083,19 @@ export async function runProductionCertificationSimulation({
         "source-validation-invocations.log",
       ),
     },
-  );
+  });
+  if (
+    !successfulSourceConsumption.stdout.includes(
+      "> interior-ai@0.1.0 certification:source-validation",
+    ) ||
+    !successfulSourceConsumption.stdout.includes(
+      "Prisma schema loaded from prisma/schema.prisma",
+    )
+  ) {
+    throw new Error(
+      "exact source-validation wrapper did not retain historical npm/Prisma logs",
+    );
+  }
   const sourceCheckIds = sourceValidationCheckSet(fixtureRoot).checks.map(
     (check) => check.id,
   );
@@ -2025,6 +2110,9 @@ export async function runProductionCertificationSimulation({
     throw new Error("simulation source-validation did not invoke the canonical check closure");
   }
   state = readCertificationState(statePath);
+  const successfulSourceBuildBoundaryPending =
+    state.stages["source-validation"].status === "passed" &&
+    state.stages.build.status === "pending";
   const successfulSourceBinding =
     state.worktrees.roles["source-validation"];
   if (
@@ -3945,7 +4033,9 @@ export async function runProductionCertificationSimulation({
   const tamperStateBytesAfterValidation = readFileSync(tamperStatePath);
   let tamperValidationReport = null;
   try {
-    tamperValidationReport = JSON.parse(tamperValidation.stdout.trim());
+    tamperValidationReport = parseCertificationStageResult(
+      tamperValidation.stdout,
+    ).details?.validationReport;
   } catch {
     // The assertion below reports a single transactional-validation failure.
   }
@@ -4241,6 +4331,14 @@ export async function runProductionCertificationSimulation({
         sha256Bytes(canonicalJsonBytes(CERTIFICATION_STAGE_ORDER)),
     },
     archiveDeterministic: true,
+    stageResultContract: {
+      ...certificationStageResultContractIdentity(),
+      regressionPassed: stageResultRegressionValue.passed === true,
+      caseCount: stageResultRegressionValue.passedCases.length,
+      exactSourceValidationNoisyOutput: true,
+      exactNextStateSha256: successfulSourceConsumption.nextStateSha256,
+      buildBoundaryPending: successfulSourceBuildBoundaryPending,
+    },
     sourceValidationCheckCount: sourceCheckIds.length,
     generatedOutputLifecycle: {
       schema:

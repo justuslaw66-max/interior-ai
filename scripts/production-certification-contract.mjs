@@ -223,10 +223,13 @@ export const CERTIFICATION_HARNESS_SOURCE_PATHS = Object.freeze([
   "scripts/build-floor-plan-upload-browser-fixture.mjs",
   "scripts/guest-save-overlay-ts-loader.mjs",
   "scripts/production-certification.mjs",
+  "scripts/production-certification-stage-result-contract.mjs",
+  "scripts/production-certification-stage-result-consumer.mjs",
   "scripts/production-certification-simulation.mjs",
   "scripts/production-certification-stage-environment.mjs",
   "scripts/production-certification-worktrees.mjs",
   "scripts/test-production-certification.mjs",
+  "scripts/test-production-certification-stage-result.mjs",
   "scripts/test-production-certification-state-worktrees.mjs",
   "scripts/test-production-certification-dependency-lifecycle.mjs",
   "scripts/test-production-certification-build-generated-output.mjs",
@@ -310,6 +313,12 @@ export function productionCertificationContract(repositoryRoot) {
       "interior-ai.production-certification-database-lifecycle.v1" ||
     contract?.databaseLifecycle?.canonicalOwner !==
       "scripts/production-certification-database-lifecycle.mjs" ||
+    contract?.stageCommandResult?.schema !==
+      "interior-ai.production-certification-stage-command-result.v1" ||
+    contract?.stageCommandResult?.canonicalOwner !==
+      "scripts/production-certification-stage-result-contract.mjs" ||
+    contract?.stageCommandResult?.canonicalConsumer !==
+      "scripts/production-certification-stage-result-consumer.mjs" ||
     contract?.continuity?.schema !==
       "interior-ai.production-certification-continuity-contract.v1"
   ) {

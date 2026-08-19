@@ -54,6 +54,7 @@ import {
 } from "./playwright-report-path.mjs";
 import { createRuntimeSmokeTimingEvidenceBinding } from "./runtime-smoke-phase-budget.mjs";
 import {
+  certificationStageEvidenceFiles,
   completeCertificationStage,
   bindCertificationWorktreeDependencies,
   certificationStateSha256,
@@ -121,6 +122,14 @@ const DEFAULT_JOURNAL =
   ".local/production-artifact-evidence/semantic-event-journal.json";
 const RUNTIME_COMMAND =
   "npx playwright test tests/e2e/00-runtime-smoke.spec.ts --project=chromium";
+const CHILD_SPAWN_ERROR_EXIT_CODE = 255;
+
+function normalizedChildExitCode(status) {
+  if (!Number.isSafeInteger(status)) return 1;
+  return status === CHILD_SPAWN_ERROR_EXIT_CODE
+    ? CHILD_SPAWN_ERROR_EXIT_CODE - 1
+    : status;
+}
 
 class StageFailure extends Error {
   constructor(
@@ -135,6 +144,7 @@ class StageFailure extends Error {
       stage = null,
       stageAttempt = null,
       failedStateSha256 = null,
+      spawnErrorClassification = null,
     } = {},
   ) {
     super(message);
@@ -147,6 +157,7 @@ class StageFailure extends Error {
     this.stage = stage;
     this.stageAttempt = stageAttempt;
     this.failedStateSha256 = failedStateSha256;
+    this.spawnErrorClassification = spawnErrorClassification;
   }
 }
 
@@ -903,7 +914,10 @@ export function assertCertificationChildPassed(
   consumed,
 ) {
   if (child.error) {
-    throw new StageFailure(message, "INFRASTRUCTURE_TRANSIENT", false);
+    throw new StageFailure(message, "INFRASTRUCTURE_TRANSIENT", false, {
+      exitCode: CHILD_SPAWN_ERROR_EXIT_CODE,
+      spawnErrorClassification: "child-spawn-error",
+    });
   }
   if (child.signal) {
     throw new StageFailure(message, "INFRASTRUCTURE_TRANSIENT", consumed, {
@@ -913,7 +927,7 @@ export function assertCertificationChildPassed(
   }
   if (child.status !== 0 || child.signal) {
     throw new StageFailure(message, classification, consumed, {
-      exitCode: Number.isSafeInteger(child.status) ? child.status : 1,
+      exitCode: normalizedChildExitCode(child.status),
     });
   }
 }
@@ -1239,6 +1253,7 @@ export function certificationStageFailure(
       stage: error.stage,
       stageAttempt: error.stageAttempt,
       failedStateSha256: error.failedStateSha256,
+      spawnErrorClassification: error.spawnErrorClassification,
     });
   }
   return new StageFailure(
@@ -1477,7 +1492,10 @@ export async function runDoctorStage({
         doctor.issues.join("; "),
         "PRECONDITION_ORCHESTRATION_FAILURE",
         false,
-        { result: doctor },
+        {
+          result: doctor,
+          evidenceFiles: { doctor: descriptor },
+        },
       );
     }
     return {
@@ -1601,22 +1619,97 @@ export async function runDatabaseAbortCleanup({
   repositoryRoot = process.cwd(),
   environment = process.env,
   originalFailure = null,
+  adapter = null,
 } = {}) {
   const context = stateContext(repositoryRoot, environment, {
     command: "database:abort-cleanup",
   });
-  requireDatabaseLifecycleBinding(context);
+  const lifecycleBeforeCleanup = requireDatabaseLifecycleBinding(context);
+  const failedStages = CERTIFICATION_STAGE_ORDER.filter(
+    (stage) => context.state.stages?.[stage]?.status === "failed",
+  );
+  if (failedStages.length > 1) {
+    throw new InvocationFailure(
+      "database abort cleanup found multiple physical failed stages",
+    );
+  }
+  const failedStage = failedStages[0] ?? null;
+  const failedAttempt = failedStage
+    ? context.state.stages[failedStage].attempts.at(-1)
+    : null;
+  const physicalFailure = failedStage
+    ? {
+        classification: failedAttempt.failureClassification,
+        stage: failedStage,
+        attempt: failedAttempt.number,
+        consumedSubstantiveGate: failedAttempt.consumedSubstantiveGate,
+        failedStateSha256: certificationStateSha256(context.state),
+        evidenceReferences: certificationStageEvidenceFiles(
+          context.state,
+          failedStage,
+        ),
+      }
+    : null;
+  if (
+    physicalFailure &&
+    originalFailure &&
+    JSON.stringify(originalFailure) !== JSON.stringify(physicalFailure)
+  ) {
+    throw new InvocationFailure(
+      "database abort cleanup original failure differs from the physical failed stage",
+    );
+  }
+  const retainedFailure =
+    physicalFailure ??
+    originalFailure ??
+    (lifecycleBeforeCleanup?.evidence?.failure
+      ? {
+          classification: lifecycleBeforeCleanup.evidence.failure.classification,
+          stage: lifecycleBeforeCleanup.evidence.failure.originalStage,
+          attempt: lifecycleBeforeCleanup.evidence.failure.attempt,
+          consumedSubstantiveGate:
+            lifecycleBeforeCleanup.evidence.failure.consumedSubstantiveGate,
+          failedStateSha256:
+            lifecycleBeforeCleanup.evidence.failure.failedStateSha256,
+          evidenceReferences:
+            lifecycleBeforeCleanup.evidence.failure.evidenceReferences,
+        }
+      : null);
+  const wrapperOwnedFailure = retainedFailure ?? {
+    classification: "PRECONDITION_ORCHESTRATION_FAILURE",
+    stage: "database-abort-cleanup",
+    attempt: null,
+    consumedSubstantiveGate: false,
+    failedStateSha256: null,
+    evidenceReferences: {},
+  };
   const result = await runDatabaseLifecycleTransition(context, () =>
     abortCertificationDatabase({
       repositoryRoot,
       environment,
-      originalFailure,
+      originalFailure: wrapperOwnedFailure,
+      adapter,
     }),
   );
+  const authoritativeFailure = result.evidence.failure;
   return {
     valid: false,
+    classification: authoritativeFailure.classification,
+    consumedSubstantiveGate:
+      authoritativeFailure.consumedSubstantiveGate,
     lifecycleState: result.evidence.currentState,
     originalFailureRetained: true,
+    originalFailure: {
+      classification: authoritativeFailure.classification,
+      originalStage: authoritativeFailure.originalStage,
+      attempt: authoritativeFailure.attempt,
+      consumedSubstantiveGate:
+        authoritativeFailure.consumedSubstantiveGate,
+      failedStateSha256: authoritativeFailure.failedStateSha256,
+      evidenceReferences: structuredClone(
+        authoritativeFailure.evidenceReferences ?? {},
+      ),
+    },
     failedRunRehabilitated: false,
     targetAbsent: true,
     evidenceSha256: result.descriptor.sha256,
@@ -2154,8 +2247,13 @@ export async function runBuildStage({
           "INFRASTRUCTURE_TRANSIENT",
           consumed,
           {
-            exitCode: child.signal ? null : 1,
+            exitCode: child.signal
+              ? null
+              : CHILD_SPAWN_ERROR_EXIT_CODE,
             signal: child.signal ?? null,
+            spawnErrorClassification: child.error
+              ? "child-spawn-error"
+              : null,
           },
         );
       }
@@ -2163,7 +2261,7 @@ export async function runBuildStage({
         "strict production build failed",
         consumed ? "BUILD_FAILURE" : "PRECONDITION_ORCHESTRATION_FAILURE",
         consumed,
-        { exitCode: child.status },
+        { exitCode: normalizedChildExitCode(child.status) },
       );
     }
     buildConsumed = true;
@@ -2396,7 +2494,11 @@ export function archivePlanStageFailure(child, retained) {
     {
       exitCode: child.signal
         ? null
-        : (retained.evidence.process.exitStatus ?? 1),
+        : child.error
+          ? CHILD_SPAWN_ERROR_EXIT_CODE
+          : normalizedChildExitCode(
+              retained.evidence.process.exitStatus ?? 1,
+            ),
       signal: child.signal ?? null,
       result: {
         valid: false,
@@ -2408,6 +2510,7 @@ export function archivePlanStageFailure(child, retained) {
         archivePlanEvidence: retained.descriptor,
       },
       evidenceFiles: { "archive-plan": retained.descriptor },
+      spawnErrorClassification: child.error ? "child-spawn-error" : null,
     },
   );
 }
@@ -2697,7 +2800,15 @@ export async function runPhase8Stage(options = {}) {
           "Phase 8 acceptance gate infrastructure failed",
           "INFRASTRUCTURE_TRANSIENT",
           substantiveStarted,
-          { exitCode: child.signal ? null : 1, signal: child.signal ?? null },
+          {
+            exitCode: child.signal
+              ? null
+              : CHILD_SPAWN_ERROR_EXIT_CODE,
+            signal: child.signal ?? null,
+            spawnErrorClassification: child.error
+              ? "child-spawn-error"
+              : null,
+          },
         );
       }
       throw new StageFailure(
@@ -2706,7 +2817,7 @@ export async function runPhase8Stage(options = {}) {
           ? "PERFORMANCE_GATE_FAILURE"
           : "PRECONDITION_ORCHESTRATION_FAILURE",
         substantiveStarted,
-        { exitCode: child.status },
+        { exitCode: normalizedChildExitCode(child.status) },
       );
     }
     childCompleted = true;
@@ -2988,9 +3099,14 @@ export async function runRuntimeSmokeStage(options = {}) {
           "INFRASTRUCTURE_TRANSIENT",
           substantiveStarted,
           {
-            exitCode: child.signal ? null : 1,
+            exitCode: child.signal
+              ? null
+              : CHILD_SPAWN_ERROR_EXIT_CODE,
             signal: child.signal ?? null,
             evidenceFiles,
+            spawnErrorClassification: child.error
+              ? "child-spawn-error"
+              : null,
           },
         );
       }
@@ -3000,7 +3116,10 @@ export async function runRuntimeSmokeStage(options = {}) {
           ? "PRODUCT_ASSERTION_FAILURE"
           : "PRECONDITION_ORCHESTRATION_FAILURE",
         substantiveStarted,
-        { exitCode: child.status, evidenceFiles },
+        {
+          exitCode: normalizedChildExitCode(child.status),
+          evidenceFiles,
+        },
       );
     }
     childCompleted = true;
@@ -3499,7 +3618,15 @@ export async function runBrowserOwnersStage(options = {}) {
             `required browser owner infrastructure failed: ${input.owner.id}`,
             "INFRASTRUCTURE_TRANSIENT",
             consumed,
-            { exitCode: child.signal ? null : 1, signal: child.signal ?? null },
+            {
+              exitCode: child.signal
+                ? null
+                : CHILD_SPAWN_ERROR_EXIT_CODE,
+              signal: child.signal ?? null,
+              spawnErrorClassification: child.error
+                ? "child-spawn-error"
+                : null,
+            },
           );
         }
         throw new StageFailure(
@@ -3508,7 +3635,7 @@ export async function runBrowserOwnersStage(options = {}) {
             ? "PRODUCT_ASSERTION_FAILURE"
             : "PRECONDITION_ORCHESTRATION_FAILURE",
           consumed,
-          { exitCode: child.status },
+          { exitCode: normalizedChildExitCode(child.status) },
         );
       }
       consumed = true;

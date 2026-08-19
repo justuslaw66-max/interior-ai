@@ -38,6 +38,7 @@ import {
 import { runProductionCertificationSimulation } from "./production-certification-simulation.mjs";
 import { validateSourceValidationEvidence } from "./production-certification-source-continuity.mjs";
 import { projectCertificationChildEnvironment } from "./production-certification-stage-environment.mjs";
+import { parseCertificationStageResult } from "./production-certification-stage-result-contract.mjs";
 import {
   certificationStateSha256,
   createCertificationInvalidationPlan,
@@ -660,12 +661,24 @@ async function transactionalValidationMatrix() {
       invocationEnvironment,
     );
     assert.notEqual(child.status, 0, `${testCase.name} must fail closed`);
-    const result = JSON.parse(child.stdout.trim());
-    assert.equal(
-      result.classification,
-      testCase.classification ?? "PRECONDITION_ORCHESTRATION_FAILURE",
-    );
-    assert.equal(result.consumedSubstantiveGate, false);
+    if (testCase.name === "missing-state-path") {
+      assert.equal(child.stdout, "");
+      assert.match(child.stderr, /unsupported|requires|state/i);
+    } else if (testCase.command === "state:validate:unknown") {
+      const result = JSON.parse(child.stdout.trim());
+      assert.equal(
+        result.classification,
+        "PRECONDITION_ORCHESTRATION_FAILURE",
+      );
+      assert.equal(result.consumedSubstantiveGate, false);
+    } else {
+      const result = parseCertificationStageResult(child.stdout);
+      assert.equal(
+        result.classification,
+        testCase.classification ?? "PRECONDITION_ORCHESTRATION_FAILURE",
+      );
+      assert.equal(result.consumedSubstantiveGate, false);
+    }
     const afterBytes = readFileSync(statePath);
     assert.equal(afterBytes.equals(baselineBytes), true, testCase.name);
     assert.equal(sha256Bytes(afterBytes), baselineSha256, testCase.name);
@@ -695,13 +708,15 @@ async function transactionalValidationMatrix() {
     CERTIFICATION_EXPECTED_STATE_SHA256: baselineSha256,
   });
   assert.notEqual(unsealedPlanChild.status, 0, "unsealed plan must fail closed");
-  const unsealedPlanResult = JSON.parse(unsealedPlanChild.stdout.trim());
+  const unsealedPlanResult = parseCertificationStageResult(
+    unsealedPlanChild.stdout,
+  );
   assert.equal(
     unsealedPlanResult.classification,
     "PRECONDITION_ORCHESTRATION_FAILURE",
   );
   assert.equal(unsealedPlanResult.consumedSubstantiveGate, false);
-  assert.match(unsealedPlanResult.issues.join("\n"), /seal is missing or malformed/);
+  assert.match(unsealedPlanChild.stderr, /seal is missing or malformed/);
   assert.equal(readFileSync(statePath).equals(baselineBytes), true);
   assert.equal(sha256Bytes(readFileSync(statePath)), baselineSha256);
   assert.equal(

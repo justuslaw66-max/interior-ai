@@ -1,5 +1,54 @@
 # Code health audit handoff
 
+## Production certification stage-result consumer — 2026-08-19
+
+Branch `fix/production-certification-stage-result-consumer` starts at exact
+commit `36d3e5d32bd5eb100230e9a97de5102659469a1e`, tree
+`ec1704c1ff7e893695582891f0c46aa352589de7`, with parent
+`5267f9ddc8878a717ca8ea23dd62a057fe4f49fa`; unchanged local and tracking
+integration remain `2c567fd483877c7dcbd8fd23e3cd8cb316732c8c`, tree
+`50f9c5d6a6610990606fd9db9a27ba40200fca90`.
+
+The preserved audit is
+`COMMITTED_CERTIFICATION_STAGE_RESULT_CONSUMER_NOT_EXPOSED`; source
+classification is `CERTIFICATION_WRAPPER_RESULT_FRAMING_CONTRACT_GAP`. The
+failed rehearsal
+`REHEARSAL_ONLY-NOT_RELEASE_CERTIFICATION-NOT_VALID_FOR_INTEGRATION-CERT-20260819T072721Z-2635f1cc6d80`
+remains immutable and unused.
+
+One v1 final-record prefix and one result schema now cover all 26 real,
+state-backed top-level wrapper commands. The canonical consumer waits for
+process/stream close, retains stdout/stderr as logs, rejects ambiguous framing,
+rehashes and validates physical state/evidence, matches stage/attempt/nonce/
+classification/consumed/process identity, and returns the exact next-state
+SHA. State/evidence durability precedes the frame; database abort cleanup
+cannot replace the original stage result. Explicit cleanup retains and binds
+the original failure; validation details are redacted/resealed and the full
+result is checked before publication; non-stage/precondition consumption and
+spawn semantics are state-bound. The archive backward JSON search is
+unchanged and not imported by the new owner/consumer.
+
+Focused validation passes 24/24 framing/state/evidence cases. Deterministic
+simulation passes with the actual source-validation wrapper, historical npm/
+Prisma log prefix, all 19 checks, generated-output cleanup, exact state-SHA
+propagation, pending build boundary, truthful consumed failure, cleanup, and
+integration-ready simulation. Required-test inventory is 27 gates / 395
+classified sources with 272 script-test paths at
+`5ad10674bb500e3f7328d12847cee2f64921bbda9523334afb5ccecb83069456`.
+Auth structured sidecars/private `GITHUB_ENV` and database-plan canonical JSON
+remain unchanged.
+
+No real build, rehearsal, Phase 8, runtime smoke, browser-owner matrix, Full
+E2E, final certification, integration, push, deployment, product, database,
+schema/migration, dependency, or lockfile change is part of this correction.
+The final independent read-only review returned **PASS** after three passes:
+it found and verified corrections for retained cleanup authority,
+producer-side privacy/resealing, non-stage/precondition binding, unchanged
+database lifecycle ownership, physically bound spawn classification, and the
+adapter-backed real cleanup owner. Exact clean committed-head qualification is
+pending at this record point; a fresh rehearsal, immutable certification,
+integration, and closure audit remain pending.
+
 ## Production certification auth-preflight database lifecycle — 2026-08-19
 
 Branch `fix/production-certification-auth-preflight-database-lifecycle` starts

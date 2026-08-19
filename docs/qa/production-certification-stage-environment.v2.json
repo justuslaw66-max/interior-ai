@@ -71,6 +71,8 @@
     "CERTIFICATION_STAGE_ENVIRONMENT_CONTRACT_SHA256": { "owner": "stage environment projector", "classification": "stage-contract-identity", "portable": true, "secret": false, "presenceChangesBehavior": false },
     "CERTIFICATION_STAGE_ENVIRONMENT_PROFILE_ID": { "owner": "stage environment projector", "classification": "stage-profile-identity", "portable": true, "secret": false, "presenceChangesBehavior": false },
     "CERTIFICATION_STAGE_ENVIRONMENT_PROFILE_SHA256": { "owner": "stage environment projector", "classification": "stage-profile-identity", "portable": true, "secret": false, "presenceChangesBehavior": false },
+    "CERTIFICATION_STAGE_RESULT_NONCE": { "owner": "certification stage-result consumer", "classification": "parent-invocation-identity", "portable": true, "secret": false, "presenceChangesBehavior": false },
+    "CERTIFICATION_STAGE_RESULT_NOISY_OUTPUT_FIXTURE": { "owner": "certification qualification", "classification": "qualification-fixture", "portable": true, "secret": false, "presenceChangesBehavior": true },
     "CERTIFICATION_STAGE_STARTED_AT": { "owner": "certification state transition", "classification": "simulation-clock", "portable": true, "secret": false, "presenceChangesBehavior": true },
     "CERTIFICATION_WORKTREE_ROOT": { "owner": "certification stage-worktree owner", "classification": "parent-physical-root", "portable": false, "secret": false, "presenceChangesBehavior": true },
     "PHASE8_BASE_URL": { "owner": "Phase 8 browser benchmark", "classification": "phase8-activation-input", "portable": true, "secret": false, "presenceChangesBehavior": true },

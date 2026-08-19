@@ -1,5 +1,29 @@
 # Required-test truthfulness
 
+## Certification stage-result consumer inventory — 2026-08-19
+
+The existing merge-required `ci.production-artifact-contract` gate directly
+executes `scripts/test-production-certification-stage-result.mjs`; no new gate,
+cadence, workflow, browser project, retry, skip, allowance, or suppression is
+added. The classified closure adds the canonical result contract, consumer,
+and focused test. Direct validation reports **27 gates / 395 classified test
+sources**. The risk-triggered `script-tests` inventory is **272** paths with
+path-set SHA-256
+`5ad10674bb500e3f7328d12847cee2f64921bbda9523334afb5ccecb83069456`.
+
+The required contribution is the executable 24-case framing/state/evidence
+matrix. The committed qualifier invokes it directly and through the existing
+production-artifact owner, then runs deterministic simulation using the real
+source-validation wrapper/consumer. Auth-result, database lifecycle,
+runtime-readiness, state/worktree/dependency, generated-output, archive/final,
+Phase 8, continuity, historical regression, code-quality, architecture,
+typecheck, zero-warning lint, tracked-artifact, and syntax/hygiene ownership
+remain in the existing qualification inventory. Exact clean committed-head
+qualification is pending until the correction is committed.
+The final independent read-only review returned **PASS** after all reported
+stage-result authority, privacy, process-binding, and database-ownership
+findings were corrected.
+
 ## Real-runner stage-order regression inventory — 2026-08-18
 
 The bounded source-validation database projection correction adds

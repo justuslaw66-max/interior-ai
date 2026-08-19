@@ -38,12 +38,16 @@ import {
 } from "./production-certification-database-lifecycle.mjs";
 import {
   certificationStateSha256,
+  completeCertificationStage,
   createCertificationState,
+  readCertificationState,
   replaceCertificationDatabaseLifecycle,
+  startCertificationStage,
   writeCertificationState,
 } from "./production-certification-state.mjs";
 import {
   reconcileCertificationDatabaseLifecycleState,
+  runDatabaseAbortCleanup,
 } from "./production-certification-real.mjs";
 import {
   createSerializedTerminalLifecycle,
@@ -1141,6 +1145,95 @@ async function deterministicContractCoverage() {
     assert.equal(serialized.includes("postgresql://"), false);
   } finally {
     rmSync(runtimeFailureFixture.root, { recursive: true, force: true });
+  }
+
+  const wrapperCleanupFixture = fixture({ id: "wrapper-cleanup-original-failure" });
+  const wrapperCleanupAdapter = new FakeDatabaseAdapter();
+  try {
+    await planCertificationDatabase({
+      repositoryRoot,
+      environment: wrapperCleanupFixture.environment,
+      adapter: wrapperCleanupAdapter,
+      nonce: "9".repeat(32),
+      qualificationFixture: true,
+    });
+    await provisionCertificationDatabase({
+      repositoryRoot,
+      environment: wrapperCleanupFixture.environment,
+      adapter: wrapperCleanupAdapter,
+    });
+    const active = await verifyInitialCertificationDatabase({
+      repositoryRoot,
+      environment: wrapperCleanupFixture.environment,
+      adapter: wrapperCleanupAdapter,
+    });
+    const statePath = path.join(wrapperCleanupFixture.root, "state.json");
+    const baseTime = Date.parse(active.binding.updatedAt);
+    const baseState = createCertificationState({
+      certificationId:
+        wrapperCleanupFixture.environment.PRODUCTION_CERTIFICATION_ID,
+      candidateId:
+        wrapperCleanupFixture.environment.PRODUCTION_EVIDENCE_CANDIDATE_ID,
+      commitSha,
+      treeSha,
+      parentSha: git("HEAD^"),
+      harnessSourceSha256: "9".repeat(64),
+      executionClass: "real-candidate",
+      createdAt: new Date(baseTime).toISOString(),
+    });
+    const boundState = replaceCertificationDatabaseLifecycle(
+      baseState,
+      active.binding,
+    );
+    const runningState = startCertificationStage(boundState, {
+      stage: "doctor",
+      startedAt: new Date(baseTime + 1).toISOString(),
+    });
+    const failedState = completeCertificationStage(runningState, {
+      stage: "doctor",
+      passed: false,
+      completedAt: new Date(baseTime + 2).toISOString(),
+      exitCode: 17,
+      failureClassification: "SOURCE_CONTRACT_FAILURE",
+      consumedSubstantiveGate: true,
+    });
+    writeCertificationState(statePath, failedState, { requireAbsent: true });
+    wrapperCleanupFixture.environment.PRODUCTION_CERTIFICATION_STATE = statePath;
+    const failedStateSha256 = certificationStateSha256(failedState);
+    const cleanup = await runDatabaseAbortCleanup({
+      repositoryRoot,
+      environment: wrapperCleanupFixture.environment,
+      adapter: wrapperCleanupAdapter,
+    });
+    assert.equal(cleanup.classification, "SOURCE_CONTRACT_FAILURE");
+    assert.equal(cleanup.consumedSubstantiveGate, true);
+    assert.deepEqual(cleanup.originalFailure, {
+      classification: "SOURCE_CONTRACT_FAILURE",
+      originalStage: "doctor",
+      attempt: 1,
+      consumedSubstantiveGate: true,
+      failedStateSha256,
+      evidenceReferences: {},
+    });
+    const cleanedState = readCertificationState(statePath);
+    assert.equal(
+      cleanedState.databaseLifecycle.lifecycleState,
+      "abort-absence-verified",
+    );
+    const retainedLifecycle = readCertificationDatabaseLifecycle({
+      repositoryRoot,
+      environment: wrapperCleanupFixture.environment,
+    });
+    assert.equal(
+      retainedLifecycle.evidence.failure.failedStateSha256,
+      failedStateSha256,
+    );
+    assert.equal(
+      retainedLifecycle.evidence.failure.consumedSubstantiveGate,
+      true,
+    );
+  } finally {
+    rmSync(wrapperCleanupFixture.root, { recursive: true, force: true });
   }
 
   const checkpointFixture = fixture({ id: "abort-checkpoint" });

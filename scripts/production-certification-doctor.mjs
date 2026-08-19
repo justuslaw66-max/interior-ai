@@ -27,6 +27,7 @@ import {
   isCandidateId,
   isSourceSha,
   continuityContract,
+  productionCertificationContract,
   sourceValidationCheckSet,
   sha256Bytes,
 } from "./production-certification-contract.mjs";
@@ -56,6 +57,12 @@ import {
   resolveCertificationStageWorktree,
 } from "./production-certification-worktrees.mjs";
 import authResultContract from "./ci-auth-fixture-result-contract.cjs";
+import {
+  PRODUCTION_CERTIFICATION_STAGE_RESULT_COMMANDS,
+  PRODUCTION_CERTIFICATION_STAGE_RESULT_PREFIX,
+  PRODUCTION_CERTIFICATION_STAGE_RESULT_SCHEMA,
+  certificationStageResultContractIdentity,
+} from "./production-certification-stage-result-contract.mjs";
 
 const REQUIRED_APPLICATION_ENVIRONMENT_NAMES = Object.freeze([
   "CERTIFICATION_DATABASE_ADMIN_URL",
@@ -191,6 +198,122 @@ export function assertFileBackedOwner(repositoryRoot, relativePath) {
     throw new Error(`${relativePath} permits data URL, eval, or stdin execution`);
   }
   return { sourceSha256: sha256Bytes(source) };
+}
+
+export function validateCertificationStageResultContracts(repositoryRoot) {
+  const ownerPath =
+    "scripts/production-certification-stage-result-contract.mjs";
+  const consumerPath =
+    "scripts/production-certification-stage-result-consumer.mjs";
+  const wrapperPath = "scripts/production-certification.mjs";
+  const testPath = "scripts/test-production-certification-stage-result.mjs";
+  const simulationPath = "scripts/production-certification-simulation.mjs";
+  for (const relativePath of [
+    ownerPath,
+    consumerPath,
+    wrapperPath,
+    testPath,
+    simulationPath,
+  ]) {
+    assertFileBackedOwner(repositoryRoot, relativePath);
+  }
+  const owner = readFileSync(path.join(repositoryRoot, ownerPath), "utf8");
+  const consumer = readFileSync(path.join(repositoryRoot, consumerPath), "utf8");
+  const wrapper = readFileSync(path.join(repositoryRoot, wrapperPath), "utf8");
+  const test = readFileSync(path.join(repositoryRoot, testPath), "utf8");
+  const simulation = readFileSync(path.join(repositoryRoot, simulationPath), "utf8");
+  const packageJson = JSON.parse(
+    readFileSync(path.join(repositoryRoot, "package.json"), "utf8"),
+  );
+  const matrix = productionCertificationContract(repositoryRoot).value;
+  const schemaOwners = readdirSync(path.join(repositoryRoot, "scripts"))
+    .filter((name) => name.endsWith(".mjs"))
+    .filter((name) =>
+      /^export const PRODUCTION_CERTIFICATION_STAGE_RESULT_SCHEMA\s*=/m.test(
+        readFileSync(path.join(repositoryRoot, "scripts", name), "utf8"),
+      ),
+    );
+  if (
+    JSON.stringify(schemaOwners) !==
+      JSON.stringify(["production-certification-stage-result-contract.mjs"]) ||
+    matrix.stageCommandResult.schema !==
+      PRODUCTION_CERTIFICATION_STAGE_RESULT_SCHEMA ||
+    matrix.stageCommandResult.prefix !==
+      PRODUCTION_CERTIFICATION_STAGE_RESULT_PREFIX ||
+    matrix.stageCommandResult.canonicalOwner !== ownerPath ||
+    matrix.stageCommandResult.canonicalConsumer !== consumerPath ||
+    !owner.includes("parseCertificationStageResult") ||
+    !owner.includes("validateCertificationStageResult") ||
+    !consumer.includes("runCertificationStageCommand") ||
+    !consumer.includes("validateCertificationStageResultFile") ||
+    /parseCertificationChildJson|parseLastJson|\.reverse\(\)/.test(consumer) ||
+    !wrapper.includes("formatCertificationStageResult") ||
+    !wrapper.includes("createCertificationStageCommandResult") ||
+    wrapper.includes(
+      "console.log(JSON.stringify(commandError.certificationResult))",
+    ) ||
+    !wrapper.includes("if (!isCertificationStageResultCommand(command))") ||
+    !test.includes("multiple competing") ||
+    !test.includes("final non-empty") ||
+    !test.includes("passed-source-check-failure-rejected") ||
+    !test.includes("real-source-wrapper-consumer-build-boundary-registered") ||
+    !simulation.includes("runCertificationStageCommand") ||
+    !simulation.includes("historical-source-validation-npm-prisma") ||
+    !simulation.includes("exactNextStateSha256") ||
+    packageJson.scripts["test:production-certification-stage-result"] !==
+      "node scripts/test-production-certification-stage-result.mjs" ||
+    packageJson.scripts["certification:stage-result:validate"] !==
+      "node scripts/production-certification-stage-result-consumer.mjs validate" ||
+    !CERTIFICATION_HARNESS_SOURCE_PATHS.includes(ownerPath) ||
+    !CERTIFICATION_HARNESS_SOURCE_PATHS.includes(consumerPath) ||
+    !CERTIFICATION_HARNESS_SOURCE_PATHS.includes(testPath)
+  ) {
+    throw new Error(
+      "canonical certification stage-result producer/consumer contract is incoherent",
+    );
+  }
+  const dispatched = PRODUCTION_CERTIFICATION_STAGE_RESULT_COMMANDS.filter(
+    (command) =>
+      wrapper.includes(`command === ${JSON.stringify(command)}`) ||
+      command === "resume",
+  );
+  if (
+    JSON.stringify(dispatched) !==
+    JSON.stringify(PRODUCTION_CERTIFICATION_STAGE_RESULT_COMMANDS)
+  ) {
+    throw new Error("a required top-level stage wrapper lacks canonical framing");
+  }
+  const realRunner = readFileSync(
+    path.join(repositoryRoot, "scripts/production-certification-real.mjs"),
+    "utf8",
+  );
+  if (
+    !realRunner.includes("export function parseCertificationChildJson") ||
+    consumer.includes("production-certification-real.mjs") ||
+    owner.includes("production-certification-real.mjs")
+  ) {
+    throw new Error(
+      "archive backward JSON parser ownership escaped into stage-result framing",
+    );
+  }
+  const auth = validateAuthResultContracts(repositoryRoot);
+  if (
+    auth.schema !== "interior-ai.ci-auth-fixture-command-result.v1" ||
+    matrix.databaseLifecycle.canonicalOwner !==
+      "scripts/production-certification-database-lifecycle.mjs"
+  ) {
+    throw new Error("auth or database result-channel ownership changed");
+  }
+  return {
+    ...certificationStageResultContractIdentity(),
+    transport: "final-framed-stdout-record",
+    commandCount: PRODUCTION_CERTIFICATION_STAGE_RESULT_COMMANDS.length,
+    canonicalOwner: ownerPath,
+    canonicalConsumer: consumerPath,
+    physicalStateAndEvidenceValidation: true,
+    archiveBackwardSearchReused: false,
+    taskDriverCopiedParserRequired: false,
+  };
 }
 
 export function validateAuthResultContracts(repositoryRoot) {
@@ -1742,6 +1865,8 @@ export async function runCertificationDoctor({
   check(checks, issues, "schema-and-mode-compatibility", () => validateContracts(root));
   check(checks, issues, "auth-result-contract", () =>
     validateAuthResultContracts(root));
+  check(checks, issues, "stage-result-contract", () =>
+    validateCertificationStageResultContracts(root));
   check(checks, issues, "stage-order-import-coherence", () =>
     validateCertificationStageOrderContracts(root));
   check(checks, issues, "dependency-lifecycle-order", () =>

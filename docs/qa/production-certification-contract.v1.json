@@ -25,6 +25,23 @@
     "stalePlanPolicy": "reject without changing state",
     "missingOrMalformedStatePolicy": "fail without creating or rewriting state"
   },
+  "stageCommandResult": {
+    "schema": "interior-ai.production-certification-stage-command-result.v1",
+    "version": 1,
+    "canonicalOwner": "scripts/production-certification-stage-result-contract.mjs",
+    "canonicalConsumer": "scripts/production-certification-stage-result-consumer.mjs",
+    "validationCommand": "npm run certification:stage-result:validate -- --stdout <log> --state <state> --evidence-root <root> --command <id> --nonce <nonce> --pre-state-sha <sha-or-null>",
+    "transport": "final-framed-stdout-record",
+    "prefix": "INTERIOR_AI_CERTIFICATION_STAGE_RESULT_V1 ",
+    "framingPolicy": "exactly one frame; final non-empty stdout record; complete canonical single-line JSON; earlier unframed JSON is log data; malformed, missing, competing, or trailing records fail",
+    "orderingProof": "the wrapper awaits every synchronous or asynchronous stage owner, inherited child streams close before return, durable evidence/state publication completes first, and failure cleanup completes before the one terminal frame is written",
+    "semanticValidation": ["schema/version/aggregate and command-specific details", "certification/candidate/commit/tree/harness/contract identity", "command/mode/stage/attempt/nonce", "physical state SHA and canonical state validation", "stage status/classification/consumed-gate/process identity", "retained abort-cleanup original failure identity", "complete referenced evidence inventory and independent file rehash", "producer-side privacy validation and redacted/resealed validation reports", "exact next-state SHA propagation"],
+    "logs": "complete stdout and stderr remain diagnostic logs and never become semantic JSON authority",
+    "privateDataPolicy": "no raw database URL/password, credential, secret, cookie/session, private environment, state path, or unrestricted machine-private path",
+    "authResultChannel": "unchanged structured auth sidecars plus private GITHUB_ENV raw assignments",
+    "databasePlanResultChannel": "unchanged complete canonical stdout JSON document",
+    "archiveChildParser": "unchanged and prohibited for certification stage-wrapper framing"
+  },
   "databaseLifecycle": {
     "schema": "interior-ai.production-certification-database-lifecycle.v1",
     "bindingSchema": "interior-ai.production-certification-database-lifecycle-binding.v1",

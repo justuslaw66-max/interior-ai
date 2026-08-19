@@ -1,5 +1,82 @@
 # Production Certification Harness v1
 
+## Canonical certification stage-command result consumer — 2026-08-19
+
+The preserved read-only audit remains exactly
+`COMMITTED_CERTIFICATION_STAGE_RESULT_CONSUMER_NOT_EXPOSED`; the source defect
+classification is `CERTIFICATION_WRAPPER_RESULT_FRAMING_CONTRACT_GAP`. The
+failed rehearsal
+`REHEARSAL_ONLY-NOT_RELEASE_CERTIFICATION-NOT_VALID_FOR_INTEGRATION-CERT-20260819T072721Z-2635f1cc6d80`
+was not resumed, reconciled, rerun, or reused.
+
+The selected transport is one explicitly framed final stdout record:
+`INTERIOR_AI_CERTIFICATION_STAGE_RESULT_V1 <canonical-json>`. This option is
+safe because every real wrapper waits for synchronous/awaited owners and all
+child streams to close, publishes durable evidence and the sealed physical
+state first, waits for failure cleanup, and writes one terminal record after
+all other stdout. A sidecar would duplicate authority and is unnecessary.
+Stdout and stderr remain complete human/nested-process logs; earlier unframed
+JSON is never semantic authority. Missing, malformed, competing, non-final,
+or trailing frames fail closed. The archive-child backward-search helper
+remains unchanged and is prohibited for wrapper results.
+
+`scripts/production-certification-stage-result-contract.mjs` is the sole
+owner of schema
+`interior-ai.production-certification-stage-command-result.v1`, its aggregate
+SHA-256, the 26 state-backed command/mode mappings, and safe framed parser.
+The schema binds certification and candidate ID, commit/tree, harness and
+result-contract hashes, command/mode, stage/attempt, invocation nonce,
+passed/failed/precondition result, classification, consumed gate, child and
+wrapper exit/signal/spawn status, pre/post state SHA-256, path
+classification, evidence IDs/relative paths/hashes/completion markers,
+timestamps, and the aggregate hash. It contains no state path, private
+sidecar path, raw environment, credential, cookie/session, or database URL.
+Validation reports are recursively redacted and resealed before result
+construction, and the producer runs the complete result schema/privacy check
+before the frame can reach stdout.
+
+`scripts/production-certification-stage-result-consumer.mjs` owns the
+importable process-and-stream-close consumer and validation-only
+`certification:stage-result:validate` CLI. It retains both logs, accepts only
+the frame, independently hashes canonical physical state and every referenced
+evidence file, runs the canonical state validator, matches exact
+stage/attempt/status/classification/consumption/process identity, validates
+safe state-validation details, and returns only the exact physical next-state
+SHA for propagation. The wrapper now publishes success only after its durable
+post-state and publishes failure only after the failed state/evidence and
+non-rehabilitating database cleanup are settled.
+An explicit abort-cleanup result is failure-authoritative: it binds the
+lifecycle-retained original stage, attempt, classification, consumed bit,
+failed-state SHA, and evidence descriptors, and cannot imply that a consumed
+failure is safely retryable. Non-stage and stage-precondition frames require
+zero consumption and null child/spawn results unless physical state proves a
+completed stage attempt.
+
+The focused 24-case matrix covers npm prose, multiline Prisma logs, earlier
+JSON-looking logs, missing/malformed/competing/trailing frames, pending state,
+missing/failed/tampered evidence, cross-run/candidate/commit, stale nonce,
+state/stage/attempt/consumption mismatch, nonzero consumed failure, and
+signal/spawn truthfulness, retained cleanup authority, producer privacy, and
+consumable redacted invalid-state reports. Deterministic simulation drives the actual framed
+source-validation wrapper through all 19 checks, proves generated-output
+cleanup, consumes the exact next-state SHA, and stops at the pending build
+boundary. Doctor requires the owner, consumer, CLI, regression, physical
+state/evidence validation, unchanged auth/database channels, and absence of a
+copied/backward parser before resource creation.
+
+Auth raw fixture export remains private `GITHUB_ENV`; auth semantic results
+remain structured sidecars. The database plan remains one complete canonical
+stdout JSON document. No product/UI, Floor Plan, auth endpoint, telemetry,
+model, runtime-readiness, archive-policy, Phase 8, Playwright assertion,
+database provisioning, Prisma, migration, dependency, lockfile, or workflow
+behavior is changed; only abort-result failure attribution is strengthened.
+Fresh rehearsal, immutable final certification, integration, push,
+deployment, and CH-0015 closure audit remain pending. Exact clean committed-
+head qualification is pending until this correction is committed.
+Independent read-only review returned **PASS** after verifying physical
+cleanup/spawn bindings, the producer privacy boundary, and unchanged
+auth/database result-channel owners.
+
 ## Auth-session preflight database correction
 
 The pre-correction stop remains
