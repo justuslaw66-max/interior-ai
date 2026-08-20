@@ -17,8 +17,11 @@ existing raw pair with an explicit application-auth activation scope. The
 private session root is inventoried but prohibited from the build child and
 all unrelated stage children. Qualification-only unbound artifact evidence is
 explicitly ineligible and fails outside qualification. Independent read-only
-review is **PASS**; exact clean committed-head qualification is pending the
-focused implementation commit.
+review is **PASS**. Exact clean committed-head qualification on implementation
+commit `54401bfeff100e59ffc7412197d0816858ada0bf`, tree
+`1ad58ea5b661e659b43393395f6b083d82bc54bd`, returned
+`QUALIFIED_FOR_FINAL_CANDIDATE_CERTIFICATION`; the final handoff records the
+required rerun for the documentation-only follow-up.
 
 The canonical command is `npm run certification:auth-preflight`; internally it
 runs export, validate-existing, production-misuse-existing, and the isolated

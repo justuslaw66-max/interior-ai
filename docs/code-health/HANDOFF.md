@@ -19,7 +19,11 @@ retained session, so no ambient candidate variables are required and any
 conflicting override fails. Caller-retained sessions require root, ID, nonce,
 and classification together. Independent read-only review is **PASS** after
 these boundaries and task-owned cleanup were corrected. Exact clean committed-
-head qualification remains to be recorded after the implementation commit.
+head qualification on implementation commit
+`54401bfeff100e59ffc7412197d0816858ada0bf`, tree
+`1ad58ea5b661e659b43393395f6b083d82bc54bd`, returned
+`QUALIFIED_FOR_FINAL_CANDIDATE_CERTIFICATION`. The final handoff records the
+same exact-head rerun for this documentation-only follow-up.
 
 The risk-triggered script-test inventory is 273 paths at
 `2e66faace4df8c8edf0580e16c606a77734e5c89129c2d2a792ff226d201f3ab`.

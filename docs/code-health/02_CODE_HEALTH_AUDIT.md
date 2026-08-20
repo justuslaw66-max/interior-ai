@@ -22,8 +22,14 @@ The complete read-only review is **PASS** after correcting candidate handoff,
 local build activation scope, qualification-only evidence rejection, explicit
 stage capability inventory, portable digest naming, reconstructed-secret and
 parent-override negatives, caller-retention completeness, and task-owned
-cleanup. Exact clean committed-head qualification is pending the focused
-implementation commit.
+cleanup. The focused implementation's exact clean committed-head qualification
+result is recorded below.
+
+Implementation commit `54401bfeff100e59ffc7412197d0816858ada0bf`, tree
+`1ad58ea5b661e659b43393395f6b083d82bc54bd`, passed exact clean committed-head
+qualification with `QUALIFIED_FOR_FINAL_CANDIDATE_CERTIFICATION`. The final
+handoff records the required exact-head rerun after this documentation-only
+follow-up.
 
 ## Certification wrapper result framing contract gap — 2026-08-19
 

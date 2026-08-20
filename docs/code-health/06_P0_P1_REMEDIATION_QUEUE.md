@@ -13,7 +13,11 @@
 - **Review/status:** independent read-only review is **PASS**. Build consumes a
   retained session with sealed state commit/tree, rejects ambient conflicts,
   projects only declared auth capability, and keeps qualification fallback
-  ineligible. Exact clean committed-head qualification is pending commit.
+  ineligible. Exact clean committed-head qualification on implementation
+  commit `54401bfeff100e59ffc7412197d0816858ada0bf`, tree
+  `1ad58ea5b661e659b43393395f6b083d82bc54bd`, returned
+  `QUALIFIED_FOR_FINAL_CANDIDATE_CERTIFICATION`; the final handoff records the
+  exact-head rerun for the documentation-only follow-up.
 - **Remaining:** fresh rehearsal, immutable certification, integration, push,
   deployment, and CH-0015 closure. Rollback is the focused correction commit;
   external sessions are removed only by their explicit owner.

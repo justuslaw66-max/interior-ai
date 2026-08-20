@@ -8,8 +8,12 @@ cadence, retry, skip, browser project, or advisory classification changes. The
 risk-triggered `script-tests` inventory is **273** paths at path-set SHA-256
 `2e66faace4df8c8edf0580e16c606a77734e5c89129c2d2a792ff226d201f3ab`.
 Independent read-only review is **PASS**. Exact clean committed-head
-qualification remains to be recorded after the focused implementation commit;
-a fresh rehearsal and final certification remain pending.
+qualification on implementation commit
+`54401bfeff100e59ffc7412197d0816858ada0bf`, tree
+`1ad58ea5b661e659b43393395f6b083d82bc54bd`, returned
+`QUALIFIED_FOR_FINAL_CANDIDATE_CERTIFICATION`; the final handoff records the
+required rerun for the documentation-only follow-up. A fresh rehearsal and
+final certification remain pending.
 
 ## Certification stage-result consumer inventory — 2026-08-19
 

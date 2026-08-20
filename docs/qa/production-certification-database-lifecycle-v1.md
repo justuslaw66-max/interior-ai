@@ -14,7 +14,11 @@ any later rehearsal database.
 The child receives the private fixture-session root only through the declared
 `auth-session-preflight` stage capability. Build and unrelated children cannot
 receive that root. Independent read-only review is **PASS**; exact clean
-committed-head qualification is pending the focused implementation commit.
+committed-head qualification on implementation commit
+`54401bfeff100e59ffc7412197d0816858ada0bf`, tree
+`1ad58ea5b661e659b43393395f6b083d82bc54bd`, returned
+`QUALIFIED_FOR_FINAL_CANDIDATE_CERTIFICATION`. The final handoff records the
+required rerun for the documentation-only follow-up.
 
 ## Auth-session preflight-only lifecycle bridge
 
