@@ -30,7 +30,9 @@ import {
 import { runCertificationDoctor } from "./production-certification-doctor.mjs";
 import { verifyFinalCertificationEvidence } from "./production-certification-evidence.mjs";
 import {
+  NEXT_BUILD_GENERATED_TYPE_DECLARATION_PATH,
   finalizeCertificationBuildGeneratedOutput,
+  finalizeCertificationFailedBuildGeneratedOutput,
   preflightCertificationBuildGeneratedOutput,
 } from "./production-certification-build-generated-output.mjs";
 import {
@@ -2115,6 +2117,63 @@ export async function runSourceValidationStage({
   );
 }
 
+function failedBuildProcess(child) {
+  return {
+    exitCode: child.signal ? null : normalizedChildExitCode(child.status),
+    signal: child.signal ?? null,
+    spawnErrorClassification: child.error ? "child-spawn-error" : null,
+  };
+}
+
+function sealFailedBuildGeneratedOutput({
+  context,
+  state,
+  preflight,
+  preparedRunNonce,
+  classification,
+  consumed,
+  child,
+}) {
+  if (
+    !existsSync(
+      path.join(
+        context.repositoryRoot,
+        NEXT_BUILD_GENERATED_TYPE_DECLARATION_PATH,
+      ),
+    )
+  ) {
+    return {};
+  }
+  const generatedOutputLifecycle =
+    finalizeCertificationFailedBuildGeneratedOutput({
+      repositoryRoot: context.repositoryRoot,
+      preflight,
+      identity: {
+        certificationId: state.certificationId,
+        candidateId: state.candidate.id,
+        commitSha: state.candidate.commitSha,
+        treeSha: state.candidate.treeSha,
+        stage: "build",
+        attempt: state.stages.build.attempts.at(-1).number,
+        classification,
+        consumedSubstantiveGate: consumed,
+        semanticJournalNonce: preparedRunNonce,
+      },
+    });
+  const descriptor = writeEvidence(
+    context.evidenceRoot,
+    "build/failed-result.json",
+    {
+      schema: "interior-ai.production-certification-failed-build-result.v1",
+      identity: structuredClone(generatedOutputLifecycle.identity),
+      generatedOutputLifecycle,
+      process: failedBuildProcess(child),
+      complete: true,
+    },
+  );
+  return { build: descriptor };
+}
+
 export async function runBuildStage({
   repositoryRoot = process.cwd(),
   environment = process.env,
@@ -2241,6 +2300,33 @@ export async function runBuildStage({
       } catch {
         // A failure before journal/build dispatch is a correctable precondition.
       }
+      const failureClassification =
+        child.error || child.signal
+          ? "INFRASTRUCTURE_TRANSIENT"
+          : consumed
+            ? "BUILD_FAILURE"
+            : "PRECONDITION_ORCHESTRATION_FAILURE";
+      let failureEvidenceFiles;
+      try {
+        failureEvidenceFiles = sealFailedBuildGeneratedOutput({
+          context,
+          state: boundState,
+          preflight: generatedOutputPreflight,
+          preparedRunNonce,
+          classification: failureClassification,
+          consumed,
+          child,
+        });
+      } catch (error) {
+        throw new StageFailure(
+          `strict failed build generated-output lifecycle failed: ${
+            error instanceof Error ? error.message : String(error)
+          }`,
+          failureClassification,
+          consumed,
+          failedBuildProcess(child),
+        );
+      }
       if (child.error || child.signal) {
         throw new StageFailure(
           "strict production build infrastructure failed",
@@ -2254,6 +2340,7 @@ export async function runBuildStage({
             spawnErrorClassification: child.error
               ? "child-spawn-error"
               : null,
+            evidenceFiles: failureEvidenceFiles,
           },
         );
       }
@@ -2261,7 +2348,10 @@ export async function runBuildStage({
         "strict production build failed",
         consumed ? "BUILD_FAILURE" : "PRECONDITION_ORCHESTRATION_FAILURE",
         consumed,
-        { exitCode: normalizedChildExitCode(child.status) },
+        {
+          exitCode: normalizedChildExitCode(child.status),
+          evidenceFiles: failureEvidenceFiles,
+        },
       );
     }
     buildConsumed = true;

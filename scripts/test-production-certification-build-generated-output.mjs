@@ -18,7 +18,9 @@ import { spawnSync } from "node:child_process";
 import {
   NEXT_BUILD_GENERATED_TYPE_DECLARATION_BYTES,
   certificationBuildGeneratedOutputIssues,
+  certificationFailedBuildGeneratedOutputIssues,
   finalizeCertificationBuildGeneratedOutput,
+  finalizeCertificationFailedBuildGeneratedOutput,
   preflightCertificationBuildGeneratedOutput,
 } from "./production-certification-build-generated-output.mjs";
 
@@ -37,6 +39,18 @@ const identity = Object.freeze({
   productionManifestSha256: "d".repeat(64),
   semanticJournalSha256: "e".repeat(64),
   semanticJournalNonce: "123e4567-e89b-42d3-a456-426614174001",
+});
+
+const failedBuildIdentity = Object.freeze({
+  certificationId: "build-output-certification",
+  candidateId: "build-output-candidate",
+  commitSha: "a".repeat(40),
+  treeSha: "b".repeat(40),
+  stage: "build",
+  attempt: 1,
+  classification: "BUILD_FAILURE",
+  consumedSubstantiveGate: true,
+  semanticJournalNonce: "123e4567-e89b-42d3-a456-426614174002",
 });
 
 const root = mkdtempSync(path.join(tmpdir(), "cert-build-generated-output-"));
@@ -70,6 +84,42 @@ try {
     "retained-build\n",
   );
   assert.equal(existsSync(path.join(root, "sentinel.txt")), true);
+
+  const failedBuildPreflight = preflightCertificationBuildGeneratedOutput({
+    repositoryRoot: root,
+  });
+  writeFileSync(
+    path.join(root, "next-env.d.ts"),
+    NEXT_BUILD_GENERATED_TYPE_DECLARATION_BYTES,
+  );
+  const failedBuildEvidence = finalizeCertificationFailedBuildGeneratedOutput({
+    repositoryRoot: root,
+    preflight: failedBuildPreflight,
+    identity: failedBuildIdentity,
+  });
+  assert.deepEqual(
+    certificationFailedBuildGeneratedOutputIssues(
+      failedBuildEvidence,
+      failedBuildIdentity,
+    ),
+    [],
+  );
+  assert.equal(existsSync(path.join(root, "next-env.d.ts")), false);
+  assert.equal(
+    readFileSync(path.join(root, ".next/BUILD_ID"), "utf8"),
+    "retained-build\n",
+  );
+  assert.equal(existsSync(path.join(root, "sentinel.txt")), true);
+
+  const tamperedFailedBuild = structuredClone(failedBuildEvidence);
+  tamperedFailedBuild.output.sha256 = "f".repeat(64);
+  assert.match(
+    certificationFailedBuildGeneratedOutputIssues(
+      tamperedFailedBuild,
+      failedBuildIdentity,
+    ).join("\n"),
+    /inventory|seal/,
+  );
 
   const tampered = structuredClone(evidence);
   tampered.cleanup.postCleanupAbsenceProof = false;

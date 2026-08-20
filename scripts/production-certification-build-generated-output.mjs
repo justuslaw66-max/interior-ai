@@ -19,6 +19,8 @@ import {
 
 export const PRODUCTION_CERTIFICATION_BUILD_GENERATED_OUTPUT_SCHEMA =
   "interior-ai.production-certification-build-generated-output-lifecycle.v1";
+export const PRODUCTION_CERTIFICATION_FAILED_BUILD_GENERATED_OUTPUT_SCHEMA =
+  "interior-ai.production-certification-failed-build-generated-output-lifecycle.v1";
 
 export const NEXT_BUILD_GENERATED_TYPE_DECLARATION_PATH = "next-env.d.ts";
 
@@ -43,6 +45,18 @@ const IDENTITY_KEYS = Object.freeze([
   "artifactSha256",
   "productionManifestSha256",
   "semanticJournalSha256",
+  "semanticJournalNonce",
+]);
+
+const FAILED_BUILD_IDENTITY_KEYS = Object.freeze([
+  "certificationId",
+  "candidateId",
+  "commitSha",
+  "treeSha",
+  "stage",
+  "attempt",
+  "classification",
+  "consumedSubstantiveGate",
   "semanticJournalNonce",
 ]);
 
@@ -133,6 +147,28 @@ function assertIdentity(identity) {
   }
 }
 
+function assertFailedBuildIdentity(identity) {
+  if (
+    !exactKeys(identity, FAILED_BUILD_IDENTITY_KEYS) ||
+    typeof identity.certificationId !== "string" ||
+    !identity.certificationId ||
+    typeof identity.candidateId !== "string" ||
+    !identity.candidateId ||
+    !isSourceSha(identity.commitSha) ||
+    !isSourceSha(identity.treeSha) ||
+    identity.stage !== "build" ||
+    !Number.isSafeInteger(identity.attempt) ||
+    identity.attempt < 1 ||
+    typeof identity.classification !== "string" ||
+    !identity.classification ||
+    typeof identity.consumedSubstantiveGate !== "boolean" ||
+    typeof identity.semanticJournalNonce !== "string" ||
+    !identity.semanticJournalNonce
+  ) {
+    throw new Error("failed build generated-output identity is malformed");
+  }
+}
+
 export function preflightCertificationBuildGeneratedOutput({ repositoryRoot }) {
   assertIgnoredUntrackedOutput(repositoryRoot);
   const target = outputPath(repositoryRoot);
@@ -148,13 +184,7 @@ export function preflightCertificationBuildGeneratedOutput({ repositoryRoot }) {
   });
 }
 
-export function finalizeCertificationBuildGeneratedOutput({
-  repositoryRoot,
-  preflight,
-  identity,
-  testHooks = null,
-}) {
-  assertIdentity(identity);
+function assertGeneratedOutputPreflight(preflight) {
   if (
     !exactKeys(preflight, [
       "relativePath",
@@ -171,6 +201,16 @@ export function finalizeCertificationBuildGeneratedOutput({
   ) {
     throw new Error("build generated-output preflight is malformed");
   }
+}
+
+function sealAndCleanupCertificationBuildGeneratedOutput({
+  repositoryRoot,
+  preflight,
+  identity,
+  schema,
+  testHooks = null,
+}) {
+  assertGeneratedOutputPreflight(preflight);
   assertIgnoredUntrackedOutput(repositoryRoot);
   const target = outputPath(repositoryRoot);
   const pathMetadata = lstatIfPresent(target);
@@ -235,7 +275,7 @@ export function finalizeCertificationBuildGeneratedOutput({
     if (descriptor !== undefined) closeSync(descriptor);
   }
   const payload = {
-    schema: PRODUCTION_CERTIFICATION_BUILD_GENERATED_OUTPUT_SCHEMA,
+    schema,
     identity: { ...identity },
     output: {
       relativePath: NEXT_BUILD_GENERATED_TYPE_DECLARATION_PATH,
@@ -267,9 +307,26 @@ export function finalizeCertificationBuildGeneratedOutput({
   });
 }
 
-export function certificationBuildGeneratedOutputIssues(
+export function finalizeCertificationBuildGeneratedOutput(options) {
+  assertIdentity(options.identity);
+  return sealAndCleanupCertificationBuildGeneratedOutput({
+    ...options,
+    schema: PRODUCTION_CERTIFICATION_BUILD_GENERATED_OUTPUT_SCHEMA,
+  });
+}
+
+export function finalizeCertificationFailedBuildGeneratedOutput(options) {
+  assertFailedBuildIdentity(options.identity);
+  return sealAndCleanupCertificationBuildGeneratedOutput({
+    ...options,
+    schema: PRODUCTION_CERTIFICATION_FAILED_BUILD_GENERATED_OUTPUT_SCHEMA,
+  });
+}
+
+function generatedOutputIssues(
   evidence,
   expectedIdentity,
+  { schema, assertEvidenceIdentity },
 ) {
   const issues = [];
   if (
@@ -281,12 +338,12 @@ export function certificationBuildGeneratedOutputIssues(
       "complete",
       "seal",
     ]) ||
-    evidence.schema !== PRODUCTION_CERTIFICATION_BUILD_GENERATED_OUTPUT_SCHEMA
+    evidence.schema !== schema
   ) {
     return ["build generated-output lifecycle schema is invalid"];
   }
   try {
-    assertIdentity(evidence.identity);
+    assertEvidenceIdentity(evidence.identity);
   } catch (error) {
     issues.push(error instanceof Error ? error.message : String(error));
   }
@@ -347,4 +404,25 @@ export function certificationBuildGeneratedOutputIssues(
     issues.push("build generated-output lifecycle seal is invalid");
   }
   return issues;
+}
+
+
+export function certificationBuildGeneratedOutputIssues(
+  evidence,
+  expectedIdentity,
+) {
+  return generatedOutputIssues(evidence, expectedIdentity, {
+    schema: PRODUCTION_CERTIFICATION_BUILD_GENERATED_OUTPUT_SCHEMA,
+    assertEvidenceIdentity: assertIdentity,
+  });
+}
+
+export function certificationFailedBuildGeneratedOutputIssues(
+  evidence,
+  expectedIdentity,
+) {
+  return generatedOutputIssues(evidence, expectedIdentity, {
+    schema: PRODUCTION_CERTIFICATION_FAILED_BUILD_GENERATED_OUTPUT_SCHEMA,
+    assertEvidenceIdentity: assertFailedBuildIdentity,
+  });
 }
