@@ -12,6 +12,7 @@ import {
   renameSync,
   rmSync,
   symlinkSync,
+  unlinkSync,
   writeFileSync,
 } from "node:fs";
 import { tmpdir } from "node:os";
@@ -84,6 +85,7 @@ import {
   NEXT_BUILD_GENERATED_TYPE_DECLARATION_BYTES,
   PRODUCTION_CERTIFICATION_BUILD_GENERATED_OUTPUT_SCHEMA,
   certificationBuildGeneratedOutputIssues,
+  certificationFailedBuildGeneratedOutputIssues,
   finalizeCertificationBuildGeneratedOutput,
   preflightCertificationBuildGeneratedOutput,
 } from "./production-certification-build-generated-output.mjs";
@@ -2685,6 +2687,229 @@ export async function runProductionCertificationSimulation({
     { recursive: true, force: true },
   );
   rmSync(buildAlreadyBoundRetryStatePath);
+  const postDispatchBuildFailureStatePath = path.join(
+    evidenceRoot,
+    "post-dispatch-build-failure-state.json",
+  );
+  writeCertificationState(postDispatchBuildFailureStatePath, state);
+  let postDispatchBuildFailure = null;
+  try {
+    await runBuildStage({
+      repositoryRoot: canonicalRoot,
+      environment: {
+        ...doctorEnvironment,
+        CERTIFICATION_EVIDENCE_ROOT: evidenceRoot,
+        PRODUCTION_CERTIFICATION_STATE: postDispatchBuildFailureStatePath,
+        CERTIFICATION_STAGE_STARTED_AT: nextTimestamp(),
+        CERTIFICATION_STAGE_COMPLETED_AT: "2099-08-14T00:00:00.000Z",
+      },
+      testHooks: {
+        suppressBuildChildOutput: true,
+        afterBuildChild({ repositoryRoot }) {
+          writeFileSync(
+            path.join(
+              repositoryRoot,
+              ".local/production-artifact-evidence/manifest.json",
+            ),
+            "{}\n",
+          );
+        },
+      },
+    });
+  } catch (error) {
+    postDispatchBuildFailure = error;
+  }
+  const postDispatchFailedState = readCertificationState(
+    postDispatchBuildFailureStatePath,
+  );
+  const postDispatchFailedDescriptor =
+    postDispatchFailedState.evidenceFiles.build;
+  if (!postDispatchFailedDescriptor) {
+    throw new Error(
+      `post-dispatch build failure did not retain failed-output evidence: ${JSON.stringify({
+        message: postDispatchBuildFailure?.message,
+        classification: postDispatchBuildFailure?.classification,
+        consumed: postDispatchBuildFailure?.consumed,
+        stage: postDispatchFailedState.stages.build,
+      })}`,
+    );
+  }
+  const postDispatchFailedEvidence = JSON.parse(
+    readFileSync(
+      path.join(evidenceRoot, postDispatchFailedDescriptor.path),
+      "utf8",
+    ),
+  );
+  const postDispatchFailedLifecycle =
+    postDispatchFailedEvidence.generatedOutputLifecycle;
+  const postDispatchFailedLifecycleIssues =
+    certificationFailedBuildGeneratedOutputIssues(
+      postDispatchFailedLifecycle,
+      {
+        certificationId: postDispatchFailedState.certificationId,
+        candidateId: postDispatchFailedState.candidate.id,
+        commitSha: postDispatchFailedState.candidate.commitSha,
+        treeSha: postDispatchFailedState.candidate.treeSha,
+        stage: "build",
+        attempt: 1,
+        classification: "BUILD_FAILURE",
+        consumedSubstantiveGate: true,
+        semanticJournalNonce:
+          postDispatchFailedLifecycle.identity.semanticJournalNonce,
+      },
+    );
+  const postDispatchFailedWorktreeIssues = certificationWorktreeIssues({
+    state: postDispatchFailedState,
+    evidenceRoot,
+    canonicalRoot,
+  });
+  let postDispatchFailedArchiveBlocked = false;
+  try {
+    startCertificationStage(postDispatchFailedState, {
+      stage: "archive-preflight",
+      startedAt: nextTimestamp(),
+    });
+  } catch {
+    postDispatchFailedArchiveBlocked = true;
+  }
+  write(artifactWorktreeRoot, ".env", "arbitrary-ignored-build-input\n");
+  const postDispatchFailedArbitraryIgnoredInputRejected =
+    certificationWorktreeIssues({
+      state: postDispatchFailedState,
+      evidenceRoot,
+      canonicalRoot,
+    }).some((issue) => /ignored influential paths: \.env/.test(issue));
+  rmSync(path.join(artifactWorktreeRoot, ".env"));
+  const postDispatchBuildFailureLifecyclePassed =
+    postDispatchBuildFailure?.classification === "BUILD_FAILURE" &&
+    postDispatchBuildFailure?.consumed === true &&
+    postDispatchFailedState.stages.build.status === "failed" &&
+    postDispatchFailedState.stages.build.failureClassification ===
+      "BUILD_FAILURE" &&
+    postDispatchFailedState.stages.build.consumedSubstantiveGate === true &&
+    postDispatchFailedEvidence.schema ===
+      "interior-ai.production-certification-failed-build-result.v1" &&
+    postDispatchFailedEvidence.process.exitCode === 0 &&
+    postDispatchFailedLifecycleIssues.length === 0 &&
+    postDispatchFailedWorktreeIssues.length === 0 &&
+    !existsSync(path.join(artifactWorktreeRoot, "next-env.d.ts")) &&
+    existsSync(path.join(artifactWorktreeRoot, ".next/BUILD_ID")) &&
+    postDispatchFailedArchiveBlocked &&
+    postDispatchFailedArbitraryIgnoredInputRejected;
+  if (!postDispatchBuildFailureLifecyclePassed) {
+    throw new Error(
+      `post-dispatch build failure did not seal generated output and preserve a valid failed worktree: ${JSON.stringify({
+        message: postDispatchBuildFailure?.message,
+        classification: postDispatchBuildFailure?.classification,
+        consumed: postDispatchBuildFailure?.consumed,
+        stage: postDispatchFailedState.stages.build,
+        evidenceSchema: postDispatchFailedEvidence.schema,
+        process: postDispatchFailedEvidence.process,
+        lifecycleIssues: postDispatchFailedLifecycleIssues,
+        worktreeIssues: postDispatchFailedWorktreeIssues,
+        nextEnvironmentPresent: existsSync(
+          path.join(artifactWorktreeRoot, "next-env.d.ts"),
+        ),
+        archiveBlocked: postDispatchFailedArchiveBlocked,
+        arbitraryIgnoredInputRejected:
+          postDispatchFailedArbitraryIgnoredInputRejected,
+      })}`,
+    );
+  }
+  rmSync(path.join(evidenceRoot, postDispatchFailedDescriptor.path));
+  for (const relativePath of [
+    "node_modules",
+    ".local",
+    ".next",
+    "next-env.d.ts",
+  ]) {
+    rmSync(path.join(artifactWorktreeRoot, relativePath), {
+      recursive: true,
+      force: true,
+    });
+  }
+  rmSync(
+    path.join(evidenceRoot, "worktree-dependencies/final-artifact"),
+    { recursive: true, force: true },
+  );
+  rmSync(postDispatchBuildFailureStatePath);
+  const danglingGeneratedOutputStatePath = path.join(
+    evidenceRoot,
+    "dangling-generated-output-state.json",
+  );
+  writeCertificationState(danglingGeneratedOutputStatePath, state);
+  let danglingGeneratedOutputFailure = null;
+  try {
+    await runBuildStage({
+      repositoryRoot: canonicalRoot,
+      environment: {
+        ...doctorEnvironment,
+        CERTIFICATION_EVIDENCE_ROOT: evidenceRoot,
+        PRODUCTION_CERTIFICATION_STATE: danglingGeneratedOutputStatePath,
+        CERTIFICATION_STAGE_STARTED_AT: nextTimestamp(),
+        CERTIFICATION_STAGE_COMPLETED_AT: "2099-08-14T00:00:00.000Z",
+      },
+      testHooks: {
+        suppressBuildChildOutput: true,
+        afterBuildChild({ repositoryRoot }) {
+          const generatedOutputPath = path.join(
+            repositoryRoot,
+            "next-env.d.ts",
+          );
+          rmSync(generatedOutputPath);
+          symlinkSync("missing-next-env-target", generatedOutputPath);
+          writeFileSync(
+            path.join(
+              repositoryRoot,
+              ".local/production-artifact-evidence/manifest.json",
+            ),
+            "{}\n",
+          );
+        },
+      },
+    });
+  } catch (error) {
+    danglingGeneratedOutputFailure = error;
+  }
+  const danglingGeneratedOutputState = readCertificationState(
+    danglingGeneratedOutputStatePath,
+  );
+  const danglingGeneratedOutputGuardPassed =
+    danglingGeneratedOutputFailure?.classification === "BUILD_FAILURE" &&
+    danglingGeneratedOutputFailure?.consumed === true &&
+    /strict failed build generated-output lifecycle failed: next-env\.d\.ts is not a physical regular generated file/.test(
+      danglingGeneratedOutputFailure?.message ?? "",
+    ) &&
+    danglingGeneratedOutputState.stages.build.status === "failed" &&
+    danglingGeneratedOutputState.evidenceFiles.build === undefined &&
+    lstatSync(path.join(artifactWorktreeRoot, "next-env.d.ts")).isSymbolicLink();
+  if (!danglingGeneratedOutputGuardPassed) {
+    throw new Error(
+      `failed-build generated-output guard bypassed a dangling symlink: ${JSON.stringify({
+        message: danglingGeneratedOutputFailure?.message,
+        classification: danglingGeneratedOutputFailure?.classification,
+        consumed: danglingGeneratedOutputFailure?.consumed,
+        stage: danglingGeneratedOutputState.stages.build,
+        buildEvidence: danglingGeneratedOutputState.evidenceFiles.build,
+      })}`,
+    );
+  }
+  unlinkSync(path.join(artifactWorktreeRoot, "next-env.d.ts"));
+  for (const relativePath of [
+    "node_modules",
+    ".local",
+    ".next",
+  ]) {
+    rmSync(path.join(artifactWorktreeRoot, relativePath), {
+      recursive: true,
+      force: true,
+    });
+  }
+  rmSync(
+    path.join(evidenceRoot, "worktree-dependencies/final-artifact"),
+    { recursive: true, force: true },
+  );
+  rmSync(danglingGeneratedOutputStatePath);
   const buildDependencyDriftStatePath = path.join(
     evidenceRoot,
     "build-dependency-drift-state.json",
@@ -4411,6 +4636,9 @@ export async function runProductionCertificationSimulation({
     buildGeneratedOutputLifecycle: {
       schema: PRODUCTION_CERTIFICATION_BUILD_GENERATED_OUTPUT_SCHEMA,
       realRunnerPassed: realBuildGeneratedOutputLifecyclePassed,
+      postDispatchFailurePassed:
+        postDispatchBuildFailureLifecyclePassed,
+      danglingSymlinkGuardPassed: danglingGeneratedOutputGuardPassed,
       arbitraryIgnoredInputRejected: arbitraryIgnoredBuildInputRejected,
       canonicalIgnoredArtifactsUnchanged:
         canonicalIgnoredBuildInputsUnchanged,

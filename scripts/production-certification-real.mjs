@@ -2171,6 +2171,21 @@ function failedBuildProcess(child) {
   };
 }
 
+function buildGeneratedOutputPresentNoFollow(repositoryRoot) {
+  try {
+    lstatSync(
+      path.join(
+        repositoryRoot,
+        NEXT_BUILD_GENERATED_TYPE_DECLARATION_PATH,
+      ),
+    );
+    return true;
+  } catch (error) {
+    if (error?.code === "ENOENT") return false;
+    throw error;
+  }
+}
+
 function sealFailedBuildGeneratedOutput({
   context,
   state,
@@ -2180,14 +2195,7 @@ function sealFailedBuildGeneratedOutput({
   consumed,
   child,
 }) {
-  if (
-    !existsSync(
-      path.join(
-        context.repositoryRoot,
-        NEXT_BUILD_GENERATED_TYPE_DECLARATION_PATH,
-      ),
-    )
-  ) {
+  if (!buildGeneratedOutputPresentNoFollow(context.repositoryRoot)) {
     return {};
   }
   const generatedOutputLifecycle =
@@ -2218,6 +2226,38 @@ function sealFailedBuildGeneratedOutput({
     },
   );
   return { build: descriptor };
+}
+
+function postDispatchBuildFailure({
+  context,
+  state,
+  preflight,
+  preparedRunNonce,
+  classification,
+  message,
+  child,
+}) {
+  let evidenceFiles;
+  try {
+    evidenceFiles = sealFailedBuildGeneratedOutput({
+      context,
+      state,
+      preflight,
+      preparedRunNonce,
+      classification,
+      consumed: true,
+      child,
+    });
+  } catch (error) {
+    return new StageFailure(
+      `strict failed build generated-output lifecycle failed: ${
+        error instanceof Error ? error.message : String(error)
+      }`,
+      classification,
+      true,
+    );
+  }
+  return new StageFailure(message, classification, true, { evidenceFiles });
 }
 
 export async function runBuildStage({
@@ -2401,33 +2441,90 @@ export async function runBuildStage({
       );
     }
     buildConsumed = true;
-    const validation = await validateProductionEvidence({
-      repositoryRoot: context.repositoryRoot,
-      manifestPath: DEFAULT_MANIFEST,
-      verificationMode: PRODUCTION_EVIDENCE_VERIFICATION_MODES.REPOSITORY_PREFLIGHT,
-      environment: buildEnvironment,
-    });
+    try {
+      testHooks?.afterBuildChild?.({
+        repositoryRoot: context.repositoryRoot,
+        child: failedBuildProcess(child),
+      });
+    } catch (error) {
+      throw postDispatchBuildFailure({
+        context,
+        state: boundState,
+        preflight: generatedOutputPreflight,
+        preparedRunNonce,
+        classification: "BUILD_FAILURE",
+        message: error instanceof Error ? error.message : String(error),
+        child,
+      });
+    }
+    let validation;
+    try {
+      validation = await validateProductionEvidence({
+        repositoryRoot: context.repositoryRoot,
+        manifestPath: DEFAULT_MANIFEST,
+        verificationMode:
+          PRODUCTION_EVIDENCE_VERIFICATION_MODES.REPOSITORY_PREFLIGHT,
+        environment: buildEnvironment,
+      });
+    } catch (error) {
+      throw postDispatchBuildFailure({
+        context,
+        state: boundState,
+        preflight: generatedOutputPreflight,
+        preparedRunNonce,
+        classification: "BUILD_FAILURE",
+        message: error instanceof Error ? error.message : String(error),
+        child,
+      });
+    }
     if (!validation.valid) {
-      throw new StageFailure(validation.issues.join("; "), "BUILD_FAILURE", true);
+      throw postDispatchBuildFailure({
+        context,
+        state: boundState,
+        preflight: generatedOutputPreflight,
+        preparedRunNonce,
+        classification: "BUILD_FAILURE",
+        message: validation.issues.join("; "),
+        child,
+      });
     }
     const manifestPath = path.join(context.repositoryRoot, DEFAULT_MANIFEST);
     const journalPath = path.join(context.repositoryRoot, DEFAULT_JOURNAL);
-    const journal = readJson(journalPath, "semantic journal v2");
-    const handoffIssues = certificationPreparedBuildJournalIssues(journal);
-    if (handoffIssues.length > 0) {
-      throw new StageFailure(
-        handoffIssues.join("; "),
-        "FINAL_EVIDENCE_FAILURE",
-        true,
-      );
+    let journal;
+    let bindingUpdates;
+    let handoffIssues;
+    try {
+      journal = readJson(journalPath, "semantic journal v2");
+      handoffIssues = certificationPreparedBuildJournalIssues(journal);
+      bindingUpdates = {
+        semanticJournalNonce: journal.runNonce,
+        nextBuildId: validation.manifest.build.nextBuildId,
+        artifactSha256: validation.manifest.artifact.sha256,
+        productionManifestSha256: sha256Bytes(readFileSync(manifestPath)),
+        semanticJournalSha256: sha256Bytes(readFileSync(journalPath)),
+      };
+    } catch (error) {
+      throw postDispatchBuildFailure({
+        context,
+        state: boundState,
+        preflight: generatedOutputPreflight,
+        preparedRunNonce,
+        classification: "FINAL_EVIDENCE_FAILURE",
+        message: error instanceof Error ? error.message : String(error),
+        child,
+      });
     }
-    const bindingUpdates = {
-      semanticJournalNonce: journal.runNonce,
-      nextBuildId: validation.manifest.build.nextBuildId,
-      artifactSha256: validation.manifest.artifact.sha256,
-      productionManifestSha256: sha256Bytes(readFileSync(manifestPath)),
-      semanticJournalSha256: sha256Bytes(readFileSync(journalPath)),
-    };
+    if (handoffIssues.length > 0) {
+      throw postDispatchBuildFailure({
+        context,
+        state: boundState,
+        preflight: generatedOutputPreflight,
+        preparedRunNonce,
+        classification: "FINAL_EVIDENCE_FAILURE",
+        message: handoffIssues.join("; "),
+        child,
+      });
+    }
     let generatedOutputLifecycle;
     try {
       generatedOutputLifecycle = finalizeCertificationBuildGeneratedOutput({
