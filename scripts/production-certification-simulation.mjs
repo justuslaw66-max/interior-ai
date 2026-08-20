@@ -4003,6 +4003,7 @@ export async function runProductionCertificationSimulation({
         encoding: "utf8",
         env: {
           ...process.env,
+          CERTIFICATION_QUALIFICATION_MODE: "1",
           PRODUCTION_CERTIFICATION_STATE: candidateStatePath,
           CERTIFICATION_EVIDENCE_ROOT: evidenceRoot,
           CERTIFICATION_ALLOW_SIMULATION: "1",

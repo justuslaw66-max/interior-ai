@@ -104,6 +104,7 @@ function finalSimulationChild(
   const state = readCertificationState(statePath);
   const environment = {
     ...process.env,
+    CERTIFICATION_QUALIFICATION_MODE: "1",
     PRODUCTION_CERTIFICATION_STATE: statePath,
     CERTIFICATION_EVIDENCE_ROOT: evidenceRoot,
     PRODUCTION_EVIDENCE_EXPECTED_COMMIT_SHA: state.candidate.commitSha,

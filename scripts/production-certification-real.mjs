@@ -1152,6 +1152,7 @@ async function validateLiveContext(
         manifestPath: DEFAULT_MANIFEST,
         verificationMode:
           PRODUCTION_EVIDENCE_VERIFICATION_MODES.REPOSITORY_PREFLIGHT,
+        environment: context.environment,
       });
       if (!artifact.valid) retainedInputIssues.push(...artifact.issues);
     } catch (error) {
