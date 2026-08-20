@@ -1,5 +1,16 @@
 # Required-test truthfulness
 
+## Auth fixture continuity inventory — 2026-08-20
+
+The exactly-once session owner and focused regression are added to the existing
+required production-artifact and certification qualification closures; no gate,
+cadence, retry, skip, browser project, or advisory classification changes. The
+risk-triggered `script-tests` inventory is **273** paths at path-set SHA-256
+`2e66faace4df8c8edf0580e16c606a77734e5c89129c2d2a792ff226d201f3ab`.
+Independent read-only review is **PASS**. Exact clean committed-head
+qualification remains to be recorded after the focused implementation commit;
+a fresh rehearsal and final certification remain pending.
+
 ## Certification stage-result consumer inventory — 2026-08-19
 
 The existing merge-required `ci.production-artifact-contract` gate directly
@@ -7,9 +18,9 @@ executes `scripts/test-production-certification-stage-result.mjs`; no new gate,
 cadence, workflow, browser project, retry, skip, allowance, or suppression is
 added. The classified closure adds the canonical result contract, consumer,
 and focused test. Direct validation reports **27 gates / 395 classified test
-sources**. The risk-triggered `script-tests` inventory is **272** paths with
+sources**. The risk-triggered `script-tests` inventory is **273** paths with
 path-set SHA-256
-`5ad10674bb500e3f7328d12847cee2f64921bbda9523334afb5ccecb83069456`.
+`2e66faace4df8c8edf0580e16c606a77734e5c89129c2d2a792ff226d201f3ab`.
 
 The required contribution is the executable 24-case framing/state/evidence
 matrix. The committed qualifier invokes it directly and through the existing

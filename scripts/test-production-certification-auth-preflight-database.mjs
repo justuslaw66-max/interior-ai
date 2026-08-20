@@ -69,12 +69,35 @@ const coveredAuthPreflightDatabaseCases = Object.freeze([
   "helper-repeated-abort-failure-retains-recovery-evidence",
   "failure-result-contract-tamper-rejected",
   "auth-passed-database-cleanup-failure-classified-accurately",
+  "database-preflight-consumes-existing-fixture-session",
+  "certification-helper-rejects-preflight-local-delegation",
+  "auth-server-receives-existing-provider-digests",
 ]);
 const candidateCommitSha = git("HEAD");
 const candidateTreeSha = git("HEAD^{tree}");
 const migrationNames = migrationInventory(repositoryRoot).migrations.map(
   ({ id }) => id,
 );
+
+function fixtureAuthStageInputs() {
+  return {
+    CI_AUTH_FIXTURE_ACTIVE: "1",
+    CI_AUTH_FIXTURE_CANDIDATE_COMMIT_SHA: candidateCommitSha,
+    CI_AUTH_FIXTURE_CANDIDATE_TREE_SHA: candidateTreeSha,
+    CI_AUTH_FIXTURE_MODE: "1",
+    CI_AUTH_FIXTURE_NO_REGENERATION: "1",
+    CI_AUTH_FIXTURE_PROVIDER_CLIENT_ID_SHA256: "a".repeat(64),
+    CI_AUTH_FIXTURE_PROVIDER_CLIENT_SECRET_SHA256: "b".repeat(64),
+    CI_AUTH_FIXTURE_RESULT_NONCE: "auth-result-nonce-fixture",
+    CI_AUTH_FIXTURE_RESULT_PATH: "/private/auth-result.json",
+    CI_AUTH_FIXTURE_RESULT_ROOT: "/private/auth-results",
+    CI_AUTH_FIXTURE_SESSION_CLASSIFICATION:
+      "PRODUCTION_INELIGIBLE_SYNTHETIC_AUTH",
+    CI_AUTH_FIXTURE_SESSION_ID: "auth-session-fixture",
+    CI_AUTH_FIXTURE_SESSION_NONCE: "auth-session-nonce-fixture",
+    CI_AUTH_FIXTURE_SESSION_ROOT: "/private/auth-session",
+  };
+}
 
 function git(revision) {
   const result = spawnSync("git", ["rev-parse", revision], {
@@ -270,7 +293,10 @@ async function normalLifecycleAndProjectionCoverage() {
       },
       stage: AUTH_SESSION_PREFLIGHT_DATABASE_STAGE,
       profileId: AUTH_SESSION_PREFLIGHT_DATABASE_STAGE,
-      stageInputs: prepared.projection.environment,
+      stageInputs: {
+        ...fixtureAuthStageInputs(),
+        ...prepared.projection.environment,
+      },
     });
     assert.equal(projected.environment.DATABASE_URL,
       prepared.projection.environment.DATABASE_URL);
@@ -846,6 +872,10 @@ function sourceOwnershipGuardCoverage() {
   assert.match(helper, /abortAuthSessionPreflightDatabaseLifecycle/);
   assert.match(helper, /projectCertificationChildEnvironment/);
   assert.match(helper, /runPreparedAuthPreflightDatabaseSequence/);
+  assert.match(helper, /consumeFixtureSession/);
+  assert.match(helper, /ci:auth-fixture:preflight-existing/);
+  assert.doesNotMatch(helper, /test:advisory-auth-preflight/);
+  assert.match(helper, /fixtureSession/);
   assert.match(helper, /private recovery evidence was retained/);
   assert.doesNotMatch(helper, /\.catch\(\(\)\s*=>\s*undefined\)/);
   const packageValue = JSON.parse(

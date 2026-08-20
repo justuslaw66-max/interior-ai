@@ -1,5 +1,36 @@
 # Production Certification Harness v1
 
+## Auth fixture continuity correction — 2026-08-20
+
+The latest failed static discovery is preserved unchanged as
+`COMMITTED_COMMAND_MODE_INCONCLUSIVE`,
+`PRECONDITION_ORCHESTRATION_FAILURE`, and
+`consumedSubstantiveGate=false`. The correction establishes one external
+exactly-once auth fixture session, keeps `ci:auth-fixture:export` as the sole
+canonical generator, and makes explicit validation, expected-negative
+production misuse, database-backed auth-session preflight, and build projection
+consume that same session and provider digests.
+
+The build parent consumes with its sealed candidate commit/tree rather than an
+ambient handoff, rejects conflicting ambient identity, and projects the
+existing raw pair with an explicit application-auth activation scope. The
+private session root is inventoried but prohibited from the build child and
+all unrelated stage children. Qualification-only unbound artifact evidence is
+explicitly ineligible and fails outside qualification. Independent read-only
+review is **PASS**; exact clean committed-head qualification is pending the
+focused implementation commit.
+
+The canonical command is `npm run certification:auth-preflight`; internally it
+runs export, validate-existing, production-misuse-existing, and the isolated
+database lifecycle plus preflight-existing. The preflight database remains
+`AUTH_SESSION_PREFLIGHT_ONLY` and cannot be reused by rehearsal. Raw values
+remain in the external mode-0600 transport. `preflight-local` is advisory-only.
+
+Focused exactly-once, structured-result, database lifecycle, build-continuity,
+doctor, simulation, and qualification owners are registered. A fresh rehearsal,
+immutable final certification, integration, push, deployment, and CH-0015
+closure remain pending. No rehearsal was started by this correction.
+
 ## Canonical certification stage-command result consumer — 2026-08-19
 
 The preserved read-only audit remains exactly

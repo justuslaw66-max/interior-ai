@@ -1,5 +1,30 @@
 # Code health audit
 
+## Production certification auth-fixture continuity — 2026-08-20
+
+The preserved result is `COMMITTED_COMMAND_MODE_INCONCLUSIVE` /
+`PRECONDITION_ORCHESTRATION_FAILURE` / `consumedSubstantiveGate=false`.
+Classifications are `CERTIFICATION_AUTH_FIXTURE_CONTINUITY_OWNER_MISSING`,
+`AUTH_COMMAND_MODE_COMPOSITION_CONTRACT_GAP`,
+`AUTH_SESSION_PREFLIGHT_FIXTURE_REGENERATION_DEFECT`, and
+`PRODUCTION_MISUSE_FIXTURE_REGENERATION_DEFECT`.
+
+One external, atomic, no-overwrite mode-0600 session now binds the sole export
+generation event, candidate, owner/policy hashes, exact name inventory, and
+provider digests. Explicit validation, production misuse, database-backed
+preflight, and build consume it. Local generation is certification-ineligible.
+Product auth, `/api/auth/session`, OAuth semantics, Prisma, migrations,
+dependencies, UI, Floor Plan, model, archive, Phase 8, and browser assertions
+are unchanged. No rehearsal, real build, runtime smoke, browser matrix, Full
+E2E, or final certification ran.
+
+The complete read-only review is **PASS** after correcting candidate handoff,
+local build activation scope, qualification-only evidence rejection, explicit
+stage capability inventory, portable digest naming, reconstructed-secret and
+parent-override negatives, caller-retention completeness, and task-owned
+cleanup. Exact clean committed-head qualification is pending the focused
+implementation commit.
+
 ## Certification wrapper result framing contract gap — 2026-08-19
 
 The committed audit classification

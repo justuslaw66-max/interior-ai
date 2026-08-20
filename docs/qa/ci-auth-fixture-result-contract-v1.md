@@ -1,5 +1,67 @@
 # CI Auth Fixture Command Result Contract v1
 
+## Exactly-once certification fixture session continuity
+
+The preserved static discovery remains exactly
+`COMMITTED_COMMAND_MODE_INCONCLUSIVE` /
+`PRECONDITION_ORCHESTRATION_FAILURE` with
+`consumedSubstantiveGate=false`. It is not reinterpreted: committed export
+generated one provider pair, production-misuse generated another,
+`preflight-local` generated another, and the database-owning helper delegated
+to that local generator. No mode was guessed or executed during that discovery.
+
+This correction is classified as
+`CERTIFICATION_AUTH_FIXTURE_CONTINUITY_OWNER_MISSING`,
+`AUTH_COMMAND_MODE_COMPOSITION_CONTRACT_GAP`,
+`AUTH_SESSION_PREFLIGHT_FIXTURE_REGENERATION_DEFECT`, and
+`PRODUCTION_MISUSE_FIXTURE_REGENERATION_DEFECT`. These are certification
+infrastructure classifications only.
+
+`scripts/ci-auth-fixture-session.cjs` now owns
+`interior-ai.ci-auth-fixture-session.v1`. A session binds the session ID and
+nonce, optional candidate commit/tree, the sole generator owner and source
+hash, fixture-policy identity, exact exported-name inventory, separate
+SHA-256 digests of both provider values, creation time, the explicit
+production-ineligible synthetic classification, private transport identity,
+completion marker, one successful generation event, and an aggregate SHA-256.
+Raw provider bytes exist only in the external, physical, symlink-rejected,
+atomic, no-overwrite, owner-mode-0600 transport.
+
+`ci:auth-fixture:export` is the sole canonical generator. The explicit
+consumers are `ci:auth-fixture:validate-existing`,
+`ci:auth-fixture:production-misuse-existing`, and
+`ci:auth-fixture:preflight-existing`. Missing, stale, foreign,
+cross-candidate, tampered, whitespace-mutated, or parent-overridden input fails
+before server/build dispatch. Production misuse still proves exactly
+`SYNTHETIC_AUTH_FIXTURE_PRODUCTION_MISUSE_REJECTED` with regeneration and all
+unintended failure causes excluded.
+
+The unambiguous entry is `npm run certification:auth-preflight`: export,
+validate-existing, production-misuse-existing, then the database-owning
+`certification:auth-session-preflight`, whose server child uses
+preflight-existing. Caller-owned roots are retained for sealed
+rehearsal/build projection; qualification-owned roots are removed. Build
+evidence reports the same safe session/digests and no raw values.
+
+Caller-owned retention is explicit: root, session ID, nonce, and exact
+classification must be supplied together or generation fails before creating
+a task-owned root. Later build consumption injects the sealed build-state
+commit/tree, accepts their absence from ambient environment, and rejects a
+conflicting ambient candidate. The build child receives no private session
+root. Its safe continuity record uses neutral digest field names and an exact
+activation-scope classification; qualification-only unbound continuity cannot
+satisfy real validation.
+
+`preflight-local` is only `LOCAL_ADVISORY_ONLY`,
+`NOT_CERTIFICATION_FIXTURE_SESSION`, `NOT_VALID_FOR_REHEARSAL`, and
+`NOT_VALID_FOR_INTEGRATION`. The real helper cannot delegate to it. The
+existing `interior-ai.ci-auth-fixture-command-result.v1` shape is extended
+compatibly with conditional `identity.fixtureSession` generated/consumed,
+no-regeneration, source-command/mode, eligibility, and digest binding.
+
+Independent read-only review of the complete correction is **PASS**. Exact
+clean committed-head qualification remains to be recorded after commit.
+
 ## Auth-preflight database prerequisite binding
 
 The real canonical `auth-session-preflight` result now adds safe

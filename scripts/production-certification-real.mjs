@@ -118,6 +118,7 @@ import {
   createArchivePlanChildEvidence,
   redactArchivePlanStream,
 } from "./production-archive-plan-evidence.mjs";
+import authFixtureSession from "./ci-auth-fixture-session.cjs";
 
 const DEFAULT_MANIFEST = ".local/production-artifact-evidence/manifest.json";
 const DEFAULT_JOURNAL =
@@ -624,6 +625,46 @@ function childResult(command, args, options = {}) {
   });
 }
 
+export function projectAuthFixtureSessionForStage({
+  repositoryRoot,
+  environment,
+  candidateCommitSha,
+  candidateTreeSha,
+}) {
+  for (const [name, expected] of [
+    ["CI_AUTH_FIXTURE_CANDIDATE_COMMIT_SHA", candidateCommitSha],
+    ["CI_AUTH_FIXTURE_CANDIDATE_TREE_SHA", candidateTreeSha],
+  ]) {
+    if (environment[name] !== undefined && environment[name] !== expected) {
+      throw new Error(
+        "Build auth fixture session has an ambient candidate override",
+      );
+    }
+  }
+  const consumed = authFixtureSession.consumeFixtureSession({
+    repositoryRoot,
+    environment: {
+      ...environment,
+      CI_AUTH_FIXTURE_CANDIDATE_COMMIT_SHA: candidateCommitSha,
+      CI_AUTH_FIXTURE_CANDIDATE_TREE_SHA: candidateTreeSha,
+    },
+    requireAmbientProviderValues: false,
+    sourceCommand: "certification:build",
+    sourceMode: "build-parent-projection",
+  });
+  if (
+    consumed.manifest.candidate.commitSha !== candidateCommitSha ||
+    consumed.manifest.candidate.treeSha !== candidateTreeSha
+  ) {
+    throw new Error("Build auth fixture session belongs to another candidate");
+  }
+  const projected = authFixtureSession.projectedFixtureEnvironment(consumed);
+  return Object.freeze({
+    environment: projected,
+    continuity: authFixtureSession.validateProjectedFixtureEnvironment(projected),
+  });
+}
+
 function stageChildProjection(
   context,
   { stage, profileId = stage, stageInputs, baseEnvironment = context.environment },
@@ -632,6 +673,23 @@ function stageChildProjection(
     context.repositoryRoot,
     profileId,
   );
+  const hasFixtureSession =
+    stage === "build" &&
+    Boolean(context.environment[authFixtureSession.FIXTURE_SESSION_ROOT_ENV]);
+  let authProjection = null;
+  if (hasFixtureSession) {
+    authProjection = projectAuthFixtureSessionForStage({
+      repositoryRoot: context.repositoryRoot,
+      environment: context.environment,
+      candidateCommitSha: context.state.candidate.commitSha,
+      candidateTreeSha: context.state.candidate.treeSha,
+    });
+  } else if (
+    stage === "build" &&
+    context.state.executionClass === "real-candidate"
+  ) {
+    throw new Error("Real certification build requires the canonical auth fixture session");
+  }
   const ownsDatabaseCapability =
     profile.childVisibleVariables.includes("DATABASE_URL");
   if (Object.hasOwn(stageInputs ?? {}, "DATABASE_URL")) {
@@ -655,12 +713,38 @@ function stageChildProjection(
       }).environment;
     }
   }
-  return projectCertificationChildEnvironment({
+  const projection = projectCertificationChildEnvironment({
     repositoryRoot: context.repositoryRoot,
-    baseEnvironment,
+    baseEnvironment: authProjection
+      ? { ...baseEnvironment, ...authProjection.environment }
+      : baseEnvironment,
     stage,
     profileId,
-    stageInputs: { ...stageInputs, ...privateDatabaseEnvironment },
+    stageInputs: {
+      ...stageInputs,
+      ...privateDatabaseEnvironment,
+      ...(stage === "build" &&
+      profile.childVisibleVariables.includes("CERTIFICATION_QUALIFICATION_MODE") &&
+      context.environment.CERTIFICATION_QUALIFICATION_MODE
+        ? {
+            CERTIFICATION_QUALIFICATION_MODE:
+              context.environment.CERTIFICATION_QUALIFICATION_MODE,
+          }
+        : {}),
+      ...(authProjection
+        ? Object.fromEntries(
+            profile.childVisibleVariables
+              .filter((name) => authProjection.environment[name] !== undefined)
+              .map((name) => [name, authProjection.environment[name]]),
+          )
+        : {}),
+    },
+  });
+  if (stage !== "build") return projection;
+  if (!authProjection) return projection;
+  return Object.freeze({
+    ...projection,
+    authFixtureContinuity: authProjection.continuity,
   });
 }
 
@@ -2623,6 +2707,12 @@ export function archiveEnvironmentProjection(context, stage) {
     profileId: stage,
     stageInputs: {
       CERTIFICATION_ENVIRONMENT_STAGE: stage,
+      ...(context.environment.CERTIFICATION_QUALIFICATION_MODE
+        ? {
+            CERTIFICATION_QUALIFICATION_MODE:
+              context.environment.CERTIFICATION_QUALIFICATION_MODE,
+          }
+        : {}),
       CERTIFICATION_EVIDENCE_ROOT: context.evidenceRoot,
       PRODUCTION_ARCHIVE_SOURCE_ROOT: context.repositoryRoot,
       PRODUCTION_ARCHIVE_PLAN: path.join(context.evidenceRoot, "archive/plan.json"),

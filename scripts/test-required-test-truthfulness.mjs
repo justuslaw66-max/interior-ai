@@ -2130,11 +2130,15 @@ assert.equal(
   assert.match(stableJob, /Configure synthetic CI OAuth fixture[\s\S]*npm run ci:auth-fixture:export/);
   assert.ok(
     stableJob.indexOf("npm run ci:auth-fixture:export") <
-      stableJob.indexOf("npm run ci:auth-fixture:validate") &&
-      stableJob.indexOf("npm run ci:auth-fixture:validate") <
+      stableJob.indexOf("npm run ci:auth-fixture:validate-existing") &&
+      stableJob.indexOf("npm run ci:auth-fixture:validate-existing") <
+        stableJob.indexOf("npm run ci:auth-fixture:production-misuse-existing") &&
+      stableJob.indexOf("npm run ci:auth-fixture:production-misuse-existing") <
         stableJob.indexOf("Apply database migrations"),
-    "stable CI must validate GITHUB_ENV propagation immediately after export",
+    "stable CI must validate and production-check the exported fixture session",
   );
+  assert.match(stableJob, /CI_AUTH_FIXTURE_SESSION_ID:/);
+  assert.match(stableJob, /CI_AUTH_FIXTURE_SESSION_NONCE:/);
   assert.ok(
     stableJob.indexOf("npm run test:auth-env-hardening") <
         stableJob.indexOf("npm run test:required-test-truthfulness") &&
@@ -2146,7 +2150,7 @@ assert.equal(
   assert.match(stableJob, /verify-standalone/);
   assert.match(
     contractPreflightJob,
-    /Preflight advisory authentication environment[\s\S]*npm run ci:auth-fixture:preflight/,
+    /Preflight advisory authentication environment[\s\S]*npm run ci:auth-fixture:preflight-existing/,
   );
   assert.match(contractPreflightJob, /npm run test:auth-env-hardening/);
   assert.match(contractPreflightJob, /npm run test:required-test-truthfulness/);
@@ -2355,14 +2359,17 @@ assert.equal(
       advisoryJob.indexOf("Install Playwright browsers"),
     "a malformed advisory auth environment must fail before browser installation",
   );
-  assert.match(advisoryJob, /npm run ci:auth-fixture:preflight/);
+  assert.match(advisoryJob, /npm run ci:auth-fixture:preflight-existing/);
   assert.ok(
     advisoryJob.indexOf("npm run ci:auth-fixture:export") <
-      advisoryJob.indexOf("npm run ci:auth-fixture:validate") &&
-      advisoryJob.indexOf("npm run ci:auth-fixture:validate") <
+      advisoryJob.indexOf("npm run ci:auth-fixture:validate-existing") &&
+      advisoryJob.indexOf("npm run ci:auth-fixture:validate-existing") <
+        advisoryJob.indexOf("npm run ci:auth-fixture:production-misuse-existing") &&
+      advisoryJob.indexOf("npm run ci:auth-fixture:production-misuse-existing") <
         advisoryJob.indexOf("Apply database migrations"),
-    "advisory CI must validate GITHUB_ENV propagation immediately after export",
+    "advisory CI must validate and production-check the exported fixture session",
   );
+  assert.match(advisoryJob, /CI_AUTH_FIXTURE_SESSION_ID:/);
   assert.doesNotMatch(advisoryJob, /^\s+GOOGLE_CLIENT_(?:ID|SECRET):/m);
   assert.doesNotMatch(
     advisoryJob,

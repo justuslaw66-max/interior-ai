@@ -26,12 +26,14 @@ import { resolveRetainedExternalEvidenceFile } from "./playwright-report-path.mj
 import { deriveProductionVerifierClosure } from "./production-verifier-closure.mjs";
 import { projectCertificationChildEnvironment } from "./production-certification-stage-environment.mjs";
 import { certificationDependencyInstallationEnvironment } from "./production-certification-dependencies.mjs";
+import authFixtureSession from "./ci-auth-fixture-session.cjs";
 import {
   decideNftTraceArchiveInclusion,
   decideNftTraceReferenceInclusion,
   formatTraceArchivePolicyRejection,
   prohibitedTraceArchivePath,
 } from "./production-trace-archive-policy.mjs";
+
 
 const EXECUTING_REPOSITORY_ROOT = path.resolve(path.dirname(import.meta.filename), "..");
 export const PRODUCTION_EVIDENCE_VERIFIER_SOURCE_PATHS = Object.freeze(
@@ -248,6 +250,10 @@ const REQUIRED_CONFIGURATION_SHAPE = [
 ];
 const SENSITIVE_ENVIRONMENT_NAME =
   /(SECRET|TOKEN|PASSWORD|PRIVATE_KEY|API_KEY|ACCESS_KEY|COOKIE|DATABASE_URL|AUTH_SECRET|CLIENT_SECRET)/i;
+const SAFE_PORTABLE_DIGEST_ENVIRONMENT_NAMES = new Set([
+  "CI_AUTH_FIXTURE_PROVIDER_CLIENT_ID_SHA256",
+  "CI_AUTH_FIXTURE_PROVIDER_CLIENT_SECRET_SHA256",
+]);
 const SENSITIVE_MANIFEST_KEY =
   /(secret|token|password|private.?key|api.?key|access.?key|cookie|database.?url|credential)/i;
 const REPOSITORY_EVIDENCE_STATEMENT =
@@ -1576,6 +1582,26 @@ function validateConfigurationShape(environment = process.env) {
   return REQUIRED_CONFIGURATION_SHAPE.map((alternatives) => alternatives.join("|"));
 }
 
+function authFixtureBuildContinuity(environment = process.env) {
+  if (!environment[authFixtureSession.FIXTURE_SESSION_ID_ENV]) {
+    if (environment.CERTIFICATION_QUALIFICATION_MODE !== "1") {
+      throw new Error(
+        "production artifact evidence requires a canonical auth fixture session",
+      );
+    }
+    return Object.freeze({
+      schema: "interior-ai.ci-auth-fixture-session.v1",
+      classification: "NOT_CERTIFICATION_FIXTURE_SESSION",
+      generatedVersusConsumed: "not-bound",
+      noRegenerationProof: "not-applicable",
+      certificationEligibility: "NOT_VALID_FOR_REHEARSAL_OR_INTEGRATION",
+      qualificationMode: "deterministic-only",
+      rawValuesRecorded: false,
+    });
+  }
+  return authFixtureSession.validateProjectedFixtureEnvironment(environment);
+}
+
 function assertBuildContract(build, developmentOnlyFlags) {
   if (!PRODUCTION_ENVIRONMENTS.has(build.applicationEnvironment)) {
     throw new Error("production evidence environment must be staging or production");
@@ -1651,6 +1677,7 @@ function leakedSensitiveEnvironmentValues(manifestBytes, environment = process.e
   for (const [name, value] of Object.entries(environment)) {
     if (
       SENSITIVE_ENVIRONMENT_NAME.test(name) &&
+      !SAFE_PORTABLE_DIGEST_ENVIRONMENT_NAMES.has(name) &&
       typeof value === "string" &&
       value.length >= 8 &&
       manifestBytes.includes(value)
@@ -1666,6 +1693,7 @@ async function sensitiveArtifactEnvironmentValues(repositoryRoot, environment = 
     .filter(
       ([name, value]) =>
         SENSITIVE_ENVIRONMENT_NAME.test(name) &&
+        !SAFE_PORTABLE_DIGEST_ENVIRONMENT_NAMES.has(name) &&
         typeof value === "string" &&
         value.length >= 8,
     )
@@ -1868,6 +1896,7 @@ export async function createProductionEvidenceManifest(options) {
     journal.buildContract.applicationEnvironment,
   );
   const requiredVariableNames = validateConfigurationShape(options.environment);
+  const authFixtureContinuity = authFixtureBuildContinuity(options.environment);
   const manifest = {
     schema: PRODUCTION_EVIDENCE_SCHEMA,
     validatorVersion: PRODUCTION_EVIDENCE_VALIDATOR_VERSION,
@@ -1913,6 +1942,7 @@ export async function createProductionEvidenceManifest(options) {
         requiredVariableNames,
         environmentValuesRecorded: false,
       },
+      authFixtureContinuity,
       environmentIdentity: recordedEnvironmentIdentity,
       command: journal.commands.build,
       serverCommand: PRODUCTION_EVIDENCE_SERVER_COMMAND,
@@ -2953,6 +2983,90 @@ export async function validateProductionEvidence({
       JSON.stringify(REQUIRED_CONFIGURATION_SHAPE.map((alternatives) => alternatives.join("|")))
   ) {
     issues.push("required environment configuration shape was not validated safely");
+  }
+  const authFixtureContinuity = manifest.build?.authFixtureContinuity;
+  const boundAuthFixtureContinuity =
+    exactKeys(authFixtureContinuity, [
+      "schema",
+      "sessionId",
+      "invocationNonce",
+      "providerDigests",
+      "generatedVersusConsumed",
+      "noRegenerationProof",
+      "activationScope",
+      "certificationEligibility",
+      "rawValuesRecorded",
+    ]) &&
+    exactKeys(authFixtureContinuity?.providerDigests, [
+      "googleClientIdSha256",
+      "googleClientSecondaryValueSha256",
+    ]) &&
+    /^[A-Za-z0-9][A-Za-z0-9._:-]{7,127}$/.test(
+      authFixtureContinuity?.sessionId ?? "",
+    ) &&
+    /^[A-Za-z0-9][A-Za-z0-9._:-]{7,127}$/.test(
+      authFixtureContinuity?.invocationNonce ?? "",
+    ) &&
+    authFixtureContinuity?.generatedVersusConsumed === "consumed-existing" &&
+    authFixtureContinuity?.noRegenerationProof === "passed" &&
+    new Set(["github-actions", "local-certification-projection"]).has(
+      authFixtureContinuity?.activationScope,
+    ) &&
+    authFixtureContinuity?.certificationEligibility ===
+      "ELIGIBLE_FOR_CANONICAL_AUTH_CONTINUITY_ONLY" &&
+    authFixtureContinuity?.rawValuesRecorded === false &&
+    /^[a-f0-9]{64}$/.test(
+      authFixtureContinuity?.providerDigests?.googleClientIdSha256 ?? "",
+    ) &&
+    /^[a-f0-9]{64}$/.test(
+      authFixtureContinuity?.providerDigests
+        ?.googleClientSecondaryValueSha256 ?? "",
+    );
+  const qualificationOnlyAuthFixtureContinuity =
+    environment.CERTIFICATION_QUALIFICATION_MODE === "1" &&
+    exactKeys(authFixtureContinuity, [
+      "schema",
+      "classification",
+      "generatedVersusConsumed",
+      "noRegenerationProof",
+      "certificationEligibility",
+      "qualificationMode",
+      "rawValuesRecorded",
+    ]) &&
+    authFixtureContinuity?.classification ===
+      "NOT_CERTIFICATION_FIXTURE_SESSION" &&
+    authFixtureContinuity?.generatedVersusConsumed === "not-bound" &&
+    authFixtureContinuity?.noRegenerationProof === "not-applicable" &&
+    authFixtureContinuity?.certificationEligibility ===
+      "NOT_VALID_FOR_REHEARSAL_OR_INTEGRATION" &&
+    authFixtureContinuity?.qualificationMode === "deterministic-only" &&
+    authFixtureContinuity?.rawValuesRecorded === false;
+  if (
+    authFixtureContinuity?.schema !==
+      "interior-ai.ci-auth-fixture-session.v1" ||
+    (!boundAuthFixtureContinuity && !qualificationOnlyAuthFixtureContinuity)
+  ) {
+    issues.push("build auth fixture continuity is missing or contradictory");
+  }
+  if (
+    environment[authFixtureSession.FIXTURE_SESSION_ID_ENV] &&
+    environment.GOOGLE_CLIENT_ID &&
+    environment.GOOGLE_CLIENT_SECRET &&
+    environment[authFixtureSession.FIXTURE_CLIENT_ID_SHA256_ENV] &&
+    environment[authFixtureSession.FIXTURE_CLIENT_SECRET_SHA256_ENV]
+  ) {
+    try {
+      const projectedContinuity =
+        authFixtureSession.validateProjectedFixtureEnvironment(environment);
+      if (
+        JSON.stringify(authFixtureContinuity) !==
+        JSON.stringify(projectedContinuity)
+      ) {
+        issues.push("build auth fixture continuity differs from the projected child");
+      }
+    } catch {
+      issues.push("build auth fixture projected child continuity is invalid");
+    }
   }
   const environmentIdentity = manifest.build?.environmentIdentity;
   const allowedVercelIdentity =

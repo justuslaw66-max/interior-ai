@@ -236,7 +236,7 @@ function stateFixture() {
 {
   const contract = stageEnvironmentContract(repositoryRoot);
   assert.equal(contract.value.schema, "interior-ai.production-certification-stage-environment.v2");
-  assert.equal(Object.keys(contract.variables).length, 97);
+  assert.equal(Object.keys(contract.variables).length, 112);
   assert.equal(Object.keys(contract.applicationFeatureVariables).length, 5);
   assert.equal(Object.keys(contract.profiles).length, 22);
   assert.deepEqual(
@@ -1436,15 +1436,16 @@ function stateFixture() {
   const regressions = JSON.parse(
     readFileSync("scripts/production-certification-regressions.json", "utf8"),
   );
-  assert.equal(regressions.cases.length, 36);
+  assert.equal(regressions.cases.length, 37);
   assert.deepEqual(
     regressions.cases.map((entry) => entry.id),
-    Array.from({ length: 36 }, (_, index) => index + 1),
+    Array.from({ length: 37 }, (_, index) => index + 1),
   );
-  assert.equal(new Set(regressions.cases.map((entry) => entry.defect)).size, 36);
-  assert.equal(regressions.authPreflightDatabaseCases.length, 27);
-  assert.equal(new Set(regressions.authPreflightDatabaseCases).size, 27);
+  assert.equal(new Set(regressions.cases.map((entry) => entry.defect)).size, 37);
+  assert.equal(regressions.authPreflightDatabaseCases.length, 30);
+  assert.equal(new Set(regressions.authPreflightDatabaseCases).size, 30);
   coveredRegressionIds.add(35);
+  coveredRegressionIds.add(37);
   assert.equal(regressions.stageResultCases.length, 24);
   assert.equal(new Set(regressions.stageResultCases).size, 24);
   coveredRegressionIds.add(36);
@@ -3239,7 +3240,7 @@ function stateFixture() {
 
 assert.deepEqual(
   [...coveredRegressionIds].sort((left, right) => left - right),
-  Array.from({ length: 36 }, (_, index) => index + 1),
+  Array.from({ length: 37 }, (_, index) => index + 1),
   "every documented regression must be exercised by an executable assertion",
 );
 

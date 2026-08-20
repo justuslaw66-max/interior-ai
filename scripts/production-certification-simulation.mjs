@@ -299,14 +299,22 @@ export function initializeFixture(repositoryRoot, fixtureRoot) {
           "npx ts-node scripts/ci-auth-fixture.ts export-github-env",
         "ci:auth-fixture:validate":
           "npx ts-node scripts/ci-auth-fixture.ts validate-env",
+        "ci:auth-fixture:validate-existing":
+          "npx ts-node scripts/ci-auth-fixture.ts validate-existing",
         "ci:auth-fixture:production-misuse":
           "npx ts-node scripts/ci-auth-fixture.ts production-misuse",
+        "ci:auth-fixture:production-misuse-existing":
+          "npx ts-node scripts/ci-auth-fixture.ts production-misuse-existing",
         "ci:auth-fixture:preflight":
           "npx ts-node scripts/ci-auth-fixture.ts preflight",
+        "ci:auth-fixture:preflight-existing":
+          "npx ts-node scripts/ci-auth-fixture.ts preflight-existing",
         "test:advisory-auth-preflight":
           "npx ts-node scripts/ci-auth-fixture.ts preflight-local",
         "test:ci-auth-fixture-real-preflight":
-          "node scripts/run-ci-auth-fixture-real-preflight.mjs",
+          "node scripts/run-ci-auth-fixture-session.mjs",
+        "certification:auth-preflight":
+          "node scripts/run-ci-auth-fixture-session.mjs",
         "certification:auth-session-preflight":
           "node scripts/run-ci-auth-fixture-real-preflight.mjs",
         "test:production-certification-auth-preflight-database":
@@ -315,6 +323,8 @@ export function initializeFixture(repositoryRoot, fixtureRoot) {
           "node scripts/ci-auth-fixture-result-contract.cjs validate",
         "test:ci-auth-fixture-results":
           "npx ts-node scripts/test-ci-auth-fixture-results.ts",
+        "test:ci-auth-fixture-session":
+          "node scripts/test-ci-auth-fixture-session.mjs",
         "test:production-certification-stage-result":
           "node scripts/test-production-certification-stage-result.mjs",
         "certification:stage-result:validate":
@@ -898,6 +908,11 @@ export async function runProductionCertificationSimulation({
   const authResultRegression = run(
     "npm",
     ["run", "test:ci-auth-fixture-results"],
+    repositoryRoot,
+  );
+  const authFixtureSessionRegression = run(
+    "npm",
+    ["run", "test:ci-auth-fixture-session"],
     repositoryRoot,
   );
   run(
@@ -4594,6 +4609,22 @@ export async function runProductionCertificationSimulation({
       cleanupAndNoLeakEvidence: true,
       regressionPassed: authResultRegression.includes(
         "CI auth fixture structured-result tests passed",
+      ),
+    },
+    authFixtureSession: {
+      schema: "interior-ai.ci-auth-fixture-session.v1",
+      exactlyOnceGeneration: true,
+      validationConsumedExisting: true,
+      productionMisuseConsumedExisting: true,
+      databasePreflightConsumedExisting: true,
+      buildContinuityGuard: true,
+      secondGenerationRejected: true,
+      localAdvisorySubstitutionRejected: true,
+      staleForeignTamperedSessionRejected: true,
+      simulationOnly: true,
+      eligibleForRealCertification: false,
+      regressionPassed: authFixtureSessionRegression.includes(
+        "CI auth fixture exactly-once session tests passed",
       ),
     },
     authPreflightDatabaseLifecycle: {

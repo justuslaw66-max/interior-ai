@@ -39,12 +39,24 @@ const COMMAND_MODES = Object.freeze({
     commandId: "ci:auth-fixture:validate",
     mode: "auth-environment-validation",
   }),
+  "validate-existing": Object.freeze({
+    commandId: "ci:auth-fixture:validate-existing",
+    mode: "auth-environment-validation",
+  }),
   "production-misuse": Object.freeze({
     commandId: "ci:auth-fixture:production-misuse",
     mode: "production-misuse-validation",
   }),
+  "production-misuse-existing": Object.freeze({
+    commandId: "ci:auth-fixture:production-misuse-existing",
+    mode: "production-misuse-validation",
+  }),
   preflight: Object.freeze({
     commandId: "ci:auth-fixture:preflight",
+    mode: "auth-session-preflight",
+  }),
+  "preflight-existing": Object.freeze({
+    commandId: "ci:auth-fixture:preflight-existing",
     mode: "auth-session-preflight",
   }),
   "preflight-local": Object.freeze({
@@ -52,7 +64,7 @@ const COMMAND_MODES = Object.freeze({
     mode: "auth-session-preflight",
   }),
   "real-preflight": Object.freeze({
-    commandId: "test:ci-auth-fixture-real-preflight",
+    commandId: "certification:auth-session-preflight",
     mode: "auth-session-preflight",
   }),
 });
@@ -323,6 +335,128 @@ function assertDescriptor(value, description) {
   assertExactKeys(value, ["bytes", "sha256"], description);
   if (!Number.isSafeInteger(value.bytes) || value.bytes < 0 || !SHA256_PATTERN.test(value.sha256)) {
     throw new Error(`${description} is malformed`);
+  }
+}
+
+function assertFixtureSessionIdentity(
+  fixtureSession,
+  resultIdentity,
+  expectedAction,
+  expectedSourceCommand,
+  expectedSourceMode,
+) {
+  assertExactKeys(
+    fixtureSession,
+    [
+      "schema",
+      "version",
+      "sessionId",
+      "invocationNonce",
+      "candidate",
+      "generator",
+      "policy",
+      "exportedVariableNames",
+      "exportedVariableNamesSha256",
+      "providerDigests",
+      "createdAt",
+      "classification",
+      "privateTransport",
+      "completion",
+      "sessionAggregateSha256",
+      "lifecycle",
+    ],
+    "Auth fixture session identity",
+  );
+  assertExactKeys(fixtureSession.candidate, ["commitSha", "treeSha"], "Auth fixture candidate");
+  assertExactKeys(fixtureSession.generator, ["owner", "sourceSha256"], "Auth fixture generator");
+  assertExactKeys(fixtureSession.policy, ["schema", "sourceSha256"], "Auth fixture policy");
+  assertExactKeys(
+    fixtureSession.providerDigests,
+    ["googleClientIdSha256", "googleClientSecretSha256"],
+    "Auth fixture provider digests",
+  );
+  assertExactKeys(
+    fixtureSession.privateTransport,
+    [
+      "identitySha256",
+      "contentSha256",
+      "ownerOnlyMode",
+      "portable",
+      "rawValuesRetainedInPortableEvidence",
+    ],
+    "Auth fixture private transport",
+  );
+  assertExactKeys(
+    fixtureSession.completion,
+    ["complete", "marker", "successfulGenerationEvents"],
+    "Auth fixture completion",
+  );
+  assertExactKeys(
+    fixtureSession.lifecycle,
+    [
+      "action",
+      "generationCount",
+      "regenerationDetected",
+      "sourceCommand",
+      "sourceMode",
+      "certificationEligibility",
+    ],
+    "Auth fixture lifecycle",
+  );
+  const expectedNames = [
+    "CI_AUTH_FIXTURE_ACTIVE",
+    "CI_AUTH_FIXTURE_SESSION_CLASSIFICATION",
+    "CI_AUTH_FIXTURE_SESSION_ID",
+    "CI_AUTH_FIXTURE_SESSION_NONCE",
+    "CI_AUTH_FIXTURE_SESSION_ROOT",
+    "CI_AUTH_FIXTURE_PROVIDER_CLIENT_ID_SHA256",
+    "CI_AUTH_FIXTURE_PROVIDER_CLIENT_SECRET_SHA256",
+    "CI_AUTH_FIXTURE_NO_REGENERATION",
+    "GOOGLE_CLIENT_ID",
+    "GOOGLE_CLIENT_SECRET",
+  ].sort();
+  if (
+    fixtureSession.schema !== "interior-ai.ci-auth-fixture-session.v1" ||
+    fixtureSession.version !== 1 ||
+    !NONCE_PATTERN.test(fixtureSession.sessionId) ||
+    !NONCE_PATTERN.test(fixtureSession.invocationNonce) ||
+    fixtureSession.candidate.commitSha !== resultIdentity.candidateCommitSha ||
+    fixtureSession.candidate.treeSha !== resultIdentity.candidateTreeSha ||
+    fixtureSession.generator.owner !==
+      "scripts/ci-auth-fixture.ts#export-github-env" ||
+    !SHA256_PATTERN.test(fixtureSession.generator.sourceSha256) ||
+    fixtureSession.policy.schema !==
+      "interior-ai.synthetic-ci-oauth-fixture-policy.v1" ||
+    !SHA256_PATTERN.test(fixtureSession.policy.sourceSha256) ||
+    JSON.stringify(fixtureSession.exportedVariableNames) !==
+      JSON.stringify(expectedNames) ||
+    fixtureSession.exportedVariableNamesSha256 !==
+      sha256Bytes(expectedNames.join("\0")) ||
+    !SHA256_PATTERN.test(fixtureSession.providerDigests.googleClientIdSha256) ||
+    !SHA256_PATTERN.test(fixtureSession.providerDigests.googleClientSecretSha256) ||
+    !Number.isFinite(Date.parse(fixtureSession.createdAt)) ||
+    fixtureSession.classification !==
+      "PRODUCTION_INELIGIBLE_SYNTHETIC_AUTH" ||
+    !SHA256_PATTERN.test(fixtureSession.privateTransport.identitySha256) ||
+    !SHA256_PATTERN.test(fixtureSession.privateTransport.contentSha256) ||
+    fixtureSession.privateTransport.ownerOnlyMode !== "0600" ||
+    fixtureSession.privateTransport.portable !== false ||
+    fixtureSession.privateTransport.rawValuesRetainedInPortableEvidence !==
+      false ||
+    fixtureSession.completion.complete !== true ||
+    fixtureSession.completion.marker !== "CI_AUTH_FIXTURE_SESSION_COMPLETE" ||
+    fixtureSession.completion.successfulGenerationEvents !== 1 ||
+    !SHA256_PATTERN.test(fixtureSession.sessionAggregateSha256) ||
+    fixtureSession.lifecycle.action !== expectedAction ||
+    fixtureSession.lifecycle.generationCount !==
+      (expectedAction === "generated" ? 1 : 0) ||
+    fixtureSession.lifecycle.regenerationDetected !== false ||
+    fixtureSession.lifecycle.sourceCommand !== expectedSourceCommand ||
+    fixtureSession.lifecycle.sourceMode !== expectedSourceMode ||
+    fixtureSession.lifecycle.certificationEligibility !==
+      "ELIGIBLE_FOR_CANONICAL_AUTH_CONTINUITY_ONLY"
+  ) {
+    throw new Error("Auth fixture session identity or exactly-once lifecycle is invalid");
   }
 }
 
@@ -681,7 +815,7 @@ function assertModeEvidence(result, allowNonConsumableFailure = false) {
   }
   if (result.command.mode === "auth-session-preflight") {
     const realDatabasePreflight =
-      result.command.id === "test:ci-auth-fixture-real-preflight";
+      result.command.id === "certification:auth-session-preflight";
     assertExactKeys(
       evidence,
       [
@@ -1047,7 +1181,8 @@ function validateAuthCommandResultValue({
   ) {
     throw new Error("Auth result command or mode does not match this invocation");
   }
-  const realDatabasePreflight = commandEntry[0] === "real-preflight";
+  const commandKey = commandEntry[0];
+  const realDatabasePreflight = commandKey === "real-preflight";
   const expectedExecutable = realDatabasePreflight ? "node" : "node-ts-node";
   const expectedArgv = realDatabasePreflight
     ? ["scripts/run-ci-auth-fixture-real-preflight.mjs"]
@@ -1068,6 +1203,10 @@ function validateAuthCommandResultValue({
   ) {
     throw new Error("Expected-negative result is invalid for this auth mode");
   }
+  const fixtureSessionRequired =
+    commandKey === "export-github-env" ||
+    commandKey.endsWith("-existing") ||
+    realDatabasePreflight;
   assertExactKeys(
     result.identity,
     [
@@ -1082,11 +1221,66 @@ function validateAuthCommandResultValue({
       "resultPathIdentitySha256",
       "startedAt",
       "completedAt",
+      ...(Object.hasOwn(result.identity, "fixtureSession")
+        ? ["fixtureSession"]
+        : []),
+      ...(Object.hasOwn(result.identity, "advisoryFixture")
+        ? ["advisoryFixture"]
+        : []),
     ],
     "Auth result identity",
   );
   if (!NONCE_PATTERN.test(result.identity.invocationNonce) || result.identity.invocationNonce !== expectedNonce) {
     throw new Error("Auth result nonce is stale or belongs to another invocation");
+  }
+  if (fixtureSessionRequired && result.result !== "failure") {
+    if (!result.identity.fixtureSession) {
+      throw new Error("Auth result lacks the canonical fixture session identity");
+    }
+    const expectedAction =
+      commandKey === "export-github-env" ? "generated" : "consumed";
+    assertFixtureSessionIdentity(
+      result.identity.fixtureSession,
+      result.identity,
+      expectedAction,
+      result.command.id,
+      commandKey,
+    );
+  } else if (result.identity.fixtureSession) {
+    const expectedAction =
+      commandKey === "export-github-env" ? "generated" : "consumed";
+    assertFixtureSessionIdentity(
+      result.identity.fixtureSession,
+      result.identity,
+      expectedAction,
+      result.command.id,
+      commandKey,
+    );
+  }
+  if (new Set(["preflight-local", "production-misuse"]).has(commandKey)) {
+    assertExactKeys(
+      result.identity.advisoryFixture,
+      [
+        "classification",
+        "fixtureSessionClassification",
+        "rehearsalClassification",
+        "integrationClassification",
+      ],
+      "Local advisory auth fixture classification",
+    );
+    if (
+      result.identity.advisoryFixture.classification !== "LOCAL_ADVISORY_ONLY" ||
+      result.identity.advisoryFixture.fixtureSessionClassification !==
+        "NOT_CERTIFICATION_FIXTURE_SESSION" ||
+      result.identity.advisoryFixture.rehearsalClassification !==
+        "NOT_VALID_FOR_REHEARSAL" ||
+      result.identity.advisoryFixture.integrationClassification !==
+        "NOT_VALID_FOR_INTEGRATION"
+    ) {
+      throw new Error("Local advisory auth result is certification-ineligible");
+    }
+  } else if (result.identity.advisoryFixture) {
+    throw new Error("Certification auth result cannot consume a local advisory fixture");
   }
   if (
     result.identity.candidateCommitSha !== (expectedCandidateCommitSha || null) ||

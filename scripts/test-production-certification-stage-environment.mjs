@@ -126,15 +126,63 @@ function testDatabaseCapabilityIsolation() {
     .sort();
   assert.deepEqual(actualDatabaseProfiles, expectedDatabaseProfiles);
   const authPreflight = contract.profiles["auth-session-preflight"];
+  const expectedAuthPreflightVariables = [
+    "CI_AUTH_FIXTURE_ACTIVE",
+    "CI_AUTH_FIXTURE_CANDIDATE_COMMIT_SHA",
+    "CI_AUTH_FIXTURE_CANDIDATE_TREE_SHA",
+    "CI_AUTH_FIXTURE_MODE",
+    "CI_AUTH_FIXTURE_NO_REGENERATION",
+    "CI_AUTH_FIXTURE_PROVIDER_CLIENT_ID_SHA256",
+    "CI_AUTH_FIXTURE_PROVIDER_CLIENT_SECRET_SHA256",
+    "CI_AUTH_FIXTURE_RESULT_NONCE",
+    "CI_AUTH_FIXTURE_RESULT_PATH",
+    "CI_AUTH_FIXTURE_RESULT_ROOT",
+    "CI_AUTH_FIXTURE_SESSION_CLASSIFICATION",
+    "CI_AUTH_FIXTURE_SESSION_ID",
+    "CI_AUTH_FIXTURE_SESSION_NONCE",
+    "CI_AUTH_FIXTURE_SESSION_ROOT",
+    "DATABASE_URL",
+  ];
   assert.deepEqual(authPreflight.stages, ["auth-session-preflight"]);
-  assert.deepEqual(authPreflight.childVisibleVariables, ["DATABASE_URL"]);
-  assert.deepEqual(authPreflight.requiredVariables, ["DATABASE_URL"]);
+  assert.deepEqual(
+    authPreflight.childVisibleVariables,
+    expectedAuthPreflightVariables,
+  );
+  assert.deepEqual(authPreflight.requiredVariables, expectedAuthPreflightVariables);
   assert.equal(
     authPreflight.parentOnlyVariables.includes(
       "CERTIFICATION_DATABASE_ADMIN_URL",
     ),
     true,
   );
+  assert.equal(contract.prefixes.includes("CI_AUTH_"), true);
+  assert.equal(contract.variables.CI_AUTH_FIXTURE_SESSION_ROOT.portable, false);
+  const build = contract.profiles.build;
+  for (const name of [
+    "CI_AUTH_FIXTURE_ACTIVE",
+    "CI_AUTH_FIXTURE_LOCAL_TEST",
+    "CI_AUTH_FIXTURE_MODE",
+    "CI_AUTH_FIXTURE_NO_REGENERATION",
+    "CI_AUTH_FIXTURE_PROVIDER_CLIENT_ID_SHA256",
+    "CI_AUTH_FIXTURE_PROVIDER_CLIENT_SECRET_SHA256",
+    "CI_AUTH_FIXTURE_SESSION_CLASSIFICATION",
+    "CI_AUTH_FIXTURE_SESSION_ID",
+    "CI_AUTH_FIXTURE_SESSION_NONCE",
+  ]) {
+    assert.equal(build.childVisibleVariables.includes(name), true);
+    assert.equal(build.optionalVariables.includes(name), true);
+    assert.equal(build.requiredVariables.includes(name), false);
+  }
+  for (const name of [
+    "CI_AUTH_FIXTURE_CANDIDATE_COMMIT_SHA",
+    "CI_AUTH_FIXTURE_CANDIDATE_TREE_SHA",
+    "CI_AUTH_FIXTURE_RESULT_NONCE",
+    "CI_AUTH_FIXTURE_RESULT_PATH",
+    "CI_AUTH_FIXTURE_RESULT_ROOT",
+    "CI_AUTH_FIXTURE_SESSION_ROOT",
+  ]) {
+    assert.equal(build.childVisibleVariables.includes(name), false);
+  }
   for (const [profileId, profile] of Object.entries(contract.profiles)) {
     const stage = profile.stages[0];
     const projection = projected({
@@ -159,6 +207,23 @@ function testDatabaseCapabilityIsolation() {
       false,
     );
   }
+
+  const unrelated = projected({
+    profileId: "doctor",
+    stage: "doctor",
+    baseEnvironment: {
+      CI_AUTH_FIXTURE_ACTIVE: "1",
+      CI_AUTH_FIXTURE_SESSION_ROOT: "/private/auth-session",
+    },
+  });
+  assert.equal(unrelated.environment.CI_AUTH_FIXTURE_ACTIVE, undefined);
+  assert.equal(unrelated.environment.CI_AUTH_FIXTURE_SESSION_ROOT, undefined);
+  assert.deepEqual(
+    unrelated.metadata.strippedKnownCertificationControlVariables.filter(
+      (name) => name.startsWith("CI_AUTH_"),
+    ),
+    ["CI_AUTH_FIXTURE_ACTIVE", "CI_AUTH_FIXTURE_SESSION_ROOT"],
+  );
 }
 
 function testFloorPlanValuePolicies() {

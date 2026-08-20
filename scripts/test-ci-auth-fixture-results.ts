@@ -431,12 +431,18 @@ async function run(): Promise<void> {
   roots.push(exportTransportRoot);
   const githubWorkspace = path.join(exportTransportRoot, "workspace");
   const githubEnvironment = path.join(exportTransportRoot, "github-environment");
+  const fixtureSessionRoot = path.join(exportTransportRoot, "fixture-session");
   mkdirSync(githubWorkspace);
   writeFileSync(githubEnvironment, "");
   const exportChild = runPackage("ci:auth-fixture:export", {
     ...resultEnvironment(exportTarget),
     GITHUB_ENV: githubEnvironment,
     GITHUB_WORKSPACE: githubWorkspace,
+    CI_AUTH_FIXTURE_SESSION_ROOT: fixtureSessionRoot,
+    CI_AUTH_FIXTURE_SESSION_ID: "auth-result-export-session-001",
+    CI_AUTH_FIXTURE_SESSION_NONCE: "auth-result-export-nonce-001",
+    CI_AUTH_FIXTURE_SESSION_CLASSIFICATION:
+      "PRODUCTION_INELIGIBLE_SYNTHETIC_AUTH",
   });
   assert.equal(
     exportChild.status,
@@ -449,13 +455,16 @@ async function run(): Promise<void> {
     "provider-fixture-export",
   );
   assert.equal(exportResult.result, "success");
-  const exportedValues = readFileSync(githubEnvironment, "utf8")
+  const exportedAssignments = Object.fromEntries(readFileSync(githubEnvironment, "utf8")
     .trim()
     .split("\n")
-    .map((line) => line.slice(line.indexOf("=") + 1));
+    .map((line) => [
+      line.slice(0, line.indexOf("=")),
+      line.slice(line.indexOf("=") + 1),
+    ]));
   const exportResultBytes = readFileSync(exportTarget.resultPath, "utf8");
-  for (const value of exportedValues) {
-    if (value !== "1") assert.ok(!exportResultBytes.includes(value));
+  for (const name of ["GOOGLE_CLIENT_ID", "GOOGLE_CLIENT_SECRET"]) {
+    assert.ok(!exportResultBytes.includes(exportedAssignments[name]));
   }
 
   const validationSuccess = destination("validation-success");

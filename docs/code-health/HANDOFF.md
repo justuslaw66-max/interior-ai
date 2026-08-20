@@ -1,5 +1,31 @@
 # Code health audit handoff
 
+## Production certification auth fixture continuity — 2026-08-20
+
+The static discovery remains exactly `COMMITTED_COMMAND_MODE_INCONCLUSIVE`,
+`PRECONDITION_ORCHESTRATION_FAILURE`, and
+`consumedSubstantiveGate=false`. One canonical exactly-once fixture session now
+keeps export as the sole generator. `npm run certification:auth-preflight`
+owns export, validate-existing, production-misuse-existing, and the
+database-backed preflight-existing path. The same safe session ID and provider
+digests reach sealed build projection; raw bytes remain only in the external
+private transport. Local preflight generation is advisory-only.
+
+The stage capability contract strips auth controls from unrelated children,
+exposes the private root only to the database-backed auth child, and exposes
+only the canonical provider pair plus safe identity/digests and activation
+scope to build. Build injects its sealed candidate commit/tree when consuming a
+retained session, so no ambient candidate variables are required and any
+conflicting override fails. Caller-retained sessions require root, ID, nonce,
+and classification together. Independent read-only review is **PASS** after
+these boundaries and task-owned cleanup were corrected. Exact clean committed-
+head qualification remains to be recorded after the implementation commit.
+
+The risk-triggered script-test inventory is 273 paths at
+`2e66faace4df8c8edf0580e16c606a77734e5c89129c2d2a792ff226d201f3ab`.
+Fresh rehearsal, immutable final certification, integration, push/deployment,
+and closure audit remain pending. This task starts none of them.
+
 ## Production certification stage-result consumer — 2026-08-19
 
 Branch `fix/production-certification-stage-result-consumer` starts at exact

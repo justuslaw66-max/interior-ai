@@ -1,5 +1,21 @@
 # Production certification database lifecycle v1
 
+## Existing auth fixture consumed by the preflight-only lifecycle
+
+`certification:auth-session-preflight` now requires the canonical external
+fixture session and consumes it through `ci:auth-fixture:preflight-existing`.
+It never delegates to generating `preflight-local`. The lifecycle remains plan,
+provision, migrate, initial inspection, scoped non-admin `DATABASE_URL`
+projection, auth checks with the same provider digests, server cleanup, final
+inspection, role removal, database drop, and absence proof. Raw provider and
+database values remain non-portable, and this database remains distinct from
+any later rehearsal database.
+
+The child receives the private fixture-session root only through the declared
+`auth-session-preflight` stage capability. Build and unrelated children cannot
+receive that root. Independent read-only review is **PASS**; exact clean
+committed-head qualification is pending the focused implementation commit.
+
 ## Auth-session preflight-only lifecycle bridge
 
 The preserved failed preflight remains exactly

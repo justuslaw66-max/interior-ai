@@ -320,9 +320,13 @@ export function validateAuthResultContracts(repositoryRoot) {
   const ownerPaths = [
     "scripts/ci-auth-fixture-result-contract.cjs",
     "scripts/ci-auth-fixture-result-contract.d.cts",
+    "scripts/ci-auth-fixture-session.cjs",
+    "scripts/ci-auth-fixture-session.d.cts",
     "scripts/ci-auth-fixture.ts",
     "scripts/run-ci-auth-fixture-real-preflight.mjs",
+    "scripts/run-ci-auth-fixture-session.mjs",
     "scripts/test-ci-auth-fixture-results.ts",
+    "scripts/test-ci-auth-fixture-session.mjs",
     "scripts/test-production-certification-auth-preflight-database.mjs",
     "lib/auth-env.ts",
   ];
@@ -345,6 +349,26 @@ export function validateAuthResultContracts(repositoryRoot) {
   );
   const realPreflightSource = readFileSync(
     path.join(repositoryRoot, "scripts/run-ci-auth-fixture-real-preflight.mjs"),
+    "utf8",
+  );
+  const fixtureSessionSource = readFileSync(
+    path.join(repositoryRoot, "scripts/ci-auth-fixture-session.cjs"),
+    "utf8",
+  );
+  const fixtureSessionRunnerSource = readFileSync(
+    path.join(repositoryRoot, "scripts/run-ci-auth-fixture-session.mjs"),
+    "utf8",
+  );
+  const fixtureSessionRegressionSource = readFileSync(
+    path.join(repositoryRoot, "scripts/test-ci-auth-fixture-session.mjs"),
+    "utf8",
+  );
+  const certificationRunnerSource = readFileSync(
+    path.join(repositoryRoot, "scripts/production-certification-real.mjs"),
+    "utf8",
+  );
+  const artifactEvidenceSource = readFileSync(
+    path.join(repositoryRoot, "scripts/production-artifact-evidence.mjs"),
     "utf8",
   );
   const databaseLifecycleSource = readFileSync(
@@ -376,11 +400,16 @@ export function validateAuthResultContracts(repositoryRoot) {
   const requiredScripts = {
     "ci:auth-fixture:export": "export-github-env",
     "ci:auth-fixture:validate": "validate-env",
+    "ci:auth-fixture:validate-existing": "validate-existing",
     "ci:auth-fixture:production-misuse": "production-misuse",
+    "ci:auth-fixture:production-misuse-existing":
+      "production-misuse-existing",
     "ci:auth-fixture:preflight": "preflight",
+    "ci:auth-fixture:preflight-existing": "preflight-existing",
     "test:advisory-auth-preflight": "preflight-local",
     "test:ci-auth-fixture-real-preflight":
-      "run-ci-auth-fixture-real-preflight.mjs",
+      "run-ci-auth-fixture-session.mjs",
+    "certification:auth-preflight": "run-ci-auth-fixture-session.mjs",
     "certification:auth-session-preflight":
       "run-ci-auth-fixture-real-preflight.mjs",
     "test:production-certification-auth-preflight-database":
@@ -388,6 +417,7 @@ export function validateAuthResultContracts(repositoryRoot) {
     "ci:auth-fixture:result:validate":
       "ci-auth-fixture-result-contract.cjs validate",
     "test:ci-auth-fixture-results": "test-ci-auth-fixture-results.ts",
+    "test:ci-auth-fixture-session": "test-ci-auth-fixture-session.mjs",
   };
   for (const [scriptId, marker] of Object.entries(requiredScripts)) {
     if (!packageJson.scripts?.[scriptId]?.includes(marker)) {
@@ -468,12 +498,49 @@ export function validateAuthResultContracts(repositoryRoot) {
     !authDatabaseRegressionSource.includes("scoped role collision") ||
     !authDatabaseRegressionSource.includes("beforePrivateSidecarPublish") ||
     !qualificationSource.includes('"test:auth-env-hardening"') ||
+    !qualificationSource.includes('"test:ci-auth-fixture-session"') ||
     !qualificationSource.includes('"test:ci-auth-fixture-real-preflight"') ||
     !qualificationSource.includes(
       '"scripts/test-production-certification-auth-preflight-database.mjs"',
     )
   ) {
     throw new Error("canonical auth result schema, validator, or no-leak policy is incomplete");
+  }
+  if (
+    !fixtureSessionSource.includes(
+      '"interior-ai.ci-auth-fixture-session.v1"',
+    ) ||
+    !fixtureSessionSource.includes("refuses a second generation attempt") ||
+    !fixtureSessionSource.includes("owner-only mode 0700") ||
+    !fixtureSessionSource.includes("owner-only mode-0600") ||
+    !fixtureSessionSource.includes("rejected a missing or overridden parent") ||
+    !fixtureSessionRunnerSource.includes("ci:auth-fixture:export") ||
+    !fixtureSessionRunnerSource.includes("ci:auth-fixture:validate-existing") ||
+    !fixtureSessionRunnerSource.includes(
+      "ci:auth-fixture:production-misuse-existing",
+    ) ||
+    !fixtureSessionRunnerSource.includes(
+      "certification:auth-session-preflight",
+    ) ||
+    !realPreflightSource.includes("ci:auth-fixture:preflight-existing") ||
+    realPreflightSource.includes("test:advisory-auth-preflight") ||
+    !fixtureSource.includes("LOCAL_ADVISORY_ONLY") ||
+    !fixtureSource.includes("NOT_CERTIFICATION_FIXTURE_SESSION") ||
+    !fixtureSessionRegressionSource.includes(
+      "CI auth fixture exactly-once session tests passed",
+    ) ||
+    !certificationRunnerSource.includes(
+      "projectAuthFixtureSessionForStage",
+    ) ||
+    !certificationRunnerSource.includes(
+      "Build auth fixture session belongs to another candidate",
+    ) ||
+    !artifactEvidenceSource.includes("authFixtureBuildContinuity") ||
+    !artifactEvidenceSource.includes(
+      "validateProjectedFixtureEnvironment",
+    )
+  ) {
+    throw new Error("canonical exactly-once auth fixture session ownership is incomplete");
   }
   if (
     !fixtureSource.includes("process.stdout.write(stdout)") ||
@@ -484,7 +551,7 @@ export function validateAuthResultContracts(repositoryRoot) {
   }
   const workflowCommandCount =
     workflowSource.match(
-      /npm run ci:auth-fixture:(?:export|validate|preflight)(?:\s|$)/g,
+      /npm run ci:auth-fixture:(?:export|validate-existing|production-misuse-existing|preflight-existing)(?:\s|$)/g,
     )?.length ?? 0;
   const workflowValidatorCount =
     workflowSource.match(/npm run ci:auth-fixture:result:validate(?:\s|$)/g)
@@ -494,7 +561,7 @@ export function validateAuthResultContracts(repositoryRoot) {
   const workflowFailureCaptureCount =
     workflowSource.match(/^\s+set \+e$/gm)?.length ?? 0;
   if (
-    workflowCommandCount !== 8 ||
+    workflowCommandCount !== 11 ||
     workflowValidatorCount !== workflowCommandCount ||
     workflowStatusBindingCount !== workflowCommandCount ||
     workflowFailureCaptureCount !== workflowCommandCount
@@ -515,6 +582,15 @@ export function validateAuthResultContracts(repositoryRoot) {
     authPreflightScopedRoleAdminCapabilities: false,
     authPreflightPortableRawDatabaseValues: false,
     authPreflightDatabaseDroppedBeforeSuccess: true,
+    canonicalFixtureSessionSchema:
+      "interior-ai.ci-auth-fixture-session.v1",
+    soleCertificationGenerator: "ci:auth-fixture:export",
+    validationConsumesExistingSession: true,
+    productionMisuseConsumesExistingSession: true,
+    databasePreflightConsumesExistingSession: true,
+    localAdvisoryCertificationEligible: false,
+    fixtureSessionBuildContinuity: true,
+    exactlyOnceRegressionRegistered: true,
     rehearsalDatabaseIndependent: true,
     workflowFailureResultsValidated: true,
     rawAuthMaterialPortable: false,
@@ -1464,12 +1540,41 @@ function validateStageEnvironmentCapabilities(repositoryRoot, environment) {
   }
   const sourceProfile = contract.profiles["source-validation"];
   const authPreflightProfile = contract.profiles["auth-session-preflight"];
+  const buildProfile = contract.profiles.build;
   const runtimeProfile = contract.profiles["runtime-smoke"];
   const phase8Profile = contract.profiles.phase8;
   const productionBrowser = contract.profiles["production-browser-owner"];
   const developmentBrowser = contract.profiles["development-browser-owner"];
   const qualificationSourceProfile =
     contract.profiles["source-validation-qualification"];
+  const expectedAuthPreflightVariables = [
+    "CI_AUTH_FIXTURE_ACTIVE",
+    "CI_AUTH_FIXTURE_CANDIDATE_COMMIT_SHA",
+    "CI_AUTH_FIXTURE_CANDIDATE_TREE_SHA",
+    "CI_AUTH_FIXTURE_MODE",
+    "CI_AUTH_FIXTURE_NO_REGENERATION",
+    "CI_AUTH_FIXTURE_PROVIDER_CLIENT_ID_SHA256",
+    "CI_AUTH_FIXTURE_PROVIDER_CLIENT_SECRET_SHA256",
+    "CI_AUTH_FIXTURE_RESULT_NONCE",
+    "CI_AUTH_FIXTURE_RESULT_PATH",
+    "CI_AUTH_FIXTURE_RESULT_ROOT",
+    "CI_AUTH_FIXTURE_SESSION_CLASSIFICATION",
+    "CI_AUTH_FIXTURE_SESSION_ID",
+    "CI_AUTH_FIXTURE_SESSION_NONCE",
+    "CI_AUTH_FIXTURE_SESSION_ROOT",
+    "DATABASE_URL",
+  ];
+  const expectedBuildAuthVariables = [
+    "CI_AUTH_FIXTURE_ACTIVE",
+    "CI_AUTH_FIXTURE_LOCAL_TEST",
+    "CI_AUTH_FIXTURE_MODE",
+    "CI_AUTH_FIXTURE_NO_REGENERATION",
+    "CI_AUTH_FIXTURE_PROVIDER_CLIENT_ID_SHA256",
+    "CI_AUTH_FIXTURE_PROVIDER_CLIENT_SECRET_SHA256",
+    "CI_AUTH_FIXTURE_SESSION_CLASSIFICATION",
+    "CI_AUTH_FIXTURE_SESSION_ID",
+    "CI_AUTH_FIXTURE_SESSION_NONCE",
+  ];
   const databaseVariable = contract.variables.DATABASE_URL;
   const expectedDatabaseProfiles = [
     "artifact-product-server",
@@ -1635,9 +1740,18 @@ function validateStageEnvironmentCapabilities(repositoryRoot, environment) {
     JSON.stringify(authPreflightProfile?.stages) !==
       JSON.stringify(["auth-session-preflight"]) ||
     JSON.stringify(authPreflightProfile?.childVisibleVariables) !==
-      JSON.stringify(["DATABASE_URL"]) ||
+      JSON.stringify(expectedAuthPreflightVariables) ||
     JSON.stringify(authPreflightProfile?.requiredVariables) !==
-      JSON.stringify(["DATABASE_URL"]) ||
+      JSON.stringify(expectedAuthPreflightVariables) ||
+    !contract.prefixes.includes("CI_AUTH_") ||
+    contract.variables.CI_AUTH_FIXTURE_SESSION_ROOT?.portable !== false ||
+    expectedBuildAuthVariables.some(
+      (name) =>
+        !buildProfile?.childVisibleVariables.includes(name) ||
+        !buildProfile?.optionalVariables.includes(name) ||
+        buildProfile?.requiredVariables.includes(name),
+    ) ||
+    buildProfile?.childVisibleVariables.includes("CI_AUTH_FIXTURE_SESSION_ROOT") ||
     !authPreflightProfile?.parentOnlyVariables.includes(
       "CERTIFICATION_DATABASE_ADMIN_URL",
     ) ||
@@ -1743,7 +1857,11 @@ function validateStageEnvironmentCapabilities(repositoryRoot, environment) {
       (entry) =>
         entry.defect === "auth-session-preflight-database-lifecycle-bridge",
     ) ||
-    regressionMatrix.authPreflightDatabaseCases?.length !== 27 ||
+    !regressionMatrix.cases.some(
+      (entry) =>
+        entry.defect === "auth-fixture-session-continuity-owner-missing",
+    ) ||
+    regressionMatrix.authPreflightDatabaseCases?.length !== 30 ||
     !/externalVisionEnabled, false/.test(floorPlanLocalOcrTest) ||
     /process\.env|delete\s+process\.env/.test(floorPlanLocalOcrTest) ||
     !/externalVisionEnabled:\s*environment\.FLOOR_PLAN_VISION_ENABLED === "1"/.test(

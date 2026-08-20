@@ -1,5 +1,23 @@
 # P0/P1 remediation queue
 
+## Certification auth fixture session continuity — 2026-08-20
+
+- **Preserved result:** `COMMITTED_COMMAND_MODE_INCONCLUSIVE` /
+  `PRECONDITION_ORCHESTRATION_FAILURE`, non-consuming and unchanged.
+- **Correction:** export is the sole canonical generator; validate-existing,
+  production-misuse-existing, database-backed preflight-existing, and build
+  consume the exact external session/digests without reconstruction.
+- **Isolation:** raw bytes remain in the owner-controlled external mode-0600
+  transport. `preflight-local` is advisory-only and cannot satisfy rehearsal or
+  integration.
+- **Review/status:** independent read-only review is **PASS**. Build consumes a
+  retained session with sealed state commit/tree, rejects ambient conflicts,
+  projects only declared auth capability, and keeps qualification fallback
+  ineligible. Exact clean committed-head qualification is pending commit.
+- **Remaining:** fresh rehearsal, immutable certification, integration, push,
+  deployment, and CH-0015 closure. Rollback is the focused correction commit;
+  external sessions are removed only by their explicit owner.
+
 ## Runtime-smoke readiness and failure-evidence regression — 2026-08-18
 
 - **Classification:** primary `RUNTIME_SMOKE_READINESS_CONTRACT_DEFECT`;

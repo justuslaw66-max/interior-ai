@@ -49,6 +49,10 @@ jobs:
       CI: "true"
       CI_AUTH_FIXTURE_MODE: "1"
       CI_AUTH_FIXTURE_RESULT_ROOT: ${{ runner.temp }}/interior-ai-auth-results
+      CI_AUTH_FIXTURE_SESSION_ROOT: ${{ runner.temp }}/interior-ai-auth-session-full-advisory
+      CI_AUTH_FIXTURE_SESSION_ID: ${{ github.run_id }}-${{ github.run_attempt }}-full-advisory-auth-session
+      CI_AUTH_FIXTURE_SESSION_NONCE: ${{ github.run_id }}-${{ github.run_attempt }}-full-advisory-auth-nonce
+      CI_AUTH_FIXTURE_SESSION_CLASSIFICATION: PRODUCTION_INELIGIBLE_SYNTHETIC_AUTH
       APP_ENV: development
       DATABASE_URL: postgresql://test:test@localhost:5432/interior_ai_test
       AUTH_SECRET: ci-only-auth-secret-at-least-32-characters
@@ -115,13 +119,31 @@ jobs:
         env:
           CI_AUTH_FIXTURE_RESULT_PATH: ${{ runner.temp }}/interior-ai-auth-results/full-advisory-validate.json
           CI_AUTH_FIXTURE_RESULT_NONCE: ${{ github.run_id }}-${{ github.run_attempt }}-full-advisory-validate
-          CI_AUTH_FIXTURE_EXPECTED_COMMAND_ID: ci:auth-fixture:validate
+          CI_AUTH_FIXTURE_EXPECTED_COMMAND_ID: ci:auth-fixture:validate-existing
           CI_AUTH_FIXTURE_EXPECTED_MODE: auth-environment-validation
         run: |
           export CI_AUTH_FIXTURE_CANDIDATE_COMMIT_SHA="$(git rev-parse HEAD)"
           export CI_AUTH_FIXTURE_CANDIDATE_TREE_SHA="$(git rev-parse 'HEAD^{tree}')"
           set +e
-          npm run ci:auth-fixture:validate
+          npm run ci:auth-fixture:validate-existing
+          auth_command_status=$?
+          set -e
+          CI_AUTH_FIXTURE_ACTUAL_EXIT_STATUS="$auth_command_status" npm run ci:auth-fixture:result:validate
+          if [ "$auth_command_status" -ne 0 ]; then
+            exit "$auth_command_status"
+          fi
+
+      - name: Validate production misuse against the exported fixture
+        env:
+          CI_AUTH_FIXTURE_RESULT_PATH: ${{ runner.temp }}/interior-ai-auth-results/full-advisory-production-misuse.json
+          CI_AUTH_FIXTURE_RESULT_NONCE: ${{ github.run_id }}-${{ github.run_attempt }}-full-advisory-production-misuse
+          CI_AUTH_FIXTURE_EXPECTED_COMMAND_ID: ci:auth-fixture:production-misuse-existing
+          CI_AUTH_FIXTURE_EXPECTED_MODE: production-misuse-validation
+        run: |
+          export CI_AUTH_FIXTURE_CANDIDATE_COMMIT_SHA="$(git rev-parse HEAD)"
+          export CI_AUTH_FIXTURE_CANDIDATE_TREE_SHA="$(git rev-parse 'HEAD^{tree}')"
+          set +e
+          npm run ci:auth-fixture:production-misuse-existing
           auth_command_status=$?
           set -e
           CI_AUTH_FIXTURE_ACTUAL_EXIT_STATUS="$auth_command_status" npm run ci:auth-fixture:result:validate
@@ -138,13 +160,13 @@ jobs:
         env:
           CI_AUTH_FIXTURE_RESULT_PATH: ${{ runner.temp }}/interior-ai-auth-results/full-advisory-preflight.json
           CI_AUTH_FIXTURE_RESULT_NONCE: ${{ github.run_id }}-${{ github.run_attempt }}-full-advisory-preflight
-          CI_AUTH_FIXTURE_EXPECTED_COMMAND_ID: ci:auth-fixture:preflight
+          CI_AUTH_FIXTURE_EXPECTED_COMMAND_ID: ci:auth-fixture:preflight-existing
           CI_AUTH_FIXTURE_EXPECTED_MODE: auth-session-preflight
         run: |
           export CI_AUTH_FIXTURE_CANDIDATE_COMMIT_SHA="$(git rev-parse HEAD)"
           export CI_AUTH_FIXTURE_CANDIDATE_TREE_SHA="$(git rev-parse 'HEAD^{tree}')"
           set +e
-          npm run ci:auth-fixture:preflight
+          npm run ci:auth-fixture:preflight-existing
           auth_command_status=$?
           set -e
           CI_AUTH_FIXTURE_ACTUAL_EXIT_STATUS="$auth_command_status" npm run ci:auth-fixture:result:validate

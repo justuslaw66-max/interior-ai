@@ -11,6 +11,7 @@ import net from "node:net";
 import path from "node:path";
 import { spawn, spawnSync, type ChildProcess } from "node:child_process";
 import AUTH_RESULT_CONTRACT_OWNER from "./ci-auth-fixture-result-contract.cjs";
+import AUTH_FIXTURE_SESSION_OWNER from "./ci-auth-fixture-session.cjs";
 
 import {
   AuthEnvironmentValidationError,
@@ -93,6 +94,33 @@ type AuthResultContractModule = Readonly<{
 // ts-node entrypoint and the ESM production-certification harness.
 const AUTH_RESULT_CONTRACT =
   AUTH_RESULT_CONTRACT_OWNER as AuthResultContractModule;
+
+type AuthFixtureSessionModule = Readonly<{
+  FIXTURE_SESSION_ROOT_ENV: string;
+  FIXTURE_SESSION_ID_ENV: string;
+  FIXTURE_SESSION_NONCE_ENV: string;
+  publishFixtureSession(options: {
+    repositoryRoot?: string;
+    environment?: NodeJS.ProcessEnv;
+    fixture: SyntheticCiOAuthFixture;
+  }): Readonly<{
+    transportBytes: Buffer;
+    safeIdentity: Readonly<Record<string, unknown>>;
+  }>;
+  consumeFixtureSession(options: {
+    repositoryRoot?: string;
+    environment?: NodeJS.ProcessEnv;
+    requireAmbientProviderValues?: boolean;
+    sourceCommand: string;
+    sourceMode: string;
+  }): Readonly<{
+    assignments: Readonly<Record<string, string>>;
+    safeIdentity: Readonly<Record<string, unknown>>;
+  }>;
+}>;
+
+const AUTH_FIXTURE_SESSION =
+  AUTH_FIXTURE_SESSION_OWNER as AuthFixtureSessionModule;
 
 type SyntheticCiOAuthFixture = Readonly<{
   googleClientId: string;
@@ -464,12 +492,14 @@ export function assertLogSafeFixtureTransportOrder(
 export function exportFixtureToGitHubEnvironment({
   environment = process.env,
   fixtureFactory = generateSyntheticFixtureForExport,
+  requireCanonicalSession = false,
   writeWorkflowCommand = (command: string) => process.stdout.write(`${command}\n`),
   appendEnvironmentFile = (filePath: string, content: string) =>
     appendFileSync(filePath, content, { encoding: "utf8" }),
 }: {
   environment?: NodeJS.ProcessEnv;
   fixtureFactory?: () => SyntheticCiOAuthFixture;
+  requireCanonicalSession?: boolean;
   writeWorkflowCommand?: (command: string) => void;
   appendEnvironmentFile?: (filePath: string, content: string) => void;
 } = {}): Readonly<Record<string, unknown>> {
@@ -522,7 +552,16 @@ export function exportFixtureToGitHubEnvironment({
   }
   const fixture = fixtureFactory();
   const assignments = canonicalGitHubEnvironmentAssignments(fixture);
-  const serializedAssignments = serializeGitHubEnvironmentAssignments(assignments);
+  const session = requireCanonicalSession
+    ? AUTH_FIXTURE_SESSION.publishFixtureSession({
+        repositoryRoot: process.cwd(),
+        environment,
+        fixture,
+      })
+    : null;
+  const serializedAssignments = session
+    ? session.transportBytes.toString("utf8")
+    : serializeGitHubEnvironmentAssignments(assignments);
   const events: CiAuthFixtureTransportEvent[] = [
     { kind: "mask", name: "GOOGLE_CLIENT_ID", value: fixture.googleClientId },
     { kind: "mask", name: "GOOGLE_CLIENT_SECRET", value: fixture.googleClientSecret },
@@ -544,6 +583,7 @@ export function exportFixtureToGitHubEnvironment({
     privateGithubEnvironment: true,
     rawValuesRetained: false,
     completed: true,
+    ...(session ? { fixtureSession: session.safeIdentity } : {}),
   });
 }
 
@@ -1298,7 +1338,11 @@ type PreflightOutcome = Readonly<{
   failure: SafeFailure | null;
 }>;
 
-function prepareResultContext(command: string, environment: NodeJS.ProcessEnv): Readonly<{
+function prepareResultContext(
+  command: string,
+  environment: NodeJS.ProcessEnv,
+  fixtureSession: Readonly<Record<string, unknown>> | null = null,
+): Readonly<{
   command: string;
   commandIdentity: Readonly<{ commandId: string; mode: string }>;
   destination: AuthResultDestination;
@@ -1350,6 +1394,18 @@ function prepareResultContext(command: string, environment: NodeJS.ProcessEnv): 
       externalRootIdentitySha256: destination.externalRootIdentitySha256,
       resultPathIdentitySha256: destination.resultPathIdentitySha256,
       startedAt,
+      ...(fixtureSession ? { fixtureSession } : {}),
+      ...(["preflight-local", "production-misuse"].includes(command)
+        ? {
+            advisoryFixture: Object.freeze({
+              classification: "LOCAL_ADVISORY_ONLY",
+              fixtureSessionClassification:
+                "NOT_CERTIFICATION_FIXTURE_SESSION",
+              rehearsalClassification: "NOT_VALID_FOR_REHEARSAL",
+              integrationClassification: "NOT_VALID_FOR_INTEGRATION",
+            }),
+          }
+        : {}),
     }),
   });
 }
@@ -1465,7 +1521,7 @@ function validationFailureEvidence(
 }
 
 function persistPreflightOutcomeWithContext(
-  command: "preflight" | "preflight-local",
+  command: "preflight" | "preflight-existing" | "preflight-local",
   environment: NodeJS.ProcessEnv,
   context: ReturnType<typeof prepareResultContext>,
   outcome: PreflightOutcome,
@@ -1504,7 +1560,7 @@ function persistPreflightOutcomeWithContext(
 }
 
 export function persistPreflightOutcome(
-  command: "preflight" | "preflight-local",
+  command: "preflight" | "preflight-existing" | "preflight-local",
   environment: NodeJS.ProcessEnv,
   outcome: PreflightOutcome,
 ): Record<string, unknown> {
@@ -1685,6 +1741,24 @@ async function executeStructuredCommand(command: string): Promise<void> {
     externalRoot: parentEnvironment[AUTH_RESULT_CONTRACT.AUTH_RESULT_ROOT_ENV],
     resultPath: parentEnvironment[AUTH_RESULT_CONTRACT.AUTH_RESULT_PATH_ENV],
   });
+  const consumeExistingCommands: Readonly<Record<string, string>> = {
+    "validate-existing": "ci:auth-fixture:validate-existing",
+    "production-misuse-existing":
+      "ci:auth-fixture:production-misuse-existing",
+    "preflight-existing": "ci:auth-fixture:preflight-existing",
+  };
+  const consumedSession = consumeExistingCommands[command]
+    ? AUTH_FIXTURE_SESSION.consumeFixtureSession({
+        repositoryRoot: process.cwd(),
+        environment: parentEnvironment,
+        requireAmbientProviderValues: true,
+        sourceCommand: consumeExistingCommands[command],
+        sourceMode: command,
+      })
+    : null;
+  const existingEnvironment = consumedSession
+    ? { ...parentEnvironment, ...consumedSession.assignments }
+    : parentEnvironment;
   const environment =
     command === "production-misuse"
       ? fixtureEnvironmentForLocalExecution({
@@ -1696,14 +1770,32 @@ async function executeStructuredCommand(command: string): Promise<void> {
           AUTH_SECRET: "ci-auth-production-misuse-secret-at-least-32-characters",
           NEXTAUTH_SECRET: "ci-auth-production-misuse-secret-at-least-32-characters",
         })
+      : command === "production-misuse-existing"
+        ? {
+            ...existingEnvironment,
+            APP_ENV: "production",
+          }
       : command === "preflight-local"
         ? localFixtureEnvironment()
-        : parentEnvironment;
-  const context = prepareResultContext(command, environment);
+        : existingEnvironment;
+  const context = prepareResultContext(
+    command,
+    environment,
+    consumedSession?.safeIdentity ?? null,
+  );
   if (command === "export-github-env") {
     try {
-      const evidence = exportFixtureToGitHubEnvironment({ environment });
-      writeStructuredResult(context, environment, "success", evidence, null);
+      const published = exportFixtureToGitHubEnvironment({
+        environment,
+        requireCanonicalSession: true,
+      });
+      const { fixtureSession, ...evidence } = published;
+      const exportContext = prepareResultContext(
+        command,
+        environment,
+        fixtureSession as Readonly<Record<string, unknown>>,
+      );
+      writeStructuredResult(exportContext, environment, "success", evidence, null);
     } catch (error) {
       const failure = safeFailure(error);
       const stderr = `${failure.message}\n`;
@@ -1727,7 +1819,7 @@ async function executeStructuredCommand(command: string): Promise<void> {
     }
     return;
   }
-  if (command === "validate-env") {
+  if (command === "validate-env" || command === "validate-existing") {
     try {
       const evidence = validateFixtureEnvironment(environment);
       const stdout = "Validated the canonical synthetic CI OAuth fixture.\n";
@@ -1748,7 +1840,7 @@ async function executeStructuredCommand(command: string): Promise<void> {
     }
     return;
   }
-  if (command === "production-misuse") {
+  if (command === "production-misuse" || command === "production-misuse-existing") {
     const child = await spawnProductionMisuseChild(environment);
     const outcome = productionMisuseEvidence(
       child,
@@ -1781,13 +1873,17 @@ async function executeStructuredCommand(command: string): Promise<void> {
     }
     return;
   }
-  if (command === "preflight" || command === "preflight-local") {
+  if (
+    command === "preflight" ||
+    command === "preflight-existing" ||
+    command === "preflight-local"
+  ) {
     const preflightEnvironment = environment;
     if (command === "preflight-local") Object.assign(process.env, preflightEnvironment);
     const outcome = await preflightAuthSession(preflightEnvironment);
     const stderr = outcome.failure ? `${outcome.failure.message}\n` : "";
     persistPreflightOutcomeWithContext(
-      command,
+      command as "preflight" | "preflight-existing" | "preflight-local",
       preflightEnvironment,
       context,
       outcome,
@@ -1814,8 +1910,11 @@ async function main(): Promise<void> {
   if (
     command === "export-github-env" ||
     command === "validate-env" ||
+    command === "validate-existing" ||
     command === "production-misuse" ||
+    command === "production-misuse-existing" ||
     command === "preflight" ||
+    command === "preflight-existing" ||
     command === "preflight-local"
   ) {
     await executeStructuredCommand(command);
@@ -1848,7 +1947,7 @@ async function main(): Promise<void> {
     return;
   }
   throw new Error(
-    "Usage: ci-auth-fixture.ts export-github-env|validate-env|production-misuse|preflight|preflight-local|runtime-smoke-local",
+    "Usage: ci-auth-fixture.ts export-github-env|validate-env|validate-existing|production-misuse|production-misuse-existing|preflight|preflight-existing|preflight-local|runtime-smoke-local",
   );
 }
 

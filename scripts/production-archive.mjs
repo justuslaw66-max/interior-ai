@@ -440,6 +440,12 @@ function verifierEnvironment(repositoryRoot, environment, closureSha256) {
     profileId: "archive-verifier",
     stageInputs: {
       CERTIFICATION_ENVIRONMENT_STAGE: "archive-verifier",
+      ...(environment.CERTIFICATION_QUALIFICATION_MODE
+        ? {
+            CERTIFICATION_QUALIFICATION_MODE:
+              environment.CERTIFICATION_QUALIFICATION_MODE,
+          }
+        : {}),
       ...Object.fromEntries(required.map((name) => [name, environment[name]])),
       PRODUCTION_EVIDENCE_EXPECTED_VERIFIER_SOURCE_CLOSURE_SHA256: closureSha256,
     },

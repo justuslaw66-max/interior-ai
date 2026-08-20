@@ -122,6 +122,33 @@ const boundsPhaseBudgets = RUNTIME_SMOKE_PHASE_BUDGETS.filter(
 assert.equal(boundsPhaseBudgets.length, 1, "bounds-verification must have one canonical budget");
 assert.equal(boundsPhaseBudgets[0]?.timeoutMs, 103_000);
 
+process.env.CERTIFICATION_QUALIFICATION_MODE = "1";
+
+function boundAuthFixtureEnvironment() {
+  const nonce = "e".repeat(32);
+  const googleClientId =
+    `123456789012345-gate-a3-ci-${nonce}.apps.googleusercontent.com`;
+  const googleClientSecret = `GOCSPX-gate-a3-ci-${nonce}`;
+  return {
+    CI_AUTH_FIXTURE_ACTIVE: "1",
+    CI_AUTH_FIXTURE_LOCAL_TEST: "1",
+    CI_AUTH_FIXTURE_MODE: "1",
+    CI_AUTH_FIXTURE_NO_REGENERATION: "1",
+    CI_AUTH_FIXTURE_PROVIDER_CLIENT_ID_SHA256: createHash("sha256")
+      .update(googleClientId)
+      .digest("hex"),
+    CI_AUTH_FIXTURE_PROVIDER_CLIENT_SECRET_SHA256: createHash("sha256")
+      .update(googleClientSecret)
+      .digest("hex"),
+    CI_AUTH_FIXTURE_SESSION_CLASSIFICATION:
+      "PRODUCTION_INELIGIBLE_SYNTHETIC_AUTH",
+    CI_AUTH_FIXTURE_SESSION_ID: "artifact-fixture-session-001",
+    CI_AUTH_FIXTURE_SESSION_NONCE: "artifact-fixture-nonce-001",
+    GOOGLE_CLIENT_ID: googleClientId,
+    GOOGLE_CLIENT_SECRET: googleClientSecret,
+  };
+}
+
 {
   const lifecycleIdentity = "a".repeat(32);
   const runtimeEnvironment = {
@@ -2109,6 +2136,7 @@ for (const policySource of [
 }
 
 const semanticJournalEnvironment = Object.freeze({
+  CERTIFICATION_QUALIFICATION_MODE: "1",
   APP_ENV: "staging",
   NEXT_PUBLIC_APP_ENV: "staging",
   NODE_ENV: "production",
@@ -2726,6 +2754,7 @@ async function fixture({
   const reportPath = ".local/production-artifact-evidence/runtime-smoke.json";
   const phaseTimingPath = ".local/production-artifact-evidence/runtime-smoke-phases.json";
   const environment = {
+      CERTIFICATION_QUALIFICATION_MODE: "1",
       APP_ENV: "staging",
       NEXT_PUBLIC_APP_ENV: "staging",
       NODE_ENV: "production",
@@ -3132,6 +3161,7 @@ function playwrightContractEnvironment(context, overrides = {}) {
   const manifestBytes = readFileSync(path.join(context.root, context.manifestPath));
   const manifest = JSON.parse(manifestBytes.toString("utf8"));
   return {
+    CERTIFICATION_QUALIFICATION_MODE: "1",
     APP_ENV: manifest.build.applicationEnvironment,
     NEXT_PUBLIC_APP_ENV: manifest.build.applicationEnvironment,
     VERCEL_ENV: "",
@@ -3674,6 +3704,14 @@ function listedSpecCount(suites) {
         overrides.environment ?? playwrightContractEnvironment(context),
       ...overrides,
     });
+  const canonicalPreflight = await validateProductionEvidence({
+    repositoryRoot: context.root,
+    manifestPath: context.manifestPath,
+    verificationMode:
+      PRODUCTION_EVIDENCE_VERIFICATION_MODES.REPOSITORY_PREFLIGHT,
+    environment: playwrightContractEnvironment(context),
+  });
+  assert.deepEqual(canonicalPreflight.issues, []);
   const loaded = load();
   assert.deepEqual(loaded.identity, accepted.identity);
   assert.equal(loaded.reportDestination.destinationClass, "repository-relative");
@@ -4356,6 +4394,40 @@ async function expectRejected(context, expectedText) {
 
 {
   const context = await fixture();
+  const result = await validateProductionEvidence({
+    repositoryRoot: context.root,
+    manifestPath: context.manifestPath,
+    verificationMode: PRODUCTION_EVIDENCE_VERIFICATION_MODES.REPOSITORY_FINAL,
+    environment: {},
+  });
+  assert.equal(result.valid, false);
+  assert.ok(
+    result.issues.includes(
+      "build auth fixture continuity is missing or contradictory",
+    ),
+  );
+}
+
+{
+  const authEnvironment = boundAuthFixtureEnvironment();
+  const context = await fixture({ environmentOverrides: authEnvironment });
+  const result = await validateProductionEvidence({
+    repositoryRoot: context.root,
+    manifestPath: context.manifestPath,
+    verificationMode: PRODUCTION_EVIDENCE_VERIFICATION_MODES.REPOSITORY_FINAL,
+    environment: { ...process.env, ...authEnvironment },
+  });
+  assert.deepEqual(result.issues, []);
+  assert.equal(result.valid, true);
+  assert.equal(
+    result.manifest.build.authFixtureContinuity.providerDigests
+      .googleClientSecondaryValueSha256,
+    authEnvironment.CI_AUTH_FIXTURE_PROVIDER_CLIENT_SECRET_SHA256,
+  );
+}
+
+{
+  const context = await fixture();
   const manifest = readManifest(context.root, context.manifestPath);
   write(context.root, ".next/BUILD_ID", "cross-run-build-id\n");
   await assert.rejects(
@@ -4999,7 +5071,10 @@ for (const mutate of [
         repositoryRoot: context.root,
         manifestPath: context.manifestPath,
         reportPath: context.reportPath,
-        environment: { OPENAI_API_KEY: openAiSecret },
+        environment: {
+          CERTIFICATION_QUALIFICATION_MODE: "1",
+          OPENAI_API_KEY: openAiSecret,
+        },
       }),
     /production artifact contains sensitive environment values: OPENAI_API_KEY/,
   );

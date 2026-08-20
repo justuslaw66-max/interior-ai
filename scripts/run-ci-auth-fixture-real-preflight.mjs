@@ -19,11 +19,13 @@ import {
   readCertificationDatabaseLifecycle,
 } from "./production-certification-database-lifecycle.mjs";
 import {
+  certificationEnvironmentProfile,
   projectCertificationChildEnvironment,
 } from "./production-certification-stage-environment.mjs";
 
 const require = createRequire(import.meta.url);
 const authResultContract = require("./ci-auth-fixture-result-contract.cjs");
+const authFixtureSession = require("./ci-auth-fixture-session.cjs");
 
 function git(args) {
   const result = spawnSync("git", args, {
@@ -80,7 +82,7 @@ function writeFinalAuthResult({
   sensitiveValues,
 }) {
   const command = {
-    id: "test:ci-auth-fixture-real-preflight",
+    id: "certification:auth-session-preflight",
     mode: "auth-session-preflight",
     executable: "node",
     argv: ["scripts/run-ci-auth-fixture-real-preflight.mjs"],
@@ -93,6 +95,14 @@ function writeFinalAuthResult({
     externalRootIdentitySha256: destination.externalRootIdentitySha256,
     resultPathIdentitySha256: destination.resultPathIdentitySha256,
     completedAt: new Date().toISOString(),
+    fixtureSession: {
+      ...childResult.identity.fixtureSession,
+      lifecycle: {
+        ...childResult.identity.fixtureSession.lifecycle,
+        sourceCommand: command.id,
+        sourceMode: "real-preflight",
+      },
+    },
   };
   const evidence = {
     ...childResult.evidence,
@@ -235,6 +245,21 @@ export async function runRealAuthPreflight() {
   }
   const candidateCommitSha = git(["rev-parse", "HEAD"]);
   const candidateTreeSha = git(["rev-parse", "HEAD^{tree}"]);
+  if (
+    (process.env.CI_AUTH_FIXTURE_CANDIDATE_COMMIT_SHA &&
+      process.env.CI_AUTH_FIXTURE_CANDIDATE_COMMIT_SHA !== candidateCommitSha) ||
+    (process.env.CI_AUTH_FIXTURE_CANDIDATE_TREE_SHA &&
+      process.env.CI_AUTH_FIXTURE_CANDIDATE_TREE_SHA !== candidateTreeSha)
+  ) {
+    throw new Error("Real auth preflight candidate binding is mismatched");
+  }
+  const consumedFixtureSession = authFixtureSession.consumeFixtureSession({
+    repositoryRoot: process.cwd(),
+    environment: process.env,
+    requireAmbientProviderValues: true,
+    sourceCommand: "certification:auth-session-preflight",
+    sourceMode: "real-preflight",
+  });
   const resultRoot = realpathSync(
     mkdtempSync(path.join(tmpdir(), "ci-auth-real-preflight-result-")),
   );
@@ -243,6 +268,12 @@ export async function runRealAuthPreflight() {
   const lifecycleRoot = path.join(resultRoot, "auth-database-lifecycle");
   const invocationNonce =
     `auth-real-preflight-${process.pid}-${randomBytes(6).toString("hex")}`;
+  const publishedResultRoot =
+    process.env.CI_AUTH_FIXTURE_RESULT_ROOT || resultRoot;
+  const publishedResultPath =
+    process.env.CI_AUTH_FIXTURE_RESULT_PATH || finalResultPath;
+  const publishedResultNonce =
+    process.env.CI_AUTH_FIXTURE_RESULT_NONCE || invocationNonce;
   let prepared = null;
   let lifecycleEnvironment = null;
   let childValidated = null;
@@ -270,18 +301,31 @@ export async function runRealAuthPreflight() {
     });
     const childBaseEnvironment = {
       ...process.env,
+      ...consumedFixtureSession.assignments,
       CI_AUTH_FIXTURE_RESULT_ROOT: resultRoot,
       CI_AUTH_FIXTURE_RESULT_PATH: childResultPath,
       CI_AUTH_FIXTURE_RESULT_NONCE: invocationNonce,
       CI_AUTH_FIXTURE_CANDIDATE_COMMIT_SHA: candidateCommitSha,
       CI_AUTH_FIXTURE_CANDIDATE_TREE_SHA: candidateTreeSha,
     };
+    const childProfile = certificationEnvironmentProfile(
+      process.cwd(),
+      AUTH_SESSION_PREFLIGHT_DATABASE_STAGE,
+    );
+    const authStageInputs = Object.fromEntries(
+      childProfile.childVisibleVariables
+        .filter((name) => childBaseEnvironment[name] !== undefined)
+        .map((name) => [name, childBaseEnvironment[name]]),
+    );
     const childEnvironment = projectCertificationChildEnvironment({
       repositoryRoot: process.cwd(),
       baseEnvironment: childBaseEnvironment,
       stage: AUTH_SESSION_PREFLIGHT_DATABASE_STAGE,
       profileId: AUTH_SESSION_PREFLIGHT_DATABASE_STAGE,
-      stageInputs: prepared.projection.environment,
+      stageInputs: {
+        ...authStageInputs,
+        ...prepared.projection.environment,
+      },
     }).environment;
     const sequence = await runPreparedAuthPreflightDatabaseSequence({
       repositoryRoot: process.cwd(),
@@ -289,7 +333,7 @@ export async function runRealAuthPreflight() {
       executeChild() {
         const childProcess = runChild(
           "npm",
-          ["run", "test:advisory-auth-preflight"],
+          ["run", "ci:auth-fixture:preflight-existing"],
           childEnvironment,
         );
         let validated;
@@ -299,7 +343,7 @@ export async function runRealAuthPreflight() {
             externalRoot: resultRoot,
             resultPath: childResultPath,
             expectedNonce: invocationNonce,
-            expectedCommandId: "test:advisory-auth-preflight",
+            expectedCommandId: "ci:auth-fixture:preflight-existing",
             expectedMode: "auth-session-preflight",
             expectedCandidateCommitSha: candidateCommitSha,
             expectedCandidateTreeSha: candidateTreeSha,
@@ -323,15 +367,15 @@ export async function runRealAuthPreflight() {
     if (!childValidated) throw retainedFailure;
     const destination = authResultContract.resolveAuthResultDestination({
       repositoryRoot: process.cwd(),
-      externalRoot: resultRoot,
-      resultPath: finalResultPath,
+      externalRoot: publishedResultRoot,
+      resultPath: publishedResultPath,
     });
     const finalClassification = retainedFailure ? "failure" : "success";
     const finalValidated = writeFinalAuthResult({
       destination,
       childResult: childValidated.result,
       databasePrerequisite: databaseCompletion.evidence,
-      invocationNonce,
+      invocationNonce: publishedResultNonce,
       candidateCommitSha,
       candidateTreeSha,
       result: finalClassification,

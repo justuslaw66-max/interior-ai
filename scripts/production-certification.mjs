@@ -210,6 +210,7 @@ function qualificationCommand() {
     [process.execPath, ["scripts/test-production-trace-archive-policy.mjs"]],
     [process.execPath, ["scripts/test-production-archive-plan-evidence.mjs"]],
     ["npm", ["run", "test:auth-env-hardening"]],
+    ["npm", ["run", "test:ci-auth-fixture-session"]],
     ["npm", ["run", "test:ci-auth-fixture-real-preflight"]],
     ["npm", ["run", "certification:simulate"]],
     [process.execPath, ["scripts/test-production-certification.mjs"]],
