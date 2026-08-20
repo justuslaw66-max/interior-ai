@@ -3157,6 +3157,7 @@ export async function runProductionCertificationSimulation({
   const archiveEnvironment = {
     ...process.env,
     ...environment,
+    CERTIFICATION_QUALIFICATION_MODE: "1",
     CERTIFICATION_EVIDENCE_ROOT: evidenceRoot,
     PRODUCTION_ARCHIVE_SOURCE_ROOT: fixtureRoot,
     PRODUCTION_ARCHIVE_PLAN: path.join(evidenceRoot, "archive/plan.json"),
