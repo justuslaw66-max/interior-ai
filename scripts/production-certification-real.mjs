@@ -1617,6 +1617,52 @@ export async function runDatabaseVerifyAbsent({
   };
 }
 
+function originalFailureMatchesPhysical(left, right) {
+  const failureKeys = [
+    "classification",
+    "stage",
+    "attempt",
+    "consumedSubstantiveGate",
+    "failedStateSha256",
+    "evidenceReferences",
+  ];
+  const exactFailureKeys = (value) =>
+    value &&
+    typeof value === "object" &&
+    !Array.isArray(value) &&
+    Object.keys(value).sort().join("\n") ===
+      [...failureKeys].sort().join("\n");
+  if (!exactFailureKeys(left) || !exactFailureKeys(right)) return false;
+  for (const name of failureKeys.filter((name) => name !== "evidenceReferences")) {
+    if (left[name] !== right[name]) return false;
+  }
+  const leftEvidence = left.evidenceReferences;
+  const rightEvidence = right.evidenceReferences;
+  if (
+    !leftEvidence ||
+    !rightEvidence ||
+    typeof leftEvidence !== "object" ||
+    typeof rightEvidence !== "object" ||
+    Array.isArray(leftEvidence) ||
+    Array.isArray(rightEvidence)
+  ) {
+    return false;
+  }
+  const names = Object.keys(leftEvidence).sort();
+  if (names.join("\n") !== Object.keys(rightEvidence).sort().join("\n")) {
+    return false;
+  }
+  return names.every(
+    (name) =>
+      leftEvidence[name]?.path === rightEvidence[name]?.path &&
+      leftEvidence[name]?.sha256 === rightEvidence[name]?.sha256 &&
+      Object.keys(leftEvidence[name] ?? {}).sort().join("\n") ===
+        "path\nsha256" &&
+      Object.keys(rightEvidence[name] ?? {}).sort().join("\n") ===
+        "path\nsha256",
+  );
+}
+
 export async function runDatabaseAbortCleanup({
   repositoryRoot = process.cwd(),
   environment = process.env,
@@ -1655,7 +1701,7 @@ export async function runDatabaseAbortCleanup({
   if (
     physicalFailure &&
     originalFailure &&
-    JSON.stringify(originalFailure) !== JSON.stringify(physicalFailure)
+    !originalFailureMatchesPhysical(originalFailure, physicalFailure)
   ) {
     throw new InvocationFailure(
       "database abort cleanup original failure differs from the physical failed stage",

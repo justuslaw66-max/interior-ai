@@ -1200,10 +1200,34 @@ async function deterministicContractCoverage() {
     writeCertificationState(statePath, failedState, { requireAbsent: true });
     wrapperCleanupFixture.environment.PRODUCTION_CERTIFICATION_STATE = statePath;
     const failedStateSha256 = certificationStateSha256(failedState);
+    await assert.rejects(
+      runDatabaseAbortCleanup({
+        repositoryRoot,
+        environment: wrapperCleanupFixture.environment,
+        adapter: wrapperCleanupAdapter,
+        originalFailure: {
+          classification: "SOURCE_CONTRACT_FAILURE",
+          consumedSubstantiveGate: true,
+          stage: "doctor",
+          attempt: 2,
+          failedStateSha256,
+          evidenceReferences: {},
+        },
+      }),
+      /original failure differs from the physical failed stage/,
+    );
     const cleanup = await runDatabaseAbortCleanup({
       repositoryRoot,
       environment: wrapperCleanupFixture.environment,
       adapter: wrapperCleanupAdapter,
+      originalFailure: {
+        classification: "SOURCE_CONTRACT_FAILURE",
+        consumedSubstantiveGate: true,
+        stage: "doctor",
+        attempt: 1,
+        failedStateSha256,
+        evidenceReferences: {},
+      },
     });
     assert.equal(cleanup.classification, "SOURCE_CONTRACT_FAILURE");
     assert.equal(cleanup.consumedSubstantiveGate, true);
