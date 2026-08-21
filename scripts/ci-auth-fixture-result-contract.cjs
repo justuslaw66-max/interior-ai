@@ -29,6 +29,13 @@ const AUTH_RESULT_EXPECTED_MODE_ENV = "CI_AUTH_FIXTURE_EXPECTED_MODE";
 const AUTH_RESULT_COMMAND_STATUS_ENV = "CI_AUTH_FIXTURE_ACTUAL_EXIT_STATUS";
 const AUTH_RESULT_CANDIDATE_COMMIT_ENV = "CI_AUTH_FIXTURE_CANDIDATE_COMMIT_SHA";
 const AUTH_RESULT_CANDIDATE_TREE_ENV = "CI_AUTH_FIXTURE_CANDIDATE_TREE_SHA";
+const AUTH_PRIVATE_VALUE_NAMES = Object.freeze([
+  "AUTH_SECRET",
+  "NEXTAUTH_SECRET",
+  "GOOGLE_CLIENT_ID",
+  "GOOGLE_CLIENT_SECRET",
+  "DATABASE_URL",
+]);
 
 const COMMAND_MODES = Object.freeze({
   "export-github-env": Object.freeze({
@@ -1103,13 +1110,7 @@ function assertModeEvidence(result, allowNonConsumableFailure = false) {
 }
 
 function privateValuesFromEnvironment(environment) {
-  const values = [
-    "AUTH_SECRET",
-    "NEXTAUTH_SECRET",
-    "GOOGLE_CLIENT_ID",
-    "GOOGLE_CLIENT_SECRET",
-    "DATABASE_URL",
-  ].flatMap((name) => {
+  const values = AUTH_PRIVATE_VALUE_NAMES.flatMap((name) => {
     const raw = environment?.[name];
     if (typeof raw !== "string") return [];
     const normalized = raw.trim();
@@ -1486,6 +1487,7 @@ module.exports = Object.freeze({
   AUTH_RESULT_COMMAND_STATUS_ENV,
   AUTH_RESULT_CANDIDATE_COMMIT_ENV,
   AUTH_RESULT_CANDIDATE_TREE_ENV,
+  AUTH_PRIVATE_VALUE_NAMES,
   COMMAND_MODES,
   canonicalJsonBytes,
   commandMode,

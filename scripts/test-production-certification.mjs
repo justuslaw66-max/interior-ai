@@ -1437,16 +1437,18 @@ function stateFixture() {
   const regressions = JSON.parse(
     readFileSync("scripts/production-certification-regressions.json", "utf8"),
   );
-  assert.equal(regressions.cases.length, 37);
+  assert.equal(regressions.cases.length, 38);
   assert.deepEqual(
     regressions.cases.map((entry) => entry.id),
-    Array.from({ length: 37 }, (_, index) => index + 1),
+    Array.from({ length: 38 }, (_, index) => index + 1),
   );
-  assert.equal(new Set(regressions.cases.map((entry) => entry.defect)).size, 37);
+  assert.equal(new Set(regressions.cases.map((entry) => entry.defect)).size, 38);
   assert.equal(regressions.authPreflightDatabaseCases.length, 30);
   assert.equal(new Set(regressions.authPreflightDatabaseCases).size, 30);
   coveredRegressionIds.add(35);
   coveredRegressionIds.add(37);
+  assert.equal(regressions.nestedAuthFixtureIsolationCases.length, 13);
+  assert.equal(new Set(regressions.nestedAuthFixtureIsolationCases).size, 13);
   assert.equal(regressions.stageResultCases.length, 24);
   assert.equal(new Set(regressions.stageResultCases).size, 24);
   coveredRegressionIds.add(36);
@@ -1595,6 +1597,52 @@ function stateFixture() {
     regressionPassed: true,
   });
   coveredRegressionIds.add(34);
+  assert.equal(
+    Object.values(simulation.sourceValidationNestedAuthFixtureRegression).every(
+      (value) => value === true,
+    ),
+    true,
+  );
+  assert.equal(
+    simulation.authFixtureSession.nestedIsolation.selectedOwner,
+    "nested-regression-child",
+  );
+  assert.equal(
+    simulation.authFixtureSession.nestedIsolation.historicalConflict,
+    "GOOGLE_CLIENT_ID",
+  );
+  assert.equal(
+    simulation.authFixtureSession.nestedIsolation.negativeCases.length,
+    13,
+  );
+  const nestedAuthFixtureRegressions = JSON.parse(
+    readFileSync(
+      "scripts/production-certification-regressions.json",
+      "utf8",
+    ),
+  ).nestedAuthFixtureIsolationCases;
+  assert.deepEqual(
+    simulation.authFixtureSession.nestedIsolation.negativeCases,
+    nestedAuthFixtureRegressions,
+  );
+  assert.equal(
+    simulation.authFixtureSession.nestedIsolation.capabilityNames.includes(
+      "AUTH_SECRET",
+    ),
+    true,
+  );
+  assert.equal(
+    simulation.authFixtureSession.nestedIsolation.capabilityNames.includes(
+      "NEXTAUTH_SECRET",
+    ),
+    true,
+  );
+  assert.equal(
+    simulation.authFixtureSession.nestedIsolation.rawProviderValuesRecorded,
+    false,
+  );
+  assert.equal(simulation.authFixtureSession.regressionPassed, true);
+  coveredRegressionIds.add(38);
   assert.equal(simulation.generatedOutputLifecycle.declaredOutputCount, 2);
   assert.equal(simulation.generatedOutputLifecycle.terminalNodeModulesOnly, true);
   coveredRegressionIds.add(31);
@@ -3241,7 +3289,7 @@ function stateFixture() {
 
 assert.deepEqual(
   [...coveredRegressionIds].sort((left, right) => left - right),
-  Array.from({ length: 37 }, (_, index) => index + 1),
+  Array.from({ length: 38 }, (_, index) => index + 1),
   "every documented regression must be exercised by an executable assertion",
 );
 

@@ -104,6 +104,9 @@ import {
   certificationStageResultContractIdentity,
   parseCertificationStageResult,
 } from "./production-certification-stage-result-contract.mjs";
+import {
+  authFixtureRegressionCapabilityNames,
+} from "./ci-auth-fixture-regression-environment.mjs";
 
 const SIMULATION_ID = "production-certification-v1-simulation";
 const FIXED_NONCE = "123e4567-e89b-42d3-a456-426614174001";
@@ -296,21 +299,21 @@ export function initializeFixture(repositoryRoot, fixtureRoot) {
       scripts: {
         build: "node scripts/production-certification-simulation.mjs fixture-build",
         "ci:auth-fixture:export":
-          "npx ts-node scripts/ci-auth-fixture.ts export-github-env",
+          "node simulation-ts-node/bin.js scripts/ci-auth-fixture.ts export-github-env",
         "ci:auth-fixture:validate":
-          "npx ts-node scripts/ci-auth-fixture.ts validate-env",
+          "node simulation-ts-node/bin.js scripts/ci-auth-fixture.ts validate-env",
         "ci:auth-fixture:validate-existing":
-          "npx ts-node scripts/ci-auth-fixture.ts validate-existing",
+          "node simulation-ts-node/bin.js scripts/ci-auth-fixture.ts validate-existing",
         "ci:auth-fixture:production-misuse":
-          "npx ts-node scripts/ci-auth-fixture.ts production-misuse",
+          "node simulation-ts-node/bin.js scripts/ci-auth-fixture.ts production-misuse",
         "ci:auth-fixture:production-misuse-existing":
-          "npx ts-node scripts/ci-auth-fixture.ts production-misuse-existing",
+          "node simulation-ts-node/bin.js scripts/ci-auth-fixture.ts production-misuse-existing",
         "ci:auth-fixture:preflight":
-          "npx ts-node scripts/ci-auth-fixture.ts preflight",
+          "node simulation-ts-node/bin.js scripts/ci-auth-fixture.ts preflight",
         "ci:auth-fixture:preflight-existing":
-          "npx ts-node scripts/ci-auth-fixture.ts preflight-existing",
+          "node simulation-ts-node/bin.js scripts/ci-auth-fixture.ts preflight-existing",
         "test:advisory-auth-preflight":
-          "npx ts-node scripts/ci-auth-fixture.ts preflight-local",
+          "node simulation-ts-node/bin.js scripts/ci-auth-fixture.ts preflight-local",
         "test:ci-auth-fixture-real-preflight":
           "node scripts/run-ci-auth-fixture-session.mjs",
         "certification:auth-preflight":
@@ -358,7 +361,29 @@ export function initializeFixture(repositoryRoot, fixtureRoot) {
   write(
     fixtureRoot,
     "simulation-ts-node/bin.js",
-    "#!/usr/bin/env node\nprocess.exitCode = 0;\n",
+    `#!/usr/bin/env node
+const path = require("node:path");
+const { pathToFileURL } = require("node:url");
+const rawArguments = process.argv.slice(2);
+const scriptIndex = rawArguments.findIndex((argument) => argument.endsWith(".ts"));
+if (scriptIndex === -1) {
+  console.error("deterministic simulation ts-node requires an explicit TypeScript entrypoint");
+  process.exit(1);
+}
+const script = rawArguments[scriptIndex];
+const args = rawArguments.slice(scriptIndex + 1);
+if (path.basename(script) === "generate-surface-material-runtime.ts") {
+  process.exit(0);
+}
+require(path.join(process.cwd(), "scripts", "simulation-ts-loader.cjs"));
+process.argv = [process.execPath, path.resolve(script), ...args];
+import(pathToFileURL(process.argv[1]).href)
+  .then((module) => module.__simulationMain())
+  .catch((error) => {
+    console.error(error instanceof Error ? error.message : String(error));
+    process.exitCode = 1;
+  });
+`,
   );
   chmodSync(path.join(fixtureRoot, "simulation-ts-node/bin.js"), 0o755);
   const npmEnvironment = {
@@ -387,6 +412,110 @@ export function initializeFixture(repositoryRoot, fixtureRoot) {
   );
   write(fixtureRoot, ".nvmrc", `${process.version.slice(1)}\n`);
   copyHarnessSources(repositoryRoot, fixtureRoot);
+  const authResultRegressionSource = readFileSync(
+    path.join(repositoryRoot, "scripts/test-ci-auth-fixture-results.ts"),
+    "utf8",
+  );
+  const simulationAuthResultRegressionSource = authResultRegressionSource.replace(
+    `run()
+  .finally(() => {
+    for (const root of roots) rmSync(root, { recursive: true, force: true });
+  })
+  .catch((error) => {
+    console.error(error instanceof Error ? error.message : String(error));
+    process.exit(1);
+  });
+`,
+    `export function __simulationMain() {
+  return run().finally(() => {
+    for (const root of roots) rmSync(root, { recursive: true, force: true });
+  });
+}
+`,
+  );
+  if (simulationAuthResultRegressionSource === authResultRegressionSource) {
+    throw new Error(
+      "deterministic simulation auth-result regression entrypoint was not rewritten",
+    );
+  }
+  write(
+    fixtureRoot,
+    "scripts/test-ci-auth-fixture-results.ts",
+    simulationAuthResultRegressionSource,
+  );
+  write(
+    fixtureRoot,
+    "scripts/simulation-ts-loader.cjs",
+    `const { readFileSync } = require("node:fs");
+const path = require("node:path");
+const { fileURLToPath } = require("node:url");
+const { registerHooks, stripTypeScriptTypes } = require("node:module");
+
+function stripTypes(source) {
+  const originalEmitWarning = process.emitWarning;
+  process.emitWarning = () => {};
+  try {
+    return stripTypeScriptTypes(source, { mode: "strip" });
+  } finally {
+    process.emitWarning = originalEmitWarning;
+  }
+}
+
+registerHooks({
+  resolve(specifier, context, nextResolve) {
+    try {
+      return nextResolve(specifier, context);
+    } catch (error) {
+      if (
+        (specifier.startsWith("./") || specifier.startsWith("../")) &&
+        path.extname(specifier) === ""
+      ) {
+        return nextResolve(specifier + ".ts", context);
+      }
+      throw error;
+    }
+  },
+  load(url, context, nextLoad) {
+    if (url.endsWith(".ts")) {
+      return {
+        format: "module",
+        source: stripTypes(readFileSync(fileURLToPath(url), "utf8")),
+        shortCircuit: true,
+      };
+    }
+    return nextLoad(url, context);
+  },
+});
+`,
+  );
+  write(
+    fixtureRoot,
+    "scripts/simulation-tsconfig-paths-register.cjs",
+    "// Deterministic simulation fixture: relative TypeScript resolution is owned by simulation-ts-loader.cjs.\n",
+  );
+  const simulationAuthFixtureSource = `import { createRequire as createSimulationRequire } from "node:module";
+const require = createSimulationRequire(import.meta.url);
+${readFileSync(
+    path.join(repositoryRoot, "scripts/ci-auth-fixture.ts"),
+    "utf8",
+  )}`
+    .replace(
+      'require.resolve("ts-node/register/transpile-only")',
+      'path.join(process.cwd(), "scripts", "simulation-ts-loader.cjs")',
+    )
+    .replace(
+      'require.resolve("tsconfig-paths/register")',
+      'path.join(process.cwd(), "scripts", "simulation-tsconfig-paths-register.cjs")',
+    )
+    .replace(
+      "if (require.main === module) {",
+      'if (process.argv[2] === "production-misuse-child") {',
+    );
+  write(
+    fixtureRoot,
+    "scripts/ci-auth-fixture.ts",
+    `${simulationAuthFixtureSource}\nexport { main as __simulationMain };\n`,
+  );
   write(fixtureRoot, "public/asset.txt", "deterministic simulation asset\n");
   write(fixtureRoot, "public/assets/floor-plans/preview.webp", "simulation preview\n");
   git(fixtureRoot, ["init", "-q"]);
@@ -915,6 +1044,36 @@ export async function runProductionCertificationSimulation({
     ["run", "test:ci-auth-fixture-session"],
     repositoryRoot,
   );
+  const authFixtureSessionIsolationLine = authFixtureSessionRegression
+    .split("\n")
+    .find((line) =>
+      line.startsWith(
+        "CI_AUTH_FIXTURE_NESTED_ISOLATION_REGRESSION_RESULT ",
+      ),
+    );
+  if (!authFixtureSessionIsolationLine) {
+    throw new Error("nested auth fixture isolation regression result is missing");
+  }
+  const authFixtureSessionIsolation = JSON.parse(
+    authFixtureSessionIsolationLine.slice(
+      "CI_AUTH_FIXTURE_NESTED_ISOLATION_REGRESSION_RESULT ".length,
+    ),
+  );
+  if (
+    authFixtureSessionIsolation.schema !==
+      "interior-ai.ci-auth-fixture-nested-isolation-regression.v1" ||
+    authFixtureSessionIsolation.selectedOwner !== "nested-regression-child" ||
+    authFixtureSessionIsolation.historicalConflict !== "GOOGLE_CLIENT_ID" ||
+    authFixtureSessionIsolation.historicalContaminationRejected !== true ||
+    authFixtureSessionIsolation.isolatedChildPassed !== true ||
+    authFixtureSessionIsolation.parentEnvironmentUnchanged !== true ||
+    authFixtureSessionIsolation.outerSessionPreserved !== true ||
+    authFixtureSessionIsolation.outerResourcesPreserved !== true ||
+    authFixtureSessionIsolation.nestedResourcesCleaned !== true ||
+    authFixtureSessionIsolation.rawProviderValuesRecorded !== false
+  ) {
+    throw new Error("nested auth fixture isolation regression is incomplete");
+  }
   run(
     process.execPath,
     ["scripts/test-production-certification-source-generated-outputs.mjs"],
@@ -944,7 +1103,7 @@ export async function runProductionCertificationSimulation({
       "AUTH_PREFLIGHT_DATABASE_REGRESSION_RESULT ".length,
     ),
   );
-  const expectedAuthPreflightDatabaseCases = JSON.parse(
+  const certificationRegressions = JSON.parse(
     readFileSync(
       path.join(
         repositoryRoot,
@@ -952,7 +1111,13 @@ export async function runProductionCertificationSimulation({
       ),
       "utf8",
     ),
-  ).authPreflightDatabaseCases;
+  );
+  const expectedAuthPreflightDatabaseCases =
+    certificationRegressions.authPreflightDatabaseCases;
+  const expectedNestedAuthFixtureIsolationCases =
+    certificationRegressions.nestedAuthFixtureIsolationCases;
+  const expectedNestedAuthFixtureCapabilityNames =
+    authFixtureRegressionCapabilityNames(repositoryRoot);
   if (
     authPreflightDatabaseRegressionResult.schema !==
       "interior-ai.production-certification-auth-preflight-database-regression.v1" ||
@@ -961,6 +1126,16 @@ export async function runProductionCertificationSimulation({
       JSON.stringify(expectedAuthPreflightDatabaseCases)
   ) {
     throw new Error("auth-preflight database regression matrix is incomplete");
+  }
+  if (
+    JSON.stringify(authFixtureSessionIsolation.negativeCases) !==
+      JSON.stringify(expectedNestedAuthFixtureIsolationCases) ||
+    JSON.stringify(authFixtureSessionIsolation.capabilityNames) !==
+      JSON.stringify(expectedNestedAuthFixtureCapabilityNames)
+  ) {
+    throw new Error(
+      "nested auth fixture isolation did not execute its canonical case and capability matrices",
+    );
   }
   const sourceDatabaseProjectionRegression = run(
     process.execPath,
@@ -2152,6 +2327,59 @@ export async function runProductionCertificationSimulation({
       "utf8",
     ),
   );
+  const productionArtifactEvidenceSourceCheck =
+    successfulSourceEvidence.checks.find(
+      (check) => check.id === "production-artifact-evidence-contracts",
+    );
+  if (
+    !productionArtifactEvidenceSourceCheck?.passed ||
+    typeof productionArtifactEvidenceSourceCheck.stdout?.path !== "string"
+  ) {
+    throw new Error(
+      "real source-validation evidence lacks the production-artifact check stream",
+    );
+  }
+  const nestedSourceResultPrefix =
+    "SOURCE_VALIDATION_NESTED_AUTH_FIXTURE_REGRESSION_RESULT ";
+  const productionArtifactEvidenceStdout = readFileSync(
+    path.join(evidenceRoot, productionArtifactEvidenceSourceCheck.stdout.path),
+    "utf8",
+  );
+  const nestedSourceResultLine = productionArtifactEvidenceStdout
+    .split("\n")
+    .find((line) => line.startsWith(nestedSourceResultPrefix));
+  if (!nestedSourceResultLine) {
+    throw new Error(
+      "real source-validation production-artifact check did not execute the nested auth fixture regression",
+    );
+  }
+  const sourceValidationNestedAuthFixtureResult = JSON.parse(
+    nestedSourceResultLine.slice(nestedSourceResultPrefix.length),
+  );
+  if (
+    sourceValidationNestedAuthFixtureResult.schema !==
+      "interior-ai.ci-auth-fixture-nested-isolation-regression.v1" ||
+    sourceValidationNestedAuthFixtureResult.selectedOwner !==
+      "nested-regression-child" ||
+    sourceValidationNestedAuthFixtureResult.historicalConflict !==
+      "GOOGLE_CLIENT_ID" ||
+    sourceValidationNestedAuthFixtureResult.historicalContaminationRejected !==
+      true ||
+    sourceValidationNestedAuthFixtureResult.isolatedChildPassed !== true ||
+    sourceValidationNestedAuthFixtureResult.parentEnvironmentUnchanged !== true ||
+    sourceValidationNestedAuthFixtureResult.outerSessionPreserved !== true ||
+    sourceValidationNestedAuthFixtureResult.outerResourcesPreserved !== true ||
+    sourceValidationNestedAuthFixtureResult.nestedResourcesCleaned !== true ||
+    sourceValidationNestedAuthFixtureResult.rawProviderValuesRecorded !== false ||
+    JSON.stringify(sourceValidationNestedAuthFixtureResult.negativeCases) !==
+      JSON.stringify(expectedNestedAuthFixtureIsolationCases) ||
+    JSON.stringify(sourceValidationNestedAuthFixtureResult.capabilityNames) !==
+      JSON.stringify(expectedNestedAuthFixtureCapabilityNames)
+  ) {
+    throw new Error(
+      "real source-validation nested auth fixture regression evidence is incomplete",
+    );
+  }
   const correctedSourceAggregateValidation = validateSourceValidationEvidence({
     evidence: successfulSourceEvidence,
     evidenceRoot,
@@ -4582,6 +4810,25 @@ export async function runProductionCertificationSimulation({
       buildBoundaryPending: successfulSourceBuildBoundaryPending,
     },
     sourceValidationCheckCount: sourceCheckIds.length,
+    sourceValidationNestedAuthFixtureRegression: {
+      actualSourceCheckInvocation: Boolean(nestedSourceResultLine),
+      productionArtifactEvidenceContractsPassed:
+        productionArtifactEvidenceSourceCheck.passed === true,
+      nestedFixtureSessionRegressionPassed:
+        sourceValidationNestedAuthFixtureResult.isolatedChildPassed === true,
+      remainingCanonicalChecksPassed:
+        successfulSourceEvidence.checks.every((check) => check.passed === true),
+      dependenciesInstalledAndBound:
+        successfulSourceBinding.dependencyStatus === "installed" &&
+        Boolean(successfulSourceBinding.dependencyBindingEvidence),
+      generatedOutputsOwnedAndCleaned: generatedOutputLifecyclePassed,
+      terminalSourceWorktreeValid: correctedSourceAggregateValidation.valid,
+      outerFixtureSessionUnchanged:
+        sourceValidationNestedAuthFixtureResult.parentEnvironmentUnchanged ===
+          true &&
+        sourceValidationNestedAuthFixtureResult.outerSessionPreserved === true &&
+        sourceValidationNestedAuthFixtureResult.outerResourcesPreserved === true,
+    },
     generatedOutputLifecycle: {
       schema:
         "interior-ai.production-certification-source-generated-outputs.v1",
@@ -4623,11 +4870,20 @@ export async function runProductionCertificationSimulation({
       secondGenerationRejected: true,
       localAdvisorySubstitutionRejected: true,
       staleForeignTamperedSessionRejected: true,
+      nestedIsolation: authFixtureSessionIsolation,
+      outerCanonicalSessionPreserved:
+        authFixtureSessionIsolation.outerSessionPreserved === true,
+      ambientContaminationRejected:
+        authFixtureSessionIsolation.historicalContaminationRejected === true,
+      nestedCleanupPassed:
+        authFixtureSessionIsolation.nestedResourcesCleaned === true,
       simulationOnly: true,
       eligibleForRealCertification: false,
-      regressionPassed: authFixtureSessionRegression.includes(
-        "CI auth fixture exactly-once session tests passed",
-      ),
+      regressionPassed:
+        authFixtureSessionIsolation.isolatedChildPassed === true &&
+        authFixtureSessionRegression.includes(
+          "CI auth fixture nested isolation regression passed",
+        ),
     },
     authPreflightDatabaseLifecycle: {
       classification: "AUTH_SESSION_PREFLIGHT_ONLY",

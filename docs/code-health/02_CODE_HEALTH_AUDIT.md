@@ -1,5 +1,36 @@
 # Code health audit
 
+## Production certification nested auth-fixture isolation — 2026-08-21
+
+The failed rehearsal remains immutable at
+`CERTIFICATION_REHEARSAL_FAILED_CLOSED`, `SOURCE_CONTRACT_FAILURE`,
+`source-validation:001`, consumed. Its canonical database abort absence proof
+does not rehabilitate it. The source defects are
+`SOURCE_VALIDATION_AUTH_FIXTURE_ENVIRONMENT_LEAKAGE_DEFECT` and
+`NESTED_FIXTURE_SESSION_REGRESSION_ISOLATION_DEFECT`.
+
+The first source command legitimately retains the outer provider context for
+production-artifact/build-auth continuity contracts. Its nested deterministic
+fixture-session regression previously copied that ambient context, generated a
+different pair, and failed correctly at `GOOGLE_CLIENT_ID`. The bounded owner-A
+correction sanitizes only the regression child from an explicit copied
+environment. Its 22-name set is derived from the canonical session, result,
+and stage contracts; no global `process.env` mutation or consumer relaxation is
+used. The historical contaminated child still fails, the isolated child passes,
+all 13 negative cases fail closed, and outer identity/digests/transport plus
+parent environment remain unchanged while nested resources are cleaned.
+
+The exact production-artifact source check passes with ambient outer provider
+variables. Doctor, deterministic integration-ready simulation, 19-check
+source-validation, 27-gate/396-source truthfulness, focused zero-warning lint,
+and diff hygiene pass. The exact clean corrected-head qualification result is
+`QUALIFIED_FOR_FINAL_CANDIDATE_CERTIFICATION`. No real build, rehearsal, Phase
+8, runtime/browser owner, Full E2E, final certification, integration, push, or
+deployment ran. Fresh rehearsal, immutable certification, integration, and
+closure audit remain pending.
+Independent terminal read-only review is **PASS** with no remaining actionable
+finding.
+
 ## Production certification auth-fixture continuity — 2026-08-20
 
 The preserved result is `COMMITTED_COMMAND_MODE_INCONCLUSIVE` /

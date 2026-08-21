@@ -779,6 +779,38 @@ so empty, duplicate, or resealed proofs remain invalid after cleanup. Evidence
 directory components are authorized as physical non-symlink directories before
 any installer, binding-state receipt, check stream, or aggregate write.
 
+## Nested auth-fixture regression isolation
+
+The canonical `production-artifact-evidence-contracts` source check remains
+`npm run test:production-artifact-evidence`. That command exercises build-auth
+continuity and may run while an outer rehearsal provider context exists. That
+real source check executes the deterministic
+`test:ci-auth-fixture-session` package owner, which must not consume the outer
+session: it creates an explicit copy, removes the complete
+capability set derived from the canonical fixture-session, structured-result,
+and stage-environment contracts, and spawns the same script with
+`--isolated-auth-fixture-regression-child`. Global `process.env`, the source
+stage profile, the outer private transport, and build/auth profiles are not
+mutated.
+
+The executable historical regression first proves that an unsanitized child
+with one valid outer session and a different nested pair is rejected at the
+first provider identity, `GOOGLE_CLIENT_ID`. The corrected child receives no
+outer capability, generates one fresh task-owned session, validates through the
+unchanged canonical consumer, removes only its own resources, and emits only
+safe names and non-reversible hashes. The fail-closed matrix retains provider,
+session ID/root/nonce/digest, transport, mixed-pair, candidate/result, duplicate,
+cleanup, parent-mutation, missing-identity, and raw-value protections. Doctor
+executes the environment-isolation projector against all 22 canonical
+capabilities and requires the real source-check invocation/result linkage
+before a real run. The generated simulation supplies the eight pre-install auth
+commands with its fixture-owned offline TypeScript runner, then exposes one
+explicit, awaited generated auth-result test entrypoint after dependency
+installation. Exact clean corrected-head qualification returns
+`QUALIFIED_FOR_FINAL_CANDIDATE_CERTIFICATION`.
+Independent terminal read-only review is **PASS** after the exact-owner cleanup
+boundary and all earlier isolation/source-linkage findings were rechecked.
+
 ## Source validation
 
 The machine-readable `sourceValidation.checks` array in

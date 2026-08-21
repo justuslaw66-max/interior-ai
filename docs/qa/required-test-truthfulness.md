@@ -1,5 +1,28 @@
 # Required-test truthfulness
 
+## Nested auth fixture regression isolation — 2026-08-21
+
+The existing merge-required `ci.production-artifact-contract` owner remains the
+sole required gate. Its canonical first source check remains
+`npm run test:production-artifact-evidence`; that command reaches the
+package-owned `test:ci-auth-fixture-session` regression through the real
+certification simulation. No gate, workflow, cadence, browser project, retry,
+skip, allowance, suppression, dependency, or package-lock entry changes.
+
+The exact historical ambient-contamination regression and its 13-case
+fail-closed matrix are registered in the existing script test. Direct manifest
+validation reports **27 gates / 396 classified test sources**. The
+risk-triggered `script-tests` path inventory remains **273** paths at path-set
+SHA-256
+`2e66faace4df8c8edf0580e16c606a77734e5c89129c2d2a792ff226d201f3ab`;
+the classified closure increases by one because the fixture-session regression
+now directly imports the canonical regression-environment owner from its
+required closure. Exact clean corrected-head qualification returns
+`QUALIFIED_FOR_FINAL_CANDIDATE_CERTIFICATION`. A fresh rehearsal,
+immutable final certification, integration, push/deployment, and closure audit
+remain pending.
+Independent terminal read-only review is **PASS**.
+
 ## Auth fixture continuity inventory — 2026-08-20
 
 The exactly-once session owner and focused regression are added to the existing

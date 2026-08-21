@@ -37,7 +37,23 @@
     { "id": 34, "defect": "source-validation-database-environment-projection", "coverage": "historical unchanged-parent precheck reproduction; active state-bound private-sidecar projection through the actual real source-validation runner; live exact-target proof; lifecycle-scoped non-admin stage role; ambient override and sidecar tamper rejection; database-free capability isolation; stdout/stderr raw-value redaction; doctor, simulation, and qualification" },
     { "id": 35, "defect": "auth-session-preflight-database-lifecycle-bridge", "coverage": "explicit preflight-only lifecycle profile; invocation-bound scoped projection; canonical provision/migrate/initial inspection/final inspection/drop/absence; failure-preserving abort; helper SQL/URL source guard; auth-result cleanup binding; doctor, simulation, focused real preflight, and qualification" },
     { "id": 36, "defect": "certification-wrapper-result-framing-contract-gap", "coverage": "one versioned final stdout frame; canonical producer/consumer/validation CLI; physical state/evidence rehash; exact stage/attempt/nonce/consumption/process binding; retained cleanup failure; producer-side privacy rejection and consumable redacted invalid-state result; 24-case noisy-output and tamper matrix; actual source-validation wrapper advances only to the pending build boundary in simulation; doctor and qualification" },
-    { "id": 37, "defect": "auth-fixture-session-continuity-owner-missing", "coverage": "sole export generator; external mode-0600 exactly-once session; explicit validate/misuse/preflight consumers; database lifecycle composition; local-advisory isolation; sealed build projection and digest guard; stale/foreign/tampered/override negatives; doctor, simulation, and qualification" }
+    { "id": 37, "defect": "auth-fixture-session-continuity-owner-missing", "coverage": "sole export generator; external mode-0600 exactly-once session; explicit validate/misuse/preflight consumers; database lifecycle composition; local-advisory isolation; sealed build projection and digest guard; stale/foreign/tampered/override negatives; doctor, simulation, and qualification" },
+    { "id": 38, "defect": "nested-auth-fixture-regression-ambient-contamination", "coverage": "historical outer-session provider conflict at GOOGLE_CLIENT_ID; package-owned explicit child environment copy; canonical session/result capability stripping; fresh nested fixture; unchanged outer session, digests, transport, and parent environment; 13-case fail-closed matrix; real-runner source-validation, doctor, simulation, and qualification" }
+  ],
+  "nestedAuthFixtureIsolationCases": [
+    "outer-provider-variable-remains",
+    "outer-fixture-session-id-remains",
+    "outer-root-remains",
+    "outer-nonce-remains",
+    "outer-digest-metadata-remains",
+    "nested-session-uses-outer-transport",
+    "mixed-provider-bytes-with-distinct-session-ids",
+    "parent-environment-mutation",
+    "nested-cleanup-removes-outer-resources",
+    "missing-nested-session-identity",
+    "nested-duplicate-generation",
+    "raw-provider-value-leak",
+    "foreign-candidate-session-result"
   ],
   "stageResultCases": [
     "npm-prose-before-valid-frame",

@@ -58,6 +58,10 @@ import {
 } from "./production-certification-worktrees.mjs";
 import authResultContract from "./ci-auth-fixture-result-contract.cjs";
 import {
+  authFixtureRegressionCapabilityNames,
+  isolatedAuthFixtureRegressionEnvironment,
+} from "./ci-auth-fixture-regression-environment.mjs";
+import {
   PRODUCTION_CERTIFICATION_STAGE_RESULT_COMMANDS,
   PRODUCTION_CERTIFICATION_STAGE_RESULT_PREFIX,
   PRODUCTION_CERTIFICATION_STAGE_RESULT_SCHEMA,
@@ -322,6 +326,7 @@ export function validateAuthResultContracts(repositoryRoot) {
     "scripts/ci-auth-fixture-result-contract.d.cts",
     "scripts/ci-auth-fixture-session.cjs",
     "scripts/ci-auth-fixture-session.d.cts",
+    "scripts/ci-auth-fixture-regression-environment.mjs",
     "scripts/ci-auth-fixture.ts",
     "scripts/run-ci-auth-fixture-real-preflight.mjs",
     "scripts/run-ci-auth-fixture-session.mjs",
@@ -363,6 +368,13 @@ export function validateAuthResultContracts(repositoryRoot) {
     path.join(repositoryRoot, "scripts/test-ci-auth-fixture-session.mjs"),
     "utf8",
   );
+  const fixtureRegressionEnvironmentSource = readFileSync(
+    path.join(
+      repositoryRoot,
+      "scripts/ci-auth-fixture-regression-environment.mjs",
+    ),
+    "utf8",
+  );
   const certificationRunnerSource = readFileSync(
     path.join(repositoryRoot, "scripts/production-certification-real.mjs"),
     "utf8",
@@ -388,6 +400,117 @@ export function validateAuthResultContracts(repositoryRoot) {
   const qualificationSource = readFileSync(
     path.join(repositoryRoot, "scripts/production-certification.mjs"),
     "utf8",
+  );
+  const simulationSource = readFileSync(
+    path.join(repositoryRoot, "scripts/production-certification-simulation.mjs"),
+    "utf8",
+  );
+  const sourceContinuitySource = readFileSync(
+    path.join(
+      repositoryRoot,
+      "scripts/production-certification-source-continuity.mjs",
+    ),
+    "utf8",
+  );
+  const regressionMatrix = JSON.parse(
+    readFileSync(
+      path.join(repositoryRoot, "scripts/production-certification-regressions.json"),
+      "utf8",
+    ),
+  );
+  const environmentContract = stageEnvironmentContract(repositoryRoot);
+  const canonicalCapabilityNames =
+    authFixtureRegressionCapabilityNames(repositoryRoot);
+  const isolationProbeParent = {
+    PATH: "/doctor-preserved-path",
+    DATABASE_URL: "doctor-preserved-database-value",
+    DOCTOR_ORDINARY_VARIABLE: "doctor-preserved-ordinary-value",
+    ...Object.fromEntries(
+      canonicalCapabilityNames.map((name, index) => [
+        name,
+        `doctor-private-capability-${index}`,
+      ]),
+    ),
+  };
+  const isolationProbeParentBefore = JSON.stringify(isolationProbeParent);
+  const isolationProbeChild = isolatedAuthFixtureRegressionEnvironment({
+    repositoryRoot,
+    parentEnvironment: isolationProbeParent,
+  });
+  const isolationProbe = {
+    returnsFreshEnvironment: isolationProbeChild !== isolationProbeParent,
+    parentEnvironmentUnchanged:
+      JSON.stringify(isolationProbeParent) === isolationProbeParentBefore,
+    capabilitiesRemoved: canonicalCapabilityNames.every(
+      (name) => !Object.hasOwn(isolationProbeChild, name),
+    ),
+    ordinaryVariablesPreserved:
+      isolationProbeChild.PATH === isolationProbeParent.PATH &&
+      isolationProbeChild.DATABASE_URL === isolationProbeParent.DATABASE_URL &&
+      isolationProbeChild.DOCTOR_ORDINARY_VARIABLE ===
+        isolationProbeParent.DOCTOR_ORDINARY_VARIABLE,
+  };
+  const nestedRegressionChild = spawnSync(
+    "npm",
+    ["run", "test:ci-auth-fixture-session"],
+    {
+      cwd: repositoryRoot,
+      env: { ...process.env },
+      encoding: "utf8",
+      maxBuffer: 16 * 1024 * 1024,
+    },
+  );
+  const nestedRegressionStdout = String(nestedRegressionChild.stdout ?? "");
+  const nestedRegressionStderr = String(nestedRegressionChild.stderr ?? "");
+  const nestedRegressionOutput =
+    `${nestedRegressionStdout}\n${nestedRegressionStderr}`;
+  const nestedRegressionProcessEvidence = {
+    exitCode: Number.isSafeInteger(nestedRegressionChild.status)
+      ? nestedRegressionChild.status
+      : null,
+    signal: nestedRegressionChild.signal ?? null,
+    spawnError: nestedRegressionChild.error?.code ?? null,
+    stdout: {
+      bytes: Buffer.byteLength(nestedRegressionStdout),
+      sha256: sha256Bytes(nestedRegressionStdout),
+    },
+    stderr: {
+      bytes: Buffer.byteLength(nestedRegressionStderr),
+      sha256: sha256Bytes(nestedRegressionStderr),
+    },
+  };
+  if (
+    nestedRegressionChild.error ||
+    nestedRegressionChild.signal ||
+    nestedRegressionChild.status !== 0
+  ) {
+    throw new Error(
+      `nested auth fixture regression execution failed: ${JSON.stringify(
+        nestedRegressionProcessEvidence,
+      )}`,
+    );
+  }
+  const ambientPrivateValues =
+    authResultContract.privateValuesFromEnvironment(process.env);
+  if (
+    ambientPrivateValues.some((value) => nestedRegressionOutput.includes(value)) ||
+    /GOCSPX[-_][A-Za-z0-9_-]{8,}/.test(nestedRegressionOutput) ||
+    /[0-9]+-gate-a3-ci-[a-f0-9]{32}\.apps\.googleusercontent\.com/i.test(
+      nestedRegressionOutput,
+    )
+  ) {
+    throw new Error("nested auth fixture regression emitted raw private values");
+  }
+  const nestedRegressionPrefix =
+    "CI_AUTH_FIXTURE_NESTED_ISOLATION_REGRESSION_RESULT ";
+  const nestedRegressionLine = nestedRegressionOutput
+    .split("\n")
+    .find((line) => line.startsWith(nestedRegressionPrefix));
+  if (!nestedRegressionLine) {
+    throw new Error("nested auth fixture regression execution result is missing");
+  }
+  const nestedRegressionResult = JSON.parse(
+    nestedRegressionLine.slice(nestedRegressionPrefix.length),
   );
   const workflowSource = [
     ".github/workflows/ci.yml",
@@ -529,6 +652,107 @@ export function validateAuthResultContracts(repositoryRoot) {
     !fixtureSessionRegressionSource.includes(
       "CI auth fixture exactly-once session tests passed",
     ) ||
+    !fixtureSessionRegressionSource.includes(
+      "isolatedAuthFixtureRegressionEnvironment",
+    ) ||
+    !fixtureSessionRegressionSource.includes(
+      "AUTH_FIXTURE_CAPABILITY_NAMES",
+    ) ||
+    !fixtureRegressionEnvironmentSource.includes(
+      "authFixtureRegressionCapabilityNames",
+    ) ||
+    !fixtureRegressionEnvironmentSource.includes(
+      "delete environment[name]",
+    ) ||
+    !fixtureSessionRegressionSource.includes(
+      "[process.argv[1], ISOLATED_CHILD_ARGUMENT]",
+    ) ||
+    !fixtureSessionRegressionSource.includes(
+      "historical ambient auth fixture contamination must fail closed",
+    ) ||
+    !fixtureSessionRegressionSource.includes(
+      "nested regression harness must not mutate global process.env",
+    ) ||
+    !Object.values(isolationProbe).every((value) => value === true) ||
+    !sourceContinuitySource.includes(
+      "runNestedAuthFixtureSourceRegression",
+    ) ||
+    !sourceContinuitySource.includes(
+      "SOURCE_VALIDATION_NESTED_AUTH_FIXTURE_REGRESSION_RESULT",
+    ) ||
+    !simulationSource.includes(
+      "SOURCE_VALIDATION_NESTED_AUTH_FIXTURE_REGRESSION_RESULT",
+    ) ||
+    !simulationSource.includes("sourceValidationNestedAuthFixtureRegression") ||
+    !regressionMatrix.cases.some(
+      (entry) =>
+        entry.id === 38 &&
+        entry.defect === "nested-auth-fixture-regression-ambient-contamination",
+    ) ||
+    JSON.stringify(regressionMatrix.nestedAuthFixtureIsolationCases) !==
+      JSON.stringify([
+        "outer-provider-variable-remains",
+        "outer-fixture-session-id-remains",
+        "outer-root-remains",
+        "outer-nonce-remains",
+        "outer-digest-metadata-remains",
+        "nested-session-uses-outer-transport",
+        "mixed-provider-bytes-with-distinct-session-ids",
+        "parent-environment-mutation",
+        "nested-cleanup-removes-outer-resources",
+        "missing-nested-session-identity",
+        "nested-duplicate-generation",
+        "raw-provider-value-leak",
+        "foreign-candidate-session-result",
+      ]) ||
+    JSON.stringify(canonicalCapabilityNames) !==
+      JSON.stringify([
+        "AUTH_SECRET",
+        "CI_AUTH_FIXTURE_ACTIVE",
+        "CI_AUTH_FIXTURE_ACTUAL_EXIT_STATUS",
+        "CI_AUTH_FIXTURE_CANDIDATE_COMMIT_SHA",
+        "CI_AUTH_FIXTURE_CANDIDATE_TREE_SHA",
+        "CI_AUTH_FIXTURE_EXPECTED_COMMAND_ID",
+        "CI_AUTH_FIXTURE_EXPECTED_MODE",
+        "CI_AUTH_FIXTURE_LOCAL_TEST",
+        "CI_AUTH_FIXTURE_MODE",
+        "CI_AUTH_FIXTURE_NO_REGENERATION",
+        "CI_AUTH_FIXTURE_PROVIDER_CLIENT_ID_SHA256",
+        "CI_AUTH_FIXTURE_PROVIDER_CLIENT_SECRET_SHA256",
+        "CI_AUTH_FIXTURE_RESULT_NONCE",
+        "CI_AUTH_FIXTURE_RESULT_PATH",
+        "CI_AUTH_FIXTURE_RESULT_ROOT",
+        "CI_AUTH_FIXTURE_SESSION_CLASSIFICATION",
+        "CI_AUTH_FIXTURE_SESSION_ID",
+        "CI_AUTH_FIXTURE_SESSION_NONCE",
+        "CI_AUTH_FIXTURE_SESSION_ROOT",
+        "GOOGLE_CLIENT_ID",
+        "GOOGLE_CLIENT_SECRET",
+        "NEXTAUTH_SECRET",
+      ]) ||
+    nestedRegressionResult.schema !==
+      "interior-ai.ci-auth-fixture-nested-isolation-regression.v1" ||
+    nestedRegressionResult.selectedOwner !== "nested-regression-child" ||
+    nestedRegressionResult.historicalConflict !== "GOOGLE_CLIENT_ID" ||
+    nestedRegressionResult.historicalContaminationRejected !== true ||
+    nestedRegressionResult.isolatedChildPassed !== true ||
+    nestedRegressionResult.parentEnvironmentUnchanged !== true ||
+    nestedRegressionResult.outerSessionPreserved !== true ||
+    nestedRegressionResult.outerResourcesPreserved !== true ||
+    nestedRegressionResult.nestedResourcesCleaned !== true ||
+    nestedRegressionResult.rawProviderValuesRecorded !== false ||
+    JSON.stringify(nestedRegressionResult.negativeCases) !==
+      JSON.stringify(regressionMatrix.nestedAuthFixtureIsolationCases) ||
+    JSON.stringify(nestedRegressionResult.capabilityNames) !==
+      JSON.stringify(canonicalCapabilityNames) ||
+    environmentContract.value.baseEnvironmentPolicy.ordinaryVariables !==
+      "preserve" ||
+    !environmentContract.profiles["auth-session-preflight"].childVisibleVariables.includes(
+      "CI_AUTH_FIXTURE_SESSION_ROOT",
+    ) ||
+    !environmentContract.profiles.build.childVisibleVariables.includes(
+      "CI_AUTH_FIXTURE_SESSION_ID",
+    ) ||
     !certificationRunnerSource.includes(
       "projectAuthFixtureSessionForStage",
     ) ||
@@ -591,6 +815,24 @@ export function validateAuthResultContracts(repositoryRoot) {
     localAdvisoryCertificationEligible: false,
     fixtureSessionBuildContinuity: true,
     exactlyOnceRegressionRegistered: true,
+    nestedFixtureRegressionChildIsolation:
+      isolationProbe.returnsFreshEnvironment &&
+      isolationProbe.capabilitiesRemoved &&
+      nestedRegressionResult.isolatedChildPassed === true,
+    nestedFixtureRegressionCapabilityNameCount: canonicalCapabilityNames.length,
+    historicalAmbientContaminationRegressionRegistered: true,
+    nestedIsolationNegativeCaseCount:
+      nestedRegressionResult.negativeCases.length,
+    parentProcessEnvironmentMutation:
+      !isolationProbe.parentEnvironmentUnchanged ||
+      nestedRegressionResult.parentEnvironmentUnchanged !== true,
+    outerFixtureProfilesPreserved:
+      isolationProbe.ordinaryVariablesPreserved &&
+      nestedRegressionResult.outerSessionPreserved === true &&
+      nestedRegressionResult.outerResourcesPreserved === true,
+    conflictDetectionFailClosed:
+      nestedRegressionResult.historicalContaminationRejected === true &&
+      nestedRegressionResult.historicalConflict === "GOOGLE_CLIENT_ID",
     rehearsalDatabaseIndependent: true,
     workflowFailureResultsValidated: true,
     rawAuthMaterialPortable: false,

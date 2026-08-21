@@ -53,6 +53,9 @@ import {
   SourceGeneratedOutputLifecycle,
   validateSourceGeneratedOutputAggregate,
 } from "./production-certification-source-generated-outputs.mjs";
+import {
+  authFixtureRegressionCapabilityNames,
+} from "./ci-auth-fixture-regression-environment.mjs";
 
 const SOURCE_EVIDENCE_SEAL_DOMAIN =
   "interior-ai.production-certification-source-validation-seal.v1\n";
@@ -3681,6 +3684,92 @@ function emitQualificationGeneratedOutputs(checkId) {
   }
 }
 
+function safeFixtureChildProcessEvidence(child) {
+  const stdout = String(child.stdout ?? "");
+  const stderr = String(child.stderr ?? "");
+  return {
+    exitCode: Number.isSafeInteger(child.status) ? child.status : null,
+    signal: child.signal ?? null,
+    spawnError: child.error?.code ?? null,
+    stdout: { bytes: Buffer.byteLength(stdout), sha256: sha256Bytes(stdout) },
+    stderr: { bytes: Buffer.byteLength(stderr), sha256: sha256Bytes(stderr) },
+  };
+}
+
+function runNestedAuthFixtureSourceRegression() {
+  const regressionMatrix = JSON.parse(
+    readFileSync(
+      path.join(
+        process.cwd(),
+        "scripts/production-certification-regressions.json",
+      ),
+      "utf8",
+    ),
+  );
+  const expectedNegativeCases =
+    regressionMatrix.nestedAuthFixtureIsolationCases;
+  const expectedCapabilityNames =
+    authFixtureRegressionCapabilityNames(process.cwd());
+  const child = spawnSync("npm", ["run", "test:ci-auth-fixture-session"], {
+    cwd: process.cwd(),
+    env: { ...process.env },
+    encoding: "utf8",
+    maxBuffer: 16 * 1024 * 1024,
+  });
+  if (child.error || child.signal || child.status !== 0) {
+    throw new Error(
+      `nested auth fixture source regression failed: ${JSON.stringify(
+        safeFixtureChildProcessEvidence(child),
+      )}`,
+    );
+  }
+  const output = `${child.stdout}\n${child.stderr}`;
+  if (
+    /GOCSPX[-_][A-Za-z0-9_-]{8,}/.test(output) ||
+    /[0-9]+-gate-a3-ci-[a-f0-9]{32}\.apps\.googleusercontent\.com/i.test(
+      output,
+    )
+  ) {
+    throw new Error("nested auth fixture source regression emitted raw provider values");
+  }
+  const line = output
+    .split("\n")
+    .find((entry) =>
+      entry.startsWith(
+        "CI_AUTH_FIXTURE_NESTED_ISOLATION_REGRESSION_RESULT ",
+      ),
+    );
+  if (!line) {
+    throw new Error("nested auth fixture source regression result is missing");
+  }
+  const result = JSON.parse(
+    line.slice("CI_AUTH_FIXTURE_NESTED_ISOLATION_REGRESSION_RESULT ".length),
+  );
+  if (
+    result.schema !==
+      "interior-ai.ci-auth-fixture-nested-isolation-regression.v1" ||
+    result.selectedOwner !== "nested-regression-child" ||
+    result.historicalContaminationRejected !== true ||
+    result.isolatedChildPassed !== true ||
+    result.parentEnvironmentUnchanged !== true ||
+    result.outerSessionPreserved !== true ||
+    result.outerResourcesPreserved !== true ||
+    result.nestedResourcesCleaned !== true ||
+    result.rawProviderValuesRecorded !== false ||
+    JSON.stringify(result.negativeCases) !==
+      JSON.stringify(expectedNegativeCases) ||
+    JSON.stringify(result.capabilityNames) !==
+      JSON.stringify(expectedCapabilityNames)
+  ) {
+    throw new Error("nested auth fixture source regression result is incomplete");
+  }
+  process.stdout.write(
+    `SOURCE_VALIDATION_NESTED_AUTH_FIXTURE_REGRESSION_RESULT ${JSON.stringify(
+      result,
+    )}\n`,
+  );
+}
+
 async function cli() {
   const command = process.argv[2];
   if (command === "fixture-check") {
@@ -3693,6 +3782,9 @@ async function cli() {
       throw new Error("source-validation fixture log must be absolute");
     }
     writeFileSync(logPath, `${id}\n`, { flag: "a", mode: 0o600 });
+    if (id === "production-artifact-evidence-contracts") {
+      runNestedAuthFixtureSourceRegression();
+    }
     if (process.env.CERTIFICATION_SOURCE_VALIDATION_DIRTY_ID === id) {
       writeFileSync(
         path.join(process.cwd(), ".certification-source-validation-dirty-fixture"),

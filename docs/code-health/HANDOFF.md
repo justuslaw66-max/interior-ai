@@ -1,5 +1,71 @@
 # Code health audit handoff
 
+## Production certification nested auth fixture isolation — 2026-08-21
+
+Branch `fix/production-certification-nested-auth-fixture-isolation` starts at
+exact commit `68b41c9c11a11abf1513ee0c54791c01be9c7ed9`, tree
+`cdf51954f3d1c27d0a8d5084662a3151d6e9e39d`, above unchanged local and
+remote-tracking integration `2c567fd483877c7dcbd8fd23e3cd8cb316732c8c`,
+tree `50f9c5d6a6610990606fd9db9a27ba40200fca90`. The preserved failed
+rehearsal remains exactly `CERTIFICATION_REHEARSAL_FAILED_CLOSED` /
+`SOURCE_CONTRACT_FAILURE` / `source-validation:001` /
+`consumedSubstantiveGate=true`; its first failed check remains
+`production-artifact-evidence-contracts`, and its completed database cleanup
+remains `abort-absence-verified` rather than rehearsal success. No retained
+rehearsal file, fixture, transport, evidence, or result was modified or reused.
+
+The source classifications are
+`SOURCE_VALIDATION_AUTH_FIXTURE_ENVIRONMENT_LEAKAGE_DEFECT` and
+`NESTED_FIXTURE_SESSION_REGRESSION_ISOLATION_DEFECT`. The exact command chain
+is `npm run test:production-artifact-evidence` to
+`scripts/test-production-certification.mjs`, deterministic simulation, then
+`npm run test:ci-auth-fixture-session`. Source projection correctly strips the
+inventoried `CI_AUTH_*` controls but preserves ordinary application variables;
+the nested test copied `process.env`, generated a different pair, and the
+canonical consumer rejected the first mismatched private variable,
+`GOOGLE_CLIENT_ID`. Conflict detection was correct and is unchanged.
+
+Owner A is selected: only the deterministic fixture-session regression owns
+isolation. Its package command now copies the parent environment, derives and
+removes all 22 current session/result capabilities from the canonical session,
+result, and stage-environment contracts, then spawns
+`node scripts/test-ci-auth-fixture-session.mjs
+--isolated-auth-fixture-regression-child`. The isolated set is
+`CI_AUTH_FIXTURE_ACTIVE`, `CI_AUTH_FIXTURE_ACTUAL_EXIT_STATUS`, candidate
+commit/tree, expected command/mode, local-test/mode/no-regeneration markers,
+both provider digests, result nonce/path/root, session classification/ID/nonce/
+root, `AUTH_SECRET`, `NEXTAUTH_SECRET`, and
+`GOOGLE_CLIENT_ID`/`GOOGLE_CLIENT_SECRET`. The child assigns one fresh
+task-owned root, ID, nonce, provider pair, result destinations, and
+candidate binding. It never mutates global `process.env`.
+
+The exact historical contaminated child fails closed at `GOOGLE_CLIENT_ID`;
+the isolated child passes. The 13-case matrix rejects one retained provider
+variable, retained outer session ID/root/nonce/digest, outer transport use,
+mixed provider bytes with distinct sessions, parent mutation, outer-resource
+cleanup, missing nested identity, duplicate generation, raw-value leakage, and
+foreign candidate/session results. Parent environment, outer session identity,
+provider digests, and transport bytes remain unchanged; nested resources are
+removed by the nested owner. Deterministic simulation passes all 19 source
+checks, installed/bound dependencies, generated-output cleanup, terminal
+source validation, and integration readiness while remaining ineligible for
+real certification. Doctor validates the isolation owner, complete capability
+inventory, unchanged conflict consumer, exact historical regression, and
+non-portable raw values. Required-test truthfulness reports 27 gates / 396
+classified sources with the unchanged 273-path script inventory. Exact clean
+corrected-head qualification returns
+`QUALIFIED_FOR_FINAL_CANDIDATE_CERTIFICATION`.
+Independent terminal read-only review is **PASS** after its cleanup, matrix,
+source-runner, Doctor, and log-safety findings were corrected and rechecked.
+
+No product/UI, auth endpoint, fixture grammar, database lifecycle, Prisma,
+migration, dependency, package-lock, Floor Plan, telemetry, model, runtime,
+archive, Phase 8, workflow, or browser behavior changes. No real build,
+rehearsal, Phase 8, runtime smoke, browser-owner matrix, Full E2E, final
+certification, integration, push, or deployment ran. A fresh rehearsal,
+immutable certification, integration, and CH-0015 closure audit remain
+pending.
+
 ## Production certification auth fixture continuity — 2026-08-20
 
 The static discovery remains exactly `COMMITTED_COMMAND_MODE_INCONCLUSIVE`,
