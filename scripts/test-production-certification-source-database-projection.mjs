@@ -307,13 +307,6 @@ async function verifyFailedMigrationCannotProject(root) {
   mkdirSync(evidenceRoot, { recursive: true, mode: 0o700 });
   mkdirSync(worktreeRoot, { recursive: true, mode: 0o700 });
   initializeFixture(repositoryRoot, fixtureRoot);
-  cpSync(
-    path.join(repositoryRoot, "prisma/migrations"),
-    path.join(fixtureRoot, "prisma/migrations"),
-    { recursive: true },
-  );
-  git(fixtureRoot, ["add", "prisma/migrations"]);
-  git(fixtureRoot, ["commit", "-qm", "add migration fixture"]);
   const environment = certificationEnvironment({
     fixtureRoot,
     evidenceRoot,

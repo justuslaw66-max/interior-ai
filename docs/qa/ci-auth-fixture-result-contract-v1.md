@@ -1,5 +1,40 @@
 # CI Auth Fixture Command Result Contract v1
 
+## Caller-owned auth-preflight failure retention
+
+The canonical `certification:auth-preflight` outer owner retains its existing
+structured command results under `auth-preflight-results` when the fixture
+session root is caller-owned. Each completed command still publishes the same
+versioned JSON plus SHA-256 sidecar; only the result-root ownership changes.
+The private fixture transport remains a sibling in the physical mode-0700
+session root and is never copied into result evidence. The disposable
+orchestration root, private `GITHUB_ENV`, and task-owned qualification sessions
+retain their existing cleanup behavior.
+
+The normal real-preflight result remains
+`interior-ai.ci-auth-fixture-command-result.v1`. When the real helper fails
+before that composed result is successfully published and validated, the sibling
+`interior-ai.auth-preflight-orchestration-failure.v1` receipt records only its
+safe earliest boundary and post-cleanup lifecycle classifications. Mere
+existence of a partial or invalid normal-result JSON does not suppress the
+receipt. The receipt retains the safe database lifecycle state, failure mode
+and classification, evidence digest, and per-substage status needed to
+distinguish plan, provision, migrations, initial verification, scoped-role and
+private-sidecar creation, stage binding, and projection failures. The receipt
+is canonical JSON with an aggregate SHA-256 and owner-mode-0600 checksum
+sidecar, is candidate/session/nonce-digest bound, and is explicitly
+non-consumable as auth-preflight success.
+
+This closes the committed failure-evidence gap in which the outer `finally`
+removed successful predecessor results and the earliest structured failure
+before the caller could attribute a generic fail-closed exit. A focused
+failure-path regression proves retained export success followed by retained
+validate-existing failure. A second regression injects a concrete private
+sidecar activation failure, proves exact lifecycle attribution despite cleanup,
+and proves a partial normal-result JSON cannot suppress the receipt. The
+task-owned success-path assertion proves that the correction does not weaken
+task cleanup.
+
 ## Exactly-once certification fixture session continuity
 
 The preserved static discovery remains exactly

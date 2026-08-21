@@ -1,5 +1,61 @@
 # Production Certification Harness v1
 
+## Auth-preflight failure-evidence retention correction — 2026-08-22
+
+The retained failed attempt remains unchanged as
+`AUTH_PREFLIGHT_INNER_FAILURE_UNATTRIBUTED`,
+`PRECONDITION_ORCHESTRATION_FAILURE`, and
+`consumedSubstantiveGate=false`. Its exact fixture-session manifest and private
+transport prove one successful generation event, but the committed outer owner
+placed every command-result sidecar in its disposable orchestration root and
+unconditionally removed that root on failure. The earliest post-generation
+boundary therefore cannot be attributed beyond export result publication and
+validation. No HTTP, database, or later-stage failure is inferred.
+
+This correction is classified as **H —
+AUTH_PREFLIGHT_FAILURE_EVIDENCE_CONTRACT_DEFECT** and is committed-source
+owned. For a caller-owned canonical fixture session,
+`scripts/run-ci-auth-fixture-session.mjs` now creates the physical mode-0700
+`auth-preflight-results` directory under that already private external session
+root. The existing versioned result JSON and SHA-256 sidecars for export,
+validate-existing, production-misuse-existing, and the composed database
+preflight wrapper are published there. The disposable orchestration root and
+its private `GITHUB_ENV` are still removed. Task-owned qualification sessions
+retain their existing cleanup behavior.
+
+If the database/worktree/server helper fails before the normal composed wrapper
+can be successfully published and validated, it now publishes the separate safe
+`interior-ai.auth-preflight-orchestration-failure.v1` receipt beside the
+expected wrapper path. That checksummed receipt binds the candidate, fixture
+session aggregate, and invocation nonce digest; identifies the earliest safe
+orchestration boundary; and records database, workspace, child-result, and
+composed-result cleanup/publication status after committed cleanup. A partial
+or invalid normal-result JSON cannot suppress this receipt. The database
+attribution also retains the safe lifecycle state, failure mode and
+classification, evidence digest, and separate results for plan, provision,
+migrations, initial verification, scoped-role/private-sidecar creation, stage
+binding, and projection. It contains
+no raw provider value, auth secret, database URL, password, cookie, session,
+CSRF value, or private path. It does not substitute for a successful auth
+result.
+
+The focused regression drives the exact canonical outer command with a safe
+auth-secret alias mismatch before database creation. It proves the successful
+export result and the structured validation failure both remain complete,
+checksummed, candidate/session/nonce-bound, and free of raw provider values
+after orchestration cleanup. A separate ownership assertion proves task-owned
+success evidence is removed with its task root. An exact imported real-helper
+failure uses an in-memory database adapter and injects a safe exception at the
+committed private-sidecar activation checkpoint after plan, provision, and
+migration execution. It proves the receipt distinguishes that precise database
+substage, survives beside a deliberately partial normal-result JSON, and
+remains after the private inner result root is removed. No live database is
+touched by that focused regression. The miniature qualification repository
+copies the tracked migration inventory required by this lifecycle regression;
+it does not execute a live database lifecycle. This correction does not replay or rehabilitate
+the failed rehearsal and does not change application auth, database, server,
+route, or cleanup semantics.
+
 ## Auth-preflight tracked-output ownership correction — 2026-08-21
 
 The bounded ownership audit classifies the retained failure as **D — MIXED**.

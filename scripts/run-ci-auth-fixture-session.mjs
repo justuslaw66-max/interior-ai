@@ -4,6 +4,7 @@ import { randomBytes } from "node:crypto";
 import { createRequire } from "node:module";
 import {
   chmodSync,
+  lstatSync,
   mkdirSync,
   mkdtempSync,
   realpathSync,
@@ -17,6 +18,65 @@ import { fileURLToPath } from "node:url";
 const require = createRequire(import.meta.url);
 const resultContract = require("./ci-auth-fixture-result-contract.cjs");
 const sessionContract = require("./ci-auth-fixture-session.cjs");
+
+export const CALLER_RETAINED_AUTH_RESULT_DIRECTORY =
+  "auth-preflight-results";
+
+function isInside(parent, candidate) {
+  const relative = path.relative(parent, candidate);
+  return (
+    relative === "" ||
+    (!relative.startsWith(`..${path.sep}`) &&
+      relative !== ".." &&
+      !path.isAbsolute(relative))
+  );
+}
+
+function canonicalWorktreeRoots(repositoryRoot) {
+  const result = spawnSync("git", ["worktree", "list", "--porcelain"], {
+    cwd: repositoryRoot,
+    encoding: "utf8",
+  });
+  if (result.error || result.signal || result.status !== 0) {
+    throw new Error("Canonical auth result owner could not enumerate worktrees");
+  }
+  return result.stdout
+    .split("\n")
+    .filter((line) => line.startsWith("worktree "))
+    .map((line) => realpathSync(line.slice("worktree ".length)));
+}
+
+function validatedCallerSessionRoot(rawRoot, repositoryRoot) {
+  if (typeof rawRoot !== "string" || !path.isAbsolute(rawRoot)) {
+    throw new Error("Caller-owned auth fixture session root must be absolute");
+  }
+  const metadata = lstatSync(rawRoot);
+  if (
+    metadata.isSymbolicLink() ||
+    !metadata.isDirectory() ||
+    (metadata.mode & 0o077) !== 0
+  ) {
+    throw new Error(
+      "Caller-owned auth fixture session root must be a physical owner-only directory",
+    );
+  }
+  const resolved = realpathSync(rawRoot);
+  if (resolved !== path.resolve(rawRoot)) {
+    throw new Error(
+      "Caller-owned auth fixture session root must be a canonical physical path",
+    );
+  }
+  if (
+    canonicalWorktreeRoots(repositoryRoot).some(
+      (worktree) => isInside(worktree, resolved) || isInside(resolved, worktree),
+    )
+  ) {
+    throw new Error(
+      "Caller-owned auth fixture session root must remain outside every worktree",
+    );
+  }
+  return resolved;
+}
 
 function git(revision) {
   const result = spawnSync("git", ["rev-parse", revision], {
@@ -130,6 +190,35 @@ export function canonicalSessionOwnership(environment = process.env) {
   });
 }
 
+export function canonicalAuthResultOwnership({
+  sessionOwnership,
+  orchestrationRoot,
+  repositoryRoot = process.cwd(),
+}) {
+  const retainedByCaller = !sessionOwnership.ownedSessionRoot;
+  const resultRoot = retainedByCaller
+    ? path.join(
+        validatedCallerSessionRoot(sessionOwnership.sessionRoot, repositoryRoot),
+        CALLER_RETAINED_AUTH_RESULT_DIRECTORY,
+      )
+    : path.join(orchestrationRoot, "results");
+  let created = false;
+  try {
+    mkdirSync(resultRoot, { mode: 0o700 });
+    created = true;
+    chmodSync(resultRoot, 0o700);
+    resultContract.resolveAuthResultDestination({
+      repositoryRoot,
+      externalRoot: resultRoot,
+      resultPath: path.join(resultRoot, "ownership-probe.json"),
+    });
+  } catch (error) {
+    if (created) rmSync(resultRoot, { recursive: true, force: true });
+    throw error;
+  }
+  return Object.freeze({ resultRoot, retainedByCaller });
+}
+
 export async function runCanonicalAuthFixtureSession() {
   const candidateCommitSha = git("HEAD");
   const candidateTreeSha = git("HEAD^{tree}");
@@ -138,24 +227,30 @@ export async function runCanonicalAuthFixtureSession() {
     mkdtempSync(path.join(tmpdir(), "ci-auth-fixture-orchestration-")),
   );
   chmodSync(orchestrationRoot, 0o700);
-  const resultRoot = path.join(orchestrationRoot, "results");
-  mkdirSync(resultRoot, { mode: 0o700 });
   const ownedSessionRoot = ownership.ownedSessionRoot;
-  const sessionRoot = ownedSessionRoot
-    ? path.join(orchestrationRoot, "session")
-    : ownership.sessionRoot;
   const identitySuffix = randomBytes(8).toString("hex");
-  const sessionId = ownedSessionRoot
-    ? `auth-fixture-session-${process.pid}-${identitySuffix}`
-    : ownership.sessionId;
-  const sessionNonce = ownedSessionRoot
-    ? `auth-fixture-nonce-${process.pid}-${identitySuffix}`
-    : ownership.sessionNonce;
-  const githubEnvironmentPath = path.join(orchestrationRoot, "github-environment");
-  writeFileSync(githubEnvironmentPath, "", { flag: "wx", mode: 0o600 });
   let retained = false;
   let workspaceTerminalEvidence = null;
   try {
+    const resultOwnership = canonicalAuthResultOwnership({
+      sessionOwnership: ownership,
+      orchestrationRoot,
+    });
+    const resultRoot = resultOwnership.resultRoot;
+    const sessionRoot = ownedSessionRoot
+      ? path.join(orchestrationRoot, "session")
+      : ownership.sessionRoot;
+    const sessionId = ownedSessionRoot
+      ? `auth-fixture-session-${process.pid}-${identitySuffix}`
+      : ownership.sessionId;
+    const sessionNonce = ownedSessionRoot
+      ? `auth-fixture-nonce-${process.pid}-${identitySuffix}`
+      : ownership.sessionNonce;
+    const githubEnvironmentPath = path.join(
+      orchestrationRoot,
+      "github-environment",
+    );
+    writeFileSync(githubEnvironmentPath, "", { flag: "wx", mode: 0o600 });
     const baseEnvironment = {
       ...process.env,
       APP_ENV: "development",
@@ -272,7 +367,7 @@ export async function runCanonicalAuthFixtureSession() {
       trackedOutput: workspaceEvidence.trackedOutput,
       cleanup: workspaceEvidence.cleanup,
     };
-    retained = !ownedSessionRoot;
+    retained = resultOwnership.retainedByCaller;
   } finally {
     rmSync(orchestrationRoot, { recursive: true, force: true });
   }

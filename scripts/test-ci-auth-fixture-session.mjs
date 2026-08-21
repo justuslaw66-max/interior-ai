@@ -5,12 +5,14 @@ import { createRequire } from "node:module";
 import {
   chmodSync,
   existsSync,
+  lstatSync,
   mkdirSync,
   mkdtempSync,
   readdirSync,
   readFileSync,
   realpathSync,
   rmSync,
+  symlinkSync,
   writeFileSync,
 } from "node:fs";
 import { tmpdir } from "node:os";
@@ -20,8 +22,18 @@ import {
   authFixtureRegressionCapabilityNames,
   isolatedAuthFixtureRegressionEnvironment,
 } from "./ci-auth-fixture-regression-environment.mjs";
+import { migrationInventory } from "./production-certification-database-contract.mjs";
 import { projectAuthFixtureSessionForStage } from "./production-certification-real.mjs";
-import { canonicalSessionOwnership } from "./run-ci-auth-fixture-session.mjs";
+import {
+  authPreflightOrchestrationFailurePath,
+  runRealAuthPreflight,
+  validateAuthPreflightOrchestrationFailure,
+} from "./run-ci-auth-fixture-real-preflight.mjs";
+import {
+  CALLER_RETAINED_AUTH_RESULT_DIRECTORY,
+  canonicalAuthResultOwnership,
+  canonicalSessionOwnership,
+} from "./run-ci-auth-fixture-session.mjs";
 
 const require = createRequire(import.meta.url);
 const resultContract = require("./ci-auth-fixture-result-contract.cjs");
@@ -50,6 +62,98 @@ const NESTED_ISOLATION_NEGATIVE_CASES = Object.freeze([
 
 const AUTH_FIXTURE_CAPABILITY_NAMES =
   authFixtureRegressionCapabilityNames(repositoryRoot);
+const certificationMigrationNames = migrationInventory(repositoryRoot).migrations.map(
+  ({ id }) => id,
+);
+
+class InnerFailureDatabaseAdapter {
+  constructor() {
+    this.exists = false;
+    this.migrated = false;
+    this.roleName = null;
+  }
+
+  async inspectAdmin() {
+    return {
+      hostClassification: "explicit-loopback",
+      host: "127.0.0.1",
+      port: 5432,
+      serverAddressClassification: "loopback",
+      serverVersion: "16.14",
+      serverVersionNumber: 160014,
+      role: "auth_preflight_admin",
+      roleClassification: "local-createdb",
+      canCreateDatabase: true,
+      targetExists: this.exists,
+    };
+  }
+
+  async createDatabase() {
+    assert.equal(this.exists, false);
+    this.exists = true;
+    return { created: true };
+  }
+
+  deployMigrations() {
+    this.migrated = true;
+    return { exitCode: 0, signal: null };
+  }
+
+  async migrationNames() {
+    return this.migrated ? certificationMigrationNames : [];
+  }
+
+  async inspectStageRole() {
+    return { exists: this.roleName !== null, adminCapabilities: false };
+  }
+
+  async createStageRole({ roleName }) {
+    this.roleName = roleName;
+    return {
+      created: true,
+      classification: "stage-login-no-admin",
+      adminCapabilities: false,
+    };
+  }
+
+  async inspectStageConnection({ roleName }) {
+    return {
+      exactTarget: this.exists,
+      exactRole: this.roleName === roleName,
+      adminCapabilities: false,
+    };
+  }
+
+  async applicationRows() {
+    return [];
+  }
+
+  async targetSessions() {
+    return [];
+  }
+
+  async terminateTargetSessions() {
+    return {
+      matchedSessionCount: 0,
+      terminatedPids: [],
+      remainingSessionCount: 0,
+    };
+  }
+
+  async dropDatabase() {
+    if (!this.exists) return { dropped: false, alreadyAbsent: true };
+    this.exists = false;
+    return { dropped: true, alreadyAbsent: false };
+  }
+
+  async dropStageRole() {
+    if (this.roleName === null) {
+      return { dropped: false, alreadyAbsent: true };
+    }
+    this.roleName = null;
+    return { dropped: true, alreadyAbsent: false };
+  }
+}
 
 function isolatedRegressionChildEnvironment(parentEnvironment) {
   return isolatedAuthFixtureRegressionEnvironment({
@@ -257,7 +361,7 @@ function sourceGuards() {
   );
 }
 
-function runIsolatedAuthFixtureRegressionChild() {
+async function runIsolatedAuthFixtureRegressionChild() {
 const executedNegativeCases = new Set();
 let completedNegativeCases = [];
 assert.deepEqual(canonicalSessionOwnership({}), {
@@ -287,6 +391,424 @@ assert.deepEqual(
     sessionId: "caller-session-id-001",
     sessionNonce: "caller-session-nonce-001",
   },
+);
+
+const retentionOwnerRoot = root("result-retention");
+const retainedSessionRoot = path.join(retentionOwnerRoot, "caller-session");
+const retainedOrchestrationRoot = path.join(
+  retentionOwnerRoot,
+  "caller-orchestration",
+);
+mkdirSync(retainedSessionRoot, { mode: 0o700 });
+mkdirSync(retainedOrchestrationRoot, { mode: 0o700 });
+const retainedResultOwnership = canonicalAuthResultOwnership({
+  sessionOwnership: canonicalSessionOwnership({
+    [sessionContract.FIXTURE_SESSION_ROOT_ENV]: retainedSessionRoot,
+    [sessionContract.FIXTURE_SESSION_ID_ENV]: "caller-session-retention-001",
+    [sessionContract.FIXTURE_SESSION_NONCE_ENV]:
+      "caller-session-retention-nonce-001",
+    [sessionContract.FIXTURE_SESSION_CLASSIFICATION_ENV]:
+      sessionContract.FIXTURE_SESSION_CLASSIFICATION,
+  }),
+  orchestrationRoot: retainedOrchestrationRoot,
+});
+assert.equal(retainedResultOwnership.retainedByCaller, true);
+assert.equal(
+  retainedResultOwnership.resultRoot,
+  path.join(retainedSessionRoot, CALLER_RETAINED_AUTH_RESULT_DIRECTORY),
+);
+assert.equal(
+  (lstatSync(retainedResultOwnership.resultRoot).mode & 0o077) === 0,
+  true,
+);
+assert.equal(lstatSync(retainedResultOwnership.resultRoot).isDirectory(), true);
+assert.equal(lstatSync(retainedResultOwnership.resultRoot).isSymbolicLink(), false);
+writeFileSync(
+  path.join(retainedResultOwnership.resultRoot, "retained-result-marker"),
+  "retained\n",
+  { flag: "wx", mode: 0o600 },
+);
+assert.throws(
+  () =>
+    canonicalAuthResultOwnership({
+      sessionOwnership: canonicalSessionOwnership({
+        [sessionContract.FIXTURE_SESSION_ROOT_ENV]: retainedSessionRoot,
+        [sessionContract.FIXTURE_SESSION_ID_ENV]:
+          "caller-session-retention-001",
+        [sessionContract.FIXTURE_SESSION_NONCE_ENV]:
+          "caller-session-retention-nonce-001",
+        [sessionContract.FIXTURE_SESSION_CLASSIFICATION_ENV]:
+          sessionContract.FIXTURE_SESSION_CLASSIFICATION,
+      }),
+      orchestrationRoot: retainedOrchestrationRoot,
+    }),
+  /EEXIST/,
+  "caller-owned result evidence must be no-overwrite",
+);
+assert.equal(
+  readFileSync(
+    path.join(retainedResultOwnership.resultRoot, "retained-result-marker"),
+    "utf8",
+  ),
+  "retained\n",
+  "a repeated result-root attempt must preserve existing evidence",
+);
+
+const unsafeModeRoot = path.join(retentionOwnerRoot, "unsafe-mode-session");
+mkdirSync(unsafeModeRoot, { mode: 0o755 });
+chmodSync(unsafeModeRoot, 0o755);
+assert.throws(
+  () =>
+    canonicalAuthResultOwnership({
+      sessionOwnership: {
+        ownedSessionRoot: false,
+        sessionRoot: unsafeModeRoot,
+      },
+      orchestrationRoot: retainedOrchestrationRoot,
+    }),
+  /physical owner-only directory/,
+);
+assert.equal(
+  existsSync(path.join(unsafeModeRoot, CALLER_RETAINED_AUTH_RESULT_DIRECTORY)),
+  false,
+);
+
+const symlinkTargetRoot = path.join(retentionOwnerRoot, "symlink-target-session");
+const symlinkSessionRoot = path.join(retentionOwnerRoot, "symlink-session");
+mkdirSync(symlinkTargetRoot, { mode: 0o700 });
+symlinkSync(symlinkTargetRoot, symlinkSessionRoot, "dir");
+assert.throws(
+  () =>
+    canonicalAuthResultOwnership({
+      sessionOwnership: {
+        ownedSessionRoot: false,
+        sessionRoot: symlinkSessionRoot,
+      },
+      orchestrationRoot: retainedOrchestrationRoot,
+    }),
+  /physical owner-only directory/,
+);
+assert.equal(
+  existsSync(
+    path.join(symlinkTargetRoot, CALLER_RETAINED_AUTH_RESULT_DIRECTORY),
+  ),
+  false,
+);
+
+const containedSessionRoot = mkdtempSync(
+  path.join(repositoryRoot, ".ci-auth-contained-session-"),
+);
+chmodSync(containedSessionRoot, 0o700);
+try {
+  assert.throws(
+    () =>
+      canonicalAuthResultOwnership({
+        sessionOwnership: {
+          ownedSessionRoot: false,
+          sessionRoot: containedSessionRoot,
+        },
+        orchestrationRoot: retainedOrchestrationRoot,
+      }),
+    /outside every worktree/,
+  );
+  assert.equal(
+    existsSync(
+      path.join(
+        containedSessionRoot,
+        CALLER_RETAINED_AUTH_RESULT_DIRECTORY,
+      ),
+    ),
+    false,
+  );
+} finally {
+  rmSync(containedSessionRoot, { recursive: true, force: true });
+}
+rmSync(retainedOrchestrationRoot, { recursive: true, force: true });
+assert.equal(
+  existsSync(
+    path.join(retainedResultOwnership.resultRoot, "retained-result-marker"),
+  ),
+  true,
+  "caller-owned result evidence must survive orchestration cleanup",
+);
+
+const taskOwnedOrchestrationRoot = path.join(
+  retentionOwnerRoot,
+  "task-owned-orchestration",
+);
+mkdirSync(taskOwnedOrchestrationRoot, { mode: 0o700 });
+const taskOwnedResultOwnership = canonicalAuthResultOwnership({
+  sessionOwnership: canonicalSessionOwnership({}),
+  orchestrationRoot: taskOwnedOrchestrationRoot,
+});
+assert.equal(taskOwnedResultOwnership.retainedByCaller, false);
+writeFileSync(
+  path.join(taskOwnedResultOwnership.resultRoot, "task-owned-result-marker"),
+  "task-owned\n",
+  { flag: "wx", mode: 0o600 },
+);
+rmSync(taskOwnedOrchestrationRoot, { recursive: true, force: true });
+assert.equal(
+  existsSync(taskOwnedResultOwnership.resultRoot),
+  false,
+  "task-owned success evidence must remain subject to task cleanup",
+);
+
+const collisionOwnerRoot = root("canonical-result-collision");
+const collisionSessionRoot = path.join(collisionOwnerRoot, "private-session");
+const collisionResultRoot = path.join(
+  collisionSessionRoot,
+  CALLER_RETAINED_AUTH_RESULT_DIRECTORY,
+);
+mkdirSync(collisionSessionRoot, { mode: 0o700 });
+mkdirSync(collisionResultRoot, { mode: 0o700 });
+writeFileSync(path.join(collisionResultRoot, "existing-evidence"), "existing\n", {
+  flag: "wx",
+  mode: 0o600,
+});
+const orchestrationRootsBeforeCollision = readdirSync(tmpdir())
+  .filter((name) => name.startsWith("ci-auth-fixture-orchestration-"))
+  .sort();
+const collisionChild = spawnSync(
+  "npm",
+  ["run", "certification:auth-preflight"],
+  {
+    cwd: repositoryRoot,
+    env: baseEnvironment(
+      collisionSessionRoot,
+      "fixture-session-result-collision-001",
+      "fixture-nonce-result-collision-001",
+    ),
+    encoding: "utf8",
+  },
+);
+assert.equal(collisionChild.status, 1);
+assert.equal(
+  readFileSync(path.join(collisionResultRoot, "existing-evidence"), "utf8"),
+  "existing\n",
+);
+assert.deepEqual(
+  readdirSync(tmpdir())
+    .filter((name) => name.startsWith("ci-auth-fixture-orchestration-"))
+    .sort(),
+  orchestrationRootsBeforeCollision,
+  "result-root collision must not leak the production orchestration root",
+);
+
+const failureOwnerRoot = root("canonical-failure-retention");
+const failureSessionRoot = path.join(failureOwnerRoot, "private-session");
+mkdirSync(failureSessionRoot, { mode: 0o700 });
+const failureSessionId = "fixture-session-failure-retention-001";
+const failureSessionNonce = "fixture-nonce-failure-retention-001";
+const failureEnvironment = {
+  ...baseEnvironment(
+    failureSessionRoot,
+    failureSessionId,
+    failureSessionNonce,
+  ),
+  AUTH_SECRET: "fixture-session-retention-secret-a-at-least-32-characters",
+  NEXTAUTH_SECRET:
+    "fixture-session-retention-secret-b-at-least-32-characters",
+};
+const failureChild = spawnSync(
+  "npm",
+  ["run", "certification:auth-preflight"],
+  {
+    cwd: repositoryRoot,
+    env: failureEnvironment,
+    encoding: "utf8",
+  },
+);
+assert.equal(
+  failureChild.status,
+  1,
+  `canonical failure-retention child had an unexpected outcome: ${JSON.stringify(safeChildProcessEvidence(failureChild))}`,
+);
+const failureConsumed = sessionContract.consumeFixtureSession({
+  repositoryRoot,
+  environment: failureEnvironment,
+  requireAmbientProviderValues: false,
+  sourceCommand: "test:ci-auth-fixture-session",
+  sourceMode: "failure-retention-validation",
+});
+const failureOutput = `${failureChild.stdout}\n${failureChild.stderr}`;
+assert.equal(
+  [
+    failureConsumed.assignments.GOOGLE_CLIENT_ID,
+    failureConsumed.assignments.GOOGLE_CLIENT_SECRET,
+  ].some((value) => failureOutput.includes(value)),
+  false,
+  "canonical failure output must not expose retained provider values",
+);
+const failureResultRoot = path.join(
+  failureSessionRoot,
+  CALLER_RETAINED_AUTH_RESULT_DIRECTORY,
+);
+assert.deepEqual(readdirSync(failureResultRoot).sort(), [
+  "export.json",
+  "export.json.sha256",
+  "validate.json",
+  "validate.json.sha256",
+]);
+const failureSensitiveValues = resultContract.privateValuesFromEnvironment({
+  ...failureEnvironment,
+  ...failureConsumed.assignments,
+});
+const retainedExportResult = resultContract.validateAuthCommandResult({
+  repositoryRoot,
+  externalRoot: failureResultRoot,
+  resultPath: path.join(failureResultRoot, "export.json"),
+  expectedNonce: `${failureSessionNonce}-export`,
+  expectedCommandId: "ci:auth-fixture:export",
+  expectedMode: "provider-fixture-export",
+  expectedCandidateCommitSha: candidateCommitSha,
+  expectedCandidateTreeSha: candidateTreeSha,
+  sensitiveValues: failureSensitiveValues,
+}).result;
+const retainedValidateResult = resultContract.validateAuthCommandResult({
+  repositoryRoot,
+  externalRoot: failureResultRoot,
+  resultPath: path.join(failureResultRoot, "validate.json"),
+  expectedNonce: `${failureSessionNonce}-validate`,
+  expectedCommandId: "ci:auth-fixture:validate-existing",
+  expectedMode: "auth-environment-validation",
+  expectedCandidateCommitSha: candidateCommitSha,
+  expectedCandidateTreeSha: candidateTreeSha,
+  sensitiveValues: failureSensitiveValues,
+}).result;
+assert.equal(retainedExportResult.result, "success");
+assert.equal(retainedValidateResult.result, "failure");
+assert.equal(retainedValidateResult.failure.code, "AUTH_SECRET_ALIAS_MISMATCH");
+assert.equal(retainedValidateResult.completion.complete, true);
+assert.equal(
+  retainedValidateResult.completion.marker,
+  resultContract.AUTH_RESULT_COMPLETION_MARKER,
+);
+
+const innerFailureSession = publishTestSession(
+  "inner-orchestration-failure-retention",
+);
+const innerFailureResultRoot = path.join(
+  innerFailureSession.ownerRoot,
+  "outer-results",
+);
+mkdirSync(innerFailureResultRoot, { mode: 0o700 });
+const innerFailurePublishedPath = path.join(
+  innerFailureResultRoot,
+  "database-preflight-wrapper.json",
+);
+const innerFailurePublishedNonce =
+  "fixture-nonce-inner-orchestration-failure-result-001";
+const innerFailureEnvironment = {
+  ...innerFailureSession.environment,
+  ...innerFailureSession.published.assignments,
+  CERTIFICATION_QUALIFICATION_MODE: "1",
+  CERTIFICATION_TEST_DATABASE_ADMIN_URL:
+    "postgresql://auth_preflight_admin:private-test-value@127.0.0.1:5432/postgres",
+  CI_AUTH_FIXTURE_RESULT_ROOT: innerFailureResultRoot,
+  CI_AUTH_FIXTURE_RESULT_PATH: innerFailurePublishedPath,
+  CI_AUTH_FIXTURE_RESULT_NONCE: innerFailurePublishedNonce,
+};
+const partialPublishedBytes = Buffer.from(
+  '{"classification":"partial-publication-regression"}\n',
+);
+writeFileSync(innerFailurePublishedPath, partialPublishedBytes, {
+  flag: "wx",
+  mode: 0o600,
+});
+const innerResultRootsBefore = readdirSync(tmpdir())
+  .filter((name) => name.startsWith("ci-auth-real-preflight-result-"))
+  .sort();
+let innerFailureError = null;
+try {
+  await runRealAuthPreflight({
+    baseEnvironment: innerFailureEnvironment,
+    sourceIdentity: {
+      status: "",
+      candidateCommitSha,
+      candidateTreeSha,
+    },
+    databaseAdapter: new InnerFailureDatabaseAdapter(),
+    databaseTestHooks: {
+      afterPrivateSidecarWrite() {
+        const error = new Error(
+          "injected safe scoped-role private-sidecar activation failure",
+        );
+        error.code =
+          "AUTH_PREFLIGHT_DATABASE_PRIVATE_SIDECAR_INJECTED_FAILURE";
+        throw error;
+      },
+    },
+  });
+} catch (error) {
+  innerFailureError = error;
+}
+assert.ok(innerFailureError instanceof Error);
+assert.match(innerFailureError.message, /private-sidecar activation failure/);
+assert.deepEqual(readFileSync(innerFailurePublishedPath), partialPublishedBytes);
+const innerFailureReceiptPath = authPreflightOrchestrationFailurePath(
+  innerFailurePublishedPath,
+);
+assert.deepEqual(readdirSync(innerFailureResultRoot).sort(), [
+  path.basename(innerFailurePublishedPath),
+  path.basename(innerFailureReceiptPath),
+  `${path.basename(innerFailureReceiptPath)}.sha256`,
+]);
+const validatedInnerFailure = validateAuthPreflightOrchestrationFailure({
+  repositoryRoot,
+  externalRoot: innerFailureResultRoot,
+  resultPath: innerFailureReceiptPath,
+  expectedCandidateCommitSha: candidateCommitSha,
+  expectedCandidateTreeSha: candidateTreeSha,
+  expectedPublishedInvocationNonce: innerFailurePublishedNonce,
+  expectedFixtureSessionAggregateSha256:
+    innerFailureSession.published.safeIdentity.sessionAggregateSha256,
+  sensitiveValues: resultContract.privateValuesFromEnvironment(
+    innerFailureEnvironment,
+  ),
+}).result;
+assert.equal(validatedInnerFailure.failure.boundary, "database-prepare");
+assert.equal(
+  validatedInnerFailure.failure.code,
+  "AUTH_SESSION_PREFLIGHT_ORCHESTRATION_FAILURE",
+);
+assert.deepEqual(validatedInnerFailure.evidence, {
+  databaseLifecycleStarted: true,
+  databaseLifecyclePrepared: false,
+  databaseLifecycleAttribution: {
+    failureSubstage: "scoped-role-private-sidecar",
+    lifecycleStateAtFailure: "failed",
+    failureMode: "provision",
+    failureClassification: "DATABASE_LIFECYCLE_FAILURE",
+    lifecycleEvidenceSha256:
+      validatedInnerFailure.evidence.databaseLifecycleAttribution
+        .lifecycleEvidenceSha256,
+    planResult: "passed",
+    provisionResult: "passed",
+    migrationResult: "passed",
+    initialVerificationResult: "not-completed",
+    scopedRolePrivateSidecarResult: "failed",
+    stageBindingResult: "not-completed",
+    projectionResult: "not-completed",
+  },
+  databaseCleanup: "absence-verified",
+  workspaceCreated: false,
+  workspaceCleanup: "not-started",
+  childResultPublication: "absent",
+  childResultValidation: "not-completed",
+  composedResultPublication: "partial-or-invalid",
+});
+assert.match(
+  validatedInnerFailure.evidence.databaseLifecycleAttribution
+    .lifecycleEvidenceSha256,
+  /^[a-f0-9]{64}$/,
+);
+assert.deepEqual(
+  readdirSync(tmpdir())
+    .filter((name) => name.startsWith("ci-auth-real-preflight-result-"))
+    .sort(),
+  innerResultRootsBefore,
+  "structured inner failure publication must not leak its private result root",
 );
 
 try {
@@ -931,7 +1453,7 @@ function runAuthFixtureRegressionHarness() {
 }
 
 if (process.argv[2] === ISOLATED_CHILD_ARGUMENT) {
-  runIsolatedAuthFixtureRegressionChild();
+  await runIsolatedAuthFixtureRegressionChild();
 } else {
   runAuthFixtureRegressionHarness();
 }

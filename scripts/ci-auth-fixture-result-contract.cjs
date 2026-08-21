@@ -312,19 +312,30 @@ function sealAuthCommandResult(payload) {
   return Object.freeze({ ...payload, aggregateSha256 });
 }
 
-function writeAuthCommandResult({ destination, payload }) {
+function writeSealedResultFiles({ destination, result }) {
   assertDestinationPathBindings(destination);
   if (lstatOrNull(destination.resultPath) || lstatOrNull(destination.sidecarPath)) {
     throw new Error("Auth result writer refuses to overwrite an existing result");
   }
-  const result = sealAuthCommandResult(payload);
+  const { aggregateSha256, ...payload } = result;
+  if (
+    !SHA256_PATTERN.test(aggregateSha256 || "") ||
+    sha256Bytes(canonicalJsonBytes(payload)) !== aggregateSha256
+  ) {
+    throw new Error("Auth result writer requires a valid sealed payload");
+  }
   const bytes = canonicalJsonBytes(result);
   writeAtomicFile(destination, destination.resultPath, bytes);
   const checksumBytes = Buffer.from(
-    `${result.aggregateSha256}  ${path.basename(destination.resultPath)}\n`,
+    `${aggregateSha256}  ${path.basename(destination.resultPath)}\n`,
   );
   writeAtomicFile(destination, destination.sidecarPath, checksumBytes);
   return result;
+}
+
+function writeAuthCommandResult({ destination, payload }) {
+  const result = sealAuthCommandResult(payload);
+  return writeSealedResultFiles({ destination, result });
 }
 
 function assertExactKeys(value, expected, description) {
@@ -1635,6 +1646,7 @@ module.exports = Object.freeze({
   AUTH_RESULT_CANDIDATE_TREE_ENV,
   AUTH_PRIVATE_VALUE_NAMES,
   COMMAND_MODES,
+  assertNoRawPrivateValues,
   canonicalJsonBytes,
   commandMode,
   privateValuesFromEnvironment,
@@ -1646,6 +1658,7 @@ module.exports = Object.freeze({
   validateAuthPreflightDatabaseEvidence: assertAuthPreflightDatabaseEvidence,
   validateAuthPreflightWorkspaceEvidence: assertAuthPreflightWorkspaceEvidence,
   writeAuthCommandResult,
+  writeSealedResultFiles,
 });
 
 if (require.main === module) {

@@ -229,6 +229,15 @@ function copyHarnessSources(repositoryRoot, fixtureRoot) {
     "scripts/runtime-smoke-operation-deadline.mjs",
     "scripts/runtime-smoke-telemetry-bootstrap-contract.mjs",
   ]);
+  for (const relativePath of run(
+    "git",
+    ["ls-files", "--", "prisma/migrations"],
+    repositoryRoot,
+  )
+    .split("\n")
+    .filter(Boolean)) {
+    paths.add(relativePath);
+  }
   for (const relativePath of [...paths].filter(
     (relativePath) => !new Set(["package.json", "package-lock.json"]).has(relativePath),
   )) {
