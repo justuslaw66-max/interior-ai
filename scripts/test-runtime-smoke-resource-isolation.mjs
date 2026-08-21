@@ -10,7 +10,10 @@ import {
 import { tmpdir } from "node:os";
 import path from "node:path";
 
-import { authorizeRuntimeSmokeReportPath } from "./playwright-report-path.mjs";
+import {
+  authorizeRuntimeSmokeReportPath,
+  resolveRuntimeSmokeStartMarkerPath,
+} from "./playwright-report-path.mjs";
 
 const runtimeSmokeSource = readFileSync(
   path.join(process.cwd(), "tests/e2e/00-runtime-smoke.spec.ts"),
@@ -121,6 +124,41 @@ assert.match(
       environment,
     });
     assert.equal(reentry.authorization.status, "same-run-reentry");
+
+    const markerPath = path.join(reportParent, "product-test-start.json");
+    const initialMarker = resolveRuntimeSmokeStartMarkerPath({
+      requestedPath: markerPath,
+      repositoryRoot,
+      authorizedExternalRoot: evidenceRoot,
+      reportDestination: reentry,
+    });
+    assert.equal(initialMarker.reentryStatus, "initial");
+    writeFileSync(
+      markerPath,
+      `${JSON.stringify(
+        {
+          schema: "interior-ai.production-certification-playwright-start.v1",
+          boundary: "test-begin",
+          gateId: "ci.production-runtime-smoke",
+          project: "chromium",
+          title: "furnished template remains stable without a render loop",
+          retry: 0,
+        },
+        null,
+        2,
+      )}\n`,
+      { flag: "wx", mode: 0o600 },
+    );
+    const replacementWorkerReentry = resolveRuntimeSmokeStartMarkerPath({
+      requestedPath: markerPath,
+      repositoryRoot,
+      authorizedExternalRoot: evidenceRoot,
+      reportDestination: reentry,
+    });
+    assert.equal(
+      replacementWorkerReentry.reentryStatus,
+      "same-run-reentry",
+    );
 
     for (const [name, value] of [
       ["CERTIFICATION_RUNTIME_STAGE_ATTEMPT", "2"],

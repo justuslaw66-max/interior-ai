@@ -107,6 +107,24 @@ function requireAbsentJsonTarget(targetPath) {
   }
 }
 
+function inspectPhysicalJsonTarget(targetPath) {
+  if (path.extname(targetPath) !== ".json" || path.basename(targetPath) === ".json") {
+    throw new Error("Production evidence report path must name a JSON file.");
+  }
+  try {
+    const target = lstatSync(targetPath);
+    if (target.isSymbolicLink() || !target.isFile()) {
+      throw new Error(
+        "Production evidence re-entry target must be a physical JSON file.",
+      );
+    }
+    return true;
+  } catch (error) {
+    if (error?.code === "ENOENT") return false;
+    throw error;
+  }
+}
+
 function readGitDirectory(repositoryRoot) {
   const dotGitPath = path.join(repositoryRoot, ".git");
   let dotGit;
@@ -342,6 +360,7 @@ function resolveExternalReport({
   repositoryRoot,
   authorizedExternalRoot,
   additionalRepositoryRoots,
+  inspectExistingTarget = false,
 }) {
   const externalRootInput = requiredNormalizedPath(
     authorizedExternalRoot,
@@ -387,7 +406,12 @@ function resolveExternalReport({
       "Production evidence report path must remain beneath the authorized external evidence root.",
     );
   }
-  requireAbsentJsonTarget(requestedPath);
+  let targetExists = false;
+  if (inspectExistingTarget) {
+    targetExists = inspectPhysicalJsonTarget(requestedPath);
+  } else {
+    requireAbsentJsonTarget(requestedPath);
+  }
   const { parentRealpath } = existingWritableParent(requestedPath);
   const canonicalTarget = path.join(parentRealpath, path.basename(requestedPath));
   if (!containedBy(externalRootRealpath, canonicalTarget)) {
@@ -405,6 +429,7 @@ function resolveExternalReport({
     destinationClass: "external-evidence-root",
     displayPath: "<external-evidence-root>",
     parentRealpath,
+    ...(inspectExistingTarget ? { targetExists } : {}),
   });
 }
 
@@ -734,6 +759,109 @@ export function authorizeRuntimeSmokeReportPath({
       evidenceRootIdentitySha256:
         authorization.evidenceRootIdentitySha256,
     }),
+  });
+}
+
+function readRuntimeSmokeStartMarker(markerPath) {
+  let bytes;
+  try {
+    bytes = readFileSync(markerPath);
+  } catch {
+    throw new Error("Runtime-smoke start marker is missing or unreadable.");
+  }
+  let marker;
+  try {
+    marker = JSON.parse(bytes.toString("utf8"));
+  } catch {
+    throw new Error("Runtime-smoke start marker is invalid.");
+  }
+  const canonicalBytes = Buffer.from(`${JSON.stringify(marker, null, 2)}\n`);
+  if (!bytes.equals(canonicalBytes)) {
+    throw new Error("Runtime-smoke start marker is not canonical JSON.");
+  }
+  const expectedKeys = [
+    "schema",
+    "boundary",
+    "gateId",
+    "project",
+    "title",
+    "retry",
+  ];
+  if (
+    !marker ||
+    typeof marker !== "object" ||
+    Array.isArray(marker) ||
+    Object.keys(marker).length !== expectedKeys.length ||
+    expectedKeys.some((key) => !Object.hasOwn(marker, key)) ||
+    marker.schema !== "interior-ai.production-certification-playwright-start.v1" ||
+    marker.boundary !== "test-begin" ||
+    marker.gateId !== "ci.production-runtime-smoke" ||
+    marker.project !== "chromium" ||
+    marker.title !== "furnished template remains stable without a render loop" ||
+    marker.retry !== 0
+  ) {
+    throw new Error("Runtime-smoke start marker does not match this stage contract.");
+  }
+  return marker;
+}
+
+export function resolveRuntimeSmokeStartMarkerPath({
+  requestedPath,
+  repositoryRoot,
+  authorizedExternalRoot,
+  reportDestination,
+  additionalRepositoryRoots = [],
+}) {
+  const markerPath = requiredNormalizedPath(
+    requestedPath,
+    "Runtime-smoke start marker path",
+  );
+  if (!path.isAbsolute(markerPath)) {
+    throw new Error("Runtime-smoke start marker path must be absolute.");
+  }
+  const destination = resolveExternalReport({
+    requestedPath: markerPath,
+    repositoryRoot,
+    authorizedExternalRoot,
+    additionalRepositoryRoots,
+    inspectExistingTarget: true,
+  });
+  if (
+    path.basename(destination.outputPath) !==
+    RUNTIME_SMOKE_EVIDENCE_OUTPUTS.startMarker.filename
+  ) {
+    throw new Error(
+      `Runtime-smoke startMarker output must use filename ${RUNTIME_SMOKE_EVIDENCE_OUTPUTS.startMarker.filename}.`,
+    );
+  }
+  if (
+    reportDestination?.authorization?.schema !==
+      RUNTIME_SMOKE_REPORT_AUTHORIZATION_SCHEMA ||
+    path.dirname(reportDestination.outputPath) !==
+      path.dirname(destination.outputPath)
+  ) {
+    throw new Error(
+      "Runtime-smoke start marker is missing its exact report authorization binding.",
+    );
+  }
+  if (existsPath(reportDestination.outputPath)) {
+    throw new Error("Production evidence report path must not already exist.");
+  }
+  let reentryStatus = "initial";
+  if (destination.targetExists) {
+    if (reportDestination.authorization.status !== "same-run-reentry") {
+      throw new Error(
+        "Runtime-smoke start marker is not authorized for configuration re-entry.",
+      );
+    }
+    readRuntimeSmokeStartMarker(destination.outputPath);
+    reentryStatus = "same-run-reentry";
+  }
+  return Object.freeze({
+    ...destination,
+    outputRole: "startMarker",
+    destinationClass: RUNTIME_SMOKE_EVIDENCE_DESTINATION_CLASS,
+    reentryStatus,
   });
 }
 

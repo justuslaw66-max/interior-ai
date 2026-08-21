@@ -4079,6 +4079,107 @@ function listedSpecCount(suites) {
     rmSync(leakageRegressionRoot, { recursive: true, force: true });
   }
 
+  const runtimeConfigReentryRoot = mkdtempSync(
+    path.join(tmpdir(), "runtime-config-reentry-"),
+  );
+  try {
+    const runtimeEvidenceDirectory = path.join(
+      runtimeConfigReentryRoot,
+      "runtime-smoke",
+    );
+    mkdirSync(runtimeEvidenceDirectory);
+    const runtimeReportPath = path.join(
+      runtimeEvidenceDirectory,
+      "playwright-report.json",
+    );
+    const runtimeStartMarkerPath = path.join(
+      runtimeEvidenceDirectory,
+      "product-test-start.json",
+    );
+    const runtimeConfigEnvironment = {
+      ...configEnvironment,
+      CERTIFICATION_EVIDENCE_ROOT: runtimeConfigReentryRoot,
+      PLAYWRIGHT_EXTERNAL_EVIDENCE_ROOT: runtimeConfigReentryRoot,
+      CERTIFICATION_ENVIRONMENT_STAGE: "runtime-smoke",
+      CERTIFICATION_RUNTIME_STAGE_ATTEMPT: "1",
+      CERTIFICATION_RUNTIME_START_MARKER_PATH: runtimeStartMarkerPath,
+      PRODUCTION_CERTIFICATION_ID: "certification-config-reentry",
+      PRODUCTION_EVIDENCE_CANDIDATE_ID: "candidate-config-reentry",
+      PRODUCTION_EVIDENCE_EXPECTED_JOURNAL_NONCE: identity.runNonce,
+      PRODUCTION_EVIDENCE_EXPECTED_JOURNAL_SHA256: createHash("sha256")
+        .update(journalBytes)
+        .digest("hex"),
+      PLAYWRIGHT_JSON_OUTPUT_FILE: runtimeReportPath,
+    };
+    const loadRuntimeConfig = (environment = runtimeConfigEnvironment) =>
+      spawnSync(
+        process.execPath,
+        [
+          path.join(mainRepositoryRoot, "node_modules/@playwright/test/cli.js"),
+          "test",
+          "tests/e2e/00-runtime-smoke.spec.ts",
+          "--config",
+          path.join(mainRepositoryRoot, "playwright.config.ts"),
+          "--project=chromium",
+          "--list",
+          "--reporter=line",
+        ],
+        { cwd: context.root, env: environment, encoding: "utf8" },
+      );
+
+    const initialConfig = loadRuntimeConfig();
+    assert.equal(
+      initialConfig.status,
+      0,
+      `initial absent runtime targets must load the real Playwright config: ${initialConfig.stderr}`,
+    );
+    assert.equal(existsSync(runtimeReportPath), false);
+    assert.equal(existsSync(`${runtimeReportPath}.owner.json`), true);
+    writeFileSync(
+      runtimeStartMarkerPath,
+      `${JSON.stringify(
+        {
+          schema: "interior-ai.production-certification-playwright-start.v1",
+          boundary: "test-begin",
+          gateId: "ci.production-runtime-smoke",
+          project: "chromium",
+          title: "furnished template remains stable without a render loop",
+          retry: 0,
+        },
+        null,
+        2,
+      )}\n`,
+      { flag: "wx", mode: 0o600 },
+    );
+    const replacementWorkerConfig = loadRuntimeConfig();
+    assert.equal(
+      replacementWorkerConfig.status,
+      0,
+      `same-run replacement-worker config evaluation must accept its retained start marker: ${replacementWorkerConfig.stderr}`,
+    );
+    assert.equal(existsSync(runtimeReportPath), false);
+
+    const foreignAttempt = loadRuntimeConfig({
+      ...runtimeConfigEnvironment,
+      CERTIFICATION_RUNTIME_STAGE_ATTEMPT: "2",
+    });
+    assert.notEqual(foreignAttempt.status, 0);
+    assert.match(
+      `${foreignAttempt.stdout}\n${foreignAttempt.stderr}`,
+      /owned by another run, attempt, destination, or evidence root/,
+    );
+
+    writeFileSync(runtimeReportPath, "{}\n", { flag: "wx", mode: 0o600 });
+    const completedReportReentry = loadRuntimeConfig();
+    assert.notEqual(completedReportReentry.status, 0);
+    assert.match(
+      `${completedReportReentry.stdout}\n${completedReportReentry.stderr}`,
+      /Production evidence report path must not already exist/,
+    );
+  } finally {
+    rmSync(runtimeConfigReentryRoot, { recursive: true, force: true });
+  }
+
   const externalEvidenceRoot = mkdtempSync(
     path.join(tmpdir(), "ch-0015i-playwright-external-evidence-"),
   );

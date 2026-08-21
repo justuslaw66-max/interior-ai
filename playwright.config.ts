@@ -8,7 +8,7 @@ import { loadProductionArtifactForPlaywright } from "./scripts/production-artifa
 import {
   CERTIFICATION_EVIDENCE_ROOT,
   PLAYWRIGHT_EXTERNAL_EVIDENCE_ROOT,
-  resolveRuntimeSmokeEvidencePath,
+  resolveRuntimeSmokeStartMarkerPath,
 } from "./scripts/playwright-report-path.mjs";
 
 const localBaseURL = "http://127.0.0.1:3000";
@@ -89,11 +89,11 @@ if (
 }
 const certificationRuntimeMarker =
   certificationRuntimeActive && certificationRuntimeMarkerPath
-    ? resolveRuntimeSmokeEvidencePath({
+    ? resolveRuntimeSmokeStartMarkerPath({
         requestedPath: certificationRuntimeMarkerPath,
         repositoryRoot: process.cwd(),
         authorizedExternalRoot: playwrightExternalRoot,
-        outputRole: "startMarker",
+        reportDestination: loadedProductionArtifactEvidence?.reportDestination,
       }).outputPath
     : null;
 const productionArtifactReporters: ReporterDescription[] = [
