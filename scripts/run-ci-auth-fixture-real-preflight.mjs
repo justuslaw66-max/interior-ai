@@ -22,6 +22,11 @@ import {
   certificationEnvironmentProfile,
   projectCertificationChildEnvironment,
 } from "./production-certification-stage-environment.mjs";
+import {
+  completeAuthPreflightWorktree,
+  createAuthPreflightWorktree,
+  inspectAuthPreflightWorktree,
+} from "./ci-auth-preflight-worktree.mjs";
 
 const require = createRequire(import.meta.url);
 const authResultContract = require("./ci-auth-fixture-result-contract.cjs");
@@ -38,9 +43,9 @@ function git(args) {
   return result.stdout.trim();
 }
 
-function runChild(command, args, environment) {
+function runChild(command, args, environment, cwd = process.cwd()) {
   return spawnSync(command, args, {
-    cwd: process.cwd(),
+    cwd,
     env: environment,
     encoding: "utf8",
   });
@@ -74,6 +79,7 @@ function writeFinalAuthResult({
   destination,
   childResult,
   databasePrerequisite,
+  workspacePrerequisite,
   invocationNonce,
   candidateCommitSha,
   candidateTreeSha,
@@ -116,6 +122,7 @@ function writeFinalAuthResult({
       invocationNonce,
     },
     databasePrerequisite,
+    workspacePrerequisite,
   };
   const payload = {
     schema: authResultContract.AUTH_RESULT_SCHEMA,
@@ -280,7 +287,10 @@ export async function runRealAuthPreflight() {
   let databaseCompletion = null;
   let retainedFailure = null;
   let fallbackCleanupFailure = null;
+  let workspaceCleanupFailure = null;
   let orchestrationFailure = null;
+  let authWorkspace = null;
+  let workspacePrerequisite = null;
   try {
     lifecycleEnvironment = createAuthSessionPreflightDatabaseEnvironment({
       baseEnvironment: process.env,
@@ -298,6 +308,13 @@ export async function runRealAuthPreflight() {
       authPreflightInvocationNonce: invocationNonce,
       qualificationFixture:
         process.env.CERTIFICATION_QUALIFICATION_MODE === "1",
+    });
+    authWorkspace = createAuthPreflightWorktree({
+      repositoryRoot: process.cwd(),
+      candidateCommitSha,
+      candidateTreeSha,
+      fixtureSessionIdentitySha256:
+        consumedFixtureSession.safeIdentity.sessionAggregateSha256,
     });
     const childBaseEnvironment = {
       ...process.env,
@@ -335,11 +352,12 @@ export async function runRealAuthPreflight() {
           "npm",
           ["run", "ci:auth-fixture:preflight-existing"],
           childEnvironment,
+          authWorkspace.worktreeRoot,
         );
         let validated;
         try {
           validated = authResultContract.validateAuthCommandResult({
-            repositoryRoot: process.cwd(),
+            repositoryRoot: authWorkspace.worktreeRoot,
             externalRoot: resultRoot,
             resultPath: childResultPath,
             expectedNonce: invocationNonce,
@@ -358,12 +376,25 @@ export async function runRealAuthPreflight() {
           publicationFailure.code = "AUTH_PREFLIGHT_RESULT_PUBLICATION_FAILED";
           throw publicationFailure;
         }
+        inspectAuthPreflightWorktree(authWorkspace);
         return { childProcess, childValidated: validated };
       },
     });
     childValidated = sequence.childValidated;
     databaseCompletion = sequence.databaseCompletion;
     retainedFailure = sequence.retainedFailure;
+    try {
+      workspacePrerequisite = completeAuthPreflightWorktree(authWorkspace);
+    } catch (error) {
+      if (
+        retainedFailure &&
+        error.safeEvidence?.cleanup?.completed === true
+      ) {
+        workspacePrerequisite = error.safeEvidence;
+      } else {
+        throw error;
+      }
+    }
     if (!childValidated) throw retainedFailure;
     const destination = authResultContract.resolveAuthResultDestination({
       repositoryRoot: process.cwd(),
@@ -375,6 +406,7 @@ export async function runRealAuthPreflight() {
       destination,
       childResult: childValidated.result,
       databasePrerequisite: databaseCompletion.evidence,
+      workspacePrerequisite,
       invocationNonce: publishedResultNonce,
       candidateCommitSha,
       candidateTreeSha,
@@ -406,6 +438,12 @@ export async function runRealAuthPreflight() {
     assert.equal(evidence.checks.nonLoopbackRequestCount, 0);
     assert.equal(evidence.databasePrerequisite.dropResult, "passed");
     assert.equal(evidence.databasePrerequisite.absenceResult, "passed");
+    assert.equal(evidence.workspacePrerequisite.cleanup.completed, true);
+    assert.equal(evidence.workspacePrerequisite.cleanup.registrationAbsent, true);
+    assert.equal(
+      evidence.workspacePrerequisite.cleanup.sourceByteIdenticalAfterCleanup,
+      true,
+    );
     assert.equal(
       evidence.databasePrerequisite.classification,
       "AUTH_SESSION_PREFLIGHT_ONLY",
@@ -447,13 +485,29 @@ export async function runRealAuthPreflight() {
     } else if (!lifecyclePath || !existsSync(lifecyclePath)) {
       terminalAbsenceVerified = true;
     }
-    if (terminalAbsenceVerified) {
+    if (authWorkspace && !workspacePrerequisite) {
+      try {
+        workspacePrerequisite = completeAuthPreflightWorktree(authWorkspace);
+      } catch (error) {
+        if (error.safeEvidence?.cleanup?.completed === true) {
+          workspacePrerequisite = error.safeEvidence;
+        } else {
+          workspaceCleanupFailure = error;
+        }
+      }
+    }
+    if (terminalAbsenceVerified && !workspaceCleanupFailure) {
       rmSync(resultRoot, { recursive: true, force: true });
     }
   }
   if (fallbackCleanupFailure) {
     throw new Error(
       "Real auth preflight abort cleanup failed; private recovery evidence was retained",
+    );
+  }
+  if (workspaceCleanupFailure) {
+    throw new Error(
+      "Real auth preflight worktree cleanup failed; task-owned recovery evidence was retained",
     );
   }
   if (orchestrationFailure) throw orchestrationFailure;

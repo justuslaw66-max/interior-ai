@@ -1,5 +1,37 @@
 # Production Certification Harness v1
 
+## Auth-preflight tracked-output ownership correction — 2026-08-21
+
+The bounded ownership audit classifies the retained failure as **D — MIXED**.
+The task-local rehearsal launcher selected the canonical candidate checkout as
+the auth-preflight working directory, while the committed real-preflight helper
+also reused its caller working directory and accepted success without owning or
+validating tracked generated output. The retained attempt remains unchanged as
+`AUTH_PREFLIGHT_TRACKED_SOURCE_MUTATION_OWNERSHIP_UNRESOLVED`,
+`PRECONDITION_ORCHESTRATION_FAILURE`, and
+`consumedSubstantiveGate=false`; its later manual source restoration is not
+rehabilitation and no rehearsal is part of this correction.
+
+`scripts/ci-auth-preflight-worktree.mjs` now owns a disposable detached
+exact-head worktree bound to the candidate commit/tree and consumed fixture
+session identity. Only that worktree receives the auth server. The owner seals
+the canonical source state and `tsconfig.json`, accepts either no tracked
+change or the exact deterministic Next.js addition
+`.next/dev/dev/types/**/*.ts`, rejects staged, ordinary-untracked, symlink, or
+other tracked output, removes only its exact task-owned worktree, proves the
+registration absent, and rechecks that the canonical source is byte-identical.
+The real preflight cannot publish success without this terminal evidence and
+database absence proof. The outer canonical auth command emits a redacted
+`AUTH_PREFLIGHT_WORKSPACE_RESULT` record for retention by its caller.
+
+The focused regression matrix covers exact-head detachment, canonical-source
+immutability, deterministic mutation containment, clean no-output operation,
+staged/untracked/symlink/unexpected-output rejection, exact cleanup, foreign
+worktree preservation, contract tamper rejection, and absence of raw paths or
+private values. Doctor and deterministic simulation register the new owner.
+Fresh rehearsal, immutable final certification, integration, push, deployment,
+and CH-0015 closure remain pending.
+
 ## Auth fixture continuity correction — 2026-08-20
 
 The latest failed static discovery is preserved unchanged as

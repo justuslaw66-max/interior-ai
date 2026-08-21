@@ -317,6 +317,7 @@
         "scripts/ci-auth-fixture.json",
         "scripts/ci-auth-fixture-result-contract.cjs",
         "scripts/ci-auth-fixture-result-contract.d.cts",
+        "scripts/ci-auth-preflight-worktree.mjs",
         "scripts/ci-auth-fixture.ts",
         "scripts/test-ci-auth-fixture-results.ts",
         "scripts/test-auth-env-hardening.ts",

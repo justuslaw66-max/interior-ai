@@ -589,6 +589,146 @@ function assertAuthPreflightDatabaseEvidence(evidence, resultClassification) {
   }
 }
 
+function assertAuthPreflightWorkspaceEvidence(evidence, result) {
+  assertExactKeys(
+    evidence,
+    [
+      "schema",
+      "owner",
+      "classification",
+      "candidateCommitSha",
+      "candidateTreeSha",
+      "fixtureSessionIdentitySha256",
+      "pathIdentitySha256",
+      "exactHeadDetached",
+      "sourceRoot",
+      "trackedOutput",
+      "cleanup",
+    ],
+    "Auth preflight worktree prerequisite",
+  );
+  assertExactKeys(
+    evidence.sourceRoot,
+    [
+      "beforeCleanStateSha256",
+      "duringCleanStateSha256",
+      "byteIdenticalBeforeAndDuring",
+    ],
+    "Auth preflight source-root continuity",
+  );
+  assertExactKeys(
+    evidence.trackedOutput,
+    [
+      "preTrackedStatusSha256",
+      "postTrackedStatusSha256",
+      "changedPaths",
+      "changedPathCount",
+      "stagedPathCount",
+      "ordinaryUntrackedPathCount",
+      "mutationClassification",
+      "expectedGeneratedInclude",
+      "tsconfigPreBlob",
+      "tsconfigPreSha256",
+      "tsconfigPostSha256",
+      "expectedGeneratedSha256",
+      "unexpectedTrackedPathCount",
+      "issues",
+    ],
+    "Auth preflight tracked-output lifecycle",
+  );
+  assertExactKeys(
+    evidence.cleanup,
+    [
+      "owner",
+      "method",
+      "worktreeRemoved",
+      "registrationAbsent",
+      "sourceByteIdenticalAfterCleanup",
+      "completed",
+    ],
+    "Auth preflight worktree cleanup",
+  );
+  const trackedOutput = evidence.trackedOutput;
+  const digestValues = [
+    evidence.fixtureSessionIdentitySha256,
+    evidence.pathIdentitySha256,
+    evidence.sourceRoot.beforeCleanStateSha256,
+    evidence.sourceRoot.duringCleanStateSha256,
+    trackedOutput.preTrackedStatusSha256,
+    trackedOutput.postTrackedStatusSha256,
+    trackedOutput.tsconfigPreSha256,
+    trackedOutput.tsconfigPostSha256,
+    trackedOutput.expectedGeneratedSha256,
+  ];
+  if (
+    evidence.schema !== "interior-ai.auth-preflight-worktree-lifecycle.v1" ||
+    evidence.owner !== "scripts/ci-auth-preflight-worktree.mjs" ||
+    evidence.classification !==
+      "AUTH_PREFLIGHT_EXACT_HEAD_DISPOSABLE_WORKTREE" ||
+    evidence.candidateCommitSha !== result.identity.candidateCommitSha ||
+    evidence.candidateTreeSha !== result.identity.candidateTreeSha ||
+    evidence.fixtureSessionIdentitySha256 !==
+      result.identity.fixtureSession.sessionAggregateSha256 ||
+    !SOURCE_SHA_PATTERN.test(evidence.candidateCommitSha) ||
+    !SOURCE_SHA_PATTERN.test(evidence.candidateTreeSha) ||
+    digestValues.some((value) => !SHA256_PATTERN.test(value)) ||
+    evidence.exactHeadDetached !== true ||
+    typeof evidence.sourceRoot.byteIdenticalBeforeAndDuring !== "boolean" ||
+    !Array.isArray(trackedOutput.changedPaths) ||
+    trackedOutput.changedPaths.some(
+      (entry) => typeof entry !== "string" || !entry || path.isAbsolute(entry),
+    ) ||
+    trackedOutput.changedPathCount !== trackedOutput.changedPaths.length ||
+    !Number.isSafeInteger(trackedOutput.stagedPathCount) ||
+    trackedOutput.stagedPathCount < 0 ||
+    !Number.isSafeInteger(trackedOutput.ordinaryUntrackedPathCount) ||
+    trackedOutput.ordinaryUntrackedPathCount < 0 ||
+    !Number.isSafeInteger(trackedOutput.unexpectedTrackedPathCount) ||
+    trackedOutput.unexpectedTrackedPathCount < 0 ||
+    !Array.isArray(trackedOutput.issues) ||
+    trackedOutput.issues.some((entry) => typeof entry !== "string" || !entry) ||
+    !new Set([
+      "absent",
+      "deterministic-next-generated",
+      "inspection-failed",
+    ]).has(trackedOutput.mutationClassification) ||
+    trackedOutput.expectedGeneratedInclude !==
+      ".next/dev/dev/types/**/*.ts" ||
+    !SOURCE_SHA_PATTERN.test(trackedOutput.tsconfigPreBlob) ||
+    evidence.cleanup.owner !== "scripts/ci-auth-preflight-worktree.mjs" ||
+    evidence.cleanup.method !==
+      "git-worktree-remove-force-exact-task-owned-path" ||
+    evidence.cleanup.worktreeRemoved !== true ||
+    evidence.cleanup.registrationAbsent !== true ||
+    evidence.cleanup.sourceByteIdenticalAfterCleanup !== true ||
+    evidence.cleanup.completed !== true
+  ) {
+    throw new Error("Auth preflight worktree prerequisite evidence is malformed");
+  }
+  if (
+    result.result === "success" &&
+    (evidence.sourceRoot.byteIdenticalBeforeAndDuring !== true ||
+      trackedOutput.stagedPathCount !== 0 ||
+      trackedOutput.ordinaryUntrackedPathCount !== 0 ||
+      trackedOutput.unexpectedTrackedPathCount !== 0 ||
+      trackedOutput.issues.length !== 0 ||
+      (trackedOutput.mutationClassification === "absent"
+        ? trackedOutput.changedPathCount !== 0 ||
+          trackedOutput.tsconfigPostSha256 !== trackedOutput.tsconfigPreSha256
+        : trackedOutput.mutationClassification ===
+            "deterministic-next-generated"
+          ? JSON.stringify(trackedOutput.changedPaths) !==
+              JSON.stringify(["tsconfig.json"]) ||
+            trackedOutput.tsconfigPostSha256 !==
+              trackedOutput.expectedGeneratedSha256
+          : true))
+  ) {
+    throw new Error(
+      "Auth preflight success lacks exact-head worktree isolation and cleanup proof",
+    );
+  }
+}
+
 function assertModeEvidence(result, allowNonConsumableFailure = false) {
   const evidence = result.evidence;
   if (result.command.mode === "provider-fixture-export") {
@@ -831,7 +971,9 @@ function assertModeEvidence(result, allowNonConsumableFailure = false) {
         "sessionRequest",
         "checks",
         "cleanup",
-        ...(realDatabasePreflight ? ["databasePrerequisite"] : []),
+        ...(realDatabasePreflight
+          ? ["databasePrerequisite", "workspacePrerequisite"]
+          : []),
       ],
       "Auth preflight evidence",
     );
@@ -1102,6 +1244,10 @@ function assertModeEvidence(result, allowNonConsumableFailure = false) {
       assertAuthPreflightDatabaseEvidence(
         evidence.databasePrerequisite,
         result.result,
+      );
+      assertAuthPreflightWorkspaceEvidence(
+        evidence.workspacePrerequisite,
+        result,
       );
     }
     return;
@@ -1498,6 +1644,7 @@ module.exports = Object.freeze({
   validateAuthCommandResult,
   validateAuthCommandResultValue,
   validateAuthPreflightDatabaseEvidence: assertAuthPreflightDatabaseEvidence,
+  validateAuthPreflightWorkspaceEvidence: assertAuthPreflightWorkspaceEvidence,
   writeAuthCommandResult,
 });
 

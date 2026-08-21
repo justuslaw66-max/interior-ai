@@ -4,9 +4,12 @@ import { randomBytes } from "node:crypto";
 import { createRequire } from "node:module";
 import {
   existsSync,
+  mkdirSync,
   mkdtempSync,
   readFileSync,
   rmSync,
+  symlinkSync,
+  unlinkSync,
   writeFileSync,
 } from "node:fs";
 import { tmpdir } from "node:os";
@@ -37,6 +40,11 @@ import {
 import {
   projectCertificationChildEnvironment,
 } from "./production-certification-stage-environment.mjs";
+import {
+  completeAuthPreflightWorktree,
+  createAuthPreflightWorktree,
+  NEXT_GENERATED_TSCONFIG_INCLUDE,
+} from "./ci-auth-preflight-worktree.mjs";
 
 const repositoryRoot = process.cwd();
 const require = createRequire(import.meta.url);
@@ -72,6 +80,14 @@ const coveredAuthPreflightDatabaseCases = Object.freeze([
   "database-preflight-consumes-existing-fixture-session",
   "certification-helper-rejects-preflight-local-delegation",
   "auth-server-receives-existing-provider-digests",
+  "exact-head-worktree-canonical-source-immutable",
+  "deterministic-next-tsconfig-output-contained",
+  "clean-no-output-terminal-state-accepted",
+  "unexpected-tracked-output-rejected-and-cleaned",
+  "staged-output-rejected-and-cleaned",
+  "untracked-output-rejected-and-cleaned",
+  "symlink-tsconfig-rejected-and-cleaned",
+  "task-owned-cleanup-preserves-foreign-worktree",
 ]);
 const candidateCommitSha = git("HEAD");
 const candidateTreeSha = git("HEAD^{tree}");
@@ -873,6 +889,8 @@ function sourceOwnershipGuardCoverage() {
   assert.match(helper, /projectCertificationChildEnvironment/);
   assert.match(helper, /runPreparedAuthPreflightDatabaseSequence/);
   assert.match(helper, /consumeFixtureSession/);
+  assert.match(helper, /createAuthPreflightWorktree/);
+  assert.match(helper, /completeAuthPreflightWorktree/);
   assert.match(helper, /ci:auth-fixture:preflight-existing/);
   assert.doesNotMatch(helper, /test:advisory-auth-preflight/);
   assert.match(helper, /fixtureSession/);
@@ -887,7 +905,238 @@ function sourceOwnershipGuardCoverage() {
   );
 }
 
+function runGit(repositoryRoot, args) {
+  const result = spawnSync("git", args, {
+    cwd: repositoryRoot,
+    encoding: "utf8",
+  });
+  assert.equal(
+    result.status,
+    0,
+    `workspace regression Git command failed: git ${args.join(" ")}`,
+  );
+  return result.stdout.trim();
+}
+
+function workspaceFixture(label) {
+  const root = mkdtempSync(
+    path.join(tmpdir(), `auth-preflight-worktree-regression-${label}-`),
+  );
+  const sourceRoot = path.join(root, "source");
+  mkdirSync(sourceRoot);
+  mkdirSync(path.join(sourceRoot, "node_modules"));
+  writeFileSync(path.join(sourceRoot, ".gitignore"), "/node_modules\n");
+  writeFileSync(path.join(sourceRoot, "marker.txt"), "canonical-marker\n");
+  writeFileSync(
+    path.join(sourceRoot, "tsconfig.json"),
+    `${JSON.stringify({ compilerOptions: {}, include: ["**/*.ts"] }, null, 2)}\n`,
+  );
+  runGit(sourceRoot, ["init", "--quiet"]);
+  runGit(sourceRoot, ["config", "user.name", "Auth Workspace Regression"]);
+  runGit(sourceRoot, ["config", "user.email", "auth-workspace@example.invalid"]);
+  runGit(sourceRoot, ["add", "."]);
+  runGit(sourceRoot, ["commit", "--quiet", "-m", "fixture"]);
+  const candidateCommitSha = runGit(sourceRoot, ["rev-parse", "HEAD"]);
+  const candidateTreeSha = runGit(sourceRoot, ["rev-parse", "HEAD^{tree}"]);
+  const sourceTsconfigSha256 = sha256(
+    readFileSync(path.join(sourceRoot, "tsconfig.json")),
+  );
+  const workspace = createAuthPreflightWorktree({
+    repositoryRoot: sourceRoot,
+    candidateCommitSha,
+    candidateTreeSha,
+    fixtureSessionIdentitySha256: "a".repeat(64),
+  });
+  return {
+    root,
+    sourceRoot,
+    candidateCommitSha,
+    candidateTreeSha,
+    sourceTsconfigSha256,
+    workspace,
+  };
+}
+
+function assertWorkspaceFixtureClean(value) {
+  assert.equal(runGit(value.sourceRoot, ["status", "--porcelain=v1"]), "");
+  assert.equal(
+    sha256(readFileSync(path.join(value.sourceRoot, "tsconfig.json"))),
+    value.sourceTsconfigSha256,
+  );
+  assert.equal(
+    runGit(value.sourceRoot, ["worktree", "list", "--porcelain"]).includes(
+      value.workspace.worktreeRoot,
+    ),
+    false,
+  );
+}
+
+function expectedGeneratedTsconfig(value) {
+  const filePath = path.join(value.workspace.worktreeRoot, "tsconfig.json");
+  const parsed = JSON.parse(readFileSync(filePath, "utf8"));
+  parsed.include.push(NEXT_GENERATED_TSCONFIG_INCLUDE);
+  writeFileSync(filePath, `${JSON.stringify(parsed, null, 2)}\n`);
+}
+
+function assertSafeWorkspaceEvidence(value, evidence) {
+  const serialized = JSON.stringify(evidence);
+  assert.doesNotMatch(serialized, /private-test-value/i);
+  assert.equal(serialized.includes(value.sourceRoot), false);
+  assert.equal(serialized.includes(value.workspace.worktreeRoot), false);
+  assert.equal(evidence.cleanup.completed, true);
+  assert.equal(evidence.cleanup.registrationAbsent, true);
+  assert.equal(evidence.cleanup.sourceByteIdenticalAfterCleanup, true);
+}
+
+function workspaceLifecycleCoverage() {
+  {
+    const value = workspaceFixture("deterministic");
+    try {
+      assert.equal(runGit(value.workspace.worktreeRoot, ["branch", "--show-current"]), "");
+      assert.equal(
+        runGit(value.workspace.worktreeRoot, ["rev-parse", "HEAD"]),
+        value.candidateCommitSha,
+      );
+      expectedGeneratedTsconfig(value);
+      const evidence = completeAuthPreflightWorktree(value.workspace);
+      assert.equal(
+        evidence.trackedOutput.mutationClassification,
+        "deterministic-next-generated",
+      );
+      assert.deepEqual(evidence.trackedOutput.changedPaths, ["tsconfig.json"]);
+      assertSafeWorkspaceEvidence(value, evidence);
+      const resultIdentity = {
+        result: "success",
+        identity: {
+          candidateCommitSha: value.candidateCommitSha,
+          candidateTreeSha: value.candidateTreeSha,
+          fixtureSession: { sessionAggregateSha256: "a".repeat(64) },
+        },
+      };
+      authResultContract.validateAuthPreflightWorkspaceEvidence(
+        evidence,
+        resultIdentity,
+      );
+      assert.throws(
+        () =>
+          authResultContract.validateAuthPreflightWorkspaceEvidence(
+            {
+              ...evidence,
+              trackedOutput: {
+                ...evidence.trackedOutput,
+                expectedGeneratedSha256: "b".repeat(64),
+              },
+            },
+            resultIdentity,
+          ),
+        /worktree prerequisite|worktree isolation/i,
+      );
+      assertWorkspaceFixtureClean(value);
+    } finally {
+      rmSync(value.root, { recursive: true, force: true });
+    }
+  }
+
+  {
+    const value = workspaceFixture("absent");
+    try {
+      const evidence = completeAuthPreflightWorktree(value.workspace);
+      assert.equal(evidence.trackedOutput.mutationClassification, "absent");
+      assert.equal(evidence.trackedOutput.changedPathCount, 0);
+      assertSafeWorkspaceEvidence(value, evidence);
+      assertWorkspaceFixtureClean(value);
+    } finally {
+      rmSync(value.root, { recursive: true, force: true });
+    }
+  }
+
+  for (const scenario of [
+    {
+      label: "unexpected-tracked",
+      mutate(value) {
+        writeFileSync(
+          path.join(value.workspace.worktreeRoot, "marker.txt"),
+          "unexpected tracked mutation\n",
+        );
+      },
+      issue: "unexpected-tracked-paths",
+    },
+    {
+      label: "staged",
+      mutate(value) {
+        writeFileSync(
+          path.join(value.workspace.worktreeRoot, "marker.txt"),
+          "staged mutation\n",
+        );
+        runGit(value.workspace.worktreeRoot, ["add", "marker.txt"]);
+      },
+      issue: "staged-paths",
+    },
+    {
+      label: "untracked",
+      mutate(value) {
+        writeFileSync(
+          path.join(value.workspace.worktreeRoot, "unexpected.txt"),
+          "ordinary untracked output\n",
+        );
+      },
+      issue: "ordinary-untracked-paths",
+    },
+    {
+      label: "symlink-tsconfig",
+      mutate(value) {
+        const tsconfigPath = path.join(value.workspace.worktreeRoot, "tsconfig.json");
+        unlinkSync(tsconfigPath);
+        symlinkSync("marker.txt", tsconfigPath);
+      },
+      issue: "tsconfig-type",
+    },
+  ]) {
+    const value = workspaceFixture(scenario.label);
+    try {
+      scenario.mutate(value);
+      let retained = null;
+      try {
+        completeAuthPreflightWorktree(value.workspace);
+      } catch (error) {
+        retained = error;
+      }
+      assert.ok(retained instanceof Error);
+      assert.equal(
+        retained.code,
+        "AUTH_PREFLIGHT_WORKTREE_OUTPUT_REJECTED",
+      );
+      assert.ok(retained.safeEvidence.trackedOutput.issues.includes(scenario.issue));
+      assertSafeWorkspaceEvidence(value, retained.safeEvidence);
+      assertWorkspaceFixtureClean(value);
+    } finally {
+      rmSync(value.root, { recursive: true, force: true });
+    }
+  }
+
+  {
+    const value = workspaceFixture("foreign-preserved");
+    const foreignRoot = path.join(value.root, "foreign-worktree");
+    try {
+      runGit(value.sourceRoot, ["worktree", "add", "--detach", foreignRoot, "HEAD"]);
+      const evidence = completeAuthPreflightWorktree(value.workspace);
+      assertSafeWorkspaceEvidence(value, evidence);
+      assert.equal(
+        runGit(value.sourceRoot, ["worktree", "list", "--porcelain"]).includes(
+          foreignRoot,
+        ),
+        true,
+      );
+      runGit(value.sourceRoot, ["worktree", "remove", "--force", foreignRoot]);
+      assertWorkspaceFixtureClean(value);
+    } finally {
+      rmSync(value.root, { recursive: true, force: true });
+    }
+  }
+}
+
 sourceOwnershipGuardCoverage();
+workspaceLifecycleCoverage();
 await normalLifecycleAndProjectionCoverage();
 await projectionTamperCoverage();
 await lifecycleReadinessCoverage();

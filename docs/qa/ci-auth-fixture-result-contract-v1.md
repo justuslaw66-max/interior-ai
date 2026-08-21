@@ -237,7 +237,15 @@ and committed-head qualification. Qualification also invokes one real
 task-owned local auth-session preflight through
 `scripts/run-ci-auth-fixture-real-preflight.mjs`; that owner creates and drops a
 unique disposable loopback PostgreSQL database and validates the external
-sidecar before cleaning its task-owned temporary result root.
+sidecar before cleaning its task-owned temporary result root. The real helper
+also delegates server execution to a detached exact-head worktree owned by
+`scripts/ci-auth-preflight-worktree.mjs`. Its structured prerequisite binds the
+candidate and fixture-session identities, accepts only an absent mutation or
+the exact deterministic Next.js `tsconfig.json` generated include, rejects all
+other staged/tracked/ordinary-untracked or symlink output, proves exact
+task-owned worktree removal, and proves that the canonical source stayed
+byte-identical. Real-preflight success requires both database absence and this
+workspace cleanup evidence.
 
 Exact clean code head `ac0f981993deae1d0783eb17da4e5e5cfa554ae9`, tree
 `0d597321c4f2f6744287b1807836858ef230564c`, returned

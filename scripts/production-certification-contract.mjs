@@ -204,6 +204,7 @@ export const CERTIFICATION_HARNESS_SOURCE_PATHS = Object.freeze([
   "scripts/production-certification-doctor.mjs",
   "scripts/ci-auth-fixture-result-contract.cjs",
   "scripts/ci-auth-fixture-result-contract.d.cts",
+  "scripts/ci-auth-preflight-worktree.mjs",
   "scripts/ci-auth-fixture-regression-environment.mjs",
   "scripts/ci-auth-fixture-session.cjs",
   "scripts/ci-auth-fixture-session.d.cts",

@@ -154,6 +154,7 @@ export async function runCanonicalAuthFixtureSession() {
   const githubEnvironmentPath = path.join(orchestrationRoot, "github-environment");
   writeFileSync(githubEnvironmentPath, "", { flag: "wx", mode: 0o600 });
   let retained = false;
+  let workspaceTerminalEvidence = null;
   try {
     const baseEnvironment = {
       ...process.env,
@@ -249,10 +250,35 @@ export async function runCanonicalAuthFixtureSession() {
     );
     assert.equal(preflightResult.evidence.databasePrerequisite.dropResult, "passed");
     assert.equal(preflightResult.evidence.databasePrerequisite.absenceResult, "passed");
+    const workspaceEvidence = preflightResult.evidence.workspacePrerequisite;
+    assert.equal(workspaceEvidence.exactHeadDetached, true);
+    assert.equal(workspaceEvidence.sourceRoot.byteIdenticalBeforeAndDuring, true);
+    assert.equal(workspaceEvidence.cleanup.completed, true);
+    assert.equal(workspaceEvidence.cleanup.registrationAbsent, true);
+    assert.equal(
+      workspaceEvidence.cleanup.sourceByteIdenticalAfterCleanup,
+      true,
+    );
+    workspaceTerminalEvidence = {
+      schema: workspaceEvidence.schema,
+      classification: workspaceEvidence.classification,
+      candidateCommitSha: workspaceEvidence.candidateCommitSha,
+      candidateTreeSha: workspaceEvidence.candidateTreeSha,
+      fixtureSessionIdentitySha256:
+        workspaceEvidence.fixtureSessionIdentitySha256,
+      pathIdentitySha256: workspaceEvidence.pathIdentitySha256,
+      exactHeadDetached: workspaceEvidence.exactHeadDetached,
+      sourceRoot: workspaceEvidence.sourceRoot,
+      trackedOutput: workspaceEvidence.trackedOutput,
+      cleanup: workspaceEvidence.cleanup,
+    };
     retained = !ownedSessionRoot;
   } finally {
     rmSync(orchestrationRoot, { recursive: true, force: true });
   }
+  console.log(
+    `AUTH_PREFLIGHT_WORKSPACE_RESULT ${JSON.stringify(workspaceTerminalEvidence)}`,
+  );
   console.log(
     retained
       ? "Canonical exactly-once auth fixture session preflight passed; private session retained by caller"

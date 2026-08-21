@@ -327,6 +327,7 @@ export function validateAuthResultContracts(repositoryRoot) {
     "scripts/ci-auth-fixture-session.cjs",
     "scripts/ci-auth-fixture-session.d.cts",
     "scripts/ci-auth-fixture-regression-environment.mjs",
+    "scripts/ci-auth-preflight-worktree.mjs",
     "scripts/ci-auth-fixture.ts",
     "scripts/run-ci-auth-fixture-real-preflight.mjs",
     "scripts/run-ci-auth-fixture-session.mjs",
@@ -354,6 +355,10 @@ export function validateAuthResultContracts(repositoryRoot) {
   );
   const realPreflightSource = readFileSync(
     path.join(repositoryRoot, "scripts/run-ci-auth-fixture-real-preflight.mjs"),
+    "utf8",
+  );
+  const authPreflightWorktreeSource = readFileSync(
+    path.join(repositoryRoot, "scripts/ci-auth-preflight-worktree.mjs"),
     "utf8",
   );
   const fixtureSessionSource = readFileSync(
@@ -618,6 +623,15 @@ export function validateAuthResultContracts(repositoryRoot) {
     !contractSource.includes(
       "Auth preflight success lacks complete database prerequisite and cleanup proof",
     ) ||
+    !contractSource.includes(
+      "Auth preflight success lacks exact-head worktree isolation and cleanup proof",
+    ) ||
+    !realPreflightSource.includes("createAuthPreflightWorktree") ||
+    !realPreflightSource.includes("completeAuthPreflightWorktree") ||
+    !authPreflightWorktreeSource.includes(
+      "git-worktree-remove-force-exact-task-owned-path",
+    ) ||
+    !authPreflightWorktreeSource.includes(".next/dev/dev/types/**/*.ts") ||
     !authDatabaseRegressionSource.includes("scoped role collision") ||
     !authDatabaseRegressionSource.includes("beforePrivateSidecarPublish") ||
     !qualificationSource.includes('"test:auth-env-hardening"') ||
@@ -2103,7 +2117,7 @@ function validateStageEnvironmentCapabilities(repositoryRoot, environment) {
       (entry) =>
         entry.defect === "auth-fixture-session-continuity-owner-missing",
     ) ||
-    regressionMatrix.authPreflightDatabaseCases?.length !== 30 ||
+    regressionMatrix.authPreflightDatabaseCases?.length !== 38 ||
     !/externalVisionEnabled, false/.test(floorPlanLocalOcrTest) ||
     /process\.env|delete\s+process\.env/.test(floorPlanLocalOcrTest) ||
     !/externalVisionEnabled:\s*environment\.FLOOR_PLAN_VISION_ENABLED === "1"/.test(

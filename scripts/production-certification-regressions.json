@@ -111,7 +111,15 @@
     "auth-passed-database-cleanup-failure-classified-accurately",
     "database-preflight-consumes-existing-fixture-session",
     "certification-helper-rejects-preflight-local-delegation",
-    "auth-server-receives-existing-provider-digests"
+    "auth-server-receives-existing-provider-digests",
+    "exact-head-worktree-canonical-source-immutable",
+    "deterministic-next-tsconfig-output-contained",
+    "clean-no-output-terminal-state-accepted",
+    "unexpected-tracked-output-rejected-and-cleaned",
+    "staged-output-rejected-and-cleaned",
+    "untracked-output-rejected-and-cleaned",
+    "symlink-tsconfig-rejected-and-cleaned",
+    "task-owned-cleanup-preserves-foreign-worktree"
   ],
   "dependencyLifecycleCases": [
     "initial-not-installed-null-valid",
