@@ -1,9 +1,11 @@
 import assert from "node:assert/strict";
 import { performance } from "node:perf_hooks";
 
+import {
+  instrumentGLBMainThreadRenderer,
+} from "../components/scene/glb-scaled-model/glbMainThreadTelemetryFacade";
 import { createGLBMainThreadTelemetryFacadeController } from "../components/scene/glb-scaled-model/glbMainThreadTelemetryFacadeController";
 import type { GLBMainThreadTelemetrySnapshot } from "../components/scene/glb-scaled-model/glbMainThreadTelemetry";
-import { getReloadGeneration } from "../components/scene/glb-scaled-model/modelDiagnosticRealm";
 
 type TelemetryGlobal = typeof globalThis & {
   __INTERIOR_AI_GLB_DIAGNOSTICS_GENERATION__?: number;
@@ -221,34 +223,44 @@ async function boundedBootstrapAndFreshRealm() {
   return overheadDurationMs;
 }
 
-async function persistedReloadRealmActivation() {
+async function waitForProductionSnapshot() {
+  for (let attempt = 0; attempt < 20; attempt += 1) {
+    const snapshot = telemetryGlobal.__INTERIOR_AI_GLB_MAIN_THREAD_SNAPSHOT__?.();
+    if (snapshot) return snapshot;
+    await new Promise<void>((resolve) => setImmediate(resolve));
+  }
+  assert.fail("production telemetry facade did not activate its collector");
+}
+
+async function persistedReloadRealmActivationViaProductionFacade() {
   delete telemetryGlobal.__INTERIOR_AI_GLB_MAIN_THREAD_TELEMETRY__;
   delete telemetryGlobal.__INTERIOR_AI_GLB_MAIN_THREAD_SNAPSHOT__;
   delete telemetryGlobal.__INTERIOR_AI_GLB_DIAGNOSTICS_GENERATION__;
+  let persistedGeneration = "1";
   Object.defineProperty(globalThis, "sessionStorage", {
     configurable: true,
     value: {
-      getItem: () => "1",
-      setItem: (_key: string, _value: string) => undefined,
+      getItem: () => persistedGeneration,
+      setItem: (_key: string, value: string) => {
+        persistedGeneration = value;
+      },
     },
   });
-  const generation = getReloadGeneration(globalThis);
-  assert.equal(generation, 2);
-  const controller = createGLBMainThreadTelemetryFacadeController({
-    telemetryEnabled: () => true,
-    loadTelemetry: collectorModule,
-    nowMs: () => 600,
-  });
-  controller.initialize();
-  await controller.whenSettled();
-  const snapshotHook = Reflect.get(
-    globalThis,
-    "__INTERIOR_AI_GLB_MAIN_THREAD_SNAPSHOT__",
-  ) as TelemetryGlobal["__INTERIOR_AI_GLB_MAIN_THREAD_SNAPSHOT__"];
+
+  const renderer = {
+    render: (_scene: unknown, _camera: unknown) => undefined,
+  } as Parameters<typeof instrumentGLBMainThreadRenderer>[0];
+  instrumentGLBMainThreadRenderer(renderer);
+  const rendererFirstSnapshot = await waitForProductionSnapshot();
   assert.equal(
-    snapshotHook?.().collectorActivationGeneration,
+    telemetryGlobal.__INTERIOR_AI_GLB_DIAGNOSTICS_GENERATION__,
     2,
-    "renderer-first activation must retain the persisted reload realm generation",
+    "renderer instrumentation must establish the persisted reload realm",
+  );
+  assert.equal(
+    rendererFirstSnapshot.collectorActivationGeneration,
+    2,
+    "renderer-first production activation must retain the persisted reload realm generation",
   );
 }
 
@@ -257,7 +269,7 @@ async function run() {
   await nonemptyActivationOrdering();
   await importFailureAndDisabledBehavior();
   const overheadDurationMs = await boundedBootstrapAndFreshRealm();
-  await persistedReloadRealmActivation();
+  await persistedReloadRealmActivationViaProductionFacade();
   console.log(
     "GLB main-thread telemetry facade behavioral tests passed " +
       `(${overheadDurationMs.toFixed(1)} ms for 10,000 direct bounded writes).`,
