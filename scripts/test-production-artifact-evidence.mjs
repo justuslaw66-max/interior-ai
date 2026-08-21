@@ -102,6 +102,7 @@ import {
 import {
   createRuntimeSmokeReadinessObservation,
   evaluateRuntimeSmokeActiveRequiredModels,
+  projectRuntimeSmokeReloadReadiness,
   runtimeSmokeRequiredRegistryReady,
 } from "./runtime-smoke-readiness-diagnostics.mjs";
 import {
@@ -221,6 +222,22 @@ function boundAuthFixtureEnvironment() {
   });
   const readyModels = activeRequiredModelIds.map((key) => readyModel(key));
 
+  assert.deepEqual(
+    projectRuntimeSmokeReloadReadiness({
+      activeRequiredEvaluation: null,
+      expectedModelCount: 8,
+      minimumReloadGeneration: 2,
+    }),
+    {
+      activeRequiredDiagnostics: [],
+      expectedReadyModelCount: 8,
+      observedReadyModelCount: 0,
+      currentReloadGeneration: null,
+      unreadyModelKeys: [],
+      ready: false,
+    },
+  );
+
   const complete = evaluateRuntimeSmokeActiveRequiredModels({
     snapshot: snapshot(readyModels),
     expectedModelCount: 8,
@@ -235,6 +252,57 @@ function boundAuthFixtureEnvironment() {
   assert.equal(complete.ready, true);
   assert.equal(complete.observedReadyCount, 8);
   assert.equal(complete.activeRequiredDiagnostics.length, 8);
+  assert.deepEqual(
+    projectRuntimeSmokeReloadReadiness({
+      activeRequiredEvaluation: complete,
+      expectedModelCount: 8,
+      minimumReloadGeneration: 2,
+    }),
+    {
+      activeRequiredDiagnostics: complete.activeRequiredDiagnostics,
+      expectedReadyModelCount: 8,
+      observedReadyModelCount: 8,
+      currentReloadGeneration: 2,
+      unreadyModelKeys: [],
+      ready: true,
+    },
+  );
+
+  const initialRealm = evaluateRuntimeSmokeActiveRequiredModels({
+    snapshot: {
+      ...snapshot(readyModels),
+      reloadGeneration: 1,
+      models: readyModels.map((model) => ({
+        ...model,
+        reloadGeneration: 1,
+        readinessKey: model.readinessKey.replace(/^g2:/, "g1:"),
+        mountInstanceId: "g1:m1",
+      })),
+    },
+    expectedModelCount: 8,
+  });
+  const staleInitialRealm = projectRuntimeSmokeReloadReadiness({
+    activeRequiredEvaluation: initialRealm,
+    expectedModelCount: 8,
+    minimumReloadGeneration: 2,
+  });
+  assert.equal(staleInitialRealm.currentReloadGeneration, 1);
+  assert.equal(staleInitialRealm.ready, false);
+
+  const explicitFixtureOnly = evaluateRuntimeSmokeActiveRequiredModels({
+    snapshot: snapshot(
+      readyModels.filter((model) => explicitFixtureKeys.includes(model.key)),
+      explicitFixtureKeys,
+    ),
+    expectedModelCount: 8,
+  });
+  const explicitFixtureOnlyProjection = projectRuntimeSmokeReloadReadiness({
+    activeRequiredEvaluation: explicitFixtureOnly,
+    expectedModelCount: 8,
+    minimumReloadGeneration: 2,
+  });
+  assert.equal(explicitFixtureOnlyProjection.observedReadyModelCount, 3);
+  assert.equal(explicitFixtureOnlyProjection.ready, false);
 
   const templateUnready = evaluateRuntimeSmokeActiveRequiredModels({
     snapshot: snapshot(
@@ -248,6 +316,15 @@ function boundAuthFixtureEnvironment() {
   });
   assert.equal(templateUnready.ready, false);
   assert.deepEqual(templateUnready.unreadyModelKeys, ["template-model-4"]);
+  const templateUnreadyProjection = projectRuntimeSmokeReloadReadiness({
+    activeRequiredEvaluation: templateUnready,
+    expectedModelCount: 8,
+    minimumReloadGeneration: 2,
+  });
+  assert.equal(templateUnreadyProjection.ready, false);
+  assert.deepEqual(templateUnreadyProjection.unreadyModelKeys, [
+    "template-model-4",
+  ]);
 
   const explicitUnready = evaluateRuntimeSmokeActiveRequiredModels({
     snapshot: snapshot(
@@ -1445,6 +1522,16 @@ assert.doesNotMatch(
   runtimeSmokeSource,
   /observedReadyModelCount:\s*remountedDiagnostics\.filter/,
   "the remount checkpoint must not count only explicit fixture diagnostics",
+);
+assert.match(
+  runtimeSmokeSource,
+  /observedReadyModelCount:\s*reloadDiagnostics\.readiness\.observedReadyModelCount/,
+  "reload telemetry must count the authoritative current-generation active-required set",
+);
+assert.doesNotMatch(
+  runtimeSmokeSource,
+  /observedReadyModelCount:\s*reloadDiagnostics\.filter/,
+  "reload telemetry must not project the three explicit fixtures as the ready set",
 );
 const runtimeReadinessConsumerSource = runtimeSmokeSource.slice(
   runtimeSmokeSource.indexOf("const readModelDiagnostics ="),

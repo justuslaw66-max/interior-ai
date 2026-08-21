@@ -23,6 +23,7 @@ import {
 import {
   createRuntimeSmokeReadinessObservation,
   evaluateRuntimeSmokeActiveRequiredModels,
+  projectRuntimeSmokeReloadReadiness,
   runtimeSmokeRequiredRegistryReady,
 } from "../../scripts/runtime-smoke-readiness-diagnostics.mjs";
 import {
@@ -1298,7 +1299,19 @@ test.describe("00. Runtime smoke", () => {
       let previousProgressSignature = "";
       while (true) {
         const diagnostics = await readModelDiagnosticsWithin(operationContext);
-        const activeRequired = activeRequiredDiagnosticsFor(diagnostics);
+        const activeRequiredEvaluation = lastRequiredSnapshot
+          ? evaluateRuntimeSmokeActiveRequiredModels({
+              snapshot: lastRequiredSnapshot,
+              expectedModelCount: EXPECTED_ACTIVE_REQUIRED_MODEL_COUNT,
+              minimumReloadGeneration,
+            })
+          : null;
+        const reloadReadiness = projectRuntimeSmokeReloadReadiness({
+          activeRequiredEvaluation,
+          expectedModelCount: EXPECTED_ACTIVE_REQUIRED_MODEL_COUNT,
+          minimumReloadGeneration,
+        });
+        const activeRequired = reloadReadiness.activeRequiredDiagnostics;
         const loadingModelCount = activeRequired.filter(
           (diagnostic) => diagnostic.loadState === "loading",
         ).length;
@@ -1321,11 +1334,8 @@ test.describe("00. Runtime smoke", () => {
           ({ modelPath }) =>
             (modelResponseCounts.get(modelPath) ?? 0) === minimumResponseCount,
         );
-        const reloadGenerations = new Set(
-          activeRequired.map((diagnostic) => diagnostic.reloadGeneration),
-        );
         const diagnosticsReady =
-          reloadGenerations.size === 1 &&
+          reloadReadiness.ready &&
           exactRequiredRegistryReady(diagnostics, minimumReloadGeneration) &&
           diagnostics.every(
           ({ diagnostic }, index) =>
@@ -1362,7 +1372,10 @@ test.describe("00. Runtime smoke", () => {
         if (combinedReadinessSatisfied) {
           finalLifecycleState = "ready";
           checkpoint("models-ready", "ready");
-          return diagnostics;
+          return {
+            fixtureDiagnostics: diagnostics,
+            readiness: reloadReadiness,
+          };
         }
         finalLifecycleState = aggregateLifecycleState;
         await page.waitForTimeout(
@@ -1963,13 +1976,12 @@ test.describe("00. Runtime smoke", () => {
           checkpoint,
         });
         const telemetryGeneration =
-          reloadDiagnostics[0]?.diagnostic?.reloadGeneration ?? 0;
+          reloadDiagnostics.readiness.currentReloadGeneration ?? 0;
         await recordTelemetryBootstrapEvidence({
           phaseName,
           expectedCollectorActivationGeneration: telemetryGeneration,
-          observedReadyModelCount: reloadDiagnostics.filter(
-            ({ diagnostic }) => diagnostic?.loadState === "ready",
-          ).length,
+          observedReadyModelCount:
+            reloadDiagnostics.readiness.observedReadyModelCount,
         });
         checkpoint("telemetry-bootstrap-contract-valid", "ready");
         const responseTotal = MODEL_FIXTURES.reduce(
@@ -1998,7 +2010,7 @@ test.describe("00. Runtime smoke", () => {
 
         checkpoint("generation-verification-started", "ready");
         const observedReloadGeneration =
-          reloadDiagnostics[0]?.diagnostic?.reloadGeneration;
+          reloadDiagnostics.readiness.currentReloadGeneration ?? undefined;
         expect(observedReloadGeneration).toBe(immediateSnapshot.reloadGeneration);
         expect(observedReloadGeneration ?? 0).toBeGreaterThan(
           completedReloadGeneration,

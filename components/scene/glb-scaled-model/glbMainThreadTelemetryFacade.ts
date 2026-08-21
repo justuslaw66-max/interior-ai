@@ -5,6 +5,7 @@ import type {
   GLBMainThreadCounter,
   GLBMainThreadTimingCategory,
 } from "./glbMainThreadTelemetryCore";
+import { getReloadGeneration } from "./modelDiagnosticRealm";
 
 type TelemetryGlobal = typeof globalThis & {
   __INTERIOR_AI_ENABLE_GLB_DIAGNOSTICS__?: boolean;
@@ -32,6 +33,7 @@ const telemetryFacade = createGLBMainThreadTelemetryFacadeController({
 });
 
 export function initializeGLBMainThreadTelemetry() {
+  if (telemetryEnabled()) getReloadGeneration(globalThis);
   telemetryFacade.initialize();
 }
 
@@ -60,6 +62,7 @@ export function recordGLBMainThreadCounter(counter: GLBMainThreadCounter) {
 
 export function instrumentGLBMainThreadRenderer(renderer: THREE.WebGLRenderer) {
   if (!telemetryEnabled() || instrumentedRenderers.has(renderer)) return;
+  getReloadGeneration(globalThis);
   instrumentedRenderers.add(renderer);
   const render = renderer.render.bind(renderer);
   renderer.render = (scene, camera) => {

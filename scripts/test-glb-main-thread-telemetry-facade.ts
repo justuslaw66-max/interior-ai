@@ -3,6 +3,7 @@ import { performance } from "node:perf_hooks";
 
 import { createGLBMainThreadTelemetryFacadeController } from "../components/scene/glb-scaled-model/glbMainThreadTelemetryFacadeController";
 import type { GLBMainThreadTelemetrySnapshot } from "../components/scene/glb-scaled-model/glbMainThreadTelemetry";
+import { getReloadGeneration } from "../components/scene/glb-scaled-model/modelDiagnosticRealm";
 
 type TelemetryGlobal = typeof globalThis & {
   __INTERIOR_AI_GLB_DIAGNOSTICS_GENERATION__?: number;
@@ -220,11 +221,43 @@ async function boundedBootstrapAndFreshRealm() {
   return overheadDurationMs;
 }
 
+async function persistedReloadRealmActivation() {
+  delete telemetryGlobal.__INTERIOR_AI_GLB_MAIN_THREAD_TELEMETRY__;
+  delete telemetryGlobal.__INTERIOR_AI_GLB_MAIN_THREAD_SNAPSHOT__;
+  delete telemetryGlobal.__INTERIOR_AI_GLB_DIAGNOSTICS_GENERATION__;
+  Object.defineProperty(globalThis, "sessionStorage", {
+    configurable: true,
+    value: {
+      getItem: () => "1",
+      setItem: (_key: string, _value: string) => undefined,
+    },
+  });
+  const generation = getReloadGeneration(globalThis);
+  assert.equal(generation, 2);
+  const controller = createGLBMainThreadTelemetryFacadeController({
+    telemetryEnabled: () => true,
+    loadTelemetry: collectorModule,
+    nowMs: () => 600,
+  });
+  controller.initialize();
+  await controller.whenSettled();
+  const snapshotHook = Reflect.get(
+    globalThis,
+    "__INTERIOR_AI_GLB_MAIN_THREAD_SNAPSHOT__",
+  ) as TelemetryGlobal["__INTERIOR_AI_GLB_MAIN_THREAD_SNAPSHOT__"];
+  assert.equal(
+    snapshotHook?.().collectorActivationGeneration,
+    2,
+    "renderer-first activation must retain the persisted reload realm generation",
+  );
+}
+
 async function run() {
   await emptyActivationOrdering();
   await nonemptyActivationOrdering();
   await importFailureAndDisabledBehavior();
   const overheadDurationMs = await boundedBootstrapAndFreshRealm();
+  await persistedReloadRealmActivation();
   console.log(
     "GLB main-thread telemetry facade behavioral tests passed " +
       `(${overheadDurationMs.toFixed(1)} ms for 10,000 direct bounded writes).`,

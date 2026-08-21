@@ -122,6 +122,7 @@ export function evaluateRuntimeSmokeActiveRequiredModels({
     activeRequiredDiagnostics.length - unreadyModelKeys.length;
 
   return {
+    expectedModelCount,
     activeRequiredDiagnostics,
     declaredActiveRequiredKeys,
     expectedActiveRequiredKeys,
@@ -137,6 +138,60 @@ export function evaluateRuntimeSmokeActiveRequiredModels({
       countMatches &&
       unreadyModelKeys.length === 0,
   };
+}
+
+export function projectRuntimeSmokeReloadReadiness({
+  activeRequiredEvaluation,
+  expectedModelCount,
+  minimumReloadGeneration,
+}) {
+  if (
+    !Number.isSafeInteger(expectedModelCount) ||
+    expectedModelCount < 0 ||
+    !Number.isSafeInteger(minimumReloadGeneration) ||
+    minimumReloadGeneration < 1
+  ) {
+    throw new Error("Runtime-smoke reload readiness projection is malformed");
+  }
+  if (activeRequiredEvaluation === null) {
+    return Object.freeze({
+      activeRequiredDiagnostics: [],
+      expectedReadyModelCount: expectedModelCount,
+      observedReadyModelCount: 0,
+      currentReloadGeneration: null,
+      unreadyModelKeys: [],
+      ready: false,
+    });
+  }
+  if (
+    !Number.isSafeInteger(activeRequiredEvaluation.expectedModelCount) ||
+    activeRequiredEvaluation.expectedModelCount !== expectedModelCount ||
+    !Array.isArray(activeRequiredEvaluation.activeRequiredDiagnostics) ||
+    !Array.isArray(activeRequiredEvaluation.unreadyModelKeys) ||
+    !Number.isSafeInteger(activeRequiredEvaluation.observedReadyCount)
+  ) {
+    throw new Error("Runtime-smoke reload readiness projection is malformed");
+  }
+  const activeRequiredDiagnostics =
+    activeRequiredEvaluation.activeRequiredDiagnostics;
+  const generations = new Set(
+    activeRequiredDiagnostics.map((model) => model.reloadGeneration),
+  );
+  const currentReloadGeneration =
+    generations.size === 1
+      ? activeRequiredDiagnostics[0]?.reloadGeneration ?? null
+      : null;
+  return Object.freeze({
+    activeRequiredDiagnostics,
+    expectedReadyModelCount: expectedModelCount,
+    observedReadyModelCount: activeRequiredEvaluation.observedReadyCount,
+    currentReloadGeneration,
+    unreadyModelKeys: [...activeRequiredEvaluation.unreadyModelKeys],
+    ready:
+      activeRequiredEvaluation.ready === true &&
+      currentReloadGeneration !== null &&
+      currentReloadGeneration >= minimumReloadGeneration,
+  });
 }
 
 export function runtimeSmokeRequiredRegistryReady({

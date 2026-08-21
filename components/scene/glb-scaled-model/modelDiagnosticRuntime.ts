@@ -1,4 +1,5 @@
 import { createGLBRequiredSnapshot } from "./glbRequiredSnapshot";
+import { getReloadGeneration } from "./modelDiagnosticRealm";
 import {
   initializeGLBMainThreadTelemetry,
   recordGLBEventLoopGap,
@@ -10,8 +11,6 @@ import type {
   GLBModelTransitionName,
 } from "./modelLifecycleTypes";
 
-const RELOAD_GENERATION_SESSION_KEY =
-  "interior-ai:glb-diagnostics-reload-generation";
 const EVENT_LOOP_SAMPLE_INTERVAL_MS = 100;
 
 type GLBDiagnosticsGlobal = typeof globalThis & {
@@ -39,33 +38,7 @@ export function transitionTimestampMs() {
     : 0;
 }
 
-export function getReloadGeneration(diagnosticsGlobal: GLBDiagnosticsGlobal) {
-  if (
-    Number.isInteger(
-      diagnosticsGlobal.__INTERIOR_AI_GLB_DIAGNOSTICS_GENERATION__
-    )
-  ) {
-    return diagnosticsGlobal.__INTERIOR_AI_GLB_DIAGNOSTICS_GENERATION__ as number;
-  }
-
-  let generation = 1;
-  try {
-    const previous = Number.parseInt(
-      window.sessionStorage.getItem(RELOAD_GENERATION_SESSION_KEY) ?? "0",
-      10
-    );
-    generation = Number.isInteger(previous) && previous >= 0 ? previous + 1 : 1;
-    window.sessionStorage.setItem(
-      RELOAD_GENERATION_SESSION_KEY,
-      String(generation)
-    );
-  } catch {
-    // Sandboxed documents can deny session storage. The per-document default
-    // still prevents identities from crossing a JavaScript global boundary.
-  }
-  diagnosticsGlobal.__INTERIOR_AI_GLB_DIAGNOSTICS_GENERATION__ = generation;
-  return generation;
-}
+export { getReloadGeneration } from "./modelDiagnosticRealm";
 
 function ensureEventLoopProbe(diagnosticsGlobal: GLBDiagnosticsGlobal) {
   if (diagnosticsGlobal.__INTERIOR_AI_GLB_EVENT_LOOP_PROBE__) return;
