@@ -1443,8 +1443,8 @@ function stateFixture() {
     Array.from({ length: 38 }, (_, index) => index + 1),
   );
   assert.equal(new Set(regressions.cases.map((entry) => entry.defect)).size, 38);
-  assert.equal(regressions.authPreflightDatabaseCases.length, 30);
-  assert.equal(new Set(regressions.authPreflightDatabaseCases).size, 30);
+  assert.equal(regressions.authPreflightDatabaseCases.length, 38);
+  assert.equal(new Set(regressions.authPreflightDatabaseCases).size, 38);
   coveredRegressionIds.add(35);
   coveredRegressionIds.add(37);
   assert.equal(regressions.nestedAuthFixtureIsolationCases.length, 13);
