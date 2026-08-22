@@ -32,12 +32,14 @@ import {
   handoffProductionEvidenceSemanticJournal,
   initializeProductionEvidenceSemanticJournal,
   inspectFloorPlanRouteNftContract,
+  projectArtifactProductServerEnvironment,
   readProductionEvidenceSemanticJournal,
   recordProductionEvidenceTest,
   recoverProductionEvidenceFromSemanticJournal,
   resolveProductionEvidenceToolchain,
   validateProductionEvidenceSemanticJournal,
   validateProductionEvidence,
+  validateArtifactProductServerAuthFixtureBinding,
   verifyRuntimeSmokeFailureEvidence,
   writeProductionEvidenceManifest,
 } from "./production-artifact-evidence.mjs";
@@ -145,6 +147,8 @@ function boundAuthFixtureEnvironment() {
       "PRODUCTION_INELIGIBLE_SYNTHETIC_AUTH",
     CI_AUTH_FIXTURE_SESSION_ID: "artifact-fixture-session-001",
     CI_AUTH_FIXTURE_SESSION_NONCE: "artifact-fixture-nonce-001",
+    CI_AUTH_FIXTURE_CANDIDATE_COMMIT_SHA: "a".repeat(40),
+    CI_AUTH_FIXTURE_CANDIDATE_TREE_SHA: "b".repeat(40),
     GOOGLE_CLIENT_ID: googleClientId,
     GOOGLE_CLIENT_SECRET: googleClientSecret,
   };
@@ -4682,6 +4686,123 @@ async function expectRejected(context, expectedText) {
       issue.includes("source commit"),
     ),
   );
+}
+
+{
+  const buildAuthEnvironment = {
+    ...boundAuthFixtureEnvironment(),
+    CERTIFICATION_ENVIRONMENT_STAGE: "build",
+  };
+  const context = await fixture({
+    environmentOverrides: buildAuthEnvironment,
+  });
+  const manifest = readManifest(context.root, context.manifestPath);
+  const productEnvironment = {
+    ...buildAuthEnvironment,
+    APP_ENV: "staging",
+    NEXT_PUBLIC_APP_ENV: "staging",
+    NODE_ENV: "production",
+    VERCEL_ENV: "preview",
+    CERTIFICATION_ENVIRONMENT_STAGE: "artifact-product-server",
+    PRODUCTION_ARTIFACT_EVIDENCE: "1",
+    PRODUCTION_ARTIFACT_COMMIT_SHA: manifest.source.commitSha,
+    PRODUCTION_CERTIFICATION_ID: "certification-fixture-001",
+    PRODUCTION_EVIDENCE_CANDIDATE_ID: manifest.candidateIdentifier,
+    PRODUCTION_EVIDENCE_EXPECTED_TREE_SHA: manifest.source.treeSha,
+    CI_AUTH_FIXTURE_CANDIDATE_COMMIT_SHA: manifest.source.commitSha,
+    CI_AUTH_FIXTURE_CANDIDATE_TREE_SHA: manifest.source.treeSha,
+  };
+  const projectedProductEnvironment = projectArtifactProductServerEnvironment({
+    repositoryRoot: process.cwd(),
+    baseEnvironment: productEnvironment,
+    manifest,
+    databaseUrl:
+      "postgresql://fixture:fixture@127.0.0.1:5432/evidence_fixture",
+  });
+  assert.deepEqual(
+    validateArtifactProductServerAuthFixtureBinding({
+      environment: projectedProductEnvironment,
+      manifest,
+    }),
+    manifest.build.authFixtureContinuity,
+  );
+  assert.equal(
+    projectedProductEnvironment.PRODUCTION_CERTIFICATION_ID,
+    productEnvironment.PRODUCTION_CERTIFICATION_ID,
+  );
+  assert.equal(
+    projectedProductEnvironment.PRODUCTION_EVIDENCE_CANDIDATE_ID,
+    manifest.candidateIdentifier,
+  );
+
+  for (const [name, mutate, expected] of [
+    [
+      "missing continuity",
+      (environment) => delete environment.CI_AUTH_FIXTURE_ACTIVE,
+      /digest or classification|incomplete/,
+    ],
+    [
+      "foreign candidate",
+      (environment) => {
+        environment.CI_AUTH_FIXTURE_CANDIDATE_COMMIT_SHA = "f".repeat(40);
+      },
+      /another candidate/,
+    ],
+    [
+      "foreign session",
+      (environment) => {
+        environment.CI_AUTH_FIXTURE_SESSION_ID = "foreign-runtime-session-001";
+      },
+      /differs from build continuity/,
+    ],
+    [
+      "foreign nonce",
+      (environment) => {
+        environment.CI_AUTH_FIXTURE_SESSION_NONCE = "foreign-runtime-nonce-001";
+      },
+      /differs from build continuity/,
+    ],
+    [
+      "altered digest",
+      (environment) => {
+        environment.CI_AUTH_FIXTURE_PROVIDER_CLIENT_SECRET_SHA256 = "0".repeat(64);
+      },
+      /digest or classification/,
+    ],
+    [
+      "production identity",
+      (environment) => {
+        environment.APP_ENV = "production";
+      },
+      /exact staging\/preview identity/,
+    ],
+    [
+      "foreign release candidate identity",
+      (environment) => {
+        environment.PRODUCTION_EVIDENCE_CANDIDATE_ID = "another-candidate";
+      },
+      /release candidate identity/,
+    ],
+    [
+      "missing certification identity",
+      (environment) => {
+        delete environment.PRODUCTION_CERTIFICATION_ID;
+      },
+      /release candidate identity/,
+    ],
+  ]) {
+    const mutated = { ...projectedProductEnvironment };
+    mutate(mutated);
+    assert.throws(
+      () =>
+        validateArtifactProductServerAuthFixtureBinding({
+          environment: mutated,
+          manifest,
+        }),
+      expected,
+      name,
+    );
+  }
 }
 
 {

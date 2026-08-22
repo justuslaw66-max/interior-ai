@@ -468,6 +468,11 @@ function stateFixture() {
       }),
     /CERTIFICATION_SOURCE_VALIDATION_CHECK_ID/,
   );
+  const runtimeFixtureNonce = "9".repeat(32);
+  const runtimeFixtureClientId =
+    `123456789012345-gate-a3-ci-${runtimeFixtureNonce}.apps.googleusercontent.com`;
+  const runtimeFixtureClientSecret =
+    `GOCSPX-gate-a3-ci-${runtimeFixtureNonce}`;
   const runtimeInputs = {
     CERTIFICATION_STAGE_ENVIRONMENT_CONTRACT_SHA256:
       stageEnvironmentContract(repositoryRoot).sha256,
@@ -477,6 +482,20 @@ function stateFixture() {
     CERTIFICATION_ENVIRONMENT_STAGE: "runtime-smoke",
     CERTIFICATION_RUNTIME_STAGE_ATTEMPT: "1",
     CERTIFICATION_RUNTIME_START_MARKER_PATH: "/external/start.json",
+    CI_AUTH_FIXTURE_ACTIVE: "1",
+    CI_AUTH_FIXTURE_CANDIDATE_COMMIT_SHA: "b".repeat(40),
+    CI_AUTH_FIXTURE_CANDIDATE_TREE_SHA: "d".repeat(40),
+    CI_AUTH_FIXTURE_LOCAL_TEST: "1",
+    CI_AUTH_FIXTURE_MODE: "1",
+    CI_AUTH_FIXTURE_NO_REGENERATION: "1",
+    CI_AUTH_FIXTURE_PROVIDER_CLIENT_ID_SHA256:
+      sha256Bytes(runtimeFixtureClientId),
+    CI_AUTH_FIXTURE_PROVIDER_CLIENT_SECRET_SHA256:
+      sha256Bytes(runtimeFixtureClientSecret),
+    CI_AUTH_FIXTURE_SESSION_CLASSIFICATION:
+      "PRODUCTION_INELIGIBLE_SYNTHETIC_AUTH",
+    CI_AUTH_FIXTURE_SESSION_ID: "runtime-fixture-session-001",
+    CI_AUTH_FIXTURE_SESSION_NONCE: "runtime-fixture-nonce-001",
     DATABASE_URL: syntheticSecret,
     PLAYWRIGHT_EXTERNAL_EVIDENCE_ROOT: "/external",
     PLAYWRIGHT_JSON_OUTPUT_FILE: "/external/report.json",
@@ -496,8 +515,8 @@ function stateFixture() {
     PRODUCTION_EVIDENCE_MANIFEST:
       ".local/production-artifact-evidence/manifest.json",
     RUNTIME_SMOKE_PHASE_TIMINGS_PATH: "/external/timings.json",
-    GOOGLE_CLIENT_ID: "synthetic-provider-client-id",
-    GOOGLE_CLIENT_SECRET: "synthetic-provider-secondary-value",
+    GOOGLE_CLIENT_ID: runtimeFixtureClientId,
+    GOOGLE_CLIENT_SECRET: runtimeFixtureClientSecret,
   };
   const runtime = projectCertificationChildEnvironment({
     repositoryRoot,
@@ -513,6 +532,26 @@ function stateFixture() {
     "/external/start.json",
   );
   assert.equal(runtime.environment.PLAYWRIGHT_EXTERNAL_EVIDENCE_ROOT, "/external");
+  for (const name of [
+    "CI_AUTH_FIXTURE_ACTIVE",
+    "CI_AUTH_FIXTURE_CANDIDATE_COMMIT_SHA",
+    "CI_AUTH_FIXTURE_CANDIDATE_TREE_SHA",
+    "CI_AUTH_FIXTURE_LOCAL_TEST",
+    "CI_AUTH_FIXTURE_MODE",
+    "CI_AUTH_FIXTURE_NO_REGENERATION",
+    "CI_AUTH_FIXTURE_PROVIDER_CLIENT_ID_SHA256",
+    "CI_AUTH_FIXTURE_PROVIDER_CLIENT_SECRET_SHA256",
+    "CI_AUTH_FIXTURE_SESSION_CLASSIFICATION",
+    "CI_AUTH_FIXTURE_SESSION_ID",
+    "CI_AUTH_FIXTURE_SESSION_NONCE",
+  ]) {
+    assert.equal(
+      runtime.environment[name],
+      runtimeInputs[name],
+      `${name} must survive the runtime projection that previously caused SYNTHETIC_AUTH_FIXTURE_SCOPE_REJECTED`,
+    );
+  }
+  coveredRegressionIds.add(39);
   const tamperedMetadata = structuredClone(runtime.metadata);
   tamperedMetadata.profileSha256 = "0".repeat(64);
   assert.equal(
@@ -1460,12 +1499,12 @@ function stateFixture() {
   const regressions = JSON.parse(
     readFileSync("scripts/production-certification-regressions.json", "utf8"),
   );
-  assert.equal(regressions.cases.length, 38);
+  assert.equal(regressions.cases.length, 39);
   assert.deepEqual(
     regressions.cases.map((entry) => entry.id),
-    Array.from({ length: 38 }, (_, index) => index + 1),
+    Array.from({ length: 39 }, (_, index) => index + 1),
   );
-  assert.equal(new Set(regressions.cases.map((entry) => entry.defect)).size, 38);
+  assert.equal(new Set(regressions.cases.map((entry) => entry.defect)).size, 39);
   assert.equal(regressions.authPreflightDatabaseCases.length, 38);
   assert.equal(new Set(regressions.authPreflightDatabaseCases).size, 38);
   coveredRegressionIds.add(35);
@@ -3312,7 +3351,7 @@ function stateFixture() {
 
 assert.deepEqual(
   [...coveredRegressionIds].sort((left, right) => left - right),
-  Array.from({ length: 38 }, (_, index) => index + 1),
+  Array.from({ length: 39 }, (_, index) => index + 1),
   "every documented regression must be exercised by an executable assertion",
 );
 

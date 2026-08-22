@@ -1602,6 +1602,106 @@ function authFixtureBuildContinuity(environment = process.env) {
   return authFixtureSession.validateProjectedFixtureEnvironment(environment);
 }
 
+const ARTIFACT_PRODUCT_SERVER_AUTH_FIXTURE_VARIABLES = Object.freeze([
+  "CI_AUTH_FIXTURE_ACTIVE",
+  "CI_AUTH_FIXTURE_CANDIDATE_COMMIT_SHA",
+  "CI_AUTH_FIXTURE_CANDIDATE_TREE_SHA",
+  "CI_AUTH_FIXTURE_LOCAL_TEST",
+  "CI_AUTH_FIXTURE_MODE",
+  "CI_AUTH_FIXTURE_NO_REGENERATION",
+  "CI_AUTH_FIXTURE_PROVIDER_CLIENT_ID_SHA256",
+  "CI_AUTH_FIXTURE_PROVIDER_CLIENT_SECRET_SHA256",
+  "CI_AUTH_FIXTURE_SESSION_CLASSIFICATION",
+  "CI_AUTH_FIXTURE_SESSION_ID",
+  "CI_AUTH_FIXTURE_SESSION_NONCE",
+  "GOOGLE_CLIENT_ID",
+  "GOOGLE_CLIENT_SECRET",
+]);
+
+export function validateArtifactProductServerAuthFixtureBinding({
+  environment,
+  manifest,
+}) {
+  if (
+    manifest?.build?.applicationEnvironment !== "staging" ||
+    environment.APP_ENV !== "staging" ||
+    environment.NEXT_PUBLIC_APP_ENV !== "staging" ||
+    environment.NODE_ENV !== "production" ||
+    environment.VERCEL_ENV !== "preview"
+  ) {
+    throw new Error(
+      "artifact product server auth fixture requires exact staging/preview identity",
+    );
+  }
+  if (
+    !environment.PRODUCTION_CERTIFICATION_ID?.trim() ||
+    environment.PRODUCTION_EVIDENCE_CANDIDATE_ID !== manifest.candidateIdentifier
+  ) {
+    throw new Error(
+      "artifact product server auth fixture differs from release candidate identity",
+    );
+  }
+  const continuity = authFixtureSession.validateProjectedFixtureEnvironment(
+    environment,
+    {
+      commitSha: manifest.source.commitSha,
+      treeSha: manifest.source.treeSha,
+    },
+  );
+  if (
+    JSON.stringify(continuity) !==
+    JSON.stringify(manifest.build?.authFixtureContinuity)
+  ) {
+    throw new Error(
+      "artifact product server auth fixture differs from build continuity",
+    );
+  }
+  return continuity;
+}
+
+export function projectArtifactProductServerEnvironment({
+  repositoryRoot,
+  baseEnvironment,
+  manifest,
+  databaseUrl,
+}) {
+  const projectedEnvironment = projectCertificationChildEnvironment({
+    repositoryRoot,
+    baseEnvironment: {
+      ...baseEnvironment,
+      NODE_ENV: "production",
+      APP_ENV: manifest.build.applicationEnvironment,
+      NEXT_PUBLIC_APP_ENV: manifest.build.applicationEnvironment,
+      CATALOG_STRICT_VALIDATION: "true",
+    },
+    stage: "artifact-product-server",
+    profileId: "artifact-product-server",
+    stageInputs: {
+      CERTIFICATION_ENVIRONMENT_STAGE: "artifact-product-server",
+      DATABASE_URL: databaseUrl,
+      PRODUCTION_ARTIFACT_EVIDENCE: "1",
+      PRODUCTION_ARTIFACT_BUILD_ID: manifest.build.nextBuildId,
+      PRODUCTION_ARTIFACT_SHA256: manifest.artifact.sha256,
+      PRODUCTION_ARTIFACT_COMMIT_SHA: manifest.source.commitSha,
+      PRODUCTION_CERTIFICATION_ID: baseEnvironment.PRODUCTION_CERTIFICATION_ID,
+      PRODUCTION_EVIDENCE_CANDIDATE_ID:
+        baseEnvironment.PRODUCTION_EVIDENCE_CANDIDATE_ID,
+      PRODUCTION_EVIDENCE_EXPECTED_TREE_SHA: manifest.source.treeSha,
+      ...Object.fromEntries(
+        ARTIFACT_PRODUCT_SERVER_AUTH_FIXTURE_VARIABLES.map((name) => [
+          name,
+          baseEnvironment[name],
+        ]),
+      ),
+    },
+  }).environment;
+  validateArtifactProductServerAuthFixtureBinding({
+    environment: projectedEnvironment,
+    manifest,
+  });
+  return projectedEnvironment;
+}
+
 function assertBuildContract(build, developmentOnlyFlags) {
   if (!PRODUCTION_ENVIRONMENTS.has(build.applicationEnvironment)) {
     throw new Error("production evidence environment must be staging or production");
@@ -3959,30 +4059,13 @@ async function serveEvidence(repositoryRoot, manifestPath) {
   if (!result.valid) throw new Error(result.issues.join("; "));
   const manifest = result.manifest;
   const port = "3000";
-  const environment = {
-    ...projectCertificationChildEnvironment({
-      repositoryRoot,
-      baseEnvironment: {
-        ...process.env,
-        NODE_ENV: "production",
-        APP_ENV: manifest.build.applicationEnvironment,
-        NEXT_PUBLIC_APP_ENV: manifest.build.applicationEnvironment,
-        CATALOG_STRICT_VALIDATION: "true",
-      },
-      stage: "artifact-product-server",
-      profileId: "artifact-product-server",
-      stageInputs: {
-        CERTIFICATION_ENVIRONMENT_STAGE: "artifact-product-server",
-        DATABASE_URL: certifiedNestedDatabaseUrl(process.env),
-        PRODUCTION_ARTIFACT_EVIDENCE: "1",
-        PRODUCTION_ARTIFACT_BUILD_ID: manifest.build.nextBuildId,
-        PRODUCTION_ARTIFACT_SHA256: manifest.artifact.sha256,
-        PRODUCTION_ARTIFACT_COMMIT_SHA: manifest.source.commitSha,
-        GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
-        GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET,
-      },
-    }).environment,
-  };
+  const projectedEnvironment = projectArtifactProductServerEnvironment({
+    repositoryRoot,
+    baseEnvironment: process.env,
+    manifest,
+    databaseUrl: certifiedNestedDatabaseUrl(process.env),
+  });
+  const environment = { ...projectedEnvironment };
   for (const name of [...SAFE_FEATURE_FLAGS, ...DEVELOPMENT_ONLY_FLAGS]) delete environment[name];
   for (const [name, enabled] of Object.entries(manifest.build.featureFlags)) {
     if (enabled !== null) environment[name] = enabled ? "true" : "false";

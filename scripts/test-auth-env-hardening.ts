@@ -8,6 +8,7 @@ import {
   symlinkSync,
   writeFileSync,
 } from "node:fs";
+import { createHash } from "node:crypto";
 import { tmpdir } from "node:os";
 import path from "node:path";
 
@@ -48,6 +49,7 @@ const RETIRED_SYNTHETIC_CI_OAUTH_FIXTURE = Object.freeze({
 type EnvSnapshot = Partial<
   Record<
     | "APP_ENV"
+    | "NEXT_PUBLIC_APP_ENV"
     | "VERCEL_ENV"
     | "AUTH_SECRET"
     | "NEXTAUTH_SECRET"
@@ -58,6 +60,20 @@ type EnvSnapshot = Partial<
     | "CI_AUTH_FIXTURE_ACTIVE"
     | "CI_AUTH_FIXTURE_MODE"
     | "CI_AUTH_FIXTURE_LOCAL_TEST"
+    | "CI_AUTH_FIXTURE_NO_REGENERATION"
+    | "CI_AUTH_FIXTURE_PROVIDER_CLIENT_ID_SHA256"
+    | "CI_AUTH_FIXTURE_PROVIDER_CLIENT_SECRET_SHA256"
+    | "CI_AUTH_FIXTURE_SESSION_CLASSIFICATION"
+    | "CI_AUTH_FIXTURE_SESSION_ID"
+    | "CI_AUTH_FIXTURE_SESSION_NONCE"
+    | "CI_AUTH_FIXTURE_CANDIDATE_COMMIT_SHA"
+    | "CI_AUTH_FIXTURE_CANDIDATE_TREE_SHA"
+    | "CERTIFICATION_ENVIRONMENT_STAGE"
+    | "PRODUCTION_ARTIFACT_EVIDENCE"
+    | "PRODUCTION_ARTIFACT_COMMIT_SHA"
+    | "PRODUCTION_CERTIFICATION_ID"
+    | "PRODUCTION_EVIDENCE_CANDIDATE_ID"
+    | "PRODUCTION_EVIDENCE_EXPECTED_TREE_SHA"
     | "NODE_ENV",
     string | undefined
   >
@@ -65,6 +81,7 @@ type EnvSnapshot = Partial<
 
 const ENV_KEYS: Array<keyof EnvSnapshot> = [
   "APP_ENV",
+  "NEXT_PUBLIC_APP_ENV",
   "VERCEL_ENV",
   "AUTH_SECRET",
   "NEXTAUTH_SECRET",
@@ -75,6 +92,20 @@ const ENV_KEYS: Array<keyof EnvSnapshot> = [
   "CI_AUTH_FIXTURE_ACTIVE",
   "CI_AUTH_FIXTURE_MODE",
   "CI_AUTH_FIXTURE_LOCAL_TEST",
+  "CI_AUTH_FIXTURE_NO_REGENERATION",
+  "CI_AUTH_FIXTURE_PROVIDER_CLIENT_ID_SHA256",
+  "CI_AUTH_FIXTURE_PROVIDER_CLIENT_SECRET_SHA256",
+  "CI_AUTH_FIXTURE_SESSION_CLASSIFICATION",
+  "CI_AUTH_FIXTURE_SESSION_ID",
+  "CI_AUTH_FIXTURE_SESSION_NONCE",
+  "CI_AUTH_FIXTURE_CANDIDATE_COMMIT_SHA",
+  "CI_AUTH_FIXTURE_CANDIDATE_TREE_SHA",
+  "CERTIFICATION_ENVIRONMENT_STAGE",
+  "PRODUCTION_ARTIFACT_EVIDENCE",
+  "PRODUCTION_ARTIFACT_COMMIT_SHA",
+  "PRODUCTION_CERTIFICATION_ID",
+  "PRODUCTION_EVIDENCE_CANDIDATE_ID",
+  "PRODUCTION_EVIDENCE_EXPECTED_TREE_SHA",
   "NODE_ENV",
 ];
 
@@ -461,6 +492,77 @@ async function run(): Promise<void> {
       );
       validateFixtureEnvironment();
     }
+  );
+
+  const artifactCommitSha = "b".repeat(40);
+  const artifactTreeSha = "d".repeat(40);
+  const artifactFixtureEnvironment: EnvSnapshot = {
+    APP_ENV: "staging",
+    NEXT_PUBLIC_APP_ENV: "staging",
+    VERCEL_ENV: "preview",
+    NODE_ENV: "production",
+    AUTH_SECRET: "1234567890abcdef",
+    GOOGLE_CLIENT_ID: SYNTHETIC_CI_OAUTH_FIXTURE.googleClientId,
+    GOOGLE_CLIENT_SECRET: SYNTHETIC_CI_OAUTH_FIXTURE.googleClientSecret,
+    CI: "true",
+    GITHUB_ACTIONS: undefined,
+    CI_AUTH_FIXTURE_ACTIVE: "1",
+    CI_AUTH_FIXTURE_LOCAL_TEST: "1",
+    CI_AUTH_FIXTURE_MODE: "1",
+    CI_AUTH_FIXTURE_NO_REGENERATION: "1",
+    CI_AUTH_FIXTURE_PROVIDER_CLIENT_ID_SHA256: createHash("sha256")
+      .update(SYNTHETIC_CI_OAUTH_FIXTURE.googleClientId)
+      .digest("hex"),
+    CI_AUTH_FIXTURE_PROVIDER_CLIENT_SECRET_SHA256: createHash("sha256")
+      .update(SYNTHETIC_CI_OAUTH_FIXTURE.googleClientSecret)
+      .digest("hex"),
+    CI_AUTH_FIXTURE_SESSION_CLASSIFICATION:
+      "PRODUCTION_INELIGIBLE_SYNTHETIC_AUTH",
+    CI_AUTH_FIXTURE_SESSION_ID: "runtime-fixture-session-001",
+    CI_AUTH_FIXTURE_SESSION_NONCE: "runtime-fixture-nonce-001",
+    CI_AUTH_FIXTURE_CANDIDATE_COMMIT_SHA: artifactCommitSha,
+    CI_AUTH_FIXTURE_CANDIDATE_TREE_SHA: artifactTreeSha,
+    CERTIFICATION_ENVIRONMENT_STAGE: "artifact-product-server",
+    PRODUCTION_ARTIFACT_EVIDENCE: "1",
+    PRODUCTION_ARTIFACT_COMMIT_SHA: artifactCommitSha,
+    PRODUCTION_CERTIFICATION_ID: "certification-runtime-fixture-001",
+    PRODUCTION_EVIDENCE_CANDIDATE_ID: "candidate-runtime-fixture-001",
+    PRODUCTION_EVIDENCE_EXPECTED_TREE_SHA: artifactTreeSha,
+  };
+  withEnv(artifactFixtureEnvironment, () => {
+    const fixture = getAuthEnvOrThrow();
+    assert(
+      isSyntheticCiOAuthFixture(fixture),
+      "Exact staging/preview artifact fixture binding must be accepted",
+    );
+  });
+  for (const [name, value] of [
+    ["CI_AUTH_FIXTURE_ACTIVE", undefined],
+    ["CI_AUTH_FIXTURE_CANDIDATE_COMMIT_SHA", "f".repeat(40)],
+    ["CI_AUTH_FIXTURE_SESSION_ID", undefined],
+    ["CI_AUTH_FIXTURE_SESSION_NONCE", undefined],
+    ["CI_AUTH_FIXTURE_PROVIDER_CLIENT_SECRET_SHA256", "0".repeat(64)],
+    ["PRODUCTION_CERTIFICATION_ID", undefined],
+    ["PRODUCTION_EVIDENCE_CANDIDATE_ID", undefined],
+  ] as const) {
+    withEnv(
+      { ...artifactFixtureEnvironment, [name]: value },
+      () => {
+        expectThrow(
+          () => getAuthEnvOrThrow(),
+          "Synthetic CI OAuth fixture",
+        );
+      },
+    );
+  }
+  withEnv(
+    { ...artifactFixtureEnvironment, APP_ENV: "production" },
+    () => {
+      expectThrow(
+        () => getAuthEnvOrThrow(),
+        "restricted to explicit non-production",
+      );
+    },
   );
 
   withEnv(

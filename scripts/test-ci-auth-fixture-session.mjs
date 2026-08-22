@@ -23,7 +23,11 @@ import {
   isolatedAuthFixtureRegressionEnvironment,
 } from "./ci-auth-fixture-regression-environment.mjs";
 import { migrationInventory } from "./production-certification-database-contract.mjs";
-import { projectAuthFixtureSessionForStage } from "./production-certification-real.mjs";
+import {
+  projectAuthFixtureSessionForStage,
+  stageChildProjection,
+} from "./production-certification-real.mjs";
+import { certificationEnvironmentProfile } from "./production-certification-stage-environment.mjs";
 import {
   authPreflightOrchestrationFailurePath,
   runRealAuthPreflight,
@@ -903,6 +907,113 @@ try {
     },
   );
   assert.equal(projected.continuity.noRegenerationProof, "passed");
+  assert.equal(
+    projected.environment.CI_AUTH_FIXTURE_CANDIDATE_COMMIT_SHA,
+    candidateCommitSha,
+  );
+  assert.equal(
+    projected.environment.CI_AUTH_FIXTURE_CANDIDATE_TREE_SHA,
+    candidateTreeSha,
+  );
+  const runtimeProjected = projectAuthFixtureSessionForStage({
+    repositoryRoot,
+    environment: buildParentEnvironment,
+    candidateCommitSha,
+    candidateTreeSha,
+    stage: "runtime-smoke",
+  });
+  assert.deepEqual(runtimeProjected.continuity, projected.continuity);
+  assert.equal(runtimeProjected.environment.CI_AUTH_FIXTURE_ACTIVE, "1");
+  assert.equal(runtimeProjected.environment.CI_AUTH_FIXTURE_LOCAL_TEST, "1");
+  assert.equal(runtimeProjected.environment.CI_AUTH_FIXTURE_MODE, "1");
+  assert.equal(
+    runtimeProjected.environment.CI_AUTH_FIXTURE_SESSION_ID,
+    projected.environment.CI_AUTH_FIXTURE_SESSION_ID,
+  );
+  assert.equal(
+    runtimeProjected.environment.CI_AUTH_FIXTURE_SESSION_NONCE,
+    projected.environment.CI_AUTH_FIXTURE_SESSION_NONCE,
+  );
+  const runtimeProfile = certificationEnvironmentProfile(
+    repositoryRoot,
+    "runtime-smoke",
+  );
+  const runtimeIntegration = stageChildProjection(
+    {
+      repositoryRoot,
+      canonicalRoot: repositoryRoot,
+      environment: {
+        ...buildParentEnvironment,
+        APP_ENV: "staging",
+        NEXT_PUBLIC_APP_ENV: "staging",
+        NODE_ENV: "production",
+        VERCEL_ENV: "preview",
+        DATABASE_URL:
+          "postgresql://fixture:fixture@127.0.0.1:5432/runtime_fixture",
+        CERTIFICATION_QUALIFICATION_MODE: "1",
+      },
+      state: {
+        executionClass: "deterministic-simulation",
+        candidate: {
+          commitSha: candidateCommitSha,
+          treeSha: candidateTreeSha,
+        },
+      },
+    },
+    {
+      stage: "runtime-smoke",
+      profileId: "runtime-smoke",
+      stageInputs: {
+        CERTIFICATION_ENVIRONMENT_STAGE: "runtime-smoke",
+        CERTIFICATION_RUNTIME_STAGE_ATTEMPT: "1",
+        CERTIFICATION_RUNTIME_START_MARKER_PATH: "/external/start.json",
+        CERTIFICATION_STAGE_ENVIRONMENT_CONTRACT_SHA256:
+          runtimeProfile.contract.sha256,
+        CERTIFICATION_STAGE_ENVIRONMENT_PROFILE_ID: runtimeProfile.id,
+        CERTIFICATION_STAGE_ENVIRONMENT_PROFILE_SHA256: runtimeProfile.sha256,
+        PLAYWRIGHT_EXTERNAL_EVIDENCE_ROOT: "/external",
+        PLAYWRIGHT_JSON_OUTPUT_FILE: "/external/report.json",
+        PLAYWRIGHT_USE_PRODUCTION_SERVER: "1",
+        PRODUCTION_CERTIFICATION_ID: "certification-runtime-projection-001",
+        PRODUCTION_EVIDENCE_CANDIDATE_ID: "candidate-runtime-projection-001",
+        PRODUCTION_EVIDENCE_EXPECTED_ARTIFACT_SHA256: "a".repeat(64),
+        PRODUCTION_EVIDENCE_EXPECTED_BUILD_ID: "runtime-build-001",
+        PRODUCTION_EVIDENCE_EXPECTED_COMMIT_SHA: candidateCommitSha,
+        PRODUCTION_EVIDENCE_EXPECTED_JOURNAL_NONCE:
+          "123e4567-e89b-42d3-a456-426614174001",
+        PRODUCTION_EVIDENCE_EXPECTED_JOURNAL_SHA256: "b".repeat(64),
+        PRODUCTION_EVIDENCE_EXPECTED_MANIFEST_SHA256: "c".repeat(64),
+        PRODUCTION_EVIDENCE_EXPECTED_TREE_SHA: candidateTreeSha,
+        PRODUCTION_EVIDENCE_JOURNAL_PATH:
+          ".local/production-artifact-evidence/semantic-event-journal.json",
+        PRODUCTION_EVIDENCE_MANIFEST:
+          ".local/production-artifact-evidence/manifest.json",
+        RUNTIME_SMOKE_PHASE_TIMINGS_PATH: "/external/timings.json",
+      },
+    },
+  );
+  assert.deepEqual(runtimeIntegration.authFixtureContinuity, projected.continuity);
+  for (const name of [
+    "CI_AUTH_FIXTURE_ACTIVE",
+    "CI_AUTH_FIXTURE_CANDIDATE_COMMIT_SHA",
+    "CI_AUTH_FIXTURE_CANDIDATE_TREE_SHA",
+    "CI_AUTH_FIXTURE_LOCAL_TEST",
+    "CI_AUTH_FIXTURE_MODE",
+    "CI_AUTH_FIXTURE_NO_REGENERATION",
+    "CI_AUTH_FIXTURE_PROVIDER_CLIENT_ID_SHA256",
+    "CI_AUTH_FIXTURE_PROVIDER_CLIENT_SECRET_SHA256",
+    "CI_AUTH_FIXTURE_SESSION_CLASSIFICATION",
+    "CI_AUTH_FIXTURE_SESSION_ID",
+    "CI_AUTH_FIXTURE_SESSION_NONCE",
+    "GOOGLE_CLIENT_ID",
+    "GOOGLE_CLIENT_SECRET",
+  ]) {
+    assert.equal(
+      runtimeIntegration.environment[name],
+      runtimeProjected.environment[name],
+      `${name} must survive the actual runtime-smoke stage integration`,
+    );
+  }
   assert.throws(
     () =>
       projectAuthFixtureSessionForStage({

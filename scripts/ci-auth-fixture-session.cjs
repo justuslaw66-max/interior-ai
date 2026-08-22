@@ -528,10 +528,14 @@ function projectedFixtureEnvironment(consumed) {
     [FIXTURE_CLIENT_ID_SHA256_ENV]: digests.googleClientIdSha256,
     [FIXTURE_CLIENT_SECRET_SHA256_ENV]: digests.googleClientSecretSha256,
     [FIXTURE_NO_REGENERATION_ENV]: "1",
+    CI_AUTH_FIXTURE_CANDIDATE_COMMIT_SHA:
+      consumed.manifest.candidate.commitSha,
+    CI_AUTH_FIXTURE_CANDIDATE_TREE_SHA:
+      consumed.manifest.candidate.treeSha,
   });
 }
 
-function validateProjectedFixtureEnvironment(environment) {
+function validateProjectedFixtureEnvironment(environment, expectedCandidate = null) {
   const required = [
     "GOOGLE_CLIENT_ID",
     "GOOGLE_CLIENT_SECRET",
@@ -539,9 +543,15 @@ function validateProjectedFixtureEnvironment(environment) {
     FIXTURE_SESSION_NONCE_ENV,
     FIXTURE_CLIENT_ID_SHA256_ENV,
     FIXTURE_CLIENT_SECRET_SHA256_ENV,
+    ...(expectedCandidate
+      ? [
+          "CI_AUTH_FIXTURE_CANDIDATE_COMMIT_SHA",
+          "CI_AUTH_FIXTURE_CANDIDATE_TREE_SHA",
+        ]
+      : []),
   ];
   if (required.some((name) => !environment?.[name])) {
-    throw new Error("Build auth fixture continuity projection is incomplete");
+    throw new Error("Auth fixture continuity projection is incomplete");
   }
   if (
     environment.CI_AUTH_FIXTURE_ACTIVE !== "1" ||
@@ -551,6 +561,7 @@ function validateProjectedFixtureEnvironment(environment) {
     ) ||
     environment[FIXTURE_SESSION_CLASSIFICATION_ENV] !==
       FIXTURE_SESSION_CLASSIFICATION ||
+    environment.CI_AUTH_FIXTURE_MODE !== "1" ||
     environment[FIXTURE_NO_REGENERATION_ENV] !== "1" ||
     sha256Bytes(environment.GOOGLE_CLIENT_ID) !==
       environment[FIXTURE_CLIENT_ID_SHA256_ENV] ||
@@ -561,7 +572,16 @@ function validateProjectedFixtureEnvironment(environment) {
       environment.GOOGLE_CLIENT_SECRET,
     )
   ) {
-    throw new Error("Build auth fixture continuity digest or classification is mismatched");
+    throw new Error("Auth fixture continuity digest or classification is mismatched");
+  }
+  if (
+    expectedCandidate &&
+    (environment.CI_AUTH_FIXTURE_CANDIDATE_COMMIT_SHA !==
+      expectedCandidate.commitSha ||
+      environment.CI_AUTH_FIXTURE_CANDIDATE_TREE_SHA !==
+        expectedCandidate.treeSha)
+  ) {
+    throw new Error("Auth fixture continuity belongs to another candidate");
   }
   return Object.freeze({
     schema: FIXTURE_SESSION_SCHEMA,

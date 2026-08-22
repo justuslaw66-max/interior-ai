@@ -1,3 +1,5 @@
+import { createHash } from "node:crypto";
+
 import { getApplicationEnvironment } from "./config";
 
 type RequiredAuthEnvKey = "GOOGLE_CLIENT_ID" | "GOOGLE_CLIENT_SECRET";
@@ -148,58 +150,124 @@ function validateAuthShapeOrThrow(authEnv: AuthEnv): void {
   }
 }
 
+function rejectRetiredSyntheticFixtureOrThrow(authEnv: AuthEnv): void {
+  const retiredFixture = [
+    /^[0-9]+-gate-a3-ci\.apps\.googleusercontent\.com$/i.test(
+      authEnv.googleClientId,
+    ),
+    /^GOCSPX[-_]gate-a3-ci-placeholder$/.test(authEnv.googleClientSecret),
+  ].some(Boolean);
+  if (!retiredFixture) return;
+  throw new AuthEnvironmentValidationError(
+    "RETIRED_SYNTHETIC_AUTH_FIXTURE_REJECTED",
+    "synthetic-fixture-policy",
+    "Retired synthetic CI OAuth fixture values are rejected in every environment",
+  );
+}
+
+function usesSyntheticCiFixtureShape(authEnv: AuthEnv): boolean {
+  // Match the runtime-generated, inert fixture by structure without embedding
+  // either complete value in the application graph or production artifact.
+  return [
+    /^[0-9]+-gate-a3-ci-([a-f0-9]{32})\.apps\.googleusercontent\.com$/i.test(
+      authEnv.googleClientId,
+    ),
+    /^GOCSPX[-_]gate-a3-ci-([a-f0-9]{32})$/i.test(
+      authEnv.googleClientSecret,
+    ),
+  ].some(Boolean);
+}
+
+function validateSyntheticFixtureBaseScopeOrThrow(
+  authEnv: AuthEnv,
+  environment: NodeJS.ProcessEnv,
+): void {
+  const githubCi = environment.CI === "true" && environment.GITHUB_ACTIONS === "true";
+  const applicationEnvironment = getApplicationEnvironment(environment);
+  const explicitlyNonProduction =
+    applicationEnvironment === "development" || applicationEnvironment === "staging";
+  const accepted = [
+    isSyntheticCiOAuthFixture(authEnv),
+    environment.CI_AUTH_FIXTURE_ACTIVE === "1",
+    githubCi || environment.CI_AUTH_FIXTURE_LOCAL_TEST === "1",
+    explicitlyNonProduction,
+  ].every(Boolean);
+  if (accepted) return;
+  throw new AuthEnvironmentValidationError(
+    applicationEnvironment === "production"
+      ? "SYNTHETIC_AUTH_FIXTURE_PRODUCTION_MISUSE_REJECTED"
+      : "SYNTHETIC_AUTH_FIXTURE_SCOPE_REJECTED",
+    applicationEnvironment === "production"
+      ? "production-activation-prohibited"
+      : "synthetic-fixture-scope",
+    "[auth] Synthetic CI OAuth fixture is restricted to explicit non-production CI/test execution",
+  );
+}
+
+function validateArtifactProductServerFixtureBindingOrThrow(
+  authEnv: AuthEnv,
+  environment: NodeJS.ProcessEnv,
+): void {
+  const artifactProductServer =
+    environment.CERTIFICATION_ENVIRONMENT_STAGE === "artifact-product-server" ||
+    environment.PRODUCTION_ARTIFACT_EVIDENCE === "1";
+  if (!artifactProductServer) return;
+
+  const sha256 = (value: string) =>
+    createHash("sha256").update(value).digest("hex");
+  const exactArtifactBinding = [
+    environment.CERTIFICATION_ENVIRONMENT_STAGE === "artifact-product-server",
+    environment.PRODUCTION_ARTIFACT_EVIDENCE === "1",
+    Boolean(environment.PRODUCTION_CERTIFICATION_ID?.trim()),
+    Boolean(environment.PRODUCTION_EVIDENCE_CANDIDATE_ID?.trim()),
+    environment.APP_ENV === "staging",
+    environment.NEXT_PUBLIC_APP_ENV === "staging",
+    environment.NODE_ENV === "production",
+    environment.VERCEL_ENV === "preview",
+    environment.CI_AUTH_FIXTURE_ACTIVE === "1",
+    environment.CI_AUTH_FIXTURE_LOCAL_TEST === "1",
+    environment.CI_AUTH_FIXTURE_MODE === "1",
+    environment.CI_AUTH_FIXTURE_NO_REGENERATION === "1",
+    environment.CI_AUTH_FIXTURE_SESSION_CLASSIFICATION ===
+      "PRODUCTION_INELIGIBLE_SYNTHETIC_AUTH",
+    /^[A-Za-z0-9][A-Za-z0-9._:-]{7,127}$/.test(
+      environment.CI_AUTH_FIXTURE_SESSION_ID ?? "",
+    ),
+    /^[A-Za-z0-9][A-Za-z0-9._:-]{7,127}$/.test(
+      environment.CI_AUTH_FIXTURE_SESSION_NONCE ?? "",
+    ),
+    environment.CI_AUTH_FIXTURE_PROVIDER_CLIENT_ID_SHA256 ===
+      sha256(authEnv.googleClientId),
+    environment.CI_AUTH_FIXTURE_PROVIDER_CLIENT_SECRET_SHA256 ===
+      sha256(authEnv.googleClientSecret),
+    /^[a-f0-9]{40}$/.test(
+      environment.CI_AUTH_FIXTURE_CANDIDATE_COMMIT_SHA ?? "",
+    ),
+    /^[a-f0-9]{40}$/.test(
+      environment.CI_AUTH_FIXTURE_CANDIDATE_TREE_SHA ?? "",
+    ),
+    environment.CI_AUTH_FIXTURE_CANDIDATE_COMMIT_SHA ===
+      environment.PRODUCTION_ARTIFACT_COMMIT_SHA,
+    environment.CI_AUTH_FIXTURE_CANDIDATE_TREE_SHA ===
+      environment.PRODUCTION_EVIDENCE_EXPECTED_TREE_SHA,
+  ].every(Boolean);
+  if (!exactArtifactBinding) {
+    throw new AuthEnvironmentValidationError(
+      "SYNTHETIC_AUTH_FIXTURE_SCOPE_REJECTED",
+      "synthetic-fixture-artifact-binding",
+      "[auth] Synthetic CI OAuth fixture is not bound to the staging artifact runtime",
+    );
+  }
+}
+
 function validateSyntheticCiFixtureScopeOrThrow(
   authEnv: AuthEnv,
   environment: NodeJS.ProcessEnv,
 ): void {
-  const retiredSyntheticClientId =
-    /^[0-9]+-gate-a3-ci\.apps\.googleusercontent\.com$/i.test(authEnv.googleClientId);
-  const retiredSyntheticClientSecret =
-    /^GOCSPX[-_]gate-a3-ci-placeholder$/.test(authEnv.googleClientSecret);
-  if (retiredSyntheticClientId || retiredSyntheticClientSecret) {
-    throw new AuthEnvironmentValidationError(
-      "RETIRED_SYNTHETIC_AUTH_FIXTURE_REJECTED",
-      "synthetic-fixture-policy",
-      "Retired synthetic CI OAuth fixture values are rejected in every environment",
-    );
-  }
-
-  // Match the runtime-generated, inert fixture by structure without embedding
-  // either complete value in the application graph or production artifact.
-  const syntheticClientId = authEnv.googleClientId.match(
-    /^[0-9]+-gate-a3-ci-([a-f0-9]{32})\.apps\.googleusercontent\.com$/i
-  );
-  const syntheticClientSecret = authEnv.googleClientSecret.match(
-    /^GOCSPX[-_]gate-a3-ci-([a-f0-9]{32})$/i
-  );
-  const usesSyntheticFixture =
-    syntheticClientId || syntheticClientSecret;
-  if (!usesSyntheticFixture) return;
-
-  const exactFixture = isSyntheticCiOAuthFixture(authEnv);
-  const explicitlyEnabled = environment.CI_AUTH_FIXTURE_ACTIVE === "1";
-  const githubCi = environment.CI === "true" && environment.GITHUB_ACTIONS === "true";
-  const localPreflight = environment.CI_AUTH_FIXTURE_LOCAL_TEST === "1";
-  const applicationEnvironment = getApplicationEnvironment(environment);
-  const explicitlyNonProduction =
-    applicationEnvironment === "development" || applicationEnvironment === "staging";
-
-  if (
-    !exactFixture ||
-    !explicitlyEnabled ||
-    (!githubCi && !localPreflight) ||
-    !explicitlyNonProduction
-  ) {
-    throw new AuthEnvironmentValidationError(
-      applicationEnvironment === "production"
-        ? "SYNTHETIC_AUTH_FIXTURE_PRODUCTION_MISUSE_REJECTED"
-        : "SYNTHETIC_AUTH_FIXTURE_SCOPE_REJECTED",
-      applicationEnvironment === "production"
-        ? "production-activation-prohibited"
-        : "synthetic-fixture-scope",
-      "[auth] Synthetic CI OAuth fixture is restricted to explicit non-production CI/test execution"
-    );
-  }
+  rejectRetiredSyntheticFixtureOrThrow(authEnv);
+  if (!usesSyntheticCiFixtureShape(authEnv)) return;
+  validateSyntheticFixtureBaseScopeOrThrow(authEnv, environment);
+  validateArtifactProductServerFixtureBindingOrThrow(authEnv, environment);
 }
 
 export function getAuthEnvOrThrow(environment: NodeJS.ProcessEnv = process.env): AuthEnv {

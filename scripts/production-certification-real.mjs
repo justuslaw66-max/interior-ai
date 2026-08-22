@@ -639,6 +639,7 @@ export function projectAuthFixtureSessionForStage({
   environment,
   candidateCommitSha,
   candidateTreeSha,
+  stage = "build",
 }) {
   for (const [name, expected] of [
     ["CI_AUTH_FIXTURE_CANDIDATE_COMMIT_SHA", candidateCommitSha],
@@ -646,7 +647,7 @@ export function projectAuthFixtureSessionForStage({
   ]) {
     if (environment[name] !== undefined && environment[name] !== expected) {
       throw new Error(
-        "Build auth fixture session has an ambient candidate override",
+        `${stage} auth fixture session has an ambient candidate override`,
       );
     }
   }
@@ -658,23 +659,26 @@ export function projectAuthFixtureSessionForStage({
       CI_AUTH_FIXTURE_CANDIDATE_TREE_SHA: candidateTreeSha,
     },
     requireAmbientProviderValues: false,
-    sourceCommand: "certification:build",
-    sourceMode: "build-parent-projection",
+    sourceCommand: `certification:${stage}`,
+    sourceMode: `${stage}-parent-projection`,
   });
   if (
     consumed.manifest.candidate.commitSha !== candidateCommitSha ||
     consumed.manifest.candidate.treeSha !== candidateTreeSha
   ) {
-    throw new Error("Build auth fixture session belongs to another candidate");
+    throw new Error(`${stage} auth fixture session belongs to another candidate`);
   }
   const projected = authFixtureSession.projectedFixtureEnvironment(consumed);
   return Object.freeze({
     environment: projected,
-    continuity: authFixtureSession.validateProjectedFixtureEnvironment(projected),
+    continuity: authFixtureSession.validateProjectedFixtureEnvironment(projected, {
+      commitSha: candidateCommitSha,
+      treeSha: candidateTreeSha,
+    }),
   });
 }
 
-function stageChildProjection(
+export function stageChildProjection(
   context,
   { stage, profileId = stage, stageInputs, baseEnvironment = context.environment },
 ) {
@@ -682,8 +686,9 @@ function stageChildProjection(
     context.repositoryRoot,
     profileId,
   );
+  const fixtureProjectionStage = new Set(["build", "runtime-smoke"]).has(stage);
   const hasFixtureSession =
-    stage === "build" &&
+    fixtureProjectionStage &&
     Boolean(context.environment[authFixtureSession.FIXTURE_SESSION_ROOT_ENV]);
   let authProjection = null;
   if (hasFixtureSession) {
@@ -692,12 +697,15 @@ function stageChildProjection(
       environment: context.environment,
       candidateCommitSha: context.state.candidate.commitSha,
       candidateTreeSha: context.state.candidate.treeSha,
+      stage,
     });
   } else if (
-    stage === "build" &&
+    fixtureProjectionStage &&
     context.state.executionClass === "real-candidate"
   ) {
-    throw new Error("Real certification build requires the canonical auth fixture session");
+    throw new Error(
+      `Real certification ${stage} requires the canonical auth fixture session`,
+    );
   }
   const ownsDatabaseCapability =
     profile.childVisibleVariables.includes("DATABASE_URL");
@@ -759,7 +767,6 @@ function stageChildProjection(
         : {}),
     },
   });
-  if (stage !== "build") return projection;
   if (!authProjection) return projection;
   return Object.freeze({
     ...projection,

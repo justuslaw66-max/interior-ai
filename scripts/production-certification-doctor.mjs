@@ -771,7 +771,15 @@ export function validateAuthResultContracts(repositoryRoot) {
       "projectAuthFixtureSessionForStage",
     ) ||
     !certificationRunnerSource.includes(
-      "Build auth fixture session belongs to another candidate",
+      "auth fixture session belongs to another candidate",
+    ) ||
+    !certificationRunnerSource.includes(
+      'new Set(["build", "runtime-smoke"])',
+    ) ||
+    !regressionMatrix.cases.some(
+      (entry) =>
+        entry.id === 39 &&
+        entry.defect === "runtime-smoke-auth-fixture-continuity-projection",
     ) ||
     !artifactEvidenceSource.includes("authFixtureBuildContinuity") ||
     !artifactEvidenceSource.includes(
@@ -1798,6 +1806,7 @@ function validateStageEnvironmentCapabilities(repositoryRoot, environment) {
   const authPreflightProfile = contract.profiles["auth-session-preflight"];
   const buildProfile = contract.profiles.build;
   const runtimeProfile = contract.profiles["runtime-smoke"];
+  const artifactProductProfile = contract.profiles["artifact-product-server"];
   const phase8Profile = contract.profiles.phase8;
   const productionBrowser = contract.profiles["production-browser-owner"];
   const developmentBrowser = contract.profiles["development-browser-owner"];
@@ -1824,6 +1833,21 @@ function validateStageEnvironmentCapabilities(repositoryRoot, environment) {
   ];
   const expectedBuildAuthVariables = [
     "CI_AUTH_FIXTURE_ACTIVE",
+    "CI_AUTH_FIXTURE_LOCAL_TEST",
+    "CI_AUTH_FIXTURE_MODE",
+    "CI_AUTH_FIXTURE_NO_REGENERATION",
+    "CI_AUTH_FIXTURE_PROVIDER_CLIENT_ID_SHA256",
+    "CI_AUTH_FIXTURE_PROVIDER_CLIENT_SECRET_SHA256",
+    "CI_AUTH_FIXTURE_SESSION_CLASSIFICATION",
+    "CI_AUTH_FIXTURE_SESSION_ID",
+    "CI_AUTH_FIXTURE_SESSION_NONCE",
+    "GOOGLE_CLIENT_ID",
+    "GOOGLE_CLIENT_SECRET",
+  ];
+  const expectedRuntimeAuthVariables = [
+    "CI_AUTH_FIXTURE_ACTIVE",
+    "CI_AUTH_FIXTURE_CANDIDATE_COMMIT_SHA",
+    "CI_AUTH_FIXTURE_CANDIDATE_TREE_SHA",
     "CI_AUTH_FIXTURE_LOCAL_TEST",
     "CI_AUTH_FIXTURE_MODE",
     "CI_AUTH_FIXTURE_NO_REGENERATION",
@@ -2027,6 +2051,26 @@ function validateStageEnvironmentCapabilities(repositoryRoot, environment) {
         !buildProfile?.optionalVariables.includes(name) ||
         buildProfile?.requiredVariables.includes(name),
     ) ||
+    expectedRuntimeAuthVariables.some(
+      (name) =>
+        !runtimeProfile?.childVisibleVariables.includes(name) ||
+        !artifactProductProfile?.childVisibleVariables.includes(name) ||
+        !artifactProductProfile?.requiredVariables.includes(name) ||
+        (name.startsWith("CI_AUTH_") &&
+          !runtimeProfile?.optionalVariables.includes(name)),
+    ) ||
+    [runtimeProfile, artifactProductProfile].some((profile) =>
+      profile?.childVisibleVariables.includes("CI_AUTH_FIXTURE_SESSION_ROOT"),
+    ) ||
+    artifactProductProfile?.fixedValues.CI_AUTH_FIXTURE_ACTIVE !== "1" ||
+    artifactProductProfile?.fixedValues.CI_AUTH_FIXTURE_LOCAL_TEST !== "1" ||
+    artifactProductProfile?.fixedValues.CI_AUTH_FIXTURE_MODE !== "1" ||
+    artifactProductProfile?.fixedValues.CI_AUTH_FIXTURE_NO_REGENERATION !== "1" ||
+    artifactProductProfile?.fixedValues.CI_AUTH_FIXTURE_SESSION_CLASSIFICATION !==
+      "PRODUCTION_INELIGIBLE_SYNTHETIC_AUTH" ||
+    !artifactProductProfile?.requiredVariables.includes(
+      "PRODUCTION_EVIDENCE_EXPECTED_TREE_SHA",
+    ) ||
     JSON.stringify(
       Object.entries(contract.profiles)
         .filter(([, profile]) =>
@@ -2156,6 +2200,10 @@ function validateStageEnvironmentCapabilities(repositoryRoot, environment) {
     !regressionMatrix.cases.some(
       (entry) =>
         entry.defect === "auth-fixture-session-continuity-owner-missing",
+    ) ||
+    !regressionMatrix.cases.some(
+      (entry) =>
+        entry.defect === "runtime-smoke-auth-fixture-continuity-projection",
     ) ||
     regressionMatrix.authPreflightDatabaseCases?.length !== 38 ||
     !/externalVisionEnabled, false/.test(floorPlanLocalOcrTest) ||
