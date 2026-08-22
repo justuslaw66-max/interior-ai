@@ -59,7 +59,10 @@ import {
   parseCertificationChildJson,
   persistManagedCertificationStageFailure,
 } from "./production-certification-real.mjs";
-import { createCertificationAbortCleanupRequest } from "./production-certification.mjs";
+import {
+  createCertificationAbortCleanupRequest,
+  createSerializedTerminalLifecycle,
+} from "./production-certification.mjs";
 import {
   measureFinalContinuity,
   rootEvidenceName,
@@ -237,7 +240,9 @@ function stateFixture() {
 {
   const contract = stageEnvironmentContract(repositoryRoot);
   assert.equal(contract.value.schema, "interior-ai.production-certification-stage-environment.v2");
-  assert.equal(Object.keys(contract.variables).length, 112);
+  assert.equal(Object.keys(contract.variables).length, 114);
+  assert.equal(contract.variables.GOOGLE_CLIENT_ID.secret, true);
+  assert.equal(contract.variables.GOOGLE_CLIENT_SECRET.secret, true);
   assert.equal(Object.keys(contract.applicationFeatureVariables).length, 5);
   assert.equal(Object.keys(contract.profiles).length, 22);
   assert.deepEqual(
@@ -491,6 +496,8 @@ function stateFixture() {
     PRODUCTION_EVIDENCE_MANIFEST:
       ".local/production-artifact-evidence/manifest.json",
     RUNTIME_SMOKE_PHASE_TIMINGS_PATH: "/external/timings.json",
+    GOOGLE_CLIENT_ID: "synthetic-provider-client-id",
+    GOOGLE_CLIENT_SECRET: "synthetic-provider-secondary-value",
   };
   const runtime = projectCertificationChildEnvironment({
     repositoryRoot,
@@ -597,6 +604,20 @@ function stateFixture() {
     /canonical grammar/,
   );
   coveredRegressionIds.add(3);
+}
+
+{
+  const cleanupReceipt = { currentState: "abort-absence-verified" };
+  const terminal = createSerializedTerminalLifecycle({
+    runAbortCleanup: async () => cleanupReceipt,
+  });
+  const commandFailure = new Error("precondition fixture");
+  const result = await terminal.execute(async () => {
+    throw commandFailure;
+  });
+  assert.equal(result.commandError, commandFailure);
+  assert.equal(result.cleanupError, null);
+  assert.equal(result.cleanupResult, cleanupReceipt);
 }
 
 {
@@ -1365,6 +1386,8 @@ function stateFixture() {
         CERTIFICATION_QUALIFICATION_MODE: "1",
         DATABASE_URL:
           "postgresql://fixture:a6e2c8f4b9d10573a6e2c8f4b9d10573@127.0.0.1:5432/fixture",
+        GOOGLE_CLIENT_ID: "synthetic-provider-client-id",
+        GOOGLE_CLIENT_SECRET: "synthetic-provider-secondary-value",
         REQUIRED_TEST_SOURCE_COMMIT_SHA: "0".repeat(40),
         REQUIRED_TEST_SOURCE_TREE_SHA: "1".repeat(40),
       },

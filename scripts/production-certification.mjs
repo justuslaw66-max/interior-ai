@@ -374,6 +374,7 @@ export function createSerializedTerminalLifecycle({ runAbortCleanup }) {
     async execute(runCommand) {
       let commandError = null;
       let cleanupError = null;
+      let cleanupResult = null;
       let commandResult = null;
       try {
         commandResult = await runCommand();
@@ -382,12 +383,18 @@ export function createSerializedTerminalLifecycle({ runAbortCleanup }) {
       }
       if (terminalSignal || commandError) {
         try {
-          await runAbortCleanup({ terminalSignal, commandError });
+          cleanupResult = await runAbortCleanup({ terminalSignal, commandError });
         } catch (error) {
           cleanupError = error;
         }
       }
-      return { terminalSignal, commandError, cleanupError, commandResult };
+      return {
+        terminalSignal,
+        commandError,
+        cleanupError,
+        cleanupResult,
+        commandResult,
+      };
     },
   };
 }
@@ -534,7 +541,7 @@ if (import.meta.url === new URL(process.argv[1], "file:").href) {
         terminalSignal,
         commandError,
       });
-      await runDatabaseAbortCleanup({
+      return runDatabaseAbortCleanup({
         environment: cleanup.environment,
         originalFailure: cleanup.originalFailure,
       });
@@ -547,6 +554,7 @@ if (import.meta.url === new URL(process.argv[1], "file:").href) {
     terminalSignal,
     commandError,
     cleanupError,
+    cleanupResult,
     commandResult,
   }) => {
     if (cleanupError) {
@@ -568,6 +576,8 @@ if (import.meta.url === new URL(process.argv[1], "file:").href) {
           invocation: stageResultInvocation,
           commandResult,
           commandError,
+          cleanupError,
+          cleanupResult,
           terminalSignal,
           wrapperExitCode: process.exitCode ?? 0,
           evidenceRoot: process.env.CERTIFICATION_EVIDENCE_ROOT,

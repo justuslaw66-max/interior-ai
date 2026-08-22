@@ -1,5 +1,23 @@
 # Production-equivalent artifact evidence
 
+## Archive consumption of persisted build-auth continuity — 2026-08-22
+
+Archive verification does not require a live auth capability. Its authority is
+the safe build-auth continuity already persisted in the production manifest:
+session identity, classification, provider digests, no-regeneration proof, and
+candidate binding, never raw provider values or private transport paths. The
+validator now compares that record with a projected environment only when the
+environment explicitly identifies an actual bound build stage. A sealed
+archive wrapper parent is not a build child and is not used as historical build
+evidence.
+
+The stage environment owner classifies both raw provider variables as secret
+and non-portable. The archive-verifier and archive-preflight profiles exclude
+them, and focused regression coverage proves a fully populated private parent
+transport is stripped before archive-child dispatch while persisted continuity
+still validates. Altered continuity, foreign session identity, or mismatched
+candidate manifest evidence continues to fail closed.
+
 ## Runtime report re-entry ownership correction — 2026-08-18
 
 The preserved rehearsal ending `20260818T075947Z-5755043309d7` did not execute

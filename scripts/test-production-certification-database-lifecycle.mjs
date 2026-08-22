@@ -80,6 +80,7 @@ class FakeDatabaseAdapter {
     createFailure = null,
     createFailureOutcome = "ambiguous",
     failFirstPostDropInspection = false,
+    inspectionFailure = null,
     releaseFailure = null,
     foreignStageRole = false,
     stageRoleCollisionOnCreate = false,
@@ -96,6 +97,7 @@ class FakeDatabaseAdapter {
     this.createFailureOutcome = createFailureOutcome;
     this.releaseFailure = releaseFailure;
     this.failFirstPostDropInspection = failFirstPostDropInspection;
+    this.inspectionFailure = inspectionFailure;
     this.stageRole = null;
     this.foreignStageRole = foreignStageRole;
     this.stageRoleCollisionOnCreate = stageRoleCollisionOnCreate;
@@ -104,6 +106,11 @@ class FakeDatabaseAdapter {
   }
 
   async inspectAdmin() {
+    if (this.inspectionFailure) {
+      const failure = this.inspectionFailure;
+      this.inspectionFailure = null;
+      throw new Error(failure);
+    }
     if (this.dropped && this.failFirstPostDropInspection) {
       this.failFirstPostDropInspection = false;
       throw new Error("post-drop absence inspection failed once");
@@ -1258,6 +1265,83 @@ async function deterministicContractCoverage() {
     );
   } finally {
     rmSync(wrapperCleanupFixture.root, { recursive: true, force: true });
+  }
+
+  const deniedCleanupFixture = fixture({
+    id: "abort-first-inspection-attribution",
+  });
+  const deniedCleanupAdapter = new FakeDatabaseAdapter();
+  try {
+    await planCertificationDatabase({
+      repositoryRoot,
+      environment: deniedCleanupFixture.environment,
+      adapter: deniedCleanupAdapter,
+      nonce: "b".repeat(32),
+      qualificationFixture: true,
+    });
+    await provisionCertificationDatabase({
+      repositoryRoot,
+      environment: deniedCleanupFixture.environment,
+      adapter: deniedCleanupAdapter,
+    });
+    await verifyInitialCertificationDatabase({
+      repositoryRoot,
+      environment: deniedCleanupFixture.environment,
+      adapter: deniedCleanupAdapter,
+    });
+    deniedCleanupAdapter.inspectionFailure =
+      "connect EPERM 127.0.0.1:5432 - Local (0.0.0.0:0)";
+    await assert.rejects(
+      abortCertificationDatabase({
+        repositoryRoot,
+        environment: deniedCleanupFixture.environment,
+        adapter: deniedCleanupAdapter,
+        originalFailure: {
+          classification: "SOURCE_CONTRACT_FAILURE",
+          consumedSubstantiveGate: false,
+          stage: "archive-preflight",
+          attempt: null,
+          failedStateSha256: null,
+          evidenceReferences: {},
+        },
+      }),
+      /connect EPERM/,
+    );
+    const denied = readCertificationDatabaseLifecycle({
+      repositoryRoot,
+      environment: deniedCleanupFixture.environment,
+    });
+    assert.equal(denied.evidence.currentState, "failed");
+    assert.deepEqual(denied.evidence.failure, {
+      mode: "abort-cleanup",
+      classification: "SOURCE_CONTRACT_FAILURE",
+      originalStage: "archive-preflight",
+      attempt: null,
+      consumedSubstantiveGate: false,
+      failedStateSha256: null,
+      evidenceReferences: {},
+      reason: "original certification failure retained",
+      at: denied.evidence.failure.at,
+    });
+    assert.equal(
+      denied.evidence.cleanupFailure.classification,
+      "DATABASE_LIFECYCLE_FAILURE",
+    );
+    assert.equal(denied.evidence.cleanupFailure.originalStage, null);
+    assert.match(denied.evidence.cleanupFailure.reason, /connect EPERM/);
+    const recovered = await abortCertificationDatabase({
+      repositoryRoot,
+      environment: deniedCleanupFixture.environment,
+      adapter: deniedCleanupAdapter,
+    });
+    assert.equal(recovered.evidence.currentState, "abort-absence-verified");
+    assert.equal(
+      recovered.evidence.failure.originalStage,
+      "archive-preflight",
+    );
+    assert.equal(recovered.evidence.cleanup.failedRunRehabilitated, false);
+  } finally {
+    rmSync(deniedCleanupFixture.root, { recursive: true, force: true });
   }
 
   const checkpointFixture = fixture({ id: "abort-checkpoint" });

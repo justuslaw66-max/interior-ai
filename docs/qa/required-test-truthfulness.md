@@ -49,7 +49,7 @@ sources**. The risk-triggered `script-tests` inventory is **273** paths with
 path-set SHA-256
 `2e66faace4df8c8edf0580e16c606a77734e5c89129c2d2a792ff226d201f3ab`.
 
-The required contribution is the executable 24-case framing/state/evidence
+The required contribution is the executable 25-case framing/state/evidence
 matrix. The committed qualifier invokes it directly and through the existing
 production-artifact owner, then runs deterministic simulation using the real
 source-validation wrapper/consumer. Auth-result, database lifecycle,

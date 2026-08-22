@@ -1,5 +1,24 @@
 # Production certification database lifecycle v1
 
+## Initial abort-inspection attribution correction — 2026-08-22
+
+The retained archive-preflight attempt remains failed and unchanged. Its first
+automatic-abort inspection was denied before the previous implementation had
+checkpointed the initiating archive-preflight failure, so the portable failure
+collapsed to generic `DATABASE_LIFECYCLE_FAILURE` attribution. That is a
+committed `AUTOMATIC_ABORT_FAILURE_ATTRIBUTION_DEFECT`; cleanup success after
+the stop is not certification success and does not rehabilitate the attempt.
+
+`abortCertificationDatabase` now persists the original stage, attempt,
+classification, consumed-gate bit, and failed-state binding before the first
+cleanup inspection. Inspection or cleanup denial is retained as a separate
+cleanup failure classification. The wrapper passes the complete automatic
+cleanup outcome into the canonical stage-result owner, which verifies the
+physical lifecycle descriptor and permits a precondition state transition only
+when the original failure and cleanup outcome are mutually consistent. A later
+authorized retry may prove physical database absence, but it cannot rewrite the
+original failed result.
+
 ## Existing auth fixture consumed by the preflight-only lifecycle
 
 `certification:auth-session-preflight` now requires the canonical external

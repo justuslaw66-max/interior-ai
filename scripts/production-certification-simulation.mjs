@@ -3298,6 +3298,8 @@ export async function runProductionCertificationSimulation({
           CERTIFICATION_EXPECTED_COMMIT_SHA: identity.commitSha,
           CERTIFICATION_EXPECTED_TREE_SHA: identity.treeSha,
           DATABASE_URL: environment.DATABASE_URL,
+          GOOGLE_CLIENT_ID: environment.GOOGLE_CLIENT_ID,
+          GOOGLE_CLIENT_SECRET: environment.GOOGLE_CLIENT_SECRET,
         },
       }).environment,
     ),
@@ -3736,6 +3738,8 @@ export async function runProductionCertificationSimulation({
       ),
       CERTIFICATION_RUNTIME_START_MARKER_PATH: runtimeStartPath,
       DATABASE_URL: environment.DATABASE_URL,
+      GOOGLE_CLIENT_ID: environment.GOOGLE_CLIENT_ID,
+      GOOGLE_CLIENT_SECRET: environment.GOOGLE_CLIENT_SECRET,
       CERTIFICATION_STAGE_ENVIRONMENT_CONTRACT_SHA256:
         simulationRuntimeProfile.contract.sha256,
       CERTIFICATION_STAGE_ENVIRONMENT_PROFILE_ID: "runtime-smoke",

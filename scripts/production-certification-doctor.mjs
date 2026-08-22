@@ -1819,6 +1819,8 @@ function validateStageEnvironmentCapabilities(repositoryRoot, environment) {
     "CI_AUTH_FIXTURE_SESSION_NONCE",
     "CI_AUTH_FIXTURE_SESSION_ROOT",
     "DATABASE_URL",
+    "GOOGLE_CLIENT_ID",
+    "GOOGLE_CLIENT_SECRET",
   ];
   const expectedBuildAuthVariables = [
     "CI_AUTH_FIXTURE_ACTIVE",
@@ -1830,6 +1832,20 @@ function validateStageEnvironmentCapabilities(repositoryRoot, environment) {
     "CI_AUTH_FIXTURE_SESSION_CLASSIFICATION",
     "CI_AUTH_FIXTURE_SESSION_ID",
     "CI_AUTH_FIXTURE_SESSION_NONCE",
+    "GOOGLE_CLIENT_ID",
+    "GOOGLE_CLIENT_SECRET",
+  ];
+  const expectedPrivateProviderProfiles = [
+    "artifact-product-server",
+    "auth-session-preflight",
+    "build",
+    "development-browser-owner",
+    "development-browser-owner-discovery",
+    "phase8",
+    "production-browser-owner",
+    "production-browser-owner-discovery",
+    "runtime-smoke",
+    "simulation-production-evidence",
   ];
   const databaseVariable = contract.variables.DATABASE_URL;
   const expectedDatabaseProfiles = [
@@ -2001,12 +2017,36 @@ function validateStageEnvironmentCapabilities(repositoryRoot, environment) {
       JSON.stringify(expectedAuthPreflightVariables) ||
     !contract.prefixes.includes("CI_AUTH_") ||
     contract.variables.CI_AUTH_FIXTURE_SESSION_ROOT?.portable !== false ||
+    contract.variables.GOOGLE_CLIENT_ID?.secret !== true ||
+    contract.variables.GOOGLE_CLIENT_ID?.portable !== false ||
+    contract.variables.GOOGLE_CLIENT_SECRET?.secret !== true ||
+    contract.variables.GOOGLE_CLIENT_SECRET?.portable !== false ||
     expectedBuildAuthVariables.some(
       (name) =>
         !buildProfile?.childVisibleVariables.includes(name) ||
         !buildProfile?.optionalVariables.includes(name) ||
         buildProfile?.requiredVariables.includes(name),
     ) ||
+    JSON.stringify(
+      Object.entries(contract.profiles)
+        .filter(([, profile]) =>
+          profile.childVisibleVariables.includes("GOOGLE_CLIENT_ID"),
+        )
+        .map(([profileId]) => profileId)
+        .sort(),
+    ) !== JSON.stringify(expectedPrivateProviderProfiles) ||
+    expectedPrivateProviderProfiles.some((profileId) => {
+      const profile = contract.profiles[profileId];
+      return (
+        !profile?.childVisibleVariables.includes("GOOGLE_CLIENT_SECRET") ||
+        ["GOOGLE_CLIENT_ID", "GOOGLE_CLIENT_SECRET"].some((name) =>
+          profileId === "build"
+            ? !profile.optionalVariables.includes(name) ||
+              profile.requiredVariables.includes(name)
+            : !profile.requiredVariables.includes(name)
+        )
+      );
+    }) ||
     buildProfile?.childVisibleVariables.includes("CI_AUTH_FIXTURE_SESSION_ROOT") ||
     !authPreflightProfile?.parentOnlyVariables.includes(
       "CERTIFICATION_DATABASE_ADMIN_URL",

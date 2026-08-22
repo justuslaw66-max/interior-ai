@@ -112,6 +112,8 @@ function fixtureAuthStageInputs() {
     CI_AUTH_FIXTURE_SESSION_ID: "auth-session-fixture",
     CI_AUTH_FIXTURE_SESSION_NONCE: "auth-session-nonce-fixture",
     CI_AUTH_FIXTURE_SESSION_ROOT: "/private/auth-session",
+    GOOGLE_CLIENT_ID: "synthetic-provider-client-id",
+    GOOGLE_CLIENT_SECRET: "synthetic-provider-secondary-value",
   };
 }
 

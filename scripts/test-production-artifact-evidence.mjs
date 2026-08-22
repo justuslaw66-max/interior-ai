@@ -4597,7 +4597,10 @@ async function expectRejected(context, expectedText) {
 }
 
 {
-  const authEnvironment = boundAuthFixtureEnvironment();
+  const authEnvironment = {
+    ...boundAuthFixtureEnvironment(),
+    CERTIFICATION_ENVIRONMENT_STAGE: "build",
+  };
   const context = await fixture({ environmentOverrides: authEnvironment });
   const result = await validateProductionEvidence({
     repositoryRoot: context.root,
@@ -4611,6 +4614,97 @@ async function expectRejected(context, expectedText) {
     result.manifest.build.authFixtureContinuity.providerDigests
       .googleClientSecondaryValueSha256,
     authEnvironment.CI_AUTH_FIXTURE_PROVIDER_CLIENT_SECRET_SHA256,
+  );
+}
+
+{
+  const buildAuthEnvironment = {
+    ...boundAuthFixtureEnvironment(),
+    CERTIFICATION_ENVIRONMENT_STAGE: "build",
+  };
+  const context = await fixture({
+    environmentOverrides: buildAuthEnvironment,
+  });
+  const archiveParentEnvironment = {
+    ...buildAuthEnvironment,
+    CERTIFICATION_ENVIRONMENT_STAGE: "archive-preflight",
+    CI_AUTH_FIXTURE_SESSION_ROOT: "/private/task-owned-auth-session",
+  };
+  delete archiveParentEnvironment.CI_AUTH_FIXTURE_LOCAL_TEST;
+  delete archiveParentEnvironment.CI_AUTH_FIXTURE_MODE;
+  const result = await validateProductionEvidence({
+    repositoryRoot: context.root,
+    manifestPath: context.manifestPath,
+    verificationMode:
+      PRODUCTION_EVIDENCE_VERIFICATION_MODES.REPOSITORY_PREFLIGHT,
+    environment: archiveParentEnvironment,
+  });
+  assert.deepEqual(result.issues, []);
+  assert.equal(result.valid, true);
+
+  const foreignSession = await validateProductionEvidence({
+    repositoryRoot: context.root,
+    manifestPath: context.manifestPath,
+    verificationMode:
+      PRODUCTION_EVIDENCE_VERIFICATION_MODES.REPOSITORY_PREFLIGHT,
+    environment: {
+      ...buildAuthEnvironment,
+      CI_AUTH_FIXTURE_SESSION_ID: "foreign-artifact-session-001",
+    },
+  });
+  assert.equal(foreignSession.valid, false);
+  assert.ok(
+    foreignSession.issues.includes(
+      "build auth fixture continuity differs from the projected child",
+    ),
+  );
+
+  const wrongCandidateContext = await fixture({
+    environmentOverrides: buildAuthEnvironment,
+  });
+  await rewriteManifest(
+    wrongCandidateContext.root,
+    wrongCandidateContext.manifestPath,
+    (manifest) => {
+      manifest.source.commitSha = "f".repeat(40);
+    },
+  );
+  const wrongCandidate = await validateProductionEvidence({
+    repositoryRoot: wrongCandidateContext.root,
+    manifestPath: wrongCandidateContext.manifestPath,
+    verificationMode:
+      PRODUCTION_EVIDENCE_VERIFICATION_MODES.REPOSITORY_PREFLIGHT,
+    environment: archiveParentEnvironment,
+  });
+  assert.equal(wrongCandidate.valid, false);
+  assert.ok(
+    wrongCandidate.issues.some((issue) =>
+      issue.includes("source commit"),
+    ),
+  );
+}
+
+{
+  const authEnvironment = {
+    ...boundAuthFixtureEnvironment(),
+    CERTIFICATION_ENVIRONMENT_STAGE: "build",
+  };
+  const missing = await fixture({ environmentOverrides: authEnvironment });
+  await rewriteManifest(missing.root, missing.manifestPath, (manifest) => {
+    delete manifest.build.authFixtureContinuity;
+  });
+  await expectRejected(
+    missing,
+    "build auth fixture continuity is missing or contradictory",
+  );
+
+  const altered = await fixture({ environmentOverrides: authEnvironment });
+  await rewriteManifest(altered.root, altered.manifestPath, (manifest) => {
+    manifest.build.authFixtureContinuity.noRegenerationProof = "altered";
+  });
+  await expectRejected(
+    altered,
+    "build auth fixture continuity is missing or contradictory",
   );
 }
 

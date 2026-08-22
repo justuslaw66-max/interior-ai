@@ -465,6 +465,186 @@ try {
   );
   passedCases.push("abort-cleanup-retains-consumed-original-failure");
 
+  const automaticAbortFixture = doctorFixture(
+    path.join(root, "automatic-abort-precondition"),
+  );
+  const activeLifecycleDescriptor = descriptor(
+    automaticAbortFixture.evidenceRoot,
+    "database/active-lifecycle.json",
+    { currentState: "active" },
+  );
+  const preAutomaticAbortState = replaceCertificationDatabaseLifecycle(
+    automaticAbortFixture.postState,
+    {
+      schema:
+        "interior-ai.production-certification-database-lifecycle-binding.v1",
+      certificationId: CERTIFICATION_ID,
+      candidateId: CANDIDATE_ID,
+      candidateCommitSha: COMMIT_SHA,
+      candidateTreeSha: TREE_SHA,
+      databaseName: "pc_stage_result_automatic_abort_fixture",
+      databaseNameSha256: "7".repeat(64),
+      databaseIdentitySha256: "8".repeat(64),
+      lifecycleState: "active",
+      evidence: activeLifecycleDescriptor,
+      updatedAt: COMPLETED_AT,
+    },
+  );
+  writeCertificationState(
+    automaticAbortFixture.statePath,
+    preAutomaticAbortState,
+  );
+  const automaticAbortInvocation = invocation(
+    automaticAbortFixture.statePath,
+    preAutomaticAbortState,
+    "archive-preflight",
+  );
+  const automaticOriginalFailure = {
+    classification: "SOURCE_CONTRACT_FAILURE",
+    originalStage: "archive-preflight",
+    attempt: null,
+    consumedSubstantiveGate: false,
+    failedStateSha256: null,
+    evidenceReferences: {},
+  };
+  const failedLifecycleDescriptor = descriptor(
+    automaticAbortFixture.evidenceRoot,
+    "database/failed-lifecycle.json",
+    {
+      currentState: "failed",
+      failure: automaticOriginalFailure,
+      cleanupFailure: {
+        classification: "DATABASE_LIFECYCLE_FAILURE",
+      },
+    },
+  );
+  const postAutomaticAbortState = replaceCertificationDatabaseLifecycle(
+    preAutomaticAbortState,
+    {
+      ...preAutomaticAbortState.databaseLifecycle,
+      lifecycleState: "failed",
+      evidence: failedLifecycleDescriptor,
+      updatedAt: "2026-08-14T00:00:00.500Z",
+    },
+  );
+  writeCertificationState(
+    automaticAbortFixture.statePath,
+    postAutomaticAbortState,
+  );
+  const automaticAbortValue = createCertificationStageCommandResult({
+    invocation: automaticAbortInvocation,
+    commandError: {
+      classification: "SOURCE_CONTRACT_FAILURE",
+    },
+    cleanupError: Object.assign(new Error("database cleanup denied"), {
+      databaseLifecycleResult: {},
+    }),
+    wrapperExitCode: 1,
+    evidenceRoot: automaticAbortFixture.evidenceRoot,
+  });
+  const automaticAbortValidationOptions = {
+    statePath: automaticAbortFixture.statePath,
+    evidenceRoot: automaticAbortFixture.evidenceRoot,
+    expectedCommand: "archive-preflight",
+    expectedInvocationNonce: NONCE,
+    expectedPreStateSha256: certificationStateSha256(
+      preAutomaticAbortState,
+    ),
+    verifyCurrentSource: false,
+  };
+  assert.equal(automaticAbortValue.result, "precondition-failure");
+  assert.equal(automaticAbortValue.stage.attemptNumber, null);
+  assert.equal(automaticAbortValue.consumedSubstantiveGate, false);
+  assert.equal(
+    automaticAbortValue.details.automaticAbort.originalFailure.originalStage,
+    "archive-preflight",
+  );
+  assert.equal(
+    automaticAbortValue.details.automaticAbort.cleanupFailureClassification,
+    "DATABASE_LIFECYCLE_FAILURE",
+  );
+  assert.equal(
+    validateCertificationStageResult({
+      value: automaticAbortValue,
+      ...automaticAbortValidationOptions,
+    }).valid,
+    true,
+  );
+  const lostOriginalAttribution = sealCertificationStageResult({
+    ...structuredClone(automaticAbortValue),
+    details: {
+      automaticAbort: {
+        ...structuredClone(automaticAbortValue.details.automaticAbort),
+        originalFailure: {
+          ...structuredClone(
+            automaticAbortValue.details.automaticAbort.originalFailure,
+          ),
+          originalStage: null,
+        },
+      },
+    },
+  });
+  assert.equal(
+    validateCertificationStageResult({
+      value: lostOriginalAttribution,
+      ...automaticAbortValidationOptions,
+    }).valid,
+    false,
+  );
+  const completedLifecycleDescriptor = descriptor(
+    automaticAbortFixture.evidenceRoot,
+    "database/completed-lifecycle.json",
+    {
+      currentState: "abort-absence-verified",
+      failure: automaticOriginalFailure,
+      cleanup: {
+        originalFailureRetained: true,
+        failedRunRehabilitated: false,
+      },
+    },
+  );
+  const completedAutomaticAbortState = replaceCertificationDatabaseLifecycle(
+    preAutomaticAbortState,
+    {
+      ...preAutomaticAbortState.databaseLifecycle,
+      lifecycleState: "abort-absence-verified",
+      evidence: completedLifecycleDescriptor,
+      updatedAt: "2026-08-14T00:00:00.600Z",
+    },
+  );
+  writeCertificationState(
+    automaticAbortFixture.statePath,
+    completedAutomaticAbortState,
+  );
+  const completedAutomaticAbortValue = createCertificationStageCommandResult({
+    invocation: automaticAbortInvocation,
+    commandError: {
+      classification: "SOURCE_CONTRACT_FAILURE",
+    },
+    cleanupResult: { currentState: "abort-absence-verified" },
+    wrapperExitCode: 1,
+    evidenceRoot: automaticAbortFixture.evidenceRoot,
+  });
+  assert.equal(
+    completedAutomaticAbortValue.details.automaticAbort.outcome,
+    "completed",
+  );
+  assert.equal(
+    completedAutomaticAbortValue.details.automaticAbort
+      .cleanupFailureClassification,
+    null,
+  );
+  assert.equal(
+    validateCertificationStageResult({
+      value: completedAutomaticAbortValue,
+      ...automaticAbortValidationOptions,
+    }).valid,
+    true,
+  );
+  passedCases.push(
+    "automatic-abort-denial-retains-precondition-and-cleanup-attribution",
+  );
+
   const signaled = doctorFixture(path.join(root, "signal"), {
     passed: false,
     consumed: true,
@@ -636,7 +816,7 @@ try {
 
   assert.equal(
     passedCases.length,
-    24,
+    25,
     "Production certification stage-result consumer tests passed.",
   );
   process.stdout.write(

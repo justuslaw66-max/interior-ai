@@ -1147,6 +1147,21 @@ export async function abortCertificationDatabase(options = {}) {
   return mutateLifecycle({ ...options, mode: "abort-cleanup" }, async ({ evidence, adapter, environment, checkpoint }) => {
     if (evidence.currentState === "abort-absence-verified") return evidence;
     let next = structuredClone(evidence);
+    const finalEmptyVerified = finalEmptyWasVerified(next);
+    next.failure ??= {
+      mode: "abort-cleanup",
+      classification: options.originalFailure?.classification ?? "CERTIFICATION_ABORTED",
+      originalStage: options.originalFailure?.stage ?? null,
+      attempt: options.originalFailure?.attempt ?? null,
+      consumedSubstantiveGate: options.originalFailure?.consumedSubstantiveGate ?? false,
+      failedStateSha256: options.originalFailure?.failedStateSha256 ?? null,
+      evidenceReferences: portableOriginalEvidenceReferences(
+        options.originalFailure?.evidenceReferences,
+      ),
+      reason: "original certification failure retained",
+      at: new Date().toISOString(),
+    };
+    next = checkpoint(next);
     let inspected = await adapter.inspectAdmin(evidence.database.name);
     const hasProvisionedOwnership = evidence.events.some(
       (entry) => entry.state === "provisioned" && entry.details?.created === true,
@@ -1178,20 +1193,6 @@ export async function abortCertificationDatabase(options = {}) {
       });
       next = checkpoint(next);
     }
-    const finalEmptyVerified = finalEmptyWasVerified(next);
-    next.failure ??= {
-      mode: "abort-cleanup",
-      classification: options.originalFailure?.classification ?? "CERTIFICATION_ABORTED",
-      originalStage: options.originalFailure?.stage ?? null,
-      attempt: options.originalFailure?.attempt ?? null,
-      consumedSubstantiveGate: options.originalFailure?.consumedSubstantiveGate ?? false,
-      failedStateSha256: options.originalFailure?.failedStateSha256 ?? null,
-      evidenceReferences: portableOriginalEvidenceReferences(
-        options.originalFailure?.evidenceReferences,
-      ),
-      reason: "original certification failure retained",
-      at: new Date().toISOString(),
-    };
     if (next.currentState !== "abort-cleanup-in-progress") {
       next = advance(next, "abort-cleanup", ["abort-cleanup-in-progress"], {
         originalFailureRetained: true,

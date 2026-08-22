@@ -3049,11 +3049,8 @@ export async function validateProductionEvidence({
     issues.push("build auth fixture continuity is missing or contradictory");
   }
   if (
-    environment[authFixtureSession.FIXTURE_SESSION_ID_ENV] &&
-    environment.GOOGLE_CLIENT_ID &&
-    environment.GOOGLE_CLIENT_SECRET &&
-    environment[authFixtureSession.FIXTURE_CLIENT_ID_SHA256_ENV] &&
-    environment[authFixtureSession.FIXTURE_CLIENT_SECRET_SHA256_ENV]
+    boundAuthFixtureContinuity &&
+    environment.CERTIFICATION_ENVIRONMENT_STAGE === "build"
   ) {
     try {
       const projectedContinuity =
@@ -3981,6 +3978,8 @@ async function serveEvidence(repositoryRoot, manifestPath) {
         PRODUCTION_ARTIFACT_BUILD_ID: manifest.build.nextBuildId,
         PRODUCTION_ARTIFACT_SHA256: manifest.artifact.sha256,
         PRODUCTION_ARTIFACT_COMMIT_SHA: manifest.source.commitSha,
+        GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
+        GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET,
       },
     }).environment,
   };

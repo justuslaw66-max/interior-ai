@@ -182,6 +182,15 @@ function requiredEnvironment(environment, name) {
   return value;
 }
 
+function applicationAuthProviderEnvironment(environment) {
+  return Object.fromEntries(
+    ["GOOGLE_CLIENT_ID", "GOOGLE_CLIENT_SECRET"].map((name) => [
+      name,
+      requiredEnvironment(environment, name),
+    ]),
+  );
+}
+
 function git(repositoryRoot, args) {
   const child = spawnSync("git", args, {
     cwd: repositoryRoot,
@@ -736,6 +745,16 @@ function stageChildProjection(
             profile.childVisibleVariables
               .filter((name) => authProjection.environment[name] !== undefined)
               .map((name) => [name, authProjection.environment[name]]),
+          )
+        : {}),
+      ...(stage === "build" &&
+      !authProjection &&
+      context.state.executionClass === "deterministic-simulation" &&
+      context.environment.CERTIFICATION_QUALIFICATION_MODE === "1"
+        ? Object.fromEntries(
+            ["GOOGLE_CLIENT_ID", "GOOGLE_CLIENT_SECRET"]
+              .filter((name) => context.environment[name] !== undefined)
+              .map((name) => [name, context.environment[name]]),
           )
         : {}),
     },
@@ -3113,6 +3132,7 @@ export async function runPhase8Stage(options = {}) {
           CERTIFICATION_ENVIRONMENT_STAGE: "phase8",
           CERTIFICATION_EVIDENCE_ROOT: context.evidenceRoot,
           PHASE8_EXTERNAL_EVIDENCE_ROOT: context.evidenceRoot,
+          ...applicationAuthProviderEnvironment(context.environment),
         },
       }),
       inherit: true,
@@ -3370,6 +3390,7 @@ export async function runRuntimeSmokeStage(options = {}) {
         PLAYWRIGHT_JSON_OUTPUT_FILE: reportPath,
         RUNTIME_SMOKE_PHASE_TIMINGS_PATH: timingPath,
         CERTIFICATION_RUNTIME_START_MARKER_PATH: startMarkerPath,
+        ...applicationAuthProviderEnvironment(context.environment),
       },
     });
     try {
@@ -3627,6 +3648,7 @@ export function browserEnvironment(
     REQUIRED_TEST_RELEASE_ENVIRONMENT: owner.applicationEnvironment,
     REQUIRED_TEST_SOURCE_COMMIT_SHA: state.candidate.commitSha,
     REQUIRED_TEST_SOURCE_TREE_SHA: state.candidate.treeSha,
+    ...applicationAuthProviderEnvironment(context.environment),
   };
   if (owner.productionServer) {
     stageInputs.PLAYWRIGHT_USE_PRODUCTION_SERVER = "1";
@@ -3652,6 +3674,7 @@ function browserListEnvironment(context, owner) {
   delete baseEnvironment.PLAYWRIGHT_RELEASE_BASE_URL;
   const stageInputs = {
     CERTIFICATION_ENVIRONMENT_STAGE: "browser-owners",
+    ...applicationAuthProviderEnvironment(context.environment),
   };
   if (owner.productionServer) {
     stageInputs.PLAYWRIGHT_USE_PRODUCTION_SERVER = "1";

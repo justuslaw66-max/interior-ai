@@ -142,6 +142,8 @@ function testDatabaseCapabilityIsolation() {
     "CI_AUTH_FIXTURE_SESSION_NONCE",
     "CI_AUTH_FIXTURE_SESSION_ROOT",
     "DATABASE_URL",
+    "GOOGLE_CLIENT_ID",
+    "GOOGLE_CLIENT_SECRET",
   ];
   assert.deepEqual(authPreflight.stages, ["auth-session-preflight"]);
   assert.deepEqual(
@@ -157,6 +159,10 @@ function testDatabaseCapabilityIsolation() {
   );
   assert.equal(contract.prefixes.includes("CI_AUTH_"), true);
   assert.equal(contract.variables.CI_AUTH_FIXTURE_SESSION_ROOT.portable, false);
+  assert.equal(contract.variables.GOOGLE_CLIENT_ID.secret, true);
+  assert.equal(contract.variables.GOOGLE_CLIENT_SECRET.secret, true);
+  assert.equal(contract.variables.GOOGLE_CLIENT_ID.portable, false);
+  assert.equal(contract.variables.GOOGLE_CLIENT_SECRET.portable, false);
   const build = contract.profiles.build;
   for (const name of [
     "CI_AUTH_FIXTURE_ACTIVE",
@@ -168,10 +174,60 @@ function testDatabaseCapabilityIsolation() {
     "CI_AUTH_FIXTURE_SESSION_CLASSIFICATION",
     "CI_AUTH_FIXTURE_SESSION_ID",
     "CI_AUTH_FIXTURE_SESSION_NONCE",
+    "GOOGLE_CLIENT_ID",
+    "GOOGLE_CLIENT_SECRET",
   ]) {
     assert.equal(build.childVisibleVariables.includes(name), true);
     assert.equal(build.optionalVariables.includes(name), true);
     assert.equal(build.requiredVariables.includes(name), false);
+  }
+  const simulationProductionEvidence =
+    contract.profiles["simulation-production-evidence"];
+  for (const name of ["GOOGLE_CLIENT_ID", "GOOGLE_CLIENT_SECRET"]) {
+    assert.equal(
+      simulationProductionEvidence.childVisibleVariables.includes(name),
+      true,
+    );
+    assert.equal(
+      simulationProductionEvidence.requiredVariables.includes(name),
+      true,
+    );
+  }
+  const expectedPrivateProviderProfiles = [
+    "artifact-product-server",
+    "auth-session-preflight",
+    "build",
+    "development-browser-owner",
+    "development-browser-owner-discovery",
+    "phase8",
+    "production-browser-owner",
+    "production-browser-owner-discovery",
+    "runtime-smoke",
+    "simulation-production-evidence",
+  ];
+  assert.deepEqual(
+    Object.entries(contract.profiles)
+      .filter(([, profile]) =>
+        profile.childVisibleVariables.includes("GOOGLE_CLIENT_ID"),
+      )
+      .map(([profileId]) => profileId)
+      .sort(),
+    expectedPrivateProviderProfiles,
+  );
+  for (const profileId of expectedPrivateProviderProfiles) {
+    const profile = contract.profiles[profileId];
+    assert.equal(
+      profile.childVisibleVariables.includes("GOOGLE_CLIENT_SECRET"),
+      true,
+    );
+    for (const name of ["GOOGLE_CLIENT_ID", "GOOGLE_CLIENT_SECRET"]) {
+      assert.equal(
+        profileId === "build"
+          ? profile.optionalVariables.includes(name)
+          : profile.requiredVariables.includes(name),
+        true,
+      );
+    }
   }
   for (const name of [
     "CI_AUTH_FIXTURE_CANDIDATE_COMMIT_SHA",
@@ -206,6 +262,20 @@ function testDatabaseCapabilityIsolation() {
       JSON.stringify(projection.metadata).includes(FIXTURE_DATABASE_URL),
       false,
     );
+    if (
+      expectedPrivateProviderProfiles.includes(profileId) &&
+      profileId !== "build"
+    ) {
+      for (const name of ["GOOGLE_CLIENT_ID", "GOOGLE_CLIENT_SECRET"]) {
+        assert.equal(typeof projection.environment[name], "string");
+        assert.equal(
+          JSON.stringify(projection.metadata).includes(
+            projection.environment[name],
+          ),
+          false,
+        );
+      }
+    }
   }
 
   const unrelated = projected({
@@ -214,16 +284,76 @@ function testDatabaseCapabilityIsolation() {
     baseEnvironment: {
       CI_AUTH_FIXTURE_ACTIVE: "1",
       CI_AUTH_FIXTURE_SESSION_ROOT: "/private/auth-session",
+      GOOGLE_CLIENT_ID: "synthetic-provider-client-id",
+      GOOGLE_CLIENT_SECRET: "synthetic-provider-secondary-value",
     },
   });
   assert.equal(unrelated.environment.CI_AUTH_FIXTURE_ACTIVE, undefined);
   assert.equal(unrelated.environment.CI_AUTH_FIXTURE_SESSION_ROOT, undefined);
+  assert.equal(unrelated.environment.GOOGLE_CLIENT_ID, undefined);
+  assert.equal(unrelated.environment.GOOGLE_CLIENT_SECRET, undefined);
   assert.deepEqual(
     unrelated.metadata.strippedKnownCertificationControlVariables.filter(
       (name) => name.startsWith("CI_AUTH_"),
     ),
     ["CI_AUTH_FIXTURE_ACTIVE", "CI_AUTH_FIXTURE_SESSION_ROOT"],
   );
+
+  const projectedBuild = projectCertificationChildEnvironment({
+    repositoryRoot,
+    baseEnvironment: {},
+    stage: "build",
+    profileId: "build",
+    stageInputs: {
+      ...stageInputs("build", "build"),
+      GOOGLE_CLIENT_ID: "synthetic-provider-client-id",
+      GOOGLE_CLIENT_SECRET: "synthetic-provider-secondary-value",
+    },
+  });
+  assert.equal(
+    projectedBuild.environment.GOOGLE_CLIENT_ID,
+    "synthetic-provider-client-id",
+  );
+  assert.equal(
+    projectedBuild.environment.GOOGLE_CLIENT_SECRET,
+    "synthetic-provider-secondary-value",
+  );
+  assert.equal(
+    JSON.stringify(projectedBuild.metadata).includes(
+      "synthetic-provider-secondary-value",
+    ),
+    false,
+  );
+
+  const leakedArchiveParent = projected({
+    profileId: "archive-preflight",
+    stage: "archive-preflight",
+    baseEnvironment: {
+      CI_AUTH_FIXTURE_ACTIVE: "1",
+      CI_AUTH_FIXTURE_NO_REGENERATION: "1",
+      CI_AUTH_FIXTURE_SESSION_ID: "foreign-session-0001",
+      CI_AUTH_FIXTURE_SESSION_NONCE: "foreign-nonce-0001",
+      CI_AUTH_FIXTURE_SESSION_ROOT: "/private/auth-session",
+      GOOGLE_CLIENT_ID: "synthetic-provider-client-id",
+      GOOGLE_CLIENT_SECRET: "synthetic-provider-secondary-value",
+    },
+  });
+  for (const name of [
+    "CI_AUTH_FIXTURE_ACTIVE",
+    "CI_AUTH_FIXTURE_NO_REGENERATION",
+    "CI_AUTH_FIXTURE_SESSION_ID",
+    "CI_AUTH_FIXTURE_SESSION_NONCE",
+    "CI_AUTH_FIXTURE_SESSION_ROOT",
+    "GOOGLE_CLIENT_ID",
+    "GOOGLE_CLIENT_SECRET",
+  ]) {
+    assert.equal(leakedArchiveParent.environment[name], undefined);
+    assert.equal(
+      leakedArchiveParent.metadata.strippedKnownCertificationControlVariables
+        .includes(name),
+      true,
+    );
+  }
 }
 
 function testFloorPlanValuePolicies() {
@@ -1029,6 +1159,8 @@ try {
         CERTIFICATION_RUNTIME_STAGE_ATTEMPT: "1",
         CERTIFICATION_RUNTIME_START_MARKER_PATH: startMarkerPath,
         DATABASE_URL: FIXTURE_DATABASE_URL,
+        GOOGLE_CLIENT_ID: "synthetic-provider-client-id",
+        GOOGLE_CLIENT_SECRET: "synthetic-provider-secondary-value",
         CERTIFICATION_STAGE_ENVIRONMENT_CONTRACT_SHA256:
           runtimeProfile.contract.sha256,
         CERTIFICATION_STAGE_ENVIRONMENT_PROFILE_ID: "runtime-smoke",

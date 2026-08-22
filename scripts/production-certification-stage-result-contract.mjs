@@ -409,10 +409,68 @@ function safeCommandDetails(command, commandResult, sensitiveValues) {
   return null;
 }
 
+function automaticAbortDetails({
+  command,
+  postState,
+  evidenceRoot,
+  cleanupError,
+  cleanupResult,
+}) {
+  if (
+    !CERTIFICATION_STAGE_ORDER.includes(COMMAND_STAGE_IDS[command]) ||
+    (!cleanupResult && !cleanupError?.databaseLifecycleResult)
+  ) {
+    return null;
+  }
+  const descriptor = postState.databaseLifecycle?.evidence;
+  if (
+    !descriptor ||
+    typeof descriptor.path !== "string" ||
+    !isSha256(descriptor.sha256)
+  ) {
+    throw new Error(
+      "automatic database abort result is missing lifecycle evidence",
+    );
+  }
+  const bytes = readFileSync(path.join(evidenceRoot, descriptor.path));
+  if (sha256(bytes) !== descriptor.sha256) {
+    throw new Error("automatic database abort lifecycle evidence changed");
+  }
+  const lifecycle = JSON.parse(bytes.toString("utf8"));
+  const originalFailure = lifecycle.failure;
+  if (!originalFailure) {
+    throw new Error("automatic database abort lost the original failure");
+  }
+  return {
+    automaticAbort: {
+      outcome: cleanupError ? "failed" : "completed",
+      lifecycleState: lifecycle.currentState,
+      originalFailureRetained: true,
+      originalFailure: {
+        classification: originalFailure.classification,
+        originalStage: originalFailure.originalStage,
+        attempt: originalFailure.attempt ?? null,
+        consumedSubstantiveGate:
+          originalFailure.consumedSubstantiveGate,
+        failedStateSha256: originalFailure.failedStateSha256 ?? null,
+        evidenceReferences: structuredClone(
+          originalFailure.evidenceReferences ?? {},
+        ),
+      },
+      cleanupFailureClassification:
+        lifecycle.cleanupFailure?.classification ?? null,
+      failedRunRehabilitated: false,
+      evidence: structuredClone(descriptor),
+    },
+  };
+}
+
 export function createCertificationStageCommandResult({
   invocation,
   commandResult = null,
   commandError = null,
+  cleanupError = null,
+  cleanupResult = null,
   terminalSignal = null,
   wrapperExitCode = null,
   evidenceRoot,
@@ -448,6 +506,19 @@ export function createCertificationStageCommandResult({
     wrapperExitCode ??
     (terminalSignal ? (terminalSignal === "SIGINT" ? 130 : 143) : valid ? 0 : 1);
   const contract = certificationStageResultContractIdentity();
+  const details =
+    automaticAbortDetails({
+      command: invocation.command,
+      postState,
+      evidenceRoot,
+      cleanupError,
+      cleanupResult,
+    }) ??
+    safeCommandDetails(
+      invocation.command,
+      commandResult,
+      sensitiveValues,
+    );
   const payload = {
     schema: PRODUCTION_CERTIFICATION_STAGE_RESULT_SCHEMA,
     version: PRODUCTION_CERTIFICATION_STAGE_RESULT_VERSION,
@@ -472,11 +543,7 @@ export function createCertificationStageCommandResult({
     result,
     valid,
     classification,
-    details: safeCommandDetails(
-      invocation.command,
-      commandResult,
-      sensitiveValues,
-    ),
+    details,
     consumedSubstantiveGate:
       transition.attempt?.consumedSubstantiveGate ??
       (invocation.command === "database:abort-cleanup"
@@ -750,11 +817,69 @@ function portableEvidenceDescriptorMap(value) {
   );
 }
 
+function automaticAbortDetailsShapeIssues(details) {
+  const automaticAbort = details?.automaticAbort;
+  const originalFailure = automaticAbort?.originalFailure;
+  const outcomeValid = new Set(["completed", "failed"]).has(
+    automaticAbort?.outcome,
+  );
+  const cleanupClassificationValid =
+    automaticAbort?.outcome === "failed"
+      ? automaticAbort.cleanupFailureClassification ===
+        "DATABASE_LIFECYCLE_FAILURE"
+      : automaticAbort?.cleanupFailureClassification === null;
+  return exactKeys(details, ["automaticAbort"]) &&
+    exactKeys(automaticAbort, [
+      "outcome",
+      "lifecycleState",
+      "originalFailureRetained",
+      "originalFailure",
+      "cleanupFailureClassification",
+      "failedRunRehabilitated",
+      "evidence",
+    ]) &&
+    outcomeValid &&
+    typeof automaticAbort.lifecycleState === "string" &&
+    automaticAbort.lifecycleState.length > 0 &&
+    automaticAbort.originalFailureRetained === true &&
+    automaticAbort.failedRunRehabilitated === false &&
+    cleanupClassificationValid &&
+    exactKeys(originalFailure, [
+      "classification",
+      "originalStage",
+      "attempt",
+      "consumedSubstantiveGate",
+      "failedStateSha256",
+      "evidenceReferences",
+    ]) &&
+    CERTIFICATION_FAILURE_CLASSIFICATIONS.includes(
+      originalFailure.classification,
+    ) &&
+    typeof originalFailure.originalStage === "string" &&
+    originalFailure.originalStage.length > 0 &&
+    (originalFailure.attempt === null ||
+      (Number.isSafeInteger(originalFailure.attempt) &&
+        originalFailure.attempt >= 1)) &&
+    typeof originalFailure.consumedSubstantiveGate === "boolean" &&
+    (originalFailure.failedStateSha256 === null ||
+      isSha256(originalFailure.failedStateSha256)) &&
+    portableEvidenceDescriptorMap(originalFailure.evidenceReferences) &&
+    portableEvidenceDescriptorMap({ evidence: automaticAbort.evidence })
+    ? []
+    : ["automatic database abort result details are malformed"];
+}
+
 function commandDetailsShapeIssues(value) {
   const command = value.command?.id;
   const details = value.details;
   if (value.result === "precondition-failure" && details === null) {
     return [];
+  }
+  if (
+    CERTIFICATION_STAGE_ORDER.includes(COMMAND_STAGE_IDS[command]) &&
+    Object.hasOwn(details ?? {}, "automaticAbort")
+  ) {
+    return automaticAbortDetailsShapeIssues(details);
   }
   if (new Set(["state:validate", "build:eligibility"]).has(command)) {
     return exactKeys(details, ["validationReport"]) &&
@@ -924,6 +1049,91 @@ function databaseAbortCleanupStateIssues(value, state, evidenceRoot) {
   return issues;
 }
 
+function automaticAbortStateIssues(value, state, evidenceRoot) {
+  const details = value.details?.automaticAbort;
+  if (!details) return [];
+  const issues = [];
+  try {
+    const descriptor = state.databaseLifecycle?.evidence;
+    if (
+      details.evidence?.path !== descriptor?.path ||
+      details.evidence?.sha256 !== descriptor?.sha256
+    ) {
+      throw new Error("automatic abort evidence descriptor mismatch");
+    }
+    const bytes = readFileSync(path.join(evidenceRoot, descriptor.path));
+    if (sha256(bytes) !== descriptor.sha256) {
+      throw new Error("automatic abort evidence hash mismatch");
+    }
+    const lifecycle = JSON.parse(bytes.toString("utf8"));
+    const failure = lifecycle.failure;
+    const expectedOriginalFailure = {
+      classification: failure?.classification ?? null,
+      originalStage: failure?.originalStage ?? null,
+      attempt: failure?.attempt ?? null,
+      consumedSubstantiveGate:
+        failure?.consumedSubstantiveGate ?? false,
+      failedStateSha256: failure?.failedStateSha256 ?? null,
+      evidenceReferences: structuredClone(
+        failure?.evidenceReferences ?? {},
+      ),
+    };
+    const expectedCleanupClassification =
+      lifecycle.cleanupFailure?.classification ?? null;
+    const expectedOutcome = expectedCleanupClassification
+      ? "failed"
+      : "completed";
+    if (
+      state.databaseLifecycle?.lifecycleState !== lifecycle.currentState ||
+      details.lifecycleState !== lifecycle.currentState ||
+      details.outcome !== expectedOutcome ||
+      details.cleanupFailureClassification !==
+        expectedCleanupClassification ||
+      details.originalFailureRetained !== true ||
+      details.failedRunRehabilitated !== false ||
+      JSON.stringify(details.originalFailure) !==
+        JSON.stringify(expectedOriginalFailure) ||
+      (expectedOutcome === "failed" && lifecycle.currentState !== "failed") ||
+      (expectedOutcome === "completed" &&
+        (lifecycle.currentState !== "abort-absence-verified" ||
+          lifecycle.cleanup?.originalFailureRetained !== true ||
+          lifecycle.cleanup?.failedRunRehabilitated !== false))
+    ) {
+      issues.push(
+        "automatic database abort result does not match physical lifecycle evidence",
+      );
+    }
+    if (
+      CERTIFICATION_STAGE_ORDER.includes(failure?.originalStage) &&
+      failure?.attempt !== null
+    ) {
+      const record = state.stages?.[failure.originalStage];
+      const attempt = record?.attempts?.at(-1);
+      if (
+        record?.status !== "failed" ||
+        attempt?.status !== "failed" ||
+        attempt?.number !== failure.attempt ||
+        attempt?.failureClassification !== failure.classification ||
+        attempt?.consumedSubstantiveGate !==
+          failure.consumedSubstantiveGate ||
+        !isSha256(failure.failedStateSha256) ||
+        JSON.stringify(
+          certificationStageEvidenceFiles(state, failure.originalStage),
+        ) !== JSON.stringify(failure.evidenceReferences ?? {})
+      ) {
+        issues.push(
+          "automatic database abort original failure contradicts the physical failed stage",
+        );
+      }
+    }
+  } catch {
+    issues.push(
+      "automatic database abort result is missing authoritative lifecycle evidence",
+    );
+  }
+  return issues;
+}
+
 function commandStateIssues(value, state, evidenceRoot) {
   const issues = [];
   const expectedStageId = COMMAND_STAGE_IDS[value.command.id];
@@ -1023,11 +1233,28 @@ function commandStateIssues(value, state, evidenceRoot) {
   }
   const record = state.stages?.[expectedStageId];
   const attempt = record?.attempts?.at(-1);
+  const automaticAbortIssues = automaticAbortStateIssues(
+    value,
+    state,
+    evidenceRoot,
+  );
+  issues.push(...automaticAbortIssues);
   if (value.result === "precondition-failure") {
+    const validAutomaticAbort =
+      value.details?.automaticAbort && automaticAbortIssues.length === 0;
+    const automaticOriginalFailure =
+      value.details?.automaticAbort?.originalFailure;
     if (
       value.stage.attemptId !== null ||
       value.stage.attemptNumber !== null ||
-      value.transition.preStateSha256 !== value.transition.postStateSha256 ||
+      (value.transition.preStateSha256 !== value.transition.postStateSha256 &&
+        !validAutomaticAbort) ||
+      (validAutomaticAbort &&
+        (automaticOriginalFailure.originalStage !== expectedStageId ||
+          automaticOriginalFailure.attempt !== null ||
+          automaticOriginalFailure.failedStateSha256 !== null ||
+          automaticOriginalFailure.classification !== value.classification ||
+          automaticOriginalFailure.consumedSubstantiveGate !== false)) ||
       value.consumedSubstantiveGate !== false ||
       value.process.childExitCode !== null ||
       value.process.spawnErrorClassification !== null ||

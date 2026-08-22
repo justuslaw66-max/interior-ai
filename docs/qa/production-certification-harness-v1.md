@@ -1,5 +1,43 @@
 # Production Certification Harness v1
 
+## Archive-preflight auth and abort-attribution correction — 2026-08-22
+
+The retained rehearsal attempt remains failed and is not resumed, retried,
+reconciled, or rehabilitated. The primary archive failure is classified
+**D — MIXED**: the archive child environment projection leaked the raw provider
+pair, while artifact validation interpreted the archive wrapper's sealed
+parent transport as though it were the historical projected build child.
+Those committed defects are respectively
+`ARCHIVE_PREFLIGHT_STAGE_ENVIRONMENT_PROJECTION_DEFECT` and
+`BUILD_AUTH_CONTINUITY_VALIDATOR_CONTEXT_DEFECT`. No narrower committed
+launcher-to-wrapper parent contract is proven, so a parent-transport defect is
+not inferred. The restricted archive invocation is separately classified
+`OPERATOR_ARCHIVE_EXECUTION_CONTEXT_ROUTING_DEFECT`; the wrapper already owns
+automatic cleanup in its invocation context and no committed cleanup delegation
+defect is inferred.
+
+`GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` are now controlled, secret,
+non-portable stage capabilities. They are admitted only to the canonical auth
+preflight and build child; the Phase 8, runtime-smoke, browser-owner/discovery,
+and nested artifact-product-server app execution paths; and the deterministic
+production-evidence simulation that validates staging configuration with
+placeholders. Their values are never recorded in projection metadata. Archive,
+doctor, and every other unrelated child strip them. Archive artifact validation
+consumes the persisted safe build-auth continuity record; projected raw-value
+continuity is cross-checked only for an actual bound build-stage child. A sealed
+archive wrapper parent can therefore preserve private outer-session transport
+without exposing it to the archive child or being reinterpreted as build
+evidence.
+
+Automatic database abort now checkpoints the original stage failure before its
+first cleanup inspection. If that inspection is denied, the portable stage
+result retains the original precondition classification and records the cleanup
+failure separately from the physical lifecycle evidence. A precondition result
+may bind the resulting state SHA transition only when a fully validated
+automatic-abort record proves that original failure, cleanup outcome, and
+non-rehabilitation. Later cleanup success never changes the retained attempt's
+failed certification status.
+
 ## Auth-preflight failure-evidence retention correction — 2026-08-22
 
 The retained failed attempt remains unchanged as
@@ -174,7 +212,7 @@ failure is safely retryable. Non-stage and stage-precondition frames require
 zero consumption and null child/spawn results unless physical state proves a
 completed stage attempt.
 
-The focused 24-case matrix covers npm prose, multiline Prisma logs, earlier
+The focused 25-case matrix covers npm prose, multiline Prisma logs, earlier
 JSON-looking logs, missing/malformed/competing/trailing frames, pending state,
 missing/failed/tampered evidence, cross-run/candidate/commit, stale nonce,
 state/stage/attempt/consumption mismatch, nonzero consumed failure, and
@@ -984,7 +1022,7 @@ generated output.
 `docs/qa/production-certification-stage-environment.v2.json` is the canonical
 machine-readable owner for certification child-process capabilities. Its schema
 is `interior-ai.production-certification-stage-environment.v2`. It inventories
-91 control names with canonical owner, classification, portability, secret
+114 control names with canonical owner, classification, portability, secret
 classification, and presence/activation semantics. It separately inventories
 the five Floor Plan vision/local-OCR application inputs with accepted-value,
 default, secret, and read-timing semantics. It defines profiles for
