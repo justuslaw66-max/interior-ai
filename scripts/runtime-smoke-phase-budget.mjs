@@ -51,6 +51,23 @@ export const RUNTIME_SMOKE_TIMING_EVIDENCE_BINDING_SCHEMA =
   "interior-ai.runtime-smoke-timing-evidence-binding.v1";
 export const RUNTIME_SMOKE_TIMING_COMPLETION_MARKER =
   "timing-file-finalized";
+export const RUNTIME_SMOKE_TIMING_IDENTITY_KEYS = Object.freeze([
+  "certificationId",
+  "candidateId",
+  "commitSha",
+  "treeSha",
+  "nextBuildId",
+  "artifactSha256",
+  "productionManifestSha256",
+  "semanticJournalSha256",
+  "semanticJournalNonce",
+  "semanticJournalSchema",
+  "semanticJournalVersion",
+  "runtimeStage",
+  "runtimeStageProfileId",
+  "runtimeStageProfileSha256",
+  "stageEnvironmentContractSha256",
+]);
 
 export function deriveFurnishedTemplatePhaseTimeout(contract) {
   return sumNonNegativeIntegers(

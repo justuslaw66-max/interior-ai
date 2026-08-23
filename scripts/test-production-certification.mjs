@@ -181,9 +181,9 @@ function mutateExtractedJournal(simulationRoot, mutate) {
   writeCertificationState(statePath, state);
 }
 
-function mutateRuntimeReportIdentity(simulationRoot, mutate) {
+function mutateRuntimeReport(simulationRoot, mutate) {
   mutateBoundEvidence(simulationRoot, "runtime-report", (report) => {
-    mutate(report.config.metadata.productionArtifactEvidence);
+    mutate(report);
   });
   const evidenceRoot = path.join(simulationRoot, "evidence");
   const state = readCertificationState(
@@ -197,6 +197,12 @@ function mutateRuntimeReportIdentity(simulationRoot, mutate) {
     },
     "runtimeSmokeEvidenceSha256",
   );
+}
+
+function mutateRuntimeReportIdentity(simulationRoot, mutate) {
+  mutateRuntimeReport(simulationRoot, (report) => {
+    mutate(report.config.metadata.productionArtifactEvidence);
+  });
 }
 
 function projectSimulationRuntimeReportThroughPhysicalOwnership(simulationRoot) {
@@ -280,9 +286,9 @@ function projectSimulationRuntimeReportThroughPhysicalOwnership(simulationRoot) 
   };
 }
 
-function mutateRuntimeTimingIdentity(simulationRoot, mutate) {
+function mutateRuntimeTiming(simulationRoot, mutate) {
   mutateBoundEvidence(simulationRoot, "runtime-phase-timings", (timing) => {
-    mutate(timing.evidenceBinding.identity);
+    mutate(timing);
   });
   const evidenceRoot = path.join(simulationRoot, "evidence");
   const state = readCertificationState(
@@ -301,10 +307,16 @@ function mutateRuntimeTimingIdentity(simulationRoot, mutate) {
         state.evidenceFiles["runtime-phase-timings"].sha256;
       evidence.phaseTimings.sha256 =
         state.evidenceFiles["runtime-phase-timings"].sha256;
-      evidence.phaseTimings.identity = timing.evidenceBinding.identity;
+      evidence.phaseTimings.identity = timing.evidenceBinding?.identity;
     },
     "runtimeSmokeEvidenceSha256",
   );
+}
+
+function mutateRuntimeTimingIdentity(simulationRoot, mutate) {
+  mutateRuntimeTiming(simulationRoot, (timing) => {
+    mutate(timing.evidenceBinding.identity);
+  });
 }
 
 function stateFixture() {
@@ -1899,6 +1911,8 @@ function stateFixture() {
   assert.equal(currentManifest.schema, PRODUCTION_EVIDENCE_SCHEMA);
   assert.equal(currentJournal.schema, PRODUCTION_EVIDENCE_JOURNAL_SCHEMA);
   assert.equal(currentJournal.version, PRODUCTION_EVIDENCE_JOURNAL_VERSION);
+  assert.equal(currentRuntimeTiming.failure, null);
+  assert.equal(Object.hasOwn(currentRawRuntime, "runtimeSmokeFailure"), false);
   assert.equal(
     currentRawRuntime.config.metadata.productionArtifactEvidence
       .semanticJournalVersion,
@@ -1941,6 +1955,10 @@ function stateFixture() {
       const projection =
         projectSimulationRuntimeReportThroughPhysicalOwnership(base);
       const rawReportBytes = readFileSync(projection.reportPath);
+      assert.equal(
+        Object.hasOwn(JSON.parse(rawReportBytes.toString("utf8")), "runtimeSmokeFailure"),
+        false,
+      );
       const child = finalSimulationChild(base);
       assert.equal(
         child.status,
@@ -2132,6 +2150,131 @@ function stateFixture() {
       /runtime-smoke raw report does not identify the certified artifact/,
     );
   }
+
+  for (const mutation of [
+    {
+      name: "cross-certification runtime timing",
+      mutate(identity) {
+        identity.certificationId = "another-certification";
+      },
+    },
+    {
+      name: "cross-candidate runtime timing",
+      mutate(identity) {
+        identity.candidateId = "another-candidate";
+      },
+    },
+    {
+      name: "cross-commit runtime timing",
+      mutate(identity) {
+        identity.commitSha = "f".repeat(40);
+      },
+    },
+    {
+      name: "cross-tree runtime timing",
+      mutate(identity) {
+        identity.treeSha = "e".repeat(40);
+      },
+    },
+    {
+      name: "cross-artifact runtime timing",
+      mutate(identity) {
+        identity.artifactSha256 = "d".repeat(64);
+      },
+    },
+    {
+      name: "cross-manifest runtime timing",
+      mutate(identity) {
+        identity.productionManifestSha256 = "c".repeat(64);
+      },
+    },
+    {
+      name: "cross-run runtime timing",
+      mutate(identity) {
+        identity.semanticJournalNonce =
+          "123e4567-e89b-42d3-a456-426614174099";
+      },
+    },
+  ]) {
+    assertFinalMutationRejected(
+      mutation.name,
+      (clone) => mutateRuntimeTimingIdentity(clone, mutation.mutate),
+      /timing evidence is cross-run or cross-artifact/,
+    );
+  }
+
+  assertFinalMutationRejected(
+    "missing runtime timing identity",
+    (clone) =>
+      mutateRuntimeTiming(clone, (timing) => {
+        delete timing.evidenceBinding.identity;
+      }),
+    /timing identity binding is malformed|timing evidence is cross-run or cross-artifact/,
+  );
+  assertFinalMutationRejected(
+    "malformed runtime timing identity",
+    (clone) =>
+      mutateRuntimeTiming(clone, (timing) => {
+        timing.evidenceBinding.identity = "malformed";
+      }),
+    /timing identity binding is malformed|timing evidence is cross-run or cross-artifact/,
+  );
+
+  for (const [name, evidenceName, mutate] of [
+    [
+      "raw runtime report hash mismatch",
+      "runtime-report",
+      (report) => {
+        report.stats.duration += 1;
+      },
+    ],
+    [
+      "raw runtime timing hash mismatch",
+      "runtime-phase-timings",
+      (timing) => {
+        timing.wholeTestTimeoutMs += 1;
+      },
+    ],
+    [
+      "raw runtime marker hash mismatch",
+      "runtime-start",
+      (marker) => {
+        marker.title = "tampered runtime marker";
+      },
+    ],
+  ]) {
+    assertFinalMutationRejected(
+      name,
+      (clone) => {
+        const evidenceRoot = path.join(clone, "evidence");
+        const state = readCertificationState(
+          path.join(evidenceRoot, "certification-state.json"),
+        );
+        const filePath = path.join(
+          evidenceRoot,
+          state.evidenceFiles[evidenceName].path,
+        );
+        const value = JSON.parse(readFileSync(filePath, "utf8"));
+        mutate(value);
+        writeFileSync(filePath, canonicalJsonBytes(value));
+      },
+      /hash mismatch/,
+    );
+  }
+
+  assertFinalMutationRejected(
+    "cross-attempt runtime report authorization",
+    (clone) => {
+      const projection =
+        projectSimulationRuntimeReportThroughPhysicalOwnership(clone);
+      const authorization = JSON.parse(
+        readFileSync(projection.ownerPath, "utf8"),
+      );
+      authorization.runtimeStageAttempt += 1;
+      writeFileSync(projection.ownerPath, canonicalJsonBytes(authorization));
+    },
+    /owned by another certification, candidate, run, attempt, path, or evidence root/,
+  );
 
   assertFinalMutationRejected(
     "runtime timing evidence journal v1",

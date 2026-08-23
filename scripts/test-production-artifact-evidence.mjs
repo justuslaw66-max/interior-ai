@@ -4996,6 +4996,51 @@ async function expectRejected(context, expectedText) {
 
 {
   const context = await fixture();
+  await rewriteFailurePair(context, ({ report, timing }) => {
+    delete report.runtimeSmokeFailure;
+    assert.equal(timing.failure, null);
+  });
+  const result = await validateProductionEvidence({
+    repositoryRoot: context.root,
+    manifestPath: context.manifestPath,
+    verificationMode: PRODUCTION_EVIDENCE_VERIFICATION_MODES.REPOSITORY_FINAL,
+  });
+  assert.deepEqual(result.issues, []);
+  assert.equal(result.valid, true);
+}
+
+{
+  const context = await fixture();
+  await rewriteFailurePair(context, ({ report, timing }) => {
+    assert.equal(timing.failure, null);
+    report.runtimeSmokeFailure = {
+      failureKind: "assertion-failure",
+      phaseId: timing.phases[0].name,
+      phaseElapsedMs: timing.phases[0].elapsedMs,
+      phaseBudgetMs: timing.phases[0].timeoutBudgetMs,
+      operationId: null,
+      operationOutcome: null,
+      operationElapsedMs: null,
+      operationElapsedPreciseMs: null,
+      operationBudgetMs: null,
+      attemptTimeoutMs: null,
+      remainingAtAttemptStartMs: null,
+      deadlineReached: null,
+      watchdogBudgetMs: null,
+      lastSafeCheckpoint: "phase-complete",
+      safeLifecycleState: timing.phases[0].finalLifecycleState,
+      progressObserved: true,
+      originalCause: null,
+    };
+  });
+  await expectRejected(
+    context,
+    "successful runtime-smoke report retains stale failure provenance",
+  );
+}
+
+{
+  const context = await fixture();
   const result = await validateProductionEvidence({
     repositoryRoot: context.root,
     manifestPath: context.manifestPath,
@@ -5399,6 +5444,21 @@ async function expectRejected(context, expectedText) {
       issue.includes("failed evidence validation cannot produce an approval-ready result")
     ),
   );
+}
+
+{
+  const context = await runtimeFailureFixture();
+  await rewriteFailurePair(context, ({ report }) => {
+    delete report.runtimeSmokeFailure;
+  });
+  const verified = await verifyRuntimeSmokeFailureEvidence({
+    repositoryRoot: context.root,
+    manifestPath: context.manifestPath,
+    reportPath: context.reportPath,
+    phaseTimingPath: context.phaseTimingPath,
+  });
+  assert.equal(verified.failure.failureKind, "nested-operation-timeout");
+  assert.equal(verified.failure.phaseId, "bounds-verification");
 }
 
 {

@@ -757,7 +757,6 @@ function simulatedRuntimePlaywrightReport(state) {
       },
     ],
     errors: [],
-    runtimeSmokeFailure: null,
     stats: {
       startTime: "2026-08-14T00:20:00.000Z",
       duration: 400,

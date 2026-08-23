@@ -110,6 +110,7 @@ const {
   RUNTIME_SMOKE_PHASE_TIMING_SCHEMA,
   RUNTIME_SMOKE_TIMING_COMPLETION_MARKER,
   RUNTIME_SMOKE_TIMING_EVIDENCE_BINDING_SCHEMA,
+  RUNTIME_SMOKE_TIMING_IDENTITY_KEYS,
   RUNTIME_SMOKE_WHOLE_TEST_TIMEOUT_MS,
   resolveRuntimeSmokeTimingDestination,
 } = await import("./runtime-smoke-phase-budget.mjs");
@@ -2924,26 +2925,16 @@ function runtimeSmokeTimingEvidenceBindingIssues(binding) {
   ) {
     issues.push("runtime-smoke timing root contract is invalid");
   }
-  const identityKeys = [
-    "certificationId",
-    "candidateId",
-    "commitSha",
-    "treeSha",
-    "nextBuildId",
-    "artifactSha256",
-    "productionManifestSha256",
-    "semanticJournalSha256",
-    "semanticJournalNonce",
-    "runtimeStage",
-    "runtimeStageProfileId",
-    "runtimeStageProfileSha256",
-    "stageEnvironmentContractSha256",
-  ];
   if (
-    !exactKeys(binding.identity, identityKeys) ||
-    Object.values(binding.identity ?? {}).some(
-      (value) => value !== null && (typeof value !== "string" || !value),
-    )
+    !exactKeys(binding.identity, RUNTIME_SMOKE_TIMING_IDENTITY_KEYS) ||
+    Object.entries(binding.identity ?? {}).some(
+      ([name, value]) =>
+        name !== "semanticJournalVersion" &&
+        value !== null &&
+        (typeof value !== "string" || !value),
+    ) ||
+    binding.identity?.semanticJournalSchema !== PRODUCTION_EVIDENCE_JOURNAL_SCHEMA ||
+    binding.identity?.semanticJournalVersion !== PRODUCTION_EVIDENCE_JOURNAL_VERSION
   ) {
     issues.push("runtime-smoke timing identity binding is malformed");
   }
@@ -3116,6 +3107,9 @@ function readRuntimeSmokePhaseTimings(
     ) {
       issues.push("runtime-smoke phase timing outcomes are invalid");
     }
+    const reportFailure = Object.hasOwn(report ?? {}, "runtimeSmokeFailure")
+      ? report.runtimeSmokeFailure
+      : null;
     if (allowFailure && failurePhases.length === 1) {
       const failurePhase = failurePhases[0];
       issues.push(
@@ -3129,12 +3123,12 @@ function readRuntimeSmokePhaseTimings(
         issues.push("runtime-smoke top-level failure disagrees with its phase record");
       }
       if (
-        !report ||
-        JSON.stringify(report.runtimeSmokeFailure) !== JSON.stringify(timing.failure)
+        reportFailure !== null &&
+        JSON.stringify(reportFailure) !== JSON.stringify(timing.failure)
       ) {
         issues.push("runtime-smoke report failure disagrees with phase timing evidence");
       }
-    } else if (!allowFailure && report?.runtimeSmokeFailure !== null) {
+    } else if (!allowFailure && reportFailure !== null) {
       issues.push("successful runtime-smoke report retains stale failure provenance");
     }
     if (Array.isArray(timing.phases)) {
