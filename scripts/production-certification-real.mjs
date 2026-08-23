@@ -36,7 +36,6 @@ import {
   preflightCertificationBuildGeneratedOutput,
 } from "./production-certification-build-generated-output.mjs";
 import {
-  canonicalizeProductionEvidenceReport,
   recordProductionEvidenceTest,
   validateProductionEvidence,
 } from "./production-artifact-evidence.mjs";
@@ -3475,10 +3474,9 @@ export async function runRuntimeSmokeStage(options = {}) {
       );
     }
     childCompleted = true;
-    canonicalizeProductionEvidenceReport(
-      context.repositoryRoot,
-      reportPath,
+    const rawReportDescriptor = retainedDescriptor(
       context.evidenceRoot,
+      reportPath,
     );
     const validation = await recordProductionEvidenceTest({
       repositoryRoot: context.repositoryRoot,
@@ -3488,10 +3486,18 @@ export async function runRuntimeSmokeStage(options = {}) {
       name: "runtime-smoke",
       command: RUNTIME_COMMAND,
       processExitCode: 0,
-      environment: context.environment,
+      environment: childProjection.environment,
       persistManifest: false,
+      expectedRawReportSha256: rawReportDescriptor.sha256,
     });
     const reportDescriptor = retainedDescriptor(context.evidenceRoot, reportPath);
+    if (reportDescriptor.sha256 !== rawReportDescriptor.sha256) {
+      throw new StageFailure(
+        "runtime-smoke raw report changed during portable evidence validation",
+        "FINAL_EVIDENCE_FAILURE",
+        true,
+      );
+    }
     const timingDescriptor = retainedDescriptor(context.evidenceRoot, timingPath);
     const startDescriptor = retainedDescriptor(
       context.evidenceRoot,

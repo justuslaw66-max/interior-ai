@@ -8,6 +8,7 @@ import {
   mkdirSync,
   mkdtempSync,
   readFileSync,
+  realpathSync,
   renameSync,
   rmSync,
   symlinkSync,
@@ -75,6 +76,7 @@ import {
 import { deriveProductionVerifierClosure } from "./production-verifier-closure.mjs";
 import CertificationPlaywrightStartReporter from "./certification-playwright-start-reporter.mjs";
 import {
+  RUNTIME_SMOKE_REPORT_AUTHORIZATION_SCHEMA,
   resolvePlaywrightReportPath,
   resolveRequiredTestReportPath,
 } from "./playwright-report-path.mjs";
@@ -195,6 +197,87 @@ function mutateRuntimeReportIdentity(simulationRoot, mutate) {
     },
     "runtimeSmokeEvidenceSha256",
   );
+}
+
+function projectSimulationRuntimeReportThroughPhysicalOwnership(simulationRoot) {
+  const evidenceRoot = path.join(simulationRoot, "evidence");
+  const statePath = path.join(evidenceRoot, "certification-state.json");
+  const state = readCertificationState(statePath);
+  const reportDescriptor = state.evidenceFiles["runtime-report"];
+  const markerDescriptor = state.evidenceFiles["runtime-start"];
+  const reportPath = path.join(evidenceRoot, reportDescriptor.path);
+  const markerPath = path.join(evidenceRoot, markerDescriptor.path);
+  const producerSidecarDescriptor =
+    state.worktrees.roles["final-artifact"].privateSidecar;
+  const producerSidecar = JSON.parse(
+    readFileSync(
+      path.join(evidenceRoot, producerSidecarDescriptor.path),
+      "utf8",
+    ),
+  );
+  const producerRoot = producerSidecar.realpath;
+  const report = JSON.parse(readFileSync(reportPath, "utf8"));
+  report.config.configFile = path.join(producerRoot, "playwright.config.ts");
+  report.config.rootDir = path.join(producerRoot, "tests/e2e");
+  report.config.projects[0].outputDir = path.join(
+    producerRoot,
+    ".local/production-artifact-evidence/playwright-output",
+  );
+  report.config.projects[0].testDir = path.join(producerRoot, "tests/e2e");
+  report.config.reporter = [
+    ["list", null],
+    ["json", { outputFile: reportPath }],
+    [
+      path.join(
+        producerRoot,
+        "scripts/certification-playwright-start-reporter.mjs",
+      ),
+      {
+        markerPath,
+        boundary: "test-begin",
+        gateId: "ci.production-runtime-smoke",
+      },
+    ],
+  ];
+  writeFileSync(reportPath, canonicalJsonBytes(report));
+  reportDescriptor.sha256 = sha256Bytes(readFileSync(reportPath));
+  const runtimeDescriptor = state.evidenceFiles["runtime-smoke"];
+  const runtimePath = path.join(evidenceRoot, runtimeDescriptor.path);
+  const runtime = JSON.parse(readFileSync(runtimePath, "utf8"));
+  runtime.reportSha256 = reportDescriptor.sha256;
+  writeFileSync(runtimePath, canonicalJsonBytes(runtime));
+  runtimeDescriptor.sha256 = sha256Bytes(readFileSync(runtimePath));
+  state.bindings.runtimeSmokeEvidenceSha256 = runtimeDescriptor.sha256;
+  const attempt = state.stages["runtime-smoke"].attempts.at(-1);
+  const ownerPath = `${reportPath}.owner.json`;
+  writeFileSync(
+    ownerPath,
+    canonicalJsonBytes({
+      schema: RUNTIME_SMOKE_REPORT_AUTHORIZATION_SCHEMA,
+      certificationId: state.certificationId,
+      candidateId: state.candidate.id,
+      sourceCommitSha: state.candidate.commitSha,
+      sourceTreeSha: state.candidate.treeSha,
+      buildId: state.bindings.nextBuildId,
+      artifactSha256: state.bindings.artifactSha256,
+      productionManifestSha256: state.bindings.productionManifestSha256,
+      semanticJournalSha256: state.bindings.semanticJournalSha256,
+      runtimeStage: "runtime-smoke",
+      runtimeStageAttempt: attempt.number,
+      runNonce: state.bindings.semanticJournalNonce,
+      reportRelativePath: reportDescriptor.path,
+      evidenceRootIdentitySha256: sha256Bytes(realpathSync(evidenceRoot)),
+    }),
+  );
+  writeCertificationState(statePath, state);
+  return {
+    markerPath,
+    ownerPath,
+    reportPath,
+    reportSha256: reportDescriptor.sha256,
+    runtimePath,
+    statePath,
+  };
 }
 
 function mutateRuntimeTimingIdentity(simulationRoot, mutate) {
@@ -1831,6 +1914,56 @@ function stateFixture() {
   );
   const completeFinalChild = finalSimulationChild(base);
   assert.equal(completeFinalChild.status, 0);
+
+  {
+    const baseEvidenceRoot = path.join(base, "evidence");
+    const baseStatePath = path.join(
+      baseEvidenceRoot,
+      "certification-state.json",
+    );
+    const baseState = readCertificationState(baseStatePath);
+    const baseReportPath = path.join(
+      baseEvidenceRoot,
+      baseState.evidenceFiles["runtime-report"].path,
+    );
+    const baseRuntimePath = path.join(
+      baseEvidenceRoot,
+      baseState.evidenceFiles["runtime-smoke"].path,
+    );
+    const baseOwnerPath = `${baseReportPath}.owner.json`;
+    const originalStateBytes = readFileSync(baseStatePath);
+    const originalReportBytes = readFileSync(baseReportPath);
+    const originalRuntimeBytes = readFileSync(baseRuntimePath);
+    const originalOwnerBytes = existsSync(baseOwnerPath)
+      ? readFileSync(baseOwnerPath)
+      : null;
+    try {
+      const projection =
+        projectSimulationRuntimeReportThroughPhysicalOwnership(base);
+      const rawReportBytes = readFileSync(projection.reportPath);
+      const child = finalSimulationChild(base);
+      assert.equal(
+        child.status,
+        0,
+        `physical runtime-report projection must pass final evidence:\n${child.stdout}\n${child.stderr}`,
+      );
+      assert.equal(JSON.parse(child.stdout.trim()).simulationComplete, true);
+      assert.deepEqual(readFileSync(projection.reportPath), rawReportBytes);
+      assert.equal(
+        sha256Bytes(readFileSync(projection.reportPath)),
+        projection.reportSha256,
+      );
+    } finally {
+      writeFileSync(baseStatePath, originalStateBytes);
+      writeFileSync(baseReportPath, originalReportBytes);
+      writeFileSync(baseRuntimePath, originalRuntimeBytes);
+      if (originalOwnerBytes === null) {
+        rmSync(baseOwnerPath, { force: true });
+      } else {
+        writeFileSync(baseOwnerPath, originalOwnerBytes);
+      }
+    }
+  }
 
   {
     const clone = cloneSimulation(base);

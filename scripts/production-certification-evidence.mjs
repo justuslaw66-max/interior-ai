@@ -21,6 +21,7 @@ import { deriveProductionVerifierClosure } from "./production-verifier-closure.m
 import { certificationBuildGeneratedOutputIssues } from "./production-certification-build-generated-output.mjs";
 import { validateRequiredTestReport } from "./required-test-truthfulness.mjs";
 import {
+  canonicalizeBoundRuntimeSmokeReport,
   readRuntimeSmokeTelemetryBootstrapEvidence,
   validateRetainedRuntimeSmokePhaseTimings,
 } from "./production-artifact-evidence.mjs";
@@ -132,14 +133,15 @@ function boundEvidence(state, evidenceRoot, name) {
   if (!descriptor || !isSha256(descriptor.sha256)) {
     throw new Error(`certification evidence binding is missing: ${name}`);
   }
+  const filePath = containedEvidencePath(evidenceRoot, descriptor.path);
   const read = readCanonicalJson(
-    containedEvidencePath(evidenceRoot, descriptor.path),
+    filePath,
     `certification evidence ${name}`,
   );
   if (read.sha256 !== descriptor.sha256) {
     throw new Error(`certification evidence hash mismatch: ${name}`);
   }
-  return read;
+  return { ...read, filePath };
 }
 
 function boundRawJsonEvidence(state, evidenceRoot, name) {
@@ -558,6 +560,80 @@ function validateRawPlaywrightReport({
   return { issues, truthfulness };
 }
 
+function finalRuntimeReportAuthorizationEnvironment(state) {
+  const attempt = state.stages?.["runtime-smoke"]?.attempts?.at(-1);
+  if (!Number.isSafeInteger(attempt?.number) || attempt.number < 1) {
+    throw new Error("runtime-smoke final evidence has no bound stage attempt");
+  }
+  return {
+    PRODUCTION_CERTIFICATION_ID: state.certificationId,
+    PRODUCTION_EVIDENCE_CANDIDATE_ID: state.candidate.id,
+    PRODUCTION_EVIDENCE_EXPECTED_COMMIT_SHA: state.candidate.commitSha,
+    PRODUCTION_EVIDENCE_EXPECTED_TREE_SHA: state.candidate.treeSha,
+    PRODUCTION_EVIDENCE_EXPECTED_BUILD_ID: state.bindings.nextBuildId,
+    PRODUCTION_EVIDENCE_EXPECTED_ARTIFACT_SHA256:
+      state.bindings.artifactSha256,
+    PRODUCTION_EVIDENCE_EXPECTED_MANIFEST_SHA256:
+      state.bindings.productionManifestSha256,
+    PRODUCTION_EVIDENCE_EXPECTED_JOURNAL_SHA256:
+      state.bindings.semanticJournalSha256,
+    PRODUCTION_EVIDENCE_EXPECTED_JOURNAL_NONCE:
+      state.bindings.semanticJournalNonce,
+    CERTIFICATION_RUNTIME_STAGE_ATTEMPT: String(attempt.number),
+  };
+}
+
+function finalRuntimeReportProducerRoot(state, evidenceRoot) {
+  const binding = state.worktrees?.roles?.["final-artifact"];
+  const descriptor = binding?.privateSidecar;
+  if (
+    binding?.role !== "final-artifact" ||
+    binding?.candidateCommitSha !== state.candidate.commitSha ||
+    binding?.candidateTreeSha !== state.candidate.treeSha ||
+    !descriptor ||
+    !isSha256(descriptor.sha256)
+  ) {
+    throw new Error("runtime report producer worktree binding is missing");
+  }
+  const sidecar = readCanonicalJson(
+    containedEvidencePath(evidenceRoot, descriptor.path),
+    "runtime report producer worktree sidecar",
+  );
+  if (
+    sidecar.sha256 !== descriptor.sha256 ||
+    sidecar.value?.schema !==
+      "interior-ai.production-certification-worktree-private.v1" ||
+    sidecar.value?.certificationId !== state.certificationId ||
+    sidecar.value?.role !== "final-artifact" ||
+    sha256Bytes(sidecar.value?.realpath ?? "") !==
+      binding.privateRealpathSha256
+  ) {
+    throw new Error("runtime report producer worktree sidecar is contradictory");
+  }
+  const producerRoot = sidecar.value.realpath;
+  const entry = lstatSync(producerRoot);
+  if (
+    entry.isSymbolicLink() ||
+    !entry.isDirectory() ||
+    realpathSync(producerRoot) !== producerRoot
+  ) {
+    throw new Error("runtime report producer worktree is not a physical directory");
+  }
+  return producerRoot;
+}
+
+function runtimeReportContainsPhysicalReporterPaths(report) {
+  return (report?.config?.reporter ?? []).some(
+    (entry) =>
+      Array.isArray(entry) &&
+      entry[1] &&
+      typeof entry[1] === "object" &&
+      [entry[1].outputFile, entry[1].markerPath].some(
+        (value) => typeof value === "string" && path.isAbsolute(value),
+      ),
+  );
+}
+
 export function finalRuntimeArtifactIdentityIssues(identity, state) {
   if (
     identity?.candidateIdentifier !== state.candidate.id ||
@@ -767,16 +843,35 @@ export function verifyFinalCertificationEvidence({
     "phase8-completion",
   );
   const runtime = boundEvidence(state, evidenceRoot, "runtime-smoke");
-  const rawRuntime = boundEvidence(state, evidenceRoot, "runtime-report");
+  const rawRuntime = boundRawJsonEvidence(state, evidenceRoot, "runtime-report");
   const runtimeStart = boundEvidence(state, evidenceRoot, "runtime-start");
   const rawRuntimeTimings = boundRawJsonEvidence(
     state,
     evidenceRoot,
     "runtime-phase-timings",
   );
+  let portableRuntimeReport = rawRuntime.value;
+  if (
+    state.executionClass === "real-candidate" ||
+    runtimeReportContainsPhysicalReporterPaths(rawRuntime.value)
+  ) {
+    try {
+      portableRuntimeReport = canonicalizeBoundRuntimeSmokeReport({
+        repositoryRoot: finalRuntimeReportProducerRoot(state, evidenceRoot),
+        reportPath: rawRuntime.filePath,
+        markerPath: runtimeStart.filePath,
+        authorizedExternalRoot: evidenceRoot,
+        expectedRawReportSha256: rawRuntime.sha256,
+        reportAuthorizationEnvironment:
+          finalRuntimeReportAuthorizationEnvironment(state),
+      });
+    } catch (error) {
+      issues.push(error instanceof Error ? error.message : String(error));
+    }
+  }
   issues.push(
     ...finalRuntimeArtifactIdentityIssues(
-      rawRuntime.value?.config?.metadata?.productionArtifactEvidence,
+      portableRuntimeReport?.config?.metadata?.productionArtifactEvidence,
       state,
     ),
   );
@@ -794,7 +889,7 @@ export function verifyFinalCertificationEvidence({
     }),
   );
   const rawRuntimeValidation = validateRawPlaywrightReport({
-    report: rawRuntime.value,
+    report: portableRuntimeReport,
     gateId: "ci.production-runtime-smoke",
     artifactRoot: root,
     state,
@@ -854,7 +949,9 @@ export function verifyFinalCertificationEvidence({
   }
   if (state.executionClass === "real-candidate") {
     issues.push(...validateRawPhase8Evidence(rawPhase8.value, phase8.value, state));
-    const telemetry = readRuntimeSmokeTelemetryBootstrapEvidence(rawRuntime.value);
+    const telemetry = readRuntimeSmokeTelemetryBootstrapEvidence(
+      portableRuntimeReport,
+    );
     issues.push(...telemetry.issues.map((issue) => `runtime telemetry: ${issue}`));
     const observedTelemetry = telemetry.observations.map((observation) => ({
       realm:
@@ -875,7 +972,7 @@ export function verifyFinalCertificationEvidence({
       repositoryRoot: root,
       timingPath: rawRuntimeTimings.filePath,
       timingSha256: rawRuntimeTimings.sha256,
-      report: rawRuntime.value,
+      report: portableRuntimeReport,
       environment: {},
     });
     issues.push(

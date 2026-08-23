@@ -42,6 +42,28 @@ or evidence payload. Exact source qualification is
 `QUALIFIED_FOR_FINAL_CANDIDATE_CERTIFICATION`; a fresh rehearsal and immutable
 final certification remain pending.
 
+## Runtime report portable-path correction — 2026-08-23
+
+The preserved rehearsal ending `20260822T171959Z-5GFdVZRv-r04` remains failed
+at `runtime-smoke:001` with `FINAL_EVIDENCE_FAILURE` and
+`consumedSubstantiveGate=true`. Its two Playwright tests passed with no skips,
+flakes, failures, or retries; final-evidence truthfulness rejected only the raw
+external `outputFile` and product-test `markerPath` recorded by Playwright.
+
+External runtime report canonicalization now separates physical and portable
+ownership. The physical Playwright JSON remains byte-preserved and its SHA-256
+is retained by certification state. Before a portable in-memory projection is
+accepted, the canonicalizer rehashes those bytes, verifies the canonical v2
+owner sidecar against the exact certification/candidate/run/attempt/root, and
+uses the retained external-file resolver to prove the report and start marker
+are normalized physical files beneath the bound root. Only the JSON reporter's
+`outputFile` and the registered start reporter's `markerPath` are projected to
+their safe root-relative paths, including `playwright-report.json` and
+`product-test-start.json`; repository-root projection remains unchanged.
+Unknown absolute fields, foreign roots or identities, traversal, symlink
+escapes, missing files, and raw-hash drift fail closed. Required-test
+truthfulness still rejects every remaining machine-local path.
+
 Status: repository-controlled CH-0016 contract. This document describes local
 production-mode artifact evidence and required CI behavior. It does not describe
 or prove a Vercel deployment, stable staging, production, or external platform

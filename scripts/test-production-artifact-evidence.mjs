@@ -23,6 +23,7 @@ import path from "node:path";
 import {
   FLOOR_PLAN_ROUTE_NFT_PATHS,
   PRODUCTION_EVIDENCE_VERIFIER_SOURCE_PATHS,
+  canonicalizeBoundRuntimeSmokeReport,
   canonicalizeProductionEvidenceReport,
   certifiedNestedDatabaseUrl,
   comparePortablePaths,
@@ -49,6 +50,7 @@ import {
   DEPENDENCY_INSTALL_COMMAND,
   GENERATED_SOURCE_CHECK_COMMAND,
   PRODUCTION_EVIDENCE_JOURNAL_SCHEMA,
+  PRODUCTION_EVIDENCE_JOURNAL_VERSION,
   PRODUCTION_EVIDENCE_SCHEMA,
   PRODUCTION_EVIDENCE_SERVER_COMMAND,
   PRODUCTION_EVIDENCE_VALIDATOR_VERSION,
@@ -60,8 +62,10 @@ import {
 import { loadProductionArtifactForPlaywright } from "./production-artifact-playwright.mjs";
 import {
   PLAYWRIGHT_EXTERNAL_EVIDENCE_ROOT,
+  authorizeRuntimeSmokeReportPath,
   resolvePlaywrightReportPath,
 } from "./playwright-report-path.mjs";
+import { validateRequiredTestReport } from "./required-test-truthfulness.mjs";
 import { inspectGitTree } from "./vercel-output-manifest.mjs";
 import {
   GITLEAKS_ARCHIVE_ENTRIES,
@@ -3567,6 +3571,412 @@ function listedSpecCount(suites) {
     rmSync(repositoryRoot, { recursive: true, force: true });
     rmSync(externalRoot, { recursive: true, force: true });
     rmSync(outsideRoot, { recursive: true, force: true });
+  }
+}
+
+function runtimeReportCanonicalizationFixture() {
+  const repositoryRoot = process.cwd();
+  const externalRoot = mkdtempSync(
+    path.join(tmpdir(), "runtime-report-canonicalization-"),
+  );
+  const outsideRoot = mkdtempSync(
+    path.join(tmpdir(), "runtime-report-canonicalization-outside-"),
+  );
+  const runtimeRoot = path.join(externalRoot, "runtime-smoke");
+  mkdirSync(runtimeRoot);
+  const reportPath = path.join(runtimeRoot, "playwright-report.json");
+  const markerPath = path.join(runtimeRoot, "product-test-start.json");
+  const environment = {
+    PRODUCTION_CERTIFICATION_ID: "CERT-runtime-portable-fixture",
+    PRODUCTION_EVIDENCE_CANDIDATE_ID: "CANDIDATE-runtime-portable-fixture",
+    PRODUCTION_EVIDENCE_EXPECTED_COMMIT_SHA: "1".repeat(40),
+    PRODUCTION_EVIDENCE_EXPECTED_TREE_SHA: "2".repeat(40),
+    PRODUCTION_EVIDENCE_EXPECTED_BUILD_ID: "runtime-portable-build",
+    PRODUCTION_EVIDENCE_EXPECTED_ARTIFACT_SHA256: "3".repeat(64),
+    PRODUCTION_EVIDENCE_EXPECTED_MANIFEST_SHA256: "4".repeat(64),
+    PRODUCTION_EVIDENCE_EXPECTED_JOURNAL_SHA256: "5".repeat(64),
+    PRODUCTION_EVIDENCE_EXPECTED_JOURNAL_NONCE:
+      "12345678-1234-4123-8123-123456789abc",
+    CERTIFICATION_RUNTIME_STAGE_ATTEMPT: "1",
+  };
+  authorizeRuntimeSmokeReportPath({
+    requestedPath: reportPath,
+    repositoryRoot,
+    authorizedExternalRoot: externalRoot,
+    environment,
+  });
+  writeFileSync(
+    markerPath,
+    `${JSON.stringify({
+      schema: "interior-ai.production-certification-playwright-start.v1",
+      boundary: "test-begin",
+      gateId: "ci.production-runtime-smoke",
+      project: "chromium",
+      title: "furnished template remains stable without a render loop",
+      retry: 0,
+    }, null, 2)}\n`,
+  );
+  const report = {
+    config: {
+      configFile: path.join(repositoryRoot, "playwright.config.ts"),
+      rootDir: path.join(repositoryRoot, "tests/e2e"),
+      forbidOnly: true,
+      projects: [
+        {
+          name: "chromium",
+          retries: 0,
+          repeatEach: 1,
+          outputDir: path.join(
+            repositoryRoot,
+            ".local/production-artifact-evidence/playwright-output",
+          ),
+          testDir: path.join(repositoryRoot, "tests/e2e"),
+          snapshotDir: null,
+        },
+      ],
+      reporter: [
+        ["list", null],
+        ["json", { outputFile: reportPath }],
+        [
+          path.join(
+            repositoryRoot,
+            "scripts/certification-playwright-start-reporter.mjs",
+          ),
+          {
+            markerPath,
+            boundary: "test-begin",
+            gateId: "ci.production-runtime-smoke",
+          },
+        ],
+      ],
+      webServer: {
+        command: PRODUCTION_EVIDENCE_SERVER_COMMAND,
+        url: "http://127.0.0.1:3000",
+        reuseExistingServer: false,
+      },
+      metadata: {
+        productionArtifactEvidence: {
+          schema: PRODUCTION_EVIDENCE_SCHEMA,
+          validatorVersion: PRODUCTION_EVIDENCE_VALIDATOR_VERSION,
+          candidateIdentifier:
+            environment.PRODUCTION_EVIDENCE_CANDIDATE_ID,
+          sourceCommitSha:
+            environment.PRODUCTION_EVIDENCE_EXPECTED_COMMIT_SHA,
+          sourceTreeSha: environment.PRODUCTION_EVIDENCE_EXPECTED_TREE_SHA,
+          artifactSha256:
+            environment.PRODUCTION_EVIDENCE_EXPECTED_ARTIFACT_SHA256,
+          nextBuildId: environment.PRODUCTION_EVIDENCE_EXPECTED_BUILD_ID,
+          semanticJournalSchema: PRODUCTION_EVIDENCE_JOURNAL_SCHEMA,
+          semanticJournalVersion: PRODUCTION_EVIDENCE_JOURNAL_VERSION,
+          runNonce:
+            environment.PRODUCTION_EVIDENCE_EXPECTED_JOURNAL_NONCE,
+          serverCommand: PRODUCTION_EVIDENCE_SERVER_COMMAND,
+          buildMode: "production",
+        },
+      },
+    },
+    suites: [
+      {
+        title: "00-runtime-smoke.spec.ts",
+        file: "00-runtime-smoke.spec.ts",
+        specs: [
+          {
+            title: "furnished template remains stable without a render loop",
+            file: "00-runtime-smoke.spec.ts",
+            ok: true,
+            tests: [
+              {
+                projectId: "chromium",
+                projectName: "chromium",
+                status: "expected",
+                annotations: [],
+                results: [
+                  {
+                    status: "passed",
+                    retry: 0,
+                    annotations: [],
+                    attachments: [],
+                  },
+                ],
+              },
+            ],
+          },
+          {
+            title: "health and catalog endpoints report ready",
+            file: "00-runtime-smoke.spec.ts",
+            ok: true,
+            tests: [
+              {
+                projectId: "chromium",
+                projectName: "chromium",
+                status: "expected",
+                annotations: [],
+                results: [
+                  {
+                    status: "passed",
+                    retry: 0,
+                    annotations: [],
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+    ],
+    errors: [],
+    stats: {
+      startTime: "2026-08-22T17:51:15.942Z",
+      duration: 73572.596,
+      expected: 2,
+      skipped: 0,
+      unexpected: 0,
+      flaky: 0,
+    },
+  };
+  const writeReport = (value = report) => {
+    const bytes = Buffer.from(`${JSON.stringify(value, null, 2)}\n`);
+    writeFileSync(reportPath, bytes);
+    return { bytes, sha256: createHash("sha256").update(bytes).digest("hex") };
+  };
+  const raw = writeReport();
+  const canonicalize = (options = {}) =>
+    canonicalizeProductionEvidenceReport(
+      repositoryRoot,
+      reportPath,
+      options.authorizedExternalRoot ?? externalRoot,
+      {
+        expectedRawReportSha256:
+          options.expectedRawReportSha256 ??
+          createHash("sha256").update(readFileSync(reportPath)).digest("hex"),
+        reportAuthorizationEnvironment:
+          options.environment ?? environment,
+      },
+    );
+  return {
+    repositoryRoot,
+    externalRoot,
+    outsideRoot,
+    runtimeRoot,
+    reportPath,
+    markerPath,
+    environment,
+    report,
+    raw,
+    writeReport,
+    canonicalize,
+    cleanup() {
+      rmSync(externalRoot, { recursive: true, force: true });
+      rmSync(outsideRoot, { recursive: true, force: true });
+    },
+  };
+}
+
+{
+  const fixture = runtimeReportCanonicalizationFixture();
+  try {
+    const ownerBytes = readFileSync(`${fixture.reportPath}.owner.json`);
+    const portable = fixture.canonicalize({
+      expectedRawReportSha256: fixture.raw.sha256,
+    });
+    assert.deepEqual(readFileSync(fixture.reportPath), fixture.raw.bytes);
+    assert.equal(
+      createHash("sha256").update(readFileSync(fixture.reportPath)).digest("hex"),
+      fixture.raw.sha256,
+    );
+    assert.deepEqual(readFileSync(`${fixture.reportPath}.owner.json`), ownerBytes);
+    assert.equal(
+      portable.config.reporter[1][1].outputFile,
+      "runtime-smoke/playwright-report.json",
+    );
+    assert.equal(
+      portable.config.reporter[2][1].markerPath,
+      "runtime-smoke/product-test-start.json",
+    );
+    assert.equal(JSON.stringify(portable).includes(fixture.externalRoot), false);
+    assert.equal(portable.config.projects[0].retries, 0);
+    assert.equal(portable.config.projects[0].repeatEach, 1);
+    const rawReport = JSON.parse(readFileSync(fixture.reportPath, "utf8"));
+    assert.equal(rawReport.config.reporter[1][1].outputFile, fixture.reportPath);
+    assert.equal(rawReport.config.reporter[2][1].markerPath, fixture.markerPath);
+    const truthfulness = validateRequiredTestReport({
+      repositoryRoot: fixture.repositoryRoot,
+      gateId: "ci.production-runtime-smoke",
+      report: portable,
+      processExitCode: 0,
+      requireMetadata: false,
+      validateRepository: false,
+    });
+    assert.deepEqual(truthfulness.issues, []);
+    assert.equal(truthfulness.valid, true);
+    const finalPortable = canonicalizeBoundRuntimeSmokeReport({
+      repositoryRoot: fixture.repositoryRoot,
+      reportPath: fixture.reportPath,
+      markerPath: fixture.markerPath,
+      authorizedExternalRoot: fixture.externalRoot,
+      expectedRawReportSha256: fixture.raw.sha256,
+      reportAuthorizationEnvironment: fixture.environment,
+    });
+    assert.deepEqual(finalPortable, portable);
+
+    for (const environmentMutation of [
+      { PRODUCTION_CERTIFICATION_ID: "CERT-foreign" },
+      { PRODUCTION_EVIDENCE_CANDIDATE_ID: "CANDIDATE-foreign" },
+      {
+        PRODUCTION_EVIDENCE_EXPECTED_JOURNAL_NONCE:
+          "87654321-4321-4321-8321-cba987654321",
+      },
+      { CERTIFICATION_RUNTIME_STAGE_ATTEMPT: "2" },
+    ]) {
+      assert.throws(
+        () =>
+          fixture.canonicalize({
+            expectedRawReportSha256: fixture.raw.sha256,
+            environment: { ...fixture.environment, ...environmentMutation },
+          }),
+        /owned by another certification, candidate, run, attempt, path, or evidence root/,
+      );
+    }
+    assert.throws(
+      () =>
+        fixture.canonicalize({
+          expectedRawReportSha256: "0".repeat(64),
+        }),
+      /raw Playwright report SHA-256/,
+    );
+    const foreignRoot = mkdtempSync(
+      path.join(tmpdir(), "runtime-report-canonicalization-foreign-"),
+    );
+    try {
+      assert.throws(
+        () => fixture.canonicalize({ authorizedExternalRoot: foreignRoot }),
+        /escapes its authorized root|outside every repository worktree/,
+      );
+    } finally {
+      rmSync(foreignRoot, { recursive: true, force: true });
+    }
+  } finally {
+    fixture.cleanup();
+  }
+}
+
+for (const mutation of [
+  {
+    name: "outside-root outputFile",
+    apply: (fixture, report) => {
+      report.config.reporter[1][1].outputFile = path.join(
+        fixture.outsideRoot,
+        "playwright-report.json",
+      );
+    },
+    expected: /exact bound raw report|escapes the authorized external evidence root/,
+  },
+  {
+    name: "traversal markerPath",
+    apply: (fixture, report) => {
+      report.config.reporter[2][1].markerPath =
+        `${fixture.runtimeRoot}${path.sep}nested${path.sep}..${path.sep}` +
+        "product-test-start.json";
+    },
+    expected:
+      /exact bound start marker|normalized absolute path|explicit ownership contract/,
+  },
+  {
+    name: "arbitrary absolute path",
+    apply: (fixture, report) => {
+      report.config.metadata.unownedPath = path.join(
+        fixture.outsideRoot,
+        "arbitrary.json",
+      );
+    },
+    expected: /absolute paths outside its explicit ownership contract/,
+  },
+  {
+    name: "unowned external-root path",
+    apply: (fixture, report) => {
+      report.config.metadata.unownedExternalPath = path.join(
+        fixture.externalRoot,
+        "unowned.json",
+      );
+    },
+    expected: /absolute paths outside its explicit ownership contract/,
+  },
+  {
+    name: "repository-prefix sibling path",
+    apply: (fixture, report) => {
+      report.config.metadata.repositoryPrefixSiblingPath =
+        `${fixture.repositoryRoot}-foreign${path.sep}secret.json`;
+    },
+    expected: /absolute paths outside its explicit ownership contract/,
+  },
+  {
+    name: "repository-root traversal path",
+    apply: (fixture, report) => {
+      report.config.metadata.repositoryTraversalPath =
+        `${fixture.repositoryRoot}${path.sep}..${path.sep}foreign` +
+        `${path.sep}secret.json`;
+    },
+    expected: /absolute paths outside its explicit ownership contract/,
+  },
+  {
+    name: "embedded repository-prefix sibling path",
+    apply: (fixture, report) => {
+      report.config.metadata.embeddedRepositoryPrefixSibling =
+        `error: ${fixture.repositoryRoot}-foreign${path.sep}secret.json`;
+    },
+    expected: /retains a raw machine-local root/,
+  },
+  {
+    name: "embedded repository traversal path",
+    apply: (fixture, report) => {
+      report.config.metadata.embeddedRepositoryTraversal =
+        `error: ${fixture.repositoryRoot}${path.sep}nested${path.sep}` +
+        `..${path.sep}..${path.sep}foreign${path.sep}secret.json`;
+    },
+    expected: /retains a raw machine-local root/,
+  },
+]) {
+  const fixture = runtimeReportCanonicalizationFixture();
+  try {
+    const report = structuredClone(fixture.report);
+    mutation.apply(fixture, report);
+    const raw = fixture.writeReport(report);
+    assert.throws(
+      () => fixture.canonicalize({ expectedRawReportSha256: raw.sha256 }),
+      mutation.expected,
+      mutation.name,
+    );
+  } finally {
+    fixture.cleanup();
+  }
+}
+
+{
+  const fixture = runtimeReportCanonicalizationFixture();
+  try {
+    rmSync(fixture.markerPath);
+    assert.throws(
+      () => fixture.canonicalize({ expectedRawReportSha256: fixture.raw.sha256 }),
+      /missing/,
+    );
+  } finally {
+    fixture.cleanup();
+  }
+}
+
+{
+  const fixture = runtimeReportCanonicalizationFixture();
+  try {
+    const outsideMarker = path.join(fixture.outsideRoot, "product-test-start.json");
+    writeFileSync(outsideMarker, "{}\n");
+    rmSync(fixture.markerPath);
+    symlinkSync(outsideMarker, fixture.markerPath);
+    assert.throws(
+      () => fixture.canonicalize({ expectedRawReportSha256: fixture.raw.sha256 }),
+      /physical file|escapes its authorized root/,
+    );
+  } finally {
+    fixture.cleanup();
   }
 }
 

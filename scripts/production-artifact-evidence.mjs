@@ -22,7 +22,10 @@ import { mkdir } from "node:fs/promises";
 import path from "node:path";
 import process from "node:process";
 
-import { resolveRetainedExternalEvidenceFile } from "./playwright-report-path.mjs";
+import {
+  resolveAuthorizedExternalEvidenceRoot,
+  resolveRetainedExternalEvidenceFile,
+} from "./playwright-report-path.mjs";
 import { deriveProductionVerifierClosure } from "./production-verifier-closure.mjs";
 import { projectCertificationChildEnvironment } from "./production-certification-stage-environment.mjs";
 import { certificationDependencyInstallationEnvironment } from "./production-certification-dependencies.mjs";
@@ -111,10 +114,12 @@ const {
   resolveRuntimeSmokeTimingDestination,
 } = await import("./runtime-smoke-phase-budget.mjs");
 const {
+  RUNTIME_SMOKE_EVIDENCE_OUTPUTS,
   RUNTIME_SMOKE_EVIDENCE_DESTINATION_CLASS,
   RUNTIME_SMOKE_EVIDENCE_ROOT_CONTRACT_SCHEMA,
   RUNTIME_SMOKE_EVIDENCE_ROOT_CONTRACT_SHA256,
   RUNTIME_SMOKE_EVIDENCE_ROOT_CONTRACT_VERSION,
+  RUNTIME_SMOKE_REPORT_AUTHORIZATION_SCHEMA,
 } = await import("./playwright-report-path.mjs");
 const RUNTIME_SMOKE_EXTERNAL_ROOT_NAME = [
   "PLAYWRIGHT",
@@ -2226,7 +2231,39 @@ function localRepositoryPathLeaks(repositoryRoot, text) {
 function replaceRepositoryPaths(value, repositoryRoots) {
   if (typeof value === "string") {
     return repositoryRoots.reduce(
-      (current, repositoryRoot) => current.split(repositoryRoot).join("<repository-root>"),
+      (current, repositoryRoot) => {
+        let result = "";
+        let offset = 0;
+        while (offset < current.length) {
+          const index = current.indexOf(repositoryRoot, offset);
+          if (index < 0) {
+            result += current.slice(offset);
+            break;
+          }
+          const end = index + repositoryRoot.length;
+          const preceding = index === 0 ? "" : current[index - 1];
+          const following = end === current.length ? "" : current[end];
+          const precedingIsPathText = /[A-Za-z0-9._~/-]/.test(preceding);
+          const followedByPathBoundary = !following || following === path.sep;
+          const candidateText = current.slice(index);
+          const delimiterIndex = candidateText.search(/[\s"'<>()[\]{}]/);
+          const candidatePathText = (delimiterIndex < 0
+            ? candidateText
+            : candidateText.slice(0, delimiterIndex)
+          ).slice(repositoryRoot.length);
+          const traverses = candidatePathText
+            .split(path.sep)
+            .some((segment) => segment === "." || segment === "..");
+          result += current.slice(offset, index);
+          if (!precedingIsPathText && followedByPathBoundary && !traverses) {
+            result += "<repository-root>";
+          } else {
+            result += repositoryRoot;
+          }
+          offset = end;
+        }
+        return result;
+      },
       value,
     );
   }
@@ -2242,6 +2279,348 @@ function replaceRepositoryPaths(value, repositoryRoots) {
     );
   }
   return value;
+}
+
+function portableExternalRelativePath(externalRoot, absolutePath, description) {
+  if (
+    typeof absolutePath !== "string" ||
+    !path.isAbsolute(absolutePath) ||
+    path.win32.isAbsolute(absolutePath) !== path.isAbsolute(absolutePath) ||
+    absolutePath !== absolutePath.trim() ||
+    absolutePath.includes("\0") ||
+    path.normalize(absolutePath) !== absolutePath
+  ) {
+    throw new Error(`${description} is not a normalized absolute path`);
+  }
+  const relativePath = path
+    .relative(externalRoot, absolutePath)
+    .split(path.sep)
+    .join("/");
+  if (
+    !relativePath ||
+    relativePath === ".." ||
+    relativePath.startsWith("../") ||
+    path.posix.normalize(relativePath) !== relativePath
+  ) {
+    throw new Error(`${description} escapes the authorized external evidence root`);
+  }
+  return relativePath;
+}
+
+function runtimeReportAuthorizationEnvironmentValue(environment, name) {
+  const value = environment?.[name];
+  if (typeof value !== "string" || !value || value !== value.trim()) {
+    throw new Error(`runtime report canonicalization is missing ${name}`);
+  }
+  return value;
+}
+
+function expectedRuntimeReportAuthorization({
+  environment,
+  reportRelativePath,
+  externalRootRealpath,
+}) {
+  const runtimeStageAttempt = runtimeReportAuthorizationEnvironmentValue(
+    environment,
+    "CERTIFICATION_RUNTIME_STAGE_ATTEMPT",
+  );
+  if (!/^[1-9]\d*$/.test(runtimeStageAttempt)) {
+    throw new Error("runtime report canonicalization stage attempt is invalid");
+  }
+  return {
+    schema: RUNTIME_SMOKE_REPORT_AUTHORIZATION_SCHEMA,
+    certificationId: runtimeReportAuthorizationEnvironmentValue(
+      environment,
+      "PRODUCTION_CERTIFICATION_ID",
+    ),
+    candidateId: runtimeReportAuthorizationEnvironmentValue(
+      environment,
+      "PRODUCTION_EVIDENCE_CANDIDATE_ID",
+    ),
+    sourceCommitSha: runtimeReportAuthorizationEnvironmentValue(
+      environment,
+      "PRODUCTION_EVIDENCE_EXPECTED_COMMIT_SHA",
+    ),
+    sourceTreeSha: runtimeReportAuthorizationEnvironmentValue(
+      environment,
+      "PRODUCTION_EVIDENCE_EXPECTED_TREE_SHA",
+    ),
+    buildId: runtimeReportAuthorizationEnvironmentValue(
+      environment,
+      "PRODUCTION_EVIDENCE_EXPECTED_BUILD_ID",
+    ),
+    artifactSha256: runtimeReportAuthorizationEnvironmentValue(
+      environment,
+      "PRODUCTION_EVIDENCE_EXPECTED_ARTIFACT_SHA256",
+    ),
+    productionManifestSha256: runtimeReportAuthorizationEnvironmentValue(
+      environment,
+      "PRODUCTION_EVIDENCE_EXPECTED_MANIFEST_SHA256",
+    ),
+    semanticJournalSha256: runtimeReportAuthorizationEnvironmentValue(
+      environment,
+      "PRODUCTION_EVIDENCE_EXPECTED_JOURNAL_SHA256",
+    ),
+    runtimeStage: "runtime-smoke",
+    runtimeStageAttempt: Number(runtimeStageAttempt),
+    runNonce: runtimeReportAuthorizationEnvironmentValue(
+      environment,
+      "PRODUCTION_EVIDENCE_EXPECTED_JOURNAL_NONCE",
+    ),
+    reportRelativePath,
+    evidenceRootIdentitySha256: sha256(Buffer.from(externalRootRealpath)),
+  };
+}
+
+function readRuntimeReportAuthorizationForCanonicalization(
+  authorizationPath,
+  resolveExternalFile,
+) {
+  resolveExternalFile(authorizationPath);
+  const bytes = readFileSync(authorizationPath);
+  let authorization;
+  try {
+    authorization = JSON.parse(bytes.toString("utf8"));
+  } catch {
+    throw new Error("runtime report authorization sidecar is invalid JSON");
+  }
+  if (!bytes.equals(Buffer.from(`${JSON.stringify(authorization, null, 2)}\n`))) {
+    throw new Error("runtime report authorization sidecar is not canonical JSON");
+  }
+  return authorization;
+}
+
+function absolutePortableReportFields(value, currentPath = "report", result = []) {
+  if (typeof value === "string") {
+    if (path.isAbsolute(value) || path.win32.isAbsolute(value)) result.push(currentPath);
+  } else if (Array.isArray(value)) {
+    value.forEach((child, index) =>
+      absolutePortableReportFields(child, `${currentPath}[${index}]`, result),
+    );
+  } else if (value && typeof value === "object") {
+    for (const [key, child] of Object.entries(value)) {
+      absolutePortableReportFields(child, `${currentPath}.${key}`, result);
+    }
+  }
+  return result;
+}
+
+function unownedRawAbsoluteReportFields(
+  value,
+  {
+    repositoryRoots,
+    explicitlyOwnedFields,
+  },
+  currentPath = "report",
+  result = [],
+) {
+  if (typeof value === "string") {
+    if (!(path.isAbsolute(value) || path.win32.isAbsolute(value))) return result;
+    const explicitlyOwnedValue = explicitlyOwnedFields.get(currentPath);
+    const normalized =
+      value === value.trim() &&
+      !value.includes("\0") &&
+      path.normalize(value) === value;
+    const repositoryOwned = repositoryRoots.some(
+      (root) => value === root || value.startsWith(`${root}${path.sep}`),
+    );
+    if (
+      !normalized ||
+      (value !== explicitlyOwnedValue && !repositoryOwned)
+    ) {
+      result.push(currentPath);
+    }
+  } else if (Array.isArray(value)) {
+    value.forEach((child, index) =>
+      unownedRawAbsoluteReportFields(
+        child,
+        { repositoryRoots, explicitlyOwnedFields },
+        `${currentPath}[${index}]`,
+        result,
+      ),
+    );
+  } else if (value && typeof value === "object") {
+    for (const [key, child] of Object.entries(value)) {
+      unownedRawAbsoluteReportFields(
+        child,
+        { repositoryRoots, explicitlyOwnedFields },
+        `${currentPath}.${key}`,
+        result,
+      );
+    }
+  }
+  return result;
+}
+
+function canonicalizeExternalRuntimeReport({
+  repositoryRoot,
+  report,
+  reportBytes,
+  absoluteReportPath,
+  authorizedExternalRoot,
+  externalRootRealpath,
+  expectedRawReportSha256,
+  reportAuthorizationEnvironment,
+  resolveExternalFile,
+  expectedMarkerPath,
+}) {
+  const rawReportSha256 = sha256(reportBytes);
+  if (
+    !/^[a-f0-9]{64}$/.test(expectedRawReportSha256 ?? "") ||
+    rawReportSha256 !== expectedRawReportSha256
+  ) {
+    throw new Error("raw Playwright report SHA-256 does not match its bound hash");
+  }
+  const externalRoot = path.resolve(authorizedExternalRoot);
+  const reportRelativePath = portableExternalRelativePath(
+    externalRoot,
+    absoluteReportPath,
+    "runtime report outputFile",
+  );
+  if (
+    path.basename(absoluteReportPath) !==
+      RUNTIME_SMOKE_EVIDENCE_OUTPUTS.report.filename
+  ) {
+    throw new Error("runtime report outputFile has a non-canonical filename");
+  }
+  const reporters = report?.config?.reporter;
+  if (!Array.isArray(reporters)) {
+    throw new Error("runtime report reporter configuration is missing");
+  }
+  const jsonReporterIndexes = reporters.flatMap((entry, index) =>
+    Array.isArray(entry) &&
+    entry[0] === "json" &&
+    entry[1] &&
+    typeof entry[1] === "object" &&
+    Object.hasOwn(entry[1], "outputFile")
+      ? [index]
+      : [],
+  );
+  const startReporterIndexes = reporters.flatMap((entry, index) =>
+    Array.isArray(entry) &&
+    typeof entry[0] === "string" &&
+    entry[0]
+      .split(path.sep)
+      .join("/")
+      .endsWith("/scripts/certification-playwright-start-reporter.mjs") &&
+    entry[1] &&
+    typeof entry[1] === "object" &&
+    Object.hasOwn(entry[1], "markerPath")
+      ? [index]
+      : [],
+  );
+  if (jsonReporterIndexes.length !== 1 || startReporterIndexes.length !== 1) {
+    throw new Error("runtime report reporter ownership is not canonical");
+  }
+  const jsonReporterIndex = jsonReporterIndexes[0];
+  const startReporterIndex = startReporterIndexes[0];
+  const repositoryRoots = [path.resolve(repositoryRoot), realpathSync(repositoryRoot)]
+    .filter((root, index, values) => values.indexOf(root) === index)
+    .sort((left, right) => right.length - left.length);
+  const expectedStartReporterPaths = new Set(
+    repositoryRoots.map((root) =>
+      path.join(root, "scripts/certification-playwright-start-reporter.mjs"),
+    ),
+  );
+  if (
+    reporters.length !== 3 ||
+    reporters[0]?.[0] !== "list" ||
+    jsonReporterIndex !== 1 ||
+    startReporterIndex !== 2 ||
+    !expectedStartReporterPaths.has(reporters[startReporterIndex][0]) ||
+    Object.keys(reporters[jsonReporterIndex][1]).join("\n") !== "outputFile" ||
+    Object.keys(reporters[startReporterIndex][1]).sort().join("\n") !==
+      ["boundary", "gateId", "markerPath"].join("\n") ||
+    reporters[startReporterIndex][1].boundary !== "test-begin" ||
+    reporters[startReporterIndex][1].gateId !== "ci.production-runtime-smoke"
+  ) {
+    throw new Error("runtime report reporter ownership is not canonical");
+  }
+  const outputFile = reporters[jsonReporterIndex][1].outputFile;
+  const markerPath = reporters[startReporterIndex][1].markerPath;
+  const rawUnownedAbsoluteFields = unownedRawAbsoluteReportFields(report, {
+    repositoryRoots,
+    explicitlyOwnedFields: new Map([
+      [
+        `report.config.reporter[${jsonReporterIndex}][1].outputFile`,
+        outputFile,
+      ],
+      [
+        `report.config.reporter[${startReporterIndex}][1].markerPath`,
+        markerPath,
+      ],
+    ]),
+  });
+  if (rawUnownedAbsoluteFields.length > 0) {
+    throw new Error(
+      `raw runtime report contains absolute paths outside its explicit ownership contract: ${rawUnownedAbsoluteFields.join(", ")}`,
+    );
+  }
+  const canonicalMarkerPath = path.join(
+    path.dirname(absoluteReportPath),
+    RUNTIME_SMOKE_EVIDENCE_OUTPUTS.startMarker.filename,
+  );
+  if (outputFile !== absoluteReportPath) {
+    throw new Error("runtime report outputFile is not its exact bound raw report");
+  }
+  if (markerPath !== canonicalMarkerPath || (expectedMarkerPath && markerPath !== expectedMarkerPath)) {
+    throw new Error("runtime report markerPath is not its exact bound start marker");
+  }
+  const markerRelativePath = portableExternalRelativePath(
+    externalRoot,
+    markerPath,
+    "runtime report markerPath",
+  );
+  resolveExternalFile(outputFile);
+  resolveExternalFile(markerPath);
+  const authorization = readRuntimeReportAuthorizationForCanonicalization(
+    `${absoluteReportPath}.owner.json`,
+    resolveExternalFile,
+  );
+  const expectedAuthorization = expectedRuntimeReportAuthorization({
+    environment: reportAuthorizationEnvironment,
+    reportRelativePath,
+    externalRootRealpath,
+  });
+  if (JSON.stringify(authorization) !== JSON.stringify(expectedAuthorization)) {
+    throw new Error(
+      "runtime report is owned by another certification, candidate, run, attempt, path, or evidence root",
+    );
+  }
+  const reportIdentity = report.config?.metadata?.productionArtifactEvidence;
+  if (
+    reportIdentity?.candidateIdentifier !== authorization.candidateId ||
+    reportIdentity?.sourceCommitSha !== authorization.sourceCommitSha ||
+    reportIdentity?.sourceTreeSha !== authorization.sourceTreeSha ||
+    reportIdentity?.artifactSha256 !== authorization.artifactSha256 ||
+    reportIdentity?.nextBuildId !== authorization.buildId ||
+    reportIdentity?.runNonce !== authorization.runNonce
+  ) {
+    throw new Error("runtime report metadata contradicts its authorization owner");
+  }
+  const portableReport = replaceRepositoryPaths(report, repositoryRoots);
+  portableReport.config.reporter[jsonReporterIndex][1].outputFile =
+    reportRelativePath;
+  portableReport.config.reporter[startReporterIndex][1].markerPath =
+    markerRelativePath;
+  const rawRoots = [
+    externalRoot,
+    externalRootRealpath,
+    ...repositoryRoots,
+  ].filter(
+    (root, index, values) => values.indexOf(root) === index,
+  );
+  const portableText = JSON.stringify(portableReport);
+  if (rawRoots.some((root) => portableText.includes(root))) {
+    throw new Error("portable runtime report retains a raw machine-local root");
+  }
+  const absoluteFields = absolutePortableReportFields(portableReport);
+  if (absoluteFields.length > 0) {
+    throw new Error(
+      `runtime report contains absolute paths outside its explicit portable contract: ${absoluteFields.join(", ")}`,
+    );
+  }
+  return portableReport;
 }
 
 function resolvedRetainedEvidencePath(
@@ -2263,6 +2642,10 @@ export function canonicalizeProductionEvidenceReport(
   repositoryRoot,
   reportPath,
   authorizedExternalRoot,
+  {
+    expectedRawReportSha256,
+    reportAuthorizationEnvironment,
+  } = {},
 ) {
   const absoluteReportPath = resolvedRetainedEvidencePath(
     repositoryRoot,
@@ -2270,14 +2653,91 @@ export function canonicalizeProductionEvidenceReport(
     "test report path",
     authorizedExternalRoot,
   );
-  const report = JSON.parse(readFileSync(absoluteReportPath, "utf8"));
+  const reportBytes = readFileSync(absoluteReportPath);
+  const report = JSON.parse(reportBytes.toString("utf8"));
+  if (path.isAbsolute(reportPath)) {
+    const externalRoot = resolveAuthorizedExternalEvidenceRoot({
+      authorizedExternalRoot,
+      repositoryRoot,
+    });
+    return canonicalizeExternalRuntimeReport({
+      repositoryRoot,
+      report,
+      reportBytes,
+      absoluteReportPath,
+      authorizedExternalRoot: externalRoot.externalRoot,
+      externalRootRealpath: externalRoot.externalRootRealpath,
+      expectedRawReportSha256,
+      reportAuthorizationEnvironment,
+      resolveExternalFile: (filePath) =>
+        resolveRetainedExternalEvidenceFile({
+          filePath,
+          authorizedExternalRoot,
+          repositoryRoot,
+        }),
+    });
+  }
   const repositoryRoots = [path.resolve(repositoryRoot), realpathSync(repositoryRoot)]
     .filter((root, index, values) => values.indexOf(root) === index)
     .sort((left, right) => right.length - left.length);
+  const portableReport = replaceRepositoryPaths(report, repositoryRoots);
   writeFileSync(
     absoluteReportPath,
-    `${JSON.stringify(replaceRepositoryPaths(report, repositoryRoots), null, 2)}\n`,
+    `${JSON.stringify(portableReport, null, 2)}\n`,
   );
+  return portableReport;
+}
+
+export function canonicalizeBoundRuntimeSmokeReport({
+  repositoryRoot,
+  reportPath,
+  markerPath,
+  authorizedExternalRoot,
+  expectedRawReportSha256,
+  reportAuthorizationEnvironment,
+}) {
+  const externalRoot = path.resolve(authorizedExternalRoot);
+  const rootEntry = lstatSync(externalRoot);
+  if (rootEntry.isSymbolicLink() || !rootEntry.isDirectory()) {
+    throw new Error("bound runtime external evidence root must be a physical directory");
+  }
+  const externalRootRealpath = realpathSync(externalRoot);
+  const resolveBoundExternalFile = (filePath) => {
+    portableExternalRelativePath(
+      externalRoot,
+      filePath,
+      "bound runtime evidence file",
+    );
+    let entry;
+    try {
+      entry = lstatSync(filePath);
+    } catch {
+      throw new Error("bound runtime evidence file is missing");
+    }
+    if (entry.isSymbolicLink() || !entry.isFile()) {
+      throw new Error("bound runtime evidence file must be a physical file");
+    }
+    const physicalPath = realpathSync(filePath);
+    if (!physicalPath.startsWith(`${externalRootRealpath}${path.sep}`)) {
+      throw new Error("bound runtime evidence file escapes its physical root");
+    }
+    return { absolutePath: filePath, realpath: physicalPath };
+  };
+  resolveBoundExternalFile(reportPath);
+  const reportBytes = readFileSync(reportPath);
+  const report = JSON.parse(reportBytes.toString("utf8"));
+  return canonicalizeExternalRuntimeReport({
+    repositoryRoot,
+    report,
+    reportBytes,
+    absoluteReportPath: reportPath,
+    authorizedExternalRoot: externalRoot,
+    externalRootRealpath,
+    expectedRawReportSha256,
+    reportAuthorizationEnvironment,
+    resolveExternalFile: resolveBoundExternalFile,
+    expectedMarkerPath: markerPath,
+  });
 }
 
 export function bindRuntimeSmokeFailureToReport(
@@ -3477,6 +3937,7 @@ export async function recordProductionEvidenceTest({
   completedAt = new Date().toISOString(),
   environment = process.env,
   persistManifest = true,
+  expectedRawReportSha256,
 }) {
   const preflight = await validateProductionEvidence({
     repositoryRoot,
@@ -3497,8 +3958,24 @@ export async function recordProductionEvidenceTest({
   );
   if (!existsSync(absoluteReportPath)) throw new Error("required test report is missing");
   const reportBytes = readFileSync(absoluteReportPath);
-  const reportText = reportBytes.toString("utf8");
-  const report = JSON.parse(reportText);
+  const report = path.isAbsolute(reportPath)
+    ? canonicalizeProductionEvidenceReport(
+        repositoryRoot,
+        reportPath,
+        authorizedExternalRoot,
+        {
+          expectedRawReportSha256,
+          reportAuthorizationEnvironment: environment,
+        },
+      )
+    : JSON.parse(reportBytes.toString("utf8"));
+  if (
+    path.isAbsolute(reportPath) &&
+    !reportBytes.equals(readFileSync(absoluteReportPath))
+  ) {
+    throw new Error("raw Playwright report bytes changed during portable canonicalization");
+  }
+  const reportText = JSON.stringify(report);
   if (localRepositoryPathLeaks(repositoryRoot, reportText).length > 0) {
     throw new Error("test report contains machine-local repository paths");
   }
