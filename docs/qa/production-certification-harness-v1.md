@@ -798,6 +798,20 @@ silently restarted.
 
 ## Pristine stage-owned worktrees
 
+Before `state:init` allocates any stage worktree, it validates the complete
+environment and state target, exact clean source/candidate identity, all
+resource destinations (including type/overlap/containment), the planned
+database lifecycle binding, and the worktree-root plan. Allocation then uses
+one invocation-private transaction ledger. A failure before durable state
+publication rolls back only ledgered Git worktrees, registrations, sidecars,
+and empty directories, and retains a portable
+`interior-ai.production-certification-pre-state-failure.v1` receipt proving
+the terminal registration and canonical-checkout results. The receipt is an
+immutable create-if-absent file at the exact invocation-nonce-derived path; a
+reused nonce fails closed without replacing history. It never fabricates
+state for cleanup. Durable-state failures continue to use the existing
+state-backed failed-run and continuity cleanup policy.
+
 Every new certification cycle creates exactly three fresh detached Git
 worktrees at the sealed candidate commit and tree:
 

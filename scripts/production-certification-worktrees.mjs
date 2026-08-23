@@ -1,11 +1,13 @@
 import { spawnSync } from "node:child_process";
 import {
   existsSync,
+  linkSync,
   lstatSync,
   mkdirSync,
   readFileSync,
   realpathSync,
   renameSync,
+  rmdirSync,
   statSync,
   statfsSync,
   unlinkSync,
@@ -18,6 +20,7 @@ import {
   isCandidateId,
   isSha256,
   isSourceSha,
+  PRODUCTION_CERTIFICATION_HARNESS_VERSION,
   sha256Bytes,
 } from "./production-certification-contract.mjs";
 import {
@@ -35,6 +38,8 @@ export const PRODUCTION_CERTIFICATION_WORKTREE_SCHEMA_V1 =
   "interior-ai.production-certification-worktrees.v1";
 export const PRODUCTION_CERTIFICATION_WORKTREE_PRIVATE_SCHEMA =
   "interior-ai.production-certification-worktree-private.v1";
+export const PRODUCTION_CERTIFICATION_PRE_STATE_FAILURE_SCHEMA =
+  "interior-ai.production-certification-pre-state-failure.v1";
 export const CERTIFICATION_WORKTREE_ROLES = Object.freeze([
   "source-validation",
   "final-artifact",
@@ -110,6 +115,21 @@ function atomicWrite(filePath, bytes) {
     renameSync(temporaryPath, filePath);
   } catch (error) {
     if (existsSync(temporaryPath)) unlinkSync(temporaryPath);
+    throw error;
+  }
+}
+
+function atomicWriteAbsent(filePath, bytes) {
+  const temporaryPath = `${filePath}.tmp-${process.pid}-${sha256Bytes(bytes).slice(0, 12)}`;
+  try {
+    writeFileSync(temporaryPath, bytes, { flag: "wx", mode: 0o600 });
+    linkSync(temporaryPath, filePath);
+    unlinkSync(temporaryPath);
+  } catch (error) {
+    if (existsSync(temporaryPath)) unlinkSync(temporaryPath);
+    if (error?.code === "EEXIST") {
+      throw new Error("pre-state failure receipt target is no longer absent");
+    }
     throw error;
   }
 }
@@ -295,7 +315,6 @@ export function planCertificationStageWorktrees({
   }
   const canonical = physicalDirectory(canonicalRoot, "canonical checkout");
   const evidence = physicalDirectory(evidenceRoot, "certification evidence root");
-  mkdirSync(worktreeRoot, { recursive: true, mode: 0o700 });
   const ownerRoot = physicalDirectory(worktreeRoot, "certification worktree root");
   if (
     pathInside(canonical, ownerRoot) ||
@@ -436,12 +455,28 @@ export function inspectCertificationStageWorktree({
   return { root, portable, privateSidecar };
 }
 
-function writePrivateSidecar(evidenceRoot, role, sidecar) {
+function writePrivateSidecar(evidenceRoot, role, sidecar, ledger = null) {
   const bytes = canonicalJsonBytes(sidecar);
   const digest = sha256Bytes(bytes);
-  const { directory } = containedPrivateSidecarDirectory(evidenceRoot, role, {
-    create: true,
-  });
+  const physicalEvidenceRoot = physicalDirectory(
+    evidenceRoot,
+    "certification evidence root",
+  );
+  let directory = physicalEvidenceRoot;
+  for (const component of ["worktrees", "private", ROLE_DIRECTORY[role]]) {
+    const next = path.join(directory, component);
+    if (!existsSync(next)) {
+      mkdirSync(next, { mode: 0o700 });
+      ledger?.createdDirectories.push(next);
+    }
+    directory = physicalDirectory(
+      next,
+      "stage worktree private sidecar parent",
+    );
+    if (!pathInside(physicalEvidenceRoot, directory)) {
+      throw new Error("stage worktree private sidecar parent escapes the evidence root");
+    }
+  }
   const filePath = path.join(directory, `${digest}.json`);
   if (existsSync(filePath)) {
     const metadata = lstatSync(filePath);
@@ -456,6 +491,7 @@ function writePrivateSidecar(evidenceRoot, role, sidecar) {
     }
   } else {
     atomicWrite(filePath, bytes);
+    ledger?.createdSidecars.push({ role, filePath, sha256: digest });
   }
   return {
     path: ["worktrees", "private", ROLE_DIRECTORY[role], `${digest}.json`].join(
@@ -520,13 +556,69 @@ function bindingFromInspection(inspection, descriptor, createdAt) {
   };
 }
 
-export function createCertificationStageWorktrees({
+function canonicalCheckoutProof(repositoryRoot) {
+  const payload = {
+    commitSha: git(repositoryRoot, ["rev-parse", "HEAD"]),
+    treeSha: git(repositoryRoot, ["rev-parse", "HEAD^{tree}"]),
+    symbolicRef: git(repositoryRoot, ["symbolic-ref", "-q", "HEAD"], {
+      allowFailure: true,
+    }),
+    statusSha256: sha256Bytes(
+      git(
+        repositoryRoot,
+        ["status", "--porcelain=v1", "-z", "--untracked-files=all"],
+        { trim: false },
+      ),
+    ),
+  };
+  return { ...payload, sha256: sha256Bytes(canonicalJsonBytes(payload)) };
+}
+
+function registrationPresent(repositoryRoot, target) {
+  const output = git(repositoryRoot, ["worktree", "list", "--porcelain"], {
+    trim: false,
+  });
+  return output
+    .split("\n")
+    .filter((line) => line.startsWith("worktree "))
+    .map((line) => path.resolve(line.slice("worktree ".length)))
+    .includes(path.resolve(target));
+}
+
+function portableCreatedResourceInventory(ledger) {
+  const worktreeRoles = ledger.createdWorktrees.map(({ role }) => role);
+  const registrationRoles = ledger.createdRegistrations.map(({ role }) => role);
+  const sidecarRoles = ledger.createdSidecars.map(({ role }) => role);
+  return {
+    worktreeCount: worktreeRoles.length,
+    worktreeRoleInventorySha256: sha256Bytes(canonicalJsonBytes(worktreeRoles)),
+    registrationCount: registrationRoles.length,
+    registrationRoleInventorySha256: sha256Bytes(
+      canonicalJsonBytes(registrationRoles),
+    ),
+    sidecarCount: sidecarRoles.length,
+    sidecarRoleInventorySha256: sha256Bytes(canonicalJsonBytes(sidecarRoles)),
+    directoryCount: ledger.createdDirectories.length,
+    directoryInventorySha256: sha256Bytes(
+      canonicalJsonBytes(
+        ledger.createdDirectories.map((entry) => sha256Bytes(entry)),
+      ),
+    ),
+  };
+}
+
+function safeRollbackIssue(kind, role = null) {
+  return role ? `${kind}:${role}` : kind;
+}
+
+export function beginCertificationStageWorktreeTransaction({
   canonicalRoot,
   evidenceRoot,
   worktreeRoot,
   certificationId,
   candidate,
   createdAt,
+  testHooks = null,
 }) {
   if (
     !isSourceSha(candidate?.commitSha) ||
@@ -541,9 +633,22 @@ export function createCertificationStageWorktrees({
     worktreeRoot,
     certificationId,
   });
-  mkdirSync(plan.certificationRoot, { mode: 0o700 });
-  const created = [];
-  try {
+  const initialCanonicalProof = canonicalCheckoutProof(plan.canonicalRoot);
+  const ledger = {
+    createdWorktrees: [],
+    createdRegistrations: [],
+    createdSidecars: [],
+    createdDirectories: [],
+  };
+  let status = "planned";
+
+  function allocate() {
+    if (status !== "planned") {
+      throw new Error("certification worktree transaction allocation is not pending");
+    }
+    status = "allocating";
+    mkdirSync(plan.certificationRoot, { mode: 0o700 });
+    ledger.createdDirectories.push(plan.certificationRoot);
     for (const role of CERTIFICATION_WORKTREE_ROLES) {
       const target = plan.roles[role];
       git(plan.canonicalRoot, [
@@ -553,7 +658,14 @@ export function createCertificationStageWorktrees({
         target,
         candidate.commitSha,
       ]);
-      created.push(target);
+      ledger.createdWorktrees.push({ role, target });
+      if (!registrationPresent(plan.canonicalRoot, target)) {
+        throw new Error("certification worktree registration was not published");
+      }
+      ledger.createdRegistrations.push({ role, target });
+      if (testHooks?.failAfterWorktreeCount === ledger.createdWorktrees.length) {
+        throw new Error("injected certification worktree allocation failure");
+      }
     }
     const inspections = Object.fromEntries(
       CERTIFICATION_WORKTREE_ROLES.map((role) => [
@@ -579,21 +691,441 @@ export function createCertificationStageWorktrees({
         plan.evidenceRoot,
         role,
         inspections[role].privateSidecar,
+        ledger,
       );
       roles[role] = bindingFromInspection(inspections[role], descriptor, createdAt);
     }
+    status = "allocated";
     return {
       schema: PRODUCTION_CERTIFICATION_WORKTREE_SCHEMA,
       roles,
     };
+  }
+
+  function rollback() {
+    if (status === "committed") {
+      throw new Error("durable certification worktrees cannot use pre-state rollback");
+    }
+    if (status === "rolled-back") {
+      throw new Error("certification worktree transaction was already rolled back");
+    }
+    status = "rolling-back";
+    const issues = [];
+    const worktrees = [];
+    for (const { role, target } of [...ledger.createdWorktrees].reverse()) {
+      let removed = false;
+      if (testHooks?.failRollbackRole === role) {
+        issues.push(safeRollbackIssue("worktree-removal-failed", role));
+      } else {
+        const result = git(
+          plan.canonicalRoot,
+          ["worktree", "remove", "--force", target],
+          { allowFailure: true },
+        );
+        removed = result !== null;
+        if (!removed && registrationPresent(plan.canonicalRoot, target)) {
+          issues.push(safeRollbackIssue("worktree-removal-failed", role));
+        }
+      }
+      const registrationAbsent = !registrationPresent(plan.canonicalRoot, target);
+      const physicalPathAbsent = !existsSync(target);
+      if (!registrationAbsent) {
+        issues.push(safeRollbackIssue("registration-remains", role));
+      }
+      if (!physicalPathAbsent) {
+        issues.push(safeRollbackIssue("worktree-path-remains", role));
+      }
+      worktrees.push({ role, removed, physicalPathAbsent, registrationAbsent });
+    }
+    const sidecars = [];
+    for (const entry of [...ledger.createdSidecars].reverse()) {
+      let removed = false;
+      try {
+        const metadata = lstatSync(entry.filePath);
+        if (
+          metadata.isSymbolicLink() ||
+          !metadata.isFile() ||
+          sha256Bytes(readFileSync(entry.filePath)) !== entry.sha256
+        ) {
+          throw new Error("sidecar ownership changed");
+        }
+        unlinkSync(entry.filePath);
+        removed = true;
+      } catch {
+        issues.push(safeRollbackIssue("sidecar-removal-failed", entry.role));
+      }
+      sidecars.push({ role: entry.role, removed });
+    }
+    for (const directory of [...ledger.createdDirectories].reverse()) {
+      try {
+        if (existsSync(directory)) rmdirSync(directory);
+      } catch (error) {
+        if (error?.code !== "ENOENT") {
+          issues.push("owned-directory-removal-failed");
+        }
+      }
+    }
+    const terminalCanonicalProof = canonicalCheckoutProof(plan.canonicalRoot);
+    const canonicalCheckoutUnchanged =
+      terminalCanonicalProof.sha256 === initialCanonicalProof.sha256;
+    if (!canonicalCheckoutUnchanged) {
+      issues.push("canonical-checkout-changed");
+    }
+    const terminalRegistrationAbsence = {
+      proven:
+        worktrees.every((entry) => entry.registrationAbsent) &&
+        ledger.createdWorktrees.length === worktrees.length,
+      roleResults: Object.fromEntries(
+        worktrees
+          .map((entry) => [entry.role, entry.registrationAbsent])
+          .sort(([left], [right]) => left.localeCompare(right)),
+      ),
+    };
+    status = "rolled-back";
+    return Object.freeze({
+      outcome: issues.length === 0 ? "completed" : "failed",
+      createdResourceInventory: portableCreatedResourceInventory(ledger),
+      worktrees: worktrees.sort((left, right) => left.role.localeCompare(right.role)),
+      sidecars: sidecars.sort((left, right) => left.role.localeCompare(right.role)),
+      terminalRegistrationAbsence,
+      canonicalCheckoutUnchanged,
+      issues: [...new Set(issues)].sort(),
+    });
+  }
+
+  return Object.freeze({
+    allocate,
+    rollback,
+    commit() {
+      if (status !== "allocated") {
+        throw new Error("certification worktree transaction is not allocated");
+      }
+      status = "committed";
+    },
+    createdResourceInventory() {
+      return portableCreatedResourceInventory(ledger);
+    },
+  });
+}
+
+export function createCertificationStageWorktrees(options) {
+  const transaction = beginCertificationStageWorktreeTransaction(options);
+  try {
+    const worktrees = transaction.allocate();
+    transaction.commit();
+    return worktrees;
   } catch (error) {
-    for (const target of created.reverse()) {
-      git(plan.canonicalRoot, ["worktree", "remove", "--force", target], {
-        allowFailure: true,
-      });
+    const rollback = transaction.rollback();
+    if (rollback.outcome !== "completed") {
+      throw Object.assign(
+        new Error("certification worktree allocation and rollback failed"),
+        { cause: error, certificationWorktreeRollback: rollback },
+      );
     }
     throw error;
   }
+}
+
+const PRE_STATE_DEFECT_CLASSIFICATIONS = Object.freeze([
+  "PRE_STATE_WORKTREE_TRANSACTION_DEFECT",
+  "STATE_INIT_RESOURCE_ORDERING_DEFECT",
+  "PRE_STATE_FAILURE_CLEANUP_OWNER_MISSING",
+]);
+
+function preStateFailurePayload(value) {
+  const payload = structuredClone(value);
+  delete payload.receiptSha256;
+  return payload;
+}
+
+function sealPreStateFailureReceipt(value) {
+  const payload = preStateFailurePayload(value);
+  return Object.freeze({
+    ...payload,
+    receiptSha256: sha256Bytes(canonicalJsonBytes(payload)),
+  });
+}
+
+function preStateReceiptIssues(value) {
+  const issues = [];
+  const rollback = value?.rollback;
+  const inventory = value?.createdResourceInventory;
+  if (
+    !exactKeys(value, [
+      "schema",
+      "version",
+      "certificationId",
+      "candidate",
+      "harness",
+      "invocationNonce",
+      "failure",
+      "defectClassifications",
+      "stateCreated",
+      "createdResourceInventory",
+      "rollback",
+      "terminalRegistrationAbsence",
+      "completionMarker",
+      "completedAt",
+      "receiptSha256",
+    ]) ||
+    value.schema !== PRODUCTION_CERTIFICATION_PRE_STATE_FAILURE_SCHEMA ||
+    value.version !== 1 ||
+    !isCandidateId(value.certificationId) ||
+    !exactKeys(value.candidate, ["id", "commitSha", "treeSha"]) ||
+    !isCandidateId(value.candidate.id) ||
+    !isSourceSha(value.candidate.commitSha) ||
+    !isSourceSha(value.candidate.treeSha) ||
+    !exactKeys(value.harness, ["version", "sourceSha256"]) ||
+    value.harness.version !== PRODUCTION_CERTIFICATION_HARNESS_VERSION ||
+    !isSha256(value.harness.sourceSha256) ||
+    !/^[A-Za-z0-9][A-Za-z0-9._:-]{15,127}$/.test(value.invocationNonce) ||
+    !exactKeys(value.failure, ["classification", "messageSha256"]) ||
+    value.failure.classification !== "PRECONDITION_ORCHESTRATION_FAILURE" ||
+    !isSha256(value.failure.messageSha256) ||
+    JSON.stringify(value.defectClassifications) !==
+      JSON.stringify(PRE_STATE_DEFECT_CLASSIFICATIONS) ||
+    value.stateCreated !== false ||
+    !exactKeys(inventory, [
+      "worktreeCount",
+      "worktreeRoleInventorySha256",
+      "registrationCount",
+      "registrationRoleInventorySha256",
+      "sidecarCount",
+      "sidecarRoleInventorySha256",
+      "directoryCount",
+      "directoryInventorySha256",
+    ]) ||
+    ![
+      inventory.worktreeCount,
+      inventory.registrationCount,
+      inventory.sidecarCount,
+      inventory.directoryCount,
+    ].every((entry) => Number.isSafeInteger(entry) && entry >= 0) ||
+    ![
+      inventory.worktreeRoleInventorySha256,
+      inventory.registrationRoleInventorySha256,
+      inventory.sidecarRoleInventorySha256,
+      inventory.directoryInventorySha256,
+    ].every(isSha256) ||
+    !exactKeys(rollback, [
+      "outcome",
+      "createdResourceInventory",
+      "worktrees",
+      "sidecars",
+      "terminalRegistrationAbsence",
+      "canonicalCheckoutUnchanged",
+      "issues",
+    ]) ||
+    !new Set(["completed", "failed"]).has(rollback.outcome) ||
+    JSON.stringify(rollback.createdResourceInventory) !== JSON.stringify(inventory) ||
+    !Array.isArray(rollback.worktrees) ||
+    !Array.isArray(rollback.sidecars) ||
+    !Array.isArray(rollback.issues) ||
+    typeof rollback.canonicalCheckoutUnchanged !== "boolean" ||
+    JSON.stringify(value.terminalRegistrationAbsence) !==
+      JSON.stringify(rollback.terminalRegistrationAbsence) ||
+    !exactKeys(value.completionMarker, ["complete", "result", "stateCreated"]) ||
+    value.completionMarker.complete !== true ||
+    value.completionMarker.result !== "failed" ||
+    value.completionMarker.stateCreated !== false ||
+    typeof value.completedAt !== "string" ||
+    !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/.test(value.completedAt) ||
+    Number.isNaN(Date.parse(value.completedAt)) ||
+    new Date(value.completedAt).toISOString() !== value.completedAt ||
+    !isSha256(value.receiptSha256) ||
+    value.receiptSha256 !== sha256Bytes(canonicalJsonBytes(preStateFailurePayload(value)))
+  ) {
+    issues.push("pre-state failure receipt is malformed or contradictory");
+  }
+  if (
+    rollback?.outcome === "completed" &&
+    (rollback.issues?.length !== 0 ||
+      rollback.canonicalCheckoutUnchanged !== true ||
+      rollback.terminalRegistrationAbsence?.proven !== true ||
+      (Array.isArray(rollback.worktrees) && rollback.worktrees.some(
+        (entry) =>
+          entry.physicalPathAbsent !== true || entry.registrationAbsent !== true,
+      )) ||
+      (Array.isArray(rollback.sidecars) &&
+        rollback.sidecars.some((entry) => entry.removed !== true)))
+  ) {
+    issues.push("pre-state failure receipt overclaims completed rollback");
+  }
+  if (
+    inventory &&
+    rollback &&
+    (inventory.worktreeCount !== rollback.worktrees?.length ||
+      inventory.registrationCount !== inventory.worktreeCount ||
+      inventory.sidecarCount !== rollback.sidecars?.length)
+  ) {
+    issues.push("pre-state failure receipt created-resource inventory is inconsistent");
+  }
+  const worktreeRoles = rollback?.worktrees?.map((entry) => entry?.role) ?? [];
+  const sidecarRoles = rollback?.sidecars?.map((entry) => entry?.role) ?? [];
+  if (
+    rollback &&
+    Array.isArray(rollback.worktrees) &&
+    Array.isArray(rollback.sidecars) &&
+    (rollback.worktrees.some(
+      (entry) =>
+        !exactKeys(entry, [
+          "role",
+          "removed",
+          "physicalPathAbsent",
+          "registrationAbsent",
+        ]) ||
+        !CERTIFICATION_WORKTREE_ROLES.includes(entry.role) ||
+        typeof entry.removed !== "boolean" ||
+        typeof entry.physicalPathAbsent !== "boolean" ||
+        typeof entry.registrationAbsent !== "boolean",
+    ) ||
+      rollback.sidecars.some(
+        (entry) =>
+          !exactKeys(entry, ["role", "removed"]) ||
+          !CERTIFICATION_WORKTREE_ROLES.includes(entry.role) ||
+          typeof entry.removed !== "boolean",
+      ) ||
+      new Set(worktreeRoles).size !== worktreeRoles.length ||
+      new Set(sidecarRoles).size !== sidecarRoles.length ||
+      !exactKeys(
+        rollback.terminalRegistrationAbsence,
+        ["proven", "roleResults"],
+      ) ||
+      typeof rollback.terminalRegistrationAbsence.proven !== "boolean" ||
+      !exactKeys(
+        rollback.terminalRegistrationAbsence.roleResults,
+        worktreeRoles,
+      ) ||
+      worktreeRoles.some(
+        (role) =>
+          rollback.terminalRegistrationAbsence.roleResults[role] !==
+          rollback.worktrees.find((entry) => entry.role === role)
+            ?.registrationAbsent,
+      ))
+  ) {
+    issues.push("pre-state failure receipt rollback inventory is malformed");
+  }
+  if (
+    rollback?.outcome === "failed" &&
+    rollback.terminalRegistrationAbsence?.proven === true &&
+    rollback.issues?.length === 0
+  ) {
+    issues.push("pre-state failure receipt cleanup failure is not retained truthfully");
+  }
+  return issues;
+}
+
+export function writeCertificationPreStateFailureReceipt({
+  evidenceRoot,
+  certificationId,
+  candidate,
+  harnessSourceSha256,
+  invocationNonce,
+  originalError,
+  rollback,
+  completedAt = new Date().toISOString(),
+}) {
+  const value = sealPreStateFailureReceipt({
+    schema: PRODUCTION_CERTIFICATION_PRE_STATE_FAILURE_SCHEMA,
+    version: 1,
+    certificationId,
+    candidate: {
+      id: candidate.id,
+      commitSha: candidate.commitSha,
+      treeSha: candidate.treeSha,
+    },
+    harness: {
+      version: PRODUCTION_CERTIFICATION_HARNESS_VERSION,
+      sourceSha256: harnessSourceSha256,
+    },
+    invocationNonce,
+    failure: {
+      classification: "PRECONDITION_ORCHESTRATION_FAILURE",
+      messageSha256: sha256Bytes(
+        originalError instanceof Error ? originalError.message : String(originalError),
+      ),
+    },
+    defectClassifications: [...PRE_STATE_DEFECT_CLASSIFICATIONS],
+    stateCreated: false,
+    createdResourceInventory: structuredClone(rollback.createdResourceInventory),
+    rollback: structuredClone(rollback),
+    terminalRegistrationAbsence: structuredClone(
+      rollback.terminalRegistrationAbsence,
+    ),
+    completionMarker: { complete: true, result: "failed", stateCreated: false },
+    completedAt,
+  });
+  const issues = preStateReceiptIssues(value);
+  if (issues.length > 0) throw new Error(issues.join("; "));
+  const root = physicalDirectory(evidenceRoot, "certification evidence root");
+  let directory = root;
+  for (const component of ["state-init", "pre-state-failures"]) {
+    const next = path.join(directory, component);
+    if (!existsSync(next)) mkdirSync(next, { mode: 0o700 });
+    directory = physicalDirectory(next, "pre-state failure receipt directory");
+    if (!pathInside(root, directory)) {
+      throw new Error("pre-state failure receipt directory escapes evidence root");
+    }
+  }
+  const relativePath = [
+    "state-init",
+    "pre-state-failures",
+    `${sha256Bytes(invocationNonce)}.json`,
+  ].join("/");
+  const filePath = path.join(root, relativePath);
+  atomicWriteAbsent(filePath, canonicalJsonBytes(value));
+  return Object.freeze({
+    receipt: value,
+    descriptor: { path: relativePath, sha256: sha256Bytes(canonicalJsonBytes(value)) },
+  });
+}
+
+export function readCertificationPreStateFailureReceipt({
+  evidenceRoot,
+  descriptor,
+  expectedInvocationNonce = null,
+}) {
+  if (
+    !exactKeys(descriptor, ["path", "sha256"]) ||
+    typeof descriptor.path !== "string" ||
+    path.isAbsolute(descriptor.path) ||
+    path.posix.normalize(descriptor.path) !== descriptor.path ||
+    !descriptor.path.startsWith("state-init/pre-state-failures/") ||
+    !isSha256(descriptor.sha256)
+  ) {
+    throw new Error("pre-state failure receipt descriptor is malformed");
+  }
+  const root = physicalDirectory(evidenceRoot, "certification evidence root");
+  const filePath = path.join(root, descriptor.path);
+  const metadata = lstatSync(filePath);
+  const physical = realpathSync(filePath);
+  if (
+    metadata.isSymbolicLink() ||
+    !metadata.isFile() ||
+    !pathInside(root, physical)
+  ) {
+    throw new Error("pre-state failure receipt is not a contained physical file");
+  }
+  const bytes = readFileSync(physical);
+  if (sha256Bytes(bytes) !== descriptor.sha256) {
+    throw new Error("pre-state failure receipt hash mismatch");
+  }
+  const receipt = JSON.parse(bytes.toString("utf8"));
+  if (
+    !bytes.equals(canonicalJsonBytes(receipt)) ||
+    preStateReceiptIssues(receipt).length > 0 ||
+    descriptor.path !==
+      [
+        "state-init",
+        "pre-state-failures",
+        `${sha256Bytes(receipt.invocationNonce)}.json`,
+      ].join("/") ||
+    (expectedInvocationNonce !== null &&
+      receipt.invocationNonce !== expectedInvocationNonce)
+  ) {
+    throw new Error("pre-state failure receipt is invalid or stale");
+  }
+  return Object.freeze(receipt);
 }
 
 function readPrivateSidecar(binding, evidenceRoot) {

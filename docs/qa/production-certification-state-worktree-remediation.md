@@ -1,5 +1,49 @@
 # Production certification state/worktree remediation
 
+## Pre-state worktree transaction correction
+
+The failed rehearsal rooted at
+`interior-ai-production-certification-rehearsal-20260823T170807Z-e4471c4e5a60`
+and its three retained registered worktrees remain read-only and are not cleanup
+targets. The proven defect is classified as
+`PRE_STATE_WORKTREE_TRANSACTION_DEFECT`,
+`STATE_INIT_RESOURCE_ORDERING_DEFECT`, and
+`PRE_STATE_FAILURE_CLEANUP_OWNER_MISSING`.
+
+`state:init` now finishes the environment/state-target contract, exact clean
+source/candidate comparison, resource destination construction including file
+and directory overlap/containment, database planned-lifecycle binding, and the
+worktree-root plan before allocation. Allocation is one explicit transaction
+with an invocation-private exact ledger for newly created worktrees, Git
+registrations, private sidecars, and directories. If allocation or state
+publication fails before a physical state exists, the committed transaction
+owner removes only ledgered worktrees through `git worktree remove`, removes
+only hash-proven ledgered sidecars and empty ledgered directories, then proves
+terminal registration absence and canonical-checkout noninterference. Foreign
+and historical worktrees are never selected by name or path pattern.
+
+The retained
+`interior-ai.production-certification-pre-state-failure.v1` receipt binds the
+certification/candidate/harness, invocation nonce, `stateCreated=false`, safe
+created-resource inventory hashes, full portable rollback result, terminal
+registration proof, completion marker, and receipt hash. The existing framed
+stage-result contract consumes that receipt without inventing state. Cleanup
+failure remains `rollback.outcome=failed` and cannot claim registration
+absence. Receipt publication is atomic create-if-absent at the exact
+invocation-nonce-derived path, so nonce reuse cannot replace retained evidence.
+Once durable state exists, the existing failed-run, database-abort,
+continuity, and worktree-cleanup policies are unchanged.
+
+The focused twelve-case matrix covers both validation conflicts before
+allocation, failures after one/two/all allocations, state-publication failure,
+truthful cleanup failure, portable non-state result consumption,
+foreign/historical survival, canonical byte identity and registration absence,
+normal three-worktree state initialization, and post-state policy preservation.
+Doctor proves the ordering, owner, and exact registration; deterministic
+simulation consumes that doctor proof; qualification runs the matrix directly.
+No rehearsal, production build, Phase 8, runtime/browser gate, Full E2E,
+integration, deployment, CI dispatch, or push belongs to this correction.
+
 ## Successor report-parent preparation binding
 
 The `...CERT-20260816T131707Z-16ae9ed` failed rehearsal remains read-only and

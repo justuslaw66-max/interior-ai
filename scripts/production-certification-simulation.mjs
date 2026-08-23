@@ -339,6 +339,8 @@ export function initializeFixture(repositoryRoot, fixtureRoot) {
           "node scripts/test-ci-auth-fixture-session.mjs",
         "test:production-certification-stage-result":
           "node scripts/test-production-certification-stage-result.mjs",
+        "test:production-certification-state-init-transaction":
+          "node scripts/test-production-certification-state-init-transaction.mjs",
         "certification:stage-result:validate":
           "node scripts/production-certification-stage-result-consumer.mjs validate",
       },
@@ -1485,17 +1487,39 @@ export async function runProductionCertificationSimulation({
   if (!changedPreparationPathRejected || !targetAfterPreparationRejected) {
     throw new Error("resource preparation tamper cases did not fail closed");
   }
-  run(
-    process.execPath,
-    ["scripts/production-certification.mjs", "doctor"],
-    canonicalRoot,
-    {
-      ...doctorEnvironment,
-      CERTIFICATION_STAGE_STARTED_AT: nextTimestamp(),
-      CERTIFICATION_STAGE_COMPLETED_AT: nextTimestamp(),
-    },
+  const successfulDoctorFrame = parseCertificationStageResult(
+    run(
+      process.execPath,
+      ["scripts/production-certification.mjs", "doctor"],
+      canonicalRoot,
+      {
+        ...doctorEnvironment,
+        CERTIFICATION_STAGE_STARTED_AT: nextTimestamp(),
+        CERTIFICATION_STAGE_COMPLETED_AT: nextTimestamp(),
+      },
+    ),
   );
   let state = readCertificationState(statePath);
+  const successfulDoctorEvidence = JSON.parse(
+    readFileSync(
+      path.join(evidenceRoot, state.evidenceFiles.doctor.path),
+      "utf8",
+    ),
+  );
+  const stateInitTransactionDoctor = successfulDoctorEvidence.checks.find(
+    (check) => check.id === "state-init-worktree-transaction",
+  );
+  if (
+    successfulDoctorFrame.result !== "passed" ||
+    stateInitTransactionDoctor?.passed !== true ||
+    stateInitTransactionDoctor.details?.manualTaskDriverCleanupRequired !==
+      false ||
+    stateInitTransactionDoctor.details?.regressionCaseCount !== 12
+  ) {
+    throw new Error(
+      "simulation did not prove state:init pre-state transaction ownership",
+    );
+  }
   const sourceChecks = sourceValidationCheckSet(fixtureRoot).checks;
   const sourcePreconditionRoot = path.join(
     simulationRoot,
@@ -2745,25 +2769,40 @@ export async function runProductionCertificationSimulation({
   );
   writeCertificationState(buildAlreadyBoundRetryStatePath, state);
   const buildAlreadyBoundFailures = [];
-  const buildRetryClock = Date.now();
+  const buildRetryEnvironment = () => {
+    const durableState = readCertificationState(
+      buildAlreadyBoundRetryStatePath,
+    );
+    const startedAtMs = Math.max(
+      Date.now(),
+      Date.parse(durableState.updatedAt) + 1,
+    );
+    return {
+      ...doctorEnvironment,
+      CERTIFICATION_EVIDENCE_ROOT: buildAlreadyBoundRetryRoot,
+      PRODUCTION_CERTIFICATION_STATE: buildAlreadyBoundRetryStatePath,
+      CERTIFICATION_STAGE_STARTED_AT: new Date(startedAtMs).toISOString(),
+      CERTIFICATION_STAGE_COMPLETED_AT: new Date(startedAtMs + 1).toISOString(),
+    };
+  };
+  const bindBuildRetryCompletionTimestamp = (attemptEnvironment) => {
+    const durableState = readCertificationState(
+      buildAlreadyBoundRetryStatePath,
+    );
+    attemptEnvironment.CERTIFICATION_STAGE_COMPLETED_AT = new Date(
+      Date.parse(durableState.updatedAt) + 1,
+    ).toISOString();
+  };
   for (let attempt = 0; attempt < 2; attempt += 1) {
+    const attemptEnvironment = buildRetryEnvironment();
     try {
       await runBuildStage({
         repositoryRoot: canonicalRoot,
-        environment: {
-          ...doctorEnvironment,
-          CERTIFICATION_EVIDENCE_ROOT: buildAlreadyBoundRetryRoot,
-          PRODUCTION_CERTIFICATION_STATE: buildAlreadyBoundRetryStatePath,
-          CERTIFICATION_STAGE_STARTED_AT: new Date(
-            buildRetryClock + attempt * 4_000 - (attempt === 0 ? 1_000 : 0),
-          ).toISOString(),
-          CERTIFICATION_STAGE_COMPLETED_AT: new Date(
-            buildRetryClock + attempt * 4_000 + 2_000,
-          ).toISOString(),
-        },
+        environment: attemptEnvironment,
         testHooks: {
           suppressBuildChildOutput: true,
           afterDependencyBinding() {
+            bindBuildRetryCompletionTimestamp(attemptEnvironment);
             throw new Error("qualification post-bind build precondition");
           },
         },
@@ -2811,20 +2850,16 @@ export async function runProductionCertificationSimulation({
   const dependencyIdentityBeforeSuccessfulBuild =
     buildAlreadyBoundRetryState.worktrees.roles["final-artifact"]
       .dependencyIdentitySha256;
+  const successfulBuildEnvironment = buildRetryEnvironment();
   const successfulBuildResult = await runBuildStage({
     repositoryRoot: canonicalRoot,
-    environment: {
-      ...doctorEnvironment,
-      CERTIFICATION_EVIDENCE_ROOT: buildAlreadyBoundRetryRoot,
-      PRODUCTION_CERTIFICATION_STATE: buildAlreadyBoundRetryStatePath,
-      CERTIFICATION_STAGE_STARTED_AT: new Date(
-        buildRetryClock + 8_000,
-      ).toISOString(),
-      CERTIFICATION_STAGE_COMPLETED_AT: new Date(
-        buildRetryClock + 10_000,
-      ).toISOString(),
+    environment: successfulBuildEnvironment,
+    testHooks: {
+      suppressBuildChildOutput: true,
+      afterDependencyBinding() {
+        bindBuildRetryCompletionTimestamp(successfulBuildEnvironment);
+      },
     },
-    testHooks: { suppressBuildChildOutput: true },
   });
   const successfulBuildState = readCertificationState(
     buildAlreadyBoundRetryStatePath,
@@ -4813,6 +4848,10 @@ export async function runProductionCertificationSimulation({
         sha256Bytes(canonicalJsonBytes(CERTIFICATION_STAGE_ORDER)),
     },
     archiveDeterministic: true,
+    stateInitWorktreeTransaction: {
+      doctorPassed: true,
+      ...stateInitTransactionDoctor.details,
+    },
     stageResultContract: {
       ...certificationStageResultContractIdentity(),
       regressionPassed: stageResultRegressionValue.passed === true,

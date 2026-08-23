@@ -1,5 +1,5 @@
 import { createHash, randomUUID } from "node:crypto";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync, realpathSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
 
@@ -21,6 +21,7 @@ import {
   validateCertificationState,
 } from "./production-certification-state.mjs";
 import { resolveRetainedExternalEvidenceFile } from "./playwright-report-path.mjs";
+import { readCertificationPreStateFailureReceipt } from "./production-certification-worktrees.mjs";
 
 export const PRODUCTION_CERTIFICATION_STAGE_RESULT_SCHEMA =
   "interior-ai.production-certification-stage-command-result.v1";
@@ -47,6 +48,14 @@ const EVIDENCE_MARKERS = new Set([
   "passed",
   "retained",
 ]);
+
+function isPreStateInitializationFailure(value) {
+  return (
+    value?.command?.id === "state:init" &&
+    value?.result === "precondition-failure" &&
+    value?.details?.preStateFailure?.stateCreated === false
+  );
+}
 
 export const PRODUCTION_CERTIFICATION_STAGE_RESULT_COMMANDS = Object.freeze([
   "state:init",
@@ -482,6 +491,90 @@ export function createCertificationStageCommandResult({
   }
   const postState = readOptionalState(invocation.statePath);
   if (!postState) {
+    if (
+      invocation.command === "state:init" &&
+      commandError?.certificationPreStateFailure
+    ) {
+      const { receipt, descriptor } = commandError.certificationPreStateFailure;
+      const contract = certificationStageResultContractIdentity();
+      const details = {
+        preStateFailure: {
+          stateCreated: false,
+          defectClassifications: structuredClone(receipt.defectClassifications),
+          createdResourceInventory: structuredClone(
+            receipt.createdResourceInventory,
+          ),
+          rollback: structuredClone(receipt.rollback),
+          terminalRegistrationAbsence: structuredClone(
+            receipt.terminalRegistrationAbsence,
+          ),
+          receipt: structuredClone(descriptor),
+        },
+      };
+      const payload = {
+        schema: PRODUCTION_CERTIFICATION_STAGE_RESULT_SCHEMA,
+        version: PRODUCTION_CERTIFICATION_STAGE_RESULT_VERSION,
+        certificationId: receipt.certificationId,
+        candidate: structuredClone(receipt.candidate),
+        harness: structuredClone(receipt.harness),
+        contract,
+        command: {
+          id: invocation.command,
+          mode: PRODUCTION_CERTIFICATION_STAGE_RESULT_MODE,
+        },
+        stage: {
+          id: COMMAND_STAGE_IDS[invocation.command],
+          attemptId: null,
+          attemptNumber: null,
+        },
+        invocationNonce: invocation.nonce,
+        result: "precondition-failure",
+        valid: false,
+        classification: "PRECONDITION_ORCHESTRATION_FAILURE",
+        details,
+        consumedSubstantiveGate: false,
+        process: {
+          childExitCode: null,
+          wrapperExitCode: wrapperExitCode ?? 1,
+          signal: terminalSignal,
+          spawnErrorClassification: null,
+        },
+        transition: {
+          preStateSha256: null,
+          postStateSha256: null,
+          statePathClassification:
+            PRODUCTION_CERTIFICATION_STAGE_RESULT_STATE_PATH_CLASSIFICATION,
+        },
+        evidence: [
+          {
+            id: "pre-state-failure",
+            path: descriptor.path,
+            sha256: descriptor.sha256,
+            completionMarker: "failed",
+          },
+        ],
+        stageCompletionMarker:
+          receipt.rollback.outcome === "completed"
+            ? "pre-state-rollback-completed"
+            : "pre-state-rollback-failed",
+        startedAt: receipt.completedAt,
+        completedAt: receipt.completedAt,
+      };
+      const value = Object.freeze({
+        ...payload,
+        aggregateSha256: aggregateResultSha256(payload),
+      });
+      const publicationIssues = certificationStageResultPublicationIssues(
+        value,
+        { sensitiveValues },
+      );
+      if (publicationIssues.length > 0) {
+        throw new Error(
+          `certification stage result is unsafe to publish: ${publicationIssues.join("; ")}`,
+        );
+      }
+      return value;
+    }
     throw new Error("certification stage result requires a physical post-command state");
   }
   const transition = stageTransitionIdentity({
@@ -736,7 +829,10 @@ function resultShapeIssues(value) {
     (value.details !== null &&
       (Array.isArray(value.details) || typeof value.details !== "object")) ||
     typeof value.consumedSubstantiveGate !== "boolean" ||
-    !isSha256(value.transition.postStateSha256) ||
+    (value.transition.postStateSha256 !== null &&
+      !isSha256(value.transition.postStateSha256)) ||
+    (value.transition.postStateSha256 === null &&
+      !isPreStateInitializationFailure(value)) ||
     (value.transition.preStateSha256 !== null &&
       !isSha256(value.transition.preStateSha256)) ||
     value.transition.statePathClassification !==
@@ -872,6 +968,29 @@ function automaticAbortDetailsShapeIssues(details) {
 function commandDetailsShapeIssues(value) {
   const command = value.command?.id;
   const details = value.details;
+  if (isPreStateInitializationFailure(value)) {
+    const failure = details.preStateFailure;
+    return exactKeys(details, ["preStateFailure"]) &&
+      exactKeys(failure, [
+        "stateCreated",
+        "defectClassifications",
+        "createdResourceInventory",
+        "rollback",
+        "terminalRegistrationAbsence",
+        "receipt",
+      ]) &&
+      failure.stateCreated === false &&
+      Array.isArray(failure.defectClassifications) &&
+      failure.defectClassifications.length === 3 &&
+      failure.rollback?.createdResourceInventory &&
+      JSON.stringify(failure.createdResourceInventory) ===
+        JSON.stringify(failure.rollback.createdResourceInventory) &&
+      JSON.stringify(failure.terminalRegistrationAbsence) ===
+        JSON.stringify(failure.rollback.terminalRegistrationAbsence) &&
+      portableEvidenceDescriptorMap({ receipt: failure.receipt })
+      ? []
+      : ["pre-state initialization failure result details are malformed"];
+  }
   if (value.result === "precondition-failure" && details === null) {
     return [];
   }
@@ -1367,6 +1486,106 @@ export function validateCertificationStageResult({
     value.transition.preStateSha256 !== expectedPreStateSha256
   ) {
     issues.push("certification stage result pre-transition state SHA mismatch");
+  }
+  if (isPreStateInitializationFailure(value)) {
+    const requestedStateTarget = path.resolve(statePath);
+    let stateTarget = requestedStateTarget;
+    let root;
+    try {
+      root = realpathSync(evidenceRoot);
+      stateTarget = path.join(
+        realpathSync(path.dirname(requestedStateTarget)),
+        path.basename(requestedStateTarget),
+      );
+    } catch {
+      root = null;
+    }
+    if (
+      !root ||
+      (stateTarget !== root && !stateTarget.startsWith(`${root}${path.sep}`)) ||
+      existsSync(stateTarget)
+    ) {
+      issues.push("pre-state initialization result contradicts physical state absence");
+    }
+    let receipt = null;
+    try {
+      receipt = readCertificationPreStateFailureReceipt({
+        evidenceRoot,
+        descriptor: value.details.preStateFailure.receipt,
+        expectedInvocationNonce: expectedInvocationNonce,
+      });
+    } catch {
+      issues.push("pre-state initialization failure receipt is unavailable or invalid");
+    }
+    if (receipt) {
+      const expectedDetails = {
+        stateCreated: false,
+        defectClassifications: receipt.defectClassifications,
+        createdResourceInventory: receipt.createdResourceInventory,
+        rollback: receipt.rollback,
+        terminalRegistrationAbsence: receipt.terminalRegistrationAbsence,
+        receipt: value.details.preStateFailure.receipt,
+      };
+      if (
+        JSON.stringify(value.details.preStateFailure) !==
+          JSON.stringify(expectedDetails) ||
+        value.certificationId !== receipt.certificationId ||
+        JSON.stringify(value.candidate) !== JSON.stringify(receipt.candidate) ||
+        JSON.stringify(value.harness) !== JSON.stringify(receipt.harness) ||
+        value.completedAt !== receipt.completedAt ||
+        value.stage.id !== "state-initialization" ||
+        value.stage.attemptId !== null ||
+        value.stage.attemptNumber !== null ||
+        value.transition.preStateSha256 !== null ||
+        value.transition.postStateSha256 !== null ||
+        value.classification !== "PRECONDITION_ORCHESTRATION_FAILURE" ||
+        value.consumedSubstantiveGate !== false ||
+        value.process.childExitCode !== null ||
+        value.process.wrapperExitCode !== 1 ||
+        value.process.signal !== null ||
+        value.process.spawnErrorClassification !== null ||
+        value.stageCompletionMarker !==
+          (receipt.rollback.outcome === "completed"
+            ? "pre-state-rollback-completed"
+            : "pre-state-rollback-failed") ||
+        JSON.stringify(value.evidence) !==
+          JSON.stringify([
+            {
+              id: "pre-state-failure",
+              path: value.details.preStateFailure.receipt.path,
+              sha256: value.details.preStateFailure.receipt.sha256,
+              completionMarker: "failed",
+            },
+          ])
+      ) {
+        issues.push("pre-state initialization result contradicts its receipt");
+      }
+      if (
+        expectedCertificationId &&
+        value.certificationId !== expectedCertificationId
+      ) {
+        issues.push("certification stage result belongs to another certification");
+      }
+      if (
+        expectedCandidate &&
+        JSON.stringify(value.candidate) !== JSON.stringify(expectedCandidate)
+      ) {
+        issues.push("certification stage result candidate/commit/tree mismatch");
+      }
+      if (
+        expectedHarnessSourceSha256 &&
+        value.harness.sourceSha256 !== expectedHarnessSourceSha256
+      ) {
+        issues.push("certification stage result harness identity mismatch");
+      }
+    }
+    return {
+      valid: issues.length === 0,
+      issues,
+      state: null,
+      nextStateSha256: null,
+      evidence: value.evidence,
+    };
   }
   let retainedState;
   try {

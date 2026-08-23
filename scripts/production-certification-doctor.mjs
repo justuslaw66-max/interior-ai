@@ -320,6 +320,125 @@ export function validateCertificationStageResultContracts(repositoryRoot) {
   };
 }
 
+export function validateStateInitWorktreeTransactionContracts(repositoryRoot) {
+  const realPath = "scripts/production-certification-real.mjs";
+  const worktreePath = "scripts/production-certification-worktrees.mjs";
+  const resultPath =
+    "scripts/production-certification-stage-result-contract.mjs";
+  const testPath =
+    "scripts/test-production-certification-state-init-transaction.mjs";
+  for (const relativePath of [realPath, worktreePath, resultPath, testPath]) {
+    assertFileBackedOwner(repositoryRoot, relativePath);
+  }
+  const real = readFileSync(path.join(repositoryRoot, realPath), "utf8");
+  const worktrees = readFileSync(
+    path.join(repositoryRoot, worktreePath),
+    "utf8",
+  );
+  const result = readFileSync(path.join(repositoryRoot, resultPath), "utf8");
+  const wrapper = readFileSync(
+    path.join(repositoryRoot, "scripts/production-certification.mjs"),
+    "utf8",
+  );
+  const test = readFileSync(path.join(repositoryRoot, testPath), "utf8");
+  const packageJson = JSON.parse(
+    readFileSync(path.join(repositoryRoot, "package.json"), "utf8"),
+  );
+  const regressionMatrix = JSON.parse(
+    readFileSync(
+      path.join(
+        repositoryRoot,
+        "scripts/production-certification-regressions.json",
+      ),
+      "utf8",
+    ),
+  );
+  const expectedCases = [
+    "resource-plan-conflict-zero-worktrees",
+    "phase8-file-directory-overlap-zero-worktrees",
+    "failure-after-first-worktree-rolls-back",
+    "failure-after-second-worktree-rolls-back",
+    "failure-after-all-three-before-state-write-rolls-back",
+    "truthful-non-state-stage-result-is-portable-and-consumable",
+    "state-publication-failure-rolls-back-provisional-resources",
+    "cleanup-failure-retained-without-absence-claim",
+    "foreign-and-historical-worktrees-survive",
+    "canonical-checkout-byte-identical-and-registrations-absent",
+    "successful-state-init-creates-three-worktrees-and-state",
+    "post-state-failure-keeps-existing-state-backed-policy",
+  ];
+  const initializer = real.slice(
+    real.indexOf("export function initializeRealCertification"),
+    real.indexOf("export async function runDoctorStage"),
+  );
+  const resourcePlanIndex = initializer.indexOf(
+    "resourcePlan = createCertificationResourcePlan",
+  );
+  const stateIdentityPreflightIndex = initializer.indexOf(
+    "createCertificationState({",
+  );
+  const databasePlanIndex = initializer.indexOf(
+    "readCertificationDatabaseLifecycle",
+  );
+  const transactionIndex = initializer.indexOf(
+    "beginCertificationStageWorktreeTransaction",
+  );
+  const allocationIndex = initializer.indexOf("transaction.allocate()");
+  const stateWriteIndex = initializer.indexOf("writeCertificationState)(statePath");
+  if (
+    stateIdentityPreflightIndex < 0 ||
+    resourcePlanIndex < 0 ||
+    databasePlanIndex < 0 ||
+    transactionIndex < 0 ||
+    allocationIndex < 0 ||
+    stateWriteIndex < 0 ||
+    !(stateIdentityPreflightIndex < resourcePlanIndex) ||
+    !(resourcePlanIndex < transactionIndex) ||
+    !(databasePlanIndex < transactionIndex) ||
+    !(transactionIndex < allocationIndex) ||
+    !(allocationIndex < stateWriteIndex) ||
+    !initializer.includes("transaction.rollback()") ||
+    /worktree["', ]+remove|git\s+clean|rmSync\s*\(/.test(initializer) ||
+    !worktrees.includes("beginCertificationStageWorktreeTransaction") ||
+    !worktrees.includes("createdWorktrees: []") ||
+    !worktrees.includes("createdRegistrations: []") ||
+    !worktrees.includes("createdSidecars: []") ||
+    !worktrees.includes("createdDirectories: []") ||
+    !worktrees.includes('["worktree", "remove", "--force", target]') ||
+    !worktrees.includes("registrationPresent(plan.canonicalRoot, target)") ||
+    !worktrees.includes("canonicalCheckoutUnchanged") ||
+    /git\s+clean|clean\s+-x/.test(worktrees) ||
+    !result.includes("readCertificationPreStateFailureReceipt") ||
+    !result.includes("pre-state-rollback-completed") ||
+    !wrapper.includes(
+      '(command === "state:init" &&\n          !existsSync(process.env.PRODUCTION_CERTIFICATION_STATE))',
+    ) ||
+    /\n\s*!existsSync\(process\.env\.PRODUCTION_CERTIFICATION_STATE\)\s*\|\|/.test(
+      wrapper,
+    ) ||
+    !test.includes("cleanup-failure-retained-without-absence-claim") ||
+    JSON.stringify(regressionMatrix.stateInitWorktreeTransactionCases) !==
+      JSON.stringify(expectedCases) ||
+    packageJson.scripts[
+      "test:production-certification-state-init-transaction"
+    ] !==
+      "node scripts/test-production-certification-state-init-transaction.mjs"
+  ) {
+    throw new Error(
+      "state:init validation ordering, rollback ownership, or regression registration is incomplete",
+    );
+  }
+  return {
+    stateIdentityPreflightPrecedesAllocation: true,
+    resourceValidationPrecedesAllocation: true,
+    databasePlanPrecedesAllocation: true,
+    preStateTransactionalRollbackOwner: worktreePath,
+    manualTaskDriverCleanupRequired: false,
+    regressionCaseCount: expectedCases.length,
+    regressionCaseInventorySha256: sha256Bytes(canonicalJsonBytes(expectedCases)),
+  };
+}
+
 export function validateAuthResultContracts(repositoryRoot) {
   const ownerPaths = [
     "scripts/ci-auth-fixture-result-contract.cjs",
@@ -2329,6 +2448,8 @@ export async function runCertificationDoctor({
     validateAuthResultContracts(root));
   check(checks, issues, "stage-result-contract", () =>
     validateCertificationStageResultContracts(root));
+  check(checks, issues, "state-init-worktree-transaction", () =>
+    validateStateInitWorktreeTransactionContracts(root));
   check(checks, issues, "stage-order-import-coherence", () =>
     validateCertificationStageOrderContracts(root));
   check(checks, issues, "dependency-lifecycle-order", () =>

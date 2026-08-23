@@ -70,6 +70,12 @@
       "development-browser": "cart and retailer development-server browser owners"
     },
     "creation": "three fresh stage-owned detached Git worktrees at the exact candidate commit and tree",
+    "creationValidationOrder": ["environment and state-target contract", "source/candidate identity", "resource destination construction/type/overlap/containment", "database planned-lifecycle binding", "worktree-root plan", "worktree allocation transaction", "state construction and atomic publication"],
+    "preStateAllocationTransaction": "an invocation-private exact ledger owns only worktrees, Git registrations, private sidecars, and directories created by that state:init invocation",
+    "preStateRollbackOwner": "scripts/production-certification-worktrees.mjs#beginCertificationStageWorktreeTransaction",
+    "preStateFailureReceiptSchema": "interior-ai.production-certification-pre-state-failure.v1",
+    "preStateFailureReceiptPublication": "atomic create-if-absent at state-init/pre-state-failures/<sha256(invocation nonce)>.json; nonce reuse and alternate receipt paths fail closed without replacement",
+    "preStateFailurePolicy": "before durable state publication, roll back only the invocation ledger through the committed Git/worktree owner, prove terminal registration absence and canonical-checkout noninterference, retain cleanup failure truthfully, and never create a cleanup-only state",
     "minimumDistinctPhysicalRoots": 3,
     "canonicalCheckoutMayBeStageRoot": false,
     "symlinkOrAliasMayBeStageRoot": false,
@@ -78,7 +84,7 @@
     "canonicalIgnoredArtifactPolicy": "non-influential, uninspected by stage owners, and byte-for-byte untouched",
     "crossCertificationReuseAllowed": false,
     "privateBindingPolicy": "physical paths and hashes are retained only in private evidence-root sidecars",
-    "cleanupPolicy": "explicit cleanup owner after continuity or terminal abort; remove only task-owned roots"
+    "cleanupPolicy": "pre-state failures use only the invocation transaction owner; durable-state worktrees retain the existing continuity-gated cleanup owner; both remove only proven task-owned roots"
   },
   "dependencyLifecycle": {
     "schema": "interior-ai.production-certification-worktree-dependency-lifecycle.v1",

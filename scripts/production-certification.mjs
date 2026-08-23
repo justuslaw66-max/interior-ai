@@ -1,4 +1,5 @@
 import { spawnSync } from "node:child_process";
+import { existsSync } from "node:fs";
 
 import {
   CERTIFICATION_HARNESS_SOURCE_PATHS,
@@ -18,6 +19,7 @@ import {
   createCertificationStageCommandResult,
   formatCertificationStageResult,
   isCertificationStageResultCommand,
+  PRODUCTION_CERTIFICATION_STAGE_RESULT_NONCE_ENV,
   redactCertificationStageResultDiagnostic,
 } from "./production-certification-stage-result-contract.mjs";
 import { runCertificationResourcePreparation } from "./production-certification-resources.mjs";
@@ -193,6 +195,10 @@ function qualificationCommand() {
     [
       process.execPath,
       ["scripts/test-production-certification-state-worktrees.mjs"],
+    ],
+    [
+      process.execPath,
+      ["scripts/test-production-certification-state-init-transaction.mjs"],
     ],
     [process.execPath, ["scripts/test-production-certification-resources.mjs"]],
     [
@@ -525,11 +531,17 @@ if (import.meta.url === new URL(process.argv[1], "file:").href) {
   const stageResultInvocation = captureCertificationStageResultInvocation({
     command,
   });
+  if (stageResultInvocation) {
+    process.env[PRODUCTION_CERTIFICATION_STAGE_RESULT_NONCE_ENV] =
+      stageResultInvocation.nonce;
+  }
   const terminal = createSerializedTerminalLifecycle({
     runAbortCleanup: async ({ terminalSignal, commandError }) => {
       if (
         process.env.CERTIFICATION_EXECUTION_CLASS !== "real-candidate" ||
         !process.env.PRODUCTION_CERTIFICATION_STATE ||
+        (command === "state:init" &&
+          !existsSync(process.env.PRODUCTION_CERTIFICATION_STATE)) ||
         !process.env.CERTIFICATION_DATABASE_LIFECYCLE_PATH ||
         command === "database:abort-cleanup" ||
         command === "database:status"

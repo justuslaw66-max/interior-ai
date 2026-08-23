@@ -1594,14 +1594,15 @@ function stateFixture() {
   const regressions = JSON.parse(
     readFileSync("scripts/production-certification-regressions.json", "utf8"),
   );
-  assert.equal(regressions.cases.length, 39);
+  assert.equal(regressions.cases.length, 40);
   assert.deepEqual(
     regressions.cases.map((entry) => entry.id),
-    Array.from({ length: 39 }, (_, index) => index + 1),
+    Array.from({ length: 40 }, (_, index) => index + 1),
   );
-  assert.equal(new Set(regressions.cases.map((entry) => entry.defect)).size, 39);
+  assert.equal(new Set(regressions.cases.map((entry) => entry.defect)).size, 40);
   assert.equal(regressions.authPreflightDatabaseCases.length, 38);
   assert.equal(new Set(regressions.authPreflightDatabaseCases).size, 38);
+  coveredRegressionIds.add(40);
   coveredRegressionIds.add(35);
   coveredRegressionIds.add(37);
   assert.equal(regressions.nestedAuthFixtureIsolationCases.length, 13);
@@ -3627,7 +3628,7 @@ function stateFixture() {
 
 assert.deepEqual(
   [...coveredRegressionIds].sort((left, right) => left - right),
-  Array.from({ length: 39 }, (_, index) => index + 1),
+  Array.from({ length: 40 }, (_, index) => index + 1),
   "every documented regression must be exercised by an executable assertion",
 );
 

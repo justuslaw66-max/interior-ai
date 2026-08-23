@@ -107,10 +107,11 @@ import {
 import {
   CERTIFICATION_WORKTREE_ROOT_ENV,
   CERTIFICATION_WORKTREE_ROLES,
+  beginCertificationStageWorktreeTransaction,
   cleanupCertificationStageWorktrees,
-  createCertificationStageWorktrees,
   resolveCertificationStageWorktree,
   stageWorktreeRole,
+  writeCertificationPreStateFailureReceipt,
 } from "./production-certification-worktrees.mjs";
 import {
   archivePlanStreamDescriptor,
@@ -227,6 +228,7 @@ function currentCandidate(repositoryRoot, canonicalCandidate, environment) {
 }
 
 const INVOCATION_COMMANDS = new Set([
+  "state:init",
   "database:provision",
   "database:verify-initial",
   "database:verify-final",
@@ -1491,7 +1493,13 @@ async function managedStage(
 export function initializeRealCertification({
   repositoryRoot = process.cwd(),
   environment = process.env,
+  testHooks = null,
 } = {}) {
+  validateCertificationInvocation({
+    repositoryRoot,
+    environment,
+    command: "state:init",
+  });
   const evidenceRoot = requiredEnvironment(environment, CERTIFICATION_EVIDENCE_ROOT_ENV);
   resolveAuthorizedExternalEvidenceRoot({
     authorizedExternalRoot: evidenceRoot,
@@ -1538,31 +1546,17 @@ export function initializeRealCertification({
     executionClass === "deterministic-simulation"
       ? requiredEnvironment(environment, "CERTIFICATION_CREATED_AT")
       : new Date().toISOString();
-  const worktrees = createCertificationStageWorktrees({
-    canonicalRoot: repositoryRoot,
-    evidenceRoot: evidenceRootPath,
-    worktreeRoot: requiredEnvironment(environment, CERTIFICATION_WORKTREE_ROOT_ENV),
-    certificationId,
-    candidate,
-    createdAt,
-  });
-  const resourcePlan = createCertificationResourcePlan({
-    repositoryRoot,
-    evidenceRoot: path.resolve(evidenceRoot),
-    environment,
-  });
-  let databaseLifecycle = null;
-  if (executionClass === "real-candidate") {
-    const plannedDatabase = readCertificationDatabaseLifecycle({
-      repositoryRoot,
-      environment,
-    });
-    if (plannedDatabase.evidence.currentState !== "planned") {
-      throw new Error("state initialization requires a fresh planned database lifecycle");
-    }
-    databaseLifecycle = plannedDatabase.binding;
+  if (
+    testHooks !== null &&
+    !(
+      executionClass === "deterministic-simulation" &&
+      environment.CERTIFICATION_QUALIFICATION_MODE === "1"
+    )
+  ) {
+    throw new Error("state initialization test hooks require qualification simulation");
   }
-  const state = createCertificationState({
+  const invocationNonce = environment.CERTIFICATION_STAGE_RESULT_NONCE?.trim() ?? null;
+  createCertificationState({
     certificationId,
     candidateId: candidate.id,
     commitSha: candidate.commitSha,
@@ -1571,19 +1565,132 @@ export function initializeRealCertification({
     harnessSourceSha256: harness.sha256,
     executionClass,
     createdAt,
-    worktrees,
-    resourcePlan,
-    databaseLifecycle,
   });
-  writeCertificationState(statePath, state, { requireAbsent: true });
-  return {
-    statePath,
-    stateSha256: certificationStateSha256(state),
-    certificationId,
-    candidate,
-    harness,
-    destinationSetSha256: resourcePlan.destinationSetSha256,
-  };
+  let transaction = null;
+  let resourcePlan = null;
+  let databaseLifecycle = null;
+  let pendingState = null;
+  let durableStateCommitted = false;
+  try {
+    resourcePlan = createCertificationResourcePlan({
+      repositoryRoot,
+      evidenceRoot: path.resolve(evidenceRoot),
+      environment,
+    });
+    if (executionClass === "real-candidate") {
+      const plannedDatabase = readCertificationDatabaseLifecycle({
+        repositoryRoot,
+        environment,
+      });
+      if (plannedDatabase.evidence.currentState !== "planned") {
+        throw new Error("state initialization requires a fresh planned database lifecycle");
+      }
+      databaseLifecycle = plannedDatabase.binding;
+    }
+    transaction = beginCertificationStageWorktreeTransaction({
+      canonicalRoot: repositoryRoot,
+      evidenceRoot: evidenceRootPath,
+      worktreeRoot: requiredEnvironment(environment, CERTIFICATION_WORKTREE_ROOT_ENV),
+      certificationId,
+      candidate,
+      createdAt,
+      testHooks,
+    });
+    const worktrees = transaction.allocate();
+    if (testHooks?.failBeforeStateWrite === true) {
+      throw new Error("injected failure before certification state write");
+    }
+    const state = createCertificationState({
+      certificationId,
+      candidateId: candidate.id,
+      commitSha: candidate.commitSha,
+      treeSha: candidate.treeSha,
+      parentSha: candidate.parentSha,
+      harnessSourceSha256: harness.sha256,
+      executionClass,
+      createdAt,
+      worktrees,
+      resourcePlan,
+      databaseLifecycle,
+    });
+    pendingState = state;
+    (testHooks?.stateWriter ?? writeCertificationState)(statePath, state, {
+      requireAbsent: true,
+    });
+    durableStateCommitted = true;
+    transaction.commit();
+    if (testHooks?.failAfterStateWrite === true) {
+      throw new Error("injected post-state initialization failure");
+    }
+    return {
+      statePath,
+      stateSha256: certificationStateSha256(state),
+      certificationId,
+      candidate,
+      harness,
+      destinationSetSha256: resourcePlan.destinationSetSha256,
+    };
+  } catch (error) {
+    if (!durableStateCommitted && pendingState && existsSync(statePath)) {
+      try {
+        durableStateCommitted =
+          certificationStateSha256(readCertificationState(statePath)) ===
+          certificationStateSha256(pendingState);
+      } catch {
+        durableStateCommitted = false;
+      }
+    }
+    if (durableStateCommitted) {
+      try {
+        transaction?.commit();
+      } catch {
+        // A successful normal commit or post-state injected failure is already durable.
+      }
+      throw error;
+    }
+    const emptyInventory = {
+      worktreeCount: 0,
+      worktreeRoleInventorySha256: sha256Bytes(canonicalJsonBytes([])),
+      registrationCount: 0,
+      registrationRoleInventorySha256: sha256Bytes(canonicalJsonBytes([])),
+      sidecarCount: 0,
+      sidecarRoleInventorySha256: sha256Bytes(canonicalJsonBytes([])),
+      directoryCount: 0,
+      directoryInventorySha256: sha256Bytes(canonicalJsonBytes([])),
+    };
+    const rollback = transaction
+      ? transaction.rollback()
+      : {
+          outcome: "completed",
+          createdResourceInventory: emptyInventory,
+          worktrees: [],
+          sidecars: [],
+          terminalRegistrationAbsence: { proven: true, roleResults: {} },
+          canonicalCheckoutUnchanged: true,
+          issues: [],
+        };
+    if (!invocationNonce) {
+      throw Object.assign(error, { certificationWorktreeRollback: rollback });
+    }
+    const preStateFailure = writeCertificationPreStateFailureReceipt({
+      evidenceRoot: evidenceRootPath,
+      certificationId,
+      candidate,
+      harnessSourceSha256: harness.sha256,
+      invocationNonce,
+      originalError: error,
+      rollback,
+      completedAt:
+        executionClass === "deterministic-simulation"
+          ? createdAt
+          : new Date().toISOString(),
+    });
+    throw Object.assign(error, {
+      classification: "PRECONDITION_ORCHESTRATION_FAILURE",
+      consumed: false,
+      certificationPreStateFailure: preStateFailure,
+    });
+  }
 }
 
 export async function runDoctorStage({
