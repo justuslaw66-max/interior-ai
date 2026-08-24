@@ -24,6 +24,9 @@ const review = read(
   "components/editor/floor-plan-import-review/FloorPlanImportReviewPanel.tsx"
 );
 const history = read("components/editor/FloorPlanImportHistory.tsx");
+const historyConfirmation = read(
+  "components/editor/useFloorPlanHistoryConfirmationState.ts"
+);
 const lifecycle = read(
   "components/editor/design-system/useEditorDialogLifecycle.ts"
 );
@@ -93,6 +96,10 @@ assert.match(pageSelection, /data-floor-plan-workspace-state="page-selection"/);
 assert.match(review, /data-floor-plan-workspace-focus/);
 
 assert.match(history, /onConfirmationOpenChange/);
+assert.match(
+  `${historyConfirmation}\n${history}`,
+  /const open = historyOpen[\s\S]*?event\.key !== "Escape" \|\| !open[\s\S]*?event\.preventDefault\(\)[\s\S]*?event\.stopPropagation\(\)[\s\S]*?onKeyDownCapture=\{guardConfirmationEscape\}/
+);
 assert.match(workspace, /onHistoryConfirmationOpenChange/);
 assert.match(dialog, /historyConfirmationOpen/);
 assert.match(uploadLifecycle, /closeDisabled:\s*historyConfirmationOpen/);

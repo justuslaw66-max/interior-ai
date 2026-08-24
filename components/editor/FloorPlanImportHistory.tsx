@@ -5,8 +5,7 @@ import { useRouter } from "next/navigation";
 import {
   isResumableFloorPlanImportStatus,
 } from "@/lib/floor-plan-import-client";
-import type { ConsumerFloorPlanImportSummary } from "./floor-plan-import-ui-types";
-import type { ConsumerFloorPlanImportJob } from "./floor-plan-import-ui-types";
+import type { ConsumerFloorPlanImportJob, ConsumerFloorPlanImportSummary } from "./floor-plan-import-ui-types";
 import { useFloorPlanHistoryConfirmationState } from "./useFloorPlanHistoryConfirmationState";
 
 type FloorPlanImportHistoryProps = {
@@ -63,7 +62,7 @@ export default function FloorPlanImportHistory({
   const [bulkDeleting, setBulkDeleting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [historyOpen, setHistoryOpen] = useState(false);
-  useFloorPlanHistoryConfirmationState(confirmDeleteJobId, bulkDeleteScope, historyOpen, onConfirmationOpenChange);
+  const guardConfirmationEscape = useFloorPlanHistoryConfirmationState(confirmDeleteJobId, bulkDeleteScope, historyOpen, onConfirmationOpenChange);
 
   const load = useCallback(async (
     cursor: string | null,
@@ -236,8 +235,7 @@ export default function FloorPlanImportHistory({
     }
   };
 
-  const allShownSelected =
-    jobs.length > 0 && jobs.every((job) => selectedJobIds.has(job.id));
+  const allShownSelected = jobs.length > 0 && jobs.every((job) => selectedJobIds.has(job.id));
   const toggleAllShown = () => {
     setSelectedJobIds((current) => {
       const next = new Set(current);
@@ -263,6 +261,7 @@ export default function FloorPlanImportHistory({
       className={dark ? "designer-recessed rounded-lg p-3" : "rounded-lg bg-neutral-50 p-3"}
       open={historyOpen}
       onToggle={(event) => setHistoryOpen(event.currentTarget.open)}
+      onKeyDownCapture={guardConfirmationEscape}
     >
       <summary className="cursor-pointer text-xs font-semibold">My floor-plan imports</summary>
       <p className={`mt-1 text-[10px] leading-4 ${subtle}`}>

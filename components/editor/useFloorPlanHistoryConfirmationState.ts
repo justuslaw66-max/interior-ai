@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, type KeyboardEvent as ReactKeyboardEvent } from "react";
 
 export function useFloorPlanHistoryConfirmationState(
   singleDeleteId: string | null,
@@ -13,4 +13,9 @@ export function useFloorPlanHistoryConfirmationState(
     onOpenChange(open);
     return () => onOpenChange(false);
   }, [onOpenChange, open]);
+  return (event: ReactKeyboardEvent<HTMLDetailsElement>) => {
+    if (event.key !== "Escape" || !open) return;
+    event.preventDefault();
+    event.stopPropagation();
+  };
 }
