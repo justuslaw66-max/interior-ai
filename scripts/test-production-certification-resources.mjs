@@ -497,6 +497,25 @@ function cleanupFixture(value) {
       ),
       false,
     );
+    for (const owner of REQUIRED_BROWSER_OWNERS) {
+      const reportPath = value.environment[
+        `CERTIFICATION_BROWSER_${owner.id.toUpperCase().replaceAll("-", "_")}_REPORT_PATH`
+      ];
+      const outputDirectory = path.join(
+        path.dirname(reportPath),
+        `${owner.gateId}-playwright-output`,
+      );
+      assert.equal(
+        existsSync(path.dirname(reportPath)),
+        true,
+        `resource preparation must create the ${owner.id} report parent`,
+      );
+      assert.equal(
+        existsSync(outputDirectory),
+        false,
+        `resource preparation must leave the ${owner.id} output directory absent`,
+      );
+    }
     assert.equal(
       validateCertificationResourcePreparation({
         repositoryRoot: value.canonicalRoot,

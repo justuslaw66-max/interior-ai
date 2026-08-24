@@ -1,4 +1,5 @@
 import { spawnSync } from "node:child_process";
+import { randomUUID } from "node:crypto";
 import {
   existsSync,
   lstatSync,
@@ -3739,6 +3740,7 @@ export function browserEnvironment(
   reportPath,
   evidencePath,
   startMarkerPath,
+  runNonce,
 ) {
   const baseEnvironment = {
     ...context.environment,
@@ -3756,6 +3758,7 @@ export function browserEnvironment(
   const stageInputs = {
     CERTIFICATION_ENVIRONMENT_STAGE: "browser-owners",
     PLAYWRIGHT_EXTERNAL_EVIDENCE_ROOT: context.evidenceRoot,
+    PRODUCTION_CERTIFICATION_ID: state.certificationId,
     REQUIRED_TEST_REPORT_PATH: reportPath,
     REQUIRED_TEST_EVIDENCE_PATH: evidencePath,
     REQUIRED_TEST_START_MARKER_PATH: startMarkerPath,
@@ -3765,6 +3768,11 @@ export function browserEnvironment(
     REQUIRED_TEST_HARNESS_VERSION: String(state.harness.version),
     REQUIRED_TEST_HARNESS_SOURCE_SHA256: state.harness.sourceSha256,
     REQUIRED_TEST_GATE_ID: owner.gateId,
+    REQUIRED_TEST_BROWSER_OWNER_ID: owner.id,
+    REQUIRED_TEST_STAGE_ATTEMPT: String(
+      state.stages["browser-owners"].attempts.at(-1).number,
+    ),
+    REQUIRED_TEST_RUN_NONCE: runNonce,
     REQUIRED_TEST_RELEASE_ENVIRONMENT: owner.applicationEnvironment,
     REQUIRED_TEST_SOURCE_COMMIT_SHA: state.candidate.commitSha,
     REQUIRED_TEST_SOURCE_TREE_SHA: state.candidate.treeSha,
@@ -4056,6 +4064,7 @@ export async function runBrowserOwnersStage(options = {}) {
         startMarkerPath,
         repositoryRoot: ownerRepositoryRoot,
         context: ownerContext,
+        runNonce: randomUUID(),
       });
     }
     const descriptors = {};
@@ -4073,6 +4082,7 @@ export async function runBrowserOwnersStage(options = {}) {
             input.reportPath,
             input.evidencePath,
             input.startMarkerPath,
+            input.runNonce,
           ),
           inherit: true,
         },

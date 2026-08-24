@@ -5,6 +5,7 @@ const localBaseURL = "http://127.0.0.1:3000";
 const requiredEvidence = requiredTestPlaywrightEvidence({
   repositoryRoot: process.cwd(),
   expectedGateId: "ci.cart-overlay-accessibility",
+  expectedBrowserOwnerId: "cart",
 });
 const requiredTestGateId = requiredEvidence.gateId;
 

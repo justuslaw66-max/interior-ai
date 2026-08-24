@@ -3,6 +3,7 @@ import {
   constants,
   accessSync,
   lstatSync,
+  mkdirSync,
   readFileSync,
   readdirSync,
   realpathSync,
@@ -23,6 +24,10 @@ export const RUNTIME_SMOKE_EVIDENCE_DESTINATION_CLASS =
   "playwright-external-evidence-root";
 export const RUNTIME_SMOKE_REPORT_AUTHORIZATION_SCHEMA =
   "interior-ai.runtime-smoke-report-authorization.v2";
+export const REQUIRED_TEST_OUTPUT_AUTHORIZATION_SCHEMA =
+  "interior-ai.required-test-output-authorization.v1";
+export const REQUIRED_TEST_OUTPUT_COMPLETION_SCHEMA =
+  "interior-ai.required-test-output-completion.v1";
 
 export const RUNTIME_SMOKE_EVIDENCE_OUTPUTS = Object.freeze({
   report: Object.freeze({ filename: "playwright-report.json" }),
@@ -865,18 +870,276 @@ export function resolveRuntimeSmokeStartMarkerPath({
   });
 }
 
-function certificationOutputDirectory(reportDestination, gateId) {
+function canonicalJsonBytes(value) {
+  return Buffer.from(`${JSON.stringify(value, null, 2)}\n`);
+}
+
+function sha256Bytes(bytes) {
+  return createHash("sha256").update(bytes).digest("hex");
+}
+
+function exactKeys(value, expected) {
+  return (
+    value &&
+    typeof value === "object" &&
+    !Array.isArray(value) &&
+    JSON.stringify(Object.keys(value).sort()) ===
+      JSON.stringify([...expected].sort())
+  );
+}
+
+function requiredTestOutputAuthorizationPaths(outputRoot) {
+  return Object.freeze({
+    authorizationPath: path.join(outputRoot, ".owner.json"),
+    completionPath: path.join(outputRoot, ".complete.json"),
+    outputDirectory: path.join(outputRoot, "test-results"),
+  });
+}
+
+function readCanonicalPhysicalJson(filePath, description) {
+  let entry;
+  let bytes;
+  try {
+    entry = lstatSync(filePath);
+    bytes = readFileSync(filePath);
+  } catch {
+    throw new Error(`${description} is missing or unreadable.`);
+  }
+  if (entry.isSymbolicLink() || !entry.isFile()) {
+    throw new Error(`${description} must be a physical file.`);
+  }
+  let value;
+  try {
+    value = JSON.parse(bytes.toString("utf8"));
+  } catch {
+    throw new Error(`${description} is not valid JSON.`);
+  }
+  if (!bytes.equals(canonicalJsonBytes(value))) {
+    throw new Error(`${description} is not canonical JSON.`);
+  }
+  return Object.freeze({ bytes, value, sha256: sha256Bytes(bytes) });
+}
+
+function normalizedBrowserRunIdentity(identity, gateId) {
+  const expectedKeys = [
+    "browserOwnerId",
+    "candidateId",
+    "certificationId",
+    "gateId",
+    "runNonce",
+    "sourceCommitSha",
+    "sourceTreeSha",
+    "stageAttempt",
+  ];
+  if (!exactKeys(identity, expectedKeys) || identity.gateId !== gateId) {
+    throw new Error("Required-test browser run identity is malformed.");
+  }
+  for (const name of [
+    "browserOwnerId",
+    "candidateId",
+    "certificationId",
+    "gateId",
+    "runNonce",
+  ]) {
+    const value = identity[name];
+    if (
+      typeof value !== "string" ||
+      value !== value.trim() ||
+      !/^[A-Za-z0-9][A-Za-z0-9._:-]{2,255}$/.test(value)
+    ) {
+      throw new Error("Required-test browser run identity is malformed.");
+    }
+  }
+  if (
+    !/^[0-9a-f]{40}$/.test(identity.sourceCommitSha) ||
+    !/^[0-9a-f]{40}$/.test(identity.sourceTreeSha) ||
+    !Number.isSafeInteger(identity.stageAttempt) ||
+    identity.stageAttempt < 1
+  ) {
+    throw new Error("Required-test browser run identity is malformed.");
+  }
+  return Object.freeze({ ...identity });
+}
+
+function normalizedProcessIdentity(processIdentity) {
+  if (
+    !exactKeys(processIdentity, ["pid", "ppid"]) ||
+    !Number.isSafeInteger(processIdentity.pid) ||
+    processIdentity.pid < 1 ||
+    !Number.isSafeInteger(processIdentity.ppid) ||
+    processIdentity.ppid < 1
+  ) {
+    throw new Error("Required-test browser process identity is malformed.");
+  }
+  return Object.freeze({ ...processIdentity });
+}
+
+function certificationOutputDirectory(
+  reportDestination,
+  gateId,
+  { browserRunIdentity = null, processIdentity = null } = {},
+) {
   if (reportDestination.destinationClass === "repository-relative") {
     return `.local/required-test-evidence/${gateId}/playwright-output`;
   }
-  const outputDirectory = path.join(
+  const outputRoot = path.join(
     path.dirname(reportDestination.outputPath),
     `${gateId}-playwright-output`,
   );
-  if (existsPath(outputDirectory)) {
-    throw new Error("Certification Playwright output directory must not already exist.");
+  const { authorizationPath, completionPath, outputDirectory } =
+    requiredTestOutputAuthorizationPaths(outputRoot);
+  if (browserRunIdentity === null) {
+    if (existsPath(outputRoot)) {
+      throw new Error("Certification Playwright output directory must not already exist.");
+    }
+    return Object.freeze({
+      outputRoot,
+      outputDirectory,
+      outputAuthorization: null,
+    });
   }
-  return outputDirectory;
+  const identity = normalizedBrowserRunIdentity(browserRunIdentity, gateId);
+  const processOwner = normalizedProcessIdentity(
+    processIdentity ?? { pid: process.pid, ppid: process.ppid },
+  );
+  let claimedNow = false;
+  if (!existsPath(outputRoot)) {
+    try {
+      mkdirSync(outputRoot, { mode: 0o700 });
+      claimedNow = true;
+    } catch (error) {
+      if (error?.code !== "EEXIST") throw error;
+    }
+  }
+  const outputRootEntry = lstatSync(outputRoot);
+  if (outputRootEntry.isSymbolicLink() || !outputRootEntry.isDirectory()) {
+    throw new Error(
+      "Certification Playwright output directory must be a physical directory.",
+    );
+  }
+  if (claimedNow) {
+    const authorization = {
+      schema: REQUIRED_TEST_OUTPUT_AUTHORIZATION_SCHEMA,
+      status: "claimed",
+      ...identity,
+      reportFilename: path.basename(reportDestination.outputPath),
+      outputRootName: path.basename(outputRoot),
+      outputDirectoryName: path.basename(outputDirectory),
+      destinationIdentitySha256: sha256Bytes(
+        canonicalJsonBytes({
+          parentRealpath: reportDestination.parentRealpath,
+          reportFilename: path.basename(reportDestination.outputPath),
+          outputRootName: path.basename(outputRoot),
+          outputDirectoryName: path.basename(outputDirectory),
+        }),
+      ),
+      ownerProcessId: processOwner.pid,
+    };
+    const bytes = canonicalJsonBytes(authorization);
+    try {
+      writeFileSync(authorizationPath, bytes, { flag: "wx", mode: 0o600 });
+    } catch (error) {
+      throw new Error(
+        `Certification Playwright output authorization was not claimed${
+          error?.code ? ` (${error.code})` : ""
+        }.`,
+      );
+    }
+  }
+  if (existsPath(completionPath)) {
+    throw new Error(
+      "Certification Playwright output directory is completed or stale.",
+    );
+  }
+  const authorizationRead = readCanonicalPhysicalJson(
+    authorizationPath,
+    "Certification Playwright output authorization",
+  );
+  const authorization = authorizationRead.value;
+  const expectedAuthorizationKeys = [
+    "browserOwnerId",
+    "candidateId",
+    "certificationId",
+    "destinationIdentitySha256",
+    "gateId",
+    "outputDirectoryName",
+    "outputRootName",
+    "ownerProcessId",
+    "reportFilename",
+    "runNonce",
+    "schema",
+    "sourceCommitSha",
+    "sourceTreeSha",
+    "stageAttempt",
+    "status",
+  ];
+  const identityMatches = Object.entries(identity).every(
+    ([name, value]) => authorization?.[name] === value,
+  );
+  const sameProcessTree =
+    authorization?.ownerProcessId === processOwner.pid ||
+    authorization?.ownerProcessId === processOwner.ppid;
+  if (
+    !exactKeys(authorization, expectedAuthorizationKeys) ||
+    authorization.schema !== REQUIRED_TEST_OUTPUT_AUTHORIZATION_SCHEMA ||
+    authorization.status !== "claimed" ||
+    authorization.reportFilename !== path.basename(reportDestination.outputPath) ||
+    authorization.outputRootName !== path.basename(outputRoot) ||
+    authorization.outputDirectoryName !== path.basename(outputDirectory) ||
+    authorization.destinationIdentitySha256 !==
+      sha256Bytes(
+        canonicalJsonBytes({
+          parentRealpath: reportDestination.parentRealpath,
+          reportFilename: path.basename(reportDestination.outputPath),
+          outputRootName: path.basename(outputRoot),
+          outputDirectoryName: path.basename(outputDirectory),
+        }),
+      ) ||
+    !Number.isSafeInteger(authorization.ownerProcessId) ||
+    authorization.ownerProcessId < 1 ||
+    !identityMatches ||
+    !sameProcessTree
+  ) {
+    throw new Error(
+      "Certification Playwright output authorization is stale or foreign.",
+    );
+  }
+  const unexpectedRootEntries = readdirSync(outputRoot, { withFileTypes: true })
+    .filter(
+      (entry) =>
+        ![path.basename(authorizationPath), path.basename(outputDirectory)].includes(
+          entry.name,
+        ),
+    )
+    .map((entry) => entry.name);
+  if (unexpectedRootEntries.length > 0) {
+    throw new Error(
+      "Certification Playwright output directory contains foreign files.",
+    );
+  }
+  if (existsPath(outputDirectory)) {
+    const entry = lstatSync(outputDirectory);
+    if (entry.isSymbolicLink() || !entry.isDirectory()) {
+      throw new Error(
+        "Certification Playwright output directory must be a physical directory.",
+      );
+    }
+  }
+  return Object.freeze({
+    outputRoot,
+    outputDirectory,
+    outputAuthorization: Object.freeze({
+      authorizationPath,
+      completionPath,
+      sha256: authorizationRead.sha256,
+      status:
+        claimedNow
+          ? "claimed"
+          : authorization.ownerProcessId === processOwner.pid
+          ? "same-process-reentry"
+          : "same-run-worker-reentry",
+    }),
+  });
 }
 
 function existsPath(targetPath) {
@@ -895,6 +1158,8 @@ export function resolveRequiredTestReportPath({
   gateId,
   authorizedExternalRoot,
   additionalRepositoryRoots = [],
+  browserRunIdentity = null,
+  processIdentity = null,
 }) {
   if (typeof gateId !== "string" || !/^[a-z0-9][a-z0-9.-]+$/.test(gateId)) {
     throw new Error("Required-test gate ID is invalid.");
@@ -938,8 +1203,76 @@ export function resolveRequiredTestReportPath({
       parentRealpath: parent.parentRealpath,
     });
   }
+  const output = certificationOutputDirectory(destination, gateId, {
+    browserRunIdentity,
+    processIdentity,
+  });
   return Object.freeze({
     ...destination,
-    outputDirectory: certificationOutputDirectory(destination, gateId),
+    ...(typeof output === "string"
+      ? { outputDirectory: output, outputAuthorization: null }
+      : output),
   });
+}
+
+function readRequiredTestDiscoveryMarker(markerPath, gateId) {
+  const marker = readCanonicalPhysicalJson(
+    markerPath,
+    "Required-test discovery marker",
+  ).value;
+  if (
+    !exactKeys(marker, ["boundary", "discoveredTestCount", "gateId", "schema"]) ||
+    marker.schema !== "interior-ai.production-certification-playwright-start.v1" ||
+    marker.boundary !== "discovery" ||
+    marker.gateId !== gateId ||
+    !Number.isSafeInteger(marker.discoveredTestCount) ||
+    marker.discoveredTestCount < 1
+  ) {
+    throw new Error("Required-test discovery marker is stale or foreign.");
+  }
+  return marker;
+}
+
+export function resolveRequiredTestStartMarkerPath({
+  requestedPath,
+  repositoryRoot,
+  gateId,
+  authorizedExternalRoot,
+  outputAuthorization,
+  additionalRepositoryRoots = [],
+}) {
+  const markerPath = requiredNormalizedPath(
+    requestedPath,
+    "Required-test discovery marker path",
+  );
+  if (!path.isAbsolute(markerPath)) {
+    return resolvePlaywrightReportPath({
+      requestedPath: markerPath,
+      repositoryRoot,
+      authorizedExternalRoot,
+      additionalRepositoryRoots,
+    });
+  }
+  const destination = resolveExternalReport({
+    requestedPath: markerPath,
+    repositoryRoot,
+    authorizedExternalRoot,
+    additionalRepositoryRoots,
+    inspectExistingTarget: true,
+  });
+  let reentryStatus = "initial";
+  if (destination.targetExists) {
+    if (
+      !["same-process-reentry", "same-run-worker-reentry"].includes(
+        outputAuthorization?.status,
+      )
+    ) {
+      throw new Error(
+        "Required-test discovery marker is not authorized for same-run re-entry.",
+      );
+    }
+    readRequiredTestDiscoveryMarker(destination.outputPath, gateId);
+    reentryStatus = outputAuthorization.status;
+  }
+  return Object.freeze({ ...destination, reentryStatus });
 }

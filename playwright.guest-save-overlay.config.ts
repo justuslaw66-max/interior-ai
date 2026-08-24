@@ -6,6 +6,7 @@ const useProductionServer = process.env.PLAYWRIGHT_USE_PRODUCTION_SERVER === "1"
 const requiredEvidence = requiredTestPlaywrightEvidence({
   repositoryRoot: process.cwd(),
   expectedGateId: "ci.guest-save-overlay-accessibility",
+  expectedBrowserOwnerId: "guest-save",
 });
 const requiredTestGateId = requiredEvidence.gateId;
 

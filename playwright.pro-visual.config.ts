@@ -10,6 +10,7 @@ const useProductionServer = process.env.PLAYWRIGHT_USE_PRODUCTION_SERVER === "1"
 const requiredEvidence = requiredTestPlaywrightEvidence({
   repositoryRoot: process.cwd(),
   expectedGateId: "ci.pro-visual-policy",
+  expectedBrowserOwnerId: "pro-visual",
 });
 const requiredTestGateId = requiredEvidence.gateId;
 

@@ -79,6 +79,7 @@ import {
   RUNTIME_SMOKE_REPORT_AUTHORIZATION_SCHEMA,
   resolvePlaywrightReportPath,
   resolveRequiredTestReportPath,
+  resolveRequiredTestStartMarkerPath,
 } from "./playwright-report-path.mjs";
 import {
   projectCertificationChildEnvironment,
@@ -335,7 +336,7 @@ function stateFixture() {
 {
   const contract = stageEnvironmentContract(repositoryRoot);
   assert.equal(contract.value.schema, "interior-ai.production-certification-stage-environment.v2");
-  assert.equal(Object.keys(contract.variables).length, 114);
+  assert.equal(Object.keys(contract.variables).length, 117);
   assert.equal(contract.variables.GOOGLE_CLIENT_ID.secret, true);
   assert.equal(contract.variables.GOOGLE_CLIENT_SECRET.secret, true);
   assert.equal(Object.keys(contract.applicationFeatureVariables).length, 5);
@@ -1162,6 +1163,185 @@ function stateFixture() {
 }
 
 {
+  const base = mkdtempSync(
+    path.join(tmpdir(), "certification-browser-output-ownership-"),
+  );
+  const sourceRoot = path.join(base, "source");
+  const evidenceRoot = path.join(base, "evidence");
+  const reportParent = path.join(evidenceRoot, "browser-reports/floor-plan-upload");
+  mkdirSync(sourceRoot, { recursive: true });
+  mkdirSync(reportParent, { recursive: true });
+  const reportPath = path.join(reportParent, "playwright.json");
+  const gateId = "ci.floor-plan-upload-accessibility";
+  const identity = {
+    certificationId: "certification-browser-output-0001",
+    candidateId: "candidate-browser-output-0001",
+    sourceCommitSha: "a".repeat(40),
+    sourceTreeSha: "b".repeat(40),
+    browserOwnerId: "floor-plan-upload",
+    gateId,
+    stageAttempt: 1,
+    runNonce: "browser-output-run-nonce-0001",
+  };
+  const resolve = (
+    browserRunIdentity = identity,
+    processIdentity = { pid: 1001, ppid: 1000 },
+  ) =>
+    resolveRequiredTestReportPath({
+      requestedPath: reportPath,
+      repositoryRoot: sourceRoot,
+      gateId,
+      authorizedExternalRoot: evidenceRoot,
+      browserRunIdentity,
+      processIdentity,
+    });
+
+  const preflight = resolveRequiredTestReportPath({
+    requestedPath: reportPath,
+    repositoryRoot: sourceRoot,
+    gateId,
+    authorizedExternalRoot: evidenceRoot,
+  });
+  assert.equal(existsSync(preflight.outputDirectory), false);
+  assert.equal(preflight.outputAuthorization, null);
+
+  const claimed = resolve();
+  assert.equal(claimed.outputAuthorization.status, "claimed");
+  assert.equal(existsSync(claimed.outputRoot), true);
+  assert.equal(existsSync(claimed.outputDirectory), false);
+  assert.equal(existsSync(claimed.outputAuthorization.authorizationPath), true);
+  assert.equal(
+    path.dirname(claimed.outputAuthorization.authorizationPath),
+    claimed.outputRoot,
+  );
+
+  assert.equal(resolve().outputAuthorization.status, "same-process-reentry");
+  mkdirSync(path.join(claimed.outputDirectory, ".playwright-artifacts-0"), {
+    recursive: true,
+  });
+  assert.equal(
+    resolve(identity, { pid: 1002, ppid: 1001 }).outputAuthorization.status,
+    "same-run-worker-reentry",
+  );
+  assert.equal(
+    resolve(identity, { pid: 1003, ppid: 1001 }).outputAuthorization.status,
+    "same-run-worker-reentry",
+  );
+
+  for (const [name, value] of [
+    ["browserOwnerId", "foreign-owner"],
+    ["stageAttempt", 2],
+    ["runNonce", "browser-output-run-nonce-foreign"],
+    ["candidateId", "candidate-browser-output-foreign"],
+    ["certificationId", "certification-browser-output-foreign"],
+    ["sourceCommitSha", "c".repeat(40)],
+    ["sourceTreeSha", "d".repeat(40)],
+  ]) {
+    assert.throws(
+      () => resolve({ ...identity, [name]: value }, { pid: 1004, ppid: 1001 }),
+      /stale or foreign/,
+      `foreign ${name} must not reuse the claimed output directory`,
+    );
+  }
+  assert.throws(
+    () => resolve(identity, { pid: 2002, ppid: 2001 }),
+    /stale or foreign/,
+    "a separate process tree must not reuse an active output claim",
+  );
+  const foreignEntryPath = path.join(claimed.outputRoot, "foreign.txt");
+  writeFileSync(foreignEntryPath, "foreign\n");
+  assert.throws(
+    () => resolve(identity, { pid: 1004, ppid: 1001 }),
+    /contains foreign files/,
+    "foreign files raced into an active output claim must be rejected",
+  );
+  unlinkSync(foreignEntryPath);
+
+  const completionMarkerPath = path.join(
+    evidenceRoot,
+    "browser-owners/floor-plan-upload/discovery-start.json",
+  );
+  mkdirSync(path.dirname(completionMarkerPath), { recursive: true });
+  assert.equal(
+    resolveRequiredTestStartMarkerPath({
+      requestedPath: completionMarkerPath,
+      repositoryRoot: sourceRoot,
+      gateId,
+      authorizedExternalRoot: evidenceRoot,
+      outputAuthorization: claimed.outputAuthorization,
+    }).reentryStatus,
+    "initial",
+  );
+  const completionReporter = new CertificationPlaywrightStartReporter({
+    markerPath: completionMarkerPath,
+    boundary: "discovery",
+    gateId,
+    outputAuthorizationPath: claimed.outputAuthorization.authorizationPath,
+    outputCompletionPath: claimed.outputAuthorization.completionPath,
+    outputAuthorizationSha256: claimed.outputAuthorization.sha256,
+  });
+  completionReporter.onBegin(null, { allTests: () => [{}, {}] });
+  const executionBoundaryProjects = [];
+  for (const [index, project] of ["chromium", "webkit"].entries()) {
+    const workerReentry = resolve(identity, {
+      pid: 1005 + index,
+      ppid: 1001,
+    });
+    assert.equal(
+      resolveRequiredTestStartMarkerPath({
+        requestedPath: completionMarkerPath,
+        repositoryRoot: sourceRoot,
+        gateId,
+        authorizedExternalRoot: evidenceRoot,
+        outputAuthorization: workerReentry.outputAuthorization,
+      }).reentryStatus,
+      "same-run-worker-reentry",
+    );
+    executionBoundaryProjects.push(project);
+  }
+  assert.deepEqual(executionBoundaryProjects, ["chromium", "webkit"]);
+  completionReporter.onEnd({ status: "passed" });
+  const completion = JSON.parse(
+    readFileSync(claimed.outputAuthorization.completionPath, "utf8"),
+  );
+  assert.equal(completion.status, "completed");
+  assert.equal(completion.authorizationSha256, claimed.outputAuthorization.sha256);
+  assert.throws(() => resolve(), /completed or stale/);
+
+  const precreatedRoot = path.join(evidenceRoot, "operator-precreated");
+  mkdirSync(precreatedRoot, { recursive: true });
+  const precreatedReportPath = path.join(precreatedRoot, "playwright.json");
+  const precreatedOutput = path.join(
+    precreatedRoot,
+    `${gateId}-playwright-output`,
+  );
+  mkdirSync(precreatedOutput);
+  assert.throws(
+    () =>
+      resolveRequiredTestReportPath({
+        requestedPath: precreatedReportPath,
+        repositoryRoot: sourceRoot,
+        gateId,
+        authorizedExternalRoot: evidenceRoot,
+        browserRunIdentity: identity,
+        processIdentity: { pid: 3001, ppid: 3000 },
+      }),
+    /missing or unreadable/,
+  );
+  writeFileSync(path.join(precreatedOutput, "foreign.txt"), "foreign\n");
+  assert.throws(
+    () =>
+      resolveRequiredTestReportPath({
+        requestedPath: precreatedReportPath,
+        repositoryRoot: sourceRoot,
+        gateId,
+        authorizedExternalRoot: evidenceRoot,
+      }),
+    /must not already exist/,
+  );
+}
+
+{
   const evidenceRoot = mkdtempSync(
     path.join(tmpdir(), "certification-start-markers-"),
   );
@@ -1508,6 +1688,7 @@ function stateFixture() {
     assert.match(source, /requiredTestPlaywrightEvidence/);
     assert.doesNotMatch(source, /must remain repository-relative/);
     assert.ok(source.includes(owner.gateId));
+    assert.ok(source.includes(`expectedBrowserOwnerId: "${owner.id}"`));
   }
   assert.equal(new Set(REQUIRED_BROWSER_OWNERS.map((owner) => owner.id)).size, 7);
 }
@@ -1528,6 +1709,7 @@ function stateFixture() {
       evidenceRoot: "/external/certification-evidence",
     },
     {
+      certificationId: "certification-test-run",
       executionClass: "deterministic-simulation",
       candidate,
       harness: { version: 1, sourceSha256: "c".repeat(64) },
@@ -1535,16 +1717,24 @@ function stateFixture() {
         artifactSha256: "d".repeat(64),
         nextBuildId: "build-id",
       },
+      stages: {
+        "browser-owners": { attempts: [{ number: 1 }] },
+      },
     },
     owner,
     "/external/certification-evidence/report.json",
     "/external/certification-evidence/evidence.json",
     "/external/certification-evidence/start.json",
+    "browser-run-nonce-0001",
   );
   assert.equal(environment.REQUIRED_TEST_SOURCE_COMMIT_SHA, candidate.commitSha);
   assert.equal(environment.REQUIRED_TEST_SOURCE_TREE_SHA, candidate.treeSha);
   assert.equal(environment.APP_ENV, owner.applicationEnvironment);
   assert.equal(environment.NEXT_PUBLIC_APP_ENV, owner.applicationEnvironment);
+  assert.equal(environment.PRODUCTION_CERTIFICATION_ID, "certification-test-run");
+  assert.equal(environment.REQUIRED_TEST_BROWSER_OWNER_ID, owner.id);
+  assert.equal(environment.REQUIRED_TEST_STAGE_ATTEMPT, "1");
+  assert.equal(environment.REQUIRED_TEST_RUN_NONCE, "browser-run-nonce-0001");
 }
 
 {
@@ -1654,7 +1844,11 @@ function stateFixture() {
     const ownerRoot = path.join(configEvidenceRoot, owner.id);
     mkdirSync(ownerRoot);
     environment.CERTIFICATION_EVIDENCE_ROOT = configEvidenceRoot;
+    environment.PRODUCTION_CERTIFICATION_ID = "config-list-certification";
     environment.REQUIRED_TEST_GATE_ID = owner.gateId;
+    environment.REQUIRED_TEST_BROWSER_OWNER_ID = owner.id;
+    environment.REQUIRED_TEST_STAGE_ATTEMPT = "1";
+    environment.REQUIRED_TEST_RUN_NONCE = `config-list-${owner.id}-nonce`;
     environment.REQUIRED_TEST_REPORT_PATH = path.join(ownerRoot, "playwright.json");
     environment.REQUIRED_TEST_SOURCE_COMMIT_SHA = commitSha;
     environment.REQUIRED_TEST_SOURCE_TREE_SHA = treeSha;
@@ -1678,6 +1872,132 @@ function stateFixture() {
   }
   rmSync(configEvidenceRoot, { recursive: true, force: true });
   coveredRegressionIds.add(4);
+}
+
+{
+  const floorPlanOwner = REQUIRED_BROWSER_OWNERS.find(
+    (owner) => owner.id === "floor-plan-upload",
+  );
+  assert.ok(floorPlanOwner);
+  mkdirSync(path.join(repositoryRoot, ".local"), { recursive: true });
+  const fixtureRoot = mkdtempSync(
+    path.join(
+      repositoryRoot,
+      ".local/certification-floor-plan-config-execution-",
+    ),
+  );
+  const evidenceRoot = mkdtempSync(
+    path.join(tmpdir(), "certification-floor-plan-config-execution-"),
+  );
+  const testsRoot = path.join(fixtureRoot, "tests");
+  const executionRoot = path.join(evidenceRoot, "execution");
+  const reportRoot = path.join(evidenceRoot, "browser-reports/floor-plan-upload");
+  const markerRoot = path.join(evidenceRoot, "browser-owners/floor-plan-upload");
+  mkdirSync(testsRoot);
+  mkdirSync(executionRoot, { recursive: true });
+  mkdirSync(reportRoot, { recursive: true });
+  mkdirSync(markerRoot, { recursive: true });
+  writeFileSync(
+    path.join(fixtureRoot, "playwright.config.ts"),
+    `import { defineConfig } from "@playwright/test";
+import path from "node:path";
+import floorPlanConfig from "../../playwright.floor-plan-upload.config";
+
+export default defineConfig({
+  ...floorPlanConfig,
+  testDir: "./tests",
+  testMatch: "execution.spec.ts",
+  reporter: floorPlanConfig.reporter?.map(([name, options]) => [
+    name.startsWith(".") ? path.resolve(process.cwd(), name) : name,
+    options,
+  ]),
+  webServer: undefined,
+});
+`,
+  );
+  writeFileSync(
+    path.join(testsRoot, "execution.spec.ts"),
+    `import { test, expect } from "@playwright/test";
+import { writeFileSync } from "node:fs";
+import path from "node:path";
+
+test("Floor Plan config reaches worker test execution", async ({}, testInfo) => {
+  expect(["chromium", "webkit"]).toContain(testInfo.project.name);
+  writeFileSync(
+    path.join(
+      process.env.FLOOR_PLAN_CONFIG_EXECUTION_ROOT!,
+      \`\${testInfo.project.name}.json\`,
+    ),
+    \`{\"project\":\${JSON.stringify(testInfo.project.name)}}\\n\`,
+    { flag: "wx", mode: 0o600 },
+  );
+});
+`,
+  );
+  const commitSha = spawnSync("git", ["rev-parse", "HEAD"], {
+    cwd: repositoryRoot,
+    encoding: "utf8",
+  }).stdout.trim();
+  const treeSha = spawnSync("git", ["rev-parse", "HEAD^{tree}"], {
+    cwd: repositoryRoot,
+    encoding: "utf8",
+  }).stdout.trim();
+  const execution = spawnSync(
+    process.platform === "win32" ? "npx.cmd" : "npx",
+    [
+      "playwright",
+      "test",
+      "--config",
+      path.join(fixtureRoot, "playwright.config.ts"),
+    ],
+    {
+      cwd: repositoryRoot,
+      env: {
+        ...process.env,
+        APP_ENV: floorPlanOwner.applicationEnvironment,
+        NEXT_PUBLIC_APP_ENV: floorPlanOwner.applicationEnvironment,
+        CI: "true",
+        PLAYWRIGHT_USE_PRODUCTION_SERVER: "1",
+        CERTIFICATION_EVIDENCE_ROOT: evidenceRoot,
+        PRODUCTION_CERTIFICATION_ID: "floor-plan-config-execution-certification",
+        REQUIRED_TEST_GATE_ID: floorPlanOwner.gateId,
+        REQUIRED_TEST_BROWSER_OWNER_ID: floorPlanOwner.id,
+        REQUIRED_TEST_STAGE_ATTEMPT: "1",
+        REQUIRED_TEST_RUN_NONCE: "floor-plan-config-execution-nonce",
+        REQUIRED_TEST_REPORT_PATH: path.join(reportRoot, "playwright.json"),
+        REQUIRED_TEST_START_MARKER_PATH: path.join(
+          markerRoot,
+          "discovery-start.json",
+        ),
+        REQUIRED_TEST_SOURCE_COMMIT_SHA: commitSha,
+        REQUIRED_TEST_SOURCE_TREE_SHA: treeSha,
+        REQUIRED_TEST_ARTIFACT_SHA256: "a".repeat(64),
+        REQUIRED_TEST_BUILD_ID: "floor-plan-config-execution-build",
+        REQUIRED_TEST_RELEASE_CANDIDATE_ID:
+          "floor-plan-config-execution-candidate",
+        REQUIRED_TEST_RELEASE_ENVIRONMENT:
+          floorPlanOwner.applicationEnvironment,
+        REQUIRED_TEST_HARNESS_VERSION: "1",
+        REQUIRED_TEST_HARNESS_SOURCE_SHA256:
+          harnessSourceIdentity(repositoryRoot).sha256,
+        FLOOR_PLAN_CONFIG_EXECUTION_ROOT: executionRoot,
+      },
+      encoding: "utf8",
+    },
+  );
+  assert.equal(
+    execution.status,
+    0,
+    `Floor Plan Chromium/WebKit config execution probe failed: ${execution.stdout}\n${execution.stderr}`,
+  );
+  assert.deepEqual(
+    ["chromium", "webkit"].map((project) =>
+      JSON.parse(readFileSync(path.join(executionRoot, `${project}.json`), "utf8")),
+    ),
+    [{ project: "chromium" }, { project: "webkit" }],
+  );
+  rmSync(fixtureRoot, { recursive: true, force: true });
+  rmSync(evidenceRoot, { recursive: true, force: true });
 }
 
 {

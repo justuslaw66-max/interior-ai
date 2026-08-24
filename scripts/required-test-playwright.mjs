@@ -2,13 +2,19 @@ import {
   CERTIFICATION_EVIDENCE_ROOT,
   PLAYWRIGHT_EXTERNAL_EVIDENCE_ROOT,
   resolveRequiredTestReportPath,
+  resolveRequiredTestStartMarkerPath,
 } from "./playwright-report-path.mjs";
 
 /**
  * @param {string | null} outputFile
  * @returns {import("playwright/types/test").ReporterDescription[]}
  */
-function requiredEvidenceReporters(outputFile, startMarker, gateId) {
+function requiredEvidenceReporters(
+  outputFile,
+  startMarker,
+  gateId,
+  outputAuthorization = null,
+) {
   return outputFile
     ? [
         ["list"],
@@ -16,7 +22,19 @@ function requiredEvidenceReporters(outputFile, startMarker, gateId) {
         ...(startMarker
           ? [[
               "./scripts/certification-playwright-start-reporter.mjs",
-              { markerPath: startMarker, boundary: "discovery", gateId },
+              {
+                markerPath: startMarker,
+                boundary: "discovery",
+                gateId,
+                ...(outputAuthorization
+                  ? {
+                      outputAuthorizationPath:
+                        outputAuthorization.authorizationPath,
+                      outputCompletionPath: outputAuthorization.completionPath,
+                      outputAuthorizationSha256: outputAuthorization.sha256,
+                    }
+                  : {}),
+              },
             ]]
           : []),
       ]
@@ -26,7 +44,9 @@ function requiredEvidenceReporters(outputFile, startMarker, gateId) {
 export function requiredTestPlaywrightEvidence({
   repositoryRoot,
   expectedGateId,
+  expectedBrowserOwnerId,
   environment = process.env,
+  processIdentity = null,
 }) {
   const certificationRoot = environment[CERTIFICATION_EVIDENCE_ROOT]?.trim();
   const playwrightRoot = environment[PLAYWRIGHT_EXTERNAL_EVIDENCE_ROOT]?.trim();
@@ -52,22 +72,44 @@ export function requiredTestPlaywrightEvidence({
   if (gateId !== expectedGateId) {
     throw new Error("Required-test gate ID does not match this Playwright owner.");
   }
+  const value = (name) => environment[name]?.trim() || null;
+  const browserOwnerId = value("REQUIRED_TEST_BROWSER_OWNER_ID");
+  if (authorizedExternalRoot && browserOwnerId !== expectedBrowserOwnerId) {
+    throw new Error(
+      "Required-test browser owner ID does not match this Playwright owner.",
+    );
+  }
+  const stageAttempt = Number(value("REQUIRED_TEST_STAGE_ATTEMPT"));
+  const browserRunIdentity = authorizedExternalRoot
+    ? {
+        certificationId: value("PRODUCTION_CERTIFICATION_ID"),
+        candidateId: value("REQUIRED_TEST_RELEASE_CANDIDATE_ID"),
+        sourceCommitSha: value("REQUIRED_TEST_SOURCE_COMMIT_SHA"),
+        sourceTreeSha: value("REQUIRED_TEST_SOURCE_TREE_SHA"),
+        browserOwnerId,
+        gateId,
+        stageAttempt,
+        runNonce: value("REQUIRED_TEST_RUN_NONCE"),
+      }
+    : null;
   const reportDestination = resolveRequiredTestReportPath({
     requestedPath,
     repositoryRoot,
     gateId,
     authorizedExternalRoot,
+    browserRunIdentity,
+    processIdentity,
   });
   const requestedStartMarker = environment.REQUIRED_TEST_START_MARKER_PATH;
   const startMarker = requestedStartMarker
-    ? resolveRequiredTestReportPath({
+    ? resolveRequiredTestStartMarkerPath({
         requestedPath: requestedStartMarker,
         repositoryRoot,
         gateId,
         authorizedExternalRoot,
+        outputAuthorization: reportDestination.outputAuthorization,
       }).outputPath
     : null;
-  const value = (name) => environment[name]?.trim() || null;
   return Object.freeze({
     active: true,
     gateId,
@@ -76,6 +118,7 @@ export function requiredTestPlaywrightEvidence({
       reportDestination.outputPath,
       startMarker,
       gateId,
+      reportDestination.outputAuthorization,
     ),
     metadata: Object.freeze({
       schema: "interior-ai.required-test-evidence.v1",

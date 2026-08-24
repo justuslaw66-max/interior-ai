@@ -1,4 +1,5 @@
-import { writeFileSync } from "node:fs";
+import { createHash } from "node:crypto";
+import { readFileSync, writeFileSync } from "node:fs";
 
 function markerValue(options, details) {
   return {
@@ -19,6 +20,26 @@ export default class CertificationPlaywrightStartReporter {
       !options.gateId
     ) {
       throw new Error("certification Playwright start reporter options are invalid");
+    }
+    const outputOptionNames = [
+      "outputAuthorizationPath",
+      "outputCompletionPath",
+      "outputAuthorizationSha256",
+    ];
+    const suppliedOutputOptionCount = outputOptionNames.filter(
+      (name) => options[name] !== undefined,
+    ).length;
+    if (
+      suppliedOutputOptionCount !== 0 &&
+      (suppliedOutputOptionCount !== outputOptionNames.length ||
+        outputOptionNames.some(
+          (name) => typeof options[name] !== "string" || !options[name],
+        ) ||
+        !/^[0-9a-f]{64}$/.test(options.outputAuthorizationSha256))
+    ) {
+      throw new Error(
+        "certification Playwright output completion options are invalid",
+      );
     }
     this.options = options;
     this.written = false;
@@ -50,5 +71,31 @@ export default class CertificationPlaywrightStartReporter {
       title: test.title,
       retry: result.retry,
     });
+  }
+
+  onEnd(result) {
+    if (!this.options.outputAuthorizationPath) return;
+    const authorizationBytes = readFileSync(
+      this.options.outputAuthorizationPath,
+    );
+    const authorizationSha256 = createHash("sha256")
+      .update(authorizationBytes)
+      .digest("hex");
+    if (authorizationSha256 !== this.options.outputAuthorizationSha256) {
+      throw new Error(
+        "certification Playwright output authorization changed before completion",
+      );
+    }
+    const completion = {
+      schema: "interior-ai.required-test-output-completion.v1",
+      status: "completed",
+      authorizationSha256,
+      playwrightStatus: result.status,
+    };
+    writeFileSync(
+      this.options.outputCompletionPath,
+      `${JSON.stringify(completion, null, 2)}\n`,
+      { flag: "wx", mode: 0o600 },
+    );
   }
 }
