@@ -688,7 +688,11 @@ export function stageChildProjection(
     context.repositoryRoot,
     profileId,
   );
-  const fixtureProjectionStage = new Set(["build", "runtime-smoke"]).has(stage);
+  const fixtureProjectionStage = new Set([
+    "build",
+    "runtime-smoke",
+    "browser-owners",
+  ]).has(stage);
   const hasFixtureSession =
     fixtureProjectionStage &&
     Boolean(context.environment[authFixtureSession.FIXTURE_SESSION_ROOT_ENV]);

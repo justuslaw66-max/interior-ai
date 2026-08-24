@@ -892,13 +892,19 @@ export function validateAuthResultContracts(repositoryRoot) {
     !certificationRunnerSource.includes(
       "auth fixture session belongs to another candidate",
     ) ||
-    !certificationRunnerSource.includes(
-      'new Set(["build", "runtime-smoke"])',
+    !/const fixtureProjectionStage = new Set\(\[\s*"build",\s*"runtime-smoke",\s*"browser-owners",\s*\]\)\.has\(stage\);/.test(
+      certificationRunnerSource,
     ) ||
     !regressionMatrix.cases.some(
       (entry) =>
         entry.id === 39 &&
         entry.defect === "runtime-smoke-auth-fixture-continuity-projection",
+    ) ||
+    !regressionMatrix.cases.some(
+      (entry) =>
+        entry.id === 41 &&
+        entry.defect ===
+          "pro-visual-browser-owner-development-server-and-auth-projection",
     ) ||
     !artifactEvidenceSource.includes("authFixtureBuildContinuity") ||
     !artifactEvidenceSource.includes(
@@ -2178,6 +2184,14 @@ function validateStageEnvironmentCapabilities(repositoryRoot, environment) {
         (name.startsWith("CI_AUTH_") &&
           !runtimeProfile?.optionalVariables.includes(name)),
     ) ||
+    expectedRuntimeAuthVariables.some(
+      (name) =>
+        !productionBrowser?.childVisibleVariables.includes(name) ||
+        !developmentBrowser?.childVisibleVariables.includes(name) ||
+        (name.startsWith("CI_AUTH_") &&
+          (!productionBrowser?.optionalVariables.includes(name) ||
+            !developmentBrowser?.optionalVariables.includes(name))),
+    ) ||
     [runtimeProfile, artifactProductProfile].some((profile) =>
       profile?.childVisibleVariables.includes("CI_AUTH_FIXTURE_SESSION_ROOT"),
     ) ||
@@ -2256,6 +2270,8 @@ function validateStageEnvironmentCapabilities(repositoryRoot, environment) {
     !certificationRunner.includes("createRuntimeSmokeTimingEvidenceBinding") ||
     !phase8Profile.requiredVariables.includes("PHASE8_EXTERNAL_EVIDENCE_ROOT") ||
     productionBrowser.fixedValues.PLAYWRIGHT_USE_PRODUCTION_SERVER !== "1" ||
+    REQUIRED_BROWSER_OWNERS.find((owner) => owner.id === "pro-visual")
+      ?.productionServer !== true ||
     developmentBrowser.childVisibleVariables.includes(
       "PLAYWRIGHT_USE_PRODUCTION_SERVER",
     ) ||
@@ -2323,6 +2339,11 @@ function validateStageEnvironmentCapabilities(repositoryRoot, environment) {
     !regressionMatrix.cases.some(
       (entry) =>
         entry.defect === "runtime-smoke-auth-fixture-continuity-projection",
+    ) ||
+    !regressionMatrix.cases.some(
+      (entry) =>
+        entry.defect ===
+        "pro-visual-browser-owner-development-server-and-auth-projection",
     ) ||
     regressionMatrix.authPreflightDatabaseCases?.length !== 38 ||
     !/externalVisionEnabled, false/.test(floorPlanLocalOcrTest) ||

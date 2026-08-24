@@ -86,6 +86,8 @@ import {
   stageEnvironmentContract,
   validateProjectedEnvironmentMetadata,
 } from "./production-certification-stage-environment.mjs";
+import { stageWorktreeRole } from "./production-certification-worktrees.mjs";
+import authFixtureSession from "./ci-auth-fixture-session.cjs";
 
 const repositoryRoot = process.cwd();
 const CURRENT_JOURNAL_V2_FINAL_POSITIVE_PATH =
@@ -1691,21 +1693,59 @@ function stateFixture() {
     assert.ok(source.includes(`expectedBrowserOwnerId: "${owner.id}"`));
   }
   assert.equal(new Set(REQUIRED_BROWSER_OWNERS.map((owner) => owner.id)).size, 7);
+  const proVisualOwner = REQUIRED_BROWSER_OWNERS.find(
+    (owner) => owner.id === "pro-visual",
+  );
+  assert.ok(proVisualOwner);
+  assert.equal(proVisualOwner.productionServer, true);
+  assert.equal(
+    stageWorktreeRole("browser-owners", proVisualOwner.id),
+    "final-artifact",
+  );
+  assert.match(
+    readFileSync(proVisualOwner.config, "utf8"),
+    /command: useProductionServer \? "npm run start" : "npm run dev"/,
+  );
 }
 
 {
   const owner = REQUIRED_BROWSER_OWNERS[0];
+  const fixtureNonce = "7".repeat(32);
+  const fixtureClientId =
+    `123456789012345-gate-a3-ci-${fixtureNonce}.apps.googleusercontent.com`;
+  const fixtureClientSecret = `GOCSPX-gate-a3-ci-${fixtureNonce}`;
+  const fixtureParent = mkdtempSync(
+    path.join(tmpdir(), "certification-browser-auth-fixture-"),
+  );
+  const fixtureSessionEnvironment = {
+    CI_AUTH_FIXTURE_SESSION_ROOT: path.join(fixtureParent, "session"),
+    CI_AUTH_FIXTURE_SESSION_ID: "browser-fixture-session-0001",
+    CI_AUTH_FIXTURE_SESSION_NONCE: "browser-fixture-nonce-0001",
+    CI_AUTH_FIXTURE_CANDIDATE_COMMIT_SHA: candidate.commitSha,
+    CI_AUTH_FIXTURE_CANDIDATE_TREE_SHA: candidate.treeSha,
+  };
+  const fixtureSession = authFixtureSession.publishFixtureSession({
+    repositoryRoot,
+    environment: fixtureSessionEnvironment,
+    fixture: {
+      googleClientId: fixtureClientId,
+      googleClientSecret: fixtureClientSecret,
+    },
+  });
+  const contextEnvironment = {
+    ...fixtureSessionEnvironment,
+    ...fixtureSession.assignments,
+    CI_AUTH_FIXTURE_CANDIDATE_COMMIT_SHA: candidate.commitSha,
+    CI_AUTH_FIXTURE_CANDIDATE_TREE_SHA: candidate.treeSha,
+    CERTIFICATION_QUALIFICATION_MODE: "1",
+    DATABASE_URL:
+      "postgresql://fixture:a6e2c8f4b9d10573a6e2c8f4b9d10573@127.0.0.1:5432/fixture",
+    REQUIRED_TEST_SOURCE_COMMIT_SHA: "0".repeat(40),
+    REQUIRED_TEST_SOURCE_TREE_SHA: "1".repeat(40),
+  };
   const environment = browserEnvironment(
     {
-      environment: {
-        CERTIFICATION_QUALIFICATION_MODE: "1",
-        DATABASE_URL:
-          "postgresql://fixture:a6e2c8f4b9d10573a6e2c8f4b9d10573@127.0.0.1:5432/fixture",
-        GOOGLE_CLIENT_ID: "synthetic-provider-client-id",
-        GOOGLE_CLIENT_SECRET: "synthetic-provider-secondary-value",
-        REQUIRED_TEST_SOURCE_COMMIT_SHA: "0".repeat(40),
-        REQUIRED_TEST_SOURCE_TREE_SHA: "1".repeat(40),
-      },
+      environment: contextEnvironment,
       evidenceRoot: "/external/certification-evidence",
     },
     {
@@ -1735,6 +1775,88 @@ function stateFixture() {
   assert.equal(environment.REQUIRED_TEST_BROWSER_OWNER_ID, owner.id);
   assert.equal(environment.REQUIRED_TEST_STAGE_ATTEMPT, "1");
   assert.equal(environment.REQUIRED_TEST_RUN_NONCE, "browser-run-nonce-0001");
+  for (const name of [
+    "CI_AUTH_FIXTURE_ACTIVE",
+    "CI_AUTH_FIXTURE_CANDIDATE_COMMIT_SHA",
+    "CI_AUTH_FIXTURE_CANDIDATE_TREE_SHA",
+    "CI_AUTH_FIXTURE_LOCAL_TEST",
+    "CI_AUTH_FIXTURE_MODE",
+    "CI_AUTH_FIXTURE_NO_REGENERATION",
+    "CI_AUTH_FIXTURE_PROVIDER_CLIENT_ID_SHA256",
+    "CI_AUTH_FIXTURE_PROVIDER_CLIENT_SECRET_SHA256",
+    "CI_AUTH_FIXTURE_SESSION_CLASSIFICATION",
+    "CI_AUTH_FIXTURE_SESSION_ID",
+    "CI_AUTH_FIXTURE_SESSION_NONCE",
+  ]) {
+    assert.equal(typeof environment[name], "string", `${name} must be projected`);
+  }
+  assert.equal(environment.CI_AUTH_FIXTURE_SESSION_ROOT, undefined);
+  assert.equal(
+    authFixtureSession.validateProjectedFixtureEnvironment(environment, {
+      commitSha: candidate.commitSha,
+      treeSha: candidate.treeSha,
+    }).noRegenerationProof,
+    "passed",
+  );
+  assert.throws(
+    () =>
+      browserEnvironment(
+        {
+          environment: {
+            GOOGLE_CLIENT_ID: fixtureClientId,
+            GOOGLE_CLIENT_SECRET: fixtureClientSecret,
+          },
+          evidenceRoot: "/external/certification-evidence",
+        },
+        {
+          certificationId: "certification-test-run",
+          executionClass: "real-candidate",
+          candidate,
+          harness: { version: 1, sourceSha256: "c".repeat(64) },
+          bindings: {
+            artifactSha256: "d".repeat(64),
+            nextBuildId: "build-id",
+          },
+          stages: { "browser-owners": { attempts: [{ number: 1 }] } },
+        },
+        owner,
+        "/external/certification-evidence/report.json",
+        "/external/certification-evidence/evidence.json",
+        "/external/certification-evidence/start.json",
+        "browser-run-nonce-0001",
+      ),
+    /requires the canonical auth fixture session/,
+  );
+  assert.throws(
+    () =>
+      browserEnvironment(
+        {
+          environment: {
+            ...contextEnvironment,
+            CI_AUTH_FIXTURE_CANDIDATE_COMMIT_SHA: "f".repeat(40),
+          },
+          evidenceRoot: "/external/certification-evidence",
+        },
+        {
+          certificationId: "certification-test-run",
+          executionClass: "deterministic-simulation",
+          candidate,
+          harness: { version: 1, sourceSha256: "c".repeat(64) },
+          bindings: {
+            artifactSha256: "d".repeat(64),
+            nextBuildId: "build-id",
+          },
+          stages: { "browser-owners": { attempts: [{ number: 1 }] } },
+        },
+        owner,
+        "/external/certification-evidence/report.json",
+        "/external/certification-evidence/evidence.json",
+        "/external/certification-evidence/start.json",
+        "browser-run-nonce-0001",
+      ),
+    /ambient candidate override/,
+  );
+  rmSync(fixtureParent, { recursive: true, force: true });
 }
 
 {
@@ -1784,12 +1906,12 @@ function stateFixture() {
   const regressions = JSON.parse(
     readFileSync("scripts/production-certification-regressions.json", "utf8"),
   );
-  assert.equal(regressions.cases.length, 40);
+  assert.equal(regressions.cases.length, 41);
   assert.deepEqual(
     regressions.cases.map((entry) => entry.id),
-    Array.from({ length: 40 }, (_, index) => index + 1),
+    Array.from({ length: 41 }, (_, index) => index + 1),
   );
-  assert.equal(new Set(regressions.cases.map((entry) => entry.defect)).size, 40);
+  assert.equal(new Set(regressions.cases.map((entry) => entry.defect)).size, 41);
   assert.equal(regressions.authPreflightDatabaseCases.length, 38);
   assert.equal(new Set(regressions.authPreflightDatabaseCases).size, 38);
   coveredRegressionIds.add(40);
@@ -1869,9 +1991,14 @@ function stateFixture() {
       `${owner.id} config must list through the real Playwright CLI: ${listed.stderr}`,
     );
     assert.match(listed.stdout, /Total: \d+ tests? in \d+ files?/);
+    if (owner.id === "pro-visual") {
+      assert.match(listed.stdout, /\[chromium\].*pro-visual-policy\.spec\.ts/);
+      assert.match(listed.stdout, /\[webkit\].*pro-visual-policy\.spec\.ts/);
+    }
   }
   rmSync(configEvidenceRoot, { recursive: true, force: true });
   coveredRegressionIds.add(4);
+  coveredRegressionIds.add(41);
 }
 
 {
@@ -3948,7 +4075,7 @@ test("Floor Plan config reaches worker test execution", async ({}, testInfo) => 
 
 assert.deepEqual(
   [...coveredRegressionIds].sort((left, right) => left - right),
-  Array.from({ length: 40 }, (_, index) => index + 1),
+  Array.from({ length: 41 }, (_, index) => index + 1),
   "every documented regression must be exercised by an executable assertion",
 );
 

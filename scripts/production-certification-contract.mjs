@@ -141,7 +141,7 @@ export const REQUIRED_BROWSER_OWNERS = Object.freeze([
     config: "playwright.pro-visual.config.ts",
     packageCommand: "test:pro-visual-policy",
     applicationEnvironment: "staging",
-    productionServer: false,
+    productionServer: true,
   }),
   Object.freeze({
     id: "guest-save",

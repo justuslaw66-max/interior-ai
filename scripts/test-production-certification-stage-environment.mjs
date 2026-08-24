@@ -181,6 +181,29 @@ function testDatabaseCapabilityIsolation() {
     assert.equal(build.optionalVariables.includes(name), true);
     assert.equal(build.requiredVariables.includes(name), false);
   }
+  for (const profileId of [
+    "production-browser-owner",
+    "development-browser-owner",
+  ]) {
+    const profile = contract.profiles[profileId];
+    for (const name of [
+      "CI_AUTH_FIXTURE_ACTIVE",
+      "CI_AUTH_FIXTURE_CANDIDATE_COMMIT_SHA",
+      "CI_AUTH_FIXTURE_CANDIDATE_TREE_SHA",
+      "CI_AUTH_FIXTURE_LOCAL_TEST",
+      "CI_AUTH_FIXTURE_MODE",
+      "CI_AUTH_FIXTURE_NO_REGENERATION",
+      "CI_AUTH_FIXTURE_PROVIDER_CLIENT_ID_SHA256",
+      "CI_AUTH_FIXTURE_PROVIDER_CLIENT_SECRET_SHA256",
+      "CI_AUTH_FIXTURE_SESSION_CLASSIFICATION",
+      "CI_AUTH_FIXTURE_SESSION_ID",
+      "CI_AUTH_FIXTURE_SESSION_NONCE",
+    ]) {
+      assert.equal(profile.childVisibleVariables.includes(name), true);
+      assert.equal(profile.optionalVariables.includes(name), true);
+      assert.equal(profile.requiredVariables.includes(name), false);
+    }
+  }
   const simulationProductionEvidence =
     contract.profiles["simulation-production-evidence"];
   for (const name of ["GOOGLE_CLIENT_ID", "GOOGLE_CLIENT_SECRET"]) {
