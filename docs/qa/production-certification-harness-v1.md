@@ -951,6 +951,22 @@ installation. Exact clean corrected-head qualification returns
 Independent terminal read-only review is **PASS** after the exact-owner cleanup
 boundary and all earlier isolation/source-linkage findings were rechecked.
 
+Phase 8, runtime smoke, and browser-owner application-server stages use that
+same retained-session reader through the shared real-stage projector. Their
+operator parent requires the private session root, session ID and nonce,
+synthetic classification, candidate commit/tree binding, provider digests, and
+no-regeneration proof; it does not require the raw Google provider pair. The
+reader validates the sealed session and private transport before projecting the
+pair plus non-root continuity controls into the eligible stage child. Browser
+discovery and archive, doctor, final-standalone, continuity, and integration
+children receive neither provider values nor fixture capabilities. The private
+session root remains parent-only, and projection metadata records names,
+digests, and continuity results without raw provider values.
+
+The bounded source correction is classified as
+`PHASE8_RETAINED_AUTH_SESSION_PROJECTION_ORDERING_DEFECT` and
+`APP_SERVER_STAGE_AMBIENT_PROVIDER_PRECONDITION_DEFECT`.
+
 ## Source validation
 
 The machine-readable `sourceValidation.checks` array in

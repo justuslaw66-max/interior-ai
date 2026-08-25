@@ -24,6 +24,7 @@ import {
 } from "./ci-auth-fixture-regression-environment.mjs";
 import { migrationInventory } from "./production-certification-database-contract.mjs";
 import {
+  phase8Projection,
   projectAuthFixtureSessionForStage,
   stageChildProjection,
 } from "./production-certification-real.mjs";
@@ -891,6 +892,9 @@ try {
   const buildParentEnvironment = { ...consumerEnvironment };
   delete buildParentEnvironment.CI_AUTH_FIXTURE_CANDIDATE_COMMIT_SHA;
   delete buildParentEnvironment.CI_AUTH_FIXTURE_CANDIDATE_TREE_SHA;
+  const retainedStageParentEnvironment = { ...buildParentEnvironment };
+  delete retainedStageParentEnvironment.GOOGLE_CLIENT_ID;
+  delete retainedStageParentEnvironment.GOOGLE_CLIENT_SECRET;
   const projected = projectAuthFixtureSessionForStage({
     repositoryRoot,
     environment: buildParentEnvironment,
@@ -934,6 +938,117 @@ try {
     runtimeProjected.environment.CI_AUTH_FIXTURE_SESSION_NONCE,
     projected.environment.CI_AUTH_FIXTURE_SESSION_NONCE,
   );
+  const stageProjectionContext = {
+    repositoryRoot,
+    canonicalRoot: repositoryRoot,
+    environment: {
+      ...retainedStageParentEnvironment,
+      APP_ENV: "staging",
+      NEXT_PUBLIC_APP_ENV: "staging",
+      NODE_ENV: "production",
+      VERCEL_ENV: "preview",
+      DATABASE_URL:
+        "postgresql://fixture:fixture@127.0.0.1:5432/runtime_fixture",
+      CERTIFICATION_QUALIFICATION_MODE: "1",
+    },
+    state: {
+      executionClass: "deterministic-simulation",
+      candidate: {
+        commitSha: candidateCommitSha,
+        treeSha: candidateTreeSha,
+      },
+    },
+  };
+  const projectPhase8 = (environment, state = stageProjectionContext.state) =>
+    phase8Projection({
+      ...stageProjectionContext,
+      environment,
+      evidenceRoot: "/external",
+      state,
+    });
+  const phase8Integration = projectPhase8(stageProjectionContext.environment);
+  assert.deepEqual(phase8Integration.authFixtureContinuity, projected.continuity);
+  assert.equal(phase8Integration.environment.APP_ENV, "staging");
+  assert.equal(phase8Integration.environment.NODE_ENV, "production");
+  assert.equal(phase8Integration.environment.VERCEL_ENV, "preview");
+  assert.equal(phase8Integration.environment.CI_AUTH_FIXTURE_SESSION_ROOT, undefined);
+  for (const name of [
+    "CI_AUTH_FIXTURE_ACTIVE",
+    "CI_AUTH_FIXTURE_CANDIDATE_COMMIT_SHA",
+    "CI_AUTH_FIXTURE_CANDIDATE_TREE_SHA",
+    "CI_AUTH_FIXTURE_LOCAL_TEST",
+    "CI_AUTH_FIXTURE_MODE",
+    "CI_AUTH_FIXTURE_NO_REGENERATION",
+    "CI_AUTH_FIXTURE_PROVIDER_CLIENT_ID_SHA256",
+    "CI_AUTH_FIXTURE_PROVIDER_CLIENT_SECRET_SHA256",
+    "CI_AUTH_FIXTURE_SESSION_CLASSIFICATION",
+    "CI_AUTH_FIXTURE_SESSION_ID",
+    "CI_AUTH_FIXTURE_SESSION_NONCE",
+    "GOOGLE_CLIENT_ID",
+    "GOOGLE_CLIENT_SECRET",
+  ]) {
+    assert.equal(
+      phase8Integration.environment[name],
+      projected.environment[name],
+      `${name} must survive the actual Phase 8 stage integration`,
+    );
+  }
+  assert.equal(
+    JSON.stringify(phase8Integration.metadata).includes(
+      projected.environment.GOOGLE_CLIENT_ID,
+    ),
+    false,
+  );
+  assert.equal(
+    JSON.stringify(phase8Integration.metadata).includes(
+      projected.environment.GOOGLE_CLIENT_SECRET,
+    ),
+    false,
+  );
+  assert.throws(
+    () =>
+      projectPhase8({
+        ...stageProjectionContext.environment,
+        GOOGLE_CLIENT_ID: "operator-provider-override.example.test",
+      }),
+    /missing or overridden parent provider value/,
+  );
+  assert.throws(
+    () =>
+      projectPhase8(
+        {
+          ...stageProjectionContext.environment,
+          CI_AUTH_FIXTURE_SESSION_ROOT: undefined,
+        },
+        { ...stageProjectionContext.state, executionClass: "real-candidate" },
+      ),
+    /requires the canonical auth fixture session/,
+  );
+  assert.throws(
+    () =>
+      projectPhase8({
+        ...stageProjectionContext.environment,
+        CI_AUTH_FIXTURE_SESSION_NONCE: "fixture-nonce-foreign-phase8-001",
+      }),
+    /foreign or altered session metadata|identity/,
+  );
+  assert.throws(
+    () =>
+      projectPhase8({
+        ...stageProjectionContext.environment,
+        CI_AUTH_FIXTURE_PROVIDER_CLIENT_ID_SHA256: "0".repeat(64),
+      }),
+    /overridden parent session control|digest/,
+  );
+  const foreignPhase8Session = publishTestSession("foreign-phase8", {
+    fixtureNonce: "e".repeat(32),
+  });
+  assert.throws(() =>
+    projectPhase8({
+      ...stageProjectionContext.environment,
+      CI_AUTH_FIXTURE_SESSION_ROOT: foreignPhase8Session.sessionRoot,
+    }),
+  );
   const runtimeProfile = certificationEnvironmentProfile(
     repositoryRoot,
     "runtime-smoke",
@@ -943,7 +1058,7 @@ try {
       repositoryRoot,
       canonicalRoot: repositoryRoot,
       environment: {
-        ...buildParentEnvironment,
+        ...retainedStageParentEnvironment,
         APP_ENV: "staging",
         NEXT_PUBLIC_APP_ENV: "staging",
         NODE_ENV: "production",
@@ -1024,6 +1139,7 @@ try {
         },
         candidateCommitSha,
         candidateTreeSha,
+        stage: "phase8",
       }),
     /ambient candidate override/,
   );
@@ -1251,12 +1367,9 @@ try {
   );
   assert.throws(
     () =>
-      sessionContract.consumeFixtureSession({
-        repositoryRoot,
-        environment: tampered.environment,
-        requireAmbientProviderValues: false,
-        sourceCommand: "tamper-test",
-        sourceMode: "consume-existing",
+      projectPhase8({
+        ...stageProjectionContext.environment,
+        ...tampered.environment,
       }),
     /transport|mutated|canonical/,
   );
@@ -1264,12 +1377,9 @@ try {
   const missing = publishTestSession("missing");
   rmSync(path.join(missing.sessionRoot, `${missing.sessionId}.transport.env`));
   assert.throws(() =>
-    sessionContract.consumeFixtureSession({
-      repositoryRoot,
-      environment: missing.environment,
-      requireAmbientProviderValues: false,
-      sourceCommand: "missing-test",
-      sourceMode: "consume-existing",
+    projectPhase8({
+      ...stageProjectionContext.environment,
+      ...missing.environment,
     }),
   );
 
@@ -1277,12 +1387,9 @@ try {
   const stale = publishTestSession("stale", { now: () => oldDate });
   assert.throws(
     () =>
-      sessionContract.consumeFixtureSession({
-        repositoryRoot,
-        environment: stale.environment,
-        requireAmbientProviderValues: false,
-        sourceCommand: "stale-test",
-        sourceMode: "consume-existing",
+      projectPhase8({
+        ...stageProjectionContext.environment,
+        ...stale.environment,
       }),
     /stale/,
   );
@@ -1292,6 +1399,8 @@ try {
     validateResult,
     misuseResult,
     projected.continuity,
+    phase8Integration.authFixtureContinuity,
+    phase8Integration.metadata,
   ]);
   assert.equal(portable.includes(consumed.assignments.GOOGLE_CLIENT_ID), false);
   assert.equal(portable.includes(consumed.assignments.GOOGLE_CLIENT_SECRET), false);

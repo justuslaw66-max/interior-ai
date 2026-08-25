@@ -892,7 +892,7 @@ export function validateAuthResultContracts(repositoryRoot) {
     !certificationRunnerSource.includes(
       "auth fixture session belongs to another candidate",
     ) ||
-    !/const fixtureProjectionStage = new Set\(\[\s*"build",\s*"runtime-smoke",\s*"browser-owners",\s*\]\)\.has\(stage\);/.test(
+    !/const fixtureProjectionStage = new Set\(\[\s*"build",\s*"phase8",\s*"runtime-smoke",\s*"browser-owners",\s*\]\)\.has\(stage\);/.test(
       certificationRunnerSource,
     ) ||
     !regressionMatrix.cases.some(
@@ -1989,10 +1989,8 @@ function validateStageEnvironmentCapabilities(repositoryRoot, environment) {
     "auth-session-preflight",
     "build",
     "development-browser-owner",
-    "development-browser-owner-discovery",
     "phase8",
     "production-browser-owner",
-    "production-browser-owner-discovery",
     "runtime-smoke",
     "simulation-production-evidence",
   ];
@@ -2179,10 +2177,12 @@ function validateStageEnvironmentCapabilities(repositoryRoot, environment) {
     expectedRuntimeAuthVariables.some(
       (name) =>
         !runtimeProfile?.childVisibleVariables.includes(name) ||
+        !phase8Profile?.childVisibleVariables.includes(name) ||
         !artifactProductProfile?.childVisibleVariables.includes(name) ||
         !artifactProductProfile?.requiredVariables.includes(name) ||
         (name.startsWith("CI_AUTH_") &&
-          !runtimeProfile?.optionalVariables.includes(name)),
+          (!runtimeProfile?.optionalVariables.includes(name) ||
+            !phase8Profile?.optionalVariables.includes(name))),
     ) ||
     expectedRuntimeAuthVariables.some(
       (name) =>
@@ -2192,7 +2192,13 @@ function validateStageEnvironmentCapabilities(repositoryRoot, environment) {
           (!productionBrowser?.optionalVariables.includes(name) ||
             !developmentBrowser?.optionalVariables.includes(name))),
     ) ||
-    [runtimeProfile, artifactProductProfile].some((profile) =>
+    [
+      runtimeProfile,
+      phase8Profile,
+      artifactProductProfile,
+      productionBrowser,
+      developmentBrowser,
+    ].some((profile) =>
       profile?.childVisibleVariables.includes("CI_AUTH_FIXTURE_SESSION_ROOT"),
     ) ||
     artifactProductProfile?.fixedValues.CI_AUTH_FIXTURE_ACTIVE !== "1" ||
@@ -2344,6 +2350,10 @@ function validateStageEnvironmentCapabilities(repositoryRoot, environment) {
       (entry) =>
         entry.defect ===
         "pro-visual-browser-owner-development-server-and-auth-projection",
+    ) ||
+    !regressionMatrix.cases.some(
+      (entry) =>
+        entry.defect === "phase8-retained-auth-session-projection-ordering",
     ) ||
     regressionMatrix.authPreflightDatabaseCases?.length !== 38 ||
     !/externalVisionEnabled, false/.test(floorPlanLocalOcrTest) ||

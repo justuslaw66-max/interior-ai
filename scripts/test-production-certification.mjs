@@ -1772,6 +1772,10 @@ function stateFixture() {
     REQUIRED_TEST_SOURCE_COMMIT_SHA: "0".repeat(40),
     REQUIRED_TEST_SOURCE_TREE_SHA: "1".repeat(40),
   };
+  delete contextEnvironment.GOOGLE_CLIENT_ID;
+  delete contextEnvironment.GOOGLE_CLIENT_SECRET;
+  assert.equal(Object.hasOwn(contextEnvironment, "GOOGLE_CLIENT_ID"), false);
+  assert.equal(Object.hasOwn(contextEnvironment, "GOOGLE_CLIENT_SECRET"), false);
   const environment = browserEnvironment(
     {
       environment: contextEnvironment,
@@ -1829,6 +1833,7 @@ function stateFixture() {
     }).noRegenerationProof,
     "passed",
   );
+  coveredRegressionIds.add(43);
   assert.throws(
     () =>
       browserEnvironment(
@@ -1886,6 +1891,35 @@ function stateFixture() {
         "browser-run-nonce-0001",
       ),
     /ambient candidate override/,
+  );
+  assert.throws(
+    () =>
+      browserEnvironment(
+        {
+          environment: {
+            ...contextEnvironment,
+            GOOGLE_CLIENT_SECRET: "operator-browser-provider-override",
+          },
+          evidenceRoot: "/external/certification-evidence",
+        },
+        {
+          certificationId: "certification-test-run",
+          executionClass: "deterministic-simulation",
+          candidate,
+          harness: { version: 1, sourceSha256: "c".repeat(64) },
+          bindings: {
+            artifactSha256: "d".repeat(64),
+            nextBuildId: "build-id",
+          },
+          stages: { "browser-owners": { attempts: [{ number: 1 }] } },
+        },
+        owner,
+        "/external/certification-evidence/report.json",
+        "/external/certification-evidence/evidence.json",
+        "/external/certification-evidence/start.json",
+        "browser-run-nonce-0001",
+      ),
+    /missing or overridden parent provider value/,
   );
   assert.throws(
     () =>
@@ -1966,12 +2000,12 @@ function stateFixture() {
   const regressions = JSON.parse(
     readFileSync("scripts/production-certification-regressions.json", "utf8"),
   );
-  assert.equal(regressions.cases.length, 42);
+  assert.equal(regressions.cases.length, 43);
   assert.deepEqual(
     regressions.cases.map((entry) => entry.id),
-    Array.from({ length: 42 }, (_, index) => index + 1),
+    Array.from({ length: 43 }, (_, index) => index + 1),
   );
-  assert.equal(new Set(regressions.cases.map((entry) => entry.defect)).size, 42);
+  assert.equal(new Set(regressions.cases.map((entry) => entry.defect)).size, 43);
   assert.equal(regressions.authPreflightDatabaseCases.length, 38);
   assert.equal(new Set(regressions.authPreflightDatabaseCases).size, 38);
   coveredRegressionIds.add(40);
@@ -4187,7 +4221,7 @@ test("Floor Plan config reaches worker test execution", async ({}, testInfo) => 
 
 assert.deepEqual(
   [...coveredRegressionIds].sort((left, right) => left - right),
-  Array.from({ length: 42 }, (_, index) => index + 1),
+  Array.from({ length: 43 }, (_, index) => index + 1),
   "every documented regression must be exercised by an executable assertion",
 );
 

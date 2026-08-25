@@ -182,6 +182,8 @@ function testDatabaseCapabilityIsolation() {
     assert.equal(build.requiredVariables.includes(name), false);
   }
   for (const profileId of [
+    "phase8",
+    "runtime-smoke",
     "production-browser-owner",
     "development-browser-owner",
   ]) {
@@ -221,10 +223,8 @@ function testDatabaseCapabilityIsolation() {
     "auth-session-preflight",
     "build",
     "development-browser-owner",
-    "development-browser-owner-discovery",
     "phase8",
     "production-browser-owner",
-    "production-browser-owner-discovery",
     "runtime-smoke",
     "simulation-production-evidence",
   ];
@@ -301,26 +301,39 @@ function testDatabaseCapabilityIsolation() {
     }
   }
 
-  const unrelated = projected({
-    profileId: "doctor",
-    stage: "doctor",
-    baseEnvironment: {
-      CI_AUTH_FIXTURE_ACTIVE: "1",
-      CI_AUTH_FIXTURE_SESSION_ROOT: "/private/auth-session",
-      GOOGLE_CLIENT_ID: "synthetic-provider-client-id",
-      GOOGLE_CLIENT_SECRET: "synthetic-provider-secondary-value",
-    },
-  });
-  assert.equal(unrelated.environment.CI_AUTH_FIXTURE_ACTIVE, undefined);
-  assert.equal(unrelated.environment.CI_AUTH_FIXTURE_SESSION_ROOT, undefined);
-  assert.equal(unrelated.environment.GOOGLE_CLIENT_ID, undefined);
-  assert.equal(unrelated.environment.GOOGLE_CLIENT_SECRET, undefined);
-  assert.deepEqual(
-    unrelated.metadata.strippedKnownCertificationControlVariables.filter(
-      (name) => name.startsWith("CI_AUTH_"),
-    ),
-    ["CI_AUTH_FIXTURE_ACTIVE", "CI_AUTH_FIXTURE_SESSION_ROOT"],
-  );
+  const unrelatedAuthParent = {
+    CI_AUTH_FIXTURE_ACTIVE: "1",
+    CI_AUTH_FIXTURE_SESSION_ROOT: "/private/auth-session",
+    GOOGLE_CLIENT_ID: "synthetic-provider-client-id",
+    GOOGLE_CLIENT_SECRET: "synthetic-provider-secondary-value",
+  };
+  for (const [profileId, stage] of [
+    ["doctor", "doctor"],
+    ["archive-preflight", "archive-preflight"],
+    ["archive", "archive"],
+    ["extracted-archive-preflight", "extracted-archive-preflight"],
+    ["production-browser-owner-discovery", "browser-owners"],
+    ["development-browser-owner-discovery", "browser-owners"],
+    ["final-standalone", "final-standalone"],
+    ["continuity", "continuity"],
+    ["integration-ready", "integration-ready"],
+  ]) {
+    const unrelated = projected({
+      profileId,
+      stage,
+      baseEnvironment: unrelatedAuthParent,
+    });
+    assert.equal(unrelated.environment.CI_AUTH_FIXTURE_ACTIVE, undefined);
+    assert.equal(unrelated.environment.CI_AUTH_FIXTURE_SESSION_ROOT, undefined);
+    assert.equal(unrelated.environment.GOOGLE_CLIENT_ID, undefined);
+    assert.equal(unrelated.environment.GOOGLE_CLIENT_SECRET, undefined);
+    assert.deepEqual(
+      unrelated.metadata.strippedKnownCertificationControlVariables.filter(
+        (name) => name.startsWith("CI_AUTH_"),
+      ),
+      ["CI_AUTH_FIXTURE_ACTIVE", "CI_AUTH_FIXTURE_SESSION_ROOT"],
+    );
+  }
 
   const projectedBuild = projectCertificationChildEnvironment({
     repositoryRoot,
