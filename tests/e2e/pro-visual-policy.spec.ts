@@ -795,6 +795,7 @@ function expectSemanticClientPreviewFocusContract(
   options: {
     exitReason: string;
     restorationEligible: boolean;
+    finalActiveIdentity: string;
     requireValidMoreFocus?: boolean;
   }
 ) {
@@ -802,6 +803,7 @@ function expectSemanticClientPreviewFocusContract(
   expect(report.dropped).toBe(0);
   expect(report.exitReason).toBe(options.exitReason);
   expect(report.restorationEligible).toBe(options.restorationEligible);
+  expect(report.finalActiveIdentity).toBe(options.finalActiveIdentity);
   expect(report.transitions).toEqual([
     "A_ENTRY_TRANSITION",
     "B_PREVIEW_ACTIVE",
@@ -2331,6 +2333,7 @@ test.describe("Pro visual policy", () => {
       {
         exitReason: "keyboard-exit-current-scope",
         restorationEligible: true,
+        finalActiveIdentity: "editor-command-overflow",
         requireValidMoreFocus: true,
       }
     );
@@ -2355,6 +2358,7 @@ test.describe("Pro visual policy", () => {
       {
         exitReason: "requested-design-changed",
         restorationEligible: false,
+        finalActiveIdentity: "body",
       }
     );
     await expect(more).not.toBeFocused();
@@ -2379,6 +2383,7 @@ test.describe("Pro visual policy", () => {
       {
         exitReason: "keyboard-exit-superseded-by-requested-design",
         restorationEligible: false,
+        finalActiveIdentity: "body",
       }
     );
     await expect(more).not.toBeFocused();
@@ -2408,6 +2413,7 @@ test.describe("Pro visual policy", () => {
       {
         exitReason: "effective-plan-changed",
         restorationEligible: false,
+        finalActiveIdentity: "upgrade-see-plans",
       }
     );
     await stopClientPreviewFocusRecorder(page);

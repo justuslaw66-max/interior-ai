@@ -347,6 +347,7 @@ assert.doesNotMatch(
 for (const focusContractMarker of [
   "generationRef",
   "scopeKey",
+  "requestedScopeIdentity",
   "semanticIdentity",
   "isConnected",
   "CLIENT_PREVIEW_EXIT_ACTION_ID",
@@ -363,6 +364,11 @@ assert.match(
   coreShellSource,
   /useClientPreviewBaseBoundary\([\s\S]*?searchParams\.get\("designId"\)[\s\S]*?designId/,
   "Preview focus scope should cancel on requested and loaded design identity changes."
+);
+assert.match(
+  clientPreviewFocusSource,
+  /restoreClientPreviewOpener[\s\S]*?requestedScopeIdentity\s*!==\s*getRequestedScopeIdentity\(\)/,
+  "Preview focus restoration should synchronously reject a changed requested route/design/mode identity."
 );
 
 assert.match(
@@ -539,7 +545,7 @@ assert.match(
 );
 assert.match(
   proVisualPolicySource,
-  /installClientPreviewFocusRecorder[\s\S]*?restorationEligible: true[\s\S]*?requireValidMoreFocus: true[\s\S]*?restorationEligible: false/,
+  /installClientPreviewFocusRecorder[\s\S]*?restorationEligible: true[\s\S]*?finalActiveIdentity: "editor-command-overflow"[\s\S]*?requireValidMoreFocus: true[\s\S]*?restorationEligible: false[\s\S]*?finalActiveIdentity: "body"/,
   "The responsive Client Preview case should classify a valid current restoration before rejecting invalid scope-cancelled More focus."
 );
 assert.match(

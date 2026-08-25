@@ -23,6 +23,7 @@ type SemanticOpener = {
 type PreviewFocusSession = {
   entryGeneration: number;
   restoreGeneration: number | null;
+  requestedScopeIdentity: string;
   opener: SemanticOpener | null;
   focusTransferred: boolean;
   restoreRequested: boolean;
@@ -58,6 +59,15 @@ function getFallbackActionElement() {
 function getExitActionElement() {
   const element = document.getElementById(CLIENT_PREVIEW_EXIT_ACTION_ID);
   return element instanceof HTMLButtonElement ? element : null;
+}
+
+function getRequestedScopeIdentity() {
+  const url = new URL(window.location.href);
+  return [
+    url.pathname,
+    url.searchParams.get("designId") ?? "local",
+    url.searchParams.get("mode") ?? "homeowner",
+  ].join("|");
 }
 
 function getSemanticIdentity(element: HTMLElement) {
@@ -175,6 +185,7 @@ function updateClientPreviewState(
     refs.session.current = {
       entryGeneration: generation,
       restoreGeneration: null,
+      requestedScopeIdentity: getRequestedScopeIdentity(),
       opener: captureCommandBarOpener(getCommandBarElement()),
       focusTransferred: false,
       restoreRequested: false,
@@ -213,6 +224,7 @@ function focusClientPreviewExit(refs: PreviewFocusRefs) {
     session = {
       entryGeneration,
       restoreGeneration: null,
+      requestedScopeIdentity: getRequestedScopeIdentity(),
       opener: captureCommandBarOpener(getCommandBarElement()),
       focusTransferred: false,
       restoreRequested: false,
@@ -240,7 +252,8 @@ function restoreClientPreviewOpener(
     refs.unmounted.current ||
     refs.generation.current !== restoreGeneration ||
     refs.session.current !== session ||
-    refs.active.current
+    refs.active.current ||
+    session.requestedScopeIdentity !== getRequestedScopeIdentity()
   ) {
     return;
   }

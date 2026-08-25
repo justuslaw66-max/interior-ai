@@ -33,6 +33,7 @@ export type ClientPreviewFocusReport = {
   capacity: number;
   dropped: number;
   finalPhase: ClientPreviewFocusPhase;
+  finalActiveIdentity: string;
   exitReason: string;
   restorationEligible: boolean;
   transitions: ClientPreviewFocusPhase[];
@@ -361,6 +362,11 @@ export async function installClientPreviewFocusRecorder(page: Page) {
           capacity,
           dropped,
           finalPhase: phase as ClientPreviewFocusPhase,
+          finalActiveIdentity:
+            document.activeElement instanceof HTMLElement
+              ? identity(document.activeElement) ||
+                document.activeElement.tagName.toLowerCase()
+              : "none",
           exitReason,
           restorationEligible,
           transitions: [...transitions],
