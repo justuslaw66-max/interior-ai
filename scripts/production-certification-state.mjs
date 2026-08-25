@@ -107,6 +107,9 @@ const BROWSER_EVIDENCE_KEYS = Object.freeze([
     `browser:${owner.id}`,
     `browser-report:${owner.id}`,
     `browser-start:${owner.id}`,
+    ...(!owner.productionServer
+      ? [`browser-server-lifecycle:${owner.id}`]
+      : []),
   ]),
 ]);
 const STAGE_EVIDENCE_KEYS = Object.freeze({
@@ -1690,6 +1693,12 @@ function requiredPassedStageIssues(state, stage) {
         `browser-report:${ownerId}`,
         `browser-start:${ownerId}`,
       );
+      const owner = REQUIRED_BROWSER_OWNERS.find(
+        (candidate) => candidate.id === ownerId,
+      );
+      if (owner?.productionServer === false) {
+        requireEvidence(`browser-server-lifecycle:${ownerId}`);
+      }
       if (!isSha256(bindings.browserOwnerEvidenceSha256?.[ownerId])) {
         issues.push(`passed browser owners are missing binding ${ownerId}`);
       }

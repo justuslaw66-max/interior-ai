@@ -106,6 +106,10 @@ import {
   stageEnvironmentContract,
 } from "./production-certification-stage-environment.mjs";
 import {
+  beginBrowserServerTrackedOutputLifecycle,
+  completeBrowserServerTrackedOutputLifecycle,
+} from "./production-certification-browser-server-lifecycle.mjs";
+import {
   CERTIFICATION_WORKTREE_ROOT_ENV,
   CERTIFICATION_WORKTREE_ROLES,
   beginCertificationStageWorktreeTransaction,
@@ -3750,6 +3754,7 @@ export function browserEnvironment(
     ...context.environment,
     APP_ENV: owner.applicationEnvironment,
     NEXT_PUBLIC_APP_ENV: owner.applicationEnvironment,
+    NODE_ENV: owner.productionServer ? "production" : "development",
     CI: "true",
   };
   delete baseEnvironment.VERCEL_ENV;
@@ -3800,6 +3805,7 @@ function browserListEnvironment(context, owner) {
     ...context.environment,
     APP_ENV: owner.applicationEnvironment,
     NEXT_PUBLIC_APP_ENV: owner.applicationEnvironment,
+    NODE_ENV: owner.productionServer ? "production" : "development",
     CI: "true",
   };
   delete baseEnvironment.VERCEL_ENV;
@@ -3884,6 +3890,51 @@ function observedBrowserEvidence(owner, state, requiredEvidence, gate) {
     tests,
     complete: requiredEvidence.complete === true && requiredEvidence.result === "passed",
   };
+}
+
+export function executeDevelopmentBrowserOwnerChild({
+  repositoryRoot,
+  candidate,
+  certificationId,
+  ownerId,
+  stageAttempt,
+  executeChild,
+}) {
+  if (typeof executeChild !== "function") {
+    throw new Error("development browser owner requires an exact child executor");
+  }
+  const lifecycle = beginBrowserServerTrackedOutputLifecycle({
+    repositoryRoot,
+    candidate,
+    certificationId,
+    ownerId,
+    stageAttempt,
+  });
+  let child;
+  try {
+    child = executeChild();
+  } catch (error) {
+    child = {
+      status: null,
+      signal: null,
+      error:
+        error instanceof Error
+          ? error
+          : new Error("browser owner child dispatch threw"),
+    };
+  }
+  let lifecycleEvidence;
+  let lifecycleFailure = null;
+  try {
+    lifecycleEvidence = completeBrowserServerTrackedOutputLifecycle(lifecycle, {
+      processExitCode: Number.isSafeInteger(child?.status) ? child.status : null,
+      signal: child?.signal ?? null,
+    });
+  } catch (error) {
+    lifecycleFailure = error;
+    lifecycleEvidence = error?.safeEvidence;
+  }
+  return { child, lifecycleEvidence, lifecycleFailure };
 }
 
 export async function runBrowserOwnersStage(options = {}) {
@@ -4018,6 +4069,12 @@ export async function runBrowserOwnersStage(options = {}) {
       }
       const evidencePath = path.join(ownerRoot, "required-evidence.json");
       const certificationPath = path.join(ownerRoot, "certification-evidence.json");
+      const serverLifecyclePath = owner.productionServer
+        ? null
+        : absentEvidenceTarget(
+            context.evidenceRoot,
+            `browser-owners/${owner.id}/server-lifecycle.json`,
+          );
       const startMarkerPath = absentEvidenceTarget(
         context.evidenceRoot,
         `browser-owners/${owner.id}/discovery-start.json`,
@@ -4027,6 +4084,7 @@ export async function runBrowserOwnersStage(options = {}) {
         evidencePath,
         certificationPath,
         startMarkerPath,
+        ...(serverLifecyclePath ? [serverLifecyclePath] : []),
       ]) {
         const physicalTarget = path.resolve(target);
         if (ownerTargets.has(physicalTarget)) {
@@ -4065,6 +4123,7 @@ export async function runBrowserOwnersStage(options = {}) {
         reportPath: report.outputPath,
         evidencePath,
         certificationPath,
+        serverLifecyclePath,
         startMarkerPath,
         repositoryRoot: ownerRepositoryRoot,
         context: ownerContext,
@@ -4074,23 +4133,77 @@ export async function runBrowserOwnersStage(options = {}) {
     const descriptors = {};
     const browserHashes = {};
     for (const input of ownerInputs) {
-      const child = childResult(
-        "npm",
-        ["run", input.owner.packageCommand],
-        {
-          cwd: input.repositoryRoot,
-          env: browserEnvironment(
-            input.context,
-            boundState,
-            input.owner,
-            input.reportPath,
-            input.evidencePath,
-            input.startMarkerPath,
-            input.runNonce,
-          ),
-          inherit: true,
-        },
+      const ownerEnvironment = browserEnvironment(
+        input.context,
+        boundState,
+        input.owner,
+        input.reportPath,
+        input.evidencePath,
+        input.startMarkerPath,
+        input.runNonce,
       );
+      const executeChild = () =>
+        childResult(
+          "npm",
+          ["run", input.owner.packageCommand],
+          {
+            cwd: input.repositoryRoot,
+            env: ownerEnvironment,
+            inherit: true,
+          },
+        );
+      const lifecycleResult = input.serverLifecyclePath
+        ? executeDevelopmentBrowserOwnerChild({
+            repositoryRoot: input.repositoryRoot,
+            candidate: boundState.candidate,
+            certificationId: boundState.certificationId,
+            ownerId: input.owner.id,
+            stageAttempt:
+              boundState.stages["browser-owners"].attempts.at(-1).number,
+            executeChild,
+          })
+        : { child: executeChild(), lifecycleEvidence: null, lifecycleFailure: null };
+      const { child } = lifecycleResult;
+      let serverLifecycleDescriptor = null;
+      const serverLifecycleFailure = lifecycleResult.lifecycleFailure;
+      if (input.serverLifecyclePath) {
+        const lifecycleEvidence = lifecycleResult.lifecycleEvidence;
+        if (!lifecycleEvidence) {
+          throw new StageFailure(
+            `browser server lifecycle produced no evidence: ${input.owner.id}`,
+            "SOURCE_CONTRACT_FAILURE",
+            existsSync(input.startMarkerPath),
+          );
+        }
+        writeFileSync(
+          input.serverLifecyclePath,
+          canonicalJsonBytes(lifecycleEvidence),
+          { flag: "wx", mode: 0o600 },
+        );
+        serverLifecycleDescriptor = retainedDescriptor(
+          context.evidenceRoot,
+          input.serverLifecyclePath,
+        );
+        descriptors[`browser-server-lifecycle:${input.owner.id}`] =
+          serverLifecycleDescriptor;
+      }
+      if (serverLifecycleFailure) {
+        const ownerStarted = existsSync(input.startMarkerPath);
+        consumed ||= ownerStarted;
+        throw new StageFailure(
+          `browser server tracked-output lifecycle failed: ${input.owner.id}`,
+          "SOURCE_CONTRACT_FAILURE",
+          consumed,
+          {
+            evidenceFiles: serverLifecycleDescriptor
+              ? {
+                  [`browser-server-lifecycle:${input.owner.id}`]:
+                    serverLifecycleDescriptor,
+                }
+              : {},
+          },
+        );
+      }
       if (child.status !== 0 || child.signal || child.error) {
         const ownerStarted = existsSync(input.startMarkerPath);
         consumed ||= ownerStarted;
@@ -4107,6 +4220,12 @@ export async function runBrowserOwnersStage(options = {}) {
               spawnErrorClassification: child.error
                 ? "child-spawn-error"
                 : null,
+              evidenceFiles: serverLifecycleDescriptor
+                ? {
+                    [`browser-server-lifecycle:${input.owner.id}`]:
+                      serverLifecycleDescriptor,
+                  }
+                : {},
             },
           );
         }
@@ -4116,7 +4235,15 @@ export async function runBrowserOwnersStage(options = {}) {
             ? "PRODUCT_ASSERTION_FAILURE"
             : "PRECONDITION_ORCHESTRATION_FAILURE",
           consumed,
-          { exitCode: normalizedChildExitCode(child.status) },
+          {
+            exitCode: normalizedChildExitCode(child.status),
+            evidenceFiles: serverLifecycleDescriptor
+              ? {
+                  [`browser-server-lifecycle:${input.owner.id}`]:
+                    serverLifecycleDescriptor,
+                }
+              : {},
+          },
         );
       }
       consumed = true;

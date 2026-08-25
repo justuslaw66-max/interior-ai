@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import "./test-production-certification-build-generated-output.mjs";
+import "./test-production-certification-browser-server-lifecycle.mjs";
 import "./test-production-certification-stage-order.mjs";
 import { spawnSync } from "node:child_process";
 import {
@@ -94,6 +95,8 @@ const CURRENT_JOURNAL_V2_FINAL_POSITIVE_PATH =
   "state-v4/manifest-v3/journal-v2/physical-final-standalone";
 const GENERATED_OUTPUT_AGGREGATE_SEAL_DOMAIN =
   "interior-ai.production-certification-source-generated-output-aggregate-seal.v1\n";
+const BROWSER_SERVER_LIFECYCLE_SEAL_DOMAIN =
+  "interior-ai.production-certification-browser-server-lifecycle-seal.v1\n";
 const fixedTime = "2026-08-14T00:00:00.000Z";
 const candidate = {
   id: "certification-test-candidate",
@@ -153,6 +156,20 @@ function mutateBoundEvidence(simulationRoot, name, mutate, binding) {
     state.bindings[binding] = descriptor.sha256;
   }
   writeCertificationState(statePath, state);
+}
+
+function resealBrowserServerLifecycleEvidence(evidence) {
+  const payload = structuredClone(evidence);
+  delete payload.aggregateEvidenceSha256;
+  return {
+    ...payload,
+    aggregateEvidenceSha256: sha256Bytes(
+      Buffer.concat([
+        Buffer.from(BROWSER_SERVER_LIFECYCLE_SEAL_DOMAIN),
+        canonicalJsonBytes(payload),
+      ]),
+    ),
+  };
 }
 
 function mutateExtractedManifest(simulationRoot, mutate) {
@@ -1706,10 +1723,20 @@ function stateFixture() {
     readFileSync(proVisualOwner.config, "utf8"),
     /command: useProductionServer \? "npm run start" : "npm run dev"/,
   );
+  const cartOwner = REQUIRED_BROWSER_OWNERS.find((owner) => owner.id === "cart");
+  assert.ok(cartOwner);
+  assert.equal(cartOwner.productionServer, false);
+  assert.equal(stageWorktreeRole("browser-owners", cartOwner.id), "development-browser");
+  const cartConfig = readFileSync(cartOwner.config, "utf8");
+  assert.match(cartConfig, /command: "npm run dev"/);
+  assert.match(cartConfig, /http:\/\/127\.0\.0\.1:3000/);
+  assert.match(cartConfig, /timeout: 120_000/);
+  assert.match(cartConfig, /retries: 0/);
 }
 
 {
-  const owner = REQUIRED_BROWSER_OWNERS[0];
+  const owner = REQUIRED_BROWSER_OWNERS.find((candidate) => candidate.id === "cart");
+  assert.ok(owner);
   const fixtureNonce = "7".repeat(32);
   const fixtureClientId =
     `123456789012345-gate-a3-ci-${fixtureNonce}.apps.googleusercontent.com`;
@@ -1738,6 +1765,8 @@ function stateFixture() {
     CI_AUTH_FIXTURE_CANDIDATE_COMMIT_SHA: candidate.commitSha,
     CI_AUTH_FIXTURE_CANDIDATE_TREE_SHA: candidate.treeSha,
     CERTIFICATION_QUALIFICATION_MODE: "1",
+    NODE_ENV: "staging",
+    VERCEL_ENV: "preview",
     DATABASE_URL:
       "postgresql://fixture:a6e2c8f4b9d10573a6e2c8f4b9d10573@127.0.0.1:5432/fixture",
     REQUIRED_TEST_SOURCE_COMMIT_SHA: "0".repeat(40),
@@ -1771,6 +1800,8 @@ function stateFixture() {
   assert.equal(environment.REQUIRED_TEST_SOURCE_TREE_SHA, candidate.treeSha);
   assert.equal(environment.APP_ENV, owner.applicationEnvironment);
   assert.equal(environment.NEXT_PUBLIC_APP_ENV, owner.applicationEnvironment);
+  assert.equal(environment.NODE_ENV, "development");
+  assert.equal(environment.VERCEL_ENV, undefined);
   assert.equal(environment.PRODUCTION_CERTIFICATION_ID, "certification-test-run");
   assert.equal(environment.REQUIRED_TEST_BROWSER_OWNER_ID, owner.id);
   assert.equal(environment.REQUIRED_TEST_STAGE_ATTEMPT, "1");
@@ -1856,6 +1887,35 @@ function stateFixture() {
       ),
     /ambient candidate override/,
   );
+  assert.throws(
+    () =>
+      browserEnvironment(
+        {
+          environment: {
+            ...contextEnvironment,
+            DATABASE_URL: undefined,
+          },
+          evidenceRoot: "/external/certification-evidence",
+        },
+        {
+          certificationId: "certification-test-run",
+          executionClass: "deterministic-simulation",
+          candidate,
+          harness: { version: 1, sourceSha256: "c".repeat(64) },
+          bindings: {
+            artifactSha256: "d".repeat(64),
+            nextBuildId: "build-id",
+          },
+          stages: { "browser-owners": { attempts: [{ number: 1 }] } },
+        },
+        owner,
+        "/external/certification-evidence/report.json",
+        "/external/certification-evidence/evidence.json",
+        "/external/certification-evidence/start.json",
+        "browser-run-nonce-0001",
+      ),
+    /requires DATABASE_URL/,
+  );
   rmSync(fixtureParent, { recursive: true, force: true });
 }
 
@@ -1906,17 +1966,18 @@ function stateFixture() {
   const regressions = JSON.parse(
     readFileSync("scripts/production-certification-regressions.json", "utf8"),
   );
-  assert.equal(regressions.cases.length, 41);
+  assert.equal(regressions.cases.length, 42);
   assert.deepEqual(
     regressions.cases.map((entry) => entry.id),
-    Array.from({ length: 41 }, (_, index) => index + 1),
+    Array.from({ length: 42 }, (_, index) => index + 1),
   );
-  assert.equal(new Set(regressions.cases.map((entry) => entry.defect)).size, 41);
+  assert.equal(new Set(regressions.cases.map((entry) => entry.defect)).size, 42);
   assert.equal(regressions.authPreflightDatabaseCases.length, 38);
   assert.equal(new Set(regressions.authPreflightDatabaseCases).size, 38);
   coveredRegressionIds.add(40);
   coveredRegressionIds.add(35);
   coveredRegressionIds.add(37);
+  coveredRegressionIds.add(42);
   assert.equal(regressions.nestedAuthFixtureIsolationCases.length, 13);
   assert.equal(new Set(regressions.nestedAuthFixtureIsolationCases).size, 13);
   assert.equal(regressions.stageResultCases.length, 24);
@@ -1991,6 +2052,16 @@ function stateFixture() {
       `${owner.id} config must list through the real Playwright CLI: ${listed.stderr}`,
     );
     assert.match(listed.stdout, /Total: \d+ tests? in \d+ files?/);
+    if (owner.id === "cart") {
+      assert.match(
+        listed.stdout,
+        /\[chromium\].*cart-overlay-accessibility\.spec\.ts/,
+      );
+      assert.match(
+        listed.stdout,
+        /\[webkit\].*cart-overlay-accessibility\.spec\.ts/,
+      );
+    }
     if (owner.id === "pro-visual") {
       assert.match(listed.stdout, /\[chromium\].*pro-visual-policy\.spec\.ts/);
       assert.match(listed.stdout, /\[webkit\].*pro-visual-policy\.spec\.ts/);
@@ -2429,6 +2500,47 @@ test("Floor Plan config reaches worker test execution", async ({}, testInfo) => 
         writeFileSync(baseOwnerPath, originalOwnerBytes);
       }
     }
+  }
+
+  for (const mutation of [
+    {
+      label: "owner",
+      apply(evidence) {
+        evidence.ownerId = "retailer";
+      },
+    },
+    {
+      label: "worktree",
+      apply(evidence) {
+        evidence.worktreeIdentitySha256 = "0".repeat(64);
+      },
+    },
+    {
+      label: "passed-stage-process",
+      apply(evidence) {
+        evidence.process.exitCode = 1;
+      },
+    },
+  ]) {
+    const clone = cloneSimulation(base);
+    mutateBoundEvidence(
+      clone,
+      "browser-server-lifecycle:cart",
+      (evidence) => {
+        mutation.apply(evidence);
+        const resealed = resealBrowserServerLifecycleEvidence(evidence);
+        for (const key of Object.keys(evidence)) delete evidence[key];
+        Object.assign(evidence, resealed);
+      },
+    );
+    const child = finalSimulationChild(clone);
+    assert.notEqual(child.status, 0);
+    assert.match(
+      `${child.stdout}\n${child.stderr}`,
+      /browser-server lifecycle identity is invalid: cart/,
+      `browser-server lifecycle ${mutation.label} swap must be rejected`,
+    );
+    rmSync(path.dirname(clone), { recursive: true, force: true });
   }
 
   {
@@ -4075,7 +4187,7 @@ test("Floor Plan config reaches worker test execution", async ({}, testInfo) => 
 
 assert.deepEqual(
   [...coveredRegressionIds].sort((left, right) => left - right),
-  Array.from({ length: 41 }, (_, index) => index + 1),
+  Array.from({ length: 42 }, (_, index) => index + 1),
   "every documented regression must be exercised by an executable assertion",
 );
 

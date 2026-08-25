@@ -95,6 +95,9 @@ import {
   runBuildStage,
   runSourceValidationStage,
 } from "./production-certification-real.mjs";
+import {
+  simulatedBrowserServerTrackedOutputLifecycle,
+} from "./production-certification-browser-server-lifecycle.mjs";
 import { validateCertificationStageOrderContracts } from "./production-certification-doctor.mjs";
 import { validateCertificationResourcePreparation } from "./production-certification-resources.mjs";
 import {
@@ -4207,6 +4210,21 @@ export async function runProductionCertificationSimulation({
     browserDescriptors[`browser:${owner.id}`] = ownerDescriptor;
     browserDescriptors[`browser-report:${owner.id}`] = reportDescriptor;
     browserDescriptors[`browser-start:${owner.id}`] = startDescriptor;
+    if (!owner.productionServer) {
+      const lifecycleDescriptor = writeEvidence(
+        evidenceRoot,
+        `browser-owners/${owner.id}/server-lifecycle.json`,
+        simulatedBrowserServerTrackedOutputLifecycle({
+          repositoryRoot: ownerExecutionRoot,
+          candidate: state.candidate,
+          certificationId: state.certificationId,
+          ownerId: owner.id,
+          stageAttempt: state.stages["browser-owners"].attempts.at(-1).number,
+        }),
+      );
+      browserDescriptors[`browser-server-lifecycle:${owner.id}`] =
+        lifecycleDescriptor;
+    }
     browserHashes[owner.id] = ownerDescriptor.sha256;
   }
   const developmentBrowserPostOwnerRevalidation =

@@ -82,6 +82,7 @@
     "certification:qualify": "node scripts/production-certification.mjs qualify",
     "certification:stage-result:validate": "node scripts/production-certification-stage-result-consumer.mjs validate",
     "test:production-certification": "node scripts/test-production-certification.mjs",
+    "test:production-certification-browser-server-lifecycle": "node scripts/test-production-certification-browser-server-lifecycle.mjs",
     "test:production-certification-stage-result": "node scripts/test-production-certification-stage-result.mjs",
     "test:production-certification-database-lifecycle": "node scripts/test-production-certification-database-lifecycle.mjs",
     "test:production-certification-source-database-projection": "node scripts/test-production-certification-source-database-projection.mjs",

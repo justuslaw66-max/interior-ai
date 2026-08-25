@@ -38,6 +38,7 @@ import {
   validateCertificationState,
 } from "./production-certification-state.mjs";
 import { certificationEnvironmentProfile } from "./production-certification-stage-environment.mjs";
+import { browserServerTrackedOutputEvidenceIssues } from "./production-certification-browser-server-lifecycle.mjs";
 import {
   PLAYWRIGHT_EXTERNAL_EVIDENCE_ROOT,
   RUNTIME_SMOKE_EVIDENCE_DESTINATION_CLASS,
@@ -1039,6 +1040,34 @@ export function verifyFinalCertificationEvidence({
         gateId: owner.gateId,
       }),
     );
+    if (!owner.productionServer) {
+      const serverLifecycle = boundEvidence(
+        state,
+        evidenceRoot,
+        `browser-server-lifecycle:${owner.id}`,
+      );
+      issues.push(
+        ...browserServerTrackedOutputEvidenceIssues(serverLifecycle.value).map(
+          (issue) => `${owner.id} ${issue}`,
+        ),
+      );
+      if (
+        serverLifecycle.value?.executionClass !== state.executionClass ||
+        serverLifecycle.value?.certificationId !== state.certificationId ||
+        serverLifecycle.value?.ownerId !== owner.id ||
+        serverLifecycle.value?.candidateCommitSha !== state.candidate.commitSha ||
+        serverLifecycle.value?.candidateTreeSha !== state.candidate.treeSha ||
+        serverLifecycle.value?.worktreeIdentitySha256 !==
+          state.worktrees?.roles?.["development-browser"]
+            ?.privateRealpathSha256 ||
+        serverLifecycle.value?.process?.exitCode !== 0 ||
+        serverLifecycle.value?.process?.signal !== null ||
+        serverLifecycle.value?.stageAttempt !==
+          state.stages["browser-owners"]?.attempts.at(-1)?.number
+      ) {
+        issues.push(`browser-server lifecycle identity is invalid: ${owner.id}`);
+      }
+    }
     if (state.executionClass === "real-candidate") {
       const raw = validateRawPlaywrightReport({
         report: rawReport.value,
