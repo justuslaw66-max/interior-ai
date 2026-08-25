@@ -37,6 +37,12 @@ const childDialogHarness = read(
 const emptyEntryHarness = read(
   "tests/required/fixtures/floor-plan-empty-entry-harness.tsx"
 );
+const inertFixtureHost = read(
+  "tests/required/fixtures/floor-plan-inert-html-host.ts"
+);
+const browserTest = read(
+  "tests/required/floor-plan-upload-accessibility.spec.ts"
+);
 
 assert.match(uploadLifecycle, /useEditorDialogLifecycle\(\{/);
 assert.match(uploadLifecycle, /manageBackground:\s*true/);
@@ -85,6 +91,18 @@ assert.match(emptyEntryHarness, /<EmptyFloorPlanProUploadAction/);
 assert.match(emptyEntryHarness, /<FloorPlanUploadPanel/);
 assert.doesNotMatch(emptyEntryHarness, /semanticId=\{FLOOR_PLAN_PRO_START_UPLOAD_ACTION_ID\}/);
 assert.doesNotMatch(emptyEntryHarness, /<FloorPlanWorkspaceOpener/);
+assert.doesNotMatch(browserTest, /\/robots\.txt/);
+assert.match(browserTest, /openFloorPlanInertFixtureHost\(page, responsive\)/);
+assert.match(browserTest, /expectFloorPlanInertFixtureHost\(page\)/);
+assert.match(inertFixtureHost, /status:\s*200/);
+assert.match(inertFixtureHost, /"content-type":\s*"text\/html; charset=utf-8"/);
+assert.match(inertFixtureHost, /url\.pathname === FLOOR_PLAN_INERT_FIXTURE_PATH/);
+assert.match(inertFixtureHost, /searchParams\.get\("fixture"\)/);
+assert.match(inertFixtureHost, /document\.scripts\.length/);
+assert.match(inertFixtureHost, /document\.querySelector\("#__next"\)/);
+assert.match(inertFixtureHost, /getByRole\("heading", \{ name: "404", exact: true \}\)/);
+assert.doesNotMatch(inertFixtureHost, /from "next\//);
+assert.doesNotMatch(inertFixtureHost, /from "@\//);
 
 assert.match(workspace, /data-floor-plan-workspace-state="empty"/);
 assert.match(workspace, /data-floor-plan-workspace-history/);

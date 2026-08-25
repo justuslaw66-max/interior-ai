@@ -1154,6 +1154,7 @@
         "scripts/build-floor-plan-upload-browser-fixture.mjs",
         "scripts/guest-save-overlay-ts-loader.mjs",
         "tests/required/floor-plan-upload-accessibility.spec.ts",
+        "tests/required/fixtures/floor-plan-inert-html-host.ts",
         "tests/required/fixtures/floor-plan-empty-entry-harness.tsx",
         "tests/required/fixtures/floor-plan-upload-dialog-harness.tsx",
         "tests/required/fixtures/next-navigation-browser-fixture.ts",

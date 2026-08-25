@@ -1,5 +1,9 @@
 import path from "node:path";
 import { expect, test, type Locator, type Page } from "@playwright/test";
+import {
+  expectFloorPlanInertFixtureHost,
+  openFloorPlanInertFixtureHost,
+} from "./fixtures/floor-plan-inert-html-host";
 
 type Entry = "pointer" | "keyboard";
 type Mode = "consumer" | "pro";
@@ -313,10 +317,7 @@ async function openEmptyPlanFixture(
   responsive = false
 ) {
   await page.setViewportSize(viewport);
-  await page.goto(`/robots.txt${responsive ? "?fixture=responsive" : ""}`, {
-    waitUntil: "domcontentloaded",
-  });
-  await page.setContent("<!doctype html><html><head><title>Floor Plan empty entry fixture</title></head><body></body></html>");
+  await openFloorPlanInertFixtureHost(page, responsive);
   await page.addScriptTag({ path: path.join(FLOOR_PLAN_FIXTURE_OUTPUT, "empty-entry.js") });
   const harness = page.getByTestId("floor-plan-empty-entry-harness");
   await expect(harness).toBeVisible();
@@ -325,6 +326,7 @@ async function openEmptyPlanFixture(
     responsive ? 0 : 1
   );
   await expect(page.getByTestId("floor-plan-import-workspace-launcher")).toHaveCount(1);
+  await expectFloorPlanInertFixtureHost(page);
   return harness;
 }
 
