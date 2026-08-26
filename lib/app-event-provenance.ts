@@ -89,6 +89,7 @@ const RESERVED_PROVENANCE_KEYS = new Set([
   "webhookeventid",
   "externaleventid",
   "verified",
+  "certificationrunbinding",
 ]);
 
 function isRecord(value: unknown): value is Record<string, unknown> {

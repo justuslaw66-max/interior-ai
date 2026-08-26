@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
-import { randomUUID } from "node:crypto";
+import { createHash, randomUUID } from "node:crypto";
 import {
   mkdirSync,
   mkdtempSync,
@@ -16,6 +16,7 @@ import { Client } from "pg";
 import {
   PRODUCTION_CERTIFICATION_DATABASE_NAME_PREFIX,
   assertUnprotectedDatabaseName,
+  canonicalJsonBytes,
   databaseAdminPolicy,
   databaseLifecycleEvidenceIssues,
   generateCertificationDatabaseName,
@@ -23,6 +24,7 @@ import {
   sealDatabaseLifecycleEvidence,
   targetDatabaseUrl,
 } from "./production-certification-database-contract.mjs";
+import { CertificationPostgresAdapter } from "./production-certification-database-adapter.mjs";
 import {
   abortCertificationDatabase,
   bindCertificationDatabaseStage,
@@ -32,10 +34,15 @@ import {
   planCertificationDatabase,
   provisionCertificationDatabase,
   readCertificationDatabaseLifecycle,
+  retainCertificationDatabaseFailureSnapshot,
   verifyCertificationDatabaseAbsent,
   verifyFinalCertificationDatabase,
   verifyInitialCertificationDatabase,
 } from "./production-certification-database-lifecycle.mjs";
+import {
+  certificationAppEventRowsSha256,
+  inspectCertificationAppEvents,
+} from "./production-certification-app-event-lifecycle.mjs";
 import {
   certificationStateSha256,
   completeCertificationStage,
@@ -50,9 +57,15 @@ import {
   runDatabaseAbortCleanup,
 } from "./production-certification-real.mjs";
 import {
+  createCertificationAbortCleanupRequest,
   createSerializedTerminalLifecycle,
   nextCertificationCommand,
 } from "./production-certification.mjs";
+import {
+  createCertificationStageCommandResult,
+  sealCertificationStageResult,
+  validateCertificationStageResult,
+} from "./production-certification-stage-result-contract.mjs";
 import {
   runCertificationDoctor,
   validateCertificationDatabaseDoctorShape,
@@ -85,10 +98,13 @@ class FakeDatabaseAdapter {
     foreignStageRole = false,
     stageRoleCollisionOnCreate = false,
     onCreateStageRole = null,
+    appEventCleanupFailure = null,
+    onDeleteAppEvents = null,
   } = {}) {
     this.exists = exists;
     this.migrated = false;
     this.rows = [{ table: "User", count: 0 }];
+    this.appEvents = [];
     this.sessions = [];
     this.unrelatedSessions = [{ database: "postgres", pid: 9001 }];
     this.terminated = [];
@@ -102,6 +118,8 @@ class FakeDatabaseAdapter {
     this.foreignStageRole = foreignStageRole;
     this.stageRoleCollisionOnCreate = stageRoleCollisionOnCreate;
     this.onCreateStageRole = onCreateStageRole;
+    this.appEventCleanupFailure = appEventCleanupFailure;
+    this.onDeleteAppEvents = onDeleteAppEvents;
     this.stageRoleDropCount = 0;
   }
 
@@ -190,6 +208,34 @@ class FakeDatabaseAdapter {
     return structuredClone(this.rows);
   }
 
+  async appEventRows() {
+    return structuredClone(this.appEvents);
+  }
+
+  async deleteCertificationAppEvents({
+    ownership,
+    expectedIds,
+    expectedRowsSha256,
+  }) {
+    await this.onDeleteAppEvents?.();
+    if (this.appEventCleanupFailure) {
+      throw new Error(this.appEventCleanupFailure);
+    }
+    assert.deepEqual(
+      this.appEvents.map((row) => row.id).sort(),
+      expectedIds,
+    );
+    assert.equal(
+      certificationAppEventRowsSha256(this.appEvents, ownership),
+      expectedRowsSha256,
+    );
+    const removedCount = this.appEvents.length;
+    this.appEvents = [];
+    const appEventTable = this.rows.find((row) => row.table === "AppEvent");
+    if (appEventTable) appEventTable.count = 0;
+    return { removedCount, remainingCount: 0, exactOwnedRowsOnly: true };
+  }
+
   async targetSessions() {
     return structuredClone(this.sessions);
   }
@@ -257,6 +303,133 @@ async function bindAllStages(environment, adapter) {
   }
 }
 
+const browserOwnerIds = [
+  "floor-plan-upload",
+  "pro-visual",
+  "guest-save",
+  "my-designs",
+  "public-share",
+  "cart",
+  "retailer",
+];
+
+function appEventOwnership(environment, { runtimeAttempt = 1, browserAttempt = 1 } = {}) {
+  return {
+    certificationId: environment.PRODUCTION_CERTIFICATION_ID,
+    candidateId: environment.PRODUCTION_EVIDENCE_CANDIDATE_ID,
+    commitSha,
+    treeSha,
+    runtimeAttempt,
+    browserAttempt,
+    browserOwnerIds,
+  };
+}
+
+function appEventBinding(
+  ownership,
+  {
+    stage = "runtime-smoke",
+    stageAttempt = ownership.runtimeAttempt,
+    browserOwnerId = null,
+    writerClassification = "browser-public-ingestion",
+  } = {},
+) {
+  const binding = {
+    schema: "interior-ai.production-certification-app-event-binding.v1",
+    certificationId: ownership.certificationId,
+    candidateId: ownership.candidateId,
+    commitSha: ownership.commitSha,
+    treeSha: ownership.treeSha,
+    stage,
+    stageAttempt,
+    browserOwnerId,
+    writerClassification,
+  };
+  return {
+    ...binding,
+    runIdentitySha256: createHash("sha256")
+      .update(`${JSON.stringify([
+        binding.schema,
+        binding.certificationId,
+        binding.candidateId,
+        binding.commitSha,
+        binding.treeSha,
+        binding.stage,
+        binding.stageAttempt,
+        binding.browserOwnerId,
+        binding.writerClassification,
+      ])}\n`)
+      .digest("hex"),
+  };
+}
+
+function appEventRow(
+  ownership,
+  {
+    id = "app-event-1",
+    eventType = "design_started",
+    stage = "runtime-smoke",
+    stageAttempt = ownership.runtimeAttempt,
+    browserOwnerId = null,
+    writerClassification = "browser-public-ingestion",
+    createdAt = "2026-08-26T10:48:17.377Z",
+    bindingOverrides = {},
+    rowOverrides = {},
+  } = {},
+) {
+  const writerContracts = {
+    "browser-public-ingestion": [
+      "BROWSER_AUTHORIZED_ANALYTICS",
+      "PUBLIC_BROWSER_INGESTION",
+      "PUBLIC_REQUEST",
+      null,
+    ],
+    "browser-server-action": [
+      "BROWSER_AUTHORIZED_ANALYTICS",
+      "SERVER_APPLICATION",
+      "SERVER_ACTION",
+      null,
+    ],
+    "internal-server-diagnostic": [
+      "INTERNAL_DIAGNOSTIC",
+      "SERVER_APPLICATION",
+      "SERVER_ACTION",
+      null,
+    ],
+    "trusted-stripe-lifecycle": [
+      "TRUSTED_SERVER_LIFECYCLE",
+      "VERIFIED_STRIPE_WEBHOOK",
+      "STRIPE_SIGNATURE",
+      "evt_certification_fixture",
+    ],
+  };
+  const [authority, producer, verificationMethod, externalEventId] =
+    writerContracts[writerClassification];
+  return {
+    id,
+    eventType,
+    authority,
+    producer,
+    verificationMethod,
+    provenanceVersion: 1,
+    externalEventId,
+    createdAt,
+    shareTokenNull: true,
+    metaObject: true,
+    prohibitedPrivateData: false,
+    binding: {
+      ...appEventBinding(ownership, {
+        stage,
+        stageAttempt,
+        browserOwnerId,
+        writerClassification,
+      }),
+      ...bindingOverrides,
+    },
+    ...rowOverrides,
+  };
+}
+
 async function deterministicContractCoverage() {
   const directCliSecret = "direct-cli-secret-must-not-survive";
   const directCliMessage = databaseLifecycleCliErrorMessage(
@@ -290,6 +463,89 @@ async function deterministicContractCoverage() {
     () => databaseAdminPolicy("postgresql://owner@127.0.0.1:6432/postgres"),
     /port/,
   );
+
+  const attributionFixture = fixture({ id: "app-event-attribution" });
+  try {
+    const ownership = appEventOwnership(attributionFixture.environment);
+    const ownedRows = [
+      appEventRow(ownership),
+      appEventRow(ownership, {
+        id: "app-event-2",
+        eventType: "share_link_created",
+        stage: "browser-owners",
+        stageAttempt: ownership.browserAttempt,
+        browserOwnerId: "public-share",
+        writerClassification: "browser-server-action",
+        createdAt: "2026-08-26T11:08:15.611Z",
+      }),
+      appEventRow(ownership, {
+        id: "app-event-3",
+        eventType: "stripe_webhook_processed",
+        writerClassification: "trusted-stripe-lifecycle",
+      }),
+    ];
+    const inspected = inspectCertificationAppEvents(ownedRows, ownership);
+    assert.equal(inspected.valid, true);
+    assert.equal(inspected.evidence.rowCount, 3);
+    assert.equal(inspected.evidence.aggregates.length, 3);
+    assert.deepEqual(inspected.removableIds, [
+      "app-event-1",
+      "app-event-2",
+      "app-event-3",
+    ]);
+    for (const invalidRow of [
+      appEventRow(ownership, { id: "unbound", rowOverrides: { binding: null } }),
+      appEventRow(
+        { ...ownership, certificationId: "certification-foreign" },
+        { id: "foreign" },
+      ),
+      appEventRow(
+        { ...ownership, candidateId: "candidate-foreign" },
+        { id: "foreign-candidate" },
+      ),
+      appEventRow(ownership, {
+        id: "wrong-attempt",
+        stageAttempt: ownership.runtimeAttempt + 1,
+      }),
+      appEventRow(ownership, {
+        id: "wrong-owner",
+        stage: "browser-owners",
+        browserOwnerId: "not-an-owner",
+      }),
+      appEventRow(ownership, { id: "unknown-type", eventType: "unknown" }),
+      appEventRow(ownership, {
+        id: "private-data",
+        rowOverrides: { prohibitedPrivateData: true },
+      }),
+      appEventRow(ownership, {
+        id: "wrong-payload",
+        rowOverrides: { provenanceVersion: null },
+      }),
+    ]) {
+      const rejected = inspectCertificationAppEvents([invalidRow], ownership);
+      assert.equal(rejected.valid, false);
+      assert.deepEqual(rejected.removableIds, []);
+    }
+    const unsafeLabels = inspectCertificationAppEvents(
+      [
+        appEventRow(ownership, {
+          eventType: "private-event-label-must-not-survive",
+          bindingOverrides: {
+            stage: "private-stage-label-must-not-survive",
+            browserOwnerId: "private-owner-label-must-not-survive",
+          },
+        }),
+      ],
+      ownership,
+    );
+    assert.equal(unsafeLabels.valid, false);
+    assert.doesNotMatch(
+      JSON.stringify(unsafeLabels.evidence),
+      /private-(event|stage|owner)-label-must-not-survive/,
+    );
+  } finally {
+    rmSync(attributionFixture.root, { recursive: true, force: true });
+  }
 
   const existingFixture = fixture({ id: "existing" });
   try {
@@ -884,12 +1140,84 @@ async function deterministicContractCoverage() {
     await bindAllStages(successFixture.environment, successAdapter);
     successAdapter.rows[0].count = 1;
     successAdapter.rows[0].count = 0;
+    const successOwnership = appEventOwnership(successFixture.environment);
+    successAdapter.appEvents = [
+      appEventRow(successOwnership),
+      appEventRow(successOwnership, {
+        id: "app-event-browser-owner",
+        eventType: "share_link_opened",
+        stage: "browser-owners",
+        stageAttempt: successOwnership.browserAttempt,
+        browserOwnerId: "public-share",
+      }),
+    ];
+    successAdapter.rows.push({ table: "AppEvent", count: 2 });
+    successAdapter.onDeleteAppEvents = () => {
+      const beforeRemoval = readCertificationDatabaseLifecycle({
+        repositoryRoot,
+        environment: successFixture.environment,
+      });
+      assert.equal(
+        beforeRemoval.evidence.appEventCleanup.status,
+        "evidence-retained",
+      );
+      assert.equal(
+        beforeRemoval.evidence.appEventCleanup.inspection.rowCount,
+        2,
+      );
+      assert.equal(
+        beforeRemoval.evidence.events.at(-1).mode,
+        "app-event-evidence",
+      );
+    };
     const final = await verifyFinalCertificationDatabase({
       repositoryRoot,
       environment: successFixture.environment,
       adapter: successAdapter,
+      appEventOwnership: successOwnership,
     });
     assert.equal(final.evidence.currentState, "final-empty-verified");
+    assert.equal(final.evidence.appEventCleanup.inspection.rowCount, 2);
+    assert.equal(final.evidence.appEventCleanup.status, "owned-rows-removed");
+    assert.equal(final.evidence.appEventCleanup.cleanup.removedCount, 2);
+    assert.equal(final.evidence.appEventCleanup.cleanup.remainingCount, 0);
+    assert.equal(successAdapter.appEvents.length, 0);
+    const contradictoryAggregate = structuredClone(final.evidence);
+    contradictoryAggregate.appEventCleanup.inspection.aggregates[0].runBound =
+      false;
+    contradictoryAggregate.appEventCleanup.inspection.aggregates[0]
+      .foreignOrUnbound = true;
+    const contradictoryPayload = structuredClone(
+      contradictoryAggregate.appEventCleanup.inspection,
+    );
+    delete contradictoryPayload.aggregateSha256;
+    contradictoryAggregate.appEventCleanup.inspection.aggregateSha256 =
+      createHash("sha256")
+        .update(canonicalJsonBytes(contradictoryPayload))
+        .digest("hex");
+    assert.match(
+      databaseLifecycleEvidenceIssues(
+        sealDatabaseLifecycleEvidence(contradictoryAggregate),
+      ).join("; "),
+      /AppEvent cleanup evidence is malformed/,
+    );
+    const impossibleOwnedAggregate = structuredClone(final.evidence);
+    impossibleOwnedAggregate.appEventCleanup.inspection.aggregates[0]
+      .eventType = "unexpected-or-malformed-event-type";
+    const impossibleOwnedPayload = structuredClone(
+      impossibleOwnedAggregate.appEventCleanup.inspection,
+    );
+    delete impossibleOwnedPayload.aggregateSha256;
+    impossibleOwnedAggregate.appEventCleanup.inspection.aggregateSha256 =
+      createHash("sha256")
+        .update(canonicalJsonBytes(impossibleOwnedPayload))
+        .digest("hex");
+    assert.match(
+      databaseLifecycleEvidenceIssues(
+        sealDatabaseLifecycleEvidence(impossibleOwnedAggregate),
+      ).join("; "),
+      /AppEvent cleanup evidence is malformed/,
+    );
     await dropCertificationDatabase({
       repositoryRoot,
       environment: successFixture.environment,
@@ -954,6 +1282,313 @@ async function deterministicContractCoverage() {
     );
   } finally {
     rmSync(successFixture.root, { recursive: true, force: true });
+  }
+
+  const emptyFinalFixture = fixture({ id: "empty-final" });
+  const emptyFinalAdapter = new FakeDatabaseAdapter();
+  try {
+    await planCertificationDatabase({
+      repositoryRoot,
+      environment: emptyFinalFixture.environment,
+      adapter: emptyFinalAdapter,
+      nonce: "1".repeat(32),
+      qualificationFixture: true,
+    });
+    await provisionCertificationDatabase({
+      repositoryRoot,
+      environment: emptyFinalFixture.environment,
+      adapter: emptyFinalAdapter,
+    });
+    await verifyInitialCertificationDatabase({
+      repositoryRoot,
+      environment: emptyFinalFixture.environment,
+      adapter: emptyFinalAdapter,
+    });
+    await bindAllStages(emptyFinalFixture.environment, emptyFinalAdapter);
+    const final = await verifyFinalCertificationDatabase({
+      repositoryRoot,
+      environment: emptyFinalFixture.environment,
+      adapter: emptyFinalAdapter,
+      appEventOwnership: appEventOwnership(emptyFinalFixture.environment),
+    });
+    assert.equal(final.evidence.currentState, "final-empty-verified");
+    assert.equal(final.evidence.appEventCleanup.inspection.rowCount, 0);
+    assert.equal(final.evidence.appEventCleanup.cleanup.removedCount, 0);
+    await dropCertificationDatabase({
+      repositoryRoot,
+      environment: emptyFinalFixture.environment,
+      adapter: emptyFinalAdapter,
+    });
+    const absent = await verifyCertificationDatabaseAbsent({
+      repositoryRoot,
+      environment: emptyFinalFixture.environment,
+      adapter: emptyFinalAdapter,
+    });
+    assert.equal(absent.evidence.currentState, "absence-verified");
+  } finally {
+    rmSync(emptyFinalFixture.root, { recursive: true, force: true });
+  }
+
+  for (const [index, failureCase] of [
+    { id: "other-table-only", rows: 1, sessions: 0, bindStages: true },
+    { id: "active-session-only", rows: 0, sessions: 1, bindStages: true },
+    { id: "missing-stage-binding-only", rows: 0, sessions: 0, bindStages: false },
+  ].entries()) {
+    const isolatedFixture = fixture({ id: failureCase.id });
+    const isolatedAdapter = new FakeDatabaseAdapter();
+    try {
+      await planCertificationDatabase({
+        repositoryRoot,
+        environment: isolatedFixture.environment,
+        adapter: isolatedAdapter,
+        nonce: String(index + 2).repeat(32),
+        qualificationFixture: true,
+      });
+      await provisionCertificationDatabase({
+        repositoryRoot,
+        environment: isolatedFixture.environment,
+        adapter: isolatedAdapter,
+      });
+      await verifyInitialCertificationDatabase({
+        repositoryRoot,
+        environment: isolatedFixture.environment,
+        adapter: isolatedAdapter,
+      });
+      if (failureCase.bindStages) {
+        await bindAllStages(isolatedFixture.environment, isolatedAdapter);
+      }
+      isolatedAdapter.rows[0].count = failureCase.rows;
+      isolatedAdapter.sessions = Array.from(
+        { length: failureCase.sessions },
+        (_, sessionIndex) => ({
+          pid: 8100 + sessionIndex,
+          role: "isolated_owner",
+          applicationName: "isolated-fixture",
+          clientAddress: "127.0.0.1",
+          state: "idle",
+          backendStartedAt: "2026-08-26T10:00:00.000Z",
+        }),
+      );
+      await assert.rejects(
+        verifyFinalCertificationDatabase({
+          repositoryRoot,
+          environment: isolatedFixture.environment,
+          adapter: isolatedAdapter,
+          appEventOwnership: appEventOwnership(isolatedFixture.environment),
+        }),
+        /row, session, or stage-binding contract failed/,
+      );
+      const failed = readCertificationDatabaseLifecycle({
+        repositoryRoot,
+        environment: isolatedFixture.environment,
+      });
+      assert.equal(failed.evidence.currentState, "failed");
+      assert.equal(
+        failed.evidence.inventories.final.totalRows,
+        failureCase.rows,
+      );
+      assert.equal(
+        failed.evidence.sessions.final.count,
+        failureCase.sessions,
+      );
+      const failedSnapshot = retainCertificationDatabaseFailureSnapshot({
+        repositoryRoot,
+        environment: isolatedFixture.environment,
+        attempt: 1,
+      });
+      await abortCertificationDatabase({
+        repositoryRoot,
+        environment: isolatedFixture.environment,
+        adapter: isolatedAdapter,
+        originalFailure: {
+          classification: "DATABASE_LIFECYCLE_FAILURE",
+          consumedSubstantiveGate: true,
+          stage: "database:verify-final",
+          attempt: 1,
+          failedStateSha256: String(index + 5).repeat(64),
+          evidenceReferences: { "database-final-failure": failedSnapshot },
+        },
+      });
+    } finally {
+      rmSync(isolatedFixture.root, { recursive: true, force: true });
+    }
+  }
+
+  const foreignEventFixture = fixture({ id: "foreign-app-event" });
+  const foreignEventAdapter = new FakeDatabaseAdapter();
+  try {
+    await planCertificationDatabase({
+      repositoryRoot,
+      environment: foreignEventFixture.environment,
+      adapter: foreignEventAdapter,
+      nonce: "e".repeat(32),
+      qualificationFixture: true,
+    });
+    await provisionCertificationDatabase({
+      repositoryRoot,
+      environment: foreignEventFixture.environment,
+      adapter: foreignEventAdapter,
+    });
+    await verifyInitialCertificationDatabase({
+      repositoryRoot,
+      environment: foreignEventFixture.environment,
+      adapter: foreignEventAdapter,
+    });
+    await bindAllStages(foreignEventFixture.environment, foreignEventAdapter);
+    const ownership = appEventOwnership(foreignEventFixture.environment);
+    const foreignOwnership = {
+      ...ownership,
+      certificationId: "certification-foreign-app-event-owner",
+    };
+    foreignEventAdapter.appEvents = [appEventRow(foreignOwnership)];
+    foreignEventAdapter.rows.push({ table: "AppEvent", count: 1 });
+    await assert.rejects(
+      verifyFinalCertificationDatabase({
+        repositoryRoot,
+        environment: foreignEventFixture.environment,
+        adapter: foreignEventAdapter,
+        appEventOwnership: ownership,
+      }),
+      /attribution was foreign, unbound, malformed/,
+    );
+    const failed = readCertificationDatabaseLifecycle({
+      repositoryRoot,
+      environment: foreignEventFixture.environment,
+    });
+    assert.equal(failed.evidence.currentState, "failed");
+    assert.equal(failed.evidence.appEventCleanup.status, "evidence-retained");
+    assert.equal(failed.evidence.appEventCleanup.inspection.valid, false);
+    assert.equal(failed.evidence.appEventCleanup.inspection.rowCount, 1);
+    assert.equal(failed.evidence.inventories.final.totalRows, 1);
+    assert.equal(failed.evidence.sessions.final.count, 0);
+    assert.equal(foreignEventAdapter.appEvents.length, 1);
+    const failedSnapshot = retainCertificationDatabaseFailureSnapshot({
+      repositoryRoot,
+      environment: foreignEventFixture.environment,
+      attempt: 1,
+    });
+    await abortCertificationDatabase({
+      repositoryRoot,
+      environment: foreignEventFixture.environment,
+      adapter: foreignEventAdapter,
+      originalFailure: {
+        classification: "DATABASE_LIFECYCLE_FAILURE",
+        consumedSubstantiveGate: true,
+        stage: "database:verify-final",
+        attempt: 1,
+        failedStateSha256: "c".repeat(64),
+        evidenceReferences: { "database-final-failure": failedSnapshot },
+      },
+    });
+  } finally {
+    rmSync(foreignEventFixture.root, { recursive: true, force: true });
+  }
+
+  const cleanupFailureFixture = fixture({ id: "app-event-cleanup-failure" });
+  const cleanupFailureAdapter = new FakeDatabaseAdapter({
+    appEventCleanupFailure: "exact AppEvent cleanup transaction failed",
+  });
+  try {
+    await planCertificationDatabase({
+      repositoryRoot,
+      environment: cleanupFailureFixture.environment,
+      adapter: cleanupFailureAdapter,
+      nonce: "f".repeat(32),
+      qualificationFixture: true,
+    });
+    await provisionCertificationDatabase({
+      repositoryRoot,
+      environment: cleanupFailureFixture.environment,
+      adapter: cleanupFailureAdapter,
+    });
+    await verifyInitialCertificationDatabase({
+      repositoryRoot,
+      environment: cleanupFailureFixture.environment,
+      adapter: cleanupFailureAdapter,
+    });
+    await bindAllStages(cleanupFailureFixture.environment, cleanupFailureAdapter);
+    const ownership = appEventOwnership(cleanupFailureFixture.environment);
+    cleanupFailureAdapter.appEvents = [appEventRow(ownership)];
+    cleanupFailureAdapter.rows.push({ table: "AppEvent", count: 1 });
+    await assert.rejects(
+      verifyFinalCertificationDatabase({
+        repositoryRoot,
+        environment: cleanupFailureFixture.environment,
+        adapter: cleanupFailureAdapter,
+        appEventOwnership: ownership,
+      }),
+      /exact AppEvent cleanup transaction failed/,
+    );
+    const failed = readCertificationDatabaseLifecycle({
+      repositoryRoot,
+      environment: cleanupFailureFixture.environment,
+    });
+    assert.equal(failed.evidence.currentState, "failed");
+    assert.equal(failed.evidence.appEventCleanup.status, "evidence-retained");
+    assert.equal(failed.evidence.appEventCleanup.inspection.valid, true);
+    assert.equal(failed.evidence.inventories.final.totalRows, 1);
+    assert.equal(failed.evidence.sessions.final.count, 0);
+    assert.equal(cleanupFailureAdapter.appEvents.length, 1);
+    const failedSnapshot = retainCertificationDatabaseFailureSnapshot({
+      repositoryRoot,
+      environment: cleanupFailureFixture.environment,
+      attempt: 1,
+    });
+    const originalFailure = {
+      classification: "DATABASE_LIFECYCLE_FAILURE",
+      consumedSubstantiveGate: true,
+      stage: "database:verify-final",
+      attempt: 1,
+      failedStateSha256: "d".repeat(64),
+      evidenceReferences: { "database-final-failure": failedSnapshot },
+    };
+    cleanupFailureAdapter.inspectionFailure =
+      "abort inspection failed after final database failure";
+    await assert.rejects(
+      abortCertificationDatabase({
+        repositoryRoot,
+        environment: cleanupFailureFixture.environment,
+        adapter: cleanupFailureAdapter,
+        originalFailure,
+      }),
+      /abort inspection failed/,
+    );
+    const failedAbort = readCertificationDatabaseLifecycle({
+      repositoryRoot,
+      environment: cleanupFailureFixture.environment,
+    });
+    assert.equal(
+      failedAbort.evidence.failure.failedStateSha256,
+      originalFailure.failedStateSha256,
+    );
+    assert.deepEqual(
+      failedAbort.evidence.failure.evidenceReferences,
+      originalFailure.evidenceReferences,
+    );
+    assert.equal(
+      failedAbort.evidence.cleanupFailure.classification,
+      "DATABASE_LIFECYCLE_FAILURE",
+    );
+    await assert.rejects(
+      abortCertificationDatabase({
+        repositoryRoot,
+        environment: cleanupFailureFixture.environment,
+        adapter: cleanupFailureAdapter,
+        originalFailure: {
+          ...originalFailure,
+          failedStateSha256: "e".repeat(64),
+        },
+      }),
+      /contradicts retained database failure/,
+    );
+    await abortCertificationDatabase({
+      repositoryRoot,
+      environment: cleanupFailureFixture.environment,
+      adapter: cleanupFailureAdapter,
+      originalFailure,
+    });
+  } finally {
+    rmSync(cleanupFailureFixture.root, { recursive: true, force: true });
   }
 
   const initialFailureFixture = fixture({ id: "initial-nonzero" });
@@ -1042,14 +1677,24 @@ async function deterministicContractCoverage() {
     assert.equal(failed.evidence.currentState, "failed");
     assert.equal(failed.evidence.inventories.final.totalRows, 1);
     assert.equal(failed.evidence.sessions.final.count, 1);
+    const failedSnapshot = retainCertificationDatabaseFailureSnapshot({
+      repositoryRoot,
+      environment: failureFixture.environment,
+      attempt: 1,
+    });
     const aborted = await abortCertificationDatabase({
       repositoryRoot,
       environment: failureFixture.environment,
       adapter: failureAdapter,
       originalFailure: {
-        classification: "PRODUCT_ASSERTION_FAILURE",
+        classification: "DATABASE_LIFECYCLE_FAILURE",
         consumedSubstantiveGate: true,
-        stage: "browser-owners",
+        stage: "database:verify-final",
+        attempt: 1,
+        failedStateSha256: "a".repeat(64),
+        evidenceReferences: {
+          "database-final-failure": failedSnapshot,
+        },
       },
     });
     assert.equal(aborted.evidence.currentState, "abort-absence-verified");
@@ -1265,6 +1910,211 @@ async function deterministicContractCoverage() {
     );
   } finally {
     rmSync(wrapperCleanupFixture.root, { recursive: true, force: true });
+  }
+
+  const databaseResultFixture = fixture({
+    id: "final-database-failure-result-channel",
+  });
+  const databaseResultAdapter = new FakeDatabaseAdapter();
+  try {
+    await planCertificationDatabase({
+      repositoryRoot,
+      environment: databaseResultFixture.environment,
+      adapter: databaseResultAdapter,
+      nonce: "8".repeat(32),
+      qualificationFixture: true,
+    });
+    await provisionCertificationDatabase({
+      repositoryRoot,
+      environment: databaseResultFixture.environment,
+      adapter: databaseResultAdapter,
+    });
+    await verifyInitialCertificationDatabase({
+      repositoryRoot,
+      environment: databaseResultFixture.environment,
+      adapter: databaseResultAdapter,
+    });
+    await bindAllStages(
+      databaseResultFixture.environment,
+      databaseResultAdapter,
+    );
+    const activeLifecycle = readCertificationDatabaseLifecycle({
+      repositoryRoot,
+      environment: databaseResultFixture.environment,
+    });
+    const statePath = path.join(databaseResultFixture.root, "state.json");
+    const baseState = createCertificationState({
+      certificationId:
+        databaseResultFixture.environment.PRODUCTION_CERTIFICATION_ID,
+      candidateId:
+        databaseResultFixture.environment.PRODUCTION_EVIDENCE_CANDIDATE_ID,
+      commitSha,
+      treeSha,
+      parentSha: git("HEAD^"),
+      harnessSourceSha256: "7".repeat(64),
+      executionClass: "real-candidate",
+      createdAt: activeLifecycle.binding.updatedAt,
+    });
+    const preState = replaceCertificationDatabaseLifecycle(
+      baseState,
+      activeLifecycle.binding,
+    );
+    databaseResultFixture.environment.PRODUCTION_CERTIFICATION_STATE = statePath;
+    databaseResultAdapter.rows[0].count = 1;
+    let finalError;
+    try {
+      await verifyFinalCertificationDatabase({
+        repositoryRoot,
+        environment: databaseResultFixture.environment,
+        adapter: databaseResultAdapter,
+        appEventOwnership: appEventOwnership(
+          databaseResultFixture.environment,
+        ),
+      });
+      assert.fail("non-empty final database must fail");
+    } catch (error) {
+      finalError = error;
+    }
+    assert.ok(finalError.databaseLifecycleResult);
+    const failedState = replaceCertificationDatabaseLifecycle(
+      preState,
+      finalError.databaseLifecycleResult.binding,
+    );
+    writeCertificationState(statePath, failedState, { requireAbsent: true });
+    const failedStateSha256 = certificationStateSha256(failedState);
+    const snapshot = retainCertificationDatabaseFailureSnapshot({
+      repositoryRoot,
+      environment: databaseResultFixture.environment,
+      attempt: 1,
+    });
+    const databaseLifecycleFailure = {
+      classification: "DATABASE_LIFECYCLE_FAILURE",
+      stage: "database:verify-final",
+      attempt: 1,
+      consumedSubstantiveGate: true,
+      failedStateSha256,
+      evidenceReferences: { "database-final-failure": snapshot },
+    };
+    const commandError = {
+      classification: "DATABASE_LIFECYCLE_FAILURE",
+      consumed: true,
+      stage: "database:verify-final",
+      stageAttempt: 1,
+      failedStateSha256,
+      evidenceFiles: databaseLifecycleFailure.evidenceReferences,
+      databaseLifecycleFailure,
+      databaseLifecycleResult: finalError.databaseLifecycleResult,
+    };
+    const abortRequest = createCertificationAbortCleanupRequest({
+      command: "database:verify-final",
+      terminalSignal: null,
+      commandError,
+      environment: databaseResultFixture.environment,
+    });
+    const invocation = {
+      command: "database:verify-final",
+      nonce: "final-database-result-channel-0001",
+      statePath,
+      preState,
+      preStateSha256: certificationStateSha256(preState),
+      capturedAt: preState.updatedAt,
+    };
+    const validationOptions = {
+      statePath,
+      evidenceRoot: databaseResultFixture.root,
+      expectedCommand: "database:verify-final",
+      expectedInvocationNonce: invocation.nonce,
+      expectedPreStateSha256: invocation.preStateSha256,
+      verifyCurrentSource: false,
+    };
+
+    databaseResultAdapter.inspectionFailure =
+      "automatic abort inspection failure";
+    let cleanupError;
+    try {
+      await runDatabaseAbortCleanup({
+        repositoryRoot,
+        environment: abortRequest.environment,
+        adapter: databaseResultAdapter,
+        originalFailure: abortRequest.originalFailure,
+      });
+      assert.fail("automatic abort inspection failure must be surfaced");
+    } catch (error) {
+      cleanupError = error;
+    }
+    assert.ok(cleanupError.databaseLifecycleResult);
+    const failedAbortValue = createCertificationStageCommandResult({
+      invocation,
+      commandError,
+      cleanupError,
+      wrapperExitCode: 1,
+      evidenceRoot: databaseResultFixture.root,
+    });
+    assert.equal(failedAbortValue.result, "failed");
+    assert.equal(failedAbortValue.details.automaticAbort.outcome, "failed");
+    assert.equal(
+      validateCertificationStageResult({
+        value: failedAbortValue,
+        ...validationOptions,
+      }).valid,
+      true,
+    );
+
+    const cleanupResult = await runDatabaseAbortCleanup({
+      repositoryRoot,
+      environment: {
+        ...abortRequest.environment,
+        CERTIFICATION_EXPECTED_STATE_SHA256: undefined,
+      },
+      adapter: databaseResultAdapter,
+      originalFailure: abortRequest.originalFailure,
+    });
+    const completedAbortValue = createCertificationStageCommandResult({
+      invocation,
+      commandError,
+      cleanupResult,
+      wrapperExitCode: 1,
+      evidenceRoot: databaseResultFixture.root,
+    });
+    assert.equal(completedAbortValue.result, "failed");
+    assert.equal(
+      completedAbortValue.classification,
+      "DATABASE_LIFECYCLE_FAILURE",
+    );
+    assert.equal(
+      completedAbortValue.stage.attemptId,
+      "database-verify-final:001",
+    );
+    assert.equal(completedAbortValue.consumedSubstantiveGate, true);
+    assert.equal(
+      completedAbortValue.details.automaticAbort.outcome,
+      "completed",
+    );
+    assert.equal(
+      completedAbortValue.details.automaticAbort.originalFailure
+        .failedStateSha256,
+      failedStateSha256,
+    );
+    assert.equal(
+      validateCertificationStageResult({
+        value: completedAbortValue,
+        ...validationOptions,
+      }).valid,
+      true,
+    );
+    const lostFailure = sealCertificationStageResult({
+      ...structuredClone(completedAbortValue),
+      classification: "PRECONDITION_ORCHESTRATION_FAILURE",
+    });
+    assert.equal(
+      validateCertificationStageResult({
+        value: lostFailure,
+        ...validationOptions,
+      }).valid,
+      false,
+    );
+  } finally {
+    rmSync(databaseResultFixture.root, { recursive: true, force: true });
   }
 
   const deniedCleanupFixture = fixture({
@@ -1526,10 +2376,62 @@ async function realDisposableDatabaseCoverage() {
       `INSERT INTO "User" (id, email, "updatedAt") VALUES ($1, $2, NOW())`,
       ["database-lifecycle-fixture", "database-lifecycle-fixture@example.test"],
     );
+    const ownership = appEventOwnership(realFixture.environment);
+    const binding = appEventBinding(ownership);
+    await targetClient.query(
+      `INSERT INTO "AppEvent" (
+         id, "eventType", meta, authority, producer, "verificationMethod",
+         "provenanceVersion", "externalEventId", "createdAt"
+       ) VALUES ($1, $2, $3::jsonb, $4, $5, $6, 1, NULL, NOW())`,
+      [
+        "database-lifecycle-owned-app-event",
+        "design_started",
+        JSON.stringify({ certificationRunBinding: binding }),
+        "BROWSER_AUTHORIZED_ANALYTICS",
+        "PUBLIC_BROWSER_INGESTION",
+        "PUBLIC_REQUEST",
+      ],
+    );
+    await targetClient.query(
+      `INSERT INTO "AppEvent" (
+         id, "eventType", meta, authority, producer, "verificationMethod",
+         "provenanceVersion", "externalEventId", "createdAt"
+       ) VALUES ($1, $2, $3::jsonb, $4, $5, $6, 1, NULL, NOW())`,
+      [
+        "database-lifecycle-private-app-event",
+        "design_started",
+        JSON.stringify({
+          cookie: "raw-private-cookie-fixture-must-not-survive",
+          certificationRunBinding: binding,
+        }),
+        "BROWSER_AUTHORIZED_ANALYTICS",
+        "PUBLIC_BROWSER_INGESTION",
+        "PUBLIC_REQUEST",
+      ],
+    );
+    const inspectionAdapter = new CertificationPostgresAdapter({
+      adminUrl,
+      repositoryRoot,
+    });
+    const privateInspection = inspectCertificationAppEvents(
+      await inspectionAdapter.appEventRows(plan.evidence.database.name),
+      ownership,
+    );
+    assert.equal(privateInspection.valid, false);
+    assert.equal(privateInspection.evidence.prohibitedPrivateDataCount, 1);
+    assert.deepEqual(privateInspection.removableIds, []);
+    assert.doesNotMatch(
+      JSON.stringify(privateInspection.evidence),
+      /raw-private-cookie-fixture-must-not-survive/,
+    );
+    await targetClient.query(`DELETE FROM "AppEvent" WHERE id = $1`, [
+      "database-lifecycle-private-app-event",
+    ]);
     await assert.rejects(
       verifyFinalCertificationDatabase({
         repositoryRoot,
         environment: realFixture.environment,
+        appEventOwnership: ownership,
       }),
       /row, session, or stage-binding contract failed/,
     );
@@ -1539,13 +2441,27 @@ async function realDisposableDatabaseCoverage() {
     });
     assert.equal(failed.evidence.inventories.final.totalRows, 1);
     assert.ok(failed.evidence.sessions.final.count >= 1);
+    assert.equal(failed.evidence.appEventCleanup.inspection.rowCount, 1);
+    assert.equal(failed.evidence.appEventCleanup.cleanup.removedCount, 1);
+    const appEventCount = await targetClient.query(
+      `SELECT COUNT(*)::int AS count FROM "AppEvent"`,
+    );
+    assert.equal(appEventCount.rows[0].count, 0);
+    const failedSnapshot = retainCertificationDatabaseFailureSnapshot({
+      repositoryRoot,
+      environment: realFixture.environment,
+      attempt: 1,
+    });
     const aborted = await abortCertificationDatabase({
       repositoryRoot,
       environment: realFixture.environment,
       originalFailure: {
-        classification: "PRODUCT_ASSERTION_FAILURE",
+        classification: "DATABASE_LIFECYCLE_FAILURE",
         consumedSubstantiveGate: true,
-        stage: "database-real-fixture",
+        stage: "database:verify-final",
+        attempt: 1,
+        failedStateSha256: "f".repeat(64),
+        evidenceReferences: { "database-final-failure": failedSnapshot },
       },
     });
     assert.equal(aborted.evidence.currentState, "abort-absence-verified");

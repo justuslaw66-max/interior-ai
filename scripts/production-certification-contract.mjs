@@ -94,6 +94,7 @@ export const CERTIFICATION_FAILURE_CLASSIFICATIONS = Object.freeze([
   "PRODUCT_ASSERTION_FAILURE",
   "ARTIFACT_CONTINUITY_FAILURE",
   "FINAL_EVIDENCE_FAILURE",
+  "DATABASE_LIFECYCLE_FAILURE",
 ]);
 
 export const CERTIFICATION_STAGE_COMMANDS = Object.freeze({
@@ -217,6 +218,11 @@ export const CERTIFICATION_HARNESS_SOURCE_PATHS = Object.freeze([
   "lib/auth-env.ts",
   "lib/config.ts",
   "lib/auth-fixture-network.ts",
+  "lib/app-event-provenance.ts",
+  "lib/app-events.ts",
+  "lib/certification-app-event-binding.ts",
+  "lib/trusted-app-event-core.ts",
+  "scripts/production-certification-app-event-lifecycle.mjs",
   "scripts/production-certification-database-contract.mjs",
   "scripts/production-certification-database-adapter.mjs",
   "scripts/production-certification-database-lifecycle.mjs",

@@ -1,5 +1,85 @@
 # Production certification database lifecycle v1
 
+## Final-database AppEvent attribution and cleanup — 2026-08-26
+
+The retained rehearsal
+`REHEARSAL_ONLY-NOT_RELEASE_CERTIFICATION-NOT_VALID_FOR_INTEGRATION-CERT-20260826T101232Z-023d251fb2b7`
+remains unchanged and failed. Its database began with zero application rows,
+all five required stage bindings were present, all seven browser owners passed
+without retry, and final verification observed 314 `AppEvent` rows, zero rows
+in every other application table, and zero sessions. Abort subsequently
+dropped the exact disposable database and proved absence; final standalone,
+continuity, and integration-ready did not run.
+
+The selected primary classification is
+`A. EXPECTED_APP_EVENT_CLEANUP_OWNER_MISSING`. The retained evidence proves one
+fresh, lifecycle-bound disposable database, an initial zero-row checkpoint,
+the exact certification/candidate commit and tree, cumulative event growth
+while the runtime and browser-owner stages ran, and the same terminal count of
+314 in the consecutive retained lifecycle. Current source attribution finds
+all production writers behind `lib/app-events.ts` or
+`lib/trusted-app-event-core.ts`: public browser ingestion, server application
+analytics, internal server diagnostics, and verified Stripe lifecycle events.
+The direct writer outside those owners is test-only and is not used by the
+certification stage commands. No evidence indicates a foreign database user,
+another application-table lifecycle, or unexpected persistence owner.
+
+The old rows did not carry a per-row certification binding. Their ownership is
+therefore proven by the exclusive fresh-database lifecycle, not by metadata in
+each row. The dropped database and retained safe evidence do not preserve the
+exact event-type breakdown or exact minimum/maximum `createdAt` values; those
+facts must not be reconstructed or invented. The safe retained inventory is:
+
+| Table/type | Count | Writer/stage attribution | Run binding | Time range | Foreign/private-data finding |
+|---|---:|---|---|---|---|
+| `AppEvent` (exact event-name breakdown unavailable) | 314 | Central application event writers during runtime smoke and seven browser owners | Exact lifecycle database and certification/candidate commit/tree; no old per-row binding | Within the retained runtime/browser-owner interval; exact row range unavailable | No foreign owner or prohibited private data is evidenced; raw payloads were not retained |
+| Every other application table | 0 | Not applicable | Exact lifecycle database | Final verification checkpoint | None |
+
+For future runs, `lib/certification-app-event-binding.ts` adds a server-derived
+`certificationRunBinding` only during `runtime-smoke` and `browser-owners`. It
+binds the certification, candidate, commit, tree, stage, stage attempt,
+browser-owner ID where applicable, writer classification, schema, and a stable
+run-identity digest. Public ingestion rejects client attempts to supply that
+reserved field. Ordinary production telemetry behavior and event semantics are
+unchanged.
+
+`scripts/production-certification-app-event-lifecycle.mjs` is the exact safe
+inspection owner, and final verification is its only release-certification
+caller. Before any deletion it retains counts grouped by event type, writer,
+stage/owner/attempt, exact `createdAt` ranges, run-bound and foreign/unbound
+flags, payload-shape status, and a prohibited-private-data flag. It retains no
+raw metadata, payload, user/design/share identifiers, row IDs, URLs, sessions,
+credentials, cookies, or provider values. Foreign, unbound, malformed,
+wrong-run, unexpected-contract, or private-data rows make the lifecycle fail
+closed with no removable ID set.
+
+The PostgreSQL adapter then opens a serializable transaction, locks and
+rereads the complete `AppEvent` set, requires the exact in-memory ID set and
+safe row-identity digest captured after evidence publication, deletes only
+those exact IDs, and proves zero remaining `AppEvent` rows before commit. It
+does not use `TRUNCATE`, delete-all, table-wide cleanup, timestamps, or event
+names as ownership. Final verification subsequently retains and enforces the
+existing all-table zero count, zero sessions, and complete stage bindings. The
+auth-preflight-only lifecycle does not invoke this release-certification owner.
+
+Final-database failure publication is independent of cleanup. A failed
+`database:verify-final` transition is now a consumed
+`DATABASE_LIFECYCLE_FAILURE` at attempt 1, not a precondition failure. The
+runner hashes the exact failed physical state, writes an immutable failed
+lifecycle snapshot, and carries both through automatic abort. Abort records
+its own cleanup transition while preserving the original failure,
+`finalEmptyVerified=false`, and `failedRunRehabilitated=false`. The canonical
+stage-result consumer validates both the immutable failed snapshot and the
+later abort lifecycle descriptor.
+
+Focused deterministic and real PostgreSQL regressions cover empty success,
+exact owned-event cleanup, evidence-before-removal, foreign/unbound/wrong-run
+and malformed/private-data rejection, other-table residue, isolated sessions,
+missing bindings, cleanup failure, normal drop/absence, preserved abort
+failure, and the final published result. The real fixture inserts one exact
+run-bound `AppEvent`, removes only that row through the transactional owner,
+then proves an unrelated row and session still cause truthful final failure.
+
 ## Initial abort-inspection attribution correction — 2026-08-22
 
 The retained archive-preflight attempt remains failed and unchanged. Its first

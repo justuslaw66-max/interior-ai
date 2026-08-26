@@ -4,6 +4,7 @@ import {
   type TrustedServerLifecycleEventType,
   type VerifiedStripeWebhookContext,
 } from "@/lib/app-event-provenance";
+import { bindCertificationAppEventMeta } from "@/lib/certification-app-event-binding";
 
 export type TrustedLifecycleEventPayload = {
   id?: string;
@@ -18,7 +19,10 @@ export function buildTrustedLifecycleEventData(
   context: VerifiedStripeWebhookContext
 ) {
   const provenance = buildTrustedLifecycleProvenance(context);
-  const sanitizedMeta = sanitizeObservabilityMeta(payload.meta);
+  const sanitizedMeta = bindCertificationAppEventMeta(
+    sanitizeObservabilityMeta(payload.meta),
+    "trusted-stripe-lifecycle"
+  );
   return {
     ...(payload.id ? { id: payload.id } : {}),
     eventType: payload.eventType,

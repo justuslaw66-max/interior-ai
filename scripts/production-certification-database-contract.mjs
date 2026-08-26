@@ -42,6 +42,63 @@ export const AUTH_SESSION_PREFLIGHT_DATABASE_CLASSIFICATIONS = Object.freeze({
   releaseCertification: "NOT_RELEASE_CERTIFICATION",
   integration: "NOT_VALID_FOR_INTEGRATION",
 });
+export const PRODUCTION_CERTIFICATION_APP_EVENT_CONTRACT = Object.freeze({
+  browserEventTypes: Object.freeze([
+    "landing_viewed",
+    "design_started",
+    "first_item_added",
+    "third_item_added",
+    "first_run_activation_step_completed",
+    "export_clicked",
+    "upgrade_clicked",
+    "share_link_created",
+    "share_link_opened",
+    "design_duplicated",
+    "share_design_duplicated",
+    "export_opened",
+    "export_printed",
+    "export_pdf_clicked",
+    "export_upgrade_prompt_shown",
+    "checkout_started",
+    "checkout_return_observed",
+    "upgrade_checkout_started",
+    "checkout_success_viewed",
+    "billing_portal_opened",
+    "beta_feedback_submitted",
+  ]),
+  trustedEventTypes: Object.freeze([
+    "upgrade_checkout_completed",
+    "subscription_canceled",
+    "webhook_failed",
+    "stripe_webhook_processed",
+  ]),
+  internalEventTypes: Object.freeze([
+    "checkout_variant_validation_failed",
+    "variant_resolution_issue",
+  ]),
+  browserOwnerIds: Object.freeze([
+    "floor-plan-upload",
+    "pro-visual",
+    "guest-save",
+    "my-designs",
+    "public-share",
+    "cart",
+    "retailer",
+  ]),
+  writerClassifications: Object.freeze([
+    "browser-public-ingestion",
+    "browser-server-action",
+    "internal-server-diagnostic",
+    "trusted-stripe-lifecycle",
+    "unexpected-writer-contract",
+  ]),
+  attributions: Object.freeze([
+    "owned",
+    "unbound-or-malformed",
+    "foreign-identity",
+    "foreign-stage-or-run",
+  ]),
+});
 
 const PROTECTED_DATABASE_NAMES = new Set([
   "postgres",
@@ -59,6 +116,15 @@ export function sha256(value) {
 
 export function canonicalJsonBytes(value) {
   return Buffer.from(`${JSON.stringify(value, null, 2)}\n`);
+}
+
+function exactKeys(value, keys) {
+  return (
+    value !== null &&
+    typeof value === "object" &&
+    !Array.isArray(value) &&
+    Object.keys(value).sort().join("\n") === [...keys].sort().join("\n")
+  );
 }
 
 export function isSha256(value) {
@@ -326,9 +392,246 @@ function validSessionInventory(inventory, { requireEmpty = false } = {}) {
   return !requireEmpty || inventory.count === 0;
 }
 
+const APP_EVENT_ATTRIBUTIONS = new Set(
+  PRODUCTION_CERTIFICATION_APP_EVENT_CONTRACT.attributions,
+);
+const APP_EVENT_WRITERS = new Set(
+  PRODUCTION_CERTIFICATION_APP_EVENT_CONTRACT.writerClassifications,
+);
+const APP_EVENT_TYPES = new Set([
+  ...PRODUCTION_CERTIFICATION_APP_EVENT_CONTRACT.browserEventTypes,
+  ...PRODUCTION_CERTIFICATION_APP_EVENT_CONTRACT.trustedEventTypes,
+  ...PRODUCTION_CERTIFICATION_APP_EVENT_CONTRACT.internalEventTypes,
+  "unexpected-or-malformed-event-type",
+]);
+const BROWSER_APP_EVENT_TYPES = new Set(
+  PRODUCTION_CERTIFICATION_APP_EVENT_CONTRACT.browserEventTypes,
+);
+const TRUSTED_APP_EVENT_TYPES = new Set(
+  PRODUCTION_CERTIFICATION_APP_EVENT_CONTRACT.trustedEventTypes,
+);
+const INTERNAL_APP_EVENT_TYPES = new Set(
+  PRODUCTION_CERTIFICATION_APP_EVENT_CONTRACT.internalEventTypes,
+);
+const BROWSER_APP_EVENT_WRITERS = new Set([
+  "browser-public-ingestion",
+  "browser-server-action",
+]);
+const APP_EVENT_STAGES = new Set([
+  "runtime-smoke",
+  "browser-owners",
+  "unexpected-or-unbound-stage",
+]);
+const APP_EVENT_BROWSER_OWNERS = new Set([
+  ...PRODUCTION_CERTIFICATION_APP_EVENT_CONTRACT.browserOwnerIds,
+  "unexpected-or-unbound-browser-owner",
+]);
+
+function appEventWriterMatchesType(entry) {
+  if (BROWSER_APP_EVENT_WRITERS.has(entry.writerClassification)) {
+    return BROWSER_APP_EVENT_TYPES.has(entry.eventType);
+  }
+  if (entry.writerClassification === "trusted-stripe-lifecycle") {
+    return TRUSTED_APP_EVENT_TYPES.has(entry.eventType);
+  }
+  if (entry.writerClassification === "internal-server-diagnostic") {
+    return INTERNAL_APP_EVENT_TYPES.has(entry.eventType);
+  }
+  return false;
+}
+
+function ownedAppEventAggregateExpected(entry) {
+  if (entry.attribution !== "owned") return true;
+  const stageExpected =
+    (entry.stage === "runtime-smoke" && entry.browserOwnerId === null) ||
+    (entry.stage === "browser-owners" &&
+      PRODUCTION_CERTIFICATION_APP_EVENT_CONTRACT.browserOwnerIds.includes(
+        entry.browserOwnerId,
+      ));
+  return (
+    stageExpected &&
+    Number.isSafeInteger(entry.stageAttempt) &&
+    appEventWriterMatchesType(entry)
+  );
+}
+
+function validAppEventAggregate(entry) {
+  return (
+    exactKeys(entry, [
+      "attribution",
+      "browserOwnerId",
+      "count",
+      "createdAtRange",
+      "eventType",
+      "foreignOrUnbound",
+      "payloadShapeExpected",
+      "prohibitedPrivateData",
+      "runBound",
+      "stage",
+      "stageAttempt",
+      "writerClassification",
+    ]) &&
+    APP_EVENT_TYPES.has(entry.eventType) &&
+    Number.isSafeInteger(entry.count) &&
+    entry.count > 0 &&
+    APP_EVENT_WRITERS.has(entry.writerClassification) &&
+    APP_EVENT_STAGES.has(entry.stage) &&
+    (entry.browserOwnerId === null ||
+      APP_EVENT_BROWSER_OWNERS.has(entry.browserOwnerId)) &&
+    (entry.stageAttempt === null ||
+      (Number.isSafeInteger(entry.stageAttempt) && entry.stageAttempt >= 1)) &&
+    exactKeys(entry.createdAtRange, ["first", "last"]) &&
+    typeof entry.createdAtRange.first === "string" &&
+    typeof entry.createdAtRange.last === "string" &&
+    Number.isFinite(Date.parse(entry.createdAtRange.first)) &&
+    Number.isFinite(Date.parse(entry.createdAtRange.last)) &&
+    Date.parse(entry.createdAtRange.last) >=
+      Date.parse(entry.createdAtRange.first) &&
+    APP_EVENT_ATTRIBUTIONS.has(entry.attribution) &&
+    entry.runBound === (entry.attribution === "owned") &&
+    entry.foreignOrUnbound === !entry.runBound &&
+    typeof entry.payloadShapeExpected === "boolean" &&
+    (!entry.payloadShapeExpected || appEventWriterMatchesType(entry)) &&
+    typeof entry.prohibitedPrivateData === "boolean" &&
+    ownedAppEventAggregateExpected(entry)
+  );
+}
+
+function appEventAggregateFacts(aggregates) {
+  const classifications = {};
+  let rowCount = 0;
+  let prohibitedPrivateDataCount = 0;
+  for (const entry of aggregates) {
+    rowCount += entry.count;
+    classifications[entry.attribution] =
+      (classifications[entry.attribution] ?? 0) + entry.count;
+    if (entry.prohibitedPrivateData) {
+      prohibitedPrivateDataCount += entry.count;
+    }
+  }
+  const allRunBound = aggregates.every((entry) => entry.runBound);
+  const allPayloadShapesExpected = aggregates.every(
+    (entry) => entry.payloadShapeExpected,
+  );
+  return {
+    rowCount,
+    classifications,
+    allRunBound,
+    allPayloadShapesExpected,
+    prohibitedPrivateDataCount,
+    valid:
+      allRunBound &&
+      allPayloadShapesExpected &&
+      prohibitedPrivateDataCount === 0,
+  };
+}
+
+function validAppEventClassifications(observed, expected, rowCount) {
+  if (!observed || typeof observed !== "object" || Array.isArray(observed)) {
+    return false;
+  }
+  const entries = Object.entries(observed);
+  return (
+    entries.every(
+      ([classification, count]) =>
+        APP_EVENT_ATTRIBUTIONS.has(classification) &&
+        Number.isSafeInteger(count) &&
+        count > 0 &&
+        expected[classification] === count,
+    ) &&
+    Object.keys(expected).every(
+      (classification) => observed[classification] === expected[classification],
+    ) &&
+    entries.reduce((total, [, count]) => total + count, 0) === rowCount
+  );
+}
+
+function appEventCleanupIssues(evidence) {
+  const owner = evidence.appEventCleanup;
+  if (owner === undefined || owner === null) return [];
+  const inspection = owner.inspection;
+  const inspectionPayload = structuredClone(inspection ?? {});
+  delete inspectionPayload.aggregateSha256;
+  const aggregates = inspection?.aggregates;
+  const aggregateCount = Array.isArray(aggregates)
+    ? aggregates.reduce((total, entry) => total + (entry?.count ?? 0), 0)
+    : -1;
+  const aggregatesValid =
+    Array.isArray(aggregates) && aggregates.every(validAppEventAggregate);
+  const aggregateFacts = aggregatesValid
+    ? appEventAggregateFacts(aggregates)
+    : null;
+  const inspectionValid =
+    owner.owner === "final-database-app-event-evidence-and-cleanup" &&
+    new Set(["evidence-retained", "owned-rows-removed"]).has(owner.status) &&
+    inspection?.schema ===
+      "interior-ai.production-certification-app-event-cleanup-evidence.v1" &&
+    inspection.inspectedReadOnly === true &&
+    Number.isSafeInteger(inspection.rowCount) &&
+    inspection.rowCount >= 0 &&
+    Number.isSafeInteger(inspection.removableRowCount) &&
+    inspection.removableRowCount >= 0 &&
+    inspection.removableRowCount <= inspection.rowCount &&
+    aggregatesValid &&
+    aggregateCount === inspection.rowCount &&
+    validAppEventClassifications(
+      inspection.classifications,
+      aggregateFacts.classifications,
+      inspection.rowCount,
+    ) &&
+    isSha256(inspection.rowIdentitySha256) &&
+    inspection.allRunBound === aggregateFacts.allRunBound &&
+    inspection.allPayloadShapesExpected ===
+      aggregateFacts.allPayloadShapesExpected &&
+    inspection.prohibitedPrivateDataCount ===
+      aggregateFacts.prohibitedPrivateDataCount &&
+    inspection.valid === aggregateFacts.valid &&
+    inspection.removableRowCount ===
+      (aggregateFacts.valid ? inspection.rowCount : 0) &&
+    isSha256(inspection.aggregateSha256) &&
+    inspection.aggregateSha256 === sha256(canonicalJsonBytes(inspectionPayload));
+  if (!inspectionValid) {
+    return ["database AppEvent cleanup evidence is malformed"];
+  }
+  const evidenceEventIndex = evidence.events.findIndex(
+    (entry) =>
+      entry.mode === "app-event-evidence" &&
+      entry.details?.aggregateSha256 === inspection.aggregateSha256 &&
+      entry.details?.evidenceRetainedBeforeRemoval === true,
+  );
+  const cleanupEventIndex = evidence.events.findIndex(
+    (entry) => entry.mode === "app-event-cleanup",
+  );
+  if (evidenceEventIndex < 0) {
+    return ["database AppEvent inspection was not retained before cleanup"];
+  }
+  if (owner.status === "evidence-retained") {
+    return owner.cleanup === null && cleanupEventIndex < 0
+      ? []
+      : ["database AppEvent cleanup claims removal without a durable receipt"];
+  }
+  const cleanup = owner.cleanup;
+  if (
+    inspection.valid !== true ||
+    inspection.allRunBound !== true ||
+    inspection.allPayloadShapesExpected !== true ||
+    inspection.prohibitedPrivateDataCount !== 0 ||
+    inspection.removableRowCount !== inspection.rowCount ||
+    !Number.isSafeInteger(cleanup?.removedCount) ||
+    cleanup.removedCount !== inspection.rowCount ||
+    cleanup.remainingCount !== 0 ||
+    cleanup.exactOwnedRowsOnly !== true ||
+    cleanupEventIndex <= evidenceEventIndex
+  ) {
+    return ["database AppEvent cleanup receipt is incomplete or unsafe"];
+  }
+  return [];
+}
+
 function semanticEvidenceIssues(evidence) {
   const issues = [];
   issues.push(...lifecycleProfileIssues(evidence));
+  issues.push(...appEventCleanupIssues(evidence));
   if (evidence.events[0]?.state !== "planned") {
     issues.push("database lifecycle must begin with planned");
   }
@@ -585,7 +888,10 @@ function semanticEvidenceIssues(evidence) {
   if (
     hasState(evidence, "final-empty-verified") &&
     (!validRowInventory(evidence.inventories?.final, { requireEmpty: true }) ||
-      !validSessionInventory(evidence.sessions?.final, { requireEmpty: true }))
+      !validSessionInventory(evidence.sessions?.final, { requireEmpty: true }) ||
+      (evidence.lifecycleProfile?.classification ===
+        "RELEASE_CERTIFICATION_DATABASE" &&
+        evidence.appEventCleanup?.status !== "owned-rows-removed"))
   ) {
     issues.push("database lifecycle final-empty evidence is incoherent");
   }
@@ -644,6 +950,29 @@ function semanticEvidenceIssues(evidence) {
     ) {
       issues.push(
         "database lifecycle runtime failure attribution is incomplete",
+      );
+    }
+  }
+  if (evidence.failure?.originalStage === "database:verify-final") {
+    const snapshot =
+      evidence.failure.evidenceReferences?.["database-final-failure"];
+    const afterAbort = hasState(evidence, "abort-cleanup-in-progress");
+    if (
+      evidence.failure.classification !== "DATABASE_LIFECYCLE_FAILURE" ||
+      !Number.isSafeInteger(evidence.failure.attempt) ||
+      evidence.failure.attempt < 1 ||
+      evidence.failure.consumedSubstantiveGate !== true ||
+      (afterAbort
+        ? !isSha256(evidence.failure.failedStateSha256) ||
+          typeof snapshot?.path !== "string" ||
+          path.isAbsolute(snapshot.path) ||
+          snapshot.path.includes("\\") ||
+          !isSha256(snapshot.sha256)
+        : evidence.failure.failedStateSha256 !== null ||
+          Object.keys(evidence.failure.evidenceReferences ?? {}).length !== 0)
+    ) {
+      issues.push(
+        "database final-verification failure attribution is incomplete",
       );
     }
   }

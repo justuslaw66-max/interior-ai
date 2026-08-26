@@ -81,6 +81,7 @@ import {
   dropCertificationDatabase,
   provisionCertificationDatabase,
   readCertificationDatabaseLifecycle,
+  retainCertificationDatabaseFailureSnapshot,
   resolveCertificationDatabaseStageEnvironment,
   verifyCertificationDatabaseAbsent,
   verifyFinalCertificationDatabase,
@@ -1774,6 +1775,7 @@ export async function runDatabaseVerifyInitial({
 export async function runDatabaseVerifyFinal({
   repositoryRoot = process.cwd(),
   environment = process.env,
+  adapter = null,
 } = {}) {
   const context = stateContext(repositoryRoot, environment, {
     command: "database:verify-final",
@@ -1784,11 +1786,63 @@ export async function runDatabaseVerifyFinal({
       "final database verification requires passed browser owners",
     );
   }
-  const result = await runDatabaseLifecycleTransition(context, () =>
-    verifyFinalCertificationDatabase({ repositoryRoot, environment }),
-  );
+  const runtimeAttempt = context.state.stages["runtime-smoke"].attempts.at(-1);
+  const browserAttempt = context.state.stages["browser-owners"].attempts.at(-1);
+  const appEventOwnership = {
+    certificationId: context.state.certificationId,
+    candidateId: context.state.candidate.id,
+    commitSha: context.state.candidate.commitSha,
+    treeSha: context.state.candidate.treeSha,
+    runtimeAttempt: runtimeAttempt?.number,
+    browserAttempt: browserAttempt?.number,
+    browserOwnerIds: REQUIRED_BROWSER_OWNERS.map((owner) => owner.id),
+  };
+  let result;
+  try {
+    result = await runDatabaseLifecycleTransition(context, () =>
+      verifyFinalCertificationDatabase({
+        repositoryRoot,
+        environment,
+        adapter,
+        appEventOwnership,
+      }),
+    );
+  } catch (error) {
+    if (!error?.databaseLifecycleResult) throw error;
+    const failedState = readCertificationState(context.statePath);
+    const failedStateSha256 = certificationStateSha256(failedState);
+    const failure = error.databaseLifecycleResult.evidence.failure;
+    const attempt = failure?.attempt;
+    const snapshot = retainCertificationDatabaseFailureSnapshot({
+      repositoryRoot,
+      environment,
+      attempt,
+    });
+    const databaseFailure = new StageFailure(
+      error instanceof Error ? error.message : String(error),
+      "DATABASE_LIFECYCLE_FAILURE",
+      true,
+      {
+        evidenceFiles: { "database-final-failure": snapshot },
+        stage: "database:verify-final",
+        stageAttempt: attempt,
+        failedStateSha256,
+      },
+    );
+    databaseFailure.databaseLifecycleResult = error.databaseLifecycleResult;
+    databaseFailure.databaseLifecycleFailure = {
+      classification: "DATABASE_LIFECYCLE_FAILURE",
+      stage: "database:verify-final",
+      attempt,
+      consumedSubstantiveGate: true,
+      failedStateSha256,
+      evidenceReferences: databaseFailure.evidenceFiles,
+    };
+    throw databaseFailure;
+  }
   return {
     valid: true,
+    attempt: 1,
     lifecycleState: result.evidence.currentState,
     totalRows: result.evidence.inventories.final.totalRows,
     sessionCount: result.evidence.sessions.final.count,

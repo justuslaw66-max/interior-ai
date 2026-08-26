@@ -8,6 +8,10 @@ import {
   type BrowserAuthorizedAnalyticsEventType,
   type InternalDiagnosticEventType,
 } from "@/lib/app-event-provenance";
+import {
+  bindCertificationAppEventMeta,
+  type CertificationAppEventWriterClassification,
+} from "@/lib/certification-app-event-binding";
 
 export type BrowserAnalyticsEventPayload = {
   eventType: BrowserAuthorizedAnalyticsEventType;
@@ -39,6 +43,7 @@ type PersistedAnalyticsEvent = {
   authority: "BROWSER_AUTHORIZED_ANALYTICS" | "INTERNAL_DIAGNOSTIC";
   producer: "PUBLIC_BROWSER_INGESTION" | "SERVER_APPLICATION";
   verificationMethod: "PUBLIC_REQUEST" | "SERVER_ACTION";
+  writerClassification: CertificationAppEventWriterClassification;
 };
 
 async function persistBestEffortAppEvent(payload: PersistedAnalyticsEvent) {
@@ -50,8 +55,12 @@ async function persistBestEffortAppEvent(payload: PersistedAnalyticsEvent) {
       ...(payload.meta ?? {}),
       ...(shareRef ? { shareRef } : {}),
     });
-    const metaValue = sanitizedMeta
-      ? JSON.parse(JSON.stringify(sanitizedMeta))
+    const boundMeta = bindCertificationAppEventMeta(
+      sanitizedMeta,
+      payload.writerClassification
+    );
+    const metaValue = boundMeta
+      ? JSON.parse(JSON.stringify(boundMeta))
       : undefined;
 
     const event = await prisma.appEvent.create({
@@ -92,6 +101,7 @@ export function recordBrowserAnalyticsEvent(
     authority: "BROWSER_AUTHORIZED_ANALYTICS",
     producer: "PUBLIC_BROWSER_INGESTION",
     verificationMethod: "PUBLIC_REQUEST",
+    writerClassification: "browser-public-ingestion",
   });
 }
 
@@ -101,6 +111,7 @@ export function recordServerAnalyticsEvent(payload: BrowserAnalyticsEventPayload
     authority: "BROWSER_AUTHORIZED_ANALYTICS",
     producer: "SERVER_APPLICATION",
     verificationMethod: "SERVER_ACTION",
+    writerClassification: "browser-server-action",
   });
 }
 
@@ -110,5 +121,6 @@ export function recordInternalDiagnosticEvent(payload: InternalDiagnosticEventPa
     authority: "INTERNAL_DIAGNOSTIC",
     producer: "SERVER_APPLICATION",
     verificationMethod: "SERVER_ACTION",
+    writerClassification: "internal-server-diagnostic",
   });
 }

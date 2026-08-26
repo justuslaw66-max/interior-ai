@@ -39,6 +39,10 @@ import {
   persistTrustedLifecycleEventWith,
 } from "@/lib/trusted-app-event-core";
 import {
+  bindCertificationAppEventMeta,
+  certificationAppEventBinding,
+} from "@/lib/certification-app-event-binding";
+import {
   applyVerifiedStripeEntitlementOnce,
   verifyStripeWebhookEnvelope,
   type StripeEntitlementDecision,
@@ -227,6 +231,7 @@ function testAppEventProvenanceContract() {
     { webhookIdentity: "evt_spoofed" },
     { externalEventId: "evt_spoofed" },
     { releaseEvidenceAuthority: true },
+    { certificationRunBinding: { certificationId: "spoofed" } },
   ];
   for (const reserved of reservedAttempts) {
     assert.deepEqual(
@@ -352,6 +357,75 @@ function testAppEventProvenanceContract() {
     sameNamedWebhookFailures.filter(hasCurrentTrustedLifecycleProvenance),
     [trustedRecord],
     "Only the exactly verified record may satisfy authoritative operations evidence."
+  );
+}
+
+function testCertificationAppEventBinding() {
+  const runtimeEnvironment = {
+    CERTIFICATION_ENVIRONMENT_STAGE: "runtime-smoke",
+    CERTIFICATION_RUNTIME_STAGE_ATTEMPT: "2",
+    PRODUCTION_CERTIFICATION_ID: "certification-binding-test",
+    PRODUCTION_EVIDENCE_CANDIDATE_ID: "candidate-binding-test",
+    PRODUCTION_EVIDENCE_EXPECTED_COMMIT_SHA: "a".repeat(40),
+    PRODUCTION_EVIDENCE_EXPECTED_TREE_SHA: "b".repeat(40),
+  };
+  const runtime = certificationAppEventBinding(
+    "browser-public-ingestion",
+    runtimeEnvironment,
+  );
+  assert.ok(runtime);
+  assert.equal(runtime.stage, "runtime-smoke");
+  assert.equal(runtime.stageAttempt, 2);
+  assert.equal(runtime.browserOwnerId, null);
+  assert.match(runtime.runIdentitySha256, /^[0-9a-f]{64}$/);
+  assert.deepEqual(
+    bindCertificationAppEventMeta(
+      { source: "runtime" },
+      "browser-public-ingestion",
+      runtimeEnvironment,
+    ),
+    { source: "runtime", certificationRunBinding: runtime },
+  );
+
+  const browserEnvironment = {
+    CERTIFICATION_ENVIRONMENT_STAGE: "browser-owners",
+    REQUIRED_TEST_STAGE_ATTEMPT: "3",
+    REQUIRED_TEST_BROWSER_OWNER_ID: "public-share",
+    PRODUCTION_CERTIFICATION_ID: "certification-binding-test",
+    REQUIRED_TEST_RELEASE_CANDIDATE_ID: "candidate-binding-test",
+    REQUIRED_TEST_SOURCE_COMMIT_SHA: "a".repeat(40),
+    REQUIRED_TEST_SOURCE_TREE_SHA: "b".repeat(40),
+  };
+  const browser = certificationAppEventBinding(
+    "browser-server-action",
+    browserEnvironment,
+  );
+  assert.ok(browser);
+  assert.equal(browser.stage, "browser-owners");
+  assert.equal(browser.stageAttempt, 3);
+  assert.equal(browser.browserOwnerId, "public-share");
+  assert.notEqual(browser.runIdentitySha256, runtime.runIdentitySha256);
+
+  assert.equal(
+    certificationAppEventBinding("internal-server-diagnostic", {
+      CERTIFICATION_ENVIRONMENT_STAGE: "production",
+    }),
+    null,
+  );
+  assert.deepEqual(
+    bindCertificationAppEventMeta(
+      { source: "ordinary-runtime" },
+      "internal-server-diagnostic",
+      { CERTIFICATION_ENVIRONMENT_STAGE: "production" },
+    ),
+    { source: "ordinary-runtime" },
+  );
+  assert.throws(
+    () =>
+      certificationAppEventBinding("browser-public-ingestion", {
+        CERTIFICATION_ENVIRONMENT_STAGE: "runtime-smoke",
+      }),
+    /requires valid PRODUCTION_CERTIFICATION_ID/,
   );
 }
 
@@ -837,6 +911,7 @@ async function main() {
   testAiContracts();
   testImportContracts();
   testAppEventProvenanceContract();
+  testCertificationAppEventBinding();
   await testBrowserAppEventIngestion();
   await testTrustedEmitterCore();
   await testStripeWebhookSecurityBehavior();

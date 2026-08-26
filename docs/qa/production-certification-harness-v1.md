@@ -1408,7 +1408,10 @@ The only classifications are
 `PRECONDITION_ORCHESTRATION_FAILURE`, `INFRASTRUCTURE_TRANSIENT`,
 `SOURCE_CONTRACT_FAILURE`, `BUILD_FAILURE`, `ARCHIVE_FAILURE`,
 `PERFORMANCE_GATE_FAILURE`, `PRODUCT_ASSERTION_FAILURE`,
-`ARTIFACT_CONTINUITY_FAILURE`, and `FINAL_EVIDENCE_FAILURE`.
+`ARTIFACT_CONTINUITY_FAILURE`, `FINAL_EVIDENCE_FAILURE`, and
+`DATABASE_LIFECYCLE_FAILURE`. The last classification is used by a consumed
+`database:verify-final` attempt and is preserved across its separate automatic
+abort transition.
 
 The attempt records whether a substantive boundary was consumed. Sampling,
 product-test execution/discovery, and declared archive compression/verification

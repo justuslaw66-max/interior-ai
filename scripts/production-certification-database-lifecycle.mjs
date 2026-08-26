@@ -19,6 +19,7 @@ import { userInfo } from "node:os";
 import path from "node:path";
 
 import { CertificationPostgresAdapter } from "./production-certification-database-adapter.mjs";
+import { inspectCertificationAppEvents } from "./production-certification-app-event-lifecycle.mjs";
 import {
   AUTH_SESSION_PREFLIGHT_DATABASE_CLASSIFICATIONS,
   AUTH_SESSION_PREFLIGHT_DATABASE_STAGE,
@@ -43,8 +44,13 @@ import {
 } from "./production-certification-database-contract.mjs";
 
 const OWNER_PATHS = Object.freeze([
+  "lib/app-event-provenance.ts",
+  "lib/app-events.ts",
+  "lib/certification-app-event-binding.ts",
+  "lib/trusted-app-event-core.ts",
   "scripts/production-certification-database-contract.mjs",
   "scripts/production-certification-database-adapter.mjs",
+  "scripts/production-certification-app-event-lifecycle.mjs",
   "scripts/production-certification-database-lifecycle.mjs",
 ]);
 
@@ -445,7 +451,12 @@ function failureEvidence(evidence, mode, error, details = {}) {
     mode,
     classification: details.classification ?? "DATABASE_LIFECYCLE_FAILURE",
     originalStage: details.originalStage ?? null,
+    attempt: details.attempt ?? null,
     consumedSubstantiveGate: details.consumedSubstantiveGate ?? false,
+    failedStateSha256: details.failedStateSha256 ?? null,
+    evidenceReferences: portableOriginalEvidenceReferences(
+      details.evidenceReferences,
+    ),
     reason: redactDatabaseLifecycleFailure(error),
     at,
   };
@@ -620,6 +631,7 @@ export async function planCertificationDatabase({
       observed: [],
     },
     cleanup: null,
+    appEventCleanup: null,
     failure: null,
     currentState: "planned",
     events: [event("planned", "plan", createdAt, { targetAbsent: true })],
@@ -670,7 +682,12 @@ async function mutateLifecycle(options, action) {
       });
     } catch (error) {
       actionError = error;
-      next = failureEvidence(persisted, options.mode ?? "lifecycle", error);
+      next = failureEvidence(
+        persisted,
+        options.mode ?? "lifecycle",
+        error,
+        options.failureDetails,
+      );
     }
     next = checkpoint(next);
     const result = {
@@ -1053,7 +1070,17 @@ export async function bindCertificationDatabaseStage(options = {}) {
 }
 
 export async function verifyFinalCertificationDatabase(options = {}) {
-  return mutateLifecycle({ ...options, mode: "verify-final" }, async ({ evidence, adapter }) => {
+  const failureDetails = {
+    classification: "DATABASE_LIFECYCLE_FAILURE",
+    originalStage: "database:verify-final",
+    attempt: 1,
+    consumedSubstantiveGate: true,
+  };
+  return mutateLifecycle({
+    ...options,
+    mode: "verify-final",
+    failureDetails,
+  }, async ({ evidence, adapter, checkpoint }) => {
     if (evidence.currentState !== "active") {
       throw new Error("final database verification requires an active lifecycle");
     }
@@ -1063,9 +1090,73 @@ export async function verifyFinalCertificationDatabase(options = {}) {
     const missing = evidence.stageBindings.requiredStages.filter(
       (stage) => !observedStages.has(stage),
     );
+    let current = structuredClone(evidence);
+    if (
+      evidence.lifecycleProfile.classification ===
+      "RELEASE_CERTIFICATION_DATABASE"
+    ) {
+      const inspectedAppEvents = inspectCertificationAppEvents(
+        await adapter.appEventRows(evidence.database.name),
+        options.appEventOwnership,
+      );
+      const beforeCleanupRows = rowInventory(
+        await adapter.applicationRows(evidence.database.name),
+      );
+      const beforeCleanupSessions = await adapter.targetSessions(
+        evidence.database.name,
+      );
+      current.inventories.final = beforeCleanupRows;
+      current.sessions.final = {
+        count: beforeCleanupSessions.length,
+        sessions: beforeCleanupSessions,
+      };
+      current.appEventCleanup = {
+        owner: "final-database-app-event-evidence-and-cleanup",
+        status: "evidence-retained",
+        inspection: inspectedAppEvents.evidence,
+        cleanup: null,
+      };
+      current = checkpoint(advance(current, "app-event-evidence", ["active"], {
+        inspectedReadOnly: true,
+        rowCount: inspectedAppEvents.evidence.rowCount,
+        evidenceRetainedBeforeRemoval: true,
+        aggregateSha256: inspectedAppEvents.evidence.aggregateSha256,
+      }));
+      if (!inspectedAppEvents.valid) {
+        return failureEvidence(
+          current,
+          "verify-final",
+          new Error(
+            "final certification AppEvent attribution was foreign, unbound, malformed, or outside the permitted contract",
+          ),
+          failureDetails,
+        );
+      }
+      const cleanup = inspectedAppEvents.removableIds.length === 0
+        ? { removedCount: 0, remainingCount: 0, exactOwnedRowsOnly: true }
+        : await adapter.deleteCertificationAppEvents({
+            databaseName: evidence.database.name,
+            ownership: options.appEventOwnership,
+            expectedIds: inspectedAppEvents.removableIds,
+            expectedRowsSha256:
+              inspectedAppEvents.evidence.rowIdentitySha256,
+          });
+      current = structuredClone(current);
+      current.appEventCleanup = {
+        ...current.appEventCleanup,
+        status: "owned-rows-removed",
+        cleanup,
+      };
+      current = checkpoint(advance(current, "app-event-cleanup", ["active"], {
+        removedCount: cleanup.removedCount,
+        remainingCount: cleanup.remainingCount,
+        exactOwnedRowsOnly: cleanup.exactOwnedRowsOnly,
+        evidenceRetainedBeforeRemoval: true,
+      }));
+    }
     const rows = rowInventory(await adapter.applicationRows(evidence.database.name));
     const sessions = await adapter.targetSessions(evidence.database.name);
-    const next = structuredClone(evidence);
+    const next = structuredClone(current);
     next.inventories.final = rows;
     next.sessions.final = { count: sessions.length, sessions };
     if (rows.totalRows !== 0 || sessions.length !== 0 || missing.length !== 0) {
@@ -1073,6 +1164,7 @@ export async function verifyFinalCertificationDatabase(options = {}) {
         next,
         "verify-final",
         new Error("final certification database row, session, or stage-binding contract failed"),
+        failureDetails,
       );
     }
     return advance(next, "verify-final", ["final-empty-verified"], {
@@ -1089,6 +1181,44 @@ export async function verifyFinalCertificationDatabase(options = {}) {
     }
     return result;
   });
+}
+
+export function retainCertificationDatabaseFailureSnapshot({
+  repositoryRoot = process.cwd(),
+  environment = process.env,
+  attempt = 1,
+} = {}) {
+  if (!Number.isSafeInteger(attempt) || attempt < 1) {
+    throw new Error("database failure snapshot attempt is malformed");
+  }
+  const paths = containedEvidencePath(repositoryRoot, environment);
+  const evidence = readEvidence(paths.absolutePath);
+  assertIdentity(evidence, environment);
+  if (
+    evidence.currentState !== "failed" ||
+    evidence.failure?.originalStage !== "database:verify-final" ||
+    evidence.failure?.attempt !== attempt
+  ) {
+    throw new Error("database failure snapshot requires the exact failed verification");
+  }
+  const directory = path.join(paths.evidenceRoot, "database-failures");
+  mkdirSync(directory, { recursive: true, mode: 0o700 });
+  if (lstatSync(directory).isSymbolicLink()) {
+    throw new Error("database failure snapshot directory cannot be a symbolic link");
+  }
+  const filePath = path.join(
+    directory,
+    `verify-final-attempt-${String(attempt).padStart(3, "0")}.json`,
+  );
+  if (existsSync(filePath)) {
+    const existing = readFileSync(filePath);
+    if (!existing.equals(canonicalJsonBytes(evidence))) {
+      throw new Error("database failure snapshot target already contains other evidence");
+    }
+  } else {
+    atomicWrite(filePath, evidence, { requireAbsent: true });
+  }
+  return descriptor(paths.evidenceRoot, filePath);
 }
 
 export async function dropCertificationDatabase(options = {}) {
@@ -1148,6 +1278,54 @@ export async function abortCertificationDatabase(options = {}) {
     if (evidence.currentState === "abort-absence-verified") return evidence;
     let next = structuredClone(evidence);
     const finalEmptyVerified = finalEmptyWasVerified(next);
+    const retainedOriginalFailure = options.originalFailure
+      ? {
+          mode: next.failure?.mode ?? "abort-cleanup",
+          classification: options.originalFailure.classification,
+          originalStage: options.originalFailure.stage,
+          attempt: options.originalFailure.attempt ?? null,
+          consumedSubstantiveGate:
+            options.originalFailure.consumedSubstantiveGate ?? false,
+          failedStateSha256:
+            options.originalFailure.failedStateSha256 ?? null,
+          evidenceReferences: portableOriginalEvidenceReferences(
+            options.originalFailure.evidenceReferences,
+          ),
+          reason:
+            next.failure?.reason ?? "original certification failure retained",
+          at: next.failure?.at ?? new Date().toISOString(),
+        }
+      : null;
+    if (
+      next.failure &&
+      retainedOriginalFailure &&
+      next.failure.originalStage === "database:verify-final" &&
+      (next.failure.classification !== retainedOriginalFailure.classification ||
+        next.failure.originalStage !== retainedOriginalFailure.originalStage ||
+        next.failure.attempt !== retainedOriginalFailure.attempt ||
+        next.failure.consumedSubstantiveGate !==
+          retainedOriginalFailure.consumedSubstantiveGate ||
+        (next.failure.failedStateSha256 !== null &&
+          next.failure.failedStateSha256 !==
+            retainedOriginalFailure.failedStateSha256) ||
+        (Object.keys(next.failure.evidenceReferences ?? {}).length > 0 &&
+          JSON.stringify(next.failure.evidenceReferences) !==
+            JSON.stringify(retainedOriginalFailure.evidenceReferences)))
+    ) {
+      throw new Error(
+        "abort cleanup original failure contradicts retained database failure",
+      );
+    }
+    const deferDatabaseFailureEnrichment =
+      next.failure?.originalStage === "database:verify-final" &&
+      retainedOriginalFailure !== null;
+    if (
+      retainedOriginalFailure &&
+      !deferDatabaseFailureEnrichment &&
+      next.failure === null
+    ) {
+      next.failure = retainedOriginalFailure;
+    }
     next.failure ??= {
       mode: "abort-cleanup",
       classification: options.originalFailure?.classification ?? "CERTIFICATION_ABORTED",
@@ -1161,6 +1339,15 @@ export async function abortCertificationDatabase(options = {}) {
       reason: "original certification failure retained",
       at: new Date().toISOString(),
     };
+    if (deferDatabaseFailureEnrichment) {
+      next.failure = retainedOriginalFailure;
+      if (next.currentState !== "abort-cleanup-in-progress") {
+        next = advance(next, "abort-cleanup", ["abort-cleanup-in-progress"], {
+          originalFailureRetained: true,
+          finalEmptyVerified,
+        });
+      }
+    }
     next = checkpoint(next);
     let inspected = await adapter.inspectAdmin(evidence.database.name);
     const hasProvisionedOwnership = evidence.events.some(
@@ -1312,6 +1499,7 @@ export async function abortCertificationDatabase(options = {}) {
       finalEmptyVerified,
       failedRunRehabilitated: false,
     };
+    delete next.cleanupFailure;
     return advance(next, "abort-cleanup", ["abort-absence-verified"], {
       targetAbsent: true,
       failedRunRehabilitated: false,

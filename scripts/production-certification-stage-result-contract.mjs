@@ -17,10 +17,12 @@ import {
   certificationValidationReportIssues,
   readCertificationState,
   sealCertificationInvalidationPlan,
+  sealCertificationState,
   sealCertificationValidationReport,
   validateCertificationState,
 } from "./production-certification-state.mjs";
 import { resolveRetainedExternalEvidenceFile } from "./playwright-report-path.mjs";
+import { databaseLifecycleEvidenceIssues } from "./production-certification-database-contract.mjs";
 import { readCertificationPreStateFailureReceipt } from "./production-certification-worktrees.mjs";
 
 export const PRODUCTION_CERTIFICATION_STAGE_RESULT_SCHEMA =
@@ -290,6 +292,11 @@ function stageTransitionIdentity({ command, preState, postState }) {
 function resultOutcome({ command, commandResult, commandError, attempt }) {
   if (attempt?.status === "passed") return "passed";
   if (attempt?.status === "failed") return "failed";
+  if (
+    command === "database:verify-final" &&
+    commandError?.databaseLifecycleFailure?.classification ===
+      "DATABASE_LIFECYCLE_FAILURE"
+  ) return "failed";
   if (commandError) return "precondition-failure";
   if (command === "database:abort-cleanup") return "failed";
   return commandResult?.valid === false ? "precondition-failure" : "passed";
@@ -426,7 +433,8 @@ function automaticAbortDetails({
   cleanupResult,
 }) {
   if (
-    !CERTIFICATION_STAGE_ORDER.includes(COMMAND_STAGE_IDS[command]) ||
+    (!CERTIFICATION_STAGE_ORDER.includes(COMMAND_STAGE_IDS[command]) &&
+      command !== "database:verify-final") ||
     (!cleanupResult && !cleanupError?.databaseLifecycleResult)
   ) {
     return null;
@@ -599,6 +607,10 @@ export function createCertificationStageCommandResult({
     wrapperExitCode ??
     (terminalSignal ? (terminalSignal === "SIGINT" ? 130 : 143) : valid ? 0 : 1);
   const contract = certificationStageResultContractIdentity();
+  const databaseFailure =
+    invocation.command === "database:verify-final" && result === "failed"
+      ? commandError?.databaseLifecycleFailure ?? null
+      : null;
   const details =
     automaticAbortDetails({
       command: invocation.command,
@@ -629,8 +641,13 @@ export function createCertificationStageCommandResult({
     },
     stage: {
       id: transition.stageId,
-      attemptId: transition.attempt?.id ?? null,
-      attemptNumber: transition.attempt?.number ?? null,
+      attemptId:
+        transition.attempt?.id ??
+        (databaseFailure
+          ? `database-verify-final:${String(databaseFailure.attempt).padStart(3, "0")}`
+          : null),
+      attemptNumber:
+        transition.attempt?.number ?? databaseFailure?.attempt ?? null,
     },
     invocationNonce: invocation.nonce,
     result,
@@ -641,6 +658,8 @@ export function createCertificationStageCommandResult({
       transition.attempt?.consumedSubstantiveGate ??
       (invocation.command === "database:abort-cleanup"
         ? commandResult?.consumedSubstantiveGate === true
+        : databaseFailure
+          ? databaseFailure.consumedSubstantiveGate === true
         : false),
     process: {
       childExitCode: transition.attempt?.exitCode ?? null,
@@ -995,7 +1014,8 @@ function commandDetailsShapeIssues(value) {
     return [];
   }
   if (
-    CERTIFICATION_STAGE_ORDER.includes(COMMAND_STAGE_IDS[command]) &&
+    (CERTIFICATION_STAGE_ORDER.includes(COMMAND_STAGE_IDS[command]) ||
+      command === "database:verify-final") &&
     Object.hasOwn(details ?? {}, "automaticAbort")
   ) {
     return automaticAbortDetailsShapeIssues(details);
@@ -1253,6 +1273,118 @@ function automaticAbortStateIssues(value, state, evidenceRoot) {
   return issues;
 }
 
+function finalDatabaseFailureStateIssues(value, state, evidenceRoot) {
+  if (
+    value.command.id !== "database:verify-final" ||
+    value.result !== "failed"
+  ) return [];
+  const issues = [];
+  try {
+    const descriptor = state.databaseLifecycle?.evidence;
+    const lifecycleBytes = readFileSync(
+      path.join(evidenceRoot, descriptor.path),
+    );
+    if (sha256(lifecycleBytes) !== descriptor.sha256) {
+      throw new Error("database lifecycle evidence hash mismatch");
+    }
+    const lifecycle = JSON.parse(lifecycleBytes.toString("utf8"));
+    const failure = lifecycle.failure;
+    const snapshotDescriptor =
+      failure?.evidenceReferences?.["database-final-failure"];
+    if (
+      !portableEvidenceDescriptorMap({ lifecycle: descriptor }) ||
+      !portableEvidenceDescriptorMap({ snapshot: snapshotDescriptor })
+    ) {
+      throw new Error("database failure evidence descriptor is malformed");
+    }
+    const snapshotBytes = readFileSync(
+      path.join(evidenceRoot, snapshotDescriptor.path),
+    );
+    if (sha256(snapshotBytes) !== snapshotDescriptor.sha256) {
+      throw new Error("database failure snapshot hash mismatch");
+    }
+    const snapshot = JSON.parse(snapshotBytes.toString("utf8"));
+    if (
+      databaseLifecycleEvidenceIssues(snapshot).length > 0 ||
+      databaseLifecycleEvidenceIssues(lifecycle).length > 0
+    ) {
+      throw new Error("database failure lifecycle evidence is invalid");
+    }
+    const snapshotPredecessors = lifecycle.bindingHistory.filter(
+      (entry) =>
+        entry.revision === snapshot.revision &&
+        entry.lifecycleState === snapshot.currentState &&
+        entry.eventCount === snapshot.events.length &&
+        entry.aggregateEvidenceSha256 === snapshot.aggregateEvidenceSha256 &&
+        entry.fileSha256 === snapshotDescriptor.sha256,
+    );
+    if (snapshotPredecessors.length !== 1) {
+      throw new Error(
+        "database abort lifecycle does not descend from the retained failed snapshot",
+      );
+    }
+    const reconstructedFailedState = structuredClone(state);
+    reconstructedFailedState.databaseLifecycle = {
+      ...structuredClone(state.databaseLifecycle),
+      lifecycleState: "failed",
+      evidence: {
+        path: descriptor.path,
+        sha256: snapshotDescriptor.sha256,
+      },
+      updatedAt: snapshot.updatedAt,
+    };
+    reconstructedFailedState.updatedAt = snapshot.updatedAt;
+    const reconstructedFailedStateSha256 = certificationStateSha256(
+      sealCertificationState(reconstructedFailedState),
+    );
+    const abortCompleted =
+      value.details?.automaticAbort?.outcome === "completed";
+    const abortTruthful = abortCompleted
+      ? lifecycle.currentState === "abort-absence-verified" &&
+        lifecycle.cleanup?.originalFailureRetained === true &&
+        lifecycle.cleanup?.finalEmptyVerified === false &&
+        lifecycle.cleanup?.failedRunRehabilitated === false
+      : lifecycle.currentState === "failed" &&
+        lifecycle.cleanupFailure?.classification ===
+          "DATABASE_LIFECYCLE_FAILURE" &&
+        lifecycle.cleanup?.finalEmptyVerified !== true &&
+        lifecycle.cleanup?.failedRunRehabilitated !== true;
+    if (
+      failure?.classification !== "DATABASE_LIFECYCLE_FAILURE" ||
+      failure.originalStage !== "database:verify-final" ||
+      !Number.isSafeInteger(failure.attempt) ||
+      failure.attempt < 1 ||
+      failure.consumedSubstantiveGate !== true ||
+      !isSha256(failure.failedStateSha256) ||
+      snapshot.currentState !== "failed" ||
+      snapshot.failure?.classification !== failure.classification ||
+      snapshot.failure?.originalStage !== failure.originalStage ||
+      snapshot.failure?.attempt !== failure.attempt ||
+      snapshot.failure?.consumedSubstantiveGate !== true ||
+      snapshot.failure?.failedStateSha256 !== null ||
+      reconstructedFailedStateSha256 !== failure.failedStateSha256 ||
+      JSON.stringify(snapshot.identity) !== JSON.stringify(lifecycle.identity) ||
+      !abortTruthful ||
+      value.stage.attemptId !==
+        `database-verify-final:${String(failure.attempt).padStart(3, "0")}` ||
+      value.stage.attemptNumber !== failure.attempt ||
+      value.classification !== failure.classification ||
+      value.consumedSubstantiveGate !== true ||
+      value.details?.automaticAbort?.originalFailure?.failedStateSha256 !==
+        failure.failedStateSha256
+    ) {
+      issues.push(
+        "final database failure result contradicts its failed-state snapshot or cleanup transition",
+      );
+    }
+  } catch {
+    issues.push(
+      "final database failure result is missing its retained failed-state snapshot",
+    );
+  }
+  return issues;
+}
+
 function commandStateIssues(value, state, evidenceRoot) {
   const issues = [];
   const expectedStageId = COMMAND_STAGE_IDS[value.command.id];
@@ -1261,7 +1393,13 @@ function commandStateIssues(value, state, evidenceRoot) {
     return issues;
   }
   if (!CERTIFICATION_STAGE_ORDER.includes(expectedStageId)) {
-    if (value.stage.attemptId !== null || value.stage.attemptNumber !== null) {
+    const finalDatabaseFailure =
+      value.command.id === "database:verify-final" &&
+      value.result === "failed";
+    if (
+      !finalDatabaseFailure &&
+      (value.stage.attemptId !== null || value.stage.attemptNumber !== null)
+    ) {
       issues.push("non-stage certification result carries an attempt identity");
     }
     if (
@@ -1282,6 +1420,7 @@ function commandStateIssues(value, state, evidenceRoot) {
       (value.process.signal === null &&
         value.process.wrapperExitCode !== (value.valid ? 0 : 1)) ||
       (value.command.id !== "database:abort-cleanup" &&
+        !finalDatabaseFailure &&
         value.consumedSubstantiveGate !== false)
     ) {
       issues.push(
@@ -1346,6 +1485,11 @@ function commandStateIssues(value, state, evidenceRoot) {
     if (value.command.id === "database:abort-cleanup") {
       issues.push(
         ...databaseAbortCleanupStateIssues(value, state, evidenceRoot),
+      );
+    }
+    if (finalDatabaseFailure) {
+      issues.push(
+        ...finalDatabaseFailureStateIssues(value, state, evidenceRoot),
       );
     }
     return issues;

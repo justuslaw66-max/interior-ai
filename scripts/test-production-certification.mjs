@@ -47,6 +47,7 @@ import {
   createCertificationState,
   invalidateCertificationState,
   readCertificationState,
+  replaceCertificationDatabaseLifecycle,
   startCertificationStage,
   validateCertificationState,
   writeCertificationState,
@@ -772,6 +773,88 @@ function stateFixture() {
   assert.equal(result.commandError, commandFailure);
   assert.equal(result.cleanupError, null);
   assert.equal(result.cleanupResult, cleanupReceipt);
+}
+
+{
+  const root = mkdtempSync(
+    path.join(tmpdir(), "certification-final-database-failure-"),
+  );
+  try {
+    const statePath = path.join(root, "state.json");
+    const databaseFailureEvidence = {
+      path: "database-failures/verify-final-attempt-001.json",
+      sha256: "7".repeat(64),
+    };
+    const databaseBinding = {
+      schema:
+        "interior-ai.production-certification-database-lifecycle-binding.v1",
+      certificationId: "certification-test",
+      candidateId: candidate.id,
+      candidateCommitSha: candidate.commitSha,
+      candidateTreeSha: candidate.treeSha,
+      databaseName: "interior_ai_gate_a3_test_cert_result_fixture",
+      databaseNameSha256: "5".repeat(64),
+      databaseIdentitySha256: "6".repeat(64),
+      lifecycleState: "failed",
+      evidence: {
+        path: "database-lifecycle.json",
+        sha256: "8".repeat(64),
+      },
+      updatedAt: fixedTime,
+    };
+    const failedState = replaceCertificationDatabaseLifecycle(
+      stateFixture(),
+      databaseBinding,
+    );
+    writeCertificationState(statePath, failedState);
+    const failedStateSha256 = certificationStateSha256(failedState);
+    const databaseLifecycleFailure = {
+      classification: "DATABASE_LIFECYCLE_FAILURE",
+      stage: "database:verify-final",
+      attempt: 1,
+      consumedSubstantiveGate: true,
+      failedStateSha256,
+      evidenceReferences: {
+        "database-final-failure": databaseFailureEvidence,
+      },
+    };
+    const commandError = {
+      classification: "DATABASE_LIFECYCLE_FAILURE",
+      consumed: true,
+      stage: "database:verify-final",
+      stageAttempt: 1,
+      failedStateSha256,
+      evidenceFiles: databaseLifecycleFailure.evidenceReferences,
+      databaseLifecycleFailure,
+      databaseLifecycleResult: { binding: databaseBinding },
+    };
+    const request = createCertificationAbortCleanupRequest({
+      command: "database:verify-final",
+      terminalSignal: null,
+      commandError,
+      environment: { PRODUCTION_CERTIFICATION_STATE: statePath },
+    });
+    assert.equal(
+      request.environment.CERTIFICATION_EXPECTED_STATE_SHA256,
+      failedStateSha256,
+    );
+    assert.deepEqual(request.originalFailure, databaseLifecycleFailure);
+    assert.throws(
+      () =>
+        createCertificationAbortCleanupRequest({
+          command: "database:verify-final",
+          terminalSignal: null,
+          commandError: {
+            ...commandError,
+            consumed: false,
+          },
+          environment: { PRODUCTION_CERTIFICATION_STATE: statePath },
+        }),
+      /differs from the physical failed lifecycle/,
+    );
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
 }
 
 {
@@ -4251,6 +4334,7 @@ assert.deepEqual(CERTIFICATION_FAILURE_CLASSIFICATIONS, [
   "PRODUCT_ASSERTION_FAILURE",
   "ARTIFACT_CONTINUITY_FAILURE",
   "FINAL_EVIDENCE_FAILURE",
+  "DATABASE_LIFECYCLE_FAILURE",
 ]);
 assert.ok(harnessSourceIdentity(repositoryRoot).sha256.match(/^[0-9a-f]{64}$/));
 assert.equal(

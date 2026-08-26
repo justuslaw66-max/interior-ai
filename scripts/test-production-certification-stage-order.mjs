@@ -153,6 +153,7 @@ function instrumentRealRunner(runnerSource, name, databaseBinding) {
     stubPath,
     `const binding = ${JSON.stringify(databaseBinding)};\n` +
       `export function readCertificationDatabaseLifecycle() { return { binding, evidence: { currentState: "active" } }; }\n` +
+      `export function retainCertificationDatabaseFailureSnapshot() {}\n` +
       `export function resolveCertificationDatabaseStageEnvironment() { return { environment: {} }; }\n` +
       `export async function bindCertificationDatabaseStage({ stage }) { throw new Error(\`STAGE_DISPATCH_REACHED:\${stage}\`); }\n` +
       `export function abortCertificationDatabase() {}\n` +

@@ -6,6 +6,10 @@ import {
   databaseAdminPolicy,
   targetDatabaseUrl,
 } from "./production-certification-database-contract.mjs";
+import {
+  CERTIFICATION_APP_EVENT_BINDING_KEY,
+  certificationAppEventRowsSha256,
+} from "./production-certification-app-event-lifecycle.mjs";
 
 function quotedIdentifier(value) {
   assertUnprotectedDatabaseName(value);
@@ -39,6 +43,39 @@ async function withClient(connectionString, action) {
   } finally {
     await client.end();
   }
+}
+
+async function queryAppEventRows(client, { forUpdate = false } = {}) {
+  const result = await client.query(
+    `SELECT id,
+            "eventType" AS "eventType",
+            authority::text AS authority,
+            producer::text AS producer,
+            "verificationMethod"::text AS "verificationMethod",
+            "provenanceVersion" AS "provenanceVersion",
+            "externalEventId" AS "externalEventId",
+            "createdAt" AS "createdAt",
+            "shareToken" IS NULL AS "shareTokenNull",
+            jsonb_typeof(meta) = 'object' AS "metaObject",
+            meta -> $1 AS binding,
+            COALESCE(
+              meta::text ~* '(postgres(?:ql)?|mysql|mongodb(?:\\+srv)?|redis|rediss|amqp|amqps)://|https?://[^/@[:space:]]+:[^/@[:space:]]+@|https?://(localhost|127\\.0\\.0\\.1|\\[?::1\\]?|10\\.[0-9.]+|192\\.168\\.[0-9.]+|172\\.(1[6-9]|2[0-9]|3[01])\\.[0-9.]+|[^/[:space:]]+\\.(local|internal))([:/]|$)|/(Users|home|private|var|tmp)/'
+              OR jsonb_path_exists(
+                COALESCE(meta, '{}'::jsonb),
+                '$.** ? (@.type() == "object").keyvalue() ? (@.key like_regex "(authorization|cookie|credential|password|secret|token|api[-_]?key|private[-_]?key|card|cvv|payment|session|address|street|postal|room[-_]?name|project[-_]?name|design[-_]?title|notes?|free[-_]?form|search[-_]?(term|query))" flag "i" && @.value != "[redacted]")'
+              ),
+              false
+            ) AS "prohibitedPrivateData"
+       FROM "AppEvent"
+      ORDER BY id${forUpdate ? " FOR UPDATE" : ""}`,
+    [CERTIFICATION_APP_EVENT_BINDING_KEY],
+  );
+  return result.rows.map((row) => ({
+    ...row,
+    provenanceVersion:
+      row.provenanceVersion === null ? null : Number(row.provenanceVersion),
+    createdAt: new Date(row.createdAt).toISOString(),
+  }));
 }
 
 export class CertificationPostgresAdapter {
@@ -307,6 +344,62 @@ export class CertificationPostgresAdapter {
         rows.push({ table: tablename, count: Number(count.rows[0]?.count ?? 0) });
       }
       return rows;
+    });
+  }
+
+  async appEventRows(databaseName) {
+    return withClient(this.targetUrl(databaseName), (client) =>
+      queryAppEventRows(client),
+    );
+  }
+
+  async deleteCertificationAppEvents({
+    databaseName,
+    ownership,
+    expectedIds,
+    expectedRowsSha256,
+  }) {
+    assertUnprotectedDatabaseName(databaseName);
+    return withClient(this.targetUrl(databaseName), async (client) => {
+      await client.query("BEGIN ISOLATION LEVEL SERIALIZABLE");
+      try {
+        const rows = await queryAppEventRows(client, { forUpdate: true });
+        const observedIds = rows.map((row) => row.id).sort();
+        if (
+          JSON.stringify(observedIds) !== JSON.stringify(expectedIds) ||
+          certificationAppEventRowsSha256(rows, ownership) !==
+            expectedRowsSha256
+        ) {
+          throw new Error(
+            "AppEvent rows changed after evidence retention and before cleanup",
+          );
+        }
+        const removed = await client.query(
+          `DELETE FROM "AppEvent" WHERE id = ANY($1::text[])`,
+          [expectedIds],
+        );
+        const remaining = await client.query(
+          `SELECT COUNT(*)::int AS count FROM "AppEvent"`,
+        );
+        const remainingCount = Number(remaining.rows[0]?.count ?? 0);
+        if (
+          removed.rowCount !== expectedIds.length ||
+          remainingCount !== 0
+        ) {
+          throw new Error(
+            "exact certification AppEvent cleanup did not prove absence",
+          );
+        }
+        await client.query("COMMIT");
+        return {
+          removedCount: removed.rowCount,
+          remainingCount,
+          exactOwnedRowsOnly: true,
+        };
+      } catch (error) {
+        await client.query("ROLLBACK");
+        throw error;
+      }
     });
   }
 

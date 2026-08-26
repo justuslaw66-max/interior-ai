@@ -497,25 +497,53 @@ export function createCertificationAbortCleanupRequest({
       evidenceReferences: physicalEvidence,
     };
   } else {
-    if (failedStateSha256) {
+    const databaseFailure = commandError?.databaseLifecycleFailure ?? null;
+    if (databaseFailure) {
+      const currentDatabaseBinding = physicalState.databaseLifecycle;
+      if (
+        command !== "database:verify-final" ||
+        commandError?.stage !== "database:verify-final" ||
+        commandError?.stageAttempt !== databaseFailure.attempt ||
+        commandError?.classification !== "DATABASE_LIFECYCLE_FAILURE" ||
+        commandError?.consumed !== true ||
+        databaseFailure.classification !== "DATABASE_LIFECYCLE_FAILURE" ||
+        databaseFailure.stage !== "database:verify-final" ||
+        !Number.isSafeInteger(databaseFailure.attempt) ||
+        databaseFailure.attempt < 1 ||
+        databaseFailure.consumedSubstantiveGate !== true ||
+        databaseFailure.failedStateSha256 !== physicalStateSha256 ||
+        failedStateSha256 !== physicalStateSha256 ||
+        JSON.stringify(commandError.databaseLifecycleResult?.binding) !==
+          JSON.stringify(currentDatabaseBinding) ||
+        currentDatabaseBinding?.lifecycleState !== "failed" ||
+        JSON.stringify(databaseFailure.evidenceReferences) !==
+          JSON.stringify(commandError.evidenceFiles)
+      ) {
+        throw new Error(
+          "returned final database failure differs from the physical failed lifecycle",
+        );
+      }
+      originalFailure = structuredClone(databaseFailure);
+    } else if (failedStateSha256) {
       throw new Error(
         "returned failed-state SHA does not identify a physical failed stage",
       );
+    } else {
+      originalFailure = {
+        classification: terminalSignal
+          ? "INFRASTRUCTURE_TRANSIENT"
+          : commandError?.classification ??
+            commandError?.certificationResult?.classification ??
+            "PRECONDITION_ORCHESTRATION_FAILURE",
+        consumedSubstantiveGate: false,
+        stage: terminalSignal
+          ? `terminal-${terminalSignal.toLowerCase()}`
+          : commandError?.stage ?? command,
+        attempt: null,
+        failedStateSha256: null,
+        evidenceReferences: {},
+      };
     }
-    originalFailure = {
-      classification: terminalSignal
-        ? "INFRASTRUCTURE_TRANSIENT"
-        : commandError?.classification ??
-          commandError?.certificationResult?.classification ??
-          "PRECONDITION_ORCHESTRATION_FAILURE",
-      consumedSubstantiveGate: false,
-      stage: terminalSignal
-        ? `terminal-${terminalSignal.toLowerCase()}`
-        : commandError?.stage ?? command,
-      attempt: null,
-      failedStateSha256: null,
-      evidenceReferences: {},
-    };
   }
   return {
     environment: {
