@@ -96,7 +96,7 @@ const CURRENT_JOURNAL_V2_FINAL_POSITIVE_PATH =
 const GENERATED_OUTPUT_AGGREGATE_SEAL_DOMAIN =
   "interior-ai.production-certification-source-generated-output-aggregate-seal.v1\n";
 const BROWSER_SERVER_LIFECYCLE_SEAL_DOMAIN =
-  "interior-ai.production-certification-browser-server-lifecycle-seal.v1\n";
+  "interior-ai.production-certification-browser-server-lifecycle-seal.v2\n";
 const fixedTime = "2026-08-14T00:00:00.000Z";
 const candidate = {
   id: "certification-test-candidate",
@@ -2008,6 +2008,22 @@ function stateFixture() {
   assert.equal(new Set(regressions.cases.map((entry) => entry.defect)).size, 43);
   assert.equal(regressions.authPreflightDatabaseCases.length, 38);
   assert.equal(new Set(regressions.authPreflightDatabaseCases).size, 38);
+  assert.equal(regressions.developmentBrowserGeneratedOutputCases.length, 17);
+  assert.equal(
+    new Set(regressions.developmentBrowserGeneratedOutputCases).size,
+    17,
+  );
+  const developmentBrowserDefect = regressions.cases.find(
+    (entry) => entry.id === 42,
+  );
+  assert.equal(
+    developmentBrowserDefect.defect,
+    "DEVELOPMENT_BROWSER_GENERATED_OUTPUT_LIFECYCLE_DEFECT",
+  );
+  assert.equal(
+    developmentBrowserDefect.relatedDefect,
+    "BROWSER_OWNER_TERMINAL_WORKTREE_CLEANUP_ORDER_DEFECT",
+  );
   coveredRegressionIds.add(40);
   coveredRegressionIds.add(35);
   coveredRegressionIds.add(37);

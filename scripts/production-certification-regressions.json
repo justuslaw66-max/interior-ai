@@ -42,7 +42,7 @@
     { "id": 39, "defect": "runtime-smoke-auth-fixture-continuity-projection", "coverage": "exact retained SYNTHETIC_AUTH_FIXTURE_SCOPE_REJECTED projection boundary; canonical runtime and artifact-product-server session projection; staging/preview acceptance; production, missing, foreign candidate/session/nonce, and altered-digest rejection; doctor and qualification" },
     { "id": 40, "defect": "pre-state-worktree-transaction-and-rollback", "coverage": "resource and database validation before allocation; invocation-private exact allocation ledger; committed Git/worktree rollback owner; safe non-state receipt and framed result; partial/allocation/publication/cleanup-failure matrix; foreign/historical/canonical noninterference; success and post-state policy preservation; doctor, simulation, and qualification" },
     { "id": 41, "defect": "pro-visual-browser-owner-development-server-and-auth-projection", "coverage": "Pro Visual production-server selection in final-artifact; exact Chromium/WebKit config discovery; canonical browser-stage auth-session projection; missing and foreign fixture rejection; tracked-worktree cleanliness guards; doctor, simulation, and qualification" },
-    { "id": 42, "defect": "cart-development-browser-environment-and-tracked-output-lifecycle", "coverage": "exact Cart development-server command and readiness contract; explicit NODE_ENV development projection; deterministic Next tsconfig mutation ownership; success and failure cleanup; altered, staged, untracked, symlink, wrong-worktree, and evidence-tamper rejection; doctor, simulation, and qualification" },
+    { "id": 42, "defect": "DEVELOPMENT_BROWSER_GENERATED_OUTPUT_LIFECYCLE_DEFECT", "relatedDefect": "BROWSER_OWNER_TERMINAL_WORKTREE_CLEANUP_ORDER_DEFECT", "coverage": "candidate/dependency/attempt-bound Cart and Retailer .next/dev, next-env.d.ts, and exact Retailer descendant ownership; evidence sealing after process exit; no-follow exact cleanup before terminal worktree validation; success and failure finalization; original browser-result preservation even without publishable lifecycle evidence; altered, empty-descendant, tracked, ordinary-untracked, ignored, symlink, traversal, outside-root, foreign-attempt, cleanup-failure, identity-tamper, dependency-root, and cross-worktree rejection; aggregate consumption, doctor, simulation, and qualification" },
     { "id": 43, "defect": "phase8-retained-auth-session-projection-ordering", "coverage": "actual shared Phase 8, runtime-smoke, and browser-owner stage projectors; parent-only retained session with child-only provider projection; ambient override, missing, stale, foreign candidate/session/nonce, altered digest/transport, and production-classification rejection; non-app-server isolation; raw-value portability guards; exactly-once/no-regeneration continuity; doctor, simulation, and qualification" }
   ],
   "nestedAuthFixtureIsolationCases": [
@@ -59,6 +59,25 @@
     "nested-duplicate-generation",
     "raw-provider-value-leak",
     "foreign-candidate-session-result"
+  ],
+  "developmentBrowserGeneratedOutputCases": [
+    "successful-next-development-output-finalized-clean",
+    "exact-next-environment-declaration-sealed-removed",
+    "exact-retailer-fixture-bundle-sealed-removed",
+    "cart-retailer-product-results-unchanged-zero-retries",
+    "browser-owner-terminal-worktree-validation-clean",
+    "failed-browser-owner-cleanup-preserves-original-result",
+    "unexpected-tracked-mutation-fails-closed",
+    "ordinary-untracked-and-ignored-output-fails-closed",
+    "altered-expected-output-fails-closed",
+    "symlink-traversal-outside-root-foreign-attempt-fails-closed",
+    "cleanup-failure-retained-without-clean-claim",
+    "missing-safe-lifecycle-evidence-preserves-original-result",
+    "exact-retailer-inventory-rejects-empty-descendant",
+    "candidate-and-dependency-binding-tamper-fails-closed",
+    "source-final-canonical-historical-worktrees-unchanged",
+    "bound-node-modules-remains-present-valid",
+    "aggregate-product-green-terminal-clean-accepted"
   ],
   "stageResultCases": [
     "npm-prose-before-valid-frame",

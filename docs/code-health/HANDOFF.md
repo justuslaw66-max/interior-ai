@@ -6873,3 +6873,40 @@ separate and unauthorized.
   disposable target and retain absence proof, then revert the one focused
   correction commit. Never drop a foreign/caller-selected database or modify
   the preserved failed preflight.
+
+## Production Certification development-browser generated-output lifecycle — 2026-08-26
+
+- **Preserved failure:** the retained rehearsal at candidate
+  `9844790686f539f4ef7f57e18b042712e78ecd13` remains read-only. Its seven green
+  browser-owner product suites, consumed browser gate, terminal
+  development-browser worktree failure, `ARTIFACT_CONTINUITY_FAILURE`, and
+  blocked downstream final/continuity/integration stages are not reclassified
+  or repaired.
+- **Classification:** `DEVELOPMENT_BROWSER_GENERATED_OUTPUT_LIFECYCLE_DEFECT`
+  and `BROWSER_OWNER_TERMINAL_WORKTREE_CLEANUP_ORDER_DEFECT`.
+- **Ownership:** Cart owns `.next/dev` and `next-env.d.ts` for its exact
+  certification/candidate ID/commit/tree/owner/attempt/worktree identity and
+  the retained development-browser dependency binding. Retailer owns those
+  same attempt-local outputs plus
+  `.next/cache/retailer-confirmation-browser-fixture`, whose closed inventory is
+  exactly one regular `bundle.js` descendant; additional files or even empty
+  directories fail closed. `node_modules` remains the installed, bound
+  persistent dependency root and is never a generated-output cleanup target.
+- **Finalization order:** the synchronous browser child must expose its terminal
+  process result before the lifecycle seals recursive no-follow inventories.
+  Exact files are link-count-proven unlinked, exact directories are removed
+  bottom-up, deterministic Next `tsconfig.json` output is restored, and only
+  empty attempt-created `.next` parent containers are removed before terminal
+  Git/index/ignored-output and worktree validation.
+- **Failure truth:** the same finalizer runs after success, nonzero exit,
+  signal, or dispatch failure. A simultaneous cleanup failure is retained in
+  sealed lifecycle evidence without claiming a clean worktree, while the
+  original product/infrastructure failure classification and consumed status
+  remain authoritative even if safe lifecycle evidence is missing or cannot be
+  published. A product-green cleanup, evidence-publication, or
+  terminal-validation failure is `ARTIFACT_CONTINUITY_FAILURE`.
+- **Scope/rollback:** certification harness, focused tests, regression contract,
+  doctor guard, and this handoff only. No product/UI assertions, retry/timeout,
+  auth/database/archive, Phase 8, runtime-smoke, dependency, source-validation,
+  final-artifact, canonical, or historical-worktree behavior changes. Rollback
+  is one focused correction commit; do not modify the retained rehearsal.

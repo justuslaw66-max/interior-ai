@@ -891,6 +891,12 @@ function revalidateSimulationRoleDependencies({
     boundary,
     dependencyIdentitySha256: retained.evidence.dependencyIdentitySha256,
     bindingEvidenceSha256: binding.dependencyBindingEvidence.sha256,
+    dependencyInventorySha256: retained.evidence.dependencyInventory.sha256,
+    nodeModulesRootIdentitySha256:
+      retained.evidence.physicalNodeModulesProof.nodeModulesRootIdentitySha256,
+    nodeModulesFilesystemIdentitySha256:
+      retained.evidence.physicalNodeModulesProof
+        .nodeModulesFilesystemIdentitySha256,
     passed: true,
   };
 }
@@ -4220,6 +4226,20 @@ export async function runProductionCertificationSimulation({
           certificationId: state.certificationId,
           ownerId: owner.id,
           stageAttempt: state.stages["browser-owners"].attempts.at(-1).number,
+          dependencyBinding: {
+            bindingEvidenceSha256:
+              developmentBrowserPreOwnerRevalidation.bindingEvidenceSha256,
+            dependencyIdentitySha256:
+              developmentBrowserPreOwnerRevalidation.dependencyIdentitySha256,
+            dependencyInventorySha256:
+              developmentBrowserPreOwnerRevalidation.dependencyInventorySha256,
+            nodeModulesRootIdentitySha256:
+              developmentBrowserPreOwnerRevalidation
+                .nodeModulesRootIdentitySha256,
+            nodeModulesFilesystemIdentitySha256:
+              developmentBrowserPreOwnerRevalidation
+                .nodeModulesFilesystemIdentitySha256,
+          },
         }),
       );
       browserDescriptors[`browser-server-lifecycle:${owner.id}`] =

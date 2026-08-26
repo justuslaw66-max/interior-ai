@@ -1041,25 +1041,63 @@ export function verifyFinalCertificationEvidence({
       }),
     );
     if (!owner.productionServer) {
+      const dependencyRoleBinding =
+        state.worktrees?.roles?.["development-browser"];
+      const dependencyBindingDescriptor =
+        dependencyRoleBinding?.dependencyBindingEvidence;
+      if (
+        !dependencyBindingDescriptor ||
+        !isSha256(dependencyBindingDescriptor.sha256)
+      ) {
+        throw new Error(
+          "development-browser dependency binding evidence is missing",
+        );
+      }
+      const dependencyBindingEvidence = readCanonicalJson(
+        containedEvidencePath(
+          evidenceRoot,
+          dependencyBindingDescriptor.path,
+        ),
+        "development-browser dependency binding evidence",
+      );
+      if (dependencyBindingEvidence.sha256 !== dependencyBindingDescriptor.sha256) {
+        throw new Error(
+          "development-browser dependency binding evidence hash is invalid",
+        );
+      }
       const serverLifecycle = boundEvidence(
         state,
         evidenceRoot,
         `browser-server-lifecycle:${owner.id}`,
       );
       issues.push(
-        ...browserServerTrackedOutputEvidenceIssues(serverLifecycle.value).map(
-          (issue) => `${owner.id} ${issue}`,
-        ),
+        ...browserServerTrackedOutputEvidenceIssues(serverLifecycle.value, {
+          candidateId: state.candidate.id,
+          bindingEvidenceSha256: dependencyBindingDescriptor.sha256,
+          dependencyIdentitySha256:
+            dependencyRoleBinding.dependencyIdentitySha256,
+          dependencyInventorySha256:
+            dependencyBindingEvidence.value?.dependencyInventory?.sha256,
+          nodeModulesRootIdentitySha256:
+            dependencyBindingEvidence.value?.physicalNodeModulesProof
+              ?.nodeModulesRootIdentitySha256,
+          nodeModulesFilesystemIdentitySha256:
+            dependencyBindingEvidence.value?.physicalNodeModulesProof
+              ?.nodeModulesFilesystemIdentitySha256,
+        }).map((issue) => `${owner.id} ${issue}`),
       );
       if (
         serverLifecycle.value?.executionClass !== state.executionClass ||
         serverLifecycle.value?.certificationId !== state.certificationId ||
+        serverLifecycle.value?.candidateId !== state.candidate.id ||
         serverLifecycle.value?.ownerId !== owner.id ||
         serverLifecycle.value?.candidateCommitSha !== state.candidate.commitSha ||
         serverLifecycle.value?.candidateTreeSha !== state.candidate.treeSha ||
         serverLifecycle.value?.worktreeIdentitySha256 !==
           state.worktrees?.roles?.["development-browser"]
             ?.privateRealpathSha256 ||
+        serverLifecycle.value?.dependencyBinding?.dependencyIdentitySha256 !==
+          dependencyRoleBinding.dependencyIdentitySha256 ||
         serverLifecycle.value?.process?.exitCode !== 0 ||
         serverLifecycle.value?.process?.signal !== null ||
         serverLifecycle.value?.stageAttempt !==

@@ -3890,6 +3890,7 @@ export function executeDevelopmentBrowserOwnerChild({
   certificationId,
   ownerId,
   stageAttempt,
+  dependencyBinding,
   executeChild,
 }) {
   if (typeof executeChild !== "function") {
@@ -3901,6 +3902,7 @@ export function executeDevelopmentBrowserOwnerChild({
     certificationId,
     ownerId,
     stageAttempt,
+    dependencyBinding,
   });
   let child;
   try {
@@ -3921,12 +3923,72 @@ export function executeDevelopmentBrowserOwnerChild({
     lifecycleEvidence = completeBrowserServerTrackedOutputLifecycle(lifecycle, {
       processExitCode: Number.isSafeInteger(child?.status) ? child.status : null,
       signal: child?.signal ?? null,
+      dispatchError: Boolean(child?.error),
     });
   } catch (error) {
     lifecycleFailure = error;
     lifecycleEvidence = error?.safeEvidence;
   }
   return { child, lifecycleEvidence, lifecycleFailure };
+}
+
+export function developmentBrowserOwnerStageFailure({
+  ownerId,
+  lifecycleResult,
+  ownerStarted,
+  consumed,
+  evidenceFiles = {},
+  lifecyclePublicationFailure = null,
+}) {
+  const { child, lifecycleFailure } = lifecycleResult;
+  const lifecycleFinalizationFailure =
+    lifecycleFailure ?? lifecyclePublicationFailure;
+  const ownerConsumed = consumed || ownerStarted;
+  let failure = null;
+  if (child.error || child.signal) {
+    failure = new StageFailure(
+      `required browser owner infrastructure failed: ${ownerId}`,
+      "INFRASTRUCTURE_TRANSIENT",
+      ownerConsumed,
+      {
+        exitCode: child.signal ? null : CHILD_SPAWN_ERROR_EXIT_CODE,
+        signal: child.signal ?? null,
+        spawnErrorClassification: child.error ? "child-spawn-error" : null,
+        evidenceFiles,
+      },
+    );
+  } else if (child.status !== 0) {
+    failure = new StageFailure(
+      `required browser owner failed: ${ownerId}`,
+      ownerStarted
+        ? "PRODUCT_ASSERTION_FAILURE"
+        : "PRECONDITION_ORCHESTRATION_FAILURE",
+      ownerConsumed,
+      {
+        exitCode: normalizedChildExitCode(child.status),
+        evidenceFiles,
+      },
+    );
+  } else if (lifecycleFinalizationFailure) {
+    failure = new StageFailure(
+      `browser server generated-output lifecycle failed: ${ownerId}`,
+      "ARTIFACT_CONTINUITY_FAILURE",
+      ownerConsumed,
+      { evidenceFiles },
+    );
+  }
+  if (failure && lifecycleFinalizationFailure) {
+    failure.cleanupFailure = Object.freeze({
+      code:
+        lifecycleFinalizationFailure.code ??
+        "BROWSER_SERVER_GENERATED_OUTPUT_REJECTED",
+      message:
+        lifecycleFinalizationFailure instanceof Error
+          ? lifecycleFinalizationFailure.message
+          : String(lifecycleFinalizationFailure),
+    });
+  }
+  return failure;
 }
 
 export async function runBrowserOwnersStage(options = {}) {
@@ -4152,92 +4214,70 @@ export async function runBrowserOwnersStage(options = {}) {
             ownerId: input.owner.id,
             stageAttempt:
               boundState.stages["browser-owners"].attempts.at(-1).number,
+            dependencyBinding: {
+              bindingEvidenceSha256:
+                developmentBrowserPreOwnerRevalidation.bindingEvidenceSha256,
+              dependencyIdentitySha256:
+                developmentBrowserPreOwnerRevalidation.dependencyIdentitySha256,
+              dependencyInventorySha256:
+                developmentBrowserPreOwnerRevalidation.dependencyInventorySha256,
+              nodeModulesRootIdentitySha256:
+                developmentBrowserPreOwnerRevalidation
+                  .nodeModulesRootIdentitySha256,
+              nodeModulesFilesystemIdentitySha256:
+                developmentBrowserPreOwnerRevalidation
+                  .nodeModulesFilesystemIdentitySha256,
+            },
             executeChild,
           })
         : { child: executeChild(), lifecycleEvidence: null, lifecycleFailure: null };
-      const { child } = lifecycleResult;
+      const ownerStarted = existsSync(input.startMarkerPath);
+      consumed ||= ownerStarted;
       let serverLifecycleDescriptor = null;
-      const serverLifecycleFailure = lifecycleResult.lifecycleFailure;
+      let lifecyclePublicationFailure = null;
       if (input.serverLifecyclePath) {
         const lifecycleEvidence = lifecycleResult.lifecycleEvidence;
         if (!lifecycleEvidence) {
-          throw new StageFailure(
-            `browser server lifecycle produced no evidence: ${input.owner.id}`,
-            "SOURCE_CONTRACT_FAILURE",
-            existsSync(input.startMarkerPath),
+          lifecyclePublicationFailure = new Error(
+            `browser server lifecycle produced no safe evidence: ${input.owner.id}`,
           );
+        } else {
+          try {
+            writeFileSync(
+              input.serverLifecyclePath,
+              canonicalJsonBytes(lifecycleEvidence),
+              { flag: "wx", mode: 0o600 },
+            );
+            serverLifecycleDescriptor = retainedDescriptor(
+              context.evidenceRoot,
+              input.serverLifecyclePath,
+            );
+            descriptors[`browser-server-lifecycle:${input.owner.id}`] =
+              serverLifecycleDescriptor;
+          } catch (error) {
+            lifecyclePublicationFailure =
+              error instanceof Error
+                ? error
+                : new Error(
+                    `browser server lifecycle evidence publication failed: ${input.owner.id}`,
+                  );
+          }
         }
-        writeFileSync(
-          input.serverLifecyclePath,
-          canonicalJsonBytes(lifecycleEvidence),
-          { flag: "wx", mode: 0o600 },
-        );
-        serverLifecycleDescriptor = retainedDescriptor(
-          context.evidenceRoot,
-          input.serverLifecyclePath,
-        );
-        descriptors[`browser-server-lifecycle:${input.owner.id}`] =
-          serverLifecycleDescriptor;
       }
-      if (serverLifecycleFailure) {
-        const ownerStarted = existsSync(input.startMarkerPath);
-        consumed ||= ownerStarted;
-        throw new StageFailure(
-          `browser server tracked-output lifecycle failed: ${input.owner.id}`,
-          "SOURCE_CONTRACT_FAILURE",
-          consumed,
-          {
-            evidenceFiles: serverLifecycleDescriptor
-              ? {
-                  [`browser-server-lifecycle:${input.owner.id}`]:
-                    serverLifecycleDescriptor,
-                }
-              : {},
-          },
-        );
-      }
-      if (child.status !== 0 || child.signal || child.error) {
-        const ownerStarted = existsSync(input.startMarkerPath);
-        consumed ||= ownerStarted;
-        if (child.error || child.signal) {
-          throw new StageFailure(
-            `required browser owner infrastructure failed: ${input.owner.id}`,
-            "INFRASTRUCTURE_TRANSIENT",
-            consumed,
-            {
-              exitCode: child.signal
-                ? null
-                : CHILD_SPAWN_ERROR_EXIT_CODE,
-              signal: child.signal ?? null,
-              spawnErrorClassification: child.error
-                ? "child-spawn-error"
-                : null,
-              evidenceFiles: serverLifecycleDescriptor
-                ? {
-                    [`browser-server-lifecycle:${input.owner.id}`]:
-                      serverLifecycleDescriptor,
-                  }
-                : {},
-            },
-          );
-        }
-        throw new StageFailure(
-          `required browser owner failed: ${input.owner.id}`,
-          ownerStarted
-            ? "PRODUCT_ASSERTION_FAILURE"
-            : "PRECONDITION_ORCHESTRATION_FAILURE",
-          consumed,
-          {
-            exitCode: normalizedChildExitCode(child.status),
-            evidenceFiles: serverLifecycleDescriptor
-              ? {
-                  [`browser-server-lifecycle:${input.owner.id}`]:
-                    serverLifecycleDescriptor,
-                }
-              : {},
-          },
-        );
-      }
+      const ownerFailure = developmentBrowserOwnerStageFailure({
+        ownerId: input.owner.id,
+        lifecycleResult,
+        ownerStarted,
+        consumed,
+        lifecyclePublicationFailure,
+        evidenceFiles: serverLifecycleDescriptor
+          ? {
+              [`browser-server-lifecycle:${input.owner.id}`]:
+                serverLifecycleDescriptor,
+            }
+          : {},
+      });
+      if (ownerFailure) throw ownerFailure;
       consumed = true;
       let requiredEvidence;
       let certificationEvidence;
@@ -4287,6 +4327,22 @@ export async function runBrowserOwnersStage(options = {}) {
       descriptors[`browser-start:${input.owner.id}`] = startDescriptor;
       browserHashes[input.owner.id] = descriptor.sha256;
     }
+    let developmentBrowserTerminalValidation;
+    try {
+      developmentBrowserTerminalValidation = resolveCertificationStageWorktree({
+        state: boundState,
+        evidenceRoot: context.evidenceRoot,
+        canonicalRoot: context.canonicalRoot,
+        role: "development-browser",
+        phase: "active",
+      }).portable;
+    } catch (error) {
+      throw new StageFailure(
+        error instanceof Error ? error.message : String(error),
+        "ARTIFACT_CONTINUITY_FAILURE",
+        true,
+      );
+    }
     const snapshot = captureArtifactSnapshot({
       repositoryRoot: finalArtifactRoot,
       evidenceRoot: context.evidenceRoot,
@@ -4327,6 +4383,19 @@ export async function runBrowserOwnersStage(options = {}) {
             developmentBrowserPreOwnerRevalidation,
           finalArtifact: finalArtifactDependencyRevalidation,
           developmentBrowser: developmentBrowserDependencyRevalidation,
+        },
+        terminalDevelopmentBrowserWorktree: {
+          validated: true,
+          candidateCommitSha:
+            developmentBrowserTerminalValidation.candidateCommitSha,
+          candidateTreeSha:
+            developmentBrowserTerminalValidation.candidateTreeSha,
+          cleanStateSha256:
+            developmentBrowserTerminalValidation.cleanStateSha256,
+          ignoredPathInventory:
+            developmentBrowserTerminalValidation.ignoredPathInventory,
+          dependencyIdentitySha256:
+            developmentBrowserTerminalValidation.dependencyIdentitySha256,
         },
       },
     };

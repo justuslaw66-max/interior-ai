@@ -2355,6 +2355,18 @@ function validateStageEnvironmentCapabilities(repositoryRoot, environment) {
       (entry) =>
         entry.defect === "phase8-retained-auth-session-projection-ordering",
     ) ||
+    !regressionMatrix.cases.some(
+      (entry) =>
+        entry.defect ===
+          "DEVELOPMENT_BROWSER_GENERATED_OUTPUT_LIFECYCLE_DEFECT" &&
+        entry.relatedDefect ===
+          "BROWSER_OWNER_TERMINAL_WORKTREE_CLEANUP_ORDER_DEFECT",
+    ) ||
+    regressionMatrix.developmentBrowserGeneratedOutputCases?.length !== 17 ||
+    !certificationRunner.includes("developmentBrowserOwnerStageFailure") ||
+    !certificationRunner.includes("lifecyclePublicationFailure") ||
+    !certificationRunner.includes("dependencyInventorySha256") ||
+    !certificationRunner.includes('"ARTIFACT_CONTINUITY_FAILURE"') ||
     regressionMatrix.authPreflightDatabaseCases?.length !== 38 ||
     !/externalVisionEnabled, false/.test(floorPlanLocalOcrTest) ||
     /process\.env|delete\s+process\.env/.test(floorPlanLocalOcrTest) ||
