@@ -24,6 +24,7 @@ import {
   PRODUCTION_EVIDENCE_JOURNAL_VERSION,
   PRODUCTION_EVIDENCE_SCHEMA,
 } from "./production-artifact-contract.mjs";
+import { projectArtifactProductServerEnvironment } from "./production-artifact-evidence.mjs";
 import {
   CERTIFICATION_FAILURE_CLASSIFICATIONS,
   CERTIFICATION_STAGE_ORDER,
@@ -668,6 +669,71 @@ function stateFixture() {
     );
   }
   coveredRegressionIds.add(39);
+  const runtimeProductManifest = {
+    candidateIdentifier: runtimeInputs.PRODUCTION_EVIDENCE_CANDIDATE_ID,
+    source: {
+      commitSha: runtimeInputs.PRODUCTION_EVIDENCE_EXPECTED_COMMIT_SHA,
+      treeSha: runtimeInputs.PRODUCTION_EVIDENCE_EXPECTED_TREE_SHA,
+    },
+    build: {
+      applicationEnvironment: "staging",
+      nextBuildId: runtimeInputs.PRODUCTION_EVIDENCE_EXPECTED_BUILD_ID,
+      authFixtureContinuity:
+        authFixtureSession.validateProjectedFixtureEnvironment(runtimeInputs, {
+          commitSha: runtimeInputs.PRODUCTION_EVIDENCE_EXPECTED_COMMIT_SHA,
+          treeSha: runtimeInputs.PRODUCTION_EVIDENCE_EXPECTED_TREE_SHA,
+        }),
+    },
+    artifact: {
+      sha256: runtimeInputs.PRODUCTION_EVIDENCE_EXPECTED_ARTIFACT_SHA256,
+    },
+  };
+  const runtimeProductEnvironment = projectArtifactProductServerEnvironment({
+    repositoryRoot,
+    baseEnvironment: {
+      ...runtimeInputs,
+      VERCEL_ENV: "preview",
+    },
+    manifest: runtimeProductManifest,
+    databaseUrl: runtimeInputs.DATABASE_URL,
+  });
+  assert.equal(
+    runtimeProductEnvironment.CERTIFICATION_ENVIRONMENT_STAGE,
+    "artifact-product-server",
+  );
+  assert.equal(
+    runtimeProductEnvironment.CERTIFICATION_RUNTIME_STAGE_ATTEMPT,
+    runtimeInputs.CERTIFICATION_RUNTIME_STAGE_ATTEMPT,
+  );
+  assert.equal(
+    runtimeProductEnvironment.PRODUCTION_ARTIFACT_COMMIT_SHA,
+    runtimeInputs.PRODUCTION_EVIDENCE_EXPECTED_COMMIT_SHA,
+  );
+  assert.equal(
+    runtimeProductEnvironment.PRODUCTION_EVIDENCE_EXPECTED_TREE_SHA,
+    runtimeInputs.PRODUCTION_EVIDENCE_EXPECTED_TREE_SHA,
+  );
+  assert.equal(
+    runtimeProductEnvironment.PRODUCTION_CERTIFICATION_ID,
+    runtimeInputs.PRODUCTION_CERTIFICATION_ID,
+  );
+  assert.equal(
+    runtimeProductEnvironment.PRODUCTION_EVIDENCE_CANDIDATE_ID,
+    runtimeInputs.PRODUCTION_EVIDENCE_CANDIDATE_ID,
+  );
+  assert.equal(
+    runtimeProductEnvironment.PRODUCTION_EVIDENCE_EXPECTED_COMMIT_SHA,
+    undefined,
+  );
+  const appEventBindingOwner = readFileSync(
+    "lib/certification-app-event-binding.ts",
+    "utf8",
+  );
+  assert.match(
+    appEventBindingOwner,
+    /stage === "artifact-product-server"[\s\S]*?"PRODUCTION_ARTIFACT_COMMIT_SHA"/,
+  );
+  coveredRegressionIds.add(44);
   const tamperedMetadata = structuredClone(runtime.metadata);
   tamperedMetadata.profileSha256 = "0".repeat(64);
   assert.equal(
@@ -2083,12 +2149,12 @@ function stateFixture() {
   const regressions = JSON.parse(
     readFileSync("scripts/production-certification-regressions.json", "utf8"),
   );
-  assert.equal(regressions.cases.length, 43);
+  assert.equal(regressions.cases.length, 44);
   assert.deepEqual(
     regressions.cases.map((entry) => entry.id),
-    Array.from({ length: 43 }, (_, index) => index + 1),
+    Array.from({ length: 44 }, (_, index) => index + 1),
   );
-  assert.equal(new Set(regressions.cases.map((entry) => entry.defect)).size, 43);
+  assert.equal(new Set(regressions.cases.map((entry) => entry.defect)).size, 44);
   assert.equal(regressions.authPreflightDatabaseCases.length, 38);
   assert.equal(new Set(regressions.authPreflightDatabaseCases).size, 38);
   assert.equal(regressions.developmentBrowserGeneratedOutputCases.length, 17);
@@ -4320,7 +4386,7 @@ test("Floor Plan config reaches worker test execution", async ({}, testInfo) => 
 
 assert.deepEqual(
   [...coveredRegressionIds].sort((left, right) => left - right),
-  Array.from({ length: 43 }, (_, index) => index + 1),
+  Array.from({ length: 44 }, (_, index) => index + 1),
   "every documented regression must be exercised by an executable assertion",
 );
 

@@ -1684,6 +1684,8 @@ export function projectArtifactProductServerEnvironment({
     profileId: "artifact-product-server",
     stageInputs: {
       CERTIFICATION_ENVIRONMENT_STAGE: "artifact-product-server",
+      CERTIFICATION_RUNTIME_STAGE_ATTEMPT:
+        baseEnvironment.CERTIFICATION_RUNTIME_STAGE_ATTEMPT,
       DATABASE_URL: databaseUrl,
       PRODUCTION_ARTIFACT_EVIDENCE: "1",
       PRODUCTION_ARTIFACT_BUILD_ID: manifest.build.nextBuildId,

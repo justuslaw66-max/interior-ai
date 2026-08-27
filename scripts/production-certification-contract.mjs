@@ -254,6 +254,7 @@ export const CERTIFICATION_HARNESS_SOURCE_PATHS = Object.freeze([
   "scripts/test-production-certification-stage-environment.mjs",
   "scripts/test-production-certification-source-generated-outputs.mjs",
   "scripts/test-production-certification-resources.mjs",
+  "scripts/test-production-certification-app-event-writer.ts",
   "scripts/test-production-certification-database-lifecycle.mjs",
   "scripts/test-production-certification-auth-preflight-database.mjs",
   "scripts/test-production-certification-source-database-projection.mjs",

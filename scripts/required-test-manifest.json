@@ -6,8 +6,8 @@
       "root": "scripts",
       "filePattern": "^test-.*\\.(?:js|mjs|ts)$",
       "classification": "risk-triggered",
-      "expectedFileCount": 275,
-      "expectedPathSha256": "dcdb3c8416fd991993024df002d66f970c87e5addf7f3f43c505aa22a7d47dc0"
+      "expectedFileCount": 276,
+      "expectedPathSha256": "3a41f584cb2964ff07330e0da17960863ff62cb77fabca590807e4cc90f06ec6"
     },
     {
       "id": "browser-specs",
@@ -115,7 +115,7 @@
       "blocking": true,
       "command": "npm run test:production-artifact-evidence",
       "packageScript": "test:production-artifact-evidence",
-      "packageClosure": { "expectedScriptCount": 1, "expectedSha256": "6e916f61423606a6327c1d3829e063e27f405e3e3ab314a856b26dc8a56559a8" },
+      "packageClosure": { "expectedScriptCount": 1, "expectedSha256": "a01f95f06f0b83ec90d69b322bc42043ffe2a9de58f14e1c84e0bede23c31393" },
       "runner": "node",
       "requiredSources": [
         "playwright.config.ts",
@@ -163,6 +163,7 @@
         "scripts/test-production-certification.mjs",
         "scripts/test-production-certification-stage-result.mjs",
         "scripts/test-production-certification-dependency-lifecycle.mjs",
+        "scripts/test-production-certification-app-event-writer.ts",
         "scripts/test-production-certification-database-lifecycle.mjs",
         "scripts/test-production-certification-auth-preflight-database.mjs",
         "scripts/test-production-certification-state-worktrees.mjs",

@@ -387,6 +387,63 @@ function testCertificationAppEventBinding() {
     { source: "runtime", certificationRunBinding: runtime },
   );
 
+  const runtimeProductServerEnvironment = {
+    ...runtimeEnvironment,
+    CERTIFICATION_ENVIRONMENT_STAGE: "artifact-product-server",
+    PRODUCTION_ARTIFACT_COMMIT_SHA:
+      runtimeEnvironment.PRODUCTION_EVIDENCE_EXPECTED_COMMIT_SHA,
+  };
+  delete (
+    runtimeProductServerEnvironment as Partial<typeof runtimeProductServerEnvironment>
+  ).PRODUCTION_EVIDENCE_EXPECTED_COMMIT_SHA;
+  const runtimeProductServer = certificationAppEventBinding(
+    "browser-public-ingestion",
+    runtimeProductServerEnvironment,
+  );
+  assert.deepEqual(runtimeProductServer, runtime);
+
+  const retainedRuntimeFamilies = [
+    ["design_started", 1],
+    ["first_item_added", 5],
+    ["first_run_activation_step_completed", 3],
+    ["landing_viewed", 5],
+    ["third_item_added", 5],
+  ] as const;
+  const representativeRuntimeRows = retainedRuntimeFamilies.flatMap(
+    ([eventType, count]) =>
+      Array.from({ length: count }, () => ({
+        eventType,
+        meta: bindCertificationAppEventMeta(
+          { source: "runtime-smoke" },
+          "browser-public-ingestion",
+          runtimeProductServerEnvironment,
+        ),
+      })),
+  );
+  assert.equal(representativeRuntimeRows.length, 19);
+  assert.deepEqual(
+    representativeRuntimeRows.map((row) => row.meta?.certificationRunBinding),
+    Array.from({ length: 19 }, () => runtime),
+  );
+  assert.deepEqual(
+    bindCertificationAppEventMeta(
+      {
+        certificationRunBinding: { certificationId: "client-spoofed" },
+      },
+      "browser-public-ingestion",
+      runtimeProductServerEnvironment,
+    ),
+    { certificationRunBinding: runtime },
+  );
+  assert.throws(
+    () =>
+      certificationAppEventBinding("browser-public-ingestion", {
+        ...runtimeProductServerEnvironment,
+        CERTIFICATION_RUNTIME_STAGE_ATTEMPT: undefined,
+      }),
+    /requires valid CERTIFICATION_RUNTIME_STAGE_ATTEMPT/,
+  );
+
   const browserEnvironment = {
     CERTIFICATION_ENVIRONMENT_STAGE: "browser-owners",
     REQUIRED_TEST_STAGE_ATTEMPT: "3",
@@ -760,6 +817,7 @@ function testSourceGuards() {
   assert.match(appEvents, /PUBLIC_BROWSER_INGESTION/);
   assert.match(appEvents, /recordServerAnalyticsEvent/);
   assert.match(appEvents, /recordInternalDiagnosticEvent/);
+  assert.match(appEvents, /bindCertificationAppEventMeta/);
   assert.doesNotMatch(appEvents, /TRUSTED_SERVER_LIFECYCLE/);
 
   const appEventRoute = read("app/api/track/app-event/route.ts");
@@ -777,6 +835,7 @@ function testSourceGuards() {
   const trustedCore = read("lib/trusted-app-event-core.ts");
   assert.match(trustedCore, /buildTrustedLifecycleProvenance/);
   assert.match(trustedCore, /persistTrustedLifecycleEventWith/);
+  assert.match(trustedCore, /bindCertificationAppEventMeta/);
 
   const productionSources = ["app", "components", "features", "hooks", "lib"]
     .flatMap((directory) => walk(path.join(root, directory)))
@@ -813,6 +872,63 @@ function testSourceGuards() {
     })
     .map((file) => path.relative(root, file));
   assert.deepEqual(directTrustedPrismaWriters, []);
+  const directAppEventPrismaWriters = productionSources
+    .filter((file) =>
+      /appEvent\s*\.\s*(?:create|createMany|upsert|update|updateMany)\s*\(/.test(
+        fs.readFileSync(file, "utf8"),
+      ),
+    )
+    .map((file) => path.relative(root, file))
+    .sort();
+  assert.deepEqual(directAppEventPrismaWriters, [
+    "lib/app-events.ts",
+    "lib/trusted-app-events.ts",
+  ]);
+  assert.equal(
+    (appEvents.match(/prisma\.appEvent\.create\s*\(/g) ?? []).length,
+    1,
+    "The browser/diagnostic facade must retain exactly one central Prisma create.",
+  );
+  assert.match(
+    appEvents,
+    /const boundMeta = bindCertificationAppEventMeta\([\s\S]*?const metaValue = boundMeta[\s\S]*?prisma\.appEvent\.create\(\{\s*data: \{[\s\S]*?meta: metaValue,/,
+    "The sole browser/diagnostic Prisma create must consume the bound meta value.",
+  );
+  assert.equal(
+    (trustedAppEvents.match(/\.appEvent\.create\s*\(/g) ?? []).length,
+    2,
+    "The trusted facade must retain exactly its global and transaction creates.",
+  );
+  assert.equal(
+    (trustedAppEvents.match(/\.appEvent\.createMany\s*\(/g) ?? []).length,
+    2,
+    "The trusted facade must retain exactly its global and transaction claims.",
+  );
+  for (const requiredTrustedCall of [
+    /persistTrustedLifecycleEventWith\(\s*\(data\) => prisma\.appEvent\.create\(\{ data \}\)/,
+    /persistTrustedLifecycleEventWith\(\s*\(data\) => tx\.appEvent\.create\(\{ data \}\)/,
+    /claimTrustedLifecycleEventWith\(\s*\(data\) => tx\.appEvent\.createMany\(\{ data: \[data\], skipDuplicates: true \}\)/,
+    /claimTrustedLifecycleEventWith\(\s*\(data\) => prisma\.appEvent\.createMany\(\{ data: \[data\], skipDuplicates: true \}\)/,
+  ]) {
+    assert.match(
+      trustedAppEvents,
+      requiredTrustedCall,
+      "Every direct trusted Prisma writer must remain behind the binding core.",
+    );
+  }
+  for (const [relativePath, eventType] of [
+    ["lib/useDesignPagePaywallTelemetryLifecycle.ts", "landing_viewed"],
+    ["lib/useDesignPagePaywallTelemetryController.ts", "design_started"],
+    ["lib/useDesignPageOnboarding.ts", "first_item_added"],
+    ["lib/useDesignPageOnboarding.ts", "third_item_added"],
+    ["lib/useDesignPageOnboarding.ts", "first_run_activation_step_completed"],
+  ] as const) {
+    assert.match(
+      read(relativePath),
+      new RegExp(`logFunnelEvent\\(["']${eventType}["']`),
+      `${relativePath} must retain the central browser AppEvent writer for ${eventType}`,
+    );
+  }
 
   const stripeWebhook = read("app/api/stripe/webhook/route.ts");
   assert.match(stripeWebhook, /recordTrustedLifecycleEventInTransaction/);

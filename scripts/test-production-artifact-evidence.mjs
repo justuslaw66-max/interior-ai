@@ -5159,6 +5159,7 @@ async function expectRejected(context, expectedText) {
     NODE_ENV: "production",
     VERCEL_ENV: "preview",
     CERTIFICATION_ENVIRONMENT_STAGE: "artifact-product-server",
+    CERTIFICATION_RUNTIME_STAGE_ATTEMPT: "4",
     PRODUCTION_ARTIFACT_EVIDENCE: "1",
     PRODUCTION_ARTIFACT_COMMIT_SHA: manifest.source.commitSha,
     PRODUCTION_CERTIFICATION_ID: "certification-fixture-001",
@@ -5188,6 +5189,31 @@ async function expectRejected(context, expectedText) {
   assert.equal(
     projectedProductEnvironment.PRODUCTION_EVIDENCE_CANDIDATE_ID,
     manifest.candidateIdentifier,
+  );
+  assert.equal(
+    projectedProductEnvironment.CERTIFICATION_RUNTIME_STAGE_ATTEMPT,
+    "4",
+  );
+  assert.equal(
+    projectedProductEnvironment.PRODUCTION_ARTIFACT_COMMIT_SHA,
+    manifest.source.commitSha,
+  );
+  assert.equal(
+    projectedProductEnvironment.PRODUCTION_EVIDENCE_EXPECTED_TREE_SHA,
+    manifest.source.treeSha,
+  );
+  const missingRuntimeBindingEnvironment = { ...productEnvironment };
+  delete missingRuntimeBindingEnvironment.CERTIFICATION_RUNTIME_STAGE_ATTEMPT;
+  assert.throws(
+    () =>
+      projectArtifactProductServerEnvironment({
+        repositoryRoot: process.cwd(),
+        baseEnvironment: missingRuntimeBindingEnvironment,
+        manifest,
+        databaseUrl:
+          "postgresql://fixture:fixture@127.0.0.1:5432/evidence_fixture",
+      }),
+    /CERTIFICATION_RUNTIME_STAGE_ATTEMPT/,
   );
 
   for (const [name, mutate, expected] of [

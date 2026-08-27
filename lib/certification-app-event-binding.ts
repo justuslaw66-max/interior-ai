@@ -77,7 +77,8 @@ function runIdentitySha256(
 }
 
 function runtimeStageBinding(
-  environment: CertificationAppEventEnvironment
+  environment: CertificationAppEventEnvironment,
+  commitVariable = "PRODUCTION_EVIDENCE_EXPECTED_COMMIT_SHA"
 ): Pick<
   CertificationAppEventBinding,
   | "candidateId"
@@ -95,7 +96,7 @@ function runtimeStageBinding(
     ),
     commitSha: required(
       environment,
-      "PRODUCTION_EVIDENCE_EXPECTED_COMMIT_SHA",
+      commitVariable,
       SOURCE_SHA
     ),
     treeSha: required(
@@ -154,7 +155,11 @@ export function certificationAppEventBinding(
   environment: CertificationAppEventEnvironment = process.env
 ): CertificationAppEventBinding | null {
   const stage = environment.CERTIFICATION_ENVIRONMENT_STAGE?.trim();
-  if (stage !== "runtime-smoke" && stage !== "browser-owners") return null;
+  if (
+    stage !== "runtime-smoke" &&
+    stage !== "artifact-product-server" &&
+    stage !== "browser-owners"
+  ) return null;
 
   const base = {
     schema: BINDING_SCHEMA,
@@ -166,9 +171,14 @@ export function certificationAppEventBinding(
     writerClassification,
   } as const;
   const stageBinding =
-    stage === "runtime-smoke"
-      ? runtimeStageBinding(environment)
-      : browserStageBinding(environment);
+    stage === "browser-owners"
+      ? browserStageBinding(environment)
+      : runtimeStageBinding(
+          environment,
+          stage === "artifact-product-server"
+            ? "PRODUCTION_ARTIFACT_COMMIT_SHA"
+            : "PRODUCTION_EVIDENCE_EXPECTED_COMMIT_SHA"
+        );
   const binding = { ...base, ...stageBinding };
   return { ...binding, runIdentitySha256: runIdentitySha256(binding) };
 }
