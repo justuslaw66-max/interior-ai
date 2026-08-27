@@ -45,7 +45,9 @@ import {
   createCertificationState,
   readCertificationState,
   reconcileCertificationState,
+  sealCertificationState,
   startCertificationStage,
+  validateCertificationState,
   writeCertificationState,
 } from "./production-certification-state.mjs";
 import {
@@ -489,10 +491,16 @@ async function worktreeIsolationMatrix() {
   assert.equal(existsSync(path.join(owner, "restoration")), false);
   const cleanupReady = structuredClone(state);
   cleanupReady.stages.continuity.status = "passed";
+  cleanupReady.stages["integration-ready"].status = "passed";
   const cleanedWorktrees = cleanupCertificationStageWorktrees({
     state: cleanupReady,
     evidenceRoot,
     canonicalRoot,
+    preStateSha256: certificationStateSha256(
+      sealCertificationState(cleanupReady),
+    ),
+    completedAt: cleanupReady.updatedAt,
+    invocationNonce: "state-worktree-cleanup-fixture-0001",
   });
   assert.equal(
     CERTIFICATION_WORKTREE_ROLES.every(
@@ -596,6 +604,254 @@ async function transactionalValidationMatrix() {
   const baselineBytes = readFileSync(statePath);
   const baselineSha256 = sha256Bytes(baselineBytes);
   const baselineStages = canonicalJsonBytes(state.stages);
+  const evidenceRoot = path.join(simulation.simulationRoot, "evidence");
+  const validateSealedState = (candidateState) =>
+    validateCertificationState({
+      state: sealCertificationState(candidateState),
+      evidenceRoot,
+      repositoryRoot: canonicalRoot,
+      verifyCurrentSource: false,
+    });
+  assert.equal(
+    simulation.continuityResultConsumer.postCleanupValidationCwdIndependent,
+    true,
+  );
+  assert.equal(
+    simulation.continuityResultConsumer.integrationContinuityEvidenceUnchanged,
+    true,
+  );
+  assert.equal(
+    simulation.continuityResultConsumer.foreignCleanupInvocationNonceRejected,
+    true,
+  );
+  assert.equal(
+    simulation.continuityResultConsumer.immutableRawRuntimePhysicalPathsAccepted,
+    true,
+  );
+  assert.equal(
+    simulation.continuityResultConsumer.postCleanupTerminalStateSha256,
+    baselineSha256,
+  );
+
+  const missingCleanupReceipt = structuredClone(state);
+  delete missingCleanupReceipt.worktrees.cleanup;
+  delete missingCleanupReceipt.evidenceFiles["worktree-cleanup"];
+  assert.match(
+    validateSealedState(missingCleanupReceipt).issues.join("\n"),
+    /unreceipted|cleanup receipt|cleanup transition/,
+  );
+
+  const contradictoryLiveState = structuredClone(state);
+  for (const binding of Object.values(contradictoryLiveState.worktrees.roles)) {
+    binding.lifecycleStatus = "active";
+    binding.cleanupStatus = "pending";
+    if (Object.hasOwn(binding, "dependencyStatus")) {
+      binding.dependencyStatus = "installed";
+    }
+  }
+  assert.match(
+    validateSealedState(contradictoryLiveState).issues.join("\n"),
+    /mixed, incomplete, or unreceipted worktree lifecycle/,
+  );
+
+  const cleanupReceiptPath = path.join(
+    evidenceRoot,
+    state.worktrees.cleanup.path,
+  );
+  const cleanupReceiptBytes = readFileSync(cleanupReceiptPath);
+  const forgedCleanupReceipt = JSON.parse(cleanupReceiptBytes.toString("utf8"));
+  forgedCleanupReceipt.complete = false;
+  writeFileSync(cleanupReceiptPath, canonicalJsonBytes(forgedCleanupReceipt));
+  assert.match(
+    validateSealedState(state).issues.join("\n"),
+    /cleanup receipt hash mismatch|evidence worktree-cleanup hash mismatch/,
+  );
+  writeFileSync(cleanupReceiptPath, cleanupReceiptBytes);
+
+  const foreignNonceReceipt = JSON.parse(cleanupReceiptBytes.toString("utf8"));
+  foreignNonceReceipt.invocationNonce = "foreign-cleanup-invocation-nonce-0001";
+  foreignNonceReceipt.invocationNonceSha256 = sha256Bytes(
+    foreignNonceReceipt.invocationNonce,
+  );
+  const foreignNonceReceiptBytes = canonicalJsonBytes(foreignNonceReceipt);
+  writeFileSync(cleanupReceiptPath, foreignNonceReceiptBytes);
+  const foreignNonceState = structuredClone(state);
+  foreignNonceState.worktrees.cleanup.sha256 = sha256Bytes(
+    foreignNonceReceiptBytes,
+  );
+  foreignNonceState.evidenceFiles["worktree-cleanup"].sha256 =
+    foreignNonceState.worktrees.cleanup.sha256;
+  const foreignNonceStatePath = path.join(
+    evidenceRoot,
+    "simulation/post-cleanup-foreign-nonce-state.json",
+  );
+  writeCertificationState(foreignNonceStatePath, foreignNonceState);
+  const foreignNonceChild = invokeCertification(canonicalRoot, "state:validate", {
+    ...environment,
+    PRODUCTION_CERTIFICATION_STATE: foreignNonceStatePath,
+    CERTIFICATION_EXPECTED_STATE_SHA256: baselineSha256,
+  });
+  assert.notEqual(foreignNonceChild.status, 0);
+  assert.match(
+    `${foreignNonceChild.stdout}\n${foreignNonceChild.stderr}`,
+    /state SHA-256|state sha|expected state/i,
+  );
+  rmSync(foreignNonceStatePath, { force: true });
+  writeFileSync(cleanupReceiptPath, cleanupReceiptBytes);
+
+  const finalSidecar = JSON.parse(
+    readFileSync(
+      path.join(
+        evidenceRoot,
+        state.worktrees.roles["final-artifact"].privateSidecar.path,
+      ),
+      "utf8",
+    ),
+  );
+  const finalSidecarPath = path.join(
+    evidenceRoot,
+    state.worktrees.roles["final-artifact"].privateSidecar.path,
+  );
+  const finalSidecarBytes = readFileSync(finalSidecarPath);
+  rmSync(finalSidecarPath);
+  assert.match(
+    validateSealedState(state).issues.join("\n"),
+    /private sidecar|unavailable|ENOENT/,
+  );
+  writeFileSync(finalSidecarPath, finalSidecarBytes);
+  writeFileSync(finalSidecarPath, Buffer.concat([finalSidecarBytes, Buffer.from("\n")]));
+  assert.match(
+    validateSealedState(state).issues.join("\n"),
+    /private sidecar hash mismatch|evidence worktree-cleanup hash mismatch/,
+  );
+  writeFileSync(finalSidecarPath, finalSidecarBytes);
+  mkdirSync(finalSidecar.realpath, { recursive: true });
+  assert.match(
+    validateSealedState(state).issues.join("\n"),
+    /cleaned worktree still exists/,
+  );
+  rmSync(finalSidecar.realpath, { recursive: true, force: true });
+  git(canonicalRoot, [
+    "worktree",
+    "add",
+    "--detach",
+    finalSidecar.realpath,
+    state.candidate.commitSha,
+  ]);
+  rmSync(finalSidecar.realpath, { recursive: true, force: true });
+  assert.match(
+    validateSealedState(state).issues.join("\n"),
+    /remains registered/,
+  );
+  git(canonicalRoot, ["worktree", "remove", "--force", finalSidecar.realpath]);
+
+  for (const mutate of [
+    (candidateState) => {
+      candidateState.candidate.id = "foreign-post-cleanup-candidate";
+    },
+    (candidateState) => {
+      candidateState.bindings.artifactSha256 = "f".repeat(64);
+    },
+    (candidateState) => {
+      candidateState.stages["runtime-smoke"].attempts.at(-1).id =
+        "runtime-smoke:999";
+    },
+  ]) {
+    const foreignIdentity = structuredClone(state);
+    mutate(foreignIdentity);
+    assert.equal(validateSealedState(foreignIdentity).valid, false);
+  }
+
+  const rawReportPath = path.join(
+    evidenceRoot,
+    state.evidenceFiles["runtime-report"].path,
+  );
+  const runtimeSummaryPath = path.join(
+    evidenceRoot,
+    state.evidenceFiles["runtime-smoke"].path,
+  );
+  const rawReportBytes = readFileSync(rawReportPath);
+  const runtimeSummaryBytes = readFileSync(runtimeSummaryPath);
+  writeFileSync(rawReportPath, Buffer.concat([rawReportBytes, Buffer.from("\n")]));
+  assert.match(
+    validateSealedState(state).issues.join("\n"),
+    /runtime-report hash mismatch/,
+  );
+  writeFileSync(rawReportPath, rawReportBytes);
+
+  const invokeStandalone = (candidateStatePath) =>
+    spawnSync(
+      process.execPath,
+      ["scripts/production-artifact-evidence.mjs", "verify-standalone"],
+      {
+        cwd: path.join(evidenceRoot, "archive/extracted"),
+        env: {
+          ...process.env,
+          CERTIFICATION_QUALIFICATION_MODE: "1",
+          PRODUCTION_CERTIFICATION_STATE: candidateStatePath,
+          CERTIFICATION_EVIDENCE_ROOT: evidenceRoot,
+          CERTIFICATION_ALLOW_SIMULATION: "1",
+          PRODUCTION_EVIDENCE_EXPECTED_COMMIT_SHA: state.candidate.commitSha,
+        },
+        encoding: "utf8",
+      },
+    );
+  const physicalRawReport = JSON.parse(rawReportBytes.toString("utf8"));
+  physicalRawReport.immutableProducerPath = finalSidecar.realpath;
+  writeFileSync(rawReportPath, canonicalJsonBytes(physicalRawReport));
+  const physicalRawState = structuredClone(state);
+  physicalRawState.evidenceFiles["runtime-report"].sha256 = sha256Bytes(
+    readFileSync(rawReportPath),
+  );
+  const physicalRawRuntime = JSON.parse(runtimeSummaryBytes.toString("utf8"));
+  physicalRawRuntime.reportSha256 =
+    physicalRawState.evidenceFiles["runtime-report"].sha256;
+  writeFileSync(runtimeSummaryPath, canonicalJsonBytes(physicalRawRuntime));
+  physicalRawState.evidenceFiles["runtime-smoke"].sha256 = sha256Bytes(
+    readFileSync(runtimeSummaryPath),
+  );
+  physicalRawState.bindings.runtimeSmokeEvidenceSha256 =
+    physicalRawState.evidenceFiles["runtime-smoke"].sha256;
+  const physicalRawStatePath = path.join(
+    evidenceRoot,
+    "simulation/post-cleanup-physical-raw-state.json",
+  );
+  writeCertificationState(physicalRawStatePath, physicalRawState);
+  const physicalRawChild = invokeStandalone(physicalRawStatePath);
+  assert.equal(
+    physicalRawChild.status,
+    0,
+    `immutable raw physical paths must not be reinterpreted post-cleanup:\n${physicalRawChild.stdout}\n${physicalRawChild.stderr}`,
+  );
+
+  writeFileSync(rawReportPath, rawReportBytes);
+  const machineLocalRuntime = JSON.parse(runtimeSummaryBytes.toString("utf8"));
+  machineLocalRuntime.portableReport.machineLocalPath = finalSidecar.realpath;
+  machineLocalRuntime.portableReportSha256 = sha256Bytes(
+    canonicalJsonBytes(machineLocalRuntime.portableReport),
+  );
+  writeFileSync(runtimeSummaryPath, canonicalJsonBytes(machineLocalRuntime));
+  const machineLocalState = structuredClone(state);
+  machineLocalState.evidenceFiles["runtime-smoke"].sha256 = sha256Bytes(
+    readFileSync(runtimeSummaryPath),
+  );
+  machineLocalState.bindings.runtimeSmokeEvidenceSha256 =
+    machineLocalState.evidenceFiles["runtime-smoke"].sha256;
+  const machineLocalStatePath = path.join(
+    evidenceRoot,
+    "simulation/post-cleanup-machine-local-portable-state.json",
+  );
+  writeCertificationState(machineLocalStatePath, machineLocalState);
+  const machineLocalChild = invokeStandalone(machineLocalStatePath);
+  assert.notEqual(machineLocalChild.status, 0);
+  assert.match(
+    `${machineLocalChild.stdout}\n${machineLocalChild.stderr}`,
+    /portable runtime report contains a machine-local path/,
+  );
+  writeFileSync(runtimeSummaryPath, runtimeSummaryBytes);
+  rmSync(physicalRawStatePath, { force: true });
+  rmSync(machineLocalStatePath, { force: true });
+  assert.equal(readFileSync(statePath).equals(baselineBytes), true);
 
   const cases = [
     {
@@ -804,6 +1060,10 @@ const worktreeSource = readFileSync(
   path.join(repositoryRoot, "scripts/production-certification-worktrees.mjs"),
   "utf8",
 );
+const evidenceSource = readFileSync(
+  path.join(repositoryRoot, "scripts/production-certification-evidence.mjs"),
+  "utf8",
+);
 const cliSource = readFileSync(
   path.join(repositoryRoot, "scripts/production-certification.mjs"),
   "utf8",
@@ -835,6 +1095,41 @@ assert.match(
 );
 assert.doesNotMatch(realSource, /git\s+clean|-x\b/);
 assert.doesNotMatch(worktreeSource, /git\s+clean|clean\s+-x|quarantine|restoration/);
+const removedRootAbsenceOwner = worktreeSource.slice(
+  worktreeSource.indexOf(
+    'binding.lifecycleStatus === "cleaned" &&',
+  ),
+  worktreeSource.indexOf(
+    'if (\n        state.worktrees.schema === PRODUCTION_CERTIFICATION_WORKTREE_SCHEMA',
+    worktreeSource.indexOf('binding.lifecycleStatus === "cleaned" &&'),
+  ),
+);
+assert.match(
+  removedRootAbsenceOwner,
+  /formerWorktreePathPresent\(sidecar\.realpath\)/,
+);
+assert.match(removedRootAbsenceOwner, /registrationPresent\(canonicalRoot, sidecar\.realpath\)/);
+assert.doesNotMatch(
+  removedRootAbsenceOwner,
+  /existsSync|lstatSync|realpathSync|readFileSync/,
+);
+const removedRootNamespaceOwner = worktreeSource.slice(
+  worktreeSource.indexOf("function formerWorktreePathPresent"),
+  worktreeSource.indexOf("function portableCreatedResourceInventory"),
+);
+assert.match(removedRootNamespaceOwner, /readdirSync\(path\.dirname\(absoluteTarget\)\)/);
+assert.doesNotMatch(
+  removedRootNamespaceOwner,
+  /existsSync|lstatSync|realpathSync|statSync|readFileSync/,
+);
+assert.match(
+  evidenceSource,
+  /worktreeValidationMode === "sealed-evidence"[\s\S]*?boundRawEvidence\(state, evidenceRoot, "runtime-report"\)/,
+);
+assert.match(
+  evidenceSource,
+  /if \(worktreeValidationMode !== "sealed-evidence"\) \{[\s\S]*?canonicalizeBoundRuntimeSmokeReport/,
+);
 assert.match(
   cliSource,
   /if \(status\.stdout !== ""\)[\s\S]*?NOT_QUALIFIED_SOURCE_CONTRACT_DEFECT/,

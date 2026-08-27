@@ -44,7 +44,28 @@
     { "id": 41, "defect": "pro-visual-browser-owner-development-server-and-auth-projection", "coverage": "Pro Visual production-server selection in final-artifact; exact Chromium/WebKit config discovery; canonical browser-stage auth-session projection; missing and foreign fixture rejection; tracked-worktree cleanliness guards; doctor, simulation, and qualification" },
     { "id": 42, "defect": "DEVELOPMENT_BROWSER_GENERATED_OUTPUT_LIFECYCLE_DEFECT", "relatedDefect": "BROWSER_OWNER_TERMINAL_WORKTREE_CLEANUP_ORDER_DEFECT", "coverage": "candidate/dependency/attempt-bound Cart and Retailer .next/dev, next-env.d.ts, and exact Retailer descendant ownership; evidence sealing after process exit; no-follow exact cleanup before terminal worktree validation; success and failure finalization; original browser-result preservation even without publishable lifecycle evidence; altered, empty-descendant, tracked, ordinary-untracked, ignored, symlink, traversal, outside-root, foreign-attempt, cleanup-failure, identity-tamper, dependency-root, and cross-worktree rejection; aggregate consumption, doctor, simulation, and qualification" },
     { "id": 43, "defect": "phase8-retained-auth-session-projection-ordering", "coverage": "actual shared Phase 8, runtime-smoke, and browser-owner stage projectors; parent-only retained session with child-only provider projection; ambient override, missing, stale, foreign candidate/session/nonce, altered digest/transport, and production-classification rejection; non-app-server isolation; raw-value portability guards; exactly-once/no-regeneration continuity; doctor, simulation, and qualification" },
-    { "id": 44, "defect": "runtime-smoke-app-event-product-server-binding", "coverage": "committed artifact-product-server stage projection of the runtime attempt; server-derived certification, candidate, commit, tree, stage, attempt, browser owner, and writer identity; actual central browser and trusted writers through Prisma and scoped real PostgreSQL; exact five-family/19-row runtime attribution; browser compatibility; spoof overwrite; missing-binding fail-closed; ordinary-production nonactivation; final exact-ID cleanup/drop/absence; doctor, deterministic simulation, and qualification" }
+    { "id": 44, "defect": "runtime-smoke-app-event-product-server-binding", "coverage": "committed artifact-product-server stage projection of the runtime attempt; server-derived certification, candidate, commit, tree, stage, attempt, browser owner, and writer identity; actual central browser and trusted writers through Prisma and scoped real PostgreSQL; exact five-family/19-row runtime attribution; browser compatibility; spoof overwrite; missing-binding fail-closed; ordinary-production nonactivation; final exact-ID cleanup/drop/absence; doctor, deterministic simulation, and qualification" },
+    { "id": 45, "defect": "POST_CLEANUP_SEALED_EVIDENCE_VALIDATION_MODE_DEFECT", "coverage": "exclusive state-bound-live-worktrees versus receipted sealed-evidence modes; exact cleanup predecessor reconstruction; canonical and unrelated-cwd terminal validation; unchanged terminal state SHA; doctor, deterministic simulation, and qualification" },
+    { "id": 46, "defect": "POST_CLEANUP_DELETED_LIVE_ROOT_REOPEN_DEFECT", "coverage": "hash-bound private sidecars; terminal lexical path and Git-registration absence; no lstat, realpath, or reopen of deleted producer roots; incomplete, forged, surviving, replaced, symlinked, and foreign-root rejection" },
+    { "id": 47, "defect": "POST_CLEANUP_RUNTIME_REPORT_SOURCE_SELECTION_DEFECT", "coverage": "runtime-stage sealed portable projection and independent raw SHA; active-mode raw-to-portable equality; post-cleanup raw hash-only consumption; immutable physical raw-path acceptance; portable machine-local-path and identity-drift rejection" }
+  ],
+  "postCleanupSealedEvidenceCases": [
+    "valid-pre-cleanup-live-root-validation",
+    "missing-replaced-symlinked-live-root-rejected",
+    "integration-ready-committed-cleanup-terminal-pass",
+    "canonical-and-unrelated-cwd-validation",
+    "deleted-roots-never-lstat-realpath-reopened",
+    "raw-playwright-report-independent-hash-binding",
+    "portable-projection-machine-local-path-owner",
+    "immutable-raw-physical-paths-accepted",
+    "altered-raw-report-hash-rejected",
+    "portable-machine-local-path-rejected",
+    "missing-or-forged-cleanup-receipt-rejected",
+    "surviving-path-or-registration-rejected",
+    "foreign-candidate-artifact-attempt-nonce-rejected",
+    "integration-ready-and-continuity-evidence-unchanged",
+    "genuine-continuity-mismatch-rejected",
+    "exact-terminal-state-sha-returned"
   ],
   "nestedAuthFixtureIsolationCases": [
     "outer-provider-variable-remains",

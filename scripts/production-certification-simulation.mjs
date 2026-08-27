@@ -95,6 +95,7 @@ import {
   runBrowserOwnersStage,
   runBuildStage,
   runSourceValidationStage,
+  validateCertificationReadOnly,
 } from "./production-certification-real.mjs";
 import {
   simulatedBrowserServerTrackedOutputLifecycle,
@@ -113,6 +114,7 @@ import {
 import {
   authFixtureRegressionCapabilityNames,
 } from "./ci-auth-fixture-regression-environment.mjs";
+import { authorizeRuntimeSmokeReportPath } from "./playwright-report-path.mjs";
 
 const SIMULATION_ID = "production-certification-v1-simulation";
 const FIXED_NONCE = "123e4567-e89b-42d3-a456-426614174001";
@@ -706,6 +708,21 @@ function simulatedRuntimePlaywrightReport(state) {
       grep: {},
       grepInvert: null,
       shard: null,
+      reporter: [
+        ["list", null],
+        [
+          "json",
+          { outputFile: "runtime-smoke/playwright-report.json" },
+        ],
+        [
+          "<repository-root>/scripts/certification-playwright-start-reporter.mjs",
+          {
+            markerPath: "runtime-smoke/product-test-start.json",
+            boundary: "test-begin",
+            gateId: "ci.production-runtime-smoke",
+          },
+        ],
+      ],
       projects: [
         {
           name: "chromium",
@@ -774,6 +791,19 @@ function simulatedRuntimePlaywrightReport(state) {
       flaky: 0,
     },
   };
+}
+
+function simulatedRawRuntimePlaywrightReport(
+  state,
+  { repositoryRoot, reportPath, markerPath },
+) {
+  const portable = simulatedRuntimePlaywrightReport(state);
+  const raw = JSON.parse(
+    JSON.stringify(portable).replaceAll("<repository-root>", repositoryRoot),
+  );
+  raw.config.reporter[1][1].outputFile = reportPath;
+  raw.config.reporter[2][1].markerPath = markerPath;
+  return raw;
 }
 
 function descriptor(evidenceRoot, filePath) {
@@ -962,6 +992,7 @@ function phase8Evidence(state, fixtureRoot, rawEvidenceSha256) {
 function runtimeEvidence(
   state,
   reportSha256,
+  portableReport,
   phaseTimingsSha256,
   phaseTimings,
   stageEnvironment,
@@ -978,6 +1009,8 @@ function runtimeEvidence(
     executionClass: "deterministic-simulation",
     simulation: true,
     reportSha256,
+    portableReportSha256: sha256Bytes(canonicalJsonBytes(portableReport)),
+    portableReport: structuredClone(portableReport),
     phaseTimingsSha256,
     phaseTimings: {
       sha256: phaseTimingsSha256,
@@ -3828,10 +3861,20 @@ export async function runProductionCertificationSimulation({
     summaryPath: runtimeSummaryPath,
     startMarkerPath: runtimeStartPath,
   });
+  authorizeRuntimeSmokeReportPath({
+    requestedPath: runtimeReportPath,
+    repositoryRoot: realpathSync(fixtureRoot),
+    authorizedExternalRoot: evidenceRoot,
+    environment: simulationRuntimeProjection.environment,
+  });
   const runtimeReportDescriptor = writeEvidence(
     evidenceRoot,
     "runtime-smoke/playwright-report.json",
-    simulatedRuntimePlaywrightReport(state),
+    simulatedRawRuntimePlaywrightReport(state, {
+      repositoryRoot: realpathSync(fixtureRoot),
+      reportPath: runtimeReportPath,
+      markerPath: runtimeStartPath,
+    }),
   );
   let simulationRuntimeClock = 0;
   const simulationRuntimeRecorder = createRuntimeSmokePhaseRecorder({
@@ -3870,6 +3913,7 @@ export async function runProductionCertificationSimulation({
   const simulatedRuntimeEvidence = runtimeEvidence(
     state,
     runtimeReportDescriptor.sha256,
+    simulatedRuntimePlaywrightReport(state),
     runtimeTimingsDescriptor.sha256,
     simulatedPhaseTimings,
     simulationRuntimeProjection.metadata,
@@ -3958,6 +4002,15 @@ export async function runProductionCertificationSimulation({
     runtimeCompletionMissingRejected: rejectsRuntimeMutation((evidence) => {
       delete evidence.phaseTimings.completionMarker;
     }),
+    portableRuntimeMachineLocalPathRejected: rejectsRuntimeMutation(
+      (evidence) => {
+        evidence.portableReport.machineLocalPath =
+          "/private/deleted-certification-worktree/runtime-report.json";
+        evidence.portableReportSha256 = sha256Bytes(
+          canonicalJsonBytes(evidence.portableReport),
+        );
+      },
+    ),
     sourceRuntimeProfileRejected: rejectsRuntimeMutation((evidence) => {
       evidence.phaseTimings.identity.runtimeStageProfileId = "source-validation";
       evidence.stageEnvironment.profileId = "source-validation";
@@ -4340,6 +4393,12 @@ export async function runProductionCertificationSimulation({
     },
   );
   writeFileSync(runtimeReportPath, canonicalJsonBytes(runtimeReportV1));
+  const runtimeSummaryBytes = readFileSync(runtimeSummaryPath);
+  const runtimeReportV1Summary = JSON.parse(runtimeSummaryBytes.toString("utf8"));
+  runtimeReportV1Summary.reportSha256 = sha256Bytes(
+    readFileSync(runtimeReportPath),
+  );
+  writeFileSync(runtimeSummaryPath, canonicalJsonBytes(runtimeReportV1Summary));
   const runtimeReportV1StatePath = path.join(
     evidenceRoot,
     "simulation/runtime-report-v1-state.json",
@@ -4348,14 +4407,20 @@ export async function runProductionCertificationSimulation({
   runtimeReportV1State.evidenceFiles["runtime-report"].sha256 = sha256Bytes(
     readFileSync(runtimeReportPath),
   );
+  runtimeReportV1State.evidenceFiles["runtime-smoke"].sha256 = sha256Bytes(
+    readFileSync(runtimeSummaryPath),
+  );
+  runtimeReportV1State.bindings.runtimeSmokeEvidenceSha256 =
+    runtimeReportV1State.evidenceFiles["runtime-smoke"].sha256;
   writeCertificationState(runtimeReportV1StatePath, runtimeReportV1State);
   const runtimeReportV1Final = invokeFinalStandalone(runtimeReportV1StatePath);
   const rawRuntimeReportJournalV1Rejected =
     runtimeReportV1Final.status !== 0 &&
-    /runtime-smoke raw report does not identify the certified artifact/.test(
+    /sealed portable runtime report differs from the live raw report projection/.test(
       finalFailureText(runtimeReportV1Final),
     );
   writeFileSync(runtimeReportPath, runtimeReportBytes);
+  writeFileSync(runtimeSummaryPath, runtimeSummaryBytes);
   rmSync(runtimeReportV1StatePath);
 
   const extractedJournalPath = path.join(
@@ -5024,26 +5089,48 @@ export async function runProductionCertificationSimulation({
   let removedWorktreeEvidenceReuseRejected = !cleanupWorktrees;
   let cleanedDependencyReceiptDeletionRejected = !cleanupWorktrees;
   let postCleanupConsumerUsedSealedEvidence = !cleanupWorktrees;
+  let postCleanupValidationCwdIndependent = !cleanupWorktrees;
+  let postCleanupTerminalStateSha256 = cleanupWorktrees ? null : certificationStateSha256(state);
+  let integrationContinuityEvidenceUnchanged = !cleanupWorktrees;
+  let foreignCleanupInvocationNonceRejected = !cleanupWorktrees;
+  let immutableRawRuntimePhysicalPathsAccepted = !cleanupWorktrees;
   if (cleanupWorktrees) {
+    const preCleanupIntegrationContinuity = canonicalJsonBytes({
+      integrationReadyStage: state.stages["integration-ready"],
+      continuityStage: state.stages.continuity,
+      integrationReadyEvidence: state.evidenceFiles["integration-ready"],
+      continuityEvidence: state.evidenceFiles.continuity,
+    });
     const cleanupConsumption = await runCertificationStageCommand({
       command: "worktrees:cleanup",
       repositoryRoot: canonicalRoot,
       environment: {
         ...doctorEnvironment,
+        CERTIFICATION_STAGE_COMPLETED_AT: nextTimestamp(),
         CERTIFICATION_STAGE_RESULT_NONCE:
           "simulation-worktree-cleanup-result-0001",
       },
     });
     state = readCertificationState(statePath);
+    integrationContinuityEvidenceUnchanged =
+      canonicalJsonBytes({
+        integrationReadyStage: state.stages["integration-ready"],
+        continuityStage: state.stages.continuity,
+        integrationReadyEvidence: state.evidenceFiles["integration-ready"],
+        continuityEvidence: state.evidenceFiles.continuity,
+      }).equals(preCleanupIntegrationContinuity);
     if (
       CERTIFICATION_WORKTREE_ROLES.some(
         (role) => state.worktrees.roles[role].cleanupStatus !== "removed",
       ) ||
       [sourceWorktreeRoot, artifactWorktreeRoot, developmentWorktreeRoot].some(
         (root) => existsSync(root),
-      )
+      ) ||
+      !integrationContinuityEvidenceUnchanged
     ) {
-      throw new Error("simulation cleanup did not remove only the three task worktrees");
+      throw new Error(
+        "simulation cleanup changed integration/continuity evidence or did not remove only the three task worktrees",
+      );
     }
     const previous = process.cwd();
     try {
@@ -5076,6 +5163,69 @@ export async function runProductionCertificationSimulation({
         "post-cleanup result consumer did not validate sealed evidence independently of deleted live roots",
       );
     }
+    const foreignCleanupResult = sealCertificationStageResult({
+      ...structuredClone(cleanupConsumption.result),
+      invocationNonce: "foreign-simulation-worktree-cleanup-result-0001",
+    });
+    foreignCleanupInvocationNonceRejected = !validateCertificationStageResult({
+      value: foreignCleanupResult,
+      statePath,
+      evidenceRoot,
+      repositoryRoot: canonicalRoot,
+      expectedCommand: "worktrees:cleanup",
+      expectedInvocationNonce: cleanupConsumption.result.invocationNonce,
+      expectedPreStateSha256:
+        cleanupConsumption.result.transition.preStateSha256,
+    }).valid;
+    if (!foreignCleanupInvocationNonceRejected) {
+      throw new Error("foreign worktree-cleanup invocation nonce was accepted");
+    }
+    const rawRuntimeReport = JSON.parse(readFileSync(runtimeReportPath, "utf8"));
+    const immutableRawRuntimePhysicalPathsPresent = [
+      rawRuntimeReport.config?.reporter?.[1]?.[1]?.outputFile,
+      rawRuntimeReport.config?.reporter?.[2]?.[1]?.markerPath,
+    ].every((value) => typeof value === "string" && path.isAbsolute(value));
+    if (!immutableRawRuntimePhysicalPathsPresent) {
+      throw new Error(
+        "simulation raw runtime report does not retain its immutable physical reporter paths",
+      );
+    }
+    const terminalStateSha256 = certificationStateSha256(state);
+    const validationReports = [];
+    for (const validationCwd of [canonicalRoot, safeConsumerCwd]) {
+      const currentCwd = process.cwd();
+      try {
+        process.chdir(validationCwd);
+        validationReports.push(
+          await validateCertificationReadOnly({
+            repositoryRoot: canonicalRoot,
+            environment: {
+              ...doctorEnvironment,
+              CERTIFICATION_EXPECTED_STATE_SHA256: terminalStateSha256,
+            },
+          }),
+        );
+      } finally {
+        process.chdir(currentCwd);
+      }
+    }
+    postCleanupValidationCwdIndependent = validationReports.every(
+      (report) =>
+        report.valid === true && report.stateSha256 === terminalStateSha256,
+    );
+    postCleanupTerminalStateSha256 = terminalStateSha256;
+    if (!postCleanupValidationCwdIndependent) {
+      throw new Error(
+        "post-cleanup terminal validation was not cwd-independent or state-SHA exact",
+      );
+    }
+    postCleanupConsumerUsedSealedEvidence =
+      postCleanupConsumerUsedSealedEvidence &&
+      foreignCleanupInvocationNonceRejected &&
+      immutableRawRuntimePhysicalPathsPresent;
+    immutableRawRuntimePhysicalPathsAccepted =
+      immutableRawRuntimePhysicalPathsPresent &&
+      postCleanupValidationCwdIndependent;
     const removedStateBytes = readFileSync(statePath);
     try {
       bindCertificationWorktreeDependencies({
@@ -5160,6 +5310,11 @@ export async function runProductionCertificationSimulation({
       genuineMismatchFailedClosed: continuityFailureRetryRetained,
       integrationReadyConsumed: integrationReadyConsumedCorrectedContinuity,
       postCleanupSealedEvidence: postCleanupConsumerUsedSealedEvidence,
+      postCleanupValidationCwdIndependent,
+      postCleanupTerminalStateSha256,
+      integrationContinuityEvidenceUnchanged,
+      foreignCleanupInvocationNonceRejected,
+      immutableRawRuntimePhysicalPathsAccepted,
     },
     sourceValidationCheckCount: sourceCheckIds.length,
     sourceValidationNestedAuthFixtureRegression: {

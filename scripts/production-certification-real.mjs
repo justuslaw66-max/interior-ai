@@ -114,6 +114,7 @@ import {
   CERTIFICATION_WORKTREE_ROOT_ENV,
   CERTIFICATION_WORKTREE_ROLES,
   beginCertificationStageWorktreeTransaction,
+  certificationWorktreeValidationMode,
   cleanupCertificationStageWorktrees,
   resolveCertificationStageWorktree,
   stageWorktreeRole,
@@ -1060,7 +1061,7 @@ function parseLastJson(stdout, description) {
 
 async function validateLiveContext(
   context,
-  { includeArtifact = true, verifyPhysicalWorktrees = true } = {},
+  { includeArtifact = true } = {},
 ) {
   if (context.state.executionClass === "real-candidate") {
     requireDatabaseLifecycleBinding(context, null, { reconcile: false });
@@ -1069,17 +1070,29 @@ async function validateLiveContext(
   let harness;
   const comparatorIssues = [];
   const retainedInputIssues = [];
+  let worktreeValidationMode = "legacy-repository-root";
   try {
-    candidate = currentCandidate(
-      context.repositoryRoot,
-      context.state.candidate,
-      context.environment,
-    );
-    harness = harnessSourceIdentity(context.repositoryRoot);
+    worktreeValidationMode = certificationWorktreeValidationMode(context.state);
   } catch (error) {
     retainedInputIssues.push(error instanceof Error ? error.message : String(error));
+  }
+  const postCleanup = worktreeValidationMode === "sealed-evidence";
+  if (postCleanup) {
     candidate = context.state.candidate;
     harness = { sha256: context.state.harness.sourceSha256 };
+  } else {
+    try {
+      candidate = currentCandidate(
+        context.repositoryRoot,
+        context.state.candidate,
+        context.environment,
+      );
+      harness = harnessSourceIdentity(context.repositoryRoot);
+    } catch (error) {
+      retainedInputIssues.push(error instanceof Error ? error.message : String(error));
+      candidate = context.state.candidate;
+      harness = { sha256: context.state.harness.sourceSha256 };
+    }
   }
   const expectedCandidateId =
     context.environment.PRODUCTION_EVIDENCE_CANDIDATE_ID?.trim();
@@ -1098,12 +1111,7 @@ async function validateLiveContext(
   }
   let sourceValidationRoot = context.repositoryRoot;
   let artifactRoot = context.repositoryRoot;
-  const worktreesCleaned =
-    new Set([2, 3, 4]).has(context.state.version) &&
-    Object.values(context.state.worktrees.roles).every(
-      (binding) => binding.lifecycleStatus === "cleaned",
-    );
-  const worktreesUnavailable = worktreesCleaned || !verifyPhysicalWorktrees;
+  const worktreesUnavailable = postCleanup;
   if (new Set([2, 3, 4]).has(context.state.version) && !worktreesUnavailable) {
     try {
       sourceValidationRoot = resolveCertificationStageWorktree({
@@ -1216,31 +1224,41 @@ async function validateLiveContext(
         path.join(context.evidenceRoot, descriptor.path),
         "integration readiness evidence",
       );
-      const localCommitSha = git(context.repositoryRoot, [
-        "rev-parse",
-        "--verify",
-        `${readiness.local.ref}^{commit}`,
-      ]);
-      const localTreeSha = git(context.repositoryRoot, [
-        "rev-parse",
-        "--verify",
-        `${readiness.local.ref}^{tree}`,
-      ]);
-      const trackingCommitSha = git(context.repositoryRoot, [
-        "rev-parse",
-        "--verify",
-        `${readiness.tracking.ref}^{commit}`,
-      ]);
-      const trackingTreeSha = git(context.repositoryRoot, [
-        "rev-parse",
-        "--verify",
-        `${readiness.tracking.ref}^{tree}`,
-      ]);
-      const ancestry = spawnSync(
-        "git",
-        ["merge-base", "--is-ancestor", localCommitSha, candidate.commitSha],
-        { cwd: context.repositoryRoot, encoding: "utf8" },
-      );
+      const localCommitSha = postCleanup
+        ? readiness.local.commitSha
+        : git(context.repositoryRoot, [
+            "rev-parse",
+            "--verify",
+            `${readiness.local.ref}^{commit}`,
+          ]);
+      const localTreeSha = postCleanup
+        ? readiness.local.treeSha
+        : git(context.repositoryRoot, [
+            "rev-parse",
+            "--verify",
+            `${readiness.local.ref}^{tree}`,
+          ]);
+      const trackingCommitSha = postCleanup
+        ? readiness.tracking.commitSha
+        : git(context.repositoryRoot, [
+            "rev-parse",
+            "--verify",
+            `${readiness.tracking.ref}^{commit}`,
+          ]);
+      const trackingTreeSha = postCleanup
+        ? readiness.tracking.treeSha
+        : git(context.repositoryRoot, [
+            "rev-parse",
+            "--verify",
+            `${readiness.tracking.ref}^{tree}`,
+          ]);
+      const ancestry = postCleanup
+        ? { status: 0, signal: null, error: null }
+        : spawnSync(
+            "git",
+            ["merge-base", "--is-ancestor", localCommitSha, candidate.commitSha],
+            { cwd: context.repositoryRoot, encoding: "utf8" },
+          );
       if (
         readiness.schema !==
           "interior-ai.production-certification-integration-readiness.v1" ||
@@ -2145,20 +2163,32 @@ export async function cleanupCertificationWorktrees({
   });
   await requireLiveContext(context, {
     includeArtifact: false,
-    verifyPhysicalWorktrees: false,
   });
+  const completedAt = certificationTimestamp(
+    context.environment,
+    "STAGE_COMPLETED_AT",
+  );
   const worktrees = cleanupCertificationStageWorktrees({
     state: context.state,
     evidenceRoot: context.evidenceRoot,
     canonicalRoot: context.canonicalRoot,
+    preStateSha256: certificationStateSha256(context.state),
+    completedAt,
+    invocationNonce: requiredEnvironment(
+      context.environment,
+      "CERTIFICATION_STAGE_RESULT_NONCE",
+    ),
   });
-  const next = replaceCertificationWorktrees(context.state, worktrees);
+  const next = replaceCertificationWorktrees(context.state, worktrees, {
+    completedAt,
+  });
   writeCertificationState(context.statePath, next, {
     expectedCurrentSha256: certificationStateSha256(context.state),
   });
   return {
     valid: true,
     cleanedRoles: [...CERTIFICATION_WORKTREE_ROLES],
+    cleanupReceipt: structuredClone(worktrees.cleanup),
     stateSha256: certificationStateSha256(next),
   };
 }
@@ -3691,6 +3721,10 @@ export async function runRuntimeSmokeStage(options = {}) {
       executionClass: state.executionClass,
       simulation: false,
       reportSha256: reportDescriptor.sha256,
+      portableReportSha256: sha256Bytes(
+        canonicalJsonBytes(validation.report),
+      ),
+      portableReport: validation.report,
       phaseTimingsSha256: timingDescriptor.sha256,
       phaseTimings: {
         sha256: timingDescriptor.sha256,

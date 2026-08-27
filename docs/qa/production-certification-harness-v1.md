@@ -1,5 +1,53 @@
 # Production Certification Harness v1
 
+## Post-cleanup sealed-evidence validation correction — 2026-08-28
+
+The retained failed rehearsal remains byte-for-byte unchanged and is not
+resumed, reconciled, or replayed. Every source, build, archive, Phase 8,
+runtime, browser-owner, AppEvent, database, final-standalone, continuity,
+integration-ready, independent pre-cleanup review, and three-worktree cleanup
+boundary passed. The sole failure occurred when terminal read-only validation
+reopened deleted producer roots and reinterpreted machine-local paths in the
+immutable raw Playwright report. The defects are classified as
+`POST_CLEANUP_SEALED_EVIDENCE_VALIDATION_MODE_DEFECT`,
+`POST_CLEANUP_DELETED_LIVE_ROOT_REOPEN_DEFECT`, and
+`POST_CLEANUP_RUNTIME_REPORT_SOURCE_SELECTION_DEFECT`.
+
+Validation now has two exclusive modes. While any certification worktree is
+active, all three state-bound roots must remain physical, exact, non-symlinked
+candidate worktrees and every existing live artifact/source check is retained.
+Sealed-evidence mode is available only after a durable cleanup receipt binds
+the exact pre-cleanup state SHA, prior and resulting three-role projections,
+candidate identity, invocation nonce and nonce digest, completion time,
+private sidecars, and terminal physical-path/Git-registration absence. A mixed,
+partial, forged, or unreceipted cleanup lifecycle fails closed.
+The cleanup command result consumer owns the externally supplied invocation
+nonce at commit time. Later terminal validation owns the exact committed state
+SHA supplied by its caller; this rejects a self-consistent foreign-nonce
+receipt/state rewrite without pretending that the harness's internal,
+unkeyed state seals are cryptographic signatures.
+
+The runtime stage now retains its canonicalized portable Playwright projection
+inside the sealed runtime envelope, with an independent projection SHA. The raw
+Playwright bytes remain a separate state-bound evidence file and are rehashed
+without being parsed for portable-path acceptance after cleanup. Pre-cleanup
+final validation still derives the projection from the physical producer root
+and requires it to equal the sealed projection. Post-cleanup final validation
+uses only the sealed projection for identity, truthfulness, telemetry, and
+machine-local-path checks; raw physical paths may remain in immutable raw bytes
+so long as their independently bound SHA is unchanged. Deleted producer roots
+are checked only for lexical existence and Git-registration absence and are
+never lstat'ed, realpathed, or reopened.
+
+Focused coverage proves valid live-root validation; missing, replaced,
+symlinked, foreign, and drifted live-root rejection; exact integration-ready to
+cleanup transition; canonical and unrelated-cwd terminal validation; unchanged
+integration-ready/continuity evidence; genuine continuity mismatch rejection;
+missing/forged cleanup receipt and sidecar rejection; surviving path or
+registration rejection; candidate/artifact/attempt/nonce drift rejection;
+unchanged raw-report hash binding; raw physical-path tolerance; portable
+machine-local-path rejection; and the exact unchanged terminal state SHA.
+
 ## Archive-preflight auth and abort-attribution correction — 2026-08-22
 
 The retained rehearsal attempt remains failed and is not resumed, retried,

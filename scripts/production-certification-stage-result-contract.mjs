@@ -24,7 +24,9 @@ import {
 import { resolveRetainedExternalEvidenceFile } from "./playwright-report-path.mjs";
 import { databaseLifecycleEvidenceIssues } from "./production-certification-database-contract.mjs";
 import {
+  CERTIFICATION_WORKTREE_CLEANUP_EVIDENCE_NAME,
   readCertificationPreStateFailureReceipt,
+  readCertificationWorktreeCleanupReceipt,
   resolveCertificationStateValidationRoots,
 } from "./production-certification-worktrees.mjs";
 
@@ -252,6 +254,13 @@ function evidenceReferences(state, stageId, evidenceRoot) {
     };
   } else if (stageId.startsWith("database-") && state.databaseLifecycle?.evidence) {
     descriptors = { "database-lifecycle": state.databaseLifecycle.evidence };
+  } else if (
+    stageId === "worktree-cleanup" &&
+    state.worktrees?.cleanup
+  ) {
+    descriptors = {
+      [CERTIFICATION_WORKTREE_CLEANUP_EVIDENCE_NAME]: state.worktrees.cleanup,
+    };
   }
   return Object.entries(descriptors)
     .sort(([left], [right]) => left.localeCompare(right))
@@ -288,6 +297,8 @@ function stageTransitionIdentity({ command, preState, postState }) {
           ? "prepared"
           : command.startsWith("database:")
             ? (postState?.databaseLifecycle?.lifecycleState ?? "unchanged")
+            : command === "worktrees:cleanup" && postState?.worktrees?.cleanup
+              ? "cleaned"
             : "unchanged"),
   };
 }
@@ -414,7 +425,10 @@ function safeCommandDetails(command, commandResult, sensitiveValues) {
     };
   }
   if (command === "worktrees:cleanup") {
-    return { cleanedRoles: commandResult.cleanedRoles };
+    return {
+      cleanedRoles: commandResult.cleanedRoles,
+      cleanupReceipt: structuredClone(commandResult.cleanupReceipt),
+    };
   }
   if (command === "database:abort-cleanup") {
     return {
@@ -1095,9 +1109,10 @@ function commandDetailsShapeIssues(value) {
       : ["state-reconciliation result details are malformed"];
   }
   if (command === "worktrees:cleanup") {
-    return exactKeys(details, ["cleanedRoles"]) &&
+    return exactKeys(details, ["cleanedRoles", "cleanupReceipt"]) &&
       Array.isArray(details.cleanedRoles) &&
-      details.cleanedRoles.every((role) => typeof role === "string" && role)
+      details.cleanedRoles.every((role) => typeof role === "string" && role) &&
+      portableEvidenceDescriptorMap({ cleanupReceipt: details.cleanupReceipt })
       ? []
       : ["worktree-cleanup result details are malformed"];
   }
@@ -1439,6 +1454,9 @@ function commandStateIssues(value, state, evidenceRoot) {
             : "unchanged"
           : value.command.id.startsWith("database:")
             ? (state.databaseLifecycle?.lifecycleState ?? "unchanged")
+            : value.command.id === "worktrees:cleanup" &&
+                state.worktrees?.cleanup
+              ? "cleaned"
             : "unchanged";
     if (value.stageCompletionMarker !== expectedMarker) {
       issues.push("non-stage certification result completion marker mismatch");
@@ -1494,6 +1512,28 @@ function commandStateIssues(value, state, evidenceRoot) {
       issues.push(
         ...finalDatabaseFailureStateIssues(value, state, evidenceRoot),
       );
+    }
+    if (value.command.id === "worktrees:cleanup") {
+      try {
+        const retained = readCertificationWorktreeCleanupReceipt({
+          state,
+          evidenceRoot,
+        });
+        if (
+          retained.receipt.invocationNonce !== value.invocationNonce ||
+          retained.receipt.preStateSha256 !==
+            value.transition.preStateSha256 ||
+          value.transition.postStateSha256 !== certificationStateSha256(state) ||
+          JSON.stringify(value.details?.cleanupReceipt) !==
+            JSON.stringify(retained.descriptor)
+        ) {
+          issues.push(
+            "worktree-cleanup result contradicts its receipt or exact state transition",
+          );
+        }
+      } catch {
+        issues.push("worktree-cleanup result is missing its durable receipt");
+      }
     }
     return issues;
   }

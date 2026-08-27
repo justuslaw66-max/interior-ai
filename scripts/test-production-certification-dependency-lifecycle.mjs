@@ -476,10 +476,14 @@ try {
 
   const removedState = structuredClone(bound);
   removedState.stages.continuity.status = "passed";
+  removedState.stages["integration-ready"].status = "passed";
   const removed = cleanupCertificationStageWorktrees({
     state: removedState,
     evidenceRoot: lifecycle.evidenceRoot,
     canonicalRoot: lifecycle.canonicalRoot,
+    preStateSha256: certificationStateSha256(sealCertificationState(removedState)),
+    completedAt: removedState.updatedAt,
+    invocationNonce: "dependency-cleanup-fixture-0001",
   });
   assert.equal(removed.roles["source-validation"].dependencyStatus, "removed");
   const cleanedState = structuredClone(bound);
@@ -1052,11 +1056,16 @@ try {
     bound = bind(cleanedRetainedEvidence, installation, null, role).state;
   }
   bound.stages.continuity.status = "passed";
+  bound.stages["integration-ready"].status = "passed";
   bound.worktrees = cleanupCertificationStageWorktrees({
     state: bound,
     evidenceRoot: cleanedRetainedEvidence.evidenceRoot,
     canonicalRoot: cleanedRetainedEvidence.canonicalRoot,
+    preStateSha256: certificationStateSha256(sealCertificationState(bound)),
+    completedAt: bound.updatedAt,
+    invocationNonce: "dependency-cleanup-fixture-0002",
   });
+  bound.evidenceFiles["worktree-cleanup"] = bound.worktrees.cleanup;
   assert.deepEqual(
     certificationWorktreeIssues({
       state: bound,
@@ -1208,10 +1217,14 @@ try {
     },
   });
   legacyState.stages.continuity.status = "passed";
+  legacyState.stages["integration-ready"].status = "passed";
   const cleanedLegacy = cleanupCertificationStageWorktrees({
     state: legacyState,
     evidenceRoot: historicalCleanup.evidenceRoot,
     canonicalRoot: historicalCleanup.canonicalRoot,
+    preStateSha256: certificationStateSha256(sealCertificationState(legacyState)),
+    completedAt: legacyState.updatedAt,
+    invocationNonce: "dependency-cleanup-fixture-0003",
   });
   assert.equal(
     cleanedLegacy.schema,

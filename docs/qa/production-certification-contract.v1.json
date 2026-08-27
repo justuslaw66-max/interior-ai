@@ -84,7 +84,8 @@
     "canonicalIgnoredArtifactPolicy": "non-influential, uninspected by stage owners, and byte-for-byte untouched",
     "crossCertificationReuseAllowed": false,
     "privateBindingPolicy": "physical paths and hashes are retained only in private evidence-root sidecars",
-    "cleanupPolicy": "pre-state failures use only the invocation transaction owner; durable-state worktrees retain the existing continuity-gated cleanup owner; both remove only proven task-owned roots"
+    "cleanupPolicy": "pre-state failures use only the invocation transaction owner; durable-state worktrees use the integration-ready-gated cleanup owner and publish an exact-pre-state, candidate, invocation-nonce, sidecar, path-absence, and Git-registration-absence receipt; both remove only proven task-owned roots",
+    "postCleanupValidationPolicy": "sealed-evidence mode is exclusive after all three receipted cleaned/removed bindings; rehash retained evidence, prove roots and registrations absent without reopening deleted producer roots, and reject mixed or incomplete cleanup state"
   },
   "dependencyLifecycle": {
     "schema": "interior-ai.production-certification-worktree-dependency-lifecycle.v1",
@@ -141,7 +142,8 @@
     },
     "diagnosticsPolicy": "readiness, post-readiness, browser, and failure diagnostics are embedded report/timing content; safe stdout/stderr and server logs are non-portable parent streams",
     "pathPolicy": ["explicit absolute root", "explicit absolute output", "exact role filename", "outside every repository and stage worktree", "lexical and physical containment", "non-symlink existing writable parent", "absent final target", "no repository-local fallback", "no generic-root fallback"],
-    "portableBinding": ["contract schema/version/hash", "destination class", "root-relative output path", "file sha256", "completion marker", "certification/candidate/commit/tree/Build-ID/artifact/manifest/journal identity", "runtime profile ID/hash"],
+    "portableBinding": ["contract schema/version/hash", "destination class", "root-relative output path", "file sha256", "sealed canonical Playwright projection and projection sha256", "completion marker", "certification/candidate/commit/tree/Build-ID/artifact/manifest/journal identity", "runtime profile ID/hash"],
+    "postCleanupRawReportPolicy": "rehash the immutable raw report independently; use only the sealed portable projection for path acceptance and do not parse the raw report or reopen its deleted producer root",
     "machineLocalRootInPortableEvidence": false
   },
   "resourcePreparation": {

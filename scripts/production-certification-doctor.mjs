@@ -212,12 +212,20 @@ export function validateCertificationStageResultContracts(repositoryRoot) {
   const wrapperPath = "scripts/production-certification.mjs";
   const testPath = "scripts/test-production-certification-stage-result.mjs";
   const simulationPath = "scripts/production-certification-simulation.mjs";
+  const stateWorktreeTestPath =
+    "scripts/test-production-certification-state-worktrees.mjs";
+  const worktreeOwnerPath = "scripts/production-certification-worktrees.mjs";
+  const finalEvidenceOwnerPath =
+    "scripts/production-certification-evidence.mjs";
   for (const relativePath of [
     ownerPath,
     consumerPath,
     wrapperPath,
     testPath,
     simulationPath,
+    stateWorktreeTestPath,
+    worktreeOwnerPath,
+    finalEvidenceOwnerPath,
   ]) {
     assertFileBackedOwner(repositoryRoot, relativePath);
   }
@@ -226,6 +234,24 @@ export function validateCertificationStageResultContracts(repositoryRoot) {
   const wrapper = readFileSync(path.join(repositoryRoot, wrapperPath), "utf8");
   const test = readFileSync(path.join(repositoryRoot, testPath), "utf8");
   const simulation = readFileSync(path.join(repositoryRoot, simulationPath), "utf8");
+  const stateWorktreeTest = readFileSync(
+    path.join(repositoryRoot, stateWorktreeTestPath),
+    "utf8",
+  );
+  const worktreeOwner = readFileSync(
+    path.join(repositoryRoot, worktreeOwnerPath),
+    "utf8",
+  );
+  const finalEvidenceOwner = readFileSync(
+    path.join(repositoryRoot, finalEvidenceOwnerPath),
+    "utf8",
+  );
+  const regressionMatrix = JSON.parse(
+    readFileSync(
+      path.join(repositoryRoot, "scripts/production-certification-regressions.json"),
+      "utf8",
+    ),
+  );
   const packageJson = JSON.parse(
     readFileSync(path.join(repositoryRoot, "package.json"), "utf8"),
   );
@@ -266,7 +292,25 @@ export function validateCertificationStageResultContracts(repositoryRoot) {
     !simulation.includes("historical-source-validation-npm-prisma") ||
     !simulation.includes("continuityConsumerCwdIndependent") ||
     !simulation.includes("postCleanupConsumerUsedSealedEvidence") ||
+    !simulation.includes("postCleanupValidationCwdIndependent") ||
+    !simulation.includes("integrationContinuityEvidenceUnchanged") ||
+    !simulation.includes("foreignCleanupInvocationNonceRejected") ||
+    !simulation.includes("immutableRawRuntimePhysicalPathsAccepted") ||
     !simulation.includes("exactNextStateSha256") ||
+    !worktreeOwner.includes("PRODUCTION_CERTIFICATION_WORKTREE_CLEANUP_SCHEMA") ||
+    !worktreeOwner.includes("readCertificationWorktreeCleanupReceipt") ||
+    !finalEvidenceOwner.includes('worktreeValidationMode === "sealed-evidence"') ||
+    !finalEvidenceOwner.includes("portableRuntimeReportIssues") ||
+    !stateWorktreeTest.includes("immutable raw physical paths must not be reinterpreted post-cleanup") ||
+    !Array.isArray(regressionMatrix.postCleanupSealedEvidenceCases) ||
+    regressionMatrix.postCleanupSealedEvidenceCases.length !== 16 ||
+    ![
+      "POST_CLEANUP_SEALED_EVIDENCE_VALIDATION_MODE_DEFECT",
+      "POST_CLEANUP_DELETED_LIVE_ROOT_REOPEN_DEFECT",
+      "POST_CLEANUP_RUNTIME_REPORT_SOURCE_SELECTION_DEFECT",
+    ].every((defect) =>
+      regressionMatrix.cases.some((entry) => entry.defect === defect)
+    ) ||
     packageJson.scripts["test:production-certification-stage-result"] !==
       "node scripts/test-production-certification-stage-result.mjs" ||
     packageJson.scripts["certification:stage-result:validate"] !==

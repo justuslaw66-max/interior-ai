@@ -5,6 +5,7 @@ import {
   lstatSync,
   mkdirSync,
   readFileSync,
+  readdirSync,
   realpathSync,
   renameSync,
   rmdirSync,
@@ -18,6 +19,7 @@ import path from "node:path";
 import {
   canonicalJsonBytes,
   isCandidateId,
+  isCanonicalUtcTimestamp,
   isSha256,
   isSourceSha,
   PRODUCTION_CERTIFICATION_HARNESS_VERSION,
@@ -40,6 +42,9 @@ export const PRODUCTION_CERTIFICATION_WORKTREE_PRIVATE_SCHEMA =
   "interior-ai.production-certification-worktree-private.v1";
 export const PRODUCTION_CERTIFICATION_PRE_STATE_FAILURE_SCHEMA =
   "interior-ai.production-certification-pre-state-failure.v1";
+export const PRODUCTION_CERTIFICATION_WORKTREE_CLEANUP_SCHEMA =
+  "interior-ai.production-certification-worktree-cleanup.v1";
+export const CERTIFICATION_WORKTREE_CLEANUP_EVIDENCE_NAME = "worktree-cleanup";
 export const CERTIFICATION_WORKTREE_ROLES = Object.freeze([
   "source-validation",
   "final-artifact",
@@ -69,6 +74,17 @@ const ROLE_ALLOWED_IGNORED_ROOTS = Object.freeze({
   "development-browser": ["node_modules", "test-results", "playwright-report"],
 });
 const MINIMUM_AVAILABLE_BYTES = 1024 ** 3;
+const GIT_EXECUTABLE = (() => {
+  const names = process.platform === "win32" ? ["git.exe", "git.cmd"] : ["git"];
+  for (const directory of (process.env.PATH ?? "").split(path.delimiter)) {
+    if (!directory) continue;
+    for (const name of names) {
+      const candidate = path.join(directory, name);
+      if (existsSync(candidate)) return candidate;
+    }
+  }
+  return "git";
+})();
 
 function exactKeys(value, keys) {
   return (
@@ -80,7 +96,7 @@ function exactKeys(value, keys) {
 }
 
 function git(repositoryRoot, args, { allowFailure = false, trim = true } = {}) {
-  const child = spawnSync("git", args, {
+  const child = spawnSync(GIT_EXECUTABLE, args, {
     cwd: repositoryRoot,
     encoding: "utf8",
     maxBuffer: 64 * 1024 * 1024,
@@ -172,6 +188,10 @@ function normalizedInventory(values) {
     count: paths.length,
     sha256: sha256Bytes(paths.map((value) => `${value}\n`).join("")),
   };
+}
+
+function worktreeRolesSha256(roles) {
+  return sha256Bytes(canonicalJsonBytes(roles));
 }
 
 function ignoredPaths(repositoryRoot) {
@@ -583,6 +603,18 @@ function registrationPresent(repositoryRoot, target) {
     .filter((line) => line.startsWith("worktree "))
     .map((line) => path.resolve(line.slice("worktree ".length)))
     .includes(path.resolve(target));
+}
+
+function formerWorktreePathPresent(target) {
+  const absoluteTarget = path.resolve(target);
+  try {
+    return readdirSync(path.dirname(absoluteTarget)).some(
+      (name) => name === path.basename(absoluteTarget),
+    );
+  } catch (error) {
+    if (error?.code === "ENOENT") return false;
+    throw error;
+  }
 }
 
 function portableCreatedResourceInventory(ledger) {
@@ -1240,6 +1272,50 @@ function validationPhase(binding) {
   return "pristine";
 }
 
+export function certificationWorktreeValidationMode(state) {
+  if (!new Set([2, 3, 4]).has(state?.version)) {
+    return "legacy-repository-root";
+  }
+  const roles = state?.worktrees?.roles;
+  if (!exactKeys(roles, CERTIFICATION_WORKTREE_ROLES)) {
+    throw new Error(
+      "certification validation roots have an incomplete worktree inventory",
+    );
+  }
+  const bindings = CERTIFICATION_WORKTREE_ROLES.map((role) => roles[role]);
+  const allActive = bindings.every(
+    (binding) =>
+      binding?.lifecycleStatus === "active" &&
+      binding?.cleanupStatus === "pending",
+  );
+  if (
+    allActive &&
+    state.worktrees.cleanup === undefined &&
+    state.evidenceFiles?.[CERTIFICATION_WORKTREE_CLEANUP_EVIDENCE_NAME] ===
+      undefined
+  ) {
+    return "state-bound-live-worktrees";
+  }
+  const allCleaned = bindings.every(
+    (binding) =>
+      binding?.lifecycleStatus === "cleaned" &&
+      binding?.cleanupStatus === "removed",
+  );
+  if (
+    allCleaned &&
+    exactKeys(state.worktrees.cleanup, ["path", "sha256"]) &&
+    state.worktrees.cleanup.path === "worktrees/cleanup.json" &&
+    isSha256(state.worktrees.cleanup.sha256) &&
+    JSON.stringify(state.evidenceFiles?.[CERTIFICATION_WORKTREE_CLEANUP_EVIDENCE_NAME]) ===
+      JSON.stringify(state.worktrees.cleanup)
+  ) {
+    return "sealed-evidence";
+  }
+  throw new Error(
+    "certification validation roots have a mixed, incomplete, or unreceipted worktree lifecycle",
+  );
+}
+
 export function resolveCertificationStateValidationRoots({
   state,
   evidenceRoot,
@@ -1252,34 +1328,15 @@ export function resolveCertificationStateValidationRoots({
     verifyCurrentSource: false,
     lifecycle: "sealed-evidence",
   };
-  if (!new Set([2, 3, 4]).has(state?.version)) {
+  const lifecycle = certificationWorktreeValidationMode(state);
+  if (lifecycle === "legacy-repository-root") {
     return {
       ...sealedOnly,
       verifyCurrentSource: verifyPhysical,
       lifecycle: "legacy-repository-root",
     };
   }
-  const bindings = Object.values(state?.worktrees?.roles ?? {});
-  const allCleaned =
-    bindings.length === CERTIFICATION_WORKTREE_ROLES.length &&
-    bindings.every(
-      (binding) =>
-        binding.lifecycleStatus === "cleaned" &&
-        binding.cleanupStatus === "removed",
-    );
-  if (allCleaned) return sealedOnly;
-  if (
-    bindings.length !== CERTIFICATION_WORKTREE_ROLES.length ||
-    bindings.some(
-      (binding) =>
-        binding.lifecycleStatus !== "active" ||
-        binding.cleanupStatus !== "pending",
-    )
-  ) {
-    throw new Error(
-      "certification validation roots have a mixed or invalid worktree lifecycle",
-    );
-  }
+  if (lifecycle === "sealed-evidence") return sealedOnly;
   const resolveRole = (role) =>
     resolveCertificationStageWorktree({
       state,
@@ -1451,6 +1508,143 @@ function dependencyInstallationChronologyIssues(state, role, binding) {
   return [];
 }
 
+function cleanupReceiptDescriptor(evidenceRoot, receipt) {
+  const bytes = canonicalJsonBytes(receipt);
+  const filePath = path.join(evidenceRoot, "worktrees/cleanup.json");
+  atomicWriteAbsent(filePath, bytes);
+  return {
+    path: "worktrees/cleanup.json",
+    sha256: sha256Bytes(bytes),
+  };
+}
+
+export function readCertificationWorktreeCleanupReceipt({
+  state,
+  evidenceRoot,
+}) {
+  const descriptor = state?.worktrees?.cleanup;
+  if (
+    !exactKeys(descriptor, ["path", "sha256"]) ||
+    descriptor.path !== "worktrees/cleanup.json" ||
+    !isSha256(descriptor.sha256) ||
+    JSON.stringify(
+      state?.evidenceFiles?.[CERTIFICATION_WORKTREE_CLEANUP_EVIDENCE_NAME],
+    ) !== JSON.stringify(descriptor)
+  ) {
+    throw new Error("worktree cleanup receipt binding is missing or malformed");
+  }
+  const physicalEvidenceRoot = physicalDirectory(
+    evidenceRoot,
+    "certification evidence root",
+  );
+  const worktreeEvidenceRoot = physicalDirectory(
+    path.join(physicalEvidenceRoot, "worktrees"),
+    "worktree cleanup receipt parent",
+  );
+  const filePath = path.join(worktreeEvidenceRoot, "cleanup.json");
+  const metadata = lstatSync(filePath);
+  const physical = realpathSync(filePath);
+  if (
+    metadata.isSymbolicLink() ||
+    !metadata.isFile() ||
+    !pathInside(physicalEvidenceRoot, physical)
+  ) {
+    throw new Error("worktree cleanup receipt is not a contained physical file");
+  }
+  const bytes = readFileSync(physical);
+  if (sha256Bytes(bytes) !== descriptor.sha256) {
+    throw new Error("worktree cleanup receipt hash mismatch");
+  }
+  let receipt;
+  try {
+    receipt = JSON.parse(bytes.toString("utf8"));
+  } catch {
+    throw new Error("worktree cleanup receipt is not valid JSON");
+  }
+  if (!bytes.equals(canonicalJsonBytes(receipt))) {
+    throw new Error("worktree cleanup receipt is not canonical JSON");
+  }
+  if (
+    !exactKeys(receipt, [
+      "schema",
+      "owner",
+      "canonicalCommand",
+      "certificationId",
+      "candidate",
+      "invocationNonce",
+      "invocationNonceSha256",
+      "preStateSha256",
+      "preStateUpdatedAt",
+      "completedAt",
+      "preWorktreeRolesSha256",
+      "cleanedWorktreeRolesSha256",
+      "roles",
+      "complete",
+    ]) ||
+    receipt.schema !== PRODUCTION_CERTIFICATION_WORKTREE_CLEANUP_SCHEMA ||
+    receipt.owner !== "worktrees:cleanup" ||
+    receipt.canonicalCommand !== "npm run certification:worktrees:cleanup" ||
+    receipt.certificationId !== state.certificationId ||
+    JSON.stringify(receipt.candidate) !== JSON.stringify({
+      id: state.candidate.id,
+      commitSha: state.candidate.commitSha,
+      treeSha: state.candidate.treeSha,
+    }) ||
+    !/^[A-Za-z0-9][A-Za-z0-9._:-]{15,127}$/.test(
+      receipt.invocationNonce ?? "",
+    ) ||
+    receipt.invocationNonceSha256 !== sha256Bytes(receipt.invocationNonce) ||
+    !isSha256(receipt.preStateSha256) ||
+    !isSha256(receipt.preWorktreeRolesSha256) ||
+    !isSha256(receipt.cleanedWorktreeRolesSha256) ||
+    !isCanonicalUtcTimestamp(receipt.preStateUpdatedAt) ||
+    !isCanonicalUtcTimestamp(receipt.completedAt) ||
+    Date.parse(receipt.completedAt) < Date.parse(receipt.preStateUpdatedAt) ||
+    !exactKeys(receipt.roles, CERTIFICATION_WORKTREE_ROLES) ||
+    receipt.complete !== true
+  ) {
+    throw new Error("worktree cleanup receipt is incomplete or cross-run");
+  }
+  return Object.freeze({ descriptor, receipt, filePath: physical });
+}
+
+function cleanupReceiptRoleIssues(receipt, role, binding) {
+  const result = receipt.roles?.[role];
+  if (
+    !exactKeys(result, [
+      "role",
+      "privateSidecar",
+      "privateRealpathSha256",
+      "gitCommonDirSha256",
+      "priorLifecycleStatus",
+      "priorCleanupStatus",
+      "priorDependencyStatus",
+      "resultingLifecycleStatus",
+      "resultingCleanupStatus",
+      "resultingDependencyStatus",
+      "physicalPathAbsent",
+      "registrationAbsent",
+    ]) ||
+    result.role !== role ||
+    JSON.stringify(result.privateSidecar) !==
+      JSON.stringify(binding.privateSidecar) ||
+    result.privateRealpathSha256 !== binding.privateRealpathSha256 ||
+    result.gitCommonDirSha256 !== binding.gitCommonDirSha256 ||
+    result.priorLifecycleStatus !== "active" ||
+    result.priorCleanupStatus !== "pending" ||
+    !new Set(["installed", null]).has(result.priorDependencyStatus) ||
+    result.resultingLifecycleStatus !== "cleaned" ||
+    result.resultingCleanupStatus !== "removed" ||
+    result.resultingDependencyStatus !==
+      (binding.dependencyStatus === undefined ? null : "removed") ||
+    result.physicalPathAbsent !== true ||
+    result.registrationAbsent !== true
+  ) {
+    return [`worktree cleanup receipt role binding is invalid: ${role}`];
+  }
+  return [];
+}
+
 export function certificationWorktreeIssues({
   state,
   evidenceRoot,
@@ -1466,6 +1660,25 @@ export function certificationWorktreeIssues({
     !exactKeys(state?.worktrees?.roles, CERTIFICATION_WORKTREE_ROLES)
   ) {
     return ["certification stage-worktree binding inventory is missing or malformed"];
+  }
+  let validationMode = null;
+  let cleanupReceipt = null;
+  try {
+    validationMode = certificationWorktreeValidationMode(state);
+    if (validationMode === "sealed-evidence") {
+      cleanupReceipt = readCertificationWorktreeCleanupReceipt({
+        state,
+        evidenceRoot,
+      }).receipt;
+      if (
+        cleanupReceipt.cleanedWorktreeRolesSha256 !==
+        worktreeRolesSha256(state.worktrees.roles)
+      ) {
+        throw new Error("worktree cleanup receipt cleaned-role hash mismatch");
+      }
+    }
+  } catch (error) {
+    issues.push(error instanceof Error ? error.message : String(error));
   }
   const roots = [];
   const dependencyRoots = [];
@@ -1521,6 +1734,15 @@ export function certificationWorktreeIssues({
           binding.filesystemIdentitySha256
       ) {
         throw new Error("private identity is cross-certification or cross-role");
+      }
+      if (
+        !path.isAbsolute(sidecar.realpath) ||
+        path.basename(sidecar.realpath) !== ROLE_DIRECTORY[role] ||
+        path.basename(path.dirname(sidecar.realpath)) !== state.certificationId ||
+        pathInside(canonicalRoot, sidecar.realpath) ||
+        pathInside(evidenceRoot, sidecar.realpath)
+      ) {
+        throw new Error("private worktree root ownership is unsafe or contradictory");
       }
       roots.push(sidecar.realpath);
       commonDirectoryHashes.push(binding.gitCommonDirSha256);
@@ -1652,9 +1874,16 @@ export function certificationWorktreeIssues({
         }
       } else if (
         binding.lifecycleStatus === "cleaned" &&
-        (binding.cleanupStatus !== "removed" || existsSync(sidecar.realpath))
+        (binding.cleanupStatus !== "removed" ||
+          formerWorktreePathPresent(sidecar.realpath) ||
+          registrationPresent(canonicalRoot, sidecar.realpath))
       ) {
-        throw new Error("cleaned worktree still exists or lacks removed status");
+        throw new Error(
+          "cleaned worktree still exists, remains registered, or lacks removed status",
+        );
+      }
+      if (cleanupReceipt) {
+        issues.push(...cleanupReceiptRoleIssues(cleanupReceipt, role, binding));
       }
       if (
         state.worktrees.schema === PRODUCTION_CERTIFICATION_WORKTREE_SCHEMA &&
@@ -1775,6 +2004,13 @@ export function certificationWorktreeIssues({
   ) {
     issues.push("certification stage worktrees share or alias node_modules");
   }
+  if (
+    validationMode === "sealed-evidence" &&
+    cleanupReceipt?.preWorktreeRolesSha256 ===
+      cleanupReceipt?.cleanedWorktreeRolesSha256
+  ) {
+    issues.push("worktree cleanup receipt does not prove a lifecycle transition");
+  }
   return issues;
 }
 
@@ -1782,11 +2018,32 @@ export function cleanupCertificationStageWorktrees({
   state,
   evidenceRoot,
   canonicalRoot,
+  preStateSha256,
+  completedAt,
+  invocationNonce,
 }) {
-  if (state.stages?.continuity?.status !== "passed") {
-    throw new Error("stage worktrees cannot be removed before continuity passes");
+  if (
+    state.stages?.continuity?.status !== "passed" ||
+    state.stages?.["integration-ready"]?.status !== "passed"
+  ) {
+    throw new Error(
+      "stage worktrees cannot be removed before continuity and integration readiness pass",
+    );
   }
+  if (
+    !isSha256(preStateSha256) ||
+    !isCanonicalUtcTimestamp(completedAt) ||
+    Date.parse(completedAt) < Date.parse(state.updatedAt ?? "") ||
+    !/^[A-Za-z0-9][A-Za-z0-9._:-]{15,127}$/.test(invocationNonce ?? "")
+  ) {
+    throw new Error("worktree cleanup transition identity is malformed");
+  }
+  if (certificationWorktreeValidationMode(state) !== "state-bound-live-worktrees") {
+    throw new Error("stage worktrees are not in the exact active cleanup predecessor state");
+  }
+  const preWorktreeRolesSha256 = worktreeRolesSha256(state.worktrees.roles);
   const roles = structuredClone(state.worktrees.roles);
+  const roleResults = {};
   for (const role of CERTIFICATION_WORKTREE_ROLES) {
     const binding = roles[role];
     const { sidecar } = readPrivateSidecar(binding, evidenceRoot);
@@ -1825,6 +2082,51 @@ export function cleanupCertificationStageWorktrees({
         : {}),
       privateSidecar: descriptor,
     };
+    const physicalPathAbsent = !existsSync(sidecar.realpath);
+    const registrationAbsent = !registrationPresent(
+      canonicalRoot,
+      sidecar.realpath,
+    );
+    if (!physicalPathAbsent || !registrationAbsent) {
+      throw new Error(
+        `worktree cleanup absence proof is incomplete: ${role}`,
+      );
+    }
+    roleResults[role] = {
+      role,
+      privateSidecar: descriptor,
+      privateRealpathSha256: binding.privateRealpathSha256,
+      gitCommonDirSha256: binding.gitCommonDirSha256,
+      priorLifecycleStatus: binding.lifecycleStatus,
+      priorCleanupStatus: binding.cleanupStatus,
+      priorDependencyStatus: binding.dependencyStatus ?? null,
+      resultingLifecycleStatus: roles[role].lifecycleStatus,
+      resultingCleanupStatus: roles[role].cleanupStatus,
+      resultingDependencyStatus: roles[role].dependencyStatus ?? null,
+      physicalPathAbsent,
+      registrationAbsent,
+    };
   }
-  return { schema: state.worktrees.schema, roles };
+  const receipt = {
+    schema: PRODUCTION_CERTIFICATION_WORKTREE_CLEANUP_SCHEMA,
+    owner: "worktrees:cleanup",
+    canonicalCommand: "npm run certification:worktrees:cleanup",
+    certificationId: state.certificationId,
+    candidate: {
+      id: state.candidate.id,
+      commitSha: state.candidate.commitSha,
+      treeSha: state.candidate.treeSha,
+    },
+    invocationNonce,
+    invocationNonceSha256: sha256Bytes(invocationNonce),
+    preStateSha256,
+    preStateUpdatedAt: state.updatedAt,
+    completedAt,
+    preWorktreeRolesSha256,
+    cleanedWorktreeRolesSha256: worktreeRolesSha256(roles),
+    roles: roleResults,
+    complete: true,
+  };
+  const cleanup = cleanupReceiptDescriptor(evidenceRoot, receipt);
+  return { schema: state.worktrees.schema, roles, cleanup };
 }

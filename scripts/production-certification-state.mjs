@@ -39,12 +39,14 @@ import {
 import { certificationResourcePlanIssues } from "./production-certification-resource-plan.mjs";
 import {
   CERTIFICATION_WORKTREE_ROLES,
+  CERTIFICATION_WORKTREE_CLEANUP_EVIDENCE_NAME,
   PRODUCTION_CERTIFICATION_WORKTREE_SCHEMA,
   PRODUCTION_CERTIFICATION_WORKTREE_SCHEMA_V1,
   certificationWorktreeIssues,
   createFailedCertificationStageWorktreeBinding,
   createInstalledCertificationStageWorktreeBinding,
   resolveCertificationStageWorktree,
+  readCertificationWorktreeCleanupReceipt,
 } from "./production-certification-worktrees.mjs";
 import {
   PRODUCTION_CERTIFICATION_DEPENDENCY_BINDING_SCHEMA,
@@ -1332,19 +1334,27 @@ export function updateCertificationWorktreeBinding(state, { role, binding }) {
   return sealCertificationState(next);
 }
 
-export function replaceCertificationWorktrees(state, worktrees) {
+export function replaceCertificationWorktrees(state, worktrees, { completedAt } = {}) {
   if (
     !new Set([2, 3, 4]).has(state?.version) ||
     !new Set([
       PRODUCTION_CERTIFICATION_WORKTREE_SCHEMA,
       PRODUCTION_CERTIFICATION_WORKTREE_SCHEMA_V1,
     ]).has(worktrees?.schema) ||
-    !exactKeys(worktrees?.roles, CERTIFICATION_WORKTREE_ROLES)
+    !exactKeys(worktrees?.roles, CERTIFICATION_WORKTREE_ROLES) ||
+    !exactKeys(worktrees?.cleanup, ["path", "sha256"]) ||
+    worktrees.cleanup.path !== "worktrees/cleanup.json" ||
+    !isSha256(worktrees.cleanup.sha256) ||
+    !isCanonicalUtcTimestamp(completedAt) ||
+    Date.parse(completedAt) < Date.parse(state.updatedAt ?? "")
   ) {
     throw new Error("certification worktree replacement is malformed");
   }
   const next = structuredClone(statePayload(state));
   next.worktrees = structuredClone(worktrees);
+  next.evidenceFiles[CERTIFICATION_WORKTREE_CLEANUP_EVIDENCE_NAME] =
+    structuredClone(worktrees.cleanup);
+  next.updatedAt = completedAt;
   return sealCertificationState(next);
 }
 
@@ -1478,6 +1488,7 @@ function stateShapeIssues(state) {
   const allowedEvidence = new Set([
     ...Object.values(STAGE_EVIDENCE_KEYS).flat(),
     ...(hasResources ? ["resource-preparation"] : []),
+    ...(hasWorktrees ? [CERTIFICATION_WORKTREE_CLEANUP_EVIDENCE_NAME] : []),
   ]);
   for (const [name, descriptor] of Object.entries(state?.evidenceFiles ?? {})) {
     if (
@@ -1737,6 +1748,59 @@ function requiredPassedStageIssues(state, stage) {
   return issues;
 }
 
+function certificationWorktreeCleanupTransitionIssues(state, evidenceRoot) {
+  if (!new Set([2, 3, 4]).has(state?.version)) return [];
+  const bindings = Object.values(state?.worktrees?.roles ?? {});
+  const cleaned =
+    bindings.length === CERTIFICATION_WORKTREE_ROLES.length &&
+    bindings.every(
+      (binding) =>
+        binding.lifecycleStatus === "cleaned" &&
+        binding.cleanupStatus === "removed",
+    );
+  if (!cleaned) return [];
+  const issues = [];
+  try {
+    const { receipt } = readCertificationWorktreeCleanupReceipt({
+      state,
+      evidenceRoot,
+    });
+    const preState = structuredClone(statePayload(state));
+    delete preState.evidenceFiles[CERTIFICATION_WORKTREE_CLEANUP_EVIDENCE_NAME];
+    delete preState.worktrees.cleanup;
+    for (const role of CERTIFICATION_WORKTREE_ROLES) {
+      const result = receipt.roles[role];
+      const binding = preState.worktrees.roles[role];
+      binding.lifecycleStatus = result.priorLifecycleStatus;
+      binding.cleanupStatus = result.priorCleanupStatus;
+      if (Object.hasOwn(binding, "dependencyStatus")) {
+        binding.dependencyStatus = result.priorDependencyStatus;
+      }
+    }
+    preState.updatedAt = receipt.preStateUpdatedAt;
+    const preRolesSha256 = sha256Bytes(
+      canonicalJsonBytes(preState.worktrees.roles),
+    );
+    if (
+      state.updatedAt !== receipt.completedAt ||
+      preRolesSha256 !== receipt.preWorktreeRolesSha256 ||
+      certificationStateSha256(sealCertificationState(preState)) !==
+        receipt.preStateSha256
+    ) {
+      issues.push(
+        "worktree cleanup receipt does not reconstruct the exact pre-cleanup state",
+      );
+    }
+  } catch (error) {
+    issues.push(
+      `worktree cleanup transition evidence is invalid: ${
+        error instanceof Error ? error.message : String(error)
+      }`,
+    );
+  }
+  return issues;
+}
+
 export function validateCertificationState({
   state,
   evidenceRoot,
@@ -1746,12 +1810,16 @@ export function validateCertificationState({
   sourceValidationRoot = repositoryRoot,
   artifactRoot = repositoryRoot,
   verifyCurrentSource = true,
+  verifyWorktreeBindings = true,
 }) {
   const issues = [
     ...certificationStateSealIssues(state),
     ...stateShapeIssues(state),
   ];
-  if (new Set([2, 3, 4]).has(state?.version)) {
+  if (
+    verifyWorktreeBindings &&
+    new Set([2, 3, 4]).has(state?.version)
+  ) {
     issues.push(
       ...certificationWorktreeIssues({
         state,
@@ -1759,6 +1827,7 @@ export function validateCertificationState({
         canonicalRoot: repositoryRoot,
         requirePhysical: verifyCurrentSource,
       }),
+      ...certificationWorktreeCleanupTransitionIssues(state, evidenceRoot),
     );
   }
   if (

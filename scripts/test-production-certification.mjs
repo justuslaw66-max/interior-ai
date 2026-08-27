@@ -203,28 +203,20 @@ function mutateExtractedJournal(simulationRoot, mutate) {
   writeCertificationState(statePath, state);
 }
 
-function mutateRuntimeReport(simulationRoot, mutate) {
-  mutateBoundEvidence(simulationRoot, "runtime-report", (report) => {
-    mutate(report);
-  });
-  const evidenceRoot = path.join(simulationRoot, "evidence");
-  const state = readCertificationState(
-    path.join(evidenceRoot, "certification-state.json"),
-  );
+function mutatePortableRuntimeReportIdentity(simulationRoot, mutate) {
   mutateBoundEvidence(
     simulationRoot,
     "runtime-smoke",
     (evidence) => {
-      evidence.reportSha256 = state.evidenceFiles["runtime-report"].sha256;
+      mutate(
+        evidence.portableReport.config.metadata.productionArtifactEvidence,
+      );
+      evidence.portableReportSha256 = sha256Bytes(
+        canonicalJsonBytes(evidence.portableReport),
+      );
     },
     "runtimeSmokeEvidenceSha256",
   );
-}
-
-function mutateRuntimeReportIdentity(simulationRoot, mutate) {
-  mutateRuntimeReport(simulationRoot, (report) => {
-    mutate(report.config.metadata.productionArtifactEvidence);
-  });
 }
 
 function projectSimulationRuntimeReportThroughPhysicalOwnership(simulationRoot) {
@@ -2149,12 +2141,12 @@ function stateFixture() {
   const regressions = JSON.parse(
     readFileSync("scripts/production-certification-regressions.json", "utf8"),
   );
-  assert.equal(regressions.cases.length, 44);
+  assert.equal(regressions.cases.length, 47);
   assert.deepEqual(
     regressions.cases.map((entry) => entry.id),
-    Array.from({ length: 44 }, (_, index) => index + 1),
+    Array.from({ length: 47 }, (_, index) => index + 1),
   );
-  assert.equal(new Set(regressions.cases.map((entry) => entry.defect)).size, 44);
+  assert.equal(new Set(regressions.cases.map((entry) => entry.defect)).size, 47);
   assert.equal(regressions.authPreflightDatabaseCases.length, 38);
   assert.equal(new Set(regressions.authPreflightDatabaseCases).size, 38);
   assert.equal(regressions.developmentBrowserGeneratedOutputCases.length, 17);
@@ -2177,6 +2169,16 @@ function stateFixture() {
   coveredRegressionIds.add(35);
   coveredRegressionIds.add(37);
   coveredRegressionIds.add(42);
+  for (const [id, defect] of [
+    [45, "POST_CLEANUP_SEALED_EVIDENCE_VALIDATION_MODE_DEFECT"],
+    [46, "POST_CLEANUP_DELETED_LIVE_ROOT_REOPEN_DEFECT"],
+    [47, "POST_CLEANUP_RUNTIME_REPORT_SOURCE_SELECTION_DEFECT"],
+  ]) {
+    assert.equal(regressions.cases.find((entry) => entry.id === id).defect, defect);
+    coveredRegressionIds.add(id);
+  }
+  assert.equal(regressions.postCleanupSealedEvidenceCases.length, 16);
+  assert.equal(new Set(regressions.postCleanupSealedEvidenceCases).size, 16);
   assert.equal(regressions.nestedAuthFixtureIsolationCases.length, 13);
   assert.equal(new Set(regressions.nestedAuthFixtureIsolationCases).size, 13);
   assert.equal(regressions.stageResultCases.length, 24);
@@ -2877,7 +2879,7 @@ test("Floor Plan config reaches worker test execution", async ({}, testInfo) => 
 
   for (const mutation of [
     {
-      name: "runtime raw report journal v1",
+      name: "portable runtime report journal v1",
       mutate(identity) {
         identity.semanticJournalSchema =
           "interior-ai.production-artifact-semantic-event-journal.v1";
@@ -2885,61 +2887,61 @@ test("Floor Plan config reaches worker test execution", async ({}, testInfo) => 
       },
     },
     {
-      name: "runtime raw report unknown journal schema",
+      name: "portable runtime report unknown journal schema",
       mutate(identity) {
         identity.semanticJournalSchema = "interior-ai.unknown-journal";
       },
     },
     {
-      name: "runtime raw report future journal version",
+      name: "portable runtime report future journal version",
       mutate(identity) {
         identity.semanticJournalVersion = PRODUCTION_EVIDENCE_JOURNAL_VERSION + 1;
       },
     },
     {
-      name: "runtime raw report missing journal version",
+      name: "portable runtime report missing journal version",
       mutate(identity) {
         delete identity.semanticJournalVersion;
       },
     },
     {
-      name: "runtime raw report malformed journal version",
+      name: "portable runtime report malformed journal version",
       mutate(identity) {
         identity.semanticJournalVersion = "2";
       },
     },
     {
-      name: "runtime raw report wrong nonce",
+      name: "portable runtime report wrong nonce",
       mutate(identity) {
         identity.runNonce = "123e4567-e89b-42d3-a456-426614174099";
       },
     },
     {
-      name: "runtime raw report wrong candidate commit",
+      name: "portable runtime report wrong candidate commit",
       mutate(identity) {
         identity.sourceCommitSha = "f".repeat(40);
       },
     },
     {
-      name: "runtime raw report wrong candidate tree",
+      name: "portable runtime report wrong candidate tree",
       mutate(identity) {
         identity.sourceTreeSha = "e".repeat(40);
       },
     },
     {
-      name: "runtime raw report wrong Build ID",
+      name: "portable runtime report wrong Build ID",
       mutate(identity) {
         identity.nextBuildId = "another-build";
       },
     },
     {
-      name: "runtime raw report cross-artifact SHA",
+      name: "portable runtime report cross-artifact SHA",
       mutate(identity) {
         identity.artifactSha256 = "d".repeat(64);
       },
     },
     {
-      name: "runtime raw report cross-candidate",
+      name: "portable runtime report cross-candidate",
       mutate(identity) {
         identity.candidateIdentifier = "another-candidate";
       },
@@ -2947,7 +2949,7 @@ test("Floor Plan config reaches worker test execution", async ({}, testInfo) => 
   ]) {
     assertFinalMutationRejected(
       mutation.name,
-      (clone) => mutateRuntimeReportIdentity(clone, mutation.mutate),
+      (clone) => mutatePortableRuntimeReportIdentity(clone, mutation.mutate),
       /runtime-smoke raw report does not identify the certified artifact/,
     );
   }
@@ -3105,7 +3107,7 @@ test("Floor Plan config reaches worker test execution", async ({}, testInfo) => 
   const secretOutput = assertFinalMutationRejected(
     "secret-safe runtime journal error",
     (clone) =>
-      mutateRuntimeReportIdentity(clone, (identity) => {
+      mutatePortableRuntimeReportIdentity(clone, (identity) => {
         identity.runNonce = "credential://raw-secret-must-not-print";
       }),
     /runtime-smoke raw report does not identify the certified artifact/,
@@ -4418,6 +4420,7 @@ test("Floor Plan config reaches worker test execution", async ({}, testInfo) => 
         CERTIFICATION_EXPECTED_PARENT_SHA: cleanupState.candidate.parentSha,
         CERTIFICATION_EXECUTION_CLASS: "deterministic-simulation",
         CERTIFICATION_QUALIFICATION_MODE: "1",
+        CERTIFICATION_STAGE_COMPLETED_AT: "2026-08-14T00:10:07.000Z",
       },
       encoding: "utf8",
     },
@@ -4428,7 +4431,7 @@ test("Floor Plan config reaches worker test execution", async ({}, testInfo) => 
 
 assert.deepEqual(
   [...coveredRegressionIds].sort((left, right) => left - right),
-  Array.from({ length: 44 }, (_, index) => index + 1),
+  Array.from({ length: 47 }, (_, index) => index + 1),
   "every documented regression must be exercised by an executable assertion",
 );
 

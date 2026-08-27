@@ -39,6 +39,7 @@ import {
 } from "./production-certification-state.mjs";
 import { certificationEnvironmentProfile } from "./production-certification-stage-environment.mjs";
 import { browserServerTrackedOutputEvidenceIssues } from "./production-certification-browser-server-lifecycle.mjs";
+import { certificationWorktreeValidationMode } from "./production-certification-worktrees.mjs";
 import {
   PLAYWRIGHT_EXTERNAL_EVIDENCE_ROOT,
   RUNTIME_SMOKE_EVIDENCE_DESTINATION_CLASS,
@@ -164,6 +165,25 @@ function boundRawJsonEvidence(state, evidenceRoot, name) {
     throw new Error(`certification evidence hash mismatch: ${name}`);
   }
   return { bytes, value, sha256, filePath };
+}
+
+function boundRawEvidence(state, evidenceRoot, name) {
+  const descriptor = state.evidenceFiles?.[name];
+  if (!descriptor || !isSha256(descriptor.sha256)) {
+    throw new Error(`certification evidence binding is missing: ${name}`);
+  }
+  const filePath = containedEvidencePath(evidenceRoot, descriptor.path);
+  let bytes;
+  try {
+    bytes = readFileSync(filePath);
+  } catch {
+    throw new Error(`certification evidence ${name} is missing or unreadable`);
+  }
+  const sha256 = sha256Bytes(bytes);
+  if (sha256 !== descriptor.sha256) {
+    throw new Error(`certification evidence hash mismatch: ${name}`);
+  }
+  return { bytes, sha256, filePath };
 }
 
 function identityIssues(identity, state) {
@@ -360,11 +380,16 @@ export function validateRuntimeEvidence(evidence, state, artifactRoot) {
   }
   if (
     !isSha256(evidence?.reportSha256) ||
+    !isSha256(evidence?.portableReportSha256) ||
+    !evidence?.portableReport ||
+    sha256Bytes(canonicalJsonBytes(evidence.portableReport)) !==
+      evidence.portableReportSha256 ||
     !isSha256(evidence?.phaseTimingsSha256) ||
     evidence?.complete !== true
   ) {
     issues.push("runtime-smoke raw hashes or completion marker are missing");
   }
+  issues.push(...portableRuntimeReportIssues(evidence?.portableReport));
   let runtimeProfile;
   try {
     runtimeProfile = certificationEnvironmentProfile(artifactRoot, "runtime-smoke");
@@ -635,6 +660,44 @@ function runtimeReportContainsPhysicalReporterPaths(report) {
   );
 }
 
+function machineLocalPortableReportFields(
+  value,
+  currentPath = "portableRuntimeReport",
+  result = [],
+) {
+  if (typeof value === "string") {
+    if (path.isAbsolute(value) || path.win32.isAbsolute(value)) {
+      result.push(currentPath);
+    }
+  } else if (Array.isArray(value)) {
+    value.forEach((entry, index) =>
+      machineLocalPortableReportFields(
+        entry,
+        `${currentPath}[${index}]`,
+        result,
+      ),
+    );
+  } else if (value && typeof value === "object") {
+    for (const [name, entry] of Object.entries(value)) {
+      machineLocalPortableReportFields(
+        entry,
+        `${currentPath}.${name}`,
+        result,
+      );
+    }
+  }
+  return result;
+}
+
+function portableRuntimeReportIssues(report) {
+  const fields = machineLocalPortableReportFields(report);
+  return fields.length > 0
+    ? [
+        `portable runtime report contains a machine-local path: ${fields.join(", ")}`,
+      ]
+    : [];
+}
+
 export function finalRuntimeArtifactIdentityIssues(identity, state) {
   if (
     identity?.candidateIdentifier !== state.candidate.id ||
@@ -800,6 +863,7 @@ export function verifyFinalCertificationEvidence({
   ) {
     throw new Error("deterministic simulation evidence cannot certify a real candidate");
   }
+  const worktreeValidationMode = certificationWorktreeValidationMode(state);
   const stateValidation = validateCertificationState({
     state,
     evidenceRoot,
@@ -807,6 +871,7 @@ export function verifyFinalCertificationEvidence({
     expectedHarnessSourceSha256: state.harness.sourceSha256,
     repositoryRoot: root,
     verifyCurrentSource: false,
+    verifyWorktreeBindings: false,
   });
   const issues = [...stateValidation.issues];
   for (const stage of [
@@ -844,28 +909,41 @@ export function verifyFinalCertificationEvidence({
     "phase8-completion",
   );
   const runtime = boundEvidence(state, evidenceRoot, "runtime-smoke");
-  const rawRuntime = boundRawJsonEvidence(state, evidenceRoot, "runtime-report");
+  const rawRuntime =
+    worktreeValidationMode === "sealed-evidence"
+      ? boundRawEvidence(state, evidenceRoot, "runtime-report")
+      : boundRawJsonEvidence(state, evidenceRoot, "runtime-report");
   const runtimeStart = boundEvidence(state, evidenceRoot, "runtime-start");
   const rawRuntimeTimings = boundRawJsonEvidence(
     state,
     evidenceRoot,
     "runtime-phase-timings",
   );
-  let portableRuntimeReport = rawRuntime.value;
-  if (
-    state.executionClass === "real-candidate" ||
-    runtimeReportContainsPhysicalReporterPaths(rawRuntime.value)
-  ) {
+  let portableRuntimeReport = runtime.value?.portableReport;
+  issues.push(...portableRuntimeReportIssues(portableRuntimeReport));
+  if (worktreeValidationMode !== "sealed-evidence") {
     try {
-      portableRuntimeReport = canonicalizeBoundRuntimeSmokeReport({
-        repositoryRoot: finalRuntimeReportProducerRoot(state, evidenceRoot),
-        reportPath: rawRuntime.filePath,
-        markerPath: runtimeStart.filePath,
-        authorizedExternalRoot: evidenceRoot,
-        expectedRawReportSha256: rawRuntime.sha256,
-        reportAuthorizationEnvironment:
-          finalRuntimeReportAuthorizationEnvironment(state),
-      });
+      const currentPortableRuntimeReport =
+        state.executionClass === "real-candidate" ||
+        runtimeReportContainsPhysicalReporterPaths(rawRuntime.value)
+          ? canonicalizeBoundRuntimeSmokeReport({
+              repositoryRoot: finalRuntimeReportProducerRoot(state, evidenceRoot),
+              reportPath: rawRuntime.filePath,
+              markerPath: runtimeStart.filePath,
+              authorizedExternalRoot: evidenceRoot,
+              expectedRawReportSha256: rawRuntime.sha256,
+              reportAuthorizationEnvironment:
+                finalRuntimeReportAuthorizationEnvironment(state),
+            })
+          : rawRuntime.value;
+      if (
+        JSON.stringify(currentPortableRuntimeReport) !==
+        JSON.stringify(portableRuntimeReport)
+      ) {
+        issues.push(
+          "sealed portable runtime report differs from the live raw report projection",
+        );
+      }
     } catch (error) {
       issues.push(error instanceof Error ? error.message : String(error));
     }

@@ -1,5 +1,20 @@
 # Required-test truthfulness
 
+## Post-cleanup sealed-evidence validation ownership — 2026-08-28
+
+The production-certification state/worktree owner and deterministic simulation
+now cover the 16-case `postCleanupSealedEvidenceCases` inventory in
+`scripts/production-certification-regressions.json`. The same real read-only
+validator is exercised before cleanup with strict physical roots and after an
+integration-ready, receipt-bound three-worktree cleanup from both the canonical
+checkout and an unrelated safe cwd. Runtime truthfulness consumes the sealed
+portable Playwright projection after cleanup while independently rehashing the
+unchanged raw report. Focused negatives cover missing or forged receipts and
+sidecars, surviving paths/registrations, raw-hash alteration, portable path
+leakage, and foreign candidate/artifact/attempt/nonce identities. The existing
+continuity mismatch case remains substantive and the terminal validator must
+return the exact unchanged post-cleanup state SHA.
+
 ## Nested auth fixture regression isolation — 2026-08-21
 
 The existing merge-required `ci.production-artifact-contract` owner remains the
