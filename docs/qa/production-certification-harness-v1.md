@@ -202,8 +202,13 @@ the frame, independently hashes canonical physical state and every referenced
 evidence file, runs the canonical state validator, matches exact
 stage/attempt/status/classification/consumption/process identity, validates
 safe state-validation details, and returns only the exact physical next-state
-SHA for propagation. The wrapper now publishes success only after its durable
-post-state and publishes failure only after the failed state/evidence and
+SHA for propagation. Validation requires an explicit repository-root context;
+while certification worktrees are active, the consumer resolves source and
+final-artifact roots from the sealed state/private-sidecar bindings instead of
+using its cwd or the invoking checkout as the artifact root. After the atomic
+cleanup transition, it validates sealed evidence and cleanup identities without
+reopening deleted live paths. The wrapper now publishes success only after its
+durable post-state and publishes failure only after the failed state/evidence and
 non-rehabilitating database cleanup are settled.
 An explicit abort-cleanup result is failure-authoritative: it binds the
 lifecycle-retained original stage, attempt, classification, consumed bit,
@@ -212,15 +217,17 @@ failure is safely retryable. Non-stage and stage-precondition frames require
 zero consumption and null child/spawn results unless physical state proves a
 completed stage attempt.
 
-The focused 25-case matrix covers npm prose, multiline Prisma logs, earlier
+The focused 26-case matrix covers npm prose, multiline Prisma logs, earlier
 JSON-looking logs, missing/malformed/competing/trailing frames, pending state,
 missing/failed/tampered evidence, cross-run/candidate/commit, stale nonce,
 state/stage/attempt/consumption mismatch, nonzero consumed failure, and
-signal/spawn truthfulness, retained cleanup authority, producer privacy, and
-consumable redacted invalid-state reports. Deterministic simulation drives the actual framed
-source-validation wrapper through all 19 checks, proves generated-output
-cleanup, consumes the exact next-state SHA, and stops at the pending build
-boundary. Doctor requires the owner, consumer, CLI, regression, physical
+signal/spawn truthfulness, retained cleanup authority, producer privacy,
+implicit-cwd rejection, and consumable redacted invalid-state reports.
+Deterministic simulation drives the actual framed source-validation and
+continuity wrappers, proves final-artifact/canonical/safe-cwd equivalence,
+strict foreign/replaced/symlink/tamper rejection, exact state-SHA propagation,
+integration readiness, and sealed post-cleanup validation. Doctor requires the
+owner, consumer, CLI, regression, physical
 state/evidence validation, unchanged auth/database channels, and absence of a
 copied/backward parser before resource creation.
 

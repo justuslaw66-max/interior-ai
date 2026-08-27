@@ -136,6 +136,7 @@ function validateFixture(fixture, value = fixture.value, overrides = {}) {
     value,
     statePath: fixture.statePath,
     evidenceRoot: fixture.evidenceRoot,
+    repositoryRoot: process.cwd(),
     expectedCommand: "doctor",
     expectedInvocationNonce: NONCE,
     expectedPreStateSha256: certificationStateSha256(fixture.preState),
@@ -310,6 +311,7 @@ try {
       value: sourceValue,
       statePath: sourceStatePath,
       evidenceRoot: sourceEvidenceRoot,
+      repositoryRoot: process.cwd(),
       expectedCommand: "source-validation",
       expectedInvocationNonce: NONCE,
       expectedPreStateSha256: certificationStateSha256(doctorPassed),
@@ -438,6 +440,7 @@ try {
   const cleanupValidationOptions = {
     statePath: cleanupFailure.statePath,
     evidenceRoot: cleanupFailure.evidenceRoot,
+    repositoryRoot: process.cwd(),
     expectedCommand: "database:abort-cleanup",
     expectedInvocationNonce: NONCE,
     expectedPreStateSha256: certificationStateSha256(
@@ -545,6 +548,7 @@ try {
   const automaticAbortValidationOptions = {
     statePath: automaticAbortFixture.statePath,
     evidenceRoot: automaticAbortFixture.evidenceRoot,
+    repositoryRoot: process.cwd(),
     expectedCommand: "archive-preflight",
     expectedInvocationNonce: NONCE,
     expectedPreStateSha256: certificationStateSha256(
@@ -697,6 +701,23 @@ try {
   assert.doesNotMatch(consumerSource, /parseCertificationChildJson|parseLastJson/);
   assert.match(simulationSource, /runCertificationStageCommand/);
   assert.match(simulationSource, /sourceValidationCheckCount/);
+  await assert.rejects(
+    runCertificationStageCommand({ command: "doctor" }),
+    /requires an explicit repository root/,
+  );
+  assert.match(
+    validateCertificationStageResult({
+      value: baseline.value,
+      statePath: baseline.statePath,
+      evidenceRoot: baseline.evidenceRoot,
+      expectedCommand: "doctor",
+      expectedInvocationNonce: NONCE,
+      expectedPreStateSha256: certificationStateSha256(baseline.preState),
+      verifyCurrentSource: false,
+    }).issues.join("\n"),
+    /requires an explicit repository root/,
+  );
+  passedCases.push("consumer-rejects-implicit-cwd-root-context");
   const actualWrapperConsumption = await runCertificationStageCommand({
     command: "state:validate",
     repositoryRoot: process.cwd(),
@@ -725,6 +746,7 @@ try {
       value: wrongPreconditionConsumption,
       statePath: baseline.statePath,
       evidenceRoot: baseline.evidenceRoot,
+      repositoryRoot: process.cwd(),
       expectedCommand: "state:validate",
       expectedInvocationNonce: "actual-wrapper-stage-result-0001",
       expectedPreStateSha256: certificationStateSha256(baseline.postState),
@@ -744,6 +766,7 @@ try {
       value: wrongPreconditionSpawn,
       statePath: baseline.statePath,
       evidenceRoot: baseline.evidenceRoot,
+      repositoryRoot: process.cwd(),
       expectedCommand: "state:validate",
       expectedInvocationNonce: "actual-wrapper-stage-result-0001",
       expectedPreStateSha256: certificationStateSha256(baseline.postState),
@@ -816,7 +839,7 @@ try {
 
   assert.equal(
     passedCases.length,
-    25,
+    26,
     "Production certification stage-result consumer tests passed.",
   );
   process.stdout.write(

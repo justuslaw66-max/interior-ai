@@ -2442,6 +2442,48 @@ test("Floor Plan config reaches worker test execution", async ({}, testInfo) => 
     "state-v4/manifest-v3/journal-v2/physical-final-standalone",
   );
   assert.equal(simulation.integrationReady, true);
+  assert.deepEqual(
+    {
+      passedFrameAccepted:
+        simulation.continuityResultConsumer.passedFrameAccepted,
+      cwdIndependent: simulation.continuityResultConsumer.cwdIndependent,
+      identityTamperRejected:
+        simulation.continuityResultConsumer.identityTamperRejected,
+      artifactIdentityTamperRejected:
+        simulation.continuityResultConsumer.artifactIdentityTamperRejected,
+      alteredSnapshotEvidenceRejected:
+        simulation.continuityResultConsumer.alteredSnapshotEvidenceRejected,
+      missingLiveRootRejected:
+        simulation.continuityResultConsumer.missingLiveRootRejected,
+      missingLiveRootCallerOptOutRejected:
+        simulation.continuityResultConsumer
+          .missingLiveRootCallerOptOutRejected,
+      canonicalRootSubstitutionRejected:
+        simulation.continuityResultConsumer.canonicalRootSubstitutionRejected,
+      foreignWorktreeReplacementRejected:
+        simulation.continuityResultConsumer.foreignWorktreeReplacementRejected,
+      realpathEscapeRejected:
+        simulation.continuityResultConsumer.realpathEscapeRejected,
+      genuineMismatchFailedClosed:
+        simulation.continuityResultConsumer.genuineMismatchFailedClosed,
+      integrationReadyConsumed:
+        simulation.continuityResultConsumer.integrationReadyConsumed,
+    },
+    {
+      passedFrameAccepted: true,
+      cwdIndependent: true,
+      identityTamperRejected: true,
+      artifactIdentityTamperRejected: true,
+      alteredSnapshotEvidenceRejected: true,
+      missingLiveRootRejected: true,
+      missingLiveRootCallerOptOutRejected: true,
+      canonicalRootSubstitutionRejected: true,
+      foreignWorktreeReplacementRejected: true,
+      realpathEscapeRejected: true,
+      genuineMismatchFailedClosed: true,
+      integrationReadyConsumed: true,
+    },
+  );
   assert.equal(
     simulation.stageOrder.canonicalOwner,
     "scripts/production-certification-contract.mjs",

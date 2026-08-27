@@ -261,8 +261,11 @@ export function validateCertificationStageResultContracts(repositoryRoot) {
     !test.includes("final non-empty") ||
     !test.includes("passed-source-check-failure-rejected") ||
     !test.includes("real-source-wrapper-consumer-build-boundary-registered") ||
+    !test.includes("consumer-rejects-implicit-cwd-root-context") ||
     !simulation.includes("runCertificationStageCommand") ||
     !simulation.includes("historical-source-validation-npm-prisma") ||
+    !simulation.includes("continuityConsumerCwdIndependent") ||
+    !simulation.includes("postCleanupConsumerUsedSealedEvidence") ||
     !simulation.includes("exactNextStateSha256") ||
     packageJson.scripts["test:production-certification-stage-result"] !==
       "node scripts/test-production-certification-stage-result.mjs" ||

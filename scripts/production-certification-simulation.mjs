@@ -56,6 +56,7 @@ import { createCertificationResourcePlan } from "./production-certification-reso
 import {
   CERTIFICATION_WORKTREE_ROLES,
   certificationWorktreeIssues,
+  resolveCertificationStateValidationRoots,
 } from "./production-certification-worktrees.mjs";
 import {
   installCertificationWorktreeDependencies,
@@ -106,6 +107,8 @@ import {
 import {
   certificationStageResultContractIdentity,
   parseCertificationStageResult,
+  sealCertificationStageResult,
+  validateCertificationStageResult,
 } from "./production-certification-stage-result-contract.mjs";
 import {
   authFixtureRegressionCapabilityNames,
@@ -4443,19 +4446,17 @@ export async function runProductionCertificationSimulation({
   );
   const stagedRetryBytes = readFileSync(stagedRetryPath);
   writeFileSync(stagedRetryPath, "continuity retry mutation\n");
-  const failedContinuity = spawnSync(
-    process.execPath,
-    ["scripts/production-certification.mjs", "continuity"],
-    {
-      cwd: canonicalRoot,
-      encoding: "utf8",
-      env: {
-        ...doctorEnvironment,
-        CERTIFICATION_STAGE_STARTED_AT: nextTimestamp(),
-        CERTIFICATION_STAGE_COMPLETED_AT: nextTimestamp(),
-      },
+  const failedContinuityConsumption = await runCertificationStageCommand({
+    command: "continuity",
+    repositoryRoot: canonicalRoot,
+    environment: {
+      ...doctorEnvironment,
+      CERTIFICATION_STAGE_RESULT_NONCE:
+        "simulation-continuity-mismatch-result-0001",
+      CERTIFICATION_STAGE_STARTED_AT: nextTimestamp(),
+      CERTIFICATION_STAGE_COMPLETED_AT: nextTimestamp(),
     },
-  );
+  });
   writeFileSync(stagedRetryPath, stagedRetryBytes);
   const failedContinuityState = readCertificationState(statePath);
   const failedContinuityDescriptor =
@@ -4471,7 +4472,10 @@ export async function runProductionCertificationSimulation({
     artifactRoot: fixtureRoot,
   });
   const continuityFailureRetryRetained =
-    failedContinuity.status !== 0 &&
+    failedContinuityConsumption.result.result === "failed" &&
+    failedContinuityConsumption.process?.exitCode === 1 &&
+    failedContinuityConsumption.nextStateSha256 ===
+      certificationStateSha256(failedContinuityState) &&
     failedContinuityState.stages.continuity.status === "failed" &&
     failedContinuityState.stages.continuity.consumedSubstantiveGate === false &&
     failedContinuityDescriptor.path === "continuity/attempt-001.json" &&
@@ -4479,16 +4483,211 @@ export async function runProductionCertificationSimulation({
   if (!continuityFailureRetryRetained) {
     throw new Error("failed continuity attempt was not retained as retryable evidence");
   }
-  run(
-    process.execPath,
-    ["scripts/production-certification.mjs", "continuity"],
-    canonicalRoot,
-    {
+  const successfulContinuityConsumption = await runCertificationStageCommand({
+    command: "continuity",
+    repositoryRoot: canonicalRoot,
+    environment: {
       ...doctorEnvironment,
+      CERTIFICATION_STAGE_RESULT_NONCE:
+        "simulation-continuity-passed-result-0001",
       CERTIFICATION_STAGE_STARTED_AT: nextTimestamp(),
       CERTIFICATION_STAGE_COMPLETED_AT: nextTimestamp(),
     },
+  });
+  const continuityPassedState = readCertificationState(statePath);
+  const continuityEvidence = JSON.parse(
+    readFileSync(
+      path.join(
+        evidenceRoot,
+        continuityPassedState.evidenceFiles.continuity.path,
+      ),
+      "utf8",
+    ),
   );
+  const continuityValidationOptions = {
+    value: successfulContinuityConsumption.result,
+    statePath,
+    evidenceRoot,
+    repositoryRoot: canonicalRoot,
+    expectedCommand: "continuity",
+    expectedInvocationNonce:
+      successfulContinuityConsumption.result.invocationNonce,
+    expectedPreStateSha256:
+      successfulContinuityConsumption.result.transition.preStateSha256,
+    expectedCertificationId: continuityPassedState.certificationId,
+    expectedCandidate: {
+      id: continuityPassedState.candidate.id,
+      commitSha: continuityPassedState.candidate.commitSha,
+      treeSha: continuityPassedState.candidate.treeSha,
+    },
+    expectedHarnessSourceSha256:
+      continuityPassedState.harness.sourceSha256,
+  };
+  const validateContinuityFrame = (
+    value = continuityValidationOptions.value,
+    overrides = {},
+  ) =>
+    validateCertificationStageResult({
+      ...continuityValidationOptions,
+      value,
+      ...overrides,
+    });
+  const validateFromCwd = (cwd) => {
+    const previous = process.cwd();
+    try {
+      process.chdir(cwd);
+      return validateContinuityFrame();
+    } finally {
+      process.chdir(previous);
+    }
+  };
+  const safeConsumerCwd = path.join(simulationRoot, "read-only-consumer-cwd");
+  mkdirSync(safeConsumerCwd, { mode: 0o700 });
+  const continuityConsumerCwdIndependent = [
+    fixtureRoot,
+    canonicalRoot,
+    safeConsumerCwd,
+  ].every((cwd) => validateFromCwd(cwd).valid);
+  const continuityPassedFrameAccepted =
+    successfulContinuityConsumption.result.result === "passed" &&
+    successfulContinuityConsumption.nextStateSha256 ===
+      certificationStateSha256(continuityPassedState) &&
+    Object.keys(continuityEvidence.inputSnapshots).length === 6 &&
+    continuityEvidence.comparisons.length === 3 &&
+    continuityEvidence.comparisons.every(
+      (comparison) => comparison.equal === true,
+    ) &&
+    continuityEvidence.mismatches.length === 0 &&
+    continuityConsumerCwdIndependent;
+  if (!continuityPassedFrameAccepted) {
+    throw new Error(
+      "passed continuity frame was not accepted from every safe consumer cwd",
+    );
+  }
+
+  const resealedContinuityFrame = (mutate) => {
+    const changed = structuredClone(successfulContinuityConsumption.result);
+    mutate(changed);
+    return sealCertificationStageResult(changed);
+  };
+  const continuityFrameIdentityTamperRejected = [
+    (value) => {
+      value.certificationId = "foreign-certification-result";
+    },
+    (value) => {
+      value.candidate.id = "foreign-continuity-candidate";
+    },
+    (value) => {
+      value.candidate.commitSha = "a".repeat(40);
+    },
+    (value) => {
+      value.candidate.treeSha = "b".repeat(40);
+    },
+    (value) => {
+      value.stage.attemptId = "continuity:999";
+      value.stage.attemptNumber = 999;
+    },
+    (value) => {
+      value.invocationNonce = "foreign-continuity-invocation-nonce";
+    },
+  ].every(
+    (mutate) => !validateContinuityFrame(resealedContinuityFrame(mutate)).valid,
+  );
+
+  const physicalMutationRejected = (filePath, changedBytes) => {
+    const original = readFileSync(filePath);
+    try {
+      writeFileSync(filePath, changedBytes);
+      return !validateContinuityFrame().valid;
+    } finally {
+      writeFileSync(filePath, original);
+    }
+  };
+  const continuityArtifactIdentityTamperRejected = [
+    [".next/static/chunk.js", "foreign artifact bytes\n"],
+    [".next/BUILD_ID", "foreign-build-id\n"],
+    [
+      ".local/production-artifact-evidence/manifest.json",
+      '{"foreign":"manifest"}\n',
+    ],
+    [
+      ".local/production-artifact-evidence/semantic-event-journal.json",
+      '{"foreign":"journal"}\n',
+    ],
+  ].every(([relativePath, bytes]) =>
+    physicalMutationRejected(path.join(fixtureRoot, relativePath), bytes),
+  );
+  const snapshotDescriptor =
+    continuityPassedState.evidenceFiles[snapshotEvidenceName("immediateBuild")];
+  const snapshotPath = path.join(evidenceRoot, snapshotDescriptor.path);
+  const snapshotBytes = readFileSync(snapshotPath);
+  let alteredSnapshotEvidenceRejected = false;
+  try {
+    writeFileSync(snapshotPath, Buffer.concat([snapshotBytes, Buffer.from(" ")]));
+    alteredSnapshotEvidenceRejected = !validateContinuityFrame().valid;
+  } finally {
+    writeFileSync(snapshotPath, snapshotBytes);
+  }
+
+  const savedArtifactRoot = `${fixtureRoot}-consumer-saved`;
+  renameSync(fixtureRoot, savedArtifactRoot);
+  let missingLiveRootRejected = false;
+  let missingLiveRootCallerOptOutRejected = false;
+  try {
+    missingLiveRootRejected = !validateContinuityFrame().valid;
+    missingLiveRootCallerOptOutRejected = !validateContinuityFrame(
+      continuityValidationOptions.value,
+      { verifyCurrentSource: false },
+    ).valid;
+  } finally {
+    renameSync(savedArtifactRoot, fixtureRoot);
+  }
+  renameSync(fixtureRoot, savedArtifactRoot);
+  symlinkSync(canonicalRoot, fixtureRoot, "dir");
+  let canonicalRootSubstitutionRejected = false;
+  try {
+    canonicalRootSubstitutionRejected = !validateContinuityFrame().valid;
+  } finally {
+    unlinkSync(fixtureRoot);
+    renameSync(savedArtifactRoot, fixtureRoot);
+  }
+  renameSync(fixtureRoot, savedArtifactRoot);
+  renameSync(developmentWorktreeRoot, fixtureRoot);
+  let foreignWorktreeReplacementRejected = false;
+  try {
+    foreignWorktreeReplacementRejected = !validateContinuityFrame().valid;
+  } finally {
+    renameSync(fixtureRoot, developmentWorktreeRoot);
+    renameSync(savedArtifactRoot, fixtureRoot);
+  }
+  const liveChunkPath = path.join(fixtureRoot, ".next/static/chunk.js");
+  const savedLiveChunkPath = `${liveChunkPath}.consumer-saved`;
+  const escapingTarget = path.join(simulationRoot, "escaping-continuity-file");
+  writeFileSync(escapingTarget, "foreign physical target\n");
+  renameSync(liveChunkPath, savedLiveChunkPath);
+  symlinkSync(escapingTarget, liveChunkPath);
+  let realpathEscapeRejected = false;
+  try {
+    realpathEscapeRejected = !validateContinuityFrame().valid;
+  } finally {
+    unlinkSync(liveChunkPath);
+    renameSync(savedLiveChunkPath, liveChunkPath);
+    unlinkSync(escapingTarget);
+  }
+  const continuityPhysicalContextTamperRejected =
+    continuityFrameIdentityTamperRejected &&
+    continuityArtifactIdentityTamperRejected &&
+    alteredSnapshotEvidenceRejected &&
+    missingLiveRootRejected &&
+    missingLiveRootCallerOptOutRejected &&
+    canonicalRootSubstitutionRejected &&
+    foreignWorktreeReplacementRejected &&
+    realpathEscapeRejected;
+  if (!continuityPhysicalContextTamperRejected) {
+    throw new Error(
+      "continuity result consumer physical-context tamper matrix did not fail closed",
+    );
+  }
   run(
     process.execPath,
     ["scripts/production-certification.mjs", "state:validate"],
@@ -4504,12 +4703,13 @@ export async function runProductionCertificationSimulation({
       CERTIFICATION_EXPECTED_INTEGRATION_TREE_SHA: identity.integrationTreeSha,
     },
   );
-  run(
-    process.execPath,
-    ["scripts/production-certification.mjs", "integration-ready"],
-    canonicalRoot,
-    {
+  const integrationReadyConsumption = await runCertificationStageCommand({
+    command: "integration-ready",
+    repositoryRoot: canonicalRoot,
+    environment: {
       ...doctorEnvironment,
+      CERTIFICATION_STAGE_RESULT_NONCE:
+        "simulation-integration-ready-result-0001",
       CERTIFICATION_STAGE_STARTED_AT: nextTimestamp(),
       CERTIFICATION_STAGE_COMPLETED_AT: nextTimestamp(),
       CERTIFICATION_INTEGRATION_BRANCH_REF: "refs/heads/integration",
@@ -4518,8 +4718,18 @@ export async function runProductionCertificationSimulation({
         identity.integrationCommitSha,
       CERTIFICATION_EXPECTED_INTEGRATION_TREE_SHA: identity.integrationTreeSha,
     },
-  );
+  });
   state = readCertificationState(statePath);
+  const integrationReadyConsumedCorrectedContinuity =
+    integrationReadyConsumption.result.result === "passed" &&
+    integrationReadyConsumption.nextStateSha256 ===
+      certificationStateSha256(state) &&
+    state.stages["integration-ready"].status === "passed";
+  if (!integrationReadyConsumedCorrectedContinuity) {
+    throw new Error(
+      "integration-ready did not consume the corrected passed continuity result",
+    );
+  }
   if (
     state.stages.continuity.attempts.length !== 2 ||
     state.stages.continuity.attempts[0].status !== "failed" ||
@@ -4813,13 +5023,17 @@ export async function runProductionCertificationSimulation({
   }
   let removedWorktreeEvidenceReuseRejected = !cleanupWorktrees;
   let cleanedDependencyReceiptDeletionRejected = !cleanupWorktrees;
+  let postCleanupConsumerUsedSealedEvidence = !cleanupWorktrees;
   if (cleanupWorktrees) {
-    run(
-      process.execPath,
-      ["scripts/production-certification.mjs", "worktrees:cleanup"],
-      canonicalRoot,
-      doctorEnvironment,
-    );
+    const cleanupConsumption = await runCertificationStageCommand({
+      command: "worktrees:cleanup",
+      repositoryRoot: canonicalRoot,
+      environment: {
+        ...doctorEnvironment,
+        CERTIFICATION_STAGE_RESULT_NONCE:
+          "simulation-worktree-cleanup-result-0001",
+      },
+    });
     state = readCertificationState(statePath);
     if (
       CERTIFICATION_WORKTREE_ROLES.some(
@@ -4830,6 +5044,37 @@ export async function runProductionCertificationSimulation({
       )
     ) {
       throw new Error("simulation cleanup did not remove only the three task worktrees");
+    }
+    const previous = process.cwd();
+    try {
+      process.chdir(safeConsumerCwd);
+      const postCleanupRoots = resolveCertificationStateValidationRoots({
+        state,
+        evidenceRoot,
+        canonicalRoot,
+      });
+      postCleanupConsumerUsedSealedEvidence =
+        postCleanupRoots.lifecycle === "sealed-evidence" &&
+        validateCertificationStageResult({
+          value: cleanupConsumption.result,
+          statePath,
+          evidenceRoot,
+          repositoryRoot: canonicalRoot,
+          expectedCommand: "worktrees:cleanup",
+          expectedInvocationNonce: cleanupConsumption.result.invocationNonce,
+          expectedPreStateSha256:
+            cleanupConsumption.result.transition.preStateSha256,
+        }).valid;
+    } finally {
+      process.chdir(previous);
+    }
+    if (
+      cleanupConsumption.nextStateSha256 !== certificationStateSha256(state) ||
+      !postCleanupConsumerUsedSealedEvidence
+    ) {
+      throw new Error(
+        "post-cleanup result consumer did not validate sealed evidence independently of deleted live roots",
+      );
     }
     const removedStateBytes = readFileSync(statePath);
     try {
@@ -4897,6 +5142,24 @@ export async function runProductionCertificationSimulation({
       exactSourceValidationNoisyOutput: true,
       exactNextStateSha256: successfulSourceConsumption.nextStateSha256,
       buildBoundaryPending: successfulSourceBuildBoundaryPending,
+    },
+    continuityResultConsumer: {
+      passedFrameAccepted: continuityPassedFrameAccepted,
+      cwdIndependent: continuityConsumerCwdIndependent,
+      exactNextStateSha256:
+        successfulContinuityConsumption.nextStateSha256,
+      identityTamperRejected: continuityFrameIdentityTamperRejected,
+      artifactIdentityTamperRejected:
+        continuityArtifactIdentityTamperRejected,
+      alteredSnapshotEvidenceRejected,
+      missingLiveRootRejected,
+      missingLiveRootCallerOptOutRejected,
+      canonicalRootSubstitutionRejected,
+      foreignWorktreeReplacementRejected,
+      realpathEscapeRejected,
+      genuineMismatchFailedClosed: continuityFailureRetryRetained,
+      integrationReadyConsumed: integrationReadyConsumedCorrectedContinuity,
+      postCleanupSealedEvidence: postCleanupConsumerUsedSealedEvidence,
     },
     sourceValidationCheckCount: sourceCheckIds.length,
     sourceValidationNestedAuthFixtureRegression: {
@@ -5067,6 +5330,7 @@ export async function runProductionCertificationSimulation({
       artifactMutationPreventsContinuityAndReadiness: artifactMutationRejected,
       copiedArtifactHashRejected: true,
       continuityFailureRetryRetained,
+      continuityPhysicalContextTamperRejected,
       liveMutationBeforePhase8Rejected,
       liveMutationDuringPhase8Rejected,
       wrongEnvironmentProfileRejected,

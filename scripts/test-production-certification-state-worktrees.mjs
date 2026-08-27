@@ -564,6 +564,10 @@ async function transactionalValidationMatrix() {
   assert.equal(simulation.dependencyLifecycle.physicalFixtureInstallation, true);
   assert.equal(simulation.dependencyLifecycle.atomicBinding, true);
   assert.equal(simulation.dependencyLifecycle.postStageRevalidation, true);
+  assert.equal(
+    simulation.continuityResultConsumer.postCleanupSealedEvidence,
+    true,
+  );
   const canonicalRoot = path.join(simulation.simulationRoot, "source");
   const { statePath, state, environment } = cliEnvironment(simulation.simulationRoot);
   assert.equal(state.stages.doctor.status, "passed");

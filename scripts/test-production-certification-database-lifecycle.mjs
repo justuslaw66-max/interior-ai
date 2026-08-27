@@ -2051,6 +2051,7 @@ async function deterministicContractCoverage() {
     const validationOptions = {
       statePath,
       evidenceRoot: databaseResultFixture.root,
+      repositoryRoot,
       expectedCommand: "database:verify-final",
       expectedInvocationNonce: invocation.nonce,
       expectedPreStateSha256: invocation.preStateSha256,

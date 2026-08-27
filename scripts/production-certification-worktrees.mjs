@@ -1228,6 +1228,74 @@ export function resolveCertificationStageWorktree({
   return { ...inspection, binding };
 }
 
+function validationPhase(binding) {
+  if (binding?.dependencyStatus === "failed") return "failed";
+  if (
+    binding?.dependencyStatus === "installed" ||
+    (binding?.dependencyStatus === undefined &&
+      binding?.dependencyIdentitySha256 !== null)
+  ) {
+    return "active";
+  }
+  return "pristine";
+}
+
+export function resolveCertificationStateValidationRoots({
+  state,
+  evidenceRoot,
+  canonicalRoot,
+  verifyPhysical = true,
+}) {
+  const sealedOnly = {
+    sourceValidationRoot: canonicalRoot,
+    artifactRoot: canonicalRoot,
+    verifyCurrentSource: false,
+    lifecycle: "sealed-evidence",
+  };
+  if (!new Set([2, 3, 4]).has(state?.version)) {
+    return {
+      ...sealedOnly,
+      verifyCurrentSource: verifyPhysical,
+      lifecycle: "legacy-repository-root",
+    };
+  }
+  const bindings = Object.values(state?.worktrees?.roles ?? {});
+  const allCleaned =
+    bindings.length === CERTIFICATION_WORKTREE_ROLES.length &&
+    bindings.every(
+      (binding) =>
+        binding.lifecycleStatus === "cleaned" &&
+        binding.cleanupStatus === "removed",
+    );
+  if (allCleaned) return sealedOnly;
+  if (
+    bindings.length !== CERTIFICATION_WORKTREE_ROLES.length ||
+    bindings.some(
+      (binding) =>
+        binding.lifecycleStatus !== "active" ||
+        binding.cleanupStatus !== "pending",
+    )
+  ) {
+    throw new Error(
+      "certification validation roots have a mixed or invalid worktree lifecycle",
+    );
+  }
+  const resolveRole = (role) =>
+    resolveCertificationStageWorktree({
+      state,
+      evidenceRoot,
+      canonicalRoot,
+      role,
+      phase: validationPhase(state.worktrees.roles[role]),
+    }).root;
+  return {
+    sourceValidationRoot: resolveRole("source-validation"),
+    artifactRoot: resolveRole("final-artifact"),
+    verifyCurrentSource: true,
+    lifecycle: "state-bound-live-worktrees",
+  };
+}
+
 export function refreshCertificationStageWorktreeBinding({
   state,
   evidenceRoot,

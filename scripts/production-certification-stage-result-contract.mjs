@@ -23,7 +23,10 @@ import {
 } from "./production-certification-state.mjs";
 import { resolveRetainedExternalEvidenceFile } from "./playwright-report-path.mjs";
 import { databaseLifecycleEvidenceIssues } from "./production-certification-database-contract.mjs";
-import { readCertificationPreStateFailureReceipt } from "./production-certification-worktrees.mjs";
+import {
+  readCertificationPreStateFailureReceipt,
+  resolveCertificationStateValidationRoots,
+} from "./production-certification-worktrees.mjs";
 
 export const PRODUCTION_CERTIFICATION_STAGE_RESULT_SCHEMA =
   "interior-ai.production-certification-stage-command-result.v1";
@@ -1596,7 +1599,7 @@ export function validateCertificationStageResult({
   value,
   statePath,
   evidenceRoot,
-  repositoryRoot = process.cwd(),
+  repositoryRoot,
   expectedCommand,
   expectedMode = PRODUCTION_CERTIFICATION_STAGE_RESULT_MODE,
   expectedInvocationNonce,
@@ -1610,6 +1613,9 @@ export function validateCertificationStageResult({
   const issues = [
     ...resultShapeIssues(value),
     ...privateValueIssues(value, sensitiveValues),
+    ...(typeof repositoryRoot === "string" && repositoryRoot.trim()
+      ? []
+      : ["certification stage result validation requires an explicit repository root"]),
   ];
   if (issues.length > 0) return { valid: false, issues, state: null };
   const contract = certificationStageResultContractIdentity();
@@ -1803,15 +1809,34 @@ export function validateCertificationStageResult({
   ) {
     issues.push("certification stage result harness identity mismatch");
   }
+  let validationRoots = {
+    sourceValidationRoot: repositoryRoot,
+    artifactRoot: repositoryRoot,
+    verifyCurrentSource,
+  };
+  try {
+    validationRoots = resolveCertificationStateValidationRoots({
+      state,
+      evidenceRoot,
+      canonicalRoot: repositoryRoot,
+      verifyPhysical: verifyCurrentSource,
+    });
+  } catch (error) {
+    issues.push(
+      `physical certification validation root is invalid: ${
+        error instanceof Error ? error.message : String(error)
+      }`,
+    );
+  }
   const validation = validateCertificationState({
     state,
     evidenceRoot,
     expectedCandidate: state.candidate,
     expectedHarnessSourceSha256: state.harness.sourceSha256,
     repositoryRoot,
-    sourceValidationRoot: repositoryRoot,
-    artifactRoot: repositoryRoot,
-    verifyCurrentSource,
+    sourceValidationRoot: validationRoots.sourceValidationRoot,
+    artifactRoot: validationRoots.artifactRoot,
+    verifyCurrentSource: validationRoots.verifyCurrentSource,
   });
   const physicalStateIssues = validation.issues.map((issue) =>
     sanitizeStageResultString(issue, sensitiveValues),

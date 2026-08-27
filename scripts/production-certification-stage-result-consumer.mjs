@@ -35,7 +35,7 @@ function spawnErrorClassification(error) {
 
 export async function runCertificationStageCommand({
   command,
-  repositoryRoot = process.cwd(),
+  repositoryRoot,
   environment = process.env,
   executable = process.execPath,
   args = ["scripts/production-certification.mjs", command],
@@ -44,6 +44,11 @@ export async function runCertificationStageCommand({
   expectedHarnessSourceSha256,
   verifyCurrentSource = true,
 } = {}) {
+  if (!repositoryRoot) {
+    throw new Error(
+      "certification stage-result consumer requires an explicit repository root",
+    );
+  }
   const nonce = createCertificationStageResultNonce(environment);
   const childEnvironment = {
     ...environment,
@@ -145,11 +150,16 @@ export function validateCertificationStageResultFile({
   stderrPath = null,
   statePath,
   evidenceRoot,
-  repositoryRoot = process.cwd(),
+  repositoryRoot,
   command,
   invocationNonce,
   preStateSha256,
 } = {}) {
+  if (!repositoryRoot) {
+    throw new Error(
+      "stage-result file validation requires an explicit repository root",
+    );
+  }
   const stdout = readFileSync(stdoutPath, "utf8");
   const stderr = stderrPath ? readFileSync(stderrPath, "utf8") : "";
   const value = parseCertificationStageResult(stdout);
@@ -185,9 +195,7 @@ function cli() {
     stderrPath: values.stderr ? path.resolve(values.stderr) : null,
     statePath: path.resolve(requiredArgument(values, "state")),
     evidenceRoot: path.resolve(requiredArgument(values, "evidence-root")),
-    repositoryRoot: values["repository-root"]
-      ? path.resolve(values["repository-root"])
-      : process.cwd(),
+    repositoryRoot: path.resolve(requiredArgument(values, "repository-root")),
     command: requiredArgument(values, "command"),
     invocationNonce: requiredArgument(values, "nonce"),
     preStateSha256: requiredArgument(values, "pre-state-sha"),
