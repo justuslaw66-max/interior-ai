@@ -2,9 +2,9 @@ name: CI - Test & Build
 
 on:
   push:
-    branches: [main, develop, staging]
+    branches: [main, develop, staging, integration/deep-clean-v1]
   pull_request:
-    branches: [main, develop, staging]
+    branches: [main, develop, staging, integration/deep-clean-v1]
   workflow_dispatch:
 
 permissions:
@@ -69,8 +69,6 @@ jobs:
     env:
       CI: "true"
       CI_AUTH_FIXTURE_MODE: "1"
-      CI_AUTH_FIXTURE_RESULT_ROOT: ${{ runner.temp }}/interior-ai-auth-results
-      CI_AUTH_FIXTURE_SESSION_ROOT: ${{ runner.temp }}/interior-ai-auth-session-stable
       CI_AUTH_FIXTURE_SESSION_ID: ${{ github.run_id }}-${{ github.run_attempt }}-stable-auth-session
       CI_AUTH_FIXTURE_SESSION_NONCE: ${{ github.run_id }}-${{ github.run_attempt }}-stable-auth-nonce
       CI_AUTH_FIXTURE_SESSION_CLASSIFICATION: PRODUCTION_INELIGIBLE_SYNTHETIC_AUTH
@@ -103,6 +101,19 @@ jobs:
         env:
           GITLEAKS_EXPECTED_SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
         run: node scripts/gitleaks-artifact.mjs verify-source
+
+      - name: Validate every GitHub Actions workflow
+        shell: bash
+        run: bash scripts/check-github-actions-workflows.sh
+
+      - name: Configure runner-local authentication fixture paths
+        shell: bash
+        run: |
+          set -euo pipefail
+          {
+            echo "CI_AUTH_FIXTURE_RESULT_ROOT=$RUNNER_TEMP/interior-ai-auth-results"
+            echo "CI_AUTH_FIXTURE_SESSION_ROOT=$RUNNER_TEMP/interior-ai-auth-session-stable"
+          } >> "$GITHUB_ENV"
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -459,8 +470,6 @@ jobs:
     env:
       CI: "true"
       CI_AUTH_FIXTURE_MODE: "1"
-      CI_AUTH_FIXTURE_RESULT_ROOT: ${{ runner.temp }}/interior-ai-auth-results
-      CI_AUTH_FIXTURE_SESSION_ROOT: ${{ runner.temp }}/interior-ai-auth-session-advisory
       CI_AUTH_FIXTURE_SESSION_ID: ${{ github.run_id }}-${{ github.run_attempt }}-advisory-auth-session
       CI_AUTH_FIXTURE_SESSION_NONCE: ${{ github.run_id }}-${{ github.run_attempt }}-advisory-auth-nonce
       CI_AUTH_FIXTURE_SESSION_CLASSIFICATION: PRODUCTION_INELIGIBLE_SYNTHETIC_AUTH
@@ -493,6 +502,15 @@ jobs:
         env:
           GITLEAKS_EXPECTED_SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
         run: node scripts/gitleaks-artifact.mjs verify-source
+
+      - name: Configure runner-local authentication fixture paths
+        shell: bash
+        run: |
+          set -euo pipefail
+          {
+            echo "CI_AUTH_FIXTURE_RESULT_ROOT=$RUNNER_TEMP/interior-ai-auth-results"
+            echo "CI_AUTH_FIXTURE_SESSION_ROOT=$RUNNER_TEMP/interior-ai-auth-session-advisory"
+          } >> "$GITHUB_ENV"
 
       - name: Setup Node.js
         uses: actions/setup-node@v4

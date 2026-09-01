@@ -2377,8 +2377,23 @@ assert.equal(
     "raw Playwright evidence must not be uploaded",
   );
   assert.match(
+    requiredWorkflow,
+    /push:\n\s+branches:\s*\[main, develop, staging, integration\/deep-clean-v1\]/,
+    "pushes to the active integration branch must launch required CI",
+  );
+  assert.match(
+    requiredWorkflow,
+    /pull_request:\n\s+branches:\s*\[main, develop, staging, integration\/deep-clean-v1\]/,
+    "pull requests into the active integration branch must launch required CI",
+  );
+  assert.match(
+    requiredWorkflow,
+    /Validate every GitHub Actions workflow[\s\S]*run:\s*bash scripts\/check-github-actions-workflows\.sh/,
+    "required CI must run the repository-controlled workflow syntax guard",
+  );
+  assert.match(
     advisoryWorkflow,
-    /pull_request:\n\s+branches:\s*\[main, develop, staging\]\n\s+types:\s*\[labeled\]/,
+    /pull_request:\n\s+branches:\s*\[main, develop, staging, integration\/deep-clean-v1\]\n\s+types:\s*\[labeled\]/,
     "ordinary PR synchronize events must not launch the full advisory workflow",
   );
   assert.doesNotMatch(advisoryWorkflow, /types:\s*\[[^\]]*synchronize/);
