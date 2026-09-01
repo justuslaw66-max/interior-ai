@@ -182,7 +182,7 @@ export function useDesignPageSceneRegionWorkspaceRegistration({
           coreShell.state.document.designSnapshot.floorPlan?.canonicalGeometryHash ?? null,
         measurementUnit: viewportShell.state.plan.planMeasurementUnit,
         theme: planWorkspace.derived.effectivePlanTheme,
-        layers: planWorkspace.derived.effectivePlanLayers,
+        layers: { ...planWorkspace.derived.effectivePlanLayers, dimensions: viewportShell.state.plan.planSettingsLoaded && planWorkspace.derived.effectivePlanLayers.dimensions },
       },
       room: {
         activeId: coreShell.state.document.designSnapshot.activeRoomId,

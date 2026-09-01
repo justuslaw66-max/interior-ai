@@ -93,7 +93,7 @@ export type DesignControlsPanelProps = {
   roomDepthInput: string;
   roomWidth: number;
   roomDepth: number;
-  measurementUnit: PlanMeasurementUnit;
+  measurementUnit: PlanMeasurementUnit; measurementUnitReady: boolean;
   catalogItems: CatalogItemSchema[];
   selectedImportedFamilyKey: string;
   selectedImportedProductId: string;
@@ -314,7 +314,7 @@ export default function DesignControlsPanel({
   roomDepthInput,
   roomWidth,
   roomDepth,
-  measurementUnit,
+  measurementUnit, measurementUnitReady,
   catalogItems,
   selectedImportedFamilyKey,
   selectedImportedProductId,
@@ -732,7 +732,7 @@ export default function DesignControlsPanel({
             roomDepthInput={roomDepthInput}
             roomWidth={roomWidth}
             roomDepth={roomDepth}
-            measurementUnit={measurementUnit}
+            measurementUnit={measurementUnit} measurementUnitReady={measurementUnitReady}
             floorPlanUnderlay={floorPlanUnderlay}
             floorPlanCalibrationMode={floorPlanCalibrationMode}
             floorPlanCalibrationPointCount={floorPlanCalibrationPointCount}

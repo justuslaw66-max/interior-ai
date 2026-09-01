@@ -83,8 +83,7 @@ export function useDesignPagePlanState() {
   const [planFixedElements, setPlanFixedElements] = useState<FixedElement2D[]>([]);
   const [simplePlanControls, setSimplePlanControls] = useState(true);
   const [planLayerPreset, setPlanLayerPreset] = useState<PlanLayerPresetId>("presentation");
-  const [planMeasurementUnit, setPlanMeasurementUnit] =
-    useState<PlanMeasurementUnit>(DEFAULT_DISPLAY_UNIT);
+  const [planMeasurementUnit, setPlanMeasurementUnit] = useState<PlanMeasurementUnit>(DEFAULT_DISPLAY_UNIT);
   const [exportStylePreset, setExportStylePreset] = useState<ExportStylePreset>("consumer");
   const [planGuidedActionsEnabled, setPlanGuidedActionsEnabled] = useState(true);
   const [planGuidedActionsChoiceSeen, setPlanGuidedActionsChoiceSeen] = useState(false);
@@ -229,5 +228,6 @@ export function useDesignPagePlanState() {
     setPlanGuidedActionsChoiceSeen,
     planOpeningsStorageState,
     planSettingsLoaded,
+    planMeasurementUnitReady: planSettingsLoaded,
   };
 }

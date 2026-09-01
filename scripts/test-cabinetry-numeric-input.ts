@@ -58,6 +58,33 @@ assert.equal(
   "feedback formatting must be idempotent for an existing secondary mm reference"
 );
 assert.equal(
+  formatCabinetMeasurementTokens("Single height is 380 mm.", "ft-in"),
+  "Single height is 1′ 3.0″ (380 mm)."
+);
+const feetAndInchesRange = formatCabinetMeasurementTokens(
+  "Typical heights are 380-520 mm.",
+  "ft-in"
+);
+assert.equal(
+  feetAndInchesRange,
+  "Typical heights are 1′ 3.0″ (380 mm)-1′ 8.5″ (520 mm)."
+);
+assert.equal(
+  formatCabinetMeasurementTokens("Already 1′ 3.0″ (380 mm).", "ft-in"),
+  "Already 1′ 3.0″ (380 mm)."
+);
+assert.equal(
+  formatCabinetMeasurementTokens(feetAndInchesRange, "ft-in"),
+  feetAndInchesRange,
+  "feet-and-inches feedback formatting must be exactly idempotent"
+);
+for (const [message, unit] of [
+  ["Already 38 cm (380 mm).", "cm"],
+  ["Already 14.961 in (380 mm).", "in"],
+] as const) {
+  assert.equal(formatCabinetMeasurementTokens(message, unit), message);
+}
+assert.equal(
   formatCabinetMeasurementTokens("Keep -12.5 mm and ID-12.5 mm.", "mm"),
   "Keep -12.5 mm and ID-12.5 mm."
 );

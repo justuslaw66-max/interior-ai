@@ -1,6 +1,5 @@
 export type DisplayUnit = "mm" | "cm" | "in" | "ft-in";
 export type MeasurementSystem = "metric" | "imperial";
-
 export type DisplayUnitMetadata = {
   unit: DisplayUnit;
   label: string;
@@ -9,9 +8,7 @@ export type DisplayUnitMetadata = {
   millimetresPerScalarUnit: number;
   scalarDecimalPlaces: number;
 };
-
 export const DEFAULT_DISPLAY_UNIT: DisplayUnit = "cm";
-
 export const DISPLAY_UNIT_METADATA: Readonly<
   Record<DisplayUnit, DisplayUnitMetadata>
 > = {
@@ -48,7 +45,6 @@ export const DISPLAY_UNIT_METADATA: Readonly<
     scalarDecimalPlaces: 1,
   },
 };
-
 export const DISPLAY_UNIT_GROUPS = [
   { label: "Metric", units: ["mm", "cm"] },
   { label: "Imperial", units: ["in", "ft-in"] },
@@ -56,7 +52,6 @@ export const DISPLAY_UNIT_GROUPS = [
   label: string;
   units: readonly DisplayUnit[];
 }>;
-
 const SQUARE_METRES_TO_SQUARE_FEET = 10.763_910_416_709_722;
 const COMPLETE_DECIMAL_NUMBER =
   /^[+-]?(?:(?:\d+(?:\.\d*)?)|(?:\.\d+))(?:[eE][+-]?\d+)?$/;
@@ -64,22 +59,28 @@ const DECIMAL_TOKEN = String.raw`(?:\d+(?:\.\d*)?|\.\d+)`;
 const SIGNED_DECIMAL_TOKEN = String.raw`[+-]?${DECIMAL_TOKEN}`;
 const FEET_MARKER = String.raw`(?:'|ft\.?|feet|foot)`;
 const INCH_MARKER = String.raw`(?:"|in\.?|inches|inch)`;
-const FEET_AND_OPTIONAL_INCHES = new RegExp(
-  String.raw`^(${SIGNED_DECIMAL_TOKEN})\s*${FEET_MARKER}(?:\s*-?\s*(${DECIMAL_TOKEN})\s*${INCH_MARKER})?$`,
+const COMPOUND_FEET_AND_INCHES = new RegExp(
+  String.raw`^(\d+)\s*${FEET_MARKER}\s*(${DECIMAL_TOKEN})\s*${INCH_MARKER}$`,
+  "i"
+);
+const FEET_ONLY = new RegExp(
+  String.raw`^(${SIGNED_DECIMAL_TOKEN})\s*${FEET_MARKER}$`,
   "i"
 );
 const INCHES_ONLY = new RegExp(
   String.raw`^(${SIGNED_DECIMAL_TOKEN})\s*${INCH_MARKER}$`,
   "i"
 );
-
 export type DisplayLengthParseResult =
   | { status: "valid"; valueMm: number }
   | {
       status: "invalid";
-      code: "empty" | "invalid_syntax" | "non_finite";
+      code:
+        | "empty"
+        | "invalid_syntax"
+        | "non_finite"
+        | "compound_inches_out_of_range";
     };
-
 export type DisplayLengthResolution =
   | { status: "valid"; valueMm: number }
   | {
@@ -90,10 +91,10 @@ export type DisplayLengthResolution =
         | "non_finite"
         | "below_minimum"
         | "above_maximum"
+        | "compound_inches_out_of_range"
         | "step_mismatch";
       valueMm?: number;
     };
-
 export type ResolveDisplayLengthOptions = {
   referenceMm?: number;
   minMm?: number;
@@ -101,12 +102,10 @@ export type ResolveDisplayLengthOptions = {
   snapStepMm?: number;
   stepBaseMm?: number;
 };
-
 function roundTo(value: number, places: number): number {
   const scale = 10 ** places;
   return Math.round((value + Number.EPSILON) * scale) / scale;
 }
-
 function normalizePrimeCharacters(value: string): string {
   return value
     .replace(/[′’‘]/g, "'")
@@ -114,11 +113,9 @@ function normalizePrimeCharacters(value: string): string {
     .replace(/\u00a0/g, " ")
     .trim();
 }
-
 function scalarSuffix(unit: Exclude<DisplayUnit, "ft-in">): RegExp {
   return new RegExp(`^(${SIGNED_DECIMAL_TOKEN}(?:[eE][+-]?\\d+)?)\\s*${unit}$`, "i");
 }
-
 function feetAndInchesParts(valueMm: number, inchDecimalPlaces: number) {
   const sign = valueMm < 0 ? "-" : "";
   const roundedTotalInches = roundTo(
@@ -129,29 +126,24 @@ function feetAndInchesParts(valueMm: number, inchDecimalPlaces: number) {
   const inches = roundTo(roundedTotalInches - feet * 12, inchDecimalPlaces);
   return { sign, feet, inches };
 }
-
 function formatInchPart(inches: number, inchDecimalPlaces: number): string {
   if (inches === 0) return "0";
   return inches.toFixed(inchDecimalPlaces);
 }
-
 export function isDisplayUnit(value: unknown): value is DisplayUnit {
   return (
     value === "mm" || value === "cm" || value === "in" || value === "ft-in"
   );
 }
-
 export function normalizeDisplayUnit(
   value: unknown,
   fallback: DisplayUnit = DEFAULT_DISPLAY_UNIT
 ): DisplayUnit {
   return isDisplayUnit(value) ? value : fallback;
 }
-
 export function getDisplayUnitMetadata(unit: DisplayUnit): DisplayUnitMetadata {
   return DISPLAY_UNIT_METADATA[unit];
 }
-
 export function getMeasurementSystem(unit: DisplayUnit): MeasurementSystem {
   return DISPLAY_UNIT_METADATA[unit].system;
 }
@@ -233,24 +225,39 @@ function parseScalarDisplayLength(
 }
 
 function parseFeetAndInchesLength(normalized: string): DisplayLengthParseResult {
-  const feetMatch = normalized.match(FEET_AND_OPTIONAL_INCHES);
-  if (feetMatch) {
-    const feetToken = feetMatch[1];
-    const feet = Number(feetToken);
-    const inches = feetMatch[2] === undefined ? 0 : Number(feetMatch[2]);
+  const compoundMatch = normalized.match(COMPOUND_FEET_AND_INCHES);
+  if (compoundMatch) {
+    const feet = Number(compoundMatch[1]);
+    const inches = Number(compoundMatch[2]);
     if (!Number.isFinite(feet) || !Number.isFinite(inches)) {
       return { status: "invalid", code: "non_finite" };
     }
-    const sign = feetToken.startsWith("-") ? -1 : 1;
-    const valueMm = sign * (Math.abs(feet) * 12 + inches) *
+    if (inches >= 12) {
+      return { status: "invalid", code: "compound_inches_out_of_range" };
+    }
+    const valueMm = (feet * 12 + inches) *
       DISPLAY_UNIT_METADATA.in.millimetresPerScalarUnit;
     return { status: "valid", valueMm: roundTo(valueMm, 3) };
   }
 
+  const feetMatch = normalized.match(FEET_ONLY);
+  if (feetMatch) {
+    const feet = Number(feetMatch[1]);
+    if (!Number.isFinite(feet)) return { status: "invalid", code: "non_finite" };
+    return {
+      status: "valid",
+      valueMm: roundTo(
+        feet * 12 * DISPLAY_UNIT_METADATA.in.millimetresPerScalarUnit,
+        3
+      ),
+    };
+  }
+
   const inchesMatch = normalized.match(INCHES_ONLY);
-  const bareInches = COMPLETE_DECIMAL_NUMBER.test(normalized) ? normalized : null;
-  const inchesToken = inchesMatch?.[1] ?? bareInches;
-  if (inchesToken === null) return { status: "invalid", code: "invalid_syntax" };
+  const inchesToken = inchesMatch?.[1];
+  if (inchesToken === undefined) {
+    return { status: "invalid", code: "invalid_syntax" };
+  }
 
   const inches = Number(inchesToken);
   if (!Number.isFinite(inches)) return { status: "invalid", code: "non_finite" };
@@ -273,13 +280,18 @@ export function parseDisplayLength(
 
 function collectDisplaySnapTargets(
   valueMm: number,
+  unit: DisplayUnit,
   options: ResolveDisplayLengthOptions
 ): number[] {
   const targets: number[] = [];
   if (Number.isFinite(options.minMm)) targets.push(options.minMm!);
   if (Number.isFinite(options.maxMm)) targets.push(options.maxMm!);
   if (Number.isFinite(options.referenceMm)) targets.push(options.referenceMm!);
-  if (Number.isFinite(options.snapStepMm) && options.snapStepMm! > 0) {
+  if (
+    getMeasurementSystem(unit) === "metric" &&
+    Number.isFinite(options.snapStepMm) &&
+    options.snapStepMm! > 0
+  ) {
     const base = Number.isFinite(options.stepBaseMm) ? options.stepBaseMm! : 0;
     targets.push(
       base + Math.round((valueMm - base) / options.snapStepMm!) * options.snapStepMm!
@@ -294,7 +306,7 @@ function snapDisplayMillimetres(
   options: ResolveDisplayLengthOptions
 ): number {
   const toleranceMm = getDisplayUnitResolutionMm(unit) / 2 + 0.000_501;
-  const precisionTarget = collectDisplaySnapTargets(valueMm, options).find(
+  const precisionTarget = collectDisplaySnapTargets(valueMm, unit, options).find(
     (target) => Math.abs(valueMm - target) <= toleranceMm
   );
   return precisionTarget === undefined ? valueMm : roundTo(precisionTarget, 3);
@@ -302,8 +314,14 @@ function snapDisplayMillimetres(
 
 function followsDisplayStep(
   valueMm: number,
+  unit: DisplayUnit,
   options: ResolveDisplayLengthOptions
 ): boolean {
+  // Room geometry persists finite metre values below the 10 mm UI increment.
+  // Imperial text therefore keeps its parsed millimetres exactly; the step is
+  // reserved for metric entry and keyboard adjustment, never proximity-based
+  // acceptance or rejection of an imperial value.
+  if (getMeasurementSystem(unit) === "imperial") return true;
   const stepMm = options.snapStepMm;
   if (!Number.isFinite(stepMm) || stepMm! <= 0) return true;
   const base = Number.isFinite(options.stepBaseMm) ? options.stepBaseMm! : 0;
@@ -329,7 +347,7 @@ export function resolveDisplayLengthInput(
     return { status: "invalid", code: "above_maximum", valueMm };
   }
 
-  if (!followsDisplayStep(valueMm, options)) {
+  if (!followsDisplayStep(valueMm, unit, options)) {
     return { status: "invalid", code: "step_mismatch", valueMm };
   }
 
@@ -358,6 +376,9 @@ export function getDisplayLengthInputError(
   }
   if (resolution.code === "above_maximum") {
     return `Enter ${displayConstraintLabel(options.maxMm ?? 0, unit)} or less.`;
+  }
+  if (resolution.code === "compound_inches_out_of_range") {
+    return "Inches must be less than 12 when feet are included.";
   }
   if (resolution.code === "step_mismatch") {
     return `Use a valid ${getDisplayUnitMetadata(unit).indicator} increment.`;

@@ -35,6 +35,7 @@ function buildEmptyPlanProps(
     roomWidth: 5,
     roomDepth: 4,
     measurementUnit: "mm",
+    measurementUnitReady: true,
     floorPlanUnderlay: null,
     floorPlanCalibrationMode: false,
     floorPlanCalibrationPointCount: 0,

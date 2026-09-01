@@ -35,6 +35,10 @@ const consumerRoomSetupSource = fs.readFileSync(
   path.join(process.cwd(), "components", "editor", "ConsumerRoomSetupCard.tsx"),
   "utf8"
 );
+const consumerMeasurementPreferenceSource = fs.readFileSync(
+  path.join(process.cwd(), "components", "editor", "ConsumerMeasurementPreferenceRegion.tsx"),
+  "utf8"
+);
 const displayUnitSelectSource = fs.readFileSync(
   path.join(process.cwd(), "components", "editor", "DisplayUnitSelect.tsx"),
   "utf8"
@@ -313,8 +317,18 @@ assert.match(
 
 assert.match(
   consumerRoomSetupSource,
-  /<DisplayUnitSelect[\s\S]*?testId="room-setup-measurement-units"[\s\S]*?touchFriendly[\s\S]*?testId="room-setup-width-input"[\s\S]*?touchFriendly[\s\S]*?testId="room-setup-depth-input"/,
-  "Consumer room units and dimensions should expose the shared selector, immediate validation fields, and touch-sized controls."
+  /<ConsumerMeasurementPreferenceRegion[\s\S]*?ready=\{measurementUnitReady\}[\s\S]*?onCommitDimension=\{actions\.commitRoomDimension\}/,
+  "Consumer room setup should delegate unit-dependent values through the preference-readiness owner."
+);
+assert.match(
+  consumerMeasurementPreferenceSource,
+  /data-testid="room-setup-measurement-placeholder"[\s\S]*?aria-busy=\{!ready\}[\s\S]*?data-measurement-preference-state=\{ready \? "ready" : "loading"\}[\s\S]*?!ready \?[\s\S]*?<MeasurementPreferencePlaceholder[\s\S]*?<ReadyMeasurementPreference/,
+  "Unit-dependent Consumer controls should stay neutral until storage resolves, then expose the shared selector and touch-sized fields."
+);
+assert.match(
+  consumerMeasurementPreferenceSource,
+  /<DisplayUnitSelect[\s\S]*?testId="room-setup-measurement-units"[\s\S]*?<MeasurementField[\s\S]*?touchFriendly[\s\S]*?room-setup-\$\{axis\}-input/,
+  "The ready preference region should expose the shared selector and touch-sized fields."
 );
 assert.match(
   displayUnitSelectSource,
@@ -323,8 +337,13 @@ assert.match(
 );
 
 assert.match(
+  consumerMeasurementPreferenceSource,
+  /data-testid="room-setup-scale-summary"[\s\S]*?role="status"[\s\S]*?Visible scale:/,
+  "The ready measurement region should expose the room scale as status text."
+);
+assert.match(
   consumerRoomSetupSource,
-  /data-testid="room-setup-scale-summary"[\s\S]*?role="status"[\s\S]*?Visible scale:[\s\S]*?data-testid="plan-tool-door"[\s\S]*?data-testid="plan-tool-window"/,
+  /data-testid="plan-tool-door"[\s\S]*?data-testid="plan-tool-window"/,
   "Consumer room setup should keep scale and door/window correction paths visible."
 );
 

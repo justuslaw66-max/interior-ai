@@ -6,8 +6,8 @@
       "root": "scripts",
       "filePattern": "^test-.*\\.(?:js|mjs|ts)$",
       "classification": "risk-triggered",
-      "expectedFileCount": 276,
-      "expectedPathSha256": "3a41f584cb2964ff07330e0da17960863ff62cb77fabca590807e4cc90f06ec6"
+      "expectedFileCount": 277,
+      "expectedPathSha256": "bb75c868e925426feb772a71b1edfa175c3c01df9566c4429f5d4ca77003ff4f"
     },
     {
       "id": "browser-specs",
@@ -355,13 +355,14 @@
       "blocking": true,
       "command": "npm run test:critical-required",
       "packageScript": "test:critical-required",
-      "packageClosure": { "expectedScriptCount": 41, "expectedSha256": "dc376b8f529d5243a506925e0037debba1e5319e53f785fd5a447263728d63d4" },
+      "packageClosure": { "expectedScriptCount": 42, "expectedSha256": "8bd66998bff433e6e26cf7e29ecb3aec879898924a9bc08d4be1c4baae663585" },
       "runner": "npm-chain",
       "supportingInventories": ["cabinetry-script-modules"],
       "requiredSources": [
         "scripts/test-phase7-security-boundaries.ts",
         "scripts/test-design-document-compatibility.ts",
         "scripts/test-design-page-local-backup-recovery.ts",
+        "scripts/test-display-units.ts",
         "scripts/test-stripe-pro-billing.ts",
         "scripts/test-pro-billing-ui.ts",
         "scripts/test-phase14-product-flow.ts",

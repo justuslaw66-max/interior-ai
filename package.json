@@ -112,7 +112,7 @@
     "create:phase15-human-evidence": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' -r tsconfig-paths/register scripts/create-phase15-human-evidence-template.ts",
     "check:phase15-release-evidence": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' -r tsconfig-paths/register scripts/check-phase15-release-evidence.ts",
     "test:phase15": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' -r tsconfig-paths/register scripts/test-phase15.ts",
-    "test:critical-required": "npm run test:phase7-security-boundaries && npm run verify:design-persistence && npm run test:stripe-pro && npm run test:phase14-product-flow && npm run test:phase15 && npm run test:editor-capabilities-accessibility && npm run verify:cabinetry && npm run test:cabinetry-release-evidence",
+    "test:critical-required": "npm run test:phase7-security-boundaries && npm run verify:design-persistence && npm run test:display-units && npm run test:stripe-pro && npm run test:phase14-product-flow && npm run test:phase15 && npm run test:editor-capabilities-accessibility && npm run verify:cabinetry && npm run test:cabinetry-release-evidence",
     "test:e2e": "playwright test",
     "test:e2e:advisory": "node scripts/required-test-truthfulness.mjs run advisory.full-e2e",
     "test:e2e:cabinetry-release": "node scripts/required-test-truthfulness.mjs run release.cabinetry-browser",

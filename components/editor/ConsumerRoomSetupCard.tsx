@@ -1,18 +1,12 @@
 "use client";
 
-import { DisplayUnitSelect } from "@/components/editor/DisplayUnitSelect";
-import MeasurementField from "@/components/editor/MeasurementField";
+import { ConsumerMeasurementPreferenceRegion } from "@/components/editor/ConsumerMeasurementPreferenceRegion";
 import {
   HOUSE_ROOM_TYPES,
-  ROOM_DIMENSION_DEFAULTS,
   ROOM_SIZE_PRESETS,
   type RoomSizePresetId,
 } from "@/lib/design-page-house-plan";
 import type { PlanMeasurementUnit } from "@/lib/design-page-types";
-import {
-  formatDisplayArea,
-  formatDisplayLength,
-} from "@/lib/display-units";
 import type { RoomOpening2D } from "@/lib/editorScene";
 import type { RoomType } from "@/lib/room-types";
 
@@ -29,6 +23,7 @@ export type ConsumerRoomSetupCardProps = {
   roomWidth: number;
   roomDepth: number;
   measurementUnit: PlanMeasurementUnit;
+  measurementUnitReady: boolean;
   openingCount: number;
   hasConnectionBlockers: boolean;
   actions: {
@@ -64,6 +59,7 @@ export function ConsumerRoomSetupCard({
   roomWidth,
   roomDepth,
   measurementUnit,
+  measurementUnitReady,
   openingCount,
   hasConnectionBlockers,
   actions,
@@ -183,74 +179,20 @@ export function ConsumerRoomSetupCard({
         </div>
       ) : null}
 
-      <DisplayUnitSelect
-        value={measurementUnit}
+      <ConsumerMeasurementPreferenceRegion
         dark={dark}
-        testId="room-setup-measurement-units"
-        className="mt-3"
-        onChange={actions.changeMeasurementUnit}
+        canEditPlanGeometry={canEditPlanGeometry}
+        hasRooms={hasRooms}
+        ready={measurementUnitReady}
+        widthMm={widthMm}
+        depthMm={depthMm}
+        measurementUnit={measurementUnit}
+        onChangeUnit={actions.changeMeasurementUnit}
+        onChangeDraft={(axis, value) => axis === "width"
+          ? actions.changeRoomWidthInput(value)
+          : actions.changeRoomDepthInput(value)}
+        onCommitDimension={actions.commitRoomDimension}
       />
-
-      <div className="mt-3 grid grid-cols-2 gap-2">
-        <MeasurementField
-          label="Width"
-          valueMm={widthMm}
-          unit={measurementUnit}
-          minMm={ROOM_DIMENSION_DEFAULTS.min * 1000}
-          maxMm={ROOM_DIMENSION_DEFAULTS.max * 1000}
-          stepMm={10}
-          keyboardStepMm={50}
-          disabled={!canEditPlanGeometry}
-          dark={dark}
-          compact
-          touchFriendly
-          testId="room-setup-width-input"
-          onCommit={(valueMm) => {
-            if (hasRooms) {
-              actions.commitRoomDimension("width", valueMm);
-              return;
-            }
-            actions.changeRoomWidthInput((valueMm / 1000).toFixed(2));
-          }}
-        />
-        <MeasurementField
-          label="Depth"
-          valueMm={depthMm}
-          unit={measurementUnit}
-          minMm={ROOM_DIMENSION_DEFAULTS.min * 1000}
-          maxMm={ROOM_DIMENSION_DEFAULTS.max * 1000}
-          stepMm={10}
-          keyboardStepMm={50}
-          disabled={!canEditPlanGeometry}
-          dark={dark}
-          compact
-          touchFriendly
-          testId="room-setup-depth-input"
-          onCommit={(valueMm) => {
-            if (hasRooms) {
-              actions.commitRoomDimension("depth", valueMm);
-              return;
-            }
-            actions.changeRoomDepthInput((valueMm / 1000).toFixed(2));
-          }}
-        />
-      </div>
-
-      <div
-        data-testid="room-setup-scale-summary"
-        role="status"
-        aria-live="polite"
-        className={
-          dark
-            ? "designer-raised mt-2 rounded-lg px-3 py-2 text-xs text-neutral-300"
-            : "mt-2 rounded-lg border border-neutral-200 bg-white px-3 py-2 text-xs text-neutral-600"
-        }
-      >
-        <span className="font-semibold">Visible scale:</span>{" "}
-        {formatDisplayLength(widthMm, measurementUnit)} ×{" "}
-        {formatDisplayLength(depthMm, measurementUnit)} ·{" "}
-        {formatDisplayArea((widthMm * depthMm) / 1_000_000, measurementUnit)}
-      </div>
 
       <p
         className={

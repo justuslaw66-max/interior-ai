@@ -132,7 +132,7 @@ export default function DesignControlsPlanPanel({
   roomDepthInput,
   roomWidth,
   roomDepth,
-  measurementUnit,
+  measurementUnit, measurementUnitReady,
   floorPlanUnderlay,
   floorPlanCalibrationMode,
   floorPlanCalibrationPointCount,
@@ -2299,7 +2299,7 @@ export default function DesignControlsPlanPanel({
                 roomDepthInput={roomDepthInput}
                 roomWidth={roomWidth}
                 roomDepth={roomDepth}
-                measurementUnit={measurementUnit}
+                measurementUnit={measurementUnit} measurementUnitReady={measurementUnitReady}
                 openingCount={planOpeningCount}
                 hasConnectionBlockers={hasConnectionBlockers}
                 actions={{

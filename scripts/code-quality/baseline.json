@@ -129,7 +129,7 @@
       "limit": 250
     },
     "components/editor/ConsumerRoomSetupCard.tsx": {
-      "lines": 367,
+      "lines": 309,
       "limit": 250
     },
     "components/editor/design-controls-plan/PlanToolIcon.tsx": {
@@ -1673,11 +1673,11 @@
     "components/editor/ConsumerRoomSetupCard.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 314
+        "maximum": 261
       },
       "complexFunctions": {
         "count": 1,
-        "maximum": 31
+        "maximum": 30
       }
     },
     "components/editor/design-controls-plan/PlanToolComponents.tsx": {
