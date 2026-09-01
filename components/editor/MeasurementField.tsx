@@ -1,13 +1,13 @@
 "use client";
 
 import { useId, useMemo, useState, type KeyboardEvent } from "react";
-
 import {
-  cabinetMillimetresToDisplay,
-  getCabinetDisplayDraftStep,
-  resolveCabinetDisplayMeasurement,
-} from "@/features/cabinetry/measurementUnits";
-import { validateCabinetNumberDraft } from "@/features/cabinetry/numericInput";
+  formatDisplayLengthInput,
+  getDisplayLengthInputError,
+  getDisplayUnitMetadata,
+  millimetresToScalarDisplay,
+  resolveDisplayLengthInput,
+} from "@/lib/display-units";
 import type { PlanMeasurementUnit } from "@/lib/design-page-types";
 
 type MeasurementFieldProps = {
@@ -31,8 +31,38 @@ type MeasurementFieldProps = {
 };
 
 function draftValue(valueMm: number, unit: PlanMeasurementUnit): string {
-  const value = cabinetMillimetresToDisplay(valueMm, unit);
-  return Number.isFinite(value) ? String(value) : "";
+  return formatDisplayLengthInput(valueMm, unit);
+}
+
+function resolveMeasurementDraft(
+  draft: string,
+  unit: PlanMeasurementUnit,
+  valueMm: number,
+  minMm: number | undefined,
+  maxMm: number | undefined,
+  stepMm: number
+) {
+  return resolveDisplayLengthInput(draft, unit, {
+    referenceMm: valueMm,
+    minMm,
+    maxMm,
+    snapStepMm: stepMm,
+    stepBaseMm: minMm,
+  });
+}
+
+function getScalarAriaValues(
+  valueMm: number,
+  unit: PlanMeasurementUnit,
+  minMm: number | undefined,
+  maxMm: number | undefined
+) {
+  if (unit === "ft-in") return {};
+  return {
+    value: millimetresToScalarDisplay(valueMm, unit),
+    min: minMm === undefined ? undefined : millimetresToScalarDisplay(minMm, unit),
+    max: maxMm === undefined ? undefined : millimetresToScalarDisplay(maxMm, unit),
+  };
 }
 
 export default function MeasurementField({
@@ -58,17 +88,15 @@ export default function MeasurementField({
   const inputId = `measurement-${generatedId.replace(/:/g, "")}`;
   const statusId = `${inputId}-status`;
   const hintId = `${inputId}-hint`;
-  const displayValue = cabinetMillimetresToDisplay(valueMm, unit);
-  const displayMin = minMm === undefined ? undefined : cabinetMillimetresToDisplay(minMm, unit);
-  const displayMax = maxMm === undefined ? undefined : cabinetMillimetresToDisplay(maxMm, unit);
-  const displayStep = getCabinetDisplayDraftStep(unit);
+  const metadata = getDisplayUnitMetadata(unit);
+  const compound = unit === "ft-in";
+  const ariaValues = getScalarAriaValues(valueMm, unit, minMm, maxMm);
   const [draft, setDraft] = useState(() => draftValue(valueMm, unit));
   const [dirty, setDirty] = useState(false);
   const [controlledMeasurement, setControlledMeasurement] = useState(() => ({
     unit,
     valueMm,
   }));
-
   if (
     controlledMeasurement.unit !== unit ||
     !Object.is(controlledMeasurement.valueMm, valueMm)
@@ -78,50 +106,37 @@ export default function MeasurementField({
     setDraft(draftValue(valueMm, unit));
   }
 
-  const validation = useMemo(
-    () =>
-      validateCabinetNumberDraft(draft, {
-        min: displayMin,
-        max: displayMax,
-        step: displayStep,
-        unit,
-      }),
-    [displayMax, displayMin, displayStep, draft, unit]
+  const resolved = useMemo(
+    () => resolveMeasurementDraft(draft, unit, valueMm, minMm, maxMm, stepMm),
+    [draft, maxMm, minMm, stepMm, unit, valueMm]
   );
-  const resolved =
-    validation.status === "valid"
-      ? resolveCabinetDisplayMeasurement(validation.value, unit, {
-          referenceMm: valueMm,
-          minMm,
-          maxMm,
-          snapStepMm: stepMm,
-          stepBaseMm: minMm,
-        })
-      : null;
   const error = dirty
-    ? validation.status !== "valid"
-      ? validation.message
-      : resolved?.status === "invalid"
-        ? resolved.code === "below_minimum"
-          ? `Enter at least ${draftValue(minMm ?? 0, unit)} ${unit}.`
-          : resolved.code === "above_maximum"
-            ? `Enter no more than ${draftValue(maxMm ?? 0, unit)} ${unit}.`
-            : `Use a valid ${unit} increment.`
-        : null
+    ? getDisplayLengthInputError(resolved, unit, { minMm, maxMm })
     : null;
 
   const revert = () => {
     setDirty(false);
     setDraft(draftValue(valueMm, unit));
   };
-  const commit = () => {
-    if (validation.status !== "valid" || resolved?.status !== "valid") {
+  const commit = (currentDraft = draft) => {
+    const currentResolution = resolveMeasurementDraft(
+      currentDraft,
+      unit,
+      valueMm,
+      minMm,
+      maxMm,
+      stepMm
+    );
+    if (currentResolution.status !== "valid") {
+      setDraft(currentDraft);
       setDirty(true);
       return false;
     }
     setDirty(false);
-    setDraft(draftValue(resolved.valueMm, unit));
-    if (!Object.is(resolved.valueMm, valueMm)) onCommit(resolved.valueMm);
+    setDraft(draftValue(currentResolution.valueMm, unit));
+    if (!Object.is(currentResolution.valueMm, valueMm)) {
+      onCommit(currentResolution.valueMm);
+    }
     return true;
   };
   const handleKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
@@ -132,7 +147,7 @@ export default function MeasurementField({
     }
     if (event.key === "Enter") {
       event.preventDefault();
-      commit();
+      commit(event.currentTarget.value);
       return;
     }
     if (
@@ -146,7 +161,18 @@ export default function MeasurementField({
     }
 
     event.preventDefault();
-    const baseMm = resolved?.status === "valid" ? resolved.valueMm : valueMm;
+    const currentResolution = resolveMeasurementDraft(
+      event.currentTarget.value,
+      unit,
+      valueMm,
+      minMm,
+      maxMm,
+      stepMm
+    );
+    const baseMm =
+      currentResolution.status === "valid"
+        ? currentResolution.valueMm
+        : valueMm;
     const direction = event.key === "ArrowUp" ? 1 : -1;
     let nextMm = baseMm + keyboardStepMm * direction;
     if (minMm !== undefined) nextMm = Math.max(minMm, nextMm);
@@ -163,7 +189,7 @@ export default function MeasurementField({
           className={dark ? "flex items-center justify-between text-[11px] font-semibold text-neutral-300" : "flex items-center justify-between text-[11px] font-semibold text-neutral-600"}
         >
           <span>{label}</span>
-          <span className={dark ? "font-normal text-neutral-400" : "font-normal text-neutral-500"}>{unit}</span>
+          <span className={dark ? "font-normal text-neutral-400" : "font-normal text-neutral-500"}>{metadata.indicator}</span>
         </label>
       ) : null}
       <span className="relative block">
@@ -172,8 +198,8 @@ export default function MeasurementField({
           data-testid={testId}
           data-model-value-mm={valueMm}
           type="text"
-          role="spinbutton"
-          inputMode="decimal"
+          role={compound ? undefined : "spinbutton"}
+          inputMode={compound ? "text" : "decimal"}
           autoComplete="off"
           spellCheck={false}
           disabled={disabled}
@@ -181,9 +207,13 @@ export default function MeasurementField({
           aria-label={hideLabel ? label : undefined}
           aria-invalid={Boolean(error) || undefined}
           aria-describedby={[statusId, hint ? hintId : null].filter(Boolean).join(" ")}
-          aria-valuemin={displayMin}
-          aria-valuemax={displayMax}
-          aria-valuenow={validation.status === "valid" ? validation.value : displayValue}
+          aria-valuemin={ariaValues.min}
+          aria-valuemax={ariaValues.max}
+          aria-valuenow={
+            !compound && resolved.status === "valid"
+              ? millimetresToScalarDisplay(resolved.valueMm, unit)
+              : ariaValues.value
+          }
           className={`${touchFriendly ? "min-h-11 rounded-md px-2" : compact ? "h-9 rounded-md px-2" : "h-10 rounded-lg px-3"} w-full border pr-11 text-sm font-semibold outline-none transition focus-visible:ring-2 disabled:cursor-not-allowed disabled:opacity-50 ${
             dark
               ? error
@@ -197,11 +227,11 @@ export default function MeasurementField({
             setDirty(true);
             setDraft(event.currentTarget.value);
           }}
-          onBlur={commit}
+          onBlur={(event) => commit(event.currentTarget.value)}
           onKeyDown={handleKeyDown}
         />
         <span aria-hidden="true" className={dark ? "pointer-events-none absolute inset-y-0 right-2 grid place-items-center text-[11px] text-neutral-400" : "pointer-events-none absolute inset-y-0 right-2 grid place-items-center text-[11px] text-neutral-500"}>
-          {unit}
+          {metadata.indicator}
         </span>
       </span>
       <span id={statusId} role={error ? "alert" : undefined} className={error ? "text-[10px] leading-4 text-red-600" : "sr-only"}>

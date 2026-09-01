@@ -77,6 +77,9 @@ async function loadSeedDesign(
   page: Page,
   seed: Awaited<ReturnType<typeof createBetaSeedDesign>>,
 ) {
+  await page.addInitScript(() => {
+    window.localStorage.setItem("plan_measurement_unit", "mm");
+  });
   await page.goto("/design", { waitUntil: "domcontentloaded" });
   await addAuthCookies(page.context(), new URL(page.url()).origin, seed.sessionToken);
   await page.reload({ waitUntil: "domcontentloaded" });

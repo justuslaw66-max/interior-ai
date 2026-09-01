@@ -7,6 +7,10 @@ import {
   type PlanLayerPresetId,
   type PlanMeasurementUnit,
 } from "@/lib/design-page-types";
+import {
+  DEFAULT_DISPLAY_UNIT,
+  normalizeDisplayUnit,
+} from "@/lib/display-units";
 
 export type PlanTheme = "consumer" | "pro";
 export type ExportStylePreset = "consumer" | "pro";
@@ -79,7 +83,8 @@ export function useDesignPagePlanState() {
   const [planFixedElements, setPlanFixedElements] = useState<FixedElement2D[]>([]);
   const [simplePlanControls, setSimplePlanControls] = useState(true);
   const [planLayerPreset, setPlanLayerPreset] = useState<PlanLayerPresetId>("presentation");
-  const [planMeasurementUnit, setPlanMeasurementUnit] = useState<PlanMeasurementUnit>("mm");
+  const [planMeasurementUnit, setPlanMeasurementUnit] =
+    useState<PlanMeasurementUnit>(DEFAULT_DISPLAY_UNIT);
   const [exportStylePreset, setExportStylePreset] = useState<ExportStylePreset>("consumer");
   const [planGuidedActionsEnabled, setPlanGuidedActionsEnabled] = useState(true);
   const [planGuidedActionsChoiceSeen, setPlanGuidedActionsChoiceSeen] = useState(false);
@@ -107,9 +112,7 @@ export function useDesignPagePlanState() {
       }
 
       const storedMeasurementUnit = localStorage.getItem("plan_measurement_unit");
-      if (storedMeasurementUnit === "mm" || storedMeasurementUnit === "cm" || storedMeasurementUnit === "in") {
-        setPlanMeasurementUnit(storedMeasurementUnit);
-      }
+      setPlanMeasurementUnit(normalizeDisplayUnit(storedMeasurementUnit));
 
       const storedGuidedActions = localStorage.getItem("plan_guided_actions");
       if (storedGuidedActions === "0") {

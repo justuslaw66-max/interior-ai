@@ -2,6 +2,7 @@
 
 import OpeningDimensionFields, { type OpeningDimensionFieldsProps } from "@/components/editor/OpeningDimensionFields";
 import { createPortal } from "react-dom";
+import { DisplayUnitSelect } from "@/components/editor/DisplayUnitSelect";
 import MeasurementField from "@/components/editor/MeasurementField";
 import {
   SelectedSurfaceInspector,
@@ -358,39 +359,17 @@ export function DesignPageSelectionInspector({
               : "mt-3 border-t border-neutral-200 pt-3"
           }
         >
-          <div className="flex items-center justify-between gap-2">
+          <div className="flex items-end justify-between gap-3">
             <div className="text-[11px] font-semibold uppercase text-neutral-500">
               Dimensions
             </div>
-            <div
-              data-testid="selection-inspector-measurement-units"
-              className={
-                configuration.dark
-                  ? "designer-raised grid grid-cols-3 rounded-md border p-0.5"
-                  : "grid grid-cols-3 rounded-md border border-neutral-200 bg-neutral-50 p-0.5"
-              }
-              aria-label="Measurement units"
-            >
-              {(["mm", "cm", "in"] as const).map((unit) => (
-                <button
-                  key={unit}
-                  type="button"
-                  aria-pressed={state.measurementUnit === unit}
-                  className={
-                    state.measurementUnit === unit
-                      ? configuration.dark
-                        ? "designer-work-control-active min-h-11 rounded px-1.5 py-1 text-[10px] font-semibold"
-                        : "min-h-11 rounded bg-neutral-950 px-1.5 py-1 text-[10px] font-semibold text-white"
-                      : configuration.dark
-                        ? "designer-work-control min-h-11 rounded px-1.5 py-1 text-[10px]"
-                        : "min-h-11 rounded px-1.5 py-1 text-[10px] text-neutral-500 hover:bg-white"
-                  }
-                  onClick={() => actions.setMeasurementUnit(unit)}
-                >
-                  {unit.toUpperCase()}
-                </button>
-              ))}
-            </div>
+            <DisplayUnitSelect
+              value={state.measurementUnit}
+              dark={configuration.dark}
+              testId="selection-inspector-measurement-units"
+              className="w-48 max-w-[70%]"
+              onChange={actions.setMeasurementUnit}
+            />
           </div>
           <div className="mt-2 grid grid-cols-2 gap-2">
             <MeasurementField

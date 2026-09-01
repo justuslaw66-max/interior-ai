@@ -1,4 +1,5 @@
 import type { AISuggestionAction } from "@/lib/ai/applySuggestion";
+import type { DisplayUnit } from "@/lib/display-units";
 import type { AABB } from "@/lib/snapGuides";
 
 export const STYLES = ["Scandi", "Luxury", "Modern", "Japandi", "Minimalistic"] as const;
@@ -138,7 +139,7 @@ export const PLAN_LAYER_PRESETS: Record<
   },
 };
 
-export type PlanMeasurementUnit = "mm" | "cm" | "in";
+export type PlanMeasurementUnit = DisplayUnit;
 
 export type WallDescriptor = {
   axis: "x" | "z";

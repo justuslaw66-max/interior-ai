@@ -158,6 +158,9 @@ test.describe("canonical saved-design routing", () => {
     const seed = await createBetaSeedDesign();
     const mutations = observeDesignMutations(page);
     try {
+      await page.addInitScript(() => {
+        window.localStorage.setItem("plan_measurement_unit", "mm");
+      });
       await addAuthCookies(page.context(), baseURL, seed.sessionToken);
       await page.goto("/dashboard", { waitUntil: "domcontentloaded" });
       await page.getByRole("link", { name: "Open", exact: true }).click();

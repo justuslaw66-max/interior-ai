@@ -1,7 +1,7 @@
 "use client";
 
+import { DisplayUnitSelect } from "@/components/editor/DisplayUnitSelect";
 import MeasurementField from "@/components/editor/MeasurementField";
-import { formatCabinetMeasurement } from "@/features/cabinetry/measurementUnits";
 import {
   HOUSE_ROOM_TYPES,
   ROOM_DIMENSION_DEFAULTS,
@@ -9,18 +9,12 @@ import {
   type RoomSizePresetId,
 } from "@/lib/design-page-house-plan";
 import type { PlanMeasurementUnit } from "@/lib/design-page-types";
+import {
+  formatDisplayArea,
+  formatDisplayLength,
+} from "@/lib/display-units";
 import type { RoomOpening2D } from "@/lib/editorScene";
 import type { RoomType } from "@/lib/room-types";
-
-const UNIT_OPTIONS: Array<{
-  value: PlanMeasurementUnit;
-  shortLabel: string;
-  label: string;
-}> = [
-  { value: "mm", shortLabel: "MM", label: "Millimetres" },
-  { value: "cm", shortLabel: "CM", label: "Centimetres" },
-  { value: "in", shortLabel: "IN", label: "Inches" },
-];
 
 export type ConsumerRoomSetupCardProps = {
   dark: boolean;
@@ -189,42 +183,13 @@ export function ConsumerRoomSetupCard({
         </div>
       ) : null}
 
-      <fieldset className="mt-3">
-        <legend className={labelClass}>Display units</legend>
-        <div
-          data-testid="room-setup-measurement-units"
-          className={
-            dark
-              ? "designer-raised mt-1 grid grid-cols-3 rounded-lg border p-1"
-              : "mt-1 grid grid-cols-3 rounded-lg border border-neutral-200 bg-white p-1"
-          }
-        >
-          {UNIT_OPTIONS.map((option) => {
-            const selected = measurementUnit === option.value;
-            return (
-              <button
-                key={option.value}
-                type="button"
-                data-testid={`room-setup-unit-${option.value}`}
-                aria-label={`Use ${option.label.toLowerCase()}`}
-                aria-pressed={selected}
-                className={
-                  selected
-                    ? dark
-                      ? "designer-work-control-active min-h-11 rounded-md px-2 text-xs font-semibold focus-visible:ring-2 focus-visible:ring-blue-400/40"
-                      : "min-h-11 rounded-md bg-neutral-900 px-2 text-xs font-semibold text-white focus-visible:ring-2 focus-visible:ring-blue-600/30"
-                    : dark
-                      ? "designer-work-control min-h-11 rounded-md px-2 text-xs focus-visible:ring-2 focus-visible:ring-blue-400/40"
-                      : "min-h-11 rounded-md px-2 text-xs text-neutral-600 hover:bg-neutral-100 focus-visible:ring-2 focus-visible:ring-blue-600/20"
-                }
-                onClick={() => actions.changeMeasurementUnit(option.value)}
-              >
-                {option.shortLabel}
-              </button>
-            );
-          })}
-        </div>
-      </fieldset>
+      <DisplayUnitSelect
+        value={measurementUnit}
+        dark={dark}
+        testId="room-setup-measurement-units"
+        className="mt-3"
+        onChange={actions.changeMeasurementUnit}
+      />
 
       <div className="mt-3 grid grid-cols-2 gap-2">
         <MeasurementField
@@ -282,9 +247,9 @@ export function ConsumerRoomSetupCard({
         }
       >
         <span className="font-semibold">Visible scale:</span>{" "}
-        {formatCabinetMeasurement(widthMm, measurementUnit)} ×{" "}
-        {formatCabinetMeasurement(depthMm, measurementUnit)} ·{" "}
-        {((widthMm * depthMm) / 1_000_000).toFixed(1)} m²
+        {formatDisplayLength(widthMm, measurementUnit)} ×{" "}
+        {formatDisplayLength(depthMm, measurementUnit)} ·{" "}
+        {formatDisplayArea((widthMm * depthMm) / 1_000_000, measurementUnit)}
       </div>
 
       <p

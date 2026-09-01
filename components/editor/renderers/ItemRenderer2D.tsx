@@ -3,6 +3,8 @@
 import { Line } from "@react-three/drei/core/Line";
 import { Html } from "@react-three/drei/web/Html";
 import type { ThreeEvent } from "@react-three/fiber";
+import type { PlanMeasurementUnit } from "@/lib/design-page-types";
+import { formatDisplayLength } from "@/lib/display-units";
 
 type ItemRenderer2DProps = {
   width: number;
@@ -17,7 +19,7 @@ type ItemRenderer2DProps = {
   showLabels: boolean;
   showDimensions: boolean;
   label: string;
-  measurementUnit?: "mm" | "cm" | "in";
+  measurementUnit?: PlanMeasurementUnit;
   rotationHudLabel?: string | null;
   interactive?: boolean;
   onSelect?: (additive: boolean) => void;
@@ -66,18 +68,8 @@ export default function ItemRenderer2D({
   const fillColor = invalidPlacement ? "#f8b6b6" : color;
 
   const corner = 0.04;
-  const formatDimension = (meters: number) => {
-    const millimeters = meters * 1000;
-    if (measurementUnit === "cm") {
-      const value = (millimeters / 10).toFixed(1).replace(/\.0$/, "");
-      return `${value} cm`;
-    }
-    if (measurementUnit === "in") {
-      const value = (millimeters / 25.4).toFixed(1).replace(/\.0$/, "");
-      return `${value} in`;
-    }
-    return `${Math.round(millimeters)} mm`;
-  };
+  const formatDimension = (meters: number) =>
+    formatDisplayLength(meters * 1000, measurementUnit);
   const cornerPoints: Array<[number, number, number]> = [
     [-width / 2, 0.003, -depth / 2],
     [width / 2, 0.003, -depth / 2],

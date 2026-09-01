@@ -35,6 +35,10 @@ const consumerRoomSetupSource = fs.readFileSync(
   path.join(process.cwd(), "components", "editor", "ConsumerRoomSetupCard.tsx"),
   "utf8"
 );
+const displayUnitSelectSource = fs.readFileSync(
+  path.join(process.cwd(), "components", "editor", "DisplayUnitSelect.tsx"),
+  "utf8"
+);
 const designPagePath = path.join(
   process.cwd(),
   "components",
@@ -309,8 +313,13 @@ assert.match(
 
 assert.match(
   consumerRoomSetupSource,
-  /data-testid="room-setup-measurement-units"[\s\S]*?aria-pressed=\{selected\}[\s\S]*?min-h-11[\s\S]*?touchFriendly[\s\S]*?testId="room-setup-width-input"[\s\S]*?touchFriendly[\s\S]*?testId="room-setup-depth-input"/,
-  "Consumer room units and dimensions should expose pressed state, immediate validation fields, and touch-sized controls."
+  /<DisplayUnitSelect[\s\S]*?testId="room-setup-measurement-units"[\s\S]*?touchFriendly[\s\S]*?testId="room-setup-width-input"[\s\S]*?touchFriendly[\s\S]*?testId="room-setup-depth-input"/,
+  "Consumer room units and dimensions should expose the shared selector, immediate validation fields, and touch-sized controls."
+);
+assert.match(
+  displayUnitSelectSource,
+  /<select[\s\S]*?min-h-11[\s\S]*?focus-visible:ring-2[\s\S]*?<optgroup[\s\S]*?DISPLAY_UNIT_METADATA\[unit\]\.label/,
+  "The shared display-unit selector should keep native grouped semantics, visible focus, exact option labels, and a touch-sized control."
 );
 
 assert.match(
@@ -353,7 +362,7 @@ assert.match(
 
 assert.match(
   consumerRoomSetupE2ESource,
-  /plan_measurement_unit[\s\S]*?room-setup-width-input[\s\S]*?aria-invalid[\s\S]*?data-model-value-mm[\s\S]*?plan-focus-control[\s\S]*?plan-canvas-guidance/,
+  /room-setup-width-input[\s\S]*?aria-invalid[\s\S]*?data-model-value-mm[\s\S]*?plan_measurement_unit[\s\S]*?plan-focus-control[\s\S]*?plan-canvas-guidance/,
   "The Consumer room-setup gate should cover invalid input recovery, saved units, and opening correction guidance."
 );
 assert.doesNotMatch(

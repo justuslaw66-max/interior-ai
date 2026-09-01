@@ -10,9 +10,13 @@ async function expectTouchTarget(locator: Locator, label: string) {
 async function openConsumerRoomSetup(page: Page) {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.addInitScript(() => {
+    if (window.sessionStorage.getItem("consumer-room-setup-initialized") === "1") {
+      return;
+    }
     window.localStorage.clear();
     window.sessionStorage.clear();
     window.localStorage.setItem("interior-ai:beta-start-dismissed", "1");
+    window.sessionStorage.setItem("consumer-room-setup-initialized", "1");
   });
 
   const response = await page.goto("/design", { waitUntil: "domcontentloaded" });
@@ -39,22 +43,29 @@ test.describe("23. Consumer room setup", () => {
       ).toHaveAttribute("aria-expanded", "false");
     }
 
-    const millimetres = page.getByTestId("room-setup-unit-mm");
-    const centimetres = page.getByTestId("room-setup-unit-cm");
-    await expect(millimetres).toHaveAttribute("aria-pressed", "true");
-    await centimetres.focus();
-    await page.keyboard.press("Enter");
-    await expect(centimetres).toHaveAttribute("aria-pressed", "true");
-    await expect(millimetres).toHaveAttribute("aria-pressed", "false");
-    await expect
-      .poll(() => page.evaluate(() => window.localStorage.getItem("plan_measurement_unit")))
-      .toBe("cm");
+    const displayUnits = page.getByTestId("room-setup-measurement-units");
+    await expect(displayUnits).toHaveAccessibleName("Display units");
+    await expect(displayUnits).toHaveValue("cm");
+    await expect(displayUnits.locator("option:checked")).toHaveText(
+      "Centimetres (cm)"
+    );
+    await expect(displayUnits.getByRole("option")).toHaveText([
+      "Millimetres (mm)",
+      "Centimetres (cm)",
+      "Inches (in)",
+      "Feet + inches (ft + in)",
+    ]);
+    const unitGroups = displayUnits.locator("optgroup");
+    await expect(unitGroups).toHaveCount(2);
+    await expect(unitGroups.nth(0)).toHaveAttribute("label", "Metric");
+    await expect(unitGroups.nth(1)).toHaveAttribute("label", "Imperial");
 
     const width = page.getByTestId("room-setup-width-input");
     const originalModelWidth = Number(await width.getAttribute("data-model-value-mm"));
     expect(originalModelWidth).toBeGreaterThanOrEqual(1_800);
 
     await width.fill("10");
+    await expect(width).toHaveAttribute("aria-invalid", "true");
     await width.press("Enter");
     await expect(width).toHaveAttribute("aria-invalid", "true");
     await expect(width).toHaveAttribute("data-model-value-mm", String(originalModelWidth));
@@ -77,6 +88,52 @@ test.describe("23. Consumer room setup", () => {
       `${revisedWidthCm} cm`
     );
 
+    const canonicalBeforeSwitch = await width.getAttribute("data-model-value-mm");
+    await displayUnits.focus();
+    await expect(displayUnits).toBeFocused();
+    await displayUnits.press("f");
+    await expect(displayUnits).toHaveValue("ft-in");
+    await expect(displayUnits.locator("option:checked")).toHaveText(
+      "Feet + inches (ft + in)"
+    );
+    await expect
+      .poll(() => page.evaluate(() => window.localStorage.getItem("plan_measurement_unit")))
+      .toBe("ft-in");
+    await expect(width).toHaveAttribute("data-model-value-mm", canonicalBeforeSwitch ?? "");
+    await expect(width).toHaveRole("textbox");
+    await expect(width).toHaveValue(/\d+′ \d+(?:\.\d)?″/);
+    await expect(page.getByTestId("room-setup-scale-summary")).toContainText("ft²");
+
+    await displayUnits.selectOption("cm");
+    await displayUnits.selectOption("ft-in");
+    await displayUnits.selectOption("cm");
+    await expect(width).toHaveAttribute("data-model-value-mm", canonicalBeforeSwitch ?? "");
+    await displayUnits.selectOption("ft-in");
+
+    await width.fill(`13' 9.4"`);
+    await width.press("Enter");
+    await expect(width).toHaveAttribute("data-model-value-mm", "4200");
+    await expect(width).toHaveValue("13′ 9.4″");
+
+    const depth = page.getByTestId("room-setup-depth-input");
+    await depth.fill("15 ft 9.0 in");
+    await depth.press("Enter");
+    await expect(depth).toHaveAttribute("data-model-value-mm", "4800");
+    await expect(depth).toHaveValue("15′ 9.0″");
+    await expect(page.getByTestId("room-setup-scale-summary")).toContainText(
+      "13′ 9.4″ × 15′ 9.0″ · 217.0 ft²"
+    );
+
+    await page.reload({ waitUntil: "domcontentloaded" });
+    await expect(page.getByTestId("scene-canvas").first()).toBeVisible({ timeout: 30_000 });
+    if (!(await page.getByTestId("consumer-room-setup").isVisible().catch(() => false))) {
+      await page.getByRole("button", { name: "2D Plan", exact: true }).click();
+    }
+    await expect(page.getByTestId("consumer-room-setup")).toBeVisible({ timeout: 20_000 });
+    await expect(page.getByTestId("room-setup-measurement-units")).toHaveValue(
+      "ft-in"
+    );
+
     const importFloorPlanSection = page.getByTestId(
       "plan-tool-section-importFloorPlan"
     );
@@ -91,10 +148,8 @@ test.describe("23. Consumer room setup", () => {
     ).toHaveAttribute("aria-expanded", "true");
 
     const touchTargets = [
-      [millimetres, "millimetres unit"],
-      [centimetres, "centimetres unit"],
-      [page.getByTestId("room-setup-unit-in"), "inches unit"],
-      [width, "room width"],
+      [page.getByTestId("room-setup-measurement-units"), "display units"],
+      [page.getByTestId("room-setup-width-input"), "room width"],
       [page.getByTestId("room-setup-depth-input"), "room depth"],
       [page.getByTestId("plan-tool-door"), "add door"],
       [page.getByTestId("plan-tool-window"), "add window"],
