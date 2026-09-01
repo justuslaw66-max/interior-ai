@@ -1,5 +1,15 @@
 import type { Locator, Page } from "@playwright/test";
 import { expect, test } from "./fixtures";
+import {
+  addAuthCookies,
+  buildBetaDesignSnapshot,
+  cleanupBetaSeed,
+  createBetaSeedDesign,
+  disconnectBetaPrismaClient,
+} from "./beta-seed";
+import { getE2EBaseUrl } from "./release-environment";
+
+const baseURL = getE2EBaseUrl();
 
 async function expectTouchTarget(locator: Locator, label: string) {
   const box = await locator.boundingBox();
@@ -27,6 +37,10 @@ async function openConsumerRoomSetup(page: Page) {
 }
 
 test.describe("23. Consumer room setup", () => {
+  test.afterAll(async () => {
+    await disconnectBetaPrismaClient();
+  });
+
   test("resolves persisted units before rendering unit-dependent values", async ({
     page,
   }) => {
@@ -296,5 +310,155 @@ test.describe("23. Consumer room setup", () => {
       () => document.documentElement.scrollWidth - document.documentElement.clientWidth
     );
     expect(horizontalOverflow).toBeLessThanOrEqual(4);
+  });
+
+  test("preserves explicit imperial values and only treats exact rendered text as unchanged", async ({
+    page,
+  }) => {
+    test.setTimeout(240_000);
+    const snapshot = buildBetaDesignSnapshot();
+    snapshot.rooms[0].geometry.width = 4.267;
+    const seed = await createBetaSeedDesign({ snapshot });
+    const designUpdates: unknown[] = [];
+    page.on("request", (request) => {
+      const pathname = new URL(request.url()).pathname;
+      if (
+        request.method() === "PUT" &&
+        pathname === `/api/designs/${seed.designId}`
+      ) {
+        designUpdates.push(request.postDataJSON());
+      }
+    });
+
+    try {
+      await page.addInitScript(() => {
+        window.localStorage.setItem("interior-ai:beta-start-dismissed", "1");
+        window.localStorage.setItem("plan_measurement_unit", "ft-in");
+      });
+      await addAuthCookies(page.context(), baseURL, seed.sessionToken);
+      await page.goto(`/design?designId=${encodeURIComponent(seed.designId)}`, {
+        waitUntil: "domcontentloaded",
+      });
+      await expect(page.getByTestId("scene-canvas").first()).toBeVisible({
+        timeout: 30_000,
+      });
+      await page.getByRole("button", { name: "2D Plan", exact: true }).click();
+      await expect(page.getByTestId("consumer-room-setup")).toBeVisible({
+        timeout: 20_000,
+      });
+
+      const width = page.getByTestId("room-setup-width-input");
+      const units = page.getByTestId("room-setup-measurement-units");
+      const fingerprint = page.getByTestId("qa-editor-snapshot-fingerprint");
+      await expect(units).toHaveValue("ft-in");
+      await expect(width).toHaveAttribute("data-model-value-mm", "4267");
+      const initialFingerprint = await fingerprint.getAttribute("data-fingerprint");
+      expect(initialFingerprint).toMatch(/^[a-f0-9]{8}$/);
+      await page.waitForTimeout(1_200);
+      expect(designUpdates).toEqual([]);
+
+      const savedFourteenFeet = page.waitForResponse(
+        (response) =>
+          response.request().method() === "PUT" &&
+          new URL(response.url()).pathname === `/api/designs/${seed.designId}`
+      );
+      await width.fill("14 ft");
+      await width.press("Enter");
+      await expect(width).toHaveAttribute("data-model-value-mm", "4267.2");
+      await expect(width).toHaveValue("14′ 0″");
+      await expect
+        .poll(() => fingerprint.getAttribute("data-fingerprint"))
+        .not.toBe(initialFingerprint);
+      expect((await savedFourteenFeet).status()).toBe(200);
+      await expect(page.getByTestId("save-status")).toHaveAttribute(
+        "data-status",
+        "saved",
+        { timeout: 30_000 }
+      );
+      expect(designUpdates.at(-1)).toMatchObject({ roomWidth: 4.2672 });
+
+      const storedFourteenFeet = await page.request.get(
+        `/api/designs/${encodeURIComponent(seed.designId)}`
+      );
+      expect(storedFourteenFeet.status()).toBe(200);
+      expect(await storedFourteenFeet.json()).toMatchObject({ roomWidth: 4.2672 });
+      await page.reload({ waitUntil: "domcontentloaded" });
+      await expect(page.getByTestId("scene-canvas").first()).toBeVisible({
+        timeout: 30_000,
+      });
+      await page.getByRole("button", { name: "2D Plan", exact: true }).click();
+      await expect(width).toHaveAttribute("data-model-value-mm", "4267.2");
+      await expect(width).toHaveValue("14′ 0″");
+
+      const savedHiddenPrecision = page.waitForResponse(
+        (response) =>
+          response.request().method() === "PUT" &&
+          new URL(response.url()).pathname === `/api/designs/${seed.designId}`
+      );
+      await width.fill("167.96 in");
+      await width.press("Enter");
+      await expect(width).toHaveAttribute("data-model-value-mm", "4266.184");
+      expect((await savedHiddenPrecision).status()).toBe(200);
+      const hiddenPrecisionFingerprint = await fingerprint.getAttribute(
+        "data-fingerprint"
+      );
+      const updatesBeforeExactReentry = designUpdates.length;
+      const exactRenderedText = await width.inputValue();
+      expect(exactRenderedText).toBe("14′ 0″");
+
+      await width.fill(exactRenderedText);
+      await width.press("Enter");
+      await expect(width).toHaveAttribute("data-model-value-mm", "4266.184");
+      await expect(fingerprint).toHaveAttribute(
+        "data-fingerprint",
+        hiddenPrecisionFingerprint ?? ""
+      );
+      await width.fill(exactRenderedText);
+      await units.focus();
+      await expect(width).toHaveAttribute("data-model-value-mm", "4266.184");
+      await page.waitForTimeout(1_200);
+      expect(designUpdates).toHaveLength(updatesBeforeExactReentry);
+
+      const explicitFourteenFeetUpdates = designUpdates.length;
+      const savedExplicitFourteenFeet = page.waitForResponse(
+        (response) =>
+          response.request().method() === "PUT" &&
+          new URL(response.url()).pathname === `/api/designs/${seed.designId}`
+      );
+      await width.fill("14 ft");
+      await width.press("Enter");
+      await expect(width).toHaveAttribute("data-model-value-mm", "4267.2");
+      await expect
+        .poll(() => designUpdates.length, { timeout: 30_000 })
+        .toBeGreaterThan(explicitFourteenFeetUpdates);
+      expect((await savedExplicitFourteenFeet).status()).toBe(200);
+
+      const savedExact4200 = page.waitForResponse(
+        (response) =>
+          response.request().method() === "PUT" &&
+          new URL(response.url()).pathname === `/api/designs/${seed.designId}`
+      );
+      await width.fill("165.354330709 in");
+      await width.press("Enter");
+      await expect(width).toHaveAttribute("data-model-value-mm", "4200");
+      expect((await savedExact4200).status()).toBe(200);
+
+      const explicitCompoundUpdates = designUpdates.length;
+      const savedExplicitCompound = page.waitForResponse(
+        (response) =>
+          response.request().method() === "PUT" &&
+          new URL(response.url()).pathname === `/api/designs/${seed.designId}`
+      );
+      await width.fill(`13' 9.4"`);
+      await units.focus();
+      await expect(width).toHaveAttribute("data-model-value-mm", "4201.16");
+      await expect
+        .poll(() => designUpdates.length, { timeout: 30_000 })
+        .toBeGreaterThan(explicitCompoundUpdates);
+      expect((await savedExplicitCompound).status()).toBe(200);
+      expect(designUpdates.at(-1)).toMatchObject({ roomWidth: 4.20116 });
+    } finally {
+      await cleanupBetaSeed(seed);
+    }
   });
 });

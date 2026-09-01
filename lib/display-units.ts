@@ -147,22 +147,18 @@ export function getDisplayUnitMetadata(unit: DisplayUnit): DisplayUnitMetadata {
 export function getMeasurementSystem(unit: DisplayUnit): MeasurementSystem {
   return DISPLAY_UNIT_METADATA[unit].system;
 }
-
 export function getMillimetresPerDisplayScalarUnit(unit: DisplayUnit): number {
   return DISPLAY_UNIT_METADATA[unit].millimetresPerScalarUnit;
 }
-
 export function getDisplayScalarDecimalPlaces(unit: DisplayUnit): number {
   return DISPLAY_UNIT_METADATA[unit].scalarDecimalPlaces;
 }
-
 export function getDisplayUnitResolutionMm(unit: DisplayUnit): number {
   return (
     10 ** -getDisplayScalarDecimalPlaces(unit) *
     getMillimetresPerDisplayScalarUnit(unit)
   );
 }
-
 export function millimetresToScalarDisplay(
   valueMm: number,
   unit: DisplayUnit
@@ -173,7 +169,6 @@ export function millimetresToScalarDisplay(
     getDisplayScalarDecimalPlaces(unit)
   );
 }
-
 export function scalarDisplayToMillimetres(
   value: number,
   unit: DisplayUnit
@@ -181,7 +176,6 @@ export function scalarDisplayToMillimetres(
   if (!Number.isFinite(value)) return value;
   return roundTo(value * getMillimetresPerDisplayScalarUnit(unit), 3);
 }
-
 export function formatDisplayLengthInput(
   valueMm: number,
   unit: DisplayUnit,
@@ -194,7 +188,6 @@ export function formatDisplayLengthInput(
   const { sign, feet, inches } = feetAndInchesParts(valueMm, inchDecimalPlaces);
   return `${sign}${feet}′ ${formatInchPart(inches, inchDecimalPlaces)}″`;
 }
-
 export function formatDisplayLength(
   valueMm: number,
   unit: DisplayUnit,
@@ -209,7 +202,6 @@ export function formatDisplayLength(
     maximumFractionDigits,
   })} ${unit}`;
 }
-
 function parseScalarDisplayLength(
   normalized: string,
   unit: Exclude<DisplayUnit, "ft-in">
@@ -283,21 +275,24 @@ function collectDisplaySnapTargets(
   unit: DisplayUnit,
   options: ResolveDisplayLengthOptions
 ): number[] {
-  const targets: number[] = [];
-  if (Number.isFinite(options.minMm)) targets.push(options.minMm!);
-  if (Number.isFinite(options.maxMm)) targets.push(options.maxMm!);
-  if (Number.isFinite(options.referenceMm)) targets.push(options.referenceMm!);
+  const boundaryTargets: number[] = [];
+  if (Number.isFinite(options.minMm)) boundaryTargets.push(options.minMm!);
+  if (Number.isFinite(options.maxMm)) boundaryTargets.push(options.maxMm!);
+  if (getMeasurementSystem(unit) === "imperial") return boundaryTargets;
+  const metricRestorationTargets: number[] = [];
+  if (Number.isFinite(options.referenceMm)) {
+    metricRestorationTargets.push(options.referenceMm!);
+  }
   if (
-    getMeasurementSystem(unit) === "metric" &&
     Number.isFinite(options.snapStepMm) &&
     options.snapStepMm! > 0
   ) {
     const base = Number.isFinite(options.stepBaseMm) ? options.stepBaseMm! : 0;
-    targets.push(
+    metricRestorationTargets.push(
       base + Math.round((valueMm - base) / options.snapStepMm!) * options.snapStepMm!
     );
   }
-  return targets;
+  return boundaryTargets.concat(metricRestorationTargets);
 }
 
 function snapDisplayMillimetres(
@@ -338,19 +333,24 @@ export function resolveDisplayLengthInput(
 ): DisplayLengthResolution {
   const parsed = parseDisplayLength(input, unit);
   if (parsed.status === "invalid") return parsed;
-  const valueMm = snapDisplayMillimetres(parsed.valueMm, unit, options);
-
+  const referenceMm = options.referenceMm;
+  const preservesImperialReference =
+    getMeasurementSystem(unit) === "imperial" &&
+    typeof referenceMm === "number" &&
+    Number.isFinite(referenceMm) &&
+    input.trim() === formatDisplayLengthInput(referenceMm, unit);
+  const valueMm = preservesImperialReference
+    ? referenceMm
+    : snapDisplayMillimetres(parsed.valueMm, unit, options);
   if (Number.isFinite(options.minMm) && valueMm < options.minMm!) {
     return { status: "invalid", code: "below_minimum", valueMm };
   }
   if (Number.isFinite(options.maxMm) && valueMm > options.maxMm!) {
     return { status: "invalid", code: "above_maximum", valueMm };
   }
-
   if (!followsDisplayStep(valueMm, unit, options)) {
     return { status: "invalid", code: "step_mismatch", valueMm };
   }
-
   return { status: "valid", valueMm };
 }
 
