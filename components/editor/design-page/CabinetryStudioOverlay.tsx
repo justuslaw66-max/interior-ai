@@ -7,6 +7,7 @@ import { CabinetryStudioDialog } from "@/components/editor/design-page/Cabinetry
 import { track } from "@/lib/analytics";
 import type { CabinetryStudioProps } from "@/features/cabinetry/components/CabinetryStudio.contract";
 import { CabinetMeasurementUnitProvider } from "@/features/cabinetry/components/CabinetMeasurementUnitContext";
+import type { CabinetMeasurementUnit } from "@/features/cabinetry/measurementUnits";
 import type { CabinetDefinition } from "@/features/cabinetry/types";
 import type { PlanMeasurementUnit } from "@/lib/design-page-types";
 
@@ -61,6 +62,8 @@ export function CabinetryStudioOverlay({
   onDismiss,
 }: CabinetryStudioOverlayProps) {
   if (!state || !enabled) return null;
+  const cabinetryMeasurementUnit: CabinetMeasurementUnit =
+    measurementUnit === "ft-in" ? "in" : measurementUnit;
 
   const handleCancel = () => {
     track("millwork_studio_closed", {
@@ -79,7 +82,7 @@ export function CabinetryStudioOverlay({
   return (
     <CabinetryStudioDialog mode={state.mode} onDismiss={handleCancel}>
       <div className="h-full overflow-hidden rounded-xl bg-white shadow-2xl">
-        <CabinetMeasurementUnitProvider unit={measurementUnit}>
+        <CabinetMeasurementUnitProvider unit={cabinetryMeasurementUnit}>
           <CabinetryStudio
             mode={state.mode}
             accessLevel={accessLevel}

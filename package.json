@@ -91,6 +91,7 @@
     "test:production-certification-resources": "node scripts/test-production-certification-resources.mjs",
     "test:production-certification-dependency-lifecycle": "node scripts/test-production-certification-dependency-lifecycle.mjs",
     "typecheck": "tsc --noEmit --pretty false",
+    "test:display-units": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' -r tsconfig-paths/register scripts/test-display-units.ts",
     "test:auth-env-hardening": "npm run test:ci-auth-fixture-results && npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' -r tsconfig-paths/register scripts/test-auth-env-hardening.ts && npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' -r tsconfig-paths/register scripts/test-admin-authorization.ts",
     "test:glb-local-render-bounds": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\",\"jsx\":\"react-jsx\"}' -r tsconfig-paths/register scripts/test-glb-local-render-bounds.ts",
     "test:glb-model-lifecycle": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' -r tsconfig-paths/register scripts/check-glb-model-lifecycle.ts",

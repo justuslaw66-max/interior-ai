@@ -1,6 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import { DisplayUnitSelect } from "@/components/editor/DisplayUnitSelect";
 import EditorViewToggle, { type EditorViewMode } from "@/components/editor/EditorViewToggle";
 import { EditorDialog } from "@/components/editor/design-system/EditorDialog";
 import ExportReadinessPreview from "@/components/editor/ExportReadinessPreview";
@@ -544,31 +545,11 @@ export function PresentExportDialog({ configuration, state, actions }: PresentEx
                   />
                 )}
                 <div className="rounded-lg border border-gray-200/70 p-2">
-                  <div className={showDesignerTheme ? "mb-2 text-[11px] text-neutral-400" : "mb-2 text-[11px] text-gray-500"}>
-                    Measurement units
-                  </div>
-                  <div className="grid grid-cols-3 gap-2">
-                    {([
-                      ["mm", "Millimeters"],
-                      ["cm", "Centimeters"],
-                      ["in", "Inches"],
-                    ] as const).map(([unit, label]) => (
-                      <button
-                        key={unit}
-                        className={
-                          planMeasurementUnit === unit
-                            ? "rounded-lg bg-teal-600 px-2 py-2 text-[11px] font-medium text-white"
-                            : showDesignerTheme
-                              ? "designer-control rounded-lg border px-2 py-2 text-[11px] text-neutral-200"
-                              : "rounded-lg bg-gray-100 px-2 py-2 text-[11px] hover:bg-gray-200"
-                        }
-                        onClick={() => actions.onMeasurementUnitChange(unit)}
-                        title={label}
-                      >
-                        {unit.toUpperCase()}
-                      </button>
-                    ))}
-                  </div>
+                  <DisplayUnitSelect
+                    value={planMeasurementUnit}
+                    dark={showDesignerTheme}
+                    onChange={actions.onMeasurementUnitChange}
+                  />
                 </div>
 
                 <div className="grid grid-cols-3 gap-2">

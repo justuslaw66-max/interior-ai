@@ -1,6 +1,7 @@
 "use client";
 
 import { createPortal } from "react-dom";
+import { DisplayUnitSelect } from "@/components/editor/DisplayUnitSelect";
 import MeasurementField from "@/components/editor/MeasurementField";
 import {
   SelectedSurfaceInspector,
@@ -12,6 +13,7 @@ import {
   type HousePlanRoom2D,
 } from "@/lib/design-page-house-plan";
 import type { PlanMeasurementUnit } from "@/lib/design-page-types";
+import { getDisplayUnitMetadata } from "@/lib/display-units";
 import type { FloorPlanPropertyEvidenceV2 } from "@/lib/floor-plan-document-v2";
 import type { FloorPlanConsumerMeasurementEvidenceV2 } from "@/lib/floor-plan-measured-property-mutations";
 import type { DesignPageSelectionInspectorSummary } from "@/lib/useDesignPageSelectionInspectorModel";
@@ -207,7 +209,7 @@ export function DesignPageSelectionInspector({
                     : "font-normal text-neutral-500"
                 }
               >
-                {state.measurementUnit}
+                {getDisplayUnitMetadata(state.measurementUnit).indicator}
               </span>
             </div>
             <div
@@ -402,39 +404,17 @@ export function DesignPageSelectionInspector({
               : "mt-3 border-t border-neutral-200 pt-3"
           }
         >
-          <div className="flex items-center justify-between gap-2">
+          <div className="flex items-end justify-between gap-3">
             <div className="text-[11px] font-semibold uppercase text-neutral-500">
               Dimensions
             </div>
-            <div
-              data-testid="selection-inspector-measurement-units"
-              className={
-                configuration.dark
-                  ? "designer-raised grid grid-cols-3 rounded-md border p-0.5"
-                  : "grid grid-cols-3 rounded-md border border-neutral-200 bg-neutral-50 p-0.5"
-              }
-              aria-label="Measurement units"
-            >
-              {(["mm", "cm", "in"] as const).map((unit) => (
-                <button
-                  key={unit}
-                  type="button"
-                  aria-pressed={state.measurementUnit === unit}
-                  className={
-                    state.measurementUnit === unit
-                      ? configuration.dark
-                        ? "designer-work-control-active min-h-11 rounded px-1.5 py-1 text-[10px] font-semibold"
-                        : "min-h-11 rounded bg-neutral-950 px-1.5 py-1 text-[10px] font-semibold text-white"
-                      : configuration.dark
-                        ? "designer-work-control min-h-11 rounded px-1.5 py-1 text-[10px]"
-                        : "min-h-11 rounded px-1.5 py-1 text-[10px] text-neutral-500 hover:bg-white"
-                  }
-                  onClick={() => actions.setMeasurementUnit(unit)}
-                >
-                  {unit.toUpperCase()}
-                </button>
-              ))}
-            </div>
+            <DisplayUnitSelect
+              value={state.measurementUnit}
+              dark={configuration.dark}
+              testId="selection-inspector-measurement-units"
+              className="w-48 max-w-[70%]"
+              onChange={actions.setMeasurementUnit}
+            />
           </div>
           <div className="mt-2 grid grid-cols-2 gap-2">
             <MeasurementField

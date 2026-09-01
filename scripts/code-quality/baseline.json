@@ -129,7 +129,7 @@
       "limit": 250
     },
     "components/editor/ConsumerRoomSetupCard.tsx": {
-      "lines": 402,
+      "lines": 367,
       "limit": 250
     },
     "components/editor/design-controls-plan/PlanToolIcon.tsx": {
@@ -157,7 +157,7 @@
       "limit": 250
     },
     "components/editor/design-page/DesignPageSelectionInspector.tsx": {
-      "lines": 663,
+      "lines": 643,
       "limit": 250
     },
     "components/editor/design-page/DesignPageViewportOverlayLayer.tsx": {
@@ -189,7 +189,7 @@
       "limit": 250
     },
     "components/editor/design-page/PresentExportDialog.tsx": {
-      "lines": 857,
+      "lines": 838,
       "limit": 250
     },
     "components/editor/design-page/ProductFinishControls.tsx": {
@@ -305,7 +305,7 @@
       "limit": 250
     },
     "components/editor/renderers/ItemRenderer2D.tsx": {
-      "lines": 337,
+      "lines": 329,
       "limit": 250
     },
     "components/editor/renderers/PlanUnderlayRenderer2D.tsx": {
@@ -313,7 +313,7 @@
       "limit": 250
     },
     "components/editor/renderers/RoomRenderer2D.tsx": {
-      "lines": 5636,
+      "lines": 5628,
       "limit": 250
     },
     "components/editor/renderers/useSurfaceMaterialTexture.ts": {
@@ -1673,11 +1673,11 @@
     "components/editor/ConsumerRoomSetupCard.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 343
+        "maximum": 314
       },
       "complexFunctions": {
         "count": 1,
-        "maximum": 32
+        "maximum": 31
       }
     },
     "components/editor/design-controls-plan/PlanToolComponents.tsx": {
@@ -1781,11 +1781,11 @@
     "components/editor/design-page/DesignPageSelectionInspector.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 565
+        "maximum": 543
       },
       "complexFunctions": {
         "count": 1,
-        "maximum": 53
+        "maximum": 52
       }
     },
     "components/editor/design-page/DesignPageToasts.tsx": {
@@ -1977,11 +1977,11 @@
     "components/editor/design-page/PresentExportDialog.tsx": {
       "overlongFunctions": {
         "count": 2,
-        "maximum": 752
+        "maximum": 732
       },
       "complexFunctions": {
         "count": 2,
-        "maximum": 78
+        "maximum": 77
       }
     },
     "components/editor/design-page/PresentExportProfessionalPlanControls.tsx": {
@@ -2337,7 +2337,7 @@
       },
       "complexFunctions": {
         "count": 1,
-        "maximum": 33
+        "maximum": 27
       }
     },
     "components/editor/PlanOpeningInspector.tsx": {
@@ -2411,7 +2411,7 @@
     "components/editor/renderers/ItemRenderer2D.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 305
+        "maximum": 295
       },
       "complexFunctions": {
         "count": 1,
@@ -2431,7 +2431,7 @@
     "components/editor/renderers/RoomRenderer2D.tsx": {
       "overlongFunctions": {
         "count": 18,
-        "maximum": 4254
+        "maximum": 4244
       },
       "complexFunctions": {
         "count": 8,
@@ -4831,11 +4831,11 @@
     "lib/useDesignPagePlanState.ts": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 159
+        "maximum": 158
       },
       "complexFunctions": {
         "count": 1,
-        "maximum": 20
+        "maximum": 17
       }
     },
     "lib/useDesignPagePlanViewportRuntime.ts": {

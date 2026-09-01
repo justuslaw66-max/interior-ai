@@ -50,6 +50,8 @@ import {
 } from "./CanonicalFloorPlanStructure";
 import type { CanonicalFloorPlanRenderModel } from "@/lib/floor-plan-render-model";
 import { buildRoomPlanShape } from "@/lib/room-plan-shape";
+import type { PlanMeasurementUnit } from "@/lib/design-page-types";
+import { formatDisplayLength } from "@/lib/display-units";
 
 type RectZone = {
   id: string;
@@ -451,7 +453,7 @@ type OpeningPreviewWallGuide = {
 type RoomRenderer2DProps = {
   width: number;
   depth: number;
-  measurementUnit?: "mm" | "cm" | "in";
+  measurementUnit?: PlanMeasurementUnit;
   showGrid?: boolean;
   showDimensions?: boolean;
   showLabels?: boolean;
@@ -2055,18 +2057,8 @@ export default function RoomRenderer2D({
     ? getOpeningPreviewDetailText(openingPreview)
     : null;
 
-  const formatDimension = (meters: number) => {
-    const millimeters = meters * 1000;
-    if (measurementUnit === "cm") {
-      const value = (millimeters / 10).toFixed(1).replace(/\.0$/, "");
-      return `${value} cm`;
-    }
-    if (measurementUnit === "in") {
-      const value = (millimeters / 25.4).toFixed(1).replace(/\.0$/, "");
-      return `${value} in`;
-    }
-    return `${Math.round(millimeters)} mm`;
-  };
+  const formatDimension = (meters: number) =>
+    formatDisplayLength(meters * 1000, measurementUnit);
 
   const setPointerCaptureIfSupported = (event: ThreeEvent<PointerEvent>) => {
     const target = event.target as Element | null;

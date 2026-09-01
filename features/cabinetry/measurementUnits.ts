@@ -1,21 +1,19 @@
+import {
+  formatDisplayLength,
+  getDisplayScalarDecimalPlaces,
+  getDisplayUnitResolutionMm,
+  getMillimetresPerDisplayScalarUnit,
+  millimetresToScalarDisplay,
+  scalarDisplayToMillimetres,
+  type DisplayUnit,
+} from "@/lib/display-units";
+
 export type CabinetMeasurementUnit = "mm" | "cm" | "in";
-
-const MILLIMETRES_PER_UNIT: Readonly<Record<CabinetMeasurementUnit, number>> = {
-  mm: 1,
-  cm: 10,
-  in: 25.4,
-};
-
-const DISPLAY_DECIMAL_PLACES: Readonly<Record<CabinetMeasurementUnit, number>> = {
-  mm: 2,
-  cm: 2,
-  in: 3,
-};
 
 export function getCabinetMillimetresPerDisplayUnit(
   unit: CabinetMeasurementUnit
 ): number {
-  return MILLIMETRES_PER_UNIT[unit];
+  return getMillimetresPerDisplayScalarUnit(unit);
 }
 
 function roundTo(value: number, places: number): number {
@@ -24,35 +22,30 @@ function roundTo(value: number, places: number): number {
 }
 
 export function getCabinetDisplayDecimalPlaces(unit: CabinetMeasurementUnit): number {
-  return DISPLAY_DECIMAL_PLACES[unit];
+  return getDisplayScalarDecimalPlaces(unit);
 }
 
 /** Smallest authored display increment retained by the shared measurement UI. */
 export function getCabinetDisplayDraftStep(unit: CabinetMeasurementUnit): number {
-  return 10 ** -DISPLAY_DECIMAL_PLACES[unit];
+  return 10 ** -getCabinetDisplayDecimalPlaces(unit);
 }
 
 export function getCabinetDisplayResolutionMm(unit: CabinetMeasurementUnit): number {
-  return getCabinetDisplayDraftStep(unit) * MILLIMETRES_PER_UNIT[unit];
+  return getDisplayUnitResolutionMm(unit);
 }
 
 export function cabinetMillimetresToDisplay(
   valueMm: number,
   unit: CabinetMeasurementUnit
 ): number {
-  if (!Number.isFinite(valueMm)) return valueMm;
-  return roundTo(
-    valueMm / MILLIMETRES_PER_UNIT[unit],
-    DISPLAY_DECIMAL_PLACES[unit]
-  );
+  return millimetresToScalarDisplay(valueMm, unit);
 }
 
 export function cabinetDisplayToMillimetres(
   value: number,
   unit: CabinetMeasurementUnit
 ): number {
-  if (!Number.isFinite(value)) return value;
-  return roundTo(value * MILLIMETRES_PER_UNIT[unit], 3);
+  return scalarDisplayToMillimetres(value, unit);
 }
 
 export interface CabinetDisplayToModelOptions {
@@ -138,13 +131,10 @@ export function resolveCabinetDisplayMeasurement(
 
 export function formatCabinetMeasurement(
   valueMm: number,
-  unit: CabinetMeasurementUnit,
+  unit: DisplayUnit,
   options: { includeMillimetreReference?: boolean } = {}
 ): string {
-  const displayValue = cabinetMillimetresToDisplay(valueMm, unit);
-  const primary = `${displayValue.toLocaleString("en-US", {
-    maximumFractionDigits: unit === "in" ? 3 : unit === "cm" ? 2 : 1,
-  })} ${unit}`;
+  const primary = formatDisplayLength(valueMm, unit);
   if (unit === "mm" || !options.includeMillimetreReference) return primary;
   return `${primary} (${Math.round(valueMm).toLocaleString("en-US")} mm)`;
 }
@@ -161,7 +151,7 @@ function formatExactMillimetreReference(valueMm: number): string {
   });
 }
 
-function formatFeedbackMeasurement(valueMm: number, unit: CabinetMeasurementUnit): string {
+function formatFeedbackMeasurement(valueMm: number, unit: DisplayUnit): string {
   return `${formatCabinetMeasurement(valueMm, unit)} (${formatExactMillimetreReference(valueMm)} mm)`;
 }
 
@@ -173,7 +163,7 @@ function formatFeedbackMeasurement(valueMm: number, unit: CabinetMeasurementUnit
  */
 export function formatCabinetMeasurementTokens(
   message: string,
-  unit: CabinetMeasurementUnit
+  unit: DisplayUnit
 ): string {
   if (!message || unit === "mm") return message;
 
