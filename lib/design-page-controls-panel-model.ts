@@ -77,6 +77,7 @@ type RoomActions = ActionSlice<
 
 type FloorPlanState = StateSlice<
   | "measurementUnit"
+  | "measurementUnitReady"
   | "floorPlanUnderlay"
   | "floorPlanCalibrationMode"
   | "floorPlanCalibrationPointCount"

@@ -155,11 +155,20 @@ function formatFeedbackMeasurement(valueMm: number, unit: DisplayUnit): string {
   return `${formatCabinetMeasurement(valueMm, unit)} (${formatExactMillimetreReference(valueMm)} mm)`;
 }
 
+function hasFormattedMeasurementBeforeReference(
+  source: string,
+  offset: number
+): boolean {
+  const preceding = source.slice(0, offset);
+  return /(?:\b(?:cm|in)|["″])\s*$/i.test(preceding);
+}
+
 /**
  * Converts standalone linear-measurement tokens in domain feedback without
  * touching unrelated numbers, IDs, compact SKU fragments, or area/volume units.
  * Domain producers can therefore remain millimetre-native while the UI follows
- * the active project unit. Existing `cm/in (... mm)` output is left unchanged.
+ * the active project unit. Existing `cm/in/ft-in (... mm)` output is left
+ * unchanged so repeated formatting is idempotent.
  */
 export function formatCabinetMeasurementTokens(
   message: string,
@@ -180,10 +189,7 @@ export function formatCabinetMeasurementTokens(
   return rangesFormatted.replace(
     MILLIMETRE_MESSAGE_TOKEN,
     (match, prefix: string, numericToken: string, offset: number, source: string) => {
-      if (
-        prefix === "(" &&
-        /\b(?:cm|in)\s*$/i.test(source.slice(0, offset))
-      ) {
+      if (prefix === "(" && hasFormattedMeasurementBeforeReference(source, offset)) {
         return match;
       }
       const valueMm = Number(numericToken.replace(/,/g, ""));

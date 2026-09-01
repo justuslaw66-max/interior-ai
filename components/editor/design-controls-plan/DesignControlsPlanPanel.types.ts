@@ -68,7 +68,7 @@ export type DesignControlsPlanPanelProps = {
   roomDepthInput: string;
   roomWidth: number;
   roomDepth: number;
-  measurementUnit: PlanMeasurementUnit;
+  measurementUnit: PlanMeasurementUnit; measurementUnitReady: boolean;
   floorPlanUnderlay: FloorPlanUnderlay | null;
   floorPlanCalibrationMode: boolean;
   floorPlanCalibrationPointCount: number;

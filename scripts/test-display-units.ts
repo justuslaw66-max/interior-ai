@@ -6,6 +6,7 @@ import {
   formatDisplayArea,
   formatDisplayLength,
   formatDisplayLengthInput,
+  getDisplayLengthInputError,
   getMeasurementSystem,
   normalizeDisplayUnit,
   parseDisplayLength,
@@ -29,6 +30,15 @@ function expectParsedMm(
   }
 }
 
+function expectInvalid(
+  input: string,
+  code?: Exclude<ReturnType<typeof parseDisplayLength>, { status: "valid" }>["code"]
+) {
+  const result = parseDisplayLength(input, "ft-in");
+  assert.equal(result.status, "invalid", `${JSON.stringify(input)} should be rejected`);
+  if (result.status === "invalid" && code) assert.equal(result.code, code);
+}
+
 assert.equal(formatDisplayLength(2_540, "mm"), "2,540 mm");
 assert.equal(formatDisplayLength(2_540, "cm"), "254 cm");
 assert.equal(formatDisplayLength(2_540, "in"), "100 in");
@@ -47,15 +57,45 @@ expectParsedMm("13 ft 9.4 in", "ft-in", 4_201.16);
 expectParsedMm("13ft 9.4in", "ft-in", 4_201.16);
 expectParsedMm("13′ 9.4″", "ft-in", 4_201.16);
 expectParsedMm("13.75 ft", "ft-in", 4_191);
+expectParsedMm("13.75 feet", "ft-in", 4_191);
+expectParsedMm("165.4 in", "ft-in", 4_201.16);
+expectParsedMm("0′ 0″", "ft-in", 0);
+expectParsedMm("11.96 in", "ft-in", 303.784);
 expectParsedMm("9.4 in", "ft-in", 238.76);
 
-for (const input of ["13 ft nine in", "NaN", "Infinity", "--13 in"]) {
-  assert.equal(
-    parseDisplayLength(input, "ft-in").status,
-    "invalid",
-    `${input} should be rejected`
-  );
+for (const input of [
+  "13.75 ft 9.4 in",
+  `13.5' 2"`,
+  "13.5 ft 2 in",
+  "13 ft -2 in",
+  "-13 ft 2 in",
+  "+13 ft 2 in",
+  "13 ft 9 in 2 in",
+  `13 ft 9" 2"`,
+  "13′ 9.4′",
+  "13″ 9.4′",
+  "13' 9 ft",
+  "13 ft ft",
+  "13 in 9 ft",
+  "13 ft nine in",
+  "13..5 ft",
+  "13.5.2 in",
+  "",
+  "   ",
+  "--13 in",
+]) {
+  expectInvalid(input);
 }
+expectInvalid("13 ft 12 in", "compound_inches_out_of_range");
+expectInvalid("13 ft 12.1 in", "compound_inches_out_of_range");
+expectInvalid("NaN", "non_finite");
+expectInvalid("Infinity", "non_finite");
+
+const overflow = resolveDisplayLengthInput("13 ft 12.1 in", "ft-in");
+assert.equal(
+  getDisplayLengthInputError(overflow, "ft-in"),
+  "Inches must be less than 12 when feet are included."
+);
 
 const negative = resolveDisplayLengthInput("-9.4 in", "ft-in", { minMm: 0 });
 assert.equal(negative.status, "invalid");
@@ -72,19 +112,48 @@ const snappedImperial = resolveDisplayLengthInput(imperialDraft, "ft-in", {
 });
 assert.deepEqual(snappedImperial, { status: "valid", valueMm: canonicalWidthMm });
 
-for (let iteration = 0; iteration < 20; iteration += 1) {
-  for (const unit of ["cm", "ft-in", "in", "mm"] as const) {
-    const draft = formatDisplayLengthInput(canonicalWidthMm, unit);
+const fourteenFeetOptions = {
+  referenceMm: canonicalWidthMm,
+  minMm: 1_800,
+  maxMm: 20_000,
+  snapStepMm: 10,
+  stepBaseMm: 1_800,
+};
+assert.deepEqual(resolveDisplayLengthInput("14 ft", "ft-in", fourteenFeetOptions), {
+  status: "valid",
+  valueMm: 4_267.2,
+});
+assert.equal(formatDisplayLengthInput(4_267.2, "ft-in"), "14′ 0″");
+assert.deepEqual(
+  resolveDisplayLengthInput("14′ 0″", "ft-in", {
+    ...fourteenFeetOptions,
+    referenceMm: 4_267.2,
+  }),
+  { status: "valid", valueMm: 4_267.2 },
+  "re-entering normalized imperial text must retain the exact canonical value"
+);
+assert.deepEqual(
+  resolveDisplayLengthInput("420.05", "cm", fourteenFeetOptions),
+  { status: "invalid", code: "step_mismatch", valueMm: 4_200.5 },
+  "metric input keeps the established 10 mm accepted increment"
+);
+
+let cycledWidthMm = canonicalWidthMm;
+for (let iteration = 0; iteration < 100; iteration += 1) {
+  for (const unit of ["cm", "ft-in", "cm", "mm", "in", "ft-in", "mm"] as const) {
+    const draft = formatDisplayLengthInput(cycledWidthMm, unit);
     const resolved = resolveDisplayLengthInput(draft, unit, {
-      referenceMm: canonicalWidthMm,
+      referenceMm: cycledWidthMm,
     });
     assert.deepEqual(
       resolved,
-      { status: "valid", valueMm: canonicalWidthMm },
-      `${unit} switching should preserve the canonical value without drift`
+      { status: "valid", valueMm: cycledWidthMm },
+      `${unit} switch ${iteration + 1} should preserve the canonical value without drift`
     );
+    if (resolved.status === "valid") cycledWidthMm = resolved.valueMm;
   }
 }
+assert.equal(cycledWidthMm, canonicalWidthMm, "100 complete unit cycles must not drift");
 
 const canonicalRoomGeometry = Object.freeze({
   width: 4.2,

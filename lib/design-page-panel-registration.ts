@@ -254,7 +254,7 @@ export function buildDesignPagePanelRegistration({
     },
     floorPlan: {
       state: {
-        measurementUnit: planDocument.state.planMeasurementUnit,
+        measurementUnit: planDocument.state.planMeasurementUnit, measurementUnitReady: planDocument.state.planMeasurementUnitReady,
         floorPlanUnderlay: floorPlan.floorPlanUnderlay,
         floorPlanCalibrationMode: floorPlan.floorPlanCalibrationMode,
         floorPlanCalibrationPointCount:

@@ -56,7 +56,7 @@ export function useDesignPagePlanDocumentState() {
     planGuidedActionsChoiceSeen,
     setPlanGuidedActionsChoiceSeen,
     planOpeningsStorageState,
-    planSettingsLoaded,
+    planSettingsLoaded, planMeasurementUnitReady,
   } = useDesignPagePlanState();
 
   const planOpeningsRef = useRef(planOpenings);
@@ -144,7 +144,7 @@ export function useDesignPagePlanDocumentState() {
       planGuidedActionsEnabled,
       planGuidedActionsChoiceSeen,
       planOpeningsStorageState,
-      planSettingsLoaded,
+      planSettingsLoaded, planMeasurementUnitReady,
     },
     actions: {
       setPlanTheme: setPlanThemeState,
