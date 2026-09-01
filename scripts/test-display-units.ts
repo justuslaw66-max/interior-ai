@@ -112,28 +112,74 @@ const snappedImperial = resolveDisplayLengthInput(imperialDraft, "ft-in", {
 });
 assert.deepEqual(snappedImperial, { status: "valid", valueMm: canonicalWidthMm });
 
-const fourteenFeetOptions = {
-  referenceMm: canonicalWidthMm,
+const imperialRoomOptions = {
   minMm: 1_800,
   maxMm: 20_000,
   snapStepMm: 10,
   stepBaseMm: 1_800,
 };
-assert.deepEqual(resolveDisplayLengthInput("14 ft", "ft-in", fourteenFeetOptions), {
-  status: "valid",
-  valueMm: 4_267.2,
-});
+for (const [referenceMm, input, unit, expectedMm] of [
+  [4_267, "14 ft", "ft-in", 4_267.2],
+  [4_266.184, "14 ft", "ft-in", 4_267.2],
+  [4_200, `13' 9.4"`, "ft-in", 4_201.16],
+  [4_200, "13 ft 9.4 in", "ft-in", 4_201.16],
+  [4_200, "165.4 in", "in", 4_201.16],
+  [4_267, "168 in", "in", 4_267.2],
+] as const) {
+  assert.deepEqual(
+    resolveDisplayLengthInput(input, unit, {
+      ...imperialRoomOptions,
+      referenceMm,
+    }),
+    { status: "valid", valueMm: expectedMm },
+    `${input} must resolve independently of the nearby ${referenceMm} mm reference`
+  );
+}
 assert.equal(formatDisplayLengthInput(4_267.2, "ft-in"), "14′ 0″");
+
+for (const referenceMm of [4_266.184, 4_200]) {
+  const exactRenderedText = formatDisplayLengthInput(referenceMm, "ft-in");
+  assert.equal(
+    exactRenderedText,
+    referenceMm === 4_266.184 ? "14′ 0″" : "13′ 9.4″"
+  );
+  let repeatedReferenceMm = referenceMm;
+  for (let iteration = 0; iteration < 100; iteration += 1) {
+    const result = resolveDisplayLengthInput(exactRenderedText, "ft-in", {
+      ...imperialRoomOptions,
+      referenceMm: repeatedReferenceMm,
+    });
+    assert.deepEqual(
+      result,
+      { status: "valid", valueMm: referenceMm },
+      `exact rendered re-entry ${iteration + 1} must preserve ${referenceMm} mm`
+    );
+    if (result.status === "valid") repeatedReferenceMm = result.valueMm;
+  }
+  assert.equal(repeatedReferenceMm, referenceMm);
+}
+
+for (const alternateFourteenFeet of [
+  "14 ft",
+  "14'",
+  "14 ft 0 in",
+  `14' 0"`,
+]) {
+  assert.deepEqual(
+    resolveDisplayLengthInput(alternateFourteenFeet, "ft-in", {
+      ...imperialRoomOptions,
+      referenceMm: 4_266.184,
+    }),
+    { status: "valid", valueMm: 4_267.2 },
+    `${alternateFourteenFeet} is explicit text, not exact rendered-text identity`
+  );
+}
+
 assert.deepEqual(
-  resolveDisplayLengthInput("14′ 0″", "ft-in", {
-    ...fourteenFeetOptions,
-    referenceMm: 4_267.2,
+  resolveDisplayLengthInput("420.05", "cm", {
+    ...imperialRoomOptions,
+    referenceMm: canonicalWidthMm,
   }),
-  { status: "valid", valueMm: 4_267.2 },
-  "re-entering normalized imperial text must retain the exact canonical value"
-);
-assert.deepEqual(
-  resolveDisplayLengthInput("420.05", "cm", fourteenFeetOptions),
   { status: "invalid", code: "step_mismatch", valueMm: 4_200.5 },
   "metric input keeps the established 10 mm accepted increment"
 );
