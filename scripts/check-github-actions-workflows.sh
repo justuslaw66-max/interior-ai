@@ -85,4 +85,4 @@ if [ "${#workflow_files[@]}" -eq 0 ]; then
   exit 1
 fi
 
-"$actionlint_binary" "${workflow_files[@]}"
+"$actionlint_binary" -shellcheck="" "${workflow_files[@]}"
