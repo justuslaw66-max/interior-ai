@@ -6,7 +6,6 @@ import {
   mkdirSync,
   mkdtempSync,
   readFileSync,
-  readdirSync,
   renameSync,
   rmSync,
   symlinkSync,
@@ -2088,9 +2087,11 @@ assert.equal(
     "the fresh PostgreSQL service must be migrated before production smoke",
   );
   assert.ok(
-    stableJob.indexOf("Run runtime smoke tests") <
-      stableJob.indexOf("Prepare standalone production evidence bundle"),
-    "only completed smoke evidence may be bundled",
+    stableJob.indexOf("Build strict production-equivalent artifact evidence") <
+      stableJob.indexOf("Run runtime smoke tests") &&
+      stableJob.indexOf("Run runtime smoke tests") <
+        stableJob.indexOf("Declare stable evidence ready"),
+    "the Stable runtime parent must consume the preceding strict artifact before upload",
   );
   assert.ok(
     stableJob.indexOf("Build strict production-equivalent artifact evidence") <
@@ -2146,8 +2147,15 @@ assert.equal(
         stableJob.indexOf("Build strict production-equivalent artifact evidence"),
     "stable-checks may retain non-server structural validation before the expensive build",
   );
-  assert.match(stableJob, /Verify standalone production evidence bundle/);
-  assert.match(stableJob, /verify-standalone/);
+  assert.match(stableJob, /npm run evidence:production:stable-runtime-smoke/);
+  assert.match(
+    stableJob,
+    /CERTIFICATION_DATABASE_ADMIN_URL:\s*postgresql:\/\/test:test@127\.0\.0\.1:5432\/postgres/,
+  );
+  assert.match(
+    stableJob,
+    /STABLE_RUNTIME_SMOKE_EXPECTED_SOURCE_SHA:\s*\$\{\{ steps\.verify-source\.outputs\.tested_source_sha \}\}/,
+  );
   assert.match(
     contractPreflightJob,
     /Preflight advisory authentication environment[\s\S]*npm run ci:auth-fixture:preflight-existing/,
@@ -2169,34 +2177,23 @@ assert.equal(
     "the live preflight must own a separate checkout/workspace boundary",
   );
   const stableSteps = requiredJobs["stable-checks"].steps;
-  const failureDiagnostics = stableSteps.find(
-    (step) => step.name === "Prepare safe runtime failure diagnostics",
-  );
-  const failureUpload = stableSteps.find(
-    (step) => step.name === "Upload safe runtime failure diagnostics",
+  const runtimeSmoke = stableSteps.find(
+    (step) => step.name === "Run runtime smoke tests",
   );
   const stableReady = stableSteps.find((step) => step.name === "Declare stable evidence ready");
   const stableUpload = stableSteps.find(
     (step) => step.name === "Upload stable production evidence",
   );
+  assert.equal(runtimeSmoke?.run, "npm run evidence:production:stable-runtime-smoke");
   assert.equal(
-    failureDiagnostics?.if,
-    "failure() && !cancelled() && steps.strict-build.outcome == 'success' && steps.runtime-smoke.outcome == 'failure'",
-    "runtime diagnostics may be prepared only after a failing runtime producer",
+    runtimeSmoke?.env?.STABLE_RUNTIME_SMOKE_EXPECTED_SOURCE_SHA,
+    "${{ steps.verify-source.outputs.tested_source_sha }}",
   );
   assert.equal(
-    failureUpload?.if,
-    "always() && !cancelled() && steps.failure-diagnostics.outputs.safe_failure_diagnostics_ready == 'true'",
-    "runtime diagnostics upload must be skipped when no producer declared a safe payload",
+    stableSteps.some((step) => step.name === "Prepare safe runtime failure diagnostics"),
+    false,
+    "Stable checks must not restore repository-relative runtime failure evidence",
   );
-  assert.equal(failureUpload?.with?.["if-no-files-found"], "error");
-  assert.match(failureDiagnostics.run, /failure-upload\.staging/);
-  assert.match(
-    failureDiagnostics.run,
-    /node scripts\/production-artifact-evidence\.mjs verify-runtime-failure/,
-  );
-  assert.match(failureDiagnostics.run, /Runtime failure diagnostics inventory is not exact/);
-  assert.match(failureDiagnostics.run, /safe_failure_diagnostics_ready=true/);
   const runWorkflowShell = (source, cwd, environment = {}) =>
     spawnSync("bash", ["-c", source], {
       cwd,
@@ -2204,78 +2201,12 @@ assert.equal(
       env: { ...process.env, ...environment },
       stdio: ["ignore", "pipe", "pipe"],
     });
-  {
-    const root = mkdtempSync(path.join(tmpdir(), "ch-0017-no-runtime-diagnostics-"));
-    const outputPath = path.join(root, "github-output");
-    const result = runWorkflowShell(failureDiagnostics.run, root, {
-      GITHUB_OUTPUT: outputPath,
-    });
-    assert.equal(result.status, 0, "an absent runtime producer must not invent a payload");
-    assert.equal(existsSync(path.join(root, ".local/production-artifact-evidence/failure-upload")), false);
-    assert.equal(existsSync(outputPath), false, "an absent producer must not report ready=true");
-    rmSync(root, { recursive: true, force: true });
-  }
-  {
-    const root = mkdtempSync(path.join(tmpdir(), "ch-0017-safe-runtime-diagnostics-"));
-    const evidenceRoot = ".local/production-artifact-evidence";
-    const outputPath = path.join(root, "github-output");
-    for (const file of ["manifest.json", "runtime-smoke.json", "runtime-smoke-phases.json"]) {
-      write(root, `${evidenceRoot}/${file}`, `${JSON.stringify({ schema: file })}\n`);
-    }
-    const result = runWorkflowShell(
-      failureDiagnostics.run.replace(
-        "node scripts/production-artifact-evidence.mjs verify-runtime-failure",
-        "true",
-      ),
-      root,
-      {
-      GITHUB_OUTPUT: outputPath,
-      GOOGLE_CLIENT_ID: "generated-client-value.example.test",
-      GOOGLE_CLIENT_SECRET: "generated-secret-value",
-      AUTH_SECRET: "generated-auth-secret-value",
-      NEXTAUTH_SECRET: "generated-nextauth-secret-value",
-      DATABASE_URL: "database-url-value",
-      },
-    );
-    assert.equal(result.status, 0, result.stderr);
-    assert.equal(readFileSync(outputPath, "utf8"), "safe_failure_diagnostics_ready=true\n");
-    assert.deepEqual(
-      readdirSync(path.join(root, `${evidenceRoot}/failure-upload`)).sort(),
-      ["manifest.json", "runtime-smoke-phases.json", "runtime-smoke.json"],
-    );
-    assert.equal(existsSync(path.join(root, `${evidenceRoot}/failure-upload.staging`)), false);
-    rmSync(root, { recursive: true, force: true });
-  }
-  {
-    const root = mkdtempSync(path.join(tmpdir(), "ch-0017-unsafe-runtime-diagnostics-"));
-    const evidenceRoot = ".local/production-artifact-evidence";
-    const outputPath = path.join(root, "github-output");
-    write(root, `${evidenceRoot}/manifest.json`, `${JSON.stringify({ value: "generated-secret-value" })}\n`);
-    write(root, `${evidenceRoot}/runtime-smoke.json`, "{}\n");
-    write(root, `${evidenceRoot}/runtime-smoke-phases.json`, "{}\n");
-    const result = runWorkflowShell(
-      failureDiagnostics.run.replace(
-        "node scripts/production-artifact-evidence.mjs verify-runtime-failure",
-        "true",
-      ),
-      root,
-      {
-      GITHUB_OUTPUT: outputPath,
-      GOOGLE_CLIENT_SECRET: "generated-secret-value",
-      },
-    );
-    assert.notEqual(result.status, 0, "credential-bearing failure diagnostics must fail closed");
-    assert.equal(existsSync(path.join(root, `${evidenceRoot}/failure-upload`)), false);
-    assert.equal(existsSync(path.join(root, `${evidenceRoot}/failure-upload.staging`)), false);
-    assert.equal(existsSync(outputPath), false);
-    rmSync(root, { recursive: true, force: true });
-  }
   assert.ok(
-    stableJob.indexOf("Verify standalone production evidence bundle") <
+    stableJob.indexOf("Run runtime smoke tests") <
       stableJob.indexOf("Declare stable evidence ready") &&
       stableJob.indexOf("Declare stable evidence ready") <
         stableJob.indexOf("Upload stable production evidence"),
-    "successful standalone evidence must be verified before it becomes mandatory to upload",
+    "the parent-verified standalone evidence must exist before it becomes mandatory to upload",
   );
   assert.match(stableReady.run, /Stable evidence producer completed without its upload directory/);
   assert.match(stableReady.run, /Stable evidence upload inventory contains a non-regular entry/);

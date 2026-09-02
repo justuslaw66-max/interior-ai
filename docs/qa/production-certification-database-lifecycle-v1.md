@@ -1,5 +1,51 @@
 # Production certification database lifecycle v1
 
+## Stable runtime-smoke lifecycle and external evidence — 2026-09-02
+
+The merge-required Stable job now has a repository-owned runtime-smoke parent.
+It reuses the strict artifact built earlier in the same job, but it does not
+invoke the full release-certification runtime command: that command requires
+the complete certification state, resource plan, stage worktrees, stage order,
+and final-artifact ownership that Stable does not possess. Instead, the parent
+uses the canonical database lifecycle and stage-environment owners with a
+closed `stable-runtime-smoke` profile.
+
+That profile is classified `STABLE_RUNTIME_SMOKE_ONLY`,
+`NOT_RELEASE_CERTIFICATION`, and `NOT_VALID_FOR_INTEGRATION`. It generates one
+fresh candidate-bound database, proves live absence before create, applies and
+verifies all current Prisma migrations, proves the initial application-row and
+session inventory empty, creates the scoped non-admin login, and permits only
+the `runtime-smoke` stage binding. The nested artifact server receives only the
+validated scoped `DATABASE_URL`; ambient URLs, admin authority, stale or
+foreign bindings, other stages, and certification-state substitution fail
+closed. A GitHub-built auth session keeps its exact session, nonce, provider
+digests, and candidate identity when the nested server applies its required
+local-process activation flag; only that activation-scope representation
+changes. Because the runtime product test intentionally creates fixture rows,
+the Stable-only completion records their safe aggregate table inventory and
+requires zero remaining sessions before removing the scoped role and sidecar,
+dropping the whole owned disposable database, and proving absence. It does not
+claim release-certification final emptiness. Failure uses
+the existing abort owner and cannot turn cleanup success into gate success.
+
+The parent creates a new, exact-owned physical task directory beneath absolute
+`RUNNER_TEMP`. Its evidence and private roots are outside every repository and
+worktree. The Playwright JSON report, phase timings, start marker, lifecycle,
+and Stable summary are written there; there is no repository-local fallback.
+Only after a successful marker-bound runtime report and database absence proof
+does the parent create portable report/timing entries for the existing
+standalone bundle contract. It then verifies the extracted bundle and removes
+the exact owned external task root. Stable publishes only the canonical bundle
+and checksum; the classification remains repository merge evidence, never
+release or integration evidence. Failure cleanup removes the task root only
+after database and role absence is proved; otherwise it retains the exact-owned
+root for canonical recovery while still removing any upload claim.
+
+The legacy direct `evidence:production:smoke` path also keeps its default
+timing path repository-relative at the binding boundary. If Playwright fails
+before product-test timing begins, the preceding web-server diagnostic remains
+authoritative and no secondary external-root error replaces it.
+
 ## Final-database AppEvent attribution and cleanup — 2026-08-26
 
 The retained rehearsal

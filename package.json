@@ -53,6 +53,7 @@
     "evidence:production:recover": "node scripts/production-artifact-evidence.mjs recover",
     "evidence:production:serve": "node scripts/production-artifact-evidence.mjs serve",
     "evidence:production:smoke": "node scripts/production-artifact-evidence.mjs smoke",
+    "evidence:production:stable-runtime-smoke": "node scripts/stable-runtime-smoke.mjs",
     "evidence:production:bundle": "node scripts/production-artifact-evidence.mjs bundle",
     "evidence:production:verify": "node scripts/production-artifact-evidence.mjs verify",
     "archive:production:plan": "node scripts/production-archive.mjs plan",

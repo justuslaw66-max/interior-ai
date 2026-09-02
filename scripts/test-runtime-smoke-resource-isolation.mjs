@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import {
   copyFileSync,
+  existsSync,
   mkdirSync,
   mkdtempSync,
   readFileSync,
@@ -14,6 +15,11 @@ import {
   authorizeRuntimeSmokeReportPath,
   resolveRuntimeSmokeStartMarkerPath,
 } from "./playwright-report-path.mjs";
+import {
+  createStableRuntimeRoots,
+  removeStableRuntimeRoot,
+  stableRuntimePaths,
+} from "./stable-runtime-smoke-resources.mjs";
 
 const runtimeSmokeSource = readFileSync(
   path.join(process.cwd(), "tests/e2e/00-runtime-smoke.spec.ts"),
@@ -25,6 +31,10 @@ const playwrightConfigSource = readFileSync(
 );
 const workflowSource = readFileSync(
   path.join(process.cwd(), ".github/workflows/ci.yml"),
+  "utf8",
+);
+const stableRuntimeParentSource = readFileSync(
+  path.join(process.cwd(), "scripts/stable-runtime-smoke.mjs"),
   "utf8",
 );
 
@@ -45,13 +55,23 @@ assert.match(
 );
 assert.match(
   workflowSource,
-  /required_files=\(manifest\.json runtime-smoke\.json runtime-smoke-phases\.json\)/,
-  "the safe structured failure artifact contract must remain unchanged",
+  /npm run evidence:production:stable-runtime-smoke/,
+  "Stable checks must dispatch its repository-owned runtime resource parent",
 );
 assert.doesNotMatch(
   workflowSource,
-  /required_files=\([^\n]*(?:trace\.zip|video\.webm)/,
-  "raw trace/video must not become required external evidence",
+  /evidence_root="\.local\/production-artifact-evidence"/,
+  "certified runtime evidence must not fall back into the repository",
+);
+assert.match(
+  stableRuntimeParentSource,
+  /STABLE_RUNTIME_SMOKE_DATABASE_PROFILE/,
+  "the Stable parent must use the canonical scoped database lifecycle",
+);
+assert.match(
+  stableRuntimeParentSource,
+  /removeStableRuntimeRoot/,
+  "the Stable parent must own external-root cleanup",
 );
 const requiredSnapshotLogSource = runtimeSmokeSource.slice(
   runtimeSmokeSource.indexOf('"[runtime-smoke-required-snapshot]"'),
@@ -266,6 +286,103 @@ assert.match(
   } finally {
     rmSync(repositoryRoot, { recursive: true, force: true });
     rmSync(evidenceContainer, { recursive: true, force: true });
+  }
+}
+
+{
+  const runnerTemp = mkdtempSync(
+    path.join(tmpdir(), "stable-runtime-parent-roots-"),
+  );
+  const manifest = {
+    candidateIdentifier: "github-33641707490-1",
+    source: {
+      commitSha: "a".repeat(40),
+      treeSha: "b".repeat(40),
+    },
+  };
+  const environment = {
+    RUNNER_TEMP: runnerTemp,
+    GITHUB_RUN_ID: "33641707490",
+    GITHUB_RUN_ATTEMPT: "1",
+    STABLE_RUNTIME_SMOKE_EXPECTED_SOURCE_SHA: manifest.source.commitSha,
+  };
+  let roots = null;
+  try {
+    assert.throws(
+      () =>
+        createStableRuntimeRoots({
+          repositoryRoot: process.cwd(),
+          environment: { ...environment, RUNNER_TEMP: "." },
+          manifest,
+        }),
+      /RUNNER_TEMP must be absolute/,
+    );
+    assert.throws(
+      () =>
+        createStableRuntimeRoots({
+          repositoryRoot: process.cwd(),
+          environment: {
+            ...environment,
+            STABLE_RUNTIME_SMOKE_EXPECTED_SOURCE_SHA: "c".repeat(40),
+          },
+          manifest,
+        }),
+      /expected source differs/,
+    );
+    const rejectedTaskRoot = path.join(
+      process.cwd(),
+      `interior-ai-stable-runtime-smoke-${environment.GITHUB_RUN_ID}-${environment.GITHUB_RUN_ATTEMPT}`,
+    );
+    assert.equal(existsSync(rejectedTaskRoot), false);
+    assert.throws(
+      () =>
+        createStableRuntimeRoots({
+          repositoryRoot: process.cwd(),
+          environment: { ...environment, RUNNER_TEMP: process.cwd() },
+          manifest,
+        }),
+      /outside every repository worktree/,
+    );
+    assert.equal(
+      existsSync(rejectedTaskRoot),
+      false,
+      "a rejected worktree-contained root must be removed transactionally",
+    );
+    roots = createStableRuntimeRoots({
+      repositoryRoot: process.cwd(),
+      environment,
+      manifest,
+    });
+    assert.equal(path.isAbsolute(roots.evidenceRoot), true);
+    assert.equal(roots.evidenceRoot.startsWith(`${process.cwd()}${path.sep}`), false);
+    assert.equal(roots.privateRoot.startsWith(`${process.cwd()}${path.sep}`), false);
+    assert.equal(readFileSync(roots.ownerPath, "utf8").includes(process.cwd()), false);
+    const paths = stableRuntimePaths(roots.evidenceRoot);
+    for (const outputPath of Object.values(paths)) {
+      assert.equal(outputPath.startsWith(`${roots.evidenceRoot}${path.sep}`), true);
+    }
+    assert.throws(
+      () =>
+        createStableRuntimeRoots({
+          repositoryRoot: process.cwd(),
+          environment,
+          manifest,
+        }),
+      /task root already exists/,
+    );
+    const ownerBytes = readFileSync(roots.ownerPath);
+    writeFileSync(roots.ownerPath, "foreign owner\n");
+    assert.throws(
+      () => removeStableRuntimeRoot(roots),
+      /root ownership changed/,
+    );
+    writeFileSync(roots.ownerPath, ownerBytes);
+    removeStableRuntimeRoot(roots);
+    assert.equal(existsSync(roots.taskRoot), false);
+    roots = null;
+  } finally {
+    if (roots?.taskRoot) rmSync(roots.taskRoot, { recursive: true, force: true });
+    rmSync(runnerTemp, { recursive: true, force: true });
   }
 }
 

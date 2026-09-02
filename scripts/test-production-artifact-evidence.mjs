@@ -67,6 +67,12 @@ import {
 } from "./playwright-report-path.mjs";
 import { validateRequiredTestReport } from "./required-test-truthfulness.mjs";
 import { inspectGitTree } from "./vercel-output-manifest.mjs";
+import { verifyStableRuntimeSmokeStandalone } from "./stable-runtime-smoke-standalone.mjs";
+import { STABLE_PORTABLE_SUMMARY_PATH } from "./stable-runtime-smoke-resources.mjs";
+import {
+  certificationEnvironmentProfile,
+  projectCertificationChildEnvironment,
+} from "./production-certification-stage-environment.mjs";
 import {
   GITLEAKS_ARCHIVE_ENTRIES,
   GITLEAKS_STAGING_ROOT,
@@ -4859,6 +4865,16 @@ for (const mutation of [
       runtimeStartIndex > preflightRejectionIndex,
     "runtime smoke cannot start when manifest validation fails",
   );
+  assert.match(
+    smokeSource,
+    /playwright\.status !== 0 && !existsSync\(absolutePhaseTimingPath\)[\s\S]*preceding Playwright webServer failure is authoritative/,
+    "a pre-test server failure must remain the primary direct-smoke diagnostic",
+  );
+  assert.match(
+    smokeSource,
+    /bindRuntimeSmokeFailureToReport\([\s\S]*requestedTimingPath,[\s\S]*externalTimingRoot/,
+    "repository-relative timing evidence must retain its requested path at the binding boundary",
+  );
   assert.ok(
     configSource.indexOf("loadProductionArtifactForPlaywright") <
       configSource.indexOf("export default defineConfig"),
@@ -5181,6 +5197,17 @@ async function expectRejected(context, expectedText) {
       manifest,
     }),
     manifest.build.authFixtureContinuity,
+  );
+  const githubBuildManifest = structuredClone(manifest);
+  githubBuildManifest.build.authFixtureContinuity.activationScope =
+    "github-actions";
+  assert.equal(
+    validateArtifactProductServerAuthFixtureBinding({
+      environment: projectedProductEnvironment,
+      manifest: githubBuildManifest,
+    }).activationScope,
+    "local-certification-projection",
+    "the server-local fixture activation may preserve the same GitHub-built session identity",
   );
   assert.equal(
     projectedProductEnvironment.PRODUCTION_CERTIFICATION_ID,
@@ -6450,6 +6477,138 @@ for (const mutate of [
 
 {
   const context = await fixture();
+  const manifestBytes = readFileSync(path.join(context.root, context.manifestPath));
+  const manifest = JSON.parse(manifestBytes.toString("utf8"));
+  const test = manifest.tests.find((entry) => entry.name === "runtime-smoke");
+  const stageProfile = certificationEnvironmentProfile(
+    process.cwd(),
+    "runtime-smoke",
+  );
+  const stageEnvironment = projectCertificationChildEnvironment({
+    repositoryRoot: process.cwd(),
+    baseEnvironment: {
+      APP_ENV: "staging",
+      CATALOG_STRICT_VALIDATION: "true",
+      CI: "true",
+      NEXT_PUBLIC_APP_ENV: "staging",
+      NODE_ENV: "production",
+      VERCEL_ENV: "preview",
+    },
+    stage: "runtime-smoke",
+    profileId: "runtime-smoke",
+    stageInputs: {
+      CERTIFICATION_ENVIRONMENT_STAGE: "runtime-smoke",
+      CERTIFICATION_RUNTIME_STAGE_ATTEMPT: "1",
+      CERTIFICATION_RUNTIME_START_MARKER_PATH: "/private/tmp/stable/marker.json",
+      CERTIFICATION_STAGE_ENVIRONMENT_CONTRACT_SHA256:
+        stageProfile.contract.sha256,
+      CERTIFICATION_STAGE_ENVIRONMENT_PROFILE_ID: stageProfile.id,
+      CERTIFICATION_STAGE_ENVIRONMENT_PROFILE_SHA256: stageProfile.sha256,
+      DATABASE_URL:
+        "postgresql://interior_ai_cert_stage_dddddddddddddddddddddddddddddddd:fixture@127.0.0.1:5432/interior_ai_gate_a3_test_cert_dddddddddddddddddddddddddddddddd",
+      GOOGLE_CLIENT_ID: "fixture.apps.googleusercontent.com",
+      GOOGLE_CLIENT_SECRET: "GOCSPX-fixture-placeholder",
+      PLAYWRIGHT_EXTERNAL_EVIDENCE_ROOT: "/private/tmp/stable/evidence",
+      PLAYWRIGHT_JSON_OUTPUT_FILE: "/private/tmp/stable/evidence/report.json",
+      PLAYWRIGHT_USE_PRODUCTION_SERVER: "1",
+      PRODUCTION_CERTIFICATION_ID:
+        `stable-runtime-smoke:123:1:${manifest.source.commitSha.slice(0, 12)}`,
+      PRODUCTION_EVIDENCE_CANDIDATE_ID: manifest.candidateIdentifier,
+      PRODUCTION_EVIDENCE_EXPECTED_ARTIFACT_SHA256: manifest.artifact.sha256,
+      PRODUCTION_EVIDENCE_EXPECTED_BUILD_ID: manifest.build.nextBuildId,
+      PRODUCTION_EVIDENCE_EXPECTED_COMMIT_SHA: manifest.source.commitSha,
+      PRODUCTION_EVIDENCE_EXPECTED_JOURNAL_NONCE: manifest.execution.runNonce,
+      PRODUCTION_EVIDENCE_EXPECTED_JOURNAL_SHA256: "c".repeat(64),
+      PRODUCTION_EVIDENCE_EXPECTED_MANIFEST_SHA256: createHash("sha256")
+        .update(manifestBytes)
+        .digest("hex"),
+      PRODUCTION_EVIDENCE_EXPECTED_TREE_SHA: manifest.source.treeSha,
+      PRODUCTION_EVIDENCE_JOURNAL_PATH:
+        ".local/production-artifact-evidence/semantic-event-journal.json",
+      PRODUCTION_EVIDENCE_MANIFEST: context.manifestPath,
+      RUNTIME_SMOKE_PHASE_TIMINGS_PATH:
+        "/private/tmp/stable/evidence/timings.json",
+    },
+  }).metadata;
+  const summary = {
+    schema: "interior-ai.stable-runtime-smoke-evidence.v1",
+    classification: "REPOSITORY_STABLE_RUNTIME_SMOKE_ONLY",
+    releaseCertification: false,
+    identity: {
+      certificationId:
+        `stable-runtime-smoke:123:1:${manifest.source.commitSha.slice(0, 12)}`,
+      candidateId: manifest.candidateIdentifier,
+      sourceCommitSha: manifest.source.commitSha,
+      sourceTreeSha: manifest.source.treeSha,
+      buildId: manifest.build.nextBuildId,
+      artifactSha256: manifest.artifact.sha256,
+      manifestSha256: createHash("sha256").update(manifestBytes).digest("hex"),
+      journalSha256: "c".repeat(64),
+      journalNonce: manifest.execution.runNonce,
+    },
+    authFixtureContinuity: manifest.build.authFixtureContinuity,
+    database: {
+      lifecycleClassification: "STABLE_RUNTIME_SMOKE_ONLY",
+      databaseName:
+        "interior_ai_gate_a3_test_cert_dddddddddddddddddddddddddddddddd",
+      databaseIdentitySha256: "d".repeat(64),
+      roleName: "interior_ai_cert_stage_dddddddddddddddddddddddddddddddd",
+      scopedRoleClassification: "private-stage-login-no-admin",
+      migrationCount: 43,
+      finalState: "stable-absence-verified",
+      targetAbsent: true,
+    },
+    stageEnvironment,
+    evidence: {
+      rawReport: {
+        path: "runtime-smoke/playwright-report.json",
+        sha256: "e".repeat(64),
+      },
+      portableReport: {
+        path: ".local/production-artifact-evidence/runtime-smoke.json",
+        sha256: test.report.sha256,
+      },
+      timings: {
+        path: ".local/production-artifact-evidence/runtime-smoke-phases.json",
+        sha256: test.phaseTimings.sha256,
+      },
+      startMarker: {
+        path: "runtime-smoke/product-test-start.json",
+        sha256: "f".repeat(64),
+      },
+    },
+    stats: test.stats,
+    complete: true,
+  };
+  write(context.root, STABLE_PORTABLE_SUMMARY_PATH, `${JSON.stringify(summary)}\n`);
+  const verified = await verifyStableRuntimeSmokeStandalone({
+    repositoryRoot: context.root,
+    environment: {
+      CERTIFICATION_QUALIFICATION_MODE: "1",
+      PRODUCTION_EVIDENCE_EXPECTED_COMMIT_SHA: manifest.source.commitSha,
+    },
+  });
+  assert.equal(verified.classification, "STABLE_RUNTIME_SMOKE_STANDALONE_VERIFIED");
+  assert.equal(verified.releaseCertification, false);
+  assert.equal(verified.databaseTargetAbsent, true);
+  write(context.root, STABLE_PORTABLE_SUMMARY_PATH, `${JSON.stringify({
+    ...summary,
+    database: { ...summary.database, targetAbsent: false },
+  })}\n`);
+  await assert.rejects(
+    () => verifyStableRuntimeSmokeStandalone({
+      repositoryRoot: context.root,
+      environment: {
+        CERTIFICATION_QUALIFICATION_MODE: "1",
+        PRODUCTION_EVIDENCE_EXPECTED_COMMIT_SHA: manifest.source.commitSha,
+      },
+    }),
+    /database absence is unproved/,
+  );
+}
+
+{
+  const context = await fixture();
   const manifest = readManifest(context.root, context.manifestPath);
   const bundle = await createProductionEvidenceBundle({
     repositoryRoot: context.root,
@@ -7022,8 +7181,8 @@ assert.match(
 const workflow = readFileSync(path.join(process.cwd(), ".github/workflows/ci.yml"), "utf8");
 assert.equal(workflow.includes('CATALOG_STRICT_VALIDATION: "false"'), false);
 assert.match(workflow, /npm run evidence:production:build/);
-assert.match(workflow, /npm run evidence:production:smoke/);
-assert.match(workflow, /npm run evidence:production:bundle/);
+assert.match(workflow, /npm run evidence:production:stable-runtime-smoke/);
+assert.doesNotMatch(workflow, /npm run evidence:production:(?:smoke|bundle|verify)\b/);
 assert.match(workflow, /\.local\/production-artifact-evidence\/upload\//);
 const vercelManifestSource = readFileSync(
   path.join(process.cwd(), "scripts/vercel-output-manifest.mjs"),

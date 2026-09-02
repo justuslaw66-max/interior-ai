@@ -267,16 +267,24 @@
       "invariant": "The exact CH-0016 production artifact starts and satisfies both runtime readiness identities.",
       "cadence": "merge-required",
       "blocking": true,
-      "command": "npm run evidence:production:smoke",
-      "packageScript": "evidence:production:smoke",
-      "packageClosure": { "expectedScriptCount": 1, "expectedSha256": "d9971664dba648e6b1026b61fbf13ad8bf14f6faa052b3d0e5eed4d8cc7fd2b1" },
+      "command": "npm run evidence:production:stable-runtime-smoke",
+      "packageScript": "evidence:production:stable-runtime-smoke",
+      "packageClosure": { "expectedScriptCount": 1, "expectedSha256": "9aa158a4fe590b1681b47350ddf4835e4aa059c45945f544f582d8e3f1b7cc23" },
       "runner": "playwright",
       "requiredSources": [
         "tests/e2e/00-runtime-smoke.spec.ts",
         "scripts/runtime-smoke-failure-evidence.mjs",
         "scripts/runtime-smoke-operation-contracts.mjs",
         "scripts/runtime-smoke-operation-deadline.mjs",
-        "scripts/runtime-smoke-phase-budget.mjs"
+        "scripts/runtime-smoke-phase-budget.mjs",
+        "scripts/stable-runtime-smoke.mjs",
+        "scripts/stable-runtime-smoke-resources.mjs",
+        "scripts/stable-runtime-smoke-standalone.mjs",
+        "scripts/production-artifact-evidence.mjs",
+        "scripts/production-certification-database-contract.mjs",
+        "scripts/production-certification-database-lifecycle.mjs",
+        "scripts/production-certification-stage-environment.mjs",
+        "scripts/playwright-report-path.mjs"
       ],
       "requiredTests": [
         {

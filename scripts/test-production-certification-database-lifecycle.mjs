@@ -15,9 +15,12 @@ import { Client } from "pg";
 
 import {
   PRODUCTION_CERTIFICATION_DATABASE_NAME_PREFIX,
+  STABLE_RUNTIME_SMOKE_DATABASE_CLASSIFICATIONS,
+  STABLE_RUNTIME_SMOKE_DATABASE_PROFILE,
   assertUnprotectedDatabaseName,
   canonicalJsonBytes,
   databaseAdminPolicy,
+  databaseLifecycleRequiredStages,
   databaseLifecycleEvidenceIssues,
   generateCertificationDatabaseName,
   migrationInventory,
@@ -29,6 +32,8 @@ import {
   abortCertificationDatabase,
   bindCertificationDatabaseStage,
   certificationDatabaseStatus,
+  completeStableRuntimeSmokeDatabase,
+  createStableRuntimeSmokeDatabaseBinding,
   databaseLifecycleCliErrorMessage,
   dropCertificationDatabase,
   planCertificationDatabase,
@@ -123,6 +128,7 @@ class FakeDatabaseAdapter {
     onCreateStageRole = null,
     appEventCleanupFailure = null,
     onDeleteAppEvents = null,
+    transientSessionInspections = 0,
   } = {}) {
     this.exists = exists;
     this.migrated = false;
@@ -144,6 +150,7 @@ class FakeDatabaseAdapter {
     this.appEventCleanupFailure = appEventCleanupFailure;
     this.onDeleteAppEvents = onDeleteAppEvents;
     this.stageRoleDropCount = 0;
+    this.transientSessionInspections = transientSessionInspections;
   }
 
   async inspectAdmin() {
@@ -260,6 +267,10 @@ class FakeDatabaseAdapter {
   }
 
   async targetSessions() {
+    if (this.transientSessionInspections > 0) {
+      this.transientSessionInspections -= 1;
+      return [{ database: "owned-target", pid: 9002 }];
+    }
     return structuredClone(this.sessions);
   }
 
@@ -590,6 +601,113 @@ async function deterministicContractCoverage() {
     );
   } finally {
     rmSync(existingFixture.root, { recursive: true, force: true });
+  }
+
+  const stableFixture = fixture({ id: "stable-runtime-smoke" });
+  const stableAdapter = new FakeDatabaseAdapter({
+    transientSessionInspections: 2,
+  });
+  try {
+    await planCertificationDatabase({
+      repositoryRoot,
+      environment: stableFixture.environment,
+      adapter: stableAdapter,
+      nonce: "8".repeat(32),
+      profile: STABLE_RUNTIME_SMOKE_DATABASE_PROFILE,
+      qualificationFixture: true,
+    });
+    await provisionCertificationDatabase({
+      repositoryRoot,
+      environment: stableFixture.environment,
+      adapter: stableAdapter,
+    });
+    await verifyInitialCertificationDatabase({
+      repositoryRoot,
+      environment: stableFixture.environment,
+      adapter: stableAdapter,
+    });
+    await bindCertificationDatabaseStage({
+      repositoryRoot,
+      environment: stableFixture.environment,
+      adapter: stableAdapter,
+      stage: "runtime-smoke",
+    });
+    const active = readCertificationDatabaseLifecycle({
+      repositoryRoot,
+      environment: stableFixture.environment,
+    });
+    assert.equal(
+      active.evidence.lifecycleProfile.classification,
+      STABLE_RUNTIME_SMOKE_DATABASE_CLASSIFICATIONS.lifecycle,
+    );
+    assert.deepEqual(databaseLifecycleRequiredStages(active.evidence), [
+      "runtime-smoke",
+    ]);
+    const stableBinding = createStableRuntimeSmokeDatabaseBinding({
+      current: active,
+    });
+    const projection = resolveCertificationDatabaseStageEnvironment({
+      repositoryRoot,
+      environment: stableFixture.environment,
+      stage: "runtime-smoke",
+      stableRuntimeLifecycleBinding: stableBinding,
+    });
+    assert.match(
+      projection.environment.DATABASE_URL,
+      /interior_ai_cert_stage_[a-f0-9]{32}/,
+    );
+    assert.equal(projection.identity.stage, "runtime-smoke");
+    assert.throws(
+      () =>
+        resolveCertificationDatabaseStageEnvironment({
+          repositoryRoot,
+          environment: stableFixture.environment,
+          stage: "runtime-smoke",
+          stableRuntimeLifecycleBinding: {
+            ...stableBinding,
+            candidateCommitSha: "f".repeat(40),
+          },
+        }),
+      /stale or foreign/,
+    );
+    assert.throws(
+      () =>
+        resolveCertificationDatabaseStageEnvironment({
+          repositoryRoot,
+          environment: stableFixture.environment,
+          stage: "runtime-smoke",
+          stableRuntimeLifecycleBinding: stableBinding,
+          state: {},
+        }),
+      /cannot consume certification state/,
+    );
+    assert.throws(
+      () =>
+        resolveCertificationDatabaseStageEnvironment({
+          repositoryRoot,
+          environment: {
+            ...stableFixture.environment,
+            DATABASE_URL: "postgresql://foreign@127.0.0.1:5432/foreign",
+          },
+          stage: "runtime-smoke",
+          stableRuntimeLifecycleBinding: stableBinding,
+        }),
+      /ambient DATABASE_URL cannot override/,
+    );
+    stableAdapter.rows = [{ table: "User", count: 19 }];
+    const absent = await completeStableRuntimeSmokeDatabase({
+      repositoryRoot,
+      environment: stableFixture.environment,
+      adapter: stableAdapter,
+    });
+    assert.equal(absent.evidence.currentState, "stable-absence-verified");
+    assert.equal(absent.evidence.inventories.final.totalRows, 19);
+    assert.equal(absent.evidence.cleanup.finalEmptyVerified, false);
+    assert.equal(absent.evidence.cleanup.targetAbsent, true);
+    assert.equal(stableAdapter.exists, false);
+    assert.equal(stableAdapter.stageRole, null);
+  } finally {
+    rmSync(stableFixture.root, { recursive: true, force: true });
   }
 
   const raceFixture = fixture({ id: "foreign-race" });

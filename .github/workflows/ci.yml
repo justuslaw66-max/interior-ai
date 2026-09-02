@@ -245,100 +245,10 @@ jobs:
 
       - name: Run runtime smoke tests
         id: runtime-smoke
-        run: npm run evidence:production:smoke
-
-      - name: Prepare safe runtime failure diagnostics
-        id: failure-diagnostics
-        if: failure() && !cancelled() && steps.strict-build.outcome == 'success' && steps.runtime-smoke.outcome == 'failure'
-        shell: bash
-        run: |
-          set -euo pipefail
-          evidence_root=".local/production-artifact-evidence"
-          final_root="$evidence_root/failure-upload"
-          staging_root="$evidence_root/failure-upload.staging"
-          required_files=(manifest.json runtime-smoke.json runtime-smoke-phases.json)
-          if [ -e "$final_root" ] || [ -e "$staging_root" ]; then
-            echo "Runtime failure diagnostics staging path is not pristine" >&2
-            exit 1
-          fi
-          for required_file in "${required_files[@]}"; do
-            if [ ! -f "$evidence_root/$required_file" ]; then
-              echo "No complete safe runtime diagnostics payload was produced."
-              exit 0
-            fi
-          done
-          node scripts/production-artifact-evidence.mjs verify-runtime-failure
-          mkdir -p "$staging_root"
-          trap 'rm -rf "$staging_root"' EXIT
-          for required_file in "${required_files[@]}"; do
-            cp "$evidence_root/$required_file" "$staging_root/$required_file"
-          done
-          FAILURE_DIAGNOSTICS_ROOT="$staging_root" node <<'NODE'
-          const fs = require("node:fs");
-          const path = require("node:path");
-          const root = process.env.FAILURE_DIAGNOSTICS_ROOT;
-          const expected = ["manifest.json", "runtime-smoke-phases.json", "runtime-smoke.json"];
-          const actual = fs.readdirSync(root).sort();
-          if (JSON.stringify(actual) !== JSON.stringify(expected)) {
-            throw new Error("Runtime failure diagnostics inventory is not exact");
-          }
-          const content = actual.map((name) => {
-            const text = fs.readFileSync(path.join(root, name), "utf8");
-            JSON.parse(text);
-            return text;
-          }).join("\n");
-          const sensitiveValues = [
-            process.env.GOOGLE_CLIENT_ID,
-            process.env.GOOGLE_CLIENT_SECRET,
-            process.env.AUTH_SECRET,
-            process.env.NEXTAUTH_SECRET,
-            process.env.DATABASE_URL,
-            process.env.OPENAI_API_KEY,
-            process.env.SHOPIFY_STOREFRONT_TOKEN,
-            process.env.POSTHOG_KEY,
-            process.env.STRIPE_SECRET_KEY,
-            process.env.STRIPE_WEBHOOK_SECRET,
-          ].filter((value) => typeof value === "string" && value.length > 0);
-          if (sensitiveValues.some((value) => content.includes(value))) {
-            throw new Error("Runtime failure diagnostics contain an environment credential");
-          }
-          if (/(?:^|[\s"'(])\/(?:home|Users|private\/tmp|tmp|var\/tmp|var\/folders)\//im.test(content)) {
-            throw new Error("Runtime failure diagnostics contain a machine-local path");
-          }
-          NODE
-          mv "$staging_root" "$final_root"
-          trap - EXIT
-          echo "safe_failure_diagnostics_ready=true" >> "$GITHUB_OUTPUT"
-
-      - name: Upload safe runtime failure diagnostics
-        if: always() && !cancelled() && steps.failure-diagnostics.outputs.safe_failure_diagnostics_ready == 'true'
-        uses: actions/upload-artifact@v4
-        with:
-          name: playwright-smoke-failure-diagnostics
-          path: .local/production-artifact-evidence/failure-upload/
-          if-no-files-found: error
-          retention-days: 14
-          compression-level: 0
-
-      - name: Prepare standalone production evidence bundle
-        id: prepare-stable-evidence
-        run: npm run evidence:production:bundle
-
-      - name: Verify standalone production evidence bundle
-        id: verify-stable-evidence
-        shell: bash
-        run: |
-          set -euo pipefail
-          npm run evidence:production:verify
-          extract_root="$(mktemp -d "$RUNNER_TEMP/ch0016-ch0017-evidence.XXXXXX")"
-          trap 'rm -rf "$extract_root"' EXIT
-          tested_source_sha="$(git rev-parse HEAD)"
-          tar -xzf .local/production-artifact-evidence/upload/ch0016-ch0017-evidence-bundle.tar.gz -C "$extract_root"
-          (
-            cd "$extract_root"
-            PRODUCTION_EVIDENCE_EXPECTED_COMMIT_SHA="$tested_source_sha" \
-              node scripts/production-artifact-evidence.mjs verify-standalone
-          )
+        env:
+          CERTIFICATION_DATABASE_ADMIN_URL: postgresql://test:test@127.0.0.1:5432/postgres
+          STABLE_RUNTIME_SMOKE_EXPECTED_SOURCE_SHA: ${{ steps.verify-source.outputs.tested_source_sha }}
+        run: npm run evidence:production:stable-runtime-smoke
 
       - name: Declare stable evidence ready
         id: stable-evidence
@@ -436,13 +346,13 @@ jobs:
         run: npm run test:floor-plan-upload-accessibility-required
 
       - name: Explain absent production evidence payload
-        if: always() && !cancelled() && steps.stable-evidence.outputs.stable_evidence_ready != 'true' && steps.failure-diagnostics.outputs.safe_failure_diagnostics_ready != 'true'
+        if: always() && !cancelled() && steps.stable-evidence.outputs.stable_evidence_ready != 'true'
         shell: bash
         run: |
           if [ "${{ steps.strict-build.outcome }}" != "success" ]; then
             echo "No production evidence payload was expected because the strict build did not complete." >> "$GITHUB_STEP_SUMMARY"
           elif [ "${{ steps.runtime-smoke.outcome }}" != "success" ]; then
-            echo "Runtime smoke failed without producing a complete safe diagnostics payload." >> "$GITHUB_STEP_SUMMARY"
+            echo "Runtime smoke failed without publishing a success payload; cleanup status is retained in the step diagnostics." >> "$GITHUB_STEP_SUMMARY"
           else
             echo "Production evidence preparation did not declare an uploadable payload." >> "$GITHUB_STEP_SUMMARY"
           fi
