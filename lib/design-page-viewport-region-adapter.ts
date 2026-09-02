@@ -3,6 +3,7 @@ import type {
   DesignPageSceneRegionState,
 } from "@/components/editor/design-page/DesignPageSceneRegion";
 import type { DesignPageOpeningMetricsPatch } from "@/lib/design-page-opening-metrics";
+import { resolveDesignPageOpeningViewportState, type DesignPageViewportOpening } from "@/lib/design-page-opening-viewport";
 import {
   resolveDesignPageViewportSelectionControlsState,
   type DesignPageViewportSelectionControlsInput,
@@ -23,6 +24,43 @@ type AddFloor = NonNullable<
 type RotateQuarterTurn =
   ViewportActions["selectionControls"]["selectedZone"]["rotateQuarterTurn"];
 
+function createOpeningMetricActions({ selectedId, update }: {
+  selectedId: string | null;
+  update: BuildDesignPageViewportRegionAdapterInput["actions"]["updateOpeningMetrics"];
+}) {
+  return {
+    commitKind: (patch: DesignPageOpeningMetricsPatch) => {
+      if (!selectedId) return;
+      update(selectedId, patch);
+    },
+    commitWall: (wall: "north" | "south" | "east" | "west") => {
+      if (!selectedId) return;
+      update(selectedId, { wall });
+    },
+    commitWidthMm: (valueMm: number) => {
+      if (!selectedId) return;
+      update(selectedId, {
+        widthMeters: valueMm / 1000,
+        widthEvidence: "user_confirmed",
+      });
+    },
+    commitHeightMm: (valueMm: number) => {
+      if (!selectedId) return;
+      update(selectedId, {
+        heightMeters: valueMm / 1000,
+        heightEvidence: "user_confirmed",
+      });
+    },
+    commitBottomMm: (valueMm: number) => {
+      if (!selectedId) return;
+      update(selectedId, {
+        bottomMeters: valueMm / 1000,
+        bottomEvidence: "user_confirmed",
+      });
+    },
+  };
+}
+
 export type BuildDesignPageViewportRegionAdapterInput = {
   state: {
     visibility: {
@@ -35,12 +73,7 @@ export type BuildDesignPageViewportRegionAdapterInput = {
     };
     opening: {
       selectedId: string | null;
-      value: {
-        kind: NonNullable<ViewportState["selectedOpening"]>["kind"];
-        wall: NonNullable<ViewportState["selectedOpening"]>["wall"];
-        widthMm: number;
-        wallSpanMeters: number;
-      } | null;
+      value: DesignPageViewportOpening | null;
     };
     selectionInspector: {
       summary: NonNullable<ViewportState["selectionInspector"]>["summary"] | null;
@@ -101,6 +134,7 @@ export type BuildDesignPageViewportRegionAdapterInput = {
     dark: boolean;
     sceneBackgroundColor: string;
     canEditPlanGeometry: boolean;
+    proMode: boolean;
     selectionInspectorDockedWithRightRail: boolean;
     floatingOverlayStackWidthPx: number;
     selectionInspectorRightPx: number;
@@ -122,6 +156,10 @@ export type BuildDesignPageViewportRegionAdapterInput = {
       ViewportActions["selectionInspector"],
       | "commitRoomDimensionMm"
       | "commitOpeningWidthMm"
+      | "commitOpeningHeightMm"
+      | "commitOpeningBottomMm"
+      | "commitOpeningKind"
+      | "commitOpeningWall"
       | "deleteSelectedPlanOverlay"
     > & {
       commitRoomDimensionMeters: (
@@ -167,15 +205,13 @@ export function buildDesignPageViewportRegionAdapter({
 }: BuildDesignPageViewportRegionAdapterInput): DesignPageViewportRegionModel {
   const selectedOverlayId = state.opening.selectedId;
   const selectionSummary = state.selectionInspector.summary;
-  const selectedOpeningMaxWidthMm = state.opening.value
-    ? Math.max(400, (state.opening.value.wallSpanMeters - 0.06) * 1000)
-    : 400;
-  const commitOpeningWidthMm = (valueMm: number) => {
-    if (!selectedOverlayId) return;
-    actions.updateOpeningMetrics(selectedOverlayId, {
-      widthMeters: valueMm / 1000,
-    });
-  };
+  const selectedOpeningState = resolveDesignPageOpeningViewportState(
+    state.opening.value, state.selectionInspector.activeRoomHeightMm
+  );
+  const openingMetricActions = createOpeningMetricActions({
+    selectedId: selectedOverlayId,
+    update: actions.updateOpeningMetrics,
+  });
 
   return buildDesignPageViewportRegionModel({
     state: {
@@ -183,13 +219,10 @@ export function buildDesignPageViewportRegionAdapter({
       sceneLoadingVisible: state.visibility.sceneLoading,
       selectedOpening:
         !state.visibility.isClientPreview &&
-        state.opening.value &&
+        selectedOpeningState &&
         selectedOverlayId
           ? {
-              kind: state.opening.value.kind,
-              wall: state.opening.value.wall,
-              widthMm: state.opening.value.widthMm,
-              maxWidthMm: selectedOpeningMaxWidthMm,
+              ...selectedOpeningState.toolbar,
               measurementUnit: state.selectionInspector.measurementUnit,
             }
           : null,
@@ -206,13 +239,8 @@ export function buildDesignPageViewportRegionAdapter({
               hasSelectedPlanAnnotation:
                 state.selectionInspector.hasSelectedPlanAnnotation,
               hasSelectedPlanOverlay: Boolean(selectedOverlayId),
-              selectedOpening:
-                state.opening.value && selectedOverlayId
-                  ? {
-                      widthMm: state.opening.value.widthMm,
-                      maxWidthMm: selectedOpeningMaxWidthMm,
-                    }
-                  : null,
+              selectedOpening: selectedOpeningState && selectedOverlayId
+                ? selectedOpeningState.inspector : null,
               surfaceInspectorIsWall:
                 state.selectionInspector.surfaceInspectorIsWall,
               surfaceInspectorIsCeiling:
@@ -287,6 +315,7 @@ export function buildDesignPageViewportRegionAdapter({
       selectionInspector: {
         dark: configuration.dark,
         canEditPlanGeometry: configuration.canEditPlanGeometry,
+        proMode: configuration.proMode,
         dockWhenPortalAvailable:
           configuration.selectionInspectorDockedWithRightRail,
         dockedWidthPx: configuration.floatingOverlayStackWidthPx,
@@ -317,7 +346,7 @@ export function buildDesignPageViewportRegionAdapter({
     references,
     actions: {
       selectedOpening: {
-        changeWidthMm: commitOpeningWidthMm,
+        changeWidthMm: openingMetricActions.commitWidthMm,
         deleteOpening: () => {
           actions.deletePlanOverlay(selectedOverlayId);
           actions.showToast("Opening deleted");
@@ -333,7 +362,11 @@ export function buildDesignPageViewportRegionAdapter({
           ),
         deleteSelectedPlanOverlay: () =>
           actions.deletePlanOverlay(selectedOverlayId),
-        commitOpeningWidthMm,
+        commitOpeningWidthMm: openingMetricActions.commitWidthMm,
+        commitOpeningHeightMm: openingMetricActions.commitHeightMm,
+        commitOpeningBottomMm: openingMetricActions.commitBottomMm,
+        commitOpeningKind: openingMetricActions.commitKind,
+        commitOpeningWall: openingMetricActions.commitWall,
       },
       planSummary: actions.planSummary,
       planQuality: actions.planQuality,

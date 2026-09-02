@@ -18,6 +18,9 @@ import type { DesignPageSelectionInspectorSummary } from "@/lib/useDesignPageSel
 import FloorPlanPropertyEvidenceControl from "@/components/editor/FloorPlanPropertyEvidenceControl";
 import type { FixturePhotometricVerification } from "@/lib/catalog-schema";
 import type { PlacedFixtureLightState } from "@/lib/room-types";
+import { SelectedOpeningDimensions } from "./SelectedOpeningDimensions";
+import type { resolveDesignPageOpeningViewportState } from "@/lib/design-page-opening-viewport";
+import type { DesignPageOpeningMetricsPatch } from "@/lib/design-page-opening-metrics";
 
 type SelectedRoom = Pick<HousePlanRoom2D, "id" | "w" | "d">;
 
@@ -30,10 +33,7 @@ type DesignPageSelectionInspectorProps = {
     hasSelectedPlanFixedElement: boolean;
     hasSelectedPlanAnnotation: boolean;
     hasSelectedPlanOverlay: boolean;
-    selectedOpening: {
-      widthMm: number;
-      maxWidthMm: number;
-    } | null;
+    selectedOpening: NonNullable<ReturnType<typeof resolveDesignPageOpeningViewportState>>["inspector"] | null;
     surfaceInspectorIsWall: boolean;
     surfaceInspectorIsCeiling: boolean;
     surfaceInspector: SelectedSurfaceInspectorState | null;
@@ -57,6 +57,7 @@ type DesignPageSelectionInspectorProps = {
   configuration: {
     dark: boolean;
     canEditPlanGeometry: boolean;
+    proMode: boolean;
     dockWhenPortalAvailable: boolean;
     portalTarget: HTMLDivElement | null;
     dockedWidthPx: number;
@@ -91,7 +92,10 @@ type DesignPageSelectionInspectorProps = {
       delete: (roomId: string) => void;
     };
     deleteSelectedPlanOverlay: () => void;
-    commitOpeningWidthMm: (valueMm: number) => void;
+    commitOpeningWidthMm: (valueMm: number) => void; commitOpeningHeightMm: (valueMm: number) => void;
+    commitOpeningBottomMm: (valueMm: number) => void;
+    commitOpeningKind: (patch: DesignPageOpeningMetricsPatch) => void;
+    commitOpeningWall: (wall: "north" | "south" | "east" | "west") => void;
     surfaceInspector: SelectedSurfaceInspectorActions;
   };
 };
@@ -172,55 +176,21 @@ export function DesignPageSelectionInspector({
       </div>
 
       {state.selectedOpening ? (
-        <div
-          data-testid="selection-inspector-opening-dimensions"
-          className="mt-3 grid grid-cols-2 gap-2"
-        >
-          <MeasurementField
-            label="Width"
-            valueMm={state.selectedOpening.widthMm}
-            unit={state.measurementUnit}
-            minMm={400}
-            maxMm={state.selectedOpening.maxWidthMm}
-            stepMm={50}
-            keyboardStepMm={50}
-            disabled={!configuration.canEditPlanGeometry}
-            dark={configuration.dark}
-            compact
-            touchFriendly
-            testId="selection-inspector-opening-width"
-            onCommit={actions.commitOpeningWidthMm}
-          />
-          <div>
-            <div
-              className={
-                configuration.dark
-                  ? "flex items-center justify-between text-[11px] font-semibold text-neutral-300"
-                  : "flex items-center justify-between text-[11px] font-semibold text-neutral-600"
-              }
-            >
-              <span>Position</span>
-              <span
-                className={
-                  configuration.dark
-                    ? "font-normal text-neutral-400"
-                    : "font-normal text-neutral-500"
-                }
-              >
-                {state.measurementUnit}
-              </span>
-            </div>
-            <div
-              className={
-                configuration.dark
-                  ? "designer-raised mt-1 flex h-9 items-center rounded-md border px-2 text-xs font-semibold"
-                  : "mt-1 flex h-9 items-center rounded-md border border-neutral-200 bg-neutral-50 px-2 text-xs font-semibold text-neutral-800"
-              }
-            >
-              {state.summary.metrics[1]}
-            </div>
-          </div>
-        </div>
+        <SelectedOpeningDimensions
+          state={{ ...state.selectedOpening, positionLabel: state.summary.metrics[1] ?? "",
+            measurementUnit: state.measurementUnit }}
+          configuration={{
+            dark: configuration.dark,
+            canEdit: configuration.canEditPlanGeometry,
+            proMode: configuration.proMode,
+          }}
+          actions={{ commitWidthMm: actions.commitOpeningWidthMm,
+            commitHeightMm: actions.commitOpeningHeightMm,
+            commitBottomMm: actions.commitOpeningBottomMm,
+            commitKind: actions.commitOpeningKind,
+            commitWall: actions.commitOpeningWall,
+          }}
+        />
       ) : state.summary.metrics.length > 0 ? (
         <div
           className={`mt-3 grid gap-2 ${

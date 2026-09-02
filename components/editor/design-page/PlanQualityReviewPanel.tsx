@@ -109,9 +109,8 @@ export function PlanQualityReviewPanel({
               onClick={() => actions.activateIssue(issue.action, issue)}
             >
               <span className="block font-semibold">{issue.title}</span>
-              <span className={configuration.dark ? "mt-0.5 block text-neutral-400" : "mt-0.5 block text-neutral-500"}>
-                {issue.suggestedFix}
-              </span>
+              <span className={configuration.dark ? "mt-0.5 block text-neutral-400" : "mt-0.5 block text-neutral-500"}>{issue.detail}</span>
+              <span className={configuration.dark ? "mt-1 block text-neutral-300" : "mt-1 block text-neutral-600"}>{issue.suggestedFix}</span>
             </button>
           ))}
         </div>

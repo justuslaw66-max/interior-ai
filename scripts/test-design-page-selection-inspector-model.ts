@@ -56,6 +56,13 @@ const selectedSurfaceInspectorSource = readFileSync(
   ),
   "utf8"
 );
+const selectedOpeningDimensionsSource = readFileSync(
+  join(
+    root,
+    "components/editor/design-page/SelectedOpeningDimensions.tsx"
+  ),
+  "utf8"
+);
 const wallRendererSource = readFileSync(
   join(
     root,
@@ -109,6 +116,17 @@ assert.match(
   /data-testid=\{[\s\S]*?state\.target === "wall"[\s\S]*?"selection-inspector-wall-apply-all"[\s\S]*?\{state\.target === "wall" \? "Apply to all walls" : "Apply all"\}/,
   "The selected-wall inspector should expose an explicit Apply to all walls action."
 );
+for (const testId of [
+  "selection-inspector-opening-width",
+  "selection-inspector-opening-height",
+  "selection-inspector-opening-bottom",
+]) {
+  assert.match(
+    selectedOpeningDimensionsSource,
+    new RegExp(`testId="${testId}"`),
+    `The existing selection panel should expose ${testId}.`
+  );
+}
 const applyRoomSource = surfaceInspectorControllerSource.slice(
   surfaceInspectorControllerSource.indexOf("const onApplyRoom"),
   surfaceInspectorControllerSource.indexOf("const onSelectPickerMaterial")

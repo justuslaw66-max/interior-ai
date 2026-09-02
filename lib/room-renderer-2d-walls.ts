@@ -1,4 +1,9 @@
 import { EDITOR_GEOMETRY_TOLERANCES } from "@/lib/editor-geometry-tolerances";
+import {
+  getPlanSegmentFrame,
+  projectPointOntoPlanSegment,
+} from "@/lib/wall-segment-geometry";
+export { mergeSharedWallSegments2D } from "@/lib/room-renderer-2d-wall-topology";
 
 type WallSide2D = "north" | "south" | "east" | "west";
 
@@ -19,6 +24,7 @@ type OpeningLike2D = {
   offset: number;
   width: number;
   kind: "door" | "window";
+  hostWorldCenter?: { x: number; z: number };
 };
 
 export type RoomWallSegment2D = {
@@ -130,10 +136,10 @@ function inferWallSide(
   x2: number,
   z2: number
 ): WallSide2D {
-  if (Math.abs(z1 - z2) <= WALL_SEGMENT_EPSILON) {
-    return z1 <= room.z ? "north" : "south";
-  }
-  return x1 <= room.x ? "west" : "east";
+  const dx = (x1 + x2) / 2 - room.x;
+  const dz = (z1 + z2) / 2 - room.z;
+  if (Math.abs(dz) >= Math.abs(dx)) return dz <= 0 ? "north" : "south";
+  return dx <= 0 ? "west" : "east";
 }
 
 export function buildRoomWallSegments2D(rooms: RoomLike2D[]): RoomWallSegment2D[] {
@@ -172,83 +178,19 @@ export function buildRoomWallSegments2D(rooms: RoomLike2D[]): RoomWallSegment2D[
   return segments;
 }
 
-function getSegmentAxisValues(segment: RoomWallSegment2D): [number, number] {
-  return segment.orientation === "horizontal"
-    ? [segment.x1, segment.x2]
-    : [segment.z1, segment.z2];
-}
-
 function normalizeSegment(segment: RoomWallSegment2D): RoomWallSegment2D {
-  if (segment.orientation === "horizontal") {
-    return segment.x1 <= segment.x2
-      ? segment
-      : { ...segment, x1: segment.x2, x2: segment.x1 };
+  const frame = getPlanSegmentFrame(segment);
+  if (!frame) return segment;
+  if (frame.tangent.x > 0 || (Math.abs(frame.tangent.x) <= 0.000001 && frame.tangent.z > 0)) {
+    return segment;
   }
-
-  return segment.z1 <= segment.z2
-    ? segment
-    : { ...segment, z1: segment.z2, z2: segment.z1 };
-}
-
-export function mergeSharedWallSegments2D(
-  segments: RoomWallSegment2D[]
-): RoomWallSegment2D[] {
-  const collinearGroups = new Map<string, RoomWallSegment2D[]>();
-
-  for (const rawSegment of segments) {
-    const segment = normalizeSegment(rawSegment);
-    const fixedCoordinate =
-      segment.orientation === "horizontal" ? segment.z1 : segment.x1;
-    const key = `${segment.orientation}:${roundWallCoordinate(fixedCoordinate)}`;
-    collinearGroups.set(key, [...(collinearGroups.get(key) ?? []), segment]);
-  }
-
-  return Array.from(collinearGroups.values()).flatMap((group) => {
-    const boundaries = Array.from(
-      new Set(
-        group.flatMap((segment) => {
-          const [start, end] = getSegmentAxisValues(segment);
-          return [roundWallCoordinate(Math.min(start, end)), roundWallCoordinate(Math.max(start, end))];
-        })
-      )
-    ).sort((first, second) => first - second);
-
-    return boundaries.slice(0, -1).flatMap((start, index): RoomWallSegment2D[] => {
-      const end = boundaries[index + 1];
-      if (end - start <= WALL_SEGMENT_EPSILON) return [];
-      const covering = group.filter((segment) => {
-        const [rawStart, rawEnd] = getSegmentAxisValues(segment);
-        const low = Math.min(rawStart, rawEnd);
-        const high = Math.max(rawStart, rawEnd);
-        return low <= start + WALL_SEGMENT_EPSILON && high >= end - WALL_SEGMENT_EPSILON;
-      });
-      if (!covering.length) return [];
-
-      const base = covering.slice().sort((first, second) => first.key.localeCompare(second.key))[0];
-      const roomWalls = Object.assign({}, ...covering.map((segment) => segment.roomWalls));
-      const roomAxisCenters = Object.assign(
-        {},
-        ...covering.map((segment) => segment.roomAxisCenters)
-      );
-      const roomIds = Array.from(new Set(covering.flatMap((segment) => segment.roomIds))).sort();
-      const fixedCoordinate =
-        base.orientation === "horizontal" ? base.z1 : base.x1;
-
-      return [
-        {
-          ...base,
-          key: covering.map((segment) => segment.key).sort().join("-"),
-          roomIds,
-          roomWalls,
-          roomAxisCenters,
-          ...(base.orientation === "horizontal"
-            ? { x1: start, x2: end, z1: fixedCoordinate, z2: fixedCoordinate }
-            : { x1: fixedCoordinate, x2: fixedCoordinate, z1: start, z2: end }),
-          thickness: Math.max(...covering.map((segment) => segment.thickness)),
-        },
-      ];
-    });
-  });
+  return {
+    ...segment,
+    x1: segment.x2,
+    z1: segment.z2,
+    x2: segment.x1,
+    z2: segment.z1,
+  };
 }
 
 export function buildWallBandCornerCaps2D(
@@ -306,14 +248,23 @@ function getOpeningRangeOnSegment(
     return null;
   }
 
-  const [axisStart, axisEnd] = getSegmentAxisValues(segment);
-  const low = Math.min(axisStart, axisEnd);
-  const high = Math.max(axisStart, axisEnd);
-  const segmentCenter = (low + high) / 2;
-  const roomAxisCenter = opening.roomId
-    ? segment.roomAxisCenters[opening.roomId]
-    : undefined;
-  const center = (roomAxisCenter ?? segmentCenter) + opening.offset;
+  const frame = getPlanSegmentFrame(segment);
+  if (!frame) return null;
+  const low = 0;
+  const high = frame.length;
+  const projectedHost = opening.hostWorldCenter
+    ? projectPointOntoPlanSegment(opening.hostWorldCenter, segment)
+    : null;
+  const roomAxisCenter = opening.roomId ? segment.roomAxisCenters[opening.roomId] : undefined;
+  const axisCenter = roomAxisCenter ?? (
+    segment.orientation === "horizontal" ? frame.center.x : frame.center.z
+  );
+  const fallbackPoint = segment.orientation === "horizontal"
+    ? { x: axisCenter + opening.offset, z: frame.center.z }
+    : { x: frame.center.x, z: axisCenter + opening.offset };
+  const center = projectedHost?.alongFromStart ??
+    projectPointOntoPlanSegment(fallbackPoint, segment)?.alongFromStart;
+  if (center === undefined) return null;
   const start = Math.max(low, center - opening.width / 2);
   const end = Math.min(high, center + opening.width / 2);
   if (end - start <= WALL_SEGMENT_EPSILON) return null;
@@ -326,20 +277,15 @@ function buildSegmentSlice(
   end: number,
   keySuffix: string
 ): WallBandPart2D {
-  if (segment.orientation === "horizontal") {
-    return {
-      ...segment,
-      key: `${segment.key}-${keySuffix}`,
-      x1: roundWallCoordinate(start),
-      x2: roundWallCoordinate(end),
-    };
-  }
-
+  const frame = getPlanSegmentFrame(segment);
+  if (!frame) return { ...segment, key: `${segment.key}-${keySuffix}` };
   return {
     ...segment,
     key: `${segment.key}-${keySuffix}`,
-    z1: roundWallCoordinate(start),
-    z2: roundWallCoordinate(end),
+    x1: roundWallCoordinate(frame.start.x + frame.tangent.x * start),
+    z1: roundWallCoordinate(frame.start.z + frame.tangent.z * start),
+    x2: roundWallCoordinate(frame.start.x + frame.tangent.x * end),
+    z2: roundWallCoordinate(frame.start.z + frame.tangent.z * end),
   };
 }
 
@@ -348,9 +294,9 @@ export function splitWallBandByOpenings2D(
   openings: OpeningLike2D[]
 ): { parts: WallBandPart2D[]; windowMarkers: WallBandPart2D[] } {
   const normalizedSegment = normalizeSegment(segment);
-  const [axisStart, axisEnd] = getSegmentAxisValues(normalizedSegment);
-  const low = Math.min(axisStart, axisEnd);
-  const high = Math.max(axisStart, axisEnd);
+  const frame = getPlanSegmentFrame(normalizedSegment);
+  const low = 0;
+  const high = frame?.length ?? 0;
   const ranges = openings
     .map((opening) => getOpeningRangeOnSegment(normalizedSegment, opening))
     .filter((range): range is NonNullable<typeof range> => Boolean(range))
@@ -397,6 +343,6 @@ export function buildWallBandGeometry2D(part: WallBandPart2D): {
       roundWallCoordinate((part.z1 + part.z2) / 2),
     ],
     size: [length, Math.max(0.025, part.thickness)],
-    rotationY: part.orientation === "vertical" ? Math.PI / 2 : 0,
+    rotationY: -Math.atan2(part.z2 - part.z1, part.x2 - part.x1),
   };
 }

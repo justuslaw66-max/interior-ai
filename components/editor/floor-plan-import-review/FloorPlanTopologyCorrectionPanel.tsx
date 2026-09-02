@@ -13,8 +13,7 @@ type FloorPlanTopologyCorrectionPanelProps = {
   onChange: (value: FloorPlanDocumentV2) => void;
   onFocusIds: (ids: string[]) => void;
   onError: (message: string | null) => void;
-  dark: boolean;
-  disabled: boolean;
+  dark: boolean; disabled: boolean; proMode: boolean;
 };
 
 export default function FloorPlanTopologyCorrectionPanel({
@@ -22,8 +21,7 @@ export default function FloorPlanTopologyCorrectionPanel({
   onChange,
   onFocusIds,
   onError,
-  dark,
-  disabled,
+  dark, disabled, proMode,
 }: FloorPlanTopologyCorrectionPanelProps) {
   const floor = document.floors[0];
   const [selectedVertexId, setSelectedVertexId] = useState("");
@@ -35,7 +33,6 @@ export default function FloorPlanTopologyCorrectionPanel({
     ? "designer-control rounded-md border px-2 py-1.5 text-xs"
     : "rounded-md border border-neutral-300 bg-white px-2 py-1.5 text-xs";
   const subtle = dark ? "text-neutral-400" : "text-neutral-600";
-
   const selectVertex = (id: string) => {
     setSelectedVertexId(id);
     const item = floor.vertices.find((entry) => entry.id === id);
@@ -66,6 +63,7 @@ export default function FloorPlanTopologyCorrectionPanel({
           document,
           operation,
           mutationId: `consumer-review-${Date.now()}`,
+          reviewMode: proMode ? "pro" : "consumer",
         })
       );
       return true;
@@ -157,6 +155,7 @@ export default function FloorPlanTopologyCorrectionPanel({
           controlClassName={control}
           subtleClassName={subtle}
           disabled={disabled}
+          proMode={proMode}
           onFocusIds={onFocusIds}
           onMutate={mutate}
         />

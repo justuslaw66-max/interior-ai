@@ -11,6 +11,10 @@ import type {
   FloorPlanVertexV2,
   FloorPlanWallV2,
 } from "@/lib/floor-plan-document-v2";
+import type {
+  FloorPlanOpeningMutationPurposeV2,
+  FloorPlanOpeningOverrideAuthorizationV2,
+} from "@/lib/floor-plan-opening-mutation-policy";
 
 export type FloorPlanTopologyMutationContextV2 = {
   mutationId: string;
@@ -76,6 +80,9 @@ export type FloorPlanTopologyMutationV2 =
       floorId: string;
       openingId: string;
       changes: FloorPlanOpeningChangesV2;
+      /** Explicit Pro-reviewed authority for replacing protected measurements. */
+      reviewedEvidenceOverride?: FloorPlanOpeningOverrideAuthorizationV2;
+      mutationPurpose?: FloorPlanOpeningMutationPurposeV2;
     }
   | {
       kind: "remove_opening";
@@ -139,6 +146,8 @@ export type FloorPlanTopologyMutationErrorCodeV2 =
   | "UNREFERENCED_NEW_VERTEX"
   | "NON_INTEGER_MILLIMETRES"
   | "NO_OP_MUTATION"
+  | "OPENING_EVIDENCE_OVERRIDE_REQUIRED"
+  | "INVALID_OPENING_EVIDENCE_OVERRIDE"
   | "ARC_MUTATION_UNSUPPORTED"
   | "INVALID_SPLIT"
   | "SPAN_CROSSES_SPLIT"

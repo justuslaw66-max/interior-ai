@@ -15,10 +15,9 @@ import {
   getFloorMaterialById,
   normalizeFloorRotationDeg,
 } from "@/lib/floor-materials";
-import {
-  getCeilingSurfaceSettings,
-} from "@/lib/surface-settings";
+import { getCeilingSurfaceSettings } from "@/lib/surface-settings";
 import type { CanonicalFloorPlanRenderModel } from "@/lib/floor-plan-render-model";
+import { legacyOpeningOffsetAtWorldPoint } from "@/lib/design-page-opening-interaction";
 import { CanonicalFloorPlanWalls3D } from "./CanonicalFloorPlanStructure";
 import {
   LegacyFloorSlabMesh,
@@ -28,9 +27,12 @@ import {
 } from "./house-plan-3d/surfaceMeshes";
 import {
   CutawayWallMesh,
-  OpeningThresholdMesh,
   WallSurfacePanelMesh,
 } from "./house-plan-3d/wallAndOpeningMeshes";
+import {
+  buildRenderableLegacyPhysicalOpeningAssemblies,
+  LegacyPhysicalOpeningMeshes,
+} from "./house-plan-3d/LegacyWallOpeningMeshes";
 import {
   buildLegacyFloorSlabsForTest,
   buildLegacyWallFaceRenderPatchesForTest,
@@ -38,7 +40,6 @@ import {
   buildOpeningLintelParts,
   buildOpeningSillParts,
   buildWallSurfacePanels,
-  getOpeningThresholds,
   getRoomOutlinePoints,
   getSharedWallRoomIds,
   getWallOpenings,
@@ -284,10 +285,6 @@ export default function HousePlanRenderer3D({
     activeRoomId,
     enabled: !canonicalPlan && rooms.length > 0,
   });
-  // These editor-state arrays are immutable snapshots. The React compiler
-  // cannot prove that across the legacy geometry helpers, while retaining this
-  // memo avoids rebuilding planar unions during unrelated interactive renders.
-  /* eslint-disable react-hooks/preserve-manual-memoization */
   const legacyWatertightGeometry = useMemo(() => {
     if (canonicalPlan || rooms.length === 0) return null;
     return {
@@ -324,7 +321,6 @@ export default function HousePlanRenderer3D({
     topologyRooms,
     wallHeight,
   ]);
-  /* eslint-enable react-hooks/preserve-manual-memoization */
   const hasLegacyMergedSlab = Boolean(
     legacyWatertightGeometry?.floorSlabs.length
   );
@@ -372,6 +368,13 @@ export default function HousePlanRenderer3D({
     }
     onSelectOpening?.(null);
   };
+
+  const legacyPhysicalOpeningAssemblies = buildRenderableLegacyPhysicalOpeningAssemblies({
+      visibleRooms: rooms, topologyRooms, openings, defaultWallHeight: wallHeight,
+      defaultWallThickness: STRUCTURE_THICKNESS_METERS,
+      activeFloorLevel: resolvedActiveFloorLevel, stackedFloors,
+      fadeInactiveFloors, inactiveFloorOpacityMultiplier: INACTIVE_FLOOR_OPACITY_MULTIPLIER,
+      enabled: !canonicalStructureExpected });
 
   return (
     <group>
@@ -435,14 +438,15 @@ export default function HousePlanRenderer3D({
           onSelectOpening={onSelectOpening}
           onEditOpening={(openingId, metrics, mode) => {
             const sourceOpening = openings.find((opening) => opening.id === openingId);
-            const sourceRoom = sourceOpening?.roomId
-              ? rooms.find((room) => room.id === sourceOpening.roomId)
+            const host = sourceOpening?.hostResolution?.status === "resolved"
+              ? sourceOpening.hostResolution.host
               : null;
-            if (!sourceOpening || !sourceRoom) return;
-            const centerOffsetMeters =
-              sourceOpening.wall === "north" || sourceOpening.wall === "south"
-                ? metrics.centerMm.xMm / 1000 - sourceRoom.x
-                : metrics.centerMm.zMm / 1000 - sourceRoom.z;
+            if (!sourceOpening || !host) return;
+            const centerOffsetMeters = legacyOpeningOffsetAtWorldPoint(host, {
+              x: metrics.centerMm.xMm / 1000,
+              z: metrics.centerMm.zMm / 1000,
+            });
+            if (centerOffsetMeters === null) return;
             if (mode === "resize") {
               onResizeOpening?.(openingId, {
                 widthMeters: metrics.widthMm / 1000,
@@ -460,6 +464,15 @@ export default function HousePlanRenderer3D({
           }
         />
       )}
+      <LegacyPhysicalOpeningMeshes
+          assemblies={legacyPhysicalOpeningAssemblies}
+          selectedOpeningId={selectedOpeningId} interactive={interactive}
+          hoveredTargetKey={visibleHoveredTargetKey} selectedTargetKey={selectedTargetKey}
+          onHoverTarget={setHoveredStructureTarget} onClearHoverTarget={clearHoveredTarget}
+          onSelectTarget={selectStructureTarget}
+          onMoveOpening={onMoveOpening}
+          onOpeningDragStateChange={onOpeningDragStateChange}
+      />
       {rooms.map((room, roomIndex) => {
         const isActive = room.id === activeRoomId;
         const roomFloorLevel = getRoomFloorLevel(room);
@@ -615,12 +628,6 @@ export default function HousePlanRenderer3D({
                 segmentWallHeight,
                 segmentWallHeight
               );
-              const thresholds = getOpeningThresholds(
-                segment,
-                wallOpenings,
-                segmentWallHeight,
-                segmentWallHeight
-              );
               const wallRenderParts = [
                 ...parts,
                 ...lintelParts,
@@ -691,37 +698,6 @@ export default function HousePlanRenderer3D({
                     onSelectTarget={selectStructureTarget}
                   />
                 )),
-                ...thresholds.map((threshold) => {
-                  const sourceOpening = openings.find(
-                    (opening) => opening.id === threshold.sourceId
-                  );
-                  const sourceRoom = sourceOpening?.roomId
-                    ? topologyRooms.find(
-                        (candidate) => candidate.id === sourceOpening.roomId
-                      )
-                    : undefined;
-
-                  return (
-                    <OpeningThresholdMesh
-                      key={threshold.key}
-                      roomId={room.id}
-                      threshold={threshold}
-                      segment={segment}
-                      wallThickness={roomWallThickness}
-                      sourceOpening={sourceOpening}
-                      sourceRoom={sourceRoom}
-                      floorWorldY={floorYOffset}
-                      interactive={interactive}
-                      hoveredTargetKey={visibleHoveredTargetKey}
-                      selectedTargetKey={selectedTargetKey}
-                      onHoverTarget={setHoveredStructureTarget}
-                      onClearHoverTarget={clearHoveredTarget}
-                      onSelectTarget={selectStructureTarget}
-                      onMoveOpening={onMoveOpening}
-                      onOpeningDragStateChange={onOpeningDragStateChange}
-                    />
-                  );
-                }),
               ];
             })}
 

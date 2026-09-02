@@ -29,8 +29,7 @@ import FloorPlanPageSelectionPanel from "./FloorPlanPageSelectionPanel";
 type FloorPlanImportAssistantProps = {
   file: File | null;
   trainingBenchmarkOptIn?: boolean;
-  dark?: boolean;
-  disabled?: boolean;
+  dark?: boolean; disabled?: boolean; proMode?: boolean;
   resumeJobId?: string | null;
   onChooseFile?: () => void;
   onActiveJobIdChange?: (jobId: string | null) => void;
@@ -40,8 +39,7 @@ type FloorPlanImportAssistantProps = {
 export default function FloorPlanImportAssistant({
   file,
   trainingBenchmarkOptIn = false,
-  dark = false,
-  disabled = false,
+  dark = false, disabled = false, proMode = false,
   resumeJobId = null,
   onChooseFile,
   onActiveJobIdChange,
@@ -780,8 +778,7 @@ export default function FloorPlanImportAssistant({
         retryingDetection={retryingDetection}
         onSubmit={(reviewIssues) => void submitReview(reviewIssues)}
         submitting={submitting}
-        disabled={disabled}
-        dark={dark}
+        disabled={disabled} proMode={proMode} dark={dark}
       />
     </div>
   );

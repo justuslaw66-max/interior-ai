@@ -59,7 +59,7 @@ export function useDesignPageSceneRoomReadRegistration({
           roomDepth: room.roomDepth,
           stackedFloorView: floor.stackedFloorView,
           hiddenFloorLevels: floor.hiddenFloorLevels,
-          selectedPlanRoomId: state.plan.selectedPlanRoomId,
+          selectedPlanRoomId: state.plan.selectedPlanRoomId, openingCount: plan.state.planOpenings.length,
         },
         editor: state.editor,
         ai: state.ai,

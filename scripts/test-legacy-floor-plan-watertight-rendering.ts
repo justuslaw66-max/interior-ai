@@ -22,6 +22,8 @@ import {
 import {
   buildLegacyWallBandCoreGeometry,
   buildLegacyWallFaceRenderPatchesForTest,
+  buildOpeningLintelParts,
+  buildOpeningSillParts,
   buildWallFinishShellGeometry,
   buildWallParts,
   buildWallSurfacePanels,
@@ -223,6 +225,55 @@ const twoDoorOpenings: WallOpening3D[] = [
     kind: "door",
   },
 ];
+const sparseWindow: WallOpening3D = {
+  id: "sparse-window",
+  sourceId: "sparse-window",
+  offset: 0,
+  width: 1.2,
+  kind: "window",
+};
+assert.deepEqual(
+  buildOpeningSillParts(twoDoorNorthSegment, [sparseWindow], 2.6, 2.6).map(
+    ({ height, centerY }) => ({ height, centerY })
+  ),
+  [{ height: 0.9, centerY: 0.45 }],
+  "A sparse compatibility window should retain the wall below the default sill."
+);
+assert.deepEqual(
+  buildOpeningLintelParts(twoDoorNorthSegment, [sparseWindow], 2.6, 2.6).map(
+    ({ height, centerY }) => ({ height, centerY })
+  ),
+  [{ height: 0.5, centerY: 2.35 }],
+  "A sparse compatibility window should retain the wall above the default opening height."
+);
+const zeroSillWindow: WallOpening3D = {
+  ...sparseWindow,
+  id: "zero-sill-window",
+  sourceId: "zero-sill-window",
+  height: 1.2,
+  bottom: 0,
+};
+assert.deepEqual(
+  buildOpeningSillParts(twoDoorNorthSegment, [zeroSillWindow], 2.6, 2.6),
+  [],
+  "An explicit zero sill should remain at floor level."
+);
+const fullHeightWindow: WallOpening3D = {
+  ...zeroSillWindow,
+  id: "full-height-window",
+  sourceId: "full-height-window",
+  height: 2.6,
+};
+assert.deepEqual(
+  buildOpeningSillParts(twoDoorNorthSegment, [fullHeightWindow], 2.6, 2.6),
+  [],
+  "An intentional full-height window should not gain a sill."
+);
+assert.deepEqual(
+  buildOpeningLintelParts(twoDoorNorthSegment, [fullHeightWindow], 2.6, 2.6),
+  [],
+  "An intentional full-height window should not gain a lintel."
+);
 const panelsAroundTwoDoors = buildWallParts(
   twoDoorNorthSegment,
   twoDoorOpenings
