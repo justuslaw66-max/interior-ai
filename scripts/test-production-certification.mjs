@@ -91,6 +91,7 @@ import {
 } from "./production-certification-stage-environment.mjs";
 import { stageWorktreeRole } from "./production-certification-worktrees.mjs";
 import authFixtureSession from "./ci-auth-fixture-session.cjs";
+import { authFixtureRegressionCapabilityNames } from "./ci-auth-fixture-regression-environment.mjs";
 
 const repositoryRoot = process.cwd();
 const CURRENT_JOURNAL_V2_FINAL_POSITIVE_PATH =
@@ -107,6 +108,95 @@ const candidate = {
   parentSha: "9".repeat(40),
 };
 const coveredRegressionIds = new Set();
+
+function saveEnvironment(names) {
+  return new Map(
+    names.map((name) => [
+      name,
+      Object.hasOwn(process.env, name)
+        ? { present: true, value: process.env[name] }
+        : { present: false, value: undefined },
+    ]),
+  );
+}
+
+function restoreEnvironment(saved) {
+  for (const [name, original] of saved) {
+    if (original.present) process.env[name] = original.value;
+    else delete process.env[name];
+  }
+}
+
+function installForeignCertificationAuthEnvironment() {
+  const capabilityNames = authFixtureRegressionCapabilityNames(repositoryRoot);
+  const saved = saveEnvironment([
+    ...capabilityNames,
+    "APP_ENV",
+    "CI",
+    "DATABASE_URL",
+    "GITHUB_ACTIONS",
+  ]);
+  const ownerRoot = mkdtempSync(
+    path.join(tmpdir(), "production-certification-foreign-auth-"),
+  );
+  const sessionRoot = path.join(ownerRoot, "session");
+  const resultRoot = path.join(ownerRoot, "results");
+  mkdirSync(resultRoot, { mode: 0o700 });
+  const revision = (value) =>
+    spawnSync("git", ["rev-parse", value], {
+      cwd: repositoryRoot,
+      encoding: "utf8",
+    }).stdout.trim();
+  const sessionEnvironment = {
+    CI_AUTH_FIXTURE_SESSION_ROOT: sessionRoot,
+    CI_AUTH_FIXTURE_SESSION_ID: "foreign-ci-session-0001",
+    CI_AUTH_FIXTURE_SESSION_NONCE: "foreign-ci-session-nonce-0001",
+    CI_AUTH_FIXTURE_SESSION_CLASSIFICATION:
+      authFixtureSession.FIXTURE_SESSION_CLASSIFICATION,
+    CI_AUTH_FIXTURE_CANDIDATE_COMMIT_SHA: revision("HEAD"),
+    CI_AUTH_FIXTURE_CANDIDATE_TREE_SHA: revision("HEAD^{tree}"),
+  };
+  const fixtureNonce = "8".repeat(32);
+  const published = authFixtureSession.publishFixtureSession({
+    repositoryRoot,
+    environment: sessionEnvironment,
+    fixture: {
+      googleClientId:
+        `123456789012345-gate-a3-ci-${fixtureNonce}.apps.googleusercontent.com`,
+      googleClientSecret: `GOCSPX-gate-a3-ci-${fixtureNonce}`,
+    },
+  });
+  const resultPath = path.join(resultRoot, "foreign-command-result.json");
+  writeFileSync(resultPath, "foreign outer result sentinel\n", { mode: 0o600 });
+  Object.assign(process.env, sessionEnvironment, published.assignments, {
+    APP_ENV: "development",
+    CI: "true",
+    GITHUB_ACTIONS: "true",
+    CI_AUTH_FIXTURE_MODE: "1",
+    CI_AUTH_FIXTURE_RESULT_ROOT: resultRoot,
+    CI_AUTH_FIXTURE_RESULT_PATH: resultPath,
+    CI_AUTH_FIXTURE_RESULT_NONCE: "foreign-result-nonce-0001",
+    CI_AUTH_FIXTURE_EXPECTED_COMMAND_ID: "ci:auth-fixture:validate-existing",
+    CI_AUTH_FIXTURE_EXPECTED_MODE: "auth-environment-validation",
+    CI_AUTH_FIXTURE_ACTUAL_EXIT_STATUS: "0",
+    DATABASE_URL:
+      "postgresql://foreign:foreign@127.0.0.1:5432/foreign_outer",
+  });
+  delete process.env.CI_AUTH_FIXTURE_CANDIDATE_COMMIT_SHA;
+  delete process.env.CI_AUTH_FIXTURE_CANDIDATE_TREE_SHA;
+  const resourcePaths = [
+    path.join(sessionRoot, `${sessionEnvironment.CI_AUTH_FIXTURE_SESSION_ID}.transport.env`),
+    path.join(sessionRoot, `${sessionEnvironment.CI_AUTH_FIXTURE_SESSION_ID}.session.json`),
+    resultPath,
+  ];
+  return {
+    capabilityNames,
+    foreignCandidate: published.manifest.candidate,
+    ownerRoot,
+    resourcePaths,
+    saved,
+  };
+}
 
 function finalSimulationChild(
   simulationRoot,
@@ -2435,9 +2525,124 @@ test("Floor Plan config reaches worker test execution", async ({}, testInfo) => 
 }
 
 {
-  const simulation = await runProductionCertificationSimulation({
-    cleanupWorktrees: false,
+  const cleanSimulation = await runProductionCertificationSimulation();
+  const stableSimulationResult = (value) => ({
+    completionState: value.completionState,
+    integrationReady: value.integrationReady,
+    buildAlreadyBoundRetryWithoutReinstall:
+      value.tamperCases.buildAlreadyBoundRetryWithoutReinstall,
+    alreadyBoundBuildRetry:
+      value.dependencyLifecycle.alreadyBoundBuildRetry,
+    simulationSession: {
+      candidateCommitSha:
+        value.simulationEnvironmentIsolation.candidateCommitSha,
+      candidateTreeSha:
+        value.simulationEnvironmentIsolation.candidateTreeSha,
+      sessionId: value.simulationEnvironmentIsolation.sessionId,
+      invocationNonce:
+        value.simulationEnvironmentIsolation.invocationNonce,
+      noRegenerationProof:
+        value.simulationEnvironmentIsolation.noRegenerationProof,
+    },
   });
+  const cleanResult = stableSimulationResult(cleanSimulation);
+  rmSync(cleanSimulation.simulationRoot, { recursive: true, force: true });
+  const foreign = installForeignCertificationAuthEnvironment();
+  let simulation;
+  try {
+    assert.throws(
+      () =>
+        authFixtureSession.consumeFixtureSession({
+          repositoryRoot,
+          environment: {
+            ...process.env,
+            CI_AUTH_FIXTURE_CANDIDATE_COMMIT_SHA: "c".repeat(40),
+            CI_AUTH_FIXTURE_CANDIDATE_TREE_SHA: "d".repeat(40),
+          },
+          requireAmbientProviderValues: true,
+        }),
+      /identity, owner, policy, or completion is mismatched/,
+      "the real fixture validator must continue rejecting a foreign candidate",
+    );
+    const outerEnvironment = saveEnvironment([
+      ...foreign.capabilityNames,
+      "APP_ENV",
+      "CI",
+      "DATABASE_URL",
+      "GITHUB_ACTIONS",
+    ]);
+    const outerResources = foreign.resourcePaths.map((filePath) =>
+      readFileSync(filePath),
+    );
+    simulation = await runProductionCertificationSimulation({
+      cleanupWorktrees: false,
+    });
+    assert.deepEqual(
+      saveEnvironment([...outerEnvironment.keys()]),
+      outerEnvironment,
+      "certification simulation must not mutate its foreign parent environment",
+    );
+    assert.deepEqual(
+      foreign.resourcePaths.map((filePath) => readFileSync(filePath)),
+      outerResources,
+      "certification simulation must not consume or change foreign auth resources",
+    );
+  } finally {
+    restoreEnvironment(foreign.saved);
+    rmSync(foreign.ownerRoot, { recursive: true, force: true });
+  }
+  assert.deepEqual(stableSimulationResult(simulation), cleanResult);
+  assert.equal(
+    simulation.simulationEnvironmentIsolation.foreignSessionConsumed,
+    false,
+  );
+  assert.equal(
+    simulation.simulationEnvironmentIsolation.simulationOwnedSession,
+    true,
+  );
+  assert.equal(
+    simulation.simulationEnvironmentIsolation.simulationSessionRootReplaced,
+    true,
+  );
+  assert.equal(
+    simulation.simulationEnvironmentIsolation.simulationResultRootReplaced,
+    true,
+  );
+  assert.notDeepEqual(
+    {
+      commitSha:
+        simulation.simulationEnvironmentIsolation.candidateCommitSha,
+      treeSha: simulation.simulationEnvironmentIsolation.candidateTreeSha,
+    },
+    foreign.foreignCandidate,
+  );
+  for (const name of [
+    "CI_AUTH_FIXTURE_RESULT_PATH",
+    "CI_AUTH_FIXTURE_SESSION_ID",
+    "CI_AUTH_FIXTURE_SESSION_ROOT",
+    "GOOGLE_CLIENT_ID",
+  ]) {
+    assert.equal(
+      simulation.simulationEnvironmentIsolation.removedAuthCapabilityNames.includes(
+        name,
+      ),
+      true,
+      `${name} must be removed from the simulation parent environment`,
+    );
+  }
+  assert.deepEqual(
+    simulation.dependencyLifecycle.alreadyBoundBuildRetry,
+    {
+      stageAttemptCount: 2,
+      failureClassifications: [
+        "SOURCE_CONTRACT_FAILURE",
+        "SOURCE_CONTRACT_FAILURE",
+      ],
+      consumedSubstantiveGate: [false, false],
+      dependencyStatus: "installed",
+      installationAttempts: 1,
+    },
+  );
   const base = simulation.simulationRoot;
   assert.equal(
     CURRENT_JOURNAL_V2_FINAL_POSITIVE_PATH,
