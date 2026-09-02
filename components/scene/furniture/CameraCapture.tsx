@@ -83,6 +83,25 @@ function updateQaCameraState(
   document.documentElement.dataset.qaCameraState = canvas.dataset.qaCameraState;
 }
 
+function updateQaCameraRenderFrame(
+  canvas: HTMLCanvasElement,
+  controls: OrbitControlsImpl | null,
+  renderFrame: MutableRefObject<number>
+) {
+  if (controls) {
+    const dampingEnabled = String(controls.enableDamping);
+    const dampingFactor = String(controls.dampingFactor);
+    canvas.dataset.qaCameraDampingEnabled = dampingEnabled;
+    canvas.dataset.qaCameraDampingFactor = dampingFactor;
+    document.documentElement.dataset.qaCameraDampingEnabled = dampingEnabled;
+    document.documentElement.dataset.qaCameraDampingFactor = dampingFactor;
+  }
+  renderFrame.current += 1;
+  const value = String(renderFrame.current);
+  canvas.dataset.qaCameraRenderFrame = value;
+  document.documentElement.dataset.qaCameraRenderFrame = value;
+}
+
 export function CameraCapture({
   cameraRef,
   canvasRef,
@@ -92,6 +111,7 @@ export function CameraCapture({
 }: CameraCaptureProps) {
   const { camera, gl, scene } = useThree();
   const lastQaState = useRef<QaCameraState | null>(null);
+  const qaRenderFrame = useRef(0);
 
   useFrame(() => {
     cameraRef.current = camera as THREE.Camera;
@@ -100,6 +120,7 @@ export function CameraCapture({
     canvasRef.current = gl.domElement;
     if (process.env.NEXT_PUBLIC_ENABLE_QA_HOOKS !== "1") return;
     updateQaCameraState(camera, gl.domElement, controlsRef.current, lastQaState);
+    updateQaCameraRenderFrame(gl.domElement, controlsRef.current, qaRenderFrame);
   });
 
   return null;

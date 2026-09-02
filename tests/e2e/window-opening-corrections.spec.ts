@@ -5,6 +5,14 @@ import path from "node:path";
 import { promisify } from "node:util";
 import { expect, test, type Browser, type Page, type TestInfo } from "@playwright/test";
 import mountedTestInventory from "../../scripts/window-opening-mounted-tests.json";
+import {
+  cameraMotion,
+  cameraTransition,
+  observeCameraSettleOnRenderFrames,
+  WINDOW_OPENING_CAMERA_SETTLE_CONFIG,
+  type CameraSettleResult,
+  type CameraState,
+} from "./window-opening-camera-settle";
 
 const STORAGE_KEY = "interior-ai:v1:livingroom-design";
 const SCREENSHOT_ROOT = process.env.WINDOW_OPENING_SCREENSHOT_DIR;
@@ -513,62 +521,14 @@ async function observeListenerAtCapture(serverContext: {
   };
 }
 
-type CameraState = {
-  projection: "orthographic" | "perspective";
-  position: [number, number, number];
-  quaternion: [number, number, number, number];
-  target: [number, number, number];
-  zoom: number;
-  fov: number | null;
-  near: number;
-  far: number;
-};
 type CameraTransitionCapture = {
   fromScreenshotId: string;
   minimumAngleDeg: number;
   minimumPositionDistance: number;
   maximumTargetDrift: number;
   fromCameraState: CameraState;
+  settleProof?: CameraSettleResult;
 };
-
-async function readCameraState(page: Page): Promise<CameraState> {
-  const raw = await page.locator("html").getAttribute("data-qa-camera-state");
-  if (!raw) throw new Error("Production QA camera state is unavailable.");
-  return JSON.parse(raw);
-}
-
-function cameraTransition(first: CameraState, second: CameraState) {
-  const direction = (camera: CameraState) => {
-    const vector = camera.target.map((value, index) => value - camera.position[index]);
-    const length = Math.hypot(...vector);
-    return vector.map((value) => value / length);
-  };
-  const firstDirection = direction(first);
-  const secondDirection = direction(second);
-  const cosine = Math.max(-1, Math.min(1, firstDirection.reduce(
-    (sum, value, index) => sum + value * secondDirection[index], 0
-  )));
-  return {
-    angleDeg: Math.acos(cosine) * 180 / Math.PI,
-    positionDistance: Math.hypot(...first.position.map(
-      (value, index) => value - second.position[index])),
-    targetDrift: Math.hypot(...first.target.map(
-      (value, index) => value - second.target[index])),
-  };
-}
-
-function cameraMotion(first: CameraState, second: CameraState) {
-  const quaternionDistance = (sign: 1 | -1) => Math.hypot(...first.quaternion.map(
-    (value, index) => value - sign * second.quaternion[index]
-  ));
-  return {
-    positionDistance: Math.hypot(...first.position.map(
-      (value, index) => value - second.position[index])),
-    quaternionDistance: Math.min(quaternionDistance(1), quaternionDistance(-1)),
-    targetDistance: Math.hypot(...first.target.map(
-      (value, index) => value - second.target[index])),
-  };
-}
 
 async function capture(page: Page, name: string,
   cameraTransitionRequest: CameraTransitionCapture | null = null) {
@@ -604,6 +564,14 @@ async function capture(page: Page, name: string,
     throw new Error(`Mounted capture context is incomplete for ${name}.`);
   }
   const cameraState: CameraState = JSON.parse(cameraStateRaw);
+  const postSettleMotion = cameraTransitionRequest?.settleProof
+    ? cameraMotion(cameraTransitionRequest.settleProof.lastState, cameraState) : null;
+  if (postSettleMotion) {
+    expect(postSettleMotion.positionDistance).toBeLessThanOrEqual(0.005);
+    expect(postSettleMotion.quaternionDistance).toBeLessThanOrEqual(0.0005);
+    expect(postSettleMotion.targetDistance).toBeLessThanOrEqual(0.001);
+    expect(postSettleMotion.zoomDistance).toBeLessThanOrEqual(0.001);
+  }
   const transitionMetrics = cameraTransitionRequest
     ? cameraTransition(cameraTransitionRequest.fromCameraState, cameraState) : null;
   if (cameraTransitionRequest && transitionMetrics) {
@@ -622,6 +590,7 @@ async function capture(page: Page, name: string,
     observedAngleDeg: transitionMetrics.angleDeg,
     observedPositionDistance: transitionMetrics.positionDistance,
     observedTargetDrift: transitionMetrics.targetDrift,
+    postSettleMotion,
     toCameraState: cameraState,
   } : null;
   const listenerObservation = await observeListenerAtCapture(serverContext);
@@ -952,28 +921,23 @@ async function orbitToSecondDirection(page: Page, first: CameraState) {
   await page.mouse.down({ button: "left" });
   await page.mouse.move(end.x, end.y, { steps: 24 });
   await page.mouse.up({ button: "left" });
-  await expect.poll(async () => cameraTransition(first, await readCameraState(page)).angleDeg, {
-    message: "OrbitControls must produce a material second production-camera direction",
-  }).toBeGreaterThanOrEqual(10);
-  let previous = await readCameraState(page);
-  let stableSamples = 0;
-  await expect.poll(async () => {
-    await page.waitForTimeout(100);
-    const current = await readCameraState(page);
-    const motion = cameraMotion(previous, current);
-    const settled = motion.positionDistance <= 0.005
-      && motion.quaternionDistance <= 0.0005
-      && motion.targetDistance <= 0.001;
-    stableSamples = settled ? stableSamples + 1 : 0;
-    previous = current;
-    return stableSamples;
-  }, { message: "OrbitControls must settle before the direction-B capture" }).toBeGreaterThanOrEqual(2);
-  const second = await readCameraState(page);
+  const settle = await page.evaluate(
+    observeCameraSettleOnRenderFrames,
+    WINDOW_OPENING_CAMERA_SETTLE_CONFIG
+  );
+  if (settle.status !== "settled") {
+    throw new Error(`OrbitControls must settle before the direction-B capture.\n${
+      JSON.stringify(settle, null, 2)
+    }`);
+  }
+  expect(settle.stableSamples).toBeGreaterThanOrEqual(2);
+  const second = settle.lastState;
   const metrics = cameraTransition(first, second);
+  expect(metrics.angleDeg).toBeGreaterThanOrEqual(10);
   expect(metrics.positionDistance).toBeGreaterThanOrEqual(0.75);
   expect(metrics.targetDrift).toBeLessThanOrEqual(0.5);
   expect(second).not.toEqual(first);
-  return { second, metrics };
+  return { second, metrics, settle };
 }
 
 test("final window matrix remains visible in full plan, focus, and both 3D directions", async ({ page }) => {
@@ -1040,7 +1004,7 @@ test("final window matrix remains visible in full plan, focus, and both 3D direc
   await assertOpeningMarkerInCanvas(page, "standard-window");
   await assertOpeningMarkerInCanvas(page, "full-height-window");
   const cameraA = await capture(page, "02-full-plan-3d-direction-a-standard-window");
-  await orbitToSecondDirection(page, cameraA);
+  const directionB = await orbitToSecondDirection(page, cameraA);
   await assertOpeningMarkerInCanvas(page, "standard-window");
   await assertOpeningMarkerInCanvas(page, "full-height-window");
   await capture(page, "03-full-plan-3d-direction-b-full-height-window", {
@@ -1049,6 +1013,7 @@ test("final window matrix remains visible in full plan, focus, and both 3D direc
     minimumPositionDistance: 0.75,
     maximumTargetDrift: 0.5,
     fromCameraState: cameraA,
+    settleProof: directionB.settle,
   });
   await capture(page, "04-partial-shared-full-plan-3d");
 

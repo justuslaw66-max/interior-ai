@@ -1,6 +1,14 @@
 import assert from "node:assert/strict";
 
 import {
+  cameraTransition,
+  observeCameraSettleOnRenderFrames,
+  WINDOW_OPENING_CAMERA_SETTLE_CONFIG,
+  type CameraSettleConfig,
+  type CameraState,
+} from "../tests/e2e/window-opening-camera-settle";
+
+import {
   getLegacyWallOpeningCountsForTest,
 } from "@/components/editor/renderers/HousePlanRenderer3D";
 import {
@@ -1144,9 +1152,134 @@ function exerciseUnresolvedRepairHistory() {
   assert.equal(resolveDesignPageOpeningHost(state[0], [lRoom]).status, "resolved");
 }
 
+function cameraState(positionX: number): CameraState {
+  return {
+    projection: "perspective",
+    position: [positionX, 5, 6],
+    quaternion: [0, 0, 0, 1],
+    target: [0, 1, 0],
+    zoom: 1,
+    fov: 46,
+    near: 0.1,
+    far: 300,
+  };
+}
+
+function replaceBrowserGlobal(name: string, value: unknown) {
+  const previous = Object.getOwnPropertyDescriptor(globalThis, name);
+  Object.defineProperty(globalThis, name, { configurable: true, writable: true, value });
+  return () => previous
+    ? Object.defineProperty(globalThis, name, previous)
+    : Reflect.deleteProperty(globalThis, name);
+}
+
+async function observeCameraFrames(
+  states: CameraState[],
+  overrides: Partial<CameraSettleConfig> = {}
+) {
+  assert.ok(states.length > 0);
+  let stateIndex = 0;
+  let nextFrameId = 0;
+  const cancelledFrames = new Set<number>();
+  const dataset = {
+    qaCameraState: JSON.stringify(states[0]),
+    qaCameraRenderFrame: "1",
+    qaCameraDampingEnabled: "true",
+    qaCameraDampingFactor: "0.08",
+  };
+  const restoreDocument = replaceBrowserGlobal("document", { documentElement: { dataset } });
+  const restoreRequest = replaceBrowserGlobal(
+    "requestAnimationFrame",
+    (callback: FrameRequestCallback) => {
+      const frameId = ++nextFrameId;
+      setImmediate(() => {
+        if (cancelledFrames.has(frameId)) return;
+        if (stateIndex < states.length - 1) {
+          stateIndex += 1;
+          dataset.qaCameraState = JSON.stringify(states[stateIndex]);
+          dataset.qaCameraRenderFrame = String(stateIndex + 1);
+        }
+        callback(performance.now());
+      });
+      return frameId;
+    }
+  );
+  const restoreCancel = replaceBrowserGlobal(
+    "cancelAnimationFrame",
+    (frameId: number) => cancelledFrames.add(frameId)
+  );
+  try {
+    return await observeCameraSettleOnRenderFrames({
+      ...WINDOW_OPENING_CAMERA_SETTLE_CONFIG,
+      maximumDurationMs: 25,
+      minimumStableDurationMs: 0,
+      ...overrides,
+    });
+  } finally {
+    restoreCancel();
+    restoreRequest();
+    restoreDocument();
+  }
+}
+
+async function exerciseCameraSettleObservation() {
+  const damping = await observeCameraFrames([
+    cameraState(0), cameraState(1), cameraState(1.1),
+    cameraState(1.104), cameraState(1.107), cameraState(1.1073),
+    cameraState(1.10755),
+  ]);
+  assert.equal(damping.status, "settled");
+  assert.equal(damping.stableSamples, 2);
+  assert.equal(damping.renderFramesObserved, 6);
+
+  const reset = await observeCameraFrames([
+    cameraState(0), cameraState(0.0003), cameraState(0.001),
+    cameraState(0.0013), cameraState(0.00155),
+  ]);
+  assert.equal(reset.status, "settled");
+  assert.deepEqual(reset.samples.map((sample) => sample.stableSamples), [0, 1, 0, 1, 2]);
+
+  const oneStableSample = await observeCameraFrames([
+    cameraState(0), cameraState(1), cameraState(1.0003),
+  ]);
+  assert.equal(oneStableSample.status, "timed-out");
+  assert.equal(oneStableSample.stableSamples, 1);
+  assert.equal(oneStableSample.samples.length, 3);
+  assert.match(oneStableSample.reason, /did not settle/);
+  assert.ok(oneStableSample.samples[2].motion);
+
+  const cumulativeMotion = await observeCameraFrames([
+    cameraState(0), cameraState(0.004), cameraState(0.008),
+  ]);
+  assert.equal(cumulativeMotion.status, "timed-out");
+  assert.deepEqual(cumulativeMotion.samples.map((sample) => sample.stableSamples), [0, 0, 0]);
+
+  const stableWindowDrift = await observeCameraFrames(
+    Array.from({ length: 18 }, (_, index) => cameraState(index * 0.00039)),
+    { requiredStableSamples: 18 }
+  );
+  assert.equal(stableWindowDrift.status, "timed-out");
+  assert.ok(stableWindowDrift.samples.every((sample) =>
+    sample.projectedTailMotion === null || sample.projectedTailMotion.positionDistance <= 0.005
+  ));
+  assert.ok(stableWindowDrift.samples.some((sample) => sample.stableSamples === 12));
+  assert.ok(stableWindowDrift.samples.some((sample, index) =>
+    index > 0 && sample.stableSamples === 0
+  ));
+
+  const noOp = cameraTransition(cameraState(0), cameraState(0));
+  assert.equal(noOp.positionDistance, 0);
+  assert.ok(noOp.angleDeg < 10 && noOp.positionDistance < 0.75);
+}
+
 exerciseOpeningHistory();
 exerciseAtomicKindHistory();
 exerciseOpeningPersistence();
 exerciseUnresolvedRepairHistory();
-
-console.log("Window-opening corrective behavior checks passed.");
+exerciseCameraSettleObservation().then(
+  () => console.log("Window-opening corrective behavior checks passed."),
+  (cause) => {
+    console.error(cause);
+    process.exitCode = 1;
+  }
+);
