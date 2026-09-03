@@ -4,6 +4,10 @@ import type {
   FloorPlanFloorV2,
 } from "@/lib/floor-plan-document-v2";
 import {
+  appendFloorPlanOpeningOverrideAuditV2,
+  type FloorPlanOpeningOverrideAuthorizationV2,
+} from "@/lib/floor-plan-opening-mutation-policy";
+import {
   FloorPlanTopologyMutationErrorV2,
   type FloorPlanTopologyMutationContextV2,
   type FloorPlanTopologyMutationErrorCodeV2,
@@ -124,6 +128,32 @@ export function demoteTopologyProvenance(
       },
     ],
   };
+}
+
+export function approveOpeningEvidenceOverride(
+  provenance: FloorPlanEntityProvenanceV2,
+  entityId: string,
+  authorization: FloorPlanOpeningOverrideAuthorizationV2,
+  state: FloorPlanTopologyMutationStateV2
+): FloorPlanEntityProvenanceV2 {
+  const extractionVersion =
+    state.context.extractionVersion ?? MUTATION_EXTRACTION_VERSION;
+  const sourceId =
+    provenance.evidence[0]?.sourceId ?? state.document.sources[0]?.id;
+  if (!sourceId) {
+    topologyMutationFail(
+      "INVALID_OPENING_EVIDENCE_OVERRIDE",
+      "An opening evidence override requires an auditable source record."
+    );
+  }
+  return appendFloorPlanOpeningOverrideAuditV2({
+    provenance,
+    sourceId,
+    authorization,
+    reviewedAt: state.context.mutatedAt,
+    reviewId: `${state.context.mutationId}:${state.operationIndex}:${entityId}:evidence-override`,
+    extractionVersion,
+  });
 }
 
 export function inferredTopologyProvenance(

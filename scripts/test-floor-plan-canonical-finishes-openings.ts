@@ -224,6 +224,7 @@ const opening = (
   operation,
   offsetMm: 1000,
   widthMm: 900,
+  widthEvidence: "source_documented",
   heightMm: kind === "window" || kind === "vent" || kind === "louvre" ? 1200 : 2100,
   heightEvidence: "source_documented",
   sillHeightMm: kind === "window" || kind === "vent" || kind === "louvre" ? 900 : 0,

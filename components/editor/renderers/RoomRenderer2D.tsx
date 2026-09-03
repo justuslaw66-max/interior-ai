@@ -1,5 +1,4 @@
 "use client";
-
 import { Line } from "@react-three/drei/core/Line";
 import { Html } from "@react-three/drei/web/Html";
 import { useCallback, useEffect, useMemo, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
@@ -23,12 +22,9 @@ import {
   type TracedOpeningPreview,
 } from "@/lib/floor-plan-tracing";
 import {
-  buildHouseRoomAdjacencyGuides,
-  buildHouseRoomDoorwaySuggestions,
-  HOUSE_ROOM_WALL_SNAP_DISTANCE_METERS,
-  ROOM_DIMENSION_DEFAULTS,
-  resolveHouseRoomMove,
-  type HouseRoomDoorwaySuggestion,
+  buildHouseRoomAdjacencyGuides, buildHouseRoomDoorwaySuggestions,
+  HOUSE_ROOM_WALL_SNAP_DISTANCE_METERS, ROOM_DIMENSION_DEFAULTS,
+  resolveHouseRoomMove, type HouseRoomDoorwaySuggestion,
   type HouseRoomSnapPreview,
 } from "@/lib/design-page-house-plan";
 import { getRuntimeSurfaceMaterialById } from "@/lib/surface-material-runtime";
@@ -52,7 +48,13 @@ import type { CanonicalFloorPlanRenderModel } from "@/lib/floor-plan-render-mode
 import { buildRoomPlanShape } from "@/lib/room-plan-shape";
 import type { PlanMeasurementUnit } from "@/lib/design-page-types";
 import { formatDisplayLength } from "@/lib/display-units";
-
+import { floorPlanPropertyEvidenceIsEditable } from "@/lib/floor-plan-measured-property-mutations";
+import { buildOpeningRenderSegments, type Opening2D,
+  type OpeningSegment2D } from "./room-renderer-2d-opening-geometry";
+import { UnresolvedOpeningMarkers2D } from "./UnresolvedOpeningMarkers2D";
+import { OpeningInteractionQaMarker2D } from "./OpeningInteractionQaMarker2D";
+import { legacyOpeningOffsetAtWorldPoint, moveOpeningCenterFromWorldPoint,
+  projectWorldPointToOpeningHost, resizeOpeningFromWorldPoint } from "@/lib/design-page-opening-interaction";
 type RectZone = {
   id: string;
   x: number;
@@ -62,38 +64,11 @@ type RectZone = {
   label: string;
 };
 
-type Opening2D = {
-  id: string;
-  roomId?: string;
-  wall: "north" | "south" | "east" | "west";
-  offset: number;
-  width: number;
-  height?: number;
-  kind: "door" | "window";
-  doorStyle?: "swing" | "sliding" | "folding" | "open";
-};
-
-type OpeningSegment2D = {
-  id: string;
-  roomId?: string;
-  kind: Opening2D["kind"];
-  doorStyle?: NonNullable<Opening2D["doorStyle"]>;
-  wall: Opening2D["wall"];
-  points: [[number, number, number], [number, number, number]];
-};
-
-type OpeningRenderSegment2D = OpeningSegment2D & {
-  offset: number;
-  width: number;
-  center: [number, number, number];
-  hitSize: [number, number];
-  identityLabelPosition: [number, number, number];
-  labelPosition: [number, number, number];
-};
-
 function getOpeningInwardNormal(
-  wall: OpeningSegment2D["wall"]
+  wall: OpeningSegment2D["wall"],
+  resolved?: { x: number; z: number }
 ): [number, number] {
+  if (resolved) return [resolved.x, resolved.z];
   if (wall === "north") return [0, 1];
   if (wall === "south") return [0, -1];
   if (wall === "west") return [1, 0];
@@ -109,7 +84,10 @@ function buildOpeningSymbolLines(
   const width = Math.max(0.001, Math.hypot(alongX, alongZ));
   const alongUnitX = alongX / width;
   const alongUnitZ = alongZ / width;
-  const [inwardX, inwardZ] = getOpeningInwardNormal(segment.wall);
+  const [inwardX, inwardZ] = getOpeningInwardNormal(
+    segment.wall,
+    segment.inwardNormal
+  );
 
   if (segment.kind === "window") {
     const glazingOffset = 0.045;
@@ -532,6 +510,22 @@ type RoomRenderer2DProps = {
   canonicalPlan?: CanonicalFloorPlanRenderModel | null;
   canonicalStructureExpected?: boolean;
 };
+
+function openingWidthIsEditable(opening: Opening2D) {
+  return !opening.widthEvidence || floorPlanPropertyEvidenceIsEditable(opening.widthEvidence);
+}
+
+function canResizeOpening(
+  callback: RoomRenderer2DProps["onResizeOpening"],
+  opening: Opening2D
+): callback is NonNullable<RoomRenderer2DProps["onResizeOpening"]> {
+  return Boolean(callback) && openingWidthIsEditable(opening);
+}
+
+function findResizableOpening(openings: readonly Opening2D[], id: string) {
+  const opening = openings.find((entry) => entry.id === id);
+  return opening && openingWidthIsEditable(opening) ? opening : undefined;
+}
 
 const getRoomOutlinePoints = (room: HouseRoom2D): Array<[number, number]> => {
   if (room.shape === "custom_polygon" && room.polygon && room.polygon.length >= 3) {
@@ -1508,8 +1502,8 @@ export default function RoomRenderer2D({
   const openingHitDepth = 0.32;
   const dragTargetRef = useRef<
     | null
-    | { kind: "opening"; id: string; grabOffset: number }
-    | { kind: "opening_resize"; id: string; fixedAxis: number }
+    | { kind: "opening"; id: string; grabDeltaAlong: number }
+    | { kind: "opening_resize"; id: string; fixedAlong: number; movingEdge: "start" | "end" }
     | { kind: "fixed"; id: string; width: number; depth: number }
     | { kind: "annotation"; id: string }
     | {
@@ -2567,37 +2561,12 @@ export default function RoomRenderer2D({
 
   const stopNativeRoomDragEvent = (event: ThreeEvent<PointerEvent>) => {
     event.stopPropagation();
-    event.nativeEvent.preventDefault();
     event.nativeEvent.stopPropagation();
     event.nativeEvent.stopImmediatePropagation?.();
   };
 
-  const getOpeningRoom = (opening: Opening2D) =>
-    opening.roomId ? rooms.find((room) => room.id === opening.roomId) : undefined;
-
-  const getOpeningAxisValue = (
-    opening: Pick<Opening2D, "wall">,
-    point: { x: number; z: number }
-  ) => (opening.wall === "north" || opening.wall === "south" ? point.x : point.z);
-
-  const getOpeningPointerAxisValue = (
-    opening: Pick<Opening2D, "wall">,
-    event: ThreeEvent<PointerEvent>
-  ) => getOpeningAxisValue(opening, getPlanPointFromPointerEvent(event));
-
-  const getOpeningRoomAxisCenter = (opening: Opening2D) => {
-    const openingRoom = getOpeningRoom(opening);
-    return opening.wall === "north" || opening.wall === "south"
-      ? openingRoom?.x ?? 0
-      : openingRoom?.z ?? 0;
-  };
-
-  const getOpeningWallSpan = (opening: Opening2D) => {
-    const openingRoom = getOpeningRoom(opening);
-    return opening.wall === "north" || opening.wall === "south"
-      ? openingRoom?.w ?? width
-      : openingRoom?.d ?? depth;
-  };
+  const getResolvedOpeningHost = (opening: Opening2D) => opening.hostResolution?.status === "resolved"
+    ? opening.hostResolution.host : null;
 
   const startOpeningMoveDrag = (openingId: string, event: ThreeEvent<PointerEvent>) => {
     stopNativeRoomDragEvent(event);
@@ -2605,12 +2574,15 @@ export default function RoomRenderer2D({
     const opening = openings.find((entry) => entry.id === openingId);
     if (!opening) return false;
 
-    const centerAxis = getOpeningRoomAxisCenter(opening);
-    const pointerOffset = getOpeningPointerAxisValue(opening, event) - centerAxis;
+    const host = getResolvedOpeningHost(opening);
+    if (!host) return false;
+    const pointerAlong = projectWorldPointToOpeningHost(
+      host, getPlanPointFromPointerEvent(event)
+    );
     dragTargetRef.current = {
       kind: "opening",
       id: openingId,
-      grabOffset: opening.offset - pointerOffset,
+      grabDeltaAlong: host.alongSegmentMeters - pointerAlong,
     };
     onOverlayDragStateChange?.(true, "opening");
     setPointerCaptureIfSupported(event);
@@ -2620,15 +2592,17 @@ export default function RoomRenderer2D({
   const handleOpeningMove = (
     opening: Opening2D,
     event: ThreeEvent<PointerEvent>,
-    grabOffset: number
+    grabDeltaAlong: number
   ) => {
     if (!onMoveOpening) return;
-    const centerAxis = getOpeningRoomAxisCenter(opening);
-    const span = getOpeningWallSpan(opening);
-    const maxOffset = Math.max(0, span / 2 - opening.width / 2 - openingEdgePadding);
-    const rawOffset = getOpeningPointerAxisValue(opening, event) - centerAxis + grabOffset;
-    const nextOffset = clamp(rawOffset, -maxOffset, maxOffset);
-    onMoveOpening(opening.id, nextOffset);
+    const host = getResolvedOpeningHost(opening);
+    if (!host) return;
+    const next = moveOpeningCenterFromWorldPoint({
+      host,
+      pointerWorld: getPlanPointFromPointerEvent(event), grabDeltaAlongMeters: grabDeltaAlong,
+      widthMeters: opening.width, edgePaddingMeters: openingEdgePadding,
+    });
+    if (next.offsetMeters !== null) onMoveOpening(opening.id, next.offsetMeters);
   };
 
   const getOpeningResizeCursor = (wall: Opening2D["wall"]) =>
@@ -2636,25 +2610,24 @@ export default function RoomRenderer2D({
 
   const handleOpeningResize = (
     opening: Opening2D,
-    fixedAxis: number,
+    fixedAlong: number,
+    movingEdge: "start" | "end",
     event: ThreeEvent<PointerEvent>
   ) => {
-    if (!onResizeOpening) return;
-    const centerAxis = getOpeningRoomAxisCenter(opening);
-    const span = getOpeningWallSpan(opening);
-    const minAxis = centerAxis - span / 2 + openingEdgePadding;
-    const maxAxis = centerAxis + span / 2 - openingEdgePadding;
-    const rawPointerAxis = getOpeningPointerAxisValue(opening, event);
-    const rawDirection = rawPointerAxis >= fixedAxis ? 1 : -1;
-    let pointerAxis = clamp(rawPointerAxis, minAxis, maxAxis);
-
-    if (Math.abs(pointerAxis - fixedAxis) < openingMinWidth) {
-      pointerAxis = clamp(fixedAxis + rawDirection * openingMinWidth, minAxis, maxAxis);
+    if (!canResizeOpening(onResizeOpening, opening)) return;
+    const host = getResolvedOpeningHost(opening);
+    if (!host) return;
+    const next = resizeOpeningFromWorldPoint({
+      host,
+      pointerWorld: getPlanPointFromPointerEvent(event), fixedAlongMeters: fixedAlong,
+      movingEdge, minimumWidthMeters: openingMinWidth, edgePaddingMeters: openingEdgePadding,
+    });
+    if (next.offsetMeters !== null) {
+      onResizeOpening(opening.id, {
+        widthMeters: next.widthMeters,
+        offsetMeters: next.offsetMeters,
+      });
     }
-
-    const widthMeters = Math.max(openingMinWidth, Math.abs(pointerAxis - fixedAxis));
-    const offsetMeters = (pointerAxis + fixedAxis) / 2 - centerAxis;
-    onResizeOpening(opening.id, { widthMeters, offsetMeters });
   };
 
   const handleFixedMove = (
@@ -2912,74 +2885,12 @@ export default function RoomRenderer2D({
     [roomDragPreview, rooms]
   );
 
-  const openingSegments = openings.map((o): OpeningRenderSegment2D => {
-    const openingRoom = getOpeningRoom(o);
-    const centerX = openingRoom?.x ?? 0;
-    const centerZ = openingRoom?.z ?? 0;
-    const openingHalfW = (openingRoom?.w ?? width) / 2;
-    const openingHalfD = (openingRoom?.d ?? depth) / 2;
-
-    if (o.wall === "north" || o.wall === "south") {
-      const z = centerZ + (o.wall === "north" ? -openingHalfD : openingHalfD);
-      const x0 = centerX + o.offset - o.width / 2;
-      const x1 = centerX + o.offset + o.width / 2;
-      const center = [(x0 + x1) / 2, 0.003, z] as [number, number, number];
-      return {
-        id: o.id,
-        roomId: o.roomId,
-        kind: o.kind,
-        doorStyle: o.doorStyle,
-        wall: o.wall,
-        offset: o.offset,
-        width: o.width,
-        center,
-        hitSize: [Math.max(o.width, openingMinHitLength), openingHitDepth] as [number, number],
-        identityLabelPosition: [
-          center[0],
-          0.07,
-          z + (o.wall === "north" ? 0.22 : -0.22),
-        ] as [number, number, number],
-        labelPosition: [
-          center[0],
-          0.07,
-          z + (o.wall === "north" ? -0.34 : 0.34),
-        ] as [number, number, number],
-        points: [
-          [x0, 0.0022, z] as [number, number, number],
-          [x1, 0.0022, z] as [number, number, number],
-        ],
-      };
-    }
-    const x = centerX + (o.wall === "west" ? -openingHalfW : openingHalfW);
-    const z0 = centerZ + o.offset - o.width / 2;
-    const z1 = centerZ + o.offset + o.width / 2;
-    const center = [x, 0.003, (z0 + z1) / 2] as [number, number, number];
-    return {
-      id: o.id,
-      roomId: o.roomId,
-      kind: o.kind,
-      doorStyle: o.doorStyle,
-      wall: o.wall,
-      offset: o.offset,
-      width: o.width,
-      center,
-      hitSize: [openingHitDepth, Math.max(o.width, openingMinHitLength)] as [number, number],
-      identityLabelPosition: [
-        x + (o.wall === "west" ? 0.22 : -0.22),
-        0.07,
-        center[2],
-      ] as [number, number, number],
-      labelPosition: [
-        x + (o.wall === "west" ? -0.34 : 0.34),
-        0.07,
-        center[2],
-      ] as [number, number, number],
-      points: [
-        [x, 0.0022, z0] as [number, number, number],
-        [x, 0.0022, z1] as [number, number, number],
-      ],
-    };
+  const openingSegments = buildOpeningRenderSegments({
+    openings, rooms, defaultWidth: width, defaultDepth: depth,
+    minimumHitLength: openingMinHitLength, hitDepth: openingHitDepth,
   });
+  const unresolvedOpenings = openings.filter((opening) =>
+    opening.hostResolution && opening.hostResolution.status !== "resolved");
   const wallBandLayout = useMemo(() => {
     if (!hasHouseRooms || canonicalStructureExpected) {
       return { parts: [], windowMarkers: [], cornerCaps: [] };
@@ -2987,7 +2898,12 @@ export default function RoomRenderer2D({
     const mergedSegments = mergeSharedWallSegments2D(buildRoomWallSegments2D(wallBandRooms));
     return mergedSegments.reduce(
       (layout, segment) => {
-        const split = splitWallBandByOpenings2D(segment, openings);
+        const split = splitWallBandByOpenings2D(
+          segment,
+          openings.filter(
+            (opening) => !opening.hostResolution || opening.hostResolution.status === "resolved"
+          )
+        );
         layout.parts.push(...split.parts);
         layout.windowMarkers.push(...split.windowMarkers);
         return layout;
@@ -4104,14 +4020,13 @@ export default function RoomRenderer2D({
             mode
           ) => {
             const sourceOpening = openings.find((opening) => opening.id === openingId);
-            const sourceRoom = sourceOpening?.roomId
-              ? rooms.find((room) => room.id === sourceOpening.roomId)
-              : null;
-            if (!sourceOpening || !sourceRoom) return;
-            const centerOffsetMeters =
-              sourceOpening.wall === "north" || sourceOpening.wall === "south"
-                ? metrics.centerMm.xMm / 1000 - sourceRoom.x
-                : metrics.centerMm.zMm / 1000 - sourceRoom.z;
+            const host = sourceOpening && getResolvedOpeningHost(sourceOpening);
+            if (!sourceOpening || !host) return;
+            const centerOffsetMeters = legacyOpeningOffsetAtWorldPoint(host, {
+              x: metrics.centerMm.xMm / 1000,
+              z: metrics.centerMm.zMm / 1000,
+            });
+            if (centerOffsetMeters === null) return;
             if (mode === "resize") {
               onResizeOpening?.(openingId, {
                 widthMeters: metrics.widthMm / 1000,
@@ -5000,6 +4915,8 @@ export default function RoomRenderer2D({
           lineWidth={isPro ? 2 : 1.5}
         />
       )}
+      <UnresolvedOpeningMarkers2D openings={unresolvedOpenings} onSelect={onSelectOverlay}
+        showOpenings={showOpenings} canonicalStructureExpected={canonicalStructureExpected} />
 
       {showOpenings && !canonicalStructureExpected &&
         openingSegments.map((seg) => (
@@ -5011,6 +4928,7 @@ export default function RoomRenderer2D({
               openingStyle: seg.doorStyle ?? null,
             }}
           >
+            <OpeningInteractionQaMarker2D openingId={seg.id} onSelect={() => onSelectOverlay?.(seg.id)} points={seg.points} selected={selectedOverlayId === seg.id} />
             {buildOpeningSymbolLines(seg).map((points, lineIndex) => (
               <Line
                 key={`${seg.id}-symbol-${lineIndex}`}
@@ -5025,11 +4943,18 @@ export default function RoomRenderer2D({
                 position={seg.identityLabelPosition}
                 center
                 transform={false}
-                style={{ pointerEvents: "none" }}
+                style={{ pointerEvents: "auto" }}
               >
-                <div
+                <button
+                  type="button"
                   data-testid="plan-opening-kind-label"
                   data-opening-kind={seg.kind}
+                  data-opening-id={seg.id}
+                  aria-label={`Select ${openingDisplayName(seg)}`}
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    onSelectOverlay?.(seg.id);
+                  }}
                   style={{
                     border: `1px solid ${
                       seg.kind === "door" ? "rgba(194,65,12,0.32)" : "rgba(2,132,199,0.32)"
@@ -5041,13 +4966,14 @@ export default function RoomRenderer2D({
                     fontWeight: 800,
                     lineHeight: 1,
                     padding: "3px 5px",
-                    pointerEvents: "none",
+                    pointerEvents: "auto",
+                    cursor: "pointer",
                     whiteSpace: "nowrap",
                     boxShadow: "0 1px 3px rgba(15,23,42,0.1)",
                   }}
                 >
                   {openingDisplayName(seg)}
-                </div>
+                </button>
               </Html>
             )}
             {selectedOverlayId === seg.id && (
@@ -5066,17 +4992,20 @@ export default function RoomRenderer2D({
                     rotation-x={-Math.PI / 2}
                     onPointerDown={(event) => {
                       stopNativeRoomDragEvent(event);
-                      const opening = openings.find((entry) => entry.id === seg.id);
+                      const opening = findResizableOpening(openings, seg.id);
                       if (!opening) return;
+                      const host = getResolvedOpeningHost(opening);
+                      if (!host) return;
                       const fixedPoint = seg.points[index === 0 ? 1 : 0];
                       onSelectOverlay?.(seg.id);
                       dragTargetRef.current = {
                         kind: "opening_resize",
                         id: seg.id,
-                        fixedAxis: getOpeningAxisValue(opening, {
+                        fixedAlong: projectWorldPointToOpeningHost(host, {
                           x: fixedPoint[0],
                           z: fixedPoint[2],
                         }),
+                        movingEdge: index === 0 ? "start" : "end",
                       };
                       document.body.style.cursor = getOpeningResizeCursor(seg.wall);
                       onOverlayDragStateChange?.(true, "opening_resize");
@@ -5093,7 +5022,12 @@ export default function RoomRenderer2D({
                       stopNativeRoomDragEvent(event);
                       const opening = openings.find((entry) => entry.id === seg.id);
                       if (!opening) return;
-                      handleOpeningResize(opening, drag.fixedAxis, event);
+                      handleOpeningResize(
+                        opening,
+                        drag.fixedAlong,
+                        drag.movingEdge,
+                        event
+                      );
                     }}
                     onPointerUp={(event) => {
                       event.stopPropagation();
@@ -5168,9 +5102,9 @@ export default function RoomRenderer2D({
             )}
             {interactive && seg.doorStyle !== "open" && (
               <>
+                <group position={seg.center} rotation-y={-(seg.hitRotationRad ?? 0)}>
                 <mesh
                   userData={{ testId: "selected-opening-hit-target" }}
-                  position={seg.center}
                   rotation-x={-Math.PI / 2}
                   onPointerDown={(event) => {
                     if (startOpeningMoveDrag(seg.id, event)) {
@@ -5188,7 +5122,7 @@ export default function RoomRenderer2D({
                     stopNativeRoomDragEvent(event);
                     const opening = openings.find((entry) => entry.id === seg.id);
                     if (!opening) return;
-                    handleOpeningMove(opening, event, drag.grabOffset);
+                    handleOpeningMove(opening, event, drag.grabDeltaAlong);
                   }}
                   onPointerUp={(event) => {
                     event.stopPropagation();
@@ -5218,6 +5152,7 @@ export default function RoomRenderer2D({
                   <planeGeometry args={seg.hitSize} />
                   <meshBasicMaterial transparent opacity={0} depthWrite={false} />
                 </mesh>
+                </group>
                 <mesh
                   userData={{ testId: "selected-opening-center-handle" }}
                   position={[seg.center[0], 0.0065, seg.center[2]]}
@@ -5238,7 +5173,7 @@ export default function RoomRenderer2D({
                     stopNativeRoomDragEvent(event);
                     const opening = openings.find((entry) => entry.id === seg.id);
                     if (!opening) return;
-                    handleOpeningMove(opening, event, drag.grabOffset);
+                    handleOpeningMove(opening, event, drag.grabDeltaAlong);
                   }}
                   onPointerUp={(event) => {
                     event.stopPropagation();

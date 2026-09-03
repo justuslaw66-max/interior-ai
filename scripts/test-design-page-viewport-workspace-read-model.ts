@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
 import { buildDesignPageViewportRegionAdapter } from "@/lib/design-page-viewport-region-adapter";
+import { resolveDesignPageOpeningViewportState } from "@/lib/design-page-opening-viewport";
 import { buildDesignPageViewportWorkspaceRegistration } from "@/lib/design-page-viewport-workspace-registration";
 import {
   buildDesignPageViewportWorkspaceReadModel,
@@ -418,6 +419,41 @@ const selectedOpening = adaptReadModel(
   buildReadModel({ selectedOpening: true })
 );
 assert.equal(selectedOpening.state.selectedOpening?.widthMm, 900);
+assert.deepEqual(
+  resolveDesignPageOpeningViewportState(
+    {
+      id: "viewport-window",
+      kind: "window",
+      wall: "west",
+      widthMm: 1400,
+      wallSpanMeters: 5.7,
+    },
+    2600
+  )?.inspector,
+  {
+    id: "viewport-window",
+    kind: "window",
+    wall: "west",
+    hostNeedsRepair: false,
+    widthMm: 1400,
+    heightMm: 1200,
+    bottomMm: 900,
+    effectiveHeightMm: 1200,
+    effectiveBottomMm: 900,
+    heightStatus: "defaulted",
+    bottomStatus: "defaulted",
+    dimensionIssues: [],
+    maxWidthMm: 5640,
+    maxHeightMm: 2600,
+    widthEvidence: "assumed",
+    heightEvidence: "assumed",
+    sillEvidence: "assumed",
+    widthEditable: true,
+    heightEditable: true,
+    sillEditable: true,
+  },
+  "The viewport inspector should display sparse windows with the shared vertical defaults."
+);
 assert.equal(
   adaptReadModel(buildReadModel({ selectedOpening: false })).state
     .selectedOpening,

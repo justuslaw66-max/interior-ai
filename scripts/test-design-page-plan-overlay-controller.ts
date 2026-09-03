@@ -7,6 +7,7 @@ import {
   getDesignPageOpeningMetricsHistoryLabel,
   normalizeDesignPageOpeningMetrics,
 } from "@/lib/design-page-opening-metrics";
+import { resolvePlanOpeningVerticalMetrics } from "@/lib/design-page-plan-overlays";
 
 const root = process.cwd();
 const workspaceSource = readFileSync(
@@ -73,13 +74,18 @@ for (const callbackName of [
 
 assert.match(
   controllerSource,
-  /runHistoryTransaction\(historyLabel,\s*\(\)\s*=>\s*\{\s*if \(canonicalTopology\?\.updateOpeningMetrics\(id, normalizedMetrics\)\) return;\s*handleUpdateOpeningMetrics2DFromPlanAction\(id, normalizedMetrics\);\s*\}\)/,
+  /runHistoryTransaction\(historyLabel,\s*\(\)\s*=>\s*\{\s*if \(canonicalTopology\?\.updateOpeningMetrics\(id, plannedMetrics\)\) return;\s*handleUpdateOpeningMetrics2DFromPlanAction\(id, plannedMetrics\);\s*\}\)/,
   "Inspector metric edits should prefer canonical topology and retain the legacy fallback inside one history transaction."
+);
+assert.ok(
+  controllerSource.indexOf("const plannedMetrics = planOpeningMetrics") <
+    controllerSource.indexOf("runHistoryTransaction(historyLabel"),
+  "Evidence-aware kind planning must complete before the undo history boundary starts."
 );
 assert.match(
   controllerSource,
-  /const handleResizeOpening2D = useCallback\([\s\S]*?handleUpdateOpeningMetrics2DFromPlanAction\(id, metrics\)/,
-  "Interactive resize should keep its direct low-level delegation instead of creating nested history."
+  /const handleResizeOpening2D = useCallback\([\s\S]*?handleUpdateOpeningMetrics2DFromPlanAction\(id, \{ \.\.\.metrics, widthEvidence: "user_confirmed" \}\)/,
+  "Interactive resize should directly delegate one width-confirmed low-level edit instead of creating nested history."
 );
 assert.match(
   controllerSource,
@@ -124,6 +130,66 @@ const existingWindow: RoomOpening2D = {
 };
 
 assert.deepEqual(
+  resolvePlanOpeningVerticalMetrics(
+    { kind: "window", heightMeters: undefined, bottomMeters: undefined },
+    2.6
+  ),
+  {
+    heightMeters: 1.2,
+    bottomMeters: 0.9,
+    topMeters: 2.1,
+    hasExplicitHeight: false,
+    hasExplicitBottom: false,
+    heightStatus: "defaulted",
+    bottomStatus: "defaulted",
+    rawHeightMeters: undefined,
+    rawBottomMeters: undefined,
+    issues: [],
+  },
+  "A sparse window should use window defaults without converting missing values into a full-height gap."
+);
+
+assert.deepEqual(
+  resolvePlanOpeningVerticalMetrics(
+    { kind: "window", heightMeters: 1.2, bottomMeters: 0 },
+    2.6
+  ),
+  {
+    heightMeters: 1.2,
+    bottomMeters: 0,
+    topMeters: 1.2,
+    hasExplicitHeight: true,
+    hasExplicitBottom: true,
+    heightStatus: "exact",
+    bottomStatus: "exact",
+    rawHeightMeters: 1.2,
+    rawBottomMeters: 0,
+    issues: [],
+  },
+  "An explicit zero-height sill should not be replaced by the window default."
+);
+
+assert.deepEqual(
+  resolvePlanOpeningVerticalMetrics(
+    { kind: "window", heightMeters: 2.6, bottomMeters: 0 },
+    2.6
+  ),
+  {
+    heightMeters: 2.6,
+    bottomMeters: 0,
+    topMeters: 2.6,
+    hasExplicitHeight: true,
+    hasExplicitBottom: true,
+    heightStatus: "exact",
+    bottomStatus: "exact",
+    rawHeightMeters: 2.6,
+    rawBottomMeters: 0,
+    issues: [],
+  },
+  "An intentional full-height window should remain full height."
+);
+
+assert.deepEqual(
   normalizeDesignPageOpeningMetrics({
     currentOpening: existingWindow,
     metrics: {
@@ -135,10 +201,10 @@ assert.deepEqual(
   }),
   {
     kind: "door",
-    bottomMeters: 0,
-    heightMeters: 2.8,
+    bottomMeters: 1.1,
+    heightMeters: 4,
   },
-  "Doors should always start at the finished floor and cannot exceed the room height."
+  "Normalization should preserve the authored height; door persistence applies the zero sill separately."
 );
 
 assert.deepEqual(
@@ -153,10 +219,10 @@ assert.deepEqual(
   }),
   {
     kind: "window",
-    bottomMeters: 2.2,
-    heightMeters: 0.4,
+    bottomMeters: 9,
+    heightMeters: 0.1,
   },
-  "Windows should keep the minimum opening height when their sill reaches the room limit."
+  "Wall-constrained values must remain raw in storage and constrain only effective rendering."
 );
 
 assert.deepEqual(
@@ -169,10 +235,10 @@ assert.deepEqual(
     roomHeight: 2.8,
   }),
   {
-    bottomMeters: 0,
-    heightMeters: 0.4,
+    bottomMeters: -0.5,
+    heightMeters: 0.2,
   },
-  "Window sill and height edits should clamp to non-negative and minimum-height bounds."
+  "Invalid authored values must remain visible for repair instead of masquerading as defaults."
 );
 
 const heightLimitedWindow = normalizeDesignPageOpeningMetrics({
@@ -183,10 +249,9 @@ const heightLimitedWindow = normalizeDesignPageOpeningMetrics({
 assert.deepEqual(
   heightLimitedWindow,
   {
-    bottomMeters: 0.8,
-    heightMeters: 2.4 - 0.8,
+    heightMeters: 2.5,
   },
-  "A window should use its stored sill when limiting height to the remaining wall space."
+  "A height edit should preserve its raw value without materializing an effective constraint."
 );
 
 const sparseResizePatch = {

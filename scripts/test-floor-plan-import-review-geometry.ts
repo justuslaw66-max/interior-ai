@@ -13,7 +13,16 @@ import {
   snapReviewSourcePoint,
   traceOpeningFromSourceSpan,
   traceRoomFromSourcePolygon,
+  planFloorPlanHorizontalCalibrationV2,
 } from "@/lib/floor-plan-import-review-geometry";
+import { applyFloorPlanHorizontalCalibrationV2 } from "@/lib/floor-plan-import-review-calibration";
+import { createFloorPlanOpeningOverrideAuthorizationV2 } from "@/lib/floor-plan-opening-override-factory";
+import { planFloorPlanOpeningKindCorrection } from "@/lib/floor-plan-opening-kind-correction";
+import {
+  planFloorPlanOpeningCorrectionUpdate,
+  type OpeningCorrectionValues,
+  type OpeningEvidence,
+} from "@/components/editor/floor-plan-import-review/useFloorPlanOpeningCorrection";
 import {
   buildStructureRectangleVertices,
   getStructureRectangleBounds,
@@ -175,6 +184,446 @@ assert.deepEqual(
   verticalBefore,
   "Scale calibration must not change vertical evidence"
 );
+
+function calibrationPreflight(document: typeof source, factor: number) {
+  return planFloorPlanHorizontalCalibrationV2({
+    document,
+    floorId: document.floors[0].id,
+    anchor: { xMm: 0, zMm: 0 },
+    factor,
+    actorId: "calibration-reviewer",
+  });
+}
+
+function assertRejectedCalibration(document: typeof source, factor: number) {
+  const before = structuredClone(document);
+  const history: unknown[] = [];
+  const preflight = calibrationPreflight(document, factor);
+  assert.notEqual(preflight.status, "ready");
+  assert.throws(() => {
+    const command = applyFloorPlanHorizontalCalibrationV2({
+      document,
+      floorId: document.floors[0].id,
+      anchor: { xMm: 0, zMm: 0 },
+      factor,
+      actorId: "calibration-reviewer",
+      mutatedAt: "2026-09-01T13:59:00.000Z",
+    });
+    history.push(command);
+  });
+  assert.deepEqual(document, before, "Rejected calibration must not mutate its source document.");
+  assert.equal(history.length, 0, "Rejected calibration must not create a history entry.");
+  return preflight;
+}
+
+const microscopic = assertRejectedCalibration(source, 0.000001);
+assert.equal(microscopic.status, "invalid");
+assert.equal(microscopic.proposedDocumentValidation.boundary, "compileFloorPlanDocumentV2");
+assert.equal(microscopic.proposedDocumentValidation.status, "invalid");
+assert.equal(source.floors[0].openings.length, 9, "The reviewed microscopic-scale fixture has nine openings.");
+assert.equal(source.floors[0].walls.length, 24, "The reviewed microscopic-scale fixture has 24 walls.");
+assert.equal(microscopic.diagnostics.filter((entry) =>
+  entry.code === "NON_POSITIVE_MEASUREMENT" && entry.path.includes(".openings[") &&
+  entry.path.endsWith(".widthMm") &&
+  entry.normalizedValue === 0).length, 9);
+assert.equal(microscopic.diagnostics.filter((entry) =>
+  entry.code === "NON_POSITIVE_MEASUREMENT" && entry.path.includes(".walls[") &&
+  entry.path.endsWith(".thicknessMm") &&
+  entry.normalizedValue === 0).length, 24);
+assert.ok(microscopic.diagnostics.some((entry) =>
+  entry.code === "NON_POSITIVE_MEASUREMENT" && entry.path.endsWith(".thicknessMm") &&
+  entry.normalizedValue === 0 && typeof entry.rawProposedValue === "number"));
+assert.ok(microscopic.diagnostics.some((entry) =>
+  entry.code === "NON_POSITIVE_MEASUREMENT" && entry.path.endsWith(".widthMm") &&
+  entry.normalizedValue === 0 && entry.affectedEntityIds.length > 0));
+for (const factor of [0, -1, Number.NaN, Number.POSITIVE_INFINITY, Number.NEGATIVE_INFINITY]) {
+  const rejected = assertRejectedCalibration(source, factor);
+  assert.equal(rejected.status, "invalid");
+  assert.equal(rejected.diagnostics[0]?.code, "INVALID_SCALE_FACTOR");
+}
+const smallValidSource = structuredClone(source);
+for (const entry of smallValidSource.floors[0].openings) entry.widthEvidence = "assumed";
+const smallValidFactor = [0.01, 0.02, 0.05, 0.1, 0.2, 0.3, 0.4, 0.5]
+  .find((factor) => calibrationPreflight(smallValidSource, factor).status === "ready");
+assert.ok(smallValidFactor && smallValidFactor < 1, "The fixture must retain one small valid scale.");
+const smallValid = applyFloorPlanHorizontalCalibrationV2({
+  document: smallValidSource, floorId: floor.id, anchor: { xMm: 0, zMm: 0 },
+  factor: smallValidFactor, actorId: "calibration-reviewer",
+  mutatedAt: "2026-09-01T13:59:01.000Z",
+}).document;
+compileFloorPlanDocumentV2(smallValid);
+const zeroThickness = assertRejectedCalibration(source, 0.001);
+assert.ok(zeroThickness.diagnostics.some((entry) =>
+  entry.path.endsWith(".thicknessMm") && entry.normalizedValue === 0));
+const zeroOpeningWidth = assertRejectedCalibration(source, 0.0001);
+assert.ok(zeroOpeningWidth.diagnostics.some((entry) =>
+  entry.path.endsWith(".widthMm") && entry.normalizedValue === 0));
+
+const stalePlan = calibrationPreflight(source, 2);
+assert.equal(stalePlan.status, "ready");
+const staleSource = structuredClone(source);
+staleSource.floors[0].annotations[0].text = "Source changed after calibration preflight";
+const staleSourceBefore = structuredClone(staleSource);
+assert.throws(() => applyFloorPlanHorizontalCalibrationV2({
+  document: staleSource, floorId: staleSource.floors[0].id,
+  anchor: { xMm: 0, zMm: 0 }, factor: 2, actorId: "calibration-reviewer",
+  mutatedAt: "2026-09-01T13:59:02.000Z", validatedPreflightPlan: stalePlan,
+}), /stale/);
+assert.deepEqual(staleSource, staleSourceBefore);
+
+const protectedCalibration = structuredClone(original);
+const protectedFloor = protectedCalibration.floors[0];
+const protectedWidth = protectedFloor.openings.find((entry) => entry.id === originalOpening.id)!;
+protectedWidth.widthEvidence = "source_documented";
+protectedWidth.offsetMm = 0;
+protectedWidth.widthMm = Math.floor(hostLength * 0.55);
+protectedFloor.openings = protectedFloor.openings.filter(
+  (entry) => entry.wallId !== protectedWidth.wallId || entry.id === protectedWidth.id
+);
+const secondOpening = protectedFloor.openings.find(
+  (entry) => entry.id !== protectedWidth.id && entry.wallId !== protectedWidth.wallId
+);
+assert.ok(secondOpening, "The mixed calibration fixture requires an unprotected opening.");
+for (const entry of protectedFloor.openings) {
+  if (entry.id !== protectedWidth.id) entry.widthEvidence = "assumed";
+}
+const protectedPreflight = planFloorPlanHorizontalCalibrationV2({
+  document: protectedCalibration,
+  floorId: protectedFloor.id,
+  anchor: { xMm: 0, zMm: 0 },
+  factor: 2,
+  actorId: "calibration-reviewer",
+});
+assert.equal(protectedPreflight.status, "ready");
+assert.equal(
+  protectedPreflight.protectedFields.find((entry) => entry.openingId === protectedWidth.id)?.disposition,
+  "preserved"
+);
+const protectedApplied = applyFloorPlanHorizontalCalibrationV2({
+  document: protectedCalibration,
+  floorId: protectedFloor.id,
+  anchor: { xMm: 0, zMm: 0 },
+  factor: 2,
+  actorId: "calibration-reviewer",
+  mutatedAt: "2026-09-01T14:00:00.000Z",
+}).document;
+assert.equal(
+  protectedApplied.floors[0].openings.find((entry) => entry.id === protectedWidth.id)?.widthMm,
+  protectedWidth.widthMm,
+  "A source-documented real-world width remains authoritative during traced-geometry scaling."
+);
+assert.equal(
+  protectedApplied.floors[0].openings.find((entry) => entry.id === protectedWidth.id)?.widthEvidence,
+  "source_documented"
+);
+assert.equal(
+  protectedApplied.floors[0].openings.find((entry) => entry.id === secondOpening.id)?.widthMm,
+  secondOpening.widthMm * 2,
+  "Unprotected traced width rescales on the same mixed floor."
+);
+
+const siteProtected = structuredClone(protectedCalibration);
+siteProtected.floors[0].openings.find((entry) => entry.id === protectedWidth.id)!.widthEvidence = "site_measured";
+const siteApplied = applyFloorPlanHorizontalCalibrationV2({
+  document: siteProtected,
+  floorId: protectedFloor.id,
+  anchor: { xMm: 0, zMm: 0 },
+  factor: 2,
+  actorId: "calibration-reviewer",
+  mutatedAt: "2026-09-01T14:01:00.000Z",
+}).document;
+assert.equal(
+  siteApplied.floors[0].openings.find((entry) => entry.id === protectedWidth.id)?.widthMm,
+  protectedWidth.widthMm
+);
+assert.equal(
+  siteApplied.floors[0].openings.find((entry) => entry.id === protectedWidth.id)?.widthEvidence,
+  "site_measured"
+);
+
+const arcConstraintDocument = structuredClone(protectedCalibration);
+const arcFloor = arcConstraintDocument.floors[0];
+const arcOpening = arcFloor.openings.find((entry) => entry.id === protectedWidth.id)!;
+arcFloor.openings = arcFloor.openings.filter(
+  (entry) => entry.wallId !== arcOpening.wallId || entry.id === arcOpening.id
+);
+const arcWall = arcFloor.walls.find((entry) => entry.id === arcOpening.wallId)!;
+assert.equal(arcWall.path.kind, "line");
+if (arcWall.path.kind !== "line") throw new Error("Arc constraint fixture requires a line wall.");
+const arcVertices = new Map(arcFloor.vertices.map((entry) => [entry.id, entry]));
+const arcStart = arcVertices.get(arcWall.path.startVertexId)!;
+const arcEnd = arcVertices.get(arcWall.path.endVertexId)!;
+const arcDx = arcEnd.xMm - arcStart.xMm;
+const arcDz = arcEnd.zMm - arcStart.zMm;
+arcFloor.vertices.push({
+  id: "calibration-arc-center",
+  xMm: Math.round((arcStart.xMm + arcEnd.xMm - arcDz) / 2),
+  zMm: Math.round((arcStart.zMm + arcEnd.zMm + arcDx) / 2),
+  provenance: structuredClone(arcStart.provenance),
+});
+arcWall.path = {
+  kind: "arc",
+  startVertexId: arcWall.path.startVertexId,
+  endVertexId: arcWall.path.endVertexId,
+  centerVertexId: "calibration-arc-center",
+  clockwise: false,
+};
+compileFloorPlanDocumentV2(arcConstraintDocument);
+const arcBefore = structuredClone(arcConstraintDocument);
+const arcConstraint = calibrationPreflight(arcConstraintDocument, 0.1);
+assert.equal(arcConstraint.status, "invalid");
+assert.ok(arcConstraint.diagnostics.some((entry) =>
+  entry.code === "OPENING_OUT_OF_BOUNDS" && entry.affectedEntityIds.includes(arcOpening.id)));
+assert.throws(() => applyFloorPlanHorizontalCalibrationV2({
+  document: arcConstraintDocument, floorId: arcFloor.id,
+  anchor: { xMm: 0, zMm: 0 }, factor: 0.1,
+  actorId: "calibration-reviewer", mutatedAt: "2026-09-01T14:01:30.000Z",
+}));
+assert.deepEqual(arcConstraintDocument, arcBefore);
+
+const overlapDocument = structuredClone(protectedCalibration);
+const overlapFloor = overlapDocument.floors[0];
+const firstOverlap = overlapFloor.openings.find((entry) => entry.id === protectedWidth.id)!;
+overlapFloor.openings = overlapFloor.openings.filter(
+  (entry) => entry.wallId !== firstOverlap.wallId || entry.id === firstOverlap.id
+);
+firstOverlap.offsetMm = 0;
+firstOverlap.widthMm = Math.floor(hostLength * 0.3);
+firstOverlap.widthEvidence = "source_documented";
+overlapFloor.openings.push({
+  ...structuredClone(firstOverlap),
+  id: "calibration-overlap-second",
+  offsetMm: firstOverlap.widthMm + 500,
+});
+compileFloorPlanDocumentV2(overlapDocument);
+const overlapBefore = structuredClone(overlapDocument);
+const overlapPreflight = calibrationPreflight(overlapDocument, 0.5);
+assert.equal(overlapPreflight.status, "invalid");
+assert.ok(overlapPreflight.diagnostics.some((entry) => entry.code === "OVERLAPPING_OPENINGS"));
+assert.throws(() => applyFloorPlanHorizontalCalibrationV2({
+  document: overlapDocument, floorId: overlapFloor.id,
+  anchor: { xMm: 0, zMm: 0 }, factor: 0.5,
+  actorId: "calibration-reviewer", mutatedAt: "2026-09-01T14:01:31.000Z",
+}));
+assert.deepEqual(overlapDocument, overlapBefore);
+
+const clampFactor = [0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1]
+  .find((factor) => planFloorPlanHorizontalCalibrationV2({
+    document: protectedCalibration,
+    floorId: protectedFloor.id,
+    anchor: { xMm: 0, zMm: 0 },
+    factor,
+    actorId: "calibration-reviewer",
+  }).status === "requires_override");
+assert.ok(clampFactor, "The protected fixture requires one schema-valid clamp scale.");
+const clampPreflight = planFloorPlanHorizontalCalibrationV2({
+  document: protectedCalibration,
+  floorId: protectedFloor.id,
+  anchor: { xMm: 0, zMm: 0 },
+  factor: clampFactor,
+  actorId: "calibration-reviewer",
+});
+assert.equal(clampPreflight.status, "requires_override");
+const protectedClamp = clampPreflight.protectedFields.find(
+  (entry) => entry.openingId === protectedWidth.id
+)!;
+assert.ok(protectedClamp.proposedRawValueMm < protectedClamp.currentRawValueMm);
+assert.ok(clampPreflight.clamps.some(
+  (entry) => entry.entityId === protectedWidth.id && entry.field === "widthMm"
+));
+const beforeRejectedCalibration = JSON.stringify(protectedCalibration);
+assert.throws(() => applyFloorPlanHorizontalCalibrationV2({
+  document: protectedCalibration,
+  floorId: protectedFloor.id,
+  anchor: { xMm: 0, zMm: 0 },
+  factor: clampFactor,
+  actorId: "calibration-reviewer",
+  mutatedAt: "2026-09-01T14:02:00.000Z",
+}));
+assert.equal(JSON.stringify(protectedCalibration), beforeRejectedCalibration);
+
+const calibrationAuthorization = createFloorPlanOpeningOverrideAuthorizationV2({
+  opening: protectedWidth,
+  changes: { widthMm: protectedClamp.proposedRawValueMm },
+  mutationPurpose: "scale_calibration",
+  actorId: "calibration-reviewer",
+  reason: "Pro reviewer accepted the required protected-width clamp.",
+  auditNote: "Scale calibration shortened the host below the documented opening width.",
+});
+const approvedPreflight = planFloorPlanHorizontalCalibrationV2({
+  document: protectedCalibration,
+  floorId: protectedFloor.id,
+  anchor: { xMm: 0, zMm: 0 },
+  factor: clampFactor,
+  actorId: "calibration-reviewer",
+  mutatedAt: "2026-09-01T14:03:00.000Z",
+  overrideAuthorizations: [calibrationAuthorization],
+});
+assert.equal(approvedPreflight.status, "ready");
+assert.equal(approvedPreflight.proposedDocumentValidation.status, "valid");
+const approvedCalibrationCommand = applyFloorPlanHorizontalCalibrationV2({
+  document: protectedCalibration,
+  floorId: protectedFloor.id,
+  anchor: { xMm: 0, zMm: 0 },
+  factor: clampFactor,
+  actorId: "calibration-reviewer",
+  mutatedAt: "2026-09-01T14:03:00.000Z",
+  overrideAuthorizations: [calibrationAuthorization],
+  validatedPreflightPlan: approvedPreflight,
+});
+const approvedCalibrationHistory = [approvedCalibrationCommand];
+assert.equal(approvedCalibrationHistory.length, 1,
+  "An approved calibration is represented by one atomic undoable command.");
+const approvedCalibration = approvedCalibrationCommand.document;
+const approvedProtectedWidth = approvedCalibration.floors[0].openings.find(
+  (entry) => entry.id === protectedWidth.id
+)!;
+assert.equal(approvedProtectedWidth.widthMm, protectedClamp.proposedRawValueMm);
+assert.equal(approvedProtectedWidth.widthEvidence, "user_confirmed");
+assert.equal(approvedProtectedWidth.provenance.reviewHistory.at(-1)?.action, "approved");
+assert.deepEqual(
+  approvedCalibrationCommand.undoDocument,
+  protectedCalibration,
+  "Undo restores the complete pre-calibration geometry, evidence, and audit state."
+);
+const redoneCalibration = applyFloorPlanHorizontalCalibrationV2({
+  document: approvedCalibrationCommand.undoDocument,
+  floorId: protectedFloor.id,
+  anchor: { xMm: 0, zMm: 0 },
+  factor: clampFactor,
+  actorId: "calibration-reviewer",
+  mutatedAt: "2026-09-01T14:03:00.000Z",
+  overrideAuthorizations: [calibrationAuthorization],
+}).document;
+assert.deepEqual(
+  redoneCalibration,
+  approvedCalibration,
+  "Redo reproduces the complete approved calibration atomically."
+);
+assert.equal(
+  JSON.parse(JSON.stringify(approvedCalibration)).floors[0].openings.find(
+    (entry: { id: string }) => entry.id === protectedWidth.id
+  ).widthEvidence,
+  "user_confirmed"
+);
+compileFloorPlanDocumentV2(approvedCalibration);
+
+function correctionValues(openingValue: typeof protectedWidth): OpeningCorrectionValues {
+  return {
+    openingOffset: openingValue.offsetMm,
+    openingWidth: openingValue.widthMm,
+    openingKind: openingValue.kind,
+    openingOperation: openingValue.operation,
+    heightMm: openingValue.heightMm ?? "",
+    sillHeightMm: openingValue.sillHeightMm ?? "",
+    hinge: openingValue.hinge,
+    handing: openingValue.handing,
+  };
+}
+
+function correctionEvidence(openingValue: typeof protectedWidth): OpeningEvidence {
+  return {
+    width: openingValue.widthEvidence ?? "assumed",
+    height: openingValue.heightEvidence ?? "assumed",
+    sill: openingValue.sillHeightEvidence ?? "assumed",
+  };
+}
+
+const allProtectedOpening = structuredClone(protectedWidth);
+allProtectedOpening.widthEvidence = "source_documented";
+allProtectedOpening.heightEvidence = "source_documented";
+allProtectedOpening.sillHeightEvidence = "site_measured";
+const unchangedValues = correctionValues(allProtectedOpening);
+const unchangedKind = planFloorPlanOpeningKindCorrection(
+  allProtectedOpening, unchangedValues.openingKind
+);
+let overrideFactoryCalls = 0;
+const unexpectedFactory = () => {
+  overrideFactoryCalls += 1;
+  throw new Error("Override factory must not be called.");
+};
+const unlockedNoop = planFloorPlanOpeningCorrectionUpdate({
+  values: unchangedValues, opening: allProtectedOpening,
+  evidence: correctionEvidence(allProtectedOpening),
+  measurementOverrides: new Set(["width"]), kindCorrection: unchangedKind,
+  kindOverrideApproved: false, authorizationFactory: unexpectedFactory,
+});
+assert.equal(unlockedNoop.status, "noop");
+assert.equal(overrideFactoryCalls, 0);
+const offsetOnly = planFloorPlanOpeningCorrectionUpdate({
+  values: { ...unchangedValues, openingOffset: unchangedValues.openingOffset + 10 },
+  opening: allProtectedOpening, evidence: correctionEvidence(allProtectedOpening),
+  measurementOverrides: new Set(["width"]), kindCorrection: unchangedKind,
+  kindOverrideApproved: false, authorizationFactory: unexpectedFactory,
+});
+assert.equal(offsetOnly.status, "ready");
+assert.deepEqual(offsetOnly.requiredOverrideFields, []);
+assert.equal(offsetOnly.reviewedEvidenceOverride, undefined);
+assert.equal(overrideFactoryCalls, 0);
+const operationOpening = structuredClone(allProtectedOpening);
+operationOpening.kind = "door";
+operationOpening.operation = "swing";
+const operationValues = correctionValues(operationOpening);
+const operationOnly = planFloorPlanOpeningCorrectionUpdate({
+  values: { ...operationValues, openingOperation: "sliding" },
+  opening: operationOpening, evidence: correctionEvidence(operationOpening),
+  measurementOverrides: new Set(["width"]),
+  kindCorrection: planFloorPlanOpeningKindCorrection(operationOpening, operationOpening.kind),
+  kindOverrideApproved: false, authorizationFactory: unexpectedFactory,
+});
+assert.equal(operationOnly.status, "ready");
+assert.deepEqual(operationOnly.requiredOverrideFields, []);
+const unprotectedOpening = structuredClone(allProtectedOpening);
+unprotectedOpening.widthEvidence = "assumed";
+const unprotectedValues = correctionValues(unprotectedOpening);
+const unprotectedDimension = planFloorPlanOpeningCorrectionUpdate({
+  values: { ...unprotectedValues, openingWidth: unprotectedValues.openingWidth + 10 },
+  opening: unprotectedOpening, evidence: correctionEvidence(unprotectedOpening),
+  measurementOverrides: new Set(),
+  kindCorrection: planFloorPlanOpeningKindCorrection(unprotectedOpening, unprotectedOpening.kind),
+  kindOverrideApproved: false, authorizationFactory: unexpectedFactory,
+});
+assert.equal(unprotectedDimension.status, "ready");
+assert.deepEqual(unprotectedDimension.requiredOverrideFields, []);
+
+function protectedCorrection(fields: Array<"width" | "height" | "sill">) {
+  const values = correctionValues(allProtectedOpening);
+  if (fields.includes("width")) values.openingWidth += 10;
+  if (fields.includes("height")) values.heightMm = (allProtectedOpening.heightMm ?? 1200) + 10;
+  if (fields.includes("sill")) values.sillHeightMm = (allProtectedOpening.sillHeightMm ?? 900) + 10;
+  return planFloorPlanOpeningCorrectionUpdate({
+    values, opening: allProtectedOpening, evidence: correctionEvidence(allProtectedOpening),
+    measurementOverrides: new Set(fields), kindCorrection: unchangedKind,
+    kindOverrideApproved: false,
+  });
+}
+for (const field of ["width", "height", "sill"] as const) {
+  const plan = protectedCorrection([field]);
+  assert.equal(plan.status, "ready");
+  assert.deepEqual(plan.requiredOverrideFields, [field]);
+  assert.deepEqual(plan.reviewedEvidenceOverride?.fields.map((entry) => entry.field), [field]);
+}
+const multiProtected = protectedCorrection(["width", "sill"]);
+assert.deepEqual(multiProtected.requiredOverrideFields, ["width", "sill"]);
+assert.deepEqual(multiProtected.reviewedEvidenceOverride?.fields.map((entry) => entry.field),
+  ["width", "sill"]);
+const blockedProtected = planFloorPlanOpeningCorrectionUpdate({
+  values: { ...unchangedValues, openingWidth: unchangedValues.openingWidth + 10 },
+  opening: allProtectedOpening, evidence: correctionEvidence(allProtectedOpening),
+  measurementOverrides: new Set(), kindCorrection: unchangedKind,
+  kindOverrideApproved: false,
+});
+assert.equal(blockedProtected.status, "blocked");
+assert.equal(blockedProtected.reviewedEvidenceOverride, undefined);
+const mutationHistory: unknown[] = [];
+assert.equal(mutationHistory.length, 0);
+assert.throws(() => planFloorPlanOpeningCorrectionUpdate({
+  values: { ...unchangedValues, openingWidth: unchangedValues.openingWidth + 10 },
+  opening: allProtectedOpening, evidence: correctionEvidence(allProtectedOpening),
+  measurementOverrides: new Set(["width"]), kindCorrection: unchangedKind,
+  kindOverrideApproved: false,
+  authorizationFactory: () => { throw new Error("unexpected authorization failure"); },
+}), /unexpected authorization failure/);
 assert.ok(
   buildReviewOverlay({
     document: scaled,
@@ -517,7 +966,7 @@ assert.throws(
       second: { x: 500, y: 0 },
       printedMm: 10000,
     }),
-  /dimension|validation|invalid/i,
+  /dimension|validation|invalid|authored geometry/i,
   "Printed dimensions must reject a contradictory global scale"
 );
 
@@ -699,13 +1148,14 @@ assert.throws(
   /rejected|dimension|invalid/i
 );
 
-const reviewUi = fs.readFileSync(
-  path.join(
-    process.cwd(),
-    "components/editor/floor-plan-import-review/FloorPlanOpeningCorrectionFields.tsx"
-  ),
-  "utf8"
-);
+const openingReviewPaths = [
+  "components/editor/floor-plan-import-review/FloorPlanOpeningCorrectionFields.tsx",
+  "components/editor/floor-plan-import-review/useFloorPlanOpeningCorrection.ts",
+  "components/editor/floor-plan-import-review/FloorPlanOpeningEvidenceLockNotice.tsx",
+];
+const reviewUi = openingReviewPaths.map((relativePath) =>
+  fs.readFileSync(path.join(process.cwd(), relativePath), "utf8")
+).join("\n");
 const openingAddUi = fs.readFileSync(
   path.join(
     process.cwd(),
@@ -719,6 +1169,9 @@ assert.match(reviewUi, /kind: "update_opening"/);
 assert.match(reviewUi, /Height \(mm, optional\)/);
 assert.match(reviewUi, /Hinge/);
 assert.match(reviewUi, /Handing/);
+assert.match(reviewUi, /floorPlanPropertyEvidenceIsEditable/);
+assert.match(reviewUi, /other\s+opening fields remain editable/);
+assert.match(reviewUi, /reviewedEvidenceOverride/);
 const wallReviewUi = fs.readFileSync(
   path.join(
     process.cwd(),

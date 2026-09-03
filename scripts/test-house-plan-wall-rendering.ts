@@ -50,7 +50,9 @@ const rendererPath = path.join(
 const rendererSourcePaths = [
   rendererPath,
   path.join(path.dirname(rendererPath), "CanonicalFloorPlanStructure.tsx"),
+  path.join(path.dirname(rendererPath), "GeneratedWindowFrame3D.tsx"),
   path.join(path.dirname(rendererPath), "house-plan-3d", "geometry.ts"),
+  path.join(path.dirname(rendererPath), "house-plan-3d", "LegacyWallOpeningMeshes.tsx"),
   path.join(path.dirname(rendererPath), "house-plan-3d", "wallAndOpeningMeshes.tsx"),
   path.join(path.dirname(rendererPath), "house-plan-3d", "surfaceMeshes.tsx"),
   path.join(process.cwd(), "lib", "wall-paint-rendering.ts"),
@@ -109,8 +111,8 @@ assert.match(
 
 assert.match(
   source,
-  /return \[room\.id, \.\.\.sharedRoomIds\]\.sort\(\)\[0\];/,
-  "Shared walls should use one deterministic render owner to keep boundaries crisp."
+  /const mounted = participants\.filter[\s\S]*?visibleRooms\.some[\s\S]*?mounted\.length \? mounted : participants[\s\S]*?\.sort\(\)\[0\]/,
+  "Shared walls should choose one deterministic owner from the mounted participants."
 );
 
 assert.match(
@@ -261,6 +263,21 @@ assert.match(
   source,
   /buildOpeningSillParts\([\s\S]*?segmentWallHeight,[\s\S]*?segmentWallHeight[\s\S]*?\)/,
   "Compatibility windows must retain their sill wall instead of becoming floor-to-ceiling gaps."
+);
+assert.match(
+  source,
+  /generated-window-frame-rail-3d[\s\S]*?function GeneratedWindowFrame3D\([\s\S]*?generated-window-glass-3d/,
+  "Canonical and compatibility windows should share one lightweight generated frame-and-glass mesh."
+);
+assert.match(
+  source,
+  /legacy-window-symbol-3d[\s\S]*?<GeneratedWindowFrame3D/,
+  "The compatibility renderer should fill resolved window gaps with the shared generated window mesh."
+);
+assert.match(
+  source,
+  /opening\.kind === "window" \|\| opening\.operation === "fixed"[\s\S]*?<GeneratedWindowFrame3D/,
+  "Canonical windows should use the same generated window mesh as compatibility plans."
 );
 
 assert.match(

@@ -18,7 +18,7 @@ import { resolveEditorInitial3DFitKey } from "@/lib/design-page-editor-configura
 import { resolveCameraViewForFloorWorldY, resolveCanonicalFloorElevationMeters } from "@/lib/floor-plan-scene-elevation";
 import { track } from "@/lib/analytics";
 import {
-  applyPlan2DCameraInvariant,
+  applyPlan2DCameraInvariant, isPlan2DCameraDegenerate,
   type Plan2DCameraControls,
 } from "@/lib/plan-camera-2d";
 import type { DesignItem } from "@/lib/room-types";
@@ -271,7 +271,7 @@ export function useDesignPageCameraNavigation({
   const updateCameraViewFromScene = useCallback(() => {
     const camera = cameraRef.current;
     const controls = controlsRef.current;
-    if (!camera || !controls) return;
+    if (!camera || !controls || (camera instanceof THREE.OrthographicCamera && isPlan2DCameraDegenerate(camera, controls as Plan2DCameraControls))) return;
 
     const target = controls.target as THREE.Vector3;
     const perspectiveFov = camera instanceof THREE.PerspectiveCamera ? camera.fov : undefined;
@@ -310,9 +310,9 @@ export function useDesignPageCameraNavigation({
     cameraTransitionTokenRef.current += 1;
 
     const restore = () => {
-      const currentCamera = cameraRef.current;
-      const currentControls = controlsRef.current;
-      if (!currentCamera || !currentControls) return;
+      if (cameraRef.current !== camera || controlsRef.current !== controls) return;
+      const currentCamera = camera;
+      const currentControls = controls;
 
       cameraTransitionTokenRef.current += 1;
       isCameraAnimatingRef.current = false;

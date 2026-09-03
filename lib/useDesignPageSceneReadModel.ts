@@ -28,6 +28,19 @@ import { useDesignPageScenePerformance } from "@/lib/useDesignPageScenePerforman
 
 type HousePlanRoom = ReturnType<typeof buildHousePlan2D>["rooms"][number];
 
+export function shouldUseHousePlanScene(input: {
+  stackedFloorView: boolean;
+  roomCount: number;
+  openingCount: number;
+  editingWallSurface: boolean;
+  hasWallSurfaceFinishes: boolean;
+  hasNonRectangularRoom: boolean;
+}): boolean {
+  return input.stackedFloorView || input.roomCount > 1 || input.openingCount > 0 ||
+    input.editingWallSurface || input.hasWallSurfaceFinishes ||
+    input.hasNonRectangularRoom;
+}
+
 export function reconcileDesignPageSceneReadiness(
   current: Record<string, boolean>,
   renderItemKeys: string[]
@@ -69,6 +82,7 @@ export type UseDesignPageSceneReadModelInput = {
       stackedFloorView: boolean;
       hiddenFloorLevels: number[];
       selectedPlanRoomId: string | null;
+      openingCount: number;
     };
     editor: {
       viewMode: EditorViewMode;
@@ -99,6 +113,7 @@ export function useDesignPageSceneReadModel({
       stackedFloorView,
       hiddenFloorLevels,
       selectedPlanRoomId,
+      openingCount,
     },
     editor: { viewMode, activeSurfaceTarget, surfaceBrushActive },
     ai: { pendingProposal },
@@ -124,13 +139,12 @@ export function useDesignPageSceneReadModel({
         )
     );
   });
-  const usesHousePlanScene =
-    stackedFloorView ||
-    hasWholeHousePlan ||
-    activeSurfaceTarget !== "floor" ||
-    surfaceBrushActive ||
-    hasWallSurfaceFinishes ||
-    housePlanRooms.some((room) => room.shape !== "rectangle");
+  const usesHousePlanScene = shouldUseHousePlanScene({
+    stackedFloorView, roomCount: housePlanRooms.length, openingCount,
+    editingWallSurface: activeSurfaceTarget !== "floor" || surfaceBrushActive,
+    hasWallSurfaceFinishes,
+    hasNonRectangularRoom: housePlanRooms.some((room) => room.shape !== "rectangle"),
+  });
   const sceneHousePlanRooms3D = useMemo(
     () =>
       stackedFloorView

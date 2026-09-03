@@ -211,9 +211,9 @@ export interface PersistedPlanOpening {
   kind: "door" | "window";
   doorStyle?: "swing" | "sliding" | "folding" | "open";
   canonicalWallId?: string;
-  operation?: "swing" | "sliding" | "folding" | "fixed" | "open";
-  evidence?: {
-    height?: FloorPlanPropertyEvidenceV2;
+  /** Last trustworthy imported/requested position, used only while host resolution fails. */ requestedWorldCenterMm?: { x: number; z: number };
+  operation?: "swing" | "sliding" | "folding" | "fixed" | "open"; evidence?: {
+    width?: FloorPlanPropertyEvidenceV2; height?: FloorPlanPropertyEvidenceV2;
     sillHeight?: FloorPlanPropertyEvidenceV2;
   };
 }

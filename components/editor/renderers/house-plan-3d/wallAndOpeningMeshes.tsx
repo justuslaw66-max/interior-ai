@@ -1,14 +1,10 @@
 "use client";
-
 import { Line } from "@react-three/drei/core/Line";
 import { useFrame, useThree, type ThreeEvent } from "@react-three/fiber";
 import { useCallback, useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
 import type { HousePlanRoom2D } from "@/lib/design-page-house-plan";
-import {
-  PLAN_OPENING_EDGE_PADDING_METERS,
-  type RoomRendererOpening,
-} from "@/lib/design-page-plan-overlays";
+import type { RoomRendererOpening } from "@/lib/design-page-plan-overlays";
 import { resolveCutawayWallOpacity } from "@/lib/design-page-wall-cutaway";
 import {
   clampFloorPatternScale,
@@ -17,7 +13,9 @@ import {
 import { getRuntimeSurfaceMaterialById } from "@/lib/surface-material-runtime";
 import { getWallPanelSurfaceSettings } from "@/lib/surface-settings";
 import { resolveWallSurfaceColorFillIntensity } from "@/lib/wall-paint-rendering";
+import { moveOpeningCenterFromWorldPoint, projectWorldPointToOpeningHost } from "@/lib/design-page-opening-interaction";
 import { useSurfaceMaterialTexture } from "../useSurfaceMaterialTexture";
+import { OpeningInteractionQaMarker3D } from "./OpeningInteractionQaMarker3D";
 import {
   getSurfaceMaterialFallbackColor,
   useSurfaceMaterialSourceTexture,
@@ -39,7 +37,6 @@ import {
   type WallSegment3D,
   type WallSurfacePanelDescriptor,
 } from "./geometry";
-
 type StructureTarget = {
   kind: "floor" | "wall" | "ceiling" | "opening";
   roomId: string;
@@ -94,10 +91,6 @@ function stopStructurePointerEvent(event: ThreeEvent<MouseEvent | PointerEvent>)
   event.stopPropagation();
   event.nativeEvent.stopPropagation();
   event.nativeEvent.stopImmediatePropagation?.();
-}
-
-function clamp(value: number, min: number, max: number): number {
-  return Math.min(Math.max(value, min), max);
 }
 
 function capturePointerIfSupported(event: ThreeEvent<PointerEvent>) {
@@ -936,7 +929,6 @@ export function OpeningThresholdMesh({
   segment,
   wallThickness,
   sourceOpening,
-  sourceRoom,
   floorWorldY,
   interactive,
   hoveredTargetKey,
@@ -952,7 +944,6 @@ export function OpeningThresholdMesh({
   segment: WallSegment3D;
   wallThickness: number;
   sourceOpening?: RoomRendererOpening;
-  sourceRoom?: HousePlanRoom2D;
   floorWorldY: number;
   interactive: boolean;
   hoveredTargetKey: string | null;
@@ -966,7 +957,7 @@ export function OpeningThresholdMesh({
   const { camera } = useThree();
   const openingMeshRef = useRef<THREE.Mesh | null>(null);
   const openingHitMeshRef = useRef<THREE.Mesh | null>(null);
-  const dragStateRef = useRef<{ pointerId: number; grabDelta: number } | null>(null);
+  const dragStateRef = useRef<{ pointerId: number; grabDeltaAlong: number } | null>(null);
   const dragPointRef = useRef(new THREE.Vector3());
   const openingPickEnabledRef = useRef(true);
   const target: StructureTarget = {
@@ -984,7 +975,9 @@ export function OpeningThresholdMesh({
   const jambTopY = Math.max(jambBaseY + 0.2, threshold.height - 0.02);
   const jambHeight = jambTopY - jambBaseY;
   const hitHeight = Math.max(0.75, jambTopY + 0.18);
-  const canDragOpening = interactive && Boolean(sourceOpening && sourceRoom && onMoveOpening);
+  const resolvedHost = sourceOpening?.hostResolution?.status === "resolved"
+    ? sourceOpening.hostResolution.host : null;
+  const canDragOpening = interactive && Boolean(sourceOpening && resolvedHost && onMoveOpening);
   const raycastOpeningWhenPickable = useCallback(
     (raycaster: THREE.Raycaster, intersects: THREE.Intersection[]) => {
       const mesh = openingMeshRef.current;
@@ -1006,37 +999,26 @@ export function OpeningThresholdMesh({
     openingPickEnabledRef.current = camera.position.y >= floorWorldY - 0.02;
   });
 
-  const getPointerOffset = (event: ThreeEvent<PointerEvent>) => {
-    if (!sourceOpening || !sourceRoom) return null;
+  const getPointerAlong = (event: ThreeEvent<PointerEvent>) => {
+    if (!resolvedHost) return null;
     const dragPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), -floorWorldY);
     const point = event.ray.intersectPlane(dragPlane, dragPointRef.current);
     if (!point) return null;
-
-    const axisValue =
-      sourceOpening.wall === "north" || sourceOpening.wall === "south" ? point.x : point.z;
-    const centerAxis =
-      sourceOpening.wall === "north" || sourceOpening.wall === "south"
-        ? sourceRoom.x
-        : sourceRoom.z;
-
-    return axisValue - centerAxis;
+    return projectWorldPointToOpeningHost(resolvedHost, { x: point.x, z: point.z });
   };
 
   const getDraggedOffset = (event: ThreeEvent<PointerEvent>) => {
-    if (!sourceOpening || !sourceRoom) return null;
-    const pointerOffset = getPointerOffset(event);
-    if (pointerOffset === null) return null;
-    const span =
-      sourceOpening.wall === "north" || sourceOpening.wall === "south"
-        ? sourceRoom.w
-        : sourceRoom.d;
-    const maxOffset = Math.max(
-      0,
-      span / 2 - sourceOpening.width / 2 - PLAN_OPENING_EDGE_PADDING_METERS
-    );
-    const grabDelta = dragStateRef.current?.grabDelta ?? 0;
-
-    return clamp(pointerOffset + grabDelta, -maxOffset, maxOffset);
+    if (!sourceOpening || !resolvedHost) return null;
+    const dragPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), -floorWorldY);
+    const point = event.ray.intersectPlane(dragPlane, dragPointRef.current);
+    if (!point) return null;
+    return moveOpeningCenterFromWorldPoint({
+      host: resolvedHost,
+      pointerWorld: { x: point.x, z: point.z },
+      grabDeltaAlongMeters: dragStateRef.current?.grabDeltaAlong ?? 0,
+      widthMeters: sourceOpening.width,
+      edgePaddingMeters: 0.03,
+    }).offsetMeters;
   };
 
   const moveOpeningFromPointer = (event: ThreeEvent<PointerEvent>) => {
@@ -1057,7 +1039,7 @@ export function OpeningThresholdMesh({
   return (
     <mesh
       ref={openingMeshRef}
-      position={[threshold.x, 0.015, threshold.z]}
+      position={[threshold.x, threshold.bottom + 0.015, threshold.z]}
       rotation-y={segment.rotationY}
       raycast={raycastOpeningWhenPickable}
       onPointerDown={
@@ -1066,11 +1048,12 @@ export function OpeningThresholdMesh({
               stopStructurePointerEvent(event);
               onSelectTarget(target, event);
               if (!canDragOpening) return;
-              const pointerOffset = getPointerOffset(event) ?? sourceOpening?.offset ?? 0;
+              if (!resolvedHost) return;
+              const pointerAlong = getPointerAlong(event) ?? resolvedHost.alongSegmentMeters;
               capturePointerIfSupported(event);
               dragStateRef.current = {
                 pointerId: event.pointerId,
-                grabDelta: (sourceOpening?.offset ?? 0) - pointerOffset,
+                grabDeltaAlong: resolvedHost.alongSegmentMeters - pointerAlong,
               };
               onOpeningDragStateChange?.(true);
             }
@@ -1125,6 +1108,7 @@ export function OpeningThresholdMesh({
           : undefined
       }
     >
+      <OpeningInteractionQaMarker3D openingId={threshold.sourceId} floorWorldY={floorWorldY} />
       <boxGeometry args={[threshold.length, 0.03, thresholdDepth]} />
       <meshBasicMaterial transparent opacity={0} depthWrite={false} />
       <mesh

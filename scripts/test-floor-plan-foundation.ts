@@ -6,6 +6,10 @@ import {
 } from "@/lib/design-page-geometry";
 import { applyFloorPlanScaleCalibration } from "@/lib/floor-plan-calibration";
 import {
+  clampDesignPageOpeningToNearestClearInterval,
+  validateDesignPageOpeningPlacement,
+} from "@/lib/design-page-opening-placement";
+import {
   HOUSE_PLAN_TEMPLATES,
   resolveFloorPlanOpeningCancelDecision,
 } from "@/lib/design-page-house-plan";
@@ -1369,6 +1373,66 @@ assert.deepEqual(
     reason: "too_close_to_opening",
     label: "Too close to another opening",
   }
+);
+assert.deepEqual(
+  validateDesignPageOpeningPlacement(
+    {
+      wall: "west",
+      kind: "window",
+      offsetMm: 0,
+      widthMm: 1400,
+    },
+    [],
+    undefined,
+    { rooms: [], planWidthMeters: 5, planDepthMeters: 4 }
+  ),
+  {
+    valid: false,
+    reason: "unresolved_wall_host",
+    label: "Opening has no physical wall",
+  },
+  "Roomless openings must fail closed when no physical wall topology exists."
+);
+assert.deepEqual(
+  validateDesignPageOpeningPlacement(
+    {
+      wall: "west",
+      kind: "window",
+      offsetMm: 400,
+      widthMm: 1200,
+    },
+    [
+      {
+        id: "global-window-existing",
+        wall: "west",
+        offsetMm: 0,
+        widthMm: 900,
+      },
+    ],
+    undefined,
+    { rooms: [], planWidthMeters: 5, planDepthMeters: 4 }
+  ),
+  {
+    valid: false,
+    reason: "unresolved_wall_host",
+    label: "Opening has no physical wall",
+  },
+  "A synthetic plan rectangle must not become collision authority."
+);
+assert.equal(
+  clampDesignPageOpeningToNearestClearInterval(
+    {
+      id: "global-window-moving",
+      wall: "west",
+      kind: "window",
+      offsetMm: 2500,
+      widthMm: 1200,
+    },
+    [],
+    { rooms: [], planWidthMeters: 5, planDepthMeters: 4 }
+  ).offsetMm,
+  2500,
+  "An unresolved opening must not be moved onto an invented plan edge."
 );
 
 console.log("Floor plan foundation checks passed.");

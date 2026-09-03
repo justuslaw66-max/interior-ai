@@ -103,10 +103,17 @@ async function openFurnishPanel(page: Page) {
 
 async function openPresentExport(page: Page) {
   await selectEditorWorkspace(page, "editor-workflow-export");
+  const dialog = page.getByTestId("present-export-dialog");
   const cameraViewName = page.getByTestId("camera-view-name-input");
-  if (await cameraViewName.isVisible().catch(() => false)) return;
-  await page.getByTestId("editor-command-overflow").click();
-  await page.getByTestId("editor-command-overflow-present-export").click();
+  await expect(async () => {
+    if (await dialog.isVisible().catch(() => false)) return;
+    await page.getByTestId("editor-command-overflow").click({ timeout: 1_000 });
+    await page
+      .getByTestId("editor-command-overflow-present-export")
+      .click({ timeout: 1_000 });
+  }).toPass({ timeout: 30_000 });
+  await expect(dialog).toBeVisible();
+  await cameraViewName.scrollIntoViewIfNeeded();
   await expect(cameraViewName).toBeVisible();
 }
 
