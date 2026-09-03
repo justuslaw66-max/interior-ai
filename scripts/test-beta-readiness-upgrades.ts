@@ -80,7 +80,10 @@ const adminOperationsDataSource = readFileSync(
   join(root, "app/admin/operations-data.ts"),
   "utf8"
 );
-const sharePageSource = readFileSync(join(root, "app/share/[shareToken]/page.tsx"), "utf8");
+const sharePageSource = readFileSync(
+  join(root, "app/share/[shareToken]/(presentation)/page.tsx"),
+  "utf8"
+);
 const exportPageSource = readFileSync(join(root, "app/share/[shareToken]/export/page.tsx"), "utf8");
 const shareActionsSource = readFileSync(join(root, "components/SharePageActions.tsx"), "utf8");
 const shareRoomScheduleSource = readFileSync(

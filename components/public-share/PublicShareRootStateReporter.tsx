@@ -17,8 +17,11 @@ export type PublicShareRootState = {
 export function PublicShareRootStateReporter({ state }: { state: PublicShareRootState }) {
   const markerRef = useRef<HTMLSpanElement | null>(null);
   useLayoutEffect(() => {
-    const root = markerRef.current?.closest<HTMLElement>('[data-testid="public-share-root"]');
+    const root = markerRef.current?.closest<HTMLElement>(
+      "[data-public-share-lifecycle-owner]"
+    );
     if (!root) return;
+    root.setAttribute("data-testid", "public-share-root");
     root.dataset.layoutStatus = state.layoutStatus;
     root.dataset.layoutMode = state.layoutMode ?? "resolving";
     root.dataset.layoutGeneration = String(state.layoutGeneration);

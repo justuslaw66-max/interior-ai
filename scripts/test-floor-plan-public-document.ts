@@ -1271,7 +1271,7 @@ for (const adminRoutePath of [
 }
 
 for (const sharePath of [
-  "app/share/[shareToken]/page.tsx",
+  "app/share/[shareToken]/(presentation)/page.tsx",
   "app/share/[shareToken]/export/page.tsx",
   "app/share/[shareToken]/export/pdf/route.ts",
 ]) {
@@ -1295,7 +1295,7 @@ for (const sharePath of [
 }
 
 const sharePageSource = fs.readFileSync(
-  path.join(process.cwd(), "app/share/[shareToken]/page.tsx"),
+  path.join(process.cwd(), "app/share/[shareToken]/(presentation)/page.tsx"),
   "utf8"
 );
 assert.match(sharePageSource, /export const metadata = \{[\s\S]*?robots:/);
