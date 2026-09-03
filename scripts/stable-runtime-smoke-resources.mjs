@@ -18,6 +18,7 @@ import {
 import {
   authorizeRuntimeSmokeReportPath,
   resolveAuthorizedExternalEvidenceRoot,
+  resolveRetainedExternalEvidenceFile,
   resolveRuntimeSmokeEvidencePath,
 } from "./playwright-report-path.mjs";
 
@@ -153,7 +154,121 @@ export function stableRuntimePaths(evidenceRoot) {
     timings: path.join(directory, "phase-timings.json"),
     marker: path.join(directory, "product-test-start.json"),
     summary: path.join(directory, "evidence.json"),
+    failure: path.join(directory, "failure.json"),
   };
+}
+
+function stableRetainedDescriptor({ repositoryRoot, roots, filePath }) {
+  const retained = resolveRetainedExternalEvidenceFile({
+    filePath,
+    authorizedExternalRoot: roots.evidenceRoot,
+    repositoryRoot,
+  });
+  return Object.freeze({
+    path: path
+      .relative(roots.evidenceRoot, retained.realpath)
+      .split(path.sep)
+      .join("/"),
+    sha256: stableSha256(readFileSync(retained.realpath)),
+  });
+}
+
+export function createStableRuntimeFailureAttribution({
+  repositoryRoot,
+  roots,
+  paths,
+  manifest,
+  runtime,
+  journal,
+  lifecycleState,
+  lifecyclePath,
+  error,
+}) {
+  const lifecycleDescriptor = stableRetainedDescriptor({
+    repositoryRoot,
+    roots,
+    filePath: lifecyclePath,
+  });
+  if (
+    lifecycleDescriptor.sha256 !==
+    stableSha256(canonicalJsonBytes(lifecycleState.evidence))
+  ) {
+    throw new Error("stable runtime-smoke failed lifecycle state changed on disk");
+  }
+  const evidenceReferences = {};
+  for (const [name, filePath] of [
+    ["runtime-report", paths.report],
+    ["runtime-phase-timings", paths.timings],
+    ["runtime-start", paths.marker],
+  ]) {
+    if (!existsSync(filePath)) continue;
+    evidenceReferences[name] = stableRetainedDescriptor({
+      repositoryRoot,
+      roots,
+      filePath,
+    });
+  }
+  const consumedSubstantiveGate = error.consumedSubstantiveGate === true;
+  if (consumedSubstantiveGate && !evidenceReferences["runtime-start"]) {
+    throw new Error(
+      "stable runtime-smoke consumed failure lost its product start marker",
+    );
+  }
+  const attribution = {
+    schema: "interior-ai.stable-runtime-smoke-failure.v1",
+    failure: {
+      classification:
+        error.classification ?? "PRECONDITION_ORCHESTRATION_FAILURE",
+      originalStage: "runtime-smoke",
+      attempt: 1,
+      consumedSubstantiveGate,
+      failedStateSha256: lifecycleDescriptor.sha256,
+      evidenceReferences: structuredClone(evidenceReferences),
+    },
+    child: {
+      command: error.runtimeCommand ?? null,
+      status: Number.isSafeInteger(error.childStatus) ? error.childStatus : null,
+      signal: typeof error.childSignal === "string" ? error.childSignal : null,
+      spawnErrorClassification: error.spawnErrorClassification ?? null,
+    },
+    identity: {
+      certificationId: roots.owner.certificationId,
+      candidateId: manifest.candidateIdentifier,
+      sourceCommitSha: manifest.source.commitSha,
+      sourceTreeSha: manifest.source.treeSha,
+      buildId: manifest.build.nextBuildId,
+      artifactSha256: manifest.artifact.sha256,
+      manifestSha256: runtime?.manifestSha256 ?? null,
+      journalSha256: runtime?.journalSha256 ?? null,
+      journalNonce: journal?.runNonce ?? null,
+    },
+    stageEnvironment: runtime?.projection.metadata ?? null,
+    evidenceRootOwner: {
+      schema: roots.owner.schema,
+      certificationId: roots.owner.certificationId,
+      runId: roots.owner.runId,
+      runAttempt: roots.owner.runAttempt,
+      lifecycleNonce: roots.owner.lifecycleNonce,
+      ownerSha256: stableSha256(readFileSync(roots.ownerPath)),
+    },
+    lifecycle: lifecycleDescriptor,
+  };
+  writeFileSync(paths.failure, canonicalJsonBytes(attribution), {
+    flag: "wx",
+    mode: 0o600,
+  });
+  evidenceReferences["runtime-failure"] = stableRetainedDescriptor({
+    repositoryRoot,
+    roots,
+    filePath: paths.failure,
+  });
+  return Object.freeze({
+    attribution,
+    failure: Object.freeze({
+      ...attribution.failure,
+      evidenceReferences: Object.freeze({ ...evidenceReferences }),
+    }),
+  });
 }
 
 function consumeAuthFixture({ repositoryRoot, environment, manifest }) {
@@ -273,6 +388,7 @@ export function createStableRuntimeProjection({
   for (const [outputRole, requestedPath] of Object.entries({
     timings: paths.timings,
     summary: paths.summary,
+    failure: paths.failure,
     startMarker: paths.marker,
   })) {
     resolveRuntimeSmokeEvidencePath({

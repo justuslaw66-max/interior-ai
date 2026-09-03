@@ -33,6 +33,7 @@ export const RUNTIME_SMOKE_EVIDENCE_OUTPUTS = Object.freeze({
   report: Object.freeze({ filename: "playwright-report.json" }),
   timings: Object.freeze({ filename: "phase-timings.json" }),
   summary: Object.freeze({ filename: "evidence.json" }),
+  failure: Object.freeze({ filename: "failure.json" }),
   startMarker: Object.freeze({ filename: "product-test-start.json" }),
 });
 

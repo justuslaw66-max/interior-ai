@@ -37,6 +37,7 @@ import {
   STABLE_PORTABLE_SUMMARY_PATH,
   STABLE_PORTABLE_TIMING_PATH,
   createPortableStableRuntimeEvidence,
+  createStableRuntimeFailureAttribution,
   createStableRuntimeProjection,
   createStableRuntimeRoots,
   removeStableRuntimeRoot,
@@ -155,10 +156,16 @@ async function executeRuntimeSmoke({ repositoryRoot, paths, runtime }) {
         ? "stable runtime-smoke product tests failed"
         : "stable runtime-smoke failed before the product test began",
     );
-    error.classification = consumed
-      ? "PRODUCT_ASSERTION_FAILURE"
-      : "PRECONDITION_ORCHESTRATION_FAILURE";
+    error.classification = child.error || child.signal
+      ? "INFRASTRUCTURE_TRANSIENT"
+      : consumed
+        ? "PRODUCT_ASSERTION_FAILURE"
+        : "PRECONDITION_ORCHESTRATION_FAILURE";
     error.consumedSubstantiveGate = consumed;
+    error.runtimeCommand = RUNTIME_COMMAND;
+    error.childStatus = child.status;
+    error.childSignal = child.signal ?? null;
+    error.spawnErrorClassification = child.error ? "child-spawn-error" : null;
     throw error;
   }
   if (!consumed) throw new Error("stable runtime-smoke passed without its start marker");
@@ -252,6 +259,7 @@ async function createAndVerifyBundle({
 
 async function completeStableRuntimeSmoke(context) {
   const paths = stableRuntimePaths(context.roots.evidenceRoot);
+  context.paths = paths;
   context.lifecycleEnvironment = createLifecycleEnvironment(context);
   context.lifecycleEnvironment = configureStableRuntimeDatabaseTransport({
     ...context,
@@ -259,15 +267,18 @@ async function completeStableRuntimeSmoke(context) {
   });
   context.testHooks?.afterTransportAccepted?.();
   const databaseState = await prepareStableDatabase(context);
+  context.databaseState = databaseState;
   const journal = JSON.parse(
     readFileSync(path.join(context.repositoryRoot, STABLE_JOURNAL_PATH), "utf8"),
   );
+  context.journal = journal;
   const runtime = createStableRuntimeProjection({
     ...context,
     paths,
     databaseUrl: databaseState.database.environment.DATABASE_URL,
     journal,
   });
+  context.runtime = runtime;
   const execution = await executeRuntimeSmoke({ ...context, paths, runtime });
   context.consumed = execution.consumed;
   const finalization = await finalizeStableEvidence({
@@ -300,18 +311,54 @@ export async function cleanupFailedStableRun(context, error) {
   const cleanupIssues = [];
   let databaseAbsent = false;
   try {
-    const absent = await abortDatabase({
+    let failure = {
+      classification: error.classification ?? "PRECONDITION_ORCHESTRATION_FAILURE",
+      consumedSubstantiveGate:
+        error.consumedSubstantiveGate ?? context.consumed,
+      stage: "runtime-smoke",
+      attempt: 1,
+    };
+    if (
+      context.lifecycleEnvironment?.CERTIFICATION_DATABASE_LIFECYCLE_PATH &&
+      existsSync(
+        context.lifecycleEnvironment.CERTIFICATION_DATABASE_LIFECYCLE_PATH,
+      )
+    ) {
+      const readLifecycle =
+        context.testHooks?.readDatabaseLifecycle ??
+        readCertificationDatabaseLifecycle;
+      const lifecycleState = readLifecycle({
+        repositoryRoot: context.repositoryRoot,
+        environment: context.lifecycleEnvironment,
+      });
+      const terminalStates = new Set([
+        "absence-verified",
+        "stable-absence-verified",
+        "abort-absence-verified",
+      ]);
+      if (!terminalStates.has(lifecycleState.evidence.currentState)) {
+        const attribution = createStableRuntimeFailureAttribution({
+          ...context,
+          lifecycleState,
+          lifecyclePath:
+            context.lifecycleEnvironment.CERTIFICATION_DATABASE_LIFECYCLE_PATH,
+          error,
+        });
+        failure = {
+          ...attribution.failure,
+          stage: attribution.failure.originalStage,
+        };
+        context.testHooks?.afterFailureAttribution?.(attribution);
+      }
+    }
+    const abort = context.testHooks?.abortDatabase ?? abortDatabase;
+    const absent = await abort({
       repositoryRoot: context.repositoryRoot,
       lifecycleEnvironment: context.lifecycleEnvironment,
-      failure: {
-        classification: error.classification ?? "PRECONDITION_ORCHESTRATION_FAILURE",
-        consumedSubstantiveGate:
-          error.consumedSubstantiveGate ?? context.consumed,
-        stage: "runtime-smoke",
-        attempt: 1,
-      },
+      failure,
     });
     databaseAbsent = absent;
+    context.testHooks?.afterDatabaseAbort?.({ databaseAbsent, failure });
     if (!databaseAbsent) cleanupIssues.push("database absence was not proved");
   } catch (cleanupError) {
     cleanupIssues.push(`database cleanup: ${cleanupError.message}`);

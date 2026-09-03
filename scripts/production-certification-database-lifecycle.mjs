@@ -1576,7 +1576,7 @@ export async function abortCertificationDatabase(options = {}) {
     }
     const ownsStageRole =
       next.privateBinding?.roleCreation?.ownershipRecoverable === true;
-    const stageRole = ownsStageRole
+    const stageRoleDrop = ownsStageRole
       ? await adapter.dropStageRole(stageRoleName(evidence))
       : {
           dropped: false,
@@ -1585,11 +1585,20 @@ export async function abortCertificationDatabase(options = {}) {
         };
     if (
       ownsStageRole &&
-      stageRole.dropped !== true &&
-      stageRole.alreadyAbsent !== true
+      stageRoleDrop.dropped !== true &&
+      stageRoleDrop.alreadyAbsent !== true
     ) {
       throw new Error("abort cleanup did not remove the private stage role");
     }
+    const roleAfterDrop = ownsStageRole
+      ? await adapter.inspectStageRole(stageRoleName(evidence))
+      : null;
+    if (ownsStageRole && roleAfterDrop?.exists !== false) {
+      throw new Error("abort cleanup did not prove private stage role absence");
+    }
+    const stageRole = ownsStageRole
+      ? { ...stageRoleDrop, verifiedAbsent: true }
+      : { ...stageRoleDrop, verifiedAbsent: false };
     let sidecarCleanup = {
       removed: false,
       alreadyAbsent: true,
