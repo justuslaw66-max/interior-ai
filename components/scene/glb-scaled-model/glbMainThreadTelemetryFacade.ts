@@ -9,6 +9,7 @@ import { getReloadGeneration } from "./modelDiagnosticRealm";
 
 type TelemetryGlobal = typeof globalThis & {
   __INTERIOR_AI_ENABLE_GLB_DIAGNOSTICS__?: boolean;
+  __INTERIOR_AI_GLB_RENDERER_CALL_COUNT__?: number;
 };
 
 const instrumentedRenderers = new WeakSet<THREE.WebGLRenderer>();
@@ -66,6 +67,9 @@ export function instrumentGLBMainThreadRenderer(renderer: THREE.WebGLRenderer) {
   instrumentedRenderers.add(renderer);
   const render = renderer.render.bind(renderer);
   renderer.render = (scene, camera) => {
+    const telemetryGlobal = globalThis as TelemetryGlobal;
+    telemetryGlobal.__INTERIOR_AI_GLB_RENDERER_CALL_COUNT__ =
+      (telemetryGlobal.__INTERIOR_AI_GLB_RENDERER_CALL_COUNT__ ?? 0) + 1;
     recordGLBMainThreadCounter("rendererCalls");
     return measureGLBMainThreadWork("r3f-render", () => render(scene, camera));
   };

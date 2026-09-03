@@ -149,7 +149,10 @@ type WorkspacePlanningGridProps = {
   shadowsEnabled: boolean;
   size: number;
 };
-const loadingFrameloop = (showSceneLoadingVeil: boolean) => showSceneLoadingVeil ? "demand" : "always";
+// Controls and product state invalidate the canvas when visual work is required.
+// Keeping the idle scene on the same demand-driven contract prevents a loaded
+// design from monopolizing the browser main thread between interactions.
+const DESIGN_SCENE_FRAMELOOP = "demand";
 
 function WorkspacePlanningGrid({
   centerX,
@@ -449,7 +452,7 @@ export function DesignSceneCanvas({
         }}
         shadows={effectiveShadowsEnabled ? QUALITY_SHADOW_FILTER : false}
         dpr={state.liteSceneEnabled ? [1, 1] : [1, 2]}
-        frameloop={loadingFrameloop(state.showSceneLoadingVeil)}
+        frameloop={DESIGN_SCENE_FRAMELOOP}
         gl={{
           antialias: true,
         }}

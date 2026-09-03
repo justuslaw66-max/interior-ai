@@ -17,8 +17,13 @@ assert.match(
 );
 assert.match(
   source,
-  /const loadingFrameloop = \([^)]+\) => showSceneLoadingVeil \? "demand" : "always";[\s\S]*frameloop=\{loadingFrameloop\(state\.showSceneLoadingVeil\)\}/,
-  "a non-visible loading canvas must render only on invalidation",
+  /const DESIGN_SCENE_FRAMELOOP = "demand";[\s\S]*frameloop=\{DESIGN_SCENE_FRAMELOOP\}/,
+  "the design canvas must render only when product state or controls invalidate it",
+);
+assert.doesNotMatch(
+  source,
+  /frameloop=\{[^}]*"always"|frameloop="always"/,
+  "the loaded design must not install a permanent render loop",
 );
 assert.match(
   source,
@@ -31,4 +36,4 @@ assert.match(
   "interactive 2D controls must remain enabled by the existing product state",
 );
 
-console.log("CH-0029 hidden-scene frameloop contract passed.");
+console.log("CH-0029 demand-driven design-scene frameloop contract passed.");

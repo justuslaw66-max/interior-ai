@@ -191,28 +191,6 @@ function startLongTaskObserver(state: GLBMainThreadTelemetryState) {
   }
 }
 
-function startFrameGapObserver(state: GLBMainThreadTelemetryState) {
-  if (typeof requestAnimationFrame === "undefined") return;
-  let previousFrameAtMs = nowMs();
-  const observeFrame = (observedAtMs: number) => {
-    const callbackStartedAtMs = nowMs();
-    const durationMs = Math.max(0, observedAtMs - previousFrameAtMs);
-    if (durationMs >= RESPONSIVE_GAP_THRESHOLD_MS) {
-      state.frameGaps.push({
-        startRelativeMs: Math.max(
-          0,
-          previousFrameAtMs - state.startedAtMs,
-        ),
-        durationMs,
-      });
-    }
-    previousFrameAtMs = observedAtMs;
-    recordObserverCost(state, callbackStartedAtMs);
-    requestAnimationFrame(observeFrame);
-  };
-  requestAnimationFrame(observeFrame);
-}
-
 export function initializeGLBMainThreadTelemetry(startedAtMs = nowMs()) {
   if (!telemetryEnabled()) return;
   const telemetryGlobal = globalThis as TelemetryGlobal;
@@ -247,7 +225,6 @@ export function initializeGLBMainThreadTelemetry(startedAtMs = nowMs()) {
   };
   telemetryGlobal.__INTERIOR_AI_GLB_MAIN_THREAD_TELEMETRY__ = state;
   startLongTaskObserver(state);
-  startFrameGapObserver(state);
 }
 
 export function recordGLBMainThreadTiming(

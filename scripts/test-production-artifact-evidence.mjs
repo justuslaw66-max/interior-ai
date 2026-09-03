@@ -118,9 +118,12 @@ import {
   runtimeSmokeRequiredRegistryReady,
 } from "./runtime-smoke-readiness-diagnostics.mjs";
 import {
+  classifyRuntimeSmokeBrowserCallbackProgress,
   projectRuntimeSmokeBrowserCallbackMilestone,
   projectRuntimeSmokeBrowserHeartbeat,
+  runtimeSmokeBrowserCallbackMilestoneMatchesRequest,
 } from "./runtime-smoke-browser-diagnostics.mjs";
+import { evaluateRuntimeSmokeRendererIdle } from "./runtime-smoke-render-idle.mjs";
 
 const sequentialRuntimeSmokeBudgetMs = RUNTIME_SMOKE_PHASE_BUDGETS.reduce(
   (total, phase) => total + phase.timeoutMs,
@@ -618,20 +621,79 @@ function boundAuthFixtureEnvironment() {
 }
 
 {
+  const models = [
+    { key: "model-1", renderCount: 3, boundsMaterialChangeCount: 1 },
+    { key: "model-2", renderCount: 4, boundsMaterialChangeCount: 1 },
+  ];
+  assert.deepEqual(
+    evaluateRuntimeSmokeRendererIdle({
+      previous: { models, rendererCalls: 120 },
+      current: { models: structuredClone(models), rendererCalls: 180 },
+    }),
+    {
+      settled: false,
+      modelsStable: true,
+      rendererIdle: false,
+      rendererCallDelta: 60,
+    },
+    "a permanent scene loop must fail even when React model counters are stable",
+  );
+  assert.deepEqual(
+    evaluateRuntimeSmokeRendererIdle({
+      previous: { models, rendererCalls: 180 },
+      current: { models: structuredClone(models), rendererCalls: 180 },
+    }),
+    {
+      settled: true,
+      modelsStable: true,
+      rendererIdle: true,
+      rendererCallDelta: 0,
+    },
+    "finite activity must pass after renderer calls stop",
+  );
+}
+
+{
   const callback = projectRuntimeSmokeBrowserCallbackMilestone({
-    schema: "interior-ai.runtime-smoke-browser-callback.v1",
+    schema: "interior-ai.runtime-smoke-browser-callback.v2",
     phaseName: "reload-1",
     operationName: "model-responses-and-readiness",
     requestId: 3,
     stage: "snapshot-complete",
+    observedAtMs: 1_234,
   });
   assert.deepEqual(callback, {
-    schema: "interior-ai.runtime-smoke-browser-callback.v1",
+    schema: "interior-ai.runtime-smoke-browser-callback.v2",
     phaseName: "reload-1",
     operationName: "model-responses-and-readiness",
     requestId: 3,
     stage: "snapshot-complete",
+    observedAtMs: 1_234,
   });
+  assert.equal(
+    runtimeSmokeBrowserCallbackMilestoneMatchesRequest(
+      {
+        phaseName: "reload-1",
+        operationName: "model-responses-and-readiness",
+        requestId: 4,
+      },
+      callback,
+    ),
+    false,
+    "a stale snapshot milestone must not be attributed to the active request",
+  );
+  assert.deepEqual(
+    classifyRuntimeSmokeBrowserCallbackProgress({
+      request: {
+        phaseName: "reload-1",
+        operationName: "diagnostics-settle-evaluation",
+        requestId: 16,
+      },
+      milestones: [],
+    }),
+    { latestStage: "not-entered", nextStage: "entered-browser" },
+    "a missing first milestone must attribute the wait before browser entry",
+  );
   assert.throws(
     () =>
       projectRuntimeSmokeBrowserCallbackMilestone({
@@ -652,20 +714,48 @@ function boundAuthFixtureEnvironment() {
     );
   }
   const heartbeat = projectRuntimeSmokeBrowserHeartbeat({
-    schema: "interior-ai.runtime-smoke-browser-heartbeat.v1",
+    schema: "interior-ai.runtime-smoke-browser-heartbeat.v2",
     kind: "interval",
     sequence: 4,
     observedAtMs: 2_000,
     eventLoopDelayMs: 7,
     maximumEventLoopDelayMs: 12,
+    lastAnimationFrameDelayMs: 3,
+    maximumAnimationFrameDelayMs: 9,
+    lastAnimationFrameCadenceMs: 1_003,
+    visibilityState: "visible",
+    documentReadyState: "complete",
+    lifecycleState: "active",
+    rendererCalls: 180,
+    rendererCallDelta: 60,
+    rendererCallRateHz: 60,
+    activeAnimationCount: 0,
+    controlActivity: "idle",
+    controlEventCount: 0,
+    webglContextLostCount: 0,
+    webglContextRestoredCount: 0,
   });
   assert.deepEqual(heartbeat, {
-    schema: "interior-ai.runtime-smoke-browser-heartbeat.v1",
+    schema: "interior-ai.runtime-smoke-browser-heartbeat.v2",
     kind: "interval",
     sequence: 4,
     observedAtMs: 2_000,
     eventLoopDelayMs: 7,
     maximumEventLoopDelayMs: 12,
+    lastAnimationFrameDelayMs: 3,
+    maximumAnimationFrameDelayMs: 9,
+    lastAnimationFrameCadenceMs: 1_003,
+    visibilityState: "visible",
+    documentReadyState: "complete",
+    lifecycleState: "active",
+    rendererCalls: 180,
+    rendererCallDelta: 60,
+    rendererCallRateHz: 60,
+    activeAnimationCount: 0,
+    controlActivity: "idle",
+    controlEventCount: 0,
+    webglContextLostCount: 0,
+    webglContextRestoredCount: 0,
   });
   assert.throws(
     () => projectRuntimeSmokeBrowserHeartbeat({ ...heartbeat, token: "unsafe" }),
@@ -1600,6 +1690,20 @@ assert.doesNotMatch(
   /fatalErrors\.push|checkpoint\(/,
   "invalid or delayed heartbeats must never fail or reset progress",
 );
+const heartbeatProducerSource = runtimeSmokeSource.slice(
+  runtimeSmokeSource.indexOf("if (!diagnosticsGlobal.__INTERIOR_AI_RUNTIME_SMOKE_HEARTBEAT__)"),
+  runtimeSmokeSource.indexOf('const clearSentinel = "__e2e_runtime_smoke_storage_cleared"'),
+);
+assert.equal(
+  heartbeatProducerSource.match(/requestAnimationFrame/g)?.length,
+  1,
+  "liveness diagnostics may request one animation frame per heartbeat but must not create a continuous frame loop",
+);
+assert.match(
+  heartbeatProducerSource,
+  /if \(!animationFramePending\)[\s\S]*requestAnimationFrame[\s\S]*animationFramePending = false/,
+  "animation-frame liveness sampling must remain coalesced and one-shot",
+);
 assert.match(
   runtimeSmokeSource,
   /projectRuntimeSmokeBrowserCallbackMilestone/,
@@ -1623,6 +1727,11 @@ assert.doesNotMatch(
   reloadLoop,
   /await\s+readModelDiagnostics\(\)/,
   "reload diagnostics must not bypass a named wall-clock operation bound",
+);
+assert.match(
+  reloadLoop,
+  /lastMainThreadTelemetrySummary\?\.counters\.rendererCalls[\s\S]*settledRendererCallsByPhase\.get\(phaseName\)/,
+  "reload assertions must prove the global scene renderer stayed idle",
 );
 assert.doesNotMatch(
   reloadLoop,
@@ -1709,7 +1818,7 @@ assert.match(
 );
 assert.match(
   diagnosticSnapshotSource,
-  /interior-ai\.runtime-smoke-browser-callback\.v1/,
+  /interior-ai\.runtime-smoke-browser-callback\.v2/,
   "diagnostic callbacks must expose fixed-stage browser timing observations",
 );
 assert.match(
