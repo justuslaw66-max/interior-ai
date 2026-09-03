@@ -45,6 +45,7 @@ import {
   stableSha256,
   writeStableRuntimeSummary,
 } from "./stable-runtime-smoke-resources.mjs";
+import { configureStableRuntimeDatabaseTransport } from "./stable-runtime-smoke-database-transport.mjs";
 
 const RUNTIME_COMMAND =
   "npx playwright test tests/e2e/00-runtime-smoke.spec.ts --project=chromium";
@@ -252,6 +253,11 @@ async function createAndVerifyBundle({
 async function completeStableRuntimeSmoke(context) {
   const paths = stableRuntimePaths(context.roots.evidenceRoot);
   context.lifecycleEnvironment = createLifecycleEnvironment(context);
+  context.lifecycleEnvironment = configureStableRuntimeDatabaseTransport({
+    ...context,
+    lifecycleEnvironment: context.lifecycleEnvironment,
+  });
+  context.testHooks?.afterTransportAccepted?.();
   const databaseState = await prepareStableDatabase(context);
   const journal = JSON.parse(
     readFileSync(path.join(context.repositoryRoot, STABLE_JOURNAL_PATH), "utf8"),
@@ -290,7 +296,7 @@ async function completeStableRuntimeSmoke(context) {
   );
 }
 
-async function cleanupFailedStableRun(context, error) {
+export async function cleanupFailedStableRun(context, error) {
   const cleanupIssues = [];
   let databaseAbsent = false;
   try {
@@ -349,6 +355,7 @@ async function cleanupFailedStableRun(context, error) {
 export async function runStableRuntimeSmoke({
   repositoryRoot = process.cwd(),
   environment = process.env,
+  testHooks = null,
 } = {}) {
   const preflight = await validateProductionEvidence({
     repositoryRoot,
@@ -367,6 +374,7 @@ export async function runStableRuntimeSmoke({
     consumed: false,
     bundleStarted: false,
     manifestFinalized: false,
+    testHooks,
   };
   try {
     context.roots = createStableRuntimeRoots(context);

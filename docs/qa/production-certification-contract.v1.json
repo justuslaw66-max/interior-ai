@@ -47,12 +47,14 @@
     "bindingSchema": "interior-ai.production-certification-database-lifecycle-binding.v1",
     "canonicalOwner": "scripts/production-certification-database-lifecycle.mjs",
     "postgresAdapter": "scripts/production-certification-database-adapter.mjs",
+    "postgresTransportClassifier": "scripts/production-certification-database-transport.mjs",
+    "postgresTransportAttestationOwner": "scripts/stable-runtime-smoke-database-transport.mjs",
     "policyOwner": "scripts/production-certification-database-contract.mjs",
     "stableRuntimeSmokeProfile": { "profile": "stable-runtime-smoke", "lifecycleClassification": "STABLE_RUNTIME_SMOKE_ONLY", "releaseCertificationClassification": "NOT_RELEASE_CERTIFICATION", "integrationClassification": "NOT_VALID_FOR_INTEGRATION", "requiredStages": ["runtime-smoke"], "parentOwner": "scripts/stable-runtime-smoke.mjs", "externalResourceOwner": "scripts/stable-runtime-smoke-resources.mjs", "databaseCleanup": "canonical normal or abort lifecycle with terminal absence proof", "externalEvidencePolicy": "exact-owned physical RUNNER_TEMP root outside repository worktrees; no repository fallback; removed only after bundle standalone verification or terminal failure cleanup" },
     "lifecycleOrder": ["database:plan", "environment-envelope-seal", "state:init", "certification:prepare-resources", "doctor", "database:provision", "database:verify-initial", "source-validation-through-browser-owners", "database:verify-final", "database:drop", "database:verify-absent", "final-standalone", "continuity"],
     "states": ["planned", "create-authorized", "provisioned", "migrated", "initial-empty-verified", "active", "stable-runtime-inspected", "stable-sessions-cleared", "stable-dropped", "stable-absence-verified", "final-empty-verified", "sessions-cleared", "dropped", "absence-verified", "failed", "abort-cleanup-in-progress", "abort-dropped", "abort-absence-verified"],
     "namePolicy": "fixed lowercase interior_ai_gate_a3_test_cert_ prefix plus a 32-hex SHA-256 prefix bound to certification ID, candidate ID, candidate commit, disposable classification, and owner-generated 128-bit nonce; maximum 63 bytes; no caller-selected final name",
-    "serverPolicy": "explicit 127.0.0.1 or ::1, port 5432, postgres admin database, PostgreSQL 14 or newer, createdb or local-superuser role",
+    "serverPolicy": "explicit 127.0.0.1 or ::1 URL, port 5432, postgres admin database, PostgreSQL 14 or newer, createdb or local-superuser role; native-loopback requires a loopback server address; Stable alone may use a live-attested GitHub-hosted healthy official PostgreSQL 15 service-container loopback forward",
     "absencePolicy": "plan is database-non-mutating and provision repeats absence just in time; an existing target always fails closed and is never reused",
     "migrationPolicy": "exact current 43 repository migrations through Prisma migrate deploy, followed by exact target migration-name verification",
     "rowPolicy": "catalog-derived public application tables excluding only _prisma_migrations must have zero rows initially and finally; no generic DELETE or leak-hiding cleanup is permitted",
@@ -61,7 +63,7 @@
     "abortPolicy": "retain original failure and consumed status, capture rows/sessions, never fabricate final-empty PASS, drop the disposable target, prove absence, and never rehabilitate the failed run",
     "privateStageEnvironmentResolver": "scripts/production-certification-database-lifecycle.mjs#resolveCertificationDatabaseStageEnvironment",
     "stageProjectionPolicy": "provision a lifecycle-scoped NOSUPERUSER/NOCREATEDB/NOCREATEROLE stage login; retain its raw target only in a mode-0600 private worktree-root sidecar whose hash is sealed into lifecycle evidence; require the exact live target/non-admin role before stage binding; reject ambient override, stale/foreign/dropped identity, missing readiness, sidecar tamper, or missing stage binding; expose raw target only to the declared database-capable stage projector and redact any child stdout/stderr occurrence",
-    "portableEvidencePolicy": "retain safe database name/hash, policy/generator/owner hashes, server and role classifications, event/inventory/session/drop/absence results, timestamps, aggregate SHA-256 and seal; never retain passwords or raw URLs"
+    "portableEvidencePolicy": "retain safe database name/hash, policy/generator/owner hashes, explicit transport and role classifications, transport attestation SHA-256, live-verification and approved image/version classifications, event/inventory/session/drop/absence results, timestamps, aggregate SHA-256 and seal; never retain passwords, raw URLs, raw container/network IDs, or bridge addresses"
   },
   "stageWorktrees": {
     "schema": "interior-ai.production-certification-worktrees.v2",

@@ -52,6 +52,8 @@ const OWNER_PATHS = Object.freeze([
   "lib/trusted-app-event-core.ts",
   "scripts/production-certification-database-contract.mjs",
   "scripts/production-certification-database-adapter.mjs",
+  "scripts/production-certification-database-transport.mjs",
+  "scripts/stable-runtime-smoke-database-transport.mjs",
   "scripts/production-certification-app-event-lifecycle.mjs",
   "scripts/production-certification-database-lifecycle.mjs",
 ]);
@@ -85,6 +87,12 @@ function implementationIdentity(repositoryRoot) {
     genericRowDeletionProhibited: true,
     exactSessionAndDropOwnership: true,
     postDropAbsenceRequired: true,
+    adminTransports: [
+      "native-loopback",
+      "github-hosted-service-container-loopback-forward",
+    ],
+    serviceContainerProfile: STABLE_RUNTIME_SMOKE_DATABASE_PROFILE,
+    serviceContainerImage: "official-postgres-major-15",
   };
   return {
     ownerFiles: files,
@@ -528,13 +536,16 @@ function assertIdentity(evidence, environment) {
   }
 }
 
-function adapterFor(options, databaseName) {
+function adapterFor(options, databaseName, lifecycleProfile, expectedServer = null) {
   if (options.adapter) return options.adapter;
   databaseAdminPolicy(required(options.environment, "CERTIFICATION_DATABASE_ADMIN_URL"));
   return new CertificationPostgresAdapter({
     adminUrl: options.environment.CERTIFICATION_DATABASE_ADMIN_URL,
     repositoryRoot: options.repositoryRoot,
     databaseName,
+    environment: options.environment,
+    lifecycleProfile,
+    expectedServer,
   });
 }
 
@@ -594,7 +605,11 @@ export async function planCertificationDatabase({
     candidateCommitSha: identity.candidateCommitSha,
     nonce: generatorNonce,
   });
-  const owner = adapterFor({ repositoryRoot, environment, adapter }, database.name);
+  const owner = adapterFor(
+    { repositoryRoot, environment, adapter },
+    database.name,
+    lifecycleProfile,
+  );
   const inspected = await safeDatabaseAdapterCall(() =>
     owner.inspectAdmin(database.name));
   if (inspected.targetExists) {
@@ -674,6 +689,8 @@ async function mutateLifecycle(options, action) {
     const adapter = adapterFor(
       { repositoryRoot, environment, adapter: options.adapter },
       evidence.database.name,
+      evidence.lifecycleProfile,
+      evidence.server,
     );
     let next;
     let actionError = null;
@@ -767,7 +784,7 @@ export async function provisionCertificationDatabase(options = {}) {
         provisionAuthorizationSha256: evidence.database.provisionAuthorizationSha256,
       });
       current = checkpoint(current);
-      adapter.deployMigrations(evidence.database.name);
+      await adapter.deployMigrations(evidence.database.name);
       const migrations = migrationInventory(repositoryRoot);
       const applied = await adapter.migrationNames(evidence.database.name);
       if (
@@ -1945,6 +1962,8 @@ export async function certificationDatabaseStatus(options = {}) {
       adapter: options.adapter,
     },
     current.evidence.database.name,
+    current.evidence.lifecycleProfile,
+    current.evidence.server,
   );
   const inspected = await safeDatabaseAdapterCall(() =>
     adapter.inspectAdmin(current.evidence.database.name));
@@ -1962,6 +1981,10 @@ export async function certificationDatabaseStatus(options = {}) {
     targetExists: inspected.targetExists,
     sessionCount: sessions.length,
     hostClassification: inspected.hostClassification,
+    transportClassification: inspected.transportClassification,
+    transportAttestationSha256: inspected.transportAttestationSha256,
+    transportVerificationStatus: inspected.transportVerificationStatus,
+    imageClassification: inspected.imageClassification,
     port: inspected.port,
     serverVersion: inspected.serverVersion,
     serverVersionNumber: inspected.serverVersionNumber,
@@ -2058,6 +2081,12 @@ export function createAuthSessionPreflightDatabaseBinding({
     scopedRoleIdentitySha256: evidence.privateBinding.roleNameSha256,
     scopedRoleClassification: evidence.privateBinding.classification,
     hostClassification: evidence.server.hostClassification,
+    transportClassification: evidence.server.transportClassification,
+    transportAttestationSha256:
+      evidence.server.transportAttestationSha256,
+    transportVerificationStatus:
+      evidence.server.transportVerificationStatus,
+    imageClassification: evidence.server.imageClassification,
     serverRoleClassification: evidence.server.roleClassification,
     lifecycleState: current.binding.lifecycleState,
   });
@@ -2128,6 +2157,12 @@ export function createStableRuntimeSmokeDatabaseBinding({ current }) {
     scopedRoleIdentitySha256: evidence.privateBinding.roleNameSha256,
     scopedRoleClassification: evidence.privateBinding.classification,
     hostClassification: evidence.server.hostClassification,
+    transportClassification: evidence.server.transportClassification,
+    transportAttestationSha256:
+      evidence.server.transportAttestationSha256,
+    transportVerificationStatus:
+      evidence.server.transportVerificationStatus,
+    imageClassification: evidence.server.imageClassification,
     serverRoleClassification: evidence.server.roleClassification,
     lifecycleState: current.binding.lifecycleState,
   });

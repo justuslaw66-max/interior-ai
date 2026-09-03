@@ -355,6 +355,42 @@ function hasState(evidence, state) {
   return evidence.events.some((entry) => entry.state === state);
 }
 
+function serverTransportIssues(evidence) {
+  const server = evidence.server;
+  const native =
+    server?.transportClassification === "native-loopback" &&
+    server.serverAddressClassification === "loopback" &&
+    server.transportAttestationSha256 === null &&
+    server.transportVerificationStatus === "verified-live" &&
+    server.imageClassification === null &&
+    server.imageRepositoryDigestSha256 === null;
+  const githubService =
+    evidence.lifecycleProfile?.classification ===
+      STABLE_RUNTIME_SMOKE_DATABASE_CLASSIFICATIONS.lifecycle &&
+    server?.transportClassification ===
+      "github-hosted-service-container-loopback-forward" &&
+    server.serverAddressClassification === "attested-container-network" &&
+    isSha256(server.transportAttestationSha256) &&
+    server.transportVerificationStatus === "verified-live-attested" &&
+    server.imageClassification === "official-postgres-major-15" &&
+    isSha256(server.imageRepositoryDigestSha256) &&
+    Math.floor(Number(server.serverVersionNumber) / 10_000) === 15;
+  if (
+    server?.hostClassification !== "explicit-loopback" ||
+    !new Set(["127.0.0.1", "::1", "[::1]"]).has(server?.host) ||
+    server?.port !== 5432 ||
+    Number(server?.serverVersionNumber) < 140000 ||
+    server?.canCreateDatabase !== true ||
+    !new Set(["local-createdb", "local-superuser-createdb"]).has(
+      server?.roleClassification,
+    ) ||
+    (!native && !githubService)
+  ) {
+    return ["database lifecycle server transport evidence is malformed or unapproved"];
+  }
+  return [];
+}
+
 export function databaseLifecycleRequiredStages(evidence) {
   const classification = evidence?.lifecycleProfile?.classification;
   if (classification === AUTH_SESSION_PREFLIGHT_DATABASE_CLASSIFICATIONS.lifecycle) {
@@ -679,6 +715,7 @@ function appEventCleanupIssues(evidence) {
 function semanticEvidenceIssues(evidence) {
   const issues = [];
   issues.push(...lifecycleProfileIssues(evidence));
+  issues.push(...serverTransportIssues(evidence));
   issues.push(...appEventCleanupIssues(evidence));
   if (evidence.events[0]?.state !== "planned") {
     issues.push("database lifecycle must begin with planned");

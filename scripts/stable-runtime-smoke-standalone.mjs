@@ -33,8 +33,9 @@ function stableDatabaseSummaryIssues(database) {
   if (
     !exactKeys(database, [
       "lifecycleClassification", "databaseName", "databaseIdentitySha256",
-      "roleName", "scopedRoleClassification", "migrationCount", "finalState",
-      "targetAbsent",
+      "roleName", "scopedRoleClassification", "transportClassification",
+      "transportAttestationSha256", "transportVerificationStatus",
+      "imageClassification", "migrationCount", "finalState", "targetAbsent",
     ]) ||
     database?.lifecycleClassification !== "STABLE_RUNTIME_SMOKE_ONLY" ||
     database?.scopedRoleClassification !== "private-stage-login-no-admin" ||
@@ -43,6 +44,17 @@ function stableDatabaseSummaryIssues(database) {
     !roleMatch ||
     databaseMatch[1] !== roleMatch[1] ||
     databaseMatch[1] !== database.databaseIdentitySha256.slice(0, 32) ||
+    !(
+      (database?.transportClassification === "native-loopback" &&
+        database.transportAttestationSha256 === null &&
+        database.transportVerificationStatus === "verified-live" &&
+        database.imageClassification === null) ||
+      (database?.transportClassification ===
+          "github-hosted-service-container-loopback-forward" &&
+        /^[a-f0-9]{64}$/.test(database.transportAttestationSha256 ?? "") &&
+        database.transportVerificationStatus === "verified-live-attested" &&
+        database.imageClassification === "official-postgres-major-15")
+    ) ||
     !Number.isSafeInteger(database?.migrationCount) ||
     database.migrationCount <= 0 ||
     database?.finalState !== "stable-absence-verified" ||
@@ -180,6 +192,8 @@ export async function verifyStableRuntimeSmokeStandalone({
     artifactSha256: result.manifest.artifact.sha256,
     databaseFinalState: summary.database.finalState,
     databaseTargetAbsent: summary.database.targetAbsent,
+    databaseTransportClassification:
+      summary.database.transportClassification,
     expectedTests: summary.stats.expected,
     releaseCertification: false,
   };

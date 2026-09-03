@@ -28,6 +28,7 @@ import {
   targetDatabaseUrl,
 } from "./production-certification-database-contract.mjs";
 import { CertificationPostgresAdapter } from "./production-certification-database-adapter.mjs";
+import { databaseTransportContractCoverage } from "./production-certification-database-transport-contract.mjs";
 import {
   abortCertificationDatabase,
   bindCertificationDatabaseStage,
@@ -129,6 +130,7 @@ class FakeDatabaseAdapter {
     appEventCleanupFailure = null,
     onDeleteAppEvents = null,
     transientSessionInspections = 0,
+    serviceTransport = false,
   } = {}) {
     this.exists = exists;
     this.migrated = false;
@@ -151,6 +153,7 @@ class FakeDatabaseAdapter {
     this.onDeleteAppEvents = onDeleteAppEvents;
     this.stageRoleDropCount = 0;
     this.transientSessionInspections = transientSessionInspections;
+    this.serviceTransport = serviceTransport;
   }
 
   async inspectAdmin() {
@@ -163,13 +166,33 @@ class FakeDatabaseAdapter {
       this.failFirstPostDropInspection = false;
       throw new Error("post-drop absence inspection failed once");
     }
+    const transport = this.serviceTransport
+      ? {
+          serverAddressClassification: "attested-container-network",
+          transportClassification:
+            "github-hosted-service-container-loopback-forward",
+          transportAttestationSha256: "a".repeat(64),
+          transportVerificationStatus: "verified-live-attested",
+          imageClassification: "official-postgres-major-15",
+          imageRepositoryDigestSha256: "b".repeat(64),
+          serverVersion: "15.14",
+          serverVersionNumber: 150014,
+        }
+      : {
+          serverAddressClassification: "loopback",
+          transportClassification: "native-loopback",
+          transportAttestationSha256: null,
+          transportVerificationStatus: "verified-live",
+          imageClassification: null,
+          imageRepositoryDigestSha256: null,
+          serverVersion: "16.14",
+          serverVersionNumber: 160014,
+        };
     return {
       hostClassification: "explicit-loopback",
       host: "127.0.0.1",
       port: 5432,
-      serverAddressClassification: "loopback",
-      serverVersion: "16.14",
-      serverVersionNumber: 160014,
+      ...transport,
       role: "qualification_owner",
       roleClassification: "local-createdb",
       canCreateDatabase: true,
@@ -606,6 +629,7 @@ async function deterministicContractCoverage() {
   const stableFixture = fixture({ id: "stable-runtime-smoke" });
   const stableAdapter = new FakeDatabaseAdapter({
     transientSessionInspections: 2,
+    serviceTransport: true,
   });
   try {
     await planCertificationDatabase({
@@ -657,6 +681,19 @@ async function deterministicContractCoverage() {
       /interior_ai_cert_stage_[a-f0-9]{32}/,
     );
     assert.equal(projection.identity.stage, "runtime-smoke");
+    assert.throws(
+      () =>
+        resolveCertificationDatabaseStageEnvironment({
+          repositoryRoot,
+          environment: stableFixture.environment,
+          stage: "runtime-smoke",
+          stableRuntimeLifecycleBinding: {
+            ...stableBinding,
+            transportClassification: "native-loopback",
+          },
+        }),
+      /stale or foreign/,
+    );
     assert.throws(
       () =>
         resolveCertificationDatabaseStageEnvironment({
@@ -1144,6 +1181,23 @@ async function deterministicContractCoverage() {
     assert.equal(portable.includes("raw-secret"), false);
     assert.equal(portable.includes("postgresql://"), false);
     assert.deepEqual(databaseLifecycleEvidenceIssues(planned.evidence), []);
+    const transportSubstitution = structuredClone(planned.evidence);
+    transportSubstitution.server.transportClassification =
+      "github-hosted-service-container-loopback-forward";
+    transportSubstitution.server.serverAddressClassification =
+      "attested-container-network";
+    transportSubstitution.server.transportAttestationSha256 = "1".repeat(64);
+    transportSubstitution.server.transportVerificationStatus =
+      "verified-live-attested";
+    transportSubstitution.server.imageClassification =
+      "official-postgres-major-15";
+    transportSubstitution.server.imageRepositoryDigestSha256 = "2".repeat(64);
+    assert.match(
+      databaseLifecycleEvidenceIssues(
+        sealDatabaseLifecycleEvidence(transportSubstitution),
+      ).join("; "),
+      /server transport evidence is malformed or unapproved/,
+    );
     const impossible = structuredClone(planned.evidence);
     impossible.events.push({
       state: "absence-verified",
@@ -3224,6 +3278,7 @@ function exists(filePath) {
   }
 }
 
+await databaseTransportContractCoverage();
 await deterministicContractCoverage();
 if (!process.argv.includes("--contract-only")) {
   await realDisposableDatabaseCoverage();

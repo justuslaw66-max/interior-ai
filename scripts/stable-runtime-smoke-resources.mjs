@@ -353,6 +353,10 @@ function createStableRuntimeSummary({
       roleName: decodeURIComponent(target.username),
       scopedRoleClassification:
         databaseState.database.identity.scopedRoleClassification,
+      transportClassification: databaseState.active.evidence.server.transportClassification,
+      transportAttestationSha256: databaseState.active.evidence.server.transportAttestationSha256,
+      transportVerificationStatus: databaseState.active.evidence.server.transportVerificationStatus,
+      imageClassification: databaseState.active.evidence.server.imageClassification,
       migrationCount: databaseState.active.evidence.migration.count,
       finalState: finalization.finalDatabase.evidence.currentState,
       targetAbsent: true,

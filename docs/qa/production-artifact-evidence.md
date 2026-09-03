@@ -894,6 +894,16 @@ proves application configuration shape only; no external integration call or
 external-control claim follows from it. GitHub execution and artifact retention
 must be confirmed from an actual workflow run.
 
+The Stable database parent classifies that service as
+`github-hosted-service-container-loopback-forward` only after a private,
+run/attempt/nonce-bound attestation and a fresh adapter-side Docker recheck prove
+one running healthy official `postgres:15` container, its exact 5432/tcp
+publication, live image repository identity, and exact PostgreSQL
+server-address/network-gateway relationship. Native loopback remains the only
+accepted release-certification transport. The standalone summary retains the
+safe transport class, attestation digest, live-verification result, and approved
+image class; all container/network addresses and identifiers remain private.
+
 After that strict artifact and its runtime evidence are complete,
 `ci.public-share-responsive` reuses the same checked-out `.next` output through
 `npm run start` for its Chromium/WebKit merge-required matrix. It does not run a
