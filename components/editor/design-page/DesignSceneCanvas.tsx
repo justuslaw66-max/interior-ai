@@ -16,9 +16,7 @@ import {
   type ReactNode,
 } from "react";
 import type { OrbitControls as OrbitControlsImpl } from "three-stdlib";
-
 import { CanvasErrorBoundary } from "@/components/CanvasErrorBoundary";
-import { instrumentGLBMainThreadRenderer } from "@/components/scene/glb-scaled-model/glbMainThreadTelemetryFacade";
 import type { EditorViewMode } from "@/components/editor/EditorViewToggle";
 import EditorCamera2D, {
   WHOLE_HOME_FIT_ZOOM_SCALE,
@@ -48,6 +46,10 @@ import type { DesignLightingSettings } from "@/lib/lightingPresets";
 import type { Plan2DCameraInvariantFit } from "@/lib/plan-camera-2d";
 import { resolveLightingScene } from "@/lib/resolve-lighting-scene";
 import type { SceneRendererMetrics } from "@/lib/scene-performance-metrics";
+import {
+  DESIGN_SCENE_DEMAND_PROPS,
+  DesignSceneDemandControls,
+} from "./designSceneDemandPolicy";
 
 type ScenePerformanceMode = "auto" | "quality" | "lite";
 
@@ -149,11 +151,6 @@ type WorkspacePlanningGridProps = {
   shadowsEnabled: boolean;
   size: number;
 };
-// Controls and product state invalidate the canvas when visual work is required.
-// Keeping the idle scene on the same demand-driven contract prevents a loaded
-// design from monopolizing the browser main thread between interactions.
-const DESIGN_SCENE_FRAMELOOP = "demand";
-
 function WorkspacePlanningGrid({
   centerX,
   centerZ,
@@ -452,11 +449,7 @@ export function DesignSceneCanvas({
         }}
         shadows={effectiveShadowsEnabled ? QUALITY_SHADOW_FILTER : false}
         dpr={state.liteSceneEnabled ? [1, 1] : [1, 2]}
-        frameloop={DESIGN_SCENE_FRAMELOOP}
-        gl={{
-          antialias: true,
-        }}
-        onCreated={({ gl }) => instrumentGLBMainThreadRenderer(gl)}
+        {...DESIGN_SCENE_DEMAND_PROPS}
         camera={{
           position: [...configuration.initialCameraView.pos],
           fov: configuration.initialCameraView.fov,
@@ -535,6 +528,10 @@ export function DesignSceneCanvas({
           canvasRef={sceneRefs.canvas}
           rendererRef={sceneRefs.renderer}
           sceneRef={sceneRefs.scene}
+        />
+        <DesignSceneDemandControls
+          controlsRef={controlsRef}
+          enabled={state.controlsEnabled}
         />
 
         {viewMode === "2d" ? (
