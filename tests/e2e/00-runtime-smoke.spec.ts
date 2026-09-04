@@ -1298,9 +1298,9 @@ test.describe("00. Runtime smoke", () => {
                 evaluationContext,
                 parentAttempt.attemptTimeoutMs,
               ),
-              task: () =>
-                page.evaluate(
-                  async ({ operation, requestId }) => {
+              task: async () => {
+                await page.evaluate(
+                  ({ operation, requestId }) => {
                     console.info(
                       "[runtime-smoke-browser-callback-milestone]",
                       JSON.stringify({
@@ -1311,10 +1311,11 @@ test.describe("00. Runtime smoke", () => {
                         observedAtMs: Math.max(0, Math.round(performance.now())),
                       }),
                     );
-                    await new Promise<never>(() => undefined);
                   },
                   { operation, requestId },
-                ),
+                );
+                await new Promise<never>(() => undefined);
+              },
             });
           }
           const samples = await runRuntimeSmokeBoundedOperation({

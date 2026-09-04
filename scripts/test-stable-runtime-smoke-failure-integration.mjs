@@ -21,7 +21,6 @@ import {
   STABLE_JOURNAL_PATH,
   STABLE_MANIFEST_PATH,
   removeStableRuntimeRoot,
-  stableRuntimePaths,
 } from "./stable-runtime-smoke-resources.mjs";
 
 const repositoryRoot = process.cwd();
@@ -121,10 +120,21 @@ function readJson(filePath) {
   return JSON.parse(readFileSync(filePath, "utf8"));
 }
 
+function retainedRuntimePaths(evidenceRoot) {
+  const directory = path.join(evidenceRoot, "runtime-smoke");
+  return {
+    report: path.join(directory, "playwright-report.json"),
+    timings: path.join(directory, "phase-timings.json"),
+    marker: path.join(directory, "product-test-start.json"),
+    summary: path.join(directory, "evidence.json"),
+    failure: path.join(directory, "failure.json"),
+  };
+}
+
 function validatePhysicalFailureEvidence({ capture, manifest, journal }) {
   const { attributionResult, roots } = capture;
   const { attribution, failure } = attributionResult;
-  const paths = stableRuntimePaths(roots.evidenceRoot);
+  const paths = retainedRuntimePaths(roots.evidenceRoot);
   const report = readJson(paths.report);
   const timings = readJson(paths.timings);
   const marker = readJson(paths.marker);
