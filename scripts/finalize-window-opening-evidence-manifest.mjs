@@ -12,6 +12,7 @@ import {
   assertWorkingTreeIdentityMatches,
   collectWorkingTreeIdentity,
   manifestSha256,
+  verifyHistoricalCommandAttempt,
   verifyWindowOpeningScreenshotEvidence,
 } from "./window-opening-evidence-manifest.mjs";
 import { physicalFileRecord } from "./window-opening-evidence-command.mjs";
@@ -236,33 +237,9 @@ const REQUIRED_HISTORICAL_COMMAND = {
 };
 
 async function historicalCommandAttemptRecord(entry) {
-  for (const key of ["evidenceRoot", "logicalCommandId", "attemptId"]) {
-    if (entry[key] !== REQUIRED_HISTORICAL_COMMAND[key]) {
-      throw new Error(`Historical command ${key} does not match the required G04KIK record.`);
-    }
-  }
-  if (entry.stage !== "source-safe-validation" ||
-      entry.classification !== "historical-required-failure" ||
-      entry.requiredFinalSuccess !== false || !entry.reason ||
-      typeof entry.argvKnown !== "boolean" || typeof entry.timestampsKnown !== "boolean" ||
-      typeof entry.runnerMetadataKnown !== "boolean") {
-    throw new Error("Historical G04KIK classification or knowledge metadata is incomplete.");
-  }
-  const expectedRecordPath = path.join(
-    "commands", entry.logicalCommandId, entry.attemptId, "record.json"
+  const { record, recordFile } = await verifyHistoricalCommandAttempt(
+    entry, REQUIRED_HISTORICAL_COMMAND
   );
-  if (path.normalize(entry.recordPath) !== expectedRecordPath) {
-    throw new Error("Historical G04KIK record path does not match its immutable attempt.");
-  }
-  const recordPath = inside(entry.evidenceRoot, entry.recordPath, "Historical command record");
-  const record = JSON.parse(await fs.readFile(recordPath, "utf8"));
-  if (record.logicalCommandId !== entry.logicalCommandId || record.attemptId !== entry.attemptId ||
-      record.exitCode !== 1 || record.signal !== null || record.required !== true ||
-      record.classification !== "required") {
-    throw new Error("Historical G04KIK terminal result is not the preserved failed lint attempt.");
-  }
-  await assertCommandAttemptIntegrity(entry.evidenceRoot, record);
-  const recordFile = await physicalFileRecord(recordPath, entry.evidenceRoot);
   const rootFiles = (await walkFiles(entry.evidenceRoot)).sort();
   const rootInventory = await Promise.all(rootFiles.map((relativePath) =>
     physicalFileRecord(inside(entry.evidenceRoot, relativePath, "Historical root artifact"),

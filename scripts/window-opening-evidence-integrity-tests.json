@@ -188,11 +188,17 @@
     "duplicate physical screenshot path across IDs rejected",
     "old identical camera direction fails",
     "material camera direction transition passes",
-    "G04KIK physical failed lint matches",
-    "G04KIK absent record fails",
-    "G04KIK log hash mismatch fails",
-    "G04KIK cannot count as required final success",
-    "G04KIK record path escape fails",
-    "G04KIK omission fails"
+    "synthetic historical failed command accepted and excluded from required success",
+    "historical missing record rejected",
+    "historical missing stdout rejected",
+    "historical missing stderr rejected",
+    "historical modified stdout rejected",
+    "historical modified stderr rejected",
+    "historical record hash mismatch rejected",
+    "historical exit result contradiction rejected",
+    "historical required success classification rejected",
+    "historical record path escape rejected",
+    "historical required reference omission rejected",
+    "declared absent real historical root rejected"
   ]
 }

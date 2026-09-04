@@ -4,7 +4,7 @@ import type {
   RoomRendererAnnotation,
   RoomRendererFixedElement,
   RoomRendererOpening,
-} from "@/lib/design-page-plan-overlays";
+} from "@/lib/design-page-plan-overlay-model";
 import {
   metersToMm,
   mmToMeters,

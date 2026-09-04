@@ -8,6 +8,7 @@ import { buildDesignPageBetaFeedbackContext, type DesignPageBetaFeedbackInput } 
 import { getRoomTypeLabel } from "@/lib/design-page-house-plan";
 import { getEditorPlanLabel, resolveEditorCapabilities } from "@/lib/editor-capabilities";
 import type { DesignLightingSettings } from "@/lib/lightingPresets";
+import { areRuntimeQaHooksEnabled } from "@/lib/qa";
 import { getAllRoomNames } from "@/lib/room-hooks";
 import { useDesignPageCommandPalette, type DesignPageCommandPaletteActions } from "@/lib/useDesignPageCommandPalette";
 import { useDesignPageEditorChromeController, type UseDesignPageEditorChromeControllerInput } from "@/lib/useDesignPageEditorChromeController";
@@ -53,6 +54,8 @@ export type UseDesignPagePresentationQaFacadeInput = {
     };
     persistence: {
       currentStoredDesignFingerprint: QaInput["state"]["persistence"]["currentStoredDesignFingerprint"];
+      cloudRevision: string | null;
+      cloudBaselineStatus: DesignPageProjectQaMarkersProps["cloudBaselineStatus"];
       isSaving: ChromeCommandState["isSaving"];
       saveStatus: ChromeCommandState["saveStatus"];
     };
@@ -170,7 +173,6 @@ export type UseDesignPagePresentationQaFacadeInput = {
     feedback: { showToast: ChromeActions["showToast"] };
   };
 };
-
 export type DesignPagePresentationQaFacade = {
   state: {
     commandPalette: ReturnType<typeof useDesignPageCommandPalette>["state"];
@@ -189,7 +191,6 @@ export type DesignPagePresentationQaFacade = {
     presentationQaLayer: DesignPagePresentationQaLayerProps;
   };
 };
-
 export function useDesignPagePresentationQaFacade({
   state,
   configuration,
@@ -261,7 +262,6 @@ export function useDesignPagePresentationQaFacade({
       presentation: actions.presentation,
     },
   });
-
   const betaFeedbackContext = buildDesignPageBetaFeedbackContext({
     identity: state.identity,
     editor: {
@@ -289,7 +289,6 @@ export function useDesignPagePresentationQaFacade({
     shopping: state.shopping,
     viewport: state.viewport,
   });
-
   const qaReadModel = useDesignPageQaReadModel({
     state: {
       persistence: {
@@ -307,7 +306,6 @@ export function useDesignPagePresentationQaFacade({
       },
     },
   });
-
   const commandPalette = useDesignPageCommandPalette({
     scopeKey: configuration.commandPaletteScopeKey, state: {
       isClientPreview: state.editor.isClientPreview,
@@ -466,12 +464,15 @@ export function useDesignPagePresentationQaFacade({
       showToast: actions.feedback.showToast,
     },
   });
-
   const { qaSnapshotFingerprint, qaScenePerformanceSnapshot, qaDesignLayoutSnapshot } = qaReadModel.derived;
+  const qaHooksEnabled = areRuntimeQaHooksEnabled();
   const presentationQaLayer: DesignPagePresentationQaLayerProps = {
     project: {
+      qaHooksEnabled,
       snapshotFingerprint: qaSnapshotFingerprint,
       cloudDesignId: state.identity.designId,
+      cloudRevision: state.persistence.cloudRevision,
+      cloudBaselineStatus: state.persistence.cloudBaselineStatus,
       activeRoomId: state.document.snapshot.activeRoomId,
       activeRoomZones: state.document.zones,
       cabinetSchedule: state.qa.cabinetSchedule,
@@ -479,7 +480,7 @@ export function useDesignPagePresentationQaFacade({
     },
     cabinetAssets: { rooms: state.document.snapshot.rooms },
     runtime: {
-      qaHooksEnabled: process.env.NEXT_PUBLIC_ENABLE_QA_HOOKS === "1",
+      qaHooksEnabled,
       firstRunActivation: state.chrome.firstRunActivation,
       scenePerformance: qaScenePerformanceSnapshot,
       layout: qaDesignLayoutSnapshot,
@@ -498,7 +499,6 @@ export function useDesignPagePresentationQaFacade({
       onRunAction: commandPalette.actions.runAction,
     },
   };
-
   return {
     state: { commandPalette: commandPalette.state },
     derived: { betaFeedbackContext, qa: qaReadModel.derived },

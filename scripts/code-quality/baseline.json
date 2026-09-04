@@ -701,7 +701,7 @@
       "limit": 400
     },
     "lib/useDesignPagePersistence.ts": {
-      "lines": 1110,
+      "lines": 1109,
       "limit": 400
     },
     "lib/useDesignPagePlanPresentationModel.ts": {
@@ -1747,7 +1747,7 @@
     "components/editor/design-page/DesignPageQaMarkers.tsx": {
       "overlongFunctions": {
         "count": 2,
-        "maximum": 108
+        "maximum": 106
       }
     },
     "components/editor/design-page/DesignPageSceneRegion.tsx": {
@@ -4699,7 +4699,7 @@
     "lib/useDesignPagePersistence.ts": {
       "overlongFunctions": {
         "count": 4,
-        "maximum": 979
+        "maximum": 978
       }
     },
     "lib/useDesignPagePersistenceRegistration.ts": {
@@ -4825,7 +4825,7 @@
     "lib/useDesignPagePresentationQaFacade.ts": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 316
+        "maximum": 315
       }
     },
     "lib/useDesignPagePresentationWorkspaceRegistration.ts": {

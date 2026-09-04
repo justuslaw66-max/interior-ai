@@ -9,6 +9,60 @@ import {
   disconnectBetaPrismaClient,
 } from "./beta-seed";
 import { selectEditorWorkspace } from "./variant-test-utils";
+import {
+  allowKnownChromiumDesignRuntimeEvents,
+  installBrowserRuntimePolicy,
+  type BrowserRuntimePolicy,
+} from "./browser-runtime-policy";
+import { getE2EBaseUrl } from "./release-environment";
+
+const baseURL = getE2EBaseUrl();
+const CLOUD_AUTOSAVE_DELAY_MS = 900;
+const CLOUD_READY_TIMEOUT_MS = 30_000;
+const runtimePolicies = new WeakMap<Page, BrowserRuntimePolicy>();
+
+test.beforeEach(async ({ page }, testInfo) => {
+  const policy = installBrowserRuntimePolicy(
+    page,
+    testInfo.titlePath.join(" > "),
+  );
+  allowKnownChromiumDesignRuntimeEvents(policy, baseURL);
+  runtimePolicies.set(page, policy);
+});
+
+test.afterEach(async ({ page }) => {
+  runtimePolicies.get(page)?.assertSatisfied();
+});
+
+function allowExpectedHttpFailure(input: {
+  page: Page;
+  method: string;
+  pathname: string;
+  status: number;
+  reason: string;
+}) {
+  const policy = runtimePolicies.get(input.page);
+  policy?.allowHttpFailure({
+    method: input.method,
+    url: new URL(input.pathname, input.page.url()).href,
+    status: input.status,
+    minCount: 1,
+    maxCount: 1,
+    reason: input.reason,
+  });
+  const descriptions: Record<number, string> = {
+    409: "Conflict",
+    503: "Service Unavailable",
+  };
+  const description = descriptions[input.status];
+  if (description) policy?.allowConsoleMessage({
+    type: "error",
+    text: `Failed to load resource: the server responded with a status of ${input.status} (${description})`,
+    minCount: 0,
+    maxCount: 1,
+    reason: `Chromium reports the exact expected ${input.status} response in its console`,
+  });
+}
 
 async function readStableFingerprint(page: Page): Promise<string> {
   const marker = page.getByTestId("qa-editor-snapshot-fingerprint");
@@ -50,6 +104,59 @@ async function expectPersistedFingerprint(
       { timeout: 60_000 },
     )
     .toBe(expectedFingerprint);
+}
+
+async function expectCloudDesignReady(
+  page: Page,
+  designId: string,
+  revision?: string,
+) {
+  const marker = page.getByTestId("qa-editor-cloud-design");
+  await expect(
+    marker,
+    `Cloud design ${designId} did not become authoritative.`,
+  ).toHaveAttribute("data-design-id", designId, {
+    timeout: CLOUD_READY_TIMEOUT_MS,
+  });
+  await expect(marker).toHaveAttribute(
+    "data-cloud-revision",
+    revision ?? /^\d{4}-\d{2}-\d{2}T/,
+    { timeout: CLOUD_READY_TIMEOUT_MS },
+  );
+  await expect(marker).toHaveAttribute(
+    "data-cloud-baseline-status",
+    "acknowledged",
+    { timeout: CLOUD_READY_TIMEOUT_MS },
+  );
+  await expect(page.getByTestId("save-status")).toHaveAttribute(
+    "data-status",
+    "saved",
+    { timeout: CLOUD_READY_TIMEOUT_MS },
+  );
+  await expect(page.getByTestId("save-status")).toHaveAttribute(
+    "data-source",
+    "cloud",
+    { timeout: CLOUD_READY_TIMEOUT_MS },
+  );
+}
+
+async function expectWriteCountStableAcrossAutosaveWindows(
+  readCount: () => number,
+  expectedCount: number,
+) {
+  const observationEndsAt = Date.now() + CLOUD_AUTOSAVE_DELAY_MS * 2 + 100;
+  await expect
+    .poll(
+      () => ({
+        complete: Date.now() >= observationEndsAt,
+        count: readCount(),
+      }),
+      {
+        intervals: [100],
+        timeout: CLOUD_AUTOSAVE_DELAY_MS * 2 + 1_000,
+      },
+    )
+    .toEqual({ complete: true, count: expectedCount });
 }
 
 async function openMyDesigns(page: Page) {
@@ -260,6 +367,7 @@ test.describe("3. Save + Reload Persistence", () => {
       await expect(page.getByTestId("scene-canvas").first()).toBeVisible({
         timeout: 30_000,
       });
+      await expectCloudDesignReady(page, seed.designId);
       await expect(page.getByTestId("qa-editor-snapshot-fingerprint")).toHaveAttribute(
         "data-fingerprint",
         fingerprintBeforeSecondReload,
@@ -275,6 +383,10 @@ test.describe("3. Save + Reload Persistence", () => {
     const seed = await createBetaSeedDesign();
     try {
       await loadSeedDesign(page, seed);
+      allowExpectedHttpFailure({
+        page, method: "PUT", pathname: `/api/designs/${seed.designId}`,
+        status: 503, reason: "exercise visible cloud-save retry recovery",
+      });
       let rejectedWrite = false;
       const designRoute = `**/api/designs/${seed.designId}`;
       await page.route(designRoute, async (route) => {
@@ -329,6 +441,12 @@ test.describe("3. Save + Reload Persistence", () => {
       try {
         const seedB = await createBetaSeedDesign({ email });
         await loadSeedDesign(page, seedA);
+        if (staleResult === "failure") {
+          allowExpectedHttpFailure({
+            page, method: "PUT", pathname: `/api/designs/${seedA.designId}`,
+            status: 503, reason: "prove a stale failed write is inert",
+          });
+        }
 
         let captureWrite!: (route: Route) => void;
         const heldWrite = new Promise<Route>((resolve) => {
@@ -409,6 +527,17 @@ test.describe("3. Save + Reload Persistence", () => {
     const seed = await createBetaSeedDesign();
     try {
       await loadSeedDesign(page, seed);
+      await expectCloudDesignReady(page, seed.designId);
+      allowExpectedHttpFailure({
+        page, method: "PUT", pathname: `/api/designs/${seed.designId}`,
+        status: 409, reason: "create the single recovery-copy conflict",
+      });
+      const originalResponse = await page.request.get(
+        `/api/designs/${encodeURIComponent(seed.designId)}`,
+      );
+      expect(originalResponse.status()).toBe(200);
+      const originalSnapshot = legacyApiToSnapshot(await originalResponse.json());
+      const originalFingerprint = fingerprintDesignSnapshot(originalSnapshot);
       let rejectedWrites = 0;
       await page.route(`**/api/designs/${seed.designId}`, async (route) => {
         if (route.request().method() === "PUT") {
@@ -442,20 +571,64 @@ test.describe("3. Save + Reload Persistence", () => {
       );
 
       const writesAtConflict = rejectedWrites;
-      await page.waitForTimeout(2_200);
-      expect(rejectedWrites).toBe(writesAtConflict);
-
-      await page.getByTestId("cloud-conflict-save-copy").click();
-      await expect(dialog).toBeHidden({ timeout: 30_000 });
-      await expect(page.getByTestId("qa-editor-cloud-design")).not.toHaveAttribute(
-        "data-design-id",
-        seed.designId
+      await expectWriteCountStableAcrossAutosaveWindows(
+        () => rejectedWrites,
+        writesAtConflict,
       );
-      await expect(saveStatus).toHaveAttribute("data-status", "saved");
+
+      const copyCreated = page.waitForResponse(
+        (response) =>
+          response.request().method() === "POST" &&
+          new URL(response.url()).pathname === "/api/designs",
+      );
+      await page.getByTestId("cloud-conflict-save-copy").click();
+      const copyResponse = await copyCreated;
+      expect(copyResponse.status()).toBe(201);
+      const copyIdentity = await copyResponse.json() as {
+        id: string;
+        updatedAt: string;
+      };
+      expect(copyIdentity.id).not.toBe(seed.designId);
+      const copyRequestSnapshot = legacyApiToSnapshot(
+        copyResponse.request().postDataJSON(),
+      );
+      expect(copyRequestSnapshot.rooms).toHaveLength(3);
+      expect(fingerprintDesignSnapshot(copyRequestSnapshot)).toBe(localFingerprint);
+      await expect(dialog).toBeHidden({ timeout: 30_000 });
+      await expect
+        .poll(() =>
+          page.evaluate(() => new URL(window.location.href).searchParams.get("designId")),
+        )
+        .toBe(copyIdentity.id);
+      await expectCloudDesignReady(page, copyIdentity.id, copyIdentity.updatedAt);
       await expect(page.getByTestId("qa-editor-snapshot-fingerprint")).toHaveAttribute(
         "data-fingerprint",
         localFingerprint
       );
+
+      const storedCopyResponse = await page.request.get(
+        `/api/designs/${encodeURIComponent(copyIdentity.id)}`,
+      );
+      expect(storedCopyResponse.status()).toBe(200);
+      const storedCopyBody = await storedCopyResponse.json();
+      expect(storedCopyBody.updatedAt).toBe(copyIdentity.updatedAt);
+      const storedCopySnapshot = legacyApiToSnapshot(storedCopyBody);
+      expect(storedCopySnapshot.rooms).toHaveLength(3);
+      expect(storedCopySnapshot.rooms[0]?.geometry.width).toBe(5.9);
+      expect(fingerprintDesignSnapshot(storedCopySnapshot)).toBe(localFingerprint);
+      await expect(page.getByTestId("room-plan-status-room-count")).toHaveText(
+        "3 rooms",
+      );
+
+      const unchangedOriginalResponse = await page.request.get(
+        `/api/designs/${encodeURIComponent(seed.designId)}`,
+      );
+      expect(unchangedOriginalResponse.status()).toBe(200);
+      expect(
+        fingerprintDesignSnapshot(
+          legacyApiToSnapshot(await unchangedOriginalResponse.json()),
+        ),
+      ).toBe(originalFingerprint);
     } finally {
       await cleanupBetaSeed(seed.userId);
     }
@@ -468,6 +641,10 @@ test.describe("3. Save + Reload Persistence", () => {
     const seed = await createBetaSeedDesign();
     try {
       await loadSeedDesign(page, seed);
+      allowExpectedHttpFailure({
+        page, method: "PUT", pathname: `/api/designs/${seed.designId}`,
+        status: 409, reason: "exercise explicit destructive conflict reload",
+      });
       const loadedCloudFingerprint = await readStableFingerprint(page);
       await page.route(`**/api/designs/${seed.designId}`, async (route) => {
         if (route.request().method() === "PUT") {

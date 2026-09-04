@@ -420,6 +420,45 @@ export function assertRequiredHistoricalCommandReferences(entries, requiredEntri
   return entries;
 }
 
+export async function verifyHistoricalCommandAttempt(entry, requiredEntry) {
+  assertRequiredHistoricalCommandReferences([entry], [requiredEntry]);
+  for (const key of ["evidenceRoot", "logicalCommandId", "attemptId"]) {
+    if (entry[key] !== requiredEntry[key]) {
+      throw new Error(`Historical command ${key} does not match the required record.`);
+    }
+  }
+  if (entry.stage !== "source-safe-validation" ||
+      entry.classification !== "historical-required-failure" ||
+      entry.requiredFinalSuccess !== false || !entry.reason ||
+      typeof entry.argvKnown !== "boolean" || typeof entry.timestampsKnown !== "boolean" ||
+      typeof entry.runnerMetadataKnown !== "boolean") {
+    throw new Error("Historical command classification or knowledge metadata is incomplete.");
+  }
+  const expectedRecordPath = path.join(
+    "commands", entry.logicalCommandId, entry.attemptId, "record.json"
+  );
+  if (path.normalize(entry.recordPath) !== expectedRecordPath) {
+    throw new Error("Historical command record path does not match its immutable attempt.");
+  }
+  const recordPath = pathInside(entry.evidenceRoot, entry.recordPath, "Historical command record");
+  const recordStat = await fs.lstat(recordPath);
+  if (!recordStat.isFile()) {
+    throw new Error("Historical command record is not a regular file.");
+  }
+  const record = JSON.parse(await fs.readFile(recordPath, "utf8"));
+  if (record.logicalCommandId !== entry.logicalCommandId ||
+      record.attemptId !== entry.attemptId || record.exitCode !== 1 ||
+      record.signal !== null || record.required !== true ||
+      record.classification !== "required") {
+    throw new Error("Historical command terminal result contradicts the required failed attempt.");
+  }
+  await assertCommandAttemptIntegrity(entry.evidenceRoot, record);
+  return {
+    record,
+    recordFile: await physicalRecord(recordPath, entry.recordPath),
+  };
+}
+
 function cameraVector(value, length, label) {
   if (!Array.isArray(value) || value.length !== length ||
       value.some((component) => !Number.isFinite(component))) {

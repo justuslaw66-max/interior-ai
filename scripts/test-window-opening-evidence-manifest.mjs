@@ -20,6 +20,7 @@ import {
   assertWorkingTreeIdentityMatches,
   collectWorkingTreeIdentity,
   manifestSha256,
+  verifyHistoricalCommandAttempt,
   verifyWindowOpeningScreenshotEvidence,
 } from "./window-opening-evidence-manifest.mjs";
 import {
@@ -1399,44 +1400,181 @@ assert.doesNotThrow(() => assertWindowOpeningCameraTransition(cameraA, cameraB, 
 }));
 cover("material camera direction transition passes");
 
-const g04Root = "/private/tmp/window-opening-final-evidence-20260901-G04KIK";
-const g04Attempt = "20260901T105640324Z-72243604-b43c-4bdf-9234-905ef6fd615d";
-const g04RecordRelative = path.join("commands", "lint", g04Attempt, "record.json");
-const g04Record = JSON.parse(await fs.readFile(path.join(g04Root, g04RecordRelative), "utf8"));
-await assert.doesNotReject(() => assertCommandAttemptIntegrity(g04Root, g04Record));
-assert.equal(g04Record.exitCode, 1);
-assert.equal(g04Record.signal, null);
-cover("G04KIK physical failed lint matches");
-await assert.rejects(() => fs.readFile(path.join(g04Root, "commands/lint/missing/record.json")));
-cover("G04KIK absent record fails");
-{
-  const corrupted = structuredClone(g04Record);
-  corrupted.stdout.sha256 = "0".repeat(64);
-  await assert.rejects(() => assertCommandAttemptIntegrity(g04Root, corrupted), /does not match/);
-  cover("G04KIK log hash mismatch fails");
+function historicalReference(evidenceRoot, attemptId) {
+  return {
+    evidenceRoot,
+    logicalCommandId: "lint",
+    attemptId,
+    recordPath: path.join("commands", "lint", attemptId, "record.json"),
+    stage: "source-safe-validation",
+    classification: "historical-required-failure",
+    requiredFinalSuccess: false,
+    reason: "Synthetic historical required lint failure.",
+    argvKnown: true,
+    timestampsKnown: true,
+    runnerMetadataKnown: true,
+  };
 }
-const historicalReference = {
-  evidenceRoot: g04Root, logicalCommandId: "lint", attemptId: g04Attempt,
-  recordPath: g04RecordRelative, classification: "historical-required-failure",
-  requiredFinalSuccess: false,
-};
-{
-  const corrupted = { ...historicalReference, requiredFinalSuccess: true };
-  assert.throws(() => assertRequiredHistoricalCommandReferences(
-    [corrupted], [historicalReference]
+
+async function historicalCommandFixture() {
+  const root = await fs.mkdtemp(path.join(os.tmpdir(), "window-opening-historical-command-"));
+  const attemptId = "synthetic-failed-attempt";
+  const reference = historicalReference(root, attemptId);
+  const attemptRoot = path.dirname(path.join(root, reference.recordPath));
+  const stdoutPath = path.join(attemptRoot, "stdout.log");
+  const stderrPath = path.join(attemptRoot, "stderr.log");
+  const recordPath = path.join(root, reference.recordPath);
+  await fs.mkdir(attemptRoot, { recursive: true });
+  await fs.writeFile(stdoutPath, "synthetic historical stdout\n");
+  await fs.writeFile(stderrPath, "synthetic historical stderr\n");
+  const record = {
+    logicalCommandId: reference.logicalCommandId,
+    attemptId,
+    argv: ["npm", "run", "lint"],
+    workingDirectory: "/synthetic/repository",
+    launcher: { version: "synthetic-npm" },
+    runner: { version: "synthetic-eslint" },
+    startedAt: "2026-09-01T00:00:00.000Z",
+    endedAt: "2026-09-01T00:00:01.000Z",
+    exitCode: 1,
+    signal: null,
+    required: true,
+    classification: "required",
+    stdout: await physicalFileRecord(stdoutPath, root),
+    stderr: await physicalFileRecord(stderrPath, root),
+  };
+  const writeRecord = () => fs.writeFile(recordPath, `${JSON.stringify(record, null, 2)}\n`);
+  await writeRecord();
+  return {
+    root,
+    reference,
+    required: {
+      evidenceRoot: root,
+      logicalCommandId: reference.logicalCommandId,
+      attemptId,
+    },
+    record,
+    recordPath,
+    stdoutPath,
+    stderrPath,
+    writeRecord,
+  };
+}
+
+async function withHistoricalCommandFixture(assertion) {
+  const fixture = await historicalCommandFixture();
+  try {
+    await assertion(fixture);
+  } finally {
+    await fs.rm(fixture.root, { recursive: true, force: true });
+  }
+}
+
+await withHistoricalCommandFixture(async (fixture) => {
+  const verified = await verifyHistoricalCommandAttempt(fixture.reference, fixture.required);
+  assert.equal(verified.record.exitCode, 1);
+  assert.equal(verified.record.signal, null);
+  assert.equal(fixture.reference.requiredFinalSuccess, false);
+});
+cover("synthetic historical failed command accepted and excluded from required success");
+
+await withHistoricalCommandFixture(async (fixture) => {
+  await fs.unlink(fixture.recordPath);
+  await assert.rejects(() => verifyHistoricalCommandAttempt(
+    fixture.reference, fixture.required
+  ), /ENOENT|no such file/i);
+});
+cover("historical missing record rejected");
+
+for (const [label, fileName, coverageId] of [
+  ["stdout", "stdoutPath", "historical missing stdout rejected"],
+  ["stderr", "stderrPath", "historical missing stderr rejected"],
+]) {
+  await withHistoricalCommandFixture(async (fixture) => {
+    await fs.unlink(fixture[fileName]);
+    await assert.rejects(() => verifyHistoricalCommandAttempt(
+      fixture.reference, fixture.required
+    ), new RegExp(`${label} log is missing`, "i"));
+  });
+  cover(coverageId);
+}
+
+for (const [label, fileName, coverageId] of [
+  ["stdout", "stdoutPath", "historical modified stdout rejected"],
+  ["stderr", "stderrPath", "historical modified stderr rejected"],
+]) {
+  await withHistoricalCommandFixture(async (fixture) => {
+    await fs.appendFile(fixture[fileName], `modified ${label}\n`);
+    await assert.rejects(() => verifyHistoricalCommandAttempt(
+      fixture.reference, fixture.required
+    ), new RegExp(`${label} log (?:bytes|sha256) does not match`, "i"));
+  });
+  cover(coverageId);
+}
+
+await withHistoricalCommandFixture(async (fixture) => {
+  fixture.record.stdout.sha256 = "0".repeat(64);
+  await fixture.writeRecord();
+  await assert.rejects(() => verifyHistoricalCommandAttempt(
+    fixture.reference, fixture.required
+  ), /stdout log sha256 does not match/i);
+});
+cover("historical record hash mismatch rejected");
+
+await withHistoricalCommandFixture(async (fixture) => {
+  fixture.record.exitCode = 0;
+  await fixture.writeRecord();
+  await assert.rejects(() => verifyHistoricalCommandAttempt(
+    fixture.reference, fixture.required
+  ), /terminal result contradicts/i);
+});
+cover("historical exit result contradiction rejected");
+
+await withHistoricalCommandFixture(async (fixture) => {
+  const countedAsSuccess = { ...fixture.reference, requiredFinalSuccess: true };
+  await assert.rejects(() => verifyHistoricalCommandAttempt(
+    countedAsSuccess, fixture.required
   ), /required final success/);
-  cover("G04KIK cannot count as required final success");
-}
-{
-  const corrupted = { ...historicalReference, recordPath: "../escape.json" };
-  assert.throws(() => assertRequiredHistoricalCommandReferences(
-    [corrupted], [historicalReference]
+});
+cover("historical required success classification rejected");
+
+await withHistoricalCommandFixture(async (fixture) => {
+  const escaped = { ...fixture.reference, recordPath: "../escape.json" };
+  await assert.rejects(() => verifyHistoricalCommandAttempt(
+    escaped, fixture.required
   ), /escapes/);
-  cover("G04KIK record path escape fails");
+});
+cover("historical record path escape rejected");
+
+await withHistoricalCommandFixture(async (fixture) => {
+  assert.throws(() => assertRequiredHistoricalCommandReferences([], [fixture.required]), /omitted/);
+});
+cover("historical required reference omission rejected");
+
+const absentHistoricalRoot = await fs.mkdtemp(
+  path.join(os.tmpdir(), "window-opening-absent-historical-root-")
+);
+await fs.rm(absentHistoricalRoot, { recursive: true });
+const absentHistoricalReference = historicalReference(absentHistoricalRoot, "declared-absent-attempt");
+await assert.rejects(() => verifyHistoricalCommandAttempt(absentHistoricalReference, {
+  evidenceRoot: absentHistoricalRoot,
+  logicalCommandId: absentHistoricalReference.logicalCommandId,
+  attemptId: absentHistoricalReference.attemptId,
+}), /ENOENT|no such file/i);
+cover("declared absent real historical root rejected");
+
+const realHistoricalRoot = process.env.WINDOW_OPENING_HISTORICAL_EVIDENCE_ROOT;
+let realHistoricalCustody = "not-requested";
+if (realHistoricalRoot) {
+  const realAttemptId = "20260901T105640324Z-72243604-b43c-4bdf-9234-905ef6fd615d";
+  const realReference = historicalReference(path.resolve(realHistoricalRoot), realAttemptId);
+  await verifyHistoricalCommandAttempt(realReference, {
+    evidenceRoot: realReference.evidenceRoot,
+    logicalCommandId: realReference.logicalCommandId,
+    attemptId: realReference.attemptId,
+  });
+  realHistoricalCustody = "verified";
 }
-assert.throws(() => assertRequiredHistoricalCommandReferences([], [historicalReference]),
-  /omitted/);
-cover("G04KIK omission fails");
 
 const canonicalRecords = [
   { path: "a", type: "file", mode: "0644", bytes: 1, sha256: "a".repeat(64) },
@@ -1481,5 +1619,6 @@ console.log(JSON.stringify({
   missingCaseIds: inventoryResult.missingIds,
   unexpectedCaseIds: inventoryResult.unexpectedIds,
   duplicateCaseIds: inventoryResult.duplicateIds,
+  realHistoricalCustody,
   cases: inventoryResult.cases,
 }, null, 2));
