@@ -105,7 +105,12 @@ class PostDropAbsenceProofFailureAdapter {
   inspectStageRole(...args) { return this.invoke("inspectStageRole", ...args); }
   inspectStageConnection(...args) { return this.invoke("inspectStageConnection", ...args); }
   deployMigrations(...args) { return this.invoke("deployMigrations", ...args); }
+  migrationNames(...args) { return this.invoke("migrationNames", ...args); }
   applicationRows(...args) { return this.invoke("applicationRows", ...args); }
+  appEventRows(...args) { return this.invoke("appEventRows", ...args); }
+  deleteCertificationAppEvents(...args) {
+    return this.invoke("deleteCertificationAppEvents", ...args);
+  }
   targetSessions(...args) { return this.invoke("targetSessions", ...args); }
   terminateTargetSessions(...args) { return this.invoke("terminateTargetSessions", ...args); }
   dropStageRole(...args) { return this.invoke("dropStageRole", ...args); }
@@ -352,6 +357,8 @@ try {
     "createDatabase",
     "createStageRole",
     "deployMigrations",
+    "migrationNames",
+    "appEventRows",
     "terminateTargetSessions",
     "dropDatabase",
     "dropStageRole",
