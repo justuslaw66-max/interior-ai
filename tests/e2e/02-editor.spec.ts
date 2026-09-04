@@ -37,6 +37,7 @@ type DemandSnapshot = {
     position: [number, number, number];
     scale: [number, number, number];
     canvasPoint: [number, number];
+    dragCanvasPoint: [number, number];
   }>;
 };
 
@@ -376,20 +377,32 @@ test.describe("2. Editor Correctness", () => {
     await selectedPanel
       .getByRole("button", { name: /^Unlock(?: selected)?$/ })
       .click();
-    await page.getByRole("button", { name: "2D Plan", exact: true }).first().click({
-      force: true,
-    });
     await expectRendererPlateau(page);
     const beforeSnap = (await readDemandSnapshot(page)).itemFrames[0];
+    await selectedPanel.getByTestId("selected-item-snap-wall").click();
+    await expect
+      .poll(async () => {
+        const current = await readDemandSnapshot(page);
+        return current.itemFrames[0]?.position.join(",");
+      })
+      .not.toBe(beforeSnap.position.join(","));
+    await expectRendererPlateau(page);
+    const snapStart = (await readDemandSnapshot(page)).itemFrames[0];
+    const pointerX = canvasBox.x + snapStart.canvasPoint[0];
+    const pointerY = canvasBox.y + snapStart.canvasPoint[1];
     await page.mouse.move(
-      canvasBox.x + beforeSnap.canvasPoint[0],
-      canvasBox.y + beforeSnap.canvasPoint[1] - 20,
+      pointerX,
+      pointerY,
     );
     await page.mouse.down();
     await page.waitForTimeout(100);
-    await page.mouse.move(canvasBox.x + 400, canvasBox.y + beforeSnap.canvasPoint[1] - 20, {
-      steps: 12,
-    });
+    // Exercise the real pointer-snap path while remaining inside the configured
+    // threshold from the wall selected by the deterministic Snap wall command.
+    await page.mouse.move(
+      canvasBox.x + snapStart.dragCanvasPoint[0],
+      canvasBox.y + snapStart.dragCanvasPoint[1],
+      { steps: 12 },
+    );
     await page.waitForTimeout(100);
     await page.mouse.up();
     await expect

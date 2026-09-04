@@ -86,6 +86,17 @@ function runCatalogPlacementHitTests() {
   );
   assert.equal(
     isCatalogPlacementLocalFootprintInsideRoom({
+      room: { ...rooms[0], w: 4.2, d: 4.8 },
+      position: [-1.47, 0, 0],
+      rotationY: 0,
+      dimsMm: { w: 1100, d: 1100 },
+      wallThickness: 0.08,
+    }),
+    true,
+    "a decimal wall snap remains contained across floating-point representation"
+  );
+  assert.equal(
+    isCatalogPlacementLocalFootprintInsideRoom({
       room: rooms[0],
       position: [1.41, 0, 0],
       rotationY: 0,

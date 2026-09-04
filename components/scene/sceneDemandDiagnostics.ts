@@ -51,6 +51,7 @@ type SceneDemandItemFrame = Readonly<{
   position: readonly [number, number, number];
   scale: readonly [number, number, number];
   canvasPoint: readonly [number, number];
+  dragCanvasPoint: readonly [number, number];
 }>;
 
 type ActiveAnimation = {
@@ -227,6 +228,17 @@ export function recordSceneDemandMutation(
   ];
 }
 
+export function sceneDemandItemUserData(
+  itemId: string,
+  viewMode: "2d" | "3d",
+  height: number,
+) {
+  return {
+    sceneDemandItemId: itemId,
+    sceneDemandDragPlaneOffsetY: viewMode === "2d" ? 0.01 : height / 2,
+  };
+}
+
 export function recordSceneDemandItemFrames(
   scene: THREE.Object3D,
   camera: THREE.Camera,
@@ -236,13 +248,24 @@ export function recordSceneDemandItemFrames(
   const nextFrames: SceneDemandItemFrame[] = [];
   const worldPosition = new THREE.Vector3();
   const projected = new THREE.Vector3();
-  const bounds = new THREE.Box3();
+  const dragProjected = new THREE.Vector3();
   scene.traverse((object) => {
     const itemId = object.userData.sceneDemandItemId;
     if (typeof itemId !== "string" || itemId.length === 0) return;
     object.getWorldPosition(worldPosition);
-    bounds.setFromObject(object).getCenter(projected);
-    projected.project(camera);
+    projected.copy(worldPosition).project(camera);
+    const dragPlaneOffsetY = object.userData.sceneDemandDragPlaneOffsetY;
+    dragProjected
+      .set(
+        worldPosition.x,
+        worldPosition.y -
+          (typeof dragPlaneOffsetY === "number" &&
+          Number.isFinite(dragPlaneOffsetY)
+            ? dragPlaneOffsetY
+            : 0),
+        worldPosition.z,
+      )
+      .project(camera);
     nextFrames.push(
       Object.freeze({
         itemId,
@@ -252,6 +275,10 @@ export function recordSceneDemandItemFrames(
         canvasPoint: Object.freeze([
           ((projected.x + 1) / 2) * renderer.domElement.clientWidth,
           ((1 - projected.y) / 2) * renderer.domElement.clientHeight,
+        ] as [number, number]),
+        dragCanvasPoint: Object.freeze([
+          ((dragProjected.x + 1) / 2) * renderer.domElement.clientWidth,
+          ((1 - dragProjected.y) / 2) * renderer.domElement.clientHeight,
         ] as [number, number]),
       }),
     );

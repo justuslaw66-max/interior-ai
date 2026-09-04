@@ -165,7 +165,7 @@
       "limit": 250
     },
     "components/editor/design-page/DesignSceneCanvas.tsx": {
-      "lines": 568,
+      "lines": 566,
       "limit": 250
     },
     "components/editor/design-page/DesignSceneStructureLayer.tsx": {
@@ -337,7 +337,7 @@
       "limit": 400
     },
     "components/scene/FurnitureItem.tsx": {
-      "lines": 954,
+      "lines": 953,
       "limit": 250
     },
     "components/scene/glb-scaled-model/huggMaterial.ts": {
@@ -481,7 +481,7 @@
       "limit": 400
     },
     "lib/catalog-placement.ts": {
-      "lines": 860,
+      "lines": 859,
       "limit": 400
     },
     "lib/catalog-schema.ts": {
@@ -1799,7 +1799,7 @@
     "components/editor/design-page/DesignSceneCanvas.tsx": {
       "overlongFunctions": {
         "count": 2,
-        "maximum": 297
+        "maximum": 295
       },
       "complexFunctions": {
         "count": 1,

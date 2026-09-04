@@ -23,9 +23,7 @@ import {
   normalizeRotationDegrees,
   ROTATION_SNAP_STEP_RADIANS,
 } from "@/lib/design-page-utils";
-import {
-  type SnapNeighbor,
-} from "@/lib/design-page-types";
+import { type SnapNeighbor } from "@/lib/design-page-types";
 import { SnapGuides } from "@/components/SnapGuides";
 import { Measurements } from "@/components/Measurements";
 import { GLBScaledModel } from "@/components/scene/GLBScaledModel";
@@ -44,6 +42,7 @@ import type { FurnitureProps } from "./furniture/FurnitureProps";
 import { FurnitureSelectionOutline } from "./furniture/FurnitureSelectionOutline";
 import { resolveFurnitureModelAppearance } from "./furniture/resolveFurnitureModelAppearance";
 import { useFurnitureFiniteAnimations } from "./furniture/useFurnitureFiniteAnimations";
+import { sceneDemandItemUserData } from "./sceneDemandDiagnostics";
 
 export { CameraCapture } from "./furniture/CameraCapture";
 export type { FurnitureProps } from "./furniture/FurnitureProps";
@@ -719,7 +718,7 @@ export function Furniture({
   return (
     <group
       ref={groupRef}
-      userData={{ sceneDemandItemId: instanceId }}
+      userData={sceneDemandItemUserData(instanceId, viewMode, height)}
       position={[
         clampedPosition[0],
         viewMode === "2d" ? 0.01 : (clampedPosition[1] ?? 0) + height / 2,

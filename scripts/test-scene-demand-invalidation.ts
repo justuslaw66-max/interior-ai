@@ -1,7 +1,9 @@
 import assert from "node:assert/strict";
 
 import {
+  DESIGN_SCENE_CONTROL_DAMPING_FACTOR,
   designSceneCameraMotionChanged,
+  resolveDesignSceneControlDampingFactor,
   type CameraMotion,
 } from "../components/editor/design-page/designSceneDemandPolicy";
 import {
@@ -32,6 +34,21 @@ assert.equal(
     target: [0, 0, 0.01],
   }),
   true,
+);
+assert.ok(
+  Math.abs(
+    resolveDesignSceneControlDampingFactor(1 / 60) -
+      DESIGN_SCENE_CONTROL_DAMPING_FACTOR,
+  ) < Number.EPSILON,
+);
+assert.ok(
+  resolveDesignSceneControlDampingFactor(0.1) >
+    DESIGN_SCENE_CONTROL_DAMPING_FACTOR,
+  "slow rendered frames must consume proportionally more of the damping tail",
+);
+assert.equal(
+  resolveDesignSceneControlDampingFactor(Number.NaN),
+  DESIGN_SCENE_CONTROL_DAMPING_FACTOR,
 );
 
 const renderer = {} as Parameters<typeof instrumentSceneDemandRenderer>[0];

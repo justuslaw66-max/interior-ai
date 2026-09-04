@@ -538,7 +538,6 @@ export function DesignSceneCanvas({
           <MapControls
             ref={controlsRef}
             enableDamping
-            dampingFactor={0.08}
             enablePan={!state.isClientPreview}
             enableZoom={!state.isClientPreview}
             enableRotate={false}
@@ -549,7 +548,6 @@ export function DesignSceneCanvas({
           <OrbitControls
             ref={controlsRef}
             enableDamping
-            dampingFactor={0.08}
             enablePan={!state.isClientPreview}
             enableZoom={!state.isClientPreview}
             enableRotate={!state.isClientPreview}

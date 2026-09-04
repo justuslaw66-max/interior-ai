@@ -33,3 +33,12 @@ export function isWithinEditorTolerance(
     Number.EPSILON * Math.max(1, Math.abs(first), Math.abs(second));
   return Math.abs(first - second) <= tolerance + representationSlack;
 }
+
+export function isWithinEditorBoundary(
+  value: number,
+  lowerBound: number,
+  upperBound: number,
+): boolean {
+  const tolerance = EDITOR_GEOMETRY_TOLERANCES.boundaryMeters;
+  return value >= lowerBound - tolerance && value <= upperBound + tolerance;
+}
