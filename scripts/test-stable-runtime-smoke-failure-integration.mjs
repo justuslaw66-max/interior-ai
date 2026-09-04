@@ -150,9 +150,16 @@ function validatePhysicalFailureEvidence({ capture, manifest, journal }) {
   assert.match(reportText, /RuntimeSmokeOperationTimeoutError/);
   assert.match(reportText, /reload-1/);
   assert.match(reportText, /diagnostics-settle-evaluation/);
-  assert.match(timingText, /RuntimeSmokeOperationTimeoutError/);
   assert.match(timingText, /reload-1/);
   assert.match(timingText, /diagnostics-settle-evaluation/);
+  assert.equal(timings.failure.failureKind, "nested-operation-timeout");
+  assert.equal(timings.failure.phaseId, "reload-1");
+  assert.equal(
+    timings.failure.operationId,
+    "diagnostics-settle-evaluation",
+  );
+  assert.equal(timings.failure.operationOutcome, "timed-out");
+  assert.equal(timings.failure.deadlineReached, true);
 
   assert.equal(attribution.failure.classification, "PRODUCT_ASSERTION_FAILURE");
   assert.equal(attribution.failure.consumedSubstantiveGate, true);
@@ -209,6 +216,8 @@ function stableEnvironment({ manifest, runnerTemp, runId }) {
 async function runTimeoutCase({ manifest, journal, runnerTemp, runId, failAbsenceProof }) {
   const capture = {
     attributionResult: null,
+    failureEvidenceValidationError: null,
+    failureEvidenceValidated: false,
     prepared: null,
     cleaned: null,
     roots: null,
@@ -246,7 +255,12 @@ async function runTimeoutCase({ manifest, journal, runnerTemp, runId, failAbsenc
         },
         afterFailureAttribution(result) {
           capture.attributionResult = structuredClone(result);
-          validatePhysicalFailureEvidence({ capture, manifest, journal });
+          try {
+            validatePhysicalFailureEvidence({ capture, manifest, journal });
+            capture.failureEvidenceValidated = true;
+          } catch (error) {
+            capture.failureEvidenceValidationError = error;
+          }
         },
         afterDatabaseAbort(result) {
           capture.cleaned = structuredClone(result);
@@ -261,6 +275,8 @@ async function runTimeoutCase({ manifest, journal, runnerTemp, runId, failAbsenc
     }),
     /stable runtime-smoke product tests failed/,
   );
+  assert.ifError(capture.failureEvidenceValidationError);
+  assert.equal(capture.failureEvidenceValidated, true);
   assert.ok(capture.attributionResult);
   assert.ok(capture.prepared);
   return { capture, wrapper };
