@@ -275,14 +275,18 @@ export function useFurnitureFiniteAnimations(
   );
   useVisibleAnimationResume(controller, options.interactive);
   useFurnitureAnimationFrames(controller, options);
+  const {
+    startLockedShake: startLockedShakeAnimation,
+    startSnapBump: startSnapBumpAnimation,
+  } = controller;
   const startLockedShake = useCallback(() => {
     if (!options.interactive) return;
-    controller.startLockedShake();
-  }, [controller.startLockedShake, options.interactive]);
+    startLockedShakeAnimation();
+  }, [options.interactive, startLockedShakeAnimation]);
   const startSnapBump = useCallback(() => {
     if (!options.interactive) return;
-    controller.startSnapBump();
-  }, [controller.startSnapBump, options.interactive]);
+    startSnapBumpAnimation();
+  }, [options.interactive, startSnapBumpAnimation]);
   return {
     groupRef: controller.groupRef,
     startLockedShake,
