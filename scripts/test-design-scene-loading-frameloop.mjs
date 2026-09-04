@@ -80,6 +80,16 @@ assert.match(
   "a hidden finite animation must request its terminal frame when visible again",
 );
 assert.match(
+  furnitureSource,
+  /if \(!interactive\) \{[\s\S]*placementStartRef\.current = null;[\s\S]*shakeUntilRef\.current = 0;[\s\S]*snapBumpUntilRef\.current = 0;/,
+  "an inactive item owner must cancel every finite-animation clock",
+);
+assert.match(
+  furnitureSource,
+  /const startLockedShake = useCallback\(\(\) => \{\s*if \(!options\.interactive\) return;/,
+  "an inactive item owner must not start a locked-item shake",
+);
+assert.match(
   exposureSource,
   /applyRendererLightingSettings[\s\S]*requestSceneDemandFrame\(invalidate\)/,
   "renderer exposure changes must request a demand frame",

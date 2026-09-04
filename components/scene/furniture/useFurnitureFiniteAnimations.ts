@@ -87,6 +87,7 @@ function usePlacementAnimationLifecycle(
 ) {
   const { generationRef, placementStartRef, requestFiniteFrame, tokensRef } =
     controller;
+  const { shakeUntilRef, snapBumpUntilRef } = controller;
   useEffect(() => {
     const generation = generationRef.current + 1;
     const tokens = Object.values(tokensRef.current);
@@ -94,6 +95,8 @@ function usePlacementAnimationLifecycle(
     cancelSceneFiniteAnimations(tokens);
     if (!interactive) {
       placementStartRef.current = null;
+      shakeUntilRef.current = 0;
+      snapBumpUntilRef.current = 0;
       return;
     }
     placementStartRef.current = performance.now();
@@ -107,10 +110,22 @@ function usePlacementAnimationLifecycle(
       if (generationRef.current === generation) generationRef.current += 1;
       cancelSceneFiniteAnimations(tokens);
     };
-  }, [generationRef, instanceId, interactive, placementStartRef, requestFiniteFrame, tokensRef]);
+  }, [
+    generationRef,
+    instanceId,
+    interactive,
+    placementStartRef,
+    requestFiniteFrame,
+    shakeUntilRef,
+    snapBumpUntilRef,
+    tokensRef,
+  ]);
 }
 
-function useVisibleAnimationResume(controller: AnimationController) {
+function useVisibleAnimationResume(
+  controller: AnimationController,
+  interactive: boolean,
+) {
   const {
     placementStartRef,
     requestFiniteFrame,
@@ -120,6 +135,7 @@ function useVisibleAnimationResume(controller: AnimationController) {
   useEffect(() => {
     const resume = () => {
       if (
+        interactive &&
         document.visibilityState === "visible" &&
         (placementStartRef.current !== null ||
           snapBumpUntilRef.current > 0 ||
@@ -130,7 +146,13 @@ function useVisibleAnimationResume(controller: AnimationController) {
     };
     document.addEventListener("visibilitychange", resume);
     return () => document.removeEventListener("visibilitychange", resume);
-  }, [placementStartRef, requestFiniteFrame, shakeUntilRef, snapBumpUntilRef]);
+  }, [
+    interactive,
+    placementStartRef,
+    requestFiniteFrame,
+    shakeUntilRef,
+    snapBumpUntilRef,
+  ]);
 }
 
 function updateFurniturePositionFrame(
@@ -138,6 +160,7 @@ function updateFurniturePositionFrame(
   now: number,
   clampedPosition: [number, number, number],
   height: number,
+  interactive: boolean,
 ) {
   const { groupRef, shakeUntilRef, snapBumpUntilRef, tokensRef } = controller;
   const group = groupRef.current;
@@ -145,11 +168,11 @@ function updateFurniturePositionFrame(
   const [baseX, positionY, baseZ] = clampedPosition;
   const bumpRemaining = snapBumpUntilRef.current - now;
   const bumpWasRunning = snapBumpUntilRef.current > 0;
-  const bumpActive = bumpRemaining > 0;
+  const bumpActive = interactive && bumpRemaining > 0;
   const bump = bumpActive
     ? Math.sin((bumpRemaining / SNAP_BUMP_DURATION_MS) * Math.PI) * 0.02
     : 0;
-  const shakeActive = shakeUntilRef.current > now;
+  const shakeActive = interactive && shakeUntilRef.current > now;
   const shakeWasRunning = shakeUntilRef.current > 0;
   const shake = shakeActive
     ? Math.sin(
@@ -232,6 +255,7 @@ function useFurnitureAnimationFrames(
       now,
       options.clampedPosition,
       options.height,
+      options.interactive,
     );
     const placementActive = updateFurnitureScaleFrame(controller, now, options);
     if (shakeActive || bumpActive || placementActive) {
@@ -249,11 +273,19 @@ export function useFurnitureFiniteAnimations(
     options.instanceId,
     options.interactive,
   );
-  useVisibleAnimationResume(controller);
+  useVisibleAnimationResume(controller, options.interactive);
   useFurnitureAnimationFrames(controller, options);
+  const startLockedShake = useCallback(() => {
+    if (!options.interactive) return;
+    controller.startLockedShake();
+  }, [controller.startLockedShake, options.interactive]);
+  const startSnapBump = useCallback(() => {
+    if (!options.interactive) return;
+    controller.startSnapBump();
+  }, [controller.startSnapBump, options.interactive]);
   return {
     groupRef: controller.groupRef,
-    startLockedShake: controller.startLockedShake,
-    startSnapBump: controller.startSnapBump,
+    startLockedShake,
+    startSnapBump,
   };
 }
