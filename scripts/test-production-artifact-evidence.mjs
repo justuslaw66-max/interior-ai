@@ -123,7 +123,10 @@ import {
   projectRuntimeSmokeBrowserHeartbeat,
   runtimeSmokeBrowserCallbackMilestoneMatchesRequest,
 } from "./runtime-smoke-browser-diagnostics.mjs";
-import { evaluateRuntimeSmokeRendererIdle } from "./runtime-smoke-render-idle.mjs";
+import {
+  RUNTIME_SMOKE_RENDER_IDLE_OBSERVATION_CONTRACT,
+  evaluateRuntimeSmokeRendererIdle,
+} from "./runtime-smoke-render-idle.mjs";
 
 const sequentialRuntimeSmokeBudgetMs = RUNTIME_SMOKE_PHASE_BUDGETS.reduce(
   (total, phase) => total + phase.timeoutMs,
@@ -625,32 +628,132 @@ function boundAuthFixtureEnvironment() {
     { key: "model-1", renderCount: 3, boundsMaterialChangeCount: 1 },
     { key: "model-2", renderCount: 4, boundsMaterialChangeCount: 1 },
   ];
-  assert.deepEqual(
-    evaluateRuntimeSmokeRendererIdle({
-      previous: { models, rendererCalls: 120 },
-      current: { models: structuredClone(models), rendererCalls: 180 },
-    }),
-    {
-      settled: false,
-      modelsStable: true,
-      rendererIdle: false,
-      rendererCallDelta: 60,
-    },
-    "a permanent scene loop must fail even when React model counters are stable",
+  const idleSamples = () =>
+    Array.from(
+      { length: RUNTIME_SMOKE_RENDER_IDLE_OBSERVATION_CONTRACT.requiredSampleCount },
+      (_, index) => ({
+        schema: "interior-ai.runtime-smoke-render-idle-sample.v1",
+        version: 1,
+        capturedAtMs: 1_000 + index * 500,
+        callbackRequestId: 16,
+        callbackEnteredAtMs: 1_000,
+        callbackEntryObserved: true,
+        documentGenerationId: "document-1",
+        reloadGeneration: 3,
+        rendererInstrumentationGeneration: 2,
+        rendererCalls: 180,
+        invalidationCalls: 24,
+        lastRendererCallAtMs: 500,
+        lastInvalidationAtMs: 500,
+        visibilityState: "visible",
+        lifecycleState: "active",
+        webglContextState: "active",
+        webglGeneration: 0,
+        activeControlTransitionCount: 0,
+        activeItemAnimationCount: 0,
+        activeSupportedAnimationCount: 0,
+        pendingInvalidation: false,
+        requiredModelRegistryIdentity: "g3:v14:model-1,model-2",
+        requiredActiveModelCount: 2,
+        models: structuredClone(models),
+        sampleFreshnessMs: 0,
+      }),
+    );
+  const expectRejected = (samples, reason, description) => {
+    const verdict = evaluateRuntimeSmokeRendererIdle({ samples });
+    assert.equal(verdict.settled, false, description);
+    assert.ok(verdict.reasons.includes(reason), description);
+  };
+  const positive = evaluateRuntimeSmokeRendererIdle({ samples: idleSamples() });
+  assert.equal(positive.settled, true, "a static scene must become idle");
+  assert.equal(positive.observationDurationMs, 2_500);
+  assert.equal(positive.rendererCallDelta, 0);
+  assert.equal(positive.invalidationCallDelta, 0);
+
+  const permanent = idleSamples().map((sample, index) => ({
+    ...sample,
+    rendererCalls: 180 + index * 30,
+    lastRendererCallAtMs: sample.capturedAtMs,
+  }));
+  expectRejected(
+    permanent,
+    "renderer-calls-observed",
+    "a permanent 60-Hz renderer loop must fail",
   );
-  assert.deepEqual(
-    evaluateRuntimeSmokeRendererIdle({
-      previous: { models, rendererCalls: 180 },
-      current: { models: structuredClone(models), rendererCalls: 180 },
-    }),
-    {
-      settled: true,
-      modelsStable: true,
-      rendererIdle: true,
-      rendererCallDelta: 0,
-    },
-    "finite activity must pass after renderer calls stop",
+
+  const lowFrequency = idleSamples();
+  for (let index = 3; index < lowFrequency.length; index += 1) {
+    lowFrequency[index].rendererCalls += 1;
+    lowFrequency[index].invalidationCalls += 1;
+    lowFrequency[index].lastRendererCallAtMs = lowFrequency[3].capturedAtMs;
+    lowFrequency[index].lastInvalidationAtMs = lowFrequency[3].capturedAtMs;
+  }
+  expectRejected(
+    lowFrequency,
+    "invalidations-observed",
+    "a 1.5-second recurring invalidation must fail the 2.5-second window",
   );
+
+  for (const [description, reason, mutate] of [
+    ["stale identical samples", "stale-sample", (samples) => {
+      samples[2].capturedAtMs = samples[1].capturedAtMs;
+    }],
+    ["cross-document samples", "cross-document-observation", (samples) => {
+      samples[4].documentGenerationId = "document-2";
+    }],
+    ["cross-reload samples", "cross-reload-observation", (samples) => {
+      samples[4].reloadGeneration = 4;
+    }],
+    ["hidden documents", "document-not-visible", (samples) => {
+      samples[2].visibilityState = "hidden";
+    }],
+    ["WebGL-lost documents", "webgl-context-lost", (samples) => {
+      samples[2].webglContextState = "lost";
+    }],
+    ["WebGL restoration between samples", "webgl-generation-changed", (samples) => {
+      samples[4].webglGeneration = 2;
+    }],
+    ["renderer counter resets", "renderer-counter-reset", (samples) => {
+      samples[3].rendererCalls = 179;
+    }],
+    ["invalidation counter resets", "invalidation-counter-reset", (samples) => {
+      samples[3].invalidationCalls = 23;
+    }],
+    ["active item animations", "active-item-animation", (samples) => {
+      samples[2].activeItemAnimationCount = 1;
+      samples[2].activeSupportedAnimationCount = 1;
+    }],
+    ["active control damping", "active-control-transition", (samples) => {
+      samples[2].activeControlTransitionCount = 1;
+      samples[2].activeSupportedAnimationCount = 1;
+    }],
+    ["pending invalidation", "pending-invalidation", (samples) => {
+      samples[2].pendingInvalidation = true;
+    }],
+  ]) {
+    const samples = idleSamples();
+    mutate(samples);
+    expectRejected(samples, reason, description);
+  }
+  for (const [description, mutate] of [
+    ["missing renderer instrumentation", (samples) => {
+      samples[0].rendererInstrumentationGeneration = 0;
+    }],
+    ["callback with no entered-browser milestone", (samples) => {
+      samples[0].callbackEntryObserved = false;
+    }],
+    ["malformed renderer counters", (samples) => {
+      samples[0].rendererCalls = -1;
+    }],
+  ]) {
+    const samples = idleSamples();
+    mutate(samples);
+    assert.throws(
+      () => evaluateRuntimeSmokeRendererIdle({ samples }),
+      /observation is malformed/,
+      description,
+    );
+  }
 }
 
 {
@@ -775,14 +878,23 @@ function boundAuthFixtureEnvironment() {
   }
 }
 assert.deepEqual(RUNTIME_SMOKE_DIAGNOSTICS_SETTLE_CONTRACT, {
-  requiredStableSamples: 2,
-  sampleIntervalMs: 500,
+  observation: {
+    schema: "interior-ai.runtime-smoke-render-idle-observation-contract.v1",
+    version: 1,
+    sampleIntervalMs: 500,
+    requiredSampleCount: 6,
+    observationDurationMs: 2_500,
+    rendererIdleWindowMs: 2_000,
+    maximumSampleFreshnessMs: 750,
+    maximumSampleGapMs: 1_250,
+  },
+  maximumObservationAttempts: 2,
+  finalReadbackEvaluationCount: 1,
   firstSampleImmediate: true,
-  baselineEvaluationCount: 1,
   evaluationCount: 3,
   evaluationTimeoutMs: 10_000,
-  assertionAllowanceMs: 1_000,
-  minimumTheoreticalCompletionMs: 1_000,
+  assertionAllowanceMs: 2_000,
+  minimumTheoreticalCompletionMs: 2_500,
   maximumLegalSequentialEnvelopeMs: 32_000,
   orchestrationMarginMs: 10_000,
   timeoutMs: 42_000,

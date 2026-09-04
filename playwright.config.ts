@@ -3,6 +3,7 @@ import {
   devices,
   type ReporterDescription,
 } from "@playwright/test";
+import { execFileSync } from "node:child_process";
 import path from "node:path";
 import { loadProductionArtifactForPlaywright } from "./scripts/production-artifact-playwright.mjs";
 import {
@@ -21,6 +22,13 @@ const productionEvidenceManifestPath = process.env.PRODUCTION_EVIDENCE_MANIFEST?
 const productionEvidenceReportPath = process.env.PLAYWRIGHT_JSON_OUTPUT_FILE;
 const requiredTestGateId = process.env.REQUIRED_TEST_GATE_ID?.trim();
 const requiredTestReportPath = process.env.REQUIRED_TEST_REPORT_PATH?.trim();
+
+function gitIdentity(revision: string) {
+  return execFileSync("git", ["rev-parse", revision], {
+    cwd: process.cwd(),
+    encoding: "utf8",
+  }).trim();
+}
 
 if (requiredTestGateId && !/^[a-z0-9][a-z0-9.-]+$/.test(requiredTestGateId)) {
   throw new Error("REQUIRED_TEST_GATE_ID is invalid.");
@@ -52,6 +60,14 @@ const loadedProductionArtifactEvidence = productionEvidenceManifestPath
     })
   : null;
 const productionArtifactEvidence = loadedProductionArtifactEvidence?.identity ?? null;
+const directRuntimeSmokeIdentity =
+  !productionArtifactEvidence && !requiredTestGateId
+    ? Object.freeze({
+        candidateCommitSha: gitIdentity("HEAD"),
+        candidateTreeSha: gitIdentity("HEAD^{tree}"),
+        buildIdentity: "next-development-server",
+      })
+    : null;
 const productionEvidenceReportOutputPath =
   loadedProductionArtifactEvidence?.reportDestination.outputPath;
 const certificationRuntimeMarkerPath =
@@ -149,10 +165,14 @@ export default defineConfig({
           ["list"],
           ["json", { outputFile: requiredTestReportPath }],
         ]
-      : [["list"]],
+      : [
+          ["list"],
+          ["./scripts/runtime-smoke-direct-attempt-reporter.mjs"],
+        ],
   metadata: {
     gateA3ReleaseBaseURL: releaseBaseURL ?? null,
     productionArtifactEvidence,
+    directRuntimeSmokeIdentity,
     requiredTestEvidence: requiredTestGateId
       ? {
           schema: "interior-ai.required-test-evidence.v1",

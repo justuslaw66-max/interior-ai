@@ -20,7 +20,10 @@ import {
   removeStableRuntimeRoot,
   stableRuntimePaths,
 } from "./stable-runtime-smoke-resources.mjs";
-import { cleanupFailedStableRun } from "./stable-runtime-smoke.mjs";
+import RuntimeSmokeDirectAttemptReporter, {
+  runtimeSmokeDirectAttemptResultPath,
+} from "./runtime-smoke-direct-attempt-reporter.mjs";
+import { resolveRuntimeSmokeTimingDestination } from "./runtime-smoke-phase-budget.mjs";
 
 const runtimeSmokeSource = readFileSync(
   path.join(process.cwd(), "tests/e2e/00-runtime-smoke.spec.ts"),
@@ -64,6 +67,93 @@ assert.doesNotMatch(
   /evidence_root="\.local\/production-artifact-evidence"/,
   "certified runtime evidence must not fall back into the repository",
 );
+
+{
+  const repositoryRoot = mkdtempSync(
+    path.join(tmpdir(), "runtime-repeat-attempt-ownership-"),
+  );
+  try {
+    const reporterOutputRoot = path.join(repositoryRoot, "reporter-attempts");
+    const reporter = new RuntimeSmokeDirectAttemptReporter({
+      outputRoot: reporterOutputRoot,
+      timingRoot: path.join(repositoryRoot, "test-results"),
+    });
+    const timingPaths = new Set();
+    const resultPaths = new Set();
+    for (let repeatEachIndex = 0; repeatEachIndex < 20; repeatEachIndex += 1) {
+      const identity = {
+        schema: "interior-ai.runtime-smoke-direct-result.v1",
+        repeatEachIndex,
+        retry: 0,
+        projectName: "chromium",
+        workerIndex: 0,
+        parallelIndex: 0,
+        testId: "runtime.template-stability",
+        processId: 4312,
+        candidateCommitSha: "a".repeat(40),
+        candidateTreeSha: "b".repeat(40),
+        buildIdentity: "next-development-server",
+        status: "passed",
+      };
+      const timingPath = resolveRuntimeSmokeTimingDestination({
+          repositoryRoot,
+          timingPath:
+            `test-results/runtime-repeat-${repeatEachIndex}/` +
+            "phase-timings-4312.json",
+          environment: {},
+        }).outputPath;
+      timingPaths.add(timingPath);
+      mkdirSync(path.dirname(timingPath), { recursive: true });
+      const { status: _status, ...attemptIdentity } = identity;
+      attemptIdentity.schema = "interior-ai.runtime-smoke-direct-attempt.v1";
+      writeFileSync(
+        timingPath,
+        `${JSON.stringify({ attemptIdentity })}\n`,
+        { flag: "wx", mode: 0o600 },
+      );
+      const resultPath = runtimeSmokeDirectAttemptResultPath({
+        outputRoot: path.join(repositoryRoot, "test-results/direct-attempts"),
+        identity,
+      });
+      resultPaths.add(resultPath);
+      mkdirSync(path.dirname(resultPath), { recursive: true });
+      writeFileSync(resultPath, `${JSON.stringify(identity)}\n`, {
+        flag: "wx",
+        mode: 0o600,
+      });
+      assert.deepEqual(JSON.parse(readFileSync(resultPath, "utf8")), identity);
+      reporter.onTestEnd(
+        {
+          title: "furnished template remains stable without a render loop",
+          repeatEachIndex,
+          id: identity.testId,
+          parent: { project: () => ({ name: identity.projectName }) },
+          annotations: [
+            {
+              type: "runtime-smoke-direct-timing-path",
+              description: timingPath,
+            },
+          ],
+        },
+        { retry: 0, workerIndex: 0, parallelIndex: 0, status: "passed" },
+      );
+    }
+    assert.equal(timingPaths.size, 20);
+    assert.equal(resultPaths.size, 20);
+    assert.equal(
+      [...resultPaths].every((resultPath) => existsSync(resultPath)),
+      true,
+    );
+    reporter.onEnd();
+    assert.equal(existsSync(reporterOutputRoot), false);
+    assert.equal(
+      [...timingPaths].every((timingPath) => !existsSync(timingPath)),
+      true,
+    );
+  } finally {
+    rmSync(repositoryRoot, { recursive: true, force: true });
+  }
+}
 assert.match(
   stableRuntimeParentSource,
   /STABLE_RUNTIME_SMOKE_DATABASE_PROFILE/,
@@ -387,124 +477,10 @@ assert.match(
   }
 }
 
-{
-  const runnerTemp = mkdtempSync(
-    path.join(tmpdir(), "stable-runtime-failed-cleanup-"),
-  );
-  const manifest = {
-    candidateIdentifier: "github-33785385583-1",
-    source: {
-      commitSha: "a".repeat(40),
-      treeSha: "b".repeat(40),
-    },
-    build: { nextBuildId: "failed-runtime-build" },
-    artifact: { sha256: "c".repeat(64) },
-  };
-  const environment = {
-    RUNNER_TEMP: runnerTemp,
-    GITHUB_RUN_ID: "33785385583",
-    GITHUB_RUN_ATTEMPT: "1",
-    STABLE_RUNTIME_SMOKE_EXPECTED_SOURCE_SHA: manifest.source.commitSha,
-  };
-  let roots = null;
-  try {
-    roots = createStableRuntimeRoots({ repositoryRoot: process.cwd(), environment, manifest });
-    const paths = stableRuntimePaths(roots.evidenceRoot);
-    const lifecyclePath = path.join(roots.evidenceRoot, "database/lifecycle.json");
-    const lifecycleEvidence = {
-      currentState: "runtime-smoke-bound",
-      revision: 7,
-    };
-    mkdirSync(path.dirname(lifecyclePath), { mode: 0o700 });
-    writeFileSync(
-      lifecyclePath,
-      `${JSON.stringify(lifecycleEvidence, null, 2)}\n`,
-      { flag: "wx", mode: 0o600 },
-    );
-    for (const filePath of [paths.report, paths.timings, paths.marker]) {
-      writeFileSync(filePath, "{}\n", { flag: "wx", mode: 0o600 });
-    }
-    let capturedAttribution = null;
-    let capturedFailure = null;
-    const context = {
-      repositoryRoot: process.cwd(),
-      lifecycleEnvironment: {
-        CERTIFICATION_DATABASE_LIFECYCLE_PATH: lifecyclePath,
-      },
-      roots,
-      paths,
-      manifest,
-      originalManifest: structuredClone(manifest),
-      journal: { runNonce: "123e4567-e89b-42d3-a456-426614174001" },
-      runtime: {
-        manifestSha256: "d".repeat(64),
-        journalSha256: "e".repeat(64),
-        projection: {
-          metadata: {
-            profileId: "runtime-smoke",
-            profileSha256: "f".repeat(64),
-          },
-        },
-      },
-      consumed: false,
-      bundleStarted: false,
-      manifestFinalized: false,
-      testHooks: {
-        readDatabaseLifecycle: () => ({ evidence: lifecycleEvidence }),
-        afterFailureAttribution: ({ attribution }) => {
-          capturedAttribution = structuredClone(attribution);
-        },
-        abortDatabase: async ({ failure }) => {
-          capturedFailure = structuredClone(failure);
-          return true;
-        },
-      },
-    };
-    const productFailure = Object.assign(
-      new Error("injected stable runtime-smoke product failure"),
-      {
-        classification: "PRODUCT_ASSERTION_FAILURE",
-        consumedSubstantiveGate: true,
-        runtimeCommand:
-          "npx playwright test tests/e2e/00-runtime-smoke.spec.ts --project=chromium",
-        childStatus: 1,
-        childSignal: null,
-        spawnErrorClassification: null,
-      },
-    );
-    await cleanupFailedStableRun(context, productFailure);
-    assert.equal(context.roots, null);
-    assert.equal(existsSync(roots.taskRoot), false);
-    assert.equal(capturedFailure.classification, "PRODUCT_ASSERTION_FAILURE");
-    assert.equal(capturedFailure.stage, "runtime-smoke");
-    assert.equal(capturedFailure.attempt, 1);
-    assert.equal(capturedFailure.consumedSubstantiveGate, true);
-    assert.match(capturedFailure.failedStateSha256, /^[a-f0-9]{64}$/);
-    assert.deepEqual(Object.keys(capturedFailure.evidenceReferences).sort(), [
-      "runtime-failure",
-      "runtime-phase-timings",
-      "runtime-report",
-      "runtime-start",
-    ]);
-    assert.equal(capturedAttribution.child.status, 1);
-    assert.equal(capturedAttribution.child.signal, null);
-    assert.equal(
-      capturedAttribution.identity.sourceCommitSha,
-      manifest.source.commitSha,
-    );
-    assert.equal(
-      capturedAttribution.evidenceRootOwner.certificationId,
-      roots.owner.certificationId,
-    );
-    const serialized = JSON.stringify(capturedAttribution);
-    assert.equal(serialized.includes(runnerTemp), false);
-    assert.equal(serialized.includes(process.cwd()), false);
-  } finally {
-    if (roots?.taskRoot && existsSync(roots.taskRoot)) {
-      rmSync(roots.taskRoot, { recursive: true, force: true });
-    }
-    rmSync(runnerTemp, { recursive: true, force: true });
-  }
-}
+assert.doesNotMatch(
+  stableRuntimeParentSource,
+  /process\.env\.[A-Z0-9_]*TIMEOUT_INJECTION/,
+  "the real post-product timeout must not be activatable by environment",
+);
 
 console.log("CH-0029 runtime-smoke resource-isolation contract passed.");

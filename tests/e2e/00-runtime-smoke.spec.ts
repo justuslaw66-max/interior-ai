@@ -1,4 +1,5 @@
 import { expect, test } from "./fixtures";
+import path from "node:path";
 import { confirmPlanTemplateReplacementIfNeeded } from "./plan-template-test-utils";
 import { getSelectedItemPanel } from "./variant-test-utils";
 import {
@@ -32,7 +33,10 @@ import {
   projectRuntimeSmokeBrowserHeartbeat,
   runtimeSmokeBrowserCallbackMilestoneMatchesRequest,
 } from "../../scripts/runtime-smoke-browser-diagnostics.mjs";
-import { evaluateRuntimeSmokeRendererIdle } from "../../scripts/runtime-smoke-render-idle.mjs";
+import {
+  RUNTIME_SMOKE_RENDER_IDLE_OBSERVATION_CONTRACT,
+  evaluateRuntimeSmokeRendererIdle,
+} from "../../scripts/runtime-smoke-render-idle.mjs";
 import {
   RUNTIME_SMOKE_TELEMETRY_BOOTSTRAP_ATTACHMENT,
   createRuntimeSmokeTelemetryBootstrapEvidence,
@@ -108,10 +112,49 @@ test.describe("00. Runtime smoke", () => {
   test("furnished template remains stable without a render loop", async ({ page }, testInfo) => {
     test.setTimeout(RUNTIME_SMOKE_WHOLE_TEST_TIMEOUT_MS);
     let finalLifecycleState = "not-observed";
+    const configuredTimingPath =
+      process.env.RUNTIME_SMOKE_PHASE_TIMINGS_PATH?.trim();
+    const directTimingPath = path.relative(
+      process.cwd(),
+      testInfo.outputPath(`phase-timings-${process.pid}.json`),
+    );
+    const directSourceIdentity = testInfo.project.metadata
+      .directRuntimeSmokeIdentity as
+      | {
+          candidateCommitSha: string;
+          candidateTreeSha: string;
+          buildIdentity: string;
+        }
+      | null;
     const phaseRecorder = createRuntimeSmokePhaseRecorder({
       repositoryRoot: process.cwd(),
-      timingPath: process.env.RUNTIME_SMOKE_PHASE_TIMINGS_PATH?.trim(),
+      timingPath: configuredTimingPath ?? directTimingPath,
+      attemptIdentity: configuredTimingPath
+        ? null
+        : {
+            schema: "interior-ai.runtime-smoke-direct-attempt.v1",
+            repeatEachIndex: testInfo.repeatEachIndex,
+            retry: testInfo.retry,
+            workerIndex: testInfo.workerIndex,
+            parallelIndex: testInfo.parallelIndex,
+            projectName: testInfo.project.name,
+            testId: testInfo.testId,
+            processId: process.pid,
+            candidateCommitSha: directSourceIdentity?.candidateCommitSha,
+            candidateTreeSha: directSourceIdentity?.candidateTreeSha,
+            buildIdentity: directSourceIdentity?.buildIdentity,
+          },
     });
+    if (!configuredTimingPath) {
+      testInfo.annotations.push({
+        type: "runtime-smoke-direct-timing-path",
+        description: path.resolve(process.cwd(), directTimingPath),
+      });
+    }
+    const injectPostProductTimeout =
+      testInfo.project.metadata.runtimeSmokeTestInjection ===
+      "post-product-diagnostics-timeout";
+    let postProductTimeoutInjected = false;
     const fatalErrors: string[] = [];
     const modelRequestCounts = new Map(
       MODEL_FIXTURES.map(({ modelPath }) => [modelPath, 0])
@@ -1187,87 +1230,315 @@ test.describe("00. Runtime smoke", () => {
           });
         }
       };
-      let previous = await readSettleSample();
-      let previousRendererCalls =
-        lastMainThreadTelemetrySummary?.counters.rendererCalls;
-      let stableSamples = 0;
-      let previousReadinessSignature = "";
-      let previousSettleSignature = "";
+      const collectRendererIdleObservation = async () => {
+        const parentAttempt = runtimeSmokeOperationAttempt(
+          settleContext,
+          RUNTIME_SMOKE_DIAGNOSTICS_SETTLE_CONTRACT.evaluationTimeoutMs,
+        );
+        const evaluationContext = createRuntimeSmokeOperationDeadline({
+          phaseName,
+          operationName: "diagnostics-settle-evaluation",
+        });
+        const requestId = ++diagnosticSnapshotRequestSequence;
+        const operation = {
+          phaseName,
+          operationName: "diagnostics-settle-evaluation",
+        };
+        const hostStartedAt = performance.now();
+        activeBrowserCallbackTiming = {
+          ...operation,
+          requestId,
+          hostStartedAt,
+          browserCallInvokedAt: performance.now(),
+          milestones: {},
+        };
+        console.info(
+          "[runtime-smoke-browser-callback-requested]",
+          JSON.stringify({
+            schema: "interior-ai.runtime-smoke-browser-callback-request.v1",
+            ...operation,
+            requestId,
+          }),
+        );
+        try {
+          if (
+            injectPostProductTimeout &&
+            phaseName === "reload-1" &&
+            !postProductTimeoutInjected
+          ) {
+            postProductTimeoutInjected = true;
+            await runRuntimeSmokeBoundedOperation({
+              operationAttempt: runtimeSmokeOperationAttempt(
+                evaluationContext,
+                parentAttempt.attemptTimeoutMs,
+              ),
+              task: () =>
+                page.evaluate(
+                  async ({ operation, requestId }) => {
+                    console.info(
+                      "[runtime-smoke-browser-callback-milestone]",
+                      JSON.stringify({
+                        schema: "interior-ai.runtime-smoke-browser-callback.v2",
+                        ...operation,
+                        requestId,
+                        stage: "entered-browser",
+                        observedAtMs: Math.max(0, Math.round(performance.now())),
+                      }),
+                    );
+                    await new Promise<never>(() => undefined);
+                  },
+                  { operation, requestId },
+                ),
+            });
+          }
+          const samples = await runRuntimeSmokeBoundedOperation({
+            operationAttempt: runtimeSmokeOperationAttempt(
+              evaluationContext,
+              parentAttempt.attemptTimeoutMs,
+            ),
+            task: () =>
+              page.evaluate(
+                async ({ contract, operation, requestId }) => {
+                  type DemandSnapshot = {
+                    schema: "interior-ai.scene-demand-diagnostics.v1";
+                    version: 1;
+                    instrumentationGeneration: number;
+                    rendererCalls: number;
+                    invalidationCalls: number;
+                    lastRendererCallAtMs: number | null;
+                    lastInvalidationAtMs: number | null;
+                    pendingInvalidation: boolean;
+                    activeItemAnimationCount: number;
+                    activeControlTransitionCount: number;
+                    activeSupportedAnimationCount: number;
+                  };
+                  type RequiredSnapshot = {
+                    reloadGeneration: number;
+                    registryVersionEnd: number;
+                    activeRequiredModelIds: string[];
+                    activeRequiredCount: number;
+                    models: Array<{
+                      key: string;
+                      active: boolean;
+                      requiredForReadiness: boolean;
+                      reloadGeneration: number;
+                      renderCount: number;
+                      boundsMaterialChangeCount: number;
+                    }>;
+                  };
+                  type DocumentState = {
+                    documentGenerationId: string;
+                    lifecycleState:
+                      | "active"
+                      | "pagehide"
+                      | "frozen"
+                      | "terminating";
+                    webglContextState: "active" | "lost";
+                    webglGeneration: number;
+                  };
+                  const diagnosticsGlobal = globalThis as typeof globalThis & {
+                    __INTERIOR_AI_SCENE_DEMAND_SNAPSHOT__?: () => DemandSnapshot;
+                    __INTERIOR_AI_GLB_REQUIRED_SNAPSHOT__?: () => RequiredSnapshot;
+                    __INTERIOR_AI_RUNTIME_SMOKE_DOCUMENT_STATE__?: DocumentState;
+                  };
+                  const callbackEnteredAtMs = Math.max(
+                    0,
+                    Math.round(performance.now()),
+                  );
+                  const emitMilestone = (
+                    stage: BrowserCallbackMilestone["stage"],
+                  ) =>
+                    console.info(
+                      "[runtime-smoke-browser-callback-milestone]",
+                      JSON.stringify({
+                        schema: "interior-ai.runtime-smoke-browser-callback.v2",
+                        ...operation,
+                        requestId,
+                        stage,
+                        observedAtMs: Math.max(
+                          0,
+                          Math.round(performance.now()),
+                        ),
+                      }),
+                    );
+                  emitMilestone("entered-browser");
+                  const samples = [];
+                  let expectedAtMs = performance.now();
+                  for (
+                    let index = 0;
+                    index < contract.requiredSampleCount;
+                    index += 1
+                  ) {
+                    if (index > 0) {
+                      expectedAtMs += contract.sampleIntervalMs;
+                      await new Promise<void>((resolve) =>
+                        window.setTimeout(resolve, contract.sampleIntervalMs),
+                      );
+                    }
+                    const capturedAt = performance.now();
+                    const capturedAtMs = Math.max(0, Math.round(capturedAt));
+                    const required =
+                      diagnosticsGlobal.__INTERIOR_AI_GLB_REQUIRED_SNAPSHOT__?.();
+                    const demand =
+                      diagnosticsGlobal.__INTERIOR_AI_SCENE_DEMAND_SNAPSHOT__?.();
+                    const documentState =
+                      diagnosticsGlobal.__INTERIOR_AI_RUNTIME_SMOKE_DOCUMENT_STATE__;
+                    const generation = required?.reloadGeneration ?? 0;
+                    const models = (required?.models ?? [])
+                      .filter(
+                        (model) =>
+                          model.active &&
+                          model.requiredForReadiness &&
+                          model.reloadGeneration === generation,
+                      )
+                      .map((model) => ({
+                        key: model.key,
+                        renderCount: model.renderCount,
+                        boundsMaterialChangeCount:
+                          model.boundsMaterialChangeCount,
+                      }))
+                      .sort((left, right) => left.key.localeCompare(right.key));
+                    const boundedTime = (value: number | null | undefined) =>
+                      value === null || value === undefined
+                        ? null
+                        : Math.max(
+                            0,
+                            Math.min(capturedAtMs, Math.round(value)),
+                          );
+                    samples.push({
+                      schema:
+                        "interior-ai.runtime-smoke-render-idle-sample.v1",
+                      version: 1,
+                      capturedAtMs,
+                      callbackRequestId: requestId,
+                      callbackEnteredAtMs,
+                      callbackEntryObserved: true,
+                      documentGenerationId:
+                        documentState?.documentGenerationId ?? "missing",
+                      reloadGeneration: generation,
+                      rendererInstrumentationGeneration:
+                        demand?.instrumentationGeneration ?? 0,
+                      rendererCalls: demand?.rendererCalls ?? -1,
+                      invalidationCalls: demand?.invalidationCalls ?? -1,
+                      lastRendererCallAtMs: boundedTime(
+                        demand?.lastRendererCallAtMs,
+                      ),
+                      lastInvalidationAtMs: boundedTime(
+                        demand?.lastInvalidationAtMs,
+                      ),
+                      visibilityState:
+                        document.visibilityState === "hidden"
+                          ? "hidden"
+                          : document.visibilityState === "prerender"
+                            ? "prerender"
+                            : "visible",
+                      lifecycleState:
+                        documentState?.lifecycleState ?? "terminating",
+                      webglContextState:
+                        documentState?.webglContextState ?? "lost",
+                      webglGeneration: documentState?.webglGeneration ?? -1,
+                      activeControlTransitionCount:
+                        demand?.activeControlTransitionCount ?? -1,
+                      activeItemAnimationCount:
+                        demand?.activeItemAnimationCount ?? -1,
+                      activeSupportedAnimationCount:
+                        demand?.activeSupportedAnimationCount ?? -1,
+                      pendingInvalidation:
+                        demand?.pendingInvalidation ?? true,
+                      requiredModelRegistryIdentity: required
+                        ? `g${generation}:v${required.registryVersionEnd}:${[
+                            ...required.activeRequiredModelIds,
+                          ]
+                            .sort()
+                            .join(",")}`
+                        : "missing",
+                      requiredActiveModelCount:
+                        required?.activeRequiredCount ?? 0,
+                      models,
+                      sampleFreshnessMs: Math.max(
+                        0,
+                        Math.round(capturedAt - expectedAtMs),
+                      ),
+                    });
+                  }
+                  emitMilestone("snapshot-complete");
+                  emitMilestone("callback-exited");
+                  emitMilestone("serialization-complete");
+                  return samples;
+                },
+                { contract: RUNTIME_SMOKE_RENDER_IDLE_OBSERVATION_CONTRACT, operation, requestId },
+              ),
+          });
+          return samples;
+        } catch (error) {
+          if (error instanceof RuntimeSmokeOperationAttemptTimeoutError) {
+            checkpoint?.("diagnostics-settle-parent-deadline-wait-started");
+            await waitForRuntimeSmokeOperationDeadline({
+              operationAttempt: parentAttempt,
+              cause: error,
+            });
+            checkpoint?.("diagnostics-settle-parent-deadline-wait-complete");
+          }
+          if (!(error instanceof RuntimeSmokeOperationTimeoutError)) throw error;
+          if (!settleContext.deadlineReached()) throw error;
+          throw new RuntimeSmokeOperationTimeoutError({
+            operationAttempt: parentAttempt,
+            cause: error,
+          });
+        } finally {
+          activeBrowserCallbackTiming = null;
+        }
+      };
       const settledResponseTotal = MODEL_FIXTURES.reduce(
         (total, { modelPath }) =>
           total + (modelResponseCounts.get(modelPath) ?? 0),
         0,
       );
-      previousReadinessSignature = recordReadinessObservation({
+      const previousReadinessSignature = recordReadinessObservation({
+        phaseName,
+        checkpoint,
+        previousSignature: "",
+        responseRequired: settledResponseTotal,
+        lifecycleState: finalLifecycleState,
+      });
+      let finalVerdict: ReturnType<typeof evaluateRuntimeSmokeRendererIdle> | null = null;
+      let finalSamples: Array<{ rendererCalls: number }> = [];
+      for (
+        let attempt = 1;
+        attempt <=
+        RUNTIME_SMOKE_DIAGNOSTICS_SETTLE_CONTRACT.maximumObservationAttempts;
+        attempt += 1
+      ) {
+        const samples = await collectRendererIdleObservation();
+        finalVerdict = evaluateRuntimeSmokeRendererIdle({ samples });
+        finalSamples = samples;
+        checkpoint?.(
+          finalVerdict.settled
+            ? `renderer-idle-observation-${attempt}-settled`
+            : `renderer-idle-observation-${attempt}-active`,
+          "ready",
+        );
+        if (finalVerdict.settled) break;
+      }
+      expect(
+        finalVerdict?.settled,
+        JSON.stringify(finalVerdict?.reasons ?? ["missing-idle-verdict"]),
+      ).toBe(true);
+      const current = await readSettleSample();
+      recordReadinessObservation({
         phaseName,
         checkpoint,
         previousSignature: previousReadinessSignature,
         responseRequired: settledResponseTotal,
         lifecycleState: finalLifecycleState,
       });
-      for (let sampleIndex = 0; ; sampleIndex += 1) {
-        await page.waitForTimeout(
-          runtimeSmokeOperationAttempt(
-            settleContext,
-            RUNTIME_SMOKE_DIAGNOSTICS_SETTLE_CONTRACT.sampleIntervalMs,
-          ).attemptTimeoutMs,
-        );
-        const current = await readSettleSample();
-        const progressSignature = current
-          .map(({ diagnostic }) =>
-            diagnostic
-              ? `${diagnostic.loadState}-${diagnostic.renderCount}-${diagnostic.boundsMaterialChangeCount}`
-              : "missing",
-          )
-          .join("-");
-        if (progressSignature !== previousSettleSignature) {
-          previousReadinessSignature = recordReadinessObservation({
-            phaseName,
-            checkpoint,
-            previousSignature: previousReadinessSignature,
-            responseRequired: settledResponseTotal,
-            lifecycleState: finalLifecycleState,
-          });
-          previousSettleSignature = progressSignature;
-        }
-        const currentRendererCalls =
-          lastMainThreadTelemetrySummary?.counters.rendererCalls;
-        const stable =
-          previousRendererCalls !== undefined &&
-          currentRendererCalls !== undefined &&
-          previous.every(({ diagnostic }) => diagnostic !== null) &&
-          current.every(({ diagnostic }) => diagnostic !== null) &&
-          evaluateRuntimeSmokeRendererIdle({
-            previous: {
-              models: previous.map(({ key, diagnostic }) => ({
-                key,
-                renderCount: diagnostic?.renderCount ?? 0,
-                boundsMaterialChangeCount:
-                  diagnostic?.boundsMaterialChangeCount ?? 0,
-              })),
-              rendererCalls: previousRendererCalls,
-            },
-            current: {
-              models: current.map(({ key, diagnostic }) => ({
-                key,
-                renderCount: diagnostic?.renderCount ?? 0,
-                boundsMaterialChangeCount:
-                  diagnostic?.boundsMaterialChangeCount ?? 0,
-              })),
-              rendererCalls: currentRendererCalls,
-            },
-          }).settled;
-        stableSamples = stable ? stableSamples + 1 : 0;
-        if (
-          stableSamples >=
-          RUNTIME_SMOKE_DIAGNOSTICS_SETTLE_CONTRACT.requiredStableSamples
-        ) {
-          settledRendererCallsByPhase.set(phaseName, currentRendererCalls);
-          return current;
-        }
-        previous = current;
-        previousRendererCalls = currentRendererCalls;
+      expect(current.every(({ diagnostic }) => diagnostic !== null)).toBe(true);
+      const settledRendererCalls = finalSamples.at(-1)?.rendererCalls;
+      if (settledRendererCalls === undefined) {
+        throw new Error("Runtime-smoke renderer-idle observation is missing");
       }
+      settledRendererCallsByPhase.set(phaseName, settledRendererCalls);
+      return current;
     };
     const verifyBodyStateAfterReadiness = async ({
       phaseName,
@@ -1596,10 +1867,29 @@ test.describe("00. Runtime smoke", () => {
           __INTERIOR_AI_ENABLE_GLB_DIAGNOSTICS__?: boolean;
           __INTERIOR_AI_RUNTIME_SMOKE_HEARTBEAT__?: boolean;
           __INTERIOR_AI_GLB_RENDERER_CALL_COUNT__?: number;
+          __INTERIOR_AI_RUNTIME_SMOKE_DOCUMENT_STATE__?: {
+            documentGenerationId: string;
+            lifecycleState: "active" | "pagehide" | "frozen" | "terminating";
+            webglContextState: "active" | "lost";
+            webglGeneration: number;
+          };
         };
         diagnosticsGlobal.__INTERIOR_AI_ENABLE_GLB_DIAGNOSTICS__ = true;
         if (!diagnosticsGlobal.__INTERIOR_AI_RUNTIME_SMOKE_HEARTBEAT__) {
           diagnosticsGlobal.__INTERIOR_AI_RUNTIME_SMOKE_HEARTBEAT__ = true;
+          const documentState = {
+            documentGenerationId: crypto.randomUUID(),
+            lifecycleState: "active" as const,
+            webglContextState: "active" as const,
+            webglGeneration: 0,
+          } as {
+            documentGenerationId: string;
+            lifecycleState: "active" | "pagehide" | "frozen" | "terminating";
+            webglContextState: "active" | "lost";
+            webglGeneration: number;
+          };
+          diagnosticsGlobal.__INTERIOR_AI_RUNTIME_SMOKE_DOCUMENT_STATE__ =
+            documentState;
           let sequence = 0;
           let maximumEventLoopDelayMs = 0;
           let lastAnimationFrameDelayMs: number | null = null;
@@ -1630,21 +1920,32 @@ test.describe("00. Runtime smoke", () => {
           }, { capture: true, passive: true });
           window.addEventListener("pagehide", () => {
             lifecycleState = "pagehide";
+            documentState.lifecycleState = "pagehide";
           });
           window.addEventListener("pageshow", () => {
             lifecycleState = "active";
+            documentState.lifecycleState = "active";
+          });
+          window.addEventListener("beforeunload", () => {
+            documentState.lifecycleState = "terminating";
           });
           document.addEventListener("freeze", () => {
             lifecycleState = "frozen";
+            documentState.lifecycleState = "frozen";
           });
           document.addEventListener("resume", () => {
             lifecycleState = "active";
+            documentState.lifecycleState = "active";
           });
           document.addEventListener("webglcontextlost", () => {
             webglContextLostCount += 1;
+            documentState.webglContextState = "lost";
+            documentState.webglGeneration += 1;
           }, { capture: true });
           document.addEventListener("webglcontextrestored", () => {
             webglContextRestoredCount += 1;
+            documentState.webglContextState = "active";
+            documentState.webglGeneration += 1;
           }, { capture: true });
           const emitHeartbeat = (kind: BrowserHeartbeat["kind"]) => {
             const observedAtMs = performance.now();

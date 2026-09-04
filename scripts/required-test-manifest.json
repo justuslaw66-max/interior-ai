@@ -6,8 +6,8 @@
       "root": "scripts",
       "filePattern": "^test-.*\\.(?:js|mjs|ts)$",
       "classification": "risk-triggered",
-      "expectedFileCount": 277,
-      "expectedPathSha256": "bb75c868e925426feb772a71b1edfa175c3c01df9566c4429f5d4ca77003ff4f"
+      "expectedFileCount": 280,
+      "expectedPathSha256": "a99321dee2fe5902730264632e4eb81f6754be541b4a423856f5c2f55fba2e74"
     },
     {
       "id": "browser-specs",
@@ -115,7 +115,7 @@
       "blocking": true,
       "command": "npm run test:production-artifact-evidence",
       "packageScript": "test:production-artifact-evidence",
-      "packageClosure": { "expectedScriptCount": 1, "expectedSha256": "a01f95f06f0b83ec90d69b322bc42043ffe2a9de58f14e1c84e0bede23c31393" },
+      "packageClosure": { "expectedScriptCount": 1, "expectedSha256": "faf9cac7a8a0a6d80dcbaa792ebb7c56eb767c3b14f0e1da448081acdb8cb105" },
       "runner": "node",
       "requiredSources": [
         "playwright.config.ts",
@@ -160,6 +160,8 @@
         "scripts/runtime-smoke-operation-contracts.mjs",
         "scripts/runtime-smoke-operation-deadline.mjs",
         "scripts/runtime-smoke-phase-budget.mjs",
+        "scripts/runtime-smoke-render-idle.mjs",
+        "scripts/test-runtime-smoke-render-idle.mjs",
         "scripts/test-production-artifact-evidence.mjs",
         "scripts/test-production-archive-plan-evidence.mjs",
         "scripts/test-production-certification.mjs",
@@ -239,6 +241,26 @@
           "id": "artifact.archive-plan-failure-evidence",
           "source": "scripts/test-production-archive-plan-evidence.mjs",
           "marker": "Archive plan policy rejection survives parent adaptation."
+        },
+        {
+          "id": "artifact.runtime-idle-permanent-loop-control",
+          "source": "scripts/test-runtime-smoke-render-idle.mjs",
+          "marker": "permanent 60-Hz render loop negative control executed"
+        },
+        {
+          "id": "artifact.runtime-idle-low-frequency-control",
+          "source": "scripts/test-runtime-smoke-render-idle.mjs",
+          "marker": "low-frequency recurring invalidation negative control executed"
+        },
+        {
+          "id": "artifact.runtime-idle-generation-lifecycle-controls",
+          "source": "scripts/test-runtime-smoke-render-idle.mjs",
+          "marker": "stale cross-generation hidden WebGL counter-reset active-animation controls executed"
+        },
+        {
+          "id": "artifact.runtime-idle-instrumentation-entry-controls",
+          "source": "scripts/test-runtime-smoke-render-idle.mjs",
+          "marker": "missing instrumentation and callback-entry controls executed"
         }
       ],
       "requiredProjects": [],
@@ -272,14 +294,23 @@
       "blocking": true,
       "command": "npm run evidence:production:stable-runtime-smoke",
       "packageScript": "evidence:production:stable-runtime-smoke",
-      "packageClosure": { "expectedScriptCount": 1, "expectedSha256": "9aa158a4fe590b1681b47350ddf4835e4aa059c45945f544f582d8e3f1b7cc23" },
+      "packageClosure": { "expectedScriptCount": 2, "expectedSha256": "d43876a351475eb9ac36c81f0182ec7783bea24ed384ea4f908f5929df8958e5" },
       "runner": "playwright",
       "requiredSources": [
         "tests/e2e/00-runtime-smoke.spec.ts",
+        "components/editor/design-page/designSceneDemandPolicy.tsx",
+        "components/editor/design-page/lighting/ExposureController.tsx",
+        "components/scene/FurnitureItem.tsx",
+        "components/scene/furniture/useFurnitureFiniteAnimations.ts",
+        "components/scene/sceneDemandDiagnostics.ts",
+        "components/scene/glb-scaled-model/glbMainThreadTelemetryFacade.ts",
         "scripts/runtime-smoke-failure-evidence.mjs",
         "scripts/runtime-smoke-operation-contracts.mjs",
         "scripts/runtime-smoke-operation-deadline.mjs",
         "scripts/runtime-smoke-phase-budget.mjs",
+        "scripts/runtime-smoke-render-idle.mjs",
+        "scripts/test-design-scene-loading-frameloop.mjs",
+        "scripts/test-scene-demand-invalidation.ts",
         "scripts/stable-runtime-smoke.mjs",
         "scripts/stable-runtime-smoke-resources.mjs",
         "scripts/stable-runtime-smoke-standalone.mjs",
@@ -290,6 +321,18 @@
         "scripts/stable-runtime-smoke-database-transport.mjs",
         "scripts/production-certification-stage-environment.mjs",
         "scripts/playwright-report-path.mjs"
+      ],
+      "requiredContributions": [
+        {
+          "id": "runtime.finite-item-animation-invalidation",
+          "source": "scripts/test-design-scene-loading-frameloop.mjs",
+          "marker": "item placement, shake, and snap animations must share finite invalidation"
+        },
+        {
+          "id": "runtime.exposure-demand-invalidation",
+          "source": "scripts/test-design-scene-loading-frameloop.mjs",
+          "marker": "renderer exposure changes must request a demand frame"
+        }
       ],
       "requiredTests": [
         {

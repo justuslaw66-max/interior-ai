@@ -248,6 +248,7 @@ function copyHarnessSources(repositoryRoot, fixtureRoot) {
     "scripts/runtime-smoke-failure-evidence.mjs",
     "scripts/runtime-smoke-operation-contracts.mjs",
     "scripts/runtime-smoke-operation-deadline.mjs",
+    "scripts/runtime-smoke-render-idle.mjs",
     "scripts/runtime-smoke-telemetry-bootstrap-contract.mjs",
   ]);
   for (const relativePath of run(
