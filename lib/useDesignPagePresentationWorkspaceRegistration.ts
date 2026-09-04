@@ -60,7 +60,6 @@ export function useDesignPagePresentationWorkspaceRegistration({
     setDesignSnapshot: coreShell.actions.document.setDesignSnapshot,
     runHistoryTransaction: documentRoom.actions.history.runHistoryTransaction,
   });
-
   const presentationQa = useDesignPagePresentationQaFacade({
     state: {
       identity: {
@@ -92,6 +91,8 @@ export function useDesignPagePresentationWorkspaceRegistration({
       persistence: {
         currentStoredDesignFingerprint:
           documentRoom.state.document.currentStoredDesignFingerprint,
+        cloudRevision: persistence.state.persistence.lastCloudRevision,
+        cloudBaselineStatus: persistence.state.persistence.cloudBaselineStatus,
         isSaving: persistence.state.persistence.isSaving,
         saveStatus: persistence.state.persistence.saveStatus,
       },
@@ -352,7 +353,6 @@ export function useDesignPagePresentationWorkspaceRegistration({
       feedback: { showToast: coreShell.actions.feedback.showRuleToast },
     },
   });
-
   return {
     boundaries: {
       presentationQa,

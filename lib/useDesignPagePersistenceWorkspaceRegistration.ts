@@ -3,6 +3,10 @@
 import type { DesignPageCoreShellRegistration } from "@/lib/useDesignPageCoreShellRegistration";
 import type { DesignPageDocumentSelectionRegistrationFacade } from "@/lib/useDesignPageDocumentSelectionRegistrationFacade";
 import type { DesignPagePlanAuthoringRegistration } from "@/lib/useDesignPagePlanAuthoringRegistration";
+import {
+  replaceDesignIdInRouteIdentity,
+  type ConflictCopyRouteSnapshot,
+} from "@/lib/design-page-cloud-conflict-copy-transition";
 import { useDesignPagePersistenceRegistration } from "@/lib/useDesignPagePersistenceRegistration";
 
 export type UseDesignPagePersistenceWorkspaceRegistrationInput = {
@@ -30,6 +34,42 @@ export function createGuestPromptScopeKey(
   ].join("|");
 }
 
+function readBrowserDesignRoute(): ConflictCopyRouteSnapshot {
+  const url = new URL(window.location.href);
+  return {
+    designId: url.searchParams.get("designId"),
+    identity: `${url.pathname}${url.search}${url.hash}`,
+  };
+}
+
+function replaceBrowserDesignRoute(
+  route: ConflictCopyRouteSnapshot,
+  designId: string,
+) {
+  if (readBrowserDesignRoute().identity !== route.identity) {
+    throw new Error("The active design route changed before copy activation.");
+  }
+  window.history.replaceState(
+    window.history.state,
+    "",
+    replaceDesignIdInRouteIdentity(route.identity, designId),
+  );
+}
+
+function restoreBrowserDesignRoute(
+  route: ConflictCopyRouteSnapshot,
+  copiedDesignId: string,
+) {
+  if (readBrowserDesignRoute().designId !== copiedDesignId) return;
+  window.history.replaceState(window.history.state, "", route.identity);
+}
+
+const conflictCopyRouteActions = {
+  readDesignRoute: readBrowserDesignRoute,
+  replaceDesignRoute: replaceBrowserDesignRoute,
+  restoreDesignRoute: restoreBrowserDesignRoute,
+};
+
 /**
  * Adapts the established shell, document, and authoring contracts to the
  * persistence/new-plan lifecycle without moving ownership into the workspace.
@@ -40,12 +80,11 @@ export function useDesignPagePersistenceWorkspaceRegistration({
   const { base, viewportShell } = coreShell.boundaries;
   const { snapshotDocument, documentRoom } = documentSelection.boundaries;
   const underlay = planAuthoring.boundaries.underlay;
-
   const persistence = useDesignPagePersistenceRegistration({
     boundaries: { snapshotDocument, documentRoom },
     state: {
       identity: {
-        designId: base.state.identity.designId,
+        designId: base.state.identity.designId, shareToken: base.state.identity.shareToken,
         shareEnabled: base.state.identity.shareEnabled,
         guestPromptScopeKey: createGuestPromptScopeKey(coreShell),
       },
@@ -66,6 +105,7 @@ export function useDesignPagePersistenceWorkspaceRegistration({
     },
     actions: {
       persistence: {
+        ...conflictCopyRouteActions,
         setDesignId: base.actions.identity.setDesignId,
         setShareToken: base.actions.identity.setShareToken,
         setShareEnabled: base.actions.identity.setShareEnabled,
