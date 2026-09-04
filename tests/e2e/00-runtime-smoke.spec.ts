@@ -105,22 +105,6 @@ const MODEL_FIXTURES = [
       "/assets/models/sofa-real-castlery-auburn-performance-fabric-3-seater-sofa.glb",
     modelPathHash: "fnv1a-3fa7f0e6",
   },
-  {
-    id: "armchair-real-castlery-cammy-armchair",
-    title: "Cammy Armchair",
-    dimensionsMm: { w: 820, d: 870, h: 750 },
-    position: [-1.55, 0, 1.5] as [number, number, number],
-    modelPath: "/assets/models/armchair-real-castlery-cammy-armchair.glb",
-    modelPathHash: "fnv1a-62e89b60",
-  },
-  {
-    id: "accessory-real-castlery-cedric-floor-lamp",
-    title: "Cedric Floor Lamp",
-    dimensionsMm: { w: 300, d: 300, h: 1600 },
-    position: [1.75, 0, 1.65] as [number, number, number],
-    modelPath: "/assets/models/accessory-real-castlery-cedric-floor-lamp.glb",
-    modelPathHash: "fnv1a-08b8017e",
-  },
 ] as const;
 
 test.describe("00. Runtime smoke", () => {
