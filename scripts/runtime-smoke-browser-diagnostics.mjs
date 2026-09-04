@@ -180,3 +180,19 @@ export function projectRuntimeSmokeBrowserHeartbeat(value) {
     webglContextRestoredCount: value.webglContextRestoredCount,
   };
 }
+
+export function runtimeSmokeBrowserHeartbeatSupportsIdleAdmission(value) {
+  const heartbeat = projectRuntimeSmokeBrowserHeartbeat(value);
+  return (
+    heartbeat.kind === "interval" &&
+    heartbeat.visibilityState === "visible" &&
+    heartbeat.documentReadyState === "complete" &&
+    heartbeat.lifecycleState === "active" &&
+    heartbeat.rendererCallDelta === 0 &&
+    heartbeat.rendererCallRateHz === 0 &&
+    heartbeat.activeAnimationCount === 0 &&
+    heartbeat.controlActivity === "idle" &&
+    heartbeat.webglContextLostCount === 0 &&
+    heartbeat.webglContextRestoredCount === 0
+  );
+}

@@ -38,6 +38,7 @@ export const RUNTIME_SMOKE_DIAGNOSTICS_SETTLE_CONTRACT = Object.freeze({
   maximumObservationAttempts: DIAGNOSTICS_SETTLE_MAXIMUM_OBSERVATION_ATTEMPTS,
   finalReadbackEvaluationCount:
     DIAGNOSTICS_SETTLE_FINAL_READBACK_EVALUATIONS,
+  admissionRequiresQuiescentHeartbeat: true,
   firstSampleImmediate: true,
   retryAlignsToQuiescence: true,
   evaluationCount: DIAGNOSTICS_SETTLE_EVALUATION_COUNT,

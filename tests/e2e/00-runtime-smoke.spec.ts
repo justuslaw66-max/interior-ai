@@ -30,6 +30,7 @@ import {
   classifyRuntimeSmokeBrowserCallbackProgress,
   projectRuntimeSmokeBrowserCallbackMilestone,
   projectRuntimeSmokeBrowserHeartbeat,
+  runtimeSmokeBrowserHeartbeatSupportsIdleAdmission,
   runtimeSmokeBrowserCallbackMilestoneMatchesRequest,
 } from "../../scripts/runtime-smoke-browser-diagnostics.mjs";
 import {
@@ -1563,6 +1564,22 @@ test.describe("00. Runtime smoke", () => {
         responseRequired: settledResponseTotal,
         lifecycleState: finalLifecycleState,
       });
+      if (
+        RUNTIME_SMOKE_DIAGNOSTICS_SETTLE_CONTRACT.admissionRequiresQuiescentHeartbeat
+      ) {
+        checkpoint?.("renderer-idle-admission-wait-started", "ready");
+        while (
+          lastBrowserHeartbeat === null ||
+          !runtimeSmokeBrowserHeartbeatSupportsIdleAdmission(
+            lastBrowserHeartbeat,
+          )
+        ) {
+          await page.waitForTimeout(
+            runtimeSmokeOperationAttempt(settleContext, 250).attemptTimeoutMs,
+          );
+        }
+        checkpoint?.("renderer-idle-admission-ready", "ready");
+      }
       let finalVerdict: ReturnType<typeof evaluateRuntimeSmokeRendererIdle> | null = null;
       let finalSamples: Array<{ rendererCalls: number }> = [];
       for (

@@ -121,6 +121,7 @@ import {
   classifyRuntimeSmokeBrowserCallbackProgress,
   projectRuntimeSmokeBrowserCallbackMilestone,
   projectRuntimeSmokeBrowserHeartbeat,
+  runtimeSmokeBrowserHeartbeatSupportsIdleAdmission,
   runtimeSmokeBrowserCallbackMilestoneMatchesRequest,
 } from "./runtime-smoke-browser-diagnostics.mjs";
 import {
@@ -860,6 +861,34 @@ function boundAuthFixtureEnvironment() {
     webglContextLostCount: 0,
     webglContextRestoredCount: 0,
   });
+  const quiescentHeartbeat = {
+    ...heartbeat,
+    rendererCallDelta: 0,
+    rendererCallRateHz: 0,
+  };
+  assert.equal(
+    runtimeSmokeBrowserHeartbeatSupportsIdleAdmission(quiescentHeartbeat),
+    true,
+    "a complete, active, quiescent interval heartbeat may admit the authoritative idle observation",
+  );
+  for (const activeHeartbeat of [
+    { ...quiescentHeartbeat, kind: "started" },
+    { ...quiescentHeartbeat, visibilityState: "hidden" },
+    { ...quiescentHeartbeat, documentReadyState: "interactive" },
+    { ...quiescentHeartbeat, lifecycleState: "frozen" },
+    { ...quiescentHeartbeat, rendererCallDelta: 1 },
+    { ...quiescentHeartbeat, rendererCallRateHz: 1 },
+    { ...quiescentHeartbeat, activeAnimationCount: 1 },
+    { ...quiescentHeartbeat, controlActivity: "pointer-active" },
+    { ...quiescentHeartbeat, webglContextLostCount: 1 },
+    { ...quiescentHeartbeat, webglContextRestoredCount: 1 },
+  ]) {
+    assert.equal(
+      runtimeSmokeBrowserHeartbeatSupportsIdleAdmission(activeHeartbeat),
+      false,
+      "non-quiescent browser state must not admit an idle observation",
+    );
+  }
   assert.throws(
     () => projectRuntimeSmokeBrowserHeartbeat({ ...heartbeat, token: "unsafe" }),
     /browser heartbeat is unsafe/,
@@ -890,6 +919,7 @@ assert.deepEqual(RUNTIME_SMOKE_DIAGNOSTICS_SETTLE_CONTRACT, {
   },
   maximumObservationAttempts: 2,
   finalReadbackEvaluationCount: 1,
+  admissionRequiresQuiescentHeartbeat: true,
   firstSampleImmediate: true,
   retryAlignsToQuiescence: true,
   evaluationCount: 3,
@@ -1956,6 +1986,11 @@ assert.doesNotMatch(
 const rendererIdleObservationSource = runtimeSmokeSource.slice(
   runtimeSmokeSource.indexOf("const collectRendererIdleObservation"),
   runtimeSmokeSource.indexOf("const settledResponseTotal"),
+);
+assert.match(
+  runtimeSmokeSource,
+  /admissionRequiresQuiescentHeartbeat[\s\S]*runtimeSmokeBrowserHeartbeatSupportsIdleAdmission\([\s\S]*lastBrowserHeartbeat/,
+  "renderer-idle evaluation must wait for a valid quiescent browser heartbeat",
 );
 assert.match(
   rendererIdleObservationSource,
