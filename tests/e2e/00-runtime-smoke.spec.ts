@@ -817,7 +817,7 @@ test.describe("00. Runtime smoke", () => {
     };
     let expectedLifecycleRegistrySize: number | null = null;
     let expectedActiveRequiredKeys: string[] | null = null;
-    let expectedReloadCacheEntryCounts: {
+    let expectedReloadActiveResourceKindCounts: {
       parsed: number;
       prepared: number;
     } | null = null;
@@ -977,19 +977,6 @@ test.describe("00. Runtime smoke", () => {
       expect(snapshot.activeRequiredCount).toBe(
         snapshot.activeRequiredModelIds.length,
       );
-      if (expectedReloadCacheEntryCounts) {
-        expect(snapshot.caches.parsed.entryCount).toBe(
-          expectedReloadCacheEntryCounts.parsed,
-        );
-        expect(snapshot.caches.prepared.entryCount).toBe(
-          expectedReloadCacheEntryCounts.prepared,
-        );
-      } else {
-        expectedReloadCacheEntryCounts = {
-          parsed: snapshot.caches.parsed.entryCount,
-          prepared: snapshot.caches.prepared.entryCount,
-        };
-      }
       const declaredActiveRequired = snapshot.models.filter(
         (model) => model.active && model.requiredForReadiness,
       );
@@ -1003,6 +990,43 @@ test.describe("00. Runtime smoke", () => {
       const activeRequired =
         activeRequiredEvaluation.activeRequiredDiagnostics;
       expect(activeRequired).toHaveLength(EXPECTED_ACTIVE_REQUIRED_MODEL_COUNT);
+      const activeResourceKindCounts = {
+        parsed: activeRequired.filter((model) => model.resourceKind === "parsed")
+          .length,
+        prepared: activeRequired.filter(
+          (model) => model.resourceKind === "prepared",
+        ).length,
+      };
+      if (expectedReloadActiveResourceKindCounts) {
+        expect(activeResourceKindCounts).toEqual(
+          expectedReloadActiveResourceKindCounts,
+        );
+      } else {
+        expectedReloadActiveResourceKindCounts = activeResourceKindCounts;
+      }
+      for (const cache of [snapshot.caches.parsed, snapshot.caches.prepared]) {
+        expect(cache.entryCount).toBe(cache.entries.length);
+        expect(cache.entryCount).toBe(
+          cache.entries.filter((entry) => entry.referenceCount > 0).length +
+            cache.zeroReferenceEntryCount,
+        );
+      }
+      expect(snapshot.caches.prepared.activeReferenceCount).toBe(
+        snapshot.models.filter(
+          (model) =>
+            model.active &&
+            model.resourceKind === "prepared" &&
+            model.resourceReleasedAtMs === null,
+        ).length,
+      );
+      expect(snapshot.caches.parsed.activeReferenceCount).toBe(
+        snapshot.models.filter(
+          (model) =>
+            model.active &&
+            model.resourceKind === "parsed" &&
+            model.resourceReleasedAtMs === null,
+        ).length + snapshot.caches.prepared.entryCount,
+      );
       activeRequired.forEach((model) => {
         expect(model.generationState, `${model.key} should be current`).toBe(
           "current",

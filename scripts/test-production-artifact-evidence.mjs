@@ -1993,6 +1993,16 @@ assert.match(
   "renderer-idle evaluation must wait for a valid quiescent browser heartbeat",
 );
 assert.match(
+  runtimeSmokeSource,
+  /expectedReloadActiveResourceKindCounts[\s\S]*prepared\.activeReferenceCount[\s\S]*parsed\.activeReferenceCount/,
+  "reload cache proof must bind stable active-resource topology and exact live lease ownership",
+);
+assert.doesNotMatch(
+  runtimeSmokeSource,
+  /expectedReloadCacheEntryCounts/,
+  "reload cache proof must not require optional zero-reference retention across documents",
+);
+assert.match(
   rendererIdleObservationSource,
   /requestAnimationFrame\(observeFrame\)/,
   "renderer-idle sampling must use monotonic animation-frame admission",
