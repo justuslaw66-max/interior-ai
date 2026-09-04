@@ -179,7 +179,7 @@ function validatePhysicalFailureEvidence({ capture, manifest, journal }) {
   assert.equal(attribution.identity.journalNonce, journal.runNonce);
   assert.match(attribution.identity.manifestSha256, /^[a-f0-9]{64}$/);
   assert.match(attribution.identity.journalSha256, /^[a-f0-9]{64}$/);
-  assert.equal(attribution.stageEnvironment.id, "runtime-smoke");
+  assert.equal(attribution.stageEnvironment.profileId, "runtime-smoke");
   assert.equal(attribution.evidenceRootOwner.certificationId, roots.owner.certificationId);
   assert.equal(attribution.evidenceRootOwner.runId, roots.owner.runId);
   assert.equal(attribution.evidenceRootOwner.runAttempt, roots.owner.runAttempt);
