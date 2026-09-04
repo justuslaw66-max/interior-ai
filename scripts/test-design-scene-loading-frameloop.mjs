@@ -30,6 +30,10 @@ const exposureSource = readFileSync(
   ),
   "utf8",
 );
+const performanceBridgeSource = readFileSync(
+  path.join(process.cwd(), "components/scene/ScenePerformanceBridge.tsx"),
+  "utf8",
+);
 
 assert.match(
   source,
@@ -79,6 +83,11 @@ assert.match(
   exposureSource,
   /applyRendererLightingSettings[\s\S]*requestSceneDemandFrame\(invalidate\)/,
   "renderer exposure changes must request a demand frame",
+);
+assert.match(
+  performanceBridgeSource,
+  /if \(!enabled\) \{[\s\S]*return;[\s\S]*onFpsSample\(fps\);[\s\S]*onRendererSample\(/,
+  "disabled performance sampling must not publish React state that re-invalidates the demand canvas",
 );
 
 console.log("CH-0029 demand-driven design-scene frameloop contract passed.");

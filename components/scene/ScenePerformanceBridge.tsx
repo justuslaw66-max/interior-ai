@@ -50,6 +50,11 @@ export function ScenePerformanceBridge({
     gl.domElement.dataset.rendererTriangles = String(gl.info.render.triangles);
     gl.domElement.dataset.rendererGeometries = String(gl.info.memory.geometries);
     gl.domElement.dataset.rendererTextures = String(gl.info.memory.textures);
+
+    if (!enabled) {
+      lowFpsStartedAtRef.current = null;
+      return;
+    }
     onFpsSample(fps);
     onRendererSample({
       drawCalls: gl.info.render.calls,
@@ -57,11 +62,6 @@ export function ScenePerformanceBridge({
       geometries: gl.info.memory.geometries,
       textures: gl.info.memory.textures,
     });
-
-    if (!enabled) {
-      lowFpsStartedAtRef.current = null;
-      return;
-    }
 
     if (fps >= 28) {
       lowFpsStartedAtRef.current = null;
