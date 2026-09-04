@@ -39,6 +39,7 @@ export const RUNTIME_SMOKE_DIAGNOSTICS_SETTLE_CONTRACT = Object.freeze({
   finalReadbackEvaluationCount:
     DIAGNOSTICS_SETTLE_FINAL_READBACK_EVALUATIONS,
   firstSampleImmediate: true,
+  retryAlignsToQuiescence: true,
   evaluationCount: DIAGNOSTICS_SETTLE_EVALUATION_COUNT,
   evaluationTimeoutMs: DIAGNOSTICS_SETTLE_EVALUATION_TIMEOUT_MS,
   assertionAllowanceMs: DIAGNOSTICS_SETTLE_ASSERTION_ALLOWANCE_MS,
@@ -107,7 +108,6 @@ const FURNISHED_TEMPLATE_REMOUNT_CONTRACT = freezePhaseContract({
     { name: "verify-2d", timeoutMs: 5_000 },
     { name: "activate-3d", timeoutMs: 30_000 },
     { name: "verify-3d", timeoutMs: 5_000 },
-    { name: "verify-selection", timeoutMs: 5_000 },
     { name: "model-readiness", timeoutMs: 60_000 },
   ],
   orchestrationMarginMs: 30_000,

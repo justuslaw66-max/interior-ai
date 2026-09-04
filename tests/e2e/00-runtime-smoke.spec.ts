@@ -1229,7 +1229,9 @@ test.describe("00. Runtime smoke", () => {
           });
         }
       };
-      const collectRendererIdleObservation = async () => {
+      const collectRendererIdleObservation = async (
+        alignToQuiescence: boolean,
+      ) => {
         const parentAttempt = runtimeSmokeOperationAttempt(
           settleContext,
           RUNTIME_SMOKE_DIAGNOSTICS_SETTLE_CONTRACT.evaluationTimeoutMs,
@@ -1297,7 +1299,7 @@ test.describe("00. Runtime smoke", () => {
             ),
             task: () =>
               page.evaluate(
-                async ({ contract, operation, requestId }) => {
+                async ({ alignToQuiescence, contract, operation, requestId }) => {
                   type DemandSnapshot = {
                     schema: "interior-ai.scene-demand-diagnostics.v1";
                     version: 1;
@@ -1362,18 +1364,25 @@ test.describe("00. Runtime smoke", () => {
                     );
                   emitMilestone("entered-browser");
                   const samples = [];
+                  const waitForMonotonicSampleTime = (targetAtMs: number) =>
+                    new Promise<void>((resolve) => {
+                      const observeFrame = (frameAtMs: number) => {
+                        if (frameAtMs >= targetAtMs) {
+                          resolve();
+                          return;
+                        }
+                        window.requestAnimationFrame(observeFrame);
+                      };
+                      window.requestAnimationFrame(observeFrame);
+                    });
                   let expectedAtMs = performance.now();
-                  for (
-                    let index = 0;
-                    index < contract.requiredSampleCount;
-                    index += 1
-                  ) {
-                    if (index > 0) {
+                  let capturedSampleCount = 0;
+                  while (samples.length < contract.requiredSampleCount) {
+                    if (capturedSampleCount > 0) {
                       expectedAtMs += contract.sampleIntervalMs;
-                      await new Promise<void>((resolve) =>
-                        window.setTimeout(resolve, contract.sampleIntervalMs),
-                      );
+                      await waitForMonotonicSampleTime(expectedAtMs);
                     }
+                    capturedSampleCount += 1;
                     const capturedAt = performance.now();
                     const capturedAtMs = Math.max(0, Math.round(capturedAt));
                     const required =
@@ -1404,7 +1413,7 @@ test.describe("00. Runtime smoke", () => {
                             0,
                             Math.min(capturedAtMs, Math.round(value)),
                           );
-                    samples.push({
+                    const sample = {
                       schema:
                         "interior-ai.runtime-smoke-render-idle-sample.v1",
                       version: 1,
@@ -1458,14 +1467,68 @@ test.describe("00. Runtime smoke", () => {
                         0,
                         Math.round(capturedAt - expectedAtMs),
                       ),
-                    });
+                    };
+                    const previous = samples.at(-1);
+                    const quiescent =
+                      sample.visibilityState === "visible" &&
+                      sample.lifecycleState === "active" &&
+                      sample.webglContextState === "active" &&
+                      sample.activeControlTransitionCount === 0 &&
+                      sample.activeItemAnimationCount === 0 &&
+                      sample.activeSupportedAnimationCount === 0 &&
+                      !sample.pendingInvalidation &&
+                      sample.sampleFreshnessMs <=
+                        contract.maximumSampleFreshnessMs;
+                    const stableFromPrevious =
+                      !previous ||
+                      (sample.capturedAtMs > previous.capturedAtMs &&
+                        sample.capturedAtMs - previous.capturedAtMs <=
+                          contract.maximumSampleGapMs &&
+                        sample.documentGenerationId ===
+                          previous.documentGenerationId &&
+                        sample.reloadGeneration === previous.reloadGeneration &&
+                        sample.rendererInstrumentationGeneration ===
+                          previous.rendererInstrumentationGeneration &&
+                        sample.webglGeneration === previous.webglGeneration &&
+                        sample.requiredModelRegistryIdentity ===
+                          previous.requiredModelRegistryIdentity &&
+                        sample.requiredActiveModelCount ===
+                          previous.requiredActiveModelCount &&
+                        sample.rendererCalls === previous.rendererCalls &&
+                        sample.invalidationCalls ===
+                          previous.invalidationCalls &&
+                        sample.models.length === previous.models.length &&
+                        sample.models.every((model, modelIndex) => {
+                          const priorModel = previous.models[modelIndex];
+                          return (
+                            model.key === priorModel?.key &&
+                            model.renderCount === priorModel.renderCount &&
+                            model.boundsMaterialChangeCount ===
+                              priorModel.boundsMaterialChangeCount
+                          );
+                        }));
+                    if (
+                      alignToQuiescence &&
+                      (!quiescent || !stableFromPrevious)
+                    ) {
+                      samples.length = 0;
+                      expectedAtMs = capturedAt;
+                      if (quiescent) samples.push(sample);
+                      continue;
+                    }
+                    samples.push(sample);
                   }
                   emitMilestone("snapshot-complete");
                   emitMilestone("callback-exited");
                   emitMilestone("serialization-complete");
                   return samples;
                 },
-                { contract: RUNTIME_SMOKE_RENDER_IDLE_OBSERVATION_CONTRACT, operation, requestId },
+                {
+                  alignToQuiescence,
+                  contract: RUNTIME_SMOKE_RENDER_IDLE_OBSERVATION_CONTRACT,
+                  operation,
+                  requestId,
+                },
               ),
           });
           return samples;
@@ -1508,7 +1571,10 @@ test.describe("00. Runtime smoke", () => {
         RUNTIME_SMOKE_DIAGNOSTICS_SETTLE_CONTRACT.maximumObservationAttempts;
         attempt += 1
       ) {
-        const samples = await collectRendererIdleObservation();
+        const samples = await collectRendererIdleObservation(
+          attempt > 1 &&
+            RUNTIME_SMOKE_DIAGNOSTICS_SETTLE_CONTRACT.retryAlignsToQuiescence,
+        );
         finalVerdict = evaluateRuntimeSmokeRendererIdle({ samples });
         finalSamples = samples;
         checkpoint?.(

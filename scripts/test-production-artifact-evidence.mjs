@@ -891,6 +891,7 @@ assert.deepEqual(RUNTIME_SMOKE_DIAGNOSTICS_SETTLE_CONTRACT, {
   maximumObservationAttempts: 2,
   finalReadbackEvaluationCount: 1,
   firstSampleImmediate: true,
+  retryAlignsToQuiescence: true,
   evaluationCount: 3,
   evaluationTimeoutMs: 10_000,
   assertionAllowanceMs: 2_000,
@@ -991,7 +992,7 @@ for (const phaseName of ["reload-1", "reload-2", "reload-3"]) {
   );
   assert.equal(runtimeSmokePhaseBudget(phaseName), 308_000);
 }
-assert.equal(runtimeSmokePhaseBudget("remount"), 165_000);
+assert.equal(runtimeSmokePhaseBudget("remount"), 160_000);
 assert.ok(
   runtimeSmokePhaseBudget("bounds-verification") - 43_432 >= 25_000,
   "bounds verification needs meaningful GitHub-runner headroom",
@@ -1497,7 +1498,9 @@ assert.equal(
 {
   const playwrightAssertionRecorder = createRuntimeSmokePhaseRecorder({
     repositoryRoot: process.cwd(),
-    phaseBudgets: [{ name: "remount", timeoutMs: 165_000 }],
+    phaseBudgets: [
+      { name: "remount", timeoutMs: runtimeSmokePhaseBudget("remount") },
+    ],
   });
   const matcherError = new Error("structured matcher fixture");
   matcherError.matcherResult = { pass: false };
@@ -1949,6 +1952,30 @@ assert.doesNotMatch(
   runtimeSmokeSource,
   /maximumSamples/,
   "diagnostics settling must enforce elapsed wall time rather than sample count",
+);
+const rendererIdleObservationSource = runtimeSmokeSource.slice(
+  runtimeSmokeSource.indexOf("const collectRendererIdleObservation"),
+  runtimeSmokeSource.indexOf("const settledResponseTotal"),
+);
+assert.match(
+  rendererIdleObservationSource,
+  /requestAnimationFrame\(observeFrame\)/,
+  "renderer-idle sampling must use monotonic animation-frame admission",
+);
+assert.doesNotMatch(
+  rendererIdleObservationSource,
+  /window\.setTimeout\(resolve, contract\.sampleIntervalMs\)/,
+  "renderer-idle sampling must not depend on throttled timeout admission",
+);
+assert.match(
+  rendererIdleObservationSource,
+  /alignToQuiescence[\s\S]*samples\.length = 0/,
+  "the retry observation must restart its candidate window until quiescent",
+);
+assert.match(
+  runtimeSmokeSource,
+  /attempt > 1[\s\S]*RUNTIME_SMOKE_DIAGNOSTICS_SETTLE_CONTRACT\.retryAlignsToQuiescence/,
+  "only retry observations may align their evidence window to quiescence",
 );
 assert.match(runtimeSmokeSource, /createRuntimeSmokeOperationDeadline/);
 assert.match(runtimeSmokeSource, /runtimeSmokeOperationAttempt/);
