@@ -1994,6 +1994,11 @@ assert.match(
 );
 assert.match(
   runtimeSmokeSource,
+  /model-responses-ready[\s\S]*browser-callback-admission-wait-started[\s\S]*runtimeSmokeBrowserHeartbeatSupportsIdleAdmission\([\s\S]*browser-callback-admission-ready[\s\S]*selection-verification/,
+  "selection diagnostics must use the existing model-response budget to await quiescent browser admission",
+);
+assert.match(
+  runtimeSmokeSource,
   /expectedReloadActiveResourceKindCounts[\s\S]*prepared\.activeReferenceCount[\s\S]*parsed\.activeReferenceCount/,
   "reload cache proof must bind stable active-resource topology and exact live lease ownership",
 );

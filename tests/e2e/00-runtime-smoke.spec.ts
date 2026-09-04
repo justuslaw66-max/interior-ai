@@ -1866,6 +1866,18 @@ test.describe("00. Runtime smoke", () => {
           )
         ) {
           checkpoint?.("model-responses-ready", finalLifecycleState);
+          checkpoint?.("browser-callback-admission-wait-started", finalLifecycleState);
+          while (
+            lastBrowserHeartbeat === null ||
+            !runtimeSmokeBrowserHeartbeatSupportsIdleAdmission(
+              lastBrowserHeartbeat,
+            )
+          ) {
+            await page.waitForTimeout(
+              runtimeSmokeOperationAttempt(operationContext, 250).attemptTimeoutMs,
+            );
+          }
+          checkpoint?.("browser-callback-admission-ready", finalLifecycleState);
           return;
         }
         const totalResponses = MODEL_FIXTURES.reduce(
