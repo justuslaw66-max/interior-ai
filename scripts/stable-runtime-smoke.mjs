@@ -50,15 +50,42 @@ import { configureStableRuntimeDatabaseTransport } from "./stable-runtime-smoke-
 
 const RUNTIME_COMMAND =
   "npx playwright test tests/e2e/00-runtime-smoke.spec.ts --project=chromium";
+const POST_PRODUCT_TIMEOUT_CONFIG =
+  "playwright.runtime-smoke-timeout.config.ts";
+const stableRuntimeSmokeTestInjections = new WeakSet();
 
-async function cleanupDatabase({ repositoryRoot, lifecycleEnvironment }) {
+export function createStableRuntimeSmokeTestInjection({
+  databaseAdapterFactory = null,
+} = {}) {
+  if (
+    databaseAdapterFactory !== null &&
+    typeof databaseAdapterFactory !== "function"
+  ) {
+    throw new Error("Stable runtime-smoke test adapter factory must be callable");
+  }
+  const injection = Object.freeze({
+    kind: "post-product-diagnostics-timeout",
+    databaseAdapterFactory,
+  });
+  stableRuntimeSmokeTestInjections.add(injection);
+  return injection;
+}
+
+function runtimeCommand(testInjection) {
+  return testInjection
+    ? `${RUNTIME_COMMAND} --config=${POST_PRODUCT_TIMEOUT_CONFIG}`
+    : RUNTIME_COMMAND;
+}
+
+async function cleanupDatabase({ repositoryRoot, lifecycleEnvironment, databaseAdapter }) {
   return completeStableRuntimeSmokeDatabase({
     repositoryRoot,
     environment: lifecycleEnvironment,
+    adapter: databaseAdapter,
   });
 }
 
-async function abortDatabase({ repositoryRoot, lifecycleEnvironment, failure }) {
+async function abortDatabase({ repositoryRoot, lifecycleEnvironment, failure, databaseAdapter }) {
   if (!lifecycleEnvironment?.CERTIFICATION_DATABASE_LIFECYCLE_PATH ||
       !existsSync(lifecycleEnvironment.CERTIFICATION_DATABASE_LIFECYCLE_PATH)) return true;
   const current = readCertificationDatabaseLifecycle({ repositoryRoot, environment: lifecycleEnvironment });
@@ -73,6 +100,7 @@ async function abortDatabase({ repositoryRoot, lifecycleEnvironment, failure }) 
     repositoryRoot,
     environment: lifecycleEnvironment,
     originalFailure: failure,
+    adapter: databaseAdapter,
   });
   return result.evidence.currentState === "abort-absence-verified";
 }
@@ -102,25 +130,29 @@ function createLifecycleEnvironment({ environment, manifest, roots }) {
   return lifecycleEnvironment;
 }
 
-async function prepareStableDatabase({ repositoryRoot, lifecycleEnvironment }) {
+async function prepareStableDatabase({ repositoryRoot, lifecycleEnvironment, databaseAdapter }) {
   await planCertificationDatabase({
     repositoryRoot,
     environment: lifecycleEnvironment,
     nonce: randomUUID().replaceAll("-", ""),
     profile: STABLE_RUNTIME_SMOKE_DATABASE_PROFILE,
+    adapter: databaseAdapter,
   });
   await provisionCertificationDatabase({
     repositoryRoot,
     environment: lifecycleEnvironment,
+    adapter: databaseAdapter,
   });
   await verifyInitialCertificationDatabase({
     repositoryRoot,
     environment: lifecycleEnvironment,
+    adapter: databaseAdapter,
   });
   await bindCertificationDatabaseStage({
     repositoryRoot,
     environment: lifecycleEnvironment,
     stage: "runtime-smoke",
+    adapter: databaseAdapter,
   });
   const active = readCertificationDatabaseLifecycle({
     repositoryRoot,
@@ -138,15 +170,19 @@ async function prepareStableDatabase({ repositoryRoot, lifecycleEnvironment }) {
   return { active, stableBinding, database };
 }
 
-async function executeRuntimeSmoke({ repositoryRoot, paths, runtime }) {
+async function executeRuntimeSmoke({ repositoryRoot, paths, runtime, testInjection }) {
+  const childArguments = [
+    "playwright",
+    "test",
+    "tests/e2e/00-runtime-smoke.spec.ts",
+    "--project=chromium",
+  ];
+  if (testInjection) {
+    childArguments.push(`--config=${POST_PRODUCT_TIMEOUT_CONFIG}`);
+  }
   const child = spawnSync(
     process.platform === "win32" ? "npx.cmd" : "npx",
-    [
-      "playwright",
-      "test",
-      "tests/e2e/00-runtime-smoke.spec.ts",
-      "--project=chromium",
-    ],
+    childArguments,
     { cwd: repositoryRoot, env: runtime.projection.environment, stdio: "inherit" },
   );
   const consumed = existsSync(paths.marker);
@@ -162,7 +198,7 @@ async function executeRuntimeSmoke({ repositoryRoot, paths, runtime }) {
         ? "PRODUCT_ASSERTION_FAILURE"
         : "PRECONDITION_ORCHESTRATION_FAILURE";
     error.consumedSubstantiveGate = consumed;
-    error.runtimeCommand = RUNTIME_COMMAND;
+    error.runtimeCommand = runtimeCommand(testInjection);
     error.childStatus = child.status;
     error.childSignal = child.signal ?? null;
     error.spawnErrorClassification = child.error ? "child-spawn-error" : null;
@@ -176,7 +212,7 @@ async function executeRuntimeSmoke({ repositoryRoot, paths, runtime }) {
     reportPath: paths.report,
     phaseTimingPath: paths.timings,
     name: "runtime-smoke",
-    command: RUNTIME_COMMAND,
+    command: runtimeCommand(testInjection),
     processExitCode: 0,
     environment: runtime.projection.environment,
     persistManifest: false,
@@ -188,11 +224,16 @@ async function executeRuntimeSmoke({ repositoryRoot, paths, runtime }) {
 async function finalizeStableEvidence({
   repositoryRoot,
   lifecycleEnvironment,
+  databaseAdapter,
   roots,
   paths,
   validation,
 }) {
-  const finalDatabase = await cleanupDatabase({ repositoryRoot, lifecycleEnvironment });
+  const finalDatabase = await cleanupDatabase({
+    repositoryRoot,
+    lifecycleEnvironment,
+    databaseAdapter,
+  });
   const portable = createPortableStableRuntimeEvidence({ roots, paths, validation });
   const finalManifest = validation.manifest;
   finalManifest.tests = [
@@ -266,8 +307,18 @@ async function completeStableRuntimeSmoke(context) {
     lifecycleEnvironment: context.lifecycleEnvironment,
   });
   context.testHooks?.afterTransportAccepted?.();
+  context.databaseAdapter =
+    context.testInjection?.databaseAdapterFactory?.({
+      repositoryRoot: context.repositoryRoot,
+      environment: context.lifecycleEnvironment,
+    }) ?? null;
   const databaseState = await prepareStableDatabase(context);
   context.databaseState = databaseState;
+  await context.testHooks?.afterDatabasePrepared?.({
+    databaseState,
+    lifecycleEnvironment: context.lifecycleEnvironment,
+    roots: context.roots,
+  });
   const journal = JSON.parse(
     readFileSync(path.join(context.repositoryRoot, STABLE_JOURNAL_PATH), "utf8"),
   );
@@ -356,6 +407,7 @@ export async function cleanupFailedStableRun(context, error) {
       repositoryRoot: context.repositoryRoot,
       lifecycleEnvironment: context.lifecycleEnvironment,
       failure,
+      databaseAdapter: context.databaseAdapter,
     });
     databaseAbsent = absent;
     context.testHooks?.afterDatabaseAbort?.({ databaseAbsent, failure });
@@ -396,6 +448,11 @@ export async function cleanupFailedStableRun(context, error) {
   } catch (cleanupError) {
     cleanupIssues.push(`external-root cleanup: ${cleanupError.message}`);
   }
+  await context.testHooks?.afterFailedCleanup?.({
+    cleanupIssues: [...cleanupIssues],
+    databaseAbsent,
+    roots: context.roots,
+  });
   if (cleanupIssues.length > 0) throw new Error(cleanupIssues.join("; "));
 }
 
@@ -403,7 +460,14 @@ export async function runStableRuntimeSmoke({
   repositoryRoot = process.cwd(),
   environment = process.env,
   testHooks = null,
+  testInjection = null,
 } = {}) {
+  if (
+    testInjection !== null &&
+    !stableRuntimeSmokeTestInjections.has(testInjection)
+  ) {
+    throw new Error("Stable runtime-smoke test injection is not repository-owned");
+  }
   const preflight = await validateProductionEvidence({
     repositoryRoot,
     manifestPath: STABLE_MANIFEST_PATH,
@@ -422,6 +486,8 @@ export async function runStableRuntimeSmoke({
     bundleStarted: false,
     manifestFinalized: false,
     testHooks,
+    testInjection,
+    databaseAdapter: null,
   };
   try {
     context.roots = createStableRuntimeRoots(context);

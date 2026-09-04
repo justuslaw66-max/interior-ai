@@ -101,6 +101,7 @@
     "test:glb-main-thread-telemetry-facade": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' -r tsconfig-paths/register scripts/test-glb-main-thread-telemetry-facade.ts",
     "test:runtime-smoke-telemetry-bootstrap": "node scripts/test-runtime-smoke-telemetry-bootstrap-contract.mjs",
     "test:runtime-smoke-resource-isolation": "node scripts/test-runtime-smoke-resource-isolation.mjs",
+    "test:stable-runtime-smoke-failure-integration": "node scripts/test-stable-runtime-smoke-failure-integration.mjs",
     "test:design-scene-loading-frameloop": "node scripts/test-design-scene-loading-frameloop.mjs && npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' -r tsconfig-paths/register scripts/test-scene-demand-invalidation.ts",
     "test:wall-paint-catalog": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' -r tsconfig-paths/register scripts/test-wall-paint-catalog.ts",
     "test:lighting-settings": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' -r tsconfig-paths/register scripts/test-lighting-settings.ts",

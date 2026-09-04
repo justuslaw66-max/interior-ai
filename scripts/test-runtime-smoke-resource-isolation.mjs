@@ -20,6 +20,7 @@ import {
   removeStableRuntimeRoot,
   stableRuntimePaths,
 } from "./stable-runtime-smoke-resources.mjs";
+import { createStableRuntimeSmokeTestInjection } from "./stable-runtime-smoke.mjs";
 import RuntimeSmokeDirectAttemptReporter, {
   runtimeSmokeDirectAttemptResultPath,
 } from "./runtime-smoke-direct-attempt-reporter.mjs";
@@ -477,6 +478,9 @@ assert.match(
   }
 }
 
+const repositoryOwnedInjection = createStableRuntimeSmokeTestInjection();
+assert.equal(repositoryOwnedInjection.kind, "post-product-diagnostics-timeout");
+assert.equal(repositoryOwnedInjection.databaseAdapterFactory, null);
 assert.doesNotMatch(
   stableRuntimeParentSource,
   /process\.env\.[A-Z0-9_]*TIMEOUT_INJECTION/,
