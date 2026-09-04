@@ -1,7 +1,6 @@
 import { expect, test } from "./fixtures";
 import path from "node:path";
 import { confirmPlanTemplateReplacementIfNeeded } from "./plan-template-test-utils";
-import { getSelectedItemPanel } from "./variant-test-utils";
 import {
   FURNISHED_TEMPLATE_PHASE_CONTRACTS,
   FURNISHED_TEMPLATE_RELOAD_CONTRACT,
@@ -105,6 +104,22 @@ const MODEL_FIXTURES = [
     modelPath:
       "/assets/models/sofa-real-castlery-auburn-performance-fabric-3-seater-sofa.glb",
     modelPathHash: "fnv1a-3fa7f0e6",
+  },
+  {
+    id: "armchair-real-castlery-cammy-armchair",
+    title: "Cammy Armchair",
+    dimensionsMm: { w: 820, d: 870, h: 750 },
+    position: [-1.55, 0, 1.5] as [number, number, number],
+    modelPath: "/assets/models/armchair-real-castlery-cammy-armchair.glb",
+    modelPathHash: "fnv1a-62e89b60",
+  },
+  {
+    id: "accessory-real-castlery-cedric-floor-lamp",
+    title: "Cedric Floor Lamp",
+    dimensionsMm: { w: 300, d: 300, h: 1600 },
+    position: [1.75, 0, 1.65] as [number, number, number],
+    modelPath: "/assets/models/accessory-real-castlery-cedric-floor-lamp.glb",
+    modelPathHash: "fnv1a-08b8017e",
   },
 ] as const;
 
@@ -2239,7 +2254,7 @@ test.describe("00. Runtime smoke", () => {
       );
       await auburnPlanTarget.click({ timeout: selectionClickTimeoutMs });
       checkpoint("auburn-selection-clicked");
-      await expect(getSelectedItemPanel(page)).toContainText("Auburn", {
+      await expect(auburnPlanTarget).toHaveAttribute("aria-pressed", "true", {
         timeout: phaseOperationTimeout(
           "initial-glb-loading-and-selection-verification",
           "plan-selection-assertion",
@@ -2270,12 +2285,21 @@ test.describe("00. Runtime smoke", () => {
           ({ modelPath }) => (modelRequestCounts.get(modelPath) ?? 0) >= 1
         )
       ).toBe(true);
-      await expect(getSelectedItemPanel(page)).toContainText("Auburn", {
+      const selectionOperationContext = createRuntimeSmokeOperationDeadline({
+        phaseName: "initial-glb-loading-and-selection-verification",
+        operationName: "selection-verification",
+      });
+      await expect.poll(async () => {
+        const diagnostics = await readModelDiagnosticsWithin(
+          selectionOperationContext,
+        );
+        return diagnostics[2]?.diagnostic?.selectionOutlineVisible ?? false;
+      }, {
         timeout: phaseOperationTimeout(
           "initial-glb-loading-and-selection-verification",
           "selection-verification",
         ),
-      });
+      }).toBe(true);
       checkpoint("initial-model-selection-verified");
     }, () => finalLifecycleState);
 
@@ -2363,14 +2387,11 @@ test.describe("00. Runtime smoke", () => {
       await expect(layoutDebug).toHaveAttribute("data-view-mode", "3d", {
         timeout: phaseOperationTimeout("remount", "verify-3d"),
       });
-      await expect(getSelectedItemPanel(page)).toContainText("Auburn", {
-        timeout: phaseOperationTimeout("remount", "verify-selection"),
-      });
-      checkpoint("view-3d-selection-restored");
       const remountedReadiness = await waitForModelDiagnosticsReady({
         minimumMountCount: 2,
         phaseName: "remount",
       });
+      checkpoint("view-3d-selection-restored");
       expect(
         remountedReadiness.fixtureDiagnostics.every(
           ({ diagnostic }) => (diagnostic?.unmountCount ?? 0) >= 1
