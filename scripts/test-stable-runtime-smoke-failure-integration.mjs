@@ -358,7 +358,6 @@ try {
     "createStageRole",
     "deployMigrations",
     "migrationNames",
-    "appEventRows",
     "terminateTargetSessions",
     "dropDatabase",
     "dropStageRole",
