@@ -990,3 +990,19 @@ Genuine development runs have an explicit development classification and no
 artifact hash. Direct execution does not certify Canonical Stable, whose sealed
 parent paths and server projection remain unchanged. Actual BUILD_ID bytes are
 never sanitized, and historical evidence is not rewritten.
+
+Runtime report authorization validates BUILD_ID separately from certification,
+candidate, session, and nonce identifiers. The lockfile-pinned Next.js 16.2.11
+uses `generateBuildId(config.generateBuildId, nanoid)`; its bundled Nano ID
+produces 21 characters from `A-Z`, `a-z`, `0-9`, `_`, and `-`, including at the
+first position. Next.js accepts a custom generator's string, but this repository's
+report contract remains bounded: 1–128 ASCII characters, first character
+`[A-Za-z0-9_-]`, remaining characters `[A-Za-z0-9._:-]`. This preserves the
+previously supported custom IDs (including dots and colons after the first
+character) and adds the legitimate leading hyphen/underscore cases. Missing or
+empty BUILD_ID and invalid BUILD_ID have distinct errors. Validation returns the
+exact value without trimming or other normalization. Physical BUILD_ID,
+manifest, expected identity, report authorization, and server health must still
+agree exactly; path containment and argument-array dispatch remain enforced by
+their existing owners. Regression report/artifact fixtures are fixture evidence,
+not compiled production-browser executions.

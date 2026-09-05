@@ -601,6 +601,20 @@ function runtimeReportIdentityValue(environment, name) {
   return value;
 }
 
+function runtimeReportBuildIdValue(environment) {
+  const name = "PRODUCTION_EVIDENCE_EXPECTED_BUILD_ID";
+  const value = environment?.[name];
+  if (value === undefined || value === null || value === "") {
+    throw new Error(`Runtime-smoke report authorization is missing ${name}.`);
+  }
+  // Next.js Nano IDs may start with "-" or "_"; retain supported custom IDs.
+  if (typeof value !== "string" || value !== value.trim() ||
+      !/^[A-Za-z0-9_-][A-Za-z0-9._:-]{0,127}$/.test(value)) {
+    throw new Error(`Runtime-smoke report authorization has invalid ${name}.`);
+  }
+  return value;
+}
+
 function runtimeReportHexIdentityValue(environment, name, length) {
   const value = runtimeReportIdentityValue(environment, name);
   if (!new RegExp(`^[a-f0-9]{${length}}$`).test(value)) {
@@ -652,10 +666,7 @@ function runtimeReportAuthorizationIdentity({
       "PRODUCTION_EVIDENCE_EXPECTED_TREE_SHA",
       40,
     ),
-    buildId: runtimeReportIdentityValue(
-      environment,
-      "PRODUCTION_EVIDENCE_EXPECTED_BUILD_ID",
-    ),
+    buildId: runtimeReportBuildIdValue(environment),
     artifactSha256: runtimeReportHexIdentityValue(
       environment,
       "PRODUCTION_EVIDENCE_EXPECTED_ARTIFACT_SHA256",

@@ -219,6 +219,54 @@ assert.match(
   try {
     mkdirSync(reportParent, { recursive: true, mode: 0o700 });
 
+    // Authorization fixtures: these are not compiled production-browser runs.
+    const authorizeBuildId = (value, requestedPath = reportPath) =>
+      authorizeRuntimeSmokeReportPath({
+        requestedPath, repositoryRoot, authorizedExternalRoot: evidenceRoot,
+        environment: { ...environment, PRODUCTION_EVIDENCE_EXPECTED_BUILD_ID: value },
+      });
+    for (const [index, buildId] of [
+      "-HMijapRnjq-h9tldkjN0", "_jT2Js5lQ3W97uL42t3VQ",
+      "v3Dmenpr6d_fsLQY9tQPM", "release-2026.09:build_42", "a..b",
+      "A", "-", "_", `_${"a".repeat(127)}`,
+    ].entries()) {
+      const buildReport = path.join(evidenceRoot, `build-${index}`, "playwright-report.json");
+      mkdirSync(path.dirname(buildReport));
+      assert.equal(authorizeBuildId(buildId, buildReport).authorization.status, "initial");
+      const ownerBytes = readFileSync(`${buildReport}.owner.json`);
+      assert.equal(JSON.parse(ownerBytes).buildId, buildId);
+      assert.equal(authorizeBuildId(buildId, buildReport).authorization.status, "same-run-reentry");
+      assert.deepEqual(readFileSync(`${buildReport}.owner.json`), ownerBytes);
+      assert.throws(() => authorizeBuildId("foreign-build", buildReport), /owned by another run/);
+    }
+    for (const value of [undefined, null, ""]) {
+      assert.throws(() => authorizeBuildId(value), {
+        message: "Runtime-smoke report authorization is missing PRODUCTION_EVIDENCE_EXPECTED_BUILD_ID.",
+      });
+    }
+    for (const value of [
+      42, {}, "a\0b", "a\x01b", "a\x7fb", "a\nb", "a\rb", "a\tb", "a\n",
+      ".", "..", "../build", "build/../other", "build/file", "build\\file",
+      " build", "build ", "build id", ".build", ":build", "build%2Fid",
+      "build?id", "build#id", "build+id", "büllid", "a".repeat(129),
+    ]) {
+      assert.throws(() => authorizeBuildId(value), {
+        message: "Runtime-smoke report authorization has invalid PRODUCTION_EVIDENCE_EXPECTED_BUILD_ID.",
+      });
+      assert.equal(existsSync(authorizationPath), false);
+    }
+    for (const name of [
+      "PRODUCTION_CERTIFICATION_ID", "PRODUCTION_EVIDENCE_CANDIDATE_ID",
+      "PRODUCTION_EVIDENCE_EXPECTED_JOURNAL_NONCE",
+    ]) {
+      for (const value of ["-identifier", "_identifier", "a".repeat(129)]) {
+        assert.throws(() => authorizeRuntimeSmokeReportPath({
+          requestedPath: reportPath, repositoryRoot, authorizedExternalRoot: evidenceRoot,
+          environment: { ...environment, [name]: value },
+        }), /Runtime-smoke report authorization is missing/);
+      }
+    }
+
     const initial = authorizeRuntimeSmokeReportPath({
       requestedPath: reportPath,
       repositoryRoot,

@@ -3890,7 +3890,7 @@ function listedSpecCount(suites) {
   }
 }
 
-function runtimeReportCanonicalizationFixture() {
+function runtimeReportCanonicalizationFixture(nextBuildId = "runtime-portable-build") {
   const repositoryRoot = process.cwd();
   const externalRoot = mkdtempSync(
     path.join(tmpdir(), "runtime-report-canonicalization-"),
@@ -3907,7 +3907,7 @@ function runtimeReportCanonicalizationFixture() {
     PRODUCTION_EVIDENCE_CANDIDATE_ID: "CANDIDATE-runtime-portable-fixture",
     PRODUCTION_EVIDENCE_EXPECTED_COMMIT_SHA: "1".repeat(40),
     PRODUCTION_EVIDENCE_EXPECTED_TREE_SHA: "2".repeat(40),
-    PRODUCTION_EVIDENCE_EXPECTED_BUILD_ID: "runtime-portable-build",
+    PRODUCTION_EVIDENCE_EXPECTED_BUILD_ID: nextBuildId,
     PRODUCTION_EVIDENCE_EXPECTED_ARTIFACT_SHA256: "3".repeat(64),
     PRODUCTION_EVIDENCE_EXPECTED_MANIFEST_SHA256: "4".repeat(64),
     PRODUCTION_EVIDENCE_EXPECTED_JOURNAL_SHA256: "5".repeat(64),
@@ -4088,8 +4088,12 @@ function runtimeReportCanonicalizationFixture() {
   };
 }
 
-{
-  const fixture = runtimeReportCanonicalizationFixture();
+// Physical report fixtures exercise authorization through portable evidence binding.
+for (const nextBuildId of [
+  "-HMijapRnjq-h9tldkjN0", "_jT2Js5lQ3W97uL42t3VQ",
+  "v3Dmenpr6d_fsLQY9tQPM", "release-2026.09:build_42", "A", "_".repeat(128),
+]) {
+  const fixture = runtimeReportCanonicalizationFixture(nextBuildId);
   try {
     const ownerBytes = readFileSync(`${fixture.reportPath}.owner.json`);
     const portable = fixture.canonicalize({
@@ -4134,8 +4138,11 @@ function runtimeReportCanonicalizationFixture() {
       reportAuthorizationEnvironment: fixture.environment,
     });
     assert.deepEqual(finalPortable, portable);
+    assert.equal(JSON.parse(ownerBytes).buildId, nextBuildId);
+    assert.equal(finalPortable.config.metadata.productionArtifactEvidence.nextBuildId, nextBuildId);
 
     for (const environmentMutation of [
+      { PRODUCTION_EVIDENCE_EXPECTED_BUILD_ID: "foreign-build" },
       { PRODUCTION_CERTIFICATION_ID: "CERT-foreign" },
       { PRODUCTION_EVIDENCE_CANDIDATE_ID: "CANDIDATE-foreign" },
       {
@@ -5326,10 +5333,14 @@ async function runtimeFailureFixture({
   return context;
 }
 
-// Two physical build inventories from the same source commit must stay distinct.
+// Physical artifact/manifest fixtures; no compiled artifact is rewritten here.
+// Independent inventories from the same source commit must stay distinct.
 {
   const identities = [];
-  for (const nextBuildId of ["direct-build-one", "_direct-build-two"]) {
+  for (const nextBuildId of [
+    "-HMijapRnjq-h9tldkjN0", "_jT2Js5lQ3W97uL42t3VQ",
+    "v3Dmenpr6d_fsLQY9tQPM", "release-2026.09:build_42", "A", "_".repeat(128),
+  ]) {
     const context = await fixture({ nextBuildId, recordRuntimeTest: false,
       commitDate: "2026-07-31T00:00:00Z" });
     try {
@@ -5338,6 +5349,24 @@ async function runtimeFailureFixture({
         environment: playwrightContractEnvironment(context),
       });
       assert.equal(identity.buildIdentity, nextBuildId, "physical BUILD_ID is never sanitized");
+      assert.equal(readFileSync(path.join(context.root, ".next/BUILD_ID"), "utf8"), `${nextBuildId}\n`);
+      const health = { build: nextBuildId, productionArtifact: {
+        kind: "local-production-mode-artifact", nextBuildId,
+        artifactSha256: identity.artifactSha256,
+        sourceCommitSha: identity.candidateCommitSha,
+      } };
+      assertDirectRuntimeSmokeServer(identity, health);
+      assert.throws(() => assertDirectRuntimeSmokeServer(identity, {
+        ...health, build: "foreign-build",
+      }), /does not match/);
+      assert.throws(() => assertDirectRuntimeSmokeServer(identity, {
+        ...health, productionArtifact: { ...health.productionArtifact, nextBuildId: "foreign-build" },
+      }), /does not match/);
+      await assert.rejects(() => inspectDirectProductionIdentity({
+        repositoryRoot: context.root, manifestPath: context.manifestPath,
+        environment: { ...playwrightContractEnvironment(context),
+          PRODUCTION_EVIDENCE_EXPECTED_BUILD_ID: "foreign-build" },
+      }), /conflicts with PRODUCTION_EVIDENCE_EXPECTED_BUILD_ID/);
       identities.push(identity);
       write(context.root, ".next/BUILD_ID", "unbound-build\n");
       await assert.rejects(() => inspectDirectProductionIdentity({
