@@ -7528,12 +7528,12 @@ const playwrightConfiguration = readFileSync(
 );
 assert.match(
   playwrightConfiguration,
-  /command: productionArtifactEvidence[\s\S]{0,160}productionArtifactEvidence\.serverCommand[\s\S]{0,160}useProductionServer[\s\S]{0,100}"npm run start"[\s\S]{0,100}"npm run dev"/,
+  /command: productionArtifactEvidence[\s\S]{0,160}productionArtifactEvidence\.serverCommand[\s\S]{0,160}useProductionServer[\s\S]{0,100}"npm run start -- --hostname 127\.0\.0\.1"[\s\S]{0,100}"npm run dev"/,
   "production artifact evidence must select its verified server before any dev fallback",
 );
 assert.match(
   playwrightConfiguration,
-  /reuseExistingServer: productionArtifactEvidence \? false/,
+  /reuseExistingServer: productionArtifactEvidence \|\| directRuntimeSmokeIdentity \|\| useProductionServer \? false/,
   "production artifact evidence must never reuse an unrelated listener",
 );
 assert.match(

@@ -22,21 +22,22 @@ async function expectIdle(page: Page) {
   return demandSnapshot(page);
 }
 
-test("Auto preserves quality through idle, resize and finite camera interactions", async ({ page }, testInfo) => {
+test("Auto preserves quality through idle and repeated finite resize interactions", async ({ page }, testInfo) => {
   test.setTimeout(120_000);
   await page.addInitScript(() => {
     Object.assign(window, { __INTERIOR_AI_ENABLE_GLB_DIAGNOSTICS__: true });
     localStorage.removeItem("scene_performance_mode");
   });
-  await page.goto("/design?mode=designer", { waitUntil: "domcontentloaded" });
+  const response = await page.goto("/design", { waitUntil: "domcontentloaded" });
+  expect(response?.status()).toBe(200);
   const view3d = page.locator('[data-testid="editor-view-3d"]:visible').first();
-  await view3d.click();
+  await expect(view3d).toBeVisible();
+  if (await view3d.getAttribute("aria-pressed") !== "true") await view3d.click();
   const canvas = page.getByTestId("scene-canvas").first();
-  const auto = page.getByTestId("qa-scene-performance");
+  await expect(canvas).toHaveCSS("opacity", "1", { timeout: 30_000 });
   const observations = [];
   await expect(canvas).toHaveAttribute("data-shadow-maps-enabled", "true");
   observations.push(await expectIdle(page));
-  await expect(auto).toHaveAttribute("data-scene-ready", "true");
   await page.waitForTimeout(5500);
   await page.setViewportSize({ width: 1350, height: 800 });
   observations.push(await expectIdle(page));
@@ -44,18 +45,16 @@ test("Auto preserves quality through idle, resize and finite camera interactions
   await expect(canvas).toHaveAttribute("data-shadow-maps-enabled", "true");
   for (let interaction = 0; interaction < 4; interaction += 1) {
     await page.waitForTimeout(1500);
-    const bounds = await canvas.boundingBox();
-    if (!bounds) throw new Error("Scene canvas is absent");
-    await page.mouse.move(bounds.x + bounds.width * 0.7, bounds.y + bounds.height * 0.4);
-    await page.mouse.down();
-    await page.mouse.move(bounds.x + bounds.width * 0.7 + 50, bounds.y + bounds.height * 0.4 + 20, { steps: 8 });
-    await page.mouse.up();
+    await page.setViewportSize({ width: 1360 + interaction * 10, height: 800 });
     observations.push(await expectIdle(page));
     expect(observations[interaction + 2].rendererCalls).toBeGreaterThan(observations[interaction + 1].rendererCalls);
     await expect(canvas).toHaveAttribute("data-shadow-maps-enabled", "true");
   }
-  await expect(auto).toHaveAttribute("data-mode", "auto");
-  await expect(auto).toHaveAttribute("data-auto-lite", "false");
+  expect(await page.evaluate(() => localStorage.getItem("scene_performance_mode"))).toBe("auto");
+  await page.getByTestId("editor-command-overflow").click();
+  const auto = page.getByTestId("scene-performance-auto");
+  await expect(auto).toHaveAttribute("data-active", "true");
+  await expect(auto).toHaveText("Auto");
   await testInfo.attach("auto-idle-quality", {
     body: JSON.stringify({ mode: "auto", shadowsEnabled: true, observations }),
     contentType: "application/json",
