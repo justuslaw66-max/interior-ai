@@ -56,17 +56,18 @@ No committed deterministic generator is associated with this snapshot. To refres
 - `app/models-test/page.tsx` — Next.js page for route /models-test.
 - `app/page.tsx` — Next.js page for route /.
 - `app/share/[shareToken]/export/page.tsx` — Next.js page for route /share/[shareToken]/export.
-- `app/share/[shareToken]/page.tsx` — Next.js page for route /share/[shareToken].
+- `app/share/[shareToken]/(presentation)/page.tsx` — Next.js page for route /share/[shareToken].
 - `app/tools/glb-optimizer/page.tsx` — Next.js page for route /tools/glb-optimizer.
 
-### 2. Layouts, loading states, error states, and route metadata (7)
+### 2. Layouts, loading states, error states, and route metadata (8)
 
 - `app/error.tsx` — Error boundary UI for route subtree /.
 - `app/favicon.ico` — Browser favicon for the web application.
 - `app/icon.svg` — Vector application icon used by Next.js route metadata.
 - `app/layout.tsx` — Next.js layout for route subtree /.
-- `app/share/[shareToken]/error.tsx` — Error boundary UI for route subtree /share/[shareToken].
-- `app/share/[shareToken]/loading.tsx` — Loading state for route subtree /share/[shareToken].
+- `app/share/[shareToken]/(presentation)/error.tsx` — Error boundary UI for route /share/[shareToken].
+- `app/share/[shareToken]/(presentation)/layout.tsx` — Owns the public presentation lifecycle landmark for route /share/[shareToken].
+- `app/share/[shareToken]/(presentation)/loading.tsx` — Loading state for route /share/[shareToken].
 - `app/tools/layout.tsx` — Next.js layout for route subtree /tools.
 
 ### 3. React UI components (29)

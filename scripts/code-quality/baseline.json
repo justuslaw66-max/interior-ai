@@ -92,10 +92,6 @@
       "lines": 531,
       "limit": 400
     },
-    "app/share/[shareToken]/page.tsx": {
-      "lines": 730,
-      "limit": 250
-    },
     "app/tools/glb-optimizer/page.tsx": {
       "lines": 360,
       "limit": 250
@@ -169,7 +165,7 @@
       "limit": 250
     },
     "components/editor/design-page/DesignSceneCanvas.tsx": {
-      "lines": 568,
+      "lines": 565,
       "limit": 250
     },
     "components/editor/design-page/DesignSceneStructureLayer.tsx": {
@@ -341,7 +337,7 @@
       "limit": 400
     },
     "components/scene/FurnitureItem.tsx": {
-      "lines": 1002,
+      "lines": 953,
       "limit": 250
     },
     "components/scene/glb-scaled-model/huggMaterial.ts": {
@@ -485,7 +481,7 @@
       "limit": 400
     },
     "lib/catalog-placement.ts": {
-      "lines": 860,
+      "lines": 859,
       "limit": 400
     },
     "lib/catalog-schema.ts": {
@@ -1506,16 +1502,6 @@
         "maximum": 94
       }
     },
-    "app/share/[shareToken]/page.tsx": {
-      "overlongFunctions": {
-        "count": 2,
-        "maximum": 663
-      },
-      "complexFunctions": {
-        "count": 1,
-        "maximum": 42
-      }
-    },
     "app/tools/glb-optimizer/page.tsx": {
       "overlongFunctions": {
         "count": 1,
@@ -1813,7 +1799,7 @@
     "components/editor/design-page/DesignSceneCanvas.tsx": {
       "overlongFunctions": {
         "count": 2,
-        "maximum": 297
+        "maximum": 294
       },
       "complexFunctions": {
         "count": 1,
@@ -2567,7 +2553,7 @@
     "components/scene/FurnitureItem.tsx": {
       "overlongFunctions": {
         "count": 2,
-        "maximum": 951
+        "maximum": 902
       },
       "complexFunctions": {
         "count": 1,
@@ -2604,12 +2590,6 @@
       "overlongFunctions": {
         "count": 1,
         "maximum": 251
-      }
-    },
-    "components/scene/ScenePerformanceBridge.tsx": {
-      "overlongFunctions": {
-        "count": 1,
-        "maximum": 69
       }
     },
     "components/scene/ZoneOutline.tsx": {

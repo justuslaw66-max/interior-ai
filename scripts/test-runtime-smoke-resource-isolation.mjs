@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import {
   copyFileSync,
+  existsSync,
   mkdirSync,
   mkdtempSync,
   readFileSync,
@@ -14,6 +15,16 @@ import {
   authorizeRuntimeSmokeReportPath,
   resolveRuntimeSmokeStartMarkerPath,
 } from "./playwright-report-path.mjs";
+import {
+  createStableRuntimeRoots,
+  removeStableRuntimeRoot,
+  stableRuntimePaths,
+} from "./stable-runtime-smoke-resources.mjs";
+import { createStableRuntimeSmokeTestInjection } from "./stable-runtime-smoke.mjs";
+import RuntimeSmokeDirectAttemptReporter, {
+  runtimeSmokeDirectAttemptResultPath,
+} from "./runtime-smoke-direct-attempt-reporter.mjs";
+import { resolveRuntimeSmokeTimingDestination } from "./runtime-smoke-phase-budget.mjs";
 
 const runtimeSmokeSource = readFileSync(
   path.join(process.cwd(), "tests/e2e/00-runtime-smoke.spec.ts"),
@@ -25,6 +36,10 @@ const playwrightConfigSource = readFileSync(
 );
 const workflowSource = readFileSync(
   path.join(process.cwd(), ".github/workflows/ci.yml"),
+  "utf8",
+);
+const stableRuntimeParentSource = readFileSync(
+  path.join(process.cwd(), "scripts/stable-runtime-smoke.mjs"),
   "utf8",
 );
 
@@ -45,13 +60,112 @@ assert.match(
 );
 assert.match(
   workflowSource,
-  /required_files=\(manifest\.json runtime-smoke\.json runtime-smoke-phases\.json\)/,
-  "the safe structured failure artifact contract must remain unchanged",
+  /npm run evidence:production:stable-runtime-smoke/,
+  "Stable checks must dispatch its repository-owned runtime resource parent",
 );
 assert.doesNotMatch(
   workflowSource,
-  /required_files=\([^\n]*(?:trace\.zip|video\.webm)/,
-  "raw trace/video must not become required external evidence",
+  /evidence_root="\.local\/production-artifact-evidence"/,
+  "certified runtime evidence must not fall back into the repository",
+);
+
+{
+  const repositoryRoot = mkdtempSync(
+    path.join(tmpdir(), "runtime-repeat-attempt-ownership-"),
+  );
+  try {
+    const reporterOutputRoot = path.join(repositoryRoot, "reporter-attempts");
+    const reporter = new RuntimeSmokeDirectAttemptReporter({
+      outputRoot: reporterOutputRoot,
+      timingRoot: path.join(repositoryRoot, "test-results"),
+    });
+    const timingPaths = new Set();
+    const resultPaths = new Set();
+    for (let repeatEachIndex = 0; repeatEachIndex < 20; repeatEachIndex += 1) {
+      const identity = {
+        schema: "interior-ai.runtime-smoke-direct-result.v1",
+        invocationId: reporter.invocationId,
+        repeatEachIndex,
+        retry: 0,
+        projectName: "chromium",
+        workerIndex: 0,
+        parallelIndex: 0,
+        testId: "runtime.template-stability",
+        processId: 4312,
+        candidateCommitSha: "a".repeat(40),
+        candidateTreeSha: "b".repeat(40),
+        buildIdentity: "next-development-server",
+        status: "passed",
+      };
+      const timingPath = resolveRuntimeSmokeTimingDestination({
+          repositoryRoot,
+          timingPath:
+            `test-results/runtime-repeat-${repeatEachIndex}/` +
+            "phase-timings-4312.json",
+          environment: {},
+        }).outputPath;
+      timingPaths.add(timingPath);
+      mkdirSync(path.dirname(timingPath), { recursive: true });
+      const { status: _status, ...attemptIdentity } = identity;
+      attemptIdentity.schema = "interior-ai.runtime-smoke-direct-attempt.v1";
+      writeFileSync(
+        timingPath,
+        `${JSON.stringify({ attemptIdentity })}\n`,
+        { flag: "wx", mode: 0o600 },
+      );
+      const resultPath = runtimeSmokeDirectAttemptResultPath({
+        outputRoot: path.join(repositoryRoot, "test-results/direct-attempts"),
+        identity,
+      });
+      resultPaths.add(resultPath);
+      mkdirSync(path.dirname(resultPath), { recursive: true });
+      writeFileSync(resultPath, `${JSON.stringify(identity)}\n`, {
+        flag: "wx",
+        mode: 0o600,
+      });
+      assert.deepEqual(JSON.parse(readFileSync(resultPath, "utf8")), identity);
+      reporter.onTestEnd(
+        {
+          title: "furnished template remains stable without a render loop",
+          repeatEachIndex,
+          id: identity.testId,
+          parent: { project: () => ({ name: identity.projectName }) },
+          annotations: [
+            {
+              type: "runtime-smoke-direct-timing-path",
+              description: timingPath,
+            },
+          ],
+        },
+        { retry: 0, workerIndex: 0, parallelIndex: 0, status: "passed" },
+      );
+    }
+    assert.equal(timingPaths.size, 20);
+    assert.equal(resultPaths.size, 20);
+    assert.equal(
+      [...resultPaths].every((resultPath) => existsSync(resultPath)),
+      true,
+    );
+    reporter.onEnd();
+    assert.equal(existsSync(reporter.outputDirectory), false);
+    assert.equal(existsSync(reporterOutputRoot), true, "shared parent remains owned by its parent");
+    assert.equal(
+      [...timingPaths].every((timingPath) => !existsSync(timingPath)),
+      true,
+    );
+  } finally {
+    rmSync(repositoryRoot, { recursive: true, force: true });
+  }
+}
+assert.match(
+  stableRuntimeParentSource,
+  /STABLE_RUNTIME_SMOKE_DATABASE_PROFILE/,
+  "the Stable parent must use the canonical scoped database lifecycle",
+);
+assert.match(
+  stableRuntimeParentSource,
+  /removeStableRuntimeRoot/,
+  "the Stable parent must own external-root cleanup",
 );
 const requiredSnapshotLogSource = runtimeSmokeSource.slice(
   runtimeSmokeSource.indexOf('"[runtime-smoke-required-snapshot]"'),
@@ -104,6 +218,54 @@ assert.match(
   };
   try {
     mkdirSync(reportParent, { recursive: true, mode: 0o700 });
+
+    // Authorization fixtures: these are not compiled production-browser runs.
+    const authorizeBuildId = (value, requestedPath = reportPath) =>
+      authorizeRuntimeSmokeReportPath({
+        requestedPath, repositoryRoot, authorizedExternalRoot: evidenceRoot,
+        environment: { ...environment, PRODUCTION_EVIDENCE_EXPECTED_BUILD_ID: value },
+      });
+    for (const [index, buildId] of [
+      "-HMijapRnjq-h9tldkjN0", "_jT2Js5lQ3W97uL42t3VQ",
+      "v3Dmenpr6d_fsLQY9tQPM", "release-2026.09:build_42", "a..b",
+      "A", "-", "_", `_${"a".repeat(127)}`,
+    ].entries()) {
+      const buildReport = path.join(evidenceRoot, `build-${index}`, "playwright-report.json");
+      mkdirSync(path.dirname(buildReport));
+      assert.equal(authorizeBuildId(buildId, buildReport).authorization.status, "initial");
+      const ownerBytes = readFileSync(`${buildReport}.owner.json`);
+      assert.equal(JSON.parse(ownerBytes).buildId, buildId);
+      assert.equal(authorizeBuildId(buildId, buildReport).authorization.status, "same-run-reentry");
+      assert.deepEqual(readFileSync(`${buildReport}.owner.json`), ownerBytes);
+      assert.throws(() => authorizeBuildId("foreign-build", buildReport), /owned by another run/);
+    }
+    for (const value of [undefined, null, ""]) {
+      assert.throws(() => authorizeBuildId(value), {
+        message: "Runtime-smoke report authorization is missing PRODUCTION_EVIDENCE_EXPECTED_BUILD_ID.",
+      });
+    }
+    for (const value of [
+      42, {}, "a\0b", "a\x01b", "a\x7fb", "a\nb", "a\rb", "a\tb", "a\n",
+      ".", "..", "../build", "build/../other", "build/file", "build\\file",
+      " build", "build ", "build id", ".build", ":build", "build%2Fid",
+      "build?id", "build#id", "build+id", "büllid", "a".repeat(129),
+    ]) {
+      assert.throws(() => authorizeBuildId(value), {
+        message: "Runtime-smoke report authorization has invalid PRODUCTION_EVIDENCE_EXPECTED_BUILD_ID.",
+      });
+      assert.equal(existsSync(authorizationPath), false);
+    }
+    for (const name of [
+      "PRODUCTION_CERTIFICATION_ID", "PRODUCTION_EVIDENCE_CANDIDATE_ID",
+      "PRODUCTION_EVIDENCE_EXPECTED_JOURNAL_NONCE",
+    ]) {
+      for (const value of ["-identifier", "_identifier", "a".repeat(129)]) {
+        assert.throws(() => authorizeRuntimeSmokeReportPath({
+          requestedPath: reportPath, repositoryRoot, authorizedExternalRoot: evidenceRoot,
+          environment: { ...environment, [name]: value },
+        }), /Runtime-smoke report authorization is missing/);
+      }
+    }
 
     const initial = authorizeRuntimeSmokeReportPath({
       requestedPath: reportPath,
@@ -269,4 +431,112 @@ assert.match(
   }
 }
 
+{
+  const runnerTemp = mkdtempSync(
+    path.join(tmpdir(), "stable-runtime-parent-roots-"),
+  );
+  const manifest = {
+    candidateIdentifier: "github-33641707490-1",
+    source: {
+      commitSha: "a".repeat(40),
+      treeSha: "b".repeat(40),
+    },
+  };
+  const environment = {
+    RUNNER_TEMP: runnerTemp,
+    GITHUB_RUN_ID: "33641707490",
+    GITHUB_RUN_ATTEMPT: "1",
+    STABLE_RUNTIME_SMOKE_EXPECTED_SOURCE_SHA: manifest.source.commitSha,
+  };
+  let roots = null;
+  try {
+    assert.throws(
+      () =>
+        createStableRuntimeRoots({
+          repositoryRoot: process.cwd(),
+          environment: { ...environment, RUNNER_TEMP: "." },
+          manifest,
+        }),
+      /RUNNER_TEMP must be absolute/,
+    );
+    assert.throws(
+      () =>
+        createStableRuntimeRoots({
+          repositoryRoot: process.cwd(),
+          environment: {
+            ...environment,
+            STABLE_RUNTIME_SMOKE_EXPECTED_SOURCE_SHA: "c".repeat(40),
+          },
+          manifest,
+        }),
+      /expected source differs/,
+    );
+    const rejectedTaskRoot = path.join(
+      process.cwd(),
+      `interior-ai-stable-runtime-smoke-${environment.GITHUB_RUN_ID}-${environment.GITHUB_RUN_ATTEMPT}`,
+    );
+    assert.equal(existsSync(rejectedTaskRoot), false);
+    assert.throws(
+      () =>
+        createStableRuntimeRoots({
+          repositoryRoot: process.cwd(),
+          environment: { ...environment, RUNNER_TEMP: process.cwd() },
+          manifest,
+        }),
+      /outside every repository worktree/,
+    );
+    assert.equal(
+      existsSync(rejectedTaskRoot),
+      false,
+      "a rejected worktree-contained root must be removed transactionally",
+    );
+    roots = createStableRuntimeRoots({
+      repositoryRoot: process.cwd(),
+      environment,
+      manifest,
+    });
+    assert.equal(path.isAbsolute(roots.evidenceRoot), true);
+    assert.equal(roots.evidenceRoot.startsWith(`${process.cwd()}${path.sep}`), false);
+    assert.equal(roots.privateRoot.startsWith(`${process.cwd()}${path.sep}`), false);
+    assert.equal(readFileSync(roots.ownerPath, "utf8").includes(process.cwd()), false);
+    const paths = stableRuntimePaths(roots.evidenceRoot);
+    for (const outputPath of Object.values(paths)) {
+      assert.equal(outputPath.startsWith(`${roots.evidenceRoot}${path.sep}`), true);
+    }
+    assert.throws(
+      () =>
+        createStableRuntimeRoots({
+          repositoryRoot: process.cwd(),
+          environment,
+          manifest,
+        }),
+      /task root already exists/,
+    );
+    const ownerBytes = readFileSync(roots.ownerPath);
+    writeFileSync(roots.ownerPath, "foreign owner\n");
+    assert.throws(
+      () => removeStableRuntimeRoot(roots),
+      /root ownership changed/,
+    );
+    writeFileSync(roots.ownerPath, ownerBytes);
+    removeStableRuntimeRoot(roots);
+    assert.equal(existsSync(roots.taskRoot), false);
+    roots = null;
+  } finally {
+    if (roots?.taskRoot) rmSync(roots.taskRoot, { recursive: true, force: true });
+    rmSync(runnerTemp, { recursive: true, force: true });
+  }
+}
+
+const repositoryOwnedInjection = createStableRuntimeSmokeTestInjection();
+assert.equal(repositoryOwnedInjection.kind, "post-product-diagnostics-timeout");
+assert.equal(repositoryOwnedInjection.databaseAdapterFactory, null);
+assert.doesNotMatch(
+  stableRuntimeParentSource,
+  /process\.env\.[A-Z0-9_]*TIMEOUT_INJECTION/,
+  "the real post-product timeout must not be activatable by environment",
+);
+
 console.log("CH-0029 runtime-smoke resource-isolation contract passed.");
+
+await import("./test-runtime-smoke-direct-ownership.mjs");

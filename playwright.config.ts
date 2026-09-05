@@ -3,8 +3,13 @@ import {
   devices,
   type ReporterDescription,
 } from "@playwright/test";
+import { randomUUID } from "node:crypto";
 import path from "node:path";
 import { loadProductionArtifactForPlaywright } from "./scripts/production-artifact-playwright.mjs";
+import {
+  directRuntimeSmokeServerEnvironment,
+  loadDirectRuntimeSmokeIdentity,
+} from "./scripts/runtime-smoke-direct-identity.mjs";
 import {
   CERTIFICATION_EVIDENCE_ROOT,
   PLAYWRIGHT_EXTERNAL_EVIDENCE_ROOT,
@@ -52,6 +57,24 @@ const loadedProductionArtifactEvidence = productionEvidenceManifestPath
     })
   : null;
 const productionArtifactEvidence = loadedProductionArtifactEvidence?.identity ?? null;
+const directRuntimeSmokeIdentity =
+  !productionArtifactEvidence && !requiredTestGateId
+    ? loadDirectRuntimeSmokeIdentity({ repositoryRoot: process.cwd(), useProductionServer, releaseBaseURL })
+    : null;
+// Workers inherit this invocation ID; independent CLI processes generate their
+// own. Playwright startup may remove only this invocation's output directory.
+const directInvocationId = directRuntimeSmokeIdentity
+  ? process.env.TEST_WORKER_INDEX === undefined
+    ? (process.env.RUNTIME_SMOKE_DIRECT_INVOCATION_ID = randomUUID())
+    : process.env.RUNTIME_SMOKE_DIRECT_INVOCATION_ID
+  : null;
+if (directInvocationId && !/^[a-f0-9-]{36}$/.test(directInvocationId)) {
+  throw new Error("Direct runtime-smoke invocation ID is invalid");
+}
+const directOutputRoot = directInvocationId
+  ? path.join(useProductionServer ? ".local/production-artifact-evidence" : "test-results",
+      `direct-runtime-smoke-${directInvocationId}`) : "test-results";
+if (directRuntimeSmokeIdentity) directRuntimeSmokeIdentity.invocationId = directInvocationId;
 const productionEvidenceReportOutputPath =
   loadedProductionArtifactEvidence?.reportDestination.outputPath;
 const certificationRuntimeMarkerPath =
@@ -138,7 +161,7 @@ export default defineConfig({
     ? ".local/production-artifact-evidence/playwright-output"
     : requiredTestGateId
       ? `.local/required-test-evidence/${requiredTestGateId}/playwright-output`
-    : "test-results",
+    : path.join(directOutputRoot, "playwright-output"),
   fullyParallel: false,
   retries: 0,
   workers: 1,
@@ -149,10 +172,19 @@ export default defineConfig({
           ["list"],
           ["json", { outputFile: requiredTestReportPath }],
         ]
-      : [["list"]],
+      : directRuntimeSmokeIdentity ? [
+          ["list"],
+          ["./scripts/runtime-smoke-direct-attempt-reporter.mjs", {
+            invocationId: directInvocationId,
+            sourceIdentity: directRuntimeSmokeIdentity,
+            outputRoot: path.join(directOutputRoot, "results"),
+            timingRoot: path.join(directOutputRoot, "playwright-output"),
+          }],
+        ] : [["list"]],
   metadata: {
     gateA3ReleaseBaseURL: releaseBaseURL ?? null,
     productionArtifactEvidence,
+    directRuntimeSmokeIdentity,
     requiredTestEvidence: requiredTestGateId
       ? {
           schema: "interior-ai.required-test-evidence.v1",
@@ -187,10 +219,11 @@ export default defineConfig({
           command: productionArtifactEvidence
             ? productionArtifactEvidence.serverCommand
             : useProductionServer
-              ? "npm run start"
+              ? "npm run start -- --hostname 127.0.0.1"
               : "npm run dev",
           url: localBaseURL,
-          reuseExistingServer: productionArtifactEvidence ? false : !process.env.CI,
+          env: directRuntimeSmokeServerEnvironment(directRuntimeSmokeIdentity),
+          reuseExistingServer: productionArtifactEvidence || directRuntimeSmokeIdentity || useProductionServer ? false : !process.env.CI,
           timeout: 120000,
         },
       }),

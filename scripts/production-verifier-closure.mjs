@@ -10,11 +10,13 @@ import {
 export const PRODUCTION_VERIFIER_ENTRYPOINTS = Object.freeze([
   "scripts/production-artifact-evidence.mjs",
   "scripts/production-certification-evidence.mjs",
+  "scripts/stable-runtime-smoke-standalone.mjs",
 ]);
 
 export const PRODUCTION_VERIFIER_DATA_INPUTS = Object.freeze([
   "scripts/required-test-manifest.json",
   "docs/qa/production-certification-source-generated-outputs.v1.json",
+  "docs/qa/production-certification-stage-environment.v2.json",
 ]);
 
 const IMPORT_PATTERNS = Object.freeze([

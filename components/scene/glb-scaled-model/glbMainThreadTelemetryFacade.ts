@@ -6,9 +6,15 @@ import type {
   GLBMainThreadTimingCategory,
 } from "./glbMainThreadTelemetryCore";
 import { getReloadGeneration } from "./modelDiagnosticRealm";
+import {
+  instrumentSceneDemandRenderer,
+  recordSceneDemandItemFrames,
+  recordSceneDemandRendererCall,
+} from "../sceneDemandDiagnostics";
 
 type TelemetryGlobal = typeof globalThis & {
   __INTERIOR_AI_ENABLE_GLB_DIAGNOSTICS__?: boolean;
+  __INTERIOR_AI_GLB_RENDERER_CALL_COUNT__?: number;
 };
 
 const instrumentedRenderers = new WeakSet<THREE.WebGLRenderer>();
@@ -64,10 +70,19 @@ export function instrumentGLBMainThreadRenderer(renderer: THREE.WebGLRenderer) {
   if (!telemetryEnabled() || instrumentedRenderers.has(renderer)) return;
   getReloadGeneration(globalThis);
   instrumentedRenderers.add(renderer);
+  instrumentSceneDemandRenderer(renderer);
   const render = renderer.render.bind(renderer);
   renderer.render = (scene, camera) => {
+    const telemetryGlobal = globalThis as TelemetryGlobal;
+    telemetryGlobal.__INTERIOR_AI_GLB_RENDERER_CALL_COUNT__ =
+      (telemetryGlobal.__INTERIOR_AI_GLB_RENDERER_CALL_COUNT__ ?? 0) + 1;
+    recordSceneDemandRendererCall();
     recordGLBMainThreadCounter("rendererCalls");
-    return measureGLBMainThreadWork("r3f-render", () => render(scene, camera));
+    return measureGLBMainThreadWork("r3f-render", () => {
+      const result = render(scene, camera);
+      recordSceneDemandItemFrames(scene, camera, renderer);
+      return result;
+    });
   };
   telemetryFacade.requestTelemetry();
 }

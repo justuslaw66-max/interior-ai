@@ -306,6 +306,7 @@ export function resolveRuntimeSmokeTimingDestination({
 export function createRuntimeSmokePhaseRecorder({
   repositoryRoot,
   timingPath,
+  attemptIdentity = null,
   environment = process.env,
   additionalRepositoryRoots = [],
   now = Date.now,
@@ -345,6 +346,7 @@ export function createRuntimeSmokePhaseRecorder({
     const payload = {
       schema: RUNTIME_SMOKE_PHASE_TIMING_SCHEMA,
       testIdentity: "runtime.template-stability",
+      ...(attemptIdentity ? { attemptIdentity } : {}),
       wholeTestTimeoutMs: deriveRuntimeSmokeWholeTestTimeout({ phases: phaseBudgets }),
       sequentialPhaseBudgetMs: sumNonNegativeIntegers(
         phaseBudgets.map((phase) => phase.timeoutMs),

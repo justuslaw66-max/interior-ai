@@ -1,5 +1,92 @@
 # Production certification database lifecycle v1
 
+## GitHub-hosted PostgreSQL service transport attestation — 2026-09-03
+
+The Stable runtime parent still requires an administrator URL whose protocol is
+PostgreSQL, whose host is the explicit address `127.0.0.1` or `::1`, whose port
+is 5432, whose database is `postgres`, and whose username is explicit. It does
+not accept `localhost`, a private-LAN endpoint, a Unix socket, or an arbitrary
+forward. Native PostgreSQL retains the `native-loopback` classification and
+must report a loopback `inet_server_addr()`; it never invokes Docker.
+
+GitHub-hosted Linux Stable runs may instead use
+`github-hosted-service-container-loopback-forward`. Before database planning,
+the Stable parent creates one canonical mode-0600, create-only attestation under
+its existing private `RUNNER_TEMP` root. The owner requires GitHub's immutable
+`GITHUB_*`/`RUNNER_*` identity, including `RUNNER_ENVIRONMENT=github-hosted`,
+and binds the current run, attempt, root lifecycle nonce, loopback endpoint
+classification, and a fresh creation nonce. It discovers Docker with executable
+plus argument-array dispatch; caller-provided container IDs, bridge addresses,
+health claims, and image digests are never authority.
+
+Every adapter inspection rereads the private canonical attestation and repeats
+live Docker discovery. Exactly one running, healthy container must own runner
+port 5432 as container port 5432/tcp. PostgreSQL's server address must equal a
+current address on that container, and a non-null client address must equal the
+gateway of the same exact network. The container image ID must agree with live
+image inspection, one verifiable Docker Official Image repository digest for
+`postgres` must exist, and the queried server must be PostgreSQL major 15. A
+stopped/replaced/ambiguous container, address or gateway change, missing Docker,
+wrong image/repository/version/port, self-hosted runner, stale run or nonce, or
+noncanonical attestation fails before database creation.
+
+The workflow deliberately retains the repository's established `postgres:15`
+major-version policy rather than introducing a time-varying multi-architecture
+digest update in this narrow repair. Per-run trust instead requires and seals
+the actual live image ID and official repository digest, while portable
+evidence retains only the transport classification, attestation SHA-256,
+live-verification status, and `official-postgres-major-15` classification.
+Container IDs, Docker network IDs, bridge addresses, administrator URLs, and
+passwords remain private and are removed with the task-owned root. This
+permission belongs only to `STABLE_RUNTIME_SMOKE_ONLY`; release certification
+and auth-preflight remain native-loopback-only.
+
+## Stable runtime-smoke lifecycle and external evidence — 2026-09-02
+
+The merge-required Stable job now has a repository-owned runtime-smoke parent.
+It reuses the strict artifact built earlier in the same job, but it does not
+invoke the full release-certification runtime command: that command requires
+the complete certification state, resource plan, stage worktrees, stage order,
+and final-artifact ownership that Stable does not possess. Instead, the parent
+uses the canonical database lifecycle and stage-environment owners with a
+closed `stable-runtime-smoke` profile.
+
+That profile is classified `STABLE_RUNTIME_SMOKE_ONLY`,
+`NOT_RELEASE_CERTIFICATION`, and `NOT_VALID_FOR_INTEGRATION`. It generates one
+fresh candidate-bound database, proves live absence before create, applies and
+verifies all current Prisma migrations, proves the initial application-row and
+session inventory empty, creates the scoped non-admin login, and permits only
+the `runtime-smoke` stage binding. The nested artifact server receives only the
+validated scoped `DATABASE_URL`; ambient URLs, admin authority, stale or
+foreign bindings, other stages, and certification-state substitution fail
+closed. A GitHub-built auth session keeps its exact session, nonce, provider
+digests, and candidate identity when the nested server applies its required
+local-process activation flag; only that activation-scope representation
+changes. Because the runtime product test intentionally creates fixture rows,
+the Stable-only completion records their safe aggregate table inventory and
+requires zero remaining sessions before removing the scoped role and sidecar,
+dropping the whole owned disposable database, and proving absence. It does not
+claim release-certification final emptiness. Failure uses
+the existing abort owner and cannot turn cleanup success into gate success.
+
+The parent creates a new, exact-owned physical task directory beneath absolute
+`RUNNER_TEMP`. Its evidence and private roots are outside every repository and
+worktree. The Playwright JSON report, phase timings, start marker, lifecycle,
+and Stable summary are written there; there is no repository-local fallback.
+Only after a successful marker-bound runtime report and database absence proof
+does the parent create portable report/timing entries for the existing
+standalone bundle contract. It then verifies the extracted bundle and removes
+the exact owned external task root. Stable publishes only the canonical bundle
+and checksum; the classification remains repository merge evidence, never
+release or integration evidence. Failure cleanup removes the task root only
+after database and role absence is proved; otherwise it retains the exact-owned
+root for canonical recovery while still removing any upload claim.
+
+The legacy direct `evidence:production:smoke` path also keeps its default
+timing path repository-relative at the binding boundary. If Playwright fails
+before product-test timing begins, the preceding web-server diagnostic remains
+authoritative and no secondary external-root error replaces it.
+
 ## Final-database AppEvent attribution and cleanup — 2026-08-26
 
 The retained rehearsal

@@ -9,6 +9,7 @@ import {
   type AABB,
 } from "@/lib/design-page-geometry";
 import { clamp, getRotatedFootprint } from "@/lib/design-page-utils";
+import { isWithinEditorBoundary } from "@/lib/editor-geometry-tolerances";
 import type { DesignItem } from "@/lib/room-types";
 import { computeAABB } from "@/lib/snapGuides";
 
@@ -393,10 +394,8 @@ export function isCatalogPlacementFootprintInsideRoom({
     const localX = x - room.x;
     const localZ = z - room.z;
     const insideBounds =
-      localX >= -room.w / 2 + wall &&
-      localX <= room.w / 2 - wall &&
-      localZ >= -room.d / 2 + wall &&
-      localZ <= room.d / 2 - wall;
+      isWithinEditorBoundary(localX, -room.w / 2 + wall, room.w / 2 - wall) &&
+      isWithinEditorBoundary(localZ, -room.d / 2 + wall, room.d / 2 - wall);
     if (!insideBounds) return false;
 
     if (room.shape === "custom_polygon" && room.polygon?.length) {

@@ -6,9 +6,11 @@ import { spawnSync } from "node:child_process";
 import {
   cpSync,
   existsSync,
+  lstatSync,
   mkdirSync,
   mkdtempSync,
   readFileSync,
+  readdirSync,
   realpathSync,
   renameSync,
   rmSync,
@@ -91,6 +93,7 @@ import {
 } from "./production-certification-stage-environment.mjs";
 import { stageWorktreeRole } from "./production-certification-worktrees.mjs";
 import authFixtureSession from "./ci-auth-fixture-session.cjs";
+import { authFixtureRegressionCapabilityNames } from "./ci-auth-fixture-regression-environment.mjs";
 
 const repositoryRoot = process.cwd();
 const CURRENT_JOURNAL_V2_FINAL_POSITIVE_PATH =
@@ -107,6 +110,201 @@ const candidate = {
   parentSha: "9".repeat(40),
 };
 const coveredRegressionIds = new Set();
+
+function pathIsWithin(root, candidate) {
+  const relative = path.relative(root, candidate);
+  return (
+    relative === "" ||
+    (relative !== ".." &&
+      !relative.startsWith(`..${path.sep}`) &&
+      !path.isAbsolute(relative))
+  );
+}
+
+function registeredWorktreeRoots(root) {
+  const listed = spawnSync("git", ["worktree", "list", "--porcelain"], {
+    cwd: root,
+    encoding: "utf8",
+  });
+  assert.equal(listed.status, 0, listed.stderr);
+  return listed.stdout
+    .split("\n")
+    .filter((line) => line.startsWith("worktree "))
+    .map((line) => line.slice("worktree ".length));
+}
+
+function withFloorPlanConfigExecutionFixture(sourceRoot, execute) {
+  const taskRoot = realpathSync(
+    mkdtempSync(path.join(tmpdir(), "certification-floor-plan-config-execution-")),
+  );
+  try {
+    for (const protectedRoot of [
+      sourceRoot,
+      ...registeredWorktreeRoots(repositoryRoot),
+    ]) {
+      assert.equal(
+        pathIsWithin(realpathSync(protectedRoot), taskRoot),
+        false,
+        `floor-plan config execution root must stay outside ${protectedRoot}`,
+      );
+    }
+    const fixtureRoot = path.join(taskRoot, "fixture");
+    const evidenceRoot = path.join(taskRoot, "evidence");
+    const testsRoot = path.join(fixtureRoot, "tests");
+    const executionRoot = path.join(evidenceRoot, "execution");
+    const reportRoot = path.join(
+      evidenceRoot,
+      "browser-reports/floor-plan-upload",
+    );
+    const markerRoot = path.join(
+      evidenceRoot,
+      "browser-owners/floor-plan-upload",
+    );
+    for (const root of [testsRoot, executionRoot, reportRoot, markerRoot]) {
+      mkdirSync(root, { recursive: true });
+    }
+    const configSpecifier = path.join(
+      sourceRoot,
+      "playwright.floor-plan-upload.config.ts",
+    );
+    writeFileSync(
+      path.join(fixtureRoot, "playwright.config.ts"),
+      `import { defineConfig } from "@playwright/test";
+import path from "node:path";
+import floorPlanConfig from ${JSON.stringify(configSpecifier)};
+
+export default defineConfig({
+  ...floorPlanConfig,
+  testDir: "./tests",
+  testMatch: "execution.spec.ts",
+  reporter: floorPlanConfig.reporter?.map(([name, options]) => [
+    name.startsWith(".") ? path.resolve(process.cwd(), name) : name,
+    options,
+  ]),
+  webServer: undefined,
+});
+`,
+    );
+    writeFileSync(
+      path.join(testsRoot, "execution.spec.ts"),
+      `import { test, expect } from "@playwright/test";
+import { writeFileSync } from "node:fs";
+import path from "node:path";
+
+test("Floor Plan config reaches worker test execution", async ({}, testInfo) => {
+  expect(["chromium", "webkit"]).toContain(testInfo.project.name);
+  writeFileSync(
+    path.join(
+      process.env.FLOOR_PLAN_CONFIG_EXECUTION_ROOT!,
+      \`\${testInfo.project.name}.json\`,
+    ),
+    \`{"project":\${JSON.stringify(testInfo.project.name)}}\\n\`,
+    { flag: "wx", mode: 0o600 },
+  );
+});
+`,
+    );
+    return execute({
+      evidenceRoot,
+      executionRoot,
+      fixtureRoot,
+      markerRoot,
+      reportRoot,
+      taskRoot,
+    });
+  } finally {
+    rmSync(taskRoot, { recursive: true, force: true });
+  }
+}
+
+function saveEnvironment(names) {
+  return new Map(
+    names.map((name) => [
+      name,
+      Object.hasOwn(process.env, name)
+        ? { present: true, value: process.env[name] }
+        : { present: false, value: undefined },
+    ]),
+  );
+}
+
+function restoreEnvironment(saved) {
+  for (const [name, original] of saved) {
+    if (original.present) process.env[name] = original.value;
+    else delete process.env[name];
+  }
+}
+
+function installForeignCertificationAuthEnvironment() {
+  const capabilityNames = authFixtureRegressionCapabilityNames(repositoryRoot);
+  const saved = saveEnvironment([
+    ...capabilityNames,
+    "APP_ENV",
+    "CI",
+    "DATABASE_URL",
+    "GITHUB_ACTIONS",
+  ]);
+  const ownerRoot = mkdtempSync(
+    path.join(tmpdir(), "production-certification-foreign-auth-"),
+  );
+  const sessionRoot = path.join(ownerRoot, "session");
+  const resultRoot = path.join(ownerRoot, "results");
+  mkdirSync(resultRoot, { mode: 0o700 });
+  const revision = (value) =>
+    spawnSync("git", ["rev-parse", value], {
+      cwd: repositoryRoot,
+      encoding: "utf8",
+    }).stdout.trim();
+  const sessionEnvironment = {
+    CI_AUTH_FIXTURE_SESSION_ROOT: sessionRoot,
+    CI_AUTH_FIXTURE_SESSION_ID: "foreign-ci-session-0001",
+    CI_AUTH_FIXTURE_SESSION_NONCE: "foreign-ci-session-nonce-0001",
+    CI_AUTH_FIXTURE_SESSION_CLASSIFICATION:
+      authFixtureSession.FIXTURE_SESSION_CLASSIFICATION,
+    CI_AUTH_FIXTURE_CANDIDATE_COMMIT_SHA: revision("HEAD"),
+    CI_AUTH_FIXTURE_CANDIDATE_TREE_SHA: revision("HEAD^{tree}"),
+  };
+  const fixtureNonce = "8".repeat(32);
+  const published = authFixtureSession.publishFixtureSession({
+    repositoryRoot,
+    environment: sessionEnvironment,
+    fixture: {
+      googleClientId:
+        `123456789012345-gate-a3-ci-${fixtureNonce}.apps.googleusercontent.com`,
+      googleClientSecret: `GOCSPX-gate-a3-ci-${fixtureNonce}`,
+    },
+  });
+  const resultPath = path.join(resultRoot, "foreign-command-result.json");
+  writeFileSync(resultPath, "foreign outer result sentinel\n", { mode: 0o600 });
+  Object.assign(process.env, sessionEnvironment, published.assignments, {
+    APP_ENV: "development",
+    CI: "true",
+    GITHUB_ACTIONS: "true",
+    CI_AUTH_FIXTURE_MODE: "1",
+    CI_AUTH_FIXTURE_RESULT_ROOT: resultRoot,
+    CI_AUTH_FIXTURE_RESULT_PATH: resultPath,
+    CI_AUTH_FIXTURE_RESULT_NONCE: "foreign-result-nonce-0001",
+    CI_AUTH_FIXTURE_EXPECTED_COMMAND_ID: "ci:auth-fixture:validate-existing",
+    CI_AUTH_FIXTURE_EXPECTED_MODE: "auth-environment-validation",
+    CI_AUTH_FIXTURE_ACTUAL_EXIT_STATUS: "0",
+    DATABASE_URL:
+      "postgresql://foreign:foreign@127.0.0.1:5432/foreign_outer",
+  });
+  delete process.env.CI_AUTH_FIXTURE_CANDIDATE_COMMIT_SHA;
+  delete process.env.CI_AUTH_FIXTURE_CANDIDATE_TREE_SHA;
+  const resourcePaths = [
+    path.join(sessionRoot, `${sessionEnvironment.CI_AUTH_FIXTURE_SESSION_ID}.transport.env`),
+    path.join(sessionRoot, `${sessionEnvironment.CI_AUTH_FIXTURE_SESSION_ID}.session.json`),
+    resultPath,
+  ];
+  return {
+    capabilityNames,
+    foreignCandidate: published.manifest.candidate,
+    ownerRoot,
+    resourcePaths,
+    saved,
+  };
+}
 
 function finalSimulationChild(
   simulationRoot,
@@ -2278,61 +2476,18 @@ function stateFixture() {
     (owner) => owner.id === "floor-plan-upload",
   );
   assert.ok(floorPlanOwner);
-  mkdirSync(path.join(repositoryRoot, ".local"), { recursive: true });
-  const fixtureRoot = mkdtempSync(
-    path.join(
-      repositoryRoot,
-      ".local/certification-floor-plan-config-execution-",
-    ),
-  );
-  const evidenceRoot = mkdtempSync(
-    path.join(tmpdir(), "certification-floor-plan-config-execution-"),
-  );
-  const testsRoot = path.join(fixtureRoot, "tests");
-  const executionRoot = path.join(evidenceRoot, "execution");
-  const reportRoot = path.join(evidenceRoot, "browser-reports/floor-plan-upload");
-  const markerRoot = path.join(evidenceRoot, "browser-owners/floor-plan-upload");
-  mkdirSync(testsRoot);
-  mkdirSync(executionRoot, { recursive: true });
-  mkdirSync(reportRoot, { recursive: true });
-  mkdirSync(markerRoot, { recursive: true });
-  writeFileSync(
-    path.join(fixtureRoot, "playwright.config.ts"),
-    `import { defineConfig } from "@playwright/test";
-import path from "node:path";
-import floorPlanConfig from "../../playwright.floor-plan-upload.config";
-
-export default defineConfig({
-  ...floorPlanConfig,
-  testDir: "./tests",
-  testMatch: "execution.spec.ts",
-  reporter: floorPlanConfig.reporter?.map(([name, options]) => [
-    name.startsWith(".") ? path.resolve(process.cwd(), name) : name,
-    options,
-  ]),
-  webServer: undefined,
-});
-`,
-  );
-  writeFileSync(
-    path.join(testsRoot, "execution.spec.ts"),
-    `import { test, expect } from "@playwright/test";
-import { writeFileSync } from "node:fs";
-import path from "node:path";
-
-test("Floor Plan config reaches worker test execution", async ({}, testInfo) => {
-  expect(["chromium", "webkit"]).toContain(testInfo.project.name);
-  writeFileSync(
-    path.join(
-      process.env.FLOOR_PLAN_CONFIG_EXECUTION_ROOT!,
-      \`\${testInfo.project.name}.json\`,
-    ),
-    \`{\"project\":\${JSON.stringify(testInfo.project.name)}}\\n\`,
-    { flag: "wx", mode: 0o600 },
-  );
-});
-`,
-  );
+  const sourceOutputPaths = [
+    ".local",
+    ".next",
+    "test-results",
+    "playwright-report",
+    "tsconfig.tsbuildinfo",
+  ];
+  const sourceOutputPresence = () =>
+    sourceOutputPaths.map((relativePath) =>
+      existsSync(path.join(repositoryRoot, relativePath)),
+    );
+  const sourceOutputsBefore = sourceOutputPresence();
   const commitSha = spawnSync("git", ["rev-parse", "HEAD"], {
     cwd: repositoryRoot,
     encoding: "utf8",
@@ -2341,62 +2496,145 @@ test("Floor Plan config reaches worker test execution", async ({}, testInfo) => 
     cwd: repositoryRoot,
     encoding: "utf8",
   }).stdout.trim();
-  const execution = spawnSync(
-    process.platform === "win32" ? "npx.cmd" : "npx",
-    [
-      "playwright",
-      "test",
-      "--config",
-      path.join(fixtureRoot, "playwright.config.ts"),
-    ],
-    {
-      cwd: repositoryRoot,
-      env: {
-        ...process.env,
-        APP_ENV: floorPlanOwner.applicationEnvironment,
-        NEXT_PUBLIC_APP_ENV: floorPlanOwner.applicationEnvironment,
-        CI: "true",
-        PLAYWRIGHT_USE_PRODUCTION_SERVER: "1",
-        CERTIFICATION_EVIDENCE_ROOT: evidenceRoot,
-        PRODUCTION_CERTIFICATION_ID: "floor-plan-config-execution-certification",
-        REQUIRED_TEST_GATE_ID: floorPlanOwner.gateId,
-        REQUIRED_TEST_BROWSER_OWNER_ID: floorPlanOwner.id,
-        REQUIRED_TEST_STAGE_ATTEMPT: "1",
-        REQUIRED_TEST_RUN_NONCE: "floor-plan-config-execution-nonce",
-        REQUIRED_TEST_REPORT_PATH: path.join(reportRoot, "playwright.json"),
-        REQUIRED_TEST_START_MARKER_PATH: path.join(
-          markerRoot,
-          "discovery-start.json",
-        ),
-        REQUIRED_TEST_SOURCE_COMMIT_SHA: commitSha,
-        REQUIRED_TEST_SOURCE_TREE_SHA: treeSha,
-        REQUIRED_TEST_ARTIFACT_SHA256: "a".repeat(64),
-        REQUIRED_TEST_BUILD_ID: "floor-plan-config-execution-build",
-        REQUIRED_TEST_RELEASE_CANDIDATE_ID:
-          "floor-plan-config-execution-candidate",
-        REQUIRED_TEST_RELEASE_ENVIRONMENT:
-          floorPlanOwner.applicationEnvironment,
-        REQUIRED_TEST_HARNESS_VERSION: "1",
-        REQUIRED_TEST_HARNESS_SOURCE_SHA256:
-          harnessSourceIdentity(repositoryRoot).sha256,
-        FLOOR_PLAN_CONFIG_EXECUTION_ROOT: executionRoot,
+  const runExecutionProbe = (observeTaskRoot) =>
+    withFloorPlanConfigExecutionFixture(
+      repositoryRoot,
+      ({
+        evidenceRoot,
+        executionRoot,
+        fixtureRoot,
+        markerRoot,
+        reportRoot,
+        taskRoot,
+      }) => {
+        observeTaskRoot(taskRoot);
+        const execution = spawnSync(
+          process.platform === "win32" ? "npx.cmd" : "npx",
+          [
+            "playwright",
+            "test",
+            "--config",
+            path.join(fixtureRoot, "playwright.config.ts"),
+          ],
+          {
+            cwd: repositoryRoot,
+            env: {
+              ...process.env,
+              APP_ENV: floorPlanOwner.applicationEnvironment,
+              NEXT_PUBLIC_APP_ENV: floorPlanOwner.applicationEnvironment,
+              CI: "true",
+              NODE_PATH: [
+                path.join(repositoryRoot, "node_modules"),
+                process.env.NODE_PATH,
+              ]
+                .filter(Boolean)
+                .join(path.delimiter),
+              PLAYWRIGHT_USE_PRODUCTION_SERVER: "1",
+              CERTIFICATION_EVIDENCE_ROOT: evidenceRoot,
+              PRODUCTION_CERTIFICATION_ID:
+                "floor-plan-config-execution-certification",
+              REQUIRED_TEST_GATE_ID: floorPlanOwner.gateId,
+              REQUIRED_TEST_BROWSER_OWNER_ID: floorPlanOwner.id,
+              REQUIRED_TEST_STAGE_ATTEMPT: "1",
+              REQUIRED_TEST_RUN_NONCE: "floor-plan-config-execution-nonce",
+              REQUIRED_TEST_REPORT_PATH: path.join(reportRoot, "playwright.json"),
+              REQUIRED_TEST_START_MARKER_PATH: path.join(
+                markerRoot,
+                "discovery-start.json",
+              ),
+              REQUIRED_TEST_SOURCE_COMMIT_SHA: commitSha,
+              REQUIRED_TEST_SOURCE_TREE_SHA: treeSha,
+              REQUIRED_TEST_ARTIFACT_SHA256: "a".repeat(64),
+              REQUIRED_TEST_BUILD_ID: "floor-plan-config-execution-build",
+              REQUIRED_TEST_RELEASE_CANDIDATE_ID:
+                "floor-plan-config-execution-candidate",
+              REQUIRED_TEST_RELEASE_ENVIRONMENT:
+                floorPlanOwner.applicationEnvironment,
+              REQUIRED_TEST_HARNESS_VERSION: "1",
+              REQUIRED_TEST_HARNESS_SOURCE_SHA256:
+                harnessSourceIdentity(repositoryRoot).sha256,
+              FLOOR_PLAN_CONFIG_EXECUTION_ROOT: executionRoot,
+            },
+            encoding: "utf8",
+          },
+        );
+        assert.equal(
+          execution.status,
+          0,
+          `Floor Plan Chromium/WebKit config execution probe failed: ${execution.stdout}\n${execution.stderr}`,
+        );
+        assert.deepEqual(
+          ["chromium", "webkit"].map((project) =>
+            JSON.parse(
+              readFileSync(path.join(executionRoot, `${project}.json`), "utf8"),
+            ),
+          ),
+          [{ project: "chromium" }, { project: "webkit" }],
+        );
       },
-      encoding: "utf8",
-    },
+    );
+
+  const sentinelCheckout = mkdtempSync(
+    path.join(tmpdir(), "certification-floor-plan-sentinel-checkout-"),
   );
-  assert.equal(
-    execution.status,
-    0,
-    `Floor Plan Chromium/WebKit config execution probe failed: ${execution.stdout}\n${execution.stderr}`,
-  );
-  assert.deepEqual(
-    ["chromium", "webkit"].map((project) =>
-      JSON.parse(readFileSync(path.join(executionRoot, `${project}.json`), "utf8")),
-    ),
-    [{ project: "chromium" }, { project: "webkit" }],
-  );
-  rmSync(fixtureRoot, { recursive: true, force: true });
-  rmSync(evidenceRoot, { recursive: true, force: true });
+  try {
+    const localRoot = path.join(sentinelCheckout, ".local");
+    const userOwnedRoot = path.join(localRoot, "user-owned");
+    const sentinelPath = path.join(userOwnedRoot, "keep.txt");
+    mkdirSync(userOwnedRoot, { recursive: true });
+    writeFileSync(sentinelPath, "user-owned floor-plan sentinel\n", {
+      mode: 0o640,
+    });
+    const snapshotSentinel = () => {
+      const bytes = readFileSync(sentinelPath);
+      const stat = lstatSync(sentinelPath, { bigint: true });
+      return {
+        bytes,
+        ctimeNs: stat.ctimeNs,
+        mode: stat.mode,
+        mtimeNs: stat.mtimeNs,
+        size: stat.size,
+      };
+    };
+    const sentinelBefore = snapshotSentinel();
+    const localInode = lstatSync(localRoot, { bigint: true }).ino;
+    let successfulTaskRoot;
+    assert.equal(
+      withFloorPlanConfigExecutionFixture(sentinelCheckout, ({ taskRoot }) => {
+        successfulTaskRoot = taskRoot;
+        writeFileSync(path.join(taskRoot, "success-staging.tmp"), "owned\n");
+        return "success";
+      }),
+      "success",
+    );
+    assert.equal(existsSync(successfulTaskRoot), false);
+    let failedTaskRoot;
+    assert.throws(
+      () =>
+        withFloorPlanConfigExecutionFixture(sentinelCheckout, ({ taskRoot }) => {
+          failedTaskRoot = taskRoot;
+          writeFileSync(path.join(taskRoot, "failure-staging.tmp"), "owned\n");
+          throw new Error("controlled floor-plan fixture failure");
+        }),
+      /controlled floor-plan fixture failure/,
+    );
+    assert.equal(existsSync(failedTaskRoot), false);
+    assert.deepEqual(snapshotSentinel(), sentinelBefore);
+    assert.equal(lstatSync(localRoot, { bigint: true }).ino, localInode);
+    assert.deepEqual(readdirSync(localRoot), ["user-owned"]);
+    assert.deepEqual(readdirSync(userOwnedRoot), ["keep.txt"]);
+  } finally {
+    rmSync(sentinelCheckout, { recursive: true, force: true });
+  }
+
+  for (let executionAttempt = 1; executionAttempt <= 2; executionAttempt += 1) {
+    let taskRoot;
+    runExecutionProbe((value) => {
+      taskRoot = value;
+    });
+    assert.equal(existsSync(taskRoot), false);
+    assert.deepEqual(sourceOutputPresence(), sourceOutputsBefore);
+  }
 }
 
 {
@@ -2435,9 +2673,124 @@ test("Floor Plan config reaches worker test execution", async ({}, testInfo) => 
 }
 
 {
-  const simulation = await runProductionCertificationSimulation({
-    cleanupWorktrees: false,
+  const cleanSimulation = await runProductionCertificationSimulation();
+  const stableSimulationResult = (value) => ({
+    completionState: value.completionState,
+    integrationReady: value.integrationReady,
+    buildAlreadyBoundRetryWithoutReinstall:
+      value.tamperCases.buildAlreadyBoundRetryWithoutReinstall,
+    alreadyBoundBuildRetry:
+      value.dependencyLifecycle.alreadyBoundBuildRetry,
+    simulationSession: {
+      candidateCommitSha:
+        value.simulationEnvironmentIsolation.candidateCommitSha,
+      candidateTreeSha:
+        value.simulationEnvironmentIsolation.candidateTreeSha,
+      sessionId: value.simulationEnvironmentIsolation.sessionId,
+      invocationNonce:
+        value.simulationEnvironmentIsolation.invocationNonce,
+      noRegenerationProof:
+        value.simulationEnvironmentIsolation.noRegenerationProof,
+    },
   });
+  const cleanResult = stableSimulationResult(cleanSimulation);
+  rmSync(cleanSimulation.simulationRoot, { recursive: true, force: true });
+  const foreign = installForeignCertificationAuthEnvironment();
+  let simulation;
+  try {
+    assert.throws(
+      () =>
+        authFixtureSession.consumeFixtureSession({
+          repositoryRoot,
+          environment: {
+            ...process.env,
+            CI_AUTH_FIXTURE_CANDIDATE_COMMIT_SHA: "c".repeat(40),
+            CI_AUTH_FIXTURE_CANDIDATE_TREE_SHA: "d".repeat(40),
+          },
+          requireAmbientProviderValues: true,
+        }),
+      /identity, owner, policy, or completion is mismatched/,
+      "the real fixture validator must continue rejecting a foreign candidate",
+    );
+    const outerEnvironment = saveEnvironment([
+      ...foreign.capabilityNames,
+      "APP_ENV",
+      "CI",
+      "DATABASE_URL",
+      "GITHUB_ACTIONS",
+    ]);
+    const outerResources = foreign.resourcePaths.map((filePath) =>
+      readFileSync(filePath),
+    );
+    simulation = await runProductionCertificationSimulation({
+      cleanupWorktrees: false,
+    });
+    assert.deepEqual(
+      saveEnvironment([...outerEnvironment.keys()]),
+      outerEnvironment,
+      "certification simulation must not mutate its foreign parent environment",
+    );
+    assert.deepEqual(
+      foreign.resourcePaths.map((filePath) => readFileSync(filePath)),
+      outerResources,
+      "certification simulation must not consume or change foreign auth resources",
+    );
+  } finally {
+    restoreEnvironment(foreign.saved);
+    rmSync(foreign.ownerRoot, { recursive: true, force: true });
+  }
+  assert.deepEqual(stableSimulationResult(simulation), cleanResult);
+  assert.equal(
+    simulation.simulationEnvironmentIsolation.foreignSessionConsumed,
+    false,
+  );
+  assert.equal(
+    simulation.simulationEnvironmentIsolation.simulationOwnedSession,
+    true,
+  );
+  assert.equal(
+    simulation.simulationEnvironmentIsolation.simulationSessionRootReplaced,
+    true,
+  );
+  assert.equal(
+    simulation.simulationEnvironmentIsolation.simulationResultRootReplaced,
+    true,
+  );
+  assert.notDeepEqual(
+    {
+      commitSha:
+        simulation.simulationEnvironmentIsolation.candidateCommitSha,
+      treeSha: simulation.simulationEnvironmentIsolation.candidateTreeSha,
+    },
+    foreign.foreignCandidate,
+  );
+  for (const name of [
+    "CI_AUTH_FIXTURE_RESULT_PATH",
+    "CI_AUTH_FIXTURE_SESSION_ID",
+    "CI_AUTH_FIXTURE_SESSION_ROOT",
+    "GOOGLE_CLIENT_ID",
+  ]) {
+    assert.equal(
+      simulation.simulationEnvironmentIsolation.removedAuthCapabilityNames.includes(
+        name,
+      ),
+      true,
+      `${name} must be removed from the simulation parent environment`,
+    );
+  }
+  assert.deepEqual(
+    simulation.dependencyLifecycle.alreadyBoundBuildRetry,
+    {
+      stageAttemptCount: 2,
+      failureClassifications: [
+        "SOURCE_CONTRACT_FAILURE",
+        "SOURCE_CONTRACT_FAILURE",
+      ],
+      consumedSubstantiveGate: [false, false],
+      dependencyStatus: "installed",
+      installationAttempts: 1,
+    },
+  );
   const base = simulation.simulationRoot;
   assert.equal(
     CURRENT_JOURNAL_V2_FINAL_POSITIVE_PATH,

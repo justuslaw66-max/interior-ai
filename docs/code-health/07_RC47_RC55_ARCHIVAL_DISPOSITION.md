@@ -301,13 +301,13 @@ separately evolved candidate.
   adjustment does not establish that invariant either.
 - **RC53:** queued persistence state is in `lib/useDesignPagePersistence.ts`;
   `app/api/designs/[id]/route.ts` enforces the strong server compare-and-swap.
-  The responsive surface is `app/share/[shareToken]/page.tsx`.
+  The responsive surface is `app/share/[shareToken]/(presentation)/page.tsx`.
 - **RC54:** projection logic and route boundaries are in
   `lib/shared-design-snapshot.ts` and
   `app/api/share/[shareToken]/duplicate/route.ts`. Static security proof is in
   `scripts/test-floor-plan-public-document.ts`; the mismatched comparison
   remains in `tests/e2e/00-beta-smoke.spec.ts`.
-- **RC55:** `app/share/[shareToken]/page.tsx` still has a single table projection,
+- **RC55:** `app/share/[shareToken]/(presentation)/page.tsx` still has a single table projection,
   and `tests/e2e/00-beta-smoke.spec.ts` lacks stable responsive-layout readiness.
 
 ## Cloud baseline and revision review

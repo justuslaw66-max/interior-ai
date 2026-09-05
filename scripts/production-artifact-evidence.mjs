@@ -46,6 +46,8 @@ export const PRODUCTION_EVIDENCE_VERIFIER_SOURCE_PATHS = Object.freeze(
 );
 
 const ARCHIVE_PREFLIGHT_COMMAND = "verify-archive-preflight";
+const STABLE_RUNTIME_STANDALONE_SUMMARY_PATH =
+  ".local/production-artifact-evidence/stable-runtime-smoke-evidence.json";
 const ARCHIVE_PREFLIGHT_PROHIBITED_PATHS = Object.freeze([
   ".git",
   ".env",
@@ -1654,9 +1656,14 @@ export function validateArtifactProductServerAuthFixtureBinding({
       treeSha: manifest.source.treeSha,
     },
   );
+  const buildContinuity = manifest.build?.authFixtureContinuity;
+  const comparableContinuity =
+    buildContinuity?.activationScope === "github-actions" &&
+    continuity.activationScope === "local-certification-projection"
+      ? { ...continuity, activationScope: "github-actions" }
+      : continuity;
   if (
-    JSON.stringify(continuity) !==
-    JSON.stringify(manifest.build?.authFixtureContinuity)
+    JSON.stringify(comparableContinuity) !== JSON.stringify(buildContinuity)
   ) {
     throw new Error(
       "artifact product server auth fixture differs from build continuity",
@@ -2641,6 +2648,29 @@ function resolvedRetainedEvidencePath(
     : resolveRepositoryPath(repositoryRoot, filePath, description);
 }
 
+function resolvedPortableTestEvidencePath(
+  repositoryRoot,
+  relativePath,
+  description,
+  environment,
+) {
+  const externalRoot =
+    environment?.CERTIFICATION_ENVIRONMENT_STAGE === "runtime-smoke"
+      ? environment[RUNTIME_SMOKE_EXTERNAL_ROOT_NAME]?.trim()
+      : null;
+  if (!externalRoot) {
+    return resolveRepositoryPath(repositoryRoot, relativePath, description);
+  }
+  if (path.isAbsolute(relativePath)) {
+    throw new Error(`${description} must use its portable relative path`);
+  }
+  return resolveRetainedExternalEvidenceFile({
+    filePath: path.join(externalRoot, relativePath),
+    authorizedExternalRoot: externalRoot,
+    repositoryRoot,
+  }).absolutePath;
+}
+
 export function canonicalizeProductionEvidenceReport(
   repositoryRoot,
   reportPath,
@@ -2771,7 +2801,12 @@ export function bindRuntimeSmokeFailureToReport(
 function readReport(repositoryRoot, test, issues, environment) {
   let reportPath;
   try {
-    reportPath = resolveRepositoryPath(repositoryRoot, test.report.path, "test report path");
+    reportPath = resolvedPortableTestEvidencePath(
+      repositoryRoot,
+      test.report.path,
+      "test report path",
+      environment,
+    );
   } catch (error) {
     issues.push(error instanceof Error ? error.message : String(error));
     return null;
@@ -2950,16 +2985,25 @@ function readRuntimeSmokePhaseTimings(
   environment,
   { allowFailure = false, report = null, absoluteTimingPath = null } = {},
 ) {
-  if (!absoluteTimingPath && test.phaseTimings?.path !== DEFAULT_PHASE_TIMINGS_PATH) {
+  const externalTimingRoot =
+    environment?.CERTIFICATION_ENVIRONMENT_STAGE === "runtime-smoke"
+      ? environment[RUNTIME_SMOKE_EXTERNAL_ROOT_NAME]?.trim()
+      : null;
+  if (
+    !absoluteTimingPath &&
+    !externalTimingRoot &&
+    test.phaseTimings?.path !== DEFAULT_PHASE_TIMINGS_PATH
+  ) {
     issues.push("runtime-smoke phase timing path is not canonical");
     return null;
   }
   let timingPath = absoluteTimingPath;
   try {
-    timingPath ??= resolveRepositoryPath(
+    timingPath ??= resolvedPortableTestEvidencePath(
         repositoryRoot,
         test.phaseTimings.path,
         "runtime-smoke phase timing path",
+        environment,
       );
   } catch (error) {
     issues.push(error instanceof Error ? error.message : String(error));
@@ -4408,6 +4452,8 @@ export async function createProductionEvidenceBundle({
   reportPath = DEFAULT_REPORT_PATH,
   bundlePath = DEFAULT_BUNDLE_PATH,
   environment = process.env,
+  externalEvidenceRoot = null,
+  externalBundleInputs = [],
 }) {
   const root = path.resolve(repositoryRoot);
   if (normalizeRelativePath(bundlePath) !== DEFAULT_BUNDLE_PATH) {
@@ -4438,7 +4484,7 @@ export async function createProductionEvidenceBundle({
     );
   }
 
-  const bundleInputs = [
+  const repositoryBundleInputs = [
     ".next",
     "public",
     ".nvmrc",
@@ -4447,24 +4493,78 @@ export async function createProductionEvidenceBundle({
     ...PRODUCTION_EVIDENCE_VERIFIER_SOURCE_PATHS,
     manifestPath,
     `${manifestPath}.sha256`,
-    reportPath,
-    DEFAULT_PHASE_TIMINGS_PATH,
   ];
-  for (const relativePath of bundleInputs) {
+  for (const relativePath of repositoryBundleInputs) {
     const absolutePath = resolveRepositoryPath(root, relativePath, "evidence bundle input");
     if (!existsSync(absolutePath)) {
       throw new Error(`evidence bundle input is missing: ${relativePath}`);
     }
   }
+  let retainedExternalRoot = null;
+  if (externalEvidenceRoot !== null) {
+    if (
+      reportPath !== DEFAULT_REPORT_PATH ||
+      JSON.stringify(externalBundleInputs) !==
+        JSON.stringify([
+          DEFAULT_REPORT_PATH,
+          DEFAULT_PHASE_TIMINGS_PATH,
+          STABLE_RUNTIME_STANDALONE_SUMMARY_PATH,
+        ])
+    ) {
+      throw new Error("external runtime bundle inputs are not canonical");
+    }
+    const retainedExternal = resolveAuthorizedExternalEvidenceRoot({
+      authorizedExternalRoot: externalEvidenceRoot,
+      repositoryRoot: root,
+    });
+    const projectedExternal = resolveAuthorizedExternalEvidenceRoot({
+      authorizedExternalRoot:
+        environment[RUNTIME_SMOKE_EXTERNAL_ROOT_NAME],
+      repositoryRoot: root,
+    });
+    if (
+      retainedExternal.externalRootRealpath !==
+      projectedExternal.externalRootRealpath
+    ) {
+      throw new Error(
+        "external runtime bundle root differs from the projected evidence root",
+      );
+    }
+    retainedExternalRoot = retainedExternal.externalRoot;
+    for (const relativePath of externalBundleInputs) {
+      resolvedPortableTestEvidencePath(
+        root,
+        relativePath,
+        "external runtime bundle input",
+        environment,
+      );
+    }
+  } else {
+    repositoryBundleInputs.push(reportPath, DEFAULT_PHASE_TIMINGS_PATH);
+    for (const relativePath of [reportPath, DEFAULT_PHASE_TIMINGS_PATH]) {
+      const absolutePath = resolveRepositoryPath(root, relativePath, "evidence bundle input");
+      if (!existsSync(absolutePath)) {
+        throw new Error(`evidence bundle input is missing: ${relativePath}`);
+      }
+    }
+  }
   await mkdir(uploadDirectory, { recursive: true });
   const absoluteBundlePath = resolveRepositoryPath(root, bundlePath, "evidence bundle path");
+  const archiveInputs = [
+    "-C",
+    root,
+    ...repositoryBundleInputs,
+    ...(retainedExternalRoot
+      ? ["-C", retainedExternalRoot, ...externalBundleInputs]
+      : []),
+  ];
   run(
     "tar",
     [
       "-czf",
       absoluteBundlePath,
       ...ARTIFACT_EXCLUSIONS.map((excludedPath) => `--exclude=${excludedPath}`),
-      ...bundleInputs,
+      ...archiveInputs,
     ],
     { cwd: root, stdio: ["ignore", "pipe", "pipe"] },
   );
@@ -4624,17 +4724,22 @@ async function smokeEvidence(repositoryRoot, manifestPath, reportPath) {
   );
   if (!existsSync(absoluteReportPath)) throw new Error("required test report is missing");
   canonicalizeProductionEvidenceReport(repositoryRoot, reportPath);
+  if (playwright.status !== 0 && !existsSync(absolutePhaseTimingPath)) {
+    throw new Error(
+      "runtime-smoke failed before product-test timing began; the preceding Playwright webServer failure is authoritative",
+    );
+  }
   bindRuntimeSmokeFailureToReport(
     repositoryRoot,
     reportPath,
-    absolutePhaseTimingPath,
+    requestedTimingPath,
     externalTimingRoot,
   );
   await recordProductionEvidenceTest({
     repositoryRoot,
     manifestPath,
     reportPath,
-    phaseTimingPath: absolutePhaseTimingPath,
+    phaseTimingPath: requestedTimingPath,
     name: "runtime-smoke",
     command: RUNTIME_SMOKE_COMMAND,
     processExitCode: playwright.status ?? 1,

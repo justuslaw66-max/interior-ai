@@ -233,7 +233,12 @@ const cabinetRendererSource = source(
 const cabinetResourceOwnershipSource = source(
   "features/cabinetry/hooks/useCabinetSceneResourceOwnership.ts"
 );
-const glbRendererSource = source("components/scene/GLBScaledModel.tsx");
+const glbResourceOwnershipSource = source(
+  "components/scene/glb-scaled-model/glbModelResources.ts"
+);
+const glbMaterialOwnershipSource = source(
+  "components/scene/glb-scaled-model/useGLBMaterials.ts"
+);
 const floorPlanAssetsSource = source("lib/useDesignPageFloorPlanAssets.ts");
 
 for (const [name, moduleSource] of [
@@ -317,8 +322,14 @@ assert.match(
   cabinetResourceOwnershipSource,
   /if \(cancelled\)[\s\S]*?texture\.dispose\(\)/
 );
-assert.match(glbRendererSource, /disposeObjectGeometryAndMaterials\(normalizedModel\)/);
-assert.match(glbRendererSource, /ownedTextures\.forEach\(\(texture\) => texture\.dispose\(\)\)/);
+assert.match(
+  glbResourceOwnershipSource,
+  /if \(scene\) disposeObjectGeometryAndMaterials\(scene\)/
+);
+assert.match(
+  glbMaterialOwnershipSource,
+  /control\.ownedTextures\.forEach\(\(texture\) => texture\.dispose\(\)\)/
+);
 assert.match(floorPlanAssetsSource, /URL\.revokeObjectURL\(/);
 
 console.log("design page scene domain and lifecycle boundaries passed");

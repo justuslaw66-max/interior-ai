@@ -15,9 +15,12 @@ import { Client } from "pg";
 
 import {
   PRODUCTION_CERTIFICATION_DATABASE_NAME_PREFIX,
+  STABLE_RUNTIME_SMOKE_DATABASE_CLASSIFICATIONS,
+  STABLE_RUNTIME_SMOKE_DATABASE_PROFILE,
   assertUnprotectedDatabaseName,
   canonicalJsonBytes,
   databaseAdminPolicy,
+  databaseLifecycleRequiredStages,
   databaseLifecycleEvidenceIssues,
   generateCertificationDatabaseName,
   migrationInventory,
@@ -25,10 +28,13 @@ import {
   targetDatabaseUrl,
 } from "./production-certification-database-contract.mjs";
 import { CertificationPostgresAdapter } from "./production-certification-database-adapter.mjs";
+import { databaseTransportContractCoverage } from "./production-certification-database-transport-contract.mjs";
 import {
   abortCertificationDatabase,
   bindCertificationDatabaseStage,
   certificationDatabaseStatus,
+  completeStableRuntimeSmokeDatabase,
+  createStableRuntimeSmokeDatabaseBinding,
   databaseLifecycleCliErrorMessage,
   dropCertificationDatabase,
   planCertificationDatabase,
@@ -123,6 +129,8 @@ class FakeDatabaseAdapter {
     onCreateStageRole = null,
     appEventCleanupFailure = null,
     onDeleteAppEvents = null,
+    transientSessionInspections = 0,
+    serviceTransport = false,
   } = {}) {
     this.exists = exists;
     this.migrated = false;
@@ -144,6 +152,8 @@ class FakeDatabaseAdapter {
     this.appEventCleanupFailure = appEventCleanupFailure;
     this.onDeleteAppEvents = onDeleteAppEvents;
     this.stageRoleDropCount = 0;
+    this.transientSessionInspections = transientSessionInspections;
+    this.serviceTransport = serviceTransport;
   }
 
   async inspectAdmin() {
@@ -156,13 +166,33 @@ class FakeDatabaseAdapter {
       this.failFirstPostDropInspection = false;
       throw new Error("post-drop absence inspection failed once");
     }
+    const transport = this.serviceTransport
+      ? {
+          serverAddressClassification: "attested-container-network",
+          transportClassification:
+            "github-hosted-service-container-loopback-forward",
+          transportAttestationSha256: "a".repeat(64),
+          transportVerificationStatus: "verified-live-attested",
+          imageClassification: "official-postgres-major-15",
+          imageRepositoryDigestSha256: "b".repeat(64),
+          serverVersion: "15.14",
+          serverVersionNumber: 150014,
+        }
+      : {
+          serverAddressClassification: "loopback",
+          transportClassification: "native-loopback",
+          transportAttestationSha256: null,
+          transportVerificationStatus: "verified-live",
+          imageClassification: null,
+          imageRepositoryDigestSha256: null,
+          serverVersion: "16.14",
+          serverVersionNumber: 160014,
+        };
     return {
       hostClassification: "explicit-loopback",
       host: "127.0.0.1",
       port: 5432,
-      serverAddressClassification: "loopback",
-      serverVersion: "16.14",
-      serverVersionNumber: 160014,
+      ...transport,
       role: "qualification_owner",
       roleClassification: "local-createdb",
       canCreateDatabase: true,
@@ -260,6 +290,10 @@ class FakeDatabaseAdapter {
   }
 
   async targetSessions() {
+    if (this.transientSessionInspections > 0) {
+      this.transientSessionInspections -= 1;
+      return [{ database: "owned-target", pid: 9002 }];
+    }
     return structuredClone(this.sessions);
   }
 
@@ -590,6 +624,127 @@ async function deterministicContractCoverage() {
     );
   } finally {
     rmSync(existingFixture.root, { recursive: true, force: true });
+  }
+
+  const stableFixture = fixture({ id: "stable-runtime-smoke" });
+  const stableAdapter = new FakeDatabaseAdapter({
+    transientSessionInspections: 2,
+    serviceTransport: true,
+  });
+  try {
+    await planCertificationDatabase({
+      repositoryRoot,
+      environment: stableFixture.environment,
+      adapter: stableAdapter,
+      nonce: "8".repeat(32),
+      profile: STABLE_RUNTIME_SMOKE_DATABASE_PROFILE,
+      qualificationFixture: true,
+    });
+    await provisionCertificationDatabase({
+      repositoryRoot,
+      environment: stableFixture.environment,
+      adapter: stableAdapter,
+    });
+    await verifyInitialCertificationDatabase({
+      repositoryRoot,
+      environment: stableFixture.environment,
+      adapter: stableAdapter,
+    });
+    await bindCertificationDatabaseStage({
+      repositoryRoot,
+      environment: stableFixture.environment,
+      adapter: stableAdapter,
+      stage: "runtime-smoke",
+    });
+    const active = readCertificationDatabaseLifecycle({
+      repositoryRoot,
+      environment: stableFixture.environment,
+    });
+    assert.equal(
+      active.evidence.lifecycleProfile.classification,
+      STABLE_RUNTIME_SMOKE_DATABASE_CLASSIFICATIONS.lifecycle,
+    );
+    assert.deepEqual(databaseLifecycleRequiredStages(active.evidence), [
+      "runtime-smoke",
+    ]);
+    const stableBinding = createStableRuntimeSmokeDatabaseBinding({
+      current: active,
+    });
+    const projection = resolveCertificationDatabaseStageEnvironment({
+      repositoryRoot,
+      environment: stableFixture.environment,
+      stage: "runtime-smoke",
+      stableRuntimeLifecycleBinding: stableBinding,
+    });
+    assert.match(
+      projection.environment.DATABASE_URL,
+      /interior_ai_cert_stage_[a-f0-9]{32}/,
+    );
+    assert.equal(projection.identity.stage, "runtime-smoke");
+    assert.throws(
+      () =>
+        resolveCertificationDatabaseStageEnvironment({
+          repositoryRoot,
+          environment: stableFixture.environment,
+          stage: "runtime-smoke",
+          stableRuntimeLifecycleBinding: {
+            ...stableBinding,
+            transportClassification: "native-loopback",
+          },
+        }),
+      /stale or foreign/,
+    );
+    assert.throws(
+      () =>
+        resolveCertificationDatabaseStageEnvironment({
+          repositoryRoot,
+          environment: stableFixture.environment,
+          stage: "runtime-smoke",
+          stableRuntimeLifecycleBinding: {
+            ...stableBinding,
+            candidateCommitSha: "f".repeat(40),
+          },
+        }),
+      /stale or foreign/,
+    );
+    assert.throws(
+      () =>
+        resolveCertificationDatabaseStageEnvironment({
+          repositoryRoot,
+          environment: stableFixture.environment,
+          stage: "runtime-smoke",
+          stableRuntimeLifecycleBinding: stableBinding,
+          state: {},
+        }),
+      /cannot consume certification state/,
+    );
+    assert.throws(
+      () =>
+        resolveCertificationDatabaseStageEnvironment({
+          repositoryRoot,
+          environment: {
+            ...stableFixture.environment,
+            DATABASE_URL: "postgresql://foreign@127.0.0.1:5432/foreign",
+          },
+          stage: "runtime-smoke",
+          stableRuntimeLifecycleBinding: stableBinding,
+        }),
+      /ambient DATABASE_URL cannot override/,
+    );
+    stableAdapter.rows = [{ table: "User", count: 19 }];
+    const absent = await completeStableRuntimeSmokeDatabase({
+      repositoryRoot,
+      environment: stableFixture.environment,
+      adapter: stableAdapter,
+    });
+    assert.equal(absent.evidence.currentState, "stable-absence-verified");
+    assert.equal(absent.evidence.inventories.final.totalRows, 19);
+    assert.equal(absent.evidence.cleanup.finalEmptyVerified, false);
+    assert.equal(absent.evidence.cleanup.targetAbsent, true);
+    assert.equal(stableAdapter.exists, false);
+    assert.equal(stableAdapter.stageRole, null);
+  } finally {
+    rmSync(stableFixture.root, { recursive: true, force: true });
   }
 
   const raceFixture = fixture({ id: "foreign-race" });
@@ -1026,6 +1181,23 @@ async function deterministicContractCoverage() {
     assert.equal(portable.includes("raw-secret"), false);
     assert.equal(portable.includes("postgresql://"), false);
     assert.deepEqual(databaseLifecycleEvidenceIssues(planned.evidence), []);
+    const transportSubstitution = structuredClone(planned.evidence);
+    transportSubstitution.server.transportClassification =
+      "github-hosted-service-container-loopback-forward";
+    transportSubstitution.server.serverAddressClassification =
+      "attested-container-network";
+    transportSubstitution.server.transportAttestationSha256 = "1".repeat(64);
+    transportSubstitution.server.transportVerificationStatus =
+      "verified-live-attested";
+    transportSubstitution.server.imageClassification =
+      "official-postgres-major-15";
+    transportSubstitution.server.imageRepositoryDigestSha256 = "2".repeat(64);
+    assert.match(
+      databaseLifecycleEvidenceIssues(
+        sealDatabaseLifecycleEvidence(transportSubstitution),
+      ).join("; "),
+      /server transport evidence is malformed or unapproved/,
+    );
     const impossible = structuredClone(planned.evidence);
     impossible.events.push({
       state: "absence-verified",
@@ -3106,6 +3278,7 @@ function exists(filePath) {
   }
 }
 
+await databaseTransportContractCoverage();
 await deterministicContractCoverage();
 if (!process.argv.includes("--contract-only")) {
   await realDisposableDatabaseCoverage();
