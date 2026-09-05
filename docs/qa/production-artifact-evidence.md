@@ -984,6 +984,8 @@ no development fallback is allowed. Its fresh loopback production server receive
 the validated identity through the existing health contract, which the furnished
 smoke checks before product setup even when `--grep` omits the health test.
 Timing and reporter records carry the same build, artifact and manifest hashes.
+Production invocation outputs live under that existing generated evidence root,
+so repeated preflight does not classify their diagnostics as build inputs.
 Genuine development runs have an explicit development classification and no
 artifact hash. Direct execution does not certify Canonical Stable, whose sealed
 parent paths and server projection remain unchanged. Actual BUILD_ID bytes are

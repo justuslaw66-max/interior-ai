@@ -72,7 +72,8 @@ if (directInvocationId && !/^[a-f0-9-]{36}$/.test(directInvocationId)) {
   throw new Error("Direct runtime-smoke invocation ID is invalid");
 }
 const directOutputRoot = directInvocationId
-  ? path.join("test-results", `runtime-smoke-${directInvocationId}`) : "test-results";
+  ? path.join(useProductionServer ? ".local/production-artifact-evidence" : "test-results",
+      `direct-runtime-smoke-${directInvocationId}`) : "test-results";
 if (directRuntimeSmokeIdentity) directRuntimeSmokeIdentity.invocationId = directInvocationId;
 const productionEvidenceReportOutputPath =
   loadedProductionArtifactEvidence?.reportDestination.outputPath;
