@@ -1,5 +1,6 @@
 import { expect, test } from "./fixtures";
 import path from "node:path";
+import { assertDirectRuntimeSmokeServer } from "../../scripts/runtime-smoke-direct-identity.mjs";
 import { confirmPlanTemplateReplacementIfNeeded } from "./plan-template-test-utils";
 import {
   FURNISHED_TEMPLATE_PHASE_CONTRACTS,
@@ -124,6 +125,10 @@ test.describe("00. Runtime smoke", () => {
           candidateCommitSha: string;
           candidateTreeSha: string;
           buildIdentity: string;
+          executionMode: string;
+          artifactSha256: string | null;
+          manifestSha256: string | null;
+          invocationId: string;
         }
       | null;
     const phaseRecorder = createRuntimeSmokePhaseRecorder({
@@ -140,9 +145,7 @@ test.describe("00. Runtime smoke", () => {
             projectName: testInfo.project.name,
             testId: testInfo.testId,
             processId: process.pid,
-            candidateCommitSha: directSourceIdentity?.candidateCommitSha,
-            candidateTreeSha: directSourceIdentity?.candidateTreeSha,
-            buildIdentity: directSourceIdentity?.buildIdentity,
+            ...directSourceIdentity,
           },
     });
     if (!configuredTimingPath) {
@@ -1902,6 +1905,11 @@ test.describe("00. Runtime smoke", () => {
     };
 
     await phaseRecorder.run("test-body-setup", async ({ checkpoint }) => {
+      if (directSourceIdentity?.executionMode === "production") {
+        const health = await page.request.get("/api/health");
+        expect(health.status()).toBe(200);
+        assertDirectRuntimeSmokeServer(directSourceIdentity, await health.json());
+      }
       page.on("pageerror", (error) => fatalErrors.push(error.message));
       page.on("console", (message) => {
         const snapshotMilestonePrefix =

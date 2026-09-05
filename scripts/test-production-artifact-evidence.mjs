@@ -59,7 +59,13 @@ import {
   certificationPreparedBuildJournalIssues,
   validateCurrentProductionEvidenceManifest,
 } from "./production-artifact-contract.mjs";
+import { inspectDirectProductionIdentity } from "./runtime-smoke-direct-production-identity.mjs";
 import { loadProductionArtifactForPlaywright } from "./production-artifact-playwright.mjs";
+import {
+  assertDirectRuntimeSmokeServer,
+  directRuntimeSmokeServerEnvironment,
+  loadDirectRuntimeSmokeIdentity,
+} from "./runtime-smoke-direct-identity.mjs";
 import {
   PLAYWRIGHT_EXTERNAL_EVIDENCE_ROOT,
   authorizeRuntimeSmokeReportPath,
@@ -3028,6 +3034,8 @@ async function fixture({
   publicArtifactText = "public artifact\n",
   manifestFactory = createProductionEvidenceManifest,
   recordRuntimeTest = true,
+  nextBuildId = "build-fixture-001",
+  commitDate = null,
 } = {}) {
   const root = mkdtempSync(path.join(tmpdir(), "ch-0016-evidence-"));
   write(root, ".gitignore", ".next/\n.local/\nnode_modules/\n*.local.js\n");
@@ -3105,7 +3113,7 @@ async function fixture({
   }
   write(root, "generated/runtime.ts", "export const generated = true;\n");
   write(root, "public/asset.txt", publicArtifactText);
-  write(root, ".next/BUILD_ID", "build-fixture-001\n");
+  write(root, ".next/BUILD_ID", `${nextBuildId}\n`);
   write(root, ".next/build-manifest.json", "{}\n");
   write(root, ".next/required-server-files.json", "{}\n");
   write(root, ".next/static/chunk.js", "static chunk\n");
@@ -3147,7 +3155,11 @@ async function fixture({
     "public/asset.txt",
     "public/assets/floor-plans/preview.webp",
   ]);
-  git(root, ["commit", "-qm", "fixture"]);
+  execFileSync("git", ["commit", "-qm", "fixture"], {
+    cwd: root, env: { ...process.env, ...(commitDate ? {
+      GIT_AUTHOR_DATE: commitDate, GIT_COMMITTER_DATE: commitDate,
+    } : {}) },
+  });
 
   const manifestPath = ".local/production-artifact-evidence/manifest.json";
   const reportPath = ".local/production-artifact-evidence/runtime-smoke.json";
@@ -4519,6 +4531,38 @@ for (const mutation of [
   assert.deepEqual(canonicalPreflight.issues, []);
   const loaded = load();
   assert.deepEqual(loaded.identity, accepted.identity);
+  const direct = await inspectDirectProductionIdentity({
+    repositoryRoot: context.root, manifestPath: context.manifestPath,
+    environment: playwrightContractEnvironment(context),
+  });
+  assert.equal(direct.executionMode, "production");
+  assert.equal(direct.buildIdentity, loaded.identity.nextBuildId);
+  assert.equal(direct.artifactSha256, loaded.identity.artifactSha256);
+  assert.equal(direct.candidateTreeSha, loaded.identity.sourceTreeSha);
+  const health = { build: direct.buildIdentity, productionArtifact: {
+    kind: "local-production-mode-artifact", nextBuildId: direct.buildIdentity,
+    artifactSha256: direct.artifactSha256, sourceCommitSha: direct.candidateCommitSha,
+  } };
+  assert.doesNotThrow(() => assertDirectRuntimeSmokeServer(direct, health));
+  assert.throws(() => assertDirectRuntimeSmokeServer(direct, { ...health, build: "other" }), /does not match/);
+  assert.throws(() => assertDirectRuntimeSmokeServer(direct, {}), /does not match/);
+  assert.throws(() => assertDirectRuntimeSmokeServer(direct, {
+    ...health, productionArtifact: { ...health.productionArtifact, artifactSha256: "f".repeat(64) },
+  }), /does not match/);
+  assert.equal(directRuntimeSmokeServerEnvironment(direct).PRODUCTION_ARTIFACT_BUILD_ID, direct.buildIdentity);
+  const development = loadDirectRuntimeSmokeIdentity({
+    repositoryRoot: context.root, useProductionServer: false,
+  });
+  assert.equal(development.executionMode, "development");
+  assert.equal(development.buildIdentity, "next-development-server");
+  assert.equal(development.artifactSha256, null);
+  await assert.rejects(() => inspectDirectProductionIdentity({
+    repositoryRoot: context.root, manifestPath: context.manifestPath,
+    environment: { ...playwrightContractEnvironment(context), PRODUCTION_EVIDENCE_EXPECTED_BUILD_ID: "wrong" },
+  }), /conflicts|rejected/);
+  await assert.rejects(() => inspectDirectProductionIdentity({
+    repositoryRoot: context.root, manifestPath: "missing.json",
+  }), /rejected/);
   assert.equal(loaded.reportDestination.destinationClass, "repository-relative");
   assert.equal(
     loaded.reportDestination.outputPath,
@@ -5280,6 +5324,32 @@ async function runtimeFailureFixture({
     processExitCode: 1,
   });
   return context;
+}
+
+// Two physical build inventories from the same source commit must stay distinct.
+{
+  const identities = [];
+  for (const nextBuildId of ["direct-build-one", "_direct-build-two"]) {
+    const context = await fixture({ nextBuildId, recordRuntimeTest: false,
+      commitDate: "2026-07-31T00:00:00Z" });
+    try {
+      const identity = await inspectDirectProductionIdentity({
+        repositoryRoot: context.root, manifestPath: context.manifestPath,
+        environment: playwrightContractEnvironment(context),
+      });
+      assert.equal(identity.buildIdentity, nextBuildId, "physical BUILD_ID is never sanitized");
+      identities.push(identity);
+      write(context.root, ".next/BUILD_ID", "unbound-build\n");
+      await assert.rejects(() => inspectDirectProductionIdentity({
+        repositoryRoot: context.root, manifestPath: context.manifestPath,
+        environment: playwrightContractEnvironment(context),
+      }), /rejected/);
+    } finally { rmSync(context.root, { recursive: true, force: true }); }
+  }
+  assert.equal(identities[0].candidateCommitSha, identities[1].candidateCommitSha);
+  assert.notEqual(identities[0].buildIdentity, identities[1].buildIdentity);
+  assert.notEqual(identities[0].artifactSha256, identities[1].artifactSha256);
+  console.log("Direct build identity C1-C6 controls passed, including distinct physical builds.");
 }
 
 async function expectRejected(context, expectedText) {

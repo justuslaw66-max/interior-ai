@@ -1,7 +1,9 @@
-import { createHash } from "node:crypto";
+import { createHash, randomUUID } from "node:crypto";
 import {
   mkdirSync,
+  mkdtempSync,
   lstatSync,
+  realpathSync,
   readFileSync,
   rmSync,
   unlinkSync,
@@ -28,11 +30,14 @@ export function runtimeSmokeDirectAttemptResultPath({ outputRoot, identity }) {
 
 export default class RuntimeSmokeDirectAttemptReporter {
   constructor(options = {}) {
-    this.outputDirectory = options.outputRoot ?? path.join(
+    this.outputParent = path.resolve(options.outputRoot ?? path.join(
       process.cwd(),
       "test-results",
       "runtime-smoke-direct-attempts",
-    );
+    ));
+    this.invocationId = options.invocationId ?? randomUUID();
+    this.sourceIdentity = options.sourceIdentity ?? null;
+    this.outputDirectory = null;
     this.timingRoot = path.resolve(
       options.timingRoot ?? path.join(process.cwd(), "test-results"),
     );
@@ -54,13 +59,16 @@ export default class RuntimeSmokeDirectAttemptReporter {
       throw new Error("runtime-smoke direct timing destination is invalid");
     }
     const timingMetadata = lstatSync(timingPath);
-    if (!timingMetadata.isFile() || timingMetadata.isSymbolicLink()) {
+    if (!timingMetadata.isFile() || timingMetadata.isSymbolicLink() ||
+        !realpathSync(timingPath).startsWith(`${realpathSync(this.timingRoot)}${path.sep}`)) {
       throw new Error("runtime-smoke direct timing destination is not a physical file");
     }
     const timing = JSON.parse(readFileSync(timingPath, "utf8"));
     const attempt = timing.attemptIdentity;
     if (
       attempt?.schema !== "interior-ai.runtime-smoke-direct-attempt.v1" ||
+      attempt.invocationId !== this.invocationId ||
+      Object.entries(this.sourceIdentity ?? {}).some(([key, value]) => attempt[key] !== value) ||
       attempt.repeatEachIndex !== test.repeatEachIndex ||
       attempt.retry !== result.retry ||
       attempt.workerIndex !== result.workerIndex ||
@@ -75,7 +83,10 @@ export default class RuntimeSmokeDirectAttemptReporter {
       schema: "interior-ai.runtime-smoke-direct-result.v1",
       status: result.status,
     };
-    mkdirSync(this.outputDirectory, { recursive: true });
+    if (this.outputDirectory === null) {
+      mkdirSync(this.outputParent, { recursive: true });
+      this.outputDirectory = mkdtempSync(path.join(this.outputParent, "invocation-"));
+    }
     const outputPath = runtimeSmokeDirectAttemptResultPath({
       outputRoot: this.outputDirectory,
       identity,
@@ -86,6 +97,7 @@ export default class RuntimeSmokeDirectAttemptReporter {
     });
     unlinkSync(timingPath);
     this.records.push({ identity, outputPath, timingPath });
+    console.log("RUNTIME_SMOKE_DIRECT_ATTEMPT_RESULT", JSON.stringify({ identity, outputPath, timingPath }));
   }
 
   onEnd() {
@@ -120,6 +132,7 @@ export default class RuntimeSmokeDirectAttemptReporter {
       "RUNTIME_SMOKE_DIRECT_ATTEMPT_OWNERSHIP_RESULT",
       JSON.stringify({
         schema: "interior-ai.runtime-smoke-direct-attempt-ownership.v1",
+        invocationId: this.invocationId,
         attemptCount: this.records.length,
         uniqueTimingDestinationCount: timingPaths.size,
         uniqueResultIdentityCount: identities.size,

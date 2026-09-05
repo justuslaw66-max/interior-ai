@@ -967,3 +967,24 @@ deployment, or external configuration rollback is involved. Generated
 `.local/production-artifact-evidence/` files are ignored and can be regenerated
 from the exact clean candidate; local copies are ephemeral and are not durable
 release evidence.
+
+Direct runtime-smoke invocations use a UUID separate from Playwright repeat,
+retry, worker, and process identities. Playwright startup owns only that UUID's
+output subtree. The direct reporter creates a unique physical results directory,
+checks invocation and build identity before consuming timings, and removes only
+its results directory after verified completion (including failed test statuses).
+Reporter errors retain its existing files for diagnosis. Shared parents and
+pre-existing files remain intact. Per-attempt stdout records preserve the exact
+identity and paths before the existing transient-file cleanup.
+
+A direct `PLAYWRIGHT_USE_PRODUCTION_SERVER=1` run now requires the canonical
+`.local/production-artifact-evidence/manifest.json` and repository preflight. It
+reuses that verifier's physical artifact inventory, BUILD_ID, and source binding;
+no development fallback is allowed. Its fresh loopback production server receives
+the validated identity through the existing health contract, which the furnished
+smoke checks before product setup even when `--grep` omits the health test.
+Timing and reporter records carry the same build, artifact and manifest hashes.
+Genuine development runs have an explicit development classification and no
+artifact hash. Direct execution does not certify Canonical Stable, whose sealed
+parent paths and server projection remain unchanged. Actual BUILD_ID bytes are
+never sanitized, and historical evidence is not rewritten.

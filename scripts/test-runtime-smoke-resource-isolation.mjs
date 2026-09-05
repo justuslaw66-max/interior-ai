@@ -84,6 +84,7 @@ assert.doesNotMatch(
     for (let repeatEachIndex = 0; repeatEachIndex < 20; repeatEachIndex += 1) {
       const identity = {
         schema: "interior-ai.runtime-smoke-direct-result.v1",
+        invocationId: reporter.invocationId,
         repeatEachIndex,
         retry: 0,
         projectName: "chromium",
@@ -146,7 +147,8 @@ assert.doesNotMatch(
       true,
     );
     reporter.onEnd();
-    assert.equal(existsSync(reporterOutputRoot), false);
+    assert.equal(existsSync(reporter.outputDirectory), false);
+    assert.equal(existsSync(reporterOutputRoot), true, "shared parent remains owned by its parent");
     assert.equal(
       [...timingPaths].every((timingPath) => !existsSync(timingPath)),
       true,
@@ -488,3 +490,5 @@ assert.doesNotMatch(
 );
 
 console.log("CH-0029 runtime-smoke resource-isolation contract passed.");
+
+await import("./test-runtime-smoke-direct-ownership.mjs");
