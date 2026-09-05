@@ -497,10 +497,9 @@ export function DesignSceneCanvas({
         <LoadingOverlay />
         <SceneProgressBridge onReadyChange={actions.onSceneProgressReadyChange} />
         <ScenePerformanceBridge
+          key={`${configuration.activeRoomId}:${state.showSceneLoadingVeil}`}
           enabled={
-            viewMode === "3d" &&
-            state.scenePerformanceMode === "auto" &&
-            !state.liteSceneEnabled
+            viewMode === "3d" && state.scenePerformanceMode === "auto" && !state.liteSceneEnabled
           }
           onFpsSample={actions.onFpsSample}
           onRendererSample={actions.onRendererSample}

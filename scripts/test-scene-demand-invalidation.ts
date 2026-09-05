@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { SceneActiveFpsSampler } from "../lib/scene-active-fps-sampler";
 
 import {
   DESIGN_SCENE_CONTROL_DAMPING_FACTOR,
@@ -92,3 +93,42 @@ assert.equal(readSceneDemandSnapshot().instrumentationGeneration, 2);
 assert.equal(readSceneDemandSnapshot().activeSupportedAnimationCount, 0);
 
 console.log("Design-scene demand invalidation controller tests passed.");
+
+const sampler = new SceneActiveFpsSampler();
+for (const idle of [10_000, 1_000_000, 1_000_000_000]) {
+  sampler.reset(); // the rendering root exhausted its requested frames
+  assert.equal(sampler.recordFrame(idle), null);
+  assert.equal(sampler.recordFrame(idle), null, "zero time cannot fabricate FPS");
+  assert.equal(sampler.degraded, false);
+}
+for (let interaction = 0; interaction < 12; interaction += 1) {
+  sampler.reset();
+  const start = interaction * 100_000;
+  for (let frame = 0; frame <= 30; frame += 1) {
+    assert.equal(sampler.recordFrame(start + frame * 16), null);
+  }
+  assert.equal(sampler.degraded, false, "finite fast runs cannot accumulate idle");
+}
+sampler.reset();
+assert.equal(sampler.recordFrame(0), null);
+assert.equal(sampler.recordFrame(2000), null, "one interval is insufficient");
+sampler.reset();
+for (let frame = 0; frame <= 100; frame += 1) {
+  const fps = sampler.recordFrame(frame * 50);
+  if (fps !== null) assert.equal(fps, 20);
+  assert.equal(sampler.degraded, frame === 100, "20 FPS degrades after 1s + 4s");
+}
+for (const boundary of ["idle", "resume", "mode change", "scene generation"]) {
+  sampler.reset();
+  assert.equal(sampler.degraded, false, boundary);
+  assert.equal(sampler.recordFrame(1_000_000), null, boundary);
+}
+sampler.reset();
+for (let frame = 0; frame <= 300; frame += 1) {
+  sampler.recordFrame(frame * 40); // 25 FPS, including long ACTIVE intervals
+}
+assert.equal(sampler.degraded, true);
+sampler.reset();
+for (let frame = 0; frame <= 500; frame += 1) sampler.recordFrame(frame * 20);
+assert.equal(sampler.degraded, false, "healthy sustained rendering stays Quality");
+console.log("Auto active-frame sampling controls passed (idle, finite, slow, reset).");

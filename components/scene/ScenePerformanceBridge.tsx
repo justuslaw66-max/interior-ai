@@ -1,9 +1,10 @@
 "use client";
 
-import { useFrame } from "@react-three/fiber";
+import { addAfterEffect, useFrame, useThree } from "@react-three/fiber";
 import { useEffect, useRef } from "react";
 
 import type { SceneRendererMetrics } from "@/lib/scene-performance-metrics";
+import { SceneActiveFpsSampler } from "@/lib/scene-active-fps-sampler";
 
 export interface ScenePerformanceBridgeProps {
   enabled: boolean;
@@ -18,33 +19,38 @@ export function ScenePerformanceBridge({
   onRendererSample,
   onSustainedLowFps,
 }: ScenePerformanceBridgeProps) {
-  const frameCountRef = useRef(0);
-  const lastSampleAtRef = useRef<number | null>(null);
-  const lowFpsStartedAtRef = useRef<number | null>(null);
-  const degradedRef = useRef(false);
+  const samplerRef = useRef(new SceneActiveFpsSampler());
+  const get = useThree((state) => state.get);
+  const gl = useThree((state) => state.gl);
+  const scene = useThree((state) => state.scene);
 
   useEffect(() => {
-    frameCountRef.current = 0;
-    lastSampleAtRef.current = null;
-    lowFpsStartedAtRef.current = null;
-    degradedRef.current = false;
-  }, [enabled]);
+    const sampler = samplerRef.current;
+    const reset = () => {
+      sampler.reset();
+      gl.domElement.removeAttribute("data-measured-fps");
+    };
+    reset();
+    // R3F decrements this root's pending frame count after rendering. Looking
+    // here includes invalidations from every frame subscriber and the renderer.
+    const unsubscribe = addAfterEffect(() => {
+      const state = get();
+      if (state.frameloop === "demand" && state.internal.frames === 0) {
+        reset();
+      }
+    });
+    document.addEventListener("visibilitychange", reset);
+    return () => {
+      unsubscribe();
+      document.removeEventListener("visibilitychange", reset);
+      reset();
+    };
+  }, [enabled, get, gl, scene]);
 
   useFrame(({ gl }) => {
-    const now = performance.now();
-    frameCountRef.current += 1;
-
-    if (lastSampleAtRef.current === null) {
-      lastSampleAtRef.current = now;
-      return;
-    }
-
-    const elapsedMs = now - lastSampleAtRef.current;
-    if (elapsedMs < 1000) return;
-
-    const fps = Math.round((frameCountRef.current * 1000) / elapsedMs);
-    frameCountRef.current = 0;
-    lastSampleAtRef.current = now;
+    const sampler = samplerRef.current;
+    const fps = sampler.recordFrame(performance.now());
+    if (fps === null) return;
     gl.domElement.dataset.measuredFps = String(fps);
     gl.domElement.dataset.rendererDrawCalls = String(gl.info.render.calls);
     gl.domElement.dataset.rendererTriangles = String(gl.info.render.triangles);
@@ -52,7 +58,6 @@ export function ScenePerformanceBridge({
     gl.domElement.dataset.rendererTextures = String(gl.info.memory.textures);
 
     if (!enabled) {
-      lowFpsStartedAtRef.current = null;
       return;
     }
     onFpsSample(fps);
@@ -63,20 +68,7 @@ export function ScenePerformanceBridge({
       textures: gl.info.memory.textures,
     });
 
-    if (fps >= 28) {
-      lowFpsStartedAtRef.current = null;
-      return;
-    }
-
-    if (lowFpsStartedAtRef.current === null) {
-      lowFpsStartedAtRef.current = now;
-      return;
-    }
-
-    if (!degradedRef.current && now - lowFpsStartedAtRef.current >= 4000) {
-      degradedRef.current = true;
-      onSustainedLowFps(fps);
-    }
+    if (sampler.degraded) onSustainedLowFps(fps);
   });
 
   return null;

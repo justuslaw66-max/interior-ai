@@ -159,3 +159,14 @@ The Phase 8 production browser check forces garbage collection, navigates the
 project page to `about:blank`, and ratchets retained heap to at most 2 MB above
 the pre-open value. The measured retained values were 673,384 bytes (small),
 676,848 bytes (medium), and 675,812 bytes (large).
+
+Auto quality samples continuous requested-frame runs through
+`ScenePerformanceBridge` and `SceneActiveFpsSampler`. R3F's per-root pending
+frame count, observed after rendering, ends the sampling window when demand
+work stops; other canvases cannot extend that window. Visibility, enabled-mode,
+renderer/scene replacement, active-room, and loading-generation changes reset
+incomplete history. No timer requests measurement frames. The existing one-second
+sample window, 28 FPS boundary, and four-second sustained-low policy remain;
+fewer than two positive active intervals produce no FPS value. Explicit Quality
+and Lite keep their existing behavior. Revert the bridge, sampler and generation
+key together to roll back this sampling correction.
