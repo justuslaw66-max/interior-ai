@@ -1,4 +1,4 @@
-import type { Locator, Page } from "@playwright/test";
+import type { BrowserContext, Locator, Page } from "@playwright/test";
 import { expect, test } from "./fixtures";
 import {
   addAuthCookies,
@@ -18,8 +18,126 @@ const baseURL = getE2EBaseUrl();
 const CLOUD_AUTOSAVE_DELAY_MS = 900;
 const CLOUD_READY_TIMEOUT_MS = 30_000;
 const runtimePolicies = new WeakMap<Page, BrowserRuntimePolicy>();
+const observedContexts = new WeakSet<BrowserContext>();
+const analyticsAttempts = new WeakMap<Page, BrowserInterceptionRecord[]>();
+const nativeProbeAttempts = new WeakMap<Page, BrowserInterceptionRecord[]>();
+const activeInterceptionProbes = new WeakSet<BrowserContext>();
 
-test.beforeEach(async ({ page }, testInfo) => {
+type BrowserInterceptionRecord = {
+  attemptedAt: string;
+  href: string;
+  method: string;
+  pathname: string;
+};
+
+function interceptionRecords(
+  records: WeakMap<Page, BrowserInterceptionRecord[]>,
+  page: Page,
+) {
+  const current = records.get(page) ?? [];
+  records.set(page, current);
+  return current;
+}
+
+async function readAddressAvailabilityAttempts(page: Page) {
+  return await page.evaluate(() => (
+    window as Window & {
+      __consumerAddressAvailabilityAttempts?: BrowserInterceptionRecord[];
+    }
+  ).__consumerAddressAvailabilityAttempts ?? []).catch(() => []);
+}
+
+test.beforeEach(async ({ context, page }, testInfo) => {
+  expect(
+    observedContexts.has(context),
+    "Each consumer case requires a fresh context.",
+  ).toBe(false);
+  observedContexts.add(context);
+  const analyticsUrl = new URL("/api/track/app-event", baseURL).href;
+  await context.route("**/*", async (route) => {
+    const request = route.request();
+    const url = new URL(request.url());
+    const isInterceptionProbe =
+      activeInterceptionProbes.has(context) &&
+      (url.pathname.startsWith("/api/track/app-event") ||
+        url.pathname.startsWith("/api/address-autocomplete"));
+    if (!isInterceptionProbe) {
+      await route.continue();
+      return;
+    }
+    interceptionRecords(nativeProbeAttempts, page).push({
+      attemptedAt: new Date().toISOString(),
+      href: url.href,
+      method: request.method(),
+      pathname: url.pathname,
+    });
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      headers: {
+        "Access-Control-Allow-Origin": new URL(page.url()).origin,
+      },
+      body: JSON.stringify({ nativeProbe: true }),
+    });
+  });
+  await context.route(analyticsUrl, async (route) => {
+    if (route.request().method() !== "POST") {
+      await route.fallback();
+      return;
+    }
+    const url = new URL(route.request().url());
+    interceptionRecords(analyticsAttempts, page).push({
+      attemptedAt: new Date().toISOString(),
+      href: url.href,
+      method: route.request().method(),
+      pathname: url.pathname,
+    });
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({ ok: true, persisted: false, intercepted: true }),
+    });
+  });
+  await context.addInitScript((addressAvailabilityUrl) => {
+    const attempts: Array<{
+      attemptedAt: string;
+      href: string;
+      method: string;
+      pathname: string;
+    }> = [];
+    Object.defineProperty(window, "__consumerAddressAvailabilityAttempts", {
+      configurable: true,
+      value: attempts,
+    });
+    const nativeFetch = window.fetch.bind(window);
+    window.fetch = (input: RequestInfo | URL, init?: RequestInit) => {
+      const inputUrl = typeof input === "string"
+        ? input
+        : input instanceof URL
+          ? input.href
+          : input.url;
+      const method = (init?.method ?? (input instanceof Request ? input.method : "GET"))
+        .toUpperCase();
+      const url = new URL(inputUrl, window.location.href);
+      if (method !== "GET" || url.href !== addressAvailabilityUrl) {
+        return nativeFetch(input, init);
+      }
+      attempts.push({
+        attemptedAt: new Date().toISOString(),
+        href: url.href,
+        method,
+        pathname: url.pathname,
+      });
+      return Promise.resolve(new Response(JSON.stringify({
+        provider: "google",
+        configured: false,
+        minimumCharacters: 3,
+      }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      }));
+    };
+  }, new URL("/api/address-autocomplete", baseURL).href);
   const policy = installBrowserRuntimePolicy(
     page,
     testInfo.titlePath.join(" > "),
@@ -28,8 +146,30 @@ test.beforeEach(async ({ page }, testInfo) => {
   runtimePolicies.set(page, policy);
 });
 
-test.afterEach(async ({ page }) => {
-  runtimePolicies.get(page)?.assertSatisfied();
+test.afterEach(async ({ page }, testInfo) => {
+  const policy = runtimePolicies.get(page);
+  let policyFailure: unknown = null;
+  try {
+    policy?.assertSatisfied();
+  } catch (cause) {
+    policyFailure = cause;
+  }
+  const addressAttempts = await readAddressAvailabilityAttempts(page);
+  for (const [name, body] of [
+    ["analytics-attempts", interceptionRecords(analyticsAttempts, page)],
+    ["address-availability-attempts", addressAttempts],
+    ["native-interception-probe-attempts", interceptionRecords(nativeProbeAttempts, page)],
+    [
+      "accepted-dev-hmr-navigation-cancellations",
+      policy?.getAcceptedDevHmrNavigationCancellations() ?? [],
+    ],
+  ] as const) {
+    await testInfo.attach(name, {
+      body: Buffer.from(JSON.stringify(body, null, 2)),
+      contentType: "application/json",
+    });
+  }
+  if (policyFailure) throw policyFailure;
 });
 
 async function expectCloudDesignReady(
@@ -107,6 +247,189 @@ async function expectTouchTarget(locator: Locator, label: string) {
   expect(box?.height ?? 0, `${label} should be at least 44px tall`).toBeGreaterThanOrEqual(44);
 }
 
+async function expectConsumerInterceptorsExact(
+  context: BrowserContext,
+  page: Page,
+) {
+  const policy = runtimePolicies.get(page);
+  await policy?.waitForCurrentRequestsToSettle({
+    reason: "starting the consumer interception exactness regression",
+    deadlineMs: 30_000,
+  });
+  const alternateOrigin = new URL(baseURL);
+  alternateOrigin.hostname = alternateOrigin.hostname === "127.0.0.1"
+    ? "localhost"
+    : "127.0.0.1";
+  const nativeBefore = interceptionRecords(nativeProbeAttempts, page).length;
+  const analyticsBefore = interceptionRecords(analyticsAttempts, page).length;
+  const addressBefore = (await readAddressAvailabilityAttempts(page)).length;
+  activeInterceptionProbes.add(context);
+  try {
+    const results = await page.evaluate(async ({ applicationOrigin, otherOrigin }) => {
+      const requestJson = async (url: string, method: string) => {
+        const response = await fetch(url, { method });
+        return await response.json() as Record<string, unknown>;
+      };
+      return {
+        analyticsExact: await requestJson(
+          `${applicationOrigin}/api/track/app-event`,
+          "POST",
+        ),
+        analyticsWrongMethod: await requestJson(
+          `${applicationOrigin}/api/track/app-event`,
+          "GET",
+        ),
+        analyticsNearbyPath: await requestJson(
+          `${applicationOrigin}/api/track/app-events`,
+          "POST",
+        ),
+        analyticsOtherOrigin: await requestJson(
+          `${otherOrigin}/api/track/app-event`,
+          "POST",
+        ),
+        addressExact: await requestJson(
+          `${applicationOrigin}/api/address-autocomplete`,
+          "GET",
+        ),
+        addressWrongMethod: await requestJson(
+          `${applicationOrigin}/api/address-autocomplete`,
+          "POST",
+        ),
+        addressNearbyPath: await requestJson(
+          `${applicationOrigin}/api/address-autocompletes`,
+          "GET",
+        ),
+        addressOtherOrigin: await requestJson(
+          `${otherOrigin}/api/address-autocomplete`,
+          "GET",
+        ),
+      };
+    }, {
+      applicationOrigin: new URL(baseURL).origin,
+      otherOrigin: alternateOrigin.origin,
+    });
+    expect(results.analyticsExact).toMatchObject({ intercepted: true });
+    expect(results.addressExact).toMatchObject({ configured: false });
+    for (const result of [
+      results.analyticsWrongMethod,
+      results.analyticsNearbyPath,
+      results.analyticsOtherOrigin,
+      results.addressWrongMethod,
+      results.addressNearbyPath,
+      results.addressOtherOrigin,
+    ]) {
+      expect(result).toEqual({ nativeProbe: true });
+    }
+  } finally {
+    activeInterceptionProbes.delete(context);
+  }
+  expect(interceptionRecords(analyticsAttempts, page).length).toBeGreaterThan(
+    analyticsBefore,
+  );
+  expect((await readAddressAvailabilityAttempts(page)).length).toBeGreaterThan(
+    addressBefore,
+  );
+  expect(
+    interceptionRecords(nativeProbeAttempts, page)
+      .slice(nativeBefore)
+      .map(({ href, method }) => `${method} ${href}`),
+  ).toEqual([
+    `GET ${new URL("/api/track/app-event", baseURL).href}`,
+    `POST ${new URL("/api/track/app-events", baseURL).href}`,
+    `POST ${new URL("/api/track/app-event", alternateOrigin).href}`,
+    `POST ${new URL("/api/address-autocomplete", baseURL).href}`,
+    `GET ${new URL("/api/address-autocompletes", baseURL).href}`,
+    `GET ${new URL("/api/address-autocomplete", alternateOrigin).href}`,
+  ]);
+  await policy?.waitForCurrentRequestsToSettle({
+    reason: "finishing the consumer interception exactness regression",
+    deadlineMs: 30_000,
+  });
+}
+
+type ConsumerReadyExpectation = {
+  activeRoomId?: string;
+  designId?: string;
+  displayUnit: "cm" | "ft-in" | "in" | "mm";
+};
+
+async function expectConsumerReady(
+  page: Page,
+  reason: string,
+  expected: ConsumerReadyExpectation,
+) {
+  const sceneCanvas = page.getByTestId("scene-canvas").first();
+  await expect(sceneCanvas).toBeVisible({ timeout: 30_000 });
+  await expect(sceneCanvas).toHaveAttribute("data-client-hydrated", "true", {
+    timeout: 30_000,
+  });
+  await expect(page.getByTestId("qa-scene-performance")).toHaveAttribute(
+    "data-scene-ready",
+    "true",
+    { timeout: 30_000 },
+  );
+  const unitRegion = page.getByTestId("room-setup-unit-dependent");
+  await expect(unitRegion).toHaveAttribute(
+    "data-measurement-preference-state",
+    "ready",
+  );
+  await expect(unitRegion).toHaveAttribute("aria-busy", "false");
+  await expect(page.getByTestId("room-setup-measurement-units")).toHaveValue(
+    expected.displayUnit,
+  );
+  const layout = page.getByTestId("qa-design-layout-debug");
+  await expect(layout).toHaveAttribute("data-room-count", /^[1-9]\d*$/);
+  await expect(layout).toHaveAttribute(
+    "data-active-room-id",
+    expected.activeRoomId ?? /.+/,
+  );
+  if (expected.designId) {
+    await expectCloudDesignReady(page, expected.designId);
+  } else {
+    const cloud = page.getByTestId("qa-editor-cloud-design");
+    await expect(cloud).toHaveAttribute("data-design-id", "");
+    await expect(cloud).toHaveAttribute("data-cloud-baseline-status", "detached");
+  }
+  await runtimePolicies.get(page)?.waitForCurrentRequestsToSettle({
+    reason,
+    deadlineMs: 30_000,
+  });
+}
+
+async function reloadConsumerAfterReady(page: Page, input: {
+  beforeNavigation?: () => Promise<void>;
+  outgoing: ConsumerReadyExpectation;
+  prepareReplacement?: () => Promise<void>;
+  reason: string;
+  replacement: ConsumerReadyExpectation;
+}) {
+  await expectConsumerReady(page, `starting ${input.reason}`, input.outgoing);
+  await input.beforeNavigation?.();
+  const policy = runtimePolicies.get(page);
+  expect(policy, "The consumer runtime policy must be installed.").toBeDefined();
+  const navigation = policy?.beginDevHmrNavigationCancellation({
+    reason: input.reason,
+    maxCancellations: 1,
+  });
+  try {
+    const response = await page.reload({ waitUntil: "domcontentloaded" });
+    expect(response?.status()).toBe(200);
+    await input.prepareReplacement?.();
+    await expectConsumerReady(
+      page,
+      `completing ${input.reason}`,
+      input.replacement,
+    );
+    await navigation?.waitForReplacementHmrReady();
+    navigation?.completeReplacementReady();
+  } catch (cause) {
+    navigation?.failReplacement(
+      cause instanceof Error ? cause.message : String(cause),
+    );
+    throw cause;
+  }
+}
+
 async function openConsumerRoomSetup(page: Page) {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.addInitScript(() => {
@@ -121,7 +444,11 @@ async function openConsumerRoomSetup(page: Page) {
 
   const response = await page.goto("/design", { waitUntil: "domcontentloaded" });
   expect(response?.status()).toBe(200);
-  await expect(page.getByTestId("scene-canvas").first()).toBeVisible({ timeout: 30_000 });
+  await expect(page.getByTestId("scene-canvas").first()).toHaveAttribute(
+    "data-client-hydrated",
+    "true",
+    { timeout: 30_000 },
+  );
   await page.getByRole("button", { name: "2D Plan", exact: true }).click();
   await expect(page.getByTestId("consumer-room-setup")).toBeVisible({ timeout: 20_000 });
 }
@@ -239,23 +566,31 @@ test.describe("23. Consumer room setup", () => {
     });
     expect(hydrationWarnings).toEqual([]);
 
+    let currentDisplayUnit: ConsumerReadyExpectation["displayUnit"] = "ft-in";
     for (const [stored, expected] of [
       ["mm", "mm"],
       ["cm", "cm"],
       ["in", "in"],
       ["unknown", "cm"],
     ] as const) {
-      await page.evaluate((unit) => localStorage.setItem("plan_measurement_unit", unit), stored);
-      await page.waitForLoadState("networkidle");
-      await page.reload({ waitUntil: "domcontentloaded" });
-      await expect(page.getByTestId("room-setup-measurement-units")).toHaveValue(expected);
+      await reloadConsumerAfterReady(page, {
+        beforeNavigation: () => page.evaluate(
+          (unit) => localStorage.setItem("plan_measurement_unit", unit),
+          stored,
+        ),
+        outgoing: { displayUnit: currentDisplayUnit },
+        reason: `reload persisted display unit ${stored}`,
+        replacement: { displayUnit: expected },
+      });
       await expect.poll(() => page.evaluate(() => localStorage.getItem("plan_measurement_unit")))
         .toBe(expected);
+      currentDisplayUnit = expected;
     }
     expect(hydrationWarnings).toEqual([]);
   });
 
   test("validates measured dimensions, persists units, and keeps correction paths touch friendly", async ({
+    context,
     page,
   }) => {
     test.setTimeout(90_000);
@@ -266,6 +601,7 @@ test.describe("23. Consumer room setup", () => {
       }
     });
     await openConsumerRoomSetup(page);
+    await expectConsumerInterceptorsExact(context, page);
 
     await expect(page.getByTestId("room-setup-status")).toHaveText("Room ready");
     await expect(page.getByTestId("room-setup-scale-summary")).toContainText("Visible scale:");
@@ -387,12 +723,19 @@ test.describe("23. Consumer room setup", () => {
       "14′ 0″ × 15′ 9.0″ · 220.5 ft²"
     );
 
-    await page.reload({ waitUntil: "domcontentloaded" });
-    await expect(page.getByTestId("scene-canvas").first()).toBeVisible({ timeout: 30_000 });
-    if (!(await page.getByTestId("consumer-room-setup").isVisible().catch(() => false))) {
-      await page.getByRole("button", { name: "2D Plan", exact: true }).click();
-    }
-    await expect(page.getByTestId("consumer-room-setup")).toBeVisible({ timeout: 20_000 });
+    await reloadConsumerAfterReady(page, {
+      outgoing: { displayUnit: "ft-in" },
+      reason: "reload persisted consumer dimensions",
+      replacement: { displayUnit: "ft-in" },
+      prepareReplacement: async () => {
+        if (!(await page.getByTestId("consumer-room-setup").isVisible().catch(() => false))) {
+          await page.getByRole("button", { name: "2D Plan", exact: true }).click();
+        }
+        await expect(page.getByTestId("consumer-room-setup")).toBeVisible({
+          timeout: 20_000,
+        });
+      },
+    });
     await expect(page.getByTestId("room-setup-measurement-units")).toHaveValue(
       "ft-in"
     );
@@ -441,9 +784,21 @@ test.describe("23. Consumer room setup", () => {
     );
     await page.getByTestId("plan-focus-done").click();
 
+    const addressAttemptCount = (await readAddressAvailabilityAttempts(page)).length;
     await page.getByTestId("plan-start-template").click();
     await expect(page.getByTestId("starter-floor-plan-picker")).toBeVisible();
     await expect(page.getByTestId("apply-plan-template-studio")).toBeVisible();
+    await expect.poll(
+      async () => (await readAddressAvailabilityAttempts(page)).length,
+    ).toBeGreaterThan(addressAttemptCount);
+    await expect(page.getByText(
+      "Address suggestions are unavailable; manual entry still works.",
+      { exact: true },
+    ).last()).toBeVisible();
+    await runtimePolicies.get(page)?.waitForCurrentRequestsToSettle({
+      reason: "finishing the address-availability check before test teardown",
+      deadlineMs: 30_000,
+    });
 
     const horizontalOverflow = await page.evaluate(
       () => document.documentElement.scrollWidth - document.documentElement.clientWidth
@@ -478,9 +833,11 @@ test.describe("23. Consumer room setup", () => {
       await page.goto(`/design?designId=${encodeURIComponent(seed.designId)}`, {
         waitUntil: "domcontentloaded",
       });
-      await expect(page.getByTestId("scene-canvas").first()).toBeVisible({
-        timeout: 30_000,
-      });
+      await expect(page.getByTestId("scene-canvas").first()).toHaveAttribute(
+        "data-client-hydrated",
+        "true",
+        { timeout: 30_000 },
+      );
       await page.getByRole("button", { name: "2D Plan", exact: true }).click();
       await expect(page.getByTestId("consumer-room-setup")).toBeVisible({
         timeout: 20_000,
@@ -523,11 +880,25 @@ test.describe("23. Consumer room setup", () => {
       );
       expect(storedFourteenFeet.status()).toBe(200);
       expect(await storedFourteenFeet.json()).toMatchObject({ roomWidth: 4.2672 });
-      await page.reload({ waitUntil: "domcontentloaded" });
-      await expect(page.getByTestId("scene-canvas").first()).toBeVisible({
-        timeout: 30_000,
+      await reloadConsumerAfterReady(page, {
+        outgoing: {
+          activeRoomId: "beta-living",
+          designId: seed.designId,
+          displayUnit: "ft-in",
+        },
+        reason: "reload the saved authenticated consumer design",
+        replacement: {
+          activeRoomId: "beta-living",
+          designId: seed.designId,
+          displayUnit: "ft-in",
+        },
+        prepareReplacement: async () => {
+          await page.getByRole("button", { name: "2D Plan", exact: true }).click();
+          await expect(page.getByTestId("consumer-room-setup")).toBeVisible({
+            timeout: 20_000,
+          });
+        },
       });
-      await page.getByRole("button", { name: "2D Plan", exact: true }).click();
       await expectCloudDesignReady(page, seed.designId);
       await expect(width).toHaveAttribute("data-model-value-mm", "4267.2");
       await expect(width).toHaveValue("14′ 0″");

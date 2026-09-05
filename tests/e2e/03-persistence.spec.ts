@@ -14,9 +14,7 @@ import {
   installBrowserRuntimePolicy,
   type BrowserRuntimePolicy,
 } from "./browser-runtime-policy";
-import { getE2EBaseUrl } from "./release-environment";
 
-const baseURL = getE2EBaseUrl();
 const CLOUD_AUTOSAVE_DELAY_MS = 900;
 const CLOUD_READY_TIMEOUT_MS = 30_000;
 const runtimePolicies = new WeakMap<Page, BrowserRuntimePolicy>();
@@ -26,12 +24,20 @@ test.beforeEach(async ({ page }, testInfo) => {
     page,
     testInfo.titlePath.join(" > "),
   );
-  allowKnownChromiumDesignRuntimeEvents(policy, baseURL);
+  allowKnownChromiumDesignRuntimeEvents(policy);
   runtimePolicies.set(page, policy);
 });
 
-test.afterEach(async ({ page }) => {
-  runtimePolicies.get(page)?.assertSatisfied();
+test.afterEach(async ({ page }, testInfo) => {
+  const policy = runtimePolicies.get(page);
+  policy?.assertSatisfied();
+  const acceptedCancellations = policy?.getAcceptedNavigationCancellations() ?? [];
+  if (acceptedCancellations.length > 0) {
+    await testInfo.attach("accepted-navigation-cancellations", {
+      body: Buffer.from(JSON.stringify(acceptedCancellations, null, 2)),
+      contentType: "application/json",
+    });
+  }
 });
 
 function allowExpectedHttpFailure(input: {
@@ -187,12 +193,34 @@ async function loadSeedDesign(
   await page.addInitScript(() => {
     window.localStorage.setItem("plan_measurement_unit", "mm");
   });
-  await page.goto("/design", { waitUntil: "domcontentloaded" });
-  await addAuthCookies(page.context(), new URL(page.url()).origin, seed.sessionToken);
-  await page.reload({ waitUntil: "domcontentloaded" });
-  await expect(page.getByTestId("scene-canvas").first()).toBeVisible({
-    timeout: 30_000,
+  const initialResponse = await page.goto("/design", {
+    waitUntil: "domcontentloaded",
   });
+  expect(initialResponse?.status()).toBe(200);
+  await addAuthCookies(page.context(), new URL(page.url()).origin, seed.sessionToken);
+  const navigation = runtimePolicies.get(page)?.beginNavigationCancellation({
+    reason: "reload the completed anonymous bootstrap document with the auth cookie",
+    // The dev document can still be loading layout, main-app, and design-page
+    // scripts when this immediate authentication reload replaces it.
+    maxCancellations: 3,
+  });
+  try {
+    const authenticatedResponse = await page.reload({
+      waitUntil: "domcontentloaded",
+    });
+    expect(authenticatedResponse?.status()).toBe(200);
+    const sceneCanvas = page.getByTestId("scene-canvas").first();
+    await expect(sceneCanvas).toBeVisible({ timeout: 30_000 });
+    await expect(sceneCanvas).toHaveAttribute("data-client-hydrated", "true", {
+      timeout: 30_000,
+    });
+    navigation?.completeReplacementReady();
+  } catch (cause) {
+    navigation?.failReplacement(
+      cause instanceof Error ? cause.message : String(cause),
+    );
+    throw cause;
+  }
   await openMyDesigns(page);
   await page.getByTestId(`load-design-${seed.designId}`).click();
   await expect(page.getByTestId("load-designs-modal")).toBeHidden({
