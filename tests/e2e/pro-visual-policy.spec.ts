@@ -1,6 +1,6 @@
 import { test, expect, type Locator, type Page } from "@playwright/test";
 import sharp from "sharp";
-import { attachProVisualDiagnostics, installProVisualDiagnostics, proVisualMark } from "./pro-visual-diagnostics";
+import { attachProVisualDiagnostics, installProVisualDiagnostics, proVisualEventsSince, proVisualMark } from "./pro-visual-diagnostics";
 import {
   beginClientPreviewFocusWindow,
   completeClientPreviewFocusWindow,
@@ -180,7 +180,10 @@ async function expectEditingCommandBarActive(page: Page) {
   await expect(commandBar).toHaveCount(1);
   await expect(commandBar).toBeVisible();
   await expect(commandBar).not.toHaveAttribute("aria-hidden", "true");
-  expect(await commandBar.evaluate((element) => element.inert)).toBe(false);
+  expect(await commandBar.evaluate((element) => {
+      if (!(element instanceof HTMLElement)) throw new Error("Expected an HTML dialog or command bar");
+      return element.inert;
+    })).toBe(false);
   expect(
     await commandBar.evaluate(
       (element, selector) =>
@@ -202,7 +205,10 @@ async function expectClientPreviewCommandBarExcluded(
   const exit = page.getByTestId("client-preview-exit");
   await expect(commandBar).toHaveCount(1);
   await expect(commandBar).toHaveAttribute("aria-hidden", "true");
-  expect(await commandBar.evaluate((element) => element.inert)).toBe(true);
+  expect(await commandBar.evaluate((element) => {
+      if (!(element instanceof HTMLElement)) throw new Error("Expected an HTML dialog or command bar");
+      return element.inert;
+    })).toBe(true);
   await expect(commandBar).toHaveCSS("pointer-events", "none");
   expect(
     await commandBar.evaluate(
@@ -255,7 +261,10 @@ async function expectClientPreviewCommandBarExcluded(
   const hiddenMore = commandBar.getByTestId("editor-command-overflow");
   await hiddenMore.evaluate((element) => element.focus());
   await expect(exit).toBeFocused();
-  await hiddenMore.evaluate((element) => element.click());
+  await hiddenMore.evaluate((element) => {
+      if (!(element instanceof HTMLButtonElement)) throw new Error("Expected a button");
+      element.click();
+    });
   await expect(hiddenMore).toHaveAttribute("aria-expanded", "false");
 }
 
@@ -424,6 +433,7 @@ type ShareFallbackClipboardMode =
   | "missing"
   | "permission-denied"
   | "rejected"
+  | "pending"
   | "success";
 
 function shareFallbackDesignPayload(id: string) {
@@ -477,6 +487,7 @@ async function mockShareFallbackDesign(page: Page) {
       mode: "missing" as ShareFallbackClipboardMode,
       writes: [] as string[],
       openedUrl: null as string | null,
+      settleWrite: null as (() => void) | null,
     };
     (
       window as typeof window & {
@@ -493,7 +504,10 @@ async function mockShareFallbackDesign(page: Page) {
             state.writes.push(value);
             const mode = state.mode;
             window.__proVisualDiagnostic?.record("mock-clipboard-invoked", { mode, writeCount: state.writes.length });
-            const result = mode === "success" ? Promise.resolve()
+            const result = mode === "pending" ? new Promise<void>((resolve) => {
+              state.settleWrite = () => { state.settleWrite = null; resolve(); };
+            })
+              : mode === "success" ? Promise.resolve()
               : mode === "permission-denied" ? Promise.reject(new DOMException("Clipboard permission denied", "NotAllowedError"))
               : Promise.reject(new Error("Clipboard write rejected"));
             if (window.__proVisualDiagnostic) void result.then(
@@ -556,19 +570,42 @@ async function openPresentExport(
     includeHidden: true,
   });
   await expect(parent).toBeVisible();
+  await expectPresentExportInteractive(parent);
+  // Initial focus belongs to the first opening, not a nested child's dismissal.
+  await expect(parent.getByRole("button", { name: "Close export panel" })).toBeFocused();
   return parent;
+}
+
+async function expectPresentExportInteractive(parent: Locator) {
+  await expect(parent).toHaveAttribute("data-editor-dialog-state", "interactive");
+  await expect(parent).toHaveAttribute("data-editor-dialog-focus-trap", "active");
+  await expect(parent).not.toHaveAttribute("aria-hidden", "true");
+  expect(await parent.evaluate((element) => {
+      if (!(element instanceof HTMLElement)) throw new Error("Expected an HTML dialog or command bar");
+      return element.inert;
+    })).toBe(false);
 }
 
 async function activateCreateShare(
   page: Page,
   activation: "keyboard" | "pointer"
 ) {
+  const parent = page.getByTestId("present-export-dialog");
+  await expectPresentExportInteractive(parent);
   const createShare = page.getByTestId("create-share");
+  await createShare.scrollIntoViewIfNeeded();
+  await expect(createShare).toBeVisible();
   await expect(createShare).toBeEnabled();
+  await expect(createShare).toBeInViewport();
+  expect(await createShare.evaluate((element) => ({
+    owner: element.closest('[role="dialog"]')?.getAttribute("data-testid"),
+    excluded: Boolean(element.closest('[inert], [hidden], [aria-hidden="true"]')),
+  }))).toEqual({ owner: "present-export-dialog", excluded: false });
   proVisualMark(page, "create-share-action-start", { activation });
   if (activation === "keyboard") {
     await createShare.focus();
-    await createShare.press("Enter");
+    await expect(createShare).toBeFocused();
+    await page.keyboard.press("Enter");
   } else {
     await createShare.click();
   }
@@ -584,11 +621,15 @@ async function expectShareFallbackTopmost(page: Page, parent: Locator) {
   await expect(fallback).toHaveCount(1);
   await expect(namedFallback).toHaveCount(1);
   await expect(fallback).toHaveAttribute("aria-modal", "true");
+  await expect(fallback).toHaveAttribute("data-editor-dialog-state", "interactive");
   await expect(fallback).toHaveAttribute("data-editor-dialog-focus-trap", "active");
   await expect(close).toBeVisible();
   await expect(close).toBeFocused();
   await expect(parent).toHaveAttribute("aria-hidden", "true");
-  expect(await parent.evaluate((element) => element.inert)).toBe(true);
+  expect(await parent.evaluate((element) => {
+      if (!(element instanceof HTMLElement)) throw new Error("Expected an HTML dialog or command bar");
+      return element.inert;
+    })).toBe(true);
   const accessibilityTree = await page.locator("body").ariaSnapshot();
   expect(accessibilityTree).toContain("Share Link");
   expect(accessibilityTree).not.toContain("Present & Export");
@@ -609,7 +650,10 @@ async function expectShareFallbackClosed(page: Page, parent: Locator) {
   await expect(parent).toBeVisible();
   await expect(parent).not.toHaveAttribute("aria-hidden", "true");
   await expect(parent).toHaveAttribute("data-editor-dialog-focus-trap", "active");
-  expect(await parent.evaluate((element) => element.inert)).toBe(false);
+  expect(await parent.evaluate((element) => {
+      if (!(element instanceof HTMLElement)) throw new Error("Expected an HTML dialog or command bar");
+      return element.inert;
+    })).toBe(false);
   await expect(page.getByTestId("create-share")).toBeFocused();
 }
 
@@ -1091,7 +1135,10 @@ test.describe("Pro visual policy", () => {
 
     const more = page.getByTestId("editor-command-overflow");
     const palette = await openCommandPalette(page, "Meta+K", more);
-    await save.evaluate((element) => element.click());
+    await save.evaluate((element) => {
+      if (!(element instanceof HTMLButtonElement)) throw new Error("Expected a button");
+      element.click();
+    });
     await expect(guest).toBeVisible();
     await expect(guest.getByTestId("guest-save-prompt-close")).toBeFocused();
     const supersededPalette = page.getByTestId("editor-command-palette");
@@ -1477,7 +1524,10 @@ test.describe("Pro visual policy", () => {
     const nested = await openPlansFromUpgrade(page, "pointer");
     let plans = await expectPlansDialog(page);
     await expect(nested.upgrade).toHaveAttribute("aria-hidden", "true");
-    expect(await nested.upgrade.evaluate((element) => element.inert)).toBe(true);
+    expect(await nested.upgrade.evaluate((element) => {
+      if (!(element instanceof HTMLElement)) throw new Error("Expected an HTML dialog or command bar");
+      return element.inert;
+    })).toBe(true);
     await nested.plansAction.evaluate((element) => (element as HTMLElement).focus());
     expect(
       await nested.upgrade.evaluate((element) =>
@@ -1492,7 +1542,10 @@ test.describe("Pro visual policy", () => {
     await plans.close.click();
     await expectPlansClosed(page);
     await expect(nested.upgrade).not.toHaveAttribute("aria-hidden", "true");
-    expect(await nested.upgrade.evaluate((element) => element.inert)).toBe(false);
+    expect(await nested.upgrade.evaluate((element) => {
+      if (!(element instanceof HTMLElement)) throw new Error("Expected an HTML dialog or command bar");
+      return element.inert;
+    })).toBe(false);
     await expect(nested.plansAction).toBeFocused();
 
     await nested.plansAction.click();
@@ -1528,7 +1581,10 @@ test.describe("Pro visual policy", () => {
     await expect(newerDialog).toHaveAttribute("aria-modal", "true");
     await expect(newerClose).toBeFocused();
     await expect(plans.dialog).toHaveAttribute("aria-hidden", "true");
-    expect(await plans.dialog.evaluate((element) => element.inert)).toBe(true);
+    expect(await plans.dialog.evaluate((element) => {
+      if (!(element instanceof HTMLElement)) throw new Error("Expected an HTML dialog or command bar");
+      return element.inert;
+    })).toBe(true);
     await newerClose.press("Escape");
     await expect(newerDialog).toHaveCount(0);
     await expect(plans.dialog).toBeVisible();
@@ -1698,10 +1754,42 @@ test.describe("Pro visual policy", () => {
 
     await activateCreateShare(page, "pointer");
     await expectShareFallbackTopmost(page, parent);
-    await setShareFallbackClipboardMode(page, "success");
+    const feedback = page.getByTestId("share-fallback-modal").getByRole("status");
+    await expect(feedback).toHaveText("");
+    await setShareFallbackClipboardMode(page, "rejected");
+    await Promise.all([
+      page.getByTestId("share-copy-button").click(),
+      expect(feedback).toHaveText("Unable to copy share link. Select the link and copy it manually."),
+    ]);
+    await expect(feedback).not.toContainText("Share link copied to clipboard!");
+    await setShareFallbackClipboardMode(page, "pending");
     proVisualMark(page, "copy-action-start");
-    await page.getByTestId("share-copy-button").click();
-    proVisualMark(page, "copy-action-returned");
+    await Promise.all([
+      page.getByTestId("share-copy-button").click().then(() => proVisualMark(page, "copy-action-returned")),
+      (async () => {
+        await expect.poll(() => page.evaluate(() => Boolean((window as typeof window & {
+          ch0015eShareFallback?: { settleWrite: (() => void) | null };
+        }).ch0015eShareFallback?.settleWrite))).toBe(true);
+        // Pending clipboard work must clear prior feedback and cannot report success.
+        await expect(feedback).toHaveText("");
+        proVisualMark(page, "feedback-assertion-start");
+        await page.evaluate(() => {
+          const state = (window as typeof window & {
+            ch0015eShareFallback?: { settleWrite: (() => void) | null };
+          }).ch0015eShareFallback;
+          if (!state?.settleWrite) throw new Error("Pending clipboard operation is missing");
+          state.settleWrite();
+        });
+        await expect(feedback).toHaveText("Share link copied to clipboard!");
+        await expect(feedback).toBeVisible();
+        expect(await feedback.evaluate((element) => {
+          const rect = element.getBoundingClientRect();
+          const hit = document.elementFromPoint(rect.x + rect.width / 2, rect.y + rect.height / 2);
+          return !element.closest('[inert], [aria-hidden="true"]') && hit !== null && element.contains(hit);
+        })).toBe(true);
+        proVisualMark(page, "feedback-assertion-end");
+      })(),
+    ]);
     await expect(page.getByTestId("share-fallback-modal")).toBeVisible();
     expect(
       await page.evaluate(() => {
@@ -1712,13 +1800,24 @@ test.describe("Pro visual policy", () => {
         ).ch0015eShareFallback;
         return state?.writes ?? [];
       })
-    ).toEqual([SHARE_FALLBACK_URL]);
-    proVisualMark(page, "feedback-assertion-start");
-    try {
-      await expect(page.getByText("Share link copied to clipboard!")).toBeVisible();
-    } finally { proVisualMark(page, "feedback-assertion-end"); }
+    ).toEqual([SHARE_FALLBACK_URL, SHARE_FALLBACK_URL]);
+    // A dismissed fallback must reject a late result from its pending Copy.
+    await page.getByTestId("share-copy-button").click();
+    await expect(feedback).toHaveText("");
+    await expect.poll(() => page.evaluate(() => (window as typeof window & {
+      ch0015eShareFallback?: { writes: string[] };
+    }).ch0015eShareFallback?.writes.length)).toBe(3);
     await page.getByTestId("share-open-button").click();
     await expectShareFallbackClosed(page, parent);
+    await page.evaluate(() => {
+      const state = (window as typeof window & {
+        ch0015eShareFallback?: { settleWrite: (() => void) | null };
+      }).ch0015eShareFallback;
+      if (!state?.settleWrite) throw new Error("Dismissed pending clipboard operation is missing");
+      state.settleWrite();
+    });
+    await waitForTwoFrames(page);
+    await expect(page.getByText("Share link copied to clipboard!")).toHaveCount(0);
     expect(
       await page.evaluate(
         () =>
@@ -1750,6 +1849,21 @@ test.describe("Pro visual policy", () => {
     proVisualMark(page, "explicit-share-activation-baseline", { requestCountBeforeActivation });
     const createShare = await activateCreateShare(page, "keyboard");
     const child = await expectShareFallbackTopmost(page, parent);
+    const activationEvents = proVisualEventsSince(page, "explicit-share-activation-baseline");
+    const keyboardEvents = activationEvents.filter((event) => event.event === "keydown");
+    expect(keyboardEvents).toEqual([expect.objectContaining({
+      key: "Enter", target: expect.objectContaining({ testId: "create-share" }),
+      active: expect.objectContaining({ testId: "create-share" }),
+    })]);
+    expect(activationEvents.filter((event) => event.event === "click")).toEqual([
+      expect.objectContaining({ control: expect.objectContaining({ testId: "create-share" }) }),
+    ]);
+    expect(activationEvents.filter((event) => event.event === "share-request")).toEqual([
+      expect.objectContaining({ method: "POST", requestSequence: requestCountBeforeActivation + 1 }),
+    ]);
+    expect(activationEvents.filter((event) => event.event === "mock-clipboard-rejected")).toEqual([
+      expect.objectContaining({ mode: "permission-denied", errorName: "NotAllowedError" }),
+    ]);
     const panel = child.fallback.locator(":scope > div");
     await expect(panel).toHaveCount(1);
     const geometry = await panel.evaluate((element) => {
@@ -1837,7 +1951,10 @@ test.describe("Pro visual policy", () => {
     let trayClose = page.getByTestId("selection-tray-close");
     await expect(trayClose).toBeFocused();
     await expect(child.fallback).toHaveAttribute("aria-hidden", "true");
-    expect(await child.fallback.evaluate((element) => element.inert)).toBe(true);
+    expect(await child.fallback.evaluate((element) => {
+      if (!(element instanceof HTMLElement)) throw new Error("Expected an HTML dialog or command bar");
+      return element.inert;
+    })).toBe(true);
     await trayClose.press("Escape");
     await expect(tray).toHaveCount(0);
     await expect(child.close).toBeFocused();
@@ -2147,11 +2264,13 @@ test.describe("Pro visual policy", () => {
     await page.keyboard.press("p");
     await expectClientPreviewCommandBarExcluded(page);
     await save.evaluate((element) => {
+      if (!(element instanceof HTMLButtonElement)) throw new Error("Expected the Save button");
       element.disabled = true;
     });
     await page.keyboard.press("p");
     await expect(more).toBeFocused();
     await save.evaluate((element) => {
+      if (!(element instanceof HTMLButtonElement)) throw new Error("Expected the Save button");
       element.disabled = false;
     });
 
@@ -2162,7 +2281,10 @@ test.describe("Pro visual policy", () => {
     await page.keyboard.press("p");
     const commandBar = page.getByTestId("editor-command-bar");
     await expect(commandBar).not.toHaveAttribute("aria-hidden", "true");
-    expect(await commandBar.evaluate((element) => element.inert)).toBe(false);
+    expect(await commandBar.evaluate((element) => {
+      if (!(element instanceof HTMLElement)) throw new Error("Expected an HTML dialog or command bar");
+      return element.inert;
+    })).toBe(false);
     await expect(commandBar).toHaveCSS("pointer-events", "auto");
     await expect(more).toBeFocused();
 
@@ -2419,11 +2541,14 @@ test.describe("Pro visual policy", () => {
     const planResponse = page.waitForResponse(
       (response) => new URL(response.url()).pathname === "/api/me"
     );
+    const previewDocument = await page.evaluate(() => performance.timeOrigin);
     await exitClientPreviewWithScopeChange(page, {
       reason: "effective-plan-changed",
       href: "/design?designId=third-project&mode=designer&refresh_plan=1",
     });
     await planResponse;
+    await expect(page).toHaveURL(/\/design\?designId=third-project&mode=designer$/);
+    expect(await page.evaluate(() => performance.timeOrigin)).toBe(previewDocument);
     await expect(page.getByTestId("client-preview-exit")).toHaveCount(0);
     await expect(page.getByTestId("pro-mode-indicator")).toHaveCount(0);
     await expectEditingCommandBarActive(page);

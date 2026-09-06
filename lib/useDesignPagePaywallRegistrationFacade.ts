@@ -82,7 +82,14 @@ export function useDesignPageDeferredPaywallLifecycle({
   actions,
 }: UseDesignPageDeferredPaywallLifecycleInput) {
   const replaceDesignUrl = useCallback(
-    (url: string) => navigation.replace(url, { scroll: false }),
+    (url: string) => {
+      const next = new URL(url, window.location.href);
+      if (next.origin === window.location.origin && next.pathname === window.location.pathname) {
+        // Billing query cleanup must retain this document and its editor scope.
+        // Null lets Next's patched history API synchronize search parameters.
+        window.history.replaceState(null, "", url);
+      } else navigation.replace(url, { scroll: false });
+    },
     [navigation]
   );
 

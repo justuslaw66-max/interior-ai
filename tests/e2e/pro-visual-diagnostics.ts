@@ -29,6 +29,17 @@ export function proVisualMark(page: Page, event: string, detail = {}) {
   collector.events.push({ event, nodeTime: Date.now(), ...detail });
 }
 
+export function proVisualEventsSince(page: Page, marker: string): Observation[] {
+  const collector = collectors.get(page);
+  if (!collector || collector.dropped) throw new Error("Pro visual observations are incomplete");
+  const index = collector.events.findLastIndex((event) => event.event === marker);
+  if (index < 0) throw new Error(`Pro visual marker is missing: ${marker}`);
+  return collector.events.slice(index + 1).map((event) => {
+    // Browser observations are decoded by this module's console collector.
+    return event.event === "browser" ? event.observation as Observation : event;
+  });
+}
+
 // Installed before navigation/actions; observations survive a departing document in Node.
 export async function installProVisualDiagnostics(page: Page) {
   const onConsole = (message: import("@playwright/test").ConsoleMessage) => {
@@ -101,13 +112,13 @@ export async function installProVisualDiagnostics(page: Page) {
     let lastFeedback: HTMLElement | null = null;
     let previous = "";
     const observeDom = () => {
-      // The current toast has no semantic/test ID. Inspect only its existing fixed corner host.
-      const feedback = Array.from(document.querySelectorAll<HTMLElement>(".fixed.top-6.right-6"))
+      // Feedback stays with the active fallback; retain the global non-fallback path too.
+      const feedback = Array.from(document.querySelectorAll<HTMLElement>('[data-testid="share-copy-status"], .fixed.top-6.right-6'))
         .find(element => element.textContent?.includes("Share link copied to clipboard!")) ?? null;
       const rect = (feedback ?? lastFeedback)?.getBoundingClientRect();
       const hit = rect ? document.elementFromPoint(rect.x + rect.width / 2, rect.y + rect.height / 2) : null;
       const state = { present: Boolean(feedback), connected: feedback?.isConnected ?? false,
-        textMatches: feedback?.textContent?.trim() === "✅ Share link copied to clipboard!",
+        textMatches: feedback?.textContent?.includes("Share link copied to clipboard!") ?? false,
         opacity: feedback ? getComputedStyle(feedback).opacity : null,
         visibility: feedback ? getComputedStyle(feedback).visibility : null,
         rect: rect?.toJSON(), centerHit: identity(hit),

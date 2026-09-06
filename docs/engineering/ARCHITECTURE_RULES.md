@@ -54,6 +54,14 @@ Appoint one source of truth for each durable or interaction state. Do not mirror
   Retained DOM nodes are insufficient authority; hidden, disabled, inert,
   disconnected, obscured, off-viewport until scrolled, stale-scope, and
   superseded candidates must be rejected.
+- Share Link Fallback owns its visible live feedback and pending Copy lifetime.
+  Persistence supplies the canonical feedback state; clipboard settlement and
+  expiry must honor the dialog's abort signal so dismissal, replacement and
+  scope changes cannot publish stale feedback. Feedback keeps its existing
+  three-second lifetime without changing dialog stacking or focus ownership.
+- Billing query cleanup uses the existing paywall URL adapter and same-document
+  history replacement. It must preserve the requested design and editor scope;
+  actual route changes continue through the application router.
 
 Place `use client` at the narrowest interactive boundary. Browser-safe shared modules must not import Prisma, auth secrets, Node filesystem/process-only modules, non-public environment values, or privileged integrations. Server modules expose typed DTOs and commands, not internal records.
 
