@@ -7,7 +7,12 @@ function money(currency: string | null, value: number | null) {
   return new Intl.NumberFormat("en-US", {
     style: "currency",
     currency: currency ?? "USD",
+    maximumFractionDigits: 2,
   }).format(value);
+}
+
+function formatArea(value: number) {
+  return `${value.toFixed(1).replace(/\.0$/, "")} m2`;
 }
 
 function BomRow({ row }: { row: SurfaceMaterialBomRow }) {
@@ -27,10 +32,10 @@ function BomRow({ row }: { row: SurfaceMaterialBomRow }) {
         ) : null}
       </td>
       <td className="p-2">{row.supplier}</td>
-      <td className="p-2">{row.materialFamily.replace(/_/g, " ")}</td>
-      <td className="p-2 text-right">{row.surfaceAreaSqm.toFixed(2)} m²</td>
+      <td className="p-2">{row.materialFamily.replace(/_/g, " ").replace(/\b\w/g, (letter) => letter.toUpperCase())}</td>
+      <td className="p-2 text-right">{formatArea(row.surfaceAreaSqm)}</td>
       <td className="p-2 text-right">
-        <div>{row.orderAreaSqm.toFixed(2)} m²</div>
+        <div>{formatArea(row.orderAreaSqm)}</div>
         <div className="text-xs text-gray-500">incl. {(row.wasteFactor * 100).toFixed(0)}% waste</div>
       </td>
       <td className="p-2 text-right">{money(row.pricePerSqmCurrency, row.pricePerSqmAmount)}</td>
@@ -47,11 +52,12 @@ function BomRow({ row }: { row: SurfaceMaterialBomRow }) {
 function BomTable({ rows }: { rows: readonly SurfaceMaterialBomRow[] }) {
   if (!rows.length) return null;
   const headings = ["Room", "Surface / Material", "Supplier", "Family", "Surface area", "Order area", "Price / m2", "Estimate", "Status"];
+  const numericHeadings = ["Surface area", "Order area", "Price / m2", "Estimate"];
   return (
     <div className="overflow-x-auto rounded-lg border">
       <table className="w-full border-collapse text-sm">
         <thead><tr className="border-b bg-gray-50 text-left">
-          {headings.map((heading) => <th key={heading} className="p-2">{heading}</th>)}
+          {headings.map((heading) => <th key={heading} className={numericHeadings.includes(heading) ? "p-2 text-right" : "p-2"}>{heading}</th>)}
         </tr></thead>
         <tbody>{rows.map((row) => <BomRow key={`${row.roomId}-${row.surface}-${row.materialId}`} row={row} />)}</tbody>
       </table>
