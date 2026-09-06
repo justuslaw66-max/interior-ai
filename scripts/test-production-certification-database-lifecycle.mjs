@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import { createHash, randomUUID } from "node:crypto";
 import {
+  lstatSync,
   mkdirSync,
   mkdtempSync,
   readFileSync,
@@ -574,6 +575,7 @@ function appEventRow(
 }
 
 async function deterministicContractCoverage() {
+  await realFixtureCleanupContractCoverage();
   runAppEventWriterFixture("source-contract", {
     ...appEventWriterBaseEnvironment(),
     CERTIFICATION_ENVIRONMENT_STAGE: "production",
@@ -2808,12 +2810,134 @@ function browserOwnerWriterEnvironment({ environment, ownership, databaseUrl }) 
   return projected;
 }
 
+function retainedRealFixtureFailure(testFixture, current, fallbackStage) {
+  const retained = current.evidence.failure;
+  if (!retained) return {
+    classification: "QUALIFICATION_FIXTURE_FAILURE",
+    consumedSubstantiveGate: false,
+    stage: fallbackStage,
+  };
+  const originalFailure = {
+    classification: retained.classification,
+    consumedSubstantiveGate: retained.consumedSubstantiveGate,
+    stage: retained.originalStage,
+    attempt: retained.attempt,
+    failedStateSha256: retained.failedStateSha256,
+    evidenceReferences: retained.evidenceReferences,
+  };
+  if (retained.originalStage === "database:verify-final" &&
+      retained.failedStateSha256 === null) {
+    assert.equal(current.evidence.events.some((entry) => entry.mode === "abort-cleanup"),
+      false, "Do not regenerate a failure snapshot after an abort attempt");
+    const snapshot = retainCertificationDatabaseFailureSnapshot({
+      repositoryRoot, environment: testFixture.environment, attempt: retained.attempt,
+    });
+    // This regression uses a synthetic state hash, as in its explicit abort calls.
+    originalFailure.failedStateSha256 = "f".repeat(64);
+    originalFailure.evidenceReferences = { "database-final-failure": snapshot };
+  }
+  return originalFailure;
+}
+
+async function finishRealDatabaseFixture({
+  testFixture, clients, primaryFailure, originalFailure = null, stage, adapter = null,
+}) {
+  const cleanupErrors = [];
+  for (const client of clients.filter(Boolean)) {
+    try { await client.end(); } catch (error) { cleanupErrors.push(error); }
+  }
+  try {
+    const metadata = lstatSync(testFixture.lifecyclePath);
+    assert.equal(metadata.isFile(), true, "Retain a missing or non-physical lifecycle receipt");
+    const current = readCertificationDatabaseLifecycle({
+      repositoryRoot, environment: testFixture.environment,
+    });
+    if (!new Set(["absence-verified", "abort-absence-verified"]).has(current.evidence.currentState)) {
+      await abortCertificationDatabase({
+        repositoryRoot, environment: testFixture.environment, adapter,
+        originalFailure: originalFailure ?? retainedRealFixtureFailure(testFixture, current, stage),
+      });
+    }
+  } catch (error) { cleanupErrors.push(error); }
+  if (cleanupErrors.length === 0) {
+    try { rmSync(testFixture.root, { recursive: true, force: true }); }
+    catch (error) { cleanupErrors.push(error); }
+  }
+  if (cleanupErrors.length > 0) {
+    throw new AggregateError(
+      [...(primaryFailure ? [primaryFailure] : []), ...cleanupErrors],
+      `Real database fixture cleanup failed; retained evidence root: ${testFixture.root}`,
+    );
+  }
+  if (primaryFailure) throw primaryFailure;
+}
+
+async function realFixtureCleanupContractCoverage() {
+  for (const scenario of ["success", "session-refusal", "missing-receipt", "malformed-receipt", "client-close-failure"]) {
+    const testFixture = fixture({ id: `real-fixture-cleanup-${scenario}` });
+    const adapter = new FakeDatabaseAdapter();
+    const options = { repositoryRoot, environment: testFixture.environment, adapter };
+    const primaryFailure = new Error(`original product assertion: ${scenario}`);
+    try {
+      await planCertificationDatabase({ ...options, nonce: "6".repeat(32), qualificationFixture: true });
+      await provisionCertificationDatabase(options);
+      await verifyInitialCertificationDatabase(options);
+      await bindAllStages(testFixture.environment, adapter);
+      adapter.rows = [{ table: "User", count: 1 }];
+      await assert.rejects(verifyFinalCertificationDatabase(options), /row, session, or stage-binding contract failed/);
+      const receiptBytes = readFileSync(testFixture.lifecyclePath);
+      if (scenario === "session-refusal") adapter.sessions = [{ pid: 1234 }];
+      if (scenario === "missing-receipt") rmSync(testFixture.lifecyclePath);
+      if (scenario === "malformed-receipt") writeFileSync(testFixture.lifecyclePath, "malformed");
+      const closeError = new Error("owned client close failed");
+      const clients = scenario === "client-close-failure"
+        ? [{ end: async () => { throw closeError; } }] : [];
+      await assert.rejects(finishRealDatabaseFixture({
+        testFixture, clients, primaryFailure, stage: "unexpected-finally-stage", adapter,
+      }), (error) => {
+        if (scenario === "success") return error === primaryFailure;
+        assert.ok(error instanceof AggregateError);
+        assert.equal(error.errors[0], primaryFailure);
+        if (scenario === "client-close-failure") assert.equal(error.errors[1], closeError);
+        assert.ok(lstatSync(testFixture.root).isDirectory());
+        return true;
+      });
+      if (scenario !== "success") {
+        if (scenario !== "client-close-failure") assert.equal(adapter.exists, true);
+        if (scenario === "session-refusal") {
+          const retained = readCertificationDatabaseLifecycle(options).evidence.failure;
+          assert.equal(retained.originalStage, "database:verify-final");
+          assert.ok(retained.evidenceReferences["database-final-failure"]);
+          assert.deepEqual(adapter.terminated, []);
+          adapter.sessions = [];
+        }
+        if (scenario === "missing-receipt" || scenario === "malformed-receipt") {
+          writeFileSync(testFixture.lifecyclePath, receiptBytes);
+        }
+        // A successful retry must reuse the old failure snapshot after the
+        // lifecycle changed during refusal, rather than regenerate its bytes.
+        await assert.rejects(finishRealDatabaseFixture({
+          testFixture, clients: [], primaryFailure, stage: "unexpected-finally-stage", adapter,
+        }), (error) => error === primaryFailure);
+      }
+      assert.equal(adapter.exists, false);
+      assert.equal(adapter.stageRole, null);
+      assert.throws(() => lstatSync(testFixture.root), { code: "ENOENT" });
+    } finally {
+      // This coverage uses only the in-memory adapter; retain real fixture
+      // directories on any database cleanup failure in the production callers.
+      rmSync(testFixture.root, { recursive: true, force: true });
+    }
+  }
+}
+
 async function realRuntimeAttributionCoverage(adminUrl) {
   const positiveFixture = fixture({
     id: `real-runtime-attribution-${Date.now()}`,
     adminUrl,
   });
   let positiveClient = null;
+  let positiveFailure = null;
   try {
     const plan = await planCertificationDatabase({
       repositoryRoot,
@@ -2996,28 +3120,13 @@ async function realRuntimeAttributionCoverage(adminUrl) {
     });
     assert.equal(absent.evidence.currentState, "absence-verified");
     assert.equal(absent.evidence.server.targetExists, false);
+  } catch (error) {
+    positiveFailure = error;
   } finally {
-    if (positiveClient) await positiveClient.end().catch(() => {});
-    if (exists(positiveFixture.lifecyclePath)) {
-      const current = readCertificationDatabaseLifecycle({
-        repositoryRoot,
-        environment: positiveFixture.environment,
-      });
-      if (!new Set(["absence-verified", "abort-absence-verified"]).has(
-        current.evidence.currentState,
-      )) {
-        await abortCertificationDatabase({
-          repositoryRoot,
-          environment: positiveFixture.environment,
-          originalFailure: {
-            classification: "QUALIFICATION_FIXTURE_FAILURE",
-            consumedSubstantiveGate: false,
-            stage: "runtime-attribution-positive-finally",
-          },
-        });
-      }
-    }
-    rmSync(positiveFixture.root, { recursive: true, force: true });
+    await finishRealDatabaseFixture({
+      testFixture: positiveFixture, clients: [positiveClient], primaryFailure: positiveFailure,
+      stage: "runtime-attribution-positive-finally",
+    });
   }
 
   const negativeFixture = fixture({
@@ -3025,6 +3134,7 @@ async function realRuntimeAttributionCoverage(adminUrl) {
     adminUrl,
   });
   let negativeClient = null;
+  let negativeFailure = null;
   try {
     const plan = await planCertificationDatabase({
       repositoryRoot,
@@ -3130,28 +3240,13 @@ async function realRuntimeAttributionCoverage(adminUrl) {
     assert.equal(aborted.evidence.cleanup.finalEmptyVerified, false);
     assert.equal(aborted.evidence.cleanup.failedRunRehabilitated, false);
     assert.equal(aborted.evidence.server.targetExists, false);
+  } catch (error) {
+    negativeFailure = error;
   } finally {
-    if (negativeClient) await negativeClient.end().catch(() => {});
-    if (exists(negativeFixture.lifecyclePath)) {
-      const current = readCertificationDatabaseLifecycle({
-        repositoryRoot,
-        environment: negativeFixture.environment,
-      });
-      if (!new Set(["absence-verified", "abort-absence-verified"]).has(
-        current.evidence.currentState,
-      )) {
-        await abortCertificationDatabase({
-          repositoryRoot,
-          environment: negativeFixture.environment,
-          originalFailure: {
-            classification: "QUALIFICATION_FIXTURE_FAILURE",
-            consumedSubstantiveGate: false,
-            stage: "runtime-attribution-negative-finally",
-          },
-        });
-      }
-    }
-    rmSync(negativeFixture.root, { recursive: true, force: true });
+    await finishRealDatabaseFixture({
+      testFixture: negativeFixture, clients: [negativeClient], primaryFailure: negativeFailure,
+      stage: "runtime-attribution-negative-finally",
+    });
   }
 }
 
@@ -3164,6 +3259,8 @@ async function realDisposableDatabaseCoverage() {
   const realFixture = fixture({ id: `real-${Date.now()}`, adminUrl });
   let targetClient = null;
   let unrelatedClient = null;
+  let primaryFailure = null;
+  let originalFailure = null;
   try {
     const plan = await planCertificationDatabase({
       repositoryRoot,
@@ -3267,9 +3364,18 @@ async function realDisposableDatabaseCoverage() {
       environment: realFixture.environment,
       attempt: 1,
     });
+    originalFailure = {
+      classification: "DATABASE_LIFECYCLE_FAILURE",
+      consumedSubstantiveGate: true,
+      stage: "database:verify-final",
+      attempt: 1,
+      failedStateSha256: "f".repeat(64),
+      evidenceReferences: { "database-final-failure": failedSnapshot },
+    };
     await assert.rejects(abortCertificationDatabase({
       repositoryRoot,
       environment: realFixture.environment,
+      originalFailure,
     }), /could not release exact target sessions/);
     assert.equal((await targetClient.query("SELECT 1 AS alive")).rows[0].alive, 1);
     await targetClient.end();
@@ -3277,14 +3383,7 @@ async function realDisposableDatabaseCoverage() {
     const aborted = await abortCertificationDatabase({
       repositoryRoot,
       environment: realFixture.environment,
-      originalFailure: {
-        classification: "DATABASE_LIFECYCLE_FAILURE",
-        consumedSubstantiveGate: true,
-        stage: "database:verify-final",
-        attempt: 1,
-        failedStateSha256: "f".repeat(64),
-        evidenceReferences: { "database-final-failure": failedSnapshot },
-      },
+      originalFailure,
     });
     assert.equal(aborted.evidence.currentState, "abort-absence-verified");
     assert.equal(aborted.evidence.cleanup.finalEmptyVerified, false);
@@ -3295,29 +3394,13 @@ async function realDisposableDatabaseCoverage() {
       JSON.stringify(aborted.evidence).includes(adminUrl),
       false,
     );
+  } catch (error) {
+    primaryFailure = error;
   } finally {
-    if (targetClient) await targetClient.end().catch(() => {});
-    if (unrelatedClient) await unrelatedClient.end().catch(() => {});
-    if (exists(realFixture.lifecyclePath)) {
-      const current = readCertificationDatabaseLifecycle({
-        repositoryRoot,
-        environment: realFixture.environment,
-      });
-      if (!new Set(["absence-verified", "abort-absence-verified"]).has(
-        current.evidence.currentState,
-      )) {
-        await abortCertificationDatabase({
-          repositoryRoot,
-          environment: realFixture.environment,
-          originalFailure: {
-            classification: "QUALIFICATION_FIXTURE_FAILURE",
-            consumedSubstantiveGate: false,
-            stage: "database-lifecycle-test-finally",
-          },
-        });
-      }
-    }
-    rmSync(realFixture.root, { recursive: true, force: true });
+    await finishRealDatabaseFixture({
+      testFixture: realFixture, clients: [targetClient, unrelatedClient], primaryFailure,
+      originalFailure, stage: "database-lifecycle-test-finally",
+    });
   }
 }
 
