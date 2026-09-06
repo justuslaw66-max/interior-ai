@@ -178,17 +178,21 @@ jobs:
         run: npx playwright install --with-deps chromium
 
       - name: Run advisory full E2E inventory
+        id: advisory-run
         run: npm run test:e2e:advisory
 
       - name: Prepare portable advisory evidence
-        if: always() && !cancelled()
-        run: npm run evidence:required-tests:prepare-upload
+        id: advisory-evidence
+        if: always() && !cancelled() && (steps.advisory-run.outcome == 'success' || steps.advisory-run.outcome == 'failure')
+        env:
+          EVIDENCE_PATH: ${{ steps.advisory-run.outputs.evidence_path }}
+        run: npm run --silent evidence:required-tests:prepare-upload -- "$EVIDENCE_PATH"
 
       - name: Upload test results
-        if: always() && !cancelled()
+        if: always() && !cancelled() && steps.advisory-evidence.outcome == 'success' && steps.advisory-evidence.outputs.archive_root != ''
         uses: actions/upload-artifact@v4
         with:
           name: playwright-full-results
-          path: .local/required-test-upload/
+          path: ${{ steps.advisory-evidence.outputs.archive_root }}
           if-no-files-found: error
           retention-days: 30

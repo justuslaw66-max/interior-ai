@@ -1,18 +1,22 @@
 import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import {
+  appendFileSync,
   existsSync,
+  lstatSync,
   mkdirSync,
+  mkdtempSync,
   readFileSync,
   readdirSync,
-  renameSync,
   rmSync,
   statSync,
   writeFileSync,
 } from "node:fs";
 import path from "node:path";
 import process from "node:process";
+import { parse as parseYaml } from "yaml";
 
+import { prepareCanonicalWindowOpeningContext, assertWindowOpeningReportContext, isCanonicalWindowOpeningOwner, readCanonicalWindowOpeningRun, requiredBrowserOutputDirectory } from "./window-opening-browser-context.mjs";
 import { resolveRequiredTestReportPath } from "./playwright-report-path.mjs";
 
 export const REQUIRED_TEST_MANIFEST_SCHEMA =
@@ -184,7 +188,7 @@ function assertRetainedTextSafe(relativePath, text, environment, parsedJson = nu
 }
 
 function listRetainedEvidenceFiles(root, relativeDirectory) {
-  const directory = repositoryPath(root, relativeDirectory, "retained evidence directory");
+  const directory = physicalEvidencePath(root, relativeDirectory);
   if (!existsSync(directory) || !statSync(directory).isDirectory()) {
     throw new Error(`retained evidence directory ${relativeDirectory} is missing`);
   }
@@ -273,21 +277,65 @@ export function verifyRequiredTestEvidenceArchive({
   if (JSON.stringify(inventoryEntries) !== JSON.stringify(archiveEntries)) {
     throw new Error("retained required-test evidence inventory does not exactly match the archive tree");
   }
+  verifySelectedAdvisoryArchive(root, archiveRoot, inventory, archiveEntries);
   return { inventory, archiveEntries };
+}
+
+function verifySelectedAdvisoryArchive(root, archiveRoot, inventory, archiveEntries) {
+  const archiveAbsoluteRoot = path.join(root, archiveRoot);
+  const contentEntries = archiveEntries.filter((file) => file !== "retained-evidence-inventory.json");
+  if (JSON.stringify(Object.keys(inventory.contentSha256 ?? {}).sort()) !== JSON.stringify(contentEntries) ||
+      contentEntries.some((file) => inventory.contentSha256[file] !==
+        sha256(readFileSync(physicalEvidencePath(root, `${archiveRoot}/${file}`))))) {
+    throw new Error("required-test archive content hashes do not match the prepared bundle");
+  }
+  const selected = inventory.selectedInvocation;
+  if (!selected || !contentEntries.includes(`required-test-evidence/${selected.evidencePath}`) ||
+      !contentEntries.includes(`required-test-evidence/${selected.reportPath}`)) {
+    throw new Error("required-test archive has no explicit selected invocation");
+  }
+  const evidence = readJson(path.join(archiveAbsoluteRoot, "required-test-evidence", selected.evidencePath), "selected envelope");
+  const reportFile = `required-test-evidence/${selected.reportPath}`;
+  const report = readJson(path.join(archiveAbsoluteRoot, reportFile), "selected report");
+  if (evidence.sourceCommitSha !== selected.sourceCommitSha ||
+      evidence.gateId !== selected.evidencePath.split("/")[0] ||
+      report.config?.metadata?.requiredTestEvidence?.gateId !== evidence.gateId ||
+      (evidence.sourceTreeSha ?? null) !== selected.sourceTreeSha ||
+      (evidence.runId ?? null) !== selected.runId ||
+      evidence.report?.path !== `${DEFAULT_REQUIRED_TEST_EVIDENCE_ROOT}/${selected.reportPath}` ||
+      evidence.report?.sha256 !== inventory.contentSha256[reportFile] ||
+      report.config?.metadata?.requiredTestEvidence?.sourceCommitSha !== selected.sourceCommitSha ||
+      (report.config?.metadata?.windowOpeningExecution?.runId ?? null) !== selected.runId ||
+      inventory.advisorySummaries?.length !== 1 ||
+      inventory.advisorySummaries[0].gateId !== evidence.gateId ||
+      inventory.advisorySummaries[0].sourceCommitSha !== selected.sourceCommitSha ||
+      (inventory.advisorySummaries[0].runId ?? null) !== selected.runId) {
+    throw new Error("required-test archive does not bind the selected invocation and source");
+  }
 }
 
 function advisoryEvidenceClassification(relativePath) {
   const segments = relativePath.split("/");
+  if (segments[0] === "advisory.full-e2e") {
+    const pairPath = segments.slice(0, 3).join("/");
+    if (segments[1] === "playwright-output" && /^[a-f0-9-]{36}$/.test(segments[2] ?? "")) {
+      const required = segments.length === 4 && ["evidence.json", "playwright.json"].includes(segments[3]);
+      return { category: required ? "required-structured-evidence" : "optional-diagnostic-text",
+        gateId: segments[0], pairPath, diagnosticPath: segments.slice(2).join("/") };
+    }
+    return { category: "prohibited-unclassified-evidence", gateId: segments[0] };
+  }
   if (
     segments.length === 2 &&
     (segments[1] === "evidence.json" || segments[1] === "playwright.json")
   ) {
-    return { category: "required-structured-evidence", gateId: segments[0] };
+    return { category: "required-structured-evidence", gateId: segments[0], pairPath: segments[0] };
   }
   if (segments.length >= 3 && segments[1] === "playwright-output") {
     return {
       category: "optional-diagnostic-text",
       gateId: segments[0],
+      pairPath: segments[0],
       diagnosticPath: segments.slice(2).join("/"),
     };
   }
@@ -315,6 +363,7 @@ function validateAdvisoryRequiredPair({
   repositoryRoot,
   gate,
   gateId,
+  evidencePath,
   evidence,
   report,
   reportBytes,
@@ -345,14 +394,20 @@ function validateAdvisoryRequiredPair({
   if (evidence.artifactSha256 !== null) {
     throw new Error(`required-test evidence ${gateId} cannot claim an advisory artifact binding`);
   }
-  const expectedReportPath =
-    `.local/required-test-evidence/${gateId}/playwright.json`;
+  const run = isCanonicalWindowOpeningOwner(gateId)
+    ? readCanonicalWindowOpeningRun(repositoryRoot, gateId, evidence.runId) : null;
+  if (run && (`${DEFAULT_REQUIRED_TEST_EVIDENCE_ROOT}/${evidencePath}` !== run.evidencePath ||
+      evidence.sourceTreeSha !== run.sourceTreeSha)) throw new Error("Advisory evidence belongs to another run.");
+  const expectedReportPath = run?.reportPath ?? `.local/required-test-evidence/${gateId}/playwright.json`;
   if (
     evidence.report?.path !== expectedReportPath ||
     evidence.report?.sha256 !== sha256(reportBytes)
   ) {
     throw new Error(`required-test evidence ${gateId}/evidence.json does not bind playwright.json`);
   }
+  if (run) assertWindowOpeningReportContext(report?.config?.metadata, gateId, {
+    repositoryRoot, config: report?.config, expectedRunId: run.runId,
+  });
   const metadata = report?.config?.metadata?.requiredTestEvidence;
   const projects = report?.config?.projects;
   const stats = report?.stats;
@@ -429,6 +484,7 @@ function validateAdvisoryRequiredPair({
   }
   const summary = {
     gateId,
+    ...(run ? { runId: run.runId } : {}),
     sourceCommitSha: evidence.sourceCommitSha,
     processExitCode: evidence.processExitCode,
     conclusion: evidence.result,
@@ -457,6 +513,7 @@ function validateAdvisoryRequiredPair({
     processExitCode: evidence.processExitCode,
     requireMetadata: true,
     expectedSourceCommitSha,
+    expectedWindowOpeningRunId: run?.runId,
     environment,
   });
   const expectedConclusion = truthfulness.valid ? "passed" : "failed";
@@ -471,9 +528,50 @@ function validateAdvisoryRequiredPair({
   return summary;
 }
 
+function physicalEvidencePath(root, relativePath, allowMissing = false) {
+  const file = repositoryPath(root, relativePath, "required-test evidence path");
+  let current = root;
+  for (const segment of ["", ...path.relative(root, file).split(path.sep)]) {
+    current = path.join(current, segment);
+    const entry = lstatSync(current, { throwIfNoEntry: false });
+    if (!entry && allowMissing) return file;
+    if (!entry || entry.isSymbolicLink() || (current !== file && !entry.isDirectory())) {
+      throw new Error("required-test evidence path is missing or traverses a symbolic link or non-directory");
+    }
+  }
+  return file;
+}
+
+function selectAdvisoryInvocation(root, evidenceRoot, evidencePath, manifest) {
+  if (typeof evidencePath !== "string" || !evidencePath) {
+    throw new Error("Select one completed invocation: prepare-upload <recorded-evidence-path>.");
+  }
+  const inputRoot = physicalEvidencePath(root, evidenceRoot);
+  const selectedPath = physicalEvidencePath(root, evidencePath);
+  const relativePath = normalizePath(path.relative(inputRoot, selectedPath));
+  const classification = advisoryEvidenceClassification(relativePath);
+  const gate = manifest.gates.find((candidate) => candidate.id === classification.gateId);
+  if (evidenceRoot !== DEFAULT_REQUIRED_TEST_EVIDENCE_ROOT ||
+      relativePath !== `${classification.pairPath}/evidence.json` ||
+      evidencePath !== `${evidenceRoot}/${relativePath}` ||
+      !gate || gate.cadence !== "advisory" || gate.blocking !== false ||
+      gate.runner !== "playwright" || gate.artifactBinding !== "none" ||
+      gate.reportPath !== `${evidenceRoot}/${gate.id}/evidence.json`) {
+    throw new Error("Selected evidence is not a recorded envelope for a registered advisory gate.");
+  }
+  return { gate, pairPath: classification.pairPath,
+    directory: `${evidenceRoot}/${classification.pairPath}` };
+}
+
+function snapshotAdvisoryInvocation(root, directory) {
+  return new Map(listRetainedEvidenceFiles(root, directory).map((file) =>
+    [file, sha256(readFileSync(physicalEvidencePath(root, file)))]));
+}
+
 export function prepareRequiredTestEvidenceUpload({
   repositoryRoot,
   evidenceRoot = DEFAULT_REQUIRED_TEST_EVIDENCE_ROOT,
+  evidencePath,
   uploadRoot = DEFAULT_REQUIRED_TEST_UPLOAD_ROOT,
   environment = process.env,
   expectedSourceCommitSha,
@@ -498,34 +596,31 @@ export function prepareRequiredTestEvidenceUpload({
     throw new Error("required-test upload source commit is malformed");
   }
   const manifest = loadRequiredTestManifest(root);
-  const stagingUploadRoot = `${DEFAULT_REQUIRED_TEST_UPLOAD_ROOT}.staging`;
-  const stagingRoot = path.join(root, stagingUploadRoot);
-  rmSync(outputRoot, { recursive: true, force: true });
-  rmSync(stagingRoot, { recursive: true, force: true });
+  const selection = selectAdvisoryInvocation(root, evidenceRoot, evidencePath, manifest);
+  const inputFiles = snapshotAdvisoryInvocation(root, selection.directory);
+  let stagingRoot;
   try {
-    const inputFiles = listRetainedEvidenceFiles(root, evidenceRoot);
     const included = [];
     const omitted = [];
     const requiredJson = new Map();
     const requiredRawBytes = new Map();
-    const requiredGateIds = new Set();
-    for (const inputRelativePath of inputFiles) {
+    const retainedText = new Map();
+    for (const [inputRelativePath, originalSha256] of inputFiles) {
       const relativeWithinEvidence = normalizePath(
         path.relative(inputRoot, path.join(root, inputRelativePath)),
       );
       const classification = advisoryEvidenceClassification(relativeWithinEvidence);
-      const rawBytes = readFileSync(path.join(root, inputRelativePath));
-      const originalSha256 = sha256(rawBytes);
+      const rawBytes = readFileSync(physicalEvidencePath(root, inputRelativePath));
+      if (sha256(rawBytes) !== originalSha256) throw new Error("Selected invocation changed during upload preparation.");
       const extension = path.extname(inputRelativePath).toLowerCase();
       const required = classification.category === "required-structured-evidence";
-      if (/^[^/]+\/playwright-output\/\.last-run\.json$/.test(relativeWithinEvidence)) {
+      if (classification.pairPath && /^[^/]+\/playwright-output\/(?:[a-f0-9-]{36}\/test-results\/)?\.last-run\.json$/.test(relativeWithinEvidence)) {
         omitted.push({
           path: relativeWithinEvidence,
           omissionCategory: "redundant-playwright-run-state",
           reasonCode: "redundant-with-hash-bound-playwright-report-and-evidence-envelope",
           originalSha256,
         });
-        requiredGateIds.add(classification.gateId);
         continue;
       }
       if (hasHiddenPathSegment(relativeWithinEvidence)) {
@@ -541,13 +636,7 @@ export function prepareRequiredTestEvidenceUpload({
           reasonCode: "optional-unsafe-path",
           originalSha256,
         });
-        if (classification.category !== "prohibited-unclassified-evidence") {
-          requiredGateIds.add(classification.gateId);
-        }
         continue;
-      }
-      if (classification.category !== "prohibited-unclassified-evidence") {
-        requiredGateIds.add(classification.gateId);
       }
       if (classification.category === "prohibited-unclassified-evidence") {
         omitted.push({
@@ -613,36 +702,15 @@ export function prepareRequiredTestEvidenceUpload({
             classification.gateId,
             classification.diagnosticPath,
           );
-      const outputRelativePath = normalizePath(
-        path.posix.join(stagingUploadRoot, retainedWithinUpload),
-      );
-      const outputAbsolutePath = repositoryPath(
-        root,
-        outputRelativePath,
-        "sanitized required-test evidence output",
-      );
-      mkdirSync(path.dirname(outputAbsolutePath), { recursive: true });
-      writeFileSync(outputAbsolutePath, sanitizedText);
+      retainedText.set(retainedWithinUpload, sanitizedText);
       included.push(retainedWithinUpload);
     }
-    if (requiredGateIds.size === 0) {
-      throw new Error("required-test evidence contains no mandatory structured evidence");
-    }
     const summaries = [];
-    for (const gateId of [...requiredGateIds].sort()) {
-      const gate = manifest.gates.find((candidate) => candidate.id === gateId);
-      if (
-        !gate ||
-        gate.cadence !== "advisory" ||
-        gate.blocking !== false ||
-        gate.runner !== "playwright" ||
-        gate.artifactBinding !== "none" ||
-        gate.reportPath !== `${DEFAULT_REQUIRED_TEST_EVIDENCE_ROOT}/${gateId}/evidence.json`
-      ) {
-        throw new Error(`required-test evidence ${gateId} is not a registered advisory gate`);
-      }
-      const evidencePath = `${gateId}/evidence.json`;
-      const reportPath = `${gateId}/playwright.json`;
+    {
+      const { gate, pairPath } = selection;
+      const gateId = gate.id;
+      const evidencePath = `${pairPath}/evidence.json`;
+      const reportPath = `${pairPath}/playwright.json`;
       const evidence = requiredJson.get(evidencePath);
       const report = requiredJson.get(reportPath);
       const reportBytes = requiredRawBytes.get(reportPath);
@@ -654,6 +722,7 @@ export function prepareRequiredTestEvidenceUpload({
           repositoryRoot: root,
           gate,
           gateId,
+          evidencePath,
           evidence,
           report,
           reportBytes,
@@ -677,28 +746,40 @@ export function prepareRequiredTestEvidenceUpload({
         left.path < right.path ? -1 : left.path > right.path ? 1 : 0,
       ),
       advisorySummaries: summaries,
+      selectedInvocation: {
+        evidencePath: `${selection.pairPath}/evidence.json`,
+        reportPath: `${selection.pairPath}/playwright.json`,
+        runId: summaries[0].runId ?? null,
+        sourceCommitSha,
+        sourceTreeSha: requiredJson.get(`${selection.pairPath}/evidence.json`).sourceTreeSha ?? null,
+      },
+      contentSha256: Object.fromEntries([...retainedText].map(([file, text]) => [file, sha256(text)])),
       prohibitedContentScan: "passed",
     };
-    mkdirSync(stagingRoot, { recursive: true });
-    writeFileSync(
-      path.join(stagingRoot, "retained-evidence-inventory.json"),
-      `${JSON.stringify(inventory, null, 2)}\n`,
-    );
-    auditRetainedEvidenceDirectory({
-      repositoryRoot: root,
-      evidenceRoot: stagingUploadRoot,
-      environment,
-    });
-    renameSync(stagingRoot, outputRoot);
+    physicalEvidencePath(root, uploadRoot, true);
+    mkdirSync(outputRoot, { recursive: true });
+    physicalEvidencePath(root, uploadRoot);
+    stagingRoot = mkdtempSync(path.join(outputRoot, "attempt-"));
+    const archiveRoot = normalizePath(path.relative(root, stagingRoot));
+    for (const [file, text] of retainedText) {
+      const destination = physicalEvidencePath(root, `${archiveRoot}/${file}`, true);
+      mkdirSync(path.dirname(destination), { recursive: true });
+      physicalEvidencePath(root, `${archiveRoot}/${file}`, true);
+      writeFileSync(destination, text, { flag: "wx" });
+    }
+    writeFileSync(path.join(stagingRoot, "retained-evidence-inventory.json"),
+      `${JSON.stringify(inventory, null, 2)}\n`, { flag: "wx" });
     const { archiveEntries: retainedFiles } = verifyRequiredTestEvidenceArchive({
-      repositoryRoot: root,
-      archiveRoot: uploadRoot,
-      environment,
+      repositoryRoot: root, archiveRoot, environment,
     });
-    return { included, omitted, retainedFiles };
+    const currentFiles = snapshotAdvisoryInvocation(root, selection.directory);
+    if (currentFiles.size !== inputFiles.size || [...inputFiles].some(([file, hash]) =>
+      currentFiles.get(file) !== hash)) {
+      throw new Error("Selected invocation changed during upload preparation.");
+    }
+    return { archiveRoot, included, omitted, retainedFiles };
   } catch (error) {
-    rmSync(stagingRoot, { recursive: true, force: true });
-    rmSync(outputRoot, { recursive: true, force: true });
+    if (stagingRoot) rmSync(stagingRoot, { recursive: true, force: true });
     throw error;
   }
 }
@@ -842,6 +923,51 @@ function extractWorkflowJob(workflow, jobName) {
     return workflow.slice(start, next?.index ?? workflow.length);
   }
   return "";
+}
+
+export function validateAdvisoryWorkflowHandoff(workflow) {
+  const issues = [];
+  let job;
+  try { job = parseYaml(workflow)?.jobs?.["e2e-full"]; }
+  catch { return ["advisory handoff workflow must be valid YAML"]; }
+  const steps = job?.steps;
+  if (!Array.isArray(steps) || steps.some((step) => !step || typeof step !== "object")) {
+    return ["advisory handoff requires the e2e-full steps"];
+  }
+  const check = (valid, message) => { if (!valid) issues.push(`advisory handoff ${message}`); };
+  const named = (name) => {
+    const matches = steps.filter((step) => step.name === name);
+    check(matches.length === 1, `requires exactly one ${name} step`);
+    return matches[0];
+  };
+  const producer = named("Run advisory full E2E inventory");
+  const preparation = named("Prepare portable advisory evidence");
+  const upload = named("Upload test results");
+  const ids = steps.map((step) => step.id).filter((id) => id !== undefined);
+  check(ids.every((id) => typeof id === "string" && /^[A-Za-z_][A-Za-z0-9_-]*$/.test(id)) &&
+    new Set(ids).size === ids.length, "step IDs must be valid and unique");
+  if (!producer || !preparation || !upload) return issues;
+  check(Boolean(producer.id) && Boolean(preparation.id), "producer and preparation require step IDs");
+  check(steps.indexOf(producer) < steps.indexOf(preparation) && steps.indexOf(preparation) < steps.indexOf(upload),
+    "must run producer, preparation, then upload in order");
+  check(producer.run === "npm run test:e2e:advisory" && producer.if === undefined && producer.uses === undefined,
+    "producer must retain its canonical command and status propagation");
+  check(job["continue-on-error"] === undefined &&
+    [producer, preparation, upload].every((step) => step["continue-on-error"] === undefined),
+    "must preserve actual failures without continue-on-error");
+  check(preparation.env?.EVIDENCE_PATH === `\${{ steps.${producer.id}.outputs.evidence_path }}`,
+    "EVIDENCE_PATH must reference the actual producer evidence_path without fallback");
+  check(preparation.run === 'npm run --silent evidence:required-tests:prepare-upload -- "$EVIDENCE_PATH"' &&
+    preparation.uses === undefined, "preparation must pass one quoted selected path to the existing CLI");
+  check(preparation.if === `always() && !cancelled() && (steps.${producer.id}.outcome == 'success' || steps.${producer.id}.outcome == 'failure')`,
+    "preparation must run after success or failure, excluding skipped/cancelled execution");
+  check(upload.if === `always() && !cancelled() && steps.${preparation.id}.outcome == 'success' && steps.${preparation.id}.outputs.archive_root != ''`,
+    "upload must require non-cancellation, preparation outcome success, and nonempty archive_root");
+  check(upload.with?.path === `\${{ steps.${preparation.id}.outputs.archive_root }}`,
+    "upload path must be only the actual preparation archive_root without fallback");
+  check(upload.uses === "actions/upload-artifact@v4" && upload.run === undefined &&
+    upload.with?.["if-no-files-found"] === "error", "upload must retain its action and nonempty bundle contract");
+  return issues;
 }
 
 function validatePlaywrightInvocation(gate, repositoryRoot, issues) {
@@ -1520,6 +1646,9 @@ export function validateRequiredTestRepository({
       issues.push(`CI workflow ${workflowRelativePath} for gate ${gate.id} is missing`);
       continue;
     }
+    if (gate.id === "advisory.full-e2e" && workflowRelativePath === ".github/workflows/full-advisory-e2e.yml") {
+      issues.push(...validateAdvisoryWorkflowHandoff(workflow));
+    }
     const job = extractWorkflowJob(workflow, gate.ci.job);
     if (!job) {
       issues.push(
@@ -1835,6 +1964,7 @@ export function validateRequiredTestReport({
   validateRepository = true,
   expectedSourceCommitSha,
   expectedArtifactSha256,
+  expectedWindowOpeningRunId,
   environment = process.env,
 }) {
   let repository;
@@ -2043,6 +2173,12 @@ export function validateRequiredTestReport({
       issues.push(`gate ${gateId} report belongs to another artifact`);
     }
   }
+  if (requireMetadata) {
+    try { assertWindowOpeningReportContext(report.config?.metadata, gateId, {
+      repositoryRoot, config: report.config, expectedRunId: expectedWindowOpeningRunId,
+    }); }
+    catch (error) { issues.push(error.message); }
+  }
   const secretFields = sensitiveKeys(report);
   if (secretFields.length > 0) {
     issues.push(`gate ${gateId} report contains secret-bearing fields: ${secretFields.join(", ")}`);
@@ -2191,7 +2327,12 @@ export function validateRequiredTestEvidence({
   }
   let report = null;
   try {
-    if (evidence.report?.path !== reportPathForGate(gate)) {
+    const run = isCanonicalWindowOpeningOwner(gateId)
+      ? readCanonicalWindowOpeningRun(root, gateId, evidence.runId) : null;
+    if (run && (evidencePath !== run.evidencePath || evidence.sourceTreeSha !== run.sourceTreeSha)) {
+      throw new Error(`gate ${gateId} evidence belongs to another run or source tree`);
+    }
+    if (evidence.report?.path !== (run?.reportPath ?? reportPathForGate(gate))) {
       issues.push(`gate ${gateId} evidence report path is not canonical`);
     }
     const reportAbsolutePath = repositoryPath(root, evidence.report?.path, "required-test report path");
@@ -2221,6 +2362,7 @@ export function validateRequiredTestEvidence({
       requireMetadata: true,
       expectedSourceCommitSha: evidence.sourceCommitSha,
       expectedArtifactSha256: evidence.artifactSha256 ?? undefined,
+      expectedWindowOpeningRunId: evidence.runId,
     });
     issues.push(...reportResult.issues);
     const reportStartedAt = report.stats?.startTime;
@@ -2301,7 +2443,20 @@ export function removeUnsafeRequiredTestArtifacts({
   reportPath,
   reportAbsolutePath: validatedReportPath,
   outputAbsolutePath: validatedOutputPath,
+  runId,
 }) {
+  if (isCanonicalWindowOpeningOwner(gateId)) {
+    const run = readCanonicalWindowOpeningRun(repositoryRoot, gateId, runId);
+    const ownedReport = path.resolve(repositoryRoot, run.reportPath);
+    if (reportPath !== run.reportPath ||
+        (validatedReportPath !== undefined && validatedReportPath !== ownedReport) ||
+        (validatedOutputPath !== undefined && validatedOutputPath !== run.outputPath)) {
+      throw new Error("Unsafe-output cleanup does not belong to the allocated run.");
+    }
+    if (existsSync(ownedReport)) rmSync(ownedReport);
+    if (existsSync(run.outputPath)) rmSync(run.outputPath, { recursive: true, force: true });
+    return;
+  }
   const reportAbsolutePath = validatedReportPath ?? repositoryPath(
     repositoryRoot,
     reportPath,
@@ -2310,7 +2465,7 @@ export function removeUnsafeRequiredTestArtifacts({
   if (existsSync(reportAbsolutePath)) rmSync(reportAbsolutePath);
   const outputPath = validatedOutputPath ?? repositoryPath(
     repositoryRoot,
-    `.local/required-test-evidence/${gateId}/playwright-output`,
+    requiredBrowserOutputDirectory(gateId),
     "unsafe required-test output path",
   );
   if (existsSync(outputPath)) rmSync(outputPath, { recursive: true, force: true });
@@ -2386,12 +2541,25 @@ export function runRequiredPlaywrightGate({
   }
   const certificationRoot =
     playwrightCertificationRoot || parentCertificationRoot;
+  const windowOpeningContext = prepareCanonicalWindowOpeningContext({
+    repositoryRoot: root, gateId, environment, sourceCommitSha, sourceTreeSha,
+  });
   let reportPath = reportPathForGate(gate);
   let evidencePath = gate.reportPath;
   let reportAbsolutePath;
   let evidenceAbsolutePath;
   let outputAbsolutePath;
-  if (certificationRoot) {
+  if (windowOpeningContext) {
+    reportPath = windowOpeningContext.reportPath;
+    evidencePath = windowOpeningContext.evidencePath;
+    reportAbsolutePath = repositoryPath(root, reportPath, "required-test report path");
+    evidenceAbsolutePath = repositoryPath(root, evidencePath, "required-test evidence path");
+    outputAbsolutePath = windowOpeningContext.outputPath;
+    console.log(`Required-test run ${windowOpeningContext.runId}: ${evidencePath}`);
+    if (environment.GITHUB_OUTPUT && gate.cadence === "advisory") {
+      appendFileSync(environment.GITHUB_OUTPUT, `evidence_path=${evidencePath}\n`);
+    }
+  } else if (certificationRoot) {
     reportPath = environment.REQUIRED_TEST_REPORT_PATH;
     evidencePath = environment.REQUIRED_TEST_EVIDENCE_PATH;
     const reportDestination = resolveRequiredTestReportPath({
@@ -2425,7 +2593,7 @@ export function runRequiredPlaywrightGate({
     evidenceAbsolutePath = repositoryPath(root, evidencePath, "required-test evidence path");
     outputAbsolutePath = repositoryPath(
       root,
-      `.local/required-test-evidence/${gateId}/playwright-output`,
+      requiredBrowserOutputDirectory(gateId),
       "required-test output path",
     );
     mkdirSync(path.dirname(reportAbsolutePath), { recursive: true });
@@ -2438,6 +2606,9 @@ export function runRequiredPlaywrightGate({
     cwd: root,
     env: {
       ...environment,
+      ...(windowOpeningContext ? {
+        WINDOW_OPENING_CANONICAL_CONTEXT: JSON.stringify(windowOpeningContext),
+      } : {}),
       REQUIRED_TEST_GATE_ID: gateId,
       REQUIRED_TEST_REPORT_PATH: reportPath,
       REQUIRED_TEST_SOURCE_COMMIT_SHA: sourceCommitSha,
@@ -2469,6 +2640,7 @@ export function runRequiredPlaywrightGate({
         requireMetadata: true,
         expectedSourceCommitSha: sourceCommitSha,
         expectedArtifactSha256: artifactSha256 ?? undefined,
+        expectedWindowOpeningRunId: windowOpeningContext?.runId,
         environment,
       });
       validationIssues.push(...result.issues);
@@ -2485,6 +2657,7 @@ export function runRequiredPlaywrightGate({
       reportPath,
       reportAbsolutePath,
       outputAbsolutePath,
+      runId: windowOpeningContext?.runId,
     });
     report = null;
     reportHash = null;
@@ -2492,6 +2665,7 @@ export function runRequiredPlaywrightGate({
   const evidence = {
     schema: REQUIRED_TEST_EVIDENCE_SCHEMA,
     gateId,
+    ...(windowOpeningContext ? { runId: windowOpeningContext.runId } : {}),
     command: gate.command,
     sourceCommitSha,
     sourceTreeSha,
@@ -2524,7 +2698,8 @@ export function runRequiredPlaywrightGate({
     result: validationIssues.length === 0 ? "passed" : "failed",
     diagnostics: validationIssues,
   };
-  writeFileSync(evidenceAbsolutePath, `${JSON.stringify(evidence, null, 2)}\n`);
+  writeFileSync(evidenceAbsolutePath, `${JSON.stringify(evidence, null, 2)}\n`,
+    windowOpeningContext ? { flag: "wx" } : undefined);
   if (validationIssues.length > 0) {
     throw new Error(validationIssues.join("; "));
   }
@@ -2546,7 +2721,7 @@ async function cli() {
   } else if (command === "verify" && process.argv[3]) {
     const manifest = loadRequiredTestManifest(repositoryRoot);
     const gate = manifest.gates.find((entry) => entry.id === process.argv[3]);
-    const evidencePath = process.argv[4] ?? gate?.reportPath;
+    const evidencePath = process.argv[4] ?? (isCanonicalWindowOpeningOwner(gate?.id) ? null : gate?.reportPath);
     if (!evidencePath) throw new Error(`gate ${process.argv[3]} has no evidence path`);
     const result = validateRequiredTestEvidence({
       repositoryRoot,
@@ -2556,19 +2731,17 @@ async function cli() {
     if (!result.valid) throw new Error(result.issues.join("; "));
     console.log(`Required-test evidence ${process.argv[3]} is valid.`);
   } else if (command === "prepare-upload") {
-    const result = prepareRequiredTestEvidenceUpload({ repositoryRoot });
-    console.log(
-      `Prepared ${result.included.length} portable required-test evidence files; omitted ${result.omitted.length} uninspectable or binary files.`,
-    );
+    if (process.argv.length !== 4) throw new Error("Select exactly one invocation: prepare-upload <recorded-evidence-path>.");
+    const result = prepareRequiredTestEvidenceUpload({ repositoryRoot, evidencePath: process.argv[3] });
+    if (process.env.GITHUB_OUTPUT) appendFileSync(process.env.GITHUB_OUTPUT, `archive_root=${result.archiveRoot}\n`);
+    console.log(result.archiveRoot);
   } else if (command === "verify-upload") {
-    const result = verifyRequiredTestEvidenceArchive({
-      repositoryRoot,
-      archiveRoot: process.argv[3] ?? DEFAULT_REQUIRED_TEST_UPLOAD_ROOT,
-    });
+    if (process.argv.length !== 4) throw new Error("Select the prepared bundle: verify-upload <archive-root>.");
+    const result = verifyRequiredTestEvidenceArchive({ repositoryRoot, archiveRoot: process.argv[3] });
     console.log(`Verified ${result.archiveEntries.length} exact required-test archive entries.`);
   } else {
     throw new Error(
-      "Usage: required-test-truthfulness.mjs check|run <gate-id>|verify <gate-id> [evidence-path]|prepare-upload|verify-upload [archive-root]",
+      "Usage: required-test-truthfulness.mjs check|run <gate-id>|verify <gate-id> [evidence-path]|prepare-upload <evidence-path>|verify-upload <archive-root>",
     );
   }
 }

@@ -1,7 +1,10 @@
 import { defineConfig, devices } from "@playwright/test";
 import path from "node:path";
 
-const baseURL = process.env.WINDOW_OPENING_BASE_URL;
+import { localWindowOpeningContext } from "./scripts/window-opening-browser-context.mjs";
+
+const executionContext = localWindowOpeningContext(process.env);
+const baseURL = executionContext.baseURL;
 const runRoot = process.env.WINDOW_OPENING_RUN_ROOT;
 if (!baseURL || !/^http:\/\/127\.0\.0\.1:\d+$/.test(baseURL)) {
   throw new Error("WINDOW_OPENING_BASE_URL must name a dedicated 127.0.0.1 port.");
@@ -12,6 +15,7 @@ if (!runRoot || !path.isAbsolute(runRoot)) {
 
 export default defineConfig({
   testDir: "./tests/e2e",
+  metadata: { windowOpeningExecution: executionContext },
   testMatch: "window-opening-corrections.spec.ts",
   timeout: 240_000,
   expect: { timeout: 20_000 },

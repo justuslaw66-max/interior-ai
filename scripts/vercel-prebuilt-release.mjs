@@ -4,7 +4,7 @@ import path from "node:path";
 import process from "node:process";
 import { spawnSync } from "node:child_process";
 import { validateRequiredTestEvidence } from "./required-test-truthfulness.mjs";
-import { verifyVercelOutputManifest } from "./vercel-output-manifest.mjs";
+import { verifyVercelOutputManifest, validateStagedVercelIdentity } from "./vercel-output-manifest.mjs";
 
 const stagedPath = path.resolve(".vercel/staged-deployment.json");
 const certificationPath = path.resolve(".vercel/gate-a3-certification.json");
@@ -63,17 +63,7 @@ export function validateGateA3CertificationEvidence({
   certifiedDeploymentUrl,
   gateId = "release.gate-a3",
 }) {
-  if (staged.artifactSha256 !== manifest.artifactSha256) {
-    throw new Error("The staged deployment does not match the current .vercel/output artifact.");
-  }
-  if (staged.gitCommit !== manifest.gitCommit) {
-    throw new Error("The staged deployment does not match the current source commit.");
-  }
-  if (certifiedDeploymentUrl !== staged.deploymentUrl) {
-    throw new Error(
-      "GATE_A3_CERTIFIED_DEPLOYMENT_URL must exactly match the recorded staged deployment URL.",
-    );
-  }
+  validateStagedVercelIdentity({ manifest, staged, certifiedDeploymentUrl });
   const evidenceResult = validateRequiredTestEvidence({
     repositoryRoot,
     gateId,

@@ -1,9 +1,7 @@
-import { execFile } from "node:child_process";
 import { createHash } from "node:crypto";
 import fs from "node:fs/promises";
 import path from "node:path";
-import { promisify } from "node:util";
-import { expect, test, type Browser, type Page, type TestInfo } from "@playwright/test";
+import { expect as baseExpect, test, type Browser, type Page, type TestInfo } from "@playwright/test";
 import mountedTestInventory from "../../scripts/window-opening-mounted-tests.json";
 import {
   cameraMotion,
@@ -14,17 +12,32 @@ import {
   type CameraState,
 } from "./window-opening-camera-settle";
 
+import {
+  assertWindowOpeningTestOwner,
+  windowOpeningCapturePaths,
+  windowOpeningPrerequisite,
+} from "../../scripts/window-opening-browser-context.mjs";
+import {
+  observeWindowOpeningLocalListener,
+  windowOpeningCaptureProvenance,
+} from "../../scripts/window-opening-capture-provenance.mjs";
+
+const expect = baseExpect.configure({ timeout: 20_000 });
+test.setTimeout(240_000);
+test.use({ viewport: { width: 1440, height: 1000 }, actionTimeout: 30_000,
+  navigationTimeout: 120_000, trace: "on" });
+
 const STORAGE_KEY = "interior-ai:v1:livingroom-design";
-const SCREENSHOT_ROOT = process.env.WINDOW_OPENING_SCREENSHOT_DIR;
-const NETWORK_EVIDENCE_PATH = process.env.WINDOW_OPENING_NETWORK_EVIDENCE_PATH;
-const RUNTIME_EVIDENCE_PATH = process.env.WINDOW_OPENING_RUNTIME_EVIDENCE_PATH;
-const SERVER_CONTEXT_PATH = process.env.WINDOW_OPENING_SERVER_CONTEXT_PATH;
-const SOURCE_IDENTITY = process.env.WINDOW_OPENING_SOURCE_IDENTITY;
-const RUN_ROOT = process.env.WINDOW_OPENING_RUN_ROOT;
-const EVIDENCE_ROOT = process.env.WINDOW_OPENING_EVIDENCE_ROOT;
+type ExecutionContext = NonNullable<ReturnType<
+  typeof import("../../scripts/window-opening-browser-context.mjs").canonicalWindowOpeningContext
+>> | ReturnType<typeof import("../../scripts/window-opening-browser-context.mjs").localWindowOpeningContext>;
+let executionContext: ExecutionContext;
+let evidenceRoot: string;
+let networkEvidencePath: string;
+let runtimeEvidencePath: string;
+let activeTestInfo: TestInfo;
 const ACTIVE_IMPORT_KEY = "interior-ai:active-floor-plan-import:v1";
 const sha256 = (value: string | Buffer) => createHash("sha256").update(value).digest("hex");
-const execFileAsync = promisify(execFile);
 const fixtureContexts = new WeakMap<Page, {
   id: string;
   sha256: string;
@@ -164,7 +177,28 @@ function attachRuntimePolicy(page: Page) {
   });
 }
 
+test.beforeAll(async ({}, testInfo) => {
+  executionContext = testInfo.config.metadata.windowOpeningExecution;
+  assertWindowOpeningTestOwner(executionContext, {
+    baseURL: testInfo.project.use.baseURL,
+    configFile: testInfo.config.configFile,
+    project: testInfo.project.name,
+  });
+  if (executionContext.owner === "local-mounted") {
+    await observeWindowOpeningLocalListener(executionContext);
+    evidenceRoot = executionContext.evidenceRoot;
+    networkEvidencePath = executionContext.networkRoot;
+    runtimeEvidencePath = executionContext.runtimeRoot;
+  } else {
+    evidenceRoot = executionContext.outputPath;
+    const runRoot = path.join(evidenceRoot, `window-opening-${executionContext.runId}`);
+    networkEvidencePath = path.join(runRoot, "analytics-interceptions");
+    runtimeEvidencePath = path.join(runRoot, "runtime-events");
+  }
+});
+
 test.beforeEach(async ({}, testInfo) => {
+  activeTestInfo = testInfo;
   const inventory = mountedTestFor(testInfo);
   activeTest = {
     id: inventory.id,
@@ -191,15 +225,15 @@ test.afterEach(async ({}, testInfo) => {
 });
 
 test.afterAll(async () => {
-  if (!NETWORK_EVIDENCE_PATH) return;
-  await fs.mkdir(NETWORK_EVIDENCE_PATH, { recursive: true });
+  if (!networkEvidencePath) return;
+  await fs.mkdir(networkEvidencePath, { recursive: true });
   await fs.writeFile(
-    path.join(NETWORK_EVIDENCE_PATH, `worker-${process.pid}.json`),
+    path.join(networkEvidencePath, `worker-${process.pid}.json`),
     `${JSON.stringify(analyticsInterceptions, null, 2)}\n`,
     { flag: "wx", mode: 0o644 }
   );
-  if (!RUNTIME_EVIDENCE_PATH) {
-    throw new Error("WINDOW_OPENING_RUNTIME_EVIDENCE_PATH is required.");
+  if (!runtimeEvidencePath) {
+    throw windowOpeningPrerequisite("runtime evidence output was not configured.");
   }
   const eventCounts = (events: typeof runtimeEvents) => ({
     consoleError: events.filter((entry) => entry.category === "consoleError").length,
@@ -208,8 +242,8 @@ test.afterAll(async () => {
     requestFailure: events.filter((entry) => entry.category === "requestFailure").length,
     responseError: events.filter((entry) => entry.category === "responseError").length,
   });
-  await fs.mkdir(RUNTIME_EVIDENCE_PATH, { recursive: true });
-  await fs.writeFile(path.join(RUNTIME_EVIDENCE_PATH, `worker-${process.pid}.json`), `${JSON.stringify({
+  await fs.mkdir(runtimeEvidencePath, { recursive: true });
+  await fs.writeFile(path.join(runtimeEvidencePath, `worker-${process.pid}.json`), `${JSON.stringify({
     schemaVersion: "window-opening-runtime-policy/v1",
     policy: "zero-unallowlisted-events",
     allowlistPolicies: [{
@@ -399,6 +433,13 @@ function room(
   };
 }
 
+function assertFixtureTarget(page: Page, pathname: string) {
+  const url = new URL(page.url());
+  if (url.origin !== executionContext.baseURL || url.pathname !== pathname) {
+    throw windowOpeningPrerequisite("fixture navigation redirected away from the configured target/route; provide the existing deployment access and authentication prerequisites.");
+  }
+}
+
 async function loadFixture(
   page: Page,
   value: ReturnType<typeof fixture>,
@@ -434,7 +475,8 @@ async function loadFixture(
     });
   });
   const health = await page.goto("/api/health", { waitUntil: "domcontentloaded" });
-  expect(health?.status()).toBe(200);
+  expect(health?.status(), "window fixture requires the owner's healthy target").toBe(200);
+  assertFixtureTarget(page, "/api/health");
   await page.evaluate(({ key, raw }) => {
     localStorage.clear();
     localStorage.setItem("__window_opening_fixture_loaded", "1");
@@ -446,9 +488,16 @@ async function loadFixture(
     localStorage.setItem("plan_guided_actions_choice_seen", "1");
   }, { key: STORAGE_KEY, raw: JSON.stringify(value) });
   const response = await page.goto(route, { waitUntil: "domcontentloaded" });
-  expect(response?.status()).toBe(200);
+  expect(response?.status(), "window fixture requires an authorized /design route").toBe(200);
+  assertFixtureTarget(page, "/design");
   await expect(page.getByTestId("scene-canvas").first()).toBeVisible();
   const debug = page.getByTestId("qa-design-layout-debug");
+  await expect.poll(async () => ({
+    layout: await debug.count(),
+    camera: Boolean(await page.locator("html").getAttribute("data-qa-camera-state")),
+    frames: Boolean(await page.locator("html").getAttribute("data-qa-camera-render-frame")),
+  }), { message: "Window-opening execution prerequisite: the selected artifact must already contain approved layout and camera QA hooks (NEXT_PUBLIC_ENABLE_QA_HOOKS=1 at build); do not substitute another artifact." })
+    .toEqual({ layout: 1, camera: true, frames: true });
   await expect(debug).toHaveAttribute("data-active-room-id", value.rooms[0].id);
   const view2d = page.locator('[data-testid="editor-view-2d"]:visible').first();
   if ((await view2d.getAttribute("aria-pressed")) !== "true") await view2d.click();
@@ -493,34 +542,6 @@ async function replaceFixture(page: Page, value: ReturnType<typeof fixture>) {
   await expect(debug).toHaveAttribute("data-view-mode", "2d");
 }
 
-async function observeListenerAtCapture(serverContext: {
-  listenerPid: number;
-  port: number;
-  serverCwd: string;
-}) {
-  const listener = await execFileAsync("lsof", [
-    "-nP", `-iTCP:${serverContext.port}`, "-sTCP:LISTEN", "-Fpcn",
-  ]);
-  const pids = listener.stdout.split("\n").filter((line) => line.startsWith("p"))
-    .map((line) => Number(line.slice(1)));
-  expect(pids).toEqual([serverContext.listenerPid]);
-  const cwdResult = await execFileAsync("lsof", [
-    "-a", "-p", String(serverContext.listenerPid), "-d", "cwd", "-Fn",
-  ]);
-  const cwd = cwdResult.stdout.split("\n").find((line) => line.startsWith("n"))?.slice(1);
-  expect(cwd).toBeTruthy();
-  expect(await fs.realpath(cwd!)).toBe(await fs.realpath(serverContext.serverCwd));
-  return {
-    observedAt: new Date().toISOString(),
-    pid: serverContext.listenerPid,
-    port: serverContext.port,
-    cwd,
-    listenerOutput: listener.stdout,
-    cwdOutput: cwdResult.stdout,
-    listenerOutputSha256: sha256(listener.stdout),
-  };
-}
-
 type CameraTransitionCapture = {
   fromScreenshotId: string;
   minimumAngleDeg: number;
@@ -532,20 +553,14 @@ type CameraTransitionCapture = {
 
 async function capture(page: Page, name: string,
   cameraTransitionRequest: CameraTransitionCapture | null = null) {
-  if (!SCREENSHOT_ROOT || !SERVER_CONTEXT_PATH || !SOURCE_IDENTITY || !RUN_ROOT || !EVIDENCE_ROOT) {
-    throw new Error("Mounted capture environment is incomplete.");
-  }
   if (!activeTest) throw new Error("Mounted capture has no active test identity.");
   const fixtureContext = fixtureContexts.get(page);
   if (!fixtureContext) throw new Error("Mounted capture has no fixture identity.");
-  const serverContextBytes = await fs.readFile(SERVER_CONTEXT_PATH);
-  const serverContext = JSON.parse(serverContextBytes.toString("utf8"));
-  if (serverContext.runRoot !== RUN_ROOT ||
-      serverContext.sourceCompleteStateIdentitySha256 !== SOURCE_IDENTITY) {
-    throw new Error("Mounted capture source or run identity does not match the server context.");
-  }
-  await fs.mkdir(SCREENSHOT_ROOT, { recursive: true });
-  const screenshotPath = path.join(SCREENSHOT_ROOT, `${name}.png`);
+  const { screenshotPath, sidecarPath, tracePath } = windowOpeningCapturePaths(executionContext, {
+    outputDir: activeTest.outputDir, testId: activeTest.id,
+    project: activeTest.project, screenshotId: name,
+  });
+  await fs.mkdir(path.dirname(screenshotPath), { recursive: true });
   const captureStartedAt = new Date().toISOString();
   const url = new URL(page.url());
   const debug = page.getByTestId("qa-design-layout-debug");
@@ -593,55 +608,26 @@ async function capture(page: Page, name: string,
     postSettleMotion,
     toCameraState: cameraState,
   } : null;
-  const listenerObservation = await observeListenerAtCapture(serverContext);
-  const serverContextRelativePath = path.relative(EVIDENCE_ROOT, SERVER_CONTEXT_PATH);
-  if (serverContextRelativePath.startsWith("..") || path.isAbsolute(serverContextRelativePath)) {
-    throw new Error("Mounted server context lies outside its evidence root.");
-  }
-  const listenerBinding = {
-    screenshotId: name,
-    serverContextSha256: sha256(serverContextBytes),
-    observedAt: listenerObservation.observedAt,
-    pid: listenerObservation.pid,
-    port: listenerObservation.port,
-    cwd: listenerObservation.cwd,
-    listenerOutputSha256: listenerObservation.listenerOutputSha256,
-  };
-  const listenerRecord = {
-    schemaVersion: "window-opening-listener-observation/v1",
-    ...listenerBinding,
-    listenerOutput: listenerObservation.listenerOutput,
-    cwdOutput: listenerObservation.cwdOutput,
-    bindingSha256: sha256(JSON.stringify(listenerBinding)),
-  };
-  const listenerRecordPath = path.join(RUN_ROOT, "listener-observations", `${name}.json`);
-  await fs.mkdir(path.dirname(listenerRecordPath), { recursive: true });
-  const listenerRecordBytes = Buffer.from(`${JSON.stringify(listenerRecord, null, 2)}\n`);
-  await fs.writeFile(listenerRecordPath, listenerRecordBytes, { flag: "wx", mode: 0o644 });
-  const listenerRecordRelativePath = path.relative(EVIDENCE_ROOT, listenerRecordPath);
-  if (listenerRecordRelativePath.startsWith("..") || path.isAbsolute(listenerRecordRelativePath)) {
-    throw new Error("Mounted listener observation lies outside its evidence root.");
-  }
+  const provenance = await windowOpeningCaptureProvenance(executionContext, name, page.url());
   const content = await page.screenshot({
     path: screenshotPath,
     fullPage: false,
   });
   const captureTimestamp = new Date().toISOString();
-  const relativePath = path.relative(EVIDENCE_ROOT, screenshotPath);
+  const relativePath = path.relative(evidenceRoot, screenshotPath);
   if (relativePath.startsWith("..") || path.isAbsolute(relativePath)) {
     throw new Error("Mounted screenshot lies outside its run root.");
   }
-  const tracePath = path.join(activeTest.outputDir, "trace.zip");
-  const sidecarPath = path.join(SCREENSHOT_ROOT, `${name}.capture.json`);
   await fs.writeFile(sidecarPath, `${JSON.stringify({
-    schemaVersion: "window-opening-screenshot-capture/v2",
+    schemaVersion: executionContext.owner === "local-mounted"
+      ? "window-opening-screenshot-capture/v2" : "window-opening-canonical-capture/v1",
+    ...provenance,
     screenshotId: name,
     test: {
       id: activeTest.id,
       title: activeTest.title,
       project: activeTest.project,
     },
-    runId: serverContext.runId,
     absolutePath: screenshotPath,
     evidenceRootRelativePath: relativePath,
     captureStartedAt,
@@ -658,42 +644,21 @@ async function capture(page: Page, name: string,
     focusedRoomId: focusRaw === "true" ? activeRoomId : null,
     cameraState,
     cameraTransitionProof,
-    listenerPid: serverContext.listenerPid,
-    launcherPid: serverContext.launcherPid,
-    serverCwd: serverContext.serverCwd,
-    serverExecutable: serverContext.serverExecutable,
-    serverPort: serverContext.port,
-    serverContext: {
-      absolutePath: SERVER_CONTEXT_PATH,
-      evidenceRootRelativePath: serverContextRelativePath,
-      sha256: sha256(serverContextBytes),
-    },
-    sourceCompleteStateIdentitySha256: SOURCE_IDENTITY,
     mime: "image/png",
     width: content.readUInt32BE(16),
     height: content.readUInt32BE(20),
     bytes: content.byteLength,
     sha256: sha256(content),
-    listenerOwnership: {
-      observedAt: listenerObservation.observedAt,
-      pid: listenerObservation.pid,
-      port: listenerObservation.port,
-      cwd: listenerObservation.cwd,
-      listenerOutputSha256: listenerObservation.listenerOutputSha256,
-      bindingSha256: listenerRecord.bindingSha256,
-      record: {
-        absolutePath: listenerRecordPath,
-        evidenceRootRelativePath: listenerRecordRelativePath,
-        bytes: listenerRecordBytes.byteLength,
-        sha256: sha256(listenerRecordBytes),
-      },
-    },
     trace: {
       testId: activeTest.id,
       absolutePath: tracePath,
-      evidenceRootRelativePath: path.relative(EVIDENCE_ROOT, tracePath),
+      evidenceRootRelativePath: path.relative(evidenceRoot, tracePath),
     },
   }, null, 2)}\n`, { flag: "wx", mode: 0o644 });
+  if (executionContext.owner !== "local-mounted") {
+    await activeTestInfo.attach(`${name}.png`, { path: screenshotPath, contentType: "image/png" });
+    await activeTestInfo.attach(`${name}.capture.json`, { path: sidecarPath, contentType: "application/json" });
+  }
   return cameraState;
 }
 

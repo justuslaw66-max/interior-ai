@@ -11,6 +11,8 @@ import {
   resolveRuntimeSmokeStartMarkerPath,
 } from "./scripts/playwright-report-path.mjs";
 
+import { assertCanonicalWindowOpeningConfiguration, canonicalWindowOpeningContext, requiredBrowserOutputDirectory } from "./scripts/window-opening-browser-context.mjs";
+
 const localBaseURL = "http://127.0.0.1:3000";
 const releaseBaseURL = process.env.PLAYWRIGHT_RELEASE_BASE_URL?.trim().replace(
   /\/+$/,
@@ -121,7 +123,17 @@ if (releaseBaseURL) {
   }
 }
 
-const baseURL = releaseBaseURL ?? localBaseURL;
+const advisoryBaseURL = requiredTestGateId === "advisory.full-e2e"
+  ? process.env.PLAYWRIGHT_ADVISORY_BASE_URL?.trim().replace(/\/+$/, "") : undefined;
+const baseURL = releaseBaseURL ?? advisoryBaseURL ?? localBaseURL;
+const windowOpeningExecution = canonicalWindowOpeningContext(
+  process.env, baseURL, requiredTestReportPath,
+);
+const outputDir = windowOpeningExecution?.outputPath ?? (productionArtifactEvidence
+  ? ".local/production-artifact-evidence/playwright-output"
+  : requiredTestGateId
+    ? requiredBrowserOutputDirectory(requiredTestGateId)
+    : "test-results");
 
 if (requiredTestGateId && !requiredTestReportPath) {
   throw new Error("REQUIRED_TEST_REPORT_PATH is required for required-test evidence.");
@@ -130,15 +142,11 @@ if (requiredTestReportPath) {
   repositoryPath(requiredTestReportPath, "Required-test report path");
 }
 
-export default defineConfig({
+const config = defineConfig({
   testDir: "./tests/e2e",
   captureGitInfo: { commit: false, diff: false },
   forbidOnly: true,
-  outputDir: productionArtifactEvidence
-    ? ".local/production-artifact-evidence/playwright-output"
-    : requiredTestGateId
-      ? `.local/required-test-evidence/${requiredTestGateId}/playwright-output`
-    : "test-results",
+  outputDir,
   fullyParallel: false,
   retries: 0,
   workers: 1,
@@ -151,6 +159,7 @@ export default defineConfig({
         ]
       : [["list"]],
   metadata: {
+    ...(windowOpeningExecution ? { windowOpeningExecution, windowOpeningTargetBaseURL: baseURL } : {}),
     gateA3ReleaseBaseURL: releaseBaseURL ?? null,
     productionArtifactEvidence,
     requiredTestEvidence: requiredTestGateId
@@ -180,7 +189,7 @@ export default defineConfig({
       use: { ...devices["Desktop Chrome"] },
     },
   ],
-  ...(releaseBaseURL
+  ...(releaseBaseURL || advisoryBaseURL
     ? {}
     : {
         webServer: {
@@ -195,3 +204,6 @@ export default defineConfig({
         },
       }),
 });
+
+assertCanonicalWindowOpeningConfiguration(windowOpeningExecution, config);
+export default config;

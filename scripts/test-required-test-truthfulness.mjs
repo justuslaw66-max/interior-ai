@@ -1,5 +1,17 @@
 import assert from "node:assert/strict";
-import { spawnSync } from "node:child_process";
+import fs from "node:fs";
+import { syncBuiltinESMExports } from "node:module";
+import { createServer } from "node:net";
+import { once } from "node:events";
+import {
+  assertWindowOpeningTestOwner, assertWindowOpeningReportContext, canonicalWindowOpeningContext,
+  localWindowOpeningContext, prepareCanonicalWindowOpeningContext,
+  windowOpeningCapturePaths,
+} from "./window-opening-browser-context.mjs";
+import {
+  observeWindowOpeningLocalListener, windowOpeningCaptureProvenance,
+} from "./window-opening-capture-provenance.mjs";
+import { spawn, spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import {
   existsSync,
@@ -7,10 +19,13 @@ import {
   mkdtempSync,
   readFileSync,
   readdirSync,
+  realpathSync,
   renameSync,
   rmSync,
   symlinkSync,
+  unlinkSync,
   writeFileSync,
+  watch,
 } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
@@ -30,11 +45,21 @@ import {
   validateRequiredTestEvidence,
   validateRequiredTestReport,
   validateRequiredTestRepository,
+  validateAdvisoryWorkflowHandoff,
 } from "./required-test-truthfulness.mjs";
 import {
   validateGateA3CertificationEvidence,
   validateGateA3PromotionCertification,
 } from "./vercel-prebuilt-release.mjs";
+
+if (!process.argv.includes("--advisory-upload-only")) {
+  await verifyWindowOpeningExecutionContracts();
+  await verifyCanonicalOutputIsolation();
+}
+if (process.argv.includes("--window-opening-context-only")) {
+  console.log("Window-opening execution-context contracts passed (synthetic artifacts; no HTTPS execution).");
+  process.exit(0);
+}
 
 function sha256(bytes) {
   return createHash("sha256").update(bytes).digest("hex");
@@ -508,11 +533,14 @@ function writeAdvisoryUploadEvidence(
 }
 
 function prepareAdvisoryUpload(context, options = {}) {
-  return prepareRequiredTestEvidenceUpload({
+  const prepared = prepareRequiredTestEvidenceUpload({
     repositoryRoot: context.root,
+    evidencePath: ".local/required-test-evidence/advisory.fixture/evidence.json",
     expectedSourceCommitSha: SOURCE_SHA,
     ...options,
   });
+  context.uploadRoot = prepared.archiveRoot;
+  return prepared;
 }
 
 function rewriteAdvisoryUploadPair(root, { mutateEvidence, mutateReport } = {}) {
@@ -527,6 +555,11 @@ function rewriteAdvisoryUploadPair(root, { mutateEvidence, mutateReport } = {}) 
   evidence.report.sha256 = sha256(reportBytes);
   mutateEvidence?.(evidence);
   write(root, evidencePath, `${JSON.stringify(evidence, null, 2)}\n`);
+}
+
+if (process.argv.includes("--advisory-upload-only")) {
+  verifyCanonicalReportHandoff();
+  process.exit(0);
 }
 
 {
@@ -552,7 +585,7 @@ function rewriteAdvisoryUploadPair(root, { mutateEvidence, mutateReport } = {}) 
   assert.equal(prepared.omitted[0]?.reasonCode, "optional-unsafe-path");
   assert.match(prepared.omitted[0]?.path ?? "", /^\.omitted\/optional-path-sha256-[0-9a-f]{64}$/);
   const inventoryText = readFileSync(
-    path.join(context.root, ".local/required-test-upload/retained-evidence-inventory.json"),
+    path.join(context.root, `${context.uploadRoot}/retained-evidence-inventory.json`),
     "utf8",
   );
   assert.equal(inventoryText.includes(unsafeFileName), false);
@@ -776,7 +809,7 @@ for (const testCase of [
   const retainedErrorContext = readFileSync(
     path.join(
       context.root,
-      ".local/required-test-upload/optional-diagnostics/advisory.fixture/failure/error-context.md",
+      `${context.uploadRoot}/optional-diagnostics/advisory.fixture/failure/error-context.md`,
     ),
     "utf8",
   );
@@ -784,7 +817,7 @@ for (const testCase of [
   assert.match(retainedErrorContext, /<WORKSPACE>/);
   const inventory = JSON.parse(
     readFileSync(
-      path.join(context.root, ".local/required-test-upload/retained-evidence-inventory.json"),
+      path.join(context.root, `${context.uploadRoot}/retained-evidence-inventory.json`),
       "utf8",
     ),
   );
@@ -799,7 +832,7 @@ for (const testCase of [
     existsSync(
       path.join(
         context.root,
-        ".local/required-test-upload/optional-diagnostics/advisory.fixture/.last-run.json",
+        `${context.uploadRoot}/optional-diagnostics/advisory.fixture/.last-run.json`,
       ),
     ),
     false,
@@ -818,7 +851,7 @@ for (const testCase of [
   );
   write(
     context.root,
-    ".local/required-test-upload/late-unsafe.log",
+    `${context.uploadRoot}/late-unsafe.log`,
     "late path /tmp/ch-0017/unsafe.log\n",
   );
   assert.throws(
@@ -837,7 +870,7 @@ for (const testCase of [
   prepareAdvisoryUpload(context);
   const downloadedRoot = ".local/downloaded-playwright-full-results";
   renameSync(
-    path.join(context.root, ".local/required-test-upload"),
+    path.join(context.root, context.uploadRoot),
     path.join(context.root, downloadedRoot),
   );
   assert.doesNotThrow(() =>
@@ -864,11 +897,11 @@ for (const testCase of [
   rmSync(
     path.join(
       context.root,
-      ".local/required-test-upload/required-test-evidence/advisory.fixture/playwright.json",
+      `${context.uploadRoot}/required-test-evidence/advisory.fixture/playwright.json`,
     ),
   );
   assert.throws(
-    () => verifyRequiredTestEvidenceArchive({ repositoryRoot: context.root }),
+    () => verifyRequiredTestEvidenceArchive({ repositoryRoot: context.root, archiveRoot: context.uploadRoot }),
     /does not exactly match the archive tree/,
   );
 }
@@ -877,9 +910,9 @@ for (const testCase of [
   const context = makeRepository();
   writeAdvisoryUploadEvidence(context.root);
   prepareAdvisoryUpload(context);
-  write(context.root, ".local/required-test-upload/.hidden.json", "{}\n");
+  write(context.root, `${context.uploadRoot}/.hidden.json`, "{}\n");
   assert.throws(
-    () => verifyRequiredTestEvidenceArchive({ repositoryRoot: context.root }),
+    () => verifyRequiredTestEvidenceArchive({ repositoryRoot: context.root, archiveRoot: context.uploadRoot }),
     /hidden path entry/,
   );
 }
@@ -2350,9 +2383,7 @@ assert.equal(
       advisoryJob.indexOf("Upload test results"),
     "advisory output must be sanitized immediately before retention",
   );
-  assert.match(advisoryJob, /npm run evidence:required-tests:prepare-upload/);
-  assert.match(advisoryJob, /path:\s*\.local\/required-test-upload\//);
-  assert.match(advisoryJob, /if-no-files-found:\s*error/);
+  verifyAdvisoryWorkflowContract(advisoryWorkflow);
   assert.doesNotMatch(advisoryJob, /\n\s+needs:\s*stable-checks/);
   assert.ok(
     advisoryJob.indexOf("Preflight advisory authentication environment") <
@@ -2475,6 +2506,837 @@ assert.equal(
     "CI workflow .github/workflows/full-advisory-e2e.yml for gate advisory.fixture is missing",
   );
 }
+
+// Installed-Playwright runner/output contracts only: no browser, app, DB or HTTPS.
+function waitForOutputBarrier(file) {
+  return new Promise((resolve, reject) => {
+    const watcher = watch(path.dirname(file), check);
+    const deadline = setTimeout(() => finish(new Error(`Output barrier missing: ${file}`)), 30_000);
+    function finish(error) { clearTimeout(deadline); watcher.close(); if (error) reject(error); else resolve(); }
+    function check() { if (existsSync(file)) finish(); }
+    watcher.on("error", finish);
+    check();
+  });
+}
+
+function outputTree(root) {
+  if (!existsSync(root)) return {};
+  const files = {};
+  const visit = (directory) => {
+    for (const entry of readdirSync(directory, { withFileTypes: true }).sort((a, b) => a.name.localeCompare(b.name))) {
+      const file = path.join(directory, entry.name);
+      if (entry.isDirectory()) visit(file);
+      else files[path.relative(root, file)] = sha256(readFileSync(file));
+    }
+  };
+  visit(root);
+  return files;
+}
+
+function writeOutputProbeFixture(root) {
+  symlinkSync(path.resolve("node_modules"), path.join(root, "node_modules"), "dir");
+  const helper = new URL("./window-opening-browser-context.mjs", import.meta.url).href;
+  write(root, "playwright.config.mjs", `
+import { appendFileSync } from 'node:fs';
+import { canonicalWindowOpeningContext, assertCanonicalWindowOpeningConfiguration } from ${JSON.stringify(helper)};
+const context = canonicalWindowOpeningContext(process.env, 'http://127.0.0.1:3000', process.env.REQUIRED_TEST_REPORT_PATH);
+const config = { testDir: './probe', workers: 1, retries: 0, timeout: 30000,
+  outputDir: context.outputPath, use: { trace: 'on' }, projects: [{ name: 'chromium' }],
+  reporter: [['list'], ['json', { outputFile: context.reportPath }]],
+  metadata: { windowOpeningExecution: context, windowOpeningTargetBaseURL: context.baseURL,
+    requiredTestEvidence: { gateId: context.owner, sourceCommitSha: context.sourceCommitSha, artifactSha256: null } } };
+if (process.env.OUTPUT_PROBE_OVERRIDE) config.outputDir = process.env.OUTPUT_PROBE_OVERRIDE;
+if (process.env.OUTPUT_PROBE_PROJECT) config.projects[0].outputDir = process.env.OUTPUT_PROBE_PROJECT;
+assertCanonicalWindowOpeningConfiguration(context, config);
+appendFileSync(context.runRoot + '-config-loads.jsonl', JSON.stringify(context) + '\\n');
+// Disposable negative control reproduces only the previous shared-output setting.
+// The normal probe always runs the production allocation and config guard.
+if (process.env.OUTPUT_PROBE_LEGACY) config.outputDir = process.cwd() + '/legacy-shared-output';
+export default config;
+`);
+  write(root, "probe/identical.spec.ts", `
+import { test, expect } from '@playwright/test';
+import { existsSync, mkdirSync, writeFileSync, watch } from 'node:fs';
+import path from 'node:path';
+test('identical synthetic output', async ({}, info) => {
+  const context = info.config.metadata.windowOpeningExecution;
+  mkdirSync(info.outputDir, { recursive: true });
+  const sentinel = info.outputPath('sentinel.txt');
+  writeFileSync(sentinel, context.runId);
+  await info.attach('identifiable-output', { path: sentinel, contentType: 'text/plain' });
+  if (process.env.OUTPUT_PROBE_BARRIER) {
+    const ready = context.runRoot + '.ready';
+    const release = context.runRoot + '.release';
+    await new Promise<void>((resolve, reject) => {
+      const watcher = watch(path.dirname(release), check);
+      const deadline = setTimeout(() => finish(new Error('controller did not release barrier')), 25000);
+      function finish(error?: Error) { clearTimeout(deadline); watcher.close(); error ? reject(error) : resolve(); }
+      function check() { if (existsSync(release)) finish(); }
+      watcher.on('error', finish);
+      writeFileSync(ready, context.runId);
+      check();
+    });
+  }
+  expect(process.env.OUTPUT_PROBE_FAIL ?? '0').toBe('0');
+});
+`);
+}
+
+function advisoryInvocationFixture() {
+  const fixture = makeRepository();
+  const root = realpathSync(fixture.root);
+  const gate = fixture.manifest.gates.find((entry) => entry.id === "advisory.fixture");
+  gate.id = "advisory.full-e2e";
+  gate.reportPath = `.local/required-test-evidence/${gate.id}/evidence.json`;
+  write(root, "scripts/required-test-manifest.json", JSON.stringify(fixture.manifest));
+  const allocate = (options = {}) => prepareCanonicalWindowOpeningContext({ repositoryRoot: root,
+    gateId: gate.id, environment: {}, sourceCommitSha: SOURCE_SHA,
+    sourceTreeSha: "3".repeat(40), ...options });
+  const complete = (run, { status = "passed", missingCoverage = false } = {}) => {
+    const report = makeReport({ artifactSha: null, sourceSha: run.sourceCommitSha, status,
+      declaredStatus: status === "passed" ? "expected" : "unexpected" });
+    report.config.projects[0].outputDir = run.outputPath;
+    report.config.metadata = { gateA3ReleaseBaseURL: null, productionArtifactEvidence: null,
+      windowOpeningExecution: run, windowOpeningTargetBaseURL: run.baseURL,
+      requiredTestEvidence: { schema: REQUIRED_TEST_EVIDENCE_SCHEMA, gateId: gate.id,
+        sourceCommitSha: run.sourceCommitSha, artifactSha256: null, releaseCandidateId: null, releaseEnvironment: null } };
+    if (missingCoverage) { report.suites = []; report.stats.expected = 0; }
+    write(root, run.reportPath, JSON.stringify(report));
+    const canonical = canonicalizeRequiredTestReport(root, run.reportPath);
+    const processExitCode = status === "passed" && !missingCoverage ? 0 : 1;
+    const result = validateRequiredTestReport({ repositoryRoot: root, gateId: gate.id, report: canonical,
+      processExitCode, expectedSourceCommitSha: run.sourceCommitSha,
+      expectedWindowOpeningRunId: run.runId, environment: {} });
+    if (processExitCode === 0) assert.deepEqual(result.issues, []);
+    write(root, run.evidencePath, JSON.stringify({ schema: REQUIRED_TEST_EVIDENCE_SCHEMA,
+      gateId: gate.id, runId: run.runId, command: gate.command, sourceCommitSha: run.sourceCommitSha,
+      sourceTreeSha: run.sourceTreeSha, artifactSha256: null, processExitCode,
+      startedAt: new Date(Date.parse(report.stats.startTime) - 100).toISOString(),
+      completedAt: new Date(Date.parse(report.stats.startTime) + 200).toISOString(),
+      report: { path: run.reportPath, sha256: sha256(readFileSync(path.join(root, run.reportPath))) },
+      complete: result.valid, result: result.valid ? "passed" : "failed", diagnostics: result.issues }));
+    const before = outputTree(run.runRoot);
+    const verified = validateRequiredTestEvidence({ repositoryRoot: root, gateId: gate.id,
+      evidencePath: run.evidencePath, expectedSourceCommitSha: run.sourceCommitSha });
+    if (result.valid) assert.deepEqual(verified.issues, []);
+    else assert.equal(verified.valid, false);
+    assert.deepEqual(outputTree(run.runRoot), before, "verification must not change the recorded run");
+    return run;
+  };
+  const prepare = (run, options = {}) => prepareRequiredTestEvidenceUpload({ repositoryRoot: root,
+    evidencePath: run?.evidencePath, expectedSourceCommitSha: SOURCE_SHA, environment: {}, ...options });
+  const verify = (prepared) => verifyRequiredTestEvidenceArchive({ repositoryRoot: root,
+    archiveRoot: prepared.archiveRoot, environment: {} });
+  return { root, gate, allocate, complete, prepare, verify };
+}
+
+function assertSelectedAdvisoryBundle(fixture, selected, excluded = []) {
+  const rawBefore = outputTree(path.join(fixture.root, ".local/required-test-evidence"));
+  const prepared = fixture.prepare(selected);
+  const { inventory } = fixture.verify(prepared);
+  assert.equal(inventory.selectedInvocation.runId, selected.runId);
+  assert.equal(inventory.selectedInvocation.sourceCommitSha, SOURCE_SHA);
+  assert.equal(inventory.advisorySummaries.length, 1);
+  for (const name of ["evidence.json", "playwright.json"]) {
+    assert.ok(prepared.included.some((file) => file.includes(selected.runId) && file.endsWith(`/${name}`)));
+  }
+  for (const run of excluded) assert.equal(JSON.stringify(inventory).includes(run.runId), false);
+  assert.deepEqual(outputTree(path.join(fixture.root, ".local/required-test-evidence")), rawBefore);
+  return prepared;
+}
+
+function withAdvisoryAssemblyWrite(intercept, callback) {
+  const original = fs.writeFileSync;
+  fs.writeFileSync = (file, ...args) => {
+    if (String(file).includes("/.local/required-test-upload/attempt-")) intercept(file, original);
+    return original(file, ...args);
+  };
+  syncBuiltinESMExports();
+  try { callback(); }
+  finally { fs.writeFileSync = original; syncBuiltinESMExports(); }
+}
+
+function verifyAdvisorySiblingSelection(kind) {
+  const fixture = advisoryInvocationFixture();
+  const { root, allocate, complete } = fixture;
+  try {
+    const a = complete(allocate({ runId: "77777777-7777-4777-8777-777777777777" }));
+    assertSelectedAdvisoryBundle(fixture, a); // A: completed A alone.
+    const siblings = [];
+    if (kind !== "historical") siblings.push(allocate({ runId: "11111111-1111-4111-8111-111111111111" }));
+    if (kind !== "active") siblings.push(complete(allocate({
+      sourceCommitSha: "4".repeat(40), runId: "ffffffff-ffff-4fff-8fff-ffffffffffff" })));
+    const prepared = assertSelectedAdvisoryBundle(fixture, a, siblings);
+    if (kind === "both") {
+      // Reinsert siblings in reverse physical creation order; selection is still A.
+      for (const run of [...siblings].reverse()) {
+        renameSync(run.runRoot, `${run.runRoot}.order`);
+        renameSync(`${run.runRoot}.order`, run.runRoot);
+      }
+      const reordered = assertSelectedAdvisoryBundle(fixture, a, siblings);
+      assert.notEqual(reordered.archiveRoot, prepared.archiveRoot);
+      fixture.verify(prepared);
+      // Unrelated malformed reports and symlinks are never read by selection.
+      write(root, `${siblings[0].reportPath}`, "malformed sibling report");
+      symlinkSync(root, path.join(siblings[0].runRoot, "unrelated-link"), "dir");
+      const siblingBytes = readFileSync(path.join(root, siblings[0].reportPath));
+      fixture.verify(fixture.prepare(a));
+      assert.deepEqual(readFileSync(path.join(root, siblings[0].reportPath)), siblingBytes);
+      unlinkSync(path.join(siblings[0].runRoot, "unrelated-link"));
+    }
+    console.log(`Advisory selection ${kind}: selected A verified; raw runs unchanged; siblings excluded.`);
+  } finally { rmSync(root, { recursive: true, force: true }); }
+}
+
+function verifyAdvisoryRejectedSelection() {
+  const fixture = advisoryInvocationFixture();
+  const { root, allocate, complete, prepare, verify } = fixture;
+  try {
+    const a = complete(allocate());
+    const previous = prepare(a);
+    const previousBytes = outputTree(path.join(root, previous.archiveRoot));
+    const unfinished = allocate();
+    const historical = complete(allocate({ sourceCommitSha: "4".repeat(40) }));
+    const b = complete(allocate());
+    const rawBefore = outputTree(path.join(root, ".local/required-test-evidence"));
+    assert.throws(() => prepare(unfinished), /missing/);
+    assert.throws(() => prepare(historical), /another source commit/);
+    assert.throws(() => prepare(), /Select one completed invocation/);
+    assert.throws(() => prepare({ evidencePath: [a.evidencePath, b.evidencePath] }), /Select one/);
+    assert.deepEqual(outputTree(path.join(root, previous.archiveRoot)), previousBytes);
+    assert.deepEqual(outputTree(path.join(root, ".local/required-test-evidence")), rawBefore);
+    const envelope = readFileSync(path.join(root, b.evidencePath));
+    const report = readFileSync(path.join(root, b.reportPath));
+    for (const corruption of ["report-path", "report-run", "envelope-run", "malformed", "missing-report", "context"]) {
+      const changed = JSON.parse(envelope);
+      if (corruption === "report-path") changed.report = JSON.parse(readFileSync(path.join(root, a.evidencePath))).report;
+      if (corruption === "envelope-run") changed.runId = a.runId;
+      if (corruption === "report-run") {
+        write(root, b.reportPath, readFileSync(path.join(root, a.reportPath)));
+        changed.report.sha256 = sha256(readFileSync(path.join(root, b.reportPath)));
+      }
+      write(root, b.evidencePath, corruption === "malformed" ? "{ truncated" : JSON.stringify(changed));
+      if (corruption === "missing-report") rmSync(path.join(root, b.reportPath));
+      const contextBytes = readFileSync(path.join(root, b.contextPath));
+      if (corruption === "context") write(root, b.contextPath, "{}");
+      assert.throws(() => prepare(b), /does not bind|another run|malformed JSON|missing|allocated context/);
+      assert.deepEqual(outputTree(path.join(root, previous.archiveRoot)), previousBytes);
+      write(root, b.reportPath, report); write(root, b.evidencePath, envelope); write(root, b.contextPath, contextBytes);
+    }
+    // Leaf and parent symlink escapes both fail before copying.
+    for (const file of [b.reportPath, b.evidencePath, b.contextPath]) {
+      const original = readFileSync(path.join(root, file));
+      rmSync(path.join(root, file)); symlinkSync(path.join(root, a.reportPath), path.join(root, file));
+      assert.throws(() => prepare(b), /symbolic link/);
+      unlinkSync(path.join(root, file)); write(root, file, original);
+    }
+    renameSync(b.runRoot, `${b.runRoot}.held`); symlinkSync(a.runRoot, b.runRoot, "dir");
+    assert.throws(() => prepare(b), /symbolic link/);
+    unlinkSync(b.runRoot); renameSync(`${b.runRoot}.held`, b.runRoot);
+    assert.deepEqual(outputTree(path.join(root, ".local/required-test-evidence")), rawBefore);
+    verify(previous);
+    console.log("Advisory invalid selection: incomplete, historical, absent, ambiguous, corrupted, substituted and symlinked inputs rejected; previous bundle unchanged.");
+  } finally { rmSync(root, { recursive: true, force: true }); }
+}
+
+function verifyAdvisoryPreparationPreservation() {
+  const fixture = advisoryInvocationFixture();
+  const { root, allocate, complete, prepare, verify } = fixture;
+  try {
+    const a = complete(allocate());
+    const previous = prepare(a);
+    const b = complete(allocate());
+    allocate(); complete(allocate({ sourceCommitSha: "4".repeat(40) }));
+    const before = outputTree(path.join(root, ".local"));
+    let writes = 0;
+    withAdvisoryAssemblyWrite(() => {
+      if (++writes === 2) throw new Error("controlled assembly write failure");
+    }, () => assert.throws(() => prepare(b), /controlled assembly write failure/));
+    assert.equal(writes, 2);
+    assert.deepEqual(outputTree(path.join(root, ".local")), before);
+    assert.deepEqual(readdirSync(path.join(root, ".local/required-test-upload")), [path.basename(previous.archiveRoot)]);
+    const uploadParent = path.join(root, ".local/required-test-upload");
+    renameSync(uploadParent, `${uploadParent}.held`);
+    write(root, ".local/outside-upload/sentinel.txt", "preserved");
+    symlinkSync(path.join(root, ".local/outside-upload"), uploadParent, "dir");
+    assert.throws(() => prepare(b), /symbolic link/);
+    assert.deepEqual(readdirSync(path.join(root, ".local/outside-upload")), ["sentinel.txt"]);
+    unlinkSync(uploadParent); renameSync(`${uploadParent}.held`, uploadParent);
+    const preparedB = assertSelectedAdvisoryBundle(fixture, b, [a]);
+    assert.notEqual(previous.archiveRoot, preparedB.archiveRoot);
+    verify(previous); verify(preparedB);
+    const preparedAgain = prepare(a);
+    assert.notEqual(previous.archiveRoot, preparedAgain.archiveRoot);
+    verify(previous); verify(preparedB); verify(preparedAgain);
+    const rawReport = readFileSync(path.join(root, b.reportPath));
+    let mutated = false;
+    withAdvisoryAssemblyWrite((_file, original) => {
+      if (!mutated) { mutated = true; original(path.join(root, b.reportPath), "{}\n"); }
+    }, () => assert.throws(() => prepare(b), /changed during upload preparation/));
+    write(root, b.reportPath, rawReport);
+    verify(previous); verify(preparedB);
+    assert.equal(readdirSync(path.join(root, ".local/required-test-upload")).length, 3);
+    // Mutations to the assembled copy fail the actual archive verifier.
+    write(root, `${preparedB.archiveRoot}/required-test-evidence/${path.relative(".local/required-test-evidence", b.reportPath)}`, "{}\n");
+    assert.throws(() => verify(preparedB), /content hashes/);
+    verify(previous);
+    console.log(`Advisory preservation: rejected/write-failed attempts preserve raw runs and previous bundles; separate destinations ${previous.archiveRoot} and ${preparedB.archiveRoot}; source/copy mutation rejected.`);
+  } finally { rmSync(root, { recursive: true, force: true }); }
+}
+
+function verifyAdvisoryFailedOutcomes() {
+  const fixture = advisoryInvocationFixture();
+  const { root, allocate, complete, prepare, verify } = fixture;
+  try {
+    complete(allocate());
+    for (const options of [{ status: "failed" }, { missingCoverage: true }]) {
+      const failed = complete(allocate(), options);
+      const { inventory } = verify(prepare(failed));
+      assert.equal(inventory.advisorySummaries[0].conclusion, "failed");
+      assert.equal(inventory.advisorySummaries[0].processExitCode, 1);
+      if (options.status) assert.equal(inventory.advisorySummaries[0].failed, 1);
+      const envelope = JSON.parse(readFileSync(path.join(root, failed.evidencePath)));
+      assert.ok(envelope.diagnostics.length > 0);
+      envelope.result = "passed"; envelope.diagnostics = [];
+      write(root, failed.evidencePath, JSON.stringify(envelope));
+      assert.throws(() => prepare(failed), /contradictory/);
+      rmSync(path.join(root, failed.reportPath));
+      assert.throws(() => prepare(failed), /missing evidence.json or playwright.json/);
+    }
+    console.log("Advisory outcomes: completed failures and missing coverage remain failed; forged passing conclusions and missing mandatory reports rejected.");
+  } finally { rmSync(root, { recursive: true, force: true }); }
+}
+
+function verifyAdvisoryUploadCli() {
+  const fixture = advisoryInvocationFixture();
+  const { root, allocate, complete, verify } = fixture;
+  try {
+    const a = complete(allocate());
+    const b = allocate();
+    const script = path.resolve("scripts/required-test-truthfulness.mjs");
+    // Only Git identity is synthetic; the real CLI/parser/preparer/verifier execute.
+    const bootstrap = `import child from "node:child_process";
+      import { syncBuiltinESMExports } from "node:module";
+      child.spawnSync = (command, args) => {
+        if (command === "git" && args.join(" ") === "rev-parse HEAD") return { status: 0, stdout: "${SOURCE_SHA}" };
+        throw new Error("Unexpected child process in report-consumer fixture");
+      };
+      syncBuiltinESMExports();
+      process.argv = [process.execPath, ${JSON.stringify(script)}, ...process.argv.slice(1)];
+      await import(${JSON.stringify(script)});`;
+    const output = path.join(root, "github-output.txt");
+    const cli = (...args) => spawnSync(process.execPath, ["--input-type=module", "-e", bootstrap, "--", ...args], {
+      cwd: root, env: { PATH: process.env.PATH, GITHUB_OUTPUT: output }, encoding: "utf8",
+    });
+    for (const args of [["prepare-upload"], ["prepare-upload", a.evidencePath, b.evidencePath],
+      ["prepare-upload", b.evidencePath]]) {
+      const result = cli(...args);
+      assert.notEqual(result.status, 0);
+      assert.equal(existsSync(output), false, "a rejected invocation cannot emit a ready path");
+    }
+    const prepared = cli("prepare-upload", a.evidencePath);
+    assert.equal(prepared.status, 0, prepared.stderr);
+    const archiveRoot = prepared.stdout.trim();
+    assert.match(archiveRoot, /^\.local\/required-test-upload\/attempt-[^/]+$/);
+    assert.equal(readFileSync(output, "utf8"), `archive_root=${archiveRoot}\n`);
+    verify({ archiveRoot });
+    const checked = cli("verify-upload", archiveRoot);
+    assert.equal(checked.status, 0, checked.stderr);
+    assert.notEqual(cli("verify-upload").status, 0);
+    console.log("Advisory CLI: explicit envelope -> verified bundle path -> verify-upload; absent/ambiguous/incomplete selections emit no ready path.");
+  } finally { rmSync(root, { recursive: true, force: true }); }
+}
+
+function verifyAdvisoryWorkflowContract(workflow) {
+  assert.deepEqual(validateAdvisoryWorkflowHandoff(workflow), []);
+  const mutations = [
+    ["duplicate producer ID", (steps) => { steps[0].id = "advisory-run"; }],
+    ["duplicate preparation ID", (steps) => { steps[0].id = "advisory-evidence"; }],
+    ["missing producer ID", (_s, producer) => { delete producer.id; }],
+    ["missing preparation ID", (_s, _p, preparation) => { delete preparation.id; }],
+    ["wrong producer", (_s, _p, preparation) => { preparation.env.EVIDENCE_PATH = "${{ steps.verify-source.outputs.evidence_path }}"; }],
+    ["wrong producer output", (_s, _p, preparation) => { preparation.env.EVIDENCE_PATH = "${{ steps.advisory-run.outputs.report_path }}"; }],
+    ["selection fallback", (_s, _p, preparation) => { preparation.env.EVIDENCE_PATH = "${{ steps.advisory-run.outputs.evidence_path || '.local/required-test-evidence' }}"; }],
+    ["unquoted selection", (_s, _p, preparation) => { preparation.run = preparation.run.replace('"$EVIDENCE_PATH"', "$EVIDENCE_PATH"); }],
+    ["success-only preparation", (_s, _p, preparation) => { preparation.if = "success()"; }],
+    ["skipped producer preparation", (_s, _p, preparation) => { preparation.if = "always() && !cancelled()"; }],
+    ["implicit upload success", (_s, _p, _e, upload) => { upload.if = upload.if.replace("always() && !cancelled() && ", ""); }],
+    ["cancelled upload", (_s, _p, _e, upload) => { upload.if = upload.if.replace("!cancelled() && ", ""); }],
+    ["conclusion instead of outcome", (_s, _p, _e, upload) => { upload.if = upload.if.replace(".outcome", ".conclusion"); }],
+    ["empty upload output", (_s, _p, _e, upload) => { upload.if = upload.if.replace(" && steps.advisory-evidence.outputs.archive_root != ''", ""); }],
+    ["wrong preparation", (_s, _p, _e, upload) => { upload.with.path = "${{ steps.advisory-run.outputs.archive_root }}"; }],
+    ["wrong preparation output", (_s, _p, _e, upload) => { upload.with.path = "${{ steps.advisory-evidence.outputs.evidence_path }}"; }],
+    ...[".local/required-test-upload/", ".local/required-test-upload/attempt-old", ".local/required-test-upload/attempt-*",
+      "${{ steps.advisory-evidence.outputs.archive_root || '.local/required-test-upload/' }}"].map((value) =>
+      [`unsafe upload ${value}`, (_s, _p, _e, upload) => { upload.with.path = value; }]),
+    ["ignored missing bundle", (_s, _p, _e, upload) => { upload.with["if-no-files-found"] = "ignore"; }],
+    ["producer failure suppression", (_s, producer) => { producer.run += " || true"; }],
+    ["preparation failure suppression", (_s, _p, preparation) => { preparation["continue-on-error"] = true; }],
+    ["reordered handoff", (steps) => { steps.reverse(); }],
+  ];
+  for (const [label, mutate] of mutations) {
+    const changed = parseYaml(workflow);
+    const steps = changed.jobs["e2e-full"].steps;
+    mutate(steps, steps.find((s) => s.id === "advisory-run"), steps.find((s) => s.id === "advisory-evidence"),
+      steps.find((s) => s.name === "Upload test results"));
+    assert.ok(validateAdvisoryWorkflowHandoff(JSON.stringify(changed)).length > 0, label);
+  }
+  console.log(`Advisory workflow contract: actual YAML accepted; ${mutations.length} broken handoffs rejected, including skipped/cancelled gates and unsafe upload selections.`);
+}
+
+function installAdvisoryWorkflowCliFixture(fixture, workflow) {
+  const { root, gate } = fixture;
+  const scripts = JSON.parse(readFileSync(path.resolve("package.json"))).scripts;
+  const fixturePackage = JSON.parse(readFileSync(path.join(root, "package.json")));
+  for (const name of ["test:e2e:advisory", "evidence:required-tests:prepare-upload"]) fixturePackage.scripts[name] = scripts[name];
+  write(root, "package.json", JSON.stringify(fixturePackage));
+  gate.packageScript = "test:e2e:advisory"; gate.command = "npm run test:e2e:advisory";
+  gate.packageClosure = packageClosure(fixturePackage.scripts, [gate.packageScript]);
+  gate.ci = { workflow: ".github/workflows/full-advisory-e2e.yml", job: "e2e-full", step: "Run advisory full E2E inventory" };
+  const manifest = JSON.parse(readFileSync(path.join(root, "scripts/required-test-manifest.json")));
+  manifest.gates = manifest.gates.map((entry) => entry.id === gate.id ? gate : entry);
+  write(root, "scripts/required-test-manifest.json", JSON.stringify(manifest));
+  write(root, gate.ci.workflow, workflow);
+  const script = path.resolve("scripts/required-test-truthfulness.mjs");
+  // Only Git identity and the Playwright child are synthetic. The actual runner,
+  // GITHUB_OUTPUT emission, shell command, npm scripts and preparation CLI execute.
+  write(root, "scripts/required-test-truthfulness.mjs", `
+import child from "node:child_process";
+import fs from "node:fs";
+import path from "node:path";
+import { syncBuiltinESMExports } from "node:module";
+const originalWrite = fs.writeFileSync;
+fs.writeFileSync = (file, ...args) => {
+  if (process.env.FIXTURE_ASSEMBLY_FAILURE && String(file).includes("/.local/required-test-upload/attempt-")) throw new Error("controlled CLI assembly failure");
+  return originalWrite(file, ...args);
+};
+child.spawnSync = (command, args, options) => {
+  if (command === "git" && args.join(" ") === "rev-parse HEAD") return { status: 0, stdout: "${SOURCE_SHA}" };
+  if (command === "git" && args.join(" ") === "rev-parse HEAD^{tree}") return { status: 0, stdout: "${"3".repeat(40)}" };
+  if (command !== "npx") throw new Error("Unexpected fixture child process");
+  const context = JSON.parse(options.env.WINDOW_OPENING_CANONICAL_CONTEXT);
+  if (fs.readFileSync(process.env.GITHUB_OUTPUT, "utf8") !== "evidence_path=" + context.evidencePath + "\\n") throw new Error("Producer output was not recorded before execution");
+  if (process.env.FIXTURE_MISSING_REPORT) return { status: 1 };
+  const report = JSON.parse(fs.readFileSync(process.env.FIXTURE_REPORT, "utf8"));
+  report.config.metadata.windowOpeningExecution = context;
+  report.config.projects[0].outputDir = context.outputPath;
+  report.stats.startTime = new Date().toISOString(); report.stats.duration = 0;
+  fs.writeFileSync(path.resolve(context.reportPath), JSON.stringify(report));
+  return { status: report.stats.unexpected ? 1 : 0 };
+};
+syncBuiltinESMExports();
+process.argv = [process.execPath, ${JSON.stringify(script)}, ...process.argv.slice(2)];
+await import(${JSON.stringify(script)});
+`);
+  assert.deepEqual(validateRequiredTestRepository({ repositoryRoot: root }).issues, []);
+}
+
+function verifyAdvisoryWorkflowShell() {
+  const fixture = advisoryInvocationFixture();
+  const { root, allocate, complete, prepare, verify } = fixture;
+  const workflow = readFileSync(path.resolve(".github/workflows/full-advisory-e2e.yml"), "utf8");
+  const steps = parseYaml(workflow).jobs["e2e-full"].steps;
+  const producer = steps.find((step) => step.id === "advisory-run");
+  const preparation = steps.find((step) => step.id === "advisory-evidence");
+  const shell = (step, output, environment = {}) => spawnSync("bash", ["--noprofile", "--norc", "-eo", "pipefail", "-c", step.run], {
+    cwd: root, env: { PATH: process.env.PATH, GITHUB_OUTPUT: output, ...environment }, encoding: "utf8",
+  });
+  let attempt = 0;
+  const prepareSelected = (evidencePath, environment = {}) => {
+    const output = path.join(root, `preparation-${attempt++}.output`);
+    const result = shell(preparation, output, { EVIDENCE_PATH: evidencePath, ...environment });
+    const values = existsSync(output) ? readFileSync(output, "utf8") : "";
+    if (result.status !== 0) { assert.equal(values, ""); return { result, archiveRoot: null }; }
+    const archiveRoot = result.stdout.trim();
+    assert.match(archiveRoot, /^\.local\/required-test-upload\/attempt-[^/]+$/);
+    assert.equal(values, `archive_root=${archiveRoot}\n`);
+    return { result, archiveRoot };
+  };
+  try {
+    installAdvisoryWorkflowCliFixture(fixture, workflow);
+    const prior = prepare(complete(allocate()));
+    const active = allocate(); const historical = complete(allocate({ sourceCommitSha: "4".repeat(40) }));
+    for (const status of ["passed", "failed", "missing"]) {
+      const template = complete(allocate(), { status: status === "failed" ? "failed" : "passed" });
+      const output = path.join(root, `producer-${status}.output`);
+      const result = shell(producer, output, { FIXTURE_REPORT: path.join(root, template.reportPath),
+        ...(status === "missing" ? { FIXTURE_MISSING_REPORT: "1" } : {}) });
+      assert.equal(result.status, status === "passed" ? 0 : 1, result.stderr);
+      const recorded = readFileSync(output, "utf8");
+      assert.match(recorded, /^evidence_path=\.local\/required-test-evidence\/advisory.full-e2e\/playwright-output\/[^/]+\/evidence.json\n$/);
+      const evidencePath = recorded.slice("evidence_path=".length).trim();
+      const before = outputTree(path.join(root, ".local"));
+      const prepared = prepareSelected(evidencePath);
+      if (status === "missing") {
+        assert.notEqual(prepared.result.status, 0); assert.equal(prepared.archiveRoot, null);
+        assert.deepEqual(outputTree(path.join(root, ".local")), before); continue;
+      }
+      assert.equal(prepared.result.status, 0, prepared.result.stderr);
+      const { inventory } = verify(prepared);
+      assert.equal(inventory.advisorySummaries[0].conclusion, status);
+      assert.equal(inventory.advisorySummaries[0].processExitCode, status === "passed" ? 0 : 1);
+      assert.equal(inventory.selectedInvocation.runId, path.basename(path.dirname(evidencePath)));
+      for (const sibling of [template, active, historical]) assert.equal(JSON.stringify(inventory).includes(sibling.runId), false);
+      const preserved = outputTree(path.join(root, ".local"));
+      const rejected = prepareSelected(evidencePath, { FIXTURE_ASSEMBLY_FAILURE: "1" });
+      assert.notEqual(rejected.result.status, 0); assert.equal(rejected.archiveRoot, null);
+      assert.match(rejected.result.stderr, /controlled CLI assembly failure/);
+      assert.deepEqual(outputTree(path.join(root, ".local")), preserved); verify(prior); verify(prepared);
+    }
+    for (const selection of ["", active.evidencePath, "missing envelope with spaces.json", `${active.evidencePath} ${historical.evidencePath}`]) {
+      const before = outputTree(path.join(root, ".local"));
+      const rejected = prepareSelected(selection);
+      assert.notEqual(rejected.result.status, 0); assert.equal(rejected.archiveRoot, null);
+      assert.doesNotMatch(rejected.result.stderr, /Select exactly one invocation/, "the shell must pass even empty/space-containing paths as one argument");
+      assert.deepEqual(outputTree(path.join(root, ".local")), before);
+    }
+    write(root, fixture.gate.ci.workflow, workflow.replace("steps.advisory-evidence.outputs.archive_root }}", "steps.advisory-run.outputs.archive_root }}"));
+    expectIssue(validateRequiredTestRepository({ repositoryRoot: root }), "upload path must be only the actual preparation archive_root");
+    console.log("Advisory workflow shell/CLI: real producer outputs precede synthetic execution; passing/failed diagnostic bundles selected; missing/incomplete inputs and injected preparation failures emit no archive_root and preserve old bundles/raw siblings. No upload action executed.");
+  } finally { rmSync(root, { recursive: true, force: true }); }
+}
+
+function verifyCanonicalReportHandoff() {
+  for (const kind of ["active", "historical", "both"]) verifyAdvisorySiblingSelection(kind);
+  verifyAdvisoryRejectedSelection();
+  verifyAdvisoryPreparationPreservation();
+  verifyAdvisoryFailedOutcomes();
+  verifyAdvisoryUploadCli();
+  verifyAdvisoryWorkflowShell();
+}
+
+async function verifyCanonicalOutputIsolation() {
+  const root = realpathSync(mkdtempSync(path.join(tmpdir(), "canonical-output-contract-")));
+  const processes = [];
+  const allocate = (runId) => prepareCanonicalWindowOpeningContext({ repositoryRoot: root,
+    gateId: "advisory.full-e2e", environment: {}, sourceCommitSha: "a".repeat(40), sourceTreeSha: "b".repeat(40), runId });
+  const start = (context, extra = {}, args = []) => {
+    const child = spawn(process.execPath, [path.resolve("node_modules/playwright/cli.js"), "test", ...args], {
+      cwd: root, env: { PATH: process.env.PATH, HOME: process.env.HOME, TMPDIR: process.env.TMPDIR,
+        REQUIRED_TEST_GATE_ID: context.owner, REQUIRED_TEST_REPORT_PATH: context.reportPath,
+        REQUIRED_TEST_SOURCE_COMMIT_SHA: context.sourceCommitSha, REQUIRED_TEST_SOURCE_TREE_SHA: context.sourceTreeSha,
+        WINDOW_OPENING_CANONICAL_CONTEXT: JSON.stringify(context), ...extra }, stdio: ["ignore", "pipe", "pipe"],
+    });
+    let output = "";
+    child.stdout.on("data", (chunk) => { output += chunk; });
+    child.stderr.on("data", (chunk) => { output += chunk; });
+    const deadline = setTimeout(() => child.kill("SIGTERM"), 40_000);
+    const done = new Promise((resolve, reject) => {
+      child.once("error", reject);
+      child.once("close", (code) => { clearTimeout(deadline); resolve({ code, output }); });
+    });
+    processes.push({ child, done });
+    return done;
+  };
+  const success = async (done) => { const result = await done; assert.equal(result.code, 0, result.output); };
+  const report = (run) => JSON.parse(readFileSync(path.join(root, run.reportPath), "utf8"));
+  const describe = (run) => {
+    const configLoads = readFileSync(run.runRoot + "-config-loads.jsonl", "utf8").trim().split("\n").map(JSON.parse);
+    for (const loaded of configLoads) assert.deepEqual(loaded, run, "every process/worker config load consumes the original allocation");
+    const traces = Object.keys(outputTree(run.outputPath)).filter((file) => file.endsWith("trace.zip"));
+    assert.equal(traces.length, 1, "installed Playwright must produce its actual trace");
+    assertWindowOpeningReportContext(report(run).config.metadata, run.owner,
+      { repositoryRoot: root, config: report(run).config, expectedRunId: run.runId });
+    return { runId: run.runId, output: run.outputPath, report: path.join(root, run.reportPath),
+      trace: path.join(run.outputPath, traces[0]), stableConfigLoads: configLoads.length, sha256ByFile: outputTree(run.runRoot) };
+  };
+  try {
+    writeOutputProbeFixture(root);
+    const a = allocate();
+    const b = allocate();
+    assert.notEqual(a.runId, b.runId);
+    assert.notEqual(a.outputPath, b.outputPath);
+    assert.notEqual(a.reportPath, b.reportPath);
+    const beforeLoad = outputTree(a.runRoot);
+    await success(start(a, {}, ["--list"]));
+    await success(start(a, {}, ["--list"]));
+    const loads = readFileSync(a.runRoot + "-config-loads.jsonl", "utf8").trim().split("\n").map(JSON.parse);
+    assert.equal(loads.length, 2);
+    assert.deepEqual(loads, [a, a], "config reads the same allocation, without replacing it");
+    assert.equal(outputTree(a.runRoot)[path.basename(a.contextPath)], beforeLoad[path.basename(a.contextPath)]);
+    await success(start(a));
+    const completeA = outputTree(a.runRoot);
+    await success(start(b));
+    assert.deepEqual(outputTree(a.runRoot), completeA, "sequential startup/completion preserves run A");
+    const sequential = [describe(a), describe(b)];
+    assert.notEqual(sequential[0].trace, sequential[1].trace);
+    assert.throws(() => allocate(a.runId), /EEXIST/);
+    assert.throws(() => allocate("../another-run"), /owner and run ID/);
+    assert.deepEqual(outputTree(a.runRoot), completeA, "collision never reuses or deletes output");
+    assert.throws(() => assertWindowOpeningReportContext(report(a).config.metadata, a.owner,
+      { repositoryRoot: root, config: report(a).config, expectedRunId: b.runId }), /another run/);
+    const immutable = path.join(root, ".vercel/output");
+    write(root, ".vercel/output/sentinel.txt", "immutable synthetic artifact");
+    const artifactBefore = outputTree(immutable);
+    for (const output of [path.dirname(a.runRoot), b.outputPath, immutable, path.join(a.outputPath, "../escape")]) {
+      const result = await start(a, { OUTPUT_PROBE_OVERRIDE: output });
+      assert.notEqual(result.code, 0);
+      assert.match(result.output, /must use the allocated run/);
+    }
+    for (const extra of [{ OUTPUT_PROBE_PROJECT: b.outputPath },
+      { PLAYWRIGHT_JSON_OUTPUT_FILE: path.join(root, b.reportPath) },
+      { PW_TEST_REPORTER: "html" },
+      { WINDOW_OPENING_CANONICAL_CONTEXT: JSON.stringify({ ...a, runId: b.runId }) },
+      { WINDOW_OPENING_CANONICAL_CONTEXT: JSON.stringify({ ...a, owner: "release.gate-a3" }) }]) {
+      assert.notEqual((await start(a, extra)).code, 0);
+    }
+    assert.notEqual((await start(a, {}, ["--output", path.dirname(a.runRoot)])).code, 0);
+    assert.notEqual((await start(a, {}, ["--reporter=json"])).code, 0);
+    assert.deepEqual(outputTree(a.runRoot), completeA, "wrong ownership is refused before startup cleanup");
+    assert.deepEqual(outputTree(immutable), artifactBefore);
+    const symlinkRun = allocate();
+    symlinkSync(b.outputPath, symlinkRun.outputPath, "dir");
+    assert.notEqual((await start(symlinkRun)).code, 0);
+    assert.throws(() => removeUnsafeRequiredTestArtifacts({ repositoryRoot: root, gateId: a.owner,
+      runId: symlinkRun.runId, reportPath: symlinkRun.reportPath }), /symlink/);
+    unlinkSync(symlinkRun.outputPath);
+    const c = allocate();
+    const d = allocate();
+    const runningC = start(c, { OUTPUT_PROBE_BARRIER: "1" });
+    await waitForOutputBarrier(c.runRoot + ".ready");
+    const activeOutput = (run) => Object.fromEntries(Object.entries(outputTree(run.outputPath)).filter(([file]) => /sentinel\.txt$|attachments\//.test(file)));
+    const activeC = activeOutput(c);
+    assert.ok(Object.keys(activeC).length > 0);
+    const runningD = start(d, { OUTPUT_PROBE_BARRIER: "1" });
+    await waitForOutputBarrier(d.runRoot + ".ready");
+    assert.deepEqual(activeOutput(c), activeC, "overlapping startup preserves active output");
+    const activeD = activeOutput(d);
+    writeFileSync(c.runRoot + ".release", "release");
+    await success(runningC);
+    assert.deepEqual(activeOutput(d), activeD, "first completion preserves active sibling");
+    const completeC = outputTree(c.runRoot);
+    writeFileSync(d.runRoot + ".release", "release");
+    await success(runningD);
+    assert.deepEqual(outputTree(c.runRoot), completeC, "second completion preserves completed sibling");
+    const overlapping = [describe(c), describe(d)];
+    const preserved = outputTree(a.runRoot);
+    const failed = allocate();
+    assert.equal((await start(failed, { OUTPUT_PROBE_FAIL: "1" })).code, 1);
+    assert.equal(report(failed).stats.unexpected, 1, "failed test retains its authoritative report");
+    describe(failed);
+    assert.throws(() => removeUnsafeRequiredTestArtifacts({ repositoryRoot: root, gateId: a.owner,
+      runId: failed.runId, reportPath: a.reportPath }), /does not belong/);
+    removeUnsafeRequiredTestArtifacts({ repositoryRoot: root, gateId: a.owner,
+      runId: failed.runId, reportPath: failed.reportPath });
+    assert.deepEqual(outputTree(failed.runRoot), { "context.json": sha256(readFileSync(path.join(root, failed.contextPath))) });
+    assert.deepEqual(outputTree(a.runRoot), preserved, "failure cleanup preserves sibling and common parent");
+    assert.deepEqual(outputTree(b.runRoot), sequential[1].sha256ByFile);
+    // Demonstrate regression sensitivity at the same installed cleanup boundary.
+    const legacyA = allocate();
+    const legacyB = allocate();
+    await success(start(legacyA, { OUTPUT_PROBE_LEGACY: "1" }));
+    const legacyOutput = path.join(root, "legacy-shared-output");
+    write(root, "legacy-shared-output/only-run-a.txt", legacyA.runId);
+    const oldA = outputTree(legacyOutput);
+    await success(start(legacyB, { OUTPUT_PROBE_LEGACY: "1" }));
+    assert.throws(() => assert.deepEqual(outputTree(legacyOutput), oldA), assert.AssertionError,
+      "the preservation regression must reject the previous shared-output behavior");
+    assert.equal(existsSync(path.join(legacyOutput, "only-run-a.txt")), false);
+    console.log("OUTPUT-ISOLATION PROOF " + JSON.stringify({ classification: "synthetic runner/output contract",
+      sequential, overlapping, stableConfigurationLoads: loads.length, collision: "refused unchanged",
+      ownership: "refused before cleanup", failureCleanup: "owned subtree only", legacyControl: "preservation assertion fails",
+      syntheticArtifactUnchanged: true, cleanup: "fixture and subprocesses removed in finally" }));
+  } finally {
+    for (const { child } of processes) if (child.exitCode === null && child.signalCode === null) child.kill("SIGTERM");
+    await Promise.allSettled(processes.map(({ done }) => done));
+    rmSync(root, { recursive: true, force: true });
+  }
+}
+
+async function verifyWindowOpeningExecutionContracts() {
+  const root = realpathSync(mkdtempSync(path.join(tmpdir(), "window-opening-context-contract-")));
+  const localRoot = path.join(root, "local");
+  mkdirSync(localRoot);
+  const server = createServer();
+  try {
+    // Synthetic capture context; the socket PID/cwd observation itself is real.
+    server.listen(0, "127.0.0.1");
+    await once(server, "listening");
+    const port = server.address().port;
+    const baseURL = `http://127.0.0.1:${port}`;
+    const localServer = { schemaVersion: "window-opening-server-context/v1", runId: "synthetic-local",
+      runRoot: localRoot, evidenceRoot: localRoot, repositoryRoot: process.cwd(),
+      serverCwd: process.cwd(), serverExecutable: process.execPath, baseUrl: baseURL,
+      listenerPid: process.pid, launcherPid: process.pid, port,
+      sourceCompleteStateIdentitySha256: "a".repeat(64) };
+    const localEnvironment = {
+      WINDOW_OPENING_BASE_URL: baseURL, WINDOW_OPENING_RUN_ROOT: localRoot,
+      WINDOW_OPENING_EVIDENCE_ROOT: localRoot,
+      WINDOW_OPENING_SCREENSHOT_DIR: path.join(localRoot, "screenshots"),
+      WINDOW_OPENING_NETWORK_EVIDENCE_PATH: path.join(localRoot, "network"),
+      WINDOW_OPENING_RUNTIME_EVIDENCE_PATH: path.join(localRoot, "runtime"),
+      WINDOW_OPENING_SERVER_CONTEXT_PATH: path.join(localRoot, "server-context.json"),
+      WINDOW_OPENING_SOURCE_IDENTITY: "a".repeat(64),
+    };
+    writeFileSync(localEnvironment.WINDOW_OPENING_SERVER_CONTEXT_PATH, JSON.stringify(localServer));
+    const local = localWindowOpeningContext(localEnvironment);
+    assertWindowOpeningTestOwner(local, { baseURL, configFile: "playwright.window-opening.config.ts", project: "chromium" });
+    const observation = await observeWindowOpeningLocalListener(local);
+    assert.equal(observation.observation.pid, process.pid);
+    const provenance = await windowOpeningCaptureProvenance(local, "synthetic-capture", `${baseURL}/design`);
+    assert.equal(provenance.listenerPid, process.pid);
+    assert.equal(provenance.serverCwd, process.cwd());
+    assert.equal(provenance.sourceCompleteStateIdentitySha256, "a".repeat(64));
+    assert.equal(sha256(readFileSync(provenance.listenerOwnership.record.absolutePath)), provenance.listenerOwnership.record.sha256);
+    for (const name of Object.keys(localEnvironment)) {
+      const missing = { ...localEnvironment };
+      delete missing[name];
+      assert.throws(() => localWindowOpeningContext(missing), /Window-opening execution prerequisite/);
+    }
+    assert.throws(() => localWindowOpeningContext({ ...localEnvironment, REQUIRED_TEST_GATE_ID: "release.gate-a3" }), /cannot consume/);
+    for (const mutation of [{ listenerPid: 1 }, { serverCwd: root, repositoryRoot: root }]) {
+      writeFileSync(localEnvironment.WINDOW_OPENING_SERVER_CONTEXT_PATH, JSON.stringify({ ...localServer, ...mutation }));
+      await assert.rejects(() => observeWindowOpeningLocalListener(localWindowOpeningContext(localEnvironment)), /missing or mismatched/);
+    }
+    writeFileSync(localEnvironment.WINDOW_OPENING_SERVER_CONTEXT_PATH, JSON.stringify(localServer));
+    await new Promise((resolve) => server.close(resolve));
+    await assert.rejects(() => observeWindowOpeningLocalListener(local), /missing or mismatched/);
+    await assert.rejects(() => windowOpeningCaptureProvenance(local, "wrong-target", "https://wrong.example.test/design"), /target origin/);
+
+    // Synthetic prebuilt output and stage record. Execute the actual physical
+    // verifier in an isolated Git fixture; this is not deployment evidence.
+    const releaseRoot = path.join(root, "release");
+    write(releaseRoot, ".gitignore", ".vercel/\n");
+    write(releaseRoot, "synthetic.txt", "synthetic artifact fixture only\n");
+    write(releaseRoot, "scripts/vercel-output-manifest.mjs", readFileSync(new URL("./vercel-output-manifest.mjs", import.meta.url)));
+    for (const args of [["init", "--quiet"], ["add", ".gitignore", "synthetic.txt", "scripts/vercel-output-manifest.mjs"],
+      ["-c", "user.name=Synthetic Contract", "-c", "user.email=synthetic@example.invalid", "commit", "--quiet", "-m", "synthetic fixture"]]) {
+      assert.equal(spawnSync("git", args, { cwd: releaseRoot }).status, 0);
+    }
+    write(releaseRoot, ".vercel/output/config.json", '{"version":3}\n');
+    write(releaseRoot, ".vercel/output/static/synthetic.txt", "synthetic output\n");
+    assert.equal(spawnSync(process.execPath, ["scripts/vercel-output-manifest.mjs"], { cwd: releaseRoot }).status, 0);
+    const manifest = JSON.parse(readFileSync(path.join(releaseRoot, ".vercel/prebuilt-manifest.json")));
+    const sourceTreeSha = spawnSync("git", ["rev-parse", "HEAD^{tree}"], { cwd: releaseRoot, encoding: "utf8" }).stdout.trim();
+    const staged = { schema: "interior-ai.vercel-staged-deployment.v1", gitCommit: manifest.gitCommit,
+      artifactSha256: manifest.artifactSha256, deploymentUrl: "https://synthetic-staged.example.test", stagedAt: new Date().toISOString() };
+    write(releaseRoot, ".vercel/staged-deployment.json", JSON.stringify(staged));
+    const environment = { PLAYWRIGHT_RELEASE_BASE_URL: staged.deploymentUrl, REQUIRED_TEST_ARTIFACT_SHA256: manifest.artifactSha256 };
+    const options = { repositoryRoot: releaseRoot, gateId: "release.gate-a3", environment,
+      sourceCommitSha: manifest.gitCommit, sourceTreeSha };
+    const release = prepareCanonicalWindowOpeningContext(options);
+    assert.equal(release.deployment.artifactSha256, manifest.artifactSha256);
+    assert.equal(release.baseURL, staged.deploymentUrl);
+    const reportMetadata = { windowOpeningExecution: release, windowOpeningTargetBaseURL: release.baseURL,
+      gateA3ReleaseBaseURL: release.baseURL, requiredTestEvidence: { gateId: release.owner,
+        sourceCommitSha: release.sourceCommitSha, artifactSha256: release.deployment.artifactSha256 } };
+    assertWindowOpeningReportContext(reportMetadata, release.owner, { repositoryRoot: releaseRoot });
+    for (const mutation of [{ windowOpeningExecution: null }, { windowOpeningTargetBaseURL: "https://wrong.example.test" },
+      { requiredTestEvidence: { ...reportMetadata.requiredTestEvidence, artifactSha256: "b".repeat(64) } }]) {
+      assert.throws(() => assertWindowOpeningReportContext({ ...reportMetadata, ...mutation }, release.owner), /canonical report/);
+    }
+    const releaseProvenance = await windowOpeningCaptureProvenance(release, "synthetic-release", `${release.baseURL}/design`);
+    assert.equal(releaseProvenance.execution.owner, "release.gate-a3");
+    assert.equal(releaseProvenance.listenerPid, undefined, "canonical release must not fabricate local application ownership");
+    const configEnvironment = { ...environment, REQUIRED_TEST_GATE_ID: release.owner,
+      REQUIRED_TEST_SOURCE_COMMIT_SHA: release.sourceCommitSha, REQUIRED_TEST_SOURCE_TREE_SHA: sourceTreeSha,
+      WINDOW_OPENING_CANONICAL_CONTEXT: JSON.stringify(release) };
+    const moduleURL = new URL("./window-opening-browser-context.mjs", import.meta.url).href;
+    const checkConfig = (contextEnvironment) => spawnSync(process.execPath, ["--input-type=module", "-e",
+      `import { canonicalWindowOpeningContext } from ${JSON.stringify(moduleURL)}; canonicalWindowOpeningContext(process.env, ${JSON.stringify(release.baseURL)}, ${JSON.stringify(release.reportPath)}, ${JSON.stringify(release.outputPath)});`],
+    { cwd: releaseRoot, env: { ...process.env, ...contextEnvironment }, encoding: "utf8" });
+    const releaseConfig = checkConfig(configEnvironment);
+    assert.equal(releaseConfig.status, 0, `config consumes independently verified physical artifact context: ${releaseConfig.stderr}`);
+    write(releaseRoot, path.relative(releaseRoot, release.outputPath) + "/synthetic-capture.json", '{"synthetic":true}\n');
+    assert.equal(checkConfig(configEnvironment).status, 0, "owned capture output must not invalidate the unchanged physical release artifact");
+    assert.notEqual(checkConfig({ ...configEnvironment, WINDOW_OPENING_CANONICAL_CONTEXT: "" }).status, 0);
+    for (const mutation of [{ baseURL: "https://wrong.example.test" }, { owner: "advisory.full-e2e" },
+      { reportPath: "other.json" }, { outputPath: path.join(root, "wrong-output") }, { sourceTreeSha: "b".repeat(40) }, { deployment: null }]) {
+      assert.notEqual(checkConfig({ ...configEnvironment, WINDOW_OPENING_CANONICAL_CONTEXT: JSON.stringify({ ...release, ...mutation }) }).status, 0);
+    }
+    for (const mutation of [{ artifactSha256: "b".repeat(64) }, { gitCommit: "b".repeat(40) },
+      { deploymentUrl: "https://wrong.example.test" }]) {
+      write(releaseRoot, ".vercel/staged-deployment.json", JSON.stringify({ ...staged, ...mutation }));
+      assert.throws(() => prepareCanonicalWindowOpeningContext(options), /execution prerequisite/);
+    }
+    write(releaseRoot, ".vercel/staged-deployment.json", JSON.stringify(staged));
+    write(releaseRoot, ".vercel/output/static/synthetic.txt", "changed output\n");
+    assert.throws(() => prepareCanonicalWindowOpeningContext(options), /prebuilt output is unavailable or invalid/);
+    assert.notEqual(checkConfig(configEnvironment).status, 0, "caller identity strings cannot replace actual output verification");
+    assert.throws(() => prepareCanonicalWindowOpeningContext({ ...options, environment: {} }), /execution prerequisite/);
+    assert.throws(() => prepareCanonicalWindowOpeningContext({ ...options, environment: { ...environment, ...localEnvironment } }), /inherited WINDOW_OPENING/);
+
+    const advisory = prepareCanonicalWindowOpeningContext({ ...options, gateId: "advisory.full-e2e",
+      environment: { PLAYWRIGHT_ADVISORY_BASE_URL: "https://synthetic-advisory.example.test" } });
+    assert.equal(advisory.deployment, null);
+    assert.equal(advisory.baseURL, "https://synthetic-advisory.example.test");
+    const advisoryEnvironment = { REQUIRED_TEST_GATE_ID: advisory.owner, REQUIRED_TEST_SOURCE_COMMIT_SHA: advisory.sourceCommitSha,
+      REQUIRED_TEST_SOURCE_TREE_SHA: advisory.sourceTreeSha, WINDOW_OPENING_CANONICAL_CONTEXT: JSON.stringify(advisory) };
+    const originalCwd = process.cwd();
+    try {
+      process.chdir(releaseRoot);
+      assert.deepEqual(canonicalWindowOpeningContext(advisoryEnvironment, advisory.baseURL, advisory.reportPath, advisory.outputPath), advisory);
+      assert.throws(() => canonicalWindowOpeningContext({ ...advisoryEnvironment, REQUIRED_TEST_GATE_ID: "release.gate-a3" }, advisory.baseURL, advisory.reportPath, advisory.outputPath), /execution prerequisite/);
+      assert.throws(() => canonicalWindowOpeningContext({ ...advisoryEnvironment, REQUIRED_TEST_ARTIFACT_SHA256: manifest.artifactSha256 }, advisory.baseURL, advisory.reportPath, advisory.outputPath), /release authority/);
+    } finally { process.chdir(originalCwd); }
+    assert.throws(() => assertWindowOpeningTestOwner(null, {}), /select test:window-opening-mounted/);
+    assert.throws(() => assertWindowOpeningTestOwner(advisory, { baseURL, configFile: "playwright.config.ts", project: "chromium" }), /differs/);
+    assertWindowOpeningTestOwner(advisory, { baseURL: advisory.baseURL, configFile: "playwright.config.ts", project: "webkit" });
+    const capture = { outputDir: path.join(advisory.outputPath, "synthetic-test"), testId: "window-opening-01", project: "chromium", screenshotId: "capture-01" };
+    const paths = [windowOpeningCapturePaths(advisory, capture),
+      windowOpeningCapturePaths(advisory, { ...capture, project: "webkit" }),
+      windowOpeningCapturePaths(advisory, { ...capture, testId: "window-opening-02" }),
+      windowOpeningCapturePaths(advisory, { ...capture, screenshotId: "capture-02" })];
+    assert.equal(new Set(paths.map((entry) => entry.screenshotPath)).size, 4);
+    assert.equal(paths[0].tracePath, path.join(capture.outputDir, "trace.zip"));
+    assert.throws(() => windowOpeningCapturePaths(advisory, { ...capture, screenshotId: "../escape" }), /invalid/);
+    mkdirSync(path.dirname(paths[0].screenshotPath), { recursive: true });
+    symlinkSync(path.join(root, "escape.png"), paths[0].screenshotPath);
+    assert.throws(() => windowOpeningCapturePaths(advisory, capture), /symlink/);
+    unlinkSync(paths[0].screenshotPath);
+    const spec = readFileSync(new URL("../tests/e2e/window-opening-corrections.spec.ts", import.meta.url), "utf8");
+    const inventory = JSON.parse(readFileSync(new URL("./window-opening-mounted-tests.json", import.meta.url)));
+    const titles = [...spec.matchAll(/^test\("([^"]+)",/gm)].map((match) => match[1]);
+    assert.deepEqual(titles, inventory.map((entry) => entry.title), "all 12 functional cases retain their fixed owner/title");
+    assert.doesNotMatch(spec, /test\.(?:skip|fixme|only)\s*\(|waitForTimeout\s*\(/);
+    const canonical = JSON.parse(readFileSync(new URL("./required-test-manifest.json", import.meta.url)));
+    for (const id of ["release.gate-a3", "advisory.full-e2e"]) {
+      const gate = canonical.gates.find((entry) => entry.id === id);
+      assert.equal(gate.requiredInventory, "browser-specs");
+      assert.deepEqual(gate.requiredProjects, ["chromium"]);
+      assert.equal(gate.playwright.config, "playwright.config.ts");
+    }
+    assert.equal(canonical.gates.find((entry) => entry.id === "release.gate-a3").blocking, true);
+    // Exercise the actual canonical config/module graph, without starting a
+    // server or browser. This catches Playwright's CJS/ESM loading boundary.
+    const currentGit = (args) => spawnSync("git", args, { cwd: process.cwd(), encoding: "utf8" }).stdout.trim();
+    const discovery = prepareCanonicalWindowOpeningContext({ repositoryRoot: process.cwd(),
+      gateId: "advisory.full-e2e", environment: {}, sourceCommitSha: currentGit(["rev-parse", "HEAD"]),
+      sourceTreeSha: currentGit(["rev-parse", "HEAD^{tree}"]) });
+    try {
+    const listed = spawnSync(path.join(process.cwd(), "node_modules/.bin/playwright"), ["test", "--list"], {
+      cwd: process.cwd(), encoding: "utf8", maxBuffer: 32 * 1024 * 1024,
+      env: { PATH: process.env.PATH, HOME: process.env.HOME, TMPDIR: process.env.TMPDIR,
+        REQUIRED_TEST_GATE_ID: discovery.owner, REQUIRED_TEST_REPORT_PATH: discovery.reportPath,
+        REQUIRED_TEST_SOURCE_COMMIT_SHA: discovery.sourceCommitSha,
+        REQUIRED_TEST_SOURCE_TREE_SHA: discovery.sourceTreeSha,
+        WINDOW_OPENING_CANONICAL_CONTEXT: JSON.stringify(discovery) },
+    });
+    assert.equal(listed.status, 0, listed.stderr);
+    const discoveryReport = JSON.parse(readFileSync(path.resolve(discovery.reportPath), "utf8"));
+    assert.deepEqual(discoveryReport.errors, []);
+    assertWindowOpeningReportContext(discoveryReport.config.metadata, discovery.owner, { config: discoveryReport.config, expectedRunId: discovery.runId });
+    const discovered = [];
+    const visit = (suite) => { discovered.push(...suite.specs ?? []); (suite.suites ?? []).forEach(visit); };
+    discoveryReport.suites.forEach(visit);
+    const windowCases = discovered.filter((entry) => entry.file.endsWith("window-opening-corrections.spec.ts"));
+    assert.deepEqual(windowCases.map((entry) => entry.title), inventory.map((entry) => entry.title));
+    assert.deepEqual(discoveryReport.config.projects.map((project) => project.name), ["chromium"]);
+    for (const entry of windowCases) {
+      assert.equal(entry.tests.length, 1);
+      assert.equal(entry.tests[0].projectName, "chromium");
+      assert.equal(entry.tests[0].timeout, 240_000);
+    }
+    console.log("Canonical discovery: all 12 window cases; Chromium; original timeouts.");
+    } finally { rmSync(discovery.runRoot, { recursive: true, force: true }); }
+
+  } finally {
+    if (server.listening) await new Promise((resolve) => server.close(resolve));
+    rmSync(root, { recursive: true, force: true });
+  }
+}
+
+verifyCanonicalReportHandoff();
 
 const realRepository = validateRequiredTestRepository({ repositoryRoot: process.cwd() });
 assert.deepEqual(realRepository.issues, [], "the checked-in required-test contract must validate itself");
