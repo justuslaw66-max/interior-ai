@@ -69,6 +69,7 @@ async function installCartEntryTrace(page: Page) {
     let observedPanel: Element | null = null;
     let lastActiveElement = document.activeElement;
     let pauseArmed = false;
+    let pauseGeneration = 0;
     const pauseWaiters: Array<() => void> = [];
     const readRect = (element: Element | null): EntryTraceRect | null => {
       if (!(element instanceof HTMLElement)) return null;
@@ -170,7 +171,36 @@ async function installCartEntryTrace(page: Page) {
       resizeObserver.observe(panel);
       record("panel-observed", panel);
     };
+    const tryPauseEntry = () => {
+      if (!pauseArmed) return;
+      const panel = document.querySelector<HTMLElement>(
+        '[data-testid="selection-tray-dialog"] > div'
+      );
+      if (panel?.parentElement?.dataset.editorDialogState !== "entering") return;
+      const animations = panel.getAnimations().filter(
+        (animation) => animation.pending || animation.playState === "running"
+      );
+      if (animations.length === 0) return;
+      const generation = pauseGeneration;
+      pauseArmed = false;
+      for (const animation of animations) {
+        animation.currentTime = 0;
+        animation.pause();
+      }
+      void Promise.all(animations.map((animation) => animation.ready)).then(() => {
+        const currentAnimations = panel.getAnimations();
+        if (generation !== pauseGeneration || !panel.isConnected ||
+          !animations.every((animation) => currentAnimations.includes(animation) &&
+            !animation.pending && animation.playState === "paused")) return;
+        if (traceWindow.__cartEntryTrace) traceWindow.__cartEntryTrace.entryPaused = true;
+        for (const resolve of pauseWaiters.splice(0)) resolve();
+        record("transition-paused", panel);
+      });
+    };
     const mutationObserver = new MutationObserver((records) => {
+      // Capture the live animation before diagnostic style/layout reads can
+      // outlast its short entry lifetime on a busy first render.
+      tryPauseEntry();
       observePanel();
       if (records.some(({ type }) => type === "attributes")) {
         record("lifecycle-change");
@@ -212,22 +242,8 @@ async function installCartEntryTrace(page: Page) {
         '[data-testid="selection-tray-dialog"] > div'
       );
       if (event.target !== panel) return;
+      if (event.type === "transitionrun") tryPauseEntry();
       record(event.type, event.target);
-      if (event.type === "transitionrun" && pauseArmed) {
-        pauseArmed = false;
-        const animations = (event.target as HTMLElement).getAnimations();
-        for (const animation of animations) {
-          animation.currentTime = 0;
-          animation.pause();
-        }
-        void Promise.all(animations.map((animation) => animation.ready)).then(() => {
-          if (traceWindow.__cartEntryTrace) {
-            traceWindow.__cartEntryTrace.entryPaused = true;
-          }
-          for (const resolve of pauseWaiters.splice(0)) resolve();
-          record("transition-paused", event.target);
-        });
-      }
     };
     const handleResize = () => record("resize");
     for (const eventName of ["focusin", "focusout"] as const) {
@@ -251,6 +267,7 @@ async function installCartEntryTrace(page: Page) {
     traceWindow.__cartEntryTrace = {
       snapshots,
       pauseNextEntry: () => {
+        pauseGeneration += 1;
         pauseArmed = true;
         if (traceWindow.__cartEntryTrace) {
           traceWindow.__cartEntryTrace.entryPaused = false;
@@ -261,6 +278,7 @@ async function installCartEntryTrace(page: Page) {
         return new Promise<void>((resolve) => pauseWaiters.push(resolve));
       },
       resumeEntry: () => {
+        pauseGeneration += 1;
         pauseArmed = false;
         const panel = document.querySelector<HTMLElement>(
           '[data-testid="selection-tray-dialog"] > div'
@@ -272,6 +290,8 @@ async function installCartEntryTrace(page: Page) {
       },
       entryPaused: false,
       stop: () => {
+        pauseGeneration += 1;
+        pauseArmed = false;
         cancelAnimationFrame(frameId);
         mutationObserver.disconnect();
         resizeObserver.disconnect();
@@ -509,6 +529,23 @@ test("a newer modal supersedes cart Escape and focus restoration", async ({ page
   const trigger = await openEditor(page, "consumer");
   await installCartEntryTrace(page);
   await armEntryPause(page);
+  // An already-ended transition must not report a pause or consume the arm.
+  const emptyTransition = await page.evaluate(async () => {
+    const shell = document.createElement("div");
+    shell.dataset.testid = "selection-tray-dialog";
+    shell.dataset.editorDialogState = "entering";
+    const panel = document.createElement("div");
+    shell.append(panel);
+    document.body.append(shell);
+    const animationCount = panel.getAnimations().length;
+    panel.dispatchEvent(new TransitionEvent("transitionrun", { bubbles: true }));
+    await Promise.resolve();
+    await Promise.resolve();
+    const entryPaused = (window as EntryTraceWindow).__cartEntryTrace?.entryPaused;
+    shell.remove();
+    return { animationCount, entryPaused };
+  });
+  expect(emptyTransition).toEqual({ animationCount: 0, entryPaused: false });
   await trigger.click();
   const cartDialog = await expectPausedEntryOwner(page);
   const generation = await cartDialog.getAttribute("data-editor-dialog-generation");
