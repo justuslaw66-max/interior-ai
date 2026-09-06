@@ -4,7 +4,7 @@ on:
   push:
     branches: [main, develop, staging]
   pull_request:
-    branches: [main, develop, staging]
+    branches: [main, develop, staging, integration/deep-clean-v1]
   workflow_dispatch:
 
 permissions:
@@ -69,8 +69,6 @@ jobs:
     env:
       CI: "true"
       CI_AUTH_FIXTURE_MODE: "1"
-      CI_AUTH_FIXTURE_RESULT_ROOT: ${{ runner.temp }}/interior-ai-auth-results
-      CI_AUTH_FIXTURE_SESSION_ROOT: ${{ runner.temp }}/interior-ai-auth-session-stable
       CI_AUTH_FIXTURE_SESSION_ID: ${{ github.run_id }}-${{ github.run_attempt }}-stable-auth-session
       CI_AUTH_FIXTURE_SESSION_NONCE: ${{ github.run_id }}-${{ github.run_attempt }}-stable-auth-nonce
       CI_AUTH_FIXTURE_SESSION_CLASSIFICATION: PRODUCTION_INELIGIBLE_SYNTHETIC_AUTH
@@ -92,6 +90,14 @@ jobs:
       STRIPE_PRICE_PRO_MONTHLY: price_gate_a3_ci_monthly
       STRIPE_PRICE_PRO_YEARLY: price_gate_a3_ci_yearly
     steps:
+      - name: Initialize runner-local auth fixture paths
+        shell: bash
+        run: |
+          set -euo pipefail
+          : "${RUNNER_TEMP:?RUNNER_TEMP is required for auth fixture paths}"
+          printf '%s\n' "CI_AUTH_FIXTURE_RESULT_ROOT=$RUNNER_TEMP/interior-ai-auth-results" >> "$GITHUB_ENV"
+          printf '%s\n' "CI_AUTH_FIXTURE_SESSION_ROOT=$RUNNER_TEMP/interior-ai-auth-session-stable" >> "$GITHUB_ENV"
+
       - uses: actions/checkout@v4
         with:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
@@ -459,8 +465,6 @@ jobs:
     env:
       CI: "true"
       CI_AUTH_FIXTURE_MODE: "1"
-      CI_AUTH_FIXTURE_RESULT_ROOT: ${{ runner.temp }}/interior-ai-auth-results
-      CI_AUTH_FIXTURE_SESSION_ROOT: ${{ runner.temp }}/interior-ai-auth-session-advisory
       CI_AUTH_FIXTURE_SESSION_ID: ${{ github.run_id }}-${{ github.run_attempt }}-advisory-auth-session
       CI_AUTH_FIXTURE_SESSION_NONCE: ${{ github.run_id }}-${{ github.run_attempt }}-advisory-auth-nonce
       CI_AUTH_FIXTURE_SESSION_CLASSIFICATION: PRODUCTION_INELIGIBLE_SYNTHETIC_AUTH
@@ -482,6 +486,14 @@ jobs:
       STRIPE_PRICE_PRO_MONTHLY: price_gate_a3_ci_monthly
       STRIPE_PRICE_PRO_YEARLY: price_gate_a3_ci_yearly
     steps:
+      - name: Initialize runner-local auth fixture paths
+        shell: bash
+        run: |
+          set -euo pipefail
+          : "${RUNNER_TEMP:?RUNNER_TEMP is required for auth fixture paths}"
+          printf '%s\n' "CI_AUTH_FIXTURE_RESULT_ROOT=$RUNNER_TEMP/interior-ai-auth-results" >> "$GITHUB_ENV"
+          printf '%s\n' "CI_AUTH_FIXTURE_SESSION_ROOT=$RUNNER_TEMP/interior-ai-auth-session-advisory" >> "$GITHUB_ENV"
+
       - uses: actions/checkout@v4
         with:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
