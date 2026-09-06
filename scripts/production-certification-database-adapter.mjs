@@ -104,7 +104,7 @@ export class CertificationPostgresAdapter {
           WHERE r.rolname = current_user`,
       );
       const database = await client.query(
-        "SELECT datname FROM pg_database WHERE datname = $1",
+        "SELECT oid, datname FROM pg_database WHERE datname = $1",
         [databaseName],
       );
       const row = server.rows[0];
@@ -130,36 +130,44 @@ export class CertificationPostgresAdapter {
           : "local-createdb",
         canCreateDatabase: true,
         targetExists: database.rowCount !== 0,
+        databaseOid: database.rowCount ? Number(database.rows[0].oid) : null,
       };
     });
   }
 
   async createDatabase(databaseName) {
     const identifier = quotedIdentifier(databaseName);
-    return withClient(this.adminUrl, async (client) => {
-      const before = await client.query(
-        "SELECT 1 FROM pg_database WHERE datname = $1",
-        [databaseName],
-      );
-      if (before.rowCount !== 0) {
-        throw new Error("generated certification database already exists");
-      }
-      try {
+    let outcome = "not-created";
+    let databaseOid = null;
+    try {
+      return await withClient(this.adminUrl, async (client) => {
+        const before = await client.query(
+          "SELECT 1 FROM pg_database WHERE datname = $1", [databaseName],
+        );
+        if (before.rowCount !== 0) {
+          throw new Error("generated certification database already exists");
+        }
+        outcome = "ambiguous";
         await client.query(`CREATE DATABASE ${identifier}`);
-      } catch (error) {
-        error.databaseCreateOutcome =
-          error?.code === "42P04" ? "not-created" : "ambiguous";
-        throw error;
-      }
-      const after = await client.query(
-        "SELECT 1 FROM pg_database WHERE datname = $1",
-        [databaseName],
-      );
-      if (after.rowCount !== 1) {
-        throw new Error("generated certification database creation was not observed");
-      }
-      return { created: true };
-    });
+        outcome = "created";
+        const after = await client.query(
+          "SELECT oid FROM pg_database WHERE datname = $1", [databaseName],
+        );
+        if (after.rowCount !== 1) {
+          throw new Error("generated certification database creation was not observed");
+        }
+        databaseOid = Number(after.rows[0].oid);
+        if (!Number.isSafeInteger(databaseOid) || databaseOid <= 0) {
+          throw new Error("created database catalog identity is invalid");
+        }
+        return { created: true, databaseOid };
+      });
+    } catch (error) {
+      error.databaseOid = databaseOid;
+      error.databaseCreateOutcome = outcome === "ambiguous" && error?.code === "42P04"
+        ? "not-created" : outcome;
+      throw error;
+    }
   }
 
   async createStageRole({ databaseName, roleName, password }) {
@@ -168,6 +176,8 @@ export class CertificationPostgresAdapter {
     if (!/^[a-f0-9]{64}$/.test(password)) {
       throw new Error("certification database stage credential is malformed");
     }
+    let outcome = "not-created";
+    let roleOid = null;
     try {
       await withClient(this.adminUrl, async (client) => {
         const existing = await client.query(
@@ -180,60 +190,68 @@ export class CertificationPostgresAdapter {
             { stageRoleCreateOutcome: "not-created" },
           );
         }
+        outcome = "ambiguous";
         await client.query(
           `CREATE ROLE ${roleIdentifier} LOGIN PASSWORD '${password}' NOSUPERUSER NOCREATEDB NOCREATEROLE NOINHERIT NOREPLICATION NOBYPASSRLS`,
         );
+        outcome = "created";
+        const created = await client.query("SELECT oid FROM pg_roles WHERE rolname = $1", [roleName]);
+        roleOid = created.rowCount === 1 ? Number(created.rows[0].oid) : null;
+        if (!Number.isSafeInteger(roleOid) || roleOid <= 0) {
+          throw new Error("created role catalog identity was not recorded");
+        }
         await client.query(`GRANT CONNECT ON DATABASE ${databaseIdentifier} TO ${roleIdentifier}`);
       });
-    } catch (error) {
-      if (error?.code === "42710" && !error.stageRoleCreateOutcome) {
-        error.stageRoleCreateOutcome = "not-created";
+      await withClient(this.targetUrl(databaseName), async (client) => {
+        await client.query(`GRANT USAGE ON SCHEMA public TO ${roleIdentifier}`);
+        await client.query(
+          `GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO ${roleIdentifier}`,
+        );
+        await client.query(
+          `GRANT USAGE, SELECT, UPDATE ON ALL SEQUENCES IN SCHEMA public TO ${roleIdentifier}`,
+        );
+      });
+      const scopedUrl = new URL(this.targetUrl(databaseName));
+      scopedUrl.username = roleName;
+      scopedUrl.password = password;
+      const verified = await withClient(scopedUrl.toString(), async (client) => {
+        const result = await client.query(
+          `SELECT current_user AS role, rolsuper, rolcreatedb, rolcreaterole,
+                  rolreplication, rolbypassrls
+             FROM pg_roles
+            WHERE rolname = current_user`,
+        );
+        return result.rows[0];
+      });
+      if (
+        verified?.role !== roleName ||
+        verified?.rolsuper !== false ||
+        verified?.rolcreatedb !== false ||
+        verified?.rolcreaterole !== false ||
+        verified?.rolreplication !== false ||
+        verified?.rolbypassrls !== false
+      ) {
+        throw new Error("certification database stage role retained admin capability");
       }
+      return {
+        created: true,
+        roleOid,
+        classification: "stage-login-no-admin",
+        adminCapabilities: false,
+      };
+    } catch (error) {
+      error.roleOid = roleOid;
+      error.stageRoleCreateOutcome = outcome === "ambiguous" && error?.code === "42710"
+        ? "not-created" : outcome;
       throw error;
     }
-    await withClient(this.targetUrl(databaseName), async (client) => {
-      await client.query(`GRANT USAGE ON SCHEMA public TO ${roleIdentifier}`);
-      await client.query(
-        `GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO ${roleIdentifier}`,
-      );
-      await client.query(
-        `GRANT USAGE, SELECT, UPDATE ON ALL SEQUENCES IN SCHEMA public TO ${roleIdentifier}`,
-      );
-    });
-    const scopedUrl = new URL(this.targetUrl(databaseName));
-    scopedUrl.username = roleName;
-    scopedUrl.password = password;
-    const verified = await withClient(scopedUrl.toString(), async (client) => {
-      const result = await client.query(
-        `SELECT current_user AS role, rolsuper, rolcreatedb, rolcreaterole,
-                rolreplication, rolbypassrls
-           FROM pg_roles
-          WHERE rolname = current_user`,
-      );
-      return result.rows[0];
-    });
-    if (
-      verified?.role !== roleName ||
-      verified?.rolsuper !== false ||
-      verified?.rolcreatedb !== false ||
-      verified?.rolcreaterole !== false ||
-      verified?.rolreplication !== false ||
-      verified?.rolbypassrls !== false
-    ) {
-      throw new Error("certification database stage role retained admin capability");
-    }
-    return {
-      created: true,
-      classification: "stage-login-no-admin",
-      adminCapabilities: false,
-    };
   }
 
   async inspectStageRole(roleName) {
     quotedStageRole(roleName);
     return withClient(this.adminUrl, async (client) => {
       const result = await client.query(
-        `SELECT rolsuper, rolcreatedb, rolcreaterole, rolreplication, rolbypassrls
+        `SELECT oid, rolsuper, rolcreatedb, rolcreaterole, rolreplication, rolbypassrls
            FROM pg_roles
           WHERE rolname = $1`,
         [roleName],
@@ -241,6 +259,7 @@ export class CertificationPostgresAdapter {
       const row = result.rows[0];
       return {
         exists: result.rowCount === 1,
+        roleOid: row ? Number(row.oid) : null,
         adminCapabilities: row
           ? row.rolsuper === true ||
             row.rolcreatedb === true ||
@@ -252,14 +271,22 @@ export class CertificationPostgresAdapter {
     });
   }
 
-  async dropStageRole(roleName) {
+  async dropStageRole(roleName, expectedOid) {
+    if (!Number.isSafeInteger(expectedOid) || expectedOid <= 0) {
+      throw new Error("role cleanup requires its recorded catalog identity");
+    }
     const roleIdentifier = quotedStageRole(roleName);
     return withClient(this.adminUrl, async (client) => {
       const existing = await client.query(
-        "SELECT 1 FROM pg_roles WHERE rolname = $1",
+        "SELECT oid FROM pg_roles WHERE rolname = $1",
         [roleName],
       );
       if (existing.rowCount === 0) return { dropped: false, alreadyAbsent: true };
+      if (Number(existing.rows[0].oid) !== expectedOid) {
+        throw new Error("stage role catalog identity changed; replacement is preserved");
+      }
+      const sessions = await client.query("SELECT pid FROM pg_stat_activity WHERE usesysid = $1", [expectedOid]);
+      if (sessions.rowCount !== 0) throw new Error("owned stage role still has connections; no sessions were terminated");
       await client.query(`DROP ROLE ${roleIdentifier}`);
       return { dropped: true, alreadyAbsent: false };
     });
@@ -417,56 +444,45 @@ export class CertificationPostgresAdapter {
     });
   }
 
-  async terminateTargetSessions(databaseName) {
-    assertUnprotectedDatabaseName(databaseName);
+  async stageRoleSessions(roleName, roleOid) {
+    quotedStageRole(roleName);
+    if (!Number.isSafeInteger(roleOid) || roleOid <= 0) {
+      throw new Error("role session inspection requires its recorded catalog identity");
+    }
     return withClient(this.adminUrl, async (client) => {
-      const before = await client.query(
-        `SELECT pid
-           FROM pg_stat_activity
-          WHERE datname = $1 AND pid <> pg_backend_pid()
-          ORDER BY pid`,
-        [databaseName],
+      const result = await client.query(
+        `SELECT pid, usename, datname, application_name, client_addr, state, backend_start
+           FROM pg_stat_activity WHERE usesysid = $1 ORDER BY pid`, [roleOid],
       );
-      const pids = before.rows.map((row) => Number(row.pid));
-      const terminated = [];
-      for (const pid of pids) {
-        const result = await client.query(
-          `SELECT pg_terminate_backend(pid) AS terminated
-             FROM pg_stat_activity
-            WHERE datname = $1 AND pid = $2 AND pid <> pg_backend_pid()`,
-          [databaseName, pid],
-        );
-        if (result.rows[0]?.terminated === true) terminated.push(pid);
-      }
-      let remainingSessionCount = pids.length;
-      for (let attempt = 0; attempt < 20 && remainingSessionCount > 0; attempt += 1) {
-        const after = await client.query(
-          `SELECT COUNT(*)::int AS count
-             FROM pg_stat_activity
-            WHERE datname = $1 AND pid <> pg_backend_pid()`,
-          [databaseName],
-        );
-        remainingSessionCount = Number(after.rows[0]?.count ?? 0);
-        if (remainingSessionCount > 0) {
-          await new Promise((resolve) => setTimeout(resolve, 25));
-        }
-      }
-      return {
-        matchedSessionCount: pids.length,
-        terminatedPids: terminated,
-        remainingSessionCount,
-      };
+      return result.rows.map((row) => ({ ...safeSession(row), database: row.datname }));
     });
   }
 
-  async dropDatabase(databaseName) {
+  async terminateTargetSessions(databaseName) {
+    // Owners close their clients and processes before cleanup. A database name
+    // does not prove session ownership, so any remaining connection blocks drop.
+    const sessions = await this.targetSessions(databaseName);
+    return {
+      matchedSessionCount: sessions.length,
+      terminatedPids: [],
+      remainingSessionCount: sessions.length,
+    };
+  }
+
+  async dropDatabase(databaseName, expectedOid) {
+    if (!Number.isSafeInteger(expectedOid) || expectedOid <= 0) {
+      throw new Error("database cleanup requires its recorded catalog identity");
+    }
     const identifier = quotedIdentifier(databaseName);
     return withClient(this.adminUrl, async (client) => {
       const existing = await client.query(
-        "SELECT 1 FROM pg_database WHERE datname = $1",
+        "SELECT oid FROM pg_database WHERE datname = $1",
         [databaseName],
       );
       if (existing.rowCount === 0) return { dropped: false, alreadyAbsent: true };
+      if (Number(existing.rows[0].oid) !== expectedOid) {
+        throw new Error("database catalog identity changed; replacement is preserved");
+      }
       const sessions = await client.query(
         "SELECT 1 FROM pg_stat_activity WHERE datname = $1 AND pid <> pg_backend_pid()",
         [databaseName],

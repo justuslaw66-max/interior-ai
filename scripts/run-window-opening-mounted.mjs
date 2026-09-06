@@ -6,6 +6,7 @@ import net from "node:net";
 import path from "node:path";
 import { finished } from "node:stream/promises";
 import { Client } from "pg";
+import { dropOwnedWindowOpeningDatabase } from "./provision-gate-a3-database.mjs";
 import { buildWindowOpeningChildEnvironment } from "./window-opening-child-environment.mjs";
 import { collectWorkingTreeIdentity } from "./window-opening-evidence-manifest.mjs";
 import { verifyWindowOpeningMountedReport } from "./window-opening-mounted-test-contract.mjs";
@@ -31,9 +32,9 @@ if (runRelativeToEvidence.startsWith("..") || path.isAbsolute(runRelativeToEvide
   throw new Error("Mounted run root must be inside WINDOW_OPENING_EVIDENCE_ROOT.");
 }
 const databaseName = `interior_ai_window_opening_evidence_test_${runId
-  .toLowerCase().replace(/[^a-z0-9]/g, "").slice(-28)}`;
+  .toLowerCase().replace(/[^a-z0-9]/g, "").slice(-20)}`;
 const databaseUrl = `postgresql://justus@127.0.0.1:5432/${databaseName}`;
-const adminUrl = "postgresql://justus@127.0.0.1:5432/postgres";
+const databaseReceiptPath = path.join(runRoot, "database-created.json");
 const authSecret = randomBytes(48).toString("base64url");
 const authFixtureNonce = randomBytes(16).toString("hex");
 const result = {
@@ -57,7 +58,7 @@ const result = {
 };
 let server = null;
 let serverExit = null;
-let databaseMayExist = false;
+let databaseProvisionAttempted = false;
 let listenerPid = null;
 let launcherPid = null;
 
@@ -188,18 +189,14 @@ async function databaseFingerprint() {
   }
 }
 
-async function dropDatabase() {
-  const admin = new Client({ connectionString: adminUrl, connectionTimeoutMillis: 10_000 });
-  await admin.connect();
-  try {
-    await admin.query(
-      "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = $1 AND pid <> pg_backend_pid()",
-      [databaseName]
-    );
-    await admin.query(`DROP DATABASE IF EXISTS ${quoteIdentifier(databaseName)}`);
-  }
-  finally { await admin.end(); }
-  result.database.dropped = true;
+async function dropDatabase({ requireOwned = true } = {}) {
+  const cleanup = await dropOwnedWindowOpeningDatabase({
+    databaseUrl, receiptPath: databaseReceiptPath, ownerId: runId,
+  });
+  result.database.creationReceiptPath = databaseReceiptPath;
+  result.database.cleanup = cleanup;
+  result.database.dropped = cleanup.dropped === true;
+  if (requireOwned && !cleanup.owned) throw new Error("Database creation ownership was not recorded.");
 }
 
 function tableDeltas(before, after) {
@@ -265,8 +262,8 @@ try {
       },
     },
   });
-  databaseMayExist = true;
-  await runLogged(process.execPath, ["scripts/provision-gate-a3-database.mjs"], {
+  databaseProvisionAttempted = true;
+  await runLogged(process.execPath, ["scripts/provision-gate-a3-database.mjs", "--create-owned-window", databaseReceiptPath, runId], {
     cwd: repositoryRoot,
     env: provisionEnvironment.environment,
   }, "database-provision");
@@ -433,13 +430,19 @@ try {
     result.failure ??= "The owned application port is still open.";
     process.exitCode = 1;
   }
-  if (databaseMayExist && !result.database.dropped) {
-    try { await dropDatabase(); } catch (cause) {
+  if (databaseProvisionAttempted && !result.database.dropped) {
+    try { await dropDatabase({ requireOwned: false }); } catch (cause) {
       result.status = "failed";
-      result.failure ??= `Database teardown failed: ${cause instanceof Error ? cause.message : String(cause)}`;
+      result.database.cleanupFailure = {
+        resources: [databaseName], receiptPath: databaseReceiptPath,
+        reason: cause instanceof Error ? cause.message : String(cause),
+      };
+      result.failure ??= `Database teardown failed: ${result.database.cleanupFailure.reason}`;
       process.exitCode = 1;
     }
   }
   await writeResult();
-  console.log(JSON.stringify({ runRoot, runId, status: result.status, failure: result.failure }, null, 2));
+  console.log(JSON.stringify({ runRoot, runId, status: result.status, failure: result.failure,
+    databaseCleanup: result.database.cleanup,
+    databaseCleanupFailure: result.database.cleanupFailure }, null, 2));
 }

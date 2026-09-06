@@ -2,6 +2,7 @@ import { createHash, randomBytes, randomUUID } from "node:crypto";
 import fs from "node:fs/promises";
 import path from "node:path";
 import { Client } from "pg";
+import { dropOwnedWindowOpeningDatabase } from "./provision-gate-a3-database.mjs";
 import {
   physicalFileRecord,
   redactCommandEvidence,
@@ -29,7 +30,7 @@ const runRoot = await fs.mkdtemp(path.join(runParent, "window-opening-build-"));
 const databaseName = `interior_ai_window_opening_evidence_test_build_${runId
   .toLowerCase().replace(/[^a-z0-9]/g, "").slice(-16)}`;
 const databaseUrl = `postgresql://justus@127.0.0.1:5432/${databaseName}`;
-const adminUrl = "postgresql://justus@127.0.0.1:5432/postgres";
+const databaseReceiptPath = path.join(runRoot, "database-created.json");
 const hash = (value) => createHash("sha256").update(value).digest("hex");
 const quoteIdentifier = (value) => `"${value.replaceAll('"', '""')}"`;
 const result = {
@@ -60,7 +61,7 @@ const result = {
   status: "running",
   failure: null,
 };
-let databaseMayExist = false;
+let databaseProvisionAttempted = false;
 
 async function runLogged(command, args, environmentContract, prefix) {
   const started = new Date();
@@ -137,19 +138,14 @@ async function databaseFingerprint() {
   }
 }
 
-async function dropDatabase() {
-  const admin = new Client({ connectionString: adminUrl, connectionTimeoutMillis: 10_000 });
-  await admin.connect();
-  try {
-    await admin.query(
-      "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = $1 AND pid <> pg_backend_pid()",
-      [databaseName]
-    );
-    await admin.query(`DROP DATABASE IF EXISTS ${quoteIdentifier(databaseName)}`);
-  } finally {
-    await admin.end();
-  }
-  result.database.dropped = true;
+async function dropDatabase({ requireOwned = true } = {}) {
+  const cleanup = await dropOwnedWindowOpeningDatabase({
+    databaseUrl, receiptPath: databaseReceiptPath, ownerId: runId,
+  });
+  result.database.creationReceiptPath = databaseReceiptPath;
+  result.database.cleanup = cleanup;
+  result.database.dropped = cleanup.dropped === true;
+  if (requireOwned && !cleanup.owned) throw new Error("Database creation ownership was not recorded.");
 }
 
 async function writeResult() {
@@ -219,10 +215,10 @@ try {
     databaseProvision: provisionEnvironment.records,
     build: isolatedEnvironment.records,
   };
-  databaseMayExist = true;
+  databaseProvisionAttempted = true;
   result.database.provision = await runLogged(
     process.execPath,
-    ["scripts/provision-gate-a3-database.mjs"],
+    ["scripts/provision-gate-a3-database.mjs", "--create-owned-window", databaseReceiptPath, runId],
     provisionEnvironment,
     "database-provision"
   );
@@ -267,10 +263,14 @@ try {
   result.failure = cause instanceof Error ? cause.message : String(cause);
   process.exitCode = 1;
 } finally {
-  if (databaseMayExist && !result.database.dropped) {
-    try { await dropDatabase(); } catch (cause) {
+  if (databaseProvisionAttempted && !result.database.dropped) {
+    try { await dropDatabase({ requireOwned: false }); } catch (cause) {
       result.status = "failed";
-      result.failure ??= `Database teardown failed: ${cause instanceof Error ? cause.message : String(cause)}`;
+      result.database.cleanupFailure = {
+        resources: [databaseName], receiptPath: databaseReceiptPath,
+        reason: cause instanceof Error ? cause.message : String(cause),
+      };
+      result.failure ??= `Database teardown failed: ${result.database.cleanupFailure.reason}`;
       process.exitCode = 1;
     }
   }
@@ -280,5 +280,7 @@ try {
     runId,
     status: result.status,
     failure: result.failure,
+    databaseCleanup: result.database.cleanup,
+    databaseCleanupFailure: result.database.cleanupFailure,
   }, null, 2));
 }

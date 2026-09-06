@@ -74,6 +74,8 @@ const certificationMigrationNames = migrationInventory(repositoryRoot).migration
 class InnerFailureDatabaseAdapter {
   constructor() {
     this.exists = false;
+    this.databaseOid = 8123;
+    this.roleOid = 8124;
     this.migrated = false;
     this.roleName = null;
   }
@@ -90,13 +92,14 @@ class InnerFailureDatabaseAdapter {
       roleClassification: "local-createdb",
       canCreateDatabase: true,
       targetExists: this.exists,
+      databaseOid: this.exists ? this.databaseOid : null,
     };
   }
 
   async createDatabase() {
     assert.equal(this.exists, false);
     this.exists = true;
-    return { created: true };
+    return { created: true, databaseOid: this.databaseOid };
   }
 
   deployMigrations() {
@@ -109,13 +112,14 @@ class InnerFailureDatabaseAdapter {
   }
 
   async inspectStageRole() {
-    return { exists: this.roleName !== null, adminCapabilities: false };
+    return { exists: this.roleName !== null, roleOid: this.roleName !== null ? this.roleOid : null, adminCapabilities: false };
   }
 
   async createStageRole({ roleName }) {
     this.roleName = roleName;
     return {
       created: true,
+      roleOid: this.roleOid,
       classification: "stage-login-no-admin",
       adminCapabilities: false,
     };
@@ -133,6 +137,10 @@ class InnerFailureDatabaseAdapter {
     return [];
   }
 
+  async stageRoleSessions() {
+    return [];
+  }
+
   async targetSessions() {
     return [];
   }
@@ -145,13 +153,15 @@ class InnerFailureDatabaseAdapter {
     };
   }
 
-  async dropDatabase() {
+  async dropDatabase(_databaseName, expectedOid) {
+    assert.equal(expectedOid, this.databaseOid);
     if (!this.exists) return { dropped: false, alreadyAbsent: true };
     this.exists = false;
     return { dropped: true, alreadyAbsent: false };
   }
 
-  async dropStageRole() {
+  async dropStageRole(_roleName, expectedOid) {
+    assert.equal(expectedOid, this.roleOid);
     if (this.roleName === null) {
       return { dropped: false, alreadyAbsent: true };
     }

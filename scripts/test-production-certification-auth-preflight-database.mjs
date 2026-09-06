@@ -73,7 +73,7 @@ const coveredAuthPreflightDatabaseCases = Object.freeze([
   "helper-readiness-failure-abort-cleanup",
   "helper-invalid-session-response-abort-cleanup",
   "helper-structured-result-publication-abort-cleanup",
-  "helper-active-session-exact-target-termination",
+  "helper-active-session-refusal-and-owned-close",
   "helper-repeated-abort-failure-retains-recovery-evidence",
   "failure-result-contract-tamper-rejected",
   "auth-passed-database-cleanup-failure-classified-accurately",
@@ -129,6 +129,9 @@ function git(revision) {
 class AuthPreflightAdapter {
   constructor({ roleCollision = false, dropFailures = 0 } = {}) {
     this.exists = false;
+    this.databaseOid = 8123;
+    this.roleOid = 8124;
+    this.roleSessions = [];
     this.migrated = false;
     this.rows = [];
     this.sessions = [];
@@ -151,13 +154,14 @@ class AuthPreflightAdapter {
       roleClassification: "local-createdb",
       canCreateDatabase: true,
       targetExists: this.exists,
+      databaseOid: this.exists ? this.databaseOid : null,
     };
   }
 
   async createDatabase() {
     assert.equal(this.exists, false);
     this.exists = true;
-    return { created: true };
+    return { created: true, databaseOid: this.databaseOid };
   }
 
   deployMigrations() {
@@ -172,6 +176,7 @@ class AuthPreflightAdapter {
   async inspectStageRole() {
     return {
       exists: this.roleName !== null,
+      roleOid: this.roleName !== null ? this.roleOid : null,
       adminCapabilities: false,
     };
   }
@@ -187,6 +192,7 @@ class AuthPreflightAdapter {
     this.roleName = roleName;
     return {
       created: true,
+      roleOid: this.roleOid,
       classification: "stage-login-no-admin",
       adminCapabilities: false,
     };
@@ -204,21 +210,25 @@ class AuthPreflightAdapter {
     return this.rows;
   }
 
+  async stageRoleSessions() {
+    return structuredClone(this.roleSessions);
+  }
+
   async targetSessions() {
     return this.sessions;
   }
 
   async terminateTargetSessions() {
     const matchedSessionCount = this.sessions.length;
-    this.sessions = [];
     return {
       matchedSessionCount,
       terminatedPids: [],
-      remainingSessionCount: 0,
+      remainingSessionCount: this.sessions.length,
     };
   }
 
-  async dropDatabase() {
+  async dropDatabase(_databaseName, expectedOid) {
+    if (this.exists && expectedOid !== this.databaseOid) throw new Error("database replacement is preserved");
     if (this.dropFailures > 0) {
       this.dropFailures -= 1;
       throw new Error("injected exact-target drop failure");
@@ -228,7 +238,9 @@ class AuthPreflightAdapter {
     return { dropped: true, alreadyAbsent: false };
   }
 
-  async dropStageRole() {
+  async dropStageRole(_roleName, expectedOid) {
+    if (expectedOid !== this.roleOid) throw new Error("role replacement is preserved");
+    if (this.roleSessions.length) throw new Error("owned role sessions remain");
     if (this.roleName === null) {
       return { dropped: false, alreadyAbsent: true };
     }
@@ -573,6 +585,16 @@ async function abortAndFailureCoverage() {
     const prepared = await prepare(authFailure);
     authFailure.adapter.rows = [{ table: "User", count: 1 }];
     authFailure.adapter.sessions = [{ pid: 441, role: "scoped" }];
+    await assert.rejects(abortAuthSessionPreflightDatabaseLifecycle({
+      repositoryRoot,
+      environment: prepared.environment,
+      adapter: authFailure.adapter,
+      preflightLifecycleBinding: prepared.preflightLifecycleBinding,
+      originalFailure: { classification: "AUTH_PREFLIGHT_SESSION_RESPONSE_INVALID" },
+    }), /could not release exact target sessions/);
+    assert.deepEqual(authFailure.adapter.sessions, [{ pid: 441, role: "scoped" }]);
+    assert.equal(authFailure.adapter.exists, true);
+    authFailure.adapter.sessions = []; // exact fixture client closes normally
     const aborted = await abortAuthSessionPreflightDatabaseLifecycle({
       repositoryRoot,
       environment: prepared.environment,
@@ -641,7 +663,9 @@ async function realHelperFailureOrchestrationCoverage() {
         repositoryRoot,
         prepared,
         adapter: value.adapter,
-        executeChild: async () => ({
+        executeChild: async () => {
+          value.adapter.sessions = []; // child cleanup closes its owned fixture client
+          return {
           childProcess: { error: null, signal: null, status: 1 },
           childValidated: {
             result: {
@@ -649,7 +673,8 @@ async function realHelperFailureOrchestrationCoverage() {
               failure: { code },
             },
           },
-        }),
+          };
+        },
       });
       assert.equal(sequence.retainedFailure instanceof Error, true);
       assert.equal(sequence.authSessionServerPreflight, "failed");

@@ -1,5 +1,38 @@
 # Production certification database lifecycle v1
 
+## Acknowledged creation and conservative cleanup — 2026-09-07
+
+Create authorization and prior absence do not prove resource ownership.
+Certification records database and scoped-role ownership only after an
+acknowledged CREATE. Adapter errors distinguish a known no-create/collision,
+acknowledged creation followed by a later failure, and an uncertain outcome.
+Later migration, grant, or inspection failures retain acknowledged ownership;
+unknown appearances and collisions are preserved for inspection. Exact role
+names accompany creation receipts; credentials remain confined to the existing
+private binding. Historical lifecycle evidence is not rewritten or reclassified.
+
+Cleanup requires acknowledged ownership and closes clients/processes through
+their existing owners. The database adapter no longer terminates sessions by
+database name. Any remaining connection blocks DROP; the exact resources and
+cleanup failure remain available for a retry after their owner closes them.
+Normal and abort cleanup verify owned database, scoped-role, and session
+absence. Unknown roles remain explicitly preserved.
+
+Window mounted/build owners use the existing Gate A3 provisioner in explicit
+`--create-owned-window` mode. This mode binds an exclusive local creation receipt
+to the invocation, verified `justus@127.0.0.1:5432/postgres` server, exact generated
+name (at most 63 bytes), acknowledged CREATE and catalog OID. It refuses existing
+names before migrations and records creation before applying migrations.
+Cleanup checks that same receipt and catalog identity, refuses remaining
+sessions, and verifies absence after ordinary DROP. Cleanup errors are recorded
+separately from the original test/build failure. The general service-database
+Gate A3 provisioning contract remains unchanged for its existing callers.
+
+The auth-preflight coverage case formerly named
+`helper-active-session-exact-target-termination` now records refusal followed
+by the fixture owner's normal client close; its place in the required matrix
+and all unrelated failure/attribution cases remain.
+
 ## Final-database AppEvent attribution and cleanup — 2026-08-26
 
 The retained rehearsal
@@ -145,7 +178,7 @@ verification, scoped non-admin role creation, private sidecar publication,
 stage binding, and validated projection. The server environment is then built
 through `projectCertificationChildEnvironment`; its sole database capability
 is the lifecycle-owned `DATABASE_URL`. Admin URL, lifecycle controls, role
-administration, session termination, and drop capabilities remain parent-only.
+administration, session inspection, and drop capabilities remain parent-only.
 Ambient `DATABASE_URL`, non-loopback, stale, cross-run, foreign, mismatched, or
 dropped projections fail closed.
 
@@ -153,8 +186,8 @@ After the auth server stops, normal completion inspects final rows/sessions,
 removes the scoped role and sidecar, drops the exact target, and proves
 absence. Any auth, projection, publication, inspection, or normal-cleanup
 failure routes through the existing canonical abort owner, retains the
-original failure, records `failedRunRehabilitated=false`, terminates only exact
-target sessions, drops only the owned target, and proves absence. The later
+original failure, records `failedRunRehabilitated=false`, refuses remaining
+connections, drops only the owned target, and proves absence. The later
 rehearsal database has a separate certification/candidate invocation and
 database identity and cannot be planned from this preflight lifecycle.
 
@@ -193,7 +226,7 @@ For runtime failure, canonical database abort therefore retains
 `originalStage=runtime-smoke`, the current attempt,
 `PRODUCT_ASSERTION_FAILURE`, `consumedSubstantiveGate=true`, the failed-state
 SHA, and runtime report/timing/start references. It captures current row/session
-inventories and may successfully release sessions, drop the exact disposable
+inventories and may, after owned clients close, drop the exact disposable
 database, and prove absence while still recording `finalEmptyVerified=false`
 when that normal checkpoint was never reached,
 `failedRunRehabilitated=false`, and intentional `valid:false`. Raw database
@@ -227,7 +260,7 @@ the retained run resumable.
 
 - `scripts/production-certification-database-lifecycle.mjs` is the only
   high-level owner. It plans, provisions, verifies initial/final state, binds
-  database-using stages, releases exact sessions, drops, verifies absence,
+  database-using stages, requires connection absence, drops, verifies absence,
   reports status, and performs abort cleanup.
 - `scripts/production-certification-database-contract.mjs` owns the name,
   server, state, schema, seal, and migration-inventory policies.
@@ -272,11 +305,10 @@ and server/role classifications, absence and policy results, timestamps,
 aggregate SHA-256, and a domain-separated self-seal. It never retains a raw
 connection URL or password. A target appearing after plan fails provision and
 is not owned or dropped; abort cleanup may drop only a target whose durable
-`create-authorized`/`provisioned` chain proves this lifecycle authorized and
-created it. A duplicate-database response revokes recoverable ownership and
-abort refuses the colliding target. A lost response after successful creation
-is recoverable only from the exact durable authorization, generated identity,
-and just-in-time absence checkpoint.
+`provisioned` receipt proves acknowledged creation and its recorded catalog
+OID still matches. A duplicate-database response marks the target unowned.
+A lost CREATE response remains uncertain; prior authorization and later
+appearance do not prove ownership. Cleanup preserves that exact resource.
 
 ## State machine and runner order
 
@@ -305,7 +337,7 @@ The real order is:
 8. source validation through browser owners with owner-projected `DATABASE_URL`
    bound to the same database identity;
 9. final-empty verification;
-10. exact session release, drop, and catalog absence proof; and
+10. connection absence, exact owned drop, and catalog absence proof; and
 11. final standalone and continuity under the existing ownership boundary.
 
 `certification:resume` reports resource preparation and doctor before database
@@ -329,7 +361,7 @@ owners. It never creates or repairs a database.
 
 Provision repeats the live absence/capability check, durably records an exact
 pre-create authorization, creates only the exact generated identifier, records
-the observed or safely recovered creation, invokes canonical
+acknowledged creation and its catalog OID, invokes canonical
 `prisma migrate deploy`, and requires the target `_prisma_migrations` names to
 equal all 43 sorted repository migration directories. It records the migration
 count, source aggregate, applied-name aggregate, and exact target identity.
@@ -346,22 +378,22 @@ count and exact target session, requires both totals zero, and never runs a
 generic delete. A leak is a truthful lifecycle failure even when later abort
 cleanup removes the disposable database.
 
-Normal cleanup first matches only sessions whose `datname` equals the exact
-generated target, excludes the current admin backend, records matched and
-terminated PIDs, waits boundedly for retirement, requires zero remaining, drops
-only the exact quoted identifier, and proves `pg_database` absence. It never
-restarts PostgreSQL or terminates another database's sessions.
+Normal cleanup verifies the recorded database and role OIDs, inspects target
+database sessions and sessions for the role on any database, and refuses any
+remaining connection. Owners close their own clients/processes normally.
+Cleanup uses ordinary DROP, then proves database, role and session absence.
+It never restarts PostgreSQL or terminates sessions.
 
 Abort cleanup retains the original stage/classification and
 `consumedSubstantiveGate` value, captures reachable rows and sessions, records
-whether final-empty genuinely passed, releases only exact owned sessions,
+whether final-empty passed, refuses any remaining connections,
 drops the entire owned disposable database even when rows remain, proves
 absence, and records `failedRunRehabilitated=false`. Repeated cleanup is
 idempotent at `abort-absence-verified`. SIGINT, SIGTERM, and ordinary runner
 failures route to this owner when a real lifecycle/state binding exists.
 Terminal signals are latched while the active owner finishes; abort cleanup is
 serialized afterward, so it cannot race the lifecycle lock. Abort checkpoints
-the row/session inventory, exact release, drop, and absence steps, retaining
+the row/session inventory, connection absence, drop, and absence steps, retaining
 partial cleanup facts and the original failure across a retry. A late
 standalone/continuity abort retains a previously proven final-empty result.
 
@@ -378,12 +410,13 @@ and credential values.
 `scripts/test-production-certification-database-lifecycle.mjs` covers canonical
 generation, length/collision behavior, protected/remote/port rejection,
 existing and between-plan/provision targets, exact migrations, initial/final
-rows, stage bindings, active sessions, exact-only termination, unrelated
-session survival, normal drop/absence, abort retention/idempotence, foreign
+rows, stage bindings, active-session refusal, owned-client closure, unrelated
+session survival, catalog replacements, missing creation identities, normal drop/absence, abort retention/idempotence, foreign
 candidate and stale state hashes, and secret-free evidence. Its real fixture
 uses one generated local database, applies all 43 migrations, proves initial
 zero rows, creates one fixture row and one held target session, proves truthful
-final failure, abort-drops the target, proves absence, and confirms an unrelated
+final failure, refuses cleanup while the held client remains open, closes that
+client, abort-drops the target, proves absence, and confirms an unrelated
 `postgres` session survives. `finally` invokes the same abort owner whenever a
 terminal absence state was not reached.
 
@@ -391,7 +424,8 @@ The deterministic matrix also rejects resealed impossible transitions, tests
 resource/doctor/provision resume ordering and live doctor absence, recovers an
 injected state CAS failure through the sealed revision chain, serializes a
 signal during an active command, distinguishes a foreign create collision from
-an ambiguous successful create response, preserves late final-empty truth and
+an uncertain CREATE response and acknowledged creation followed by failure,
+preserves late final-empty truth and
 partial abort checkpoints, and proves injected URL/password values are absent
 from retained evidence and surfaced errors.
 
@@ -422,10 +456,12 @@ absence evidence are unchanged. The lifecycle owner now exposes one private
 active, provisioned, migrated, initial-empty, state-bound, loopback database and
 observed stage identity. Provisioning creates one lifecycle-scoped non-admin
 stage login and mode-0600 private sidecar outside portable evidence; the sealed
-lifecycle retains only sidecar/role hashes. Every stage bind proves that login
+lifecycle originally retained sidecar/role hashes; the 2026-09-07 correction
+adds exact created role names and catalog OIDs. Every stage bind proves that login
 still reaches the exact live target with no admin capability, and normal/abort
 cleanup removes both the generated database and scoped role/sidecar. A durable
-pre-create/created role receipt makes ambiguous task-owned creation recoverable;
+acknowledged-created role receipt permits cleanup only for its matching catalog
+identity; uncertain creation is preserved under the 2026-09-07 correction;
 an explicit or raced foreign role collision is recorded non-owned and abort
 cleanup proves it was preserved rather than dropping it. The private sidecar
 uses the same two-phase absent/expected-hash receipt: crash-after-write cleanup
@@ -454,3 +490,10 @@ database is active, run `npm run certification:database:abort-cleanup` first and
 retain its absence proof. Never delete rows from or drop a caller-selected or
 foreign database, never reuse the preserved failed preflight, and never rewrite
 migration history.
+
+Cleanup also binds the certification database and role to catalog OIDs recorded
+after acknowledged CREATE. A missing identity or same-name replacement is
+preserved, including before abort cleanup reads application rows. Role-session
+checks use the recorded role OID across all databases; any remaining session
+blocks cleanup without termination. Normal and abort absence verification
+include both database sessions and sessions for the recorded role.

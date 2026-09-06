@@ -136,6 +136,7 @@
         "scripts/production-certification-doctor.mjs",
         "scripts/production-certification-dependencies.mjs",
         "scripts/production-certification-database-adapter.mjs",
+        "scripts/provision-gate-a3-database.mjs",
         "scripts/production-certification-database-contract.mjs",
         "scripts/production-certification-database-lifecycle.mjs",
         "scripts/production-certification-real.mjs",
