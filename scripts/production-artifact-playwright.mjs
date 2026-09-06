@@ -110,7 +110,7 @@ export function loadProductionArtifactForPlaywright({
       realpathSync(
         repositoryPath(
           repositoryRoot,
-          "scripts/production-artifact-evidence.mjs",
+          "scripts/production-artifact-source.mjs",
           "Production artifact validator path",
         ),
       ),

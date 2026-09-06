@@ -27,7 +27,6 @@ import {
   canonicalizeProductionEvidenceReport,
   certifiedNestedDatabaseUrl,
   comparePortablePaths,
-  createProductionEvidenceBundle,
   createProductionEvidenceManifest,
   executeProductionEvidenceChild,
   handoffProductionEvidenceSemanticJournal,
@@ -35,15 +34,18 @@ import {
   inspectFloorPlanRouteNftContract,
   projectArtifactProductServerEnvironment,
   readProductionEvidenceSemanticJournal,
-  recordProductionEvidenceTest,
   recoverProductionEvidenceFromSemanticJournal,
   resolveProductionEvidenceToolchain,
   validateProductionEvidenceSemanticJournal,
-  validateProductionEvidence,
   validateArtifactProductServerAuthFixtureBinding,
-  verifyRuntimeSmokeFailureEvidence,
   writeProductionEvidenceManifest,
 } from "./production-artifact-evidence.mjs";
+import {
+  createProductionEvidenceBundle,
+  recordProductionEvidenceTest,
+  validateProductionEvidence,
+  verifyRuntimeSmokeFailureEvidence,
+} from "./production-artifact-source.mjs";
 import {
   BUILD_COMMAND,
   CURRENT_PRODUCTION_EVIDENCE_VERSIONS,
@@ -2799,6 +2801,27 @@ async function fixture({
       readFileSync(path.join(process.cwd(), relativePath)),
     );
   }
+  // Give this synthetic artifact its own valid source-policy fixture. Source
+  // verification must check this root, never a different checkout's workflows.
+  for (const relativePath of [
+    "scripts/production-artifact-source.mjs",
+    "scripts/required-test-workflow-policy.mjs",
+  ]) write(root, relativePath, readFileSync(path.join(process.cwd(), relativePath)));
+  const fixtureManifest = JSON.parse(readFileSync(path.join(root, "scripts/required-test-manifest.json")));
+  const runtimeGate = fixtureManifest.gates.find((gate) => gate.id === "ci.production-runtime-smoke");
+  delete runtimeGate.ci;
+  write(root, "scripts/required-test-manifest.json", JSON.stringify({
+    schema: fixtureManifest.schema, gates: [runtimeGate], sourceInventories: [],
+  }));
+  const fixturePackage = JSON.parse(readFileSync(path.join(root, "package.json")));
+  fixturePackage.scripts = {
+    "evidence:production:smoke": "node scripts/production-artifact-source.mjs smoke",
+  };
+  write(root, "package.json", JSON.stringify(fixturePackage));
+  write(root, "playwright.config.ts", "// Synthetic artifact source fixture configuration.\n");
+  write(root, "tests/e2e/00-runtime-smoke.spec.ts",
+    readFileSync(path.join(process.cwd(), "tests/e2e/00-runtime-smoke.spec.ts")));
+  cpSync(path.join(process.cwd(), "node_modules/yaml"), path.join(root, "node_modules/yaml"), { recursive: true });
   write(root, "generated/runtime.ts", "export const generated = true;\n");
   write(root, "public/asset.txt", publicArtifactText);
   write(root, ".next/BUILD_ID", "build-fixture-001\n");
@@ -2829,6 +2852,10 @@ async function fixture({
     "package-lock.json",
     "scripts/production-artifact-contract.mjs",
     "scripts/production-artifact-evidence.mjs",
+    "scripts/production-artifact-source.mjs",
+    "scripts/required-test-workflow-policy.mjs",
+    "playwright.config.ts",
+    "tests/e2e/00-runtime-smoke.spec.ts",
     "scripts/runtime-smoke-phase-budget.mjs",
     "scripts/runtime-smoke-failure-evidence.mjs",
     "scripts/runtime-smoke-operation-contracts.mjs",
@@ -4249,7 +4276,7 @@ for (const mutation of [
   const rejectedByCanonicalValidator = spawnSync(
     process.execPath,
     [
-      realpathSync(path.join(context.root, "scripts/production-artifact-evidence.mjs")),
+      realpathSync(path.join(context.root, "scripts/production-artifact-source.mjs")),
       "verify-preflight",
     ],
     {
@@ -4839,7 +4866,7 @@ for (const mutation of [
   );
   const smokeSource = producerSource.slice(
     producerSource.indexOf("async function smokeEvidence"),
-    producerSource.indexOf("async function cli"),
+    producerSource.indexOf("export async function runProductionArtifactEvidenceCli"),
   );
   const preflightIndex = smokeSource.indexOf(
     "const preflight = await validateProductionEvidence",
@@ -4859,9 +4886,11 @@ for (const mutation of [
       runtimeStartIndex > preflightRejectionIndex,
     "runtime smoke cannot start when manifest validation fails",
   );
+  const artifactLoadIndex = configSource.indexOf("loadProductionArtifactForPlaywright({");
+  const configConstructionIndex = configSource.indexOf("const config = defineConfig({");
   assert.ok(
-    configSource.indexOf("loadProductionArtifactForPlaywright") <
-      configSource.indexOf("export default defineConfig"),
+    artifactLoadIndex >= 0 && configConstructionIndex > artifactLoadIndex &&
+      configSource.indexOf("export default config;") > configConstructionIndex,
     "Playwright must reject invalid evidence before exposing a webServer command",
   );
 }
@@ -6002,7 +6031,7 @@ for (const mutate of [
     );
     assert.match(
       `${repositoryPreflight.stdout}\n${repositoryPreflight.stderr}`,
-      /not a git repository|Unable to inspect the Git working tree/,
+      /Repository artifact operations require the source-repository driver/,
     );
 
     const finalStandalone = runStagedVerifier(

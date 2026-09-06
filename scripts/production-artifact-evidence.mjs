@@ -101,7 +101,7 @@ if (process.argv[2] === ARCHIVE_PREFLIGHT_COMMAND) {
 }
 
 const { validateRequiredTestReport } = await import(
-  "./required-test-truthfulness.mjs"
+  "./required-test-report-validation.mjs"
 );
 const {
   FURNISHED_TEMPLATE_PHASE_CONTRACTS,
@@ -3196,6 +3196,7 @@ function validateTestRecord(
   {
     requiredTestRepositoryRoot,
     validateRequiredTestRepository = true,
+    sourceRepositoryValidator,
     allowFailedRuntimeSmoke = false,
   } = {},
 ) {
@@ -3299,6 +3300,7 @@ function validateTestRecord(
     issues.push("test report metadata does not identify the recorded production artifact");
   }
   const truthfulness = validateRequiredTestReport({
+    sourceRepositoryValidator,
     repositoryRoot:
       requiredTestRepositoryRoot ?? path.resolve(import.meta.dirname, ".."),
     gateId: "ci.production-runtime-smoke",
@@ -3313,7 +3315,16 @@ function validateTestRecord(
   issues.push(...truthfulnessIssues.map((issue) => `required runtime smoke: ${issue}`));
 }
 
+function assertSourceRepositoryValidation(sourceRepositoryValidator, repositoryRoot) {
+  if (typeof sourceRepositoryValidator !== "function") {
+    throw new Error("Repository artifact operations require the source-repository driver.");
+  }
+  const validation = sourceRepositoryValidator({ repositoryRoot: path.resolve(repositoryRoot) });
+  if (!validation.valid) throw new Error(validation.issues.join("; "));
+}
+
 export async function validateProductionEvidence({
+  sourceRepositoryValidator,
   repositoryRoot,
   manifestPath,
   verificationMode = PRODUCTION_EVIDENCE_VERIFICATION_MODES.REPOSITORY_FINAL,
@@ -3337,6 +3348,7 @@ export async function validateProductionEvidence({
     requireSemanticJournal,
     allowFailedRuntimeSmoke,
   } = modeConfig;
+  if (!standalone) assertSourceRepositoryValidation(sourceRepositoryValidator, repositoryRoot);
   const runtimeRequired =
     testPolicy === "runtime-required" ||
     testPolicy === "runtime-failure-required";
@@ -3864,8 +3876,9 @@ export async function validateProductionEvidence({
         { report, allowFailure: allowFailedRuntimeSmoke && test.processExitCode !== 0 },
       );
       validateTestRecord(manifest, test, report, phaseTimings, issues, {
-        requiredTestRepositoryRoot: standalone ? root : undefined,
+        requiredTestRepositoryRoot: root,
         validateRequiredTestRepository: !standalone,
+        sourceRepositoryValidator,
         allowFailedRuntimeSmoke,
       });
       if (!canonicalUtcTimestamp(test.completedAt)) {
@@ -3923,6 +3936,7 @@ function truthfulRuntimeSmokeFailureIssues(truthfulness) {
 }
 
 export async function recordProductionEvidenceTest({
+  sourceRepositoryValidator,
   repositoryRoot,
   manifestPath,
   reportPath,
@@ -3936,6 +3950,7 @@ export async function recordProductionEvidenceTest({
   expectedRawReportSha256,
 }) {
   const preflight = await validateProductionEvidence({
+    sourceRepositoryValidator,
     repositoryRoot,
     manifestPath,
     verificationMode:
@@ -4020,7 +4035,8 @@ export async function recordProductionEvidenceTest({
     throw new Error("test report does not prove the canonical non-reused production server");
   }
   const truthfulness = validateRequiredTestReport({
-    repositoryRoot: path.resolve(import.meta.dirname, ".."),
+    sourceRepositoryValidator,
+    repositoryRoot,
     gateId: "ci.production-runtime-smoke",
     report,
     processExitCode,
@@ -4128,6 +4144,7 @@ export async function recordProductionEvidenceTest({
 }
 
 export async function verifyRuntimeSmokeFailureEvidence({
+  sourceRepositoryValidator,
   repositoryRoot,
   manifestPath = DEFAULT_MANIFEST_PATH,
   reportPath = DEFAULT_REPORT_PATH,
@@ -4136,6 +4153,7 @@ export async function verifyRuntimeSmokeFailureEvidence({
 }) {
   const root = path.resolve(repositoryRoot);
   const fullValidation = await validateProductionEvidence({
+    sourceRepositoryValidator,
     repositoryRoot: root,
     manifestPath,
     verificationMode:
@@ -4200,7 +4218,8 @@ export async function verifyRuntimeSmokeFailureEvidence({
     issues.push("runtime-smoke failure timing summary is contradictory");
   }
   const truthfulness = validateRequiredTestReport({
-    repositoryRoot: path.resolve(import.meta.dirname, ".."),
+    sourceRepositoryValidator,
+    repositoryRoot,
     gateId: "ci.production-runtime-smoke",
     report,
     processExitCode: test?.processExitCode ?? 1,
@@ -4393,8 +4412,18 @@ async function completePreparedBuildEvidence(
   return result;
 }
 
-async function buildEvidence(repositoryRoot, manifestPath) {
+async function prepareSourceBuildEvidence(repositoryRoot, loadSourceRepositoryValidator) {
+  if (typeof loadSourceRepositoryValidator !== "function") {
+    throw new Error("Repository artifact operations require the source-repository driver.");
+  }
   const prepared = await prepareBuildEvidence(repositoryRoot);
+  const sourceRepositoryValidator = await loadSourceRepositoryValidator();
+  assertSourceRepositoryValidation(sourceRepositoryValidator, repositoryRoot);
+  return prepared;
+}
+
+async function buildEvidence(repositoryRoot, manifestPath, loadSourceRepositoryValidator) {
+  const prepared = await prepareSourceBuildEvidence(repositoryRoot, loadSourceRepositoryValidator);
   return completePreparedBuildEvidence(
     repositoryRoot,
     manifestPath,
@@ -4403,6 +4432,7 @@ async function buildEvidence(repositoryRoot, manifestPath) {
 }
 
 export async function createProductionEvidenceBundle({
+  sourceRepositoryValidator,
   repositoryRoot,
   manifestPath = DEFAULT_MANIFEST_PATH,
   reportPath = DEFAULT_REPORT_PATH,
@@ -4423,8 +4453,10 @@ export async function createProductionEvidenceBundle({
   if (uploadDirectory !== path.join(root, DEFAULT_UPLOAD_DIRECTORY)) {
     throw new Error("evidence upload directory is not the dedicated safe path");
   }
+  assertSourceRepositoryValidation(sourceRepositoryValidator, repositoryRoot);
   rmSync(uploadDirectory, { recursive: true, force: true });
   const result = await validateProductionEvidence({
+    sourceRepositoryValidator,
     repositoryRoot: root,
     manifestPath,
     verificationMode: PRODUCTION_EVIDENCE_VERIFICATION_MODES.REPOSITORY_FINAL,
@@ -4522,8 +4554,9 @@ export function certifiedNestedDatabaseUrl(environment) {
   return environment.DATABASE_URL;
 }
 
-async function serveEvidence(repositoryRoot, manifestPath) {
+async function serveEvidence(repositoryRoot, manifestPath, sourceRepositoryValidator) {
   const result = await validateProductionEvidence({
+    sourceRepositoryValidator,
     repositoryRoot,
     manifestPath,
     verificationMode:
@@ -4567,8 +4600,9 @@ async function serveEvidence(repositoryRoot, manifestPath) {
   }
 }
 
-async function smokeEvidence(repositoryRoot, manifestPath, reportPath) {
+async function smokeEvidence(repositoryRoot, manifestPath, reportPath, sourceRepositoryValidator) {
   const preflight = await validateProductionEvidence({
+    sourceRepositoryValidator,
     repositoryRoot,
     manifestPath,
     verificationMode:
@@ -4631,6 +4665,7 @@ async function smokeEvidence(repositoryRoot, manifestPath, reportPath) {
     externalTimingRoot,
   );
   await recordProductionEvidenceTest({
+    sourceRepositoryValidator,
     repositoryRoot,
     manifestPath,
     reportPath,
@@ -4642,6 +4677,7 @@ async function smokeEvidence(repositoryRoot, manifestPath, reportPath) {
   });
   if (playwright.status !== 0) process.exit(playwright.status ?? 1);
   const finalResult = await validateProductionEvidence({
+    sourceRepositoryValidator,
     repositoryRoot,
     manifestPath,
     verificationMode: PRODUCTION_EVIDENCE_VERIFICATION_MODES.REPOSITORY_FINAL,
@@ -4652,16 +4688,21 @@ async function smokeEvidence(repositoryRoot, manifestPath, reportPath) {
   );
 }
 
-async function cli() {
+export async function runProductionArtifactEvidenceCli({ sourceRepositoryValidator, loadSourceRepositoryValidator } = {}) {
   const repositoryRoot = process.cwd();
   const command = process.argv[2];
+  if (["complete-certification-build", "recover", "verify-preflight", "serve",
+    "smoke", "verify-runtime-failure", "bundle", "verify"].includes(command)) {
+    if (loadSourceRepositoryValidator) sourceRepositoryValidator = await loadSourceRepositoryValidator();
+    assertSourceRepositoryValidation(sourceRepositoryValidator, repositoryRoot);
+  }
   const manifestPath =
     process.env.PRODUCTION_EVIDENCE_MANIFEST?.trim() || DEFAULT_MANIFEST_PATH;
   const reportPath =
     process.env.PLAYWRIGHT_JSON_OUTPUT_FILE?.trim() || DEFAULT_REPORT_PATH;
-  if (command === "build") await buildEvidence(repositoryRoot, manifestPath);
+  if (command === "build") await buildEvidence(repositoryRoot, manifestPath, loadSourceRepositoryValidator);
   else if (command === "prepare-certification-build") {
-    const prepared = await prepareBuildEvidence(repositoryRoot);
+    const prepared = await prepareSourceBuildEvidence(repositoryRoot, loadSourceRepositoryValidator);
     console.log(JSON.stringify({
       prepared: true,
       runNonce: prepared.journal.runNonce,
@@ -4700,6 +4741,7 @@ async function cli() {
   }
   else if (command === "verify-preflight") {
     const result = await validateProductionEvidence({
+      sourceRepositoryValidator,
       repositoryRoot,
       manifestPath,
       verificationMode:
@@ -4708,10 +4750,11 @@ async function cli() {
     if (!result.valid) throw new Error(result.issues.join("; "));
     console.log("Production artifact canonical preflight valid.");
   }
-  else if (command === "serve") await serveEvidence(repositoryRoot, manifestPath);
-  else if (command === "smoke") await smokeEvidence(repositoryRoot, manifestPath, reportPath);
+  else if (command === "serve") await serveEvidence(repositoryRoot, manifestPath, sourceRepositoryValidator);
+  else if (command === "smoke") await smokeEvidence(repositoryRoot, manifestPath, reportPath, sourceRepositoryValidator);
   else if (command === "verify-runtime-failure") {
     const result = await verifyRuntimeSmokeFailureEvidence({
+      sourceRepositoryValidator,
       repositoryRoot,
       manifestPath,
       reportPath,
@@ -4721,12 +4764,14 @@ async function cli() {
     );
   } else if (command === "bundle") {
     await createProductionEvidenceBundle({
+      sourceRepositoryValidator,
       repositoryRoot,
       manifestPath,
       reportPath,
     });
   } else if (command === ARCHIVE_PREFLIGHT_COMMAND) {
     const result = await validateProductionEvidence({
+      sourceRepositoryValidator,
       repositoryRoot,
       manifestPath,
       verificationMode:
@@ -4737,6 +4782,7 @@ async function cli() {
     console.log(JSON.stringify(result.verificationResult, null, 2));
   } else if (command === "verify-standalone") {
     const result = await validateProductionEvidence({
+      sourceRepositoryValidator,
       repositoryRoot,
       manifestPath,
       verificationMode:
@@ -4756,6 +4802,7 @@ async function cli() {
     console.log(JSON.stringify(certification));
   } else if (command === "verify") {
     const result = await validateProductionEvidence({
+      sourceRepositoryValidator,
       repositoryRoot,
       manifestPath,
       verificationMode: PRODUCTION_EVIDENCE_VERIFICATION_MODES.REPOSITORY_FINAL,
@@ -4772,7 +4819,7 @@ async function cli() {
 }
 
 if (process.argv[1] && path.resolve(process.argv[1]) === path.resolve(import.meta.filename)) {
-  cli().catch((error) => {
+  runProductionArtifactEvidenceCli().catch((error) => {
     console.error(error instanceof Error ? error.message : String(error));
     process.exit(1);
   });

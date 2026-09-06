@@ -265,7 +265,7 @@
     },
     {
       "id": "environment-execution-classification",
-      "canonicalCommandOrCli": "npm run evidence:production:build; node scripts/production-artifact-evidence.mjs verify-preflight",
+      "canonicalCommandOrCli": "npm run evidence:production:build; node scripts/production-artifact-source.mjs verify-preflight",
       "sourceOwner": ["scripts/production-artifact-evidence.mjs", "scripts/production-artifact-playwright.mjs"],
       "requiredEnvironmentNames": ["APP_ENV", "NEXT_PUBLIC_APP_ENV", "CATALOG_STRICT_VALIDATION", "NODE_ENV", "VERCEL_ENV"],
       "requiredInputs": ["staging or production application classification", "strict catalog flag", "production Node mode", "safe feature-flag shape"],

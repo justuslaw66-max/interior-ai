@@ -1,5 +1,29 @@
 # Production-equivalent artifact evidence
 
+## Source and portable verifier dependencies — 2026-09-07
+
+`required-test-report-validation.mjs` owns shared manifest and report validation.
+Portable archive verification imports that implementation using only physical
+local modules and Node built-ins. The unchanged verifier-closure checker still
+rejects package imports and resolution fallbacks; archived verification requires
+neither a source checkout nor `node_modules`.
+
+Source operations enter through `production-artifact-source.mjs`, including the
+registered `evidence:production:*` commands, Playwright preflight, certification
+build calls, and CI runtime-failure diagnostics. This driver supplies full
+repository validation for the actual operation root, including parsed workflow
+routing and selected-handoff policy. Source commands reject a missing driver;
+explicit report-only consumers retain their existing manifest/report contract.
+Both paths share the same report assertions and artifact identities. Historical
+archives and evidence retain their original source attribution.
+
+Fresh build and certification preparation first run their existing owned
+`npm ci` boundary. The source-only driver then loads its literal repository
+validator dependency and validates the target before returning preparation
+evidence or starting generation/build. A failed installation or source check
+cannot advance to build; the portable CLI rejects these commands before any
+installation when the source driver is missing.
+
 ## Archive consumption of persisted build-auth continuity — 2026-08-22
 
 Archive verification does not require a live auth capability. Its authority is

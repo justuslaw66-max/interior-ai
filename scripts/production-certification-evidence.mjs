@@ -19,7 +19,7 @@ import {
 import { inventoryProductionArchiveTree } from "./production-archive.mjs";
 import { deriveProductionVerifierClosure } from "./production-verifier-closure.mjs";
 import { certificationBuildGeneratedOutputIssues } from "./production-certification-build-generated-output.mjs";
-import { validateRequiredTestReport } from "./required-test-truthfulness.mjs";
+import { validateRequiredTestReport } from "./required-test-report-validation.mjs";
 import {
   canonicalizeBoundRuntimeSmokeReport,
   readRuntimeSmokeTelemetryBootstrapEvidence,

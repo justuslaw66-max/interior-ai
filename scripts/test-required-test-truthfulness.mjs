@@ -29,7 +29,10 @@ import {
 } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
-import { parse as parseYaml } from "yaml";
+import { parse as parseYaml, stringify as stringifyYaml } from "yaml";
+import { assertRequiredWorkflowRouting as assertRoutingPolicy } from "./required-test-workflow-policy.mjs";
+import { validateRequiredTestReport as validatePortableReport } from "./required-test-report-validation.mjs";
+import { validateProductionEvidence as validatePortableArtifact } from "./production-artifact-evidence.mjs";
 
 import {
   REQUIRED_TEST_EVIDENCE_SCHEMA,
@@ -335,6 +338,64 @@ function makeRepository() {
 
 const SOURCE_SHA = "1".repeat(40);
 const ARTIFACT_SHA = "2".repeat(64);
+
+await verifyPortableValidationBoundary();
+
+async function verifyPortableValidationBoundary() {
+  const { root, manifest } = makeRepository();
+  try {
+    const gate = manifest.gates.find((entry) => entry.id === "release.fixture");
+    const portableManifest = {
+      ...manifest,
+      sourceInventories: [],
+      requiredRegistrations: [],
+      gates: [{ ...gate, supportingInventories: [], reportOwnershipRegistrations: [] }],
+    };
+    write(root, "scripts/required-test-manifest.json", JSON.stringify(portableManifest));
+    const options = {
+      repositoryRoot: root, gateId: gate.id,
+      report: makeReport({ file: "required.spec.ts" }), processExitCode: 0,
+      validateRepository: false, environment: {},
+    };
+    assert.equal(validatePortableReport(options).valid, true);
+    for (const mutate of [
+      () => {},
+      (report) => { report.config.projects[0].retries = 1; },
+      (report) => { report.config.grep = { pattern: "narrowed" }; },
+      (report) => { report.stats.expected = 0; },
+      (report) => { report.config.metadata.requiredTestEvidence.gateId = "foreign"; },
+    ]) {
+      const report = structuredClone(options.report);
+      mutate(report);
+      assert.deepEqual(validatePortableReport({ ...options, report }),
+        validateRequiredTestReport({ ...options, report }));
+    }
+    for (const entry of ["package.json", ".github", "tests"]) {
+      rmSync(path.join(root, entry), { recursive: true, force: true });
+    }
+    assert.equal(validatePortableReport(options).valid, true,
+      "portable manifest/report validation must not require a checkout or package installation");
+    assert.throws(() => validatePortableReport({ ...options, validateRepository: true }),
+      /requires the source-repository driver/);
+    assert.throws(() => validateRequiredTestReport({ ...options, validateRepository: true }),
+      /package.json is missing/,
+      "the source wrapper must retain repository validation when source files are unavailable");
+    await assert.rejects(() => validatePortableArtifact({ repositoryRoot: root }),
+      /require the source-repository driver/);
+    let checkedRoot;
+    await assert.rejects(() => validatePortableArtifact({
+      repositoryRoot: root,
+      sourceRepositoryValidator: ({ repositoryRoot }) => {
+        checkedRoot = repositoryRoot;
+        throw new Error("target source policy rejected");
+      },
+    }), /target source policy rejected/);
+    assert.equal(checkedRoot, path.resolve(root),
+      "source validation must check the operation's target, not the verifier's checkout");
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+}
 
 function runGit(root, args) {
   const result = spawnSync("git", args, { cwd: root, encoding: "utf8" });
@@ -2226,7 +2287,7 @@ assert.equal(
   assert.match(failureDiagnostics.run, /failure-upload\.staging/);
   assert.match(
     failureDiagnostics.run,
-    /node scripts\/production-artifact-evidence\.mjs verify-runtime-failure/,
+    /node scripts\/production-artifact-source\.mjs verify-runtime-failure/,
   );
   assert.match(failureDiagnostics.run, /Runtime failure diagnostics inventory is not exact/);
   assert.match(failureDiagnostics.run, /safe_failure_diagnostics_ready=true/);
@@ -2257,7 +2318,7 @@ assert.equal(
     }
     const result = runWorkflowShell(
       failureDiagnostics.run.replace(
-        "node scripts/production-artifact-evidence.mjs verify-runtime-failure",
+        "node scripts/production-artifact-source.mjs verify-runtime-failure",
         "true",
       ),
       root,
@@ -2288,7 +2349,7 @@ assert.equal(
     write(root, `${evidenceRoot}/runtime-smoke-phases.json`, "{}\n");
     const result = runWorkflowShell(
       failureDiagnostics.run.replace(
-        "node scripts/production-artifact-evidence.mjs verify-runtime-failure",
+        "node scripts/production-artifact-source.mjs verify-runtime-failure",
         "true",
       ),
       root,
@@ -2407,32 +2468,6 @@ assert.equal(
     /path:\s*[|>]?[\s\S]*?\.local\/required-test-evidence\//,
     "raw Playwright evidence must not be uploaded",
   );
-  const assertRoutingPolicy = (required, advisory) => {
-    const approvedPrTargets = ["main", "develop", "staging", "integration/deep-clean-v1"];
-    assert.deepEqual(Object.keys(required.on).sort(), ["pull_request", "push", "workflow_dispatch"]);
-    assert.deepEqual(required.on.pull_request, { branches: approvedPrTargets },
-      "required CI must retain its approved PR targets and default activity types");
-    assert.deepEqual(required.on.push, { branches: ["main", "develop", "staging"] });
-    assert.equal(required.on.workflow_dispatch, null);
-    assert.deepEqual(Object.keys(advisory.on).sort(), ["pull_request", "schedule", "workflow_dispatch"]);
-    assert.deepEqual(Object.keys(advisory.on.pull_request).sort(), ["branches", "types"]);
-    assert.deepEqual(advisory.on.pull_request.branches, approvedPrTargets,
-      "full advisory must retain exactly the approved PR targets");
-    assert.deepEqual(advisory.on.pull_request.types, ["labeled"],
-      "ordinary PR synchronize events must not launch the full advisory workflow");
-    assert.equal(advisory.jobs["e2e-full"].if.replace(/\s+/g, " ").trim(),
-      "github.event_name == 'workflow_dispatch' || github.event_name == 'schedule' || " +
-        "(github.event_name == 'pull_request' && github.event.action == 'labeled' && " +
-        "github.event.label.name == 'run-full-e2e')",
-      "full advisory PR execution must require the run-full-e2e label");
-    assert.deepEqual(advisory.on.schedule, [{ cron: "17 2 * * *" }]);
-    assert.deepEqual(advisory.on.workflow_dispatch, {
-      inputs: { source_sha: { description: "Exact 40-character commit SHA to test", required: true, type: "string" } },
-    });
-    for (const workflow of [required, advisory]) {
-      assert.deepEqual(workflow.permissions, { contents: "read" });
-    }
-  };
   assertRoutingPolicy(requiredDefinition, advisoryDefinition);
   const routingMutations = [
     ["missing canonical CI target", (required) => required.on.pull_request.branches.pop()],
@@ -2944,6 +2979,14 @@ function installAdvisoryWorkflowCliFixture(fixture, workflow) {
   manifest.gates = manifest.gates.map((entry) => entry.id === gate.id ? gate : entry);
   write(root, "scripts/required-test-manifest.json", JSON.stringify(manifest));
   write(root, gate.ci.workflow, workflow);
+  const requiredWorkflowPath = ".github/workflows/ci.yml";
+  const fixtureRequiredWorkflow = readFileSync(path.join(root, requiredWorkflowPath), "utf8");
+  const fixtureRequiredJobs = fixtureRequiredWorkflow.slice(fixtureRequiredWorkflow.indexOf("jobs:\n"));
+  const canonicalRequiredWorkflow = parseYaml(readFileSync(path.resolve(requiredWorkflowPath), "utf8"));
+  write(root, requiredWorkflowPath, stringifyYaml({
+    on: canonicalRequiredWorkflow.on,
+    permissions: canonicalRequiredWorkflow.permissions,
+  }) + fixtureRequiredJobs);
   const script = path.resolve("scripts/required-test-truthfulness.mjs");
   // Only Git identity and the Playwright child are synthetic. The actual runner,
   // GITHUB_OUTPUT emission, shell command, npm scripts and preparation CLI execute.
@@ -2976,6 +3019,18 @@ process.argv = [process.execPath, ${JSON.stringify(script)}, ...process.argv.sli
 await import(${JSON.stringify(script)});
 `);
   assert.deepEqual(validateRequiredTestRepository({ repositoryRoot: root }).issues, []);
+  const approvedWorkflow = readFileSync(path.join(root, requiredWorkflowPath), "utf8");
+  try {
+    const changed = parseYaml(approvedWorkflow);
+    changed.on.pull_request.branches.push("feature/unapproved");
+    write(root, requiredWorkflowPath, stringifyYaml({
+      on: changed.on, permissions: changed.permissions,
+    }) + fixtureRequiredJobs);
+    expectIssue(validateRequiredTestRepository({ repositoryRoot: root }),
+      "required workflow routing policy is invalid");
+  } finally {
+    write(root, requiredWorkflowPath, approvedWorkflow);
+  }
 }
 
 function verifyAdvisoryWorkflowShell() {
