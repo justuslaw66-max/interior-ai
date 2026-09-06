@@ -318,7 +318,8 @@ async function capturePreview(
   return page.screenshot({
     path,
     clip: bounds!,
-    animations: "disabled",
+    animations: "allow",
+    caret: "initial",
   });
 }
 
@@ -544,6 +545,53 @@ async function setShareFallbackClipboardMode(
     state.mode = nextMode;
     window.__proVisualDiagnostic?.record("mock-clipboard-mode", { mode: nextMode });
   }, mode);
+}
+
+async function settleAndExpectLiveCopyFeedback(page: Page) {
+  await page.evaluate(() => {
+    const dialog = document.querySelector<HTMLElement>('[data-testid="share-fallback-modal"]');
+    const feedback = dialog?.querySelector<HTMLElement>('[role="status"]');
+    const state = (window as typeof window & {
+      ch0015eShareFallback?: { settleWrite: (() => void) | null; writes: string[] };
+    }).ch0015eShareFallback;
+    if (!dialog || !feedback || feedback.textContent !== "" ||
+      !state?.settleWrite || state.writes.length !== 2) {
+      throw new Error("Live copy assertion requires fresh pending feedback from the second write");
+    }
+    const generation = dialog.dataset.editorDialogGeneration;
+    if (!generation) throw new Error("Share fallback generation is missing");
+    // Arm and release within one browser evaluation: tracing can delay the next
+    // protocol command beyond the real feedback lifetime.
+    return new Promise<void>((resolve, reject) => {
+      let frame = 0;
+      const timeout = setTimeout(() => {
+        cancelAnimationFrame(frame);
+        reject(new Error("Fresh, visible, topmost copy feedback was not observed"));
+      }, 30_000);
+      const observe = () => {
+        const rect = feedback.getBoundingClientRect();
+        const style = getComputedStyle(feedback);
+        const hit = document.elementFromPoint(rect.x + rect.width / 2, rect.y + rect.height / 2);
+        if (dialog.isConnected && feedback.isConnected &&
+          dialog.dataset.editorDialogGeneration === generation &&
+          dialog.dataset.editorDialogState === "interactive" &&
+          feedback.textContent === "Share link copied to clipboard!" &&
+          !feedback.closest('[inert], [hidden], [aria-hidden="true"]') &&
+          style.display !== "none" && style.visibility === "visible" && Number(style.opacity) > 0 &&
+          rect.width > 0 && rect.height > 0 && rect.left >= 0 && rect.top >= 0 &&
+          rect.right <= innerWidth && rect.bottom <= innerHeight && hit && feedback.contains(hit)) {
+          clearTimeout(timeout);
+          window.__proVisualDiagnostic?.record("live-feedback-asserted", { generation });
+          resolve();
+          return;
+        }
+        frame = requestAnimationFrame(observe);
+      };
+      frame = requestAnimationFrame(observe);
+      window.__proVisualDiagnostic?.record("live-feedback-observer-armed", { generation });
+      state.settleWrite?.();
+    });
+  });
 }
 
 async function openPresentExport(
@@ -1773,20 +1821,7 @@ test.describe("Pro visual policy", () => {
         // Pending clipboard work must clear prior feedback and cannot report success.
         await expect(feedback).toHaveText("");
         proVisualMark(page, "feedback-assertion-start");
-        await page.evaluate(() => {
-          const state = (window as typeof window & {
-            ch0015eShareFallback?: { settleWrite: (() => void) | null };
-          }).ch0015eShareFallback;
-          if (!state?.settleWrite) throw new Error("Pending clipboard operation is missing");
-          state.settleWrite();
-        });
-        await expect(feedback).toHaveText("Share link copied to clipboard!");
-        await expect(feedback).toBeVisible();
-        expect(await feedback.evaluate((element) => {
-          const rect = element.getBoundingClientRect();
-          const hit = document.elementFromPoint(rect.x + rect.width / 2, rect.y + rect.height / 2);
-          return !element.closest('[inert], [aria-hidden="true"]') && hit !== null && element.contains(hit);
-        })).toBe(true);
+        await settleAndExpectLiveCopyFeedback(page);
         proVisualMark(page, "feedback-assertion-end");
       })(),
     ]);
@@ -2167,6 +2202,17 @@ test.describe("Pro visual policy", () => {
     await expect(renderer).toHaveAttribute("data-render-color-space", "srgb");
     await expect(renderer).toHaveAttribute("data-tone-mapping", "aces-filmic");
 
+    // Screenshot capture must preserve the running page rather than finishing
+    // animations and firing lifecycle callbacks while sampling the WebGL view.
+    await page.evaluate(() => {
+      const probe = document.createElement("div");
+      probe.id = "cabinet-capture-animation-probe";
+      probe.style.cssText = "position:fixed;left:-1000px;width:1px;height:1px";
+      document.body.append(probe);
+      probe.animate([{ opacity: 0.5 }, { opacity: 1 }], {
+        duration: 1_000_000, fill: "forwards",
+      });
+    });
     for (const template of RECOMMENDED_CABINET_TEMPLATES) {
       await page.getByTestId(`cabinet-preset-${template}`).click();
       await expect(renderer).toBeVisible();
@@ -2177,8 +2223,12 @@ test.describe("Pro visual policy", () => {
         renderer,
         testInfo.outputPath(`cabinet-${template}-perspective.png`)
       );
+      expect(await page.locator("#cabinet-capture-animation-probe").evaluate(
+        (element) => element.getAnimations().map((animation) => animation.playState)
+      )).toEqual(["running"]);
       await expectRenderedScene(screenshot, `${template} Perspective`);
     }
+    await page.locator("#cabinet-capture-animation-probe").evaluate((element) => element.remove());
 
     await page.getByTestId("cabinet-preset-wardrobe").click();
     for (const view of CABINET_VIEWS) {
