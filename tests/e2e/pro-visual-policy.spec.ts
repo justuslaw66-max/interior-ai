@@ -1,5 +1,6 @@
 import { test, expect, type Locator, type Page } from "@playwright/test";
 import sharp from "sharp";
+import { attachProVisualDiagnostics, installProVisualDiagnostics, proVisualMark } from "./pro-visual-diagnostics";
 import {
   beginClientPreviewFocusWindow,
   completeClientPreviewFocusWindow,
@@ -482,6 +483,7 @@ async function mockShareFallbackDesign(page: Page) {
         ch0015eShareFallback?: typeof state;
       }
     ).ch0015eShareFallback = state;
+    window.__proVisualDiagnostic?.record("mock-clipboard-fixture-installed", { mode: state.mode });
     Object.defineProperty(navigator, "clipboard", {
       configurable: true,
       get() {
@@ -489,13 +491,16 @@ async function mockShareFallbackDesign(page: Page) {
         return {
           writeText(value: string) {
             state.writes.push(value);
-            if (state.mode === "success") return Promise.resolve();
-            if (state.mode === "permission-denied") {
-              return Promise.reject(
-                new DOMException("Clipboard permission denied", "NotAllowedError")
-              );
-            }
-            return Promise.reject(new Error("Clipboard write rejected"));
+            const mode = state.mode;
+            window.__proVisualDiagnostic?.record("mock-clipboard-invoked", { mode, writeCount: state.writes.length });
+            const result = mode === "success" ? Promise.resolve()
+              : mode === "permission-denied" ? Promise.reject(new DOMException("Clipboard permission denied", "NotAllowedError"))
+              : Promise.reject(new Error("Clipboard write rejected"));
+            if (window.__proVisualDiagnostic) void result.then(
+              () => window.__proVisualDiagnostic?.record("mock-clipboard-fulfilled", { mode }),
+              (error: Error) => window.__proVisualDiagnostic?.record("mock-clipboard-rejected", { mode, errorName: error.name }),
+            );
+            return result;
           },
         };
       },
@@ -523,6 +528,7 @@ async function setShareFallbackClipboardMode(
     ).ch0015eShareFallback;
     if (!state) throw new Error("Share fallback clipboard state is unavailable");
     state.mode = nextMode;
+    window.__proVisualDiagnostic?.record("mock-clipboard-mode", { mode: nextMode });
   }, mode);
 }
 
@@ -559,12 +565,14 @@ async function activateCreateShare(
 ) {
   const createShare = page.getByTestId("create-share");
   await expect(createShare).toBeEnabled();
+  proVisualMark(page, "create-share-action-start", { activation });
   if (activation === "keyboard") {
     await createShare.focus();
     await createShare.press("Enter");
   } else {
     await createShare.click();
   }
+  proVisualMark(page, "create-share-action-returned", { activation });
   await expect(page.getByTestId("share-fallback-modal")).toBeVisible();
   return createShare;
 }
@@ -903,6 +911,14 @@ async function mockDelayedPaletteDesignLoad(page: Page, designId: string) {
 
 test.describe("Pro visual policy", () => {
   test.use({ viewport: { width: 2048, height: 1200 }, deviceScaleFactor: 1 });
+  test.beforeEach(async ({ page }, testInfo) => {
+    if (/gives Consumer pointer Share Link Fallback|gives Pro keyboard and narrow Share Link Fallback|keeps Client Preview responsive, scope-cancelled, and Pro-gated/.test(testInfo.title)) {
+      await installProVisualDiagnostics(page);
+    }
+  });
+  test.afterEach(async ({ page }, testInfo) => {
+    await attachProVisualDiagnostics(page, testInfo);
+  });
 
   test("gives Consumer Meta Command Palette complete modal and Enter execution ownership", async ({
     page,
@@ -1683,7 +1699,9 @@ test.describe("Pro visual policy", () => {
     await activateCreateShare(page, "pointer");
     await expectShareFallbackTopmost(page, parent);
     await setShareFallbackClipboardMode(page, "success");
+    proVisualMark(page, "copy-action-start");
     await page.getByTestId("share-copy-button").click();
+    proVisualMark(page, "copy-action-returned");
     await expect(page.getByTestId("share-fallback-modal")).toBeVisible();
     expect(
       await page.evaluate(() => {
@@ -1695,7 +1713,10 @@ test.describe("Pro visual policy", () => {
         return state?.writes ?? [];
       })
     ).toEqual([SHARE_FALLBACK_URL]);
-    await expect(page.getByText("Share link copied to clipboard!")).toBeVisible();
+    proVisualMark(page, "feedback-assertion-start");
+    try {
+      await expect(page.getByText("Share link copied to clipboard!")).toBeVisible();
+    } finally { proVisualMark(page, "feedback-assertion-end"); }
     await page.getByTestId("share-open-button").click();
     await expectShareFallbackClosed(page, parent);
     expect(
@@ -1726,6 +1747,7 @@ test.describe("Pro visual policy", () => {
     await setShareFallbackClipboardMode(page, "permission-denied");
     const parent = await openPresentExport(page, "keyboard");
     const requestCountBeforeActivation = shareMock.getShareRequestCount();
+    proVisualMark(page, "explicit-share-activation-baseline", { requestCountBeforeActivation });
     const createShare = await activateCreateShare(page, "keyboard");
     const child = await expectShareFallbackTopmost(page, parent);
     const panel = child.fallback.locator(":scope > div");

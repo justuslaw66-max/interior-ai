@@ -324,11 +324,28 @@ jobs:
         run: npm run test:public-share-responsive-required
 
       - name: Run Pro visual policy matrix
+        id: pro-visual
         env:
           APP_ENV: staging
           CATALOG_STRICT_VALIDATION: "true"
           PLAYWRIGHT_USE_PRODUCTION_SERVER: "1"
         run: npm run test:pro-visual-policy
+
+      - name: Prepare Pro visual diagnostics
+        id: pro-visual-diagnostics
+        if: always() && (steps.pro-visual.outcome == 'success' || steps.pro-visual.outcome == 'failure' || steps.pro-visual.outcome == 'cancelled')
+        env:
+          PRO_VISUAL_MATRIX_OUTCOME: ${{ steps.pro-visual.outcome }}
+        run: node tests/e2e/pro-visual-diagnostics-upload.mjs
+
+      - name: Upload Pro visual diagnostics
+        if: always() && steps.pro-visual-diagnostics.outputs.has_payload == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: pro-visual-diagnostics-${{ github.run_id }}-${{ github.run_attempt }}
+          path: .local/pro-visual-diagnostics-upload/
+          if-no-files-found: error
+          retention-days: 14
 
       - name: Run required cart overlay accessibility matrix
         run: npm run test:cart-overlay-accessibility-required
