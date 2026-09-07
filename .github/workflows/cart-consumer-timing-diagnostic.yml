@@ -1,0 +1,157 @@
+name: Diagnostic only - Consumer Cart timing
+on:
+  push:
+    branches:
+      - diagnostic/cart-consumer-timing-6dd4271
+permissions:
+  contents: read
+jobs:
+  cart-timing-observation:
+    name: DIAGNOSTIC ONLY - Chromium Consumer Cart timing 1
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: test
+          POSTGRES_PASSWORD: test
+          POSTGRES_DB: interior_ai_test
+        options: --health-cmd "pg_isready -U test -d interior_ai_test" --health-interval 10s --health-timeout 5s --health-retries 5
+        ports:
+          - 5432:5432
+    env:
+      CI: "true"
+      CI_AUTH_FIXTURE_MODE: "1"
+      CI_AUTH_FIXTURE_SESSION_ID: ${{ github.run_id }}-${{ github.run_attempt }}-cart-diagnostic-auth-session
+      CI_AUTH_FIXTURE_SESSION_NONCE: ${{ github.run_id }}-${{ github.run_attempt }}-cart-diagnostic-auth-nonce
+      CI_AUTH_FIXTURE_SESSION_CLASSIFICATION: PRODUCTION_INELIGIBLE_SYNTHETIC_AUTH
+      APP_ENV: development
+      DATABASE_URL: postgresql://test:test@localhost:5432/interior_ai_test
+      AUTH_SECRET: ci-only-auth-secret-at-least-32-characters
+      NEXTAUTH_SECRET: ci-only-auth-secret-at-least-32-characters
+      NEXTAUTH_URL: http://127.0.0.1:3000
+      APP_ORIGIN: http://127.0.0.1:3000
+      AUTH_TRUST_HOST: "true"
+      ADMIN_EMAILS: gate-a3-admin@example.test
+      PLAYWRIGHT_ADMIN_EMAIL: gate-a3-admin@example.test
+      OPENAI_API_KEY: gate-a3-ci-openai-placeholder
+      SHOPIFY_STORE_DOMAIN: gate-a3-ci.myshopify.com
+      SHOPIFY_STOREFRONT_TOKEN: gate-a3-ci-shopify-placeholder
+      POSTHOG_KEY: gate-a3-ci-posthog-placeholder
+      STRIPE_SECRET_KEY: sk_test_gate_a3_ci_placeholder
+      STRIPE_WEBHOOK_SECRET: whsec_gate_a3_ci_placeholder
+      STRIPE_PRICE_PRO_MONTHLY: price_gate_a3_ci_monthly
+      STRIPE_PRICE_PRO_YEARLY: price_gate_a3_ci_yearly
+      NEXT_TELEMETRY_DISABLED: "1"
+    defaults:
+      run:
+        working-directory: app
+        shell: bash
+    steps:
+      - name: Checkout diagnostic harness
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          path: harness
+          persist-credentials: false
+      - name: Checkout exact application baseline
+        uses: actions/checkout@v4
+        with:
+          ref: 6dd4271031613ea35c9a4b2bf82bf8612c754f56
+          path: app
+          lfs: true
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Setup pinned Node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: app/.nvmrc
+      - name: Establish isolated diagnostic output and identity
+        run: node ../harness/scripts/diagnostics/cart-consumer-timing.cjs initialize
+      - name: Install unchanged locked dependencies
+        run: npm ci
+      - name: Configure new job-owned synthetic fixture paths
+        run: |-
+          {
+            echo "CI_AUTH_FIXTURE_RESULT_ROOT=$RUNNER_TEMP/cart-diagnostic-auth-results"
+            echo "CI_AUTH_FIXTURE_SESSION_ROOT=$RUNNER_TEMP/cart-diagnostic-auth-session"
+          } >> "$GITHUB_ENV"
+      - name: Configure synthetic CI OAuth fixture
+        env:
+          CI_AUTH_FIXTURE_RESULT_PATH: ${{ runner.temp }}/cart-diagnostic-auth-results/cart-diagnostic-export.json
+          CI_AUTH_FIXTURE_RESULT_NONCE: ${{ github.run_id }}-${{ github.run_attempt }}-cart-diagnostic-export
+          CI_AUTH_FIXTURE_EXPECTED_COMMAND_ID: ci:auth-fixture:export
+          CI_AUTH_FIXTURE_EXPECTED_MODE: provider-fixture-export
+        run: |
+          mkdir -p "$CI_AUTH_FIXTURE_RESULT_ROOT"
+          export CI_AUTH_FIXTURE_CANDIDATE_COMMIT_SHA="$(git rev-parse HEAD)"
+          export CI_AUTH_FIXTURE_CANDIDATE_TREE_SHA="$(git rev-parse 'HEAD^{tree}')"
+          set +e
+          npm run ci:auth-fixture:export
+          auth_command_status=$?
+          set -e
+          CI_AUTH_FIXTURE_ACTUAL_EXIT_STATUS="$auth_command_status" npm run ci:auth-fixture:result:validate
+          if [ "$auth_command_status" -ne 0 ]; then
+            exit "$auth_command_status"
+          fi
+      - name: Validate synthetic CI OAuth fixture
+        env:
+          CI_AUTH_FIXTURE_RESULT_PATH: ${{ runner.temp }}/cart-diagnostic-auth-results/cart-diagnostic-validate.json
+          CI_AUTH_FIXTURE_RESULT_NONCE: ${{ github.run_id }}-${{ github.run_attempt }}-cart-diagnostic-validate
+          CI_AUTH_FIXTURE_EXPECTED_COMMAND_ID: ci:auth-fixture:validate-existing
+          CI_AUTH_FIXTURE_EXPECTED_MODE: auth-environment-validation
+        run: |
+          export CI_AUTH_FIXTURE_CANDIDATE_COMMIT_SHA="$(git rev-parse HEAD)"
+          export CI_AUTH_FIXTURE_CANDIDATE_TREE_SHA="$(git rev-parse 'HEAD^{tree}')"
+          set +e
+          npm run ci:auth-fixture:validate-existing
+          auth_command_status=$?
+          set -e
+          CI_AUTH_FIXTURE_ACTUAL_EXIT_STATUS="$auth_command_status" npm run ci:auth-fixture:result:validate
+          if [ "$auth_command_status" -ne 0 ]; then
+            exit "$auth_command_status"
+          fi
+      - name: Validate production misuse against the exported fixture
+        env:
+          CI_AUTH_FIXTURE_RESULT_PATH: ${{ runner.temp }}/cart-diagnostic-auth-results/cart-diagnostic-production-misuse.json
+          CI_AUTH_FIXTURE_RESULT_NONCE: ${{ github.run_id }}-${{ github.run_attempt }}-cart-diagnostic-production-misuse
+          CI_AUTH_FIXTURE_EXPECTED_COMMAND_ID: ci:auth-fixture:production-misuse-existing
+          CI_AUTH_FIXTURE_EXPECTED_MODE: production-misuse-validation
+        run: |
+          export CI_AUTH_FIXTURE_CANDIDATE_COMMIT_SHA="$(git rev-parse HEAD)"
+          export CI_AUTH_FIXTURE_CANDIDATE_TREE_SHA="$(git rev-parse 'HEAD^{tree}')"
+          set +e
+          npm run ci:auth-fixture:production-misuse-existing
+          auth_command_status=$?
+          set -e
+          CI_AUTH_FIXTURE_ACTUAL_EXIT_STATUS="$auth_command_status" npm run ci:auth-fixture:result:validate
+          if [ "$auth_command_status" -ne 0 ]; then
+            exit "$auth_command_status"
+          fi
+      - name: Migrate fresh job-owned test database
+        env:
+          GATE_A3_DATABASE_URL: ${{ env.DATABASE_URL }}
+        run: npm run gate:a3:db
+      - name: Install pinned Chromium only
+        run: npx playwright install --with-deps chromium
+      - name: Prepare timing-only copy and record environment
+        run: node ../harness/scripts/diagnostics/cart-consumer-timing.cjs prepare
+      - name: Discover exactly one diagnostic case
+        run: node ../harness/scripts/diagnostics/cart-consumer-timing.cjs discover
+      - name: Observe one Chromium Consumer case
+        id: observation
+        run: node ../harness/scripts/diagnostics/cart-consumer-timing.cjs observe
+      - name: Inspect and retain allowlisted diagnostic evidence
+        if: always()
+        env:
+          OBSERVATION_OUTCOME: ${{ steps.observation.outcome }}
+        run: node ../harness/scripts/diagnostics/cart-consumer-timing.cjs collect
+      - name: Upload inspected diagnostic evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cart-consumer-timing-diagnostic-${{ github.run_id }}-${{ github.run_attempt }}
+          path: app/.local/cart-timing-diagnostic/upload/
+          if-no-files-found: error
+          retention-days: 14
