@@ -20,6 +20,7 @@ import {
 } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
+import { pathToFileURL } from "node:url";
 
 import {
   PRODUCTION_EVIDENCE_JOURNAL_SCHEMA,
@@ -2066,28 +2067,37 @@ function stateFixture() {
   assert.ok(cartOwner);
   assert.equal(cartOwner.productionServer, false);
   assert.equal(stageWorktreeRole("browser-owners", cartOwner.id), "development-browser");
-  function readCartConfig(port, required = true) {
-    const result = spawnSync(process.execPath, ["--input-type=module", "-e", `
-      const { default: config } = await import("./${cartOwner.config}");
-      console.log(JSON.stringify(config));
-    `], {
-      cwd: repositoryRoot,
-      encoding: "utf8",
-      env: {
-        PATH: process.env.PATH,
-        // Required ownership must hold even outside CI, without inherited overrides.
-        CI: "",
-        ...(port === undefined ? {} : { CART_OVERLAY_TEST_PORT: port }),
-        ...(required ? {
-          REQUIRED_TEST_GATE_ID: cartOwner.gateId,
-          REQUIRED_TEST_REPORT_PATH:
-            `.local/required-test-evidence/${cartOwner.gateId}/config-contract-${process.pid}.json`,
-        } : {}),
-      },
-    });
-    if (result.error) throw result.error;
-    if (result.status !== 0) throw new Error(result.stderr);
-    return JSON.parse(result.stdout);
+  function readCartConfig(port, required = true, prepareReportParent = true) {
+    const fixtureRoot = mkdtempSync(path.join(tmpdir(), "certification-cart-config-"));
+    const reportParent = `.local/required-test-evidence/${cartOwner.gateId}`;
+    const configURL = pathToFileURL(path.join(repositoryRoot, cartOwner.config)).href;
+    try {
+      if (required && prepareReportParent) {
+        mkdirSync(path.join(fixtureRoot, reportParent), { recursive: true });
+      }
+      const result = spawnSync(process.execPath, ["--input-type=module", "-e", `
+        const { default: config } = await import(${JSON.stringify(configURL)});
+        console.log(JSON.stringify(config));
+      `], {
+        cwd: fixtureRoot,
+        encoding: "utf8",
+        env: {
+          PATH: process.env.PATH,
+          // Required ownership must hold even outside CI, without inherited overrides.
+          CI: "",
+          ...(port === undefined ? {} : { CART_OVERLAY_TEST_PORT: port }),
+          ...(required ? {
+            REQUIRED_TEST_GATE_ID: cartOwner.gateId,
+            REQUIRED_TEST_REPORT_PATH: `${reportParent}/config-contract.json`,
+          } : {}),
+        },
+      });
+      if (result.error) throw result.error;
+      if (result.status !== 0) throw new Error(result.stderr);
+      return JSON.parse(result.stdout);
+    } finally {
+      rmSync(fixtureRoot, { recursive: true, force: true });
+    }
   }
 
   const packageScripts = JSON.parse(readFileSync("package.json", "utf8")).scripts;
@@ -2115,6 +2125,8 @@ function stateFixture() {
     assert.equal(launch[1], port === "3000" ? "0.0.0.0" : "127.0.0.1");
   }
 
+  assert.throws(() => readCartConfig(undefined, true, false),
+    /Production evidence report parent directory must already exist\./);
   for (const port of [undefined, "3000", "3108", "1", "65535"]) {
     const config = readCartConfig(port);
     assertCartServer(config, port ?? "3000");
