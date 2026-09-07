@@ -2066,11 +2066,103 @@ function stateFixture() {
   assert.ok(cartOwner);
   assert.equal(cartOwner.productionServer, false);
   assert.equal(stageWorktreeRole("browser-owners", cartOwner.id), "development-browser");
-  const cartConfig = readFileSync(cartOwner.config, "utf8");
-  assert.match(cartConfig, /command: "npm run dev"/);
-  assert.match(cartConfig, /http:\/\/127\.0\.0\.1:3000/);
-  assert.match(cartConfig, /timeout: 120_000/);
-  assert.match(cartConfig, /retries: 0/);
+  function readCartConfig(port, required = true) {
+    const result = spawnSync(process.execPath, ["--input-type=module", "-e", `
+      const { default: config } = await import("./${cartOwner.config}");
+      console.log(JSON.stringify(config));
+    `], {
+      cwd: repositoryRoot,
+      encoding: "utf8",
+      env: {
+        PATH: process.env.PATH,
+        // Required ownership must hold even outside CI, without inherited overrides.
+        CI: "",
+        ...(port === undefined ? {} : { CART_OVERLAY_TEST_PORT: port }),
+        ...(required ? {
+          REQUIRED_TEST_GATE_ID: cartOwner.gateId,
+          REQUIRED_TEST_REPORT_PATH:
+            `.local/required-test-evidence/${cartOwner.gateId}/config-contract-${process.pid}.json`,
+        } : {}),
+      },
+    });
+    if (result.error) throw result.error;
+    if (result.status !== 0) throw new Error(result.stderr);
+    return JSON.parse(result.stdout);
+  }
+
+  const packageScripts = JSON.parse(readFileSync("package.json", "utf8")).scripts;
+  function assertCartServer(config, port) {
+    const expectedURL = `http://127.0.0.1:${port}`;
+    assert.equal(config.use.baseURL, expectedURL);
+    assert.equal(config.webServer.url, expectedURL);
+    assert.equal(config.webServer.reuseExistingServer, false);
+    assert.equal(config.webServer.timeout, 120_000);
+    let command = config.webServer.command;
+    // Resolve the existing npm launch chain so a changed dev script cannot
+    // silently disagree with Playwright's browser and readiness targets.
+    for (let depth = 0; /\bnpm run [\w:-]+/.test(command); depth += 1) {
+      assert.ok(depth < 5, "Cart development launch must not recurse");
+      command = command.replace(/\bnpm run ([\w:-]+)/g, (_, name) => {
+        assert.equal(typeof packageScripts[name], "string");
+        return packageScripts[name];
+      });
+    }
+    const launch = command.match(
+      /^node scripts\/dev-preflight\.mjs && env -u DEBUG (?:node node_modules\/next\/dist\/bin\/next|next) dev --webpack --hostname (127\.0\.0\.1|0\.0\.0\.0) --port (\d+)$/,
+    );
+    assert.ok(launch, "Cart must launch the preflighted local development server");
+    assert.equal(Number(launch[2]), Number(port));
+    assert.equal(launch[1], port === "3000" ? "0.0.0.0" : "127.0.0.1");
+  }
+
+  for (const port of [undefined, "3000", "3108", "1", "65535"]) {
+    const config = readCartConfig(port);
+    assertCartServer(config, port ?? "3000");
+    if (port === undefined) assert.equal(config.webServer.command, "npm run dev");
+    assert.equal(config.testDir, "./tests/required");
+    assert.equal(config.testMatch, "cart-overlay-accessibility.spec.ts");
+    assert.equal(config.forbidOnly, true);
+    assert.equal(config.fullyParallel, false);
+    assert.equal(config.timeout, undefined, "keep Playwright's default test deadline");
+    assert.equal(config.retries, 0);
+    assert.equal(config.workers, 1);
+    assert.deepEqual(config.expect, { timeout: 30_000 });
+    assert.deepEqual(config.use, {
+      baseURL: `http://127.0.0.1:${port ?? "3000"}`,
+      actionTimeout: 30_000,
+      navigationTimeout: 60_000,
+      trace: "off",
+      screenshot: "off",
+      video: "off",
+    });
+    assert.deepEqual(config.projects.map((project) => [
+      project.name, project.use.defaultBrowserType,
+    ]), [["chromium", "chromium"], ["webkit", "webkit"]]);
+  }
+  for (const port of ["", "0", "65536", "-1", "1.5", " 3108", "3108 ", "NaN", "3108; echo invalid"]) {
+    assert.throws(() => readCartConfig(port),
+      /CART_OVERLAY_TEST_PORT must be a TCP port from 1 to 65535\./);
+  }
+  const isolated = readCartConfig("3108");
+  for (const change of [
+    { use: { ...isolated.use, baseURL: "http://127.0.0.1:3109" } },
+    { use: { ...isolated.use, baseURL: "http://example.invalid:3108" } },
+    { webServer: { ...isolated.webServer, url: "http://127.0.0.1:3109" } },
+    { webServer: { ...isolated.webServer, url: "http://example.invalid:3108" } },
+    { webServer: { ...isolated.webServer, reuseExistingServer: true } },
+    { webServer: { ...isolated.webServer,
+      command: isolated.webServer.command.replace("--port 3108", "--port 3109") } },
+    { webServer: { ...isolated.webServer,
+      command: isolated.webServer.command.replace("127.0.0.1", "example.invalid") } },
+    { webServer: { ...isolated.webServer, command: "npm run start" } },
+  ]) {
+    assert.throws(() => assertCartServer({ ...isolated, ...change }, "3108"),
+      assert.AssertionError);
+  }
+  const focused = readCartConfig("3108", false);
+  assert.equal(focused.use.trace, "retain-on-failure");
+  assert.equal(focused.use.screenshot, "only-on-failure");
+  assert.equal(focused.use.video, "retain-on-failure");
 }
 
 {
