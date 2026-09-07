@@ -6,8 +6,8 @@
       "root": "scripts",
       "filePattern": "^test-.*\\.(?:js|mjs|ts)$",
       "classification": "risk-triggered",
-      "expectedFileCount": 281,
-      "expectedPathSha256": "117d50ef62f82ab84ac6e6b3a72662cf28f58a2e3ba69610c0c5affa50d09aa0"
+      "expectedFileCount": 282,
+      "expectedPathSha256": "1512f0e23ce0a63679551d19040cbc188e27442ecbb829346848cc33bf09c63e"
     },
     {
       "id": "browser-specs",
@@ -136,6 +136,7 @@
         "scripts/production-certification-doctor.mjs",
         "scripts/production-certification-dependencies.mjs",
         "scripts/production-certification-database-adapter.mjs",
+        "scripts/production-certification-database-cleanup-observation.mjs",
         "scripts/provision-gate-a3-database.mjs",
         "scripts/production-certification-database-contract.mjs",
         "scripts/production-certification-database-lifecycle.mjs",

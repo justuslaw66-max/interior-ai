@@ -497,3 +497,75 @@ preserved, including before abort cleanup reads application rows. Role-session
 checks use the recorded role OID across all databases; any remaining session
 blocks cleanup without termination. Normal and abort absence verification
 include both database sessions and sessions for the recorded role.
+
+### Approved cleanup observation exception (2026-09-07)
+
+Owner: window-integration task / Justus. Review expiry: **2026-09-14**.
+Expiry requires review; it does not extend the budget automatically. This is the
+specific approved timing exception under `docs/engineering/CODE_REVIEW.md`;
+the general review policy and its ratchets remain unchanged.
+
+The negative-attribution diagnostic on candidate `9453324` observed an autovacuum
+worker starting inside abort cleanup after final verification had observed zero
+sessions. Evidence: task-state `candidate-9453324-session-type-observations.json`
+and `database-autovacuum-cleanup-wait-proposal-review.md`. Approved proposal:
+`database-autovacuum-cleanup-wait-proposal.md`, SHA256
+`40334c1c94f491c49203d35b51a41909a576f4a807f73a1b4cc15ccaab1bdb46`.
+Explicit approval: attachment `ee9e57af-4cc3-46d4-ae01-39d443b69c1d`.
+The original qualifier's session subtype remains **UNKNOWN**. The instrumented
+diagnostic does not retrospectively classify it or qualify the failed run.
+
+The adapter and lifecycle use the cohesive local owner
+`scripts/production-certification-database-cleanup-observation.mjs` for one
+2,000 ms monotonic polling deadline per normal-drop or abort invocation, shared
+by release observation and the final pre-DROP guard. It starts at the first
+eligible nonempty autovacuum-only observation. Once started, query, identity
+check, checkpoint and sleep time consume that same budget. Requested sleeps
+are at most `min(50 ms, remaining)`. No additional poll or sleep starts after
+expiry. Mandatory initial/final guard observations still execute. An empty
+result succeeds without deliberate waiting, including an in-flight query that
+finishes beyond the deadline. The existing 10-second connection timeout and
+absence of an explicit SQL query timeout are preserved; this is not a hard
+2-second cleanup or SQL-operation timeout.
+
+Waiting requires physical acknowledged creation, matching recorded database
+and role OIDs, and the existing ownership/private-binding checks. Every session
+must explicitly identify `backendType: "autovacuum worker"`. Client, unknown,
+other server or mixed session sets refuse immediately. Raw null client addresses
+remain null. Current database identity is rechecked on each nonempty observation
+and immediately before non-forced DROP; role receipt checks remain enforced.
+No session is filtered, cancelled or terminated. No settings change, forced DROP,
+DROP retry or automatic cleanup replay is introduced. A zero count is mandatory;
+a late DROP race remains a failure and retains its evidence. Timeout preserves
+resources for later exact-ownership cleanup after conditions change.
+
+Each invocation records its observations, backend types, chronological poll and
+sleep events, shared budget, elapsed time, final count and refusal/identity/query
+failures in `sessions.cleanupObservations`. Checkpoints preserve these through
+later errors and stale intermediate lifecycle snapshots. Existing failure fields
+retain later DROP/cleanup errors and the original failure independently.
+Historical evidence may omit the new field; omission is not evidence of waiting.
+The portable evidence validator checks the optional observation contract, and
+the helper and focused tests are registered in source/ownership inventories.
+The registered database-lifecycle owner executes the controlled-clock regression
+coverage and lifecycle checkpoint cases before its complete real disposable
+coverage, including the held-client refusal and unrelated-session assertions.
+
+This scope changes no initial/final substantive verification, application data,
+package dependency or publication/deployment authority. Roll back the coherent
+cleanup-observation patch to restore immediate worker refusal; prior failure and
+browser/build artifacts remain attributed to their original source.
+
+Automatic fallbacks in the certification CLI, both auth-preflight fallback
+paths, and the real database fixture finalizer read the validated physical
+receipt before attempting cleanup. If a failed lifecycle has already recorded
+a cleanup observation, they preserve it and refuse replay, including timeout,
+late in-flight failure and failed DROP. This prevents renewed budgets and a
+second automatic DROP. The original error remains the primary error/cause;
+explicit later exact-owner cleanup is still available after conditions change.
+
+The imported focused regression module remains in the harness inventory and
+its precommit fixture copy list. The global script-test inventory includes its
+one new path. It is executed by the existing database test owner, so it is not
+listed as an additional direct package-command test in the gate manifest.
+Existing literal-command enforcement and package-script digests are unchanged.

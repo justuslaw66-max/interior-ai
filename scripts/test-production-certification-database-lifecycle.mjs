@@ -1,3 +1,5 @@
+import { assertAutomaticDatabaseCleanupMayStart } from "./production-certification-database-cleanup-observation.mjs";
+import { verifyDatabaseCleanupObservation, verifyCleanupLifecycleCheckpoints, exhaustedCleanupObservationFixture } from "./test-production-certification-database-cleanup-observation.mjs";
 import { createOwnedWindowOpeningDatabase, dropOwnedWindowOpeningDatabase } from "./provision-gate-a3-database.mjs";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
@@ -370,8 +372,9 @@ class FakeDatabaseAdapter {
     return structuredClone(this.sessions);
   }
 
-  async terminateTargetSessions() {
-    const pids = this.sessions.map((session) => session.pid);
+  async terminateTargetSessions(_databaseName, observation = null) {
+    const sessions = observation ? await observation.observe(() => this.targetSessions(), "release") : this.sessions;
+    const pids = sessions.map((session) => session.pid);
     const result = {
       matchedSessionCount: pids.length,
       terminatedPids: [],
@@ -381,7 +384,11 @@ class FakeDatabaseAdapter {
     return result;
   }
 
-  async dropDatabase(_databaseName, expectedOid) {
+  async dropDatabase(_databaseName, expectedOid, observation = null) {
+    if (observation) {
+      await observation.observe(() => this.targetSessions(), "pre-drop");
+      await observation.beforeDrop();
+    }
     if (this.exists && expectedOid !== this.databaseOid) throw new Error("database replacement is preserved");
     if (this.sessions.length) throw new Error("target sessions remain");
     const wasPresent = this.exists;
@@ -403,7 +410,7 @@ class FakeDatabaseAdapter {
 async function abortAfterClosingFakeSessions(options) {
   if (options.adapter.sessions.length > 0) {
     const originalSessions = structuredClone(options.adapter.sessions);
-    await assert.rejects(abortCertificationDatabase(options), /could not release exact target sessions/);
+    await assert.rejects(abortCertificationDatabase(options), /refuses active sessions/);
     assert.deepEqual(options.adapter.sessions, originalSessions);
     assert.deepEqual(options.adapter.terminated, []);
     assert.equal(options.adapter.exists, true);
@@ -575,6 +582,13 @@ function appEventRow(
 }
 
 async function deterministicContractCoverage() {
+  await verifyDatabaseCleanupObservation();
+  await verifyCleanupLifecycleCheckpoints({
+    fixture, FakeDatabaseAdapter, repositoryRoot, planCertificationDatabase,
+    provisionCertificationDatabase, abortCertificationDatabase,
+    readCertificationDatabaseLifecycle,
+    removeFixture: (root) => rmSync(root, { recursive: true, force: true }),
+  });
   await realFixtureCleanupContractCoverage();
   runAppEventWriterFixture("source-contract", {
     ...appEventWriterBaseEnvironment(),
@@ -2465,16 +2479,9 @@ async function deterministicContractCoverage() {
       adapter: checkpointAdapter,
     });
     checkpointAdapter.rows[0].count = 2;
-    checkpointAdapter.sessions = [
-      {
-        pid: 7101,
-        role: "owner",
-        applicationName: "checkpoint-fixture",
-        clientAddress: "127.0.0.1",
-        state: "idle",
-        backendStartedAt: "2026-08-17T00:00:00.000Z",
-      },
-    ];
+    // Empty observation reaches the injected release-operation error. Nonempty
+    // client refusal and retained worker observations have separate coverage.
+    checkpointAdapter.sessions = [];
     let releaseError;
     try {
       await abortCertificationDatabase({
@@ -2498,7 +2505,7 @@ async function deterministicContractCoverage() {
       environment: checkpointFixture.environment,
     });
     assert.equal(partial.evidence.inventories.abort.totalRows, 2);
-    assert.equal(partial.evidence.sessions.abort.count, 1);
+    assert.equal(partial.evidence.sessions.abort.count, 0);
     assert.equal(partial.evidence.failure.classification, "PRODUCT_ASSERTION_FAILURE");
     assert.doesNotMatch(JSON.stringify(partial.evidence), /checkpoint-secret/);
     checkpointAdapter.releaseFailure = null;
@@ -2853,6 +2860,7 @@ async function finishRealDatabaseFixture({
       repositoryRoot, environment: testFixture.environment,
     });
     if (!new Set(["absence-verified", "abort-absence-verified"]).has(current.evidence.currentState)) {
+      assertAutomaticDatabaseCleanupMayStart(current.evidence, primaryFailure);
       await abortCertificationDatabase({
         repositoryRoot, environment: testFixture.environment, adapter,
         originalFailure: originalFailure ?? retainedRealFixtureFailure(testFixture, current, stage),
@@ -2873,7 +2881,7 @@ async function finishRealDatabaseFixture({
 }
 
 async function realFixtureCleanupContractCoverage() {
-  for (const scenario of ["success", "session-refusal", "missing-receipt", "malformed-receipt", "client-close-failure"]) {
+  for (const scenario of ["success", "session-refusal", "missing-receipt", "malformed-receipt", "client-close-failure", "observation-timeout"]) {
     const testFixture = fixture({ id: `real-fixture-cleanup-${scenario}` });
     const adapter = new FakeDatabaseAdapter();
     const options = { repositoryRoot, environment: testFixture.environment, adapter };
@@ -2886,6 +2894,11 @@ async function realFixtureCleanupContractCoverage() {
       adapter.rows = [{ table: "User", count: 1 }];
       await assert.rejects(verifyFinalCertificationDatabase(options), /row, session, or stage-binding contract failed/);
       const receiptBytes = readFileSync(testFixture.lifecyclePath);
+      if (scenario === "observation-timeout") {
+        const current = readCertificationDatabaseLifecycle(options);
+        current.evidence.sessions.cleanupObservations = [await exhaustedCleanupObservationFixture()];
+        writeFileSync(testFixture.lifecyclePath, JSON.stringify(sealDatabaseLifecycleEvidence(current.evidence)));
+      }
       if (scenario === "session-refusal") adapter.sessions = [{ pid: 1234 }];
       if (scenario === "missing-receipt") rmSync(testFixture.lifecyclePath);
       if (scenario === "malformed-receipt") writeFileSync(testFixture.lifecyclePath, "malformed");
@@ -2910,9 +2923,25 @@ async function realFixtureCleanupContractCoverage() {
           assert.ok(retained.evidenceReferences["database-final-failure"]);
           assert.deepEqual(adapter.terminated, []);
           adapter.sessions = [];
+          const current = readCertificationDatabaseLifecycle(options);
+          await abortCertificationDatabase({ ...options,
+            originalFailure: retainedRealFixtureFailure(testFixture, current, "later-exact-cleanup"),
+          });
         }
         if (scenario === "missing-receipt" || scenario === "malformed-receipt") {
           writeFileSync(testFixture.lifecyclePath, receiptBytes);
+        }
+        if (scenario === "observation-timeout") {
+          const current = readCertificationDatabaseLifecycle(options);
+          assert.equal(current.evidence.sessions.cleanupObservations.length, 1);
+          assert.equal(current.evidence.sessions.cleanupObservations[0].outcome, "expired");
+          assert.equal(current.evidence.events.some((event) => event.mode === "abort-cleanup"), false);
+          // An explicit later cleanup after independently observing changed
+          // conditions is distinct from finally replaying the exhausted abort.
+          assert.deepEqual(await adapter.targetSessions(), []);
+          await abortCertificationDatabase({ ...options,
+            originalFailure: retainedRealFixtureFailure(testFixture, current, "later-exact-cleanup"),
+          });
         }
         // A successful retry must reuse the old failure snapshot after the
         // lifecycle changed during refusal, rather than regenerate its bytes.
@@ -3376,7 +3405,7 @@ async function realDisposableDatabaseCoverage() {
       repositoryRoot,
       environment: realFixture.environment,
       originalFailure,
-    }), /could not release exact target sessions/);
+    }), /refuses active sessions/);
     assert.equal((await targetClient.query("SELECT 1 AS alive")).rows[0].alive, 1);
     await targetClient.end();
     targetClient = null;

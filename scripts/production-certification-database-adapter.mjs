@@ -28,7 +28,8 @@ function safeSession(row) {
     pid: Number(row.pid),
     role: row.usename,
     applicationName: row.application_name || null,
-    clientAddress: row.client_addr || "local-socket",
+    clientAddress: row.client_addr ?? null,
+    backendType: row.backend_type ?? null,
     state: row.state || null,
     backendStartedAt: new Date(row.backend_start).toISOString(),
   };
@@ -434,7 +435,7 @@ export class CertificationPostgresAdapter {
     assertUnprotectedDatabaseName(databaseName);
     return withClient(this.adminUrl, async (client) => {
       const result = await client.query(
-        `SELECT pid, usename, application_name, client_addr, state, backend_start
+        `SELECT pid, usename, application_name, client_addr, state, backend_start, backend_type
            FROM pg_stat_activity
           WHERE datname = $1 AND pid <> pg_backend_pid()
           ORDER BY pid`,
@@ -451,17 +452,19 @@ export class CertificationPostgresAdapter {
     }
     return withClient(this.adminUrl, async (client) => {
       const result = await client.query(
-        `SELECT pid, usename, datname, application_name, client_addr, state, backend_start
+        `SELECT pid, usename, datname, application_name, client_addr, state, backend_start, backend_type
            FROM pg_stat_activity WHERE usesysid = $1 ORDER BY pid`, [roleOid],
       );
       return result.rows.map((row) => ({ ...safeSession(row), database: row.datname }));
     });
   }
 
-  async terminateTargetSessions(databaseName) {
+  async terminateTargetSessions(databaseName, observation = null) {
     // Owners close their clients and processes before cleanup. A database name
     // does not prove session ownership, so any remaining connection blocks drop.
-    const sessions = await this.targetSessions(databaseName);
+    const sessions = observation
+      ? await observation.observe(() => this.targetSessions(databaseName), "release")
+      : await this.targetSessions(databaseName);
     return {
       matchedSessionCount: sessions.length,
       terminatedPids: [],
@@ -469,7 +472,7 @@ export class CertificationPostgresAdapter {
     };
   }
 
-  async dropDatabase(databaseName, expectedOid) {
+  async dropDatabase(databaseName, expectedOid, observation = null) {
     if (!Number.isSafeInteger(expectedOid) || expectedOid <= 0) {
       throw new Error("database cleanup requires its recorded catalog identity");
     }
@@ -483,12 +486,25 @@ export class CertificationPostgresAdapter {
       if (Number(existing.rows[0].oid) !== expectedOid) {
         throw new Error("database catalog identity changed; replacement is preserved");
       }
-      const sessions = await client.query(
-        "SELECT 1 FROM pg_stat_activity WHERE datname = $1 AND pid <> pg_backend_pid()",
-        [databaseName],
-      );
-      if (sessions.rowCount !== 0) {
+      const readSessions = async () => {
+        const result = await client.query(
+          `SELECT pid, usename, application_name, client_addr, state, backend_start, backend_type
+           FROM pg_stat_activity WHERE datname = $1 AND pid <> pg_backend_pid() ORDER BY pid`,
+          [databaseName],
+        );
+        return result.rows.map(safeSession);
+      };
+      const sessions = observation
+        ? await observation.observe(readSessions, "pre-drop") : await readSessions();
+      if (sessions.length !== 0) {
         throw new Error("generated certification database still has active sessions");
+      }
+      if (observation) await observation.beforeDrop();
+      const finalIdentity = await client.query(
+        "SELECT oid FROM pg_database WHERE datname = $1", [databaseName],
+      );
+      if (finalIdentity.rowCount !== 1 || Number(finalIdentity.rows[0].oid) !== expectedOid) {
+        throw new Error("database catalog identity changed before DROP; target preserved");
       }
       await client.query(`DROP DATABASE ${identifier}`);
       return { dropped: true, alreadyAbsent: false };

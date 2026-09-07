@@ -18,6 +18,7 @@ import {
 import { userInfo } from "node:os";
 import path from "node:path";
 
+import { createDatabaseCleanupObservation } from "./production-certification-database-cleanup-observation.mjs";
 import { CertificationPostgresAdapter } from "./production-certification-database-adapter.mjs";
 import { inspectCertificationAppEvents } from "./production-certification-app-event-lifecycle.mjs";
 import {
@@ -50,6 +51,7 @@ const OWNER_PATHS = Object.freeze([
   "lib/trusted-app-event-core.ts",
   "scripts/production-certification-database-contract.mjs",
   "scripts/production-certification-database-adapter.mjs",
+  "scripts/production-certification-database-cleanup-observation.mjs",
   "scripts/production-certification-app-event-lifecycle.mjs",
   "scripts/production-certification-database-lifecycle.mjs",
 ]);
@@ -203,6 +205,27 @@ async function assertOwnedRoleCleanupReady(evidence, adapter) {
   const sessions = await adapter.stageRoleSessions(roleName, roleOid);
   if (sessions.length !== 0) {
     throw new Error(`Retain owned role ${roleName}: connections remain; no sessions were terminated`);
+  }
+}
+
+async function assertCleanupObservationIdentity(evidence, adapter, environment, { waiting }) {
+  if (!ownsAcknowledgedDatabase(evidence)) {
+    throw new Error("cleanup observation requires acknowledged database ownership");
+  }
+  const database = await adapter.inspectAdmin(evidence.database.name);
+  assertDatabaseCatalogIdentity(evidence, database);
+  if (!database.targetExists) throw new Error("cleanup target disappeared without a drop receipt");
+  if (waiting || ownsAcknowledgedRole(evidence)) {
+    if (!ownsAcknowledgedRole(evidence)) throw new Error("cleanup waiting requires acknowledged role ownership");
+    await assertOwnedRoleCleanupReady(evidence, adapter);
+    const role = await adapter.inspectStageRole(stageRoleName(evidence));
+    if (!role.exists || role.roleOid !== evidence.privateBinding.roleCreation.roleOid) {
+      throw new Error("cleanup role identity changed or disappeared");
+    }
+  }
+  if (waiting && typeof evidence.privateBinding?.sidecarSha256 === "string" &&
+      inspectPrivateDatabaseBindingFile(environment, evidence).status !== "owned") {
+    throw new Error("cleanup waiting requires the recorded private binding");
   }
 }
 
@@ -698,6 +721,7 @@ async function mutateLifecycle(options, action) {
   return withEvidenceLock(paths.absolutePath, async () => {
     const evidence = readEvidence(paths.absolutePath);
     let persisted = evidence;
+    let cleanupObservations = evidence.sessions?.cleanupObservations;
     assertIdentity(evidence, environment);
     const adapter = adapterFor(
       { repositoryRoot, environment, adapter: options.adapter },
@@ -706,6 +730,17 @@ async function mutateLifecycle(options, action) {
     let next;
     let actionError = null;
     const checkpoint = (checkpointEvidence) => {
+      if (cleanupObservations) {
+        checkpointEvidence = structuredClone(checkpointEvidence);
+        checkpointEvidence.sessions.cleanupObservations = structuredClone(cleanupObservations);
+        const abort = cleanupObservations.filter((entry) => entry.mode === "abort").at(-1);
+        const observed = abort?.events.find((event) => event.kind === "observation");
+        if (observed) {
+          const inventory = { count: observed.sessions.length, sessions: observed.sessions };
+          checkpointEvidence.sessions.abort ??= persisted.sessions.abort ?? inventory;
+          checkpointEvidence.sessions.abortLatest = inventory;
+        }
+      }
       const prepared = nextPersistedRevision(persisted, checkpointEvidence);
       const issues = databaseLifecycleEvidenceIssues(prepared);
       if (issues.length > 0) throw new Error(issues.join("; "));
@@ -720,6 +755,18 @@ async function mutateLifecycle(options, action) {
         repositoryRoot,
         environment,
         checkpoint,
+        cleanupObservation: (mode) => {
+          cleanupObservations = [...(cleanupObservations ?? [])];
+          const index = cleanupObservations.length;
+          return createDatabaseCleanupObservation({
+            mode,
+            assertIdentity: (details) => assertCleanupObservationIdentity(evidence, adapter, environment, details),
+            record: (snapshot) => {
+              cleanupObservations[index] = snapshot;
+              checkpoint(persisted);
+            },
+          });
+        },
       });
     } catch (error) {
       actionError = error;
@@ -1274,7 +1321,7 @@ export function retainCertificationDatabaseFailureSnapshot({
 }
 
 export async function dropCertificationDatabase(options = {}) {
-  return mutateLifecycle({ ...options, mode: "drop" }, async ({ evidence, adapter, environment, checkpoint }) => {
+  return mutateLifecycle({ ...options, mode: "drop" }, async ({ evidence, adapter, environment, checkpoint, cleanupObservation }) => {
     if (evidence.currentState !== "final-empty-verified") {
       throw new Error("normal database drop requires truthful final-empty verification");
     }
@@ -1283,14 +1330,15 @@ export async function dropCertificationDatabase(options = {}) {
     }
     assertDatabaseCatalogIdentity(evidence, await adapter.inspectAdmin(evidence.database.name));
     await assertOwnedRoleCleanupReady(evidence, adapter);
-    const release = await adapter.terminateTargetSessions(evidence.database.name);
+    const observation = cleanupObservation("normal");
+    const release = await adapter.terminateTargetSessions(evidence.database.name, observation);
     if (release.remainingSessionCount !== 0) {
       throw new Error("target sessions remained after exact release");
     }
     const next = structuredClone(evidence);
     next.sessions.release = release;
     const cleared = checkpoint(advance(next, "drop", ["sessions-cleared"], release));
-    const dropped = await adapter.dropDatabase(evidence.database.name, evidence.provisioning.databaseOid);
+    const dropped = await adapter.dropDatabase(evidence.database.name, evidence.provisioning.databaseOid, observation);
     if (dropped.dropped !== true) {
       throw new Error("normal database drop did not remove the owned target");
     }
@@ -1340,7 +1388,7 @@ export async function verifyCertificationDatabaseAbsent(options = {}) {
 }
 
 export async function abortCertificationDatabase(options = {}) {
-  return mutateLifecycle({ ...options, mode: "abort-cleanup" }, async ({ evidence, adapter, environment, checkpoint }) => {
+  return mutateLifecycle({ ...options, mode: "abort-cleanup" }, async ({ evidence, adapter, environment, checkpoint, cleanupObservation }) => {
     if (evidence.currentState === "abort-absence-verified") return evidence;
     let next = structuredClone(evidence);
     const finalEmptyVerified = finalEmptyWasVerified(next);
@@ -1432,21 +1480,19 @@ export async function abortCertificationDatabase(options = {}) {
     if (inspected.targetExists) {
       assertDatabaseCatalogIdentity(evidence, inspected);
       const rows = rowInventory(await adapter.applicationRows(evidence.database.name));
-      const sessions = await adapter.targetSessions(evidence.database.name);
       next = structuredClone(next);
       next.inventories.abort ??= rows;
-      next.sessions.abort ??= { count: sessions.length, sessions };
       next.inventories.abortLatest = rows;
-      next.sessions.abortLatest = { count: sessions.length, sessions };
       next = checkpoint(next);
-      const release = await adapter.terminateTargetSessions(evidence.database.name);
+      const observation = cleanupObservation("abort");
+      const release = await adapter.terminateTargetSessions(evidence.database.name, observation);
       next = structuredClone(next);
       next.sessions.abortRelease = release;
       next = checkpoint(next);
       if (release.remainingSessionCount !== 0) {
         throw new Error("abort cleanup could not release exact target sessions");
       }
-      const drop = await adapter.dropDatabase(evidence.database.name, evidence.provisioning.databaseOid);
+      const drop = await adapter.dropDatabase(evidence.database.name, evidence.provisioning.databaseOid, observation);
       if (drop.dropped !== true) {
         throw new Error("abort cleanup did not drop the observed owned target");
       }

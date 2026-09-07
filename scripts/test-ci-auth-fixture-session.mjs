@@ -1,3 +1,7 @@
+import {
+  abortCertificationDatabase, createAuthSessionPreflightDatabaseEnvironment,
+  prepareAuthSessionPreflightDatabaseLifecycle, readCertificationDatabaseLifecycle,
+} from "./production-certification-database-lifecycle.mjs";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
@@ -145,7 +149,8 @@ class InnerFailureDatabaseAdapter {
     return [];
   }
 
-  async terminateTargetSessions() {
+  async terminateTargetSessions(_databaseName, observation = null) {
+    if (observation) await observation.observe(() => this.targetSessions(), "release");
     return {
       matchedSessionCount: 0,
       terminatedPids: [],
@@ -153,7 +158,11 @@ class InnerFailureDatabaseAdapter {
     };
   }
 
-  async dropDatabase(_databaseName, expectedOid) {
+  async dropDatabase(_databaseName, expectedOid, observation = null) {
+    if (observation) {
+      await observation.observe(() => this.targetSessions(), "pre-drop");
+      await observation.beforeDrop();
+    }
     assert.equal(expectedOid, this.databaseOid);
     if (!this.exists) return { dropped: false, alreadyAbsent: true };
     this.exists = false;
@@ -825,6 +834,60 @@ assert.deepEqual(
   innerResultRootsBefore,
   "structured inner failure publication must not leak its private result root",
 );
+
+// A failed prerequisite abort must not be replayed by the outer finally owner.
+// Retain its error chain and physical receipt, then recover only explicitly.
+const replayAdapter = new InnerFailureDatabaseAdapter();
+const originalReplayDrop = replayAdapter.dropDatabase.bind(replayAdapter);
+let replayDropAttempts = 0;
+let replayEnvironment = null;
+let replayResultRoot = null;
+replayAdapter.dropDatabase = async (_name, _oid, observation) => {
+  await observation.observe(() => replayAdapter.targetSessions(), "pre-drop");
+  await observation.beforeDrop();
+  replayDropAttempts++;
+  throw new Error("injected prerequisite abort DROP failure");
+};
+try {
+  await assert.rejects(runRealAuthPreflight({
+    baseEnvironment: { ...innerFailureEnvironment,
+      CI_AUTH_FIXTURE_RESULT_PATH: path.join(innerFailureResultRoot, "refused-replay.json"),
+      CI_AUTH_FIXTURE_RESULT_NONCE: "fixture-refused-replay-result-001",
+    },
+    sourceIdentity: { status: "", candidateCommitSha, candidateTreeSha },
+    databaseAdapter: replayAdapter,
+    prepareDatabaseLifecycle: (options) => {
+      replayResultRoot = path.dirname(options.lifecycleRoot);
+      replayEnvironment = createAuthSessionPreflightDatabaseEnvironment(options);
+      return prepareAuthSessionPreflightDatabaseLifecycle(options);
+    },
+    databaseTestHooks: {
+      afterPrivateSidecarWrite() { throw new Error("original prerequisite activation failure"); },
+    },
+  }), (error) => {
+    assert.match(error.message, /abort cleanup failed/);
+    assert.match(error.cause.message, /automatic cleanup replay is prohibited/);
+    assert.match(error.cause.cause.message, /original prerequisite activation failure/);
+    return true;
+  });
+  const current = readCertificationDatabaseLifecycle({ repositoryRoot, environment: replayEnvironment });
+  assert.equal(replayDropAttempts, 1);
+  assert.equal(replayAdapter.exists, true);
+  assert.equal(current.evidence.sessions.cleanupObservations.length, 1);
+  assert.match(current.evidence.failure.reason, /original prerequisite activation failure/);
+  assert.match(current.evidence.cleanupFailure.reason, /prerequisite abort DROP failure/);
+} finally {
+  replayAdapter.dropDatabase = originalReplayDrop;
+  if (replayEnvironment) {
+    const recovered = await abortCertificationDatabase({
+      repositoryRoot, environment: replayEnvironment, adapter: replayAdapter,
+    });
+    assert.equal(recovered.evidence.cleanup.failedRunRehabilitated, false);
+    assert.equal(recovered.evidence.currentState, "abort-absence-verified");
+    assert.ok(path.basename(replayResultRoot).startsWith("ci-auth-real-preflight-result-"));
+    rmSync(replayResultRoot, { recursive: true, force: true });
+  }
+}
 
 try {
   const ownerRoot = root("canonical");

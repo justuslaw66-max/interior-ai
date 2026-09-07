@@ -140,7 +140,8 @@ class ProjectionDatabaseAdapter {
     return [];
   }
 
-  async terminateTargetSessions() {
+  async terminateTargetSessions(_databaseName, observation = null) {
+    if (observation) await observation.observe(() => this.targetSessions(), "release");
     return { terminatedSessionCount: 0, remainingSessionCount: 0 };
   }
 
@@ -152,7 +153,11 @@ class ProjectionDatabaseAdapter {
     return { dropped, alreadyAbsent: !dropped };
   }
 
-  async dropDatabase(_databaseName, expectedOid) {
+  async dropDatabase(_databaseName, expectedOid, observation = null) {
+    if (observation) {
+      await observation.observe(() => this.targetSessions(), "pre-drop");
+      await observation.beforeDrop();
+    }
     if (this.exists && expectedOid !== this.databaseOid) throw new Error("database replacement is preserved");
     const dropped = this.exists;
     this.exists = false;

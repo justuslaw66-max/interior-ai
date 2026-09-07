@@ -55,7 +55,7 @@
     "absencePolicy": "plan is database-non-mutating and provision repeats absence just in time; an existing target always fails closed and is never reused",
     "migrationPolicy": "exact current 43 repository migrations through Prisma migrate deploy, followed by exact target migration-name verification",
     "rowPolicy": "catalog-derived public application tables excluding only _prisma_migrations must have zero rows initially and finally; no generic DELETE or leak-hiding cleanup is permitted",
-    "sessionPolicy": "inventory exact target sessions; normal final verification requires zero; normal/abort cleanup may terminate only exact target sessions while excluding the admin session",
+    "sessionPolicy": "inventory all exact target sessions including backend type; final verification and successful cleanup require zero; no termination or cancellation; acknowledged OID-bound autovacuum-only cleanup observation has one shared 2000 ms polling budget under the approved exception expiring 2026-09-14",
     "dropPolicy": "drop only the generated owned target after exact session release and prove catalog absence; no server restart or broad process termination",
     "abortPolicy": "retain original failure and consumed status, capture rows/sessions, never fabricate final-empty PASS, drop the disposable target, prove absence, and never rehabilitate the failed run",
     "privateStageEnvironmentResolver": "scripts/production-certification-database-lifecycle.mjs#resolveCertificationDatabaseStageEnvironment",

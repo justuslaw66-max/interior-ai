@@ -1,3 +1,4 @@
+import { assertAutomaticDatabaseCleanupMayStart } from "./production-certification-database-cleanup-observation.mjs";
 import { spawnSync } from "node:child_process";
 import { existsSync } from "node:fs";
 
@@ -23,7 +24,7 @@ import {
   redactCertificationStageResultDiagnostic,
 } from "./production-certification-stage-result-contract.mjs";
 import { runCertificationResourcePreparation } from "./production-certification-resources.mjs";
-import { redactDatabaseLifecycleFailure } from "./production-certification-database-lifecycle.mjs";
+import { readCertificationDatabaseLifecycle, redactDatabaseLifecycleFailure } from "./production-certification-database-lifecycle.mjs";
 import {
   initializeRealCertification,
   runDatabaseAbortCleanup,
@@ -576,6 +577,8 @@ if (import.meta.url === new URL(process.argv[1], "file:").href) {
       ) {
         return;
       }
+      const current = readCertificationDatabaseLifecycle();
+      assertAutomaticDatabaseCleanupMayStart(current.evidence, commandError);
       const cleanup = createCertificationAbortCleanupRequest({
         command,
         terminalSignal,
