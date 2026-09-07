@@ -2,8 +2,10 @@ import type { Page, Route } from "@playwright/test";
 import { expect, test } from "./fixtures";
 import { fingerprintDesignSnapshot } from "../../lib/snapshot-fingerprint";
 import { legacyApiToSnapshot } from "../../lib/room-persistence";
+import type { PersistedPlanOpening } from "../../lib/room-types";
 import {
   addAuthCookies,
+  buildBetaDesignSnapshot,
   cleanupBetaSeed,
   createBetaSeedDesign,
   disconnectBetaPrismaClient,
@@ -289,6 +291,121 @@ async function expectLoadedDesignRemainsStable(
 test.describe("3. Save + Reload Persistence", () => {
   test.afterAll(async () => {
     await disconnectBetaPrismaClient();
+  });
+
+  test("window dimensions and field evidence survive undo, redo, cloud save, and reload", async ({ page }) => {
+    test.setTimeout(180_000);
+    const snapshot = buildBetaDesignSnapshot();
+    const opening: PersistedPlanOpening = {
+      id: "opening-dining-window", roomId: "beta-dining", kind: "window",
+      wall: "east", offsetMm: 650, widthMm: 1400, heightMm: 1200, bottomMm: 900,
+      evidence: { height: "source_documented", sillHeight: "site_measured" },
+    };
+    snapshot.activeRoomId = "beta-dining";
+    snapshot.floorPlan = {
+      ...snapshot.floorPlan,
+      openings: snapshot.floorPlan?.openings?.map((entry) =>
+        entry.id === opening.id ? opening : entry),
+    };
+    const initialOpenings = snapshot.floorPlan.openings;
+    expect(initialOpenings?.filter((entry) => entry.id === opening.id)).toHaveLength(1);
+    const edited: PersistedPlanOpening = {
+      ...opening, widthMm: 1600,
+      evidence: { ...opening.evidence, width: "user_confirmed" },
+    };
+    const editedOpenings = initialOpenings?.map((entry) =>
+      entry.id === opening.id ? edited : entry);
+    const seed = await createBetaSeedDesign({ snapshot });
+    const successfulWrites: unknown[] = [];
+    page.on("response", (response) => {
+      if (response.status() === 200 && response.request().method() === "PUT" &&
+          new URL(response.url()).pathname === `/api/designs/${seed.designId}`) {
+        successfulWrites.push(response.request().postDataJSON()?.snapshot?.floorPlan?.openings);
+      }
+    });
+    const storedOpenings = (): Promise<unknown> => page.evaluate(() => {
+      const raw = localStorage.getItem("interior-ai:v1:livingroom-design");
+      return raw ? JSON.parse(raw).floorPlan?.openings ?? null : null;
+    });
+    const selectWindow = async () => {
+      await page.getByTestId("editor-view-2d").click();
+      await page.locator(`[data-testid="plan-opening-kind-label"][data-opening-id="${opening.id}"]`).click();
+      await expect(page.getByTestId("selection-inspector-opening-dimensions")).toBeVisible();
+    };
+    const expectInspector = async (width: string, evidence: string) => {
+      await expect(page.getByTestId("selection-inspector-opening-kind")).toHaveValue("window");
+      const widthInput = page.getByTestId("selection-inspector-opening-width");
+      await expect(widthInput).toHaveValue(width);
+      await expect(widthInput).toHaveAttribute("data-model-value-mm", width);
+      await expect(widthInput).toBeEnabled();
+      for (const [field, value] of [["height", "1200"], ["bottom", "900"]]) {
+        const input = page.getByTestId(`selection-inspector-opening-${field}`);
+        await expect(input).toHaveValue(value);
+        await expect(input).toHaveAttribute("data-model-value-mm", value);
+        await expect(input).toBeDisabled();
+      }
+      await expect(page.getByTestId("selection-inspector-opening-width-evidence-badge")).toHaveText(evidence);
+      await expect(page.getByTestId("selection-inspector-opening-height-evidence-badge")).toHaveText("Source documented");
+      await expect(page.getByTestId("selection-inspector-opening-sill-evidence-badge")).toHaveText("Site measured");
+    };
+    const expectCloudOpenings = async (expected: typeof initialOpenings) => {
+      const response = await page.request.get(`/api/designs/${seed.designId}`);
+      expect(response.status()).toBe(200);
+      const body = await response.json();
+      expect(body.id).toBe(seed.designId);
+      expect(body.snapshot.floorPlan.openings).toEqual(expected);
+    };
+    try {
+      await loadSeedDesign(page, seed);
+      await expectCloudDesignReady(page, seed.designId);
+      await expectCloudOpenings(initialOpenings);
+      await selectWindow();
+      await expectInspector("1400", "Estimated");
+      await expect.poll(storedOpenings).toEqual(initialOpenings);
+      const baseline = await readStableFingerprint(page);
+
+      const width = page.getByTestId("selection-inspector-opening-width");
+      await width.fill("1600");
+      await width.press("Enter");
+      await expect.poll(storedOpenings).toEqual(editedOpenings);
+      await expectInspector("1600", "User confirmed");
+      const editedFingerprint = await readStableFingerprint(page);
+      expect(editedFingerprint).not.toBe(baseline);
+      await page.getByTestId("command-undo").click();
+      await expect.poll(storedOpenings).toEqual(initialOpenings);
+      await expect(page.getByTestId("qa-editor-snapshot-fingerprint")).toHaveAttribute("data-fingerprint", baseline);
+      await expectInspector("1400", "Estimated");
+      await page.getByTestId("command-redo").click();
+      await expect.poll(storedOpenings).toEqual(editedOpenings);
+      await expect(page.getByTestId("qa-editor-snapshot-fingerprint")).toHaveAttribute("data-fingerprint", editedFingerprint);
+      await expectInspector("1600", "User confirmed");
+
+      await page.getByTestId("save-design").click();
+      await expectCloudDesignReady(page, seed.designId);
+      // Autosave may have sent this state before the explicit Save click.
+      await expect.poll(() => successfulWrites, { timeout: 30_000 }).toContainEqual(editedOpenings);
+      await expectPersistedFingerprint(page, seed.designId, editedFingerprint);
+      await expectCloudOpenings(editedOpenings);
+      const [reloadResponse] = await Promise.all([
+        page.waitForResponse((response) =>
+          response.request().method() === "GET" &&
+          new URL(response.url()).pathname === `/api/designs/${seed.designId}` &&
+          !new URL(response.url()).searchParams.has("shareToken")),
+        page.reload({ waitUntil: "domcontentloaded" }),
+      ]);
+      expect(reloadResponse.status()).toBe(200);
+      const reloaded = await reloadResponse.json();
+      expect(reloaded.id).toBe(seed.designId);
+      expect(reloaded.snapshot.floorPlan.openings).toEqual(editedOpenings);
+      await expectCloudDesignReady(page, seed.designId);
+      await expect(page.getByTestId("qa-editor-snapshot-fingerprint")).toHaveAttribute("data-fingerprint", editedFingerprint);
+      await selectWindow();
+      await expectInspector("1600", "User confirmed");
+      await expect.poll(storedOpenings).toEqual(editedOpenings);
+      await expectCloudOpenings(editedOpenings);
+    } finally {
+      await cleanupBetaSeed(seed);
+    }
   });
 
   test("cloud save preserves items, zones, and named views after reload", async ({

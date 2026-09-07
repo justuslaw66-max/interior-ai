@@ -21,6 +21,7 @@ import type {
 } from "./types";
 import { floorPlanMvpBlockingIssueIds } from "./types";
 import { floorPlanVisionRuntimeConfiguration } from "./vision-configuration";
+import { loadFloorPlanPdfRuntime } from "./pdf-runtime";
 import {
   applySemanticEvidencePrior,
   multiplyMatrices,
@@ -656,14 +657,11 @@ async function renderPdf(
   source: StoredFloorPlanSource,
   context: FloorPlanAdapterContext
 ): Promise<FloorPlanRenderedPage[]> {
-  const [{ getDocument }, { createCanvas }] = await Promise.all([
-    import("pdfjs-dist/legacy/build/pdf.mjs"),
+  const [{ createLoadingTask }, { createCanvas }] = await Promise.all([
+    loadFloorPlanPdfRuntime(),
     import("@napi-rs/canvas"),
   ]);
-  const loadingTask = getDocument({
-    data: source.bytes.slice(),
-    useSystemFonts: true,
-  });
+  const loadingTask = createLoadingTask(source.bytes);
   const pdf = await loadingTask.promise;
   try {
     if (pdf.numPages > MAX_PDF_PAGES) {
@@ -793,11 +791,8 @@ async function extractPdfEvidence(
   source: StoredFloorPlanSource,
   renderedPages: FloorPlanRenderedPage[]
 ): Promise<RegisteredPageEvidence[]> {
-  const { getDocument, OPS } = await import("pdfjs-dist/legacy/build/pdf.mjs");
-  const loadingTask = getDocument({
-    data: source.bytes.slice(),
-    useSystemFonts: true,
-  });
+  const { createLoadingTask, OPS } = await loadFloorPlanPdfRuntime();
+  const loadingTask = createLoadingTask(source.bytes);
   const pdf = await loadingTask.promise;
   try {
     const pages: RegisteredPageEvidence[] = [];
