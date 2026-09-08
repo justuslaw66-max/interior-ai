@@ -117,6 +117,7 @@ import {
 } from "./production-certification-stage-result-contract.mjs";
 import {
   authFixtureRegressionCapabilityNames,
+  isolatedAuthFixtureRegressionEnvironment,
 } from "./ci-auth-fixture-regression-environment.mjs";
 import { authorizeRuntimeSmokeReportPath } from "./playwright-report-path.mjs";
 
@@ -651,7 +652,20 @@ export function verifySourceBuildBootstrap(repositoryRoot = process.cwd()) {
       }
       git(fixtureRoot, ["add", "."]);
       git(fixtureRoot, ["commit", "--allow-empty", "-qm", "bootstrap scenario"]);
-      const environment = { ...process.env, ...simulationEnvironment({
+      const parentEnvironment = { ...process.env };
+      const capabilityNames = authFixtureRegressionCapabilityNames(repositoryRoot);
+      if (scenario === "build") {
+        // Exercise inherited capabilities even outside a configured CI job.
+        for (const name of capabilityNames) parentEnvironment[name] = `outer-bootstrap-${name}`;
+      }
+      const parentBefore = { ...parentEnvironment };
+      const isolatedEnvironment = isolatedAuthFixtureRegressionEnvironment({
+        repositoryRoot,
+        parentEnvironment,
+      });
+      assert.deepEqual(parentEnvironment, parentBefore);
+      assert.equal(capabilityNames.some((name) => Object.hasOwn(isolatedEnvironment, name)), false);
+      const environment = { ...isolatedEnvironment, ...simulationEnvironment({
         commitSha: git(fixtureRoot, ["rev-parse", "HEAD"]),
         treeSha: git(fixtureRoot, ["rev-parse", "HEAD^{tree}"]),
         parentSha: git(fixtureRoot, ["rev-parse", "HEAD^"]),
@@ -682,6 +696,14 @@ export function verifySourceBuildBootstrap(repositoryRoot = process.cwd()) {
         assert.equal(child.status, 0, child.stderr || child.stdout);
         assert.equal(journal.events.dependencyInstall.status, "succeeded");
         assert.equal(journal.events.build.status, scenario === "build" ? "succeeded" : "pending");
+        if (scenario === "build") {
+          const manifest = JSON.parse(readFileSync(
+            path.join(fixtureRoot, ".local/production-artifact-evidence/manifest.json"), "utf8",
+          ));
+          assert.equal(manifest.build.authFixtureContinuity.classification, "NOT_CERTIFICATION_FIXTURE_SESSION");
+          assert.equal(manifest.build.authFixtureContinuity.qualificationMode, "deterministic-only");
+          assert.equal(manifest.build.authFixtureContinuity.certificationEligibility, "NOT_VALID_FOR_REHEARSAL_OR_INTEGRATION");
+        }
       }
     }
     console.log("Source build bootstrap: cold build/preparation passed; absent driver, failed install and invalid target refused before build.");
@@ -1343,8 +1365,17 @@ export async function runProductionCertificationSimulation({
   const environment = simulationEnvironment(identity);
   const nextTimestamp = stateClock();
   const statePath = path.join(evidenceRoot, "certification-state.json");
-  const doctorEnvironment = {
+  const doctorParentEnvironment = Object.freeze({
     ...process.env,
+    ...Object.fromEntries(authFixtureRegressionCapabilityNames(repositoryRoot).map(
+      (name) => [name, `outer-simulation-${name}`],
+    )),
+  });
+  const doctorEnvironment = {
+    ...isolatedAuthFixtureRegressionEnvironment({
+      repositoryRoot,
+      parentEnvironment: doctorParentEnvironment,
+    }),
     ...environment,
     NPM_CONFIG_CACHE: path.join(simulationRoot, "npm-cache"),
     PRODUCTION_CERTIFICATION_ID: SIMULATION_ID,
@@ -1371,6 +1402,9 @@ export async function runProductionCertificationSimulation({
       "phase8-target/evidence.json",
     ),
   };
+  for (const name of authFixtureRegressionCapabilityNames(repositoryRoot)) {
+    assert.equal(doctorEnvironment[name], environment[name]);
+  }
   for (const owner of REQUIRED_BROWSER_OWNERS) {
     doctorEnvironment[
       `CERTIFICATION_BROWSER_${owner.id.toUpperCase().replaceAll("-", "_")}_REPORT_PATH`
