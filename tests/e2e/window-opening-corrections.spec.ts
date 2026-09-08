@@ -1289,6 +1289,10 @@ test("mounted diagonal drag persists one exact wall-local metre and resizes", as
     approximate: approximateEndHandle,
     cursor: "ew-resize",
   });
+  await page.mouse.click(endHandle.x, endHandle.y);
+  await expect(page.getByTestId("qa-opening-select-2d-diagonal-window"))
+    .toHaveAttribute("data-selected", "true");
+  expect((await storedOpening(page, "diagonal-window"))?.widthMm).toBe(moved.widthMm);
   await page.mouse.move(endHandle.x, endHandle.y);
   await page.mouse.down();
   await page.mouse.move(
@@ -1299,6 +1303,9 @@ test("mounted diagonal drag persists one exact wall-local metre and resizes", as
   await page.mouse.up();
   await expect.poll(async () => (await storedOpening(page, "diagonal-window"))?.widthMm)
     .toBeGreaterThan(1080);
+  await expect(page.getByTestId("selection-inspector-opening-dimensions")).toBeVisible();
+  await expect(page.getByTestId("qa-opening-select-2d-diagonal-window"))
+    .toHaveAttribute("data-selected", "true");
   await capture(page, "10-diagonal-resize-result");
 });
 

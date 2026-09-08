@@ -46,6 +46,7 @@ import {
 } from "./CanonicalFloorPlanStructure";
 import type { CanonicalFloorPlanRenderModel } from "@/lib/floor-plan-render-model";
 import { buildRoomPlanShape, shouldRenderRoomPlanGeometry } from "@/lib/room-plan-shape";
+import { ROOM_PLAN_CLICK_DISTANCE_PX, selectRoomSurfaceFromClick } from "./room-renderer-2d-surface-selection";
 import type { PlanMeasurementUnit } from "@/lib/design-page-types";
 import { formatDisplayLength } from "@/lib/display-units";
 import { floorPlanPropertyEvidenceIsEditable } from "@/lib/floor-plan-measured-property-mutations";
@@ -323,20 +324,9 @@ function HouseRoomFloorFill2D({
       }
       onClick={
         interactive
-          ? (event) => {
-              event.stopPropagation();
-              const additive =
-                event.nativeEvent.shiftKey ||
-                event.nativeEvent.metaKey ||
-                event.nativeEvent.ctrlKey;
-              if (additive) {
-                onSelectRoom?.(room.id, { additive: true });
-              } else if (onSelectSurfaceTarget) {
-                onSelectSurfaceTarget({ kind: "floor", roomId: room.id, id: "floor" });
-              } else {
-                onSelectRoom?.(room.id);
-              }
-            }
+          ? (event) => selectRoomSurfaceFromClick(event,
+              { kind: "floor", roomId: room.id, id: "floor" },
+              onSelectRoom, onSelectSurfaceTarget)
           : undefined
       }
     >
@@ -1658,7 +1648,6 @@ export default function RoomRenderer2D({
   }, [onMoveRoom, onOverlayDragStateChange, onRoomDragStateChange]);
   const pointerDragWasReleased = (event: ThreeEvent<PointerEvent>) =>
     event.nativeEvent.pointerType !== "touch" && event.nativeEvent.buttons === 0;
-  const roomBodyClickThresholdPx = 6;
 
   useEffect(() => {
     if (!interactive) return;
@@ -3275,7 +3264,7 @@ export default function RoomRenderer2D({
                     const deltaX = event.nativeEvent.clientX - pointerStart.clientX;
                     const deltaY = event.nativeEvent.clientY - pointerStart.clientY;
                     roomBodyPointerRef.current = null;
-                    if (Math.hypot(deltaX, deltaY) <= roomBodyClickThresholdPx) {
+                    if (Math.hypot(deltaX, deltaY) <= ROOM_PLAN_CLICK_DISTANCE_PX) {
                       onSelectRoom?.(room.id, {
                         additive:
                           event.nativeEvent.shiftKey ||
@@ -4066,18 +4055,9 @@ export default function RoomRenderer2D({
                 userData={{ testId: "room-wall-band-2d" }}
                 onClick={
                   interactive && bandRoom
-                    ? (event) => {
-                        event.stopPropagation();
-                        if (onSelectSurfaceTarget) {
-                          onSelectSurfaceTarget({
-                            kind: "wall",
-                            roomId: bandRoom.id,
-                            id: part.wall,
-                          });
-                        } else {
-                          onSelectRoom?.(bandRoom.id);
-                        }
-                      }
+                    ? (event) => selectRoomSurfaceFromClick(event,
+                        { kind: "wall", roomId: bandRoom.id, id: part.wall },
+                        onSelectRoom, onSelectSurfaceTarget)
                     : undefined
                 }
               >
@@ -4990,6 +4970,7 @@ export default function RoomRenderer2D({
                     key={`${seg.id}-endpoint-${index}`}
                     position={[point[0], 0.006, point[2]]}
                     rotation-x={-Math.PI / 2}
+                    onClick={(event) => event.stopPropagation()}
                     onPointerDown={(event) => {
                       stopNativeRoomDragEvent(event);
                       const opening = findResizableOpening(openings, seg.id);

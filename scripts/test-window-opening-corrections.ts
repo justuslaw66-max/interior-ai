@@ -1,5 +1,9 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
+import {
+  ROOM_PLAN_CLICK_DISTANCE_PX,
+  selectRoomSurfaceFromClick,
+} from "@/components/editor/renderers/room-renderer-2d-surface-selection";
 import { shouldRenderRoomPlanGeometry } from "@/lib/room-plan-shape";
 
 import {
@@ -415,6 +419,41 @@ for (const route of [null, "/", "/api/design", "/design/other"]) {
 for (const mode of ["off", "retain-on-failure", ""]) {
   assert.equal(isWindowOpeningCaptureDriverWarning(captureWarning, "/design", mode, []), false);
 }
+
+// A released opening drag must not become a floor/wall selection click.
+assert.equal(ROOM_PLAN_CLICK_DISTANCE_PX, 6);
+for (const kind of ["floor", "wall"] as const) {
+  const target = { kind, roomId: "surface-room", id: kind === "floor" ? "floor" : "north" };
+  for (const delta of [0, 6, 6.01, 50]) {
+    for (const modifier of [null, "shiftKey", "metaKey", "ctrlKey"] as const) {
+      for (const hasSurfaceHandler of [true, false]) {
+        const calls: unknown[] = [];
+        let stopped = 0;
+        selectRoomSurfaceFromClick({
+          delta, stopPropagation: () => { stopped += 1; },
+          nativeEvent: {
+            shiftKey: modifier === "shiftKey", metaKey: modifier === "metaKey",
+            ctrlKey: modifier === "ctrlKey",
+          },
+        }, target,
+        (id, options) => calls.push({ roomId: id, options }),
+        hasSurfaceHandler ? (selected) => calls.push(selected) : undefined);
+        assert.equal(stopped, 1, "Even refused drag clicks must stop propagation.");
+        const expected = delta > 6 ? [] : kind === "floor" && modifier
+          ? [{ roomId: target.roomId, options: { additive: true } }]
+          : hasSurfaceHandler ? [target] : [{ roomId: target.roomId, options: undefined }];
+        assert.deepEqual(calls, expected);
+      }
+    }
+  }
+}
+const surfaceSelectionSource = readFileSync("components/editor/renderers/RoomRenderer2D.tsx", "utf8");
+assert.match(surfaceSelectionSource,
+  /selectRoomSurfaceFromClick\(event,\s*\{ kind: "floor", roomId: room\.id/);
+assert.match(surfaceSelectionSource,
+  /selectRoomSurfaceFromClick\(event,\s*\{ kind: "wall", roomId: bandRoom\.id/);
+assert.match(surfaceSelectionSource,
+  /Math\.hypot\(deltaX, deltaY\) <= ROOM_PLAN_CLICK_DISTANCE_PX/);
 
 const sharedA = room("a-room", -2, 0, 4, 4);
 for (const [rooms, expected] of [

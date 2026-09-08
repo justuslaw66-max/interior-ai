@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
+import { ROOM_PLAN_CLICK_DISTANCE_PX } from "../components/editor/renderers/room-renderer-2d-surface-selection";
 
 const rendererPath = path.join(
   process.cwd(),
@@ -322,9 +323,12 @@ assert.match(
 
 assert.match(
   source,
-  /const roomBodyClickThresholdPx = 6;/,
+  /import \{[^}]*ROOM_PLAN_CLICK_DISTANCE_PX[^}]*\} from "\.\/room-renderer-2d-surface-selection";/,
   "Room body clicks should use a small pixel threshold so drag gestures can pan the plan."
 );
+
+assert.equal(ROOM_PLAN_CLICK_DISTANCE_PX, 6);
+assert.match(roomPointerUpSource, /Math\.hypot\(deltaX, deltaY\) <= ROOM_PLAN_CLICK_DISTANCE_PX/);
 
 assert.match(
   roomBodyPointerDownSource,
