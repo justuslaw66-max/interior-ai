@@ -3373,7 +3373,7 @@ export default function RoomRenderer2D({
                 </Html>
               )}
               {showLabels && (
-                <Html zIndexRange={htmlZIndexRange} position={[0, 0.012, 0]} center transform={false}>
+                <Html zIndexRange={htmlZIndexRange} position={[0, 0.012, 0]} center transform={false} style={{ pointerEvents: "none" }}>
                   <div
                     data-testid="house-room-2d-label"
                     data-room-id={room.id}
