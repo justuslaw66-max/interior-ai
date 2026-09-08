@@ -1,6 +1,12 @@
 import assert from "node:assert/strict";
 
 import {
+  isWindowOpeningCaptureDriverWarning,
+  WINDOW_OPENING_TRACE_MODE,
+} from "../tests/e2e/window-opening-capture-runtime-policy";
+import mountedTestInventory from "./window-opening-mounted-tests.json";
+
+import {
   cameraTransition,
   observeCameraSettleOnRenderFrames,
   WINDOW_OPENING_CAMERA_SETTLE_CONFIG,
@@ -357,6 +363,56 @@ assert.deepEqual(
   { valid: true },
   "Separate collinear physical walls must not collide."
 );
+
+// Trace frames perform readback even in mounted cases without explicit PNGs.
+const captureWarning = {
+  category: "consoleWarning", testId: "window-opening-12-shared-parallel-collision",
+  pageId: "page-1",
+  message: "[.WebGL-0x11c0051f000]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels",
+};
+const acceptedCaptureWarnings: typeof captureWarning[] = [];
+for (let count = 0; count < 4; count += 1) {
+  assert.equal(isWindowOpeningCaptureDriverWarning(
+    captureWarning, "/design", WINDOW_OPENING_TRACE_MODE, acceptedCaptureWarnings
+  ), true);
+  acceptedCaptureWarnings.push(captureWarning);
+}
+assert.equal(isWindowOpeningCaptureDriverWarning(
+  captureWarning, "/design", WINDOW_OPENING_TRACE_MODE, acceptedCaptureWarnings
+), false, "A fifth identical warning on the same page remains a failure.");
+assert.equal(isWindowOpeningCaptureDriverWarning(
+  { ...captureWarning, pageId: "page-2" }, "/design", WINDOW_OPENING_TRACE_MODE,
+  acceptedCaptureWarnings
+), true, "Another owned page has an independent four-warning bound.");
+for (const entry of mountedTestInventory) {
+  assert.equal(isWindowOpeningCaptureDriverWarning(
+    { ...captureWarning, testId: entry.id }, "/design", WINDOW_OPENING_TRACE_MODE, []
+  ), true, "Every fixed mounted case captures trace frames.");
+}
+assert.equal(isWindowOpeningCaptureDriverWarning({
+  ...captureWarning, message: `${captureWarning.message} (this message will no longer repeat)`,
+}, "/design", WINDOW_OPENING_TRACE_MODE, []), true);
+for (const patch of [
+  { category: "consoleError" }, { category: "pageError" },
+  { category: "requestFailure", message: "net::ERR_NETWORK_IO_SUSPENDED" },
+  { category: "responseError" }, { testId: "outside-active-test" },
+  { testId: "unknown-test" }, { pageId: "" }, { pageId: "page-0" },
+  { message: "" }, { message: "WebGL context lost" },
+  { message: captureWarning.message.replace("ReadPixels", "DrawArrays") },
+  { message: `${captureWarning.message} additional warning` },
+]) {
+  assert.equal(isWindowOpeningCaptureDriverWarning(
+    { ...captureWarning, ...patch }, "/design", WINDOW_OPENING_TRACE_MODE, []
+  ), false, `Reject non-capture event ${JSON.stringify(patch)}.`);
+}
+for (const route of [null, "/", "/api/design", "/design/other"]) {
+  assert.equal(isWindowOpeningCaptureDriverWarning(
+    captureWarning, route, WINDOW_OPENING_TRACE_MODE, []
+  ), false);
+}
+for (const mode of ["off", "retain-on-failure", ""]) {
+  assert.equal(isWindowOpeningCaptureDriverWarning(captureWarning, "/design", mode, []), false);
+}
 
 const sharedA = room("a-room", -2, 0, 4, 4);
 const sharedB = room("b-room", 2, 0, 4, 4);

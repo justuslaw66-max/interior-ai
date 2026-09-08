@@ -4,6 +4,10 @@ import path from "node:path";
 import { expect as baseExpect, test, type Browser, type Page, type TestInfo } from "@playwright/test";
 import mountedTestInventory from "../../scripts/window-opening-mounted-tests.json";
 import {
+  isWindowOpeningCaptureDriverWarning,
+  WINDOW_OPENING_TRACE_MODE,
+} from "./window-opening-capture-runtime-policy";
+import {
   cameraMotion,
   cameraTransition,
   observeCameraSettleOnRenderFrames,
@@ -25,7 +29,7 @@ import {
 const expect = baseExpect.configure({ timeout: 20_000 });
 test.setTimeout(240_000);
 test.use({ viewport: { width: 1440, height: 1000 }, actionTimeout: 30_000,
-  navigationTimeout: 120_000, trace: "on" });
+  navigationTimeout: 120_000, trace: WINDOW_OPENING_TRACE_MODE });
 
 const STORAGE_KEY = "interior-ai:v1:livingroom-design";
 type ExecutionContext = NonNullable<ReturnType<
@@ -47,16 +51,6 @@ const fixtureContexts = new WeakMap<Page, {
 const observedPages = new WeakSet<Page>();
 const pageIds = new WeakMap<Page, string>();
 const mountedTestIds = new Set(mountedTestInventory.map((entry) => entry.id));
-const screenshotCaptureTestIds = new Set([
-  "window-opening-01-visual-matrix",
-  "window-opening-02-unresolved-repair",
-  "window-opening-03-missing-host",
-  "window-opening-04-ambiguous-host",
-  "window-opening-05-import-review-override",
-  "window-opening-06-kind-override",
-  "window-opening-07-diagonal-drag-resize",
-  "window-opening-09-3d-tangent-drag",
-]);
 let nextPageId = 1;
 const runtimeEvents: Array<{
   category: "consoleError" | "consoleWarning" | "pageError" | "requestFailure" | "responseError";
@@ -104,14 +98,10 @@ function recordRuntimeEvent(event: (typeof runtimeEvents)[number]) {
   runtimeEvents.push(event);
   const url = event.location?.url ?? event.url;
   const route = url ? new URL(url).pathname : null;
-  const driverWarning = /^\[\.WebGL-0x[0-9a-f]+\]GL Driver Message \(OpenGL, Performance, GL_CLOSE_PATH_NV, High\): GPU stall due to ReadPixels(?: \(this message will no longer repeat\))?$/;
   const preloadWarning = /^The resource http:\/\/127\.0\.0\.1:\d+\/_next\/static\/css\/app\/layout\.css\?v=\d+ was preloaded using link preload but not used within a few seconds from the window's load event\. Please make sure it has an appropriate `as` value and it is preloaded intentionally\.$/;
-  const driverWarningCount = allowlistedRuntimeEvents.filter(
-    (entry) => entry.pageId === event.pageId && driverWarning.test(entry.message)
-  ).length;
-  if (event.category === "consoleWarning" && route === "/design" &&
-      screenshotCaptureTestIds.has(event.testId) &&
-      driverWarning.test(event.message) && driverWarningCount < 4) {
+  if (isWindowOpeningCaptureDriverWarning(
+    event, route, WINDOW_OPENING_TRACE_MODE, allowlistedRuntimeEvents
+  )) {
     allowlistedRuntimeEvents.push(event);
     return;
   }
@@ -250,10 +240,10 @@ test.afterAll(async () => {
       id: "chromium-webgl-readpixels-driver-warning",
       origin: "Chromium OpenGL driver diagnostics",
       route: "/design",
-      testIds: [...screenshotCaptureTestIds],
-      component: "Playwright screenshot capture",
+      testIds: [...mountedTestIds],
+      component: "Playwright screenshot and trace capture",
       maximumPerPage: 4,
-      justification: "Browser driver warning emitted by deterministic screenshot readback; not application console output.",
+      justification: "Exact bounded Chromium ReadPixels diagnostics observed during screenshot and trace-frame readback.",
     }, {
       id: "next-development-css-preload-warning",
       origin: "Chromium resource-hint diagnostics for Next development CSS",

@@ -1,5 +1,6 @@
 import { defineConfig, devices } from "@playwright/test";
 import path from "node:path";
+import { WINDOW_OPENING_TRACE_MODE } from "./tests/e2e/window-opening-capture-runtime-policy";
 
 import { localWindowOpeningContext } from "./scripts/window-opening-browser-context.mjs";
 
@@ -31,7 +32,7 @@ export default defineConfig({
     viewport: { width: 1440, height: 1000 },
     actionTimeout: 30_000,
     navigationTimeout: 120_000,
-    trace: "on",
+    trace: WINDOW_OPENING_TRACE_MODE,
     screenshot: "only-on-failure",
   },
   projects: [{
