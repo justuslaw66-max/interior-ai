@@ -44,7 +44,10 @@ import {
 import {
   CALLER_RETAINED_AUTH_RESULT_DIRECTORY,
   canonicalAuthResultOwnership,
+  canonicalAuthCommandResult,
+  canonicalAuthFailureText,
   canonicalSessionOwnership,
+  finishCanonicalAuthSession,
 } from "./run-ci-auth-fixture-session.mjs";
 
 const require = createRequire(import.meta.url);
@@ -706,11 +709,96 @@ const retainedValidateResult = resultContract.validateAuthCommandResult({
 assert.equal(retainedExportResult.result, "success");
 assert.equal(retainedValidateResult.result, "failure");
 assert.equal(retainedValidateResult.failure.code, "AUTH_SECRET_ALIAS_MISMATCH");
+assert.match(failureOutput, /AUTH_SECRET_ALIAS_MISMATCH/);
 assert.equal(retainedValidateResult.completion.complete, true);
 assert.equal(
   retainedValidateResult.completion.marker,
   resultContract.AUTH_RESULT_COMPLETION_MARKER,
 );
+
+const ownedFailureEnvironment = { ...failureEnvironment };
+for (const name of [sessionContract.FIXTURE_SESSION_ROOT_ENV, sessionContract.FIXTURE_SESSION_ID_ENV,
+  sessionContract.FIXTURE_SESSION_NONCE_ENV, sessionContract.FIXTURE_SESSION_CLASSIFICATION_ENV]) {
+  delete ownedFailureEnvironment[name];
+}
+function retainedOwnedFailure(child, environment) {
+  assert.equal(child.status, 1, JSON.stringify(safeChildProcessEvidence(child)));
+  const output = `${child.stdout}\n${child.stderr}`;
+  const locator = output.match(/Retained private auth failure evidence root SHA-256: ([a-f0-9]{64})/);
+  assert(locator, "owned command failure must identify retained private evidence safely");
+  const matches = readdirSync(tmpdir()).filter((name) => name.startsWith("ci-auth-fixture-orchestration-"))
+    .map((name) => realpathSync(path.join(tmpdir(), name)))
+    .filter((directory) => createHash("sha256").update(directory).digest("hex") === locator[1]);
+  assert.equal(matches.length, 1);
+  const directory = matches[0];
+  assert.equal(lstatSync(directory).mode & 0o077, 0);
+  assert.equal(lstatSync(path.join(directory, "failure.txt")).mode & 0o077, 0);
+  roots.push(directory);
+  const sessionRoot = path.join(directory, "session");
+  const sessionName = readdirSync(sessionRoot).find((name) => name.endsWith(".session.json"));
+  assert(sessionName);
+  const session = JSON.parse(readFileSync(path.join(sessionRoot, sessionName), "utf8"));
+  const sessionEnvironment = { ...environment,
+    [sessionContract.FIXTURE_SESSION_ROOT_ENV]: sessionRoot,
+    [sessionContract.FIXTURE_SESSION_ID_ENV]: session.sessionId,
+    [sessionContract.FIXTURE_SESSION_NONCE_ENV]: session.invocationNonce,
+    [sessionContract.FIXTURE_SESSION_CLASSIFICATION_ENV]: sessionContract.FIXTURE_SESSION_CLASSIFICATION };
+  const consumed = sessionContract.consumeFixtureSession({ repositoryRoot, environment: sessionEnvironment,
+    requireAmbientProviderValues: false, sourceCommand: "test:ci-auth-fixture-session", sourceMode: "owned-failure-retention" });
+  const sensitive = resultContract.privateValuesFromEnvironment({ ...sessionEnvironment, ...consumed.assignments });
+  for (const value of sensitive) assert.equal(output.includes(value), false);
+  assert.equal(output.includes(directory), false);
+  assert.equal(output.includes("::add-mask::"), false);
+  resultContract.assertNoRawPrivateValues(Buffer.from(readFileSync(path.join(directory, "failure.txt"), "utf8")), sensitive);
+  return { directory, session, sensitive, output };
+}
+const ownedAliasFailure = retainedOwnedFailure(spawnSync(process.execPath,
+  ["scripts/run-ci-auth-fixture-session.mjs"], { cwd: repositoryRoot, env: ownedFailureEnvironment, encoding: "utf8" }),
+  ownedFailureEnvironment);
+const ownedAliasResult = resultContract.validateAuthCommandResult({ repositoryRoot,
+  externalRoot: path.join(ownedAliasFailure.directory, "results"),
+  resultPath: path.join(ownedAliasFailure.directory, "results/validate.json"),
+  expectedNonce: `${ownedAliasFailure.session.invocationNonce}-validate`,
+  expectedCommandId: "ci:auth-fixture:validate-existing", expectedMode: "auth-environment-validation",
+  expectedCandidateCommitSha: candidateCommitSha, expectedCandidateTreeSha: candidateTreeSha,
+  sensitiveValues: ownedAliasFailure.sensitive }).result;
+assert.equal(ownedAliasResult.failure.code, "AUTH_SECRET_ALIAS_MISMATCH");
+
+const exportFailureBin = root("owned-export-failure-bin");
+const npmCli = process.env.npm_execpath ?? realpathSync(path.join(path.dirname(process.execPath), "npm"));
+writeFileSync(path.join(exportFailureBin, "npm"), `#!${process.execPath}
+const fs = require('node:fs');
+const { spawnSync } = require('node:child_process');
+const child = spawnSync(${JSON.stringify(process.execPath)}, [${JSON.stringify(npmCli)}, ...process.argv.slice(2)],
+  { env: { ...process.env, PATH: ${JSON.stringify(process.env.PATH)} }, encoding: 'utf8' });
+process.stdout.write(child.stdout || ''); process.stderr.write(child.stderr || '');
+if (process.argv[3] === 'ci:auth-fixture:export' && child.status === 0) {
+  fs.writeFileSync(process.env.CI_AUTH_FIXTURE_RESULT_PATH, '{}');
+  process.stderr.write('injected export process/result failure\\n');
+  process.exitCode = 1;
+} else process.exitCode = child.status ?? 1;
+`, { flag: "wx", mode: 0o700 });
+const exportFailureEnvironment = { ...ownedFailureEnvironment,
+  NEXTAUTH_SECRET: ownedFailureEnvironment.AUTH_SECRET, PATH: `${exportFailureBin}${path.delimiter}${process.env.PATH}` };
+const exportFailure = retainedOwnedFailure(spawnSync(process.execPath,
+  ["scripts/run-ci-auth-fixture-session.mjs"], { cwd: repositoryRoot, env: exportFailureEnvironment, encoding: "utf8" }),
+  exportFailureEnvironment);
+assert.match(exportFailure.output, /Primary auth command failure: ci:auth-fixture:export/);
+assert.match(exportFailure.output, /injected export process\/result failure/);
+assert.match(exportFailure.output, /Auth result validation failure/);
+assert(exportFailure.output.indexOf("Primary auth command failure") < exportFailure.output.indexOf("Auth result validation failure"));
+
+assert.throws(() => canonicalAuthCommandResult({ child: { status: 1, stdout: "primary-string", stderr: "" },
+  commandId: "ci:auth-fixture:export", environment: {}, validate: () => { throw "validation-string"; } }),
+  /primary-string[\s\S]*validation-string/);
+assert.equal(canonicalAuthFailureText("authjs.session-token=unresolved-cookie-value"), "Diagnostic text withheld by the private-value guard");
+assert.throws(() => finishCanonicalAuthSession({ failures: ["original failure"], keepFailedRoot: false,
+  cleanup: () => { throw "cleanup failure"; }, retain: () => { throw null; }, environment: {} }),
+  /original failure[\s\S]*cleanup failure[\s\S]*Auth failure retention error: null/);
+let successCleanup = 0;
+finishCanonicalAuthSession({ failures: [], keepFailedRoot: true, cleanup: () => { successCleanup += 1; },
+  retain: () => assert.fail("success must not retain failure evidence"), environment: {} });
+assert.equal(successCleanup, 1);
 
 const innerFailureSession = publishTestSession(
   "inner-orchestration-failure-retention",
