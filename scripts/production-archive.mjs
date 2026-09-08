@@ -532,7 +532,22 @@ export function inventoryProductionArchiveTree(stageRoot) {
   return stageInventory(stageRoot);
 }
 
+export function productionTarOwnershipArguments(version) {
+  if (/^tar \(GNU tar\) \d/m.test(version)) {
+    return ["--owner=root:0", "--group=root:0"];
+  }
+  if (/^bsdtar \d/m.test(version)) {
+    return ["--uid", "0", "--gid", "0", "--uname", "root", "--gname", "root"];
+  }
+  throw new Error("deterministic archive requires GNU tar or bsdtar");
+}
+
 function deterministicArchive(stageRoot, archivePath) {
+  const version = spawnSync("tar", ["--version"], { encoding: "utf8" });
+  if (version.status !== 0 || version.signal) {
+    throw new Error(`tar version detection failed: ${String(version.stderr).trim()}`);
+  }
+  const ownershipArguments = productionTarOwnershipArguments(version.stdout);
   const temporaryRoot = mkdtempSync(path.join(tmpdir(), "production-archive-tar-"));
   try {
     const tarPath = path.join(temporaryRoot, "archive.tar");
@@ -553,14 +568,7 @@ function deterministicArchive(stageRoot, archivePath) {
       "tar",
       [
         "--no-xattrs",
-        "--uid",
-        "0",
-        "--gid",
-        "0",
-        "--uname",
-        "root",
-        "--gname",
-        "root",
+        ...ownershipArguments,
         "-cf",
         tarPath,
         "-C",
