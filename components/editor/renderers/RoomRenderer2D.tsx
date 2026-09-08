@@ -3422,7 +3422,7 @@ export default function RoomRenderer2D({
                 </Html>
               )}
               {isActiveRoom && (
-                <Html zIndexRange={[1, 0]} position={[0, 0.012, 0]} center transform={false}>
+                <Html zIndexRange={[1, 0]} position={[0, 0.012, 0]} center transform={false} style={{ pointerEvents: "none" }}>
                   <div
                     data-testid="house-room-2d-hit-probe"
                     data-room-id={room.id}

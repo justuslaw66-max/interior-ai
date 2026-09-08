@@ -11,11 +11,13 @@ const rendererPath = path.join(
   "RoomRenderer2D.tsx"
 );
 const source = fs.readFileSync(rendererPath, "utf8");
-const roomLabelWrapper = source.match(
-  /<Html\b[^>]*>\s*<div\s+data-testid="house-room-2d-label"/
-)?.[0] ?? "";
-assert.match(roomLabelWrapper, /style=\{\{ pointerEvents: "none" \}\}/,
-  "The passive room label's Html wrapper must pass native clicks through to the canvas.");
+for (const testId of ["house-room-2d-label", "house-room-2d-hit-probe"]) {
+  const wrapper = source.match(new RegExp(
+    `<Html\\b[^>]*>\\s*<div\\s+data-testid="${testId}"`
+  ))?.[0] ?? "";
+  assert.match(wrapper, /style=\{\{ pointerEvents: "none" \}\}/,
+    `${testId}'s passive Html wrapper must pass native clicks through to the canvas.`);
+}
 const sceneRegionWorkspaceSource = fs.readFileSync(
   path.join(
     process.cwd(),
