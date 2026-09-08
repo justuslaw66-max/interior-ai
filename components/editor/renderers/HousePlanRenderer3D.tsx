@@ -25,10 +25,8 @@ import {
   RoomCeilingCapMesh,
   RoomFloorMesh,
 } from "./house-plan-3d/surfaceMeshes";
-import {
-  CutawayWallMesh,
-  WallSurfacePanelMesh,
-} from "./house-plan-3d/wallAndOpeningMeshes";
+import { WallSurfacePanelMesh } from "./house-plan-3d/wallAndOpeningMeshes";
+import { MountedCutawayWallMesh } from "./house-plan-3d/MountedCutawayWallMesh";
 import {
   buildRenderableLegacyPhysicalOpeningAssemblies,
   LegacyPhysicalOpeningMeshes,
@@ -638,43 +636,39 @@ export default function HousePlanRenderer3D({
               );
 
               return [
-                ...wallRenderParts.map((part) => {
-                  const isFullHeightStructuralPart =
-                    fullHeightStructuralPartKeys.has(part.key);
-
-                  return (
-                    <CutawayWallMesh
-                      key={part.key}
-                      room={room}
-                      rooms={topologyRooms}
-                      segment={segment}
-                      part={part}
-                      wallHeight={segmentWallHeight}
-                      wallThickness={roomWallThickness}
-                      wallOpacity={wallOpacity}
-                      renderBase={!hasLegacyMergedWalls}
-                      // Full-height decorative finishes are rendered once per
-                      // canonical room-facing panel below. Lintels and sills
-                      // remain structural sub-parts and inherit the face finish.
-                      renderSurfaces={!isFullHeightStructuralPart}
-                      selectionPieceKey={null}
-                      selectionSettingsFallbackKeys={[]}
-                      selectionPanelLength={part.length}
-                      selectionPanelCenterOffset={0}
-                      forceCutaway={legacyCutawaySegmentKeys.has(segment.key)}
-                      squareStart={Boolean(endJoinOptions.squareStart)}
-                      squareEnd={Boolean(endJoinOptions.squareEnd)}
-                      activeRoomId={activeRoomId}
-                      isActive={isActive}
-                      interactive={false}
-                      hoveredTargetKey={visibleHoveredTargetKey}
-                      selectedTargetKey={selectedTargetKey}
-                      onHoverTarget={setHoveredStructureTarget}
-                      onClearHoverTarget={clearHoveredTarget}
-                      onSelectTarget={selectStructureTarget}
-                    />
-                  );
-                }),
+                ...wallRenderParts.map((part) => (
+                  <MountedCutawayWallMesh
+                    key={part.key}
+                    room={room}
+                    rooms={topologyRooms}
+                    visibleRooms={rooms}
+                    segment={segment}
+                    part={part}
+                    wallHeight={segmentWallHeight}
+                    wallThickness={roomWallThickness}
+                    wallOpacity={wallOpacity}
+                    renderBase={!hasLegacyMergedWalls}
+                    // Full-height decorative finishes are rendered once per
+                    // canonical room-facing panel below. Lintels and sills
+                    // remain structural sub-parts and inherit the face finish.
+                    renderSurfaces={!fullHeightStructuralPartKeys.has(part.key)}
+                    selectionPieceKey={null}
+                    selectionSettingsFallbackKeys={[]}
+                    selectionPanelLength={part.length}
+                    selectionPanelCenterOffset={0}
+                    forceCutaway={legacyCutawaySegmentKeys.has(segment.key)}
+                    squareStart={Boolean(endJoinOptions.squareStart)}
+                    squareEnd={Boolean(endJoinOptions.squareEnd)}
+                    activeRoomId={activeRoomId}
+                    isActive={isActive}
+                    interactive={false}
+                    hoveredTargetKey={visibleHoveredTargetKey}
+                    selectedTargetKey={selectedTargetKey}
+                    onHoverTarget={setHoveredStructureTarget}
+                    onClearHoverTarget={clearHoveredTarget}
+                    onSelectTarget={selectStructureTarget}
+                  />
+                )),
                 ...resolvedWallSurfacePanels.map((panel) => (
                   <WallSurfacePanelMesh
                     key={panel.panelId}

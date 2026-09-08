@@ -12,6 +12,8 @@ import {
   getLegacyWallOpeningCountsForTest,
 } from "@/components/editor/renderers/HousePlanRenderer3D";
 import {
+  buildOpeningLintelParts,
+  buildOpeningSillParts,
   getWallOpenings,
   getWallSegments,
   projectOpeningWorldCenterOntoLegacySegment,
@@ -19,8 +21,9 @@ import {
 } from "@/components/editor/renderers/house-plan-3d/geometry";
 import {
   buildLegacyPhysicalOpeningAssemblies,
-  getMountedSharedWallRenderOwnerRoomId,
 } from "@/components/editor/renderers/house-plan-3d/LegacyWallOpeningMeshes";
+import { MountedCutawayWallMesh } from "@/components/editor/renderers/house-plan-3d/MountedCutawayWallMesh";
+import { CutawayWallMesh } from "@/components/editor/renderers/house-plan-3d/wallAndOpeningMeshes";
 import {
   openingMetersToMillimetres,
   openingMillimetresToMeters,
@@ -373,35 +376,63 @@ assert.ok(sharedRendererOpening);
 const segmentA = getWallSegments(sharedA).find((segment) => segment.wall === "east");
 const segmentB = getWallSegments(sharedB).find((segment) => segment.wall === "west");
 assert.ok(segmentA && segmentB);
-const partA = { key: "shared-part-a", x: segmentA.x, z: segmentA.z, length: segmentA.length };
-const partB = { key: "shared-part-b", x: segmentB.x, z: segmentB.z, length: segmentB.length };
-assert.equal(
-  getMountedSharedWallRenderOwnerRoomId(
-    sharedA, [sharedA, sharedB], segmentA, partA, [sharedA, sharedB]
-  ),
-  sharedA.id
-);
-assert.equal(
-  getMountedSharedWallRenderOwnerRoomId(
-    sharedB,
-    [sharedA, sharedB],
-    segmentB,
-    partB,
-    [sharedB]
-  ),
-  sharedB.id,
-  "Focusing the non-global owner must transfer the single render owner."
-);
-assert.equal(
-  getMountedSharedWallRenderOwnerRoomId(
-    sharedA,
-    [sharedA, sharedB],
-    segmentA,
-    partA,
-    [sharedA]
-  ),
-  sharedA.id
-);
+// Exercise the production adapter with real sill/lintel parts, including the
+// partial shared wall from mounted screenshot06. A hidden lexical owner must
+// never suppress its focused neighbor's replacement wall faces.
+for (const topology of [
+  [sharedA, sharedB],
+  [room("a-room", 0, 0, 4, 4), room("b-room", 3, 1, 2, 2)],
+]) {
+  const [owner, neighbor] = topology;
+  const projected = mapPlanOpeningsToRoomRenderer([{
+    ...sharedOpening, roomId: owner.id,
+    offsetMm: topology[0] === sharedA ? 0 : 1000,
+    widthMm: 800, heightMm: 1100, bottomMm: 950,
+  }], topology);
+  for (const [visibleRooms, expectedOwner] of [
+    [topology, owner.id], [[owner], owner.id], [[neighbor], neighbor.id],
+  ] as const) {
+    const renderedParts = [];
+    for (const mountedRoom of visibleRooms) {
+      const segment = getWallSegments(mountedRoom).find((candidate) =>
+        candidate.wall === (mountedRoom === owner ? "east" : "west")
+      );
+      assert.ok(segment);
+      const openings = getWallOpenings(mountedRoom, segment, topology, projected);
+      const parts = [
+        ...buildOpeningLintelParts(segment, openings, 2.6, 2.6),
+        ...buildOpeningSillParts(segment, openings, 2.6, 2.6),
+      ];
+      assert.equal(parts.length, 2);
+      for (const part of parts) {
+        const element = MountedCutawayWallMesh({
+          room: mountedRoom, rooms: topology, visibleRooms, segment, part,
+          wallHeight: 2.6, wallThickness: 0.12, wallOpacity: 1,
+          renderBase: false, renderSurfaces: true, selectionPieceKey: null,
+          selectionSettingsFallbackKeys: [], selectionPanelLength: part.length,
+          selectionPanelCenterOffset: 0, forceCutaway: false,
+          squareStart: false, squareEnd: false, activeRoomId: mountedRoom.id,
+          isActive: true, interactive: false, hoveredTargetKey: null,
+          selectedTargetKey: null, onHoverTarget: () => {},
+          onClearHoverTarget: () => {}, onSelectTarget: () => {},
+        });
+        assert.equal(element.type, CutawayWallMesh);
+        assert.equal(element.props.renderOwnerRoomId, expectedOwner);
+        assert.equal(element.props.rooms, topology, "Retain both physical faces.");
+        assert.equal(element.props.part, part, "Preserve the physical infill.");
+        assert.equal(element.props.renderSurfaces, true);
+        if (element.props.renderOwnerRoomId === mountedRoom.id) renderedParts.push(part);
+      }
+    }
+    assert.equal(renderedParts.length, 2, "Exactly one mounted sill and lintel.");
+    for (const [index, height, centerY] of [[0, 0.55, 2.325], [1, 0.95, 0.475]]) {
+      const part = renderedParts[index];
+      assert.ok(Math.abs((part.height ?? 0) - height) < 1e-9);
+      assert.ok(Math.abs((part.centerY ?? 0) - centerY) < 1e-9);
+      assert.ok(Math.abs(part.length - 0.8) < 1e-9);
+    }
+  }
+}
 assert.deepEqual(
   [
     getWallOpenings(sharedA, segmentA, [sharedA, sharedB], [sharedRendererOpening]),

@@ -293,11 +293,11 @@
       "limit": 250
     },
     "components/editor/renderers/house-plan-3d/wallAndOpeningMeshes.tsx": {
-      "lines": 1179,
+      "lines": 1174,
       "limit": 250
     },
     "components/editor/renderers/HousePlanRenderer3D.tsx": {
-      "lines": 723,
+      "lines": 717,
       "limit": 250
     },
     "components/editor/renderers/ItemRenderer2D.tsx": {
@@ -2349,7 +2349,7 @@
     "components/editor/renderers/house-plan-3d/wallAndOpeningMeshes.tsx": {
       "overlongFunctions": {
         "count": 5,
-        "maximum": 346
+        "maximum": 342
       },
       "complexFunctions": {
         "count": 1,
@@ -2359,7 +2359,7 @@
     "components/editor/renderers/HousePlanRenderer3D.tsx": {
       "overlongFunctions": {
         "count": 3,
-        "maximum": 499
+        "maximum": 495
       },
       "complexFunctions": {
         "count": 2,

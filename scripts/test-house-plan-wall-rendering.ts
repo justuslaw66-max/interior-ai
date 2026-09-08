@@ -117,7 +117,7 @@ assert.match(
 
 assert.match(
   source,
-  /const isDuplicateSharedWall = sharedWallOwnerRoomId !== room\.id;/,
+  /const isDuplicateSharedWall = renderOwnerRoomId !== room\.id;/,
   "Duplicate shared wall meshes should be suppressed to avoid z-fighting artifacts."
 );
 
@@ -641,8 +641,13 @@ assert.match(
 );
 
 assert.match(
+  fs.readFileSync(rendererPath, "utf8"),
+  /<MountedCutawayWallMesh\s[\s\S]*?rooms=\{topologyRooms\}[\s\S]*?visibleRooms=\{rooms\}/,
+  "Actual infill rendering must resolve ownership among mounted rooms using full topology."
+);
+assert.match(
   source,
-  /<CutawayWallMesh[\s\S]*?wallHeight=\{segmentWallHeight\}/,
+  /<MountedCutawayWallMesh[\s\S]*?wallHeight=\{segmentWallHeight\}/,
   "Rendered wall geometry should use the selected wall face height."
 );
 
@@ -654,7 +659,7 @@ assert.match(
 
 assert.match(
   source,
-  /<CutawayWallMesh[\s\S]*?wallThickness=\{roomWallThickness\}/,
+  /<MountedCutawayWallMesh[\s\S]*?wallThickness=\{roomWallThickness\}/,
   "Rendered wall geometry should receive the same wall thickness used by the 2D room model."
 );
 
@@ -690,7 +695,7 @@ assert.match(
 
 assert.match(
   source,
-  /<CutawayWallMesh[\s\S]*?renderSurfaces=\{!isFullHeightStructuralPart\}[\s\S]*?interactive=\{false\}[\s\S]*?resolvedWallSurfacePanels\.map\(\s*\(panel\) => \([\s\S]*?<WallSurfacePanelMesh/,
+  /<MountedCutawayWallMesh[\s\S]*?renderSurfaces=\{!fullHeightStructuralPartKeys\.has\(part\.key\)\}[\s\S]*?interactive=\{false\}[\s\S]*?resolvedWallSurfacePanels\.map\(\s*\(panel\) => \([\s\S]*?<WallSurfacePanelMesh/,
   "Structural fragments must not render finish planes or receive raycasts; one canonical panel mesh owns both."
 );
 

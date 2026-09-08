@@ -23,7 +23,6 @@ import {
 import {
   buildWallFinishShellGeometry,
   getSharedWallMatches,
-  getSharedWallRenderOwnerRoomId,
   getSharedWallRoomIds,
   getSelectableWallSurfacePanelId,
   getWallInteriorSurfaceSide,
@@ -377,6 +376,7 @@ function WallSurfaceCutCapMesh({
 export function CutawayWallMesh({
   room,
   rooms,
+  renderOwnerRoomId,
   segment,
   part,
   wallHeight,
@@ -403,6 +403,7 @@ export function CutawayWallMesh({
 }: {
   room: HousePlanRoom2D;
   rooms: readonly HousePlanRoom2D[];
+  renderOwnerRoomId: string;
   segment: WallSegment3D;
   part: WallPart3D;
   wallHeight: number;
@@ -574,13 +575,7 @@ export function CutawayWallMesh({
     },
     []
   );
-  const sharedWallOwnerRoomId = getSharedWallRenderOwnerRoomId(
-    room,
-    rooms,
-    segment,
-    part
-  );
-  const isDuplicateSharedWall = sharedWallOwnerRoomId !== room.id;
+  const isDuplicateSharedWall = renderOwnerRoomId !== room.id;
   const pickEnabledRef = useRef(!isDuplicateSharedWall && baseOpacity > 0.01);
 
   useFrame(() => {
