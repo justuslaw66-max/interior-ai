@@ -7,7 +7,7 @@ permissions:
   contents: read
 jobs:
   cart-timing-observation:
-    name: DIAGNOSTIC ONLY - Chromium Consumer Cart timing 1
+    name: DIAGNOSTIC ONLY - Chromium Consumer Cart timing 2
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     services:

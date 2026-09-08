@@ -6,19 +6,18 @@ const {createRequire}=require('module');
 const req=createRequire(root+'/package.json');
 const {monotonicTime}=req('playwright-core/lib/coreBundle').iso;
 let lastState=null;
-const sampled=new Set([412,420,469,476,480,481,482,486,488]);
+const sampled = /data-client-hydrated|expectOpenCart\(page\)|expectClosedCart\(page\)|expect\(trigger\)\.toBeFocused/;
 function budget(){
- const info=test.info();const tm=info._timeoutManager;const slot=tm.defaultSlot();const running=tm._running;const now=monotonicTime();
+ const info=test.info();const tm=info._timeoutManager;const bodySlot=tm.defaultSlot();const running=tm._running;const slot=running?.slot??bodySlot;const now=monotonicTime();
  const consumed=slot.elapsed+(running?.slot===slot?now-running.start:0);
- return {hostMonotonicMs:now,wall:Date.now(),elapsedMs:consumed,remainingMs:slot.timeout-consumed,timeoutMs:slot.timeout,wallSinceTestInfoMs:now-info._startTime,project:info.project.name};
+ return {hostMonotonicMs:now,wall:Date.now(),phase:slot===bodySlot?'scenario':'setup',elapsedMs:consumed,remainingMs:slot.timeout-consumed,timeoutMs:slot.timeout,bodyElapsedMs:bodySlot.elapsed+(running?.slot===bodySlot?now-running.start:0),bodyTimeoutMs:bodySlot.timeout,wallSinceTestInfoMs:now-info._startTime,project:info.project.name};
 }
 function save(row){try{fs.appendFileSync(path.join(path.join(root,'.local/cart-timing-diagnostic/raw'),'ledger-'+test.info().project.name+'.jsonl'),JSON.stringify(row)+'\n');}catch(error){process.stderr.write('Diagnostic ledger write failed: '+error.message+'\n');}}
 exports.timed=async function(label,operation,page){
- const start=budget();if(label.startsWith('L459:'))save({event:'browser-version',...start,version:page.context().browser()?.version()??null});save({event:'start',label,...start,lastState});
+ const start=budget();if(label.includes('openEditor(page, mode)'))save({event:'browser-version',...start,version:page.context().browser()?.version()??null});save({event:'start',label,...start,lastState});
  try{
   const result=await operation();save({event:'end',label,...budget(),lastState});
-  const line=Number(/^L(\d+)/.exec(label)?.[1]);
-  if(sampled.has(line)){
+  if(sampled.test(label)){
    const sampleStart=budget();
    try{
     lastState=await page.evaluate(()=>{
@@ -53,6 +52,8 @@ const ROOT = process.cwd(), SOURCE = '6dd4271031613ea35c9a4b2bf82bf8612c754f56';
 const HARNESS = path.resolve(__dirname, '../..');
 const DIR = path.join(ROOT, '.local/cart-timing-diagnostic');
 const RAW = path.join(DIR, 'raw'), PROBE = path.join(DIR, 'probe'), UPLOAD = path.join(DIR, 'upload');
+const SETUP_COMMIT = '0fc3d799c1d203280aa77d26fed7fcd138f02a46';
+const TEST_FILE = 'tests/required/cart-overlay-accessibility.spec.ts';
 const TITLE = 'consumer empty cart owns a closed, pointer, keyboard, and reopen lifecycle';
 const req = createRequire(path.join(ROOT, 'package.json'));
 const sha = bytes => crypto.createHash('sha256').update(bytes).digest('hex');
@@ -61,14 +62,23 @@ const write = (name, value) => fs.writeFileSync(path.join(RAW,name), JSON.string
 const mono = () => Number(process.hrtime.bigint())/1e6;
 function checkSource() {
   if (git(ROOT,'HEAD')!==SOURCE) throw Error('Application source mismatch');
-  cp.execFileSync('git',['diff','--exit-code','HEAD'],{cwd:ROOT});
+  const changed=cp.execFileSync('git',['diff','--name-only','HEAD'],{cwd:ROOT,encoding:'utf8'}).trim();
+  if(changed!==TEST_FILE||sha(fs.readFileSync(TEST_FILE))!==sha(fs.readFileSync(path.join(HARNESS,TEST_FILE))))throw Error('Reviewed setup-only test patch mismatch');
+  cp.execFileSync('git',['diff','--exit-code','HEAD','--','.',':(exclude)'+TEST_FILE],{cwd:ROOT});
 }
 function initialize() {
+  if(git(ROOT,'HEAD')!==SOURCE)throw Error('Baseline checkout mismatch');
+  cp.execFileSync('git',['diff','--exit-code','HEAD'],{cwd:ROOT});
+  if (fs.existsSync(DIR)) throw Error('Diagnostic output already exists');
+  if(process.env.GITHUB_SHA)cp.execFileSync('git',['diff','--exit-code','HEAD'],{cwd:HARNESS});
+  fs.copyFileSync(path.join(HARNESS,TEST_FILE),path.join(ROOT,TEST_FILE));
   checkSource();
   if(process.env.GITHUB_SHA&&git(HARNESS,'HEAD')!==process.env.GITHUB_SHA)throw Error('Workflow/harness identity mismatch');
   if (fs.existsSync(DIR)) throw Error('Diagnostic output already exists');
   fs.mkdirSync(RAW,{recursive:true});fs.mkdirSync(PROBE);fs.mkdirSync(UPLOAD);
-  write('identity.json',{diagnosticOnly:true,sourceCommit:SOURCE,sourceTree:git(ROOT,'HEAD^{tree}'),harnessCommit:git(HARNESS,'HEAD'),workflowCommit:process.env.GITHUB_SHA??null,run:process.env.GITHUB_RUN_ID??null,attempt:process.env.GITHUB_RUN_ATTEMPT??null,helperSha256:sha(fs.readFileSync(__filename)),lockSha256:sha(fs.readFileSync('package-lock.json')),nextInitiallyPresent:fs.existsSync('.next'),initializedWall:Date.now(),initializedHostMonotonicMs:mono()});
+  const testPatch=cp.execFileSync('git',['diff','HEAD','--',TEST_FILE],{cwd:ROOT,encoding:'utf8'});
+  fs.writeFileSync(path.join(RAW,'setup-patch.txt'),testPatch);
+  write('identity.json',{diagnosticOnly:true,setupCommit:SETUP_COMMIT,ownershipHelperSha256:sha(fs.readFileSync(path.join(__dirname,'cart-server-ownership.cjs'))),setupTestSha256:sha(fs.readFileSync(TEST_FILE)),setupPatchSha256:sha(testPatch),sourceCommit:SOURCE,sourceTree:git(ROOT,'HEAD^{tree}'),harnessCommit:git(HARNESS,'HEAD'),workflowCommit:process.env.GITHUB_SHA??null,run:process.env.GITHUB_RUN_ID??null,attempt:process.env.GITHUB_RUN_ATTEMPT??null,helperSha256:sha(fs.readFileSync(__filename)),lockSha256:sha(fs.readFileSync('package-lock.json')),nextInitiallyPresent:fs.existsSync('.next'),initializedWall:Date.now(),initializedHostMonotonicMs:mono()});
 }
 function prepare() {
   checkSource();
@@ -76,13 +86,14 @@ function prepare() {
   const source=fs.readFileSync('tests/required/cart-overlay-accessibility.spec.ts','utf8');
   const sf=ts.createSourceFile('cart-overlay-accessibility.spec.ts',source,ts.ScriptTarget.Latest,true,ts.ScriptKind.TS);
   const edits=[];
+  const first=source.indexOf('async function openEditor('),last=source.indexOf('test("cart restoration resolves');
   function walk(n) {
     const line=sf.getLineAndCharacterOfPosition(n.getStart(sf)).line+1;
-    if(ts.isAwaitExpression(n)&&line>=395&&line<=490){edits.push({start:n.getStart(sf),end:n.end,line,text:n.expression.getText(sf)});return;}
+    if(ts.isAwaitExpression(n)&&n.getStart(sf)>=first&&n.getStart(sf)<last&&n.expression.getText(sf)!=='use(trigger)'){edits.push({start:n.getStart(sf),end:n.end,line,text:n.expression.getText(sf)});return;}
     ts.forEachChild(n,walk);
   }
   walk(sf);
-  if(!edits.some(e=>e.line===482)||!edits.some(e=>e.line===428))throw Error('Unexpected baseline operation map');
+  if(edits.filter(e=>e.text==='expect(trigger).toBeFocused()').length!==3||!edits.some(e=>e.text==='openEditor(page, mode)'))throw Error('Unexpected baseline operation map');
   let instrumented=source;
   for(const e of [...edits].reverse())instrumented=instrumented.slice(0,e.start)+`await timed(${JSON.stringify('L'+e.line+': '+e.text.replace(/\s+/g,' '))}, () => ${e.text}, page)`+instrumented.slice(e.end);
   instrumented=instrumented.replace('from "@playwright/test"','from '+JSON.stringify(path.join(ROOT,'node_modules/@playwright/test')));
@@ -93,13 +104,14 @@ function prepare() {
   const diff=cp.spawnSync('git',['diff','--no-index','--','tests/required/cart-overlay-accessibility.spec.ts',path.join(PROBE,'cart-budget.spec.ts')],{encoding:'utf8'});
   if(![0,1].includes(diff.status))throw Error('Cannot record timing patch');
   fs.writeFileSync(path.join(RAW,'timing-patch.txt'),diff.stdout);
-  write('instrumentation.json',{originalSha256:sha(source),instrumentedSha256:sha(instrumented),timingPatchSha256:sha(diff.stdout),timingHelperSha256:sha(TIMING),reporterSha256:sha(REPORTER),operations:edits.map(e=>({line:e.line,expression:e.text})),accounting:'elapsed=defaultSlot.elapsed + monotonicNow-running.start when running.slot is defaultSlot; remaining=30000-elapsed. Worker slots and teardown are separate. Browser performance.now is a distinct clock domain.',overhead:'Synchronous compact writes plus nine small state evaluations; no polling loop. Sample latency stays inside test budget.'});
+  write('instrumentation.json',{originalSha256:sha(source),instrumentedSha256:sha(instrumented),timingPatchSha256:sha(diff.stdout),timingHelperSha256:sha(TIMING),reporterSha256:sha(REPORTER),operations:edits.map(e=>({line:e.line,expression:e.text})),accounting:'phase and elapsed refer to the active fixture or default scenario slot; elapsed=activeSlot.elapsed + monotonicNow-running.start; remaining=slot.timeout-elapsed. bodyElapsedMs separately tracks the default slot; setup and scenario each have 30000ms. Browser performance.now is a distinct clock domain.',overhead:'Synchronous compact writes plus boundary state evaluations; no polling loop. Sample latency stays inside test budget.'});
   fs.mkdirSync(path.join(ROOT,'.local/required-test-evidence/ci.cart-overlay-accessibility'),{recursive:true});
+  fs.writeFileSync(path.join(PROBE,'verify-server.cjs'),`module.exports=()=>{require('node:child_process').execFileSync(process.execPath,[${JSON.stringify(__filename)},'verify-server'],{cwd:${JSON.stringify(ROOT)},stdio:'inherit'});};`);
   const config=`import base from ${JSON.stringify(path.join(ROOT,'playwright.cart-overlay.config'))};
 import {defineConfig} from ${JSON.stringify(path.join(ROOT,'node_modules/@playwright/test'))};
 import fs from 'node:fs';
 fs.writeFileSync(${JSON.stringify(path.join(RAW,'base-config.json'))},JSON.stringify(base,null,2));
-export default defineConfig({...base,testDir:${JSON.stringify(PROBE)},testMatch:'cart-budget.spec.ts',reporter:[['list'],['json',{outputFile:${JSON.stringify(path.join(RAW,'playwright.json'))}}],[${JSON.stringify(path.join(PROBE,'reporter.cjs'))}]],outputDir:${JSON.stringify(path.join(RAW,'playwright-output'))},metadata:{diagnosticOnly:true,source:${JSON.stringify(SOURCE)},notCanonicalGate:true},webServer:{...base.webServer,cwd:${JSON.stringify(ROOT)},stdout:'pipe',stderr:'pipe'}});`;
+export default defineConfig({...base,globalSetup:${JSON.stringify(path.join(PROBE,'verify-server.cjs'))},testDir:${JSON.stringify(PROBE)},testMatch:'cart-budget.spec.ts',reporter:[['list'],['json',{outputFile:${JSON.stringify(path.join(RAW,'playwright.json'))}}],[${JSON.stringify(path.join(PROBE,'reporter.cjs'))}]],outputDir:${JSON.stringify(path.join(RAW,'playwright-output'))},metadata:{diagnosticOnly:true,source:${JSON.stringify(SOURCE)},notCanonicalGate:true},webServer:{...base.webServer,command:${JSON.stringify(process.execPath+' '+__filename+' serve')},cwd:${JSON.stringify(ROOT)},stdout:'pipe',stderr:'pipe'}});`;
   fs.writeFileSync(path.join(PROBE,'diagnostic.config.ts'),config);
   const version = (cmd,args,env=process.env) => {const r=cp.spawnSync(cmd,args,{encoding:'utf8',env});return r.status===0?r.stdout.trim():{unavailable:true,exit:r.status};};
   const postgres=version('psql',['-h','localhost','-U','test','-d','interior_ai_test','-Atc','show server_version'],{...process.env,PGPASSWORD:'test'});
@@ -130,22 +142,44 @@ function discover() {
   write('resolved-config.json',config);
   console.log('Selected exactly one Chromium Consumer case; deadlines and required recording settings verified.');
 }
+async function serve() {
+  checkSource();
+  const {listeners}=require('./cart-server-ownership.cjs');
+  if(listeners(3000).length)throw Error('Unrelated listener already present');
+  const child=cp.spawn('npm',['run','dev'],{cwd:ROOT,env:process.env,stdio:'inherit'});
+  write('server-launch.json',{wrapperPid:process.pid,childPid:child.pid,cwd:fs.realpathSync(ROOT),command:'npm run dev',wall:Date.now(),hostMonotonicMs:mono()});
+  const result=await new Promise((resolve,reject)=>{child.on('error',reject);child.on('close',(exitCode,signal)=>resolve({exitCode,signal}));});
+  process.exitCode=result.exitCode??1;
+}
+function verifyServer() {
+  try {
+    checkSource();
+    const identity=JSON.parse(fs.readFileSync(path.join(RAW,'identity.json'),'utf8'));
+    const instrumentation=JSON.parse(fs.readFileSync(path.join(RAW,'instrumentation.json'),'utf8'));
+    if(identity.harnessCommit!==git(HARNESS,'HEAD')||identity.helperSha256!==sha(fs.readFileSync(__filename))||identity.ownershipHelperSha256!==sha(fs.readFileSync(path.join(__dirname,'cart-server-ownership.cjs'))))throw Error('Harness bytes changed since initialization');
+    if(instrumentation.instrumentedSha256!==sha(fs.readFileSync(path.join(PROBE,'cart-budget.spec.ts')))||instrumentation.timingHelperSha256!==sha(fs.readFileSync(path.join(PROBE,'timing.cjs'))))throw Error('Instrumented test bytes changed before execution');
+    const launch=JSON.parse(fs.readFileSync(path.join(RAW,'server-launch.json'),'utf8'));
+    const proof=require('./cart-server-ownership.cjs').verify({root:ROOT,port:3000,launch,baseURL:'http://127.0.0.1:3000'});
+    write('server-ownership.json',{...proof,sourceCommit:SOURCE,setupTestSha256:sha(fs.readFileSync(TEST_FILE)),harnessCommit:git(HARNESS,'HEAD'),wall:Date.now(),hostMonotonicMs:mono(),beforeBrowserWorkers:true});
+    console.log('Verified actual listener, source patch, development command and launch ancestry before browser workers.');
+  } catch(error) {
+    write('server-ownership-error.json',{message:error.message,wall:Date.now(),hostMonotonicMs:mono()});
+    throw error;
+  }
+}
 async function observe() {
   checkSource();
   if(!fs.existsSync(path.join(RAW,'selection.json')))throw Error('Discovery prerequisite missing');
   if(fs.existsSync(path.join(RAW,'execution-start.json')))throw Error('Diagnostic execution already attempted');
   write('execution-start.json',{wall:Date.now(),hostMonotonicMs:mono(),command:[process.execPath,...args()]});
-  const log=fs.openSync(path.join(RAW,'server.log'),'wx');let ownership=false;
+  const log=fs.openSync(path.join(RAW,'server.log'),'wx');
   const child=cp.spawn(process.execPath,args(),{env:executionEnvironment(),stdio:['ignore','pipe','pipe']});
   for(const stream of [child.stdout,child.stderr])stream.on('data',chunk=>{
-    const line=`[hostMonotonicMs=${mono()} wall=${Date.now()}] ${chunk}`;fs.writeSync(log,line);process.stdout.write(chunk);
-    if(!ownership&&(chunk.toString().includes('Ready')||chunk.toString().includes('Running '))){
-      const ids=cp.spawnSync('lsof',['-nP','-t','-iTCP:3000','-sTCP:LISTEN'],{encoding:'utf8'}).stdout?.trim().split('\n').filter(Boolean)??[];
-      const owners=[...new Set(ids)].map(pid=>({pid,cwd:cp.spawnSync('lsof',['-a','-p',pid,'-d','cwd','-Fn'],{encoding:'utf8'}).stdout}));
-      if(owners.length){write('server-ownership.json',{wall:Date.now(),hostMonotonicMs:mono(),owners});ownership=owners.every(o=>o.cwd.includes('n'+ROOT+'\n'));if(!ownership){child.kill('SIGTERM');process.exitCode=1;}}
-    }
+    fs.writeSync(log,`[hostMonotonicMs=${mono()} wall=${Date.now()}] ${chunk}`);process.stdout.write(chunk);
   });
-  const result=await new Promise(resolve=>child.on('close',(exitCode,signal)=>resolve({exitCode,signal})));
+  const result=await new Promise((resolve,reject)=>{child.on('error',reject);child.on('close',(exitCode,signal)=>resolve({exitCode,signal}));});
+  const ownershipPath=path.join(RAW,'server-ownership.json');
+  const ownership=fs.existsSync(ownershipPath)&&JSON.parse(fs.readFileSync(ownershipPath,'utf8')).verified===true;
   fs.closeSync(log);write('execution.json',{...result,wall:Date.now(),hostMonotonicMs:mono(),ownershipVerified:ownership});
   process.exitCode=result.exitCode??1;
 }
@@ -171,13 +205,14 @@ async function collect() {
     try{auditRetainedEvidenceDirectory({repositoryRoot:ROOT,evidenceRoot:path.relative(ROOT,UPLOAD)});included.push({path:destination,originalSha256:sha(bytes),retainedSha256:sha(text)});}
     catch{fs.rmSync(output);omitted.push({path:relative,reason:'existing retained-evidence safety audit rejected content'});}
   }
-  for(const name of ['identity.json','machine.json','selection.json','base-config.json','resolved-config.json','instrumentation.json','timing-patch.txt','execution-start.json','execution.json','playwright.json','reporter.json','server-ownership.json','discovery.log','server.log'])retain(name);
+  for(const name of ['identity.json','machine.json','selection.json','base-config.json','resolved-config.json','instrumentation.json','timing-patch.txt','setup-patch.txt','server-launch.json','execution-start.json','execution.json','playwright.json','reporter.json','server-ownership.json','discovery.log','server.log'])retain(name);
+  if(fs.existsSync(path.join(RAW,'server-ownership-error.json')))retain('server-ownership-error.json');
   retain('ledger-chromium.jsonl','timing.json',true);retain('fixtures.jsonl','fixtures.json',true);
   const errorRoot=path.join(RAW,'playwright-output');
   const contexts=fs.existsSync(errorRoot)?fs.readdirSync(errorRoot,{recursive:true}).filter(x=>x.endsWith('/error-context.md')):[];
   for(const [i,p] of contexts.entries())retain('playwright-output/'+p,`error-context-${i+1}.md`);
   if(!contexts.length)missing.push('error-context.md:not-produced-or-unavailable');
-  const required=['identity.json','machine.json','selection.json','resolved-config.json','instrumentation.json','execution.json','playwright.json','timing.json','fixtures.json','server-ownership.json'];
+  const required=['identity.json','machine.json','selection.json','resolved-config.json','instrumentation.json','execution.json','playwright.json','timing.json','fixtures.json','server-ownership.json','setup-patch.txt','server-launch.json'];
   const incomplete=required.filter(name=>!included.some(x=>x.path===name));
   if(fs.existsSync(path.join(RAW,'execution.json'))&&!JSON.parse(fs.readFileSync(path.join(RAW,'execution.json'),'utf8')).ownershipVerified)incomplete.push('positive server ownership unavailable');
   const unfinishedOperations=[];
@@ -189,4 +224,4 @@ async function collect() {
   console.log(JSON.stringify({included:included.length,missing,omitted}));
   if(omitted.length||incomplete.length)process.exitCode=1;
 }
-(async()=>{const mode=process.argv[2];if(mode==='initialize')initialize();else if(mode==='prepare')prepare();else if(mode==='discover')discover();else if(mode==='observe')await observe();else if(mode==='collect')await collect();else throw Error('Unknown diagnostic mode');})().catch(error=>{console.error(error);process.exitCode=1;});
+(async()=>{const mode=process.argv[2];if(mode==='initialize')initialize();else if(mode==='prepare')prepare();else if(mode==='discover')discover();else if(mode==='serve')await serve();else if(mode==='verify-server')verifyServer();else if(mode==='observe')await observe();else if(mode==='collect')await collect();else throw Error('Unknown diagnostic mode');})().catch(error=>{console.error(error);process.exitCode=1;});

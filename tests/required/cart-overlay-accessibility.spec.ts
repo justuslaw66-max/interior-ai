@@ -1,4 +1,4 @@
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test, type Locator, type Page } from "@playwright/test";
 
 type UserMode = "consumer" | "pro";
 
@@ -455,8 +455,15 @@ async function waitForTwoAnimationFrames(page: Page) {
 }
 
 for (const mode of ["consumer", "pro"] as const) {
-  test(`${mode} empty cart owns a closed, pointer, keyboard, and reopen lifecycle`, async ({ page }) => {
-    const trigger = await openEditor(page, mode);
+  // Editor setup has a separate finite allowance; all Cart checks keep the
+  // original test budget. This increases permitted setup time, not performance.
+  const lifecycleTest = test.extend<{ editorTrigger: Locator }>({
+    editorTrigger: [async ({ page }, use) => {
+      const trigger = await openEditor(page, mode);
+      await use(trigger);
+    }, { timeout: 30_000 }],
+  });
+  lifecycleTest(`${mode} empty cart owns a closed, pointer, keyboard, and reopen lifecycle`, async ({ page, editorTrigger: trigger }) => {
     await expectClosedCart(page);
     await expect(trigger).toHaveAttribute("aria-haspopup", "dialog");
     await expect(trigger).toHaveAttribute("aria-expanded", "false");
