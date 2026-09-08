@@ -972,9 +972,24 @@
           "title": "Retailer-group keyboard lifecycle restores replacements and the Cart fallback"
         },
         {
-          "id": "retailer-confirmation.count-boundaries",
+          "id": "retailer-confirmation.count-zero",
           "file": "tests/required/retailer-confirmation-accessibility.spec.ts",
-          "title": "Counting boundaries preserve zero one three and four tab behavior"
+          "title": "Counting zero tabs keeps checkout disabled"
+        },
+        {
+          "id": "retailer-confirmation.count-one",
+          "file": "tests/required/retailer-confirmation-accessibility.spec.ts",
+          "title": "Counting one tab opens directly without confirmation"
+        },
+        {
+          "id": "retailer-confirmation.count-three",
+          "file": "tests/required/retailer-confirmation-accessibility.spec.ts",
+          "title": "Counting three tabs opens directly without confirmation"
+        },
+        {
+          "id": "retailer-confirmation.count-four",
+          "file": "tests/required/retailer-confirmation-accessibility.spec.ts",
+          "title": "Counting four tabs opens confirmation and supports cancellation"
         },
         {
           "id": "retailer-confirmation.count-bundle-exclusion-missing",
