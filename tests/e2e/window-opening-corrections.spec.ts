@@ -482,13 +482,13 @@ async function loadFixture(
   assertFixtureTarget(page, "/design");
   await expect(page.getByTestId("scene-canvas").first()).toBeVisible();
   const debug = page.getByTestId("qa-design-layout-debug");
-  await expect.poll(async () => ({
-    layout: await debug.count(),
-    camera: Boolean(await page.locator("html").getAttribute("data-qa-camera-state")),
-    frames: Boolean(await page.locator("html").getAttribute("data-qa-camera-render-frame")),
-  }), { message: "Window-opening execution prerequisite: the selected artifact must already contain approved layout and camera QA hooks (NEXT_PUBLIC_ENABLE_QA_HOOKS=1 at build); do not substitute another artifact." })
-    .toEqual({ layout: 1, camera: true, frames: true });
   await expect(debug).toHaveAttribute("data-active-room-id", value.rooms[0].id);
+  await expect.poll(() => page.evaluate(() => ({
+    layout: document.querySelectorAll('[data-testid="qa-design-layout-debug"]').length,
+    camera: Boolean(document.documentElement.getAttribute("data-qa-camera-state")),
+    frames: Boolean(document.documentElement.getAttribute("data-qa-camera-render-frame")),
+  })), { message: "Window-opening execution prerequisite: the selected artifact must already contain approved layout and camera QA hooks (NEXT_PUBLIC_ENABLE_QA_HOOKS=1 at build); do not substitute another artifact." })
+    .toEqual({ layout: 1, camera: true, frames: true });
   const view2d = page.locator('[data-testid="editor-view-2d"]:visible').first();
   if ((await view2d.getAttribute("aria-pressed")) !== "true") await view2d.click();
   await expect(debug).toHaveAttribute(
@@ -1378,6 +1378,14 @@ test("mounted 2D movement projects every wall orientation, zoom, noise, and clam
 test("mounted 3D drag uses the projected physical tangent and persists undo/redo", async ({ browser }) => {
   const polygon = [{ x: -2, z: -2.75 }, { x: 1, z: 0.25 }, { x: 2, z: 2 }, { x: -2, z: 2 }];
   const { page } = await newPolygonCase(browser, "three-d-diagonal", polygon);
+  const roomLabel = page.locator(
+    '[data-testid="house-room-2d-label"][data-room-id="three-d-diagonal-room"]'
+  );
+  await expect(roomLabel).toBeVisible();
+  const roomBox = await roomLabel.boundingBox();
+  expect(roomBox).toBeTruthy();
+  await page.mouse.click(roomBox!.x + roomBox!.width / 2, roomBox!.y + roomBox!.height / 2);
+  await expect(roomLabel).toHaveAttribute("data-active", "true");
   await page.locator(
     '[data-testid="plan-opening-kind-label"][data-opening-id="three-d-diagonal"]'
   ).click();
