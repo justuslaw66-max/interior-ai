@@ -3,12 +3,19 @@
 ## Scope and owners
 
 This contract applies only to anonymous/client-facing
-`/share/[shareToken]` presentation. `app/share/[shareToken]/page.tsx` remains the
+`/share/[shareToken]` presentation. The pathless `(presentation)` route group's
+`page.tsx` remains the
 server owner for exact enabled-token lookup and obtains one canonical public
 transport through `projectSharedDesignTransport`. The shell receives the
 validated snapshot from that transport; title/style/budget/notes and every
 presentation/export consumer read from the same projection. The responsive
 implementation does not fetch, copy, or reconstruct another share document.
+
+`app/share/[shareToken]/(presentation)/layout.tsx` owns the one physical lifecycle `<main>` for
+the direct presentation route. Loading, invalid, error, resolving, ready, and
+empty content report state onto that owner instead of mounting alternate
+landmarks. Nested export routes bypass this presentation owner and retain their
+existing export document structure.
 
 `components/public-share/PublicShareShell.tsx` owns the client presentation
 state for that snapshot: responsive mode, selected room, selected saved view,
@@ -154,12 +161,13 @@ Stable identities supplement roles and accessible names:
 No identity uses an array index, translated display text, random/time value, or
 viewport width. Missing saved-view IDs do not gain an index-derived public
 identity; malformed views remain unavailable. `PublicShareResolvedRoot` is the
-single semantic and DOM source owner of `public-share-root`. The route first
-uses the distinct accessible `public-share-loading` identity. The client-only
-dynamic boundary renders no server or intermediate fallback markup; once its
-module mounts, the one resolved root itself transitions from `resolving` to
-`ready` (or the defensive `empty` state). Invalid, revoked, and error retain
-distinct non-root identities.
+former resolved-only owner. `PublicShareRouteLifecycle` is now the single
+semantic and DOM owner for every presentation state. Its one node begins as
+`public-share-loading`; fallback and resolved reporters change that node's
+identity and state without adding another `<main>`. The client-only dynamic
+boundary still renders no server or intermediate fallback markup. Once its
+module mounts, the same current owner transitions from `resolving` to `ready`
+(or the defensive `empty` state).
 
 This placement corrects the Chromium streaming sequence exposed at `729caae`.
 Previously the automatic route loading boundary kept server root node 1 in a
@@ -172,9 +180,14 @@ The route is keyed by design ID plus share token, so a same-document token
 transition disconnects the old generation before the new root becomes
 actionable. No hidden or superseded second tree remains actionable or focusable.
 Next may connect the outgoing loading fallback and incoming invalid/error
-fallback within one mutation handoff. Diagnostics retain that connected count,
-but correctness requires at most one visible and one accessibility-active
-lifecycle owner; the hidden outgoing fallback cannot exempt or emit actions.
+fallback within one mutation handoff. At `d69a510`, the revoked-token response
+connected visible loading node 1 under `body` while invalid node 3 was hidden
+inside streaming boundary `S:1` and then `S:0`. Both nodes belonged to one new
+document generation and no page-cache restoration occurred. Ubuntu WebKit
+occasionally retained the handoff long enough for a second invalid landmark to
+reach the strict assertion. Moving ownership above the streamed page/fallback
+slot means those concurrent child payloads can no longer create concurrent
+lifecycle owners, duplicate IDs, or duplicate primary landmarks.
 
 ## Route and capability boundaries
 
@@ -210,7 +223,10 @@ invalid/revoked states. A database lock provides a semantic slow-projection
 barrier, and the browser suite also covers empty public room content, the real
 route error boundary, a same-document App Router token transition, and a
 retained stale control. Diagnostics are bounded, fail on truncation, preserve
-ordered phases, and continuously accumulate maximum root/action counts.
+ordered phases, record fallback node/parent/streaming/document identities
+without raw tokens, and continuously accumulate maximum root/action counts. A
+deliberate duplicate-invalid injection proves the observer still rejects two
+physical owners.
 `04-share.spec.ts` retains its separate read-only/privacy
 and saved-view coverage in advisory Full E2E and release Gate A3; it is not
 duplicated into the required responsive owner.

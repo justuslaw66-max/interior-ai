@@ -18,6 +18,10 @@ export const PRODUCTION_CERTIFICATION_DATABASE_STATES = Object.freeze([
   "migrated",
   "initial-empty-verified",
   "active",
+  "stable-runtime-inspected",
+  "stable-sessions-cleared",
+  "stable-dropped",
+  "stable-absence-verified",
   "final-empty-verified",
   "sessions-cleared",
   "dropped",
@@ -39,6 +43,13 @@ export const AUTH_SESSION_PREFLIGHT_DATABASE_STAGE =
 export const AUTH_SESSION_PREFLIGHT_DATABASE_CLASSIFICATIONS = Object.freeze({
   lifecycle: "AUTH_SESSION_PREFLIGHT_ONLY",
   rehearsal: "NOT_REHEARSAL_DATABASE",
+  releaseCertification: "NOT_RELEASE_CERTIFICATION",
+  integration: "NOT_VALID_FOR_INTEGRATION",
+});
+export const STABLE_RUNTIME_SMOKE_DATABASE_PROFILE =
+  "stable-runtime-smoke";
+export const STABLE_RUNTIME_SMOKE_DATABASE_CLASSIFICATIONS = Object.freeze({
+  lifecycle: "STABLE_RUNTIME_SMOKE_ONLY",
   releaseCertification: "NOT_RELEASE_CERTIFICATION",
   integration: "NOT_VALID_FOR_INTEGRATION",
 });
@@ -299,7 +310,29 @@ const LEGAL_DATABASE_TRANSITIONS = Object.freeze({
     "abort-cleanup-in-progress",
   ]),
   "initial-empty-verified": new Set(["active"]),
-  active: new Set(["active", "final-empty-verified", "failed", "abort-cleanup-in-progress"]),
+  active: new Set([
+    "active",
+    "stable-runtime-inspected",
+    "final-empty-verified",
+    "failed",
+    "abort-cleanup-in-progress",
+  ]),
+  "stable-runtime-inspected": new Set([
+    "stable-sessions-cleared",
+    "failed",
+    "abort-cleanup-in-progress",
+  ]),
+  "stable-sessions-cleared": new Set([
+    "stable-dropped",
+    "failed",
+    "abort-cleanup-in-progress",
+  ]),
+  "stable-dropped": new Set([
+    "stable-absence-verified",
+    "failed",
+    "abort-cleanup-in-progress",
+  ]),
+  "stable-absence-verified": new Set([]),
   "final-empty-verified": new Set([
     "sessions-cleared",
     "failed",
@@ -322,11 +355,51 @@ function hasState(evidence, state) {
   return evidence.events.some((entry) => entry.state === state);
 }
 
+function serverTransportIssues(evidence) {
+  const server = evidence.server;
+  const native =
+    server?.transportClassification === "native-loopback" &&
+    server.serverAddressClassification === "loopback" &&
+    server.transportAttestationSha256 === null &&
+    server.transportVerificationStatus === "verified-live" &&
+    server.imageClassification === null &&
+    server.imageRepositoryDigestSha256 === null;
+  const githubService =
+    evidence.lifecycleProfile?.classification ===
+      STABLE_RUNTIME_SMOKE_DATABASE_CLASSIFICATIONS.lifecycle &&
+    server?.transportClassification ===
+      "github-hosted-service-container-loopback-forward" &&
+    server.serverAddressClassification === "attested-container-network" &&
+    isSha256(server.transportAttestationSha256) &&
+    server.transportVerificationStatus === "verified-live-attested" &&
+    server.imageClassification === "official-postgres-major-15" &&
+    isSha256(server.imageRepositoryDigestSha256) &&
+    Math.floor(Number(server.serverVersionNumber) / 10_000) === 15;
+  if (
+    server?.hostClassification !== "explicit-loopback" ||
+    !new Set(["127.0.0.1", "::1", "[::1]"]).has(server?.host) ||
+    server?.port !== 5432 ||
+    Number(server?.serverVersionNumber) < 140000 ||
+    server?.canCreateDatabase !== true ||
+    !new Set(["local-createdb", "local-superuser-createdb"]).has(
+      server?.roleClassification,
+    ) ||
+    (!native && !githubService)
+  ) {
+    return ["database lifecycle server transport evidence is malformed or unapproved"];
+  }
+  return [];
+}
+
 export function databaseLifecycleRequiredStages(evidence) {
-  return evidence?.lifecycleProfile?.classification ===
-    AUTH_SESSION_PREFLIGHT_DATABASE_CLASSIFICATIONS.lifecycle
-    ? [AUTH_SESSION_PREFLIGHT_DATABASE_STAGE]
-    : [...PRODUCTION_CERTIFICATION_DATABASE_STAGE_BINDINGS];
+  const classification = evidence?.lifecycleProfile?.classification;
+  if (classification === AUTH_SESSION_PREFLIGHT_DATABASE_CLASSIFICATIONS.lifecycle) {
+    return [AUTH_SESSION_PREFLIGHT_DATABASE_STAGE];
+  }
+  if (classification === STABLE_RUNTIME_SMOKE_DATABASE_CLASSIFICATIONS.lifecycle) {
+    return ["runtime-smoke"];
+  }
+  return [...PRODUCTION_CERTIFICATION_DATABASE_STAGE_BINDINGS];
 }
 
 function lifecycleProfileIssues(evidence) {
@@ -334,6 +407,17 @@ function lifecycleProfileIssues(evidence) {
   if (profile === undefined) return [];
   if (
     profile?.classification === "RELEASE_CERTIFICATION_DATABASE" &&
+    profile?.authPreflightInvocationNonceSha256 === null
+  ) {
+    return [];
+  }
+  if (
+    profile?.classification ===
+      STABLE_RUNTIME_SMOKE_DATABASE_CLASSIFICATIONS.lifecycle &&
+    profile?.releaseCertificationClassification ===
+      STABLE_RUNTIME_SMOKE_DATABASE_CLASSIFICATIONS.releaseCertification &&
+    profile?.integrationClassification ===
+      STABLE_RUNTIME_SMOKE_DATABASE_CLASSIFICATIONS.integration &&
     profile?.authPreflightInvocationNonceSha256 === null
   ) {
     return [];
@@ -631,6 +715,7 @@ function appEventCleanupIssues(evidence) {
 function semanticEvidenceIssues(evidence) {
   const issues = [];
   issues.push(...lifecycleProfileIssues(evidence));
+  issues.push(...serverTransportIssues(evidence));
   issues.push(...appEventCleanupIssues(evidence));
   if (evidence.events[0]?.state !== "planned") {
     issues.push("database lifecycle must begin with planned");
@@ -643,7 +728,11 @@ function semanticEvidenceIssues(evidence) {
       break;
     }
   }
-  const terminal = new Set(["absence-verified", "abort-absence-verified"]);
+  const terminal = new Set([
+    "absence-verified",
+    "stable-absence-verified",
+    "abort-absence-verified",
+  ]);
   if (evidence.complete !== terminal.has(evidence.currentState)) {
     issues.push("database lifecycle completion marker is incoherent");
   }
@@ -719,7 +808,9 @@ function semanticEvidenceIssues(evidence) {
   const privateBinding = evidence.privateBinding;
   const privateBindingRequired = hasState(evidence, "migrated");
   const privateBindingRemoved =
-    hasState(evidence, "dropped") || hasState(evidence, "abort-dropped");
+    hasState(evidence, "dropped") ||
+    hasState(evidence, "stable-dropped") ||
+    hasState(evidence, "abort-dropped");
   const privateRoleStatuses = new Set([
     "create-authorized",
     "role-created",
@@ -894,6 +985,42 @@ function semanticEvidenceIssues(evidence) {
         evidence.appEventCleanup?.status !== "owned-rows-removed"))
   ) {
     issues.push("database lifecycle final-empty evidence is incoherent");
+  }
+  if (
+    hasState(evidence, "stable-runtime-inspected") &&
+    (evidence.lifecycleProfile?.classification !==
+      STABLE_RUNTIME_SMOKE_DATABASE_CLASSIFICATIONS.lifecycle ||
+      !validRowInventory(evidence.inventories?.final) ||
+      !validSessionInventory(evidence.sessions?.final, { requireEmpty: true }) ||
+      evidence.stageBindings.observed.length !== 1 ||
+      evidence.stageBindings.observed[0]?.stage !== "runtime-smoke")
+  ) {
+    issues.push("stable runtime-smoke database inspection is incoherent");
+  }
+  if (
+    hasState(evidence, "stable-sessions-cleared") &&
+    evidence.sessions?.release?.remainingSessionCount !== 0
+  ) {
+    issues.push("stable runtime-smoke session-release evidence is incoherent");
+  }
+  if (
+    hasState(evidence, "stable-dropped") &&
+    (evidence.cleanup?.mode !== "stable-runtime-smoke" ||
+      evidence.cleanup?.drop?.dropped !== true ||
+      evidence.cleanup?.stageRole?.dropped !== true)
+  ) {
+    issues.push("stable runtime-smoke database drop evidence is incoherent");
+  }
+  if (
+    hasState(evidence, "stable-absence-verified") &&
+    (evidence.cleanup?.mode !== "stable-runtime-smoke" ||
+      evidence.cleanup?.targetAbsent !== true ||
+      evidence.cleanup?.originalFailureRetained !== false ||
+      evidence.events.find(
+        (entry) => entry.state === "stable-absence-verified",
+      )?.details?.cleanupMode !== "stable-runtime-smoke")
+  ) {
+    issues.push("stable runtime-smoke database absence evidence is incoherent");
   }
   if (
     hasState(evidence, "sessions-cleared") &&

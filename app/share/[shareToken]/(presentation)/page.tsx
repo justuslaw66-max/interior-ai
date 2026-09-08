@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import ShareViewer from "@/components/ShareViewer";
-import ShareTracking from "./ShareTracking";
+import ShareTracking from "../ShareTracking";
 import { ShareFooterCTA } from "@/components/ShareFooterCTA";
 import SharePageActions from "@/components/SharePageActions";
 import { storedToSnapshot } from "@/lib/room-persistence";
@@ -21,14 +21,13 @@ import {
 } from "@/lib/room-shopping";
 import type { DesignSnapshot } from "@/lib/room-types";
 import LazyImage from "@/components/common/LazyImage";
-import ShopLink from "./export/ShopLink";
-import ShoppingCsvDownload from "./export/ShoppingCsvDownload";
+import ShopLink from "../export/ShopLink";
+import ShoppingCsvDownload from "../export/ShoppingCsvDownload";
 import { projectSharedDesignTransport } from "@/lib/shared-design-snapshot";
 import ShareFloorPlanPreview from "@/components/ShareFloorPlanPreview";
 import ShareShoppingCheckout from "@/components/ShareShoppingCheckout";
 import { PublicShareClientBoundary } from "@/components/public-share/PublicShareClientBoundary";
 import { PublicShareInvalidView } from "@/components/public-share/PublicShareRootLifecycle";
-import { resolvePublicShareSelectedRoomId } from "@/lib/public-share-layout";
 import {
   PublicShareRoomSchedule,
   type PublicShareRoomScheduleItem,
@@ -221,7 +220,6 @@ export default async function SharePage({
   ];
   const handoffFidelitySummary = buildShareExportFidelitySummary(designSnapshot, CATALOG_ITEMS);
   const projectionContentIdentity = buildPublicProjectionContentIdentity(designSnapshot);
-  const initialSelectedRoomId = resolvePublicShareSelectedRoomId(designSnapshot.rooms, designSnapshot.activeRoomId);
   const qaFidelitySummary = handoffFidelitySummary;
   const handoffReady =
     handoffFidelitySummary.missingCommerceCount === 0 &&
@@ -255,7 +253,6 @@ export default async function SharePage({
       snapshot={designSnapshot}
       projectionContentIdentity={projectionContentIdentity}
       projectionDiagnosticFingerprint={handoffFidelitySummary.fingerprint}
-      selectedRoomId={initialSelectedRoomId}
     >
       {qaFidelitySummary ? (
         <div

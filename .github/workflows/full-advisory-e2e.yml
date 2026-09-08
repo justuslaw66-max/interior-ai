@@ -8,7 +8,7 @@ on:
         required: true
         type: string
   pull_request:
-    branches: [main, develop, staging]
+    branches: [main, develop, staging, integration/deep-clean-v1]
     types: [labeled]
   schedule:
     - cron: "17 2 * * *"
@@ -48,8 +48,6 @@ jobs:
     env:
       CI: "true"
       CI_AUTH_FIXTURE_MODE: "1"
-      CI_AUTH_FIXTURE_RESULT_ROOT: ${{ runner.temp }}/interior-ai-auth-results
-      CI_AUTH_FIXTURE_SESSION_ROOT: ${{ runner.temp }}/interior-ai-auth-session-full-advisory
       CI_AUTH_FIXTURE_SESSION_ID: ${{ github.run_id }}-${{ github.run_attempt }}-full-advisory-auth-session
       CI_AUTH_FIXTURE_SESSION_NONCE: ${{ github.run_id }}-${{ github.run_attempt }}-full-advisory-auth-nonce
       CI_AUTH_FIXTURE_SESSION_CLASSIFICATION: PRODUCTION_INELIGIBLE_SYNTHETIC_AUTH
@@ -86,6 +84,15 @@ jobs:
             exit 1
           fi
           echo "tested_source_sha=$actual_source_sha" >> "$GITHUB_OUTPUT"
+
+      - name: Configure runner-local authentication fixture paths
+        shell: bash
+        run: |
+          set -euo pipefail
+          {
+            echo "CI_AUTH_FIXTURE_RESULT_ROOT=$RUNNER_TEMP/interior-ai-auth-results"
+            echo "CI_AUTH_FIXTURE_SESSION_ROOT=$RUNNER_TEMP/interior-ai-auth-session-full-advisory"
+          } >> "$GITHUB_ENV"
 
       - name: Setup Node.js
         uses: actions/setup-node@v4

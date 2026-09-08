@@ -59,7 +59,13 @@ import {
   certificationPreparedBuildJournalIssues,
   validateCurrentProductionEvidenceManifest,
 } from "./production-artifact-contract.mjs";
+import { inspectDirectProductionIdentity } from "./runtime-smoke-direct-production-identity.mjs";
 import { loadProductionArtifactForPlaywright } from "./production-artifact-playwright.mjs";
+import {
+  assertDirectRuntimeSmokeServer,
+  directRuntimeSmokeServerEnvironment,
+  loadDirectRuntimeSmokeIdentity,
+} from "./runtime-smoke-direct-identity.mjs";
 import {
   PLAYWRIGHT_EXTERNAL_EVIDENCE_ROOT,
   authorizeRuntimeSmokeReportPath,
@@ -67,6 +73,12 @@ import {
 } from "./playwright-report-path.mjs";
 import { validateRequiredTestReport } from "./required-test-truthfulness.mjs";
 import { inspectGitTree } from "./vercel-output-manifest.mjs";
+import { verifyStableRuntimeSmokeStandalone } from "./stable-runtime-smoke-standalone.mjs";
+import { STABLE_PORTABLE_SUMMARY_PATH } from "./stable-runtime-smoke-resources.mjs";
+import {
+  certificationEnvironmentProfile,
+  projectCertificationChildEnvironment,
+} from "./production-certification-stage-environment.mjs";
 import {
   GITLEAKS_ARCHIVE_ENTRIES,
   GITLEAKS_STAGING_ROOT,
@@ -112,9 +124,16 @@ import {
   runtimeSmokeRequiredRegistryReady,
 } from "./runtime-smoke-readiness-diagnostics.mjs";
 import {
+  classifyRuntimeSmokeBrowserCallbackProgress,
   projectRuntimeSmokeBrowserCallbackMilestone,
   projectRuntimeSmokeBrowserHeartbeat,
+  runtimeSmokeBrowserHeartbeatSupportsIdleAdmission,
+  runtimeSmokeBrowserCallbackMilestoneMatchesRequest,
 } from "./runtime-smoke-browser-diagnostics.mjs";
+import {
+  RUNTIME_SMOKE_RENDER_IDLE_OBSERVATION_CONTRACT,
+  evaluateRuntimeSmokeRendererIdle,
+} from "./runtime-smoke-render-idle.mjs";
 
 const sequentialRuntimeSmokeBudgetMs = RUNTIME_SMOKE_PHASE_BUDGETS.reduce(
   (total, phase) => total + phase.timeoutMs,
@@ -612,20 +631,179 @@ function boundAuthFixtureEnvironment() {
 }
 
 {
+  const models = [
+    { key: "model-1", renderCount: 3, boundsMaterialChangeCount: 1 },
+    { key: "model-2", renderCount: 4, boundsMaterialChangeCount: 1 },
+  ];
+  const idleSamples = () =>
+    Array.from(
+      { length: RUNTIME_SMOKE_RENDER_IDLE_OBSERVATION_CONTRACT.requiredSampleCount },
+      (_, index) => ({
+        schema: "interior-ai.runtime-smoke-render-idle-sample.v1",
+        version: 1,
+        capturedAtMs: 1_000 + index * 500,
+        callbackRequestId: 16,
+        callbackEnteredAtMs: 1_000,
+        callbackEntryObserved: true,
+        documentGenerationId: "document-1",
+        reloadGeneration: 3,
+        rendererInstrumentationGeneration: 2,
+        rendererCalls: 180,
+        invalidationCalls: 24,
+        lastRendererCallAtMs: 500,
+        lastInvalidationAtMs: 500,
+        visibilityState: "visible",
+        lifecycleState: "active",
+        webglContextState: "active",
+        webglGeneration: 0,
+        activeControlTransitionCount: 0,
+        activeItemAnimationCount: 0,
+        activeSupportedAnimationCount: 0,
+        pendingInvalidation: false,
+        requiredModelRegistryIdentity: "g3:v14:model-1,model-2",
+        requiredActiveModelCount: 2,
+        models: structuredClone(models),
+        sampleFreshnessMs: 0,
+      }),
+    );
+  const expectRejected = (samples, reason, description) => {
+    const verdict = evaluateRuntimeSmokeRendererIdle({ samples });
+    assert.equal(verdict.settled, false, description);
+    assert.ok(verdict.reasons.includes(reason), description);
+  };
+  const positive = evaluateRuntimeSmokeRendererIdle({ samples: idleSamples() });
+  assert.equal(positive.settled, true, "a static scene must become idle");
+  assert.equal(positive.observationDurationMs, 2_500);
+  assert.equal(positive.rendererCallDelta, 0);
+  assert.equal(positive.invalidationCallDelta, 0);
+
+  const permanent = idleSamples().map((sample, index) => ({
+    ...sample,
+    rendererCalls: 180 + index * 30,
+    lastRendererCallAtMs: sample.capturedAtMs,
+  }));
+  expectRejected(
+    permanent,
+    "renderer-calls-observed",
+    "a permanent 60-Hz renderer loop must fail",
+  );
+
+  const lowFrequency = idleSamples();
+  for (let index = 3; index < lowFrequency.length; index += 1) {
+    lowFrequency[index].rendererCalls += 1;
+    lowFrequency[index].invalidationCalls += 1;
+    lowFrequency[index].lastRendererCallAtMs = lowFrequency[3].capturedAtMs;
+    lowFrequency[index].lastInvalidationAtMs = lowFrequency[3].capturedAtMs;
+  }
+  expectRejected(
+    lowFrequency,
+    "invalidations-observed",
+    "a 1.5-second recurring invalidation must fail the 2.5-second window",
+  );
+
+  for (const [description, reason, mutate] of [
+    ["stale identical samples", "stale-sample", (samples) => {
+      samples[2].capturedAtMs = samples[1].capturedAtMs;
+    }],
+    ["cross-document samples", "cross-document-observation", (samples) => {
+      samples[4].documentGenerationId = "document-2";
+    }],
+    ["cross-reload samples", "cross-reload-observation", (samples) => {
+      samples[4].reloadGeneration = 4;
+    }],
+    ["hidden documents", "document-not-visible", (samples) => {
+      samples[2].visibilityState = "hidden";
+    }],
+    ["WebGL-lost documents", "webgl-context-lost", (samples) => {
+      samples[2].webglContextState = "lost";
+    }],
+    ["WebGL restoration between samples", "webgl-generation-changed", (samples) => {
+      samples[4].webglGeneration = 2;
+    }],
+    ["renderer counter resets", "renderer-counter-reset", (samples) => {
+      samples[3].rendererCalls = 179;
+    }],
+    ["invalidation counter resets", "invalidation-counter-reset", (samples) => {
+      samples[3].invalidationCalls = 23;
+    }],
+    ["active item animations", "active-item-animation", (samples) => {
+      samples[2].activeItemAnimationCount = 1;
+      samples[2].activeSupportedAnimationCount = 1;
+    }],
+    ["active control damping", "active-control-transition", (samples) => {
+      samples[2].activeControlTransitionCount = 1;
+      samples[2].activeSupportedAnimationCount = 1;
+    }],
+    ["pending invalidation", "pending-invalidation", (samples) => {
+      samples[2].pendingInvalidation = true;
+    }],
+  ]) {
+    const samples = idleSamples();
+    mutate(samples);
+    expectRejected(samples, reason, description);
+  }
+  for (const [description, mutate] of [
+    ["missing renderer instrumentation", (samples) => {
+      samples[0].rendererInstrumentationGeneration = 0;
+    }],
+    ["callback with no entered-browser milestone", (samples) => {
+      samples[0].callbackEntryObserved = false;
+    }],
+    ["malformed renderer counters", (samples) => {
+      samples[0].rendererCalls = -1;
+    }],
+  ]) {
+    const samples = idleSamples();
+    mutate(samples);
+    assert.throws(
+      () => evaluateRuntimeSmokeRendererIdle({ samples }),
+      /observation is malformed/,
+      description,
+    );
+  }
+}
+
+{
   const callback = projectRuntimeSmokeBrowserCallbackMilestone({
-    schema: "interior-ai.runtime-smoke-browser-callback.v1",
+    schema: "interior-ai.runtime-smoke-browser-callback.v2",
     phaseName: "reload-1",
     operationName: "model-responses-and-readiness",
     requestId: 3,
     stage: "snapshot-complete",
+    observedAtMs: 1_234,
   });
   assert.deepEqual(callback, {
-    schema: "interior-ai.runtime-smoke-browser-callback.v1",
+    schema: "interior-ai.runtime-smoke-browser-callback.v2",
     phaseName: "reload-1",
     operationName: "model-responses-and-readiness",
     requestId: 3,
     stage: "snapshot-complete",
+    observedAtMs: 1_234,
   });
+  assert.equal(
+    runtimeSmokeBrowserCallbackMilestoneMatchesRequest(
+      {
+        phaseName: "reload-1",
+        operationName: "model-responses-and-readiness",
+        requestId: 4,
+      },
+      callback,
+    ),
+    false,
+    "a stale snapshot milestone must not be attributed to the active request",
+  );
+  assert.deepEqual(
+    classifyRuntimeSmokeBrowserCallbackProgress({
+      request: {
+        phaseName: "reload-1",
+        operationName: "diagnostics-settle-evaluation",
+        requestId: 16,
+      },
+      milestones: [],
+    }),
+    { latestStage: "not-entered", nextStage: "entered-browser" },
+    "a missing first milestone must attribute the wait before browser entry",
+  );
   assert.throws(
     () =>
       projectRuntimeSmokeBrowserCallbackMilestone({
@@ -646,21 +824,77 @@ function boundAuthFixtureEnvironment() {
     );
   }
   const heartbeat = projectRuntimeSmokeBrowserHeartbeat({
-    schema: "interior-ai.runtime-smoke-browser-heartbeat.v1",
+    schema: "interior-ai.runtime-smoke-browser-heartbeat.v2",
     kind: "interval",
     sequence: 4,
     observedAtMs: 2_000,
     eventLoopDelayMs: 7,
     maximumEventLoopDelayMs: 12,
+    lastAnimationFrameDelayMs: 3,
+    maximumAnimationFrameDelayMs: 9,
+    lastAnimationFrameCadenceMs: 1_003,
+    visibilityState: "visible",
+    documentReadyState: "complete",
+    lifecycleState: "active",
+    rendererCalls: 180,
+    rendererCallDelta: 60,
+    rendererCallRateHz: 60,
+    activeAnimationCount: 0,
+    controlActivity: "idle",
+    controlEventCount: 0,
+    webglContextLostCount: 0,
+    webglContextRestoredCount: 0,
   });
   assert.deepEqual(heartbeat, {
-    schema: "interior-ai.runtime-smoke-browser-heartbeat.v1",
+    schema: "interior-ai.runtime-smoke-browser-heartbeat.v2",
     kind: "interval",
     sequence: 4,
     observedAtMs: 2_000,
     eventLoopDelayMs: 7,
     maximumEventLoopDelayMs: 12,
+    lastAnimationFrameDelayMs: 3,
+    maximumAnimationFrameDelayMs: 9,
+    lastAnimationFrameCadenceMs: 1_003,
+    visibilityState: "visible",
+    documentReadyState: "complete",
+    lifecycleState: "active",
+    rendererCalls: 180,
+    rendererCallDelta: 60,
+    rendererCallRateHz: 60,
+    activeAnimationCount: 0,
+    controlActivity: "idle",
+    controlEventCount: 0,
+    webglContextLostCount: 0,
+    webglContextRestoredCount: 0,
   });
+  const quiescentHeartbeat = {
+    ...heartbeat,
+    rendererCallDelta: 0,
+    rendererCallRateHz: 0,
+  };
+  assert.equal(
+    runtimeSmokeBrowserHeartbeatSupportsIdleAdmission(quiescentHeartbeat),
+    true,
+    "a complete, active, quiescent interval heartbeat may admit the authoritative idle observation",
+  );
+  for (const activeHeartbeat of [
+    { ...quiescentHeartbeat, kind: "started" },
+    { ...quiescentHeartbeat, visibilityState: "hidden" },
+    { ...quiescentHeartbeat, documentReadyState: "interactive" },
+    { ...quiescentHeartbeat, lifecycleState: "frozen" },
+    { ...quiescentHeartbeat, rendererCallDelta: 1 },
+    { ...quiescentHeartbeat, rendererCallRateHz: 1 },
+    { ...quiescentHeartbeat, activeAnimationCount: 1 },
+    { ...quiescentHeartbeat, controlActivity: "pointer-active" },
+    { ...quiescentHeartbeat, webglContextLostCount: 1 },
+    { ...quiescentHeartbeat, webglContextRestoredCount: 1 },
+  ]) {
+    assert.equal(
+      runtimeSmokeBrowserHeartbeatSupportsIdleAdmission(activeHeartbeat),
+      false,
+      "non-quiescent browser state must not admit an idle observation",
+    );
+  }
   assert.throws(
     () => projectRuntimeSmokeBrowserHeartbeat({ ...heartbeat, token: "unsafe" }),
     /browser heartbeat is unsafe/,
@@ -679,14 +913,25 @@ function boundAuthFixtureEnvironment() {
   }
 }
 assert.deepEqual(RUNTIME_SMOKE_DIAGNOSTICS_SETTLE_CONTRACT, {
-  requiredStableSamples: 2,
-  sampleIntervalMs: 500,
+  observation: {
+    schema: "interior-ai.runtime-smoke-render-idle-observation-contract.v1",
+    version: 1,
+    sampleIntervalMs: 500,
+    requiredSampleCount: 6,
+    observationDurationMs: 2_500,
+    rendererIdleWindowMs: 2_000,
+    maximumSampleFreshnessMs: 750,
+    maximumSampleGapMs: 1_250,
+  },
+  maximumObservationAttempts: 2,
+  finalReadbackEvaluationCount: 1,
+  admissionRequiresQuiescentHeartbeat: true,
   firstSampleImmediate: true,
-  baselineEvaluationCount: 1,
+  retryAlignsToQuiescence: true,
   evaluationCount: 3,
   evaluationTimeoutMs: 10_000,
-  assertionAllowanceMs: 1_000,
-  minimumTheoreticalCompletionMs: 1_000,
+  assertionAllowanceMs: 2_000,
+  minimumTheoreticalCompletionMs: 2_500,
   maximumLegalSequentialEnvelopeMs: 32_000,
   orchestrationMarginMs: 10_000,
   timeoutMs: 42_000,
@@ -783,7 +1028,7 @@ for (const phaseName of ["reload-1", "reload-2", "reload-3"]) {
   );
   assert.equal(runtimeSmokePhaseBudget(phaseName), 308_000);
 }
-assert.equal(runtimeSmokePhaseBudget("remount"), 165_000);
+assert.equal(runtimeSmokePhaseBudget("remount"), 160_000);
 assert.ok(
   runtimeSmokePhaseBudget("bounds-verification") - 43_432 >= 25_000,
   "bounds verification needs meaningful GitHub-runner headroom",
@@ -1289,7 +1534,9 @@ assert.equal(
 {
   const playwrightAssertionRecorder = createRuntimeSmokePhaseRecorder({
     repositoryRoot: process.cwd(),
-    phaseBudgets: [{ name: "remount", timeoutMs: 165_000 }],
+    phaseBudgets: [
+      { name: "remount", timeoutMs: runtimeSmokePhaseBudget("remount") },
+    ],
   });
   const matcherError = new Error("structured matcher fixture");
   matcherError.matcherResult = { pass: false };
@@ -1594,6 +1841,20 @@ assert.doesNotMatch(
   /fatalErrors\.push|checkpoint\(/,
   "invalid or delayed heartbeats must never fail or reset progress",
 );
+const heartbeatProducerSource = runtimeSmokeSource.slice(
+  runtimeSmokeSource.indexOf("if (!diagnosticsGlobal.__INTERIOR_AI_RUNTIME_SMOKE_HEARTBEAT__)"),
+  runtimeSmokeSource.indexOf('const clearSentinel = "__e2e_runtime_smoke_storage_cleared"'),
+);
+assert.equal(
+  heartbeatProducerSource.match(/requestAnimationFrame/g)?.length,
+  1,
+  "liveness diagnostics may request one animation frame per heartbeat but must not create a continuous frame loop",
+);
+assert.match(
+  heartbeatProducerSource,
+  /if \(!animationFramePending\)[\s\S]*requestAnimationFrame[\s\S]*animationFramePending = false/,
+  "animation-frame liveness sampling must remain coalesced and one-shot",
+);
 assert.match(
   runtimeSmokeSource,
   /projectRuntimeSmokeBrowserCallbackMilestone/,
@@ -1617,6 +1878,11 @@ assert.doesNotMatch(
   reloadLoop,
   /await\s+readModelDiagnostics\(\)/,
   "reload diagnostics must not bypass a named wall-clock operation bound",
+);
+assert.match(
+  reloadLoop,
+  /lastMainThreadTelemetrySummary\?\.counters\.rendererCalls[\s\S]*settledRendererCallsByPhase\.get\(phaseName\)/,
+  "reload assertions must prove the global scene renderer stayed idle",
 );
 assert.doesNotMatch(
   reloadLoop,
@@ -1703,7 +1969,7 @@ assert.match(
 );
 assert.match(
   diagnosticSnapshotSource,
-  /interior-ai\.runtime-smoke-browser-callback\.v1/,
+  /interior-ai\.runtime-smoke-browser-callback\.v2/,
   "diagnostic callbacks must expose fixed-stage browser timing observations",
 );
 assert.match(
@@ -1722,6 +1988,50 @@ assert.doesNotMatch(
   runtimeSmokeSource,
   /maximumSamples/,
   "diagnostics settling must enforce elapsed wall time rather than sample count",
+);
+const rendererIdleObservationSource = runtimeSmokeSource.slice(
+  runtimeSmokeSource.indexOf("const collectRendererIdleObservation"),
+  runtimeSmokeSource.indexOf("const settledResponseTotal"),
+);
+assert.match(
+  runtimeSmokeSource,
+  /admissionRequiresQuiescentHeartbeat[\s\S]*runtimeSmokeBrowserHeartbeatSupportsIdleAdmission\([\s\S]*lastBrowserHeartbeat/,
+  "renderer-idle evaluation must wait for a valid quiescent browser heartbeat",
+);
+assert.match(
+  runtimeSmokeSource,
+  /model-responses-ready[\s\S]*browser-callback-admission-wait-started[\s\S]*runtimeSmokeBrowserHeartbeatSupportsIdleAdmission\([\s\S]*browser-callback-admission-ready[\s\S]*selection-verification/,
+  "selection diagnostics must use the existing model-response budget to await quiescent browser admission",
+);
+assert.match(
+  runtimeSmokeSource,
+  /expectedReloadActiveResourceKindCounts[\s\S]*prepared\.activeReferenceCount[\s\S]*parsed\.activeReferenceCount/,
+  "reload cache proof must bind stable active-resource topology and exact live lease ownership",
+);
+assert.doesNotMatch(
+  runtimeSmokeSource,
+  /expectedReloadCacheEntryCounts/,
+  "reload cache proof must not require optional zero-reference retention across documents",
+);
+assert.match(
+  rendererIdleObservationSource,
+  /requestAnimationFrame\(observeFrame\)/,
+  "renderer-idle sampling must use monotonic animation-frame admission",
+);
+assert.doesNotMatch(
+  rendererIdleObservationSource,
+  /window\.setTimeout\(resolve, contract\.sampleIntervalMs\)/,
+  "renderer-idle sampling must not depend on throttled timeout admission",
+);
+assert.match(
+  rendererIdleObservationSource,
+  /alignToQuiescence[\s\S]*samples\.length = 0/,
+  "the retry observation must restart its candidate window until quiescent",
+);
+assert.match(
+  runtimeSmokeSource,
+  /attempt > 1[\s\S]*RUNTIME_SMOKE_DIAGNOSTICS_SETTLE_CONTRACT\.retryAlignsToQuiescence/,
+  "only retry observations may align their evidence window to quiescence",
 );
 assert.match(runtimeSmokeSource, /createRuntimeSmokeOperationDeadline/);
 assert.match(runtimeSmokeSource, /runtimeSmokeOperationAttempt/);
@@ -2724,6 +3034,8 @@ async function fixture({
   publicArtifactText = "public artifact\n",
   manifestFactory = createProductionEvidenceManifest,
   recordRuntimeTest = true,
+  nextBuildId = "build-fixture-001",
+  commitDate = null,
 } = {}) {
   const root = mkdtempSync(path.join(tmpdir(), "ch-0016-evidence-"));
   write(root, ".gitignore", ".next/\n.local/\nnode_modules/\n*.local.js\n");
@@ -2801,7 +3113,7 @@ async function fixture({
   }
   write(root, "generated/runtime.ts", "export const generated = true;\n");
   write(root, "public/asset.txt", publicArtifactText);
-  write(root, ".next/BUILD_ID", "build-fixture-001\n");
+  write(root, ".next/BUILD_ID", `${nextBuildId}\n`);
   write(root, ".next/build-manifest.json", "{}\n");
   write(root, ".next/required-server-files.json", "{}\n");
   write(root, ".next/static/chunk.js", "static chunk\n");
@@ -2843,7 +3155,11 @@ async function fixture({
     "public/asset.txt",
     "public/assets/floor-plans/preview.webp",
   ]);
-  git(root, ["commit", "-qm", "fixture"]);
+  execFileSync("git", ["commit", "-qm", "fixture"], {
+    cwd: root, env: { ...process.env, ...(commitDate ? {
+      GIT_AUTHOR_DATE: commitDate, GIT_COMMITTER_DATE: commitDate,
+    } : {}) },
+  });
 
   const manifestPath = ".local/production-artifact-evidence/manifest.json";
   const reportPath = ".local/production-artifact-evidence/runtime-smoke.json";
@@ -3574,7 +3890,7 @@ function listedSpecCount(suites) {
   }
 }
 
-function runtimeReportCanonicalizationFixture() {
+function runtimeReportCanonicalizationFixture(nextBuildId = "runtime-portable-build") {
   const repositoryRoot = process.cwd();
   const externalRoot = mkdtempSync(
     path.join(tmpdir(), "runtime-report-canonicalization-"),
@@ -3591,7 +3907,7 @@ function runtimeReportCanonicalizationFixture() {
     PRODUCTION_EVIDENCE_CANDIDATE_ID: "CANDIDATE-runtime-portable-fixture",
     PRODUCTION_EVIDENCE_EXPECTED_COMMIT_SHA: "1".repeat(40),
     PRODUCTION_EVIDENCE_EXPECTED_TREE_SHA: "2".repeat(40),
-    PRODUCTION_EVIDENCE_EXPECTED_BUILD_ID: "runtime-portable-build",
+    PRODUCTION_EVIDENCE_EXPECTED_BUILD_ID: nextBuildId,
     PRODUCTION_EVIDENCE_EXPECTED_ARTIFACT_SHA256: "3".repeat(64),
     PRODUCTION_EVIDENCE_EXPECTED_MANIFEST_SHA256: "4".repeat(64),
     PRODUCTION_EVIDENCE_EXPECTED_JOURNAL_SHA256: "5".repeat(64),
@@ -3772,8 +4088,12 @@ function runtimeReportCanonicalizationFixture() {
   };
 }
 
-{
-  const fixture = runtimeReportCanonicalizationFixture();
+// Physical report fixtures exercise authorization through portable evidence binding.
+for (const nextBuildId of [
+  "-HMijapRnjq-h9tldkjN0", "_jT2Js5lQ3W97uL42t3VQ",
+  "v3Dmenpr6d_fsLQY9tQPM", "release-2026.09:build_42", "A", "_".repeat(128),
+]) {
+  const fixture = runtimeReportCanonicalizationFixture(nextBuildId);
   try {
     const ownerBytes = readFileSync(`${fixture.reportPath}.owner.json`);
     const portable = fixture.canonicalize({
@@ -3818,8 +4138,11 @@ function runtimeReportCanonicalizationFixture() {
       reportAuthorizationEnvironment: fixture.environment,
     });
     assert.deepEqual(finalPortable, portable);
+    assert.equal(JSON.parse(ownerBytes).buildId, nextBuildId);
+    assert.equal(finalPortable.config.metadata.productionArtifactEvidence.nextBuildId, nextBuildId);
 
     for (const environmentMutation of [
+      { PRODUCTION_EVIDENCE_EXPECTED_BUILD_ID: "foreign-build" },
       { PRODUCTION_CERTIFICATION_ID: "CERT-foreign" },
       { PRODUCTION_EVIDENCE_CANDIDATE_ID: "CANDIDATE-foreign" },
       {
@@ -4215,6 +4538,38 @@ for (const mutation of [
   assert.deepEqual(canonicalPreflight.issues, []);
   const loaded = load();
   assert.deepEqual(loaded.identity, accepted.identity);
+  const direct = await inspectDirectProductionIdentity({
+    repositoryRoot: context.root, manifestPath: context.manifestPath,
+    environment: playwrightContractEnvironment(context),
+  });
+  assert.equal(direct.executionMode, "production");
+  assert.equal(direct.buildIdentity, loaded.identity.nextBuildId);
+  assert.equal(direct.artifactSha256, loaded.identity.artifactSha256);
+  assert.equal(direct.candidateTreeSha, loaded.identity.sourceTreeSha);
+  const health = { build: direct.buildIdentity, productionArtifact: {
+    kind: "local-production-mode-artifact", nextBuildId: direct.buildIdentity,
+    artifactSha256: direct.artifactSha256, sourceCommitSha: direct.candidateCommitSha,
+  } };
+  assert.doesNotThrow(() => assertDirectRuntimeSmokeServer(direct, health));
+  assert.throws(() => assertDirectRuntimeSmokeServer(direct, { ...health, build: "other" }), /does not match/);
+  assert.throws(() => assertDirectRuntimeSmokeServer(direct, {}), /does not match/);
+  assert.throws(() => assertDirectRuntimeSmokeServer(direct, {
+    ...health, productionArtifact: { ...health.productionArtifact, artifactSha256: "f".repeat(64) },
+  }), /does not match/);
+  assert.equal(directRuntimeSmokeServerEnvironment(direct).PRODUCTION_ARTIFACT_BUILD_ID, direct.buildIdentity);
+  const development = loadDirectRuntimeSmokeIdentity({
+    repositoryRoot: context.root, useProductionServer: false,
+  });
+  assert.equal(development.executionMode, "development");
+  assert.equal(development.buildIdentity, "next-development-server");
+  assert.equal(development.artifactSha256, null);
+  await assert.rejects(() => inspectDirectProductionIdentity({
+    repositoryRoot: context.root, manifestPath: context.manifestPath,
+    environment: { ...playwrightContractEnvironment(context), PRODUCTION_EVIDENCE_EXPECTED_BUILD_ID: "wrong" },
+  }), /conflicts|rejected/);
+  await assert.rejects(() => inspectDirectProductionIdentity({
+    repositoryRoot: context.root, manifestPath: "missing.json",
+  }), /rejected/);
   assert.equal(loaded.reportDestination.destinationClass, "repository-relative");
   assert.equal(
     loaded.reportDestination.outputPath,
@@ -4859,6 +5214,16 @@ for (const mutation of [
       runtimeStartIndex > preflightRejectionIndex,
     "runtime smoke cannot start when manifest validation fails",
   );
+  assert.match(
+    smokeSource,
+    /playwright\.status !== 0 && !existsSync\(absolutePhaseTimingPath\)[\s\S]*preceding Playwright webServer failure is authoritative/,
+    "a pre-test server failure must remain the primary direct-smoke diagnostic",
+  );
+  assert.match(
+    smokeSource,
+    /bindRuntimeSmokeFailureToReport\([\s\S]*requestedTimingPath,[\s\S]*externalTimingRoot/,
+    "repository-relative timing evidence must retain its requested path at the binding boundary",
+  );
   assert.ok(
     configSource.indexOf("loadProductionArtifactForPlaywright") <
       configSource.indexOf("export default defineConfig"),
@@ -4966,6 +5331,54 @@ async function runtimeFailureFixture({
     processExitCode: 1,
   });
   return context;
+}
+
+// Physical artifact/manifest fixtures; no compiled artifact is rewritten here.
+// Independent inventories from the same source commit must stay distinct.
+{
+  const identities = [];
+  for (const nextBuildId of [
+    "-HMijapRnjq-h9tldkjN0", "_jT2Js5lQ3W97uL42t3VQ",
+    "v3Dmenpr6d_fsLQY9tQPM", "release-2026.09:build_42", "A", "_".repeat(128),
+  ]) {
+    const context = await fixture({ nextBuildId, recordRuntimeTest: false,
+      commitDate: "2026-07-31T00:00:00Z" });
+    try {
+      const identity = await inspectDirectProductionIdentity({
+        repositoryRoot: context.root, manifestPath: context.manifestPath,
+        environment: playwrightContractEnvironment(context),
+      });
+      assert.equal(identity.buildIdentity, nextBuildId, "physical BUILD_ID is never sanitized");
+      assert.equal(readFileSync(path.join(context.root, ".next/BUILD_ID"), "utf8"), `${nextBuildId}\n`);
+      const health = { build: nextBuildId, productionArtifact: {
+        kind: "local-production-mode-artifact", nextBuildId,
+        artifactSha256: identity.artifactSha256,
+        sourceCommitSha: identity.candidateCommitSha,
+      } };
+      assertDirectRuntimeSmokeServer(identity, health);
+      assert.throws(() => assertDirectRuntimeSmokeServer(identity, {
+        ...health, build: "foreign-build",
+      }), /does not match/);
+      assert.throws(() => assertDirectRuntimeSmokeServer(identity, {
+        ...health, productionArtifact: { ...health.productionArtifact, nextBuildId: "foreign-build" },
+      }), /does not match/);
+      await assert.rejects(() => inspectDirectProductionIdentity({
+        repositoryRoot: context.root, manifestPath: context.manifestPath,
+        environment: { ...playwrightContractEnvironment(context),
+          PRODUCTION_EVIDENCE_EXPECTED_BUILD_ID: "foreign-build" },
+      }), /conflicts with PRODUCTION_EVIDENCE_EXPECTED_BUILD_ID/);
+      identities.push(identity);
+      write(context.root, ".next/BUILD_ID", "unbound-build\n");
+      await assert.rejects(() => inspectDirectProductionIdentity({
+        repositoryRoot: context.root, manifestPath: context.manifestPath,
+        environment: playwrightContractEnvironment(context),
+      }), /rejected/);
+    } finally { rmSync(context.root, { recursive: true, force: true }); }
+  }
+  assert.equal(identities[0].candidateCommitSha, identities[1].candidateCommitSha);
+  assert.notEqual(identities[0].buildIdentity, identities[1].buildIdentity);
+  assert.notEqual(identities[0].artifactSha256, identities[1].artifactSha256);
+  console.log("Direct build identity C1-C6 controls passed, including distinct physical builds.");
 }
 
 async function expectRejected(context, expectedText) {
@@ -5181,6 +5594,17 @@ async function expectRejected(context, expectedText) {
       manifest,
     }),
     manifest.build.authFixtureContinuity,
+  );
+  const githubBuildManifest = structuredClone(manifest);
+  githubBuildManifest.build.authFixtureContinuity.activationScope =
+    "github-actions";
+  assert.equal(
+    validateArtifactProductServerAuthFixtureBinding({
+      environment: projectedProductEnvironment,
+      manifest: githubBuildManifest,
+    }).activationScope,
+    "local-certification-projection",
+    "the server-local fixture activation may preserve the same GitHub-built session identity",
   );
   assert.equal(
     projectedProductEnvironment.PRODUCTION_CERTIFICATION_ID,
@@ -6450,6 +6874,142 @@ for (const mutate of [
 
 {
   const context = await fixture();
+  const manifestBytes = readFileSync(path.join(context.root, context.manifestPath));
+  const manifest = JSON.parse(manifestBytes.toString("utf8"));
+  const test = manifest.tests.find((entry) => entry.name === "runtime-smoke");
+  const stageProfile = certificationEnvironmentProfile(
+    process.cwd(),
+    "runtime-smoke",
+  );
+  const stageEnvironment = projectCertificationChildEnvironment({
+    repositoryRoot: process.cwd(),
+    baseEnvironment: {
+      APP_ENV: "staging",
+      CATALOG_STRICT_VALIDATION: "true",
+      CI: "true",
+      NEXT_PUBLIC_APP_ENV: "staging",
+      NODE_ENV: "production",
+      VERCEL_ENV: "preview",
+    },
+    stage: "runtime-smoke",
+    profileId: "runtime-smoke",
+    stageInputs: {
+      CERTIFICATION_ENVIRONMENT_STAGE: "runtime-smoke",
+      CERTIFICATION_RUNTIME_STAGE_ATTEMPT: "1",
+      CERTIFICATION_RUNTIME_START_MARKER_PATH: "/private/tmp/stable/marker.json",
+      CERTIFICATION_STAGE_ENVIRONMENT_CONTRACT_SHA256:
+        stageProfile.contract.sha256,
+      CERTIFICATION_STAGE_ENVIRONMENT_PROFILE_ID: stageProfile.id,
+      CERTIFICATION_STAGE_ENVIRONMENT_PROFILE_SHA256: stageProfile.sha256,
+      DATABASE_URL:
+        "postgresql://interior_ai_cert_stage_dddddddddddddddddddddddddddddddd:fixture@127.0.0.1:5432/interior_ai_gate_a3_test_cert_dddddddddddddddddddddddddddddddd",
+      GOOGLE_CLIENT_ID: "fixture.apps.googleusercontent.com",
+      GOOGLE_CLIENT_SECRET: "GOCSPX-fixture-placeholder",
+      PLAYWRIGHT_EXTERNAL_EVIDENCE_ROOT: "/private/tmp/stable/evidence",
+      PLAYWRIGHT_JSON_OUTPUT_FILE: "/private/tmp/stable/evidence/report.json",
+      PLAYWRIGHT_USE_PRODUCTION_SERVER: "1",
+      PRODUCTION_CERTIFICATION_ID:
+        `stable-runtime-smoke:123:1:${manifest.source.commitSha.slice(0, 12)}`,
+      PRODUCTION_EVIDENCE_CANDIDATE_ID: manifest.candidateIdentifier,
+      PRODUCTION_EVIDENCE_EXPECTED_ARTIFACT_SHA256: manifest.artifact.sha256,
+      PRODUCTION_EVIDENCE_EXPECTED_BUILD_ID: manifest.build.nextBuildId,
+      PRODUCTION_EVIDENCE_EXPECTED_COMMIT_SHA: manifest.source.commitSha,
+      PRODUCTION_EVIDENCE_EXPECTED_JOURNAL_NONCE: manifest.execution.runNonce,
+      PRODUCTION_EVIDENCE_EXPECTED_JOURNAL_SHA256: "c".repeat(64),
+      PRODUCTION_EVIDENCE_EXPECTED_MANIFEST_SHA256: createHash("sha256")
+        .update(manifestBytes)
+        .digest("hex"),
+      PRODUCTION_EVIDENCE_EXPECTED_TREE_SHA: manifest.source.treeSha,
+      PRODUCTION_EVIDENCE_JOURNAL_PATH:
+        ".local/production-artifact-evidence/semantic-event-journal.json",
+      PRODUCTION_EVIDENCE_MANIFEST: context.manifestPath,
+      RUNTIME_SMOKE_PHASE_TIMINGS_PATH:
+        "/private/tmp/stable/evidence/timings.json",
+    },
+  }).metadata;
+  const summary = {
+    schema: "interior-ai.stable-runtime-smoke-evidence.v1",
+    classification: "REPOSITORY_STABLE_RUNTIME_SMOKE_ONLY",
+    releaseCertification: false,
+    identity: {
+      certificationId:
+        `stable-runtime-smoke:123:1:${manifest.source.commitSha.slice(0, 12)}`,
+      candidateId: manifest.candidateIdentifier,
+      sourceCommitSha: manifest.source.commitSha,
+      sourceTreeSha: manifest.source.treeSha,
+      buildId: manifest.build.nextBuildId,
+      artifactSha256: manifest.artifact.sha256,
+      manifestSha256: createHash("sha256").update(manifestBytes).digest("hex"),
+      journalSha256: "c".repeat(64),
+      journalNonce: manifest.execution.runNonce,
+    },
+    authFixtureContinuity: manifest.build.authFixtureContinuity,
+    database: {
+      lifecycleClassification: "STABLE_RUNTIME_SMOKE_ONLY",
+      databaseName:
+        "interior_ai_gate_a3_test_cert_dddddddddddddddddddddddddddddddd",
+      databaseIdentitySha256: "d".repeat(64),
+      roleName: "interior_ai_cert_stage_dddddddddddddddddddddddddddddddd",
+      scopedRoleClassification: "private-stage-login-no-admin",
+      transportClassification: "native-loopback",
+      transportAttestationSha256: null,
+      transportVerificationStatus: "verified-live",
+      imageClassification: null,
+      migrationCount: 43,
+      finalState: "stable-absence-verified",
+      targetAbsent: true,
+    },
+    stageEnvironment,
+    evidence: {
+      rawReport: {
+        path: "runtime-smoke/playwright-report.json",
+        sha256: "e".repeat(64),
+      },
+      portableReport: {
+        path: ".local/production-artifact-evidence/runtime-smoke.json",
+        sha256: test.report.sha256,
+      },
+      timings: {
+        path: ".local/production-artifact-evidence/runtime-smoke-phases.json",
+        sha256: test.phaseTimings.sha256,
+      },
+      startMarker: {
+        path: "runtime-smoke/product-test-start.json",
+        sha256: "f".repeat(64),
+      },
+    },
+    stats: test.stats,
+    complete: true,
+  };
+  write(context.root, STABLE_PORTABLE_SUMMARY_PATH, `${JSON.stringify(summary)}\n`);
+  const verified = await verifyStableRuntimeSmokeStandalone({
+    repositoryRoot: context.root,
+    environment: {
+      CERTIFICATION_QUALIFICATION_MODE: "1",
+      PRODUCTION_EVIDENCE_EXPECTED_COMMIT_SHA: manifest.source.commitSha,
+    },
+  });
+  assert.equal(verified.classification, "STABLE_RUNTIME_SMOKE_STANDALONE_VERIFIED");
+  assert.equal(verified.releaseCertification, false);
+  assert.equal(verified.databaseTargetAbsent, true);
+  write(context.root, STABLE_PORTABLE_SUMMARY_PATH, `${JSON.stringify({
+    ...summary,
+    database: { ...summary.database, targetAbsent: false },
+  })}\n`);
+  await assert.rejects(
+    () => verifyStableRuntimeSmokeStandalone({
+      repositoryRoot: context.root,
+      environment: {
+        CERTIFICATION_QUALIFICATION_MODE: "1",
+        PRODUCTION_EVIDENCE_EXPECTED_COMMIT_SHA: manifest.source.commitSha,
+      },
+    }),
+    /database absence is unproved/,
+  );
+}
+
+{
+  const context = await fixture();
   const manifest = readManifest(context.root, context.manifestPath);
   const bundle = await createProductionEvidenceBundle({
     repositoryRoot: context.root,
@@ -6997,12 +7557,12 @@ const playwrightConfiguration = readFileSync(
 );
 assert.match(
   playwrightConfiguration,
-  /command: productionArtifactEvidence[\s\S]{0,160}productionArtifactEvidence\.serverCommand[\s\S]{0,160}useProductionServer[\s\S]{0,100}"npm run start"[\s\S]{0,100}"npm run dev"/,
+  /command: productionArtifactEvidence[\s\S]{0,160}productionArtifactEvidence\.serverCommand[\s\S]{0,160}useProductionServer[\s\S]{0,100}"npm run start -- --hostname 127\.0\.0\.1"[\s\S]{0,100}"npm run dev"/,
   "production artifact evidence must select its verified server before any dev fallback",
 );
 assert.match(
   playwrightConfiguration,
-  /reuseExistingServer: productionArtifactEvidence \? false/,
+  /reuseExistingServer: productionArtifactEvidence \|\| directRuntimeSmokeIdentity \|\| useProductionServer \? false/,
   "production artifact evidence must never reuse an unrelated listener",
 );
 assert.match(
@@ -7022,8 +7582,8 @@ assert.match(
 const workflow = readFileSync(path.join(process.cwd(), ".github/workflows/ci.yml"), "utf8");
 assert.equal(workflow.includes('CATALOG_STRICT_VALIDATION: "false"'), false);
 assert.match(workflow, /npm run evidence:production:build/);
-assert.match(workflow, /npm run evidence:production:smoke/);
-assert.match(workflow, /npm run evidence:production:bundle/);
+assert.match(workflow, /npm run evidence:production:stable-runtime-smoke/);
+assert.doesNotMatch(workflow, /npm run evidence:production:(?:smoke|bundle|verify)\b/);
 assert.match(workflow, /\.local\/production-artifact-evidence\/upload\//);
 const vercelManifestSource = readFileSync(
   path.join(process.cwd(), "scripts/vercel-output-manifest.mjs"),

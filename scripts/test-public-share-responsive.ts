@@ -5,7 +5,7 @@ import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import type { RoomSnapshot } from "@/lib/room-types";
 import type { DesignSnapshot } from "@/lib/room-types";
-import PublicShareError from "@/app/share/[shareToken]/error";
+import PublicShareError from "@/app/share/[shareToken]/(presentation)/error";
 import { PublicShareLoadingState } from "@/components/public-share/PublicShareRootLifecycle";
 import {
   buildPublicProjectionContentIdentity,
@@ -293,27 +293,32 @@ assert.match(viewerSource, /getBoundingClientRect/);
 assert.match(viewerSource, /data-testid="share-preview-surface"/);
 assert.doesNotMatch(viewerSource, /saved-view-\$\{index\}|initialSnapshot/);
 
-const errorSource = read("app/share/[shareToken]/error.tsx");
-const loadingSource = read("app/share/[shareToken]/loading.tsx");
-const pageSource = read("app/share/[shareToken]/page.tsx");
-assert.equal(existsSync(join(root, "app/share/[shareToken]/loading.tsx")), true);
-assert.match(rootLifecycleSource, /data-testid="public-share-root"/);
+const presentationRoute = "app/share/[shareToken]/(presentation)";
+const errorSource = read(`${presentationRoute}/error.tsx`);
+const loadingSource = read(`${presentationRoute}/loading.tsx`);
+const layoutSource = read(`${presentationRoute}/layout.tsx`);
+const pageSource = read(`${presentationRoute}/page.tsx`);
+assert.equal(existsSync(join(root, presentationRoute, "loading.tsx")), true);
+assert.match(rootLifecycleSource, /data-public-share-lifecycle-owner="true"/);
 assert.equal(
-  (rootLifecycleSource.match(/data-testid="public-share-root"/g) ?? []).length,
+  [...sourceFiles("app"), ...sourceFiles("components")].filter((relativePath) =>
+    read(relativePath).includes('data-public-share-lifecycle-owner="true"')
+  ).length,
   1,
-  "The stable public-share root identity must have one source owner"
+  "The stable public-share lifecycle owner must have one source owner"
 );
 assert.deepEqual(
   [...sourceFiles("app"), ...sourceFiles("components")].filter((relativePath) =>
-    read(relativePath).split("\n").some((line) => /^\s+data-testid="public-share-root"/.test(line))
+    read(relativePath).includes('data-public-share-lifecycle-owner="true"')
   ),
   ["components/public-share/PublicShareRootLifecycle.tsx"],
-  "No route fallback or alternate presentation may claim the stable public-share root"
+  "No fallback or alternate presentation may claim the route lifecycle owner"
 );
+assert.match(layoutSource, /<PublicShareRouteLifecycle>/);
 assert.match(loadingSource, /PublicShareLoadingState/);
 assert.match(rootLifecycleSource, /data-layout-status="loading"/);
-assert.match(errorSource, /data-layout-status="error"/);
-assert.match(rootLifecycleSource, /data-layout-status="invalid"/);
+assert.match(errorSource, /state="error"/);
+assert.match(rootLifecycleSource, /state="invalid"/);
 assert.match(pageSource, /<PublicShareClientBoundary/);
 assert.match(pageSource, /key=\{`\$\{design\.id\}:\$\{shareToken\}`\}/);
 assert.match(clientBoundarySource, /ssr: false/);
@@ -327,9 +332,9 @@ const loadingMarkup = renderToStaticMarkup(createElement(PublicShareLoadingState
 const errorMarkup = renderToStaticMarkup(
   createElement(PublicShareError, { reset: () => undefined })
 );
-assert.match(loadingMarkup, /data-testid="public-share-loading"/);
-assert.match(loadingMarkup, /aria-busy="true"/);
-assert.match(errorMarkup, /data-testid="public-share-error"/);
+assert.doesNotMatch(loadingMarkup + errorMarkup, /<main/);
+assert.match(loadingMarkup, /Loading shared design/);
+assert.match(errorMarkup, /Shared design could not load/);
 assert.match(errorMarkup, /data-testid="public-share-error-retry"/);
 
 console.log("Public share responsive layout tests passed.");

@@ -626,8 +626,10 @@ test("history confirmation is unchanged and guards parent Escape while scope rep
   const confirmation = page.getByRole("alertdialog", {
     name: "Delete this import from your history?",
   });
+  const close = dialog.getByRole("button", { name: "Close floor-plan import" });
   await expect(confirmation).toHaveCount(1);
   await expect(confirmation).not.toHaveAttribute("aria-modal", "true");
+  await expect(close).toBeDisabled();
   await page.keyboard.press("Escape");
   await expect(dialog).toHaveCount(1);
   await expect(confirmation).toHaveCount(1);
@@ -640,10 +642,14 @@ test("history confirmation is unchanged and guards parent Escape while scope rep
   });
   await expect(bulkConfirmation).toHaveCount(1);
   await expect(bulkConfirmation).not.toHaveAttribute("aria-modal", "true");
+  await expect(close).toBeDisabled();
   await page.keyboard.press("Escape");
   await expect(dialog).toHaveCount(1);
   await page.getByText("My floor-plan imports", { exact: true }).click();
   await expect(bulkConfirmation).not.toBeVisible();
+  // Native details visibility changes before its queued toggle updates the
+  // existing confirmation guard. Await that guard before the single Escape.
+  await expect(close).toBeEnabled();
   await page.keyboard.press("Escape");
   await expect(dialog).toHaveCount(0);
   await expect(action).toBeFocused();
