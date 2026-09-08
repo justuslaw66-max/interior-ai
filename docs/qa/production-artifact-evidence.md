@@ -1,5 +1,47 @@
 # Production-equivalent artifact evidence
 
+## Ordinary artifact runtime ownership — 2026-09-09
+
+The source `smoke` command owns ordinary CI execution explicitly. After artifact
+preflight it consumes the physical canonical auth session, preserves its build
+activation scope, validates the isolated database, and allocates a fresh restricted
+runtime role. Hosted ownership is the stable workflow's exact service/run/session;
+the approved local substitute requires the WINDOW database creation receipt and OID.
+The smoke step passes its `job.services.postgres.id`; the source owner inspects that
+exact running `postgres:15` container, its synthetic account/database configuration,
+5432 publication and network addresses. PostgreSQL's observed address must match
+that service and is frozen with the database/role OIDs for later checks. This accounts
+for Docker's published-port boundary; it does not allow arbitrary private addresses.
+Local ownership continues to require the exact 127.0.0.1 server and creation receipt.
+The [GitHub service context](https://docs.github.com/en/actions/reference/workflows-and-actions/contexts#job-context)
+provides the container ID, while [PostgreSQL's connection information](https://www.postgresql.org/docs/16/functions-info.html)
+reports the address of the server socket rather than the client's connection hostname.
+The parent retains provisioning authority. Playwright receives the restricted URL;
+the product receives only required system settings, canonical synthetic auth,
+workflow synthetic staging service values, and verified artifact/run identity.
+Private session/capability/receipt paths and admin/module-loading inputs stay out
+of the product process.
+
+The unchanged server command consumes a fresh private binding of physical source,
+manifest, build/artifact/run, auth session, database and acknowledged role OIDs.
+It rejects mixed or missing execution owners. Genuine certification continues
+through its existing lifecycle selector and environment profile, with no ordinary
+fallback. Ordinary report identity is retained and cannot satisfy certified report
+recording or final certification; ordinary AppEvents receive no certification binding.
+
+Ordinary smoke requires the existing canonical repository report and timing paths
+and refuses existing outputs before allocating resources. Timing consumers retain
+the validated relative reference; the shared resolver preserves explicitly authorized
+external roots for their existing owners. Genuine certification's external report
+and timing contract is unchanged. Physical containment, symlink rejection and
+no-overwrite publication remain enforced. Captured startup/test failures, reporting
+failures and cleanup/retention failures retain their ordered redacted causes.
+
+Role cleanup requires acknowledged exact identity and zero target/role sessions,
+rechecks immediately before DROP, and observes terminal absence. It never terminates
+sessions, drops a replacement role, or drops the hosted service database. The local
+WINDOW database remains owned by its separate creation/cleanup receipt lifecycle.
+
 ## Source and portable verifier dependencies — 2026-09-07
 
 `required-test-report-validation.mjs` owns shared manifest and report validation.

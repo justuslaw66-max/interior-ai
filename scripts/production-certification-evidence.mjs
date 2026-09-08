@@ -699,6 +699,9 @@ function portableRuntimeReportIssues(report) {
 }
 
 export function finalRuntimeArtifactIdentityIssues(identity, state) {
+  if (identity && Object.hasOwn(identity, "ordinaryRuntime")) {
+    return ["ordinary runtime evidence cannot identify a certified artifact"];
+  }
   if (
     identity?.candidateIdentifier !== state.candidate.id ||
     identity?.sourceCommitSha !== state.candidate.commitSha ||

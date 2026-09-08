@@ -25,7 +25,13 @@ export const verifyRuntimeSmokeFailureEvidence = async (options) => verifyRuntim
 export const createProductionEvidenceBundle = async (options) => createBundle(await sourceOptions(options));
 
 if (process.argv[1] && path.resolve(process.argv[1]) === path.resolve(import.meta.filename)) {
-  runProductionArtifactEvidenceCli({ loadSourceRepositoryValidator })
+  runProductionArtifactEvidenceCli({
+    loadSourceRepositoryValidator,
+    runOrdinaryRuntime: async (options) =>
+      (await import("./production-artifact-ordinary-runtime.mjs")).withOrdinaryArtifactRuntime(options),
+    consumeOrdinaryRuntime: async (options) =>
+      (await import("./production-artifact-ordinary-runtime.mjs")).consumeOrdinaryArtifactRuntime(options),
+  })
     .catch((error) => {
       console.error(error instanceof Error ? error.message : String(error));
       process.exit(1);

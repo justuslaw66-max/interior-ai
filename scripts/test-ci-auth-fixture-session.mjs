@@ -1,3 +1,6 @@
+import { inspectOrdinaryPostgresService } from "./production-artifact-ordinary-database.mjs";
+import { ordinaryRuntimeIdentity } from "./production-artifact-runtime-binding.mjs";
+import { ordinaryFixtureProjection, consumeOrdinaryArtifactRuntime, ORDINARY_ARTIFACT_SERVICE_CONFIGURATION } from "./production-artifact-ordinary-runtime.mjs";
 import {
   abortCertificationDatabase, createAuthSessionPreflightDatabaseEnvironment,
   prepareAuthSessionPreflightDatabaseLifecycle, readCertificationDatabaseLifecycle,
@@ -924,6 +927,164 @@ try {
     ...exportEnvironment,
     ...consumed.assignments,
   };
+  const ordinaryManifest = { source: { commitSha: candidateCommitSha, treeSha: candidateTreeSha },
+    build: { applicationEnvironment: "staging", authFixtureContinuity:
+      sessionContract.validateProjectedFixtureEnvironment({ ...sessionContract.projectedFixtureEnvironment(consumed) }) } };
+  const ordinaryEnvironment = Object.fromEntries(Object.entries(consumerEnvironment).filter(([name]) =>
+    !name.startsWith("CERTIFICATION_") && !name.startsWith("PRODUCTION_CERTIFICATION")));
+  const ordinaryProjection = ordinaryFixtureProjection({ repositoryRoot, environment: ordinaryEnvironment,
+    manifest: ordinaryManifest });
+  assert.equal(ordinaryProjection.sessionSha256, consumed.manifest.aggregateSha256);
+  assert.equal(ordinaryProjection.projection.CI_AUTH_FIXTURE_LOCAL_TEST, "1");
+  const hostedManifest = { ...ordinaryManifest, build: { ...ordinaryManifest.build,
+    authFixtureContinuity: { ...ordinaryManifest.build.authFixtureContinuity, activationScope: "github-actions" } } };
+  const hostedProjection = ordinaryFixtureProjection({ repositoryRoot,
+    environment: { ...ordinaryEnvironment, CI: "true", GITHUB_ACTIONS: "true" }, manifest: hostedManifest });
+  assert.equal(hostedProjection.projection.CI_AUTH_FIXTURE_LOCAL_TEST, undefined);
+  assert.equal(hostedProjection.projection.GITHUB_ACTIONS, "true");
+  for (const patch of [{ CI_AUTH_FIXTURE_SESSION_ROOT: resultRoot },
+    { CI_AUTH_FIXTURE_SESSION_NONCE: "foreign-session-nonce" }, { GOOGLE_CLIENT_ID: "foreign-provider" },
+    { CI_AUTH_FIXTURE_CANDIDATE_COMMIT_SHA: "f".repeat(40) }, { PRODUCTION_CERTIFICATION_ID: "foreign-certification" }]) {
+    assert.throws(() => ordinaryFixtureProjection({ repositoryRoot,
+      environment: { ...ordinaryEnvironment, ...patch }, manifest: ordinaryManifest }));
+  }
+  assert.throws(() => ordinaryFixtureProjection({ repositoryRoot, environment: ordinaryEnvironment,
+    manifest: { ...ordinaryManifest, build: { ...ordinaryManifest.build, applicationEnvironment: "production" } } }));
+  // The real capability consumer checks physical synthetic receipts; DB I/O is a contract fake.
+  const capabilityRoot = mkdtempSync(path.join(sessionRoot, "ordinary-runtime-"));
+  const runId = "d".repeat(32);
+  const artifactManifest = { ...ordinaryManifest, candidateIdentifier: "ordinary-fixture-candidate",
+    build: { ...ordinaryManifest.build, nextBuildId: "ordinary-fixture-build" },
+    artifact: { sha256: "e".repeat(64) }, execution: { runNonce: "ordinary-fixture-build-run" } };
+  const artifactPath = path.join(ownerRoot, "ordinary-manifest.json");
+  writeFileSync(artifactPath, JSON.stringify(artifactManifest), { flag: "wx", mode: 0o600 });
+  const localCreationPath = path.join(ownerRoot, "ordinary-database-creation.json");
+  const localDatabaseName = "interior_ai_window_opening_evidence_test_contract";
+  const creationReceipt = { schema: "window-opening-database-creation/v1", created: true, outcome: "created",
+    ownerId: "window-runtime-contract", databaseName: localDatabaseName, databaseOid: 8001,
+    host: "127.0.0.1", port: 5432, role: "justus" };
+  writeFileSync(localCreationPath, JSON.stringify(creationReceipt), { flag: "wx", mode: 0o600 });
+  const runtimeTarget = { database: localDatabaseName, databaseOid: 8001, serverAddress: "127.0.0.1", resourceOwner: "window-local-receipt",
+    ownerId: creationReceipt.ownerId, creationReceiptPath: localCreationPath,
+    creationReceiptSha256: createHash("sha256").update(readFileSync(localCreationPath)).digest("hex"),
+    role: `interior_ai_ordinary_stage_${runId}`, roleOid: 8002 };
+  const runtimeUrl = `postgresql://${runtimeTarget.role}:synthetic-contract-value@127.0.0.1:5432/${localDatabaseName}`;
+  const hash = (bytes) => createHash("sha256").update(bytes).digest("hex");
+  const context = { identity: ordinaryRuntimeIdentity(artifactManifest, runId),
+    repositoryRoot: realpathSync(repositoryRoot), manifestSha256: hash(readFileSync(artifactPath)),
+    sessionSha256: ordinaryProjection.sessionSha256, target: runtimeTarget,
+    runtimeUrlSha256: hash(runtimeUrl), ownerPid: process.ppid };
+  const roleReceipt = { schema: "ordinary-artifact-role/v1", runId, role: runtimeTarget.role,
+    roleOid: runtimeTarget.roleOid, outcome: "created", target: { ...runtimeTarget, role: "justus", roleOid: 8000 } };
+  const contextPath = path.join(capabilityRoot, "context.json");
+  const receiptPath = path.join(capabilityRoot, "role.json");
+  const capabilityEnvironment = { ...ordinaryEnvironment, ...ORDINARY_ARTIFACT_SERVICE_CONFIGURATION,
+    DATABASE_URL: runtimeUrl, ORDINARY_ARTIFACT_CONTEXT_PATH: contextPath, ORDINARY_ARTIFACT_RUN_ID: runId };
+  const writeCapability = (value = context, receipt = roleReceipt) => {
+    writeFileSync(contextPath, JSON.stringify(value), { mode: 0o600 });
+    writeFileSync(receiptPath, JSON.stringify(receipt), { mode: 0o600 });
+    return { ...capabilityEnvironment, ORDINARY_ARTIFACT_BINDING_SHA256: hash(readFileSync(contextPath)) };
+  };
+  class CapabilityDatabaseClient {
+    async connect() {}
+    async end() {}
+    async query() { return { rowCount: 1, rows: [{ ...runtimeTarget, host: "127.0.0.1", port: 5432,
+      rolsuper: false, rolcreatedb: false, rolcreaterole: false, rolinherit: false,
+      rolreplication: false, rolbypassrls: false, canCreate: false }] }; }
+  }
+  const consumeCapability = (environment) => consumeOrdinaryArtifactRuntime({ repositoryRoot,
+    manifestPath: artifactPath, manifest: artifactManifest, environment, ClientClass: CapabilityDatabaseClient });
+  const product = await consumeCapability(writeCapability());
+  assert.equal(product.DATABASE_URL, runtimeUrl);
+  assert.equal(product.ORDINARY_ARTIFACT_CONTEXT_PATH, undefined);
+  assert.equal(product.CI_AUTH_FIXTURE_SESSION_ROOT, undefined);
+  for (const patch of [{ repositoryRoot: ownerRoot }, { manifestSha256: "0".repeat(64) },
+    { sessionSha256: "0".repeat(64) }, { runtimeUrlSha256: "0".repeat(64) }, { ownerPid: process.pid },
+    { identity: { ...context.identity, artifactSha256: "0".repeat(64) } },
+    { target: { ...runtimeTarget, roleOid: 9000 } }]) {
+    await assert.rejects(consumeCapability(writeCapability({ ...context, ...patch })));
+  }
+  for (const patch of [{ roleOid: 9000 }, { runId: "f".repeat(32) }, { outcome: "unacknowledged" },
+    { cleanup: { roleAbsent: true } }, { role: `interior_ai_ordinary_stage_${"f".repeat(32)}` }]) {
+    await assert.rejects(consumeCapability(writeCapability(context, { ...roleReceipt, ...patch })));
+  }
+  for (const patch of [{ resourceOwner: undefined }, { resourceOwner: "foreign" }, { serverAddress: "172.18.0.2" },
+    { database: "foreign_database" }, { creationReceiptSha256: "0".repeat(64) },
+    { ownerId: "foreign-owner" }]) {
+    await assert.rejects(consumeCapability(writeCapability({ ...context, target: { ...runtimeTarget, ...patch } })));
+  }
+  for (const oid of [undefined, null, "8002", 0, -1, 9000]) {
+    await assert.rejects(consumeCapability(writeCapability(
+      { ...context, target: { ...runtimeTarget, roleOid: oid } }, { ...roleReceipt, roleOid: oid })));
+    await assert.rejects(consumeCapability(writeCapability(
+      { ...context, target: { ...runtimeTarget, databaseOid: oid } },
+      { ...roleReceipt, target: { ...roleReceipt.target, databaseOid: oid } })));
+  }
+  const validCapabilityEnvironment = writeCapability();
+  await assert.rejects(consumeCapability({ ...validCapabilityEnvironment, ORDINARY_ARTIFACT_BINDING_SHA256: "0".repeat(64) }));
+  chmodSync(contextPath, 0o644);
+  await assert.rejects(consumeCapability(validCapabilityEnvironment), /owner-only/);
+  chmodSync(contextPath, 0o600);
+  writeFileSync(path.join(capabilityRoot, "result.json"), "{}", { flag: "wx", mode: 0o600 });
+  await assert.rejects(consumeCapability(validCapabilityEnvironment), /finalized/);
+  const hostedSessionRoot = path.join(ownerRoot, "hosted-session");
+  const hostedExportEnvironment = { ...ordinaryEnvironment, CI: "true", GITHUB_ACTIONS: "true",
+    CI_AUTH_FIXTURE_SESSION_ROOT: hostedSessionRoot,
+    CI_AUTH_FIXTURE_SESSION_ID: "123-1-stable-auth-session", CI_AUTH_FIXTURE_SESSION_NONCE: "123-1-stable-auth-nonce" };
+  const hostedPublished = sessionContract.publishFixtureSession({ repositoryRoot, environment: hostedExportEnvironment,
+    fixture: { googleClientId: consumed.assignments.GOOGLE_CLIENT_ID, googleClientSecret: consumed.assignments.GOOGLE_CLIENT_SECRET } });
+  const hostedEnvironment = { ...hostedExportEnvironment, ...hostedPublished.assignments, ...ORDINARY_ARTIFACT_SERVICE_CONFIGURATION };
+  const hostedArtifact = { ...artifactManifest, candidateIdentifier: "github-123-1", build: { ...artifactManifest.build,
+    authFixtureContinuity: { ...artifactManifest.build.authFixtureContinuity,
+      sessionId: hostedPublished.manifest.sessionId, invocationNonce: hostedPublished.manifest.invocationNonce,
+      activationScope: "github-actions" } } };
+  const hostedArtifactPath = path.join(ownerRoot, "hosted-manifest.json");
+  writeFileSync(hostedArtifactPath, JSON.stringify(hostedArtifact), { flag: "wx", mode: 0o600 });
+  const hostedCapsuleRoot = mkdtempSync(path.join(hostedSessionRoot, "ordinary-runtime-"));
+  const hostedTarget = { database: "interior_ai_test", databaseOid: 9001, role: runtimeTarget.role, roleOid: 9002,
+    resourceOwner: "github-stable-service", githubRun: "123-1", githubRepository: "justuslaw66-max/interior-ai", githubJob: "stable-checks",
+    serviceContainerId: "f".repeat(64), serverAddresses: ["172.18.0.2"], serverAddress: "172.18.0.2" };
+  const hostedUrl = `postgresql://${hostedTarget.role}:synthetic-contract-value@localhost:5432/interior_ai_test`;
+  const hostedContext = { ...context, identity: ordinaryRuntimeIdentity(hostedArtifact, runId), target: hostedTarget,
+    manifestSha256: hash(readFileSync(hostedArtifactPath)), sessionSha256: hostedPublished.manifest.aggregateSha256,
+    runtimeUrlSha256: hash(hostedUrl) };
+  const hostedRole = { ...roleReceipt, roleOid: hostedTarget.roleOid, target: { ...hostedTarget, role: "test", roleOid: 9000 } };
+  const service = { Id: hostedTarget.serviceContainerId, State: { Running: true },
+    Config: { Image: "postgres:15", Env: ["POSTGRES_USER=test", "POSTGRES_PASSWORD=test", "POSTGRES_DB=interior_ai_test"] },
+    NetworkSettings: { Ports: { "5432/tcp": [{ HostIp: "0.0.0.0", HostPort: "5432" }] },
+      Networks: { workflow: { IPAddress: "172.18.0.2" } } } };
+  let hostedConnectionCount = 0;
+  class HostedCapabilityDatabaseClient extends CapabilityDatabaseClient {
+    async connect() { hostedConnectionCount += 1; }
+    async query() { const result = await super.query(); return { ...result,
+      rows: [{ ...result.rows[0], ...hostedTarget, host: "172.18.0.2" }] }; }
+  }
+  const consumeHosted = (value = hostedContext, receipt = hostedRole) => {
+    const filePath = path.join(hostedCapsuleRoot, "context.json");
+    writeFileSync(filePath, JSON.stringify(value), { mode: 0o600 });
+    writeFileSync(path.join(hostedCapsuleRoot, "role.json"), JSON.stringify(receipt), { mode: 0o600 });
+    return consumeOrdinaryArtifactRuntime({ repositoryRoot, manifestPath: hostedArtifactPath, manifest: hostedArtifact,
+      environment: { ...hostedEnvironment, DATABASE_URL: hostedUrl, ORDINARY_ARTIFACT_CONTEXT_PATH: filePath,
+        ORDINARY_ARTIFACT_RUN_ID: runId, ORDINARY_ARTIFACT_BINDING_SHA256: hash(readFileSync(filePath)) },
+      ClientClass: HostedCapabilityDatabaseClient,
+      inspectService: (environment) => inspectOrdinaryPostgresService(environment,
+        () => ({ status: 0, stdout: JSON.stringify([service]) })) });
+  };
+  const hostedProduct = await consumeHosted();
+  assert.equal(hostedProduct.DATABASE_URL, hostedUrl);
+  assert.equal(hostedProduct.GITHUB_ACTIONS, "true");
+  assert.equal(hostedProduct.CI_AUTH_FIXTURE_LOCAL_TEST, undefined);
+  assert.equal(hostedProduct.ORDINARY_ARTIFACT_POSTGRES_SERVICE_ID, undefined);
+  const connectionsBeforeRefusals = hostedConnectionCount;
+  for (const patch of [{ serviceContainerId: undefined }, { serviceContainerId: "0".repeat(64) },
+    { serverAddress: "172.18.0.9" }, { serverAddresses: ["172.18.0.9"] }, { githubRun: "999-1" }]) {
+    await assert.rejects(consumeHosted({ ...hostedContext, target: { ...hostedTarget, ...patch } }));
+  }
+  await assert.rejects(consumeHosted(hostedContext, { ...hostedRole,
+    target: { ...hostedRole.target, serviceContainerId: "0".repeat(64) } }));
+  service.NetworkSettings.Networks.workflow.IPAddress = "172.18.0.9";
+  await assert.rejects(consumeHosted());
+  assert.equal(hostedConnectionCount, connectionsBeforeRefusals, "Hosted precondition refusals must not connect to PostgreSQL");
   const validateResult = runStructured({
     script: "ci:auth-fixture:validate-existing",
     commandId: "ci:auth-fixture:validate-existing",

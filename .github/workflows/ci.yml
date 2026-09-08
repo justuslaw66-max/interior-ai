@@ -240,6 +240,8 @@ jobs:
 
       - name: Run runtime smoke tests
         id: runtime-smoke
+        env:
+          ORDINARY_ARTIFACT_POSTGRES_SERVICE_ID: ${{ job.services.postgres.id }}
         run: npm run evidence:production:smoke
 
       - name: Prepare safe runtime failure diagnostics

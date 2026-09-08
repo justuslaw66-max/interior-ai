@@ -1,3 +1,4 @@
+import { PRODUCTION_EVIDENCE_JOURNAL_SCHEMA, PRODUCTION_EVIDENCE_JOURNAL_VERSION } from "./production-artifact-contract.mjs";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import {
@@ -167,6 +168,14 @@ for (const [schema, version] of [
       /historical runtime report identity is invalid/,
     );
     assert.notDeepEqual(finalRuntimeArtifactIdentityIssues(runtimeIdentity, state), []);
+    const certifiedIdentity = { ...runtimeIdentity, semanticJournalSchema: PRODUCTION_EVIDENCE_JOURNAL_SCHEMA,
+      semanticJournalVersion: PRODUCTION_EVIDENCE_JOURNAL_VERSION };
+    assert.deepEqual(finalRuntimeArtifactIdentityIssues(certifiedIdentity, state), []);
+    for (const ordinaryRuntime of [null, {}, { classification: "ORDINARY_CI_NOT_CERTIFICATION" }]) {
+      assert.match(finalRuntimeArtifactIdentityIssues({ ...certifiedIdentity, ordinaryRuntime }, state).join("; "),
+        /ordinary runtime evidence cannot identify a certified artifact/);
+    }
+
     assert.notDeepEqual(
       finalCertificationManifestIdentityIssues(
         { value: manifest, sha256: sha256Bytes(manifestBytes) },

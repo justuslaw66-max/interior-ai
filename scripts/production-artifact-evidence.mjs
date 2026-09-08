@@ -23,9 +23,11 @@ import path from "node:path";
 import process from "node:process";
 
 import {
+  resolvePlaywrightReportPath,
   resolveAuthorizedExternalEvidenceRoot,
   resolveRetainedExternalEvidenceFile,
 } from "./playwright-report-path.mjs";
+import { ordinaryRuntimeReportIdentity, validateOrdinaryRuntimeIdentity, runtimeFailureText } from "./production-artifact-runtime-binding.mjs";
 import { deriveProductionVerifierClosure } from "./production-verifier-closure.mjs";
 import { projectCertificationChildEnvironment } from "./production-certification-stage-environment.mjs";
 import { certificationDependencyInstallationEnvironment } from "./production-certification-dependencies.mjs";
@@ -2638,13 +2640,14 @@ function resolvedRetainedEvidencePath(
   description,
   authorizedExternalRoot,
 ) {
-  return path.isAbsolute(filePath)
-    ? resolveRetainedExternalEvidenceFile({
-        filePath,
-        authorizedExternalRoot,
-        repositoryRoot,
-      }).absolutePath
-    : resolveRepositoryPath(repositoryRoot, filePath, description);
+  if (path.isAbsolute(filePath)) return resolveRetainedExternalEvidenceFile({
+    filePath, authorizedExternalRoot, repositoryRoot }).absolutePath;
+  const absolutePath = resolveRepositoryPath(repositoryRoot, filePath, description);
+  if (existsSync(absolutePath) && (lstatSync(absolutePath).isSymbolicLink() ||
+      !realpathSync(absolutePath).startsWith(`${realpathSync(repositoryRoot)}${path.sep}`))) {
+    throw new Error("Retained repository evidence escapes its physical owner");
+  }
+  return absolutePath;
 }
 
 export function canonicalizeProductionEvidenceReport(
@@ -3295,6 +3298,13 @@ function validateTestRecord(
     issues.push("recorded runtime telemetry bootstrap summary does not match the report");
   }
   const identity = report.config?.metadata?.productionArtifactEvidence;
+  if (identity?.ordinaryRuntime) {
+    try { validateOrdinaryRuntimeIdentity(identity.ordinaryRuntime, manifest); }
+    catch (error) { issues.push(error.message); }
+  }
+  if (JSON.stringify(identity?.ordinaryRuntime ?? null) !== JSON.stringify(test.ordinaryRuntime ?? null)) {
+    issues.push("Recorded ordinary runtime identity differs from its report");
+  }
   if (
     identity?.schema !== PRODUCTION_EVIDENCE_SCHEMA ||
     identity?.sourceCommitSha !== manifest.source.commitSha ||
@@ -4014,6 +4024,10 @@ export async function recordProductionEvidenceTest({
     throw new Error(`test report contains sensitive environment values: ${leaks.join(", ")}`);
   }
   const identity = report.config?.metadata?.productionArtifactEvidence;
+  const ordinaryIdentity = ordinaryRuntimeReportIdentity(environment, manifest);
+  if (JSON.stringify(identity?.ordinaryRuntime ?? null) !== JSON.stringify(ordinaryIdentity)) {
+    throw new Error("Runtime report execution owner differs from ordinary/certification context");
+  }
   if (
     identity?.schema !== PRODUCTION_EVIDENCE_SCHEMA ||
     identity?.sourceCommitSha !== manifest.source.commitSha ||
@@ -4122,6 +4136,7 @@ export async function recordProductionEvidenceTest({
     return normalizeRelativePath(path.relative(base, absolutePath));
   };
   const test = {
+    ...(ordinaryIdentity ? { ordinaryRuntime: ordinaryIdentity } : {}),
     name,
     command,
     processExitCode,
@@ -4569,7 +4584,7 @@ export function certifiedNestedDatabaseUrl(environment) {
   return environment.DATABASE_URL;
 }
 
-async function serveEvidence(repositoryRoot, manifestPath, sourceRepositoryValidator) {
+async function serveEvidence(repositoryRoot, manifestPath, sourceRepositoryValidator, consumeOrdinaryRuntime) {
   const result = await validateProductionEvidence({
     sourceRepositoryValidator,
     repositoryRoot,
@@ -4580,12 +4595,12 @@ async function serveEvidence(repositoryRoot, manifestPath, sourceRepositoryValid
   if (!result.valid) throw new Error(result.issues.join("; "));
   const manifest = result.manifest;
   const port = "3000";
-  const projectedEnvironment = projectArtifactProductServerEnvironment({
-    repositoryRoot,
-    baseEnvironment: process.env,
-    manifest,
-    databaseUrl: certifiedNestedDatabaseUrl(process.env),
-  });
+  const ordinary = Object.keys(process.env).some((name) => name.startsWith("ORDINARY_ARTIFACT_"));
+  if (ordinary && !consumeOrdinaryRuntime) throw new Error("Ordinary runtime requires its source execution owner");
+  const projectedEnvironment = ordinary
+    ? await consumeOrdinaryRuntime({ repositoryRoot, manifestPath, manifest, environment: process.env })
+    : projectArtifactProductServerEnvironment({ repositoryRoot, baseEnvironment: process.env,
+        manifest, databaseUrl: certifiedNestedDatabaseUrl(process.env) });
   const environment = { ...projectedEnvironment };
   for (const name of [...SAFE_FEATURE_FLAGS, ...DEVELOPMENT_ONLY_FLAGS]) delete environment[name];
   for (const [name, enabled] of Object.entries(manifest.build.featureFlags)) {
@@ -4615,7 +4630,7 @@ async function serveEvidence(repositoryRoot, manifestPath, sourceRepositoryValid
   }
 }
 
-async function smokeEvidence(repositoryRoot, manifestPath, reportPath, sourceRepositoryValidator) {
+async function smokeEvidence(repositoryRoot, manifestPath, reportPath, sourceRepositoryValidator, runOrdinaryRuntime) {
   const preflight = await validateProductionEvidence({
     sourceRepositoryValidator,
     repositoryRoot,
@@ -4624,23 +4639,48 @@ async function smokeEvidence(repositoryRoot, manifestPath, reportPath, sourceRep
       PRODUCTION_EVIDENCE_VERIFICATION_MODES.REPOSITORY_PREFLIGHT,
   });
   if (!preflight.valid) throw new Error(preflight.issues.join("; "));
-  const manifest = preflight.manifest;
-  const absoluteReportPath = resolveRepositoryPath(repositoryRoot, reportPath, "test report path");
-  if (existsSync(absoluteReportPath)) rmSync(absoluteReportPath);
+  if (!runOrdinaryRuntime) throw new Error("Ordinary smoke requires its source execution owner");
+  validateOrdinarySmokeDestinations({ repositoryRoot, reportPath, environment: process.env });
+  return runOrdinaryRuntime({ repositoryRoot, manifestPath, manifest: preflight.manifest,
+    environment: process.env, execute: (environment, writeDiagnostic) => runVerifiedArtifactSmoke({ repositoryRoot,
+      manifestPath, reportPath, sourceRepositoryValidator, manifest: preflight.manifest, environment, writeDiagnostic }) });
+}
+
+export function validateOrdinarySmokeDestinations({ repositoryRoot, reportPath, environment }) {
+  const timingPath = environment.RUNTIME_SMOKE_PHASE_TIMINGS_PATH?.trim() || DEFAULT_PHASE_TIMINGS_PATH;
+  if (reportPath !== DEFAULT_REPORT_PATH || timingPath !== DEFAULT_PHASE_TIMINGS_PATH) {
+    throw new Error("Ordinary repository evidence requires its canonical owned report and timing destinations");
+  }
+  resolvePlaywrightReportPath({ repositoryRoot, requestedPath: reportPath });
+  resolveRuntimeSmokeTimingDestination({ repositoryRoot, timingPath, environment });
+}
+
+export async function retainRuntimeSmokeOutcome(playwright, report) {
+  const failures = [];
+  if (playwright.error || playwright.signal || playwright.status !== 0) {
+    failures.push(`Primary runtime failure (status ${playwright.status ?? "unknown"}, signal ${playwright.signal ?? "none"}): ${[playwright.error === undefined ? null : runtimeFailureText(playwright.error), playwright.stderr?.trim(), playwright.stdout?.trim()].filter(Boolean).join("\n") || "startup/test process failed"}`);
+  }
+  try { await report(); } catch (error) { failures.push(`Runtime reporting failure: ${runtimeFailureText(error)}`); }
+  if (failures.length) throw new Error(failures.join("\n"));
+}
+
+async function runVerifiedArtifactSmoke({ repositoryRoot, manifestPath, reportPath, sourceRepositoryValidator,
+  manifest, environment: baseEnvironment, writeDiagnostic }) {
+  const absoluteReportPath = resolvePlaywrightReportPath({ repositoryRoot, requestedPath: reportPath }).outputPath;
   const requestedTimingPath =
-    process.env.RUNTIME_SMOKE_PHASE_TIMINGS_PATH?.trim() ||
+    baseEnvironment.RUNTIME_SMOKE_PHASE_TIMINGS_PATH?.trim() ||
     DEFAULT_PHASE_TIMINGS_PATH;
   const timingDestination = resolveRuntimeSmokeTimingDestination({
     repositoryRoot,
     timingPath: requestedTimingPath,
-    environment: process.env,
+    environment: baseEnvironment,
   });
   const externalTimingRoot = timingDestination.rootVariableName
-    ? process.env[timingDestination.rootVariableName]?.trim()
+    ? baseEnvironment[timingDestination.rootVariableName]?.trim()
     : null;
-  const absolutePhaseTimingPath = timingDestination.outputPath;
+  const retainedTimingPath = timingDestination.retainedPath ?? requestedTimingPath;
   const environment = {
-    ...process.env,
+    ...baseEnvironment,
     CI: "true",
     APP_ENV: manifest.build.applicationEnvironment,
     NEXT_PUBLIC_APP_ENV: manifest.build.applicationEnvironment,
@@ -4661,22 +4701,24 @@ async function smokeEvidence(repositoryRoot, manifestPath, reportPath, sourceRep
     PRODUCTION_EVIDENCE_EXPECTED_COMMIT_SHA: manifest.source.commitSha,
     PRODUCTION_EVIDENCE_EXPECTED_TREE_SHA: manifest.source.treeSha,
   };
-  const playwright = run(
+  const playwright = spawnSync(
     process.platform === "win32" ? "npx.cmd" : "npx",
     ["playwright", "test", "tests/e2e/00-runtime-smoke.spec.ts", "--project=chromium"],
     {
       cwd: repositoryRoot,
       env: environment,
-      stdio: "inherit",
-      allowFailure: true,
+      encoding: "utf8",
+      maxBuffer: 128 * 1024 * 1024,
     },
   );
+  writeDiagnostic([playwright.stdout, playwright.stderr].filter(Boolean).join("\n"));
+  await retainRuntimeSmokeOutcome(playwright, async () => {
   if (!existsSync(absoluteReportPath)) throw new Error("required test report is missing");
-  canonicalizeProductionEvidenceReport(repositoryRoot, reportPath);
+  if (!path.isAbsolute(reportPath)) canonicalizeProductionEvidenceReport(repositoryRoot, reportPath);
   bindRuntimeSmokeFailureToReport(
     repositoryRoot,
     reportPath,
-    absolutePhaseTimingPath,
+    retainedTimingPath,
     externalTimingRoot,
   );
   await recordProductionEvidenceTest({
@@ -4684,13 +4726,13 @@ async function smokeEvidence(repositoryRoot, manifestPath, reportPath, sourceRep
     repositoryRoot,
     manifestPath,
     reportPath,
-    phaseTimingPath: absolutePhaseTimingPath,
+    phaseTimingPath: retainedTimingPath,
     name: "runtime-smoke",
     command: RUNTIME_SMOKE_COMMAND,
     processExitCode: playwright.status ?? 1,
     environment,
   });
-  if (playwright.status !== 0) process.exit(playwright.status ?? 1);
+  });
   const finalResult = await validateProductionEvidence({
     sourceRepositoryValidator,
     repositoryRoot,
@@ -4703,7 +4745,8 @@ async function smokeEvidence(repositoryRoot, manifestPath, reportPath, sourceRep
   );
 }
 
-export async function runProductionArtifactEvidenceCli({ sourceRepositoryValidator, loadSourceRepositoryValidator } = {}) {
+export async function runProductionArtifactEvidenceCli({ sourceRepositoryValidator, loadSourceRepositoryValidator,
+  runOrdinaryRuntime, consumeOrdinaryRuntime } = {}) {
   const repositoryRoot = process.cwd();
   const command = process.argv[2];
   if (["complete-certification-build", "recover", "verify-preflight", "serve",
@@ -4765,8 +4808,8 @@ export async function runProductionArtifactEvidenceCli({ sourceRepositoryValidat
     if (!result.valid) throw new Error(result.issues.join("; "));
     console.log("Production artifact canonical preflight valid.");
   }
-  else if (command === "serve") await serveEvidence(repositoryRoot, manifestPath, sourceRepositoryValidator);
-  else if (command === "smoke") await smokeEvidence(repositoryRoot, manifestPath, reportPath, sourceRepositoryValidator);
+  else if (command === "serve") await serveEvidence(repositoryRoot, manifestPath, sourceRepositoryValidator, consumeOrdinaryRuntime);
+  else if (command === "smoke") await smokeEvidence(repositoryRoot, manifestPath, reportPath, sourceRepositoryValidator, runOrdinaryRuntime);
   else if (command === "verify-runtime-failure") {
     const result = await verifyRuntimeSmokeFailureEvidence({
       sourceRepositoryValidator,
