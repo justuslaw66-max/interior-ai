@@ -303,6 +303,12 @@ const VERIFICATION_MODE_CONFIG = Object.freeze({
       requireSemanticJournal: true,
       allowFailedRuntimeSmoke: true,
     }),
+  [PRODUCTION_EVIDENCE_VERIFICATION_MODES.STANDALONE_BUNDLE]: Object.freeze({
+    standalone: true,
+    testPolicy: "runtime-required",
+    requireSemanticJournal: false,
+    allowFailedRuntimeSmoke: false,
+  }),
   [PRODUCTION_EVIDENCE_VERIFICATION_MODES.STANDALONE_FINAL]: Object.freeze({
     standalone: true,
     testPolicy: "external-certification-required",
@@ -3329,6 +3335,7 @@ export async function validateProductionEvidence({
   manifestPath,
   verificationMode = PRODUCTION_EVIDENCE_VERIFICATION_MODES.REPOSITORY_FINAL,
   expectedSourceCommitSha,
+  expectedManifestSha256,
   expectedArchiveIdentity,
   environment = process.env,
 }) {
@@ -3360,6 +3367,13 @@ export async function validateProductionEvidence({
     return { valid: false, issues, manifest: null, verificationResult: null };
   }
   const { manifest, bytes } = readResult;
+  if (verificationMode === PRODUCTION_EVIDENCE_VERIFICATION_MODES.STANDALONE_BUNDLE) {
+    if (!/^[0-9a-f]{64}$/.test(expectedManifestSha256 ?? "")) {
+      issues.push("bundle verification requires an exact expected source manifest SHA-256");
+    } else if (createHash("sha256").update(bytes).digest("hex") !== expectedManifestSha256) {
+      issues.push("bundle manifest differs from the verified source manifest");
+    }
+  }
   if (
     manifest.schema !== PRODUCTION_EVIDENCE_SCHEMA ||
     manifest.validatorVersion !== PRODUCTION_EVIDENCE_VALIDATOR_VERSION
@@ -3438,7 +3452,8 @@ export async function validateProductionEvidence({
   if (standalone) {
     issues.push(...sourceIssues(manifest.source));
     if (
-      verificationMode === PRODUCTION_EVIDENCE_VERIFICATION_MODES.STANDALONE_FINAL
+      verificationMode === PRODUCTION_EVIDENCE_VERIFICATION_MODES.STANDALONE_FINAL ||
+      verificationMode === PRODUCTION_EVIDENCE_VERIFICATION_MODES.STANDALONE_BUNDLE
     ) {
       if (!/^[0-9a-f]{40,64}$/i.test(expectedSourceCommitSha ?? "")) {
         issues.push("standalone verification requires an exact expected source commit SHA");
@@ -4780,6 +4795,23 @@ export async function runProductionArtifactEvidenceCli({ sourceRepositoryValidat
     });
     if (!result.valid) throw new Error(result.issues.join("; "));
     console.log(JSON.stringify(result.verificationResult, null, 2));
+  } else if (command === "verify-bundle") {
+    const result = await validateProductionEvidence({
+      repositoryRoot,
+      manifestPath,
+      verificationMode: PRODUCTION_EVIDENCE_VERIFICATION_MODES.STANDALONE_BUNDLE,
+      expectedSourceCommitSha: process.env.PRODUCTION_EVIDENCE_EXPECTED_COMMIT_SHA?.trim(),
+      expectedManifestSha256: process.env.PRODUCTION_EVIDENCE_EXPECTED_MANIFEST_SHA256?.trim(),
+    });
+    if (!result.valid) throw new Error(result.issues.join("; "));
+    console.log(JSON.stringify({
+      bundleVerified: true,
+      sourceCommitSha: result.manifest.source.commitSha,
+      manifestSha256: process.env.PRODUCTION_EVIDENCE_EXPECTED_MANIFEST_SHA256.trim(),
+      artifactSha256: result.manifest.artifact.sha256,
+      certificationComplete: false,
+      finalStandaloneVerificationRequired: true,
+    }));
   } else if (command === "verify-standalone") {
     const result = await validateProductionEvidence({
       sourceRepositoryValidator,
@@ -4813,7 +4845,7 @@ export async function runProductionArtifactEvidenceCli({ sourceRepositoryValidat
     );
   } else {
     throw new Error(
-      "Usage: production-artifact-evidence.mjs build|recover|verify-floor-plan-traces|verify-preflight|verify-archive-preflight|serve|smoke|verify-runtime-failure|bundle|verify|verify-standalone",
+      "Usage: production-artifact-evidence.mjs build|recover|verify-floor-plan-traces|verify-preflight|verify-archive-preflight|serve|smoke|verify-runtime-failure|bundle|verify|verify-bundle|verify-standalone",
     );
   }
 }

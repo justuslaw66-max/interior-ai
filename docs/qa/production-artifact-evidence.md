@@ -809,20 +809,32 @@ The Git-history secret-scan action still produces the required check result.
 Repository staging changes only the transport layout; it cannot turn scan
 findings or action failure into success.
 
-After downloading the GitHub artifact into a fresh directory, verify the archive
-sidecar, extract it, and run:
+The ordinary CI transport bundle is not a final certification archive. CI first
+performs repository-final verification, captures that source manifest's SHA-256,
+checks the transport sidecar before extraction, and verifies the extracted bundle.
+Retain the expected source and manifest hashes from that verified CI step; do not
+derive both expectations from the downloaded bundle itself. After downloading
+into a fresh directory and checking the archive sidecar, extract it and run:
 
 ```sh
 PRODUCTION_EVIDENCE_EXPECTED_COMMIT_SHA='<workflow-head-sha>' \
-node scripts/production-artifact-evidence.mjs verify-standalone
+PRODUCTION_EVIDENCE_EXPECTED_MANIFEST_SHA256='<verified-source-manifest-sha256>' \
+node scripts/production-artifact-evidence.mjs verify-bundle
 ```
 
-Standalone mode requires that explicit source SHA, rehashes the extracted
+Bundle mode requires both explicit hashes, requires successful runtime smoke,
+and rehashes the extracted
 `.next` and `public` inventory (including preserved symlink identities), checks
 the lockfile, build ID, manifest sidecar, runtime report hash and stable test
 identities, and rejects source/artifact/report disagreement. It does not need a
 Git checkout or `node_modules`; the original run remains responsible for the
 recorded full trace-closure and installed-lockfile checks.
+
+Its result explicitly records `certificationComplete=false`. The unchanged
+`verify-standalone` command additionally requires the final certification state,
+evidence root, canonical extracted path, and completed certification gates.
+Archive preflight remains a separate pre-runtime check requiring its journal and
+bound inventory; neither command is replaced by ordinary CI bundle verification.
 
 The manifest is an automated report suitable for hashing into the existing
 Phase 15 signed release manifest. The sidecar is an integrity check, not a

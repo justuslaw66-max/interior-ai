@@ -319,12 +319,17 @@ jobs:
         id: prepare-stable-evidence
         run: npm run evidence:production:bundle
 
-      - name: Verify standalone production evidence bundle
+      - name: Verify portable production evidence bundle
         id: verify-stable-evidence
         shell: bash
         run: |
           set -euo pipefail
           npm run evidence:production:verify
+          source_manifest_sha256="$(sha256sum .local/production-artifact-evidence/manifest.json | cut -d ' ' -f 1)"
+          (
+            cd .local/production-artifact-evidence/upload
+            sha256sum --check ch0016-ch0017-evidence-bundle.tar.gz.sha256
+          )
           extract_root="$(mktemp -d "$RUNNER_TEMP/ch0016-ch0017-evidence.XXXXXX")"
           trap 'rm -rf "$extract_root"' EXIT
           tested_source_sha="$(git rev-parse HEAD)"
@@ -332,7 +337,8 @@ jobs:
           (
             cd "$extract_root"
             PRODUCTION_EVIDENCE_EXPECTED_COMMIT_SHA="$tested_source_sha" \
-              node scripts/production-artifact-evidence.mjs verify-standalone
+            PRODUCTION_EVIDENCE_EXPECTED_MANIFEST_SHA256="$source_manifest_sha256" \
+              node scripts/production-artifact-evidence.mjs verify-bundle
           )
 
       - name: Declare stable evidence ready

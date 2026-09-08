@@ -6554,6 +6554,70 @@ for (const mutate of [
     `${standaloneResult.stdout}\n${standaloneResult.stderr}`,
     /final standalone verification requires certification state and evidence root/,
   );
+  const sourceManifestSha256 = createHash("sha256")
+    .update(readFileSync(path.join(context.root, context.manifestPath))).digest("hex");
+  const verifyBundle = (overrides = {}) => spawnSync(
+    process.execPath,
+    ["scripts/production-artifact-evidence.mjs", "verify-bundle"],
+    {
+      cwd: extractedRoot,
+      encoding: "utf8",
+      env: {
+        ...process.env,
+        PRODUCTION_CERTIFICATION_STATE: "",
+        CERTIFICATION_EVIDENCE_ROOT: "",
+        PRODUCTION_EVIDENCE_EXPECTED_COMMIT_SHA: manifest.source.commitSha,
+        PRODUCTION_EVIDENCE_EXPECTED_MANIFEST_SHA256: sourceManifestSha256,
+        ...overrides,
+      },
+    },
+  );
+  const verifiedBundle = verifyBundle();
+  assert.equal(verifiedBundle.status, 0, verifiedBundle.stderr);
+  assert.deepEqual(JSON.parse(verifiedBundle.stdout), {
+    bundleVerified: true,
+    sourceCommitSha: manifest.source.commitSha,
+    manifestSha256: sourceManifestSha256,
+    artifactSha256: manifest.artifact.sha256,
+    certificationComplete: false,
+    finalStandaloneVerificationRequired: true,
+  });
+  for (const [overrides, failure] of [
+    [{ PRODUCTION_EVIDENCE_EXPECTED_COMMIT_SHA: "" }, /exact expected source commit SHA/],
+    [{ PRODUCTION_EVIDENCE_EXPECTED_COMMIT_SHA: "f".repeat(40) }, /another source commit/],
+    [{ PRODUCTION_EVIDENCE_EXPECTED_MANIFEST_SHA256: "" }, /exact expected source manifest SHA-256/],
+    [{ PRODUCTION_EVIDENCE_EXPECTED_MANIFEST_SHA256: "f".repeat(64) }, /differs from the verified source manifest/],
+  ]) {
+    const rejectedBundle = verifyBundle(overrides);
+    assert.notEqual(rejectedBundle.status, 0);
+    assert.match(rejectedBundle.stderr, failure);
+  }
+  const extractedManifestPath = path.join(extractedRoot, context.manifestPath);
+  const originalManifestBytes = readFileSync(extractedManifestPath);
+  await rewriteManifest(extractedRoot, context.manifestPath, (candidate) => {
+    candidate.tests = [];
+    candidate.repositoryEvidence.status = "pending_tests";
+  });
+  const reboundWithoutSmoke = verifyBundle({
+    PRODUCTION_EVIDENCE_EXPECTED_MANIFEST_SHA256: createHash("sha256")
+      .update(readFileSync(extractedManifestPath)).digest("hex"),
+  });
+  assert.notEqual(reboundWithoutSmoke.status, 0);
+  assert.match(reboundWithoutSmoke.stderr, /required production runtime-smoke report is missing/);
+  writeFileSync(extractedManifestPath, originalManifestBytes);
+  writeFileSync(`${extractedManifestPath}.sha256`, `${sourceManifestSha256}\n`);
+  const extractedReportPath = path.join(extractedRoot, context.reportPath);
+  const originalReportBytes = readFileSync(extractedReportPath);
+  writeFileSync(extractedReportPath, `${originalReportBytes.toString("utf8")}\n`);
+  const alteredReport = verifyBundle();
+  assert.notEqual(alteredReport.status, 0);
+  assert.match(alteredReport.stderr, /report SHA-256 mismatch/);
+  writeFileSync(extractedReportPath, originalReportBytes);
+  const buildIdPath = path.join(extractedRoot, ".next/BUILD_ID");
+  writeFileSync(buildIdPath, "different-build\n");
+  const alteredArtifact = verifyBundle();
+  assert.notEqual(alteredArtifact.status, 0);
+  assert.match(alteredArtifact.stderr, /artifact SHA-256 mismatch|BUILD_ID does not match/);
 }
 
 {

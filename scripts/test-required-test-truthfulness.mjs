@@ -2240,8 +2240,39 @@ assert.equal(
         stableJob.indexOf("Build strict production-equivalent artifact evidence"),
     "stable-checks may retain non-server structural validation before the expensive build",
   );
-  assert.match(stableJob, /Verify standalone production evidence bundle/);
-  assert.match(stableJob, /verify-standalone/);
+  assert.match(stableJob, /Verify portable production evidence bundle/);
+  assert.match(stableJob, /verify-bundle/);
+  assert.doesNotMatch(stableJob, /verify-standalone/);
+  assert.match(stableJob, /PRODUCTION_EVIDENCE_EXPECTED_MANIFEST_SHA256="\$source_manifest_sha256"/);
+  const bundleVerificationScript = requiredJobs["stable-checks"].steps.find(
+    (step) => step.name === "Verify portable production evidence bundle",
+  ).run;
+  const bundleVerificationCommands = [
+    "npm run evidence:production:verify",
+    "source_manifest_sha256=",
+    "sha256sum --check ch0016-ch0017-evidence-bundle.tar.gz.sha256",
+    "tar -xzf",
+    "node scripts/production-artifact-evidence.mjs verify-bundle",
+  ];
+  const assertBundleVerificationSequence = (script) => {
+    const positions = bundleVerificationCommands.map((command) => {
+      const position = script.indexOf(command);
+      assert.ok(position >= 0, `portable bundle verification is missing ${command}`);
+      return position;
+    });
+    assert.deepEqual(positions, [...positions].sort((left, right) => left - right),
+      "portable bundle verification must bind source evidence and check its transport before extraction");
+  };
+  assertBundleVerificationSequence(bundleVerificationScript);
+  for (const command of bundleVerificationCommands) {
+    assert.throws(() => assertBundleVerificationSequence(
+      bundleVerificationScript.replace(command, ""),
+    ), /portable bundle verification is missing/);
+  }
+  const checksumCommand = bundleVerificationCommands[2];
+  assert.throws(() => assertBundleVerificationSequence(
+    `${bundleVerificationScript.replace(checksumCommand, "")}\n${checksumCommand}`,
+  ), /check its transport before extraction/);
   assert.match(
     contractPreflightJob,
     /Preflight advisory authentication environment[\s\S]*npm run ci:auth-fixture:preflight-existing/,
@@ -2365,7 +2396,7 @@ assert.equal(
     rmSync(root, { recursive: true, force: true });
   }
   assert.ok(
-    stableJob.indexOf("Verify standalone production evidence bundle") <
+    stableJob.indexOf("Verify portable production evidence bundle") <
       stableJob.indexOf("Declare stable evidence ready") &&
       stableJob.indexOf("Declare stable evidence ready") <
         stableJob.indexOf("Upload stable production evidence"),
