@@ -2278,11 +2278,10 @@ function stateFixture() {
     (owner) => owner.id === "floor-plan-upload",
   );
   assert.ok(floorPlanOwner);
-  mkdirSync(path.join(repositoryRoot, ".local"), { recursive: true });
   const fixtureRoot = mkdtempSync(
     path.join(
       repositoryRoot,
-      ".local/certification-floor-plan-config-execution-",
+      "certification-floor-plan-config-execution-",
     ),
   );
   const evidenceRoot = mkdtempSync(
@@ -2300,7 +2299,7 @@ function stateFixture() {
     path.join(fixtureRoot, "playwright.config.ts"),
     `import { defineConfig } from "@playwright/test";
 import path from "node:path";
-import floorPlanConfig from "../../playwright.floor-plan-upload.config";
+import floorPlanConfig from "../playwright.floor-plan-upload.config";
 
 export default defineConfig({
   ...floorPlanConfig,
@@ -2397,6 +2396,7 @@ test("Floor Plan config reaches worker test execution", async ({}, testInfo) => 
   );
   rmSync(fixtureRoot, { recursive: true, force: true });
   rmSync(evidenceRoot, { recursive: true, force: true });
+  assert.equal(existsSync(fixtureRoot), false, "config execution leaves no source fixture directory");
 }
 
 {

@@ -6,7 +6,7 @@ import { once } from "node:events";
 import {
   assertWindowOpeningTestOwner, assertWindowOpeningReportContext, canonicalWindowOpeningContext,
   localWindowOpeningContext, prepareCanonicalWindowOpeningContext,
-  windowOpeningCapturePaths,
+  requiredBrowserOutputDirectory, windowOpeningCapturePaths,
 } from "./window-opening-browser-context.mjs";
 import {
   observeWindowOpeningLocalListener, windowOpeningCaptureProvenance,
@@ -56,6 +56,7 @@ import {
 } from "./vercel-prebuilt-release.mjs";
 
 if (!process.argv.includes("--advisory-upload-only")) {
+  verifyCanonicalDiscoveryParentCleanup();
   await verifyWindowOpeningExecutionContracts();
   await verifyCanonicalOutputIsolation();
 }
@@ -3276,6 +3277,135 @@ async function verifyCanonicalOutputIsolation() {
   }
 }
 
+// Canonical discovery must use the real repository paths. Own only parents
+// created by this test, and remove them only while their identities are intact.
+function withCanonicalDiscoveryParents(repositoryRoot, action) {
+  const parents = [];
+  const errors = [];
+  let run;
+  const assertParents = () => {
+    // Validate from the repository outward before traversing any descendant.
+    for (const { directory, identity } of parents) {
+      const current = fs.lstatSync(directory);
+      assert.ok(current.isDirectory() && current.dev === identity.dev && current.ino === identity.ino,
+        "discovery parent was replaced; preserve it");
+    }
+  };
+  try {
+    let directory = repositoryRoot;
+    for (const segment of requiredBrowserOutputDirectory("advisory.full-e2e").split("/")) {
+      directory = path.join(directory, segment);
+      let created = false;
+      try { mkdirSync(directory); created = true; }
+      catch (error) { if (error.code !== "EEXIST") throw error; }
+      const identity = fs.lstatSync(directory);
+      assert.ok(identity.isDirectory(), "discovery parent must be a physical directory");
+      parents.push({ directory, identity, created });
+    }
+    action((runRoot) => {
+      assert.equal(run, undefined, "discovery registers only its allocated run");
+      assertParents();
+      assert.equal(path.dirname(runRoot), directory);
+      const identity = fs.lstatSync(runRoot);
+      assert.ok(identity.isDirectory(), "discovery run must be a physical directory");
+      run = { runRoot, identity };
+    });
+  } catch (error) { errors.push(error); }
+  if (run) {
+    try {
+      assertParents();
+      const current = fs.lstatSync(run.runRoot);
+      assert.ok(current.isDirectory() && current.dev === run.identity.dev && current.ino === run.identity.ino,
+        "discovery run was replaced; preserve it");
+      rmSync(run.runRoot, { recursive: true, force: true });
+    } catch (error) { errors.push(error); }
+  }
+  try {
+    assertParents();
+    for (const { directory, created } of parents.reverse()) {
+      if (created) fs.rmdirSync(directory);
+    }
+  } catch (error) { errors.push(error); }
+  if (errors.length === 1) throw errors[0];
+  if (errors.length > 1) throw new AggregateError(errors, "discovery and parent cleanup failed");
+}
+
+function verifyCanonicalDiscoveryParentCleanup() {
+  const root = mkdtempSync(path.join(tmpdir(), "canonical-discovery-parent-cleanup-"));
+  const local = path.join(root, ".local");
+  const parent = path.join(root, requiredBrowserOutputDirectory("advisory.full-e2e"));
+  const failure = new Error("synthetic discovery failure");
+  try {
+    withCanonicalDiscoveryParents(root, (ownRun) => {
+      const discovery = prepareCanonicalWindowOpeningContext({ repositoryRoot: root,
+        gateId: "advisory.full-e2e", environment: {}, sourceCommitSha: "1".repeat(40),
+        sourceTreeSha: "2".repeat(40) });
+      ownRun(discovery.runRoot);
+      assert.ok(existsSync(discovery.runRoot));
+    });
+    assert.equal(existsSync(local), false, "fresh discovery removes empty ancestors too");
+    assert.throws(() => withCanonicalDiscoveryParents(root, () => { throw failure; }),
+      (error) => error === failure);
+    assert.equal(existsSync(local), false, "failed discovery cleans newly owned empty parents");
+
+    mkdirSync(local);
+    const sentinel = path.join(local, "foreign.txt");
+    writeFileSync(sentinel, "preserve");
+    const identity = fs.lstatSync(local);
+    withCanonicalDiscoveryParents(root, () => assert.ok(existsSync(parent)));
+    assert.equal(fs.lstatSync(local).ino, identity.ino);
+    assert.equal(readFileSync(sentinel, "utf8"), "preserve");
+    assert.equal(existsSync(path.join(local, "required-test-evidence")), false);
+    unlinkSync(sentinel);
+    fs.rmdirSync(local);
+
+    const outside = path.join(root, "outside");
+    mkdirSync(outside);
+    symlinkSync(outside, local);
+    assert.throws(() => withCanonicalDiscoveryParents(root, () => assert.fail("must not traverse symlink")),
+      /physical directory/);
+    assert.ok(fs.lstatSync(local).isSymbolicLink());
+    assert.deepEqual(readdirSync(outside), []);
+    unlinkSync(local);
+
+    assert.throws(() => withCanonicalDiscoveryParents(root, () => {
+      renameSync(local, path.join(root, "original-local"));
+      mkdirSync(local);
+    }), /replaced/);
+    assert.ok(existsSync(local));
+    assert.ok(existsSync(path.join(root, "original-local")));
+    fs.rmdirSync(local);
+
+    assert.throws(() => withCanonicalDiscoveryParents(root, () => {
+      writeFileSync(path.join(parent, "foreign.txt"), "preserve");
+      throw failure;
+    }), (error) => error instanceof AggregateError && error.errors[0] === failure &&
+      error.errors[1].code === "ENOTEMPTY");
+    assert.equal(readFileSync(path.join(parent, "foreign.txt"), "utf8"), "preserve");
+
+    for (const replaceParent of [true, false]) {
+      const scenarioRoot = path.join(root, replaceParent ? "parent-replacement" : "run-replacement");
+      mkdirSync(scenarioRoot);
+      let replacedRun;
+      assert.throws(() => withCanonicalDiscoveryParents(scenarioRoot, (ownRun) => {
+        const discovery = prepareCanonicalWindowOpeningContext({ repositoryRoot: scenarioRoot,
+          gateId: "advisory.full-e2e", environment: {}, sourceCommitSha: "1".repeat(40),
+          sourceTreeSha: "2".repeat(40) });
+        ownRun(discovery.runRoot);
+        const replaced = replaceParent ? path.join(scenarioRoot, ".local") : discovery.runRoot;
+        renameSync(replaced, path.join(scenarioRoot, "original"));
+        mkdirSync(discovery.runRoot, { recursive: true });
+        replacedRun = discovery.runRoot;
+        writeFileSync(path.join(replacedRun, "foreign.txt"), "preserve");
+        throw failure;
+      }), (error) => error instanceof AggregateError && error.errors[0] === failure &&
+        /replaced/.test(error.errors[1].message) && error.errors.length === 3);
+      assert.equal(readFileSync(path.join(replacedRun, "foreign.txt"), "utf8"), "preserve",
+        "validate ownership before recursive run cleanup");
+    }
+  } finally { rmSync(root, { recursive: true, force: true }); }
+}
+
 async function verifyWindowOpeningExecutionContracts() {
   const root = realpathSync(mkdtempSync(path.join(tmpdir(), "window-opening-context-contract-")));
   const localRoot = path.join(root, "local");
@@ -3433,35 +3563,36 @@ async function verifyWindowOpeningExecutionContracts() {
     // Exercise the actual canonical config/module graph, without starting a
     // server or browser. This catches Playwright's CJS/ESM loading boundary.
     const currentGit = (args) => spawnSync("git", args, { cwd: process.cwd(), encoding: "utf8" }).stdout.trim();
-    const discovery = prepareCanonicalWindowOpeningContext({ repositoryRoot: process.cwd(),
-      gateId: "advisory.full-e2e", environment: {}, sourceCommitSha: currentGit(["rev-parse", "HEAD"]),
-      sourceTreeSha: currentGit(["rev-parse", "HEAD^{tree}"]) });
-    try {
-    const listed = spawnSync(path.join(process.cwd(), "node_modules/.bin/playwright"), ["test", "--list"], {
-      cwd: process.cwd(), encoding: "utf8", maxBuffer: 32 * 1024 * 1024,
-      env: { PATH: process.env.PATH, HOME: process.env.HOME, TMPDIR: process.env.TMPDIR,
-        REQUIRED_TEST_GATE_ID: discovery.owner, REQUIRED_TEST_REPORT_PATH: discovery.reportPath,
-        REQUIRED_TEST_SOURCE_COMMIT_SHA: discovery.sourceCommitSha,
-        REQUIRED_TEST_SOURCE_TREE_SHA: discovery.sourceTreeSha,
-        WINDOW_OPENING_CANONICAL_CONTEXT: JSON.stringify(discovery) },
+    withCanonicalDiscoveryParents(process.cwd(), (ownRun) => {
+      const discovery = prepareCanonicalWindowOpeningContext({ repositoryRoot: process.cwd(),
+        gateId: "advisory.full-e2e", environment: {}, sourceCommitSha: currentGit(["rev-parse", "HEAD"]),
+        sourceTreeSha: currentGit(["rev-parse", "HEAD^{tree}"]) });
+      ownRun(discovery.runRoot);
+      const listed = spawnSync(path.join(process.cwd(), "node_modules/.bin/playwright"), ["test", "--list"], {
+        cwd: process.cwd(), encoding: "utf8", maxBuffer: 32 * 1024 * 1024,
+        env: { PATH: process.env.PATH, HOME: process.env.HOME, TMPDIR: process.env.TMPDIR,
+          REQUIRED_TEST_GATE_ID: discovery.owner, REQUIRED_TEST_REPORT_PATH: discovery.reportPath,
+          REQUIRED_TEST_SOURCE_COMMIT_SHA: discovery.sourceCommitSha,
+          REQUIRED_TEST_SOURCE_TREE_SHA: discovery.sourceTreeSha,
+          WINDOW_OPENING_CANONICAL_CONTEXT: JSON.stringify(discovery) },
+      });
+      assert.equal(listed.status, 0, listed.stderr);
+      const discoveryReport = JSON.parse(readFileSync(path.resolve(discovery.reportPath), "utf8"));
+      assert.deepEqual(discoveryReport.errors, []);
+      assertWindowOpeningReportContext(discoveryReport.config.metadata, discovery.owner, { config: discoveryReport.config, expectedRunId: discovery.runId });
+      const discovered = [];
+      const visit = (suite) => { discovered.push(...suite.specs ?? []); (suite.suites ?? []).forEach(visit); };
+      discoveryReport.suites.forEach(visit);
+      const windowCases = discovered.filter((entry) => entry.file.endsWith("window-opening-corrections.spec.ts"));
+      assert.deepEqual(windowCases.map((entry) => entry.title), inventory.map((entry) => entry.title));
+      assert.deepEqual(discoveryReport.config.projects.map((project) => project.name), ["chromium"]);
+      for (const entry of windowCases) {
+        assert.equal(entry.tests.length, 1);
+        assert.equal(entry.tests[0].projectName, "chromium");
+        assert.equal(entry.tests[0].timeout, 240_000);
+      }
+      console.log("Canonical discovery: all 12 window cases; Chromium; original timeouts.");
     });
-    assert.equal(listed.status, 0, listed.stderr);
-    const discoveryReport = JSON.parse(readFileSync(path.resolve(discovery.reportPath), "utf8"));
-    assert.deepEqual(discoveryReport.errors, []);
-    assertWindowOpeningReportContext(discoveryReport.config.metadata, discovery.owner, { config: discoveryReport.config, expectedRunId: discovery.runId });
-    const discovered = [];
-    const visit = (suite) => { discovered.push(...suite.specs ?? []); (suite.suites ?? []).forEach(visit); };
-    discoveryReport.suites.forEach(visit);
-    const windowCases = discovered.filter((entry) => entry.file.endsWith("window-opening-corrections.spec.ts"));
-    assert.deepEqual(windowCases.map((entry) => entry.title), inventory.map((entry) => entry.title));
-    assert.deepEqual(discoveryReport.config.projects.map((project) => project.name), ["chromium"]);
-    for (const entry of windowCases) {
-      assert.equal(entry.tests.length, 1);
-      assert.equal(entry.tests[0].projectName, "chromium");
-      assert.equal(entry.tests[0].timeout, 240_000);
-    }
-    console.log("Canonical discovery: all 12 window cases; Chromium; original timeouts.");
-    } finally { rmSync(discovery.runRoot, { recursive: true, force: true }); }
 
   } finally {
     if (server.listening) await new Promise((resolve) => server.close(resolve));
