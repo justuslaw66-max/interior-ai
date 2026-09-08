@@ -45,7 +45,7 @@ import {
   type CanonicalOpeningDragMetricsV2,
 } from "./CanonicalFloorPlanStructure";
 import type { CanonicalFloorPlanRenderModel } from "@/lib/floor-plan-render-model";
-import { buildRoomPlanShape } from "@/lib/room-plan-shape";
+import { buildRoomPlanShape, shouldRenderRoomPlanGeometry } from "@/lib/room-plan-shape";
 import type { PlanMeasurementUnit } from "@/lib/design-page-types";
 import { formatDisplayLength } from "@/lib/display-units";
 import { floorPlanPropertyEvidenceIsEditable } from "@/lib/floor-plan-measured-property-mutations";
@@ -1449,7 +1449,7 @@ export default function RoomRenderer2D({
   const halfW = width / 2;
   const halfD = depth / 2;
   const isPro = theme === "pro";
-  const hasHouseRooms = rooms.length > 1;
+  const hasHouseRooms = shouldRenderRoomPlanGeometry(rooms);
   const canEditPlan = interactive && !drawRoomMode && !traceOpeningMode;
   const canEditRoomGeometry = canEditPlan && !canonicalStructureExpected;
   const canClearRoomSelection = canEditPlan && Boolean(onClearRoomSelection);

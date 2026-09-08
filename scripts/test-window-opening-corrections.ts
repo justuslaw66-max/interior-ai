@@ -1,4 +1,6 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+import { shouldRenderRoomPlanGeometry } from "@/lib/room-plan-shape";
 
 import {
   isWindowOpeningCaptureDriverWarning,
@@ -415,6 +417,21 @@ for (const mode of ["off", "retain-on-failure", ""]) {
 }
 
 const sharedA = room("a-room", -2, 0, 4, 4);
+for (const [rooms, expected] of [
+  [[], false],
+  [[{ shape: "rectangle" }], false],
+  [[{ shape: "custom_polygon" }], true],
+  [[{ shape: "l_shape" }], true],
+  [[{ shape: "rectangle" }, { shape: "rectangle" }], true],
+] as const) {
+  assert.equal(shouldRenderRoomPlanGeometry(rooms), expected,
+    "A single nonrectangular room must render its physical floor and wall outline.");
+}
+assert.match(
+  readFileSync("components/editor/renderers/RoomRenderer2D.tsx", "utf8"),
+  /const hasHouseRooms = shouldRenderRoomPlanGeometry\(rooms\);/,
+  "Actual 2D floor, wall bands and outline must use the tested shape-aware routing."
+);
 const sharedB = room("b-room", 2, 0, 4, 4);
 const sharedOpening: RoomOpening2D = {
   id: "shared-window",
