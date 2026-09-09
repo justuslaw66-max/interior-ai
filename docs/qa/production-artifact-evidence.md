@@ -1089,7 +1089,12 @@ Timing and reporter records carry the same build, artifact and manifest hashes.
 Production invocation outputs live under that existing generated evidence root,
 so repeated preflight does not classify their diagnostics as build inputs.
 Genuine development runs have an explicit development classification and no
-artifact hash. Direct execution does not certify Canonical Stable, whose sealed
+artifact hash. Their invocation-specific output lives under
+`.local/runtime-smoke-direct/`, satisfying the repository timing writer's
+physical `.local` boundary while preserving reporter ownership and cleanup.
+The resource-isolation regression loads the actual Playwright configuration
+without starting a browser and exercises its timing destinations.
+Direct execution does not certify Canonical Stable, whose sealed
 parent paths and server projection remain unchanged. Actual BUILD_ID bytes are
 never sanitized, and historical evidence is not rewritten.
 
