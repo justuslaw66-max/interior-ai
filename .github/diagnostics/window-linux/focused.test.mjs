@@ -10,7 +10,7 @@ import { createRetention, readOwnedPhysicalFile } from './retention.mjs';
 import { createProjection, digest, LIMITS, projectCleanup } from './projection.mjs';
 import { createStreamProjection, runCaptured } from './process-capture.mjs';
 import { FOUNDATIONS, serialPair, mayStartSecond, verifySourceDelta, sealPublication, safeFailureCode } from './campaign.mjs';
-import { requireMatchedHost, importAuthExports, activeRunnerExecutable, defaultHeadlessExecutable } from './environment.mjs';
+import { requireMatchedHost, importAuthExports, activeRunnerExecutable, activeRunnerCompanion, matchedRunnerVersion, defaultHeadlessExecutable } from './environment.mjs';
 import { verifyUpload } from './verify-upload.mjs';
 import { finishBootstrapConnection } from './bootstrap-database.mjs';
 
@@ -219,6 +219,16 @@ test('active runner version is bound to current process ancestry, not an install
   }
   assert.equal(activeRunnerExecutable(100, root).executable, '/home/runner/runners/9.9.9/bin/Runner.Worker');
   fs.writeFileSync(path.join(root, '99/status'), 'PPid:\t100\n'); assert.throws(() => activeRunnerExecutable(100, root));
+});
+test('current runner physical companion supports a layout without a version directory and rejects replacement/version mismatch', t => {
+  const root = temporary(); t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+  const directory = path.join(root, 'active-bundle/bin'); fs.mkdirSync(directory, { recursive: true });
+  const worker = path.join(directory, 'Runner.Worker'); const listener = path.join(directory, 'Runner.Listener'); fs.writeFileSync(worker, 'unit-worker'); fs.writeFileSync(listener, 'unit-listener');
+  assert.equal(activeRunnerCompanion({ executable: worker }), listener); assert.equal(matchedRunnerVersion('2.337.0'), '2.337.0');
+  assert.throws(() => matchedRunnerVersion('2.338.0'), /runner-version-mismatch/); assert.throws(() => matchedRunnerVersion(sensitive));
+  fs.unlinkSync(listener); assert.throws(() => activeRunnerCompanion({ executable: worker }), /runner-version-unavailable/);
+  fs.writeFileSync(path.join(root, 'other-listener'), 'unit'); fs.symlinkSync(path.join(root, 'other-listener'), listener); assert.throws(() => activeRunnerCompanion({ executable: worker }), /runner-version-unavailable/);
+  fs.unlinkSync(worker); assert.throws(() => activeRunnerCompanion({ executable: worker }), /runner-ancestry-invalid/);
 });
 test('actual bootstrap close handler preserves primary errors and records secondary close/write failures', async () => {
   const primary = new Error(sensitive); const receipt = { closeFailures: 0, persistenceFailures: 0 };

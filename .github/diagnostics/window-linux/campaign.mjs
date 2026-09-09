@@ -4,7 +4,7 @@ import { execFileSync } from 'node:child_process';
 import { pathToFileURL } from 'node:url';
 import { runCaptured } from './process-capture.mjs';
 import { createProjection, digest, LIMITS } from './projection.mjs';
-import { hostObservation, requireMatchedHost, REFERENCE, browserObservation, sourceEnvironment, importAuthExports, activeRunnerExecutable, fileHash } from './environment.mjs';
+import { hostObservation, requireMatchedHost, REFERENCE, browserObservation, sourceEnvironment, importAuthExports, activeRunnerExecutable, activeRunnerCompanion, matchedRunnerVersion, fileHash } from './environment.mjs';
 import { bootstrapDatabase } from './bootstrap-database.mjs';
 
 const HERE = path.dirname(import.meta.filename);
@@ -113,12 +113,14 @@ export async function campaign() {
     record.host.runnerWorkerPid = activeRunner.pid;
     record.host.actualRunnerPathVersion = /^\/home\/runner\/runners\/([0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3})\/bin\/Runner.Worker$/.exec(activeRunner.executable)?.[1] ?? null;
     record.host.runnerExecutablePathSha256 = digest(activeRunner.executable); persist();
-    if (record.host.actualRunnerPathVersion !== REFERENCE.runner) throw new Error('runner-version-mismatch');
-    const listener = path.join(path.dirname(activeRunner.executable), 'Runner.Listener');
+    // Installation layout is observation only. Use the physical companion of
+    // the Worker in this job's ancestry, with no search for another bundle.
+    const listener = activeRunnerCompanion(activeRunner);
     record.host.runnerWorkerSha256 = await fileHash(activeRunner.executable);
     const runnerVersion = readCommand(listener, ['--version'], workflow);
+    record.host.actualRunnerVersion = /^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$/.test(runnerVersion) ? runnerVersion : null;
     record.host.runnerMatches = runnerVersion === REFERENCE.runner; record.host.runner = record.host.runnerMatches ? REFERENCE.runner : null; persist();
-    if (!record.host.runnerMatches) throw new Error('runner-version-mismatch');
+    matchedRunnerVersion(runnerVersion);
     const serviceId = base.WINDOW_POSTGRES_SERVICE_ID;
     if (!/^[a-f0-9]{64}$/.test(serviceId)) throw new Error('service-identity');
     const inspection = JSON.parse(readCommand('docker', ['inspect', serviceId], workflow));

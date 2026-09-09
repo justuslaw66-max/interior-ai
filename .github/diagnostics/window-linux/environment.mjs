@@ -43,6 +43,22 @@ export function activeRunnerExecutable(startPid = process.pid, procRoot = '/proc
   }
   throw new Error('active-runner-unavailable');
 }
+export function activeRunnerCompanion(activeRunner) {
+  const executable = activeRunner.executable;
+  try {
+    if (!path.isAbsolute(executable) || path.basename(executable) !== 'Runner.Worker' || fs.realpathSync(executable) !== executable || !fs.lstatSync(executable).isFile()) throw new Error();
+  } catch { throw new Error('runner-ancestry-invalid'); }
+  const directory = path.dirname(executable);
+  const listener = path.join(directory, 'Runner.Listener');
+  try {
+    if (fs.realpathSync(listener) !== listener || !fs.lstatSync(listener).isFile()) throw new Error();
+  } catch { throw new Error('runner-version-unavailable'); }
+  return listener;
+}
+export function matchedRunnerVersion(rawVersion) {
+  if (rawVersion !== REFERENCE.runner) throw new Error('runner-version-mismatch');
+  return rawVersion;
+}
 export function defaultHeadlessExecutable(source) {
   const require = createRequire(path.join(source, 'package.json'));
   const coreRoot = path.dirname(require.resolve('playwright-core/package.json'));
