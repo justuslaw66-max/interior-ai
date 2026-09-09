@@ -352,6 +352,12 @@ async function completeStableRuntimeSmoke(context) {
   });
   context.bundleStarted = true;
   await createAndVerifyBundle({ ...context, runtime });
+  context.testHooks?.beforeSuccessfulRootRemoval?.({
+    roots: context.roots,
+    paths,
+    lifecycleEnvironment: context.lifecycleEnvironment,
+    finalDatabase: finalization.finalDatabase,
+  });
   removeStableRuntimeRoot(context.roots);
   context.roots = null;
   console.log(
