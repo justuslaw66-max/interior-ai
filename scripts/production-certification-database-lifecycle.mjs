@@ -27,6 +27,8 @@ import {
   PRODUCTION_CERTIFICATION_DATABASE_CONTRACT_VERSION,
   PRODUCTION_CERTIFICATION_DATABASE_LIFECYCLE_SCHEMA,
   PRODUCTION_CERTIFICATION_DATABASE_STAGE_BINDINGS,
+  STABLE_RUNTIME_SMOKE_DATABASE_CLASSIFICATIONS,
+  STABLE_RUNTIME_SMOKE_DATABASE_PROFILE,
   canonicalDatabaseNonce,
   canonicalJsonBytes,
   createDatabaseLifecycleBinding,
@@ -52,6 +54,8 @@ const OWNER_PATHS = Object.freeze([
   "scripts/production-certification-database-contract.mjs",
   "scripts/production-certification-database-adapter.mjs",
   "scripts/production-certification-database-cleanup-observation.mjs",
+  "scripts/production-certification-database-transport.mjs",
+  "scripts/stable-runtime-smoke-database-transport.mjs",
   "scripts/production-certification-app-event-lifecycle.mjs",
   "scripts/production-certification-database-lifecycle.mjs",
 ]);
@@ -85,6 +89,12 @@ function implementationIdentity(repositoryRoot) {
     genericRowDeletionProhibited: true,
     exactSessionAndDropOwnership: true,
     postDropAbsenceRequired: true,
+    adminTransports: [
+      "native-loopback",
+      "github-hosted-service-container-loopback-forward",
+    ],
+    serviceContainerProfile: STABLE_RUNTIME_SMOKE_DATABASE_PROFILE,
+    serviceContainerImage: "official-postgres-major-15",
   };
   return {
     ownerFiles: files,
@@ -249,6 +259,19 @@ function databaseLifecycleProfile({
     }
     return {
       classification: "RELEASE_CERTIFICATION_DATABASE",
+      authPreflightInvocationNonceSha256: null,
+    };
+  }
+  if (profile === STABLE_RUNTIME_SMOKE_DATABASE_PROFILE) {
+    if (authPreflightInvocationNonce !== null) {
+      throw new Error("stable runtime-smoke database cannot bind an auth-preflight nonce");
+    }
+    return {
+      classification: STABLE_RUNTIME_SMOKE_DATABASE_CLASSIFICATIONS.lifecycle,
+      releaseCertificationClassification:
+        STABLE_RUNTIME_SMOKE_DATABASE_CLASSIFICATIONS.releaseCertification,
+      integrationClassification:
+        STABLE_RUNTIME_SMOKE_DATABASE_CLASSIFICATIONS.integration,
       authPreflightInvocationNonceSha256: null,
     };
   }
@@ -469,9 +492,11 @@ function advance(evidence, mode, states, details, at = new Date().toISOString())
   for (const state of states) next.events.push(event(state, mode, at, details));
   next.currentState = states.at(-1);
   next.updatedAt = at;
-  next.complete = new Set(["absence-verified", "abort-absence-verified"]).has(
-    next.currentState,
-  );
+  next.complete = new Set([
+    "absence-verified",
+    "stable-absence-verified",
+    "abort-absence-verified",
+  ]).has(next.currentState);
   return sealDatabaseLifecycleEvidence(next);
 }
 
@@ -575,13 +600,16 @@ function assertIdentity(evidence, environment) {
   }
 }
 
-function adapterFor(options, databaseName) {
+function adapterFor(options, databaseName, lifecycleProfile, expectedServer = null) {
   if (options.adapter) return options.adapter;
   databaseAdminPolicy(required(options.environment, "CERTIFICATION_DATABASE_ADMIN_URL"));
   return new CertificationPostgresAdapter({
     adminUrl: options.environment.CERTIFICATION_DATABASE_ADMIN_URL,
     repositoryRoot: options.repositoryRoot,
     databaseName,
+    environment: options.environment,
+    lifecycleProfile,
+    expectedServer,
   });
 }
 
@@ -641,7 +669,11 @@ export async function planCertificationDatabase({
     candidateCommitSha: identity.candidateCommitSha,
     nonce: generatorNonce,
   });
-  const owner = adapterFor({ repositoryRoot, environment, adapter }, database.name);
+  const owner = adapterFor(
+    { repositoryRoot, environment, adapter },
+    database.name,
+    lifecycleProfile,
+  );
   const inspected = await safeDatabaseAdapterCall(() =>
     owner.inspectAdmin(database.name));
   if (inspected.targetExists) {
@@ -687,11 +719,7 @@ export async function planCertificationDatabase({
     inventories: { initial: null, final: null, abort: null },
     sessions: { initial: null, final: null, release: null, abort: null },
     stageBindings: {
-      requiredStages:
-        lifecycleProfile.classification ===
-        AUTH_SESSION_PREFLIGHT_DATABASE_CLASSIFICATIONS.lifecycle
-          ? [AUTH_SESSION_PREFLIGHT_DATABASE_STAGE]
-          : [...PRODUCTION_CERTIFICATION_DATABASE_STAGE_BINDINGS],
+      requiredStages: databaseLifecycleRequiredStages({ lifecycleProfile }),
       observed: [],
     },
     cleanup: null,
@@ -726,6 +754,8 @@ async function mutateLifecycle(options, action) {
     const adapter = adapterFor(
       { repositoryRoot, environment, adapter: options.adapter },
       evidence.database.name,
+      evidence.lifecycleProfile,
+      evidence.server,
     );
     let next;
     let actionError = null;
@@ -847,7 +877,7 @@ export async function provisionCertificationDatabase(options = {}) {
       });
       current = checkpoint(current);
       assertDatabaseCatalogIdentity(current, await adapter.inspectAdmin(evidence.database.name));
-      adapter.deployMigrations(evidence.database.name);
+      await adapter.deployMigrations(evidence.database.name);
       const migrations = migrationInventory(repositoryRoot);
       const applied = await adapter.migrationNames(evidence.database.name);
       if (
@@ -1076,13 +1106,23 @@ function rowInventory(rows) {
   };
 }
 
+async function settledTargetSessions(adapter, databaseName) {
+  let sessions = [];
+  for (let attempt = 0; attempt < 20; attempt += 1) {
+    sessions = await adapter.targetSessions(databaseName);
+    if (sessions.length === 0) return sessions;
+    await new Promise((resolve) => setTimeout(resolve, 25));
+  }
+  return sessions;
+}
+
 export async function verifyInitialCertificationDatabase(options = {}) {
   return mutateLifecycle({ ...options, mode: "verify-initial" }, async ({ evidence, adapter }) => {
     if (evidence.currentState !== "migrated") {
       throw new Error("initial database verification requires completed migrations");
     }
     const rows = rowInventory(await adapter.applicationRows(evidence.database.name));
-    const sessions = await adapter.targetSessions(evidence.database.name);
+    const sessions = await settledTargetSessions(adapter, evidence.database.name);
     const next = structuredClone(evidence);
     next.inventories.initial = rows;
     next.sessions.initial = { count: sessions.length, sessions };
@@ -1254,7 +1294,7 @@ export async function verifyFinalCertificationDatabase(options = {}) {
       }));
     }
     const rows = rowInventory(await adapter.applicationRows(evidence.database.name));
-    const sessions = await adapter.targetSessions(evidence.database.name);
+    const sessions = await settledTargetSessions(adapter, evidence.database.name);
     const next = structuredClone(current);
     next.inventories.final = rows;
     next.sessions.final = { count: sessions.length, sessions };
@@ -1280,6 +1320,123 @@ export async function verifyFinalCertificationDatabase(options = {}) {
     }
     return result;
   });
+}
+
+function assertStableRuntimeCompletionReady(evidence) {
+  const observed = evidence.stageBindings.observed;
+  if (
+    evidence.currentState !== "active" ||
+    evidence.lifecycleProfile.classification !==
+      STABLE_RUNTIME_SMOKE_DATABASE_CLASSIFICATIONS.lifecycle ||
+    observed.length !== 1 ||
+    observed[0]?.stage !== "runtime-smoke"
+  ) {
+    throw new Error(
+      "stable runtime-smoke database completion requires its exact active binding",
+    );
+  }
+  return observed;
+}
+
+async function inspectStableRuntimeDatabase(evidence, adapter, observation) {
+  const rows = rowInventory(
+    await adapter.applicationRows(evidence.database.name),
+  );
+  const release = await adapter.terminateTargetSessions(evidence.database.name, observation);
+  if (release.remainingSessionCount !== 0) {
+    throw new Error("stable runtime-smoke database retained unexplained sessions");
+  }
+  return { rows, release };
+}
+
+async function removeStableRuntimeDatabase({
+  evidence,
+  adapter,
+  environment,
+  checkpoint,
+  current,
+  rows,
+  observation,
+  release,
+}) {
+  let next = structuredClone(current);
+  next.sessions.release = release;
+  next = checkpoint(
+    advance(next, "stable-runtime-complete", ["stable-sessions-cleared"], release),
+  );
+  const drop = await adapter.dropDatabase(evidence.database.name, evidence.provisioning.databaseOid, observation);
+  const stageRole = await adapter.dropStageRole(stageRoleName(evidence), evidence.privateBinding.roleCreation.roleOid);
+  if (drop.dropped !== true || stageRole.dropped !== true) {
+    throw new Error("stable runtime-smoke did not remove its exact database and role");
+  }
+  removePrivateDatabaseBinding(environment, evidence);
+  next = structuredClone(next);
+  next.privateBinding = { ...next.privateBinding, status: "removed" };
+  next.cleanup = {
+    mode: "stable-runtime-smoke",
+    drop,
+    stageRole,
+    targetAbsent: false,
+    finalEmptyVerified: rows.totalRows === 0,
+    originalFailureRetained: false,
+  };
+  return checkpoint(
+    advance(next, "stable-runtime-complete", ["stable-dropped"], drop),
+  );
+}
+
+async function proveStableRuntimeDatabaseAbsent(evidence, adapter) {
+  const inspected = await adapter.inspectAdmin(evidence.database.name);
+  if (inspected.targetExists) {
+    throw new Error("stable runtime-smoke database remained after exact drop");
+  }
+  const role = await adapter.inspectStageRole(stageRoleName(evidence));
+  const sessions = await adapter.targetSessions(evidence.database.name);
+  const roleSessions = await adapter.stageRoleSessions(stageRoleName(evidence), evidence.privateBinding.roleCreation.roleOid);
+  if (role.exists || sessions.length !== 0 || roleSessions.length !== 0) {
+    throw new Error("stable runtime-smoke retained its owned role or sessions after drop");
+  }
+  const next = structuredClone(evidence);
+  next.cleanup.targetAbsent = true;
+  next.cleanup.stageRole = { ...next.cleanup.stageRole, verifiedAbsent: true };
+  return advance(
+    next,
+    "stable-runtime-complete",
+    ["stable-absence-verified"],
+    { targetAbsent: true, roleAbsent: true, sessionCount: 0, roleSessionCount: 0, cleanupMode: "stable-runtime-smoke" },
+  );
+}
+
+export async function completeStableRuntimeSmokeDatabase(options = {}) {
+  return mutateLifecycle(
+    { ...options, mode: "stable-runtime-complete" },
+    async ({ evidence, adapter, environment, checkpoint, cleanupObservation }) => {
+      const observed = assertStableRuntimeCompletionReady(evidence);
+      if (!ownsAcknowledgedDatabase(evidence) || !ownsAcknowledgedRole(evidence)) {
+        throw new Error("stable runtime cleanup requires acknowledged database and role creation receipts");
+      }
+      assertDatabaseCatalogIdentity(evidence, await adapter.inspectAdmin(evidence.database.name));
+      await assertOwnedRoleCleanupReady(evidence, adapter);
+      const observation = cleanupObservation("normal");
+      const { rows, release } = await inspectStableRuntimeDatabase(evidence, adapter, observation);
+      const next = structuredClone(evidence);
+      next.inventories.final = rows;
+      next.sessions.final = { count: 0, sessions: [] };
+      const inspected = checkpoint(
+        advance(next, "stable-runtime-complete", ["stable-runtime-inspected"], {
+          applicationTableCount: rows.applicationTableCount,
+          totalRows: rows.totalRows,
+          sessionCount: 0,
+          stageBindingCount: observed.length,
+        }),
+      );
+      const dropped = await removeStableRuntimeDatabase({
+        evidence, adapter, environment, checkpoint, current: inspected, rows,
+        observation, release,
+      });
+      return proveStableRuntimeDatabaseAbsent(dropped, adapter);
+    },
+  );
 }
 
 export function retainCertificationDatabaseFailureSnapshot({
@@ -1518,7 +1675,7 @@ export async function abortCertificationDatabase(options = {}) {
       };
     }
     const ownsStageRole = ownsAcknowledgedRole(next);
-    const stageRole = ownsStageRole
+    const stageRoleDrop = ownsStageRole
       ? await adapter.dropStageRole(stageRoleName(evidence), evidence.privateBinding.roleCreation.roleOid)
       : {
           dropped: false,
@@ -1527,11 +1684,20 @@ export async function abortCertificationDatabase(options = {}) {
         };
     if (
       ownsStageRole &&
-      stageRole.dropped !== true &&
-      stageRole.alreadyAbsent !== true
+      stageRoleDrop.dropped !== true &&
+      stageRoleDrop.alreadyAbsent !== true
     ) {
       throw new Error("abort cleanup did not remove the private stage role");
     }
+    const roleAfterDrop = ownsStageRole
+      ? await adapter.inspectStageRole(stageRoleName(evidence))
+      : null;
+    if (ownsStageRole && roleAfterDrop?.exists !== false) {
+      throw new Error("abort cleanup did not prove private stage role absence");
+    }
+    const stageRole = ownsStageRole
+      ? { ...stageRoleDrop, verifiedAbsent: true }
+      : { ...stageRoleDrop, verifiedAbsent: false };
     let sidecarCleanup = {
       removed: false,
       alreadyAbsent: true,
@@ -1915,6 +2081,8 @@ export async function certificationDatabaseStatus(options = {}) {
       adapter: options.adapter,
     },
     current.evidence.database.name,
+    current.evidence.lifecycleProfile,
+    current.evidence.server,
   );
   const inspected = await safeDatabaseAdapterCall(() =>
     adapter.inspectAdmin(current.evidence.database.name));
@@ -1932,6 +2100,10 @@ export async function certificationDatabaseStatus(options = {}) {
     targetExists: inspected.targetExists,
     sessionCount: sessions.length,
     hostClassification: inspected.hostClassification,
+    transportClassification: inspected.transportClassification,
+    transportAttestationSha256: inspected.transportAttestationSha256,
+    transportVerificationStatus: inspected.transportVerificationStatus,
+    imageClassification: inspected.imageClassification,
     port: inspected.port,
     serverVersion: inspected.serverVersion,
     serverVersionNumber: inspected.serverVersionNumber,
@@ -2028,6 +2200,12 @@ export function createAuthSessionPreflightDatabaseBinding({
     scopedRoleIdentitySha256: evidence.privateBinding.roleNameSha256,
     scopedRoleClassification: evidence.privateBinding.classification,
     hostClassification: evidence.server.hostClassification,
+    transportClassification: evidence.server.transportClassification,
+    transportAttestationSha256:
+      evidence.server.transportAttestationSha256,
+    transportVerificationStatus:
+      evidence.server.transportVerificationStatus,
+    imageClassification: evidence.server.imageClassification,
     serverRoleClassification: evidence.server.roleClassification,
     lifecycleState: current.binding.lifecycleState,
   });
@@ -2065,12 +2243,64 @@ function assertDatabaseProjectionStateBinding(state, current) {
   }
 }
 
+export function createStableRuntimeSmokeDatabaseBinding({ current }) {
+  const evidence = current?.evidence;
+  if (
+    current?.binding?.lifecycleState !== "active" ||
+    evidence?.lifecycleProfile?.classification !==
+      STABLE_RUNTIME_SMOKE_DATABASE_CLASSIFICATIONS.lifecycle ||
+    !isSourceSha(current.binding.candidateCommitSha) ||
+    !isSourceSha(current.binding.candidateTreeSha) ||
+    !isSha256(current.binding.databaseNameSha256) ||
+    !isSha256(current.binding.databaseIdentitySha256) ||
+    !isSha256(current.binding.evidence?.sha256) ||
+    !isSha256(evidence.privateBinding?.sidecarSha256) ||
+    !isSha256(evidence.privateBinding?.roleNameSha256)
+  ) {
+    throw new Error("stable runtime-smoke database binding is not active or complete");
+  }
+  return Object.freeze({
+    schema: "interior-ai.stable-runtime-smoke-database-binding.v1",
+    classification: STABLE_RUNTIME_SMOKE_DATABASE_CLASSIFICATIONS.lifecycle,
+    releaseCertificationClassification:
+      STABLE_RUNTIME_SMOKE_DATABASE_CLASSIFICATIONS.releaseCertification,
+    integrationClassification:
+      STABLE_RUNTIME_SMOKE_DATABASE_CLASSIFICATIONS.integration,
+    stage: "runtime-smoke",
+    candidateCommitSha: current.binding.candidateCommitSha,
+    candidateTreeSha: current.binding.candidateTreeSha,
+    databaseNameSha256: current.binding.databaseNameSha256,
+    databaseIdentitySha256: current.binding.databaseIdentitySha256,
+    lifecycleEvidenceSha256: current.binding.evidence.sha256,
+    privateSidecarSha256: evidence.privateBinding.sidecarSha256,
+    scopedRoleIdentitySha256: evidence.privateBinding.roleNameSha256,
+    scopedRoleClassification: evidence.privateBinding.classification,
+    hostClassification: evidence.server.hostClassification,
+    transportClassification: evidence.server.transportClassification,
+    transportAttestationSha256:
+      evidence.server.transportAttestationSha256,
+    transportVerificationStatus:
+      evidence.server.transportVerificationStatus,
+    imageClassification: evidence.server.imageClassification,
+    serverRoleClassification: evidence.server.roleClassification,
+    lifecycleState: current.binding.lifecycleState,
+  });
+}
+
+function assertStableRuntimeSmokeDatabaseBinding(binding, current) {
+  const expected = createStableRuntimeSmokeDatabaseBinding({ current });
+  if (JSON.stringify(binding) !== JSON.stringify(expected)) {
+    throw new Error("stable runtime-smoke database projection binding is stale or foreign");
+  }
+}
+
 export function resolveCertificationDatabaseStageEnvironment({
   repositoryRoot = process.cwd(),
   environment = process.env,
   state = null,
   stage,
   preflightLifecycleBinding = null,
+  stableRuntimeLifecycleBinding = null,
   authPreflightInvocationNonce = null,
 }) {
   const knownStage =
@@ -2083,7 +2313,30 @@ export function resolveCertificationDatabaseStageEnvironment({
     repositoryRoot,
     environment,
   });
-  if (stage === AUTH_SESSION_PREFLIGHT_DATABASE_STAGE) {
+  const stableRuntimeProfile =
+    current.evidence.lifecycleProfile?.classification ===
+    STABLE_RUNTIME_SMOKE_DATABASE_CLASSIFICATIONS.lifecycle;
+  if (stableRuntimeProfile) {
+    if (
+      stage !== "runtime-smoke" ||
+      state !== null ||
+      preflightLifecycleBinding !== null ||
+      authPreflightInvocationNonce !== null
+    ) {
+      throw new Error(
+        "stable runtime-smoke database projection cannot consume certification state",
+      );
+    }
+    assertStableRuntimeSmokeDatabaseBinding(
+      stableRuntimeLifecycleBinding,
+      current,
+    );
+  } else if (stage === AUTH_SESSION_PREFLIGHT_DATABASE_STAGE) {
+    if (stableRuntimeLifecycleBinding !== null) {
+      throw new Error(
+        "auth-session preflight database projection cannot consume a stable runtime binding",
+      );
+    }
     if (state !== null) {
       throw new Error(
         "auth-session preflight database projection cannot consume rehearsal state",
@@ -2095,7 +2348,11 @@ export function resolveCertificationDatabaseStageEnvironment({
       authPreflightInvocationNonce,
     });
   } else {
-    if (preflightLifecycleBinding !== null || authPreflightInvocationNonce !== null) {
+    if (
+      preflightLifecycleBinding !== null ||
+      stableRuntimeLifecycleBinding !== null ||
+      authPreflightInvocationNonce !== null
+    ) {
       throw new Error(
         "rehearsal database projection cannot consume auth-preflight bindings",
       );

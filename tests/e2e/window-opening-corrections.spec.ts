@@ -436,6 +436,12 @@ async function loadFixture(
   route = "/design?debug_layout=1"
 ) {
   attachRuntimePolicy(page);
+  await page.addInitScript(() => {
+    // Enable the existing read-only diagnostics before production scene creation.
+    Object.defineProperty(globalThis, "__INTERIOR_AI_ENABLE_GLB_DIAGNOSTICS__", {
+      configurable: true, writable: true, value: true,
+    });
+  });
   const fixtureSha256 = sha256(JSON.stringify(value));
   fixtureContexts.set(page, {
     id: `${currentTestId()}:${fixtureSha256.slice(0, 16)}`,

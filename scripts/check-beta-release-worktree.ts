@@ -33,7 +33,7 @@ const BETA_GATE_PATHS = new Set([
 const MIXED_BETA_GATE_PATHS = new Set([
   "package.json",
   "app/design/page.tsx",
-  "app/share/[shareToken]/page.tsx",
+  "app/share/[shareToken]/(presentation)/page.tsx",
   "app/share/[shareToken]/export/page.tsx",
 ]);
 

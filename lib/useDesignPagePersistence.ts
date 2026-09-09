@@ -12,6 +12,7 @@ import {
 import { track, trackProductEvent } from "@/lib/analytics";
 import { getAnonId } from "@/lib/anon";
 import { designApi, DesignApiError } from "@/lib/design-api-client";
+import { copyFallbackShareLinkWithFeedback } from "@/lib/copy-fallback-share-link";
 import { executeDesignPageCloudWrite } from "@/lib/design-page-cloud-write-execution";
 import { createDesignPageCloudWriteQueue } from "@/lib/design-page-cloud-write-queue";
 import { getDesignPageSaveStatus } from "@/lib/design-page-save-status";
@@ -616,11 +617,8 @@ export function useDesignPagePersistence({
     setShareLinkFallback(null);
   }, []);
 
-  const copyFallbackShareLink = useCallback((url: string) => {
-    void navigator.clipboard.writeText(url);
-    setShareSuccessToast(true);
-    setTimeout(() => setShareSuccessToast(false), 3000);
-  }, []);
+  const copyFallbackShareLink = useCallback((url: string, signal: AbortSignal) =>
+    copyFallbackShareLinkWithFeedback(url, signal, setShareSuccessToast, setShareErrorToast), []);
 
   const openFallbackShareLink = useCallback((url: string) => {
     window.open(url, "_blank");

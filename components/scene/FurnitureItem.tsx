@@ -2,7 +2,7 @@
 
 import React, { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
-import { useFrame, type ThreeEvent } from "@react-three/fiber";
+import { type ThreeEvent } from "@react-three/fiber";
 import { Line } from "@react-three/drei/core/Line";
 import { Html } from "@react-three/drei/web/Html";
 import { useCursor } from "@react-three/drei/web/useCursor";
@@ -23,9 +23,7 @@ import {
   normalizeRotationDegrees,
   ROTATION_SNAP_STEP_RADIANS,
 } from "@/lib/design-page-utils";
-import {
-  type SnapNeighbor,
-} from "@/lib/design-page-types";
+import { type SnapNeighbor } from "@/lib/design-page-types";
 import { SnapGuides } from "@/components/SnapGuides";
 import { Measurements } from "@/components/Measurements";
 import { GLBScaledModel } from "@/components/scene/GLBScaledModel";
@@ -43,6 +41,8 @@ import { resolveObjectShadowEligibility } from "@/components/editor/design-page/
 import type { FurnitureProps } from "./furniture/FurnitureProps";
 import { FurnitureSelectionOutline } from "./furniture/FurnitureSelectionOutline";
 import { resolveFurnitureModelAppearance } from "./furniture/resolveFurnitureModelAppearance";
+import { useFurnitureFiniteAnimations } from "./furniture/useFurnitureFiniteAnimations";
+import { sceneDemandItemUserData } from "./sceneDemandDiagnostics";
 
 export { CameraCapture } from "./furniture/CameraCapture";
 export type { FurnitureProps } from "./furniture/FurnitureProps";
@@ -137,10 +137,10 @@ export function Furniture({
   const [position, setPosition] = useState<[number, number, number]>(
     initialPosition
   );
-  const [rotation, setRotation] = useState(initialRotationY); // Y-axis rotation in radians
-  const [snapType, setSnapType] = useState<SnapType>("none"); // Track current snap type for auto-facing
-  const [snapGuides, setSnapGuides] = useState<Guide[]>([]); // Snap visualization guides
-  const [measurements, setMeasurements] = useState<Measure[]>([]); // Real-time measurements
+  const [rotation, setRotation] = useState(initialRotationY);
+  const [snapType, setSnapType] = useState<SnapType>("none");
+  const [snapGuides, setSnapGuides] = useState<Guide[]>([]);
+  const [measurements, setMeasurements] = useState<Measure[]>([]);
   const [hovered, setHovered] = useState(false);
   const [invalidPlacement, setInvalidPlacement] = useState(false);
   const [rotateDragging, setRotateDragging] = useState(false);
@@ -175,20 +175,16 @@ export function Furniture({
   const initialPositionX = initialPosition[0];
   const initialPositionY = initialPosition[1];
   const initialPositionZ = initialPosition[2];
-  const groupRef = useRef<THREE.Group>(null);
-  const shakeUntilRef = useRef(0);
-  const placementStartRef = useRef<number | null>(null);
-  const snapBumpUntilRef = useRef(0);
   const rotateStartRef = useRef(initialRotationY);
   const rotateTargetRef = useRef(initialRotationY);
   const rotatePointerTargetRef = useRef<HTMLElement | null>(null);
   const rotatePointerIdRef = useRef<number | null>(null);
   const rotateSnapEnabledRef = useRef(true);
+  const snapTypeRef = useRef<SnapType>("none");
   const lastReportedRenderReadyRef = useRef<{
     key: string;
     ready: boolean;
   } | null>(null);
-
   const materialProps = useMemo(() => {
     return resolveMaterialProps({
       category: product.category,
@@ -216,6 +212,7 @@ export function Furniture({
       setSnapType((currentSnapType) =>
         currentSnapType === "none" ? currentSnapType : "none"
       );
+      snapTypeRef.current = "none";
       rotateStartRef.current = initialRotationY;
       rotateTargetRef.current = initialRotationY;
     });
@@ -233,11 +230,6 @@ export function Furniture({
   }, [rotation]);
 
   useCursor(hovered && Boolean(locked), "not-allowed");
-
-  useEffect(() => {
-    if (!interactive) return;
-    placementStartRef.current = performance.now();
-  }, [instanceId, interactive]);
 
   const getPointerRotation = (
     e: ThreeEvent<PointerEvent>,
@@ -261,7 +253,7 @@ export function Furniture({
     e.stopPropagation();
     if (!interactive || locked || viewMode !== "2d") {
       if (locked) {
-        shakeUntilRef.current = Number(e.timeStamp) + 220;
+        startLockedShake();
       }
       return;
     }
@@ -470,6 +462,15 @@ export function Furniture({
     position[1],
     clampedZ,
   ] as [number, number, number];
+  const { groupRef, startLockedShake, startSnapBump } =
+    useFurnitureFiniteAnimations({
+      instanceId,
+      interactive,
+      dragging,
+      cartPreviewed,
+      clampedPosition,
+      height,
+    });
 
   // Snap to wall when within threshold (typically 3cm)
   const applySnap = (x: number, z: number): [number, number, SnapType] => {
@@ -509,7 +510,7 @@ export function Furniture({
     e.stopPropagation();
     if (!interactive || locked) {
       if (locked) {
-        shakeUntilRef.current = performance.now() + 220;
+        startLockedShake();
       }
       return;
     }
@@ -521,15 +522,16 @@ export function Furniture({
 
   const onPointerUp = (e: ThreeEvent<PointerEvent>) => {
     e.stopPropagation();
-    const wasSnapped = snapType !== "none";
+    const wasSnapped = snapTypeRef.current !== "none";
     try {
       (e.target as unknown as HTMLElement).releasePointerCapture(e.pointerId);
     } catch {}
     setDragging(false);
-    setSnapType("none"); // Reset snap type
+    setSnapType("none");
+    snapTypeRef.current = "none";
     setInvalidPlacement(false);
     if (wasSnapped && interactive) {
-      snapBumpUntilRef.current = performance.now() + 160;
+      startSnapBump();
       onSnapPulse?.();
       onSnapSuccess?.();
     }
@@ -680,62 +682,10 @@ export function Furniture({
     }
     setInvalidPlacement(false);
     setSnapType(snap);
+    snapTypeRef.current = snap;
     setPosition(nextPos);
   };
-
-
-  // Determine if current position is snapped (based on snap type rather than position)
   const isSnapped = snapType !== "none";
-
-  useFrame(() => {
-    if (!groupRef.current) return;
-    const now = performance.now();
-    const baseX = clampedPosition[0];
-    const baseZ = clampedPosition[2];
-    const baseY = (clampedPosition[1] ?? 0) + height / 2;
-    const bumpRemaining = snapBumpUntilRef.current - now;
-    const bump =
-      bumpRemaining > 0
-        ? Math.sin((bumpRemaining / 160) * Math.PI) * 0.02
-        : 0;
-
-    if (shakeUntilRef.current > now) {
-      const phase = (shakeUntilRef.current - now) / 220;
-      const offset = Math.sin(phase * Math.PI * 10) * 0.02;
-      groupRef.current.position.set(baseX + offset + bump, baseY, baseZ);
-    } else {
-      groupRef.current.position.set(baseX + bump, baseY, baseZ);
-    }
-
-    if (dragging) {
-      groupRef.current.scale.set(1, 1, 1);
-      return;
-    }
-
-    if (cartPreviewed) {
-      groupRef.current.scale.set(1.02, 1.02, 1.02);
-      return;
-    }
-
-    if (!interactive) {
-      groupRef.current.scale.set(1, 1, 1);
-      return;
-    }
-
-    const start = placementStartRef.current;
-    if (start !== null) {
-      const t = Math.min(1, (now - start) / 160);
-      const scale = 0.98 + 0.02 * t;
-      groupRef.current.scale.set(scale, scale, scale);
-      if (t >= 1) {
-        placementStartRef.current = null;
-      }
-    } else {
-      groupRef.current.scale.set(1, 1, 1);
-    }
-  });
-
-  // finalRotation is the current rotation state (set directly when snapping)
   const finalRotation = rotation;
   const rotationHudLabel =
     viewMode === "2d" && rotateDragging
@@ -768,6 +718,7 @@ export function Furniture({
   return (
     <group
       ref={groupRef}
+      userData={sceneDemandItemUserData(instanceId, viewMode, height)}
       position={[
         clampedPosition[0],
         viewMode === "2d" ? 0.01 : (clampedPosition[1] ?? 0) + height / 2,

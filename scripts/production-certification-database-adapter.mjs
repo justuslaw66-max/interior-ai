@@ -6,6 +6,7 @@ import {
   databaseAdminPolicy,
   targetDatabaseUrl,
 } from "./production-certification-database-contract.mjs";
+import { classifyDatabaseAdminTransport } from "./production-certification-database-transport.mjs";
 import {
   CERTIFICATION_APP_EVENT_BINDING_KEY,
   certificationAppEventRowsSha256,
@@ -35,9 +36,13 @@ function safeSession(row) {
   };
 }
 
-async function withClient(connectionString, action) {
-  const { Client } = await import("pg");
-  const client = new Client({ connectionString, connectionTimeoutMillis: 10_000 });
+async function withClient(connectionString, action, clientFactory = null) {
+  const client = clientFactory
+    ? await clientFactory(connectionString)
+    : new (await import("pg")).Client({
+        connectionString,
+        connectionTimeoutMillis: 10_000,
+      });
   await client.connect();
   try {
     return await action(client);
@@ -80,9 +85,24 @@ async function queryAppEventRows(client, { forUpdate = false } = {}) {
 }
 
 export class CertificationPostgresAdapter {
-  constructor({ adminUrl, repositoryRoot }) {
+  constructor({
+    adminUrl,
+    repositoryRoot,
+    environment = process.env,
+    lifecycleProfile = { classification: "RELEASE_CERTIFICATION_DATABASE" },
+    transportCommandRunner,
+    adminClientFactory,
+    databaseName = null,
+    expectedServer = null,
+  }) {
     this.adminUrl = adminUrl;
     this.repositoryRoot = repositoryRoot;
+    this.environment = environment;
+    this.lifecycleProfile = lifecycleProfile;
+    this.transportCommandRunner = transportCommandRunner;
+    this.adminClientFactory = adminClientFactory;
+    this.databaseName = databaseName;
+    this.expectedServer = expectedServer;
     this.policy = databaseAdminPolicy(adminUrl);
   }
 
@@ -99,6 +119,7 @@ export class CertificationPostgresAdapter {
                 current_setting('server_version') AS server_version,
                 current_setting('server_version_num')::int AS server_version_num,
                 host(inet_server_addr()) AS server_address,
+                host(inet_client_addr()) AS client_address,
                 r.rolsuper,
                 r.rolcreatedb
            FROM pg_roles r
@@ -113,16 +134,29 @@ export class CertificationPostgresAdapter {
         !row ||
         row.database !== "postgres" ||
         Number(row.server_version_num) < 140000 ||
-        (row.server_address !== "127.0.0.1" && row.server_address !== "::1") ||
         (row.rolsuper !== true && row.rolcreatedb !== true)
       ) {
         throw new Error("local PostgreSQL server or role classification is not approved");
       }
-      return {
+      const transport = classifyDatabaseAdminTransport({
+        repositoryRoot: this.repositoryRoot,
+        environment: this.environment,
+        lifecycleProfile: this.lifecycleProfile,
+        lifecycleNonce:
+          this.environment.CERTIFICATION_DATABASE_TRANSPORT_LIFECYCLE_NONCE ?? "",
+        policy: this.policy,
+        observation: {
+          serverAddress: row.server_address,
+          clientAddress: row.client_address,
+          serverVersionNumber: Number(row.server_version_num),
+        },
+        commandRunner: this.transportCommandRunner,
+      });
+      const inspected = {
         hostClassification: this.policy.hostClassification,
         host: this.policy.host,
         port: this.policy.port,
-        serverAddressClassification: "loopback",
+        ...transport,
         serverVersion: row.server_version,
         serverVersionNumber: Number(row.server_version_num),
         role: row.role,
@@ -133,10 +167,32 @@ export class CertificationPostgresAdapter {
         targetExists: database.rowCount !== 0,
         databaseOid: database.rowCount ? Number(database.rows[0].oid) : null,
       };
-    });
+      if (this.expectedServer) {
+        const continuity = [
+          "hostClassification", "host", "port", "serverAddressClassification",
+          "transportClassification", "transportAttestationSha256",
+          "transportVerificationStatus", "imageClassification",
+          "imageRepositoryDigestSha256", "serverVersion",
+          "serverVersionNumber", "role", "roleClassification",
+          "canCreateDatabase",
+        ].map((field) => [field, this.expectedServer[field], inspected[field]]);
+        if (continuity.some(([, expected, actual]) => expected !== actual)) {
+          throw new Error("database administrator transport changed during its lifecycle");
+        }
+      }
+      return inspected;
+    }, this.adminClientFactory);
+  }
+
+  async recheckTransport(databaseName = this.databaseName) {
+    if (!databaseName) {
+      throw new Error("database transport recheck requires the lifecycle database");
+    }
+    await this.inspectAdmin(databaseName);
   }
 
   async createDatabase(databaseName) {
+    await this.recheckTransport(databaseName);
     const identifier = quotedIdentifier(databaseName);
     let outcome = "not-created";
     let databaseOid = null;
@@ -172,6 +228,7 @@ export class CertificationPostgresAdapter {
   }
 
   async createStageRole({ databaseName, roleName, password }) {
+    await this.recheckTransport(databaseName);
     const databaseIdentifier = quotedIdentifier(databaseName);
     const roleIdentifier = quotedStageRole(roleName);
     if (!/^[a-f0-9]{64}$/.test(password)) {
@@ -249,6 +306,7 @@ export class CertificationPostgresAdapter {
   }
 
   async inspectStageRole(roleName) {
+    await this.recheckTransport();
     quotedStageRole(roleName);
     return withClient(this.adminUrl, async (client) => {
       const result = await client.query(
@@ -276,6 +334,7 @@ export class CertificationPostgresAdapter {
     if (!Number.isSafeInteger(expectedOid) || expectedOid <= 0) {
       throw new Error("role cleanup requires its recorded catalog identity");
     }
+    await this.recheckTransport();
     const roleIdentifier = quotedStageRole(roleName);
     return withClient(this.adminUrl, async (client) => {
       const existing = await client.query(
@@ -294,6 +353,7 @@ export class CertificationPostgresAdapter {
   }
 
   async inspectStageConnection({ databaseUrl, databaseName, roleName }) {
+    await this.recheckTransport(databaseName);
     assertUnprotectedDatabaseName(databaseName);
     quotedStageRole(roleName);
     return withClient(databaseUrl, async (client) => {
@@ -322,7 +382,8 @@ export class CertificationPostgresAdapter {
     });
   }
 
-  deployMigrations(databaseName) {
+  async deployMigrations(databaseName) {
+    await this.recheckTransport(databaseName);
     const executable =
       process.platform === "win32"
         ? path.join(this.repositoryRoot, "node_modules/.bin/prisma.cmd")
@@ -343,6 +404,7 @@ export class CertificationPostgresAdapter {
   }
 
   async migrationNames(databaseName) {
+    await this.recheckTransport(databaseName);
     return withClient(this.targetUrl(databaseName), async (client) => {
       const result = await client.query(
         `SELECT migration_name
@@ -355,6 +417,7 @@ export class CertificationPostgresAdapter {
   }
 
   async applicationRows(databaseName) {
+    await this.recheckTransport(databaseName);
     return withClient(this.targetUrl(databaseName), async (client) => {
       const tables = await client.query(
         `SELECT tablename
@@ -376,6 +439,7 @@ export class CertificationPostgresAdapter {
   }
 
   async appEventRows(databaseName) {
+    await this.recheckTransport(databaseName);
     return withClient(this.targetUrl(databaseName), (client) =>
       queryAppEventRows(client),
     );
@@ -387,6 +451,7 @@ export class CertificationPostgresAdapter {
     expectedIds,
     expectedRowsSha256,
   }) {
+    await this.recheckTransport(databaseName);
     assertUnprotectedDatabaseName(databaseName);
     return withClient(this.targetUrl(databaseName), async (client) => {
       await client.query("BEGIN ISOLATION LEVEL SERIALIZABLE");
@@ -432,6 +497,7 @@ export class CertificationPostgresAdapter {
   }
 
   async targetSessions(databaseName) {
+    await this.recheckTransport(databaseName);
     assertUnprotectedDatabaseName(databaseName);
     return withClient(this.adminUrl, async (client) => {
       const result = await client.query(
@@ -450,6 +516,7 @@ export class CertificationPostgresAdapter {
     if (!Number.isSafeInteger(roleOid) || roleOid <= 0) {
       throw new Error("role session inspection requires its recorded catalog identity");
     }
+    await this.recheckTransport();
     return withClient(this.adminUrl, async (client) => {
       const result = await client.query(
         `SELECT pid, usename, datname, application_name, client_addr, state, backend_start, backend_type
@@ -476,6 +543,7 @@ export class CertificationPostgresAdapter {
     if (!Number.isSafeInteger(expectedOid) || expectedOid <= 0) {
       throw new Error("database cleanup requires its recorded catalog identity");
     }
+    await this.recheckTransport(databaseName);
     const identifier = quotedIdentifier(databaseName);
     return withClient(this.adminUrl, async (client) => {
       const existing = await client.query(

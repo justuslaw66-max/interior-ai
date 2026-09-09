@@ -1,3 +1,10 @@
+import type { SceneDemandSnapshot } from "../../components/scene/sceneDemandDiagnostics";
+
+type CameraDemandState = Pick<SceneDemandSnapshot,
+  "instrumentationGeneration" | "rendererCalls" | "invalidationCalls" |
+  "pendingInvalidation" | "activeItemAnimationCount" |
+  "activeControlTransitionCount" | "activeSupportedAnimationCount">;
+
 export type CameraState = {
   projection: "orthographic" | "perspective";
   position: [number, number, number];
@@ -28,6 +35,8 @@ type CameraMotion = {
 };
 
 type CameraSettleSample = {
+  demand: CameraDemandState;
+  observation: "initial" | "advancing-render" | "idle-demand" | "unsettled";
   renderFrame: number;
   elapsedMs: number;
   camera: CameraState;
@@ -116,16 +125,45 @@ export async function observeCameraSettleOnRenderFrames(
       throw new Error("Production QA camera, render progress, or damping state is unavailable.");
     }
     const renderFrame = Number(rawFrame);
-    if (!Number.isSafeInteger(renderFrame)) {
+    if (!Number.isSafeInteger(renderFrame) || renderFrame <= 0) {
       throw new Error(`Invalid production QA camera render frame: ${rawFrame}.`);
     }
     const dampingFactor = Number(rawDampingFactor);
-    if (!Number.isFinite(dampingFactor) || dampingFactor <= 0 || dampingFactor >= 1 ||
-        Math.abs(dampingFactor - config.expectedDampingFactor) > Number.EPSILON) {
+    if (!Number.isFinite(dampingFactor) || dampingFactor <= 0 || dampingFactor >= 1) {
       throw new Error(`Unexpected production OrbitControls damping factor: ${rawDampingFactor}.`);
     }
     const state: CameraState = JSON.parse(rawState);
-    return { renderFrame, state, dampingFactor };
+    // The existing diagnostic owner returns a snapshot; retain only the counters
+    // needed to distinguish a genuinely idle demand canvas from stalled work.
+    const diagnostics = globalThis as typeof globalThis & {
+      __INTERIOR_AI_SCENE_DEMAND_SNAPSHOT__?: () => SceneDemandSnapshot;
+    };
+    const snapshot = diagnostics.__INTERIOR_AI_SCENE_DEMAND_SNAPSHOT__?.();
+    if (!snapshot || snapshot.schema !== "interior-ai.scene-demand-diagnostics.v1" ||
+        snapshot.version !== 1 || !Number.isSafeInteger(snapshot.instrumentationGeneration) ||
+        snapshot.instrumentationGeneration <= 0 || !Number.isSafeInteger(snapshot.rendererCalls) ||
+        snapshot.rendererCalls <= 0 || !Number.isFinite(snapshot.lastRendererCallAtMs) ||
+        snapshot.lastRendererCallAtMs === null || snapshot.lastRendererCallAtMs < 0 ||
+        !Number.isSafeInteger(snapshot.invalidationCalls) || snapshot.invalidationCalls < 0 ||
+        typeof snapshot.pendingInvalidation !== "boolean" ||
+        [snapshot.activeItemAnimationCount, snapshot.activeControlTransitionCount,
+          snapshot.activeSupportedAnimationCount].some((count) => !Number.isSafeInteger(count) || count < 0)) {
+      throw new Error("Production scene demand diagnostics are unavailable or invalid.");
+    }
+    const demand: CameraDemandState = {
+      instrumentationGeneration: snapshot.instrumentationGeneration,
+      rendererCalls: snapshot.rendererCalls,
+      invalidationCalls: snapshot.invalidationCalls,
+      pendingInvalidation: snapshot.pendingInvalidation,
+      activeItemAnimationCount: snapshot.activeItemAnimationCount,
+      activeControlTransitionCount: snapshot.activeControlTransitionCount,
+      activeSupportedAnimationCount: snapshot.activeSupportedAnimationCount,
+    };
+    const inactive = !demand.pendingInvalidation && demand.activeItemAnimationCount === 0 &&
+      demand.activeControlTransitionCount === 0 && demand.activeSupportedAnimationCount === 0;
+    return { renderFrame, state, dampingFactor, demand, inactive,
+      visible: document.visibilityState === "visible" };
+
   };
   const motion = (first: CameraState, second: CameraState): CameraMotion => {
     const positiveQuaternion = distance(first.quaternion, second.quaternion);
@@ -151,6 +189,8 @@ export async function observeCameraSettleOnRenderFrames(
   const startedAt = performance.now();
   const initial = read();
   const samples: CameraSettleSample[] = [{
+    demand: initial.demand,
+    observation: "initial",
     renderFrame: initial.renderFrame,
     elapsedMs: 0,
     camera: initial.state,
@@ -162,12 +202,14 @@ export async function observeCameraSettleOnRenderFrames(
     dampingFactor: initial.dampingFactor,
   }];
 
-  return new Promise((resolve) => {
+  return new Promise((resolve, reject) => {
     let previous = initial;
     let stableSamples = 0;
     let stableSince: number | null = null;
     let stableWindowStart: CameraState | null = null;
     let renderFramesObserved = 0;
+    let stableObservation: CameraSettleSample["observation"] | null = null;
+    let previousObservationAt = startedAt;
     let animationFrame = 0;
     let finished = false;
     const finish = (status: CameraSettleResult["status"], reason: string) => {
@@ -181,7 +223,7 @@ export async function observeCameraSettleOnRenderFrames(
         elapsedMs: performance.now() - startedAt,
         renderFramesObserved,
         stableSamples,
-        dampingFactor: initial.dampingFactor,
+        dampingFactor: previous.dampingFactor,
         lastRenderFrame: previous.renderFrame,
         lastState: previous.state,
         samples,
@@ -192,13 +234,33 @@ export async function observeCameraSettleOnRenderFrames(
       `Camera did not settle within ${config.maximumDurationMs}ms.`
     ), config.maximumDurationMs);
     const sample = (now: number) => {
-      const current = read();
-      if (current.renderFrame !== previous.renderFrame) {
-        renderFramesObserved += 1;
+      try {
+        const current = read();
+        const sameGeneration = current.demand.instrumentationGeneration === previous.demand.instrumentationGeneration;
+        if (sameGeneration && (current.renderFrame < previous.renderFrame ||
+            current.demand.rendererCalls < previous.demand.rendererCalls ||
+            current.demand.invalidationCalls < previous.demand.invalidationCalls)) {
+          throw new Error("Camera demand counters regressed within one renderer generation.");
+        }
+        const advanced = sameGeneration && current.renderFrame > previous.renderFrame;
+        if (advanced) renderFramesObserved += 1;
         const delta = motion(previous.state, current.state);
-        const projectedTail = scaleMotion(delta, 1 / current.dampingFactor);
+        const projectedTail = scaleMotion(delta, 1 / Math.min(current.dampingFactor, config.expectedDampingFactor));
+        const countersUnchanged = sameGeneration && current.renderFrame === previous.renderFrame &&
+          current.demand.rendererCalls === previous.demand.rendererCalls &&
+          current.demand.invalidationCalls === previous.demand.invalidationCalls;
+        const freshVisible = now > previousObservationAt && current.visible && previous.visible;
+        const idle = freshVisible && countersUnchanged && current.inactive && previous.inactive &&
+          Math.abs(current.dampingFactor - config.expectedDampingFactor) <= Number.EPSILON;
+        const observation: CameraSettleSample["observation"] = idle ? "idle-demand"
+          : advanced && freshVisible && current.inactive ? "advancing-render" : "unsettled";
+        if (observation !== stableObservation) {
+          stableSamples = 0;
+          stableSince = null;
+          stableWindowStart = null;
+        }
         let windowMotion = stableWindowStart ? motion(stableWindowStart, current.state) : null;
-        const stable = withinTolerance(projectedTail) &&
+        const stable = observation !== "unsettled" && withinTolerance(projectedTail) &&
           (windowMotion === null || withinTolerance(windowMotion));
         if (stable) {
           stableWindowStart ??= previous.state;
@@ -212,22 +274,28 @@ export async function observeCameraSettleOnRenderFrames(
           windowMotion = null;
         }
         samples.push({
-          renderFrame: current.renderFrame,
-          elapsedMs: now - startedAt,
-          camera: current.state,
-          motion: delta,
-          projectedTailMotion: projectedTail,
-          stableWindowMotion: windowMotion,
-          stable,
-          stableSamples,
+          demand: current.demand, observation,
+          renderFrame: current.renderFrame, elapsedMs: now - startedAt,
+          camera: current.state, motion: delta, projectedTailMotion: projectedTail,
+          stableWindowMotion: windowMotion, stable, stableSamples,
           dampingFactor: current.dampingFactor,
         });
         previous = current;
+        previousObservationAt = now;
+        stableObservation = observation;
         if (stableSamples >= config.requiredStableSamples && stableSince !== null &&
             now - stableSince >= config.minimumStableDurationMs) {
-          finish("settled", "Camera remained within tolerance on advancing render frames.");
+          finish("settled", observation === "idle-demand"
+            ? "Camera remained within tolerance across fresh observations of a verified idle demand renderer."
+            : "Camera remained within tolerance on advancing render frames.");
           return;
         }
+      } catch (error) {
+        finished = true;
+        cancelAnimationFrame(animationFrame);
+        clearTimeout(timeout);
+        reject(error);
+        return;
       }
       if (!finished) animationFrame = requestAnimationFrame(sample);
     };

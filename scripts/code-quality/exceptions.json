@@ -1,4 +1,22 @@
 {
   "schemaVersion": 1,
-  "files": {}
+  "files": {
+    "app/share/[shareToken]/(presentation)/page.tsx": {
+      "reason": "The pathless route-group move is required to keep the single lifecycle owner above only the public presentation stream without inserting a client boundary above export routes; the unchanged cohesive presentation remains smaller than its prior accepted debt.",
+      "owner": "public-share",
+      "review": "PR #28 independent public-share review",
+      "expiresOn": "2026-12-31",
+      "allow": {
+        "lines": 727,
+        "overlongFunctions": {
+          "count": 2,
+          "maximum": 661
+        },
+        "complexFunctions": {
+          "count": 1,
+          "maximum": 42
+        }
+      }
+    }
+  }
 }

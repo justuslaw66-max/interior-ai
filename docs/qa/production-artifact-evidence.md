@@ -1,5 +1,29 @@
 # Production-equivalent artifact evidence
 
+## WINDOW synchronization with the green integration baseline — 2026-09-09
+
+Stable CI retains the baseline's `evidence:production:stable-runtime-smoke`
+parent and external lifecycle/report ownership. Its source-only preflight,
+record and bundle calls use `production-artifact-source.mjs`; the portable
+closure continues to consume the core verifier without repository validators.
+The Stable parent checks its newly created tar/checksum before extraction and
+passes the source manifest digest into `STANDALONE_BUNDLE` verification. The
+Stable summary's database, auth, projection and non-release classifications
+remain mandatory. Full certification is not a prerequisite for this ordinary
+transport verification and is not claimed by it.
+
+`evidence:production:smoke` retains the separate ordinary runtime owner for
+local exact-candidate acceptance. Neither owner grants release certification
+or final integration authority. New baseline runtime behavior does not
+retrospectively explain or clear failures on the earlier WINDOW candidate.
+
+WINDOW mounted camera evidence now observes the existing demand diagnostics:
+frame-normalized damping during motion is allowed, and an already-idle canvas
+requires positive render history, stable generation/counters, no pending or
+active work, and fresh visible observations. The original 20-second maximum,
+50 ms stable duration, two samples, motion tolerances and post-orbit movement
+assertions remain unchanged. It requests no extra render frames.
+
 ## Ordinary artifact runtime ownership — 2026-09-09
 
 The source `smoke` command owns ordinary CI execution explicitly. After artifact
@@ -972,6 +996,16 @@ proves application configuration shape only; no external integration call or
 external-control claim follows from it. GitHub execution and artifact retention
 must be confirmed from an actual workflow run.
 
+The Stable database parent classifies that service as
+`github-hosted-service-container-loopback-forward` only after a private,
+run/attempt/nonce-bound attestation and a fresh adapter-side Docker recheck prove
+one running healthy official `postgres:15` container, its exact 5432/tcp
+publication, live image repository identity, and exact PostgreSQL
+server-address/network-gateway relationship. Native loopback remains the only
+accepted release-certification transport. The standalone summary retains the
+safe transport class, attestation digest, live-verification result, and approved
+image class; all container/network addresses and identifiers remain private.
+
 After that strict artifact and its runtime evidence are complete,
 `ci.public-share-responsive` reuses the same checked-out `.next` output through
 `npm run start` for its Chromium/WebKit merge-required matrix. It does not run a
@@ -1035,3 +1069,42 @@ deployment, or external configuration rollback is involved. Generated
 `.local/production-artifact-evidence/` files are ignored and can be regenerated
 from the exact clean candidate; local copies are ephemeral and are not durable
 release evidence.
+
+Direct runtime-smoke invocations use a UUID separate from Playwright repeat,
+retry, worker, and process identities. Playwright startup owns only that UUID's
+output subtree. The direct reporter creates a unique physical results directory,
+checks invocation and build identity before consuming timings, and removes only
+its results directory after verified completion (including failed test statuses).
+Reporter errors retain its existing files for diagnosis. Shared parents and
+pre-existing files remain intact. Per-attempt stdout records preserve the exact
+identity and paths before the existing transient-file cleanup.
+
+A direct `PLAYWRIGHT_USE_PRODUCTION_SERVER=1` run now requires the canonical
+`.local/production-artifact-evidence/manifest.json` and repository preflight. It
+reuses that verifier's physical artifact inventory, BUILD_ID, and source binding;
+no development fallback is allowed. Its fresh loopback production server receives
+the validated identity through the existing health contract, which the furnished
+smoke checks before product setup even when `--grep` omits the health test.
+Timing and reporter records carry the same build, artifact and manifest hashes.
+Production invocation outputs live under that existing generated evidence root,
+so repeated preflight does not classify their diagnostics as build inputs.
+Genuine development runs have an explicit development classification and no
+artifact hash. Direct execution does not certify Canonical Stable, whose sealed
+parent paths and server projection remain unchanged. Actual BUILD_ID bytes are
+never sanitized, and historical evidence is not rewritten.
+
+Runtime report authorization validates BUILD_ID separately from certification,
+candidate, session, and nonce identifiers. The lockfile-pinned Next.js 16.2.11
+uses `generateBuildId(config.generateBuildId, nanoid)`; its bundled Nano ID
+produces 21 characters from `A-Z`, `a-z`, `0-9`, `_`, and `-`, including at the
+first position. Next.js accepts a custom generator's string, but this repository's
+report contract remains bounded: 1–128 ASCII characters, first character
+`[A-Za-z0-9_-]`, remaining characters `[A-Za-z0-9._:-]`. This preserves the
+previously supported custom IDs (including dots and colons after the first
+character) and adds the legitimate leading hyphen/underscore cases. Missing or
+empty BUILD_ID and invalid BUILD_ID have distinct errors. Validation returns the
+exact value without trimming or other normalization. Physical BUILD_ID,
+manifest, expected identity, report authorization, and server health must still
+agree exactly; path containment and argument-array dispatch remain enforced by
+their existing owners. Regression report/artifact fixtures are fixture evidence,
+not compiled production-browser executions.

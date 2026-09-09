@@ -1,12 +1,11 @@
 "use client";
 
+import { PublicShareFallbackStateReporter } from "@/components/public-share/PublicShareRootLifecycle";
+
 export default function PublicShareError({ reset }: { reset: () => void }) {
   return (
-    <main
-      className="flex min-h-screen items-center justify-center bg-neutral-100 p-8"
-      data-testid="public-share-error"
-      data-layout-status="error"
-    >
+    <div className="flex min-h-screen items-center justify-center bg-neutral-100 p-8">
+      <PublicShareFallbackStateReporter state="error" />
       <div className="rounded-xl border bg-white p-6">
         <h1 className="text-lg font-semibold">Shared design could not load</h1>
         <p className="mt-1 text-sm text-neutral-600">
@@ -22,6 +21,6 @@ export default function PublicShareError({ reset }: { reset: () => void }) {
           Try again
         </button>
       </div>
-    </main>
+    </div>
   );
 }

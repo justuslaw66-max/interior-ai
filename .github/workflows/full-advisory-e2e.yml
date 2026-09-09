@@ -95,6 +95,15 @@ jobs:
           fi
           echo "tested_source_sha=$actual_source_sha" >> "$GITHUB_OUTPUT"
 
+      - name: Configure runner-local authentication fixture paths
+        shell: bash
+        run: |
+          set -euo pipefail
+          {
+            echo "CI_AUTH_FIXTURE_RESULT_ROOT=$RUNNER_TEMP/interior-ai-auth-results"
+            echo "CI_AUTH_FIXTURE_SESSION_ROOT=$RUNNER_TEMP/interior-ai-auth-session-full-advisory"
+          } >> "$GITHUB_ENV"
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:

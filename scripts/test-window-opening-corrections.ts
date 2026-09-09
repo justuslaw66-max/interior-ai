@@ -1519,29 +1519,57 @@ function replaceBrowserGlobal(name: string, value: unknown) {
 
 async function observeCameraFrames(
   states: CameraState[],
-  overrides: Partial<CameraSettleConfig> = {}
+  overrides: Partial<CameraSettleConfig> = {},
+  observation: {
+    frozenIdle?: boolean;
+    dampingFactors?: number[];
+    visibility?: "visible" | "hidden";
+    frameDelayMs?: number;
+    demand?: (step: number, stopped: boolean) => unknown;
+    mutateFrozenCamera?: (step: number) => CameraState;
+  } = {}
 ) {
   assert.ok(states.length > 0);
   let stateIndex = 0;
   let nextFrameId = 0;
+  let stopped = false;
   const cancelledFrames = new Set<number>();
   const dataset = {
     qaCameraState: JSON.stringify(states[0]),
     qaCameraRenderFrame: "1",
     qaCameraDampingEnabled: "true",
-    qaCameraDampingFactor: "0.08",
+    qaCameraDampingFactor: String(observation.dampingFactors?.[0] ?? 0.08),
   };
-  const restoreDocument = replaceBrowserGlobal("document", { documentElement: { dataset } });
+  const restoreDocument = replaceBrowserGlobal("document", {
+    documentElement: { dataset }, visibilityState: observation.visibility ?? "visible",
+  });
+  const restoreDemand = replaceBrowserGlobal("__INTERIOR_AI_SCENE_DEMAND_SNAPSHOT__", () =>
+    observation.demand ? observation.demand(nextFrameId, stopped) : {
+      schema: "interior-ai.scene-demand-diagnostics.v1", version: 1,
+      instrumentationGeneration: 1, rendererCalls: Number(dataset.qaCameraRenderFrame),
+      invalidationCalls: Number(dataset.qaCameraRenderFrame), lastRendererCallAtMs: 0,
+      pendingInvalidation: stopped && !observation.frozenIdle,
+      activeItemAnimationCount: 0, activeControlTransitionCount: stopped && !observation.frozenIdle ? 1 : 0,
+      activeSupportedAnimationCount: stopped && !observation.frozenIdle ? 1 : 0,
+    });
   const restoreRequest = replaceBrowserGlobal(
     "requestAnimationFrame",
     (callback: FrameRequestCallback) => {
       const frameId = ++nextFrameId;
-      setImmediate(() => {
+      const dispatch = observation.frameDelayMs === undefined ? setImmediate
+        : (work: () => void) => setTimeout(work, observation.frameDelayMs);
+      dispatch(() => {
         if (cancelledFrames.has(frameId)) return;
         if (stateIndex < states.length - 1) {
           stateIndex += 1;
           dataset.qaCameraState = JSON.stringify(states[stateIndex]);
           dataset.qaCameraRenderFrame = String(stateIndex + 1);
+          dataset.qaCameraDampingFactor = String(observation.dampingFactors?.[stateIndex] ?? 0.08);
+        } else {
+          stopped = true;
+          if (observation.mutateFrozenCamera) {
+            dataset.qaCameraState = JSON.stringify(observation.mutateFrozenCamera(nextFrameId));
+          }
         }
         callback(performance.now());
       });
@@ -1562,6 +1590,7 @@ async function observeCameraFrames(
   } finally {
     restoreCancel();
     restoreRequest();
+    restoreDemand();
     restoreDocument();
   }
 }
@@ -1587,8 +1616,9 @@ async function exerciseCameraSettleObservation() {
     cameraState(0), cameraState(1), cameraState(1.0003),
   ]);
   assert.equal(oneStableSample.status, "timed-out");
-  assert.equal(oneStableSample.stableSamples, 1);
-  assert.equal(oneStableSample.samples.length, 3);
+  assert.equal(oneStableSample.stableSamples, 0);
+  assert.equal(oneStableSample.samples[2].stableSamples, 1);
+  assert.ok(oneStableSample.samples.slice(3).every((sample) => sample.observation === "unsettled"));
   assert.match(oneStableSample.reason, /did not settle/);
   assert.ok(oneStableSample.samples[2].motion);
 
@@ -1596,7 +1626,7 @@ async function exerciseCameraSettleObservation() {
     cameraState(0), cameraState(0.004), cameraState(0.008),
   ]);
   assert.equal(cumulativeMotion.status, "timed-out");
-  assert.deepEqual(cumulativeMotion.samples.map((sample) => sample.stableSamples), [0, 0, 0]);
+  assert.ok(cumulativeMotion.samples.every((sample) => sample.stableSamples === 0));
 
   const stableWindowDrift = await observeCameraFrames(
     Array.from({ length: 18 }, (_, index) => cameraState(index * 0.00039)),
@@ -1610,6 +1640,54 @@ async function exerciseCameraSettleObservation() {
   assert.ok(stableWindowDrift.samples.some((sample, index) =>
     index > 0 && sample.stableSamples === 0
   ));
+
+  const demand = (step: number) => ({
+    schema: "interior-ai.scene-demand-diagnostics.v1", version: 1,
+    instrumentationGeneration: 1, rendererCalls: 5, invalidationCalls: 5,
+    lastRendererCallAtMs: 0, pendingInvalidation: false,
+    activeItemAnimationCount: 0, activeControlTransitionCount: 0, activeSupportedAnimationCount: 0,
+    observedStep: step,
+  });
+  const idle = await observeCameraFrames([cameraState(1)], {
+    maximumDurationMs: 250, minimumStableDurationMs: 50,
+  }, { frozenIdle: true, frameDelayMs: 20 });
+  assert.equal(idle.status, "settled");
+  assert.equal(idle.renderFramesObserved, 0);
+  assert.ok(idle.elapsedMs >= 50);
+  assert.ok(idle.samples.slice(1).every((sample) => sample.observation === "idle-demand"));
+  for (const blocker of [
+    { pendingInvalidation: true }, { activeControlTransitionCount: 1 },
+    { activeItemAnimationCount: 1 }, { activeSupportedAnimationCount: 1 },
+  ]) {
+    const blocked = await observeCameraFrames([cameraState(1)], {}, {
+      demand: (step) => ({ ...demand(step), ...blocker }),
+    });
+    assert.equal(blocked.status, "timed-out");
+    assert.equal(blocked.stableSamples, 0);
+  }
+  const generationChange = await observeCameraFrames([cameraState(1)], {}, {
+    demand: (step) => ({ ...demand(step), instrumentationGeneration: step < 2 ? 1 : 2 }),
+  });
+  assert.equal(generationChange.status, "settled");
+  assert.deepEqual(generationChange.samples.map((sample) => sample.stableSamples), [0, 1, 0, 1, 2]);
+  const hidden = await observeCameraFrames([cameraState(1)], {}, { frozenIdle: true, visibility: "hidden" });
+  assert.equal(hidden.status, "timed-out");
+  const drift = await observeCameraFrames([cameraState(1)], {}, {
+    frozenIdle: true, mutateFrozenCamera: (step) => cameraState(1 + step * 0.01),
+  });
+  assert.equal(drift.status, "timed-out");
+  for (const invalid of [null, { ...demand(0), rendererCalls: 0 },
+    { ...demand(0), instrumentationGeneration: -1 }, { ...demand(0), pendingInvalidation: undefined }]) {
+    await assert.rejects(observeCameraFrames([cameraState(1)], {}, { demand: () => invalid }), /demand diagnostics/);
+  }
+  await assert.rejects(observeCameraFrames([cameraState(1)], {}, {
+    demand: (step) => step === 0 ? demand(step) : null,
+  }), /demand diagnostics/);
+  const variableDamping = await observeCameraFrames([
+    cameraState(0), cameraState(1), cameraState(1.001), cameraState(1.0011), cameraState(1.0012),
+  ], {}, { dampingFactors: [0.08, 0.24, 0.16, 0.12, 0.08] });
+  assert.equal(variableDamping.status, "settled");
+  assert.ok(variableDamping.samples.some((sample) => sample.dampingFactor === 0.24));
 
   const noOp = cameraTransition(cameraState(0), cameraState(0));
   assert.equal(noOp.positionDistance, 0);

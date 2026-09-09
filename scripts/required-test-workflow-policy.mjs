@@ -6,7 +6,7 @@ export function assertRequiredWorkflowRouting(required, advisory) {
   assert.deepEqual(Object.keys(required.on).sort(), ["pull_request", "push", "workflow_dispatch"]);
   assert.deepEqual(required.on.pull_request, { branches: approvedPrTargets },
     "required CI must retain its approved PR targets and default activity types");
-  assert.deepEqual(required.on.push, { branches: ["main", "develop", "staging"] });
+  assert.deepEqual(required.on.push, { branches: approvedPrTargets });
   assert.equal(required.on.workflow_dispatch, null);
   assert.deepEqual(Object.keys(advisory.on).sort(), ["pull_request", "schedule", "workflow_dispatch"]);
   assert.deepEqual(Object.keys(advisory.on.pull_request).sort(), ["branches", "types"]);

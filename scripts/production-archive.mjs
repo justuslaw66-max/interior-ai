@@ -542,12 +542,25 @@ export function productionTarOwnershipArguments(version) {
   throw new Error("deterministic archive requires GNU tar or bsdtar");
 }
 
+function unsafeTarListMember(member) {
+  return typeof member !== "string" || member.length === 0 || member.startsWith("-") || member.trim() !== member || /[\0\r\n\\]/u.test(member);
+}
+
+export function productionArchiveTarCommand({ tarPath, stageRoot, listPath, members, tarVersion }) {
+  if (!Array.isArray(members) || members.some(unsafeTarListMember) || JSON.stringify(members) !== JSON.stringify([...members].sort())) {
+    throw new Error("archive members must be sorted safe tar file-list paths");
+  }
+  return Object.freeze({ executable: "tar", args: Object.freeze([
+    "--no-xattrs", ...productionTarOwnershipArguments(tarVersion), "-cf", tarPath, "-C", stageRoot, "-T", listPath,
+  ]) });
+}
+
 function deterministicArchive(stageRoot, archivePath) {
   const version = spawnSync("tar", ["--version"], { encoding: "utf8" });
   if (version.status !== 0 || version.signal) {
     throw new Error(`tar version detection failed: ${String(version.stderr).trim()}`);
   }
-  const ownershipArguments = productionTarOwnershipArguments(version.stdout);
+  productionTarOwnershipArguments(version.stdout);
   const temporaryRoot = mkdtempSync(path.join(tmpdir(), "production-archive-tar-"));
   try {
     const tarPath = path.join(temporaryRoot, "archive.tar");
@@ -563,23 +576,16 @@ function deterministicArchive(stageRoot, archivePath) {
         utimesSync(absolutePath, epoch, epoch);
       }
     }
+    const command = productionArchiveTarCommand({ tarPath, stageRoot, listPath, members: files, tarVersion: version.stdout });
     writeFileSync(listPath, `${files.join("\n")}\n`);
-    const child = spawnSync(
-      "tar",
-      [
-        "--no-xattrs",
-        ...ownershipArguments,
-        "-cf",
-        tarPath,
-        "-C",
-        stageRoot,
-        "-T",
-        listPath,
-      ],
-      { encoding: "utf8", env: { ...process.env, COPYFILE_DISABLE: "1" } },
-    );
+    const child = spawnSync(command.executable, command.args, {
+      encoding: "utf8",
+      env: { ...process.env, COPYFILE_DISABLE: "1" },
+    });
     if (child.status !== 0 || child.signal) {
-      throw new Error(`deterministic tar failed: ${String(child.stderr).trim()}`);
+      let diagnostic = String(child.stderr || child.error?.code || "no child diagnostic").trim();
+      for (const privatePath of [temporaryRoot, stageRoot, archivePath]) diagnostic = diagnostic.replaceAll(privatePath, "<archive-path>");
+      throw new Error(`deterministic tar failed (executable=tar, status=${child.status ?? "none"}, signal=${child.signal ?? "none"}): ${diagnostic}`);
     }
     const compressed = gzipSync(readFileSync(tarPath), { level: 9, mtime: 0 });
     writeFileSync(archivePath, compressed, { flag: "wx", mode: 0o600 });
@@ -666,7 +672,7 @@ export function compressProductionArchive({ repositoryRoot, stageRoot, archivePa
   return { archivePath: archive, archiveSha256, inventory };
 }
 
-function assertSafeArchiveEntries(entries) {
+export function assertSafeProductionArchiveEntries(entries) {
   for (const entry of entries) {
     const normalized = path.posix.normalize(entry);
     if (
@@ -701,7 +707,7 @@ export function extractAndVerifyProductionArchive({
     const listed = spawnSync("tar", ["-tf", tarPath], { encoding: "utf8" });
     if (listed.status !== 0 || listed.signal) throw new Error("archive inventory read failed");
     const entries = listed.stdout.trim().split("\n").filter(Boolean);
-    assertSafeArchiveEntries(entries);
+    assertSafeProductionArchiveEntries(entries);
     mkdirSync(extracted, { recursive: false, mode: 0o700 });
     const child = spawnSync("tar", ["-xf", tarPath, "-C", extracted], {
       encoding: "utf8",

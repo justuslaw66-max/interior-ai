@@ -118,13 +118,21 @@ import {
 import {
   authFixtureRegressionCapabilityNames,
   isolatedAuthFixtureRegressionEnvironment,
+  projectProductionCertificationSimulationEnvironment,
+  projectProductionCertificationSimulationRuntimeEnvironment,
 } from "./ci-auth-fixture-regression-environment.mjs";
 import { authorizeRuntimeSmokeReportPath } from "./playwright-report-path.mjs";
+import authFixtureSession from "./ci-auth-fixture-session.cjs";
 
 const SIMULATION_ID = "production-certification-v1-simulation";
 const FIXED_NONCE = "123e4567-e89b-42d3-a456-426614174001";
 const FIXED_GIT_DATE = "2026-08-14T00:00:00Z";
 const FIXED_STATE_BASE = Date.parse("2026-08-14T00:10:00.000Z");
+let simulationSubprocessEnvironment = null;
+
+function currentSimulationSubprocessEnvironment() {
+  return simulationSubprocessEnvironment ?? process.env;
+}
 
 function write(root, relativePath, value) {
   const filePath = path.join(root, relativePath);
@@ -200,7 +208,12 @@ function certificationStageOrderTamperCases(repositoryRoot) {
   };
 }
 
-function run(command, args, cwd, environment = process.env) {
+function run(
+  command,
+  args,
+  cwd,
+  environment = currentSimulationSubprocessEnvironment(),
+) {
   const result = spawnSync(command, args, { cwd, env: environment, encoding: "utf8" });
   if (result.status !== 0 || result.signal) {
     throw new Error(
@@ -212,7 +225,7 @@ function run(command, args, cwd, environment = process.env) {
 
 function git(root, args) {
   return run("git", args, root, {
-    ...process.env,
+    ...currentSimulationSubprocessEnvironment(),
     GIT_AUTHOR_DATE: FIXED_GIT_DATE,
     GIT_COMMITTER_DATE: FIXED_GIT_DATE,
   });
@@ -240,6 +253,7 @@ function copyHarnessSources(repositoryRoot, fixtureRoot) {
     "scripts/runtime-smoke-failure-evidence.mjs",
     "scripts/runtime-smoke-operation-contracts.mjs",
     "scripts/runtime-smoke-operation-deadline.mjs",
+    "scripts/runtime-smoke-render-idle.mjs",
     "scripts/runtime-smoke-telemetry-bootstrap-contract.mjs",
   ]);
   for (const relativePath of run(
@@ -438,7 +452,7 @@ import(pathToFileURL(process.argv[1]).href)
   );
   chmodSync(path.join(fixtureRoot, "simulation-ts-node/bin.js"), 0o755);
   const npmEnvironment = {
-    ...process.env,
+    ...currentSimulationSubprocessEnvironment(),
     NODE_OPTIONS: "",
     NODE_PATH: "",
     NPM_CONFIG_CACHE: path.join(path.dirname(fixtureRoot), "npm-cache"),
@@ -958,7 +972,7 @@ function runStateTransitionCli({ fixtureRoot, evidenceRoot, statePath, action, p
     fixtureRoot,
     projectCertificationChildEnvironment({
       repositoryRoot: fixtureRoot,
-      baseEnvironment: process.env,
+      baseEnvironment: currentSimulationSubprocessEnvironment(),
       stage: "simulation",
       profileId: "simulation-control",
       stageInputs: {
@@ -991,7 +1005,7 @@ function installAndBindSimulationRole({
   role,
   stage,
 }) {
-  const environment = { ...process.env };
+  const environment = { ...currentSimulationSubprocessEnvironment() };
   delete environment.NODE_OPTIONS;
   delete environment.NODE_PATH;
   environment.NPM_CONFIG_CACHE = path.join(path.dirname(canonicalRoot), "npm-cache");
@@ -1189,6 +1203,14 @@ export async function runProductionCertificationSimulation({
   cleanupWorktrees = true,
 } = {}) {
   const repositoryRoot = process.cwd();
+  const runtimeProjection =
+    projectProductionCertificationSimulationRuntimeEnvironment({
+      repositoryRoot,
+      baseEnvironment: process.env,
+    });
+  const previousSubprocessEnvironment = simulationSubprocessEnvironment;
+  simulationSubprocessEnvironment = runtimeProjection.environment;
+  try {
   verifySourceBuildBootstrap(repositoryRoot);
   const stageResultRegression = run(
     process.execPath,
@@ -1329,9 +1351,45 @@ export async function runProductionCertificationSimulation({
   // each stage worktree still begins pristine and installs through its owner.
   run("npm", ["ci", "--include=dev"], fixtureRoot,
     certificationDependencyInstallationEnvironment({
-      ...process.env, NODE_PATH: "", NODE_OPTIONS: "",
+      ...currentSimulationSubprocessEnvironment(), NODE_PATH: "", NODE_OPTIONS: "",
       NPM_CONFIG_CACHE: path.join(simulationRoot, "npm-cache"),
     }));
+  const simulationFixtureSessionRoot = path.join(
+    simulationRoot,
+    "auth-fixture-session",
+  );
+  const simulationAuthResultRoot = path.join(
+    simulationRoot,
+    "auth-fixture-results",
+  );
+  mkdirSync(simulationAuthResultRoot, { mode: 0o700 });
+  const simulationEnvironmentProjection =
+    projectProductionCertificationSimulationEnvironment({
+      repositoryRoot,
+      baseEnvironment: process.env,
+      simulationCandidate: identity,
+      simulationFixtureRoot: simulationFixtureSessionRoot,
+      simulationResultRoot: simulationAuthResultRoot,
+    });
+  const fixtureNonce = sha256Bytes(
+    `${identity.commitSha}:${identity.treeSha}`,
+  ).slice(0, 32);
+  const publishedSimulationSession = authFixtureSession.publishFixtureSession({
+    repositoryRoot: fixtureRoot,
+    environment: simulationEnvironmentProjection.environment,
+    fixture: {
+      googleClientId:
+        `123456789012345-gate-a3-ci-${fixtureNonce}.apps.googleusercontent.com`,
+      googleClientSecret: `GOCSPX-gate-a3-ci-${fixtureNonce}`,
+    },
+  });
+  const simulationFixtureContinuity =
+    authFixtureSession.validateProjectedFixtureEnvironment(
+      authFixtureSession.projectedFixtureEnvironment(
+        publishedSimulationSession,
+      ),
+      identity,
+    );
   const stageOrderContracts = validateCertificationStageOrderContracts(fixtureRoot);
   const stageOrderTamperCases = certificationStageOrderTamperCases(fixtureRoot);
   if (Object.values(stageOrderTamperCases).some((rejected) => rejected !== true)) {
@@ -1362,11 +1420,15 @@ export async function runProductionCertificationSimulation({
     ]),
   );
   const finalComponentTarget = realpathSync(path.join(fixtureRoot, "final-component"));
-  const environment = simulationEnvironment(identity);
+  const environment = {
+    ...simulationEnvironmentProjection.environment,
+    ...simulationEnvironment(identity),
+    ...publishedSimulationSession.assignments,
+  };
   const nextTimestamp = stateClock();
   const statePath = path.join(evidenceRoot, "certification-state.json");
   const doctorParentEnvironment = Object.freeze({
-    ...process.env,
+    ...currentSimulationSubprocessEnvironment(),
     ...Object.fromEntries(authFixtureRegressionCapabilityNames(repositoryRoot).map(
       (name) => [name, `outer-simulation-${name}`],
     )),
@@ -2815,7 +2877,10 @@ export async function runProductionCertificationSimulation({
     );
     return projectCertificationChildEnvironment({
       repositoryRoot: fixtureRoot,
-      baseEnvironment: { ...process.env, ...environment },
+      baseEnvironment: {
+        ...currentSimulationSubprocessEnvironment(),
+        ...environment,
+      },
       stage,
       profileId,
       stageInputs,
@@ -3504,7 +3569,10 @@ export async function runProductionCertificationSimulation({
       fixtureRoot,
       projectCertificationChildEnvironment({
         repositoryRoot: fixtureRoot,
-        baseEnvironment: { ...process.env, ...environment },
+        baseEnvironment: {
+          ...currentSimulationSubprocessEnvironment(),
+          ...environment,
+        },
         stage: "simulation",
         profileId: "simulation-production-evidence",
         stageInputs: {
@@ -3611,7 +3679,7 @@ export async function runProductionCertificationSimulation({
     },
   });
   const archiveEnvironment = {
-    ...process.env,
+    ...currentSimulationSubprocessEnvironment(),
     ...environment,
     CERTIFICATION_QUALIFICATION_MODE: "1",
     CERTIFICATION_EVIDENCE_ROOT: evidenceRoot,
@@ -3942,7 +4010,7 @@ export async function runProductionCertificationSimulation({
   const simulationRuntimeProjection = projectCertificationChildEnvironment({
     repositoryRoot: fixtureRoot,
     baseEnvironment: {
-      ...process.env,
+      ...currentSimulationSubprocessEnvironment(),
       ...environment,
       CERTIFICATION_EVIDENCE_ROOT: evidenceRoot,
     },
@@ -4509,7 +4577,7 @@ export async function runProductionCertificationSimulation({
         cwd: extractionRoot,
         encoding: "utf8",
         env: {
-          ...process.env,
+          ...currentSimulationSubprocessEnvironment(),
           CERTIFICATION_QUALIFICATION_MODE: "1",
           PRODUCTION_CERTIFICATION_STATE: candidateStatePath,
           CERTIFICATION_EVIDENCE_ROOT: evidenceRoot,
@@ -5419,6 +5487,35 @@ export async function runProductionCertificationSimulation({
         sha256Bytes(canonicalJsonBytes(CERTIFICATION_STAGE_ORDER)),
     },
     archiveDeterministic: true,
+    simulationEnvironmentIsolation: {
+      preservedRuntimeNames:
+        simulationEnvironmentProjection.metadata.preservedRuntimeNames,
+      removedAuthCapabilityNames:
+        simulationEnvironmentProjection.metadata.removedAuthCapabilityNames,
+      foreignSessionConsumed:
+        Boolean(process.env.CI_AUTH_FIXTURE_SESSION_ROOT) &&
+        publishedSimulationSession.assignments.CI_AUTH_FIXTURE_SESSION_ROOT ===
+          process.env.CI_AUTH_FIXTURE_SESSION_ROOT,
+      simulationOwnedSession:
+        publishedSimulationSession.assignments.CI_AUTH_FIXTURE_SESSION_ROOT ===
+        realpathSync(simulationFixtureSessionRoot),
+      simulationSessionRootReplaced:
+        process.env.CI_AUTH_FIXTURE_SESSION_ROOT !==
+        publishedSimulationSession.assignments.CI_AUTH_FIXTURE_SESSION_ROOT,
+      simulationResultRootReplaced:
+        process.env.CI_AUTH_FIXTURE_RESULT_ROOT !==
+        realpathSync(simulationAuthResultRoot),
+      candidateCommitSha:
+        publishedSimulationSession.manifest.candidate.commitSha,
+      candidateTreeSha:
+        publishedSimulationSession.manifest.candidate.treeSha,
+      sessionId: simulationFixtureContinuity.sessionId,
+      invocationNonce: simulationFixtureContinuity.invocationNonce,
+      noRegenerationProof:
+        simulationFixtureContinuity.noRegenerationProof,
+      rawProviderValuesRecorded:
+        simulationFixtureContinuity.rawValuesRecorded,
+    },
     stateInitWorktreeTransaction: {
       doctorPassed: true,
       ...stateInitTransactionDoctor.details,
@@ -5601,6 +5698,23 @@ export async function runProductionCertificationSimulation({
         developmentBrowserPreOwnerRevalidation.passed === true &&
         developmentBrowserPostOwnerRevalidation.passed === true &&
         finalArtifactPostBrowserRevalidation.passed === true,
+      alreadyBoundBuildRetry: {
+        stageAttemptCount:
+          buildAlreadyBoundRetryState.stages.build.attempts.length,
+        failureClassifications: buildAlreadyBoundFailures.map(
+          (error) => error?.classification ?? null,
+        ),
+        consumedSubstantiveGate: buildAlreadyBoundFailures.map(
+          (error) => error?.consumed ?? null,
+        ),
+        dependencyStatus:
+          buildAlreadyBoundRetryState.worktrees.roles["final-artifact"]
+            .dependencyStatus,
+        installationAttempts: dependencyInstallationAttemptCount(
+          buildAlreadyBoundRetryRoot,
+          "final-artifact",
+        ),
+      },
     },
     tamperCases: {
       sourceInstallPreconditionClassified: sourcePreconditionClassified,
@@ -5659,6 +5773,9 @@ export async function runProductionCertificationSimulation({
     simulationRoot,
     stateSha256: sha256Bytes(readFileSync(statePath)),
   };
+  } finally {
+    simulationSubprocessEnvironment = previousSubprocessEnvironment;
+  }
 }
 
 function requiredSimulationQualification() {

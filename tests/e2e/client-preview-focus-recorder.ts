@@ -30,6 +30,9 @@ export type ClientPreviewMoreFocusEvent = {
 };
 
 export type ClientPreviewFocusReport = {
+  documentId: string;
+  recorderId: string;
+  entryGeneration: number;
   capacity: number;
   dropped: number;
   finalPhase: ClientPreviewFocusPhase;
@@ -41,6 +44,8 @@ export type ClientPreviewFocusReport = {
 };
 
 type RecorderApi = {
+  documentId: string;
+  recorderId: string;
   begin: () => void;
   entered: () => void;
   exitRequested: (reason: string, restorationEligible: boolean) => void;
@@ -62,6 +67,10 @@ export async function installClientPreviewFocusRecorder(page: Page) {
     const targetWindow = window as typeof window &
       Record<string, RecorderApi | undefined>;
     targetWindow[recorderKey]?.stop();
+    const documentId = window.__proVisualDiagnostic?.documentId ?? String(performance.timeOrigin);
+    const recorderId = crypto.randomUUID();
+    const observe = (event: string, detail: Record<string, unknown> = {}) =>
+      window.__proVisualDiagnostic?.record(event, { recorderId, entryGeneration, ...detail });
 
     const capacity = 64;
     const moreIdentity = "editor-command-overflow";
@@ -323,14 +332,18 @@ export async function installClientPreviewFocusRecorder(page: Page) {
         dropped += 1;
       }
       events.push(record);
+      observe("focus-event", { record });
     };
 
     const setPhase = (nextPhase: ClientPreviewFocusPhase) => {
       phase = nextPhase;
       transitions.push(nextPhase);
+      observe("focus-phase", { phase: nextPhase });
     };
 
     const recorder: RecorderApi = {
+      documentId,
+      recorderId,
       begin: () => {
         active = true;
         dropped = 0;
@@ -347,6 +360,7 @@ export async function installClientPreviewFocusRecorder(page: Page) {
             ? document.activeElement
             : null;
         openerIdentity = identity(openerElement);
+        observe("focus-window-start", { entryScopeHash, openerIdentity });
         setPhase("A_ENTRY_TRANSITION");
       },
       entered: () => setPhase("B_PREVIEW_ACTIVE"),
@@ -359,6 +373,9 @@ export async function installClientPreviewFocusRecorder(page: Page) {
       complete: () => {
         advanceExitPhaseIfSettled();
         const report: ClientPreviewFocusReport = {
+          documentId,
+          recorderId,
+          entryGeneration,
           capacity,
           dropped,
           finalPhase: phase as ClientPreviewFocusPhase,
@@ -372,11 +389,13 @@ export async function installClientPreviewFocusRecorder(page: Page) {
           transitions: [...transitions],
           events: [...events],
         };
+        observe("focus-window-complete", { report });
         active = false;
         phase = "IDLE";
         return report;
       },
       stop: () => {
+        observe("focus-recorder-stopped", { active, phase });
         active = false;
         document.removeEventListener("focusin", recordFocus);
         document.removeEventListener("focusout", recordFocus);
@@ -387,6 +406,10 @@ export async function installClientPreviewFocusRecorder(page: Page) {
     document.addEventListener("focusin", recordFocus);
     document.addEventListener("focusout", recordFocus);
     targetWindow[recorderKey] = recorder;
+    observe("focus-recorder-installed", { documentId });
+    window.addEventListener("pagehide", () => observe("focus-document-departing", {
+      active, phase, dropped, events: [...events], transitions: [...transitions],
+    }), { once: true });
   }, RECORDER_KEY);
 }
 
@@ -459,6 +482,10 @@ export async function completeClientPreviewFocusWindow(
     const recorder = (window as typeof window & Record<string, RecorderApi>)[
       recorderKey
     ];
+    window.__proVisualDiagnostic?.record("focus-collection-request", {
+      recorderPresent: Boolean(recorder), recorderId: recorder?.recorderId ?? null,
+      recorderDocumentId: recorder?.documentId ?? null,
+    });
     if (!recorder) throw new Error("Client Preview focus recorder is not installed");
     return recorder.complete();
   }, RECORDER_KEY);

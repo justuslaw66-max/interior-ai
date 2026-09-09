@@ -336,27 +336,32 @@ test("Retailer-group keyboard lifecycle restores replacements and the Cart fallb
   expect(boundaries.payloads).toHaveLength(4);
 });
 
-test("Counting boundaries preserve zero one three and four tab behavior", async ({ page }) => {
-  const boundaries = await installSyntheticBoundaries(page);
+for (const { tabs, title } of [
+  { tabs: 0, title: "Counting zero tabs keeps checkout disabled" },
+  { tabs: 1, title: "Counting one tab opens directly without confirmation" },
+  { tabs: 3, title: "Counting three tabs opens directly without confirmation" },
+  { tabs: 4, title: "Counting four tabs opens confirmation and supports cancellation" },
+]) {
+  test(title, async ({ page }) => {
+    const boundaries = await installSyntheticBoundaries(page);
+    await loadHarness(page, boundaries, tabs === 0 ? { scenario: "zero", tabs } : { tabs });
 
-  await loadHarness(page, boundaries, { scenario: "zero", tabs: 0 });
-  await expect(page.getByTestId("checkout-affiliate")).toBeDisabled();
+    if (tabs === 0) {
+      await expect(page.getByTestId("checkout-affiliate")).toBeDisabled();
+      return;
+    }
 
-  await loadHarness(page, boundaries, { tabs: 1 });
-  await page.getByTestId("checkout-affiliate").click();
-  await expectWindowOpenCount(page, 1);
-  await expect(page.getByTestId("retailer-confirmation-dialog")).toHaveCount(0);
+    await page.getByTestId("checkout-affiliate").click();
+    if (tabs < 4) {
+      await expectWindowOpenCount(page, tabs);
+      await expect(page.getByTestId("retailer-confirmation-dialog")).toHaveCount(0);
+      return;
+    }
 
-  await loadHarness(page, boundaries, { tabs: 3 });
-  await page.getByTestId("checkout-affiliate").click();
-  await expectWindowOpenCount(page, 3);
-  await expect(page.getByTestId("retailer-confirmation-dialog")).toHaveCount(0);
-
-  await loadHarness(page, boundaries, { tabs: 4 });
-  await page.getByTestId("checkout-affiliate").click();
-  await expectConfirmation(page, "Buy external items", GLOBAL_ACTION_ID);
-  await page.getByTestId("retailer-confirmation-cancel").click();
-});
+    await expectConfirmation(page, "Buy external items", GLOBAL_ACTION_ID);
+    await page.getByTestId("retailer-confirmation-cancel").click();
+  });
+}
 
 test("Counting preserves bundle exclusion and missing-link behavior", async ({ page }) => {
   const boundaries = await installSyntheticBoundaries(page);
