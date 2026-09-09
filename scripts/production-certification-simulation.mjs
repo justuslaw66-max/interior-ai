@@ -279,12 +279,23 @@ function installSimulationSourcePolicy(repositoryRoot, fixtureRoot) {
   const gates = manifest.gates.filter((gate) => gateIds.has(gate.id));
   const sourcePackage = JSON.parse(readFileSync(path.join(repositoryRoot, "package.json"), "utf8"));
   const fixturePackage = JSON.parse(readFileSync(path.join(fixtureRoot, "package.json"), "utf8"));
+  const copiedScripts = new Set();
+  const copyPackageScript = (name) => {
+    if (copiedScripts.has(name)) return;
+    const command = sourcePackage.scripts[name];
+    assert.equal(typeof command, "string", `source package script ${name} is missing`);
+    copiedScripts.add(name);
+    fixturePackage.scripts[name] = command;
+    for (const [, child] of command.matchAll(/\bnpm run ([A-Za-z0-9:_-]+)/g)) {
+      copyPackageScript(child);
+    }
+  };
   for (const gate of gates) {
     // This miniature source has no CI execution. Retain each exercised report
     // owner's exact assertions, source coverage, command and closure identity.
     delete gate.ci;
     for (const name of [gate.packageScript, ...(gate.packagePrerequisites ?? [])]) {
-      fixturePackage.scripts[name] = sourcePackage.scripts[name];
+      copyPackageScript(name);
     }
     for (const relativePath of [...gate.requiredSources, gate.playwright?.config].filter(Boolean)) {
       write(fixtureRoot, relativePath, readFileSync(path.join(repositoryRoot, relativePath)));
@@ -650,7 +661,7 @@ function simulationEnvironment(identity) {
 export function verifySourceBuildBootstrap(repositoryRoot = process.cwd()) {
   const root = mkdtempSync(path.join(tmpdir(), "source-build-bootstrap-"));
   try {
-    for (const scenario of ["build", "prepare-certification-build", "invalid-source", "failed-install"]) {
+    for (const scenario of ["build", "prepare-certification-build", "invalid-source", "missing-nested-script", "failed-install"]) {
       const fixtureRoot = path.join(root, scenario);
       initializeFixture(repositoryRoot, fixtureRoot);
       if (scenario === "invalid-source") {
@@ -658,6 +669,12 @@ export function verifySourceBuildBootstrap(repositoryRoot = process.cwd()) {
         const manifest = JSON.parse(readFileSync(manifestPath, "utf8"));
         manifest.gates[0].requiredSources.push("scripts/missing-bootstrap-source.mjs");
         writeFileSync(manifestPath, canonicalJsonBytes(manifest));
+      } else if (scenario === "missing-nested-script") {
+        const packagePath = path.join(fixtureRoot, "package.json");
+        const packageValue = JSON.parse(readFileSync(packagePath, "utf8"));
+        assert.equal(typeof packageValue.scripts["test:design-scene-loading-frameloop"], "string");
+        delete packageValue.scripts["test:design-scene-loading-frameloop"];
+        writeFileSync(packagePath, canonicalJsonBytes(packageValue));
       } else if (scenario === "failed-install") {
         const packagePath = path.join(fixtureRoot, "package.json");
         const packageValue = JSON.parse(readFileSync(packagePath, "utf8"));
@@ -699,12 +716,15 @@ export function verifySourceBuildBootstrap(repositoryRoot = process.cwd()) {
         cwd: fixtureRoot, env: environment, encoding: "utf8",
       });
       const journal = readProductionEvidenceSemanticJournal({ repositoryRoot: fixtureRoot });
-      if (scenario === "failed-install" || scenario === "invalid-source") {
+      if (["failed-install", "invalid-source", "missing-nested-script"].includes(scenario)) {
         assert.notEqual(child.status, 0);
         assert.equal(journal.events.dependencyInstall.status, scenario === "failed-install" ? "failed" : "succeeded");
         assert.equal(journal.events.generatedSourceCheck.status, "pending");
         assert.equal(journal.events.build.status, "pending");
         if (scenario === "invalid-source") assert.match(child.stderr, /missing-bootstrap-source/);
+        if (scenario === "missing-nested-script") {
+          assert.match(child.stderr, /package script test:design-scene-loading-frameloop is missing/);
+        }
         assert.doesNotMatch(child.stderr, /ERR_MODULE_NOT_FOUND/);
       } else {
         assert.equal(child.status, 0, child.stderr || child.stdout);
@@ -720,7 +740,7 @@ export function verifySourceBuildBootstrap(repositoryRoot = process.cwd()) {
         }
       }
     }
-    console.log("Source build bootstrap: cold build/preparation passed; absent driver, failed install and invalid target refused before build.");
+    console.log("Source build bootstrap: cold build/preparation passed; absent driver, failed install, invalid target and missing nested command refused before build.");
   } finally {
     rmSync(root, { recursive: true, force: true });
   }
