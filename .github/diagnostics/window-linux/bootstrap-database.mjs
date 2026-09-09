@@ -23,6 +23,7 @@ export async function bootstrapDatabase({ source, adminUrl, name, persist, servi
   const snapshot = inspectGithubPostgresServiceContainer({ repositoryRoot: source });
   if (snapshot.containerIdentitySha256 !== digest(serviceId)) throw new Error('bootstrap-service-identity');
   const receipt = { name, creation: 'not-attempted', oid: null, absent: false, sessionCount: null, cleanup: 'not-attempted', connectionFailures: 0, closeFailures: 0, persistenceFailures: 0, primaryFailureStage: null };
+  persist(receipt);
   async function connect() {
     if (JSON.stringify(inspectGithubPostgresServiceContainer({ repositoryRoot: source })) !== JSON.stringify(snapshot)) throw new Error('bootstrap-service-changed');
     const client = new Client({ connectionString: adminUrl, connectionTimeoutMillis: 10000, statement_timeout: 10000, query_timeout: 12000 });
@@ -57,6 +58,9 @@ export async function bootstrapDatabase({ source, adminUrl, name, persist, servi
       finally { await finishBootstrapConnection({ client, receipt, persist, primaryError }); }
     },
     async cleanup() {
+      if (receipt.creation === 'not-attempted' && receipt.oid === null) {
+        receipt.cleanup = 'not-required-no-create-attempt'; persist(receipt); return false;
+      }
       if (receipt.creation !== 'created' || !Number.isSafeInteger(receipt.oid) || receipt.oid <= 0) throw new Error('bootstrap-ownership-uncertain');
       const client = await connect(); let primaryError = null;
       try {

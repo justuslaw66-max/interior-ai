@@ -13,7 +13,7 @@ const FAILURE_CODES = new Set(['campaign-context', 'workflow-identity', 'source-
   'graphics-unavailable', 'browser-process-unavailable', 'paired-browser-mismatch', 'command-failed', 'pristine-next', 'pristine-source', 'pristine-ignored', 'manifest-identity', 'build-budget', 'runtime-budget',
   'bootstrap-name', 'bootstrap-admin', 'bootstrap-service-identity', 'bootstrap-service-changed', 'bootstrap-server', 'bootstrap-network-binding', 'bootstrap-collision',
   'bootstrap-acknowledgement', 'bootstrap-ownership-uncertain', 'bootstrap-identity-changed', 'bootstrap-sessions-remain', 'bootstrap-cleanup-unproven', 'bootstrap-close-failed', 'bootstrap-receipt-write-failed',
-  'auth-export-cap', 'auth-export-shape', 'auth-export-inventory']);
+  'auth-export-cap', 'auth-export-shape', 'auth-export-inventory', 'auth-export-session']);
 export const safeFailureCode = error => FAILURE_CODES.has(error?.message) ? error.message : 'unclassified-private-error';
 export const FOUNDATIONS = Object.freeze([
   { id: 'C', foundation: 'd5deaba4874bb62278d4ec026f95f0ad4ef9d71c', foundationTree: 'f1a01d07a0c417ff6c0388f21369723dbe4b9dab' },

@@ -124,14 +124,14 @@ export function sourceEnvironment(source, root, identity, adminUrl, databaseName
 export function importAuthExports(file, environment) {
   const bytes = fs.readFileSync(file);
   if (bytes.length > 16384) throw new Error('auth-export-cap');
-  const lines = bytes.toString('utf8').trimEnd().split('\n');
-  const allowed = ['GOOGLE_CLIENT_ID', 'GOOGLE_CLIENT_SECRET', 'CI_AUTH_FIXTURE_ACTIVE'];
-  const values = {};
-  for (const line of lines) {
-    const match = /^([A-Z_]+)=([^\r\n]+)$/.exec(line);
-    if (!match || !allowed.includes(match[1]) || Object.hasOwn(values, match[1])) throw new Error('auth-export-shape');
-    values[match[1]] = match[2];
-  }
-  if (Object.keys(values).length !== 3 || values.CI_AUTH_FIXTURE_ACTIVE !== '1') throw new Error('auth-export-inventory');
-  Object.assign(environment, values);
+  // The source's canonical exporter includes session continuity and digest
+  // controls. Consume that same physical session before importing any value.
+  try {
+    const repositoryRoot = environment.GITHUB_WORKSPACE;
+    const session = createRequire(path.join(repositoryRoot, 'package.json'))('./scripts/ci-auth-fixture-session.cjs');
+    const consumed = session.consumeFixtureSession({ repositoryRoot, environment, requireAmbientProviderValues: false,
+      sourceCommand: 'ci:auth-fixture:export', sourceMode: 'export-github-env' });
+    if (!bytes.equals(Buffer.from(session.serializeAssignments(consumed.assignments)))) throw new Error();
+    Object.assign(environment, consumed.assignments);
+  } catch { throw new Error('auth-export-session'); }
 }

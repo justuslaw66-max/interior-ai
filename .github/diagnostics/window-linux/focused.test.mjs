@@ -170,11 +170,48 @@ test('serial pair preserves C failure while allowing T only after proven cleanup
   }
   await assert.rejects(() => serialPair(sources.toReversed(), async () => null)); assert.equal(mayStartSecond(null), false);
 });
-test('environment mismatch is a mandatory stop and auth export accepts only exact fixture keys', t => {
+test('environment mismatch remains a mandatory stop', () => {
   assert.throws(() => requireMatchedHost({ linux: true, x64: true, imageMatches: false, osMatches: true, nodeMatches: true }));
-  const root = temporary(); t.after(() => fs.rmSync(root, { recursive: true, force: true })); const file = path.join(root, 'env');
-  fs.writeFileSync(file, `GOOGLE_CLIENT_ID=${sensitive}\nGOOGLE_CLIENT_SECRET=${sensitive}\nCI_AUTH_FIXTURE_ACTIVE=1\n`); const env = {}; importAuthExports(file, env); assert.equal(env.CI_AUTH_FIXTURE_ACTIVE, '1');
-  fs.appendFileSync(file, 'UNEXPECTED=secret\n'); assert.throws(() => importAuthExports(file, {}));
+});
+for (const id of ['C', 'T']) test(`${id} auth import consumes the real source session contract and exact export without partial mutation`, t => {
+  const root = temporary(); t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+  const repositoryRoot = path.join(comparisonRoot, `${id.toLowerCase()}-source`);
+  const session = createRequire(path.join(repositoryRoot, 'package.json'))('./scripts/ci-auth-fixture-session.cjs');
+  const identities = JSON.parse(fs.readFileSync(path.join(path.dirname(import.meta.filename), 'sources.json')));
+  const identity = identities.find(item => item.id === id);
+  const base = { GITHUB_WORKSPACE: repositoryRoot, CI_AUTH_FIXTURE_SESSION_ROOT: path.join(root, 'session'),
+    CI_AUTH_FIXTURE_SESSION_ID: `diagnostic-unit-${id}-session`, CI_AUTH_FIXTURE_SESSION_NONCE: `diagnostic-unit-${id}-nonce`,
+    CI_AUTH_FIXTURE_SESSION_CLASSIFICATION: session.FIXTURE_SESSION_CLASSIFICATION,
+    CI_AUTH_FIXTURE_CANDIDATE_COMMIT_SHA: identity.commit, CI_AUTH_FIXTURE_CANDIDATE_TREE_SHA: identity.tree };
+  // Canonical publisher + consumer operate only on disposable local fixture files.
+  const published = session.publishFixtureSession({ repositoryRoot, environment: base,
+    fixture: { googleClientId: `123456789012345-gate-a3-ci-${'b'.repeat(32)}.apps.googleusercontent.com`, googleClientSecret: `GOCSPX-gate-a3-ci-${'b'.repeat(32)}` } });
+  const file = path.join(root, 'env'); fs.writeFileSync(file, published.transportBytes, { mode: 0o600 });
+  const environment = { ...base }; importAuthExports(file, environment);
+  assert.equal(session.EXPORTED_VARIABLE_NAMES.length, 10);
+  assert.ok(session.EXPORTED_VARIABLE_NAMES.every(name => environment[name] === published.assignments[name]));
+  assert.equal(environment.CI_AUTH_FIXTURE_NO_REGENERATION, '1');
+  assert.doesNotThrow(() => session.consumeFixtureSession({ repositoryRoot, environment }));
+  const rejectsUnchanged = (bytes, override = {}, code = 'auth-export-session') => {
+    fs.writeFileSync(file, bytes); const target = { ...base, ...override }; const before = JSON.stringify(target);
+    assert.throws(() => importAuthExports(file, target), error => error.message === code);
+    assert.equal(JSON.stringify(target), before);
+  };
+  const original = published.transportBytes.toString('utf8');
+  rejectsUnchanged(`GOOGLE_CLIENT_ID=${sensitive}\nGOOGLE_CLIENT_SECRET=${sensitive}\nCI_AUTH_FIXTURE_ACTIVE=1\n`);
+  rejectsUnchanged(original + `UNEXPECTED=${sensitive}\n`);
+  rejectsUnchanged(original + 'CI_AUTH_FIXTURE_ACTIVE=1\n');
+  rejectsUnchanged(original.replace('CI_AUTH_FIXTURE_ACTIVE=1', 'CI_AUTH_FIXTURE_ACTIVE=0'));
+  rejectsUnchanged(original.replaceAll('\n', '\r\n'));
+  rejectsUnchanged(Buffer.alloc(16385), {}, 'auth-export-cap');
+  rejectsUnchanged(original, { GOOGLE_CLIENT_ID: sensitive });
+  rejectsUnchanged(original, { CI_AUTH_FIXTURE_SESSION_NONCE: 'foreign-unit-session' });
+  rejectsUnchanged(original, { CI_AUTH_FIXTURE_CANDIDATE_COMMIT_SHA: 'f'.repeat(40) });
+  const transport = path.join(base.CI_AUTH_FIXTURE_SESSION_ROOT, `${base.CI_AUTH_FIXTURE_SESSION_ID}.transport.env`);
+  fs.writeFileSync(transport, original + `UNEXPECTED=${sensitive}\n`); rejectsUnchanged(original);
+  fs.writeFileSync(transport, published.transportBytes);
+  const manifest = path.join(base.CI_AUTH_FIXTURE_SESSION_ROOT, `${base.CI_AUTH_FIXTURE_SESSION_ID}.session.json`);
+  fs.unlinkSync(manifest); rejectsUnchanged(original);
 });
 test('actual committed sources contain exactly the equal approved hook and unchanged matching lockfiles', () => {
   const workflow = path.resolve(path.dirname(import.meta.filename), '../../..');
@@ -257,4 +294,30 @@ for (const id of ['C', 'T']) test(`${id} actual success owner keeps callback aft
     const complete = vm.runInNewContext(sourceFunction(file, 'completeStableRuntimeSmoke') + '\ncompleteStableRuntimeSmoke', globals);
     await complete(context); assert.deepEqual(events, supplied ? ['summary', 'bundle-verified', 'capture', 'root-removed'] : ['summary', 'bundle-verified', 'root-removed']); assert.equal(context.roots, null);
   }
+});
+
+test('actual bootstrap owner records never-attempted cleanup without a connection or fabricated absence, preserving uncertain attempts', async () => {
+  const file = path.join(path.dirname(import.meta.filename), 'bootstrap-database.mjs');
+  const events = []; const receipts = []; const serviceId = 'a'.repeat(64);
+  const snapshot = { containerIdentitySha256: digest(serviceId) };
+  const globals = { path, URL, digest, finishBootstrapConnection,
+    createRequire: () => () => ({ Client: class { constructor() { events.push('client'); throw new Error('unit must not connect'); } } }),
+    loadTransport: async () => ({ inspectGithubPostgresServiceContainer: () => snapshot }) };
+  // Only the dynamic module loader is a unit stand-in; execute actual create/cleanup bodies.
+  const body = sourceFunction(file, 'bootstrapDatabase').replace(/await import\(pathToFileURL\(path.join\(source, 'scripts\/production-certification-database-transport.mjs'\)\).href\)/,
+    'await loadTransport()');
+  assert.ok(body.includes('await loadTransport()'));
+  const make = vm.runInNewContext(body + '\nbootstrapDatabase', globals);
+  const owner = await make({ source: '/unit', adminUrl: 'postgresql://test:unit@127.0.0.1:5432/postgres', name: 'window_linux_test_C_123_1', serviceId,
+    persist: receipt => receipts.push(JSON.parse(JSON.stringify(receipt))) });
+  assert.equal(receipts[0].creation, 'not-attempted'); assert.equal(receipts[0].cleanup, 'not-attempted');
+  assert.equal(await owner.cleanup(), false); assert.equal(events.length, 0);
+  const terminal = receipts.at(-1); assert.equal(terminal.cleanup, 'not-required-no-create-attempt');
+  assert.equal(terminal.oid, null); assert.equal(terminal.absent, false); assert.equal(terminal.sessionCount, null);
+  assert.equal(mayStartSecond({ runtimeInvocations: 0, bootstrap: terminal, observerErrors: 0 }), false);
+  for (const creation of ['unacknowledged', 'collision-preserved', 'created']) {
+    owner.receipt.creation = creation;
+    await assert.rejects(() => owner.cleanup(), /bootstrap-ownership-uncertain/);
+  }
+  assert.equal(events.length, 0);
 });
