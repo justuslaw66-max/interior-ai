@@ -4,7 +4,7 @@ import { execFileSync } from 'node:child_process';
 import { pathToFileURL } from 'node:url';
 import { runCaptured } from './process-capture.mjs';
 import { createProjection, digest, LIMITS } from './projection.mjs';
-import { hostObservation, requireMatchedHost, REFERENCE, browserObservation, sourceEnvironment, importAuthExports, activeRunnerExecutable, activeRunnerCompanion, matchedRunnerVersion, fileHash } from './environment.mjs';
+import { hostObservation, requireMatchedHost, REFERENCE, browserObservation, sourceEnvironment, importAuthExports, authRegressionEnvironment, activeRunnerExecutable, activeRunnerCompanion, matchedRunnerVersion, fileHash } from './environment.mjs';
 import { bootstrapDatabase } from './bootstrap-database.mjs';
 
 const HERE = path.dirname(import.meta.filename);
@@ -171,7 +171,10 @@ export async function campaign() {
         }
         result.stage = 'build-preconditions'; persist(); await bootstrap.create();
         requireSuccess(await command('migrations', ['run', 'gate:a3:db'], source, { ...environment, GATE_A3_DATABASE_URL: environment.DATABASE_URL }, result));
-        for (const script of ['test:auth-env-hardening', 'check:code-quality', 'test:required-test-truthfulness', 'test:production-artifact-evidence']) requireSuccess(await command(script, ['run', script], source, environment, result));
+        for (const script of ['test:auth-env-hardening', 'check:code-quality', 'test:required-test-truthfulness', 'test:production-artifact-evidence']) {
+          const childEnvironment = script === 'test:auth-env-hardening' ? await authRegressionEnvironment(source, environment) : environment;
+          requireSuccess(await command(script, ['run', script], source, childEnvironment, result));
+        }
         assertPristine(source);
         result.stage = 'strict-build'; result.strictBuilds++; record.strictBuilds++; persist();
         if (record.strictBuilds > 2) throw new Error('build-budget');

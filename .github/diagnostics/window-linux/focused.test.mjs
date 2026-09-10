@@ -10,7 +10,7 @@ import { createRetention, readOwnedPhysicalFile } from './retention.mjs';
 import { createProjection, digest, LIMITS, projectCleanup } from './projection.mjs';
 import { createStreamProjection, runCaptured } from './process-capture.mjs';
 import { FOUNDATIONS, serialPair, mayStartSecond, verifySourceDelta, sealPublication, safeFailureCode } from './campaign.mjs';
-import { requireMatchedHost, importAuthExports, activeRunnerExecutable, activeRunnerCompanion, matchedRunnerVersion, defaultHeadlessExecutable } from './environment.mjs';
+import { requireMatchedHost, importAuthExports, authRegressionEnvironment, activeRunnerExecutable, activeRunnerCompanion, matchedRunnerVersion, defaultHeadlessExecutable } from './environment.mjs';
 import { verifyUpload } from './verify-upload.mjs';
 import { finishBootstrapConnection } from './bootstrap-database.mjs';
 
@@ -320,4 +320,18 @@ test('actual bootstrap owner records never-attempted cleanup without a connectio
     await assert.rejects(() => owner.cleanup(), /bootstrap-ownership-uncertain/);
   }
   assert.equal(events.length, 0);
+});
+
+test('actual source regression projection removes child auth capabilities without changing the parent or database environment', async () => {
+  for (const id of ['C', 'T']) {
+    const repositoryRoot = path.join(comparisonRoot, `${id.toLowerCase()}-source`);
+    const { authFixtureRegressionCapabilityNames } = await import(pathToFileURL(path.join(repositoryRoot, 'scripts/ci-auth-fixture-regression-environment.mjs')).href);
+    const names = authFixtureRegressionCapabilityNames(repositoryRoot);
+    const parent = freeze({ ...Object.fromEntries(names.map(name => [name, sensitive])), PATH: '/unit/bin', GITHUB_ACTIONS: 'true',
+      GITHUB_WORKSPACE: repositoryRoot, DATABASE_URL: 'postgresql://unit@127.0.0.1:5432/unit', CERTIFICATION_DATABASE_ADMIN_URL: 'private-unit-admin',
+      PRODUCTION_EVIDENCE_CANDIDATE_ID: 'unit-candidate' });
+    const before = JSON.stringify(parent); const child = await authRegressionEnvironment(repositoryRoot, parent);
+    assert.ok(names.every(name => !Object.hasOwn(child, name))); assert.equal(JSON.stringify(parent), before);
+    for (const name of ['PATH', 'GITHUB_ACTIONS', 'GITHUB_WORKSPACE', 'DATABASE_URL', 'CERTIFICATION_DATABASE_ADMIN_URL', 'PRODUCTION_EVIDENCE_CANDIDATE_ID']) assert.equal(child[name], parent[name]);
+  }
 });

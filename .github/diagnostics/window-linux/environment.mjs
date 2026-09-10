@@ -3,6 +3,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { createRequire } from 'node:module';
 import { createHash } from 'node:crypto';
+import { pathToFileURL } from 'node:url';
 
 export const REFERENCE = Object.freeze({ image: '20260831.293.1', os: 'Ubuntu 24.04.4 LTS', runner: '2.337.0', node: 'v24.13.0', browser: '148.0.7778.96', revision: '1223' });
 export function hostObservation(environment = process.env) {
@@ -134,4 +135,9 @@ export function importAuthExports(file, environment) {
     if (!bytes.equals(Buffer.from(session.serializeAssignments(consumed.assignments)))) throw new Error();
     Object.assign(environment, consumed.assignments);
   } catch { throw new Error('auth-export-session'); }
+}
+
+export async function authRegressionEnvironment(source, environment) {
+  const { isolatedAuthFixtureRegressionEnvironment } = await import(pathToFileURL(path.join(source, 'scripts/ci-auth-fixture-regression-environment.mjs')).href);
+  return isolatedAuthFixtureRegressionEnvironment({ repositoryRoot: source, parentEnvironment: environment });
 }
