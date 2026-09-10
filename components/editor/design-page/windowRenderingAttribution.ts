@@ -1,5 +1,5 @@
 import type { Material, Object3D, WebGLRenderer } from "three";
-import { WINDOW_RENDER_LIMIT, WINDOW_RENDER_SCHEMA } from "@/scripts/window-rendering-attribution.mjs";
+import { WINDOW_RENDER_LIMIT, WINDOW_RENDER_SCHEMA } from "@/scripts/window-rendering-attribution-constants.cjs";
 
 type Target = Parameters<WebGLRenderer["setRenderTarget"]>[0];
 type Frame = { id: number; parent: number; generatedCalls: number; generatedDraws: number; otherTransmissiveCalls: number; allDirectCalls: number; targetSwitches: number; directMs: number };
