@@ -1375,11 +1375,13 @@ test.describe("Pro visual policy", () => {
       "Meta+K",
       page.getByTestId("editor-command-overflow")
     );
+    const loadAnnouncement = page.getByTestId("rule-announcement-status");
+    const loadedMessage = "Loaded CH-0015H loaded Palette scope";
+    await expect(loadAnnouncement).not.toHaveText(loadedMessage);
+    // Observe the committed load through production UI before its toast expires.
+    const committedLoad = expect(loadAnnouncement).toHaveText(loadedMessage);
     delayedLoad.releaseResponse();
-    await expect(page.getByTestId("qa-editor-cloud-design")).toHaveAttribute(
-      "data-design-id",
-      loadedDesignId
-    );
+    await committedLoad;
     await expect(page.getByTestId("editor-command-palette")).toHaveCount(0);
 
     palette = await openCommandPalette(
