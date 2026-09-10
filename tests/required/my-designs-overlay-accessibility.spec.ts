@@ -3,6 +3,8 @@ import { PrismaClient } from "@prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { expect, test, type Page, type TestInfo } from "@playwright/test";
 import { Pool } from "pg";
+import { assertCurrentDesignDocument } from "../../lib/design-page-local-backup-recovery";
+import { DESIGN_PAGE_LOCAL_BACKUP_STORAGE_KEY } from "../../lib/useDesignPageLocalBackupHydration";
 
 type UserMode = "consumer" | "pro";
 type Seed = {
@@ -168,6 +170,20 @@ async function openMyDesigns(page: Page, entry: "pointer" | "keyboard") {
   await expect(dialog).toHaveCount(1);
   await expect(dialog).toBeVisible();
   return dialog;
+}
+
+async function readValidatedLocalBackup(page: Page) {
+  const raw = await page.evaluate(
+    (key) => window.localStorage.getItem(key),
+    DESIGN_PAGE_LOCAL_BACKUP_STORAGE_KEY
+  );
+  if (raw === null) return null;
+  assertCurrentDesignDocument(raw);
+  const parsed: unknown = JSON.parse(raw);
+  if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+    throw new Error("Expected a complete local design backup object.");
+  }
+  return parsed;
 }
 
 async function expectParentContract(page: Page) {
@@ -441,10 +457,17 @@ test("deleting the loaded final design preserves detach semantics and focuses th
   try {
     await openEditor(page, seed, "consumer");
     await openMyDesigns(page, "pointer");
+    const loadAnnouncement = page.getByTestId("rule-announcement-status");
+    const loadedMessage = "Loaded Loaded Target";
+    await expect(loadAnnouncement).not.toHaveText(loadedMessage);
+    const committedLoad = expect(loadAnnouncement).toHaveText(loadedMessage);
     await page.getByTestId(`load-design-${designId}`).click();
+    await committedLoad;
     await expect(page.getByRole("dialog", { name: "My Designs" })).toHaveCount(0);
     await expect(page).toHaveURL(new RegExp(`[?&]designId=${designId}(?:&|$)`));
-    await expect(page.getByTestId("qa-editor-cloud-design")).toHaveAttribute("data-design-id", designId);
+    await expect.poll(() => readValidatedLocalBackup(page)).toMatchObject({ designId });
+    const loadedBackup = await readValidatedLocalBackup(page);
+    expect(loadedBackup).toMatchObject({ designId });
 
     await openMyDesigns(page, "pointer");
     await page.getByTestId("delete-all-saved-designs").click();
@@ -453,7 +476,10 @@ test("deleting the loaded final design preserves detach semantics and focuses th
     await expect(confirm).toHaveCount(0);
     await expect(page.getByText("No saved designs yet")).toBeVisible();
     await expect(page.getByTestId("load-designs-close")).toBeFocused();
-    await expect(page.getByTestId("qa-editor-cloud-design")).toHaveAttribute("data-design-id", "");
+    await expect.poll(() => readValidatedLocalBackup(page)).toEqual({
+      ...loadedBackup,
+      designId: null,
+    });
     expect(await prisma.design.count({ where: { userId: seed.userId } })).toBe(0);
   } finally {
     await cleanupSeed(seed);
@@ -479,13 +505,15 @@ test("semantic replacement, newer owned dialog, reopen, and route unmount suppre
     await expect(page.getByTestId("my-designs-replacement-opener")).toBeFocused();
 
     await openMyDesigns(page, "pointer");
+    const loadAnnouncement = page.getByTestId("rule-announcement-status");
+    const loadedMessage = "Loaded Supersession Target";
+    await expect(loadAnnouncement).not.toHaveText(loadedMessage);
+    const committedLoad = expect(loadAnnouncement).toHaveText(loadedMessage);
     await page.getByTestId(`load-design-${designId}`).click();
+    await committedLoad;
     await expect(page).toHaveURL(new RegExp(`[?&]designId=${designId}(?:&|$)`));
     await expect(page.getByTestId("my-designs-replacement-opener")).not.toBeFocused();
-    await expect(page.getByTestId("qa-editor-cloud-design")).toHaveAttribute(
-      "data-design-id",
-      designId
-    );
+    await expect.poll(() => readValidatedLocalBackup(page)).toMatchObject({ designId });
 
     await openMyDesigns(page, "pointer");
     const { action, confirm } = await openSingleConfirm(page, designId);

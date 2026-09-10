@@ -145,6 +145,22 @@ async function activate(page: Page, action: Locator, entry: Entry) {
   await page.keyboard.press("Enter");
 }
 
+async function resetCountingHarness(
+  page: Page,
+  boundaries: SyntheticBoundaries,
+  scenario: "excluded" | "missing-link"
+) {
+  boundaries.reset();
+  await page.evaluate((nextScenario) => {
+    window.__retailerWindowOpens = [];
+    window.__retailerResetCountingScenario(nextScenario);
+  }, scenario);
+  await expect(page.getByTestId("retailer-confirmation-harness"))
+    .toHaveAttribute("data-retailer-scenario", scenario);
+  await expect(page.getByTestId("cart-panel")).toHaveCount(1);
+  await expect(page.getByTestId("retailer-confirmation-dialog")).toHaveCount(0);
+}
+
 async function readWindowOpens(page: Page) {
   return page.evaluate(() => window.__retailerWindowOpens ?? []);
 }
@@ -370,11 +386,11 @@ test("Counting preserves bundle exclusion and missing-link behavior", async ({ p
   await expectWindowOpenCount(page, 1);
   await expect(page.getByTestId("retailer-confirmation-dialog")).toHaveCount(0);
 
-  await loadHarness(page, boundaries, { scenario: "excluded", tabs: 4 });
+  await resetCountingHarness(page, boundaries, "excluded");
   await expect(page.getByTestId("checkout-affiliate")).toBeDisabled();
   expect(await readWindowOpens(page)).toHaveLength(0);
 
-  await loadHarness(page, boundaries, { scenario: "missing-link", tabs: 4 });
+  await resetCountingHarness(page, boundaries, "missing-link");
   await page.getByTestId("checkout-affiliate").click();
   await expect(page.getByTestId("cart-notice")).toContainText(
     "No items in this group have buy links yet."

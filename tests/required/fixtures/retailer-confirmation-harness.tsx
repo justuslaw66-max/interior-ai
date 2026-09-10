@@ -7,6 +7,12 @@ import CartSidebar, {
 import { EditorDialog } from "@/components/editor/design-system/EditorDialog";
 import { CATALOG_ITEMS } from "@/lib/catalog";
 
+declare global {
+  interface Window {
+    __retailerResetCountingScenario: (scenario: "excluded" | "missing-link") => void;
+  }
+}
+
 const ALPHA_PRODUCT_ID = "ch0015g-alpha-product";
 const ALPHA_VARIANT_ID = "ch0015g-alpha-variant";
 const BETA_PRODUCT_ID = "ch0015g-beta-product";
@@ -69,9 +75,12 @@ registerAffiliateProduct(
   ""
 );
 
-function initialItems(): CartSidebarPlacedItem[] {
-  if (scenario === "zero") return [];
-  if (scenario === "duplicate") {
+function initialItems(
+  nextScenario = scenario,
+  nextTabs = requestedTabs
+): CartSidebarPlacedItem[] {
+  if (nextScenario === "zero") return [];
+  if (nextScenario === "duplicate") {
     return ["duplicate-a", "duplicate-b"].map((instanceId) => ({
       instanceId,
       productId: ALPHA_PRODUCT_ID,
@@ -80,13 +89,13 @@ function initialItems(): CartSidebarPlacedItem[] {
       includeInCheckout: true,
     }));
   }
-  if (scenario === "mixed-groups") {
+  if (nextScenario === "mixed-groups") {
     return [
       {
         instanceId: "alpha-line",
         productId: ALPHA_PRODUCT_ID,
         variantId: ALPHA_VARIANT_ID,
-        qty: requestedTabs,
+        qty: nextTabs,
         includeInCheckout: true,
       },
       {
@@ -98,19 +107,22 @@ function initialItems(): CartSidebarPlacedItem[] {
       },
     ];
   }
-  const missingLink = scenario === "missing-link";
+  const missingLink = nextScenario === "missing-link";
   return [{
     instanceId: "alpha-line",
     productId: missingLink ? MISSING_PRODUCT_ID : ALPHA_PRODUCT_ID,
     variantId: missingLink ? MISSING_VARIANT_ID : ALPHA_VARIANT_ID,
-    qty: requestedTabs,
-    includeInCheckout: scenario !== "excluded",
-    bundleQuantity: scenario === "bundle" ? requestedTabs : undefined,
+    qty: nextTabs,
+    includeInCheckout: nextScenario !== "excluded",
+    bundleQuantity: nextScenario === "bundle" ? nextTabs : undefined,
   }];
 }
 
-function RetailerConfirmationHarness() {
-  const [items, setItems] = useState(initialItems);
+function RetailerConfirmationHarness({
+  fixtureScenario = scenario,
+  tabs = requestedTabs,
+}: { fixtureScenario?: string; tabs?: number }) {
+  const [items, setItems] = useState(() => initialItems(fixtureScenario, tabs));
   const [cartMounted, setCartMounted] = useState(true);
   const [newerDialogOpen, setNewerDialogOpen] = useState(false);
   const isPro = userKind === "pro";
@@ -119,6 +131,7 @@ function RetailerConfirmationHarness() {
     <main
       data-testid="retailer-confirmation-harness"
       data-retailer-user={userKind}
+      data-retailer-scenario={fixtureScenario}
       className="min-h-screen bg-neutral-100 p-6"
     >
       <div data-testid="retailer-fixture-controls" className="mb-4 flex gap-2">
@@ -189,4 +202,19 @@ function RetailerConfirmationHarness() {
 document.body.innerHTML = '<div id="retailer-confirmation-harness-root"></div>';
 const root = document.getElementById("retailer-confirmation-harness-root");
 if (!root) throw new Error("Retailer confirmation fixture root is missing");
-createRoot(root).render(<RetailerConfirmationHarness />);
+const fixtureRoot = createRoot(root);
+let countingGeneration = 0;
+window.__retailerResetCountingScenario = (nextScenario) => {
+  if (nextScenario !== "excluded" && nextScenario !== "missing-link") {
+    throw new Error("Unsupported retailer counting scenario.");
+  }
+  // A new key disposes the prior Cart and gives this input fresh hook state.
+  fixtureRoot.render(
+    <RetailerConfirmationHarness
+      key={++countingGeneration}
+      fixtureScenario={nextScenario}
+      tabs={4}
+    />
+  );
+};
+fixtureRoot.render(<RetailerConfirmationHarness key={countingGeneration} />);
