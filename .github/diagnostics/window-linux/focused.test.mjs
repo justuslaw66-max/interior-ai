@@ -247,7 +247,7 @@ test('workflow has one manual-only bounded standard-runner job and one allowlist
   assert.ok(job.if.includes('github.run_attempt == 1')); assert.ok(job.if.includes('diagnostic/window-idle-linux-d5deaba-87ba770'));
   assert.equal(job.services.postgres.env.POSTGRES_PASSWORD, undefined); assert.ok(job.services.postgres.options.includes('--log-driver none'));
   const uploads = job.steps.filter(step => step.uses?.startsWith('actions/upload-artifact@')); assert.equal(uploads.length, 1); assert.equal(uploads[0].with['retention-days'], 7);
-  assert.equal(uploads[0].with.path, '${{ runner.temp }}/window-linux-attribution-4d1479c9/sanitized/');
+  assert.equal(uploads[0].with.path, '${{ runner.temp }}/window-linux-standing-r1-01/sanitized/');
   const execute = job.steps.find(step => step.id === 'comparison'); assert.ok(execute.run.includes('> "$RUNNER_TEMP/window-linux-driver.raw" 2>&1')); assert.equal(execute['continue-on-error'], undefined);
 });
 test('failure codes do not print private exceptions and late bootstrap close failure stops B', () => {

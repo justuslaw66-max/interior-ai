@@ -5,23 +5,29 @@ import { createRequire } from 'node:module';
 import { createHash } from 'node:crypto';
 import { pathToFileURL } from 'node:url';
 
-export const REFERENCE = Object.freeze({ image: '20260907.300.1', os: 'Ubuntu 24.04.5 LTS', runner: '2.337.0', node: 'v24.13.0', browser: '148.0.7778.96', revision: '1223' });
+export const APPROVED_HOST_PAIRS = Object.freeze([
+  Object.freeze({ os: 'Ubuntu 24.04.4 LTS', image: '20260831.293.1' }),
+  Object.freeze({ os: 'Ubuntu 24.04.5 LTS', image: '20260907.300.1' }),
+]);
+export const REFERENCE = Object.freeze({ hostPairs: APPROVED_HOST_PAIRS, runner: '2.337.0', node: 'v24.13.0', browser: '148.0.7778.96', revision: '1223' });
 export function hostObservation(environment = process.env) {
   const release = fs.readFileSync('/etc/os-release', 'utf8');
   const pretty = /^PRETTY_NAME="([^"]+)"$/m.exec(release)?.[1];
-  const observed = { linux: process.platform === 'linux', x64: process.arch === 'x64', imageMatches: environment.ImageVersion === REFERENCE.image,
-    osMatches: pretty === REFERENCE.os, nodeMatches: process.version === REFERENCE.node,
+  const pair = APPROVED_HOST_PAIRS.find(value => value.os === pretty && value.image === environment.ImageVersion);
+  const observed = { linux: process.platform === 'linux', x64: process.arch === 'x64', imageMatches: Boolean(pair),
+    osMatches: Boolean(pair), hostPairMatches: Boolean(pair), nodeMatches: process.version === REFERENCE.node,
     cpuCount: os.cpus().length, memoryBytes: os.totalmem(), cpuModelSha256: createHash('sha256').update(os.cpus().map(cpu => cpu.model).join('\n')).digest('hex'),
     osReleaseSha256: createHash('sha256').update(release).digest('hex'),
     actualImageVersion: /^[0-9]{8}\.[0-9]{1,5}\.[0-9]{1,5}$/.test(environment.ImageVersion ?? '') ? environment.ImageVersion : null,
     actualNodeVersion: /^v[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$/.test(process.version) ? process.version : null,
     actualOsVersion: /^Ubuntu ([0-9]{2}\.[0-9]{2}\.[0-9]{1,2}) LTS$/.exec(pretty ?? '')?.[1] ?? null,
-    image: environment.ImageVersion === REFERENCE.image ? REFERENCE.image : null,
-    os: pretty === REFERENCE.os ? REFERENCE.os : null, node: process.version === REFERENCE.node ? REFERENCE.node : null };
+    image: pair?.image ?? null,
+    os: pair?.os ?? null, node: process.version === REFERENCE.node ? REFERENCE.node : null };
   return observed;
 }
 export function requireMatchedHost(observed) {
-  if (![observed.linux, observed.x64, observed.imageMatches, observed.osMatches, observed.nodeMatches].every(value => value === true)) throw new Error('environment-mismatch');
+  if (!observed || ![observed.linux, observed.x64, observed.imageMatches, observed.osMatches, observed.hostPairMatches, observed.nodeMatches].every(value => value === true) ||
+      !APPROVED_HOST_PAIRS.some(pair => pair.os === observed.os && pair.image === observed.image)) throw new Error('environment-mismatch');
 }
 export async function fileHash(file) {
   const hash = createHash('sha256');

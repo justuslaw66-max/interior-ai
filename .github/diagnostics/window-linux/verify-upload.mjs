@@ -32,7 +32,7 @@ export function verifyUpload(publication) {
 }
 if (process.argv[1] && path.resolve(process.argv[1]) === path.resolve(import.meta.filename)) {
   try {
-    const root = path.join(process.env.RUNNER_TEMP, 'window-linux-attribution-4d1479c9');
+    const root = path.join(process.env.RUNNER_TEMP, 'window-linux-standing-r1-01');
     if (readOwnedPhysicalFile(root, path.join(root, 'upload-ready'), 32).toString('utf8') !== 'ALLOWLISTED\n') throw new Error('upload-not-ready');
     verifyUpload(path.join(root, 'sanitized'));
   } catch { process.exitCode = 1; }
