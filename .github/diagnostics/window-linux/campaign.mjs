@@ -65,7 +65,7 @@ export function sealPublication(publication) {
 
 export async function campaign() {
   const workflow = fs.realpathSync(path.join(HERE, '../../..'));
-  const root = path.join(process.env.RUNNER_TEMP, 'window-linux-standing-r1-02');
+  const root = path.join(process.env.RUNNER_TEMP, 'window-linux-standing-r1-03');
   const publication = path.join(root, 'sanitized'); const privateRoot = path.join(root, 'private');
   fs.mkdirSync(root, { mode: 0o700 }); fs.mkdirSync(publication, { mode: 0o700 }); fs.mkdirSync(privateRoot, { mode: 0o700 });
   const record = { schema: 'window-rendering-attribution.v1', classification: 'DIAGNOSTIC_ONLY', acceptedAsRequiredCI: false,

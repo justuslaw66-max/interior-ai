@@ -3,7 +3,7 @@ import path from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { digest, LIMITS } from './projection.mjs';
 export const PARENT = '8dccb85a91f02b1620b1f69af42ce0010550e7fd';
-export const SOURCE_PARENTS = Object.freeze({ A: '9b5658af4bea3fbc1c8d8f698bfbfbfff57524a5', B: '80f28efe6de202b0a571766c3bd516ca63f12667' });
+export const SOURCE_PARENTS = Object.freeze({ A: '9b5658af4bea3fbc1c8d8f698bfbfbfff57524a5', B: '0052cc707c383936e777bfc2df00e07d6aa61dd4' });
 export const FOUNDATION = 'd5deaba4874bb62278d4ec026f95f0ad4ef9d71c';
 export const FOUNDATION_TREE = 'f1a01d07a0c417ff6c0388f21369723dbe4b9dab';
 export const OBSERVATION_FILES = Object.freeze(['components/editor/design-page/designSceneDemandPolicy.tsx', 'components/editor/design-page/windowRenderingAttribution.ts', 'scripts/window-rendering-attribution.mjs', 'scripts/window-rendering-attribution-constants.cjs', 'tests/e2e/00-runtime-smoke.spec.ts']);
@@ -32,7 +32,7 @@ export function verifyVariantTree(root, tree, id) {
   for (const name of OBSERVATION_FILES) if (digest(git(root, ['show', `${tree}:${name}`])) !== approved[name]) throw new Error('source-delta');
   const original = git(root, ['show', `${PARENT}:${MATERIAL_FILE}`]).toString('utf8');
   if (original.split('transmission={0.5}').length !== 2) throw new Error('source-delta');
-  const expected = id === 'B' ? original.replace('transmission={0.5}', 'transmission={0}') : original;
+  const expected = id === 'B' ? frontSideMaterial(original) : original;
   if (!git(root, ['show', `${tree}:${MATERIAL_FILE}`]).equals(Buffer.from(expected))) throw new Error('source-delta');
   const lock = git(root, ['show', `${tree}:package-lock.json`]);
   if (!lock.equals(git(root, ['show', `${FOUNDATION}:package-lock.json`]))) throw new Error('lockfile-delta');
@@ -42,5 +42,10 @@ export function verifyPairDelta(root, sources) {
   const [a,b] = sources;
   if (a.id !== 'A' || b.id !== 'B' || a.commit === b.commit || line(root, ['diff', '--name-only', a.commit, b.commit]) !== MATERIAL_FILE) throw new Error('source-delta');
   const before = git(root, ['show', `${a.commit}:${MATERIAL_FILE}`]).toString('utf8');
-  if (!git(root, ['show', `${b.commit}:${MATERIAL_FILE}`]).equals(Buffer.from(before.replace('transmission={0.5}', 'transmission={0}')))) throw new Error('source-delta');
+  if (!git(root, ['show', `${b.commit}:${MATERIAL_FILE}`]).equals(Buffer.from(frontSideMaterial(before)))) throw new Error('source-delta');
+}
+
+export function frontSideMaterial(original) {
+  if (original.split('DoubleSide').length !== 3 || !original.includes('import { DoubleSide } from "three";') || !original.includes('side={DoubleSide}') || original.split('transmission={0.5}').length !== 2) throw new Error('source-delta');
+  return original.replaceAll('DoubleSide', 'FrontSide');
 }

@@ -228,7 +228,9 @@ test('prepared A/B retain the exact parent hook and one material delta, with mat
   for (const name of OBSERVATION_FILES) assert.deepEqual(fs.readFileSync(path.join(a,name)),fs.readFileSync(path.join(b,name)));
   const before = fs.readFileSync(path.join(a,MATERIAL_FILE),'utf8');
   assert.equal(before.split('transmission={0.5}').length,2);
-  assert.equal(fs.readFileSync(path.join(b,MATERIAL_FILE),'utf8'),before.replace('transmission={0.5}','transmission={0}'));
+  assert.equal(before.split('DoubleSide').length,3);
+  assert.throws(()=>verifyVariantTree(workflow,'9827848accfb131af1915678a781e5c4fd22a81e','B')); // Previous zero-transmission tree is not this experiment.
+  assert.equal(fs.readFileSync(path.join(b,MATERIAL_FILE),'utf8'),before.replaceAll('DoubleSide','FrontSide'));
   assert.deepEqual(fs.readFileSync(path.join(a,'package-lock.json')),fs.readFileSync(path.join(b,'package-lock.json')));
   assert.equal(digest(fs.readFileSync(path.join(path.dirname(import.meta.filename), 'success-retention.patch'))), '4e34f31f0028c7ba9ad495259f60046a25232e5b59019ce94c6a7b1e207cfb58');
 });
@@ -247,7 +249,7 @@ test('workflow has one manual-only bounded standard-runner job and one allowlist
   assert.ok(job.if.includes('github.run_attempt == 1')); assert.ok(job.if.includes('diagnostic/window-idle-linux-d5deaba-87ba770'));
   assert.equal(job.services.postgres.env.POSTGRES_PASSWORD, undefined); assert.ok(job.services.postgres.options.includes('--log-driver none'));
   const uploads = job.steps.filter(step => step.uses?.startsWith('actions/upload-artifact@')); assert.equal(uploads.length, 1); assert.equal(uploads[0].with['retention-days'], 7);
-  assert.equal(uploads[0].with.path, '${{ runner.temp }}/window-linux-standing-r1-02/sanitized/');
+  assert.equal(uploads[0].with.path, '${{ runner.temp }}/window-linux-standing-r1-03/sanitized/');
   const execute = job.steps.find(step => step.id === 'comparison'); assert.ok(execute.run.includes('> "$RUNNER_TEMP/window-linux-driver.raw" 2>&1')); assert.equal(execute['continue-on-error'], undefined);
 });
 test('failure codes do not print private exceptions and late bootstrap close failure stops B', () => {

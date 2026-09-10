@@ -53,10 +53,11 @@ function fixture(source=a,throwLog=false) {
   return {gl,observer,events,forward,mesh,material,otherMaterial,target,
     throwRender(value){throwRender=value;},throwDirect(value){throwDirect=value;},draw(value){draw=value;}};
 }
-test('actual A/B element settings and observer preserve all properties except targeted transmission',()=>{
+test('actual A/B element settings and observer preserve all properties except targeted side',()=>{
   const observed=fixture(a), counterfactual=fixture(b);
-  assert.equal(observed.material.transmission,.5);assert.equal(counterfactual.material.transmission,0);
-  for(const key of ['opacity','roughness','thickness','side','depthWrite','transparent'])assert.equal(observed.material[key],counterfactual.material[key]);
+  assert.equal(observed.material.transmission,.5);assert.equal(counterfactual.material.transmission,.5);
+  assert.equal(observed.material.side,THREE.DoubleSide);assert.equal(counterfactual.material.side,THREE.FrontSide);
+  for(const key of ['opacity','roughness','thickness','depthWrite','transparent'])assert.equal(observed.material[key],counterfactual.material[key]);
   for(const f of [observed,counterfactual]){
     const before=f.otherMaterial.toJSON();
     assert.equal(f.gl.render({},{}),'render-result');
@@ -64,7 +65,7 @@ test('actual A/B element settings and observer preserve all properties except ta
     assert.equal(f.events.some(e=>JSON.stringify(e).includes(sentinel)),false);
     const entry=f.events.find(e=>e.event==='generated-enter');const exit=f.events.find(e=>e.event==='generated-exit');
     assert.equal(entry.objectId,f.mesh.id);assert.equal(entry.materialId,f.material.id);assert.equal(exit.drawDelta,1);assert.equal(exit.completed,true);
-    assert.equal(entry.transmission,f.material.transmission);assert.equal(entry.side,THREE.DoubleSide);
+    assert.equal(entry.transmission,f.material.transmission);assert.equal(entry.side,f.material.side);
     assert.equal(entry.targetId>0,true);assert.equal(entry.width,640);assert.equal(entry.height,480);
     const render=f.events.find(e=>e.event==='render-exit');assert.equal(render.generatedCalls,2);assert.equal(render.generatedDraws,2);assert.equal(render.otherTransmissiveCalls,1);assert.equal(render.allDirectCalls,3);
     assert.equal(f.events.filter(e=>e.event==='other-transmissive').length,1);
