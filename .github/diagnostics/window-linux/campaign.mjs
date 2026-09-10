@@ -6,7 +6,7 @@ import { runCaptured } from './process-capture.mjs';
 import { createProjection, digest, LIMITS } from './projection.mjs';
 import { hostObservation, requireMatchedHost, REFERENCE, browserObservation, sourceEnvironment, importAuthExports, authRegressionEnvironment, activeRunnerExecutable, activeRunnerCompanion, matchedRunnerVersion, fileHash } from './environment.mjs';
 import { bootstrapDatabase } from './bootstrap-database.mjs';
-import { PARENT, FOUNDATION, FOUNDATION_TREE, verifySourceDelta, verifyPairDelta } from './source-variants.mjs';
+import { SOURCE_PARENTS, FOUNDATION, FOUNDATION_TREE, verifySourceDelta, verifyPairDelta } from './source-variants.mjs';
 import { assessMaterialObservation } from './render-observation.mjs';
 export { verifySourceDelta } from './source-variants.mjs';
 
@@ -18,7 +18,7 @@ const FAILURE_CODES = new Set(['campaign-context', 'workflow-identity', 'source-
   'bootstrap-acknowledgement', 'bootstrap-ownership-uncertain', 'bootstrap-identity-changed', 'bootstrap-sessions-remain', 'bootstrap-cleanup-unproven', 'bootstrap-close-failed', 'bootstrap-receipt-write-failed',
   'auth-export-cap', 'auth-export-shape', 'auth-export-inventory', 'auth-export-session']);
 export const safeFailureCode = error => FAILURE_CODES.has(error?.message) ? error.message : 'unclassified-private-error';
-export const FOUNDATIONS = Object.freeze(['A','B'].map(id=>({id, foundation:FOUNDATION, foundationTree:FOUNDATION_TREE, parent:PARENT})));
+export const FOUNDATIONS = Object.freeze(['A','B'].map(id=>({id, foundation:FOUNDATION, foundationTree:FOUNDATION_TREE, parent:SOURCE_PARENTS[id]})));
 export function validateSources(sources) {
   if (!Array.isArray(sources) || sources.length !== 2) throw new Error('source-inventory');
   for (let index = 0; index < 2; index++) {
@@ -65,7 +65,7 @@ export function sealPublication(publication) {
 
 export async function campaign() {
   const workflow = fs.realpathSync(path.join(HERE, '../../..'));
-  const root = path.join(process.env.RUNNER_TEMP, 'window-linux-standing-r1-01');
+  const root = path.join(process.env.RUNNER_TEMP, 'window-linux-standing-r1-02');
   const publication = path.join(root, 'sanitized'); const privateRoot = path.join(root, 'private');
   fs.mkdirSync(root, { mode: 0o700 }); fs.mkdirSync(publication, { mode: 0o700 }); fs.mkdirSync(privateRoot, { mode: 0o700 });
   const record = { schema: 'window-rendering-attribution.v1', classification: 'DIAGNOSTIC_ONLY', acceptedAsRequiredCI: false,
@@ -170,6 +170,7 @@ export async function campaign() {
         const expected = { ...identity, workflowCommit, runId: base.GITHUB_RUN_ID, attempt: '1', candidateId: manifest.candidateIdentifier,
           sourceRoot: source, artifactSha256: manifest.artifact.sha256, buildId: manifest.build.nextBuildId, manifestSha256: digest(manifestBytes) };
         result.artifact = { sha256: expected.artifactSha256, buildId: expected.buildId, manifestSha256: expected.manifestSha256 };
+        result.stage = 'runtime-prerequisites'; persist();
         requireSuccess(await command('frameloop-prerequisite', ['run', 'test:design-scene-loading-frameloop'], source, environment, result));
         requireSuccess(await command('render-idle-prerequisite', ['scripts/test-runtime-smoke-render-idle.mjs'], source, environment, result, 'node'));
         const config = { expected, environment, privateOutput: path.join(ownRoot, 'retained-raw'), publicOutput: path.join(publication, identity.id), privateResult: path.join(ownRoot, 'runtime-result.json') };

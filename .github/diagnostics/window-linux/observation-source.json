@@ -1,6 +1,7 @@
 {
   "components/editor/design-page/designSceneDemandPolicy.tsx": "1fb1ce99210e80bad80f6282d9ebc3a51a59283e3aa6688e0f765aaf48da5c1a",
-  "components/editor/design-page/windowRenderingAttribution.ts": "1b73316bc26283a2e486ebee2e8dc694862f4f7d1ade3b8dfdb38fd1a5f5694b",
-  "scripts/window-rendering-attribution.mjs": "ee9a4c2b5ade05e714259a65fb36a30b4781a11177110273a3e2d07e6dca94b0",
-  "tests/e2e/00-runtime-smoke.spec.ts": "1314b1c9566963ad84d4ff128639c0dd7d385bd4ea401ee983be89b1f42390e5"
+  "components/editor/design-page/windowRenderingAttribution.ts": "3c8074d86ca44fedd83013bfb6014641d468af2f7af8fc4040df7320158dc1d6",
+  "scripts/window-rendering-attribution.mjs": "c149c7d113aefafab56554a15f1a21959545d0f888eec184ab66068b6687dfb4",
+  "tests/e2e/00-runtime-smoke.spec.ts": "1314b1c9566963ad84d4ff128639c0dd7d385bd4ea401ee983be89b1f42390e5",
+  "scripts/window-rendering-attribution-constants.cjs": "dadee1f76aef06f533001842d393d6ba1acd2891ab190819567b05240128a49c"
 }

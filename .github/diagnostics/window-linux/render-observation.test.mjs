@@ -22,7 +22,7 @@ const sentinel='PRIVATE_TOKEN_DOM_UNRELATED';
 function moduleAt(source,name,logger=()=>{}) {
   const input=fs.readFileSync(path.join(source,name),'utf8');
   const code=ts.transpileModule(input,{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022,jsx:ts.JsxEmit.ReactJSX}}).outputText;
-  const context={exports:{},performance,console:{info:logger},require:id=>id==='@/scripts/window-rendering-attribution.mjs'?schema:req(id)};
+  const context={exports:{},performance,console:{info:logger},require:id=>id==='@/scripts/window-rendering-attribution-constants.cjs'?req(path.join(source,'scripts/window-rendering-attribution-constants.cjs')):req(id)};
   vm.runInNewContext(code,context,{timeout:1000});return context.exports;
 }
 function glass(source) {
