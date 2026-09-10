@@ -118,7 +118,7 @@ export function GeneratedWindowFrame3D({
           transparent
           opacity={Math.min(0.42, opacity * 0.34)}
           roughness={0.08}
-          transmission={0.5}
+          transmission={0}
           thickness={0.01}
           depthWrite={false}
           side={DoubleSide}

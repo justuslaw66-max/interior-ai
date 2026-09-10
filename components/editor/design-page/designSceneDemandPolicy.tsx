@@ -2,6 +2,7 @@
 
 import { useFrame, useThree, type RootState } from "@react-three/fiber";
 import { useCallback, useEffect, useRef, type MutableRefObject } from "react";
+import { installWindowRenderingAttribution } from "./windowRenderingAttribution";
 import type { OrbitControls as OrbitControlsImpl } from "three-stdlib";
 
 import { instrumentGLBMainThreadRenderer } from "@/components/scene/glb-scaled-model/glbMainThreadTelemetryFacade";
@@ -19,6 +20,7 @@ const DESIGN_SCENE_MAX_DAMPING_FRAME_SECONDS = 0.125;
 
 export function initializeDesignSceneDemandRenderer({ gl }: RootState) {
   instrumentGLBMainThreadRenderer(gl);
+  installWindowRenderingAttribution(gl);
 }
 
 export const DESIGN_SCENE_DEMAND_PROPS = Object.freeze({
