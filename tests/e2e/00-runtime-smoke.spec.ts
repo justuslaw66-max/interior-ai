@@ -1,3 +1,4 @@
+import { forwardWindowRenderObservation, forwardWindowClock, recordWindowAdmission } from "../../scripts/window-rendering-attribution.mjs";
 import { expect, test } from "./fixtures";
 import path from "node:path";
 import { assertDirectRuntimeSmokeServer } from "../../scripts/runtime-smoke-direct-identity.mjs";
@@ -1596,6 +1597,7 @@ test.describe("00. Runtime smoke", () => {
         RUNTIME_SMOKE_DIAGNOSTICS_SETTLE_CONTRACT.admissionRequiresQuiescentHeartbeat
       ) {
         checkpoint?.("renderer-idle-admission-wait-started", "ready");
+        recordWindowAdmission(phaseName, "admission-start");
         while (
           lastBrowserHeartbeat === null ||
           !runtimeSmokeBrowserHeartbeatSupportsIdleAdmission(
@@ -1607,6 +1609,7 @@ test.describe("00. Runtime smoke", () => {
           );
         }
         checkpoint?.("renderer-idle-admission-ready", "ready");
+        recordWindowAdmission(phaseName, "admission-ready");
       }
       let finalVerdict: ReturnType<typeof evaluateRuntimeSmokeRendererIdle> | null = null;
       let finalSamples: Array<{ rendererCalls: number }> = [];
@@ -1912,6 +1915,8 @@ test.describe("00. Runtime smoke", () => {
       }
       page.on("pageerror", (error) => fatalErrors.push(error.message));
       page.on("console", (message) => {
+        forwardWindowRenderObservation(message.text());
+        forwardWindowClock(message.text());
         const snapshotMilestonePrefix =
           "[runtime-smoke-required-snapshot-milestone] ";
         if (message.text().startsWith(snapshotMilestonePrefix)) {
@@ -2017,6 +2022,7 @@ test.describe("00. Runtime smoke", () => {
           };
           diagnosticsGlobal.__INTERIOR_AI_RUNTIME_SMOKE_DOCUMENT_STATE__ =
             documentState;
+          console.info("[window-render-clock]", JSON.stringify({ schema: "interior-ai.window-render-clock.v1", timeOriginMs: performance.timeOrigin, observedAtMs: performance.now() }));
           let sequence = 0;
           let maximumEventLoopDelayMs = 0;
           let lastAnimationFrameDelayMs: number | null = null;
@@ -2527,6 +2533,7 @@ test.describe("00. Runtime smoke", () => {
       finalLifecycleState = "not-observed";
       await phaseRecorder.run(phaseName, async ({ checkpoint }) => {
         lastBrowserHeartbeat = null;
+        recordWindowAdmission(phaseName, "reload-start");
         const reloadResponse = await page.reload({
           waitUntil: "domcontentloaded",
           timeout: reloadOperationTimeout("navigation"),
