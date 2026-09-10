@@ -1,4 +1,4 @@
-import { DoubleSide } from "three";
+import { FrontSide } from "three";
 
 type GeneratedWindowFrame3DProps = {
   widthMeters: number;
@@ -121,7 +121,7 @@ export function GeneratedWindowFrame3D({
           transmission={0.5}
           thickness={0.01}
           depthWrite={false}
-          side={DoubleSide}
+          side={FrontSide}
         />
       </mesh>
     </group>
