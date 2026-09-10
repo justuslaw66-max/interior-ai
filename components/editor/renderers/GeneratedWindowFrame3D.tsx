@@ -118,7 +118,8 @@ export function GeneratedWindowFrame3D({
           transparent
           opacity={Math.min(0.42, opacity * 0.34)}
           roughness={0.08}
-          transmission={0.5}
+          // Thin editor glazing stays translucent through alpha without a scene transmission pass.
+          transmission={0}
           thickness={0.01}
           depthWrite={false}
           side={FrontSide}

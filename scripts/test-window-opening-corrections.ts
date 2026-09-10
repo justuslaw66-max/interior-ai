@@ -1720,8 +1720,10 @@ function exerciseClosedWindowGlassSurfaces() {
     const geometry = new BoxGeometry(...box.props.args);
     const material = new MeshPhysicalMaterial(surface.props);
     try {
-      assert.equal(material.side, FrontSide, "Closed glass must avoid duplicate backface transmission draws.");
-      assert.equal(material.transmission, 0.5, "Retain physical transmission instead of disabling glass.");
+      assert.equal(material.side, FrontSide, "Closed glass must avoid duplicate backface draws.");
+      assert.equal(material.transmission, 0, "Thin editor glazing must avoid a scene transmission pass.");
+      assert.equal(material.transparent, true, "Keep alpha glazing visible and translucent.");
+      assert.equal(material.depthWrite, false, "Glazing must not occlude objects behind it in the depth buffer.");
       assert.equal(material.opacity, Math.min(0.42, (props.opacity ?? 1) * 0.34));
       const mesh = new Mesh(geometry, material);
       mesh.updateMatrixWorld(true);
