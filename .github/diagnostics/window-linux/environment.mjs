@@ -5,7 +5,7 @@ import { createRequire } from 'node:module';
 import { createHash } from 'node:crypto';
 import { pathToFileURL } from 'node:url';
 
-export const REFERENCE = Object.freeze({ image: '20260831.293.1', os: 'Ubuntu 24.04.4 LTS', runner: '2.337.0', node: 'v24.13.0', browser: '148.0.7778.96', revision: '1223' });
+export const REFERENCE = Object.freeze({ image: '20260907.300.1', os: 'Ubuntu 24.04.5 LTS', runner: '2.337.0', node: 'v24.13.0', browser: '148.0.7778.96', revision: '1223' });
 export function hostObservation(environment = process.env) {
   const release = fs.readFileSync('/etc/os-release', 'utf8');
   const pretty = /^PRETTY_NAME="([^"]+)"$/m.exec(release)?.[1];
