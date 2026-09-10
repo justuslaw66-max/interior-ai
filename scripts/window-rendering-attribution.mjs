@@ -1,6 +1,6 @@
-export const WINDOW_RENDER_SCHEMA = 'interior-ai.window-rendering-attribution.v1';
+import { WINDOW_RENDER_SCHEMA, WINDOW_RENDER_LIMIT } from './window-rendering-attribution-constants.cjs';
+export { WINDOW_RENDER_SCHEMA, WINDOW_RENDER_LIMIT };
 export const WINDOW_RENDER_MARKER = '[window-render-attribution] ';
-export const WINDOW_RENDER_LIMIT = 2048;
 export const WINDOW_RENDER_EVENTS = Object.freeze(['installed', 'render-enter', 'render-exit', 'target-enter', 'target-exit', 'generated-enter', 'generated-exit', 'other-transmissive', 'limit', 'observer-error']);
 const base = ['sequence','timeOriginMs','observedAtMs','rendererId','frame','observerMs','observerErrors','omitted','materialOmissions','omittedIsLowerBound'];
 const target = ['targetId','width','height'];
