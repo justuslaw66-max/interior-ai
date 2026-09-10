@@ -1,5 +1,8 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
+import { Children, isValidElement, type ReactNode } from "react";
+import { BoxGeometry, FrontSide, Mesh, MeshPhysicalMaterial, Raycaster, Vector3, type MeshPhysicalMaterialParameters } from "three";
+import { GeneratedWindowFrame3D } from "@/components/editor/renderers/GeneratedWindowFrame3D";
 import {
   ROOM_PLAN_CLICK_DISTANCE_PX,
   selectRoomSurfaceFromClick,
@@ -1694,6 +1697,48 @@ async function exerciseCameraSettleObservation() {
   assert.ok(noOp.angleDeg < 10 && noOp.positionDistance < 0.75);
 }
 
+function exerciseClosedWindowGlassSurfaces() {
+  const directions = [[0, 0, 1], [0, 0, -1], [1, 0, 0], [-1, 0, 0],
+    [0, 1, 0], [0, -1, 0], [1, 0.3, 1], [-1, 0.3, -1]];
+  for (const props of [
+    { widthMeters: 2, heightMeters: 1.5, wallDepthMeters: 0.2 },
+    { widthMeters: 1.2, heightMeters: 2.8, wallDepthMeters: 0.12, selected: true },
+    { widthMeters: 0.6, heightMeters: 0.6, wallDepthMeters: 0.08, opacity: 0.2 },
+    { widthMeters: 0, heightMeters: 0, wallDepthMeters: 0 },
+  ]) {
+    const frame = GeneratedWindowFrame3D(props);
+    const glass = Children.toArray(frame.props.children).find((node) =>
+      isValidElement<{ userData?: { testId?: string } }>(node) &&
+      node.props.userData?.testId === "generated-window-glass-3d");
+    assert.ok(isValidElement<{ children: ReactNode; raycast: () => null }>(glass));
+    assert.equal(glass.props.raycast(), null, "Glass must not intercept opening interactions.");
+    const children = Children.toArray(glass.props.children);
+    const box = children.find((node) => isValidElement(node) && node.type === "boxGeometry");
+    const surface = children.find((node) => isValidElement(node) && node.type === "meshPhysicalMaterial");
+    assert.ok(isValidElement<{ args: ConstructorParameters<typeof BoxGeometry> }>(box));
+    assert.ok(isValidElement<MeshPhysicalMaterialParameters>(surface));
+    const geometry = new BoxGeometry(...box.props.args);
+    const material = new MeshPhysicalMaterial(surface.props);
+    try {
+      assert.equal(material.side, FrontSide, "Closed glass must avoid duplicate backface transmission draws.");
+      assert.equal(material.transmission, 0.5, "Retain physical transmission instead of disabling glass.");
+      assert.equal(material.opacity, Math.min(0.42, (props.opacity ?? 1) * 0.34));
+      const mesh = new Mesh(geometry, material);
+      mesh.updateMatrixWorld(true);
+      for (const direction of directions) {
+        const origin = new Vector3(direction[0], direction[1], direction[2]).normalize().multiplyScalar(4);
+        const ray = new Raycaster(origin, origin.clone().negate().normalize());
+        assert.ok(ray.intersectObject(mesh).length > 0,
+          `An outward glass surface must remain visible from ${direction.join(",")}.`);
+      }
+    } finally {
+      geometry.dispose();
+      material.dispose();
+    }
+  }
+}
+
+exerciseClosedWindowGlassSurfaces();
 exerciseOpeningHistory();
 exerciseAtomicKindHistory();
 exerciseOpeningPersistence();
