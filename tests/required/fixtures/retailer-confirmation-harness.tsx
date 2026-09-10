@@ -7,9 +7,17 @@ import CartSidebar, {
 import { EditorDialog } from "@/components/editor/design-system/EditorDialog";
 import { CATALOG_ITEMS } from "@/lib/catalog";
 
+const SCENARIOS = ["ordinary", "zero", "duplicate", "mixed-groups", "missing-link", "excluded", "bundle", "unavailable"] as const;
+const USER_KINDS = ["guest", "consumer", "pro"] as const;
+export type RetailerFixtureInputs = {
+  scenario: typeof SCENARIOS[number];
+  tabs: number;
+  userKind: typeof USER_KINDS[number];
+};
+
 declare global {
   interface Window {
-    __retailerResetCountingScenario: (scenario: "excluded" | "missing-link") => void;
+    __retailerResetFixture: (inputs: RetailerFixtureInputs) => number;
   }
 }
 
@@ -20,9 +28,6 @@ const BETA_VARIANT_ID = "ch0015g-beta-variant";
 const MISSING_PRODUCT_ID = "ch0015g-missing-product";
 const MISSING_VARIANT_ID = "ch0015g-missing-variant";
 const params = new URLSearchParams(window.location.search);
-const scenario = params.get("retailer-scenario") ?? "ordinary";
-const requestedTabs = Number(params.get("retailer-tabs") ?? "4");
-const userKind = params.get("retailer-user") ?? "consumer";
 const template = Object.values(CATALOG_ITEMS)[0];
 if (!template) throw new Error("Retailer fixture requires a catalog template");
 const templateVariant = template.variants[0];
@@ -55,29 +60,17 @@ function registerAffiliateProduct(
   };
 }
 
-registerAffiliateProduct(
-  ALPHA_PRODUCT_ID,
-  ALPHA_VARIANT_ID,
-  "Safe Retailer",
-  "http://127.0.0.1:3000/synthetic-retailer/alpha",
-  scenario !== "unavailable"
-);
-registerAffiliateProduct(
-  BETA_PRODUCT_ID,
-  BETA_VARIANT_ID,
-  "Second Safe Retailer",
-  "http://127.0.0.1:3000/synthetic-retailer/beta"
-);
-registerAffiliateProduct(
-  MISSING_PRODUCT_ID,
-  MISSING_VARIANT_ID,
-  "Missing Link Retailer",
-  ""
-);
+function registerScenarioProducts(scenario: RetailerFixtureInputs["scenario"]) {
+  registerAffiliateProduct(ALPHA_PRODUCT_ID, ALPHA_VARIANT_ID, "Safe Retailer",
+    "http://127.0.0.1:3000/synthetic-retailer/alpha", scenario !== "unavailable");
+  registerAffiliateProduct(BETA_PRODUCT_ID, BETA_VARIANT_ID, "Second Safe Retailer",
+    "http://127.0.0.1:3000/synthetic-retailer/beta");
+  registerAffiliateProduct(MISSING_PRODUCT_ID, MISSING_VARIANT_ID, "Missing Link Retailer", "");
+}
 
 function initialItems(
-  nextScenario = scenario,
-  nextTabs = requestedTabs
+  nextScenario: RetailerFixtureInputs["scenario"],
+  nextTabs: number
 ): CartSidebarPlacedItem[] {
   if (nextScenario === "zero") return [];
   if (nextScenario === "duplicate") {
@@ -119,10 +112,11 @@ function initialItems(
 }
 
 function RetailerConfirmationHarness({
-  fixtureScenario = scenario,
-  tabs = requestedTabs,
-}: { fixtureScenario?: string; tabs?: number }) {
-  const [items, setItems] = useState(() => initialItems(fixtureScenario, tabs));
+  fixture,
+  generation,
+}: { fixture: RetailerFixtureInputs; generation: number }) {
+  const { scenario, tabs, userKind } = fixture;
+  const [items, setItems] = useState(() => initialItems(scenario, tabs));
   const [cartMounted, setCartMounted] = useState(true);
   const [newerDialogOpen, setNewerDialogOpen] = useState(false);
   const isPro = userKind === "pro";
@@ -131,7 +125,9 @@ function RetailerConfirmationHarness({
     <main
       data-testid="retailer-confirmation-harness"
       data-retailer-user={userKind}
-      data-retailer-scenario={fixtureScenario}
+      data-retailer-scenario={scenario}
+      data-retailer-tabs={tabs}
+      data-retailer-generation={generation}
       className="min-h-screen bg-neutral-100 p-6"
     >
       <div data-testid="retailer-fixture-controls" className="mb-4 flex gap-2">
@@ -203,18 +199,28 @@ document.body.innerHTML = '<div id="retailer-confirmation-harness-root"></div>';
 const root = document.getElementById("retailer-confirmation-harness-root");
 if (!root) throw new Error("Retailer confirmation fixture root is missing");
 const fixtureRoot = createRoot(root);
-let countingGeneration = 0;
-window.__retailerResetCountingScenario = (nextScenario) => {
-  if (nextScenario !== "excluded" && nextScenario !== "missing-link") {
-    throw new Error("Unsupported retailer counting scenario.");
+let fixtureGeneration = 0;
+function renderFixture(input: { scenario: string; tabs: number; userKind: string }) {
+  const scenario = SCENARIOS.find((value) => value === input.scenario);
+  const userKind = USER_KINDS.find((value) => value === input.userKind);
+  if (!scenario || !userKind || !Number.isSafeInteger(input.tabs) || input.tabs < 0 || input.tabs > 7) {
+    throw new Error("Unsupported retailer fixture inputs.");
   }
-  // A new key disposes the prior Cart and gives this input fresh hook state.
+  registerScenarioProducts(scenario);
+  const generation = ++fixtureGeneration;
+  // Remount the entire fixture so every scenario starts with fresh Cart state.
   fixtureRoot.render(
     <RetailerConfirmationHarness
-      key={++countingGeneration}
-      fixtureScenario={nextScenario}
-      tabs={4}
+      key={generation}
+      fixture={{ scenario, tabs: input.tabs, userKind }}
+      generation={generation}
     />
   );
-};
-fixtureRoot.render(<RetailerConfirmationHarness key={countingGeneration} />);
+  return generation;
+}
+window.__retailerResetFixture = renderFixture;
+renderFixture({
+  scenario: params.get("retailer-scenario") ?? "ordinary",
+  tabs: Number(params.get("retailer-tabs") ?? "4"),
+  userKind: params.get("retailer-user") ?? "consumer",
+});
