@@ -1,4 +1,5 @@
 import test from 'node:test';
+import { execFileSync } from 'node:child_process';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
@@ -9,13 +10,14 @@ import { pathToFileURL } from 'node:url';
 import { createRetention, readOwnedPhysicalFile } from './retention.mjs';
 import { createProjection, digest, LIMITS, projectCleanup } from './projection.mjs';
 import { createStreamProjection, runCaptured } from './process-capture.mjs';
+import { verifyRetainedParent, verifyVariantTree, OBSERVATION_FILES, MATERIAL_FILE } from './source-variants.mjs';
 import { FOUNDATIONS, serialPair, mayStartSecond, verifySourceDelta, sealPublication, safeFailureCode } from './campaign.mjs';
 import { requireMatchedHost, importAuthExports, authRegressionEnvironment, activeRunnerExecutable, activeRunnerCompanion, matchedRunnerVersion, defaultHeadlessExecutable } from './environment.mjs';
 import { verifyUpload } from './verify-upload.mjs';
 import { finishBootstrapConnection } from './bootstrap-database.mjs';
 
 const comparisonRoot = path.resolve(path.dirname(import.meta.filename), '../../../..');
-const source = path.join(comparisonRoot, 'c-source');
+const source = path.join(comparisonRoot, 'a-source');
 const load = file => import(pathToFileURL(path.join(source, 'scripts', file)).href);
 const { FURNISHED_TEMPLATE_PHASE_CONTRACTS: contracts } = await load('runtime-smoke-operation-contracts.mjs');
 const validators = await load('runtime-smoke-browser-diagnostics.mjs');
@@ -78,7 +80,7 @@ test('failure after completed cleanup still captures report without attribution 
   const f = fixture(t); f.terminal(); f.adapter.hooks.afterDatabaseAbort();
   assert.equal(f.adapter.snapshot().documents.find(item => item.id === 'runtime-report').projectionAvailable, true);
 });
-test('observer write failure cannot throw into canonical removal or authorize T', t => {
+test('observer write failure cannot throw into canonical removal or authorize B', t => {
   const f = fixture(t, (file, ...args) => { if (file.endsWith('retention.json')) throw new Error(sensitive); return fs.writeFileSync(file, ...args); });
   const result = completeFixture(f); assert.equal(result.originalExitCode, 0); assert.equal(result.safeForNextSource, false); assert.equal(fs.existsSync(f.roots.taskRoot), false);
   assert.deepEqual(result.observerErrors, ['final-retention-write']);
@@ -161,19 +163,19 @@ test('private process capture preserves nonzero exit and raw checksum without pr
   const result = await runCaptured({ command: process.execPath, args: ['-e', `process.stdout.write('${sensitive}\\n');process.stderr.write('${sensitive}\\n');process.exitCode=7`], cwd: root, environment: {}, privateLog: path.join(root, 'log') });
   assert.equal(result.exitCode, 7); assert.equal(result.rawSha256, digest(fs.readFileSync(path.join(root, 'log')))); assert.equal(JSON.stringify(result).includes(sensitive), false);
 });
-test('serial pair preserves C failure while allowing T only after proven cleanup', async () => {
+test('serial pair preserves A failure while allowing B only after proven cleanup', async () => {
   const sources = FOUNDATIONS.map((value, index) => ({ ...value, commit: String(index + 1).repeat(40), tree: '4'.repeat(40) })); const calls = [];
-  const result = await serialPair(sources, async source => { calls.push(source.id); return { runtimeInvocations: 1, runtime: { exitCode: source.id === 'C' ? 1 : 0, safeForNextSource: true }, bootstrap: { absent: true, sessionCount: 0 }, observerErrors: 0 }; });
-  assert.deepEqual(calls, ['C', 'T']); assert.equal(result[0].runtime.exitCode, 1);
+  const result = await serialPair(sources, async source => { calls.push(source.id); return { runtimeInvocations: 1, runtime: { exitCode: source.id === 'A' ? 1 : 0, safeForNextSource: true }, bootstrap: { absent: true, sessionCount: 0 }, observerErrors: 0, attribution: { meaningful: true } }; });
+  assert.deepEqual(calls, ['A', 'B']); assert.equal(result[0].runtime.exitCode, 1);
   for (const change of [{ runtime: { safeForNextSource: false } }, { bootstrap: { absent: true, sessionCount: 1 } }, { observerErrors: 1 }]) {
-    const started = []; await serialPair(sources, async source => { started.push(source.id); return { ...result[0], ...change }; }); assert.deepEqual(started, ['C']);
+    const started = []; await serialPair(sources, async source => { started.push(source.id); return { ...result[0], ...change }; }); assert.deepEqual(started, ['A']);
   }
   await assert.rejects(() => serialPair(sources.toReversed(), async () => null)); assert.equal(mayStartSecond(null), false);
 });
 test('environment mismatch remains a mandatory stop', () => {
   assert.throws(() => requireMatchedHost({ linux: true, x64: true, imageMatches: false, osMatches: true, nodeMatches: true }));
 });
-for (const id of ['C', 'T']) test(`${id} auth import consumes the real source session contract and exact export without partial mutation`, t => {
+for (const id of ['A', 'B']) test(`${id} auth import consumes the real source session contract and exact export without partial mutation`, t => {
   const root = temporary(); t.after(() => fs.rmSync(root, { recursive: true, force: true }));
   const repositoryRoot = path.join(comparisonRoot, `${id.toLowerCase()}-source`);
   const session = createRequire(path.join(repositoryRoot, 'package.json'))('./scripts/ci-auth-fixture-session.cjs');
@@ -213,19 +215,29 @@ for (const id of ['C', 'T']) test(`${id} auth import consumes the real source se
   const manifest = path.join(base.CI_AUTH_FIXTURE_SESSION_ROOT, `${base.CI_AUTH_FIXTURE_SESSION_ID}.session.json`);
   fs.unlinkSync(manifest); rejectsUnchanged(original);
 });
-test('actual committed sources contain exactly the equal approved hook and unchanged matching lockfiles', () => {
+test('prepared A/B retain the exact parent hook and one material delta, with matching locked dependencies', () => {
   const workflow = path.resolve(path.dirname(import.meta.filename), '../../..');
-  const sources = JSON.parse(fs.readFileSync(path.join(path.dirname(import.meta.filename), 'sources.json')));
-  const hashes = sources.map(source => verifySourceDelta(workflow, source)); assert.equal(hashes[0], hashes[1]);
-  assert.throws(() => verifySourceDelta(workflow, { ...sources[0], commit: sources[1].commit }));
+  verifyRetainedParent(workflow);
+  const a = path.join(comparisonRoot, 'a-source'); const b = path.join(comparisonRoot, 'b-source');
+  for (const id of ['A','B']) {
+    const cwd=path.join(comparisonRoot,`${id.toLowerCase()}-source`);
+    const tree=execFileSync('git',['write-tree'],{cwd,encoding:'utf8'}).trim();
+    assert.equal(verifyVariantTree(workflow,tree,id),digest(fs.readFileSync(path.join(cwd,'package-lock.json'))));
+    assert.throws(()=>verifyVariantTree(workflow,tree,id==='A'?'B':'A'));
+  }
+  for (const name of OBSERVATION_FILES) assert.deepEqual(fs.readFileSync(path.join(a,name)),fs.readFileSync(path.join(b,name)));
+  const before = fs.readFileSync(path.join(a,MATERIAL_FILE),'utf8');
+  assert.equal(before.split('transmission={0.5}').length,2);
+  assert.equal(fs.readFileSync(path.join(b,MATERIAL_FILE),'utf8'),before.replace('transmission={0.5}','transmission={0}'));
+  assert.deepEqual(fs.readFileSync(path.join(a,'package-lock.json')),fs.readFileSync(path.join(b,'package-lock.json')));
   assert.equal(digest(fs.readFileSync(path.join(path.dirname(import.meta.filename), 'success-retention.patch'))), '4e34f31f0028c7ba9ad495259f60046a25232e5b59019ce94c6a7b1e207cfb58');
 });
 test('artifact seal allows only projected filenames and enforces aggregate 100 MiB before upload', t => {
   const root = temporary(); t.after(() => fs.rmSync(root, { recursive: true, force: true }));
-  fs.writeFileSync(path.join(root, 'campaign.json'), '{}'); fs.mkdirSync(path.join(root, 'C')); fs.writeFileSync(path.join(root, 'C/retention.json'), '{}');
+  fs.writeFileSync(path.join(root, 'campaign.json'), '{}'); fs.mkdirSync(path.join(root, 'A')); fs.writeFileSync(path.join(root, 'A/retention.json'), '{}');
   sealPublication(root); assert.equal(JSON.parse(fs.readFileSync(path.join(root, 'inventory.json'))).files.length, 2); fs.unlinkSync(path.join(root, 'inventory.json'));
   fs.writeFileSync(path.join(root, 'raw.log'), sensitive); assert.throws(() => sealPublication(root)); fs.unlinkSync(path.join(root, 'raw.log'));
-  const fd = fs.openSync(path.join(root, 'C/retention.json'), 'w'); fs.ftruncateSync(fd, LIMITS.artifact + 1); fs.closeSync(fd); assert.throws(() => sealPublication(root));
+  const fd = fs.openSync(path.join(root, 'A/retention.json'), 'w'); fs.ftruncateSync(fd, LIMITS.artifact + 1); fs.closeSync(fd); assert.throws(() => sealPublication(root));
 });
 test('workflow has one manual-only bounded standard-runner job and one allowlisted seven-day upload', () => {
   const yaml = createRequire(path.join(source, 'package.json'))('yaml');
@@ -235,10 +247,10 @@ test('workflow has one manual-only bounded standard-runner job and one allowlist
   assert.ok(job.if.includes('github.run_attempt == 1')); assert.ok(job.if.includes('diagnostic/window-idle-linux-d5deaba-87ba770'));
   assert.equal(job.services.postgres.env.POSTGRES_PASSWORD, undefined); assert.ok(job.services.postgres.options.includes('--log-driver none'));
   const uploads = job.steps.filter(step => step.uses?.startsWith('actions/upload-artifact@')); assert.equal(uploads.length, 1); assert.equal(uploads[0].with['retention-days'], 7);
-  assert.equal(uploads[0].with.path, '${{ runner.temp }}/window-linux-7b5f1b26/sanitized/');
+  assert.equal(uploads[0].with.path, '${{ runner.temp }}/window-linux-attribution-4d1479c9/sanitized/');
   const execute = job.steps.find(step => step.id === 'comparison'); assert.ok(execute.run.includes('> "$RUNNER_TEMP/window-linux-driver.raw" 2>&1')); assert.equal(execute['continue-on-error'], undefined);
 });
-test('failure codes do not print private exceptions and late bootstrap close failure stops T', () => {
+test('failure codes do not print private exceptions and late bootstrap close failure stops B', () => {
   assert.equal(safeFailureCode(new Error(sensitive)), 'unclassified-private-error'); assert.equal(safeFailureCode(new Error('environment-mismatch')), 'environment-mismatch');
   assert.equal(mayStartSecond({ runtimeInvocations: 1, runtime: { safeForNextSource: true }, bootstrap: { absent: true, sessionCount: 0, closeFailures: 1 }, observerErrors: 0 }), false);
 });
@@ -282,7 +294,7 @@ function sourceFunction(file, name) {
   const node = ast.statements.find(item => ts.isFunctionDeclaration(item) && item.name?.text === name); assert.ok(node);
   return node.getText(ast).replace(/^export /, '');
 }
-for (const id of ['C', 'T']) test(`${id} actual success owner keeps callback after bundle verification and before root removal; absence unchanged`, async () => {
+for (const id of ['A', 'B']) test(`${id} actual success owner keeps callback after bundle verification and before root removal; absence unchanged`, async () => {
   const file = path.join(comparisonRoot, `${id.toLowerCase()}-source/scripts/stable-runtime-smoke.mjs`);
   for (const supplied of [false, true]) {
     const events = []; const context = { repositoryRoot: '/unit', roots: { evidenceRoot: '/unit/evidence' }, manifest: { candidateIdentifier: 'unit', artifact: { sha256: 'unit' } }, testHooks: supplied ? { beforeSuccessfulRootRemoval: () => events.push('capture') } : null };
@@ -308,7 +320,7 @@ test('actual bootstrap owner records never-attempted cleanup without a connectio
     'await loadTransport()');
   assert.ok(body.includes('await loadTransport()'));
   const make = vm.runInNewContext(body + '\nbootstrapDatabase', globals);
-  const owner = await make({ source: '/unit', adminUrl: 'postgresql://test:unit@127.0.0.1:5432/postgres', name: 'window_linux_test_C_123_1', serviceId,
+  const owner = await make({ source: '/unit', adminUrl: 'postgresql://test:unit@127.0.0.1:5432/postgres', name: 'window_linux_test_A_123_1', serviceId,
     persist: receipt => receipts.push(JSON.parse(JSON.stringify(receipt))) });
   assert.equal(receipts[0].creation, 'not-attempted'); assert.equal(receipts[0].cleanup, 'not-attempted');
   assert.equal(await owner.cleanup(), false); assert.equal(events.length, 0);
@@ -323,7 +335,7 @@ test('actual bootstrap owner records never-attempted cleanup without a connectio
 });
 
 test('actual source regression projection removes child auth capabilities without changing the parent or database environment', async () => {
-  for (const id of ['C', 'T']) {
+  for (const id of ['A', 'B']) {
     const repositoryRoot = path.join(comparisonRoot, `${id.toLowerCase()}-source`);
     const { authFixtureRegressionCapabilityNames } = await import(pathToFileURL(path.join(repositoryRoot, 'scripts/ci-auth-fixture-regression-environment.mjs')).href);
     const names = authFixtureRegressionCapabilityNames(repositoryRoot);

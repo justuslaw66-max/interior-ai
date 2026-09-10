@@ -1,4 +1,4 @@
-name: WINDOW bounded Linux diagnostic
+name: WINDOW bounded rendering attribution
 
 on:
   workflow_dispatch:
@@ -51,7 +51,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          if [ -f "$RUNNER_TEMP/window-linux-7b5f1b26/upload-ready" ]; then
+          if [ -f "$RUNNER_TEMP/window-linux-attribution-4d1479c9/upload-ready" ]; then
             node .github/diagnostics/window-linux/verify-upload.mjs > "$RUNNER_TEMP/window-linux-upload-verification.raw" 2>&1
             echo "ready=true" >> "$GITHUB_OUTPUT"
           fi
@@ -60,7 +60,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: window-linux-diagnostic-${{ github.run_id }}-${{ github.run_attempt }}
-          path: ${{ runner.temp }}/window-linux-7b5f1b26/sanitized/
+          path: ${{ runner.temp }}/window-linux-attribution-4d1479c9/sanitized/
           if-no-files-found: error
           retention-days: 7
           compression-level: 0

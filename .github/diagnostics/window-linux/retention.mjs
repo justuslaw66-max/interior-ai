@@ -61,7 +61,7 @@ export function createRetention({ expected, projection, privateOutput, publicOut
     if (!/^[a-f0-9]{64}$/.test(expected[key])) throw new Error('artifact-sha');
     identity[key] = expected[key];
   }
-  if (!['C', 'T'].includes(expected.id) || !/^[1-9][0-9]*$/.test(expected.runId) || expected.attempt !== '1' ||
+  if (!['A', 'B'].includes(expected.id) || !/^[1-9][0-9]*$/.test(expected.runId) || expected.attempt !== '1' ||
       expected.candidateId !== `github-${expected.runId}-${expected.attempt}` || !/^[A-Za-z0-9_-]{1,100}$/.test(expected.buildId) || typeof readLifecycle !== 'function') throw new Error('identity-or-validator');
   for (const key of ['id', 'runId', 'attempt', 'candidateId', 'buildId']) identity[key] = expected[key];
   fs.mkdirSync(privateOutput, { mode: 0o700 }); fs.mkdirSync(publicOutput, { mode: 0o700 });

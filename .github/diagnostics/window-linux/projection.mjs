@@ -82,6 +82,19 @@ export function createProjection(contracts, checkpoints = [], validators = {}) {
   }
   function event(value) {
     if (!value || typeof value !== 'object' || Object.keys(value).includes('__proto__')) return null;
+    if (value.schema === 'interior-ai.window-rendering-attribution.v1') {
+      const safe = validators.projectWindowRenderObservation?.(value);
+      return safe ? { kind: 'window-render', ...safe } : { kind: 'window-render-invalid' };
+    }
+    if (value.schema === 'interior-ai.window-rendering-attribution-invalid.v1') return { kind: 'window-render-invalid' };
+    if (value.schema === 'interior-ai.window-render-clock.v1') {
+      if (!exact(value, ['schema','timeOriginMs','observedAtMs']) || numeric(value.timeOriginMs) === null || numeric(value.observedAtMs) === null) return { kind:'window-render-invalid' };
+      return { kind:'window-clock', timeOriginMs:value.timeOriginMs, observedAtMs:value.observedAtMs };
+    }
+    if (value.schema === 'interior-ai.window-render-admission.v1') {
+      if (!exact(value,['schema','phaseName','stage']) || !phases.includes(value.phaseName) || !['reload-start','admission-start','admission-ready'].includes(value.stage)) return { kind:'window-render-invalid' };
+      return { kind:'window-admission', phaseName:value.phaseName, stage:value.stage };
+    }
     if (value.schema === 'interior-ai.runtime-smoke-browser-heartbeat.v2') {
       try { validators.projectRuntimeSmokeBrowserHeartbeat(value); } catch { return null; }
       const numericKeys = ['sequence', 'observedAtMs', 'eventLoopDelayMs', 'maximumEventLoopDelayMs', 'lastAnimationFrameDelayMs', 'maximumAnimationFrameDelayMs', 'lastAnimationFrameCadenceMs', 'rendererCalls', 'rendererCallDelta', 'rendererCallRateHz', 'activeAnimationCount', 'controlEventCount', 'webglContextLostCount', 'webglContextRestoredCount'];

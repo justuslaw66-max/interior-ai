@@ -14,7 +14,7 @@ export async function runtimeWorker(config) {
   const { FURNISHED_TEMPLATE_PHASE_CONTRACTS } = await load('runtime-smoke-operation-contracts.mjs');
   const spec = fs.readFileSync(path.join(source, 'tests/e2e/00-runtime-smoke.spec.ts'), 'utf8');
   const checkpoints = [...new Set(['phase-start', 'phase-complete', ...Array.from(spec.matchAll(/checkpoint(?:\?\.)?\(\s*["']([a-z0-9-]+)["']/g), match => match[1])])];
-  const validators = await load('runtime-smoke-browser-diagnostics.mjs');
+  const validators = { ...await load('runtime-smoke-browser-diagnostics.mjs'), ...await load('window-rendering-attribution.mjs') };
   const projection = createProjection(FURNISHED_TEMPLATE_PHASE_CONTRACTS, checkpoints, validators);
   const { readCertificationDatabaseLifecycle } = await load('production-certification-database-lifecycle.mjs');
   const retention = createRetention({ ...config, projection, readLifecycle: readCertificationDatabaseLifecycle });

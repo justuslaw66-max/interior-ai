@@ -4,7 +4,7 @@ import { performance } from 'node:perf_hooks';
 import { createHash } from 'node:crypto';
 import { LIMITS, SIGNALS } from './projection.mjs';
 
-const MARKERS = new Set(['runtime-smoke-browser-heartbeat-observation', 'runtime-smoke-browser-callback-requested', 'runtime-smoke-browser-callback-observation', 'runtime-smoke-browser-callback-timing', 'runtime-smoke-readiness-observation']);
+const MARKERS = new Set(['window-render-attribution-observation', 'window-render-clock-observation', 'window-render-admission', 'window-render-attribution-invalid', 'runtime-smoke-browser-heartbeat-observation', 'runtime-smoke-browser-callback-requested', 'runtime-smoke-browser-callback-observation', 'runtime-smoke-browser-callback-timing', 'runtime-smoke-readiness-observation']);
 
 export function createStreamProjection(project, stamp = () => ({})) {
   const events = []; const counters = { bytes: 0, lines: 0, omitted: 0, malformed: 0, capped: 0, projectionMs: 0 };

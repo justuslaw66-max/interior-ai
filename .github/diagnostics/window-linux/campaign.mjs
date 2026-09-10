@@ -6,6 +6,9 @@ import { runCaptured } from './process-capture.mjs';
 import { createProjection, digest, LIMITS } from './projection.mjs';
 import { hostObservation, requireMatchedHost, REFERENCE, browserObservation, sourceEnvironment, importAuthExports, authRegressionEnvironment, activeRunnerExecutable, activeRunnerCompanion, matchedRunnerVersion, fileHash } from './environment.mjs';
 import { bootstrapDatabase } from './bootstrap-database.mjs';
+import { PARENT, FOUNDATION, FOUNDATION_TREE, verifySourceDelta, verifyPairDelta } from './source-variants.mjs';
+import { assessMaterialObservation } from './render-observation.mjs';
+export { verifySourceDelta } from './source-variants.mjs';
 
 const HERE = path.dirname(import.meta.filename);
 const FAILURE_CODES = new Set(['campaign-context', 'workflow-identity', 'source-inventory', 'source-selection', 'source-delta', 'retention-delta', 'lockfile-delta', 'paired-lockfile-mismatch',
@@ -15,10 +18,7 @@ const FAILURE_CODES = new Set(['campaign-context', 'workflow-identity', 'source-
   'bootstrap-acknowledgement', 'bootstrap-ownership-uncertain', 'bootstrap-identity-changed', 'bootstrap-sessions-remain', 'bootstrap-cleanup-unproven', 'bootstrap-close-failed', 'bootstrap-receipt-write-failed',
   'auth-export-cap', 'auth-export-shape', 'auth-export-inventory', 'auth-export-session']);
 export const safeFailureCode = error => FAILURE_CODES.has(error?.message) ? error.message : 'unclassified-private-error';
-export const FOUNDATIONS = Object.freeze([
-  { id: 'C', foundation: 'd5deaba4874bb62278d4ec026f95f0ad4ef9d71c', foundationTree: 'f1a01d07a0c417ff6c0388f21369723dbe4b9dab' },
-  { id: 'T', foundation: '87ba770d3f336553da7a9cbc2317b2b4a0c829d0', foundationTree: '81f7dacb61a73dba9c545fce14e76dc8dbfba56e' },
-]);
+export const FOUNDATIONS = Object.freeze(['A','B'].map(id=>({id, foundation:FOUNDATION, foundationTree:FOUNDATION_TREE, parent:PARENT})));
 export function validateSources(sources) {
   if (!Array.isArray(sources) || sources.length !== 2) throw new Error('source-inventory');
   for (let index = 0; index < 2; index++) {
@@ -32,25 +32,11 @@ export function mayStartSecond(first) {
 export async function serialPair(sources, execute) {
   validateSources(sources); const results = [];
   results.push(await execute(sources[0]));
-  if (mayStartSecond(results[0])) results.push(await execute(sources[1]));
+  if (mayStartSecond(results[0]) && results[0]?.attribution?.meaningful === true) results.push(await execute(sources[1]));
   return results;
 }
 function readCommand(command, args, cwd, environment = process.env) {
   return execFileSync(command, args, { cwd, env: environment, stdio: ['ignore', 'pipe', 'pipe'], maxBuffer: LIMITS.document, encoding: 'utf8' }).trim();
-}
-export function verifySourceDelta(workflow, source) {
-  const show = ref => execFileSync('git', ['show', ref], { cwd: workflow, maxBuffer: LIMITS.document, stdio: ['ignore', 'pipe', 'pipe'] });
-  if (readCommand('git', ['rev-parse', `${source.commit}^`], workflow) !== source.foundation ||
-      readCommand('git', ['rev-parse', `${source.commit}^{tree}`], workflow) !== source.tree ||
-      readCommand('git', ['rev-parse', `${source.foundation}^{tree}`], workflow) !== source.foundationTree ||
-      readCommand('git', ['diff', '--name-only', source.foundation, source.commit], workflow) !== 'scripts/stable-runtime-smoke.mjs') throw new Error('source-delta');
-  const before = show(`${source.foundation}:scripts/stable-runtime-smoke.mjs`).toString('utf8');
-  const needle = '  await createAndVerifyBundle({ ...context, runtime });\n';
-  const insertion = '  context.testHooks?.beforeSuccessfulRootRemoval?.({\n    roots: context.roots,\n    paths,\n    lifecycleEnvironment: context.lifecycleEnvironment,\n    finalDatabase: finalization.finalDatabase,\n  });\n';
-  if (before.split(needle).length !== 2 || !show(`${source.commit}:scripts/stable-runtime-smoke.mjs`).equals(Buffer.from(before.replace(needle, needle + insertion)))) throw new Error('retention-delta');
-  const lock = show(`${source.commit}:package-lock.json`);
-  if (!lock.equals(show(`${source.foundation}:package-lock.json`))) throw new Error('lockfile-delta');
-  return digest(lock);
 }
 function json(file, value) { fs.writeFileSync(file, JSON.stringify(value, null, 2) + '\n', { mode: 0o600 }); }
 function assertPristine(source) {
@@ -65,7 +51,7 @@ export function sealPublication(publication) {
   const files = [];
   for (const entry of fs.readdirSync(publication, { withFileTypes: true })) {
     if (entry.isFile() && entry.name === 'campaign.json') files.push(entry.name);
-    else if (entry.isDirectory() && ['C', 'T'].includes(entry.name)) for (const name of fs.readdirSync(path.join(publication, entry.name))) {
+    else if (entry.isDirectory() && ['A', 'B'].includes(entry.name)) for (const name of fs.readdirSync(path.join(publication, entry.name))) {
       if (!['runtime-report.json', 'phase-timings.json', 'retention.json'].includes(name)) throw new Error('artifact-inventory');
       files.push(`${entry.name}/${name}`);
     } else throw new Error('artifact-inventory');
@@ -79,10 +65,10 @@ export function sealPublication(publication) {
 
 export async function campaign() {
   const workflow = fs.realpathSync(path.join(HERE, '../../..'));
-  const root = path.join(process.env.RUNNER_TEMP, 'window-linux-7b5f1b26');
+  const root = path.join(process.env.RUNNER_TEMP, 'window-linux-attribution-4d1479c9');
   const publication = path.join(root, 'sanitized'); const privateRoot = path.join(root, 'private');
   fs.mkdirSync(root, { mode: 0o700 }); fs.mkdirSync(publication, { mode: 0o700 }); fs.mkdirSync(privateRoot, { mode: 0o700 });
-  const record = { schema: 'window-linux-comparison.v1', classification: 'DIAGNOSTIC_ONLY', acceptedAsRequiredCI: false,
+  const record = { schema: 'window-rendering-attribution.v1', classification: 'DIAGNOSTIC_ONLY', acceptedAsRequiredCI: false,
     reference: REFERENCE, campaignLimit: 1, runtimeLimit: 2, strictBuildLimit: 2, runtimeInvocations: 0, strictBuilds: 0, cases: [], host: null, preflight: 'incomplete', stop: null };
   const persist = () => json(path.join(publication, 'campaign.json'), record);
   let sequence = 0;
@@ -105,9 +91,10 @@ export async function campaign() {
     if (patchSha256 !== '4e34f31f0028c7ba9ad495259f60046a25232e5b59019ce94c6a7b1e207cfb58') throw new Error('retention-delta');
     record.retentionPatchSha256 = patchSha256;
     const lockHashes = sources.map(source => verifySourceDelta(workflow, source));
+    verifyPairDelta(workflow, sources);
     if (lockHashes[0] !== lockHashes[1]) throw new Error('paired-lockfile-mismatch');
     record.lockfileSha256 = lockHashes[0];
-    record.sources = sources.map(source => Object.fromEntries(['id', 'foundation', 'foundationTree', 'commit', 'tree'].map(key => [key, source[key]])));
+    record.sources = sources.map(source => Object.fromEntries(['id', 'foundation', 'foundationTree', 'parent', 'commit', 'tree'].map(key => [key, source[key]])));
     record.host = hostObservation(); persist(); requireMatchedHost(record.host);
     const activeRunner = activeRunnerExecutable();
     record.host.runnerWorkerPid = activeRunner.pid;
@@ -145,8 +132,7 @@ export async function campaign() {
       requireSuccess(await command('source-checkout', ['checkout', '--detach', identity.commit], source, setupEnv, result, 'git'));
       requireSuccess(await command('source-origin', ['remote', 'set-url', 'origin', 'https://github.com/justuslaw66-max/interior-ai.git'], source, setupEnv, result, 'git'));
       requireSuccess(await command('source-lfs', ['lfs', 'pull'], source, base, result, 'git'));
-      if (readCommand('git', ['rev-parse', 'HEAD'], source) !== identity.commit || readCommand('git', ['rev-parse', 'HEAD^{tree}'], source) !== identity.tree ||
-          readCommand('git', ['rev-parse', 'HEAD^'], source) !== identity.foundation || readCommand('git', ['diff', '--name-only', identity.foundation, 'HEAD'], source) !== 'scripts/stable-runtime-smoke.mjs') throw new Error('source-delta');
+      if (readCommand('git', ['rev-parse', 'HEAD'], source) !== identity.commit || readCommand('git', ['rev-parse', 'HEAD^{tree}'], source) !== identity.tree || readCommand('git', ['rev-parse', 'HEAD^'], source) !== identity.parent) throw new Error('source-delta');
       const databaseName = `window_linux_test_${identity.id}_${base.GITHUB_RUN_ID}_1`;
       const environment = sourceEnvironment(source, ownRoot, identity, adminUrl, databaseName);
       requireSuccess(await command('dependencies', ['ci'], source, environment, result));
@@ -189,11 +175,12 @@ export async function campaign() {
         const config = { expected, environment, privateOutput: path.join(ownRoot, 'retained-raw'), publicOutput: path.join(publication, identity.id), privateResult: path.join(ownRoot, 'runtime-result.json') };
         const configPath = path.join(ownRoot, 'runtime-config.json'); json(configPath, config);
         const { FURNISHED_TEMPLATE_PHASE_CONTRACTS } = await import(pathToFileURL(path.join(source, 'scripts/runtime-smoke-operation-contracts.mjs')).href);
-        const validators = await import(pathToFileURL(path.join(source, 'scripts/runtime-smoke-browser-diagnostics.mjs')).href);
+        const validators = { ...await import(pathToFileURL(path.join(source, 'scripts/runtime-smoke-browser-diagnostics.mjs')).href), ...await import(pathToFileURL(path.join(source, 'scripts/window-rendering-attribution.mjs')).href) };
         const projection = createProjection(FURNISHED_TEMPLATE_PHASE_CONTRACTS, [], validators);
         result.stage = 'runtime'; result.runtimeInvocations++; record.runtimeInvocations++; persist();
         if (record.runtimeInvocations > 2) throw new Error('runtime-budget');
         const outcome = await command('stable-runtime-owner-with-retention', [path.join(HERE, 'runtime-worker.mjs'), configPath], source, environment, result, 'node', projection.event);
+        result.attribution = assessMaterialObservation(outcome, validators.projectWindowRenderObservation);
         if (fs.existsSync(config.privateResult)) {
           const received = JSON.parse(fs.readFileSync(config.privateResult, 'utf8'));
           result.runtime = { exitCode: outcome.exitCode, signal: outcome.signal, originalOwnerExitCode: Number.isInteger(received.exitCode) ? received.exitCode : null,
@@ -208,7 +195,7 @@ export async function campaign() {
       }
       return result;
     });
-    record.stop = record.cases[1].runtimeInvocations === 1 ? 'pair-complete' : 'first-source-precondition-or-cleanup-stop';
+    record.stop = record.cases[1].runtimeInvocations === 1 ? 'pair-complete' : 'first-source-precondition-cleanup-or-material-observation-stop';
   } catch (error) { record.stop = record.preflight === 'passed' ? 'campaign-failed' : 'preflight-rejected'; record.failureCode = safeFailureCode(error); }
   persist();
   sealPublication(publication);

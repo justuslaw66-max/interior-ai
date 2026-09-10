@@ -15,7 +15,7 @@ export async function finishBootstrapConnection({ client, receipt, persist, prim
 // Own only the prerequisite migration DB. The Stable owner's separate DB/role,
 // attestation and cleanup remain entirely under the existing source owner.
 export async function bootstrapDatabase({ source, adminUrl, name, persist, serviceId }) {
-  if (!/^window_linux_test_[CT]_[1-9][0-9]*_1$/.test(name) || name.length > 63) throw new Error('bootstrap-name');
+  if (!/^window_linux_test_[AB]_[1-9][0-9]*_1$/.test(name) || name.length > 63) throw new Error('bootstrap-name');
   const url = new URL(adminUrl);
   if (url.protocol !== 'postgresql:' || url.hostname !== '127.0.0.1' || url.port !== '5432' || url.username !== 'test' || !url.password || url.pathname !== '/postgres' || url.search || url.hash) throw new Error('bootstrap-admin');
   const { Client } = createRequire(path.join(source, 'package.json'))('pg');
