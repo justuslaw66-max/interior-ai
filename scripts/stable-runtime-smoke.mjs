@@ -1,3 +1,4 @@
+import { assertAutomaticDatabaseCleanupMayStart } from "./production-certification-database-cleanup-observation.mjs";
 import { spawnSync } from "node:child_process";
 import { randomUUID } from "node:crypto";
 import {
@@ -12,8 +13,8 @@ import {
   createProductionEvidenceBundle,
   recordProductionEvidenceTest,
   validateProductionEvidence,
-  writeProductionEvidenceManifest,
-} from "./production-artifact-evidence.mjs";
+} from "./production-artifact-source.mjs";
+import { writeProductionEvidenceManifest } from "./production-artifact-evidence.mjs";
 import { PRODUCTION_EVIDENCE_VERIFICATION_MODES } from "./production-artifact-contract.mjs";
 import {
   STABLE_RUNTIME_SMOKE_DATABASE_PROFILE,
@@ -45,6 +46,7 @@ import {
   stableRuntimePaths,
   stableSha256,
   writeStableRuntimeSummary,
+  verifyStableRuntimeBundleTransport,
 } from "./stable-runtime-smoke-resources.mjs";
 import { configureStableRuntimeDatabaseTransport } from "./stable-runtime-smoke-database-transport.mjs";
 
@@ -85,7 +87,7 @@ async function cleanupDatabase({ repositoryRoot, lifecycleEnvironment, databaseA
   });
 }
 
-async function abortDatabase({ repositoryRoot, lifecycleEnvironment, failure, databaseAdapter }) {
+export async function abortStableRuntimeSmokeDatabase({ repositoryRoot, lifecycleEnvironment, failure, databaseAdapter }) {
   if (!lifecycleEnvironment?.CERTIFICATION_DATABASE_LIFECYCLE_PATH ||
       !existsSync(lifecycleEnvironment.CERTIFICATION_DATABASE_LIFECYCLE_PATH)) return true;
   const current = readCertificationDatabaseLifecycle({ repositoryRoot, environment: lifecycleEnvironment });
@@ -96,6 +98,7 @@ async function abortDatabase({ repositoryRoot, lifecycleEnvironment, failure, da
   ]).has(current.evidence.currentState)) {
     return true;
   }
+  assertAutomaticDatabaseCleanupMayStart(current.evidence, failure);
   const result = await abortCertificationDatabase({
     repositoryRoot,
     environment: lifecycleEnvironment,
@@ -258,7 +261,7 @@ async function createAndVerifyBundle({
   roots,
   runtime,
 }) {
-  await createProductionEvidenceBundle({
+  const bundle = await createProductionEvidenceBundle({
     repositoryRoot,
     manifestPath: STABLE_MANIFEST_PATH,
     reportPath: STABLE_PORTABLE_REPORT_PATH,
@@ -270,6 +273,11 @@ async function createAndVerifyBundle({
       STABLE_PORTABLE_TIMING_PATH,
       STABLE_PORTABLE_SUMMARY_PATH,
     ],
+  });
+  const sourceManifestSha256 = verifyStableRuntimeBundleTransport({
+    bundlePath: path.join(repositoryRoot, STABLE_BUNDLE_PATH),
+    bundleSha256: bundle.bundleSha256,
+    manifestPath: path.join(repositoryRoot, STABLE_MANIFEST_PATH),
   });
   const extractedRoot = path.join(roots.taskRoot, "standalone");
   mkdirSync(extractedRoot, { mode: 0o700 });
@@ -289,6 +297,7 @@ async function createAndVerifyBundle({
       env: {
         ...environment,
         PRODUCTION_EVIDENCE_EXPECTED_COMMIT_SHA: manifest.source.commitSha,
+        PRODUCTION_EVIDENCE_EXPECTED_MANIFEST_SHA256: sourceManifestSha256,
       },
       stdio: "inherit",
     },
@@ -402,7 +411,7 @@ export async function cleanupFailedStableRun(context, error) {
         context.testHooks?.afterFailureAttribution?.(attribution);
       }
     }
-    const abort = context.testHooks?.abortDatabase ?? abortDatabase;
+    const abort = context.testHooks?.abortDatabase ?? abortStableRuntimeSmokeDatabase;
     const absent = await abort({
       repositoryRoot: context.repositoryRoot,
       lifecycleEnvironment: context.lifecycleEnvironment,

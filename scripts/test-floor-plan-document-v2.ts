@@ -287,6 +287,7 @@ assert.deepEqual(scene.floors[0].openings.find((opening) => opening.id === "bedr
   operation: "swing",
   offsetMm: 1000,
   widthMm: 900,
+  widthEvidence: "assumed",
   heightMm: 2100,
   heightEvidence: "assumed",
   sillHeightMm: 0,

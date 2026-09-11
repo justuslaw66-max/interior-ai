@@ -47,8 +47,11 @@ export type RoomOpening2D = {
   /** A wall-free passage behaves like a door for circulation but has no door leaf. */
   doorStyle?: "swing" | "sliding" | "folding" | "open";
   canonicalWallId?: string;
+  /** Last trustworthy imported/requested position, used only while host resolution fails. */
+  requestedWorldCenterMm?: Vec2Mm;
   operation?: "swing" | "sliding" | "folding" | "fixed" | "open";
   evidence?: {
+    width?: FloorPlanPropertyEvidenceV2;
     height?: FloorPlanPropertyEvidenceV2;
     sillHeight?: FloorPlanPropertyEvidenceV2;
   };

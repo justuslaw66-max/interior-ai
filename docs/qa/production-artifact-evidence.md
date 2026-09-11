@@ -1,5 +1,95 @@
 # Production-equivalent artifact evidence
 
+## WINDOW synchronization with the green integration baseline — 2026-09-09
+
+Stable CI retains the baseline's `evidence:production:stable-runtime-smoke`
+parent and external lifecycle/report ownership. Its source-only preflight,
+record and bundle calls use `production-artifact-source.mjs`; the portable
+closure continues to consume the core verifier without repository validators.
+The Stable parent checks its newly created tar/checksum before extraction and
+passes the source manifest digest into `STANDALONE_BUNDLE` verification. The
+Stable summary's database, auth, projection and non-release classifications
+remain mandatory. Full certification is not a prerequisite for this ordinary
+transport verification and is not claimed by it.
+
+`evidence:production:smoke` retains the separate ordinary runtime owner for
+local exact-candidate acceptance. Neither owner grants release certification
+or final integration authority. New baseline runtime behavior does not
+retrospectively explain or clear failures on the earlier WINDOW candidate.
+
+WINDOW mounted camera evidence now observes the existing demand diagnostics:
+frame-normalized damping during motion is allowed, and an already-idle canvas
+requires positive render history, stable generation/counters, no pending or
+active work, and fresh visible observations. The original 20-second maximum,
+50 ms stable duration, two samples, motion tolerances and post-orbit movement
+assertions remain unchanged. It requests no extra render frames.
+
+## Ordinary artifact runtime ownership — 2026-09-09
+
+The source `smoke` command owns ordinary CI execution explicitly. After artifact
+preflight it consumes the physical canonical auth session, preserves its build
+activation scope, validates the isolated database, and allocates a fresh restricted
+runtime role. Hosted ownership is the stable workflow's exact service/run/session;
+the approved local substitute requires the WINDOW database creation receipt and OID.
+The smoke step passes its `job.services.postgres.id`; the source owner inspects that
+exact running `postgres:15` container, its synthetic account/database configuration,
+5432 publication and network addresses. PostgreSQL's observed address must match
+that service and is frozen with the database/role OIDs for later checks. This accounts
+for Docker's published-port boundary; it does not allow arbitrary private addresses.
+Local ownership continues to require the exact 127.0.0.1 server and creation receipt.
+The [GitHub service context](https://docs.github.com/en/actions/reference/workflows-and-actions/contexts#job-context)
+provides the container ID, while [PostgreSQL's connection information](https://www.postgresql.org/docs/16/functions-info.html)
+reports the address of the server socket rather than the client's connection hostname.
+The parent retains provisioning authority. Playwright receives the restricted URL;
+the product receives only required system settings, canonical synthetic auth,
+workflow synthetic staging service values, and verified artifact/run identity.
+Private session/capability/receipt paths and admin/module-loading inputs stay out
+of the product process.
+
+The unchanged server command consumes a fresh private binding of physical source,
+manifest, build/artifact/run, auth session, database and acknowledged role OIDs.
+It rejects mixed or missing execution owners. Genuine certification continues
+through its existing lifecycle selector and environment profile, with no ordinary
+fallback. Ordinary report identity is retained and cannot satisfy certified report
+recording or final certification; ordinary AppEvents receive no certification binding.
+
+Ordinary smoke requires the existing canonical repository report and timing paths
+and refuses existing outputs before allocating resources. Timing consumers retain
+the validated relative reference; the shared resolver preserves explicitly authorized
+external roots for their existing owners. Genuine certification's external report
+and timing contract is unchanged. Physical containment, symlink rejection and
+no-overwrite publication remain enforced. Captured startup/test failures, reporting
+failures and cleanup/retention failures retain their ordered redacted causes.
+
+Role cleanup requires acknowledged exact identity and zero target/role sessions,
+rechecks immediately before DROP, and observes terminal absence. It never terminates
+sessions, drops a replacement role, or drops the hosted service database. The local
+WINDOW database remains owned by its separate creation/cleanup receipt lifecycle.
+
+## Source and portable verifier dependencies — 2026-09-07
+
+`required-test-report-validation.mjs` owns shared manifest and report validation.
+Portable archive verification imports that implementation using only physical
+local modules and Node built-ins. The unchanged verifier-closure checker still
+rejects package imports and resolution fallbacks; archived verification requires
+neither a source checkout nor `node_modules`.
+
+Source operations enter through `production-artifact-source.mjs`, including the
+registered `evidence:production:*` commands, Playwright preflight, certification
+build calls, and CI runtime-failure diagnostics. This driver supplies full
+repository validation for the actual operation root, including parsed workflow
+routing and selected-handoff policy. Source commands reject a missing driver;
+explicit report-only consumers retain their existing manifest/report contract.
+Both paths share the same report assertions and artifact identities. Historical
+archives and evidence retain their original source attribution.
+
+Fresh build and certification preparation first run their existing owned
+`npm ci` boundary. The source-only driver then loads its literal repository
+validator dependency and validates the target before returning preparation
+evidence or starting generation/build. A failed installation or source check
+cannot advance to build; the portable CLI rejects these commands before any
+installation when the source driver is missing.
+
 ## Archive consumption of persisted build-auth continuity — 2026-08-22
 
 Archive verification does not require a live auth capability. Its authority is
@@ -785,20 +875,32 @@ The Git-history secret-scan action still produces the required check result.
 Repository staging changes only the transport layout; it cannot turn scan
 findings or action failure into success.
 
-After downloading the GitHub artifact into a fresh directory, verify the archive
-sidecar, extract it, and run:
+The ordinary CI transport bundle is not a final certification archive. CI first
+performs repository-final verification, captures that source manifest's SHA-256,
+checks the transport sidecar before extraction, and verifies the extracted bundle.
+Retain the expected source and manifest hashes from that verified CI step; do not
+derive both expectations from the downloaded bundle itself. After downloading
+into a fresh directory and checking the archive sidecar, extract it and run:
 
 ```sh
 PRODUCTION_EVIDENCE_EXPECTED_COMMIT_SHA='<workflow-head-sha>' \
-node scripts/production-artifact-evidence.mjs verify-standalone
+PRODUCTION_EVIDENCE_EXPECTED_MANIFEST_SHA256='<verified-source-manifest-sha256>' \
+node scripts/production-artifact-evidence.mjs verify-bundle
 ```
 
-Standalone mode requires that explicit source SHA, rehashes the extracted
+Bundle mode requires both explicit hashes, requires successful runtime smoke,
+and rehashes the extracted
 `.next` and `public` inventory (including preserved symlink identities), checks
 the lockfile, build ID, manifest sidecar, runtime report hash and stable test
 identities, and rejects source/artifact/report disagreement. It does not need a
 Git checkout or `node_modules`; the original run remains responsible for the
 recorded full trace-closure and installed-lockfile checks.
+
+Its result explicitly records `certificationComplete=false`. The unchanged
+`verify-standalone` command additionally requires the final certification state,
+evidence root, canonical extracted path, and completed certification gates.
+Archive preflight remains a separate pre-runtime check requiring its journal and
+bound inventory; neither command is replaced by ordinary CI bundle verification.
 
 The manifest is an automated report suitable for hashing into the existing
 Phase 15 signed release manifest. The sidecar is an integrity check, not a
@@ -987,7 +1089,12 @@ Timing and reporter records carry the same build, artifact and manifest hashes.
 Production invocation outputs live under that existing generated evidence root,
 so repeated preflight does not classify their diagnostics as build inputs.
 Genuine development runs have an explicit development classification and no
-artifact hash. Direct execution does not certify Canonical Stable, whose sealed
+artifact hash. Their invocation-specific output lives under
+`.local/runtime-smoke-direct/`, satisfying the repository timing writer's
+physical `.local` boundary while preserving reporter ownership and cleanup.
+The resource-isolation regression loads the actual Playwright configuration
+without starting a browser and exercises its timing destinations.
+Direct execution does not certify Canonical Stable, whose sealed
 parent paths and server projection remain unchanged. Actual BUILD_ID bytes are
 never sanitized, and historical evidence is not rewritten.
 

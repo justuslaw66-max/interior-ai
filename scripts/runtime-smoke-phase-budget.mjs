@@ -2,6 +2,7 @@ import {
   linkSync,
   lstatSync,
   mkdirSync,
+  realpathSync,
   unlinkSync,
   writeFileSync,
 } from "node:fs";
@@ -266,6 +267,26 @@ export function createRuntimeSmokeTimingEvidenceBinding({
   });
 }
 
+function repositoryTimingDestination(repositoryRoot, timingPath) {
+  const parts = timingPath.split("/");
+  if (path.win32.isAbsolute(timingPath) || timingPath.includes("\\") ||
+      parts.some((part) => !part || part === "." || part === "..") ||
+      parts[0] !== ".local" || !timingPath.endsWith(".json")) {
+    throw new Error("runtime-smoke phase timing path must remain inside the repository owned .local directory");
+  }
+  const root = realpathSync(repositoryRoot);
+  let current = root;
+  for (const [index, part] of parts.entries()) {
+    current = path.join(current, part);
+    const entry = lstatSync(current, { throwIfNoEntry: false });
+    if (entry && (entry.isSymbolicLink() || index === parts.length - 1 || !entry.isDirectory())) {
+      throw new Error("runtime-smoke timing destination must be physical and must not already exist");
+    }
+  }
+  return Object.freeze({ outputPath: current, retainedPath: timingPath,
+    destinationClass: "repository-relative-runtime-timing" });
+}
+
 export function resolveRuntimeSmokeTimingDestination({
   repositoryRoot,
   timingPath,
@@ -277,22 +298,12 @@ export function resolveRuntimeSmokeTimingDestination({
   }
   if (environment.CERTIFICATION_ENVIRONMENT_STAGE !== "runtime-smoke") {
     if (path.isAbsolute(timingPath)) {
-      return resolvePlaywrightReportPath({
-        requestedPath: timingPath,
-        repositoryRoot,
-        authorizedExternalRoot: environment[PLAYWRIGHT_EXTERNAL_EVIDENCE_ROOT],
-        additionalRepositoryRoots,
-      });
+      const destination = resolvePlaywrightReportPath({ requestedPath: timingPath, repositoryRoot,
+        authorizedExternalRoot: environment[PLAYWRIGHT_EXTERNAL_EVIDENCE_ROOT], additionalRepositoryRoots });
+      return Object.freeze({ ...destination, retainedPath: timingPath,
+        rootVariableName: PLAYWRIGHT_EXTERNAL_EVIDENCE_ROOT });
     }
-    const root = path.resolve(repositoryRoot);
-    const outputPath = path.resolve(root, timingPath);
-    if (!outputPath.startsWith(`${root}${path.sep}`)) {
-      throw new Error("runtime-smoke phase timing path must remain inside the repository");
-    }
-    return Object.freeze({
-      outputPath,
-      destinationClass: "repository-relative-runtime-timing",
-    });
+    return repositoryTimingDestination(repositoryRoot, timingPath);
   }
   return resolveRuntimeSmokeEvidencePath({
     requestedPath: timingPath,
@@ -361,7 +372,9 @@ export function createRuntimeSmokePhaseRecorder({
       ...(evidenceBinding ? { evidenceBinding } : {}),
     };
     if (timingDestination.destinationClass === "repository-relative-runtime-timing") {
+      repositoryTimingDestination(repositoryRoot, timingPath);
       mkdirSync(path.dirname(absoluteTimingPath), { recursive: true });
+      repositoryTimingDestination(repositoryRoot, timingPath);
     }
     writeFileSync(stagingPath, `${JSON.stringify(payload, null, 2)}\n`, {
       flag: records.length === 1 ? "wx" : "w",

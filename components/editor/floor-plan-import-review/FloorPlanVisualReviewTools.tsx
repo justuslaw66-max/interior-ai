@@ -22,7 +22,7 @@ type FloorPlanVisualReviewToolsProps = {
   assetRoutePrefix?: string;
   guidedLayout?: boolean;
   openScaleByDefault?: boolean;
-  consumerMode?: boolean;
+  consumerMode?: boolean; proMode?: boolean;
   manualToolsOpen?: boolean;
   onManualToolsOpenChange?: (value: boolean) => void;
   previewOnly?: boolean;
@@ -39,7 +39,7 @@ export default function FloorPlanVisualReviewTools({
   assetRoutePrefix,
   guidedLayout = false,
   openScaleByDefault = false,
-  consumerMode = false,
+  consumerMode = false, proMode = false,
   manualToolsOpen = false,
   onManualToolsOpenChange,
   previewOnly = false,
@@ -204,7 +204,7 @@ export default function FloorPlanVisualReviewTools({
           onFocusIds={setFocusedCorrectionIds}
           onError={setError}
           dark={dark}
-          disabled={disabled}
+          disabled={disabled} proMode={proMode}
         />
         <FloorPlanOrientationReviewPanel
           document={document}

@@ -532,20 +532,35 @@ export function inventoryProductionArchiveTree(stageRoot) {
   return stageInventory(stageRoot);
 }
 
+export function productionTarOwnershipArguments(version) {
+  if (/^tar \(GNU tar\) \d/m.test(version)) {
+    return ["--owner=root:0", "--group=root:0"];
+  }
+  if (/^bsdtar \d/m.test(version)) {
+    return ["--uid", "0", "--gid", "0", "--uname", "root", "--gname", "root"];
+  }
+  throw new Error("deterministic archive requires GNU tar or bsdtar");
+}
+
 function unsafeTarListMember(member) {
   return typeof member !== "string" || member.length === 0 || member.startsWith("-") || member.trim() !== member || /[\0\r\n\\]/u.test(member);
 }
 
-export function productionArchiveTarCommand({ tarPath, stageRoot, listPath, members }) {
+export function productionArchiveTarCommand({ tarPath, stageRoot, listPath, members, tarVersion }) {
   if (!Array.isArray(members) || members.some(unsafeTarListMember) || JSON.stringify(members) !== JSON.stringify([...members].sort())) {
     throw new Error("archive members must be sorted safe tar file-list paths");
   }
   return Object.freeze({ executable: "tar", args: Object.freeze([
-    "--no-xattrs", "--owner=root:0", "--group=root:0", "-cf", tarPath, "-C", stageRoot, "-T", listPath,
+    "--no-xattrs", ...productionTarOwnershipArguments(tarVersion), "-cf", tarPath, "-C", stageRoot, "-T", listPath,
   ]) });
 }
 
 function deterministicArchive(stageRoot, archivePath) {
+  const version = spawnSync("tar", ["--version"], { encoding: "utf8" });
+  if (version.status !== 0 || version.signal) {
+    throw new Error(`tar version detection failed: ${String(version.stderr).trim()}`);
+  }
+  productionTarOwnershipArguments(version.stdout);
   const temporaryRoot = mkdtempSync(path.join(tmpdir(), "production-archive-tar-"));
   try {
     const tarPath = path.join(temporaryRoot, "archive.tar");
@@ -561,7 +576,7 @@ function deterministicArchive(stageRoot, archivePath) {
         utimesSync(absolutePath, epoch, epoch);
       }
     }
-    const command = productionArchiveTarCommand({ tarPath, stageRoot, listPath, members: files });
+    const command = productionArchiveTarCommand({ tarPath, stageRoot, listPath, members: files, tarVersion: version.stdout });
     writeFileSync(listPath, `${files.join("\n")}\n`);
     const child = spawnSync(command.executable, command.args, {
       encoding: "utf8",

@@ -17,6 +17,14 @@ export type RequestedDesignLoadCompletion =
   | { kind: "unchanged" }
   | { kind: "replace"; href: string };
 
+export function resolveActiveRequestedDesignId(
+  routedDesignId: string,
+  browserSearch: string | null,
+): string {
+  if (browserSearch === null) return routedDesignId;
+  return new URLSearchParams(browserSearch).get("designId") ?? "";
+}
+
 export function resolveRequestedDesignLoadDecision(input: {
   requestedDesignId: string;
   currentDesignId: string | null;
@@ -72,16 +80,18 @@ export function useDesignPageRequestedDesignWorkspaceRegistration({
   const localBackupHydrated = coreShell.state.document.localBackupHydrated;
   const loadDesign = persistence.actions.persistence.loadDesign;
   const cancelDesignLoad = persistence.actions.persistence.cancelDesignLoad;
-
   useEffect(() => {
-    const decision = resolveRequestedDesignLoadDecision({
+    const activeRequestedDesignId = resolveActiveRequestedDesignId(
       requestedDesignId,
+      window.location.search,
+    );
+    const decision = resolveRequestedDesignLoadDecision({
+      requestedDesignId: activeRequestedDesignId,
       currentDesignId,
       authenticated,
       localBackupHydrated,
     });
     if (decision.kind !== "load") return;
-
     let active = true;
     void loadDesign(decision.designId).then((result) => {
       const completion = resolveRequestedDesignLoadCompletion({

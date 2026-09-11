@@ -1,3 +1,4 @@
+import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import {
   chmodSync,
@@ -23,7 +24,9 @@ import {
   executeProductionEvidenceChild,
   handoffProductionEvidenceSemanticJournal,
   initializeProductionEvidenceSemanticJournal,
+  readProductionEvidenceSemanticJournal,
   recoverProductionEvidenceFromSemanticJournal,
+  PRODUCTION_EVIDENCE_JOURNAL_PATH,
 } from "./production-artifact-evidence.mjs";
 import {
   PRODUCTION_EVIDENCE_JOURNAL_SCHEMA,
@@ -59,6 +62,7 @@ import {
   resolveCertificationStateValidationRoots,
 } from "./production-certification-worktrees.mjs";
 import {
+  certificationDependencyInstallationEnvironment,
   installCertificationWorktreeDependencies,
   readAndValidateCertificationDependencyBindingEvidence,
 } from "./production-certification-dependencies.mjs";
@@ -113,6 +117,7 @@ import {
 } from "./production-certification-stage-result-contract.mjs";
 import {
   authFixtureRegressionCapabilityNames,
+  isolatedAuthFixtureRegressionEnvironment,
   projectProductionCertificationSimulationEnvironment,
   projectProductionCertificationSimulationRuntimeEnvironment,
 } from "./ci-auth-fixture-regression-environment.mjs";
@@ -267,6 +272,41 @@ function copyHarnessSources(repositoryRoot, fixtureRoot) {
   }
 }
 
+function installSimulationSourcePolicy(repositoryRoot, fixtureRoot) {
+  const manifest = JSON.parse(readFileSync(path.join(repositoryRoot, "scripts/required-test-manifest.json"), "utf8"));
+  const gateIds = new Set(["ci.production-artifact-contract", "ci.production-runtime-smoke",
+    ...REQUIRED_BROWSER_OWNERS.map((owner) => owner.gateId)]);
+  const gates = manifest.gates.filter((gate) => gateIds.has(gate.id));
+  const sourcePackage = JSON.parse(readFileSync(path.join(repositoryRoot, "package.json"), "utf8"));
+  const fixturePackage = JSON.parse(readFileSync(path.join(fixtureRoot, "package.json"), "utf8"));
+  const copiedScripts = new Set();
+  const copyPackageScript = (name) => {
+    if (copiedScripts.has(name)) return;
+    const command = sourcePackage.scripts[name];
+    assert.equal(typeof command, "string", `source package script ${name} is missing`);
+    copiedScripts.add(name);
+    fixturePackage.scripts[name] = command;
+    for (const [, child] of command.matchAll(/\bnpm run ([A-Za-z0-9:_-]+)/g)) {
+      copyPackageScript(child);
+    }
+  };
+  for (const gate of gates) {
+    // This miniature source has no CI execution. Retain each exercised report
+    // owner's exact assertions, source coverage, command and closure identity.
+    delete gate.ci;
+    for (const name of [gate.packageScript, ...(gate.packagePrerequisites ?? [])]) {
+      copyPackageScript(name);
+    }
+    for (const relativePath of [...gate.requiredSources, gate.playwright?.config].filter(Boolean)) {
+      write(fixtureRoot, relativePath, readFileSync(path.join(repositoryRoot, relativePath)));
+    }
+  }
+  write(fixtureRoot, "package.json", canonicalJsonBytes(fixturePackage));
+  write(fixtureRoot, "scripts/required-test-manifest.json", canonicalJsonBytes({
+    schema: manifest.schema, gates, sourceInventories: [],
+  }));
+}
+
 function writeFloorPlanNfts(root) {
   const targets = [
     ".next/server/app/api/admin/floor-plan-imports/[id]/construction-sources/route.js",
@@ -314,6 +354,8 @@ function writeMiniatureArtifact(root) {
 
 export function initializeFixture(repositoryRoot, fixtureRoot) {
   const npmVersion = run("npm", ["--version"], repositoryRoot);
+  const yamlPackageRoot = path.join(repositoryRoot, "node_modules/yaml");
+  const yamlVersion = JSON.parse(readFileSync(path.join(yamlPackageRoot, "package.json"), "utf8")).version;
   write(
     fixtureRoot,
     ".gitignore",
@@ -369,6 +411,7 @@ export function initializeFixture(repositoryRoot, fixtureRoot) {
       dependencies: {
         "simulation-fixture": "file:simulation-fixture-1.0.0.tgz",
         "ts-node": "file:ts-node-0.0.0.tgz",
+        yaml: `file:yaml-${yamlVersion}.tgz`,
       },
     }, null, 2)}\n`,
   );
@@ -439,12 +482,19 @@ import(pathToFileURL(process.argv[1]).href)
   );
   run(
     "npm",
+    ["pack", yamlPackageRoot, "--ignore-scripts", "--pack-destination", "."],
+    fixtureRoot,
+    npmEnvironment,
+  );
+  run(
+    "npm",
     ["install", "--package-lock-only", "--ignore-scripts"],
     fixtureRoot,
     npmEnvironment,
   );
   write(fixtureRoot, ".nvmrc", `${process.version.slice(1)}\n`);
   copyHarnessSources(repositoryRoot, fixtureRoot);
+  installSimulationSourcePolicy(repositoryRoot, fixtureRoot);
   const authResultRegressionSource = readFileSync(
     path.join(repositoryRoot, "scripts/test-ci-auth-fixture-results.ts"),
     "utf8",
@@ -606,6 +656,94 @@ function simulationEnvironment(identity) {
     CERTIFICATION_EXPECTED_TREE_SHA: identity.treeSha,
     CERTIFICATION_EXPECTED_PARENT_SHA: identity.parentSha,
   };
+}
+
+export function verifySourceBuildBootstrap(repositoryRoot = process.cwd()) {
+  const root = mkdtempSync(path.join(tmpdir(), "source-build-bootstrap-"));
+  try {
+    for (const scenario of ["build", "prepare-certification-build", "invalid-source", "missing-nested-script", "failed-install"]) {
+      const fixtureRoot = path.join(root, scenario);
+      initializeFixture(repositoryRoot, fixtureRoot);
+      if (scenario === "invalid-source") {
+        const manifestPath = path.join(fixtureRoot, "scripts/required-test-manifest.json");
+        const manifest = JSON.parse(readFileSync(manifestPath, "utf8"));
+        manifest.gates[0].requiredSources.push("scripts/missing-bootstrap-source.mjs");
+        writeFileSync(manifestPath, canonicalJsonBytes(manifest));
+      } else if (scenario === "missing-nested-script") {
+        const packagePath = path.join(fixtureRoot, "package.json");
+        const packageValue = JSON.parse(readFileSync(packagePath, "utf8"));
+        assert.equal(typeof packageValue.scripts["test:design-scene-loading-frameloop"], "string");
+        delete packageValue.scripts["test:design-scene-loading-frameloop"];
+        writeFileSync(packagePath, canonicalJsonBytes(packageValue));
+      } else if (scenario === "failed-install") {
+        const packagePath = path.join(fixtureRoot, "package.json");
+        const packageValue = JSON.parse(readFileSync(packagePath, "utf8"));
+        packageValue.dependencies.yaml = "file:missing-parser.tgz";
+        writeFileSync(packagePath, canonicalJsonBytes(packageValue));
+      }
+      git(fixtureRoot, ["add", "."]);
+      git(fixtureRoot, ["commit", "--allow-empty", "-qm", "bootstrap scenario"]);
+      const parentEnvironment = { ...process.env };
+      const capabilityNames = authFixtureRegressionCapabilityNames(repositoryRoot);
+      if (scenario === "build") {
+        // Exercise inherited capabilities even outside a configured CI job.
+        for (const name of capabilityNames) parentEnvironment[name] = `outer-bootstrap-${name}`;
+      }
+      const parentBefore = { ...parentEnvironment };
+      const isolatedEnvironment = isolatedAuthFixtureRegressionEnvironment({
+        repositoryRoot,
+        parentEnvironment,
+      });
+      assert.deepEqual(parentEnvironment, parentBefore);
+      assert.equal(capabilityNames.some((name) => Object.hasOwn(isolatedEnvironment, name)), false);
+      const environment = { ...isolatedEnvironment, ...simulationEnvironment({
+        commitSha: git(fixtureRoot, ["rev-parse", "HEAD"]),
+        treeSha: git(fixtureRoot, ["rev-parse", "HEAD^{tree}"]),
+        parentSha: git(fixtureRoot, ["rev-parse", "HEAD^"]),
+      }), CERTIFICATION_QUALIFICATION_MODE: "1",
+        NPM_CONFIG_CACHE: path.join(root, "npm-cache"), NODE_PATH: "", NODE_OPTIONS: "" };
+      const command = scenario === "prepare-certification-build" ? scenario : "build";
+      const journalPath = path.join(fixtureRoot, PRODUCTION_EVIDENCE_JOURNAL_PATH);
+      assert.equal(existsSync(path.join(fixtureRoot, "node_modules")), false);
+      const direct = spawnSync(process.execPath, ["scripts/production-artifact-evidence.mjs", command], {
+        cwd: fixtureRoot, env: environment, encoding: "utf8",
+      });
+      assert.notEqual(direct.status, 0);
+      assert.match(direct.stderr, /require the source-repository driver/);
+      assert.equal(existsSync(journalPath), false);
+      assert.equal(existsSync(path.join(fixtureRoot, "node_modules")), false);
+      const child = spawnSync(process.execPath, ["scripts/production-artifact-source.mjs", command], {
+        cwd: fixtureRoot, env: environment, encoding: "utf8",
+      });
+      const journal = readProductionEvidenceSemanticJournal({ repositoryRoot: fixtureRoot });
+      if (["failed-install", "invalid-source", "missing-nested-script"].includes(scenario)) {
+        assert.notEqual(child.status, 0);
+        assert.equal(journal.events.dependencyInstall.status, scenario === "failed-install" ? "failed" : "succeeded");
+        assert.equal(journal.events.generatedSourceCheck.status, "pending");
+        assert.equal(journal.events.build.status, "pending");
+        if (scenario === "invalid-source") assert.match(child.stderr, /missing-bootstrap-source/);
+        if (scenario === "missing-nested-script") {
+          assert.match(child.stderr, /package script test:design-scene-loading-frameloop is missing/);
+        }
+        assert.doesNotMatch(child.stderr, /ERR_MODULE_NOT_FOUND/);
+      } else {
+        assert.equal(child.status, 0, child.stderr || child.stdout);
+        assert.equal(journal.events.dependencyInstall.status, "succeeded");
+        assert.equal(journal.events.build.status, scenario === "build" ? "succeeded" : "pending");
+        if (scenario === "build") {
+          const manifest = JSON.parse(readFileSync(
+            path.join(fixtureRoot, ".local/production-artifact-evidence/manifest.json"), "utf8",
+          ));
+          assert.equal(manifest.build.authFixtureContinuity.classification, "NOT_CERTIFICATION_FIXTURE_SESSION");
+          assert.equal(manifest.build.authFixtureContinuity.qualificationMode, "deterministic-only");
+          assert.equal(manifest.build.authFixtureContinuity.certificationEligibility, "NOT_VALID_FOR_REHEARSAL_OR_INTEGRATION");
+        }
+      }
+    }
+    console.log("Source build bootstrap: cold build/preparation passed; absent driver, failed install, invalid target and missing nested command refused before build.");
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
 }
 
 async function emitProductionEvidence(fixtureRoot, identity, environment) {
@@ -1093,6 +1231,7 @@ export async function runProductionCertificationSimulation({
   const previousSubprocessEnvironment = simulationSubprocessEnvironment;
   simulationSubprocessEnvironment = runtimeProjection.environment;
   try {
+  verifySourceBuildBootstrap(repositoryRoot);
   const stageResultRegression = run(
     process.execPath,
     ["scripts/test-production-certification-stage-result.mjs"],
@@ -1228,6 +1367,13 @@ export async function runProductionCertificationSimulation({
   mkdirSync(evidenceRoot, { recursive: true, mode: 0o700 });
   mkdirSync(worktreeOwnerRoot, { recursive: true, mode: 0o700 });
   const identity = initializeFixture(repositoryRoot, fixtureRoot);
+  // Canonical source CLI orchestration has its own declared dependencies;
+  // each stage worktree still begins pristine and installs through its owner.
+  run("npm", ["ci", "--include=dev"], fixtureRoot,
+    certificationDependencyInstallationEnvironment({
+      ...currentSimulationSubprocessEnvironment(), NODE_PATH: "", NODE_OPTIONS: "",
+      NPM_CONFIG_CACHE: path.join(simulationRoot, "npm-cache"),
+    }));
   const simulationFixtureSessionRoot = path.join(
     simulationRoot,
     "auth-fixture-session",
@@ -1301,8 +1447,17 @@ export async function runProductionCertificationSimulation({
   };
   const nextTimestamp = stateClock();
   const statePath = path.join(evidenceRoot, "certification-state.json");
-  const doctorEnvironment = {
+  const doctorParentEnvironment = Object.freeze({
     ...currentSimulationSubprocessEnvironment(),
+    ...Object.fromEntries(authFixtureRegressionCapabilityNames(repositoryRoot).map(
+      (name) => [name, `outer-simulation-${name}`],
+    )),
+  });
+  const doctorEnvironment = {
+    ...isolatedAuthFixtureRegressionEnvironment({
+      repositoryRoot,
+      parentEnvironment: doctorParentEnvironment,
+    }),
     ...environment,
     NPM_CONFIG_CACHE: path.join(simulationRoot, "npm-cache"),
     PRODUCTION_CERTIFICATION_ID: SIMULATION_ID,
@@ -1329,6 +1484,9 @@ export async function runProductionCertificationSimulation({
       "phase8-target/evidence.json",
     ),
   };
+  for (const name of authFixtureRegressionCapabilityNames(repositoryRoot)) {
+    assert.equal(doctorEnvironment[name], environment[name]);
+  }
   for (const owner of REQUIRED_BROWSER_OWNERS) {
     doctorEnvironment[
       `CERTIFICATION_BROWSER_${owner.id.toUpperCase().replaceAll("-", "_")}_REPORT_PATH`

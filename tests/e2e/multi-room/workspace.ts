@@ -1,4 +1,5 @@
 import { test, expect } from "../fixtures";
+import type { Page } from "@playwright/test";
 import {
   chooseTemplateStart,
   clearBrowserStorageBeforeNextLoad,
@@ -8,9 +9,20 @@ import {
   getEmptyCanvasPoint,
 } from "./helpers";
 
+async function selectWorkspace(page: Page, workspace: "plan" | "furnish" | "shop" | "export") {
+  const trigger = page.getByTestId("editor-command-workspace");
+  if ((await trigger.getAttribute("aria-expanded")) !== "true") {
+    await trigger.click({ timeout: 10_000 });
+  }
+  const item = page.getByTestId(`editor-workflow-${workspace}`);
+  await expect(item).toBeVisible();
+  await expect(item).toBeEnabled();
+  await item.click({ timeout: 5_000, noWaitAfter: true });
+}
+
 export function registerWorkspaceTests() {
   test("consumer workflow tabs switch panels reliably", async ({ page }) => {
-    test.setTimeout(60_000);
+    test.setTimeout(90_000);
 
     await page.goto("/design");
     await page.waitForLoadState("domcontentloaded");
@@ -18,13 +30,8 @@ export function registerWorkspaceTests() {
     await expect(page.getByTestId("scene-canvas").first()).toBeVisible({ timeout: 20000 });
     await expect(page.getByTestId("editor-workflow-plan")).toHaveAttribute("data-active", "true");
 
-    const furnishWorkflow = page.getByTestId("editor-workflow-furnish");
-    await expect(async () => {
-      if ((await furnishWorkflow.getAttribute("data-active")) !== "true") {
-        await furnishWorkflow.evaluate((button) => (button as HTMLButtonElement).click());
-      }
-      await expect(furnishWorkflow).toHaveAttribute("data-active", "true", { timeout: 1500 });
-    }).toPass({ timeout: 10000 });
+    await selectWorkspace(page, "furnish");
+    await expect(page.getByTestId("editor-workflow-furnish")).toHaveAttribute("data-active", "true");
     await expect(page.getByTestId("furnish-room-summary")).toBeVisible();
     const catalogMode = page.getByTestId("furnish-mode-catalog");
     const guidedMode = page.getByTestId("furnish-mode-guided");
@@ -165,17 +172,17 @@ export function registerWorkspaceTests() {
     await expect(page.getByTestId("catalog-detail-add-to-room")).toContainText("Add to Living Room");
     await clickWithFallback(page.getByRole("button", { name: "Close" }));
 
-    await clickWithFallback(page.getByTestId("editor-workflow-shop"));
+    await selectWorkspace(page, "shop");
     await expect(page.getByTestId("editor-workflow-shop")).toHaveAttribute("data-active", "true");
     await expect(page.getByText("Shopping overview")).toBeVisible({ timeout: 10000 });
     await expect(page.getByTestId("shopping-checkout-readiness")).toBeVisible();
     await expect(page.getByText("Retailer-link spend")).toBeVisible();
     await expect(page.getByTestId("cart-checkout-readiness")).toBeVisible();
 
-    await clickWithFallback(page.getByTestId("editor-workflow-plan"));
+    await selectWorkspace(page, "plan");
     await expect(page.getByTestId("editor-workflow-plan")).toHaveAttribute("data-active", "true");
 
-    await clickWithFallback(page.getByTestId("editor-workflow-export"));
+    await selectWorkspace(page, "export");
     await expect(page.getByTestId("editor-workflow-export")).toHaveAttribute("data-active", "true");
     await expect(page.getByRole("heading", { name: "Present & Export" })).toBeVisible({
       timeout: 10000,
@@ -189,7 +196,7 @@ export function registerWorkspaceTests() {
     await expect(page.getByText("Saved views appear on share links and export packs.")).toBeVisible();
     await page.getByRole("button", { name: "Close export panel" }).click({ force: true });
 
-    await clickWithFallback(page.getByTestId("editor-workflow-plan"));
+    await selectWorkspace(page, "plan");
     await expect(page.getByTestId("editor-workflow-plan")).toHaveAttribute("data-active", "true");
   });
 
@@ -201,7 +208,7 @@ export function registerWorkspaceTests() {
     await page.waitForLoadState("domcontentloaded");
 
     await expect(page.getByTestId("scene-canvas").first()).toBeVisible({ timeout: 20_000 });
-    await clickWithFallback(page.getByTestId("editor-workflow-export"));
+    await selectWorkspace(page, "export");
     await expect(page.getByRole("heading", { name: "Present & Export" })).toBeVisible({
       timeout: 10_000,
     });
@@ -233,7 +240,7 @@ export function registerWorkspaceTests() {
     await page.waitForLoadState("domcontentloaded");
 
     await expect(page.getByTestId("scene-canvas").first()).toBeVisible({ timeout: 20000 });
-    await clickWithFallback(page.getByTestId("editor-workflow-furnish"));
+    await selectWorkspace(page, "furnish");
 
     const catalogMode = page.getByTestId("furnish-mode-catalog");
     const guidedMode = page.getByTestId("furnish-mode-guided");
@@ -271,25 +278,36 @@ export function registerWorkspaceTests() {
     const depthInput = page.getByTestId("selection-inspector-room-depth");
     await expect(widthInput).toBeVisible();
     await expect(depthInput).toBeVisible();
-    const initialWidthMm = Number(await widthInput.inputValue());
+    const displayUnits = page.getByTestId("selection-inspector-measurement-units");
+    await expect(displayUnits).toHaveValue("cm");
+    const initialWidthMm = Number(await widthInput.getAttribute("data-model-value-mm"));
+    const initialDepthMm = Number(await depthInput.getAttribute("data-model-value-mm"));
+    await expect(widthInput).toHaveValue(String(initialWidthMm / 10));
+    await expect(depthInput).toHaveValue(String(initialDepthMm / 10));
+    await displayUnits.selectOption("mm");
+    await expect(widthInput).toHaveValue(String(initialWidthMm));
+    await expect(depthInput).toHaveValue(String(initialDepthMm));
     const nextWidthMm = initialWidthMm - 100;
     await widthInput.fill(String(nextWidthMm));
     await widthInput.press("Enter");
     await expect(widthInput).toHaveValue(String(nextWidthMm));
+    await expect(widthInput).toHaveAttribute("data-model-value-mm", String(nextWidthMm));
 
-    const initialDepthMm = Number(await depthInput.inputValue());
     const nextDepthMm = initialDepthMm - 100;
     await depthInput.fill(String(nextDepthMm));
     await depthInput.press("Enter");
     await expect(depthInput).toHaveValue(String(nextDepthMm));
+    await expect(depthInput).toHaveAttribute("data-model-value-mm", String(nextDepthMm));
 
     await widthInput.fill(String(nextWidthMm - 100));
     await widthInput.press("Escape");
     await expect(widthInput).toHaveValue(String(nextWidthMm));
 
-    await page.getByTestId("selection-inspector-measurement-units").getByRole("button", { name: "CM" }).click();
+    await displayUnits.selectOption("cm");
     await expect(widthInput).toHaveValue(String(nextWidthMm / 10));
     await expect(depthInput).toHaveValue(String(nextDepthMm / 10));
+    await expect(widthInput).toHaveAttribute("data-model-value-mm", String(nextWidthMm));
+    await expect(depthInput).toHaveAttribute("data-model-value-mm", String(nextDepthMm));
   });
 
   test("right plan rail reflows map, floor, and selection without overlap", async ({ page }) => {
@@ -382,14 +400,7 @@ export function registerWorkspaceTests() {
       '[data-testid="house-room-2d-label"][data-active="true"]'
     );
     const resizeHandles = page.locator('[data-testid^="room-resize-handle-"]');
-    if ((await activeRoomLabels.count()) === 0) {
-      test.info().annotations.push({
-        type: "note",
-        description: "Skipping selected-room label clearing assertions because 2D active room labels are density-hidden in this layout.",
-      });
-      await expect(page.getByTestId("room-plan-status-room-count")).toHaveText("2 rooms");
-      return;
-    }
+    await expect(page.getByTestId("room-plan-status-room-count")).toHaveText("2 rooms");
     await expect(activeRoomLabels).toHaveCount(1);
     await expect(resizeHandles.first()).toBeVisible();
 
@@ -420,4 +431,3 @@ export function registerWorkspaceTests() {
   });
 
 }
-

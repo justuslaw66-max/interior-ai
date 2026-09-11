@@ -63,6 +63,9 @@ class ProjectionDatabaseAdapter {
   constructor(root) {
     this.migrations = migrationInventory(root).migrations.map(({ id }) => id);
     this.exists = false;
+    this.databaseOid = 8123;
+    this.roleOid = 8124;
+    this.roleSessions = [];
     this.migrated = false;
     this.stageRole = null;
   }
@@ -84,12 +87,13 @@ class ProjectionDatabaseAdapter {
       roleClassification: "local-createdb",
       canCreateDatabase: true,
       targetExists: this.exists,
+      databaseOid: this.exists ? this.databaseOid : null,
     };
   }
 
   async createDatabase() {
     this.exists = true;
-    return { created: true };
+    return { created: true, databaseOid: this.databaseOid };
   }
 
   deployMigrations() {
@@ -107,6 +111,7 @@ class ProjectionDatabaseAdapter {
     this.stageRole = roleName;
     return {
       created: true,
+      roleOid: this.roleOid,
       classification: "stage-login-no-admin",
       adminCapabilities: false,
     };
@@ -115,6 +120,7 @@ class ProjectionDatabaseAdapter {
   async inspectStageRole() {
     return {
       exists: this.stageRole !== null,
+      roleOid: this.stageRole !== null ? this.roleOid : null,
       adminCapabilities: false,
     };
   }
@@ -131,21 +137,33 @@ class ProjectionDatabaseAdapter {
     return [];
   }
 
+  async stageRoleSessions() {
+    return structuredClone(this.roleSessions);
+  }
+
   async targetSessions() {
     return [];
   }
 
-  async terminateTargetSessions() {
+  async terminateTargetSessions(_databaseName, observation = null) {
+    if (observation) await observation.observe(() => this.targetSessions(), "release");
     return { terminatedSessionCount: 0, remainingSessionCount: 0 };
   }
 
-  async dropStageRole() {
+  async dropStageRole(_roleName, expectedOid) {
+    if (expectedOid !== this.roleOid) throw new Error("role replacement is preserved");
+    if (this.roleSessions.length) throw new Error("owned role sessions remain");
     const dropped = this.stageRole !== null;
     this.stageRole = null;
     return { dropped, alreadyAbsent: !dropped };
   }
 
-  async dropDatabase() {
+  async dropDatabase(_databaseName, expectedOid, observation = null) {
+    if (observation) {
+      await observation.observe(() => this.targetSessions(), "pre-drop");
+      await observation.beforeDrop();
+    }
+    if (this.exists && expectedOid !== this.databaseOid) throw new Error("database replacement is preserved");
     const dropped = this.exists;
     this.exists = false;
     return { dropped };

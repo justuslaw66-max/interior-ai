@@ -15,6 +15,16 @@ import {
   type PlanarUnionPolygonMm,
 } from "@/lib/floor-plan-planar-union";
 import { buildRoomPlanShape } from "@/lib/room-plan-shape";
+import {
+  getOpeningDisplayBottom, getOpeningDisplayHeight,
+} from "./openingVerticalGeometry";
+import { getWallOpenings } from "./legacyWallOpenings";
+export {
+  getOpeningDisplayBottom,
+  getOpeningDisplayHeight,
+} from "./openingVerticalGeometry";
+export { projectOpeningWorldCenterOntoLegacySegment } from "./legacyOpeningProjection";
+export { getWallOpenings } from "./legacyWallOpenings";
 
 const STRUCTURE_THICKNESS_METERS = 0.025;
 const FLOOR_THICKNESS_METERS = ROOM_DIMENSION_DEFAULTS.slabThickness;
@@ -195,7 +205,10 @@ function getWallSurfacePanelId({
 
 export type OpeningThreshold3D = WallPart3D & {
   sourceId: string;
+  offset: number;
+  bottom: number;
   height: number;
+  kind: WallOpening3D["kind"];
 };
 
 export type SharedWallRange3D = {
@@ -829,85 +842,6 @@ export function getLegacyWallSurfaceJoinRangesForTest(
   });
 }
 
-export function getWallOpenings(
-  room: HousePlanRoom2D,
-  segment: WallSegment3D,
-  rooms: readonly HousePlanRoom2D[],
-  openings: readonly RoomRendererOpening[]
-): WallOpening3D[] {
-  const directOpenings = segment.wall
-    ? openings
-    .filter((opening) => opening.roomId === room.id && opening.wall === segment.wall)
-    .map((opening) => ({
-      id: opening.id,
-      sourceId: opening.id,
-      offset: opening.offset,
-      width: opening.width,
-      height: opening.height,
-      bottom: opening.bottom,
-      kind: opening.kind,
-    }))
-    : [];
-
-  const mirroredOpenings = openings.flatMap((opening) => {
-    if (!opening.roomId) return [];
-    if (opening.roomId === room.id && opening.wall === segment.wall) return [];
-    const sourceRoom = rooms.find((candidate) => candidate.id === opening.roomId);
-    if (!sourceRoom) return [];
-    const targetDirection = {
-      x: Math.cos(segment.rotationY),
-      z: -Math.sin(segment.rotationY),
-    };
-    const sourceDirection =
-      opening.wall === "north" || opening.wall === "south"
-        ? { x: 1, z: 0 }
-        : { x: 0, z: 1 };
-    if (
-      Math.abs(
-        targetDirection.x * sourceDirection.z -
-          targetDirection.z * sourceDirection.x
-      ) > 0.01
-    ) {
-      return [];
-    }
-    const openingCenter = {
-      x:
-        opening.wall === "north" || opening.wall === "south"
-          ? sourceRoom.x + opening.offset
-          : getWallCoordinate(sourceRoom, opening.wall),
-      z:
-        opening.wall === "east" || opening.wall === "west"
-          ? sourceRoom.z + opening.offset
-          : getWallCoordinate(sourceRoom, opening.wall),
-    };
-    const targetCenter = { x: room.x + segment.x, z: room.z + segment.z };
-    const delta = {
-      x: openingCenter.x - targetCenter.x,
-      z: openingCenter.z - targetCenter.z,
-    };
-    const perpendicularDistance = Math.abs(
-      delta.x * -targetDirection.z + delta.z * targetDirection.x
-    );
-    if (perpendicularDistance > LEGACY_WALL_JOIN_TOLERANCE_METERS) return [];
-    const offset = delta.x * targetDirection.x + delta.z * targetDirection.z;
-    if (Math.abs(offset) > segment.length / 2 + opening.width / 2) return [];
-
-    return [
-      {
-        id: `${opening.id}-mirrored-${room.id}`,
-        sourceId: opening.id,
-        offset,
-        width: opening.width,
-        height: opening.height,
-        bottom: opening.bottom,
-        kind: opening.kind,
-      },
-    ];
-  });
-
-  return [...directOpenings, ...mirroredOpenings];
-}
-
 export function getLegacyWallOpeningCountsForTest(
   rooms: readonly HousePlanRoom2D[],
   openings: readonly RoomRendererOpening[]
@@ -1134,30 +1068,6 @@ export function withWallSurfacePanelSupportIntervals(
   });
 }
 
-export function getOpeningDisplayHeight(
-  opening: WallOpening3D,
-  wallHeight: number,
-  physicalWallHeight: number
-): number {
-  const requestedHeight = opening.height;
-  if (!requestedHeight || !Number.isFinite(requestedHeight)) return wallHeight;
-  const displayHeight = (requestedHeight / Math.max(0.2, physicalWallHeight)) * wallHeight;
-  return Math.min(Math.max(0.08, displayHeight), wallHeight);
-}
-
-export function getOpeningDisplayBottom(
-  opening: WallOpening3D,
-  wallHeight: number,
-  physicalWallHeight: number
-) {
-  const requestedBottom = opening.bottom;
-  if (!requestedBottom || !Number.isFinite(requestedBottom)) return 0;
-  return Math.min(
-    Math.max(0, (requestedBottom / Math.max(0.2, physicalWallHeight)) * wallHeight),
-    Math.max(0, wallHeight - 0.08)
-  );
-}
-
 export function buildOpeningLintelParts(
   segment: WallSegment3D,
   openings: WallOpening3D[],
@@ -1237,19 +1147,24 @@ export function getOpeningThresholds(
   wallHeight: number,
   physicalWallHeight: number
 ): OpeningThreshold3D[] {
-  return openings
-    .filter((opening) => opening.kind === "door")
-    .map((opening) => {
-      const center = wallPartCenter(segment, opening.offset);
-      return {
-        key: `${segment.key}-${opening.id}-threshold`,
-        sourceId: opening.sourceId,
-        x: center.x,
-        z: center.z,
-        length: Math.min(segment.length, opening.width),
-        height: getOpeningDisplayHeight(opening, wallHeight, physicalWallHeight),
-      };
-    });
+  return openings.map((opening) => {
+    const center = wallPartCenter(segment, opening.offset);
+    return {
+      key: `${segment.key}-${opening.id}-threshold`,
+      sourceId: opening.sourceId,
+      offset: opening.offset,
+      x: center.x,
+      z: center.z,
+      length: Math.min(segment.length, opening.width),
+      bottom: getOpeningDisplayBottom(
+        opening,
+        wallHeight,
+        physicalWallHeight
+      ),
+      height: getOpeningDisplayHeight(opening, wallHeight, physicalWallHeight),
+      kind: opening.kind,
+    };
+  });
 }
 
 export function getSharedWallOverlapRanges(

@@ -17,6 +17,7 @@ import {
 } from "@/lib/command-palette-session";
 import type { PlanLayerPresetId } from "@/lib/design-page-types";
 import type { RoomOpening2D } from "@/lib/editorScene";
+import { DEFAULT_DOOR_WIDTH_MM } from "@/lib/design-page-opening-dimensions";
 
 export type DesignPageCommandPaletteState = {
   isClientPreview: boolean;
@@ -273,7 +274,7 @@ export function useDesignPageCommandPalette({
           wall: "south",
           kind: "door",
           offsetMm: 0,
-          widthMm: 900,
+          widthMm: DEFAULT_DOOR_WIDTH_MM,
         },
       ])
     );

@@ -12,6 +12,7 @@ import {
   FloorPlanTopologyMutationErrorV2,
   type FloorPlanTopologyMutationContextV2,
 } from "@/lib/floor-plan-topology-mutations";
+import { createFloorPlanOpeningOverrideAuthorizationV2 } from "@/lib/floor-plan-opening-override-factory";
 
 const sourceId = "source-plan";
 
@@ -458,32 +459,209 @@ const documentedOpeningSource = document();
 const documentedOpening = documentedOpeningSource.floors[0].openings.find(
   ({ id }) => id === "living-window"
 )!;
+documentedOpening.widthEvidence = "source_documented";
 documentedOpening.heightMm = 1200;
 documentedOpening.heightEvidence = "source_documented";
 documentedOpening.sillHeightMm = 900;
 documentedOpening.sillHeightEvidence = "source_documented";
 compileFloorPlanDocumentV2(documentedOpeningSource);
-const correctedOpeningProperties = applyFloorPlanTopologyMutationV2(
+const documentedJson = JSON.stringify(documentedOpeningSource);
+for (const [field, changes] of [
+  ["width", { widthMm: 801 }],
+  ["height", { heightMm: 1100 }],
+  ["sill", { sillHeightMm: 800 }],
+] as const) {
+  const error = expectError(
+    () => applyFloorPlanTopologyMutationV2(
+      documentedOpeningSource,
+      {
+        kind: "update_opening",
+        floorId: "floor-1",
+        openingId: "living-window",
+        changes,
+      },
+      context(`blocked-documented-${field}`)
+    ),
+    "OPENING_EVIDENCE_OVERRIDE_REQUIRED"
+  );
+  assert.match(error.message, new RegExp(field));
+  assert.equal(
+    JSON.stringify(documentedOpeningSource),
+    documentedJson,
+    `Blocked ${field} changes must not mutate values, evidence, provenance or history.`
+  );
+}
+
+const siteMeasuredOpeningSource = structuredClone(documentedOpeningSource);
+const siteMeasuredOpening = siteMeasuredOpeningSource.floors[0].openings.find(
+  ({ id }) => id === "living-window"
+)!;
+siteMeasuredOpening.widthEvidence = "site_measured";
+siteMeasuredOpening.heightEvidence = "site_measured";
+siteMeasuredOpening.sillHeightEvidence = "site_measured";
+compileFloorPlanDocumentV2(siteMeasuredOpeningSource);
+for (const [field, changes] of [
+  ["width", { widthMm: 801 }],
+  ["height", { heightMm: 1100 }],
+  ["sill", { sillHeightMm: 800 }],
+] as const) {
+  expectError(
+    () => applyFloorPlanTopologyMutationV2(
+      siteMeasuredOpeningSource,
+      {
+        kind: "update_opening",
+        floorId: "floor-1",
+        openingId: "living-window",
+        changes,
+      },
+      context(`blocked-site-measured-${field}`)
+    ),
+    "OPENING_EVIDENCE_OVERRIDE_REQUIRED"
+  );
+}
+
+const unchangedProtected = applyFloorPlanTopologyMutationV2(
   documentedOpeningSource,
   {
     kind: "update_opening",
     floorId: "floor-1",
     openingId: "living-window",
     changes: {
-      heightMm: 1100,
-      sillHeightMm: 800,
+      widthMm: documentedOpening.widthMm,
+      heightMm: documentedOpening.heightMm,
+      sillHeightMm: documentedOpening.sillHeightMm,
       hinge: "end",
-      handing: "right",
     },
   },
-  context("update-opening-properties")
+  context("unchanged-protected-opening-values")
 ).document.floors[0].openings.find(({ id }) => id === "living-window")!;
-assert.equal(correctedOpeningProperties.heightMm, 1100);
-assert.equal(correctedOpeningProperties.heightEvidence, "assumed");
-assert.equal(correctedOpeningProperties.sillHeightMm, 800);
-assert.equal(correctedOpeningProperties.sillHeightEvidence, "assumed");
-assert.equal(correctedOpeningProperties.hinge, "end");
-assert.equal(correctedOpeningProperties.handing, "right");
+assert.equal(unchangedProtected.hinge, "end");
+assert.equal(unchangedProtected.widthEvidence, "source_documented");
+assert.equal(unchangedProtected.heightEvidence, "source_documented");
+assert.equal(unchangedProtected.sillHeightEvidence, "source_documented");
+
+const approvedOpeningProperties = applyFloorPlanTopologyMutationV2(
+  documentedOpeningSource,
+  {
+    kind: "update_opening",
+    floorId: "floor-1",
+    openingId: "living-window",
+    changes: { widthMm: 801, heightMm: 1100, sillHeightMm: 800 },
+    reviewedEvidenceOverride: createFloorPlanOpeningOverrideAuthorizationV2({
+      opening: documentedOpening,
+      changes: { widthMm: 801, heightMm: 1100, sillHeightMm: 800 },
+      mutationPurpose: "measurement_edit",
+      actorId: "editor-user",
+      reason: "Pro reviewer compared all three replacement measurements.",
+      auditNote: "Pro reviewer approved all three replacement measurements.",
+    }),
+  },
+  context("approved-opening-properties")
+).document.floors[0].openings.find(({ id }) => id === "living-window")!;
+assert.equal(approvedOpeningProperties.widthMm, 801);
+assert.equal(approvedOpeningProperties.heightMm, 1100);
+assert.equal(approvedOpeningProperties.sillHeightMm, 800);
+assert.equal(approvedOpeningProperties.widthEvidence, "user_confirmed");
+assert.equal(approvedOpeningProperties.heightEvidence, "user_confirmed");
+assert.equal(approvedOpeningProperties.sillHeightEvidence, "user_confirmed");
+assert.equal(approvedOpeningProperties.provenance.evidence.at(-1)?.basis, "user_confirmed");
+assert.equal(approvedOpeningProperties.provenance.reviewHistory.at(-1)?.action, "approved");
+assert.match(
+  approvedOpeningProperties.provenance.reviewHistory.at(-1)?.note ?? "",
+  /approved all three replacement measurements/
+);
+const reloadedApprovedOpening = JSON.parse(
+  JSON.stringify(approvedOpeningProperties)
+) as typeof approvedOpeningProperties;
+assert.equal(reloadedApprovedOpening.widthMm, 801);
+assert.equal(reloadedApprovedOpening.heightMm, 1100);
+assert.equal(reloadedApprovedOpening.sillHeightMm, 800);
+assert.equal(reloadedApprovedOpening.widthEvidence, "user_confirmed");
+assert.equal(reloadedApprovedOpening.heightEvidence, "user_confirmed");
+assert.equal(reloadedApprovedOpening.sillHeightEvidence, "user_confirmed");
+assert.equal(reloadedApprovedOpening.provenance.reviewHistory.at(-1)?.action, "approved");
+
+expectError(
+  () => applyFloorPlanTopologyMutationV2(
+    documentedOpeningSource,
+    {
+      kind: "update_opening",
+      floorId: "floor-1",
+      openingId: "living-window",
+      changes: { kind: "door" },
+    },
+    context("blocked-protected-kind-sill")
+  ),
+  "OPENING_EVIDENCE_OVERRIDE_REQUIRED"
+);
+const approvedKindChange = applyFloorPlanTopologyMutationV2(
+  documentedOpeningSource,
+  {
+    kind: "update_opening",
+    floorId: "floor-1",
+    openingId: "living-window",
+    changes: { kind: "door" },
+    reviewedEvidenceOverride: createFloorPlanOpeningOverrideAuthorizationV2({
+      opening: documentedOpening,
+      changes: { kind: "door" },
+      mutationPurpose: "opening_kind_change",
+      actorId: "editor-user",
+      reason: "Pro reviewer approved the documented sill replacement.",
+      auditNote: "Pro reviewer approved replacing the documented nonzero sill for the door conversion.",
+    }),
+  },
+  context("approved-protected-kind-sill")
+);
+const approvedDoor = approvedKindChange.document.floors[0].openings.find(
+  ({ id }) => id === "living-window"
+)!;
+assert.equal(approvedDoor.kind, "door");
+assert.equal(approvedDoor.sillHeightMm, 0);
+assert.equal(approvedDoor.sillHeightEvidence, "user_confirmed");
+assert.equal(approvedDoor.widthMm, documentedOpening.widthMm);
+assert.equal(approvedDoor.heightMm, documentedOpening.heightMm);
+
+const protectedZeroSource = structuredClone(documentedOpeningSource);
+const protectedZeroWindow = protectedZeroSource.floors[0].openings.find(
+  ({ id }) => id === "living-window"
+)!;
+protectedZeroWindow.sillHeightMm = 0;
+compileFloorPlanDocumentV2(protectedZeroSource);
+const protectedZeroDoor = applyFloorPlanTopologyMutationV2(
+  protectedZeroSource,
+  {
+    kind: "update_opening",
+    floorId: "floor-1",
+    openingId: "living-window",
+    changes: { kind: "door" },
+  },
+  context("protected-zero-sill-kind")
+).document.floors[0].openings.find(({ id }) => id === "living-window")!;
+assert.equal(protectedZeroDoor.kind, "door");
+assert.equal(protectedZeroDoor.sillHeightMm, 0);
+assert.equal(protectedZeroDoor.sillHeightEvidence, "source_documented");
+
+const explicitZeroWindow = applyFloorPlanTopologyMutationV2(
+  {
+    ...protectedZeroSource,
+    floors: protectedZeroSource.floors.map((candidate) => ({
+      ...candidate,
+      openings: candidate.openings.map((opening) =>
+        opening.id === "living-window" ? { ...opening, kind: "door" as const } : opening
+      ),
+    })),
+  },
+  {
+    kind: "update_opening",
+    floorId: "floor-1",
+    openingId: "living-window",
+    changes: { kind: "window" },
+  },
+  context("door-to-window-explicit-zero")
+).document.floors[0].openings.find(({ id }) => id === "living-window")!;
+assert.equal(explicitZeroWindow.kind, "window");
+assert.equal(explicitZeroWindow.sillHeightMm, 0);
+assert.equal(explicitZeroWindow.sillHeightEvidence, "source_documented");
 
 const removed = applyFloorPlanTopologyMutationV2(
   original,

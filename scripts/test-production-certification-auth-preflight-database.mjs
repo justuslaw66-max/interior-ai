@@ -73,7 +73,7 @@ const coveredAuthPreflightDatabaseCases = Object.freeze([
   "helper-readiness-failure-abort-cleanup",
   "helper-invalid-session-response-abort-cleanup",
   "helper-structured-result-publication-abort-cleanup",
-  "helper-active-session-exact-target-termination",
+  "helper-active-session-refusal-and-owned-close",
   "helper-repeated-abort-failure-retains-recovery-evidence",
   "failure-result-contract-tamper-rejected",
   "auth-passed-database-cleanup-failure-classified-accurately",
@@ -129,12 +129,16 @@ function git(revision) {
 class AuthPreflightAdapter {
   constructor({ roleCollision = false, dropFailures = 0 } = {}) {
     this.exists = false;
+    this.databaseOid = 8123;
+    this.roleOid = 8124;
+    this.roleSessions = [];
     this.migrated = false;
     this.rows = [];
     this.sessions = [];
     this.roleName = null;
     this.roleCollision = roleCollision;
     this.dropFailures = dropFailures;
+    this.dropAttempts = 0;
     this.unrelatedDatabaseExists = true;
     this.unrelatedSessionExists = true;
   }
@@ -156,13 +160,14 @@ class AuthPreflightAdapter {
       roleClassification: "local-createdb",
       canCreateDatabase: true,
       targetExists: this.exists,
+      databaseOid: this.exists ? this.databaseOid : null,
     };
   }
 
   async createDatabase() {
     assert.equal(this.exists, false);
     this.exists = true;
-    return { created: true };
+    return { created: true, databaseOid: this.databaseOid };
   }
 
   deployMigrations() {
@@ -177,6 +182,7 @@ class AuthPreflightAdapter {
   async inspectStageRole() {
     return {
       exists: this.roleName !== null,
+      roleOid: this.roleName !== null ? this.roleOid : null,
       adminCapabilities: false,
     };
   }
@@ -192,6 +198,7 @@ class AuthPreflightAdapter {
     this.roleName = roleName;
     return {
       created: true,
+      roleOid: this.roleOid,
       classification: "stage-login-no-admin",
       adminCapabilities: false,
     };
@@ -209,21 +216,31 @@ class AuthPreflightAdapter {
     return this.rows;
   }
 
+  async stageRoleSessions() {
+    return structuredClone(this.roleSessions);
+  }
+
   async targetSessions() {
     return this.sessions;
   }
 
-  async terminateTargetSessions() {
+  async terminateTargetSessions(_databaseName, observation = null) {
+    if (observation) await observation.observe(() => this.targetSessions(), "release");
     const matchedSessionCount = this.sessions.length;
-    this.sessions = [];
     return {
       matchedSessionCount,
       terminatedPids: [],
-      remainingSessionCount: 0,
+      remainingSessionCount: this.sessions.length,
     };
   }
 
-  async dropDatabase() {
+  async dropDatabase(_databaseName, expectedOid, observation = null) {
+    if (observation) {
+      await observation.observe(() => this.targetSessions(), "pre-drop");
+      await observation.beforeDrop();
+    }
+    if (this.exists && expectedOid !== this.databaseOid) throw new Error("database replacement is preserved");
+    this.dropAttempts += 1;
     if (this.dropFailures > 0) {
       this.dropFailures -= 1;
       throw new Error("injected exact-target drop failure");
@@ -233,7 +250,9 @@ class AuthPreflightAdapter {
     return { dropped: true, alreadyAbsent: false };
   }
 
-  async dropStageRole() {
+  async dropStageRole(_roleName, expectedOid) {
+    if (expectedOid !== this.roleOid) throw new Error("role replacement is preserved");
+    if (this.roleSessions.length) throw new Error("owned role sessions remain");
     if (this.roleName === null) {
       return { dropped: false, alreadyAbsent: true };
     }
@@ -578,6 +597,16 @@ async function abortAndFailureCoverage() {
     const prepared = await prepare(authFailure);
     authFailure.adapter.rows = [{ table: "User", count: 1 }];
     authFailure.adapter.sessions = [{ pid: 441, role: "scoped" }];
+    await assert.rejects(abortAuthSessionPreflightDatabaseLifecycle({
+      repositoryRoot,
+      environment: prepared.environment,
+      adapter: authFailure.adapter,
+      preflightLifecycleBinding: prepared.preflightLifecycleBinding,
+      originalFailure: { classification: "AUTH_PREFLIGHT_SESSION_RESPONSE_INVALID" },
+    }), /refuses active sessions/);
+    assert.deepEqual(authFailure.adapter.sessions, [{ pid: 441, role: "scoped" }]);
+    assert.equal(authFailure.adapter.exists, true);
+    authFailure.adapter.sessions = []; // exact fixture client closes normally
     const aborted = await abortAuthSessionPreflightDatabaseLifecycle({
       repositoryRoot,
       environment: prepared.environment,
@@ -646,7 +675,9 @@ async function realHelperFailureOrchestrationCoverage() {
         repositoryRoot,
         prepared,
         adapter: value.adapter,
-        executeChild: async () => ({
+        executeChild: async () => {
+          value.adapter.sessions = []; // child cleanup closes its owned fixture client
+          return {
           childProcess: { error: null, signal: null, status: 1 },
           childValidated: {
             result: {
@@ -654,7 +685,8 @@ async function realHelperFailureOrchestrationCoverage() {
               failure: { code },
             },
           },
-        }),
+          };
+        },
       });
       assert.equal(sequence.retainedFailure instanceof Error, true);
       assert.equal(sequence.authSessionServerPreflight, "failed");
@@ -743,23 +775,34 @@ async function realHelperFailureOrchestrationCoverage() {
   );
   try {
     const prepared = await prepare(cleanup);
-    const sequence = await runPreparedAuthPreflightDatabaseSequence({
-      repositoryRoot,
-      prepared,
-      adapter: cleanup.adapter,
+    await assert.rejects(runPreparedAuthPreflightDatabaseSequence({
+      repositoryRoot, prepared, adapter: cleanup.adapter,
       executeChild: async () => ({
         childProcess: { error: null, signal: null, status: 0 },
         childValidated: { result: { result: "success", failure: null } },
       }),
+    }), (error) => {
+      assert.match(error.message, /automatic cleanup replay is prohibited/);
+      assert.match(error.cause.message, /normal database cleanup failed/);
+      assert.match(error.cause.cause.message, /injected exact-target drop failure/);
+      return true;
     });
-    assert.equal(sequence.authSessionServerPreflight, "passed");
-    assert.equal(sequence.databaseCompletion.evidence.authSessionServerPreflight, "passed");
-    assert.equal(sequence.databaseCompletion.evidence.cleanupMode, "abort");
-    assert.equal(sequence.databaseCompletion.evidence.originalFailureRetained, true);
-    authResultContract.validateAuthPreflightDatabaseEvidence(
-      sequence.databaseCompletion.evidence,
-      "failure",
-    );
+    const retained = readCertificationDatabaseLifecycle({ repositoryRoot, environment: prepared.environment });
+    assert.equal(cleanup.adapter.dropAttempts, 1);
+    assert.equal(cleanup.adapter.exists, true);
+    assert.equal(retained.evidence.sessions.cleanupObservations.length, 1);
+    assert.equal(retained.evidence.currentState, "failed");
+    // The injected failure condition is over. Explicit later cleanup preserves
+    // the failed normal attempt; the automatic sequence did not retry DROP.
+    const recovered = await abortAuthSessionPreflightDatabaseLifecycle({
+      repositoryRoot, environment: prepared.environment, adapter: cleanup.adapter,
+      preflightLifecycleBinding: prepared.preflightLifecycleBinding,
+      originalFailure: { classification: "AUTH_PREFLIGHT_NORMAL_CLEANUP_FAILURE" },
+      authSessionServerPreflight: "passed",
+    });
+    assert.equal(recovered.evidence.originalFailureRetained, true);
+    assert.equal(recovered.evidence.failedPreflightRehabilitated, false);
+    authResultContract.validateAuthPreflightDatabaseEvidence(recovered.evidence, "failure");
   } finally {
     rmSync(cleanup.root, { recursive: true, force: true });
   }
@@ -799,12 +842,15 @@ async function realHelperFailureOrchestrationCoverage() {
         adapter: repeatedAbort.adapter,
         executeChild,
       }),
-      /injected exact-target drop failure/,
+      /automatic cleanup replay is prohibited/,
     );
     assert.equal(
       existsSync(prepared.environment.CERTIFICATION_DATABASE_LIFECYCLE_PATH),
       true,
     );
+    assert.equal(repeatedAbort.adapter.dropAttempts, 1);
+    assert.equal(repeatedAbort.adapter.dropFailures, 1);
+    repeatedAbort.adapter.dropFailures = 0; // explicit later recovery after changed conditions
     const recovered = await abortAuthSessionPreflightDatabaseLifecycle({
       repositoryRoot,
       environment: prepared.environment,

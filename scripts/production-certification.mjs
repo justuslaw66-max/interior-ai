@@ -1,3 +1,4 @@
+import { assertAutomaticDatabaseCleanupMayStart } from "./production-certification-database-cleanup-observation.mjs";
 import { spawnSync } from "node:child_process";
 import { existsSync } from "node:fs";
 
@@ -21,9 +22,10 @@ import {
   isCertificationStageResultCommand,
   PRODUCTION_CERTIFICATION_STAGE_RESULT_NONCE_ENV,
   redactCertificationStageResultDiagnostic,
+  redactCertificationStageResultDiagnosticOutput,
 } from "./production-certification-stage-result-contract.mjs";
 import { runCertificationResourcePreparation } from "./production-certification-resources.mjs";
-import { redactDatabaseLifecycleFailure } from "./production-certification-database-lifecycle.mjs";
+import { readCertificationDatabaseLifecycle, redactDatabaseLifecycleFailure } from "./production-certification-database-lifecycle.mjs";
 import {
   initializeRealCertification,
   runDatabaseAbortCleanup,
@@ -123,6 +125,26 @@ export function nextCertificationCommand(state) {
         canonicalCommand: state.stages[nextStage].canonicalCommand,
       }
     : { complete: true, nextStage: null, canonicalCommand: null };
+}
+
+export function qualificationChildFailure(command, args, child, environment) {
+  if (child.status === 0 && !child.signal) return null;
+  const classification = child.error || child.signal
+    ? "INCONCLUSIVE"
+    : args.includes("certification:simulate")
+      ? "NOT_QUALIFIED_ORCHESTRATION_GAP"
+      : "NOT_QUALIFIED_SOURCE_CONTRACT_DEFECT";
+  const identity = {
+    command, args, status: child.status, signal: child.signal,
+    error: child.error ? { code: child.error.code, message: child.error.message } : null,
+  };
+  const diagnostic = redactCertificationStageResultDiagnosticOutput(
+    `Qualification child failed: ${JSON.stringify(identity)}\n` +
+      `stdout (redacted):\n${child.stdout ?? ""}\n` +
+      `stderr (redacted):\n${child.stderr ?? ""}`,
+    certificationStageResultSensitiveValues(environment),
+  );
+  return { classification, diagnostic };
 }
 
 function qualificationCommand() {
@@ -261,11 +283,10 @@ function qualificationCommand() {
       env: qualificationEnvironment,
     });
     if (child.error) sawInfrastructureFailure = true;
-    if (child.status !== 0 || child.signal) {
-      if (child.error || child.signal) return "INCONCLUSIVE";
-      return args.includes("certification:simulate")
-        ? "NOT_QUALIFIED_ORCHESTRATION_GAP"
-        : "NOT_QUALIFIED_SOURCE_CONTRACT_DEFECT";
+    const failure = qualificationChildFailure(command, args, child, qualificationEnvironment);
+    if (failure) {
+      console.error(failure.diagnostic);
+      return failure.classification;
     }
   }
   return sawInfrastructureFailure
@@ -576,6 +597,8 @@ if (import.meta.url === new URL(process.argv[1], "file:").href) {
       ) {
         return;
       }
+      const current = readCertificationDatabaseLifecycle();
+      assertAutomaticDatabaseCleanupMayStart(current.evidence, commandError);
       const cleanup = createCertificationAbortCleanupRequest({
         command,
         terminalSignal,

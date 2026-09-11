@@ -28,6 +28,7 @@ const assistant = [
   "components/editor/floor-plan-import-review/FloorPlanScaleReviewPanel.tsx",
   "components/editor/floor-plan-import-review/FloorPlanTopologyCorrectionPanel.tsx",
   "components/editor/floor-plan-import-review/FloorPlanOpeningCorrectionFields.tsx",
+  "components/editor/floor-plan-import-review/useFloorPlanOpeningCorrection.ts",
   "components/editor/floor-plan-import-review/FloorPlanOrientationReviewPanel.tsx",
   "lib/floor-plan-import-review-geometry.ts",
 ]
@@ -67,6 +68,9 @@ const confirmRoute = read(
   "app/api/floor-plan-imports/[id]/confirm/route.ts"
 );
 const roomRenderer = read("components/editor/renderers/RoomRenderer2D.tsx");
+const openingGeometry = read(
+  "components/editor/renderers/room-renderer-2d-opening-geometry.ts"
+);
 const underlayRenderer = read(
   "components/editor/renderers/PlanUnderlayRenderer2D.tsx"
 );
@@ -509,7 +513,7 @@ assert.match(
 );
 
 assert.match(
-  roomRenderer,
+  openingGeometry,
   /doorStyle\?: "swing" \| "sliding" \| "folding" \| "open"/,
   "The 2D renderer should retain all canonical door operations."
 );
@@ -554,9 +558,24 @@ assert.match(
   "Open passages should not expose a false movable-door hit target."
 );
 assert.match(
-  roomRenderer,
-  /const openingSegments = openings\.map\(\(o\): OpeningRenderSegment2D =>/,
+  openingGeometry,
+  /export type OpeningSegment2D = \{[\s\S]*?\n  points: \[\[number, number, number\], \[number, number, number\]\];\n\};/,
   "Opening endpoints should retain their fixed two-point tuple contract."
+);
+assert.match(
+  openingGeometry,
+  /export type OpeningRenderSegment2D = OpeningSegment2D &/,
+  "Rendered openings should inherit the fixed endpoint tuple contract."
+);
+assert.match(
+  openingGeometry,
+  /export function buildOpeningRenderSegments\([\s\S]*?\): OpeningRenderSegment2D\[\] \{/,
+  "The opening geometry builder should return typed render segments."
+);
+assert.match(
+  roomRenderer,
+  /import \{ buildOpeningRenderSegments, type Opening2D,[\s\S]*?from "\.\/room-renderer-2d-opening-geometry";[\s\S]*?const openingSegments = buildOpeningRenderSegments\(\{\s*openings, rooms,/,
+  "The 2D renderer should consume the typed opening geometry owner."
 );
 
 assertBackgroundValidationKeepsPolling()

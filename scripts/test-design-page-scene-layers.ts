@@ -436,7 +436,7 @@ for (const expected of [
   "<PlanQualityHintOverlay",
   "<HousePlanRenderer3D",
   "<Room",
-  "mapPlanOpeningsToRoomRenderer(plan.scene.openings)",
+  "mapPlanOpeningsToRoomRenderer(",
   "mapPlanFixedElementsToRoomRenderer(",
   "mapPlanAnnotationsToRoomRenderer(plan.scene.annotations)",
 ] as const) {

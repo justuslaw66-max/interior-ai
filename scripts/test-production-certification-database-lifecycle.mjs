@@ -1,7 +1,12 @@
+import { abortStableRuntimeSmokeDatabase } from "./stable-runtime-smoke.mjs";
+import { assertAutomaticDatabaseCleanupMayStart } from "./production-certification-database-cleanup-observation.mjs";
+import { verifyDatabaseCleanupObservation, verifyCleanupLifecycleCheckpoints, exhaustedCleanupObservationFixture } from "./test-production-certification-database-cleanup-observation.mjs";
+import { createOwnedWindowOpeningDatabase, dropOwnedWindowOpeningDatabase } from "./provision-gate-a3-database.mjs";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import { createHash, randomUUID } from "node:crypto";
 import {
+  lstatSync,
   mkdirSync,
   mkdtempSync,
   readFileSync,
@@ -116,6 +121,100 @@ function git(revision) {
   return child.stdout.trim();
 }
 
+async function verifyWindowDatabaseCreationOwnership() {
+  const root = mkdtempSync(path.join(tmpdir(), "window-database-ownership-"));
+  try {
+    for (const scenario of ["success", "collision", "create-race", "ambiguous", "post-create-observation", "wrong-server", "live-session", "replacement", "failed-drop-observation"]) {
+      const name = `interior_ai_window_opening_evidence_test_${scenario.replaceAll("-", "_")}`;
+      // Keep long scenario labels out of PostgreSQL's 63-byte identity limit.
+      const databaseName = name.slice(0, 63);
+      const state = { exists: scenario === "collision", oid: 8123, sessions: [], queries: [] };
+      class OwnedClient {
+        constructor(options) {
+          assert.equal(options.connectionString, "postgresql://justus@127.0.0.1:5432/postgres");
+        }
+        async connect() {}
+        async end() {}
+        async query(sql, values) {
+          state.queries.push(sql);
+          if (sql.includes("current_user AS role")) return { rows: [{
+            role: "justus", database: "postgres", host: scenario === "wrong-server" ? "192.0.2.1" : "127.0.0.1",
+            port: 5432, can_create_database: true,
+          }] };
+          if (sql.includes("pg_database")) {
+            assert.deepEqual(values, [databaseName]);
+            if (scenario === "post-create-observation" && state.exists) throw new Error("post-create inspection failed");
+            return { rowCount: Number(state.exists), rows: state.exists ? [{ oid: state.oid }] : [] };
+          }
+          if (sql.startsWith("CREATE DATABASE")) {
+            assert.equal(sql, `CREATE DATABASE "${databaseName}"`);
+            state.exists = true;
+            if (scenario === "create-race") throw Object.assign(new Error("duplicate database"), { code: "42P04" });
+            if (scenario === "ambiguous") throw new Error("CREATE acknowledgement lost");
+            return {};
+          }
+          if (sql.includes("pg_stat_activity")) return { rowCount: state.sessions.length, rows: state.sessions };
+          if (sql.startsWith("DROP DATABASE")) {
+            assert.equal(sql, `DROP DATABASE "${databaseName}"`);
+            if (scenario !== "failed-drop-observation") state.exists = false;
+            return {};
+          }
+          assert.fail(`unexpected SQL: ${sql}`);
+        }
+      }
+      const options = { databaseUrl: `postgresql://justus@127.0.0.1:5432/${databaseName}`,
+        receiptPath: path.join(root, `${scenario}.json`), ownerId: scenario, ClientClass: OwnedClient };
+      if (["collision", "create-race", "ambiguous", "post-create-observation", "wrong-server"].includes(scenario)) {
+        await assert.rejects(createOwnedWindowOpeningDatabase(options));
+        const receipt = JSON.parse(readFileSync(options.receiptPath, "utf8"));
+        assert.equal(receipt.created, scenario === "post-create-observation");
+        if (receipt.created) await assert.rejects(dropOwnedWindowOpeningDatabase(options), /catalog identity was not recorded/);
+        else assert.equal((await dropOwnedWindowOpeningDatabase(options)).owned, false);
+        assert.equal(state.queries.some((sql) => sql.startsWith("DROP DATABASE")), false);
+        assert.equal(state.exists, scenario !== "wrong-server");
+        continue;
+      }
+      const receipt = await createOwnedWindowOpeningDatabase(options);
+      assert.equal(receipt.created, true);
+      assert.equal(receipt.databaseOid, state.oid);
+      await assert.rejects(dropOwnedWindowOpeningDatabase({ ...options, ownerId: "foreign" }), /different invocation/);
+      if (scenario === "live-session") {
+        state.sessions = [{ pid: 7456 }];
+        await assert.rejects(dropOwnedWindowOpeningDatabase(options), /connections remain/);
+        assert.equal(state.exists, true);
+        assert.deepEqual(state.sessions, [{ pid: 7456 }]);
+        state.sessions = []; // this fixture's client closes normally
+      }
+      if (scenario === "replacement") {
+        state.oid += 1;
+        await assert.rejects(dropOwnedWindowOpeningDatabase(options), /replacement is preserved/);
+        assert.equal(state.exists, true);
+        continue;
+      }
+      if (scenario === "failed-drop-observation") {
+        await assert.rejects(dropOwnedWindowOpeningDatabase(options), /absence was not verified/);
+        continue;
+      }
+      const cleaned = await dropOwnedWindowOpeningDatabase(options);
+      assert.equal(cleaned.databaseAbsent, true);
+      assert.equal(cleaned.sessionCount, 0);
+      assert.equal(state.exists, false);
+      assert.equal(state.queries.some((sql) => /pg_terminate_backend|FORCE/.test(sql)), false);
+    }
+    for (const databaseUrl of [
+      `postgresql://justus@127.0.0.1:5432/interior_ai_window_opening_evidence_test_${"a".repeat(30)}`,
+      "postgresql://justus@localhost:5432/interior_ai_window_opening_evidence_test_wrong",
+      "postgresql://other@127.0.0.1:5432/interior_ai_window_opening_evidence_test_wrong",
+    ]) {
+      await assert.rejects(createOwnedWindowOpeningDatabase({ databaseUrl,
+        receiptPath: path.join(root, "invalid.json"), ownerId: "invalid" }), /exact approved local target/);
+    }
+    console.log("Window database ownership contracts passed; collisions/unknown resources and sessions preserved.");
+  } finally { rmSync(root, { recursive: true, force: true }); }
+}
+
+await verifyWindowDatabaseCreationOwnership();
+
 class FakeDatabaseAdapter {
   constructor({
     exists = false,
@@ -133,6 +232,9 @@ class FakeDatabaseAdapter {
     serviceTransport = false,
   } = {}) {
     this.exists = exists;
+    this.databaseOid = 8123;
+    this.roleOid = 8124;
+    this.roleSessions = [];
     this.migrated = false;
     this.rows = [{ table: "User", count: 0 }];
     this.appEvents = [];
@@ -197,6 +299,7 @@ class FakeDatabaseAdapter {
       roleClassification: "local-createdb",
       canCreateDatabase: true,
       targetExists: this.exists,
+      databaseOid: this.exists ? this.databaseOid : null,
     };
   }
 
@@ -206,9 +309,10 @@ class FakeDatabaseAdapter {
     if (this.createFailure) {
       const error = new Error(this.createFailure);
       error.databaseCreateOutcome = this.createFailureOutcome;
+      error.databaseOid = this.createFailureOutcome === "created" ? this.databaseOid : null;
       throw error;
     }
-    return { created: true };
+    return { created: true, databaseOid: this.databaseOid };
   }
 
   deployMigrations() {
@@ -234,6 +338,7 @@ class FakeDatabaseAdapter {
     this.onCreateStageRole?.();
     return {
       created: true,
+      roleOid: this.roleOid,
       classification: "stage-login-no-admin",
       adminCapabilities: false,
     };
@@ -245,6 +350,7 @@ class FakeDatabaseAdapter {
     }
     return {
       exists: this.stageRole !== null,
+      roleOid: this.stageRole !== null ? this.roleOid : null,
       adminCapabilities: this.foreignStageRole,
     };
   }
@@ -289,6 +395,10 @@ class FakeDatabaseAdapter {
     return { removedCount, remainingCount: 0, exactOwnedRowsOnly: true };
   }
 
+  async stageRoleSessions() {
+    return structuredClone(this.roleSessions);
+  }
+
   async targetSessions() {
     if (this.transientSessionInspections > 0) {
       this.transientSessionInspections -= 1;
@@ -297,20 +407,24 @@ class FakeDatabaseAdapter {
     return structuredClone(this.sessions);
   }
 
-  async terminateTargetSessions() {
-    const pids = this.sessions.map((session) => session.pid);
-    this.terminated.push(...pids);
-    this.sessions = [];
+  async terminateTargetSessions(_databaseName, observation = null) {
+    const sessions = observation ? await observation.observe(() => this.targetSessions(), "release") : this.sessions;
+    const pids = sessions.map((session) => session.pid);
     const result = {
       matchedSessionCount: pids.length,
-      terminatedPids: pids,
-      remainingSessionCount: 0,
+      terminatedPids: [],
+      remainingSessionCount: pids.length,
     };
     if (this.releaseFailure) throw new Error(this.releaseFailure);
     return result;
   }
 
-  async dropDatabase() {
+  async dropDatabase(_databaseName, expectedOid, observation = null) {
+    if (observation) {
+      await observation.observe(() => this.targetSessions(), "pre-drop");
+      await observation.beforeDrop();
+    }
+    if (this.exists && expectedOid !== this.databaseOid) throw new Error("database replacement is preserved");
     if (this.sessions.length) throw new Error("target sessions remain");
     const wasPresent = this.exists;
     this.exists = false;
@@ -318,12 +432,27 @@ class FakeDatabaseAdapter {
     return { dropped: wasPresent, alreadyAbsent: !wasPresent };
   }
 
-  async dropStageRole() {
+  async dropStageRole(_roleName, expectedOid) {
+    if (expectedOid !== this.roleOid) throw new Error("role replacement is preserved");
+    if (this.roleSessions.length) throw new Error("owned role sessions remain");
     this.stageRoleDropCount += 1;
     const dropped = this.stageRole !== null;
     this.stageRole = null;
     return { dropped, alreadyAbsent: !dropped };
   }
+}
+
+async function abortAfterClosingFakeSessions(options) {
+  if (options.adapter.sessions.length > 0) {
+    const originalSessions = structuredClone(options.adapter.sessions);
+    await assert.rejects(abortCertificationDatabase(options), /refuses active sessions/);
+    assert.deepEqual(options.adapter.sessions, originalSessions);
+    assert.deepEqual(options.adapter.terminated, []);
+    assert.equal(options.adapter.exists, true);
+    // The fixture owner closes its own clients before retrying exact cleanup.
+    options.adapter.sessions = [];
+  }
+  return abortCertificationDatabase(options);
 }
 
 function fixture({ id, adminUrl = "postgresql://owner:raw-secret@127.0.0.1:5432/postgres" }) {
@@ -488,6 +617,14 @@ function appEventRow(
 }
 
 async function deterministicContractCoverage() {
+  await verifyDatabaseCleanupObservation();
+  await verifyCleanupLifecycleCheckpoints({
+    fixture, FakeDatabaseAdapter, repositoryRoot, planCertificationDatabase,
+    provisionCertificationDatabase, abortCertificationDatabase,
+    readCertificationDatabaseLifecycle,
+    removeFixture: (root) => rmSync(root, { recursive: true, force: true }),
+  });
+  await realFixtureCleanupContractCoverage();
   runAppEventWriterFixture("source-contract", {
     ...appEventWriterBaseEnvironment(),
     CERTIFICATION_ENVIRONMENT_STAGE: "production",
@@ -741,10 +878,52 @@ async function deterministicContractCoverage() {
     assert.equal(absent.evidence.inventories.final.totalRows, 19);
     assert.equal(absent.evidence.cleanup.finalEmptyVerified, false);
     assert.equal(absent.evidence.cleanup.targetAbsent, true);
+    assert.equal(absent.evidence.cleanup.stageRole.verifiedAbsent, true);
+    assert.equal(absent.evidence.sessions.cleanupObservations.length, 1);
+    assert.equal(absent.evidence.sessions.cleanupObservations[0].mode, "normal");
+
     assert.equal(stableAdapter.exists, false);
     assert.equal(stableAdapter.stageRole, null);
   } finally {
     rmSync(stableFixture.root, { recursive: true, force: true });
+  }
+
+  for (const failureKind of ["release-failure", "transient-client"]) {
+  const failedStableFixture = fixture({ id: `stable-no-cleanup-replay-${failureKind}` });
+  const failedStableAdapter = new FakeDatabaseAdapter();
+  const failedStableOptions = { repositoryRoot, environment: failedStableFixture.environment, adapter: failedStableAdapter };
+  try {
+    await planCertificationDatabase({ ...failedStableOptions, nonce: "7".repeat(32),
+      profile: STABLE_RUNTIME_SMOKE_DATABASE_PROFILE, qualificationFixture: true });
+    await provisionCertificationDatabase(failedStableOptions);
+    await verifyInitialCertificationDatabase(failedStableOptions);
+    await bindCertificationDatabaseStage({ ...failedStableOptions, stage: "runtime-smoke" });
+    if (failureKind === "release-failure") {
+      failedStableAdapter.releaseFailure = "controlled stable cleanup observation failure";
+    } else {
+      failedStableAdapter.transientSessionInspections = 1;
+    }
+    await assert.rejects(completeStableRuntimeSmokeDatabase(failedStableOptions),
+      failureKind === "release-failure" ? /controlled stable cleanup/ : /refuses active sessions/);
+    const failed = readCertificationDatabaseLifecycle(failedStableOptions).evidence;
+    assert.equal(failed.currentState, "failed");
+    assert.equal(failed.sessions.cleanupObservations.length, 1);
+    if (failureKind === "transient-client") {
+      assert.equal(failed.sessions.cleanupObservations[0].outcome, "refused");
+      assert.equal(failed.sessions.cleanupObservations[0].events.filter((event) => event.kind === "observation").length, 1,
+        "a disappearing unknown client must be refused on the first cleanup query");
+    }
+    failedStableAdapter.releaseFailure = null;
+    await assert.rejects(abortStableRuntimeSmokeDatabase({ repositoryRoot,
+      lifecycleEnvironment: failedStableFixture.environment, databaseAdapter: failedStableAdapter,
+      failure: { classification: "RUNTIME_SMOKE_FAILURE", consumedSubstantiveGate: true, stage: "runtime-smoke", attempt: 1 },
+    }), /automatic cleanup replay is prohibited/);
+    assert.equal(failedStableAdapter.exists, true);
+    assert.equal(failedStableAdapter.stageRoleDropCount, 0);
+    assert.deepEqual(readCertificationDatabaseLifecycle(failedStableOptions).evidence, failed);
+  } finally {
+    rmSync(failedStableFixture.root, { recursive: true, force: true });
+  }
   }
 
   const raceFixture = fixture({ id: "foreign-race" });
@@ -1153,18 +1332,114 @@ async function deterministicContractCoverage() {
       environment: ambiguousCreateFixture.environment,
     });
     assert.equal(retained.evidence.currentState, "failed");
-    assert.ok(retained.evidence.events.some((entry) => entry.state === "provisioned"));
+    assert.equal(retained.evidence.provisioning.ownershipRecoverable, false);
+    assert.equal(retained.evidence.events.some((entry) => entry.state === "provisioned"), false);
     assert.doesNotMatch(JSON.stringify(retained.evidence), new RegExp(leakedCredential));
-    const cleaned = await abortCertificationDatabase({
+    await assert.rejects(abortCertificationDatabase({
       repositoryRoot,
       environment: ambiguousCreateFixture.environment,
       adapter: ambiguousCreateAdapter,
-    });
-    assert.equal(cleaned.evidence.currentState, "abort-absence-verified");
-    assert.equal(cleaned.evidence.cleanup.drop.dropped, true);
-    assert.equal(ambiguousCreateAdapter.exists, false);
+    }), /not durably created/);
+    assert.equal(ambiguousCreateAdapter.exists, true);
+    assert.equal(ambiguousCreateAdapter.dropped, false);
+
   } finally {
     rmSync(ambiguousCreateFixture.root, { recursive: true, force: true });
+  }
+
+  for (const resource of ["database", "role"]) {
+    for (const outcome of ["created", "ambiguous"]) {
+      const receiptFixture = fixture({ id: `${resource}-${outcome}` });
+      const receiptAdapter = new FakeDatabaseAdapter(resource === "database"
+        ? { createFailure: "post-create failure", createFailureOutcome: outcome } : {});
+      if (resource === "role") {
+        const createRole = receiptAdapter.createStageRole.bind(receiptAdapter);
+        receiptAdapter.createStageRole = async (options) => {
+          await createRole(options);
+          throw Object.assign(new Error("role setup failed"), { stageRoleCreateOutcome: outcome, roleOid: outcome === "created" ? receiptAdapter.roleOid : null });
+        };
+      }
+      try {
+        await planCertificationDatabase({ repositoryRoot, environment: receiptFixture.environment,
+          adapter: receiptAdapter, nonce: "d".repeat(32), qualificationFixture: true });
+        await assert.rejects(provisionCertificationDatabase({ repositoryRoot,
+          environment: receiptFixture.environment, adapter: receiptAdapter }), /failed|failure/);
+        if (resource === "database" && outcome === "ambiguous") {
+          await assert.rejects(abortCertificationDatabase({ repositoryRoot,
+            environment: receiptFixture.environment, adapter: receiptAdapter }), /not durably created/);
+          assert.equal(receiptAdapter.exists, true);
+        } else {
+          const cleaned = await abortCertificationDatabase({ repositoryRoot,
+            environment: receiptFixture.environment, adapter: receiptAdapter });
+          assert.equal(cleaned.evidence.cleanup.targetAbsent, true);
+          assert.equal(receiptAdapter.exists, false);
+          if (resource === "role") assert.equal(receiptAdapter.stageRole === null, outcome === "created");
+        }
+      } finally { rmSync(receiptFixture.root, { recursive: true, force: true }); }
+    }
+  }
+
+  for (const cleanupMode of ["normal", "abort"]) {
+    for (const mutation of ["database-replacement", "role-replacement", "role-other-database-session"]) {
+      const value = fixture({ id: `${cleanupMode}-${mutation}` });
+      const adapter = new FakeDatabaseAdapter();
+      const options = { repositoryRoot, environment: value.environment, adapter };
+      try {
+        await planCertificationDatabase({ ...options, qualificationFixture: true });
+        const provisioned = await provisionCertificationDatabase(options);
+        assert.equal(provisioned.evidence.provisioning.databaseOid, adapter.databaseOid);
+        assert.equal(provisioned.evidence.privateBinding.roleCreation.roleOid, adapter.roleOid);
+        assert.equal(provisioned.evidence.privateBinding.roleCreation.roleName, adapter.stageRole);
+        if (cleanupMode === "normal") {
+          await verifyInitialCertificationDatabase(options);
+          await bindAllStages(value.environment, adapter);
+          await verifyFinalCertificationDatabase(options);
+        }
+        if (mutation === "database-replacement") adapter.databaseOid += 1;
+        if (mutation === "role-replacement") adapter.roleOid += 1;
+        if (mutation === "role-other-database-session") adapter.roleSessions = [{ pid: 7457, database: "postgres" }];
+        let applicationReads = 0;
+        adapter.applicationRows = async () => { applicationReads += 1; return structuredClone(adapter.rows); };
+        await assert.rejects(cleanupMode === "normal" ? dropCertificationDatabase(options) : abortCertificationDatabase(options),
+          /catalog identity changed|connections remain/);
+        assert.equal(adapter.exists, true);
+        assert.notEqual(adapter.stageRole, null);
+        assert.equal(adapter.stageRoleDropCount, 0);
+        assert.equal(applicationReads, 0, "cleanup must reject foreign identity/session before application reads");
+        assert.deepEqual(adapter.terminated, []);
+        // Restore only this fake fixture's state; no real replacement is adopted.
+        adapter.databaseOid = 8123;
+        adapter.roleOid = 8124;
+        adapter.roleSessions = [];
+        const cleaned = await abortCertificationDatabase(options);
+        assert.equal(cleaned.evidence.cleanup.roleSessionCount, 0);
+        assert.equal(adapter.exists, false);
+        assert.equal(adapter.stageRole, null);
+      } finally { rmSync(value.root, { recursive: true, force: true }); }
+    }
+  }
+
+  for (const resource of ["database", "role"]) {
+    const value = fixture({ id: `missing-${resource}-catalog-receipt` });
+    const adapter = new FakeDatabaseAdapter();
+    const options = { repositoryRoot, environment: value.environment, adapter };
+    const method = resource === "database" ? "createDatabase" : "createStageRole";
+    const create = adapter[method].bind(adapter);
+    adapter[method] = async (...args) => {
+      await create(...args);
+      throw Object.assign(new Error("catalog observation failed after acknowledged create"),
+        resource === "database" ? { databaseCreateOutcome: "created" } : { stageRoleCreateOutcome: "created" });
+    };
+    try {
+      await planCertificationDatabase({ ...options, qualificationFixture: true });
+      await assert.rejects(provisionCertificationDatabase(options), /catalog observation failed/);
+      await assert.rejects(abortCertificationDatabase(options), /catalog identity was not recorded/);
+      assert.equal(adapter.exists, true);
+      assert.equal(adapter.dropped, false);
+      if (resource === "role") assert.notEqual(adapter.stageRole, null);
+      const retained = readCertificationDatabaseLifecycle(options).evidence;
+      assert.equal(resource === "database" ? retained.provisioning.outcome : retained.privateBinding.roleCreation.outcome, "created");
+    } finally { rmSync(value.root, { recursive: true, force: true }); }
   }
 
   const successFixture = fixture({ id: "success" });
@@ -1597,7 +1872,7 @@ async function deterministicContractCoverage() {
         environment: isolatedFixture.environment,
         attempt: 1,
       });
-      await abortCertificationDatabase({
+      await abortAfterClosingFakeSessions({
         repositoryRoot,
         environment: isolatedFixture.environment,
         adapter: isolatedAdapter,
@@ -1883,7 +2158,7 @@ async function deterministicContractCoverage() {
       environment: failureFixture.environment,
       attempt: 1,
     });
-    const aborted = await abortCertificationDatabase({
+    const aborted = await abortAfterClosingFakeSessions({
       repositoryRoot,
       environment: failureFixture.environment,
       adapter: failureAdapter,
@@ -1902,7 +2177,7 @@ async function deterministicContractCoverage() {
     assert.equal(aborted.evidence.cleanup.finalEmptyVerified, false);
     assert.equal(aborted.evidence.cleanup.drop.dropped, true);
     assert.equal(aborted.evidence.cleanup.failedRunRehabilitated, false);
-    assert.deepEqual(failureAdapter.terminated, [7001]);
+    assert.deepEqual(failureAdapter.terminated, []);
     assert.equal(failureAdapter.unrelatedSessions.length, 1);
     const repeated = await abortCertificationDatabase({
       repositoryRoot,
@@ -1961,7 +2236,7 @@ async function deterministicContractCoverage() {
         sha256: "c".repeat(64),
       },
     };
-    const aborted = await abortCertificationDatabase({
+    const aborted = await abortAfterClosingFakeSessions({
       repositoryRoot,
       environment: runtimeFailureFixture.environment,
       adapter: runtimeFailureAdapter,
@@ -2419,16 +2694,9 @@ async function deterministicContractCoverage() {
       adapter: checkpointAdapter,
     });
     checkpointAdapter.rows[0].count = 2;
-    checkpointAdapter.sessions = [
-      {
-        pid: 7101,
-        role: "owner",
-        applicationName: "checkpoint-fixture",
-        clientAddress: "127.0.0.1",
-        state: "idle",
-        backendStartedAt: "2026-08-17T00:00:00.000Z",
-      },
-    ];
+    // Empty observation reaches the injected release-operation error. Nonempty
+    // client refusal and retained worker observations have separate coverage.
+    checkpointAdapter.sessions = [];
     let releaseError;
     try {
       await abortCertificationDatabase({
@@ -2452,10 +2720,11 @@ async function deterministicContractCoverage() {
       environment: checkpointFixture.environment,
     });
     assert.equal(partial.evidence.inventories.abort.totalRows, 2);
-    assert.equal(partial.evidence.sessions.abort.count, 1);
+    assert.equal(partial.evidence.sessions.abort.count, 0);
     assert.equal(partial.evidence.failure.classification, "PRODUCT_ASSERTION_FAILURE");
     assert.doesNotMatch(JSON.stringify(partial.evidence), /checkpoint-secret/);
     checkpointAdapter.releaseFailure = null;
+    checkpointAdapter.sessions = [];
     const recovered = await abortCertificationDatabase({
       repositoryRoot,
       environment: checkpointFixture.environment,
@@ -2763,12 +3032,156 @@ function browserOwnerWriterEnvironment({ environment, ownership, databaseUrl }) 
   return projected;
 }
 
+function retainedRealFixtureFailure(testFixture, current, fallbackStage) {
+  const retained = current.evidence.failure;
+  if (!retained) return {
+    classification: "QUALIFICATION_FIXTURE_FAILURE",
+    consumedSubstantiveGate: false,
+    stage: fallbackStage,
+  };
+  const originalFailure = {
+    classification: retained.classification,
+    consumedSubstantiveGate: retained.consumedSubstantiveGate,
+    stage: retained.originalStage,
+    attempt: retained.attempt,
+    failedStateSha256: retained.failedStateSha256,
+    evidenceReferences: retained.evidenceReferences,
+  };
+  if (retained.originalStage === "database:verify-final" &&
+      retained.failedStateSha256 === null) {
+    assert.equal(current.evidence.events.some((entry) => entry.mode === "abort-cleanup"),
+      false, "Do not regenerate a failure snapshot after an abort attempt");
+    const snapshot = retainCertificationDatabaseFailureSnapshot({
+      repositoryRoot, environment: testFixture.environment, attempt: retained.attempt,
+    });
+    // This regression uses a synthetic state hash, as in its explicit abort calls.
+    originalFailure.failedStateSha256 = "f".repeat(64);
+    originalFailure.evidenceReferences = { "database-final-failure": snapshot };
+  }
+  return originalFailure;
+}
+
+async function finishRealDatabaseFixture({
+  testFixture, clients, primaryFailure, originalFailure = null, stage, adapter = null,
+}) {
+  const cleanupErrors = [];
+  for (const client of clients.filter(Boolean)) {
+    try { await client.end(); } catch (error) { cleanupErrors.push(error); }
+  }
+  try {
+    const metadata = lstatSync(testFixture.lifecyclePath);
+    assert.equal(metadata.isFile(), true, "Retain a missing or non-physical lifecycle receipt");
+    const current = readCertificationDatabaseLifecycle({
+      repositoryRoot, environment: testFixture.environment,
+    });
+    if (!new Set(["absence-verified", "abort-absence-verified"]).has(current.evidence.currentState)) {
+      assertAutomaticDatabaseCleanupMayStart(current.evidence, primaryFailure);
+      await abortCertificationDatabase({
+        repositoryRoot, environment: testFixture.environment, adapter,
+        originalFailure: originalFailure ?? retainedRealFixtureFailure(testFixture, current, stage),
+      });
+    }
+  } catch (error) { cleanupErrors.push(error); }
+  if (cleanupErrors.length === 0) {
+    try { rmSync(testFixture.root, { recursive: true, force: true }); }
+    catch (error) { cleanupErrors.push(error); }
+  }
+  if (cleanupErrors.length > 0) {
+    throw new AggregateError(
+      [...(primaryFailure ? [primaryFailure] : []), ...cleanupErrors],
+      `Real database fixture cleanup failed; retained evidence root: ${testFixture.root}`,
+    );
+  }
+  if (primaryFailure) throw primaryFailure;
+}
+
+async function realFixtureCleanupContractCoverage() {
+  for (const scenario of ["success", "session-refusal", "missing-receipt", "malformed-receipt", "client-close-failure", "observation-timeout"]) {
+    const testFixture = fixture({ id: `real-fixture-cleanup-${scenario}` });
+    const adapter = new FakeDatabaseAdapter();
+    const options = { repositoryRoot, environment: testFixture.environment, adapter };
+    const primaryFailure = new Error(`original product assertion: ${scenario}`);
+    try {
+      await planCertificationDatabase({ ...options, nonce: "6".repeat(32), qualificationFixture: true });
+      await provisionCertificationDatabase(options);
+      await verifyInitialCertificationDatabase(options);
+      await bindAllStages(testFixture.environment, adapter);
+      adapter.rows = [{ table: "User", count: 1 }];
+      await assert.rejects(verifyFinalCertificationDatabase(options), /row, session, or stage-binding contract failed/);
+      const receiptBytes = readFileSync(testFixture.lifecyclePath);
+      if (scenario === "observation-timeout") {
+        const current = readCertificationDatabaseLifecycle(options);
+        current.evidence.sessions.cleanupObservations = [await exhaustedCleanupObservationFixture()];
+        writeFileSync(testFixture.lifecyclePath, JSON.stringify(sealDatabaseLifecycleEvidence(current.evidence)));
+      }
+      if (scenario === "session-refusal") adapter.sessions = [{ pid: 1234 }];
+      if (scenario === "missing-receipt") rmSync(testFixture.lifecyclePath);
+      if (scenario === "malformed-receipt") writeFileSync(testFixture.lifecyclePath, "malformed");
+      const closeError = new Error("owned client close failed");
+      const clients = scenario === "client-close-failure"
+        ? [{ end: async () => { throw closeError; } }] : [];
+      await assert.rejects(finishRealDatabaseFixture({
+        testFixture, clients, primaryFailure, stage: "unexpected-finally-stage", adapter,
+      }), (error) => {
+        if (scenario === "success") return error === primaryFailure;
+        assert.ok(error instanceof AggregateError);
+        assert.equal(error.errors[0], primaryFailure);
+        if (scenario === "client-close-failure") assert.equal(error.errors[1], closeError);
+        assert.ok(lstatSync(testFixture.root).isDirectory());
+        return true;
+      });
+      if (scenario !== "success") {
+        if (scenario !== "client-close-failure") assert.equal(adapter.exists, true);
+        if (scenario === "session-refusal") {
+          const retained = readCertificationDatabaseLifecycle(options).evidence.failure;
+          assert.equal(retained.originalStage, "database:verify-final");
+          assert.ok(retained.evidenceReferences["database-final-failure"]);
+          assert.deepEqual(adapter.terminated, []);
+          adapter.sessions = [];
+          const current = readCertificationDatabaseLifecycle(options);
+          await abortCertificationDatabase({ ...options,
+            originalFailure: retainedRealFixtureFailure(testFixture, current, "later-exact-cleanup"),
+          });
+        }
+        if (scenario === "missing-receipt" || scenario === "malformed-receipt") {
+          writeFileSync(testFixture.lifecyclePath, receiptBytes);
+        }
+        if (scenario === "observation-timeout") {
+          const current = readCertificationDatabaseLifecycle(options);
+          assert.equal(current.evidence.sessions.cleanupObservations.length, 1);
+          assert.equal(current.evidence.sessions.cleanupObservations[0].outcome, "expired");
+          assert.equal(current.evidence.events.some((event) => event.mode === "abort-cleanup"), false);
+          // An explicit later cleanup after independently observing changed
+          // conditions is distinct from finally replaying the exhausted abort.
+          assert.deepEqual(await adapter.targetSessions(), []);
+          await abortCertificationDatabase({ ...options,
+            originalFailure: retainedRealFixtureFailure(testFixture, current, "later-exact-cleanup"),
+          });
+        }
+        // A successful retry must reuse the old failure snapshot after the
+        // lifecycle changed during refusal, rather than regenerate its bytes.
+        await assert.rejects(finishRealDatabaseFixture({
+          testFixture, clients: [], primaryFailure, stage: "unexpected-finally-stage", adapter,
+        }), (error) => error === primaryFailure);
+      }
+      assert.equal(adapter.exists, false);
+      assert.equal(adapter.stageRole, null);
+      assert.throws(() => lstatSync(testFixture.root), { code: "ENOENT" });
+    } finally {
+      // This coverage uses only the in-memory adapter; retain real fixture
+      // directories on any database cleanup failure in the production callers.
+      rmSync(testFixture.root, { recursive: true, force: true });
+    }
+  }
+}
+
 async function realRuntimeAttributionCoverage(adminUrl) {
   const positiveFixture = fixture({
     id: `real-runtime-attribution-${Date.now()}`,
     adminUrl,
   });
   let positiveClient = null;
+  let positiveFailure = null;
   try {
     const plan = await planCertificationDatabase({
       repositoryRoot,
@@ -2951,28 +3364,13 @@ async function realRuntimeAttributionCoverage(adminUrl) {
     });
     assert.equal(absent.evidence.currentState, "absence-verified");
     assert.equal(absent.evidence.server.targetExists, false);
+  } catch (error) {
+    positiveFailure = error;
   } finally {
-    if (positiveClient) await positiveClient.end().catch(() => {});
-    if (exists(positiveFixture.lifecyclePath)) {
-      const current = readCertificationDatabaseLifecycle({
-        repositoryRoot,
-        environment: positiveFixture.environment,
-      });
-      if (!new Set(["absence-verified", "abort-absence-verified"]).has(
-        current.evidence.currentState,
-      )) {
-        await abortCertificationDatabase({
-          repositoryRoot,
-          environment: positiveFixture.environment,
-          originalFailure: {
-            classification: "QUALIFICATION_FIXTURE_FAILURE",
-            consumedSubstantiveGate: false,
-            stage: "runtime-attribution-positive-finally",
-          },
-        });
-      }
-    }
-    rmSync(positiveFixture.root, { recursive: true, force: true });
+    await finishRealDatabaseFixture({
+      testFixture: positiveFixture, clients: [positiveClient], primaryFailure: positiveFailure,
+      stage: "runtime-attribution-positive-finally",
+    });
   }
 
   const negativeFixture = fixture({
@@ -2980,6 +3378,7 @@ async function realRuntimeAttributionCoverage(adminUrl) {
     adminUrl,
   });
   let negativeClient = null;
+  let negativeFailure = null;
   try {
     const plan = await planCertificationDatabase({
       repositoryRoot,
@@ -3085,28 +3484,13 @@ async function realRuntimeAttributionCoverage(adminUrl) {
     assert.equal(aborted.evidence.cleanup.finalEmptyVerified, false);
     assert.equal(aborted.evidence.cleanup.failedRunRehabilitated, false);
     assert.equal(aborted.evidence.server.targetExists, false);
+  } catch (error) {
+    negativeFailure = error;
   } finally {
-    if (negativeClient) await negativeClient.end().catch(() => {});
-    if (exists(negativeFixture.lifecyclePath)) {
-      const current = readCertificationDatabaseLifecycle({
-        repositoryRoot,
-        environment: negativeFixture.environment,
-      });
-      if (!new Set(["absence-verified", "abort-absence-verified"]).has(
-        current.evidence.currentState,
-      )) {
-        await abortCertificationDatabase({
-          repositoryRoot,
-          environment: negativeFixture.environment,
-          originalFailure: {
-            classification: "QUALIFICATION_FIXTURE_FAILURE",
-            consumedSubstantiveGate: false,
-            stage: "runtime-attribution-negative-finally",
-          },
-        });
-      }
-    }
-    rmSync(negativeFixture.root, { recursive: true, force: true });
+    await finishRealDatabaseFixture({
+      testFixture: negativeFixture, clients: [negativeClient], primaryFailure: negativeFailure,
+      stage: "runtime-attribution-negative-finally",
+    });
   }
 }
 
@@ -3119,6 +3503,8 @@ async function realDisposableDatabaseCoverage() {
   const realFixture = fixture({ id: `real-${Date.now()}`, adminUrl });
   let targetClient = null;
   let unrelatedClient = null;
+  let primaryFailure = null;
+  let originalFailure = null;
   try {
     const plan = await planCertificationDatabase({
       repositoryRoot,
@@ -3222,17 +3608,26 @@ async function realDisposableDatabaseCoverage() {
       environment: realFixture.environment,
       attempt: 1,
     });
+    originalFailure = {
+      classification: "DATABASE_LIFECYCLE_FAILURE",
+      consumedSubstantiveGate: true,
+      stage: "database:verify-final",
+      attempt: 1,
+      failedStateSha256: "f".repeat(64),
+      evidenceReferences: { "database-final-failure": failedSnapshot },
+    };
+    await assert.rejects(abortCertificationDatabase({
+      repositoryRoot,
+      environment: realFixture.environment,
+      originalFailure,
+    }), /refuses active sessions/);
+    assert.equal((await targetClient.query("SELECT 1 AS alive")).rows[0].alive, 1);
+    await targetClient.end();
+    targetClient = null;
     const aborted = await abortCertificationDatabase({
       repositoryRoot,
       environment: realFixture.environment,
-      originalFailure: {
-        classification: "DATABASE_LIFECYCLE_FAILURE",
-        consumedSubstantiveGate: true,
-        stage: "database:verify-final",
-        attempt: 1,
-        failedStateSha256: "f".repeat(64),
-        evidenceReferences: { "database-final-failure": failedSnapshot },
-      },
+      originalFailure,
     });
     assert.equal(aborted.evidence.currentState, "abort-absence-verified");
     assert.equal(aborted.evidence.cleanup.finalEmptyVerified, false);
@@ -3243,29 +3638,13 @@ async function realDisposableDatabaseCoverage() {
       JSON.stringify(aborted.evidence).includes(adminUrl),
       false,
     );
+  } catch (error) {
+    primaryFailure = error;
   } finally {
-    if (targetClient) await targetClient.end().catch(() => {});
-    if (unrelatedClient) await unrelatedClient.end().catch(() => {});
-    if (exists(realFixture.lifecyclePath)) {
-      const current = readCertificationDatabaseLifecycle({
-        repositoryRoot,
-        environment: realFixture.environment,
-      });
-      if (!new Set(["absence-verified", "abort-absence-verified"]).has(
-        current.evidence.currentState,
-      )) {
-        await abortCertificationDatabase({
-          repositoryRoot,
-          environment: realFixture.environment,
-          originalFailure: {
-            classification: "QUALIFICATION_FIXTURE_FAILURE",
-            consumedSubstantiveGate: false,
-            stage: "database-lifecycle-test-finally",
-          },
-        });
-      }
-    }
-    rmSync(realFixture.root, { recursive: true, force: true });
+    await finishRealDatabaseFixture({
+      testFixture: realFixture, clients: [targetClient, unrelatedClient], primaryFailure,
+      originalFailure, stage: "database-lifecycle-test-finally",
+    });
   }
 }
 

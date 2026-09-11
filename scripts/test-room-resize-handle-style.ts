@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
+import { ROOM_PLAN_CLICK_DISTANCE_PX } from "../components/editor/renderers/room-renderer-2d-surface-selection";
 
 const rendererPath = path.join(
   process.cwd(),
@@ -10,6 +11,13 @@ const rendererPath = path.join(
   "RoomRenderer2D.tsx"
 );
 const source = fs.readFileSync(rendererPath, "utf8");
+for (const testId of ["house-room-2d-label", "house-room-2d-hit-probe"]) {
+  const wrapper = source.match(new RegExp(
+    `<Html\\b[^>]*>\\s*<div\\s+data-testid="${testId}"`
+  ))?.[0] ?? "";
+  assert.match(wrapper, /style=\{\{ pointerEvents: "none" \}\}/,
+    `${testId}'s passive Html wrapper must pass native clicks through to the canvas.`);
+}
 const sceneRegionWorkspaceSource = fs.readFileSync(
   path.join(
     process.cwd(),
@@ -322,9 +330,12 @@ assert.match(
 
 assert.match(
   source,
-  /const roomBodyClickThresholdPx = 6;/,
+  /import \{[^}]*ROOM_PLAN_CLICK_DISTANCE_PX[^}]*\} from "\.\/room-renderer-2d-surface-selection";/,
   "Room body clicks should use a small pixel threshold so drag gestures can pan the plan."
 );
+
+assert.equal(ROOM_PLAN_CLICK_DISTANCE_PX, 6);
+assert.match(roomPointerUpSource, /Math\.hypot\(deltaX, deltaY\) <= ROOM_PLAN_CLICK_DISTANCE_PX/);
 
 assert.match(
   roomBodyPointerDownSource,

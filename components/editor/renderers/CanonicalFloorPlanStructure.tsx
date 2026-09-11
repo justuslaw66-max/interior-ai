@@ -57,6 +57,7 @@ import {
   surfaceMaterialFallbackColor,
 } from "./canonical-floor-plan/surfaceMaterials";
 import { useCanonicalCameraCutawayWallKeys } from "./canonical-floor-plan/useCameraCutaway";
+import { GeneratedWindowFrame3D } from "./GeneratedWindowFrame3D";
 
 export type { CanonicalOpeningDragMetricsV2 } from "./canonical-floor-plan/openingDrag";
 
@@ -773,17 +774,15 @@ function CanonicalOpening3DSymbol({
         ))}
       </group>
     ) : opening.kind === "window" || opening.operation === "fixed" ? (
-      <mesh position={[0, bottom + height / 2, 0]} raycast={() => null}>
-        <boxGeometry args={[spanLength, height, 0.025]} />
-        <meshPhysicalMaterial
-          color={color}
-          transparent
-          opacity={Math.min(0.48, opacity * 0.42)}
-          roughness={0.12}
-          transmission={0.35}
-          side={DoubleSide}
+      <group position={[0, bottom + height / 2, 0]}>
+        <GeneratedWindowFrame3D
+          widthMeters={spanLength}
+          heightMeters={height}
+          wallDepthMeters={Math.max(0.04, wallThicknessMm / 1000)}
+          opacity={opacity}
+          selected={selected}
         />
-      </mesh>
+      </group>
     ) : opening.operation === "sliding" ? (
       <group position={[0, bottom + height / 2, 0]}>
         {[-1, 1].map((direction) => (

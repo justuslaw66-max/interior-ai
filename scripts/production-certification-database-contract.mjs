@@ -1,3 +1,4 @@
+import { databaseCleanupObservationIssues } from "./production-certification-database-cleanup-observation.mjs";
 import { createHash, randomBytes } from "node:crypto";
 import { readFileSync, readdirSync } from "node:fs";
 import path from "node:path";
@@ -986,6 +987,7 @@ function semanticEvidenceIssues(evidence) {
   ) {
     issues.push("database lifecycle final-empty evidence is incoherent");
   }
+  issues.push(...databaseCleanupObservationIssues(evidence.sessions?.cleanupObservations));
   if (
     hasState(evidence, "stable-runtime-inspected") &&
     (evidence.lifecycleProfile?.classification !==

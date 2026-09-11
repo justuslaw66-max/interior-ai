@@ -850,7 +850,7 @@ export default function FloorPlanUploadPanel({
         )}
       </div>
     </div>
-    <FloorPlanUploadWorkspaceDialog {...dialog} dark={dark} disabled={disabled}
+    <FloorPlanUploadWorkspaceDialog {...dialog} dark={dark} disabled={disabled} proMode={isDesigner}
       buttonClass={buttonClass} subtleClass={subtleClass} request={autoImportRequest}
       trainingBenchmarkOptIn={trainingBenchmarkOptIn} onClose={dialog.requestClose}
       onChooseFile={() => inputRef.current?.click()}
