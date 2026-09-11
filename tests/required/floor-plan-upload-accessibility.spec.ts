@@ -1,4 +1,6 @@
 import path from "node:path";
+import { fingerprintDesignSnapshot } from "@/lib/snapshot-fingerprint";
+import { storedToSnapshot } from "@/lib/room-persistence";
 import { result as directoryResult, payload as directoryRevision } from "./fixtures/floor-plan-directory-fixture";
 import { expect, test, type Locator, type Page } from "@playwright/test";
 import {
@@ -823,7 +825,7 @@ test("removed opener falls back and reopen creates a new lifecycle generation", 
 });
 
 
-test("directory cancellation, malformed responses and exact canonical selection use the active editor", async ({ page }) => {
+test("directory cancellation, malformed responses and exact canonical selection use the active editor", async ({ page }, testInfo) => {
   await installBoundaries(page, { job: null });
   let malformed = false;
   let releaseRevision: (() => void) | undefined;
@@ -888,8 +890,16 @@ test("directory cancellation, malformed responses and exact canonical selection 
   await expect(page.getByTestId("scene-canvas")).toBeVisible();
   await page.getByTestId("editor-view-2d").click();
   await expect(page.getByTestId("canonical-floor-plan-integrity-warning")).toHaveCount(0);
-  const applied = await page.getByTestId("qa-editor-snapshot-fingerprint").getAttribute("data-fingerprint");
+  const savedBeforeReload = await page.evaluate(() => JSON.parse(localStorage.getItem("interior-ai:v1:livingroom-design") ?? "{}"));
+  // Compare the reopened runtime with the actual persisted projection, not a transient pre-save marker.
+  const applied = fingerprintDesignSnapshot(storedToSnapshot(savedBeforeReload));
   await page.reload({ waitUntil: "domcontentloaded" });
-  await expect(page.getByTestId("qa-editor-snapshot-fingerprint")).toHaveAttribute("data-fingerprint", applied!);
+  try {
+    await expect(page.getByTestId("qa-editor-snapshot-fingerprint")).toHaveAttribute("data-fingerprint", applied!, { timeout: 5_000 });
+  } catch (error) {
+    const afterReload = await page.evaluate(() => JSON.parse(localStorage.getItem("interior-ai:v1:livingroom-design") ?? "{}"));
+    await testInfo.attach("synthetic-snapshot-roundtrip", { body: JSON.stringify({ before: savedBeforeReload, after: afterReload }), contentType: "application/json" });
+    throw error;
+  }
   await expect(page.getByTestId("canonical-floor-plan-integrity-warning")).toHaveCount(0);
 });
