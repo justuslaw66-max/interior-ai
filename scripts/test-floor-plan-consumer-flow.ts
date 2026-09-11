@@ -15,6 +15,12 @@ import { inverseFloorPlanAddressTransform } from "@/lib/floor-plan-consumer-orie
 import { applyFloorPlanAddressTransformV2 } from "@/lib/floor-plan-legacy-adapters";
 import type { FloorPlanDocumentV2 } from "@/lib/floor-plan-document-v2";
 import type { FloorPlanCatalogSearchResult } from "@/lib/floor-plan-catalog-repository";
+import {
+  createFloorPlanExactSearchIdentity,
+  FloorPlanExactSearchRequestAuthority,
+  type FloorPlanExactSearchRequestBinding,
+  type FloorPlanExactSearchRequestToken,
+} from "@/lib/floor-plan-exact-search-request-authority";
 
 const root = process.cwd();
 const read = (relativePath: string) =>
@@ -52,6 +58,7 @@ const selectPageRoute = read(
 const importSession = read("components/editor/useConsumerFloorPlanImportSession.ts");
 const importHistory = read("components/editor/FloorPlanImportHistory.tsx");
 const addressSearch = read("components/editor/FloorPlanAddressSearch.tsx");
+const floorPlanDirectoryClient = read("lib/floor-plan-directory-client.ts");
 const addressFields = read("components/editor/FloorPlanAddressFields.tsx");
 const catalogResults = read("components/editor/FloorPlanCatalogResultList.tsx");
 const orientationFeedback = read("components/editor/design-page/DesignValidationFeedback.tsx");
@@ -81,15 +88,284 @@ const underlayController = read(
   "lib/useDesignPageFloorPlanUnderlayController.ts"
 );
 
-assert.equal(
+assert.equal(buildStructuredFloorPlanAddressQuery({ address: "810A Chai Chee St", floor: "7", stack: "5/09" }), null,
+  "Malformed unit selectors must not silently become another valid unit");
+assert.deepEqual(
   buildStructuredFloorPlanAddressQuery({ address: " 810A  Chai Chee St ", floor: "7", stack: "509" }),
-  "810A Chai Chee St #07-509"
+  {
+    mode: "search",
+    countryCode: "SG",
+    address: { normalizedText: "810A Chai Chee St" },
+    unit: { floor: 7, stack: "509" },
+    limit: 12,
+  }
 );
 assert.equal(
   buildStructuredFloorPlanAddressQuery({ address: "810A Chai Chee St", floor: "7", stack: "" }),
-  "810A Chai Chee St",
+  null,
   "Partial unit fields must not create a false exact-unit search."
 );
+
+type Deferred<T> = {
+  promise: Promise<T>;
+  resolve: (value: T) => void;
+};
+
+function createDeferred<T>(): Deferred<T> {
+  let resolve!: (value: T) => void;
+  const promise = new Promise<T>((next) => { resolve = next; });
+  return { promise, resolve };
+}
+
+async function applyControlledCompletion<T>(input: {
+  authority: FloorPlanExactSearchRequestAuthority;
+  binding: FloorPlanExactSearchRequestBinding;
+  token: FloorPlanExactSearchRequestToken;
+  response: Promise<T>;
+  apply: (value: T) => void;
+  finalize?: () => void;
+}) {
+  try {
+    const value = await input.response;
+    if (!input.authority.isCurrent(input.token, input.binding)) return;
+    input.apply(value);
+  } finally {
+    if (input.authority.isCurrent(input.token, input.binding)) {
+      input.finalize?.();
+    }
+    input.authority.finish(input.token);
+  }
+}
+
+function exactRequest(address: string, floor: string, stack: string) {
+  const request = buildStructuredFloorPlanAddressQuery({ address, floor, stack });
+  assert.ok(request);
+  return request;
+}
+
+async function assertExactSearchRequestIdentityRaces() {
+  const requestA = exactRequest("100 Race A Street", "10", "101");
+  const requestB = exactRequest("200 Race B Street", "20", "202");
+  const identityA = createFloorPlanExactSearchIdentity(requestA);
+  const identityB = createFloorPlanExactSearchIdentity(requestB);
+
+  {
+    const authority = new FloorPlanExactSearchRequestAuthority();
+    const state = {
+      results: ["seed"],
+      cursor: "seed-cursor",
+      binding: "seed-binding",
+      transform: "mirror_x",
+      status: "loading",
+    };
+    authority.activate(identityA);
+    const bindingA = { purpose: "initial", identity: identityA } as const;
+    const tokenA = authority.begin(bindingA);
+    assert.ok(tokenA);
+    const deferredA = createDeferred<{ results: string[]; cursor: string }>();
+    const completionA = applyControlledCompletion({
+      authority,
+      binding: bindingA,
+      token: tokenA,
+      response: deferredA.promise,
+      apply: (value) => {
+        state.results = value.results;
+        state.cursor = value.cursor;
+        state.binding = "binding-a";
+        state.transform = "normal";
+      },
+      finalize: () => { state.status = "ready-a"; },
+    });
+
+    authority.activate(identityB);
+    assert.equal(tokenA.signal.aborted, true);
+    const bindingB = { purpose: "initial", identity: identityB } as const;
+    const tokenB = authority.begin(bindingB);
+    assert.ok(tokenB);
+    const deferredB = createDeferred<{ results: string[]; cursor: string }>();
+    const completionB = applyControlledCompletion({
+      authority,
+      binding: bindingB,
+      token: tokenB,
+      response: deferredB.promise,
+      apply: (value) => {
+        state.results = value.results;
+        state.cursor = value.cursor;
+        state.binding = "binding-b";
+        state.transform = "mirror_x";
+      },
+      finalize: () => { state.status = "ready-b"; },
+    });
+    deferredB.resolve({ results: ["result-b"], cursor: "cursor-b" });
+    await completionB;
+    deferredA.resolve({ results: ["result-a"], cursor: "cursor-a" });
+    await completionA;
+    assert.deepEqual(state, {
+      results: ["result-b"],
+      cursor: "cursor-b",
+      binding: "binding-b",
+      transform: "mirror_x",
+      status: "ready-b",
+    }, "Abort-insensitive initial completion A must not overwrite exact search B");
+  }
+
+  {
+    const authority = new FloorPlanExactSearchRequestAuthority();
+    const state = { results: ["a-1"], cursor: "a-2", status: "loading-a", error: "" };
+    authority.activate(identityA);
+    const loadBindingA = {
+      purpose: "load-more",
+      identity: identityA,
+      cursor: "a-2",
+      resultSetIdentity: "a-1",
+    } as const;
+    const loadTokenA = authority.begin(loadBindingA);
+    assert.ok(loadTokenA);
+    assert.equal(
+      authority.begin(loadBindingA),
+      null,
+      "The same search cursor must not be requested concurrently"
+    );
+    const deferredLoadA = createDeferred<{ results: string[]; cursor: string }>();
+    const completionLoadA = applyControlledCompletion({
+      authority,
+      binding: loadBindingA,
+      token: loadTokenA,
+      response: deferredLoadA.promise,
+      apply: (value) => {
+        state.results = [...state.results, ...value.results];
+        state.cursor = value.cursor;
+      },
+      finalize: () => { state.status = "ready-a"; },
+    });
+
+    authority.activate(identityB);
+    const searchBindingB = { purpose: "initial", identity: identityB } as const;
+    const searchTokenB = authority.begin(searchBindingB);
+    assert.ok(searchTokenB);
+    const deferredSearchB = createDeferred<{ results: string[]; cursor: string }>();
+    const completionSearchB = applyControlledCompletion({
+      authority,
+      binding: searchBindingB,
+      token: searchTokenB,
+      response: deferredSearchB.promise,
+      apply: (value) => {
+        state.results = value.results;
+        state.cursor = value.cursor;
+        state.error = "";
+      },
+      finalize: () => { state.status = "ready-b"; },
+    });
+    deferredSearchB.resolve({ results: ["b-1"], cursor: "b-2" });
+    await completionSearchB;
+    deferredLoadA.resolve({ results: ["a-2"], cursor: "a-3" });
+    await completionLoadA;
+    assert.deepEqual(state, {
+      results: ["b-1"],
+      cursor: "b-2",
+      status: "ready-b",
+      error: "",
+    }, "A stale load-more page must not append to exact unit B or alter B state");
+  }
+
+  {
+    const authority = new FloorPlanExactSearchRequestAuthority();
+    const state = {
+      binding: "base",
+      transform: "normal",
+      selectedVariant: "base",
+      applyCount: 0,
+      startNewCount: 0,
+      replaceCount: 0,
+    };
+    authority.activate(identityA);
+    const variantBindingA = {
+      purpose: "authored-variant",
+      identity: identityA,
+      resultId: "result-a",
+      selectedRevisionId: "revision-a-base",
+      requestedVariantRevisionId: "revision-a-variant",
+    } as const;
+    const variantTokenA = authority.begin(variantBindingA);
+    assert.ok(variantTokenA);
+    const deferredVariantA = createDeferred<{ binding: string; transform: string; variant: string }>();
+    const completionVariantA = applyControlledCompletion({
+      authority,
+      binding: variantBindingA,
+      token: variantTokenA,
+      response: deferredVariantA.promise,
+      apply: (value) => {
+        state.binding = value.binding;
+        state.transform = value.transform;
+        state.selectedVariant = value.variant;
+        state.applyCount += 1;
+        state.startNewCount += 1;
+        state.replaceCount += 1;
+      },
+    });
+
+    authority.activate(identityB);
+    const variantBindingB = {
+      purpose: "authored-variant",
+      identity: identityB,
+      resultId: "result-b",
+      selectedRevisionId: "revision-b-base",
+      requestedVariantRevisionId: "revision-b-variant",
+    } as const;
+    const variantTokenB = authority.begin(variantBindingB);
+    assert.ok(variantTokenB);
+    const deferredVariantB = createDeferred<{ binding: string; transform: string; variant: string }>();
+    const completionVariantB = applyControlledCompletion({
+      authority,
+      binding: variantBindingB,
+      token: variantTokenB,
+      response: deferredVariantB.promise,
+      apply: (value) => {
+        state.binding = value.binding;
+        state.transform = value.transform;
+        state.selectedVariant = value.variant;
+        state.applyCount += 1;
+        state.startNewCount += 1;
+        state.replaceCount += 1;
+      },
+    });
+    deferredVariantB.resolve({ binding: "binding-b", transform: "mirror_x", variant: "variant-b" });
+    await completionVariantB;
+    deferredVariantA.resolve({ binding: "binding-a", transform: "normal", variant: "variant-a" });
+    await completionVariantA;
+    assert.deepEqual(state, {
+      binding: "binding-b",
+      transform: "mirror_x",
+      selectedVariant: "variant-b",
+      applyCount: 1,
+      startNewCount: 1,
+      replaceCount: 1,
+    }, "Obsolete authored variant A must not update or invoke any plan application callback");
+  }
+
+  {
+    const authority = new FloorPlanExactSearchRequestAuthority();
+    authority.activate(identityA);
+    const binding = { purpose: "initial", identity: identityA } as const;
+    const token = authority.begin(binding);
+    assert.ok(token);
+    const deferred = createDeferred<string>();
+    let updatesAfterUnmount = 0;
+    const completion = applyControlledCompletion({
+      authority,
+      binding,
+      token,
+      response: deferred.promise,
+      apply: () => { updatesAfterUnmount += 1; },
+      finalize: () => { updatesAfterUnmount += 1; },
+    });
+    authority.dispose();
+    assert.equal(token.signal.aborted, true);
+    deferred.resolve("late");
+    await completion;
+    assert.equal(updatesAfterUnmount, 0, "Unmount must reject every late state or apply callback");
+  }
+}
 
 const storageValues = new Map<string, string>();
 const fakeStorage = {
@@ -354,13 +630,12 @@ assert.match(
   "Consumers should be able to rerun the current extractor without uploading again."
 );
 assert.match(addressFields, /floor-plan-address-floor[\s\S]*?floor-plan-address-stack/);
-for (const requestMarker of [
-  "floorPlanRequest",
-  "floor-plan-address-requested",
-  "floor-plan-upload-requested",
-]) {
-  assert.ok(addressSearch.includes(requestMarker));
-}
+assert.doesNotMatch(addressSearch, /floorPlanRequest|floor-plan-address-requested|CustomEvent/);
+assert.match(addressSearch, /floor-plan-upload-requested/);
+assert.match(floorPlanDirectoryClient, /method: "POST"[\s\S]*?body: JSON\.stringify\(request\)/);
+assert.match(addressSearch, /ph-no-capture/);
+assert.match(addressFields, /ph-no-capture/);
+assert.match(catalogResults, /Exact unit match/);
 assert.match(addressSearch, /floorPlanSearchFacets[\s\S]*?groupFloorPlanSearchResults/);
 assert.match(catalogResults, /Start a new design[\s\S]*?Replace current plan/);
 assert.match(addressSearch, /startAsNewDesign/);
@@ -559,7 +834,10 @@ assert.match(
   "Opening endpoints should retain their fixed two-point tuple contract."
 );
 
-assertBackgroundValidationKeepsPolling()
+Promise.all([
+  assertBackgroundValidationKeepsPolling(),
+  assertExactSearchRequestIdentityRaces(),
+])
   .then(() => console.log("Floor-plan consumer flow guardrails passed."))
   .catch((cause) => {
     console.error(cause);

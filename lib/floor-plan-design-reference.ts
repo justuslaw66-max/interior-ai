@@ -20,6 +20,27 @@ export type FloorPlanDesignReferenceCandidate = {
   geometryHash: string | null;
   addressBindingId: string | null;
   transform: FloorPlanAddressTransform | null;
+  unitFloor: number | null;
+  unitStack: string | null;
+};
+
+type RevisionLineage = {
+  id: string;
+  sourceJobId: string;
+  geometryHash: string;
+  publicationStatus: string;
+  publishedAt: Date | null;
+  verificationTier: string;
+};
+
+type AddressBindingLineage = {
+  id: string;
+  revisionId: string;
+  transform: string;
+  stack: string | null;
+  floorMin: number | null;
+  floorMax: number | null;
+  revision: RevisionLineage;
 };
 
 export type FloorPlanDesignReferenceSyncErrorCode =
@@ -30,7 +51,10 @@ export type FloorPlanDesignReferenceSyncErrorCode =
   | "LINEAGE_REVISION_MISMATCH"
   | "LINEAGE_SOURCE_JOB_MISMATCH"
   | "LINEAGE_SOURCE_HASH_MISMATCH"
-  | "LINEAGE_GEOMETRY_HASH_MISMATCH";
+  | "LINEAGE_GEOMETRY_HASH_MISMATCH"
+  | "REVISION_NOT_ELIGIBLE"
+  | "ADDRESS_UNIT_MISMATCH"
+  | "ADDRESS_TRANSFORM_MISMATCH";
 
 export class FloorPlanDesignReferenceSyncError extends Error {
   constructor(public readonly code: FloorPlanDesignReferenceSyncErrorCode) {
@@ -55,6 +79,161 @@ function hash(value: unknown) {
   if (typeof value !== "string") return null;
   const normalized = value.trim().toLowerCase();
   return SHA256.test(normalized) ? normalized : null;
+}
+
+function unitFloor(value: unknown) {
+  return Number.isSafeInteger(value) && Number(value) >= 1 && Number(value) <= 99
+    ? Number(value)
+    : null;
+}
+
+function unitStack(value: unknown) {
+  if (typeof value !== "string") return null;
+  const normalized = value.normalize("NFKC").trim().toUpperCase();
+  return /^\d{2,5}[A-Z]?$/.test(normalized) ? normalized : null;
+}
+
+function assertEligiblePublishedSelection(
+  candidate: FloorPlanDesignReferenceCandidate,
+  revision: RevisionLineage | null,
+  binding: AddressBindingLineage | null,
+  retained: boolean
+) {
+  if (
+    revision && (
+      (revision.publicationStatus !== "published" && !(retained && revision.publicationStatus === "retired")) ||
+      !revision.publishedAt ||
+      !["source_verified", "construction_verified"].includes(revision.verificationTier)
+    )
+  ) {
+    throw new FloorPlanDesignReferenceSyncError("REVISION_NOT_ELIGIBLE");
+  }
+  assertSelectedUnit(candidate, binding, retained);
+}
+
+function assertSelectedUnit(
+  candidate: FloorPlanDesignReferenceCandidate,
+  binding: AddressBindingLineage | null,
+  retained: boolean
+) {
+  if (!binding) return;
+  if (retained && candidate.unitFloor === null && candidate.unitStack === null) return;
+  if (
+    candidate.unitFloor === null ||
+    candidate.unitStack === null ||
+    binding.stack?.toUpperCase() !== candidate.unitStack ||
+    (binding.floorMin !== null && candidate.unitFloor < binding.floorMin) ||
+    (binding.floorMax !== null && candidate.unitFloor > binding.floorMax)
+  ) {
+    throw new FloorPlanDesignReferenceSyncError("ADDRESS_UNIT_MISMATCH");
+  }
+  if (!candidate.transform || candidate.transform !== binding.transform) {
+    throw new FloorPlanDesignReferenceSyncError("ADDRESS_TRANSFORM_MISMATCH");
+  }
+}
+
+async function loadRevisionSelection(
+  client: Prisma.TransactionClient,
+  candidate: FloorPlanDesignReferenceCandidate
+) {
+  const binding = candidate.addressBindingId
+    ? await client.floorPlanAddressBinding.findUnique({
+        where: { id: candidate.addressBindingId },
+        select: {
+          id: true,
+          revisionId: true,
+          transform: true,
+          stack: true,
+          floorMin: true,
+          floorMax: true,
+          revision: {
+            select: {
+              id: true,
+              sourceJobId: true,
+              geometryHash: true,
+              publicationStatus: true,
+              publishedAt: true,
+              verificationTier: true,
+            },
+          },
+        },
+      })
+    : null;
+  if (candidate.addressBindingId && !binding) {
+    throw new FloorPlanDesignReferenceSyncError("ADDRESS_BINDING_NOT_FOUND");
+  }
+
+  let revision = candidate.revisionId
+    ? await client.floorPlanRevision.findUnique({
+        where: { id: candidate.revisionId },
+        select: {
+          id: true,
+          sourceJobId: true,
+          geometryHash: true,
+          publicationStatus: true,
+          publishedAt: true,
+          verificationTier: true,
+        },
+      })
+    : null;
+  if (binding) {
+    if (candidate.revisionId && candidate.revisionId !== binding.revisionId) {
+      throw new FloorPlanDesignReferenceSyncError("LINEAGE_REVISION_MISMATCH");
+    }
+    if (revision && revision.id !== binding.revisionId) {
+      throw new FloorPlanDesignReferenceSyncError("LINEAGE_REVISION_MISMATCH");
+    }
+    revision = binding.revision;
+  }
+  return { binding, revision };
+}
+
+function sourceHashMismatch(
+  candidateHash: string | null,
+  sourceJob: { sourceAsset: { sha256: string } } | null
+) {
+  return Boolean(
+    candidateHash && sourceJob && sourceJob.sourceAsset.sha256 !== candidateHash
+  );
+}
+
+async function loadValidatedSourceJob(input: {
+  client: Prisma.TransactionClient;
+  candidate: FloorPlanDesignReferenceCandidate;
+  revision: RevisionLineage | null;
+  ownerUserId: string;
+}) {
+  const sourceJobId = input.candidate.sourceJobId ?? input.revision?.sourceJobId ?? null;
+  const sourceJob = sourceJobId
+    ? await input.client.floorPlanImportJob.findUnique({
+        where: { id: sourceJobId },
+        select: {
+          id: true,
+          userId: true,
+          sourceAsset: { select: { sha256: true } },
+        },
+      })
+    : null;
+  if (sourceJobId && !sourceJob) {
+    throw new FloorPlanDesignReferenceSyncError("SOURCE_JOB_NOT_FOUND");
+  }
+  if (input.revision && sourceJob?.id !== input.revision.sourceJobId) {
+    throw new FloorPlanDesignReferenceSyncError("LINEAGE_SOURCE_JOB_MISMATCH");
+  }
+  if (!input.revision && sourceJob && sourceJob.userId !== input.ownerUserId) {
+    throw new FloorPlanDesignReferenceSyncError("SOURCE_JOB_NOT_OWNED");
+  }
+  if (sourceHashMismatch(input.candidate.sourceAssetSha256, sourceJob)) {
+    throw new FloorPlanDesignReferenceSyncError("LINEAGE_SOURCE_HASH_MISMATCH");
+  }
+  if (
+    input.candidate.geometryHash &&
+    input.revision &&
+    input.revision.geometryHash !== input.candidate.geometryHash
+  ) {
+    throw new FloorPlanDesignReferenceSyncError("LINEAGE_GEOMETRY_HASH_MISMATCH");
+  }
+  return sourceJob;
 }
 
 /**
@@ -87,8 +266,28 @@ export function extractFloorPlanDesignReference(
       hash(floorPlan.canonicalGeometryHash),
     addressBindingId: identifier(binding?.bindingId),
     transform,
+    unitFloor: unitFloor(binding?.unitFloor),
+    unitStack: unitStack(binding?.unitStack),
   };
   return Object.values(result).some(Boolean) ? result : null;
+}
+
+async function isRetainedOwnedReference(input: {
+  client: Prisma.TransactionClient; designId: string; previousSnapshot?: unknown;
+}, candidate: FloorPlanDesignReferenceCandidate) {
+  const previous = extractFloorPlanDesignReference(input.previousSnapshot);
+  if (!previous || Object.entries(candidate).some(([key, value]) =>
+    previous[key as keyof FloorPlanDesignReferenceCandidate] !== value)) return false;
+  const existing = await input.client.floorPlanDesignReference.findUnique({
+    where: { designId: input.designId },
+  });
+  if (!existing || !candidate.revisionId || !candidate.geometryHash) return false;
+  const identityKeys = ["revisionId", "geometryHash", "addressBindingId", "transform"] as const;
+  if (identityKeys.some((key) => existing[key] !== candidate[key])) return false;
+  return ["sourceJobId", "sourceAssetSha256"].every((key) => {
+    const field = key as "sourceJobId" | "sourceAssetSha256";
+    return !candidate[field] || existing[field] === candidate[field];
+  });
 }
 
 /**
@@ -104,6 +303,8 @@ export async function syncFloorPlanDesignReference(input: {
   designId: string;
   ownerUserId: string;
   snapshot: unknown;
+  /** Server-read pre-update snapshot; never supplied from the request body. */
+  previousSnapshot?: unknown;
 }) {
   const design = await input.client.design.findFirst({
     where: { id: input.designId, userId: input.ownerUserId },
@@ -121,72 +322,14 @@ export async function syncFloorPlanDesignReference(input: {
     return null;
   }
 
-  const binding = candidate.addressBindingId
-    ? await input.client.floorPlanAddressBinding.findUnique({
-        where: { id: candidate.addressBindingId },
-        select: {
-          id: true,
-          revisionId: true,
-          transform: true,
-          revision: {
-            select: { id: true, sourceJobId: true, geometryHash: true },
-          },
-        },
-      })
-    : null;
-  if (candidate.addressBindingId && !binding) {
-    throw new FloorPlanDesignReferenceSyncError("ADDRESS_BINDING_NOT_FOUND");
-  }
-
-  let revision = candidate.revisionId
-    ? await input.client.floorPlanRevision.findUnique({
-        where: { id: candidate.revisionId },
-        select: { id: true, sourceJobId: true, geometryHash: true },
-      })
-    : null;
-  if (binding) {
-    if (candidate.revisionId && candidate.revisionId !== binding.revisionId) {
-      throw new FloorPlanDesignReferenceSyncError("LINEAGE_REVISION_MISMATCH");
-    }
-    if (revision && revision.id !== binding.revisionId) {
-      throw new FloorPlanDesignReferenceSyncError("LINEAGE_REVISION_MISMATCH");
-    }
-    revision = binding.revision;
-  }
-  const sourceJobId = candidate.sourceJobId ?? revision?.sourceJobId ?? null;
-  const sourceJob = sourceJobId
-    ? await input.client.floorPlanImportJob.findUnique({
-        where: { id: sourceJobId },
-        select: {
-          id: true,
-          userId: true,
-          sourceAsset: { select: { sha256: true } },
-        },
-      })
-    : null;
-  if (sourceJobId && !sourceJob) {
-    throw new FloorPlanDesignReferenceSyncError("SOURCE_JOB_NOT_FOUND");
-  }
-  if (revision && sourceJob?.id !== revision.sourceJobId) {
-    throw new FloorPlanDesignReferenceSyncError("LINEAGE_SOURCE_JOB_MISMATCH");
-  }
-  if (!revision && sourceJob && sourceJob.userId !== input.ownerUserId) {
-    throw new FloorPlanDesignReferenceSyncError("SOURCE_JOB_NOT_OWNED");
-  }
-  if (
-    candidate.sourceAssetSha256 &&
-    sourceJob &&
-    sourceJob.sourceAsset.sha256 !== candidate.sourceAssetSha256
-  ) {
-    throw new FloorPlanDesignReferenceSyncError("LINEAGE_SOURCE_HASH_MISMATCH");
-  }
-  if (
-    candidate.geometryHash &&
-    revision &&
-    revision.geometryHash !== candidate.geometryHash
-  ) {
-    throw new FloorPlanDesignReferenceSyncError("LINEAGE_GEOMETRY_HASH_MISMATCH");
-  }
+  const { binding, revision } = await loadRevisionSelection(input.client, candidate);
+  assertEligiblePublishedSelection(candidate, revision, binding, await isRetainedOwnedReference(input, candidate));
+  const sourceJob = await loadValidatedSourceJob({
+    client: input.client,
+    candidate,
+    revision,
+    ownerUserId: input.ownerUserId,
+  });
 
   // A local canonical document with only synthetic IDs is not durable lineage.
   if (!revision && !sourceJob && !binding) {

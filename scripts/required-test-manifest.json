@@ -6,8 +6,8 @@
       "root": "scripts",
       "filePattern": "^test-.*\\.(?:js|mjs|ts)$",
       "classification": "risk-triggered",
-      "expectedFileCount": 281,
-      "expectedPathSha256": "4e33e3d9cb429ae516bd0561afd0c9a8f1abcd7d0133ffa807947dab68c31e44"
+      "expectedFileCount": 282,
+      "expectedPathSha256": "a2ebfc5278f7867f769eefb8d74cb0818e4cfca2a0f6b5e897d80680b264c024"
     },
     {
       "id": "browser-specs",
@@ -493,9 +493,10 @@
       "blocking": true,
       "command": "npm run test:floor-plan-required",
       "packageScript": "test:floor-plan-required",
-      "packageClosure": { "expectedScriptCount": 57, "expectedSha256": "dffa1c298a28463308882fa042bb3b6aae48b466adab0ad67f3f08e85f8eaa61" },
+      "packageClosure": { "expectedScriptCount": 58, "expectedSha256": "0b088f3417444349915984b72f62ade7651b85662219c878b7fd3a640e023aea" },
       "runner": "npm-chain",
       "requiredSources": [
+        "scripts/test-floor-plan-directory-privacy.ts",
         "scripts/test-floor-plan-catalog-draft-match.ts",
         "scripts/test-floor-plan-live-progress.ts",
         "scripts/test-floor-plan-multifloor-parity.ts",

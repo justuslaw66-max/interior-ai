@@ -1,4 +1,5 @@
 import path from "node:path";
+import { result as directoryResult, payload as directoryRevision } from "./fixtures/floor-plan-directory-fixture";
 import { expect, test, type Locator, type Page } from "@playwright/test";
 import {
   expectFloorPlanInertFixtureHost,
@@ -211,19 +212,23 @@ function historySummary(job: ImportJob) {
 }
 
 async function installBoundaries(page: Page, state: { job: ImportJob | null }) {
-  await page.route("**/api/floor-plans?*", (route) =>
-    route.fulfill({
+  await page.route("**/api/floor-plans*", (route) => {
+    const request = route.request();
+    const url = new URL(request.url());
+    if (url.pathname !== "/api/floor-plans") return route.fallback();
+    const mode = request.method() === "POST" ? "search" : "browse";
+    return route.fulfill({
       status: 200,
       contentType: "application/json",
+      headers: { "X-Floor-Plan-Fixture": `${mode}-public-response` },
       body: JSON.stringify({
-        query: new URL(route.request().url()).searchParams.get("q") ?? "",
-        unitQuery: null,
+        mode,
         count: 0,
         nextCursor: null,
         results: [],
       }),
-    })
-  );
+    });
+  });
   await page.route("**/api/models/imported", (route) =>
     route.fulfill({ status: 200, contentType: "application/json", body: '{"models":[]}' })
   );
@@ -670,6 +675,35 @@ test("history confirmation is unchanged and guards parent Escape while scope rep
 
 test("removed opener falls back and reopen creates a new lifecycle generation", async ({ page }) => {
   const state = { job: null as ImportJob | null };
+  const floorPlanRequests: Array<{ method: string; url: string; body: string | null }> = [];
+  page.on("request", (request) => {
+    if (new URL(request.url()).pathname !== "/api/floor-plans") return;
+    floorPlanRequests.push({
+      method: request.method(),
+      url: request.url(),
+      body: request.postData(),
+    });
+  });
+  await page.addInitScript(() => {
+    const evidence: Array<{ state: string; url: string }> = [];
+    const record = (state: unknown, url: string | URL | null | undefined) => {
+      evidence.push({
+        state: JSON.stringify(state),
+        url: url === null || url === undefined ? window.location.href : String(url),
+      });
+    };
+    const pushState = window.history.pushState.bind(window.history);
+    const replaceState = window.history.replaceState.bind(window.history);
+    window.history.pushState = (data, unused, url) => {
+      record(data, url);
+      pushState(data, unused, url);
+    };
+    window.history.replaceState = (data, unused, url) => {
+      record(data, url);
+      replaceState(data, unused, url);
+    };
+    Object.defineProperty(window, "__floorPlanPrivacyHistory", { value: evidence });
+  });
   await installBoundaries(page, state);
   await openEditor(page, "consumer");
   const { action, dialog } = await openWorkspace(page, "consumer", "pointer");
@@ -695,9 +729,82 @@ test("removed opener falls back and reopen creates a new lifecycle generation", 
   await expect(launcher).toBeFocused();
 
   await page.getByRole("button", { name: "Starter layouts", exact: true }).click();
-  await page.getByTestId("floor-plan-address-search").fill("No Match Street");
-  await expect(page.getByText("No approved floor plan found for that address yet.")).toBeVisible();
-  await page.locator("#floor-plan-address-upload-action").click();
+  const sentinel = {
+    address: "867A C1 Exact Privacy Sentinel Street",
+    floor: "73",
+    stack: "731",
+  };
+  const addressInput = page.getByTestId("floor-plan-address-search");
+  await addressInput.fill(sentinel.address);
+  await page.getByTestId("floor-plan-address-floor").fill(sentinel.floor);
+  const [response] = await Promise.all([
+    page.waitForResponse((candidate) =>
+      new URL(candidate.url()).pathname === "/api/floor-plans" &&
+      candidate.request().method() === "POST"
+    ),
+    page.getByTestId("floor-plan-address-stack").fill(sentinel.stack),
+  ]);
+  const exactRequest = response.request();
+  expect(exactRequest.method()).toBe("POST");
+  expect(new URL(exactRequest.url()).pathname).toBe("/api/floor-plans");
+  expect(exactRequest.postDataJSON()).toMatchObject({
+    mode: "search",
+    countryCode: "SG",
+    address: { normalizedText: sentinel.address },
+    unit: { floor: Number(sentinel.floor), stack: sentinel.stack },
+  });
+  for (const privateValue of Object.values(sentinel)) {
+    expect(exactRequest.url()).not.toContain(privateValue);
+    expect(page.url()).not.toContain(privateValue);
+  }
+  const exactSearchGets = floorPlanRequests.filter(({ method, url }) => {
+    if (method !== "GET") return false;
+    return new URL(url).searchParams.get("browse") !== "1";
+  });
+  expect(exactSearchGets).toEqual([]);
+  expect(floorPlanRequests.filter(({ method }) => method === "POST")).toHaveLength(1);
+  expect(floorPlanRequests.find(({ method }) => method === "POST")?.body).toContain(
+    sentinel.address
+  );
+  const publicResponseBody = await response.text();
+  const publicResponseHeaders = JSON.stringify(response.headers());
+  const historyEvidence = await page.evaluate(() => ({
+    href: window.location.href,
+    state: window.history.state,
+    changes: (
+      window as unknown as {
+        __floorPlanPrivacyHistory: Array<{ state: string; url: string }>;
+      }
+    ).__floorPlanPrivacyHistory,
+  }));
+  const renderedExactRegion = page.getByTestId("floor-plan-address-library");
+  await expect(
+    page.getByText("No approved floor plan found for that exact unit yet.", { exact: true })
+  ).toBeVisible();
+  for (const privateValue of Object.values(sentinel)) {
+    expect(publicResponseBody).not.toContain(privateValue);
+    expect(publicResponseHeaders).not.toContain(privateValue);
+    expect(JSON.stringify(historyEvidence)).not.toContain(privateValue);
+    await expect(renderedExactRegion).not.toContainText(privateValue);
+  }
+  await expect(page.getByText("Request this address", { exact: true })).toHaveCount(0);
+  await expect(page.getByText("Request noted", { exact: true })).toHaveCount(0);
+  await expect(page.getByText("Help us add this address", { exact: true })).toHaveCount(0);
+  expect(JSON.stringify(historyEvidence)).not.toContain("floorPlanRequest");
+  expect(page.url()).not.toContain("floorPlanRequest");
+  expect(await addressInput.evaluate((element) => {
+    const privateOwner = element.closest<HTMLElement>("[data-private-floor-plan]");
+    return {
+      private: privateOwner?.dataset.privateFloorPlan,
+      replayExcluded: Boolean(privateOwner?.classList.contains("ph-no-capture")),
+    };
+  })).toEqual({ private: "true", replayExcluded: true });
+  const uploadFallback = page.locator("#floor-plan-address-upload-action");
+  await expect(uploadFallback).toBeVisible();
+  await expect(uploadFallback).toBeEnabled();
+  await uploadFallback.focus();
+  await expect(uploadFallback).toBeFocused();
+  await page.keyboard.press("Enter");
   await expect(dialog).toHaveCount(1);
   await page.keyboard.press("Escape");
   await expectFocusId(page, "floor-plan-workspace-launch-action");
@@ -713,4 +820,76 @@ test("removed opener falls back and reopen creates a new lifecycle generation", 
   expect(await reopened.getAttribute("data-editor-dialog-generation")).not.toBe(firstGeneration);
   await page.keyboard.press("Escape");
   await expect(importAction).toBeFocused();
+});
+
+
+test("directory cancellation, malformed responses and exact canonical selection use the active editor", async ({ page }) => {
+  await installBoundaries(page, { job: null });
+  let malformed = false;
+  let releaseRevision: (() => void) | undefined;
+  let revisionStarted: (() => void) | undefined;
+  const started = new Promise<void>((resolve) => { revisionStarted = resolve; });
+  const delayed = new Promise<void>((resolve) => { releaseRevision = resolve; });
+  let delay = true;
+  await page.route("**/api/floor-plans*", async (route) => {
+    if (new URL(route.request().url()).pathname !== "/api/floor-plans") return route.fallback();
+    const mode = route.request().method() === "POST" ? "search" : "browse";
+    const browse = { ...directoryResult, matchLevel: "layout", selectedBindingId: undefined, addressTransform: undefined };
+    await route.fulfill({ json: malformed ? {} : { mode, count: 1, results: [mode === "search" ? directoryResult : browse], nextCursor: null } });
+  });
+  await page.route("**/api/floor-plans/revisions/*", async (route) => {
+    revisionStarted?.();
+    if (delay) await delayed;
+    await route.fulfill({ json: directoryRevision }).catch(() => undefined);
+  });
+  await openEditor(page, "consumer");
+  // Seed existing work through the real local backup format before testing replacement.
+  await expect.poll(() => page.evaluate(() => localStorage.getItem("interior-ai:v1:livingroom-design"))).not.toBeNull();
+  await page.evaluate(() => {
+    const key = "interior-ai:v1:livingroom-design";
+    const saved = JSON.parse(localStorage.getItem(key)!);
+    saved.rooms[0].geometry.width = 6;
+    localStorage.setItem(key, JSON.stringify(saved));
+  });
+  await page.reload({ waitUntil: "domcontentloaded" });
+  await expect(page.getByTestId("scene-canvas")).toHaveAttribute("data-client-hydrated", "true");
+  await page.getByRole("button", { name: "Starter layouts", exact: true }).click();
+  await page.getByRole("button", { name: /Browse.*plan/i }).click();
+  await expect(page.getByTestId("floor-plan-orientation")).toContainText("not established");
+  const fingerprint = await page.getByTestId("qa-editor-snapshot-fingerprint").getAttribute("data-fingerprint");
+  await page.getByTestId("apply-address-floor-plan-revision-1").click();
+  await started;
+  await page.getByTestId("floor-plan-address-search").fill("810A Chai Chee Street");
+  releaseRevision?.();
+  delay = false;
+  await page.getByTestId("floor-plan-address-floor").fill("12");
+  malformed = true;
+  await page.getByTestId("floor-plan-address-stack").fill("509");
+  await expect(page.getByTestId("floor-plan-address-library")).toContainText("invalid data");
+  await expect(page.getByTestId("qa-editor-snapshot-fingerprint")).toHaveAttribute("data-fingerprint", fingerprint!);
+  await expect(page.getByRole("dialog", { name: "Start a new plan?" })).toHaveCount(0);
+  malformed = false;
+  await page.getByTestId("floor-plan-address-stack").fill("510");
+  await expect(page.getByTestId("floor-plan-unit-match-badge")).toBeVisible();
+  await expect(page.getByTestId("floor-plan-orientation")).toContainText("Mirrored left to right");
+  await page.getByRole("button", { name: "Replace current plan…", exact: true }).click();
+  const confirmation = page.getByRole("dialog", { name: "Start a new plan?" });
+  await expect(confirmation).toBeVisible();
+  await expect(page.getByTestId("qa-editor-snapshot-fingerprint")).toHaveAttribute("data-fingerprint", fingerprint!);
+  await page.getByTestId("new-plan-replace-current").click();
+  await expect(confirmation).toBeHidden();
+  await expect(page.getByTestId("qa-editor-snapshot-fingerprint")).not.toHaveAttribute("data-fingerprint", fingerprint!);
+  await expect.poll(() => page.evaluate(() => {
+    const saved = JSON.parse(localStorage.getItem("interior-ai:v1:livingroom-design") ?? "{}");
+    return { revision: saved.floorPlan?.revisionId, transform: saved.floorPlan?.addressTransform,
+      units: saved.floorPlan?.canonicalDocument?.units, roomCount: saved.rooms?.length };
+  })).toEqual({ revision: "revision-1", transform: "mirror_x", units: "mm", roomCount: 1 });
+  await page.getByTestId("editor-view-3d").click();
+  await expect(page.getByTestId("scene-canvas")).toBeVisible();
+  await page.getByTestId("editor-view-2d").click();
+  await expect(page.getByTestId("canonical-floor-plan-integrity-warning")).toHaveCount(0);
+  const applied = await page.getByTestId("qa-editor-snapshot-fingerprint").getAttribute("data-fingerprint");
+  await page.reload({ waitUntil: "domcontentloaded" });
+  await expect(page.getByTestId("qa-editor-snapshot-fingerprint")).toHaveAttribute("data-fingerprint", applied!);
+  await expect(page.getByTestId("canonical-floor-plan-integrity-warning")).toHaveCount(0);
 });

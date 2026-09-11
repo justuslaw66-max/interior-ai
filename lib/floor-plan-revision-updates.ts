@@ -4,6 +4,12 @@ import type {
   DesignSnapshot,
   PersistedFloorPlanAddressBinding,
 } from "@/lib/room-types";
+import { floorPlanBindingCoversSavedUnit } from "@/lib/floor-plan-binding-match";
+
+export {
+  floorPlanBindingCoversSavedUnit,
+  isSameFloorPlanAddressBinding,
+} from "@/lib/floor-plan-binding-match";
 
 export type FloorPlanRevisionUpdateCounts = {
   added: number;
@@ -43,82 +49,6 @@ export type FloorPlanRevisionCopyPreservation = {
   preservedFinishRoomCount: number;
   preservedSavedViewCount: number;
 };
-
-function normalized(value: string | null) {
-  return (value ?? "").trim().replace(/\s+/g, " ").toUpperCase();
-}
-
-/**
- * Binding IDs are revision-owned and therefore change on correction. Match the
- * immutable address/stack/orientation tuple instead. Floor ranges are exact,
- * so a revision for another vertical zone is never suggested as an update.
- */
-export function isSameFloorPlanAddressBinding(
-  current: PersistedFloorPlanAddressBinding,
-  candidate: PersistedFloorPlanAddressBinding
-) {
-  return (
-    normalized(current.countryCode) === normalized(candidate.countryCode) &&
-    normalized(current.addressNormalized) === normalized(candidate.addressNormalized) &&
-    normalized(current.block) === normalized(candidate.block) &&
-    normalized(current.street) === normalized(candidate.street) &&
-    normalized(current.postalCode) === normalized(candidate.postalCode) &&
-    normalized(current.stack) === normalized(candidate.stack) &&
-    current.transform === candidate.transform &&
-    current.floorMin === candidate.floorMin &&
-    current.floorMax === candidate.floorMax
-  );
-}
-
-/**
- * Selects the one replacement binding that serves the saved consumer unit.
- * Atomic supersede may split one old floor range into several new bindings, so
- * the exact searched floor/stack is preferred when it was captured at apply.
- * Older snapshots without unit context retain the conservative exact-range
- * behavior and never guess between split ranges.
- */
-export function floorPlanBindingCoversSavedUnit(
-  current: PersistedFloorPlanAddressBinding,
-  candidate: PersistedFloorPlanAddressBinding,
-  options: {
-    allowTransformChange?: boolean;
-    allowPostalEvidenceChange?: boolean;
-  } = {}
-) {
-  const postalMatches =
-    normalized(current.postalCode) === normalized(candidate.postalCode) ||
-    (options.allowPostalEvidenceChange === true &&
-      (!normalized(current.postalCode) || !normalized(candidate.postalCode)));
-  const sameAddress =
-    normalized(current.countryCode) === normalized(candidate.countryCode) &&
-    normalized(current.addressNormalized) === normalized(candidate.addressNormalized) &&
-    normalized(current.block) === normalized(candidate.block) &&
-    normalized(current.street) === normalized(candidate.street) &&
-    postalMatches;
-  if (!sameAddress) return false;
-
-  const selectedStack = normalized(current.unitStack ?? current.stack);
-  const candidateStack = normalized(candidate.stack);
-  if (selectedStack) {
-    if (candidateStack && candidateStack !== selectedStack) return false;
-  } else if (candidateStack) {
-    // An older all-stack snapshot has no evidence for choosing one finite stack.
-    return false;
-  }
-
-  if (Number.isInteger(current.unitFloor)) {
-    const floor = current.unitFloor as number;
-    if (candidate.floorMin !== null && floor < candidate.floorMin) return false;
-    if (candidate.floorMax !== null && floor > candidate.floorMax) return false;
-  } else if (
-    current.floorMin !== candidate.floorMin ||
-    current.floorMax !== candidate.floorMax
-  ) {
-    return false;
-  }
-
-  return options.allowTransformChange === true || current.transform === candidate.transform;
-}
 
 function time(value: Date | string | null) {
   if (!value) return Number.NEGATIVE_INFINITY;

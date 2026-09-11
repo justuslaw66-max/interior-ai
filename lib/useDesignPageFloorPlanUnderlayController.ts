@@ -41,6 +41,9 @@ import {
 import type { CameraView } from "@/lib/design-page-types";
 import type { EditorViewMode } from "@/components/editor/EditorViewToggle";
 
+const floorPlanTemplateMatchLevel = (template: HousePlanTemplate) =>
+  template.canonical?.addressBinding ? "unit" : "layout";
+
 type MutableRef<T> = { current: T };
 
 type HistoryAdapter = {
@@ -189,13 +192,10 @@ export function useDesignPageFloorPlanUnderlayController({
         history.commit();
         showRuleToast(`${template.label} added from verified revision`);
         track("floor_plan_canonical_revision_applied", {
-          templateId: template.id,
-          revisionId: template.canonical.revisionId,
-          geometryHash: template.canonical.geometryHash,
           verificationTier: template.canonical.verificationTier,
-          addressTransform: template.canonical.addressTransform,
           roomCount: canonical.snapshot.rooms.length,
           openingCount: canonical.openings.length,
+          matchLevel: floorPlanTemplateMatchLevel(template),
         });
         return;
       }

@@ -8,6 +8,43 @@ export const dynamic = "force-dynamic";
 export const revalidate = 0;
 const SAFE_PUBLIC_REVISION_CACHE_CONTROL = "no-store, max-age=0";
 
+type PublicVariantGroup = {
+  groupId: string;
+  options: Array<{ optionId: string; revisionId: string }>;
+};
+
+type PersistedVariantEntry = {
+  group: {
+    groupKey: string;
+    options: Array<{
+      optionKey: string;
+      revisionId: string;
+      addressBinding: { revisionId: string; role: string };
+    }>;
+  };
+};
+
+function hasPublishedAuthoredVariantLink(input: {
+  revisionId: string;
+  publicGroups: PublicVariantGroup[];
+  persistedEntries: PersistedVariantEntry[];
+}) {
+  return input.publicGroups.some((group) =>
+    group.options.some((option) =>
+      option.revisionId === input.revisionId &&
+      input.persistedEntries.some((entry) =>
+        entry.group.groupKey === group.groupId &&
+        entry.group.options.some((persisted) =>
+          persisted.optionKey === option.optionId &&
+          persisted.revisionId === input.revisionId &&
+          persisted.addressBinding.revisionId === input.revisionId &&
+          persisted.addressBinding.role === "authored_variant"
+        )
+      )
+    )
+  );
+}
+
 function notFound() {
   return NextResponse.json(
     { error: "Floor-plan revision not found" },
@@ -178,17 +215,11 @@ export async function GET(
     const hasCatalogBinding = revision.addressBindings.some(
       (binding) => binding.role === "catalog"
     );
-    const hasPublishedVariantLink = payload.revision.authoredConfigurationGroups.some(
-      (group) => group.options.some(
-        (option) =>
-          option.revisionId === revision.id &&
-          revision.addressBindings.some(
-            (binding) =>
-              binding.id === option.addressBinding.id &&
-              binding.role === "authored_variant"
-          )
-      )
-    );
+    const hasPublishedVariantLink = hasPublishedAuthoredVariantLink({
+      revisionId: revision.id,
+      publicGroups: payload.revision.authoredConfigurationGroups,
+      persistedEntries: revision.authoredVariantOptions,
+    });
     if (!hasCatalogBinding && !hasPublishedVariantLink) {
       throw new Error("Variant-only revision has no published authored relationship");
     }

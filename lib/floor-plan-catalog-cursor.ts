@@ -1,15 +1,15 @@
 import { createHash, createHmac, timingSafeEqual } from "node:crypto";
 import { normalizeFloorPlanAddress } from "@/lib/floor-plan-address-search";
+import type { FloorPlanExactSearch } from "@/lib/floor-plan-directory-contract";
 import type { PublishedFloorPlanCatalogKey } from "@/lib/floor-plan-catalog-repository";
 
-const CURSOR_VERSION = 1;
+const CURSOR_VERSION = 2;
 const MAX_CURSOR_LENGTH = 1_024;
 const PUBLIC_FALLBACK_KEY = "interior-ai:public-floor-plan-catalog-cursor:v1";
 
-export type FloorPlanCatalogCursorScope = {
-  mode: "browse" | "search";
-  query: string;
-};
+export type FloorPlanCatalogCursorScope =
+  | { mode: "browse" }
+  | ({ mode: "search" } & FloorPlanExactSearch);
 
 type FloorPlanCatalogCursorPayload = {
   v: typeof CURSOR_VERSION;
@@ -17,11 +17,18 @@ type FloorPlanCatalogCursorPayload = {
   q: string;
   p: string;
   r: string;
-  a: string;
 };
 
 function queryFingerprint(scope: FloorPlanCatalogCursorScope) {
-  const normalized = scope.mode === "browse" ? "" : normalizeFloorPlanAddress(scope.query);
+  const normalized = scope.mode === "browse"
+    ? "browse"
+    : JSON.stringify({
+        countryCode: scope.countryCode,
+        address: normalizeFloorPlanAddress(scope.address),
+        floor: scope.unit.floor,
+        stack: scope.unit.stack,
+        revisionId: scope.revisionId ?? null,
+      });
   return createHash("sha256").update(normalized).digest("base64url").slice(0, 22);
 }
 
@@ -70,7 +77,6 @@ export function encodeFloorPlanCatalogCursor(
     q: queryFingerprint(scope),
     p: key.publishedAt,
     r: key.revisionId,
-    a: key.bindingId,
   };
   const encodedPayload = Buffer.from(JSON.stringify(payload), "utf8").toString("base64url");
   return `${encodedPayload}.${signature(encodedPayload)}`;
@@ -104,10 +110,9 @@ export function decodeFloorPlanCatalogCursor(
     value.m !== (scope.mode === "browse" ? "b" : "s") ||
     value.q !== queryFingerprint(scope) ||
     !publishedAt ||
-    !validIdentifier(value.r) ||
-    !validIdentifier(value.a)
+    !validIdentifier(value.r)
   ) {
     return null;
   }
-  return { publishedAt, revisionId: value.r, bindingId: value.a };
+  return { publishedAt, revisionId: value.r };
 }

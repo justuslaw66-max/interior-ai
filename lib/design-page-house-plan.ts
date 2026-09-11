@@ -191,7 +191,7 @@ export type HousePlanTemplate = {
     geometryHash: string;
     verificationTier: FloorPlanDocumentV2["verification"]["tier"];
     addressTransform: FloorPlanAddressTransform;
-    addressBinding: PersistedFloorPlanAddressBinding;
+    addressBinding?: PersistedFloorPlanAddressBinding;
   };
 };
 

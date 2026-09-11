@@ -37,6 +37,10 @@ import {
   parsePublicDesignProjection,
   publicDesignProjectionHasIdentity,
 } from "../tests/e2e/public-projection-assertion";
+import {
+  assertPublicFloorPlanProjectionSafe,
+  assertPublicFloorPlanSentinelsAbsent,
+} from "./floor-plan-public-privacy-assertions";
 
 const PRIVATE_EMAIL = "private-admin@example.com";
 const PRIVATE_FILE = "Justus-Home-810A-private.pdf";
@@ -1135,21 +1139,11 @@ const payload = buildPublicFloorPlanRevisionPayload({
   publishedAt: "2026-07-16T09:00:00.000Z",
   documentJson: document,
   publicMetadata: PUBLIC_DISPLAY_METADATA,
-  addressBindings: [{
-    id: "binding-1",
-    countryCode: "SG",
-    addressNormalized: "810A Chai Chee Street",
-    block: "810A",
-    street: "Chai Chee Street",
-    stack: "509",
-    floorMin: 2,
-    floorMax: 15,
-    transform: "normal",
-    sourceEvidenceJson: { note: PRIVATE_NOTE },
-  } as never],
 });
 assert.equal(JSON.stringify(payload).includes(PRIVATE_NOTE), false);
-assert.equal("sourceEvidenceJson" in payload.revision.addressBindings[0], false);
+assert.equal("addressBindings" in payload.revision, false);
+assertPublicFloorPlanProjectionSafe(payload);
+assertPublicFloorPlanSentinelsAbsent(payload, [PRIVATE_ADDRESS, "509"]);
 
 const searchResults = mapPublishedFloorPlanRevisionRows(
   [{
@@ -1214,7 +1208,13 @@ const searchResults = mapPublishedFloorPlanRevisionRows(
       transform: "normal",
     }],
   }],
-  { rawQuery: "810A Chai Chee Street #12-509" }
+  {
+    exactSearch: {
+      countryCode: "SG",
+      address: "810A Chai Chee Street",
+      unit: { floor: 12, stack: "509" },
+    },
+  }
 );
 assert.equal(searchResults.length, 1);
 const serializedSearch = JSON.stringify(searchResults);
