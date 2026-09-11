@@ -4,6 +4,7 @@ import type {
   PublishedFloorPlanRevisionDataSource,
   PublishedFloorPlanRevisionListInput,
 } from "@/lib/floor-plan-catalog-repository";
+import { projectFloorPlanPublicDisplayMetadata } from "@/lib/floor-plan-imports/public-display-metadata";
 import { assessFloorPlanServingIntegrity } from "@/lib/floor-plan-imports/serving-integrity";
 
 function addressBindingWhere(
@@ -232,7 +233,7 @@ export const prismaPublishedFloorPlanRevisionDataSource: PublishedFloorPlanRevis
         publishedByEmail: revision.publishedByEmail,
         documentJson: revision.documentJson,
         sourceManifestJson: revision.sourceManifestJson,
-        publicMetadata: revision.publicMetadata,
+        publicMetadata: revision.publicMetadata ? projectFloorPlanPublicDisplayMetadata(revision.publicMetadata) : null,
         authoredVariantGroups: revision.authoredVariantOptions.map((entry) => entry.group),
         addressBindings: revision.addressBindings.map((binding) => ({
           id: binding.id,
