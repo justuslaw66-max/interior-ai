@@ -119,6 +119,9 @@ async function openEditor(
   viewport = DESKTOP
 ) {
   await page.setViewportSize(viewport);
+  await page.addInitScript(() => {
+    localStorage.setItem("scene_performance_mode", "lite");
+  });
   await page.context().addCookies([
     {
       name: "authjs.session-token",
@@ -144,6 +147,7 @@ async function openEditor(
   await expect(scene).toHaveCount(1);
   await expect(scene).toBeVisible();
   await expect(scene).toHaveAttribute("data-client-hydrated", "true");
+  await expect(scene).toHaveAttribute("data-lighting-quality", "low");
   if (mode === "pro") {
     await expect(page.getByTestId("pro-mode-indicator")).toBeVisible();
   }
