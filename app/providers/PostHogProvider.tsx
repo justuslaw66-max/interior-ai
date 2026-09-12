@@ -5,6 +5,11 @@ import { PostHogProvider as PHProvider } from "posthog-js/react";
 import { useEffect } from "react";
 import { setClientAnalyticsDisabled } from "@/lib/analytics";
 import { isUsablePostHogKey } from "@/lib/posthog-config";
+import {
+  maskFloorPlanReplayNetworkRequest,
+  sanitizeFloorPlanAnalyticsUrl,
+  sanitizePostHogEvent,
+} from "@/lib/posthog-privacy";
 
 function resolvePostHogIngestHost(rawHost?: string): string {
   const fallback = "https://us.i.posthog.com";
@@ -50,16 +55,31 @@ export function PostHogProvider({
     const ingestHost = resolvePostHogIngestHost(process.env.NEXT_PUBLIC_POSTHOG_HOST);
     const uiHost = process.env.NEXT_PUBLIC_POSTHOG_UI_HOST || "https://us.posthog.com";
 
-    posthog.init(postHogKey, {
-      // In local dev, call PostHog directly to avoid flaky local proxy timeouts.
-      api_host: isDevelopment ? ingestHost : "/ingest",
-      ui_host: uiHost,
-      capture_pageview: false,
-      autocapture: false,
-      capture_exceptions: true,
-      // Reduce noisy recorder traffic/errors in development.
-      disable_session_recording: isDevelopment,
-    });
+    try {
+      posthog.init(postHogKey, {
+        // In local dev, call PostHog directly to avoid flaky local proxy timeouts.
+        api_host: isDevelopment ? ingestHost : "/ingest",
+        ui_host: uiHost,
+        capture_pageview: false,
+        autocapture: false,
+        capture_exceptions: true,
+        enable_recording_console_log: false,
+        get_current_url: sanitizeFloorPlanAnalyticsUrl,
+        before_send: sanitizePostHogEvent,
+        session_recording: {
+          maskAllInputs: true,
+          blockSelector: ".ph-no-capture, [data-private-floor-plan]",
+          maskTextSelector: ".ph-mask, [data-private-floor-plan]",
+          recordHeaders: false,
+          recordBody: false,
+          maskCapturedNetworkRequestFn: maskFloorPlanReplayNetworkRequest,
+        },
+        // Reduce noisy recorder traffic/errors in development.
+        disable_session_recording: isDevelopment,
+      });
+    } catch {
+      setClientAnalyticsDisabled(true);
+    }
   }, [effectiveAnalyticsDisabled, postHogKey]);
 
   if (effectiveAnalyticsDisabled) {

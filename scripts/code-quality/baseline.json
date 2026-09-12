@@ -256,10 +256,6 @@
       "lines": 291,
       "limit": 250
     },
-    "components/editor/FloorPlanAddressSearch.tsx": {
-      "lines": 410,
-      "limit": 250
-    },
     "components/editor/FloorPlanImportAssistant.tsx": {
       "lines": 785,
       "limit": 250
@@ -546,10 +542,6 @@
     },
     "lib/floor-plan-address-search.ts": {
       "lines": 459,
-      "limit": 400
-    },
-    "lib/floor-plan-catalog-repository.ts": {
-      "lines": 456,
       "limit": 400
     },
     "lib/floor-plan-catalog-v1-adapter.ts": {
@@ -1361,7 +1353,7 @@
     "app/api/floor-plans/revisions/[id]/route.ts": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 188
+        "maximum": 182
       }
     },
     "app/api/health/route.ts": {
@@ -2199,21 +2191,21 @@
     "components/editor/FloorPlanAddressSearch.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 353
+        "maximum": 210
       },
       "complexFunctions": {
         "count": 1,
-        "maximum": 46
+        "maximum": 42
       }
     },
     "components/editor/FloorPlanCatalogResultList.tsx": {
       "overlongFunctions": {
         "count": 3,
-        "maximum": 125
+        "maximum": 116
       },
       "complexFunctions": {
         "count": 1,
-        "maximum": 19
+        "maximum": 17
       }
     },
     "components/editor/FloorPlanImportAssistant.tsx": {
@@ -3523,7 +3515,7 @@
     "lib/floor-plan-authored-variant-links.ts": {
       "overlongFunctions": {
         "count": 2,
-        "maximum": 90
+        "maximum": 86
       },
       "complexFunctions": {
         "count": 2,
@@ -3541,35 +3533,31 @@
       }
     },
     "lib/floor-plan-catalog-client.ts": {
-      "overlongFunctions": {
-        "count": 3,
-        "maximum": 80
-      },
       "complexFunctions": {
         "count": 1,
-        "maximum": 23
+        "maximum": 18
       }
     },
     "lib/floor-plan-catalog-cursor.ts": {
       "complexFunctions": {
         "count": 1,
-        "maximum": 17
+        "maximum": 16
       }
     },
     "lib/floor-plan-catalog-prisma.ts": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 196
+        "maximum": 114
       }
     },
     "lib/floor-plan-catalog-repository.ts": {
       "overlongFunctions": {
-        "count": 2,
-        "maximum": 108
+        "count": 1,
+        "maximum": 67
       },
       "complexFunctions": {
-        "count": 2,
-        "maximum": 29
+        "count": 1,
+        "maximum": 24
       }
     },
     "lib/floor-plan-catalog-v1-adapter.ts": {
@@ -3590,16 +3578,6 @@
       "complexFunctions": {
         "count": 2,
         "maximum": 23
-      }
-    },
-    "lib/floor-plan-design-reference.ts": {
-      "overlongFunctions": {
-        "count": 1,
-        "maximum": 111
-      },
-      "complexFunctions": {
-        "count": 1,
-        "maximum": 39
       }
     },
     "lib/floor-plan-import-review-geometry.ts": {
@@ -4064,10 +4042,6 @@
       "overlongFunctions": {
         "count": 2,
         "maximum": 82
-      },
-      "complexFunctions": {
-        "count": 1,
-        "maximum": 22
       }
     },
     "lib/floor-plan-seeds/ping-yi-court-review-intake.ts": {
@@ -4549,7 +4523,7 @@
     "lib/useDesignPageFloorPlanUnderlayController.ts": {
       "overlongFunctions": {
         "count": 3,
-        "maximum": 693
+        "maximum": 690
       },
       "complexFunctions": {
         "count": 1,

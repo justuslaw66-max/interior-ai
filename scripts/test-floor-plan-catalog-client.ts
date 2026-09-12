@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFloorPlanDirectoryResponse, fetchPublicFloorPlanRevision } from "../lib/floor-plan-directory-client";
 import { compileFloorPlanDocumentV2 } from "@/lib/floor-plan-compiler-v2";
 import type {
   FloorPlanDocumentV2,
@@ -173,7 +174,7 @@ const document: FloorPlanDocumentV2 = {
 const geometryHash = compileFloorPlanDocumentV2(document).geometryHash;
 const result: FloorPlanPublishedRevisionSearchResult = {
   resultKind: "canonical_revision",
-  id: "revision:revision-1:binding-1",
+  id: "revision:revision-1",
   planId: "revision-1",
   layoutId: "revision-1",
   revisionId: "revision-1",
@@ -181,21 +182,8 @@ const result: FloorPlanPublishedRevisionSearchResult = {
   geometryHash,
   verificationTier: "source_verified",
   addressTransform: "mirror_x",
-  addressBinding: {
-    id: "binding-1",
-    countryCode: "SG",
-    addressNormalized: "810a chai chee street",
-    block: "810A",
-    street: "Chai Chee Street",
-    postalCode: null,
-    stack: "509",
-    floorMin: 2,
-    floorMax: 15,
-    transform: "mirror_x",
-  },
+  selectedBindingId: "binding-1",
   projectName: "Ping Yi Court",
-  addressLabel: "Block 810A, Chai Chee Street",
-  matchedBlocks: ["810A"],
   label: "4-room",
   flatType: "4-room",
   bedroomCount: 3,
@@ -210,7 +198,6 @@ const result: FloorPlanPublishedRevisionSearchResult = {
   verificationNote: "Reviewed against source.",
   accuracyNotice: "Confirm orientation.",
   matchLevel: "unit",
-  unitMatches: [],
 };
 
 assert.equal(isCanonicalFloorPlanCatalogResult(result), true);
@@ -224,10 +211,18 @@ const payload = {
     documentJson: document,
   },
 };
-const template = buildCanonicalFloorPlanTemplate(result, payload);
+const privateSelection = {
+  address: "810a chai chee street",
+  floor: 12,
+  stack: "509",
+};
+const template = buildCanonicalFloorPlanTemplate(result, payload, privateSelection);
 assert.equal(template.canonical?.revisionId, "revision-1");
 assert.equal(template.canonical?.geometryHash, geometryHash);
 assert.equal(template.canonical?.addressTransform, "mirror_x");
+assert.equal(template.canonical?.addressBinding?.bindingId, "binding-1");
+assert.equal(template.canonical?.addressBinding?.unitFloor, 12);
+assert.equal(template.canonical?.addressBinding?.unitStack, "509");
 assert.equal(template.rooms.length, 0, "canonical documents must not be duplicated into v1 rooms");
 
 const alternateDocument = { ...document, revisionId: "revision-2" };
@@ -245,7 +240,6 @@ const authoredGroup = {
       verificationTier: "source_verified" as const,
       defaultSelected: true,
       sourcePage: 1,
-      addressBinding: { id: "binding-1", transform: "mirror_x" as const },
     },
     {
       optionId: "partitioned",
@@ -256,14 +250,25 @@ const authoredGroup = {
       verificationTier: "source_verified" as const,
       defaultSelected: false,
       sourcePage: 2,
-      addressBinding: { id: "binding-2", transform: "normal" as const },
     },
   ],
 };
 const alternate = buildCanonicalFloorPlanTemplateForAuthoredVariant({
   baseResult: { ...result, authoredConfigurationGroups: [authoredGroup] },
+  matchedResult: {
+    ...result,
+    id: "revision:revision-2",
+    planId: "revision-2",
+    layoutId: "revision-2",
+    revisionId: "revision-2",
+    revisionUrl: "/api/floor-plans/revisions/revision-2",
+    selectedBindingId: "binding-2",
+    addressTransform: "normal",
+    authoredConfigurationGroups: [authoredGroup],
+  },
   groupId: authoredGroup.groupId,
   option: authoredGroup.options[1],
+  privateSelection,
   responseValue: {
     revision: {
       ...payload.revision,
@@ -279,8 +284,14 @@ assert.equal(alternate.canonical?.addressTransform, "normal");
 assert.throws(
   () => buildCanonicalFloorPlanTemplateForAuthoredVariant({
     baseResult: result,
+    matchedResult: {
+      ...result,
+      revisionId: "revision-2",
+      geometryHash,
+    },
     groupId: authoredGroup.groupId,
     option: { ...authoredGroup.options[1], geometryHash: "f".repeat(64) },
+    privateSelection,
     responseValue: {
       revision: {
         ...payload.revision,
@@ -297,7 +308,8 @@ assert.throws(
   () =>
     buildCanonicalFloorPlanTemplate(
       { ...result, geometryHash: "f".repeat(64) },
-      payload
+      payload,
+      privateSelection
     ),
   /geometry changed/i
 );
@@ -305,15 +317,36 @@ assert.throws(
   () =>
     buildCanonicalFloorPlanTemplate(result, {
       revision: { ...payload.revision, id: "revision-2" },
-    }),
+    }, privateSelection),
   /does not match/i
 );
 assert.throws(
   () =>
     buildCanonicalFloorPlanTemplate(result, {
       revision: { ...payload.revision, documentJson: { ...document, revisionId: "revision-2" } },
-    }),
-  /identifier is inconsistent/i
+    }, privateSelection),
+  /evidence is inconsistent/i
 );
 
-console.log("Floor-plan catalog client checks passed.");
+async function checkDirectoryBoundary() {
+  const valid = { mode: "search", count: 1, results: [result], nextCursor: null };
+  assert.equal((await readFloorPlanDirectoryResponse(Response.json(valid), "search")).results[0].revisionId, result.revisionId);
+  for (const invalid of [
+    {}, { ...valid, count: 2 }, { ...valid, mode: "browse" },
+    { ...valid, privateAddress: privateSelection.address },
+    ...[
+      { verificationTier: "needs_review" }, { revisionUrl: "https://example.com/private" },
+      { selectedBindingId: undefined }, { sourceUrl: "http://127.0.0.1/private" },
+      { address: privateSelection.address }, { addressTransform: "unknown" },
+    ].map((patch) => ({ ...valid, results: [{ ...result, ...patch }] })),
+  ]) {
+    await assert.rejects(readFloorPlanDirectoryResponse(Response.json(invalid), "search"), /invalid data/);
+  }
+  await assert.rejects(readFloorPlanDirectoryResponse(new Response("bad json")), /invalid data/);
+  await assert.rejects(readFloorPlanDirectoryResponse(Response.json(valid), "browse"), /invalid data/);
+  await assert.rejects(readFloorPlanDirectoryResponse(Response.json({ error: "PRIVATE_SENTINEL" }, { status: 500 })),
+    (error: Error) => /unavailable/.test(error.message) && !error.message.includes("PRIVATE_SENTINEL"));
+  await assert.rejects(fetchPublicFloorPlanRevision({ ...result, revisionUrl: "https://example.com/private" }), /revision is invalid/);
+  console.log("Floor-plan catalog client and public HTTP boundary checks passed.");
+}
+void checkDirectoryBoundary().catch((error: unknown) => { console.error(error); process.exitCode = 1; });

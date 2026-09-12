@@ -315,18 +315,6 @@ export type PublicFloorPlanRevisionRow = {
   publishedAt: Date | string | null;
   documentJson: unknown;
   publicMetadata: FloorPlanPublicDisplayMetadata;
-  addressBindings: Array<{
-    id?: string;
-    countryCode: string;
-    addressNormalized: string;
-    block: string;
-    street: string;
-    postalCode?: string | null;
-    stack?: string | null;
-    floorMin?: number | null;
-    floorMax?: number | null;
-    transform: string;
-  }>;
   authoredVariantOptions?: Array<{
     group: PersistedFloorPlanAuthoredVariantGroup;
   }>;
@@ -355,18 +343,6 @@ export function buildPublicFloorPlanRevisionPayload(
         revision.authoredVariantOptions?.map((entry) => entry.group) ?? [],
         revision.id
       ),
-      addressBindings: revision.addressBindings.map((binding) => ({
-        ...(binding.id ? { id: binding.id } : {}),
-        countryCode: binding.countryCode,
-        addressNormalized: binding.addressNormalized,
-        block: binding.block,
-        street: binding.street,
-        postalCode: binding.postalCode ?? null,
-        stack: binding.stack ?? null,
-        floorMin: binding.floorMin ?? null,
-        floorMax: binding.floorMax ?? null,
-        transform: binding.transform,
-      })),
     },
   };
 }

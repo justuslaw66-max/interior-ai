@@ -3,6 +3,7 @@
 import Image from "next/image";
 import type { FloorPlanCatalogSearchResult } from "@/lib/floor-plan-catalog-repository";
 
+import { floorPlanOrientationLabel } from "./FloorPlanSelectionContext";
 type ResultGroup = { projectName: string; plans: FloorPlanCatalogSearchResult[] };
 
 type FloorPlanCatalogResultListProps = {
@@ -36,18 +37,15 @@ export default function FloorPlanCatalogResultList({
           </div>
           <div className="grid gap-3">
             {group.plans.map((result) => {
-              const unitMatch = result.unitMatches[0] ?? null;
+              const exactMatch = result.matchLevel === "unit";
               const isApplying = applyingResultId === result.id;
-              const verificationBadge = result.verificationTier === "construction_verified"
-                ? "Construction verified"
-                : "Source verified";
               return (
                 <article
                   key={result.id}
                   data-testid={`floor-plan-library-result-${result.layoutId}`}
-                  className={dark
+                  className={`ph-no-capture ${dark
                     ? "designer-control overflow-hidden rounded-lg border border-white/10"
-                    : "overflow-hidden rounded-lg border border-neutral-200 bg-white shadow-sm"}
+                    : "overflow-hidden rounded-lg border border-neutral-200 bg-white shadow-sm"}`}
                 >
                   <div className={dark ? "bg-white" : "bg-neutral-50"}>
                     {result.previewUrl ? (
@@ -73,21 +71,20 @@ export default function FloorPlanCatalogResultList({
                         </div>
                       </div>
                       <div className="flex shrink-0 flex-wrap justify-end gap-1">
-                        {unitMatch ? (
+                        {exactMatch ? (
                           <span data-testid="floor-plan-unit-match-badge" className="rounded-full bg-emerald-100 px-2 py-1 text-[10px] font-semibold text-emerald-800">
-                            Exact unit
+                            Exact unit match
                           </span>
                         ) : null}
                         <span className="rounded-full bg-emerald-100 px-2 py-1 text-[10px] font-semibold text-emerald-800">
-                          {verificationBadge}
+                          {result.verificationTier === "construction_verified" ? "Construction verified" : "Source verified"}
                         </span>
                       </div>
                     </div>
-                    <div data-testid={unitMatch ? "floor-plan-unit-match" : undefined} className={`mt-2 text-[11px] ${subtle}`}>
-                      {unitMatch
-                        ? `Block ${unitMatch.block} · ${unitMatch.label}`
-                        : `Blocks ${result.matchedBlocks.join(", ")}`}
+                    <div data-testid={exactMatch ? "floor-plan-unit-match" : undefined} className={`mt-2 text-[11px] ${subtle}`}>
+                      {exactMatch ? "Private address match" : "Published layout"}
                     </div>
+                    <p data-testid="floor-plan-orientation" className={`mt-1 text-[11px] ${subtle}`}>{floorPlanOrientationLabel(result)} Preview shows the published source when available.</p>
                     <p className={`mt-1 text-[11px] leading-4 ${subtle}`}>{result.verificationNote}</p>
                     <div className="mt-3 grid gap-2">
                       <button
@@ -119,11 +116,6 @@ export default function FloorPlanCatalogResultList({
                           Source page {result.sourcePage}
                         </a>
                       ) : <span className={`text-[10px] ${subtle}`}>Published revision</span>}
-                      {unitMatch?.sourceUrl ? (
-                        <a href={`${unitMatch.sourceUrl.split("#")[0]}#page=${unitMatch.sourcePdfPage}`} target="_blank" rel="noreferrer" className="text-[10px] font-semibold text-blue-700">
-                          Unit evidence
-                        </a>
-                      ) : null}
                     </div>
                     {applyError?.id === result.id ? (
                       <p role="alert" className="mt-2 text-[11px] text-red-700">{applyError.message}</p>

@@ -1,4 +1,5 @@
 import type { FloorPlanCatalogSearchResult } from "@/lib/floor-plan-catalog-repository";
+import type { FloorPlanExactSearchRequest } from "@/lib/floor-plan-directory-contract";
 
 export type StructuredFloorPlanAddressQuery = {
   address: string;
@@ -7,17 +8,35 @@ export type StructuredFloorPlanAddressQuery = {
 };
 
 export function buildStructuredFloorPlanAddressQuery(
-  input: StructuredFloorPlanAddressQuery
-) {
-  const address = input.address.trim().replace(/\s+/g, " ");
+  input: StructuredFloorPlanAddressQuery & {
+    limit?: number;
+    cursor?: string;
+    revisionId?: string;
+  }
+): FloorPlanExactSearchRequest | null {
+  const address = input.address.normalize("NFKC").trim().replace(/\s+/g, " ");
   const floorValue = input.floor.trim();
-  const stack = input.stack.trim().toUpperCase().replace(/[^0-9A-Z]/g, "");
+  const stack = input.stack.normalize("NFKC").trim().toUpperCase();
   const floor = /^\d{1,2}$/.test(floorValue) ? Number(floorValue) : null;
-  const unit =
-    floor !== null && floor >= 1 && floor <= 99 && /^\d{2,5}[A-Z]?$/.test(stack)
-      ? `#${String(floor).padStart(2, "0")}-${stack}`
-      : "";
-  return [address, unit].filter(Boolean).join(" ");
+  if (
+    address.length < 2 ||
+    address.length > 240 ||
+    floor === null ||
+    floor < 1 ||
+    floor > 99 ||
+    !/^\d{2,5}[A-Z]?$/.test(stack)
+  ) {
+    return null;
+  }
+  return {
+    mode: "search",
+    countryCode: "SG",
+    address: { normalizedText: address },
+    unit: { floor, stack },
+    limit: input.limit ?? 12,
+    ...(input.cursor ? { cursor: input.cursor } : {}),
+    ...(input.revisionId ? { revisionId: input.revisionId } : {}),
+  };
 }
 
 export function floorPlanSearchFacets(results: FloorPlanCatalogSearchResult[]) {
