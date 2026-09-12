@@ -1,6 +1,7 @@
 import { createHash, randomUUID } from "node:crypto";
 import {
   existsSync,
+  lstatSync,
   mkdirSync,
   readFileSync,
   realpathSync,
@@ -21,6 +22,21 @@ import {
   resolveRetainedExternalEvidenceFile,
   resolveRuntimeSmokeEvidencePath,
 } from "./playwright-report-path.mjs";
+
+export function verifyStableRuntimeBundleTransport({ bundlePath, bundleSha256, manifestPath }) {
+  for (const file of [bundlePath, `${bundlePath}.sha256`, manifestPath]) {
+    const entry = lstatSync(file);
+    if (!entry.isFile() || entry.isSymbolicLink()) {
+      throw new Error("stable runtime-smoke bundle transport requires physical files");
+    }
+  }
+  const checksum = readFileSync(`${bundlePath}.sha256`, "utf8");
+  if (stableSha256(readFileSync(bundlePath)) !== bundleSha256 ||
+      checksum !== `${bundleSha256}  ${path.basename(bundlePath)}\n`) {
+    throw new Error("stable runtime-smoke bundle transport checksum failed");
+  }
+  return stableSha256(readFileSync(manifestPath));
+}
 
 export const STABLE_MANIFEST_PATH =
   ".local/production-artifact-evidence/manifest.json";

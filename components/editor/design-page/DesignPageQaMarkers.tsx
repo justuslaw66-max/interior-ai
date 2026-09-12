@@ -1,4 +1,5 @@
 import type { EditorViewMode } from "@/components/editor/EditorViewToggle";
+import { DesignPageCloudQaMarker } from "@/components/editor/design-page/DesignPageCloudQaMarker";
 import type {
   CabinetProjectHandoffPackage,
   CabinetProjectSchedulePackage,
@@ -42,39 +43,37 @@ export interface DesignPageLayoutQaSnapshot {
   projectedRoomMinAreaPx: number;
   selectedPlanRoomId: string;
 }
-
 export interface DesignPageHistoryQaSummary {
   pastCount: number;
   futureCount: number;
   transactionName: string | null;
 }
-
 export interface DesignPageProjectQaMarkersProps {
+  qaHooksEnabled: boolean;
   snapshotFingerprint: string | null;
   cloudDesignId: string | null;
+  cloudRevision: string | null;
+  cloudBaselineStatus: "detached" | "loading" | "pending" | "acknowledged" | "failed";
   activeRoomId: string;
   activeRoomZones: ZoneMin[];
   cabinetSchedule: CabinetProjectSchedulePackage;
   cabinetHandoff: CabinetProjectHandoffPackage | null;
 }
-
 export function DesignPageProjectQaMarkers({
+  qaHooksEnabled,
   snapshotFingerprint,
   cloudDesignId,
+  cloudRevision,
+  cloudBaselineStatus,
   activeRoomId,
   activeRoomZones,
   cabinetSchedule,
   cabinetHandoff,
 }: DesignPageProjectQaMarkersProps) {
   const manualZones = activeRoomZones.filter((zone) => zone.source === "manual");
-
   return (
     <>
-      <div
-        data-testid="qa-editor-cloud-design"
-        data-design-id={cloudDesignId ?? ""}
-        hidden
-      />
+      <DesignPageCloudQaMarker {...{ qaHooksEnabled, cloudDesignId, cloudRevision, cloudBaselineStatus }} />
       {snapshotFingerprint ? (
         <div
           data-testid="qa-editor-snapshot-fingerprint"
@@ -241,6 +240,7 @@ export function DesignPageRuntimeQaMarkers({
           )}
           data-plan-2d-projected-room-min-area-px={String(layout.projectedRoomMinAreaPx)}
           data-selected-plan-room-id={layout.selectedPlanRoomId}
+          data-history-past-count={String(history.pastCount)}
           hidden
         />
       ) : null}

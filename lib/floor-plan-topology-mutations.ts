@@ -1,7 +1,4 @@
-import {
-  compileFloorPlanDocumentV2,
-  FloorPlanDocumentValidationErrorV2,
-} from "@/lib/floor-plan-compiler-v2";
+import { compileFloorPlanDocumentV2, FloorPlanDocumentValidationErrorV2 } from "@/lib/floor-plan-compiler-v2";
 import type {
   FloorPlanDocumentV2,
   FloorPlanFloorV2,
@@ -29,6 +26,7 @@ import {
   assertTopologyInteger as assertInteger,
   assertUnusedGlobalEntityId,
   demoteTopologyProvenance as demoteProvenance,
+  approveOpeningEvidenceOverride,
   inferredTopologyProvenance as inferredProvenanceForNewEntity,
   pruneUnreferencedFloorVertices as pruneUnreferencedStructureVertices,
   topologyMutationFail as fail,
@@ -330,6 +328,7 @@ function entityMutationServices(
   state: MutationState
 ): FloorPlanEntityMutationServicesV2 {
   return {
+    actorId: state.context.actorId,
     changedIds: state.changedIds,
     fail,
     assertInteger,
@@ -344,6 +343,7 @@ function entityMutationServices(
       inferredProvenanceForNewEntity(floor, id, reason, state),
     demoteProvenance: (provenance, id, reason) =>
       demoteProvenance(provenance, id, reason, state),
+    approveOpeningEvidenceOverride: (provenance, id, authorization) => approveOpeningEvidenceOverride(provenance, id, authorization, state),
   };
 }
 

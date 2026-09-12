@@ -25,6 +25,7 @@ import {
   floorPlanPointOnLineSegment,
   type FloorPlanValidationCanonicalWallSegment,
 } from "@/lib/floor-plan-geometry-validation";
+import { buildUnverifiedConstructionOpeningIssues } from "@/lib/floor-plan-opening-construction-evidence";
 
 export type FloorPlanValidationSeverityV2 = "error" | "warning";
 
@@ -80,6 +81,7 @@ export type CompiledFloorPlanOpeningV2 = {
   operation: FloorPlanOpeningV2["operation"];
   offsetMm: number;
   widthMm: number;
+  widthEvidence: FloorPlanPropertyEvidenceV2;
   heightMm: number;
   heightEvidence: FloorPlanPropertyEvidenceV2;
   sillHeightMm: number;
@@ -1037,6 +1039,7 @@ export function validateFloorPlanDocumentV2(
       if (!wall) addIssue(issues, "UNKNOWN_WALL", `${openingPath}.wallId`, `Unknown wall: ${opening.wallId}.`);
       validateInteger(opening.offsetMm, `${openingPath}.offsetMm`, issues, { nonnegative: true });
       validateInteger(opening.widthMm, `${openingPath}.widthMm`, issues, { positive: true });
+      validatePropertyEvidence(opening.widthEvidence, `${openingPath}.widthEvidence`, issues);
       if (opening.heightMm !== undefined) validateInteger(opening.heightMm, `${openingPath}.heightMm`, issues, { positive: true });
       if (opening.sillHeightMm !== undefined) validateInteger(opening.sillHeightMm, `${openingPath}.sillHeightMm`, issues, { nonnegative: true });
       validatePropertyEvidence(opening.heightEvidence, `${openingPath}.heightEvidence`, issues);
@@ -1226,33 +1229,9 @@ export function validateFloorPlanDocumentV2(
         }
       });
       floor.openings.forEach((opening, openingIndex) => {
-        const heightEvidence = opening.heightMm === undefined
-          ? (opening.kind === "window" || opening.kind === "vent" || opening.kind === "louvre"
-              ? floor.defaults.windowHeight.evidence
-              : floor.defaults.doorHeight.evidence)
-          : opening.heightEvidence ?? "assumed";
-        const sillEvidence = opening.sillHeightMm === undefined
-          ? floor.defaults.windowSillHeight.evidence
-          : opening.sillHeightEvidence ?? "assumed";
-        if (heightEvidence === "assumed" || heightEvidence === "user_confirmed") {
-          addIssue(
-            issues,
-            "UNVERIFIED_CONSTRUCTION_PROPERTY",
-            `${path}.openings[${openingIndex}].heightEvidence`,
-            "Construction-verified opening heights require construction or site-measured evidence."
-          );
-        }
-        if (
-          (opening.kind === "window" || opening.kind === "vent" || opening.kind === "louvre") &&
-          (sillEvidence === "assumed" || sillEvidence === "user_confirmed")
-        ) {
-          addIssue(
-            issues,
-            "UNVERIFIED_CONSTRUCTION_PROPERTY",
-            `${path}.openings[${openingIndex}].sillHeightEvidence`,
-            "Construction-verified sill heights require construction or site-measured evidence."
-          );
-        }
+        issues.push(...buildUnverifiedConstructionOpeningIssues(
+          opening, floor.defaults, `${path}.openings[${openingIndex}]`
+        ));
       });
       floor.structures.forEach((structure, structureIndex) => {
         for (const [propertyName, evidence] of [
@@ -1415,6 +1394,7 @@ function compileOpening(opening: FloorPlanOpeningV2, floor: FloorPlanFloorV2, ma
     operation: opening.operation,
     offsetMm: opening.offsetMm,
     widthMm: opening.widthMm,
+    widthEvidence: opening.widthEvidence ?? "assumed",
     heightMm,
     heightEvidence: opening.heightMm === undefined
       ? (opening.kind === "window" || opening.kind === "vent" || opening.kind === "louvre"

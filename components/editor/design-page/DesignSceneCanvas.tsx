@@ -523,8 +523,8 @@ export function DesignSceneCanvas({
 
         <Suspense fallback={<RoomSkeleton />}>{children}</Suspense>
         <CameraCapture
-          cameraRef={sceneRefs.camera}
-          canvasRef={sceneRefs.canvas}
+          cameraRef={sceneRefs.camera} canvasRef={sceneRefs.canvas}
+          controlsRef={controlsRef}
           rendererRef={sceneRefs.renderer}
           sceneRef={sceneRefs.scene}
         />

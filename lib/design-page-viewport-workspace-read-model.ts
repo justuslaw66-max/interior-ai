@@ -154,9 +154,13 @@ function buildViewportPanelState(
       selectedId: sources.viewportShell.state.planSelection.selectedPlanOverlayId,
       value: inspector.visiblePlanOpening
         ? {
+            id: inspector.visiblePlanOpening.id,
             kind: inspector.visiblePlanOpening.kind,
             wall: inspector.visiblePlanOpening.wall,
             widthMm: inspector.visiblePlanOpening.widthMm,
+            heightMm: inspector.visiblePlanOpening.heightMm,
+            bottomMm: inspector.visiblePlanOpening.bottomMm,
+            evidence: inspector.visiblePlanOpening.evidence,
             wallSpanMeters: inspector.visiblePlanOpeningWallSpanMeters,
           }
         : null,
@@ -270,6 +274,7 @@ function buildViewportConfiguration(
     dark,
     sceneBackgroundColor: planWorkspace.derived.sceneBackgroundColor,
     canEditPlanGeometry: sources.placement.derived.canEditPlanGeometry,
+    proMode: coreShell.derived.access.isDesigner,
     selectionInspectorDockedWithRightRail:
       planWorkspace.derived.selectionInspectorDockedWithRightRail,
     floatingOverlayStackWidthPx: PLAN_FLOATING_OVERLAY_STACK_WIDTH_PX,

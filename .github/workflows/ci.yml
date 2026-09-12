@@ -90,6 +90,14 @@ jobs:
       STRIPE_PRICE_PRO_MONTHLY: price_gate_a3_ci_monthly
       STRIPE_PRICE_PRO_YEARLY: price_gate_a3_ci_yearly
     steps:
+      - name: Initialize runner-local auth fixture paths
+        shell: bash
+        run: |
+          set -euo pipefail
+          : "${RUNNER_TEMP:?RUNNER_TEMP is required for auth fixture paths}"
+          printf '%s\n' "CI_AUTH_FIXTURE_RESULT_ROOT=$RUNNER_TEMP/interior-ai-auth-results" >> "$GITHUB_ENV"
+          printf '%s\n' "CI_AUTH_FIXTURE_SESSION_ROOT=$RUNNER_TEMP/interior-ai-auth-session-stable" >> "$GITHUB_ENV"
+
       - uses: actions/checkout@v4
         with:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
@@ -105,15 +113,6 @@ jobs:
       - name: Validate every GitHub Actions workflow
         shell: bash
         run: bash scripts/check-github-actions-workflows.sh
-
-      - name: Configure runner-local authentication fixture paths
-        shell: bash
-        run: |
-          set -euo pipefail
-          {
-            echo "CI_AUTH_FIXTURE_RESULT_ROOT=$RUNNER_TEMP/interior-ai-auth-results"
-            echo "CI_AUTH_FIXTURE_SESSION_ROOT=$RUNNER_TEMP/interior-ai-auth-session-stable"
-          } >> "$GITHUB_ENV"
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -418,6 +417,14 @@ jobs:
       STRIPE_PRICE_PRO_MONTHLY: price_gate_a3_ci_monthly
       STRIPE_PRICE_PRO_YEARLY: price_gate_a3_ci_yearly
     steps:
+      - name: Initialize runner-local auth fixture paths
+        shell: bash
+        run: |
+          set -euo pipefail
+          : "${RUNNER_TEMP:?RUNNER_TEMP is required for auth fixture paths}"
+          printf '%s\n' "CI_AUTH_FIXTURE_RESULT_ROOT=$RUNNER_TEMP/interior-ai-auth-results" >> "$GITHUB_ENV"
+          printf '%s\n' "CI_AUTH_FIXTURE_SESSION_ROOT=$RUNNER_TEMP/interior-ai-auth-session-advisory" >> "$GITHUB_ENV"
+
       - uses: actions/checkout@v4
         with:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
@@ -429,15 +436,6 @@ jobs:
         env:
           GITLEAKS_EXPECTED_SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
         run: node scripts/gitleaks-artifact.mjs verify-source
-
-      - name: Configure runner-local authentication fixture paths
-        shell: bash
-        run: |
-          set -euo pipefail
-          {
-            echo "CI_AUTH_FIXTURE_RESULT_ROOT=$RUNNER_TEMP/interior-ai-auth-results"
-            echo "CI_AUTH_FIXTURE_SESSION_ROOT=$RUNNER_TEMP/interior-ai-auth-session-advisory"
-          } >> "$GITHUB_ENV"
 
       - name: Setup Node.js
         uses: actions/setup-node@v4

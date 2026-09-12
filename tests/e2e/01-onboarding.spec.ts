@@ -166,6 +166,14 @@ test.describe("1. Onboarding Activation Flow", () => {
     );
     expect(initialOnboardingState).toBeNull();
 
+    const continueToFurnish = page.getByTestId("room-setup-continue-furnish");
+    await expect(continueToFurnish).toBeVisible();
+    await expect(continueToFurnish).toBeEnabled();
+    await continueToFurnish.click({ timeout: 5000 });
+    await expect(page.getByTestId("editor-command-workspace")).toHaveAttribute(
+      "aria-label", "Workspace: Furnish",
+    );
+
     const opened = await openCatalogPreview(page, MADISON_2S_ID, "Madison", [
       /^Sofa \(/,
     ]);

@@ -18,6 +18,7 @@ import {
 import { userInfo } from "node:os";
 import path from "node:path";
 
+import { createDatabaseCleanupObservation } from "./production-certification-database-cleanup-observation.mjs";
 import { CertificationPostgresAdapter } from "./production-certification-database-adapter.mjs";
 import { inspectCertificationAppEvents } from "./production-certification-app-event-lifecycle.mjs";
 import {
@@ -52,6 +53,7 @@ const OWNER_PATHS = Object.freeze([
   "lib/trusted-app-event-core.ts",
   "scripts/production-certification-database-contract.mjs",
   "scripts/production-certification-database-adapter.mjs",
+  "scripts/production-certification-database-cleanup-observation.mjs",
   "scripts/production-certification-database-transport.mjs",
   "scripts/stable-runtime-smoke-database-transport.mjs",
   "scripts/production-certification-app-event-lifecycle.mjs",
@@ -173,6 +175,68 @@ function atomicWrite(
 
 function stageRoleName(evidence) {
   return `interior_ai_cert_stage_${evidence.database.identitySha256.slice(0, 32)}`;
+}
+
+function ownsAcknowledgedDatabase(evidence) {
+  return evidence.provisioning?.outcome === "created" &&
+    evidence.provisioning?.ownershipRecoverable === true && evidence.events.some(
+      (entry) => entry.state === "provisioned" && entry.details?.created === true &&
+        entry.details?.recoveredAfterAmbiguousCreate === false,
+    );
+}
+
+function ownsAcknowledgedRole(evidence) {
+  return evidence.privateBinding?.roleCreation?.outcome === "created" &&
+    evidence.privateBinding?.roleCreation?.roleName === stageRoleName(evidence) &&
+    evidence.privateBinding?.roleCreation?.ownershipRecoverable === true;
+}
+
+function assertDatabaseCatalogIdentity(evidence, inspected) {
+  const expectedOid = evidence.provisioning?.databaseOid;
+  if (!Number.isSafeInteger(expectedOid) || expectedOid <= 0) {
+    throw new Error(`Retain acknowledged database ${evidence.database.name}: its catalog identity was not recorded`);
+  }
+  if (inspected.targetExists && inspected.databaseOid !== expectedOid) {
+    throw new Error("database catalog identity changed; replacement is preserved");
+  }
+}
+
+async function assertOwnedRoleCleanupReady(evidence, adapter) {
+  if (!ownsAcknowledgedRole(evidence)) return;
+  const roleName = stageRoleName(evidence);
+  const roleOid = evidence.privateBinding.roleCreation.roleOid;
+  if (!Number.isSafeInteger(roleOid) || roleOid <= 0) {
+    throw new Error(`Retain acknowledged role ${roleName}: its catalog identity was not recorded`);
+  }
+  const observed = await adapter.inspectStageRole(roleName);
+  if (observed.exists && observed.roleOid !== roleOid) {
+    throw new Error("stage role catalog identity changed; replacement is preserved");
+  }
+  const sessions = await adapter.stageRoleSessions(roleName, roleOid);
+  if (sessions.length !== 0) {
+    throw new Error(`Retain owned role ${roleName}: connections remain; no sessions were terminated`);
+  }
+}
+
+async function assertCleanupObservationIdentity(evidence, adapter, environment, { waiting }) {
+  if (!ownsAcknowledgedDatabase(evidence)) {
+    throw new Error("cleanup observation requires acknowledged database ownership");
+  }
+  const database = await adapter.inspectAdmin(evidence.database.name);
+  assertDatabaseCatalogIdentity(evidence, database);
+  if (!database.targetExists) throw new Error("cleanup target disappeared without a drop receipt");
+  if (waiting || ownsAcknowledgedRole(evidence)) {
+    if (!ownsAcknowledgedRole(evidence)) throw new Error("cleanup waiting requires acknowledged role ownership");
+    await assertOwnedRoleCleanupReady(evidence, adapter);
+    const role = await adapter.inspectStageRole(stageRoleName(evidence));
+    if (!role.exists || role.roleOid !== evidence.privateBinding.roleCreation.roleOid) {
+      throw new Error("cleanup role identity changed or disappeared");
+    }
+  }
+  if (waiting && typeof evidence.privateBinding?.sidecarSha256 === "string" &&
+      inspectPrivateDatabaseBindingFile(environment, evidence).status !== "owned") {
+    throw new Error("cleanup waiting requires the recorded private binding");
+  }
 }
 
 function authPreflightInvocationNonceSha256(value) {
@@ -685,6 +749,7 @@ async function mutateLifecycle(options, action) {
   return withEvidenceLock(paths.absolutePath, async () => {
     const evidence = readEvidence(paths.absolutePath);
     let persisted = evidence;
+    let cleanupObservations = evidence.sessions?.cleanupObservations;
     assertIdentity(evidence, environment);
     const adapter = adapterFor(
       { repositoryRoot, environment, adapter: options.adapter },
@@ -695,6 +760,17 @@ async function mutateLifecycle(options, action) {
     let next;
     let actionError = null;
     const checkpoint = (checkpointEvidence) => {
+      if (cleanupObservations) {
+        checkpointEvidence = structuredClone(checkpointEvidence);
+        checkpointEvidence.sessions.cleanupObservations = structuredClone(cleanupObservations);
+        const abort = cleanupObservations.filter((entry) => entry.mode === "abort").at(-1);
+        const observed = abort?.events.find((event) => event.kind === "observation");
+        if (observed) {
+          const inventory = { count: observed.sessions.length, sessions: observed.sessions };
+          checkpointEvidence.sessions.abort ??= persisted.sessions.abort ?? inventory;
+          checkpointEvidence.sessions.abortLatest = inventory;
+        }
+      }
       const prepared = nextPersistedRevision(persisted, checkpointEvidence);
       const issues = databaseLifecycleEvidenceIssues(prepared);
       if (issues.length > 0) throw new Error(issues.join("; "));
@@ -709,6 +785,18 @@ async function mutateLifecycle(options, action) {
         repositoryRoot,
         environment,
         checkpoint,
+        cleanupObservation: (mode) => {
+          cleanupObservations = [...(cleanupObservations ?? [])];
+          const index = cleanupObservations.length;
+          return createDatabaseCleanupObservation({
+            mode,
+            assertIdentity: (details) => assertCleanupObservationIdentity(evidence, adapter, environment, details),
+            record: (snapshot) => {
+              cleanupObservations[index] = snapshot;
+              checkpoint(persisted);
+            },
+          });
+        },
       });
     } catch (error) {
       actionError = error;
@@ -764,7 +852,7 @@ export async function provisionCertificationDatabase(options = {}) {
     const authorized = structuredClone(evidence);
     authorized.provisioning = {
       outcome: "authorized",
-      ownershipRecoverable: true,
+      ownershipRecoverable: false,
     };
     let current = advance(authorized, "provision", ["create-authorized"], {
       targetAbsentImmediatelyBeforeCreate: true,
@@ -772,11 +860,15 @@ export async function provisionCertificationDatabase(options = {}) {
     });
     current = checkpoint(current);
     try {
-      await adapter.createDatabase(evidence.database.name);
+      const creation = await adapter.createDatabase(evidence.database.name);
+      if (creation?.created !== true) {
+        throw new Error("database CREATE was not acknowledged");
+      }
       current = structuredClone(current);
       current.provisioning = {
         outcome: "created",
         ownershipRecoverable: true,
+        databaseOid: creation.databaseOid ?? null,
       };
       current = advance(current, "provision", ["provisioned"], {
         created: true,
@@ -784,6 +876,7 @@ export async function provisionCertificationDatabase(options = {}) {
         provisionAuthorizationSha256: evidence.database.provisionAuthorizationSha256,
       });
       current = checkpoint(current);
+      assertDatabaseCatalogIdentity(current, await adapter.inspectAdmin(evidence.database.name));
       await adapter.deployMigrations(evidence.database.name);
       const migrations = migrationInventory(repositoryRoot);
       const applied = await adapter.migrationNames(evidence.database.name);
@@ -810,7 +903,8 @@ export async function provisionCertificationDatabase(options = {}) {
         status: "create-authorized",
         roleCreation: {
           outcome: "authorized",
-          ownershipRecoverable: true,
+          ownershipRecoverable: false,
+          roleName,
           roleAbsentImmediatelyBeforeCreate: true,
         },
         sidecarCreation: null,
@@ -832,26 +926,31 @@ export async function provisionCertificationDatabase(options = {}) {
             roleCreation: {
               outcome: "foreign-collision",
               ownershipRecoverable: false,
+              roleName,
               roleAbsentImmediatelyBeforeCreate: true,
             },
           };
           throw error;
         }
-        const inspectedRole = await adapter.inspectStageRole(roleName);
-        if (inspectedRole.exists) {
+        if (error?.stageRoleCreateOutcome === "created") {
           current = structuredClone(current);
           current.privateBinding = {
             ...current.privateBinding,
             status: "role-created",
             roleCreation: {
-              outcome: "ambiguous-create-recovered",
+              outcome: "created",
               ownershipRecoverable: true,
+              roleName,
+              roleOid: error.roleOid ?? null,
               roleAbsentImmediatelyBeforeCreate: true,
             },
           };
           current = checkpoint(current);
         }
         throw error;
+      }
+      if (stageRole?.created !== true) {
+        throw new Error("stage role CREATE was not acknowledged");
       }
       current = structuredClone(current);
       current.privateBinding = {
@@ -860,11 +959,14 @@ export async function provisionCertificationDatabase(options = {}) {
         roleCreation: {
           outcome: "created",
           ownershipRecoverable: true,
+          roleName,
+          roleOid: stageRole.roleOid ?? null,
           roleAbsentImmediatelyBeforeCreate: true,
         },
       };
       current = checkpoint(current);
       if (
+        !Number.isSafeInteger(stageRole?.roleOid) || stageRole.roleOid <= 0 ||
         stageRole?.created !== true ||
         stageRole?.classification !== "stage-login-no-admin" ||
         stageRole?.adminCapabilities !== false
@@ -960,19 +1062,16 @@ export async function provisionCertificationDatabase(options = {}) {
       });
     } catch (error) {
       if (current.currentState === "create-authorized") {
-        const afterError = await adapter.inspectAdmin(evidence.database.name);
-        if (
-          afterError.targetExists &&
-          error?.databaseCreateOutcome !== "not-created"
-        ) {
+        if (error?.databaseCreateOutcome === "created") {
           current = structuredClone(current);
           current.provisioning = {
-            outcome: "ambiguous-create-recovered",
+            outcome: "created",
             ownershipRecoverable: true,
+            databaseOid: error.databaseOid ?? null,
           };
           current = advance(current, "provision", ["provisioned"], {
             created: true,
-            recoveredAfterAmbiguousCreate: true,
+            recoveredAfterAmbiguousCreate: false,
             provisionAuthorizationSha256:
               evidence.database.provisionAuthorizationSha256,
           });
@@ -1239,15 +1338,15 @@ function assertStableRuntimeCompletionReady(evidence) {
   return observed;
 }
 
-async function inspectStableRuntimeDatabase(evidence, adapter) {
+async function inspectStableRuntimeDatabase(evidence, adapter, observation) {
   const rows = rowInventory(
     await adapter.applicationRows(evidence.database.name),
   );
-  const sessions = await settledTargetSessions(adapter, evidence.database.name);
-  if (sessions.length !== 0) {
+  const release = await adapter.terminateTargetSessions(evidence.database.name, observation);
+  if (release.remainingSessionCount !== 0) {
     throw new Error("stable runtime-smoke database retained unexplained sessions");
   }
-  return rows;
+  return { rows, release };
 }
 
 async function removeStableRuntimeDatabase({
@@ -1257,18 +1356,16 @@ async function removeStableRuntimeDatabase({
   checkpoint,
   current,
   rows,
+  observation,
+  release,
 }) {
-  const release = await adapter.terminateTargetSessions(evidence.database.name);
-  if (release.remainingSessionCount !== 0) {
-    throw new Error("stable runtime-smoke could not release exact target sessions");
-  }
   let next = structuredClone(current);
   next.sessions.release = release;
   next = checkpoint(
     advance(next, "stable-runtime-complete", ["stable-sessions-cleared"], release),
   );
-  const drop = await adapter.dropDatabase(evidence.database.name);
-  const stageRole = await adapter.dropStageRole(stageRoleName(evidence));
+  const drop = await adapter.dropDatabase(evidence.database.name, evidence.provisioning.databaseOid, observation);
+  const stageRole = await adapter.dropStageRole(stageRoleName(evidence), evidence.privateBinding.roleCreation.roleOid);
   if (drop.dropped !== true || stageRole.dropped !== true) {
     throw new Error("stable runtime-smoke did not remove its exact database and role");
   }
@@ -1293,22 +1390,35 @@ async function proveStableRuntimeDatabaseAbsent(evidence, adapter) {
   if (inspected.targetExists) {
     throw new Error("stable runtime-smoke database remained after exact drop");
   }
+  const role = await adapter.inspectStageRole(stageRoleName(evidence));
+  const sessions = await adapter.targetSessions(evidence.database.name);
+  const roleSessions = await adapter.stageRoleSessions(stageRoleName(evidence), evidence.privateBinding.roleCreation.roleOid);
+  if (role.exists || sessions.length !== 0 || roleSessions.length !== 0) {
+    throw new Error("stable runtime-smoke retained its owned role or sessions after drop");
+  }
   const next = structuredClone(evidence);
   next.cleanup.targetAbsent = true;
+  next.cleanup.stageRole = { ...next.cleanup.stageRole, verifiedAbsent: true };
   return advance(
     next,
     "stable-runtime-complete",
     ["stable-absence-verified"],
-    { targetAbsent: true, cleanupMode: "stable-runtime-smoke" },
+    { targetAbsent: true, roleAbsent: true, sessionCount: 0, roleSessionCount: 0, cleanupMode: "stable-runtime-smoke" },
   );
 }
 
 export async function completeStableRuntimeSmokeDatabase(options = {}) {
   return mutateLifecycle(
     { ...options, mode: "stable-runtime-complete" },
-    async ({ evidence, adapter, environment, checkpoint }) => {
+    async ({ evidence, adapter, environment, checkpoint, cleanupObservation }) => {
       const observed = assertStableRuntimeCompletionReady(evidence);
-      const rows = await inspectStableRuntimeDatabase(evidence, adapter);
+      if (!ownsAcknowledgedDatabase(evidence) || !ownsAcknowledgedRole(evidence)) {
+        throw new Error("stable runtime cleanup requires acknowledged database and role creation receipts");
+      }
+      assertDatabaseCatalogIdentity(evidence, await adapter.inspectAdmin(evidence.database.name));
+      await assertOwnedRoleCleanupReady(evidence, adapter);
+      const observation = cleanupObservation("normal");
+      const { rows, release } = await inspectStableRuntimeDatabase(evidence, adapter, observation);
       const next = structuredClone(evidence);
       next.inventories.final = rows;
       next.sessions.final = { count: 0, sessions: [] };
@@ -1322,6 +1432,7 @@ export async function completeStableRuntimeSmokeDatabase(options = {}) {
       );
       const dropped = await removeStableRuntimeDatabase({
         evidence, adapter, environment, checkpoint, current: inspected, rows,
+        observation, release,
       });
       return proveStableRuntimeDatabaseAbsent(dropped, adapter);
     },
@@ -1367,22 +1478,28 @@ export function retainCertificationDatabaseFailureSnapshot({
 }
 
 export async function dropCertificationDatabase(options = {}) {
-  return mutateLifecycle({ ...options, mode: "drop" }, async ({ evidence, adapter, environment, checkpoint }) => {
+  return mutateLifecycle({ ...options, mode: "drop" }, async ({ evidence, adapter, environment, checkpoint, cleanupObservation }) => {
     if (evidence.currentState !== "final-empty-verified") {
       throw new Error("normal database drop requires truthful final-empty verification");
     }
-    const release = await adapter.terminateTargetSessions(evidence.database.name);
+    if (!ownsAcknowledgedDatabase(evidence) || !ownsAcknowledgedRole(evidence)) {
+      throw new Error("normal cleanup requires acknowledged database and role creation receipts");
+    }
+    assertDatabaseCatalogIdentity(evidence, await adapter.inspectAdmin(evidence.database.name));
+    await assertOwnedRoleCleanupReady(evidence, adapter);
+    const observation = cleanupObservation("normal");
+    const release = await adapter.terminateTargetSessions(evidence.database.name, observation);
     if (release.remainingSessionCount !== 0) {
       throw new Error("target sessions remained after exact release");
     }
     const next = structuredClone(evidence);
     next.sessions.release = release;
     const cleared = checkpoint(advance(next, "drop", ["sessions-cleared"], release));
-    const dropped = await adapter.dropDatabase(evidence.database.name);
+    const dropped = await adapter.dropDatabase(evidence.database.name, evidence.provisioning.databaseOid, observation);
     if (dropped.dropped !== true) {
       throw new Error("normal database drop did not remove the owned target");
     }
-    const stageRole = await adapter.dropStageRole(stageRoleName(evidence));
+    const stageRole = await adapter.dropStageRole(stageRoleName(evidence), evidence.privateBinding.roleCreation.roleOid);
     if (stageRole.dropped !== true) {
       throw new Error("normal database drop did not remove the private stage role");
     }
@@ -1411,15 +1528,24 @@ export async function verifyCertificationDatabaseAbsent(options = {}) {
     if (inspected.targetExists) {
       throw new Error("dropped certification database still exists");
     }
+    const role = await adapter.inspectStageRole(stageRoleName(evidence));
+    const sessions = await adapter.targetSessions(evidence.database.name);
+    const roleSessions = await adapter.stageRoleSessions(stageRoleName(evidence), evidence.privateBinding.roleCreation.roleOid);
+    if (role.exists || sessions.length !== 0 || roleSessions.length !== 0) {
+      throw new Error("owned certification role or sessions remain after database drop");
+    }
     return advance(evidence, "verify-absent", ["absence-verified"], {
       targetAbsent: true,
+      roleAbsent: true,
+      sessionCount: 0,
+      roleSessionCount: 0,
       cleanupMode: "normal",
     });
   });
 }
 
 export async function abortCertificationDatabase(options = {}) {
-  return mutateLifecycle({ ...options, mode: "abort-cleanup" }, async ({ evidence, adapter, environment, checkpoint }) => {
+  return mutateLifecycle({ ...options, mode: "abort-cleanup" }, async ({ evidence, adapter, environment, checkpoint, cleanupObservation }) => {
     if (evidence.currentState === "abort-absence-verified") return evidence;
     let next = structuredClone(evidence);
     const finalEmptyVerified = finalEmptyWasVerified(next);
@@ -1495,36 +1621,11 @@ export async function abortCertificationDatabase(options = {}) {
     }
     next = checkpoint(next);
     let inspected = await adapter.inspectAdmin(evidence.database.name);
-    const hasProvisionedOwnership = evidence.events.some(
-      (entry) => entry.state === "provisioned" && entry.details?.created === true,
-    );
-    const hasDurableCreateAuthorization = evidence.events.some(
-      (entry) =>
-        entry.state === "create-authorized" &&
-        entry.details?.targetAbsentImmediatelyBeforeCreate === true &&
-        entry.details?.provisionAuthorizationSha256 ===
-          evidence.database.provisionAuthorizationSha256,
-    ) && evidence.provisioning?.ownershipRecoverable === true;
-    if (inspected.targetExists && !hasProvisionedOwnership && !hasDurableCreateAuthorization) {
+    if (inspected.targetExists && !ownsAcknowledgedDatabase(evidence)) {
       throw new Error("abort cleanup refuses a target not durably created by this lifecycle");
     }
-    if (
-      inspected.targetExists &&
-      evidence.currentState === "create-authorized" &&
-      !hasProvisionedOwnership
-    ) {
-      next.provisioning = {
-        outcome: "ambiguous-create-recovered-during-abort",
-        ownershipRecoverable: true,
-      };
-      next = advance(next, "abort-cleanup", ["provisioned"], {
-        created: true,
-        recoveredAfterAmbiguousCreate: true,
-        provisionAuthorizationSha256:
-          evidence.database.provisionAuthorizationSha256,
-      });
-      next = checkpoint(next);
-    }
+    if (inspected.targetExists) assertDatabaseCatalogIdentity(evidence, inspected);
+    await assertOwnedRoleCleanupReady(evidence, adapter);
     if (next.currentState !== "abort-cleanup-in-progress") {
       next = advance(next, "abort-cleanup", ["abort-cleanup-in-progress"], {
         originalFailureRetained: true,
@@ -1534,22 +1635,21 @@ export async function abortCertificationDatabase(options = {}) {
     }
     inspected = await adapter.inspectAdmin(evidence.database.name);
     if (inspected.targetExists) {
+      assertDatabaseCatalogIdentity(evidence, inspected);
       const rows = rowInventory(await adapter.applicationRows(evidence.database.name));
-      const sessions = await adapter.targetSessions(evidence.database.name);
       next = structuredClone(next);
       next.inventories.abort ??= rows;
-      next.sessions.abort ??= { count: sessions.length, sessions };
       next.inventories.abortLatest = rows;
-      next.sessions.abortLatest = { count: sessions.length, sessions };
       next = checkpoint(next);
-      const release = await adapter.terminateTargetSessions(evidence.database.name);
+      const observation = cleanupObservation("abort");
+      const release = await adapter.terminateTargetSessions(evidence.database.name, observation);
       next = structuredClone(next);
       next.sessions.abortRelease = release;
       next = checkpoint(next);
       if (release.remainingSessionCount !== 0) {
         throw new Error("abort cleanup could not release exact target sessions");
       }
-      const drop = await adapter.dropDatabase(evidence.database.name);
+      const drop = await adapter.dropDatabase(evidence.database.name, evidence.provisioning.databaseOid, observation);
       if (drop.dropped !== true) {
         throw new Error("abort cleanup did not drop the observed owned target");
       }
@@ -1574,10 +1674,9 @@ export async function abortCertificationDatabase(options = {}) {
         failedRunRehabilitated: false,
       };
     }
-    const ownsStageRole =
-      next.privateBinding?.roleCreation?.ownershipRecoverable === true;
+    const ownsStageRole = ownsAcknowledgedRole(next);
     const stageRoleDrop = ownsStageRole
-      ? await adapter.dropStageRole(stageRoleName(evidence))
+      ? await adapter.dropStageRole(stageRoleName(evidence), evidence.privateBinding.roleCreation.roleOid)
       : {
           dropped: false,
           alreadyAbsent: false,
@@ -1644,9 +1743,20 @@ export async function abortCertificationDatabase(options = {}) {
     if (absent.targetExists) {
       throw new Error("abort cleanup did not prove target absence");
     }
+    const roleAfter = await adapter.inspectStageRole(stageRoleName(evidence));
+    const sessionsAfter = await adapter.targetSessions(evidence.database.name);
+    const roleSessionsAfter = ownsStageRole
+      ? await adapter.stageRoleSessions(stageRoleName(evidence), evidence.privateBinding.roleCreation.roleOid)
+      : [];
+    if ((ownsStageRole && roleAfter.exists) || sessionsAfter.length !== 0 || roleSessionsAfter.length !== 0) {
+      throw new Error("owned certification role or sessions remain after abort cleanup");
+    }
     next = structuredClone(next);
     next.cleanup = {
       ...next.cleanup,
+      roleAbsent: !roleAfter.exists,
+      sessionCount: sessionsAfter.length,
+      roleSessionCount: roleSessionsAfter.length,
       mode: "abort",
       targetAbsent: true,
       originalFailureRetained: true,

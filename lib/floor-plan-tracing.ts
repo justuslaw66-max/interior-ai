@@ -4,6 +4,10 @@ import {
   roundPlanCoordinate,
   type HousePlanRoom2D,
 } from "@/lib/design-page-house-plan";
+import {
+  clampDesignPageOpeningToNearestClearInterval,
+  validateDesignPageOpeningPlacement,
+} from "@/lib/design-page-opening-placement";
 import { metersToMm, type RoomOpening2D } from "@/lib/editorScene";
 
 export type TracedRoomRectangle = {
@@ -71,7 +75,13 @@ export type TracedOpeningPlacementValidation =
   | { valid: true }
   | {
       valid: false;
-      reason: "too_close_to_corner" | "too_close_to_opening" | "opening_too_wide" | "blocked_by_wall";
+      reason:
+        | "too_close_to_corner"
+        | "too_close_to_opening"
+        | "opening_too_wide"
+        | "blocked_by_wall"
+        | "unresolved_wall_host"
+        | "ambiguous_wall_host";
       label: string;
     };
 
@@ -90,8 +100,6 @@ export type TracedOpeningPreview = {
 };
 
 const MAX_OPENING_WALL_DISTANCE_METERS = 0.45;
-const MIN_OPENING_CORNER_CLEARANCE_METERS = 0.18;
-const MIN_OPENING_SPACING_METERS = 0.18;
 export const ROOM_DRAW_GRID_STEP_METERS = 0.1;
 export const ROOM_DRAW_EDGE_SNAP_DISTANCE_METERS = 0.35;
 export const ROOM_DRAW_CORNER_SNAP_DISTANCE_METERS = 0.35;
@@ -754,15 +762,6 @@ function getOpeningRoom(opening: Pick<RoomOpening2D, "roomId">, rooms: HousePlan
     : null;
 }
 
-function getOpeningWallSpanMeters(
-  opening: Pick<RoomOpening2D, "roomId" | "wall">,
-  rooms: HousePlanRoom2D[]
-): number | null {
-  const room = getOpeningRoom(opening, rooms);
-  if (!room) return null;
-  return opening.wall === "north" || opening.wall === "south" ? room.w : room.d;
-}
-
 export function buildTracedOpeningSegment(
   opening: Pick<RoomOpening2D, "roomId" | "wall" | "offsetMm" | "widthMm">,
   rooms: HousePlanRoom2D[]
@@ -811,53 +810,12 @@ export function validateTracedOpeningPlacement(
   > = [],
   ignoreOpeningId?: string
 ): TracedOpeningPlacementValidation {
-  const span = getOpeningWallSpanMeters(opening, rooms);
-  if (!span) {
-    return {
-      valid: false,
-      reason: "opening_too_wide",
-      label: "Pick a room wall",
-    };
-  }
-
-  const width = opening.widthMm / 1000;
-  const halfWidth = width / 2;
-  const maxUsableWidth = span - MIN_OPENING_CORNER_CLEARANCE_METERS * 2;
-  if (width > maxUsableWidth) {
-    return {
-      valid: false,
-      reason: "opening_too_wide",
-      label: "Opening is too wide for this wall",
-    };
-  }
-
-  const distanceToNearestCorner = span / 2 - Math.abs(opening.offsetMm / 1000) - halfWidth;
-  if (distanceToNearestCorner < MIN_OPENING_CORNER_CLEARANCE_METERS) {
-    return {
-      valid: false,
-      reason: "too_close_to_corner",
-      label: "Too close to corner",
-    };
-  }
-
-  const overlappingOpening = existingOpenings.find((existing) => {
-    if (ignoreOpeningId && existing.id === ignoreOpeningId) return false;
-    if (existing.roomId !== opening.roomId || existing.wall !== opening.wall) return false;
-    const centerDistance = Math.abs(existing.offsetMm - opening.offsetMm) / 1000;
-    const requiredDistance =
-      existing.widthMm / 2000 + opening.widthMm / 2000 + MIN_OPENING_SPACING_METERS;
-    return centerDistance < requiredDistance;
-  });
-
-  if (overlappingOpening) {
-    return {
-      valid: false,
-      reason: "too_close_to_opening",
-      label: "Too close to another opening",
-    };
-  }
-
-  return { valid: true };
+  return validateDesignPageOpeningPlacement(
+    opening,
+    existingOpenings,
+    ignoreOpeningId,
+    { rooms, planWidthMeters: 0, planDepthMeters: 0 }
+  );
 }
 
 export function clampOpeningToNearestClearInterval(
@@ -865,57 +823,14 @@ export function clampOpeningToNearestClearInterval(
   rooms: HousePlanRoom2D[],
   existingOpenings: RoomOpening2D[] | RoomOpening2D = []
 ): RoomOpening2D {
-  const span = getOpeningWallSpanMeters(opening, rooms);
-  if (!span) return opening;
   const existingOpeningList = Array.isArray(existingOpenings)
     ? existingOpenings
     : [existingOpenings];
-
-  const widthMeters = opening.widthMm / 1000;
-  const halfWidth = widthMeters / 2;
-  const maxOffset = Math.max(
-    0,
-    span / 2 - halfWidth - MIN_OPENING_CORNER_CLEARANCE_METERS
+  return clampDesignPageOpeningToNearestClearInterval(
+    opening,
+    existingOpeningList,
+    { rooms, planWidthMeters: 0, planDepthMeters: 0 }
   );
-  const requestedOffsetMeters = clamp(opening.offsetMm / 1000, -maxOffset, maxOffset);
-  const blockers = existingOpeningList.filter(
-    (existing) =>
-      existing.id !== opening.id &&
-      existing.roomId === opening.roomId &&
-      existing.wall === opening.wall
-  );
-  const candidates = new Set<number>([requestedOffsetMeters, 0, -maxOffset, maxOffset]);
-
-  for (const blocker of blockers) {
-    const blockerOffsetMeters = blocker.offsetMm / 1000;
-    const requiredDistance =
-      blocker.widthMm / 2000 + halfWidth + MIN_OPENING_SPACING_METERS;
-    candidates.add(clamp(blockerOffsetMeters - requiredDistance, -maxOffset, maxOffset));
-    candidates.add(clamp(blockerOffsetMeters + requiredDistance, -maxOffset, maxOffset));
-  }
-
-  const best = Array.from(candidates)
-    .map((offsetMeters) => {
-      const candidate = { ...opening, offsetMm: metersToMm(offsetMeters) };
-      const validation = validateTracedOpeningPlacement(
-        candidate,
-        rooms,
-        existingOpeningList,
-        opening.id
-      );
-      return {
-        offsetMeters,
-        valid: validation.valid,
-        distance: Math.abs(offsetMeters - requestedOffsetMeters),
-      };
-    })
-    .filter((candidate) => candidate.valid)
-    .sort((first, second) => first.distance - second.distance)[0];
-
-  return {
-    ...opening,
-    offsetMm: metersToMm(best?.offsetMeters ?? requestedOffsetMeters),
-  };
 }
 
 export function resolveTracedOpeningPreview(

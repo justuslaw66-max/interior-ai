@@ -56,6 +56,21 @@ const selectedSurfaceInspectorSource = readFileSync(
   ),
   "utf8"
 );
+const selectedOpeningDimensionsSource = readFileSync(
+  join(
+    root,
+    "components/editor/design-page/SelectedOpeningDimensions.tsx"
+  ),
+  "utf8"
+);
+const selectionInspectorSource = readFileSync(
+  join(root, "components/editor/design-page/DesignPageSelectionInspector.tsx"),
+  "utf8"
+);
+const roomRendererSource = readFileSync(
+  join(root, "components/editor/renderers/RoomRenderer2D.tsx"),
+  "utf8"
+);
 const wallRendererSource = readFileSync(
   join(
     root,
@@ -108,6 +123,37 @@ assert.match(
   selectedSurfaceInspectorSource,
   /data-testid=\{[\s\S]*?state\.target === "wall"[\s\S]*?"selection-inspector-wall-apply-all"[\s\S]*?\{state\.target === "wall" \? "Apply to all walls" : "Apply all"\}/,
   "The selected-wall inspector should expose an explicit Apply to all walls action."
+);
+for (const testId of [
+  "selection-inspector-opening-width",
+  "selection-inspector-opening-height",
+  "selection-inspector-opening-bottom",
+]) {
+  assert.match(
+    selectedOpeningDimensionsSource,
+    new RegExp(`testId="${testId}"`),
+    `The existing selection panel should expose ${testId}.`
+  );
+}
+assert.equal(
+  selectionInspectorSource.match(/<SelectedOpeningDimensions/g)?.length,
+  1,
+  "The selection inspector should render exactly one opening-dimension control group."
+);
+assert.doesNotMatch(
+  selectionInspectorSource,
+  /testId="selection-inspector-opening-width"/,
+  "The selection inspector must not restore the retired duplicate inline width control."
+);
+assert.match(
+  selectedOpeningDimensionsSource,
+  /getDisplayUnitMetadata\(measurementUnit\)\.indicator/,
+  "The extracted opening controls should use the canonical display-unit indicator."
+);
+assert.match(
+  roomRendererSource,
+  /formatDisplayLength\(meters \* 1000, measurementUnit\)[\s\S]*?openingDisplayName\(seg\)\} \{formatDimension\(seg\.width\)\}[\s\S]*?\{seg\.wall\} \{formatDimension\(seg\.offset\)\}/,
+  "The 2D opening label should format numeric geometry with the selected display unit."
 );
 const applyRoomSource = surfaceInspectorControllerSource.slice(
   surfaceInspectorControllerSource.indexOf("const onApplyRoom"),

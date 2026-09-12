@@ -146,6 +146,7 @@ export async function validateCertificationDatabaseDoctorShape(
   for (const relativePath of [
     "scripts/production-certification-database-lifecycle.mjs",
     "scripts/production-certification-database-adapter.mjs",
+    "scripts/production-certification-database-cleanup-observation.mjs",
     "scripts/production-certification-database-contract.mjs",
   ]) {
     assertFileBackedOwner(repositoryRoot, relativePath);

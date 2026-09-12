@@ -1,10 +1,12 @@
 import assert from "node:assert/strict";
+import { execFileSync } from "node:child_process";
 import {
   copyFileSync,
   existsSync,
   mkdirSync,
   mkdtempSync,
   readFileSync,
+  realpathSync,
   rmSync,
   writeFileSync,
 } from "node:fs";
@@ -70,14 +72,28 @@ assert.doesNotMatch(
 );
 
 {
-  const repositoryRoot = mkdtempSync(
+  const repositoryRoot = realpathSync(mkdtempSync(
     path.join(tmpdir(), "runtime-repeat-attempt-ownership-"),
-  );
+  ));
   try {
+    const listed = JSON.parse(execFileSync(process.execPath, [
+      "node_modules/playwright/cli.js", "test", "tests/e2e/00-runtime-smoke.spec.ts",
+      "--project=chromium", "--list", "--reporter=json",
+    ], {
+      cwd: process.cwd(), encoding: "utf8",
+      env: Object.fromEntries(["PATH", "HOME", "TMPDIR", "USER", "LOGNAME", "SHELL"]
+        .filter((name) => process.env[name] !== undefined).map((name) => [name, process.env[name]])),
+    }));
+    const configuredOutput = path.relative(process.cwd(), listed.config.projects[0].outputDir);
+    assert.match(configuredOutput, /^\.local\/runtime-smoke-direct\/direct-runtime-smoke-[a-f0-9-]{36}\/playwright-output$/,
+      "actual direct development configuration must satisfy the repository timing boundary");
+    assert.throws(() => resolveRuntimeSmokeTimingDestination({ repositoryRoot,
+      timingPath: "test-results/phase-timings-4312.json", environment: {},
+    }), /repository owned \.local/, "the previous unowned destination remains rejected");
     const reporterOutputRoot = path.join(repositoryRoot, "reporter-attempts");
     const reporter = new RuntimeSmokeDirectAttemptReporter({
       outputRoot: reporterOutputRoot,
-      timingRoot: path.join(repositoryRoot, "test-results"),
+      timingRoot: path.join(repositoryRoot, configuredOutput),
     });
     const timingPaths = new Set();
     const resultPaths = new Set();
@@ -100,7 +116,7 @@ assert.doesNotMatch(
       const timingPath = resolveRuntimeSmokeTimingDestination({
           repositoryRoot,
           timingPath:
-            `test-results/runtime-repeat-${repeatEachIndex}/` +
+            `${configuredOutput}/runtime-repeat-${repeatEachIndex}/` +
             "phase-timings-4312.json",
           environment: {},
         }).outputPath;

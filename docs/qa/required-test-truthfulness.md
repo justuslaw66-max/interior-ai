@@ -486,10 +486,10 @@ required and advisory gate classification. `package.json` remains the command
 owner; the manifest points to those commands and verifies their recursive test
 sources instead of duplicating their shell bodies.
 
-The manifest currently classifies 256 `scripts/test-*` files as risk-triggered
-tests, 101 Playwright specs as release-only browser inventory, 14 imported
+The manifest currently classifies 281 `scripts/test-*` files as risk-triggered
+tests, 102 Playwright specs as release-only browser inventory, 14 imported
 cabinetry/multi-room browser modules, and 8 imported cabinetry script-test
-modules, for 379 classified sources in total. The sorted path-set hashes make a new,
+modules, for 405 classified sources in total. The sorted path-set hashes make a new,
 deleted, renamed, or moved test source a blocking manifest-review event. Static
 registration contracts additionally prove every split-suite registration is
 imported and invoked, so removing an import/call cannot silently exclude an
@@ -527,7 +527,7 @@ gate, the Chromium/WebKit Selection Tray lifecycle gate, the Chromium/WebKit My
 Designs parent/nested-delete lifecycle gate, the Guest Save Prompt lifecycle
 gate, the Retailer Confirmation lifecycle gate, the Floor Plan Upload
 lifecycle gate, and final merge-result
-aggregation. Gate A3 discovers all 101 current
+aggregation. Gate A3 discovers all 102 current
 browser specs and separately locks the six repaired
 commerce/Kelsey requirement identities; cabinetry release evidence owns 23
 named Consumer/Pro workflows. CH-0016 runtime smoke locks its two runtime
@@ -823,6 +823,114 @@ disagreement, aggregate-count disagreement, duplicate merge-required owner,
 and registered-owner reports with no imported-module contribution. External
 `merge-gate` ruleset selection remains `not-verified` and was not modified.
 
+## Window-opening browser execution owners
+
+The one `tests/e2e/window-opening-corrections.spec.ts` suite retains all 12
+functional cases. Its dedicated mounted owner and the canonical full-suite
+owners select capture context explicitly; absence of mounted variables never
+selects a permissive fallback. Missing or contradictory owner, source, target,
+report, or run inputs fail with a window-opening prerequisite error.
+
+- `test:window-opening-mounted` supplies the existing dedicated local server,
+  disposable database, source identity, and capture directories.
+  `playwright.window-opening.config.ts` validates that complete context. The
+  shared provenance adapter checks the actual local listener PID/port/cwd before
+  the suite and at every capture. Existing v2 screenshots, listener records,
+  traces, source binding, fixed 12-case inventory and resource cleanup remain
+  owned by the mounted runner and its unchanged evidence verifier.
+- `test:e2e:release` selects `release.gate-a3` and the exact HTTPS origin in
+  `PLAYWRIGHT_RELEASE_BASE_URL`. Before launch, and when Playwright loads its
+  config, the context adapter calls the existing physical
+  `verifyVercelOutputManifest` export. It rehashes `.vercel/output` and checks the
+  clean committed source. The existing staged-deployment identity comparison
+  matches `.vercel/staged-deployment.json` against that output, source and URL.
+  A source SHA or caller-provided artifact string alone is insufficient.
+  Captures carry the verified artifact and staged-record identities, selected
+  target and canonical report/run identity. They contain no fictitious local
+  application PID. The report validator also rejects capture-context metadata
+  that disagrees with the canonical owner, source, target or artifact.
+- `test:e2e:advisory` selects `advisory.full-e2e`, with an explicit development
+  target at the existing local port or `PLAYWRIGHT_ADVISORY_BASE_URL` for an
+  already provisioned staging origin. Its context carries no release authority.
+  Release/advisory target inputs and inherited `WINDOW_OPENING_*` inputs cannot
+  be mixed. The wrapper generates `WINDOW_OPENING_CANONICAL_CONTEXT`; it is not
+  an operator-supplied substitute for artifact verification.
+
+The owning wrapper allocates a fresh UUID directory with exclusive creation before
+launching Playwright. Gate A3 uses
+`.vercel/gate-a3-playwright-output/<run-id>/`; advisory full E2E uses
+`.local/required-test-evidence/advisory.full-e2e/playwright-output/<run-id>/`.
+Each contains the frozen `context.json`, authoritative `playwright.json` and
+`evidence.json`, plus a separate `test-results/` subtree for Playwright output.
+Playwright startup clears only that invocation's `test-results/`. Configuration
+reloads and workers consume the allocated context without allocating again.
+Reporters and project output must agree with it; CLI/report environment overrides,
+symlinks, traversal and mismatched run ownership are rejected.
+
+Completed verification reads the recorded context and requires the explicit
+`evidence.json` path printed by the wrapper. Pass that same path to
+`required-test-truthfulness.mjs verify <gate-id> <evidence-path>` or
+`release:vercel:certify`; no shared latest report is written. Advisory retention
+pairs each run's envelope with its hash-bound report. Accepted and ordinary failed
+runs remain available; unsafe-report cleanup removes only that run's report and
+`test-results/`, preserving its context/envelope and all sibling runs.
+
+Release output stays outside immutable `.vercel/output` and inside the existing
+approved generated parent. The clean-source policy and other gates' output
+locations are unchanged. This isolates browser output; artifact builds and
+deployments retain their existing concurrency constraints.
+
+Canonical captures use the current test's Playwright output directory, run ID,
+project and fixed test identity. PNG and JSON capture attachments join the
+normal report output; tracing stays in the owning test's trace.zip. The local
+runner retains its existing screenshot filenames and one Chromium project.
+The canonical Chromium matrix is unchanged, with no spec exclusion or filter.
+Viewport 1440x1000, 240-second test timeout, 20-second expectation timeout,
+30-second action timeout, 120-second navigation timeout and full tracing apply
+only to this spec. Other specs retain their existing settings. Camera motion,
+fixture, screenshot and strict runtime assertions are shared across owners.
+
+The suite installs its existing scene fixture into localStorage only after a
+successful health navigation at the owner's exact origin. Design navigation
+must stay on that origin and `/design`; deployment protection/login redirects
+fail as prerequisites. Existing browser-scoped `/api/me`, analytics and import
+review route fixtures remain test fixtures; they do not weaken server auth or
+provide deployment access. New page contexts use this spec's configured target
+and browser options, including any approved existing access/session settings.
+
+The selected artifact must already contain the approved layout and camera QA
+hooks. The suite observes their DOM output before functional assertions and
+fails explicitly when they are unavailable. Camera/interaction hooks require
+`NEXT_PUBLIC_ENABLE_QA_HOOKS=1` in the original artifact build. Runtime QA hooks
+additionally follow `lib/qa.ts`'s existing non-production application-environment
+restriction. Existing `debug_layout=1` usage does not authorize or enable a
+missing compiled hook. No public debug route or new QA URL switch is added.
+The prebuilt manifest does not itself record approval of the QA build inputs:
+review the existing pulled platform settings and approved target configuration
+before building/staging the one artifact. Never rebuild a different QA artifact
+and reuse the original artifact identity.
+
+Local contract coverage runs within `test:required-test-truthfulness`. Its
+`--window-opening-context-only` direct script option is for focused iteration
+before inventory reconciliation. It uses explicitly synthetic prebuilt/staged
+fixtures with the real artifact verifier, a real temporary localhost listener,
+wrong-owner/target/artifact negatives and the fixed 12-case registration contract.
+Small browser-free fixtures run the installed Playwright startup/cleanup path:
+sequential and barrier-synchronized overlapping runs preserve their siblings;
+collisions, output redirects and symlinks fail; controlled failure cleanup stays
+within the allocated subtree. A disposable shared-output negative control must
+fail the same preservation assertion. These are runner/output contracts. Such
+fixtures, `playwright test --list` discovery and a passing dedicated development
+run are not HTTPS Gate A3 execution.
+
+Actual Gate A3 still requires the committed clean candidate, physical prebuilt
+output and manifest, stage-produced deployment record, approved QA settings in
+that same artifact, deployment access/authentication inputs and the dedicated
+safe data prerequisites from `vercel-prebuilt-release.md`. Missing external
+inputs block real release execution without invalidating synthetic/local
+contract coverage. No history or earlier development result is recertified by
+this integration.
+
 ## Truthful pass contract
 
 A required Playwright pass proves all of the following:
@@ -850,23 +958,84 @@ process exit, report path/hash, result, and diagnostics. It never records an
 environment dump, credentials, cookies, private designs, or machine-local
 repository paths.
 
-CI never uploads this raw directory. After an advisory runner result,
-`evidence:required-tests:prepare-upload` requires the process envelope and
-Playwright JSON report, verifies their source/hash/process/project/totals
-relationship, and writes a safe failing-or-passing summary. Mandatory malformed
-or unsafe JSON rejects the complete bundle. Optional diagnostic text is decoded
-as strict UTF-8, normalized from Linux/macOS/Windows/home/temp paths to
-`<WORKSPACE>`, and retained only under `optional-diagnostics/`; unsafe optional
-files are omitted with a safe path, category, reason code, and original SHA-256.
-Screenshots, videos, traces, archives, and other binary/uninspectable files are
-never copied. A retained/omitted inventory makes omissions explicit. The staged
-tree is rescanned and atomically published as `.local/required-test-upload/`;
-every failure removes both staging and canonical output.
+Advisory upload preparation selects one completed invocation by its recorded
+`evidence.json` path, using the same positional path convention as `verify`.
+For `advisory.full-e2e`, that envelope, its allocated context, and the hash-bound
+report must identify the same run, owner, source commit and tree. Selection never
+scans retained siblings or infers a latest/passing/current-source run. Missing or
+ambiguous selection fails with an explicit command hint. An allocated context
+alone is unfinished and cannot be prepared. The selected invocation's complete
+mandatory envelope/report pair and all existing report coverage, outcome,
+source, timing, ownership, path and integrity checks remain required.
+
+`evidence:required-tests:prepare-upload` retains truthful completed advisory
+failures as failures, including their nonzero process result and missing-coverage
+diagnostics. It cannot substitute another run's report or turn a failed run into
+a passing one. Mandatory malformed, missing or unsafe JSON rejects the bundle.
+Optional diagnostic text is decoded as strict UTF-8, normalized from
+Linux/macOS/Windows/home/temp paths to `<WORKSPACE>`, and retained only under
+`optional-diagnostics/`; unsafe optional files are omitted with a safe path,
+category, reason code, and original SHA-256. Screenshots, videos, traces, archives,
+and other binary/uninspectable files are never copied. The existing inventory
+records the selected invocation, source, retained content hashes and omissions.
+
+Preparation validates selected input bytes before allocating a fresh, exclusive
+`.local/required-test-upload/attempt-<unique>/` directory. It verifies the assembled
+bundle with `verify-upload` and checks that the selected raw files have not changed
+before returning the explicit repository-relative `archiveRoot`. The CLI prints
+only that path. A rejected selection creates no preparation directory; a copy or
+verification failure removes only that attempt's incomplete directory. Previous
+bundles, source runs, sibling runs and the generated parent remain untouched.
+Repeated preparation uses a new destination, including for the same invocation.
+There is no shared authoritative upload directory and no implicit fallback.
+
+The runner exposes its allocated envelope path as `evidence_path` through
+`GITHUB_OUTPUT` before the process runs, so a completed failed invocation can
+still be selected. Preparation emits `archive_root` only after validation and
+assembly succeed. The actual `.github/workflows/full-advisory-e2e.yml` caller now
+binds `steps.advisory-run.outputs.evidence_path` to preparation's `EVIDENCE_PATH`
+environment variable and runs
+`npm run --silent evidence:required-tests:prepare-upload -- "$EVIDENCE_PATH"`.
+The `advisory-evidence` step supplies `archive_root` directly to the existing
+`playwright-full-results` upload action, with its unchanged version, 30-day
+retention and `if-no-files-found: error`. No shared-parent, sibling glob, previous
+attempt or latest-run fallback is accepted.
+
+Preparation uses `always() && !cancelled()` and requires the producer's actual
+`outcome` to be `success` or `failure`. A passing run yields its selected bundle;
+a completed failed run can yield its failed diagnostic bundle while preserving
+the original test failure. An attempted run with absent output, missing envelope
+or incomplete report fails preparation explicitly and emits no ready bundle.
+A skipped producer or cancelled workflow skips preparation and upload without
+claiming completed acceptance. Upload has its own explicit status check,
+non-cancellation guard, `steps.advisory-evidence.outcome == 'success'`, and
+nonempty `archive_root` check; it never relies on a potentially rewritten
+`conclusion`. Preparation failure leaves prior bundles and raw evidence intact.
+
+The local workflow-contract checks parse the actual YAML, verify unique step
+IDs, exact output references, the quoted CLI argument, ordering and failure-aware
+gates, and reject wrong references, shared parents, hard-coded attempts, globs,
+fallbacks and failure suppression. The local shell fixtures execute the actual
+runner and preparation npm commands with temporary `GITHUB_OUTPUT` files,
+synthetic Git identity and synthetic Playwright reports; no upload action runs.
+This implements the CI caller in source. Remote execution/retention verification,
+the separate CI-routing decision and actual HTTPS Gate A3 remain pending; no
+trigger, permission, advisory classification or other workflow policy changes.
+
+The disposable report-consumer regressions cover active and historical siblings,
+order-independent selection, invalid selected runs, substitution and symlink
+rejections, preservation after validation/copy failures, separate destinations,
+source changes during assembly, archive hash verification, truthful failed
+outcomes and the actual positional CLI. Existing per-run output isolation and
+canonical discovery regressions remain in the complete truthfulness suite.
+No app/browser campaign, database, external upload or HTTPS Gate A3 is required
+for these new fixtures. The historical fixture classification remains
+**NOT REPRODUCED IN CURRENT VALIDATION; HISTORICAL CAUSE UNRESOLVED.**
 
 Process-only gates remain direct package commands or `&&`-chained umbrellas, so
 missing executable files and nonzero child results already stop the command.
 The manifest audit verifies a stable hash of every recursively reachable package
-script body—41 scripts for the critical-domain umbrella, 56 for floor-plan, and
+script body—42 scripts for the critical-domain umbrella, 56 for floor-plan, and
 8 for catalog/materials—so a nested child, fail-open operator, or scope-changing
 flag cannot silently disappear behind an edited umbrella.
 
@@ -877,7 +1046,6 @@ Static inventory and negative contract:
 ```sh
 npm run test:required-test-truthfulness
 node scripts/required-test-truthfulness.mjs check
-npm run evidence:required-tests:prepare-upload
 ```
 
 Broad E2E visibility, deliberately advisory:
@@ -885,6 +1053,20 @@ Broad E2E visibility, deliberately advisory:
 ```sh
 npm run test:e2e:advisory
 ```
+
+Select the exact envelope path printed by that invocation, even when its test
+outcome failed. Both commands below fail closed; the path is never discovered by
+listing retained directories:
+
+```sh
+evidence='.local/required-test-evidence/advisory.full-e2e/playwright-output/<recorded-run-id>/evidence.json'
+bundle="$(npm run --silent evidence:required-tests:prepare-upload -- "$evidence")" &&
+  node scripts/required-test-truthfulness.mjs verify-upload "$bundle"
+```
+
+Only the returned `$bundle` is eligible for the existing upload caller. Do not
+upload its parent or reuse a path left by an earlier command after a failure.
+For a downloaded archive, pass its explicit root to `verify-upload`.
 
 Exact staged-artifact Gate A3 evidence:
 
@@ -895,7 +1077,7 @@ REQUIRED_TEST_ARTIFACT_SHA256='<sha256 from .vercel/prebuilt-manifest.json>' \
 
 GATE_A3_CERTIFIED_DEPLOYMENT_URL='https://staged.example.vercel.app' \
   npm run release:vercel:certify -- \
-  .vercel/gate-a3-required-test-evidence.json
+  '.vercel/gate-a3-playwright-output/<run-id>/evidence.json'
 ```
 
 `release:vercel:certify` validates the evidence envelope, its hashed Playwright

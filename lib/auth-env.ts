@@ -204,28 +204,44 @@ function validateSyntheticFixtureBaseScopeOrThrow(
   );
 }
 
+function artifactExecutionOwnerIsBound(environment: NodeJS.ProcessEnv): boolean {
+  const ordinary = Object.keys(environment).some((name) =>
+    name.startsWith("ORDINARY_ARTIFACT_") && environment[name] !== undefined);
+  if (!ordinary) {
+    return environment.CERTIFICATION_ENVIRONMENT_STAGE === "artifact-product-server" &&
+      Boolean(environment.PRODUCTION_CERTIFICATION_ID?.trim()) &&
+      environment.CI_AUTH_FIXTURE_LOCAL_TEST === "1";
+  }
+  return !Object.keys(environment).some((name) =>
+    (name.startsWith("CERTIFICATION_") || name.startsWith("PRODUCTION_CERTIFICATION")) &&
+    environment[name] !== undefined) && environment.ORDINARY_ARTIFACT_RUNTIME === "1" &&
+    /^[a-f0-9]{32}$/.test(environment.ORDINARY_ARTIFACT_RUN_ID ?? "") &&
+    /^[a-f0-9]{64}$/.test(environment.ORDINARY_ARTIFACT_BINDING_SHA256 ?? "") &&
+    /^[a-f0-9]{64}$/.test(environment.PRODUCTION_ARTIFACT_SHA256 ?? "") &&
+    Boolean(environment.PRODUCTION_ARTIFACT_BUILD_ID?.trim());
+}
+
 function validateArtifactProductServerFixtureBindingOrThrow(
   authEnv: AuthEnv,
   environment: NodeJS.ProcessEnv,
 ): void {
   const artifactProductServer =
     environment.CERTIFICATION_ENVIRONMENT_STAGE === "artifact-product-server" ||
-    environment.PRODUCTION_ARTIFACT_EVIDENCE === "1";
+    environment.PRODUCTION_ARTIFACT_EVIDENCE === "1" ||
+    environment.ORDINARY_ARTIFACT_RUNTIME !== undefined;
   if (!artifactProductServer) return;
 
   const sha256 = (value: string) =>
     createHash("sha256").update(value).digest("hex");
   const exactArtifactBinding = [
-    environment.CERTIFICATION_ENVIRONMENT_STAGE === "artifact-product-server",
+    artifactExecutionOwnerIsBound(environment),
     environment.PRODUCTION_ARTIFACT_EVIDENCE === "1",
-    Boolean(environment.PRODUCTION_CERTIFICATION_ID?.trim()),
     Boolean(environment.PRODUCTION_EVIDENCE_CANDIDATE_ID?.trim()),
     environment.APP_ENV === "staging",
     environment.NEXT_PUBLIC_APP_ENV === "staging",
     environment.NODE_ENV === "production",
     environment.VERCEL_ENV === "preview",
     environment.CI_AUTH_FIXTURE_ACTIVE === "1",
-    environment.CI_AUTH_FIXTURE_LOCAL_TEST === "1",
     environment.CI_AUTH_FIXTURE_MODE === "1",
     environment.CI_AUTH_FIXTURE_NO_REGENERATION === "1",
     environment.CI_AUTH_FIXTURE_SESSION_CLASSIFICATION ===

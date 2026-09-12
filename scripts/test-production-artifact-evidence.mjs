@@ -1,3 +1,9 @@
+import { ordinaryDatabaseTarget, projectOrdinaryArtifactEnvironment,
+  ORDINARY_ARTIFACT_SERVICE_CONFIGURATION, finishOrdinaryRuntimeResult } from "./production-artifact-ordinary-runtime.mjs";
+import { assertOrdinaryDatabaseObservation, createOrdinaryRuntimeRole, dropOrdinaryRuntimeRole,
+  withOrdinaryDatabase, inspectOrdinaryPostgresService } from "./production-artifact-ordinary-database.mjs";
+import { assertNoCertificationContext, ordinaryRuntimeIdentity, ordinaryRuntimeReportIdentity,
+  validateOrdinaryRuntimeIdentity } from "./production-artifact-runtime-binding.mjs";
 import assert from "node:assert/strict";
 import { execFileSync, spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
@@ -26,8 +32,10 @@ import {
   canonicalizeBoundRuntimeSmokeReport,
   canonicalizeProductionEvidenceReport,
   certifiedNestedDatabaseUrl,
+  retainRuntimeSmokeOutcome,
+  bindRuntimeSmokeFailureToReport,
+  validateOrdinarySmokeDestinations,
   comparePortablePaths,
-  createProductionEvidenceBundle,
   createProductionEvidenceManifest,
   executeProductionEvidenceChild,
   handoffProductionEvidenceSemanticJournal,
@@ -35,15 +43,18 @@ import {
   inspectFloorPlanRouteNftContract,
   projectArtifactProductServerEnvironment,
   readProductionEvidenceSemanticJournal,
-  recordProductionEvidenceTest,
   recoverProductionEvidenceFromSemanticJournal,
   resolveProductionEvidenceToolchain,
   validateProductionEvidenceSemanticJournal,
-  validateProductionEvidence,
   validateArtifactProductServerAuthFixtureBinding,
-  verifyRuntimeSmokeFailureEvidence,
   writeProductionEvidenceManifest,
 } from "./production-artifact-evidence.mjs";
+import {
+  createProductionEvidenceBundle,
+  recordProductionEvidenceTest,
+  validateProductionEvidence,
+  verifyRuntimeSmokeFailureEvidence,
+} from "./production-artifact-source.mjs";
 import {
   BUILD_COMMAND,
   CURRENT_PRODUCTION_EVIDENCE_VERSIONS,
@@ -74,7 +85,7 @@ import {
 import { validateRequiredTestReport } from "./required-test-truthfulness.mjs";
 import { inspectGitTree } from "./vercel-output-manifest.mjs";
 import { verifyStableRuntimeSmokeStandalone } from "./stable-runtime-smoke-standalone.mjs";
-import { STABLE_PORTABLE_SUMMARY_PATH } from "./stable-runtime-smoke-resources.mjs";
+import { STABLE_PORTABLE_SUMMARY_PATH, verifyStableRuntimeBundleTransport } from "./stable-runtime-smoke-resources.mjs";
 import {
   certificationEnvironmentProfile,
   projectCertificationChildEnvironment,
@@ -101,6 +112,7 @@ import {
   RuntimeSmokeTerminalError,
   createRuntimeSmokeOperationDeadline,
   createRuntimeSmokePhaseRecorder,
+  resolveRuntimeSmokeTimingDestination,
   deriveFurnishedTemplatePhaseTimeout,
   deriveRuntimeSmokeWholeTestTimeout,
   runRuntimeSmokeBoundedOperation,
@@ -2171,6 +2183,226 @@ if (process.argv.includes("--readiness-diagnostics-contract-only")) {
   process.exit(0);
 }
 
+// Exercise actual ordinary selection, projection, report failure and resource owners.
+{
+  const owner = readFileSync(path.join(process.cwd(), "scripts/stable-runtime-smoke.mjs"), "utf8");
+  const start = owner.indexOf("async function createAndVerifyBundle(");
+  const end = owner.indexOf("async function completeStableRuntimeSmoke(", start);
+  assert.ok(start >= 0 && end > start);
+  const caller = owner.slice(start, end);
+  const markers = [
+    "await createProductionEvidenceBundle(",
+    "const sourceManifestSha256 = verifyStableRuntimeBundleTransport(",
+    "const extract = spawnSync(",
+    "const standalone = spawnSync(",
+    "PRODUCTION_EVIDENCE_EXPECTED_MANIFEST_SHA256: sourceManifestSha256",
+  ];
+  function validBundleCaller(source) {
+    const offsets = markers.map((marker) => source.indexOf(marker));
+    return offsets.every((offset, index) => offset >= 0 && (index === 0 || offsets[index - 1] < offset)) &&
+      source.includes("bundleSha256: bundle.bundleSha256") &&
+      source.includes("PRODUCTION_EVIDENCE_EXPECTED_COMMIT_SHA: manifest.source.commitSha");
+  }
+  assert.equal(validBundleCaller(caller), true,
+    "actual Stable owner must bind transport before extraction and pass the captured source digest to standalone");
+  for (const marker of markers) {
+    assert.equal(validBundleCaller(caller.replace(marker, "omitted")), false, `missing ${marker} must fail closed`);
+  }
+  for (let index = 0; index < markers.length - 1; index += 1) {
+    const reordered = caller.replace(markers[index], "__swapped__")
+      .replace(markers[index + 1], markers[index]).replace("__swapped__", markers[index + 1]);
+    assert.equal(validBundleCaller(reordered), false, "reversed bundle boundaries must fail closed");
+  }
+  const standalone = readFileSync(path.join(process.cwd(), "scripts/stable-runtime-smoke-standalone.mjs"), "utf8");
+  assert.match(standalone, /verificationMode: PRODUCTION_EVIDENCE_VERIFICATION_MODES\.STANDALONE_BUNDLE/);
+  assert.match(standalone, /expectedManifestSha256: environment\.PRODUCTION_EVIDENCE_EXPECTED_MANIFEST_SHA256\?\.trim\(\)/);
+}
+{
+  const manifest = { candidateIdentifier: "github-123-1", source: { commitSha: "a".repeat(40), treeSha: "b".repeat(40) },
+    build: { nextBuildId: "ordinary-build", applicationEnvironment: "staging" },
+    artifact: { sha256: "c".repeat(64) }, execution: { runNonce: "build-run-001" } };
+  const ordinary = { CI: "true", GITHUB_ACTIONS: "true", GITHUB_REPOSITORY: "justuslaw66-max/interior-ai",
+    GITHUB_JOB: "stable-checks", GITHUB_RUN_ID: "123", GITHUB_RUN_ATTEMPT: "1",
+    CI_AUTH_FIXTURE_SESSION_ID: "123-1-stable-auth-session", CI_AUTH_FIXTURE_SESSION_NONCE: "123-1-stable-auth-nonce",
+    DATABASE_URL: "postgresql://test:test@localhost:5432/interior_ai_test", ...ORDINARY_ARTIFACT_SERVICE_CONFIGURATION };
+  ordinary.ORDINARY_ARTIFACT_POSTGRES_SERVICE_ID = "f".repeat(64);
+  const service = { Id: ordinary.ORDINARY_ARTIFACT_POSTGRES_SERVICE_ID, State: { Running: true },
+    Config: { Image: "postgres:15", Env: ["POSTGRES_USER=test", "POSTGRES_PASSWORD=test", "POSTGRES_DB=interior_ai_test"] },
+    NetworkSettings: { Ports: { "5432/tcp": [{ HostIp: "0.0.0.0", HostPort: "5432" }] },
+      Networks: { workflow: { IPAddress: "172.18.0.2", GlobalIPv6Address: "" } } } };
+  const inspectService = (environment) => inspectOrdinaryPostgresService(environment, (command, args, options) => {
+    assert.equal(command, "docker");
+    assert.deepEqual(args, ["inspect", "--type", "container", ordinary.ORDINARY_ARTIFACT_POSTGRES_SERVICE_ID]);
+    assert.equal(options.env.DATABASE_URL, undefined);
+    return { status: 0, stdout: JSON.stringify([service]) };
+  });
+  const target = ordinaryDatabaseTarget(ordinary, manifest, { inspectService });
+  assert.deepEqual(target.serverAddresses, ["172.18.0.2"]);
+  for (const patch of [{ Id: "0".repeat(64) }, { State: { Running: false } }, { Config: { ...service.Config, Image: "postgres:16" } },
+    { Config: { ...service.Config, Env: ["POSTGRES_USER=foreign"] } },
+    { NetworkSettings: { ...service.NetworkSettings, Ports: { "5432/tcp": [{ HostIp: "0.0.0.0", HostPort: "6432" }] } } },
+    { NetworkSettings: { ...service.NetworkSettings, Networks: {} } },
+    { NetworkSettings: { ...service.NetworkSettings, Networks: { workflow: { IPAddress: "not-an-ip" } } } }]) {
+    assert.throws(() => inspectOrdinaryPostgresService(ordinary, () => ({ status: 0, stdout: JSON.stringify([{ ...service, ...patch }]) })));
+  }
+  assert.throws(() => inspectOrdinaryPostgresService({ ...ordinary, ORDINARY_ARTIFACT_POSTGRES_SERVICE_ID: undefined }));
+  assert.throws(() => inspectOrdinaryPostgresService(ordinary, () => ({ status: 1, stderr: "unavailable" })));
+  const stableWorkflow = readFileSync(path.join(process.cwd(), ".github/workflows/ci.yml"), "utf8");
+  assert.match(stableWorkflow, /id: runtime-smoke\s+env:\s+CERTIFICATION_DATABASE_ADMIN_URL:/);
+  assert.match(stableWorkflow, /run: npm run evidence:production:stable-runtime-smoke/);
+  assert.doesNotMatch(stableWorkflow, /ORDINARY_ARTIFACT_POSTGRES_SERVICE_ID:/,
+    "Stable uses its attested lifecycle owner; ordinary service inspection remains a separate API");
+  assert.equal(target.resourceOwner, "github-stable-service");
+  for (const patch of [{ GITHUB_JOB: "foreign" }, { GITHUB_RUN_ID: "bad" }, { GITHUB_RUN_ATTEMPT: undefined },
+    { DATABASE_URL: "postgresql://test:test@remote:5432/interior_ai_test" },
+    { DATABASE_URL: "postgresql://test:test@localhost:5432/interior_ai_test?options=foreign" },
+    { CI_AUTH_FIXTURE_SESSION_NONCE: "foreign-nonce" }, { CERTIFICATION_ENVIRONMENT_STAGE: "runtime-smoke" }]) {
+    assert.throws(() => ordinaryDatabaseTarget({ ...ordinary, ...patch }, manifest, { inspectService }));
+  }
+  for (const name of ["CERTIFICATION_ENVIRONMENT_STAGE", "CERTIFICATION_STAGE_ENVIRONMENT_PROFILE_ID",
+    "PRODUCTION_CERTIFICATION_ID", "CERTIFICATION_QUALIFICATION_MODE"]) {
+    assert.throws(() => assertNoCertificationContext({ [name]: "" }), /conflicts.*no fallback/);
+  }
+  assert.throws(() => certifiedNestedDatabaseUrl({ ...ordinary, ORDINARY_ARTIFACT_RUN_ID: "d".repeat(32) }), /certified runtime/);
+  const identity = ordinaryRuntimeIdentity(manifest, "d".repeat(32));
+  for (const field of ["runId", "sourceCommitSha", "sourceTreeSha", "buildId", "artifactSha256", "buildRunNonce", "classification"]) {
+    assert.throws(() => validateOrdinaryRuntimeIdentity({ ...identity, [field]: "foreign" }, manifest));
+  }
+  const owner = { ...ordinary, ORDINARY_ARTIFACT_RUN_ID: identity.runId,
+    ORDINARY_ARTIFACT_CONTEXT_PATH: "/private/owned/context.json", ORDINARY_ARTIFACT_BINDING_SHA256: "e".repeat(64) };
+  assert.deepEqual(ordinaryRuntimeReportIdentity(owner, manifest), identity);
+  assert.throws(() => ordinaryRuntimeReportIdentity({ ...owner, PRODUCTION_CERTIFICATION_ID: "certified" }, manifest));
+  assert.throws(() => ordinaryRuntimeReportIdentity({ ...owner, ORDINARY_ARTIFACT_BINDING_SHA256: "bad" }, manifest));
+  const projected = projectOrdinaryArtifactEnvironment({ environment: { ...owner, NODE_OPTIONS: "injected",
+    DATABASE_ADMIN_URL: "private-admin", CI_AUTH_FIXTURE_SESSION_ROOT: "/private/session", GITHUB_TOKEN: "private-token" },
+    manifest, fixture: { CI_AUTH_FIXTURE_ACTIVE: "1" } });
+  for (const name of ["NODE_OPTIONS", "DATABASE_ADMIN_URL", "GITHUB_TOKEN", "CI_AUTH_FIXTURE_SESSION_ROOT", "ORDINARY_ARTIFACT_CONTEXT_PATH", "ORDINARY_ARTIFACT_POSTGRES_SERVICE_ID"]) {
+    assert.equal(projected[name], undefined, `Product must not inherit ${name}`);
+  }
+  assert.equal(projected.PRODUCTION_ARTIFACT_EVIDENCE, "1");
+  for (const [name, value] of Object.entries(ORDINARY_ARTIFACT_SERVICE_CONFIGURATION)) assert.equal(projected[name], value);
+  assert.throws(() => projectOrdinaryArtifactEnvironment({ environment: { ...owner, STRIPE_SECRET_KEY: "sk_live_foreign" }, manifest, fixture: {} }));
+  await assert.rejects(retainRuntimeSmokeOutcome({ status: 1, stdout: "actual startup cause", stderr: "reporter tail" },
+    async () => { throw new Error("missing phase report"); }), (error) => {
+    assert.match(error.message, /Primary runtime failure.*actual startup cause/s);
+    assert.match(error.message, /reporter tail/);
+    assert.match(error.message, /Runtime reporting failure: missing phase report/);
+    return true;
+  });
+  await retainRuntimeSmokeOutcome({ status: 0 }, async () => {});
+  for (const cause of ["string cause", null]) {
+    await assert.rejects(retainRuntimeSmokeOutcome({ status: 1, error: cause }, async () => { throw cause; }),
+      (error) => error.message.includes(String(cause)) && error.message.includes("Runtime reporting failure"));
+    assert.throws(() => finishOrdinaryRuntimeResult({ runId: identity.runId, receipt: {},
+      failures: [new Error("primary startup"), cause], sensitive: [],
+      close: () => { throw "close cause"; }, retain: () => { throw null; } }), (error) => {
+      assert.match(error.message, /primary startup/);
+      assert(error.message.includes(String(cause)));
+      assert.match(error.message, /Ordinary receipt close: close cause/);
+      assert.match(error.message, /Ordinary result retention: null/);
+      return true;
+    });
+  }
+
+  const root = mkdtempSync(path.join(tmpdir(), "ordinary-runtime-paths-"));
+  try {
+    mkdirSync(path.join(root, ".local/production-artifact-evidence"), { recursive: true });
+    validateOrdinarySmokeDestinations({ repositoryRoot: root,
+      reportPath: ".local/production-artifact-evidence/runtime-smoke.json", environment: {} });
+    assert.throws(() => validateOrdinarySmokeDestinations({ repositoryRoot: root,
+      reportPath: path.join(root, "external.json"), environment: {} }), /canonical owned/);
+    writeFileSync(path.join(root, ".local/production-artifact-evidence/runtime-smoke.json"), "retained");
+    assert.throws(() => validateOrdinarySmokeDestinations({ repositoryRoot: root,
+      reportPath: ".local/production-artifact-evidence/runtime-smoke.json", environment: {} }), /exist/);
+    assert.equal(readFileSync(path.join(root, ".local/production-artifact-evidence/runtime-smoke.json"), "utf8"), "retained");
+    const relativeTiming = ".local/production-artifact-evidence/runtime-smoke-phases.json";
+    const destination = resolveRuntimeSmokeTimingDestination({ repositoryRoot: root, timingPath: relativeTiming, environment: {} });
+    assert.equal(destination.retainedPath, relativeTiming);
+    writeFileSync(destination.outputPath, JSON.stringify({ failure: null }));
+    const reportPath = ".local/production-artifact-evidence/binding-test.json";
+    writeFileSync(path.join(root, reportPath), "{}");
+    assert.equal(bindRuntimeSmokeFailureToReport(root, reportPath, destination.retainedPath), null);
+    assert.throws(() => resolveRuntimeSmokeTimingDestination({ repositoryRoot: root, timingPath: relativeTiming, environment: {} }), /already exist/);
+    for (const timingPath of ["../escape.json", ".local/../escape.json", "unrelated.json", ".local/foreign\\path.json"]) {
+      assert.throws(() => resolveRuntimeSmokeTimingDestination({ repositoryRoot: root, timingPath, environment: {} }));
+    }
+    const external = mkdtempSync(path.join(tmpdir(), "ordinary-timing-external-"));
+    try {
+      symlinkSync(external, path.join(root, ".local/escape"));
+      assert.throws(() => resolveRuntimeSmokeTimingDestination({ repositoryRoot: root, timingPath: ".local/escape/timing.json", environment: {} }), /physical/);
+      const timingPath = path.join(external, "timing.json");
+      assert.throws(() => resolveRuntimeSmokeTimingDestination({ repositoryRoot: root, timingPath, environment: {} }));
+      const externalDestination = resolveRuntimeSmokeTimingDestination({ repositoryRoot: root, timingPath,
+        environment: { PLAYWRIGHT_EXTERNAL_EVIDENCE_ROOT: external } });
+      assert.equal(externalDestination.rootVariableName, "PLAYWRIGHT_EXTERNAL_EVIDENCE_ROOT");
+      assert.equal(externalDestination.retainedPath, timingPath);
+      writeFileSync(timingPath, JSON.stringify({ failure: null }));
+      assert.equal(bindRuntimeSmokeFailureToReport(root, reportPath, externalDestination.retainedPath, external), null);
+      assert.throws(() => bindRuntimeSmokeFailureToReport(root, reportPath, timingPath), /external evidence root/i);
+    } finally { rmSync(external, { recursive: true, force: true }); }
+
+  } finally { rmSync(root, { recursive: true, force: true }); }
+  const observed = { database: target.database, role: target.role, host: "172.18.0.2", port: 5432,
+    databaseOid: 7001, roleOid: 7002 };
+  assertOrdinaryDatabaseObservation(observed, target);
+  assert.throws(() => assertOrdinaryDatabaseObservation({ ...observed, host: "172.18.0.9" }, target));
+  assert.throws(() => assertOrdinaryDatabaseObservation({ ...observed, databaseOid: 9000 }, { ...target, databaseOid: 7001 }));
+  const restricted = { ...observed, role: `interior_ai_ordinary_stage_${identity.runId}`, roleOid: 7003,
+    rolsuper: false, rolcreatedb: false, rolcreaterole: false, rolinherit: false, rolreplication: false, rolbypassrls: false, canCreate: false };
+  assertOrdinaryDatabaseObservation(restricted, { ...target, role: restricted.role }, { runtime: true });
+  for (const name of ["rolsuper", "rolcreatedb", "rolcreaterole", "rolinherit", "rolreplication", "rolbypassrls", "canCreate"]) {
+    assert.throws(() => assertOrdinaryDatabaseObservation({ ...restricted, [name]: true }, { ...target, role: restricted.role }, { runtime: true }));
+  }
+  class FailingCloseClient {
+    async connect() { throw new Error("primary connect"); }
+    async end() { throw new Error("secondary close"); }
+  }
+  await assert.rejects(withOrdinaryDatabase("unused", async () => {}, FailingCloseClient), /primary connect.*secondary close/s);
+  const calls = [];
+  let roleExists = false;
+  let sessionCheck = 0;
+  let lateSession = false;
+  class OwnedRoleClient {
+    constructor({ connectionString }) { this.runtime = new URL(connectionString).username === restricted.role; }
+    async connect() {}
+    async end() {}
+    async query(sql) {
+      calls.push(sql);
+      if (sql.includes("current_database() AS database")) return { rowCount: 1, rows: [this.runtime ? restricted : observed] };
+      if (sql.startsWith("SELECT oid")) return { rowCount: roleExists ? 1 : 0, rows: roleExists ? [{ oid: 7003 }] : [] };
+      if (sql.startsWith("CREATE ROLE")) roleExists = true;
+      if (sql.startsWith("DROP ROLE")) roleExists = false;
+      if (sql.includes("pg_stat_activity")) {
+        sessionCheck += 1;
+        return { rowCount: lateSession && sessionCheck > 1 ? 1 : 0, rows: [] };
+      }
+      return { rowCount: 0, rows: [] };
+    }
+  }
+  const receipt = { outcome: "not-attempted", roleOid: null };
+  const snapshots = [];
+  const persist = () => snapshots.push(JSON.parse(JSON.stringify(receipt)));
+  await createOrdinaryRuntimeRole({ adminUrl: ordinary.DATABASE_URL, target, runId: identity.runId,
+    receipt, persist, ClientClass: OwnedRoleClient });
+  assert(snapshots.some((snapshot) => snapshot.outcome === "created" && snapshot.roleOid === null),
+    "Acknowledged role creation must persist before OID observation");
+  lateSession = true;
+  await assert.rejects(dropOrdinaryRuntimeRole({ adminUrl: ordinary.DATABASE_URL, target, receipt, persist,
+    ClientClass: OwnedRoleClient }), /sessions appeared/);
+  assert.equal(roleExists, true);
+  assert.equal(receipt.cleanup, undefined);
+  assert.equal(calls.some((sql) => sql.startsWith("DROP ROLE")), false);
+  // A separate fake run proves terminal observation; no live resource retry is performed.
+  lateSession = false;
+  sessionCheck = 0;
+  await dropOrdinaryRuntimeRole({ adminUrl: ordinary.DATABASE_URL, target, receipt, persist, ClientClass: OwnedRoleClient });
+  assert.equal(sessionCheck, 3);
+  assert.deepEqual(receipt.cleanup, { roleAbsent: true, sessionCount: 0 });
+  await assert.rejects(dropOrdinaryRuntimeRole({ adminUrl: ordinary.DATABASE_URL, target,
+    receipt: { outcome: "unacknowledged" }, persist, ClientClass: OwnedRoleClient }), /acknowledged exact ownership/);
+  console.log("Ordinary artifact runtime selection, projection, owned cleanup and ordered failures passed.");
+}
+
 if (process.argv.includes("--phase-budget-contract-only")) {
   console.log("CH-0017 runtime-smoke phase-budget contract tests passed.");
   process.exit(0);
@@ -3111,6 +3343,33 @@ async function fixture({
       readFileSync(path.join(process.cwd(), relativePath)),
     );
   }
+  // Give this synthetic artifact its own valid source-policy fixture. Source
+  // verification must check this root, never a different checkout's workflows.
+  for (const relativePath of [
+    "scripts/production-artifact-source.mjs",
+    "scripts/production-artifact-ordinary-runtime.mjs",
+    "scripts/production-artifact-ordinary-database.mjs",
+    "scripts/required-test-workflow-policy.mjs",
+  ]) write(root, relativePath, readFileSync(path.join(process.cwd(), relativePath)));
+  const fixtureManifest = JSON.parse(readFileSync(path.join(root, "scripts/required-test-manifest.json")));
+  const runtimeGate = fixtureManifest.gates.find((gate) => gate.id === "ci.production-runtime-smoke");
+  delete runtimeGate.ci;
+  for (const relativePath of runtimeGate.requiredSources) {
+    write(root, relativePath, readFileSync(path.join(process.cwd(), relativePath)));
+  }
+  write(root, "scripts/required-test-manifest.json", JSON.stringify({
+    schema: fixtureManifest.schema, gates: [runtimeGate], sourceInventories: [],
+  }));
+  const fixturePackage = JSON.parse(readFileSync(path.join(root, "package.json")));
+  const sourcePackage = JSON.parse(readFileSync(path.join(process.cwd(), "package.json")));
+  fixturePackage.scripts = Object.fromEntries([
+    "evidence:production:stable-runtime-smoke", "test:design-scene-loading-frameloop",
+  ].map((name) => [name, sourcePackage.scripts[name]]));
+  write(root, "package.json", JSON.stringify(fixturePackage));
+  write(root, "playwright.config.ts", "// Synthetic artifact source fixture configuration.\n");
+  write(root, "tests/e2e/00-runtime-smoke.spec.ts",
+    readFileSync(path.join(process.cwd(), "tests/e2e/00-runtime-smoke.spec.ts")));
+  cpSync(path.join(process.cwd(), "node_modules/yaml"), path.join(root, "node_modules/yaml"), { recursive: true });
   write(root, "generated/runtime.ts", "export const generated = true;\n");
   write(root, "public/asset.txt", publicArtifactText);
   write(root, ".next/BUILD_ID", `${nextBuildId}\n`);
@@ -3141,6 +3400,12 @@ async function fixture({
     "package-lock.json",
     "scripts/production-artifact-contract.mjs",
     "scripts/production-artifact-evidence.mjs",
+    "scripts/production-artifact-source.mjs",
+    "scripts/production-artifact-ordinary-runtime.mjs",
+    "scripts/production-artifact-ordinary-database.mjs",
+    "scripts/required-test-workflow-policy.mjs",
+    "playwright.config.ts",
+    "tests/e2e/00-runtime-smoke.spec.ts",
     "scripts/runtime-smoke-phase-budget.mjs",
     "scripts/runtime-smoke-failure-evidence.mjs",
     "scripts/runtime-smoke-operation-contracts.mjs",
@@ -3151,6 +3416,7 @@ async function fixture({
     "scripts/test-production-archive-plan-evidence.mjs",
     "scripts/test-production-trace-archive-policy.mjs",
     ...PRODUCTION_EVIDENCE_VERIFIER_SOURCE_PATHS,
+    ...runtimeGate.requiredSources,
     "generated/runtime.ts",
     "public/asset.txt",
     "public/assets/floor-plans/preview.webp",
@@ -4604,7 +4870,7 @@ for (const mutation of [
   const rejectedByCanonicalValidator = spawnSync(
     process.execPath,
     [
-      realpathSync(path.join(context.root, "scripts/production-artifact-evidence.mjs")),
+      realpathSync(path.join(context.root, "scripts/production-artifact-source.mjs")),
       "verify-preflight",
     ],
     {
@@ -5194,7 +5460,7 @@ for (const mutation of [
   );
   const smokeSource = producerSource.slice(
     producerSource.indexOf("async function smokeEvidence"),
-    producerSource.indexOf("async function cli"),
+    producerSource.indexOf("export async function runProductionArtifactEvidenceCli"),
   );
   const preflightIndex = smokeSource.indexOf(
     "const preflight = await validateProductionEvidence",
@@ -5204,16 +5470,19 @@ for (const mutation of [
     preflightIndex,
   );
   const runtimeStartIndex = smokeSource.indexOf(
-    "const playwright = run(",
+    "const playwright = spawnSync(",
     preflightIndex,
   );
   assert.ok(
     smokeSource.length > 0 &&
       preflightIndex >= 0 &&
       preflightRejectionIndex > preflightIndex &&
-      runtimeStartIndex > preflightRejectionIndex,
+      smokeSource.indexOf("return runOrdinaryRuntime(") > preflightRejectionIndex &&
+      runtimeStartIndex > smokeSource.indexOf("return runOrdinaryRuntime("),
     "runtime smoke cannot start when manifest validation fails",
   );
+  const artifactLoadIndex = configSource.indexOf("loadProductionArtifactForPlaywright({");
+  const configConstructionIndex = configSource.indexOf("const config = defineConfig({");
   assert.match(
     smokeSource,
     /playwright\.status !== 0 && !existsSync\(absolutePhaseTimingPath\)[\s\S]*preceding Playwright webServer failure is authoritative/,
@@ -5221,12 +5490,12 @@ for (const mutation of [
   );
   assert.match(
     smokeSource,
-    /bindRuntimeSmokeFailureToReport\([\s\S]*requestedTimingPath,[\s\S]*externalTimingRoot/,
+    /bindRuntimeSmokeFailureToReport\([\s\S]*retainedTimingPath,[\s\S]*externalTimingRoot/,
     "repository-relative timing evidence must retain its requested path at the binding boundary",
   );
   assert.ok(
-    configSource.indexOf("loadProductionArtifactForPlaywright") <
-      configSource.indexOf("export default defineConfig"),
+    artifactLoadIndex >= 0 && configConstructionIndex > artifactLoadIndex &&
+      configSource.indexOf("export default config;") > configConstructionIndex,
     "Playwright must reject invalid evidence before exposing a webServer command",
   );
 }
@@ -5392,6 +5661,33 @@ async function expectRejected(context, expectedText) {
     result.issues.some((issue) => issue.includes(expectedText)),
     `missing rejection ${JSON.stringify(expectedText)} in ${JSON.stringify(result.issues)}`,
   );
+}
+
+{
+  const context = await fixture();
+  const manifest = readManifest(context.root, context.manifestPath);
+  const reportFile = path.join(context.root, context.reportPath);
+  const report = JSON.parse(readFileSync(reportFile, "utf8"));
+  const identity = ordinaryRuntimeIdentity(manifest, "d".repeat(32));
+  await rewriteManifest(context.root, context.manifestPath, (pending) => {
+    pending.tests = [];
+    pending.repositoryEvidence.status = "pending_tests";
+  });
+  report.config.metadata.productionArtifactEvidence.ordinaryRuntime = identity;
+  writeFileSync(reportFile, `${JSON.stringify(report, null, 2)}\n`);
+  const options = { repositoryRoot: context.root, manifestPath: context.manifestPath,
+    reportPath: context.reportPath, phaseTimingPath: context.phaseTimingPath, name: "runtime-smoke",
+    command: "npx playwright test tests/e2e/00-runtime-smoke.spec.ts --project=chromium", processExitCode: 0 };
+  await assert.rejects(recordProductionEvidenceTest({ ...options,
+    environment: { PRODUCTION_CERTIFICATION_ID: "certification-owner", CERTIFICATION_ENVIRONMENT_STAGE: "runtime-smoke" } }), /execution owner/);
+  await assert.rejects(recordProductionEvidenceTest({ ...options, environment: {} }), /execution owner/);
+  await recordProductionEvidenceTest({ ...options, environment: {
+    ORDINARY_ARTIFACT_CONTEXT_PATH: "/private/synthetic-owner/context.json",
+    ORDINARY_ARTIFACT_RUN_ID: identity.runId, ORDINARY_ARTIFACT_BINDING_SHA256: "e".repeat(64) } });
+  const ordinaryResult = await validateProductionEvidence({ repositoryRoot: context.root, manifestPath: context.manifestPath,
+    verificationMode: PRODUCTION_EVIDENCE_VERIFICATION_MODES.REPOSITORY_FINAL });
+  assert.deepEqual(ordinaryResult.issues, []);
+  assert.deepEqual(ordinaryResult.manifest.tests[0].ordinaryRuntime, identity);
 }
 
 {
@@ -6426,7 +6722,7 @@ for (const mutate of [
     );
     assert.match(
       `${repositoryPreflight.stdout}\n${repositoryPreflight.stderr}`,
-      /not a git repository|Unable to inspect the Git working tree/,
+      /Repository artifact operations require the source-repository driver/,
     );
 
     const finalStandalone = runStagedVerifier(
@@ -6987,11 +7283,21 @@ for (const mutate of [
     environment: {
       CERTIFICATION_QUALIFICATION_MODE: "1",
       PRODUCTION_EVIDENCE_EXPECTED_COMMIT_SHA: manifest.source.commitSha,
+      PRODUCTION_EVIDENCE_EXPECTED_MANIFEST_SHA256: summary.identity.manifestSha256,
     },
   });
   assert.equal(verified.classification, "STABLE_RUNTIME_SMOKE_STANDALONE_VERIFIED");
   assert.equal(verified.releaseCertification, false);
   assert.equal(verified.databaseTargetAbsent, true);
+  for (const expectedDigest of [undefined, "0".repeat(64)]) {
+    await assert.rejects(() => verifyStableRuntimeSmokeStandalone({
+      repositoryRoot: context.root,
+      environment: {
+        PRODUCTION_EVIDENCE_EXPECTED_COMMIT_SHA: manifest.source.commitSha,
+        PRODUCTION_EVIDENCE_EXPECTED_MANIFEST_SHA256: expectedDigest,
+      },
+    }), /manifest SHA-256|manifest.*mismatch|manifest differs/);
+  }
   write(context.root, STABLE_PORTABLE_SUMMARY_PATH, `${JSON.stringify({
     ...summary,
     database: { ...summary.database, targetAbsent: false },
@@ -7002,6 +7308,7 @@ for (const mutate of [
       environment: {
         CERTIFICATION_QUALIFICATION_MODE: "1",
         PRODUCTION_EVIDENCE_EXPECTED_COMMIT_SHA: manifest.source.commitSha,
+      PRODUCTION_EVIDENCE_EXPECTED_MANIFEST_SHA256: summary.identity.manifestSha256,
       },
     }),
     /database absence is unproved/,
@@ -7018,6 +7325,20 @@ for (const mutate of [
   });
   const absoluteBundlePath = path.join(context.root, bundle.bundlePath);
   const archiveBytes = readFileSync(absoluteBundlePath);
+  const transport = {
+    bundlePath: absoluteBundlePath, bundleSha256: bundle.bundleSha256,
+    manifestPath: path.join(context.root, context.manifestPath),
+  };
+  assert.equal(verifyStableRuntimeBundleTransport(transport),
+    createHash("sha256").update(readFileSync(transport.manifestPath)).digest("hex"));
+  const sidecarBytes = readFileSync(`${absoluteBundlePath}.sha256`);
+  writeFileSync(absoluteBundlePath, Buffer.concat([archiveBytes, Buffer.from("tampered")]));
+  assert.throws(() => verifyStableRuntimeBundleTransport(transport), /transport checksum/);
+  writeFileSync(absoluteBundlePath, archiveBytes);
+  writeFileSync(`${absoluteBundlePath}.sha256`, "wrong checksum\n");
+  assert.throws(() => verifyStableRuntimeBundleTransport(transport), /transport checksum/);
+  writeFileSync(`${absoluteBundlePath}.sha256`, sidecarBytes);
+
   const archiveSha256 = createHash("sha256").update(archiveBytes).digest("hex");
   assert.equal(bundle.bundleSha256, archiveSha256);
   assert.equal(
@@ -7085,6 +7406,70 @@ for (const mutate of [
     `${standaloneResult.stdout}\n${standaloneResult.stderr}`,
     /final standalone verification requires certification state and evidence root/,
   );
+  const sourceManifestSha256 = createHash("sha256")
+    .update(readFileSync(path.join(context.root, context.manifestPath))).digest("hex");
+  const verifyBundle = (overrides = {}) => spawnSync(
+    process.execPath,
+    ["scripts/production-artifact-evidence.mjs", "verify-bundle"],
+    {
+      cwd: extractedRoot,
+      encoding: "utf8",
+      env: {
+        ...process.env,
+        PRODUCTION_CERTIFICATION_STATE: "",
+        CERTIFICATION_EVIDENCE_ROOT: "",
+        PRODUCTION_EVIDENCE_EXPECTED_COMMIT_SHA: manifest.source.commitSha,
+        PRODUCTION_EVIDENCE_EXPECTED_MANIFEST_SHA256: sourceManifestSha256,
+        ...overrides,
+      },
+    },
+  );
+  const verifiedBundle = verifyBundle();
+  assert.equal(verifiedBundle.status, 0, verifiedBundle.stderr);
+  assert.deepEqual(JSON.parse(verifiedBundle.stdout), {
+    bundleVerified: true,
+    sourceCommitSha: manifest.source.commitSha,
+    manifestSha256: sourceManifestSha256,
+    artifactSha256: manifest.artifact.sha256,
+    certificationComplete: false,
+    finalStandaloneVerificationRequired: true,
+  });
+  for (const [overrides, failure] of [
+    [{ PRODUCTION_EVIDENCE_EXPECTED_COMMIT_SHA: "" }, /exact expected source commit SHA/],
+    [{ PRODUCTION_EVIDENCE_EXPECTED_COMMIT_SHA: "f".repeat(40) }, /another source commit/],
+    [{ PRODUCTION_EVIDENCE_EXPECTED_MANIFEST_SHA256: "" }, /exact expected source manifest SHA-256/],
+    [{ PRODUCTION_EVIDENCE_EXPECTED_MANIFEST_SHA256: "f".repeat(64) }, /differs from the verified source manifest/],
+  ]) {
+    const rejectedBundle = verifyBundle(overrides);
+    assert.notEqual(rejectedBundle.status, 0);
+    assert.match(rejectedBundle.stderr, failure);
+  }
+  const extractedManifestPath = path.join(extractedRoot, context.manifestPath);
+  const originalManifestBytes = readFileSync(extractedManifestPath);
+  await rewriteManifest(extractedRoot, context.manifestPath, (candidate) => {
+    candidate.tests = [];
+    candidate.repositoryEvidence.status = "pending_tests";
+  });
+  const reboundWithoutSmoke = verifyBundle({
+    PRODUCTION_EVIDENCE_EXPECTED_MANIFEST_SHA256: createHash("sha256")
+      .update(readFileSync(extractedManifestPath)).digest("hex"),
+  });
+  assert.notEqual(reboundWithoutSmoke.status, 0);
+  assert.match(reboundWithoutSmoke.stderr, /required production runtime-smoke report is missing/);
+  writeFileSync(extractedManifestPath, originalManifestBytes);
+  writeFileSync(`${extractedManifestPath}.sha256`, `${sourceManifestSha256}\n`);
+  const extractedReportPath = path.join(extractedRoot, context.reportPath);
+  const originalReportBytes = readFileSync(extractedReportPath);
+  writeFileSync(extractedReportPath, `${originalReportBytes.toString("utf8")}\n`);
+  const alteredReport = verifyBundle();
+  assert.notEqual(alteredReport.status, 0);
+  assert.match(alteredReport.stderr, /report SHA-256 mismatch/);
+  writeFileSync(extractedReportPath, originalReportBytes);
+  const buildIdPath = path.join(extractedRoot, ".next/BUILD_ID");
+  writeFileSync(buildIdPath, "different-build\n");
+  const alteredArtifact = verifyBundle();
+  assert.notEqual(alteredArtifact.status, 0);
+  assert.match(alteredArtifact.stderr, /artifact SHA-256 mismatch|BUILD_ID does not match/);
 }
 
 {

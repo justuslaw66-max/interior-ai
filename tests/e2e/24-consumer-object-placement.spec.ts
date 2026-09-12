@@ -84,9 +84,9 @@ async function setupConsumerItem(page: Page): Promise<{
     await continueToFurnish.click();
   }
 
-  const beforePlacement = await readFingerprint(page);
   const opened = await openCatalogPreview(page, TEST_ITEM_ID, "Hugg");
   expect(opened, "The deterministic Hugg fixture must be available").toBe(true);
+  const beforePlacement = await readFingerprint(page);
   await addCatalogDrawerItemToRoom(page);
   const afterPlacement = await readFingerprint(page);
 

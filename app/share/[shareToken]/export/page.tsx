@@ -19,7 +19,7 @@ import {
 } from "@/lib/share-shopping-csv";
 import { buildShareExportFidelitySummary } from "@/lib/share-export-fidelity";
 import { buildRoomHealthSummary } from "@/lib/room-health-summary";
-import { buildRoomSurfaceMaterialBomRows } from "@/lib/surface-material-bom";
+import { buildRoomSurfaceMaterialBomResult } from "@/lib/surface-material-bom-result";
 import type { DesignSnapshot, PersistedPlanOpening, RoomSnapshot, SavedView } from "@/lib/room-types";
 import {
   getExportCapabilities,
@@ -33,6 +33,7 @@ import PrintButton from "./PrintButton";
 import PlanSvgDownload from "./PlanSvgDownload";
 import ShoppingList from "./ShoppingList";
 import ShoppingCsvDownload from "./ShoppingCsvDownload";
+import { SurfaceMaterialBomSection } from "@/components/SurfaceMaterialBomSection";
 
 export const metadata = {
   robots: { index: false, follow: false },
@@ -44,15 +45,6 @@ function formatCurrency(value: number) {
     style: "currency",
     currency: "USD",
     maximumFractionDigits: 0,
-  }).format(value);
-}
-
-function formatMaterialCurrency(currency: string | null, value: number | null) {
-  if (value === null) return "Quote";
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: currency ?? "USD",
-    maximumFractionDigits: 2,
   }).format(value);
 }
 
@@ -1080,7 +1072,7 @@ export default async function ExportPage({
   const openingScheduleRows = buildOpeningScheduleRows(rooms, planOpenings);
   const checkoutReadinessRows = buildCheckoutReadinessRows(rooms);
   const presentationViewRows = buildPresentationViewRows(rooms);
-  const surfaceMaterialBomRows = buildRoomSurfaceMaterialBomRows(
+  const { rows: surfaceMaterialBomRows, warnings: surfaceMaterialBomWarnings } = buildRoomSurfaceMaterialBomResult(
     rooms,
     planOpenings
   );
@@ -1462,79 +1454,7 @@ export default async function ExportPage({
             </div>
           )}
 
-          {surfaceMaterialBomRows.length > 0 && (
-            <div className="mb-12">
-              <h2 className="mb-4 text-2xl font-bold text-gray-900">Surface Material BOM</h2>
-              <p className="mb-3 text-sm text-gray-600">
-                Area-based floor and wall finishes with a suggested 10% waste allowance. Quote/sample materials are not furniture cart lines.
-              </p>
-              <div className="overflow-x-auto rounded-lg border">
-                <table className="w-full border-collapse text-sm">
-                  <thead>
-                    <tr className="border-b bg-gray-50 text-left">
-                      <th className="p-2">Room</th>
-                      <th className="p-2">Surface / Material</th>
-                      <th className="p-2">Supplier</th>
-                      <th className="p-2">Family</th>
-                      <th className="p-2 text-right">Surface area</th>
-                      <th className="p-2 text-right">Order area</th>
-                      <th className="p-2 text-right">Price / m2</th>
-                      <th className="p-2 text-right">Estimate</th>
-                      <th className="p-2">Status</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {surfaceMaterialBomRows.map((row) => (
-                      <tr key={`${row.roomId}-${row.surface}-${row.materialId}`} className="border-b align-top">
-                        <td className="p-2">{row.roomName}</td>
-                        <td className="p-2">
-                          <div className="font-medium">{row.materialName}</div>
-                          <div className="text-xs text-gray-500">
-                            {row.surfaceLabel} · {row.materialId}
-                          </div>
-                          <div className="mt-1 text-xs text-gray-500">
-                            Pattern {row.pattern.replace(/_/g, " ")} · Rotation {row.rotationDeg}° · Scale {row.scale.toFixed(2)}x · Joint {row.jointSizeMm} mm
-                          </div>
-                          {row.sampleRequestUrl ? (
-                            <a
-                              href={row.sampleRequestUrl}
-                              className="mt-1 inline-block text-xs font-semibold text-blue-700"
-                              target="_blank"
-                              rel="noreferrer"
-                            >
-                              Request sample / quote
-                            </a>
-                          ) : null}
-                        </td>
-                        <td className="p-2">{row.supplier}</td>
-                        <td className="p-2">{formatRoomType(row.materialFamily)}</td>
-                        <td className="p-2 text-right">{formatMeasurement(row.surfaceAreaSqm, "m2")}</td>
-                        <td className="p-2 text-right">
-                          <div>{formatMeasurement(row.orderAreaSqm, "m2")}</div>
-                          <div className="text-xs text-gray-500">incl. {(row.wasteFactor * 100).toFixed(0)}% waste</div>
-                        </td>
-                        <td className="p-2 text-right">
-                          {formatMaterialCurrency(row.pricePerSqmCurrency, row.pricePerSqmAmount)}
-                        </td>
-                        <td className="p-2 text-right">
-                          {formatMaterialCurrency(row.pricePerSqmCurrency, row.lineTotal)}
-                        </td>
-                        <td className="p-2">
-                          <div className={row.status === "published" ? "text-green-700" : "text-amber-700"}>
-                            {row.status.replace(/_/g, " ")}
-                          </div>
-                          <div className="mt-1 text-xs text-gray-500">{row.purchaseMode.replace(/_/g, " ")}</div>
-                          {row.reviewNote ? (
-                            <div className="mt-1 text-xs text-amber-700">{row.reviewNote}</div>
-                          ) : null}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          )}
+          <SurfaceMaterialBomSection rows={surfaceMaterialBomRows} warnings={surfaceMaterialBomWarnings} />
 
           {/* Practical Checks */}
           <div className="mb-12">

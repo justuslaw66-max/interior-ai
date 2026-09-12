@@ -55,10 +55,6 @@ const cloudWriteExecutionSource = fs.readFileSync(
   path.join(root, "lib", "design-page-cloud-write-execution.ts"),
   "utf8"
 );
-const conflictCopyControllerSource = fs.readFileSync(
-  path.join(root, "lib", "useDesignPageCloudConflictCopyController.ts"),
-  "utf8"
-);
 const persistenceProjectionSource = fs.readFileSync(
   path.join(root, "lib", "design-page-persistence-projection.ts"),
   "utf8"
@@ -102,7 +98,11 @@ assert.ok(
     pageSource.indexOf("useDesignPageRequestedDesignWorkspaceRegistration({"),
   "The requested-design route effect must mount after persistence."
 );
-assert.match(requestedDesignRegistrationSource, /useEffect\(\(\) => \{/);
+assert.match(
+  requestedDesignRegistrationSource,
+  /useEffect\(\(\) => \{[\s\S]*?window\.location\.search[\s\S]*?requestedDesignId: activeRequestedDesignId/,
+  "Requested-design loads should reject a stale route-hook snapshot after synchronous canonical navigation."
+);
 assert.match(
   editorInteractionRegistrationSource,
   /useDesignPageZoneController\(\{/,
@@ -232,19 +232,14 @@ assert.match(
   "A revision conflict should become durable UI state and pause repeated autosave writes."
 );
 assert.match(
-  conflictCopyControllerSource,
-  /saveConflictAsNewCopy[\s\S]*?currentWriteIsBlocked\(\)[\s\S]*?invalidateCloudWrites\(\)[\s\S]*?prepareConflictCopy\(input\)[\s\S]*?createConflictCopy\(input, prepared\)/,
-  "Recovery-copy creation should invalidate older writes before binding its independent request."
-);
-assert.match(
-  conflictCopyControllerSource,
-  /commitConflictCopy[\s\S]*?detachBaseline\(\)[\s\S]*?stageWriteBaseline\(/,
-  "A recovery copy should detach before staging its new cloud identity."
+  controllerSource,
+  /useDesignPageCloudConflictCopyController\(\{/,
+  "Conflict resolution should use the extracted behavioral copy controller."
 );
 assert.match(
   controllerSource,
-  /useDesignPageCloudConflictCopyController\(\{[\s\S]*?const reloadCloudAfterConflict = useCallback[\s\S]*?loadDesign\(conflict\.designId\)/,
-  "Conflict resolution should offer the extracted copy path and explicit cloud reload."
+  /const reloadCloudAfterConflict = useCallback[\s\S]*?loadDesignAfterCancellingConflictCopy\(conflict\.designId\)/,
+  "Conflict resolution should cancel stale copy work before explicit cloud reload."
 );
 
 assert.match(

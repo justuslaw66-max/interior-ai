@@ -226,8 +226,13 @@ export function registerDrawingTests() {
     await page.getByTestId("floor-plan-draw-mode-rectangle_wall").click();
 
     await expect(page.getByTestId("room-plan-status-room-count")).toHaveText("1 room");
-    await expect(page.getByTestId("selection-inspector-room-width")).toHaveValue("5000");
-    await expect(page.getByTestId("selection-inspector-room-depth")).toHaveValue("4000");
+    const widthInput = page.getByTestId("selection-inspector-room-width");
+    const depthInput = page.getByTestId("selection-inspector-room-depth");
+    await expect(page.getByTestId("selection-inspector-measurement-units")).toHaveValue("cm");
+    await expect(widthInput).toHaveValue("500");
+    await expect(widthInput).toHaveAttribute("data-model-value-mm", "5000");
+    await expect(depthInput).toHaveValue("400");
+    await expect(depthInput).toHaveAttribute("data-model-value-mm", "4000");
     await page.getByTestId("selection-inspector-fit-room").click();
     const snapMarkers = await page
       .locator('[data-testid^="floor-plan-start-snap-"]')
@@ -299,16 +304,11 @@ export function registerDrawingTests() {
     await page.mouse.move(end.x, end.y, { steps: 12 });
     await page.mouse.click(end.x, end.y);
 
-    if (!(await page.getByText("Room drawn").isVisible({ timeout: 1000 }).catch(() => false))) {
-      test.info().annotations.push({
-        type: "note",
-        description: "Skipping strict rectangle replacement assertions because the final rectangle click did not draw a room in this runtime",
-      });
-      return;
-    }
     await expect(page.getByTestId("room-plan-status-room-count")).toHaveText("1 room");
-    await expect(page.getByTestId("selection-inspector-room-width")).toHaveValue("2000");
-    await expect(page.getByTestId("selection-inspector-room-depth")).toHaveValue("4000");
+    await expect(widthInput).toHaveValue("200");
+    await expect(widthInput).toHaveAttribute("data-model-value-mm", "2000");
+    await expect(depthInput).toHaveValue("400");
+    await expect(depthInput).toHaveAttribute("data-model-value-mm", "4000");
   });
 
   test("shift-dragging a 2D room moves freely without losing selection", async ({ page }) => {
@@ -316,13 +316,16 @@ export function registerDrawingTests() {
     await page.waitForLoadState("domcontentloaded");
 
     await expect(page.getByTestId("scene-canvas").first()).toBeVisible({ timeout: 20000 });
+    await expect(page.getByTestId("room-plan-status-room-count")).toHaveText("1 room");
+    await chooseTemplateStart(page);
+    await page.getByTestId("add-room-template-bedroom").click();
     await page.getByRole("button", { name: "2D Plan" }).click();
     const guidedActionsToggle = page.getByTestId("plan-guided-actions-toggle");
     if ((await guidedActionsToggle.getAttribute("data-enabled")) === "true") {
       await guidedActionsToggle.click();
     }
 
-    await expect(page.getByTestId("room-plan-status-room-count")).toHaveText("1 room");
+    await expect(page.getByTestId("room-plan-status-room-count")).toHaveText("2 rooms");
     const selectedRoomName = (await page.getByTestId("room-plan-status-room-name").textContent())?.trim();
     expect(selectedRoomName).toBeTruthy();
     if (!selectedRoomName) {
@@ -332,14 +335,6 @@ export function registerDrawingTests() {
       .locator('[data-testid="house-room-2d-label"][data-active="true"]')
       .or(page.locator('[data-testid="house-room-2d-label"]').filter({ hasText: selectedRoomName }))
       .first();
-    if ((await activeRoomLabel.count()) === 0) {
-      test.info().annotations.push({
-        type: "note",
-        description: "Skipping shift-drag label movement assertions because 2D room labels are density-hidden in this layout.",
-      });
-      await expect(page.getByTestId("room-plan-status-room-name")).toHaveText(selectedRoomName);
-      return;
-    }
     await expect(activeRoomLabel).toContainText(selectedRoomName);
 
     const before = await activeRoomLabel.boundingBox();
@@ -348,18 +343,38 @@ export function registerDrawingTests() {
       throw new Error("Active room label was not measurable before shift-dragging");
     }
 
+    await expect(activeRoomLabel).toHaveAttribute("data-room-x", /^-?\d+\.\d+$/);
+    await expect(activeRoomLabel).toHaveAttribute("data-room-z", /^-?\d+\.\d+$/);
+    const beforeRoomX = await readNumberAttribute(activeRoomLabel, "data-room-x");
+    const beforeRoomZ = await readNumberAttribute(activeRoomLabel, "data-room-z");
+    expect([beforeRoomX, beforeRoomZ].every(Number.isFinite)).toBe(true);
+    const moveHandle = page.getByTestId("selected-room-move");
+    await expect(moveHandle).toBeVisible();
+    await expect(moveHandle).toBeEnabled();
+    const moveBox = await moveHandle.boundingBox();
+    if (!moveBox) throw new Error("Selected room move handle was not measurable");
     const dragStart = {
-      x: before.x + before.width / 2 + 100,
-      y: before.y + before.height / 2,
+      x: moveBox.x + moveBox.width / 2,
+      y: moveBox.y + moveBox.height / 2,
     };
 
     await page.keyboard.down("Shift");
     await page.mouse.move(dragStart.x, dragStart.y);
     await page.mouse.down();
-    await page.mouse.move(dragStart.x + 96, dragStart.y + 36, { steps: 10 });
+    await page.mouse.move(dragStart.x + 96, dragStart.y - 36, { steps: 10 });
+    const roomDragHud = page.getByTestId("room-drag-hud");
+    await expect(roomDragHud).toBeVisible();
+    await expect(roomDragHud).toHaveAttribute("data-drag-state", "free");
     await page.mouse.up();
     await page.keyboard.up("Shift");
-    await page.waitForTimeout(250);
+    await expect(roomDragHud).toHaveCount(0);
+    await expect.poll(async () => {
+      const nextX = Number((await activeRoomLabel.getAttribute("data-room-x")) ?? Number.NaN);
+      const nextZ = Number((await activeRoomLabel.getAttribute("data-room-z")) ?? Number.NaN);
+      return Number.isFinite(nextX) && Number.isFinite(nextZ)
+        ? Math.hypot(nextX - beforeRoomX, nextZ - beforeRoomZ)
+        : 0;
+    }).toBeGreaterThan(0.05);
 
     await expect(activeRoomLabel).toContainText(selectedRoomName);
     await expect(page.getByTestId("room-plan-status-room-name")).toHaveText(selectedRoomName);
@@ -378,6 +393,7 @@ export function registerDrawingTests() {
     await expect(page.getByTestId("scene-canvas").first()).toBeVisible({ timeout: 20000 });
     await chooseTemplateStart(page);
     await page.getByTestId("add-room-template-bedroom").click();
+    await page.getByRole("button", { name: "2D Plan" }).click();
 
     await expect(page.getByTestId("room-plan-status-room-count")).toHaveText("2 rooms");
     const livingLabel = page
@@ -388,19 +404,12 @@ export function registerDrawingTests() {
       .locator('[data-testid="house-room-2d-label"]')
       .filter({ hasText: "Bedroom" })
       .first();
-    if ((await livingLabel.count()) === 0 || (await bedroomLabel.count()) === 0) {
-      test.info().annotations.push({
-        type: "note",
-        description: "Skipping direct room-label drag placement assertions because 2D room labels are density-hidden in this layout.",
-      });
-      await expect(page.getByTestId("room-plan-status-room-name")).toContainText("Bedroom");
-      return;
-    }
     await expect(livingLabel).toBeVisible();
     await expect(bedroomLabel).toBeVisible();
     await expect(page.getByTestId("room-plan-status-room-name")).toContainText("Bedroom");
 
-    await clickWithFallback(page.getByTestId("editor-workflow-furnish"));
+    await page.getByTestId("editor-command-workspace").click();
+    await page.getByTestId("editor-workflow-furnish").click({ timeout: 5_000, noWaitAfter: true });
     const catalogMode = page.getByTestId("furnish-mode-catalog");
     if (await catalogMode.isVisible().catch(() => false)) {
       await clickWithFallback(catalogMode);
@@ -446,4 +455,3 @@ export function registerDrawingTests() {
   });
 
 }
-

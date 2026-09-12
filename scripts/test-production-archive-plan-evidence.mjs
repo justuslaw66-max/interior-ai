@@ -319,7 +319,7 @@ function createArchiveStage(owner, name, unsafe = false) {
 }
 
 {
-  const command = productionArchiveTarCommand({ tarPath: "/archive.tar", stageRoot: "/stage", listPath: "/files.txt", members: ["file"] });
+  const command = productionArchiveTarCommand({ tarPath: "/archive.tar", stageRoot: "/stage", listPath: "/files.txt", members: ["file"], tarVersion: "tar (GNU tar) 1.35" });
   assert.equal(command.executable, "tar");
   assert.equal(Object.hasOwn(command, "shell"), false);
   assert.ok(command.args.includes("--owner=root:0"));
@@ -327,6 +327,12 @@ function createArchiveStage(owner, name, unsafe = false) {
   for (const option of ["--uid", "--gid", "--uname", "--gname"]) {
     assert.equal(command.args.includes(option), false);
   }
+  const bsd = productionArchiveTarCommand({
+    tarPath: "/archive.tar", stageRoot: "/stage", listPath: "/files.txt",
+    members: ["file"], tarVersion: "bsdtar 3.5.3",
+  });
+  assert.deepEqual(bsd.args.slice(1, 9), ["--uid", "0", "--gid", "0", "--uname", "root", "--gname", "root"]);
+  assert.throws(() => productionArchiveTarCommand({ members: ["file"], tarVersion: "unknown tar" }), /requires GNU tar or bsdtar/);
   for (const member of ["-C", "line\nfeed", "carriage\rreturn", "nul\0byte", "back\\slash", " padded"]) {
     assert.throws(() => productionArchiveTarCommand({ ...command, members: [member] }), /safe tar file-list/);
   }

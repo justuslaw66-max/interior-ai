@@ -175,7 +175,7 @@ export function buildRoomSurfaceMaterialBomRows(
   const topologyRoomById = new Map(
     housePlan.rooms.map((room) => [room.id, room])
   );
-  const rendererOpenings = mapPlanOpeningsToRoomRenderer([...planOpenings]);
+  const rendererOpenings = mapPlanOpeningsToRoomRenderer([...planOpenings], housePlan.rooms);
 
   return rooms.flatMap((room) => {
     const surfaces = getRoomSurfaceAssignments(room);

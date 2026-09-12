@@ -160,7 +160,8 @@ export async function verifyStableRuntimeSmokeStandalone({
   const result = await validateProductionEvidence({
     repositoryRoot,
     manifestPath: STABLE_MANIFEST_PATH,
-    verificationMode: PRODUCTION_EVIDENCE_VERIFICATION_MODES.STANDALONE_FINAL,
+    verificationMode: PRODUCTION_EVIDENCE_VERIFICATION_MODES.STANDALONE_BUNDLE,
+    expectedManifestSha256: environment.PRODUCTION_EVIDENCE_EXPECTED_MANIFEST_SHA256?.trim(),
     expectedSourceCommitSha,
     environment,
   });

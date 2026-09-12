@@ -228,6 +228,8 @@ export type FloorPlanOpeningV2 = {
   operation: FloorPlanOpeningOperationV2;
   offsetMm: number;
   widthMm: number;
+  /** Evidence for the authored opening width. Missing legacy evidence is assumed. */
+  widthEvidence?: FloorPlanPropertyEvidenceV2;
   heightMm?: number;
   /** Evidence for an authored opening-specific height override. */
   heightEvidence?: FloorPlanPropertyEvidenceV2;

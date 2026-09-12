@@ -8,7 +8,7 @@ import { prisma } from "@/lib/prisma";
 import { storedToSnapshot } from "@/lib/room-persistence";
 import { projectSharedDesignTransport } from "@/lib/shared-design-snapshot";
 import { resolveRoomShoppingItems, summarizeShoppingRooms, summarizeWholeHomeShopping } from "@/lib/room-shopping";
-import { buildRoomSurfaceMaterialBomRows } from "@/lib/surface-material-bom";
+import { buildRoomSurfaceMaterialBomResult, formatSurfaceMaterialBomWarning } from "@/lib/surface-material-bom-result";
 import type { DesignSnapshot, PersistedPlanOpening, RoomSnapshot, SavedView } from "@/lib/room-types";
 
 export const runtime = "nodejs";
@@ -294,10 +294,7 @@ export async function GET(
         roomName: room.name,
       }))
     );
-    const surfaceMaterialBomRows = buildRoomSurfaceMaterialBomRows(
-      rooms,
-      planOpenings
-    );
+    const { rows: surfaceMaterialBomRows, warnings: surfaceMaterialBomWarnings } = buildRoomSurfaceMaterialBomResult(rooms, planOpenings);
     const metricsByRoomId = new Map(
       rooms.map((room) => [room.id, getRoomMetrics(room, rooms, planOpenings)])
     );
@@ -424,9 +421,12 @@ export async function GET(
       }
     }
 
-    if (surfaceMaterialBomRows.length > 0) {
+    if (surfaceMaterialBomRows.length + surfaceMaterialBomWarnings.length > 0) {
       ({ page, y } = ensureSpace(pdfDoc, page, y, 100, watermarked));
       y = drawSectionHeading(page, "Surface Material BOM", y, fonts);
+      surfaceMaterialBomWarnings.slice(0, 1).forEach(() => {
+        y = drawWrappedText(page, formatSurfaceMaterialBomWarning(surfaceMaterialBomWarnings), MARGIN, y, 500, fonts.bold, 8, 10, rgb(0.66, 0.38, 0.02));
+      });
       for (const row of surfaceMaterialBomRows) {
         ({ page, y } = ensureSpace(pdfDoc, page, y, 58, watermarked, "Surface Material BOM", fonts));
         y = drawWrappedText(page, `${row.roomName} ${row.surfaceLabel}: ${row.materialName}`, MARGIN, y, 340, fonts.bold, 9, 11);

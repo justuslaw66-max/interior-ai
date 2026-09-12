@@ -1,6 +1,8 @@
 import type { APIRequestContext } from "@playwright/test";
+import fs from "node:fs/promises";
 import { expect, test } from "./fixtures";
 import { legacyApiToSnapshot } from "../../lib/room-persistence";
+import type { DesignSnapshot } from "../../lib/room-types";
 import { fingerprintDesignSnapshot } from "../../lib/snapshot-fingerprint";
 import {
   addAuthCookies,
@@ -44,6 +46,110 @@ async function getSharedDesignFingerprint(
 test.describe("4. Share Link Read-Only", () => {
   test.afterAll(async () => {
     await disconnectBetaPrismaClient();
+  });
+
+  test("window host warnings and uncut quantities survive HTML, CSV, and PDF export", async ({ page, request }, testInfo) => {
+    test.setTimeout(120_000);
+    const openingId = "window-export-review";
+    const materialId = "goodrich-geff-novaclick-gnv-002-silver-oak";
+    const materialName = "GEFF NovaClick GNV-002 Silver Oak";
+    const warning = "The original room and wall are unavailable. Choose a new wall before this opening can cut the plan. Wall quantities were left uncut for this opening.";
+    const unresolved: DesignSnapshot = {
+      version: 3, title: "Window Export Review", activeRoomId: "window-export-room",
+      rooms: [{
+        id: "window-export-room", name: "Window Export Room", roomType: "living",
+        floorLevel: 1, floorLabel: "1F",
+        geometry: { width: 4, depth: 3, height: 2.6, wallThickness: 0.2, slabThickness: 0.1 },
+        planPosition: { x: 0, z: 0 }, planShape: "rectangle",
+        surfaceFinishes: { wallMaterialId: materialId },
+        items: [], zones: [], savedViews: [],
+      }],
+      floorPlan: { openings: [{
+        id: openingId, roomId: "missing-export-room", kind: "window", wall: "north",
+        offsetMm: 0, widthMm: 1000, heightMm: 2600, bottomMm: 0,
+      }] },
+    };
+    const resolved = structuredClone(unresolved);
+    const resolvedOpening = resolved.floorPlan?.openings?.[0];
+    if (!resolvedOpening) throw new Error("Window export fixture is missing its opening");
+    resolvedOpening.roomId = "window-export-room";
+    expect(resolvedOpening).toEqual({ ...unresolved.floorPlan?.openings?.[0], roomId: "window-export-room" });
+
+    // A full-height, zero-sill window makes the physical cut exactly 1 m × 2.6 m.
+    // This control does not claim partial-height sill/lintel BOM coverage.
+    for (const state of [
+      { name: "unresolved", snapshot: unresolved, blocked: true, surface: "36.4", order: "40", rawSurface: "36.40", rawOrder: "40.04" },
+      { name: "resolved", snapshot: resolved, blocked: false, surface: "33.8", order: "37.2", rawSurface: "33.80", rawOrder: "37.18" },
+    ]) {
+      const seed = await createBetaSeedDesign({ snapshot: state.snapshot });
+      try {
+        // This existing effect marks client startup; static HTML alone has no
+        // attached CSV click handler yet. Bind it to this exact export.
+        const [clientStarted, response] = await Promise.all([
+          page.waitForResponse((response) => {
+            if (response.request().method() !== "POST" ||
+                new URL(response.url()).pathname !== "/api/track/app-event") return false;
+            const body = response.request().postDataJSON();
+            return body.eventType === "export_opened" &&
+              body.shareToken === seed.shareToken && body.designId === seed.designId;
+          }),
+          page.goto(`/share/${seed.shareToken}/export`, { waitUntil: "domcontentloaded" }),
+        ]);
+        expect(response?.status()).toBe(200);
+        expect(clientStarted.status()).toBe(200);
+        await expect(page.getByRole("heading", { name: "Surface Material BOM", exact: true })).toBeVisible({ timeout: 30_000 });
+        const row = page.getByRole("row", { name: new RegExp(`Window Export Room.*${materialId}`) });
+        await expect(row).toHaveCount(1);
+        await expect(row).toContainText(`All walls · ${materialId}`);
+        await expect(row.getByRole("cell", { name: `${state.surface} m2`, exact: true })).toBeVisible();
+        await expect(row.getByRole("cell", { name: `${state.order} m2 incl. 10% waste`, exact: true })).toBeVisible();
+        const warningElement = page.getByTestId("surface-material-bom-opening-warning");
+        if (state.blocked) {
+          await expect(warningElement).toBeVisible();
+          await expect(warningElement).toContainText(`Opening ${openingId}: ${warning}`);
+        } else {
+          await expect(warningElement).toHaveCount(0);
+        }
+
+        const downloadPromise = page.waitForEvent("download");
+        await page.getByTestId("share-export-shopping-csv-download").click();
+        const download = await downloadPromise;
+        expect(download.suggestedFilename()).toBe("window-export-review-shopping-list.csv");
+        expect(await download.failure()).toBeNull();
+        const csvPath = testInfo.outputPath(`${state.name}-window-shopping.csv`);
+        await download.saveAs(csvPath);
+        await testInfo.attach(`${state.name}-window-shopping.csv`, { path: csvPath, contentType: "text/csv" });
+        const lines = (await fs.readFile(csvPath, "utf8")).split("\n");
+        expect(lines[0]).toBe("Room,Category,Item,Product ID,Variant ID,Variant,Purchase option,Qty,Status,Source,Retailer URL,Include in checkout,Unit price USD,Line total USD,Room subtotal USD,Review note");
+        const warnings = lines.filter((line) => line.startsWith("Plan review,Wall Quantity Warning,"));
+        expect(warnings).toEqual(state.blocked ? [
+          `Plan review,Wall Quantity Warning,Opening ${openingId},${openingId},unresolved,Wall area left uncut,,0,Blocked pending opening repair,Physical wall host validation,,No,0.00,0.00,0.00,${warning}`,
+        ] : []);
+        const materialRows = lines.filter((line) => line.startsWith("Window Export Room,Wall Surface Material,"));
+        expect(materialRows).toHaveLength(1);
+        expect(materialRows[0]).toMatch(new RegExp(`^Window Export Room,Wall Surface Material,${materialName},${materialId},walls,All walls · ${state.rawOrder.replace(".", "\\.")} m2 incl\\. 10% waste,quote_or_sample,${state.rawOrder.replace(".", "\\.")},`));
+        expect(materialRows[0]).toContain(`Surface All walls; measured area ${state.rawSurface} m2; suggested order ${state.rawOrder} m2 with 10% waste.`);
+
+        const pdfResponse = await request.get(`/share/${seed.shareToken}/export/pdf`);
+        expect(pdfResponse.status()).toBe(200);
+        expect(pdfResponse.headers()["content-disposition"]).toContain("window-export-review-presentation-pack.pdf");
+        const pdfBody = await pdfResponse.body();
+        await testInfo.attach(`${state.name}-window-export.pdf`, { body: pdfBody, contentType: "application/pdf" });
+        const pdfText = (await extractPdfText(pdfBody)).replace(/\s+/g, " ");
+        expect(pdfText).toContain("Surface Material BOM");
+        expect(pdfText).toContain("Window Export Room");
+        expect(pdfText).toContain(materialName);
+        expect(pdfText).toContain(`Surface area ${state.surface} m2`);
+        expect(pdfText).toContain(`Order ${state.order} m2 incl. 10% waste`);
+        if (state.blocked) {
+          expect(pdfText).toContain(`Warning — wall quantities remain uncut for opening: ${openingId}.`);
+        } else {
+          expect(pdfText).not.toContain("wall quantities remain uncut");
+        }
+      } finally {
+        await cleanupBetaSeed(seed);
+      }
+    }
   });
 
   test("shared design cannot expose editor mutations or change its snapshot", async ({

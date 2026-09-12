@@ -4,7 +4,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import {
   validateProductionEvidence,
-} from "./production-artifact-evidence.mjs";
+} from "./production-artifact-source.mjs";
 import { PRODUCTION_EVIDENCE_VERIFICATION_MODES } from "./production-artifact-contract.mjs";
 import { STABLE_MANIFEST_PATH } from "./stable-runtime-smoke-resources.mjs";
 

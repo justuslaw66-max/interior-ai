@@ -14,9 +14,7 @@ import { getAnonId } from "@/lib/anon";
 import { designApi, DesignApiError } from "@/lib/design-api-client";
 import { copyFallbackShareLinkWithFeedback } from "@/lib/copy-fallback-share-link";
 import { executeDesignPageCloudWrite } from "@/lib/design-page-cloud-write-execution";
-import {
-  createDesignPageCloudWriteQueue,
-} from "@/lib/design-page-cloud-write-queue";
+import { createDesignPageCloudWriteQueue } from "@/lib/design-page-cloud-write-queue";
 import { getDesignPageSaveStatus } from "@/lib/design-page-save-status";
 import { writeValidatedLocalBackup } from "@/lib/design-page-local-backup-recovery";
 import type { NamedCameraView, Style } from "@/lib/design-page-types";
@@ -28,6 +26,7 @@ import {
 import type { StoredDesign } from "@/lib/room-persistence";
 import type { DesignItem, DesignSnapshot, ZoneMin } from "@/lib/room-types";
 import { createDesignPageLoadRequestCoordinator } from "@/lib/design-page-requested-design-load-coordinator";
+import type { ConflictCopyRouteActions } from "@/lib/design-page-cloud-conflict-copy-transition";
 import { useDesignPageCloudBaselineController } from "@/lib/useDesignPageCloudBaselineController";
 import {
   useDesignPageCloudConflictCopyController,
@@ -67,6 +66,7 @@ export type { PreserveCurrentDesignResult } from "@/lib/useDesignPageExplicitClo
 type DesignPagePersistenceState = {
   identity: {
     designId: string | null;
+    shareToken: string | null;
     shareEnabled: boolean;
     guestPromptScopeKey: string;
   };
@@ -92,7 +92,7 @@ type DesignPagePersistenceState = {
   };
 };
 
-type DesignPagePersistenceActions = {
+type DesignPagePersistenceActions = ConflictCopyRouteActions & {
   setDesignId: Dispatch<SetStateAction<string | null>>;
   setShareToken: Dispatch<SetStateAction<string | null>>;
   setShareEnabled: Dispatch<SetStateAction<boolean>>;
@@ -132,7 +132,7 @@ export type UseDesignPagePersistenceParams = {
 
 export function useDesignPagePersistence({
   state: {
-    identity: { designId, shareEnabled, guestPromptScopeKey },
+    identity: { designId, shareToken, shareEnabled, guestPromptScopeKey },
     document: {
       designSnapshot,
       currentStoredDesignFingerprint,
@@ -150,7 +150,7 @@ export function useDesignPagePersistence({
     lifecycle: { localBackupHydrated },
   },
   actions: {
-    setDesignId,
+    readDesignRoute, replaceDesignRoute, restoreDesignRoute, setDesignId,
     setShareToken,
     setShareEnabled,
     setDesignSnapshot,
@@ -194,6 +194,7 @@ export function useDesignPagePersistence({
   const [pendingDeleteDesign, setPendingDeleteDesign] =
     useState<PendingSavedDesignDelete | null>(null);
   const firstSaveRef = useRef(false);
+  const conflictCopyCancelRef = useRef<() => void>(() => undefined);
   const documentEpochRef = useRef(0);
   const [cloudWriteQueue] = useState(() =>
     createDesignPageCloudWriteQueue({
@@ -367,6 +368,7 @@ export function useDesignPagePersistence({
   });
 
   const detachCurrentDesignForNewDraft = useCallback(() => {
+    conflictCopyCancelRef.current();
     detachCloudBaseline();
     cloudWriteQueue.invalidate({
       designId: null,
@@ -648,33 +650,20 @@ export function useDesignPagePersistence({
       showRuleToast,
     },
   });
-
-  const saveConflictAsNewCopy = useDesignPageCloudConflictCopyController({
+  const { save: saveConflictAsNewCopy, cancel: cancelConflictCopy } =
+    useDesignPageCloudConflictCopyController({
     state: {
-      conflict: cloudSaveConflict,
-      isDesigner,
-      savedViews,
-      style,
-      budget,
-      mode,
-      notes,
+      cloudSaveConflict, designId, shareToken, shareEnabled,
+      currentStoredDesignFingerprint, lastCloudRevision, lastDbSaveAt,
+      lastPersistedSnapshotFingerprint, lastCloudSaveError, isSaving,
+      isDesigner, savedViews, style, budget, mode, notes,
     },
     actions: {
-      setConflict: setCloudSaveConflict,
-      currentWriteIsBlocked: currentCloudWriteIsBlocked,
-      invalidateCloudWrites,
-      installCloudWriteIdentity,
-      detachBaseline: detachCloudBaseline,
-      stageWriteBaseline: stageCloudWriteBaseline,
-      setDesignId,
-      setShareToken,
-      setShareEnabled,
-      setLastCloudRevision,
-      setLastDbSaveAt,
-      setLastPersistedFingerprint: setLastPersistedSnapshotFingerprint,
-      setLastCloudSaveError,
-      fetchShareStatus,
-      enableShare,
+      currentCloudWriteIsBlocked, cloudBaseline: cloudBaselineController.actions,
+      readDesignRoute, replaceDesignRoute, restoreDesignRoute, cancelDesignLoad,
+      setCloudSaveConflict, setDesignId, setShareToken, setShareEnabled,
+      setLastCloudRevision, setLastDbSaveAt, setLastPersistedSnapshotFingerprint,
+      setLastCloudSaveError, setIsSaving, fetchShareStatus, enableShare,
       showRuleToast,
     },
     adapters: {
@@ -682,9 +671,19 @@ export function useDesignPagePersistence({
       getStoredDesignForPersistence,
       fingerprintStoredDesign,
     },
-    refs: { documentEpochRef },
   });
-
+  conflictCopyCancelRef.current = cancelConflictCopy;
+  const loadDesignAfterCancellingConflictCopy = useCallback(
+    (...args: Parameters<typeof loadDesign>) => {
+      cancelConflictCopy();
+      return loadDesign(...args);
+    },
+    [cancelConflictCopy, loadDesign]
+  );
+  const cancelDesignTransitions = useCallback(() => {
+    cancelConflictCopy();
+    cancelDesignLoad();
+  }, [cancelDesignLoad, cancelConflictCopy]);
   const reloadCloudAfterConflict = useCallback(async () => {
     const conflict = cloudSaveConflict;
     if (!conflict || conflict.isWorking) return;
@@ -693,7 +692,7 @@ export function useDesignPagePersistence({
       isWorking: true,
       resolutionError: null,
     });
-    const result = await loadDesign(conflict.designId);
+    const result = await loadDesignAfterCancellingConflictCopy(conflict.designId);
     if (result === "loaded") {
       setLastCloudSaveError(null);
       setCloudSaveConflict(null);
@@ -710,7 +709,7 @@ export function useDesignPagePersistence({
           }
         : previous
     );
-  }, [cloudSaveConflict, loadDesign, showRuleToast]);
+  }, [cloudSaveConflict, loadDesignAfterCancellingConflictCopy, showRuleToast]);
 
   const claimGuestDesign = useCallback(async () => {
     if (isAuthenticated) return;
@@ -1057,7 +1056,7 @@ export function useDesignPagePersistence({
   return {
     state: {
       lastPersistedSnapshotFingerprint,
-      lastCloudRevision,
+      lastCloudRevision, cloudBaselineStatus: cloudBaseline.status,
       cloudSaveConflict,
       isSaving,
       saveStatus,
@@ -1085,8 +1084,8 @@ export function useDesignPagePersistence({
       saveConflictAsNewCopy,
       reloadCloudAfterConflict,
       retrySaveStatus,
-      loadDesign,
-      cancelDesignLoad,
+      loadDesign: loadDesignAfterCancellingConflictCopy,
+      cancelDesignLoad: cancelDesignTransitions,
       clearPersistedSnapshotFingerprint,
       createShareLinkAndCopy,
       closeShareLinkFallback,
