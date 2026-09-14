@@ -609,7 +609,7 @@
       "limit": 400
     },
     "lib/floor-plan-legacy-adapters.ts": {
-      "lines": 629,
+      "lines": 546,
       "limit": 400
     },
     "lib/floor-plan-library-schema.ts": {
@@ -637,7 +637,7 @@
       "limit": 400
     },
     "lib/room-types.ts": {
-      "lines": 621,
+      "lines": 605,
       "limit": 400
     },
     "lib/surface-material-audit.ts": {
@@ -3970,8 +3970,8 @@
     },
     "lib/floor-plan-legacy-adapters.ts": {
       "overlongFunctions": {
-        "count": 6,
-        "maximum": 259
+        "count": 5,
+        "maximum": 199
       },
       "complexFunctions": {
         "count": 2,

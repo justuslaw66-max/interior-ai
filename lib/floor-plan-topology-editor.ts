@@ -1,4 +1,5 @@
 import { canonicalFloorPlanToDesignSnapshot } from "@/lib/floor-plan-legacy-adapters";
+import { getCanonicalPlanLine, pointOnCanonicalPlanLine } from "@/lib/wall-segment-geometry";
 import type {
   FloorPlanDocumentV2,
   FloorPlanOpeningV2,
@@ -164,6 +165,30 @@ function legacyOpeningCenterMm(
   return { xMm: centerX + halfWidth, zMm: centerZ + centerOffsetMm };
 }
 
+function projectCanonicalCenterOffset(document: FloorPlanDocumentV2, openingId: string, centerOffsetMm: number, widthMm: number): CanonicalOpeningWallProjectionV2 {
+  const { floor, opening } = findCanonicalOpening(document, openingId);
+  const wall = floor.walls.find(({ id }) => id === opening.wallId);
+  if (!wall) throw new CanonicalOpeningProjectionErrorV2("UNKNOWN_WALL", "The opening host wall is missing.");
+  if (wall.path.kind !== "line") throw new CanonicalOpeningProjectionErrorV2("ARC_EDIT_UNSUPPORTED", "Curved opening editing is not supported.");
+  const start = floor.vertices.find(({ id }) => id === wall.path.startVertexId);
+  const end = floor.vertices.find(({ id }) => id === wall.path.endVertexId);
+  const line = start && end ? getCanonicalPlanLine({ x1: start.xMm, z1: start.zMm, x2: end.xMm, z2: end.zMm }) : null;
+  if (!line) throw new CanonicalOpeningProjectionErrorV2("MISSING_CANONICAL_WALL", "The opening host has no valid endpoints.");
+  if (!Number.isFinite(centerOffsetMm) || !Number.isSafeInteger(widthMm) || widthMm <= 0) {
+    throw new CanonicalOpeningProjectionErrorV2("INVALID_INTEGER_METRICS", "Opening width must be a positive integer in millimetres.");
+  }
+  const length = line.high - line.low;
+  const forward = (end!.xMm - start!.xMm) * line.tangent.x + (end!.zMm - start!.zMm) * line.tangent.z > 0;
+  const offsetMm = Math.round(length / 2 + (forward ? centerOffsetMm : -centerOffsetMm) - widthMm / 2);
+  if (offsetMm < 0 || offsetMm + widthMm > length + 0.5) {
+    throw new CanonicalOpeningProjectionErrorV2("OPENING_OUT_OF_BOUNDS", "The opening must remain completely inside its wall.");
+  }
+  const point = pointOnCanonicalPlanLine(line.tangent, line.normal, line.lineOffset,
+    forward ? line.low + offsetMm + widthMm / 2 : line.high - offsetMm - widthMm / 2);
+  return { floorId: floor.id, openingId, wallId: wall.id, offsetMm, widthMm,
+    projectedCenterMm: { xMm: point.x, zMm: point.z }, distanceFromWallMm: 0 };
+}
+
 export function projectLegacyOpeningGestureToCanonicalWallV2({
   snapshot,
   opening,
@@ -183,7 +208,7 @@ export function projectLegacyOpeningGestureToCanonicalWallV2({
     );
   }
   const room = snapshot.rooms.find((candidate) => candidate.id === opening.roomId);
-  if (!room) {
+  if (!room && !opening.canonicalHost) {
     throw new CanonicalOpeningProjectionErrorV2(
       "UNKNOWN_ROOM",
       `Opening ${opening.id} has no compatible projected room.`
@@ -196,10 +221,11 @@ export function projectLegacyOpeningGestureToCanonicalWallV2({
       `Opening ${opening.id} no longer matches canonical wall ${opening.canonicalWallId}.`
     );
   }
+  if (opening.canonicalHost) return projectCanonicalCenterOffset(document, opening.id, centerOffsetMm + opening.canonicalHost.offsetOriginMm, widthMm);
   return projectCanonicalOpeningToStraightWallV2({
     document,
     openingId: opening.id,
-    centerMm: legacyOpeningCenterMm(room, opening, centerOffsetMm),
+    centerMm: legacyOpeningCenterMm(room!, opening, centerOffsetMm),
     widthMm,
   });
 }

@@ -43,6 +43,8 @@ type PlacementOpening = Pick<
   | "widthMm"
   | "kind"
   | "canonicalWallId"
+  | "canonicalHost"
+  | "requestedWorldCenterMm"
 >;
 
 function hostRange(host: DesignPagePhysicalWallHost) {

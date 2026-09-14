@@ -1,4 +1,5 @@
 import type { HousePlanRoom2D } from "@/lib/design-page-house-plan";
+import { resolveCanonicalOpeningHost } from "@/lib/design-page-canonical-opening-host";
 import type { RoomOpening2D } from "@/lib/editorScene";
 import {
   buildRoomWallSegments2D,
@@ -21,22 +22,18 @@ function roundHostCoordinate(value: number) {
 
 export type OpeningHostInput = Pick<
   RoomOpening2D,
-  | "id"
-  | "roomId"
-  | "wall"
-  | "offsetMm"
-  | "widthMm"
-  | "canonicalWallId"
-  | "requestedWorldCenterMm"
+  "id" | "roomId" | "wall" | "offsetMm" | "widthMm" |
+  "canonicalWallId" | "canonicalHost" | "requestedWorldCenterMm"
 >;
 
 export type DesignPagePhysicalWallHost = {
   physicalWallId: string;
   segment: RoomWallSegment2D;
-  roomId: string;
+  roomId?: string;
   roomWall: RoomOpening2D["wall"];
   roomSegmentKey: string;
   roomSegment: RoomWallSegment2D;
+  offsetOriginMeters?: number;
   segmentOffsetMeters: number;
   alongSegmentMeters: number;
   worldCenter: PlanPoint2D;
@@ -333,7 +330,7 @@ function hostFailure(
   return { status, code, diagnostic, consumerMessage: message, requestedWorldCenter };
 }
 
-export function resolveDesignPageOpeningHostWithContext(
+function resolveLegacyOpeningHostWithContext(
   opening: OpeningHostInput,
   topology: DesignPageOpeningHostContext
 ): DesignPageOpeningHostResolution {
@@ -378,14 +375,17 @@ export function resolveDesignPageOpeningHostWithContext(
     `Opening ${opening.id} does not resolve to a physical wall segment.`, requestedWorldCenter);
 }
 
-export function resolveDesignPageOpeningHost(
-  opening: OpeningHostInput,
-  rooms: readonly HousePlanRoom2D[]
+export function resolveDesignPageOpeningHostWithContext(
+  opening: OpeningHostInput, topology: DesignPageOpeningHostContext
 ): DesignPageOpeningHostResolution {
-  return resolveDesignPageOpeningHostWithContext(
-    opening,
-    createDesignPageOpeningHostContext(rooms)
-  );
+  return opening.canonicalHost ? resolveCanonicalOpeningHost(opening, topology.roomsById)
+    : resolveLegacyOpeningHostWithContext(opening, topology);
+}
+
+export function resolveDesignPageOpeningHost(
+  opening: OpeningHostInput, rooms: readonly HousePlanRoom2D[]
+): DesignPageOpeningHostResolution {
+  return resolveDesignPageOpeningHostWithContext(opening, createDesignPageOpeningHostContext(rooms));
 }
 
 export function resolveDesignPageOpeningHosts<TOpening extends OpeningHostInput>(

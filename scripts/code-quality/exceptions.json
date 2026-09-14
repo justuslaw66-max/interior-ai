@@ -17,15 +17,6 @@
           "maximum": 42
         }
       }
-    },
-    "lib/room-types.ts": {
-      "reason": "One additive optional proposal field belongs with canonicalDocument in the existing persistence contract. Its detailed type lives in floor-plan-proposal-types; moving unrelated legacy room types solely for this line would broaden the change.",
-      "owner": "scan-to-editable-plan-v1",
-      "review": "docs/development/scan-to-editable-plan-v1/FEATURE-STATUS.md; final feature review pending",
-      "expiresOn": "2026-12-14",
-      "allow": {
-        "lines": 622
-      }
     }
   }
 }

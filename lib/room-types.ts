@@ -1,6 +1,5 @@
 import type {
   FloorPlanDocumentV2,
-  FloorPlanPropertyEvidenceV2,
 } from "@/lib/floor-plan-document-v2";
 import type { FloorPlanAddressTransform } from "@/lib/floor-plan-imports/types";
 import type {
@@ -200,23 +199,7 @@ export interface PersistedFloorPlanUnderlay {
   calibration?: PersistedFloorPlanCalibration;
 }
 
-export interface PersistedPlanOpening {
-  id: string;
-  roomId?: string;
-  wall: "north" | "south" | "east" | "west";
-  offsetMm: number;
-  widthMm: number;
-  heightMm?: number;
-  bottomMm?: number;
-  kind: "door" | "window";
-  doorStyle?: "swing" | "sliding" | "folding" | "open";
-  canonicalWallId?: string;
-  /** Last trustworthy imported/requested position, used only while host resolution fails. */ requestedWorldCenterMm?: { x: number; z: number };
-  operation?: "swing" | "sliding" | "folding" | "fixed" | "open"; evidence?: {
-    width?: FloorPlanPropertyEvidenceV2; height?: FloorPlanPropertyEvidenceV2;
-    sillHeight?: FloorPlanPropertyEvidenceV2;
-  };
-}
+export type PersistedPlanOpening = import("@/lib/editorScene").RoomOpening2D;
 
 export interface PersistedPlanFixedElement {
   id: string;

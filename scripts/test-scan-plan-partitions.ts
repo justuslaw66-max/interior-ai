@@ -8,6 +8,10 @@ import { canonicalFloorPlanToDesignSnapshot } from "@/lib/floor-plan-legacy-adap
 import { findCanonicalPlacementWall } from "@/lib/floor-plan-placement-boundaries";
 import { buildHousePlan2D } from "@/lib/design-page-house-plan";
 import { resolveDesignPageOpeningHost } from "@/lib/design-page-opening-host";
+import { projectLegacyOpeningGestureToCanonicalWallV2 } from "@/lib/floor-plan-topology-editor";
+import { mapPlanOpeningsToRoomRenderer } from "@/lib/design-page-plan-overlay-projections";
+import { buildOpeningRenderSegments } from "@/components/editor/renderers/room-renderer-2d-opening-geometry";
+import { validateDesignPageOpeningPlacement } from "@/lib/design-page-opening-placement";
 
 let sequence = 0;
 function mutate(document: FloorPlanDocumentV2, operation: FloorPlanTopologyMutationV2) {
@@ -48,6 +52,66 @@ assert.equal(diagonal.solids[0].topMm, 1100);
 assert.equal(diagonal.centerlineSegments[0].start.xMm, 6100);
 assert.equal(diagonal.centerlineSegments[0].end.zMm, 2700);
 assert.equal(compileFloorPlanDocumentV2(JSON.parse(JSON.stringify(moved.document))).geometryHash, model.geometryHash);
+const diagonalOpening = mutate(moved.document, { kind: "add_opening", floorId: "apartment", opening: {
+  id: "diagonal-window", wallId: "diagonal", kind: "window", operation: "fixed", offsetMm: 501, widthMm: 601,
+  heightMm: 500, sillHeightMm: 500, hinge: "none", handing: "none",
+} });
+const diagonalProjection = canonicalFloorPlanToDesignSnapshot(diagonalOpening.document);
+const freeWindow = diagonalProjection.openings.find(({ id }) => id === "diagonal-window")!;
+assert(freeWindow, "A freestanding diagonal opening must survive the Consumer projection");
+assert.equal(freeWindow.roomId, undefined, "Do not invent a room association for a freestanding wall");
+const diagonalHouse = buildHousePlan2D(diagonalProjection.snapshot.rooms, 9.26, 6);
+const freeHost = resolveDesignPageOpeningHost(freeWindow, diagonalHouse.rooms);
+assert.equal(freeHost.status, "resolved");
+if (freeHost.status !== "resolved") throw new Error("Expected exact canonical host");
+assert.equal(freeHost.host.physicalWallId, "canonical:apartment:diagonal");
+assert(Math.abs(freeHost.host.tangent.x - Math.SQRT1_2) < 1e-8);
+assert(Math.abs(freeHost.host.tangent.z - Math.SQRT1_2) < 1e-8);
+const noMove = projectLegacyOpeningGestureToCanonicalWallV2({ snapshot: diagonalProjection.snapshot, opening: freeWindow,
+  centerOffsetMm: freeWindow.offsetMm, widthMm: 601 });
+assert.equal(noMove.offsetMm, 501, "An odd-width diagonal opening must not drift through compatibility coordinates");
+const advanced = projectLegacyOpeningGestureToCanonicalWallV2({ snapshot: diagonalProjection.snapshot, opening: freeWindow,
+  centerOffsetMm: freeWindow.offsetMm + 100, widthMm: 601 });
+assert.equal(advanced.offsetMm, 601);
+assert.equal(validateDesignPageOpeningPlacement(freeWindow, [freeWindow], freeWindow.id, {
+  rooms: diagonalHouse.rooms, planWidthMeters: 9.26, planDepthMeters: 6,
+}).valid, true);
+const renderedOpenings = mapPlanOpeningsToRoomRenderer([freeWindow], diagonalHouse.rooms);
+const segments = buildOpeningRenderSegments({ openings: renderedOpenings, rooms: diagonalHouse.rooms,
+  defaultWidth: 9.26, defaultDepth: 6, minimumHitLength: 0.4, hitDepth: 0.1 });
+assert.equal(segments.length, 1);
+assert(Math.abs(segments[0].hitRotationRad! - Math.PI / 4) < 1e-8);
+const exactOpening = diagonalOpening.scene.floors[0].openings.find(({ id }) => id === freeWindow.id)!;
+for (const [index, point] of [exactOpening.start, exactOpening.end].entries()) {
+  assert(Math.abs(segments[0].points[index][0] * 1000 - point.xMm) < 0.01);
+  assert(Math.abs(segments[0].points[index][2] * 1000 - point.zMm) < 0.01);
+}
+const diagonalReload = canonicalFloorPlanToDesignSnapshot(JSON.parse(JSON.stringify(diagonalOpening.document)));
+assert.deepEqual(diagonalReload.openings, diagonalProjection.openings);
+for (const reverse of [false, true]) {
+  const variant = structuredClone(diagonalOpening.document);
+  const floor = variant.floors[0];
+  floor.vertices.find(({ id }) => id === "q")!.zMm = 2900;
+  const wall = floor.walls.find(({ id }) => id === "diagonal")!;
+  if (reverse) [wall.path.startVertexId, wall.path.endVertexId] = [wall.path.endVertexId, wall.path.startVertexId];
+  const projection = canonicalFloorPlanToDesignSnapshot(variant);
+  const opening = projection.openings.find(({ id }) => id === "diagonal-window")!;
+  for (const delta of [0, 99, -101]) {
+    const result = projectLegacyOpeningGestureToCanonicalWallV2({ snapshot: projection.snapshot, opening,
+      centerOffsetMm: opening.offsetMm + delta, widthMm: 601 });
+    assert.equal(result.offsetMm, 501 + (reverse ? -delta : delta), "Non-cardinal forward/reverse wall gestures preserve integer host offsets");
+  }
+}
+const slopedBoundary = mutate(original, { kind: "move_vertex", floorId: "apartment", vertexId: "c", to: { xMm: 9260, zMm: 700 } });
+const slopedProjection = canonicalFloorPlanToDesignSnapshot(slopedBoundary.document);
+const slopedWindow = slopedProjection.openings.find(({ id }) => id === "window")!;
+const slopedHouse = buildHousePlan2D(slopedProjection.snapshot.rooms, 9.26, 6);
+const slopedHost = resolveDesignPageOpeningHost(slopedWindow, slopedHouse.rooms);
+assert.equal(slopedHost.status, "resolved");
+if (slopedHost.status !== "resolved") throw new Error("Expected diagonal room-boundary host");
+assert(slopedHost.host.tangent.x > 0 && slopedHost.host.tangent.z > 0);
+assert.equal(projectLegacyOpeningGestureToCanonicalWallV2({ snapshot: slopedProjection.snapshot, opening: slopedWindow,
+  centerOffsetMm: slopedWindow.offsetMm + 100, widthMm: slopedWindow.widthMm }).offsetMm, 1100);
 assert.throws(() => mutate(partial.document, { kind: "add_wall", floorId: "apartment", wallId: "duplicate", startVertexId: "p", endVertexId: "q", thicknessMm: 100 }), /invalid canonical geometry/);
 const attached = mutate(merged.document, {
   kind: "add_wall", floorId: "apartment", wallId: "attached", startVertexId: "t1", endVertexId: "t2", thicknessMm: 100,
