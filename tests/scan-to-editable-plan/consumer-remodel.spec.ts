@@ -1,3 +1,4 @@
+import { exerciseOpeningGestures } from "./opening-gesture-journey";
 import { exerciseWallGestures } from "./wall-gesture-journey";
 import { test, expect, type Page } from "@playwright/test";
 import { authoredApartment } from "../../scripts/fixtures/scan-to-editable-plan/apartment";
@@ -104,6 +105,7 @@ test("Consumer shared-wall merge, attached partition, opening edit, undo/redo, 3
   await panel.getByRole("combobox", { name: "Swing side", exact: true }).selectOption("none");
   await panel.getByRole("button", { name: "Add opening", exact: true }).click();
   await expect.poll(async () => (await saved(page)).floorPlan?.canonicalDocument?.floors[0].openings.length).toBe(2);
+  await exerciseOpeningGestures(page, diagonalId, () => saved(page), testInfo);
   const accepted = (await saved(page)).floorPlan?.canonicalDocument;
   expect(accepted).toBeTruthy();
   const geometry = compileCanonicalFloorPlanRenderModel(accepted!);

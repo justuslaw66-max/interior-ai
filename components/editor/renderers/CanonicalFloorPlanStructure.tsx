@@ -12,7 +12,6 @@ import type { HousePlanRoom2D } from "@/lib/design-page-house-plan";
 import {
   buildCanonicalOpeningSymbolLinesV2,
   getCanonicalOpeningRenderIdentityV2,
-  type CanonicalOpeningSymbolRole,
 } from "@/lib/floor-plan-opening-primitives";
 import type {
   CanonicalFloorPlanLineSegment,
@@ -50,6 +49,7 @@ import {
   useCanonicalOpeningDrag,
   type CanonicalOpeningDragMetricsV2,
   type CanonicalOpeningDragMode,
+  type CanonicalOpeningEditHandler,
 } from "./canonical-floor-plan/openingDrag";
 import {
   WALL_SURFACE_TEXTURE_RESOLUTION,
@@ -60,6 +60,9 @@ import { useCanonicalCameraCutawayWallKeys } from "./canonical-floor-plan/useCam
 import type { CanonicalWallGestureControls } from "@/lib/floor-plan-wall-gesture";
 import { CanonicalWallGestureOverlay } from "./canonical-floor-plan/CanonicalWallGestureOverlay";
 import { CanonicalWallSegments2D } from "./canonical-floor-plan/CanonicalWallSegments2D";
+import { openingColor, symbolLineStyle } from "./canonical-floor-plan/openingStyle";
+import { OpeningDragPreview } from "./canonical-floor-plan/OpeningDragPreview";
+import { openingGestureBindings } from "./canonical-floor-plan/openingGestureBindings";
 import { GeneratedWindowFrame3D } from "./GeneratedWindowFrame3D";
 
 export type { CanonicalOpeningDragMetricsV2 } from "./canonical-floor-plan/openingDrag";
@@ -192,27 +195,12 @@ function CanonicalStructure3D({
   );
 }
 
-function openingColor(opening: CompiledFloorPlanOpeningV2, selected: boolean) {
-  if (selected) return "#f97316";
-  if (opening.kind === "window" || opening.kind === "vent" || opening.kind === "louvre") {
-    return "#0891b2";
-  }
-  return "#1d4ed8";
-}
-
-function symbolLineStyle(role: CanonicalOpeningSymbolRole) {
-  if (role === "swing_arc") return { width: 1.15, dashed: true };
-  if (role === "host_span") return { width: 3.2, dashed: false };
-  if (role === "open_jamb" || role === "vent_slat") return { width: 1.35, dashed: false };
-  return { width: 1.8, dashed: false };
-}
-
 function CanonicalOpening2DSymbol({
   opening,
   wallId,
   floorId,
   hostSegments,
-  geometryHash,
+  geometryHash, revisionId,
   selected,
   interactive,
   onSelect,
@@ -225,17 +213,13 @@ function CanonicalOpening2DSymbol({
   wallId: string;
   floorId: string;
   hostSegments: CanonicalFloorPlanLineSegment[];
-  geometryHash: string;
+  geometryHash: string; revisionId: string;
   selected: boolean;
   interactive: boolean;
   onSelect?: (openingId: string | null) => void;
   wallStart: { xMm: number; zMm: number };
   wallEnd: { xMm: number; zMm: number };
-  onEdit?: (
-    openingId: string,
-    metrics: CanonicalOpeningDragMetricsV2,
-    mode: CanonicalOpeningDragMode
-  ) => void;
+  onEdit?: CanonicalOpeningEditHandler;
   onDragStateChange?: (dragging: boolean, mode: CanonicalOpeningDragMode) => void;
 }) {
   const identity = getCanonicalOpeningRenderIdentityV2(opening);
@@ -244,8 +228,8 @@ function CanonicalOpening2DSymbol({
     ? [hostSegments[0].start, ...hostSegments.map((segment) => segment.end)]
     : [opening.start, opening.end];
   const color = openingColor(opening, selected);
-  const drag = useCanonicalOpeningDrag({
-    opening,
+  const { previewRef, beginMove, beginResize, move, finish, cancel } = useCanonicalOpeningDrag({
+    opening, revisionId,
     wallStart,
     wallEnd,
     floorY: 0,
@@ -272,6 +256,7 @@ function CanonicalOpening2DSymbol({
         canonicalGeometryHash: geometryHash,
       }}
     >
+      <OpeningDragPreview meshRef={previewRef} />
       {symbols.map((symbol) => {
         const style = symbolLineStyle(symbol.role);
         const sourcePoints = symbol.role === "host_span" ? exactHostPoints : symbol.points;
@@ -308,23 +293,23 @@ function CanonicalOpening2DSymbol({
               interactive && symbol.role === "host_span" && onEdit
                 ? (event) => {
                     onSelect?.(opening.id);
-                    drag.beginMove(event);
+                    beginMove(event);
                   }
                 : undefined
             }
             onPointerMove={
               interactive && symbol.role === "host_span" && onEdit
-                ? drag.move
+                ? move
                 : undefined
             }
             onPointerUp={
               interactive && symbol.role === "host_span" && onEdit
-                ? drag.finish
+                ? finish
                 : undefined
             }
             onPointerCancel={
               interactive && symbol.role === "host_span" && onEdit
-                ? drag.finish
+                ? cancel
                 : undefined
             }
           />
@@ -344,10 +329,10 @@ function CanonicalOpening2DSymbol({
                   canonicalOpeningId: opening.id,
                   canonicalResizeEdge: edge,
                 }}
-                onPointerDown={(event) => drag.beginResize(edge, event)}
-                onPointerMove={drag.move}
-                onPointerUp={drag.finish}
-                onPointerCancel={drag.finish}
+                onPointerDown={(event) => beginResize(edge, event)}
+                onPointerMove={move}
+                onPointerUp={finish}
+                onPointerCancel={cancel}
               >
                 <circleGeometry args={[0.085, 20]} />
                 <meshBasicMaterial color="#ffffff" />
@@ -694,7 +679,7 @@ function CanonicalOpening3DSymbol({
   floorId,
   floorElevationMm,
   hostSegments,
-  geometryHash,
+  geometryHash, revisionId,
   selected,
   opacity,
   interactive,
@@ -710,18 +695,14 @@ function CanonicalOpening3DSymbol({
   floorId: string;
   floorElevationMm: number;
   hostSegments: CanonicalFloorPlanLineSegment[];
-  geometryHash: string;
+  geometryHash: string; revisionId: string;
   selected: boolean;
   opacity: number;
   interactive: boolean;
   onSelect?: (openingId: string | null) => void;
   wallStart: { xMm: number; zMm: number };
   wallEnd: { xMm: number; zMm: number };
-  onEdit?: (
-    openingId: string,
-    metrics: CanonicalOpeningDragMetricsV2,
-    mode: CanonicalOpeningDragMode
-  ) => void;
+  onEdit?: CanonicalOpeningEditHandler;
   onDragStateChange?: (dragging: boolean, mode: CanonicalOpeningDragMode) => void;
 }) {
   const identity = getCanonicalOpeningRenderIdentityV2(opening);
@@ -837,8 +818,8 @@ function CanonicalOpening3DSymbol({
     );
 
   const exactHostSegments = hostSegments.length ? hostSegments : [chord];
-  const drag = useCanonicalOpeningDrag({
-    opening,
+  const { previewRef, beginMove, beginResize, move, finish, cancel } = useCanonicalOpeningDrag({
+    opening, revisionId,
     wallStart,
     wallEnd,
     floorY: floorElevationMm / 1000,
@@ -848,6 +829,7 @@ function CanonicalOpening3DSymbol({
   });
   return (
     <>
+      <OpeningDragPreview meshRef={previewRef} y={floorElevationMm / 1000 + bottom + height / 2} height={height} depth={Math.max(0.08, wallThicknessMm / 1000)} />
       <group
         position={[geometry.centerX, floorElevationMm / 1000, geometry.centerZ]}
         rotation-y={geometry.rotationY}
@@ -902,13 +884,13 @@ function CanonicalOpening3DSymbol({
               interactive && onEdit
                 ? (event) => {
                     onSelect?.(opening.id);
-                    drag.beginMove(event);
+                    beginMove(event);
                   }
                 : undefined
             }
-            onPointerMove={interactive && onEdit ? drag.move : undefined}
-            onPointerUp={interactive && onEdit ? drag.finish : undefined}
-            onPointerCancel={interactive && onEdit ? drag.finish : undefined}
+            onPointerMove={interactive && onEdit ? move : undefined}
+            onPointerUp={interactive && onEdit ? finish : undefined}
+            onPointerCancel={interactive && onEdit ? cancel : undefined}
           >
             <boxGeometry args={[host.length, height, Math.max(0.08, wallThicknessMm / 1000)]} />
             <meshBasicMaterial
@@ -936,10 +918,10 @@ function CanonicalOpening3DSymbol({
                 canonicalOpeningId: opening.id,
                 canonicalResizeEdge: edge,
               }}
-              onPointerDown={(event) => drag.beginResize(edge, event)}
-              onPointerMove={drag.move}
-              onPointerUp={drag.finish}
-              onPointerCancel={drag.finish}
+              onPointerDown={(event) => beginResize(edge, event)}
+              onPointerMove={move}
+              onPointerUp={finish}
+              onPointerCancel={cancel}
             >
               <sphereGeometry args={[0.09, 16, 12]} />
               <meshBasicMaterial color="#ffffff" />
@@ -1020,7 +1002,7 @@ export function CanonicalFloorPlanWalls2D({
       {activeFloor && <CanonicalWallSegments2D floor={activeFloor} geometryHash={model.geometryHash}
         activeRoomId={activeRoomId} theme={theme} interactive={interactive} wallEditing={wallEditing}
         onSelectWall={onSelectWall} onSelectRoom={onSelectRoom} onSelectOpening={onSelectOpening} />}
-      {activeFloor && selectedWall && wallEditing && <CanonicalWallGestureOverlay key={`${activeFloor.id}:${selectedWall.id}`}
+      {activeFloor && selectedWall && !selectedOpeningId && wallEditing && <CanonicalWallGestureOverlay key={`${activeFloor.id}:${selectedWall.id}`}
         wall={selectedWall} floorId={activeFloor.id} revisionId={model.revisionId} controls={wallEditing} />}
 
       {showOpenings &&
@@ -1038,8 +1020,8 @@ export function CanonicalFloorPlanWalls2D({
               onSelect={onSelectOpening}
               wallStart={wall.centerlineSegments[0]?.start ?? opening.start}
               wallEnd={wall.centerlineSegments.at(-1)?.end ?? opening.end}
-              onEdit={wall.path.kind === "line" ? onEditOpening : undefined}
-              onDragStateChange={onOpeningDragStateChange}
+              revisionId={model.revisionId}
+              {...openingGestureBindings(wallEditing, activeFloor.id, wall.path.kind, onEditOpening, onOpeningDragStateChange)}
             />
           ))
         )}
@@ -1251,6 +1233,7 @@ export function CanonicalFloorPlanWalls3D({
                   onSelect={onSelectOpening}
                   wallStart={wall.centerlineSegments[0]?.start ?? opening.start}
                   wallEnd={wall.centerlineSegments.at(-1)?.end ?? opening.end}
+                  revisionId={model.revisionId}
                   onEdit={wall.path.kind === "line" ? onEditOpening : undefined}
                   onDragStateChange={onOpeningDragStateChange}
                 />

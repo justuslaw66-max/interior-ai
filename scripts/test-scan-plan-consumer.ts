@@ -96,7 +96,6 @@ const sourceWindow = document.floors[0].openings.find(({ id }) => id === "window
 const windowForm = proposedOpeningForm(document.floors[0], sourceWindow);
 assert.equal(windowForm.sillHeightMm, document.floors[0].defaults.windowSillHeight.valueMm);
 assert.deepEqual(changedOpeningFormFields(document.floors[0], sourceWindow, { ...windowForm, offsetMm: 1100 }), { offsetMm: 1100 });
-console.log("PASS: consumer private proposal merge/split, reference immutability, exact world positions, room recovery, integer dimensions and saved reload.");
 
 const staleGesture = { kind: "move_wall", floorId: "apartment", wallId: "shared", deltaXMm: 10, deltaZMm: 0 } as const;
 const gestureCommits: ConsumerWallTopologyMutationV2[] = [], gestureMessages: string[] = [];
@@ -106,3 +105,4 @@ assert.equal(gestureCommits.length, 0, "A stale gesture must not reach the canon
 assert.match(gestureMessages[0], /plan changed/);
 assert.equal(commitCurrentWallGesture(merged, merged.floorPlan!.canonicalDocument!.revisionId, staleGesture, recordCommit, () => undefined), true);
 assert.deepEqual(gestureCommits, [staleGesture]);
+console.log("PASS: consumer private proposal merge/split, reference immutability, exact world positions, room recovery, integer dimensions and saved reload.");

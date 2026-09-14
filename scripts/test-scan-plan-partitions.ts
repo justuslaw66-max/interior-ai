@@ -12,6 +12,8 @@ import { projectLegacyOpeningGestureToCanonicalWallV2 } from "@/lib/floor-plan-t
 import { mapPlanOpeningsToRoomRenderer } from "@/lib/design-page-plan-overlay-projections";
 import { buildOpeningRenderSegments } from "@/components/editor/renderers/room-renderer-2d-opening-geometry";
 import { validateDesignPageOpeningPlacement } from "@/lib/design-page-opening-placement";
+import { projectDesignPageViewportOpening, resolveDesignPageOpeningViewportState } from "@/lib/design-page-opening-viewport";
+import { buildOpeningGestureDraft } from "@/lib/floor-plan-opening-gesture";
 import { buildWallGestureDraft } from "@/lib/floor-plan-wall-gesture";
 import { proposedWallLengthEndpoint } from "@/lib/floor-plan-wall-length";
 
@@ -96,6 +98,7 @@ const diagonalHouse = buildHousePlan2D(diagonalProjection.snapshot.rooms, 9.26, 
 const freeHost = resolveDesignPageOpeningHost(freeWindow, diagonalHouse.rooms);
 assert.equal(freeHost.status, "resolved");
 if (freeHost.status !== "resolved") throw new Error("Expected exact canonical host");
+assert.equal(resolveDesignPageOpeningViewportState(projectDesignPageViewportOpening(freeWindow, Math.hypot(1500, 1500) / 1000), 2600)?.toolbar.wall, "Selected wall");
 assert.equal(freeHost.host.physicalWallId, "canonical:apartment:diagonal");
 assert(Math.abs(freeHost.host.tangent.x - Math.SQRT1_2) < 1e-8);
 assert(Math.abs(freeHost.host.tangent.z - Math.SQRT1_2) < 1e-8);
@@ -194,4 +197,19 @@ const detached = mutate(annotated, { ...remove, confirmedOpeningIds: ["door"] })
 assert.equal(detached.document.floors[0].annotations[0].geometry.kind, "polyline");
 assert.equal(detached.document.floors[0].annotations[0].scope, "reference");
 assert.equal(compileFloorPlanDocumentV2(detached.document).floors[0].annotations[0].geometry.kind, "polyline");
+
+const openingGestureBase = { wallStart: { xMm: 6100, zMm: 1200 }, wallEnd: { xMm: 7868, zMm: 2968 }, widthMm: 601, revisionId: "gesture-revision" };
+const openingMove = buildOpeningGestureDraft({ ...openingGestureBase, anchor: { mode: "move", grabDeltaMm: 0 }, pointerOffsetMm: 901.5 })!;
+assert.equal(openingMove.offsetMm, 601);
+assert.equal(openingMove.widthMm, 601);
+assert(Math.abs(Math.hypot(openingMove.centerMm.xMm - 6100, openingMove.centerMm.zMm - 1200) - 901.5) < 1e-9, "Odd-width centres must not be rounded in world space");
+for (const edge of ["start", "end"] as const) {
+  const fixedOffsetMm = edge === "start" ? 1102 : 501;
+  const draft = buildOpeningGestureDraft({ ...openingGestureBase, anchor: { mode: "resize", fixedOffsetMm, edge }, pointerOffsetMm: edge === "start" ? 401.2 : 1202.4 })!;
+  assert.equal(draft.widthMm, 701);
+  assert.equal(edge === "start" ? draft.offsetMm + draft.widthMm : draft.offsetMm, fixedOffsetMm);
+}
+const openingClamp = buildOpeningGestureDraft({ ...openingGestureBase, anchor: { mode: "move", grabDeltaMm: 0 }, pointerOffsetMm: 99999 })!;
+assert(openingClamp.offsetMm + openingClamp.widthMm <= Math.hypot(1768, 1768));
+assert.equal(buildOpeningGestureDraft({ ...openingGestureBase, anchor: { mode: "move", grabDeltaMm: 0 }, pointerOffsetMm: NaN }), null);
 console.log("PASS: shared wall removal, dependency confirmation, room merge/division, partial diagonal partition, exact move, canonical 3D/reload, immutable reference, invalid envelope/overlap.");

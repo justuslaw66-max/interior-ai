@@ -273,7 +273,7 @@
       "limit": 250
     },
     "components/editor/renderers/CanonicalFloorPlanStructure.tsx": {
-      "lines": 1262,
+      "lines": 1245,
       "limit": 250
     },
     "components/editor/renderers/house-plan-3d/geometry.ts": {
@@ -2282,16 +2282,10 @@
         "maximum": 27
       }
     },
-    "components/editor/renderers/canonical-floor-plan/openingDrag.ts": {
-      "overlongFunctions": {
-        "count": 1,
-        "maximum": 148
-      }
-    },
     "components/editor/renderers/CanonicalFloorPlanStructure.tsx": {
       "overlongFunctions": {
         "count": 9,
-        "maximum": 262
+        "maximum": 259
       },
       "complexFunctions": {
         "count": 2,

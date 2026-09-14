@@ -1,3 +1,4 @@
+import { projectDesignPageViewportOpening } from "@/lib/design-page-opening-viewport";
 import { PLAN_FLOATING_OVERLAY_STACK_WIDTH_PX } from "@/lib/design-page-editor-configuration";
 import type { BuildDesignPageViewportRegionAdapterInput } from "@/lib/design-page-viewport-region-adapter";
 import { resolveDesignLightingSettings } from "@/lib/design-lighting-settings";
@@ -152,18 +153,7 @@ function buildViewportPanelState(
     },
     opening: {
       selectedId: sources.viewportShell.state.planSelection.selectedPlanOverlayId,
-      value: inspector.visiblePlanOpening
-        ? {
-            id: inspector.visiblePlanOpening.id,
-            kind: inspector.visiblePlanOpening.kind,
-            wall: inspector.visiblePlanOpening.wall,
-            widthMm: inspector.visiblePlanOpening.widthMm,
-            heightMm: inspector.visiblePlanOpening.heightMm,
-            bottomMm: inspector.visiblePlanOpening.bottomMm,
-            evidence: inspector.visiblePlanOpening.evidence,
-            wallSpanMeters: inspector.visiblePlanOpeningWallSpanMeters,
-          }
-        : null,
+      value: projectDesignPageViewportOpening(inspector.visiblePlanOpening, inspector.visiblePlanOpeningWallSpanMeters),
     },
     planQuality: {
       report: quality.report,
