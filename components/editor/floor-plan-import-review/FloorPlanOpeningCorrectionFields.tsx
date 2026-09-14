@@ -63,7 +63,7 @@ export default function FloorPlanOpeningCorrectionFields({
   const { width: widthEvidence, height: heightEvidence, sill: sillEvidence } = evidence;
 
   return (
-    <div className="grid gap-3 border-t border-neutral-200 pt-2">
+    <div data-review-controls="opening" className="grid gap-3 border-t border-neutral-200 pt-2">
       <div className="grid gap-2">
         <label className={`text-[10px] ${subtleClassName}`}>
           Edit or remove an opening

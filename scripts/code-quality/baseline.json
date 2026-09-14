@@ -237,7 +237,7 @@
       "limit": 250
     },
     "components/editor/floor-plan-import-review/FloorPlanImportReviewPanel.tsx": {
-      "lines": 770,
+      "lines": 756,
       "limit": 250
     },
     "components/editor/floor-plan-import-review/FloorPlanSourceReviewCanvas.tsx": {
@@ -249,7 +249,7 @@
       "limit": 250
     },
     "components/editor/floor-plan-import-review/FloorPlanVisualReviewTools.tsx": {
-      "lines": 290,
+      "lines": 285,
       "limit": 250
     },
     "components/editor/FloorPlanImportAssistant.tsx": {
@@ -2073,10 +2073,10 @@
     "components/editor/floor-plan-import-review/FloorPlanImportReviewPanel.tsx": {
       "overlongFunctions": {
         "count": 3,
-        "maximum": 649
+        "maximum": 634
       },
       "complexFunctions": {
-        "count": 3,
+        "count": 2,
         "maximum": 45
       }
     },
@@ -2153,11 +2153,11 @@
     "components/editor/floor-plan-import-review/FloorPlanVisualReviewTools.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 257
+        "maximum": 248
       },
       "complexFunctions": {
         "count": 1,
-        "maximum": 22
+        "maximum": 19
       }
     },
     "components/editor/floor-plan-import-review/FloorPlanWallCorrectionFields.tsx": {

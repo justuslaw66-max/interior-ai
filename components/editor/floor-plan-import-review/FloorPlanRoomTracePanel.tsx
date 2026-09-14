@@ -53,7 +53,7 @@ export default function FloorPlanRoomTracePanel({
   const subtle = dark ? "text-neutral-400" : "text-neutral-600";
 
   return (
-    <details className="mt-3 rounded-lg border border-emerald-200 bg-emerald-50 p-3" open={pickingRoom || !floor.rooms.length}>
+    <details data-review-controls="room" className="mt-3 rounded-lg border border-emerald-200 bg-emerald-50 p-3" open={pickingRoom || !floor.rooms.length}>
       <summary className="cursor-pointer text-sm font-semibold">
         <span className="mr-2 inline-flex h-6 w-6 items-center justify-center rounded-full bg-emerald-600 text-xs text-white">2</span>
         Outline each room

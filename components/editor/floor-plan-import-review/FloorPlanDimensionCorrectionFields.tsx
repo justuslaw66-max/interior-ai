@@ -116,7 +116,7 @@ export default function FloorPlanDimensionCorrectionFields({
     measuredMm > 0;
 
   return (
-    <div className="grid gap-2 border-t border-neutral-200 pt-2">
+    <div data-review-controls="dimension" className="grid gap-2 border-t border-neutral-200 pt-2">
       <label className={`text-[10px] ${subtleClassName}`}>
         Add or edit an exact source dimension
         <select

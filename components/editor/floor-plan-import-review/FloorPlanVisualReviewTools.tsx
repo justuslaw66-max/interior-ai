@@ -1,7 +1,10 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
+import { useRef, useState, type ReactNode } from "react";
 import type { FloorPlanDocumentV2 } from "@/lib/floor-plan-document-v2";
+import type { FloorPlanReviewIssue } from "@/lib/floor-plan-imports/types";
+import { expandFloorPlanReviewFocus, floorPlanReviewPage, resolveFloorPlanReviewTarget } from "@/lib/floor-plan-review-target";
+import { FloorPlanReviewIssueAction } from "./FloorPlanReviewIssueAction";
 import type { ReviewSourcePoint } from "@/lib/floor-plan-import-review-geometry";
 import type { ConsumerFloorPlanImportJob } from "../floor-plan-import-ui-types";
 import FloorPlanOpeningTracePanel from "./FloorPlanOpeningTracePanel";
@@ -18,6 +21,7 @@ type FloorPlanVisualReviewToolsProps = {
     "id" | "adapterId" | "renderedPagesJson"
   >;
   focusedIssueEntityIds: string[];
+  focusedIssue?: FloorPlanReviewIssue | null;
   onChange: (value: FloorPlanDocumentV2) => void;
   assetRoutePrefix?: string;
   guidedLayout?: boolean;
@@ -35,6 +39,7 @@ export default function FloorPlanVisualReviewTools({
   document,
   job,
   focusedIssueEntityIds,
+  focusedIssue,
   onChange,
   assetRoutePrefix,
   guidedLayout = false,
@@ -48,10 +53,9 @@ export default function FloorPlanVisualReviewTools({
   disabled = false,
 }: FloorPlanVisualReviewToolsProps) {
   const floor = document.floors[0];
-  const initialPage =
-    floor?.calibrations[0]?.pageNumber ??
-    job.renderedPagesJson[0]?.pageNumber ??
-    1;
+  const root = useRef<HTMLDivElement>(null);
+  const reviewTarget = resolveFloorPlanReviewTarget(document, job.renderedPagesJson, focusedIssue);
+  const initialPage = reviewTarget?.pageNumber ?? floor?.calibrations[0]?.pageNumber ?? job.renderedPagesJson[0]?.pageNumber ?? 1;
   const [pageNumber, setPageNumber] = useState(initialPage);
   const [pickingScale, setPickingScale] = useState(false);
   const [scalePoints, setScalePoints] = useState<ReviewSourcePoint[]>([]);
@@ -61,33 +65,22 @@ export default function FloorPlanVisualReviewTools({
   const [openingPoints, setOpeningPoints] = useState<ReviewSourcePoint[]>([]);
   const [focusedCorrectionIds, setFocusedCorrectionIds] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
-  const page =
-    job.renderedPagesJson.find((entry) => entry.pageNumber === pageNumber) ??
-    job.renderedPagesJson[0] ??
-    null;
-  const fallbackSourceId =
-    floor?.calibrations[0]?.sourceId ?? document.sources[0]?.id ?? "";
-  const sourceId =
-    floor?.calibrations.find((entry) => entry.pageNumber === page?.pageNumber)
-      ?.sourceId ?? fallbackSourceId;
-  const calibration = floor?.calibrations.find(
-    (entry) =>
-      entry.sourceId === sourceId && entry.pageNumber === page?.pageNumber
-  );
+  const { page, sourceId, calibration } = floorPlanReviewPage(document, job.renderedPagesJson, pageNumber);
+  const focusKey = `${focusedIssue?.id ?? ""}:${reviewTarget?.pageNumber ?? ""}`;
+  const [previousFocus, setPreviousFocus] = useState(focusKey);
+  if (previousFocus !== focusKey) {
+    setPreviousFocus(focusKey);
+    setFocusedCorrectionIds([]);
+    if (reviewTarget?.pageNumber) setPageNumber(reviewTarget.pageNumber);
+    setScalePoints([]); setRoomPoints([]); setOpeningPoints([]);
+    setPickingScale(false); setPickingRoom(false); setPickingOpening(false);
+  }
   if (!floor) return null;
 
-  const expandedIssueFocus = new Set(focusedIssueEntityIds);
-  for (const room of floor.rooms) {
-    if (!expandedIssueFocus.has(room.id)) continue;
-    for (const loop of room.wallLoops) {
-      for (const wall of loop.walls) expandedIssueFocus.add(wall.wallId);
-    }
-  }
-  const focusedEntityIds = [
-    ...new Set([...expandedIssueFocus, ...focusedCorrectionIds]),
-  ];
+  const focusedEntityIds = expandFloorPlanReviewFocus(floor, focusedIssueEntityIds, focusedCorrectionIds);
 
   const canvas = (
+    <>
       <FloorPlanSourceReviewCanvas
         document={document} onDocumentChange={onChange} disabled={disabled} previewOnly={previewOnly}
         floorId={floor.id}
@@ -123,6 +116,8 @@ export default function FloorPlanVisualReviewTools({
         assetRoutePrefix={assetRoutePrefix}
         dark={dark}
       />
+      {!previewOnly && <FloorPlanReviewIssueAction target={reviewTarget} root={root} disabled={disabled} />}
+    </>
   );
   const primaryControls = (
     <>
@@ -226,7 +221,7 @@ export default function FloorPlanVisualReviewTools({
 
   if (consumerMode) {
     return (
-      <>
+      <div ref={root}>
         {canvas}
         <details
           id="floor-plan-manual-tools"
@@ -257,21 +252,21 @@ export default function FloorPlanVisualReviewTools({
           </p>
           {primaryControls}
         </details>
-      </>
+      </div>
     );
   }
 
   if (!guidedLayout) {
     return (
-      <>
+      <div ref={root}>
         {canvas}
         {primaryControls}
-      </>
+      </div>
     );
   }
 
   return (
-    <div className="mt-4 grid items-start gap-4 xl:grid-cols-[minmax(0,1.65fr)_minmax(330px,0.7fr)]">
+    <div ref={root} className="mt-4 grid items-start gap-4 xl:grid-cols-[minmax(0,1.65fr)_minmax(330px,0.7fr)]">
       <div className="min-w-0 xl:sticky xl:top-4">{canvas}</div>
       <aside className="min-w-0 rounded-xl border bg-neutral-50 p-3 xl:max-h-[calc(100vh-2rem)] xl:overflow-y-auto">
         <div className="rounded-lg bg-white p-3 text-xs leading-5 text-neutral-700">

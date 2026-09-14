@@ -16,6 +16,7 @@ import type { ConsumerFloorPlanImportJob } from "../floor-plan-import-ui-types";
 import FloorPlanPropertyEvidenceControl from "../FloorPlanPropertyEvidenceControl";
 import FloorPlanOptionalConfigurationPanel from "../FloorPlanOptionalConfigurationPanel";
 import FloorPlanVisualReviewTools from "./FloorPlanVisualReviewTools";
+import { FloorPlanIssueFocusButton } from "./FloorPlanIssueFocusButton";
 
 type FloorPlanImportReviewPanelProps = {
   candidate: FloorPlanDocumentV2;
@@ -460,6 +461,7 @@ export default function FloorPlanImportReviewPanel({
         document={candidate}
         job={job}
         focusedIssueEntityIds={focusedIssueEntityIds}
+        focusedIssue={issues.find((issue) => issue.id === focusedIssueId)}
         onChange={(next) => setCandidate(next)}
         consumerMode proMode={proMode}
         manualToolsOpen={manualToolsOpen}
@@ -718,24 +720,8 @@ export default function FloorPlanImportReviewPanel({
                       />
                     </label>
                   ) : null}
-                  {issue.entityIds?.length ? (
-                    <button
-                      type="button"
-                      className="mt-1 text-[10px] font-semibold text-blue-600"
-                      aria-pressed={focusedIssueId === issue.id}
-                      onClick={() =>
-                        setFocusedIssueId((current) =>
-                          current === issue.id ? null : issue.id
-                        )
-                      }
-                    >
-                      {focusedIssueId === issue.id
-                        ? "Clear source focus"
-                        : `Show ${issue.entityIds.length} affected item${
-                            issue.entityIds.length === 1 ? "" : "s"
-                          }`}
-                    </button>
-                  ) : null}
+                  <FloorPlanIssueFocusButton issue={issue} document={candidate} pages={job.renderedPagesJson}
+                    focusedIssueId={focusedIssueId} setFocusedIssueId={setFocusedIssueId} />
                 </div>
               </div>
             );
