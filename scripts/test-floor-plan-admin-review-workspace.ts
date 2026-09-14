@@ -29,6 +29,7 @@ const visualCorrectionSource = [
   "FloorPlanRoomTracePanel.tsx",
   "FloorPlanOpeningTracePanel.tsx",
   "FloorPlanSourceReviewCanvas.tsx",
+  "FloorPlanReviewZoomControls.tsx",
 ].map((fileName) =>
   fs.readFileSync(
     path.join(
@@ -99,6 +100,7 @@ assert.match(visualCorrectionSource, /Add visible doors and windows/);
 assert.match(visualCorrectionSource, /Add this opening/);
 assert.match(visualCorrectionSource, /calculated automatically/);
 assert.match(visualCorrectionSource, /Zoom in/);
+assert.match(visualCorrectionSource, /<FloorPlanReviewZoomControls\s/);
 assert.match(visualCorrectionSource, /Magnified selection area/);
 assert.match(visualCorrectionSource, /Snap to saved corners and straight lines/);
 

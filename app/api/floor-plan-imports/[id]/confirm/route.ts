@@ -1,4 +1,5 @@
 import { registeredImportUnderlay } from "@/lib/floor-plan-imports/registered-underlay";
+import { lockImportForConfirmation } from "@/lib/floor-plan-imports/confirmation-retention";
 import { NextResponse } from "next/server";
 import type { Prisma } from "@prisma/client";
 import { auth } from "@/lib/auth";
@@ -129,6 +130,9 @@ export async function POST(
   const payload = snapshotToLegacyApi(canonicalDesign.snapshot);
   try {
     const design = await prisma.$transaction(async (tx) => {
+      const eligibleImport = await lockImportForConfirmation(tx, {
+        id, userId, candidateVersion: job.candidateVersion, sourceAsset: job.sourceAsset,
+      });
       const created = await tx.design.create({
         data: {
           title: payload.title,
@@ -161,14 +165,7 @@ export async function POST(
         snapshot: created.snapshot,
       });
       const applied = await tx.floorPlanImportJob.updateMany({
-        where: {
-          id,
-          userId,
-          status: "ready",
-          candidateVersion: job.candidateVersion,
-          appliedDesignId: null,
-          revision: { is: null },
-        },
+        where: eligibleImport,
         data: {
           status: "applied",
           statusChangedAt: new Date(),

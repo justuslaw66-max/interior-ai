@@ -9,6 +9,23 @@ async function main() {
   let userId: string | null = "owner", candidate = calibratedScaleFixture(), writes = 0, reads = 0;
   let renderedPages: { pageNumber: number; widthPx: number; heightPx: number; assetKey: string }[] = [];
   const snapshots: unknown[] = [];
+  const freshJob = () => ({ id: "private-import", userId: "owner", status: "ready", candidateVersion: 7,
+    sourceAssetId: "authored-source", appliedDesignId: null as string | null, revision: null as { id: string } | null,
+    sourceDeletionRequestedAt: null as Date | null, historyDeletedAt: null as Date | null,
+    sourceAsset: { id: "authored-source", sha256: "a".repeat(64), fileName: "private-authored.png", mimeType: "image/png", contentDeletedAt: null as Date | null } });
+  let jobState = freshJob();
+  let beforeTransaction: () => void = () => undefined, beforeApply: () => void = () => undefined;
+  const events: string[] = [];
+  let checkedWhere: unknown;
+  const matches = (where: Record<string, unknown>) => Object.entries(where).every(([key, value]) => {
+    if (key === "revision") return jobState.revision === null;
+    if (key === "sourceAsset") {
+      const filter = value as { is: Record<string, unknown> };
+      return Object.entries(filter.is).every(([field, expected]) => JSON.stringify(jobState.sourceAsset[field as keyof typeof jobState.sourceAsset]) === JSON.stringify(expected));
+    }
+    assert.ok(Object.hasOwn(jobState, key), `Unhandled database predicate ${key}`);
+    return JSON.stringify(jobState[key as keyof typeof jobState]) === JSON.stringify(value);
+  });
   const stubbed = new Map<string, NodeModule | undefined>();
   function stub(name: string, exports: object) {
     const id = require.resolve(name);
@@ -18,25 +35,41 @@ async function main() {
     require.cache[id] = stubModule;
   }
   const tx = {
+    $queryRaw: async (query: { sql: string; values: unknown[] }) => {
+      assert.match(query.sql, /FOR UPDATE OF source/); assert.match(query.sql, /INNER JOIN "FloorPlanImportJob" job/);
+      assert.deepEqual(query.values, ["private-import", "owner"]); events.push("source-lock"); return [{ id: "authored-source" }];
+    },
     design: { create: async ({ data }: { data: { snapshot: unknown; userId: string } }) => {
+      events.push("design-create");
       assert.equal(data.userId, "owner"); writes++; snapshots.push(structuredClone(data.snapshot));
       return { id: "private-design", snapshot: data.snapshot };
     } },
-    floorPlanImportJob: { updateMany: async ({ where }: { where: { userId: string; candidateVersion: number } }) => {
-      assert.equal(where.userId, "owner"); assert.equal(where.candidateVersion, 7); return { count: 1 };
-    } },
+    floorPlanImportJob: {
+      findFirst: async ({ where }: { where: Record<string, unknown> }) => {
+        events.push("fresh-check"); checkedWhere = structuredClone(where); return matches(where) ? { id: jobState.id } : null;
+      },
+      updateMany: async ({ where }: { where: Record<string, unknown> }) => {
+        beforeApply(); events.push("compare-and-set");
+        assert.equal(where.userId, "owner"); assert.equal(where.candidateVersion, 7);
+        if (checkedWhere) assert.deepEqual(where, checkedWhere, "Final application must retain every fresh-read condition.");
+        return { count: matches(where) ? 1 : 0 };
+      },
+    },
   };
   stub("@/lib/auth", { auth: async () => userId ? { user: { id: userId } } : null });
   stub("@/lib/prisma", { prisma: {
     floorPlanImportJob: { findFirst: async ({ where }: { where: { id: string; userId: string } }) => {
       reads++; assert.equal(where.id, "private-import");
       if (where.userId !== "owner") return null;
-      return { id: where.id, status: "ready", candidateVersion: 7, candidateJson: candidate,
-        sourceManifestJson: null, renderedPagesJson: renderedPages, reviewIssuesJson: [], appliedDesignId: null, revision: null,
-        sourceAsset: { id: "authored-source", sha256: "a".repeat(64), fileName: "private-authored.png", mimeType: "image/png" } };
+      return structuredClone({ ...jobState, candidateJson: candidate, sourceManifestJson: null, renderedPagesJson: renderedPages, reviewIssuesJson: [] });
     } },
     user: { findUnique: async () => ({ plan: "pro" }) },
-    $transaction: async (callback: (transaction: typeof tx) => Promise<unknown>) => callback(tx),
+    $transaction: async (callback: (transaction: typeof tx) => Promise<unknown>) => {
+      beforeTransaction(); events.length = 0; checkedWhere = undefined;
+      const previousWrites: number = writes, previousSnapshots = snapshots.length;
+      try { return await callback(tx); }
+      catch (cause) { writes = previousWrites; snapshots.length = previousSnapshots; throw cause; }
+    },
   } });
   stub("@/lib/floor-plan-design-reference", { syncFloorPlanDesignReference: async (input: { ownerUserId: string; designId: string }) => {
     assert.equal(input.ownerUserId, "owner"); assert.equal(input.designId, "private-design");
@@ -71,7 +104,46 @@ async function main() {
     assert.deepEqual(mapUnderlayWorldPointToPixels(underlay, { x: 0, z: 0 }), { x: 100, y: 200 });
     assert.deepEqual(mapUnderlayWorldPointToPixels(underlay, { x: 4, z: 0 }), { x: 100, y: 600 });
     assert.deepEqual(mapUnderlayWorldPointToPixels(underlay, { x: 0, z: -4 }), { x: 500, y: 200 });
-    console.log("PASS: actual confirmation POST enforces current independent scale, candidate version, authentication and owner scope before design writes. Database/auth boundaries are isolated stubs.");
+    const rejectionScenarios = [
+      ["deleted source", () => { jobState.sourceAsset.contentDeletedAt = new Date(); }],
+      ["queued deletion", () => { jobState.sourceDeletionRequestedAt = new Date(); }],
+      ["deleted history", () => { jobState.historyDeletedAt = new Date(); }],
+      ["newer correction", () => { jobState.candidateVersion++; }],
+      ["cancelled/failed job", () => { jobState.status = "failed"; }],
+      ["another tab applied", () => { jobState.appliedDesignId = "other-design"; }],
+      ["public revision", () => { jobState.revision = { id: "public-revision" }; }],
+      ["changed owner", () => { jobState.userId = "different-owner"; }],
+      ["replaced source", () => { jobState.sourceAssetId = "other-source"; jobState.sourceAsset.id = "other-source"; }],
+      ["changed source bytes", () => { jobState.sourceAsset.sha256 = "b".repeat(64); }],
+    ] as const;
+    for (const [label, change] of rejectionScenarios) {
+      jobState = freshJob(); beforeTransaction = change;
+      const previousWrites: number = writes, previousSnapshots = snapshots.length;
+      const response = await request();
+      assert.equal(response.status, 409, `${label} between validation and transaction must block confirmation`);
+      assert.equal(writes, previousWrites); assert.equal(snapshots.length, previousSnapshots);
+      assert.deepEqual(events, ["source-lock", "fresh-check"], `${label} must be rejected before attempting a Design write`);
+    }
+    beforeTransaction = () => undefined;
+    for (const [label, change] of rejectionScenarios.slice(3, 8)) {
+      jobState = freshJob(); beforeApply = change;
+      const previousWrites: number = writes, previousSnapshots = snapshots.length;
+      assert.equal((await request()).status, 409, `${label} after the fresh read must roll back the design`);
+      assert.equal(writes, previousWrites); assert.equal(snapshots.length, previousSnapshots);
+      assert.deepEqual(events, ["source-lock", "fresh-check", "design-create", "compare-and-set"]);
+    }
+    beforeApply = () => undefined; jobState = freshJob();
+    jobState.sourceAsset.contentDeletedAt = new Date();
+    const beforeDeleted = writes; assert.equal((await request()).status, 409); assert.equal(writes, beforeDeleted);
+    jobState = freshJob(); assert.equal((await request()).status, 201);
+    assert.deepEqual(events, ["source-lock", "fresh-check", "design-create", "compare-and-set"]);
+    assert.deepEqual(checkedWhere, { id: "private-import", userId: "owner", status: "ready", candidateVersion: 7,
+      appliedDesignId: null, revision: { is: null }, sourceDeletionRequestedAt: null, historyDeletedAt: null,
+      sourceAssetId: "authored-source", sourceAsset: { is: { id: "authored-source", sha256: "a".repeat(64), contentDeletedAt: null } } });
+    jobState.appliedDesignId = "private-design";
+    const beforeDuplicate = writes, duplicate = await request();
+    assert.equal(duplicate.status, 200); assert.equal((await duplicate.json()).alreadyApplied, true); assert.equal(writes, beforeDuplicate);
+    console.log("PASS: actual confirmation POST enforces independent scale, source registration, owner/version checks, source-row lock before Design writes, deletion/correction/cancellation races, rollback and duplicate requests. Database/auth boundaries are isolated stubs, not live database certification.");
   } finally {
     for (const [id, value] of stubbed) { if (value) require.cache[id] = value; else delete require.cache[id]; }
   }
