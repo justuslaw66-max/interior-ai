@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import fs from "node:fs/promises";
 import path from "node:path";
-import { PDFDocument, PDFName, PDFRawStream, decodePDFRawStream } from "pdf-lib";
+import { PDFDocument, PDFName, PDFRawStream } from "pdf-lib";
 import { authoredApartment } from "./fixtures/scan-to-editable-plan/apartment";
 import { applyFloorPlanTopologyMutationsV2 } from "@/lib/floor-plan-topology-mutations";
 import { buildFloorPlanVectorDrawing } from "@/lib/floor-plan-vector-drawing";
@@ -9,6 +9,8 @@ import { exportFloorPlanVectorPdf, exportFloorPlanVectorSvg, layoutFloorPlanVect
 import { compileCanonicalFloorPlanRenderModel } from "@/lib/floor-plan-render-model";
 import { physicalDimensionLineMm } from "./fixtures/scan-to-editable-plan/pdf-physical-scale";
 import { canonicalFloorPlanToDesignSnapshot } from "@/lib/floor-plan-legacy-adapters";
+import { loadPlanVectorFont } from "@/lib/floor-plan-vector-font";
+import { vectorExportFontBytes, vectorPdfEmbeddedFonts, vectorPdfPageContent } from "./fixtures/scan-to-editable-plan/pdf-vector-inspection";
 
 function testFurnitureDrawing(document: ReturnType<typeof authoredApartment>) {
   const snapshot = canonicalFloorPlanToDesignSnapshot(document).snapshot, room = snapshot.rooms[0];
@@ -47,23 +49,33 @@ async function main() {
   assert(drawing.primitives.some((p) => p.id.startsWith("replacement:wall")));
   assert(!drawing.primitives.some((p) => p.id.startsWith("shared:")));
   const options = { paper: "A4", orientation: "landscape", scale: 100 } as const;
-  const layout = layoutFloorPlanVectorExport(drawing, options);
+  const resources = { fontBytes: await vectorExportFontBytes() }, font = await loadPlanVectorFont(resources.fontBytes);
+  const layout = layoutFloorPlanVectorExport(drawing, options, font.font);
   assert.equal(9260 / layout.scale, 92.6);
-  const bytes = await exportFloorPlanVectorPdf(drawing, options);
-  assert.deepEqual(bytes, await exportFloorPlanVectorPdf(drawing, options));
+  const bytes = await exportFloorPlanVectorPdf(drawing, options, resources);
+  assert.deepEqual(bytes, await exportFloorPlanVectorPdf(drawing, options, resources));
   const pdf = await PDFDocument.load(bytes);
   assert.equal(pdf.getPageCount(), 1);
   assert(Math.abs(pdf.getPage(0).getWidth() / (72 / 25.4) - 297) < 1e-9);
   const streams = pdf.context.enumerateIndirectObjects().flatMap(([, object]) => object instanceof PDFRawStream ? [object] : []);
   assert(!streams.some((stream) => stream.dict.get(PDFName.of("Subtype"))?.toString() === "/Image"));
-  const content = streams.map((stream) => Buffer.from(decodePDFRawStream(stream).decode()).toString()).join("\n");
+  assert.deepEqual(vectorPdfEmbeddedFonts(pdf), [resources.fontBytes], "The licensed font program must be embedded intact, not replaced by outlines or a missing external font.");
+  const content = vectorPdfPageContent(pdf);
   const count = (regex: RegExp) => [...content.matchAll(regex)].length;
   const measuredPaperMm = physicalDimensionLineMm(content, 9260);
   assert(measuredPaperMm !== undefined && Math.abs(measuredPaperMm - 92.6) <= 0.01, "Actual PDF path after all emitted transforms must measure 92.6 mm");
   assert(count(/\bBT\b/g) >= 5, "Editable text operators must remain");
   assert(count(/\bm\b/g) >= 15, "Separate path components must remain");
   assert(count(/\bc\b/g) > 0, "Swing must contain a cubic curve");
-  const svg = exportFloorPlanVectorSvg(drawing, options);
+  const svg = await exportFloorPlanVectorSvg(drawing, options, resources);
+  assert(svg.includes("data:font/ttf;base64,"), "SVG keeps text and carries the matching display font.");
+  const label = { id: "unicode", kind: "text", text: "Café Ω", point: { xMm: 2500, zMm: 1700 }, role: "annotation-text" } as const;
+  const unicodeDrawing = { ...drawing, primitives: [...drawing.primitives, label] };
+  const unicodePdf = await exportFloorPlanVectorPdf(unicodeDrawing, options, resources);
+  const invalid = { ...drawing, primitives: [{ ...label, text: "卧室" }] };
+  await assert.rejects(exportFloorPlanVectorPdf(invalid, options, resources), /does not contain/);
+  assert.throws(() => layoutFloorPlanVectorExport({ ...drawing, primitives: [{ ...label, text: "W".repeat(150) }] }, options, font.font), /will not fit/, "A label cannot fit merely because its anchor is on the page.");
+  assert.throws(() => layoutFloorPlanVectorExport(drawing, { ...options, title: "W".repeat(150) }, font.font), /title will not fit/);
   assert(svg.includes("9260"));
   assert(!svg.includes("<image"));
   const output = process.env.SCAN_PLAN_ARTIFACT_DIR;
@@ -71,6 +83,7 @@ async function main() {
     await fs.mkdir(output, { recursive: true });
     await fs.writeFile(path.join(output, "proposed-apartment.pdf"), bytes);
     await fs.writeFile(path.join(output, "proposed-apartment.svg"), svg);
+    await fs.writeFile(path.join(output, "editable-font-unicode.pdf"), unicodePdf);
     await fs.writeFile(path.join(output, "proposed-apartment.json"), JSON.stringify(result.document, null, 2));
     await fs.writeFile(path.join(output, "drawing-manifest.json"), JSON.stringify({ layout, drawing }, null, 2));
     await fs.writeFile(path.join(output, "vector-inspection.json"), JSON.stringify({ layout, measuredPaperMm, primitiveCount: drawing.primitives.length, pathCount: count(/\bm\b/g), textCount: count(/\bBT\b/g), cubicCount: count(/\bc\b/g), imageCount: 0, geometryHash: drawing.geometryHash, unsupported: drawing.unsupported }, null, 2));

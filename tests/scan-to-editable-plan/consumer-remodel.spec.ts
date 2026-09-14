@@ -10,10 +10,11 @@ import { canonicalFloorPlanToDesignSnapshot } from "../../lib/floor-plan-legacy-
 import { snapshotToStored, type StoredDesign } from "../../lib/room-persistence";
 import { compileCanonicalFloorPlanRenderModel } from "../../lib/floor-plan-render-model";
 import { readFile, writeFile } from "node:fs/promises";
-import { PDFDocument, PDFName, PDFRawStream, decodePDFRawStream } from "pdf-lib";
+import { PDFDocument, PDFName, PDFRawStream } from "pdf-lib";
 import { physicalDimensionLineMm } from "../../scripts/fixtures/scan-to-editable-plan/pdf-physical-scale";
 import { buildFloorPlanVectorDrawing } from "../../lib/floor-plan-vector-drawing";
 import { exportFloorPlanVectorSvg } from "../../lib/floor-plan-vector-export";
+import { vectorExportFontBytes, vectorPdfPageContent } from "../../scripts/fixtures/scan-to-editable-plan/pdf-vector-inspection";
 
 const storageKey = "interior-ai:v1:livingroom-design";
 async function saved(page: Page): Promise<StoredDesign> {
@@ -134,14 +135,14 @@ test("Consumer shared-wall merge, attached partition, opening edit, undo/redo, 3
   expect(pdf.getPage(0).getWidth() / (72 / 25.4)).toBeCloseTo(297, 8);
   const streams = pdf.context.enumerateIndirectObjects().flatMap(([, object]) => object instanceof PDFRawStream ? [object] : []);
   expect(streams.some((stream) => stream.dict.get(PDFName.of("Subtype"))?.toString() === "/Image")).toBe(false);
-  const content = streams.map((stream) => Buffer.from(decodePDFRawStream(stream).decode()).toString()).join("\n");
+  const content = vectorPdfPageContent(pdf);
   expect(physicalDimensionLineMm(content, 9260)).toBeCloseTo(92.6, 2);
   const svgDownload = page.waitForEvent("download");
   await panel.getByRole("button", { name: "SVG", exact: true }).click();
   const svgPath = testInfo.outputPath("consumer-proposed.svg");
   await (await svgDownload).saveAs(svgPath);
   const expectedDrawing = buildFloorPlanVectorDrawing(accepted!, { floorId: "apartment", dimensions: true, labels: true, fixtures: true });
-  expect(await readFile(svgPath, "utf8")).toBe(exportFloorPlanVectorSvg(expectedDrawing, { paper: "A4", orientation: "landscape", scale: 100 }));
+  expect(await readFile(svgPath, "utf8")).toBe(await exportFloorPlanVectorSvg(expectedDrawing, { paper: "A4", orientation: "landscape", scale: 100 }, { fontBytes: await vectorExportFontBytes() }));
   await page.screenshot({ path: testInfo.outputPath("proposed-2d.png") });
   await page.getByTestId("editor-view-3d").click();
   await expect(page.locator("canvas").first()).toBeVisible();

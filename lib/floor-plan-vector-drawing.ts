@@ -29,7 +29,7 @@ function swingCurve(id: string, center: Point, points: Point[]): PlanDrawingPrim
   const factor = 4 / 3 * Math.tan(sweep / 4);
   const c1 = { xMm: first.xMm - factor * (first.zMm - center.zMm), zMm: first.zMm + factor * (first.xMm - center.xMm) };
   const c2 = { xMm: last.xMm + factor * (last.zMm - center.zMm), zMm: last.zMm - factor * (last.xMm - center.xMm) };
-  return { id, kind: "path", path: `M ${xy(first)} C ${xy(c1)} ${xy(c2)} ${xy(last)}`, fill: false, points, role: "swing_arc" };
+  return { id, kind: "path", path: `M ${xy(first)} C ${xy(c1)} ${xy(c2)} ${xy(last)}`, fill: false, points: [...points, c1, c2], role: "swing_arc" };
 }
 
 function openingPrimitives(floor: CompiledFloorPlanFloorV2) {

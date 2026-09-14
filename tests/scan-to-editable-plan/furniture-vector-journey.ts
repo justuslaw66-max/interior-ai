@@ -1,10 +1,11 @@
 import { expect, type Page, type TestInfo } from "@playwright/test";
 import { readFile, writeFile } from "node:fs/promises";
-import { PDFDocument, PDFName, PDFRawStream, decodePDFRawStream } from "pdf-lib";
+import { PDFDocument, PDFName, PDFRawStream } from "pdf-lib";
 import { storedToSnapshot, type StoredDesign } from "../../lib/room-persistence";
 import { buildFloorPlanVectorDrawing } from "../../lib/floor-plan-vector-drawing";
 import { exportFloorPlanVectorSvg } from "../../lib/floor-plan-vector-export";
 import { physicalDimensionLineMm } from "../../scripts/fixtures/scan-to-editable-plan/pdf-physical-scale";
+import { vectorExportFontBytes, vectorPdfEmbeddedFonts, vectorPdfPageContent } from "../../scripts/fixtures/scan-to-editable-plan/pdf-vector-inspection";
 
 export async function exerciseFurnishedVectorExport(page: Page, saved: () => Promise<StoredDesign>, testInfo: TestInfo) {
   const before = await saved(), snapshot = storedToSnapshot(before), document = snapshot.floorPlan!.canonicalDocument!;
@@ -22,7 +23,9 @@ export async function exerciseFurnishedVectorExport(page: Page, saved: () => Pro
   expect(pdf.getPage(0).getWidth() / (72 / 25.4)).toBeCloseTo(297, 8);
   const streams = pdf.context.enumerateIndirectObjects().flatMap(([, object]) => object instanceof PDFRawStream ? [object] : []);
   expect(streams.some((stream) => stream.dict.get(PDFName.of("Subtype"))?.toString() === "/Image")).toBe(false);
-  const content = streams.map((stream) => Buffer.from(decodePDFRawStream(stream).decode()).toString()).join("\n");
+  const fontBytes = await vectorExportFontBytes();
+  expect(vectorPdfEmbeddedFonts(pdf)).toEqual([fontBytes]);
+  const content = vectorPdfPageContent(pdf);
   expect(physicalDimensionLineMm(content, 9260)).toBeCloseTo(92.6, 2);
   const svgDownload = page.waitForEvent("download");
   await panel.getByRole("button", { name: "SVG", exact: true }).click();
@@ -37,7 +40,7 @@ export async function exerciseFurnishedVectorExport(page: Page, saved: () => Pro
   expect(drawing.primitives.filter(({ role }) => role === "swing_arc")).toHaveLength(1);
   expect((content.match(/\bm\b/g) ?? []).length).toBe(drawing.primitives.filter(({ kind }) => kind === "path").length);
   expect((content.match(/\bc\b/g) ?? []).length).toBe(1);
-  expect(await readFile(svgPath, "utf8")).toBe(exportFloorPlanVectorSvg(drawing, { paper: "A4", orientation: "landscape", scale: 100 }));
+  expect(await readFile(svgPath, "utf8")).toBe(await exportFloorPlanVectorSvg(drawing, { paper: "A4", orientation: "landscape", scale: 100 }, { fontBytes }));
   await panel.getByRole("button", { name: "View original", exact: true }).click();
   const comparison = panel.locator('object[aria-label="Plan comparison drawing"]');
   await expect(comparison).toBeVisible();

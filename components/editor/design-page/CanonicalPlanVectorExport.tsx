@@ -21,10 +21,10 @@ export function CanonicalPlanVectorExport({ document, floorId, original, furnitu
       const drawing = buildFloorPlanVectorDrawing(format === "original" && original ? original : document, { floorId, dimensions, labels, fixtures }, format === "original" ? undefined : furniture);
       const warnings = drawing.unsupported.length ? `Unsupported details: ${drawing.unsupported.join("; ")}` : "";
       if (format === "original" || format === "proposed") {
-        setPreview(`data:image/svg+xml;charset=utf-8,${encodeURIComponent(exportFloorPlanVectorSvg(drawing, options))}`);
+        setPreview(`data:image/svg+xml;charset=utf-8,${encodeURIComponent(await exportFloorPlanVectorSvg(drawing, options))}`);
         setMessage(`${format === "original" ? "Original planning reference" : "Current proposed geometry"}. ${warnings}`);
       } else {
-        const content = format === "pdf" ? new Uint8Array(await exportFloorPlanVectorPdf(drawing, options)).buffer : exportFloorPlanVectorSvg(drawing, options);
+        const content = format === "pdf" ? new Uint8Array(await exportFloorPlanVectorPdf(drawing, options)).buffer : await exportFloorPlanVectorSvg(drawing, options);
         const url = URL.createObjectURL(new Blob([content], { type: format === "pdf" ? "application/pdf" : "image/svg+xml" }));
         const link = window.document.createElement("a"); link.href = url; link.download = `proposed-plan-1-${options.scale}.${format}`; link.click();
         window.setTimeout(() => URL.revokeObjectURL(url), 1000);
@@ -35,7 +35,7 @@ export function CanonicalPlanVectorExport({ document, floorId, original, furnitu
   };
   const field = "mt-1 w-full rounded border border-neutral-400 bg-transparent p-1.5";
   return <details className="mt-3 border-t border-neutral-300 pt-3"><summary className="cursor-pointer font-semibold">Compare and export vector plan</summary>
-    <p className="my-2">Exports the current 2D geometry as separate paths and editable text. The original source image and private source metadata are excluded. Helvetica must be available or substituted when editing text in Illustrator.</p>
+    <p className="my-2">Exports separate paths and editable text with embedded Liberation Sans. The original source image and private source metadata are excluded. Install <a className="underline" href="/fonts/liberation-sans/LiberationSans-Regular.ttf" download>Liberation Sans</a> if Illustrator requests font substitution. <a className="underline" href="/fonts/liberation-sans/OFL.txt">Font license</a></p>
     <div className="grid grid-cols-3 gap-2">
       <label>Paper<select className={field} value={options.paper} onChange={(event) => setOptions({ ...options, paper: event.target.value === "A3" ? "A3" : "A4" })}><option>A4</option><option>A3</option></select></label>
       <label>Orientation<select className={field} value={options.orientation} onChange={(event) => setOptions({ ...options, orientation: event.target.value === "portrait" ? "portrait" : "landscape" })}><option>landscape</option><option>portrait</option></select></label>
