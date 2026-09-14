@@ -15,7 +15,7 @@ function SourceArtwork({ annotations, selectedId, picking, onSelect, focused }: 
     const selected = selectedId === annotation.id || focused.has(annotation.id);
     const select = () => { if (!picking) onSelect(annotation.id); };
     const text = geometry.command === "text";
-    return <g key={annotation.id} role="button" tabIndex={picking ? -1 : 0}
+    return <g key={annotation.id} data-review-entity-id={annotation.id} role="button" tabIndex={picking ? -1 : 0}
       aria-label={text ? `Source text: ${annotation.text}` : `Source stroke ${annotation.id}`}
       aria-pressed={selected} className="cursor-pointer focus:outline focus:outline-2 focus:outline-violet-600"
       onClick={(event) => { if (!picking) { event.stopPropagation(); select(); } }}
@@ -35,14 +35,14 @@ function SourceArtwork({ annotations, selectedId, picking, onSelect, focused }: 
 
 function PlanOutlines({ overlay, focused, pickingRoom }: { overlay: ReviewOverlay | null; focused: Set<string>; pickingRoom: boolean }) {
   return <>
-    {overlay?.structures.map((path) => <polygon key={path.id} fill={focused.has(path.id) ? "rgba(245,158,11,.28)" : "rgba(245,158,11,.12)"}
+    {overlay?.structures.map((path) => <polygon key={path.id} data-review-entity-id={path.id} fill={focused.has(path.id) ? "rgba(245,158,11,.28)" : "rgba(245,158,11,.12)"}
       points={points(path.points)} stroke={focused.has(path.id) ? "#dc2626" : "#d97706"}
       strokeWidth={focused.has(path.id) ? 4 : 2} vectorEffect="non-scaling-stroke" />)}
-    {overlay?.walls.map((path) => <polyline key={path.id} points={points(path.points)} stroke={focused.has(path.id) ? "#dc2626" : "#059669"}
+    {overlay?.walls.map((path) => <polyline key={path.id} data-review-entity-id={path.id} points={points(path.points)} stroke={focused.has(path.id) ? "#dc2626" : "#059669"}
       strokeWidth={focused.has(path.id) ? 5 : 2.5} vectorEffect="non-scaling-stroke" />)}
-    {overlay?.openings.map((path) => <polyline key={path.id} points={points(path.points)} stroke={focused.has(path.id) ? "#dc2626" : "#2563eb"}
+    {overlay?.openings.map((path) => <polyline key={path.id} data-review-entity-id={path.id} points={points(path.points)} stroke={focused.has(path.id) ? "#dc2626" : "#2563eb"}
       strokeWidth={focused.has(path.id) ? 7 : 4} vectorEffect="non-scaling-stroke" />)}
-    {overlay?.vertices.filter((point) => focused.has(point.id)).map((point) => <circle key={point.id} cx={point.x} cy={point.y}
+    {overlay?.vertices.filter((point) => focused.has(point.id)).map((point) => <circle key={point.id} data-review-entity-id={point.id} cx={point.x} cy={point.y}
       fill="#fff" r={5} stroke="#dc2626" strokeWidth={3} vectorEffect="non-scaling-stroke" />)}
     {pickingRoom ? overlay?.vertices.map((point) => <circle key={`snap-${point.id}`} cx={point.x} cy={point.y}
       fill="white" opacity={0.9} r={5} stroke="#059669" strokeWidth={2} vectorEffect="non-scaling-stroke" />) : null}

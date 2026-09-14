@@ -6,7 +6,7 @@ Updated 2026-09-15. **IN_PROGRESS**. Continue autonomously; this is a checkpoint
 
 - Feature worktree `/Users/justus/Developer/interior-ai-scan-to-editable-plan`, branch `feature/scan-to-editable-plan-v1`. User explicitly authorizes this isolated checkout despite general canonical-worktree routing.
 - Base `a4295bb60c2819c0c3d380f2c758aad8f20f21db`, tree `4f82d7ab6bc838fb91ff42c4805dba7c93e0fd9d` (live integration ref read at start).
-- Latest committed source `bb14d8e7d673933900fb2e6c80150064a888a22e`, tree `cfbcacdfbf158aedae8fa90fd24ecf477da9a195` (optional separate reference underlay). Read actual HEAD/status before continuing; issue-focus zoom batch is uncommitted.
+- Latest committed source `69be59afff6115a74349348cd4589925ec85cc97`, tree `40c8e05c184a7dbf54b5fdbb84257cf572b9be41` (rendered history verification; app source remains bb14d8e). Read actual HEAD/status before continuing; issue-focus zoom batch is uncommitted.
 - Protected dirty primary `/Users/justus/Developer/interior-ai` and other worktrees untouched. Never reset/stash/clean/synchronize entire dirty files. lsof listener + cwd required before runtime code edits.
 - Local implementation/tests/ordinary checkpoint commits authorized. **No push, PR, merge, rebase, amend, deployment, secrets, shared DB, paid infrastructure or billable/external recognition call**. No such actions performed. No schema changes. Exact @pdf-lib/fontkit1.1.1 dependency added locally in fc3685f below. Catalog retailer-media reads are ordinary product assets, not client-plan uploads.
 - One independent read-only FINAL reviewer authorized; none used yet. No routine subagents. No goal/automation created. No outstanding approval rejection. Do not ask whether to continue.
@@ -156,7 +156,7 @@ Checkpoint commits (full identities/history in Git): d48971b direct3D openings;7
 
 ## Next executable work after active fix
 
-- Commit the isolated rendered-history test correction, then commit the reviewed issue-focus batch. Continue M2 independent scale confirmation, planning-review tiers and actual import lifecycle. No deploy or Gate A3 certification.
+- Issue-focus complete diff reviewed; ordinary checkpoint follows. Continue M2 independent scale confirmation, planning-review tiers and actual import lifecycle. No deploy or Gate A3 certification.
 - M2: components/editor/floor-plan-import-review/{FloorPlanImportReviewPanel,FloorPlanScaleReviewPanel,FloorPlanSourceReviewCanvas,FloorPlanVisualReviewTools}. focusedIssue/entityIDs exist; issuezoom absent. Calibration is twoendpoints+oneprintedlength; add independentcrosscheck. Assumedheight gating currently blocksconfirmation; support visiblyassumed planningdraft and optionalannotation uncertainty. True import/cancel/back/failure/staleresult/source-deletion/two-tab/ownership tests onlydisposablelocalboundaries.
 - Complete reference artwork review outsideinitialimport where needed, roomrecovery options (archivedviews/finishes retained butnotallrestorechoices), exportunderlay option and font-shaping limits, independentrealwall/opening audit/actualcoverage. Do not acquiredata indefinitely or inventpilot.
 - Final exact-source requiredchecks/build/immutableLOCALsmoke/performance+memory/ONEindependentread-onlyfinalreview/remediation. Re-read livetargetonlybefore separatelyauthorizedintegration. No READY whiledirecttests/realinputaccuracy/Illustrator remain.

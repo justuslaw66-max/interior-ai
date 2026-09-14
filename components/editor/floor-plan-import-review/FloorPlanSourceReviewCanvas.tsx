@@ -11,6 +11,8 @@ import {
 import FloorPlanSourceReviewOverlay from "./FloorPlanSourceReviewOverlay";
 import FloorPlanSourceArtworkSelection from "./FloorPlanSourceArtworkFields";
 import type { ConsumerFloorPlanImportJob } from "../floor-plan-import-ui-types";
+import { useFloorPlanReviewZoom } from "./useFloorPlanReviewZoom";
+import { FloorPlanReviewZoomControls } from "./FloorPlanReviewZoomControls";
 
 type FloorPlanSourceReviewCanvasProps = {
   document: FloorPlanDocumentV2;
@@ -72,11 +74,11 @@ export default function FloorPlanSourceReviewCanvas({
   const [showArtwork, setShowArtwork] = useState(true);
   const [sourceOpacity, setSourceOpacity] = useState(82);
   const [overlayOpacity, setOverlayOpacity] = useState(92);
-  const [zoom, setZoom] = useState(1);
   const [snapEnabled, setSnapEnabled] = useState(true);
   const [hoverSnap, setHoverSnap] = useState<ReviewSourceSnapResult | null>(null);
   const page =
     pages.find((item) => item.pageNumber === pageNumber) ?? pages[0] ?? null;
+  const { zoom, setZoom, scrollRef, svgRef } = useFloorPlanReviewZoom(focusedEntityIds, page, `${jobId}:${floorId}:${sourceId}`);
   const overlay = useMemo(
     () =>
       page
@@ -191,56 +193,8 @@ export default function FloorPlanSourceReviewCanvas({
               : "Your selected measurements and room corners will appear here."}
           </div>
         </div>
-        <div className="flex flex-wrap items-center justify-end gap-1 text-[10px]">
-          <button
-            aria-label="Zoom out"
-            className="rounded border bg-white px-2 py-1 disabled:opacity-40"
-            disabled={zoom <= 1}
-            onClick={() => setZoom((current) => Math.max(1, current - 0.5))}
-            type="button"
-          >
-            −
-          </button>
-          <span className="min-w-10 text-center font-medium">{Math.round(zoom * 100)}%</span>
-          <button
-            aria-label="Zoom in"
-            className="rounded border bg-white px-2 py-1 disabled:opacity-40"
-            disabled={zoom >= 4}
-            onClick={() => setZoom((current) => Math.min(4, current + 0.5))}
-            type="button"
-          >
-            +
-          </button>
-          <button
-            className="rounded border bg-white px-2 py-1"
-            onClick={() => setZoom(1)}
-            type="button"
-          >
-            Fit
-          </button>
-          {pages.length > 1 ? (
-            <select
-              aria-label="Source page"
-              className={
-                dark
-                  ? "designer-control rounded border px-1 py-1 text-[10px]"
-                  : "rounded border border-neutral-300 bg-white px-1 py-1 text-[10px]"
-              }
-              value={page.pageNumber}
-              onChange={(event) => {
-                setZoom(1);
-                setHoverSnap(null);
-                onPageNumberChange(Number(event.target.value));
-              }}
-            >
-              {pages.map((item) => (
-                <option key={item.pageNumber} value={item.pageNumber}>
-                  Page {item.pageNumber}
-                </option>
-              ))}
-            </select>
-          ) : null}
-        </div>
+        <FloorPlanReviewZoomControls zoom={zoom} setZoom={setZoom} pages={pages} pageNumber={page.pageNumber} dark={dark}
+          onPageNumberChange={(value) => { setHoverSnap(null); onPageNumberChange(value); }} />
       </div>
       <figure
         className={
@@ -250,7 +204,7 @@ export default function FloorPlanSourceReviewCanvas({
         }
       >
         <div className="relative">
-          <div className="max-h-[72vh] overflow-auto bg-neutral-100">
+          <div ref={scrollRef} data-testid="source-review-scroll" className="max-h-[72vh] overflow-auto bg-neutral-100">
             <div
               className="relative origin-top-left bg-white"
               style={{
@@ -272,6 +226,7 @@ export default function FloorPlanSourceReviewCanvas({
             src={assetUrl}
           />
           <svg
+            ref={svgRef}
             aria-label={
               pickingScale
                 ? "Pick scale points on the source drawing"

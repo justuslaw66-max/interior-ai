@@ -28,7 +28,7 @@ test("Reference artwork selection, text correction, calibration and local compon
   const errors: string[] = [];
   page.on("pageerror", (error) => errors.push(error.message));
   await page.route("**/scan-plan-component", (route) => route.fulfill({ contentType: "text/html", body:
-    '<!doctype html><html><head><title>Source artwork fixture</title><style>body{font-family:Arial}.relative{position:relative}.absolute{position:absolute}.inset-0{inset:0}.h-full{height:100%}.w-full{width:100%}svg{display:block}output{display:none}.pointer-events-none{pointer-events:none}label,button{margin:4px}</style></head><body></body></html>' }));
+    '<!doctype html><html><head><title>Source artwork fixture</title><style>body{font-family:Arial}.relative{position:relative}.absolute{position:absolute}.inset-0{inset:0}.h-full{height:100%}.w-full{width:100%}svg{display:block}output{display:none}.pointer-events-none{pointer-events:none}label,button{margin:4px}[data-testid="source-review-scroll"]{max-height:72vh;overflow:auto}</style></head><body></body></html>' }));
   await page.route("**/api/floor-plan-imports/**/assets/**", (route) => route.fulfill({ contentType: "image/svg+xml", body:
     '<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600"><rect width="800" height="600" fill="white"/></svg>' }));
   await page.goto("/scan-plan-component");
@@ -59,5 +59,36 @@ test("Reference artwork selection, text correction, calibration and local compon
   await page.addScriptTag({ path: bundle });
   await expect(page.getByRole("button", { name: "Source text: Reviewed room text" })).toBeVisible();
   expect(JSON.parse(await page.getByTestId("fixture-document").innerText())).toEqual(after);
+  const focusButton = page.getByRole("button", { name: "Show source text issue", exact: true });
+  await focusButton.focus(); await page.keyboard.press("Enter");
+  const scroll = page.getByTestId("source-review-scroll");
+  const evidenceVisible = (id: string) => scroll.evaluate((element, id) => {
+    const box = element.getBoundingClientRect(), evidence = element.querySelector(`[data-review-entity-id="${id}"]`)!.getBoundingClientRect();
+    return evidence.left >= box.left && evidence.right <= box.right && evidence.top >= box.top && evidence.bottom <= box.bottom;
+  }, id);
+  await expect.poll(() => evidenceVisible("far-text")).toBe(true);
+  await expect(focusButton).toBeFocused();
+  await expect(page.getByText("400%", { exact: true })).toBeVisible();
+  await page.getByRole("button", { name: "Toggle measurement picking" }).click();
+  const pick = page.getByRole("group", { name: "Pick scale points on the source drawing" });
+  const screenPoint = await pick.evaluate((svg) => {
+    svg.addEventListener("click", (event) => {
+      const input = event as MouseEvent, element = svg as SVGSVGElement;
+      const source = new DOMPoint(input.clientX, input.clientY).matrixTransform(element.getScreenCTM()!.inverse());
+      svg.setAttribute("data-observed-click", JSON.stringify({ clientX: input.clientX, clientY: input.clientY, x: Math.round(source.x * 10) / 10, y: Math.round(source.y * 10) / 10 }));
+    }, { capture: true, once: true });
+    const box = svg.getBoundingClientRect(); return { x: box.left + 700 / 800 * box.width, y: box.top + 535 / 600 * box.height };
+  });
+  await page.mouse.click(screenPoint.x, screenPoint.y);
+  const native = JSON.parse((await pick.getAttribute("data-observed-click"))!);
+  expect(Math.hypot(native.clientX - screenPoint.x, native.clientY - screenPoint.y)).toBeLessThanOrEqual(1.5);
+  await expect.poll(async () => JSON.parse(await page.getByTestId("fixture-picked-points").innerText())).toEqual([{ x: native.x, y: native.y }]);
+  await fs.writeFile(info.outputPath("zoom-click-evidence.json"), JSON.stringify({ requested: screenPoint, native, checks: ["native event mapped with SVG inverse screen CTM", "exact 0.1-source-pixel stored point", "original 1.5-CSS-pixel input tolerance"] }, null, 2));
+  await page.getByRole("button", { name: "Show curve issue", exact: true }).click();
+  await expect.poll(() => evidenceVisible("curve")).toBe(true);
+  expect(JSON.parse(await page.getByTestId("fixture-document").innerText())).toEqual(after);
+  await page.screenshot({ path: info.outputPath("focused-source-evidence.png") });
+  await page.getByRole("button", { name: "Fit", exact: true }).click();
+  await expect(page.getByText("100%", { exact: true })).toBeVisible();
   expect(errors).toEqual([]);
 });

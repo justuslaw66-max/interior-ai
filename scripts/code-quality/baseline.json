@@ -245,7 +245,7 @@
       "limit": 250
     },
     "components/editor/floor-plan-import-review/FloorPlanSourceReviewCanvas.tsx": {
-      "lines": 529,
+      "lines": 484,
       "limit": 250
     },
     "components/editor/floor-plan-import-review/FloorPlanStructureCorrectionFields.tsx": {
@@ -2135,11 +2135,11 @@
     "components/editor/floor-plan-import-review/FloorPlanSourceReviewCanvas.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 485
+        "maximum": 438
       },
       "complexFunctions": {
         "count": 1,
-        "maximum": 33
+        "maximum": 31
       }
     },
     "components/editor/floor-plan-import-review/FloorPlanStructureCorrectionFields.tsx": {
