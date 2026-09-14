@@ -143,6 +143,19 @@ export type FloorPlanSourceCalibrationPointV2 = {
   planMm: FloorPlanPointMmV2;
 };
 
+/** Confirmed source span; residuals are always derived from the current calibration. */
+export type FloorPlanSourceMeasurementV2 = {
+  id: string;
+  firstPx: { x: number; y: number };
+  secondPx: { x: number; y: number };
+  confirmedLengthMm: number;
+  inputUnit: "mm" | "cm" | "in" | "ft-in";
+  sourceQuality: "clean" | "scan";
+  confirmedAt: string;
+  /** Historical reading only; never used as the current readiness result. */
+  residualAtConfirmation?: { millimetres: number; pixels: number };
+};
+
 export type FloorPlanSourceCalibrationV2 = {
   id: string;
   sourceId: string;
@@ -151,6 +164,8 @@ export type FloorPlanSourceCalibrationV2 = {
   imageHeightPx: number;
   controlPoints: FloorPlanSourceCalibrationPointV2[];
   rmsErrorPx?: number;
+  primaryMeasurement?: FloorPlanSourceMeasurementV2;
+  independentMeasurements?: FloorPlanSourceMeasurementV2[];
 };
 
 export type FloorPlanWallClassificationV2 =

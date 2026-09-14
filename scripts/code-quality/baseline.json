@@ -240,10 +240,6 @@
       "lines": 770,
       "limit": 250
     },
-    "components/editor/floor-plan-import-review/FloorPlanScaleReviewPanel.tsx": {
-      "lines": 274,
-      "limit": 250
-    },
     "components/editor/floor-plan-import-review/FloorPlanSourceReviewCanvas.tsx": {
       "lines": 484,
       "limit": 250
@@ -553,7 +549,7 @@
       "limit": 400
     },
     "lib/floor-plan-import-review-geometry.ts": {
-      "lines": 1141,
+      "lines": 1084,
       "limit": 400
     },
     "lib/floor-plan-imports/address-binding-evidence.ts": {
@@ -2124,12 +2120,12 @@
     },
     "components/editor/floor-plan-import-review/FloorPlanScaleReviewPanel.tsx": {
       "overlongFunctions": {
-        "count": 2,
-        "maximum": 239
+        "count": 1,
+        "maximum": 128
       },
       "complexFunctions": {
         "count": 1,
-        "maximum": 30
+        "maximum": 27
       }
     },
     "components/editor/floor-plan-import-review/FloorPlanSourceReviewCanvas.tsx": {

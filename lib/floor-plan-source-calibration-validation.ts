@@ -1,4 +1,5 @@
 import type { FloorPlanSourceCalibrationV2 } from "./floor-plan-document-v2";
+import { validateSourceMeasurements } from "./floor-plan-scale-measurements";
 
 type CalibrationValidationChecks = {
   issue: (code: string, path: string, message: string) => void;
@@ -12,6 +13,9 @@ export function validateFloorPlanSourceCalibration(
   sourceIds: ReadonlySet<string>,
   checks: CalibrationValidationChecks
 ) {
+  for (const error of validateSourceMeasurements(calibration)) {
+    checks.issue("INVALID_SOURCE_MEASUREMENT", `${calibrationPath}.${error.path}`, error.message);
+  }
   if (!sourceIds.has(calibration.sourceId)) checks.issue("UNKNOWN_SOURCE", `${calibrationPath}.sourceId`, `Unknown source: ${calibration.sourceId}.`);
   checks.integer(calibration.pageNumber, `${calibrationPath}.pageNumber`, { positive: true });
   checks.integer(calibration.imageWidthPx, `${calibrationPath}.imageWidthPx`, { positive: true });

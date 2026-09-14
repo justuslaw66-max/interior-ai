@@ -1,5 +1,6 @@
 import type { FloorPlanDocumentV2 } from "@/lib/floor-plan-document-v2";
 import type { FloorPlanReviewIssue } from "./types";
+import { collectScaleMeasurementIssues, isScaleMeasurementIssue } from "./scale-measurement-readiness";
 
 const READINESS_ISSUE_IDS = new Set([
   "source-registration-incomplete",
@@ -74,7 +75,7 @@ export function collectFloorPlanImportReadinessIssues(input: {
   document: FloorPlanDocumentV2;
   sourceManifest: Record<string, unknown> | null;
 }): FloorPlanReviewIssue[] {
-  const issues: FloorPlanReviewIssue[] = [];
+  const issues: FloorPlanReviewIssue[] = collectScaleMeasurementIssues(input.document);
   const unregisteredFloors = input.document.floors.filter(
     (floor) => floor.calibrations.length === 0
   );
@@ -188,7 +189,7 @@ export function reconcileFloorPlanImportReadinessIssues(input: {
   reviewIssues: FloorPlanReviewIssue[];
 }) {
   return [
-    ...input.reviewIssues.filter((entry) => !READINESS_ISSUE_IDS.has(entry.id)),
+    ...input.reviewIssues.filter((entry) => !READINESS_ISSUE_IDS.has(entry.id) && !isScaleMeasurementIssue(entry)),
     ...collectFloorPlanImportReadinessIssues(input),
   ];
 }

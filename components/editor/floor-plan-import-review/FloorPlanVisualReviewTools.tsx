@@ -126,7 +126,7 @@ export default function FloorPlanVisualReviewTools({
   );
   const primaryControls = (
     <>
-      <FloorPlanScaleReviewPanel
+      <FloorPlanScaleReviewPanel key={`${sourceId}:${page?.pageNumber}`}
         document={document}
         floorId={floor.id}
         sourceId={sourceId}
