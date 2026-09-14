@@ -13,6 +13,7 @@ type ConsumerMeasurementPreferenceRegionProps = {
   ready: boolean;
   widthMm: number;
   depthMm: number;
+  areaSquareMeters?: number;
   measurementUnit: PlanMeasurementUnit;
   onChangeUnit: (unit: PlanMeasurementUnit) => void;
   onChangeDraft: (axis: "width" | "depth", value: string) => void;
@@ -49,6 +50,7 @@ function ReadyMeasurementPreference({
   hasRooms,
   widthMm,
   depthMm,
+  areaSquareMeters,
   measurementUnit,
   onChangeUnit,
   onChangeDraft,
@@ -78,7 +80,7 @@ function ReadyMeasurementPreference({
       <span className="font-semibold">Visible scale:</span>{" "}
       {formatDisplayLength(widthMm, measurementUnit)} ×{" "}
       {formatDisplayLength(depthMm, measurementUnit)} ·{" "}
-      {formatDisplayArea((widthMm * depthMm) / 1_000_000, measurementUnit)}
+      {formatDisplayArea(areaSquareMeters ?? (widthMm * depthMm) / 1_000_000, measurementUnit)}
     </div>
   </>;
 }
@@ -90,6 +92,7 @@ export function ConsumerMeasurementPreferenceRegion({
   ready,
   widthMm,
   depthMm,
+  areaSquareMeters,
   measurementUnit,
   onChangeUnit,
   onChangeDraft,
@@ -108,10 +111,20 @@ export function ConsumerMeasurementPreferenceRegion({
         </>
       ) : (
         <ReadyMeasurementPreference dark={dark} canEditPlanGeometry={canEditPlanGeometry}
-          hasRooms={hasRooms} widthMm={widthMm} depthMm={depthMm}
+          hasRooms={hasRooms} widthMm={widthMm} depthMm={depthMm} areaSquareMeters={areaSquareMeters}
           measurementUnit={measurementUnit} onChangeUnit={onChangeUnit}
           onChangeDraft={onChangeDraft} onCommitDimension={onCommitDimension} />
       )}
     </div>
   );
+}
+
+export function consumerRoomMeasurementDimensions(input: {
+  hasRooms: boolean; roomWidth: number; roomDepth: number; roomWidthInput: string; roomDepthInput: string;
+}) {
+  const dimension = (value: string, fallback: number) => {
+    const parsed = Number(value);
+    return (input.hasRooms || !Number.isFinite(parsed) || parsed <= 0 ? fallback : parsed) * 1000;
+  };
+  return { widthMm: dimension(input.roomWidthInput, input.roomWidth), depthMm: dimension(input.roomDepthInput, input.roomDepth) };
 }

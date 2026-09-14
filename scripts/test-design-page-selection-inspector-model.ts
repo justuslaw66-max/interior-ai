@@ -493,4 +493,7 @@ assert.equal(
   "Adjust mode should keep plan-object summaries visible when no product is selected."
 );
 
+const roomWithHole = { ...room, holes: [[{ x: -0.5, z: -0.5 }, { x: 0.5, z: -0.5 }, { x: 0.5, z: 0.5 }, { x: -0.5, z: 0.5 }]] };
+assert.equal(summarize({ selectedPlanRoom: roomWithHole })!.detail, `${room.roomType} room · ${(room.w * room.d - 1).toFixed(1)} sqm`);
+
 console.log("design page selection-inspector model guardrails passed");

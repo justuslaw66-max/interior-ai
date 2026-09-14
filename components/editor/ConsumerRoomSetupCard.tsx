@@ -1,6 +1,6 @@
 "use client";
 
-import { ConsumerMeasurementPreferenceRegion } from "@/components/editor/ConsumerMeasurementPreferenceRegion";
+import { ConsumerMeasurementPreferenceRegion, consumerRoomMeasurementDimensions } from "@/components/editor/ConsumerMeasurementPreferenceRegion";
 import {
   HOUSE_ROOM_TYPES,
   ROOM_SIZE_PRESETS,
@@ -22,6 +22,7 @@ export type ConsumerRoomSetupCardProps = {
   roomDepthInput: string;
   roomWidth: number;
   roomDepth: number;
+  roomAreaSquareMeters?: number;
   measurementUnit: PlanMeasurementUnit;
   measurementUnitReady: boolean;
   openingCount: number;
@@ -41,11 +42,6 @@ export type ConsumerRoomSetupCardProps = {
   };
 };
 
-function validDraftMetres(value: string, fallback: number) {
-  const parsed = Number(value);
-  return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
-}
-
 export function ConsumerRoomSetupCard({
   dark,
   canEdit,
@@ -58,16 +54,14 @@ export function ConsumerRoomSetupCard({
   roomDepthInput,
   roomWidth,
   roomDepth,
+  roomAreaSquareMeters,
   measurementUnit,
   measurementUnitReady,
   openingCount,
   hasConnectionBlockers,
   actions,
 }: ConsumerRoomSetupCardProps) {
-  const widthMm =
-    (hasRooms ? roomWidth : validDraftMetres(roomWidthInput, roomWidth)) * 1000;
-  const depthMm =
-    (hasRooms ? roomDepth : validDraftMetres(roomDepthInput, roomDepth)) * 1000;
+  const dimensions = consumerRoomMeasurementDimensions({ hasRooms, roomWidth, roomDepth, roomWidthInput, roomDepthInput });
   const roomTypeLabel =
     HOUSE_ROOM_TYPES.find((option) => option.type === newRoomType)?.label ??
     "Room";
@@ -184,8 +178,8 @@ export function ConsumerRoomSetupCard({
         canEditPlanGeometry={canEditPlanGeometry}
         hasRooms={hasRooms}
         ready={measurementUnitReady}
-        widthMm={widthMm}
-        depthMm={depthMm}
+        {...dimensions}
+        areaSquareMeters={hasRooms ? roomAreaSquareMeters : undefined}
         measurementUnit={measurementUnit}
         onChangeUnit={actions.changeMeasurementUnit}
         onChangeDraft={(axis, value) => axis === "width"

@@ -32,8 +32,11 @@ export async function exerciseEnclosedRoom(page: Page, saved: () => Promise<Stor
   expect(floor.rooms.find(({ id }) => id === "living")!.wallLoops.filter(({ kind }) => kind === "hole")).toHaveLength(1);
   expect(floor.walls.filter(({ id }) => !existing.has(id)).every(({ adjacentRoomIds }) => adjacentRoomIds.length === 2)).toBe(true);
   expect((await saved()).rooms!.find(({ id }) => id === "living")!.planHoles).toHaveLength(1);
+  await expect(page.getByTestId("room-setup-scale-summary")).toContainText("51.1 m²");
   await page.screenshot({ path: testInfo.outputPath("enclosed-room-2d.png") });
   await page.getByTestId("editor-view-3d").click();
+  await expect(page.getByTestId("room-setup-scale-summary")).toContainText("51.1 m²");
+  await expect(page.getByText(/Room area 51\.06 sqm/)).toBeVisible();
   await page.screenshot({ path: testInfo.outputPath("enclosed-room-3d.png") });
   expect(await document()).toEqual(enclosed);
   await page.getByTestId("editor-view-2d").click();

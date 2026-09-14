@@ -1,11 +1,10 @@
+import type { DesignPageSurfaceRoomSummary as SurfaceRoomSummary } from "@/lib/design-page-surface-room-summary";
 import type { CSSProperties } from "react";
 
 import { ROOM_DIMENSION_DEFAULTS } from "@/lib/design-page-house-plan";
 import type { FloorMaterial } from "@/lib/floor-materials";
 import type {
   RoomFloorPattern,
-  RoomSurfaceAssignments,
-  RoomType,
 } from "@/lib/room-types";
 import {
   getSurfaceMaterialTextureSource,
@@ -18,17 +17,7 @@ export type SurfaceBrowserViewMode = "grid" | "list";
 export type SurfaceFilterKey = "effect" | "collection" | "size" | "color";
 export type SurfaceTargetMode = "floor" | "walls" | "selected_wall" | "ceiling";
 
-export type SurfaceRoomSummary = {
-  id: string;
-  name: string;
-  floorLabel?: string;
-  roomType: RoomType;
-  width: number;
-  depth: number;
-  height?: number;
-  surfaces?: RoomSurfaceAssignments;
-  surfaceFinishes?: RoomSurfaceAssignments;
-};
+export type { SurfaceRoomSummary };
 
 export type SurfaceFilterState = Partial<Record<SurfaceFilterKey, string>> & {
   favoritesOnly?: boolean;
@@ -267,8 +256,8 @@ export function buildFacetOptions(
   );
 }
 
-export function getSurfaceRoomAreaSqm(room: SurfaceRoomSummary) {
-  return Math.max(0, room.width * room.depth);
+export function getSurfaceRoomAreaSqm(room: Pick<SurfaceRoomSummary, "width" | "depth" | "areaSquareMeters">) {
+  return room.areaSquareMeters ?? Math.max(0, room.width * room.depth);
 }
 
 function getSurfaceRoomWallHeight(room: SurfaceRoomSummary) {

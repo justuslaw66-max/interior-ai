@@ -8,6 +8,7 @@ import { changedOpeningFormFields, proposedOpeningForm } from "@/lib/floor-plan-
 import { applyFloorPlanTopologyMutationV2 } from "@/lib/floor-plan-topology-mutations";
 import { restoreLayoutVersion } from "@/lib/layout-versions";
 import { commitCurrentWallGesture } from "@/lib/floor-plan-wall-gesture";
+import { buildSurfaceRoomSummary } from "@/lib/design-page-surface-room-summary";
 import { proposedWallEditFailureMessage } from "@/lib/floor-plan-wall-edit-feedback";
 import { FloorPlanTopologyMutationErrorV2 } from "@/lib/floor-plan-topology-mutation-types";
 import { recoverProposedRoomLayout } from "@/lib/floor-plan-room-recovery";
@@ -62,6 +63,8 @@ const enclosedConsumer = encloseConsumerRoom(merged, "enclosed", [[1000, 1000], 
 assert.equal(enclosedConsumer.rooms.find(({ id }) => id === "enclosed")!.items[0].instanceId, "sofa");
 assert.equal(enclosedConsumer.rooms.find(({ id }) => id === "living")!.items[0].instanceId, "desk");
 assert.deepEqual(world(enclosedConsumer), world(original));
+assert.equal(buildSurfaceRoomSummary(enclosedConsumer.rooms.find(({ id }) => id === "living")!).areaSquareMeters, 48.56);
+assert.equal(buildSurfaceRoomSummary(enclosedConsumer.rooms.find(({ id }) => id === "enclosed")!).areaSquareMeters, 7);
 const nestedConsumer = encloseConsumerRoom(enclosedConsumer, "surrounding", [[500, 500], [3500, 500], [3500, 5000], [500, 5000]]);
 assert.deepEqual(nestedConsumer.rooms.find(({ id }) => id === "surrounding")!.surfaces, livingRoom.surfaces,
   "Room split lineage preserves finishes even when the new room centre falls in an existing hole");

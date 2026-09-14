@@ -6,6 +6,7 @@ import {
   buildDesignSelectionContext,
   type DesignSelectionContext,
 } from "@/lib/design-page-selection-context";
+import { getPlanRoomAreaSquareMeters } from "@/lib/plan-room-summary";
 import { getItemPrice, normalizeRotationDegrees } from "@/lib/design-page-utils";
 import type { HousePlanRoom2D } from "@/lib/design-page-house-plan";
 import { getPlanOpeningWallSpanMeters } from "@/lib/design-page-plan-overlays";
@@ -217,15 +218,12 @@ export function buildDesignPageSelectionInspectorSummary({
     };
   }
 
-  if (selectedPlanRoom) {
-    const roomArea = selectedPlanRoom.w * selectedPlanRoom.d;
-    return {
+  if (selectedPlanRoom) return {
       kind: "Room",
       title: selectedPlanRoom.name,
-      detail: `${selectedPlanRoom.roomType} room · ${roomArea.toFixed(1)} sqm`,
+      detail: `${selectedPlanRoom.roomType} room · ${getPlanRoomAreaSquareMeters(selectedPlanRoom).toFixed(1)} sqm`,
       metrics: [],
     };
-  }
 
   return null;
 }

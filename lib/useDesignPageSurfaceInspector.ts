@@ -55,6 +55,7 @@ import type {
   SurfaceTargetMode,
 } from "@/lib/useDesignPageSurfaceActions";
 import type { RoomFloorPattern, RoomSnapshot } from "@/lib/room-types";
+import { getPlanRoomAreaSquareMeters } from "@/lib/plan-room-summary";
 import { getWallPaintDisplayName } from "@/lib/wall-paint";
 import { formatCabinetMeasurement } from "@/features/cabinetry/measurementUnits";
 
@@ -1023,9 +1024,7 @@ export function useDesignPageSurfaceInspector({
               ? `Ceiling paint · Height ${Math.round(
                   wallInspectorDefaultHeight * 1000
                 )} mm`
-              : `Rotation ${floorInspectorRotationDeg}° · Room area ${(
-                  selectedPlanRoom.w * selectedPlanRoom.d
-                ).toFixed(2)} sqm`;
+              : `Rotation ${floorInspectorRotationDeg}° · Room area ${getPlanRoomAreaSquareMeters(selectedPlanRoom).toFixed(2)} sqm`;
           const blockers =
             isDesigner && surfaceInspectorBlockers.length > 0
               ? `Blockers: ${surfaceInspectorBlockers

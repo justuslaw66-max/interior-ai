@@ -55,7 +55,7 @@ function polygonArea(points: Array<{ x: number; z: number }>): number {
   return Math.abs(twiceArea) / 2;
 }
 
-function getRoomLocalPoints(room: HousePlanRoom2D): Array<{ x: number; z: number }> {
+function getRoomLocalPoints(room: Pick<HousePlanRoom2D, "polygon" | "w" | "d">): Array<{ x: number; z: number }> {
   if (room.polygon && room.polygon.length >= 3) return room.polygon;
   return [
     { x: -room.w / 2, z: -room.d / 2 },
@@ -77,7 +77,7 @@ function getRoomBounds(room: HousePlanRoom2D): Bounds {
   );
 }
 
-function getRoomArea(room: HousePlanRoom2D): number {
+export function getPlanRoomAreaSquareMeters(room: Pick<HousePlanRoom2D, "polygon" | "holes" | "w" | "d">): number {
   const outerArea = polygonArea(getRoomLocalPoints(room));
   const holesArea = (room.holes ?? []).reduce(
     (sum, hole) => sum + polygonArea(hole),
@@ -115,7 +115,7 @@ export function buildPlanRoomSummary(
       name: room.name,
       widthMeters: bounds.maxX - bounds.minX,
       depthMeters: bounds.maxZ - bounds.minZ,
-      areaSquareMeters: getRoomArea(room),
+      areaSquareMeters: getPlanRoomAreaSquareMeters(room),
     };
   });
 

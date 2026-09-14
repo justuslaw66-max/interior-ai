@@ -125,7 +125,7 @@
       "limit": 250
     },
     "components/editor/ConsumerRoomSetupCard.tsx": {
-      "lines": 309,
+      "lines": 303,
       "limit": 250
     },
     "components/editor/design-controls-plan/PlanToolIcon.tsx": {
@@ -221,11 +221,11 @@
       "limit": 250
     },
     "components/editor/DesignControlsPanel.tsx": {
-      "lines": 970,
+      "lines": 960,
       "limit": 250
     },
     "components/editor/DesignControlsPlanPanel.tsx": {
-      "lines": 3893,
+      "lines": 3892,
       "limit": 250
     },
     "components/editor/DraggableFloatingPanel.tsx": {
@@ -716,10 +716,6 @@
       "lines": 627,
       "limit": 400
     },
-    "lib/useDesignPageRoomReadModel.ts": {
-      "lines": 410,
-      "limit": 400
-    },
     "lib/useDesignPageSceneItemDrag.ts": {
       "lines": 659,
       "limit": 400
@@ -729,7 +725,7 @@
       "limit": 400
     },
     "lib/useDesignPageSelectionInspectorModel.ts": {
-      "lines": 418,
+      "lines": 416,
       "limit": 400
     },
     "lib/useDesignPageSelectionTransforms.ts": {
@@ -741,7 +737,7 @@
       "limit": 400
     },
     "lib/useDesignPageSurfaceInspector.ts": {
-      "lines": 1109,
+      "lines": 1108,
       "limit": 400
     },
     "lib/useDesignPageZoneController.ts": {
@@ -1625,11 +1621,11 @@
     "components/editor/ConsumerRoomSetupCard.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 261
+        "maximum": 259
       },
       "complexFunctions": {
         "count": 1,
-        "maximum": 30
+        "maximum": 29
       }
     },
     "components/editor/design-controls-plan/PlanToolComponents.tsx": {
@@ -2047,7 +2043,7 @@
     "components/editor/DesignControlsPlanPanel.tsx": {
       "overlongFunctions": {
         "count": 7,
-        "maximum": 3777
+        "maximum": 3776
       },
       "complexFunctions": {
         "count": 6,
@@ -4841,7 +4837,7 @@
     "lib/useDesignPageRoomReadModel.ts": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 315
+        "maximum": 304
       },
       "complexFunctions": {
         "count": 1,
@@ -4939,7 +4935,7 @@
     "lib/useDesignPageSurfaceInspector.ts": {
       "overlongFunctions": {
         "count": 3,
-        "maximum": 618
+        "maximum": 616
       },
       "complexFunctions": {
         "count": 2,

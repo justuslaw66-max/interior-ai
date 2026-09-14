@@ -1,5 +1,7 @@
 "use client";
 
+import type { DesignPageSurfaceRoomSummary as SurfaceRoomSummary } from "@/lib/design-page-surface-room-summary";
+
 import type { CatalogItemSchema } from "@/lib/catalog-schema";
 import type {
   HouseRoomConnectionChecklistItem,
@@ -30,7 +32,7 @@ import type { CatalogTopCategory } from "@/lib/catalog/view-builders";
 import type { ActiveRoomShoppingItem } from "@/lib/room-shopping";
 import type { ShoppingReadinessFilter } from "@/lib/shopping-readiness";
 import type { DesignSelectionContext } from "@/lib/design-page-selection-context";
-import type { RoomFloorPattern, RoomPlanShape, RoomSurfaceAssignments, RoomType } from "@/lib/room-types";
+import type { RoomFloorPattern, RoomPlanShape, RoomType } from "@/lib/room-types";
 import type { FloorSurfacePatch, NormalizedSurfaceSettings, SurfaceSettingsPatch } from "@/lib/surface-settings";
 import { PanelLeftOpen, Pin } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
@@ -55,18 +57,6 @@ type HouseRoomTemplate = {
   shape: RoomPlanShape;
   width: number;
   depth: number;
-};
-
-type SurfaceRoomSummary = {
-  id: string;
-  name: string;
-  floorLabel?: string;
-  roomType: RoomType;
-  width: number;
-  depth: number;
-  height?: number;
-  surfaces?: RoomSurfaceAssignments;
-  surfaceFinishes?: RoomSurfaceAssignments;
 };
 
 export type DesignControlsPanelProps = {
