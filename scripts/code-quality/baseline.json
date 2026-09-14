@@ -293,7 +293,7 @@
       "limit": 250
     },
     "components/editor/renderers/PlanUnderlayRenderer2D.tsx": {
-      "lines": 569,
+      "lines": 523,
       "limit": 250
     },
     "components/editor/renderers/RoomRenderer2D.tsx": {
@@ -633,7 +633,7 @@
       "limit": 400
     },
     "lib/room-types.ts": {
-      "lines": 605,
+      "lines": 578,
       "limit": 400
     },
     "lib/surface-material-audit.ts": {
@@ -1274,8 +1274,8 @@
     },
     "app/api/floor-plan-imports/[id]/confirm/route.ts": {
       "overlongFunctions": {
-        "count": 2,
-        "maximum": 249
+        "count": 1,
+        "maximum": 172
       },
       "complexFunctions": {
         "count": 1,
@@ -2335,11 +2335,11 @@
     "components/editor/renderers/PlanUnderlayRenderer2D.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 433
+        "maximum": 385
       },
       "complexFunctions": {
         "count": 1,
-        "maximum": 36
+        "maximum": 35
       }
     },
     "components/editor/renderers/RoomRenderer2D.tsx": {

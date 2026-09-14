@@ -768,6 +768,11 @@ assert.match(
 );
 assert.match(
   confirmRoute,
+  /underlay: registeredImportUnderlay\(\{ document: compiled\.document, jobId: id,/,
+  "Confirmation should derive source placement from the same compiled canonical document."
+);
+assert.match(
+  read("lib/floor-plan-imports/registered-underlay.ts"),
   /assetUrl: `\/api\/floor-plan-imports\/[\s\S]*?visible: false,[\s\S]*?locked: true/,
   "Confirmation should attach a locked, initially hidden owner-scoped source reference."
 );

@@ -2,9 +2,12 @@ import assert from "node:assert/strict";
 import Module from "node:module";
 import { calibratedScaleFixture, scaleMeasurement } from "./fixtures/scan-to-editable-plan/scale-review";
 import { changeReviewMeasurement } from "@/lib/floor-plan-review-measurements";
+import { isStoredDesign, storedToSnapshot } from "@/lib/room-persistence";
+import { mapUnderlayWorldPointToPixels } from "@/lib/floor-plan-calibration";
 
 async function main() {
   let userId: string | null = "owner", candidate = calibratedScaleFixture(), writes = 0, reads = 0;
+  let renderedPages: { pageNumber: number; widthPx: number; heightPx: number; assetKey: string }[] = [];
   const snapshots: unknown[] = [];
   const stubbed = new Map<string, NodeModule | undefined>();
   function stub(name: string, exports: object) {
@@ -29,7 +32,7 @@ async function main() {
       reads++; assert.equal(where.id, "private-import");
       if (where.userId !== "owner") return null;
       return { id: where.id, status: "ready", candidateVersion: 7, candidateJson: candidate,
-        sourceManifestJson: null, renderedPagesJson: [], reviewIssuesJson: [], appliedDesignId: null, revision: null,
+        sourceManifestJson: null, renderedPagesJson: renderedPages, reviewIssuesJson: [], appliedDesignId: null, revision: null,
         sourceAsset: { id: "authored-source", sha256: "a".repeat(64), fileName: "private-authored.png", mimeType: "image/png" } };
     } },
     user: { findUnique: async () => ({ plan: "pro" }) },
@@ -56,6 +59,18 @@ async function main() {
     assert.equal((await accepted.json()).id, "private-design");
     assert.match(JSON.stringify(snapshots[0]), /independentMeasurements/);
     assert.doesNotMatch(JSON.stringify(snapshots[0]), /source_verified|construction_verified/);
+    candidate = calibratedScaleFixture();
+    candidate.floors[0].calibrations[0].controlPoints = [
+      { sourcePx: { x: 100, y: 200 }, planMm: { xMm: 0, zMm: 0 } },
+      { sourcePx: { x: 100, y: 600 }, planMm: { xMm: 4000, zMm: 0 } },
+    ];
+    renderedPages = [{ pageNumber: 1, widthPx: 1000, heightPx: 800, assetKey: "rotated-authored-page" }];
+    assert.equal((await request()).status, 201);
+    const stored = snapshots.at(-1); assert.ok(isStoredDesign(stored));
+    const underlay = storedToSnapshot(stored).floorPlan?.underlay; assert.ok(underlay);
+    assert.deepEqual(mapUnderlayWorldPointToPixels(underlay, { x: 0, z: 0 }), { x: 100, y: 200 });
+    assert.deepEqual(mapUnderlayWorldPointToPixels(underlay, { x: 4, z: 0 }), { x: 100, y: 600 });
+    assert.deepEqual(mapUnderlayWorldPointToPixels(underlay, { x: 0, z: -4 }), { x: 500, y: 200 });
     console.log("PASS: actual confirmation POST enforces current independent scale, candidate version, authentication and owner scope before design writes. Database/auth boundaries are isolated stubs.");
   } finally {
     for (const [id, value] of stubbed) { if (value) require.cache[id] = value; else delete require.cache[id]; }

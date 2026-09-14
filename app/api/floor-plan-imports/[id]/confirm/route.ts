@@ -1,3 +1,4 @@
+import { registeredImportUnderlay } from "@/lib/floor-plan-imports/registered-underlay";
 import { NextResponse } from "next/server";
 import type { Prisma } from "@prisma/client";
 import { auth } from "@/lib/auth";
@@ -108,85 +109,8 @@ export async function POST(
       sourceJobId: id,
       sourceAssetSha256: job.sourceAsset.sha256,
       orientationConfirmed: true,
-      underlay: (() => {
-        const floor = compiled.document.floors[0];
-        const calibration = floor?.calibrations[0];
-        const renderedPages = Array.isArray(job.renderedPagesJson)
-          ? (job.renderedPagesJson as Array<{
-              pageNumber?: unknown;
-              widthPx?: unknown;
-              heightPx?: unknown;
-              assetKey?: unknown;
-            }>)
-          : [];
-        const rendered = renderedPages.find(
-          (page) => page.pageNumber === calibration?.pageNumber
-        );
-        if (
-          !calibration ||
-          !rendered ||
-          typeof rendered.assetKey !== "string" ||
-          !Number.isFinite(rendered.widthPx) ||
-          !Number.isFinite(rendered.heightPx)
-        ) {
-          return null;
-        }
-        const [first, second] = calibration.controlPoints;
-        const sourceDistancePx =
-          first && second
-            ? Math.hypot(
-                second.sourcePx.x - first.sourcePx.x,
-                second.sourcePx.y - first.sourcePx.y
-              )
-            : 0;
-        const planDistanceMm =
-          first && second
-            ? Math.hypot(
-                second.planMm.xMm - first.planMm.xMm,
-                second.planMm.zMm - first.planMm.zMm
-              )
-            : 0;
-        if (sourceDistancePx <= 0 || planDistanceMm <= 0) return null;
-        const millimetresPerPixel = planDistanceMm / sourceDistancePx;
-        const widthPx = Number(rendered.widthPx);
-        const heightPx = Number(rendered.heightPx);
-        const widthMeters = (widthPx * millimetresPerPixel) / 1_000;
-        const depthMeters = (heightPx * millimetresPerPixel) / 1_000;
-        return {
-          id: `import-underlay-${id}`,
-          floorId: floor.id,
-          name: job.sourceAsset.fileName,
-          assetUrl: `/api/floor-plan-imports/${encodeURIComponent(
-            id
-          )}/assets/${encodeURIComponent(rendered.assetKey)}`,
-          mimeType: "image/png",
-          sourceMimeType: job.sourceAsset.mimeType,
-          sourceAssetSha256: job.sourceAsset.sha256,
-          sourceJobId: id,
-          renderedPage: calibration.pageNumber,
-          pageCount: renderedPages.length,
-          widthPx,
-          heightPx,
-          position: {
-            x: widthMeters / 2,
-            z: depthMeters / 2,
-          },
-          widthMeters,
-          depthMeters,
-          opacity: 0.45,
-          visible: false,
-          rotationDeg: 0,
-          locked: true,
-          calibration: {
-            pixelsPerMeter: 1_000 / millimetresPerPixel,
-            referenceLengthMeters: planDistanceMm / 1_000,
-            referencePointsPx: [
-              { x: first.sourcePx.x, y: first.sourcePx.y },
-              { x: second.sourcePx.x, y: second.sourcePx.y },
-            ],
-          },
-        };
-      })(),
+      underlay: registeredImportUnderlay({ document: compiled.document, jobId: id,
+        renderedPages: job.renderedPagesJson, sourceAsset: job.sourceAsset }),
     });
   } catch (cause) {
     const message = cause instanceof Error ? cause.message : "Invalid canonical floor plan";

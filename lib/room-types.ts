@@ -169,35 +169,8 @@ export interface PersistedFloorPlanCalibration {
   ];
 }
 
-export interface PersistedFloorPlanUnderlay {
-  id: string;
-  floorId: string;
-  name: string;
-  assetUrl: string;
-  mimeType: string;
-  sourceMimeType?: string;
-  /**
-   * SHA-256 of the original private upload (not the rendered PDF preview).
-   * Retention cleanup uses this owner-scoped link to remove persisted data-URL
-   * copies without touching the rest of the saved design.
-   */
-  sourceAssetSha256?: string;
-  /** Import-job link when the underlay was attached by an import workflow. */
-  sourceJobId?: string;
-  renderedPage?: number;
-  pageCount?: number;
-  widthPx?: number;
-  heightPx?: number;
-  position: { x: number; z: number };
-  widthMeters: number;
-  depthMeters: number;
-  opacity: number;
-  /** Legacy underlays omit this and remain visible. */
-  visible?: boolean;
-  rotationDeg: number;
-  locked: boolean;
-  calibration?: PersistedFloorPlanCalibration;
-}
+/** Persisted and rendered underlays share one placement contract, including private source linkage. */
+export type PersistedFloorPlanUnderlay = import("./floor-plan-types").FloorPlanUnderlay;
 
 export type PersistedPlanOpening = import("@/lib/editorScene").RoomOpening2D;
 
