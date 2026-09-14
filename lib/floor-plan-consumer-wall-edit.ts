@@ -1,3 +1,4 @@
+import type { FloorPlanWallSplitLineageV2 } from "@/lib/floor-plan-topology-mutation-types";
 import type {
   FloorPlanWallClassificationV2,
 } from "@/lib/floor-plan-document-v2";
@@ -92,23 +93,18 @@ function copySplitFinish(
 }
 
 function preserveSplitWallFinishes(
-  commit: CanonicalTopologySnapshotCommitV2,
-  operation: ConsumerWallTopologyMutationV2
-): CanonicalTopologySnapshotCommitV2 {
-  if (operation.kind !== "split_wall") return commit;
-  const rooms = commit.snapshot.rooms.map((room) => ({
-    ...room,
-    surfaces: copySplitFinish(room.surfaces, operation.wallId, operation.newWallId),
-    surfaceFinishes: copySplitFinish(
-      room.surfaceFinishes,
-      operation.wallId,
-      operation.newWallId
-    ),
-  }));
-  return {
-    ...commit,
-    snapshot: { ...commit.snapshot, rooms },
-  };
+  snapshot: DesignSnapshot, splits: readonly FloorPlanWallSplitLineageV2[] = []
+): DesignSnapshot {
+  let rooms = snapshot.rooms;
+  for (const split of splits) {
+    const wall = snapshot.floorPlan?.canonicalDocument?.floors.find(({ id }) => id === split.floorId)?.walls.find(({ id }) => id === split.newWallId);
+    rooms = rooms.map((room) => wall?.adjacentRoomIds.includes(room.id) ? {
+      ...room,
+      surfaces: copySplitFinish(room.surfaces, split.sourceWallId, split.newWallId),
+      surfaceFinishes: copySplitFinish(room.surfaceFinishes, split.sourceWallId, split.newWallId),
+    } : room);
+  }
+  return rooms === snapshot.rooms ? snapshot : { ...snapshot, rooms };
 }
 
 export function isConsumerWallEditLocalForkV2(snapshot: DesignSnapshot): boolean {
@@ -157,10 +153,7 @@ export function applyConfirmedConsumerWallEditV2({
 
   const anchoredSnapshot = withSourceRevisionAnchor(snapshot, sourceRevision);
   const result = applyFloorPlanTopologyMutationV2(forkOpeningEvidenceForProposal(document, operation, context), operation, context);
-  const committed = preserveSplitWallFinishes(
-    commitCanonicalTopologyMutationToSnapshotV2(anchoredSnapshot, result),
-    operation
-  );
+  const committed = commitCanonicalTopologyMutationToSnapshotV2(anchoredSnapshot, result);
   const committedDocument = committed.snapshot.floorPlan?.canonicalDocument;
   if (
     !committedDocument ||
@@ -172,7 +165,7 @@ export function applyConfirmedConsumerWallEditV2({
       "The local floor-plan edit did not preserve its immutable source revision."
     );
   }
-  const reconciled = reconcileProposedRoomContent(snapshot, committed.snapshot, operation);
+  const reconciled = preserveSplitWallFinishes(reconcileProposedRoomContent(snapshot, committed.snapshot, operation), result.wallSplits);
   const issues = reviewProposedPlacements(reconciled, buildCanonicalFloorPlanRenderModel(result.scene));
   reconciled.floorPlan!.proposal!.reviewIssues = [...new Set([...reconciled.floorPlan!.proposal!.reviewIssues, ...issues])];
   return { ...committed, snapshot: reconciled };

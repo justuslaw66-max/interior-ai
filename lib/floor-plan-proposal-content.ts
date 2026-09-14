@@ -25,6 +25,17 @@ function rehostZone(zone: ZoneMin, from: RoomSnapshot, to: RoomSnapshot): ZoneMi
   return { ...zone, ...(zone.anchor ? { anchor: translatedPosition(zone.anchor, from, to) } : {}) };
 }
 
+function rehostSavedLayouts(previous: RoomSnapshot, target: RoomSnapshot, issues: Set<string>) {
+  if (!previous.layoutVersions) return;
+  target.layoutVersions = previous.layoutVersions.map((version) => ({ ...version,
+    items: version.items.map((item) => rehostItem(item, previous, target)),
+    zones: version.zones.map((zone) => rehostZone(zone, previous, target)),
+  }));
+  if (target.layoutVersions.some((version) => version.items.some((item) => !containsWorldPoint(target, translatedPosition(item.position, target))))) {
+    issues.add(`Saved layouts in ${target.name} retain their world positions. Some items lie outside the new room boundary; review before restoring.`);
+  }
+}
+
 function contentTargets(before: DesignSnapshot, after: DesignSnapshot, operation: FloorPlanTopologyMutationV2) {
   const created = after.rooms.filter((room) => !before.rooms.some(({ id }) => id === room.id));
   return before.rooms.map((previous) => {
@@ -46,7 +57,7 @@ export function reconcileProposedRoomContent(before: DesignSnapshot, after: Desi
     if (!rooms.some(({ id }) => id === previous.id)) {
       recovery.push({ id: previous.id, name: previous.name, roomType: previous.roomType, planPosition: previous.planPosition, surfaces: previous.surfaces, surfaceFinishes: previous.surfaceFinishes, savedViews: previous.savedViews, layoutVersions: previous.layoutVersions });
       issues.add(`Room ${previous.name} merged into ${primary.name}. Its alternate finishes and saved layouts remain in room recovery.`);
-    }
+    } else rehostSavedLayouts(previous, primary, issues);
     for (const item of previous.items) {
       const world = translatedPosition(item.position, previous);
       const target = candidates.find((room) => containsWorldPoint(room, world)) ?? primary;

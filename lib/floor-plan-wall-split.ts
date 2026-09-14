@@ -114,6 +114,8 @@ function commitSplit(
   };
   if (!existingVertex) floor.vertices.push(vertex);
   floor.walls.splice(wallIndex + 1, 0, newWall);
+  (state.wallSplits ??= []).push({ floorId: floor.id, sourceWallId: wall.id,
+    newWallId: newWall.id, splitVertexId: vertex.id, offsetMm: operation.offsetMm });
 
   updateSplitRoomLoops(floor, wall, newWall, reason, state);
 }

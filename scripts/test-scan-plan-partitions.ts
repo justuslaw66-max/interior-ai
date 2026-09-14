@@ -129,6 +129,8 @@ const attached = mutate(merged.document, {
 });
 assert.equal(attached.document.floors[0].rooms.length, 2);
 assert.equal(attached.document.floors[0].walls.length, 9, "Two host splits and the new partition are one valid revision");
+assert.equal(attached.wallSplits?.length, 2);
+assert.deepEqual(attached.wallSplits?.map(({ sourceWallId }) => sourceWallId).sort(), ["north-west", "south-west"]);
 assert.equal(attached.scene.floors[0].rooms.reduce((sum, room) => sum + room.areaSquareMm, 0), 9260 * 6000);
 const attachedProjection = canonicalFloorPlanToDesignSnapshot(attached.document);
 const house = buildHousePlan2D(attachedProjection.snapshot.rooms, 9.26, 6);
