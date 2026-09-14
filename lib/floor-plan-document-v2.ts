@@ -1,3 +1,4 @@
+import type { FloorPlanSourceDrawingGeometryV2 } from "./floor-plan-source-drawing";
 /**
  * Canonical, source-auditable floor-plan document.
  *
@@ -264,6 +265,7 @@ export type FloorPlanStructureV2 = {
 };
 
 export type FloorPlanAnnotationGeometryV2 =
+  | FloorPlanSourceDrawingGeometryV2
   | { kind: "point"; vertexId: string }
   | { kind: "polygon"; vertexIds: string[] }
   | { kind: "polyline"; vertexIds: string[] }

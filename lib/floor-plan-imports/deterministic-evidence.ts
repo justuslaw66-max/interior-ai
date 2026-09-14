@@ -70,6 +70,8 @@ export type SourceTextEvidence = {
   center: SourcePointPx;
   widthPx: number;
   heightPx: number;
+  rotationDegrees?: number;
+  reviewRequired?: boolean;
   evidenceKind?: "positioned_text" | "ocr";
 };
 
@@ -118,10 +120,7 @@ export type SemanticOpeningSymbol = {
   evidenceKind?: "positioned_text" | "ocr" | "vision";
 };
 
-/**
- * A source-drawing symbol that helps classify an otherwise unlabeled room.
- * Fixture observations never become walls, openings, or placeable furniture.
- */
+/** Source fixture observations may suggest room meaning, never building geometry. */
 export type SemanticFixtureSymbol = {
   kind:
     | "toilet"
@@ -140,11 +139,7 @@ export type SemanticFixtureSymbol = {
   evidenceKind?: "positioned_text" | "ocr" | "vision";
 };
 
-/**
- * Approximate semantic proposal only. These points are never canonical
- * geometry until every edge is independently snapped to deterministic source
- * linework and the complete room set passes the topology gates.
- */
+/** Approximate proposals require independent source-edge registration and complete topology validation. */
 export type SemanticRoomBoundary = {
   label: string;
   roomType: SemanticRoomLabel["roomType"];
@@ -191,6 +186,7 @@ export type RegisteredPageEvidence = {
   pageNumber: number;
   widthPx: number;
   heightPx: number;
+  rasterRegions?: SourcePointPx[][];
   vectorSegments: SourceVectorSegment[];
   vectorPaths: SourceVectorPath[];
   text: SourceTextEvidence[];

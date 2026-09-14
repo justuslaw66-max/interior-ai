@@ -1,3 +1,5 @@
+import { automaticScaleReviewMessage, solveCrossCheckedScale } from "./source-scale-cross-check";
+import { sourceTextEvidenceFromLocalOcr } from "./local-ocr-rotation";
 import { z } from "zod";
 import type {
   FloorPlanAnnotationV2,
@@ -30,8 +32,6 @@ import {
   registerRoomBoundaries,
   segmentLengthPx,
   semanticEvidencePrior,
-  solveScaleFromRegisteredEvidence,
-  transformSourcePoint,
   type Matrix2D,
   type PageSemanticEvidence,
   type RegisteredPageEvidence,
@@ -78,6 +78,8 @@ import {
   registerVisionGuidedRoomBoundaries,
   type VisionGuidedTopologyResult,
 } from "./vision-guided-topology";
+import { sourceDrawingAnnotations } from "./source-drawing-annotations";
+import { appendPdfRasterRegion, mergeMixedPdfEvidence, pageGeometryBasis, pageLineworkKind, positionedPdfTextBounds } from "./mixed-pdf-evidence";
 import { parsePdfDrawPathEvidence } from "./pdf-vector-evidence";
 import {
   buildSourceBoundCatalogDraft,
@@ -87,7 +89,7 @@ import {
   type CatalogFloorPlanDraftMatchReference,
 } from "./catalog-draft-match";
 
-const EXTRACTION_VERSION = "pdf-raster-hybrid-2.4.0";
+const EXTRACTION_VERSION = "pdf-raster-hybrid-2.5.0";
 const MAX_PDF_PAGES = 30;
 const MAX_SEMANTIC_PAGES = 8;
 const MAX_VECTOR_SEGMENTS_PER_PAGE = 20_000;
@@ -496,7 +498,7 @@ function semanticsFromPositionedText(
   heightPx: number
 ): PageSemanticEvidence {
   const result = emptySemantics();
-  for (const item of text) {
+  for (const item of text.filter((entry) => !entry.reviewRequired)) {
     const evidenceKind = item.evidenceKind ?? "positioned_text";
     const confidence = semanticEvidencePrior(evidenceKind);
     const roomType = roomTypeFromLabel(item.text);
@@ -526,24 +528,6 @@ function semanticsFromPositionedText(
     }
   }
   return result;
-}
-
-export function sourceTextEvidenceFromLocalOcr(
-  pageNumber: number,
-  result: FloorPlanLocalOcrResult
-): SourceTextEvidence[] {
-  return result.candidates.map((candidate, index) => ({
-    id: `p${pageNumber}-ocr${index + 1}`,
-    pageNumber,
-    text: candidate.text,
-    center: {
-      x: (candidate.bbox.left + candidate.bbox.right) / 2,
-      y: (candidate.bbox.top + candidate.bbox.bottom) / 2,
-    },
-    widthPx: candidate.bbox.right - candidate.bbox.left,
-    heightPx: candidate.bbox.bottom - candidate.bbox.top,
-    evidenceKind: "ocr",
-  }));
 }
 
 function boundedEnvironmentInteger(
@@ -811,21 +795,19 @@ async function extractPdfEvidence(
           viewport.transform as Matrix2D,
           typed.transform.slice(0, 6) as Matrix2D
         );
-        const origin = transformSourcePoint(matrix, { x: 0, y: 0 });
         const widthPx = Math.abs(typed.width * viewport.scale);
         const heightPx = Math.max(1, Math.abs(typed.height * viewport.scale));
         text.push({
           id: `p${rendered.pageNumber}-text${text.length + 1}`,
           pageNumber: rendered.pageNumber,
           text: typed.str,
-          center: { x: origin.x + widthPx / 2, y: origin.y - heightPx / 2 },
-          widthPx,
-          heightPx,
+          ...positionedPdfTextBounds(matrix, widthPx, heightPx),
         });
       }
 
       const segments: SourceVectorSegment[] = [];
       const paths: SourceVectorPath[] = [];
+      const rasterRegions: SourcePointPx[][] = [];
       let transform = viewport.transform as Matrix2D;
       let lineWidthSource = 1;
       let drawPathIndex = 0;
@@ -853,6 +835,7 @@ async function extractPdfEvidence(
       for (let index = 0; index < operatorList.fnArray.length; index += 1) {
         const fn = operatorList.fnArray[index];
         const args = operatorList.argsArray[index] ?? [];
+        appendPdfRasterRegion(rasterRegions, fn, OPS, transform, rendered);
         if (fn === OPS.paintFormXObjectBegin) {
           const id = `p${rendered.pageNumber}-form${++formIndex}`;
           formStack.push({
@@ -935,6 +918,7 @@ async function extractPdfEvidence(
         vectorPaths: paths,
         text,
         semantics: deterministic,
+        rasterRegions,
       });
     }
     return pages;
@@ -1530,15 +1514,7 @@ export function registerSupportedPageTopology(
     : applyVisionGuidedFallback(deterministicTopology, visionGuided);
 }
 
-function buildCanonicalCandidate(
-  envelope: ExtractionEnvelope,
-  jobId: string
-): {
-  document: FloorPlanDocumentV2;
-  issues: FloorPlanReviewIssue[];
-  topology: RegisteredPageTopology;
-} {
-  const issues: FloorPlanReviewIssue[] = [];
+function selectCanonicalPage(envelope: ExtractionEnvelope) {
   const eligiblePages = envelope.selectedPageNumber
     ? envelope.pages.filter(
         (candidate) => candidate.pageNumber === envelope.selectedPageNumber
@@ -1558,13 +1534,26 @@ function buildCanonicalCandidate(
     );
   const selected = ranked[0];
   const page = selected?.page ?? eligiblePages[0];
-  const rooms = selected?.topology.rooms ?? [];
   const topology =
     selected?.topology ?? unavailableRegisteredPageTopology(0, "page_unavailable");
   const scale = page
     ? (envelope.scales?.find((entry) => entry.pageNumber === page.pageNumber) ??
       (envelope.scale?.pageNumber === page.pageNumber ? envelope.scale : null))
     : null;
+  const rooms = scale ? selected?.topology.rooms ?? [] : [];
+  return { page, topology, scale, rooms };
+}
+
+function buildCanonicalCandidate(
+  envelope: ExtractionEnvelope,
+  jobId: string
+): {
+  document: FloorPlanDocumentV2;
+  issues: FloorPlanReviewIssue[];
+  topology: RegisteredPageTopology;
+} {
+  const issues: FloorPlanReviewIssue[] = [];
+  const { page, topology, scale, rooms } = selectCanonicalPage(envelope);
   if (!scale || !page) {
     const solvedOtherPage =
       page &&
@@ -1577,7 +1566,7 @@ function buildCanonicalCandidate(
         "scale_unresolved",
         solvedOtherPage
           ? `Dimensions were solved on source page ${solvedOtherPage.pageNumber}, but the selected plan is on page ${page.pageNumber}. Confirm dimensions from this plan page before geometry can be trusted.`
-          : "Confirm one known distance. At least two printed dimensions must agree before automatic geometry can be trusted.",
+          : automaticScaleReviewMessage(page),
         "critical"
       )
     );
@@ -1600,10 +1589,7 @@ function buildCanonicalCandidate(
   const sourceId = envelope.source.id;
   const pageNumber = page?.pageNumber ?? 1;
   const millimetresPerPixel = scale?.millimetresPerPixel ?? 1;
-  const geometryBasis =
-    envelope.source.mimeType === "application/pdf"
-      ? ("vector_traced" as const)
-      : ("raster_traced" as const);
+  const geometryBasis = pageGeometryBasis(page, envelope.source.mimeType);
   const geometryEvidenceName =
     geometryBasis === "vector_traced"
       ? "deterministic PDF vector linework"
@@ -1614,7 +1600,7 @@ function buildCanonicalCandidate(
   const openings: FloorPlanOpeningV2[] = [];
   const openingByEvidenceId = new Map<string, FloorPlanOpeningV2>();
   const dimensions: FloorPlanDimensionV2[] = [];
-  const annotations: FloorPlanAnnotationV2[] = [];
+  const annotations: FloorPlanAnnotationV2[] = sourceDrawingAnnotations(page, sourceId, EXTRACTION_VERSION, issues);
   const vertexByPoint = new Map<string, FloorPlanVertexV2>();
   const wallBySpan = new Map<
     string,
@@ -2347,7 +2333,7 @@ export class PdfRasterFloorPlanSourceAdapter implements FloorPlanSourceAdapter {
       const pdfPages = await extractPdfEvidence(source, renderedPages);
       const weakPageNumbers = new Set(
         pdfPages
-          .filter((page) => page.vectorPaths.length === 0)
+          .filter((page) => page.vectorPaths.length === 0 || Boolean(page.rasterRegions?.length))
           .map((page) => page.pageNumber)
       );
       const rasterFallback = weakPageNumbers.size
@@ -2360,19 +2346,7 @@ export class PdfRasterFloorPlanSourceAdapter implements FloorPlanSourceAdapter {
       const rasterByPage = new Map(
         (rasterFallback?.pages ?? []).map((page) => [page.pageNumber, page])
       );
-      pages = pdfPages.map((page) => {
-        const fallback = rasterByPage.get(page.pageNumber);
-        if (!fallback || fallback.vectorPaths.length === 0) return page;
-        return {
-          ...page,
-          vectorSegments: fallback.vectorSegments,
-          vectorPaths: fallback.vectorPaths,
-          semantics: {
-            ...page.semantics,
-            notes: [...page.semantics.notes, ...fallback.semantics.notes],
-          },
-        };
-      });
+      pages = pdfPages.map((page) => mergeMixedPdfEvidence(page, rasterByPage.get(page.pageNumber)));
       rasterEvidence = rasterFallback
         ? {
             pages: pages.filter((page) => rasterByPage.has(page.pageNumber)),
@@ -2482,7 +2456,7 @@ export class PdfRasterFloorPlanSourceAdapter implements FloorPlanSourceAdapter {
             ).size,
             wallFootprintBandCount:
               detectRegisteredWallFootprintBands(page).length,
-            lineworkEvidenceKind: raster ? "raster_linework" : "pdf_vector",
+            lineworkEvidenceKind: pageLineworkKind(page),
             rasterLineworkConfidence: raster?.confidence ?? null,
             rasterLineworkWeakReason: raster?.weakReason ?? null,
             rasterCycleSearchCapped: raster?.cycleSearchCapped ?? false,
@@ -2520,9 +2494,9 @@ export class PdfRasterFloorPlanSourceAdapter implements FloorPlanSourceAdapter {
       metrics: {
         pageCount: pages.length,
         vectorPageCount: pages.filter((page) => page.vectorSegments.length > 0).length,
-        rasterLineworkPageCount: rasterEvidence
-          ? pages.filter((page) => page.vectorSegments.length > 0).length
-          : 0,
+        rasterLineworkPageCount: pages.filter((page) =>
+          page.vectorSegments.some((segment) => segment.evidenceKind === "raster_linework")
+        ).length,
         localOcrPageCount: [...localOcrDiagnostics.values()].filter(
           (entry) => entry.attempted
         ).length,
@@ -2617,7 +2591,7 @@ export class PdfRasterFloorPlanSourceAdapter implements FloorPlanSourceAdapter {
       }
     }
     const solutions = selectedPages
-      .map((page) => ({ page, solution: solveScaleFromRegisteredEvidence(page) }))
+      .map((page) => ({ page, solution: solveCrossCheckedScale(page) }))
       .filter((entry) => entry.solution !== null)
       .sort(
         (left, right) =>

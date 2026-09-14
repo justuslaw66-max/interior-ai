@@ -132,7 +132,7 @@ function namespaceSyntheticFloorTopology(
       annotation.geometry.vertexIds = annotation.geometry.vertexIds.map(
         (id) => vertexIds.get(id)!
       );
-    } else {
+    } else if (annotation.geometry.kind === "wall_span") {
       annotation.geometry.wallId = wallIds.get(annotation.geometry.wallId)!;
     }
   }

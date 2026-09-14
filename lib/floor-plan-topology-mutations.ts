@@ -1,3 +1,4 @@
+import { updateAnnotationText } from "@/lib/floor-plan-annotation-mutations";
 import { splitWall } from "@/lib/floor-plan-wall-split";
 import { compileFloorPlanDocumentV2, FloorPlanDocumentValidationErrorV2 } from "@/lib/floor-plan-compiler-v2";
 import { addCanonicalPartition, removeCanonicalPartition } from "@/lib/floor-plan-partition-mutations";
@@ -245,6 +246,7 @@ function entityMutationServices(
 
 function applyOperation(state: MutationState, operation: FloorPlanTopologyMutationV2): void {
   const floor = floorById(state.document, operation.floorId);
+  if (operation.kind === "update_annotation_text") return updateAnnotationText(floor, operation.annotationId, operation.text, state);
   if (operation.kind === "add_wall") return addCanonicalPartition(floor, operation, state);
   if (operation.kind === "remove_wall") return removeCanonicalPartition(floor, operation, state);
   if (operation.kind === "move_vertex") return moveVertex(floor, operation.vertexId, operation.to, state);

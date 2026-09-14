@@ -245,7 +245,7 @@
       "limit": 250
     },
     "components/editor/floor-plan-import-review/FloorPlanSourceReviewCanvas.tsx": {
-      "lines": 570,
+      "lines": 529,
       "limit": 250
     },
     "components/editor/floor-plan-import-review/FloorPlanStructureCorrectionFields.tsx": {
@@ -253,7 +253,7 @@
       "limit": 250
     },
     "components/editor/floor-plan-import-review/FloorPlanVisualReviewTools.tsx": {
-      "lines": 291,
+      "lines": 290,
       "limit": 250
     },
     "components/editor/FloorPlanImportAssistant.tsx": {
@@ -549,7 +549,7 @@
       "limit": 400
     },
     "lib/floor-plan-compiler-v2.ts": {
-      "lines": 1658,
+      "lines": 1650,
       "limit": 400
     },
     "lib/floor-plan-import-review-geometry.ts": {
@@ -569,7 +569,7 @@
       "limit": 400
     },
     "lib/floor-plan-imports/deterministic-evidence.ts": {
-      "lines": 1207,
+      "lines": 1203,
       "limit": 400
     },
     "lib/floor-plan-imports/lease.ts": {
@@ -581,7 +581,7 @@
       "limit": 400
     },
     "lib/floor-plan-imports/pdf-raster-adapter.ts": {
-      "lines": 2866,
+      "lines": 2840,
       "limit": 400
     },
     "lib/floor-plan-imports/planar-face-evidence.ts": {
@@ -2143,7 +2143,7 @@
     "components/editor/floor-plan-import-review/FloorPlanSourceReviewCanvas.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 531
+        "maximum": 485
       },
       "complexFunctions": {
         "count": 1,
@@ -2165,7 +2165,7 @@
     "components/editor/floor-plan-import-review/FloorPlanVisualReviewTools.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 258
+        "maximum": 257
       },
       "complexFunctions": {
         "count": 1,
@@ -3671,7 +3671,7 @@
     "lib/floor-plan-imports/local-ocr.ts": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 74
+        "maximum": 69
       }
     },
     "lib/floor-plan-imports/object-storage-config.ts": {
@@ -3711,11 +3711,11 @@
     "lib/floor-plan-imports/pdf-raster-adapter.ts": {
       "overlongFunctions": {
         "count": 10,
-        "maximum": 781
+        "maximum": 753
       },
       "complexFunctions": {
         "count": 7,
-        "maximum": 105
+        "maximum": 97
       },
       "deeplyNestedFunctions": {
         "count": 1,

@@ -89,7 +89,7 @@ export default function FloorPlanVisualReviewTools({
 
   const canvas = (
       <FloorPlanSourceReviewCanvas
-        document={document}
+        document={document} onDocumentChange={onChange} disabled={disabled} previewOnly={previewOnly}
         floorId={floor.id}
         sourceId={sourceId}
         jobId={job.id}
@@ -195,8 +195,7 @@ export default function FloorPlanVisualReviewTools({
           Expert corrections (only if the outline is wrong)
         </summary>
         <p className="mt-2 text-[10px] leading-4 text-neutral-500">
-          Most imports do not need these controls. Use them only to repair a
-          specific wall, opening, structural object, dimension, or orientation.
+          Repair a specific wall, opening, structural object, dimension, or orientation.
         </p>
         <FloorPlanTopologyCorrectionPanel
           document={document}

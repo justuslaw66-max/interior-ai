@@ -1,3 +1,5 @@
+import { compileFloorPlanAnnotationV2 } from "./floor-plan-annotation-compiler";
+import { sourceDrawingGeometryError, type FloorPlanSourceDrawingGeometryV2 } from "./floor-plan-source-drawing";
 import type {
   FloorPlanAnnotationGeometryV2,
   FloorPlanAnnotationV2,
@@ -104,6 +106,7 @@ export type CompiledFloorPlanStructureV2 = Omit<
 };
 
 export type CompiledFloorPlanAnnotationGeometryV2 =
+  | FloorPlanSourceDrawingGeometryV2
   | { kind: "point"; point: FloorPlanPointMmV2 }
   | { kind: "polygon"; points: FloorPlanPointMmV2[] }
   | { kind: "polyline"; points: FloorPlanPointMmV2[] }
@@ -764,8 +767,15 @@ function validateAnnotationGeometry(
   geometry: FloorPlanAnnotationGeometryV2,
   path: string,
   maps: FloorMaps,
-  issues: FloorPlanValidationIssueV2[]
+  issues: FloorPlanValidationIssueV2[],
+  sourceIds: Set<string>
 ): void {
+  if (geometry.kind === "source_drawing") {
+    const error = sourceDrawingGeometryError(geometry) ??
+      (sourceIds.has(geometry.sourceId) ? null : "Source artwork must reference an existing document source.");
+    if (error) addIssue(issues, "INVALID_SOURCE_ARTWORK", path, error);
+    return;
+  }
   if (geometry.kind === "point") {
     if (!maps.vertices.has(geometry.vertexId)) {
       addIssue(issues, "UNKNOWN_VERTEX", `${path}.vertexId`, `Unknown vertex: ${geometry.vertexId}.`);
@@ -1105,7 +1115,7 @@ export function validateFloorPlanDocumentV2(
     floor.annotations.forEach((annotation, index) => {
       const annotationPath = `${path}.annotations[${index}]`;
       if (!annotation.text.trim()) addIssue(issues, "EMPTY_ANNOTATION", `${annotationPath}.text`, "Annotation text is required.");
-      validateAnnotationGeometry(annotation.geometry, `${annotationPath}.geometry`, maps, issues);
+      validateAnnotationGeometry(annotation.geometry, `${annotationPath}.geometry`, maps, issues, sourceIds);
       validateProvenance(annotation.provenance, `${annotationPath}.provenance`, sourceIds, issues);
     });
 
@@ -1417,27 +1427,6 @@ function compileOpening(opening: FloorPlanOpeningV2, floor: FloorPlanFloorV2, ma
   };
 }
 
-function compileAnnotation(annotation: FloorPlanAnnotationV2, maps: FloorMaps): CompiledFloorPlanAnnotationV2 {
-  let geometry: CompiledFloorPlanAnnotationGeometryV2;
-  if (annotation.geometry.kind === "point") {
-    geometry = { kind: "point", point: getVertexPoint(maps.vertices.get(annotation.geometry.vertexId)!) };
-  } else if (annotation.geometry.kind === "polygon" || annotation.geometry.kind === "polyline") {
-    geometry = {
-      kind: annotation.geometry.kind,
-      points: annotation.geometry.vertexIds.map((vertexId) => getVertexPoint(maps.vertices.get(vertexId)!)),
-    };
-  } else {
-    const wall = maps.walls.get(annotation.geometry.wallId)!;
-    geometry = {
-      ...annotation.geometry,
-      start: pointAlongWall(wall, annotation.geometry.offsetMm, maps.vertices),
-      end: pointAlongWall(wall, annotation.geometry.offsetMm + annotation.geometry.widthMm, maps.vertices),
-    };
-  }
-  const { provenance: _provenance, ...compiled } = annotation;
-  return { ...compiled, geometry };
-}
-
 function compileDimension(dimension: FloorPlanDimensionV2, maps: FloorMaps): CompiledFloorPlanDimensionV2 {
   const { provenance: _provenance, ...compiledDimension } = dimension;
   const from = getVertexPoint(maps.vertices.get(dimension.fromVertexId)!);
@@ -1488,7 +1477,10 @@ function compileFloor(floor: FloorPlanFloorV2): CompiledFloorPlanFloorV2 {
         ),
       })
     ),
-    annotations: floor.annotations.slice().sort(compareById).map((annotation) => compileAnnotation(annotation, maps)),
+    annotations: floor.annotations.slice().sort(compareById).map((annotation) => compileFloorPlanAnnotationV2(annotation, {
+      vertex: (id) => getVertexPoint(maps.vertices.get(id)!),
+      wallPoint: (id, offset) => pointAlongWall(maps.walls.get(id)!, offset, maps.vertices),
+    })),
     dimensions: floor.dimensions.slice().sort(compareById).map((dimension) => compileDimension(dimension, maps)),
   };
 }

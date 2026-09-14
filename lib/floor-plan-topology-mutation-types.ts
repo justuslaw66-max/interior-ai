@@ -43,6 +43,7 @@ export type FloorPlanDimensionChangesV2 = Partial<
 >;
 
 export type FloorPlanTopologyMutationV2 =
+  | { kind: "update_annotation_text"; floorId: string; annotationId: string; text: string }
   | {
       kind: "add_wall";
       floorId: string;

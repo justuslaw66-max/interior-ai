@@ -70,7 +70,7 @@ function dimensionPrimitives(floor: CompiledFloorPlanFloorV2): PlanDrawingPrimit
 
 function annotationPrimitives(floor: CompiledFloorPlanFloorV2): PlanDrawingPrimitive[] {
   return floor.annotations.flatMap((annotation) => {
-    if (annotation.scope === "reference") return [];
+    if (annotation.scope === "reference" || annotation.geometry.kind === "source_drawing") return [];
     const geometry = annotation.geometry;
     const points = geometry.kind === "point" ? [geometry.point] : "points" in geometry ? geometry.points : [geometry.start, geometry.end];
     if (!points.length) return [];

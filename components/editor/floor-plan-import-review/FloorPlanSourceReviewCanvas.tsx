@@ -8,6 +8,8 @@ import {
   type ReviewSourcePoint,
   type ReviewSourceSnapResult,
 } from "@/lib/floor-plan-import-review-geometry";
+import FloorPlanSourceReviewOverlay from "./FloorPlanSourceReviewOverlay";
+import FloorPlanSourceArtworkSelection from "./FloorPlanSourceArtworkFields";
 import type { ConsumerFloorPlanImportJob } from "../floor-plan-import-ui-types";
 
 type FloorPlanSourceReviewCanvasProps = {
@@ -31,6 +33,9 @@ type FloorPlanSourceReviewCanvasProps = {
   onOpeningPoint?: (point: ReviewSourcePoint) => void;
   assetRoutePrefix?: string;
   dark?: boolean;
+  onDocumentChange?: (document: FloorPlanDocumentV2) => void;
+  disabled?: boolean;
+  previewOnly?: boolean;
 };
 
 function polygonPoints(value: ReviewSourcePoint[]) {
@@ -58,7 +63,13 @@ export default function FloorPlanSourceReviewCanvas({
   onOpeningPoint,
   assetRoutePrefix,
   dark = false,
+  onDocumentChange,
+  disabled = false,
+  previewOnly = false,
 }: FloorPlanSourceReviewCanvasProps) {
+  const [selectedArtworkId, setSelectedArtworkId] = useState("");
+  const [artworkError, setArtworkError] = useState<string | null>(null);
+  const [showArtwork, setShowArtwork] = useState(true);
   const [sourceOpacity, setSourceOpacity] = useState(82);
   const [overlayOpacity, setOverlayOpacity] = useState(92);
   const [zoom, setZoom] = useState(1);
@@ -78,6 +89,10 @@ export default function FloorPlanSourceReviewCanvas({
         : null,
     [document, floorId, page, sourceId]
   );
+  const artwork = useMemo(() => document.floors.find((floor) => floor.id === floorId)?.annotations.filter((annotation) =>
+    annotation.geometry.kind === "source_drawing" && annotation.geometry.sourceId === sourceId && annotation.geometry.pageNumber === page?.pageNumber
+  ) ?? [], [document, floorId, sourceId, page?.pageNumber]);
+  const selectedArtwork = artwork.find((annotation) => annotation.id === selectedArtworkId);
   const focused = useMemo(
     () => new Set(focusedEntityIds),
     [focusedEntityIds]
@@ -161,6 +176,10 @@ export default function FloorPlanSourceReviewCanvas({
 
   return (
     <section className="mt-3" aria-label="Interactive 2D plan preview">
+      <FloorPlanSourceArtworkSelection count={artwork.length} show={showArtwork} onShow={setShowArtwork}
+        annotation={selectedArtwork} document={document} floorId={floorId} onChange={onDocumentChange}
+        onError={setArtworkError} error={artworkError} onClose={() => setSelectedArtworkId("")}
+        disabled={disabled} previewOnly={previewOnly} />
       <div className="mb-2 flex items-center justify-between gap-2">
         <div>
           <div className="text-sm font-semibold">2D plan preview</div>
@@ -273,72 +292,12 @@ export default function FloorPlanSourceReviewCanvas({
               setHoverSnap(picking ? pointFromEvent(event) : null)
             }
             preserveAspectRatio="none"
-            role="img"
+            role="group"
             viewBox={`0 0 ${page.widthPx} ${page.heightPx}`}
           >
-            <g fill="none" opacity={overlayOpacity / 100}>
-              {overlay?.structures.map((path) => (
-                <polygon
-                  key={path.id}
-                  fill={
-                    focused.has(path.id)
-                      ? "rgba(245,158,11,.28)"
-                      : "rgba(245,158,11,.12)"
-                  }
-                  points={polygonPoints(path.points)}
-                  stroke={focused.has(path.id) ? "#dc2626" : "#d97706"}
-                  strokeWidth={focused.has(path.id) ? 4 : 2}
-                  vectorEffect="non-scaling-stroke"
-                />
-              ))}
-              {overlay?.walls.map((path) => (
-                <polyline
-                  key={path.id}
-                  points={polygonPoints(path.points)}
-                  stroke={focused.has(path.id) ? "#dc2626" : "#059669"}
-                  strokeWidth={focused.has(path.id) ? 5 : 2.5}
-                  vectorEffect="non-scaling-stroke"
-                />
-              ))}
-              {overlay?.openings.map((path) => (
-                <polyline
-                  key={path.id}
-                  points={polygonPoints(path.points)}
-                  stroke={focused.has(path.id) ? "#dc2626" : "#2563eb"}
-                  strokeWidth={focused.has(path.id) ? 7 : 4}
-                  vectorEffect="non-scaling-stroke"
-                />
-              ))}
-              {overlay?.vertices
-                .filter((point) => focused.has(point.id))
-                .map((point) => (
-                  <circle
-                    key={point.id}
-                    cx={point.x}
-                    cy={point.y}
-                    fill="#fff"
-                    r={5}
-                    stroke="#dc2626"
-                    strokeWidth={3}
-                    vectorEffect="non-scaling-stroke"
-                  />
-                ))}
-              {pickingRoom
-                ? overlay?.vertices.map((point) => (
-                    <circle
-                      cx={point.x}
-                      cy={point.y}
-                      fill="white"
-                      key={`snap-${point.id}`}
-                      opacity={0.9}
-                      r={5}
-                      stroke="#059669"
-                      strokeWidth={2}
-                      vectorEffect="non-scaling-stroke"
-                    />
-                  ))
-                : null}
-            </g>
+            <FloorPlanSourceReviewOverlay overlay={overlay} focused={focused} pickingRoom={pickingRoom}
+              opacity={overlayOpacity / 100} annotations={showArtwork ? artwork : []} selectedId={selectedArtworkId}
+              picking={picking} onSelect={setSelectedArtworkId} />
             {scalePoints.map((point, index) => (
               <g key={`${point.x}-${point.y}-${index}`}>
                 <circle
