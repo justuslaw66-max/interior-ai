@@ -4,15 +4,11 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   floorPlanImportResponseJson,
-  loadConsumerFloorPlanImportJob,
   parseFloorPlanImportDocument,
   parseFloorPlanImportIssues,
   useConsumerFloorPlanImportSession,
 } from "./useConsumerFloorPlanImportSession";
-import {
-  isPausedFloorPlanImportStatus,
-  startAndPollFloorPlanImport,
-} from "@/lib/floor-plan-import-client";
+import { useConsumerFloorPlanImportProgress } from "./useConsumerFloorPlanImportProgress";
 import {
   isFloorPlanMvpBlockingIssue,
   type FloorPlanReviewIssue,
@@ -106,53 +102,7 @@ export default function FloorPlanImportAssistant({
     );
   }, [activeJob?.status, pageSelection]);
 
-  const showWorkingJob = useCallback(
-    (job: ConsumerFloorPlanImportJob, fallbackMessage: string) => {
-      onJobUpdate?.(job);
-      const estimate = job.progressEstimate;
-      const nextProgress = estimate?.estimatedPercent ?? job.progress;
-      setState((current) => ({
-        kind: "working",
-        message: estimate?.stageLabel ?? fallbackMessage,
-        progress:
-          current.kind === "working" && current.status === job.status
-            ? Math.max(current.progress, nextProgress)
-            : nextProgress,
-        status: job.status,
-        estimate,
-      }));
-    },
-    [onJobUpdate, setState]
-  );
-
-  const processAndPoll = useCallback(
-    async (
-      jobId: string,
-      fallbackMessage: string,
-      options: { continueSelectedPage?: boolean } = {}
-    ) => {
-      const statusUrl = `/api/floor-plan-imports/${encodeURIComponent(jobId)}`;
-      const loadJob = () => loadConsumerFloorPlanImportJob(statusUrl);
-      const initialJob = await loadJob();
-      showWorkingJob(initialJob, fallbackMessage);
-      return startAndPollFloorPlanImport({
-        initialJob,
-        startProcessing: async () =>
-          floorPlanImportResponseJson(
-            await fetch(`${statusUrl}/process`, { method: "POST" })
-          ),
-        loadJob,
-        isPaused: options.continueSelectedPage
-          ? (job) =>
-              job.status === "selecting_page"
-                ? false
-                : isPausedFloorPlanImportStatus(job.status)
-          : undefined,
-        onProgress: (job) => showWorkingJob(job, fallbackMessage),
-      });
-    },
-    [showWorkingJob]
-  );
+  const processAndPoll = useConsumerFloorPlanImportProgress({ setState, onJobUpdate });
   const sourceContentDeleted = Boolean(
     sourceDeleted || activeJob?.sourceAsset?.contentDeletedAt
   );
