@@ -10,6 +10,18 @@ export async function exerciseFurnitureDrag(page: Page, saved: () => Promise<Sto
   const item = async () => (await saved()).rooms!.flatMap((room) => room.items).find(({ instanceId }) => instanceId === itemId)!;
   const frame = () => page.evaluate(() => new Promise<void>((resolve) => requestAnimationFrame(() => requestAnimationFrame(() => resolve()))));
   const read = (offset: { x: number; y?: number; z: number } = grab) => renderedSceneObject(page, { itemId, delta: offset });
+  const renderedAfterHistory = async (stage: string, expected: typeof before) => {
+    const samples: unknown[] = [], target = [expected.position[0] + room.planPosition!.x, expected.position[2] + room.planPosition!.z];
+    try {
+      await expect.poll(async () => {
+        const rendered = await read();
+        samples.push({ time: Date.now(), world: rendered?.world, savedPosition: (await item()).position });
+        return rendered ? Math.max(Math.abs(rendered.world[0] - target[0]), Math.abs(rendered.world[2] - target[1])) : Infinity;
+      }).toBeLessThan(0.000005);
+    } finally {
+      await writeFile(testInfo.outputPath(`furniture-history-${view}-${stage}.json`), JSON.stringify({ target, samples }, null, 2));
+    }
+  };
   const gestures: unknown[] = [];
   const begin = async () => {
     await frame();
@@ -56,10 +68,13 @@ export async function exerciseFurnitureDrag(page: Page, saved: () => Promise<Sto
   expect((await saved()).floorPlan).toEqual(initial.floorPlan);
   await page.getByRole("button", { name: /^Undo/ }).click();
   await expect.poll(async () => (await item()).position).toEqual(before.position);
+  await renderedAfterHistory("undo", before);
   await page.getByRole("button", { name: /^Redo/ }).click();
   await expect.poll(async () => (await item()).position).toEqual(moved.position);
+  await renderedAfterHistory("redo", moved);
   await page.getByRole("button", { name: /^Undo/ }).click();
   await expect.poll(async () => (await item()).position).toEqual(before.position);
+  await renderedAfterHistory("restore", before);
   await writeFile(testInfo.outputPath(`furniture-drag-${view}-evidence.json`), JSON.stringify({ before, moved, start, released,
     checks: ["native canvas pointer input", "removed wall has no drag barrier", "fixed camera", "grab point retained within 1.5 CSS pixels", "Escape rollback", "pointercancel rollback", "one undo/redo", "canonical geometry unchanged"] }, null, 2));
 }
