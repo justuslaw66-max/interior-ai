@@ -5,7 +5,7 @@ import type { FloorPlanWallClassificationV2 } from "@/lib/floor-plan-document-v2
 import { CONSUMER_WALL_EDIT_CONFIRMATION_COPY, selectConsumerWallGeometry } from "@/lib/floor-plan-consumer-wall-edit";
 import { CanonicalPlanRemodelTools } from "@/components/editor/design-page/CanonicalPlanRemodelTools";
 import { CanonicalPlanVectorExport } from "@/components/editor/design-page/CanonicalPlanVectorExport";
-import type { PlanFurnitureDrawingSource } from "@/lib/floor-plan-vector-furniture";
+import type { CanonicalPlanVectorExportSource } from "./useCanonicalPlanVectorExport";
 import type {
   ImportedWallEditingActions,
   ImportedWallEditingState,
@@ -21,7 +21,7 @@ const CLASSIFICATIONS: FloorPlanWallClassificationV2[] = [
 
 export type ImportedFloorPlanWallEditorProps = {
   state: ImportedWallEditingState;
-  configuration: { dark: boolean; exportFurniture?: PlanFurnitureDrawingSource };
+  configuration: { dark: boolean; vectorExport?: CanonicalPlanVectorExportSource };
   actions: ImportedWallEditingActions;
 };
 
@@ -242,7 +242,7 @@ export function ImportedFloorPlanWallEditor({
           <button type="button" className={secondaryButton} onClick={actions.stopEditing}>Stop editing walls</button>
         </div>
       )}
-      <CanonicalPlanVectorExport document={document} floorId={floor.id} original={state.proposal?.originalDocument} furniture={configuration.exportFurniture} />
+      <CanonicalPlanVectorExport document={document} floorId={floor.id} original={state.proposal?.originalDocument} {...configuration.vectorExport} />
     </section>
   );
 }

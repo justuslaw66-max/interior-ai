@@ -11,6 +11,7 @@ import { physicalDimensionLineMm } from "./fixtures/scan-to-editable-plan/pdf-ph
 import { canonicalFloorPlanToDesignSnapshot } from "@/lib/floor-plan-legacy-adapters";
 import { loadPlanVectorFont } from "@/lib/floor-plan-vector-font";
 import { vectorExportFontBytes, vectorPdfEmbeddedFonts, vectorPdfPageContent } from "./fixtures/scan-to-editable-plan/pdf-vector-inspection";
+import { testVectorUnderlay } from "./test-scan-plan-vector-underlay";
 
 function testFurnitureDrawing(document: ReturnType<typeof authoredApartment>) {
   const snapshot = canonicalFloorPlanToDesignSnapshot(document).snapshot, room = snapshot.rooms[0];
@@ -50,6 +51,7 @@ async function main() {
   assert(!drawing.primitives.some((p) => p.id.startsWith("shared:")));
   const options = { paper: "A4", orientation: "landscape", scale: 100 } as const;
   const resources = { fontBytes: await vectorExportFontBytes() }, font = await loadPlanVectorFont(resources.fontBytes);
+  await testVectorUnderlay(drawing, resources);
   const layout = layoutFloorPlanVectorExport(drawing, options, font.font);
   assert.equal(9260 / layout.scale, 92.6);
   const bytes = await exportFloorPlanVectorPdf(drawing, options, resources);

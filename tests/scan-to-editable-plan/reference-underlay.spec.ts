@@ -1,0 +1,94 @@
+import { expect, test } from "@playwright/test";
+import { readFile, writeFile } from "node:fs/promises";
+import { PDFDocument, PDFName, PDFRawStream } from "pdf-lib";
+import { authoredApartment } from "../../scripts/fixtures/scan-to-editable-plan/apartment";
+import { authoredReferenceImage, authoredUnderlay } from "../../scripts/test-scan-plan-vector-underlay";
+import { canonicalFloorPlanToDesignSnapshot } from "../../lib/floor-plan-legacy-adapters";
+import { snapshotToStored } from "../../lib/room-persistence";
+import { vectorPdfPageContent } from "../../scripts/fixtures/scan-to-editable-plan/pdf-vector-inspection";
+import { physicalDimensionLineMm } from "../../scripts/fixtures/scan-to-editable-plan/pdf-physical-scale";
+
+test("Consumer optional reference underlay stays separate and respects private-source deletion", async ({ page }, info) => {
+  const png = await authoredReferenceImage(), key = "interior-ai:v1:livingroom-design", jobId = "fixture-underlay-job";
+  const assetUrl = `/api/floor-plan-imports/${jobId}/assets/fixture-rendered`;
+  const source = { ...authoredUnderlay(assetUrl), sourceJobId: jobId, sourceAssetSha256: "a".repeat(64) };
+  const initial = snapshotToStored(canonicalFloorPlanToDesignSnapshot(authoredApartment(), { underlay: source }).snapshot);
+  let sourceRequests = 0, assetRequests = 0, deleted = false, denied = false, deleteDuringRead = false, holdAsset = false;
+  let releaseAsset: (() => void) | undefined;
+  let deleteOnSourceRequest = -1;
+  const errors: string[] = [], downloads: string[] = [];
+  page.on("pageerror", (error) => errors.push(error.message));
+  page.on("download", (download) => downloads.push(download.suggestedFilename()));
+  await page.route(`**/api/floor-plan-imports/${jobId}`, async (route) => {
+    sourceRequests++;
+    if (sourceRequests === deleteOnSourceRequest) deleted = true;
+    await route.fulfill({ status: denied ? 403 : 200, contentType: "application/json", body: JSON.stringify({ job: {
+      id: jobId, sourceDeletionRequestedAt: deleted ? "2026-09-15" : null,
+      sourceAsset: { sha256: source.sourceAssetSha256, contentDeletedAt: deleted ? "2026-09-15" : null },
+    } }) });
+  });
+  await page.route(`**${assetUrl}`, async (route) => {
+    assetRequests++;
+    if (deleteDuringRead) deleted = true;
+    if (holdAsset) await new Promise<void>((resolve) => { releaseAsset = resolve; });
+    await route.fulfill({ contentType: "image/png", body: png });
+  });
+  await page.addInitScript(({ key, initial }) => {
+    if (window !== window.top) return;
+    if (!localStorage.getItem(key)) localStorage.setItem(key, JSON.stringify(initial));
+    localStorage.setItem("interior-ai:beta-start-dismissed", "1");
+  }, { key, initial });
+  await page.goto("/design");
+  await page.getByRole("button", { name: "Yes, it matches", exact: true }).click();
+  await page.getByTestId("editor-view-2d").click();
+  const panel = page.getByTestId("imported-wall-editor");
+  await panel.locator("summary", { hasText: "Compare and export vector plan" }).click();
+  const before = await page.evaluate((key) => localStorage.getItem(key), key);
+  await expect(panel.getByRole("checkbox", { name: "Reference underlay", exact: true })).not.toBeChecked();
+  const cleanDownload = page.waitForEvent("download"); await panel.getByRole("button", { name: "PDF", exact: true }).click();
+  const cleanPath = info.outputPath("clean.pdf"); await (await cleanDownload).saveAs(cleanPath);
+  const clean = await PDFDocument.load(await readFile(cleanPath));
+  expect(vectorPdfPageContent(clean)).not.toMatch(/\bDo\b/);
+  expect({ sourceRequests, assetRequests }).toEqual({ sourceRequests: 0, assetRequests: 0 });
+  await panel.getByRole("checkbox", { name: "Reference underlay", exact: true }).check();
+  const download = page.waitForEvent("download"); await panel.getByRole("button", { name: "PDF", exact: true }).click();
+  const pdfPath = info.outputPath("with-reference.pdf"); await (await download).saveAs(pdfPath);
+  const pdf = await PDFDocument.load(await readFile(pdfPath)), content = vectorPdfPageContent(pdf);
+  const images = pdf.context.enumerateIndirectObjects().filter(([, object]) => object instanceof PDFRawStream && object.dict.get(PDFName.of("Subtype"))?.toString() === "/Image");
+  expect(images).toHaveLength(1); expect(content.match(/\bDo\b/g)).toHaveLength(1);
+  expect(content.match(/\bm\b/g)).toHaveLength((vectorPdfPageContent(clean).match(/\bm\b/g) ?? []).length);
+  expect(physicalDimensionLineMm(content, 9260)).toBeCloseTo(92.6, 2);
+  const svgDownload = page.waitForEvent("download"); await panel.getByRole("button", { name: "SVG", exact: true }).click();
+  const svgPath = info.outputPath("with-reference.svg"); await (await svgDownload).saveAs(svgPath);
+  const svg = await readFile(svgPath, "utf8"), encoded = /href="data:image\/png;base64,([^"]+)"/.exec(svg)![1];
+  expect(svg.match(/<image /g)).toHaveLength(1); expect(svg).toContain("rotate(-30)");
+  expect(svg).not.toContain(source.name); expect(svg).not.toContain(jobId); expect(svg).not.toContain(assetUrl);
+  expect(Buffer.from(encoded, "base64").includes(Buffer.from("PRIVATE_METADATA_SENTINEL"))).toBe(false);
+  await panel.getByRole("button", { name: "View proposed", exact: true }).click();
+  await expect(panel.getByRole("status")).toContainText("Current proposed geometry");
+  await page.screenshot({ path: info.outputPath("underlay-preview.png") });
+  const acceptedDownloads = downloads.length, acceptedAssetRequests = assetRequests;
+  denied = true; await panel.getByRole("button", { name: "PDF", exact: true }).click();
+  await expect(panel.getByRole("status")).toContainText("unavailable"); expect(assetRequests).toBe(acceptedAssetRequests);
+  denied = false; deleted = true; await panel.getByRole("button", { name: "PDF", exact: true }).click();
+  await expect(panel.getByRole("status")).toContainText("deleted, changed"); expect(assetRequests).toBe(acceptedAssetRequests);
+  deleted = false; deleteDuringRead = true; await panel.getByRole("button", { name: "SVG", exact: true }).click();
+  await expect(panel.getByRole("status")).toContainText("deleted, changed"); expect(downloads).toHaveLength(acceptedDownloads);
+  expect(await page.evaluate((key) => localStorage.getItem(key), key)).toBe(before);
+  deleted = false; deleteDuringRead = false; deleteOnSourceRequest = sourceRequests + 3;
+  await panel.getByRole("button", { name: "PDF", exact: true }).click();
+  await expect(panel.getByRole("status")).toContainText("deleted, changed"); expect(downloads).toHaveLength(acceptedDownloads);
+  deleted = false; deleteDuringRead = false; holdAsset = true;
+  await panel.getByRole("button", { name: "PDF", exact: true }).click();
+  await expect.poll(() => Boolean(releaseAsset)).toBe(true);
+  await page.getByTestId("editor-view-3d").click();
+  await expect(panel).toBeHidden(); releaseAsset!();
+  await expect(page.getByTestId("scene-ready-veil")).toBeHidden();
+  await page.getByTestId("editor-view-2d").click();
+  await expect(panel).toBeVisible();
+  await panel.locator("summary", { hasText: "Compare and export vector plan" }).click();
+  await expect(panel.getByRole("checkbox", { name: "Reference underlay", exact: true })).not.toBeChecked();
+  expect(downloads).toHaveLength(acceptedDownloads);
+  await writeFile(info.outputPath("source-access-evidence.json"), JSON.stringify({ sourceRequests, assetRequests, downloads, checks: ["default no source read", "separate image and paths", "9260 mm becomes 92.6 mm", "metadata stripped", "owner denial", "source deletion before/during read and after PDF generation", "saved state unchanged", "leaving export cancels pending download"] }, null, 2));
+  expect(errors).toEqual([]);
+});

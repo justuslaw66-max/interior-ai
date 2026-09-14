@@ -13,6 +13,8 @@ import type { HousePlanRoom2D } from "@/lib/design-page-house-plan";
 import type { BuildDesignPageViewportRegionAdapterInput } from "@/lib/design-page-viewport-region-adapter";
 import { createRoom, type DesignItem } from "@/lib/room-types";
 import type { DesignPagePresentationWorkspaceRegistration } from "@/lib/useDesignPagePresentationWorkspaceRegistration";
+import type { FloorPlanUnderlay } from "@/lib/floor-plan-types";
+import { resolveDesignItemVisualProduct } from "@/lib/design-item-product-snapshot";
 
 const inertCommand = new Proxy((..._args: unknown[]) => undefined, {
   get: () => inertCommand,
@@ -84,6 +86,7 @@ type FixtureOptions = {
   selectedOpening?: boolean;
   selectedRoomIds?: string[];
   selectedZone?: boolean;
+  underlay?: FloorPlanUnderlay | null;
 };
 
 function buildPresentationFixture({
@@ -97,6 +100,7 @@ function buildPresentationFixture({
   selectedOpening = false,
   selectedRoomIds = rooms[0] ? [rooms[0].id] : [],
   selectedZone = false,
+  underlay = null,
 }: FixtureOptions = {}): DesignPagePresentationWorkspaceRegistration {
   const snapshotRooms = rooms.map((room) => ({
     ...createRoom(room.id, room.name),
@@ -120,6 +124,7 @@ function buildPresentationFixture({
               base: { state: { editor: { viewMode } } },
               viewportShell: {
                 state: {
+                  floorPlan: { floorPlanUnderlay: underlay },
                   planSelection: {
                     selectedPlanOverlayId: selectedOpening
                       ? "opening-1"
@@ -151,6 +156,7 @@ function buildPresentationFixture({
                   version: 3,
                   rooms: snapshotRooms,
                   activeRoomId,
+                  floorPlan: { sourceJobId: "fixture-import-job" },
                 },
               },
               placement: {
@@ -231,6 +237,7 @@ function buildPresentationFixture({
             boundaries: {
               selectionInspection: {
                 derived: { selectedProduct: null },
+                resolvers: { resolveItemConfigurationEntry: () => null, resolveConfiguredVisualDimsMm: () => { throw new Error("Fixture has no configured dimensions"); } },
                 actions: inertCommand,
               },
               planWorkspace: {
@@ -354,6 +361,12 @@ const emptyModel = buildReadModel({ rooms: [], activeRoomId: "" });
 assert.equal(emptyModel.state.planSummary, null);
 assert.equal(emptyModel.state.navigator.enabled, false);
 assert.deepEqual(emptyModel.state.navigator.rooms, []);
+assert.equal(emptyModel.configuration.importedWallEditor.vectorExport?.underlay, null);
+const referenceUnderlay: FloorPlanUnderlay = { id: "reference", floorId: "floor-1", name: "Reference", assetUrl: "/private-reference", mimeType: "image/png",
+  position: { x: 1, z: 2 }, widthMeters: 6, depthMeters: 4, opacity: 0.4, rotationDeg: 30, locked: true };
+const referenceModel = buildReadModel({ underlay: referenceUnderlay });
+assert.equal(referenceModel.configuration.importedWallEditor.vectorExport?.underlay, referenceUnderlay, "Export reads the existing underlay identity, without creating a second image placement.");
+assert.equal(referenceModel.configuration.importedWallEditor.vectorExport?.sourceJobId, "fixture-import-job");
 
 const consumer2d = buildReadModel({ rooms: [roomA], viewMode: "2d" });
 assert.deepEqual(
@@ -484,10 +497,19 @@ const repeatedInput: FixtureOptions = {
   isDesigner: true,
   selectedItem: fixtureItem,
 };
+function comparableReadModel(model: DesignPageViewportWorkspaceReadModel) {
+  const editor = model.configuration.importedWallEditor, source = editor.vectorExport!, furniture = source.furniture!;
+  const { resolveDimensions, ...furnitureState } = furniture;
+  assert(resolveDimensions);
+  const dimensions = resolveDimensions(fixtureItem, resolveDesignItemVisualProduct(fixtureItem)!);
+  assert.deepEqual(dimensions, { w: 400, d: 400, h: 1600 }, "The read-only resolver must retain the saved item's actual dimensions.");
+  return { ...model, configuration: { ...model.configuration, importedWallEditor: { ...editor,
+    vectorExport: { ...source, furniture: { ...furnitureState, resolvedFixtureDimensions: dimensions } } } } };
+}
 assert.deepEqual(
-  buildReadModel(repeatedInput),
-  buildReadModel(repeatedInput),
-  "Save/reload-equivalent inputs must not retain or change viewport state."
+  comparableReadModel(buildReadModel(repeatedInput)),
+  comparableReadModel(buildReadModel(repeatedInput)),
+  "Save/reload-equivalent inputs must preserve all viewport data and resolved dimensions; a newly created read-only callback has no persistent identity."
 );
 const repeatedPresentation = buildPresentationFixture(repeatedInput);
 const firstRegistration = buildDesignPageViewportWorkspaceRegistration({

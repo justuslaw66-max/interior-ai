@@ -1,12 +1,13 @@
 import type { Font } from "@pdf-lib/fontkit";
 import type { PlanVectorDrawing } from "@/lib/floor-plan-vector-drawing";
 import { vectorTextMetrics } from "@/lib/floor-plan-vector-font";
+import { vectorUnderlayCorners, type PlanVectorUnderlay } from "@/lib/floor-plan-vector-underlay";
 
 export type PlanVectorExportOptions = { paper: "A4" | "A3"; orientation: "portrait" | "landscape"; scale: 50 | 100; title?: string };
 export type PlanVectorExportLayout = { widthMm: number; heightMm: number; offsetX: number; offsetY: number; scale: number };
 
 /** Include visible text bounds, curve control hulls and half the stroke width in fixed-scale page fitting. */
-export function layoutFloorPlanVectorExport(drawing: PlanVectorDrawing, options: PlanVectorExportOptions, font: Font): PlanVectorExportLayout {
+export function layoutFloorPlanVectorExport(drawing: PlanVectorDrawing, options: PlanVectorExportOptions, font: Font, underlay?: PlanVectorUnderlay): PlanVectorExportLayout {
   if (![50, 100].includes(options.scale)) throw new Error("Choose a supported fixed scale: 1:50 or 1:100.");
   if (!["A4", "A3"].includes(options.paper) || !["portrait", "landscape"].includes(options.orientation)) throw new Error("Choose paper size and orientation.");
   const paper = options.paper === "A3" ? [297, 420] : [210, 297];
@@ -20,6 +21,7 @@ export function layoutFloorPlanVectorExport(drawing: PlanVectorDrawing, options:
     const x = primitive.point.xMm - metrics.advance / 2, z = primitive.point.zMm;
     return [{ xMm: x + metrics.left, zMm: z + metrics.top }, { xMm: x + metrics.right, zMm: z + metrics.bottom }];
   });
+  if (underlay) points.push(...vectorUnderlayCorners(underlay));
   if (!points.length || points.some((point) => !Number.isFinite(point.xMm) || !Number.isFinite(point.zMm))) throw new Error("The plan has no valid drawing geometry.");
   const minX = Math.min(...points.map((point) => point.xMm)), minY = Math.min(...points.map((point) => point.zMm));
   const width = (Math.max(...points.map((point) => point.xMm)) - minX) / options.scale;
