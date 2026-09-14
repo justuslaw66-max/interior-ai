@@ -11,6 +11,7 @@ import {
 } from "react";
 
 import { track } from "@/lib/analytics";
+import { commitSeatingZone, type SeatingZoneHistory } from "@/lib/design-page-seating-zone-history";
 import type { CATALOG_ITEMS } from "@/lib/catalog";
 import { aabbIntersects } from "@/lib/design-page-geometry";
 import {
@@ -36,11 +37,6 @@ import {
 } from "@/lib/room-types";
 import type { AABB } from "@/lib/snapGuides";
 import type { DesignPageEditorMode } from "@/lib/useDesignPagePanelMode";
-
-type ZoneHistory = {
-  begin: (name: string) => void;
-  commit: () => void;
-};
 
 type SetDesignSnapshot = (
   next: DesignSnapshot | ((previous: DesignSnapshot) => DesignSnapshot)
@@ -93,7 +89,7 @@ export type DesignPageZoneControllerActions = {
   setSelectedZoneId: Dispatch<SetStateAction<string | null>>;
   clearSelection: () => void;
   commitItems: CommitItems;
-  history: ZoneHistory;
+  history: SeatingZoneHistory;
   clampToRoom: ClampToRoom;
   getSelectionBounds: GetSelectionBounds;
   getItemAABB: GetItemAABB;
@@ -241,13 +237,7 @@ export function useDesignPageZoneController({
         catalogItems,
       });
 
-      history.begin("auto_create_seating_zone");
-
-      setDesignSnapshot((previous) =>
-        updateActiveRoomZones(previous, nextZones)
-      );
-
-      history.commit();
+      commitSeatingZone({ source: request.source, sofaId: sofaItem.instanceId, zones: nextZones, history, setSnapshot: setDesignSnapshot });
       setSelectedZoneId(next.zoneId);
       track("seating_zone_auto_created", {
         zoneId: next.zoneId,

@@ -18,6 +18,8 @@ import {
 } from "@/lib/room-types";
 import { snapshotToStored, storedToSnapshot } from "@/lib/room-persistence";
 import { projectSharedDesignSnapshot } from "@/lib/shared-design-snapshot";
+import { commitSeatingZone } from "@/lib/design-page-seating-zone-history";
+import type { DesignPageHistorySnapshot } from "@/lib/useDesignPageHistory";
 
 type CounterState = { value: number; label: string };
 
@@ -335,6 +337,46 @@ function testPlanAnnotationPersistence() {
   );
 }
 
+function testDerivedSeatingHistory() {
+  const original: DesignPageHistorySnapshot = { designSnapshot: { version: 3, activeRoomId: "living", rooms: [createRoom("living", "Living")] },
+    planAnnotations: [], planFixedElements: [], planOpenings: [], floorPlanUnderlay: null };
+  let state = structuredClone(original);
+  const history = new HistoryManager(() => state, (value) => { state = value; });
+  const sofa = makeItem("sofa");
+  history.executeCommand({ id: "replace-room-items", description: "Add sofa", input: sofa,
+    execute: (item) => { state = { ...state, designSnapshot: applyReplaceRoomItemsCommand(state.designSnapshot, { roomId: "living", items: [item] }) }; } });
+  const zones = [{ id: "seating", type: "seating" as const, itemIds: [sofa.instanceId], source: "manual" as const }];
+  const setSnapshot = (updater: (previous: DesignSnapshot) => DesignSnapshot) => { state = { ...state, designSnapshot: updater(state.designSnapshot) }; };
+  commitSeatingZone({ source: "onboarding_post_placement", sofaId: sofa.instanceId, zones, history, setSnapshot });
+  const placed = structuredClone(state);
+  assert.equal(history.getStatus().pastCount, 1, "The automatic placement consequence must remain one history entry.");
+  assert.equal(history.undo(), "Add sofa"); assert.deepEqual(state, original);
+  assert.equal(history.redo(), "Add sofa"); assert.deepEqual(state, placed, "Redo restores exact zone identity with its sofa.");
+  commitSeatingZone({ source: "editor", sofaId: sofa.instanceId, zones: [{ ...zones[0], id: "explicit" }], history, setSnapshot });
+  assert.equal(history.getStatus().pastCount, 2, "Explicit zone changes remain separate.");
+  history.undo(); assert.deepEqual(state, placed);
+}
+
+function testDerivedCommandGuards() {
+  const workspace = createCounterHistory();
+  const { history, getState, setState } = workspace;
+  history.executeCommand({ id: "parent", description: "Parent", input: null, execute: () => setState({ value: 1, label: "placed" }) });
+  const update = { commandIds: ["parent"], matches: () => true, update: () => setState({ value: 2, label: "derived" }) };
+  assert.equal(history.completeLastCommand({ ...update, commandIds: ["other"] }), false);
+  assert.equal(history.completeLastCommand({ ...update, matches: () => false }), false);
+  setState({ value: 3, label: "newer unrecorded state" });
+  assert.equal(history.completeLastCommand(update), false, "A stale effect cannot overwrite newer state.");
+  setState({ value: 1, label: "placed" });
+  assert.throws(() => history.completeLastCommand({ ...update, update: () => { setState({ value: 99, label: "partial" }); throw new Error("failed derived change"); } }), /failed derived change/);
+  assert.deepEqual(getState(), { value: 1, label: "placed" });
+  assert.equal(history.getStatus().activeCommand, null);
+  history.begin("in-flight"); assert.equal(history.completeLastCommand(update), false); history.rollback();
+  history.undo(); assert.equal(history.completeLastCommand(update), false, "Undo history must never be extended by a late effect.");
+  history.redo(); assert.deepEqual(getState(), { value: 1, label: "placed" });
+}
+
+testDerivedSeatingHistory();
+testDerivedCommandGuards();
 testDiscreteCommandsAndRollback();
 testContinuousCommands();
 testInterruptedDragRecovery();

@@ -26,8 +26,8 @@ export async function observeRenderedScene(page: Page) {
 type ObservedFiber = { stateNode?: unknown; child?: ObservedFiber | null; sibling?: ObservedFiber | null };
 type SceneObject = Object3D & { geometry?: BufferGeometry; __r3f?: { root: { getState: () => RootState } } };
 
-export async function renderedOpening(page: Page, query: { testId: string; openingId: string; edge?: string; delta?: { x: number; z: number } }) {
-  return page.evaluate(({ testId, openingId, edge, delta }) => {
+export async function renderedSceneObject(page: Page, query: { testId?: string; openingId?: string; itemId?: string; edge?: string; delta?: { x: number; z: number } }) {
+  return page.evaluate(({ testId, openingId, itemId, edge, delta }) => {
     // The hook above receives React's root objects; validate scene candidates before reading Three methods.
     const host = window as typeof window & { __scanPlanReactRoots?: Set<{ current: ObservedFiber }>; __scanPlanPointerEvents?: { type: string; x: number; y: number }[] };
     const pending = [...(host.__scanPlanReactRoots ?? [])].map(({ current }) => current);
@@ -42,8 +42,8 @@ export async function renderedOpening(page: Page, query: { testId: string; openi
       const value = instance && typeof instance === "object" && "object" in instance ? instance.object : instance;
       if (value && typeof value === "object" && "isObject3D" in value && value.isObject3D === true && "matrixWorld" in value) objects.add(value as SceneObject);
     }
-    const object = [...objects].find((candidate) => candidate.userData.testId === testId && candidate.userData.canonicalOpeningId === openingId &&
-      (!edge || candidate.userData.canonicalResizeEdge === edge));
+    const object = [...objects].find((candidate) => itemId ? candidate.userData.sceneDemandItemId === itemId :
+      candidate.userData.testId === testId && candidate.userData.canonicalOpeningId === openingId && (!edge || candidate.userData.canonicalResizeEdge === edge));
     if (!object?.__r3f) return null;
     for (let ancestor: Object3D | null = object; ancestor; ancestor = ancestor.parent) if (!ancestor.visible) return null;
     const state = object.__r3f.root.getState(), bounds = state.gl.domElement.getBoundingClientRect();
@@ -70,3 +70,5 @@ export async function renderedOpening(page: Page, query: { testId: string; openi
       symbols: symbols.map(({ userData }) => userData), camera: { position: state.camera.position.toArray(), quaternion: state.camera.quaternion.toArray(), matrix: state.camera.projectionMatrix.toArray() } };
   }, query);
 }
+
+export const renderedOpening = renderedSceneObject;

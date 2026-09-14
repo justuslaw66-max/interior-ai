@@ -45,8 +45,11 @@ export async function exerciseOpening3D(page: Page, wallId: string, saved: () =>
     await page.mouse.move(target.target.x, target.target.y, { steps: 6 });
     const after = await read();
     await writeFile(testInfo.outputPath("opening-3d-camera-diagnostic.json"), JSON.stringify({ requested: target, after }, null, 2));
-    expect(after?.camera.position).toEqual(target.camera.position);
-    expect(after?.camera.quaternion).toEqual(target.camera.quaternion);
+    expect(after).not.toBeNull();
+    for (const key of ["position", "quaternion"] as const) target.camera[key].forEach((value, axis) => {
+      // OrbitControls can recompute an unchanged pose with a few IEEE-754 rounding bits.
+      expect(Math.abs(after!.camera[key][axis] - value)).toBeLessThanOrEqual(16 * Number.EPSILON * Math.max(1, Math.abs(value)));
+    });
     return target;
   };
   await begin(); expect(await document()).toEqual(before);

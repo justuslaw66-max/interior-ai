@@ -740,10 +740,6 @@
       "lines": 1108,
       "limit": 400
     },
-    "lib/useDesignPageZoneController.ts": {
-      "lines": 409,
-      "limit": 400
-    },
     "lib/useFloorPlanRoomDrawing.ts": {
       "lines": 600,
       "limit": 400
@@ -4969,7 +4965,7 @@
     "lib/useDesignPageZoneController.ts": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 301
+        "maximum": 295
       }
     },
     "lib/useFloorManager.ts": {

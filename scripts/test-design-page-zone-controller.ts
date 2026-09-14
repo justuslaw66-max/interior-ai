@@ -188,8 +188,8 @@ assert.ok(
 );
 assert.match(
   controllerSource,
-  /const nextZones = reconcileZonesForItems\(\{[\s\S]*?zones: next\.manualZones,[\s\S]*?allItems: itemsRef\.current,[\s\S]*?catalogItems,[\s\S]*?history\.begin\("auto_create_seating_zone"\);[\s\S]*?setDesignSnapshot\(\(previous\) =>[\s\S]*?updateActiveRoomZones\(previous, nextZones\)[\s\S]*?history\.commit\(\);[\s\S]*?setSelectedZoneId\(next\.zoneId\);/,
-  "Automatic creation should reconcile auto zones and preserve its active-room update, history, and selection behavior."
+  /const nextZones = reconcileZonesForItems\(\{[\s\S]*?zones: next\.manualZones,[\s\S]*?allItems: itemsRef\.current,[\s\S]*?catalogItems,[\s\S]*?commitSeatingZone\(\{ source: request\.source, sofaId: sofaItem\.instanceId, zones: nextZones, history, setSnapshot: setDesignSnapshot \}\);[\s\S]*?setSelectedZoneId\(next\.zoneId\);/,
+  "Automatic creation should reconcile zones through the placement-aware history boundary and preserve selection."
 );
 assert.match(
   controllerSource,
@@ -288,7 +288,7 @@ assert.equal(
   "Normalization and both creation paths should share one zone reconciler."
 );
 assert.equal(
-  controllerSource.match(/updateActiveRoomZones\(/g)?.length,
+  [controllerSource, readSource("lib/design-page-seating-zone-history.ts")].join("\n").match(/updateActiveRoomZones\(/g)?.length,
   4,
   "Every zone write path should use the shared active-room updater."
 );
