@@ -117,7 +117,7 @@ export function useDesignPageImportedWallEditingController({
 
   const commit = useCallback(
     (operation: ConsumerWallTopologyMutationV2): boolean => {
-      if (!editingEnabled || !available) {
+      if (!editingEnabled) {
         actions.showToast("Choose Edit local copy before changing imported walls");
         return false;
       }
@@ -154,7 +154,7 @@ export function useDesignPageImportedWallEditingController({
         return false;
       }
     },
-    [actions, available, editingEnabled, nextIdentity, refs.designSnapshot]
+    [actions, editingEnabled, nextIdentity, refs.designSnapshot]
   );
 
   const moveVertex = useCallback<ImportedWallEditingActions["moveVertex"]>(

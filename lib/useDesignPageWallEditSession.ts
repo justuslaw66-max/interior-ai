@@ -18,8 +18,9 @@ type SessionInput = { designSnapshot: DesignSnapshot; canEdit: boolean; isClient
 function wallSessionContext({ designSnapshot, canEdit, isClientPreview, viewMode }: SessionInput) {
   const document = designSnapshot.floorPlan?.canonicalDocument ?? null;
   const sourceRevisionId = document ? designSnapshot.floorPlan?.revisionId ?? document.parentRevisionId ?? document.revisionId : null;
-  return { document, sourceRevisionId, key: document && sourceRevisionId ? `${document.id}:${sourceRevisionId}` : "none",
-    available: Boolean(document && canEdit && !isClientPreview && viewMode === "2d") };
+  const canEditCopy = Boolean(document && canEdit && !isClientPreview);
+  return { document, sourceRevisionId, canEditCopy, key: document && sourceRevisionId ? `${document.id}:${sourceRevisionId}` : "none",
+    available: canEditCopy && viewMode === "2d" };
 }
 
 /** One confirmation/selection session shared by the numeric controls and main viewport. */
@@ -27,9 +28,9 @@ export function useDesignPageWallEditSession(input: SessionInput) {
   const [session, setSession] = useState({ key: "none", confirmationPending: false, editingEnabled: false });
   const [selected, setSelected] = useState({ documentId: "", floorId: "", wallId: "" });
   const nextIdentity = useWallMutationIdentity();
-  const { document, sourceRevisionId, key, available } = wallSessionContext(input);
+  const { document, sourceRevisionId, key, available, canEditCopy } = wallSessionContext(input);
   const confirmationPending = available && session.key === key && session.confirmationPending;
-  const editingEnabled = available && session.key === key && session.editingEnabled;
+  const editingEnabled = canEditCopy && session.key === key && session.editingEnabled;
   const currentSelection = selected.documentId === document?.id ? selected : { floorId: "", wallId: "" };
   const floor = document?.floors.find(({ id }) => id === currentSelection.floorId) ?? document?.floors[0];
   const wall = floor?.walls.find(({ id }) => id === currentSelection.wallId) ?? floor?.walls[0];

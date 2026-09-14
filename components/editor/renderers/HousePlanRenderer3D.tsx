@@ -17,7 +17,8 @@ import {
 } from "@/lib/floor-materials";
 import { getCeilingSurfaceSettings } from "@/lib/surface-settings";
 import type { CanonicalFloorPlanRenderModel } from "@/lib/floor-plan-render-model";
-import { legacyOpeningOffsetAtWorldPoint } from "@/lib/design-page-opening-interaction";
+import { legacyOpeningGestureHandler } from "./canonical-floor-plan/legacyOpeningGesture";
+import type { CanonicalWallGestureControls } from "@/lib/floor-plan-wall-gesture";
 import { CanonicalFloorPlanWalls3D } from "./CanonicalFloorPlanStructure";
 import {
   LegacyFloorSlabMesh,
@@ -63,6 +64,7 @@ export {
 } from "./house-plan-3d/geometry";
 
 type HousePlanRenderer3DProps = {
+  canonicalWallEditing?: CanonicalWallGestureControls;
   rooms: readonly HousePlanRoom2D[];
   /**
    * Whole-home room graph used to resolve shared walls and mirrored openings.
@@ -239,7 +241,7 @@ export default function HousePlanRenderer3D({
   onMoveOpening,
   onResizeOpening,
   onOpeningDragStateChange,
-  canonicalPlan = null,
+  canonicalWallEditing, canonicalPlan = null,
   canonicalStructureExpected = false,
 }: HousePlanRenderer3DProps) {
   const activeRoom = rooms.find((room) => room.id === activeRoomId);
@@ -434,26 +436,8 @@ export default function HousePlanRenderer3D({
             );
           }}
           onSelectOpening={onSelectOpening}
-          onEditOpening={(openingId, metrics, mode) => {
-            const sourceOpening = openings.find((opening) => opening.id === openingId);
-            const host = sourceOpening?.hostResolution?.status === "resolved"
-              ? sourceOpening.hostResolution.host
-              : null;
-            if (!sourceOpening || !host) return;
-            const centerOffsetMeters = legacyOpeningOffsetAtWorldPoint(host, {
-              x: metrics.centerMm.xMm / 1000,
-              z: metrics.centerMm.zMm / 1000,
-            });
-            if (centerOffsetMeters === null) return;
-            if (mode === "resize") {
-              onResizeOpening?.(openingId, {
-                widthMeters: metrics.widthMm / 1000,
-                offsetMeters: centerOffsetMeters,
-              });
-            } else {
-              onMoveOpening?.(openingId, centerOffsetMeters);
-            }
-          }}
+          wallEditing={canonicalWallEditing}
+          onEditOpening={legacyOpeningGestureHandler(openings, onMoveOpening, onResizeOpening)}
           onOpeningDragStateChange={(dragging, mode) =>
             onOpeningDragStateChange?.(
               dragging,

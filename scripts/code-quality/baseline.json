@@ -273,7 +273,7 @@
       "limit": 250
     },
     "components/editor/renderers/CanonicalFloorPlanStructure.tsx": {
-      "lines": 1245,
+      "lines": 1244,
       "limit": 250
     },
     "components/editor/renderers/house-plan-3d/geometry.ts": {
@@ -289,7 +289,7 @@
       "limit": 250
     },
     "components/editor/renderers/HousePlanRenderer3D.tsx": {
-      "lines": 717,
+      "lines": 701,
       "limit": 250
     },
     "components/editor/renderers/ItemRenderer2D.tsx": {
@@ -725,7 +725,7 @@
       "limit": 400
     },
     "lib/useDesignPageSelectionInspectorModel.ts": {
-      "lines": 416,
+      "lines": 408,
       "limit": 400
     },
     "lib/useDesignPageSelectionTransforms.ts": {
@@ -2323,7 +2323,7 @@
     "components/editor/renderers/HousePlanRenderer3D.tsx": {
       "overlongFunctions": {
         "count": 3,
-        "maximum": 495
+        "maximum": 477
       },
       "complexFunctions": {
         "count": 2,
@@ -4903,7 +4903,7 @@
       },
       "complexFunctions": {
         "count": 1,
-        "maximum": 26
+        "maximum": 25
       }
     },
     "lib/useDesignPageSelectionTransforms.ts": {

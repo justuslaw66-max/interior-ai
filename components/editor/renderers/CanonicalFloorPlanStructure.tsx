@@ -329,7 +329,7 @@ function CanonicalOpening2DSymbol({
                   canonicalOpeningId: opening.id,
                   canonicalResizeEdge: edge,
                 }}
-                onPointerDown={(event) => beginResize(edge, event)}
+                onClick={(event) => event.stopPropagation()} onPointerDown={(event) => beginResize(edge, event)}
                 onPointerMove={move}
                 onPointerUp={finish}
                 onPointerCancel={cancel}
@@ -822,7 +822,7 @@ function CanonicalOpening3DSymbol({
     opening, revisionId,
     wallStart,
     wallEnd,
-    floorY: floorElevationMm / 1000,
+    floorY: floorElevationMm / 1000, projection: "wall",
     enabled: interactive && Boolean(onEdit),
     onEdit,
     onDragStateChange,
@@ -918,7 +918,7 @@ function CanonicalOpening3DSymbol({
                 canonicalOpeningId: opening.id,
                 canonicalResizeEdge: edge,
               }}
-              onPointerDown={(event) => beginResize(edge, event)}
+              onClick={(event) => event.stopPropagation()} onPointerDown={(event) => beginResize(edge, event)}
               onPointerMove={move}
               onPointerUp={finish}
               onPointerCancel={cancel}
@@ -1030,7 +1030,7 @@ export function CanonicalFloorPlanWalls2D({
 }
 
 type CanonicalFloorPlanWalls3DProps = {
-  model: CanonicalFloorPlanRenderModel;
+  wallEditing?: CanonicalWallGestureControls; model: CanonicalFloorPlanRenderModel;
   rooms?: readonly HousePlanRoom2D[];
   activeRoomId: string | null;
   focusRoomId?: string | null;
@@ -1059,7 +1059,7 @@ type CanonicalFloorPlanWalls3DProps = {
 };
 
 export function CanonicalFloorPlanWalls3D({
-  model,
+  model, wallEditing,
   rooms = [],
   activeRoomId,
   focusRoomId = null,
@@ -1234,8 +1234,7 @@ export function CanonicalFloorPlanWalls3D({
                   wallStart={wall.centerlineSegments[0]?.start ?? opening.start}
                   wallEnd={wall.centerlineSegments.at(-1)?.end ?? opening.end}
                   revisionId={model.revisionId}
-                  onEdit={wall.path.kind === "line" ? onEditOpening : undefined}
-                  onDragStateChange={onOpeningDragStateChange}
+                  {...openingGestureBindings(wallEditing, floor.id, wall.path.kind, onEditOpening, onOpeningDragStateChange)}
                 />
               ))
         );

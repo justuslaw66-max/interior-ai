@@ -7,6 +7,7 @@ import {
   type DesignSelectionContext,
 } from "@/lib/design-page-selection-context";
 import { getPlanRoomAreaSquareMeters } from "@/lib/plan-room-summary";
+import { buildOpeningSelectionSummary } from "@/lib/design-page-opening-summary";
 import { getItemPrice, normalizeRotationDegrees } from "@/lib/design-page-utils";
 import type { HousePlanRoom2D } from "@/lib/design-page-house-plan";
 import { getPlanOpeningWallSpanMeters } from "@/lib/design-page-plan-overlays";
@@ -161,16 +162,7 @@ export function buildDesignPageSelectionInspectorSummary({
   }
 
   if (visiblePlanOpening) {
-    const kindLabel = visiblePlanOpening.kind === "door" ? "Door" : "Window";
-    return {
-      kind: kindLabel,
-      title: `${kindLabel} on ${visiblePlanOpening.wall}`,
-      detail: visiblePlanOpeningRoomName,
-      metrics: [
-        `${formatCabinetMeasurement(visiblePlanOpening.widthMm, planMeasurementUnit)} wide`,
-        `${formatCabinetMeasurement(visiblePlanOpening.offsetMm, planMeasurementUnit)} from center`,
-      ],
-    };
+    return buildOpeningSelectionSummary(visiblePlanOpening, visiblePlanOpeningRoomName, planMeasurementUnit);
   }
 
   if (selectedPlanFixedElement) {

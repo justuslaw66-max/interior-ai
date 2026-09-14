@@ -410,8 +410,8 @@ export function DesignSceneStructureLayer({
           if (kind) actions.overlays.setDragging(dragging, kind);
           else actions.wholeHome.setOpeningDragging(dragging);
         }}
-        canonicalPlan={canonicalPlan}
-        canonicalStructureExpected={canonicalStructureExpected}
+        canonicalPlan={canonicalPlan} canonicalStructureExpected={canonicalStructureExpected}
+        canonicalWallEditing={resolveWallGestureControls(state.plan.wallEditing, actions.walls)}
       />
       {canonicalIntegrityWarning}
       {canonicalEditingNotice}

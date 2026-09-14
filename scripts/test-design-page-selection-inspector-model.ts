@@ -365,6 +365,14 @@ assert.deepEqual(
   "An explicitly selected opening should take precedence over other plan objects."
 );
 
+assert.deepEqual(summarize({
+  visiblePlanOpening: { ...opening, kind: "window", canonicalHost: {
+    floorId: "floor-1", floorLevel: 0, pathKind: "line", startMm: { x: 0, z: 0 },
+    endMm: { x: 2000, z: 2000 }, thicknessMm: 100, offsetOriginMm: 0,
+  } }, visiblePlanOpeningRoomName: room.name,
+}), { kind: "Window", title: "Window on selected wall", detail: room.name,
+  metrics: ["900 mm wide", "350 mm from center"] }, "Canonical diagonal hosts should not be labelled as cardinal walls; legacy offsets stay unchanged.");
+
 assert.deepEqual(
   summarize({
     selectedPlanAnnotation: annotation,

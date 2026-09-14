@@ -1,3 +1,5 @@
+import { observeRenderedScene } from "./rendered-scene-observer";
+import { exerciseOpening3D } from "./opening-3d-journey";
 import { exerciseEnclosedRoom } from "./enclosed-room-journey";
 import { exerciseWallJoins } from "./wall-join-journey";
 import { exerciseOpeningGestures } from "./opening-gesture-journey";
@@ -22,6 +24,7 @@ async function roomCount(page: Page, count: number) {
 }
 
 test("Consumer shared-wall merge, attached partition, opening edit, undo/redo, 3D and reload", async ({ page }, testInfo) => {
+  await observeRenderedScene(page);
   const errors: string[] = [];
   page.on("pageerror", (error) => errors.push(error.message));
   page.on("console", (entry) => { if (entry.type() === "error" && /same key|Each child in a list/.test(entry.text())) errors.push(entry.text()); });
@@ -110,6 +113,7 @@ test("Consumer shared-wall merge, attached partition, opening edit, undo/redo, 3
   await panel.getByRole("button", { name: "Add opening", exact: true }).click();
   await expect.poll(async () => (await saved(page)).floorPlan?.canonicalDocument?.floors[0].openings.length).toBe(2);
   await exerciseOpeningGestures(page, diagonalId, () => saved(page), testInfo);
+  await exerciseOpening3D(page, diagonalId, () => saved(page), testInfo);
   const accepted = (await saved(page)).floorPlan?.canonicalDocument;
   expect(accepted).toBeTruthy();
   const geometry = compileCanonicalFloorPlanRenderModel(accepted!);

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, type RefObject } from "react";
 import { useThree, type ThreeEvent } from "@react-three/fiber";
+import { useOpeningReleaseClick } from "./useOpeningReleaseClick";
 import { Mesh, Plane, Vector3 } from "three";
 import type { CompiledFloorPlanOpeningV2 } from "@/lib/floor-plan-compiler-v2";
 import { buildOpeningGestureDraft, type CanonicalOpeningDragMetricsV2, type CanonicalOpeningDragMode, type OpeningGestureAnchor } from "@/lib/floor-plan-opening-gesture";
@@ -9,7 +10,7 @@ type CaptureTarget = EventTarget & { setPointerCapture?: (id: number) => void; r
 type Input = {
   opening: CompiledFloorPlanOpeningV2; revisionId: string;
   wallStart: { xMm: number; zMm: number }; wallEnd: { xMm: number; zMm: number };
-  floorY: number; enabled: boolean; onEdit?: CanonicalOpeningEditHandler;
+  projection?: "plan" | "wall"; floorY: number; enabled: boolean; onEdit?: CanonicalOpeningEditHandler;
   onDragStateChange?: (dragging: boolean, mode: CanonicalOpeningDragMode) => void;
 };
 function stopPointer(event: ThreeEvent<PointerEvent>) {
@@ -21,13 +22,17 @@ type Session = { pointerId: number; target: CaptureTarget; nativeTarget: Element
 function useOpeningPointerOffset(input: Input) {
   const plane = useMemo(() => new Plane(new Vector3(0, 1, 0), -input.floorY), [input.floorY]);
   const pointRef = useRef(new Vector3());
-  const { wallStart, wallEnd } = input;
+  const { wallStart, wallEnd, projection } = input;
+  const wallPlane = useMemo(() => new Plane().setFromNormalAndCoplanarPoint(
+    new Vector3(wallEnd.zMm - wallStart.zMm, 0, wallStart.xMm - wallEnd.xMm).normalize(),
+    new Vector3(wallStart.xMm / 1000, input.floorY, wallStart.zMm / 1000)), [wallStart, wallEnd, input.floorY]);
   return useCallback((event: ThreeEvent<PointerEvent>) => {
-    const point = event.ray.intersectPlane(plane, pointRef.current);
+    const targetPlane = projection === "wall" && Math.abs(event.ray.direction.dot(wallPlane.normal)) > 0.00001 ? wallPlane : plane;
+    const point = event.ray.intersectPlane(targetPlane, pointRef.current);
     const dx = wallEnd.xMm - wallStart.xMm, dz = wallEnd.zMm - wallStart.zMm;
     const length = Math.hypot(dx, dz);
     return point && length > 0 ? ((point.x * 1000 - wallStart.xMm) * dx + (point.z * 1000 - wallStart.zMm) * dz) / length : null;
-  }, [plane, wallStart, wallEnd]);
+  }, [plane, wallPlane, projection, wallStart, wallEnd]);
 }
 
 function useOpeningCancellation(sessionRef: RefObject<Session | null>, previewRef: RefObject<Mesh | null>, latestRef: RefObject<Input>) {
@@ -80,7 +85,7 @@ export function useCanonicalOpeningDrag(input: Input) {
   const latestRef = useRef(input), sessionRef = useRef<Session | null>(null), previewRef = useRef<Mesh>(null);
   useLayoutEffect(() => { latestRef.current = input; }, [input]);
   const offsetAt = useOpeningPointerOffset(input), invalidate = useThree((state) => state.invalidate);
-  const cancel = useOpeningCancellation(sessionRef, previewRef, latestRef);
+  const cancel = useOpeningCancellation(sessionRef, previewRef, latestRef), markRelease = useOpeningReleaseClick();
   useOpeningCancellationEvents(cancel, sessionRef, input);
   const begin = useCallback((edge: "start" | "end" | null, event: ThreeEvent<PointerEvent>) => {
     const current = latestRef.current, pointer = offsetAt(event);
@@ -106,12 +111,13 @@ export function useCanonicalOpeningDrag(input: Input) {
     if (!drag || drag.pointerId !== event.pointerId) return;
     if (!drag.nativeTarget.hasPointerCapture(event.pointerId)) { stopPointer(event); cancel(); return; }
     move(event);
+    if (drag.draft) markRelease(drag.nativeTarget);
     const current = latestRef.current;
     // The legacy path owns its continuous transaction; the private proposal path commits its own.
     try {
       if (current.enabled && drag.revisionId === current.revisionId && drag.draft) current.onEdit?.(current.opening.id, drag.draft, drag.anchor.mode);
     } finally { cancel(); }
-  }, [move, cancel]);
+  }, [move, cancel, markRelease]);
   return { previewRef, beginMove: (event: ThreeEvent<PointerEvent>) => begin(null, event),
     beginResize: (edge: "start" | "end", event: ThreeEvent<PointerEvent>) => begin(edge, event), move, finish, cancel: (event: ThreeEvent<PointerEvent>) => { stopPointer(event); cancel(); } };
 }
