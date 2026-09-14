@@ -11,6 +11,7 @@ import {
   type FloorPlanTopologyMutationV2,
 } from "@/lib/floor-plan-topology-mutations";
 import type { DesignSnapshot, RoomSurfaceAssignments } from "@/lib/room-types";
+import { reconcileProposedRoomContent } from "@/lib/floor-plan-proposal-content";
 
 export const CONSUMER_WALL_EDIT_CONFIRMATION_COPY =
   "This creates a local editable copy for this design. The imported source plan remains unchanged. Accepted wall changes are marked Needs review and may affect connected rooms and openings.";
@@ -18,7 +19,7 @@ export const CONSUMER_WALL_EDIT_CONFIRMATION_COPY =
 export type ConsumerWallTopologyMutationV2 = Extract<
   FloorPlanTopologyMutationV2,
   {
-    kind: "move_vertex" | "move_wall" | "update_wall" | "split_wall";
+    kind: "move_vertex" | "move_wall" | "update_wall" | "split_wall" | "add_wall" | "remove_wall" | "add_opening" | "update_opening" | "remove_opening";
   }
 >;
 
@@ -107,30 +108,6 @@ function preserveSplitWallFinishes(
   };
 }
 
-function assertConsumerContentPreserved(
-  before: DesignSnapshot,
-  after: DesignSnapshot
-): void {
-  const afterById = new Map(after.rooms.map((room) => [room.id, room]));
-  for (const room of before.rooms) {
-    const next = afterById.get(room.id);
-    if (!next) {
-      throw new Error(`Wall editing unexpectedly removed room ${room.id}.`);
-    }
-    const preserved = [
-      ["items", room.items, next.items],
-      ["zones", room.zones, next.zones],
-      ["saved views", room.savedViews, next.savedViews],
-      ["layout versions", room.layoutVersions, next.layoutVersions],
-    ] as const;
-    for (const [label, previousValue, nextValue] of preserved) {
-      if (JSON.stringify(previousValue) !== JSON.stringify(nextValue)) {
-        throw new Error(`Wall editing unexpectedly changed ${label} in room ${room.id}.`);
-      }
-    }
-  }
-}
-
 export function isConsumerWallEditLocalForkV2(snapshot: DesignSnapshot): boolean {
   const document = snapshot.floorPlan?.canonicalDocument;
   if (!document) return false;
@@ -192,6 +169,6 @@ export function applyConfirmedConsumerWallEditV2({
       "The local floor-plan edit did not preserve its immutable source revision."
     );
   }
-  assertConsumerContentPreserved(snapshot, committed.snapshot);
-  return committed;
+  const reconciled = reconcileProposedRoomContent(snapshot, committed.snapshot, operation);
+  return { ...committed, snapshot: reconciled };
 }

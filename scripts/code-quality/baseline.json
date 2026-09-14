@@ -173,7 +173,7 @@
       "limit": 250
     },
     "components/editor/design-page/ImportedFloorPlanWallEditor.tsx": {
-      "lines": 279,
+      "lines": 273,
       "limit": 250
     },
     "components/editor/design-page/LightingSettingsControls.tsx": {
@@ -618,10 +618,6 @@
     },
     "lib/floor-plan-quality.ts": {
       "lines": 642,
-      "limit": 400
-    },
-    "lib/floor-plan-topology-mutations.ts": {
-      "lines": 458,
       "limit": 400
     },
     "lib/floor-plan-tracing.ts": {
@@ -1813,7 +1809,7 @@
     "components/editor/design-page/ImportedFloorPlanWallEditor.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 239
+        "maximum": 221
       },
       "complexFunctions": {
         "count": 1,
@@ -4070,8 +4066,8 @@
     },
     "lib/floor-plan-topology-mutations.ts": {
       "overlongFunctions": {
-        "count": 2,
-        "maximum": 72
+        "count": 1,
+        "maximum": 62
       },
       "complexFunctions": {
         "count": 1,
@@ -4561,7 +4557,7 @@
     "lib/useDesignPageImportedWallEditingController.ts": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 174
+        "maximum": 156
       },
       "complexFunctions": {
         "count": 1,

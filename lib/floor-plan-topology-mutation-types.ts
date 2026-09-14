@@ -30,7 +30,7 @@ export type FloorPlanOpeningChangesV2 = Partial<
   Omit<FloorPlanOpeningDraftV2, "id">
 >;
 export type FloorPlanWallChangesV2 = Partial<
-  Pick<FloorPlanWallV2, "thicknessMm" | "classification">
+  Pick<FloorPlanWallV2, "thicknessMm" | "classification" | "heightMm" | "baseOffsetMm">
 >;
 export type FloorPlanVertexDraftV2 = Omit<FloorPlanVertexV2, "provenance">;
 export type FloorPlanStructureDraftV2 = Omit<FloorPlanStructureV2, "provenance">;
@@ -43,6 +43,29 @@ export type FloorPlanDimensionChangesV2 = Partial<
 >;
 
 export type FloorPlanTopologyMutationV2 =
+  | {
+      kind: "add_wall";
+      floorId: string;
+      wallId: string;
+      startVertexId: string;
+      endVertexId: string;
+      vertices?: FloorPlanVertexDraftV2[];
+      thicknessMm: number;
+      heightMm?: number;
+      baseOffsetMm?: number;
+      /** Required when the partition splits a room; first boundary keeps its ID. */
+      newRoomId?: string;
+      newRoomName?: string;
+    }
+  | {
+      kind: "remove_wall";
+      floorId: string;
+      wallId: string;
+      /** Exact dependency list from the reviewed deletion preview. */
+      confirmedOpeningIds: string[];
+      /** Explicit choice of name/type/finish owner when rooms merge. */
+      keepRoomId?: string;
+    }
   | {
       kind: "move_vertex";
       floorId: string;
@@ -151,6 +174,9 @@ export type FloorPlanTopologyMutationErrorCodeV2 =
   | "ARC_MUTATION_UNSUPPORTED"
   | "INVALID_SPLIT"
   | "SPAN_CROSSES_SPLIT"
+  | "WALL_DEPENDENCIES_CHANGED"
+  | "ROOM_CHOICE_REQUIRED"
+  | "UNRESOLVED_BOUNDARY"
   | "MUTATION_VALIDATION_FAILED";
 
 export class FloorPlanTopologyMutationErrorV2 extends Error {

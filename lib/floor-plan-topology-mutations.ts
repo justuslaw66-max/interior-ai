@@ -1,9 +1,10 @@
+import { splitWall } from "@/lib/floor-plan-wall-split";
 import { compileFloorPlanDocumentV2, FloorPlanDocumentValidationErrorV2 } from "@/lib/floor-plan-compiler-v2";
+import { addCanonicalPartition, removeCanonicalPartition } from "@/lib/floor-plan-partition-mutations";
 import type {
   FloorPlanDocumentV2,
   FloorPlanFloorV2,
   FloorPlanPointMmV2,
-  FloorPlanVertexV2,
   FloorPlanWallV2,
 } from "@/lib/floor-plan-document-v2";
 import {
@@ -199,128 +200,14 @@ function updateWall(
     fail("NO_OP_MUTATION", `Wall ${wallId} update has no changes.`);
   }
   Object.assign(wall, changes);
+  if (changes.heightMm !== undefined) wall.heightEvidence = "user_confirmed";
+  if (changes.baseOffsetMm !== undefined) wall.baseOffsetEvidence = "user_confirmed";
   wall.provenance = demoteProvenance(
     wall.provenance,
     wall.id,
     `Updated wall ${wall.id}`,
     state
   );
-}
-
-function remapWallSpansAfterSplit(
-  floor: FloorPlanFloorV2,
-  wallId: string,
-  newWallId: string,
-  splitOffsetMm: number,
-  state: MutationState
-): void {
-  for (const opening of floor.openings) {
-    if (opening.wallId !== wallId) continue;
-    const end = opening.offsetMm + opening.widthMm;
-    if (opening.offsetMm < splitOffsetMm && end > splitOffsetMm) {
-      fail("SPAN_CROSSES_SPLIT", `Opening ${opening.id} crosses the requested wall split.`);
-    }
-    if (opening.offsetMm >= splitOffsetMm) {
-      opening.wallId = newWallId;
-      opening.offsetMm -= splitOffsetMm;
-      opening.provenance = demoteProvenance(
-        opening.provenance,
-        opening.id,
-        `Remapped opening after splitting wall ${wallId}`,
-        state
-      );
-    }
-  }
-  for (const annotation of floor.annotations) {
-    if (annotation.geometry.kind !== "wall_span" || annotation.geometry.wallId !== wallId) continue;
-    const end = annotation.geometry.offsetMm + annotation.geometry.widthMm;
-    if (annotation.geometry.offsetMm < splitOffsetMm && end > splitOffsetMm) {
-      fail("SPAN_CROSSES_SPLIT", `Annotation ${annotation.id} crosses the requested wall split.`);
-    }
-    if (annotation.geometry.offsetMm >= splitOffsetMm) {
-      annotation.geometry.wallId = newWallId;
-      annotation.geometry.offsetMm -= splitOffsetMm;
-      annotation.provenance = demoteProvenance(
-        annotation.provenance,
-        annotation.id,
-        `Remapped annotation after splitting wall ${wallId}`,
-        state
-      );
-    }
-  }
-}
-
-function splitWall(
-  floor: FloorPlanFloorV2,
-  operation: Extract<FloorPlanTopologyMutationV2, { kind: "split_wall" }>,
-  state: MutationState
-): void {
-  assertInteger(operation.offsetMm, "Wall split offset");
-  assertUnusedGlobalEntityId(state.document, operation.newVertexId, "Split vertex ID");
-  assertUnusedGlobalEntityId(state.document, operation.newWallId, "Split wall ID");
-  if (operation.newVertexId === operation.newWallId) {
-    fail("DUPLICATE_ENTITY_ID", "The new split wall and vertex need different IDs.");
-  }
-  const wallIndex = floor.walls.findIndex((candidate) => candidate.id === operation.wallId);
-  if (wallIndex < 0) fail("UNKNOWN_WALL", `Unknown wall: ${operation.wallId}.`);
-  const wall = floor.walls[wallIndex];
-  if (wall.path.kind !== "line") {
-    fail("ARC_MUTATION_UNSUPPORTED", `Wall ${wall.id} is an arc and cannot be split by this operation.`);
-  }
-  const start = floor.vertices.find((vertex) => vertex.id === wall.path.startVertexId)!;
-  const end = floor.vertices.find((vertex) => vertex.id === wall.path.endVertexId)!;
-  const length = Math.hypot(end.xMm - start.xMm, end.zMm - start.zMm);
-  if (operation.offsetMm <= 0 || operation.offsetMm >= length) {
-    fail("INVALID_SPLIT", `Wall ${wall.id} must be split strictly between its endpoints.`);
-  }
-  const ratio = operation.offsetMm / length;
-  const splitX = start.xMm + (end.xMm - start.xMm) * ratio;
-  const splitZ = start.zMm + (end.zMm - start.zMm) * ratio;
-  if (!Number.isSafeInteger(splitX) || !Number.isSafeInteger(splitZ)) {
-    fail("NON_INTEGER_MILLIMETRES", "The requested split does not land on an exact integer-mm point.");
-  }
-
-  remapWallSpansAfterSplit(floor, wall.id, operation.newWallId, operation.offsetMm, state);
-  const originalEndVertexId = wall.path.endVertexId;
-  const reason = `Split wall ${wall.id} at ${operation.offsetMm} mm`;
-  const vertex: FloorPlanVertexV2 = {
-    id: operation.newVertexId,
-    xMm: splitX,
-    zMm: splitZ,
-    provenance: demoteProvenance(start.provenance, operation.newVertexId, reason, state),
-  };
-  wall.path.endVertexId = operation.newVertexId;
-  wall.provenance = demoteProvenance(wall.provenance, wall.id, reason, state);
-  const newWall: FloorPlanWallV2 = {
-    ...wall,
-    id: operation.newWallId,
-    path: {
-      kind: "line",
-      startVertexId: operation.newVertexId,
-      endVertexId: originalEndVertexId,
-    },
-    adjacentRoomIds: [...wall.adjacentRoomIds],
-    provenance: demoteProvenance(wall.provenance, operation.newWallId, reason, state),
-  };
-  floor.vertices.push(vertex);
-  floor.walls.splice(wallIndex + 1, 0, newWall);
-
-  for (const room of floor.rooms) {
-    let changed = false;
-    for (const loop of room.wallLoops) {
-      loop.walls = loop.walls.flatMap((reference) => {
-        if (reference.wallId !== wall.id) return [reference];
-        changed = true;
-        return reference.direction === "forward"
-          ? [reference, { wallId: newWall.id, direction: "forward" as const }]
-          : [
-              { wallId: newWall.id, direction: "reverse" as const },
-              reference,
-            ];
-      });
-    }
-    if (changed) room.provenance = demoteProvenance(room.provenance, room.id, reason, state);
-  }
 }
 
 function entityMutationServices(
@@ -349,6 +236,8 @@ function entityMutationServices(
 
 function applyOperation(state: MutationState, operation: FloorPlanTopologyMutationV2): void {
   const floor = floorById(state.document, operation.floorId);
+  if (operation.kind === "add_wall") return addCanonicalPartition(floor, operation, state);
+  if (operation.kind === "remove_wall") return removeCanonicalPartition(floor, operation, state);
   if (operation.kind === "move_vertex") return moveVertex(floor, operation.vertexId, operation.to, state);
   if (operation.kind === "move_wall") {
     return moveWall(floor, operation.wallId, operation.deltaXMm, operation.deltaZMm, state);

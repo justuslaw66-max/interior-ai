@@ -158,7 +158,7 @@ export function useDesignPagePlanAuthoringRegistration({
   const importedWallEditing = useDesignPageImportedWallEditingController({
     state: {
       designSnapshot: snapshotDocument.state.designSnapshot,
-      canEdit,
+      canEdit: !isClientPreview, // Private geometry edits do not require a furniture catalog.
       isClientPreview,
       viewMode,
     },

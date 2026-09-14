@@ -73,6 +73,7 @@ const PUBLIC_LAYOUT_VERSION_KEYS = new Set([
   "id", "items", "name", "source", "summary", "timestamp", "zones",
 ]);
 const INPUT_FLOOR_PLAN_KEYS = new Set([
+  "proposal",
   "addressBinding", "addressTransform", "annotations", "canonicalDocument",
   "canonicalGeometryHash", "fixedElements", "openings", "orientationConfirmed",
   "revisionId", "sourceAssetSha256", "sourceJobId", "sourceRevisionGeometryHash",

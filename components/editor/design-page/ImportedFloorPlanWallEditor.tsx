@@ -1,8 +1,10 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import type { FloorPlanWallClassificationV2 } from "@/lib/floor-plan-document-v2";
 import { CONSUMER_WALL_EDIT_CONFIRMATION_COPY } from "@/lib/floor-plan-consumer-wall-edit";
+import { CanonicalPlanRemodelTools } from "@/components/editor/design-page/CanonicalPlanRemodelTools";
+import { CanonicalPlanVectorExport } from "@/components/editor/design-page/CanonicalPlanVectorExport";
 import type {
   ImportedWallEditingActions,
   ImportedWallEditingState,
@@ -34,28 +36,7 @@ export function ImportedFloorPlanWallEditor({
   const [deltaZMm, setDeltaZMm] = useState(0);
   const [vertexId, setVertexId] = useState("");
 
-  const floor = useMemo(
-    () =>
-      document?.floors.find((candidate) => candidate.id === floorId) ??
-      document?.floors[0] ??
-      null,
-    [document, floorId]
-  );
-  const wall = useMemo(
-    () =>
-      floor?.walls.find((candidate) => candidate.id === wallId) ??
-      floor?.walls[0] ??
-      null,
-    [floor, wallId]
-  );
-  const wallLengthMm = useMemo(() => {
-    if (!floor || !wall || wall.path.kind !== "line") return null;
-    const start = floor.vertices.find(({ id }) => id === wall.path.startVertexId);
-    const end = floor.vertices.find(({ id }) => id === wall.path.endVertexId);
-    return start && end
-      ? Math.hypot(end.xMm - start.xMm, end.zMm - start.zMm)
-      : null;
-  }, [floor, wall]);
+  const { floor, wall, wallLengthMm } = selectedWallGeometry(document, floorId, wallId);
   const selectionKey =
     document && floor && wall
       ? `${document.id}:${document.revisionId}:${floor.id}:${wall.id}`
@@ -255,9 +236,12 @@ export function ImportedFloorPlanWallEditor({
             </button>
           </div>
           {!straightWall ? <p className="text-[10px] text-amber-700">Arc geometry is review-only here. Wall type and thickness remain editable.</p> : null}
+          <CanonicalPlanRemodelTools key={document.revisionId} floor={floor} wall={wall} commit={actions.applyProposalMutation} />
+          {state.proposal?.reviewIssues.map((issue) => <p key={issue} className="text-amber-700">{issue}</p>)}
           <button type="button" className={secondaryButton} onClick={actions.stopEditing}>Stop editing walls</button>
         </div>
       )}
+      <CanonicalPlanVectorExport document={document} floorId={floor.id} original={state.proposal?.originalDocument} />
     </section>
   );
 }
@@ -276,4 +260,14 @@ function NumberField({ label, value, min, className, subtle, onChange }: {
       <input className={`${className} mt-1 w-full`} type="number" step={1} min={min} value={value} onChange={(event) => onChange(Number(event.target.value))} />
     </label>
   );
+}
+
+function selectedWallGeometry(document: ImportedWallEditingState["document"], floorId: string, wallId: string) {
+  const floor = document?.floors.find((candidate) => candidate.id === floorId) ?? document?.floors[0] ?? null;
+  const wall = floor?.walls.find((candidate) => candidate.id === wallId) ?? floor?.walls[0] ?? null;
+  const start = floor?.vertices.find(({ id }) => id === wall?.path.startVertexId);
+  const end = floor?.vertices.find(({ id }) => id === wall?.path.endVertexId);
+  const wallLengthMm = start && end && wall?.path.kind === "line"
+    ? Math.hypot(end.xMm - start.xMm, end.zMm - start.zMm) : null;
+  return { floor, wall, wallLengthMm };
 }

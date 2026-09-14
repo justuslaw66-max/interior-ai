@@ -276,6 +276,7 @@ export interface PersistedFloorPlanState {
   fixedElements?: PersistedPlanFixedElement[];
   annotations?: PersistedPlanAnnotation[];
   canonicalDocument?: FloorPlanDocumentV2;
+  proposal?: import("@/lib/floor-plan-proposal-types").FloorPlanProposalState;
   canonicalGeometryHash?: string;
   revisionId?: string;
   /** Geometry hash of the immutable, untransformed published revision. */

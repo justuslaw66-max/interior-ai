@@ -23,6 +23,7 @@ import type { DesignSnapshot } from "@/lib/room-types";
 type FunctionalStateAction<T> = T | ((previous: T) => T);
 
 export type ImportedWallEditingState = {
+  proposal: NonNullable<DesignSnapshot["floorPlan"]>["proposal"];
   available: boolean;
   confirmationPending: boolean;
   editingEnabled: boolean;
@@ -33,6 +34,7 @@ export type ImportedWallEditingState = {
 };
 
 export type ImportedWallEditingActions = {
+  applyProposalMutation: (operation: ConsumerWallTopologyMutationV2) => boolean;
   requestEditing: () => void;
   cancelEditingRequest: () => void;
   confirmEditing: () => void;
@@ -85,6 +87,8 @@ export type UseDesignPageImportedWallEditingControllerInput = {
 };
 
 const ACTION_LABELS: Record<ConsumerWallTopologyMutationV2["kind"], string> = {
+  add_wall: "Add proposed wall", remove_wall: "Remove proposed wall",
+  add_opening: "Add proposed opening", update_opening: "Edit proposed opening", remove_opening: "Remove proposed opening",
   move_vertex: "Move imported wall endpoint",
   move_wall: "Move imported wall",
   update_wall: "Update imported wall",
@@ -222,6 +226,7 @@ export function useDesignPageImportedWallEditingController({
 
   return {
     state: {
+      proposal: state.designSnapshot.floorPlan?.proposal,
       available,
       confirmationPending,
       editingEnabled,
@@ -234,34 +239,15 @@ export function useDesignPageImportedWallEditingController({
       document: available ? document : null,
     },
     actions: {
+      applyProposalMutation: commit,
       requestEditing: () => {
-        if (!available) return;
-        setWallEditSession({
-          sessionKey,
-          confirmationPending: true,
-          editingEnabled: false,
-        });
+        if (available) setWallEditSession({ sessionKey, confirmationPending: true, editingEnabled: false });
       },
-      cancelEditingRequest: () =>
-        setWallEditSession({
-          sessionKey,
-          confirmationPending: false,
-          editingEnabled: false,
-        }),
+      cancelEditingRequest: () => setWallEditSession({ sessionKey, confirmationPending: false, editingEnabled: false }),
       confirmEditing: () => {
-        if (!available || !confirmationPending) return;
-        setWallEditSession({
-          sessionKey,
-          confirmationPending: false,
-          editingEnabled: true,
-        });
+        if (available && confirmationPending) setWallEditSession({ sessionKey, confirmationPending: false, editingEnabled: true });
       },
-      stopEditing: () =>
-        setWallEditSession({
-          sessionKey,
-          confirmationPending: false,
-          editingEnabled: false,
-        }),
+      stopEditing: () => setWallEditSession({ sessionKey, confirmationPending: false, editingEnabled: false }),
       moveVertex,
       moveWall,
       updateWall,
