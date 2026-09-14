@@ -26,7 +26,7 @@ export async function observeRenderedScene(page: Page) {
 type ObservedFiber = { stateNode?: unknown; child?: ObservedFiber | null; sibling?: ObservedFiber | null };
 type SceneObject = Object3D & { geometry?: BufferGeometry; __r3f?: { root: { getState: () => RootState } } };
 
-export async function renderedSceneObject(page: Page, query: { testId?: string; openingId?: string; itemId?: string; edge?: string; delta?: { x: number; z: number } }) {
+export async function renderedSceneObject(page: Page, query: { testId?: string; openingId?: string; itemId?: string; edge?: string; delta?: { x: number; y?: number; z: number } }) {
   return page.evaluate(({ testId, openingId, itemId, edge, delta }) => {
     // The hook above receives React's root objects; validate scene candidates before reading Three methods.
     const host = window as typeof window & { __scanPlanReactRoots?: Set<{ current: ObservedFiber }>; __scanPlanPointerEvents?: { type: string; x: number; y: number }[] };
@@ -42,13 +42,16 @@ export async function renderedSceneObject(page: Page, query: { testId?: string; 
       const value = instance && typeof instance === "object" && "object" in instance ? instance.object : instance;
       if (value && typeof value === "object" && "isObject3D" in value && value.isObject3D === true && "matrixWorld" in value) objects.add(value as SceneObject);
     }
-    const object = [...objects].find((candidate) => itemId ? candidate.userData.sceneDemandItemId === itemId :
-      candidate.userData.testId === testId && candidate.userData.canonicalOpeningId === openingId && (!edge || candidate.userData.canonicalResizeEdge === edge));
+    const object = [...objects].find((candidate) => {
+      if (!candidate.__r3f || candidate.__r3f.root.getState().scene.getObjectById(candidate.id) !== candidate) return false;
+      return itemId ? candidate.userData.sceneDemandItemId === itemId :
+        candidate.userData.testId === testId && candidate.userData.canonicalOpeningId === openingId && (!edge || candidate.userData.canonicalResizeEdge === edge);
+    });
     if (!object?.__r3f) return null;
     for (let ancestor: Object3D | null = object; ancestor; ancestor = ancestor.parent) if (!ancestor.visible) return null;
     const state = object.__r3f.root.getState(), bounds = state.gl.domElement.getBoundingClientRect();
     const world = object.position.clone().setFromMatrixPosition(object.matrixWorld);
-    const target = world.clone(); target.x += delta?.x ?? 0; target.z += delta?.z ?? 0;
+    const target = world.clone(); target.x += delta?.x ?? 0; target.y += delta?.y ?? 0; target.z += delta?.z ?? 0;
     const screen = (point: typeof world) => {
       const projected = point.clone().project(state.camera);
       return { x: bounds.left + (projected.x + 1) * bounds.width / 2, y: bounds.top + (1 - projected.y) * bounds.height / 2 };
@@ -66,7 +69,11 @@ export async function renderedSceneObject(page: Page, query: { testId?: string; 
     };
     const wallSolids = [...objects].filter((candidate) => candidate.userData.testId === "canonical-wall-3d" && candidate.userData.canonicalWallId === object.userData.canonicalWallId).map(meshBounds);
     const wallBodies = [...objects].filter((candidate) => candidate.userData.testId === "canonical-wall-body-3d").map(meshBounds);
-    return { pointerEvents: host.__scanPlanPointerEvents, wallSolids, wallBodies, screen: screen(world), target: screen(target), world: world.toArray(), userData: object.userData,
+    // Read the renderer's captured native intersection, including its own raycast filtering and model transforms.
+    const captured = [...state.internal.capturedMap.values()].flatMap((captures) => [...captures.values()])
+      .find(({ intersection }) => intersection.eventObject === object)?.intersection;
+    return { pointerEvents: host.__scanPlanPointerEvents, hitOffset: captured ? captured.point.clone().sub(world).toArray() : null,
+      fixedProjection: [screen(world.clone().set(0, 0, 0)), screen(world.clone().set(1, 1, 1))], wallSolids, wallBodies, screen: screen(world), target: screen(target), world: world.toArray(), userData: object.userData,
       symbols: symbols.map(({ userData }) => userData), camera: { position: state.camera.position.toArray(), quaternion: state.camera.quaternion.toArray(), matrix: state.camera.projectionMatrix.toArray() } };
   }, query);
 }

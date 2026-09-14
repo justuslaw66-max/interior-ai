@@ -125,14 +125,10 @@ assert.match(
   /publishAllMovedItems[\s\S]*?previewItems\(update\)[\s\S]*?commitActiveDrag[\s\S]*?setItems\(input\)/,
   "Single-item pointer previews should stay off root document state until the gesture commits."
 );
-const pointerUpSource = furnitureItemSource.slice(
-  furnitureItemSource.indexOf("const onPointerUp"),
-  furnitureItemSource.indexOf("const onPointerMove")
-);
-assert.ok(
-  pointerUpSource.indexOf("onDragEnd(instanceId, position)") <
-    pointerUpSource.indexOf("onDraggingChange?.(false)"),
-  "Pointer-up should commit or roll back the document gesture before the canvas closes it."
+assert.match(
+  furnitureItemSource,
+  /onFinish: \(cancelled, finalPosition\)[\s\S]*?try \{ if \(!cancelled && interactive\) onDragEnd\?\.\(instanceId, finalPosition\); \}[\s\S]*?finally \{ onDraggingChange\?\.\(false\); \}/,
+  "Accepted release must commit before the canvas closes the gesture; cancellation must skip commit and use its rollback."
 );
 assert.doesNotMatch(
   documentHistoryControllerSource,

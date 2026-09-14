@@ -6,6 +6,7 @@ import { snapshotToStored, type StoredDesign } from "../../lib/room-persistence"
 import { compileCanonicalFloorPlanRenderModel } from "../../lib/floor-plan-render-model";
 import { observeRenderedScene, renderedSceneObject } from "./rendered-scene-observer";
 import { exerciseFurnitureWalls } from "./furniture-wall-journey";
+import { exerciseFurnitureDrag } from "./furniture-drag-journey";
 
 test("Consumer replacement doorway, catalog furniture, undo and saved reload", async ({ page }, testInfo) => {
   await observeRenderedScene(page);
@@ -82,6 +83,7 @@ test("Consumer replacement doorway, catalog furniture, undo and saved reload", a
   await expect.poll(items).toEqual(placed);
   expect((await saved()).rooms!.find(({ id }) => id === placed[0].roomId)!.zones).toEqual(placedZones);
   await exerciseFurnitureWalls(page, saved, testInfo);
+  await exerciseFurnitureDrag(page, saved, testInfo, "2d");
   await expect(page.getByTestId("scene-ready-veil")).toBeHidden();
   const rendered2d = await renderedSceneObject(page, { itemId: placed[0].instanceId });
   expect(rendered2d).not.toBeNull();
@@ -89,6 +91,7 @@ test("Consumer replacement doorway, catalog furniture, undo and saved reload", a
   await page.getByTestId("editor-view-3d").click();
   await expect(page.getByTestId("scene-ready-veil")).toBeHidden();
   await expect.poll(async () => Boolean(await renderedSceneObject(page, { itemId: placed[0].instanceId }))).toBe(true);
+  await exerciseFurnitureDrag(page, saved, testInfo, "3d");
   const rendered3d = (await renderedSceneObject(page, { itemId: placed[0].instanceId }))!;
   const room = (await saved()).rooms!.find(({ id }) => id === placed[0].roomId)!;
   expect(rendered3d.world[0]).toBeCloseTo(placed[0].position[0] + (room.planPosition?.x ?? 0), 5);

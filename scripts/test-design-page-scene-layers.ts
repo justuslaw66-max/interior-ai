@@ -614,8 +614,13 @@ assert.doesNotMatch(
 
 assert.match(
   adapterSource,
-  /structure:\s*\{[\s\S]*viewMode: editor\.viewMode,[\s\S]*underlay: plan\.underlay,[\s\S]*scene: plan\.editorScene,[\s\S]*enabled: room\.wholeHomeEnabled,[\s\S]*width: room\.width,/,
+  /structure:\s*\{[\s\S]*viewMode: editor\.viewMode,[\s\S]*plan: projectStructurePlan\(plan\),[\s\S]*enabled: room\.wholeHomeEnabled,[\s\S]*width: room\.width,/,
   "The scene adapter should map live 2D, whole-home, and single-room structure state."
+);
+assert.match(
+  adapterSource,
+  /function projectStructurePlan\([\s\S]*underlay: plan\.underlay,[\s\S]*scene: plan\.editorScene,[\s\S]*canonicalDocument: plan\.canonicalDocument,/,
+  "The extracted plan projection must retain the underlay, legacy scene and canonical geometry."
 );
 assert.match(
   adapterSource,

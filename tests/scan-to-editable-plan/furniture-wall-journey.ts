@@ -4,6 +4,7 @@ import type { StoredDesign } from "../../lib/room-persistence";
 import { storedToSnapshot } from "../../lib/room-persistence";
 import { compileCanonicalFloorPlanRenderModel } from "../../lib/floor-plan-render-model";
 import { findCanonicalPlacementWall } from "../../lib/floor-plan-placement-boundaries";
+import { renderedSceneObject } from "./rendered-scene-observer";
 
 export async function exerciseFurnitureWalls(page: Page, saved: () => Promise<StoredDesign>, testInfo: TestInfo) {
   const before = await saved(), beforeDocument = before.floorPlan!.canonicalDocument!;
@@ -61,14 +62,25 @@ export async function exerciseFurnitureWalls(page: Page, saved: () => Promise<St
   await expect.poll(async () => (await item()).position[0] + (initialRoom.planPosition?.x ?? 0)).toBe(6);
   expect(await wallAtItem()).toBeNull();
   const recovered = await item();
+  const nativeStart = (await renderedSceneObject(page, { itemId, delta: { x: 0.4, z: 0.2 } }))!;
+  const nativeEnd = (await renderedSceneObject(page, { itemId, delta: { x: -1.6, z: 0.2 } }))!;
+  await page.mouse.move(nativeStart.target.x, nativeStart.target.y); await page.mouse.down();
+  await page.mouse.move(nativeEnd.target.x, nativeEnd.target.y, { steps: 6 }); await page.mouse.up();
+  await expect.poll(async () => (await item()).position).not.toEqual(recovered.position);
+  expect(await wallAtItem()).toBeNull();
+  const blockedDrag = await item();
+  expect(blockedDrag.position[0]).toBeGreaterThan(acrossRemovedWall.position[0]);
+  await page.getByRole("button", { name: /^Undo/ }).click();
+  await expect.poll(async () => (await item()).position).toEqual(recovered.position);
+  await selectFurniture();
   await moveToWorldX(4);
   expect(await item()).toEqual(recovered);
   expect((await saved()).floorPlan!.canonicalDocument).toEqual(addedDocument);
   await workspace("plan");
   await expect(panel).not.toContainText(`Placement ${itemId} intersects proposed wall ${wall.id}`);
   await workspace("furnish");
-  await writeFile(testInfo.outputPath("furniture-wall-evidence.json"), JSON.stringify({ itemId, beforeDocument, addedDocument, acrossRemovedWall, recovered,
-    checks: ["removed wall has no collision barrier", "added partial wall preserves item world position", "visible collision review", "move furniture clear", "blocked movement into new wall"] }, null, 2));
+  await writeFile(testInfo.outputPath("furniture-wall-evidence.json"), JSON.stringify({ itemId, beforeDocument, addedDocument, acrossRemovedWall, recovered, blockedDrag,
+    checks: ["removed wall has no collision barrier", "added partial wall preserves item world position", "visible collision review", "move furniture clear", "native drag stops before new wall", "blocked movement into new wall"] }, null, 2));
   await page.getByRole("button", { name: /^Undo/ }).click();
   await expect.poll(item).toEqual(acrossRemovedWall);
   await page.getByRole("button", { name: /^Undo/ }).click();

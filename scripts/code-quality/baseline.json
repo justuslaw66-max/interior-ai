@@ -329,7 +329,7 @@
       "limit": 400
     },
     "components/scene/FurnitureItem.tsx": {
-      "lines": 953,
+      "lines": 932,
       "limit": 250
     },
     "components/scene/glb-scaled-model/huggMaterial.ts": {
@@ -2485,7 +2485,7 @@
     "components/scene/FurnitureItem.tsx": {
       "overlongFunctions": {
         "count": 2,
-        "maximum": 902
+        "maximum": 880
       },
       "complexFunctions": {
         "count": 1,
