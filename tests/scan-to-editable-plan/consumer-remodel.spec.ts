@@ -22,6 +22,8 @@ test("Consumer shared-wall merge, attached partition, opening edit, undo/redo, 3
   page.on("pageerror", (error) => errors.push(error.message));
   page.on("console", (entry) => { if (entry.type() === "error" && /same key|Each child in a list/.test(entry.text())) errors.push(entry.text()); });
   const snapshot = canonicalFloorPlanToDesignSnapshot(authoredApartment()).snapshot;
+  snapshot.rooms.find(({ id }) => id === "bedroom")!.layoutVersions = [{ id: "source-layout", name: "Desk layout", source: "manual", timestamp: 1,
+    items: [{ instanceId: "saved-desk", productId: "authored-desk", variantId: "default", position: [0, 0, -0.5] }], zones: [], summary: { itemCount: 1, zoneCount: 0 } }];
   await page.addInitScript(({ key, initial }) => {
     if (!localStorage.getItem(key)) localStorage.setItem(key, initial);
     localStorage.setItem("interior-ai:beta-start-dismissed", "1");
@@ -44,6 +46,17 @@ test("Consumer shared-wall merge, attached partition, opening edit, undo/redo, 3
   expect((await saved(page)).floorPlan?.canonicalDocument?.floors[0].openings.map(({ id }) => id)).toEqual(["door", "window"]);
   await page.getByRole("button", { name: /^Redo/ }).click();
   await roomCount(page, 1);
+  const mergedGeometry = (await saved(page)).floorPlan?.canonicalDocument;
+  await panel.locator("summary", { hasText: "Recover a room layout" }).click();
+  await panel.getByRole("button", { name: "Recover saved layout", exact: true }).click();
+  const layoutCount = async () => (await saved(page)).rooms?.find(({ id }) => id === "living")?.layoutVersions?.length;
+  await expect.poll(layoutCount).toBe(1);
+  expect((await saved(page)).floorPlan?.canonicalDocument).toEqual(mergedGeometry);
+  await page.getByRole("button", { name: /^Undo/ }).click();
+  await expect.poll(layoutCount).toBe(0);
+  await roomCount(page, 1);
+  await page.getByRole("button", { name: /^Redo/ }).click();
+  await expect.poll(layoutCount).toBe(1);
   await panel.locator("summary", { hasText: "Add a wall" }).click();
   for (const [label, value] of [["Start X (mm)", "3000"], ["Start Z (mm)", "0"], ["End X (mm)", "3000"], ["End Z (mm)", "6000"]]) {
     await panel.getByLabel(label, { exact: true }).fill(value);
@@ -128,5 +141,6 @@ test("Consumer shared-wall merge, attached partition, opening edit, undo/redo, 3
   expect(restored).toEqual(accepted);
   expect(compileCanonicalFloorPlanRenderModel(restored!).geometryHash).toEqual(geometry.geometryHash);
   expect((await saved(page)).floorPlan?.proposal?.originalDocument.revisionId).toBe("authored-reference");
+  expect((await saved(page)).rooms?.find(({ id }) => id === "living")?.layoutVersions?.[0].id).toBe("recovered:bedroom:source-layout");
   expect(errors).toEqual([]);
 });

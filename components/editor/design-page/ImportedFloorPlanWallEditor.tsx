@@ -236,7 +236,7 @@ export function ImportedFloorPlanWallEditor({
             </button>
           </div>
           {!straightWall ? <p className="text-[10px] text-amber-700">Arc geometry is review-only here. Wall type and thickness remain editable.</p> : null}
-          <CanonicalPlanRemodelTools floor={floor} wall={wall} commit={actions.applyProposalMutation} />
+          <CanonicalPlanRemodelTools floor={floor} wall={wall} commit={actions.applyProposalMutation} proposal={state.proposal} recover={actions.recoverLayout} />
           {state.proposal?.reviewIssues.map((issue) => <p key={issue} className="text-amber-700">{issue}</p>)}
           <button type="button" className={secondaryButton} onClick={actions.stopEditing}>Stop editing walls</button>
         </div>

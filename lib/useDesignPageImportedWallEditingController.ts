@@ -19,6 +19,8 @@ import {
 } from "@/lib/floor-plan-consumer-wall-edit";
 import type { FixedElement2D, RoomOpening2D } from "@/lib/editorScene";
 import type { DesignSnapshot } from "@/lib/room-types";
+import { useDesignPageRoomRecovery } from "@/lib/useDesignPageRoomRecovery";
+import type { RecoverProposedRoomLayoutInput } from "@/lib/floor-plan-room-recovery";
 
 type FunctionalStateAction<T> = T | ((previous: T) => T);
 
@@ -34,6 +36,7 @@ export type ImportedWallEditingState = {
 };
 
 export type ImportedWallEditingActions = {
+  recoverLayout: (input: RecoverProposedRoomLayoutInput) => boolean;
   applyProposalMutation: (operation: ConsumerWallTopologyMutationV2) => boolean;
   requestEditing: () => void;
   cancelEditingRequest: () => void;
@@ -141,6 +144,7 @@ export function useDesignPageImportedWallEditingController({
       revisionId: `local-floor-plan:${suffix}`,
     };
   }, []);
+  const recoverLayout = useDesignPageRoomRecovery({ enabled: editingEnabled, refs, actions });
 
   const commit = useCallback(
     (operation: ConsumerWallTopologyMutationV2): boolean => {
@@ -248,10 +252,7 @@ export function useDesignPageImportedWallEditingController({
         if (available && confirmationPending) setWallEditSession({ sessionKey, confirmationPending: false, editingEnabled: true });
       },
       stopEditing: () => setWallEditSession({ sessionKey, confirmationPending: false, editingEnabled: false }),
-      moveVertex,
-      moveWall,
-      updateWall,
-      splitWall,
+      moveVertex, moveWall, updateWall, splitWall, recoverLayout,
     },
   };
 }

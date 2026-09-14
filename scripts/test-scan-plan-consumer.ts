@@ -7,6 +7,7 @@ import { snapshotToStored, storedToSnapshot } from "@/lib/room-persistence";
 import { changedOpeningFormFields, proposedOpeningForm } from "@/lib/floor-plan-opening-form";
 import { applyFloorPlanTopologyMutationV2 } from "@/lib/floor-plan-topology-mutations";
 import { restoreLayoutVersion } from "@/lib/layout-versions";
+import { recoverProposedRoomLayout } from "@/lib/floor-plan-room-recovery";
 
 const document = authoredApartment();
 const original = canonicalFloorPlanToDesignSnapshot(document).snapshot;
@@ -19,6 +20,8 @@ livingRoom.surfaces = { walls: { faces: { "north-west": { paintColorHex: "#12345
 livingRoom.zones = [{ id: "seating", type: "seating", itemIds: ["sofa"], anchor: [-0.5, 0, 0.5] }];
 livingRoom.layoutVersions = [{ id: "layout-one", name: "Original layout", source: "manual", timestamp: 1,
   items: structuredClone(livingRoom.items), zones: structuredClone(livingRoom.zones), summary: { itemCount: 1, zoneCount: 1 } }];
+bedroomRoom.layoutVersions = [{ id: "bedroom-layout", name: "Desk layout", source: "manual", timestamp: 1,
+  items: structuredClone(bedroomRoom.items), zones: [], summary: { itemCount: 1, zoneCount: 0 } }];
 let count = 0;
 function edit(snapshot: DesignSnapshot, operation: ConsumerWallTopologyMutationV2) {
   count += 1;
@@ -37,6 +40,23 @@ assert.equal(JSON.stringify(original), frozen);
 const restoredLayout = restoreLayoutVersion(merged.rooms[0], merged.rooms[0].layoutVersions![0]);
 assert.deepEqual(world({ ...merged, rooms: [restoredLayout] }), world({ ...original, rooms: [livingRoom] }), "Saved-layout restoration preserves world position after room-origin changes");
 assert.equal(restoredLayout.zones[0].anchor![0] + restoredLayout.planPosition!.x, 1.5);
+const recoverInput = { sourceRoomId: "bedroom", targetRoomId: "living", layoutId: "bedroom-layout" };
+const beforeRecovery = JSON.stringify(merged);
+const recovered = recoverProposedRoomLayout(merged, recoverInput);
+assert.deepEqual(world(recovered), world(merged), "Recovery must not replace currently placed furniture");
+assert.equal(JSON.stringify(merged), beforeRecovery, "The saved archive and incoming snapshot remain immutable");
+assert.equal(recovered.floorPlan?.canonicalDocument, merged.floorPlan?.canonicalDocument);
+const recoveredRoom = recovered.rooms.find(({ id }) => id === "living")!;
+const recoveredLayout = recoveredRoom.layoutVersions!.find(({ id }) => id === "recovered:bedroom:bedroom-layout")!;
+assert.deepEqual(world({ ...recovered, rooms: [restoreLayoutVersion(recoveredRoom, recoveredLayout)] }), world({ ...original, rooms: [bedroomRoom] }));
+assert.throws(() => recoverProposedRoomLayout(recovered, recoverInput), /already recovered/);
+assert.deepEqual(storedToSnapshot(JSON.parse(JSON.stringify(snapshotToStored(recovered)))).rooms[0].layoutVersions, JSON.parse(JSON.stringify(recovered.rooms[0].layoutVersions)));
+const fullRoom = structuredClone(merged);
+fullRoom.rooms[0].layoutVersions = Array.from({ length: 8 }, (_, index) => ({ ...recoveredLayout, id: `existing-${index}` }));
+assert.throws(() => recoverProposedRoomLayout(fullRoom, recoverInput), /already has 8 saved layouts/);
+const differentFloor = structuredClone(merged);
+differentFloor.rooms[0].floorLevel = 2;
+assert.throws(() => recoverProposedRoomLayout(differentFloor, recoverInput), /original floor/);
 const split = edit(merged, { kind: "add_wall", floorId: "apartment", wallId: "new-partition", startVertexId: "b", endVertexId: "e", thicknessMm: 123, newRoomId: "new-room", newRoomName: "Study" });
 assert.equal(split.rooms.length, 2);
 assert.deepEqual(world(split), world(original));

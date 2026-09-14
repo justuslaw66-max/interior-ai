@@ -5,6 +5,9 @@ import type { FloorPlanFloorV2, FloorPlanWallV2 } from "@/lib/floor-plan-documen
 import type { ConsumerWallTopologyMutationV2 } from "@/lib/floor-plan-consumer-wall-edit";
 import { changedOpeningFormFields, proposedOpeningForm } from "@/lib/floor-plan-opening-form";
 import { CanonicalWallDimensions } from "./CanonicalWallDimensions";
+import { CanonicalRoomRecovery } from "./CanonicalRoomRecovery";
+import type { FloorPlanProposalState } from "@/lib/floor-plan-proposal-types";
+import type { RecoverProposedRoomLayoutInput } from "@/lib/floor-plan-room-recovery";
 
 type Props = { floor: FloorPlanFloorV2; wall: FloorPlanWallV2; commit: (operation: ConsumerWallTopologyMutationV2) => boolean };
 const inputStyle = "mt-1 w-full rounded border border-neutral-400 bg-transparent p-1.5";
@@ -14,12 +17,13 @@ function Millimetres({ label, value, change, min }: { label: string; value: numb
   return <label>{label} (mm)<input className={inputStyle} type="number" step="1" min={min} value={value} onChange={(event) => change(Number(event.target.value))} /></label>;
 }
 
-export function CanonicalPlanRemodelTools({ floor, wall, commit }: Props) {
+export function CanonicalPlanRemodelTools({ floor, wall, commit, proposal, recover }: Props & { proposal?: FloorPlanProposalState; recover: (input: RecoverProposedRoomLayoutInput) => boolean }) {
   return <div className="grid gap-3 border-t border-neutral-300 pt-3">
     <CanonicalWallDimensions floor={floor} wall={wall} commit={commit} />
     <AddPartition floor={floor} commit={commit} />
     <WallRemoval key={`removal:${wall.id}:${floor.openings.filter((opening) => opening.wallId === wall.id).map(({ id }) => id).join()}`} floor={floor} wall={wall} commit={commit} />
     <OpeningProperties key={`openings:${wall.id}:${floor.openings.map((opening) => opening.id).join()}`} floor={floor} wall={wall} commit={commit} />
+    <CanonicalRoomRecovery proposal={proposal} rooms={floor.rooms} recover={recover} />
   </div>;
 }
 

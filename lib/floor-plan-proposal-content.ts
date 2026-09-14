@@ -1,4 +1,4 @@
-import type { DesignItem, DesignSnapshot, RoomSnapshot, ZoneMin } from "@/lib/room-types";
+import type { DesignItem, DesignSnapshot, LayoutVersion, RoomSnapshot, ZoneMin } from "@/lib/room-types";
 import type { FloorPlanTopologyMutationV2 } from "@/lib/floor-plan-topology-mutation-types";
 import { isPointInPlanarRing } from "@/lib/floor-plan-planar-union";
 
@@ -9,11 +9,13 @@ function containsWorldPoint(room: RoomSnapshot, point: [number, number, number])
   return isPointInPlanarRing(local, points(room.planPolygon ?? [])) && !(room.planHoles ?? []).some((hole) => isPointInPlanarRing(local, points(hole)));
 }
 
-function translatedPosition(position: [number, number, number], from: RoomSnapshot, to?: RoomSnapshot): [number, number, number] {
+type RoomOrigin = Pick<RoomSnapshot, "planPosition">;
+
+function translatedPosition(position: [number, number, number], from: RoomOrigin, to?: RoomOrigin): [number, number, number] {
   return [position[0] + (from.planPosition?.x ?? 0) - (to?.planPosition?.x ?? 0), position[1], position[2] + (from.planPosition?.z ?? 0) - (to?.planPosition?.z ?? 0)];
 }
 
-function rehostItem(item: DesignItem, from: RoomSnapshot, to: RoomSnapshot): DesignItem {
+function rehostItem(item: DesignItem, from: RoomOrigin, to: RoomSnapshot): DesignItem {
   return {
     ...item, position: translatedPosition(item.position, from, to),
     ...(item.roomId ? { roomId: to.id } : {}),
@@ -21,16 +23,20 @@ function rehostItem(item: DesignItem, from: RoomSnapshot, to: RoomSnapshot): Des
   };
 }
 
-function rehostZone(zone: ZoneMin, from: RoomSnapshot, to: RoomSnapshot): ZoneMin {
+function rehostZone(zone: ZoneMin, from: RoomOrigin, to: RoomOrigin): ZoneMin {
   return { ...zone, ...(zone.anchor ? { anchor: translatedPosition(zone.anchor, from, to) } : {}) };
+}
+
+export function rehostSavedRoomLayouts(versions: readonly LayoutVersion[], previous: RoomOrigin, target: RoomSnapshot): LayoutVersion[] {
+  return structuredClone(versions).map((version) => ({ ...version,
+    items: version.items.map((item) => rehostItem(item, previous, target)),
+    zones: version.zones.map((zone) => rehostZone(zone, previous, target)),
+  }));
 }
 
 function rehostSavedLayouts(previous: RoomSnapshot, target: RoomSnapshot, issues: Set<string>) {
   if (!previous.layoutVersions) return;
-  target.layoutVersions = previous.layoutVersions.map((version) => ({ ...version,
-    items: version.items.map((item) => rehostItem(item, previous, target)),
-    zones: version.zones.map((zone) => rehostZone(zone, previous, target)),
-  }));
+  target.layoutVersions = rehostSavedRoomLayouts(previous.layoutVersions, previous, target);
   if (target.layoutVersions.some((version) => version.items.some((item) => !containsWorldPoint(target, translatedPosition(item.position, target))))) {
     issues.add(`Saved layouts in ${target.name} retain their world positions. Some items lie outside the new room boundary; review before restoring.`);
   }
@@ -55,7 +61,7 @@ export function reconcileProposedRoomContent(before: DesignSnapshot, after: Desi
   const issues = new Set(before.floorPlan?.proposal?.reviewIssues ?? []);
   for (const { previous, primary, candidates } of contentTargets(before, next, operation)) {
     if (!rooms.some(({ id }) => id === previous.id)) {
-      recovery.push({ id: previous.id, name: previous.name, roomType: previous.roomType, planPosition: previous.planPosition, surfaces: previous.surfaces, surfaceFinishes: previous.surfaceFinishes, savedViews: previous.savedViews, layoutVersions: previous.layoutVersions });
+      recovery.push({ id: previous.id, name: previous.name, roomType: previous.roomType, floorLevel: previous.floorLevel, planPosition: previous.planPosition, surfaces: previous.surfaces, surfaceFinishes: previous.surfaceFinishes, savedViews: previous.savedViews, layoutVersions: previous.layoutVersions });
       issues.add(`Room ${previous.name} merged into ${primary.name}. Its alternate finishes and saved layouts remain in room recovery.`);
     } else rehostSavedLayouts(previous, primary, issues);
     for (const item of previous.items) {

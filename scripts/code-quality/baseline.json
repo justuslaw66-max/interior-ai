@@ -4557,7 +4557,7 @@
     "lib/useDesignPageImportedWallEditingController.ts": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 156
+        "maximum": 154
       },
       "complexFunctions": {
         "count": 1,
