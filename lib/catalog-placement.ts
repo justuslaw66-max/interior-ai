@@ -390,24 +390,13 @@ export function isCatalogPlacementFootprintInsideRoom({
     [position[0], position[2]],
   ] as const;
 
-  return samplePoints.every(([x, z]) => {
+  const samplesInside = samplePoints.every(([x, z]) => {
     const localX = x - room.x;
     const localZ = z - room.z;
     const insideBounds =
       isWithinEditorBoundary(localX, -room.w / 2 + wall, room.w / 2 - wall) &&
       isWithinEditorBoundary(localZ, -room.d / 2 + wall, room.d / 2 - wall);
     if (!insideBounds) return false;
-
-    if (room.shape === "custom_polygon" && room.polygon?.length) {
-      return isFootprintInsideRoomPolygon(
-        localX,
-        localZ,
-        halfWidth + wall,
-        halfDepth + wall,
-        room.polygon,
-        room.holes
-      );
-    }
 
     if (room.shape === "l_shape") {
       const notchW = room.w * 0.42;
@@ -417,6 +406,12 @@ export function isCatalogPlacementFootprintInsideRoom({
 
     return true;
   });
+  if (!samplesInside) return false;
+  if (room.shape === "custom_polygon" && room.polygon?.length) {
+    return isFootprintInsideRoomPolygon(position[0] - room.x, position[2] - room.z,
+      halfWidth + wall, halfDepth + wall, room.polygon, room.holes);
+  }
+  return true;
 }
 
 export function isCatalogPlacementLocalFootprintInsideRoom({

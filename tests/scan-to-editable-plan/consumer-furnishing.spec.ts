@@ -5,6 +5,7 @@ import { canonicalFloorPlanToDesignSnapshot } from "../../lib/floor-plan-legacy-
 import { snapshotToStored, type StoredDesign } from "../../lib/room-persistence";
 import { compileCanonicalFloorPlanRenderModel } from "../../lib/floor-plan-render-model";
 import { observeRenderedScene, renderedSceneObject } from "./rendered-scene-observer";
+import { exerciseFurnitureWalls } from "./furniture-wall-journey";
 
 test("Consumer replacement doorway, catalog furniture, undo and saved reload", async ({ page }, testInfo) => {
   await observeRenderedScene(page);
@@ -80,6 +81,7 @@ test("Consumer replacement doorway, catalog furniture, undo and saved reload", a
   await page.getByRole("button", { name: /^Redo/ }).click();
   await expect.poll(items).toEqual(placed);
   expect((await saved()).rooms!.find(({ id }) => id === placed[0].roomId)!.zones).toEqual(placedZones);
+  await exerciseFurnitureWalls(page, saved, testInfo);
   await expect(page.getByTestId("scene-ready-veil")).toBeHidden();
   const rendered2d = await renderedSceneObject(page, { itemId: placed[0].instanceId });
   expect(rendered2d).not.toBeNull();

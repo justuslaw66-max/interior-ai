@@ -12,6 +12,8 @@ import { buildSurfaceRoomSummary } from "@/lib/design-page-surface-room-summary"
 import { proposedWallEditFailureMessage } from "@/lib/floor-plan-wall-edit-feedback";
 import { FloorPlanTopologyMutationErrorV2 } from "@/lib/floor-plan-topology-mutation-types";
 import { recoverProposedRoomLayout } from "@/lib/floor-plan-room-recovery";
+import { currentProposedPlacementReview } from "@/lib/floor-plan-placement-review";
+import { compileCanonicalFloorPlanRenderModel } from "@/lib/floor-plan-render-model";
 
 const document = authoredApartment();
 const original = canonicalFloorPlanToDesignSnapshot(document).snapshot;
@@ -36,6 +38,30 @@ function world(snapshot: DesignSnapshot) {
 }
 const frozen = JSON.stringify(original);
 const merged = edit(original, { kind: "remove_wall", floorId: "apartment", wallId: "shared", confirmedOpeningIds: ["door"], keepRoomId: "living" });
+function testCurrentPlacementReview() {
+  const scene = structuredClone(merged), room = scene.rooms[0];
+  room.items = [{ instanceId: "offline-sofa", productId: "offline-sofa", variantId: "authored", position: [4 - room.planPosition!.x, 0, 3 - room.planPosition!.z],
+    productSnapshot: { schemaVersion: 1, productId: "offline-sofa", variantId: "authored", name: "Authored sofa", category: "sofa",
+      dimensionsMm: { w: 1000, d: 600, h: 800 }, variantLabel: "Authored", assets: {} } }];
+  const intersecting = edit(scene, { kind: "add_wall", floorId: "apartment", wallId: "review-wall", startVertexId: "review-start", endVertexId: "review-end",
+    vertices: [{ id: "review-start", xMm: 4000, zMm: 2000 }, { id: "review-end", xMm: 4000, zMm: 4000 }], thicknessMm: 100 });
+  const model = compileCanonicalFloorPlanRenderModel(intersecting.floorPlan!.canonicalDocument!);
+  const savedBefore = JSON.stringify(intersecting);
+  assert.ok(currentProposedPlacementReview(intersecting, model)!.reviewIssues.some((issue) => issue.includes("intersects proposed wall review-wall")));
+  assert.equal(JSON.stringify(intersecting), savedBefore, "Current review is a read projection, not a document mutation.");
+  const resolved = structuredClone(intersecting);
+  resolved.rooms[0].items[0].position[0] += 2;
+  const reviewed = currentProposedPlacementReview(resolved, model)!;
+  assert.ok(!reviewed.reviewIssues.some((issue) => issue.startsWith("Placement ")), "Resolved overlap notes clear while saved product dimensions remain available offline.");
+  assert.ok(reviewed.reviewIssues.some((issue) => issue.includes("room recovery")), "Historical room recovery notes remain.");
+  resolved.rooms[0].items[0].position[0] = 100;
+  assert.ok(currentProposedPlacementReview(resolved, model)!.reviewIssues.some((issue) => issue.includes("extends outside")), "Out-of-room placements remain visibly unresolved.");
+  delete resolved.rooms[0].items[0].productSnapshot;
+  assert.ok(currentProposedPlacementReview(resolved, model)!.reviewIssues.some((issue) => issue.includes("dimensions unavailable")));
+  resolved.rooms[0].items = [];
+  assert.ok(!currentProposedPlacementReview(resolved, model)!.reviewIssues.some((issue) => issue.startsWith("Placement ")), "Deleted items do not leave phantom placement warnings.");
+}
+testCurrentPlacementReview();
 assert.equal(merged.rooms.length, 1);
 assert.deepEqual(world(merged), world(original));
 assert.equal(merged.floorPlan?.proposal?.roomRecovery[0].name, "Bedroom");

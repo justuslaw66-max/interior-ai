@@ -21,6 +21,7 @@ import { proposedWallEditFailureMessage } from "@/lib/floor-plan-wall-edit-feedb
 import { commitCurrentWallGesture } from "@/lib/floor-plan-wall-gesture";
 import { useDesignPageWallEditSession } from "@/lib/useDesignPageWallEditSession";
 import { useDesignPageRoomRecovery } from "@/lib/useDesignPageRoomRecovery";
+import { useProposedPlacementReview } from "@/lib/useProposedPlacementReview";
 import type { RecoverProposedRoomLayoutInput } from "@/lib/floor-plan-room-recovery";
 
 type FunctionalStateAction<T> = T | ((previous: T) => T);
@@ -196,7 +197,7 @@ export function useDesignPageImportedWallEditingController({
   return {
     state: {
       selection: session.selection,
-      proposal: state.designSnapshot.floorPlan?.proposal,
+      proposal: useProposedPlacementReview(state.designSnapshot),
       available,
       confirmationPending,
       editingEnabled,

@@ -473,7 +473,7 @@
       "limit": 400
     },
     "lib/catalog-placement.ts": {
-      "lines": 859,
+      "lines": 854,
       "limit": 400
     },
     "lib/catalog-schema.ts": {
