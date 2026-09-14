@@ -23,7 +23,7 @@ export const CONSUMER_WALL_EDIT_CONFIRMATION_COPY =
 export type ConsumerWallTopologyMutationV2 = Extract<
   FloorPlanTopologyMutationV2,
   {
-    kind: "move_vertex" | "move_wall" | "update_wall" | "split_wall" | "add_wall" | "remove_wall" | "add_opening" | "update_opening" | "remove_opening";
+    kind: "join_wall_endpoint" | "move_vertex" | "move_wall" | "update_wall" | "split_wall" | "add_wall" | "remove_wall" | "add_opening" | "update_opening" | "remove_opening";
   }
 >;
 

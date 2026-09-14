@@ -1,3 +1,4 @@
+import { exerciseWallJoins } from "./wall-join-journey";
 import { exerciseOpeningGestures } from "./opening-gesture-journey";
 import { exerciseWallGestures } from "./wall-gesture-journey";
 import { test, expect, type Page } from "@playwright/test";
@@ -80,6 +81,7 @@ test("Consumer shared-wall merge, attached partition, opening edit, undo/redo, 3
   await expect.poll(async () => (await saved(page)).floorPlan?.canonicalDocument?.floors[0].walls.length).toBe(10);
   const diagonalId = (await saved(page)).floorPlan!.canonicalDocument!.floors[0].walls.find(({ id }) => !existingWalls.includes(id))!.id;
   await panel.getByLabel("Wall", { exact: true }).selectOption(diagonalId);
+  await exerciseWallJoins(page, diagonalId, () => saved(page), testInfo);
   await panel.locator("summary", { hasText: "Wall length and height" }).click();
   await panel.getByLabel("Requested length (mm)", { exact: true }).fill("2500");
   await panel.getByRole("button", { name: "Apply wall length", exact: true }).click();

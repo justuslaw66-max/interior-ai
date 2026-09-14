@@ -4,6 +4,7 @@ import { useState } from "react";
 import type { FloorPlanFloorV2, FloorPlanWallV2 } from "@/lib/floor-plan-document-v2";
 import type { ConsumerWallTopologyMutationV2 } from "@/lib/floor-plan-consumer-wall-edit";
 import { changedOpeningFormFields, proposedOpeningForm } from "@/lib/floor-plan-opening-form";
+import { CanonicalWallJoin } from "./CanonicalWallJoin";
 import { CanonicalWallDimensions } from "./CanonicalWallDimensions";
 import { CanonicalRoomRecovery } from "./CanonicalRoomRecovery";
 import type { FloorPlanProposalState } from "@/lib/floor-plan-proposal-types";
@@ -20,6 +21,7 @@ function Millimetres({ label, value, change, min }: { label: string; value: numb
 export function CanonicalPlanRemodelTools({ floor, wall, commit, proposal, recover }: Props & { proposal?: FloorPlanProposalState; recover: (input: RecoverProposedRoomLayoutInput) => boolean }) {
   return <div className="grid gap-3 border-t border-neutral-300 pt-3">
     <CanonicalWallDimensions floor={floor} wall={wall} commit={commit} />
+    <CanonicalWallJoin key={`join:${wall.id}`} floor={floor} wall={wall} commit={commit} />
     <AddPartition floor={floor} commit={commit} />
     <WallRemoval key={`removal:${wall.id}:${floor.openings.filter((opening) => opening.wallId === wall.id).map(({ id }) => id).join()}`} floor={floor} wall={wall} commit={commit} />
     <OpeningProperties key={`openings:${wall.id}:${floor.openings.map((opening) => opening.id).join()}`} floor={floor} wall={wall} commit={commit} />

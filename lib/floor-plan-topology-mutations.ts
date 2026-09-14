@@ -1,3 +1,4 @@
+import { joinCanonicalWallEndpoint } from "@/lib/floor-plan-wall-join";
 import { updateAnnotationText } from "@/lib/floor-plan-annotation-mutations";
 import { splitWall } from "@/lib/floor-plan-wall-split";
 import { compileFloorPlanDocumentV2, FloorPlanDocumentValidationErrorV2 } from "@/lib/floor-plan-compiler-v2";
@@ -249,6 +250,7 @@ function applyOperation(state: MutationState, operation: FloorPlanTopologyMutati
   if (operation.kind === "update_annotation_text") return updateAnnotationText(floor, operation.annotationId, operation.text, state);
   if (operation.kind === "add_wall") return addCanonicalPartition(floor, operation, state);
   if (operation.kind === "remove_wall") return removeCanonicalPartition(floor, operation, state);
+  if (operation.kind === "join_wall_endpoint") return joinCanonicalWallEndpoint(floor, operation, state, (id, to) => moveVertex(floor, id, to, state));
   if (operation.kind === "move_vertex") return moveVertex(floor, operation.vertexId, operation.to, state);
   if (operation.kind === "move_wall") {
     return moveWall(floor, operation.wallId, operation.deltaXMm, operation.deltaZMm, state);

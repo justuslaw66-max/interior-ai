@@ -49,6 +49,32 @@ const partial = mutate(split.document, {
   vertices: [{ id: "p", xMm: 6000, zMm: 1000 }, { id: "q", xMm: 7500, zMm: 2500 }],
 });
 assert.equal(partial.document.floors[0].rooms.length, 2);
+const joinSource = structuredClone(partial.document);
+joinSource.floors[0].dimensions.push({ id: "diagonal-measure", fromVertexId: "p", toVertexId: "q", axis: "aligned", measuredMm: 2121,
+  provenance: structuredClone(original.floors[0].dimensions[0].provenance) });
+const beforeJoin = JSON.stringify(joinSource);
+const joinStart = mutate(joinSource, { kind: "join_wall_endpoint", floorId: "apartment", wallId: "diagonal", endpoint: "start", to: { xMm: 4000, zMm: 0 } });
+assert.equal(joinStart.document.floors[0].walls.find(({ id }) => id === "diagonal")!.path.startVertexId, "b");
+assert.equal(joinStart.document.floors[0].vertices.some(({ id }) => id === "p"), false);
+assert.equal(joinStart.document.floors[0].dimensions.find(({ id }) => id === "diagonal-measure")!.fromVertexId, "b");
+assert.equal(joinStart.document.floors[0].rooms.length, 2, "A joined partial wall does not invent a room");
+assert.equal(JSON.stringify(joinSource), beforeJoin);
+const joinEnd = mutate(joinStart.document, { kind: "join_wall_endpoint", floorId: "apartment", wallId: "diagonal", endpoint: "end", to: { xMm: 9260, zMm: 6000 }, newRoomId: "joined-room", newRoomName: "Diagonal room" });
+assert.equal(joinEnd.document.floors[0].rooms.length, 3);
+assert.equal(joinEnd.scene.floors[0].rooms.reduce((total, room) => total + room.areaSquareMm, 0), 9260 * 6000);
+assert.equal(joinEnd.document.floors[0].walls.find(({ id }) => id === "diagonal")!.path.endVertexId, "d");
+assert.equal(joinEnd.document.floors[0].walls.find(({ id }) => id === "diagonal")!.adjacentRoomIds.length, 2);
+assert.equal(joinEnd.document.floors[0].dimensions.find(({ id }) => id === "diagonal-measure")!.toVertexId, "d");
+assert.equal(compileFloorPlanDocumentV2(JSON.parse(JSON.stringify(joinEnd.document))).geometryHash, joinEnd.scene.geometryHash);
+const joinMiddle = mutate(joinStart.document, { kind: "join_wall_endpoint", floorId: "apartment", wallId: "diagonal", endpoint: "end", to: { xMm: 6000, zMm: 6000 }, newRoomId: "joined-middle-room", newRoomName: "Joined room" });
+assert.equal(joinMiddle.document.floors[0].rooms.length, 3);
+assert.equal(joinMiddle.wallSplits?.length, 1, "Joining to a host interior splits it atomically for finish reconciliation");
+assert.equal(joinMiddle.wallSplits?.[0].splitVertexId, "q");
+assert.throws(() => mutate(joinStart.document, { kind: "join_wall_endpoint", floorId: "apartment", wallId: "diagonal", endpoint: "end", to: { xMm: 9260, zMm: 6000 } }), /Name the new room/);
+assert.throws(() => mutate(joinSource, { kind: "join_wall_endpoint", floorId: "apartment", wallId: "replacement", endpoint: "start", to: { xMm: 9260, zMm: 6000 } }), /free wall endpoint/);
+assert.throws(() => mutate(joinSource, { kind: "join_wall_endpoint", floorId: "apartment", wallId: "diagonal", endpoint: "end", to: { xMm: 6500, zMm: 3500 } }), /exactly on/);
+assert.throws(() => mutate(joinSource, { kind: "join_wall_endpoint", floorId: "apartment", wallId: "diagonal", endpoint: "end", to: { xMm: 5500, zMm: 0 } }), /cross|opening/i);
+assert.equal(JSON.stringify(joinSource), beforeJoin, "Rejected joins must leave geometry, measurements and openings intact");
 const moved = mutate(partial.document, { kind: "move_wall", floorId: "apartment", wallId: "diagonal", deltaXMm: 100, deltaZMm: 200 });
 const model = compileCanonicalFloorPlanRenderModel(moved.document);
 const diagonal = model.floors[0].walls.find(({ id }) => id === "diagonal")!;

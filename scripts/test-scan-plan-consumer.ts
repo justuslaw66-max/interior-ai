@@ -38,6 +38,14 @@ assert.deepEqual(world(merged), world(original));
 assert.equal(merged.floorPlan?.proposal?.roomRecovery[0].name, "Bedroom");
 assert.deepEqual(merged.floorPlan?.proposal?.originalDocument, document);
 assert.equal(JSON.stringify(original), frozen);
+const joinFree = edit(merged, { kind: "add_wall", floorId: "apartment", wallId: "join-wall", startVertexId: "join-start", endVertexId: "join-end", thicknessMm: 100,
+  vertices: [{ id: "join-start", xMm: 6000, zMm: 1000 }, { id: "join-end", xMm: 7500, zMm: 2500 }] });
+const joinAttached = edit(joinFree, { kind: "join_wall_endpoint", floorId: "apartment", wallId: "join-wall", endpoint: "start", to: { xMm: 4000, zMm: 0 } });
+const joinDivided = edit(joinAttached, { kind: "join_wall_endpoint", floorId: "apartment", wallId: "join-wall", endpoint: "end", to: { xMm: 9260, zMm: 6000 }, newRoomId: "join-child", newRoomName: "Joined room" });
+assert.equal(joinDivided.rooms.length, 2);
+assert.deepEqual(world(joinDivided), world(original), "Joining a partition preserves furniture in world space");
+assert.deepEqual(world(storedToSnapshot(JSON.parse(JSON.stringify(snapshotToStored(joinDivided))))), world(original));
+assert.deepEqual(joinDivided.floorPlan?.proposal?.originalDocument, document);
 const restoredLayout = restoreLayoutVersion(merged.rooms[0], merged.rooms[0].layoutVersions![0]);
 assert.deepEqual(world({ ...merged, rooms: [restoredLayout] }), world({ ...original, rooms: [livingRoom] }), "Saved-layout restoration preserves world position after room-origin changes");
 assert.equal(restoredLayout.zones[0].anchor![0] + restoredLayout.planPosition!.x, 1.5);

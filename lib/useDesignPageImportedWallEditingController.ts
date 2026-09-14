@@ -98,7 +98,7 @@ const ACTION_LABELS: Record<ConsumerWallTopologyMutationV2["kind"], string> = {
   move_vertex: "Move imported wall endpoint",
   move_wall: "Move imported wall",
   update_wall: "Update imported wall",
-  split_wall: "Split imported wall",
+  split_wall: "Split imported wall", join_wall_endpoint: "Join proposed wall endpoint",
 };
 
 function stableIdPart(value: string): string {

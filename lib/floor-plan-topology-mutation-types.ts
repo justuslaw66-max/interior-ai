@@ -43,6 +43,8 @@ export type FloorPlanDimensionChangesV2 = Partial<
 >;
 
 export type FloorPlanTopologyMutationV2 =
+  | { kind: "join_wall_endpoint"; floorId: string; wallId: string; endpoint: "start" | "end";
+      to: FloorPlanPointMmV2; newRoomId?: string; newRoomName?: string }
   | { kind: "update_annotation_text"; floorId: string; annotationId: string; text: string }
   | {
       kind: "add_wall";
