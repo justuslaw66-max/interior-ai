@@ -550,7 +550,7 @@ export function canonicalFloorPlanToDesignSnapshot(
             ? "window"
             : "door",
         doorStyle,
-        canonicalWallId: opening.wallId,
+        canonicalWallId: opening.wallId, requestedWorldCenterMm: { x: center.xMm, z: center.zMm },
         operation: opening.operation,
         evidence: {
           width: opening.widthEvidence, height: opening.heightEvidence,

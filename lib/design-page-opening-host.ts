@@ -263,7 +263,7 @@ function owningRoomCandidates(
     if (floorLevel !== roomFloorLevel(room)) return [];
     if (!segment.roomIds.includes(room.id)) return [];
     if (segment.roomWalls[room.id] !== opening.wall) return [];
-    const requestedPoint = requestedPointOnOriginalSegment(
+    const requestedPoint = (opening.canonicalWallId ? persistedRequestedWorldCenter(opening) : null) ?? requestedPointOnOriginalSegment(
       opening,
       originalRoomSegmentContaining(segment, originalSegments)
     );

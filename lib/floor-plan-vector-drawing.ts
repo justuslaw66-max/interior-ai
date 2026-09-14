@@ -70,12 +70,13 @@ function dimensionPrimitives(floor: CompiledFloorPlanFloorV2): PlanDrawingPrimit
 
 function annotationPrimitives(floor: CompiledFloorPlanFloorV2): PlanDrawingPrimitive[] {
   return floor.annotations.flatMap((annotation) => {
+    if (annotation.scope === "reference") return [];
     const geometry = annotation.geometry;
-    const points = geometry.kind === "point" ? [geometry.point] : geometry.kind === "polygon" ? geometry.points : [geometry.start, geometry.end];
+    const points = geometry.kind === "point" ? [geometry.point] : "points" in geometry ? geometry.points : [geometry.start, geometry.end];
     if (!points.length) return [];
     const result: PlanDrawingPrimitive[] = [];
     if (points.length > 1) result.push(line(`${annotation.id}:artwork`, points, "annotation"));
-    if (annotation.text) result.push({ id: `${annotation.id}:text`, kind: "text", text: annotation.text, point: points[0], role: "annotation-text" });
+    if (annotation.text && geometry.kind !== "polyline") result.push({ id: `${annotation.id}:text`, kind: "text", text: annotation.text, point: points[0], role: "annotation-text" });
     return result;
   });
 }

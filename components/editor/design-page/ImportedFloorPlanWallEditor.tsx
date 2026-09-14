@@ -170,7 +170,7 @@ export function ImportedFloorPlanWallEditor({
           ) : null}
           <label className={subtle}>
             Wall
-            <select className={`${control} mt-1 w-full`} value={wall.id} onChange={(event) => {
+            <select aria-label="Wall" className={`${control} mt-1 w-full`} value={wall.id} onChange={(event) => {
               setWallId(event.target.value);
               setVertexId("");
               setDeltaXMm(0);

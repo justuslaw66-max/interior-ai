@@ -44,7 +44,7 @@ export function reconcileProposedRoomContent(before: DesignSnapshot, after: Desi
   const issues = new Set(before.floorPlan?.proposal?.reviewIssues ?? []);
   for (const { previous, primary, candidates } of contentTargets(before, next, operation)) {
     if (!rooms.some(({ id }) => id === previous.id)) {
-      recovery.push({ id: previous.id, name: previous.name, roomType: previous.roomType, surfaces: previous.surfaces, surfaceFinishes: previous.surfaceFinishes, savedViews: previous.savedViews, layoutVersions: previous.layoutVersions });
+      recovery.push({ id: previous.id, name: previous.name, roomType: previous.roomType, planPosition: previous.planPosition, surfaces: previous.surfaces, surfaceFinishes: previous.surfaceFinishes, savedViews: previous.savedViews, layoutVersions: previous.layoutVersions });
       issues.add(`Room ${previous.name} merged into ${primary.name}. Its alternate finishes and saved layouts remain in room recovery.`);
     }
     for (const item of previous.items) {

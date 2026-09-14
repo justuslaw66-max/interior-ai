@@ -196,7 +196,7 @@ function lineSegmentsIntersect(
   );
 }
 
-function polygonIntersectsFootprint(
+export function polygonIntersectsFootprint(
   polygon: RoomPlanPolygonPoint[],
   minX: number,
   maxX: number,
@@ -209,15 +209,8 @@ function polygonIntersectsFootprint(
     { x: maxX, z: maxZ },
     { x: minX, z: maxZ },
   ];
-  if (
-    polygon.some(
-      (point) =>
-        point.x >= minX &&
-        point.x <= maxX &&
-        point.z >= minZ &&
-        point.z <= maxZ
-    )
-  ) return true;
+  if (polygon.some((point) => point.x >= minX && point.x <= maxX && point.z >= minZ && point.z <= maxZ) ||
+    footprint.some((point) => isPointInsideRoomPolygon(point, polygon))) return true;
 
   return polygon.some((point, index) => {
     const next = polygon[(index + 1) % polygon.length];

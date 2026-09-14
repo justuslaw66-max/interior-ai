@@ -31,7 +31,6 @@ import type { DesignPageEditorMode } from "@/lib/useDesignPagePanelMode";
 import type { RendererSurfaceTarget } from "@/lib/useDesignPageSurfaceActions";
 import type { FloorPlanDocumentV2 } from "@/lib/floor-plan-document-v2";
 import { compileCanonicalFloorPlanRenderModel } from "@/lib/floor-plan-render-model";
-import { CANONICAL_ROOM_GEOMETRY_LOCK_REASON } from "@/lib/floor-plan-topology-editor";
 
 type UnderlayRendererProps = ComponentProps<typeof PlanUnderlayRenderer2D>;
 type PlanRendererProps = ComponentProps<typeof RoomRenderer2D>;
@@ -249,7 +248,7 @@ export function DesignSceneStructureLayer({
       <Html position={[0, 0.1, 0]} center transform={false} zIndexRange={[18, 0]}>
         <div
           data-testid="canonical-room-geometry-lock-reason"
-          title={CANONICAL_ROOM_GEOMETRY_LOCK_REASON}
+          title="Use the imported plan wall tools in 2D Plan to create an editable proposed copy."
           style={{
             border: "1px solid rgba(37,99,235,0.22)",
             borderRadius: 999,
@@ -262,7 +261,7 @@ export function DesignSceneStructureLayer({
             whiteSpace: "nowrap",
           }}
         >
-          Room boundaries source-locked · openings editable on-wall
+          Edit proposed walls in 2D Plan · openings editable on-wall
         </div>
       </Html>
     ) : null;

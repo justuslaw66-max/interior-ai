@@ -22,7 +22,7 @@ export function layoutFloorPlanVectorExport(drawing: PlanVectorDrawing, options:
 
 function svgPrimitive(primitive: PlanDrawingPrimitive) {
   const id = xml(primitive.id);
-  if (primitive.kind === "text") return `<text id="${id}" x="${primitive.point.xMm}" y="${primitive.point.zMm}" text-anchor="middle">${xml(primitive.text)}</text>`;
+  if (primitive.kind === "text") return `<text id="${id}" x="${primitive.point.xMm}" y="${primitive.point.zMm}" stroke="none" text-anchor="middle">${xml(primitive.text)}</text>`;
   return `<path id="${id}" d="${primitive.path}" fill="${primitive.fill ? "#454545" : "none"}"/>`;
 }
 

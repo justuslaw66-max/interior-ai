@@ -106,6 +106,7 @@ export type CompiledFloorPlanStructureV2 = Omit<
 export type CompiledFloorPlanAnnotationGeometryV2 =
   | { kind: "point"; point: FloorPlanPointMmV2 }
   | { kind: "polygon"; points: FloorPlanPointMmV2[] }
+  | { kind: "polyline"; points: FloorPlanPointMmV2[] }
   | {
       kind: "wall_span";
       wallId: string;
@@ -771,9 +772,9 @@ function validateAnnotationGeometry(
     }
     return;
   }
-  if (geometry.kind === "polygon") {
-    if (geometry.vertexIds.length < 3) {
-      addIssue(issues, "ANNOTATION_POLYGON_TOO_SHORT", `${path}.vertexIds`, "Annotation polygons need at least three vertices.");
+  if (geometry.kind === "polygon" || geometry.kind === "polyline") {
+    if (geometry.vertexIds.length < (geometry.kind === "polyline" ? 2 : 3)) {
+      addIssue(issues, "ANNOTATION_POLYGON_TOO_SHORT", `${path}.vertexIds`, "Annotations need at least two polyline vertices or three polygon vertices.");
     }
     geometry.vertexIds.forEach((vertexId, index) => {
       if (!maps.vertices.has(vertexId)) {
@@ -1420,9 +1421,9 @@ function compileAnnotation(annotation: FloorPlanAnnotationV2, maps: FloorMaps): 
   let geometry: CompiledFloorPlanAnnotationGeometryV2;
   if (annotation.geometry.kind === "point") {
     geometry = { kind: "point", point: getVertexPoint(maps.vertices.get(annotation.geometry.vertexId)!) };
-  } else if (annotation.geometry.kind === "polygon") {
+  } else if (annotation.geometry.kind === "polygon" || annotation.geometry.kind === "polyline") {
     geometry = {
-      kind: "polygon",
+      kind: annotation.geometry.kind,
       points: annotation.geometry.vertexIds.map((vertexId) => getVertexPoint(maps.vertices.get(vertexId)!)),
     };
   } else {
@@ -1433,13 +1434,8 @@ function compileAnnotation(annotation: FloorPlanAnnotationV2, maps: FloorMaps): 
       end: pointAlongWall(wall, annotation.geometry.offsetMm + annotation.geometry.widthMm, maps.vertices),
     };
   }
-  return {
-    id: annotation.id,
-    kind: annotation.kind,
-    text: annotation.text,
-    ...(annotation.configurationId ? { configurationId: annotation.configurationId } : {}),
-    geometry,
-  };
+  const { provenance: _provenance, ...compiled } = annotation;
+  return { ...compiled, geometry };
 }
 
 function compileDimension(dimension: FloorPlanDimensionV2, maps: FloorMaps): CompiledFloorPlanDimensionV2 {

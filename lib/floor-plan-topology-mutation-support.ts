@@ -231,7 +231,7 @@ function vertexHasReference(floor: FloorPlanFloorV2, vertexId: string): boolean 
       const geometry = annotation.geometry;
       return (
         (geometry.kind === "point" && geometry.vertexId === vertexId) ||
-        (geometry.kind === "polygon" && geometry.vertexIds.includes(vertexId))
+        ((geometry.kind === "polygon" || geometry.kind === "polyline") && geometry.vertexIds.includes(vertexId))
       );
     })
   ) {

@@ -4,6 +4,8 @@ import { canonicalFloorPlanToDesignSnapshot } from "@/lib/floor-plan-legacy-adap
 import { applyConfirmedConsumerWallEditV2, type ConsumerWallTopologyMutationV2 } from "@/lib/floor-plan-consumer-wall-edit";
 import type { DesignSnapshot } from "@/lib/room-types";
 import { snapshotToStored, storedToSnapshot } from "@/lib/room-persistence";
+import { changedOpeningFormFields, proposedOpeningForm } from "@/lib/floor-plan-opening-form";
+import { applyFloorPlanTopologyMutationV2 } from "@/lib/floor-plan-topology-mutations";
 
 const document = authoredApartment();
 const original = canonicalFloorPlanToDesignSnapshot(document).snapshot;
@@ -33,4 +35,20 @@ const reloaded = storedToSnapshot(JSON.parse(JSON.stringify(snapshotToStored(spl
 assert.deepEqual(world(reloaded), world(original));
 assert.deepEqual(reloaded.floorPlan, JSON.parse(JSON.stringify(split.floorPlan)));
 assert.equal(split.floorPlan?.canonicalDocument?.floors[0].walls.find(({ id }) => id === "new-partition")?.thicknessMm, 123);
+const protectedDocument = authoredApartment();
+const window = protectedDocument.floors[0].openings.find(({ id }) => id === "window")!;
+window.widthEvidence = "source_documented";
+window.heightMm = 1200;
+window.heightEvidence = "source_documented";
+const protectedSnapshot = canonicalFloorPlanToDesignSnapshot(protectedDocument).snapshot;
+const widthEdit = { kind: "update_opening", floorId: "apartment", openingId: "window", changes: { widthMm: 1700 } } as const;
+assert.throws(() => applyFloorPlanTopologyMutationV2(protectedDocument, widthEdit, { mutationId: "direct", nextRevisionId: "direct-rev", actorId: "test", mutatedAt: "2026-09-14T00:00:00Z" }), /protected|reviewed/i);
+const proposedWindow = edit(protectedSnapshot, widthEdit);
+assert.equal(proposedWindow.floorPlan?.canonicalDocument?.floors[0].openings.find(({ id }) => id === "window")?.widthMm, 1700);
+assert.equal(proposedWindow.floorPlan?.canonicalDocument?.floors[0].openings.find(({ id }) => id === "window")?.heightEvidence, "source_documented");
+assert.equal(proposedWindow.floorPlan?.proposal?.originalDocument.floors[0].openings.find(({ id }) => id === "window")?.widthMm, 1800);
+const sourceWindow = document.floors[0].openings.find(({ id }) => id === "window")!;
+const windowForm = proposedOpeningForm(document.floors[0], sourceWindow);
+assert.equal(windowForm.sillHeightMm, document.floors[0].defaults.windowSillHeight.valueMm);
+assert.deepEqual(changedOpeningFormFields(document.floors[0], sourceWindow, { ...windowForm, offsetMm: 1100 }), { offsetMm: 1100 });
 console.log("PASS: consumer private proposal merge/split, reference immutability, exact world positions, room recovery, integer dimensions and saved reload.");

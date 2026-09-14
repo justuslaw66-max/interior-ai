@@ -5,7 +5,6 @@ import type {
   FloorPlanDocumentV2,
   FloorPlanFloorV2,
   FloorPlanPointMmV2,
-  FloorPlanWallV2,
 } from "@/lib/floor-plan-document-v2";
 import {
   mutateFloorPlanDimensionV2,
@@ -124,7 +123,7 @@ function markVertexDependants(
     const geometry = annotation.geometry;
     const affected =
       (geometry.kind === "point" && vertexIds.has(geometry.vertexId)) ||
-      (geometry.kind === "polygon" && geometry.vertexIds.some((id) => vertexIds.has(id))) ||
+      ("vertexIds" in geometry && geometry.vertexIds.some((id) => vertexIds.has(id))) ||
       (geometry.kind === "wall_span" && affectedWallIds.has(geometry.wallId));
     if (affected) {
       annotation.provenance = demoteProvenance(annotation.provenance, annotation.id, reason, state);
@@ -132,9 +131,19 @@ function markVertexDependants(
   }
   for (const dimension of floor.dimensions) {
     if (vertexIds.has(dimension.fromVertexId) || vertexIds.has(dimension.toVertexId)) {
+      dimension.measuredMm = updatedDimensionMeasurement(floor, dimension);
+      dimension.label = undefined; // Historical printed text remains in the immutable original.
       dimension.provenance = demoteProvenance(dimension.provenance, dimension.id, reason, state);
     }
   }
+}
+
+function updatedDimensionMeasurement(floor: FloorPlanFloorV2, dimension: FloorPlanFloorV2["dimensions"][number]) {
+  const from = floor.vertices.find(({ id }) => id === dimension.fromVertexId)!;
+  const to = floor.vertices.find(({ id }) => id === dimension.toVertexId)!;
+  if (dimension.axis === "horizontal") return Math.abs(to.xMm - from.xMm);
+  if (dimension.axis === "vertical") return Math.abs(to.zMm - from.zMm);
+  return Math.round(Math.hypot(to.xMm - from.xMm, to.zMm - from.zMm));
 }
 
 function moveVertex(

@@ -7,6 +7,7 @@ import { applyFloorPlanTopologyMutationsV2 } from "@/lib/floor-plan-topology-mut
 import { buildFloorPlanVectorDrawing } from "@/lib/floor-plan-vector-drawing";
 import { exportFloorPlanVectorPdf, exportFloorPlanVectorSvg, layoutFloorPlanVectorExport } from "@/lib/floor-plan-vector-export";
 import { compileCanonicalFloorPlanRenderModel } from "@/lib/floor-plan-render-model";
+import { physicalDimensionLineMm } from "./fixtures/scan-to-editable-plan/pdf-physical-scale";
 
 async function main() {
   const source = authoredApartment();
@@ -14,6 +15,8 @@ async function main() {
     { kind: "remove_wall", floorId: "apartment", wallId: "shared", confirmedOpeningIds: ["door"], keepRoomId: "living" },
     { kind: "add_wall", floorId: "apartment", wallId: "replacement", startVertexId: "b", endVertexId: "e", thicknessMm: 120, newRoomId: "study", newRoomName: "Study" },
     { kind: "add_opening", floorId: "apartment", opening: { id: "new-door", wallId: "replacement", kind: "door", operation: "swing", widthMm: 850, offsetMm: 1700, hinge: "end", handing: "right" } },
+    { kind: "add_structure", floorId: "apartment", structure: { id: "fixture-column", kind: "column", name: "Authored column", locked: true, vertexIds: ["col-a", "col-b", "col-c", "col-d"], baseOffsetMm: 0, heightMm: 2600 },
+      vertices: [{ id: "col-a", xMm: 7800, zMm: 4400 }, { id: "col-b", xMm: 8150, zMm: 4400 }, { id: "col-c", xMm: 8150, zMm: 4650 }, { id: "col-d", xMm: 7800, zMm: 4650 }] },
   ], { mutationId: "proof", nextRevisionId: "proposed-proof", actorId: "fixture-author", mutatedAt: "2026-09-14T01:00:00Z" });
   const drawing = buildFloorPlanVectorDrawing(result.document, { floorId: "apartment", dimensions: true, labels: true, fixtures: true });
   assert.equal(drawing.geometryHash, compileCanonicalFloorPlanRenderModel(result.document).geometryHash);
@@ -31,6 +34,8 @@ async function main() {
   assert(!streams.some((stream) => stream.dict.get(PDFName.of("Subtype"))?.toString() === "/Image"));
   const content = streams.map((stream) => Buffer.from(decodePDFRawStream(stream).decode()).toString()).join("\n");
   const count = (regex: RegExp) => [...content.matchAll(regex)].length;
+  const measuredPaperMm = physicalDimensionLineMm(content, 9260);
+  assert(measuredPaperMm !== undefined && Math.abs(measuredPaperMm - 92.6) <= 0.01, "Actual PDF path after all emitted transforms must measure 92.6 mm");
   assert(count(/\bBT\b/g) >= 5, "Editable text operators must remain");
   assert(count(/\bm\b/g) >= 15, "Separate path components must remain");
   assert(count(/\bc\b/g) > 0, "Swing must contain a cubic curve");
@@ -43,7 +48,8 @@ async function main() {
     await fs.writeFile(path.join(output, "proposed-apartment.pdf"), bytes);
     await fs.writeFile(path.join(output, "proposed-apartment.svg"), svg);
     await fs.writeFile(path.join(output, "proposed-apartment.json"), JSON.stringify(result.document, null, 2));
-    await fs.writeFile(path.join(output, "vector-inspection.json"), JSON.stringify({ layout, primitiveCount: drawing.primitives.length, pathCount: count(/\bm\b/g), textCount: count(/\bBT\b/g), cubicCount: count(/\bc\b/g), imageCount: 0, geometryHash: drawing.geometryHash, unsupported: drawing.unsupported }, null, 2));
+    await fs.writeFile(path.join(output, "drawing-manifest.json"), JSON.stringify({ layout, drawing }, null, 2));
+    await fs.writeFile(path.join(output, "vector-inspection.json"), JSON.stringify({ layout, measuredPaperMm, primitiveCount: drawing.primitives.length, pathCount: count(/\bm\b/g), textCount: count(/\bBT\b/g), cubicCount: count(/\bc\b/g), imageCount: 0, geometryHash: drawing.geometryHash, unsupported: drawing.unsupported }, null, 2));
   }
   console.log(`PASS: remove/add/opening/3D/vector PDF+SVG proof; ${drawing.primitives.length} primitives, ${count(/\bBT\b/g)} text objects, ${count(/\bc\b/g)} cubic curves, zero images, 92.6 mm physical scale.`);
 }

@@ -7,6 +7,7 @@ import {
 } from "@/lib/floor-plan-topology-mutation-support";
 import { divideRoomAtAddedWall, mergeRoomsAtRemovedWall, partitionLoopPoints, refreshPartitionAdjacency } from "@/lib/floor-plan-partition-rooms";
 import { isPointInPlanarRing } from "@/lib/floor-plan-planar-union";
+import { attachPartitionEndpoint } from "@/lib/floor-plan-wall-attachment";
 
 type Add = Extract<FloorPlanTopologyMutationV2, { kind: "add_wall" }>;
 type Remove = Extract<FloorPlanTopologyMutationV2, { kind: "remove_wall" }>;
@@ -30,9 +31,10 @@ export function addCanonicalPartition(floor: FloorPlanFloorV2, operation: Add, s
   assertUnusedGlobalEntityId(state.document, operation.wallId, "New wall ID");
   assertKnownFloorVertices(floor, ids);
   assertInteriorPartition(floor, operation);
+  const attachedIds = ids.map((id) => attachPartitionEndpoint(floor, id, state));
   const wall = {
     id: operation.wallId,
-    path: { kind: "line" as const, startVertexId: ids[0], endVertexId: ids[1] },
+    path: { kind: "line" as const, startVertexId: attachedIds[0], endVertexId: attachedIds[1] },
     thicknessMm: operation.thicknessMm,
     heightMm: operation.heightMm,
     heightEvidence: operation.heightMm === undefined ? undefined : "user_confirmed" as const,
@@ -66,7 +68,8 @@ function detachWallAnnotations(floor: FloorPlanFloorV2, wallId: string, state: S
       floor.vertices.push(vertex);
     }
     // Preserve a historical source mark independently of the removed host.
-    annotation.geometry = { kind: "polygon", vertexIds: vertices.map(({ id }) => id) };
+    annotation.geometry = { kind: "polyline", vertexIds: vertices.map(({ id }) => id) };
+    annotation.scope = "reference";
     state.changedIds.add(annotation.id);
   }
 }

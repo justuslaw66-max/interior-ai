@@ -266,12 +266,14 @@ export type FloorPlanStructureV2 = {
 export type FloorPlanAnnotationGeometryV2 =
   | { kind: "point"; vertexId: string }
   | { kind: "polygon"; vertexIds: string[] }
+  | { kind: "polyline"; vertexIds: string[] }
   | { kind: "wall_span"; wallId: string; offsetMm: number; widthMm: number };
 
 export type FloorPlanAnnotationV2 = {
   id: string;
   kind: "label" | "suggested_room" | "optional_partition" | "note";
   text: string;
+  scope?: "reference" | "proposed";
   geometry: FloorPlanAnnotationGeometryV2;
   configurationId?: string;
   provenance: FloorPlanEntityProvenanceV2;

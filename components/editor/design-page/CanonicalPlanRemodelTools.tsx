@@ -3,6 +3,7 @@
 import { useState } from "react";
 import type { FloorPlanFloorV2, FloorPlanWallV2 } from "@/lib/floor-plan-document-v2";
 import type { ConsumerWallTopologyMutationV2 } from "@/lib/floor-plan-consumer-wall-edit";
+import { changedOpeningFormFields, proposedOpeningForm } from "@/lib/floor-plan-opening-form";
 
 type Props = { floor: FloorPlanFloorV2; wall: FloorPlanWallV2; commit: (operation: ConsumerWallTopologyMutationV2) => boolean };
 const inputStyle = "mt-1 w-full rounded border border-neutral-400 bg-transparent p-1.5";
@@ -33,7 +34,7 @@ function AddPartition({ floor, commit }: Omit<Props, "wall">) {
       thicknessMm: values.thickness, heightMm: values.height, newRoomId: `room-${suffix}`, newRoomName: values.roomName });
   };
   return <details><summary className="cursor-pointer font-semibold">Add a wall</summary>
-    <p className="my-2">Enter centreline endpoints. Match existing endpoints to divide a room; split a boundary first when needed. Partial partitions keep the room open.</p>
+    <p className="my-2">Enter centreline endpoints. A point exactly on a straight wall creates a junction automatically. A boundary-to-boundary partition divides the room; partial partitions keep it open.</p>
     <div className="grid grid-cols-2 gap-2">
       <Millimetres label="Start X" value={values.x1} change={(v) => set("x1", v)} /><Millimetres label="Start Z" value={values.z1} change={(v) => set("z1", v)} />
       <Millimetres label="End X" value={values.x2} change={(v) => set("x2", v)} /><Millimetres label="End Z" value={values.z2} change={(v) => set("z2", v)} />
@@ -70,14 +71,15 @@ function OpeningProperties({ floor, wall, commit }: Props) {
 }
 
 function OpeningForm({ floor, wall, opening, commit }: Props & { opening?: FloorPlanFloorV2["openings"][number] }) {
-  const [draft, setDraft] = useState({ kind: opening?.kind ?? "door", operation: opening?.operation ?? "swing", offsetMm: opening?.offsetMm ?? 0, widthMm: opening?.widthMm ?? 900, heightMm: opening?.heightMm ?? 2100, sillHeightMm: opening?.sillHeightMm ?? 0, hinge: opening?.hinge ?? "start", handing: opening?.handing ?? "left" });
+  const [draft, setDraft] = useState(() => proposedOpeningForm(floor, opening));
   return <div className="mt-2 grid grid-cols-2 gap-2">
-    <label>Type<select className={inputStyle} value={draft.kind} onChange={(event) => setDraft({ ...draft, kind: event.target.value === "window" ? "window" : "door" })}><option value="door">Door</option><option value="window">Window</option></select></label>
+    <label>Type<select className={inputStyle} value={draft.kind} onChange={(event) => { const kind = event.target.value; if (kind === "door" || kind === "window" || kind === "open_passage" || kind === "gate" || kind === "vent" || kind === "louvre") setDraft({ ...draft, kind }); }}>{["door", "window", "open_passage", "gate", "vent", "louvre"].map((kind) => <option key={kind}>{kind}</option>)}</select></label>
     <label>Operation<select className={inputStyle} value={draft.operation} onChange={(event) => { const value = event.target.value; if (value === "swing" || value === "sliding" || value === "fixed" || value === "folding" || value === "open") setDraft({ ...draft, operation: value }); }}>{["swing", "sliding", "fixed", "folding", "open"].map((v) => <option key={v}>{v}</option>)}</select></label>
     {([['offsetMm', 'Position from wall start'], ['widthMm', 'Width'], ['heightMm', 'Height'], ['sillHeightMm', 'Sill']] as const).map(([key, label]) => <Millimetres key={key} label={label} value={draft[key]} min={0} change={(value) => setDraft({ ...draft, [key]: value })} />)}
     <label>Hinge<select className={inputStyle} value={draft.hinge} onChange={(event) => { const value = event.target.value; if (value === "start" || value === "end" || value === "none" || value === "unknown") setDraft({ ...draft, hinge: value }); }}>{["start", "end", "none", "unknown"].map((v) => <option key={v}>{v}</option>)}</select></label>
     <label>Swing side<select className={inputStyle} value={draft.handing} onChange={(event) => { const value = event.target.value; if (value === "left" || value === "right" || value === "double" || value === "none" || value === "unknown") setDraft({ ...draft, handing: value }); }}>{["left", "right", "double", "none", "unknown"].map((v) => <option key={v}>{v}</option>)}</select></label>
-    <button type="button" className={`${buttonStyle} col-span-2`} onClick={() => commit(opening ? { kind: "update_opening", floorId: floor.id, openingId: opening.id, changes: draft } : { kind: "add_opening", floorId: floor.id, opening: { ...draft, id: `opening-${crypto.randomUUID()}`, wallId: wall.id } })}>{opening ? "Apply opening changes" : "Add opening"}</button>
+    <p className="col-span-2">Heights without source measurements use the plan defaults. Only values you change become proposed measurements.</p>
+    <button type="button" className={`${buttonStyle} col-span-2`} onClick={() => commit(opening ? { kind: "update_opening", floorId: floor.id, openingId: opening.id, changes: changedOpeningFormFields(floor, opening, draft) } : { kind: "add_opening", floorId: floor.id, opening: { ...draft, id: `opening-${crypto.randomUUID()}`, wallId: wall.id, heightEvidence: "assumed", sillHeightEvidence: "assumed", widthEvidence: "user_confirmed" } })}>{opening ? "Apply opening changes" : "Add opening"}</button>
     {opening ? <button type="button" className={`${buttonStyle} col-span-2`} onClick={() => commit({ kind: "remove_opening", floorId: floor.id, openingId: opening.id })}>Remove opening</button> : null}
   </div>;
 }

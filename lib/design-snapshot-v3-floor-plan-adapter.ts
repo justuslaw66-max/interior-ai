@@ -128,7 +128,7 @@ function namespaceSyntheticFloorTopology(
   for (const annotation of floor.annotations) {
     if (annotation.geometry.kind === "point") {
       annotation.geometry.vertexId = vertexIds.get(annotation.geometry.vertexId)!;
-    } else if (annotation.geometry.kind === "polygon") {
+    } else if (annotation.geometry.kind === "polygon" || annotation.geometry.kind === "polyline") {
       annotation.geometry.vertexIds = annotation.geometry.vertexIds.map(
         (id) => vertexIds.get(id)!
       );

@@ -12,6 +12,9 @@ import {
 } from "@/lib/floor-plan-topology-mutations";
 import type { DesignSnapshot, RoomSurfaceAssignments } from "@/lib/room-types";
 import { reconcileProposedRoomContent } from "@/lib/floor-plan-proposal-content";
+import { forkOpeningEvidenceForProposal } from "@/lib/floor-plan-proposal-opening";
+import { buildCanonicalFloorPlanRenderModel } from "@/lib/floor-plan-render-model";
+import { reviewProposedPlacements } from "@/lib/floor-plan-placement-review";
 
 export const CONSUMER_WALL_EDIT_CONFIRMATION_COPY =
   "This creates a local editable copy for this design. The imported source plan remains unchanged. Accepted wall changes are marked Needs review and may affect connected rooms and openings.";
@@ -153,7 +156,7 @@ export function applyConfirmedConsumerWallEditV2({
   }
 
   const anchoredSnapshot = withSourceRevisionAnchor(snapshot, sourceRevision);
-  const result = applyFloorPlanTopologyMutationV2(document, operation, context);
+  const result = applyFloorPlanTopologyMutationV2(forkOpeningEvidenceForProposal(document, operation, context), operation, context);
   const committed = preserveSplitWallFinishes(
     commitCanonicalTopologyMutationToSnapshotV2(anchoredSnapshot, result),
     operation
@@ -170,5 +173,7 @@ export function applyConfirmedConsumerWallEditV2({
     );
   }
   const reconciled = reconcileProposedRoomContent(snapshot, committed.snapshot, operation);
+  const issues = reviewProposedPlacements(reconciled, buildCanonicalFloorPlanRenderModel(result.scene));
+  reconciled.floorPlan!.proposal!.reviewIssues = [...new Set([...reconciled.floorPlan!.proposal!.reviewIssues, ...issues])];
   return { ...committed, snapshot: reconciled };
 }

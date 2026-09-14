@@ -169,7 +169,7 @@
       "limit": 250
     },
     "components/editor/design-page/DesignSceneStructureLayer.tsx": {
-      "lines": 456,
+      "lines": 455,
       "limit": 250
     },
     "components/editor/design-page/ImportedFloorPlanWallEditor.tsx": {
@@ -513,7 +513,7 @@
       "limit": 400
     },
     "lib/design-page-geometry.ts": {
-      "lines": 480,
+      "lines": 473,
       "limit": 400
     },
     "lib/design-page-house-plan.ts": {
@@ -549,7 +549,7 @@
       "limit": 400
     },
     "lib/floor-plan-compiler-v2.ts": {
-      "lines": 1662,
+      "lines": 1658,
       "limit": 400
     },
     "lib/floor-plan-import-review-geometry.ts": {

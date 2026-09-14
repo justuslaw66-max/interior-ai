@@ -6,6 +6,7 @@ import type {
   FloorPlanWallV2,
 } from "@/lib/floor-plan-document-v2";
 import { isPointInPlanarRing } from "@/lib/floor-plan-planar-union";
+import { partitionChain, reversePartitionChain } from "@/lib/floor-plan-partition-chain";
 import {
   assertUnusedGlobalEntityId,
   demoteTopologyProvenance as demote,
@@ -76,13 +77,15 @@ export function mergeRoomsAtRemovedWall(
 function splitLoops(floor: FloorPlanFloorV2, room: FloorPlanRoomV2, wall: FloorPlanWallV2) {
   const outer = room.wallLoops.find((loop) => loop.kind === "outer");
   if (!outer) return null;
-  const start = outer.walls.findIndex((ref) => ends(floor, ref)[0] === wall.path.startVertexId);
-  const end = outer.walls.findIndex((ref) => ends(floor, ref)[0] === wall.path.endVertexId);
+  const chain = partitionChain(floor, outer, wall);
+  if (!chain) return null;
+  const start = outer.walls.findIndex((ref) => ends(floor, ref)[0] === chain.start);
+  const end = outer.walls.findIndex((ref) => ends(floor, ref)[0] === chain.end);
   if (start < 0 || end < 0 || start === end) return null;
   const rotated = [...outer.walls.slice(start), ...outer.walls.slice(0, start)];
   const count = (end - start + outer.walls.length) % outer.walls.length;
-  const first: FloorPlanRoomWallLoopV2 = { kind: "outer", walls: [...rotated.slice(0, count), { wallId: wall.id, direction: "reverse" }] };
-  const second: FloorPlanRoomWallLoopV2 = { kind: "outer", walls: [...rotated.slice(count), { wallId: wall.id, direction: "forward" }] };
+  const first: FloorPlanRoomWallLoopV2 = { kind: "outer", walls: [...rotated.slice(0, count), ...reversePartitionChain(chain.refs)] };
+  const second: FloorPlanRoomWallLoopV2 = { kind: "outer", walls: [...rotated.slice(count), ...chain.refs] };
   return { first, second };
 }
 

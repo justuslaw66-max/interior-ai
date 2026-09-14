@@ -16,6 +16,7 @@ function remapWallSpansAfterSplit(
       fail("SPAN_CROSSES_SPLIT", `Opening ${opening.id} crosses the requested wall split.`);
     }
     if (opening.offsetMm >= splitOffsetMm) {
+      assertInteger(opening.offsetMm - splitOffsetMm, "Rehosted opening offset; choose an exact millimetre split clear of this opening");
       opening.wallId = newWallId;
       opening.offsetMm -= splitOffsetMm;
       opening.provenance = demoteProvenance(
@@ -33,6 +34,7 @@ function remapWallSpansAfterSplit(
       fail("SPAN_CROSSES_SPLIT", `Annotation ${annotation.id} crosses the requested wall split.`);
     }
     if (annotation.geometry.offsetMm >= splitOffsetMm) {
+      assertInteger(annotation.geometry.offsetMm - splitOffsetMm, "Rehosted annotation offset");
       annotation.geometry.wallId = newWallId;
       annotation.geometry.offsetMm -= splitOffsetMm;
       annotation.provenance = demoteProvenance(
@@ -48,10 +50,13 @@ function remapWallSpansAfterSplit(
 export function splitWall(
   floor: FloorPlanFloorV2,
   operation: Extract<FloorPlanTopologyMutationV2, { kind: "split_wall" }>,
-  state: MutationState
+  state: MutationState,
+  existingVertex?: FloorPlanVertexV2
 ): void {
-  assertInteger(operation.offsetMm, "Wall split offset");
-  assertUnusedGlobalEntityId(state.document, operation.newVertexId, "Split vertex ID");
+  if (!existingVertex) {
+    assertInteger(operation.offsetMm, "Wall split offset");
+    assertUnusedGlobalEntityId(state.document, operation.newVertexId, "Split vertex ID");
+  }
   assertUnusedGlobalEntityId(state.document, operation.newWallId, "Split wall ID");
   if (operation.newVertexId === operation.newWallId) {
     fail("DUPLICATE_ENTITY_ID", "The new split wall and vertex need different IDs.");
@@ -69,19 +74,29 @@ export function splitWall(
     fail("INVALID_SPLIT", `Wall ${wall.id} must be split strictly between its endpoints.`);
   }
   const ratio = operation.offsetMm / length;
-  const splitX = start.xMm + (end.xMm - start.xMm) * ratio;
-  const splitZ = start.zMm + (end.zMm - start.zMm) * ratio;
+  const splitX = existingVertex?.xMm ?? start.xMm + (end.xMm - start.xMm) * ratio;
+  const splitZ = existingVertex?.zMm ?? start.zMm + (end.zMm - start.zMm) * ratio;
   if (!Number.isSafeInteger(splitX) || !Number.isSafeInteger(splitZ)) {
     fail("NON_INTEGER_MILLIMETRES", "The requested split does not land on an exact integer-mm point.");
   }
+  if ((splitX - start.xMm) * (end.zMm - start.zMm) !== (splitZ - start.zMm) * (end.xMm - start.xMm)) {
+    fail("INVALID_SPLIT", "The attachment point must lie exactly on the wall centreline.");
+  }
+  commitSplit(floor, operation, state, wallIndex, { xMm: splitX, zMm: splitZ }, existingVertex);
+}
 
+function commitSplit(
+  floor: FloorPlanFloorV2, operation: Extract<FloorPlanTopologyMutationV2, { kind: "split_wall" }>,
+  state: MutationState, wallIndex: number, point: { xMm: number; zMm: number }, existingVertex?: FloorPlanVertexV2
+) {
+  const wall = floor.walls[wallIndex];
+  const start = floor.vertices.find((vertex) => vertex.id === wall.path.startVertexId)!;
   remapWallSpansAfterSplit(floor, wall.id, operation.newWallId, operation.offsetMm, state);
   const originalEndVertexId = wall.path.endVertexId;
   const reason = `Split wall ${wall.id} at ${operation.offsetMm} mm`;
   const vertex: FloorPlanVertexV2 = {
     id: operation.newVertexId,
-    xMm: splitX,
-    zMm: splitZ,
+    ...point,
     provenance: demoteProvenance(start.provenance, operation.newVertexId, reason, state),
   };
   wall.path.endVertexId = operation.newVertexId;
@@ -97,7 +112,7 @@ export function splitWall(
     adjacentRoomIds: [...wall.adjacentRoomIds],
     provenance: demoteProvenance(wall.provenance, operation.newWallId, reason, state),
   };
-  floor.vertices.push(vertex);
+  if (!existingVertex) floor.vertices.push(vertex);
   floor.walls.splice(wallIndex + 1, 0, newWall);
 
   updateSplitRoomLoops(floor, wall, newWall, reason, state);
@@ -121,4 +136,3 @@ function updateSplitRoomLoops(floor: FloorPlanFloorV2, wall: FloorPlanWallV2, ne
     if (changed) room.provenance = demoteProvenance(room.provenance, room.id, reason, state);
   }
 }
-
