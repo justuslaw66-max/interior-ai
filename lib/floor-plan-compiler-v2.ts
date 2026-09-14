@@ -1,3 +1,4 @@
+import { validateFloorPlanSourceCalibration } from "./floor-plan-source-calibration-validation";
 import { compileFloorPlanAnnotationV2 } from "./floor-plan-annotation-compiler";
 import { sourceDrawingGeometryError, type FloorPlanSourceDrawingGeometryV2 } from "./floor-plan-source-drawing";
 import type {
@@ -869,31 +870,13 @@ export function validateFloorPlanDocumentV2(
     validateMeasuredProperty(floor.defaults.windowSillHeight, `${path}.defaults.windowSillHeight`, sourceIds, issues);
 
     validateUniqueIds(floor.calibrations, `${path}.calibrations`, issues);
-    floor.calibrations.forEach((calibration, index) => {
-      const calibrationPath = `${path}.calibrations[${index}]`;
-      if (!sourceIds.has(calibration.sourceId)) addIssue(issues, "UNKNOWN_SOURCE", `${calibrationPath}.sourceId`, `Unknown source: ${calibration.sourceId}.`);
-      validateInteger(calibration.pageNumber, `${calibrationPath}.pageNumber`, issues, { positive: true });
-      validateInteger(calibration.imageWidthPx, `${calibrationPath}.imageWidthPx`, issues, { positive: true });
-      validateInteger(calibration.imageHeightPx, `${calibrationPath}.imageHeightPx`, issues, { positive: true });
-      if (calibration.controlPoints.length < 2) {
-        addIssue(issues, "INSUFFICIENT_CALIBRATION", `${calibrationPath}.controlPoints`, "Source registration needs at least two control points.");
+    floor.calibrations.forEach((calibration, index) => validateFloorPlanSourceCalibration(
+      calibration, `${path}.calibrations[${index}]`, sourceIds, {
+        issue: (code, location, message) => addIssue(issues, code, location, message),
+        integer: (value, location, options) => validateInteger(value, location, issues, options),
+        finite: (value, location) => validateFinite(value, location, issues),
       }
-      const sourcePointKeys = new Set<string>();
-      calibration.controlPoints.forEach((point, pointIndex) => {
-        const pointPath = `${calibrationPath}.controlPoints[${pointIndex}]`;
-        validateFinite(point.sourcePx.x, `${pointPath}.sourcePx.x`, issues);
-        validateFinite(point.sourcePx.y, `${pointPath}.sourcePx.y`, issues);
-        validateInteger(point.planMm.xMm, `${pointPath}.planMm.xMm`, issues);
-        validateInteger(point.planMm.zMm, `${pointPath}.planMm.zMm`, issues);
-        const key = `${point.sourcePx.x}:${point.sourcePx.y}`;
-        if (sourcePointKeys.has(key)) addIssue(issues, "DUPLICATE_CALIBRATION_POINT", pointPath, "Calibration source points must be distinct.");
-        sourcePointKeys.add(key);
-      });
-      if (calibration.rmsErrorPx !== undefined) {
-        validateFinite(calibration.rmsErrorPx, `${calibrationPath}.rmsErrorPx`, issues);
-        if (calibration.rmsErrorPx < 0) addIssue(issues, "NEGATIVE_CALIBRATION_ERROR", `${calibrationPath}.rmsErrorPx`, "Calibration error cannot be negative.");
-      }
-    });
+    ));
 
     validateUniqueIds(floor.vertices, `${path}.vertices`, issues);
     validateUniqueIds(floor.walls, `${path}.walls`, issues);

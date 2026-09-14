@@ -549,11 +549,11 @@
       "limit": 400
     },
     "lib/floor-plan-compiler-v2.ts": {
-      "lines": 1650,
+      "lines": 1633,
       "limit": 400
     },
     "lib/floor-plan-import-review-geometry.ts": {
-      "lines": 1162,
+      "lines": 1141,
       "limit": 400
     },
     "lib/floor-plan-imports/address-binding-evidence.ts": {
@@ -3555,7 +3555,7 @@
     "lib/floor-plan-compiler-v2.ts": {
       "overlongFunctions": {
         "count": 5,
-        "maximum": 527
+        "maximum": 509
       },
       "complexFunctions": {
         "count": 2,
