@@ -5,6 +5,7 @@ import type { FloorPlanWallClassificationV2 } from "@/lib/floor-plan-document-v2
 import { CONSUMER_WALL_EDIT_CONFIRMATION_COPY, selectConsumerWallGeometry } from "@/lib/floor-plan-consumer-wall-edit";
 import { CanonicalPlanRemodelTools } from "@/components/editor/design-page/CanonicalPlanRemodelTools";
 import { CanonicalPlanVectorExport } from "@/components/editor/design-page/CanonicalPlanVectorExport";
+import { ImportedFloorPlanReviewStatus } from "./ImportedFloorPlanReviewStatus";
 import type { CanonicalPlanVectorExportSource } from "./useCanonicalPlanVectorExport";
 import type {
   ImportedWallEditingActions,
@@ -97,21 +98,7 @@ export function ImportedFloorPlanWallEditor({
 
   return (
     <section data-testid="imported-wall-editor" className={shell}>
-      <div className="flex items-start justify-between gap-2">
-        <div>
-          <div className="font-semibold">Imported plan geometry</div>
-          <div className={`mt-0.5 text-[10px] ${subtle}`}>
-            {state.isLocalFork ? "Local needs-review copy" : "Source plan locked"}
-          </div>
-        </div>
-        <span className={
-          state.editingEnabled
-            ? "rounded-full bg-amber-100 px-2 py-1 text-[10px] font-semibold text-amber-800"
-            : "rounded-full bg-emerald-100 px-2 py-1 text-[10px] font-semibold text-emerald-800"
-        }>
-          {state.editingEnabled ? "Editing" : "Locked"}
-        </span>
-      </div>
+      <ImportedFloorPlanReviewStatus document={document} isLocalFork={state.isLocalFork} editingEnabled={state.editingEnabled} subtle={subtle} />
 
       {!state.editingEnabled ? (
         <div className="mt-3">

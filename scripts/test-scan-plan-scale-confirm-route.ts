@@ -92,6 +92,13 @@ async function main() {
     assert.equal((await accepted.json()).id, "private-design");
     assert.match(JSON.stringify(snapshots[0]), /independentMeasurements/);
     assert.doesNotMatch(JSON.stringify(snapshots[0]), /source_verified|construction_verified/);
+    assert.ok(isStoredDesign(snapshots[0]));
+    const review = storedToSnapshot(snapshots[0]).floorPlan!.canonicalDocument!.verification;
+    assert.equal(review.planningReview?.reviewerId, "owner");
+    assert.equal(review.planningReview?.revisionId, candidate.revisionId);
+    assert.equal(review.tier, "needs_review");
+    assert.ok(!review.approvedBy && !review.approvedAt);
+    assert.ok(!candidate.verification.planningReview, "Creating a design does not change the imported candidate.");
     candidate = calibratedScaleFixture();
     candidate.floors[0].calibrations[0].controlPoints = [
       { sourcePx: { x: 100, y: 200 }, planMm: { xMm: 0, zMm: 0 } },

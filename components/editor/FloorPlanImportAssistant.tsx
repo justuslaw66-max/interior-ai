@@ -596,14 +596,12 @@ export default function FloorPlanImportAssistant({
         <div className="text-xs font-bold uppercase tracking-[0.14em] text-emerald-700">
           AI import complete
         </div>
-        <h3 className="mt-1 text-2xl font-semibold">Your editable plan is ready</h3>
+        <h3 className="mt-1 text-2xl font-semibold">Review your plan before creating a design</h3>
         <p className={`mt-2 max-w-3xl text-sm leading-6 ${subtle}`}>
-          AI found {canonicalRoomCount} room
+          This candidate contains {canonicalRoomCount} room
           {canonicalRoomCount === 1 ? "" : "s"} and{" "}
-          {canonicalDimensionCount} exact printed measurement
-          {canonicalDimensionCount === 1 ? "" : "s"}. Create a separate design
-          with editable walls, rooms, doors, and windows. It starts with no
-          furniture.
+          {canonicalDimensionCount} recorded measurement
+          {canonicalDimensionCount === 1 ? "" : "s"}. Check the drawing and scale. Confirming records your review for planning and creates a separate editable design without furniture.
         </p>
         <div className="mt-4 flex flex-wrap gap-2 text-xs">
           <span className="rounded-full bg-emerald-100 px-3 py-1.5 font-semibold text-emerald-800">
@@ -640,10 +638,10 @@ export default function FloorPlanImportAssistant({
             ? "Creating and opening…"
             : createError
               ? "Try creating again"
-              : "Create editable plan"}
+              : "Confirm review & create editable plan"}
         </button>
         <p className={`mt-2 text-center text-xs leading-5 ${subtle}`}>
-          Opens in 2D Furnish. Switch to 3D at any time.
+          Opens in 2D Furnish. Your planning review does not grant source verification or construction approval.
         </p>
         {createError ? (
           <p className="mt-2 text-[10px] leading-4 text-red-600">
@@ -682,11 +680,10 @@ export default function FloorPlanImportAssistant({
             className={`mt-3 text-xs leading-5 ${subtle}`}
             data-testid="floor-plan-import-accuracy-baseline"
           >
-            Accuracy baseline passed: {canonicalRoomCount} canonical room
+            Import checks passed: {canonicalRoomCount} canonical room
             {canonicalRoomCount === 1 ? "" : "s"} and{" "}
-            {canonicalDimensionCount} exact printed dimension
-            {canonicalDimensionCount === 1 ? "" : "s"}. Source scale and all
-            critical review items passed validation.
+            {canonicalDimensionCount} recorded dimension
+            {canonicalDimensionCount === 1 ? "" : "s"}. Scale and critical review items passed software checks; whole-plan accuracy still depends on the source and your review.
           </p>
           <p className={`mt-2 text-xs leading-5 ${subtle}`}>
             {sourceDeletionPending

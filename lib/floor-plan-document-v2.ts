@@ -343,6 +343,8 @@ export type FloorPlanVerificationV2 = {
   criticalIssueIds: string[];
   approvedBy?: string;
   approvedAt?: string;
+  /** Consumer review record only; never a source/construction verification tier. */
+  planningReview?: { reviewerId: string; reviewedAt: string; revisionId: string; geometryHash: string };
 };
 
 export type FloorPlanDocumentV2 = {

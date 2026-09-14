@@ -173,7 +173,7 @@
       "limit": 250
     },
     "components/editor/design-page/ImportedFloorPlanWallEditor.tsx": {
-      "lines": 264,
+      "lines": 251,
       "limit": 250
     },
     "components/editor/design-page/LightingSettingsControls.tsx": {
@@ -253,7 +253,7 @@
       "limit": 250
     },
     "components/editor/FloorPlanImportAssistant.tsx": {
-      "lines": 785,
+      "lines": 782,
       "limit": 250
     },
     "components/editor/FloorPlanImportHistory.tsx": {
@@ -1797,11 +1797,11 @@
     "components/editor/design-page/ImportedFloorPlanWallEditor.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 221
+        "maximum": 207
       },
       "complexFunctions": {
         "count": 1,
-        "maximum": 51
+        "maximum": 48
       }
     },
     "components/editor/design-page/JaronConfigurationSelector.tsx": {
@@ -2195,7 +2195,7 @@
     "components/editor/FloorPlanImportAssistant.tsx": {
       "overlongFunctions": {
         "count": 2,
-        "maximum": 747
+        "maximum": 744
       },
       "complexFunctions": {
         "count": 1,

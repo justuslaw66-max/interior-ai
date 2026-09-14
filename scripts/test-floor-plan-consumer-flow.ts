@@ -718,7 +718,7 @@ assert.match(
 );
 assert.match(
   assistant,
-  /Current design unchanged[\s\S]*?Create editable plan/,
+  /Current design unchanged[\s\S]*?Confirm review & create editable plan/,
   "The ready state should make the editable outcome and non-destructive creation clear."
 );
 assert.doesNotMatch(
@@ -733,8 +733,8 @@ assert.match(
 );
 assert.match(
   assistant,
-  /Accuracy baseline passed:[\s\S]*?canonical room[\s\S]*?exact[\s\S]*?printed dimension/,
-  "The ready state should report the room and exact-dimension baseline that passed."
+  /Import checks passed:[\s\S]*?canonical room[\s\S]*?recorded dimension[\s\S]*?whole-plan accuracy still depends on the source and your review/,
+  "Software checks must not be presented as independent whole-plan accuracy certification."
 );
 assert.match(
   assistant,

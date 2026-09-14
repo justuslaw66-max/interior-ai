@@ -539,7 +539,7 @@ test("state transitions focus ready, failure, and image upload", async ({ page }
   await expect(retry).toBeFocused();
   state.job = importJob("ready", minimalDocument(true));
   await retry.click();
-  await expect(page.getByRole("button", { name: "Create editable plan" })).toBeFocused();
+  await expect(page.getByRole("button", { name: "Confirm review & create editable plan" })).toBeFocused();
 
   await page.keyboard.press("Escape");
   state.job = null;

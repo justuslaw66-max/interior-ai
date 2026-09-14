@@ -1,5 +1,6 @@
 import { registeredImportUnderlay } from "@/lib/floor-plan-imports/registered-underlay";
 import { lockImportForConfirmation } from "@/lib/floor-plan-imports/confirmation-retention";
+import { recordFloorPlanPlanningReview } from "@/lib/floor-plan-planning-review";
 import { NextResponse } from "next/server";
 import type { Prisma } from "@prisma/client";
 import { auth } from "@/lib/auth";
@@ -105,7 +106,7 @@ export async function POST(
     if (!source || source.sha256 !== job.sourceAsset.sha256) {
       return error("The floor-plan candidate is not bound to its uploaded source", 409);
     }
-    canonicalDesign = canonicalFloorPlanToDesignSnapshot(compiled.document, {
+    canonicalDesign = canonicalFloorPlanToDesignSnapshot(recordFloorPlanPlanningReview(compiled.document, userId), {
       title: title || "Imported floor plan",
       sourceJobId: id,
       sourceAssetSha256: job.sourceAsset.sha256,

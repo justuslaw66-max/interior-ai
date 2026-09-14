@@ -6,6 +6,7 @@ import { exerciseOpeningGestures } from "./opening-gesture-journey";
 import { exerciseWallGestures } from "./wall-gesture-journey";
 import { test, expect, type Page } from "@playwright/test";
 import { authoredApartment } from "../../scripts/fixtures/scan-to-editable-plan/apartment";
+import { recordFloorPlanPlanningReview } from "../../lib/floor-plan-planning-review";
 import { canonicalFloorPlanToDesignSnapshot } from "../../lib/floor-plan-legacy-adapters";
 import { snapshotToStored, type StoredDesign } from "../../lib/room-persistence";
 import { compileCanonicalFloorPlanRenderModel } from "../../lib/floor-plan-render-model";
@@ -29,7 +30,7 @@ test("Consumer shared-wall merge, attached partition, opening edit, undo/redo, 3
   const errors: string[] = [];
   page.on("pageerror", (error) => errors.push(error.message));
   page.on("console", (entry) => { if (entry.type() === "error" && /same key|Each child in a list/.test(entry.text())) errors.push(entry.text()); });
-  const snapshot = canonicalFloorPlanToDesignSnapshot(authoredApartment()).snapshot;
+  const snapshot = canonicalFloorPlanToDesignSnapshot(recordFloorPlanPlanningReview(authoredApartment(), "authored-reviewer", "2026-09-15T00:00:00Z")).snapshot;
   snapshot.rooms.find(({ id }) => id === "bedroom")!.layoutVersions = [{ id: "source-layout", name: "Desk layout", source: "manual", timestamp: 1,
     items: [{ instanceId: "saved-desk", productId: "authored-desk", variantId: "default", position: [0, 0, -0.5] }], zones: [], summary: { itemCount: 1, zoneCount: 0 } }];
   await page.addInitScript(({ key, initial }) => {
@@ -40,6 +41,7 @@ test("Consumer shared-wall merge, attached partition, opening edit, undo/redo, 3
   await page.getByRole("button", { name: "Yes, it matches", exact: true }).click();
   await page.getByTestId("editor-view-2d").click();
   const panel = page.getByTestId("imported-wall-editor");
+  await expect(panel.getByTestId("floor-plan-review-status")).toHaveText("User-reviewed for planning");
   await panel.getByTestId("request-edit-imported-walls").click();
   await panel.getByTestId("confirm-edit-local-floor-plan").click();
   await panel.getByLabel("Wall", { exact: true }).selectOption("shared");
@@ -48,12 +50,15 @@ test("Consumer shared-wall merge, attached partition, opening edit, undo/redo, 3
   await panel.getByRole("checkbox").check();
   await panel.getByRole("button", { name: "Remove proposed wall", exact: true }).click();
   await roomCount(page, 1);
+  await expect(panel.getByTestId("floor-plan-review-status")).toHaveText("Needs review");
   expect((await saved(page)).floorPlan?.canonicalDocument?.floors[0].openings.map(({ id }) => id)).toEqual(["window"]);
   await page.getByRole("button", { name: /^Undo/ }).click();
   await roomCount(page, 2);
+  await expect(panel.getByTestId("floor-plan-review-status")).toHaveText("User-reviewed for planning");
   expect((await saved(page)).floorPlan?.canonicalDocument?.floors[0].openings.map(({ id }) => id)).toEqual(["door", "window"]);
   await page.getByRole("button", { name: /^Redo/ }).click();
   await roomCount(page, 1);
+  await expect(panel.getByTestId("floor-plan-review-status")).toHaveText("Needs review");
   const mergedGeometry = (await saved(page)).floorPlan?.canonicalDocument;
   await panel.locator("summary", { hasText: "Recover a room layout" }).click();
   await panel.getByRole("button", { name: "Recover saved layout", exact: true }).click();
