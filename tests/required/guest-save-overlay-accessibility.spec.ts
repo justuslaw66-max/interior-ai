@@ -351,12 +351,29 @@ test("Save keyboard lifecycle returns across responsive remount and blocks dupli
   await page.reload({ waitUntil: "domcontentloaded" });
   await expect(page.getByTestId("scene-canvas")).toHaveAttribute("data-client-hydrated", "true");
   dialog = await openSavePrompt(page, "keyboard");
-  await page.getByTestId("guest-save-prompt-primary").evaluate((button) => {
-    (button as HTMLButtonElement).click();
-    (button as HTMLButtonElement).click();
+  // The synthetic sign-in returns to this same URL. Only a new document
+  // loses this observational marker; history changes and iframes cannot pass.
+  await page.evaluate(() => {
+    Object.defineProperty(document, "__guestSaveBeforeSignIn", { value: true });
   });
-  await expect(dialog).toHaveCount(0);
-  await expect.poll(() => boundaries.calls.claim).toBe(1);
+  await Promise.all([
+    page.waitForFunction(
+      (returnURL) =>
+        !Object.hasOwn(document, "__guestSaveBeforeSignIn") &&
+        window.location.href === returnURL &&
+        document.readyState !== "loading",
+      page.url()
+    ).then((handle) => handle.dispose()),
+    (async () => {
+      await page.getByTestId("guest-save-prompt-primary").evaluate((button) => {
+        (button as HTMLButtonElement).click();
+        (button as HTMLButtonElement).click();
+      });
+      await expect(dialog).toHaveCount(0);
+      await expect.poll(() => boundaries.calls.claim).toBe(1);
+    })(),
+  ]);
+  await expect(page.getByTestId("scene-canvas")).toHaveAttribute("data-client-hydrated", "true");
 
   await page.reload({ waitUntil: "domcontentloaded" });
   await expect(page.getByTestId("scene-canvas")).toHaveAttribute("data-client-hydrated", "true");

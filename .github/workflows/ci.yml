@@ -347,7 +347,24 @@ jobs:
           retention-days: 14
 
       - name: Run required cart overlay accessibility matrix
+        id: cart-overlay
         run: npm run test:cart-overlay-accessibility-required
+
+      - name: Prepare Cart failure diagnostics
+        id: cart-diagnostics
+        if: failure() && steps.cart-overlay.outcome == 'failure'
+        env:
+          CART_MATRIX_OUTCOME: ${{ steps.cart-overlay.outcome }}
+        run: node tests/e2e/cart-diagnostics-upload.mjs
+
+      - name: Upload Cart failure diagnostics
+        if: failure() && steps.cart-overlay.outcome == 'failure' && steps.cart-diagnostics.outcome == 'success' && steps.cart-diagnostics.outputs.has_payload == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: cart-overlay-diagnostics-${{ github.run_id }}-${{ github.run_attempt }}
+          path: .local/cart-diagnostics-upload/
+          if-no-files-found: error
+          retention-days: 14
 
       - name: Run required Retailer Confirmation accessibility matrix
         run: npm run test:retailer-confirmation-accessibility-required
