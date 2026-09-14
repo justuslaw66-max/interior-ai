@@ -2,8 +2,6 @@
 
 import {
   useCallback,
-  useRef,
-  useState,
   type Dispatch,
   type MutableRefObject,
   type SetStateAction,
@@ -19,12 +17,15 @@ import {
 } from "@/lib/floor-plan-consumer-wall-edit";
 import type { FixedElement2D, RoomOpening2D } from "@/lib/editorScene";
 import type { DesignSnapshot } from "@/lib/room-types";
+import { commitCurrentWallGesture } from "@/lib/floor-plan-wall-gesture";
+import { useDesignPageWallEditSession } from "@/lib/useDesignPageWallEditSession";
 import { useDesignPageRoomRecovery } from "@/lib/useDesignPageRoomRecovery";
 import type { RecoverProposedRoomLayoutInput } from "@/lib/floor-plan-room-recovery";
 
 type FunctionalStateAction<T> = T | ((previous: T) => T);
 
 export type ImportedWallEditingState = {
+  selection: { floorId: string; wallId: string };
   proposal: NonNullable<DesignSnapshot["floorPlan"]>["proposal"];
   available: boolean;
   confirmationPending: boolean;
@@ -36,6 +37,8 @@ export type ImportedWallEditingState = {
 };
 
 export type ImportedWallEditingActions = {
+  selectWall: (floorId: string, wallId: string) => void;
+  commitWallGesture: (operation: ConsumerWallTopologyMutationV2, expectedRevisionId: string) => boolean;
   recoverLayout: (input: RecoverProposedRoomLayoutInput) => boolean;
   applyProposalMutation: (operation: ConsumerWallTopologyMutationV2) => boolean;
   requestEditing: () => void;
@@ -107,43 +110,8 @@ export function useDesignPageImportedWallEditingController({
   refs,
   actions,
 }: UseDesignPageImportedWallEditingControllerInput): DesignPageImportedWallEditingController {
-  const [wallEditSession, setWallEditSession] = useState({
-    sessionKey: "none",
-    confirmationPending: false,
-    editingEnabled: false,
-  });
-  const sequenceRef = useRef(0);
-  const document = state.designSnapshot.floorPlan?.canonicalDocument ?? null;
-  const sourceRevisionId = document
-    ? state.designSnapshot.floorPlan?.revisionId ??
-      document.parentRevisionId ??
-      document.revisionId
-    : null;
-  const sessionKey = document && sourceRevisionId
-    ? `${document.id}:${sourceRevisionId}`
-    : "none";
-  const available = Boolean(
-    document && state.canEdit && !state.isClientPreview && state.viewMode === "2d"
-  );
-  const sessionIsCurrent = wallEditSession.sessionKey === sessionKey;
-  const confirmationPending = Boolean(
-    available && sessionIsCurrent && wallEditSession.confirmationPending
-  );
-  const editingEnabled = Boolean(
-    available && sessionIsCurrent && wallEditSession.editingEnabled
-  );
-
-  const nextIdentity = useCallback((kind: ConsumerWallTopologyMutationV2["kind"]) => {
-    sequenceRef.current += 1;
-    const timestamp = Date.now();
-    const suffix = `${timestamp.toString(36)}:${sequenceRef.current}`;
-    return {
-      timestamp,
-      suffix,
-      mutationId: `consumer-wall-edit:${kind}:${suffix}`,
-      revisionId: `local-floor-plan:${suffix}`,
-    };
-  }, []);
+  const session = useDesignPageWallEditSession(state);
+  const { document, sourceRevisionId, available, confirmationPending, editingEnabled, nextIdentity } = session;
   const recoverLayout = useDesignPageRoomRecovery({ enabled: editingEnabled, refs, actions });
 
   const commit = useCallback(
@@ -230,6 +198,7 @@ export function useDesignPageImportedWallEditingController({
 
   return {
     state: {
+      selection: session.selection,
       proposal: state.designSnapshot.floorPlan?.proposal,
       available,
       confirmationPending,
@@ -244,14 +213,8 @@ export function useDesignPageImportedWallEditingController({
     },
     actions: {
       applyProposalMutation: commit,
-      requestEditing: () => {
-        if (available) setWallEditSession({ sessionKey, confirmationPending: true, editingEnabled: false });
-      },
-      cancelEditingRequest: () => setWallEditSession({ sessionKey, confirmationPending: false, editingEnabled: false }),
-      confirmEditing: () => {
-        if (available && confirmationPending) setWallEditSession({ sessionKey, confirmationPending: false, editingEnabled: true });
-      },
-      stopEditing: () => setWallEditSession({ sessionKey, confirmationPending: false, editingEnabled: false }),
+      ...session.actions,
+      commitWallGesture: (operation, revisionId) => commitCurrentWallGesture(refs.designSnapshot.current, revisionId, operation, commit, actions.showToast),
       moveVertex, moveWall, updateWall, splitWall, recoverLayout,
     },
   };

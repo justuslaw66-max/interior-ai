@@ -7,6 +7,7 @@ import { snapshotToStored, storedToSnapshot } from "@/lib/room-persistence";
 import { changedOpeningFormFields, proposedOpeningForm } from "@/lib/floor-plan-opening-form";
 import { applyFloorPlanTopologyMutationV2 } from "@/lib/floor-plan-topology-mutations";
 import { restoreLayoutVersion } from "@/lib/layout-versions";
+import { commitCurrentWallGesture } from "@/lib/floor-plan-wall-gesture";
 import { recoverProposedRoomLayout } from "@/lib/floor-plan-room-recovery";
 
 const document = authoredApartment();
@@ -96,3 +97,12 @@ const windowForm = proposedOpeningForm(document.floors[0], sourceWindow);
 assert.equal(windowForm.sillHeightMm, document.floors[0].defaults.windowSillHeight.valueMm);
 assert.deepEqual(changedOpeningFormFields(document.floors[0], sourceWindow, { ...windowForm, offsetMm: 1100 }), { offsetMm: 1100 });
 console.log("PASS: consumer private proposal merge/split, reference immutability, exact world positions, room recovery, integer dimensions and saved reload.");
+
+const staleGesture = { kind: "move_wall", floorId: "apartment", wallId: "shared", deltaXMm: 10, deltaZMm: 0 } as const;
+const gestureCommits: ConsumerWallTopologyMutationV2[] = [], gestureMessages: string[] = [];
+const recordCommit = (operation: ConsumerWallTopologyMutationV2) => { gestureCommits.push(operation); return true; };
+assert.equal(commitCurrentWallGesture(merged, original.floorPlan!.canonicalDocument!.revisionId, staleGesture, recordCommit, (message) => gestureMessages.push(message)), false);
+assert.equal(gestureCommits.length, 0, "A stale gesture must not reach the canonical mutation/history owner");
+assert.match(gestureMessages[0], /plan changed/);
+assert.equal(commitCurrentWallGesture(merged, merged.floorPlan!.canonicalDocument!.revisionId, staleGesture, recordCommit, () => undefined), true);
+assert.deepEqual(gestureCommits, [staleGesture]);

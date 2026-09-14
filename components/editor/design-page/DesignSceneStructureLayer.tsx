@@ -30,7 +30,8 @@ import type { FloorPlanQualityIssue } from "@/lib/floor-plan-quality";
 import type { DesignPageEditorMode } from "@/lib/useDesignPagePanelMode";
 import type { RendererSurfaceTarget } from "@/lib/useDesignPageSurfaceActions";
 import type { FloorPlanDocumentV2 } from "@/lib/floor-plan-document-v2";
-import { compileCanonicalFloorPlanRenderModel } from "@/lib/floor-plan-render-model";
+import { resolveCanonicalSceneModel } from "@/lib/floor-plan-scene-model-resolution";
+import type { CanonicalWallGestureControls } from "@/lib/floor-plan-wall-gesture";
 
 type UnderlayRendererProps = ComponentProps<typeof PlanUnderlayRenderer2D>;
 type PlanRendererProps = ComponentProps<typeof RoomRenderer2D>;
@@ -69,6 +70,7 @@ export type DesignSceneStructureLayerState = {
     qualityIssues: FloorPlanQualityIssue[];
     canonicalDocument: FloorPlanDocumentV2 | null;
     canonicalGeometryHash: string | null;
+    wallEditing?: Pick<CanonicalWallGestureControls, "enabled" | "selectedWallId">;
   };
   wholeHome: {
     enabled: boolean;
@@ -121,6 +123,7 @@ export type DesignSceneStructureLayerConfiguration = {
 };
 
 export type DesignSceneStructureLayerActions = {
+  walls?: Pick<CanonicalWallGestureControls, "select" | "commit" | "setDragging">;
   underlay: {
     addCalibrationPoint: NonNullable<
       UnderlayRendererProps["onCalibrationPoint"]
@@ -195,27 +198,8 @@ export function DesignSceneStructureLayer({
   actions,
   focusRoomId = null,
 }: DesignSceneStructureLayerProps) {
-  const canonicalResolution = useMemo(() => {
-    if (!state.plan.canonicalDocument) return { plan: null, error: null };
-    try {
-      return {
-        plan: compileCanonicalFloorPlanRenderModel(
-          state.plan.canonicalDocument,
-          state.plan.canonicalGeometryHash
-        ),
-        error: null,
-      };
-    } catch (cause) {
-      console.error("Canonical floor-plan render model rejected", cause);
-      return {
-        plan: null,
-        error:
-          cause instanceof Error
-            ? cause.message
-            : "Canonical floor-plan integrity check failed",
-      };
-    }
-  }, [state.plan.canonicalDocument, state.plan.canonicalGeometryHash]);
+  const canonicalResolution = useMemo(() => resolveCanonicalSceneModel(state.plan.canonicalDocument, state.plan.canonicalGeometryHash),
+    [state.plan.canonicalDocument, state.plan.canonicalGeometryHash]);
   const canonicalPlan = canonicalResolution.plan;
   const canonicalActiveFloorId =
     canonicalPlan?.floors.find(
@@ -289,6 +273,7 @@ export function DesignSceneStructureLayer({
           onTraceOpeningPoint={actions.underlay.addOpeningTracePoint}
         />
         <RoomRenderer2D
+          canonicalWallEditing={resolveWallGestureControls(plan.wallEditing, actions.walls)}
           width={plan.width}
           depth={plan.depth}
           rooms={plan.rooms}
@@ -452,4 +437,8 @@ export function DesignSceneStructureLayer({
       renderQuality={configuration.renderQuality}
     />
   );
+}
+
+function resolveWallGestureControls(state: DesignSceneStructureLayerState["plan"]["wallEditing"], actions: DesignSceneStructureLayerActions["walls"]): CanonicalWallGestureControls | undefined {
+  return state && actions ? { ...state, ...actions } : undefined;
 }

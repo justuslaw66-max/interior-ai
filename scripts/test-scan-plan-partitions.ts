@@ -12,6 +12,7 @@ import { projectLegacyOpeningGestureToCanonicalWallV2 } from "@/lib/floor-plan-t
 import { mapPlanOpeningsToRoomRenderer } from "@/lib/design-page-plan-overlay-projections";
 import { buildOpeningRenderSegments } from "@/components/editor/renderers/room-renderer-2d-opening-geometry";
 import { validateDesignPageOpeningPlacement } from "@/lib/design-page-opening-placement";
+import { buildWallGestureDraft } from "@/lib/floor-plan-wall-gesture";
 import { proposedWallLengthEndpoint } from "@/lib/floor-plan-wall-length";
 
 let sequence = 0;
@@ -53,6 +54,27 @@ assert.equal(diagonal.solids[0].topMm, 1100);
 assert.equal(diagonal.centerlineSegments[0].start.xMm, 6100);
 assert.equal(diagonal.centerlineSegments[0].end.zMm, 2700);
 assert.equal(compileFloorPlanDocumentV2(JSON.parse(JSON.stringify(moved.document))).geometryHash, model.geometryHash);
+const gestureInput = { floorId: "apartment", wallId: "diagonal", path: diagonal.path,
+  start: diagonal.centerlineSegments[0].start, end: diagonal.centerlineSegments[0].end, mode: "wall" as const, delta: { xMm: 101.4, zMm: -52.8 } };
+const translation = buildWallGestureDraft(gestureInput)!;
+assert.deepEqual(translation.start, { xMm: 6201, zMm: 1147 });
+assert.deepEqual(translation.end, { xMm: 7701, zMm: 2647 });
+const gestureMoved = mutate(moved.document, translation.operation);
+assert.deepEqual(compileCanonicalFloorPlanRenderModel(gestureMoved.document).floors[0].walls.find(({ id }) => id === "diagonal")!.centerlineSegments[0].start, translation.start);
+for (const mode of ["start", "end"] as const) {
+  const draft = buildWallGestureDraft({ ...gestureInput, mode })!;
+  const edited = mutate(moved.document, draft.operation);
+  const editedWall = compileCanonicalFloorPlanRenderModel(JSON.parse(JSON.stringify(edited.document))).floors[0].walls.find(({ id }) => id === "diagonal")!;
+  assert.deepEqual(editedWall.centerlineSegments[0].start, draft.start);
+  assert.deepEqual(editedWall.centerlineSegments[0].end, draft.end);
+  assert.deepEqual(mode === "start" ? draft.end : draft.start, mode === "start" ? gestureInput.end : gestureInput.start);
+}
+for (const delta of [{ xMm: 0.4, zMm: -0.4 }, { xMm: Infinity, zMm: 0 }, { xMm: Number.MAX_SAFE_INTEGER, zMm: 0 }]) {
+  assert.equal(buildWallGestureDraft({ ...gestureInput, delta }), null);
+}
+assert.equal(buildWallGestureDraft({ ...gestureInput, path: { kind: "arc", startVertexId: "p", endVertexId: "q", centerVertexId: "arc-center", clockwise: true } }), null, "Curved walls must not be silently converted to a chord drag");
+const zeroLength = buildWallGestureDraft({ ...gestureInput, mode: "end", delta: { xMm: -1500, zMm: -1500 } })!;
+assert.throws(() => mutate(moved.document, zeroLength.operation), /zero|length|invalid|compile/i);
 const lengthDraft = proposedWallLengthEndpoint(moved.document.floors[0], moved.document.floors[0].walls.find(({ id }) => id === "diagonal")!, 2500)!;
 assert.deepEqual(lengthDraft.to, { xMm: 7868, zMm: 2968 });
 assert(Math.abs(lengthDraft.actualLengthMm - 2500) < 0.71, "Report integer endpoint rounding instead of claiming an exact unattainable length");

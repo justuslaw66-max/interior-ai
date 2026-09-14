@@ -57,6 +57,9 @@ import {
   surfaceMaterialFallbackColor,
 } from "./canonical-floor-plan/surfaceMaterials";
 import { useCanonicalCameraCutawayWallKeys } from "./canonical-floor-plan/useCameraCutaway";
+import type { CanonicalWallGestureControls } from "@/lib/floor-plan-wall-gesture";
+import { CanonicalWallGestureOverlay } from "./canonical-floor-plan/CanonicalWallGestureOverlay";
+import { CanonicalWallSegments2D } from "./canonical-floor-plan/CanonicalWallSegments2D";
 import { GeneratedWindowFrame3D } from "./GeneratedWindowFrame3D";
 
 export type { CanonicalOpeningDragMetricsV2 } from "./canonical-floor-plan/openingDrag";
@@ -948,6 +951,7 @@ function CanonicalOpening3DSymbol({
 }
 
 type CanonicalFloorPlanWalls2DProps = {
+  wallEditing?: CanonicalWallGestureControls;
   model: CanonicalFloorPlanRenderModel;
   activeFloorId?: string | null;
   /** One-based editor floor level (`canonical floor.levelIndex + 1`). */
@@ -973,7 +977,7 @@ type CanonicalFloorPlanWalls2DProps = {
 };
 
 export function CanonicalFloorPlanWalls2D({
-  model,
+  model, wallEditing,
   activeFloorId = null,
   activeFloorLevel,
   activeRoomId,
@@ -988,12 +992,11 @@ export function CanonicalFloorPlanWalls2D({
   onEditOpening,
   onOpeningDragStateChange,
 }: CanonicalFloorPlanWalls2DProps) {
-  const wallColor = theme === "pro" ? "#a1a1aa" : "#b8b0a1";
-  const activeWallColor = "#16a34a";
   const activeFloor = resolveCanonicalFloorPlan2DActiveFloor(model, {
     floorId: activeFloorId,
     floorLevel: activeFloorLevel,
   });
+  const selectedWall = wallEditing?.enabled ? activeFloor?.walls.find(({ id }) => id === wallEditing.selectedWallId) : null;
   return (
     <group
       userData={{
@@ -1014,48 +1017,11 @@ export function CanonicalFloorPlanWalls2D({
             theme={theme}
           />
         ))}
-      {activeFloor?.walls.flatMap((wall) => {
-        const roomId = preferredRoomId(wall.adjacentRoomIds, activeRoomId);
-        const color = roomId === activeRoomId ? activeWallColor : wallColor;
-        return wall.planSegments.map((segment) => {
-          const geometry = segmentTransform(segment);
-          return (
-            <mesh
-              key={`${activeFloor.id}:wall:${wall.id}:segment:${segment.startOffsetMm}:${segment.endOffsetMm}`}
-              position={[geometry.centerX, 0.009, geometry.centerZ]}
-              rotation-y={geometry.rotationY}
-              raycast={interactive ? undefined : () => null}
-              userData={{
-                testId: "canonical-wall-2d",
-                canonicalFloorId: activeFloor.id,
-                canonicalWallId: wall.id,
-                canonicalPathKind: wall.path.kind,
-                canonicalThicknessMm: wall.thicknessMm,
-                canonicalGeometryHash: model.geometryHash,
-              }}
-              onClick={
-                interactive
-                  ? (event: CanonicalPointerEvent) => {
-                      event.stopPropagation();
-                      if (onSelectWall) onSelectWall(wall.id, roomId);
-                      else if (roomId) onSelectRoom?.(roomId);
-                      onSelectOpening?.(null);
-                    }
-                  : undefined
-              }
-            >
-              <boxGeometry
-                args={[
-                  geometry.length,
-                  0.018,
-                  Math.max(0.01, wall.thicknessMm / 1000),
-                ]}
-              />
-              <meshBasicMaterial color={color} />
-            </mesh>
-          );
-        });
-      })}
+      {activeFloor && <CanonicalWallSegments2D floor={activeFloor} geometryHash={model.geometryHash}
+        activeRoomId={activeRoomId} theme={theme} interactive={interactive} wallEditing={wallEditing}
+        onSelectWall={onSelectWall} onSelectRoom={onSelectRoom} onSelectOpening={onSelectOpening} />}
+      {activeFloor && selectedWall && wallEditing && <CanonicalWallGestureOverlay key={`${activeFloor.id}:${selectedWall.id}`}
+        wall={selectedWall} floorId={activeFloor.id} revisionId={model.revisionId} controls={wallEditing} />}
 
       {showOpenings &&
         activeFloor?.walls.flatMap((wall) =>

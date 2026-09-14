@@ -30,12 +30,12 @@ export function ImportedFloorPlanWallEditor({
   actions,
 }: ImportedFloorPlanWallEditorProps) {
   const document = state.document;
-  const [floorId, setFloorId] = useState("");
-  const [wallId, setWallId] = useState("");
+  const { floorId, wallId } = state.selection;
+  const setFloorId = (id: string) => actions.selectWall(id, document?.floors.find((floor) => floor.id === id)?.walls[0]?.id ?? "");
+  const setWallId = (id: string) => actions.selectWall(floorId, id);
   const [deltaXMm, setDeltaXMm] = useState(0);
   const [deltaZMm, setDeltaZMm] = useState(0);
   const [vertexId, setVertexId] = useState("");
-
   const { floor, wall, wallLengthMm } = selectedWallGeometry(document, floorId, wallId);
   const selectionKey =
     document && floor && wall

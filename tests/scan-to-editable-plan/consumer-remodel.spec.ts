@@ -1,3 +1,4 @@
+import { exerciseWallGestures } from "./wall-gesture-journey";
 import { test, expect, type Page } from "@playwright/test";
 import { authoredApartment } from "../../scripts/fixtures/scan-to-editable-plan/apartment";
 import { canonicalFloorPlanToDesignSnapshot } from "../../lib/floor-plan-legacy-adapters";
@@ -92,6 +93,7 @@ test("Consumer shared-wall merge, attached partition, opening edit, undo/redo, 3
   await page.keyboard.press("Enter");
   await expect(panel.getByRole("button", { name: "Apply wall height", exact: true })).toBeFocused();
   await expect.poll(async () => (await saved(page)).floorPlan?.canonicalDocument?.floors[0].walls.find(({ id }) => id === diagonalId)?.heightMm).toBe(1100);
+  await exerciseWallGestures(page, diagonalId, () => saved(page), testInfo);
   await panel.locator("summary", { hasText: "Doors and windows" }).click();
   await panel.getByRole("combobox", { name: "Type", exact: true }).selectOption("window");
   await panel.getByRole("combobox", { name: "Operation", exact: true }).selectOption("fixed");
