@@ -13,6 +13,7 @@ import {
   type FloorPlanTopologyMutationErrorCodeV2,
   type FloorPlanVertexDraftV2,
   type FloorPlanWallSplitLineageV2,
+  type FloorPlanRoomSplitLineageV2,
 } from "@/lib/floor-plan-topology-mutation-types";
 
 const MUTATION_EXTRACTION_VERSION = "floor-plan-topology-editor-v1";
@@ -24,6 +25,7 @@ export type FloorPlanTopologyMutationStateV2 = {
   changedIds: Set<string>;
   operationIndex: number;
   wallSplits?: FloorPlanWallSplitLineageV2[];
+  roomSplits?: FloorPlanRoomSplitLineageV2[];
 };
 
 type FloorEntityCollection =

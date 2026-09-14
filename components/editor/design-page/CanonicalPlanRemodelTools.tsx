@@ -42,13 +42,13 @@ function AddPartition({ floor, commit }: Omit<Props, "wall">) {
       thicknessMm: values.thickness, heightMm: values.height, newRoomId: `room-${suffix}`, newRoomName: values.roomName });
   };
   return <details><summary className="cursor-pointer font-semibold">Add a wall</summary>
-    <p className="my-2">Enter centreline endpoints. A point exactly on a straight wall creates a junction automatically. A boundary-to-boundary partition divides the room; partial partitions keep it open.</p>
+    <p className="my-2">Enter centreline endpoints. A point exactly on a straight wall creates a junction automatically. A boundary-to-boundary partition or closed interior loop creates a room; partial partitions keep it open.</p>
     <div className="grid grid-cols-2 gap-2">
       <Millimetres label="Start X" value={values.x1} change={(v) => set("x1", v)} /><Millimetres label="Start Z" value={values.z1} change={(v) => set("z1", v)} />
       <Millimetres label="End X" value={values.x2} change={(v) => set("x2", v)} /><Millimetres label="End Z" value={values.z2} change={(v) => set("z2", v)} />
       <Millimetres label="Thickness" value={values.thickness} change={(v) => set("thickness", v)} min={1} /><Millimetres label="Proposed height" value={values.height} change={(v) => set("height", v)} min={1} />
       <label className="col-span-2">New room name if divided<input className={inputStyle} value={values.roomName} onChange={(event) => set("roomName", event.target.value)} /></label>
-      <p className="col-span-2">The existing name stays on the boundary side reached from start to end. The new room inherits the same finishes for review.</p>
+      <p className="col-span-2">For a dividing partition, the existing name stays on the boundary side reached from start to end. For an enclosed loop, it stays with the surrounding space. The new room inherits finishes for review.</p>
       <button type="button" className={`${buttonStyle} col-span-2`} onClick={add}>Add proposed wall</button>
     </div>
   </details>;

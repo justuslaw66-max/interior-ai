@@ -4061,7 +4061,7 @@
     "lib/floor-plan-topology-mutations.ts": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 62
+        "maximum": 61
       },
       "complexFunctions": {
         "count": 1,
@@ -4551,7 +4551,7 @@
     "lib/useDesignPageImportedWallEditingController.ts": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 114
+        "maximum": 110
       }
     },
     "lib/useDesignPageItemDocumentController.ts": {

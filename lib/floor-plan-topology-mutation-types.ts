@@ -158,7 +158,10 @@ export type FloorPlanTopologyMutationResultV2 = {
   changedEntityIds: string[];
   /** Accepted split lineage, including implicit attachment splits, for dependent projections. */
   wallSplits?: FloorPlanWallSplitLineageV2[];
+  roomSplits?: FloorPlanRoomSplitLineageV2[];
 };
+
+export type FloorPlanRoomSplitLineageV2 = { floorId: string; parentRoomId: string; newRoomId: string };
 
 export type FloorPlanWallSplitLineageV2 = {
   floorId: string;

@@ -165,7 +165,7 @@ export function applyConfirmedConsumerWallEditV2({
       "The local floor-plan edit did not preserve its immutable source revision."
     );
   }
-  const reconciled = preserveSplitWallFinishes(reconcileProposedRoomContent(snapshot, committed.snapshot, operation), result.wallSplits);
+  const reconciled = preserveSplitWallFinishes(reconcileProposedRoomContent(snapshot, committed.snapshot, operation, result.roomSplits), result.wallSplits);
   const issues = reviewProposedPlacements(reconciled, buildCanonicalFloorPlanRenderModel(result.scene));
   reconciled.floorPlan!.proposal!.reviewIssues = [...new Set([...reconciled.floorPlan!.proposal!.reviewIssues, ...issues])];
   return { ...committed, snapshot: reconciled };

@@ -1,3 +1,4 @@
+import { exerciseEnclosedRoom } from "./enclosed-room-journey";
 import { exerciseWallJoins } from "./wall-join-journey";
 import { exerciseOpeningGestures } from "./opening-gesture-journey";
 import { exerciseWallGestures } from "./wall-gesture-journey";
@@ -60,6 +61,7 @@ test("Consumer shared-wall merge, attached partition, opening edit, undo/redo, 3
   await roomCount(page, 1);
   await page.getByRole("button", { name: /^Redo/ }).click();
   await expect.poll(layoutCount).toBe(1);
+  await exerciseEnclosedRoom(page, () => saved(page), testInfo);
   await panel.locator("summary", { hasText: "Add a wall" }).click();
   for (const [label, value] of [["Start X (mm)", "3000"], ["Start Z (mm)", "0"], ["End X (mm)", "3000"], ["End Z (mm)", "6000"]]) {
     await panel.getByLabel(label, { exact: true }).fill(value);

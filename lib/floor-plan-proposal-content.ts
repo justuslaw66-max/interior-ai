@@ -1,5 +1,5 @@
 import type { DesignItem, DesignSnapshot, LayoutVersion, RoomSnapshot, ZoneMin } from "@/lib/room-types";
-import type { FloorPlanTopologyMutationV2 } from "@/lib/floor-plan-topology-mutation-types";
+import type { FloorPlanTopologyMutationV2, FloorPlanRoomSplitLineageV2 } from "@/lib/floor-plan-topology-mutation-types";
 import { isPointInPlanarRing } from "@/lib/floor-plan-planar-union";
 
 function containsWorldPoint(room: RoomSnapshot, point: [number, number, number]) {
@@ -54,7 +54,7 @@ function contentTargets(before: DesignSnapshot, after: DesignSnapshot, operation
 }
 
 /** Reconciles only editor projections; canonical geometry remains the transaction result. */
-export function reconcileProposedRoomContent(before: DesignSnapshot, after: DesignSnapshot, operation: FloorPlanTopologyMutationV2): DesignSnapshot {
+export function reconcileProposedRoomContent(before: DesignSnapshot, after: DesignSnapshot, operation: FloorPlanTopologyMutationV2, splits: readonly FloorPlanRoomSplitLineageV2[] = []): DesignSnapshot {
   const rooms = after.rooms.map((room) => ({ ...room, items: [] as DesignItem[], zones: [] as ZoneMin[] }));
   const next = { ...after, rooms };
   const recovery = [...(before.floorPlan?.proposal?.roomRecovery ?? [])];
@@ -75,7 +75,8 @@ export function reconcileProposedRoomContent(before: DesignSnapshot, after: Desi
   }
   for (const room of rooms.filter((candidate) => !before.rooms.some(({ id }) => id === candidate.id))) {
     const point: [number, number, number] = [room.planPosition?.x ?? 0, 0, room.planPosition?.z ?? 0];
-    const parent = before.rooms.find((candidate) => containsWorldPoint(candidate, point));
+    const lineage = splits.find(({ newRoomId }) => newRoomId === room.id);
+    const parent = before.rooms.find((candidate) => lineage ? candidate.id === lineage.parentRoomId : containsWorldPoint(candidate, point));
     room.surfaces = parent?.surfaces;
     room.surfaceFinishes = parent?.surfaceFinishes;
     issues.add(`New room ${room.name} inherits its parent's finishes. Review the association in Surfaces.`);

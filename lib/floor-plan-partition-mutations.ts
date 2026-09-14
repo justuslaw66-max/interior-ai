@@ -5,7 +5,8 @@ import {
   inferredTopologyProvenance, topologyMutationFail as fail,
   type FloorPlanTopologyMutationStateV2 as State,
 } from "@/lib/floor-plan-topology-mutation-support";
-import { divideRoomAtAddedWall, mergeRoomsAtRemovedWall, partitionLoopPoints, refreshPartitionAdjacency } from "@/lib/floor-plan-partition-rooms";
+import { divideRoomAtAddedWall, mergeRoomsAtRemovedWall, refreshPartitionAdjacency } from "@/lib/floor-plan-partition-rooms";
+import { partitionLoopPoints } from "@/lib/floor-plan-partition-boundaries";
 import { isPointInPlanarRing } from "@/lib/floor-plan-planar-union";
 import { attachPartitionEndpoint } from "@/lib/floor-plan-wall-attachment";
 

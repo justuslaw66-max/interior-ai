@@ -335,8 +335,7 @@ export function applyFloorPlanTopologyMutationsV2(
   try {
     const scene = compileFloorPlanDocumentV2(document);
     return {
-      document,
-      scene,
+      document, scene, ...(state.roomSplits?.length ? { roomSplits: state.roomSplits } : {}),
       changedEntityIds: [...state.changedIds].sort(), ...(state.wallSplits?.length ? { wallSplits: state.wallSplits } : {}),
     };
   } catch (error) {

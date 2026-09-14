@@ -8,6 +8,8 @@ import { changedOpeningFormFields, proposedOpeningForm } from "@/lib/floor-plan-
 import { applyFloorPlanTopologyMutationV2 } from "@/lib/floor-plan-topology-mutations";
 import { restoreLayoutVersion } from "@/lib/layout-versions";
 import { commitCurrentWallGesture } from "@/lib/floor-plan-wall-gesture";
+import { proposedWallEditFailureMessage } from "@/lib/floor-plan-wall-edit-feedback";
+import { FloorPlanTopologyMutationErrorV2 } from "@/lib/floor-plan-topology-mutation-types";
 import { recoverProposedRoomLayout } from "@/lib/floor-plan-room-recovery";
 
 const document = authoredApartment();
@@ -46,6 +48,32 @@ assert.equal(joinDivided.rooms.length, 2);
 assert.deepEqual(world(joinDivided), world(original), "Joining a partition preserves furniture in world space");
 assert.deepEqual(world(storedToSnapshot(JSON.parse(JSON.stringify(snapshotToStored(joinDivided))))), world(original));
 assert.deepEqual(joinDivided.floorPlan?.proposal?.originalDocument, document);
+function encloseConsumerRoom(snapshot: DesignSnapshot, prefix: string, points: number[][]) {
+  let current = snapshot;
+  for (let index = 0; index < points.length; index += 1) {
+    const next = (index + 1) % points.length;
+    const vertices = (index === 0 ? [0, 1] : index < points.length - 1 ? [next] : []).map((point) => ({ id: `${prefix}-v${point}`, xMm: points[point][0], zMm: points[point][1] }));
+    current = edit(current, { kind: "add_wall", floorId: "apartment", wallId: `${prefix}-w${index}`, startVertexId: `${prefix}-v${index}`, endVertexId: `${prefix}-v${next}`,
+      vertices, thicknessMm: 100, newRoomId: prefix, newRoomName: prefix });
+  }
+  return current;
+}
+const enclosedConsumer = encloseConsumerRoom(merged, "enclosed", [[1000, 1000], [3000, 1000], [3000, 4500], [1000, 4500]]);
+assert.equal(enclosedConsumer.rooms.find(({ id }) => id === "enclosed")!.items[0].instanceId, "sofa");
+assert.equal(enclosedConsumer.rooms.find(({ id }) => id === "living")!.items[0].instanceId, "desk");
+assert.deepEqual(world(enclosedConsumer), world(original));
+const nestedConsumer = encloseConsumerRoom(enclosedConsumer, "surrounding", [[500, 500], [3500, 500], [3500, 5000], [500, 5000]]);
+assert.deepEqual(nestedConsumer.rooms.find(({ id }) => id === "surrounding")!.surfaces, livingRoom.surfaces,
+  "Room split lineage preserves finishes even when the new room centre falls in an existing hole");
+assert.deepEqual(world(storedToSnapshot(JSON.parse(JSON.stringify(snapshotToStored(nestedConsumer))))), world(original));
+const reopenedConsumer = edit(nestedConsumer, { kind: "remove_wall", floorId: "apartment", wallId: "enclosed-w0", confirmedOpeningIds: [], keepRoomId: "surrounding" });
+assert.deepEqual(world(reopenedConsumer), world(original));
+assert.deepEqual(reopenedConsumer.floorPlan?.proposal?.originalDocument, document);
+assert(reopenedConsumer.floorPlan?.proposal?.roomRecovery.some(({ id }) => id === "enclosed"));
+const issue = { code: "OPENING_OUT_OF_BOUNDS", path: "floors[0].openings[0]", message: "Opening extends beyond its host wall.", severity: "error" as const };
+assert.equal(proposedWallEditFailureMessage(new FloorPlanTopologyMutationErrorV2("MUTATION_VALIDATION_FAILED", "Generic", [issue, issue])), issue.message);
+assert.equal(proposedWallEditFailureMessage(new Error("Choose a room")), "Choose a room");
+assert.equal(proposedWallEditFailureMessage(null), "The geometry is not valid.");
 const restoredLayout = restoreLayoutVersion(merged.rooms[0], merged.rooms[0].layoutVersions![0]);
 assert.deepEqual(world({ ...merged, rooms: [restoredLayout] }), world({ ...original, rooms: [livingRoom] }), "Saved-layout restoration preserves world position after room-origin changes");
 assert.equal(restoredLayout.zones[0].anchor![0] + restoredLayout.planPosition!.x, 1.5);

@@ -3,6 +3,8 @@ import { authoredApartment } from "./fixtures/scan-to-editable-plan/apartment";
 import { compileFloorPlanDocumentV2 } from "@/lib/floor-plan-compiler-v2";
 import { applyFloorPlanTopologyMutationV2, type FloorPlanTopologyMutationV2 } from "@/lib/floor-plan-topology-mutations";
 import type { FloorPlanDocumentV2 } from "@/lib/floor-plan-document-v2";
+import { buildCanonicalFloorSlabPolygons } from "@/lib/floor-plan-watertight-geometry";
+import { signedPlanarRingAreaSquareMm } from "@/lib/floor-plan-planar-union";
 import { compileCanonicalFloorPlanRenderModel } from "@/lib/floor-plan-render-model";
 import { canonicalFloorPlanToDesignSnapshot } from "@/lib/floor-plan-legacy-adapters";
 import { findCanonicalPlacementWall } from "@/lib/floor-plan-placement-boundaries";
@@ -36,6 +38,75 @@ assert.equal(merged.document.floors[0].openings.length, 1);
 assert.equal(JSON.stringify(original), frozen);
 assert(!compileCanonicalFloorPlanRenderModel(merged.document).floors[0].walls.some(({ id }) => id === "shared"));
 assert.throws(() => mutate(original, { kind: "remove_wall", floorId: "apartment", wallId: "west", confirmedOpeningIds: [] }), /replacement closed boundary/);
+
+function encloseRectangle(document: FloorPlanDocumentV2, prefix: string, low: number, high: number, reverse = false) {
+  const points = [{ xMm: low, zMm: low }, { xMm: high, zMm: low }, { xMm: high, zMm: high }, { xMm: low, zMm: high }];
+  if (reverse) points.reverse();
+  let current = document;
+  for (let index = 0; index < 4; index += 1) {
+    const next = (index + 1) % 4;
+    const vertices = index === 0 ? [{ id: `${prefix}-v0`, ...points[0] }, { id: `${prefix}-v1`, ...points[1] }]
+      : index < 3 ? [{ id: `${prefix}-v${next}`, ...points[next] }] : [];
+    const operation = { kind: "add_wall", floorId: "apartment", wallId: `${prefix}-w${index}`, startVertexId: `${prefix}-v${index}`,
+      endVertexId: `${prefix}-v${next}`, vertices, thicknessMm: 100, newRoomId: prefix, newRoomName: prefix } as const;
+    if (index === 3) {
+      const frozen = JSON.stringify(current);
+      assert.throws(() => mutate(current, { ...operation, newRoomName: "" }), /Name the new room/);
+      assert.equal(JSON.stringify(current), frozen);
+    }
+    current = mutate(current, operation).document;
+    assert.equal(current.floors[0].rooms.length, document.floors[0].rooms.length + (index === 3 ? 1 : 0));
+  }
+  return current;
+}
+for (const reverse of [false, true]) {
+  const enclosed = encloseRectangle(merged.document, "inner", 1000, 3000, reverse);
+  const floor = enclosed.floors[0], compiled = compileFloorPlanDocumentV2(enclosed);
+  assert.equal(compiled.floors[0].rooms.find(({ id }) => id === "inner")!.areaSquareMm, 4_000_000);
+  assert.equal(compiled.floors[0].rooms.reduce((sum, room) => sum + room.areaSquareMm, 0), 9260 * 6000);
+  assert.equal(floor.rooms.find(({ id }) => id === "living")!.wallLoops.filter(({ kind }) => kind === "hole").length, 1);
+  assert(floor.walls.filter(({ id }) => id.startsWith("inner-w")).every(({ adjacentRoomIds }) => adjacentRoomIds.length === 2));
+  assert.equal(compileFloorPlanDocumentV2(JSON.parse(JSON.stringify(enclosed))).geometryHash, compiled.geometryHash);
+  const slabArea = (document: FloorPlanDocumentV2) => buildCanonicalFloorSlabPolygons(compileCanonicalFloorPlanRenderModel(document).floors[0])
+    .reduce((sum, polygon) => sum + Math.abs(signedPlanarRingAreaSquareMm(polygon.outer)) - (polygon.holes ?? []).reduce((area, hole) => area + Math.abs(signedPlanarRingAreaSquareMm(hole)), 0), 0);
+  assert.equal(slabArea(enclosed), slabArea(merged.document), "3D floor footprint includes the inner room and preserves the whole slab");
+  const withDoor = mutate(enclosed, { kind: "add_opening", floorId: "apartment", opening: { id: "inner-door", wallId: "inner-w0", kind: "door",
+    operation: "swing", offsetMm: 400, widthMm: 800, hinge: "start", handing: "left" } }).document;
+  assert.throws(() => mutate(withDoor, { kind: "remove_wall", floorId: "apartment", wallId: "inner-w0", keepRoomId: "living", confirmedOpeningIds: [] }), /Review the current doors/);
+  for (const keepRoomId of ["living", "inner"]) {
+    const reopened = mutate(withDoor, { kind: "remove_wall", floorId: "apartment", wallId: "inner-w1", keepRoomId, confirmedOpeningIds: [] });
+    assert.equal(reopened.document.floors[0].rooms.length, 1);
+    assert.equal(reopened.document.floors[0].rooms[0].id, keepRoomId);
+    assert.equal(reopened.document.floors[0].rooms[0].wallLoops.length, 1, "Removing an enclosed boundary must remove its room hole");
+    assert.equal(reopened.scene.floors[0].rooms[0].areaSquareMm, 9260 * 6000);
+    assert(reopened.document.floors[0].openings.some(({ id }) => id === "inner-door"), "A door on a surviving partial wall remains");
+    assert(reopened.document.floors[0].walls.filter(({ id }) => id.startsWith("inner-w")).every(({ adjacentRoomIds }) => adjacentRoomIds.length === 0));
+  }
+  const curvedSource = mutate(enclosed, { kind: "remove_wall", floorId: "apartment", wallId: "inner-w3", keepRoomId: "living", confirmedOpeningIds: [] }).document;
+  const curveFloor = curvedSource.floors[0];
+  curveFloor.vertices.push({ id: "east-arc-centre", xMm: 9260, zMm: 3000, provenance: structuredClone(curveFloor.vertices[0].provenance) });
+  curveFloor.walls.find(({ id }) => id === "east")!.path = { kind: "arc", startVertexId: "c", endVertexId: "d", centerVertexId: "east-arc-centre", clockwise: true };
+  compileFloorPlanDocumentV2(curvedSource);
+  const beforeCurveClosure = JSON.stringify(curvedSource);
+  assert.throws(() => mutate(curvedSource, { kind: "add_wall", floorId: "apartment", wallId: "inner-w3", startVertexId: "inner-v3", endVertexId: "inner-v0",
+    thicknessMm: 100, newRoomId: "curved-child", newRoomName: "Curved child" }), /Curved boundaries are retained/);
+  assert.equal(JSON.stringify(curvedSource), beforeCurveClosure, "Unsupported closure preserves the curved geometry without straightening it");
+  const nested = encloseRectangle(enclosed, "around-inner", 500, 3500, reverse);
+  const nestedScene = compileFloorPlanDocumentV2(nested);
+  assert.equal(nestedScene.floors[0].rooms.find(({ id }) => id === "around-inner")!.areaSquareMm, 5_000_000);
+  assert.equal(nestedScene.floors[0].rooms.reduce((sum, room) => sum + room.areaSquareMm, 0), 9260 * 6000);
+  const nestedMerge = mutate(nested, { kind: "remove_wall", floorId: "apartment", wallId: "inner-w0", keepRoomId: "around-inner", confirmedOpeningIds: [] });
+  assert.equal(nestedMerge.scene.floors[0].rooms.find(({ id }) => id === "around-inner")!.areaSquareMm, 9_000_000);
+  const voidSource = structuredClone(enclosed);
+  voidSource.floors[0].rooms = voidSource.floors[0].rooms.filter(({ id }) => id !== "inner");
+  voidSource.floors[0].walls.forEach((wall) => { wall.adjacentRoomIds = wall.adjacentRoomIds.filter((id) => id !== "inner"); });
+  compileFloorPlanDocumentV2(voidSource);
+  const aroundVoid = encloseRectangle(voidSource, "around-void", 500, 3500, reverse);
+  assert.equal(compileFloorPlanDocumentV2(aroundVoid).floors[0].rooms.reduce((sum, room) => sum + room.areaSquareMm, 0), 9260 * 6000 - 4_000_000);
+  const voidMerge = mutate(aroundVoid, { kind: "remove_wall", floorId: "apartment", wallId: "around-void-w0", keepRoomId: "living", confirmedOpeningIds: [] });
+  assert.equal(voidMerge.scene.floors[0].rooms[0].areaSquareMm, 9260 * 6000 - 4_000_000);
+  assert.equal(voidMerge.document.floors[0].rooms[0].wallLoops.filter(({ kind }) => kind === "hole").length, 1, "An actual void remains after the surrounding rooms merge");
+}
 
 const split = mutate(merged.document, {
   kind: "add_wall", floorId: "apartment", wallId: "replacement", startVertexId: "b", endVertexId: "e", thicknessMm: 120,
@@ -173,7 +244,7 @@ if (slopedHost.status !== "resolved") throw new Error("Expected diagonal room-bo
 assert(slopedHost.host.tangent.x > 0 && slopedHost.host.tangent.z > 0);
 assert.equal(projectLegacyOpeningGestureToCanonicalWallV2({ snapshot: slopedProjection.snapshot, opening: slopedWindow,
   centerOffsetMm: slopedWindow.offsetMm + 100, widthMm: slopedWindow.widthMm }).offsetMm, 1100);
-assert.throws(() => mutate(partial.document, { kind: "add_wall", floorId: "apartment", wallId: "duplicate", startVertexId: "p", endVertexId: "q", thicknessMm: 100 }), /invalid canonical geometry/);
+assert.throws(() => mutate(partial.document, { kind: "add_wall", floorId: "apartment", wallId: "duplicate", startVertexId: "p", endVertexId: "q", thicknessMm: 100 }), /remove the overlapping wall/);
 const attached = mutate(merged.document, {
   kind: "add_wall", floorId: "apartment", wallId: "attached", startVertexId: "t1", endVertexId: "t2", thicknessMm: 100,
   vertices: [{ id: "t1", xMm: 3000, zMm: 0 }, { id: "t2", xMm: 3000, zMm: 6000 }], newRoomId: "office", newRoomName: "Office",

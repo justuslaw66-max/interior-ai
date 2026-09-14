@@ -1,10 +1,11 @@
 import type {
-  FloorPlanDirectedWallReferenceV2 as WallRef,
   FloorPlanFloorV2,
   FloorPlanRoomV2,
   FloorPlanRoomWallLoopV2,
   FloorPlanWallV2,
 } from "@/lib/floor-plan-document-v2";
+import { encloseRoomAtAddedWall } from "@/lib/floor-plan-enclosed-partition";
+import { partitionLoopPoints, partitionReferenceEnds as ends, mergePartitionLoops } from "@/lib/floor-plan-partition-boundaries";
 import { isPointInPlanarRing } from "@/lib/floor-plan-planar-union";
 import { partitionChain, reversePartitionChain } from "@/lib/floor-plan-partition-chain";
 import {
@@ -13,38 +14,6 @@ import {
   topologyMutationFail as fail,
   type FloorPlanTopologyMutationStateV2 as State,
 } from "@/lib/floor-plan-topology-mutation-support";
-
-function ends(floor: FloorPlanFloorV2, reference: WallRef) {
-  const wall = floor.walls.find(({ id }) => id === reference.wallId);
-  if (!wall) return fail("UNKNOWN_WALL", `Missing boundary wall ${reference.wallId}.`);
-  return reference.direction === "forward"
-    ? [wall.path.startVertexId, wall.path.endVertexId]
-    : [wall.path.endVertexId, wall.path.startVertexId];
-}
-
-export function partitionLoopPoints(floor: FloorPlanFloorV2, loop: FloorPlanRoomWallLoopV2) {
-  return loop.walls.map((ref) => {
-    const point = floor.vertices.find(({ id }) => id === ends(floor, ref)[0]);
-    if (!point) return fail("UNKNOWN_VERTEX", "A room boundary vertex is missing.");
-    return point;
-  });
-}
-
-/** Reuses canonical directed boundaries, preserving curved paths and hole loops. */
-function stitchBoundary(floor: FloorPlanFloorV2, references: WallRef[]): WallRef[] {
-  const remaining = [...references];
-  const ordered: WallRef[] = [];
-  while (remaining.length) {
-    const nextStart = ordered.length ? ends(floor, ordered[ordered.length - 1])[1] : null;
-    const index = nextStart === null ? 0 : remaining.findIndex((ref) => ends(floor, ref)[0] === nextStart);
-    if (index < 0) fail("UNRESOLVED_BOUNDARY", "These rooms cannot form one continuous boundary.");
-    ordered.push(...remaining.splice(index, 1));
-  }
-  if (!ordered.length || ends(floor, ordered[0])[0] !== ends(floor, ordered[ordered.length - 1])[1]) {
-    fail("UNRESOLVED_BOUNDARY", "Keep the exterior envelope closed before removing this wall.");
-  }
-  return ordered;
-}
 
 export function refreshPartitionAdjacency(floor: FloorPlanFloorV2, state: State) {
   for (const wall of floor.walls) {
@@ -67,8 +36,7 @@ export function mergeRoomsAtRemovedWall(
   const loops = rooms.flatMap((room) => room.wallLoops.filter((loop) => loop.kind === "outer"));
   if (loops.length !== 2) fail("UNRESOLVED_BOUNDARY", "Each merged room must have one outer boundary.");
   const shared = new Set(floor.walls.filter((candidate) => rooms.every((room) => candidate.adjacentRoomIds.includes(room.id))).map(({ id }) => id));
-  const outer = stitchBoundary(floor, loops.flatMap((loop) => loop.walls.filter((ref) => !shared.has(ref.wallId))));
-  keep.wallLoops = [{ kind: "outer", walls: outer }, ...rooms.flatMap((room) => room.wallLoops.filter((loop) => loop.kind === "hole"))];
+  keep.wallLoops = mergePartitionLoops(floor, rooms.flatMap((room) => room.wallLoops), shared);
   keep.provenance = demote(keep.provenance, keep.id, `Merged room ${removed.id} into ${keep.id}; retained chosen name and finishes`, state);
   floor.rooms = floor.rooms.filter(({ id }) => id !== removed.id);
   state.changedIds.add(removed.id);
@@ -92,6 +60,7 @@ function splitLoops(floor: FloorPlanFloorV2, room: FloorPlanRoomV2, wall: FloorP
 export function divideRoomAtAddedWall(
   floor: FloorPlanFloorV2, wall: FloorPlanWallV2, newRoomId: string | undefined, newRoomName: string | undefined, state: State
 ) {
+  if (encloseRoomAtAddedWall(floor, wall, newRoomId, newRoomName, state)) return;
   const candidates = floor.rooms.flatMap((room) => {
     const loops = splitLoops(floor, room, wall);
     return loops ? [{ room, ...loops }] : [];
@@ -108,6 +77,7 @@ export function divideRoomAtAddedWall(
     if (isPointInPlanarRing(point, partitionLoopPoints(floor, first))) firstHoles.push(hole);
     else secondHoles.push(hole);
   }
+  (state.roomSplits ??= []).push({ floorId: floor.id, parentRoomId: room.id, newRoomId });
   room.wallLoops = [first, ...firstHoles];
   room.provenance = demote(room.provenance, room.id, `Divided room with wall ${wall.id}; new child ${newRoomId}`, state);
   floor.rooms.push({

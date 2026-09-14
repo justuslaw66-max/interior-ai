@@ -17,6 +17,7 @@ import {
 } from "@/lib/floor-plan-consumer-wall-edit";
 import type { FixedElement2D, RoomOpening2D } from "@/lib/editorScene";
 import type { DesignSnapshot } from "@/lib/room-types";
+import { proposedWallEditFailureMessage } from "@/lib/floor-plan-wall-edit-feedback";
 import { commitCurrentWallGesture } from "@/lib/floor-plan-wall-gesture";
 import { useDesignPageWallEditSession } from "@/lib/useDesignPageWallEditSession";
 import { useDesignPageRoomRecovery } from "@/lib/useDesignPageRoomRecovery";
@@ -149,11 +150,7 @@ export function useDesignPageImportedWallEditingController({
         );
         return true;
       } catch (cause) {
-        actions.showToast(
-          `Wall change blocked: ${
-            cause instanceof Error ? cause.message : "The geometry is not valid."
-          }`
-        );
+        actions.showToast(`Wall change blocked: ${proposedWallEditFailureMessage(cause)}`);
         return false;
       }
     },
