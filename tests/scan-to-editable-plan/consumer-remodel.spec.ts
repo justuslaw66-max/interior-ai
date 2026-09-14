@@ -3,7 +3,7 @@ import { authoredApartment } from "../../scripts/fixtures/scan-to-editable-plan/
 import { canonicalFloorPlanToDesignSnapshot } from "../../lib/floor-plan-legacy-adapters";
 import { snapshotToStored, type StoredDesign } from "../../lib/room-persistence";
 import { compileCanonicalFloorPlanRenderModel } from "../../lib/floor-plan-render-model";
-import { readFile } from "node:fs/promises";
+import { readFile, writeFile } from "node:fs/promises";
 import { PDFDocument, PDFName, PDFRawStream, decodePDFRawStream } from "pdf-lib";
 import { physicalDimensionLineMm } from "../../scripts/fixtures/scan-to-editable-plan/pdf-physical-scale";
 import { buildFloorPlanVectorDrawing } from "../../lib/floor-plan-vector-drawing";
@@ -20,6 +20,7 @@ async function roomCount(page: Page, count: number) {
 test("Consumer shared-wall merge, attached partition, opening edit, undo/redo, 3D and reload", async ({ page }, testInfo) => {
   const errors: string[] = [];
   page.on("pageerror", (error) => errors.push(error.message));
+  page.on("console", (entry) => { if (entry.type() === "error" && /same key|Each child in a list/.test(entry.text())) errors.push(entry.text()); });
   const snapshot = canonicalFloorPlanToDesignSnapshot(authoredApartment()).snapshot;
   await page.addInitScript(({ key, initial }) => {
     if (!localStorage.getItem(key)) localStorage.setItem(key, initial);
@@ -56,9 +57,47 @@ test("Consumer shared-wall merge, attached partition, opening edit, undo/redo, 3
   await panel.getByLabel("Width (mm)", { exact: true }).fill("1700");
   await panel.getByRole("button", { name: "Apply opening changes", exact: true }).click();
   await expect.poll(async () => (await saved(page)).floorPlan?.canonicalDocument?.floors[0].openings[0].widthMm).toBe(1700);
+  const existingWalls = (await saved(page)).floorPlan!.canonicalDocument!.floors[0].walls.map(({ id }) => id);
+  for (const [label, value] of [["Start X (mm)", "6000"], ["Start Z (mm)", "1000"], ["End X (mm)", "7500"], ["End Z (mm)", "2500"]]) {
+    await panel.getByLabel(label, { exact: true }).fill(value);
+  }
+  await panel.getByRole("button", { name: "Add proposed wall", exact: true }).click();
+  await expect.poll(async () => (await saved(page)).floorPlan?.canonicalDocument?.floors[0].walls.length).toBe(10);
+  const diagonalId = (await saved(page)).floorPlan!.canonicalDocument!.floors[0].walls.find(({ id }) => !existingWalls.includes(id))!.id;
+  await panel.getByLabel("Wall", { exact: true }).selectOption(diagonalId);
+  await panel.locator("summary", { hasText: "Wall length and height" }).click();
+  await panel.getByLabel("Requested length (mm)", { exact: true }).fill("2500");
+  await panel.getByRole("button", { name: "Apply wall length", exact: true }).click();
+  await panel.getByLabel("Move X (mm)", { exact: true }).fill("100");
+  await panel.getByLabel("Move Z (mm)", { exact: true }).fill("200");
+  await panel.getByRole("button", { name: "Move wall", exact: true }).click();
+  await panel.getByLabel("Wall height (mm)", { exact: true }).fill("1100");
+  await panel.getByLabel("Wall base above floor (mm)", { exact: true }).fill("200");
+  // macOS WebKit uses Option-Tab for button navigation (same path as the command-bar suite).
+  await panel.getByLabel("Wall base above floor (mm)", { exact: true }).press(testInfo.project.name === "webkit" ? "Alt+Tab" : "Tab");
+  await expect(panel.getByRole("button", { name: "Apply wall height", exact: true })).toBeFocused();
+  await page.keyboard.press("Enter");
+  await expect(panel.getByRole("button", { name: "Apply wall height", exact: true })).toBeFocused();
+  await expect.poll(async () => (await saved(page)).floorPlan?.canonicalDocument?.floors[0].walls.find(({ id }) => id === diagonalId)?.heightMm).toBe(1100);
+  await panel.locator("summary", { hasText: "Doors and windows" }).click();
+  await panel.getByRole("combobox", { name: "Type", exact: true }).selectOption("window");
+  await panel.getByRole("combobox", { name: "Operation", exact: true }).selectOption("fixed");
+  for (const [label, value] of [["Position from wall start (mm)", "501"], ["Width (mm)", "601"], ["Height (mm)", "500"], ["Sill (mm)", "500"]]) {
+    await panel.getByLabel(label, { exact: true }).fill(value);
+  }
+  await panel.getByRole("combobox", { name: "Hinge", exact: true }).selectOption("none");
+  await panel.getByRole("combobox", { name: "Swing side", exact: true }).selectOption("none");
+  await panel.getByRole("button", { name: "Add opening", exact: true }).click();
+  await expect.poll(async () => (await saved(page)).floorPlan?.canonicalDocument?.floors[0].openings.length).toBe(2);
   const accepted = (await saved(page)).floorPlan?.canonicalDocument;
   expect(accepted).toBeTruthy();
   const geometry = compileCanonicalFloorPlanRenderModel(accepted!);
+  const diagonal = geometry.floors[0].walls.find(({ id }) => id === diagonalId)!;
+  expect(diagonal.centerlineSegments[0].start).toMatchObject({ xMm: 6100, zMm: 1200 });
+  expect(diagonal.centerlineSegments[0].end).toMatchObject({ xMm: 7868, zMm: 2968 });
+  expect(Math.min(...diagonal.solids.map((solid) => solid.bottomMm))).toBe(200);
+  expect(Math.max(...diagonal.solids.map((solid) => solid.topMm))).toBe(1300);
+  await writeFile(testInfo.outputPath("consumer-proposed.json"), JSON.stringify(accepted, null, 2));
   await expect(page.getByText("Window needs wall repair", { exact: true })).toHaveCount(0);
   await panel.locator("summary", { hasText: "Compare and export vector plan" }).click();
   const pdfDownload = page.waitForEvent("download");

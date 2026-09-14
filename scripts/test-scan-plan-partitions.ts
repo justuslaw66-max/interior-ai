@@ -12,6 +12,7 @@ import { projectLegacyOpeningGestureToCanonicalWallV2 } from "@/lib/floor-plan-t
 import { mapPlanOpeningsToRoomRenderer } from "@/lib/design-page-plan-overlay-projections";
 import { buildOpeningRenderSegments } from "@/components/editor/renderers/room-renderer-2d-opening-geometry";
 import { validateDesignPageOpeningPlacement } from "@/lib/design-page-opening-placement";
+import { proposedWallLengthEndpoint } from "@/lib/floor-plan-wall-length";
 
 let sequence = 0;
 function mutate(document: FloorPlanDocumentV2, operation: FloorPlanTopologyMutationV2) {
@@ -52,6 +53,15 @@ assert.equal(diagonal.solids[0].topMm, 1100);
 assert.equal(diagonal.centerlineSegments[0].start.xMm, 6100);
 assert.equal(diagonal.centerlineSegments[0].end.zMm, 2700);
 assert.equal(compileFloorPlanDocumentV2(JSON.parse(JSON.stringify(moved.document))).geometryHash, model.geometryHash);
+const lengthDraft = proposedWallLengthEndpoint(moved.document.floors[0], moved.document.floors[0].walls.find(({ id }) => id === "diagonal")!, 2500)!;
+assert.deepEqual(lengthDraft.to, { xMm: 7868, zMm: 2968 });
+assert(Math.abs(lengthDraft.actualLengthMm - 2500) < 0.71, "Report integer endpoint rounding instead of claiming an exact unattainable length");
+const lengthEdited = mutate(moved.document, { kind: "move_vertex", floorId: "apartment", vertexId: lengthDraft.vertexId, to: lengthDraft.to });
+const lengthRestored = JSON.parse(JSON.stringify(lengthEdited.document));
+assert.equal(compileFloorPlanDocumentV2(lengthRestored).geometryHash, lengthEdited.scene.geometryHash);
+assert.equal(lengthRestored.floors[0].vertices.find((v: { id: string }) => v.id === "q").xMm, 7868);
+assert.equal(lengthRestored.floors[0].vertices.find((v: { id: string }) => v.id === "q").zMm, 2968);
+assert.equal(proposedWallLengthEndpoint(moved.document.floors[0], moved.document.floors[0].walls[0], 0), null);
 const diagonalOpening = mutate(moved.document, { kind: "add_opening", floorId: "apartment", opening: {
   id: "diagonal-window", wallId: "diagonal", kind: "window", operation: "fixed", offsetMm: 501, widthMm: 601,
   heightMm: 500, sillHeightMm: 500, hinge: "none", handing: "none",

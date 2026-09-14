@@ -4,6 +4,7 @@ import { useState } from "react";
 import type { FloorPlanFloorV2, FloorPlanWallV2 } from "@/lib/floor-plan-document-v2";
 import type { ConsumerWallTopologyMutationV2 } from "@/lib/floor-plan-consumer-wall-edit";
 import { changedOpeningFormFields, proposedOpeningForm } from "@/lib/floor-plan-opening-form";
+import { CanonicalWallDimensions } from "./CanonicalWallDimensions";
 
 type Props = { floor: FloorPlanFloorV2; wall: FloorPlanWallV2; commit: (operation: ConsumerWallTopologyMutationV2) => boolean };
 const inputStyle = "mt-1 w-full rounded border border-neutral-400 bg-transparent p-1.5";
@@ -15,9 +16,10 @@ function Millimetres({ label, value, change, min }: { label: string; value: numb
 
 export function CanonicalPlanRemodelTools({ floor, wall, commit }: Props) {
   return <div className="grid gap-3 border-t border-neutral-300 pt-3">
+    <CanonicalWallDimensions floor={floor} wall={wall} commit={commit} />
     <AddPartition floor={floor} commit={commit} />
-    <WallRemoval key={wall.id} floor={floor} wall={wall} commit={commit} />
-    <OpeningProperties key={`${wall.id}:${floor.openings.map((opening) => opening.id).join()}`} floor={floor} wall={wall} commit={commit} />
+    <WallRemoval key={`removal:${wall.id}:${floor.openings.filter((opening) => opening.wallId === wall.id).map(({ id }) => id).join()}`} floor={floor} wall={wall} commit={commit} />
+    <OpeningProperties key={`openings:${wall.id}:${floor.openings.map((opening) => opening.id).join()}`} floor={floor} wall={wall} commit={commit} />
   </div>;
 }
 
@@ -71,7 +73,11 @@ function OpeningProperties({ floor, wall, commit }: Props) {
 }
 
 function OpeningForm({ floor, wall, opening, commit }: Props & { opening?: FloorPlanFloorV2["openings"][number] }) {
-  const [draft, setDraft] = useState(() => proposedOpeningForm(floor, opening));
+  const source = proposedOpeningForm(floor, opening);
+  const sourceKey = JSON.stringify([wall.id, opening?.id, source]);
+  const [form, setForm] = useState({ key: sourceKey, values: source });
+  const draft = form.key === sourceKey ? form.values : source;
+  const setDraft = (values: typeof source) => setForm({ key: sourceKey, values });
   return <div className="mt-2 grid grid-cols-2 gap-2">
     <label>Type<select className={inputStyle} value={draft.kind} onChange={(event) => { const kind = event.target.value; if (kind === "door" || kind === "window" || kind === "open_passage" || kind === "gate" || kind === "vent" || kind === "louvre") setDraft({ ...draft, kind }); }}>{["door", "window", "open_passage", "gate", "vent", "louvre"].map((kind) => <option key={kind}>{kind}</option>)}</select></label>
     <label>Operation<select className={inputStyle} value={draft.operation} onChange={(event) => { const value = event.target.value; if (value === "swing" || value === "sliding" || value === "fixed" || value === "folding" || value === "open") setDraft({ ...draft, operation: value }); }}>{["swing", "sliding", "fixed", "folding", "open"].map((v) => <option key={v}>{v}</option>)}</select></label>
