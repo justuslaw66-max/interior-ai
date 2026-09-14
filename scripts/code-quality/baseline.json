@@ -173,7 +173,7 @@
       "limit": 250
     },
     "components/editor/design-page/ImportedFloorPlanWallEditor.tsx": {
-      "lines": 273,
+      "lines": 264,
       "limit": 250
     },
     "components/editor/design-page/LightingSettingsControls.tsx": {

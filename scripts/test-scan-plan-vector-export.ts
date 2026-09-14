@@ -8,6 +8,29 @@ import { buildFloorPlanVectorDrawing } from "@/lib/floor-plan-vector-drawing";
 import { exportFloorPlanVectorPdf, exportFloorPlanVectorSvg, layoutFloorPlanVectorExport } from "@/lib/floor-plan-vector-export";
 import { compileCanonicalFloorPlanRenderModel } from "@/lib/floor-plan-render-model";
 import { physicalDimensionLineMm } from "./fixtures/scan-to-editable-plan/pdf-physical-scale";
+import { canonicalFloorPlanToDesignSnapshot } from "@/lib/floor-plan-legacy-adapters";
+
+function testFurnitureDrawing(document: ReturnType<typeof authoredApartment>) {
+  const snapshot = canonicalFloorPlanToDesignSnapshot(document).snapshot, room = snapshot.rooms[0];
+  room.items = [{ instanceId: "independent-sofa", productId: "offline-sofa", variantId: "authored", position: [1, 0, 1], rotationY: Math.PI / 2,
+    productSnapshot: { schemaVersion: 1, productId: "offline-sofa", variantId: "authored", name: "Authored sofa", category: "sofa",
+      dimensionsMm: { w: 1000, d: 600, h: 800 }, variantLabel: "Authored", assets: {} } }];
+  const options = { floorId: "apartment", dimensions: true, labels: true, fixtures: true }, source = { rooms: snapshot.rooms };
+  const before = JSON.stringify({ document, snapshot });
+  const drawing = buildFloorPlanVectorDrawing(document, options, source), furniture = drawing.primitives.filter((primitive) => primitive.role === "furniture");
+  assert.equal(furniture.length, 1, "A placed item must be a separate editable path.");
+  const outline = furniture[0]; assert.equal(outline.kind, "path");
+  if (outline.kind !== "path") throw new Error("Expected furniture outline");
+  const x = (room.planPosition!.x + 1) * 1000, z = (room.planPosition!.z + 1) * 1000;
+  assert.deepEqual(outline.points.map((point) => [Math.round(point.xMm), Math.round(point.zMm)]),
+    [[x - 300, z + 500], [x - 300, z - 500], [x + 300, z - 500], [x + 300, z + 500]], "Independent 90-degree corners must retain item world position and dimensions.");
+  assert.equal(JSON.stringify({ document, snapshot }), before, "Export cannot alter accepted or original design state.");
+  assert(!buildFloorPlanVectorDrawing(document, { ...options, fixtures: false }, source).primitives.some((primitive) => primitive.role === "furniture"));
+  room.items[0].configurationCode = "missing-config";
+  assert(buildFloorPlanVectorDrawing(document, options, source).unsupported.some((note) => note.includes("dimensions unresolved")), "Unknown configuration must be reported instead of exporting a guessed footprint.");
+  delete room.items[0].configurationCode; delete room.items[0].productSnapshot;
+  assert(buildFloorPlanVectorDrawing(document, options, source).unsupported.some((note) => note.includes("dimensions unresolved")), "Unavailable offline dimensions must not disappear silently.");
+}
 
 async function main() {
   const source = authoredApartment();
@@ -19,6 +42,7 @@ async function main() {
       vertices: [{ id: "col-a", xMm: 7800, zMm: 4400 }, { id: "col-b", xMm: 8150, zMm: 4400 }, { id: "col-c", xMm: 8150, zMm: 4650 }, { id: "col-d", xMm: 7800, zMm: 4650 }] },
   ], { mutationId: "proof", nextRevisionId: "proposed-proof", actorId: "fixture-author", mutatedAt: "2026-09-14T01:00:00Z" });
   const drawing = buildFloorPlanVectorDrawing(result.document, { floorId: "apartment", dimensions: true, labels: true, fixtures: true });
+  testFurnitureDrawing(result.document);
   assert.equal(drawing.geometryHash, compileCanonicalFloorPlanRenderModel(result.document).geometryHash);
   assert(drawing.primitives.some((p) => p.id.startsWith("replacement:wall")));
   assert(!drawing.primitives.some((p) => p.id.startsWith("shared:")));

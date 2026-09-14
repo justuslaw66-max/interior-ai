@@ -1,6 +1,7 @@
 import type { FloorPlanWallSplitLineageV2 } from "@/lib/floor-plan-topology-mutation-types";
 import type {
   FloorPlanWallClassificationV2,
+  FloorPlanDocumentV2,
 } from "@/lib/floor-plan-document-v2";
 import {
   commitCanonicalTopologyMutationToSnapshotV2,
@@ -19,6 +20,16 @@ import { reviewProposedPlacements } from "@/lib/floor-plan-placement-review";
 
 export const CONSUMER_WALL_EDIT_CONFIRMATION_COPY =
   "This creates a local editable copy for this design. The imported source plan remains unchanged. Accepted wall changes are marked Needs review and may affect connected rooms and openings.";
+
+export function selectConsumerWallGeometry(document: FloorPlanDocumentV2 | null, floorId: string, wallId: string) {
+  const floor = document?.floors.find((candidate) => candidate.id === floorId) ?? document?.floors[0] ?? null;
+  const wall = floor?.walls.find((candidate) => candidate.id === wallId) ?? floor?.walls[0] ?? null;
+  const start = floor?.vertices.find(({ id }) => id === wall?.path.startVertexId);
+  const end = floor?.vertices.find(({ id }) => id === wall?.path.endVertexId);
+  const wallLengthMm = start && end && wall?.path.kind === "line"
+    ? Math.hypot(end.xMm - start.xMm, end.zMm - start.zMm) : null;
+  return { floor, wall, wallLengthMm };
+}
 
 export type ConsumerWallTopologyMutationV2 = Extract<
   FloorPlanTopologyMutationV2,

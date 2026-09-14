@@ -2,9 +2,10 @@
 
 import { useState } from "react";
 import type { FloorPlanWallClassificationV2 } from "@/lib/floor-plan-document-v2";
-import { CONSUMER_WALL_EDIT_CONFIRMATION_COPY } from "@/lib/floor-plan-consumer-wall-edit";
+import { CONSUMER_WALL_EDIT_CONFIRMATION_COPY, selectConsumerWallGeometry } from "@/lib/floor-plan-consumer-wall-edit";
 import { CanonicalPlanRemodelTools } from "@/components/editor/design-page/CanonicalPlanRemodelTools";
 import { CanonicalPlanVectorExport } from "@/components/editor/design-page/CanonicalPlanVectorExport";
+import type { PlanFurnitureDrawingSource } from "@/lib/floor-plan-vector-furniture";
 import type {
   ImportedWallEditingActions,
   ImportedWallEditingState,
@@ -20,7 +21,7 @@ const CLASSIFICATIONS: FloorPlanWallClassificationV2[] = [
 
 export type ImportedFloorPlanWallEditorProps = {
   state: ImportedWallEditingState;
-  configuration: { dark: boolean };
+  configuration: { dark: boolean; exportFurniture?: PlanFurnitureDrawingSource };
   actions: ImportedWallEditingActions;
 };
 
@@ -36,7 +37,7 @@ export function ImportedFloorPlanWallEditor({
   const [deltaXMm, setDeltaXMm] = useState(0);
   const [deltaZMm, setDeltaZMm] = useState(0);
   const [vertexId, setVertexId] = useState("");
-  const { floor, wall, wallLengthMm } = selectedWallGeometry(document, floorId, wallId);
+  const { floor, wall, wallLengthMm } = selectConsumerWallGeometry(document, floorId, wallId);
   const selectionKey =
     document && floor && wall
       ? `${document.id}:${document.revisionId}:${floor.id}:${wall.id}`
@@ -241,7 +242,7 @@ export function ImportedFloorPlanWallEditor({
           <button type="button" className={secondaryButton} onClick={actions.stopEditing}>Stop editing walls</button>
         </div>
       )}
-      <CanonicalPlanVectorExport document={document} floorId={floor.id} original={state.proposal?.originalDocument} />
+      <CanonicalPlanVectorExport document={document} floorId={floor.id} original={state.proposal?.originalDocument} furniture={configuration.exportFurniture} />
     </section>
   );
 }
@@ -260,14 +261,4 @@ function NumberField({ label, value, min, className, subtle, onChange }: {
       <input className={`${className} mt-1 w-full`} type="number" step={1} min={min} value={value} onChange={(event) => onChange(Number(event.target.value))} />
     </label>
   );
-}
-
-function selectedWallGeometry(document: ImportedWallEditingState["document"], floorId: string, wallId: string) {
-  const floor = document?.floors.find((candidate) => candidate.id === floorId) ?? document?.floors[0] ?? null;
-  const wall = floor?.walls.find((candidate) => candidate.id === wallId) ?? floor?.walls[0] ?? null;
-  const start = floor?.vertices.find(({ id }) => id === wall?.path.startVertexId);
-  const end = floor?.vertices.find(({ id }) => id === wall?.path.endVertexId);
-  const wallLengthMm = start && end && wall?.path.kind === "line"
-    ? Math.hypot(end.xMm - start.xMm, end.zMm - start.zMm) : null;
-  return { floor, wall, wallLengthMm };
 }

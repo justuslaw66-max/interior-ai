@@ -7,6 +7,7 @@ import { compileCanonicalFloorPlanRenderModel } from "../../lib/floor-plan-rende
 import { observeRenderedScene, renderedSceneObject } from "./rendered-scene-observer";
 import { exerciseFurnitureWalls } from "./furniture-wall-journey";
 import { exerciseFurnitureDrag } from "./furniture-drag-journey";
+import { exerciseFurnishedVectorExport } from "./furniture-vector-journey";
 
 test("Consumer replacement doorway, catalog furniture, undo and saved reload", async ({ page }, testInfo) => {
   await observeRenderedScene(page);
@@ -14,6 +15,7 @@ test("Consumer replacement doorway, catalog furniture, undo and saved reload", a
   page.on("pageerror", (error) => errors.push(error.message));
   const initial = snapshotToStored(canonicalFloorPlanToDesignSnapshot(authoredApartment()).snapshot);
   await page.addInitScript(({ key, initial }) => {
+    if (window !== window.top) return;
     if (!localStorage.getItem(key)) localStorage.setItem(key, JSON.stringify(initial));
     localStorage.setItem("interior-ai:beta-start-dismissed", "1");
   }, { key, initial });
@@ -106,6 +108,7 @@ test("Consumer replacement doorway, catalog furniture, undo and saved reload", a
   expect(await items()).toEqual(placed);
   expect(await document()).toEqual(accepted);
   expect((await saved()).floorPlan!.proposal!.originalDocument).toEqual(authoredApartment());
+  await exerciseFurnishedVectorExport(page, saved, testInfo);
   await writeFile(testInfo.outputPath("furnishing-evidence.json"), JSON.stringify({ accepted, placed, placedZones, rendered2d, rendered3d, door3d, geometryHash: compileCanonicalFloorPlanRenderModel(accepted).geometryHash,
     checks: ["shared wall and hosted door removed", "replacement room division", "door hinge and swing", "connection readiness", "real catalog confirmation", "undo/redo", "view switch and saved reload"] }, null, 2));
   expect(errors).toEqual([]);

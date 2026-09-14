@@ -4,6 +4,7 @@ import type { BuildDesignPageViewportRegionAdapterInput } from "@/lib/design-pag
 import { resolveDesignLightingSettings } from "@/lib/design-lighting-settings";
 import { LIGHTING_PRESETS } from "@/lib/lightingPresets";
 import { resolveFixturePhotometrics } from "@/lib/resolve-lighting-scene";
+import { resolveVectorFurnitureDimensions } from "@/lib/floor-plan-vector-export-source";
 import type { DesignPagePresentationWorkspaceRegistration } from "@/lib/useDesignPagePresentationWorkspaceRegistration";
 
 type ViewportState = BuildDesignPageViewportRegionAdapterInput["state"];
@@ -56,7 +57,7 @@ export type BuildDesignPageViewportWorkspaceReadModelInput = {
     selection: Pick<SelectionWorkspace, "derived">;
     selectionInspection: Pick<
       PlanAuthoring["boundaries"]["selectionInspection"],
-      "derived"
+      "derived" | "resolvers"
     >;
     viewportShell: Pick<CoreShell["boundaries"]["viewportShell"], "state">;
     zone: Pick<EditorInteraction["boundaries"]["zone"], "state">;
@@ -273,7 +274,8 @@ function buildViewportConfiguration(
     selectionInspectorWidthPx: planWorkspace.derived.selectionInspectorWidthPx,
     planQualityReviewTopPx: quality.reviewPanelTopPx,
     editorMode: viewportShell.state.editor.editorMode,
-    importedWallEditor: { dark },
+    importedWallEditor: { dark, exportFurniture: { rooms: coreShell.state.document.designSnapshot.rooms,
+      resolveDimensions: (item, product) => resolveVectorFurnitureDimensions(item, product, sources.selectionInspection.resolvers) } },
   };
 }
 

@@ -3,6 +3,7 @@ import type { FloorPlanDocumentV2, FloorPlanPointMmV2 as Point } from "@/lib/flo
 import { compileCanonicalFloorPlanRenderModel } from "@/lib/floor-plan-render-model";
 import { buildRectangularWallFootprint } from "@/lib/floor-plan-wall-footprints";
 import { buildCanonicalOpeningSymbolLinesV2 } from "@/lib/floor-plan-opening-primitives";
+import { buildFloorPlanFurnitureDrawing, type PlanFurnitureDrawingSource } from "@/lib/floor-plan-vector-furniture";
 
 export type PlanDrawingPrimitive =
   | { id: string; kind: "path"; path: string; fill: boolean; points: Point[]; role: string }
@@ -81,7 +82,7 @@ function annotationPrimitives(floor: CompiledFloorPlanFloorV2): PlanDrawingPrimi
   });
 }
 
-export function buildFloorPlanVectorDrawing(document: FloorPlanDocumentV2, options: PlanDrawingOptions): PlanVectorDrawing {
+export function buildFloorPlanVectorDrawing(document: FloorPlanDocumentV2, options: PlanDrawingOptions, furniture?: PlanFurnitureDrawingSource): PlanVectorDrawing {
   const model = compileCanonicalFloorPlanRenderModel(document);
   const floor = model.floors.find(({ id }) => id === options.floorId);
   const compiled = model.compiledScene.floors.find(({ id }) => id === options.floorId);
@@ -109,5 +110,9 @@ export function buildFloorPlanVectorDrawing(document: FloorPlanDocumentV2, optio
     }
   }
   if (options.fixtures) compiled.structures.forEach((structure) => primitives.push(line(`${structure.id}:outline`, [...structure.points, structure.points[0]], "fixture")));
+  if (options.fixtures && furniture) {
+    const drawing = buildFloorPlanFurnitureDrawing(compiled, furniture);
+    primitives.push(...drawing.primitives); unsupported.push(...drawing.unsupported);
+  }
   return { geometryHash: model.geometryHash, primitives, unsupported };
 }

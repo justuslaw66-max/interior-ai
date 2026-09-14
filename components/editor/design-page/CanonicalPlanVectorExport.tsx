@@ -3,8 +3,9 @@
 import { useState } from "react";
 import type { FloorPlanDocumentV2 } from "@/lib/floor-plan-document-v2";
 import type { PlanVectorExportOptions } from "@/lib/floor-plan-vector-export";
+import type { PlanFurnitureDrawingSource } from "@/lib/floor-plan-vector-furniture";
 
-export function CanonicalPlanVectorExport({ document, floorId, original }: { document: FloorPlanDocumentV2; floorId: string; original?: FloorPlanDocumentV2 }) {
+export function CanonicalPlanVectorExport({ document, floorId, original, furniture }: { document: FloorPlanDocumentV2; floorId: string; original?: FloorPlanDocumentV2; furniture?: PlanFurnitureDrawingSource }) {
   const [options, setOptions] = useState<PlanVectorExportOptions>({ paper: "A4", orientation: "landscape", scale: 100 });
   const [dimensions, setDimensions] = useState(true);
   const [labels, setLabels] = useState(true);
@@ -17,7 +18,7 @@ export function CanonicalPlanVectorExport({ document, floorId, original }: { doc
     try {
       const { buildFloorPlanVectorDrawing } = await import("@/lib/floor-plan-vector-drawing");
       const { exportFloorPlanVectorPdf, exportFloorPlanVectorSvg } = await import("@/lib/floor-plan-vector-export");
-      const drawing = buildFloorPlanVectorDrawing(format === "original" && original ? original : document, { floorId, dimensions, labels, fixtures });
+      const drawing = buildFloorPlanVectorDrawing(format === "original" && original ? original : document, { floorId, dimensions, labels, fixtures }, format === "original" ? undefined : furniture);
       const warnings = drawing.unsupported.length ? `Unsupported details: ${drawing.unsupported.join("; ")}` : "";
       if (format === "original" || format === "proposed") {
         setPreview(`data:image/svg+xml;charset=utf-8,${encodeURIComponent(exportFloorPlanVectorSvg(drawing, options))}`);
@@ -40,7 +41,7 @@ export function CanonicalPlanVectorExport({ document, floorId, original }: { doc
       <label>Orientation<select className={field} value={options.orientation} onChange={(event) => setOptions({ ...options, orientation: event.target.value === "portrait" ? "portrait" : "landscape" })}><option>landscape</option><option>portrait</option></select></label>
       <label>Scale<select className={field} value={options.scale} onChange={(event) => setOptions({ ...options, scale: event.target.value === "50" ? 50 : 100 })}><option value="50">1:50</option><option value="100">1:100</option></select></label>
     </div>
-    <div className="my-2 flex flex-wrap gap-3">{([['Dimensions', dimensions, setDimensions], ['Labels', labels, setLabels], ['Fixture outlines', fixtures, setFixtures]] as const).map(([text, value, change]) => <label key={text} className="flex items-center gap-1"><input type="checkbox" checked={value} onChange={(event) => change(event.target.checked)} />{text}</label>)}</div>
+    <div className="my-2 flex flex-wrap gap-3">{([['Dimensions', dimensions, setDimensions], ['Labels', labels, setLabels], ['Fixtures and furniture', fixtures, setFixtures]] as const).map(([text, value, change]) => <label key={text} className="flex items-center gap-1"><input type="checkbox" checked={value} onChange={(event) => change(event.target.checked)} />{text}</label>)}</div>
     <div className="flex flex-wrap gap-2">{([['PDF', 'pdf'], ['SVG', 'svg'], ['View proposed', 'proposed'], ...(original ? [['View original', 'original'] as const] : [])] as const).map(([label, format]) => <button key={format} type="button" className="rounded border border-neutral-400 px-2 py-1.5 disabled:opacity-40" disabled={busy} onClick={() => void run(format)}>{label}</button>)}</div>
     <p role="status" className="my-2">{message}</p>
     {preview ? <object aria-label="Plan comparison drawing" type="image/svg+xml" data={preview} className="w-full bg-white" /> : null}
