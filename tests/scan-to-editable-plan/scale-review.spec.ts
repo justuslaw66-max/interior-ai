@@ -94,6 +94,30 @@ test("Scale setting, independent conflicts, correction, unit rounding and compon
   expect(rescaled.verification.tier).toBe("needs_review");
   await page.getByRole("button", { name: "Cross-check scale", exact: true }).click();
   await page.screenshot({ path: info.outputPath("persisted-scale-conflict.png") });
-  await fs.writeFile(info.outputPath("scale-review-evidence.json"), JSON.stringify({ agreed, conflict, rounded, rescaled }, null, 2));
+  const overlayPoints = () => page.locator("polyline[data-review-entity-id]").evaluateAll((elements) => elements.map((element) => ({
+    id: element.getAttribute("data-review-entity-id"), coordinates: element.getAttribute("points")!.split(/[ ,]+/).map(Number),
+  })));
+  const beforeMirror = await overlayPoints();
+  expect(beforeMirror.length).toBeGreaterThan(0);
+  await page.getByText("Orientation", { exact: true }).click();
+  await page.getByRole("button", { name: "Mirror left/right", exact: true }).click();
+  await expect(page.getByRole("alert")).toHaveCount(0);
+  const mirrored = await saved();
+  expect(mirrored.floors[0].vertices).not.toEqual(rescaled.floors[0].vertices);
+  expect(mirrored.floors[0].calibrations[0].reflected).toBe(true);
+  expect(mirrored.floors[0].calibrations[0].independentMeasurements).toEqual(rescaled.floors[0].calibrations[0].independentMeasurements);
+  const afterMirror = await overlayPoints();
+  expect(afterMirror.map(({ id }) => id)).toEqual(beforeMirror.map(({ id }) => id));
+  let maxMirrorErrorPx = 0;
+  afterMirror.forEach((entity, index) => {
+    expect(entity.coordinates.length).toBe(beforeMirror[index].coordinates.length);
+    entity.coordinates.forEach((coordinate, axis) => { maxMirrorErrorPx = Math.max(maxMirrorErrorPx, Math.abs(coordinate - beforeMirror[index].coordinates[axis])); });
+  });
+  expect(maxMirrorErrorPx).toBeLessThan(1e-7);
+  await page.reload(); await page.addScriptTag({ path: bundle });
+  expect(await saved()).toEqual(mirrored);
+  expect(await overlayPoints()).toEqual(afterMirror);
+  await page.screenshot({ path: info.outputPath("mirrored-source-registration.png") });
+  await fs.writeFile(info.outputPath("scale-review-evidence.json"), JSON.stringify({ agreed, conflict, rounded, rescaled, mirrored, maxMirrorErrorPx }, null, 2));
   expect(errors).toEqual([]);
 });

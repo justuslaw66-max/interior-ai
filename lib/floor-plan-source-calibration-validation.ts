@@ -13,6 +13,9 @@ export function validateFloorPlanSourceCalibration(
   sourceIds: ReadonlySet<string>,
   checks: CalibrationValidationChecks
 ) {
+  if (calibration.reflected !== undefined && typeof calibration.reflected !== "boolean") {
+    checks.issue("INVALID_CALIBRATION_REFLECTION", `${calibrationPath}.reflected`, "Source registration reflection must be a boolean.");
+  }
   for (const error of validateSourceMeasurements(calibration)) {
     checks.issue("INVALID_SOURCE_MEASUREMENT", `${calibrationPath}.${error.path}`, error.message);
   }

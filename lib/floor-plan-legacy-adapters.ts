@@ -1,4 +1,5 @@
 import { projectCanonicalFloorOpenings } from "@/lib/floor-plan-opening-projection";
+import { transformSourceCalibration } from "./floor-plan-source-calibration-transform";
 import type { FloorPlanDocumentV2 } from "@/lib/floor-plan-document-v2";
 import {
   compileFloorPlanDocumentV2,
@@ -309,18 +310,10 @@ export function applyFloorPlanAddressTransformV2(
       entry.vertex.xMm = entry.point.xMm - minX;
       entry.vertex.zMm = entry.point.zMm - minZ;
     }
-    // Registration coordinates live in the same canonical plan space as the
-    // vertices. Materialising an address transform without transforming these
-    // points would leave a verified source overlay registered to the original
-    // orientation while the saved design uses the mirrored/rotated geometry.
+    // Keep source registration and geometry in one coordinate system, including handedness.
     for (const calibration of floor.calibrations) {
-      for (const controlPoint of calibration.controlPoints) {
-        const planPoint = transformPoint(controlPoint.planMm, transform);
-        controlPoint.planMm = {
-          xMm: planPoint.xMm - minX,
-          zMm: planPoint.zMm - minZ,
-        };
-      }
+      transformSourceCalibration(calibration, (point) => transformPoint(point, transform),
+        { xMm: minX, zMm: minZ }, reversesOrientation(transform));
     }
     if (swapsPlanAxes(transform)) {
       for (const dimension of floor.dimensions) {

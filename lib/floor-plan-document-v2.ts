@@ -163,6 +163,8 @@ export type FloorPlanSourceCalibrationV2 = {
   imageWidthPx: number;
   imageHeightPx: number;
   controlPoints: FloorPlanSourceCalibrationPointV2[];
+  /** Handedness for two-point or collinear registration; affine controls remain authoritative. */
+  reflected?: boolean;
   rmsErrorPx?: number;
   primaryMeasurement?: FloorPlanSourceMeasurementV2;
   independentMeasurements?: FloorPlanSourceMeasurementV2[];

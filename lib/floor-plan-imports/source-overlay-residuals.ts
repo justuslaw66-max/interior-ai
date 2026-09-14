@@ -157,28 +157,25 @@ function affineProjection(calibration: FloorPlanSourceCalibrationV2): Project | 
   });
 }
 
-/**
- * Fits a rotation/scale/translation registration using every control point.
- * This is also the deterministic fallback for collinear affine controls.
- */
+/** Fits every control point, preserving reflection for two-point/collinear registration. */
 function similarityProjection(calibration: FloorPlanSourceCalibrationV2): Project | null {
   if (calibration.controlPoints.length < 2) return null;
   const rows: number[][] = [];
   const values: number[] = [];
-  for (const point of calibration.controlPoints) {
-    const { xMm, zMm } = point.planMm;
-    rows.push([xMm, -zMm, 1, 0]);
-    values.push(point.sourcePx.x);
-    rows.push([zMm, xMm, 0, 1]);
-    values.push(point.sourcePx.y);
+  const sign = calibration.reflected ? -1 : 1;
+  for (const { planMm: { xMm, zMm }, sourcePx } of calibration.controlPoints) {
+    rows.push([xMm, -sign * zMm, 1, 0]);
+    values.push(sourcePx.x);
+    rows.push([sign * zMm, xMm, 0, 1]);
+    values.push(sourcePx.y);
   }
   const coefficients = solveLeastSquares(rows, values);
   if (!coefficients) return null;
   const [a, b, translateX, translateY] = coefficients;
   if (Math.hypot(a, b) < 1e-12) return null;
   return (point) => ({
-    xPx: a * point.xMm - b * point.zMm + translateX,
-    yPx: b * point.xMm + a * point.zMm + translateY,
+    xPx: a * point.xMm - b * sign * point.zMm + translateX,
+    yPx: b * point.xMm + a * sign * point.zMm + translateY,
   });
 }
 

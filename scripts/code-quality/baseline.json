@@ -597,7 +597,7 @@
       "limit": 400
     },
     "lib/floor-plan-imports/source-overlay-residuals.ts": {
-      "lines": 660,
+      "lines": 657,
       "limit": 400
     },
     "lib/floor-plan-imports/vision-guided-topology.ts": {
@@ -605,7 +605,7 @@
       "limit": 400
     },
     "lib/floor-plan-legacy-adapters.ts": {
-      "lines": 546,
+      "lines": 539,
       "limit": 400
     },
     "lib/floor-plan-library-schema.ts": {
@@ -3952,7 +3952,7 @@
     },
     "lib/floor-plan-legacy-adapters.ts": {
       "overlongFunctions": {
-        "count": 5,
+        "count": 4,
         "maximum": 199
       },
       "complexFunctions": {

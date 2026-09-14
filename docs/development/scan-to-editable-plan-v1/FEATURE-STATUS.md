@@ -5,7 +5,7 @@
 ## Authority, source and environment
 
 - Authorized isolated worktree `/Users/justus/Developer/interior-ai-scan-to-editable-plan`, branch `feature/scan-to-editable-plan-v1`. Protected dirty primary `/Users/justus/Developer/interior-ai` untouched. User explicitly selected isolation despite general canonical-worktree routing.
-- Base `a4295bb60c2819c0c3d380f2c758aad8f20f21db`, tree `4f82d7ab6bc838fb91ff42c4805dba7c93e0fd9d`; integration ref read at mandate start. Latest committed implementation `556adfe14b17f330fd1823c1d0174fa5699a0b7b`, tree `c52d1dde755a37bbcda5d91dc258105a107df3d6`. Registered-underlay batch below is UNCOMMITTED. Read actual HEAD/status.
+- Base `a4295bb60c2819c0c3d380f2c758aad8f20f21db`, tree `4f82d7ab6bc838fb91ff42c4805dba7c93e0fd9d`; integration ref read at mandate start. Latest committed implementation `e915127dc875f2fa62f210e8c1681092d4b23edd`, tree `eeab7dc48476e0f055c7d3123b9c4fc967387d51`. Mirror-registration batch below is being checkpointed. Read actual HEAD/status.
 - Local implementation/tests/ordinary commits authorized. NO push, PR, merge/rebase/amend, deployment, secrets, shared DB, paid infra or billable/external recognition. None done. No schema changes. ONE independent read-only FINAL reviewer authorized, unused; no routine subagents. No goal/automation or outstanding approval rejection.
 - AGENTS: lsof listener+cwd before runtime edits; preserve dirty files. New TS<=400/TSX<=250/functions<=60; modified debt shrinks, lower improved baselines, no exceptions/suppressions/gaming. Use set -e for verification→commit. Discover filenames with rg --files instead of guessing missing paths. Never print font/image base64 from SVG inspections.
 - Private **E** = `/Users/justus/Developer/interior-ai-task-state/scan-to-editable-plan-v1`. Node24.13/npm11.6.2, macOS arm64. All test DB URLs `postgresql://isolated:isolated@127.0.0.1:1/scan_plan_disposable`, dummy/inert allowlisted auth, external vision off, telemetry/providers empty. No live DB integration certification.
@@ -19,7 +19,7 @@
 - Focused `npm run test:scan-plan`, `npm run test:floor-plan-import-review-geometry` (includes new scale/confirm checks). `npm run typecheck`; scoped ESLint --max-warnings=0; `npm run check:code-quality`; lower baseline with `node scripts/code-quality/check.mjs --update-baseline`; git diff --check.
 - Browser `SCAN_PLAN_BROWSER_ARTIFACT_DIR=E/<run>-artifacts node_modules/.bin/playwright test --config=playwright.scan-plan.config.ts <spec>`. Explicit local-browser sandbox escalation authorized. Chromium+WebKit,1worker,0retries,120s tests/30s actions unchanged. Do not edit app source during browser runs; immutable preview source independent.
 - Frozen: clean2px/scan3px source geometry; exact integer-mm authored mutations; vector PDF paper error<=0.01mm; native gesture1.5CSSpx; actual3D mesh position5e−6m. <=100walls/50openings compile+mutation p95<=50ms; pointer<=16ms excludingrender;1MP extraction<=30s excluding bounded OCR. Final whole-flow performance/memory still pending.
-- Required suite last PASS at e0b10ac app source, E/required-furnishing-r3.log; NOT final-source/GateA3. Full platform also PASS at current556adfe, E/platform-scale-check-r1.log. Current registered-underlay final suites pending below.
+- Required suite last PASS at e0b10ac app source, E/required-furnishing-r3.log; NOT final-source/GateA3. Full platform also PASS at current556adfe, E/platform-scale-check-r1.log. Registered-underlay final suites PASS below.
 
 ## Milestones and implementation
 
@@ -59,7 +59,7 @@ One FloorPlanDocumentV2/compiler/transaction owner. Original immutable/private p
 - Actual confirm-handler test stubs auth/Prisma/design-reference boundaries; rejects conflicts with empty storedissues, wrongversion/owner/noauth beforewrites, agreementcreatesprivateplan. NOT liveDBownershipcertification. E/confirm-route-scale-check-r2.log.
 - Final scan-plan/types/ESLint/quality/platform PASS, E/{scan-plan,types,lint,quality}-scale-check-final.log and E/platform-scale-check-r1.log.1250prod,183oversized,541functiondebt,18inheritedsuppressions,0cycles. Panel158lines/maxfn125/complexity27. No active tests from thatbatch.
 
-## ACTIVE UNCOMMITTED — registered source underlay
+## Registered source underlay (e915127)
 
 - Reproduced actual confirmation-route bug: calibration source(100,200)→world(0,0), but reloaded underlay mapped that worldpoint→source(0,0). E/confirm-registration-before.log. Existing route used scalar page-centre/rotation0. New registeredImportUnderlay derives centre/basis from canonical inverse, validates actual renderedpage metadata through existing parser and rejects changeddimensions. Sourceid/page mustmatch. No new calibration or hidden distortion correction.
 - Minimal compatible underlay skewX/flipY fields preserve existing affine registration; shared underlayPlanBasis feeds inversepixelpicking, actual Three image mesh, SVG transform and PDF image CTM. PersistedFloorPlanUnderlay aliases rendered type, onecontract. Image-only surface extracted; same pickingcallbacks. Width/depth recalibration uniformly scales existing transform. Core canonical walls/furniture untouched.
@@ -76,9 +76,18 @@ One FloorPlanDocumentV2/compiler/transaction owner. Original immutable/private p
 
 ## Next executable actions / unresolved blockers
 
-1. Read current finaltest sessions/logs above, fixdirectfailures, reviewcompleteaffinediff, gitdiffcheck, scopedcheckpoint. Keepstatus/guidecurrent.
+1. Mirror-registration batch passes focused domain/browser/type/lint/quality; checkpoint it, then finish confirmation retention guard and related M2 work. Keep status/guide current.
 2. Confirmation/source deletion race remains UNFIXED. Route reads source identity withoutretentionfields and doesnotlocksource beforeDesigncreate. Existing sanitizePrivateFloorPlanUnderlayForSave in lib/floor-plan-imports/retention.ts locks source before Design and scrubsdeletedunderlay for normaldesigns; reuse its lockcontract, not a parallelretentionengine. Addactualhandler isolated-boundary cancellation/version/deletion-race tests; no sharedDB.
-3. Investigate mirror orientation with a TWO-control-point calibration: current similarityprojection cannot encode reflection fromtwoanchors alone. Existing addressmirror transformscontrols butretainsnohandedness. Newaffineunderlay handlesexplicit3-pointreflection correctly, notproofthat2-pointorientationworkflowisfixed. Reproduced E/two-point-mirror-before.json: known(100,200)sourcepoint becomes(100,−200),400pxerror aftermirror_x onauthored2-pointcalibration. Notfixed. Preserveoneprojectionowner; mirroredthree-pointfixturepassingdoesnotcoverthiscase.
+3. Two-point mirror registration is fixed; see the batch below. Include it in the next immutable local preview.
 4. Planning-review designation (distinctfromsource/constructionverified), relevantissuecorrectionnavigation and whole actualimport/cancel/back/failure/staleresult/deletion/two-tab scenarios remain. Assumedheights/optionalroomlabels are ALREADY MVPsuggestions; do not reimplement a nonexistentblocker fromstalenotes.
 5. Finishreferenceartwork/recoverychoices where needed; independentreal wall/opening audit and honestcoverage. Do not acquiredata indefinitely/inventpilot. Whole-planrealaccuracy andnativeIllustratorremainrequiredacceptancegaps.
 6. Finalexact-source requiredsuite/build/immutableLOCALsmoke/performance+memory/ONEindependentread-onlyfinalreview/remediation. No READY whiledirecttests/realinputaccuracy/Illustratorarepending. No integration/deploywithoutseparateauthorization.
+
+
+## Mirror registration — checkpoint batch
+
+- Before: two controls lose reflected handedness, mapping source(100,200) to(100,-200),400pxerror. E/two-point-mirror-before.json and orientation-registration-before.log. Existing length-only scale tests could not detect this spatial error.
+- Existing canonical calibration now carries optional validated reflected:boolean. The shared similarity solver uses it for two-point/collinear controls; three-point affine fitting remains authoritative. One helper transforms cloned registration points and retains/toggles handedness inferred from the existing projection. Original source and measurement records unchanged; no second solver or geometry owner.
+- Independent all-eight-orientation oracles test off-axis points, two-point/three-collinear/affine fixtures, private underlay inverse, persisted reload and double mirror. E/orientation-registration-r2.log PASS. r1 test-only strict-deep comparison distinguished -0 from0; changed to exact zero geometric distance after existing0.01px rounding, no tolerance relaxation.
+- Actual production review-component browser workflow includes scale/conflict/recalibration, native Mirror left/right and reload. Both browsers PASS r2(Chromium828ms/WebKit1.9s,total5.1s,0retries), maxoverlaycoordinatechange1.1368683772161603e-13px vs1e-7 testguard. E/browser-orientation-r2-artifacts. WebKit screenshot visually inspected. r1 could not launch browsers inside sandbox (Chromium MachPort permission denied, WebKit abort); authorized local escalation r2 succeeded, no app changes between runs.
+- Import-review plus scale/confirm/registered/orientation suite, existing source-overlay suite, typecheck and scopedESLint PASS: E/orientation-{review,overlay,types,lint}-r1.log. Qualityr1 required only lower baselines; qualityr2 PASS after lowering:1254prod,183oversized,541functiondebt,18inheritedsuppressions,0cycles. All sessions completed. Full-platform/final-required/immutable-smoke still to run after related M2 batch.

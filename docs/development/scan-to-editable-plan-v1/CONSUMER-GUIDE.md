@@ -8,6 +8,8 @@ In Consumer Mode, open the imported-wall controls and choose **Edit this plan** 
 
 Wall and opening controls, 2D/3D views, placement checks and vector export use the same accepted plan. A completed drag or confirmed numeric edit is one undoable change; Escape cancels an active drag. Check new placement warnings after changing walls. Intersecting furniture is preserved for correction, and saved room layouts remain available for recovery.
 
+**Orientation** rotates or mirrors the candidate and its source registration together. The overlay stays on the same source features, including plans calibrated with two points. Saved independent measurements remain attached to their original source endpoints.
+
 In **Compare and export vector plan**, choose paper, orientation and a fixed scale of 1:50 or 1:100. Choose a larger page or 1:100 if the drawing does not fit. Print at 100%: a 9260 mm plan dimension measures 92.6 mm at 1:100. Dimensions show live proposed millimetres measured along the stated centreline convention. Historical source numbers do not replace current measurements.
 
 The PDF and SVG contain separate wall, window, door, swing, fixture/furniture and text objects. Dimensions, labels and fixtures/furniture can be toggled. Unknown furniture dimensions and unsupported details are reported. Curved wall footprints currently use sampled segments; the exporter does not claim precise curved-wall editability.
