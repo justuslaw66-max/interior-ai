@@ -44,7 +44,10 @@ test("Native pointer, renderer and memory observations on 100 walls and 50 openi
   await page.evaluate(() => { (window as typeof window & { __scanPlanPerformance: { active: boolean } }).__scanPlanPerformance.active = true; });
   for (let index = 0; index < 5; index++) {
     await page.mouse.move(origin.x, origin.y); await page.mouse.down();
-    await page.mouse.move(origin.x + 30, origin.y + 20, { steps: 20 });
+    for (let step = 1; step <= 20; step++) {
+      await page.mouse.move(origin.x + 30 * step / 20, origin.y + step);
+      await page.evaluate(() => new Promise<void>((resolve) => requestAnimationFrame(() => resolve())));
+    }
     await page.keyboard.press("Escape"); await page.mouse.up();
   }
   await page.evaluate(() => { (window as typeof window & { __scanPlanPerformance: { active: boolean } }).__scanPlanPerformance.active = false; });
