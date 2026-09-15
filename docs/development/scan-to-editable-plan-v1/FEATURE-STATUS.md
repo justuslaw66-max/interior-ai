@@ -2,6 +2,14 @@
 
 2026-09-16. **IN_PROGRESS**. Installation and the bounded recognition experiment are complete; real-plan conversion, independent coverage and the remaining specific native Illustrator checks remain incomplete. This is not READY or integrated. Authority: [original mandate](MANDATE.md), [continuation](Scan_Plan_Acceptance_Completion_Mandate.md).
 
+## Latest source review — outlines confirmed; two opening spans corrected locally
+
+The user confirms all three displayed outlines and the first opening's span. They identify a second opening shifted into its lower wall and a correctly located window whose proposed span stops short of both frame ends. Enlarged source inspection confirms those errors and the three-parallel-line window symbol. The current fallback aligns semantic endpoints with a host wall; it does not locate the actual jamb/frame ends, so host alignment alone did not establish correct span placement.
+
+Private **E/opening-source-review-r1** preserves the exact correction, original-pixel crops/profiles, prior proposal and a new assisted review copy. The assistant selected visible source ends and applied the existing Consumer source-span analysis and safe opening-edit domain functions: one span moved upward and shortened, the window extended at both ends. The first opening, all outlines/walls/vertices/dimensions/calibrations and the original source compare unchanged. Both corrected spans project back within the unchanged3px original-source tolerance. Compiler and local JSON save/reload checks PASS; the private comparison controls pass desktop/mobile browser checks. An initial harness comparison of undefined versus omitted JSON properties was corrected and its failure retained.
+
+These are explicitly **assisted local corrections**, not an automatic jamb detector, a production importer change or completed Consumer browser import/persistence acceptance. No site dimensions or construction verification were granted. Automatic source-supported endpoint refinement, operation details and the full photo-only Consumer workflow remain open. No application code changed in this review; the tested application remains **7812167e4466b23df08bfdee4bf1ea455ed9472b**. This status update is not a separately tested build. No new external recognition or integration occurred.
+
 ## Photo-only product assumption — user confirmed
 
 The consumer may have **only the uploaded photo**. An original PDF, flatbed scan or replacement file is not a prerequisite for this feature. The user confirms that the highlighted printed source endpoints look correct. That source-reading question is closed; this does not establish site accuracy or construction verification. The replacement-file request is withdrawn. The remaining task is a photo-calibration/reconstruction capability gap, not waiting for the consumer to supply a better original.
