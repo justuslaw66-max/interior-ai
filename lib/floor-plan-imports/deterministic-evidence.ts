@@ -1,7 +1,7 @@
 import { scaleInspection, type DimensionCandidate, type SourceScaleInspection } from "./scale-diagnostics";
 import { dimensionCandidateMatchesHint, dimensionHintDistance, rasterDimensionCandidates } from "./dimension-span-candidates";
 import type { RasterDimensionSpanEvidence } from "./raster-dimension-spans";
-
+import type { RasterOpeningSpanEvidence } from "./raster-opening-spans";
 export type SourcePointPx = { x: number; y: number };
 
 export type SourceVectorSegment = {
@@ -197,8 +197,8 @@ export type RegisteredPageEvidence = {
   text: SourceTextEvidence[];
   semantics: PageSemanticEvidence;
   dimensionSpanEvidence?: RasterDimensionSpanEvidence;
+  openingSpanEvidence?: RasterOpeningSpanEvidence;
 };
-
 export type SourceScaleSolution = {
   millimetresPerPixel: number;
   dimensionCount: number;

@@ -1,3 +1,4 @@
+import { testRasterOpeningSpans } from "./test-raster-opening-spans";
 import { diagnoseSourceScale, solveCrossCheckedScale } from "@/lib/floor-plan-imports/source-scale-cross-check";
 import { testRasterDimensionAssociations } from "./test-raster-dimension-associations";
 import assert from "node:assert/strict";
@@ -711,6 +712,7 @@ async function testRejectedClusterDiagnostics() {
 
 async function main() {
   await testRasterDimensionAssociations();
+  await testRasterOpeningSpans();
   testRelevantPageRanking();
   await testRejectedClusterDiagnostics();
   await testIndependentScaleConflict();

@@ -1,5 +1,6 @@
 import { automaticScaleReviewMessage, diagnoseSourceScale } from "./source-scale-cross-check";
 import { registerRasterDimensionSpans } from "./raster-dimension-spans";
+import { registerRasterOpeningSpans, sourceOpeningSpan } from "./raster-opening-spans";
 import { mergeDimensionLabels } from "./semantic-dimension-merge";
 import { sourceTextEvidenceFromLocalOcr } from "./local-ocr-rotation";
 import { z } from "zod";
@@ -1898,7 +1899,7 @@ function buildCanonicalCandidate(
   }
 
   if (page && walls.length > 0) {
-    for (const symbol of page.semantics.openingSymbols) {
+    for (const [symbolIndex, symbol] of page.semantics.openingSymbols.entries()) {
       if (symbol.confidence < 0.5) continue;
       const sourcePoint = {
         x: symbol.centerXRatio * page.widthPx,
@@ -1974,19 +1975,7 @@ function buildCanonicalCandidate(
         )
       ) continue;
       const requestedWidth = symbol.kind === "window" ? 1200 : 900;
-      const sourceSpan =
-        symbol.spanStart && symbol.spanEnd
-          ? [
-              {
-                x: symbol.spanStart.xRatio * page.widthPx,
-                y: symbol.spanStart.yRatio * page.heightPx,
-              },
-              {
-                x: symbol.spanEnd.xRatio * page.widthPx,
-                y: symbol.spanEnd.yRatio * page.heightPx,
-              },
-            ] as const
-          : null;
+      const { points: sourceSpan, pixelSupported } = sourceOpeningSpan(page, symbol, symbolIndex);
       const snappedSpan = sourceSpan
         ? sourceSpan.map((point) =>
             pointToSegmentDistance(
@@ -2067,9 +2056,9 @@ function buildCanonicalCandidate(
           pageNumber,
           Math.min(0.65, symbol.confidence),
           "inferred",
-          spanSupported
-            ? "Semantic opening span snapped to a deterministic host wall; handing needs review"
-            : "Symbol classified semantically and snapped to a deterministic wall; width and handing need review"
+          pixelSupported
+            ? "Opening endpoints located from raster jamb or frame evidence; classification and operation need review"
+            : "Opening proposal aligned to a source-supported host wall; endpoints, width and operation need review"
         ),
       });
     }
@@ -2578,6 +2567,8 @@ export class PdfRasterFloorPlanSourceAdapter implements FloorPlanSourceAdapter {
     }
     for (const page of selectedPages) await registerRasterDimensionSpans(page,
       envelope.renderedPages?.find((rendered) => rendered.pageNumber === page.pageNumber), context);
+    for (const page of selectedPages) await registerRasterOpeningSpans(page,
+      envelope.renderedPages?.find((rendered) => rendered.pageNumber === page.pageNumber), context);
     const observations = selectedPages.map((page) => ({ page, diagnosis: diagnoseSourceScale(page) }));
     const solutions = observations
       .map(({ page, diagnosis }) => ({ page, solution: diagnosis.status === "accepted" ? diagnosis.candidate : null }))
@@ -2600,6 +2591,7 @@ export class PdfRasterFloorPlanSourceAdapter implements FloorPlanSourceAdapter {
       sourceManifest: result.sourceManifest
         ? {
             ...result.sourceManifest,
+            rasterOpeningSpans: selectedPages.filter((page) => page.openingSpanEvidence).map((page) => ({ pageNumber: page.pageNumber, ...page.openingSpanEvidence })),
             scaleDiagnostics: observations.map(({ page, diagnosis }) => ({ pageNumber: page.pageNumber, ...diagnosis })),
             selectedPageNumber: next.selectedPageNumber ?? next.scale?.pageNumber ?? null,
             scale: next.scale
