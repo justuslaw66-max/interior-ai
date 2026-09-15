@@ -241,7 +241,7 @@
       "limit": 250
     },
     "components/editor/floor-plan-import-review/FloorPlanSourceReviewCanvas.tsx": {
-      "lines": 484,
+      "lines": 481,
       "limit": 250
     },
     "components/editor/floor-plan-import-review/FloorPlanStructureCorrectionFields.tsx": {
@@ -249,7 +249,7 @@
       "limit": 250
     },
     "components/editor/floor-plan-import-review/FloorPlanVisualReviewTools.tsx": {
-      "lines": 285,
+      "lines": 284,
       "limit": 250
     },
     "components/editor/FloorPlanImportAssistant.tsx": {
@@ -565,7 +565,7 @@
       "limit": 400
     },
     "lib/floor-plan-imports/deterministic-evidence.ts": {
-      "lines": 1173,
+      "lines": 1143,
       "limit": 400
     },
     "lib/floor-plan-imports/lease.ts": {
@@ -577,7 +577,7 @@
       "limit": 400
     },
     "lib/floor-plan-imports/pdf-raster-adapter.ts": {
-      "lines": 2815,
+      "lines": 2808,
       "limit": 400
     },
     "lib/floor-plan-imports/planar-face-evidence.ts": {
@@ -2131,7 +2131,7 @@
     "components/editor/floor-plan-import-review/FloorPlanSourceReviewCanvas.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 438
+        "maximum": 437
       },
       "complexFunctions": {
         "count": 1,
@@ -2153,7 +2153,7 @@
     "components/editor/floor-plan-import-review/FloorPlanVisualReviewTools.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 248
+        "maximum": 247
       },
       "complexFunctions": {
         "count": 1,
@@ -3606,8 +3606,8 @@
     },
     "lib/floor-plan-imports/deterministic-evidence.ts": {
       "overlongFunctions": {
-        "count": 6,
-        "maximum": 232
+        "count": 5,
+        "maximum": 202
       },
       "complexFunctions": {
         "count": 2,

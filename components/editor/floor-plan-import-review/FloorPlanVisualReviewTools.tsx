@@ -91,13 +91,12 @@ export default function FloorPlanVisualReviewTools({
         pageNumber={page?.pageNumber ?? pageNumber}
         onPageNumberChange={(value) => {
           setPageNumber(value);
-          setScalePoints([]);
-          setRoomPoints([]);
-          setOpeningPoints([]);
+          setScalePoints([]); setRoomPoints([]); setOpeningPoints([]);
         }}
         focusedEntityIds={focusedEntityIds}
         pickingScale={pickingScale}
         scalePoints={scalePoints}
+        onUseScaleEndpoints={setScalePoints}
         onSourcePoint={(point) =>
           setScalePoints((current) =>
             current.length >= 2 ? [point] : [...current, point]

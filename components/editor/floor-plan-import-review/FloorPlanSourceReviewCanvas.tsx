@@ -13,6 +13,7 @@ import FloorPlanSourceArtworkSelection from "./FloorPlanSourceArtworkFields";
 import type { ConsumerFloorPlanImportJob } from "../floor-plan-import-ui-types";
 import { useFloorPlanReviewZoom } from "./useFloorPlanReviewZoom";
 import { FloorPlanReviewZoomControls } from "./FloorPlanReviewZoomControls";
+import { sourceDrawingSvgPoints as polygonPoints } from "@/lib/floor-plan-source-drawing";
 
 type FloorPlanSourceReviewCanvasProps = {
   document: FloorPlanDocumentV2;
@@ -27,6 +28,7 @@ type FloorPlanSourceReviewCanvasProps = {
   pickingScale: boolean;
   scalePoints: ReviewSourcePoint[];
   onSourcePoint: (point: ReviewSourcePoint) => void;
+  onUseScaleEndpoints?: (points: ReviewSourcePoint[]) => void;
   pickingRoom?: boolean;
   roomPoints?: ReviewSourcePoint[];
   onRoomPoint?: (point: ReviewSourcePoint) => void;
@@ -40,10 +42,6 @@ type FloorPlanSourceReviewCanvasProps = {
   previewOnly?: boolean;
 };
 
-function polygonPoints(value: ReviewSourcePoint[]) {
-  return value.map((point) => `${point.x},${point.y}`).join(" ");
-}
-
 export default function FloorPlanSourceReviewCanvas({
   document,
   floorId,
@@ -55,8 +53,7 @@ export default function FloorPlanSourceReviewCanvas({
   onPageNumberChange,
   focusedEntityIds,
   pickingScale,
-  scalePoints,
-  onSourcePoint,
+  scalePoints, onSourcePoint, onUseScaleEndpoints,
   pickingRoom = false,
   roomPoints = [],
   onRoomPoint,
@@ -180,7 +177,7 @@ export default function FloorPlanSourceReviewCanvas({
     <section className="mt-3" aria-label="Interactive 2D plan preview">
       <FloorPlanSourceArtworkSelection count={artwork.length} show={showArtwork} onShow={setShowArtwork}
         annotation={selectedArtwork} document={document} floorId={floorId} onChange={onDocumentChange}
-        onError={setArtworkError} error={artworkError} onClose={() => setSelectedArtworkId("")}
+        onError={setArtworkError} error={artworkError} onClose={() => setSelectedArtworkId("")} onUseScaleEndpoints={onUseScaleEndpoints}
         disabled={disabled} previewOnly={previewOnly} />
       <div className="mb-2 flex items-center justify-between gap-2">
         <div>

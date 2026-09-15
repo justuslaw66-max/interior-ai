@@ -41,3 +41,7 @@ export function sourceDrawingSvgPath(geometry: FloorPlanSourceDrawingGeometryV2)
   const command = { line: "L", cubic: "C", quadratic: "Q", text: "M" }[geometry.command];
   return `M ${start.x} ${start.y}${points.length ? ` ${command} ${points.map((point) => `${point.x} ${point.y}`).join(" ")}` : ""}`;
 }
+
+export function sourceDrawingSvgPoints(points: FloorPlanSourceDrawingGeometryV2["points"]) {
+  return points.map((point) => `${point.x},${point.y}`).join(" ");
+}

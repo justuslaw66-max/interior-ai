@@ -1,4 +1,6 @@
 import { automaticScaleReviewMessage, diagnoseSourceScale } from "./source-scale-cross-check";
+import { registerRasterDimensionSpans } from "./raster-dimension-spans";
+import { mergeDimensionLabels } from "./semantic-dimension-merge";
 import { sourceTextEvidenceFromLocalOcr } from "./local-ocr-rotation";
 import { z } from "zod";
 import type {
@@ -378,23 +380,7 @@ function mergeSemantics(
     }
     roomBoundaries.push(candidate);
   }
-  const dimensionLabels = [...preferred.dimensionLabels];
-  for (const candidate of supplemental.dimensionLabels) {
-    if (
-      dimensionLabels.some(
-        (existing) =>
-          Math.abs(existing.valueMm - candidate.valueMm) <=
-            Math.max(10, candidate.valueMm * 0.01) &&
-          (existing.orientation === candidate.orientation ||
-            existing.orientation === "unknown" ||
-            candidate.orientation === "unknown") &&
-          distanceBetween(existing, candidate) <= 0.04
-      )
-    ) {
-      continue;
-    }
-    dimensionLabels.push(candidate);
-  }
+  const dimensionLabels = mergeDimensionLabels(preferred.dimensionLabels, supplemental.dimensionLabels);
   const openingSymbols = [...preferred.openingSymbols];
   for (const candidate of supplemental.openingSymbols) {
     if (
@@ -2590,6 +2576,8 @@ export class PdfRasterFloorPlanSourceAdapter implements FloorPlanSourceAdapter {
         }
       }
     }
+    for (const page of selectedPages) await registerRasterDimensionSpans(page,
+      envelope.renderedPages?.find((rendered) => rendered.pageNumber === page.pageNumber), context);
     const observations = selectedPages.map((page) => ({ page, diagnosis: diagnoseSourceScale(page) }));
     const solutions = observations
       .map(({ page, diagnosis }) => ({ page, solution: diagnosis.status === "accepted" ? diagnosis.candidate : null }))
@@ -2642,6 +2630,11 @@ export class PdfRasterFloorPlanSourceAdapter implements FloorPlanSourceAdapter {
       metrics: {
         ...result.metrics,
         scaleSolved: Boolean(next.scale),
+        labelObservationCount: envelope.pages.reduce((sum, page) => sum + page.semantics.roomLabels.length, 0),
+        roomBoundaryProposalCount: envelope.pages.reduce((sum, page) => sum + (page.semantics.roomBoundaries?.length ?? 0), 0),
+        dimensionObservationCount: envelope.pages.reduce((sum, page) => sum + page.semantics.dimensionLabels.length, 0),
+        openingObservationCount: envelope.pages.reduce((sum, page) => sum + page.semantics.openingSymbols.length, 0),
+        fixtureObservationCount: envelope.pages.reduce((sum, page) => sum + (page.semantics.fixtureSymbols?.length ?? 0), 0),
         scaleDimensionCount: next.scale?.dimensionCount ?? 0,
         scaleResidualMm: next.scale?.rmsResidualMm ?? null,
         scaleSingleSegmentCandidateCount: observations.reduce((sum, { diagnosis }) => sum + diagnosis.diagnostics.singleSegmentCandidateCount, 0),

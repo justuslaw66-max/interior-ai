@@ -3,10 +3,11 @@
 import type { FloorPlanAnnotationV2, FloorPlanDocumentV2 } from "@/lib/floor-plan-document-v2";
 import { applyConsumerTopologyCorrection } from "@/lib/floor-plan-import-review-geometry";
 
-function FloorPlanSourceArtworkFields({ annotation, document, floorId, onChange, onError, onClose, disabled }: {
+function FloorPlanSourceArtworkFields({ annotation, document, floorId, onChange, onError, onClose, disabled, onUseScaleEndpoints }: {
   annotation: FloorPlanAnnotationV2; document: FloorPlanDocumentV2; floorId: string;
   onChange?: (document: FloorPlanDocumentV2) => void; onError: (error: string | null) => void;
   onClose: () => void; disabled: boolean;
+  onUseScaleEndpoints?: (points: Array<{ x: number; y: number }>) => void;
 }) {
   const textMark = annotation.geometry.kind === "source_drawing" && annotation.geometry.command === "text";
   return <form key={`${annotation.id}:${document.revisionId}`} className="mt-2 rounded border bg-white p-3 text-xs text-neutral-800"
@@ -28,7 +29,13 @@ function FloorPlanSourceArtworkFields({ annotation, document, floorId, onChange,
     {textMark ? <label>Correct text
       <input aria-label="Correct source text" className="my-2 block w-full rounded border p-2" name="text"
         defaultValue={annotation.text} maxLength={2000} disabled={!onChange || disabled} />
-    </label> : <p>This unclassified line remains available for review against the original drawing.</p>}
+    </label> : <p>{annotation.id.startsWith("source-proposal:") ? annotation.text : "This unclassified line remains available for review against the original drawing."}</p>}
+    {onUseScaleEndpoints && /^source-proposal:\d+:dimension:\d+$/.test(annotation.id) && annotation.geometry.kind === "source_drawing" &&
+      annotation.geometry.command === "line" && annotation.geometry.points.length === 2 ?
+      <button type="button" className="mt-2 rounded border px-3 py-1" disabled={disabled} onClick={() => {
+        if (annotation.geometry.kind === "source_drawing") onUseScaleEndpoints(annotation.geometry.points);
+        onClose();
+      }}>Use these endpoints for scale review</button> : null}
     {textMark && onChange ? <button className="rounded border px-3 py-1" disabled={disabled} type="submit">Save text correction</button> : null}
   </form>;
 }
@@ -39,6 +46,7 @@ export default function FloorPlanSourceArtworkSelection(props: {
   annotation?: FloorPlanAnnotationV2; document: FloorPlanDocumentV2; floorId: string;
   onChange?: (document: FloorPlanDocumentV2) => void; onError: (error: string | null) => void;
   onClose: () => void; disabled: boolean; previewOnly: boolean; error: string | null;
+  onUseScaleEndpoints?: (points: Array<{ x: number; y: number }>) => void;
 }) {
   return <>
     {props.count ? <label className="mb-2 flex items-center gap-2 text-xs">

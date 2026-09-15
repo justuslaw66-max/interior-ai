@@ -1,10 +1,8 @@
 "use client";
 
 import type { FloorPlanAnnotationV2 } from "@/lib/floor-plan-document-v2";
-import type { ReviewOverlay, ReviewSourcePoint } from "@/lib/floor-plan-import-review-overlay";
-import { sourceDrawingSvgPath } from "@/lib/floor-plan-source-drawing";
-
-const points = (value: ReviewSourcePoint[]) => value.map((point) => `${point.x},${point.y}`).join(" ");
+import type { ReviewOverlay } from "@/lib/floor-plan-import-review-overlay";
+import { sourceDrawingSvgPath, sourceDrawingSvgPoints as points } from "@/lib/floor-plan-source-drawing";
 
 function SourceArtwork({ annotations, selectedId, picking, onSelect, focused }: {
   annotations: FloorPlanAnnotationV2[]; selectedId: string; picking: boolean; onSelect: (id: string) => void; focused: Set<string>;
@@ -16,7 +14,7 @@ function SourceArtwork({ annotations, selectedId, picking, onSelect, focused }: 
     const select = () => { if (!picking) onSelect(annotation.id); };
     const text = geometry.command === "text";
     return <g key={annotation.id} data-review-entity-id={annotation.id} role="button" tabIndex={picking ? -1 : 0}
-      aria-label={text ? `Source text: ${annotation.text}` : `Source stroke ${annotation.id}`}
+      aria-label={annotation.id.startsWith("source-proposal:") ? annotation.text : text ? `Source text: ${annotation.text}` : `Source stroke ${annotation.id}`}
       aria-pressed={selected} className="cursor-pointer focus:outline focus:outline-2 focus:outline-violet-600"
       onClick={(event) => { if (!picking) { event.stopPropagation(); select(); } }}
       onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); select(); } }}>
@@ -27,6 +25,7 @@ function SourceArtwork({ annotations, selectedId, picking, onSelect, focused }: 
           <path d={sourceDrawingSvgPath(geometry)} fill="none" stroke="transparent" strokeWidth={12}
             vectorEffect="non-scaling-stroke" pointerEvents={picking ? "none" : "stroke"} aria-hidden="true" />
           <path data-source-artwork-shape d={sourceDrawingSvgPath(geometry)} fill="none" stroke={selected ? "#dc2626" : "#7c3aed"}
+            strokeDasharray={annotation.id.startsWith("source-proposal:") ? "4 3" : undefined}
             strokeWidth={selected ? 4 : 1.5} vectorEffect="non-scaling-stroke" pointerEvents="none" />
         </>}
     </g>;

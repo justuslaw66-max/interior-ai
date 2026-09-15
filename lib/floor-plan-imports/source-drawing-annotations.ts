@@ -2,6 +2,7 @@ import type { FloorPlanAnnotationV2, FloorPlanEntityProvenanceV2 } from "@/lib/f
 import { sourceDrawingGeometryError, type FloorPlanSourceDrawingGeometryV2 } from "@/lib/floor-plan-source-drawing";
 import type { FloorPlanReviewIssue } from "./types";
 import type { RegisteredPageEvidence } from "./deterministic-evidence";
+import { sourceProposalAnnotations } from "./source-proposal-annotations";
 
 /** Preserve private source marks independently of semantic/topology success. */
 export function sourceDrawingAnnotations(page: RegisteredPageEvidence | undefined, sourceId: string, version: string, issues: FloorPlanReviewIssue[] = []) {
@@ -43,5 +44,5 @@ export function sourceDrawingAnnotations(page: RegisteredPageEvidence | undefine
     message: `${rejected} source marks exceed supported drawing bounds; inspect the original underlay.`, severity: "warning" });
   if (conflictIds.length) issues.push({ id: "source-text-conflict", code: "source_text_conflict", resolved: false,
     entityIds: conflictIds, message: "Rotated OCR passes disagree on highlighted text. Compare the readings with the source; they have not supplied automatic labels or dimensions.", severity: "warning" });
-  return annotations;
+  return [...annotations, ...sourceProposalAnnotations(page, sourceId, version)];
 }

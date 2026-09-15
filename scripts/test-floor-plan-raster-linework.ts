@@ -1,4 +1,5 @@
 import { diagnoseSourceScale, solveCrossCheckedScale } from "@/lib/floor-plan-imports/source-scale-cross-check";
+import { testRasterDimensionAssociations } from "./test-raster-dimension-associations";
 import assert from "node:assert/strict";
 import { compileFloorPlanDocumentV2 } from "@/lib/floor-plan-compiler-v2";
 import type { FloorPlanDocumentV2 } from "@/lib/floor-plan-document-v2";
@@ -709,6 +710,7 @@ async function testRejectedClusterDiagnostics() {
 }
 
 async function main() {
+  await testRasterDimensionAssociations();
   testRelevantPageRanking();
   await testRejectedClusterDiagnostics();
   await testIndependentScaleConflict();

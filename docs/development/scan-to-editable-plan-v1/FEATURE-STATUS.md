@@ -2,6 +2,14 @@
 
 2026-09-15. **IN_PROGRESS**. Installation and the bounded recognition experiment are complete; real-plan conversion, independent coverage and native Illustrator acceptance remain incomplete. This is not READY or integrated. Authority: [original mandate](MANDATE.md), [continuation](Scan_Plan_Acceptance_Completion_Mandate.md).
 
+## Current focused continuation — candidate verification in progress
+
+Resumed clean **e31e483d20f124ec4854799cea1d5b35e046fa8c**, which differs from tested01b4e83 only in this status document. The current candidate fixes dimension fragment/chain association and OCR/supplemental endpoint handoff, retains uncalibrated proposals as reference artwork and adds their endpoint-selection action before topology. [Implementation and field-consumption notes](SOURCE-ASSOCIATION.md). No further recognition calls or integration work.
+
+Private E/source-association-r1 contains the exact continuation, offline replays, per-dimension tick/line trace, original/rendered/crop transforms and highlighted confirmation crops. The captured observations now locate **16 raster-supported tick spans**, but the original scan still has **zero accepted walls/rooms/openings** and `scale_unavailable`. This is a **real-scan feature acceptance blocker**. Neither the common-scale test nor a conditional affine hypothesis passes all independent source-pixel checks. No warp, averaged compromise, threshold change or authored substitute was applied. Printed endpoint confirmation is pending; a consistent original source/control plan is still needed if the source interpretation is confirmed.
+
+Focused raster/detection/scale tests, typecheck, lint and lowered quality baselines pass on the working candidate. The development Consumer probe uploaded the original into a fresh local importer run, merged the captured response offline, selected and corrected dimension endpoints with no walls, and saved a conflicting draft. Final immutable build/repository-required tests and production UI evidence are pending; **01b4e83 remains the latest completed normal-build checkpoint until those finish**. Earlier editor/3D/export and native Illustrator evidence below is preserved, not recertified by this candidate.
+
 ## Exact source and tested revision
 
 - **Source identity CLOSED:** `/Users/justus/Downloads/IMG_4900.jpg`,836×1080,93,802bytes, SHA-256 **a0d0209a591dc57352b803fc5f8678055da8a8a24a5c2bd5d795ed8dff2d5006**. Rehashed again after testing; identical to original uploaded IMG_4900(1).jpg. Identity does not establish accuracy.

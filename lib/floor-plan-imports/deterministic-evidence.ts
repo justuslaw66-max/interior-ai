@@ -1,4 +1,6 @@
 import { scaleInspection, type DimensionCandidate, type SourceScaleInspection } from "./scale-diagnostics";
+import { dimensionCandidateMatchesHint, dimensionHintDistance, rasterDimensionCandidates } from "./dimension-span-candidates";
+import type { RasterDimensionSpanEvidence } from "./raster-dimension-spans";
 
 export type SourcePointPx = { x: number; y: number };
 
@@ -106,6 +108,7 @@ export type SemanticDimensionLabel = {
   bbox?: SemanticBoundingBox;
   extensionStart?: SemanticRatioPoint;
   extensionEnd?: SemanticRatioPoint;
+  extensionEvidenceKind?: "positioned_text" | "ocr" | "vision";
   confidence: number;
   evidenceKind?: "positioned_text" | "ocr" | "vision";
 };
@@ -193,6 +196,7 @@ export type RegisteredPageEvidence = {
   vectorPaths: SourceVectorPath[];
   text: SourceTextEvidence[];
   semantics: PageSemanticEvidence;
+  dimensionSpanEvidence?: RasterDimensionSpanEvidence;
 };
 
 export type SourceScaleSolution = {
@@ -352,10 +356,6 @@ function midpoint(segment: SourceVectorSegment): SourcePointPx {
     x: (segment.start.x + segment.end.x) / 2,
     y: (segment.start.y + segment.end.y) / 2,
   };
-}
-
-function pointDistance(left: SourcePointPx, right: SourcePointPx) {
-  return Math.hypot(left.x - right.x, left.y - right.y);
 }
 
 function median(values: number[]) {
@@ -713,12 +713,13 @@ export function inspectScaleFromRegisteredEvidence(page: RegisteredPageEvidence)
 
   const pageDiagonal = Math.hypot(page.widthPx, page.heightPx);
   const candidates: DimensionCandidate[] = dimensions.flatMap(
-    (dimension, dimensionIndex) => [
+    (dimension, dimensionIndex) => rasterDimensionCandidates(page, dimension, dimensionIndex) ?? [
       ...compoundDimensionCandidates(page, dimension, dimensionIndex),
       ...textGapDimensionCandidates(page, dimension, dimensionIndex),
-    ]
+    ].filter((candidate) => dimensionCandidateMatchesHint(page, dimension, candidate))
   );
   dimensions.forEach((dimension, dimensionIndex) => {
+    if (rasterDimensionCandidates(page, dimension, dimensionIndex) !== null) return;
     const center = {
       x: dimension.centerXRatio * page.widthPx,
       y: dimension.centerYRatio * page.heightPx,
@@ -730,39 +731,7 @@ export function inspectScaleFromRegisteredEvidence(page: RegisteredPageEvidence)
         const orientation = dx >= dy ? "horizontal" : "vertical";
         const lengthPx = segmentLengthPx(segment);
         const lineCenter = midpoint(segment);
-        const extensionDistance =
-          dimension.extensionStart && dimension.extensionEnd
-            ? Math.min(
-                pointDistance(
-                  segment.start,
-                  {
-                    x: dimension.extensionStart.xRatio * page.widthPx,
-                    y: dimension.extensionStart.yRatio * page.heightPx,
-                  }
-                ) +
-                  pointDistance(
-                    segment.end,
-                    {
-                      x: dimension.extensionEnd.xRatio * page.widthPx,
-                      y: dimension.extensionEnd.yRatio * page.heightPx,
-                    }
-                  ),
-                pointDistance(
-                  segment.end,
-                  {
-                    x: dimension.extensionStart.xRatio * page.widthPx,
-                    y: dimension.extensionStart.yRatio * page.heightPx,
-                  }
-                ) +
-                  pointDistance(
-                    segment.start,
-                    {
-                      x: dimension.extensionEnd.xRatio * page.widthPx,
-                      y: dimension.extensionEnd.yRatio * page.heightPx,
-                    }
-                  )
-              ) / 2
-            : null;
+        const extensionDistance = dimensionHintDistance(page, dimension, segment.start, segment.end);
         return {
           segment,
           orientation,
@@ -777,6 +746,7 @@ export function inspectScaleFromRegisteredEvidence(page: RegisteredPageEvidence)
         };
       })
       .filter((entry) => {
+        if (!dimensionCandidateMatchesHint(page, dimension, entry.segment)) return false;
         if (entry.lengthPx < pageDiagonal * 0.025) return false;
         if (entry.distancePx > pageDiagonal * 0.16) return false;
         return (
