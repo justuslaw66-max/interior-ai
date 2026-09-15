@@ -13,7 +13,7 @@ Scale clustering, source tolerances and topology gates are unchanged. Independen
 | Observation | Existing consumption | Review and limits |
 | --- | --- | --- |
 | Literal room labels | Label-to-source/face matching | A label does not establish a boundary. |
-| Dimension values, orientation, text bounds | Dimension observations and scale candidates | OCR number provenance retained when matching a supplemental observation. Different numbers are not duplicates. |
+| Dimension values, orientation, text bounds | Dimension observations and scale candidates | The current stage's preferred number provenance is retained (OCR in local-preferred mode, vision in selected-page replay). Different numbers are not duplicates. |
 | Dimension endpoint hints | Bounded raster tick search | Continuous source-line support required; coordinates remain proposals until reviewed. |
 | Room polygons | Existing source-supported boundary registration | Uncalibrated edges additionally retained as dashed reference annotations; never direct canonical rooms. |
 | Opening spans, kinds and operations | Existing source/wall support and host checks | Dashed reference spans retained without scale. Symbol classification and door operation still require review. |
@@ -21,7 +21,7 @@ Scale clustering, source tolerances and topology gates are unchanged. Independen
 | Extra wall-band observations outside semantic schema | Private diagnostic overlay only | Not passed through as authored walls or added to the canonical graph. |
 | Uncertain regions and notes | Private response comparison and existing semantic notes where supported | No uncertainty is converted into verification. |
 
-The one authorized response is replayed offline. There is no new recognition route, retry, provider fallback or production enablement in this change. Detailed client imagery, observations, response and overlays remain outside Git.
+The selected-page captured replay already retained all dimension hints; the separate OCR-preferred merge regression is not presented as its topology failure cause. The one authorized response is replayed offline. There is no new recognition route, retry, provider fallback or production enablement in this change. Detailed client imagery, observations, response and overlays remain outside Git.
 
 ## Consumer correction before topology
 
