@@ -7,7 +7,7 @@
 - **Source identity CLOSED:** `/Users/justus/Downloads/IMG_4900.jpg`,836×1080,93,802bytes, SHA-256 **a0d0209a591dc57352b803fc5f8678055da8a8a24a5c2bd5d795ed8dff2d5006**. Rehashed again after testing; identical to original uploaded IMG_4900(1).jpg. Identity does not establish accuracy.
 - Worktree `/Users/justus/Developer/interior-ai-scan-to-editable-plan`, branch `feature/scan-to-editable-plan-v1`. Exact tested code checkpoint **210809e0bad3c6032b984bcd47b25ce13786a63f**, tree **d2a5ab4520c61a9a40fe958192bde94288e988c1**, production BuildID **VSPQEPT16lDYMkXJb8MtI**. This status update follows testing and is documentation only; do not describe a subsequent documentation commit as the revision that ran the tests.
 - Resumed21b3354e11e222c1ef9e3df6e0979a13c9e17add was verified clean and status-only relative to testeddbc0ef4. Continuation checkpoint9c502a6 added scale diagnostics;210809e added incomplete consumer draft saving. No target synchronization or primary-checkout edits.
-- **E** = `/Users/justus/Developer/interior-ai-task-state/scan-to-editable-plan-v1`. All earlier immutable evidence remains. Detailed prior status archived in E/status-before-final-acceptance-checkpoint-210809e.md and Git; original handoff in E/status-before-acceptance-continuation-21b3354.md.
+- **E** = `/Users/justus/Developer/interior-ai-task-state/scan-to-editable-plan-v1`. Historical evidence remains; the user-edited Illustrator sample is explicitly distinguished below from preserved original exporter bytes. Detailed prior status archived in E/status-before-final-acceptance-checkpoint-210809e.md and Git; original handoff in E/status-before-acceptance-continuation-21b3354.md.
 
 ## Normal isolated installation and checks — PASS
 
@@ -38,7 +38,9 @@ That probe uses production UI/domain functions with an explicitly in-memory HTTP
 
 **ILLUSTRATOR_ACCEPTANCE_PENDING.** User screenshot2026-09-15 11:34:48 shows Illustrator2024 with proposed-apartment.pdf open, a displaced wall individually selected with vector handles. User reports individual items move. This supports native individual-object editing of the authored PDF. E/illustrator-manual-20260915 retains screenshot/hash/observations.
 
-Dimension Type-tool edit9260→9300, font/substitution warning, separate door leaf/swing and window/fixture actions, edited-copy save/close/reopen, paper scale and SVG checks remain unobserved. Pink text highlighting is visible; its cause is unconfirmed. Output paths/hashes pending. Installed version previously read28.0.0. Two prior AppleEvent timeouts preserved; no retries. [Manual checklist](ILLUSTRATOR-ACCEPTANCE.md). A compact follow-up was asked directly in Codex.
+**17:25 follow-up:** user confirms number editing, separately movable lines and saving proposed-apartment copy edited.pdf. Saved file found and hashed **31ab0f7fee2834a1b7d33c34e6a8e80187ec81911024599d86488fbcfb2b8a98**,58,526bytes. Read-only inspection and rendering confirm **9300 remains live text**, paths and Illustrator editing data remain, zero images, A4landscape. Metadata identifies Illustrator28.0(Macintosh). Text edit and edited-PDF save are now supported native results. E/illustrator-manual-20260915-save-r1.
+
+Close/reopen confirmation and font fidelity remain pending: saved descriptor names LiberationSans but lists MyriadPro family; no warning observation is assumed. Specific door-leaf/swing, deletion/window/fixture actions, native scale and SVG checks remain unobserved. Screenshot has an unsaved asterisk. The original sample in the old preview was also modified; its observed bytes were preserved, while the original a06977f0… exporter bytes remain intact in the ZIP and clean-install packs. [Detailed evidence and checklist](ILLUSTRATOR-ACCEPTANCE.md). Two prior AppleEvent timeouts preserved; no retries.
 
 ## Preserved limits and next action
 

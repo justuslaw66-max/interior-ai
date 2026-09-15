@@ -1,8 +1,14 @@
-# Illustrator acceptance — pending
+# Illustrator acceptance — partial native results
 
 Status: **ILLUSTRATOR_ACCEPTANCE_PENDING**. Illustrator 2024 reports version **28.0.0** on this Mac. The JavaScript automation and System Events diagnostic each returned AppleEvent timeout `-1712`; no artwork-editing action ran. PDF inspection and another renderer do not establish Illustrator acceptance.
 
 2026-09-15 manual update: the user opened proposed-apartment.pdf in Illustrator2024, showed an individually selected/moved wall, and reported that individual items can move. This is a partial native object-editing observation. Dimension text editing, font warnings/substitution, exact saved output identity, save/close/reopen and the separate SVG test remain pending. Screenshot and direct report are retained privately in E/illustrator-manual-20260915. No additional AppleEvent attempt ran.
+
+2026-09-15 17:25 manual update supersedes the text-edit/save portions of the earlier pending record. The user reports saving **proposed-apartment copy edited.pdf**, successfully editing the number, and moving each line separately. The saved file was found in E/local-preview-dbc0ef4/vector-pack,58,526bytes, SHA-256 **31ab0f7fee2834a1b7d33c34e6a8e80187ec81911024599d86488fbcfb2b8a98**. Its metadata identifies Adobe Illustrator28.0(Macintosh). Independent read-only inspection finds **9300 as live text**, vector paths, one cubic curve, zero images, Illustrator private editing data and A4landscape297.000083×210.000144mm. Poppler rendering was visually inspected. **Native individual-object movement, dimension text editing and saving an edited PDF are supported by actual evidence.**
+
+Explicit close/reopen confirmation remains pending; the screenshot tab has an asterisk, so the visible state may contain newer unsaved changes. PDF parsing is not a native reopen test. Font fidelity also remains pending: the saved font descriptor names LiberationSans but lists MyriadPro as the family; the pink text highlighting's cause and actual warning/substitution need confirmation. Specific window/door-leaf-versus-swing/deletion/fixture actions, physical-scale checks and separate SVG acceptance remain unobserved. A concise close/reopen/font follow-up was asked directly in Codex. Private screenshot, saved-copy snapshot, hashes and independent inspection are in E/illustrator-manual-20260915-save-r1.
+
+Evidence provenance correction: the original-tab sample at E/local-preview-dbc0ef4/vector-pack/proposed-apartment.pdf now also contains9300 and differs from the historical exporter hash (current **7d9c2713a4422236821a575478f474e0a8d7bb2d01688eca2be681dbbcc03b5d**). It was preserved without restoring/overwriting it. Original exporter bytes **a06977f066e4feed3b5248badb6f4126344a8503ce190e7ba5dd68f830422e76** remain intact in the review-pack ZIP and both normal-install vector packs. These native tests concern the authored export fixture, not successful real-scan recognition.
 
 The independently authored test pack is generated with:
 
