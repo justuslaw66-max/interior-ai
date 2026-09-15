@@ -14,6 +14,8 @@ import {
 } from "@/lib/floor-plan-imports/types";
 import type { ConsumerFloorPlanImportJob } from "./floor-plan-import-ui-types";
 import FloorPlanImportReviewPanel from "./floor-plan-import-review/FloorPlanImportReviewPanel";
+import { prepareFloorPlanReviewSubmission } from "@/lib/floor-plan-import-review-submission";
+import FloorPlanReviewDraftSave from "./floor-plan-import-review/FloorPlanReviewDraftSave";
 import FloorPlanVisualReviewTools from "./floor-plan-import-review/FloorPlanVisualReviewTools";
 import FloorPlanOptionalConfigurationPanel from "./FloorPlanOptionalConfigurationPanel";
 import { inspectFloorPlanOptionalConfigurations } from "@/lib/floor-plan-optional-configurations";
@@ -69,6 +71,7 @@ export default function FloorPlanImportAssistant({
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const [createError, setCreateError] = useState<string | null>(null);
   const [reviewError, setReviewError] = useState<string | null>(null);
+  const [savedDraftVersion, setSavedDraftVersion] = useState<number | null>(null);
   const [retryingDetection, setRetryingDetection] = useState(false);
   const [selectedPageNumber, setSelectedPageNumber] = useState<number | null>(
     null
@@ -82,7 +85,7 @@ export default function FloorPlanImportAssistant({
     setSavedUnderlaysScrubbed(0);
     setDeleteError(null);
     setCreateError(null);
-    setReviewError(null);
+    setReviewError(null); setSavedDraftVersion(null);
     setRetryingDetection(false);
     setSelectedPageNumber(null);
   }, [file, resumeJobId, trainingBenchmarkOptIn]);
@@ -142,12 +145,13 @@ export default function FloorPlanImportAssistant({
   }, [cadPreview, candidate, floor]);
 
   const submitReview = async (
-    reviewIssues: FloorPlanReviewIssue[] = issues
+    reviewIssues: FloorPlanReviewIssue[] = issues,
+    draft = false
   ) => {
     if (
       !activeJob ||
       !candidate ||
-      reviewIssues.some(isFloorPlanMvpBlockingIssue)
+      (!draft && reviewIssues.some(isFloorPlanMvpBlockingIssue))
     ) {
       return;
     }
@@ -155,34 +159,7 @@ export default function FloorPlanImportAssistant({
     setSubmitting(true);
     setReviewError(null);
     try {
-      const nextCandidate = structuredClone(candidate);
-      const nextFloor = nextCandidate.floors[0];
-      if (entranceOpeningId && nextFloor) {
-        const entrance = nextFloor.openings.find((opening) => opening.id === entranceOpeningId);
-        if (entrance && !nextFloor.annotations.some((annotation) => annotation.configurationId === "main-entrance")) {
-          let annotationIndex = nextFloor.annotations.length + 1;
-          while (
-            nextFloor.annotations.some(
-              (annotation) => annotation.id === `annotation-${annotationIndex}`
-            )
-          ) {
-            annotationIndex += 1;
-          }
-          nextFloor.annotations.push({
-            id: `annotation-${annotationIndex}`,
-            kind: "label",
-            text: "Main entrance",
-            geometry: {
-              kind: "wall_span",
-              wallId: entrance.wallId,
-              offsetMm: entrance.offsetMm,
-              widthMm: entrance.widthMm,
-            },
-            configurationId: "main-entrance",
-            provenance: structuredClone(entrance.provenance),
-          });
-        }
-      }
+      const nextCandidate = prepareFloorPlanReviewSubmission(candidate, entranceOpeningId);
       await floorPlanImportResponseJson(
         await fetch(`/api/floor-plan-imports/${activeJob.id}/candidate`, {
           method: "PATCH",
@@ -191,20 +168,22 @@ export default function FloorPlanImportAssistant({
             candidate: nextCandidate,
             reviewIssues,
             candidateVersion: activeJob.candidateVersion,
-            correctionNote:
-              "Consumer confirmed the AI-generated floor plan against the uploaded source.",
+            correctionNote: draft
+              ? "Consumer saved an incomplete review draft; unresolved evidence remains unconfirmed."
+              : "Consumer confirmed the AI-generated floor plan against the uploaded source.",
           }),
         })
       );
       signal.throwIfAborted();
       const job = await processAndPoll(
         activeJob.id,
-        "Validating your corrections", { signal }
+        draft ? "Validating review draft" : "Validating your corrections", { signal }
       );
       signal.throwIfAborted();
       setCandidate(parseFloorPlanImportDocument(job.candidateJson));
       setIssues(parseFloorPlanImportIssues(job.reviewIssuesJson));
       setState({ kind: "job", job });
+      if (draft) setSavedDraftVersion(job.candidateVersion);
     } catch (cause) {
       if (signal.aborted) return;
       setReviewError(
@@ -690,6 +669,8 @@ export default function FloorPlanImportAssistant({
           {reviewError}
         </p>
       ) : null}
+      <FloorPlanReviewDraftSave disabled={disabled} submitting={submitting} deletingSource={deletingSource}
+        savedVersion={savedDraftVersion} control={control} subtle={subtle} onSave={() => void submitReview(issues, true)} />
       <FloorPlanImportReviewPanel
         candidate={candidate}
         job={activeJob}

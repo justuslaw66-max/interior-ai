@@ -345,7 +345,7 @@ export default function FloorPlanImportReviewPanel({
           </div>
           <h3 className="mt-1 text-xl font-semibold">
             {needsRoomRecovery
-              ? "AI needs a clearer wall outline"
+              ? "Wall detection needs review"
               : needsScaleRecovery
                 ? "Confirm one real measurement"
                 : unresolvedCritical.length
@@ -403,12 +403,12 @@ export default function FloorPlanImportReviewPanel({
         >
           <div className="text-sm font-semibold">
             {needsRoomRecovery
-              ? "For the fastest result, upload the original plan"
+              ? "Continue reviewing this drawing"
               : "One small correction is needed"}
           </div>
           <p className={`mt-1 text-xs leading-5 ${subtle}`}>
             {needsRoomRecovery
-              ? "Use the original PDF or a clean image without browser controls, furniture labels, or another editor drawn over it. AI will retry automatically."
+              ? "Check the scale and visible wall outlines. You can save an incomplete draft, retry detection, or choose another source. Manually traced rooms remain consumer-authored corrections."
               : blockingPrerequisites[0] ??
                 "Open the correction tools and adjust the highlighted part of the plan."}
           </p>
@@ -442,7 +442,7 @@ export default function FloorPlanImportReviewPanel({
                 disabled={disabled || submitting}
                 onClick={onChooseFile}
               >
-                Upload a clearer file
+                Choose another file
               </button>
             ) : null}
             <button
@@ -451,7 +451,7 @@ export default function FloorPlanImportReviewPanel({
               disabled={disabled || submitting}
               onClick={openManualTools}
             >
-              Help AI finish this one
+              Review scale and wall outlines
             </button>
           </div>
         </div>

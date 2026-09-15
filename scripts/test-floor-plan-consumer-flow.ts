@@ -675,7 +675,7 @@ assert.match(
 );
 assert.match(
   assistant,
-  /data-testid="floor-plan-import-simple-recovery"[\s\S]*?Upload a clearer file[\s\S]*?Help AI finish this one/,
+  /data-testid="floor-plan-import-simple-recovery"[\s\S]*?Choose another file[\s\S]*?Review scale and wall outlines/,
   "When detection is unsafe, the consumer should get one simple recovery choice before manual tools."
 );
 assert.match(

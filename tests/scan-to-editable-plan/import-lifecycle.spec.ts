@@ -4,6 +4,8 @@ import fs from "node:fs/promises";
 import webpack from "webpack";
 import { lifecycleImportJob } from "../../scripts/fixtures/scan-to-editable-plan/import-lifecycle";
 import { ACTIVE_FLOOR_PLAN_IMPORT_STORAGE_KEY } from "../../lib/floor-plan-import-client";
+import { calibratedScaleFixture, scaleMeasurement } from "../../scripts/fixtures/scan-to-editable-plan/scale-review";
+import { collectScaleMeasurementIssues } from "../../lib/floor-plan-imports/scale-measurement-readiness";
 import { test, expect, type Page } from "@playwright/test";
 
 let bundle: string;
@@ -25,6 +27,42 @@ test.beforeAll(async () => {
   }));
 });
 test.afterAll(async () => { if (bundle) await fs.rm(path.dirname(bundle), { recursive: true, force: true }); });
+
+test("An incomplete consumer review draft preserves corrections and conflicts after reload", async ({ page }, info) => {
+  await mountWorkspace(page, "needs_review");
+  const candidate = calibratedScaleFixture();
+  candidate.floors[0].calibrations[0].independentMeasurements = [scaleMeasurement({ confirmedLengthMm: 4400 })];
+  const stored = { ...lifecycleImportJob("original-job", "needs_review"), candidateJson: candidate,
+    reviewIssuesJson: collectScaleMeasurementIssues(candidate) };
+  let patches = 0, confirmations = 0;
+  await page.route("**/api/floor-plan-imports/original-job**", (route) => {
+    if (route.request().url().includes("/assets/")) return route.fallback();
+    if (route.request().url().endsWith("/confirm")) { confirmations++; return route.fulfill({ status: 409 }); }
+    if (route.request().method() === "PATCH") {
+      const body: { candidate: typeof candidate; candidateVersion: number; correctionNote: string } = route.request().postDataJSON();
+      expect(body.candidateVersion).toBe(stored.candidateVersion);
+      expect(body.correctionNote).toContain("incomplete review draft");
+      stored.candidateJson = body.candidate; stored.candidateVersion++; patches++;
+      stored.reviewIssuesJson = collectScaleMeasurementIssues(body.candidate);
+      return route.fulfill({ json: { ok: true, candidateVersion: stored.candidateVersion } });
+    }
+    return route.fulfill({ json: { job: stored } });
+  });
+  await page.reload(); await page.addScriptTag({ path: bundle });
+  const names = page.locator("details").filter({ has: page.getByText("Edit room names (optional)", { exact: true }) });
+  await names.locator("summary").click(); await names.locator("input").first().fill("Saved review room");
+  await page.getByRole("button", { name: "Save review draft", exact: true }).click();
+  await expect(page.getByRole("status")).toContainText("Review draft version 8 saved");
+  expect(patches).toBe(1); expect(confirmations).toBe(0);
+  expect(stored.reviewIssuesJson.some((issue) => issue.code === "independent_scale_conflict")).toBe(true);
+  expect(stored.candidateJson.floors[0].rooms[0].name).toBe("Saved review room");
+  await page.reload(); await page.addScriptTag({ path: bundle });
+  await names.locator("summary").click();
+  await expect(names.locator("input").first()).toHaveValue("Saved review room");
+  await expect(page.getByTestId("floor-plan-import-ready")).toHaveCount(0);
+  expect(new URL(page.url()).pathname).toBe("/scan-plan-lifecycle-component");
+  await fs.writeFile(info.outputPath("saved-incomplete-draft.json"), JSON.stringify({ stored, patches, confirmations }, null, 2));
+});
 
 async function mountWorkspace(page: Page, status: Parameters<typeof lifecycleImportJob>[1] = "ready") {
   const state = { candidateVersion: 7 };

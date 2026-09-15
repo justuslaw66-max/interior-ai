@@ -14,6 +14,23 @@ import { FloorPlanTopologyMutationErrorV2 } from "@/lib/floor-plan-topology-muta
 import { recoverProposedRoomLayout } from "@/lib/floor-plan-room-recovery";
 import { currentProposedPlacementReview } from "@/lib/floor-plan-placement-review";
 import { compileCanonicalFloorPlanRenderModel } from "@/lib/floor-plan-render-model";
+import { prepareFloorPlanReviewSubmission } from "@/lib/floor-plan-import-review-submission";
+
+function testReviewSubmission() {
+  const candidate = authoredApartment(), before = JSON.stringify(candidate);
+  const prepared = prepareFloorPlanReviewSubmission(candidate, "door");
+  assert.equal(JSON.stringify(candidate), before);
+  const entrance = prepared.floors[0].annotations.find((annotation) => annotation.configurationId === "main-entrance")!;
+  assert.equal(entrance.geometry.kind, "wall_span");
+  assert.deepEqual(prepareFloorPlanReviewSubmission(prepared, "door"), prepared, "Repeated saves cannot duplicate entrance annotations.");
+  assert.deepEqual(prepareFloorPlanReviewSubmission(candidate, "absent"), candidate);
+  const collision = structuredClone(candidate);
+  collision.floors[0].annotations = [{ ...entrance, id: "annotation-2", configurationId: undefined, text: "Unrelated source label" }];
+  const saved = prepareFloorPlanReviewSubmission(collision, "door");
+  assert.deepEqual(saved.floors[0].annotations.map(({ id }) => id), ["annotation-2", "annotation-3"]);
+  assert.equal(saved.floors[0].annotations[0].text, "Unrelated source label");
+}
+testReviewSubmission();
 
 const document = authoredApartment();
 const original = canonicalFloorPlanToDesignSnapshot(document).snapshot;
