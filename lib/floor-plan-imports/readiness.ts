@@ -172,8 +172,8 @@ export function collectFloorPlanImportReadinessIssues(input: {
       "source-dimension-coverage-incomplete",
       "source_dimension_coverage_incomplete",
       dimensionIds.length
-        ? `Source analysis found ${expectedDimensionCount} printed dimensions, but ${dimensionIds.length} are reconciled exactly. The remaining labels are suggested verification checks.`
-        : `Source analysis found ${expectedDimensionCount} printed dimensions, but none are registered as exact dimensions. At least one exact dimension and a solved scale are required.`,
+        ? `Source analysis found ${expectedDimensionCount} dimension readings, with ${dimensionIds.length} editable dimensions registered. Check the remaining readings and endpoints against the source.`
+        : `Source analysis found ${expectedDimensionCount} dimension readings, but none are registered as editable dimensions. At least one exact dimension and a solved scale are required.`,
       dimensionIds,
       dimensionIds.length ? "warning" : "critical"
     ));

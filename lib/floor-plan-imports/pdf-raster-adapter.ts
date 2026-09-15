@@ -1806,9 +1806,11 @@ function buildCanonicalCandidate(
           pageNumber,
           detected.confidence,
           geometryBasis,
-          edgeEvidence
-            ? `Wall centerline and ${edgeEvidence.thicknessMm} mm thickness paired from source boundaries ${edgeEvidence.sourceSegmentIds.join(", ")}`
-            : "Wall path registered from the containing source path; thickness requires review"
+          detected.registrationKind === "vision_guided_source_snap"
+            ? "Proposed wall path snapped to source linework; wall thickness is assumed and requires review"
+            : edgeEvidence
+              ? `Wall centerline and ${edgeEvidence.thicknessMm} mm thickness paired from source boundaries ${edgeEvidence.sourceSegmentIds.join(", ")}`
+              : "Wall path registered from the containing source path; thickness requires review"
         ),
       };
       walls.push(wall);
@@ -2135,8 +2137,6 @@ function buildCanonicalCandidate(
         "warning"
       )
     );
-  }
-  if (page) {
     const detectedCount = page.semantics.dimensionLabels.length;
     const guidance = detectedCount > dimensions.length
       ? "The remaining printed dimensions are suggested follow-up checks."
@@ -2147,7 +2147,7 @@ function buildCanonicalCandidate(
       issue(
         "dimension-reconciliation-review",
         "dimensions_confirmation",
-        `${dimensions.length} of ${detectedCount} detected printed dimensions were reconciled exactly. ${guidance}`,
+        `${dimensions.length} editable dimensions were created from ${detectedCount} source readings. Check their values and endpoints against the source. ${guidance}`,
         dimensions.length === 0 ? "critical" : "warning"
       )
     );
