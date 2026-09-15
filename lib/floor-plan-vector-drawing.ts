@@ -58,10 +58,12 @@ function dimensionPrimitives(floor: CompiledFloorPlanFloorV2): PlanDrawingPrimit
     const normal = { xMm: -(end.zMm - start.zMm) / length, zMm: (end.xMm - start.xMm) / length };
     const shift = (point: Point, distance: number) => ({ xMm: point.xMm + normal.xMm * distance, zMm: point.zMm + normal.zMm * distance });
     const a = shift(start, -500), b = shift(end, -500);
+    const extensionEnd = (witness: Point, projected: Point) => shift(projected,
+      (projected.xMm - witness.xMm) * normal.xMm + (projected.zMm - witness.zMm) * normal.zMm > 0 ? 150 : -150);
     return [
       line(`${dimension.id}:line`, [a, b], "dimension"),
-      line(`${dimension.id}:extension-a`, [start, shift(start, -650)], "dimension-extension"),
-      line(`${dimension.id}:extension-b`, [end, shift(end, -650)], "dimension-extension"),
+      line(`${dimension.id}:extension-a`, [dimension.from, extensionEnd(dimension.from, a)], "dimension-extension"),
+      line(`${dimension.id}:extension-b`, [dimension.to, extensionEnd(dimension.to, b)], "dimension-extension"),
       line(`${dimension.id}:tick-a`, [shift(a, -70), shift(a, 70)], "dimension-tick"),
       line(`${dimension.id}:tick-b`, [shift(b, -70), shift(b, 70)], "dimension-tick"),
       { id: `${dimension.id}:text`, kind: "text", text: String(Math.round(dimension.actualMm)), point: shift({ xMm: (a.xMm + b.xMm) / 2, zMm: (a.zMm + b.zMm) / 2 }, -100), role: "live-dimension-mm" },

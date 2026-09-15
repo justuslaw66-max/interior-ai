@@ -10,6 +10,8 @@ In Consumer Mode, open the imported-wall controls and choose **Edit this plan** 
 
 Wall and opening controls, 2D/3D views, placement checks and vector export use the same accepted plan. A completed drag or confirmed numeric edit is one undoable change; Escape cancels an active drag. Check new placement warnings after changing walls. Intersecting furniture is preserved for correction, and saved room layouts remain available for recovery.
 
+When a room divides, a furniture zone follows its members. If its members land in different rooms, the zone splits into room-specific groups and a review message points you to Zones; undo restores the original grouping. Existing curved walls remain intact. Adding or joining partitions on a floor containing curved walls is currently unsupported and produces an explicit error rather than approximating the curved boundary.
+
 **Confirm review & create editable plan** records your planning review on a separate saved design. The editor shows **User-reviewed for planning** until a plan correction or geometry edit clears that record. Undo can restore the reviewed baseline; the original comparison retains its own status. This is separate from source or construction verification, and vector exports remain labelled proposed/unverified.
 
 Closing the import workspace keeps your current design open. A confirmation already sent may finish creating its separate design; reopen it through **Previous imports & privacy**. Late responses from a closed workspace or replaced upload cannot switch your current design. If another tab changed the candidate, reopen the import and review its latest version before confirming.

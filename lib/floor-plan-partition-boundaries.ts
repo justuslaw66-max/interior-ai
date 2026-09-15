@@ -1,6 +1,13 @@
 import type { FloorPlanDirectedWallReferenceV2 as Ref, FloorPlanFloorV2, FloorPlanRoomWallLoopV2 as Loop } from "@/lib/floor-plan-document-v2";
 import { topologyMutationFail as fail } from "@/lib/floor-plan-topology-mutation-support";
 
+/** Chord-based room splitting cannot validate retained arcs; preserve them without approximation. */
+export function assertStraightPartitionFloor(floor: FloorPlanFloorV2) {
+  if (floor.walls.some(({ path }) => path.kind === "arc")) {
+    fail("ARC_MUTATION_UNSUPPORTED", "Curved boundaries are retained. Adding or joining partitions on a floor containing curved walls is not supported; keep the existing geometry or use a reviewed straight-wall plan.");
+  }
+}
+
 export function partitionReferenceEnds(floor: FloorPlanFloorV2, reference: Ref) {
   const wall = floor.walls.find(({ id }) => id === reference.wallId);
   if (!wall) return fail("UNKNOWN_WALL", `Missing boundary wall ${reference.wallId}.`);

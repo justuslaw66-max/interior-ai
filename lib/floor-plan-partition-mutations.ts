@@ -6,7 +6,7 @@ import {
   type FloorPlanTopologyMutationStateV2 as State,
 } from "@/lib/floor-plan-topology-mutation-support";
 import { divideRoomAtAddedWall, mergeRoomsAtRemovedWall, refreshPartitionAdjacency } from "@/lib/floor-plan-partition-rooms";
-import { partitionLoopPoints } from "@/lib/floor-plan-partition-boundaries";
+import { assertStraightPartitionFloor, partitionLoopPoints } from "@/lib/floor-plan-partition-boundaries";
 import { isPointInPlanarRing } from "@/lib/floor-plan-planar-union";
 import { attachPartitionEndpoint } from "@/lib/floor-plan-wall-attachment";
 
@@ -26,6 +26,7 @@ function assertInteriorPartition(floor: FloorPlanFloorV2, operation: Add) {
 }
 
 export function addCanonicalPartition(floor: FloorPlanFloorV2, operation: Add, state: State) {
+  assertStraightPartitionFloor(floor);
   assertUnusedGlobalEntityId(state.document, operation.wallId, "New wall ID");
   const ids = [operation.startVertexId, operation.endVertexId];
   addTopologyStructureVertices(floor, operation.vertices ?? [], new Set(ids), state);

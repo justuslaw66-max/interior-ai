@@ -1,6 +1,7 @@
 import type { FloorPlanFloorV2, FloorPlanPointMmV2 } from "@/lib/floor-plan-document-v2";
 import type { FloorPlanTopologyMutationV2 } from "@/lib/floor-plan-topology-mutation-types";
 import { attachPartitionEndpoint } from "@/lib/floor-plan-wall-attachment";
+import { assertStraightPartitionFloor } from "@/lib/floor-plan-partition-boundaries";
 import { divideRoomAtAddedWall, refreshPartitionAdjacency } from "@/lib/floor-plan-partition-rooms";
 import { assertTopologyInteger, topologyMutationFail as fail, type FloorPlanTopologyMutationStateV2 as State } from "@/lib/floor-plan-topology-mutation-support";
 
@@ -47,6 +48,7 @@ function remapJoinedVertex(floor: FloorPlanFloorV2, from: string, to: string, st
 
 export function joinCanonicalWallEndpoint(floor: FloorPlanFloorV2, operation: Join, state: State,
   moveVertex: (vertexId: string, to: FloorPlanPointMmV2) => void) {
+  assertStraightPartitionFloor(floor);
   const wall = floor.walls.find(({ id }) => id === operation.wallId);
   if (!wall) return fail("UNKNOWN_WALL", `Unknown wall ${operation.wallId}.`);
   if (wall.path.kind !== "line") fail("ARC_MUTATION_UNSUPPORTED", "Curved walls are retained; joining their constrained endpoints is not supported.");

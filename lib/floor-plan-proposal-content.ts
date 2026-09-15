@@ -53,12 +53,37 @@ function contentTargets(before: DesignSnapshot, after: DesignSnapshot, operation
   });
 }
 
+function distributeZones(previous: RoomSnapshot, targets: RoomSnapshot[], issues: Set<string>, usedIds: Set<string>) {
+  for (const zone of previous.zones) {
+    const groups = targets.flatMap((target) => {
+      const itemIds = zone.itemIds.filter((id) => target.items.some((item) => item.instanceId === id));
+      return itemIds.length ? [{ target, itemIds }] : [];
+    });
+    if (!groups.length) {
+      targets[0].zones.push(rehostZone(zone, previous, targets[0]));
+      continue;
+    }
+    for (const [index, { target, itemIds }] of groups.entries()) {
+      let id = zone.id;
+      if (index > 0) {
+        const base = `${zone.id}:split:${target.id}`;
+        id = base;
+        for (let suffix = 2; usedIds.has(id); suffix++) id = `${base}:${suffix}`;
+        usedIds.add(id);
+      }
+      target.zones.push({ ...rehostZone(zone, previous, target), id, itemIds });
+    }
+    if (groups.length > 1) issues.add(`Zone ${zone.id} was split between ${groups.map(({ target }) => target.name).join(" and ")}. Each part keeps its local members; review the grouping in Zones.`);
+  }
+}
+
 /** Reconciles only editor projections; canonical geometry remains the transaction result. */
 export function reconcileProposedRoomContent(before: DesignSnapshot, after: DesignSnapshot, operation: FloorPlanTopologyMutationV2, splits: readonly FloorPlanRoomSplitLineageV2[] = []): DesignSnapshot {
   const rooms = after.rooms.map((room) => ({ ...room, items: [] as DesignItem[], zones: [] as ZoneMin[] }));
   const next = { ...after, rooms };
   const recovery = [...(before.floorPlan?.proposal?.roomRecovery ?? [])];
   const issues = new Set(before.floorPlan?.proposal?.reviewIssues ?? []);
+  const zoneIds = new Set(before.rooms.flatMap((room) => room.zones.map(({ id }) => id)));
   for (const { previous, primary, candidates } of contentTargets(before, next, operation)) {
     if (!rooms.some(({ id }) => id === previous.id)) {
       recovery.push({ id: previous.id, name: previous.name, roomType: previous.roomType, floorLevel: previous.floorLevel, planPosition: previous.planPosition, surfaces: previous.surfaces, surfaceFinishes: previous.surfaceFinishes, savedViews: previous.savedViews, layoutVersions: previous.layoutVersions });
@@ -70,8 +95,7 @@ export function reconcileProposedRoomContent(before: DesignSnapshot, after: Desi
       target.items.push(rehostItem(item, previous, target));
       if (!containsWorldPoint(target, world)) issues.add(`Placement ${item.instanceId} needs review after the wall edit; its world position is preserved.`);
     }
-    for (const zone of previous.zones) primary.zones.push(rehostZone(zone, previous, primary));
-
+    distributeZones(previous, candidates, issues, zoneIds);
   }
   for (const room of rooms.filter((candidate) => !before.rooms.some(({ id }) => id === candidate.id))) {
     const point: [number, number, number] = [room.planPosition?.x ?? 0, 0, room.planPosition?.z ?? 0];
