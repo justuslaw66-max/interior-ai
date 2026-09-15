@@ -31,14 +31,15 @@ export function useConsumerFloorPlanImportProgress({ setState, onJobUpdate }: Pr
     async (
       jobId: string,
       fallbackMessage: string,
-      options: { continueSelectedPage?: boolean } = {}
+      options: { continueSelectedPage?: boolean; signal?: AbortSignal } = {}
     ) => {
       const statusUrl = `/api/floor-plan-imports/${encodeURIComponent(jobId)}`;
-      const loadJob = () => loadConsumerFloorPlanImportJob(statusUrl);
+      const loadJob = () => loadConsumerFloorPlanImportJob(statusUrl, options.signal);
       const initialJob = await loadJob();
+      options.signal?.throwIfAborted();
       showWorkingJob(initialJob, fallbackMessage);
       return startAndPollFloorPlanImport({
-        initialJob,
+        initialJob, signal: options.signal,
         startProcessing: async () =>
           floorPlanImportResponseJson(
             await fetch(`${statusUrl}/process`, { method: "POST" })
@@ -50,7 +51,7 @@ export function useConsumerFloorPlanImportProgress({ setState, onJobUpdate }: Pr
                 ? false
                 : isPausedFloorPlanImportStatus(job.status)
           : undefined,
-        onProgress: (job) => showWorkingJob(job, fallbackMessage),
+        onProgress: (job) => { if (!options.signal?.aborted) showWorkingJob(job, fallbackMessage); },
       });
     },
     [showWorkingJob]

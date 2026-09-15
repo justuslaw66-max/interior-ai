@@ -12,6 +12,8 @@ Wall and opening controls, 2D/3D views, placement checks and vector export use t
 
 **Confirm review & create editable plan** records your planning review on a separate saved design. The editor shows **User-reviewed for planning** until a plan correction or geometry edit clears that record. Undo can restore the reviewed baseline; the original comparison retains its own status. This is separate from source or construction verification, and vector exports remain labelled proposed/unverified.
 
+Closing the import workspace keeps your current design open. A confirmation already sent may finish creating its separate design; reopen it through **Previous imports & privacy**. Late responses from a closed workspace or replaced upload cannot switch your current design. If another tab changed the candidate, reopen the import and review its latest version before confirming.
+
 **Orientation** rotates or mirrors the candidate and its source registration together. The overlay stays on the same source features, including plans calibrated with two points. Saved independent measurements remain attached to their original source endpoints.
 
 In **Compare and export vector plan**, choose paper, orientation and a fixed scale of 1:50 or 1:100. Choose a larger page or 1:100 if the drawing does not fit. Print at 100%: a 9260 mm plan dimension measures 92.6 mm at 1:100. Dimensions show live proposed millimetres measured along the stated centreline convention. Historical source numbers do not replace current measurements.

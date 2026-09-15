@@ -253,7 +253,7 @@
       "limit": 250
     },
     "components/editor/FloorPlanImportAssistant.tsx": {
-      "lines": 732,
+      "lines": 711,
       "limit": 250
     },
     "components/editor/FloorPlanImportHistory.tsx": {
@@ -2195,7 +2195,7 @@
     "components/editor/FloorPlanImportAssistant.tsx": {
       "overlongFunctions": {
         "count": 2,
-        "maximum": 698
+        "maximum": 675
       },
       "complexFunctions": {
         "count": 1,
@@ -2423,7 +2423,7 @@
       },
       "complexFunctions": {
         "count": 1,
-        "maximum": 22
+        "maximum": 21
       }
     },
     "components/FPSMeter.tsx": {

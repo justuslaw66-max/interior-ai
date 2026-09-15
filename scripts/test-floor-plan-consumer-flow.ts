@@ -28,6 +28,7 @@ const read = (relativePath: string) =>
 
 const assistant = [
   "components/editor/FloorPlanImportAssistant.tsx",
+  "components/editor/useConsumerFloorPlanImportCreation.ts",
   "components/editor/floor-plan-import-review/FloorPlanImportReviewPanel.tsx",
   "components/editor/floor-plan-import-review/FloorPlanVisualReviewTools.tsx",
   "components/editor/floor-plan-import-review/FloorPlanSourceReviewCanvas.tsx",
@@ -545,9 +546,10 @@ assert.match(
 );
 assert.match(
   assistant,
-  /const processAndPoll[\s\S]*?startAndPollFloorPlanImport[\s\S]*?submitReview[\s\S]*?processAndPoll/,
+  /const processAndPoll = useConsumerFloorPlanImportProgress[\s\S]*?submitReview[\s\S]*?processAndPoll/,
   "Review, selection, and retry flows should share the same concurrent processing helper."
 );
+assert.match(read("components/editor/useConsumerFloorPlanImportProgress.ts"), /startAndPollFloorPlanImport\(\{[\s\S]*?signal: options\.signal/);
 assert.match(
   importSession,
   /error\.status === 401[\s\S]*?privately detect, review, and save this plan/,
@@ -713,7 +715,7 @@ assert.match(
 );
 assert.match(
   assistant,
-  /const createDesign = useCallback\(async \(\) => \{[\s\S]*?\}, \[activeJob, onActiveJobIdChange, router, title\]\);/,
+  /useConsumerFloorPlanImportCreation\([\s\S]*?return useCallback\(async \(\) => \{[\s\S]*?signal\.throwIfAborted\(\)[\s\S]*?\[activeJob, title, beginAction, setSubmitting, setCreateError, onActiveJobIdChange, router\]/,
   "Design creation should refresh for current job, title, navigation, and active-job ownership without depending on an unused session setter."
 );
 assert.match(

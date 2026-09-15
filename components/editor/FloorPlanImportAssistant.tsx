@@ -1,7 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useMemo, useState } from "react";
 import {
   floorPlanImportResponseJson,
   parseFloorPlanImportDocument,
@@ -20,6 +19,9 @@ import FloorPlanOptionalConfigurationPanel from "./FloorPlanOptionalConfiguratio
 import { inspectFloorPlanOptionalConfigurations } from "@/lib/floor-plan-optional-configurations";
 import { readFloorPlanPageSelection } from "@/lib/floor-plan-imports/page-selection";
 import { formatFloorPlanRemainingTime } from "@/lib/floor-plan-imports/progress-estimate";
+import { useConsumerFloorPlanImportActionScope } from "./useConsumerFloorPlanImportActionScope";
+import { useConsumerFloorPlanImportCreation } from "./useConsumerFloorPlanImportCreation";
+import { FloorPlanImportRetentionNotice } from "./FloorPlanImportRetentionNotice";
 import FloorPlanPageSelectionPanel from "./FloorPlanPageSelectionPanel";
 
 type FloorPlanImportAssistantProps = {
@@ -41,7 +43,7 @@ export default function FloorPlanImportAssistant({
   onActiveJobIdChange,
   onJobUpdate,
 }: FloorPlanImportAssistantProps) {
-  const router = useRouter();
+  const beginAction = useConsumerFloorPlanImportActionScope(file, resumeJobId, trainingBenchmarkOptIn);
   const {
     state,
     setState,
@@ -73,6 +75,7 @@ export default function FloorPlanImportAssistant({
   );
 
   useEffect(() => {
+    setSubmitting(false); setDeletingSource(false);
     setEntranceOpeningId("");
     setSourceDeleted(false);
     setSourceDeletionQueued(false);
@@ -82,9 +85,10 @@ export default function FloorPlanImportAssistant({
     setReviewError(null);
     setRetryingDetection(false);
     setSelectedPageNumber(null);
-  }, [file, resumeJobId]);
+  }, [file, resumeJobId, trainingBenchmarkOptIn]);
 
   const activeJob = state.kind === "job" ? state.job : null;
+  const createDesign = useConsumerFloorPlanImportCreation({ activeJob, title, beginAction, setSubmitting, setCreateError, onActiveJobIdChange });
   const pageSelection = useMemo(
     () => readFloorPlanPageSelection(activeJob?.candidateJson),
     [activeJob?.candidateJson]
@@ -147,6 +151,7 @@ export default function FloorPlanImportAssistant({
     ) {
       return;
     }
+    const signal = beginAction();
     setSubmitting(true);
     setReviewError(null);
     try {
@@ -191,55 +196,26 @@ export default function FloorPlanImportAssistant({
           }),
         })
       );
+      signal.throwIfAborted();
       const job = await processAndPoll(
         activeJob.id,
-        "Validating your corrections"
+        "Validating your corrections", { signal }
       );
+      signal.throwIfAborted();
       setCandidate(parseFloorPlanImportDocument(job.candidateJson));
       setIssues(parseFloorPlanImportIssues(job.reviewIssuesJson));
       setState({ kind: "job", job });
     } catch (cause) {
+      if (signal.aborted) return;
       setReviewError(
         cause instanceof Error
           ? cause.message
           : "Unable to save floor-plan review"
       );
     } finally {
-      setSubmitting(false);
+      if (!signal.aborted) setSubmitting(false);
     }
   };
-
-  const createDesign = useCallback(async () => {
-    if (!activeJob || activeJob.status !== "ready") return;
-    setSubmitting(true);
-    setCreateError(null);
-    try {
-      const payload = await floorPlanImportResponseJson(
-        await fetch(`/api/floor-plan-imports/${activeJob.id}/confirm`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ title, candidateVersion: activeJob.candidateVersion }),
-        })
-      );
-      const id = typeof payload.id === "string" ? payload.id : null;
-      if (!id) throw new Error("The new design ID is missing");
-      onActiveJobIdChange?.(null);
-      router.push(
-        `/design?designId=${encodeURIComponent(
-          id
-        )}&view=2d&workspace=furnish&floorPlanImport=${encodeURIComponent(
-          activeJob.id
-        )}`
-      );
-    } catch (cause) {
-      const message = cause instanceof Error
-        ? cause.message
-        : "Unable to create the new design";
-      setCreateError(message);
-    } finally {
-      setSubmitting(false);
-    }
-  }, [activeJob, onActiveJobIdChange, router, title]);
 
   const optionalConfigurationCount = useMemo(
     () => candidate ? inspectFloorPlanOptionalConfigurations(candidate).length : 0,
@@ -254,6 +230,7 @@ export default function FloorPlanImportAssistant({
     ) {
       return;
     }
+    const signal = beginAction();
     setSubmitting(true);
     try {
       await floorPlanImportResponseJson(
@@ -269,15 +246,18 @@ export default function FloorPlanImportAssistant({
           }
         )
       );
+      signal.throwIfAborted();
       const job = await processAndPoll(
         activeJob.id,
         "Analyzing the selected floor plan",
-        { continueSelectedPage: true }
+        { continueSelectedPage: true, signal }
       );
+      signal.throwIfAborted();
       setCandidate(parseFloorPlanImportDocument(job.candidateJson));
       setIssues(parseFloorPlanImportIssues(job.reviewIssuesJson));
       setState({ kind: "job", job });
     } catch (cause) {
+      if (signal.aborted) return;
       setState({
         kind: "error",
         message:
@@ -286,7 +266,7 @@ export default function FloorPlanImportAssistant({
             : "Unable to analyze the selected page",
       });
     } finally {
-      setSubmitting(false);
+      if (!signal.aborted) setSubmitting(false);
     }
   };
 
@@ -294,6 +274,7 @@ export default function FloorPlanImportAssistant({
     if (!activeJob || !["needs_review", "failed"].includes(activeJob.status)) {
       return;
     }
+    const signal = beginAction();
     setRetryingDetection(true);
     setReviewError(null);
     try {
@@ -303,6 +284,7 @@ export default function FloorPlanImportAssistant({
           { method: "POST" }
         )
       );
+      signal.throwIfAborted();
       const retryJobId =
         retryPayload.job &&
         typeof retryPayload.job === "object" &&
@@ -311,14 +293,17 @@ export default function FloorPlanImportAssistant({
           : null;
       if (!retryJobId) throw new Error("The retry job ID is missing");
       onActiveJobIdChange?.(retryJobId);
+      signal.throwIfAborted();
       const job = await processAndPoll(
         retryJobId,
-        "Retrying with improved wall and dimension detection"
+        "Retrying with improved wall and dimension detection", { signal }
       );
+      signal.throwIfAborted();
       setCandidate(parseFloorPlanImportDocument(job.candidateJson));
       setIssues(parseFloorPlanImportIssues(job.reviewIssuesJson));
       setState({ kind: "job", job });
     } catch (cause) {
+      if (signal.aborted) return;
       setState({
         kind: "error",
         message:
@@ -327,12 +312,13 @@ export default function FloorPlanImportAssistant({
             : "Unable to retry floor-plan detection",
       });
     } finally {
-      setRetryingDetection(false);
+      if (!signal.aborted) setRetryingDetection(false);
     }
   };
 
   const deletePrivateSource = async () => {
     if (!activeJob || sourceContentDeleted || sourceDeletionPending) return;
+    const signal = beginAction();
     setDeletingSource(true);
     setDeleteError(null);
     try {
@@ -341,6 +327,7 @@ export default function FloorPlanImportAssistant({
           method: "DELETE",
         })
       );
+      signal.throwIfAborted();
       const deletionQueued = payload.deletionState === "queued";
       const deletionCompleted = payload.deletionState === "deleted";
       if (!deletionQueued && !deletionCompleted) {
@@ -375,13 +362,14 @@ export default function FloorPlanImportAssistant({
           : current
       );
     } catch (cause) {
+      if (signal.aborted) return;
       setDeleteError(
         cause instanceof Error
           ? cause.message
           : "Unable to delete the private floor-plan source"
       );
     } finally {
-      setDeletingSource(false);
+      if (!signal.aborted) setDeletingSource(false);
     }
   };
 
@@ -507,7 +495,7 @@ export default function FloorPlanImportAssistant({
           <button
             type="button" data-floor-plan-workspace-focus="primary"
             className="mt-3 rounded-md bg-neutral-900 px-3 py-2 text-xs font-semibold text-white disabled:opacity-50"
-            disabled={disabled || retryingDetection}
+            disabled={disabled || retryingDetection || deletingSource}
             onClick={() => void retryDetection()}
           >
             {retryingDetection
@@ -519,7 +507,7 @@ export default function FloorPlanImportAssistant({
           <button
             type="button"
             className={dark ? "designer-control mt-2 rounded-md border px-2 py-1.5 text-xs" : "mt-2 rounded-md border border-neutral-300 bg-white px-2 py-1.5 text-xs"}
-            disabled={disabled || deletingSource}
+            disabled={disabled || deletingSource || retryingDetection}
             onClick={() => void deletePrivateSource()}
           >
             {deletingSource ? "Deleting upload…" : "Delete private upload now"}
@@ -581,7 +569,7 @@ export default function FloorPlanImportAssistant({
         <button
           type="button" data-floor-plan-workspace-focus="primary"
           className="mt-4 w-full rounded-lg bg-emerald-600 px-4 py-3 text-sm font-semibold text-white disabled:opacity-50"
-          disabled={disabled || submitting}
+          disabled={disabled || submitting || deletingSource}
           onClick={() => void createDesign()}
         >
           {submitting
@@ -622,7 +610,7 @@ export default function FloorPlanImportAssistant({
             <FloorPlanOptionalConfigurationPanel
               document={candidate}
               dark={dark}
-              disabled={disabled || submitting}
+              disabled={disabled || submitting || deletingSource}
               compact
             />
           ) : null}
@@ -635,17 +623,8 @@ export default function FloorPlanImportAssistant({
             {canonicalDimensionCount} recorded dimension
             {canonicalDimensionCount === 1 ? "" : "s"}. Scale and critical review items passed software checks; whole-plan accuracy still depends on the source and your review.
           </p>
-          <p className={`mt-2 text-xs leading-5 ${subtle}`}>
-            {sourceDeletionPending
-              ? "Private-source deletion is queued."
-              : sourceContentDeleted
-                ? savedUnderlaysScrubbed > 0
-                  ? "The upload and saved-design reference were deleted."
-                  : "The private upload was deleted."
-                : retentionDate && !Number.isNaN(retentionDate.getTime())
-                  ? `Private file bytes are scheduled for deletion by ${retentionDate.toLocaleDateString()}.`
-                  : "Private file bytes are retained temporarily."}
-          </p>
+          <FloorPlanImportRetentionNotice sourceDeletionPending={sourceDeletionPending} sourceContentDeleted={sourceContentDeleted}
+            savedUnderlaysScrubbed={savedUnderlaysScrubbed} retentionDate={retentionDate} subtle={subtle} />
           {!sourceContentDeleted && !sourceDeletionPending ? (
             <button
               type="button"
@@ -668,7 +647,7 @@ export default function FloorPlanImportAssistant({
                   ? "designer-control ml-2 mt-2 rounded-md border px-3 py-2 text-xs font-semibold"
                   : "ml-2 mt-2 rounded-md border border-neutral-300 bg-white px-3 py-2 text-xs font-semibold text-neutral-700"
               }
-              disabled={disabled || submitting}
+              disabled={disabled || submitting || deletingSource}
               onClick={onChooseFile}
             >
               Use a different file

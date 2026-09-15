@@ -68,6 +68,7 @@ export async function loadConsumerFloorPlanImportJob(
   const payload = await floorPlanImportResponseJson(
     await fetch(statusUrl, { signal, cache: "no-store" })
   );
+  signal?.throwIfAborted();
   const job = (payload.job ?? null) as ConsumerFloorPlanImportJob;
   if (payload.progressEstimate && typeof payload.progressEstimate === "object") {
     job.progressEstimate =
@@ -116,6 +117,7 @@ export function useConsumerFloorPlanImportSession(input: {
     }
     const runId = ++runIdRef.current;
     const controller = new AbortController();
+    const isCurrent = () => !controller.signal.aborted && runIdRef.current === runId;
     setCandidate(null);
     setIssues([]);
     if (file) setTitle(file.name.replace(/\.[^.]+$/, "") || "Imported floor plan");
@@ -145,6 +147,7 @@ export function useConsumerFloorPlanImportSession(input: {
               signal: controller.signal,
             })
           );
+          controller.signal.throwIfAborted();
           next = created.next as { processUrl?: string; statusUrl?: string } | undefined;
           const createdJob = created.job as { id?: unknown } | undefined;
           if (typeof createdJob?.id === "string") {
@@ -181,7 +184,7 @@ export function useConsumerFloorPlanImportSession(input: {
             loadJob: () => loadJob(next.statusUrl!),
             signal: controller.signal,
             onProgress: (pendingJob) => {
-              if (runIdRef.current !== runId) return;
+              if (!isCurrent()) return;
               onJobUpdate?.(pendingJob);
               const nextProgress =
                 pendingJob.progressEstimate?.estimatedPercent ??
@@ -201,15 +204,13 @@ export function useConsumerFloorPlanImportSession(input: {
               }));
             },
           });
-        } else {
-          onJobUpdate?.(job);
         }
-        if (runIdRef.current !== runId) return;
+        if (!isCurrent()) return;
         setCandidate(parseFloorPlanImportDocument(job.candidateJson));
         setIssues(parseFloorPlanImportIssues(job.reviewIssuesJson));
         setState({ kind: "job", job });
       } catch (cause) {
-        if (controller.signal.aborted || runIdRef.current !== runId) return;
+        if (!isCurrent()) return;
         const error = cause as Error & { status?: number };
         if (error.status === 404 && !file) onActiveJobIdChange?.(null);
         const isCad = Boolean(file && /\.(dxf|ifc|ifcstep|stp|step|dwg)$/i.test(file.name));
