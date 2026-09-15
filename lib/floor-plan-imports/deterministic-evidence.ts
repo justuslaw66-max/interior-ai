@@ -1,3 +1,5 @@
+import { scaleInspection, type DimensionCandidate, type SourceScaleInspection } from "./scale-diagnostics";
+
 export type SourcePointPx = { x: number; y: number };
 
 export type SourceVectorSegment = {
@@ -420,18 +422,6 @@ export function parsePrintedLengthMm(text: string): number | null {
   return null;
 }
 
-type DimensionCandidate = {
-  dimensionIndex: number;
-  valueMm: number;
-  observedLengthPx: number;
-  ratio: number;
-  distancePx: number;
-  segmentId: string;
-  start: SourcePointPx;
-  end: SourcePointPx;
-  kind: "single_segment" | "compound_span";
-};
-
 function segmentOrientation(segment: SourceVectorSegment) {
   return Math.abs(segment.end.x - segment.start.x) >=
     Math.abs(segment.end.y - segment.start.y)
@@ -708,6 +698,10 @@ function textGapDimensionCandidates(
 export function solveScaleFromRegisteredEvidence(
   page: RegisteredPageEvidence
 ): SourceScaleSolution | null {
+  return inspectScaleFromRegisteredEvidence(page).solution;
+}
+
+export function inspectScaleFromRegisteredEvidence(page: RegisteredPageEvidence): SourceScaleInspection {
   const dimensions = page.semantics.dimensionLabels.filter(
     (dimension) =>
       Number.isSafeInteger(dimension.valueMm) &&
@@ -715,7 +709,7 @@ export function solveScaleFromRegisteredEvidence(
       dimension.valueMm <= 100_000 &&
       dimension.confidence >= 0.45
   );
-  if (dimensions.length < 2 || page.vectorSegments.length === 0) return null;
+  if (dimensions.length < 2 || page.vectorSegments.length === 0) return scaleInspection(dimensions, [], "insufficient_evidence");
 
   const pageDiagonal = Math.hypot(page.widthPx, page.heightPx);
   const candidates: DimensionCandidate[] = dimensions.flatMap(
@@ -809,7 +803,7 @@ export function solveScaleFromRegisteredEvidence(
       });
     }
   });
-  if (candidates.length < 2) return null;
+  if (candidates.length < 2) return scaleInspection(dimensions, candidates, "insufficient_evidence");
 
   const clusters: Array<{
     candidates: DimensionCandidate[];
@@ -900,7 +894,7 @@ export function solveScaleFromRegisteredEvidence(
       left.distancePx - right.distancePx
   );
   const best = clusters[0];
-  if (!best) return null;
+  if (!best) return scaleInspection(dimensions, candidates, "no_supported_cluster");
   const bestMeanDistancePx = best.distancePx / best.candidates.length;
   // A competing scale must have comparable independent support and be locally
   // anchored to its labels. Repeated lengths elsewhere in a dense plan are
@@ -923,9 +917,9 @@ export function solveScaleFromRegisteredEvidence(
       }
     )
   ) {
-    return null;
+    return scaleInspection(dimensions, candidates, "competing_clusters", null, clusters);
   }
-  return {
+  return scaleInspection(dimensions, candidates, "supported_cluster", {
     millimetresPerPixel: best.millimetresPerPixel,
     dimensionCount: best.candidates.length,
     rmsResidualMm: best.rmsResidualMm,
@@ -937,31 +931,7 @@ export function solveScaleFromRegisteredEvidence(
       )
     ),
     evidence: best.evidence,
-    diagnostics: {
-      eligibleDimensionCount: dimensions.length,
-      singleSegmentCandidateCount: candidates.filter(
-        (candidate) => candidate.kind === "single_segment"
-      ).length,
-      compoundSpanCandidateCount: candidates.filter(
-        (candidate) => candidate.kind === "compound_span"
-      ).length,
-      rejectedMissingEndpoints: dimensions.filter(
-        (dimension) =>
-          !dimension.extensionStart || !dimension.extensionEnd
-      ).length,
-      rejectedUnsupportedSpan: dimensions.filter(
-        (dimension, dimensionIndex) =>
-          dimension.extensionStart &&
-          dimension.extensionEnd &&
-          !candidates.some(
-            (candidate) =>
-              candidate.dimensionIndex === dimensionIndex &&
-              candidate.kind === "compound_span"
-          )
-      ).length,
-      rejectedResidualClusters: Math.max(0, candidates.length - best.candidates.length),
-    },
-  };
+  }, clusters);
 }
 
 function containsPoint(

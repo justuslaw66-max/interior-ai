@@ -1,4 +1,4 @@
-import { solveScaleFromRegisteredEvidence, type RegisteredPageEvidence, type SemanticDimensionLabel, type SourceScaleSolution, type SourceVectorSegment } from "./deterministic-evidence";
+import { inspectScaleFromRegisteredEvidence, type RegisteredPageEvidence, type SemanticDimensionLabel, type SourceScaleSolution, type SourceVectorSegment } from "./deterministic-evidence";
 
 const REVIEW_PREFIX = "Dimension association conflict:";
 const TOLERANCE_PX = 3;
@@ -34,14 +34,18 @@ export function scaleDimensionConflicts(page: RegisteredPageEvidence, solution: 
 }
 
 export function diagnoseSourceScale(page: RegisteredPageEvidence) {
-  const candidate = solveScaleFromRegisteredEvidence(page);
+  const { solution: candidate, ...inspection } = inspectScaleFromRegisteredEvidence(page);
   const conflicts = candidate ? scaleDimensionConflicts(page, candidate) : [];
+  if (inspection.reason === "competing_clusters") {
+    const note = `${REVIEW_PREFIX} Several locally supported scale candidates disagree. Their spans have unverified endpoints. Review the printed numbers and full dimension spans; scale remains unconfirmed.`;
+    if (!page.semantics.notes.includes(note)) page.semantics.notes.push(note);
+  }
   if (conflicts.length) {
     const note = `${REVIEW_PREFIX} ${conflicts.map((item) => `${item.valueMm} mm differs by ${item.residualPx.toFixed(1)} source pixels`).join("; ")}. These automatically associated spans have unverified endpoints. Check the printed numbers, endpoints and orientations before judging source distortion. Scale remains unconfirmed.`;
     if (!page.semantics.notes.includes(note)) page.semantics.notes.push(note);
   }
   return { status: !candidate ? "no_supported_cluster" as const : conflicts.length ? "rejected_associations" as const : "accepted" as const,
-    candidate, conflicts, tolerancePx: TOLERANCE_PX };
+    candidate, conflicts, tolerancePx: TOLERANCE_PX, ...inspection };
 }
 
 export function solveCrossCheckedScale(page: RegisteredPageEvidence): SourceScaleSolution | null {

@@ -8,6 +8,7 @@ import { PDFDocument, degrees } from "pdf-lib";
 import { mergeMixedPdfEvidence } from "@/lib/floor-plan-imports/mixed-pdf-evidence";
 import {
   registerRoomRectangles,
+  solveScaleFromRegisteredEvidence,
   type RegisteredPageEvidence,
 } from "@/lib/floor-plan-imports/deterministic-evidence";
 import {
@@ -670,8 +671,46 @@ async function testIndependentScaleConflict() {
   assert.ok(Number(scaled.metrics?.scaleSingleSegmentCandidateCount) > 0, "A rejected cluster cannot erase detected-candidate counts.");
 }
 
+async function testRejectedClusterDiagnostics() {
+  const page: RegisteredPageEvidence = { pageNumber: 1, widthPx: 1000, heightPx: 800,
+    vectorPaths: [], text: [],
+    vectorSegments: [100, 200, 500, 600].map((y, index) => ({ id: `span-${index}`, pageNumber: 1,
+      start: { x: 100, y }, end: { x: 500, y }, strokeWidthPx: 1 })),
+    semantics: { roomLabels: [], openingSymbols: [], notes: [], dimensionLabels: [100, 200, 500, 600].map((y, index) => ({
+      valueMm: index < 2 ? 4000 : 8000, centerXRatio: 0.3, centerYRatio: (y - 10) / 800,
+      orientation: "horizontal", confidence: 0.72 })) },
+  };
+  const diagnosis = diagnoseSourceScale(page);
+  assert.equal(diagnosis.reason, "competing_clusters");
+  assert.equal(diagnosis.candidate, null);
+  assert.equal(solveScaleFromRegisteredEvidence(page), null, "Diagnostic retention must not pick one competing scale.");
+  assert.equal(diagnosis.clusters.length, 2);
+  assert.deepEqual(diagnosis.clusters.map((cluster) => cluster.millimetresPerPixel).sort((a, b) => a - b), [10, 20]);
+  assert.ok(diagnosis.candidates.length > 0);
+  assert.equal(diagnosis.diagnostics.singleSegmentCandidateCount, diagnosis.candidates.filter((candidate) => candidate.kind === "single_segment").length);
+  assert.ok(page.semantics.notes.some((note) => note.includes("Several locally supported scale candidates disagree")));
+  const adapter = new PdfRasterFloorPlanSourceAdapter({ localOcrProvider: null });
+  const scaled = await adapter.solveScale({ candidate: { kind: "floor_plan_deterministic_evidence_v1",
+    source: { id: "ambiguous-source", fileName: "synthetic.png", mimeType: "image/png", sha256: "b".repeat(64) },
+    pages: [page], scale: null, scales: [] }, sourceManifest: { pages: [{ pageNumber: 1 }] }, reviewIssues: [], metrics: {} });
+  assert.equal(scaled.candidate?.scale, null);
+  assert.equal(scaled.metrics?.scaleSolved, false);
+  assert.equal(scaled.metrics?.scaleSingleSegmentCandidateCount, diagnosis.diagnostics.singleSegmentCandidateCount);
+  assert.deepEqual(scaled.sourceManifest?.scaleDiagnostics, [{ pageNumber: 1, ...diagnosis }]);
+  page.semantics.dimensionLabels = [page.semantics.dimensionLabels[0], page.semantics.dimensionLabels[2]];
+  const unsupported = diagnoseSourceScale(page);
+  assert.equal(unsupported.reason, "no_supported_cluster");
+  assert.ok(unsupported.diagnostics.singleSegmentCandidateCount > 0);
+  assert.equal(unsupported.candidate, null);
+  page.semantics.dimensionLabels = [];
+  const empty = diagnoseSourceScale(page);
+  assert.equal(empty.reason, "insufficient_evidence");
+  assert.equal(empty.diagnostics.singleSegmentCandidateCount, 0);
+}
+
 async function main() {
   testRelevantPageRanking();
+  await testRejectedClusterDiagnostics();
   await testIndependentScaleConflict();
   await testCleanRasterAndDeterminism();
   await testSkewAndNoiseRejection();

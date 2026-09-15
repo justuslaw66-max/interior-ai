@@ -2644,12 +2644,9 @@ export class PdfRasterFloorPlanSourceAdapter implements FloorPlanSourceAdapter {
         scaleSolved: Boolean(next.scale),
         scaleDimensionCount: next.scale?.dimensionCount ?? 0,
         scaleResidualMm: next.scale?.rmsResidualMm ?? null,
-        scaleSingleSegmentCandidateCount:
-          observations.reduce((sum, { diagnosis }) => sum + (diagnosis.candidate?.diagnostics?.singleSegmentCandidateCount ?? 0), 0),
-        scaleCompoundSpanCandidateCount:
-          observations.reduce((sum, { diagnosis }) => sum + (diagnosis.candidate?.diagnostics?.compoundSpanCandidateCount ?? 0), 0),
-        scaleUnsupportedSpanCount:
-          observations.reduce((sum, { diagnosis }) => sum + (diagnosis.candidate?.diagnostics?.rejectedUnsupportedSpan ?? 0), 0),
+        scaleSingleSegmentCandidateCount: observations.reduce((sum, { diagnosis }) => sum + diagnosis.diagnostics.singleSegmentCandidateCount, 0),
+        scaleCompoundSpanCandidateCount: observations.reduce((sum, { diagnosis }) => sum + diagnosis.diagnostics.compoundSpanCandidateCount, 0),
+        scaleUnsupportedSpanCount: observations.reduce((sum, { diagnosis }) => sum + diagnosis.diagnostics.rejectedUnsupportedSpan, 0),
       },
     };
   }
