@@ -1,4 +1,4 @@
-import { automaticScaleReviewMessage, solveCrossCheckedScale } from "./source-scale-cross-check";
+import { automaticScaleReviewMessage, diagnoseSourceScale } from "./source-scale-cross-check";
 import { sourceTextEvidenceFromLocalOcr } from "./local-ocr-rotation";
 import { z } from "zod";
 import type {
@@ -2590,44 +2590,21 @@ export class PdfRasterFloorPlanSourceAdapter implements FloorPlanSourceAdapter {
         }
       }
     }
-    const solutions = selectedPages
-      .map((page) => ({ page, solution: solveCrossCheckedScale(page) }))
+    const observations = selectedPages.map((page) => ({ page, diagnosis: diagnoseSourceScale(page) }));
+    const solutions = observations
+      .map(({ page, diagnosis }) => ({ page, solution: diagnosis.status === "accepted" ? diagnosis.candidate : null }))
       .filter((entry) => entry.solution !== null)
       .sort(
         (left, right) =>
           (right.solution?.dimensionCount ?? 0) - (left.solution?.dimensionCount ?? 0)
       );
-    const best = solutions[0];
     const scales: PageScaleSolution[] = solutions.flatMap(({ page, solution }) =>
-      solution
-        ? [
-            {
-              pageNumber: page.pageNumber,
-              millimetresPerPixel: solution.millimetresPerPixel,
-              dimensionCount: solution.dimensionCount,
-              rmsResidualMm: solution.rmsResidualMm,
-              confidence: solution.confidence,
-              evidence: solution.evidence,
-              diagnostics: solution.diagnostics,
-            },
-          ]
-        : []
+      solution ? [{ pageNumber: page.pageNumber, ...solution }] : []
     );
     const next: ExtractionEnvelope = {
       ...envelope,
       scales,
-      scale:
-        best?.solution
-          ? {
-              pageNumber: best.page.pageNumber,
-              millimetresPerPixel: best.solution.millimetresPerPixel,
-              dimensionCount: best.solution.dimensionCount,
-              rmsResidualMm: best.solution.rmsResidualMm,
-              confidence: best.solution.confidence,
-              evidence: best.solution.evidence,
-              diagnostics: best.solution.diagnostics,
-            }
-          : null,
+      scale: scales[0] ?? null,
     };
     return {
       ...result,
@@ -2635,6 +2612,7 @@ export class PdfRasterFloorPlanSourceAdapter implements FloorPlanSourceAdapter {
       sourceManifest: result.sourceManifest
         ? {
             ...result.sourceManifest,
+            scaleDiagnostics: observations.map(({ page, diagnosis }) => ({ pageNumber: page.pageNumber, ...diagnosis })),
             selectedPageNumber: next.selectedPageNumber ?? next.scale?.pageNumber ?? null,
             scale: next.scale
               ? {
@@ -2667,11 +2645,11 @@ export class PdfRasterFloorPlanSourceAdapter implements FloorPlanSourceAdapter {
         scaleDimensionCount: next.scale?.dimensionCount ?? 0,
         scaleResidualMm: next.scale?.rmsResidualMm ?? null,
         scaleSingleSegmentCandidateCount:
-          next.scale?.diagnostics?.singleSegmentCandidateCount ?? 0,
+          observations.reduce((sum, { diagnosis }) => sum + (diagnosis.candidate?.diagnostics?.singleSegmentCandidateCount ?? 0), 0),
         scaleCompoundSpanCandidateCount:
-          next.scale?.diagnostics?.compoundSpanCandidateCount ?? 0,
+          observations.reduce((sum, { diagnosis }) => sum + (diagnosis.candidate?.diagnostics?.compoundSpanCandidateCount ?? 0), 0),
         scaleUnsupportedSpanCount:
-          next.scale?.diagnostics?.rejectedUnsupportedSpan ?? 0,
+          observations.reduce((sum, { diagnosis }) => sum + (diagnosis.candidate?.diagnostics?.rejectedUnsupportedSpan ?? 0), 0),
       },
     };
   }

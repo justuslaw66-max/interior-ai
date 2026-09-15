@@ -1,4 +1,4 @@
-import { solveCrossCheckedScale } from "@/lib/floor-plan-imports/source-scale-cross-check";
+import { diagnoseSourceScale, solveCrossCheckedScale } from "@/lib/floor-plan-imports/source-scale-cross-check";
 import assert from "node:assert/strict";
 import { compileFloorPlanDocumentV2 } from "@/lib/floor-plan-compiler-v2";
 import type { FloorPlanDocumentV2 } from "@/lib/floor-plan-document-v2";
@@ -635,7 +635,7 @@ async function testPageScaleIsolation() {
   );
 }
 
-function testIndependentScaleConflict() {
+async function testIndependentScaleConflict() {
   const page: RegisteredPageEvidence = { pageNumber: 1, widthPx: 1000, heightPx: 800,
     vectorPaths: [], text: [],
     vectorSegments: [
@@ -653,11 +653,26 @@ function testIndependentScaleConflict() {
   page.semantics.dimensionLabels[2].valueMm = 4400;
   assert.equal(solveCrossCheckedScale(page), null, "A two-dimension cluster cannot silence a clear independent contradiction");
   assert.ok(page.semantics.notes.some((note) => note.includes("4400 mm differs by 40.0 source pixels")));
+  const diagnosis = diagnoseSourceScale(page);
+  assert.equal(diagnosis.status, "rejected_associations");
+  assert.equal(diagnosis.tolerancePx, 3);
+  assert.deepEqual(diagnosis.conflicts[0], { valueMm: 4400, residualPx: 40, segmentId: "dimension-c",
+    start: { x: 100, y: 600 }, end: { x: 500, y: 600 }, observedLengthPx: 400,
+    orientation: "horizontal", rawText: null, endpointStatus: "unverified" });
+  const adapter = new PdfRasterFloorPlanSourceAdapter({ localOcrProvider: null });
+  const scaled = await adapter.solveScale({ candidate: { kind: "floor_plan_deterministic_evidence_v1",
+    source: { id: "diagnostic-source", fileName: "authored.png", mimeType: "image/png", sha256: "a".repeat(64) },
+    pages: [page], scale: null, scales: [] }, sourceManifest: { pages: [{ pageNumber: 1 }] }, reviewIssues: [], metrics: {} });
+  assert.equal(scaled.candidate?.scale, null, "Retaining rejected associations must not promote a metric scale.");
+  assert.deepEqual(scaled.sourceManifest?.scaleDiagnostics, [{ pageNumber: 1, ...diagnosis }]);
+  assert.equal(scaled.metrics?.scaleSolved, false);
+  assert.equal(scaled.metrics?.scaleSingleSegmentCandidateCount, diagnosis.candidate?.diagnostics?.singleSegmentCandidateCount);
+  assert.ok(Number(scaled.metrics?.scaleSingleSegmentCandidateCount) > 0, "A rejected cluster cannot erase detected-candidate counts.");
 }
 
 async function main() {
   testRelevantPageRanking();
-  testIndependentScaleConflict();
+  await testIndependentScaleConflict();
   await testCleanRasterAndDeterminism();
   await testSkewAndNoiseRejection();
   await testIncompleteLineworkDoesNotCloseRoom();

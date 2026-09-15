@@ -39,6 +39,7 @@ async function main() {
     started = performance.now();
     result = await adapter[stage](result, context);
     timings[`${stage}Ms`] = performance.now() - started;
+    await fs.writeFile(path.join(output, `${stage}.json`), JSON.stringify(result, null, 2), { mode: 0o600 });
   }
   await fs.writeFile(path.join(output, "result.json"), JSON.stringify({ pages, timings, result }, null, 2), { mode: 0o600 });
   console.log(JSON.stringify({ timings, metrics: result.metrics, issues: result.reviewIssues.map(({ code, severity }) => ({ code, severity })), output }, null, 2));

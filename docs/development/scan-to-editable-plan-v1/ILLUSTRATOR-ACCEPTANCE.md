@@ -2,6 +2,8 @@
 
 Status: **ILLUSTRATOR_ACCEPTANCE_PENDING**. Illustrator 2024 reports version **28.0.0** on this Mac. The JavaScript automation and System Events diagnostic each returned AppleEvent timeout `-1712`; no artwork-editing action ran. PDF inspection and another renderer do not establish Illustrator acceptance.
 
+2026-09-15 manual update: the user opened proposed-apartment.pdf in Illustrator2024, showed an individually selected/moved wall, and reported that individual items can move. This is a partial native object-editing observation. Dimension text editing, font warnings/substitution, exact saved output identity, save/close/reopen and the separate SVG test remain pending. Screenshot and direct report are retained privately in E/illustrator-manual-20260915. No additional AppleEvent attempt ran.
+
 The independently authored test pack is generated with:
 
 ```sh
