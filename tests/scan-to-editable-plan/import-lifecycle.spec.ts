@@ -28,6 +28,37 @@ test.beforeAll(async () => {
 });
 test.afterAll(async () => { if (bundle) await fs.rm(path.dirname(bundle), { recursive: true, force: true }); });
 
+test("History restores a parent review after a new child replaces the active job", async ({ page }) => {
+  await mountWorkspace(page,"needs_review");
+  const parent=lifecycleImportJob("original-job","needs_review"),child=lifecycleImportJob("child-job","ready");
+  parent.reviewIssuesJson=[{id:"missing-boundaries",code:"photo_recomputed_boundaries_review",severity:"critical",resolved:false,message:"Review missing source boundaries before accepting this synthetic fixture."}];
+  await page.route("**/api/floor-plan-imports?*",route=>route.fulfill({json:{jobs:[child,parent],nextCursor:null}}));
+  await page.route("**/original-job",route=>route.fulfill({json:{job:parent}}));
+  await page.route("**/original-job/retry-detection",route=>route.fulfill({json:{job:{id:child.id}}}));
+  await page.route("**/child-job",route=>route.fulfill({json:{job:child}}));
+  await page.reload();await page.addScriptTag({path:bundle});
+  await page.getByRole("button",{name:"Rerun AI detection",exact:true}).click();
+  await expect(page.getByTestId("floor-plan-import-ready")).toBeVisible();
+  await expect.poll(()=>page.evaluate(key=>localStorage.getItem(key),ACTIVE_FLOOR_PLAN_IMPORT_STORAGE_KEY)).toBe(child.id);
+  await page.getByText("Previous imports & privacy",{exact:true}).click();
+  await page.getByText("My floor-plan imports",{exact:true}).click();
+  await page.getByTestId("floor-plan-import-history-original-job").getByRole("button",{name:"Resume",exact:true}).click();
+  await expect(page.getByTestId("floor-plan-import-review")).toBeVisible();
+  await expect(page.getByTestId("floor-plan-import-ready")).toHaveCount(0);
+  await expect.poll(()=>page.evaluate(key=>localStorage.getItem(key),ACTIVE_FLOOR_PLAN_IMPORT_STORAGE_KEY)).toBe(parent.id);
+});
+
+test("Continuing the already active review retains unsaved consumer corrections", async ({page})=>{
+  await mountWorkspace(page,"needs_review");
+  await page.route("**/api/floor-plan-imports?*",route=>route.fulfill({json:{jobs:[lifecycleImportJob("original-job","needs_review")],nextCursor:null}}));
+  const names=page.locator("details").filter({has:page.getByText("Edit room names (optional)",{exact:true})});
+  await names.locator("summary").click();await names.locator("input").first().fill("Unsaved consumer correction");
+  await page.getByText("Previous imports & privacy",{exact:true}).click();
+  await page.getByText("My floor-plan imports",{exact:true}).click();
+  await page.getByTestId("floor-plan-import-history-original-job").getByRole("button",{name:"Continue below",exact:true}).click();
+  await expect(names.locator("input").first()).toHaveValue("Unsaved consumer correction");
+});
+
 test("An incomplete consumer review draft preserves corrections and conflicts after reload", async ({ page }, info) => {
   await mountWorkspace(page, "needs_review");
   const candidate = calibratedScaleFixture();

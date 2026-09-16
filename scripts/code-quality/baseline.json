@@ -2216,10 +2216,6 @@
       "overlongFunctions": {
         "count": 1,
         "maximum": 163
-      },
-      "complexFunctions": {
-        "count": 1,
-        "maximum": 16
       }
     },
     "components/editor/FloorPlanOptionalConfigurationPanel.tsx": {
