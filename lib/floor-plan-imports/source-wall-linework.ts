@@ -3,7 +3,11 @@ import { mapPhotoPoint } from "../floor-plan-photo-math";
 const MIN_SEGMENT_LENGTH_PX=8;
 const pointDistance=(a:SourcePointPx,b:SourcePointPx)=>Math.hypot(a.x-b.x,a.y-b.y);
 const segmentMidpoint=(s:SourceVectorSegment)=>({x:(s.start.x+s.end.x)/2,y:(s.start.y+s.end.y)/2});
-function pointInBox(p:SourcePointPx,b:SemanticBoundingBox,page:RegisteredPageEvidence){return p.x>=b.leftRatio*page.widthPx&&p.x<=b.rightRatio*page.widthPx&&p.y>=b.topRatio*page.heightPx&&p.y<=b.bottomRatio*page.heightPx;}
+function pointInBox(p:SourcePointPx,b:SemanticBoundingBox,page:RegisteredPageEvidence){
+  const padding=Math.max(2,Math.hypot(page.widthPx,page.heightPx)*0.001);
+  return p.x>=b.leftRatio*page.widthPx-padding&&p.x<=b.rightRatio*page.widthPx+padding&&
+    p.y>=b.topRatio*page.heightPx-padding&&p.y<=b.bottomRatio*page.heightPx+padding;
+}
 export function sourcePixelDistance(page:RegisteredPageEvidence,a:SourcePointPx,b:SourcePointPx) {
   const m=page.originalPixelMapping;return m?pointDistance(mapPhotoPoint(m,a),mapPhotoPoint(m,b)):pointDistance(a,b);
 }

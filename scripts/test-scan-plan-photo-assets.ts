@@ -35,7 +35,7 @@ async function main() {
 
   let user:string|null="owner",owned=true,retained=true,reads=0;
   const saved=new Map<string,NodeModule|undefined>();
-  const stub=(name:string,exports:object)=>{const id=require.resolve(name);saved.set(id,require.cache[id]);const module=new Module(id);module.exports=exports;module.loaded=true;require.cache[id]=module;};
+  const stub=(name:string,exports:object)=>{const id=require.resolve(name);saved.set(id,require.cache[id]);const stubModule=new Module(id);stubModule.exports=exports;stubModule.loaded=true;require.cache[id]=stubModule;};
   stub("@/lib/auth",{auth:async()=>user?{user:{id:user}}:null});
   stub("@/lib/prisma",{prisma:{floorPlanDerivedAsset:{findFirst:async({where}:{where:{job:{userId:string}}})=>owned&&where.job.userId==="owner"?{mimeType:"image/png"}:null},
     floorPlanImportJob:{findFirst:async()=>retained?{candidateJson:document,renderedPagesJson:pages}:null}}});

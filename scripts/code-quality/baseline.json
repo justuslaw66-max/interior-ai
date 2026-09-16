@@ -601,7 +601,7 @@
       "limit": 400
     },
     "lib/floor-plan-imports/vision-guided-topology.ts": {
-      "lines": 1117,
+      "lines": 1105,
       "limit": 400
     },
     "lib/floor-plan-legacy-adapters.ts": {

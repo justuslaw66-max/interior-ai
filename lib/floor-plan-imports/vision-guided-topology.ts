@@ -3,7 +3,6 @@ import {
   pointInPolygon,
   type RegisteredPageEvidence,
   type RegisteredRoomBoundary,
-  type SemanticBoundingBox,
   type SemanticFixtureSymbol,
   type SemanticRoomBoundary,
   type SourcePointPx,
@@ -46,7 +45,6 @@ export type VisionGuidedTopologyResult = {
 };
 
 const MIN_PROPOSAL_CONFIDENCE = 0.5;
-const MIN_SEGMENT_LENGTH_PX = 8;
 const MIN_EDGE_LENGTH_PX = 14;
 const MAX_POLYGON_POINTS = 24;
 const OPEN_PLAN_ROOM_TYPES = new Set(["living", "dining", "kitchen"]);
@@ -82,16 +80,6 @@ export function inferRoomIdentityFromFixtures(
     roomType: "toilet",
     confidence: Math.min(...supported.map((fixture) => fixture.confidence)),
   };
-}
-
-function pointInBox(point: SourcePointPx, box: SemanticBoundingBox, page: RegisteredPageEvidence) {
-  const padding = Math.max(2, Math.hypot(page.widthPx, page.heightPx) * 0.001);
-  return (
-    point.x >= box.leftRatio * page.widthPx - padding &&
-    point.x <= box.rightRatio * page.widthPx + padding &&
-    point.y >= box.topRatio * page.heightPx - padding &&
-    point.y <= box.bottomRatio * page.heightPx + padding
-  );
 }
 
 function segmentMidpoint(segment: SourceVectorSegment): SourcePointPx {

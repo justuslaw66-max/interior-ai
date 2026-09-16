@@ -22,7 +22,7 @@ async function main() {
     sourceAsset:{id:sourceId,sha256:"a".repeat(64),contentDeletedAt:null as Date|null}});
   let state=fresh(),user:string|null="owner",afterRecompute=()=>{},created=0,updates=0,computes=0;
   const events:string[]=[],assetWrites:Array<{jobId:string;mimeType:string}>=[],saved=new Map<string,NodeModule|undefined>();
-  const stub=(name:string,exports:object)=>{const id=require.resolve(name);saved.set(id,require.cache[id]);const module=new Module(id);module.exports=exports;module.loaded=true;require.cache[id]=module;};
+  const stub=(name:string,exports:object)=>{const id=require.resolve(name);saved.set(id,require.cache[id]);const stubModule=new Module(id);stubModule.exports=exports;stubModule.loaded=true;require.cache[id]=stubModule;};
   const findFirst=async({where}:{where:{userId:string;historyDeletedAt?:null}})=>where.userId===state.userId&&!state.historyDeletedAt?structuredClone(state):null;
   const tx={$queryRaw:async()=>{events.push("lock");return [{id:sourceId}];},floorPlanImportJob:{findFirst,update:async({where}:{where:{id:string}})=>{
     assert.equal(where.id,"child");updates++;events.push("update-child");}}};
