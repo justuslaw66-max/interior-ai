@@ -58,7 +58,11 @@ export function sourceSegmentsForWalls(page: RegisteredPageEvidence) {
         rightRatio: (text.center.x + text.widthPx / 2) / page.widthPx,
         bottomRatio: (text.center.y + text.heightPx / 2) / page.heightPx,
       };
-      return pointInBox(midpoint, box, page);
+      // OCR often reads long wall rails as I/l/| or punctuation. Such marks
+      // remain visible for review but cannot erase architectural evidence.
+      // A real text box excludes only strokes contained within that text.
+      return /[\p{L}02-9]/u.test(text.text.replace(/[Iil]/g, "")) &&
+        pointInBox(segment.start, box, page) && pointInBox(segment.end, box, page);
     });
   });
 }

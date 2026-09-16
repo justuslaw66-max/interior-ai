@@ -5,7 +5,7 @@ import { saveSourceReviewSpan,type SourceSpanKind } from "@/lib/floor-plan-sourc
 
 type Props={document:FloorPlanDocumentV2;floorId:string;sourceId:string;
   page:{pageNumber:number;widthPx:number;heightPx:number}|null;points:Array<{x:number;y:number}>;
-  onPick:()=>void;onChange:(value:FloorPlanDocumentV2)=>void;disabled:boolean};
+  onPick:()=>void;onSelect:(id:string,points:Array<{x:number;y:number}>)=>void;onChange:(value:FloorPlanDocumentV2)=>void;disabled:boolean};
 const control="rounded border bg-white px-2 py-1 text-xs disabled:opacity-50";
 
 export default function FloorPlanPendingSpanReview(props:Props) {
@@ -23,14 +23,17 @@ export default function FloorPlanPendingSpanReview(props:Props) {
     <summary className="cursor-pointer text-sm font-semibold">Review missing boundaries and openings</summary>
     <fieldset disabled={props.disabled} className="mt-2 grid gap-2 text-xs">
       <p>Mark a missing span, or correct a proposal, even before scale and walls exist. These purple reference marks stay pending; they do not close a room or create an opening.</p>
-      <label>Source proposal<select aria-label="Source span to correct" className={`${control} block w-full`} value={selected} onChange={e=>setSelected(e.target.value)}>
+      <label>Source proposal<select aria-label="Source span to correct" className={`${control} block w-full`} value={selected} onChange={e=>{
+        const id=e.target.value,span=spans.find(a=>a.id===id);setSelected(id);setMessage(null);
+        props.onSelect(id,span?.geometry.kind==="source_drawing"?span.geometry.points.map(p=>({x:p.x,y:p.y})):[]);
+      }}>
         <option value="">Mark a new unresolved span</option>{spans.map((a,i)=><option key={a.id} value={a.id}>{i+1}. {a.text||a.id}</option>)}
       </select></label>
       <label>What is visible?<select aria-label="Pending source span kind" className={`${control} ml-2`} value={kind} onChange={e=>{
         const value=e.target.value;if(value==="boundary"||value==="door"||value==="window"||value==="unknown")setKind(value);
       }}><option value="boundary">Boundary</option><option value="door">Doorway</option><option value="window">Window</option><option value="unknown">Uncertain mark</option></select></label>
       <button type="button" className={control} onClick={props.onPick}>Pick pending span endpoints</button>
-      <p>{props.points.length}/2 endpoints selected on the source above.</p>
+      <p>{props.points.length}/2 endpoints selected on the source above. Selecting a proposal highlights it and loads its endpoints; pick again to adjust them.</p>
       <label>Review note<input aria-label="Pending source span note" className={`${control} block w-full`} value={note} maxLength={500} onChange={e=>setNote(e.target.value)}/></label>
       <button type="button" className={control} disabled={props.points.length!==2||!props.page||!note.trim()} onClick={save}>Record pending source correction</button>
       {message?<p role="status">{message}</p>:null}

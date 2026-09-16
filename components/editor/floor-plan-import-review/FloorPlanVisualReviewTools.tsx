@@ -99,16 +99,13 @@ export default function FloorPlanVisualReviewTools({
           setScalePoints([]); setRoomPoints([]); setOpeningPoints([]);
         }}
         focusedEntityIds={focusedEntityIds}
-        pickingScale={pickingScale}
-        scalePoints={scalePoints}
-        onUseScaleEndpoints={setScalePoints}
+        pickingScale={pickingScale} scalePoints={scalePoints} onUseScaleEndpoints={setScalePoints}
         onSourcePoint={(point) =>
           setScalePoints((current) =>
             current.length >= 2 ? [point] : [...current, point]
           )
         }
-        pickingRoom={pickingRoom}
-        roomPoints={roomPoints}
+        pickingRoom={pickingRoom} roomPoints={roomPoints}
         onRoomPoint={(point) => setRoomPoints((current) => [...current, point])}
         pickingOpening={pickingOpening}
         openingPoints={openingPoints}
@@ -129,7 +126,8 @@ export default function FloorPlanVisualReviewTools({
         sourceId={sourceId} jobId={job.id} page={page} calibration={calibration} scalePoints={scalePoints}
         onPicking={()=>{setScalePoints([]);pick("scale");}} onChange={onChange} assetRoutePrefix={assetRoutePrefix} disabled={disabled}/>
       <FloorPlanPendingSpanReview key={`spans:${sourceId}:${pageNumber}`} document={document} floorId={floor.id} sourceId={sourceId}
-        page={page} points={scalePoints} onPick={()=>{setScalePoints([]);pick("scale");}} onChange={onChange} disabled={disabled}/>
+        page={page} points={scalePoints} onPick={()=>{setScalePoints([]);pick("scale");}} onChange={onChange} disabled={disabled}
+        onSelect={(id,points)=>{setFocusedCorrectionIds(id?[id]:[]);setScalePoints(points);pick("scale",false);}}/>
       <FloorPlanScaleReviewPanel key={`${sourceId}:${page?.pageNumber}`}
         document={document}
         floorId={floor.id}

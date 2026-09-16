@@ -1,5 +1,10 @@
 import assert from "node:assert/strict";
-import { architecturalLineworkPage,hasSourceDivider,sourcePixelDistance } from "../lib/floor-plan-imports/source-wall-linework";
+import { architecturalLineworkPage,hasSourceDivider,sourcePixelDistance,sourceSegmentsForWalls } from "../lib/floor-plan-imports/source-wall-linework";
+import { rasterBoundaryProposals } from "../lib/floor-plan-imports/raster-boundary-proposals";
+import { mergePhotoReferenceReview } from "../lib/floor-plan-imports/photo-reference-review";
+import { acceptedPhotoFixture } from "./fixtures/scan-to-editable-plan/photo-calibration";
+import { inversePhotoMatrix,mapPhotoPoint } from "../lib/floor-plan-photo-math";
+import { compileFloorPlanDocumentV2 } from "../lib/floor-plan-compiler-v2";
 import type { RegisteredPageEvidence,SourceVectorSegment } from "../lib/floor-plan-imports/deterministic-evidence";
 const segment=(id:string,y:number,x=0,end=200):SourceVectorSegment=>({id,pageNumber:1,start:{x,y},end:{x:end,y},strokeWidthPx:1,confidence:1,evidenceKind:"raster_linework"});
 const page:RegisteredPageEvidence={pageNumber:1,widthPx:300,heightPx:400,vectorSegments:[segment("ruler",20),segment("wall",24)],vectorPaths:[],text:[],
@@ -23,3 +28,54 @@ assert.equal(hasSourceDivider(partition,polygon),false,"A short fixture mark doe
 partition.vectorSegments=[segment("single-mark",150)];assert.equal(hasSourceDivider(partition,polygon),false);
 partition.vectorSegments=[segment("edge-a",0),segment("edge-b",4)];assert.equal(hasSourceDivider(partition,polygon),false,"Outer wall rails are not interior partitions.");
 console.log("PASS: confirmed chained dimension rulers excluded from wall support, original-pixel tolerance retained, unresolved hints preserved and complete internal paired boundaries prevent false room merging.");
+
+const textPage=structuredClone(partition);textPage.vectorSegments=[segment("long-wall",100,20,180)];
+textPage.text=[{id:"ocr",pageNumber:1,text:"Il",center:{x:100,y:100},widthPx:180,heightPx:15,evidenceKind:"ocr"}];
+assert.equal(sourceSegmentsForWalls(textPage).length,1,"OCR stroke-like glyphs must not erase a long wall.");
+textPage.text[0].text="BEDROOM";textPage.text[0].widthPx=30;
+assert.equal(sourceSegmentsForWalls(textPage).length,1,"A small text box crossing a wall midpoint cannot delete the full wall.");
+textPage.vectorSegments=[segment("letter-stroke",100,90,110)];
+assert.equal(sourceSegmentsForWalls(textPage).length,0,"Real letter strokes contained in text remain excluded.");
+
+const rails=structuredClone(partition);rails.text=[];
+rails.semantics.planRegion={bbox:{leftRatio:0,topRatio:0,rightRatio:1,bottomRatio:1},rotationDegrees:0,confidence:1,evidenceKind:"vision"};
+rails.vectorSegments=[segment("rail-a",100,20,180),segment("rail-b",106,30,170)];
+const pairs=rasterBoundaryProposals(rails,20);
+assert.equal(pairs.length,1);assert.deepEqual(pairs[0].start,{x:30,y:103});assert.deepEqual(pairs[0].end,{x:170,y:103});
+rails.vectorSegments.push(segment("window-middle",103,30,170));
+assert.equal(rasterBoundaryProposals(rails,20).length,0,"Three rails cannot become a wall by choosing adjacent pairs.");
+rails.vectorSegments=[segment("rail-a",100,20,180),segment("first-fragment",106,20,65),segment("second-fragment",106,120,180)];
+const fragments=rasterBoundaryProposals(rails,20);assert.equal(fragments.length,2);
+assert(fragments.every(p=>p.end.x<=65||p.start.x>=120),"An unsupported gap remains open.");
+rails.semantics.planRegion=undefined;assert.equal(rasterBoundaryProposals(rails,20).length,0);
+
+const photo=acceptedPhotoFixture().floors[0].calibrations[0];
+const evidence=structuredClone(rails);evidence.widthPx=photo.photoCorrection!.correctedWidthPx;evidence.heightPx=photo.photoCorrection!.correctedHeightPx;
+evidence.semantics.planRegion={bbox:{leftRatio:0,topRatio:0,rightRatio:1,bottomRatio:1},rotationDegrees:0,confidence:1,evidenceKind:"vision"};
+evidence.vectorSegments=[segment("supported-solid",200,100,200)];evidence.vectorSegments[0].strokeWidthPx=8;
+const annotations=mergePhotoReferenceReview([],evidence,photo,20);assert.equal(annotations.length,1);
+assert(annotations[0].geometry.kind==="source_drawing");
+assert.deepEqual(annotations[0].geometry.points[0],mapPhotoPoint(inversePhotoMatrix(photo.photoCorrection!.originalToCorrected),{x:100,y:200}));
+const corrected=structuredClone(annotations);corrected[0].text="Consumer correction";
+corrected[0].provenance.reviewHistory=[{id:"review",action:"corrected",reviewerId:"consumer",reviewedAt:"2026-09-16T00:00:00Z"}];
+evidence.vectorSegments[0].start.x=110;
+assert.deepEqual(mergePhotoReferenceReview(corrected,evidence,photo,20),corrected,"New extraction cannot overwrite a saved consumer source correction.");
+evidence.vectorSegments=[];
+assert.deepEqual(mergePhotoReferenceReview(annotations,evidence,photo,20),[],"Stale automatic boundary proposals are invalidated.");
+assert.deepEqual(mergePhotoReferenceReview(corrected,evidence,photo,20),corrected,"Manual corrections survive invalidated automatic proposals.");
+evidence.vectorSegments=[segment("pair-a",200,100,200),segment("pair-b",206,100,200)];
+const compiled=acceptedPhotoFixture();compiled.floors[0].annotations=mergePhotoReferenceReview([],evidence,photo,20);
+assert.equal(compiled.floors[0].annotations.length,1);compileFloorPlanDocumentV2(compiled);
+assert.equal(compiled.floors[0].walls.length,0,"Reference candidates cannot become canonical geometry.");
+const hintStart={x:300,y:300},hintEnd={x:300,y:380},actualStart={x:301,y:298},actualEnd={x:301,y:383};
+evidence.semantics.openingSymbols=[{kind:"door",operation:"swing",centerXRatio:300/evidence.widthPx,centerYRatio:340/evidence.heightPx,confidence:0.55,evidenceKind:"vision",
+  spanStart:{xRatio:300/evidence.widthPx,yRatio:300/evidence.heightPx},spanEnd:{xRatio:300/evidence.widthPx,yRatio:380/evidence.heightPx}}];
+evidence.openingSpanEvidence={coordinateSpace:"rendered_px",imageSha256:"synthetic",widthPx:evidence.widthPx,heightPx:evidence.heightPx,
+  observations:[{symbolIndex:0,kind:"door",hintStart,hintEnd,span:{start:actualStart,end:actualEnd,method:"wall_jambs"},reason:"source_supported"}]};
+const local=mergePhotoReferenceReview([],evidence,photo,20),opening=local.find(a=>a.id==="source-proposal:1:opening:0")!;
+assert(opening.geometry.kind==="source_drawing");
+assert.deepEqual(opening.geometry.points[0],mapPhotoPoint(inversePhotoMatrix(photo.photoCorrection!.originalToCorrected),actualStart));
+opening.provenance.reviewHistory=[{id:"consumer-door",action:"corrected",reviewerId:"consumer",reviewedAt:"2026-09-16T00:00:00Z"}];
+opening.geometry.points[0].x+=2;
+assert.deepEqual(mergePhotoReferenceReview([opening],evidence,photo,20).find(a=>a.id===opening.id),opening,"Pixel refinements cannot overwrite newer consumer opening endpoints.");
+console.log("PASS: OCR/wall associations, unresolved raster boundaries, multi-rail abstention, gap preservation, original-frame mapping and protected consumer edits.");

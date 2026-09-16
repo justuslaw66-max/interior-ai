@@ -11,6 +11,7 @@ import { correctedPhotoObservations } from "./photo-observations";
 import { restorePhotoCandidateFrame } from "./photo-candidate-frame";
 import { compileCandidateFloorPlanDocumentV2 } from "./validation";
 import { reconcileFloorPlanImportReadinessIssues } from "./readiness";
+import { mergePhotoReferenceReview } from "./photo-reference-review";
 
 function reviewedPhotoScale(calibration:FloorPlanSourceCalibrationV2) {
   const c=calibration.photoCorrection;if(!c)throw new Error("Accept a supported photo correction first.");
@@ -56,6 +57,7 @@ export async function recomputeCorrectedPhoto(input:{original:FloorPlanDocumentV
   result=await adapter.buildTopology(result,context);
   const built=compileCandidateFloorPlanDocumentV2(result.candidate).document;
   const document=restorePhotoCandidateFrame(built,calibration,input.original);
+  for(const floor of document.floors)floor.annotations=mergePhotoReferenceReview(floor.annotations,solved.pages[0],calibration,scale.millimetresPerPixel);
   compileCandidateFloorPlanDocumentV2(document);
   const issues=reconcileFloorPlanImportReadinessIssues({document,sourceManifest:result.sourceManifest,reviewIssues:[...result.reviewIssues,
     {id:"photo-recomputed-boundaries-review",code:"photo_recomputed_boundaries_review",severity:"critical",resolved:false,
