@@ -1,6 +1,21 @@
 # Scan-to-Editable-Plan V1 — acceptance continuation
 
-2026-09-16. **IN_PROGRESS**. Installation and the bounded recognition experiment are complete; real-plan conversion, independent coverage and the remaining specific native Illustrator checks remain incomplete. This is not READY or integrated. Authority: [original mandate](MANDATE.md), [continuation](Scan_Plan_Acceptance_Completion_Mandate.md).
+2026-09-17. **IN_PROGRESS**. Source-faithful tracing is the immediate priority. Installation, the bounded recognition experiment and the specific export alignment/Illustrator action fixes are complete; real-plan conversion and independent coverage remain incomplete. This is not READY or integrated. Authority: [original mandate](MANDATE.md), [continuation](Scan_Plan_Acceptance_Completion_Mandate.md).
+
+
+## Active priority — source-faithful vector tracing (2026-09-17)
+
+The user superseded architectural recovery as the immediate priority with tracing visible source artwork. Existing editor, calibration, persistence, 3D and completed PDF/Illustrator acceptance remain preserved. The current tracing pass is local only; no new external recognition call.
+
+Resumed actual HEAD **051b8527bedcf66e707cc5f15e751d48c6cf9a84** (status-only successor of tested ac35427), and confirmed the feature runtime's working directory with lsof. Original image SHA-256 **a0d0209a591dc57352b803fc5f8678055da8a8a24a5c2bd5d795ed8dff2d5006** matches again. Private **E/source-trace-r1** preserves the exact original review underlay, prior saved candidate, extraction and source-only evaluation inventory. No screenshot overlays entered extraction; no new transform or calibration change.
+
+**Working implementation, production checkpoint pending:** source-supported grayscale mask, graph-based stroke chains and bounded cubic fitting recover actual curves and separate close parallels. Broad fills retain silhouettes/holes; observed glyph ink is preserved in existing OCR regions without replacing text or deleting nearby strokes. Raw candidates and semantic proposals remain separate. The review offers source-only, final-vectors-only, overlay and optional raw diagnostics, per-path/control editing and Undo, versioned save/reload, protected retrace into a separate review, and existing PDF/SVG export with an explicit uncalibrated label.
+
+Matched source evaluation: old final artwork120 line objects/zero curves; improved artwork493 objects/209 native cubic spans. All623 samples across20 independently inventoried elements in the entrance/right crops fall within the unchanged3 original-pixel gate (old275 misses, maximum36.075px; new0 misses, maximum2.830px). Additional close-parallel checks max1.460px; zero exact duplicates or near-coincident stroke pairs under the recorded structural check. The whole page has0 generated samples unsupported within the2px raster-support neighborhood; this alone is not exhaustive recall proof. See the private criteria, object audit and matched 100%/400% source/old/new/vector-only/overlay artifacts. Thick blurred junctions, isolated dark marks and the partially OCR-covered shelter lettering remain quality limitations; no perfect text reconstruction or exhaustive whole-page recovery claim.
+
+Normal file-input upload of the confirmed original into **http://127.0.0.1:3044/design** produced493 editable artwork paths with zero canonical walls/rooms/openings and unresolved metric scale. Vector-only mode hides the raster. A real recovered entrance curve moves by2px and Undo restores its exact starting point. Preview retrace returns the same493 objects. This is a temporary development preview; the final exact-checkpoint preview and persistence evidence will be recorded below after verification. Stable3036 still serves ac35427 until then. Export inspection confirms one page,0 raster images, native curves, and no false fixed-scale label.
+
+Focused source-trace, route concurrency/retention/ownership and vector-export tests, full lint, typecheck and scan-plan suite pass on the working code. The wider floor-plan-required suite exposed an outdated route-expression assertion; it now recognizes the additional source-trace branch while preserving retry/photo checks. Final quality/build/exact-SHA validation is pending. [Implementation boundaries](SOURCE_VECTOR_TRACING.md). This is improved source artwork, not measured walls, completed semantic recognition or a complete real-apartment 3D/furnishing journey.
 
 ## Latest export correction — wall joins and window alignment
 

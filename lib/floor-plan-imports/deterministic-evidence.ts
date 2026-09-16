@@ -189,11 +189,10 @@ export type PageSemanticEvidence = {
 };
 
 export type RegisteredPageEvidence = {
-  /** Optional inverse correction, for unchanged source-pixel acceptance tolerances. */
+  sourceArtwork?: import("./source-artwork-trace").SourceArtworkTrace;
+  /** Inverse correction keeps acceptance tolerances in original pixels. */
   originalPixelMapping?: import("../floor-plan-photo-math").PhotoMatrix;
-  pageNumber: number;
-  widthPx: number;
-  heightPx: number;
+  pageNumber: number; widthPx: number; heightPx: number;
   rasterRegions?: SourcePointPx[][];
   vectorSegments: SourceVectorSegment[];
   vectorPaths: SourceVectorPath[];

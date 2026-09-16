@@ -9,12 +9,12 @@ import {
   type ReviewSourceSnapResult,
 } from "@/lib/floor-plan-import-review-geometry";
 import FloorPlanSourceReviewOverlay from "./FloorPlanSourceReviewOverlay";
-import FloorPlanSourceArtworkSelection from "./FloorPlanSourceArtworkFields";
+import FloorPlanSourceReviewToolbar from "./FloorPlanSourceReviewToolbar";
 import type { ConsumerFloorPlanImportJob } from "../floor-plan-import-ui-types";
 import { useFloorPlanReviewZoom } from "./useFloorPlanReviewZoom";
 import { FloorPlanReviewZoomControls } from "./FloorPlanReviewZoomControls";
 import { sourceDrawingSvgPoints as polygonPoints } from "@/lib/floor-plan-source-drawing";
-import { useSourceReviewLayers } from "./useSourceReviewLayers";
+import { useSourceReviewLayers, sourceReviewPresentation, sourceReviewOverlay, sourceReviewLabels } from "./useSourceReviewLayers";
 
 type FloorPlanSourceReviewCanvasProps = {
   document: FloorPlanDocumentV2;
@@ -92,20 +92,11 @@ export default function FloorPlanSourceReviewCanvas({
   );
   const sourceReview = useSourceReviewLayers(document, floorId, sourceId, page?.pageNumber, focused);
 
-  if (!page) {
-    return (
-      <div
-        className={
-          dark
-            ? "mt-2 rounded-md bg-white/5 p-2 text-[10px] text-neutral-300"
-            : "mt-2 rounded-md bg-neutral-100 p-2 text-[10px] text-neutral-600"
-        }
-      >
-        No durable source preview is available. Keep the underlay and use guided
-        tracing.
-      </div>
-    );
-  }
+  const presentation = sourceReviewPresentation(sourceReview.layer, sourceOpacity, overlayOpacity);
+  const visibleOverlay = sourceReviewOverlay(sourceReview.layer, overlay);
+  if (!page) return <p className={dark ? "mt-2 text-xs text-neutral-300" : "mt-2 text-xs text-neutral-600"}>
+    No durable source preview is available. Keep the underlay and use guided tracing.
+  </p>;
 
   const assetUrl = `${
     assetRoutePrefix ??
@@ -150,6 +141,7 @@ export default function FloorPlanSourceReviewCanvas({
     else onOpeningPoint?.(snap.point);
   };
   const isCad = Boolean(adapterId && /(dxf|ifc|dwg)/i.test(adapterId));
+  const labels = sourceReviewLabels(presentation.artworkView,isCad,Boolean(overlay));
   const picking = pickingScale || pickingRoom || pickingOpening;
   const lensSize = Math.max(
     60,
@@ -170,19 +162,16 @@ export default function FloorPlanSourceReviewCanvas({
 
   return (
     <section className="mt-3" aria-label="Interactive 2D plan preview">
-      <FloorPlanSourceArtworkSelection {...sourceReview} count={sourceReview.artwork.length} visibleCount={sourceReview.visible.length}
-        document={document} floorId={floorId} onChange={onDocumentChange}
-        onClose={() => sourceReview.select("")} onUseScaleEndpoints={onUseScaleEndpoints}
-        disabled={disabled} previewOnly={previewOnly} />
+      <FloorPlanSourceReviewToolbar sourceReview={sourceReview} document={document} floorId={floorId} onChange={onDocumentChange}
+        onUseScaleEndpoints={onUseScaleEndpoints} disabled={disabled} previewOnly={previewOnly}
+        sourceId={sourceId} jobId={jobId} pageNumber={page.pageNumber} assetUrl={assetUrl}/>
       <div className="mb-2 flex items-center justify-between gap-2">
         <div>
-          <div className="text-sm font-semibold">2D plan preview</div>
+          <div className="text-sm font-semibold">{labels.title}</div>
           <div
             className={dark ? "text-xs text-neutral-400" : "text-xs text-neutral-600"}
           >
-            {overlay
-              ? "Source registration is available. Review any recovered outlines against the uploaded plan."
-              : "Your selected measurements and room corners will appear here."}
+            {labels.description}
           </div>
         </div>
         <FloorPlanReviewZoomControls zoom={zoom} setZoom={setZoom} pages={pages} pageNumber={page.pageNumber} dark={dark}
@@ -214,7 +203,7 @@ export default function FloorPlanSourceReviewCanvas({
             }
             className="absolute inset-0 h-full w-full select-none"
             draggable={false}
-            style={{ opacity: sourceOpacity / 100 }}
+            style={{ opacity: presentation.sourceOpacity }}
             src={assetUrl}
           />
           <svg
@@ -226,7 +215,7 @@ export default function FloorPlanSourceReviewCanvas({
                   ? "Trace room corners on the source drawing"
                   : pickingOpening
                     ? "Pick both ends of an opening on the source drawing"
-                  : "Canonical candidate overlay"
+                  : labels.overlay
             }
             className={
               picking
@@ -242,8 +231,8 @@ export default function FloorPlanSourceReviewCanvas({
             role="group"
             viewBox={`0 0 ${page.widthPx} ${page.heightPx}`}
           >
-            <FloorPlanSourceReviewOverlay overlay={overlay} focused={focused} pickingRoom={pickingRoom}
-              opacity={overlayOpacity / 100} annotations={sourceReview.visible} selectedId={sourceReview.selectedId}
+            <FloorPlanSourceReviewOverlay overlay={visibleOverlay} focused={focused} pickingRoom={pickingRoom}
+              opacity={presentation.overlayOpacity} annotations={sourceReview.visible} selectedId={sourceReview.selectedId}
               picking={picking} onSelect={sourceReview.select} />
             {scalePoints.map((point, index) => (
               <g key={`${point.x}-${point.y}-${index}`}>
@@ -429,9 +418,7 @@ export default function FloorPlanSourceReviewCanvas({
           ) : null}
         </div>
         <figcaption className="border-t border-neutral-200 px-2 py-1.5 text-[10px] text-neutral-600">
-          {isCad
-            ? "CAD lines remain a reference until you confirm them."
-            : "Green: proposed walls. Blue: proposed openings and selected measurements. Orange: opening being marked. Purple: source evidence needing review."}
+          {labels.caption}
         </figcaption>
       </figure>
       <details className="mt-2 text-[10px] text-neutral-600">

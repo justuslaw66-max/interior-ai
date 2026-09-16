@@ -17,6 +17,7 @@ import FloorPlanImportReviewPanel from "./floor-plan-import-review/FloorPlanImpo
 import { prepareFloorPlanReviewSubmission } from "@/lib/floor-plan-import-review-submission";
 import FloorPlanReviewDraftSave from "./floor-plan-import-review/FloorPlanReviewDraftSave";
 import FloorPlanVisualReviewTools from "./floor-plan-import-review/FloorPlanVisualReviewTools";
+import { SourceTraceAction,type SourceTraceRequest } from "./floor-plan-import-review/source-trace-action";
 import { PhotoReviewAction,requestDetectionReview,photoReviewBusy,type PhotoReviewRequest } from "./floor-plan-import-review/photo-review-action";
 import FloorPlanOptionalConfigurationPanel from "./FloorPlanOptionalConfigurationPanel";
 import { inspectFloorPlanOptionalConfigurations } from "@/lib/floor-plan-optional-configurations";
@@ -250,22 +251,20 @@ export default function FloorPlanImportAssistant({
     }
   };
 
-  const retryDetection = async (photo?:PhotoReviewRequest) => {
-    if (!activeJob || !["needs_review", "failed"].includes(activeJob.status)) {
-      return;
-    }
+  const retryDetection = async (photo?:PhotoReviewRequest,trace?:SourceTraceRequest) => {
+    if (!activeJob || !["needs_review", "failed"].includes(activeJob.status)) return;
     const signal = beginAction();
     setRetryingDetection(true);
     setReviewError(null);
     try {
-      const job=await requestDetectionReview({activeJob,photo,candidate,signal,onActiveJobIdChange,processAndPoll});
+      const job=await requestDetectionReview({activeJob,photo,trace,candidate,signal,onActiveJobIdChange,processAndPoll});
       signal.throwIfAborted();
       setCandidate(parseFloorPlanImportDocument(job.candidateJson));
       setIssues(parseFloorPlanImportIssues(job.reviewIssuesJson));
       setState({ kind: "job", job });
     } catch (cause) {
       if (signal.aborted) return;
-      if(photo){setReviewError(cause instanceof Error?cause.message:"Unable to recompute this review");return;}
+      if(photo||trace){setReviewError(cause instanceof Error?cause.message:"Unable to recompute this review");return;}
       setState({
         kind: "error",
         message:
@@ -644,7 +643,6 @@ export default function FloorPlanImportAssistant({
   }
 
   if (!activeJob || !candidate || !floor) return null;
-
   return (
     <div className={surface} data-testid="floor-plan-import-review" data-floor-plan-workspace-state="review">
       {reviewError ? (
@@ -654,6 +652,7 @@ export default function FloorPlanImportAssistant({
       ) : null}
       <FloorPlanReviewDraftSave disabled={disabled} submitting={submitting} deletingSource={deletingSource}
         savedVersion={savedDraftVersion} control={control} subtle={subtle} onSave={() => void submitReview(issues, true)} />
+      <SourceTraceAction.Provider value={{candidateVersion:activeJob.candidateVersion,saved:parseFloorPlanImportDocument(activeJob.candidateJson),onAccept:request=>void retryDetection(undefined,request)}}>
       <PhotoReviewAction.Provider value={(request)=>void retryDetection(request)}><FloorPlanImportReviewPanel
         candidate={candidate}
         job={activeJob}
@@ -669,7 +668,7 @@ export default function FloorPlanImportAssistant({
         onSubmit={(reviewIssues) => void submitReview(reviewIssues)}
         submitting={submitting}
         disabled={photoReviewBusy(disabled,submitting,retryingDetection)} proMode={proMode} dark={dark}
-      /></PhotoReviewAction.Provider>
+      /></PhotoReviewAction.Provider></SourceTraceAction.Provider>
     </div>
   );
 }

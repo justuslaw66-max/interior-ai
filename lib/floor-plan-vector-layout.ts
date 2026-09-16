@@ -12,6 +12,7 @@ export function layoutFloorPlanVectorExport(drawing: PlanVectorDrawing, options:
   if (!["A4", "A3"].includes(options.paper) || !["portrait", "landscape"].includes(options.orientation)) throw new Error("Choose paper size and orientation.");
   const paper = options.paper === "A3" ? [297, 420] : [210, 297];
   const [widthMm, heightMm] = options.orientation === "landscape" ? [...paper].reverse() : paper;
+  if (drawing.coordinateSpace === "source_pixels") return sourceArtworkLayout(drawing,widthMm,heightMm);
   const points = drawing.primitives.flatMap((primitive) => {
     if (primitive.kind === "path") {
       const padding = 0.09 * options.scale;
@@ -31,4 +32,11 @@ export function layoutFloorPlanVectorExport(drawing: PlanVectorDrawing, options:
   if (title.right > widthMm - 30 || title.left < -5) throw new Error("The title will not fit on this page. Shorten it or choose larger paper.");
   return { widthMm, heightMm, offsetX: (widthMm - width) / 2 - minX / options.scale,
     offsetY: 32 + (heightMm - 70 - height) / 2 - minY / options.scale, scale: options.scale };
+}
+
+function sourceArtworkLayout(drawing:PlanVectorDrawing,widthMm:number,heightMm:number):PlanVectorExportLayout {
+  const size=drawing.sourceSize;
+  if(!size||!Number.isFinite(size.width)||!Number.isFinite(size.height)||size.width<=0||size.height<=0)throw new Error("Source artwork has no valid image frame.");
+  const scale=Math.max(size.width/(widthMm-40),size.height/(heightMm-70));
+  return{widthMm,heightMm,scale,offsetX:(widthMm-size.width/scale)/2,offsetY:32+(heightMm-70-size.height/scale)/2};
 }

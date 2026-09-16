@@ -2,6 +2,8 @@
 
 import type { FloorPlanAnnotationV2, FloorPlanDocumentV2 } from "@/lib/floor-plan-document-v2";
 import { applyConsumerTopologyCorrection } from "@/lib/floor-plan-import-review-geometry";
+import { isFinalSourceTrace } from "@/lib/floor-plan-source-trace";
+import FloorPlanTracePathFields from "./FloorPlanTracePathFields";
 import { SOURCE_REVIEW_LAYERS, type SourceReviewLayer } from "./useSourceReviewLayers";
 
 function FloorPlanSourceArtworkFields({ annotation, document, floorId, onChange, onError, onClose, disabled, onUseScaleEndpoints }: {
@@ -11,7 +13,7 @@ function FloorPlanSourceArtworkFields({ annotation, document, floorId, onChange,
   onUseScaleEndpoints?: (points: Array<{ x: number; y: number }>) => void;
 }) {
   const textMark = annotation.geometry.kind === "source_drawing" && annotation.geometry.command === "text";
-  return <form key={`${annotation.id}:${document.revisionId}`} className="mt-2 rounded border bg-white p-3 text-xs text-neutral-800"
+  return <form key={annotation.id} className="mt-2 rounded border bg-white p-3 text-xs text-neutral-800"
     onSubmit={(event) => {
       event.preventDefault();
       if (!onChange || disabled) return;
@@ -37,6 +39,7 @@ function FloorPlanSourceArtworkFields({ annotation, document, floorId, onChange,
         if (annotation.geometry.kind === "source_drawing") onUseScaleEndpoints(annotation.geometry.points);
         onClose();
       }}>Use these endpoints for scale review</button> : null}
+    {isFinalSourceTrace(annotation) ? <FloorPlanTracePathFields annotation={annotation} document={document} floorId={floorId} onChange={onChange} onError={onError} disabled={disabled}/> : null}
     {textMark && onChange ? <button className="rounded border px-3 py-1" disabled={disabled} type="submit">Save text correction</button> : null}
   </form>;
 }
@@ -56,7 +59,7 @@ export default function FloorPlanSourceArtworkSelection(props: {
           {SOURCE_REVIEW_LAYERS.map(option => <option key={option.value} value={option.value}>{option.label}</option>)}
         </select>
       </label>
-      <p className="mt-1">{props.visibleCount} of {props.count} source marks shown. Purple marks are review evidence, not converted walls. All evidence is retained.</p>
+      <p className="mt-1">{props.visibleCount} of {props.count} source marks shown. Traced artwork stays separate from walls. OCR readings and raw candidates are separate diagnostic layers.</p>
       {props.layer === "all" ? <p className="mt-1">Diagnostic view includes overlapping strokes and uncertain text. Use a specific layer or select one proposal for a clearer view.</p> : null}
     </div> : null}
     {props.annotation ? <FloorPlanSourceArtworkFields {...props} annotation={props.annotation}

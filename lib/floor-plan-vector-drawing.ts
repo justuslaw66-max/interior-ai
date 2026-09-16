@@ -7,10 +7,10 @@ import { buildCanonicalOpeningSymbolLinesV2 } from "@/lib/floor-plan-opening-pri
 import { buildFloorPlanFurnitureDrawing, type PlanFurnitureDrawingSource } from "@/lib/floor-plan-vector-furniture";
 
 export type PlanDrawingPrimitive =
-  | { id: string; kind: "path"; path: string; fill: boolean; points: Point[]; role: string; strokeInsetNormal?: { x: number; z: number } }
+  | { id: string; kind: "path"; path: string; fill: boolean; points: Point[]; role: string; strokeWidth?: number; strokeInsetNormal?: { x: number; z: number } }
   | { id: string; kind: "text"; text: string; point: Point; role: string };
 export type PlanDrawingOptions = { floorId: string; dimensions: boolean; labels: boolean; fixtures: boolean };
-export type PlanVectorDrawing = { geometryHash: string; primitives: PlanDrawingPrimitive[]; unsupported: string[] };
+export type PlanVectorDrawing = { coordinateSpace?: "source_pixels"; sourceSize?: { width: number; height: number }; geometryHash: string; primitives: PlanDrawingPrimitive[]; unsupported: string[] };
 
 const number = (value: number) => Number(value.toFixed(6));
 const xy = (point: Point) => `${number(point.xMm)} ${number(point.zMm)}`;

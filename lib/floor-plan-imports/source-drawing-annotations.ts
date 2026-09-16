@@ -1,3 +1,4 @@
+import { sourceTraceAnnotations } from "../floor-plan-source-trace";
 import type { FloorPlanAnnotationV2, FloorPlanEntityProvenanceV2 } from "@/lib/floor-plan-document-v2";
 import { sourceDrawingGeometryError, type FloorPlanSourceDrawingGeometryV2 } from "@/lib/floor-plan-source-drawing";
 import type { FloorPlanReviewIssue } from "./types";
@@ -44,5 +45,5 @@ export function sourceDrawingAnnotations(page: RegisteredPageEvidence | undefine
     message: `${rejected} source marks exceed supported drawing bounds; inspect the original underlay.`, severity: "warning" });
   if (conflictIds.length) issues.push({ id: "source-text-conflict", code: "source_text_conflict", resolved: false,
     entityIds: conflictIds, message: "Rotated OCR passes disagree on highlighted text. Compare the readings with the source; they have not supplied automatic labels or dimensions.", severity: "warning" });
-  return [...annotations, ...sourceProposalAnnotations(page, sourceId, version)];
+  return [...annotations, ...(page.sourceArtwork ? sourceTraceAnnotations(page.sourceArtwork, sourceId, page.pageNumber) : []), ...sourceProposalAnnotations(page, sourceId, version)];
 }

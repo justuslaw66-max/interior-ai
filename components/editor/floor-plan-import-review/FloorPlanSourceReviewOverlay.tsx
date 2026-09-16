@@ -1,6 +1,7 @@
 "use client";
 
 import type { FloorPlanAnnotationV2 } from "@/lib/floor-plan-document-v2";
+import { isFinalSourceTrace } from "@/lib/floor-plan-source-trace";
 import type { ReviewOverlay } from "@/lib/floor-plan-import-review-overlay";
 import { sourceDrawingSvgPath, sourceDrawingSvgPoints as points } from "@/lib/floor-plan-source-drawing";
 
@@ -12,7 +13,7 @@ function SourceArtwork({ annotations, selectedId, picking, onSelect, focused }: 
     if (geometry.kind !== "source_drawing") return null;
     const selected = selectedId === annotation.id || focused.has(annotation.id);
     const select = () => { if (!picking) onSelect(annotation.id); };
-    const text = geometry.command === "text";
+    const text = geometry.command === "text", trace = isFinalSourceTrace(annotation);
     return <g key={annotation.id} data-review-entity-id={annotation.id} role="button" tabIndex={picking ? -1 : 0}
       aria-label={annotation.id.startsWith("source-proposal:") ? annotation.text : text ? `Source text: ${annotation.text}` : `Source stroke ${annotation.id}`}
       aria-pressed={selected} className="cursor-pointer focus:outline focus:outline-2 focus:outline-violet-600"
@@ -21,13 +22,7 @@ function SourceArtwork({ annotations, selectedId, picking, onSelect, focused }: 
       {text ? <text x={geometry.points[0].x} y={geometry.points[0].y} fill={selected ? "#dc2626" : "#7c3aed"}
         transform={`rotate(${geometry.textRotationDegrees ?? 0} ${geometry.points[0].x} ${geometry.points[0].y})`}
         stroke="none" fontSize={12} pointerEvents={picking ? "none" : "all"}>{annotation.text}</text>
-        : <>
-          <path d={sourceDrawingSvgPath(geometry)} fill="none" stroke="transparent" strokeWidth={12}
-            vectorEffect="non-scaling-stroke" pointerEvents={picking ? "none" : "stroke"} aria-hidden="true" />
-          <path data-source-artwork-shape d={sourceDrawingSvgPath(geometry)} fill="none" stroke={selected ? "#dc2626" : "#7c3aed"}
-            strokeDasharray={annotation.id.startsWith("source-proposal:") ? "4 3" : undefined}
-            strokeWidth={selected ? 4 : 1.5} vectorEffect="non-scaling-stroke" pointerEvents="none" />
-        </>}
+        : <SourceArtworkShape geometry={geometry} selected={selected} trace={trace} proposal={annotation.id.startsWith("source-proposal:")} picking={picking}/> }
     </g>;
   });
 }
@@ -57,4 +52,15 @@ export default function FloorPlanSourceReviewOverlay(props: {
     <SourceArtwork {...props} />
     <PlanOutlines {...props} />
   </g>;
+}
+
+function SourceArtworkShape({geometry,selected,trace,proposal,picking}:{geometry:import("@/lib/floor-plan-source-drawing").FloorPlanSourceDrawingGeometryV2;selected:boolean;trace:boolean;proposal:boolean;picking:boolean}) {
+  return <>
+          <path d={sourceDrawingSvgPath(geometry)} fill="none" stroke="transparent" strokeWidth={12}
+            vectorEffect="non-scaling-stroke" pointerEvents={picking ? "none" : "stroke"} aria-hidden="true" />
+          <path data-source-artwork-shape data-final-trace={trace||undefined} d={sourceDrawingSvgPath(geometry)} fill={geometry.fill ? (selected?"#dc2626":"#333") : "none"} stroke={geometry.fill?"none":selected ? "#dc2626" : trace ? "#333" : "#7c3aed"}
+            strokeDasharray={proposal ? "4 3" : undefined}
+            strokeWidth={trace ? geometry.strokeWidthPx ?? 1 : selected ? 4 : 1.5} vectorEffect={trace?undefined:"non-scaling-stroke"} pointerEvents="none" />
+          {trace && selected ? geometry.points.map((p,i)=><circle key={i} cx={p.x} cy={p.y} r={1.4} fill="white" stroke="#dc2626" strokeWidth={0.4}/>) : null}
+        </>;
 }

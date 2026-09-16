@@ -1,3 +1,4 @@
+import type { SourceTraceRequest } from "./source-trace-action";
 import { createContext } from "react";
 import type { PhotoConstraints } from "@/lib/floor-plan-photo-constraints";
 import type { FloorPlanDocumentV2 } from "@/lib/floor-plan-document-v2";
@@ -24,13 +25,14 @@ export function createdReviewJobId(payload:Record<string,unknown>) {
   return job.id;
 }
 
-export async function requestDetectionReview(input:{activeJob:ConsumerFloorPlanImportJob;photo?:PhotoReviewRequest;candidate:FloorPlanDocumentV2|null;
+export async function requestDetectionReview(input:{activeJob:ConsumerFloorPlanImportJob;photo?:PhotoReviewRequest;trace?:SourceTraceRequest;candidate:FloorPlanDocumentV2|null;
   signal:AbortSignal;onActiveJobIdChange?: (id:string)=>void;
   processAndPoll:(id:string,message:string,options:{signal:AbortSignal})=>Promise<ConsumerFloorPlanImportJob>}) {
-  const {activeJob,photo,candidate,signal}=input;
+  const {activeJob,photo,trace,candidate,signal}=input;
+  if(trace && JSON.stringify(candidate)!==JSON.stringify(parseFloorPlanImportDocument(activeJob.candidateJson)))throw new Error("Save review edits before opening the traced review.");
   assertPhotoForkDraft(photo,candidate,parseFloorPlanImportDocument(activeJob.candidateJson));
-  const payload=await floorPlanImportResponseJson(await fetch(`/api/floor-plan-imports/${activeJob.id}/${photo?"photo-review":"retry-detection"}`,
-    {method:"POST",signal,...(photo?{headers:{"content-type":"application/json"},body:JSON.stringify({...photo,candidateVersion:activeJob.candidateVersion})}:{})}));
+  const payload=await floorPlanImportResponseJson(await fetch(`/api/floor-plan-imports/${activeJob.id}/${trace?"source-trace":photo?"photo-review":"retry-detection"}`,
+    {method:"POST",signal,...((photo||trace)?{headers:{"content-type":"application/json"},body:JSON.stringify({...photo,...trace,...(trace?{action:"accept"}:{}),candidateVersion:activeJob.candidateVersion})}:{})}));
   signal.throwIfAborted();const id=createdReviewJobId(payload);input.onActiveJobIdChange?.(id);signal.throwIfAborted();
-  return input.processAndPoll(id,photo?"Re-extracting the corrected source locally":"Retrying with improved wall and dimension detection",{signal});
+  return input.processAndPoll(id,trace?"Opening the traced artwork review":photo?"Re-extracting the corrected source locally":"Retrying with improved wall and dimension detection",{signal});
 }

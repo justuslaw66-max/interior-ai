@@ -634,7 +634,7 @@ assert.match(
 );
 assert.match(
   assistant,
-  /\/api\/floor-plan-imports\/\$\{activeJob\.id\}\/\$\{photo\?"photo-review":"retry-detection"\}/,
+  /\/api\/floor-plan-imports\/\$\{activeJob\.id\}\/\$\{trace\?"source-trace":photo\?"photo-review":"retry-detection"\}/,
   "Consumers should be able to rerun the current extractor without uploading again."
 );
 assert.match(assistant,/Retry with improved detection/,"The consumer retry action stays available alongside photo recomputation.");

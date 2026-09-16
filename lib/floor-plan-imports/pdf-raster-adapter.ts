@@ -1,3 +1,4 @@
+import { extractRasterEvidence,attachRasterSourceArtwork } from "./raster-page-evidence";
 import { asEnvelope,type ExtractionEnvelope,type PageScaleSolution } from "./pdf-raster-evidence";
 import { architecturalLineworkPage,hasSourceDivider } from "./source-wall-linework";
 import { automaticScaleReviewMessage, diagnoseSourceScale } from "./source-scale-cross-check";
@@ -53,9 +54,7 @@ import {
 } from "./page-selection";
 import type { FloorPlanPageCandidate } from "./types";
 import {
-  extractRasterLinework,
   normalizeRasterForLinework,
-  type RasterLineworkDiagnostics,
 } from "./raster-linework";
 import {
   createDefaultFloorPlanLocalOcrProvider,
@@ -668,66 +667,6 @@ async function renderRaster(
   ];
 }
 
-async function extractRasterEvidence(
-  source: StoredFloorPlanSource,
-  renderedPages: FloorPlanRenderedPage[],
-  context: FloorPlanAdapterContext
-): Promise<{
-  pages: RegisteredPageEvidence[];
-  diagnostics: Map<number, RasterLineworkDiagnostics>;
-}> {
-  const pages: RegisteredPageEvidence[] = [];
-  const diagnostics = new Map<number, RasterLineworkDiagnostics>();
-  for (const page of renderedPages) {
-    try {
-      const stored = context.store.readDerivative
-        ? await context.store.readDerivative(page.assetKey)
-        : null;
-      let bytes = stored?.bytes;
-      if (!bytes) {
-        const normalized = await normalizeRasterForLinework(source.bytes);
-        bytes = normalized.bytes;
-      }
-      const extracted = await extractRasterLinework(bytes, {
-        pageNumber: page.pageNumber,
-        expectedWidthPx: page.widthPx,
-        expectedHeightPx: page.heightPx,
-        normalization: page.normalization,
-      });
-      diagnostics.set(page.pageNumber, extracted.diagnostics);
-      const semantics = emptySemantics();
-      semantics.notes.push(
-        extracted.vectorPaths.length
-          ? `Deterministic raster linework found ${extracted.vectorSegments.length} axis-aligned segments and ${extracted.vectorPaths.length} conservative closed cycles. Room meaning, scale and openings still require independent evidence.`
-          : "Raster linework did not contain a conservative closed rectilinear cycle. Keep the source underlay and use guided calibration/tracing."
-      );
-      pages.push({
-        pageNumber: page.pageNumber,
-        widthPx: page.widthPx,
-        heightPx: page.heightPx,
-        vectorSegments: extracted.vectorSegments,
-        vectorPaths: extracted.vectorPaths,
-        text: [],
-        semantics,
-      });
-    } catch (cause) {
-      const semantics = emptySemantics();
-      semantics.notes.push(
-        `Raster linework extraction unavailable: ${cause instanceof Error ? cause.message : "unknown error"}. Keep the source underlay and use guided tracing.`
-      );
-      pages.push({
-        pageNumber: page.pageNumber,
-        widthPx: page.widthPx,
-        heightPx: page.heightPx,
-        vectorSegments: [],
-        vectorPaths: [],
-        text: [],
-        semantics,
-      });
-    }
-  }
-  return { pages, diagnostics };
-}
 
 async function extractPdfEvidence(
   source: StoredFloorPlanSource,
@@ -2299,6 +2238,7 @@ export class PdfRasterFloorPlanSourceAdapter implements FloorPlanSourceAdapter {
       context,
       this.localOcrProvider
     );
+    if(rasterEvidence)await attachRasterSourceArtwork(rasterEvidence.pages,renderedPages,context);
     const semanticPages = rankFloorPlanSemanticPages(pages).slice(
       0,
       MAX_SEMANTIC_PAGES
