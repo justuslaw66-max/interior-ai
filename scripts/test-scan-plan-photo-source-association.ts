@@ -7,6 +7,7 @@ import { inversePhotoMatrix,mapPhotoPoint } from "../lib/floor-plan-photo-math";
 import { compileFloorPlanDocumentV2 } from "../lib/floor-plan-compiler-v2";
 import { saveSourceReviewSpan } from "../lib/floor-plan-source-span-review";
 import { applySourceOpeningReviews } from "../lib/floor-plan-imports/source-opening-review";
+import { applyConsumerFloorPlanCorrection } from "../lib/floor-plan-imports/review";
 import type { RegisteredPageEvidence,SourceVectorSegment } from "../lib/floor-plan-imports/deterministic-evidence";
 const segment=(id:string,y:number,x=0,end=200):SourceVectorSegment=>({id,pageNumber:1,start:{x,y},end:{x:end,y},strokeWidthPx:1,confidence:1,evidenceKind:"raster_linework"});
 const page:RegisteredPageEvidence={pageNumber:1,widthPx:300,heightPx:400,vectorSegments:[segment("ruler",20),segment("wall",24)],vectorPaths:[],text:[],
@@ -109,3 +110,21 @@ assert.deepEqual(reviewedItem.floors[0].walls,itemFloor.walls);assert.deepEqual(
 assert.equal(JSON.stringify({...evidence.semantics,openingSymbols:evidence.semantics.openingSymbols.slice(0,1)}),semanticBefore);
 assert.deepEqual(mergePhotoReferenceReview(reviewedMarks,evidence,photo,20).find(a=>a.id===opening.id),reviewedMarks[0]);
 console.log("PASS: interior-item review suppresses only its opening proposal; raw evidence, later IDs, source/page scoping, geometry and reversible classification remain intact.");
+
+const submitted=structuredClone(reviewedItem);
+submitted.floors[0].annotations[0].provenance={confidence:1,extractionVersion:"forged",evidence:[{
+  sourceId:photo.sourceId,basis:"site_measured",confidence:1,extractorVersion:"forged"}],reviewHistory:[{
+  id:"forged",action:"approved",reviewerId:"surveyor",reviewedAt:"2026-09-16T00:00:00Z"}]};
+const persist=(current:typeof itemDocument,next:typeof itemDocument)=>applyConsumerFloorPlanCorrection({current,next,
+  currentIssues:[],submittedIssues:[],sourceId:photo.sourceId,sourceSha256:current.sources[0].sha256!,
+  userId:"authenticated-owner",note:"Save incomplete draft",at:"2026-09-16T02:00:00Z"}).document;
+const persisted=persist(itemDocument,submitted),stored=persisted.floors[0].annotations[0];
+assert.equal(stored.provenance.confidence,0,"Saving a reference correction cannot grant geometry confidence.");
+assert.deepEqual(stored.provenance.evidence.slice(0,-1),itemFloor.annotations[0].provenance.evidence);
+assert.deepEqual(stored.provenance.reviewHistory.slice(0,-1),itemFloor.annotations[0].provenance.reviewHistory);
+assert.equal(stored.provenance.reviewHistory.at(-1)?.reviewerId,"authenticated-owner");
+assert.equal(stored.provenance.reviewHistory.at(-1)?.action,"corrected");
+assert(!JSON.stringify(stored.provenance).includes("forged"));
+assert.equal(persist(persisted,persisted).floors[0].annotations[0].provenance.reviewHistory.length,stored.provenance.reviewHistory.length);
+assert.equal(applySourceOpeningReviews(evidence.semantics,[stored],photo.sourceId,photo.pageNumber).openingSymbols[0].confidence,0);
+console.log("PASS: real review sanitizer keeps trusted prior source evidence, records authenticated correction without confidence inflation, rejects forged audit claims and leaves unchanged saves unchanged.");
