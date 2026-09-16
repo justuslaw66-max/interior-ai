@@ -18,7 +18,7 @@ import { prepareFloorPlanReviewSubmission } from "@/lib/floor-plan-import-review
 import FloorPlanReviewDraftSave from "./floor-plan-import-review/FloorPlanReviewDraftSave";
 import FloorPlanVisualReviewTools from "./floor-plan-import-review/FloorPlanVisualReviewTools";
 import { SourceTraceAction,type SourceTraceRequest } from "./floor-plan-import-review/source-trace-action";
-import { PhotoReviewAction,requestDetectionReview,photoReviewBusy,type PhotoReviewRequest } from "./floor-plan-import-review/photo-review-action";
+import { PhotoReviewAction,requestDetectionReview,photoReviewBusy,canRequestDetectionReview,type PhotoReviewRequest } from "./floor-plan-import-review/photo-review-action";
 import FloorPlanOptionalConfigurationPanel from "./FloorPlanOptionalConfigurationPanel";
 import { inspectFloorPlanOptionalConfigurations } from "@/lib/floor-plan-optional-configurations";
 import { readFloorPlanPageSelection } from "@/lib/floor-plan-imports/page-selection";
@@ -252,7 +252,7 @@ export default function FloorPlanImportAssistant({
   };
 
   const retryDetection = async (photo?:PhotoReviewRequest,trace?:SourceTraceRequest) => {
-    if (!activeJob || !["needs_review", "failed"].includes(activeJob.status)) return;
+    if (!activeJob || !canRequestDetectionReview(activeJob.status,Boolean(trace))) return;
     const signal = beginAction();
     setRetryingDetection(true);
     setReviewError(null);

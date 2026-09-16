@@ -9,6 +9,8 @@ export type PhotoReviewRequest={constraints:PhotoConstraints;pageNumber:number};
 /** The import session owns async job switching; nested source tools only request it. */
 export const PhotoReviewAction=createContext<((request:PhotoReviewRequest)=>void)|null>(null);
 export const photoReviewBusy=(...states:boolean[])=>states.some(Boolean);
+export const canRequestDetectionReview=(status:string,trace:boolean)=>
+  (trace?["needs_review","ready","applied"]:["needs_review","failed"]).includes(status);
 
 function hasOtherUnsavedPhotoEdits(current:FloorPlanDocumentV2,saved:FloorPlanDocumentV2) {
   const withoutPhoto=(doc:FloorPlanDocumentV2)=>({...doc,revisionId:"",floors:doc.floors.map(({calibrations:_c,photoReviewDrafts:_d,...floor})=>floor)});

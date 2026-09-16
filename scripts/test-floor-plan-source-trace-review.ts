@@ -3,7 +3,11 @@ import Module from "node:module";
 import { acceptedPhotoFixture } from "./fixtures/scan-to-editable-plan/photo-calibration";
 import { TRACE_SETTINGS } from "../lib/floor-plan-imports/source-trace-mask";
 import { editSourceTrace,isFinalSourceTrace } from "../lib/floor-plan-source-trace";
+import { canRequestDetectionReview } from "../components/editor/floor-plan-import-review/photo-review-action";
 async function main(){
+  for(const status of ["needs_review","ready","applied"])assert.ok(canRequestDetectionReview(status,true));
+  assert.ok(!canRequestDetectionReview("extracting",true)&&!canRequestDetectionReview("failed",true));
+  assert.ok(canRequestDetectionReview("failed",false)&&!canRequestDetectionReview("ready",false));
   const document=acceptedPhotoFixture();document.floors[0].calibrations=[];const sourceId=document.sources[0].id;
   const expiry=new Date(Date.now()+86_400_000);
   const fresh=()=>({id:"parent",userId:"owner",sourceAssetId:sourceId,candidateJson:document,candidateVersion:7,status:"needs_review",sourceManifestJson:{},
