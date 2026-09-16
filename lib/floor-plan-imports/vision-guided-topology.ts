@@ -510,21 +510,15 @@ function supportEdge(
     return null;
   }
   const snappedOffset = median(best.members.map((member) => member.offset));
-  const residuals = best.members.map((member) =>
-    sourcePixelDistance(page,segmentMidpoint(member.segment),{
-      x:segmentMidpoint(member.segment).x-nx*(member.offset-snappedOffset),
-      y:segmentMidpoint(member.segment).y-ny*(member.offset-snappedOffset)})
-  );
+  // Midpoints alone conceal angular drift; keep the same original-pixel gates.
+  const residuals = best.members.flatMap(({segment}) => [segment.start,segmentMidpoint(segment),segment.end].map(point => {
+    const drift=(point.x-start.x)*nx+(point.y-start.y)*ny-snappedOffset;
+    return sourcePixelDistance(page,point,{x:point.x-nx*drift,y:point.y-ny*drift});
+  }));
   const sourceSegmentIds = [...new Set(best.members.map((member) => member.segment.id))];
   return {
-    shiftedStart: {
-      x: start.x + nx * snappedOffset,
-      y: start.y + ny * snappedOffset,
-    },
-    shiftedEnd: {
-      x: end.x + nx * snappedOffset,
-      y: end.y + ny * snappedOffset,
-    },
+    shiftedStart: { x: start.x + nx * snappedOffset, y: start.y + ny * snappedOffset },
+    shiftedEnd: { x: end.x + nx * snappedOffset, y: end.y + ny * snappedOffset },
     sourceSegmentIds,
     sourcePathIds: [
       ...new Set(sourceSegmentIds.flatMap((segmentId) => sourcePathIds.get(segmentId) ?? [])),
