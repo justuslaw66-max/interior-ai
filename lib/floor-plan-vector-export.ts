@@ -3,6 +3,7 @@ import type { PlanDrawingPrimitive, PlanVectorDrawing } from "@/lib/floor-plan-v
 import { layoutFloorPlanVectorExport, type PlanVectorExportOptions } from "@/lib/floor-plan-vector-layout";
 import { loadPlanVectorFont, vectorFontDataUrl, PLAN_VECTOR_FONT_FAMILY, PLAN_VECTOR_FONT_FEATURES } from "@/lib/floor-plan-vector-font";
 import { drawVectorUnderlayPdf, vectorUnderlaySvg, type PlanVectorUnderlay } from "@/lib/floor-plan-vector-underlay";
+import { vectorInkPath } from "@/lib/floor-plan-vector-ink";
 
 export type { PlanVectorExportOptions, PlanVectorExportLayout } from "@/lib/floor-plan-vector-layout";
 export { layoutFloorPlanVectorExport } from "@/lib/floor-plan-vector-layout";
@@ -11,10 +12,10 @@ const UNDERLAY_NOTE = "Reference underlay included; source marks are historical.
 const POINTS_PER_MM = 72 / 25.4;
 const xml = (text: string) => text.replace(/[<>&"']/g, (value) => ({ "<": "&lt;", ">": "&gt;", "&": "&amp;", '"': "&quot;", "'": "&apos;" })[value] ?? value);
 
-function svgPrimitive(primitive: PlanDrawingPrimitive) {
+function svgPrimitive(primitive: PlanDrawingPrimitive, scale: number) {
   const id = xml(primitive.id);
   if (primitive.kind === "text") return `<text id="${id}" x="${primitive.point.xMm}" y="${primitive.point.zMm}" stroke="none" text-anchor="middle">${xml(primitive.text)}</text>`;
-  return `<path id="${id}" d="${primitive.path}" fill="${primitive.fill ? "#454545" : "none"}"/>`;
+  return `<path id="${id}" d="${vectorInkPath(primitive, scale)}" fill="${primitive.fill ? "#454545" : "none"}"${primitive.role === "wall" ? ' stroke="none"' : ""}/>`;
 }
 
 export async function exportFloorPlanVectorSvg(drawing: PlanVectorDrawing, options: PlanVectorExportOptions, resources: PlanVectorExportResources = {}) {
@@ -27,7 +28,7 @@ export async function exportFloorPlanVectorSvg(drawing: PlanVectorDrawing, optio
 <text x="15" y="17" font-size="4">${xml(title)}</text>
 <g transform="translate(${layout.offsetX} ${layout.offsetY}) scale(${1 / layout.scale})" stroke="#222" stroke-width="${0.18 * layout.scale}" font-size="${2.6 * layout.scale}" fill="#222">
 ${resources.underlay ? vectorUnderlaySvg(resources.underlay) : ""}
-${drawing.primitives.map(svgPrimitive).join("\n")}
+${drawing.primitives.map((primitive) => svgPrimitive(primitive, layout.scale)).join("\n")}
 </g><text x="15" y="${layout.heightMm - 15}" font-size="2.6">Proposed / unverified | 1:${options.scale} | dimensions in mm, centreline | print at 100%</text>
 ${resources.underlay ? `<text x="15" y="${layout.heightMm - 9}" font-size="2.6">${UNDERLAY_NOTE}</text>` : ""}</svg>`;
 }
@@ -49,9 +50,9 @@ export async function exportFloorPlanVectorPdf(drawing: PlanVectorDrawing, optio
   if (resources.underlay) await drawVectorUnderlayPdf(pdf, page, resources.underlay, layout);
   for (const primitive of drawing.primitives) {
     if (primitive.kind === "path") {
-      page.drawSvgPath(primitive.path, { x: layout.offsetX * POINTS_PER_MM, y: (layout.heightMm - layout.offsetY) * POINTS_PER_MM,
-        scale: POINTS_PER_MM / layout.scale, borderWidth: 0.18 * layout.scale,
-        borderColor: rgb(0.13, 0.13, 0.13), color: primitive.fill ? rgb(0.27, 0.27, 0.27) : undefined });
+      page.drawSvgPath(vectorInkPath(primitive, layout.scale), { x: layout.offsetX * POINTS_PER_MM, y: (layout.heightMm - layout.offsetY) * POINTS_PER_MM,
+        scale: POINTS_PER_MM / layout.scale, borderWidth: primitive.role === "wall" ? 0 : 0.18 * layout.scale,
+        borderColor: primitive.role === "wall" ? undefined : rgb(0.13, 0.13, 0.13), color: primitive.fill ? rgb(0.27, 0.27, 0.27) : undefined });
     } else {
       const size = 2.6 * POINTS_PER_MM;
       page.drawText(primitive.text, { x: (layout.offsetX + primitive.point.xMm / layout.scale) * POINTS_PER_MM - font.widthOfTextAtSize(primitive.text, size) / 2,

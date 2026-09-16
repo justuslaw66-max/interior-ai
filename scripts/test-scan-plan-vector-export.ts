@@ -12,6 +12,7 @@ import { canonicalFloorPlanToDesignSnapshot } from "@/lib/floor-plan-legacy-adap
 import { loadPlanVectorFont } from "@/lib/floor-plan-vector-font";
 import { vectorExportFontBytes, vectorPdfEmbeddedFonts, vectorPdfPageContent } from "./fixtures/scan-to-editable-plan/pdf-vector-inspection";
 import { testVectorUnderlay } from "./test-scan-plan-vector-underlay";
+import { testVectorInk, testVectorJunctions } from "./test-scan-plan-vector-junctions";
 
 function testFurnitureDrawing(document: ReturnType<typeof authoredApartment>) {
   const snapshot = canonicalFloorPlanToDesignSnapshot(document).snapshot, room = snapshot.rooms[0];
@@ -45,6 +46,7 @@ async function main() {
       vertices: [{ id: "col-a", xMm: 7800, zMm: 4400 }, { id: "col-b", xMm: 8150, zMm: 4400 }, { id: "col-c", xMm: 8150, zMm: 4650 }, { id: "col-d", xMm: 7800, zMm: 4650 }] },
   ], { mutationId: "proof", nextRevisionId: "proposed-proof", actorId: "fixture-author", mutatedAt: "2026-09-14T01:00:00Z" });
   const drawing = buildFloorPlanVectorDrawing(result.document, { floorId: "apartment", dimensions: true, labels: true, fixtures: true });
+  testVectorJunctions(result.document);
   testFurnitureDrawing(result.document);
   assert.equal(drawing.geometryHash, compileCanonicalFloorPlanRenderModel(result.document).geometryHash);
   assert(drawing.primitives.some((p) => p.id.startsWith("replacement:wall")));
@@ -70,6 +72,8 @@ async function main() {
   assert(count(/\bm\b/g) >= 15, "Separate path components must remain");
   assert(count(/\bc\b/g) > 0, "Swing must contain a cubic curve");
   const svg = await exportFloorPlanVectorSvg(drawing, options, resources);
+  testVectorInk(svg, 100);
+  testVectorInk(await exportFloorPlanVectorSvg(drawing, { ...options, scale: 50 }, resources), 50);
   assert(svg.includes("data:font/ttf;base64,"), "SVG keeps text and carries the matching display font.");
   const label = { id: "unicode", kind: "text", text: "Café Ω", point: { xMm: 2500, zMm: 1700 }, role: "annotation-text" } as const;
   const unicodeDrawing = { ...drawing, primitives: [...drawing.primitives, label] };

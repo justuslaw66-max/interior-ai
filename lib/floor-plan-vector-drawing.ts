@@ -1,12 +1,13 @@
 import type { CompiledFloorPlanFloorV2 } from "@/lib/floor-plan-compiler-v2";
 import type { FloorPlanDocumentV2, FloorPlanPointMmV2 as Point } from "@/lib/floor-plan-document-v2";
 import { compileCanonicalFloorPlanRenderModel } from "@/lib/floor-plan-render-model";
-import { buildRectangularWallFootprint } from "@/lib/floor-plan-wall-footprints";
+import { buildFloorPlanVectorWalls } from "@/lib/floor-plan-vector-walls";
+import { windowFrameInkNormal } from "@/lib/floor-plan-vector-ink";
 import { buildCanonicalOpeningSymbolLinesV2 } from "@/lib/floor-plan-opening-primitives";
 import { buildFloorPlanFurnitureDrawing, type PlanFurnitureDrawingSource } from "@/lib/floor-plan-vector-furniture";
 
 export type PlanDrawingPrimitive =
-  | { id: string; kind: "path"; path: string; fill: boolean; points: Point[]; role: string }
+  | { id: string; kind: "path"; path: string; fill: boolean; points: Point[]; role: string; strokeInsetNormal?: { x: number; z: number } }
   | { id: string; kind: "text"; text: string; point: Point; role: string };
 export type PlanDrawingOptions = { floorId: string; dimensions: boolean; labels: boolean; fixtures: boolean };
 export type PlanVectorDrawing = { geometryHash: string; primitives: PlanDrawingPrimitive[]; unsupported: string[] };
@@ -34,13 +35,14 @@ function swingCurve(id: string, center: Point, points: Point[]): PlanDrawingPrim
 
 function openingPrimitives(floor: CompiledFloorPlanFloorV2) {
   return floor.openings.flatMap((opening) => {
-    const symbols = buildCanonicalOpeningSymbolLinesV2(opening);
+    const symbols = buildCanonicalOpeningSymbolLinesV2(opening, floor.walls.find((wall) => wall.id === opening.wallId)?.thicknessMm);
     return symbols.map((symbol, index) => {
       const id = `${opening.id}:${symbol.role}:${index}`;
       const leaf = symbols[index - 1];
-      return symbol.role === "swing_arc" && leaf?.role === "swing_leaf"
+      const primitive = symbol.role === "swing_arc" && leaf?.role === "swing_leaf"
         ? swingCurve(id, leaf.points[0], symbol.points)
         : line(id, symbol.points, symbol.role);
+      return primitive.kind === "path" ? { ...primitive, strokeInsetNormal: windowFrameInkNormal(opening, symbol) } : primitive;
     });
   });
 }
@@ -89,13 +91,9 @@ export function buildFloorPlanVectorDrawing(document: FloorPlanDocumentV2, optio
   const floor = model.floors.find(({ id }) => id === options.floorId);
   const compiled = model.compiledScene.floors.find(({ id }) => id === options.floorId);
   if (!floor || !compiled) throw new Error("Choose an existing floor for vector export.");
-  const primitives: PlanDrawingPrimitive[] = [];
+  const primitives: PlanDrawingPrimitive[] = buildFloorPlanVectorWalls(floor);
   const unsupported: string[] = [];
   for (const wall of floor.walls) {
-    for (const [index, segment] of wall.planSegments.entries()) {
-      const footprint = buildRectangularWallFootprint(segment, wall.thicknessMm);
-      primitives.push(line(`${wall.id}:wall:${index}`, [footprint.startLeft, footprint.endLeft, footprint.endRight, footprint.startRight], "wall", true));
-    }
     if (wall.path.kind === "arc") unsupported.push(`${wall.id}: curved wall footprint currently sampled`);
   }
   primitives.push(...openingPrimitives(compiled));

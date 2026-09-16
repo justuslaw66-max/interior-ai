@@ -3988,12 +3988,6 @@
         "maximum": 17
       }
     },
-    "lib/floor-plan-opening-primitives.ts": {
-      "overlongFunctions": {
-        "count": 1,
-        "maximum": 68
-      }
-    },
     "lib/floor-plan-planar-union.ts": {
       "overlongFunctions": {
         "count": 1,
