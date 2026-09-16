@@ -2,6 +2,7 @@
 
 import type { FloorPlanAnnotationV2, FloorPlanDocumentV2 } from "@/lib/floor-plan-document-v2";
 import { applyConsumerTopologyCorrection } from "@/lib/floor-plan-import-review-geometry";
+import { SOURCE_REVIEW_LAYERS, type SourceReviewLayer } from "./useSourceReviewLayers";
 
 function FloorPlanSourceArtworkFields({ annotation, document, floorId, onChange, onError, onClose, disabled, onUseScaleEndpoints }: {
   annotation: FloorPlanAnnotationV2; document: FloorPlanDocumentV2; floorId: string;
@@ -42,17 +43,22 @@ function FloorPlanSourceArtworkFields({ annotation, document, floorId, onChange,
 
 
 export default function FloorPlanSourceArtworkSelection(props: {
-  count: number; show: boolean; onShow: (show: boolean) => void;
+  count: number; visibleCount: number; layer: SourceReviewLayer; onLayer: (value: string) => void;
   annotation?: FloorPlanAnnotationV2; document: FloorPlanDocumentV2; floorId: string;
   onChange?: (document: FloorPlanDocumentV2) => void; onError: (error: string | null) => void;
   onClose: () => void; disabled: boolean; previewOnly: boolean; error: string | null;
   onUseScaleEndpoints?: (points: Array<{ x: number; y: number }>) => void;
 }) {
   return <>
-    {props.count ? <label className="mb-2 flex items-center gap-2 text-xs">
-      <input type="checkbox" checked={props.show} onChange={(event) => props.onShow(event.target.checked)} />
-      Source strokes and text ({props.count}) · purple · select to review
-    </label> : null}
+    {props.count ? <div className="mb-3 rounded border border-violet-200 bg-white p-2 text-xs text-neutral-700">
+      <label className="flex flex-wrap items-center gap-2">Review overlay
+        <select aria-label="Review overlay" className="rounded border bg-white px-2 py-1" value={props.layer} onChange={event => props.onLayer(event.target.value)}>
+          {SOURCE_REVIEW_LAYERS.map(option => <option key={option.value} value={option.value}>{option.label}</option>)}
+        </select>
+      </label>
+      <p className="mt-1">{props.visibleCount} of {props.count} source marks shown. Purple marks are review evidence, not converted walls. All evidence is retained.</p>
+      {props.layer === "all" ? <p className="mt-1">Diagnostic view includes overlapping strokes and uncertain text. Use a specific layer or select one proposal for a clearer view.</p> : null}
+    </div> : null}
     {props.annotation ? <FloorPlanSourceArtworkFields {...props} annotation={props.annotation}
       disabled={props.disabled || props.previewOnly} /> : null}
     {props.error ? <p role="alert" className="text-xs text-red-700">{props.error}</p> : null}

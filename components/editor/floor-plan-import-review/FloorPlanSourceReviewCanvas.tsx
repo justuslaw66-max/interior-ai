@@ -14,6 +14,7 @@ import type { ConsumerFloorPlanImportJob } from "../floor-plan-import-ui-types";
 import { useFloorPlanReviewZoom } from "./useFloorPlanReviewZoom";
 import { FloorPlanReviewZoomControls } from "./FloorPlanReviewZoomControls";
 import { sourceDrawingSvgPoints as polygonPoints } from "@/lib/floor-plan-source-drawing";
+import { useSourceReviewLayers } from "./useSourceReviewLayers";
 
 type FloorPlanSourceReviewCanvasProps = {
   document: FloorPlanDocumentV2;
@@ -66,9 +67,6 @@ export default function FloorPlanSourceReviewCanvas({
   disabled = false,
   previewOnly = false,
 }: FloorPlanSourceReviewCanvasProps) {
-  const [selectedArtworkId, setSelectedArtworkId] = useState("");
-  const [artworkError, setArtworkError] = useState<string | null>(null);
-  const [showArtwork, setShowArtwork] = useState(true);
   const [sourceOpacity, setSourceOpacity] = useState(82);
   const [overlayOpacity, setOverlayOpacity] = useState(92);
   const [snapEnabled, setSnapEnabled] = useState(true);
@@ -88,14 +86,11 @@ export default function FloorPlanSourceReviewCanvas({
         : null,
     [document, floorId, page, sourceId]
   );
-  const artwork = useMemo(() => document.floors.find((floor) => floor.id === floorId)?.annotations.filter((annotation) =>
-    annotation.geometry.kind === "source_drawing" && annotation.geometry.sourceId === sourceId && annotation.geometry.pageNumber === page?.pageNumber
-  ) ?? [], [document, floorId, sourceId, page?.pageNumber]);
-  const selectedArtwork = artwork.find((annotation) => annotation.id === selectedArtworkId);
   const focused = useMemo(
     () => new Set(focusedEntityIds),
     [focusedEntityIds]
   );
+  const sourceReview = useSourceReviewLayers(document, floorId, sourceId, page?.pageNumber, focused);
 
   if (!page) {
     return (
@@ -175,9 +170,9 @@ export default function FloorPlanSourceReviewCanvas({
 
   return (
     <section className="mt-3" aria-label="Interactive 2D plan preview">
-      <FloorPlanSourceArtworkSelection count={artwork.length} show={showArtwork} onShow={setShowArtwork}
-        annotation={selectedArtwork} document={document} floorId={floorId} onChange={onDocumentChange}
-        onError={setArtworkError} error={artworkError} onClose={() => setSelectedArtworkId("")} onUseScaleEndpoints={onUseScaleEndpoints}
+      <FloorPlanSourceArtworkSelection {...sourceReview} count={sourceReview.artwork.length} visibleCount={sourceReview.visible.length}
+        document={document} floorId={floorId} onChange={onDocumentChange}
+        onClose={() => sourceReview.select("")} onUseScaleEndpoints={onUseScaleEndpoints}
         disabled={disabled} previewOnly={previewOnly} />
       <div className="mb-2 flex items-center justify-between gap-2">
         <div>
@@ -248,8 +243,8 @@ export default function FloorPlanSourceReviewCanvas({
             viewBox={`0 0 ${page.widthPx} ${page.heightPx}`}
           >
             <FloorPlanSourceReviewOverlay overlay={overlay} focused={focused} pickingRoom={pickingRoom}
-              opacity={overlayOpacity / 100} annotations={showArtwork ? artwork : []} selectedId={selectedArtworkId}
-              picking={picking} onSelect={setSelectedArtworkId} />
+              opacity={overlayOpacity / 100} annotations={sourceReview.visible} selectedId={sourceReview.selectedId}
+              picking={picking} onSelect={sourceReview.select} />
             {scalePoints.map((point, index) => (
               <g key={`${point.x}-${point.y}-${index}`}>
                 <circle
@@ -436,7 +431,7 @@ export default function FloorPlanSourceReviewCanvas({
         <figcaption className="border-t border-neutral-200 px-2 py-1.5 text-[10px] text-neutral-600">
           {isCad
             ? "CAD lines remain a reference until you confirm them."
-            : "Blue marks rooms and measurements. Orange marks a new opening. Green lines are saved walls."}
+            : "Green: proposed walls. Blue: proposed openings and selected measurements. Orange: opening being marked. Purple: source evidence needing review."}
         </figcaption>
       </figure>
       <details className="mt-2 text-[10px] text-neutral-600">

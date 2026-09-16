@@ -1,0 +1,44 @@
+"use client";
+
+import { useMemo, useState } from "react";
+import type { FloorPlanAnnotationV2, FloorPlanDocumentV2 } from "@/lib/floor-plan-document-v2";
+import { INTERIOR_ITEM_REVIEW_CONFIGURATION } from "@/lib/floor-plan-source-span-review";
+
+export const SOURCE_REVIEW_LAYERS = [
+  { value: "selected", label: "Plan + selected mark" },
+  { value: "boundary", label: "Boundary proposals" },
+  { value: "opening", label: "Opening proposals" },
+  { value: "dimension", label: "Printed dimensions" },
+  { value: "text", label: "Source text" },
+  { value: "all", label: "All extracted marks (diagnostic)" },
+] as const;
+export type SourceReviewLayer = typeof SOURCE_REVIEW_LAYERS[number]["value"];
+
+function annotationLayer(annotation: FloorPlanAnnotationV2): SourceReviewLayer {
+  if (annotation.configurationId === INTERIOR_ITEM_REVIEW_CONFIGURATION) return "selected";
+  if (annotation.geometry.kind === "source_drawing" && annotation.geometry.command === "text") return "text";
+  if (/^source-proposal:\d+:dimension:/.test(annotation.id)) return "dimension";
+  if (/^source-proposal:\d+:opening:|^consumer-source:(door|window):/.test(annotation.id)) return "opening";
+  if (/^source-proposal:\d+:room:|^source-local-boundary:|^consumer-source:boundary:/.test(annotation.id)) return "boundary";
+  return "selected";
+}
+
+/** View filters never discard evidence or change recognition/acceptance state.
+ * Explicit issue/span focus remains visible even when its layer is hidden. */
+export function useSourceReviewLayers(document: FloorPlanDocumentV2, floorId: string, sourceId: string,
+  pageNumber: number | undefined, focused: Set<string>) {
+  const [layer, setLayer] = useState<SourceReviewLayer>("selected");
+  const [selectedId, select] = useState("");
+  const [error, onError] = useState<string | null>(null);
+  const artwork = useMemo(() => document.floors.find(floor => floor.id === floorId)?.annotations.filter(annotation =>
+    annotation.geometry.kind === "source_drawing" && annotation.geometry.sourceId === sourceId && annotation.geometry.pageNumber === pageNumber
+  ) ?? [], [document, floorId, sourceId, pageNumber]);
+  const visible = artwork.filter(annotation => layer === "all" || annotation.id === selectedId || focused.has(annotation.id) ||
+    (layer !== "selected" && annotationLayer(annotation) === layer));
+  const onLayer = (value: string) => {
+    const option = SOURCE_REVIEW_LAYERS.find(item => item.value === value);
+    if (option) { setLayer(option.value); select(""); onError(null); }
+  };
+  return { artwork, visible, layer, onLayer, selectedId, select, error, onError,
+    annotation: artwork.find(annotation => annotation.id === selectedId) };
+}

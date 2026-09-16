@@ -4,6 +4,7 @@ import FloorPlanSourceReviewCanvas from "../../components/editor/floor-plan-impo
 import { authoredApartment } from "../../scripts/fixtures/scan-to-editable-plan/apartment";
 import { registerEmptyPlanScaleCalibration } from "../../lib/floor-plan-import-review-geometry";
 import type { FloorPlanDocumentV2 } from "../../lib/floor-plan-document-v2";
+import { INTERIOR_ITEM_REVIEW_CONFIGURATION } from "../../lib/floor-plan-source-span-review";
 
 const initial = authoredApartment();
 const floor = initial.floors[0];
@@ -19,6 +20,13 @@ floor.annotations = [
     geometry: { ...source, command: "text", points: [{ x: 300, y: 250 }] } },
   { id: "far-text", kind: "label", text: "Far corner note", scope: "reference", provenance,
     geometry: { ...source, command: "text", points: [{ x: 650, y: 520 }] } },
+  ...["source-proposal:1:room:0:0", "source-local-boundary:1:paired", "source-proposal:1:opening:0", "source-proposal:1:dimension:0"].map((id, index) => ({
+    id, kind: "note" as const, text: `Synthetic proposal ${index}`, scope: "reference" as const, provenance,
+    geometry: { ...source, command: "line" as const, points: [{ x: 500 + index * 10, y: 100 }, { x: 500 + index * 10, y: 400 }] },
+  })),
+  { id: "source-proposal:1:opening:1", kind: "note", text: "Reviewed interior item", scope: "reference", provenance,
+    configurationId: INTERIOR_ITEM_REVIEW_CONFIGURATION,
+    geometry: { ...source, command: "line", points: [{ x: 560, y: 100 }, { x: 560, y: 400 }] } },
 ];
 const key = "scan-plan:source-artwork-component-fixture";
 

@@ -2,7 +2,7 @@ import path from "node:path";
 import os from "node:os";
 import fs from "node:fs/promises";
 import webpack from "webpack";
-import { test, expect } from "@playwright/test";
+import { test, expect, type Page } from "@playwright/test";
 
 let bundle: string;
 test.beforeAll(async () => {
@@ -24,15 +24,39 @@ test.beforeAll(async () => {
 });
 test.afterAll(async () => { if (bundle) await fs.rm(path.dirname(bundle), { recursive: true, force: true }); });
 
-test("Reference artwork selection, text correction, calibration and local component reload", async ({ page }, info) => {
-  const errors: string[] = [];
-  page.on("pageerror", (error) => errors.push(error.message));
+async function mountArtwork(page: Page) {
   await page.route("**/scan-plan-component", (route) => route.fulfill({ contentType: "text/html", body:
     '<!doctype html><html><head><title>Source artwork fixture</title><style>body{font-family:Arial}.relative{position:relative}.absolute{position:absolute}.inset-0{inset:0}.h-full{height:100%}.w-full{width:100%}svg{display:block}output{display:none}.pointer-events-none{pointer-events:none}label,button{margin:4px}[data-testid="source-review-scroll"]{max-height:72vh;overflow:auto}</style></head><body></body></html>' }));
   await page.route("**/api/floor-plan-imports/**/assets/**", (route) => route.fulfill({ contentType: "image/svg+xml", body:
     '<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600"><rect width="800" height="600" fill="white"/></svg>' }));
   await page.goto("/scan-plan-component");
   await page.addScriptTag({ path: bundle });
+}
+
+test("Review layers reduce clutter without deleting evidence or hiding a focused proposal", async ({ page }, info) => {
+  await mountArtwork(page);
+  const before = await page.getByTestId("fixture-document").innerText();
+  const layer = page.getByLabel("Review overlay", { exact: true });
+  const marks = page.locator('[data-review-entity-id][role="button"]');
+  await expect(layer).toHaveValue("selected"); await expect(marks).toHaveCount(0);
+  for (const [value, count] of [["boundary", 2], ["opening", 1], ["dimension", 1], ["text", 2], ["all", 9]] as const) {
+    await layer.selectOption(value); await expect(marks).toHaveCount(count);
+    if (value === "opening") await expect(page.locator('[data-review-entity-id="source-proposal:1:opening:1"]')).toHaveCount(0);
+  }
+  await expect(page.getByText(/Diagnostic view includes overlapping/)).toBeVisible();
+  await layer.selectOption("selected");
+  await page.getByRole("button", { name: "Show curve issue", exact: true }).click();
+  await expect(marks).toHaveCount(1);
+  await expect(page.getByRole("button", { name: "Source stroke curve", exact: true })).toHaveAttribute("aria-pressed", "true");
+  expect(await page.getByTestId("fixture-document").innerText()).toBe(before);
+  await fs.writeFile(info.outputPath("layer-retention.json"), JSON.stringify({ count: 9, defaultVisible: 0, focusedVisible: 1, documentUnchanged: true }));
+});
+
+test("Reference artwork selection, text correction, calibration and local component reload", async ({ page }, info) => {
+  const errors: string[] = [];
+  page.on("pageerror", (error) => errors.push(error.message));
+  await mountArtwork(page);
+  await page.getByLabel("Review overlay", { exact: true }).selectOption("all");
   const drawing = page.getByRole("group", { name: "Canonical candidate overlay" });
   await drawing.getByRole("button", { name: "Source text: Uncertain room text" }).focus();
   await page.keyboard.press("Enter");
@@ -57,8 +81,10 @@ test("Reference artwork selection, text correction, calibration and local compon
   await page.screenshot({ path: info.outputPath("source-artwork.png") });
   await page.reload();
   await page.addScriptTag({ path: bundle });
+  await page.getByLabel("Review overlay", { exact: true }).selectOption("text");
   await expect(page.getByRole("button", { name: "Source text: Reviewed room text" })).toBeVisible();
   expect(JSON.parse(await page.getByTestId("fixture-document").innerText())).toEqual(after);
+  await page.getByLabel("Review overlay", { exact: true }).selectOption("selected");
   const focusButton = page.getByRole("button", { name: "Show source text issue", exact: true });
   await focusButton.focus(); await page.keyboard.press("Enter");
   const scroll = page.getByTestId("source-review-scroll");
