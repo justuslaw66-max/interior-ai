@@ -1,6 +1,6 @@
 /** Local grayscale contrast, without rescaling, rectifying or applying OCR boxes. */
 export type TracePixels = { gray: Uint8Array; width: number; height: number; signal?: AbortSignal };
-export const TRACE_SETTINGS = Object.freeze({ version: "source-strokes-v1", contrast: 14,
+export const TRACE_SETTINGS = Object.freeze({ version: "source-strokes-v2", contrast: 14,
   maximumGray: 240, solidInkMaximumGray: 160, backgroundRadius: 12, fitErrorPx: 0.65, minimumComponentPixels: 3, fillRadius: 3 });
 
 function maximumPass(input: Uint8Array, width: number, height: number, radius: number, vertical: boolean) {

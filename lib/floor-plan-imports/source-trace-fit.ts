@@ -40,9 +40,11 @@ function fitCubic(points:Point[],tolerance:number) {
 function fitSpan(points:Point[],tolerance:number,result:TracePath,curves:boolean,depth=0) {
   const first=points[0],last=points[points.length-1];let error=0,split=0;
   points.forEach((p,i)=>{const d=pointSegmentDistance(p,first,last);if(d>error){error=d;split=i;}});
-  const cubic=curves&&points.length>=6?fitCubic(points,tolerance):null;
-  if(cubic&&error>0.15&&cubic.error<=tolerance&&(error>tolerance||cubic.error<error*0.6)){result.commands.push("C");result.points.push(...cubic.controls.slice(1));return;}
+  // Prefer the simplest supported primitive. A better cubic residual alone is not
+  // evidence of curvature: scan blur and skeleton stair-steps also lower it.
   if(error<=tolerance||points.length<=2){result.commands.push("L");result.points.push(last);return;}
+  const cubic=curves&&points.length>=6?fitCubic(points,tolerance):null;
+  if(cubic&&cubic.error<=tolerance){result.commands.push("C");result.points.push(...cubic.controls.slice(1));return;}
   if(depth>32)throw new Error("Source trace curve fitting exceeded its depth bound.");
   split=Math.max(1,Math.min(points.length-2,split||Math.floor(points.length/2)));
   fitSpan(points.slice(0,split+1),tolerance,result,curves,depth+1);
@@ -53,6 +55,25 @@ export function fitTracePath(points:Point[],tolerance:number,fill:boolean,groupI
   const result:TracePath={points:[points[0]],commands:[],fill,strokeWidthPx:1,groupId};
   const closed=distance(points[0],points[points.length-1])<0.01;
   if(closed){const middle=Math.floor(points.length/2);fitSpan(points.slice(0,middle+1),tolerance,result,!fill);fitSpan(points.slice(middle),tolerance,result,!fill);result.commands.push("Z");}
-  else fitSpan(points,tolerance,result,true);
+  else fitSpan(points,tolerance,result,!fill);
   return result;
+}
+
+/** Validate changed junctions against the unchanged observations, in both directions.
+ * Dense curve samples bound curve-to-chain checks; straight spans use exact distances. */
+export function tracePathFitsChain(path:TracePath,chain:Point[],tolerance:number) {
+  const sampled:Point[]=[path.points[0]];let at=1,start=path.points[0];
+  for(const command of path.commands){
+    const count=command==="C"?3:1,controls=path.points.slice(at,at+count);at+=count;
+    const end=controls[controls.length-1];if(!end)return false;
+    const length=[start,...controls].slice(1).reduce((s,p,i)=>s+distance(p,[start,...controls][i]),0);
+    const steps=Math.max(1,Math.ceil(length*4));
+    for(let i=1;i<=steps;i++)sampled.push(command==="C"?cubicPoint([start,...controls],i/steps):blend(start,end,i/steps));
+    start=end;
+  }
+  const covered=(points:Point[],segments:Point[])=>points.every(p=>{
+    for(let i=1;i<segments.length;i++)if(pointSegmentDistance(p,segments[i-1],segments[i])<=tolerance)return true;
+    return false;
+  });
+  return covered(chain,sampled)&&covered(sampled,chain);
 }

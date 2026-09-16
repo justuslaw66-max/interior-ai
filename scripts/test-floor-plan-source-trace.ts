@@ -3,7 +3,9 @@ import sharp from "sharp";
 import { extractSourceArtwork } from "../lib/floor-plan-imports/source-artwork-trace";
 import { sourceTraceAnnotations } from "../lib/floor-plan-source-trace";
 import { sourceDrawingSvgPath,sourceDrawingGeometryError } from "../lib/floor-plan-source-drawing";
-import { pointSegmentDistance,type TracePath } from "../lib/floor-plan-imports/source-trace-fit";
+import { fitTracePath,pointSegmentDistance,tracePathFitsChain,type TracePath } from "../lib/floor-plan-imports/source-trace-fit";
+import { fitTraceStrokes } from "../lib/floor-plan-imports/source-trace-strokes";
+import { fitTraceFills } from "../lib/floor-plan-imports/source-trace-fills";
 import { thinTraceMask } from "../lib/floor-plan-imports/source-trace-skeleton";
 import { preserveTraceGlyphs } from "../lib/floor-plan-imports/source-trace-glyphs";
 
@@ -57,4 +59,27 @@ async function run() {
   assert.equal(pointSegmentDistance({x:1,y:1},{x:0,y:0},{x:2,y:0}),1);
   console.log("Source tracing: parallels, divided outlines, full cubic spans, faint strokes, dashes, junctions, nearby text, filled holes, determinism and bounds PASS.");
 }
-void run().catch(e=>{console.error(e);process.exitCode=1;});
+async function refinement() {
+  const tolerance=.65,signal=new AbortController().signal;
+  const wobble=Array.from({length:101},(_,i)=>({x:i,y:20+.4*Math.sin(i/30)}));
+  assert.deepEqual(fitTracePath(wobble,tolerance,false,"wobble").commands,["L"],"A lower cubic residual does not justify bending a supported straight stroke");
+  const rail=Array.from({length:101},(_,i)=>({x:30+.012*i+(i===0?.5:i===100?-.5:0),y:i}));
+  const crossbar=[{...rail[0]},{x:45,y:0}],parallel=rail.map(p=>({x:p.x+4,y:p.y}));
+  const paths=await fitTraceStrokes([rail,crossbar,parallel],tolerance,signal);
+  assert.deepEqual(paths[0].commands,["L"],"Whole-stroke fitting must remove endpoint-driven bends");
+  assert.deepEqual(paths[0].points[0],paths[1].points[0],"A shared junction has one coordinate after refinement");
+  assert.ok(paths[0].points[1].x-paths[0].points[0].x>.5,"Supported source skew is retained, not snapped vertical");
+  for(const [i,original] of [rail,crossbar,parallel].entries())assert.ok(tracePathFitsChain(paths[i],original,tolerance),"Refinement stays inside the unchanged fitting bound in both directions");
+  assert.ok(Math.abs(paths[2].points[0].x-paths[0].points[0].x-4)<.01,"Distinct parallel spacing remains");
+  const curve=Array.from({length:81},(_,i)=>({x:100+40*Math.cos(i/80*Math.PI/2),y:100+40*Math.sin(i/80*Math.PI/2)}));
+  const arc=(await fitTraceStrokes([curve],tolerance,signal))[0];
+  assert.ok(arc.commands.includes("C"));assert.ok(tracePathFitsChain(arc,curve,tolerance),"A real curved finite span is preserved");
+  const dashes=[[{x:0,y:0},{x:20,y:.2}],[{x:23,y:.2},{x:43,y:0}]];
+  const dashPaths=await fitTraceStrokes(dashes,tolerance,signal);
+  assert.ok(dashPaths[1].points[0].x-dashPaths[0].points.at(-1)!.x>2.9,"Refinement never bridges disconnected dashes");
+  const contour=[...Array.from({length:101},(_,x)=>({x,y:x%2*.8})),{x:100,y:30},...Array.from({length:101},(_,i)=>({x:100-i,y:30+(i%2)*.8})),{x:0,y:0}];
+  const fills=await fitTraceFills([contour],tolerance,signal);
+  assert.equal(fills.length,1);assert.ok(fills[0].commands.length<12,"Supported long fill boundaries lose pixel-step vertices");
+  console.log("Refinement: straight-first fitting, shared bounded junctions, true curves, unsnapped skew, parallels, dash gaps and filled silhouettes PASS.");
+}
+void run().then(refinement).catch(e=>{console.error(e);process.exitCode=1;});

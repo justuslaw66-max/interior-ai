@@ -2,7 +2,8 @@ import { fitTraceFills } from "./source-trace-fills";
 import { refineTraceCenters,restoreTraceCaps } from "./source-trace-center";
 import { TRACE_SETTINGS,traceInkMask,traceFillMask,removeTraceSpecks } from "./source-trace-mask";
 import { thinTraceMask,traceSkeletonPaths,traceFillContours } from "./source-trace-skeleton";
-import { fitTracePath,type TracePath } from "./source-trace-fit";
+import type { TracePath } from "./source-trace-fit";
+import { fitTraceStrokes } from "./source-trace-strokes";
 import { preserveTraceGlyphs, type TraceTextRegion } from "./source-trace-glyphs";
 import { setImmediate as yieldTracing } from "node:timers/promises";
 export type SourceArtworkTrace = {version:string;widthPx:number;heightPx:number;paths:TracePath[];
@@ -23,15 +24,12 @@ export async function extractSourceArtwork(bytes:Uint8Array,options:{signal?:Abo
   const skeleton=await thinTraceMask(mask,width,height,signal);
   for(let i=0;i<skeleton.length;i++)if(fill[i])skeleton[i]=0;
   const chains=traceSkeletonPaths(skeleton,width,height),contours=traceFillContours(fill,width,height),paths:TracePath[]=[];
-  paths.push(...fitTraceFills(contours,TRACE_SETTINGS.fitErrorPx));
+  paths.push(...await fitTraceFills(contours,TRACE_SETTINGS.fitErrorPx,signal));
   const endpoints = new Map<string,number>();
   for(const points of chains)for(const p of [points[0],points[points.length-1]]){const key=`${p.x}:${p.y}`;endpoints.set(key,(endpoints.get(key)??0)+1);}
   const caps=new Set([...endpoints].filter(([,count])=>count===1).map(([key])=>key));
-  for(const [i,points] of chains.entries()){
-    if(i%32===0)await yieldTracing();
-    signal.throwIfAborted();const path=fitTracePath(refineTraceCenters(restoreTraceCaps(points,mask,fill,width,height,caps),gray,width,height),TRACE_SETTINGS.fitErrorPx,false,`stroke-${i}`);
-    paths.push(path);
-  }
+  const observations=chains.map(points=>refineTraceCenters(restoreTraceCaps(points,mask,fill,width,height,caps),gray,width,height));
+  paths.push(...await fitTraceStrokes(observations,TRACE_SETTINGS.fitErrorPx,signal));
   if(paths.length>20_000)throw new Error("Source artwork exceeds the bounded editable path limit.");
   return{version:TRACE_SETTINGS.version,widthPx:width,heightPx:height,paths,settings:TRACE_SETTINGS,
     diagnostics:{inkPixels:mask.reduce((s,v)=>s+v,0),removedSpeckPixels,rawChains:chains.length,fillContours:contours.length,

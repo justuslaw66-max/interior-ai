@@ -3,6 +3,16 @@
 2026-09-17. **IN_PROGRESS**. Source-faithful tracing is the immediate priority. Installation, the bounded recognition experiment and the specific export alignment/Illustrator action fixes are complete; real-plan conversion and independent coverage remain incomplete. This is not READY or integrated. Authority: [original mandate](MANDATE.md), [continuation](Scan_Plan_Acceptance_Completion_Mandate.md).
 
 
+## Vector refinement continuation — local verification in progress (2026-09-17)
+
+User feedback compares the crooked trace with a crisp drawing reference. The screenshot is quality guidance only; extraction still uses the hash-confirmed original. Resumed clean7f2ba783638cec248bc5c2053bfa87f308686fa0; lsof confirms development3018/3044 in the feature checkout and stable3036/3045 in the preserved95165a1 snapshot. No old evidence or saved design was overwritten.
+
+Implemented `source-strokes-v2`: straight-first fitting, source-direction minimax line proposals, shared bounded endpoint fitting with consistent rejection, and finite fill-edge refinement. Pixel masks, calibration/registration and0.65px fitting/3px scan gates remain unchanged. This removes unnecessary curved/jogged rail segments and many raster-step fill vertices across the drawing without forcing axes/right angles or supplying replacement geometry.
+
+Private evidence **E/source-trace-refinement-r1** compares the exact95165a1 final trace against the refinement on the same836×1080 source.493 objects are retained; cubic spans209→85. All27 existing stroke elements/870 samples pass the unchanged3px gate, maximum2.830px; all six parallel checks pass, maximum1.322px. No exact duplicates, near-coincident stroke pairs or unsupported sampled output points were found by the existing checker. This is bounded denoising, not reference-quality CAD reconstruction: blurred junction blobs, remaining local kinks beyond the fitting budget, source skew and imperfect lettering still remain. Whole-plan exhaustive recall, full semantic conversion and independent plan coverage are not claimed.
+
+Focused tracing/review/export tests and Git quality/ratchet/hygiene PASS. Added generic checks for low-amplitude wobble, endpoint-driven bends, common junctions, genuine curves, retained skew, close parallels, dash gaps and jagged filled contours. A first quality check caught excess nesting in the new nearby-endpoint guard; it was simplified without baseline changes. Exact checkpoint build, broader affected tests and consumer preview verification follow; the stable preview still serves95165a1 until those pass.
+
 ## Active priority — source-faithful vector tracing (2026-09-17)
 
 **Tested application95165a11baa1ec92f22ca14cf49a734bfcce8f16**, tree **b7f690b74ac93c6260a6f833b3e5147c69a88037**, BuildID **G_d7_fGOcozFLrH9MzD5H**. The user superseded architectural recovery as the immediate priority with tracing visible source artwork. Existing editor, calibration, persistence,3D and completed PDF/Illustrator acceptance remain preserved. This subsequent status-only update is not a separately tested application build.
