@@ -30,6 +30,8 @@ const assistant = [
   "components/editor/FloorPlanImportAssistant.tsx",
   "components/editor/useConsumerFloorPlanImportCreation.ts",
   "components/editor/floor-plan-import-review/FloorPlanImportReviewPanel.tsx",
+  "components/editor/floor-plan-import-review/import-review-summary.ts",
+  "components/editor/floor-plan-import-review/photo-review-action.ts",
   "components/editor/floor-plan-import-review/FloorPlanVisualReviewTools.tsx",
   "components/editor/floor-plan-import-review/FloorPlanSourceReviewCanvas.tsx",
   "components/editor/floor-plan-import-review/FloorPlanScaleReviewPanel.tsx",
@@ -632,9 +634,10 @@ assert.match(
 );
 assert.match(
   assistant,
-  /\/api\/floor-plan-imports\/\$\{activeJob\.id\}\/retry-detection[\s\S]*?Retry with improved detection/,
+  /\/api\/floor-plan-imports\/\$\{activeJob\.id\}\/\$\{photo\?"photo-review":"retry-detection"\}/,
   "Consumers should be able to rerun the current extractor without uploading again."
 );
+assert.match(assistant,/Retry with improved detection/,"The consumer retry action stays available alongside photo recomputation.");
 assert.match(addressFields, /floor-plan-address-floor[\s\S]*?floor-plan-address-stack/);
 assert.doesNotMatch(addressSearch, /floorPlanRequest|floor-plan-address-requested|CustomEvent/);
 assert.match(addressSearch, /floor-plan-upload-requested/);

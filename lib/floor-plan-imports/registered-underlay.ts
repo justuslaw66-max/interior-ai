@@ -2,6 +2,8 @@ import type { FloorPlanDocumentV2, FloorPlanSourceCalibrationV2 } from "../floor
 import type { FloorPlanUnderlay } from "../floor-plan-types";
 import { projectReviewSourcePointToPlan } from "../floor-plan-source-point-projection";
 import { parseRenderedPages } from "./validation";
+import { mapPhotoPoint } from "../floor-plan-photo-math";
+import { assertPhotoSourceFrames } from "../floor-plan-photo-frame";
 
 /** Decompose the existing canonical affine registration into image placement. */
 function registeredPlacement(calibration: FloorPlanSourceCalibrationV2) {
@@ -21,6 +23,14 @@ function registeredPlacement(calibration: FloorPlanSourceCalibrationV2) {
     ...(Math.abs(skewX) > 32 * Number.EPSILON ? { skewX } : {}), ...(perpendicular < 0 ? { flipY: true } : {}) };
 }
 
+function correctedRegistration(calibration:FloorPlanSourceCalibrationV2):FloorPlanSourceCalibrationV2 {
+  const correction=calibration.photoCorrection;
+  if(!correction) return calibration;
+  const {photoCorrection:_correction,...rest}=calibration;
+  return {...rest,imageWidthPx:correction.correctedWidthPx,imageHeightPx:correction.correctedHeightPx,
+    controlPoints:rest.controlPoints.map((p)=>({...p,sourcePx:mapPhotoPoint(correction.originalToCorrected,p.sourcePx)}))};
+}
+
 export function registeredImportUnderlay(input: {
   document: FloorPlanDocumentV2; jobId: string; renderedPages: unknown;
   sourceAsset: { id: string; sha256: string; fileName: string; mimeType: string };
@@ -29,19 +39,22 @@ export function registeredImportUnderlay(input: {
   const calibration = floor?.calibrations.find(({ sourceId }) => sourceId === input.sourceAsset.id);
   if (!input.renderedPages || (Array.isArray(input.renderedPages) && !input.renderedPages.length)) return null;
   const pages = parseRenderedPages(input.renderedPages);
+  assertPhotoSourceFrames(input.document,pages);
   const page = pages.find(({ pageNumber }) => pageNumber === calibration?.pageNumber);
   if (!floor || !calibration || !page) return null;
   if (page.widthPx !== calibration.imageWidthPx || page.heightPx !== calibration.imageHeightPx) {
     throw new Error("The source preview dimensions changed. Reload and check the registered page before creating a design.");
   }
-  const [first, second] = calibration.controlPoints;
+  const registered=correctedRegistration(calibration);
+  const [first, second] = registered.controlPoints;
   const referenceLengthMeters = Math.hypot(second.planMm.xMm - first.planMm.xMm, second.planMm.zMm - first.planMm.zMm) / 1000;
   const sourceLengthPx = Math.hypot(second.sourcePx.x - first.sourcePx.x, second.sourcePx.y - first.sourcePx.y);
   return { id: `import-underlay-${input.jobId}`, floorId: floor.id, name: input.sourceAsset.fileName,
-    assetUrl: `/api/floor-plan-imports/${encodeURIComponent(input.jobId)}/assets/${encodeURIComponent(page.assetKey)}`,
+    assetUrl: `/api/floor-plan-imports/${encodeURIComponent(input.jobId)}/assets/${encodeURIComponent(page.assetKey)}`+
+      (calibration.photoCorrection?`?photoCalibrationId=${encodeURIComponent(calibration.id)}`:""),
     mimeType: "image/png", sourceMimeType: input.sourceAsset.mimeType, sourceAssetSha256: input.sourceAsset.sha256,
-    sourceJobId: input.jobId, renderedPage: page.pageNumber, pageCount: pages.length, widthPx: page.widthPx, heightPx: page.heightPx,
-    ...registeredPlacement(calibration), opacity: 0.45, visible: false, locked: true,
+    sourceJobId: input.jobId, renderedPage: page.pageNumber, pageCount: pages.length, widthPx: registered.imageWidthPx, heightPx: registered.imageHeightPx,
+    ...registeredPlacement(registered), opacity: 0.45, visible: false, locked: true,
     calibration: { pixelsPerMeter: sourceLengthPx / referenceLengthMeters, referenceLengthMeters,
       referencePointsPx: [{ ...first.sourcePx }, { ...second.sourcePx }] } };
 }

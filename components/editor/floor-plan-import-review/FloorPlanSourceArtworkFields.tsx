@@ -29,7 +29,7 @@ function FloorPlanSourceArtworkFields({ annotation, document, floorId, onChange,
     {textMark ? <label>Correct text
       <input aria-label="Correct source text" className="my-2 block w-full rounded border p-2" name="text"
         defaultValue={annotation.text} maxLength={2000} disabled={!onChange || disabled} />
-    </label> : <p>{annotation.id.startsWith("source-proposal:") ? annotation.text : "This unclassified line remains available for review against the original drawing."}</p>}
+    </label> : <p>{annotation.id.startsWith("source-proposal:")||annotation.id.startsWith("consumer-source:") ? annotation.text : "This unclassified line remains available for review against the original drawing."}</p>}
     {onUseScaleEndpoints && /^source-proposal:\d+:dimension:\d+$/.test(annotation.id) && annotation.geometry.kind === "source_drawing" &&
       annotation.geometry.command === "line" && annotation.geometry.points.length === 2 ?
       <button type="button" className="mt-2 rounded border px-3 py-1" disabled={disabled} onClick={() => {

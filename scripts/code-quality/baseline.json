@@ -237,7 +237,7 @@
       "limit": 250
     },
     "components/editor/floor-plan-import-review/FloorPlanImportReviewPanel.tsx": {
-      "lines": 756,
+      "lines": 736,
       "limit": 250
     },
     "components/editor/floor-plan-import-review/FloorPlanSourceReviewCanvas.tsx": {
@@ -249,11 +249,11 @@
       "limit": 250
     },
     "components/editor/floor-plan-import-review/FloorPlanVisualReviewTools.tsx": {
-      "lines": 284,
+      "lines": 276,
       "limit": 250
     },
     "components/editor/FloorPlanImportAssistant.tsx": {
-      "lines": 692,
+      "lines": 675,
       "limit": 250
     },
     "components/editor/FloorPlanImportHistory.tsx": {
@@ -545,7 +545,7 @@
       "limit": 400
     },
     "lib/floor-plan-compiler-v2.ts": {
-      "lines": 1633,
+      "lines": 1632,
       "limit": 400
     },
     "lib/floor-plan-import-review-geometry.ts": {
@@ -565,7 +565,7 @@
       "limit": 400
     },
     "lib/floor-plan-imports/deterministic-evidence.ts": {
-      "lines": 1143,
+      "lines": 1125,
       "limit": 400
     },
     "lib/floor-plan-imports/lease.ts": {
@@ -577,7 +577,7 @@
       "limit": 400
     },
     "lib/floor-plan-imports/pdf-raster-adapter.ts": {
-      "lines": 2800,
+      "lines": 2761,
       "limit": 400
     },
     "lib/floor-plan-imports/planar-face-evidence.ts": {
@@ -597,11 +597,11 @@
       "limit": 400
     },
     "lib/floor-plan-imports/source-overlay-residuals.ts": {
-      "lines": 657,
+      "lines": 540,
       "limit": 400
     },
     "lib/floor-plan-imports/vision-guided-topology.ts": {
-      "lines": 1136,
+      "lines": 1117,
       "limit": 400
     },
     "lib/floor-plan-legacy-adapters.ts": {
@@ -1307,7 +1307,7 @@
     "app/api/floor-plan-imports/[id]/route.ts": {
       "overlongFunctions": {
         "count": 3,
-        "maximum": 124
+        "maximum": 111
       },
       "complexFunctions": {
         "count": 1,
@@ -2073,11 +2073,11 @@
     "components/editor/floor-plan-import-review/FloorPlanImportReviewPanel.tsx": {
       "overlongFunctions": {
         "count": 3,
-        "maximum": 634
+        "maximum": 625
       },
       "complexFunctions": {
         "count": 2,
-        "maximum": 45
+        "maximum": 41
       }
     },
     "components/editor/floor-plan-import-review/FloorPlanOpeningAddFields.tsx": {
@@ -2153,7 +2153,7 @@
     "components/editor/floor-plan-import-review/FloorPlanVisualReviewTools.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 247
+        "maximum": 237
       },
       "complexFunctions": {
         "count": 1,
@@ -2195,7 +2195,7 @@
     "components/editor/FloorPlanImportAssistant.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 654
+        "maximum": 636
       },
       "complexFunctions": {
         "count": 1,
@@ -3551,7 +3551,7 @@
     "lib/floor-plan-compiler-v2.ts": {
       "overlongFunctions": {
         "count": 5,
-        "maximum": 509
+        "maximum": 508
       },
       "complexFunctions": {
         "count": 2,
@@ -3897,7 +3897,7 @@
     "lib/floor-plan-imports/source-overlay-residuals.ts": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 323
+        "maximum": 320
       },
       "complexFunctions": {
         "count": 1,

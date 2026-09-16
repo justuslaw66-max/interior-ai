@@ -12,12 +12,9 @@ import { hashCanonicalJson } from "@/lib/floor-plan-imports/json";
 import { FLOOR_PLAN_IMPORT_PROGRESS } from "@/lib/floor-plan-imports/status";
 import { buildFloorPlanProgressEstimate } from "@/lib/floor-plan-imports/progress-estimate-server";
 import { recordFloorPlanEtaPrediction } from "@/lib/floor-plan-imports/eta-calibration";
-import { applyConsumerFloorPlanCorrection } from "@/lib/floor-plan-imports/review";
+import { checkedConsumerCandidateCorrection } from "@/lib/floor-plan-imports/consumer-candidate-correction";
 import {
-  compileCandidateFloorPlanDocumentV2,
   MAX_FLOOR_PLAN_CANDIDATE_BYTES,
-  parseCandidate,
-  parseReviewIssues,
 } from "@/lib/floor-plan-imports/validation";
 
 export const runtime = "nodejs";
@@ -183,6 +180,7 @@ export async function PATCH(
       candidateJson: true,
       candidateVersion: true,
       correctionLogJson: true,
+      renderedPagesJson: true,
       reviewIssuesJson: true,
       sourceAsset: { select: { id: true, sha256: true } },
     },
@@ -206,27 +204,13 @@ export async function PATCH(
   }
 
   try {
-    const candidate = parseCandidate(body.candidate);
-    const submittedReviewIssues = parseReviewIssues(body.reviewIssues);
     const expectedVersion = body.candidateVersion;
     if (!Number.isInteger(expectedVersion) || expectedVersion !== current.candidateVersion) {
       return error("The candidate changed; reload before applying corrections", 409);
     }
     const correctionNote =
       typeof body.correctionNote === "string" ? body.correctionNote.trim().slice(0, 2_000) : "";
-    const currentCompiled = compileCandidateFloorPlanDocumentV2(current.candidateJson);
-    const nextCompiled = compileCandidateFloorPlanDocumentV2(candidate);
-    const correction = applyConsumerFloorPlanCorrection({
-      current: currentCompiled.document,
-      next: nextCompiled.document,
-      currentIssues: parseReviewIssues(current.reviewIssuesJson),
-      submittedIssues: submittedReviewIssues,
-      sourceId: current.sourceAsset.id,
-      sourceSha256: current.sourceAsset.sha256,
-      userId,
-      note: correctionNote,
-    });
-    compileCandidateFloorPlanDocumentV2(correction.document);
+    const correction = checkedConsumerCandidateCorrection({body,current,userId,note:correctionNote});
     const correctionLog = Array.isArray(current.correctionLogJson)
       ? current.correctionLogJson
       : [];

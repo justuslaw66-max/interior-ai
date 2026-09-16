@@ -1,3 +1,4 @@
+import { sourceSegmentsForWalls,roomSourceConflict,sourcePixelDistance } from "./source-wall-linework";
 import {
   pointInPolygon,
   type RegisteredPageEvidence,
@@ -35,6 +36,7 @@ export type VisionGuidedTopologyResult = {
       unsnappableCorner: number;
       invalidPolygon: number;
       ambiguousLabel: number;
+      internalDivider: number;
       incompatibleFixtureCluster: number;
       excessiveResidual: number;
     };
@@ -99,29 +101,6 @@ function segmentMidpoint(segment: SourceVectorSegment): SourcePointPx {
   };
 }
 
-function sourceSegmentsForWalls(page: RegisteredPageEvidence) {
-  const semanticTextBoxes = [
-    ...page.semantics.roomLabels.flatMap((label) => (label.bbox ? [label.bbox] : [])),
-    ...page.semantics.dimensionLabels.flatMap((label) =>
-      label.bbox ? [label.bbox] : []
-    ),
-  ];
-  return page.vectorSegments.filter((segment) => {
-    if (pointDistance(segment.start, segment.end) < MIN_SEGMENT_LENGTH_PX) return false;
-    if ((segment.confidence ?? 1) < 0.55) return false;
-    const midpoint = segmentMidpoint(segment);
-    if (semanticTextBoxes.some((box) => pointInBox(midpoint, box, page))) return false;
-    return !page.text.some((text) => {
-      const box = {
-        leftRatio: (text.center.x - text.widthPx / 2) / page.widthPx,
-        topRatio: (text.center.y - text.heightPx / 2) / page.heightPx,
-        rightRatio: (text.center.x + text.widthPx / 2) / page.widthPx,
-        bottomRatio: (text.center.y + text.heightPx / 2) / page.heightPx,
-      };
-      return pointInBox(midpoint, box, page);
-    });
-  });
-}
 
 function median(values: readonly number[]) {
   const sorted = [...values].sort((left, right) => left - right);
@@ -544,7 +523,9 @@ function supportEdge(
   }
   const snappedOffset = median(best.members.map((member) => member.offset));
   const residuals = best.members.map((member) =>
-    Math.abs(member.offset - snappedOffset)
+    sourcePixelDistance(page,segmentMidpoint(member.segment),{
+      x:segmentMidpoint(member.segment).x-nx*(member.offset-snappedOffset),
+      y:segmentMidpoint(member.segment).y-ny*(member.offset-snappedOffset)})
   );
   const sourceSegmentIds = [...new Set(best.members.map((member) => member.segment.id))];
   return {
@@ -862,6 +843,7 @@ export function registerVisionGuidedRoomBoundaries(
     unsnappableCorner: 0,
     invalidPolygon: 0,
     ambiguousLabel: 0,
+    internalDivider: 0,
     incompatibleFixtureCluster: 0,
     excessiveResidual: 0,
   };
@@ -960,13 +942,12 @@ export function registerVisionGuidedRoomBoundaries(
         )
     );
     const fixtureIdentity = inferRoomIdentityFromFixtures(sourceFixtures);
-    const openPlan =
-      labels.length > 1 &&
+    const openPlan = labels.length > 1 &&
       labels.every((entry) => OPEN_PLAN_ROOM_TYPES.has(entry.roomType)) &&
       new Set(labels.map((entry) => entry.roomType)).size > 1;
-    if (labels.length > 1 && !openPlan) {
-      rejectionCounts.ambiguousLabel += 1;
-      continue;
+    const sourceConflict=roomSourceConflict(page,completePoints,labels.length > 1 && !openPlan);
+    if (sourceConflict) {
+      rejectionCounts[sourceConflict] += 1; continue;
     }
     if (
       fixtureIdentity &&

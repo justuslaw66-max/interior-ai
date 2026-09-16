@@ -17,6 +17,7 @@ export function applyScaleReviewMeasurement(input: Pick<FloorPlanScaleReviewPane
   inputUnit: FloorPlanSourceMeasurementV2["inputUnit"]; sourceQuality: FloorPlanSourceMeasurementV2["sourceQuality"];
 }) {
   if (!input.page || input.scalePoints.length !== 2) throw new Error("Choose two endpoints on the source page.");
+  if(input.calibration?.photoCorrection)throw new Error("Use the photo correction measurements to change this scale, then create a separate corrected review. You can still add independent scale checks here.");
   const args = { ...input, pageNumber: input.page.pageNumber, pageWidthPx: input.page.widthPx, pageHeightPx: input.page.heightPx,
     first: input.scalePoints[0], second: input.scalePoints[1] };
   const hasVertices = (input.document.floors.find(({ id }) => id === input.floorId)?.vertices.length ?? 0) >= 2;

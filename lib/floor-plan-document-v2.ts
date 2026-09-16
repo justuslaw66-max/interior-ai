@@ -163,6 +163,8 @@ export type FloorPlanSourceCalibrationV2 = {
   imageWidthPx: number;
   imageHeightPx: number;
   controlPoints: FloorPlanSourceCalibrationPointV2[];
+  /** Original pixels remain authoritative; this invertible normalization precedes affine registration. */
+  photoCorrection?: import("./floor-plan-photo-constraints").PhotoCorrection;
   /** Handedness for two-point or collinear registration; affine controls remain authoritative. */
   reflected?: boolean;
   rmsErrorPx?: number;
@@ -329,6 +331,8 @@ export type FloorPlanFloorV2 = {
   verticalEvidence?: FloorPlanFloorVerticalEvidenceV2;
   defaults: FloorPlanDefaultsV2;
   calibrations: FloorPlanSourceCalibrationV2[];
+  /** Unaccepted source observations, persisted separately from metric registration and geometry. */
+  photoReviewDrafts?: import("./floor-plan-photo-constraints").PhotoReviewDraft[];
   vertices: FloorPlanVertexV2[];
   walls: FloorPlanWallV2[];
   rooms: FloorPlanRoomV2[];

@@ -1,3 +1,5 @@
+import { asEnvelope,type ExtractionEnvelope,type PageScaleSolution } from "./pdf-raster-evidence";
+import { architecturalLineworkPage,hasSourceDivider } from "./source-wall-linework";
 import { automaticScaleReviewMessage, diagnoseSourceScale } from "./source-scale-cross-check";
 import { registerRasterDimensionSpans } from "./raster-dimension-spans";
 import { registerRasterOpeningSpans, sourceOpeningSpan } from "./raster-opening-spans";
@@ -40,7 +42,6 @@ import {
   type RegisteredPageEvidence,
   type SemanticBoundingBox,
   type SourcePointPx,
-  type SourceScaleSolution,
   type SourceTextEvidence,
   type SourceVectorPath,
   type SourceVectorSegment,
@@ -89,7 +90,6 @@ import {
   catalogFloorPlanDraftMatchReference,
   matchPrivateUploadToCatalogDraft,
   resolveCatalogFloorPlanDraftMatch,
-  type CatalogFloorPlanDraftMatchReference,
 } from "./catalog-draft-match";
 
 const EXTRACTION_VERSION = "pdf-raster-hybrid-2.5.0";
@@ -264,35 +264,6 @@ const semanticSchema = z.object({
   notes: z.array(z.string().max(240)).max(30),
 });
 
-type PageScaleSolution = {
-  pageNumber: number;
-  millimetresPerPixel: number;
-  dimensionCount: number;
-  rmsResidualMm: number;
-  confidence: number;
-  evidence?: SourceScaleSolution["evidence"];
-  diagnostics?: SourceScaleSolution["diagnostics"];
-};
-
-type ExtractionEnvelope = {
-  kind:
-    | "floor_plan_deterministic_evidence_v1"
-    | typeof ENHANCED_FLOOR_PLAN_EVIDENCE_KIND;
-  source: {
-    id: string;
-    fileName: string;
-    mimeType: string;
-    sha256: string;
-  };
-  pages: RegisteredPageEvidence[];
-  renderedPages?: FloorPlanRenderedPage[];
-  pageCandidates?: FloorPlanPageCandidate[];
-  selectedPageNumber?: number | null;
-  scale: PageScaleSolution | null;
-  /** Page-bound solutions prevent dimensions from one brochure page scaling another. */
-  scales?: PageScaleSolution[];
-  catalogDraftMatch?: CatalogFloorPlanDraftMatchReference | null;
-};
 
 type PdfOperatorList = {
   fnArray: number[];
@@ -919,6 +890,7 @@ async function classifyRenderedPage(
   detail: "low" | "original",
   planCrop?: SemanticBoundingBox | null
 ): Promise<PageSemanticEvidence | null> {
+  if(context.localOnly)return null;
   const vision = floorPlanVisionRuntimeConfiguration();
   if (
     !vision.externalVisionEnabled ||
@@ -1143,18 +1115,6 @@ async function classifyRenderedPage(
   );
 }
 
-function asEnvelope(candidate: Record<string, unknown> | null): ExtractionEnvelope {
-  if (
-    !candidate ||
-    ![
-      "floor_plan_deterministic_evidence_v1",
-      ENHANCED_FLOOR_PLAN_EVIDENCE_KIND,
-    ].includes(String(candidate.kind))
-  ) {
-    throw new Error("Floor-plan extraction evidence is missing");
-  }
-  return candidate as unknown as ExtractionEnvelope;
-}
 
 function issue(
   id: string,
@@ -1323,10 +1283,11 @@ function applyVisionGuidedFallback(
 }
 
 export function registerSupportedPageTopology(
-  page: RegisteredPageEvidence,
+  sourcePage: RegisteredPageEvidence,
   scale: PageScaleSolution | null
 ): RegisteredPageTopology {
-  const directRooms = registerRoomBoundaries(page);
+  const page=architecturalLineworkPage(sourcePage);
+  const directRooms = registerRoomBoundaries(page).filter(room=>!hasSourceDivider(page,room.sourcePoints));
   const wallFootprintBands = detectRegisteredWallFootprintBands(page);
   const directCompleteness = directRooms.length
     ? assessRegisteredDirectPathCompleteness(

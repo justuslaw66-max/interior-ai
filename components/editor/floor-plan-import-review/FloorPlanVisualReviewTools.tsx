@@ -7,6 +7,8 @@ import { expandFloorPlanReviewFocus, floorPlanReviewPage, resolveFloorPlanReview
 import { FloorPlanReviewIssueAction } from "./FloorPlanReviewIssueAction";
 import type { ReviewSourcePoint } from "@/lib/floor-plan-import-review-geometry";
 import type { ConsumerFloorPlanImportJob } from "../floor-plan-import-ui-types";
+import FloorPlanPhotoCorrectionPanel from "./FloorPlanPhotoCorrectionPanel";
+import FloorPlanPendingSpanReview from "./FloorPlanPendingSpanReview";
 import FloorPlanOpeningTracePanel from "./FloorPlanOpeningTracePanel";
 import FloorPlanOrientationReviewPanel from "./FloorPlanOrientationReviewPanel";
 import FloorPlanRoomTracePanel from "./FloorPlanRoomTracePanel";
@@ -77,6 +79,9 @@ export default function FloorPlanVisualReviewTools({
   }
   if (!floor) return null;
 
+  const pick=(kind:"scale"|"room"|"opening",value=true)=> {
+    setPickingScale(kind==="scale"&&value);setPickingRoom(kind==="room"&&value);setPickingOpening(kind==="opening"&&value);
+  };
   const focusedEntityIds = expandFloorPlanReviewFocus(floor, focusedIssueEntityIds, focusedCorrectionIds);
 
   const canvas = (
@@ -120,6 +125,11 @@ export default function FloorPlanVisualReviewTools({
   );
   const primaryControls = (
     <>
+      <FloorPlanPhotoCorrectionPanel key={`photo:${sourceId}:${pageNumber}`} document={document} floorId={floor.id}
+        sourceId={sourceId} jobId={job.id} page={page} calibration={calibration} scalePoints={scalePoints}
+        onPicking={()=>{setScalePoints([]);pick("scale");}} onChange={onChange} assetRoutePrefix={assetRoutePrefix} disabled={disabled}/>
+      <FloorPlanPendingSpanReview key={`spans:${sourceId}:${pageNumber}`} document={document} floorId={floor.id} sourceId={sourceId}
+        page={page} points={scalePoints} onPick={()=>{setScalePoints([]);pick("scale");}} onChange={onChange} disabled={disabled}/>
       <FloorPlanScaleReviewPanel key={`${sourceId}:${page?.pageNumber}`}
         document={document}
         floorId={floor.id}
@@ -128,13 +138,7 @@ export default function FloorPlanVisualReviewTools({
         calibration={calibration}
         pickingScale={pickingScale}
         scalePoints={scalePoints}
-        onPickingScaleChange={(value) => {
-          setPickingScale(value);
-          if (value) {
-            setPickingRoom(false);
-            setPickingOpening(false);
-          }
-        }}
+        onPickingScaleChange={(value)=>pick("scale",value)}
         onScalePointsChange={setScalePoints}
         onChange={onChange}
         onError={setError}
@@ -150,13 +154,7 @@ export default function FloorPlanVisualReviewTools({
         floorId={floor.id}
         onChange={onChange}
         onError={setError}
-        onPickingRoomChange={(value) => {
-          setPickingRoom(value);
-          if (value) {
-            setPickingScale(false);
-            setPickingOpening(false);
-          }
-        }}
+        onPickingRoomChange={(value)=>pick("room",value)}
         onRoomPointsChange={setRoomPoints}
         pageNumber={page?.pageNumber ?? null}
         pickingRoom={pickingRoom}
@@ -172,13 +170,7 @@ export default function FloorPlanVisualReviewTools({
         onChange={onChange}
         onError={setError}
         onOpeningPointsChange={setOpeningPoints}
-        onPickingOpeningChange={(value) => {
-          setPickingOpening(value);
-          if (value) {
-            setPickingScale(false);
-            setPickingRoom(false);
-          }
-        }}
+        onPickingOpeningChange={(value)=>pick("opening",value)}
         openingPoints={openingPoints}
         pageNumber={page?.pageNumber ?? null}
         pickingOpening={pickingOpening}

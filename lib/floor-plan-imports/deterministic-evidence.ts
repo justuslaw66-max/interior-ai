@@ -1,3 +1,4 @@
+import type { SourceScaleSolution } from "./scale-diagnostics";
 import { scaleInspection, type DimensionCandidate, type SourceScaleInspection } from "./scale-diagnostics";
 import { dimensionCandidateMatchesHint, dimensionHintDistance, rasterDimensionCandidates } from "./dimension-span-candidates";
 import type { RasterDimensionSpanEvidence } from "./raster-dimension-spans";
@@ -188,6 +189,8 @@ export type PageSemanticEvidence = {
 };
 
 export type RegisteredPageEvidence = {
+  /** Optional inverse correction, for unchanged source-pixel acceptance tolerances. */
+  originalPixelMapping?: import("../floor-plan-photo-math").PhotoMatrix;
   pageNumber: number;
   widthPx: number;
   heightPx: number;
@@ -199,28 +202,7 @@ export type RegisteredPageEvidence = {
   dimensionSpanEvidence?: RasterDimensionSpanEvidence;
   openingSpanEvidence?: RasterOpeningSpanEvidence;
 };
-export type SourceScaleSolution = {
-  millimetresPerPixel: number;
-  dimensionCount: number;
-  rmsResidualMm: number;
-  confidence: number;
-  evidence: Array<{
-    valueMm: number;
-    observedLengthPx: number;
-    residualMm: number;
-    segmentId: string;
-    start: SourcePointPx;
-    end: SourcePointPx;
-  }>;
-  diagnostics?: {
-    eligibleDimensionCount: number;
-    singleSegmentCandidateCount: number;
-    compoundSpanCandidateCount: number;
-    rejectedMissingEndpoints: number;
-    rejectedUnsupportedSpan: number;
-    rejectedResidualClusters: number;
-  };
-};
+export type { SourceScaleSolution } from "./scale-diagnostics";
 
 export type RegisteredRoomBoundary = {
   key: string;

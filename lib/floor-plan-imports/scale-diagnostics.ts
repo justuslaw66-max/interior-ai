@@ -1,4 +1,4 @@
-import type { SemanticDimensionLabel, SourcePointPx, SourceScaleSolution } from "./deterministic-evidence";
+import type { SemanticDimensionLabel, SourcePointPx } from "./deterministic-evidence";
 
 export type DimensionCandidate = {
   dimensionIndex: number;
@@ -38,3 +38,26 @@ export function scaleInspection(
 }
 
 export type SourceScaleInspection = ReturnType<typeof scaleInspection>;
+
+export type SourceScaleSolution = {
+  millimetresPerPixel: number;
+  dimensionCount: number;
+  rmsResidualMm: number;
+  confidence: number;
+  evidence: Array<{
+    valueMm: number;
+    observedLengthPx: number;
+    residualMm: number;
+    segmentId: string;
+    start: SourcePointPx;
+    end: SourcePointPx;
+  }>;
+  diagnostics?: {
+    eligibleDimensionCount: number;
+    singleSegmentCandidateCount: number;
+    compoundSpanCandidateCount: number;
+    rejectedMissingEndpoints: number;
+    rejectedUnsupportedSpan: number;
+    rejectedResidualClusters: number;
+  };
+};

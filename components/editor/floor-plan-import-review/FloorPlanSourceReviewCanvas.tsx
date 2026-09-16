@@ -186,7 +186,7 @@ export default function FloorPlanSourceReviewCanvas({
             className={dark ? "text-xs text-neutral-400" : "text-xs text-neutral-600"}
           >
             {overlay
-              ? "Saved room and wall outlines are shown over the uploaded plan."
+              ? "Source registration is available. Review any recovered outlines against the uploaded plan."
               : "Your selected measurements and room corners will appear here."}
           </div>
         </div>

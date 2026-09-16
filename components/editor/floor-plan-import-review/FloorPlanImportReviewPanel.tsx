@@ -1,5 +1,8 @@
 "use client";
 
+import { createImportReviewMutationMetadata,importReviewSummary,photoReviewRequired } from "./import-review-summary";
+
+
 import { useState, type Dispatch, type SetStateAction } from "react";
 import type { FloorPlanDocumentV2 } from "@/lib/floor-plan-document-v2";
 import {
@@ -105,20 +108,6 @@ function issuePrerequisite(
   return null;
 }
 
-function createImportReviewMutationMetadata(
-  floorId: string,
-  property: string,
-  note: string
-) {
-  const timestamp = Date.now().toString(36);
-  return {
-    mutationId: `import-review:${floorId}:${property}:${timestamp}`,
-    nextRevisionId: `import-review-revision:${timestamp}:${property}`,
-    actorId: "consumer-import-review",
-    mutatedAt: new Date().toISOString(),
-    note,
-  };
-}
 
 export default function FloorPlanImportReviewPanel({
   candidate,
@@ -160,7 +149,8 @@ export default function FloorPlanImportReviewPanel({
   const needsManualRecovery =
     Boolean(cannotFinishReason) ||
     blockingPrerequisites.length > 0 ||
-    needsDetectionRetry;
+    needsDetectionRetry || photoReviewRequired(unresolvedCritical);
+  const summary=importReviewSummary({needsRoomRecovery,needsScaleRecovery,unresolvedCritical,photo:floor.calibrations.some(c=>Boolean(c.photoCorrection))});
   const focusedIssueEntityIds =
     issues.find((issue) => issue.id === focusedIssueId)?.entityIds ?? [];
 
@@ -344,20 +334,10 @@ export default function FloorPlanImportReviewPanel({
             AI floor-plan check
           </div>
           <h3 className="mt-1 text-xl font-semibold">
-            {needsRoomRecovery
-              ? "Wall detection needs review"
-              : needsScaleRecovery
-                ? "Confirm one real measurement"
-                : unresolvedCritical.length
-                  ? "Check the detected plan"
-                  : "Your plan is ready for a final check"}
+            {summary.title}
           </h3>
           <p className={`mt-1 max-w-3xl text-sm leading-6 ${subtle}`}>
-            {needsRoomRecovery
-              ? "The drawing is visible, but the AI could not safely close the room walls. Nothing has been created or added to your current design."
-              : needsScaleRecovery
-                ? "The rooms are visible, but the AI needs one printed measurement to make the editable plan the correct real-world size."
-                : "AI detected the architectural plan. Check the preview once, then continue to create a separate editable 2D and 3D design."}
+            {summary.description}
           </p>
         </div>
         <div className="flex flex-wrap gap-2 text-xs">
@@ -404,7 +384,7 @@ export default function FloorPlanImportReviewPanel({
           <div className="text-sm font-semibold">
             {needsRoomRecovery
               ? "Continue reviewing this drawing"
-              : "One small correction is needed"}
+              : "Review the remaining corrections"}
           </div>
           <p className={`mt-1 text-xs leading-5 ${subtle}`}>
             {needsRoomRecovery

@@ -17,6 +17,7 @@ import FloorPlanImportReviewPanel from "./floor-plan-import-review/FloorPlanImpo
 import { prepareFloorPlanReviewSubmission } from "@/lib/floor-plan-import-review-submission";
 import FloorPlanReviewDraftSave from "./floor-plan-import-review/FloorPlanReviewDraftSave";
 import FloorPlanVisualReviewTools from "./floor-plan-import-review/FloorPlanVisualReviewTools";
+import { PhotoReviewAction,requestDetectionReview,photoReviewBusy,type PhotoReviewRequest } from "./floor-plan-import-review/photo-review-action";
 import FloorPlanOptionalConfigurationPanel from "./FloorPlanOptionalConfigurationPanel";
 import { inspectFloorPlanOptionalConfigurations } from "@/lib/floor-plan-optional-configurations";
 import { readFloorPlanPageSelection } from "@/lib/floor-plan-imports/page-selection";
@@ -249,7 +250,7 @@ export default function FloorPlanImportAssistant({
     }
   };
 
-  const retryDetection = async () => {
+  const retryDetection = async (photo?:PhotoReviewRequest) => {
     if (!activeJob || !["needs_review", "failed"].includes(activeJob.status)) {
       return;
     }
@@ -257,32 +258,14 @@ export default function FloorPlanImportAssistant({
     setRetryingDetection(true);
     setReviewError(null);
     try {
-      const retryPayload = await floorPlanImportResponseJson(
-        await fetch(
-          `/api/floor-plan-imports/${activeJob.id}/retry-detection`,
-          { method: "POST" }
-        )
-      );
-      signal.throwIfAborted();
-      const retryJobId =
-        retryPayload.job &&
-        typeof retryPayload.job === "object" &&
-        typeof (retryPayload.job as { id?: unknown }).id === "string"
-          ? (retryPayload.job as { id: string }).id
-          : null;
-      if (!retryJobId) throw new Error("The retry job ID is missing");
-      onActiveJobIdChange?.(retryJobId);
-      signal.throwIfAborted();
-      const job = await processAndPoll(
-        retryJobId,
-        "Retrying with improved wall and dimension detection", { signal }
-      );
+      const job=await requestDetectionReview({activeJob,photo,candidate,signal,onActiveJobIdChange,processAndPoll});
       signal.throwIfAborted();
       setCandidate(parseFloorPlanImportDocument(job.candidateJson));
       setIssues(parseFloorPlanImportIssues(job.reviewIssuesJson));
       setState({ kind: "job", job });
     } catch (cause) {
       if (signal.aborted) return;
+      if(photo){setReviewError(cause instanceof Error?cause.message:"Unable to recompute this review");return;}
       setState({
         kind: "error",
         message:
@@ -671,7 +654,7 @@ export default function FloorPlanImportAssistant({
       ) : null}
       <FloorPlanReviewDraftSave disabled={disabled} submitting={submitting} deletingSource={deletingSource}
         savedVersion={savedDraftVersion} control={control} subtle={subtle} onSave={() => void submitReview(issues, true)} />
-      <FloorPlanImportReviewPanel
+      <PhotoReviewAction.Provider value={(request)=>void retryDetection(request)}><FloorPlanImportReviewPanel
         candidate={candidate}
         job={activeJob}
         issues={issues}
@@ -685,8 +668,8 @@ export default function FloorPlanImportAssistant({
         retryingDetection={retryingDetection}
         onSubmit={(reviewIssues) => void submitReview(reviewIssues)}
         submitting={submitting}
-        disabled={disabled} proMode={proMode} dark={dark}
-      />
+        disabled={photoReviewBusy(disabled,submitting,retryingDetection)} proMode={proMode} dark={dark}
+      /></PhotoReviewAction.Provider>
     </div>
   );
 }

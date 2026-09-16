@@ -76,7 +76,8 @@ function testMeasurements() {
   const malformed = structuredClone(checked);
   Object.assign(malformed.floors[0].calibrations[0].independentMeasurements![0], { inputUnit: "yards" });
   assert.throws(() => compileFloorPlanDocumentV2(malformed), /validation/i);
-  malformed.floors[0].calibrations[0].independentMeasurements = Array.from({ length: 9 }, (_, index) => scaleMeasurement({ id: `check-${index}` }));
+  // Photo correction retains the predeclared held-out spans; the bounded review limit is now 32.
+  malformed.floors[0].calibrations[0].independentMeasurements = Array.from({ length: 33 }, (_, index) => scaleMeasurement({ id: `check-${index}` }));
   assert.throws(() => compileFloorPlanDocumentV2(malformed), /validation/i);
 }
 

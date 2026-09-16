@@ -1,4 +1,4 @@
-import { validateFloorPlanSourceCalibration } from "./floor-plan-source-calibration-validation";
+import { validateFloorSourceReviews } from "./floor-plan-source-calibration-validation";
 import { compileFloorPlanAnnotationV2 } from "./floor-plan-annotation-compiler";
 import { sourceDrawingGeometryError, type FloorPlanSourceDrawingGeometryV2 } from "./floor-plan-source-drawing";
 import type {
@@ -870,13 +870,12 @@ export function validateFloorPlanDocumentV2(
     validateMeasuredProperty(floor.defaults.windowSillHeight, `${path}.defaults.windowSillHeight`, sourceIds, issues);
 
     validateUniqueIds(floor.calibrations, `${path}.calibrations`, issues);
-    floor.calibrations.forEach((calibration, index) => validateFloorPlanSourceCalibration(
-      calibration, `${path}.calibrations[${index}]`, sourceIds, {
+    validateFloorSourceReviews(floor,path,sourceIds,{
         issue: (code, location, message) => addIssue(issues, code, location, message),
         integer: (value, location, options) => validateInteger(value, location, issues, options),
         finite: (value, location) => validateFinite(value, location, issues),
       }
-    ));
+    );
 
     validateUniqueIds(floor.vertices, `${path}.vertices`, issues);
     validateUniqueIds(floor.walls, `${path}.walls`, issues);

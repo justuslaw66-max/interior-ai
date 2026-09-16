@@ -1,6 +1,8 @@
 import { z } from "zod";
 import type { FloorPlanSourceCalibrationV2, FloorPlanSourceMeasurementV2 } from "./floor-plan-document-v2";
 import { projectReviewSourcePointToPlan } from "./floor-plan-source-point-projection";
+import { buildFloorPlanSourceProjection } from "./floor-plan-imports/source-projection";
+import { originalPhotoPoint } from "./floor-plan-photo-constraints";
 
 const point = z.object({ x: z.number().finite(), y: z.number().finite() }).strict();
 export const sourceMeasurementSchema = z.object({
@@ -14,7 +16,7 @@ export const sourceMeasurementSchema = z.object({
   residualAtConfirmation: z.object({ millimetres: z.number().finite(), pixels: z.number().finite() }).strict().optional(),
 }).strict();
 const calibrationMeasurementsSchema = z.object({ primaryMeasurement: sourceMeasurementSchema.optional(),
-  independentMeasurements: z.array(sourceMeasurementSchema).max(8).optional() });
+  independentMeasurements: z.array(sourceMeasurementSchema).max(32).optional() });
 
 const distance = (a: { x: number; y: number }, b: { x: number; y: number }) => Math.hypot(b.x - a.x, b.y - a.y);
 
@@ -38,13 +40,15 @@ export function validateSourceMeasurements(calibration: FloorPlanSourceCalibrati
 }
 
 function isIndependent(calibration: FloorPlanSourceCalibrationV2, measurement: FloorPlanSourceMeasurementV2) {
+  const original=(point:{x:number;y:number})=>calibration.photoCorrection?originalPhotoPoint(calibration.photoCorrection.constraints,point):point;
+  const apart=(a:{x:number;y:number},b:{x:number;y:number})=>distance(original(a),original(b));
   const primary = calibration.primaryMeasurement;
   if (!primary) {
-    return !(calibration.controlPoints.some(({ sourcePx }) => distance(sourcePx, measurement.firstPx) <= 3) &&
-      calibration.controlPoints.some(({ sourcePx }) => distance(sourcePx, measurement.secondPx) <= 3));
+    return !(calibration.controlPoints.some(({ sourcePx }) => apart(sourcePx, measurement.firstPx) <= 3) &&
+      calibration.controlPoints.some(({ sourcePx }) => apart(sourcePx, measurement.secondPx) <= 3));
   }
-  return !((distance(primary.firstPx, measurement.firstPx) <= 3 && distance(primary.secondPx, measurement.secondPx) <= 3) ||
-    (distance(primary.secondPx, measurement.firstPx) <= 3 && distance(primary.firstPx, measurement.secondPx) <= 3));
+  return !((apart(primary.firstPx, measurement.firstPx) <= 3 && apart(primary.secondPx, measurement.secondPx) <= 3) ||
+    (apart(primary.secondPx, measurement.firstPx) <= 3 && apart(primary.firstPx, measurement.secondPx) <= 3));
 }
 
 /** Length disagreement in the measured direction; never fits or warps geometry. */
@@ -54,7 +58,15 @@ export function evaluateSourceMeasurement(calibration: FloorPlanSourceCalibratio
   const lengthMm = first && second ? Math.hypot(second.xMm - first.xMm, second.zMm - first.zMm) : NaN;
   const sourceLengthPx = distance(measurement.firstPx, measurement.secondPx);
   const residualMm = lengthMm - measurement.confirmedLengthMm;
-  const residualPx = residualMm * sourceLengthPx / lengthMm;
+  let residualPx = residualMm * sourceLengthPx / lengthMm;
+  const projection=calibration.photoCorrection?buildFloorPlanSourceProjection(calibration):null;
+  if(projection && first && second && lengthMm>0) {
+    const ratio=measurement.confirmedLengthMm/lengthMm;
+    const a=projection.project({xMm:second.xMm+(first.xMm-second.xMm)*ratio,zMm:second.zMm+(first.zMm-second.zMm)*ratio});
+    const b=projection.project({xMm:first.xMm+(second.xMm-first.xMm)*ratio,zMm:first.zMm+(second.zMm-first.zMm)*ratio});
+    const original=(point:{x:number;y:number})=>calibration.photoCorrection?originalPhotoPoint(calibration.photoCorrection.constraints,point):point;
+    residualPx=Math.sign(residualMm)*Math.max(distance(original({x:a.xPx,y:a.yPx}),original(measurement.firstPx)),distance(original({x:b.xPx,y:b.yPx}),original(measurement.secondPx)));
+  }
   const tolerancePx = measurement.sourceQuality === "clean" ? 2 : 3;
   const independent = isIndependent(calibration, measurement);
   return { lengthMm, residualMm, residualPx, tolerancePx, independent,
