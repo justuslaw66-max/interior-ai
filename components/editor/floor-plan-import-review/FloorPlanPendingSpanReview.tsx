@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import type { FloorPlanDocumentV2 } from "@/lib/floor-plan-document-v2";
-import { saveSourceReviewSpan,type SourceSpanKind } from "@/lib/floor-plan-source-span-review";
+import { saveSourceReviewSpan,INTERIOR_ITEM_REVIEW_CONFIGURATION,type SourceSpanKind } from "@/lib/floor-plan-source-span-review";
 
 type Props={document:FloorPlanDocumentV2;floorId:string;sourceId:string;
   page:{pageNumber:number;widthPx:number;heightPx:number}|null;points:Array<{x:number;y:number}>;
@@ -25,13 +25,15 @@ export default function FloorPlanPendingSpanReview(props:Props) {
       <p>Mark a missing span, or correct a proposal, even before scale and walls exist. These purple reference marks stay pending; they do not close a room or create an opening.</p>
       <label>Source proposal<select aria-label="Source span to correct" className={`${control} block w-full`} value={selected} onChange={e=>{
         const id=e.target.value,span=spans.find(a=>a.id===id);setSelected(id);setMessage(null);
+        setKind(span?.configurationId===INTERIOR_ITEM_REVIEW_CONFIGURATION?"interior_item":id?"unknown":"boundary");
         props.onSelect(id,span?.geometry.kind==="source_drawing"?span.geometry.points.map(p=>({x:p.x,y:p.y})):[]);
       }}>
         <option value="">Mark a new unresolved span</option>{spans.map((a,i)=><option key={a.id} value={a.id}>{i+1}. {a.text||a.id}</option>)}
       </select></label>
       <label>What is visible?<select aria-label="Pending source span kind" className={`${control} ml-2`} value={kind} onChange={e=>{
-        const value=e.target.value;if(value==="boundary"||value==="door"||value==="window"||value==="unknown")setKind(value);
-      }}><option value="boundary">Boundary</option><option value="door">Doorway</option><option value="window">Window</option><option value="unknown">Uncertain mark</option></select></label>
+        const value=e.target.value;if(value==="boundary"||value==="door"||value==="window"||value==="interior_item"||value==="unknown")setKind(value);
+      }}><option value="boundary">Boundary</option><option value="door">Doorway</option><option value="window">Window</option><option value="interior_item">Interior item (not an opening)</option><option value="unknown">Uncertain mark</option></select></label>
+      {kind==="interior_item"?<p>{/^source-proposal:\d+:opening:\d+$/.test(selected)?"This excludes the selected opening proposal from a separate corrected review.":"This records an interior item as a reference mark."} Nearby marks and existing geometry stay unchanged.</p>:null}
       <button type="button" className={control} onClick={props.onPick}>Pick pending span endpoints</button>
       <p>{props.points.length}/2 endpoints selected on the source above. Selecting a proposal highlights it and loads its endpoints; pick again to adjust them.</p>
       <label>Review note<input aria-label="Pending source span note" className={`${control} block w-full`} value={note} maxLength={500} onChange={e=>setNote(e.target.value)}/></label>

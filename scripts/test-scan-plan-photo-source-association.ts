@@ -5,6 +5,8 @@ import { mergePhotoReferenceReview } from "../lib/floor-plan-imports/photo-refer
 import { acceptedPhotoFixture } from "./fixtures/scan-to-editable-plan/photo-calibration";
 import { inversePhotoMatrix,mapPhotoPoint } from "../lib/floor-plan-photo-math";
 import { compileFloorPlanDocumentV2 } from "../lib/floor-plan-compiler-v2";
+import { saveSourceReviewSpan } from "../lib/floor-plan-source-span-review";
+import { applySourceOpeningReviews } from "../lib/floor-plan-imports/source-opening-review";
 import type { RegisteredPageEvidence,SourceVectorSegment } from "../lib/floor-plan-imports/deterministic-evidence";
 const segment=(id:string,y:number,x=0,end=200):SourceVectorSegment=>({id,pageNumber:1,start:{x,y},end:{x:end,y},strokeWidthPx:1,confidence:1,evidenceKind:"raster_linework"});
 const page:RegisteredPageEvidence={pageNumber:1,widthPx:300,heightPx:400,vectorSegments:[segment("ruler",20),segment("wall",24)],vectorPaths:[],text:[],
@@ -79,3 +81,31 @@ opening.provenance.reviewHistory=[{id:"consumer-door",action:"corrected",reviewe
 opening.geometry.points[0].x+=2;
 assert.deepEqual(mergePhotoReferenceReview([opening],evidence,photo,20).find(a=>a.id===opening.id),opening,"Pixel refinements cannot overwrite newer consumer opening endpoints.");
 console.log("PASS: OCR/wall associations, unresolved raster boundaries, multi-rail abstention, gap preservation, original-frame mapping and protected consumer edits.");
+
+const itemDocument=acceptedPhotoFixture(),itemFloor=itemDocument.floors[0];
+itemFloor.annotations=[opening];
+const reviewInput={document:itemDocument,floorId:itemFloor.id,sourceId:photo.sourceId,
+  page:{pageNumber:photo.pageNumber,widthPx:photo.imageWidthPx,heightPx:photo.imageHeightPx},
+  annotationId:opening.id,points:opening.geometry.points,note:"An interior item, not a window",at:"2026-09-16T01:00:00Z"};
+const reviewedItem=saveSourceReviewSpan({...reviewInput,kind:"interior_item"});
+const reviewedMarks=reviewedItem.floors[0].annotations;
+assert.match(reviewedMarks[0].text,/Reviewed interior item, not an opening/);
+assert.deepEqual(reviewedMarks[0].provenance.evidence.slice(0,-1),opening.provenance.evidence,"Retain the rejected proposal's evidence.");
+const semanticBefore=JSON.stringify(evidence.semantics);
+evidence.semantics.openingSymbols.push({...evidence.semantics.openingSymbols[0],kind:"window"});
+const withFollowing=JSON.stringify(evidence.semantics);
+const filtered=applySourceOpeningReviews(evidence.semantics,reviewedMarks,photo.sourceId,photo.pageNumber);
+assert.equal(filtered.openingSymbols.length,2,"Preserve ordinal identities of subsequent proposals.");
+assert.equal(filtered.openingSymbols[0].confidence,0);assert.equal(filtered.openingSymbols[0].spanStart,undefined);
+assert.deepEqual(filtered.openingSymbols[1],evidence.semantics.openingSymbols[1]);
+assert.equal(JSON.stringify(evidence.semantics),withFollowing,"Never mutate retained recognition evidence.");
+for(const [source,pageNumber] of [["other-source",photo.pageNumber],[photo.sourceId,photo.pageNumber+1]] as const)
+  assert.equal(applySourceOpeningReviews(evidence.semantics,reviewedMarks,source,pageNumber).openingSymbols[0].confidence,0.55);
+assert.equal(applySourceOpeningReviews(evidence.semantics,[opening],photo.sourceId,photo.pageNumber).openingSymbols[0].confidence,0.55);
+const reversed=saveSourceReviewSpan({...reviewInput,document:reviewedItem,kind:"window",note:"Reclassified after closer source review"});
+assert.equal(reversed.floors[0].annotations[0].configurationId,undefined);
+assert.equal(applySourceOpeningReviews(evidence.semantics,reversed.floors[0].annotations,photo.sourceId,photo.pageNumber).openingSymbols[0].confidence,0.55);
+assert.deepEqual(reviewedItem.floors[0].walls,itemFloor.walls);assert.deepEqual(reviewedItem.floors[0].calibrations,itemFloor.calibrations);
+assert.equal(JSON.stringify({...evidence.semantics,openingSymbols:evidence.semantics.openingSymbols.slice(0,1)}),semanticBefore);
+assert.deepEqual(mergePhotoReferenceReview(reviewedMarks,evidence,photo,20).find(a=>a.id===opening.id),reviewedMarks[0]);
+console.log("PASS: interior-item review suppresses only its opening proposal; raw evidence, later IDs, source/page scoping, geometry and reversible classification remain intact.");

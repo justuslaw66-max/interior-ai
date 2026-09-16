@@ -12,6 +12,7 @@ import { restorePhotoCandidateFrame } from "./photo-candidate-frame";
 import { compileCandidateFloorPlanDocumentV2 } from "./validation";
 import { reconcileFloorPlanImportReadinessIssues } from "./readiness";
 import { mergePhotoReferenceReview } from "./photo-reference-review";
+import { applySourceOpeningReviews } from "./source-opening-review";
 
 function reviewedPhotoScale(calibration:FloorPlanSourceCalibrationV2) {
   const c=calibration.photoCorrection;if(!c)throw new Error("Accept a supported photo correction first.");
@@ -45,7 +46,8 @@ export async function recomputeCorrectedPhoto(input:{original:FloorPlanDocumentV
   if(!detected)throw new Error("Local extraction did not return the corrected page.");
   const freshDimensions=detected.semantics.dimensionLabels;
   detected.originalPixelMapping=multiplyPhotoMatrices(correction.constraints.originalFrame?.renderedToOriginal??[1,0,0,0,1,0,0,0,1],inversePhotoMatrix(correction.originalToCorrected));
-  detected.semantics=correctedPhotoObservations(prior.semantics,correction);
+  detected.semantics=correctedPhotoObservations(applySourceOpeningReviews(prior.semantics,
+    input.original.floors.flatMap(f=>f.annotations),calibration.sourceId,calibration.pageNumber),correction);
   // Explicitly reviewed source readings drive calibration. Fresh OCR remains diagnostic, never silently authoritative.
   result.sourceManifest={...result.sourceManifest,photoReview:{kind:"consumer_confirmed_photo_correction",
     originalSha256:input.source.sha256,calibrationId:calibration.id,freshCorrectedDimensionCount:freshDimensions.length,
