@@ -148,6 +148,11 @@ for (const change of ["close", "replace"] as const) {
 for (const action of ["candidate", "retry-detection", "source", "select-page"] as const) {
   test(`A delayed ${action} response cannot alter a replacement upload`, async ({ page }, info) => {
     await mountWorkspace(page, action === "select-page" ? "selecting_page" : action === "candidate" ? "needs_review" : action === "retry-detection" ? "failed" : "ready");
+    // Deliver the obsolete response even when production correctly aborts its transport.
+    await page.evaluate((action) => {
+      const fetch = window.fetch.bind(window);
+      window.fetch = (input, init) => fetch(input, typeof input === "string" && input.endsWith(`/original-job/${action}`) ? { ...init, signal: undefined } : init);
+    }, action);
     let release!: () => void, started!: () => void;
     const pending = new Promise<void>((resolve) => { release = resolve; });
     const received = new Promise<void>((resolve) => { started = resolve; });
@@ -175,6 +180,25 @@ for (const action of ["candidate", "retry-detection", "source", "select-page"] a
     await fs.writeFile(info.outputPath("late-action.json"), JSON.stringify({ action, oldFollowups, url: page.url() }, null, 2));
   });
 }
+
+test("Replacing an upload cancels its pending detection retry", async ({ page }, info) => {
+  await mountWorkspace(page, "failed");
+  let release!: () => void, started!: () => void;
+  const pending = new Promise<void>((resolve) => { release = resolve; });
+  const received = new Promise<void>((resolve) => { started = resolve; });
+  await page.route("**/original-job/retry-detection", async (route) => {
+    started(); await pending; await route.fulfill({ json: { job: { id: "obsolete-retry" } } });
+  });
+  const cancelled = page.waitForEvent("requestfailed", (request) => request.url().endsWith("/original-job/retry-detection"));
+  await page.getByRole("button", { name: "Retry with improved detection", exact: true }).click();
+  await received;
+  await page.getByRole("button", { name: "Replace upload", exact: true }).click();
+  const request = await cancelled; release();
+  await expect(page.getByTestId("floor-plan-import-ready")).toBeVisible();
+  expect(await page.evaluate((key) => localStorage.getItem(key), ACTIVE_FLOOR_PLAN_IMPORT_STORAGE_KEY)).toBe("replacement-job");
+  expect(request.failure()).not.toBeNull();
+  await fs.writeFile(info.outputPath("cancelled-detection-retry.json"), JSON.stringify({ failure: request.failure(), active: "replacement-job" }, null, 2));
+});
 
 test("Version conflict requires reopening the latest candidate before confirmation", async ({ page }, info) => {
   const server = await mountWorkspace(page);
