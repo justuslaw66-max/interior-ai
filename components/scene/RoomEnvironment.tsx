@@ -4,8 +4,8 @@ import * as THREE from "three";
 import { useFrame, useThree } from "@react-three/fiber";
 import { useMemo, useEffect, useRef } from "react";
 import { resolveFloorUndersideCutawayElevationMeters } from "@/lib/floor-plan-scene-elevation";
+import { CeilingShadowOccluder } from "./CeilingShadowOccluder";
 export const ROOM_FLOOR_SURFACE_OFFSET = 0.006;
-
 type RoomProps = {
   floorWorldY?: number;
   width?: number;
@@ -37,7 +37,6 @@ export function Room({
   const { camera, gl } = useThree();
   const floorTexture = useMemo(() => {
     if (renderQuality === "lite") return null;
-
     const size = 1024;
     const canvas = document.createElement("canvas");
     canvas.width = size;
@@ -161,6 +160,7 @@ export function Room({
   const backZ = halfD - wallThickness / 2;
   const leftX = -halfW + wallThickness / 2;
   const rightX = halfW - wallThickness / 2;
+  const ceilingShadowOverhang = height * 2;
   useFrame(() => {
     const outsideBuffer = 0.02;
 
@@ -221,9 +221,12 @@ export function Room({
           depthWrite={floorOpacity > 0.34}
         />
       </mesh>
-
+      <CeilingShadowOccluder
+        boxSize={[width + ceilingShadowOverhang * 2, wallThickness, depth + ceilingShadowOverhang * 2]}
+        position={[0, height + wallThickness / 2, 0]}
+      />
       {ceilingVisible && (
-        <mesh ref={ceilingRef} receiveShadow castShadow position={[0, height + wallThickness / 2, 0]}>
+        <mesh ref={ceilingRef} receiveShadow position={[0, height + wallThickness / 2, 0]}>
           <boxGeometry args={[width, wallThickness, depth]} />
           <primitive object={ceilingMat} attach="material" />
         </mesh>
@@ -240,10 +243,7 @@ export function Room({
       </mesh>
 
       <mesh
-        ref={backWallRef}
-        receiveShadow
-        castShadow
-        position={[0, height / 2, backZ]}
+        ref={backWallRef} receiveShadow castShadow position={[0, height / 2, backZ]}
       >
         <boxGeometry args={[width, height, wallThickness]} />
         <primitive object={wallMat} attach="material" />

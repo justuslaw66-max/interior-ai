@@ -20,6 +20,10 @@ const regionSource = readSource(
 const canvasSource = readSource(
   "components/editor/design-page/DesignSceneCanvas.tsx"
 );
+const workspacePlanningGridSource =
+  canvasSource.match(
+    /function WorkspacePlanningGrid\([\s\S]*?\n}\n\nexport function DesignSceneCanvas/
+  )?.[0] ?? "";
 const lightingSystemSource = readSource(
   "components/editor/design-page/lighting/LightingSystem.tsx"
 );
@@ -686,8 +690,8 @@ assert.match(
 );
 assert.match(
   [canvasSource, lightingSystemSource, sunControllerSource].join("\n"),
-  /receiveShadow=\{shadowsEnabled\}[\s\S]*const effectiveShadowsEnabled =[\s\S]*viewMode === "3d" && lighting\.shadows\.enabled[\s\S]*data-shadow-maps-enabled=[\s\S]*shadows=\{effectiveShadowsEnabled \? QUALITY_SHADOW_FILTER : false\}[\s\S]*<LightingSystem[\s\S]*<SunController[\s\S]*castShadow=\{lighting\.sun\.castShadow && lighting\.shadows\.enabled\}/,
-  "Quality-mode 3D should provide user-controlled shadow maps, a matching key light, and a shadow-receiving workspace plane."
+  /const effectiveShadowsEnabled =[\s\S]*viewMode === "3d" && lighting\.shadows\.enabled[\s\S]*data-shadow-maps-enabled=[\s\S]*shadows=\{effectiveShadowsEnabled \? QUALITY_SHADOW_FILTER : false\}[\s\S]*<LightingSystem[\s\S]*<SunController[\s\S]*castShadow=\{lighting\.sun\.castShadow && lighting\.shadows\.enabled\}/,
+  "Quality-mode 3D should provide user-controlled shadow maps and a matching key light."
 );
 assert.match(
   canvasSource,
@@ -696,8 +700,17 @@ assert.match(
 );
 assert.match(
   canvasSource,
-  /WORKSPACE_GRID_MIN_SIZE_METERS = 160[\s\S]*<meshBasicMaterial[\s\S]*color="#f3f5f5"[\s\S]*toneMapped=\{false\}[\s\S]*<shadowMaterial[\s\S]*opacity=\{shadowsEnabled \? 0\.08 : 0\}[\s\S]*<Grid[\s\S]*args=\{\[size, size\]\}[\s\S]*fadeDistance=\{WORKSPACE_GRID_FADE_DISTANCE_METERS\}[\s\S]*workspaceGridSize/,
-  "The 3D grid should cover a full light workspace, retain soft grounding shadows, and fade before its boundary."
+  /WORKSPACE_GRID_MIN_SIZE_METERS = 160[\s\S]*<meshBasicMaterial[\s\S]*color="#f3f5f5"[\s\S]*toneMapped=\{false\}[\s\S]*<Grid[\s\S]*args=\{\[size, size\]\}[\s\S]*fadeDistance=\{WORKSPACE_GRID_FADE_DISTANCE_METERS\}[\s\S]*workspaceGridSize/,
+  "The 3D grid should cover a full light workspace and fade before its boundary."
+);
+assert.ok(
+  workspacePlanningGridSource.length > 0,
+  "The workspace planning grid implementation should remain directly testable."
+);
+assert.doesNotMatch(
+  workspacePlanningGridSource,
+  /receiveShadow|<shadowMaterial/,
+  "The nonphysical workspace grid must not catch shadows from room or ceiling geometry."
 );
 assert.match(
   canvasSource,
@@ -711,8 +724,8 @@ assert.match(
 );
 assert.match(
   [canvasSource, sunControllerSource].join("\n"),
-  /shadowCameraHalfSpan[\s\S]*presentationBounds\.widthMeters[\s\S]*presentationBounds\.depthMeters[\s\S]*shadow-mapSize-width=\{lighting\.shadows\.mapSize\}[\s\S]*shadow-camera-left=\{-shadowCameraHalfSpan\}[\s\S]*shadow-camera-right=\{shadowCameraHalfSpan\}/,
-  "Quality-mode 3D shadows should use a high-resolution map fitted to the visible plan instead of a low-resolution fixed frustum."
+  /const ceilingShadowOverhang = planBounds\.roomHeight \* 2;[\s\S]*Math\.hypot\([\s\S]*presentationBounds\.widthMeters,[\s\S]*presentationBounds\.depthMeters[\s\S]*?\)\s*\/\s*2\s*\+[\s\S]*ceilingShadowOverhang \+[\s\S]*SHADOW_CAMERA_PADDING_METERS[\s\S]*shadow-mapSize-width=\{lighting\.shadows\.mapSize\}[\s\S]*shadow-camera-left=\{-shadowCameraHalfSpan\}[\s\S]*shadow-camera-right=\{shadowCameraHalfSpan\}/,
+  "Quality-mode 3D shadows should fit the plan diagonal and bounded ceiling occluders inside the high-resolution shadow camera."
 );
 assert.match(
   [canvasSource, sunControllerSource].join("\n"),
