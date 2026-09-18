@@ -580,17 +580,14 @@ export function useDesignPageOnboarding({
             ? mapToTopCategory(catalogItem.category, catalogItem) === "sofa"
             : false;
         });
-        const rugItem = state.items.find(
-          (item) => CATALOG_ITEMS[item.productId]?.category === "rug"
-        );
-        const coffeeItem = state.items.find(
-          (item) => CATALOG_ITEMS[item.productId]?.category === "coffee_table"
-        );
+        const hasCategory = (category: string) =>
+          state.items.some((item) => CATALOG_ITEMS[item.productId]?.category === category);
         const nudgeText = getNextBestActionNudge({
+          roomCount: state.designRoomCount,
           hasItems: state.items.length > 0,
           hasSofa: Boolean(sofaItem),
-          hasRug: Boolean(rugItem),
-          hasCoffeeTable: Boolean(coffeeItem),
+          hasRug: hasCategory("rug"),
+          hasCoffeeTable: hasCategory("coffee_table"),
           contentWarningCount: state.constraintResults.filter(
             (result) => result.level === "warn" || result.level === "error"
           ).length,
@@ -624,6 +621,7 @@ export function useDesignPageOnboarding({
     onboardingState.enabled,
     state.constraintResults,
     state.designId,
+    state.designRoomCount,
     state.editorMode,
     state.isClientPreview,
     state.items,

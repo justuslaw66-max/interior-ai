@@ -169,9 +169,11 @@ export function getEmptyStateCoaching(
 
 /**
  * "Next best action" nudge based on current state
- * Context-aware hints to help users when stuck
+ * Context-aware hints to help users when stuck. Every nudge is about
+ * furnishing a room, so a design without rooms gets none.
  */
 export function getNextBestActionNudge(opts: {
+  roomCount: number;
   hasItems: boolean;
   hasSofa: boolean;
   hasRug: boolean;
@@ -181,6 +183,7 @@ export function getNextBestActionNudge(opts: {
   mode: "design" | "adjust" | "buy" | "present";
 }): string | null {
   const {
+    roomCount,
     hasItems,
     hasSofa,
     hasRug,
@@ -190,8 +193,8 @@ export function getNextBestActionNudge(opts: {
     mode,
   } = opts;
 
-  if (mode === "present") {
-    return null; // No nudges in present
+  if (mode === "present" || roomCount === 0) {
+    return null; // No nudges in present or before a room exists
   }
 
   if (mode === "design" || mode === "adjust") {
