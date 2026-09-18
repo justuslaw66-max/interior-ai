@@ -872,7 +872,7 @@ export default function DesignControlsPanel({
             dark={dark}
             style={style}
             budget={budget}
-            {...{ activeRoomName, activeRoomType, activeRoomTypeLabel, roomWidth, roomDepth }}
+            {...{ activeRoomName, activeRoomType, activeRoomTypeLabel, roomWidth, roomDepth, measurementUnit }}
             roomFloorAreaSqm={getActiveSurfaceRoomFloorAreaSqm(surfaceRooms, activeRoomId)}
             activeRoomItemCount={planItemCount}
             aiLayoutProposal={aiLayoutProposal}

@@ -2053,7 +2053,7 @@
     "components/editor/DesignControlsAiPanel.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 386
+        "maximum": 383
       },
       "complexFunctions": {
         "count": 1,

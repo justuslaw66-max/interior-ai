@@ -268,6 +268,14 @@ assert.doesNotMatch(
   /\.toFixed\(\d\)\}?\s?(?:m2|m²|sqm|m)(?![A-Za-z0-9])|\}\s?(?:m2|m²|sqm)(?![A-Za-z0-9])|\{template\.(?:width|depth)\}/,
   "Plan panel lengths and areas must use the display-unit formatters, not hard-coded metres."
 );
+const aiPanelSource = readFileSync(join(process.cwd(), "components/editor/DesignControlsAiPanel.tsx"), "utf8");
+assert.doesNotMatch(
+  aiPanelSource,
+  /\.toFixed\(\d\)\}?\s?(?:m2|m²|sqm|m)(?![A-Za-z0-9])|\}\s?(?:m2|m²|sqm)(?![A-Za-z0-9])/,
+  "The AI room brief must use the display-unit formatters, not hard-coded metres."
+);
+assert.match(aiPanelSource, /formatPlanDimensionsLabel\(roomWidth, roomDepth, measurementUnit\)/);
+assert.match(aiPanelSource, /formatDisplayArea\(roomArea, measurementUnit\)/);
 
 assert.deepEqual(resolvePlanRoomSelection([], "living", false), {
   ids: ["living"],
