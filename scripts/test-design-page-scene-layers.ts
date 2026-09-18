@@ -435,7 +435,7 @@ for (const expected of [
   "<RoomRenderer2D",
   "<PlanQualityHintOverlay",
   "<HousePlanRenderer3D",
-  "<Room",
+  "<DesignSceneSingleRoom",
   "mapPlanOpeningsToRoomRenderer(plan.scene.openings)",
   "mapPlanFixedElementsToRoomRenderer(",
   "mapPlanAnnotationsToRoomRenderer(plan.scene.annotations)",
@@ -493,6 +493,16 @@ assert.match(
 );
 assert.match(
   planRendererSource,
+  /rooms\.length === 1 && \([\s\S]*?<planeGeometry args=\{\[width, depth\]\}/,
+  "A zero-room design must not render the legacy single-room floor rectangle."
+);
+assert.match(
+  planRendererSource,
+  /rooms\.length === 1 && \([\s\S]*?<Line[\s\S]*?\[-halfW, 0\.002, -halfD\]/,
+  "A zero-room design must not render the legacy single-room outline."
+);
+assert.match(
+  planRendererSource,
   /Math\.floor\(\(gridCenterX - gridWidth \/ 2\) \/ gridStep\) \* gridStep/,
   "The expanded grid should remain aligned to the global measurement grid."
 );
@@ -502,9 +512,14 @@ assert.match(
   "Whole-home structure interaction should remain disabled in present and client-preview modes."
 );
 assert.match(
-  structureSource,
-  /state\.singleRoom\.slabThickness \?\?\s*ROOM_DIMENSION_DEFAULTS\.slabThickness/,
+  readSource("components/editor/design-page/DesignSceneSingleRoom.tsx"),
+  /room\.slabThickness \?\?\s*ROOM_DIMENSION_DEFAULTS\.slabThickness/,
   "The single-room renderer should retain its default slab-thickness fallback."
+);
+assert.match(
+  structureSource,
+  /if \(state\.wholeHome\.rooms\.length > 0\)[\s\S]*?return \([\s\S]*?<DesignSceneSingleRoom[\s\S]*?\);[\s\S]*?\}[\s\S]*?return \([\s\S]*?canonicalIntegrityWarning[\s\S]*?canonicalEditingNotice/,
+  "A zero-room design must not fall through to the legacy single-room 3D renderer."
 );
 
 for (const contractName of [

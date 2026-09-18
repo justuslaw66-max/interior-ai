@@ -3192,7 +3192,7 @@ export default function RoomRenderer2D({
         </group>
       )}
 
-      {!hasHouseRooms && (
+      {rooms.length === 1 && (
         <mesh
           rotation-x={-Math.PI / 2}
           position={[0, 0.0005, 0]}
@@ -4995,7 +4995,7 @@ export default function RoomRenderer2D({
         </>
       )}
 
-      {!hasHouseRooms && (
+      {rooms.length === 1 && (
         <Line
           points={[
             [-halfW, 0.002, -halfD],

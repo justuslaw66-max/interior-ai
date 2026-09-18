@@ -208,6 +208,11 @@ assert.equal(resolveNewRoomName([living], "bedroom"), "Bedroom");
 assert.equal(resolveNewRoomName([living, bedroom], "bedroom"), "Bedroom 2");
 
 assert.deepEqual(getNextRoomPlanPosition(plan.rooms, 5, 3), { x: 8, z: 0 });
+assert.deepEqual(
+  getNextRoomPlanPosition([], 5, 3),
+  { x: 0, z: 0 },
+  "The first room drawn on a blank canvas should be centered."
+);
 
 assert.deepEqual(
   resolveFloorPlanDrawCancelDecision({

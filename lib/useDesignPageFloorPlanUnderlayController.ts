@@ -27,6 +27,7 @@ import {
   type HousePlanTemplate,
   type HousePlanTemplateApplyOptions,
 } from "@/lib/design-page-house-plan";
+import { buildPlanTemplateReplacementSnapshot } from "@/lib/design-page-plan-template-replacement";
 import {
   isTemplateFurnishingNearDoorway,
   resolveTemplateFurnishingProduct,
@@ -392,12 +393,9 @@ export function useDesignPageFloorPlanUnderlayController({
       floorCameraViewsRef.current = {};
       setViewMode("2d");
 
-      setDesignSnapshot((previous) => ({
-        ...previous,
-        version: 3,
-        rooms,
-        activeRoomId: activeTemplateRoom.id,
-      }));
+      setDesignSnapshot((previous) =>
+        buildPlanTemplateReplacementSnapshot(previous, rooms, activeTemplateRoom.id)
+      );
       history.commit();
 
       if (selectedFurnishingPack && skippedFurnishingCount > 0) {

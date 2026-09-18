@@ -112,6 +112,38 @@ runFixture("buildDuplicatedDesignData derives legacy fields from valid snapshot"
   assert.equal((data.items as Array<{ productId: string }>)[0].productId, "snapshot-product");
 });
 
+runFixture("buildDuplicatedDesignData preserves a blank-canvas snapshot", () => {
+  const snapshot: StoredDesign = {
+    version: 3,
+    activeRoomId: "",
+    rooms: [],
+    title: "Blank plan",
+  };
+
+  const data = buildDuplicatedDesignData(
+    {
+      title: "Blank plan",
+      roomWidth: 4,
+      roomDepth: 5,
+      items: [{ instanceId: "stale-item" }],
+      zones: [{ id: "stale-zone" }],
+      savedViews: [{ id: "stale-view" }],
+      snapshot,
+      style: null,
+      budget: null,
+      mode: null,
+      notes: null,
+    },
+    "user_blank"
+  );
+
+  assert.deepEqual((data.snapshot as unknown as StoredDesign).rooms, []);
+  assert.equal((data.snapshot as unknown as StoredDesign).activeRoomId, "");
+  assert.deepEqual(data.items, []);
+  assert.deepEqual(data.zones, []);
+  assert.deepEqual(data.savedViews, []);
+});
+
 runFixture("buildDuplicatedDesignData ignores invalid snapshots", () => {
   const data = buildDuplicatedDesignData(
     {

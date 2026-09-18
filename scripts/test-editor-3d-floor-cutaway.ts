@@ -130,6 +130,10 @@ const designSceneStructureLayerSource = fs.readFileSync(
   ),
   "utf8"
 );
+const designSceneSingleRoomSource = fs.readFileSync(
+  path.join(process.cwd(), "components", "editor", "design-page", "DesignSceneSingleRoom.tsx"),
+  "utf8"
+);
 const editorConfigurationSource = fs.readFileSync(
   path.join(process.cwd(), "lib", "design-page-editor-configuration.ts"),
   "utf8"
@@ -283,8 +287,13 @@ assert.match(
 
 assert.match(
   designSceneStructureLayerSource,
-  /<Room[\s\S]*?floorWorldY=\{state\.singleRoom\.floorWorldY\}/,
-  "The structure layer should pass the canonical floor plane to the single-room renderer."
+  /<DesignSceneSingleRoom[\s\S]*?room=\{state\.singleRoom\}/,
+  "The structure layer should pass the canonical single-room state to the single-room renderer."
+);
+assert.match(
+  designSceneSingleRoomSource,
+  /<Room[\s\S]*?floorWorldY=\{room\.floorWorldY\}/,
+  "The single-room renderer should pass the canonical floor plane to the room environment."
 );
 
 assert.match(

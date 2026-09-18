@@ -228,7 +228,7 @@ export function buildDesignPageViewportRegionAdapter({
               activeFloorRoomCount:
                 state.selectionInspector.activeFloorRoomCount,
               canDeleteSelectedRoom:
-                state.selectionInspector.designRoomCount > 1,
+                state.selectionInspector.designRoomCount > 0,
               selectedFixtureLight:
                 state.selectionInspector.selectedFixtureLight,
             }

@@ -215,15 +215,6 @@ export function normalizeDesignPageLocalBackup({
       };
     });
 
-    if (restoredRooms.length === 0) {
-      return {
-        format: parsed.version === 3 ? "v3" : "legacy",
-        snapshot: null,
-        savedViews,
-        cloudDesignId: null,
-      };
-    }
-
     const activeRoomExists = restoredRooms.some(
       (room) => room.id === restored.activeRoomId
     );
@@ -232,7 +223,7 @@ export function normalizeDesignPageLocalBackup({
       rooms: restoredRooms,
       activeRoomId: activeRoomExists
         ? restored.activeRoomId
-        : restoredRooms[0].id,
+        : restoredRooms[0]?.id ?? "",
     };
 
     return {

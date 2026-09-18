@@ -9,11 +9,11 @@ import HousePlanRenderer3D from "@/components/editor/renderers/HousePlanRenderer
 import PlanUnderlayRenderer2D from "@/components/editor/renderers/PlanUnderlayRenderer2D";
 import RoomRenderer2D from "@/components/editor/renderers/RoomRenderer2D";
 import { PlanQualityHintOverlay } from "@/components/editor/design-page/PlanQualityHintOverlay";
-import { Room } from "@/components/scene/RoomEnvironment";
 import {
-  ROOM_DIMENSION_DEFAULTS,
-  type HousePlanRoom2D,
-} from "@/lib/design-page-house-plan";
+  DesignSceneSingleRoom,
+  type DesignSceneSingleRoomState,
+} from "@/components/editor/design-page/DesignSceneSingleRoom";
+import type { HousePlanRoom2D } from "@/lib/design-page-house-plan";
 import {
   mapPlanAnnotationsToRoomRenderer,
   mapPlanFixedElementsToRoomRenderer,
@@ -36,7 +36,7 @@ import { CANONICAL_ROOM_GEOMETRY_LOCK_REASON } from "@/lib/floor-plan-topology-e
 type UnderlayRendererProps = ComponentProps<typeof PlanUnderlayRenderer2D>;
 type PlanRendererProps = ComponentProps<typeof RoomRenderer2D>;
 type WholeHomeRendererProps = ComponentProps<typeof HousePlanRenderer3D>;
-type SingleRoomRendererProps = ComponentProps<typeof Room>;
+type SingleRoomRendererProps = ComponentProps<typeof DesignSceneSingleRoom>;
 
 export type DesignSceneStructureLayerState = {
   viewMode: EditorViewMode;
@@ -81,19 +81,7 @@ export type DesignSceneStructureLayerState = {
     selectedOpeningId: string | null;
     selectedSurfaceTarget: WholeHomeRendererProps["selectedSurfaceTarget"];
   };
-  singleRoom: {
-    floorWorldY: number;
-    width: number;
-    depth: number;
-    height: number;
-    wallThickness: number;
-    slabThickness?: number;
-    wallOpacity: number;
-    floorOpacity: number;
-    ceilingOpacity: number;
-    ceilingVisible: boolean;
-    ceilingColor: string;
-  };
+  singleRoom: DesignSceneSingleRoomState;
 };
 export type DesignSceneStructureLayerConfiguration = {
   editorMode: DesignPageEditorMode;
@@ -434,23 +422,18 @@ export function DesignSceneStructureLayer({
       </>
     );
   }
+  if (state.wholeHome.rooms.length > 0) {
+    return (
+      <DesignSceneSingleRoom
+        room={state.singleRoom}
+        renderQuality={configuration.renderQuality}
+      />
+    );
+  }
   return (
-    <Room
-      floorWorldY={state.singleRoom.floorWorldY}
-      width={state.singleRoom.width}
-      depth={state.singleRoom.depth}
-      height={state.singleRoom.height}
-      wallThickness={state.singleRoom.wallThickness}
-      slabThickness={
-        state.singleRoom.slabThickness ??
-        ROOM_DIMENSION_DEFAULTS.slabThickness
-      }
-      wallOpacity={state.singleRoom.wallOpacity}
-      floorOpacity={state.singleRoom.floorOpacity}
-      ceilingOpacity={state.singleRoom.ceilingOpacity}
-      ceilingVisible={state.singleRoom.ceilingVisible}
-      ceilingColor={state.singleRoom.ceilingColor}
-      renderQuality={configuration.renderQuality}
-    />
+    <>
+      {canonicalIntegrityWarning}
+      {canonicalEditingNotice}
+    </>
   );
 }

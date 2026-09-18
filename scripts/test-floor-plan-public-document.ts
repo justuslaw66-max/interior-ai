@@ -597,6 +597,29 @@ for (const rawOuterValue of [
   );
 }
 
+const blankTransport = projectSharedDesignTransport({
+  ...rawOuterInput,
+  title: "Blank shared plan",
+  roomWidth: 4,
+  roomDepth: 5,
+  style: null,
+  budget: null,
+  notes: null,
+  snapshot: {
+    version: 3,
+    activeRoomId: "",
+    rooms: [],
+    title: "Blank shared plan",
+  } satisfies StoredDesign,
+});
+assert.deepEqual(blankTransport.snapshot.rooms, []);
+assert.equal(blankTransport.snapshot.activeRoomId, "");
+assert.equal(blankTransport.roomWidth, 4);
+assert.equal(blankTransport.roomDepth, 5);
+assert.deepEqual(blankTransport.items, []);
+assert.deepEqual(blankTransport.zones, []);
+assert.deepEqual(blankTransport.savedViews, []);
+
 const RAW_OUTER_PRIVATE_SENTINEL = "PRIVATE RAW OUTER NOTES MUST NEVER BE PUBLIC";
 const changedPrivateOuterInput = {
   ...rawOuterInput,
