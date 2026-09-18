@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 
 import {
@@ -445,7 +445,6 @@ for (const expected of [
   "<RoomRenderer2D",
   "<PlanQualityHintOverlay",
   "<HousePlanRenderer3D",
-  "<DesignSceneSingleRoom",
   "mapPlanOpeningsToRoomRenderer(plan.scene.openings)",
   "mapPlanFixedElementsToRoomRenderer(",
   "mapPlanAnnotationsToRoomRenderer(plan.scene.annotations)",
@@ -594,14 +593,34 @@ assert.match(
   "Whole-home structure interaction should remain disabled in present and client-preview modes."
 );
 assert.match(
-  readSource("components/editor/design-page/DesignSceneSingleRoom.tsx"),
-  /room\.slabThickness \?\?\s*ROOM_DIMENSION_DEFAULTS\.slabThickness/,
-  "The single-room renderer should retain its default slab-thickness fallback."
+  housePlanRenderer3DSource,
+  /const FLOOR_THICKNESS_METERS = ROOM_DIMENSION_DEFAULTS\.slabThickness;[\s\S]*?room\.slabThickness \?\? FLOOR_THICKNESS_METERS/,
+  "The house-plan renderer should retain its default slab-thickness fallback."
 );
 assert.match(
   structureSource,
-  /if \(state\.wholeHome\.rooms\.length > 0\)[\s\S]*?return \([\s\S]*?<DesignSceneSingleRoom[\s\S]*?\);[\s\S]*?\}[\s\S]*?return \([\s\S]*?canonicalIntegrityWarning[\s\S]*?canonicalEditingNotice/,
-  "A zero-room design must not fall through to the legacy single-room 3D renderer."
+  /if \(state\.wholeHome\.rooms\.length > 0\) \{[\s\S]*?return \([\s\S]*?<HousePlanRenderer3D[\s\S]*?\{canonicalIntegrityWarning\}\s*\{canonicalEditingNotice\}[\s\S]*?\);\s*\}\s*return \(\s*<>\s*\{canonicalIntegrityWarning\}\s*\{canonicalEditingNotice\}\s*<\/>\s*\);\s*\}\s*$/,
+  "Every design with rooms should render through the house-plan scene, and a zero-room design should render only the canonical notices."
+);
+assert.doesNotMatch(
+  structureSource,
+  /DesignSceneSingleRoom|RoomEnvironment|singleRoom|wholeHome\.enabled/,
+  "The legacy single-room 3D shell must not return to the structure layer."
+);
+for (const retiredShell of [
+  "components/editor/design-page/DesignSceneSingleRoom.tsx",
+  "components/scene/RoomEnvironment.tsx",
+]) {
+  assert.equal(
+    existsSync(join(root, retiredShell)),
+    false,
+    `${retiredShell} should stay deleted now that single rooms use the house-plan scene.`
+  );
+}
+assert.doesNotMatch(
+  regionSource,
+  /wholeHome\.enabled/,
+  "Active-room focus should depend on the room count, not a renderer-routing flag."
 );
 
 for (const contractName of [
@@ -711,13 +730,32 @@ assert.doesNotMatch(
 
 assert.match(
   adapterSource,
-  /structure:\s*\{[\s\S]*viewMode: editor\.viewMode,[\s\S]*underlay: plan\.underlay,[\s\S]*scene: plan\.editorScene,[\s\S]*enabled: room\.wholeHomeEnabled,[\s\S]*width: room\.width,/,
-  "The scene adapter should map live 2D, whole-home, and single-room structure state."
+  /structure:\s*\{[\s\S]*viewMode: editor\.viewMode,[\s\S]*underlay: plan\.underlay,[\s\S]*scene: plan\.editorScene,[\s\S]*wholeHome: \{\s*rooms: room\.wholeHomeRooms,[\s\S]*?wallHeight: room\.height/,
+  "The scene adapter should map live 2D and house-plan structure state."
+);
+assert.doesNotMatch(
+  adapterSource,
+  /singleRoom|wholeHomeEnabled/,
+  "The scene adapter should not project state for the retired single-room shell."
+);
+const structureConfigurationSource =
+  adapterSource.match(
+    /structure:\s*\{\s*editorMode: editor\.editorMode,[\s\S]*?gridBounds: plan\.fitBounds,\s*\},\s*\},\s*guidance:/
+  )?.[0] ?? "";
+assert.match(
+  structureConfigurationSource,
+  /editorMode: editor\.editorMode,[\s\S]*isClientPreview: editor\.isClientPreview,[\s\S]*layers: plan\.layers,/,
+  "The scene adapter should map editor and plan structure configuration."
+);
+assert.doesNotMatch(
+  structureConfigurationSource,
+  /renderQuality/,
+  "The structure layer draws no quality-dependent shell, so it should not receive render quality."
 );
 assert.match(
   adapterSource,
-  /structure:\s*\{[\s\S]*editorMode: editor\.editorMode,[\s\S]*isClientPreview: editor\.isClientPreview,[\s\S]*layers: plan\.layers,[\s\S]*renderQuality: scene\.renderQuality/,
-  "The scene adapter should map editor, plan, and render structure configuration."
+  /items: \{[\s\S]*?renderQuality: scene\.renderQuality,/,
+  "Scene items should keep receiving the active render quality."
 );
 assert.match(
   adapterSource,

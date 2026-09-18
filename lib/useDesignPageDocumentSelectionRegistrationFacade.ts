@@ -95,8 +95,6 @@ export function useDesignPageDocumentSelectionRegistrationFacade({
       },
       editor: {
         viewMode: base.state.editor.viewMode,
-        activeSurfaceTarget: editorShell.state.surface.activeSurfaceTarget,
-        surfaceBrushActive: editorShell.state.surface.surfaceBrushActive,
       },
       ai: { pendingProposal: pendingAiLayoutProposal },
       surface: {

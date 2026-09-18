@@ -23,7 +23,6 @@ import type {
   DesignSnapshot,
   RoomSnapshot,
 } from "@/lib/room-types";
-import type { SurfaceTargetMode } from "@/lib/useDesignPageSurfaceActions";
 import { useDesignPageScenePerformance } from "@/lib/useDesignPageScenePerformance";
 
 type HousePlanRoom = ReturnType<typeof buildHousePlan2D>["rooms"][number];
@@ -72,8 +71,6 @@ export type UseDesignPageSceneReadModelInput = {
     };
     editor: {
       viewMode: EditorViewMode;
-      activeSurfaceTarget: SurfaceTargetMode;
-      surfaceBrushActive: boolean;
     };
     ai: {
       pendingProposal: PendingAiLayoutProposal | null;
@@ -100,7 +97,7 @@ export function useDesignPageSceneReadModel({
       hiddenFloorLevels,
       selectedPlanRoomId,
     },
-    editor: { viewMode, activeSurfaceTarget, surfaceBrushActive },
+    editor: { viewMode },
     ai: { pendingProposal },
   } = state;
   const { setSelectedPlanRoomId, showToast } = actions;
@@ -111,26 +108,6 @@ export function useDesignPageSceneReadModel({
   const previousSelectedPlanActiveRoomIdRef = useRef<string | null>(null);
 
   const hasWholeHousePlan = housePlanRooms.length > 1;
-  const hasWallSurfaceFinishes = designSnapshot.rooms.some((room) => {
-    const surfaces = room.surfaces ?? room.surfaceFinishes;
-    const defaultWall = surfaces?.walls?.default;
-    const faceSettings = Object.values(surfaces?.walls?.faces ?? {});
-    return Boolean(
-      surfaces?.wallMaterialId ||
-        defaultWall?.materialId ||
-        defaultWall?.paintColorHex ||
-        faceSettings.some(
-          (settings) => settings.materialId || settings.paintColorHex
-        )
-    );
-  });
-  const usesHousePlanScene =
-    stackedFloorView ||
-    hasWholeHousePlan ||
-    activeSurfaceTarget !== "floor" ||
-    surfaceBrushActive ||
-    hasWallSurfaceFinishes ||
-    housePlanRooms.some((room) => room.shape !== "rectangle");
   const sceneHousePlanRooms3D = useMemo(
     () =>
       stackedFloorView
@@ -312,7 +289,6 @@ export function useDesignPageSceneReadModel({
     },
     derived: {
       hasWholeHousePlan,
-      usesHousePlanScene,
       sceneHousePlanRooms3D,
       houseRoomById,
       selectedPlanRoomContext,

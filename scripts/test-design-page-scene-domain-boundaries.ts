@@ -271,6 +271,11 @@ assert.doesNotMatch(
   /viewMode/,
   "The canonical item model must not vary by active renderer."
 );
+assert.doesNotMatch(
+  readModelSource,
+  /usesHousePlanScene|hasWallSurfaceFinishes|activeSurfaceTarget|surfaceBrushActive/,
+  "Every design with rooms renders through the house-plan scene, so surface tools and finishes must not route the renderer."
+);
 assert.match(itemLayerSource, /projectSceneRoomItem\(\s*sceneEntry,\s*projection/);
 assert.match(itemLayerSource, /resolveSceneItemViewContinuity\(sceneEntry/);
 assert.match(itemLayerSource, /sceneLayerId:\s*continuity\.layerId/);

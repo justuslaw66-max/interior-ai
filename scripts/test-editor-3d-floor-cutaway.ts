@@ -116,10 +116,6 @@ const cameraNavigationSource = fs.readFileSync(
   path.join(process.cwd(), "lib", "useDesignPageCameraNavigation.ts"),
   "utf8"
 );
-const sceneRegionAdapterSource = fs.readFileSync(
-  path.join(process.cwd(), "lib", "design-page-scene-region-adapter.ts"),
-  "utf8"
-);
 const designSceneStructureLayerSource = fs.readFileSync(
   path.join(
     process.cwd(),
@@ -128,10 +124,6 @@ const designSceneStructureLayerSource = fs.readFileSync(
     "design-page",
     "DesignSceneStructureLayer.tsx"
   ),
-  "utf8"
-);
-const designSceneSingleRoomSource = fs.readFileSync(
-  path.join(process.cwd(), "components", "editor", "design-page", "DesignSceneSingleRoom.tsx"),
   "utf8"
 );
 const editorConfigurationSource = fs.readFileSync(
@@ -146,10 +138,6 @@ const designSceneCanvasSource = fs.readFileSync(
     "design-page",
     "DesignSceneCanvas.tsx"
   ),
-  "utf8"
-);
-const roomEnvironmentSource = fs.readFileSync(
-  path.join(process.cwd(), "components", "scene", "RoomEnvironment.tsx"),
   "utf8"
 );
 const housePlanRendererSource = fs.readFileSync(
@@ -207,34 +195,32 @@ assert.match(
   "The Canvas shell should apply its configured maximum polar angle to 3D OrbitControls."
 );
 
-assert.match(
-  roomEnvironmentSource,
-  /const floorVisible = camera\.position\.y > resolveFloorUndersideCutawayElevationMeters\(floorWorldY, slabThickness\);/,
-  "Single-room floor visibility should be derived from its finished-floor world elevation."
-);
+for (const retiredShell of [
+  ["components", "scene", "RoomEnvironment.tsx"],
+  ["components", "editor", "design-page", "DesignSceneSingleRoom.tsx"],
+]) {
+  assert.equal(
+    fs.existsSync(path.join(process.cwd(), ...retiredShell)),
+    false,
+    "Single rooms render through the house-plan scene, so the legacy single-room shell and its cutaway must stay retired."
+  );
+}
 
-assert.match(
-  roomEnvironmentSource,
-  /<group position=\{\[0, floorWorldY, 0\]\}>/,
-  "The single-room shell should be positioned on its canonical finished-floor world plane."
+assert.doesNotMatch(
+  sceneRegionWorkspaceRegistrationSource,
+  /floorWorldY:/,
+  "The scene registration should not project a floor plane for a separate single-room renderer."
 );
-
-assert.match(
-  roomEnvironmentSource,
-  /ceilingRef\.current\.visible = camera\.position\.y <= floorWorldY \+ height \+ wallThickness \+ outsideBuffer;/,
-  "Single-room ceiling visibility should use the same finished-floor world elevation."
+assert.doesNotMatch(
+  sceneRegionWorkspaceRegistrationSource,
+  /usesHousePlanScene/,
+  "Every design with rooms uses the house-plan scene, so no renderer-routing flag should remain."
 );
 
 assert.match(
   sceneRegionWorkspaceRegistrationSource,
-  /floorWorldY:\s*resolveCanonicalFloorElevationMeters\(room\.activeRoom \?\? \{\}\) \?\? 0/,
-  "The scene registration should project the active room's canonical elevation into world metres."
-);
-
-assert.match(
-  sceneRegionWorkspaceRegistrationSource,
-  /initialCameraView:\s*resolveCameraViewForFloorWorldY\([\s\S]*?DEFAULT_EDITOR_CAMERA_VIEW,[\s\S]*?resolveCanonicalFloorElevationMeters\(room\.activeRoom \?\? \{\}\) \?\? 0[\s\S]*?\)/,
-  "The initial single-room Canvas camera should start on the canonical floor plane."
+  /initialCameraView:\s*resolveCameraViewForFloorWorldY\([\s\S]*?DEFAULT_EDITOR_CAMERA_VIEW,\s*scene\.hasWholeHousePlan \? 0 : resolveCanonicalFloorElevationMeters\(room\.activeRoom \?\? \{\}\) \?\? 0\s*\)/,
+  "The initial single-room Canvas camera should start on the active room's canonical floor plane, and a multi-room plan at world Y zero."
 );
 
 assert.match(
@@ -280,32 +266,9 @@ assert.match(
 );
 
 assert.match(
-  sceneRegionAdapterSource,
-  /singleRoom:[\s\S]*?floorWorldY: room\.floorWorldY/,
-  "The scene adapter should preserve the single-room finished-floor world elevation."
-);
-
-assert.match(
   designSceneStructureLayerSource,
-  /<DesignSceneSingleRoom[\s\S]*?room=\{state\.singleRoom\}/,
-  "The structure layer should pass the canonical single-room state to the single-room renderer."
-);
-assert.match(
-  designSceneSingleRoomSource,
-  /<Room[\s\S]*?floorWorldY=\{room\.floorWorldY\}/,
-  "The single-room renderer should pass the canonical floor plane to the room environment."
-);
-
-assert.match(
-  roomEnvironmentSource,
-  /floorSurfaceRef\.current\.visible = floorVisible;/,
-  "Single-room floor surface visibility should follow the underside cutaway."
-);
-
-assert.match(
-  roomEnvironmentSource,
-  /slabRef\.current\.visible = floorVisible;/,
-  "Single-room slab visibility should follow the underside cutaway."
+  /if \(state\.wholeHome\.rooms\.length > 0\) \{[\s\S]*?<HousePlanRenderer3D\s+rooms=\{visibleRooms\}/,
+  "Every design with rooms, including a lone room, should render its floors through the house-plan cutaway."
 );
 
 assert.match(

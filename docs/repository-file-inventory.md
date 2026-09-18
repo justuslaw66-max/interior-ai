@@ -400,9 +400,8 @@ The present uncommitted work centers on editable doors and windows across 2D and
 - `components/editor/design-page/LightingSettingsControls.tsx` — Implements `LightingSettingsControls` for Lighting Settings Controls.
 - `components/editor/design-page/LightingSettingsDrawer.tsx` — Implements `LightingSettingsDrawer` for Lighting Settings Drawer.
 - `components/LightingPresetsUI.tsx` — Implements `LightingPresetsUI` for Lighting Presets UI.
-- `components/scene/CeilingShadowOccluder.tsx` — Renders an invisible, non-interactive ceiling mesh that contributes only to scene shadow maps.
+- `components/scene/CeilingShadowOccluder.tsx` — Renders an invisible, non-interactive house-plan ceiling mesh that contributes only to scene shadow maps.
 - `components/scene/furniture/CameraCapture.tsx` — Implements `CameraCapture` for Camera Capture.
-- `components/scene/RoomEnvironment.tsx` — Renders the legacy single-room 3D environment, including room surfaces, lighting, and ceiling shadow occlusion.
 - `lib/design-lighting-settings.ts` — Defines `resolveDesignLightingSettings`, `updateDesignLightingSettings` for design lighting settings.
 - `lib/design-page-wall-cutaway.ts` — Defines `isWallFacingCamera`, `resolveDominantCameraCutawayWall`, `isWallBetweenCameraAndTarget`, `isWallOnCameraSideOfTarget`, and related exports for design page wall cutaway.
 - `lib/floor-plan-camera-cutaway.ts` — Defines `canonicalWallCutawayKey`, `deriveCanonicalWallBoundaryRoles`, `resolveCanonicalCameraCutawayWallKeys`, `CanonicalCutawayTarget`, and related exports for floor plan camera cutaway.
@@ -3913,7 +3912,6 @@ Other-format breakdown: `.mjs` 109; `.sh` 7; `.cjs` 3; `.cts` 2; `.example` 2; `
 | ` M` | `components/editor/renderers/house-plan-3d/geometry.ts` | Builds 3D wall/opening geometry, stable surface-panel identities, and selection metadata. |
 | ` M` | `components/editor/renderers/house-plan-3d/surfaceMeshes.tsx` | Renders 3D floor, ceiling, and wall-surface meshes, including ceiling shadow occlusion. |
 | ` M` | `components/editor/renderers/house-plan-3d/wallAndOpeningMeshes.tsx` | Renders selectable walls, finish panels, doors, and opening-related 3D solids. |
-| ` M` | `components/scene/RoomEnvironment.tsx` | Renders the legacy single-room 3D environment, including room surfaces, lighting, and ceiling shadow occlusion. |
 | ` M` | `docs/engineering/ARCHITECTURE_RULES.md` | Architecture rules for the canonical document, Consumer/Pro capabilities, rendering, floor-plan openings, security, and module ownership. |
 | ` M` | `docs/repository-file-inventory.md` | Generated working-tree repository inventory, product overview, path descriptions, and navigation indexes. |
 | ` M` | `lib/design-document-contract.ts` | Validates and migrates the versioned persisted design document for rooms, walls, openings, items, surfaces, and cabinetry. |
@@ -3965,7 +3963,7 @@ Other-format breakdown: `.mjs` 109; `.sh` 7; `.cjs` 3; `.cts` 2; `.example` 2; `
 | `components/editor/renderers/house-plan-3d/windowOpeningDrag.ts` | Pure clamp-and-round geometry for horizontal and vertical window dragging that retains the grab point. | Likely intentional — imported by the window-drag hook and regression test. |
 | `components/editor/renderers/house-plan-3d/windowOpeningGeometry.ts` | Computes the clipped aperture-only hit volume for a 3D window opening. | Likely intentional — used by window rendering and drag logic. |
 | `components/editor/renderers/house-plan-3d/WindowOpeningMesh.tsx` | Renders an aperture-only 3D window hit target, outline, selection, and drag entry point. | Likely intentional — rendered by the current 3D house-plan renderer. |
-| `components/scene/CeilingShadowOccluder.tsx` | Renders an invisible, non-interactive ceiling mesh that contributes only to scene shadow maps. | Likely intentional — imported by room and house-plan rendering. |
+| `components/scene/CeilingShadowOccluder.tsx` | Renders an invisible, non-interactive house-plan ceiling mesh that contributes only to scene shadow maps. | Likely intentional — imported by house-plan rendering. |
 | `lib/design-page-plan-template-replacement.ts` | Builds a clean editable design snapshot when a new floor-plan template replaces prior room geometry. | Likely intentional — imported by the current floor-plan underlay controller. |
 | `lib/surface-material-wall-panels.ts` | Resolves wall finish assignments and combines opening-aware wall-panel quantities by durable assignment. | Likely intentional — imported by the surface-material BOM. |
 | `lib/useDesignPageOpeningMoveAction.ts` | Routes 2D/3D opening moves through the canonical metrics/mutation path while respecting evidence locks. | Likely intentional — imported by the plan-overlay controller and regression test. |

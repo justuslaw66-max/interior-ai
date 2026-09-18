@@ -9,10 +9,6 @@ import HousePlanRenderer3D from "@/components/editor/renderers/HousePlanRenderer
 import PlanUnderlayRenderer2D from "@/components/editor/renderers/PlanUnderlayRenderer2D";
 import RoomRenderer2D from "@/components/editor/renderers/RoomRenderer2D";
 import { PlanQualityHintOverlay } from "@/components/editor/design-page/PlanQualityHintOverlay";
-import {
-  DesignSceneSingleRoom,
-  type DesignSceneSingleRoomState,
-} from "@/components/editor/design-page/DesignSceneSingleRoom";
 import type { HousePlanRoom2D } from "@/lib/design-page-house-plan";
 import {
   mapPlanAnnotationsToRoomRenderer,
@@ -36,7 +32,6 @@ import { CANONICAL_ROOM_GEOMETRY_LOCK_REASON } from "@/lib/floor-plan-topology-e
 type UnderlayRendererProps = ComponentProps<typeof PlanUnderlayRenderer2D>;
 type PlanRendererProps = ComponentProps<typeof RoomRenderer2D>;
 type WholeHomeRendererProps = ComponentProps<typeof HousePlanRenderer3D>;
-type SingleRoomRendererProps = ComponentProps<typeof DesignSceneSingleRoom>;
 
 export type DesignSceneStructureLayerState = {
   viewMode: EditorViewMode;
@@ -72,7 +67,6 @@ export type DesignSceneStructureLayerState = {
     canonicalGeometryHash: string | null;
   };
   wholeHome: {
-    enabled: boolean;
     rooms: HousePlanRoom2D[];
     activeRoomId: string;
     activeFloorLevel: number;
@@ -81,7 +75,6 @@ export type DesignSceneStructureLayerState = {
     selectedOpeningId: string | null;
     selectedSurfaceTarget: WholeHomeRendererProps["selectedSurfaceTarget"];
   };
-  singleRoom: DesignSceneSingleRoomState;
 };
 export type DesignSceneStructureLayerConfiguration = {
   editorMode: DesignPageEditorMode;
@@ -106,7 +99,6 @@ export type DesignSceneStructureLayerConfiguration = {
       depthMeters: number;
     };
   };
-  renderQuality: NonNullable<SingleRoomRendererProps["renderQuality"]>;
 };
 
 export type DesignSceneStructureLayerActions = {
@@ -375,7 +367,7 @@ export function DesignSceneStructureLayer({
     );
   }
 
-  if (state.wholeHome.enabled) {
+  if (state.wholeHome.rooms.length > 0) {
     const visibleRooms = focusRoomId
       ? state.wholeHome.rooms.filter((room) => room.id === focusRoomId)
       : state.wholeHome.rooms;
@@ -420,14 +412,6 @@ export function DesignSceneStructureLayer({
       {canonicalIntegrityWarning}
       {canonicalEditingNotice}
       </>
-    );
-  }
-  if (state.wholeHome.rooms.length > 0) {
-    return (
-      <DesignSceneSingleRoom
-        room={state.singleRoom}
-        renderQuality={configuration.renderQuality}
-      />
     );
   }
   return (

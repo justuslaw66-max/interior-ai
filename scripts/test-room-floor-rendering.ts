@@ -8,7 +8,6 @@ const roomEnvironmentPath = path.join(
   "scene",
   "RoomEnvironment.tsx"
 );
-const source = fs.readFileSync(roomEnvironmentPath, "utf8");
 const housePlanRendererPath = path.join(
   process.cwd(),
   "components",
@@ -29,28 +28,10 @@ const ceilingShadowOccluderSource = fs.readFileSync(
   "utf8"
 );
 
-assert.match(
-  source,
-  /export const ROOM_FLOOR_SURFACE_OFFSET = 0\.006;/,
-  "Room floor must keep a small height offset above the slab to avoid z-fighting."
-);
-
-assert.match(
-  source,
-  /position=\{\[0, ROOM_FLOOR_SURFACE_OFFSET, 0\]\}/,
-  "Room floor mesh must render above the slab top face."
-);
-
-assert.match(
-  source,
-  /polygonOffset:\s*true,/,
-  "Room floor material should use polygon offset as an extra depth-fighting guard."
-);
-
-assert.match(
-  source,
-  /polygonOffsetFactor:\s*-1,/,
-  "Room floor material should bias the wood floor toward the camera."
+assert.equal(
+  fs.existsSync(roomEnvironmentPath),
+  false,
+  "Single rooms render their floors through the house-plan scene, so the legacy single-room environment must stay retired."
 );
 
 assert.match(
@@ -78,9 +59,14 @@ assert.match(
 );
 
 assert.match(
-  source,
-  /const ceilingShadowOverhang = height \* 2;[\s\S]*?<CeilingShadowOccluder[\s\S]*?boxSize=\{\[width \+ ceilingShadowOverhang \* 2, wallThickness, depth \+ ceilingShadowOverhang \* 2\]\}[\s\S]*?\{ceilingVisible && \(/,
-  "Single-room ceiling occlusion must use a height-bounded overhang so its caster fits the shadow camera."
+  ceilingShadowOccluderSource,
+  /geometry: THREE\.BufferGeometry;/,
+  "A ceiling shadow occluder must be given its room-shaped caster geometry."
+);
+assert.doesNotMatch(
+  ceilingShadowOccluderSource,
+  /boxSize/,
+  "Only the house-plan scene casts ceiling shadows, so the legacy box caster must stay retired."
 );
 
 assert.match(

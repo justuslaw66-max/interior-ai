@@ -173,7 +173,7 @@
       "limit": 250
     },
     "components/editor/design-page/DesignSceneStructureLayer.tsx": {
-      "lines": 439,
+      "lines": 423,
       "limit": 250
     },
     "components/editor/design-page/ImportedFloorPlanWallEditor.tsx": {
@@ -354,10 +354,6 @@
     },
     "components/scene/GLBScaledModel.tsx": {
       "lines": 255,
-      "limit": 250
-    },
-    "components/scene/RoomEnvironment.tsx": {
-      "lines": 273,
       "limit": 250
     },
     "features/cabinetry/automation.ts": {
@@ -749,7 +745,7 @@
       "limit": 400
     },
     "lib/useDesignPageSceneRegionWorkspaceRegistration.ts": {
-      "lines": 436,
+      "lines": 427,
       "limit": 400
     },
     "lib/useDesignPageSelectionInspectorModel.ts": {
@@ -1767,7 +1763,7 @@
     "components/editor/design-page/DesignPageSceneRegion.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 140
+        "maximum": 139
       }
     },
     "components/editor/design-page/DesignPageSelectionInspector.tsx": {
@@ -1827,11 +1823,11 @@
     "components/editor/design-page/DesignSceneStructureLayer.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 259
+        "maximum": 251
       },
       "complexFunctions": {
         "count": 1,
-        "maximum": 19
+        "maximum": 18
       }
     },
     "components/editor/design-page/DesignValidationFeedback.tsx": {
@@ -2586,12 +2582,6 @@
       "complexFunctions": {
         "count": 1,
         "maximum": 25
-      }
-    },
-    "components/scene/RoomEnvironment.tsx": {
-      "overlongFunctions": {
-        "count": 1,
-        "maximum": 251
       }
     },
     "components/scene/ScenePerformanceBridge.tsx": {
@@ -3479,7 +3469,7 @@
     "lib/design-page-scene-region-adapter.ts": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 186
+        "maximum": 171
       }
     },
     "lib/design-page-selection-panel-model.ts": {
@@ -4549,7 +4539,7 @@
     "lib/useDesignPageDocumentSelectionRegistrationFacade.ts": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 222
+        "maximum": 220
       }
     },
     "lib/useDesignPageDocumentStateController.ts": {
@@ -4961,13 +4951,13 @@
     "lib/useDesignPageSceneReadModel.ts": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 247
+        "maximum": 226
       }
     },
     "lib/useDesignPageSceneRegionWorkspaceRegistration.ts": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 408
+        "maximum": 399
       }
     },
     "lib/useDesignPageSceneRoomReadRegistration.ts": {
