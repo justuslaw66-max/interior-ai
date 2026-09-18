@@ -270,6 +270,7 @@ The present uncommitted work centers on editable doors and windows across 2D and
 - `lib/plan-room-summary.ts` — Defines `resolvePlanRoomSelection`, `buildPlanRoomSummary`, `PlanRoomMetric`, `PlanRoomSummary`, and related exports for plan room summary.
 - `lib/room-budget-recommendations.ts` — Defines `buildRoomBudgetRecommendations`, `RoomBudgetRecommendation`, `BuildRoomBudgetRecommendationsParams` for room budget recommendations.
 - `lib/room-fix-preview.ts` — Defines `buildRoomFixPreviewFromRecommendations`, `RoomFixPreview` for room fix preview.
+- `lib/room-floor-area.ts` — Defines `getRoomFloorAreaSqm`, `getRoomSnapshotFloorAreaSqm`, `getPlanRoomFloorAreaSqm`, `RoomFloorOutline`, the single owner of room floor and ceiling area.
 - `lib/room-health-summary.ts` — Defines `resolveDesignPageRoomHealthReviewTarget`, `buildRoomHealthSummary`, `RoomHealthLevel`, `RoomHealthSummary`, and related exports for room health summary.
 - `lib/room-plan-shape.ts` — Defines `buildRoomPlanShape`, `RoomPlanShapePoint` for room plan shape.
 - `lib/room-present-mode.ts` — Defines `createPresentModeState`, `getPresentModeRoom`, `getPresentModeSavedView`, `getPresentModeRooms`, and related exports for room present mode.
@@ -1176,7 +1177,7 @@ The present uncommitted work centers on editable doors and windows across 2D and
 
 - `components/editor/design-controls-plan/surfaceCatalog.ts` — Defines `getFloorMaterialSwatchStyle`, `formatSurfaceMaterialValue`, `getSurfaceMaterialSupplierLabel`, `getSurfaceMaterialCollectionLabel`, and related exports for surface Catalog.
 - `components/editor/design-controls-plan/SurfaceMaterialCatalogBoundary.tsx` — Implements `SurfaceMaterialCatalogBoundary` for Surface Material Catalog Boundary.
-- `components/editor/design-controls-plan/surfaceSummaryRows.ts` — Defines `buildSurfaceRoomSummaries` and `buildSurfaceSummaryRows`, the Surface Summary rows whose wall areas come from `buildRoomWallFinishQuantities`.
+- `components/editor/design-controls-plan/surfaceSummaryRows.ts` — Defines `buildSurfaceRoomSummaries`, `buildSurfaceSummaryRows` and `getActiveSurfaceRoomFloorAreaSqm`, the Surface Summary rows whose wall areas come from `buildRoomWallFinishQuantities` and whose floor areas come from `lib/room-floor-area`.
 - `components/editor/design-controls-plan/WallPaintPicker.tsx` — Implements `WallPaintPicker` for Wall Paint Picker.
 - `components/editor/design-page/ProductFinishControls.tsx` — Defines `ProductFinishControls`, `ProductFinishControlsState`, `ProductFinishControlsActions` for Product Finish Controls.
 - `components/editor/renderers/canonical-floor-plan/surfaceMaterials.ts` — Defines `surfaceMaterialFallbackColor`, `resolveRoomSurfaceAssignments`, `WALL_SURFACE_TEXTURE_RESOLUTION` for surface Materials.

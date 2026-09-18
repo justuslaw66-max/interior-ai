@@ -19,6 +19,7 @@ import {
   summarizeWholeHomeShopping,
   type ActiveRoomShoppingItem,
 } from "@/lib/room-shopping";
+import { getRoomSnapshotFloorAreaSqm } from "@/lib/room-floor-area";
 import type { DesignSnapshot } from "@/lib/room-types";
 import LazyImage from "@/components/common/LazyImage";
 import ShopLink from "./export/ShopLink";
@@ -144,7 +145,7 @@ export default async function SharePage({
   const roomListItems: PublicShareRoomScheduleItem[] = designSnapshot.rooms.map((room) => {
     const shoppingRoom = shoppingRoomById.get(room.id);
     const health = roomHealthById.get(room.id);
-    const areaSqm = room.geometry.width * room.geometry.depth;
+    const areaSqm = getRoomSnapshotFloorAreaSqm(room);
     return {
       id: room.id,
       name: room.name,
@@ -171,10 +172,7 @@ export default async function SharePage({
   const measuredRoomCount = designSnapshot.rooms.filter(
     (room) => room.geometry.width > 0 && room.geometry.depth > 0
   ).length;
-  const totalAreaSqm = designSnapshot.rooms.reduce(
-    (sum, room) => sum + room.geometry.width * room.geometry.depth,
-    0
-  );
+  const totalAreaSqm = designSnapshot.rooms.reduce((sum, room) => sum + getRoomSnapshotFloorAreaSqm(room), 0);
   const totalOpenings = designSnapshot.floorPlan?.openings?.length ?? 0;
   const readyShoppingCount = checkoutReadyRows.length + retailerLinkRows.length;
   const reviewShoppingCount = needsReviewRows.length + notInCartRows.length;

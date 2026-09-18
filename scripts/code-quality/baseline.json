@@ -85,15 +85,15 @@
       "limit": 250
     },
     "app/share/[shareToken]/export/page.tsx": {
-      "lines": 1585,
+      "lines": 1575,
       "limit": 250
     },
     "app/share/[shareToken]/export/pdf/route.ts": {
-      "lines": 531,
+      "lines": 521,
       "limit": 400
     },
     "app/share/[shareToken]/page.tsx": {
-      "lines": 730,
+      "lines": 728,
       "limit": 250
     },
     "app/tools/glb-optimizer/page.tsx": {
@@ -217,7 +217,7 @@
       "limit": 250
     },
     "components/editor/DesignControlsAiPanel.tsx": {
-      "lines": 465,
+      "lines": 464,
       "limit": 250
     },
     "components/editor/DesignControlsFurnishPanel.tsx": {
@@ -225,7 +225,7 @@
       "limit": 250
     },
     "components/editor/DesignControlsPanel.tsx": {
-      "lines": 959,
+      "lines": 957,
       "limit": 250
     },
     "components/editor/DesignControlsPlanPanel.tsx": {
@@ -281,7 +281,7 @@
       "limit": 250
     },
     "components/editor/FloorPropertiesPanel.tsx": {
-      "lines": 693,
+      "lines": 692,
       "limit": 250
     },
     "components/editor/renderers/CanonicalFloorPlanStructure.tsx": {
@@ -313,7 +313,7 @@
       "limit": 250
     },
     "components/editor/renderers/RoomRenderer2D.tsx": {
-      "lines": 5623,
+      "lines": 5621,
       "limit": 250
     },
     "components/editor/renderers/useSurfaceMaterialTexture.ts": {
@@ -633,7 +633,7 @@
       "limit": 400
     },
     "lib/floor-plan-quality.ts": {
-      "lines": 643,
+      "lines": 631,
       "limit": 400
     },
     "lib/floor-plan-topology-mutations.ts": {
@@ -749,7 +749,7 @@
       "limit": 400
     },
     "lib/useDesignPageSelectionInspectorModel.ts": {
-      "lines": 417,
+      "lines": 415,
       "limit": 400
     },
     "lib/useDesignPageSelectionTransforms.ts": {
@@ -761,7 +761,7 @@
       "limit": 400
     },
     "lib/useDesignPageSurfaceInspector.ts": {
-      "lines": 1109,
+      "lines": 1107,
       "limit": 400
     },
     "lib/useDesignPageZoneController.ts": {
@@ -1497,7 +1497,7 @@
     "app/share/[shareToken]/page.tsx": {
       "overlongFunctions": {
         "count": 2,
-        "maximum": 663
+        "maximum": 660
       },
       "complexFunctions": {
         "count": 1,
@@ -1661,7 +1661,7 @@
     "components/editor/ConsumerRoomSetupCard.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 261
+        "maximum": 259
       },
       "complexFunctions": {
         "count": 1,
@@ -2073,7 +2073,7 @@
     "components/editor/DesignControlsPanel.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 677
+        "maximum": 674
       },
       "complexFunctions": {
         "count": 1,
@@ -2311,7 +2311,7 @@
     "components/editor/FloorPropertiesPanel.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 630
+        "maximum": 628
       },
       "complexFunctions": {
         "count": 1,
@@ -5023,7 +5023,7 @@
     "lib/useDesignPageSurfaceInspector.ts": {
       "overlongFunctions": {
         "count": 3,
-        "maximum": 618
+        "maximum": 614
       },
       "complexFunctions": {
         "count": 2,

@@ -45,6 +45,14 @@ export function buildSurfaceRoomSummaries(
   }));
 }
 
+/** The active room's floor area, falling back to the first room like getActiveRoom. */
+export function getActiveSurfaceRoomFloorAreaSqm(
+  rooms: readonly SurfaceRoomSummary[],
+  activeRoomId: string | null | undefined
+): number {
+  return (rooms.find((room) => room.id === activeRoomId) ?? rooms[0])?.floorAreaSqm ?? 0;
+}
+
 function buildWallFinishRow(
   room: SurfaceRoomSummary,
   scope: { id: string; target: "walls" | "selected_wall"; surfaceLabel: string; areaSqm: number },

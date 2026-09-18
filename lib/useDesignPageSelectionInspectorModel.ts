@@ -2,10 +2,7 @@ import { useMemo } from "react";
 import { formatCabinetMeasurement } from "@/features/cabinetry/measurementUnits";
 import { resolveCatalogVariant } from "@/lib/catalog/variant-resolver";
 import type { CatalogItemSchema, DimensionsMm } from "@/lib/catalog-schema";
-import {
-  buildDesignSelectionContext,
-  type DesignSelectionContext,
-} from "@/lib/design-page-selection-context";
+import { buildDesignSelectionContext, type DesignSelectionContext } from "@/lib/design-page-selection-context";
 import { getItemPrice, normalizeRotationDegrees } from "@/lib/design-page-utils";
 import type { HousePlanRoom2D } from "@/lib/design-page-house-plan";
 import { getPlanOpeningWallSpanMeters } from "@/lib/design-page-plan-overlays";
@@ -19,6 +16,7 @@ import {
   type FixedElement2D,
   type RoomOpening2D,
 } from "@/lib/editorScene";
+import { getPlanRoomFloorAreaSqm } from "@/lib/room-floor-area";
 import type { DesignItem } from "@/lib/room-types";
 import { resolveFixturePhotometrics } from "@/lib/resolve-lighting-scene";
 
@@ -222,7 +220,7 @@ export function buildDesignPageSelectionInspectorSummary({
     return {
       kind: "Room",
       title: selectedPlanRoom.name,
-      detail: `${selectedPlanRoom.roomType} room · ${formatDisplayArea(selectedPlanRoom.w * selectedPlanRoom.d, planMeasurementUnit)}`,
+      detail: `${selectedPlanRoom.roomType} room · ${formatDisplayArea(getPlanRoomFloorAreaSqm(selectedPlanRoom), planMeasurementUnit)}`,
       metrics: [],
     };
   }

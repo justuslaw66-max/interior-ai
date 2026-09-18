@@ -220,6 +220,8 @@ function buildPresentationFixture({
                     activeRoomCeilingVisible: true,
                     activeRoomCeilingColor: "#ffffff",
                     roomItemCountsById: itemCountsByRoomId,
+                    // Distinct from w × d so the floor panel must read the owner's projection.
+                    surfaceRoomSummaries: rooms.map((room) => ({ id: room.id, floorAreaSqm: room.w * room.d - 1 })),
                   },
                 },
               },
@@ -453,6 +455,11 @@ const roomSwitch = buildReadModel({
   viewMode: "3d",
 });
 assert.equal(roomSwitch.state.navigator.activeRoomId, "room-b");
+assert.equal(
+  roomSwitch.state.floorProperties?.activeRoomFloorAreaSqm,
+  11,
+  "The floor properties area must be the active room's polygon-aware Surface Summary floor area."
+);
 const projectSwitch = buildReadModel({
   rooms: [{ ...roomA, id: "project-2-room" }],
   activeRoomId: "project-2-room",

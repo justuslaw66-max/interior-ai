@@ -18,6 +18,8 @@ type DesignControlsAiPanelProps = {
   activeRoomTypeLabel: string;
   roomWidth: number;
   roomDepth: number;
+  /** The active room's polygon-aware floor area (lib/room-floor-area). */
+  roomFloorAreaSqm: number;
   activeRoomItemCount: number;
   aiLayoutProposal: AiLayoutProposal | null;
   onStyleChange: (style: Style) => void;
@@ -38,10 +40,7 @@ const AI_MUST_HAVE_OPTIONS: Array<{ label: string; role: AiLayoutRole }> = [
 ];
 
 const AI_ROLE_LABELS: Record<AiLayoutRole, string> = AI_MUST_HAVE_OPTIONS.reduce(
-  (labels, option) => ({
-    ...labels,
-    [option.role]: option.label,
-  }),
+  (labels, option) => ({ ...labels, [option.role]: option.label }),
   {} as Record<AiLayoutRole, string>
 );
 
@@ -86,6 +85,7 @@ export default function DesignControlsAiPanel({
   activeRoomTypeLabel,
   roomWidth,
   roomDepth,
+  roomFloorAreaSqm: roomArea,
   activeRoomItemCount,
   aiLayoutProposal,
   onStyleChange,
@@ -107,7 +107,6 @@ export default function DesignControlsAiPanel({
     ? "designer-recessed rounded-xl p-3"
     : "rounded-xl border border-neutral-200 bg-white p-3";
   const mutedClass = dark ? "text-neutral-400" : "text-neutral-500";
-  const roomArea = Math.max(0, roomWidth * roomDepth);
   const roomSizeLabel = `${roomWidth.toFixed(1)} x ${roomDepth.toFixed(1)}m`;
   const roomSupported = activeRoomType === "living";
   const briefReady = aiMustHaves.length > 0 && roomArea > 0 && roomSupported;

@@ -19,6 +19,7 @@ import {
 } from "@/lib/share-shopping-csv";
 import { buildShareExportFidelitySummary } from "@/lib/share-export-fidelity";
 import { buildRoomHealthSummary } from "@/lib/room-health-summary";
+import { getPlanRoomFloorAreaSqm, getRoomSnapshotFloorAreaSqm } from "@/lib/room-floor-area";
 import { buildRoomSurfaceMaterialBomRows } from "@/lib/surface-material-bom";
 import type { DesignSnapshot, PersistedPlanOpening, RoomSnapshot, SavedView } from "@/lib/room-types";
 import {
@@ -69,15 +70,6 @@ function formatMeasurement(value: number, unit: string) {
   return `${value.toFixed(1).replace(/\.0$/, "")} ${unit}`;
 }
 
-function getPolygonArea(points: NonNullable<RoomSnapshot["planPolygon"]>) {
-  if (points.length < 3) return 0;
-  const area = points.reduce((sum, point, index) => {
-    const next = points[(index + 1) % points.length];
-    return sum + point.x * next.z - next.x * point.z;
-  }, 0);
-  return Math.abs(area) / 2;
-}
-
 function getPolygonPerimeter(points: NonNullable<RoomSnapshot["planPolygon"]>) {
   if (points.length < 2) return 0;
   return points.reduce((sum, point, index) => {
@@ -106,9 +98,7 @@ function getRoomMetrics(
   const depth = room.geometry.depth;
   const polygon = room.planShape === "custom_polygon" ? room.planPolygon : null;
   const holes = room.planHoles ?? [];
-  const areaSqm = polygon?.length
-    ? Math.max(0, getPolygonArea(polygon) - holes.reduce((sum, hole) => sum + getPolygonArea(hole), 0))
-    : width * depth;
+  const areaSqm = getRoomSnapshotFloorAreaSqm(room);
   const perimeterM = polygon?.length
     ? getPolygonPerimeter(polygon) + holes.reduce((sum, hole) => sum + getPolygonPerimeter(hole), 0)
     : (width + depth) * 2;
@@ -500,7 +490,7 @@ function buildPlanDiagramFloors(
       labelZ: (bounds.minZ + bounds.maxZ) / 2,
       width: room.w,
       depth: room.d,
-      areaSqm: metrics?.areaSqm ?? room.w * room.d,
+      areaSqm: metrics?.areaSqm ?? getPlanRoomFloorAreaSqm(room),
       itemCount: sourceRoom?.items.length ?? 0,
       openingCount: metrics?.openingCount ?? 0,
     };

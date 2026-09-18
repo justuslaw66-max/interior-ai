@@ -22,6 +22,7 @@ import { buildRoomSurfaceMaterialBomRows } from "../lib/surface-material-bom";
 import {
   buildSurfaceRoomSummaries,
   buildSurfaceSummaryRows,
+  getActiveSurfaceRoomFloorAreaSqm,
 } from "../components/editor/design-controls-plan/surfaceSummaryRows";
 import { mapPlanOpeningsToRoomRenderer } from "../lib/design-page-plan-overlays";
 import { buildOpeningWallSurfacePanels } from "../components/editor/renderers/house-plan-3d/openingWallSurfacePanels";
@@ -1191,10 +1192,21 @@ assert.deepEqual(
 );
 assert.doesNotMatch(fs.readFileSync("lib/surface-material-bom.ts", "utf8"), /function getRoomAreaSqm/,
   "The BOM must read floor area from lib/room-floor-area.ts instead of a private copy.");
-assert.doesNotMatch(
+assert.match(
   fs.readFileSync("components/editor/design-controls-plan/surfaceSummaryRows.ts", "utf8"),
-  /getSurfaceRoomAreaSqm/,
-  "Surface Summary floor and ceiling rows must use the polygon-aware room floor area, not width × depth."
+  /export function buildSurfaceRoomSummaries\([\s\S]*?floorAreaSqm: getRoomSnapshotFloorAreaSqm\(room\),/,
+  "Surface Summary floor and ceiling rows must read the room floor area from lib/room-floor-area.ts."
+);
+const notchedSurfaceRooms = buildSurfaceRoomSummaries(
+  [{ ...notchedPolygonRoom, id: "plain_room", planShape: "rectangle", planHoles: undefined }, notchedPolygonRoom], []);
+assert.deepEqual(
+  [
+    getActiveSurfaceRoomFloorAreaSqm(notchedSurfaceRooms, "notched_polygon_room"),
+    getActiveSurfaceRoomFloorAreaSqm(notchedSurfaceRooms, "missing_room"),
+    getActiveSurfaceRoomFloorAreaSqm([], "notched_polygon_room"),
+  ],
+  [11, 16, 0],
+  "The active-room area readout must use the summary floor area and fall back to the first room like getActiveRoom."
 );
 
 assert.equal(normalizeWallPaintColorHex("f5f1e8"), "#F5F1E8", "wall paint colors should normalize to uppercase hex");

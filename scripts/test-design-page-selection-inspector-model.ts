@@ -399,6 +399,23 @@ assert.equal(
   "living room · 215.3 ft²",
   "A room summary area should follow the display-unit preference."
 );
+assert.equal(
+  summarize({
+    selectedPlanRoom: {
+      ...room,
+      shape: "custom_polygon",
+      w: 4,
+      d: 4,
+      polygon: [
+        { x: -2, z: -2 }, { x: 2, z: -2 }, { x: 2, z: 0 },
+        { x: 0, z: 0 }, { x: 0, z: 2 }, { x: -2, z: 2 },
+      ],
+      holes: [[{ x: -1.5, z: -1.5 }, { x: -0.5, z: -1.5 }, { x: -0.5, z: -0.5 }, { x: -1.5, z: -0.5 }]],
+    },
+  })?.detail,
+  "living room · 11.0 m²",
+  "A custom-polygon room summary must show the polygon-aware floor area, not width × depth."
+);
 
 assert.equal(summarize(), null, "The model should return no summary when nothing is selected.");
 

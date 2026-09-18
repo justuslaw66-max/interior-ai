@@ -9,7 +9,7 @@ import {
   formatPlanRoomMetricLabel,
   resolvePlanRoomSelection,
 } from "@/lib/plan-room-summary";
-import { getRoomFloorAreaSqm } from "@/lib/room-floor-area";
+import { getPlanRoomFloorAreaSqm, getRoomFloorAreaSqm } from "@/lib/room-floor-area";
 
 const planRoomSummarySource = readFileSync(
   join(process.cwd(), "lib/plan-room-summary.ts"),
@@ -121,11 +121,58 @@ assert.equal(
   "Degenerate holes are ignored and oversized holes clamp the floor area at zero."
 );
 assert.equal(getRoomFloorAreaSqm({ shape: "rectangle", width: -3, depth: 2 }), 0);
+assert.equal(
+  getPlanRoomFloorAreaSqm({ shape: "custom_polygon", w: 4, d: 4, polygon: notch }),
+  12,
+  "2D plan rooms (w × d) must share the snapshot floor-area rule."
+);
+const stalePolygonPlan = buildPlanRoomSummary([
+  { id: "stale", name: "Stale", roomType: "custom", shape: "rectangle", x: 0, z: 0, w: 2, d: 3, polygon: notch },
+]);
+assert.deepEqual(
+  [stalePolygonPlan.widthMeters, stalePolygonPlan.depthMeters, stalePolygonPlan.areaSquareMeters],
+  [2, 3, 6],
+  "A stale polygon on a rectangle room must change neither its summary dimensions nor its area."
+);
 assert.doesNotMatch(
   planRoomSummarySource,
   /function polygonArea|function getRoomArea\b/,
   "The plan summary must read room area from lib/room-floor-area.ts."
 );
+// Every consumer-facing room floor-area readout reads lib/room-floor-area.ts
+// (directly, or through the SurfaceRoomSummary.floorAreaSqm it projects).
+const roomAreaReadouts: Array<[string, RegExp]> = [
+  ["components/editor/DesignControlsPlanPanel.tsx",
+    /const activeRoomArea = getActiveSurfaceRoomFloorAreaSqm\(surfaceRooms, activeRoomId\);[\s\S]*?<ConsumerRoomSetupCard[\s\S]*?activeRoomFloorAreaSqm=\{activeRoomArea\}/],
+  ["components/editor/DesignControlsAiPanel.tsx", /roomFloorAreaSqm: roomArea,/],
+  ["components/editor/ConsumerRoomSetupCard.tsx", /roomFloorAreaSqm=\{activeRoomFloorAreaSqm\}/],
+  ["components/editor/ConsumerMeasurementPreferenceRegion.tsx",
+    /formatDisplayArea\(hasRooms \? roomFloorAreaSqm : \(widthMm \* depthMm\) \/ 1_000_000, measurementUnit\)/],
+  ["components/editor/DesignControlsPanel.tsx",
+    /roomFloorAreaSqm=\{getActiveSurfaceRoomFloorAreaSqm\(surfaceRooms, activeRoomId\)\}/],
+  ["lib/design-page-viewport-workspace-read-model.ts",
+    /activeRoomFloorAreaSqm: getActiveSurfaceRoomFloorAreaSqm\(\s*roomRead\.surfaceRoomSummaries,/],
+  ["components/editor/FloorPropertiesPanel.tsx", /formatDisplayArea\(activeRoomFloorAreaSqm, measurementUnit\)/],
+  ["lib/useDesignPageSelectionInspectorModel.ts",
+    /room · \$\{formatDisplayArea\(getPlanRoomFloorAreaSqm\(selectedPlanRoom\), planMeasurementUnit\)\}/],
+  ["lib/useDesignPageSurfaceInspector.ts",
+    /Room area \$\{formatDisplayArea\(getPlanRoomFloorAreaSqm\(selectedPlanRoom\), planMeasurementUnit\)\}/],
+  ["lib/floor-plan-quality.ts", /Number\(getPlanRoomFloorAreaSqm\(room\)\.toFixed\(2\)\)/],
+  ["components/editor/renderers/RoomRenderer2D.tsx",
+    /\{formatDisplayArea\(getPlanRoomFloorAreaSqm\(room\), measurementUnit\)\}/],
+  ["app/share/[shareToken]/page.tsx", /const areaSqm = getRoomSnapshotFloorAreaSqm\(room\);/],
+  ["app/share/[shareToken]/export/page.tsx", /const areaSqm = getRoomSnapshotFloorAreaSqm\(room\);/],
+  ["app/share/[shareToken]/export/pdf/route.ts", /const areaSqm = getRoomSnapshotFloorAreaSqm\(room\);/],
+];
+for (const [file, ownerRead] of roomAreaReadouts) {
+  const source = readFileSync(join(process.cwd(), file), "utf8");
+  assert.match(source, ownerRead, `${file} must read room floor area from lib/room-floor-area.ts.`);
+  assert.doesNotMatch(
+    source,
+    /roomWidth \* roomDepth|\.w \* [a-zA-Z]+\.d\b|geometry\.width \* [a-zA-Z]+\.geometry\.depth|function getPolygonArea/,
+    `${file} must not compute a room floor area as width × depth or with a private polygon helper.`
+  );
+}
 
 const fiveByFour = { widthMeters: 5, depthMeters: 4, areaSquareMeters: 20 };
 assert.equal(

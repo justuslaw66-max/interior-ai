@@ -40,6 +40,7 @@ import DesignControlsFurnishPanel from "./DesignControlsFurnishPanel";
 import DesignControlsPlanPanel, { type FloorPlanLifecycleIdentity, type PlanStartMode } from "./DesignControlsPlanPanel";
 import type { FloorPlanTool } from "./FloorPlanToolStrip";
 import type { SurfaceRoomSummary } from "./design-controls-plan/surfaceCatalog";
+import { getActiveSurfaceRoomFloorAreaSqm } from "./design-controls-plan/surfaceSummaryRows";
 
 type Budget = "$" | "$$" | "$$$";
 type ConsumerPanelMode = "plan" | "furnish" | "ai";
@@ -871,11 +872,8 @@ export default function DesignControlsPanel({
             dark={dark}
             style={style}
             budget={budget}
-            activeRoomName={activeRoomName}
-            activeRoomType={activeRoomType}
-            activeRoomTypeLabel={activeRoomTypeLabel}
-            roomWidth={roomWidth}
-            roomDepth={roomDepth}
+            {...{ activeRoomName, activeRoomType, activeRoomTypeLabel, roomWidth, roomDepth }}
+            roomFloorAreaSqm={getActiveSurfaceRoomFloorAreaSqm(surfaceRooms, activeRoomId)}
             activeRoomItemCount={planItemCount}
             aiLayoutProposal={aiLayoutProposal}
             onStyleChange={onStyleChange}

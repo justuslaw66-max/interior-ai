@@ -4,7 +4,7 @@ import {
   formatDisplayLength,
   type DisplayUnit,
 } from "@/lib/display-units";
-import { getRoomFloorAreaSqm } from "@/lib/room-floor-area";
+import { getPlanRoomFloorAreaSqm } from "@/lib/room-floor-area";
 
 export type PlanRoomMetric = {
   id: string;
@@ -50,8 +50,9 @@ type Bounds = {
   maxZ: number;
 };
 
+/** Same outline rule as lib/room-floor-area: only a custom polygon replaces w × d. */
 function getRoomLocalPoints(room: HousePlanRoom2D): Array<{ x: number; z: number }> {
-  if (room.polygon && room.polygon.length >= 3) return room.polygon;
+  if (room.shape === "custom_polygon" && room.polygon && room.polygon.length >= 3) return room.polygon;
   return [
     { x: -room.w / 2, z: -room.d / 2 },
     { x: room.w / 2, z: -room.d / 2 },
@@ -101,13 +102,7 @@ export function buildPlanRoomSummary(
       name: room.name,
       widthMeters: bounds.maxX - bounds.minX,
       depthMeters: bounds.maxZ - bounds.minZ,
-      areaSquareMeters: getRoomFloorAreaSqm({
-        shape: room.shape,
-        width: room.w,
-        depth: room.d,
-        polygon: room.polygon,
-        holes: room.holes,
-      }),
+      areaSquareMeters: getPlanRoomFloorAreaSqm(room),
     };
   });
 

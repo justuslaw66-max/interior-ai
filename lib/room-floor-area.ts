@@ -37,6 +37,13 @@ export function getRoomFloorAreaSqm(outline: RoomFloorOutline): number {
   return Math.max(0, outerAreaSqm - holesAreaSqm);
 }
 
+/** Floor area of a 2D house-plan room, whose footprint fields are `w` × `d`. */
+export function getPlanRoomFloorAreaSqm(
+  room: Omit<RoomFloorOutline, "width" | "depth"> & { w: number; d: number }
+): number {
+  return getRoomFloorAreaSqm({ ...room, width: room.w, depth: room.d });
+}
+
 export function getRoomSnapshotFloorAreaSqm(room: RoomSnapshot): number {
   return getRoomFloorAreaSqm({
     shape: room.planShape,

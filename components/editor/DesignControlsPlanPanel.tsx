@@ -98,7 +98,7 @@ import {
   type SurfaceMaterialProductGroup,
   type WallSurfaceMode,
 } from "./design-controls-plan/surfaceCatalog";
-import { buildSurfaceSummaryRows } from "./design-controls-plan/surfaceSummaryRows";
+import { buildSurfaceSummaryRows, getActiveSurfaceRoomFloorAreaSqm } from "./design-controls-plan/surfaceSummaryRows";
 import { formatDisplayArea, formatDisplayLength } from "@/lib/display-units";
 import { formatPlanDimensionsLabel } from "@/lib/plan-room-summary";
 
@@ -1290,7 +1290,7 @@ export default function DesignControlsPlanPanel({
     : "min-h-10 rounded-lg border border-neutral-200 bg-white px-2.5 py-2 text-sm text-neutral-900 outline-none disabled:opacity-50";
   const activeFloorLabel =
     floorOptions.find((option) => option.level === activeFloorLevel)?.label ?? "1F";
-  const activeRoomArea = Math.max(0, roomWidth * roomDepth);
+  const activeRoomArea = getActiveSurfaceRoomFloorAreaSqm(surfaceRooms, activeRoomId);
   const activeRoomPerimeter = Math.max(0, (roomWidth + roomDepth) * 2);
   const activeRoomAspectRatio = roomWidth > 0 && roomDepth > 0 ? roomWidth / roomDepth : 0;
   const activeRoomAspectLabel =
@@ -2142,8 +2142,8 @@ export default function DesignControlsPlanPanel({
                 activeRoomPresetId={activeRoomPresetId}
                 roomWidthInput={roomWidthInput}
                 roomDepthInput={roomDepthInput}
-                roomWidth={roomWidth}
-                roomDepth={roomDepth}
+                roomWidth={roomWidth} roomDepth={roomDepth}
+                activeRoomFloorAreaSqm={activeRoomArea}
                 measurementUnit={measurementUnit} measurementUnitReady={measurementUnitReady}
                 openingCount={planOpeningCount}
                 hasConnectionBlockers={hasConnectionBlockers}

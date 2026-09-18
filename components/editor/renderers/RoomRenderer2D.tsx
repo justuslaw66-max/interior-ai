@@ -45,14 +45,12 @@ import {
 import { resolveLoneRoomPlanFrame2D } from "@/lib/room-renderer-2d-lone-room";
 import { EDITOR_GEOMETRY_TOLERANCES } from "@/lib/editor-geometry-tolerances";
 import type { Plan2DViewOrientation } from "@/components/editor/camera/EditorCamera2D";
-import {
-  CanonicalFloorPlanWalls2D,
-  type CanonicalOpeningDragMetricsV2,
-} from "./CanonicalFloorPlanStructure";
+import { CanonicalFloorPlanWalls2D, type CanonicalOpeningDragMetricsV2 } from "./CanonicalFloorPlanStructure";
 import type { CanonicalFloorPlanRenderModel } from "@/lib/floor-plan-render-model";
 import { buildRoomPlanShape } from "@/lib/room-plan-shape";
 import type { PlanMeasurementUnit } from "@/lib/design-page-types";
-import { formatDisplayLength } from "@/lib/display-units";
+import { formatDisplayArea, formatDisplayLength } from "@/lib/display-units";
+import { getPlanRoomFloorAreaSqm } from "@/lib/room-floor-area";
 
 type RectZone = {
   id: string;
@@ -3651,7 +3649,7 @@ export default function RoomRenderer2D({
                     <div style={{ color: "#166534", fontSize: 11 }}>
                       {formatDimension(room.w)} x {formatDimension(room.d)}
                       <span style={{ color: "#4b5563", fontWeight: 600, marginLeft: 6 }}>
-                        {(room.w * room.d).toFixed(1)} m2
+                        {formatDisplayArea(getPlanRoomFloorAreaSqm(room), measurementUnit)}
                       </span>
                     </div>
                     <div style={{ color: "#6b7280", fontSize: 9, fontWeight: 650, marginTop: 1 }}>
