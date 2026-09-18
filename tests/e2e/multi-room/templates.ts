@@ -342,12 +342,7 @@ export function registerTemplateTests() {
     await page.getByTestId("room-pan-zoom-in").click();
     await page.getByTestId("room-pan-zoom-out").click();
     await page.getByTestId("room-pan-reset-view").click();
-    if (!(await page.getByText("Home fitted").isVisible({ timeout: 1000 }).catch(() => false))) {
-      test.info().annotations.push({
-        type: "note",
-        description: "Home fitted toast was not visible long enough to assert in this run.",
-      });
-    }
+    await expect(page.getByTestId("collision-toast")).toContainText("Home fitted");
 
     await clickWithFallback(page.getByTestId("editor-workflow-ai"));
     await expect(page.getByTestId("editor-workflow-ai")).toHaveAttribute("data-active", "true");
@@ -380,10 +375,7 @@ export function registerTemplateTests() {
     }
     await expect(page.locator('[data-testid^="room-resize-handle-"][data-testid$="-s"]')).toBeVisible();
     await expect(page.locator('[data-testid^="room-resize-handle-"][data-testid$="-w"]')).toBeVisible();
-    const adjacencyGuide = page.getByTestId("room-adjacency-guide");
-    if (await adjacencyGuide.isVisible({ timeout: 1000 }).catch(() => false)) {
-      await expect(adjacencyGuide).toHaveText("Shared wall");
-    }
+    await expect(page.getByTestId("room-adjacency-guide")).toHaveText("Shared wall");
     await expect(page.getByTestId("room-connection-checklist")).toBeVisible();
     await expect(page.getByTestId("room-connection-checklist")).toContainText("Connections");
     await expect(page.getByTestId("room-connection-checklist")).toContainText("Needs doorway");
