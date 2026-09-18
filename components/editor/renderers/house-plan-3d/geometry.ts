@@ -168,7 +168,7 @@ function normalizeWallPanelIdToken(value: string): string {
     .replace(/^_+|_+$/g, "") || "unknown";
 }
 
-function getWallSurfacePanelId({
+export function getWallSurfacePanelId({
   room,
   segment,
   startAnchor,

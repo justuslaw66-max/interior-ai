@@ -138,7 +138,7 @@ export type DesignSceneStructureLayerActions = {
   overlays: {
     select: NonNullable<PlanRendererProps["onSelectOverlay"]>;
     delete: NonNullable<PlanRendererProps["onDeleteOverlay"]>;
-    moveOpening: NonNullable<PlanRendererProps["onMoveOpening"]>;
+    moveOpening: NonNullable<WholeHomeRendererProps["onMoveOpening"]>;
     resizeOpening: NonNullable<PlanRendererProps["onResizeOpening"]>;
     addDoorwaySuggestion: NonNullable<
       PlanRendererProps["onAddDoorwaySuggestion"]

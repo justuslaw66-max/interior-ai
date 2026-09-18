@@ -22,6 +22,7 @@ import {
   type DesignPageOpeningMetricsPatch,
 } from "@/lib/design-page-opening-metrics";
 import { buildEditorScene2D } from "@/lib/design-page-plan-scene";
+import { useDesignPageOpeningMoveAction } from "@/lib/useDesignPageOpeningMoveAction";
 import type { PlanLayerPresetId } from "@/lib/design-page-types";
 import type {
   EditorAnnotation2D,
@@ -208,13 +209,11 @@ export function useDesignPagePlanOverlayController({
     track,
   });
 
-  const handleMoveOpening2D = useCallback(
-    (id: string, offsetMeters: number) => {
-      if (canonicalTopology?.moveOpening(id, offsetMeters)) return;
-      handleMoveOpening2DFromPlanAction(id, offsetMeters);
-    },
-    [canonicalTopology, handleMoveOpening2DFromPlanAction]
-  );
+  const handleMoveOpening2D = useDesignPageOpeningMoveAction({
+    openingsRef: planOpeningsRef, canonicalTopology,
+    moveOpening: handleMoveOpening2DFromPlanAction,
+    updateMetrics: handleUpdateOpeningMetrics2DFromPlanAction,
+  });
 
   const commitPlanAnnotation = useCallback(() => {
     if (!pendingAnnotationKind || !pendingAnnotationText.trim()) {

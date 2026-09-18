@@ -1,7 +1,6 @@
 import { getSurfaceMaterialById } from "./catalog-registry";
 import { clampFloorPatternScale, normalizeFloorRotationDeg } from "./floor-materials";
 import {
-  getWallPanelSurfaceSettings,
   getDefaultWallSurfaceSettings,
   getWallFaceLabel,
   getWallFaceSurfaceSettings,
@@ -12,6 +11,9 @@ import {
   type HousePlanRoom2D,
 } from "./design-page-house-plan";
 import { mapPlanOpeningsToRoomRenderer } from "./design-page-plan-overlays";
+import { resolveAssignedWallPanels, type BomWallPanel } from "./surface-material-wall-panels";
+import { buildOpeningWallSurfacePanels } from "@/components/editor/renderers/house-plan-3d/openingWallSurfacePanels";
+import { getContinuousWallPanelId } from "@/components/editor/renderers/house-plan-3d/continuousWallSelection";
 import {
   buildWallSurfacePanels,
   getWallOpenings,
@@ -127,13 +129,6 @@ export function getRoomSurfaceAssignments(room: RoomSnapshot): RoomSurfaceAssign
   return room.surfaces ?? room.surfaceFinishes;
 }
 
-type BomWallPanel = {
-  panelId: string;
-  faceId: string;
-  areaSqm: number;
-  legacyPanelIds: readonly string[];
-};
-
 function buildRoomBomWallPanels(
   room: RoomSnapshot,
   topologyRoom: HousePlanRoom2D | undefined,
@@ -143,21 +138,16 @@ function buildRoomBomWallPanels(
   if (!topologyRoom) return [];
   return getWallSegments(topologyRoom).flatMap((segment) => {
     const faceId = segment.wall ?? segment.key;
-    const height = Math.max(
-      0.2,
-      topologyRoom.wallHeights?.[faceId] ??
-        topologyRoom.height ??
-        getRoomWallHeight(room)
-    );
-    return buildWallSurfacePanels(
-      topologyRoom,
-      segment,
-      getWallOpenings(topologyRoom, segment, topologyRooms, openings)
-    ).map((panel) => ({
-      panelId: panel.panelId,
+    const height = Math.max(0.2, topologyRoom.wallHeights?.[faceId] ?? topologyRoom.height ?? getRoomWallHeight(room));
+    const wallOpenings = getWallOpenings(topologyRoom, segment, topologyRooms, openings);
+    return [
+      ...buildWallSurfacePanels(topologyRoom, segment, wallOpenings),
+      ...buildOpeningWallSurfacePanels(topologyRoom, topologyRooms, segment, wallOpenings, height).filter((panel) => panel.role === "interior"),
+    ].map((panel) => ({
+      panelId: getContinuousWallPanelId(topologyRoom, segment, wallOpenings, panel.role) ?? panel.panelId,
       faceId: panel.faceId,
-      areaSqm: panel.part.length * height,
-      legacyPanelIds: panel.legacyPanelIds,
+      areaSqm: panel.part.length * (panel.part.height ?? height),
+      legacyPanelIds: [panel.panelId, ...panel.legacyPanelIds],
     }));
   });
 }
@@ -309,23 +299,7 @@ export function buildRoomSurfaceMaterialBomRows(
             0
           )
         : getRoomWallAreaSqm(room);
-    const panelAssignments = surfaces?.walls?.panels ?? {};
-    const resolvedPanels = wallPanels.flatMap((panel) => {
-      const assignmentId = [panel.panelId, ...panel.legacyPanelIds].find(
-        (panelId) =>
-          Object.prototype.hasOwnProperty.call(panelAssignments, panelId)
-      );
-      if (!assignmentId) return [];
-      const settings = getWallPanelSurfaceSettings(
-        surfaces,
-        panel.faceId,
-        panel.panelId,
-        normalizeFloorRotationDeg,
-        clampFloorPatternScale,
-        panel.legacyPanelIds
-      );
-      return [{ ...panel, settings }];
-    });
+    const resolvedPanels = resolveAssignedWallPanels(wallPanels, surfaces);
     const panelOverrideAreaByFace = new Map<string, number>();
     resolvedPanels.forEach((panel) => {
       panelOverrideAreaByFace.set(

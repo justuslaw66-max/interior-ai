@@ -4,11 +4,14 @@ import {
   HOUSE_PLAN_TEMPLATES,
   type HousePlanRoom2D,
 } from "@/lib/design-page-house-plan";
-import type { RoomRendererOpening } from "@/lib/design-page-plan-overlays";
+import { mapPlanOpeningsToRoomRenderer, type RoomRendererOpening } from "@/lib/design-page-plan-overlays";
 import { canonicalFloorPlanToDesignSnapshot } from "@/lib/floor-plan-legacy-adapters";
 import { loadPingYiCourtV2ReviewSeedBundle } from "@/lib/floor-plan-seeds/ping-yi-court-review-intake";
 import { snapshotToStored, storedToSnapshot } from "@/lib/room-persistence";
 import { isPointInPlanarRing } from "@/lib/floor-plan-planar-union";
+import { buildOpeningWallSurfacePanels } from "@/components/editor/renderers/house-plan-3d/openingWallSurfacePanels";
+import { withContinuousWallSelection } from "@/components/editor/renderers/house-plan-3d/continuousWallSelection";
+import { getWindowOpeningHitVolume } from "@/components/editor/renderers/house-plan-3d/windowOpeningGeometry";
 import {
   buildLegacyFloorSlabsForTest,
   buildLegacyWallBandsForTest,
@@ -34,6 +37,7 @@ import {
   getSharedWallRoomIds,
   getWallOpenings,
   getWallSegments,
+  legacyWallPartAxisRange,
   isWallSurfacePanelCutawayEligible,
   resolveAtomicWallCutawayRenderState,
   splitWallPartsAtSharedBoundaries,
@@ -192,6 +196,91 @@ const doorwayRoom: HousePlanRoom2D = {
   shape: "rectangle",
   polygon: undefined,
 };
+const savedTemplateWindow = {
+  id: "template-window-studio",
+  roomId: doorwayRoom.id,
+  wall: "north" as const,
+  kind: "window" as const,
+  widthMm: 1400,
+  offsetMm: 0,
+};
+for (const dimensions of [
+  {},
+  { heightMm: 1000, bottomMm: 700 },
+  { heightMm: 2600, bottomMm: 0 },
+]) {
+  const savedOpening = { ...savedTemplateWindow, ...dimensions };
+  const projected = mapPlanOpeningsToRoomRenderer([savedOpening]);
+  const bands = buildLegacyWallBandsForTest({
+    rooms: [doorwayRoom], openings: projected,
+    defaultWallHeight: 2.6, stackedFloors: false,
+  });
+  const bottom = (dimensions.bottomMm ?? 900) / 1000;
+  const top = bottom + (dimensions.heightMm ?? 1200) / 1000;
+  const wallExistsAt = (height: number) => bands.some((band) =>
+    band.bottomMeters <= height && band.topMeters >= height &&
+    band.polygons.some((polygon) =>
+      isPointInPlanarRing({ xMm: 0, zMm: -1500 }, polygon.outer) &&
+      !polygon.holes.some((hole) => isPointInPlanarRing({ xMm: 0, zMm: -1500 }, hole))
+    )
+  );
+  if (bottom > 0) assert(wallExistsAt(bottom / 2), "A saved template window must retain the wall below its sill.");
+  if (top < 2.6) assert(wallExistsAt((top + 2.6) / 2), "A saved template window must retain the wall above its head.");
+  assert(!wallExistsAt((bottom + top) / 2), "The window opening itself must remain clear, including explicit full-height windows.");
+  assert.deepEqual(savedOpening, { ...savedTemplateWindow, ...dimensions }, "Rendering defaults must not rewrite the saved opening.");
+  const segment = getWallSegments(doorwayRoom).find((entry) => entry.wall === "north");
+  assert.ok(segment);
+  const wallOpenings = getWallOpenings(doorwayRoom, segment, [doorwayRoom], projected);
+  const panels = buildOpeningWallSurfacePanels(doorwayRoom, [doorwayRoom], segment, wallOpenings, 2.6);
+  const interiorPanels = panels.filter((panel) => panel.role === "interior");
+  assert.equal(interiorPanels.length, Number(bottom > 0) + Number(top < 2.6));
+  assert.equal(new Set(panels.map((panel) => panel.panelId)).size, panels.length, "Render fragments retain unique keys for material compatibility.");
+  for (const panel of panels) {
+    const partBottom = (panel.part.centerY ?? 0) - (panel.part.height ?? 0) / 2;
+    const partTop = partBottom + (panel.part.height ?? 0);
+    assert(partTop <= bottom + 1e-9 || partBottom >= top - 1e-9, "Selectable wall panels must never fill or intercept the window aperture (allowing floating-point roundoff).");
+    assert.equal(panel.part.length, 1.4);
+    assert.equal(panel.faceId, "north");
+    assert.equal(panel.roomId, doorwayRoom.id);
+  }
+  const movedPanels = buildOpeningWallSurfacePanels(doorwayRoom, [doorwayRoom], segment,
+    wallOpenings.map((opening) => ({ ...opening, offset: 0.3, width: 1.1 })), 2.6);
+  assert.deepEqual(movedPanels.map((panel) => panel.panelId), panels.map((panel) => panel.panelId), "Moving/resizing an opening must preserve the surrounding wall material targets.");
+  const grouped = withContinuousWallSelection(doorwayRoom, segment, wallOpenings, [
+    ...buildWallSurfacePanels(doorwayRoom, segment, wallOpenings),
+    ...buildWallSurfacePanels(doorwayRoom, segment, wallOpenings, "exterior"), ...panels,
+  ], 2.6, 0);
+  assert.equal(new Set(grouped.map((panel) => panel.selectionPanelId)).size, 2,
+    "The full wall around a window must have one target per side, including sill and lintel.");
+  for (const side of [1, -1]) {
+    let perimeter = 0;
+    for (const panel of grouped.filter((entry) => entry.side === side)) {
+      const centerX = legacyWallPartAxisRange(segment, panel.part).centerOffset;
+      const centerY = panel.part.centerY ?? 1.3;
+      for (const [a, b] of panel.boundaryEdges ?? []) {
+        perimeter += Math.hypot(b[0] - a[0], b[1] - a[1]);
+        const x = (a[0] + b[0]) / 2 + centerX, y = (a[1] + b[1]) / 2 + centerY;
+        const near = (first: number, second: number) => Math.abs(first - second) < 1e-8;
+        const outer = near(Math.abs(x), segment.length / 2) || near(y, 0) || near(y, 2.6);
+        const hole = (near(Math.abs(x), 0.7) && y >= bottom && y <= top) ||
+          (Math.abs(x) <= 0.7 + 1e-8 && (near(y, bottom) || near(y, top)));
+        assert(outer || hole, "There must be no selection seams between wall fragments.");
+      }
+    }
+    const expected = 2 * (segment.length + 2.6) + 2 * (1.4 + top - bottom) -
+      2 * 1.4 * (Number(bottom === 0) + Number(top === 2.6));
+    assert(Math.abs(perimeter - expected) < 1e-8, "The full wall and cutout perimeter must be highlighted exactly once.");
+  }
+  const movedGrouped = withContinuousWallSelection(doorwayRoom, segment,
+    wallOpenings.map((opening) => ({ ...opening, offset: 0.3, width: 1.1 })), grouped, 2.6, 0);
+  assert.deepEqual(movedGrouped.map((panel) => panel.selectionPanelId), grouped.map((panel) => panel.selectionPanelId));
+  const hit = getWindowOpeningHitVolume(segment, wallOpenings[0], 2.6);
+  assert.equal(hit.width, 1.4);
+  assert.equal(hit.bottom, bottom);
+  assert(Math.abs(hit.centerY - (bottom + top) / 2) < 1e-8);
+  assert(Math.abs(hit.height - (top - bottom)) < 1e-8,
+    "The window hit target must cover only the aperture, never the sill or lintel.");
+}
 const twoDoorRoom: HousePlanRoom2D = {
   ...doorwayRoom,
   id: "two-door-room",

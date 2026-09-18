@@ -19,6 +19,10 @@ import {
   buildSurfaceMaterialCsvRows,
 } from "../lib/share-shopping-csv";
 import { buildRoomSurfaceMaterialBomRows } from "../lib/surface-material-bom";
+import { mapPlanOpeningsToRoomRenderer } from "../lib/design-page-plan-overlays";
+import { buildOpeningWallSurfacePanels } from "../components/editor/renderers/house-plan-3d/openingWallSurfacePanels";
+import { getContinuousWallPanelId } from "../components/editor/renderers/house-plan-3d/continuousWallSelection";
+import { getWallOpenings, getWallSegments } from "../components/editor/renderers/house-plan-3d/geometry";
 import {
   SURFACE_MATERIAL_RENDER_REGISTRY,
   getRuntimeSurfaceMaterialById,
@@ -1055,7 +1059,7 @@ const canonicalInheritedWallRow = canonicalPanelBomRows.find(
 assert.ok(canonicalInheritedWallRow);
 assert.equal(
   canonicalInheritedWallRow.surfaceAreaSqm,
-  28.75,
+  29.15,
   "The overridden panel area must be subtracted from the inherited wall material."
 );
 assert.equal(
@@ -1066,9 +1070,43 @@ assert.equal(
         : sum,
     0
   ),
-  32.5,
+  32.9,
   "Wall BOM rows must cover the solid wall area exactly once after subtracting the doorway."
 );
+
+const bomWindow = {
+  id: "bom-window", roomId: roomWithCanonicalPanelFinish.id, kind: "window" as const,
+  wall: "north" as const, widthMm: 1400, offsetMm: 0, heightMm: 1200, bottomMm: 900,
+};
+const bomTopology = buildHousePlan2D([roomWithCanonicalPanelFinish], 4, 3).rooms;
+const bomSegment = getWallSegments(bomTopology[0]).find((segment) => segment.wall === "north");
+assert.ok(bomSegment);
+const bomWindowPanels = buildOpeningWallSurfacePanels(bomTopology[0], bomTopology, bomSegment,
+  getWallOpenings(bomTopology[0], bomSegment, bomTopology, mapPlanOpeningsToRoomRenderer([bomWindow])), 2.5);
+const sillPanel = bomWindowPanels.find((panel) => panel.role === "interior" && panel.part.key.endsWith("-sill"));
+assert.ok(sillPanel);
+const windowPanelRoom: RoomSnapshot = {
+  ...roomWithCanonicalPanelFinish,
+  surfaces: { walls: {
+    default: { materialId: "goodrich-geff-novaclick-gnv-002-silver-oak" },
+    panels: { [sillPanel.panelId]: { materialId: "goodrich-geff-novaclick-gnv-003-ash-oak" } },
+  } },
+};
+const windowBomRows = buildRoomSurfaceMaterialBomRows([windowPanelRoom], [bomWindow]);
+assert.equal(windowBomRows.find((row) => row.wallPanelId === sillPanel.panelId)?.surfaceAreaSqm, 1.26,
+  "A saved fragment material must retain its area until the continuous wall is repainted.");
+assert.equal(Math.round(windowBomRows.reduce((sum, row) => sum + row.surfaceAreaSqm, 0) * 100), 3332,
+  "The window aperture must be excluded and its lintel/sill areas counted exactly once.");
+const continuousPanelId = getContinuousWallPanelId(bomTopology[0], bomSegment,
+  getWallOpenings(bomTopology[0], bomSegment, bomTopology, mapPlanOpeningsToRoomRenderer([bomWindow])), "interior");
+assert.ok(continuousPanelId);
+windowPanelRoom.surfaces!.walls!.panels![continuousPanelId] = { materialId: "goodrich-geff-novaclick-gnv-003-ash-oak" };
+const continuousBomRows = buildRoomSurfaceMaterialBomRows([windowPanelRoom], [bomWindow]);
+const continuousRows = continuousBomRows.filter((row) => row.wallPanelId === continuousPanelId);
+assert.equal(continuousRows.length, 1, "One selected wall must produce one material quantity row.");
+assert.equal(continuousRows[0].surfaceAreaSqm, 8.32, "A continuous wall finish includes all solid sections minus the window.");
+assert.equal(continuousBomRows.some((row) => row.wallPanelId === sillPanel.panelId), false,
+  "A whole wall assignment must supersede old fragment assignments without double counting.");
 
 assert.equal(normalizeWallPaintColorHex("f5f1e8"), "#F5F1E8", "wall paint colors should normalize to uppercase hex");
 assert.equal(normalizeWallPaintColorHex("#xyz123"), null, "invalid wall paint colors should be rejected");

@@ -661,7 +661,7 @@ assert.doesNotMatch(
 
 assert.match(
   source,
-  /const visibleHoveredTargetKey =\s*selectedSurfaceTarget\?\.kind === "wall" && selectedTargetKey\s*\? null\s*: hoveredTargetKey;[\s\S]*?hoveredTargetKey=\{visibleHoveredTargetKey\}[\s\S]*?selectedTargetKey=\{selectedTargetKey\}/,
+  /if \(selected\?\.kind === "wall" && selectedKey && target\?\.kind !== "opening"\) return null;[\s\S]*?const visibleHoveredTargetKey = visibleStructureHover[\s\S]*?hoveredTargetKey=\{visibleHoveredTargetKey\}/,
   "A selected wall panel should keep the only visible wall outline while pointer movement crosses neighboring panels."
 );
 
@@ -673,13 +673,20 @@ assert.match(
 
 assert.match(
   source,
-  /<CutawayWallMesh[\s\S]*?renderSurfaces=\{!isFullHeightStructuralPart\}[\s\S]*?interactive=\{false\}[\s\S]*?resolvedWallSurfacePanels\.map\(\s*\(panel\) => \([\s\S]*?<WallSurfacePanelMesh/,
+  /<CutawayWallMesh[\s\S]*?renderSurfaces=\{false\}[\s\S]*?interactive=\{false\}[\s\S]*?resolvedWallSurfacePanels\.map\(\s*\(panel\) => \([\s\S]*?<WallSurfacePanelMesh/,
   "Structural fragments must not render finish planes or receive raycasts; one canonical panel mesh owns both."
 );
 
+assert.match(source, /\.\.\.buildOpeningWallSurfacePanels\(room, topologyRooms, segment, wallOpenings, segmentWallHeight\)/,
+  "Opening lintels and sills must be routed through the same selectable panel owner as the side sections.");
+assert.match(source, /const partHeight = panel\.part\.height \?\? wallHeight;[\s\S]*const partCenterY = panel\.part\.centerY \?\? wallHeight \/ 2;[\s\S]*position=\{\[panel\.part\.x, partCenterY, panel\.part\.z\]\}[\s\S]*partHeight=\{partHeight\}/,
+  "Opening panel hit geometry and visible surfaces must retain their own height and elevation.");
+assert.match(source, /const edges = panel\.boundaryEdges \?\?/,
+  "Window walls must use the exposed boundary, excluding internal fragment seams.");
+
 assert.match(
   source,
-  /export function WallSurfacePanelMesh\([\s\S]*?pieceKey: `wall:\$\{panel\.roomId\}:\$\{panel\.faceId\}:\$\{panel\.panelId\}`,[\s\S]*?panelAliases: panel\.legacyPanelIds,[\s\S]*?getWallPanelSurfaceSettings\([\s\S]*?panel\.panelId[\s\S]*?panel\.legacyPanelIds/,
+  /export function WallSurfacePanelMesh\([\s\S]*?pieceKey: `wall:\$\{panel\.roomId\}:\$\{panel\.faceId\}:\$\{selectionPanelId\}`,[\s\S]*?panelAliases: panel\.selectionPanelAliases \?\? panel\.legacyPanelIds,[\s\S]*?getWallPanelSurfaceSettings\([\s\S]*?panel\.panelId[\s\S]*?panel\.legacyPanelIds/,
   "Every finish mesh must resolve one canonical target and one settings object with deterministic legacy fallbacks."
 );
 
@@ -709,7 +716,7 @@ assert.match(
 
 assert.match(
   source,
-  /const target: StructureTarget = \{[\s\S]*?roomId: panel\.roomId,[\s\S]*?id: panel\.faceId,[\s\S]*?panelId: panel\.panelId,[\s\S]*?surfaceSide: panel\.side/,
+  /const target: StructureTarget = \{[\s\S]*?roomId: panel\.roomId,[\s\S]*?id: panel\.faceId,[\s\S]*?panelId: selectionPanelId,[\s\S]*?surfaceSide: panel\.side/,
   "Clicks on a panel must return the canonical room, face, panel, and physical side."
 );
 
@@ -755,8 +762,8 @@ assert.match(
 
 assert.match(
   source,
-  /const outlinePoints:[\s\S]*?\[outlineLeftX, outlineBottomY, outlineZ\][\s\S]*?\[outlineRightX, outlineBottomY, outlineZ\][\s\S]*?\[outlineRightX, outlineTopY, outlineZ\][\s\S]*?\[outlineLeftX, outlineTopY, outlineZ\][\s\S]*?\[outlineLeftX, outlineBottomY, outlineZ\][\s\S]*?key=\{`wall-surface-panel-outline:\$\{panel\.panelId\}`\}[\s\S]*?renderOrder=\{25\}[\s\S]*?depthTest=\{false\}[\s\S]*?depthWrite=\{false\}/,
-  "A selected canonical panel must draw one closed four-edge overlay that cannot be occluded by adjacent wall caps."
+  /const outlinePoints = edges\.flatMap[\s\S]*?key=\{`wall-surface-panel-outline:\$\{panel\.panelId\}`\}[\s\S]*?segments[\s\S]*?renderOrder=\{25\}[\s\S]*?depthTest=\{false\}[\s\S]*?depthWrite=\{false\}/,
+  "The outline must draw only exposed boundary edges, including holes, above the wall caps."
 );
 
 assert.doesNotMatch(

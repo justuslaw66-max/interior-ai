@@ -20,6 +20,9 @@ import {
 } from "@/lib/surface-settings";
 import type { CanonicalFloorPlanRenderModel } from "@/lib/floor-plan-render-model";
 import { CanonicalFloorPlanWalls3D } from "./CanonicalFloorPlanStructure";
+import { buildOpeningWallSurfacePanels } from "./house-plan-3d/openingWallSurfacePanels";
+import { withContinuousWallSelection } from "./house-plan-3d/continuousWallSelection";
+import { WindowOpeningMesh } from "./house-plan-3d/WindowOpeningMesh";
 import {
   LegacyFloorSlabMesh,
   LegacyWallBandMesh,
@@ -98,7 +101,7 @@ type HousePlanRenderer3DProps = {
     surfaceSide?: 1 | -1;
   }) => void;
   onSelectOpening?: (openingId: string | null) => void;
-  onMoveOpening?: (openingId: string, offsetMeters: number) => void;
+  onMoveOpening?: (openingId: string, offsetMeters: number, bottomMeters?: number) => void;
   onResizeOpening?: (
     openingId: string,
     metrics: { widthMeters: number; offsetMeters: number }
@@ -153,6 +156,12 @@ function getStructurePieceKey(target: StructureTarget | null): string | null {
 
 function isSameStructurePiece(first: StructureTarget | null, second: StructureTarget): boolean {
   return getStructurePieceKey(first) === getStructurePieceKey(second);
+}
+
+function visibleStructureHover(target: StructureTarget | null, selected: StructureTarget | null, selectedKey: string | null) {
+  // Keep the selected wall outline while allowing an opening hover inside it.
+  if (selected?.kind === "wall" && selectedKey && target?.kind !== "opening") return null;
+  return getStructurePieceKey(target);
 }
 
 function getStructureOutlineStyle(
@@ -251,7 +260,6 @@ export default function HousePlanRenderer3D({
         ? getRoomFloorLevel(activeRoom)
         : 1;
   const [hoveredStructureTarget, setHoveredStructureTarget] = useState<StructureTarget | null>(null);
-  const hoveredTargetKey = getStructurePieceKey(hoveredStructureTarget);
   const selectedOpening = selectedOpeningId
     ? openings.find((opening) => opening.id === selectedOpeningId) ?? null
     : null;
@@ -272,13 +280,7 @@ export default function HousePlanRenderer3D({
     selectedSurfaceTarget?.kind === "wall"
       ? persistedWallPanelKey ?? selectedLogicalTargetKey
       : selectedLogicalTargetKey;
-  // Keep the saved wall panel as the single visual selection. Previously a
-  // neighboring hover replaced the blue selection with a cyan outline, making
-  // the selection appear to jump or span more than one panel.
-  const visibleHoveredTargetKey =
-    selectedSurfaceTarget?.kind === "wall" && selectedTargetKey
-      ? null
-      : hoveredTargetKey;
+  const visibleHoveredTargetKey = visibleStructureHover(hoveredStructureTarget, selectedSurfaceTarget, selectedTargetKey);
   const legacyCutawaySegmentKeys = useLegacyCameraCutawaySegmentKeys({
     rooms,
     activeRoomId,
@@ -597,45 +599,20 @@ export default function HousePlanRenderer3D({
                 segment,
                 wallPanelParts
               );
-              const resolvedWallSurfacePanels =
-                withWallSurfacePanelSupportIntervals(
-                  wallSurfacePanels,
-                  segment,
-                  parts
-                );
-              const lintelParts = buildOpeningLintelParts(
-                segment,
-                wallOpenings,
-                segmentWallHeight,
-                segmentWallHeight
-              );
-              const sillParts = buildOpeningSillParts(
-                segment,
-                wallOpenings,
-                segmentWallHeight,
-                segmentWallHeight
-              );
-              const thresholds = getOpeningThresholds(
-                segment,
-                wallOpenings,
-                segmentWallHeight,
-                segmentWallHeight
-              );
+              const resolvedWallSurfacePanels = withContinuousWallSelection(room, segment, wallOpenings, [
+                ...withWallSurfacePanelSupportIntervals(wallSurfacePanels, segment, parts),
+                ...buildOpeningWallSurfacePanels(room, topologyRooms, segment, wallOpenings, segmentWallHeight),
+              ], segmentWallHeight, roomWallThickness, endJoinOptions);
+              const lintelParts = buildOpeningLintelParts(segment, wallOpenings, segmentWallHeight, segmentWallHeight);
+              const sillParts = buildOpeningSillParts(segment, wallOpenings, segmentWallHeight, segmentWallHeight);
+              const thresholds = getOpeningThresholds(segment, wallOpenings, segmentWallHeight, segmentWallHeight);
               const wallRenderParts = [
                 ...parts,
                 ...lintelParts,
                 ...sillParts,
               ];
-              const fullHeightStructuralPartKeys = new Set(
-                parts.map((part) => part.key)
-              );
-
               return [
-                ...wallRenderParts.map((part) => {
-                  const isFullHeightStructuralPart =
-                    fullHeightStructuralPartKeys.has(part.key);
-
-                  return (
+                ...wallRenderParts.map((part) => (
                     <CutawayWallMesh
                       key={part.key}
                       room={room}
@@ -646,10 +623,8 @@ export default function HousePlanRenderer3D({
                       wallThickness={roomWallThickness}
                       wallOpacity={wallOpacity}
                       renderBase={!hasLegacyMergedWalls}
-                      // Full-height decorative finishes are rendered once per
-                      // canonical room-facing panel below. Lintels and sills
-                      // remain structural sub-parts and inherit the face finish.
-                      renderSurfaces={!isFullHeightStructuralPart}
+                      // Every finish, including opening fragments, is owned by a selectable panel.
+                      renderSurfaces={false}
                       selectionPieceKey={null}
                       selectionSettingsFallbackKeys={[]}
                       selectionPanelLength={part.length}
@@ -666,8 +641,7 @@ export default function HousePlanRenderer3D({
                       onClearHoverTarget={clearHoveredTarget}
                       onSelectTarget={selectStructureTarget}
                     />
-                  );
-                }),
+                )),
                 ...resolvedWallSurfacePanels.map((panel) => (
                   <WallSurfacePanelMesh
                     key={panel.panelId}
@@ -691,14 +665,22 @@ export default function HousePlanRenderer3D({
                     onSelectTarget={selectStructureTarget}
                   />
                 )),
+                ...wallOpenings.filter((opening) => opening.kind === "window").map((opening) => (
+                  <WindowOpeningMesh key={`window-hit:${segment.key}:${opening.id}`}
+                    roomId={openings.find((source) => source.id === opening.sourceId)?.roomId ?? room.id}
+                    sourceOpening={openings.find((source) => source.id === opening.sourceId)}
+                    opening={opening} segment={segment} wallHeight={segmentWallHeight}
+                    wallThickness={roomWallThickness} floorWorldY={floorYOffset} interactive={interactive}
+                    hidden={legacyCutawaySegmentKeys.has(segment.key)}
+                    hoveredTargetKey={visibleHoveredTargetKey} selectedTargetKey={selectedTargetKey}
+                    onHoverTarget={setHoveredStructureTarget} onClearHoverTarget={clearHoveredTarget}
+                    onSelectTarget={selectStructureTarget}
+                    onMoveOpening={onMoveOpening} onOpeningDragStateChange={onOpeningDragStateChange} />
+                )),
                 ...thresholds.map((threshold) => {
-                  const sourceOpening = openings.find(
-                    (opening) => opening.id === threshold.sourceId
-                  );
+                  const sourceOpening = openings.find((opening) => opening.id === threshold.sourceId);
                   const sourceRoom = sourceOpening?.roomId
-                    ? topologyRooms.find(
-                        (candidate) => candidate.id === sourceOpening.roomId
-                      )
+                    ? topologyRooms.find((candidate) => candidate.id === sourceOpening.roomId)
                     : undefined;
 
                   return (

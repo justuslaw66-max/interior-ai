@@ -90,7 +90,7 @@ export type TracedOpeningPreview = {
 };
 
 const MAX_OPENING_WALL_DISTANCE_METERS = 0.45;
-const MIN_OPENING_CORNER_CLEARANCE_METERS = 0.18;
+export const MIN_OPENING_CORNER_CLEARANCE_METERS = 0.18;
 const MIN_OPENING_SPACING_METERS = 0.18;
 export const ROOM_DRAW_GRID_STEP_METERS = 0.1;
 export const ROOM_DRAW_EDGE_SNAP_DISTANCE_METERS = 0.35;
@@ -832,7 +832,7 @@ export function validateTracedOpeningPlacement(
   }
 
   const distanceToNearestCorner = span / 2 - Math.abs(opening.offsetMm / 1000) - halfWidth;
-  if (distanceToNearestCorner < MIN_OPENING_CORNER_CLEARANCE_METERS) {
+  if (distanceToNearestCorner + 1e-9 < MIN_OPENING_CORNER_CLEARANCE_METERS) {
     return {
       valid: false,
       reason: "too_close_to_corner",
