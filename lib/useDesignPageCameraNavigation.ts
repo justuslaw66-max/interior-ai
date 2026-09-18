@@ -1222,12 +1222,12 @@ export function useDesignPageCameraNavigation({
     const targetY = Math.max(0.8, (product.dimsMm.h / 1000) * 0.5);
     const offsetBack = Math.max(2.2, (product.dimsMm.d / 1000) * 2.8);
 
-    return resolveCameraViewForFloorWorldY({
+    return resolveCameraViewForRoomOrigin({
       target: [sofaX, targetY, sofaZ],
       pos: [sofaX, 1.5, sofaZ + offsetBack],
       fov: 45,
-    }, activeRoomFloorWorldY);
-  }, [activeRoomFloorWorldY, items, singleRoomDefaultCameraView]);
+    }, activeRoomOrigin);
+  }, [activeRoomOrigin, items, singleRoomDefaultCameraView]);
 
   const getFocusView = useCallback((): CameraView => {
     if (!selectedItem || !selectedProduct) {
@@ -1250,7 +1250,7 @@ export function useDesignPageCameraNavigation({
     const itemSize = Math.max(width, depth, selectedProduct.dimsMm.h / 1000);
     const distance = Math.max(1.8, Math.min(4.4, itemSize * 2.4));
 
-    return resolveCameraViewForFloorWorldY({
+    return resolveCameraViewForRoomOrigin({
       target: [centerX, centerY, centerZ],
       pos: [
         centerX + distance * 0.42,
@@ -1258,8 +1258,8 @@ export function useDesignPageCameraNavigation({
         centerZ + distance,
       ],
       fov: 45,
-    }, activeRoomFloorWorldY);
-  }, [activeRoomFloorWorldY, getEyeLevelView, selectedItem, selectedProduct]);
+    }, activeRoomOrigin);
+  }, [activeRoomOrigin, getEyeLevelView, selectedItem, selectedProduct]);
 
   return {
     state: {

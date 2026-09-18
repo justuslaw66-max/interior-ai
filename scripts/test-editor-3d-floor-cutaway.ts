@@ -276,8 +276,8 @@ assert.match(
 
 assert.match(
   cameraNavigationSource,
-  /const getEyeLevelView[\s\S]*?resolveCameraViewForFloorWorldY\([\s\S]*?activeRoomFloorWorldY[\s\S]*?const getFocusView[\s\S]*?resolveCameraViewForFloorWorldY\([\s\S]*?activeRoomFloorWorldY/,
-  "Eye-level and item-focus views should translate their local composition to the active floor."
+  /const getEyeLevelView[\s\S]*?resolveCameraViewForRoomOrigin\([\s\S]*?activeRoomOrigin\)[\s\S]*?const getFocusView[\s\S]*?resolveCameraViewForRoomOrigin\([\s\S]*?activeRoomOrigin\)/,
+  "Eye-level and item-focus views should translate their room-local composition to the active room's plan position and floor."
 );
 
 assert.match(
