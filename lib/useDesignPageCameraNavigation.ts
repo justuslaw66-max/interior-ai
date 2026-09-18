@@ -15,7 +15,7 @@ import type { CatalogItemSchema } from "@/lib/catalog-schema";
 import type { HousePlanRoom2D } from "@/lib/design-page-house-plan";
 import type { CameraView } from "@/lib/design-page-types";
 import { resolveEditorInitial3DFitKey } from "@/lib/design-page-editor-configuration";
-import { resolveCameraViewForFloorWorldY, resolveCanonicalFloorElevationMeters } from "@/lib/floor-plan-scene-elevation";
+import { resolveCameraViewForFloorWorldY, resolveCameraViewForRoomOrigin, resolveCanonicalFloorElevationMeters } from "@/lib/floor-plan-scene-elevation";
 import { track } from "@/lib/analytics";
 import {
   applyPlan2DCameraInvariant,
@@ -70,6 +70,7 @@ export type DesignPageCameraNavigationConfiguration = {
   floatingPlanOverlayStackVisible: boolean;
   floatingPlanOverlayStackWidthPx: number;
   activeRoomFloorWorldY: number;
+  activeRoomPlanOffset: { x: number; z: number };
   roomHeight: number;
   planViewWidth: number;
   planViewDepth: number;
@@ -170,7 +171,7 @@ export function useDesignPageCameraNavigation({
     planSafeAreaBottomPx,
     floatingPlanOverlayStackVisible,
     floatingPlanOverlayStackWidthPx,
-    activeRoomFloorWorldY, roomHeight,
+    activeRoomFloorWorldY, activeRoomPlanOffset: { x: activeRoomPlanX, z: activeRoomPlanZ }, roomHeight,
     planViewWidth,
     planViewDepth,
     min3DPolarAngle,
@@ -183,7 +184,8 @@ export function useDesignPageCameraNavigation({
     showRuleToast,
     switchRoom,
   } = actions;
-  const singleRoomDefaultCameraView = useMemo(() => resolveCameraViewForFloorWorldY(defaultCameraView, activeRoomFloorWorldY), [activeRoomFloorWorldY, defaultCameraView]);
+  const activeRoomOrigin = useMemo(() => ({ x: activeRoomPlanX, y: activeRoomFloorWorldY, z: activeRoomPlanZ }), [activeRoomFloorWorldY, activeRoomPlanX, activeRoomPlanZ]);
+  const singleRoomDefaultCameraView = useMemo(() => resolveCameraViewForRoomOrigin(defaultCameraView, activeRoomOrigin), [activeRoomOrigin, defaultCameraView]);
   const isCameraAnimatingRef = useRef(false);
   const cameraTransitionTokenRef = useRef(0);
   const cameraSelectionGuardUntilRef = useRef(0);
@@ -528,7 +530,7 @@ export function useDesignPageCameraNavigation({
       Math.round(viewportSize.height / 24),
       Math.round(planSafeAreaLeftPx / 24),
     ].join(":");
-    const fitKey = resolveEditorInitial3DFitKey({ activeRoomId: rooms[0]?.id ?? null, designId, floorWorldY: activeRoomFloorWorldY, hasWholeHousePlan, wholeHomeResponsiveKey });
+    const fitKey = resolveEditorInitial3DFitKey({ activeRoomId: rooms[0]?.id ?? null, designId, roomOrigin: activeRoomOrigin, hasWholeHousePlan, wholeHomeResponsiveKey });
     if (initial3DFitKeyRef.current === fitKey) return;
     initial3DFitKeyRef.current = fitKey;
     if (Date.now() < cameraSelectionGuardUntilRef.current) return;
@@ -536,7 +538,7 @@ export function useDesignPageCameraNavigation({
     pending3DViewRef.current = null;
     applyQueued3DView(hasWholeHousePlan ? getWholeHome3DView() : singleRoomDefaultCameraView, 260);
   }, [
-    activeRoomFloorWorldY,
+    activeRoomOrigin,
     applyQueued3DView,
     designId,
     getWholeHome3DView,
@@ -558,9 +560,7 @@ export function useDesignPageCameraNavigation({
     (next: EditorViewMode) => {
       if (next === "3d") {
         resetFloorPlanInteraction({ resetCalibrationDistance: false });
-        pending3DViewRef.current = hasWholeHousePlan
-          ? getWholeHome3DView()
-          : singleRoomDefaultCameraView;
+        pending3DViewRef.current = hasWholeHousePlan ? getWholeHome3DView() : singleRoomDefaultCameraView;
       }
       setViewMode(next);
     },

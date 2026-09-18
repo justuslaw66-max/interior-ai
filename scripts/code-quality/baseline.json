@@ -4427,7 +4427,7 @@
     "lib/useDesignPageCameraNavigation.ts": {
       "overlongFunctions": {
         "count": 3,
-        "maximum": 1160
+        "maximum": 1159
       },
       "complexFunctions": {
         "count": 1,

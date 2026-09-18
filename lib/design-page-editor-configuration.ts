@@ -9,13 +9,14 @@ export const DEFAULT_EDITOR_CAMERA_VIEW: CameraView = {
 export function resolveEditorInitial3DFitKey(input: {
   activeRoomId: string | null;
   designId: string | null;
-  floorWorldY: number;
+  roomOrigin: { x: number; y: number; z: number };
   hasWholeHousePlan: boolean;
   wholeHomeResponsiveKey: string;
 }): string {
+  const { x, y, z } = input.roomOrigin;
   return input.hasWholeHousePlan
     ? `whole-home:${input.wholeHomeResponsiveKey}`
-    : `single-room:${input.designId ?? input.activeRoomId ?? "local"}:${input.floorWorldY.toFixed(3)}`;
+    : `single-room:${input.designId ?? input.activeRoomId ?? "local"}:${y.toFixed(3)}:${x.toFixed(3)}:${z.toFixed(3)}`;
 }
 
 export const EDITOR_3D_MIN_CAMERA_DISTANCE = 1.4;

@@ -33,16 +33,27 @@ export function resolveFloorUndersideCutawayElevationMeters(
   );
 }
 
+/**
+ * Projects a room-relative camera preset into world space without mutating it.
+ * `origin` is the room's plan centre (x/z) and finished-floor world plane (y).
+ */
+export function resolveCameraViewForRoomOrigin(
+  view: CameraView,
+  origin: { x: number; y: number; z: number }
+): CameraView {
+  return {
+    pos: [view.pos[0] + origin.x, view.pos[1] + origin.y, view.pos[2] + origin.z],
+    target: [view.target[0] + origin.x, view.target[1] + origin.y, view.target[2] + origin.z],
+    fov: view.fov,
+  };
+}
+
 /** Projects a floor-relative camera preset into world space without mutating it. */
 export function resolveCameraViewForFloorWorldY(
   view: CameraView,
   floorWorldY: number
 ): CameraView {
-  return {
-    pos: [view.pos[0], view.pos[1] + floorWorldY, view.pos[2]],
-    target: [view.target[0], view.target[1] + floorWorldY, view.target[2]],
-    fov: view.fov,
-  };
+  return resolveCameraViewForRoomOrigin(view, { x: 0, y: floorWorldY, z: 0 });
 }
 
 export function addFloorElevationToItemPosition(

@@ -51,7 +51,7 @@ export function useDesignPageEditorInteractionRegistration({
   const history = documentRoom.boundaries.history.refs.history;
   const { activeRoom, items, zones, roomWidth, roomDepth, roomHeight, wallThickness } =
     documentRoom.derived.room;
-  const { housePlan2D, planViewWidth, planViewDepth } =
+  const { housePlan2D, planViewWidth, planViewDepth, activeRoomPlanOffset } =
     documentRoom.derived.plan;
   const selectionInspection =
     planAuthoring.boundaries.selectionInspection;
@@ -97,9 +97,9 @@ export function useDesignPageEditorInteractionRegistration({
         floatingPlanOverlayStackWidthPx:
           planAuthoring.configuration.floatingOverlayStackWidthPx,
         activeRoomFloorWorldY: resolveCanonicalFloorElevationMeters(activeRoom ?? {}) ?? 0,
+        activeRoomPlanOffset,
         roomHeight,
-        planViewWidth,
-        planViewDepth,
+        planViewWidth, planViewDepth,
         min3DPolarAngle: EDITOR_3D_MIN_POLAR_ANGLE,
         max3DPolarAngle: EDITOR_3D_MAX_POLAR_ANGLE,
       },
