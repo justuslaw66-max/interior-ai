@@ -659,7 +659,7 @@ The present uncommitted work centers on editable doors and windows across 2D and
 - `lib/my-designs-command-focus.ts` — Defines `MY_DESIGNS_COMMAND_ACTION_ID`, `MY_DESIGNS_FALLBACK_ACTION_ID`, `MY_DESIGNS_RETURN_FOCUS_IDS` for my designs command focus.
 - `lib/my-designs-dialog-focus.ts` — Defines `getMyDesignsOpenActionId`, `getMyDesignsDeleteActionId`, `getMyDesignsDeleteReturnFocusIds`, `MY_DESIGNS_CLOSE_ACTION_ID`, and related exports for my designs dialog focus.
 - `lib/observability.ts` — Defines `sanitizeObservabilityMeta`, `logOperationalEvent`, `OperationalLog` for observability.
-- `lib/onboarding.ts` — Defines `getOnboardingProgress`, `isOnboardingEligible`, `checkActivation`, `getEmptyStateCoaching`, and related exports for onboarding.
+- `lib/onboarding.ts` — Defines `getOnboardingProgress`, `isOnboardingEligible`, `checkActivation`, `getNextBestActionNudge`, and related exports for onboarding.
 - `lib/onboardingActions.ts` — Implements `autoCompleteStep` for onboarding Actions.
 - `lib/performance-monitor.ts` — Implements `PerformanceMonitor` for performance monitor.
 - `lib/phase15-release-evidence.ts` — Defines `createPhase15HumanEvidenceTemplate`, `canonicalizePhase15ReleaseManifest`, `validatePhase15HumanEvidence`, `productOwnerPublicKeyFingerprint`, and related exports for phase15 release evidence.
