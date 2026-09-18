@@ -10,7 +10,8 @@ type RoomPlanStatusBarProps = {
   roomCount: number;
   widthMeters: number;
   depthMeters: number;
-  measurementUnit: DisplayUnit;
+  /** Null until the saved plan display unit has loaded, so no default-unit size flashes. */
+  measurementUnit: DisplayUnit | null;
   healthLevel?: "ready" | "review" | "blocked";
   healthScore?: number;
   healthNextAction?: string;
@@ -24,6 +25,33 @@ type RoomPlanStatusBarProps = {
   onFitPlan?: () => void;
   onRenameRoom?: () => void;
 };
+
+type RoomStatusDetails = Pick<
+  RoomPlanStatusBarProps,
+  "roomTypeLabel" | "widthMeters" | "depthMeters" | "measurementUnit" | "roomCount"
+>;
+
+/** One-line room details for the compact overflow card; the size waits for the display unit. */
+export function formatRoomStatusDetails(room: RoomStatusDetails): string {
+  const size = room.measurementUnit
+    ? formatPlanDimensionsLabel(room.widthMeters, room.depthMeters, room.measurementUnit)
+    : null;
+  const roomCount = `${room.roomCount} ${room.roomCount === 1 ? "room" : "rooms"}`;
+  return [room.roomTypeLabel, size, roomCount].filter(Boolean).join(" · ");
+}
+
+function renderRoomSize(widthMeters: number, depthMeters: number, unit: DisplayUnit | null) {
+  if (!unit) {
+    return (
+      <span
+        data-testid="room-plan-status-room-size-placeholder"
+        aria-hidden="true"
+        className="inline-block h-2 w-16 animate-pulse rounded-full bg-current align-middle opacity-20"
+      />
+    );
+  }
+  return formatPlanDimensionsLabel(widthMeters, depthMeters, unit);
+}
 
 export default function RoomPlanStatusBar({
   roomName,
@@ -132,10 +160,10 @@ export default function RoomPlanStatusBar({
         {roomTypeLabel}
       </div>
       <div
-        data-testid="room-plan-status-room-size"
+        data-testid="room-plan-status-room-size" aria-busy={measurementUnit === null}
         className={`${metaClass} whitespace-nowrap`}
       >
-        {formatPlanDimensionsLabel(widthMeters, depthMeters, measurementUnit)}
+        {renderRoomSize(widthMeters, depthMeters, measurementUnit)}
       </div>
       <div
         data-testid="room-plan-status-room-count"

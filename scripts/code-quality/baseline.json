@@ -149,7 +149,7 @@
       "limit": 250
     },
     "components/editor/design-page/DesignPageEditorCommandBar.tsx": {
-      "lines": 343,
+      "lines": 339,
       "limit": 250
     },
     "components/editor/design-page/DesignPageQaMarkers.tsx": {
@@ -717,7 +717,7 @@
       "limit": 400
     },
     "lib/useDesignPagePresentationQaFacade.ts": {
-      "lines": 507,
+      "lines": 506,
       "limit": 400
     },
     "lib/useDesignPageProductConfiguration.ts": {
@@ -1735,11 +1735,11 @@
     "components/editor/design-page/DesignPageEditorCommandBar.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 247
+        "maximum": 244
       },
       "complexFunctions": {
         "count": 1,
-        "maximum": 35
+        "maximum": 34
       }
     },
     "components/editor/design-page/DesignPagePanelRegion.tsx": {
@@ -4849,7 +4849,7 @@
     "lib/useDesignPagePresentationQaFacade.ts": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 315
+        "maximum": 313
       }
     },
     "lib/useDesignPagePresentationWorkspaceRegistration.ts": {

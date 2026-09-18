@@ -4,7 +4,7 @@ import path from "node:path";
 import { createElement, type ComponentProps } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 
-import RoomPlanStatusBar from "@/components/editor/RoomPlanStatusBar";
+import RoomPlanStatusBar, { formatRoomStatusDetails } from "@/components/editor/RoomPlanStatusBar";
 import type { DisplayUnit } from "@/lib/display-units";
 
 const statusBarPath = path.join(process.cwd(), "components", "editor", "RoomPlanStatusBar.tsx");
@@ -40,7 +40,7 @@ assert.match(
   "The room/plan view toggle should keep a stable width and stay in the action cluster."
 );
 
-function renderRoomSize(measurementUnit: DisplayUnit): string {
+function renderRoomSizeElement(measurementUnit: DisplayUnit | null): string {
   const props: ComponentProps<typeof RoomPlanStatusBar> = {
     roomName: "Living room",
     roomTypeLabel: "Living",
@@ -53,9 +53,15 @@ function renderRoomSize(measurementUnit: DisplayUnit): string {
     onViewModeChange: () => undefined,
   };
   const markup = renderToStaticMarkup(createElement(RoomPlanStatusBar, props));
-  const match = markup.match(/data-testid="room-plan-status-room-size"[^>]*>([^<]*)</);
+  const match = markup.match(/<div data-testid="room-plan-status-room-size"[\s\S]*?<\/div>/);
   assert.ok(match, "The room status should render its room-size readout.");
-  return match[1];
+  return match[0];
+}
+
+function renderRoomSize(measurementUnit: DisplayUnit): string {
+  const element = renderRoomSizeElement(measurementUnit);
+  assert.match(element, /aria-busy="false"/, "A resolved display unit should not mark the room size busy.");
+  return element.replace(/<[^>]*>/g, "");
 }
 
 assert.equal(
@@ -68,9 +74,36 @@ assert.equal(
   "13′ 9.4″ × 12′ 5.6″",
   "Imperial viewers should read the command-bar room size in feet and inches."
 );
+// Until the saved display unit loads, the pill must not flash the default unit (server HTML included).
+const pendingRoomSize = renderRoomSizeElement(null);
+assert.match(pendingRoomSize, /aria-busy="true"/, "The room size should be marked busy while the display unit loads.");
+assert.match(
+  pendingRoomSize,
+  /data-testid="room-plan-status-room-size-placeholder"/,
+  "The room size should show a neutral placeholder while the display unit loads."
+);
+assert.equal(
+  pendingRoomSize.replace(/<[^>]*>/g, ""),
+  "",
+  "The room size must not render a default-unit length before the saved display unit loads."
+);
+assert.equal(
+  formatRoomStatusDetails({
+    roomTypeLabel: "Living", widthMeters: 4.2, depthMeters: 3.8, measurementUnit: "ft-in", roomCount: 2,
+  }),
+  "Living · 13′ 9.4″ × 12′ 5.6″ · 2 rooms",
+  "The compact overflow room details should show the size in the plan display unit."
+);
+assert.equal(
+  formatRoomStatusDetails({
+    roomTypeLabel: "Living", widthMeters: 4.2, depthMeters: 3.8, measurementUnit: null, roomCount: 1,
+  }),
+  "Living · 1 room",
+  "The compact overflow room details should omit the size until the display unit loads."
+);
 assert.match(
   source,
-  /data-testid="room-plan-status-room-size"\s*className=\{`\$\{metaClass\} whitespace-nowrap`\}/,
+  /data-testid="room-plan-status-room-size"[^>]*?className=\{`\$\{metaClass\} whitespace-nowrap`\}/,
   "The longer unit-aware room size should stay on one line inside the 30px command pill."
 );
 

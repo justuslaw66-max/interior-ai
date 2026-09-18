@@ -161,7 +161,7 @@ The present uncommitted work centers on editable doors and windows across 2D and
 - `components/editor/EditorViewToggle.tsx` — Defines `EditorViewToggle`, `EditorViewMode` for Editor View Toggle.
 - `components/editor/RoomConnectionChecklist.tsx` — Implements `RoomConnectionChecklist` for Room Connection Checklist.
 - `components/editor/RoomPanNavigator.tsx` — Implements `RoomPanNavigator` for Room Pan Navigator.
-- `components/editor/RoomPlanStatusBar.tsx` — Implements `RoomPlanStatusBar` for Room Plan Status Bar.
+- `components/editor/RoomPlanStatusBar.tsx` — Implements `RoomPlanStatusBar` and `formatRoomStatusDetails` for the command-bar room status; the room size waits for the saved plan display unit.
 - `components/editor/SelectedItemDetailsPanel.tsx` — Implements `SelectedItemDetailsPanel` for Selected Item Details Panel.
 - `components/editor/ShoppingOverviewPanel.tsx` — Defines `ShoppingOverviewPanel`, `ShoppingOverviewPanelProps` for Shopping Overview Panel.
 - `components/editor/workspaceMenuKeyboard.ts` — Implements `handleWorkspaceMenuKeyDown` for workspace Menu Keyboard.

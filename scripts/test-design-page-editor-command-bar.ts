@@ -182,8 +182,19 @@ assert.match(
 );
 assert.match(
   commandBarSource,
-  /data-testid="editor-command-overflow-room-context"[\s\S]*?2xl:hidden[\s\S]*?data-testid="editor-command-overflow-room-name"[\s\S]*?room\.roomName[\s\S]*?formatPlanDimensionsLabel\(room\.widthMeters, room\.depthMeters, room\.measurementUnit\)/,
+  /data-testid="editor-command-overflow-room-context"[\s\S]*?2xl:hidden[\s\S]*?data-testid="editor-command-overflow-room-name"[\s\S]*?room\.roomName[\s\S]*?\{formatRoomStatusDetails\(room\)\}/,
   "Compact desktop overflow should preserve room identity and dimensions, in the plan display unit, when the header context is hidden."
+);
+// The room size waits for the saved display unit instead of flashing the default unit.
+assert.match(
+  fs.readFileSync(path.join(root, "lib/useDesignPagePresentationQaFacade.ts"), "utf8"),
+  /measurementUnit: state\.plan\.planMeasurementUnitReady \? state\.plan\.planMeasurementUnit : null,/,
+  "The command-bar room status should receive no display unit until the saved plan unit has loaded."
+);
+assert.match(
+  presentationWorkspaceSource,
+  /planMeasurementUnitReady: viewportShell\.state\.plan\.planSettingsLoaded,/,
+  "The presentation facade should learn when the saved plan display unit has loaded."
 );
 assert.doesNotMatch(
   commandBarSource,

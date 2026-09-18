@@ -117,10 +117,10 @@ export function useDesignPagePresentationWorkspaceRegistration({
         planLayerPreset: viewportShell.state.plan.planLayerPreset,
         planLayers: viewportShell.state.plan.planLayers,
         planMeasurementUnit: viewportShell.state.plan.planMeasurementUnit,
+        planMeasurementUnitReady: viewportShell.state.plan.planSettingsLoaded,
         planTheme: viewportShell.state.plan.planTheme,
         annotationToolKind: planWorkspace.state.overlay.annotationToolKind,
-        selectedPlanOverlayId:
-          viewportShell.state.planSelection.selectedPlanOverlayId,
+        selectedPlanOverlayId: viewportShell.state.planSelection.selectedPlanOverlayId,
         visiblePlanOpening: planWorkspace.state.inspector.visiblePlanOpening,
         visiblePlanOpeningRoomName:
           planWorkspace.state.inspector.visiblePlanOpeningRoomName,

@@ -3,12 +3,11 @@
 import type { ComponentProps } from "react";
 import EditorCommandBar from "@/components/editor/EditorCommandBar";
 import { LightingSettingsControls } from "@/components/editor/design-page/LightingSettingsControls";
-import RoomPlanStatusBar from "@/components/editor/RoomPlanStatusBar";
+import RoomPlanStatusBar, { formatRoomStatusDetails } from "@/components/editor/RoomPlanStatusBar";
 import type {
   DesignLightingSettings,
   LightingPreset,
 } from "@/lib/lightingPresets";
-import { formatPlanDimensionsLabel } from "@/lib/plan-room-summary";
 import type { ScenePerformanceMode } from "@/lib/useDesignPageScenePerformance";
 
 type EditorCommandBarProps = ComponentProps<typeof EditorCommandBar>;
@@ -174,10 +173,7 @@ export function DesignPageEditorCommandBar({
               >
                 {room.roomName}
               </div>
-              <div className="mt-0.5 text-xs opacity-65">
-                {room.roomTypeLabel} · {formatPlanDimensionsLabel(room.widthMeters, room.depthMeters, room.measurementUnit)}
-                {` · ${room.roomCount} ${room.roomCount === 1 ? "room" : "rooms"}`}
-              </div>
+              <div className="mt-0.5 text-xs opacity-65">{formatRoomStatusDetails(room)}</div>
             </div>
             {configuration.showRoomHealth && overflowRoomHealthLabel ? (
               <span
