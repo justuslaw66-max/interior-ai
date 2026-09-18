@@ -778,4 +778,25 @@ assert.doesNotMatch(
   "Whole-home 3D should stay uncluttered without persistent floating room or floor labels."
 );
 
+const rendererCeilingFallback = source.match(
+  /const ceilingColor = ceilingSettings\.paintColorHex \?\? surfaces\?\.ceilingColor \?\? (\w+);/
+)?.[1];
+const rendererCeilingDefault = rendererCeilingFallback
+  ? source.match(new RegExp(`const ${rendererCeilingFallback} = "(#[0-9a-fA-F]{6})";`))?.[1]
+  : undefined;
+const panelCeilingDefaults = [
+  ["useDesignPageRoomReadModel.ts", /activeRoomSurfaces\?\.ceilingColor \?\?\s*"(#[0-9a-fA-F]{6})"/],
+  ["useDesignPageSurfaceInspector.ts", /floorInspectorSurfaces\?\.ceilingColor \?\?\s*"(#[0-9a-fA-F]{6})"/],
+] as const;
+for (const [fileName, fallbackPattern] of panelCeilingDefaults) {
+  const panelSource = fs.readFileSync(path.join(process.cwd(), "lib", fileName), "utf8");
+  const panelCeilingDefault = panelSource.match(fallbackPattern)?.[1];
+  assert.ok(panelCeilingDefault, `${fileName} must keep a literal ceiling colour fallback.`);
+  assert.equal(
+    rendererCeilingDefault?.toLowerCase(),
+    panelCeilingDefault.toLowerCase(),
+    `An unpainted 3D ceiling must render the ceiling colour ${fileName} shows in the panel.`
+  );
+}
+
 console.log("House-plan wall rendering guardrails passed.");
