@@ -81,7 +81,7 @@
       "limit": 400
     },
     "app/lighting-reference/LightingReferenceClient.tsx": {
-      "lines": 467,
+      "lines": 466,
       "limit": 250
     },
     "app/share/[shareToken]/export/page.tsx": {
@@ -1875,7 +1875,7 @@
     "components/editor/design-page/lighting/ViewerLighting.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 78
+        "maximum": 77
       }
     },
     "components/editor/design-page/LightingSettingsControls.tsx": {
@@ -4961,7 +4961,7 @@
     "lib/useDesignPageSceneReadModel.ts": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 249
+        "maximum": 247
       }
     },
     "lib/useDesignPageSceneRegionWorkspaceRegistration.ts": {

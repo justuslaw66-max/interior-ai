@@ -91,7 +91,6 @@ const REFERENCE_FIXTURE_ENTRY: SceneRoomItemEntry = {
   roomHeight: REFERENCE_ROOM.height ?? 3,
   roomPlanShape: "rectangle",
   roomWallThickness: 0.2,
-  roomWallModel: "house-plan-shell",
   isActiveRoom: true,
 };
 

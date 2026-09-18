@@ -19,7 +19,6 @@ import {
 } from "@/lib/design-page-geometry";
 import {
   EDITOR_GEOMETRY_TOLERANCES,
-  HOUSE_PLAN_RENDERED_WALL_THICKNESS_METERS,
   isWithinEditorTolerance,
 } from "@/lib/editor-geometry-tolerances";
 import { createRoom, type DesignItem, type DesignSnapshot } from "@/lib/room-types";
@@ -68,7 +67,6 @@ const entries = buildDesignPageSceneRoomItems({
   hasWholeHousePlan: false,
   housePlanRooms: [planRoom],
   houseRoomById: new Map([[room.id, planRoom]]),
-  usesHousePlanScene: true,
 });
 
 assert.equal(entries.length, 1);
@@ -76,7 +74,7 @@ const entry = entries[0];
 assert.equal(entry.item, item, "The canonical scene entry must retain the document item.");
 assert.equal(entry.roomFloorElevationMeters, 3.475, "Integer millimetres project to metres once.");
 assert.equal(entry.roomWallThickness, 0.14);
-assert.equal(entry.roomWallModel, "house-plan-shell");
+assert.equal("roomWallModel" in entry, false);
 assert.equal(entry.layerId, "room:upper-room:items");
 assert.equal(entry.visible, true);
 
@@ -118,16 +116,8 @@ assert.deepEqual(
 assert.deepEqual(planProjection.position, [4.25, 0.125, -2.5]);
 assert.deepEqual(spatialProjection.position, canonical.worldPosition);
 assert.equal(planProjection.rotationY, spatialProjection.rotationY);
-assert.equal(planProjection.wallThickness, 0.14);
-assert.equal(planProjection.wallContactInset, 0);
-assert.equal(
-  spatialProjection.wallThickness,
-  HOUSE_PLAN_RENDERED_WALL_THICKNESS_METERS
-);
-assert.equal(
-  spatialProjection.wallContactInset,
-  HOUSE_PLAN_RENDERED_WALL_THICKNESS_METERS / 2
-);
+assert.deepEqual(Object.keys(spatialProjection).sort(), ["position", "rotationY"]);
+assert.deepEqual(Object.keys(planProjection).sort(), ["position", "rotationY"]);
 assert.ok(
   Math.abs(getFurnitureWallInset(entry.roomWallThickness) - 0.09) <
     EDITOR_GEOMETRY_TOLERANCES.boundaryMeters,

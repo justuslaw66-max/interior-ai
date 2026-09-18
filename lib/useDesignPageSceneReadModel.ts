@@ -218,7 +218,6 @@ export function useDesignPageSceneReadModel({
         hasWholeHousePlan,
         housePlanRooms,
         houseRoomById,
-        usesHousePlanScene,
       }),
     [
       activeRoom,
@@ -226,7 +225,6 @@ export function useDesignPageSceneReadModel({
       hasWholeHousePlan,
       housePlanRooms,
       houseRoomById,
-      usesHousePlanScene,
     ]
   );
   const sceneRenderItemKeys = useMemo(

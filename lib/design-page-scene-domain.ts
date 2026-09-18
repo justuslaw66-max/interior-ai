@@ -14,8 +14,6 @@ export type ScenePlanRoom = {
   z: number;
 };
 
-export type SceneRoomWallModel = "canonical-room" | "house-plan-shell";
-
 /**
  * Renderer-neutral item entry. Item coordinates stay room-local; the room
  * transform and canonical finished-floor elevation are carried alongside the
@@ -37,7 +35,6 @@ export type SceneRoomItemEntry = {
   roomPlanPolygon?: RoomPlanPolygonPoint[];
   roomPlanHoles?: RoomPlanPolygonPoint[][];
   roomWallThickness: number;
-  roomWallModel: SceneRoomWallModel;
   isActiveRoom: boolean;
 };
 
@@ -47,14 +44,12 @@ export type BuildDesignPageSceneRoomItemsInput = {
   hasWholeHousePlan: boolean;
   housePlanRooms: ScenePlanRoom[];
   houseRoomById: ReadonlyMap<string, ScenePlanRoom>;
-  usesHousePlanScene: boolean;
 };
 
 function buildSceneRoomItemEntry(
   item: DesignItem,
   room: RoomSnapshot,
   roomOffset: { x: number; z: number },
-  roomWallModel: SceneRoomWallModel,
   isActiveRoom: boolean
 ): SceneRoomItemEntry {
   return {
@@ -74,7 +69,6 @@ function buildSceneRoomItemEntry(
     roomPlanHoles: room.planHoles,
     roomWallThickness:
       room.geometry.wallThickness ?? ROOM_DIMENSION_DEFAULTS.wallThickness,
-    roomWallModel,
     isActiveRoom,
   };
 }
@@ -128,17 +122,13 @@ export function buildDesignPageSceneRoomItems({
   hasWholeHousePlan,
   housePlanRooms,
   houseRoomById,
-  usesHousePlanScene,
 }: BuildDesignPageSceneRoomItemsInput): SceneRoomItemEntry[] {
   if (!hasWholeHousePlan) {
     if (!activeRoom) return [];
     const planRoom = houseRoomById.get(activeRoom.id);
     const roomOffset = { x: planRoom?.x ?? 0, z: planRoom?.z ?? 0 };
-    const roomWallModel: SceneRoomWallModel = usesHousePlanScene
-      ? "house-plan-shell"
-      : "canonical-room";
     return activeRoom.items.map((item) =>
-      buildSceneRoomItemEntry(item, activeRoom, roomOffset, roomWallModel, true)
+      buildSceneRoomItemEntry(item, activeRoom, roomOffset, true)
     );
   }
 
@@ -153,7 +143,6 @@ export function buildDesignPageSceneRoomItems({
           item,
           room,
           roomOffset,
-          "house-plan-shell",
           room.id === designSnapshot.activeRoomId
         )
       );

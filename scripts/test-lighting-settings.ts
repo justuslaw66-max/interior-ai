@@ -500,7 +500,6 @@ const fixtureEntry: SceneRoomItemEntry = {
   roomHeight: lightingRoom.height!,
   roomPlanShape: "rectangle",
   roomWallThickness: 0.2,
-  roomWallModel: "house-plan-shell",
   isActiveRoom: true,
 };
 const referenceSettings = {

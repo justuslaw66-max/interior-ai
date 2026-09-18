@@ -372,7 +372,7 @@ The present uncommitted work centers on editable doors and windows across 2D and
 - `lib/design-page-placement-target-policy.ts` — Defines `resolvePlacementAwareRoomSelectionDecision`, `resolveDesignPageSurfaceBrushAction`, `PlacementAwareRoomSelectionDecision`, `DesignPageSurfaceBrushAction` for design page placement target policy.
 - `lib/design-page-shopping-item-replacement.ts` — Defines `replaceShoppingItemWithRecommendation`, `DesignPageShoppingItemReplacement` for design page shopping item replacement.
 - `lib/design-page-viewport-selection-controls.ts` — Defines `resolveDesignPageViewportSelectionControlsState`, `DesignPageViewportSelectionControlsState`, `DesignPageViewportSelectionControlsInput` for design page viewport selection controls.
-- `lib/editor-geometry-tolerances.ts` — Defines `isWithinEditorTolerance`, `EDITOR_GEOMETRY_TOLERANCES`, `HOUSE_PLAN_RENDERED_WALL_THICKNESS_METERS` for editor geometry tolerances.
+- `lib/editor-geometry-tolerances.ts` — Defines `isWithinEditorTolerance`, `EDITOR_GEOMETRY_TOLERANCES` for editor geometry tolerances.
 - `lib/editorScene.ts` — Defines `metersToMm`, `mmToMeters`, `radiansToDeg`, `degToRadians`, and related exports for editor Scene.
 - `lib/floor-plan-geometry-validation.ts` — Defines `floorPlanPointOnLineSegment`, `floorPlanLineSegmentsIntersect`, `findPotentialLineIntersectionPairs`, `findCanonicalWallIntersectionProblems`, and related exports for floor plan geometry validation.
 - `lib/floor-plan-scene-elevation.ts` — Defines `resolveCanonicalFloorElevationMeters`, `resolveFloorUndersideCutawayElevationMeters`, `resolveCameraViewForFloorWorldY`, `addFloorElevationToItemPosition`, and related exports for floor plan scene elevation.
