@@ -388,10 +388,15 @@ assert.deepEqual(
   {
     kind: "Room",
     title: "Living Room",
-    detail: "living room · 20.0 sqm",
+    detail: "living room · 20.0 m²",
     metrics: [],
   },
   "A room summary should retain its type and calculated area."
+);
+assert.equal(
+  summarize({ selectedPlanRoom: room, planMeasurementUnit: "ft-in" })?.detail,
+  "living room · 215.3 ft²",
+  "A room summary area should follow the display-unit preference."
 );
 
 assert.equal(summarize(), null, "The model should return no summary when nothing is selected.");

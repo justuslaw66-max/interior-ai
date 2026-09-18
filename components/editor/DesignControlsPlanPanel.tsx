@@ -91,7 +91,6 @@ import {
   getSurfaceMaterialSizeOptionLabel,
   getSurfaceMaterialSupplierLabel,
   getSurfaceMaterialSwatchStyle,
-  getSurfaceRoomAreaSqm,
   type SurfaceBrowserTab,
   type SurfaceBrowserViewMode,
   type SurfaceFilterKey,
@@ -100,7 +99,8 @@ import {
   type WallSurfaceMode,
 } from "./design-controls-plan/surfaceCatalog";
 import { buildSurfaceSummaryRows } from "./design-controls-plan/surfaceSummaryRows";
-import { formatDisplayArea } from "@/lib/display-units";
+import { formatDisplayArea, formatDisplayLength } from "@/lib/display-units";
+import { formatPlanDimensionsLabel } from "@/lib/plan-room-summary";
 
 export type { FloorPlanLifecycleIdentity, PlanStartMode } from "./design-controls-plan/DesignControlsPlanPanel.types";
 import type {
@@ -1323,7 +1323,7 @@ export default function DesignControlsPlanPanel({
   const measurementChecks = [
     {
       label: "Dimensions",
-      value: `${roomWidth.toFixed(1)} x ${roomDepth.toFixed(1)}m`,
+      value: formatPlanDimensionsLabel(roomWidth, roomDepth, measurementUnit),
       ready: hasRooms,
     },
     {
@@ -1835,7 +1835,7 @@ export default function DesignControlsPlanPanel({
                       {room.name}
                     </div>
                     <div className={progressMetaClass}>
-                      {(room.floorLabel ?? "Floor")} · {getSurfaceRoomAreaSqm(room).toFixed(2)} sqm
+                      {(room.floorLabel ?? "Floor")} · {formatDisplayArea(room.floorAreaSqm, measurementUnit)}
                     </div>
                     <div className={progressMetaClass}>
                       {row?.materialName ?? "Starter finish"}
@@ -2554,7 +2554,7 @@ export default function DesignControlsPlanPanel({
                   <div className={progressLabelClass}>Floor plan</div>
                   <div className={progressMetaClass}>
                     {hasRooms
-                      ? `${planRoomCount} room${planRoomCount === 1 ? "" : "s"} · ${roomWidth.toFixed(1)} x ${roomDepth.toFixed(1)}m`
+                      ? `${planRoomCount} room${planRoomCount === 1 ? "" : "s"} · ${formatPlanDimensionsLabel(roomWidth, roomDepth, measurementUnit)}`
                       : "Draw, upload, or choose a template."}
                   </div>
                 </div>
@@ -2599,21 +2599,21 @@ export default function DesignControlsPlanPanel({
             </summary>
             <div className="mt-2 grid grid-cols-2 gap-2">
               <div className={measurementTileClass} data-testid="plan-measurement-area">
-                <div className={measurementValueClass}>{activeRoomArea.toFixed(2)} m2</div>
+                <div className={measurementValueClass}>{formatDisplayArea(activeRoomArea, measurementUnit)}</div>
                 <div className={measurementLabelClass}>Area</div>
               </div>
               <div className={measurementTileClass} data-testid="plan-measurement-perimeter">
-                <div className={measurementValueClass}>{activeRoomPerimeter.toFixed(1)} m</div>
+                <div className={measurementValueClass}>{formatDisplayLength(activeRoomPerimeter * 1000, measurementUnit)}</div>
                 <div className={measurementLabelClass}>Perimeter</div>
               </div>
               <div className={measurementTileClass} data-testid="plan-measurement-clearance">
                 <div className={measurementValueClass}>
-                  {activeRoomClearWidth.toFixed(1)} x {activeRoomClearDepth.toFixed(1)}m
+                  {formatPlanDimensionsLabel(activeRoomClearWidth, activeRoomClearDepth, measurementUnit)}
                 </div>
                 <div className={measurementLabelClass}>Clear span</div>
               </div>
               <div className={measurementTileClass} data-testid="plan-measurement-height">
-                <div className={measurementValueClass}>{(activeRoomHeightMm / 1000).toFixed(2)} m</div>
+                <div className={measurementValueClass}>{formatDisplayLength(activeRoomHeightMm, measurementUnit)}</div>
                 <div className={measurementLabelClass}>Floor wall height</div>
               </div>
               <div className={measurementTileClass} data-testid="plan-measurement-ratio">
@@ -2907,7 +2907,7 @@ export default function DesignControlsPlanPanel({
             <div className="grid gap-2">
               <div className="grid grid-cols-[1fr_7rem] items-center gap-3">
                 <span className={floorFieldLabelClass}>Interior area</span>
-                <div className={floorInputClass}>{activeRoomArea.toFixed(2)} m2</div>
+                <div className={floorInputClass}>{formatDisplayArea(activeRoomArea, measurementUnit)}</div>
               </div>
               <MeasurementField
                 label="Floor wall height"
@@ -3519,7 +3519,7 @@ export default function DesignControlsPlanPanel({
                     <span className="flex items-center justify-between gap-2">
                       <span>{template.label}</span>
                       <span className={dark ? "shrink-0 text-xs text-neutral-400" : "shrink-0 text-xs text-neutral-500"}>
-                        {Math.round(areaSqm)} m²
+                        {formatDisplayArea(areaSqm, measurementUnit)}
                       </span>
                     </span>
                     <span className={dark ? "mt-0.5 block text-xs text-neutral-400" : "mt-0.5 block text-xs text-neutral-500"}>
@@ -3529,7 +3529,7 @@ export default function DesignControlsPlanPanel({
                       data-testid={`plan-template-dimensions-${template.id}`}
                       className={dark ? "mt-1 block text-[11px] font-semibold text-neutral-300" : "mt-1 block text-[11px] font-semibold text-neutral-700"}
                     >
-                      Footprint {planWidth.toFixed(1)} × {planDepth.toFixed(1)} m · {template.rooms.length} room{template.rooms.length === 1 ? "" : "s"}
+                      Footprint {formatPlanDimensionsLabel(planWidth, planDepth, measurementUnit)} · {template.rooms.length} room{template.rooms.length === 1 ? "" : "s"}
                     </span>
                     <span className={dark ? "mt-1 block text-[11px] font-semibold text-emerald-200" : "mt-1 block text-[11px] font-semibold text-emerald-700"}>
                       Good for: {template.bestFor}
@@ -3623,7 +3623,7 @@ export default function DesignControlsPlanPanel({
               >
                 <span className="block">{template.label}</span>
                 <span className={dark ? "mt-0.5 block text-xs text-neutral-400" : "mt-0.5 block text-xs text-neutral-500"}>
-                  {template.width} x {template.depth}m
+                  {formatPlanDimensionsLabel(template.width, template.depth, measurementUnit)}
                 </span>
               </button>
             ))}

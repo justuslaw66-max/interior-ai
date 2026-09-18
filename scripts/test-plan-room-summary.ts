@@ -5,6 +5,7 @@ import { join } from "node:path";
 import type { HousePlanRoom2D } from "@/lib/design-page-house-plan";
 import {
   buildPlanRoomSummary,
+  formatPlanDimensionsLabel,
   formatPlanRoomMetricLabel,
   resolvePlanRoomSelection,
 } from "@/lib/plan-room-summary";
@@ -20,6 +21,10 @@ const roomRendererSource = readFileSync(
 );
 const summaryCardSource = readFileSync(
   join(process.cwd(), "components/editor/design-page/PlanRoomSummaryCard.tsx"),
+  "utf8"
+);
+const planPanelSource = readFileSync(
+  join(process.cwd(), "components/editor/DesignControlsPlanPanel.tsx"),
   "utf8"
 );
 
@@ -146,6 +151,21 @@ for (const pattern of [
   assert.match(summaryCardSource, pattern, "Every plan summary measurement should use the display-unit label.");
 }
 assert.doesNotMatch(summaryCardSource, / m²|\} m</, "The plan summary card must not hard-code metric units.");
+assert.equal(
+  formatPlanDimensionsLabel(4.2, 4.8, "cm"),
+  "420 cm × 480 cm",
+  "Plan panel room dimensions should follow a metric display-unit preference."
+);
+assert.equal(
+  formatPlanDimensionsLabel(4.2, 4.8, "ft-in"),
+  "13′ 9.4″ × 15′ 9.0″",
+  "Plan panel room dimensions should show feet/inches in ft+in mode."
+);
+assert.doesNotMatch(
+  planPanelSource,
+  /\.toFixed\(\d\)\}?\s?(?:m2|m²|sqm|m)(?![A-Za-z0-9])|\}\s?(?:m2|m²|sqm)(?![A-Za-z0-9])|\{template\.(?:width|depth)\}/,
+  "Plan panel lengths and areas must use the display-unit formatters, not hard-coded metres."
+);
 
 assert.deepEqual(resolvePlanRoomSelection([], "living", false), {
   ids: ["living"],

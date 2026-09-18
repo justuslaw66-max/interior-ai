@@ -10,6 +10,7 @@ import { getItemPrice, normalizeRotationDegrees } from "@/lib/design-page-utils"
 import type { HousePlanRoom2D } from "@/lib/design-page-house-plan";
 import { getPlanOpeningWallSpanMeters } from "@/lib/design-page-plan-overlays";
 import type { PlanMeasurementUnit } from "@/lib/design-page-types";
+import { formatDisplayArea } from "@/lib/display-units";
 import { getWallFaceLabel } from "@/lib/surface-settings";
 import type { DesignPageEditorMode } from "@/lib/useDesignPagePanelMode";
 import {
@@ -218,11 +219,10 @@ export function buildDesignPageSelectionInspectorSummary({
   }
 
   if (selectedPlanRoom) {
-    const roomArea = selectedPlanRoom.w * selectedPlanRoom.d;
     return {
       kind: "Room",
       title: selectedPlanRoom.name,
-      detail: `${selectedPlanRoom.roomType} room · ${roomArea.toFixed(1)} sqm`,
+      detail: `${selectedPlanRoom.roomType} room · ${formatDisplayArea(selectedPlanRoom.w * selectedPlanRoom.d, planMeasurementUnit)}`,
       metrics: [],
     };
   }

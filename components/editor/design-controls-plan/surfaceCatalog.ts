@@ -270,10 +270,6 @@ export function buildFacetOptions(
   );
 }
 
-export function getSurfaceRoomAreaSqm(room: SurfaceRoomSummary) {
-  return Math.max(0, room.width * room.depth);
-}
-
 export function getSurfaceMaterialPrimaryId(material: SurfaceMaterialCatalogRecord | null) {
   return material?.surface_material.material_id ?? null;
 }

@@ -77,7 +77,7 @@ export function registerTemplateTests() {
     await chooseTemplateStart(page);
 
     await expect(page.getByTestId("plan-template-dimensions-studio")).toContainText(
-      "Footprint 6.3 × 5.7 m"
+      "Footprint 630 cm × 570 cm"
     );
     await page.getByTestId("apply-plan-template-studio").click();
 

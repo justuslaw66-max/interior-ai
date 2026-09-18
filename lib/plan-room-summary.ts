@@ -123,12 +123,22 @@ export function buildPlanRoomSummary(
   };
 }
 
+/** "Width × depth" in the viewer's display unit. */
+export function formatPlanDimensionsLabel(
+  widthMeters: number,
+  depthMeters: number,
+  unit: DisplayUnit
+): string {
+  const width = formatDisplayLength(widthMeters * 1000, unit);
+  const depth = formatDisplayLength(depthMeters * 1000, unit);
+  return `${width} × ${depth}`;
+}
+
 /** "Width × depth · area" in the viewer's display unit. */
 export function formatPlanRoomMetricLabel(
   metric: Pick<PlanRoomMetric, "widthMeters" | "depthMeters" | "areaSquareMeters">,
   unit: DisplayUnit
 ): string {
-  const width = formatDisplayLength(metric.widthMeters * 1000, unit);
-  const depth = formatDisplayLength(metric.depthMeters * 1000, unit);
-  return `${width} × ${depth} · ${formatDisplayArea(metric.areaSquareMeters, unit)}`;
+  const dimensions = formatPlanDimensionsLabel(metric.widthMeters, metric.depthMeters, unit);
+  return `${dimensions} · ${formatDisplayArea(metric.areaSquareMeters, unit)}`;
 }
