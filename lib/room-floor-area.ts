@@ -20,16 +20,25 @@ function getLoopAreaSqm(loop: readonly RoomPlanPolygonPoint[]): number {
 }
 
 /**
+ * Share of the width and of the depth that an L-shape room's corner notch
+ * takes. Every L-shape outline (2D and 3D renderers, walls, placement) cuts
+ * the same notch.
+ */
+export const L_SHAPE_NOTCH_RATIO = 0.42;
+
+/**
  * Floor (and ceiling) area of one room. Only a custom polygon with at least
- * three points replaces the width × depth footprint; holes with at least three
- * points are subtracted and the result never drops below zero.
+ * three points replaces the width × depth footprint, and an L-shape excludes
+ * its drawn corner notch; holes with at least three points are subtracted and
+ * the result never drops below zero.
  */
 export function getRoomFloorAreaSqm(outline: RoomFloorOutline): number {
   const polygon = outline.shape === "custom_polygon" ? outline.polygon : null;
+  const footprintShare = outline.shape === "l_shape" ? 1 - L_SHAPE_NOTCH_RATIO ** 2 : 1;
   const outerAreaSqm =
     polygon && polygon.length >= 3
       ? getLoopAreaSqm(polygon)
-      : Math.max(0, outline.width * outline.depth);
+      : Math.max(0, outline.width * outline.depth) * footprintShare;
   const holesAreaSqm = (outline.holes ?? []).reduce(
     (sum, hole) => sum + (hole.length >= 3 ? getLoopAreaSqm(hole) : 0),
     0

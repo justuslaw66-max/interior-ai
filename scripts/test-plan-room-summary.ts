@@ -9,7 +9,7 @@ import {
   formatPlanRoomMetricLabel,
   resolvePlanRoomSelection,
 } from "@/lib/plan-room-summary";
-import { getPlanRoomFloorAreaSqm, getRoomFloorAreaSqm } from "@/lib/room-floor-area";
+import { getPlanRoomFloorAreaSqm, getRoomFloorAreaSqm, L_SHAPE_NOTCH_RATIO } from "@/lib/room-floor-area";
 
 const planRoomSummarySource = readFileSync(
   join(process.cwd(), "lib/plan-room-summary.ts"),
@@ -134,6 +134,51 @@ assert.deepEqual(
   [2, 3, 6],
   "A stale polygon on a rectangle room must change neither its summary dimensions nor its area."
 );
+// A 5 m × 4 m L-shape loses the 2.1 m × 1.68 m notch every renderer draws: 20 − 3.528 = 16.472 m².
+assert.equal(
+  getRoomFloorAreaSqm({ shape: "l_shape", width: 5, depth: 4 }),
+  16.472,
+  "An L-shape room's floor area must exclude the drawn notch."
+);
+assert.equal(
+  getRoomFloorAreaSqm({
+    shape: "l_shape", width: 5, depth: 4, polygon: notch,
+    holes: [[{ x: -2, z: -1 }, { x: -1.5, z: -1 }, { x: -1.5, z: -0.5 }, { x: -2, z: -0.5 }]],
+  }),
+  16.222,
+  "An L-shape ignores a stale polygon and subtracts its holes like every other shape."
+);
+const lShapePlan = buildPlanRoomSummary([
+  { id: "l_room", name: "L Living", roomType: "living", shape: "l_shape", x: 1, z: 2, w: 5, d: 4 },
+]);
+assert.deepEqual(
+  [lShapePlan.widthMeters, lShapePlan.depthMeters, lShapePlan.areaSquareMeters, lShapePlan.rooms[0].areaSquareMeters],
+  [5, 4, 16.472, 16.472],
+  "The plan summary keeps an L-shape's bounding dimensions and reports the area without the notch."
+);
+assert.equal(
+  formatPlanRoomMetricLabel(lShapePlan.rooms[0], "cm"),
+  "500 cm × 400 cm · 16.5 m²",
+  "The plan summary card must show the L-shape area without the notch."
+);
+// Every copy of the L-shape outline must cut the notch the floor-area owner subtracts.
+for (const file of [
+  "components/editor/renderers/house-plan-3d/geometry.ts",
+  "components/editor/renderers/RoomRenderer2D.tsx",
+  "lib/room-renderer-2d-walls.ts",
+  "lib/floor-plan-types.ts",
+  "lib/design-page-geometry.ts",
+  "lib/design-page-house-plan.ts",
+  "lib/catalog-placement.ts",
+]) {
+  const notchRatios = [...readFileSync(join(process.cwd(), file), "utf8").matchAll(
+    /const notchW = [\w.]+ \* ([\d.]+);\s*const notchD = [\w.]+ \* ([\d.]+);/g
+  )].flatMap((match) => [Number(match[1]), Number(match[2])]);
+  assert.ok(notchRatios.length > 0, `${file} must still draw the L-shape notch from width and depth.`);
+  for (const ratio of notchRatios) {
+    assert.equal(ratio, L_SHAPE_NOTCH_RATIO, `${file} must cut the L-shape notch at L_SHAPE_NOTCH_RATIO.`);
+  }
+}
 assert.doesNotMatch(
   planRoomSummarySource,
   /function polygonArea|function getRoomArea\b/,

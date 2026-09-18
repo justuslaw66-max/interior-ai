@@ -50,7 +50,7 @@ type Bounds = {
   maxZ: number;
 };
 
-/** Same outline rule as lib/room-floor-area: only a custom polygon replaces w × d. */
+/** Bounding outline: only a custom polygon replaces the w × d box (an L-shape notch stays inside it). */
 function getRoomLocalPoints(room: HousePlanRoom2D): Array<{ x: number; z: number }> {
   if (room.shape === "custom_polygon" && room.polygon && room.polygon.length >= 3) return room.polygon;
   return [

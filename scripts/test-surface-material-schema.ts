@@ -1208,6 +1208,35 @@ assert.deepEqual(
   [11, 16, 0],
   "The active-room area readout must use the summary floor area and fall back to the first room like getActiveRoom."
 );
+// 5 m × 4 m L-shape minus the drawn 2.1 m × 1.68 m notch = 16.472 m²; its walls keep the 18 m bounding perimeter.
+const lShapeRoom: RoomSnapshot = {
+  ...notchedPolygonRoom,
+  id: "l_shape_room",
+  geometry: { width: 5, depth: 4, height: 2.5 },
+  planShape: "l_shape",
+  planHoles: undefined,
+  surfaces: {
+    floorMaterialId: "goodrich-geff-novaclick-gnv-001-ivory-oak",
+    walls: { default: { materialId: "goodrich-geff-novaclick-gnv-002-silver-oak" } },
+  },
+};
+const lShapeBomRows = buildRoomSurfaceMaterialBomRows([lShapeRoom]);
+const lShapeFloorBomRow = lShapeBomRows.find((row) => row.surface === "floor");
+assert.deepEqual([lShapeFloorBomRow?.surfaceAreaSqm, lShapeFloorBomRow?.roomAreaSqm], [16.47, 16.47],
+  "The BOM floor must exclude the L-shape notch, not bill width × depth.");
+assert.equal(lShapeBomRows.find((row) => row.surface === "walls")?.surfaceAreaSqm, 45,
+  "L-shape walls must follow the drawn outline, whose perimeter equals its bounding rectangle's.");
+const lShapeSurfaceRooms = buildSurfaceRoomSummaries([lShapeRoom], []);
+const lShapeSummaryRows = buildSurfaceSummaryRows(lShapeSurfaceRooms, noSampleUrl);
+assert.deepEqual(
+  [
+    lShapeSurfaceRooms[0].floorAreaSqm,
+    ...(["floor", "ceiling"] as const).map((target) =>
+      lShapeSummaryRows.find((row) => row.target === target)?.areaSqm),
+  ],
+  [16.472, 16.472, 16.472],
+  "Surface Summary floor and ceiling areas must exclude the L-shape notch like the BOM."
+);
 
 assert.equal(normalizeWallPaintColorHex("f5f1e8"), "#F5F1E8", "wall paint colors should normalize to uppercase hex");
 assert.equal(normalizeWallPaintColorHex("#xyz123"), null, "invalid wall paint colors should be rejected");

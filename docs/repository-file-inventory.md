@@ -270,7 +270,7 @@ The present uncommitted work centers on editable doors and windows across 2D and
 - `lib/plan-room-summary.ts` — Defines `resolvePlanRoomSelection`, `buildPlanRoomSummary`, `PlanRoomMetric`, `PlanRoomSummary`, and related exports for plan room summary.
 - `lib/room-budget-recommendations.ts` — Defines `buildRoomBudgetRecommendations`, `RoomBudgetRecommendation`, `BuildRoomBudgetRecommendationsParams` for room budget recommendations.
 - `lib/room-fix-preview.ts` — Defines `buildRoomFixPreviewFromRecommendations`, `RoomFixPreview` for room fix preview.
-- `lib/room-floor-area.ts` — Defines `getRoomFloorAreaSqm`, `getRoomSnapshotFloorAreaSqm`, `getPlanRoomFloorAreaSqm`, `RoomFloorOutline`, the single owner of room floor and ceiling area.
+- `lib/room-floor-area.ts` — Defines `getRoomFloorAreaSqm`, `getRoomSnapshotFloorAreaSqm`, `getPlanRoomFloorAreaSqm`, `RoomFloorOutline` and `L_SHAPE_NOTCH_RATIO`, the single owner of room floor and ceiling area (L-shapes exclude their drawn notch).
 - `lib/room-health-summary.ts` — Defines `resolveDesignPageRoomHealthReviewTarget`, `buildRoomHealthSummary`, `RoomHealthLevel`, `RoomHealthSummary`, and related exports for room health summary.
 - `lib/room-plan-shape.ts` — Defines `buildRoomPlanShape`, `RoomPlanShapePoint` for room plan shape.
 - `lib/room-present-mode.ts` — Defines `createPresentModeState`, `getPresentModeRoom`, `getPresentModeSavedView`, `getPresentModeRooms`, and related exports for room present mode.
