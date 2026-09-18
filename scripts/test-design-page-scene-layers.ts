@@ -752,14 +752,28 @@ assert.doesNotMatch(
   /renderQuality/,
   "The structure layer draws no quality-dependent shell, so it should not receive render quality."
 );
+const canonicalStructureSource3D = readSource(
+  "components/editor/renderers/CanonicalFloorPlanStructure.tsx"
+);
+for (const handler of canonicalStructureSource3D.match(
+  /onSelectWall\?\.\(wallId, (?:roomId|room\.id), event\);[^\n]*\n[^\n]*/g
+) ?? []) {
+  assert.doesNotMatch(
+    handler,
+    /onSelectOpening\?\.\(null\)/,
+    "Canonical 3D wall clicks should leave opening deselection to selectStructureTarget, which ignores orbit drags."
+  );
+}
+const itemsConfigurationSource =
+  adapterSource.match(/items: \{[^{}]*\},\s*preview: \{/)?.[0] ?? "";
 assert.match(
-  adapterSource,
-  /items: \{[\s\S]*?renderQuality: scene\.renderQuality,/,
+  itemsConfigurationSource,
+  /renderQuality: scene\.renderQuality,/,
   "Scene items should keep receiving the active render quality."
 );
 assert.match(
-  adapterSource,
-  /items: \{[\s\S]*?hasWholeHousePlan: room\.hasWholeHousePlan,/,
+  itemsConfigurationSource,
+  /hasWholeHousePlan: room\.hasWholeHousePlan,/,
   "Scene items should allow cross-room drags only when the plan has several rooms, not whenever the house-plan scene draws a lone room."
 );
 assert.match(
@@ -770,7 +784,7 @@ assert.match(
 assert.match(
   sceneWorkspaceSource,
   /hasWholeHousePlan: scene\.hasWholeHousePlan,/,
-  "Scene workspace should feed the multi-room flag, not the house-plan-scene flag, into item and preview semantics."
+  "Scene workspace should feed the multi-room flag into item and preview semantics, because a lone room also renders through the house-plan scene."
 );
 assert.match(
   sceneWorkspaceSource,
