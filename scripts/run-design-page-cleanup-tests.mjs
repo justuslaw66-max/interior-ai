@@ -50,6 +50,7 @@ const typescriptGuardFiles = [
   "test-design-page-room-placement-operations.ts",
   "test-design-page-room-plan-controller.ts",
   "test-design-page-save-status.ts",
+  "test-design-page-scene-domain-boundaries.ts",
   "test-design-page-scene-layers.ts",
   "test-design-page-scene-region-workspace-registration.ts",
   "test-design-page-selected-item-panel-controller.ts",

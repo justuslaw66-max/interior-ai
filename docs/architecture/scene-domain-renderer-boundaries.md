@@ -110,7 +110,7 @@ room/world round trips.
 | Confidence/toast timers | `useDesignPageTransientFeedback` | Every timer has a ref and is cleared on replacement and unmount |
 | Floor-plan underlay object URL | `useDesignPageFloorPlanAssets` | Revoked on replacement/unmount |
 | Cabinet preview groups and textures | `useCabinetSceneResourceOwnership` | Unique geometries, materials, and loaded textures disposed on dependency change/unmount; late texture results disposed after cancellation |
-| GLB source and normalized model resources | `GLBScaledModel` | Loader disposed; owned textures, cloned geometries, and cloned materials disposed on change/unmount |
+| GLB source and normalized model resources | `useGLBModelLifecycle`, `useGLBMaterials`, and the `glbModelResources` caches | `useGLBModelLifecycle` disposes an instance clone's geometries and materials on change/unmount only when the instance owns them (`ownsResources`); `useGLBMaterials` disposes owned variant textures on change/unmount, including late results after cancellation; the parsed and prepared caches dispose their scenes on eviction or a non-persisted `pagehide`, and loader decoders are disposed after each load |
 | React Three Fiber render loop/canvas/context | Scene canvas owner | Fiber owns loop and WebGL context teardown; child renderers dispose only resources they allocate |
 
 Resource creation and cleanup must remain paired in the same component or hook.

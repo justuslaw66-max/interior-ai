@@ -234,6 +234,15 @@ const cabinetResourceOwnershipSource = source(
   "features/cabinetry/hooks/useCabinetSceneResourceOwnership.ts"
 );
 const glbRendererSource = source("components/scene/GLBScaledModel.tsx");
+const glbLifecycleSource = source(
+  "components/scene/glb-scaled-model/useGLBModelLifecycle.ts"
+);
+const glbMaterialsSource = source(
+  "components/scene/glb-scaled-model/useGLBMaterials.ts"
+);
+const glbResourcesSource = source(
+  "components/scene/glb-scaled-model/glbModelResources.ts"
+);
 const floorPlanAssetsSource = source("lib/useDesignPageFloorPlanAssets.ts");
 
 for (const [name, moduleSource] of [
@@ -317,8 +326,31 @@ assert.match(
   cabinetResourceOwnershipSource,
   /if \(cancelled\)[\s\S]*?texture\.dispose\(\)/
 );
-assert.match(glbRendererSource, /disposeObjectGeometryAndMaterials\(normalizedModel\)/);
-assert.match(glbRendererSource, /ownedTextures\.forEach\(\(texture\) => texture\.dispose\(\)\)/);
+assert.match(glbRendererSource, /useGLBModelLifecycle\(\{/);
+assert.match(
+  glbLifecycleSource,
+  /if \(!modelResult\.model \|\| !modelResult\.ownsResources\) return;[\s\S]*?disposeObjectGeometryAndMaterials\(modelResult\.model!\)/
+);
+assert.match(
+  glbMaterialsSource,
+  /return \(\) => \{[\s\S]*?control\.ownedTextures\.forEach\(\(texture\) => texture\.dispose\(\)\)/
+);
+assert.match(
+  glbMaterialsSource,
+  /if \(control\.cancelled\) \{\s*control\.ownedTextures\.forEach\(\(texture\) => texture\.dispose\(\)\);/
+);
+assert.match(
+  glbResourcesSource,
+  /const parsedCache = createGLBResourceCache<CachedGLBSource>\(\{[\s\S]*?dispose: \(\{ scene \}\) =>[\s\S]*?disposeObjectTextures\(scene\);\s*disposeObjectGeometryAndMaterials\(scene\);/
+);
+assert.match(
+  glbResourcesSource,
+  /const preparedCache = createGLBResourceCache<PreparedGLBResource>\(\{[\s\S]*?dispose: \(\{ scene, releaseSource \}\) =>[\s\S]*?disposeObjectGeometryAndMaterials\(scene\);\s*releaseSource\(\);/
+);
+assert.match(
+  glbResourcesSource,
+  /"pagehide"[\s\S]*?clearPrepared: \(\) => preparedCache\.clear\(\),\s*clearParsed: \(\) => parsedCache\.clear\(\),/
+);
 assert.match(floorPlanAssetsSource, /URL\.revokeObjectURL\(/);
 
 console.log("design page scene domain and lifecycle boundaries passed");
