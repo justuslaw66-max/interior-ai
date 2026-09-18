@@ -6,6 +6,9 @@ import {
   mergeDesignPageCameraDiagnostics,
   mergeDesignPagePlanMetrics,
 } from "../lib/design-page-editor-shell-metrics";
+import { buildHousePlan2D } from "../lib/design-page-house-plan";
+import { resolveLoneRoomPlanFrame2D } from "../lib/room-renderer-2d-lone-room";
+import { createRoom } from "../lib/room-types";
 
 const root = process.cwd();
 const readSource = (relativePath: string) =>
@@ -495,15 +498,87 @@ assert.match(
   /const PLAN_GRID_MIN_SIZE_METERS = 80;/,
   "The Pro plan grid should cover a useful workspace beyond the plan footprint."
 );
-assert.match(
-  planRendererSource,
-  /rooms\.length === 1 && \([\s\S]*?<planeGeometry args=\{\[width, depth\]\}/,
-  "A zero-room design must not render the legacy single-room floor rectangle."
+const offOriginLoneRoom = createRoom("living", "Living Room", "living", {
+  width: 4.8,
+  depth: 4.2,
+  wallThickness: 0.12,
+  height: 2.6,
+});
+offOriginLoneRoom.planPosition = { x: 2.4, z: 2.1 };
+const offOriginLonePlan = buildHousePlan2D([offOriginLoneRoom], 4.8, 4.2);
+assert.deepEqual(
+  [offOriginLonePlan.width, offOriginLonePlan.depth],
+  [9.6, 8.4],
+  "The plan extent handed to the 2D renderer is origin-symmetric, so it cannot size a lone off-origin room."
+);
+assert.deepEqual(
+  resolveLoneRoomPlanFrame2D(offOriginLonePlan.rooms),
+  {
+    centerX: 2.4,
+    centerZ: 2.1,
+    width: 4.8,
+    depth: 4.2,
+    outline: [
+      [0, 0],
+      [4.8, 0],
+      [4.8, 4.2],
+      [0, 4.2],
+      [0, 0],
+    ],
+  },
+  "A lone off-origin room should be framed by its own plan rectangle, not by the plan extent at the origin."
+);
+const originLoneRoom = createRoom("origin", "Bedroom", "bedroom", {
+  width: 5,
+  depth: 4,
+  wallThickness: 0.12,
+  height: 2.6,
+});
+originLoneRoom.planPosition = { x: 0, z: 0 };
+const originLonePlan = buildHousePlan2D([originLoneRoom], 5, 4);
+assert.deepEqual(
+  resolveLoneRoomPlanFrame2D(originLonePlan.rooms),
+  {
+    centerX: 0,
+    centerZ: 0,
+    width: originLonePlan.width,
+    depth: originLonePlan.depth,
+    outline: [
+      [-2.5, -2],
+      [2.5, -2],
+      [2.5, 2],
+      [-2.5, 2],
+      [-2.5, -2],
+    ],
+  },
+  "A lone room at the origin should keep the rectangle it has always been drawn with."
+);
+assert.equal(
+  resolveLoneRoomPlanFrame2D([]),
+  null,
+  "A zero-room design must not render the legacy single-room floor or outline."
+);
+assert.equal(
+  resolveLoneRoomPlanFrame2D(
+    buildHousePlan2D([offOriginLoneRoom, originLoneRoom], 5, 4).rooms
+  ),
+  null,
+  "Multi-room plans should keep drawing every room through the house-room path."
 );
 assert.match(
   planRendererSource,
-  /rooms\.length === 1 && \([\s\S]*?<Line[\s\S]*?\[-halfW, 0\.002, -halfD\]/,
-  "A zero-room design must not render the legacy single-room outline."
+  /const loneRoomFrame = useMemo\(\(\) => resolveLoneRoomPlanFrame2D\(rooms\), \[rooms\]\);/,
+  "The 2D renderer should derive the lone-room floor and outline from the plan rooms."
+);
+assert.match(
+  planRendererSource,
+  /\{loneRoomFrame && \(\s*<mesh[\s\S]*?position=\{\[loneRoomFrame\.centerX, 0\.0005, loneRoomFrame\.centerZ\]\}[\s\S]*?<planeGeometry args=\{\[loneRoomFrame\.width, loneRoomFrame\.depth\]\}/,
+  "The lone-room floor should be drawn at the room's plan position and size."
+);
+assert.match(
+  planRendererSource,
+  /\{loneRoomFrame && \(\s*<Line\s*points=\{loneRoomFrame\.outline\.map\(/,
+  "The lone-room outline should follow the room's plan rectangle."
 );
 assert.match(
   planRendererSource,

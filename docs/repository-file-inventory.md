@@ -273,6 +273,7 @@ The present uncommitted work centers on editable doors and windows across 2D and
 - `lib/room-health-summary.ts` — Defines `resolveDesignPageRoomHealthReviewTarget`, `buildRoomHealthSummary`, `RoomHealthLevel`, `RoomHealthSummary`, and related exports for room health summary.
 - `lib/room-plan-shape.ts` — Defines `buildRoomPlanShape`, `RoomPlanShapePoint` for room plan shape.
 - `lib/room-present-mode.ts` — Defines `createPresentModeState`, `getPresentModeRoom`, `getPresentModeSavedView`, `getPresentModeRooms`, and related exports for room present mode.
+- `lib/room-renderer-2d-lone-room.ts` — Defines `resolveLoneRoomPlanFrame2D`, the plan-position floor and outline frame the 2D renderer draws for a floor with exactly one room.
 - `lib/room-renderer-2d-walls.ts` — Defines `buildInnerFloorGeometry2D`, `buildRoomWallSegments2D`, `mergeSharedWallSegments2D`, `buildWallBandCornerCaps2D`, and related exports for room renderer 2D walls.
 - `lib/room-shopping.ts` — Defines `summarizeShoppingRooms`, `summarizeWholeHomeShopping`, `countRoomCategories`, `countRoomProductQuantities`, and related exports for room shopping.
 - `lib/room-types.ts` — Defines the canonical room, floor-plan, opening, surface, cabinetry, and design snapshot model plus migrations.

@@ -42,6 +42,7 @@ import {
   mergeSharedWallSegments2D,
   splitWallBandByOpenings2D,
 } from "@/lib/room-renderer-2d-walls";
+import { resolveLoneRoomPlanFrame2D } from "@/lib/room-renderer-2d-lone-room";
 import { EDITOR_GEOMETRY_TOLERANCES } from "@/lib/editor-geometry-tolerances";
 import type { Plan2DViewOrientation } from "@/components/editor/camera/EditorCamera2D";
 import {
@@ -1456,6 +1457,7 @@ export default function RoomRenderer2D({
   const halfD = depth / 2;
   const isPro = theme === "pro";
   const hasHouseRooms = rooms.length > 1;
+  const loneRoomFrame = useMemo(() => resolveLoneRoomPlanFrame2D(rooms), [rooms]);
   const canEditPlan = interactive && !drawRoomMode && !traceOpeningMode;
   const canEditRoomGeometry = canEditPlan && !canonicalStructureExpected;
   const canClearRoomSelection = canEditPlan && Boolean(onClearRoomSelection);
@@ -3184,16 +3186,16 @@ export default function RoomRenderer2D({
         </group>
       )}
 
-      {rooms.length === 1 && (
+      {loneRoomFrame && (
         <mesh
           rotation-x={-Math.PI / 2}
-          position={[0, 0.0005, 0]}
+          position={[loneRoomFrame.centerX, 0.0005, loneRoomFrame.centerZ]}
           onPointerDown={handleOpeningTraceCommit}
           onPointerMove={handleOpeningTracePointerMove}
           onPointerOut={handleOpeningTracePointerOut}
           onClick={handleOpeningTraceCommit}
         >
-          <planeGeometry args={[width, depth]} />
+          <planeGeometry args={[loneRoomFrame.width, loneRoomFrame.depth]} />
           <meshBasicMaterial color={floorColor} />
         </mesh>
       )}
@@ -4987,15 +4989,9 @@ export default function RoomRenderer2D({
         </>
       )}
 
-      {rooms.length === 1 && (
+      {loneRoomFrame && (
         <Line
-          points={[
-            [-halfW, 0.002, -halfD],
-            [halfW, 0.002, -halfD],
-            [halfW, 0.002, halfD],
-            [-halfW, 0.002, halfD],
-            [-halfW, 0.002, -halfD],
-          ]}
+          points={loneRoomFrame.outline.map(([x, z]): [number, number, number] => [x, 0.002, z])}
           color={borderColor}
           lineWidth={isPro ? 2 : 1.5}
         />
