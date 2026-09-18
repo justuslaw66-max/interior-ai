@@ -313,7 +313,7 @@
       "limit": 250
     },
     "components/editor/renderers/RoomRenderer2D.tsx": {
-      "lines": 5624,
+      "lines": 5623,
       "limit": 250
     },
     "components/editor/renderers/useSurfaceMaterialTexture.ts": {
@@ -2419,7 +2419,7 @@
     "components/editor/renderers/RoomRenderer2D.tsx": {
       "overlongFunctions": {
         "count": 18,
-        "maximum": 4239
+        "maximum": 4238
       },
       "complexFunctions": {
         "count": 8,

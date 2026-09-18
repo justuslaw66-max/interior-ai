@@ -2569,7 +2569,6 @@ export default function RoomRenderer2D({
 
   const stopNativeRoomDragEvent = (event: ThreeEvent<PointerEvent>) => {
     event.stopPropagation();
-    event.nativeEvent.preventDefault();
     event.nativeEvent.stopPropagation();
     event.nativeEvent.stopImmediatePropagation?.();
   };

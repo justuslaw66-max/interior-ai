@@ -314,6 +314,32 @@ assert.match(
   "Room drag start and move should stop immediate native propagation so 2D pan controls never start during room drags."
 );
 
+const stopNativeRoomDragEventBody = source.match(
+  /const stopNativeRoomDragEvent = \(event: ThreeEvent<PointerEvent>\) => \{([\s\S]*?)\n  \};/
+)?.[1];
+assert.ok(stopNativeRoomDragEventBody, "RoomRenderer2D should define stopNativeRoomDragEvent.");
+assert.doesNotMatch(
+  stopNativeRoomDragEventBody,
+  /preventDefault/,
+  "stopNativeRoomDragEvent runs inside R3F pointer handlers, which R3F registers as passive listeners (DOM_EVENTS), so preventDefault only logs a console error; scene-canvas touch-action:none already blocks native scrolling."
+);
+
+const listTsxFilesRecursively = (directory: string): string[] =>
+  fs.readdirSync(directory, { recursive: true, encoding: "utf8" })
+    .filter((entry) => entry.endsWith(".tsx"))
+    .map((entry) => path.join(directory, entry));
+
+for (const filePath of [
+  ...listTsxFilesRecursively(path.join(process.cwd(), "components", "editor", "renderers")),
+  ...listTsxFilesRecursively(path.join(process.cwd(), "components", "scene")),
+]) {
+  assert.doesNotMatch(
+    fs.readFileSync(filePath, "utf8"),
+    /nativeEvent\.preventDefault\(/,
+    `${path.relative(process.cwd(), filePath)} must not call nativeEvent.preventDefault(): R3F registers pointer and wheel listeners as passive (DOM_EVENTS), so the call is ignored and logs "Unable to preventDefault inside passive event listener".`
+  );
+}
+
 assert.match(
   source,
   /data-testid="selected-room-move"[\s\S]*?onPointerDown=\{\(event\) => startExplicitRoomMove\(room, event\)\}/,
