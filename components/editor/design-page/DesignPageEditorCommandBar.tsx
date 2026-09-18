@@ -8,6 +8,7 @@ import type {
   DesignLightingSettings,
   LightingPreset,
 } from "@/lib/lightingPresets";
+import { formatPlanDimensionsLabel } from "@/lib/plan-room-summary";
 import type { ScenePerformanceMode } from "@/lib/useDesignPageScenePerformance";
 
 type EditorCommandBarProps = ComponentProps<typeof EditorCommandBar>;
@@ -26,10 +27,7 @@ type CommandBarActions = Pick<
   EditorCommandBarProps,
   HandlerKeys<EditorCommandBarProps>
 >;
-type RoomStatusHandlerKeys = Exclude<
-  HandlerKeys<RoomPlanStatusBarProps>,
-  "onRenameRoom"
->;
+type RoomStatusHandlerKeys = Exclude<HandlerKeys<RoomPlanStatusBarProps>, "onRenameRoom">;
 type RoomStatusState = Omit<
   RoomPlanStatusBarProps,
   | HandlerKeys<RoomPlanStatusBarProps>
@@ -128,6 +126,7 @@ export function DesignPageEditorCommandBar({
           roomCount={room.roomCount}
           widthMeters={room.widthMeters}
           depthMeters={room.depthMeters}
+          measurementUnit={room.measurementUnit}
           healthLevel={
             configuration.showRoomHealth
               ? room.health?.level
@@ -176,9 +175,8 @@ export function DesignPageEditorCommandBar({
                 {room.roomName}
               </div>
               <div className="mt-0.5 text-xs opacity-65">
-                {room.roomTypeLabel} · {room.widthMeters.toFixed(1)} ×{" "}
-                {room.depthMeters.toFixed(1)}m · {room.roomCount}{" "}
-                {room.roomCount === 1 ? "room" : "rooms"}
+                {room.roomTypeLabel} · {formatPlanDimensionsLabel(room.widthMeters, room.depthMeters, room.measurementUnit)}
+                {` · ${room.roomCount} ${room.roomCount === 1 ? "room" : "rooms"}`}
               </div>
             </div>
             {configuration.showRoomHealth && overflowRoomHealthLabel ? (

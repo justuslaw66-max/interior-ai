@@ -382,12 +382,11 @@ export function useDesignPagePresentationQaFacade({
           ? {
               id: state.document.activeRoom.id,
               roomName: state.document.activeRoom.name,
-              roomTypeLabel: getRoomTypeLabel(
-                state.document.activeRoom.roomType
-              ),
+              roomTypeLabel: getRoomTypeLabel(state.document.activeRoom.roomType),
               roomCount: state.document.snapshot.rooms.length,
               widthMeters: state.document.roomWidth,
               depthMeters: state.document.roomDepth,
+              measurementUnit: state.plan.planMeasurementUnit,
               viewMode: state.editor.viewMode,
               health: state.chrome.activeRoomHealthSummary
                 ? {

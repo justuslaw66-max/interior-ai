@@ -4,7 +4,10 @@ import {
   isFootprintInsideRoomPolygon,
   isPointInsideRoomPolygon,
 } from "@/lib/design-page-geometry";
-import { applyFloorPlanScaleCalibration } from "@/lib/floor-plan-calibration";
+import {
+  applyFloorPlanScaleCalibration,
+  formatFloorPlanCalibrationSummary,
+} from "@/lib/floor-plan-calibration";
 import {
   HOUSE_PLAN_TEMPLATES,
   resolveFloorPlanOpeningCancelDecision,
@@ -684,6 +687,22 @@ assert.ok(calibrated);
 assert.equal(calibrated.calibration?.pixelsPerMeter, 200);
 assert.equal(calibrated.widthMeters, 5);
 assert.equal(calibrated.depthMeters, 2.5);
+assert.equal(formatFloorPlanCalibrationSummary(null, "cm"), null);
+assert.equal(
+  formatFloorPlanCalibrationSummary(underlay, "cm"),
+  null,
+  "An uncalibrated underlay should not claim a scale."
+);
+assert.equal(
+  formatFloorPlanCalibrationSummary(calibrated, "cm"),
+  "500 cm set (500 cm × 250 cm)",
+  "The calibration summary should use the plan display unit instead of hard-coded metres."
+);
+assert.equal(
+  formatFloorPlanCalibrationSummary(calibrated, "ft-in"),
+  "16′ 4.9″ set (16′ 4.9″ × 8′ 2.4″)",
+  "Imperial viewers should read the calibration reference and underlay extent in feet and inches."
+);
 assert.equal(
   applyFloorPlanScaleCalibration({
     underlay,

@@ -1,6 +1,8 @@
 "use client";
 
 import type { EditorViewMode } from "@/components/editor/EditorViewToggle";
+import type { DisplayUnit } from "@/lib/display-units";
+import { formatPlanDimensionsLabel } from "@/lib/plan-room-summary";
 
 type RoomPlanStatusBarProps = {
   roomName: string;
@@ -8,6 +10,7 @@ type RoomPlanStatusBarProps = {
   roomCount: number;
   widthMeters: number;
   depthMeters: number;
+  measurementUnit: DisplayUnit;
   healthLevel?: "ready" | "review" | "blocked";
   healthScore?: number;
   healthNextAction?: string;
@@ -22,15 +25,13 @@ type RoomPlanStatusBarProps = {
   onRenameRoom?: () => void;
 };
 
-const formatMeters = (value: number) =>
-  value.toFixed(1).replace(/\.0$/, "");
-
 export default function RoomPlanStatusBar({
   roomName,
   roomTypeLabel,
   roomCount,
   widthMeters,
   depthMeters,
+  measurementUnit,
   healthLevel,
   healthScore,
   healthNextAction,
@@ -47,7 +48,6 @@ export default function RoomPlanStatusBar({
   const isCommand = variant === "command";
   const nextViewMode: EditorViewMode = viewMode === "2d" ? "3d" : "2d";
   const viewActionLabel = viewMode === "2d" ? "Room view" : "Plan";
-  const sizeLabel = `${formatMeters(widthMeters)} x ${formatMeters(depthMeters)}m`;
   const roomCountLabel = `${roomCount} room${roomCount === 1 ? "" : "s"}`;
   const showRoomType = roomTypeLabel.trim().toLowerCase() !== roomName.trim().toLowerCase();
   const healthLabel =
@@ -133,9 +133,9 @@ export default function RoomPlanStatusBar({
       </div>
       <div
         data-testid="room-plan-status-room-size"
-        className={metaClass}
+        className={`${metaClass} whitespace-nowrap`}
       >
-        {sizeLabel}
+        {formatPlanDimensionsLabel(widthMeters, depthMeters, measurementUnit)}
       </div>
       <div
         data-testid="room-plan-status-room-count"

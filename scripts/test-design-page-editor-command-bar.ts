@@ -182,8 +182,13 @@ assert.match(
 );
 assert.match(
   commandBarSource,
-  /data-testid="editor-command-overflow-room-context"[\s\S]*?2xl:hidden[\s\S]*?data-testid="editor-command-overflow-room-name"[\s\S]*?room\.roomName[\s\S]*?room\.widthMeters\.toFixed\(1\)[\s\S]*?room\.depthMeters\.toFixed\(1\)/,
-  "Compact desktop overflow should preserve room identity and dimensions when the header context is hidden."
+  /data-testid="editor-command-overflow-room-context"[\s\S]*?2xl:hidden[\s\S]*?data-testid="editor-command-overflow-room-name"[\s\S]*?room\.roomName[\s\S]*?formatPlanDimensionsLabel\(room\.widthMeters, room\.depthMeters, room\.measurementUnit\)/,
+  "Compact desktop overflow should preserve room identity and dimensions, in the plan display unit, when the header context is hidden."
+);
+assert.doesNotMatch(
+  commandBarSource,
+  /toFixed\(1\)\}m\b|\.toFixed\(1\)\} ×/,
+  "Command-bar room dimensions must not hard-code metre strings."
 );
 assert.match(
   commandBarSource,
@@ -193,8 +198,8 @@ assert.match(
 
 assert.match(
   commandBarSource,
-  /<RoomPlanStatusBar[\s\S]*?roomName=\{room\.roomName\}[\s\S]*?roomTypeLabel=\{room\.roomTypeLabel\}[\s\S]*?roomCount=\{room\.roomCount\}[\s\S]*?widthMeters=\{room\.widthMeters\}[\s\S]*?depthMeters=\{room\.depthMeters\}/,
-  "The command context should preserve the active room identity, count, and dimensions."
+  /<RoomPlanStatusBar[\s\S]*?roomName=\{room\.roomName\}[\s\S]*?roomTypeLabel=\{room\.roomTypeLabel\}[\s\S]*?roomCount=\{room\.roomCount\}[\s\S]*?widthMeters=\{room\.widthMeters\}[\s\S]*?depthMeters=\{room\.depthMeters\}[\s\S]*?measurementUnit=\{room\.measurementUnit\}/,
+  "The command context should preserve the active room identity, count, and dimensions in the plan display unit."
 );
 assert.match(
   commandBarSource,

@@ -210,7 +210,7 @@ assertSourceOrder(
     "showLayoutDebugOverlay, setShowLayoutDebugOverlay",
     "viewportSize, setViewportSize",
     "useDesignPagePlanDocumentState()",
-    "useDesignPageFloorPlanDocumentState()",
+    "useDesignPageFloorPlanDocumentState(planDocument.state.planMeasurementUnit)",
     "selectedPlanOverlayId, setSelectedPlanOverlayId",
     "suppressedDoorwaySuggestionKeys, setSuppressedDoorwaySuggestionKeys",
     "planRoomSelection, setPlanRoomSelection",

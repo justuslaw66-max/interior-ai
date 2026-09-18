@@ -149,7 +149,7 @@
       "limit": 250
     },
     "components/editor/design-page/DesignPageEditorCommandBar.tsx": {
-      "lines": 345,
+      "lines": 343,
       "limit": 250
     },
     "components/editor/design-page/DesignPageQaMarkers.tsx": {
@@ -717,7 +717,7 @@
       "limit": 400
     },
     "lib/useDesignPagePresentationQaFacade.ts": {
-      "lines": 508,
+      "lines": 507,
       "limit": 400
     },
     "lib/useDesignPageProductConfiguration.ts": {
@@ -4849,7 +4849,7 @@
     "lib/useDesignPagePresentationQaFacade.ts": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 316
+        "maximum": 315
       }
     },
     "lib/useDesignPagePresentationWorkspaceRegistration.ts": {
