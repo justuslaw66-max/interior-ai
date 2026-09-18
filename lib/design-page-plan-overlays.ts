@@ -57,6 +57,23 @@ export const PLAN_OPENING_MAX_HEIGHT_METERS = 3.2;
 const PLAN_OPENING_MIN_WIDTH_METERS = 0.4;
 export const PLAN_OPENING_EDGE_PADDING_METERS = 0.03;
 
+/** Resolve missing legacy dimensions consistently for the inspector, geometry and lighting. */
+export function resolvePlanOpeningVerticalMetrics(
+  opening: Pick<RoomOpening2D, "kind" | "heightMm" | "bottomMm">
+): { heightMeters: number; bottomMeters: number } {
+  const isWindow = opening.kind === "window";
+  const height = opening.heightMm;
+  const bottom = opening.bottomMm;
+  return {
+    heightMeters: typeof height === "number" && Number.isFinite(height) && height > 0
+      ? mmToMeters(height)
+      : isWindow ? 1.2 : PLAN_OPENING_DEFAULT_HEIGHT_METERS,
+    bottomMeters: typeof bottom === "number" && Number.isFinite(bottom) && bottom >= 0
+      ? mmToMeters(bottom)
+      : isWindow ? 0.9 : 0,
+  };
+}
+
 function clamp(value: number, min: number, max: number): number {
   return Math.min(Math.max(value, min), max);
 }
@@ -154,17 +171,20 @@ export function updatePlanOpeningMetrics(
 }
 
 export function mapPlanOpeningsToRoomRenderer(openings: RoomOpening2D[]): RoomRendererOpening[] {
-  return openings.map((opening) => ({
-    id: opening.id,
-    roomId: opening.roomId,
-    wall: opening.wall,
-    kind: opening.kind,
-    offset: mmToMeters(opening.offsetMm),
-    width: mmToMeters(opening.widthMm),
-    height: opening.heightMm !== undefined ? mmToMeters(opening.heightMm) : undefined,
-    bottom: opening.bottomMm !== undefined ? mmToMeters(opening.bottomMm) : undefined,
-    doorStyle: opening.doorStyle,
-  }));
+  return openings.map((opening) => {
+    const windowMetrics = opening.kind === "window" ? resolvePlanOpeningVerticalMetrics(opening) : undefined;
+    return {
+      id: opening.id,
+      roomId: opening.roomId,
+      wall: opening.wall,
+      kind: opening.kind,
+      offset: mmToMeters(opening.offsetMm),
+      width: mmToMeters(opening.widthMm),
+      height: windowMetrics?.heightMeters ?? (opening.heightMm !== undefined ? mmToMeters(opening.heightMm) : undefined),
+      bottom: windowMetrics?.bottomMeters ?? (opening.bottomMm !== undefined ? mmToMeters(opening.bottomMm) : undefined),
+      doorStyle: opening.doorStyle,
+    };
+  });
 }
 
 export function mapPlanFixedElementsToRoomRenderer(

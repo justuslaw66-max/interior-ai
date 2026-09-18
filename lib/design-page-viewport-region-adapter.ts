@@ -3,6 +3,7 @@ import type {
   DesignPageSceneRegionState,
 } from "@/components/editor/design-page/DesignPageSceneRegion";
 import type { DesignPageOpeningMetricsPatch } from "@/lib/design-page-opening-metrics";
+import type { RoomOpening2D } from "@/lib/editorScene";
 import {
   resolveDesignPageViewportSelectionControlsState,
   type DesignPageViewportSelectionControlsInput,
@@ -35,11 +36,9 @@ export type BuildDesignPageViewportRegionAdapterInput = {
     };
     opening: {
       selectedId: string | null;
-      value: {
-        kind: NonNullable<ViewportState["selectedOpening"]>["kind"];
-        wall: NonNullable<ViewportState["selectedOpening"]>["wall"];
-        widthMm: number;
+      value: RoomOpening2D & {
         wallSpanMeters: number;
+        maxHeightMeters: number;
       } | null;
     };
     selectionInspector: {
@@ -121,7 +120,7 @@ export type BuildDesignPageViewportRegionAdapterInput = {
     selectionInspector: Omit<
       ViewportActions["selectionInspector"],
       | "commitRoomDimensionMm"
-      | "commitOpeningWidthMm"
+      | "updateOpeningMetrics"
       | "deleteSelectedPlanOverlay"
     > & {
       commitRoomDimensionMeters: (
@@ -172,9 +171,7 @@ export function buildDesignPageViewportRegionAdapter({
     : 400;
   const commitOpeningWidthMm = (valueMm: number) => {
     if (!selectedOverlayId) return;
-    actions.updateOpeningMetrics(selectedOverlayId, {
-      widthMeters: valueMm / 1000,
-    });
+    actions.updateOpeningMetrics(selectedOverlayId, { widthMeters: valueMm / 1000 });
   };
 
   return buildDesignPageViewportRegionModel({
@@ -209,8 +206,9 @@ export function buildDesignPageViewportRegionAdapter({
               selectedOpening:
                 state.opening.value && selectedOverlayId
                   ? {
-                      widthMm: state.opening.value.widthMm,
-                      maxWidthMm: selectedOpeningMaxWidthMm,
+                      opening: state.opening.value,
+                      wallSpanMeters: state.opening.value.wallSpanMeters,
+                      maxHeightMeters: state.opening.value.maxHeightMeters,
                     }
                   : null,
               surfaceInspectorIsWall:
@@ -333,7 +331,7 @@ export function buildDesignPageViewportRegionAdapter({
           ),
         deleteSelectedPlanOverlay: () =>
           actions.deletePlanOverlay(selectedOverlayId),
-        commitOpeningWidthMm,
+        updateOpeningMetrics: actions.updateOpeningMetrics,
       },
       planSummary: actions.planSummary,
       planQuality: actions.planQuality,

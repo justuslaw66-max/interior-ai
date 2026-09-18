@@ -154,10 +154,9 @@ function buildViewportPanelState(
       selectedId: sources.viewportShell.state.planSelection.selectedPlanOverlayId,
       value: inspector.visiblePlanOpening
         ? {
-            kind: inspector.visiblePlanOpening.kind,
-            wall: inspector.visiblePlanOpening.wall,
-            widthMm: inspector.visiblePlanOpening.widthMm,
+            ...inspector.visiblePlanOpening,
             wallSpanMeters: inspector.visiblePlanOpeningWallSpanMeters,
+            maxHeightMeters: inspector.visiblePlanOpeningMaxHeightMeters,
           }
         : null,
     },

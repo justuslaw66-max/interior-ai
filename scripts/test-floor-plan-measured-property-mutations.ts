@@ -290,7 +290,7 @@ assert.throws(
 
 const root = process.cwd();
 const openingInspector = fs.readFileSync(
-  path.join(root, "components/editor/PlanOpeningInspector.tsx"),
+  path.join(root, "components/editor/OpeningDimensionFields.tsx"),
   "utf8"
 );
 const floorInspector = fs.readFileSync(
@@ -308,9 +308,13 @@ const roomGeometryController = fs.readFileSync(
   path.join(root, "lib/useDesignPageRoomGeometry.ts"),
   "utf8"
 );
-assert.match(openingInspector, /plan-opening-height-evidence/);
-assert.match(openingInspector, /plan-opening-sill-evidence/);
-assert.match(openingInspector, /disabled=\{!heightEditable\}/);
+assert.match(openingInspector, /evidence: opening\.evidence\?\.height, evidenceKey: "heightEvidence"/);
+assert.match(openingInspector, /evidence: opening\.evidence\?\.sillHeight, evidenceKey: "bottomEvidence"/);
+assert.match(openingInspector, /disabled=\{disabled \|\| !evidenceEditable\}/);
+for (const consumer of ["components/editor/PlanOpeningInspector.tsx", "components/editor/design-page/DesignPageSelectionInspector.tsx"]) {
+  assert.match(fs.readFileSync(path.join(root, consumer), "utf8"), /<OpeningDimensionFields/,
+    "Both inspectors must share the same evidence-aware dimension fields.");
+}
 assert.match(floorInspector, /floor-properties-wall-height-evidence/);
 assert.match(floorInspector, /floor-properties-slab-thickness-evidence/);
 assert.match(floorInspector, /canEditActiveRoomWallHeight/);

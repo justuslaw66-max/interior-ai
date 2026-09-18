@@ -1,5 +1,6 @@
 "use client";
 
+import OpeningDimensionFields, { type OpeningDimensionFieldsProps } from "@/components/editor/OpeningDimensionFields";
 import { createPortal } from "react-dom";
 import MeasurementField from "@/components/editor/MeasurementField";
 import {
@@ -30,10 +31,7 @@ type DesignPageSelectionInspectorProps = {
     hasSelectedPlanFixedElement: boolean;
     hasSelectedPlanAnnotation: boolean;
     hasSelectedPlanOverlay: boolean;
-    selectedOpening: {
-      widthMm: number;
-      maxWidthMm: number;
-    } | null;
+    selectedOpening: Pick<OpeningDimensionFieldsProps, "opening" | "wallSpanMeters" | "maxHeightMeters"> | null;
     surfaceInspectorIsWall: boolean;
     surfaceInspectorIsCeiling: boolean;
     surfaceInspector: SelectedSurfaceInspectorState | null;
@@ -91,7 +89,7 @@ type DesignPageSelectionInspectorProps = {
       delete: (roomId: string) => void;
     };
     deleteSelectedPlanOverlay: () => void;
-    commitOpeningWidthMm: (valueMm: number) => void;
+    updateOpeningMetrics: OpeningDimensionFieldsProps["onChange"];
     surfaceInspector: SelectedSurfaceInspectorActions;
   };
 };
@@ -172,54 +170,12 @@ export function DesignPageSelectionInspector({
       </div>
 
       {state.selectedOpening ? (
-        <div
-          data-testid="selection-inspector-opening-dimensions"
-          className="mt-3 grid grid-cols-2 gap-2"
-        >
-          <MeasurementField
-            label="Width"
-            valueMm={state.selectedOpening.widthMm}
-            unit={state.measurementUnit}
-            minMm={400}
-            maxMm={state.selectedOpening.maxWidthMm}
-            stepMm={50}
-            keyboardStepMm={50}
+        <div data-testid="selection-inspector-opening-dimensions" className="mt-3">
+          <OpeningDimensionFields {...state.selectedOpening}
+            measurementUnit={state.measurementUnit} dark={configuration.dark}
             disabled={!configuration.canEditPlanGeometry}
-            dark={configuration.dark}
-            compact
-            touchFriendly
-            testId="selection-inspector-opening-width"
-            onCommit={actions.commitOpeningWidthMm}
-          />
-          <div>
-            <div
-              className={
-                configuration.dark
-                  ? "flex items-center justify-between text-[11px] font-semibold text-neutral-300"
-                  : "flex items-center justify-between text-[11px] font-semibold text-neutral-600"
-              }
-            >
-              <span>Position</span>
-              <span
-                className={
-                  configuration.dark
-                    ? "font-normal text-neutral-400"
-                    : "font-normal text-neutral-500"
-                }
-              >
-                {state.measurementUnit}
-              </span>
-            </div>
-            <div
-              className={
-                configuration.dark
-                  ? "designer-raised mt-1 flex h-9 items-center rounded-md border px-2 text-xs font-semibold"
-                  : "mt-1 flex h-9 items-center rounded-md border border-neutral-200 bg-neutral-50 px-2 text-xs font-semibold text-neutral-800"
-              }
-            >
-              {state.summary.metrics[1]}
-            </div>
-          </div>
+            testIdPrefix="selection-inspector-opening" inputTestIdSuffix=""
+            onChange={actions.updateOpeningMetrics} />
         </div>
       ) : state.summary.metrics.length > 0 ? (
         <div

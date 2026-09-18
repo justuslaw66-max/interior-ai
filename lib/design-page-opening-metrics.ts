@@ -1,6 +1,6 @@
 import type { RoomOpening2D } from "@/lib/editorScene";
 import type { FloorPlanConsumerMeasurementEvidenceV2 } from "@/lib/floor-plan-measured-property-mutations";
-import { PLAN_OPENING_DEFAULT_HEIGHT_METERS } from "@/lib/design-page-plan-overlays";
+import { resolvePlanOpeningVerticalMetrics } from "@/lib/design-page-plan-overlays";
 
 export type DesignPageOpeningMetricsPatch = {
   widthMeters?: number;
@@ -28,8 +28,9 @@ export function normalizeDesignPageOpeningMetrics({
   roomHeight,
 }: NormalizeDesignPageOpeningMetricsInput): DesignPageOpeningMetricsPatch {
   const nextKind = metrics.kind ?? currentOpening?.kind ?? "window";
+  const currentVerticalMetrics = resolvePlanOpeningVerticalMetrics({ ...currentOpening, kind: nextKind });
   const currentBottomMeters =
-    nextKind === "door" ? 0 : (currentOpening?.bottomMm ?? 900) / 1000;
+    nextKind === "door" ? 0 : currentVerticalMetrics.bottomMeters;
   const bottomMeters =
     nextKind === "door"
       ? 0
@@ -37,9 +38,7 @@ export function normalizeDesignPageOpeningMetrics({
           Math.max(0, metrics.bottomMeters ?? currentBottomMeters),
           Math.max(0, roomHeight - 0.4)
         );
-  const currentHeightMeters =
-    (currentOpening?.heightMm ?? PLAN_OPENING_DEFAULT_HEIGHT_METERS * 1000) /
-    1000;
+  const currentHeightMeters = currentVerticalMetrics.heightMeters;
   const heightMeters = Math.min(
     Math.max(0.4, metrics.heightMeters ?? currentHeightMeters),
     Math.max(0.4, roomHeight - bottomMeters)

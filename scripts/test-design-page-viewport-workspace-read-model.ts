@@ -10,12 +10,18 @@ import {
 } from "@/lib/design-page-viewport-workspace-read-model";
 import type { HousePlanRoom2D } from "@/lib/design-page-house-plan";
 import type { BuildDesignPageViewportRegionAdapterInput } from "@/lib/design-page-viewport-region-adapter";
+import type { RoomOpening2D } from "@/lib/editorScene";
 import { createRoom, type DesignItem } from "@/lib/room-types";
 import type { DesignPagePresentationWorkspaceRegistration } from "@/lib/useDesignPagePresentationWorkspaceRegistration";
 
 const inertCommand = new Proxy((..._args: unknown[]) => undefined, {
   get: () => inertCommand,
 });
+const windowFixture: RoomOpening2D = {
+  id: "opening-1", roomId: "room-a", kind: "window", wall: "north",
+  widthMm: 900, heightMm: 1200, bottomMm: 800, offsetMm: 250,
+  evidence: { height: "assumed", sillHeight: "user_confirmed" },
+};
 
 const roomA: HousePlanRoom2D = {
   id: "room-a",
@@ -236,11 +242,14 @@ function buildPresentationFixture({
                 state: {
                   inspector: {
                     floatingSelectionInspectorVisible: true,
-                    selectedObjectInspector: null,
+                    selectedObjectInspector: selectedOpening
+                      ? { kind: "Window", title: "Window on north", detail: "Living room", metrics: [] }
+                      : null,
                     visiblePlanOpening: selectedOpening
-                      ? { kind: "door", wall: "north", widthMm: 900 }
+                      ? windowFixture
                       : null,
                     visiblePlanOpeningWallSpanMeters: 4,
+                    visiblePlanOpeningMaxHeightMeters: 2.7,
                     selectedPlanFixedElement: null,
                     selectedPlanAnnotation: null,
                   },
@@ -336,11 +345,13 @@ function buildReadModel(options: FixtureOptions = {}) {
   });
 }
 
-function adaptReadModel(readModel: DesignPageViewportWorkspaceReadModel) {
+function adaptReadModel(readModel: DesignPageViewportWorkspaceReadModel,
+  updateOpeningMetrics: BuildDesignPageViewportRegionAdapterInput["actions"]["updateOpeningMetrics"] = () => undefined) {
   const inertBoundary = {
     ...readModel,
     references: { planQuality: { setPanel: () => undefined } },
     actions: {
+      updateOpeningMetrics,
       selectionInspector: {},
       floorProperties: {},
       selectionControls: { selectedZone: {} },
@@ -414,10 +425,21 @@ const presentation = adaptReadModel(
 assert.ok(presentation.state.navigator);
 assert.equal(presentation.configuration.navigator.disabled, true);
 
-const selectedOpening = adaptReadModel(
-  buildReadModel({ selectedOpening: true })
-);
+const openingEdits: Parameters<BuildDesignPageViewportRegionAdapterInput["actions"]["updateOpeningMetrics"]>[] = [];
+const selectedOpening = adaptReadModel(buildReadModel({ selectedOpening: true, viewMode: "3d" }),
+  (id, metrics) => { openingEdits.push([id, metrics]); });
 assert.equal(selectedOpening.state.selectedOpening?.widthMm, 900);
+assert.deepEqual(selectedOpening.state.selectionInspector?.selectedOpening, {
+  opening: { ...windowFixture, wallSpanMeters: 4, maxHeightMeters: 2.7 },
+  wallSpanMeters: 4, maxHeightMeters: 2.7,
+}, "The visible 3D inspector must retain height, sill, offset, evidence, and wall bounds.");
+for (const metrics of [{ heightMeters: 1.4 }, { bottomMeters: 0.9 }, { offsetMeters: -0.35 }]) {
+  selectedOpening.actions.selectionInspector.updateOpeningMetrics(windowFixture.id, metrics);
+}
+assert.deepEqual(openingEdits, [
+  [windowFixture.id, { heightMeters: 1.4 }], [windowFixture.id, { bottomMeters: 0.9 }],
+  [windowFixture.id, { offsetMeters: -0.35 }],
+], "Viewport edits must reach the existing opening mutation/history action without dropping metrics.");
 assert.equal(
   adaptReadModel(buildReadModel({ selectedOpening: false })).state
     .selectedOpening,
