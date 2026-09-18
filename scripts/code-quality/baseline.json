@@ -697,7 +697,7 @@
       "limit": 400
     },
     "lib/useDesignPageFloorPlanUnderlayController.ts": {
-      "lines": 788,
+      "lines": 781,
       "limit": 400
     },
     "lib/useDesignPageItemDocumentController.ts": {
@@ -4603,7 +4603,7 @@
     "lib/useDesignPageFloorPlanUnderlayController.ts": {
       "overlongFunctions": {
         "count": 3,
-        "maximum": 690
+        "maximum": 683
       },
       "complexFunctions": {
         "count": 1,

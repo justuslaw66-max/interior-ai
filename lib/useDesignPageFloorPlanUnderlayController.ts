@@ -161,6 +161,26 @@ export function useDesignPageFloorPlanUnderlayController({
       }
       skipNextTemplateReplacementConfirmRef.current = false;
       requirePlanChoiceForNextTemplateRef.current = false;
+      const replacePlanDocument = (
+        openings: RoomOpening2D[],
+        fixedElements: FixedElement2D[],
+        snapshot: SetStateAction<DesignSnapshot>
+      ) =>
+        runHistoryTransaction("Apply plan template", () => {
+          revokeUnderlayObjectUrl();
+          pdfSourceDataRef.current = null;
+          setFloorPlanPdfSourceReady(false);
+          setFloorPlanUnderlay(null);
+          resetFloorPlanInteraction();
+          setPlanOpenings(openings);
+          setPlanFixedElements(fixedElements);
+          setSelectedPlanOverlayId(null);
+          clearAllSelection();
+          prepareCameraForPlanTemplate();
+          floorCameraViewsRef.current = {};
+          setViewMode("2d");
+          setDesignSnapshot(snapshot);
+        });
 
       const timestamp = Date.now();
       if (template.canonical) {
@@ -174,20 +194,7 @@ export function useDesignPageFloorPlanUnderlayController({
             sourceAssetSha256: template.canonical.document.sources[0]?.sha256,
           }
         );
-        revokeUnderlayObjectUrl();
-        pdfSourceDataRef.current = null;
-        setFloorPlanPdfSourceReady(false);
-        setFloorPlanUnderlay(null);
-        resetFloorPlanInteraction();
-        setPlanOpenings(canonical.openings);
-        setPlanFixedElements(canonical.fixedElements);
-        setSelectedPlanOverlayId(null);
-        clearAllSelection();
-        prepareCameraForPlanTemplate();
-        floorCameraViewsRef.current = {};
-        setViewMode("2d");
-        setDesignSnapshot(canonical.snapshot);
-        history.commit();
+        replacePlanDocument(canonical.openings, canonical.fixedElements, canonical.snapshot);
         showRuleToast(`${template.label} added from verified revision`);
         track("floor_plan_canonical_revision_applied", {
           templateId: template.id,
@@ -380,23 +387,9 @@ export function useDesignPageFloorPlanUnderlayController({
         }
       }
 
-      revokeUnderlayObjectUrl();
-      pdfSourceDataRef.current = null;
-      setFloorPlanPdfSourceReady(false);
-      setFloorPlanUnderlay(null);
-      resetFloorPlanInteraction();
-      setPlanOpenings(templateOpenings);
-      setPlanFixedElements(templateFixedElements);
-      setSelectedPlanOverlayId(null);
-      clearAllSelection();
-      prepareCameraForPlanTemplate();
-      floorCameraViewsRef.current = {};
-      setViewMode("2d");
-
-      setDesignSnapshot((previous) =>
+      replacePlanDocument(templateOpenings, templateFixedElements, (previous) =>
         buildPlanTemplateReplacementSnapshot(previous, rooms, activeTemplateRoom.id)
       );
-      history.commit();
 
       if (selectedFurnishingPack && skippedFurnishingCount > 0) {
         showRuleToast("Some starter items were skipped");
@@ -420,13 +413,13 @@ export function useDesignPageFloorPlanUnderlayController({
       clearAllSelection,
       designSnapshotRef,
       floorCameraViewsRef,
-      history,
       pdfSourceDataRef,
       planOpenings,
       prepareCameraForPlanTemplate,
       resetFloorPlanInteraction,
       revokeUnderlayObjectUrl,
       roomHeight,
+      runHistoryTransaction,
       setDesignSnapshot,
       setFloorPlanPdfSourceReady,
       setFloorPlanUnderlay,

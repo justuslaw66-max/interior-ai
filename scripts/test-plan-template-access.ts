@@ -594,7 +594,7 @@ assert.match(
 
 assert.match(
   floorPlanControllerSource,
-  /setPlanOpenings\(templateOpenings\)/,
+  /replacePlanDocument\(templateOpenings, templateFixedElements,/,
   "Applying a template should install automatic doorways instead of clearing openings."
 );
 
@@ -606,7 +606,7 @@ assert.match(
 
 assert.match(
   floorPlanControllerSource,
-  /setPlanOpenings\(templateOpenings\);[\s\S]*?setPlanFixedElements\(templateFixedElements\);/,
+  /const replacePlanDocument = \([\s\S]*?setPlanOpenings\(openings\);[\s\S]*?setPlanFixedElements\(fixedElements\);/,
   "Applying a template should replace standalone built-ins with template-owned reference zones so stale rectangles cannot survive."
 );
 
