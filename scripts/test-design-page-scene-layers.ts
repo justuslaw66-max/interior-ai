@@ -93,6 +93,9 @@ const cameraNavigationSource = readSource(
 const canonicalStructureSource = readSource(
   "components/editor/renderers/CanonicalFloorPlanStructure.tsx"
 );
+const housePlanRenderer3DSource = readSource(
+  "components/editor/renderers/HousePlanRenderer3D.tsx"
+);
 const coreShellBaseRegistrationSource = readSource(
   "lib/useDesignPageCoreShellBaseRegistration.ts"
 );
@@ -757,6 +760,11 @@ assert.match(
   canonicalStructureSource,
   /focusRoomId[\s\S]*wall\.adjacentRoomIds\.includes\(focusRoomId\)[\s\S]*floor=\{visibleFloor\}/,
   "Canonical 3D focus should retain only walls adjacent to the focused room."
+);
+assert.match(
+  housePlanRenderer3DSource,
+  /const selectStructureTarget = \([\s\S]*?if \(!interactive\) return;\s*event\.stopPropagation\(\);\s*if \(event\.delta > 2\) return;/,
+  "An orbit drag must not select floor, wall, ceiling or opening surfaces, while the nearest surface still keeps the drag's click from reaching items behind it."
 );
 assert.match(
   cameraNavigationSource,

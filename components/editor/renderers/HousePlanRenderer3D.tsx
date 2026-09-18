@@ -327,12 +327,8 @@ export default function HousePlanRenderer3D({
     wallHeight,
   ]);
   /* eslint-enable react-hooks/preserve-manual-memoization */
-  const hasLegacyMergedSlab = Boolean(
-    legacyWatertightGeometry?.floorSlabs.length
-  );
-  const hasLegacyMergedWalls = Boolean(
-    legacyWatertightGeometry?.wallBands.length
-  );
+  const hasLegacyMergedSlab = Boolean(legacyWatertightGeometry?.floorSlabs.length);
+  const hasLegacyMergedWalls = Boolean(legacyWatertightGeometry?.wallBands.length);
   const legacyWallTopMetersByFloor = new Map<number, number>();
   for (const band of legacyWatertightGeometry?.wallBands ?? []) {
     legacyWallTopMetersByFloor.set(
@@ -356,6 +352,7 @@ export default function HousePlanRenderer3D({
   ) => {
     if (!interactive) return;
     event.stopPropagation();
+    if (event.delta > 2) return;
     if (target.kind === "opening") {
       onSelectOpening?.(target.id);
       return;
