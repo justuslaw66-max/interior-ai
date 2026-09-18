@@ -22,6 +22,7 @@ import type { SelectableWallSurfacePanel } from "./continuousWallSelection";
 import {
   getSurfaceMaterialFallbackColor,
   useSurfaceMaterialSourceTexture,
+  useTransparencyRecompileRef,
 } from "./materials";
 import {
   buildWallFinishShellGeometry,
@@ -157,14 +158,13 @@ function WallSurfaceSideMesh({
 }) {
   const { gl, invalidate } = useThree();
   const surfaceMeshRef = useRef<THREE.Mesh | null>(null);
-  const materialRef = useRef<THREE.MeshStandardMaterial | null>(null);
+  const materialRef = useTransparencyRecompileRef<THREE.MeshStandardMaterial>(baseOpacity < 0.999);
   const wallSurfaceMaterial = getRuntimeSurfaceMaterialById(settings.materialId);
   const normalizedTexturePanelLength = Math.max(
     partLength,
     texturePanelLength
   );
-  const surfaceCenterWithinPanel =
-    centerOffset - texturePanelCenterOffset;
+  const surfaceCenterWithinPanel = centerOffset - texturePanelCenterOffset;
   const textureStartU =
     0.5 +
     (surfaceCenterWithinPanel - partLength / 2) /
@@ -260,7 +260,7 @@ function WallSurfaceSideMesh({
   useEffect(() => {
     onMaterialReady(materialKey, materialRef.current);
     return () => onMaterialReady(materialKey, null);
-  }, [materialKey, onMaterialReady]);
+  }, [materialKey, materialRef, onMaterialReady]);
 
   useEffect(() => () => surfaceGeometry.dispose(), [surfaceGeometry]);
 
@@ -270,7 +270,7 @@ function WallSurfaceSideMesh({
     materialRef.current.color.set(wallColor);
     materialRef.current.needsUpdate = true;
     invalidate();
-  }, [invalidate, wallColor, wallTexture]);
+  }, [invalidate, materialRef, wallColor, wallTexture]);
 
   return (
     <group position={[centerOffset, 0, surfaceOffsetZ]} rotation-y={surfaceRotationY}>
@@ -436,9 +436,9 @@ export function CutawayWallMesh({
 }) {
   const { camera } = useThree();
   const groupRef = useRef<THREE.Group | null>(null);
-  const baseMaterialRef = useRef<THREE.MeshStandardMaterial | null>(null);
   const surfaceMaterialRefs = useRef<Map<string, THREE.MeshStandardMaterial>>(new Map());
   const baseOpacity = (isActive ? ACTIVE_WALL_OPACITY : INACTIVE_WALL_OPACITY) * wallOpacity;
+  const baseMaterialRef = useTransparencyRecompileRef<THREE.MeshStandardMaterial>(baseOpacity < 0.999);
   const partHeight = part.height ?? wallHeight;
   const partCenterY = part.centerY ?? wallHeight / 2;
   const faceId = getWallSurfaceFaceId(room, segment);

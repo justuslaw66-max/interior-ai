@@ -447,6 +447,30 @@ assert.match(
   "Merged wall bands should fade with the lowest wall-opacity setting of the rooms on their floor."
 );
 
+const houseMaterialsSource = fs.readFileSync(
+  path.join(path.dirname(rendererPath), "house-plan-3d", "materials.ts"),
+  "utf8"
+);
+assert.match(
+  houseMaterialsSource,
+  /export function useTransparencyRecompileRef[\s\S]*?useLayoutEffect\(\(\) => \{[\s\S]*?\.needsUpdate = true;[\s\S]*?\}, \[transparent\]\);/,
+  "A live transparency flip must bump the material version; three otherwise keeps the opaque program that pins alpha to 1."
+);
+for (const [owner, materialRef] of [
+  ["LegacyWallBandMesh", "coreMaterialRef"],
+  ["LegacyWallBandMesh", "capMaterialRef"],
+  ["WallSurfaceSideMesh", "materialRef"],
+  ["CutawayWallMesh", "baseMaterialRef"],
+] as const) {
+  assert.match(
+    source,
+    new RegExp(
+      `function ${owner}\\b[\\s\\S]*?const ${materialRef} = useTransparencyRecompileRef<THREE\\.MeshStandardMaterial>\\((?:baseOpacity|opacity) < 0\\.999\\);[\\s\\S]*?ref=\\{${materialRef}\\}`
+    ),
+    `${owner} must recompile its ${materialRef} material when the wall-opacity slider flips its transparency.`
+  );
+}
+
 assert.match(
   source,
   /function CanonicalWallBodies3D[\s\S]*?canonical-wall-top-cap-3d[\s\S]*?<shapeGeometry args=\{\[shapes\]\}/,

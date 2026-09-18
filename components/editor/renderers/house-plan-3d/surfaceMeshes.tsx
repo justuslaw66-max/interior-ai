@@ -15,7 +15,7 @@ import { resolveFloorUndersideCutawayElevationMeters } from "@/lib/floor-plan-sc
 import { getRuntimeSurfaceMaterialById } from "@/lib/surface-material-runtime";
 import { normalizeFloorSurfaceSettings } from "@/lib/surface-settings";
 import { useSurfaceMaterialTexture } from "../useSurfaceMaterialTexture";
-import { createFloorMaterialTexture } from "./materials";
+import { createFloorMaterialTexture, useTransparencyRecompileRef } from "./materials";
 import {
   buildLegacyWallBandCoreGeometry,
   buildHorizontalRoomGeometry,
@@ -103,14 +103,11 @@ export function LegacyWallBandMesh({
 }) {
   const shapes = useMemo(() => legacyPlanarShape(band.polygons), [band.polygons]);
   const coreGeometry = useMemo(
-    () =>
-      buildLegacyWallBandCoreGeometry({
-        band,
-        facePatches,
-        removeTopCap: showTopCap,
-      }),
+    () => buildLegacyWallBandCoreGeometry({ band, facePatches, removeTopCap: showTopCap }),
     [band, facePatches, showTopCap]
   );
+  const coreMaterialRef = useTransparencyRecompileRef<THREE.MeshStandardMaterial>(opacity < 0.999);
+  const capMaterialRef = useTransparencyRecompileRef<THREE.MeshStandardMaterial>(opacity < 0.999);
 
   useEffect(() => () => coreGeometry.dispose(), [coreGeometry]);
 
@@ -134,6 +131,7 @@ export function LegacyWallBandMesh({
       >
         <primitive object={coreGeometry} attach="geometry" />
         <meshStandardMaterial
+          ref={coreMaterialRef}
           color={INACTIVE_WALL_COLOR}
           emissive={INACTIVE_WALL_COLOR}
           emissiveIntensity={WALL_INDIRECT_FILL_INTENSITY}
@@ -156,6 +154,7 @@ export function LegacyWallBandMesh({
         >
           <shapeGeometry args={[shapes]} />
           <meshStandardMaterial
+            ref={capMaterialRef}
             color={WALL_CUT_SURFACE_COLOR}
             emissive={WALL_CUT_SURFACE_COLOR}
             emissiveIntensity={WALL_INDIRECT_FILL_INTENSITY}
