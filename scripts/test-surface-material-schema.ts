@@ -19,6 +19,10 @@ import {
   buildSurfaceMaterialCsvRows,
 } from "../lib/share-shopping-csv";
 import { buildRoomSurfaceMaterialBomRows } from "../lib/surface-material-bom";
+import {
+  buildSurfaceRoomSummaries,
+  buildSurfaceSummaryRows,
+} from "../components/editor/design-controls-plan/surfaceSummaryRows";
 import { mapPlanOpeningsToRoomRenderer } from "../lib/design-page-plan-overlays";
 import { buildOpeningWallSurfacePanels } from "../components/editor/renderers/house-plan-3d/openingWallSurfacePanels";
 import { getContinuousWallPanelId } from "../components/editor/renderers/house-plan-3d/continuousWallSelection";
@@ -1107,6 +1111,56 @@ assert.equal(continuousRows.length, 1, "One selected wall must produce one mater
 assert.equal(continuousRows[0].surfaceAreaSqm, 8.32, "A continuous wall finish includes all solid sections minus the window.");
 assert.equal(continuousBomRows.some((row) => row.wallPanelId === sillPanel.panelId), false,
   "A whole wall assignment must supersede old fragment assignments without double counting.");
+
+const roundSummaryArea = (areaSqm: number | undefined) =>
+  areaSqm === undefined ? undefined : Math.round(areaSqm * 100) / 100;
+const noSampleUrl = () => null;
+const panelSummaryRows = buildSurfaceSummaryRows(
+  buildSurfaceRoomSummaries([windowPanelRoom], [bomWindow]),
+  noSampleUrl
+);
+const panelSummaryRow = panelSummaryRows.find(
+  (row) => row.id === `${windowPanelRoom.id}-wall-panel-${continuousPanelId}`
+);
+assert.ok(panelSummaryRow, "A finish applied to a selected wall must appear in the Surface Summary.");
+assert.deepEqual(
+  [panelSummaryRow.target, panelSummaryRow.surfaceLabel, panelSummaryRow.materialName],
+  ["selected_wall", continuousRows[0].surfaceLabel, continuousRows[0].materialName],
+  "The Surface Summary panel row must name the same wall and material as the export BOM."
+);
+assert.equal(roundSummaryArea(panelSummaryRow.areaSqm), continuousRows[0].surfaceAreaSqm,
+  "The Surface Summary panel area must match the export BOM, excluding the window aperture.");
+assert.equal(
+  panelSummaryRows.filter((row) => row.id.includes("-wall-panel-")).length,
+  continuousBomRows.filter((row) => row.wallPanelId).length,
+  "Superseded fragment finishes must not add Surface Summary rows the export BOM does not have."
+);
+assert.equal(
+  roundSummaryArea(panelSummaryRows.find((row) => row.target === "walls")?.areaSqm),
+  continuousBomRows.find((row) => row.surface === "walls")?.surfaceAreaSqm,
+  "The Surface Summary remaining-wall area must match the export BOM after the panel override."
+);
+const undonePanelSummaryRows = buildSurfaceSummaryRows(
+  buildSurfaceRoomSummaries([roomWithCanonicalPanelFinish].map((room) => ({
+    ...room,
+    surfaces: { walls: { default: { materialId: "goodrich-geff-novaclick-gnv-002-silver-oak" } } },
+  })), [bomWindow]),
+  noSampleUrl
+);
+assert.equal(undonePanelSummaryRows.some((row) => row.id.includes("-wall-panel-")), false,
+  "Removing the panel finish must remove its Surface Summary row.");
+const paintedPanelSummaryRow = buildSurfaceSummaryRows(
+  buildSurfaceRoomSummaries([{
+    ...windowPanelRoom,
+    surfaces: { walls: { panels: { [continuousPanelId]: { paintColorHex: "#F5F1E8", paintName: "Soft Gallery White" } } } },
+  }], [bomWindow]),
+  noSampleUrl
+).find((row) => row.id.endsWith(continuousPanelId));
+assert.deepEqual(
+  [paintedPanelSummaryRow?.materialName, roundSummaryArea(paintedPanelSummaryRow?.areaSqm)],
+  ["Soft Gallery White", 8.32],
+  "A painted selected wall must appear in the Surface Summary with its aperture-free area."
+);
 
 assert.equal(normalizeWallPaintColorHex("f5f1e8"), "#F5F1E8", "wall paint colors should normalize to uppercase hex");
 assert.equal(normalizeWallPaintColorHex("#xyz123"), null, "invalid wall paint colors should be rejected");

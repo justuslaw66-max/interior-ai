@@ -1,12 +1,12 @@
 import type { CSSProperties } from "react";
 
-import { ROOM_DIMENSION_DEFAULTS } from "@/lib/design-page-house-plan";
 import type { FloorMaterial } from "@/lib/floor-materials";
 import type {
   RoomFloorPattern,
   RoomSurfaceAssignments,
   RoomType,
 } from "@/lib/room-types";
+import type { RoomWallFinishQuantities } from "@/lib/surface-material-wall-panels";
 import {
   getSurfaceMaterialTextureSource,
   type SurfaceMaterialCatalogRecord,
@@ -28,6 +28,7 @@ export type SurfaceRoomSummary = {
   height?: number;
   surfaces?: RoomSurfaceAssignments;
   surfaceFinishes?: RoomSurfaceAssignments;
+  wallFinishQuantities: RoomWallFinishQuantities;
 };
 
 export type SurfaceFilterState = Partial<Record<SurfaceFilterKey, string>> & {
@@ -269,21 +270,6 @@ export function buildFacetOptions(
 
 export function getSurfaceRoomAreaSqm(room: SurfaceRoomSummary) {
   return Math.max(0, room.width * room.depth);
-}
-
-function getSurfaceRoomWallHeight(room: SurfaceRoomSummary) {
-  return Math.max(0.2, room.height ?? ROOM_DIMENSION_DEFAULTS.roomHeight);
-}
-
-export function getSurfaceRoomWallAreaSqm(room: SurfaceRoomSummary) {
-  return Math.max(0, (room.width + room.depth) * 2 * getSurfaceRoomWallHeight(room));
-}
-
-export function getSurfaceRoomWallFaceAreaSqm(room: SurfaceRoomSummary, faceId: string) {
-  const height = getSurfaceRoomWallHeight(room);
-  if (faceId === "north" || faceId === "south") return Math.max(0, room.width * height);
-  if (faceId === "east" || faceId === "west") return Math.max(0, room.depth * height);
-  return Math.max(0, Math.max(room.width, room.depth) * height);
 }
 
 export function getSurfaceMaterialPrimaryId(material: SurfaceMaterialCatalogRecord | null) {

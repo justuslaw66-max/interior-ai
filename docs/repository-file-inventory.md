@@ -1177,6 +1177,7 @@ The present uncommitted work centers on editable doors and windows across 2D and
 
 - `components/editor/design-controls-plan/surfaceCatalog.ts` — Defines `getFloorMaterialSwatchStyle`, `formatSurfaceMaterialValue`, `getSurfaceMaterialSupplierLabel`, `getSurfaceMaterialCollectionLabel`, and related exports for surface Catalog.
 - `components/editor/design-controls-plan/SurfaceMaterialCatalogBoundary.tsx` — Implements `SurfaceMaterialCatalogBoundary` for Surface Material Catalog Boundary.
+- `components/editor/design-controls-plan/surfaceSummaryRows.ts` — Defines `buildSurfaceRoomSummaries` and `buildSurfaceSummaryRows`, the Surface Summary rows whose wall areas come from `buildRoomWallFinishQuantities`.
 - `components/editor/design-controls-plan/WallPaintPicker.tsx` — Implements `WallPaintPicker` for Wall Paint Picker.
 - `components/editor/design-page/ProductFinishControls.tsx` — Defines `ProductFinishControls`, `ProductFinishControlsState`, `ProductFinishControlsActions` for Product Finish Controls.
 - `components/editor/renderers/canonical-floor-plan/surfaceMaterials.ts` — Defines `surfaceMaterialFallbackColor`, `resolveRoomSurfaceAssignments`, `WALL_SURFACE_TEXTURE_RESOLUTION` for surface Materials.
@@ -1187,12 +1188,12 @@ The present uncommitted work centers on editable doors and windows across 2D and
 - `lib/floor-materials.ts` — Defines `getFloorMaterialById`, `getRecommendedFloorMaterials`, `normalizeFloorRotationDeg`, `clampFloorPatternScale`, and related exports for floor materials.
 - `lib/materialPresets.ts` — Defines `getPresetsForCategory`, `getPresetById`, `getDefaultPreset`, `getPresetsByTone`, and related exports for material Presets.
 - `lib/nippon-paint-colours.ts` — Defines `NIPPON_PAINT_COLOURS`, `NipponPaintColour` for nippon paint colours.
-- `lib/surface-material-bom.ts` — Builds surface-material bills of materials, including opening-aware wall-panel quantities.
+- `lib/surface-material-bom.ts` — Builds surface-material bills of materials from the shared opening-aware wall finish quantities.
 - `lib/surface-material-runtime-types.ts` — Defines `SurfaceMaterialRenderRecord`, `SurfaceMaterialCatalogMetadata`, `SurfaceMaterialCatalogRecord`, `SurfaceMaterialRenderTuple`, and related exports for surface material runtime types.
 - `lib/surface-material-runtime.ts` — Defines `decodeSurfaceMaterialRenderTuple`, `getRuntimeSurfaceMaterialById`, `getSurfaceMaterialTextureSource`, `shouldUseSingleSurfaceSwatch`, and related exports for surface material runtime.
 - `lib/surface-material-schema.ts` — Defines `SURFACE_MATERIAL_VOCABULARY`, `SurfaceCategory`, `FlooringMaterialFamily`, `SurfaceMaterialFamily`, and related exports for surface material schema.
 - `lib/surface-material-texture-repeat.ts` — Defines `resolveSurfaceTextureRepeat`, `SurfaceTextureRepeat` for surface material texture repeat.
-- `lib/surface-material-wall-panels.ts` — Resolves wall finish assignments and combines opening-aware wall-panel quantities by durable assignment.
+- `lib/surface-material-wall-panels.ts` — Defines `buildRoomWallFinishQuantities`, the opening-aware default, face and panel wall quantities shared by the export BOM and the Surface Summary.
 - `lib/surface-material-yaml.ts` — Defines `getSurfaceMaterialCatalogRoot`, `getAllSurfaceMaterialFiles`, `readSurfaceMaterialYamlFile`, `getAllSurfaceMaterialYamlEntries`, and related exports for surface material yaml.
 - `lib/surface-settings.ts` — Defines `normalizeFloorPattern`, `getFloorPatternOptionsForIds`, `normalizeFloorPatternOffset`, `normalizeFloorJointSizeMm`, and related exports for surface settings.
 - `lib/wall-paint-rendering.ts` — Defines `getWallPaintColorFidelityFillIntensity`, `resolveWallSurfaceColorFillIntensity`, `WALL_PAINT_COLOR_FIDELITY_MIN_FILL_INTENSITY`, `WALL_PAINT_COLOR_FIDELITY_MAX_FILL_INTENSITY` for wall paint rendering.

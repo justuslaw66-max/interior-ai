@@ -225,11 +225,11 @@
       "limit": 250
     },
     "components/editor/DesignControlsPanel.tsx": {
-      "lines": 970,
+      "lines": 959,
       "limit": 250
     },
     "components/editor/DesignControlsPlanPanel.tsx": {
-      "lines": 3893,
+      "lines": 3738,
       "limit": 250
     },
     "components/editor/DraggableFloatingPanel.tsx": {
@@ -742,10 +742,6 @@
     },
     "lib/useDesignPageRoomPlanController.ts": {
       "lines": 609,
-      "limit": 400
-    },
-    "lib/useDesignPageRoomReadModel.ts": {
-      "lines": 410,
       "limit": 400
     },
     "lib/useDesignPageSceneItemDrag.ts": {
@@ -2090,11 +2086,11 @@
     },
     "components/editor/DesignControlsPlanPanel.tsx": {
       "overlongFunctions": {
-        "count": 7,
-        "maximum": 3777
+        "count": 6,
+        "maximum": 3628
       },
       "complexFunctions": {
-        "count": 6,
+        "count": 5,
         "maximum": 251
       }
     },
@@ -4377,7 +4373,7 @@
     "lib/surface-material-bom.ts": {
       "overlongFunctions": {
         "count": 3,
-        "maximum": 242
+        "maximum": 183
       }
     },
     "lib/surface-settings.ts": {
@@ -4939,7 +4935,7 @@
     "lib/useDesignPageRoomReadModel.ts": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 315
+        "maximum": 304
       },
       "complexFunctions": {
         "count": 1,

@@ -39,10 +39,6 @@ import {
   DEFAULT_FLOOR_JOINT_SIZE_MM,
   DEFAULT_FLOOR_PATTERN_OFFSET,
   getFloorPatternLabel,
-  getDefaultWallSurfaceSettings,
-  getCeilingSurfaceSettings,
-  getWallFaceLabel,
-  getWallFaceSurfaceSettings,
   normalizeFloorSurfaceSettings,
   type NormalizedSurfaceSettings,
 } from "@/lib/surface-settings";
@@ -82,7 +78,6 @@ import {
   WALL_PAINT_INITIAL_VISIBLE_COUNT,
   buildFacetOptions,
   buildSurfaceMaterialProductGroups,
-  formatSurfaceMaterialValue,
   getFloorMaterialSwatchStyle,
   getSurfaceMaterialCollectionLabel,
   getSurfaceMaterialColorLabel,
@@ -97,16 +92,15 @@ import {
   getSurfaceMaterialSupplierLabel,
   getSurfaceMaterialSwatchStyle,
   getSurfaceRoomAreaSqm,
-  getSurfaceRoomWallAreaSqm,
-  getSurfaceRoomWallFaceAreaSqm,
   type SurfaceBrowserTab,
   type SurfaceBrowserViewMode,
   type SurfaceFilterKey,
   type SurfaceFilterState,
   type SurfaceMaterialProductGroup,
-  type SurfaceSummaryRow,
   type WallSurfaceMode,
 } from "./design-controls-plan/surfaceCatalog";
+import { buildSurfaceSummaryRows } from "./design-controls-plan/surfaceSummaryRows";
+import { formatDisplayArea } from "@/lib/display-units";
 
 export type { FloorPlanLifecycleIdentity, PlanStartMode } from "./design-controls-plan/DesignControlsPlanPanel.types";
 import type {
@@ -1218,158 +1212,9 @@ export default function DesignControlsPlanPanel({
     }
     openSurfaceSummary("information_fallback");
   };
-  const activeSurfaceSummaryRows = surfaceRooms.flatMap((room) => {
-    const surfaces = room.surfaces ?? room.surfaceFinishes;
-    const floorMaterialId = surfaces?.floorMaterialId ?? null;
-    const floorMaterial = getRuntimeSurfaceMaterialById(floorMaterialId);
-    const starterMaterial = getFloorMaterialById(floorMaterialId);
-    const floorSettings = normalizeFloorSurfaceSettings(
-      surfaces,
-      normalizeFloorRotationDeg,
-      clampFloorPatternScale
-    );
-    const floorRow = {
-      id: `${room.id}-floor`,
-      room,
-      target: "floor" as const,
-      surfaceLabel: "Floor",
-      materialId: floorMaterial?.surface_material.material_id ?? starterMaterial.id,
-      materialName: floorMaterial?.surface_material.product_name ?? starterMaterial.name,
-      supplier: floorMaterial
-        ? floorMaterial.surface_material.brand ?? formatSurfaceMaterialValue(floorMaterial.surface_material.supplier)
-        : "Starter finish",
-      areaSqm: getSurfaceRoomAreaSqm(room),
-      status: floorMaterial?.import_governance.publish_status ?? "not_orderable",
-      sampleUrl: getSurfaceMaterialSampleUrl(surfaceCatalog.byId.get(floorMaterialId)),
-      settings: {
-        pattern: floorSettings.floorPattern,
-        rotationDeg: floorSettings.floorRotationDeg,
-        scale: floorSettings.floorScale,
-        offset: floorSettings.floorPatternOffset,
-        jointSizeMm: floorSettings.floorJointSizeMm,
-        jointColor: floorSettings.floorJointColor,
-      },
-    };
-
-    const rows: SurfaceSummaryRow[] = [floorRow];
-    const ceilingSettings = getCeilingSurfaceSettings(
-      surfaces,
-      normalizeFloorRotationDeg,
-      clampFloorPatternScale
-    );
-    const ceilingPaintName = ceilingSettings.paintColorHex
-      ? getWallPaintDisplayName(ceilingSettings.paintColorHex, ceilingSettings.paintName)
-      : "No ceiling paint";
-    rows.push({
-      id: `${room.id}-ceiling`,
-      room,
-      target: "ceiling" as const,
-      surfaceLabel: "Ceiling",
-      materialId: ceilingSettings.paintColorHex ? `paint:${ceilingSettings.paintColorHex}` : `ceiling:${room.id}`,
-      materialName: ceilingPaintName,
-      supplier: ceilingSettings.paintColorHex ? "Paint colour" : "Visual finish",
-      areaSqm: getSurfaceRoomAreaSqm(room),
-      status: ceilingSettings.paintColorHex ? "visual_finish" : "not_started",
-      sampleUrl: null,
-      settings: {
-        pattern: ceilingSettings.pattern,
-        rotationDeg: ceilingSettings.rotationDeg,
-        scale: ceilingSettings.scale,
-        offset: ceilingSettings.offset,
-        jointSizeMm: ceilingSettings.jointSizeMm,
-        jointColor: ceilingSettings.jointColor,
-      },
-    });
-    const wallDefaultSettings = getDefaultWallSurfaceSettings(
-      surfaces,
-      normalizeFloorRotationDeg,
-      clampFloorPatternScale
-    );
-    const faceIds = Object.keys(surfaces?.walls?.faces ?? {});
-    const faceAreaTotal = faceIds.reduce(
-      (sum, faceId) => sum + getSurfaceRoomWallFaceAreaSqm(room, faceId),
-      0
-    );
-    const defaultWallArea = Math.max(
-      0,
-      getSurfaceRoomWallAreaSqm(room) - Math.min(getSurfaceRoomWallAreaSqm(room), faceAreaTotal)
-    );
-    if (wallDefaultSettings.materialId || wallDefaultSettings.paintColorHex) {
-      const material = wallDefaultSettings.materialId
-        ? getRuntimeSurfaceMaterialById(wallDefaultSettings.materialId)
-        : null;
-      const starter = wallDefaultSettings.materialId
-        ? getFloorMaterialById(wallDefaultSettings.materialId)
-        : null;
-      const paintName = getWallPaintDisplayName(
-        wallDefaultSettings.paintColorHex,
-        wallDefaultSettings.paintName
-      );
-      rows.push({
-        id: `${room.id}-walls`,
-        room,
-        target: "walls" as const,
-        surfaceLabel: faceIds.length > 0 ? "Remaining walls" : "All walls",
-        materialId: material?.surface_material.material_id ?? starter?.id ?? `paint:${wallDefaultSettings.paintColorHex}`,
-        materialName: material?.surface_material.product_name ?? starter?.name ?? paintName,
-        supplier: material
-          ? material.surface_material.brand ?? formatSurfaceMaterialValue(material.surface_material.supplier)
-          : starter
-            ? "Starter finish"
-            : "Paint colour",
-        areaSqm: defaultWallArea,
-        status: material?.import_governance.publish_status ?? (starter ? "not_orderable" : "visual_finish"),
-        sampleUrl: getSurfaceMaterialSampleUrl(surfaceCatalog.byId.get(wallDefaultSettings.materialId)),
-        settings: {
-          pattern: wallDefaultSettings.pattern,
-          rotationDeg: wallDefaultSettings.rotationDeg,
-          scale: wallDefaultSettings.scale,
-          offset: wallDefaultSettings.offset,
-          jointSizeMm: wallDefaultSettings.jointSizeMm,
-          jointColor: wallDefaultSettings.jointColor,
-        },
-      });
-    }
-
-    faceIds.forEach((faceId) => {
-      const settings = getWallFaceSurfaceSettings(
-        surfaces,
-        faceId,
-        normalizeFloorRotationDeg,
-        clampFloorPatternScale
-      );
-      if (!settings.materialId && !settings.paintColorHex) return;
-      const material = settings.materialId ? getRuntimeSurfaceMaterialById(settings.materialId) : null;
-      const starter = settings.materialId ? getFloorMaterialById(settings.materialId) : null;
-      const paintName = getWallPaintDisplayName(settings.paintColorHex, settings.paintName);
-      rows.push({
-        id: `${room.id}-wall-${faceId}`,
-        room,
-        target: "selected_wall" as const,
-        surfaceLabel: getWallFaceLabel(faceId),
-        materialId: material?.surface_material.material_id ?? starter?.id ?? `paint:${settings.paintColorHex}`,
-        materialName: material?.surface_material.product_name ?? starter?.name ?? paintName,
-        supplier: material
-          ? material.surface_material.brand ?? formatSurfaceMaterialValue(material.surface_material.supplier)
-          : starter
-            ? "Starter finish"
-            : "Paint colour",
-        areaSqm: getSurfaceRoomWallFaceAreaSqm(room, faceId),
-        status: material?.import_governance.publish_status ?? (starter ? "not_orderable" : "visual_finish"),
-        sampleUrl: getSurfaceMaterialSampleUrl(surfaceCatalog.byId.get(settings.materialId)),
-        settings: {
-          pattern: settings.pattern,
-          rotationDeg: settings.rotationDeg,
-          scale: settings.scale,
-          offset: settings.offset,
-          jointSizeMm: settings.jointSizeMm,
-          jointColor: settings.jointColor,
-        },
-      });
-    });
-
-    return rows;
-  });
+  const activeSurfaceSummaryRows = buildSurfaceSummaryRows(surfaceRooms, (materialId) =>
+    getSurfaceMaterialSampleUrl(surfaceCatalog.byId.get(materialId))
+  );
   const setSurfaceFilter = (key: SurfaceFilterKey, value: string) => {
     setSurfaceFilters((current) => ({
       ...current,
@@ -2085,7 +1930,7 @@ export default function DesignControlsPlanPanel({
                       {row.room.name} · {row.surfaceLabel}
                     </div>
                     <div className={progressMetaClass}>
-                      {row.materialName} · {row.areaSqm.toFixed(2)} sqm
+                      {row.materialName} · {formatDisplayArea(row.areaSqm, measurementUnit)}
                     </div>
                     <div className={progressMetaClass}>
                       {getFloorPatternLabel(row.settings.pattern)} · {row.settings.rotationDeg}° · Scale {row.settings.scale.toFixed(2)}x · Joint {row.settings.jointSizeMm} mm
