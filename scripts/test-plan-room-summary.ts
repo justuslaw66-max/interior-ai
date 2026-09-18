@@ -5,11 +5,16 @@ import { join } from "node:path";
 import type { HousePlanRoom2D } from "@/lib/design-page-house-plan";
 import {
   buildPlanRoomSummary,
+  formatPlanRoomMetricLabel,
   resolvePlanRoomSelection,
 } from "@/lib/plan-room-summary";
 
 const roomRendererSource = readFileSync(
   join(process.cwd(), "components/editor/renderers/RoomRenderer2D.tsx"),
+  "utf8"
+);
+const summaryCardSource = readFileSync(
+  join(process.cwd(), "components/editor/design-page/PlanRoomSummaryCard.tsx"),
   "utf8"
 );
 
@@ -82,6 +87,31 @@ const polygonPlan = buildPlanRoomSummary([
 assert.equal(polygonPlan.widthMeters, 4);
 assert.equal(polygonPlan.depthMeters, 4);
 assert.equal(polygonPlan.areaSquareMeters, 11);
+
+const fiveByFour = { widthMeters: 5, depthMeters: 4, areaSquareMeters: 20 };
+assert.equal(
+  formatPlanRoomMetricLabel(fiveByFour, "cm"),
+  "500 cm × 400 cm · 20.0 m²",
+  "Plan summary dimensions should follow a metric display-unit preference."
+);
+assert.equal(
+  formatPlanRoomMetricLabel(fiveByFour, "ft-in"),
+  "16′ 4.9″ × 13′ 1.5″ · 215.3 ft²",
+  "Plan summary dimensions should show feet/inches and ft² in ft+in mode."
+);
+assert.equal(
+  formatPlanRoomMetricLabel(fiveByFour, "in"),
+  "196.85 in × 157.48 in · 215.3 ft²",
+  "Plan summary dimensions should show inches and ft² in inch mode."
+);
+for (const pattern of [
+  /formatPlanRoomMetricLabel\(wholePlan, configuration\.measurementUnit\)/,
+  /formatPlanRoomMetricLabel\(selection, configuration\.measurementUnit\)/,
+  /formatPlanRoomMetricLabel\(room, configuration\.measurementUnit\)/,
+]) {
+  assert.match(summaryCardSource, pattern, "Every plan summary measurement should use the display-unit label.");
+}
+assert.doesNotMatch(summaryCardSource, / m²|\} m</, "The plan summary card must not hard-code metric units.");
 
 assert.deepEqual(resolvePlanRoomSelection([], "living", false), {
   ids: ["living"],

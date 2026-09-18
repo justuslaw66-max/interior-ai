@@ -1,4 +1,9 @@
 import type { HousePlanRoom2D } from "@/lib/design-page-house-plan";
+import {
+  formatDisplayArea,
+  formatDisplayLength,
+  type DisplayUnit,
+} from "@/lib/display-units";
 
 export type PlanRoomMetric = {
   id: string;
@@ -129,4 +134,14 @@ export function buildPlanRoomSummary(
     ),
     rooms: roomMetrics,
   };
+}
+
+/** "Width × depth · area" in the viewer's display unit. */
+export function formatPlanRoomMetricLabel(
+  metric: Pick<PlanRoomMetric, "widthMeters" | "depthMeters" | "areaSquareMeters">,
+  unit: DisplayUnit
+): string {
+  const width = formatDisplayLength(metric.widthMeters * 1000, unit);
+  const depth = formatDisplayLength(metric.depthMeters * 1000, unit);
+  return `${width} × ${depth} · ${formatDisplayArea(metric.areaSquareMeters, unit)}`;
 }

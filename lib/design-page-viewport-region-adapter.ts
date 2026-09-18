@@ -292,7 +292,7 @@ export function buildDesignPageViewportRegionAdapter({
         floatingTopPx: configuration.selectionInspectorTopPx,
         floatingWidthPx: configuration.selectionInspectorWidthPx,
       },
-      planSummary: { dark: configuration.dark },
+      planSummary: { dark: configuration.dark, measurementUnit: state.selectionInspector.measurementUnit },
       planQuality: {
         dark: configuration.dark,
         dockedWidthPx: configuration.floatingOverlayStackWidthPx,

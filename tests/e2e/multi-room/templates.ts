@@ -83,8 +83,7 @@ export function registerTemplateTests() {
 
     const summary = page.locator('[data-testid="plan-room-summary"]:visible').first();
     await expect(summary).toBeVisible();
-    await expect(summary).toContainText("6.3 × 5.7 m");
-    await expect(summary).toContainText("32.1 m²");
+    await expect(summary).toContainText("630 cm × 570 cm · 32.1 m²");
 
     const livingLabel = page
       .locator('[data-testid="house-room-2d-label"]')

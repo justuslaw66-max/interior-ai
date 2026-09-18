@@ -1947,7 +1947,7 @@
     "components/editor/design-page/PlanRoomSummaryCard.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 133
+        "maximum": 130
       },
       "complexFunctions": {
         "count": 1,
