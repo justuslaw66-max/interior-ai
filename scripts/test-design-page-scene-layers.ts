@@ -720,6 +720,21 @@ assert.match(
   "The scene adapter should map editor, plan, and render structure configuration."
 );
 assert.match(
+  adapterSource,
+  /items: \{[\s\S]*?hasWholeHousePlan: room\.hasWholeHousePlan,/,
+  "Scene items should allow cross-room drags only when the plan has several rooms, not whenever the house-plan scene draws a lone room."
+);
+assert.match(
+  adapterSource,
+  /preview: \{\s*hasWholeHousePlan: room\.hasWholeHousePlan,/,
+  "Placement preview planes should span the whole plan only for multi-room plans and stay inside a lone room."
+);
+assert.match(
+  sceneWorkspaceSource,
+  /hasWholeHousePlan: scene\.hasWholeHousePlan,/,
+  "Scene workspace should feed the multi-room flag, not the house-plan-scene flag, into item and preview semantics."
+);
+assert.match(
   sceneWorkspaceSource,
   /buildDesignPageSceneRegionAdapter\(\{[\s\S]*structure:\s*\{[\s\S]*addCalibrationPoint: planAuthoring\.boundaries\.underlay\.actions\.addCalibrationPoint[\s\S]*select: placement\.actions\.targeting\.handlePlacementAwareRoomSelect[\s\S]*select:[\s\S]*selectionInspection\.actions\.selection\.handleSelectPlanOverlay[\s\S]*addRoomPoint:[\s\S]*handleBlankGridRoomDrawPoint[\s\S]*setOpeningDragging:[\s\S]*camera\.actions\.canvas\.changePlanOpeningDragging[\s\S]*reportPlanMetrics:[\s\S]*viewportShell\.actions\.diagnostics\.handlePlanDebugMetricsChange/,
   "Scene workspace should inject grouped underlay, room, overlay, drawing, and whole-home actions into the scene adapter."

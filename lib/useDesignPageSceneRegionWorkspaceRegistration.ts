@@ -191,9 +191,9 @@ export function useDesignPageSceneRegionWorkspaceRegistration({
         activeFloorLevel: documentRoom.derived.floor.activeFloorLevel,
         stackedFloors: documentRoom.state.floor.stackedFloorView,
         wholeHomeEnabled: scene.usesHousePlanScene,
+        hasWholeHousePlan: scene.hasWholeHousePlan,
         wholeHomeRooms: scene.sceneHousePlanRooms3D,
-        selectedSurfaceTarget:
-          viewportShell.state.surface.selectedRendererSurfaceTarget,
+        selectedSurfaceTarget: viewportShell.state.surface.selectedRendererSurfaceTarget,
         floorWorldY: resolveCanonicalFloorElevationMeters(room.activeRoom ?? {}) ?? 0,
         width: room.roomWidth,
         depth: room.roomDepth,

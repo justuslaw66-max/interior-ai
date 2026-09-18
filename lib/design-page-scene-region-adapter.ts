@@ -84,6 +84,7 @@ export type BuildDesignPageSceneRegionAdapterInput = {
       activeFloorLevel: StructureState["wholeHome"]["activeFloorLevel"];
       stackedFloors: StructureState["wholeHome"]["stackedFloors"];
       wholeHomeEnabled: StructureState["wholeHome"]["enabled"];
+      hasWholeHousePlan: ItemsConfiguration["hasWholeHousePlan"];
       wholeHomeRooms: StructureState["wholeHome"]["rooms"];
       selectedSurfaceTarget: StructureState["wholeHome"]["selectedSurfaceTarget"];
       floorWorldY: StructureState["singleRoom"]["floorWorldY"];
@@ -287,7 +288,7 @@ export function buildDesignPageSceneRegionAdapter({
         isClientPreview: editor.isClientPreview,
         canEdit: editor.canEdit,
         isDesigner: editor.isDesigner,
-        hasWholeHousePlan: room.wholeHomeEnabled,
+        hasWholeHousePlan: room.hasWholeHousePlan,
         renderQuality: scene.renderQuality,
         walls: room.walls,
         snapEnabled: configuration.snapEnabled,
@@ -298,7 +299,7 @@ export function buildDesignPageSceneRegionAdapter({
         planMeasurementUnit: plan.measurementUnit,
       },
       preview: {
-        hasWholeHousePlan: room.wholeHomeEnabled,
+        hasWholeHousePlan: room.hasWholeHousePlan,
         planWidth: plan.width,
         planDepth: plan.depth,
         activeRoomWidth: room.width,
