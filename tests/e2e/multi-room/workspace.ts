@@ -271,7 +271,11 @@ export function registerWorkspaceTests() {
     const depthInput = page.getByTestId("selection-inspector-room-depth");
     await expect(widthInput).toBeVisible();
     await expect(depthInput).toBeVisible();
-    const initialWidthMm = Number(await widthInput.inputValue());
+    const unitSelect = page.getByTestId("selection-inspector-measurement-units");
+    await unitSelect.selectOption("mm");
+    await expect(unitSelect).toHaveValue("mm");
+    const initialWidthMm = Number(await widthInput.getAttribute("data-model-value-mm"));
+    await expect(widthInput).toHaveValue(String(initialWidthMm));
     const nextWidthMm = initialWidthMm - 100;
     await widthInput.fill(String(nextWidthMm));
     await widthInput.press("Enter");
@@ -287,9 +291,12 @@ export function registerWorkspaceTests() {
     await widthInput.press("Escape");
     await expect(widthInput).toHaveValue(String(nextWidthMm));
 
-    await page.getByTestId("selection-inspector-measurement-units").getByRole("button", { name: "CM" }).click();
+    await unitSelect.selectOption("cm");
+    await expect(unitSelect).toHaveValue("cm");
     await expect(widthInput).toHaveValue(String(nextWidthMm / 10));
     await expect(depthInput).toHaveValue(String(nextDepthMm / 10));
+    await expect(widthInput).toHaveAttribute("data-model-value-mm", String(nextWidthMm));
+    await expect(depthInput).toHaveAttribute("data-model-value-mm", String(nextDepthMm));
   });
 
   test("right plan rail reflows map, floor, and selection without overlap", async ({ page }) => {

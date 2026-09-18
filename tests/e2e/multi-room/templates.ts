@@ -29,8 +29,8 @@ export function registerTemplateTests() {
     );
     await expect(page.getByTestId("room-connection-checklist")).toContainText("Connections");
     await expect(page.getByTestId("room-connection-checklist")).toContainText("shared wall");
-    await expect(page.getByText(/^Overall horizontal \d+ mm$/)).toBeVisible();
-    await expect(page.getByText(/^Overall vertical \d+ mm$/)).toBeVisible();
+    await expect(page.getByText(/^Overall horizontal [\d,.]+ cm$/)).toBeVisible();
+    await expect(page.getByText(/^Overall vertical [\d,.]+ cm$/)).toBeVisible();
     await expect(page.locator('[data-testid^="wall-draw-segment-length-"]')).toHaveCount(0);
 
     const originalWidthText = await page.getByTestId("active-room-dimension-width").textContent();
@@ -250,8 +250,14 @@ export function registerTemplateTests() {
     const selectionInspector = page.getByTestId("selection-inspector");
     await expect(selectionInspector).toBeVisible();
     await expect(selectionInspector).toContainText("Bedroom");
-    await expect(page.getByTestId("selection-inspector-room-width")).toHaveValue("4000");
-    await expect(page.getByTestId("selection-inspector-room-depth")).toHaveValue("3600");
+    await expect(page.getByTestId("selection-inspector-room-width")).toHaveAttribute(
+      "data-model-value-mm",
+      "4000"
+    );
+    await expect(page.getByTestId("selection-inspector-room-depth")).toHaveAttribute(
+      "data-model-value-mm",
+      "3600"
+    );
     await expect(page.getByTestId("consumer-plan-next-steps")).toContainText("2 rooms ready");
     await expect(page.getByTestId("consumer-plan-next-steps")).toContainText(
       "Add 1 doorway."
@@ -362,8 +368,8 @@ export function registerTemplateTests() {
     await expect(page.getByTestId("plan-start-draw")).toBeVisible();
     await expect(page.getByTestId("plan-tool-door")).toBeVisible();
     await expect(page.getByTestId("plan-tool-window")).toBeVisible();
-    await expect(page.getByTestId("active-room-dimension-width")).toContainText("Width 4000 mm");
-    await expect(page.getByTestId("active-room-dimension-depth")).toContainText("Depth 3600 mm");
+    await expect(page.getByTestId("active-room-dimension-width")).toContainText("Width 400 cm");
+    await expect(page.getByTestId("active-room-dimension-depth")).toContainText("Depth 360 cm");
     await expect(page.locator('[data-testid^="room-resize-handle-"][data-testid$="-n"]')).toBeVisible();
     const eastRoomHandle = page.locator('[data-testid^="room-resize-handle-"][data-testid$="-e"]');
     await expect(eastRoomHandle).toBeVisible();
@@ -395,21 +401,29 @@ export function registerTemplateTests() {
     await expect(page.getByTestId("plan-opening-live-label")).toContainText("Door");
     await expect(page.getByTestId("selected-plan-opening-actions")).toBeVisible();
     const selectedOpeningWidth = page.getByTestId("selected-plan-opening-width-input");
-    await expect(selectedOpeningWidth).toHaveValue("900");
-    await selectedOpeningWidth.fill("1000");
+    await expect(selectedOpeningWidth).toHaveAttribute("data-model-value-mm", "900");
+    await selectedOpeningWidth.fill("100");
     await selectedOpeningWidth.press("Enter");
-    await expect(page.getByTestId("selection-inspector-opening-width")).toHaveValue("1000");
-    await expect(planOpeningInspector.getByTestId("plan-opening-width-input")).toHaveValue("1000");
-    await planOpeningInspector.getByTestId("plan-opening-width-input").fill("1100");
-    await planOpeningInspector.getByTestId("plan-opening-width-input").press("Enter");
-    await expect(planOpeningInspector.getByTestId("plan-opening-width-input")).toHaveValue("1100");
-    await planOpeningInspector.getByTestId("plan-opening-offset-input").fill("200");
-    await planOpeningInspector.getByTestId("plan-opening-offset-input").press("Enter");
-    await expect(planOpeningInspector.getByTestId("plan-opening-offset-input")).toHaveValue("200");
-    await expect(planOpeningInspector.getByTestId("plan-opening-height-input")).toHaveValue("2100");
-    await planOpeningInspector.getByTestId("plan-opening-width-input").fill("1150");
-    await planOpeningInspector.getByTestId("plan-opening-width-input").press("Enter");
-    await expect(planOpeningInspector.getByTestId("plan-opening-width-input")).toHaveValue("1150");
+    await expect(page.getByTestId("selection-inspector-opening-width")).toHaveAttribute(
+      "data-model-value-mm",
+      "1000"
+    );
+    const planOpeningWidth = planOpeningInspector.getByTestId("plan-opening-width-input");
+    const planOpeningOffset = planOpeningInspector.getByTestId("plan-opening-offset-input");
+    await expect(planOpeningWidth).toHaveAttribute("data-model-value-mm", "1000");
+    await planOpeningWidth.fill("110");
+    await planOpeningWidth.press("Enter");
+    await expect(planOpeningWidth).toHaveAttribute("data-model-value-mm", "1100");
+    await planOpeningOffset.fill("20");
+    await planOpeningOffset.press("Enter");
+    await expect(planOpeningOffset).toHaveAttribute("data-model-value-mm", "200");
+    await expect(planOpeningInspector.getByTestId("plan-opening-height-input")).toHaveAttribute(
+      "data-model-value-mm",
+      "2100"
+    );
+    await planOpeningWidth.fill("115");
+    await planOpeningWidth.press("Enter");
+    await expect(planOpeningWidth).toHaveAttribute("data-model-value-mm", "1150");
   });
 
 }

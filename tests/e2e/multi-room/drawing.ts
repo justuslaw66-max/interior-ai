@@ -226,8 +226,14 @@ export function registerDrawingTests() {
     await page.getByTestId("floor-plan-draw-mode-rectangle_wall").click();
 
     await expect(page.getByTestId("room-plan-status-room-count")).toHaveText("1 room");
-    await expect(page.getByTestId("selection-inspector-room-width")).toHaveValue("5000");
-    await expect(page.getByTestId("selection-inspector-room-depth")).toHaveValue("4000");
+    await expect(page.getByTestId("selection-inspector-room-width")).toHaveAttribute(
+      "data-model-value-mm",
+      "5000"
+    );
+    await expect(page.getByTestId("selection-inspector-room-depth")).toHaveAttribute(
+      "data-model-value-mm",
+      "4000"
+    );
     await page.getByTestId("selection-inspector-fit-room").click();
     const snapMarkers = await page
       .locator('[data-testid^="floor-plan-start-snap-"]')
@@ -307,8 +313,14 @@ export function registerDrawingTests() {
       return;
     }
     await expect(page.getByTestId("room-plan-status-room-count")).toHaveText("1 room");
-    await expect(page.getByTestId("selection-inspector-room-width")).toHaveValue("2000");
-    await expect(page.getByTestId("selection-inspector-room-depth")).toHaveValue("4000");
+    await expect(page.getByTestId("selection-inspector-room-width")).toHaveAttribute(
+      "data-model-value-mm",
+      "2000"
+    );
+    await expect(page.getByTestId("selection-inspector-room-depth")).toHaveAttribute(
+      "data-model-value-mm",
+      "4000"
+    );
   });
 
   test("shift-dragging a 2D room moves freely without losing selection", async ({ page }) => {
