@@ -305,7 +305,15 @@ export function registerDrawingTests() {
     await page.mouse.move(end.x, end.y, { steps: 12 });
     await page.mouse.click(end.x, end.y);
 
-    if (!(await page.getByText("Room drawn").isVisible({ timeout: 1000 }).catch(() => false))) {
+    const roomDrawn = await page
+      .getByText("Room drawn")
+      .first()
+      .waitFor({ state: "visible", timeout: 5000 })
+      .then(
+        () => true,
+        () => false
+      );
+    if (!roomDrawn) {
       test.info().annotations.push({
         type: "note",
         description: "Skipping strict rectangle replacement assertions because the final rectangle click did not draw a room in this runtime",
