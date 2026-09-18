@@ -6,8 +6,9 @@ The design document is the source of truth for rooms, items, transforms,
 materials, hierarchy, and exact floor elevations. `design-page-scene-domain.ts`
 builds one renderer-neutral `SceneRoomItemEntry` collection from that document.
 The collection is independent of the current 2D/3D view and retains room-local
-item coordinates, room offsets, canonical finished-floor elevation, canonical
-wall thickness, and the wall relationship model.
+item coordinates, room offsets, canonical finished-floor elevation, and
+canonical wall thickness. It carries no wall model or renderer-specific wall
+value.
 
 `floor-plan-render-model.ts` remains the canonical structural model. Its same
 floors, walls, openings, and elevation data are consumed by
@@ -19,7 +20,7 @@ modules:
 | Domain concern | Pure owner |
 | --- | --- |
 | Scene hierarchy and room/world transforms | `design-page-scene-domain.ts` |
-| Projection and wall relationships | `design-page-scene-projection.ts` |
+| Plan/spatial item projection | `design-page-scene-projection.ts` |
 | Room polygons, bounds, clamping, pointer rotation | `design-page-geometry.ts` |
 | AABBs and snapping candidates | `snapGuides.ts` and `wallSnap.ts` |
 | Gap and clearance measurements | `measurements.ts` |
@@ -34,11 +35,14 @@ must not duplicate their calculations.
 
 ## Projection adapters
 
-`design-page-scene-projection.ts` is the item renderer adapter. A `plan`
-projection suppresses finished-floor elevation and uses the authored wall
-thickness; a `spatial` projection adds the exact canonical elevation and maps a
-house-plan shell to its established rendered wall thickness. Both furniture and
-parametric cabinetry go through this adapter before reaching their renderer.
+`design-page-scene-projection.ts` is the item renderer adapter. It returns
+only an item's position and rotation: a `plan` projection suppresses the
+canonical finished-floor elevation and keeps the item's room-local Y, and a
+`spatial` projection adds that elevation. The projection carries no wall
+values; `SceneItemsLayer` derives furniture wall contact from the canonical
+wall thickness with `getFurnitureWallInset(roomWallThickness)`. Both furniture
+and parametric cabinetry go through this adapter before reaching their
+renderer.
 
 Placed cabinetry keeps the renderer-specific mapping explicit:
 `CabinetDesignItemPlan2D` consumes the plan projection and renders the cabinet
@@ -125,5 +129,6 @@ import boundary, distinct cabinet plan/spatial adapters, preview Canvas/scene
 ownership, unchanged tolerance values, projection and transform correctness,
 absence of business policy in render loops, and executable plus static cleanup
 checks for the cleanup-sensitive systems above. Visual equivalence is claimed
-only for the transform/wall parameters and renderer constants protected by
-these tests; no untested pixel-equivalence claim is made.
+only for the item transforms, the furniture wall inset, and the renderer
+constants protected by these tests; no untested pixel-equivalence claim is
+made.

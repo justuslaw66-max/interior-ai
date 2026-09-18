@@ -234,6 +234,23 @@ const glbResourcesSource = source(
   "components/scene/glb-scaled-model/glbModelResources.ts"
 );
 const floorPlanAssetsSource = source("lib/useDesignPageFloorPlanAssets.ts");
+const boundaryDoc = source("docs/architecture/scene-domain-renderer-boundaries.md");
+
+assert.doesNotMatch(
+  boundaryDoc,
+  /wall\s+relationship|authored\s+wall\s+thickness|rendered\s+wall\s+thickness|transform\/wall\s+parameters/,
+  "The boundary doc must not describe the retired projection wall model or wall-thickness fields."
+);
+assert.match(
+  boundaryDoc,
+  /\| Plan\/spatial item projection \| `design-page-scene-projection\.ts` \|/,
+  "The boundary doc must name the projection module as the plan/spatial item projection owner."
+);
+assert.match(
+  boundaryDoc,
+  /`SceneItemsLayer`[\s\S]*?`getFurnitureWallInset\(roomWallThickness\)`/,
+  "The boundary doc must say furniture wall contact comes from the canonical wall thickness in SceneItemsLayer."
+);
 
 for (const [name, moduleSource] of [
   ["scene domain", domainSource],
