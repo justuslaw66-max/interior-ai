@@ -1,6 +1,6 @@
 # Repository File Inventory
 
-> Generated repository reference for source commit `765476686d40469ded173151f86cb5d613f02844` (tree `607f80562e6edbab5b3af6a7fbe992a443ba60cc`). This is a descriptive navigation aid, not a certification contract or an architecture source of truth. It is a snapshot that may become stale after later commits; Git and the current repository source remain authoritative.
+> Working-tree repository reference generated on 2026-09-18 from commit `72ec9e5d3d3cf4bd1afb20b25f062eb9abaa224a` (tree `82d07652da18cf14d3cc73396cc9e9a98f062bd6`). This is a descriptive navigation aid, not a certification contract or architecture source of truth. Git and the current repository source remain authoritative.
 >
 > Future Codex sessions should search this file by repository-relative path or section and read only the relevant ranges instead of loading the entire large document into context.
 
@@ -8,36 +8,48 @@
 
 | Field | Value |
 |---|---|
-| Reference status | Generated snapshot |
-| Originating task | Completed, separately owned Codex repository-file-inventory task |
-| Source branch at generation | `fix/production-certification-archive-trace-policy` |
-| Source commit | `765476686d40469ded173151f86cb5d613f02844` |
-| Source tree | `607f80562e6edbab5b3af6a7fbe992a443ba60cc` |
-| Worktree clean before report creation | Yes |
-| Modified/staged/deleted/renamed files before report creation | 0 |
-| Untracked, non-ignored files before report creation | 0 |
-| Inventory document included in source snapshot | No |
+| Absolute repository root | `/Users/justus/Developer/interior-ai` |
+| Reference status | Dirty working-tree snapshot |
+| Source branch at update | `wip/integration-dirty-pre-display-units-20260902` |
+| Source commit | `72ec9e5d3d3cf4bd1afb20b25f062eb9abaa224a` |
+| Source tree at HEAD | `82d07652da18cf14d3cc73396cc9e9a98f062bd6` |
+| Worktree clean before inventory update | No |
+| Modified/staged/deleted/renamed paths before inventory update | 52 |
+| Untracked, non-ignored paths before inventory update | 13 |
+| Inventory document included in source snapshot | Yes — tracked at HEAD |
 
-The report itself did not exist in the bound source commit/tree. After generation, `docs/repository-file-inventory.md` was the sole expected untracked artifact and is intentionally excluded from the categorized inventory and pre-generation counts.
+The worktree was already dirty before this update. This report records those paths and only `docs/repository-file-inventory.md` is intentionally rewritten by this task.
+
+## Product overview and apparent goal
+
+### What you have created
+
+The repository describes **Interior AI**, a full-stack, consumer-first web app for planning and furnishing real rooms with real catalog products. A user can begin at `/design`, choose a template, draw a measured room, upload a plan, or request an AI proposal; then place products, edit rooms and openings, switch between consistent 2D and 3D views, and save, recover, share, export, and use a shopping plan. This is supported by the product definition in `docs/product/launch-product-v1.md`, the editor route and start UI, and the shared document rules in `docs/engineering/ARCHITECTURE_RULES.md`.
+
+Consumer Mode is the default experience. Pro Mode adds precise controls, custom millwork/cabinetry, technical outputs, and other advanced capabilities over the same versioned document, commands, catalog, renderer, persistence model, and accessibility semantics—not a separate application.
+
+### Apparent product goal
+
+> Design your real room with real products, see what fits, and leave with a saved, shareable, purchasable plan.
+
+The documented launch target is a homeowner furnishing a real room, initially centered on a living-room workflow. The app aims to make an otherwise technical task approachable without CAD or fabrication knowledge, while preserving a capable Pro path for designers and fabricators. It explicitly does not promise BIM-grade coordination, structural or code approval, fully autonomous AI, universal checkout, or an unreviewed custom-millwork order.
+
+### Current working-tree focus
+
+The present uncommitted work centers on editable doors and windows across 2D and 3D: shared dimensions, sill height, horizontal placement, aperture-only selection, 3D window dragging, continuous wall-finish selection around openings, opening-aware material quantities, ceiling shadow occlusion, lighting environment adjustments, persistence propagation, and regression coverage. These changes are recorded as work in progress, not evidence of a completed or certified release.
 
 ## Scope and method
 
-- The originating task used Git metadata and repository file inspection; Git was authoritative. At the bound source commit, `git ls-files` returned 3,673 tracked paths and `git ls-files --others --exclude-standard` returned 0 pre-existing untracked paths.
-- The inventory covers 3,556 selected tracked paths after the exclusions below. Every included path is repository-relative and appears exactly once in the categorized inventory.
-- 117 tracked paths were intentionally excluded by the originating task's generated/report/evidence rules.
+- Git was authoritative: `git ls-files` returned 3,704 tracked paths; `git ls-files --others --exclude-standard` returned 13 non-ignored untracked paths.
+- The categorized inventory covers 3,599 selected paths: 3,587 tracked paths and 12 in-scope untracked paths. Every included path is repository-relative and appears exactly once.
+- 118 paths were excluded by the generated/report/evidence rules.
   - 7 — excluded directory: evidence.
   - 2 — excluded directory: generated.
-  - 105 — excluded directory: reports.
+  - 106 — excluded directory: reports.
   - 3 — generated screenshot snapshot.
-- Ignored and untracked files are outside the inventory scope. Dependency contents, build output, local/private evidence, report and Playwright output, database data, and temporary files are also excluded; examples include `node_modules`, `.next`, `.local`, and `.vercel`.
-- Tracked binary assets may be represented by repository-relative path and description, but their payloads are not embedded here. Secret files and excluded generated/evidence/report output were not read into or summarized in this report.
-- The document itself is excluded because it is not present in the bound source tree. A later regeneration may include it only if the regenerated scope explicitly says so and all counts are updated consistently.
-- Entries are grouped into numbered categories. Their existing within-category order is part of this snapshot but is not a guaranteed deterministic sort order.
-- Descriptions use file contents, route exports, Markdown headings, data labels, source exports, and path context. Any unresolved role is explicitly marked for manual confirmation.
-
-## Regeneration
-
-No committed deterministic generator is associated with this snapshot. To refresh it safely, start from a clean checkout of the intended source commit, record `git rev-parse HEAD` and `git rev-parse HEAD^{tree}`, enumerate tracked paths with `git ls-files -z`, apply the exclusions above, choose and document a stable path-ordering rule, and revalidate counts, duplicates, path normalization, privacy, and Markdown structure. Update the source binding and snapshot claims in the same change. Do not read or summarize private environment, evidence, dependency, build, database, or temporary contents merely to regenerate this reference.
+- Ignored dependency contents, build output, local/private evidence, report output, databases, logs, caches, and temporary files are outside scope.
+- Tracked binary assets are represented by path and description only. Local secret files were excluded and no secret values are reproduced.
+- Descriptions use current file contents, route or source exports, documentation headings, data labels, and path context. Unresolved roles are marked for manual confirmation.
 
 ## Categorized inventory
 
@@ -158,9 +170,9 @@ No committed deterministic generator is associated with this snapshot. To refres
 - `lib/design-page-selection-panel-model.ts` — Defines `buildDesignPageSelectionPanelModels`, `BuildDesignPageSelectionPanelModelsInput`, `DesignPageSelectionPanelModels` for design page selection panel model.
 - `lib/design-page-shopping-panel-model.ts` — Defines `buildDesignPageShoppingPanelModel`, `BuildDesignPageShoppingPanelModelInput` for design page shopping panel model.
 - `lib/design-page-viewport-region-model.ts` — Defines `buildDesignPageViewportRegionModel`, `composeDesignPageSceneRegionModel`, `DesignPageViewportRegionModel`, `BuildDesignPageViewportRegionModelInput`, and related exports for design page viewport region model.
-- `lib/design-page-viewport-workspace-read-model.ts` — Defines `buildDesignPageViewportWorkspaceReadModel`, `DesignPageViewportWorkspaceReadModel`, `BuildDesignPageViewportWorkspaceReadModelInput` for design page viewport workspace read model.
+- `lib/design-page-viewport-workspace-read-model.ts` — Builds the derived viewport/workspace read model for editor composition.
 
-### 5. 2D floor-plan editor (100)
+### 5. 2D floor-plan editor (103)
 
 - `components/editor/design-controls-plan/DesignControlsPlanPanel.types.ts` — Defines `PlanStartMode`, `FloorPlanLifecycleIdentity`, `DesignControlsPlanPanelProps` for Design Controls Plan Panel.types.
 - `components/editor/design-controls-plan/EmptyFloorPlanSurfacesActions.tsx` — Defines `EmptyFloorPlanProUploadAction`, `EmptyFloorPlanSurfacesActions` for Empty Floor Plan Surfaces Actions.
@@ -210,14 +222,16 @@ No committed deterministic generator is associated with this snapshot. To refres
 - `components/editor/FloorPlanWorkspaceOpener.tsx` — Implements `FloorPlanWorkspaceOpener` for Floor Plan Workspace Opener.
 - `components/editor/FloorPropertiesPanel.tsx` — Defines `FloorPropertiesPanel`, `FloorCreationMode`, `FloorPropertiesPanelProps` for Floor Properties Panel.
 - `components/editor/MeasurementField.tsx` — Implements `MeasurementField` for Measurement Field.
-- `components/editor/PlanOpeningInspector.tsx` — Implements `PlanOpeningInspector` for Plan Opening Inspector.
+- `components/editor/OpeningDimensionFields.tsx` — Shared unit-aware controls for opening width, height, sill, and horizontal position that honor measurement-evidence locks.
+- `components/editor/PlanOpeningInspector.tsx` — 2D floor-plan sidebar inspector for door/window selection, using shared dimension, sill, and horizontal-position controls.
 - `components/editor/renderers/ItemRenderer2D.tsx` — Implements `ItemRenderer2D` for Item Renderer2 D.
 - `components/editor/renderers/PlanUnderlayRenderer2D.tsx` — Implements `PlanUnderlayRenderer2D` for Plan Underlay Renderer2 D.
-- `components/editor/renderers/RoomRenderer2D.tsx` — Implements `RoomRenderer2D` for Room Renderer2 D.
+- `components/editor/renderers/RoomRenderer2D.tsx` — Renders interactive 2D room geometry, walls, openings, dimensions, and plan overlays.
 - `components/ShareFloorPlanPreview.tsx` — Implements `ShareFloorPlanPreview` for Share Floor Plan Preview.
 - `lib/design-page-floor-plan-utils.ts` — Defines `clampEditorOpacity`, `clampRoomHeightMeters`, `clampSlabThicknessMeters`, `clampWallThicknessMeters`, and related exports for design page floor plan utils.
-- `lib/design-page-opening-metrics.ts` — Defines `normalizeDesignPageOpeningMetrics`, `getDesignPageOpeningMetricsHistoryLabel`, `DesignPageOpeningMetricsPatch`, `NormalizeDesignPageOpeningMetricsInput` for design page opening metrics.
+- `lib/design-page-opening-metrics.ts` — Normalizes opening dimension patches and derives history labels for opening edits.
 - `lib/design-page-plan-scene.ts` — Defines `buildEditorScene2D`, `createPlanAnnotation` for design page plan scene.
+- `lib/design-page-plan-template-replacement.ts` — Builds a clean editable design snapshot when a new floor-plan template replaces prior room geometry.
 - `lib/design-page-wall-descriptors.ts` — Defines `buildRoomWallDescriptors`, `DEFAULT_WALL_LONG_SIDE_CLEARANCE_METERS`, `BuildRoomWallDescriptorsInput`, `RoomWallDescriptors` for design page wall descriptors.
 - `lib/design-page-zone-layout.ts` — Defines `normalizeItemsToRoom`, `computeZoneAnchor`, `normalizeZones`, `zonesEqual`, and related exports for design page zone layout.
 - `lib/design-page-zone-orchestration.ts` — Defines `canAutoCreateSeatingZoneForEditor`, `buildManualZoneFromSelection`, `buildAutoSeatingZone`, `reconcileZonesForItems`, and related exports for design page zone orchestration.
@@ -249,7 +263,7 @@ No committed deterministic generator is associated with this snapshot. To refres
 - `lib/floor-plan-topology-mutation-support.ts` — Defines `topologyMutationFail`, `assertTopologyInteger`, `assertUnusedGlobalEntityId`, `demoteTopologyProvenance`, and related exports for floor plan topology mutation support.
 - `lib/floor-plan-topology-mutation-types.ts` — Defines `FloorPlanTopologyMutationErrorV2`, `FloorPlanTopologyMutationContextV2`, `FloorPlanOpeningDraftV2`, `FloorPlanOpeningChangesV2`, and related exports for floor plan topology mutation types.
 - `lib/floor-plan-topology-mutations.ts` — Defines `applyFloorPlanTopologyMutationsV2`, `applyFloorPlanTopologyMutationV2` for floor plan topology mutations.
-- `lib/floor-plan-tracing.ts` — Defines `resolveTracedRoomRectangle`, `snapFloorPlanPointToGrid`, `snapFloorPlanPointToRoomEdges`, `snapFloorPlanPointToRoomCorners`, and related exports for floor plan tracing.
+- `lib/floor-plan-tracing.ts` — Pure tracing and snapping calculations for drawing rooms and walls in a floor plan.
 - `lib/floor-plan-types.ts` — Defines `buildFloorPlanRoomPolygon`, `calculateFloorPlanPolygonAreaSqm`, `buildFloorPlanFromRooms`, `buildFloorPlanFromDesignSnapshot`, and related exports for floor plan types.
 - `lib/floor-plan-upload-dialog-focus.ts` — Defines `captureFloorPlanWorkspaceOpener`, `getFloorPlanWorkspaceReturnFocusIds`, `forwardFloorPlanWorkspaceOpener`, `getFloorPlanWorkspaceScopeKey`, and related exports for floor plan upload dialog focus.
 - `lib/open-floor-plan-upload-workspace.ts` — Implements `openFloorPlanUploadWorkspace` for open floor plan upload workspace.
@@ -261,27 +275,32 @@ No committed deterministic generator is associated with this snapshot. To refres
 - `lib/room-present-mode.ts` — Defines `createPresentModeState`, `getPresentModeRoom`, `getPresentModeSavedView`, `getPresentModeRooms`, and related exports for room present mode.
 - `lib/room-renderer-2d-walls.ts` — Defines `buildInnerFloorGeometry2D`, `buildRoomWallSegments2D`, `mergeSharedWallSegments2D`, `buildWallBandCornerCaps2D`, and related exports for room renderer 2D walls.
 - `lib/room-shopping.ts` — Defines `summarizeShoppingRooms`, `summarizeWholeHomeShopping`, `countRoomCategories`, `countRoomProductQuantities`, and related exports for room shopping.
-- `lib/room-types.ts` — Defines `createRoom`, `migrateToV3`, `getActiveRoom`, `updateRoom`, and related exports for room types.
+- `lib/room-types.ts` — Defines the canonical room, floor-plan, opening, surface, cabinetry, and design snapshot model plus migrations.
+- `lib/useDesignPageOpeningMoveAction.ts` — Routes 2D/3D opening moves through the canonical metrics/mutation path while respecting evidence locks.
 
-### 6. Three.js, React Three Fiber, and 3D rendering (57)
+### 6. Three.js, React Three Fiber, and 3D rendering (62)
 
 - `components/CanvasErrorBoundary.tsx` — Implements `CanvasErrorBoundary` for Canvas Error Boundary.
 - `components/DesignerCanvas.tsx` — Implements `DesignerCanvas` for Designer Canvas.
-- `components/FPSMeter.tsx` — Implements `FPSMeter` for FPSMeter.
 - `components/editor/design-page/DesignPageSceneRegion.tsx` — Defines `DesignPageSceneRegion`, `DesignPageSceneRegionState`, `DesignPageSceneRegionConfiguration`, `DesignPageSceneRegionReferences`, and related exports for Design Page Scene Region.
-- `components/editor/design-page/DesignSceneCanvas.tsx` — Implements `DesignSceneCanvas` for Design Scene Canvas.
+- `components/editor/design-page/DesignSceneCanvas.tsx` — React Three Fiber editor canvas that composes scene rendering, selection, controls, and interaction lifecycle.
 - `components/editor/design-page/DesignSceneGuidanceLayer.tsx` — Defines `DesignSceneGuidanceLayer`, `DesignSceneGuidanceLayerState`, `DesignSceneGuidanceLayerConfiguration`, `DesignSceneGuidanceLayerResolvers`, and related exports for Design Scene Guidance Layer.
 - `components/editor/design-page/DesignScenePreviewLayer.tsx` — Defines `DesignScenePreviewLayer`, `DesignScenePreviewLayerState`, `DesignScenePreviewLayerConfiguration`, `DesignScenePreviewLayerActions`, and related exports for Design Scene Preview Layer.
-- `components/editor/design-page/DesignSceneStructureLayer.tsx` — Defines `DesignSceneStructureLayer`, `DesignSceneStructureLayerState`, `DesignSceneStructureLayerConfiguration`, `DesignSceneStructureLayerActions` for Design Scene Structure Layer.
+- `components/editor/design-page/DesignSceneStructureLayer.tsx` — Composes the editor's structural room, wall, opening, and plan-rendering layers.
 - `components/editor/design-page/SceneItemsLayer.tsx` — Defines `SceneItemsLayer`, `SceneItemDimensionsMm`, `SceneItemMoveContext`, `SceneItemDragEndContext` for Scene Items Layer.
 - `components/editor/design-page/SceneReadyVeil.tsx` — Implements `SceneReadyVeil` for Scene Ready Veil.
 - `components/editor/renderers/canonical-floor-plan/geometry.ts` — Defines `segmentTransform`, `wallSolidShape`, `appendPlanarRing`, `planarUnionShapes`, and related exports for geometry.
 - `components/editor/renderers/CanonicalFloorPlanStructure.tsx` — Defines `CanonicalFloorPlanWalls2D`, `CanonicalFloorPlanWalls3D` for Canonical Floor Plan Structure.
-- `components/editor/renderers/house-plan-3d/geometry.ts` — Defines `isWallSurfacePanelCutawayEligible`, `resolveAtomicWallCutawayRenderState`, `getSelectableWallFacePanelId`, `getLogicalWallPanelForPart`, and related exports for geometry.
+- `components/editor/renderers/house-plan-3d/continuousWallSelection.ts` — Groups fragmented window-wall finish panels into a stable whole-wall selection identity and aperture-aware outline.
+- `components/editor/renderers/house-plan-3d/geometry.ts` — Builds 3D wall/opening geometry, stable surface-panel identities, and selection metadata.
 - `components/editor/renderers/house-plan-3d/materials.ts` — Defines `createFloorMaterialTexture`, `getSurfaceMaterialFallbackColor`, `useSurfaceMaterialSourceTexture` for materials.
-- `components/editor/renderers/house-plan-3d/surfaceMeshes.tsx` — Defines `LegacyFloorSlabMesh`, `LegacyWallBandMesh`, `RoomFloorMesh`, `RoomCeilingCapMesh` for surface Meshes.
-- `components/editor/renderers/house-plan-3d/wallAndOpeningMeshes.tsx` — Defines `CutawayWallMesh`, `WallSurfacePanelMesh`, `OpeningThresholdMesh` for wall And Opening Meshes.
-- `components/editor/renderers/HousePlanRenderer3D.tsx` — Implements `HousePlanRenderer3D` for House Plan Renderer3 D.
+- `components/editor/renderers/house-plan-3d/openingWallSurfacePanels.ts` — Projects lintel and sill solids around openings into interior/exterior wall surface-panel descriptors.
+- `components/editor/renderers/house-plan-3d/surfaceMeshes.tsx` — Renders 3D floor, ceiling, and wall-surface meshes, including ceiling shadow occlusion.
+- `components/editor/renderers/house-plan-3d/wallAndOpeningMeshes.tsx` — Renders selectable walls, finish panels, doors, and opening-related 3D solids.
+- `components/editor/renderers/house-plan-3d/windowOpeningGeometry.ts` — Computes the clipped aperture-only hit volume for a 3D window opening.
+- `components/editor/renderers/house-plan-3d/WindowOpeningMesh.tsx` — Renders an aperture-only 3D window hit target, outline, selection, and drag entry point.
+- `components/editor/renderers/HousePlanRenderer3D.tsx` — Renders multi-room 3D walls, openings, finishes, selection, and aperture-only window interactions.
+- `components/FPSMeter.tsx` — Implements `FPSMeter` for FPSMeter.
 - `components/public-share/ShareScene.tsx` — Implements `ShareScene` for Share Scene.
 - `components/ReadOnlyViewer.tsx` — Implements `ReadOnlyViewer` for Read Only Viewer.
 - `components/scene/DesignerGrid.tsx` — Defines `DesignerGrid`, `DesignerGridCoverage` for Designer Grid.
@@ -305,7 +324,8 @@ No committed deterministic generator is associated with this snapshot. To refres
 - `components/scene/glb-scaled-model/glbSceneResourceOwnership.ts` — Defines `disposeObjectGeometryAndMaterials`, `clonePreparedGLBForMount`, `disposeObjectTextures` for GLB Scene Resource Ownership.
 - `components/scene/glb-scaled-model/glbSourceLoadError.ts` — Defines `categorizeGLBBoundsFailure`, `GLBSourceLoadError` for GLB Source Load Error.
 - `components/scene/glb-scaled-model/huggMaterial.ts` — Implements `createHuggTopTint` for hugg Material.
-- `components/scene/glb-scaled-model/modelDiagnosticRuntime.ts` — Defines `transitionTimestampMs`, `getReloadGeneration`, `getDiagnosticStore`, `nextMountInstanceId`, and related exports for model Diagnostic Runtime.
+- `components/scene/glb-scaled-model/modelDiagnosticRealm.ts` — Owns page-realm GLB diagnostic reload-generation state shared by model lifecycle telemetry.
+- `components/scene/glb-scaled-model/modelDiagnosticRuntime.ts` — Defines `transitionTimestampMs`, `getDiagnosticStore`, `nextMountInstanceId`, `bumpDiagnosticRegistryVersion`, and related exports for model Diagnostic Runtime.
 - `components/scene/glb-scaled-model/modelDiagnostics.ts` — Defines `recordGLBModelMount`, `recordGLBModelUnmount`, `recordGLBModelMetadata`, `recordGLBModelRender`, and related exports for model Diagnostics.
 - `components/scene/glb-scaled-model/modelLifecycleTypes.ts` — Defines `GLBModelLoadState`, `GLBModelCacheStatus`, `GLBModelCacheAcquisitionStatus`, `GLBModelPipelineState`, and related exports for model Lifecycle Types.
 - `components/scene/glb-scaled-model/modelReadiness.ts` — Implements `evaluateRequiredGLBModelReadiness` for model Readiness.
@@ -323,15 +343,17 @@ No committed deterministic generator is associated with this snapshot. To refres
 - `lib/design-page-scene-region-model.ts` — Defines `buildDesignPageSceneCanvasRegionModel`, `DesignPageSceneCanvasRegionModel`, `BuildDesignPageSceneCanvasRegionModelInput` for design page scene region model.
 - `lib/scene-performance-metrics.ts` — Defines `EMPTY_SCENE_RENDERER_METRICS`, `SceneRendererMetrics` for scene performance metrics.
 
-### 7. Scene objects, placement, snapping, collision, and transforms (33)
+### 7. Scene objects, placement, snapping, collision, and transforms (35)
 
 - `components/editor/design-page/CatalogPlacementConfirmPanel.tsx` — Defines `CatalogPlacementConfirmPanel`, `CatalogPlacementConfirmPanelState`, `CatalogPlacementConfirmPanelConfiguration`, `CatalogPlacementConfirmPanelActions`, and related exports for Catalog Placement Confirm Panel.
 - `components/editor/design-page/CrossRoomDragTarget.tsx` — Implements `CrossRoomDragTarget` for Cross Room Drag Target.
-- `components/editor/design-page/DesignPageSelectionInspector.tsx` — Implements `DesignPageSelectionInspector` for Design Page Selection Inspector.
+- `components/editor/design-page/DesignPageSelectionInspector.tsx` — Viewport selection inspector for items, openings, and surfaces; presents the shared door/window dimension controls.
 - `components/editor/design-page/DesignPageViewportSelectionControls.tsx` — Defines `DesignPageViewportSelectionControls`, `DesignPageViewportSelectionControlsState`, `DesignPageViewportSelectionControlsConfiguration`, `DesignPageViewportSelectionControlsActions` for Design Page Viewport Selection Controls.
 - `components/editor/design-page/MultiSelectionToolbar.tsx` — Implements `MultiSelectionToolbar` for Multi Selection Toolbar.
 - `components/editor/DraggableFloatingPanel.tsx` — Implements `DraggableFloatingPanel` for Draggable Floating Panel.
 - `components/editor/renderers/canonical-floor-plan/openingDrag.ts` — Defines `useCanonicalOpeningDrag`, `CanonicalOpeningDragMetricsV2`, `CanonicalOpeningDragMode` for opening Drag.
+- `components/editor/renderers/house-plan-3d/useWindowOpeningDrag.ts` — Owns R3F pointer capture and wall-plane projection for dragging a 3D window aperture.
+- `components/editor/renderers/house-plan-3d/windowOpeningDrag.ts` — Pure clamp-and-round geometry for horizontal and vertical window dragging that retains the grab point.
 - `components/editor/SceneAdjustmentToolbar.tsx` — Implements `SceneAdjustmentToolbar` for Scene Adjustment Toolbar.
 - `components/editor/SelectedItemRotationControls.tsx` — Implements `SelectedItemRotationControls` for Selected Item Rotation Controls.
 - `components/Measurements.tsx` — Implements `Measurements` for Measurements.
@@ -359,17 +381,17 @@ No committed deterministic generator is associated with this snapshot. To refres
 - `lib/shopping-replacements.ts` — Defines `buildShoppingReplacementSuggestions`, `ShoppingReplacementSuggestion` for shopping replacements.
 - `lib/snap-types.ts` — Implements `AABB` for snap types.
 
-### 8. Lighting, cameras, controls, shaders, and visual effects (25)
+### 8. Lighting, cameras, controls, shaders, and visual effects (26)
 
 - `components/editor/camera/EditorCamera2D.tsx` — Defines `resolvePlan2DViewFit`, `EditorCamera2D`, `WHOLE_HOME_FIT_ZOOM_SCALE`, `Plan2DViewOrientation`, and related exports for Editor Camera2 D.
 - `components/editor/camera/Plan2DCameraInvariantGuard.tsx` — Defines `Plan2DCameraInvariantGuard`, `Plan2DCameraDiagnostics`, `Plan2DCameraInvariantGuardProps` for Plan2 DCamera Invariant Guard.
 - `components/editor/design-page/lighting/ContactShadowController.tsx` — Implements `ContactShadowController` for Contact Shadow Controller.
-- `components/editor/design-page/lighting/EnvironmentController.tsx` — Implements `EnvironmentController` for Environment Controller.
+- `components/editor/design-page/lighting/EnvironmentController.tsx` — Applies lighting-preset environment maps and key/fill softbox positioning to the editor scene.
 - `components/editor/design-page/lighting/ExposureController.tsx` — Implements `ExposureController` for Exposure Controller.
 - `components/editor/design-page/lighting/index.ts` — Provides index logic for lighting, cameras, controls, shaders, and visual effects.
-- `components/editor/design-page/lighting/lightingPresets.ts` — Defines `resolveLightingMode`, `resolvePersistedLightingPreset`, `resolveLightingQuality`, `resolveEditorLighting`, and related exports for lighting Presets.
+- `components/editor/design-page/lighting/lightingPresets.ts` — Resolves editor lighting modes, quality, environment key/fill placement, and persisted-preset compatibility.
 - `components/editor/design-page/lighting/LightingSystem.tsx` — Implements `LightingSystem` for Lighting System.
-- `components/editor/design-page/lighting/lightingTypes.ts` — Defines `LightingMode`, `LightingQuality`, `LightingShadowQuality`, `LightingColor`, and related exports for lighting Types.
+- `components/editor/design-page/lighting/lightingTypes.ts` — Types editor lighting modes, quality budgets, environment settings, fixtures, windows, and resolved scene lighting.
 - `components/editor/design-page/lighting/ShadowBudgetManager.ts` — Defines `resolveObjectShadowEligibility`, `ObjectShadowPolicyInput` for Shadow Budget Manager.
 - `components/editor/design-page/lighting/SunController.tsx` — Implements `SunController` for Sun Controller.
 - `components/editor/design-page/lighting/ViewerLighting.tsx` — Implements `ViewerLighting` for Viewer Lighting.
@@ -377,15 +399,16 @@ No committed deterministic generator is associated with this snapshot. To refres
 - `components/editor/design-page/LightingSettingsControls.tsx` — Implements `LightingSettingsControls` for Lighting Settings Controls.
 - `components/editor/design-page/LightingSettingsDrawer.tsx` — Implements `LightingSettingsDrawer` for Lighting Settings Drawer.
 - `components/LightingPresetsUI.tsx` — Implements `LightingPresetsUI` for Lighting Presets UI.
+- `components/scene/CeilingShadowOccluder.tsx` — Renders an invisible, non-interactive ceiling mesh that contributes only to scene shadow maps.
 - `components/scene/furniture/CameraCapture.tsx` — Implements `CameraCapture` for Camera Capture.
-- `components/scene/RoomEnvironment.tsx` — Defines `Room`, `ROOM_FLOOR_SURFACE_OFFSET` for Room Environment.
+- `components/scene/RoomEnvironment.tsx` — Renders the legacy single-room 3D environment, including room surfaces, lighting, and ceiling shadow occlusion.
 - `lib/design-lighting-settings.ts` — Defines `resolveDesignLightingSettings`, `updateDesignLightingSettings` for design lighting settings.
 - `lib/design-page-wall-cutaway.ts` — Defines `isWallFacingCamera`, `resolveDominantCameraCutawayWall`, `isWallBetweenCameraAndTarget`, `isWallOnCameraSideOfTarget`, and related exports for design page wall cutaway.
 - `lib/floor-plan-camera-cutaway.ts` — Defines `canonicalWallCutawayKey`, `deriveCanonicalWallBoundaryRoles`, `resolveCanonicalCameraCutawayWallKeys`, `CanonicalCutawayTarget`, and related exports for floor plan camera cutaway.
 - `lib/lightingPresets.ts` — Defines `isLightingPreset`, `DEFAULT_DESIGN_LIGHTING_SETTINGS`, `LIGHTING_PRESETS`, `LightingPreset`, and related exports for lighting Presets.
 - `lib/pendant-light-adjustment.ts` — Defines `clampPendantHeightCm`, `getAdjustablePendantHeight`, `calculatePendantCableDeformation`, `PendantCableAdjustment`, and related exports for pendant light adjustment.
 - `lib/plan-camera-2d.ts` — Defines `applyPlan2DCameraInvariant`, `getPlan2DCameraInvariantStatus`, `isPlan2DCameraDegenerate`, `recoverPlan2DCameraIfNeeded`, and related exports for plan camera 2D.
-- `lib/resolve-lighting-scene.ts` — Defines `cctKelvinToLinearSrgb`, `lumensToCandela`, `resolveLightingQualityBudget`, `resolveFixturePhotometrics`, and related exports for resolve lighting scene.
+- `lib/resolve-lighting-scene.ts` — Resolves scene photometrics, solar orientation, key/fill lighting, fixtures, windows, and quality budgets.
 
 ### 9. State management (2)
 
@@ -399,15 +422,15 @@ No committed deterministic generator is associated with this snapshot. To refres
 - `lib/design-page-cloud-write-execution.ts` — Defines `executeDesignPageCloudWrite`, `DesignPageCloudWriteResult` for design page cloud write execution.
 - `lib/design-page-cloud-write-queue.ts` — Defines `createDesignPageCloudWriteQueue`, `DesignPageCloudWriteQueue`, `DesignPageCloudWriteKind`, `DesignPageCloudWriteContext`, and related exports for design page cloud write queue.
 - `lib/design-page-local-backup-recovery.ts` — Defines `getLastKnownValidLocalBackupKey`, `getLocalBackupSourceVersion`, `assertLocalBackupWithinSizeLimit`, `assertCurrentDesignDocument`, and related exports for design page local backup recovery.
-- `lib/design-page-local-backup.ts` — Defines `normalizeDesignPageLocalBackup`, `NormalizeDesignPageLocalBackupInput`, `NormalizedDesignPageLocalBackup` for design page local backup.
+- `lib/design-page-local-backup.ts` — Normalizes and validates local design backups before recovery or persistence.
 - `lib/design-page-persistence-projection.ts` — Defines `projectCanonicalDesignPersistence`, `normalizeLoadedCloudDesign`, `DesignPageCloudNormalizationError` for design page persistence projection.
 - `lib/design-page-save-status.ts` — Defines `getDesignPageSaveStatus`, `DesignPageSaveStatusInput` for design page save status.
 - `lib/design-snapshot-v3-floor-plan-adapter.ts` — Defines `designSnapshotV3ToFloorPlanDocumentV2`, `DesignSnapshotV3FloorPlanAdapterOptions`, `DesignSnapshotV3FloorPlanAdapterResult` for design snapshot v3 floor plan adapter.
 - `lib/floor-plan-imports/revision-retirement.ts` — Defines `retirePublishedFloorPlanRevisionForSupersede`, `retireFloorPlanRevisionWithoutReplacement`, `StandaloneFloorPlanRevisionForRetirement`, `PublishedFloorPlanRevisionForRetirement` for revision retirement.
 - `lib/floor-plan-imports/revision-supersede.ts` — Defines `findUncoveredFloorPlanSupersedeBindings`, `assertFloorPlanSupersedeCoverage` for revision supersede.
 - `lib/floor-plan-revision-updates.ts` — Defines `isSameFloorPlanAddressBinding`, `floorPlanBindingCoversSavedUnit`, `findLatestFloorPlanRevisionUpdate`, `compareFloorPlanRevisions`, and related exports for floor plan revision updates.
-- `lib/room-persistence.ts` — Defines `isPersistableFloorPlanAssetUrl`, `isStoredDesign`, `sanitizeStoredDesign`, `snapshotToStored`, and related exports for room persistence.
-- `lib/shared-design-snapshot.ts` — Defines `projectSharedDesignSnapshot`, `projectSharedStoredDesign`, `projectSharedDesignTransport`, `SharedDesignTransportProjection`, and related exports for shared design snapshot.
+- `lib/room-persistence.ts` — Converts, sanitizes, serializes, and recovers persisted room/design snapshots.
+- `lib/shared-design-snapshot.ts` — Projects a safe read-only shared-design snapshot and transport representation.
 - `lib/snapshot-fingerprint.ts` — Defines `canonicalizeDesignSnapshot`, `serializeDesignSnapshotFingerprint`, `fingerprintDesignSnapshot` for snapshot fingerprint.
 
 ### 11. Hooks (145)
@@ -470,7 +493,7 @@ No committed deterministic generator is associated with this snapshot. To refres
 - `lib/useDesignPageFloorPlanLifecycleRegistration.ts` — Defines `useDesignPageFloorPlanLifecycleRegistration`, `UseDesignPageFloorPlanLifecycleRegistrationInput`, `DesignPageFloorPlanLifecycleRegistration` for use Design Page Floor Plan Lifecycle Registration.
 - `lib/useDesignPageFloorPlanTracing.ts` — Defines `useDesignPageFloorPlanTracing`, `ConsumerPlanCompletionSignal` for use Design Page Floor Plan Tracing.
 - `lib/useDesignPageFloorPlanTracingKeyboard.ts` — Defines `handleFloorPlanTracingKeyDown`, `bindDesignPageFloorPlanTracingKeyboard`, `useDesignPageFloorPlanTracingKeyboard`, `UseDesignPageFloorPlanTracingKeyboardInput`, and related exports for use Design Page Floor Plan Tracing Keyboard.
-- `lib/useDesignPageFloorPlanUnderlayController.ts` — Defines `useDesignPageFloorPlanUnderlayController`, `PendingPlanTemplateReplacement` for use Design Page Floor Plan Underlay Controller.
+- `lib/useDesignPageFloorPlanUnderlayController.ts` — Coordinates floor-plan underlay loading, template replacement, and associated editor actions.
 - `lib/useDesignPageFloorPlanWorkflowState.ts` — Defines `useDesignPageFloorPlanWorkflowState`, `FloorPlanActiveTool` for use Design Page Floor Plan Workflow State.
 - `lib/useDesignPageHistory.ts` — Defines `useDesignPageHistory`, `DesignPageHistorySnapshot`, `UseDesignPageHistoryInput` for use Design Page History.
 - `lib/useDesignPageHousePlanState.ts` — Implements `useDesignPageHousePlanState` for use Design Page House Plan State.
@@ -504,13 +527,13 @@ No committed deterministic generator is associated with this snapshot. To refres
 - `lib/useDesignPagePlanActions.ts` — Defines `useDesignPagePlanActions`, `PlanOverlayCommandId` for use Design Page Plan Actions.
 - `lib/useDesignPagePlanAuthoringRegistration.ts` — Defines `useDesignPagePlanAuthoringRegistration`, `UseDesignPagePlanAuthoringRegistrationInput`, `DesignPagePlanAuthoringRegistration` for use Design Page Plan Authoring Registration.
 - `lib/useDesignPagePlanCanvasActionsController.ts` — Defines `useDesignPagePlanCanvasActionsController`, `UseDesignPagePlanCanvasActionsControllerInput`, `DesignPagePlanCanvasActionsController` for use Design Page Plan Canvas Actions Controller.
-- `lib/useDesignPagePlanEditingFacade.ts` — Defines `useDesignPagePlanEditingFacade`, `UseDesignPagePlanEditingFacadeInput` for use Design Page Plan Editing Facade.
-- `lib/useDesignPagePlanOverlayController.ts` — Defines `useDesignPagePlanOverlayController`, `DesignPagePlanOverlayControllerState`, `DesignPagePlanOverlayControllerConfiguration`, `DesignPagePlanOverlayControllerRefs`, and related exports for use Design Page Plan Overlay Controller.
+- `lib/useDesignPagePlanEditingFacade.ts` — Exposes the editor-facing facade for plan editing actions and state.
+- `lib/useDesignPagePlanOverlayController.ts` — Coordinates plan-overlay state, opening moves, metrics edits, and related actions.
 - `lib/useDesignPagePlanPresentationModel.ts` — Defines `resolveDesignPageViewportLayout`, `useDesignPagePlanPresentationModel`, `ResolveDesignPageViewportLayoutInput`, `UseDesignPagePlanPresentationModelInput` for use Design Page Plan Presentation Model.
 - `lib/useDesignPagePlanQualityController.ts` — Defines `useDesignPagePlanQualityController`, `DesignPagePlanQualityState`, `DesignPagePlanQualityConfiguration`, `DesignPagePlanQualityActions`, and related exports for use Design Page Plan Quality Controller.
 - `lib/useDesignPagePlanState.ts` — Defines `useDesignPagePlanState`, `PlanTheme`, `ExportStylePreset`, `PlanLayers` for use Design Page Plan State.
 - `lib/useDesignPagePlanViewportRuntime.ts` — Defines `useDesignPagePlanViewportRuntime`, `UseDesignPagePlanViewportRuntimeInput` for use Design Page Plan Viewport Runtime.
-- `lib/useDesignPagePlanWorkspaceFacade.ts` — Defines `useDesignPagePlanWorkspaceFacade`, `useDesignPagePlanUnderlayFacade`, `useDesignPagePlanTracingFacade`, `UseDesignPagePlanWorkspaceFacadeInput` for use Design Page Plan Workspace Facade.
+- `lib/useDesignPagePlanWorkspaceFacade.ts` — Exposes workspace-facing plan, tracing, and underlay controls.
 - `lib/useDesignPagePlanWorkspaceRegistrationFacade.ts` — Defines `buildDesignPagePlanWorkspaceRegistrationInput`, `useDesignPagePlanWorkspaceRegistrationFacade`, `UseDesignPagePlanWorkspaceRegistrationFacadeInput` for use Design Page Plan Workspace Registration Facade.
 - `lib/useDesignPagePresentationBackupRegistrationFacade.ts` — Defines `useDesignPagePresentationBackupRegistrationFacade`, `UseDesignPagePresentationBackupRegistrationFacadeInput`, `DesignPagePresentationBackupRegistrationFacade` for use Design Page Presentation Backup Registration Facade.
 - `lib/useDesignPagePresentationExportRuntime.ts` — Defines `useDesignPagePresentationExportRuntime`, `UseDesignPagePresentationExportRuntimeInput`, `DesignPagePresentationExportRuntime` for use Design Page Presentation Export Runtime.
@@ -526,7 +549,7 @@ No committed deterministic generator is associated with this snapshot. To refres
 - `lib/useDesignPageRequestedDesignWorkspaceRegistration.ts` — Defines `resolveRequestedDesignLoadDecision`, `resolveRequestedDesignLoadCompletion`, `useDesignPageRequestedDesignWorkspaceRegistration`, `RequestedDesignLoadDecision`, and related exports for use Design Page Requested Design Workspace Registration.
 - `lib/useDesignPageRoomFloorWorkspace.ts` — Defines `useDesignPageRoomFloorWorkspace`, `UseDesignPageRoomFloorWorkspaceInput` for use Design Page Room Floor Workspace.
 - `lib/useDesignPageRoomGeometry.ts` — Implements `useDesignPageRoomGeometry` for use Design Page Room Geometry.
-- `lib/useDesignPageRoomPlanController.ts` — Defines `useDesignPageRoomPlanController`, `DesignPageRoomPlanControllerState`, `DesignPageRoomPlanControllerConfiguration`, `DesignPageRoomPlanControllerRefs`, and related exports for use Design Page Room Plan Controller.
+- `lib/useDesignPageRoomPlanController.ts` — Coordinates room-plan edits, floor-plan document changes, and associated history behavior.
 - `lib/useDesignPageRoomReadModel.ts` — Defines `useDesignPageRoomReadModel`, `UseDesignPageRoomReadModelInput` for use Design Page Room Read Model.
 - `lib/useDesignPageSceneItemDrag.ts` — Implements `useDesignPageSceneItemDrag` for use Design Page Scene Item Drag.
 - `lib/useDesignPageScenePerformance.ts` — Defines `useDesignPageScenePerformance`, `ScenePerformanceMode`, `SceneRenderQuality` for use Design Page Scene Performance.
@@ -589,9 +612,9 @@ No committed deterministic generator is associated with this snapshot. To refres
 - `lib/command-palette-session.ts` — Defines `captureCommandPaletteSemanticOpener`, `createCommandPaletteSession`, `prepareCommandPaletteReturnTarget`, `cancelCommandPaletteSession`, and related exports for command palette session.
 - `lib/config.ts` — Defines `getApplicationEnvironment`, `validateDeploymentEnvironmentOrThrow`, `validateEnvOrThrow`, `config`, and related exports for config.
 - `lib/design-api-client.ts` — Defines `DesignApiError`, `designApi`, `DesignApiErrorKind`, `SavedDesignTransport`, and related exports for design API client.
-- `lib/design-document-contract.ts` — Defines `validateStoredDesignDocument`, `getSerializedDesignDocumentByteLength`, `isStoredDesignDocument`, `DESIGN_DOCUMENT_VERSION`, and related exports for design document contract.
+- `lib/design-document-contract.ts` — Validates and migrates the versioned persisted design document for rooms, walls, openings, items, surfaces, and cabinetry.
 - `lib/design-document-migrations.ts` — Defines `migrateDesignDocument`, `DesignDocumentMigrationStep`, `DesignDocumentMigrationFailure`, `DesignDocumentMigrationResult` for design document migrations.
-- `lib/design-duplication.ts` — Defines `buildDuplicateTitle`, `buildDuplicatedDesignData`, `DuplicateDesignSource` for design duplication.
+- `lib/design-duplication.ts` — Builds safe duplicated-design data while preserving valid stored-document semantics.
 - `lib/design-editor-url.ts` — Defines `buildDesignEditorUrl`, `DesignEditorMode`, `DesignEditorView`, `DesignEditorWorkspace`, and related exports for design editor url.
 - `lib/design-page-beta-feedback.ts` — Defines `buildDesignPageBetaFeedbackContext`, `DesignPageBetaFeedbackInput` for design page beta feedback.
 - `lib/design-page-calibration.ts` — Defines `getModelCalibration`, `STANDARD_IMPORTED_CASTLERY_SOFA_CALIBRATION`, `GLB_CALIBRATION_BY_PRODUCT_ID`, `GLBCalibration` for design page calibration.
@@ -601,7 +624,7 @@ No committed deterministic generator is associated with this snapshot. To refres
 - `lib/design-page-editor-client-preferences.ts` — Defines `parseDesignPagePlacementAddMode`, `DesignPagePlacementAddMode` for design page editor client preferences.
 - `lib/design-page-editor-configuration.ts` — Defines `resolveEditorInitial3DFitKey`, `DEFAULT_EDITOR_CAMERA_VIEW`, `EDITOR_3D_MIN_CAMERA_DISTANCE`, `EDITOR_3D_MIN_POLAR_ANGLE`, and related exports for design page editor configuration.
 - `lib/design-page-editor-shell-metrics.ts` — Defines `mergeDesignPagePlanMetrics`, `mergeDesignPageCameraDiagnostics`, `DesignPagePlanMetricUpdate` for design page editor shell metrics.
-- `lib/design-page-house-plan.ts` — Defines `resolveHouseRoomFloorElevationMeters`, `resolveFloorPlanDrawCancelDecision`, `resolveFloorPlanOpeningCancelDecision`, `clampRoomDimension`, and related exports for design page house plan.
+- `lib/design-page-house-plan.ts` — Builds canonical 2D house-plan projections and room geometry, naming, dimensions, and placement helpers.
 - `lib/design-page-item-commands.ts` — Defines `rollbackInterruptedSceneItemDrag`, `applyReplaceRoomItemsCommand`, `applyMoveItemsBetweenRoomsCommand`, `applyDesignItemTransformPatches`, and related exports for design page item commands.
 - `lib/design-page-keyboard-context.ts` — Defines `createDesignPageKeyboardOwnership`, `bindDesignPageKeyboardOwnership`, `isFloorPlanRectangleWallShortcut`, `resolveDesignPageHigherPriorityKeyboardOwner`, and related exports for design page keyboard context.
 - `lib/design-page-panel-region-adapter.ts` — Defines `buildDesignPagePanelRegionAdapter`, `BuildDesignPagePanelRegionAdapterInput` for design page panel region adapter.
@@ -609,7 +632,7 @@ No committed deterministic generator is associated with this snapshot. To refres
 - `lib/design-page-panel-registration.ts` — Implements `buildDesignPagePanelRegistration` for design page panel registration.
 - `lib/design-page-panel-workspace-registration.ts` — Defines `buildDesignPagePanelWorkspaceRegistration`, `BuildDesignPagePanelWorkspaceRegistrationInput`, `DesignPagePanelWorkspaceRegistration` for design page panel workspace registration.
 - `lib/design-page-plan-canvas-overlays.ts` — Defines `resolveDesignPagePlanCanvasOverlaysState`, `DesignPagePlanCanvasOverlaysState`, `DesignPagePlanCanvasOverlaysInput` for design page plan canvas overlays.
-- `lib/design-page-plan-overlays.ts` — Defines `getPlanOpeningWallSpanMeters`, `clampPlanOpeningMetrics`, `updatePlanOpeningMetrics`, `mapPlanOpeningsToRoomRenderer`, and related exports for design page plan overlays.
+- `lib/design-page-plan-overlays.ts` — Maps, updates, and moves floor-plan openings, fixed elements, annotations, and their displayed metrics.
 - `lib/design-page-presentation-hotkey.ts` — Defines `resolveDesignPagePresentHotkey`, `DesignPagePresentHotkeyCommand` for design page presentation hotkey.
 - `lib/design-page-refresh-zoom.ts` — Defines `resolveDesignPageRefreshZoomTransform`, `DESIGN_PAGE_REFRESH_ZOOM_EPSILON`, `DesignPageRefreshZoomTransform` for design page refresh zoom.
 - `lib/design-page-requested-design-load-coordinator.ts` — Defines `createDesignPageLoadRequestCoordinator`, `isSupersededDesignPageLoadError`, `DesignPageLoadRequest` for design page requested design load coordinator.
@@ -619,9 +642,9 @@ No committed deterministic generator is associated with this snapshot. To refres
 - `lib/design-page-template-furnishings.ts` — Defines `resolveTemplateFurnishingProduct`, `isTemplateFurnishingNearDoorway`, `shouldConfirmPlanTemplateReplacement` for design page template furnishings.
 - `lib/design-page-types.ts` — Defines `STYLES`, `PLAN_LAYER_PRESETS`, `Style`, `CameraView`, and related exports for design page types.
 - `lib/design-page-utils.ts` — Defines `getItemPrice`, `getDimensions`, `parseVariantLabel`, `formatMoney`, and related exports for design page utils.
-- `lib/design-page-viewport-region-adapter.ts` — Defines `buildDesignPageViewportRegionAdapter`, `BuildDesignPageViewportRegionAdapterInput` for design page viewport region adapter.
+- `lib/design-page-viewport-region-adapter.ts` — Adapts canonical design-page state and actions into the interactive viewport region.
 - `lib/design-page-viewport-workspace-registration.ts` — Defines `buildDesignPageViewportWorkspaceRegistration`, `BuildDesignPageViewportWorkspaceRegistrationInput`, `DesignPageViewportWorkspaceRegistration` for design page viewport workspace registration.
-- `lib/design-route-payload.ts` — Defines `parseDesignCreatePayload`, `parseDesignClaimPayload`, `buildDesignUpdatePayload`, `DesignPayloadResult`, and related exports for design route payload.
+- `lib/design-route-payload.ts` — Validates and builds design create, claim, and update API payloads from persisted document data.
 - `lib/first-run-activation.ts` — Defines `buildFirstRunActivationState`, `FirstRunActivationStepId`, `FirstRunActivationStep`, `FirstRunActivationState` for first run activation.
 - `lib/floor-manager-logic.ts` — Defines `formatFloorLevel`, `getFloorAccentColor`, `resolveActiveFloorLevel`, `resolveFloorOptions`, and related exports for floor manager logic.
 - `lib/google-address-types.ts` — Defines `GoogleAddressSuggestion`, `GoogleResolvedAddress`, `GoogleAddressAutocompleteResponse`, `GoogleAddressResolveResponse` for google address types.
@@ -766,15 +789,16 @@ No committed deterministic generator is associated with this snapshot. To refres
 - `components/AuthButtons.tsx` — Implements `AuthButtons` for Auth Buttons.
 - `components/AuthProvider.tsx` — Implements `AuthProvider` for Auth Provider.
 - `lib/anonymousId.ts` — Implements `getAnonymousId` for anonymous Id.
-- `lib/auth-env.ts` — Defines `isSyntheticCiOAuthFixture`, `getAuthEnvOrThrow` for auth env.
+- `lib/auth-env.ts` — Defines `isSyntheticCiOAuthFixture`, `getAuthEnvOrThrow`, `AuthEnvironmentValidationError`, `AuthEnvironmentFailureCode` for auth env.
 - `lib/auth.ts` — Provides auth logic for authentication and authorization.
 - `proxy.ts` — Implements the Next.js request proxy boundary, including access-related request handling.
 
-### 17. Security, permissions, governance, and audit logic (20)
+### 17. Security, permissions, governance, and audit logic (21)
 
 - `lib/app-event-provenance.ts` — Defines `parseBrowserAnalyticsEventInput`, `buildTrustedLifecycleProvenance`, `isVerifiedStripeEventId`, `hasCurrentTrustedLifecycleProvenance`, and related exports for app event provenance.
 - `lib/catalog-audit.ts` — Defines `findCatalogFiles`, `finalizeDraftAudit`, `getRelativeCatalogPath`, `runCatalogQualityAudit`, and related exports for catalog audit.
 - `lib/catalog/variant-audit.ts` — Defines `runVariantResolutionAudit`, `VariantAuditIssue`, `VariantAuditSummary` for variant audit.
+- `lib/certification-app-event-binding.ts` — Defines cryptographically bound certification-run metadata for AppEvent records.
 - `lib/floor-plan-imports/candidate-mutation-rate-limit.ts` — Defines `takeFloorPlanCandidateMutationAllowance`, `FLOOR_PLAN_CANDIDATE_MUTATION_RATE_LIMIT`, `FLOOR_PLAN_CANDIDATE_MUTATION_RATE_WINDOW_MS`, `FloorPlanCandidateMutationAllowance` for candidate mutation rate limit.
 - `lib/floor-plan-imports/privacy.ts` — Defines `floorPlanPrivateSourceRetentionDays`, `floorPlanSourceRetentionDeadline`, `parseFloorPlanTrainingBenchmarkOptIn`, `floorPlanImportPrivacyForUpload`, and related exports for privacy.
 - `lib/floor-plan-imports/publication-governance.ts` — Defines `canReviewPublicFloorPlans`, `canPublishPublicFloorPlans`, `requireFloorPlanReviewer`, `requireFloorPlanPublisher`, and related exports for publication governance.
@@ -1148,7 +1172,7 @@ No committed deterministic generator is associated with this snapshot. To refres
 - `public/draco/draco_decoder.wasm` — WebAssembly runtime asset for browser-side Draco mesh decoding.
 - `public/draco/draco_wasm_wrapper.js` — Provides draco wasm wrapper logic for furniture assets and glb-related logic.
 
-### 21. Materials, finishes, flooring, paint, and textures (233)
+### 21. Materials, finishes, flooring, paint, and textures (234)
 
 - `components/editor/design-controls-plan/surfaceCatalog.ts` — Defines `getFloorMaterialSwatchStyle`, `formatSurfaceMaterialValue`, `getSurfaceMaterialSupplierLabel`, `getSurfaceMaterialCollectionLabel`, and related exports for surface Catalog.
 - `components/editor/design-controls-plan/SurfaceMaterialCatalogBoundary.tsx` — Implements `SurfaceMaterialCatalogBoundary` for Surface Material Catalog Boundary.
@@ -1162,11 +1186,12 @@ No committed deterministic generator is associated with this snapshot. To refres
 - `lib/floor-materials.ts` — Defines `getFloorMaterialById`, `getRecommendedFloorMaterials`, `normalizeFloorRotationDeg`, `clampFloorPatternScale`, and related exports for floor materials.
 - `lib/materialPresets.ts` — Defines `getPresetsForCategory`, `getPresetById`, `getDefaultPreset`, `getPresetsByTone`, and related exports for material Presets.
 - `lib/nippon-paint-colours.ts` — Defines `NIPPON_PAINT_COLOURS`, `NipponPaintColour` for nippon paint colours.
-- `lib/surface-material-bom.ts` — Defines `getRoomSurfaceAssignments`, `buildRoomSurfaceMaterialBomRows`, `SurfaceMaterialBomRow` for surface material bom.
+- `lib/surface-material-bom.ts` — Builds surface-material bills of materials, including opening-aware wall-panel quantities.
 - `lib/surface-material-runtime-types.ts` — Defines `SurfaceMaterialRenderRecord`, `SurfaceMaterialCatalogMetadata`, `SurfaceMaterialCatalogRecord`, `SurfaceMaterialRenderTuple`, and related exports for surface material runtime types.
 - `lib/surface-material-runtime.ts` — Defines `decodeSurfaceMaterialRenderTuple`, `getRuntimeSurfaceMaterialById`, `getSurfaceMaterialTextureSource`, `shouldUseSingleSurfaceSwatch`, and related exports for surface material runtime.
 - `lib/surface-material-schema.ts` — Defines `SURFACE_MATERIAL_VOCABULARY`, `SurfaceCategory`, `FlooringMaterialFamily`, `SurfaceMaterialFamily`, and related exports for surface material schema.
 - `lib/surface-material-texture-repeat.ts` — Defines `resolveSurfaceTextureRepeat`, `SurfaceTextureRepeat` for surface material texture repeat.
+- `lib/surface-material-wall-panels.ts` — Resolves wall finish assignments and combines opening-aware wall-panel quantities by durable assignment.
 - `lib/surface-material-yaml.ts` — Defines `getSurfaceMaterialCatalogRoot`, `getAllSurfaceMaterialFiles`, `readSurfaceMaterialYamlFile`, `getAllSurfaceMaterialYamlEntries`, and related exports for surface material yaml.
 - `lib/surface-settings.ts` — Defines `normalizeFloorPattern`, `getFloorPatternOptionsForIds`, `normalizeFloorPatternOffset`, `normalizeFloorJointSizeMm`, and related exports for surface settings.
 - `lib/wall-paint-rendering.ts` — Defines `getWallPaintColorFidelityFillIntensity`, `resolveWallSurfaceColorFillIntensity`, `WALL_PAINT_COLOR_FIDELITY_MIN_FILL_INTENSITY`, `WALL_PAINT_COLOR_FIDELITY_MAX_FILL_INTENSITY` for wall paint rendering.
@@ -1859,12 +1884,12 @@ No committed deterministic generator is associated with this snapshot. To refres
 - `tests/e2e/studio-wall-panels.spec.ts` — Playwright/end-to-end coverage for studio wall panels.spec.
 - `tests/e2e/variant-test-utils.ts` — Playwright/end-to-end coverage for variant test utils.
 - `tests/required/cart-overlay-accessibility.spec.ts` — Playwright/end-to-end coverage for cart overlay accessibility.spec.
-- `tests/required/floor-plan-upload-accessibility.spec.ts` — Playwright/end-to-end coverage for floor plan upload accessibility.spec.
+- `tests/required/floor-plan-upload-accessibility.spec.ts` — Automated coverage for floor plan upload accessibility.spec.
 - `tests/required/guest-save-overlay-accessibility.spec.ts` — Playwright/end-to-end coverage for guest save overlay accessibility.spec.
 - `tests/required/my-designs-overlay-accessibility.spec.ts` — Playwright/end-to-end coverage for my designs overlay accessibility.spec.
 - `tests/required/retailer-confirmation-accessibility.spec.ts` — Playwright/end-to-end coverage for retailer confirmation accessibility.spec.
 
-### 32. Test fixtures, mocks, helpers, and test data (29)
+### 32. Test fixtures, mocks, helpers, and test data (30)
 
 - `app/admin/floor-plans/AdminFloorPlanFixturePanel.tsx` — Test fixture or harness for Admin Floor Plan Fixture Panel.
 - `components/editor/design-page/lighting/FixtureLightManager.tsx` — Test fixture or harness for Fixture Light Manager.
@@ -1875,13 +1900,13 @@ No committed deterministic generator is associated with this snapshot. To refres
 - `scripts/build-guest-save-overlay-browser-fixture.mjs` — Test fixture or harness for build guest save overlay browser fixture.
 - `scripts/build-retailer-confirmation-browser-fixture.mjs` — Test fixture or harness for build retailer confirmation browser fixture.
 - `scripts/ci-auth-fixture.json` — Structured JSON input, manifest, or baseline data for ci auth fixture.
-- `scripts/ci-auth-fixture.ts` — Test fixture or harness for ci auth fixture.
+- `scripts/ci-auth-fixture.ts` — Defines `authPreflightServerEnvironment`, `serializeGitHubEnvironmentAssignments`, `assertLogSafeFixtureTransportOrder`, `exportFixtureToGitHubEnvironment`, and related exports for ci auth fixture.
 - `scripts/fixtures/floor-plan-cad/room-mm.dxf` — Test fixture containing DXF floor-plan/CAD input data.
 - `scripts/fixtures/floor-plan-cad/room-mm.ifc` — Test fixture containing IFC floor-plan/CAD input data.
 - `scripts/fixtures/production-trace/glb-optimizer-post-correction.nft.json` — Test fixture or harness for GLB optimizer post correction.nft.
 - `scripts/fixtures/production-trace/glb-optimizer-retained-overtrace.nft.json` — Test fixture or harness for GLB optimizer retained overtrace.nft.
 - `scripts/fixtures/public-share-projection-identity-collision.json` — Test fixture or harness for public share projection identity collision.
-- `scripts/test-design-duplication-fixtures.ts` — Test fixture or harness for test design duplication fixtures.
+- `scripts/test-design-duplication-fixtures.ts` — Automated fixture coverage for safe design duplication.
 - `scripts/test-imported-variant-normalization-fixtures.ts` — Test fixture or harness for test imported variant normalization fixtures.
 - `scripts/test-phase-c-module-fixtures.ts` — Test fixture or harness for test phase c module fixtures.
 - `tests/e2e/fixtures.ts` — Test fixture or harness for fixtures.
@@ -1891,6 +1916,7 @@ No committed deterministic generator is associated with this snapshot. To refres
 - `tests/fixtures/surface-material-runtime.generated.ts` — Test fixture or harness for surface material runtime.generated.
 - `tests/fixtures/surface-materials/flooring/test-only/test-published-flooring/catalog.yaml` — Test fixture or harness for catalog.
 - `tests/required/fixtures/floor-plan-empty-entry-harness.tsx` — Test fixture or harness for floor plan empty entry harness.
+- `tests/required/fixtures/floor-plan-inert-html-host.ts` — Playwright helper that opens and verifies the inert floor-plan upload HTML fixture.
 - `tests/required/fixtures/floor-plan-upload-dialog-harness.tsx` — Test fixture or harness for floor plan upload dialog harness.
 - `tests/required/fixtures/guest-save-checkout-harness.tsx` — Test fixture or harness for guest save checkout harness.
 - `tests/required/fixtures/next-navigation-browser-fixture.ts` — Test fixture or harness for next navigation browser fixture.
@@ -1909,7 +1935,7 @@ No committed deterministic generator is associated with this snapshot. To refres
 - `playwright.retailer-confirmation.config.ts` — Playwright configuration for retailer confirmation.
 - `playwright.share-responsive.config.ts` — Playwright configuration for share responsive.
 
-### 34. Scripts and command-line tools (391)
+### 34. Scripts and command-line tools (417)
 
 - `query-catalog.js` — Command-line script for query catalog.
 - `QUICKSTART.sh` — Command-line script for QUICKSTART.
@@ -1945,6 +1971,12 @@ No committed deterministic generator is associated with this snapshot. To refres
 - `scripts/check-glb-model-lifecycle.ts` — Command-line script for check GLB model lifecycle.
 - `scripts/check-glb-resource-cache.ts` — Command-line script for check GLB resource cache.
 - `scripts/check-phase15-release-evidence.ts` — Command-line script for check phase15 release evidence.
+- `scripts/ci-auth-fixture-regression-environment.mjs` — Defines isolated environment capabilities for CI authentication-fixture regression runs.
+- `scripts/ci-auth-fixture-result-contract.cjs` — Defines and validates the sealed command-result contract for CI authentication fixtures.
+- `scripts/ci-auth-fixture-result-contract.d.cts` — Type declaration for the CI authentication-fixture result-contract CommonJS module.
+- `scripts/ci-auth-fixture-session.cjs` — Defines CI authentication-fixture session ownership, nonce binding, and result-path contracts.
+- `scripts/ci-auth-fixture-session.d.cts` — Type declaration for the CI authentication-fixture session CommonJS module.
+- `scripts/ci-auth-preflight-worktree.mjs` — Creates, inspects, and completes isolated authentication-preflight worktrees.
 - `scripts/code-quality/baseline.json` — Machine-readable baseline for repository code-quality ratchets.
 - `scripts/code-quality/check.mjs` — Command-line script for check.
 - `scripts/code-quality/exceptions.json` — Structured JSON input, manifest, or baseline data for exceptions.
@@ -1974,41 +2006,50 @@ No committed deterministic generator is associated with this snapshot. To refres
 - `scripts/phase8-project-benchmark-evidence-io.ts` — Command-line script for phase8 project benchmark evidence io.
 - `scripts/phase8-project-benchmark-validator.ts` — Command-line script for phase8 project benchmark validator.
 - `scripts/phase8-representative-projects.ts` — Command-line script for phase8 representative projects.
-- `scripts/playwright-report-path.mjs` — Command-line script for playwright report path.
+- `scripts/playwright-report-path.mjs` — Defines `resolveCertificationExternalDestination`, `resolveAuthorizedExternalEvidenceRoot`, `resolveRetainedExternalEvidenceFile`, `resolvePlaywrightReportPath`, and related exports for playwright report path.
 - `scripts/postcss-strip-scoped-tailwind-properties.cjs` — Command-line script for postcss strip scoped tailwind properties.
 - `scripts/prisma-generate.mjs` — Command-line script for prisma generate.
 - `scripts/process-ottoman-thumbs.py` — Command-line script for process ottoman thumbs.
 - `scripts/production-archive-plan-evidence.mjs` — Command-line script for production archive plan evidence.
-- `scripts/production-archive.mjs` — Command-line script for production archive.
+- `scripts/production-archive.mjs` — Defines `immutableNextArtifactFiles`, `nftDerivedInputs`, `planProductionArchive`, `structuredProductionArchiveFailure`, and related exports for production archive.
 - `scripts/production-artifact-contract.mjs` — Command-line script for production artifact contract.
-- `scripts/production-artifact-evidence.mjs` — Command-line script for production artifact evidence.
-- `scripts/production-artifact-playwright.mjs` — Command-line script for production artifact playwright.
-- `scripts/production-certification-build-generated-output.mjs` — Command-line script for production certification build generated output.
-- `scripts/production-certification-contract.mjs` — Command-line script for production certification contract.
+- `scripts/production-artifact-evidence.mjs` — Defines `comparePortablePaths`, `inspectSourceIdentity`, `inspectTraceInventory`, `inspectFloorPlanRouteNftContract`, and related exports for production artifact evidence.
+- `scripts/production-artifact-playwright.mjs` — Defines `loadProductionArtifactForPlaywright` for production artifact playwright.
+- `scripts/production-certification-app-event-lifecycle.mjs` — Inspects, binds, hashes, and validates certification AppEvent lifecycle evidence.
+- `scripts/production-certification-browser-server-lifecycle.mjs` — Manages tracked-output cleanup and evidence for certification browser-server lifecycles.
+- `scripts/production-certification-build-generated-output.mjs` — Defines `preflightCertificationBuildGeneratedOutput`, `finalizeCertificationBuildGeneratedOutput`, `finalizeCertificationFailedBuildGeneratedOutput`, `certificationBuildGeneratedOutputIssues`, and related exports for production certification build generated output.
+- `scripts/production-certification-contract.mjs` — Defines `sha256Bytes`, `canonicalJsonBytes`, `productionCertificationContract`, `resourcePreparationContract`, and related exports for production certification contract.
+- `scripts/production-certification-database-adapter.mjs` — Implements the PostgreSQL adapter used by production-certification database lifecycle commands.
+- `scripts/production-certification-database-contract.mjs` — Defines production-certification database lifecycle schemas, bindings, states, and canonical hashing.
+- `scripts/production-certification-database-lifecycle.mjs` — Plans, provisions, verifies, retains, and removes isolated production-certification databases.
 - `scripts/production-certification-dependencies.mjs` — Command-line script for production certification dependencies.
-- `scripts/production-certification-doctor.mjs` — Command-line script for production certification doctor.
-- `scripts/production-certification-evidence.mjs` — Command-line script for production certification evidence.
+- `scripts/production-certification-doctor.mjs` — Defines `validateCertificationDatabaseDoctorShape`, `assertFileBackedOwner`, `validateCertificationStageResultContracts`, `parseCertificationChildJson`, and related exports for production certification doctor.
+- `scripts/production-certification-evidence.mjs` — Defines `isFinalCertificationStateSchemaSupported`, `validateRuntimeEvidence`, `finalRuntimeArtifactIdentityIssues`, `finalCertificationManifestIdentityIssues`, and related exports for production certification evidence.
 - `scripts/production-certification-historical-evidence.mjs` — Command-line script for production certification historical evidence.
-- `scripts/production-certification-real.mjs` — Command-line script for production certification real.
-- `scripts/production-certification-regressions.json` — Structured JSON input, manifest, or baseline data for production certification regressions.
+- `scripts/production-certification-real.mjs` — Defines `validateCertificationInvocation`, `reconcileCertificationDatabaseLifecycleState`, `absentEvidenceTarget`, `projectAuthFixtureSessionForStage`, and related exports for production certification real.
+- `scripts/production-certification-regressions.json` — Machine-readable registry of production-certification regression coverage.
 - `scripts/production-certification-resource-evidence.mjs` — Command-line script for production certification resource evidence.
 - `scripts/production-certification-resource-plan.mjs` — Command-line script for production certification resource plan.
 - `scripts/production-certification-resources.mjs` — Command-line script for production certification resources.
-- `scripts/production-certification-simulation.mjs` — Command-line script for production certification simulation.
-- `scripts/production-certification-source-continuity.mjs` — Command-line script for production certification source continuity.
+- `scripts/production-certification-simulation.mjs` — Defines `initializeFixture`, `__simulationMain`, `runProductionCertificationSimulation`, `route` for production certification simulation.
+- `scripts/production-certification-source-continuity.mjs` — Defines `physicalSourceIdentity`, `sealSourceValidationEvidence`, `sourceValidationEvidenceNames`, `snapshotEvidenceName`, and related exports for production certification source continuity.
 - `scripts/production-certification-source-generated-outputs.mjs` — Command-line script for production certification source generated outputs.
 - `scripts/production-certification-stage-environment.mjs` — Command-line script for production certification stage environment.
-- `scripts/production-certification-state.mjs` — Command-line script for production certification state.
-- `scripts/production-certification-worktrees.mjs` — Command-line script for production certification worktrees.
-- `scripts/production-certification.mjs` — Command-line script for production certification.
+- `scripts/production-certification-stage-result-consumer.mjs` — Runs certification stages and validates their sealed result files.
+- `scripts/production-certification-stage-result-contract.mjs` — Defines nonce-bound certification stage-result creation, sealing, and validation contracts.
+- `scripts/production-certification-state.mjs` — Defines `certificationStageEvidenceFiles`, `sealCertificationState`, `certificationStateSha256`, `sealCertificationInvalidationPlan`, and related exports for production certification state.
+- `scripts/production-certification-worktrees.mjs` — Defines `sourceValidationWorktreeOutputState`, `stageWorktreeRole`, `planCertificationStageWorktrees`, `inspectCertificationStageWorktree`, and related exports for production certification worktrees.
+- `scripts/production-certification.mjs` — Defines `nextCertificationCommand`, `createSerializedTerminalLifecycle`, `createCertificationAbortCleanupRequest` for production certification.
 - `scripts/production-trace-archive-policy.mjs` — Command-line script for production trace archive policy.
 - `scripts/production-verifier-closure.mjs` — Command-line script for production verifier closure.
 - `scripts/provision-gate-a3-database.mjs` — Command-line script for provision gate a3 database.
 - `scripts/required-test-manifest.json` — Machine-readable manifest of required test commands, ownership, and certification metadata.
-- `scripts/required-test-playwright.mjs` — Command-line script for required test playwright.
+- `scripts/required-test-playwright.mjs` — Defines `requiredTestPlaywrightEvidence` for required test playwright.
 - `scripts/required-test-truthfulness.mjs` — Command-line script for required test truthfulness.
 - `scripts/restore-db.sh` — Command-line script for restore db.
 - `scripts/restore-model-assets.ts` — Command-line script for restore model assets.
+- `scripts/run-ci-auth-fixture-real-preflight.mjs` — Runs the real CI authentication preflight with isolated database sequencing and retained failure evidence.
+- `scripts/run-ci-auth-fixture-session.mjs` — Runs the canonical CI authentication-fixture session and enforces output ownership.
 - `scripts/run-design-page-cleanup-tests.mjs` — Command-line script for run design page cleanup tests.
 - `scripts/run-floor-plan-deletion-worker.ts` — Command-line script for run floor plan deletion worker.
 - `scripts/run-floor-plan-import-worker.ts` — Command-line script for run floor plan import worker.
@@ -2018,9 +2059,9 @@ No committed deterministic generator is associated with this snapshot. To refres
 - `scripts/runtime-smoke-failure-evidence.mjs` — Command-line script for runtime smoke failure evidence.
 - `scripts/runtime-smoke-operation-contracts.mjs` — Command-line script for runtime smoke operation contracts.
 - `scripts/runtime-smoke-operation-deadline.mjs` — Command-line script for runtime smoke operation deadline.
-- `scripts/runtime-smoke-phase-budget.mjs` — Command-line script for runtime smoke phase budget.
+- `scripts/runtime-smoke-phase-budget.mjs` — Defines `deriveFurnishedTemplatePhaseTimeout`, `runtimeSmokeAggregateLifecycleState`, `deriveRuntimeSmokeWholeTestTimeout`, `runtimeSmokePhaseBudget`, and related exports for runtime smoke phase budget.
 - `scripts/runtime-smoke-post-readiness.mjs` — Command-line script for runtime smoke post readiness.
-- `scripts/runtime-smoke-readiness-diagnostics.mjs` — Command-line script for runtime smoke readiness diagnostics.
+- `scripts/runtime-smoke-readiness-diagnostics.mjs` — Defines `runtimeSmokeModelSemanticallyReady`, `evaluateRuntimeSmokeActiveRequiredModels`, `projectRuntimeSmokeReloadReadiness`, `runtimeSmokeRequiredRegistryReady`, and related exports for runtime smoke readiness diagnostics.
 - `scripts/runtime-smoke-telemetry-bootstrap-contract.mjs` — Command-line script for runtime smoke telemetry bootstrap contract.
 - `scripts/seed-test-data.js` — Command-line script for seed test data.
 - `scripts/seed-test-data.ts` — Command-line script for seed test data.
@@ -2032,7 +2073,7 @@ No committed deterministic generator is associated with this snapshot. To refres
 - `scripts/test-ai-layout-planner.ts` — Command-line script for test AI layout planner.
 - `scripts/test-ai-layout-preview.ts` — Command-line script for test AI layout preview.
 - `scripts/test-auburn-public-catalog.ts` — Command-line script for test auburn public catalog.
-- `scripts/test-auth-env-hardening.ts` — Command-line script for test auth env hardening.
+- `scripts/test-auth-env-hardening.ts` — Command-line regression coverage for test auth env hardening.
 - `scripts/test-beta-feedback-widget.ts` — Command-line script for test beta feedback widget.
 - `scripts/test-beta-readiness-upgrades.ts` — Command-line script for test beta readiness upgrades.
 - `scripts/test-beta-release-handoff.ts` — Command-line script for test beta release handoff.
@@ -2087,12 +2128,14 @@ No committed deterministic generator is associated with this snapshot. To refres
 - `scripts/test-catalog-route-hardening.ts` — Command-line script for test catalog route hardening.
 - `scripts/test-catalog-variant-color.ts` — Command-line script for test catalog variant color.
 - `scripts/test-cedric-lamp-calibration.ts` — Command-line script for test cedric lamp calibration.
+- `scripts/test-ci-auth-fixture-results.ts` — Command-line regression coverage for CI authentication-fixture result handling.
+- `scripts/test-ci-auth-fixture-session.mjs` — Command-line regression coverage for CI authentication-fixture session contracts.
 - `scripts/test-circulation-analysis.ts` — Command-line script for test circulation analysis.
 - `scripts/test-code-quality-ratchet.mjs` — Command-line script for test code quality ratchet.
 - `scripts/test-command-bar-save-status.ts` — Command-line script for test command bar save status.
 - `scripts/test-dalton-catalog-media.ts` — Command-line script for test dalton catalog media.
 - `scripts/test-dawson-retailer-links.ts` — Command-line script for test dawson retailer links.
-- `scripts/test-design-document-compatibility.ts` — Command-line script for test design document compatibility.
+- `scripts/test-design-document-compatibility.ts` — Automated compatibility coverage for persisted design-document revisions and migrations.
 - `scripts/test-design-editor-routing.ts` — Command-line script for test design editor routing.
 - `scripts/test-design-page-ai-layout-controller.ts` — Command-line script for test design page AI layout controller.
 - `scripts/test-design-page-ai-layout-proposal.ts` — Command-line script for test design page AI layout proposal.
@@ -2102,18 +2145,18 @@ No committed deterministic generator is associated with this snapshot. To refres
 - `scripts/test-design-page-commerce-actions.ts` — Command-line script for test design page commerce actions.
 - `scripts/test-design-page-core-shell-registration.ts` — Command-line script for test design page core shell registration.
 - `scripts/test-design-page-document-selection-registration.ts` — Command-line script for test design page document selection registration.
-- `scripts/test-design-page-editor-command-bar.ts` — Command-line script for test design page editor command bar.
+- `scripts/test-design-page-editor-command-bar.ts` — Command-line regression coverage for test design page editor command bar.
 - `scripts/test-design-page-editor-registration.ts` — Command-line script for test design page editor registration.
 - `scripts/test-design-page-equivalent-variant.ts` — Command-line script for test design page equivalent variant.
 - `scripts/test-design-page-feature-registration.ts` — Command-line script for test design page feature registration.
 - `scripts/test-design-page-floor-plan-lifecycle-registration.ts` — Command-line script for test design page floor plan lifecycle registration.
 - `scripts/test-design-page-history-controller.ts` — Command-line script for test design page history controller.
-- `scripts/test-design-page-house-plan.ts` — Command-line script for test design page house plan.
+- `scripts/test-design-page-house-plan.ts` — Automated coverage for canonical house-plan projection and geometry helpers.
 - `scripts/test-design-page-layout-versions-and-views-controller.ts` — Command-line script for test design page layout versions and views controller.
 - `scripts/test-design-page-live-catalog.ts` — Command-line script for test design page live catalog.
 - `scripts/test-design-page-local-backup-recovery.ts` — Command-line script for test design page local backup recovery.
 - `scripts/test-design-page-local-backup.ts` — Command-line script for test design page local backup.
-- `scripts/test-design-page-new-plan-controller.ts` — Command-line script for test design page new plan controller.
+- `scripts/test-design-page-new-plan-controller.ts` — Automated coverage for new-plan controller and template-replacement behavior.
 - `scripts/test-design-page-panel-mode.ts` — Command-line script for test design page panel mode.
 - `scripts/test-design-page-panel-workspace-registration.ts` — Command-line script for test design page panel workspace registration.
 - `scripts/test-design-page-paywall.ts` — Command-line script for test design page paywall.
@@ -2122,17 +2165,17 @@ No committed deterministic generator is associated with this snapshot. To refres
 - `scripts/test-design-page-persistence-presentation-registration.ts` — Command-line script for test design page persistence presentation registration.
 - `scripts/test-design-page-placement-workspace-registration.ts` — Command-line script for test design page placement workspace registration.
 - `scripts/test-design-page-plan-canvas-overlays.ts` — Command-line script for test design page plan canvas overlays.
-- `scripts/test-design-page-plan-overlay-controller.ts` — Command-line script for test design page plan overlay controller.
+- `scripts/test-design-page-plan-overlay-controller.ts` — Automated coverage for plan-overlay controller behavior.
 - `scripts/test-design-page-plan-quality-controller.ts` — Command-line script for test design page plan quality controller.
 - `scripts/test-design-page-presentation-export-runtime.ts` — Command-line script for test design page presentation export runtime.
 - `scripts/test-design-page-presentation-workspace-registration.ts` — Command-line script for test design page presentation workspace registration.
 - `scripts/test-design-page-refresh-zoom.ts` — Command-line script for test design page refresh zoom.
 - `scripts/test-design-page-requested-design-workspace-registration.ts` — Command-line script for test design page requested design workspace registration.
 - `scripts/test-design-page-room-placement-operations.ts` — Command-line script for test design page room placement operations.
-- `scripts/test-design-page-room-plan-controller.ts` — Command-line script for test design page room plan controller.
+- `scripts/test-design-page-room-plan-controller.ts` — Automated coverage for room-plan controller behavior.
 - `scripts/test-design-page-save-status.ts` — Command-line script for test design page save status.
 - `scripts/test-design-page-scene-domain-boundaries.ts` — Command-line script for test design page scene domain boundaries.
-- `scripts/test-design-page-scene-layers.ts` — Command-line script for test design page scene layers.
+- `scripts/test-design-page-scene-layers.ts` — Automated coverage for design-page scene layer ownership and behavior.
 - `scripts/test-design-page-scene-region-workspace-registration.ts` — Command-line script for test design page scene region workspace registration.
 - `scripts/test-design-page-selected-item-panel-controller.ts` — Command-line script for test design page selected item panel controller.
 - `scripts/test-design-page-selected-item-panel.ts` — Command-line script for test design page selected item panel.
@@ -2142,11 +2185,11 @@ No committed deterministic generator is associated with this snapshot. To refres
 - `scripts/test-design-page-view-continuity.ts` — Command-line script for test design page view continuity.
 - `scripts/test-design-page-viewport-overlay-layer.ts` — Command-line script for test design page viewport overlay layer.
 - `scripts/test-design-page-viewport-selection-controls.ts` — Command-line script for test design page viewport selection controls.
-- `scripts/test-design-page-viewport-workspace-read-model.ts` — Command-line script for test design page viewport workspace read model.
+- `scripts/test-design-page-viewport-workspace-read-model.ts` — Automated coverage for the derived viewport/workspace read model.
 - `scripts/test-design-page-viewport-workspace-registration.ts` — Command-line script for test design page viewport workspace registration.
 - `scripts/test-design-page-wall-descriptors.ts` — Command-line script for test design page wall descriptors.
 - `scripts/test-design-page-zone-controller.ts` — Command-line script for test design page zone controller.
-- `scripts/test-design-route-payload.ts` — Command-line script for test design route payload.
+- `scripts/test-design-route-payload.ts` — Automated coverage for design API payload validation and construction.
 - `scripts/test-design-scene-loading-frameloop.mjs` — Command-line script for test design scene loading frameloop.
 - `scripts/test-design-snapshot-v3-floor-plan-adapter.ts` — Command-line script for test design snapshot v3 floor plan adapter.
 - `scripts/test-designer-theme-contrast.ts` — Command-line script for test designer theme contrast.
@@ -2186,7 +2229,7 @@ No committed deterministic generator is associated with this snapshot. To refres
 - `scripts/test-floor-plan-library.ts` — Command-line script for test floor plan library.
 - `scripts/test-floor-plan-live-progress.ts` — Command-line script for test floor plan live progress.
 - `scripts/test-floor-plan-local-ocr.ts` — Command-line script for test floor plan local ocr.
-- `scripts/test-floor-plan-measured-property-mutations.ts` — Command-line script for test floor plan measured property mutations.
+- `scripts/test-floor-plan-measured-property-mutations.ts` — Automated coverage for evidence-aware floor-plan property mutations.
 - `scripts/test-floor-plan-multifloor-parity.ts` — Command-line script for test floor plan multifloor parity.
 - `scripts/test-floor-plan-object-storage.ts` — Command-line script for test floor plan object storage.
 - `scripts/test-floor-plan-object-store-compensation.ts` — Command-line script for test floor plan object store compensation.
@@ -2194,7 +2237,7 @@ No committed deterministic generator is associated with this snapshot. To refres
 - `scripts/test-floor-plan-private-source-retention.ts` — Command-line script for test floor plan private source retention.
 - `scripts/test-floor-plan-processing-mode.ts` — Command-line script for test floor plan processing mode.
 - `scripts/test-floor-plan-public-display-metadata.ts` — Command-line script for test floor plan public display metadata.
-- `scripts/test-floor-plan-public-document.ts` — Command-line script for test floor plan public document.
+- `scripts/test-floor-plan-public-document.ts` — Automated coverage for public floor-plan document projection and privacy boundaries.
 - `scripts/test-floor-plan-quality.ts` — Command-line script for test floor plan quality.
 - `scripts/test-floor-plan-queue-health.ts` — Command-line script for test floor plan queue health.
 - `scripts/test-floor-plan-raster-linework.ts` — Command-line script for test floor plan raster linework.
@@ -2213,23 +2256,23 @@ No committed deterministic generator is associated with this snapshot. To refres
 - `scripts/test-floor-plan-supplementary-sources.ts` — Command-line script for test floor plan supplementary sources.
 - `scripts/test-floor-plan-topology-editor.ts` — Command-line script for test floor plan topology editor.
 - `scripts/test-floor-plan-topology-mutations.ts` — Command-line script for test floor plan topology mutations.
-- `scripts/test-floor-plan-upload-accessibility-static.ts` — Command-line script for test floor plan upload accessibility static.
+- `scripts/test-floor-plan-upload-accessibility-static.ts` — Command-line regression coverage for test floor plan upload accessibility static.
 - `scripts/test-floor-plan-upload-ingress.ts` — Command-line script for test floor plan upload ingress.
 - `scripts/test-floor-plan-verification-hardening.ts` — Command-line script for test floor plan verification hardening.
 - `scripts/test-floor-plan-vision-configuration.ts` — Command-line script for test floor plan vision configuration.
 - `scripts/test-furnish-full-catalog.ts` — Command-line script for test furnish full catalog.
 - `scripts/test-glb-local-render-bounds.ts` — Command-line script for test GLB local render bounds.
-- `scripts/test-glb-main-thread-telemetry-facade.ts` — Command-line script for test GLB main thread telemetry facade.
+- `scripts/test-glb-main-thread-telemetry-facade.ts` — Command-line regression coverage for test GLB main thread telemetry facade.
 - `scripts/test-glb-main-thread-telemetry.ts` — Command-line script for test GLB main thread telemetry.
 - `scripts/test-google-address-autocomplete.ts` — Command-line script for test google address autocomplete.
 - `scripts/test-guest-save-overlay-static.tsx` — Command-line script for test guest save overlay static.
 - `scripts/test-hamilton-sofa-bed-import.ts` — Command-line script for test hamilton sofa bed import.
-- `scripts/test-house-plan-wall-rendering.ts` — Command-line script for test house plan wall rendering.
+- `scripts/test-house-plan-wall-rendering.ts` — Automated coverage for house-plan wall, opening, selection, and surface-panel rendering.
 - `scripts/test-import-route-hardening.ts` — Command-line script for test import route hardening.
 - `scripts/test-imported-variant-normalization.ts` — Command-line script for test imported variant normalization.
 - `scripts/test-layout-version-ui-polish.ts` — Command-line script for test layout version UI polish.
 - `scripts/test-layout-versions.ts` — Command-line script for test layout versions.
-- `scripts/test-legacy-floor-plan-watertight-rendering.ts` — Command-line script for test legacy floor plan watertight rendering.
+- `scripts/test-legacy-floor-plan-watertight-rendering.ts` — Automated coverage for legacy watertight room and opening-wall rendering.
 - `scripts/test-lighting-settings.ts` — Command-line script for test lighting settings.
 - `scripts/test-load-design-delete-modal.ts` — Command-line script for test load design delete modal.
 - `scripts/test-manual-placement-scoring.ts` — Command-line script for test manual placement scoring.
@@ -2241,7 +2284,7 @@ No committed deterministic generator is associated with this snapshot. To refres
 - `scripts/test-phase13-batch5-sharing.ts` — Command-line script for test phase13 batch5 sharing.
 - `scripts/test-phase14-product-flow.ts` — Command-line script for test phase14 product flow.
 - `scripts/test-phase15.ts` — Command-line script for test phase15.
-- `scripts/test-phase7-security-boundaries.ts` — Command-line script for test phase7 security boundaries.
+- `scripts/test-phase7-security-boundaries.ts` — Command-line regression coverage for test phase7 security boundaries.
 - `scripts/test-phase8-performance-boundaries.ts` — Command-line script for test phase8 performance boundaries.
 - `scripts/test-ping-yi-court-review-seed-intake.ts` — Command-line script for test ping yi court review seed intake.
 - `scripts/test-ping-yi-court-v2-review-seeds.ts` — Command-line script for test ping yi court v2 review seeds.
@@ -2262,39 +2305,48 @@ No committed deterministic generator is associated with this snapshot. To refres
 - `scripts/test-pro-billing-ui.ts` — Command-line script for test pro billing UI.
 - `scripts/test-pro-tools-toggle-copy.ts` — Command-line script for test pro tools toggle copy.
 - `scripts/test-production-archive-plan-evidence.mjs` — Command-line script for test production archive plan evidence.
-- `scripts/test-production-artifact-evidence.mjs` — Command-line script for test production artifact evidence.
-- `scripts/test-production-certification-build-generated-output.mjs` — Command-line script for test production certification build generated output.
-- `scripts/test-production-certification-dependency-lifecycle.mjs` — Command-line script for test production certification dependency lifecycle.
-- `scripts/test-production-certification-resources.mjs` — Command-line script for test production certification resources.
-- `scripts/test-production-certification-source-generated-outputs.mjs` — Command-line script for test production certification source generated outputs.
-- `scripts/test-production-certification-stage-environment.mjs` — Command-line script for test production certification stage environment.
-- `scripts/test-production-certification-state-worktrees.mjs` — Command-line script for test production certification state worktrees.
-- `scripts/test-production-certification.mjs` — Command-line script for test production certification.
-- `scripts/test-production-trace-archive-policy.mjs` — Command-line script for test production trace archive policy.
+- `scripts/test-production-artifact-evidence.mjs` — Command-line regression coverage for test production artifact evidence.
+- `scripts/test-production-certification-app-event-writer.ts` — Command-line regression coverage for certification AppEvent writer bindings.
+- `scripts/test-production-certification-auth-preflight-database.mjs` — Command-line regression coverage for authentication-preflight database isolation.
+- `scripts/test-production-certification-browser-server-lifecycle.mjs` — Command-line regression coverage for certification browser-server output lifecycles.
+- `scripts/test-production-certification-build-generated-output.mjs` — Command-line regression coverage for test production certification build generated output.
+- `scripts/test-production-certification-database-lifecycle.mjs` — Command-line regression coverage for production-certification database lifecycle behavior.
+- `scripts/test-production-certification-dependency-lifecycle.mjs` — Command-line regression coverage for test production certification dependency lifecycle.
+- `scripts/test-production-certification-resources.mjs` — Command-line regression coverage for test production certification resources.
+- `scripts/test-production-certification-source-database-projection.mjs` — Command-line regression coverage for certification source-database projections.
+- `scripts/test-production-certification-source-generated-outputs.mjs` — Command-line regression coverage for test production certification source generated outputs.
+- `scripts/test-production-certification-stage-environment.mjs` — Command-line regression coverage for test production certification stage environment.
+- `scripts/test-production-certification-stage-order.mjs` — Command-line regression coverage for certification stage ordering and database transitions.
+- `scripts/test-production-certification-stage-result.mjs` — Command-line regression coverage for certification stage-result contracts.
+- `scripts/test-production-certification-state-init-transaction.mjs` — Command-line regression coverage for transactional certification-state initialization.
+- `scripts/test-production-certification-state-worktrees.mjs` — Command-line regression coverage for test production certification state worktrees.
+- `scripts/test-production-certification.mjs` — Command-line regression coverage for test production certification.
+- `scripts/test-production-trace-archive-policy.mjs` — Command-line regression coverage for test production trace archive policy.
 - `scripts/test-public-catalog-placeholder-gate.ts` — Command-line script for test public catalog placeholder gate.
 - `scripts/test-public-catalog-placeholders.ts` — Command-line script for test public catalog placeholders.
 - `scripts/test-public-catalog-swatch-textures.ts` — Command-line script for test public catalog swatch textures.
 - `scripts/test-public-share-responsive.ts` — Command-line script for test public share responsive.
-- `scripts/test-required-test-truthfulness.mjs` — Command-line script for test required test truthfulness.
+- `scripts/test-required-test-truthfulness.mjs` — Command-line regression coverage for test required test truthfulness.
 - `scripts/test-retailer-confirmation-static.tsx` — Command-line script for test retailer confirmation static.
 - `scripts/test-revenue-funnel-metrics.ts` — Command-line script for test revenue funnel metrics.
 - `scripts/test-revenue-funnel-panel.ts` — Command-line script for test revenue funnel panel.
 - `scripts/test-room-budget-recommendations.ts` — Command-line script for test room budget recommendations.
-- `scripts/test-room-floor-rendering.ts` — Command-line script for test room floor rendering.
+- `scripts/test-room-floor-rendering.ts` — Automated coverage for room floor, ceiling, and shadow-occluder rendering.
 - `scripts/test-room-plan-status-bar-layout.ts` — Command-line script for test room plan status bar layout.
 - `scripts/test-room-resize-handle-style.ts` — Command-line script for test room resize handle style.
 - `scripts/test-room-shopping-catalog-refresh.ts` — Command-line script for test room shopping catalog refresh.
-- `scripts/test-runtime-smoke-resource-isolation.mjs` — Command-line script for test runtime smoke resource isolation.
+- `scripts/test-runtime-smoke-resource-isolation.mjs` — Command-line regression coverage for test runtime smoke resource isolation.
 - `scripts/test-runtime-smoke-telemetry-bootstrap-contract.mjs` — Command-line script for test runtime smoke telemetry bootstrap contract.
 - `scripts/test-shopping-readiness-polish.ts` — Command-line script for test shopping readiness polish.
 - `scripts/test-stripe-pro-billing.ts` — Command-line script for test stripe pro billing.
 - `scripts/test-style-consistency.ts` — Command-line script for test style consistency.
 - `scripts/test-surface-material-browser-semantics.ts` — Command-line script for test surface material browser semantics.
-- `scripts/test-surface-material-schema.ts` — Command-line script for test surface material schema.
+- `scripts/test-surface-material-schema.ts` — Automated coverage for surface-material schema, wall panels, and opening-aware BOM behavior.
 - `scripts/test-tap-target-placement.ts` — Command-line script for test tap target placement.
 - `scripts/test-touch-placement-polish.ts` — Command-line script for test touch placement polish.
 - `scripts/test-tracked-artifact-hygiene.mjs` — Command-line script for test tracked artifact hygiene.
 - `scripts/test-wall-paint-catalog.ts` — Command-line script for test wall paint catalog.
+- `scripts/test-window-opening-drag.ts` — Automated coverage for 3D window-opening drag clamping and canonical opening mutation behavior.
 - `scripts/validate-dawson-references.mjs` — Command-line script for validate dawson references.
 - `scripts/validate-product-assets.ts` — Command-line script for validate product assets.
 - `scripts/vercel-output-manifest.mjs` — Command-line script for vercel output manifest.
@@ -2327,7 +2379,7 @@ No committed deterministic generator is associated with this snapshot. To refres
 - `eslint.config.mjs` — Configures repository linting rules and file scopes.
 - `next.config.ts` — Configures the Next.js application build and runtime behavior.
 - `package-lock.json` — Locks the exact npm dependency graph for reproducible installs.
-- `package.json` — Declares package metadata, scripts, runtime dependencies, and development dependencies.
+- `package.json` — Declares package metadata, scripts, runtime dependencies, development dependencies, and the window-opening drag test command.
 - `postcss.config.mjs` — Configures PostCSS processing for application styles.
 - `tailwind.config.ts` — Configures Tailwind CSS content discovery and theme extensions.
 - `tsconfig.json` — Configures TypeScript compilation, path aliases, and framework integration.
@@ -3607,7 +3659,7 @@ No committed deterministic generator is associated with this snapshot. To refres
 - `public/window.svg` — Static SVG asset for window.
 - `studio.jpg` — Purpose requires manual confirmation; root-level image stored as PNG data despite its .jpg filename.
 
-### 40. Documentation (98)
+### 40. Documentation (101)
 
 - `AGENTS.md` — Defines repository-specific engineering guardrails and working instructions for coding agents.
 - `CATALOG_FILES_MANIFEST.md` — Documentation: Catalog System - File Inventory & Quick Links.
@@ -3662,7 +3714,7 @@ No committed deterministic generator is associated with this snapshot. To refres
 - `docs/development/floor-plan-import-platform.md` — Documentation: Floor-plan import platform.
 - `docs/development/stripe-pro-testing.md` — Documentation: Stripe Pro testing.
 - `docs/development/workspace-reliability.md` — Documentation: Workspace Reliability.
-- `docs/engineering/ARCHITECTURE_RULES.md` — Documentation: Architecture rules.
+- `docs/engineering/ARCHITECTURE_RULES.md` — Architecture rules for the canonical document, Consumer/Pro capabilities, rendering, floor-plan openings, security, and module ownership.
 - `docs/engineering/CODE_REVIEW.md` — Documentation: Code review.
 - `docs/engineering/ENGINEERING_STANDARDS.md` — Documentation: Engineering standards.
 - `docs/handoffs/2026-07-27-cabinetry-module-shelf-selection-handoff.md` — Documentation: Current objective.
@@ -3674,13 +3726,16 @@ No committed deterministic generator is associated with this snapshot. To refres
 - `docs/product/release-entry-criteria-v1.md` — Documentation: Alpha, beta, and launch entry criteria v1.
 - `docs/qa/cabinetry-phase2-behavior-map.md` — Documentation: Cabinetry Studio Phase 2 behavior map.
 - `docs/qa/cabinetry-studio-mvp.md` — Documentation: Custom Millwork Studio MVP QA.
+- `docs/qa/ci-auth-fixture-result-contract-v1.md` — Documentation: CI Auth Fixture Command Result Contract v1.
 - `docs/qa/production-artifact-evidence.md` — Documentation: Production-equivalent artifact evidence.
 - `docs/qa/production-certification-contract.v1.json` — Structured JSON data for production certification contract.v1.
+- `docs/qa/production-certification-database-lifecycle-v1.md` — Documentation: Production certification database lifecycle v1.
 - `docs/qa/production-certification-source-generated-outputs.v1.json` — Structured JSON data for production certification source generated outputs.v1.
 - `docs/qa/production-certification-stage-environment.v2.json` — Structured JSON data for production certification stage environment.v2.
 - `docs/qa/production-certification-state-worktree-remediation.md` — Documentation: Production certification state/worktree remediation.
 - `docs/qa/required-test-truthfulness.md` — Documentation: Required-test truthfulness.
 - `docs/qa/vercel-prebuilt-release.md` — Documentation: Exact-artifact Vercel release workflow.
+- `docs/repository-file-inventory.md` — Generated working-tree repository inventory, product overview, path descriptions, and navigation indexes.
 - `docs/security/CH-0001_AUTHORIZATION_MATRIX.md` — Documentation: CH-0001 authorization matrix.
 - `docs/security/CH-0001_EXTERNAL_CONTROLS_CHECKLIST.md` — Documentation: CH-0001 external controls checklist.
 - `docs/security/CH-0004_TRUSTED_EVENT_PROVENANCE.md` — Documentation: CH-0004 trusted event provenance.
@@ -3766,10 +3821,11 @@ Excluded and generated directories are intentionally absent.
 
 | Measure | Count |
 |---|---:|
-| Total tracked files reported by Git | 3,673 |
-| Total pre-existing untracked files reported by Git | 0 |
+| Total tracked files reported by Git | 3,704 |
+| Total non-ignored untracked files reported by Git | 13 |
 | Excluded tracked files | 117 |
-| Total files inventoried | 3,556 |
+| Excluded untracked files | 1 |
+| Total files inventoried | 3,599 |
 
 ### Counts by category
 
@@ -3779,10 +3835,10 @@ Excluded and generated directories are intentionally absent.
 | 2 | Layouts, loading states, error states, and route metadata | 7 |
 | 3 | React UI components | 29 |
 | 4 | Design editor UI | 56 |
-| 5 | 2D floor-plan editor | 100 |
-| 6 | Three.js, React Three Fiber, and 3D rendering | 57 |
-| 7 | Scene objects, placement, snapping, collision, and transforms | 33 |
-| 8 | Lighting, cameras, controls, shaders, and visual effects | 25 |
+| 5 | 2D floor-plan editor | 103 |
+| 6 | Three.js, React Three Fiber, and 3D rendering | 62 |
+| 7 | Scene objects, placement, snapping, collision, and transforms | 35 |
+| 8 | Lighting, cameras, controls, shaders, and visual effects | 26 |
 | 9 | State management | 2 |
 | 10 | Design persistence, revisions, autosave, recovery, and cloud synchronization | 15 |
 | 11 | Hooks | 145 |
@@ -3791,11 +3847,11 @@ Excluded and generated directories are intentionally absent.
 | 14 | API routes | 74 |
 | 15 | Server-side services and backend logic | 14 |
 | 16 | Authentication and authorization | 6 |
-| 17 | Security, permissions, governance, and audit logic | 20 |
+| 17 | Security, permissions, governance, and audit logic | 21 |
 | 18 | Prisma schema, migrations, seeds, and database utilities | 47 |
 | 19 | Product catalog | 72 |
 | 20 | Furniture assets and GLB-related logic | 227 |
-| 21 | Materials, finishes, flooring, paint, and textures | 233 |
+| 21 | Materials, finishes, flooring, paint, and textures | 234 |
 | 22 | Commerce, Shopify, cart, pricing, and affiliate integrations | 24 |
 | 23 | Custom cabinetry and millwork | 138 |
 | 24 | Consumer-mode features | 5 |
@@ -3806,15 +3862,15 @@ Excluded and generated directories are intentionally absent.
 | 29 | PDF, image, GLB, presentation, or documentation exports | 14 |
 | 30 | Admin pages and admin tools | 55 |
 | 31 | Tests | 128 |
-| 32 | Test fixtures, mocks, helpers, and test data | 29 |
+| 32 | Test fixtures, mocks, helpers, and test data | 30 |
 | 33 | Playwright and end-to-end test infrastructure | 10 |
-| 34 | Scripts and command-line tools | 391 |
+| 34 | Scripts and command-line tools | 417 |
 | 35 | CI/CD and GitHub Actions | 2 |
 | 36 | Vercel and deployment configuration | 2 |
 | 37 | Linting, formatting, TypeScript, and build configuration | 16 |
 | 38 | Catalog data, YAML, JSON, schemas, and validation files | 1,143 |
 | 39 | Public/static assets | 126 |
-| 40 | Documentation | 98 |
+| 40 | Documentation | 101 |
 | 41 | Developer tooling | 9 |
 | 42 | Other files | 0 |
 
@@ -3822,91 +3878,157 @@ Excluded and generated directories are intentionally absent.
 
 | Extension group | Files |
 |---|---:|
-| `.ts` | 1,211 |
-| `.tsx` | 342 |
+| `.ts` | 1,225 |
+| `.tsx` | 345 |
 | `.js` | 5 |
 | `.json` | 26 |
 | `.yaml` | 1,139 |
 | `.yml` | 2 |
 | `.css` | 5 |
-| `.md` | 106 |
+| `.md` | 109 |
 | `.sql` | 44 |
 | `.prisma` | 1 |
 | `.glb` | 222 |
 | `Image formats` | 341 |
-| `Other formats` | 107 |
+| `Other formats` | 130 |
 | `[no extension]` | 5 |
 
-Other-format breakdown: `.mjs` 90; `.sh` 7; `.example` 2; `.toml` 2; `.cjs` 1; `.dxf` 1; `.ifc` 1; `.py` 1; `.template` 1; `.wasm` 1.
+Other-format breakdown: `.mjs` 109; `.sh` 7; `.cjs` 3; `.cts` 2; `.example` 2; `.toml` 2; `.dxf` 1; `.ifc` 1; `.py` 1; `.template` 1; `.wasm` 1.
 
 ## C. Modified files
 
-None. The source worktree had no modified, deleted, renamed, or staged files at snapshot collection time.
+| Git status code | Relative path | Apparent purpose |
+|---|---|---|
+| ` M` | `components/editor/PlanOpeningInspector.tsx` | 2D floor-plan sidebar inspector for door/window selection, using shared dimension, sill, and horizontal-position controls. |
+| ` M` | `components/editor/design-page/DesignPageSelectionInspector.tsx` | Viewport selection inspector for items, openings, and surfaces; presents the shared door/window dimension controls. |
+| ` M` | `components/editor/design-page/DesignSceneCanvas.tsx` | React Three Fiber editor canvas that composes scene rendering, selection, controls, and interaction lifecycle. |
+| ` M` | `components/editor/design-page/DesignSceneStructureLayer.tsx` | Composes the editor's structural room, wall, opening, and plan-rendering layers. |
+| ` M` | `components/editor/design-page/lighting/EnvironmentController.tsx` | Applies lighting-preset environment maps and key/fill softbox positioning to the editor scene. |
+| ` M` | `components/editor/design-page/lighting/lightingPresets.ts` | Resolves editor lighting modes, quality, environment key/fill placement, and persisted-preset compatibility. |
+| ` M` | `components/editor/design-page/lighting/lightingTypes.ts` | Types editor lighting modes, quality budgets, environment settings, fixtures, windows, and resolved scene lighting. |
+| ` M` | `components/editor/renderers/HousePlanRenderer3D.tsx` | Renders multi-room 3D walls, openings, finishes, selection, and aperture-only window interactions. |
+| ` M` | `components/editor/renderers/RoomRenderer2D.tsx` | Renders interactive 2D room geometry, walls, openings, dimensions, and plan overlays. |
+| ` M` | `components/editor/renderers/house-plan-3d/geometry.ts` | Builds 3D wall/opening geometry, stable surface-panel identities, and selection metadata. |
+| ` M` | `components/editor/renderers/house-plan-3d/surfaceMeshes.tsx` | Renders 3D floor, ceiling, and wall-surface meshes, including ceiling shadow occlusion. |
+| ` M` | `components/editor/renderers/house-plan-3d/wallAndOpeningMeshes.tsx` | Renders selectable walls, finish panels, doors, and opening-related 3D solids. |
+| ` M` | `components/scene/RoomEnvironment.tsx` | Renders the legacy single-room 3D environment, including room surfaces, lighting, and ceiling shadow occlusion. |
+| ` M` | `docs/engineering/ARCHITECTURE_RULES.md` | Architecture rules for the canonical document, Consumer/Pro capabilities, rendering, floor-plan openings, security, and module ownership. |
+| ` M` | `docs/repository-file-inventory.md` | Generated working-tree repository inventory, product overview, path descriptions, and navigation indexes. |
+| ` M` | `lib/design-document-contract.ts` | Validates and migrates the versioned persisted design document for rooms, walls, openings, items, surfaces, and cabinetry. |
+| ` M` | `lib/design-duplication.ts` | Builds safe duplicated-design data while preserving valid stored-document semantics. |
+| ` M` | `lib/design-page-house-plan.ts` | Builds canonical 2D house-plan projections and room geometry, naming, dimensions, and placement helpers. |
+| ` M` | `lib/design-page-local-backup.ts` | Normalizes and validates local design backups before recovery or persistence. |
+| ` M` | `lib/design-page-opening-metrics.ts` | Normalizes opening dimension patches and derives history labels for opening edits. |
+| ` M` | `lib/design-page-plan-overlays.ts` | Maps, updates, and moves floor-plan openings, fixed elements, annotations, and their displayed metrics. |
+| ` M` | `lib/design-page-viewport-region-adapter.ts` | Adapts canonical design-page state and actions into the interactive viewport region. |
+| ` M` | `lib/design-page-viewport-workspace-read-model.ts` | Builds the derived viewport/workspace read model for editor composition. |
+| ` M` | `lib/design-route-payload.ts` | Validates and builds design create, claim, and update API payloads from persisted document data. |
+| ` M` | `lib/floor-plan-tracing.ts` | Pure tracing and snapping calculations for drawing rooms and walls in a floor plan. |
+| ` M` | `lib/resolve-lighting-scene.ts` | Resolves scene photometrics, solar orientation, key/fill lighting, fixtures, windows, and quality budgets. |
+| ` M` | `lib/room-persistence.ts` | Converts, sanitizes, serializes, and recovers persisted room/design snapshots. |
+| ` M` | `lib/room-types.ts` | Defines the canonical room, floor-plan, opening, surface, cabinetry, and design snapshot model plus migrations. |
+| ` M` | `lib/shared-design-snapshot.ts` | Projects a safe read-only shared-design snapshot and transport representation. |
+| ` M` | `lib/surface-material-bom.ts` | Builds surface-material bills of materials, including opening-aware wall-panel quantities. |
+| ` M` | `lib/useDesignPageFloorPlanUnderlayController.ts` | Coordinates floor-plan underlay loading, template replacement, and associated editor actions. |
+| ` M` | `lib/useDesignPagePlanEditingFacade.ts` | Exposes the editor-facing facade for plan editing actions and state. |
+| ` M` | `lib/useDesignPagePlanOverlayController.ts` | Coordinates plan-overlay state, opening moves, metrics edits, and related actions. |
+| ` M` | `lib/useDesignPagePlanWorkspaceFacade.ts` | Exposes workspace-facing plan, tracing, and underlay controls. |
+| ` M` | `lib/useDesignPageRoomPlanController.ts` | Coordinates room-plan edits, floor-plan document changes, and associated history behavior. |
+| ` M` | `package.json` | Declares package metadata, scripts, runtime dependencies, development dependencies, and the window-opening drag test command. |
+| ` M` | `scripts/code-quality/baseline.json` | Machine-readable baseline for repository code-quality ratchets. |
+| ` M` | `scripts/test-design-document-compatibility.ts` | Automated compatibility coverage for persisted design-document revisions and migrations. |
+| ` M` | `scripts/test-design-duplication-fixtures.ts` | Automated fixture coverage for safe design duplication. |
+| ` M` | `scripts/test-design-page-house-plan.ts` | Automated coverage for canonical house-plan projection and geometry helpers. |
+| ` M` | `scripts/test-design-page-new-plan-controller.ts` | Automated coverage for new-plan controller and template-replacement behavior. |
+| ` M` | `scripts/test-design-page-plan-overlay-controller.ts` | Automated coverage for plan-overlay controller behavior. |
+| ` M` | `scripts/test-design-page-room-plan-controller.ts` | Automated coverage for room-plan controller behavior. |
+| ` M` | `scripts/test-design-page-scene-layers.ts` | Automated coverage for design-page scene layer ownership and behavior. |
+| ` M` | `scripts/test-design-page-viewport-workspace-read-model.ts` | Automated coverage for the derived viewport/workspace read model. |
+| ` M` | `scripts/test-design-route-payload.ts` | Automated coverage for design API payload validation and construction. |
+| ` M` | `scripts/test-floor-plan-measured-property-mutations.ts` | Automated coverage for evidence-aware floor-plan property mutations. |
+| ` M` | `scripts/test-floor-plan-public-document.ts` | Automated coverage for public floor-plan document projection and privacy boundaries. |
+| ` M` | `scripts/test-house-plan-wall-rendering.ts` | Automated coverage for house-plan wall, opening, selection, and surface-panel rendering. |
+| ` M` | `scripts/test-legacy-floor-plan-watertight-rendering.ts` | Automated coverage for legacy watertight room and opening-wall rendering. |
+| ` M` | `scripts/test-room-floor-rendering.ts` | Automated coverage for room floor, ceiling, and shadow-occluder rendering. |
+| ` M` | `scripts/test-surface-material-schema.ts` | Automated coverage for surface-material schema, wall panels, and opening-aware BOM behavior. |
 
 ## D. Untracked files
 
-None before report creation.
+| Relative path | Apparent purpose | Assessment |
+|---|---|---|
+| `components/editor/OpeningDimensionFields.tsx` | Shared unit-aware controls for opening width, height, sill, and horizontal position that honor measurement-evidence locks. | Likely intentional — imported by both current opening inspectors. |
+| `components/editor/renderers/house-plan-3d/continuousWallSelection.ts` | Groups fragmented window-wall finish panels into a stable whole-wall selection identity and aperture-aware outline. | Likely intentional — used by current 3D rendering and material BOM code. |
+| `components/editor/renderers/house-plan-3d/openingWallSurfacePanels.ts` | Projects lintel and sill solids around openings into interior/exterior wall surface-panel descriptors. | Likely intentional — used by current 3D rendering and material BOM code. |
+| `components/editor/renderers/house-plan-3d/useWindowOpeningDrag.ts` | Owns R3F pointer capture and wall-plane projection for dragging a 3D window aperture. | Likely intentional — used by the new 3D window aperture mesh. |
+| `components/editor/renderers/house-plan-3d/windowOpeningDrag.ts` | Pure clamp-and-round geometry for horizontal and vertical window dragging that retains the grab point. | Likely intentional — imported by the window-drag hook and regression test. |
+| `components/editor/renderers/house-plan-3d/windowOpeningGeometry.ts` | Computes the clipped aperture-only hit volume for a 3D window opening. | Likely intentional — used by window rendering and drag logic. |
+| `components/editor/renderers/house-plan-3d/WindowOpeningMesh.tsx` | Renders an aperture-only 3D window hit target, outline, selection, and drag entry point. | Likely intentional — rendered by the current 3D house-plan renderer. |
+| `components/scene/CeilingShadowOccluder.tsx` | Renders an invisible, non-interactive ceiling mesh that contributes only to scene shadow maps. | Likely intentional — imported by room and house-plan rendering. |
+| `lib/design-page-plan-template-replacement.ts` | Builds a clean editable design snapshot when a new floor-plan template replaces prior room geometry. | Likely intentional — imported by the current floor-plan underlay controller. |
+| `lib/surface-material-wall-panels.ts` | Resolves wall finish assignments and combines opening-aware wall-panel quantities by durable assignment. | Likely intentional — imported by the surface-material BOM. |
+| `lib/useDesignPageOpeningMoveAction.ts` | Routes 2D/3D opening moves through the canonical metrics/mutation path while respecting evidence locks. | Likely intentional — imported by the plan-overlay controller and regression test. |
+| `scripts/test-window-opening-drag.ts` | Automated coverage for 3D window-opening drag clamping and canonical opening mutation behavior. | Likely intentional — registered in the current package test scripts. |
 
-Post-generation note: `docs/repository-file-inventory.md` | repository file-location inventory | likely intentional (this requested report).
+1 additional untracked path is inside an excluded report/generated/evidence location and is intentionally omitted from this inventory.
 
 ## E. Largest source files
 
-Line counts cover source-controlled text files after exclusions. The responsibility/refactoring observations are structural triage signals, not refactoring directives.
+Line counts cover source-controlled text files after exclusions; untracked files are intentionally not ranked here. The responsibility/refactoring observations are structural triage signals, not refactoring directives.
 
 | # | Relative path | Lines | Responsibility | Multiple unrelated responsibilities? | Refactoring candidate? |
 |---:|---|---:|---|---|---|
 | 1 | `package-lock.json` | 11,106 | Locks the exact npm dependency graph for reproducible installs. | No — appears to be one cohesive data, schema, style, or documentation artifact | No — size alone is not evidence |
 | 2 | `features/cabinetry/generateCabinetDocumentation.ts` | 8,372 | Defines `buildCabinetSourceDefinitionFingerprint`, `generateCabinetCutList`, `generateCabinetMaterialSchedule`, `generateCabinetEdgeBandingSchedule`, and related exports for generate Cabinet Documentation. | Possible — contains 153 named functions/classes | Review candidate; confirm cohesion before splitting |
-| 3 | `docs/code-health/HANDOFF.md` | 6,396 | Documentation: Code health audit handoff. | No — appears to be one cohesive data, schema, style, or documentation artifact | No — size alone is not evidence |
-| 4 | `scripts/test-production-artifact-evidence.mjs` | 5,799 | Command-line script for test production artifact evidence. | Possible — contains 41 named functions/classes | Review candidate; confirm cohesion before splitting |
-| 5 | `components/editor/renderers/RoomRenderer2D.tsx` | 5,636 | Implements `RoomRenderer2D` for Room Renderer2 D. | Possible — contains 111 named functions/classes | Review candidate; confirm cohesion before splitting |
-| 6 | `scripts/code-quality/baseline.json` | 5,161 | Machine-readable baseline for repository code-quality ratchets. | No — appears to be one cohesive data, schema, style, or documentation artifact | No — size alone is not evidence |
-| 7 | `scripts/production-certification-simulation.mjs` | 4,280 | Command-line script for production certification simulation. | Possible — contains 36 named functions/classes | Review candidate; confirm cohesion before splitting |
-| 8 | `scripts/production-artifact-evidence.mjs` | 4,066 | Command-line script for production artifact evidence. | Possible — contains 111 named functions/classes | Review candidate; confirm cohesion before splitting |
-| 9 | `components/editor/DesignControlsPlanPanel.tsx` | 3,893 | Implements `DesignControlsPlanPanel` for Design Controls Plan Panel. | Possible — contains 41 named functions/classes | Review candidate; confirm cohesion before splitting |
-| 10 | `features/cabinetry/validation.ts` | 3,842 | Implements `validateCabinetDefinition` for validation. | No clear signal from structure | No clear refactoring signal |
-| 11 | `scripts/production-certification-source-continuity.mjs` | 3,635 | Command-line script for production certification source continuity. | Possible — contains 72 named functions/classes | Review candidate; confirm cohesion before splitting |
-| 12 | `features/cabinetry/components/CabinetryStudioDetailedView.tsx` | 3,375 | Defines `CabinetryStudioDetailedView`, `CabinetryStudioDetailedViewBindings` for Cabinetry Studio Detailed View. | No clear signal from structure | No clear refactoring signal |
-| 13 | `catalog/furniture/sofas/solange_performance_boucle_chair/catalog.yaml` | 3,322 | Canonical furniture catalog record for Solange Performance Boucle Chair. | No — appears to be one cohesive data, schema, style, or documentation artifact | No — size alone is not evidence |
-| 14 | `scripts/production-certification-real.mjs` | 3,257 | Command-line script for production certification real. | Possible — contains 61 named functions/classes | Review candidate; confirm cohesion before splitting |
-| 15 | `scripts/test-production-certification.mjs` | 2,983 | Command-line script for test production certification. | Possible — contains 17 named functions/classes | Potential candidate, subject to manual cohesion review |
-| 16 | `lib/design-page-house-plan.ts` | 2,912 | Defines `resolveHouseRoomFloorElevationMeters`, `resolveFloorPlanDrawCancelDecision`, `resolveFloorPlanOpeningCancelDecision`, `clampRoomDimension`, and related exports for design page house plan. | Possible — contains 46 named functions/classes | Review candidate; confirm cohesion before splitting |
-| 17 | `lib/floor-plan-imports/pdf-raster-adapter.ts` | 2,871 | Defines `rankFloorPlanSemanticPages`, `sourceTextEvidenceFromLocalOcr`, `registerSupportedPageTopology`, `PdfRasterFloorPlanSourceAdapter`, and related exports for PDF raster adapter. | Possible — contains 43 named functions/classes | Review candidate; confirm cohesion before splitting |
-| 18 | `catalog/furniture/sofas/lena_armchair/catalog.yaml` | 2,849 | Canonical furniture catalog record for Lena Armchair. | No — appears to be one cohesive data, schema, style, or documentation artifact | No — size alone is not evidence |
-| 19 | `features/cabinetry/generateCabinetParts.ts` | 2,775 | Implements `generateCabinetParts` for generate Cabinet Parts. | Possible — contains 22 named functions/classes | Review candidate; confirm cohesion before splitting |
-| 20 | `catalog/furniture/sofas/mori_performance_fabric_armchair/catalog.yaml` | 2,757 | Canonical furniture catalog record for Mori Performance Fabric Armchair. | No — appears to be one cohesive data, schema, style, or documentation artifact | No — size alone is not evidence |
-| 21 | `features/cabinetry/components/CabinetryStudio.tsx` | 2,696 | Implements `CabinetryStudio` for Cabinetry Studio. | Possible — contains 87 named functions/classes | Review candidate; confirm cohesion before splitting |
-| 22 | `components/editor/renderers/house-plan-3d/geometry.ts` | 2,661 | Defines `isWallSurfacePanelCutawayEligible`, `resolveAtomicWallCutawayRenderState`, `getSelectableWallFacePanelId`, `getLogicalWallPanelForPart`, and related exports for geometry. | Possible — contains 92 named functions/classes | Review candidate; confirm cohesion before splitting |
-| 23 | `scripts/required-test-truthfulness.mjs` | 2,581 | Command-line script for required test truthfulness. | Possible — contains 71 named functions/classes | Review candidate; confirm cohesion before splitting |
-| 24 | `scripts/cabinetry-tests/export-behavior.ts` | 2,572 | Command-line script for export behavior. | No clear signal from structure | No clear refactoring signal |
-| 25 | `lib/nippon-paint-colours.ts` | 2,516 | Defines `NIPPON_PAINT_COLOURS`, `NipponPaintColour` for nippon paint colours. | No clear signal from structure | No clear refactoring signal |
-| 26 | `scripts/test-required-test-truthfulness.mjs` | 2,476 | Command-line script for test required test truthfulness. | Possible — contains 17 named functions/classes | Potential candidate, subject to manual cohesion review |
-| 27 | `tests/e2e/pro-visual-policy.spec.ts` | 2,474 | Playwright/end-to-end coverage for pro visual policy.spec. | No clear signal — multiple cases may belong to one suite | Only if test concerns prove unrelated |
-| 28 | `lib/catalog/data.ts` | 2,413 | Defines `buildAveryUpholsteryVariants`, `DALTON_STANDARD_QUEEN_THUMB_URL`, `CATALOG` for data. | No clear signal from structure | No clear refactoring signal |
-| 29 | `features/cabinetry/types.ts` | 2,228 | Defines `CabinetUnitType`, `CabinetFrontType`, `DoorStyle`, `CabinetGrainDirection`, and related exports for types. | No clear signal from structure | No clear refactoring signal |
-| 30 | `tests/e2e/00-runtime-smoke.spec.ts` | 2,188 | Playwright/end-to-end coverage for 00 runtime smoke.spec. | No clear signal — multiple cases may belong to one suite | Only if test concerns prove unrelated |
-| 31 | `lib/useDesignPageCatalogPlacement.ts` | 2,103 | Defines `useDesignPageCatalogPlacement`, `DesignPageCatalogPlacementState`, `DesignPageCatalogPlacementConfiguration`, `CatalogPlacementTargetResult`, and related exports for use Design Page Catalog Placement. | No clear signal from structure | No clear refactoring signal |
-| 32 | `scripts/cabinetry-release-evidence.ts` | 2,061 | Command-line script for cabinetry release evidence. | Possible — contains 34 named functions/classes | Review candidate; confirm cohesion before splitting |
-| 33 | `scripts/production-certification-state.mjs` | 1,969 | Command-line script for production certification state. | Possible — contains 38 named functions/classes | Review candidate; confirm cohesion before splitting |
-| 34 | `features/cabinetry/presetData.ts` | 1,930 | Defines `names`, `unitTypeByPreset`, `DEFAULT_PRESET_TOE_KICK_HEIGHT_MM`, `presets`, and related exports for preset Data. | No clear signal from structure | No clear refactoring signal |
-| 35 | `features/cabinetry/components/CabinetryStudioGuidedView.tsx` | 1,896 | Defines `CabinetryStudioGuidedView`, `CabinetryStudioGuidedViewBindings` for Cabinetry Studio Guided View. | No clear signal from structure | No clear refactoring signal |
-| 36 | `lib/useDesignPageProductConfiguration.ts` | 1,824 | Defines `normalizeProductVariantKey`, `useDesignPageProductConfiguration` for use Design Page Product Configuration. | Possible — contains 13 named functions/classes | Potential candidate, subject to manual cohesion review |
-| 37 | `docs/code-health/06_P0_P1_REMEDIATION_QUEUE.md` | 1,698 | Documentation: P0/P1 remediation queue. | No — appears to be one cohesive data, schema, style, or documentation artifact | No — size alone is not evidence |
-| 38 | `lib/floor-plan-compiler-v2.ts` | 1,682 | Defines `validateFloorPlanDocumentV2`, `canonicalizeFloorPlanGeometryV2`, `hashFloorPlanGeometryV2`, `compileFloorPlanDocumentV2`, and related exports for floor plan compiler v2. | Possible — contains 56 named functions/classes | Review candidate; confirm cohesion before splitting |
-| 39 | `scripts/cabinetry-tests/specialty-preset-contracts.ts` | 1,677 | Command-line script for specialty preset contracts. | No clear signal from structure | No clear refactoring signal |
-| 40 | `lib/useDesignPageSurfaceActions.ts` | 1,623 | Defines `useDesignPageSurfaceActions`, `SurfaceTargetMode`, `SelectedWallSurfaceTarget`, `RendererSurfaceTarget`, and related exports for use Design Page Surface Actions. | Possible — contains 16 named functions/classes | Potential candidate, subject to manual cohesion review |
-| 41 | `features/cabinetry/exportCabinetShopDrawingSvg.ts` | 1,611 | Defines `buildCabinetShopDrawingSvgFileName`, `buildCabinetShopDrawingSvg`, `downloadCabinetShopDrawingSvg` for export Cabinet Shop Drawing Svg. | Possible — contains 19 named functions/classes | Review candidate; confirm cohesion before splitting |
-| 42 | `scripts/cabinetry-tests/core-rendering-contracts.ts` | 1,600 | Command-line script for core rendering contracts. | No clear signal from structure | No clear refactoring signal |
-| 43 | `scripts/production-certification-dependencies.mjs` | 1,592 | Command-line script for production certification dependencies. | Possible — contains 39 named functions/classes | Review candidate; confirm cohesion before splitting |
-| 44 | `app/share/[shareToken]/export/page.tsx` | 1,585 | Next.js page for route /share/[shareToken]/export. | Possible — contains 33 named functions/classes | Review candidate; confirm cohesion before splitting |
-| 45 | `app/admin/operations-dashboard.module.css` | 1,511 | Styles operations dashboard.module UI and layout. | No — appears to be one cohesive data, schema, style, or documentation artifact | No — size alone is not evidence |
-| 46 | `scripts/test-surface-material-schema.ts` | 1,483 | Command-line script for test surface material schema. | No clear signal from structure | No clear refactoring signal |
-| 47 | `docs/code-health/02_CODE_HEALTH_AUDIT.md` | 1,454 | Documentation: Code health audit. | No — appears to be one cohesive data, schema, style, or documentation artifact | No — size alone is not evidence |
-| 48 | `scripts/cabinetry-tests/layout-validation.ts` | 1,453 | Command-line script for layout validation. | No clear signal from structure | No clear refactoring signal |
-| 49 | `scripts/required-test-manifest.json` | 1,430 | Machine-readable manifest of required test commands, ownership, and certification metadata. | No — appears to be one cohesive data, schema, style, or documentation artifact | No — size alone is not evidence |
-| 50 | `features/cabinetry/useDesignPageCabinetry.ts` | 1,379 | Defines `buildCabinetryAvailableSpaces`, `buildSelectedCabinetDocumentation`, `buildSelectedCabinetAssetManifest`, `useDesignPageCabinetry`, and related exports for use Design Page Cabinetry. | No clear signal from structure | No clear refactoring signal |
+| 3 | `scripts/test-production-artifact-evidence.mjs` | 7,059 | Command-line regression coverage for test production artifact evidence. | Possible — contains 48 named functions/classes | Review candidate; confirm cohesion before splitting |
+| 4 | `docs/code-health/HANDOFF.md` | 6,912 | Documentation: Code health audit handoff. | No — appears to be one cohesive data, schema, style, or documentation artifact | No — size alone is not evidence |
+| 5 | `components/editor/renderers/RoomRenderer2D.tsx` | 5,636 | Renders interactive 2D room geometry, walls, openings, dimensions, and plan overlays. | Possible — contains 111 named functions/classes | Review candidate; confirm cohesion before splitting |
+| 6 | `scripts/production-certification-simulation.mjs` | 5,621 | Defines `initializeFixture`, `__simulationMain`, `runProductionCertificationSimulation`, `route` for production certification simulation. | Possible — contains 47 named functions/classes | Review candidate; confirm cohesion before splitting |
+| 7 | `scripts/code-quality/baseline.json` | 5,153 | Machine-readable baseline for repository code-quality ratchets. | No — appears to be one cohesive data, schema, style, or documentation artifact | No — size alone is not evidence |
+| 8 | `scripts/production-artifact-evidence.mjs` | 4,779 | Defines `comparePortablePaths`, `inspectSourceIdentity`, `inspectTraceInventory`, `inspectFloorPlanRouteNftContract`, and related exports for production artifact evidence. | Possible — contains 125 named functions/classes | Review candidate; confirm cohesion before splitting |
+| 9 | `scripts/production-certification-real.mjs` | 4,627 | Defines `validateCertificationInvocation`, `reconcileCertificationDatabaseLifecycleState`, `absentEvidenceTarget`, `projectAuthFixtureSessionForStage`, and related exports for production certification real. | Possible — contains 89 named functions/classes | Review candidate; confirm cohesion before splitting |
+| 10 | `scripts/test-production-certification.mjs` | 4,457 | Command-line regression coverage for test production certification. | Possible — contains 22 named functions/classes | Review candidate; confirm cohesion before splitting |
+| 11 | `docs/repository-file-inventory.md` | 4,034 | Generated working-tree repository inventory, product overview, path descriptions, and navigation indexes. | No — appears to be one cohesive data, schema, style, or documentation artifact | No — size alone is not evidence |
+| 12 | `components/editor/DesignControlsPlanPanel.tsx` | 3,893 | Implements `DesignControlsPlanPanel` for Design Controls Plan Panel. | Possible — contains 41 named functions/classes | Review candidate; confirm cohesion before splitting |
+| 13 | `features/cabinetry/validation.ts` | 3,842 | Implements `validateCabinetDefinition` for validation. | No clear signal from structure | No clear refactoring signal |
+| 14 | `scripts/production-certification-source-continuity.mjs` | 3,834 | Defines `physicalSourceIdentity`, `sealSourceValidationEvidence`, `sourceValidationEvidenceNames`, `snapshotEvidenceName`, and related exports for production certification source continuity. | Possible — contains 78 named functions/classes | Review candidate; confirm cohesion before splitting |
+| 15 | `features/cabinetry/components/CabinetryStudioDetailedView.tsx` | 3,375 | Defines `CabinetryStudioDetailedView`, `CabinetryStudioDetailedViewBindings` for Cabinetry Studio Detailed View. | No clear signal from structure | No clear refactoring signal |
+| 16 | `catalog/furniture/sofas/solange_performance_boucle_chair/catalog.yaml` | 3,322 | Canonical furniture catalog record for Solange Performance Boucle Chair. | No — appears to be one cohesive data, schema, style, or documentation artifact | No — size alone is not evidence |
+| 17 | `scripts/test-production-certification-database-lifecycle.mjs` | 3,117 | Command-line regression coverage for production-certification database lifecycle behavior. | Possible — contains 19 named functions/classes | Review candidate; confirm cohesion before splitting |
+| 18 | `lib/design-page-house-plan.ts` | 2,913 | Builds canonical 2D house-plan projections and room geometry, naming, dimensions, and placement helpers. | Possible — contains 46 named functions/classes | Review candidate; confirm cohesion before splitting |
+| 19 | `lib/floor-plan-imports/pdf-raster-adapter.ts` | 2,871 | Defines `rankFloorPlanSemanticPages`, `sourceTextEvidenceFromLocalOcr`, `registerSupportedPageTopology`, `PdfRasterFloorPlanSourceAdapter`, and related exports for PDF raster adapter. | Possible — contains 43 named functions/classes | Review candidate; confirm cohesion before splitting |
+| 20 | `catalog/furniture/sofas/lena_armchair/catalog.yaml` | 2,849 | Canonical furniture catalog record for Lena Armchair. | No — appears to be one cohesive data, schema, style, or documentation artifact | No — size alone is not evidence |
+| 21 | `features/cabinetry/generateCabinetParts.ts` | 2,775 | Implements `generateCabinetParts` for generate Cabinet Parts. | Possible — contains 22 named functions/classes | Review candidate; confirm cohesion before splitting |
+| 22 | `catalog/furniture/sofas/mori_performance_fabric_armchair/catalog.yaml` | 2,757 | Canonical furniture catalog record for Mori Performance Fabric Armchair. | No — appears to be one cohesive data, schema, style, or documentation artifact | No — size alone is not evidence |
+| 23 | `features/cabinetry/components/CabinetryStudio.tsx` | 2,696 | Implements `CabinetryStudio` for Cabinetry Studio. | Possible — contains 87 named functions/classes | Review candidate; confirm cohesion before splitting |
+| 24 | `components/editor/renderers/house-plan-3d/geometry.ts` | 2,661 | Builds 3D wall/opening geometry, stable surface-panel identities, and selection metadata. | Possible — contains 92 named functions/classes | Review candidate; confirm cohesion before splitting |
+| 25 | `scripts/production-certification-doctor.mjs` | 2,605 | Defines `validateCertificationDatabaseDoctorShape`, `assertFileBackedOwner`, `validateCertificationStageResultContracts`, `parseCertificationChildJson`, and related exports for production certification doctor. | Possible — contains 44 named functions/classes | Review candidate; confirm cohesion before splitting |
+| 26 | `scripts/required-test-truthfulness.mjs` | 2,581 | Command-line script for required test truthfulness. | Possible — contains 71 named functions/classes | Review candidate; confirm cohesion before splitting |
+| 27 | `scripts/cabinetry-tests/export-behavior.ts` | 2,572 | Command-line script for export behavior. | No clear signal from structure | No clear refactoring signal |
+| 28 | `lib/nippon-paint-colours.ts` | 2,516 | Defines `NIPPON_PAINT_COLOURS`, `NipponPaintColour` for nippon paint colours. | No clear signal from structure | No clear refactoring signal |
+| 29 | `scripts/test-required-test-truthfulness.mjs` | 2,483 | Command-line regression coverage for test required test truthfulness. | Possible — contains 17 named functions/classes | Potential candidate, subject to manual cohesion review |
+| 30 | `tests/e2e/pro-visual-policy.spec.ts` | 2,480 | Playwright/end-to-end coverage for pro visual policy.spec. | No clear signal — multiple cases may belong to one suite | Only if test concerns prove unrelated |
+| 31 | `lib/catalog/data.ts` | 2,413 | Defines `buildAveryUpholsteryVariants`, `DALTON_STANDARD_QUEEN_THUMB_URL`, `CATALOG` for data. | No clear signal from structure | No clear refactoring signal |
+| 32 | `features/cabinetry/types.ts` | 2,228 | Defines `CabinetUnitType`, `CabinetFrontType`, `DoorStyle`, `CabinetGrainDirection`, and related exports for types. | No clear signal from structure | No clear refactoring signal |
+| 33 | `tests/e2e/00-runtime-smoke.spec.ts` | 2,176 | Playwright/end-to-end coverage for 00 runtime smoke.spec. | No clear signal — multiple cases may belong to one suite | Only if test concerns prove unrelated |
+| 34 | `scripts/production-certification-state.mjs` | 2,139 | Defines `certificationStageEvidenceFiles`, `sealCertificationState`, `certificationStateSha256`, `sealCertificationInvalidationPlan`, and related exports for production certification state. | Possible — contains 42 named functions/classes | Review candidate; confirm cohesion before splitting |
+| 35 | `scripts/production-certification-worktrees.mjs` | 2,132 | Defines `sourceValidationWorktreeOutputState`, `stageWorktreeRole`, `planCertificationStageWorktrees`, `inspectCertificationStageWorktree`, and related exports for production certification worktrees. | Possible — contains 55 named functions/classes | Review candidate; confirm cohesion before splitting |
+| 36 | `scripts/production-certification-database-lifecycle.mjs` | 2,104 | Plans, provisions, verifies, retains, and removes isolated production-certification databases. | Possible — contains 54 named functions/classes | Review candidate; confirm cohesion before splitting |
+| 37 | `lib/useDesignPageCatalogPlacement.ts` | 2,103 | Defines `useDesignPageCatalogPlacement`, `DesignPageCatalogPlacementState`, `DesignPageCatalogPlacementConfiguration`, `CatalogPlacementTargetResult`, and related exports for use Design Page Catalog Placement. | No clear signal from structure | No clear refactoring signal |
+| 38 | `scripts/cabinetry-release-evidence.ts` | 2,061 | Command-line script for cabinetry release evidence. | Possible — contains 34 named functions/classes | Review candidate; confirm cohesion before splitting |
+| 39 | `scripts/production-certification-stage-result-contract.mjs` | 1,988 | Defines nonce-bound certification stage-result creation, sealing, and validation contracts. | Possible — contains 44 named functions/classes | Review candidate; confirm cohesion before splitting |
+| 40 | `scripts/ci-auth-fixture.ts` | 1,959 | Defines `authPreflightServerEnvironment`, `serializeGitHubEnvironmentAssignments`, `assertLogSafeFixtureTransportOrder`, `exportFixtureToGitHubEnvironment`, and related exports for ci auth fixture. | Possible — contains 40 named functions/classes | Review candidate; confirm cohesion before splitting |
+| 41 | `features/cabinetry/presetData.ts` | 1,930 | Defines `names`, `unitTypeByPreset`, `DEFAULT_PRESET_TOE_KICK_HEIGHT_MM`, `presets`, and related exports for preset Data. | No clear signal from structure | No clear refactoring signal |
+| 42 | `features/cabinetry/components/CabinetryStudioGuidedView.tsx` | 1,896 | Defines `CabinetryStudioGuidedView`, `CabinetryStudioGuidedViewBindings` for Cabinetry Studio Guided View. | No clear signal from structure | No clear refactoring signal |
+| 43 | `lib/useDesignPageProductConfiguration.ts` | 1,824 | Defines `normalizeProductVariantKey`, `useDesignPageProductConfiguration` for use Design Page Product Configuration. | Possible — contains 13 named functions/classes | Potential candidate, subject to manual cohesion review |
+| 44 | `scripts/production-certification-browser-server-lifecycle.mjs` | 1,804 | Manages tracked-output cleanup and evidence for certification browser-server lifecycles. | Possible — contains 47 named functions/classes | Review candidate; confirm cohesion before splitting |
+| 45 | `docs/code-health/06_P0_P1_REMEDIATION_QUEUE.md` | 1,776 | Documentation: P0/P1 remediation queue. | No — appears to be one cohesive data, schema, style, or documentation artifact | No — size alone is not evidence |
+| 46 | `lib/floor-plan-compiler-v2.ts` | 1,682 | Defines `validateFloorPlanDocumentV2`, `canonicalizeFloorPlanGeometryV2`, `hashFloorPlanGeometryV2`, `compileFloorPlanDocumentV2`, and related exports for floor plan compiler v2. | Possible — contains 56 named functions/classes | Review candidate; confirm cohesion before splitting |
+| 47 | `scripts/test-ci-auth-fixture-session.mjs` | 1,679 | Command-line regression coverage for CI authentication-fixture session contracts. | Possible — contains 18 named functions/classes | Review candidate; confirm cohesion before splitting |
+| 48 | `scripts/cabinetry-tests/specialty-preset-contracts.ts` | 1,677 | Command-line script for specialty preset contracts. | No clear signal from structure | No clear refactoring signal |
+| 49 | `scripts/ci-auth-fixture-result-contract.cjs` | 1,671 | Defines and validates the sealed command-result contract for CI authentication fixtures. | Possible — contains 26 named functions/classes | Review candidate; confirm cohesion before splitting |
+| 50 | `docs/qa/production-certification-harness-v1.md` | 1,626 | Documentation: Production Certification Harness v1. | No — appears to be one cohesive data, schema, style, or documentation artifact | No — size alone is not evidence |
 
 ## F. Files with unclear ownership or purpose
 
-- `hero.jpg` — Purpose requires manual confirmation; root-level image stored as PNG data despite its `.jpg` filename.
-- `studio.jpg` — Purpose requires manual confirmation; root-level image stored as PNG data despite its `.jpg` filename.
+- `hero.jpg` — Purpose requires manual confirmation; root-level image stored as PNG data despite its .jpg filename.
+- `studio.jpg` — Purpose requires manual confirmation; root-level image stored as PNG data despite its .jpg filename.
