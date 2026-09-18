@@ -2,7 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { CATALOG_ITEMS } from "@/lib/catalog";
 import { resolveCatalogVariant } from "@/lib/catalog/variant-resolver";
 import { resolveDesignItemVisualProduct } from "@/lib/design-item-product-snapshot";
-import { buildHousePlan2D } from "@/lib/design-page-house-plan";
+import { buildHousePlan2D, getHouseRoomPlanPolygon } from "@/lib/design-page-house-plan";
 import { storedToSnapshot } from "@/lib/room-persistence";
 import { projectSharedDesignTransport } from "@/lib/shared-design-snapshot";
 import {
@@ -283,26 +283,6 @@ function buildOpeningScheduleRows(
   );
 }
 
-function getPlanRoomPoints(room: ReturnType<typeof buildHousePlan2D>["rooms"][number]): PlanPoint[] {
-  if (room.shape === "custom_polygon" && room.polygon && room.polygon.length >= 3) {
-    return room.polygon.map((point) => ({
-      x: room.x + point.x,
-      z: room.z + point.z,
-    }));
-  }
-
-  const left = room.x - room.w / 2;
-  const right = room.x + room.w / 2;
-  const top = room.z - room.d / 2;
-  const bottom = room.z + room.d / 2;
-  return [
-    { x: left, z: top },
-    { x: right, z: top },
-    { x: right, z: bottom },
-    { x: left, z: bottom },
-  ];
-}
-
 function getPlanPointsBounds(points: PlanPoint[]) {
   return points.reduce(
     (bounds, point) => ({
@@ -474,7 +454,7 @@ function buildPlanDiagramFloors(
     const floorLevel = sourceRoom?.floorLevel ?? room.floorLevel ?? 1;
     const floorLabel = sourceRoom?.floorLabel ?? room.floorLabel ?? `Floor ${floorLevel}`;
     const floorKey = String(floorLevel);
-    const points = getPlanRoomPoints(room);
+    const points = getHouseRoomPlanPolygon(room);
     const bounds = getPlanPointsBounds(points);
     const metrics = roomMetricsById.get(room.id);
     const diagramOpenings = buildPlanDiagramOpenings(room, sourceRoom, rooms, openings);

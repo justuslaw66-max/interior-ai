@@ -2007,7 +2007,7 @@ function getHouseRoomOverlapArea(
 
 type HouseRoomPlanPoint = { x: number; z: number };
 
-function getHouseRoomPlanPolygon(
+export function getHouseRoomPlanPolygon(
   room: HousePlanRoom2D,
   x = room.x,
   z = room.z,

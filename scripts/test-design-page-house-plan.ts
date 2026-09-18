@@ -11,6 +11,7 @@ import {
   clampRoomDimension,
   doesHouseRoomOverlap,
   getActiveRoomPlanOffset,
+  getHouseRoomPlanPolygon,
   getNextRoomPlanPosition,
   resolveFloorPlanDrawCancelDecision,
   resolveHouseRoomDimension,
@@ -35,6 +36,8 @@ import {
   resolveDominantCameraCutawayWall,
   resolveCutawayWallOpacity,
 } from "@/lib/design-page-wall-cutaway";
+import { calculateFloorPlanPolygonAreaSqm } from "@/lib/floor-plan-types";
+import { getPlanRoomFloorAreaSqm } from "@/lib/room-floor-area";
 import type { RoomSnapshot } from "@/lib/room-types";
 
 function makeRoom(
@@ -944,5 +947,24 @@ assert.equal(
   }),
   220
 );
+
+// The shared house-plan outline is what the share preview and export diagram draw,
+// so an L-shape must keep its notch and the drawn area must match the reported area.
+const [lShapePlanRoom] = buildHousePlan2D(
+  [{ ...makeRoom("l-living", "L Living", 5, 4, { x: 1, z: 2 }), planShape: "l_shape" }],
+  5,
+  4
+).rooms;
+const lShapeOutline = getHouseRoomPlanPolygon(lShapePlanRoom);
+assert.deepEqual(
+  lShapeOutline.map((point) => [roundPlanCoordinate(point.x), roundPlanCoordinate(point.z)]),
+  [[-1.5, 0], [3.5, 0], [3.5, 2.32], [1.4, 2.32], [1.4, 4], [-1.5, 4]],
+  "An L-shape plan outline must cut its south-east notch at the room's plan position."
+);
+assert.ok(
+  Math.abs(calculateFloorPlanPolygonAreaSqm(lShapeOutline) - getPlanRoomFloorAreaSqm(lShapePlanRoom)) < 1e-9,
+  "The drawn L-shape outline must enclose exactly the floor area the room reports."
+);
+assert.equal(getHouseRoomPlanPolygon(plan.rooms[0]).length, 4, "A rectangle room keeps its four-corner outline.");
 
 console.log("Design page house-plan helper checks passed.");

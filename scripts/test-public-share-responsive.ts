@@ -6,6 +6,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import type { RoomSnapshot } from "@/lib/room-types";
 import type { DesignSnapshot } from "@/lib/room-types";
 import PublicShareError from "@/app/share/[shareToken]/error";
+import ShareFloorPlanPreview from "@/components/ShareFloorPlanPreview";
 import { PublicShareLoadingState } from "@/components/public-share/PublicShareRootLifecycle";
 import {
   buildPublicProjectionContentIdentity,
@@ -331,5 +332,24 @@ assert.match(loadingMarkup, /data-testid="public-share-loading"/);
 assert.match(loadingMarkup, /aria-busy="true"/);
 assert.match(errorMarkup, /data-testid="public-share-error"/);
 assert.match(errorMarkup, /data-testid="public-share-error-retry"/);
+
+const lShapePreviewMarkup = renderToStaticMarkup(
+  createElement(ShareFloorPlanPreview, {
+    snapshot: {
+      version: 3,
+      activeRoomId: "room-l",
+      rooms: [{
+        id: "room-l", name: "L Living", roomType: "living", planShape: "l_shape",
+        geometry: { width: 5, depth: 4, wallThickness: 0.12 }, planPosition: { x: 0, z: 0 },
+        items: [], zones: [], savedViews: [],
+      }],
+    },
+  })
+);
+assert.equal(
+  lShapePreviewMarkup.match(/<polygon points="([^"]*)"/)?.[1].trim().split(/\s+/).length,
+  6,
+  "The public floor-plan preview must draw an L-shape room with its notch, not as a full rectangle"
+);
 
 console.log("Public share responsive layout tests passed.");

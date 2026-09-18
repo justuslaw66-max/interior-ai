@@ -1,4 +1,4 @@
-import { buildHousePlan2D } from "@/lib/design-page-house-plan";
+import { buildHousePlan2D, getHouseRoomPlanPolygon } from "@/lib/design-page-house-plan";
 import type { DesignSnapshot, PersistedPlanOpening } from "@/lib/room-types";
 
 type Point = { x: number; z: number };
@@ -22,18 +22,6 @@ type PreviewFloor = {
 const SVG_WIDTH = 720;
 const SVG_HEIGHT = 360;
 const SVG_PADDING = 28;
-
-function roomPoints(room: ReturnType<typeof buildHousePlan2D>["rooms"][number]): Point[] {
-  if (room.shape === "custom_polygon" && room.polygon && room.polygon.length >= 3) {
-    return room.polygon.map((point) => ({ x: room.x + point.x, z: room.z + point.z }));
-  }
-  return [
-    { x: room.x - room.w / 2, z: room.z - room.d / 2 },
-    { x: room.x + room.w / 2, z: room.z - room.d / 2 },
-    { x: room.x + room.w / 2, z: room.z + room.d / 2 },
-    { x: room.x - room.w / 2, z: room.z + room.d / 2 },
-  ];
-}
 
 function pointsBounds(points: Point[]) {
   return points.reduce(
@@ -72,7 +60,7 @@ function buildPreviewFloors(snapshot: DesignSnapshot): PreviewFloor[] {
     const source = sourceById.get(room.id);
     const floorLevel = source?.floorLevel ?? room.floorLevel ?? 1;
     const key = String(floorLevel);
-    const points = roomPoints(room);
+    const points = getHouseRoomPlanPolygon(room);
     const bounds = pointsBounds(points);
     const previewRoom: PreviewRoom = {
       id: room.id,

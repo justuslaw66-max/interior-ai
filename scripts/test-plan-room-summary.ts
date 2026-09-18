@@ -179,6 +179,16 @@ for (const file of [
     assert.equal(ratio, L_SHAPE_NOTCH_RATIO, `${file} must cut the L-shape notch at L_SHAPE_NOTCH_RATIO.`);
   }
 }
+// Client-facing plan drawings label rooms with this area, so they draw the notched house-plan outline.
+for (const file of ["app/share/[shareToken]/export/page.tsx", "components/ShareFloorPlanPreview.tsx"]) {
+  const drawingSource = readFileSync(join(process.cwd(), file), "utf8");
+  assert.match(drawingSource, /getHouseRoomPlanPolygon\(room\)/, `${file} must draw rooms with the shared house-plan outline.`);
+  assert.doesNotMatch(
+    drawingSource,
+    /room\.shape === "custom_polygon"/,
+    `${file} must not keep a private room outline that drops the L-shape notch.`
+  );
+}
 assert.doesNotMatch(
   planRoomSummarySource,
   /function polygonArea|function getRoomArea\b/,
