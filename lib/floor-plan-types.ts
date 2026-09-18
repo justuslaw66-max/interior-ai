@@ -5,6 +5,7 @@ import {
   type RoomSnapshot,
   type RoomType,
 } from "@/lib/room-types";
+import { getRoomSnapshotFloorAreaSqm } from "@/lib/room-floor-area";
 
 export type FloorPlanSource = "manual" | "room_snapshot" | "uploaded" | "ai_detected" | "cad_imported";
 
@@ -267,7 +268,7 @@ export function buildFloorPlanFromRooms(
       name: room.name,
       roomType: room.roomType,
       polygon,
-      areaSqm: calculateFloorPlanPolygonAreaSqm(polygon),
+      areaSqm: getRoomSnapshotFloorAreaSqm(room),
       source: "room_snapshot",
     };
   });

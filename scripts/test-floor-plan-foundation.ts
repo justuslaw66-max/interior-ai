@@ -529,6 +529,18 @@ assert.deepEqual(buildFloorPlanRoomPolygon(customRoom), [
   { x: 0, z: 1 },
 ]);
 assert.equal(calculateFloorPlanPolygonAreaSqm(buildFloorPlanRoomPolygon(customRoom)), 8);
+customRoom.planHoles = [[
+  { x: -1.5, z: -1.25 },
+  { x: -1, z: -1.25 },
+  { x: -1, z: -0.75 },
+  { x: -1.5, z: -0.75 },
+]];
+assert.equal(
+  buildFloorPlanFromRooms([customRoom]).floors[0].rooms[0].areaSqm,
+  7.75,
+  "Floor-plan documents must report the room floor area from lib/room-floor-area, holes excluded."
+);
+customRoom.planHoles = undefined;
 assert.equal(
   isPointInsideRoomPolygon({ x: 1, z: 2 }, buildFloorPlanRoomPolygon(customRoom)),
   false

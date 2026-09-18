@@ -179,6 +179,14 @@ for (const file of [
     assert.equal(ratio, L_SHAPE_NOTCH_RATIO, `${file} must cut the L-shape notch at L_SHAPE_NOTCH_RATIO.`);
   }
 }
+// The cabinetry studio builds the active room's L outline inline from the same ratio.
+const cabinetryNotchRatios = [...readFileSync(
+  join(process.cwd(), "features/cabinetry/useDesignPageCabinetry.ts"), "utf8"
+).matchAll(/geometry\.(?:width|depth) \* ([\d.]+)/g)].map((match) => Number(match[1]));
+assert.ok(cabinetryNotchRatios.length > 0, "The cabinetry studio must still draw the L-shape notch.");
+for (const ratio of cabinetryNotchRatios) {
+  assert.equal(ratio, L_SHAPE_NOTCH_RATIO, "The cabinetry studio must cut the L-shape notch at L_SHAPE_NOTCH_RATIO.");
+}
 // Client-facing plan drawings label rooms with this area, so they draw the notched house-plan outline.
 for (const file of ["app/share/[shareToken]/export/page.tsx", "components/ShareFloorPlanPreview.tsx"]) {
   const drawingSource = readFileSync(join(process.cwd(), file), "utf8");
@@ -218,6 +226,7 @@ const roomAreaReadouts: Array<[string, RegExp]> = [
   ["app/share/[shareToken]/page.tsx", /const areaSqm = getRoomSnapshotFloorAreaSqm\(room\);/],
   ["app/share/[shareToken]/export/page.tsx", /const areaSqm = getRoomSnapshotFloorAreaSqm\(room\);/],
   ["app/share/[shareToken]/export/pdf/route.ts", /const areaSqm = getRoomSnapshotFloorAreaSqm\(room\);/],
+  ["lib/floor-plan-types.ts", /areaSqm: getRoomSnapshotFloorAreaSqm\(room\),/],
 ];
 for (const [file, ownerRead] of roomAreaReadouts) {
   const source = readFileSync(join(process.cwd(), file), "utf8");
