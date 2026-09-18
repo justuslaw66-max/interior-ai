@@ -3275,7 +3275,7 @@ export default function DesignControlsPlanPanel({
       {roomConnectionChecklistItems.length > 0 && (
         <div className="mt-3">
           <RoomConnectionChecklist
-            items={roomConnectionChecklistItems}
+            items={roomConnectionChecklistItems} measurementUnit={measurementUnit}
             disabled={isClientPreview}
             dark={dark}
             variant={isDesigner ? "pro" : "consumer"}

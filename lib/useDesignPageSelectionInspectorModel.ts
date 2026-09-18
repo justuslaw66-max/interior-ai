@@ -383,17 +383,16 @@ export function useDesignPageSelectionInspectorModel({
   const selectedObjectContext = useMemo(
     () =>
       buildDesignSelectionContext({
-        selectedFurniture:
-          selectedItem && selectedProduct
-            ? { title: selectedProduct.title, category: selectedProduct.category }
-            : null,
+        selectedFurniture: selectedItem ? selectedProduct : null,
         activeRoomName: activeRoomName ?? "Room",
+        planMeasurementUnit,
         visiblePlanOpening,
         visiblePlanOpeningRoomName,
         selectedPlanRoom,
       }),
     [
       activeRoomName,
+      planMeasurementUnit,
       selectedItem,
       selectedPlanRoom,
       selectedProduct,

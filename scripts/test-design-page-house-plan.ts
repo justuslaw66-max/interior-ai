@@ -1,4 +1,7 @@
 import assert from "node:assert/strict";
+import { createElement } from "react";
+import { renderToStaticMarkup } from "react-dom/server";
+import RoomConnectionChecklist from "@/components/editor/RoomConnectionChecklist";
 import {
   buildHousePlan2D,
   buildHouseRoomAdjacencyGuides,
@@ -545,6 +548,24 @@ assert.deepEqual(buildHouseRoomConnectionChecklist(plan.rooms, [], "bedroom"), [
     },
   },
 ]);
+const renderConnectionChecklist = (measurementUnit: "cm" | "ft-in") =>
+  renderToStaticMarkup(
+    createElement(RoomConnectionChecklist, {
+      items: buildHouseRoomConnectionChecklist(plan.rooms, [], "bedroom"),
+      measurementUnit,
+      onAddDoorway: () => undefined,
+    })
+  );
+assert.match(
+  renderConnectionChecklist("cm"),
+  />300 cm shared wall</,
+  "The connections checklist should state the shared wall length in the display unit."
+);
+assert.match(
+  renderConnectionChecklist("ft-in"),
+  />9′ 10\.1″ shared wall</,
+  "The connections checklist should follow a feet-and-inches preference."
+);
 assert.deepEqual(
   buildHouseRoomConnectionChecklist(
     plan.rooms,

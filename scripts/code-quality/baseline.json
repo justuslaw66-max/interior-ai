@@ -749,7 +749,7 @@
       "limit": 400
     },
     "lib/useDesignPageSelectionInspectorModel.ts": {
-      "lines": 418,
+      "lines": 417,
       "limit": 400
     },
     "lib/useDesignPageSelectionTransforms.ts": {
@@ -2435,7 +2435,7 @@
     "components/editor/RoomConnectionChecklist.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 114
+        "maximum": 113
       }
     },
     "components/editor/RoomPanNavigator.tsx": {
@@ -4987,7 +4987,7 @@
     "lib/useDesignPageSelectionInspectorModel.ts": {
       "overlongFunctions": {
         "count": 2,
-        "maximum": 166
+        "maximum": 165
       },
       "complexFunctions": {
         "count": 1,
