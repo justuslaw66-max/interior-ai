@@ -434,6 +434,19 @@ assert.match(
   "The compatibility top cap must be the only depth owner at the exact union-footprint wall top."
 );
 
+const legacyWallBandOpacityExpression =
+  source.match(/<LegacyWallBandMesh[\s\S]*?\n\s*opacity=\{([\s\S]*?)\n\s*\}\n\s*\/>/)?.[1] ?? "";
+assert.match(
+  legacyWallBandOpacityExpression,
+  /INACTIVE_FLOOR_OPACITY_MULTIPLIER/,
+  "Merged wall bands on inactive floors should keep the inactive-floor fade."
+);
+assert.match(
+  legacyWallBandOpacityExpression,
+  /getRoomFloorLevel\(room\) === band\.floorLevel[\s\S]*?clampStructureOpacity\(room\.surfaceOpacity\?\.wall\)/,
+  "Merged wall bands should fade with the lowest wall-opacity setting of the rooms on their floor."
+);
+
 assert.match(
   source,
   /function CanonicalWallBodies3D[\s\S]*?canonical-wall-top-cap-3d[\s\S]*?<shapeGeometry args=\{\[shapes\]\}/,

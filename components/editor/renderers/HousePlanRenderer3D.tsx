@@ -395,11 +395,11 @@ export default function HousePlanRenderer3D({
             ) <= 0.0005
           }
           opacity={
-            stackedFloors &&
-            fadeInactiveFloors &&
-            band.floorLevel !== resolvedActiveFloorLevel
+            (stackedFloors && fadeInactiveFloors && band.floorLevel !== resolvedActiveFloorLevel
               ? INACTIVE_FLOOR_OPACITY_MULTIPLIER
-              : 1
+              : 1) *
+            Math.min(1, ...rooms.filter((room) => getRoomFloorLevel(room) === band.floorLevel)
+              .map((room) => clampStructureOpacity(room.surfaceOpacity?.wall)))
           }
         />
       ))}
