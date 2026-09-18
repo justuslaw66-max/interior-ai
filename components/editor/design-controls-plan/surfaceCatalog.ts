@@ -26,6 +26,8 @@ export type SurfaceRoomSummary = {
   width: number;
   depth: number;
   height?: number;
+  /** Polygon-aware floor and ceiling area from lib/room-floor-area. */
+  floorAreaSqm: number;
   surfaces?: RoomSurfaceAssignments;
   surfaceFinishes?: RoomSurfaceAssignments;
   wallFinishQuantities: RoomWallFinishQuantities;

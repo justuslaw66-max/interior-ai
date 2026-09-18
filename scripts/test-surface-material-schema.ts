@@ -1161,6 +1161,41 @@ assert.deepEqual(
   ["Soft Gallery White", 8.32],
   "A painted selected wall must appear in the Surface Summary with its aperture-free area."
 );
+// 4 m × 4 m bounds, minus a 2 m × 2 m notch and a 1 m × 1 m courtyard hole = 11 m².
+const notchedPolygonRoom: RoomSnapshot = {
+  id: "notched_polygon_room",
+  name: "Notched polygon room",
+  roomType: "custom",
+  geometry: { width: 4, depth: 4, height: 2.5 },
+  planPosition: { x: 0, z: 0 },
+  planShape: "custom_polygon",
+  planPolygon: [
+    { x: -2, z: -2 }, { x: 2, z: -2 }, { x: 2, z: 0 },
+    { x: 0, z: 0 }, { x: 0, z: 2 }, { x: -2, z: 2 },
+  ],
+  planHoles: [[{ x: -1.5, z: -1.5 }, { x: -0.5, z: -1.5 }, { x: -0.5, z: -0.5 }, { x: -1.5, z: -0.5 }]],
+  surfaces: { floorMaterialId: "goodrich-geff-novaclick-gnv-001-ivory-oak" },
+  items: [],
+  zones: [],
+  savedViews: [],
+};
+const notchedFloorBomRow = buildRoomSurfaceMaterialBomRows([notchedPolygonRoom]).find((row) => row.surface === "floor");
+assert.deepEqual([notchedFloorBomRow?.surfaceAreaSqm, notchedFloorBomRow?.roomAreaSqm], [11, 11],
+  "The BOM floor must use the custom polygon minus its hole, not width × depth.");
+const notchedSummaryRows = buildSurfaceSummaryRows(buildSurfaceRoomSummaries([notchedPolygonRoom], []), noSampleUrl);
+assert.deepEqual(
+  (["floor", "ceiling"] as const).map((target) =>
+    roundSummaryArea(notchedSummaryRows.find((row) => row.target === target)?.areaSqm)),
+  [11, 11],
+  "Surface Summary floor and ceiling areas must match the BOM floor area for a notched room with a hole."
+);
+assert.doesNotMatch(fs.readFileSync("lib/surface-material-bom.ts", "utf8"), /function getRoomAreaSqm/,
+  "The BOM must read floor area from lib/room-floor-area.ts instead of a private copy.");
+assert.doesNotMatch(
+  fs.readFileSync("components/editor/design-controls-plan/surfaceSummaryRows.ts", "utf8"),
+  /getSurfaceRoomAreaSqm/,
+  "Surface Summary floor and ceiling rows must use the polygon-aware room floor area, not width × depth."
+);
 
 assert.equal(normalizeWallPaintColorHex("f5f1e8"), "#F5F1E8", "wall paint colors should normalize to uppercase hex");
 assert.equal(normalizeWallPaintColorHex("#xyz123"), null, "invalid wall paint colors should be rejected");

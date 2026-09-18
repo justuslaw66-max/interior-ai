@@ -8,7 +8,12 @@ import {
   formatPlanRoomMetricLabel,
   resolvePlanRoomSelection,
 } from "@/lib/plan-room-summary";
+import { getRoomFloorAreaSqm } from "@/lib/room-floor-area";
 
+const planRoomSummarySource = readFileSync(
+  join(process.cwd(), "lib/plan-room-summary.ts"),
+  "utf8"
+);
 const roomRendererSource = readFileSync(
   join(process.cwd(), "components/editor/renderers/RoomRenderer2D.tsx"),
   "utf8"
@@ -87,6 +92,35 @@ const polygonPlan = buildPlanRoomSummary([
 assert.equal(polygonPlan.widthMeters, 4);
 assert.equal(polygonPlan.depthMeters, 4);
 assert.equal(polygonPlan.areaSquareMeters, 11);
+
+const notch = [
+  { x: -2, z: -2 }, { x: 2, z: -2 }, { x: 2, z: 0 },
+  { x: 0, z: 0 }, { x: 0, z: 2 }, { x: -2, z: 2 },
+];
+assert.equal(
+  getRoomFloorAreaSqm({ shape: "rectangle", width: 2, depth: 2, polygon: notch }),
+  4,
+  "A stale polygon on a rectangle room must not change its floor area."
+);
+assert.equal(
+  getRoomFloorAreaSqm({ shape: "custom_polygon", width: 5, depth: 5, polygon: notch.slice(0, 2) }),
+  25,
+  "A degenerate custom polygon must fall back to width × depth."
+);
+assert.equal(
+  getRoomFloorAreaSqm({
+    shape: "custom_polygon", width: 4, depth: 4, polygon: notch,
+    holes: [[{ x: -1, z: -1 }, { x: 0, z: -1 }], [{ x: -2, z: -2 }, { x: 2, z: -2 }, { x: 2, z: 2 }, { x: -2, z: 2 }]],
+  }),
+  0,
+  "Degenerate holes are ignored and oversized holes clamp the floor area at zero."
+);
+assert.equal(getRoomFloorAreaSqm({ shape: "rectangle", width: -3, depth: 2 }), 0);
+assert.doesNotMatch(
+  planRoomSummarySource,
+  /function polygonArea|function getRoomArea\b/,
+  "The plan summary must read room area from lib/room-floor-area.ts."
+);
 
 const fiveByFour = { widthMeters: 5, depthMeters: 4, areaSquareMeters: 20 };
 assert.equal(

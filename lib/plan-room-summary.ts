@@ -4,6 +4,7 @@ import {
   formatDisplayLength,
   type DisplayUnit,
 } from "@/lib/display-units";
+import { getRoomFloorAreaSqm } from "@/lib/room-floor-area";
 
 export type PlanRoomMetric = {
   id: string;
@@ -49,17 +50,6 @@ type Bounds = {
   maxZ: number;
 };
 
-function polygonArea(points: Array<{ x: number; z: number }>): number {
-  if (points.length < 3) return 0;
-  let twiceArea = 0;
-  for (let index = 0; index < points.length; index += 1) {
-    const current = points[index];
-    const next = points[(index + 1) % points.length];
-    twiceArea += current.x * next.z - next.x * current.z;
-  }
-  return Math.abs(twiceArea) / 2;
-}
-
 function getRoomLocalPoints(room: HousePlanRoom2D): Array<{ x: number; z: number }> {
   if (room.polygon && room.polygon.length >= 3) return room.polygon;
   return [
@@ -80,15 +70,6 @@ function getRoomBounds(room: HousePlanRoom2D): Bounds {
     }),
     { minX: Infinity, maxX: -Infinity, minZ: Infinity, maxZ: -Infinity }
   );
-}
-
-function getRoomArea(room: HousePlanRoom2D): number {
-  const outerArea = polygonArea(getRoomLocalPoints(room));
-  const holesArea = (room.holes ?? []).reduce(
-    (sum, hole) => sum + polygonArea(hole),
-    0
-  );
-  return Math.max(0, outerArea - holesArea);
 }
 
 export function buildPlanRoomSummary(
@@ -120,7 +101,13 @@ export function buildPlanRoomSummary(
       name: room.name,
       widthMeters: bounds.maxX - bounds.minX,
       depthMeters: bounds.maxZ - bounds.minZ,
-      areaSquareMeters: getRoomArea(room),
+      areaSquareMeters: getRoomFloorAreaSqm({
+        shape: room.shape,
+        width: room.w,
+        depth: room.d,
+        polygon: room.polygon,
+        holes: room.holes,
+      }),
     };
   });
 

@@ -6,6 +6,7 @@ import {
   getWallFaceSurfaceSettings,
   normalizeFloorSurfaceSettings,
 } from "./surface-settings";
+import { getRoomSnapshotFloorAreaSqm } from "./room-floor-area";
 import { buildRoomWallFinishQuantities } from "./surface-material-wall-panels";
 import type {
   PersistedPlanOpening,
@@ -55,26 +56,6 @@ export type SurfaceMaterialBomRow = {
   floorJointSizeMm: number;
   floorJointColor: string;
 };
-
-function getRoomAreaSqm(room: RoomSnapshot): number {
-  const polygon = room.planShape === "custom_polygon" ? room.planPolygon : null;
-  if (polygon && polygon.length >= 3) {
-    const loopArea = (loop: NonNullable<RoomSnapshot["planPolygon"]>) => Math.abs(loop.reduce((sum, point, index) => {
-      const next = loop[(index + 1) % loop.length];
-      return sum + point.x * next.z - next.x * point.z;
-    }, 0)) / 2;
-    return Math.max(
-      0,
-      loopArea(polygon) -
-        (room.planHoles ?? []).reduce(
-          (sum, hole) => sum + (hole.length >= 3 ? loopArea(hole) : 0),
-          0
-        )
-    );
-  }
-
-  return Math.max(0, room.geometry.width * room.geometry.depth);
-}
 
 const FLOORING_WASTE_FACTOR = 0.1;
 
@@ -126,7 +107,7 @@ export function buildRoomSurfaceMaterialBomRows(
       const material = getSurfaceMaterialById(normalizedMaterialId);
       if (!material) return null;
 
-      const roomAreaSqm = roundSquareMeters(getRoomAreaSqm(room));
+      const roomAreaSqm = roundSquareMeters(getRoomSnapshotFloorAreaSqm(room));
       const roundedSurfaceAreaSqm = roundSquareMeters(surfaceAreaSqm);
       const orderAreaSqm = roundSquareMeters(roundedSurfaceAreaSqm * (1 + FLOORING_WASTE_FACTOR));
       const pricePerSqm = material.commerce.price_per_sqm;
@@ -187,7 +168,7 @@ export function buildRoomSurfaceMaterialBomRows(
       materialId: surfaces?.floorMaterialId ?? surfaces?.floor?.materialId,
       surface: "floor",
       surfaceLabel: "Floor",
-      surfaceAreaSqm: getRoomAreaSqm(room),
+      surfaceAreaSqm: getRoomSnapshotFloorAreaSqm(room),
       settings: {
         pattern: floorSettings.floorPattern,
         rotationDeg: floorSettings.floorRotationDeg,

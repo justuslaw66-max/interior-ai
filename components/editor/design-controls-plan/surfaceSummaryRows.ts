@@ -3,6 +3,7 @@ import {
   getFloorMaterialById,
   normalizeFloorRotationDeg,
 } from "@/lib/floor-materials";
+import { getRoomSnapshotFloorAreaSqm } from "@/lib/room-floor-area";
 import type { PersistedPlanOpening, RoomSnapshot } from "@/lib/room-types";
 import { buildRoomWallFinishQuantities } from "@/lib/surface-material-wall-panels";
 import { getRuntimeSurfaceMaterialById } from "@/lib/surface-material-runtime";
@@ -17,7 +18,6 @@ import {
 import { getWallPaintDisplayName } from "@/lib/wall-paint";
 import {
   formatSurfaceMaterialValue,
-  getSurfaceRoomAreaSqm,
   type SurfaceRoomSummary,
   type SurfaceSummaryRow,
 } from "./surfaceCatalog";
@@ -38,6 +38,7 @@ export function buildSurfaceRoomSummaries(
     width: room.geometry.width,
     depth: room.geometry.depth,
     height: room.geometry.height,
+    floorAreaSqm: getRoomSnapshotFloorAreaSqm(room),
     surfaces: room.surfaces,
     surfaceFinishes: room.surfaceFinishes,
     wallFinishQuantities: wallFinishQuantities[index],
@@ -100,7 +101,7 @@ function buildRoomFloorAndCeilingRows(
       supplier: floorMaterial
         ? floorMaterial.surface_material.brand ?? formatSurfaceMaterialValue(floorMaterial.surface_material.supplier)
         : "Starter finish",
-      areaSqm: getSurfaceRoomAreaSqm(room),
+      areaSqm: room.floorAreaSqm,
       status: floorMaterial?.import_governance.publish_status ?? "not_orderable",
       sampleUrl: sampleUrlFor(floorMaterialId),
       settings: {
@@ -122,7 +123,7 @@ function buildRoomFloorAndCeilingRows(
         ? getWallPaintDisplayName(ceilingSettings.paintColorHex, ceilingSettings.paintName)
         : "No ceiling paint",
       supplier: ceilingSettings.paintColorHex ? "Paint colour" : "Visual finish",
-      areaSqm: getSurfaceRoomAreaSqm(room),
+      areaSqm: room.floorAreaSqm,
       status: ceilingSettings.paintColorHex ? "visual_finish" : "not_started",
       sampleUrl: null,
       settings: {
