@@ -1,4 +1,5 @@
 import type { Page } from "@playwright/test";
+import { createHash } from "node:crypto";
 import sharp from "sharp";
 import { test, expect } from "./fixtures";
 import { chooseTemplateStart } from "./multi-room/helpers";
@@ -15,6 +16,11 @@ type PixelBounds = {
 type WorkspaceGridLeakMetrics = {
   paintedPixelCount: number;
   p90LocalContrast: number;
+  sceneDigest: string;
+};
+
+type RapidOrbitFrame = WorkspaceGridLeakMetrics & {
+  cameraHandleCenter: { x: number; y: number };
 };
 
 async function frameLivingEastWall(page: Page) {
@@ -312,8 +318,16 @@ async function workspaceGridLeakMetrics(
   const sceneMaxX = Math.round(1000 * pixelScale);
   const sceneMinY = Math.round(48 * pixelScale);
   const sceneMaxY = Math.round(710 * pixelScale);
+  const sceneHash = createHash("sha1");
 
   for (let y = sceneMinY; y < sceneMaxY; y += 1) {
+    const rowOffset = y * info.width * channels;
+    sceneHash.update(
+      data.subarray(
+        rowOffset + sceneMinX * channels,
+        rowOffset + sceneMaxX * channels
+      )
+    );
     for (let x = sceneMinX; x < sceneMaxX; x += 1) {
       if (!isPaintedRed(x, y)) continue;
       let maximumContrast = 0;
@@ -344,6 +358,7 @@ async function workspaceGridLeakMetrics(
     paintedPixelCount: localContrasts.length,
     p90LocalContrast:
       localContrasts[Math.floor(localContrasts.length * 0.9)] ?? 0,
+    sceneDigest: sceneHash.digest("hex"),
   };
 }
 
@@ -421,11 +436,17 @@ async function wallPaintColorMetrics(
   };
 }
 
-async function rapidOrbitGridLeakMetrics(page: Page) {
+async function rapidOrbitGridLeakMetrics(
+  page: Page
+): Promise<RapidOrbitFrame[]> {
   const navigator = page.getByRole("region", { name: "Room view navigator" });
   const cameraHandle = page.getByRole("button", {
     name: "Drag camera position",
   });
+  // The expanded wall inspector leaves the right rail scrolled so the camera
+  // handle sits above the rail's clipped viewport, where a press lands on the
+  // command bar instead, so bring the navigator back into view first.
+  await navigator.scrollIntoViewIfNeeded();
   const navigatorBox = await navigator.boundingBox();
   const cameraBox = await cameraHandle.boundingBox();
   expect(navigatorBox).not.toBeNull();
@@ -433,6 +454,18 @@ async function rapidOrbitGridLeakMetrics(page: Page) {
   if (!navigatorBox || !cameraBox) {
     throw new Error("Room-view navigator was not measurable.");
   }
+  const press = {
+    x: cameraBox.x + cameraBox.width / 2,
+    y: cameraBox.y + cameraBox.height / 2,
+  };
+  expect(
+    await cameraHandle.evaluate(
+      (handle, point) =>
+        handle.contains(document.elementFromPoint(point.x, point.y)),
+      press
+    ),
+    "The orbit press must land on the navigator camera handle."
+  ).toBe(true);
   const inset = 24;
   const orbitPoints = [
     { x: navigatorBox.x + inset, y: navigatorBox.y + inset },
@@ -454,24 +487,30 @@ async function rapidOrbitGridLeakMetrics(page: Page) {
       y: navigatorBox.y + navigatorBox.height - inset,
     },
   ];
-  const metrics: WorkspaceGridLeakMetrics[] = [];
+  const frames: RapidOrbitFrame[] = [];
 
-  await page.mouse.move(
-    cameraBox.x + cameraBox.width / 2,
-    cameraBox.y + cameraBox.height / 2
-  );
+  await page.mouse.move(press.x, press.y);
   await page.mouse.down();
   try {
     for (const point of orbitPoints) {
       await page.mouse.move(point.x, point.y, { steps: 1 });
       await page.waitForTimeout(24);
-      metrics.push(await workspaceGridLeakMetrics(page));
+      const metrics = await workspaceGridLeakMetrics(page);
+      const handleBox = await cameraHandle.boundingBox();
+      if (!handleBox) throw new Error("The camera handle left the navigator.");
+      frames.push({
+        ...metrics,
+        cameraHandleCenter: {
+          x: handleBox.x + handleBox.width / 2,
+          y: handleBox.y + handleBox.height / 2,
+        },
+      });
     }
   } finally {
     await page.mouse.up();
   }
 
-  return metrics;
+  return frames;
 }
 
 type CompiledMaterialProgram = {
@@ -955,8 +994,21 @@ test.describe("Studio canonical wall panels", () => {
     await expect(appliedToast).toBeVisible();
     await expect(appliedToast).toBeHidden({ timeout: 5_000 });
 
-    const orbitMetrics = await rapidOrbitGridLeakMetrics(page);
-    const measurableFrames = orbitMetrics.filter(
+    const orbitFrames = await rapidOrbitGridLeakMetrics(page);
+    // The drag must move the camera: sampling one static view proves nothing.
+    const firstHandle = orbitFrames[0]!.cameraHandleCenter;
+    const lastHandle = orbitFrames.at(-1)!.cameraHandleCenter;
+    expect(
+      Math.hypot(lastHandle.x - firstHandle.x, lastHandle.y - firstHandle.y),
+      "The rapid orbit must drag the navigator camera across the map."
+    ).toBeGreaterThan(40);
+    // The path visits four corners (two twice); allow one frame to lag behind
+    // its move while still rejecting a static view, which yields one digest.
+    expect(
+      new Set(orbitFrames.map(({ sceneDigest }) => sceneDigest)).size,
+      "The rapid orbit must render at least three distinct camera views."
+    ).toBeGreaterThanOrEqual(3);
+    const measurableFrames = orbitFrames.filter(
       (metrics) => metrics.paintedPixelCount > 1_000
     );
     expect(measurableFrames.length).toBeGreaterThanOrEqual(4);
