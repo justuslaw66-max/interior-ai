@@ -75,6 +75,27 @@ async function clickButtonWithDomFallback(locator: Locator): Promise<void> {
   });
 }
 
+export async function ensureEditorWorkspaceMenuOpen(
+  trigger: Pick<Locator, "click" | "getAttribute">,
+): Promise<void> {
+  if (await trigger.getAttribute("aria-expanded") === "true") return;
+  try {
+    await trigger.click({ timeout: 5000 });
+  } catch (cause) {
+    if (!(cause instanceof Error) || cause.name !== "TimeoutError") throw cause;
+    let opened: boolean;
+    try {
+      opened = await trigger.getAttribute("aria-expanded") === "true";
+    } catch {
+      // An unreadable postcondition cannot establish delivery; retain the click failure.
+      throw cause;
+    }
+    if (!opened) throw cause;
+    // The native click opened this toggle before its post-action wait timed out.
+    // Replaying it would close the menu that the caller is about to inspect.
+  }
+}
+
 export async function selectEditorWorkspace(
   page: Page,
   itemTestId: string
@@ -83,7 +104,7 @@ export async function selectEditorWorkspace(
   if (!(await item.isVisible().catch(() => false))) {
     const trigger = page.getByTestId("editor-command-workspace");
     await expect(trigger).toBeVisible({ timeout: 20_000 });
-    await clickButtonWithDomFallback(trigger);
+    await ensureEditorWorkspaceMenuOpen(trigger);
   }
   await expect(item).toBeVisible({ timeout: 10_000 });
   await clickButtonWithDomFallback(item);

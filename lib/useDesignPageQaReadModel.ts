@@ -7,6 +7,7 @@ import type {
   DesignPageScenePerformanceQaSnapshot,
 } from "@/components/editor/design-page/DesignPageQaMarkers";
 import type { EditorViewMode } from "@/components/editor/EditorViewToggle";
+import { areRuntimeQaHooksEnabled } from "@/lib/qa";
 import type { DesignSnapshot, RoomSnapshot } from "@/lib/room-types";
 import type { ScenePerformanceMode, SceneRenderQuality } from "@/lib/useDesignPageScenePerformance";
 import type { DesignPageEditorMode } from "@/lib/useDesignPagePanelMode";
@@ -159,7 +160,7 @@ export function useDesignPageQaReadModel({
   const qaScenePerformanceSnapshot = useMemo(
     () =>
       buildDesignPageScenePerformanceQaSnapshot({
-        enabled: process.env.NEXT_PUBLIC_ENABLE_QA_HOOKS === "1",
+        enabled: areRuntimeQaHooksEnabled(),
         mode: scene.mode,
         liteEnabled: scene.liteEnabled,
         renderQuality: scene.renderQuality,

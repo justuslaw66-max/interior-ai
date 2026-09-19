@@ -37,7 +37,7 @@ export default function FloorPlanAddressFields({
   const subtle = dark ? "text-neutral-400" : "text-neutral-600";
 
   return (
-    <>
+    <div className="ph-no-capture" data-private-floor-plan="true">
       <GoogleAddressAutocomplete
         className={inputClass}
         countryCode="SG"
@@ -52,7 +52,7 @@ export default function FloorPlanAddressFields({
       />
       <div className="mt-2 grid grid-cols-2 gap-2">
         <label className={`text-[10px] ${subtle}`}>
-          Floor (optional)
+          Floor (required for exact match)
           <input
             data-testid="floor-plan-address-floor"
             inputMode="numeric"
@@ -64,7 +64,7 @@ export default function FloorPlanAddressFields({
           />
         </label>
         <label className={`text-[10px] ${subtle}`}>
-          Stack / unit position (optional)
+          Stack / unit position (required for exact match)
           <input
             data-testid="floor-plan-address-stack"
             inputMode="text"
@@ -95,6 +95,6 @@ export default function FloorPlanAddressFields({
           <span aria-hidden="true" className="ml-1">{browseOpen ? "−" : "+"}</span>
         </span>
       </button>
-    </>
+    </div>
   );
 }

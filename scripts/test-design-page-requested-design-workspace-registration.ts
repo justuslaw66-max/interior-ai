@@ -6,6 +6,7 @@ import {
   createDesignPageLoadRequestCoordinator,
 } from "@/lib/design-page-requested-design-load-coordinator";
 import {
+  resolveActiveRequestedDesignId,
   resolveRequestedDesignLoadCompletion,
   resolveRequestedDesignLoadDecision,
 } from "@/lib/useDesignPageRequestedDesignWorkspaceRegistration";
@@ -31,6 +32,22 @@ const baseDecision = {
   authenticated: true,
   localBackupHydrated: true,
 };
+
+assert.equal(
+  resolveActiveRequestedDesignId("stale-route", "?designId=recovery-copy"),
+  "recovery-copy",
+  "The live browser URL should win while the route hook catches up.",
+);
+assert.equal(
+  resolveActiveRequestedDesignId("stale-route", ""),
+  "",
+  "A live route removal should not restore a stale hook identity.",
+);
+assert.equal(
+  resolveActiveRequestedDesignId("server-route", null),
+  "server-route",
+  "Non-browser callers should retain the routed identity.",
+);
 
 assert.deepEqual(
   resolveRequestedDesignLoadDecision({

@@ -669,7 +669,7 @@ export function PresentExportDialog({ configuration, state, actions }: PresentEx
                     wallSpanMeters={visiblePlanOpeningWallSpanMeters}
                     maxHeightMeters={visiblePlanOpeningMaxHeightMeters}
                     measurementUnit={planMeasurementUnit}
-                    dark={showDesignerTheme}
+                    dark={showDesignerTheme} proMode={canUseAdvancedPlanControls}
                     onChange={actions.onOpeningChange}
                   />
                 )}

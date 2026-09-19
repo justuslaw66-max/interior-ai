@@ -208,6 +208,20 @@ export async function createVercelOutputManifest() {
   return manifest;
 }
 
+export function validateStagedVercelIdentity({ manifest, staged, certifiedDeploymentUrl }) {
+  if (staged.artifactSha256 !== manifest.artifactSha256) {
+    throw new Error("The staged deployment does not match the current .vercel/output artifact.");
+  }
+  if (staged.gitCommit !== manifest.gitCommit) {
+    throw new Error("The staged deployment does not match the current source commit.");
+  }
+  if (certifiedDeploymentUrl !== staged.deploymentUrl) {
+    throw new Error(
+      "GATE_A3_CERTIFIED_DEPLOYMENT_URL must exactly match the recorded staged deployment URL.",
+    );
+  }
+}
+
 export async function verifyVercelOutputManifest() {
   const [recorded, inspected, gitTree] = await Promise.all([
     readFile(manifestPath, "utf8").then(JSON.parse),

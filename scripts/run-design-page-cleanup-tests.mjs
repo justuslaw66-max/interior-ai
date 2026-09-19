@@ -20,6 +20,8 @@ const typescriptGuardFiles = [
   "test-design-page-ai-panel-registration.ts",
   "test-design-page-cabinetry-controller.ts",
   "test-design-page-catalog-placement-registration.ts",
+  "test-design-page-cloud-conflict-copy-transition.ts",
+  "test-design-page-cloud-qa-marker.tsx",
   "test-design-page-commerce-actions.ts",
   "test-design-page-core-shell-registration.ts",
   "test-design-page-document-selection-registration.ts",

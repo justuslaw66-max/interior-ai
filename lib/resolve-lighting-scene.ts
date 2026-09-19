@@ -5,7 +5,7 @@ import type {
   FixturePhotometricVerification,
 } from "@/lib/catalog-schema";
 import type { HousePlanRoom2D } from "@/lib/design-page-house-plan";
-import { resolvePlanOpeningVerticalMetrics } from "@/lib/design-page-plan-overlays";
+import { resolveEffectiveOpeningDimensions } from "@/lib/design-page-opening-dimensions";
 import type { SceneRoomItemEntry } from "@/lib/design-page-scene-domain";
 import type { RoomOpening2D } from "@/lib/editorScene";
 import {
@@ -404,9 +404,9 @@ function resolveWindowLight(
   colorAvailable: boolean
 ): Omit<ResolvedWindowLight, "castShadow"> {
   const widthMeters = Math.max(0.2, opening.widthMm / 1000);
-  const { heightMeters, bottomMeters: sillMeters } = resolvePlanOpeningVerticalMetrics(opening);
-  const offsetMeters = opening.offsetMm / 1000;
   const roomHeight = room.height ?? 2.6;
+  const { heightMm, bottomMm } = resolveEffectiveOpeningDimensions(opening, roomHeight * 1000);
+  const heightMeters = heightMm / 1000, sillMeters = bottomMm / 1000, offsetMeters = opening.offsetMm / 1000;
   const centerY = clamp(
     sillMeters + heightMeters / 2,
     0.1,

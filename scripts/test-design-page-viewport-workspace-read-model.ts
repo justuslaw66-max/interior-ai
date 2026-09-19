@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
 import { buildDesignPageViewportRegionAdapter } from "@/lib/design-page-viewport-region-adapter";
+import { resolveDesignPageOpeningViewportState } from "@/lib/design-page-opening-viewport";
 import { buildDesignPageViewportWorkspaceRegistration } from "@/lib/design-page-viewport-workspace-registration";
 import {
   buildDesignPageViewportWorkspaceReadModel,
@@ -432,16 +433,58 @@ const selectedOpening = adaptReadModel(buildReadModel({ selectedOpening: true, v
   (id, metrics) => { openingEdits.push([id, metrics]); });
 assert.equal(selectedOpening.state.selectedOpening?.widthMm, 900);
 assert.deepEqual(selectedOpening.state.selectionInspector?.selectedOpening, {
-  opening: { ...windowFixture, wallSpanMeters: 4, maxHeightMeters: 2.7 },
-  wallSpanMeters: 4, maxHeightMeters: 2.7,
-}, "The visible 3D inspector must retain height, sill, offset, evidence, and wall bounds.");
-for (const metrics of [{ heightMeters: 1.4 }, { bottomMeters: 0.9 }, { offsetMeters: -0.35 }]) {
-  selectedOpening.actions.selectionInspector.updateOpeningMetrics(windowFixture.id, metrics);
-}
+  id: windowFixture.id, kind: "window", wall: "north", hostNeedsRepair: false,
+  widthMm: 900, heightMm: 1200, bottomMm: 800, effectiveHeightMm: 1200, effectiveBottomMm: 800,
+  heightStatus: "exact", bottomStatus: "exact", dimensionIssues: [], maxWidthMm: 3940, maxHeightMm: 2700,
+  widthEvidence: "assumed", heightEvidence: "assumed", sillEvidence: "user_confirmed",
+  widthEditable: true, heightEditable: true, sillEditable: true,
+}, "The visible 3D inspector must retain height, sill, evidence, and wall bounds.");
+const viewportInspectorActions = selectedOpening.actions.selectionInspector;
+viewportInspectorActions.commitOpeningHeightMm(1400);
+viewportInspectorActions.commitOpeningBottomMm(900);
+viewportInspectorActions.commitOpeningWidthMm(1000);
+viewportInspectorActions.commitOpeningWall("east");
 assert.deepEqual(openingEdits, [
-  [windowFixture.id, { heightMeters: 1.4 }], [windowFixture.id, { bottomMeters: 0.9 }],
-  [windowFixture.id, { offsetMeters: -0.35 }],
+  [windowFixture.id, { heightMeters: 1.4, heightEvidence: "user_confirmed" }],
+  [windowFixture.id, { bottomMeters: 0.9, bottomEvidence: "user_confirmed" }],
+  [windowFixture.id, { widthMeters: 1, widthEvidence: "user_confirmed" }],
+  [windowFixture.id, { wall: "east" }],
 ], "Viewport edits must reach the existing opening mutation/history action without dropping metrics.");
+assert.deepEqual(
+  resolveDesignPageOpeningViewportState(
+    {
+      id: "viewport-window",
+      kind: "window",
+      wall: "west",
+      widthMm: 1400,
+      wallSpanMeters: 5.7,
+    },
+    2600
+  )?.inspector,
+  {
+    id: "viewport-window",
+    kind: "window",
+    wall: "west",
+    hostNeedsRepair: false,
+    widthMm: 1400,
+    heightMm: 1200,
+    bottomMm: 900,
+    effectiveHeightMm: 1200,
+    effectiveBottomMm: 900,
+    heightStatus: "defaulted",
+    bottomStatus: "defaulted",
+    dimensionIssues: [],
+    maxWidthMm: 5640,
+    maxHeightMm: 2600,
+    widthEvidence: "assumed",
+    heightEvidence: "assumed",
+    sillEvidence: "assumed",
+    widthEditable: true,
+    heightEditable: true,
+    sillEditable: true,
+  },
+  "The viewport inspector should display sparse windows with the shared vertical defaults."
+);
 assert.equal(
   adaptReadModel(buildReadModel({ selectedOpening: false })).state
     .selectedOpening,

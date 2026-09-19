@@ -2,7 +2,7 @@ import {
   resolveRoomShoppingItems,
   type ActiveRoomShoppingItem,
 } from "@/lib/room-shopping";
-import { buildRoomSurfaceMaterialBomRows } from "@/lib/surface-material-bom";
+import { buildRoomSurfaceMaterialBomResult } from "@/lib/surface-material-bom-result";
 import type { PersistedPlanOpening, RoomSnapshot } from "@/lib/room-types";
 
 export type CheckoutReadinessRow = ActiveRoomShoppingItem & {
@@ -129,7 +129,8 @@ export function buildSurfaceMaterialCsvRows(
   rooms: RoomSnapshot[],
   planOpenings: readonly PersistedPlanOpening[] = []
 ): ShoppingCsvRow[] {
-  return buildRoomSurfaceMaterialBomRows(rooms, planOpenings).map((row) => {
+  const result = buildRoomSurfaceMaterialBomResult(rooms, planOpenings);
+  const rows = result.rows.map((row) => {
     const brandLabel = row.brand ?? row.supplier;
     const status =
       row.status === "published"
@@ -160,4 +161,24 @@ export function buildSurfaceMaterialCsvRows(
       ].filter(Boolean).join(" "),
     };
   });
+  return [
+    ...result.warnings.map((warning): ShoppingCsvRow => ({
+      roomName: "Plan review",
+      category: "Wall Quantity Warning",
+      itemTitle: `Opening ${warning.openingId}`,
+      productId: warning.openingId,
+      variantId: warning.status,
+      variantLabel: "Wall area left uncut",
+      purchaseOptionLabel: null,
+      quantity: 0,
+      status: "Blocked pending opening repair",
+      source: "Physical wall host validation",
+      retailerUrl: null,
+      includeInCheckout: false,
+      unitPriceUsd: 0,
+      lineTotalUsd: 0,
+      reviewNote: warning.message,
+    })),
+    ...rows,
+  ];
 }

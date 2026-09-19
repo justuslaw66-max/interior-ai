@@ -1,4 +1,4 @@
-import type { Locator, Page } from "@playwright/test";
+import type { Browser, Locator, Page } from "@playwright/test";
 import type { Prisma } from "@prisma/client";
 import { expect, test } from "./fixtures";
 import {
@@ -11,43 +11,68 @@ import {
 
 type ShareLayoutMode = "mobile" | "tablet" | "desktop";
 
+type PublicShareLifecycleNode = {
+  nodeId: number;
+  testId: string | null;
+  connected: boolean;
+  state: string | null;
+  layoutMode: string | null;
+  layoutGeneration: string | null;
+  projectionIdentity: string | null;
+  selectedRoomId: string | null;
+  selectedSavedViewId: string | null;
+  parent: string | null;
+  parentNodeId: number | null;
+  streamingOwner: string | null;
+  streamingOwnerNodeId: number | null;
+  visible: boolean;
+  accessibilityActive: boolean;
+  hidden: boolean;
+  ariaHidden: boolean;
+  inert: boolean;
+  actionableDescendantCount: number;
+  focusWithin: boolean;
+  createdAtMs: number;
+  removedAtMs: number | null;
+  documentId: string;
+  documentGeneration: number;
+  routePathname: string;
+  routeIdentityDigest: string;
+  routeGeneration: number;
+  pageCacheRestored: boolean;
+};
+
 type PublicShareRootLifecycleSample = {
   atMs: number;
-  event: "mutation" | "removed";
-  url: string;
-  fallbackStates: string[];
+  event: "mutation" | "removed" | "pagehide" | "pageshow";
+  documentId: string;
+  documentGeneration: number;
+  routePathname: string;
+  routeIdentityDigest: string;
+  routeGeneration: number;
+  pageCacheRestored: boolean;
+  recognizedStates: string[];
   duplicateStableTestIds: string[];
-  lifecycleOwnerCount: number;
+  duplicateStableLifecycleMarkerNodeIds: number[];
+  recognizedStateOwnerCount: number;
+  stableOwnerCount: number;
+  presentationMainLandmarkCount: number;
   visibleLifecycleOwnerCount: number;
   accessibilityLifecycleOwnerCount: number;
   orphanShareIdentityCount: number;
   outsideCurrentOwnerActionableCount: number;
-  roots: Array<{
-    nodeId: number;
-    connected: boolean;
-    state: string | null;
-    layoutMode: string | null;
-    layoutGeneration: string | null;
-    projectionIdentity: string | null;
-    selectedRoomId: string | null;
-    selectedSavedViewId: string | null;
-    parent: string | null;
-    streamingOwner: string | null;
-    visible: boolean;
-    ariaHidden: boolean;
-    inert: boolean;
-    actionableDescendantCount: number;
-    focusWithin: boolean;
-  }>;
+  recognizedStateOwners: PublicShareLifecycleNode[];
+  stableOwners: PublicShareLifecycleNode[];
+  presentationMainLandmarks: PublicShareLifecycleNode[];
 };
 
 type PublicShareRootLifecycleDiagnostics = {
   samples: PublicShareRootLifecycleSample[];
   sampleCount: number;
   truncated: boolean;
-  maxConnectedRootCount: number;
-  maxVisibleRootCount: number;
-  maxLifecycleOwnerCount: number;
+  maxRecognizedStateOwnerCount: number;
+  maxConnectedStableOwnerCount: number;
+  maxPresentationMainLandmarkCount: number;
   maxVisibleLifecycleOwnerCount: number;
   maxAccessibilityLifecycleOwnerCount: number;
   maxOutsideCurrentOwnerActionableCount: number;
@@ -63,16 +88,36 @@ async function installPublicShareRootLifecycleObserver(page: Page) {
       samples,
       sampleCount: 0,
       truncated: false,
-      maxConnectedRootCount: 0,
-      maxVisibleRootCount: 0,
-      maxLifecycleOwnerCount: 0,
+      maxRecognizedStateOwnerCount: 0,
+      maxConnectedStableOwnerCount: 0,
+      maxPresentationMainLandmarkCount: 0,
       maxVisibleLifecycleOwnerCount: 0,
       maxAccessibilityLifecycleOwnerCount: 0,
       maxOutsideCurrentOwnerActionableCount: 0,
     };
     const nodeIds = new WeakMap<Element, number>();
+    const nodeCreatedAt = new WeakMap<Element, number>();
+    const stableLifecycleOwnerSelector = "[data-public-share-lifecycle-owner]";
+    const recognizedStateOwnerSelector = [
+      '[data-testid="public-share-root"]',
+      '[data-testid="public-share-loading"]',
+      '[data-testid="public-share-client-resolving"]',
+      '[data-testid="public-share-invalid"]',
+      '[data-testid="public-share-error"]',
+    ].join(",");
+    const presentationMainLandmarkSelector = 'main, [role="main"]';
+    const documentGenerationKey = "public-share-diagnostic-document-generation";
+    const previousDocumentGeneration = Number(sessionStorage.getItem(documentGenerationKey));
+    const documentGeneration = Number.isFinite(previousDocumentGeneration)
+      ? previousDocumentGeneration + 1
+      : 1;
+    sessionStorage.setItem(documentGenerationKey, String(documentGeneration));
+    const documentId = `public-share-document:${documentGeneration}:${performance.timeOrigin.toFixed(3)}`;
+    let pageCacheRestored = false;
     let nextNodeId = 1;
     let previousSignature = "";
+    let previousRouteIdentityDigest = "";
+    let routeGeneration = 0;
     const nodeId = (node: Element) => {
       const existing = nodeIds.get(node);
       if (existing) return existing;
@@ -80,79 +125,137 @@ async function installPublicShareRootLifecycleObserver(page: Page) {
       nodeIds.set(node, assigned);
       return assigned;
     };
+    const createdAtMs = (node: Element) => {
+      const existing = nodeCreatedAt.get(node);
+      if (existing !== undefined) return existing;
+      const created = performance.now();
+      nodeCreatedAt.set(node, created);
+      return created;
+    };
+    const routePathname = () =>
+      location.pathname.replace(/^\/share\/[^/]+/, "/share/:shareToken");
+    const routeIdentityDigest = () => {
+      let primary = 2166136261;
+      let secondary = 3339675911;
+      for (const character of location.pathname) {
+        const code = character.charCodeAt(0);
+        primary = Math.imul(primary ^ code, 16777619) >>> 0;
+        secondary = Math.imul(secondary ^ code, 2246822519) >>> 0;
+      }
+      return `public-share-route.v1:${primary.toString(16).padStart(8, "0")}${secondary.toString(16).padStart(8, "0")}`;
+    };
+    const routeDiagnostics = () => {
+      const identityDigest = routeIdentityDigest();
+      if (identityDigest !== previousRouteIdentityDigest) {
+        previousRouteIdentityDigest = identityDigest;
+        routeGeneration += 1;
+      }
+      return {
+        pathname: routePathname(),
+        identityDigest,
+        generation: routeGeneration,
+      };
+    };
+    const isInteractivePresentationRoute = () => /^\/share\/[^/]+\/?$/.test(location.pathname);
     const describeOwner = (node: Element | null) => {
       if (!node) return null;
       const testId = node.getAttribute("data-testid");
       const id = node.id;
       return `${node.tagName.toLowerCase()}${id ? `#${id}` : ""}${testId ? `[${testId}]` : ""}`;
     };
-    const describeRoot = (root: Element, connected = root.isConnected) => {
-      const style = getComputedStyle(root);
-      const bounds = root.getBoundingClientRect();
-      const ariaHiddenOwner = root.closest('[aria-hidden="true"]');
-      const inertOwner = root.closest("[inert]");
-      const hiddenOwner = root.closest("[hidden]");
-      const streamingOwner = root.closest('[id^="S:"], [id^="B:"]');
-      const actionableDescendantCount = root.querySelectorAll(
+    const describeLifecycleNode = (
+      lifecycleNode: Element,
+      connected = lifecycleNode.isConnected,
+      removedAtMs: number | null = null,
+      route = routeDiagnostics()
+    ): PublicShareLifecycleNode => {
+      const style = getComputedStyle(lifecycleNode);
+      const bounds = lifecycleNode.getBoundingClientRect();
+      const ariaHiddenOwner = lifecycleNode.closest('[aria-hidden="true"]');
+      const inertOwner = lifecycleNode.closest("[inert]");
+      const hiddenOwner = lifecycleNode.closest("[hidden]");
+      const streamingOwner = lifecycleNode.closest('[id^="S:"], [id^="B:"]');
+      const actionableDescendantCount = lifecycleNode.querySelectorAll(
         'button, a[href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
       ).length;
+      const hidden = Boolean(hiddenOwner);
+      const ariaHidden = Boolean(ariaHiddenOwner);
+      const inert = Boolean(inertOwner);
       return {
-        nodeId: nodeId(root),
+        nodeId: nodeId(lifecycleNode),
+        testId: lifecycleNode.getAttribute("data-testid"),
         connected,
-        state: root.getAttribute("data-layout-status"),
-        layoutMode: root.getAttribute("data-layout-mode"),
-        layoutGeneration: root.getAttribute("data-layout-generation"),
-        projectionIdentity: root.getAttribute("data-projection-content-identity"),
-        selectedRoomId: root.getAttribute("data-selected-room-id"),
-        selectedSavedViewId: root.getAttribute("data-selected-saved-view-id"),
-        parent: describeOwner(root.parentElement),
+        state: lifecycleNode.getAttribute("data-layout-status"),
+        layoutMode: lifecycleNode.getAttribute("data-layout-mode"),
+        layoutGeneration: lifecycleNode.getAttribute("data-layout-generation"),
+        projectionIdentity: lifecycleNode.getAttribute("data-projection-content-identity"),
+        selectedRoomId: lifecycleNode.getAttribute("data-selected-room-id"),
+        selectedSavedViewId: lifecycleNode.getAttribute("data-selected-saved-view-id"),
+        parent: describeOwner(lifecycleNode.parentElement),
+        parentNodeId: lifecycleNode.parentElement ? nodeId(lifecycleNode.parentElement) : null,
         streamingOwner: describeOwner(streamingOwner),
+        streamingOwnerNodeId: streamingOwner ? nodeId(streamingOwner) : null,
         visible:
           connected &&
-          !hiddenOwner &&
+          !hidden &&
           style.display !== "none" &&
           style.visibility !== "hidden" &&
           bounds.width > 0 &&
           bounds.height > 0,
-        ariaHidden: Boolean(ariaHiddenOwner || hiddenOwner),
-        inert: Boolean(inertOwner),
+        accessibilityActive: connected && !hidden && !ariaHidden && !inert,
+        hidden,
+        ariaHidden,
+        inert,
         actionableDescendantCount,
-        focusWithin: connected && root.contains(document.activeElement),
+        focusWithin: connected && lifecycleNode.contains(document.activeElement),
+        createdAtMs: createdAtMs(lifecycleNode),
+        removedAtMs,
+        documentId,
+        documentGeneration,
+        routePathname: route.pathname,
+        routeIdentityDigest: route.identityDigest,
+        routeGeneration: route.generation,
+        pageCacheRestored,
       };
     };
-    const record = (event: "mutation" | "removed", removedRoots: Element[] = []) => {
-      const fallbackOwners = Array.from(
-        document.querySelectorAll(
-          '[data-testid="public-share-loading"], [data-testid="public-share-client-resolving"], [data-testid="public-share-invalid"], [data-testid="public-share-error"]'
-        )
+    const record = (
+      event: PublicShareRootLifecycleSample["event"],
+      removedLifecycleNodes: Element[] = []
+    ) => {
+      const route = routeDiagnostics();
+      const recognizedStateOwnerElements = Array.from(
+        document.querySelectorAll(recognizedStateOwnerSelector)
       );
-      const fallbackStates = fallbackOwners.flatMap((node) => {
+      const recognizedStates = recognizedStateOwnerElements.flatMap((node) => {
         const state = node.getAttribute("data-layout-status");
         return state ? [state] : [];
       });
-      const connectedRootElements = Array.from(
-        document.querySelectorAll('[data-testid="public-share-root"]')
+      const connectedStableOwnerElements = Array.from(
+        document.querySelectorAll(stableLifecycleOwnerSelector)
       );
-      const roots = connectedRootElements.map((root) => describeRoot(root));
-      roots.push(...removedRoots.map((root) => describeRoot(root, false)));
-      const describeFallback = (fallback: Element) => {
-        const style = getComputedStyle(fallback);
-        const bounds = fallback.getBoundingClientRect();
-        const hidden = Boolean(fallback.closest("[hidden]"));
-        const ariaHidden = Boolean(fallback.closest('[aria-hidden="true"]'));
-        const inert = Boolean(fallback.closest("[inert]"));
-        return {
-          node: fallback,
-          visible:
-            !hidden &&
-            style.display !== "none" &&
-            style.visibility !== "hidden" &&
-            bounds.width > 0 &&
-            bounds.height > 0,
-          accessibilityActive: !hidden && !ariaHidden && !inert,
-        };
-      };
-      const describedFallbacks = fallbackOwners.map(describeFallback);
+      const connectedPresentationMainElements = isInteractivePresentationRoute()
+        ? Array.from(document.querySelectorAll(presentationMainLandmarkSelector))
+        : [];
+      const removedAtMs = performance.now();
+      const stableOwners = connectedStableOwnerElements.map((owner) =>
+        describeLifecycleNode(owner, true, null, route)
+      );
+      stableOwners.push(
+        ...removedLifecycleNodes.map((owner) =>
+          describeLifecycleNode(owner, false, removedAtMs, route)
+        )
+      );
+      const recognizedStateOwners = recognizedStateOwnerElements.map((owner) =>
+        describeLifecycleNode(owner, true, null, route)
+      );
+      recognizedStateOwners.push(
+        ...removedLifecycleNodes
+          .filter((owner) => owner.matches(recognizedStateOwnerSelector))
+          .map((owner) => describeLifecycleNode(owner, false, removedAtMs, route))
+      );
+      const presentationMainLandmarks = connectedPresentationMainElements.map((landmark) =>
+        describeLifecycleNode(landmark, true, null, route)
+      );
       const stableTestIds = Array.from(
         document.querySelectorAll(
           [
@@ -174,21 +277,17 @@ async function installPublicShareRootLifecycleObserver(page: Page) {
       const duplicateStableTestIds = stableTestIds.filter(
         (identity, index) => stableTestIds.indexOf(identity) !== index
       );
-      const currentRoot = document.querySelector('[data-testid="public-share-root"]');
-      const orphanShareIdentityCount = currentRoot
+      const currentOwner = connectedStableOwnerElements.find((owner) =>
+        describeLifecycleNode(owner, true, null, route).accessibilityActive
+      );
+      const orphanShareIdentityCount = currentOwner
         ? Array.from(document.querySelectorAll('[data-testid^="share-"]')).filter(
-            (node) => !currentRoot.contains(node)
+            (node) => !currentOwner.contains(node)
           ).length
         : document.querySelectorAll('[data-testid^="share-"]').length;
-      const currentOwners = [
-        ...connectedRootElements.filter((root) => {
-          const described = describeRoot(root);
-          return !described.ariaHidden && !described.inert;
-        }),
-        ...describedFallbacks.flatMap((fallback) =>
-          fallback.accessibilityActive ? [fallback.node] : []
-        ),
-      ];
+      const currentOwners = connectedStableOwnerElements.filter((owner) =>
+        describeLifecycleNode(owner, true, null, route).accessibilityActive
+      );
       const outsideCurrentOwnerActionableCount = Array.from(
         document.querySelectorAll(
           'button, a[href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
@@ -203,38 +302,49 @@ async function installPublicShareRootLifecycleObserver(page: Page) {
           Boolean(node.closest('[data-testid^="share-"]'))
         );
       }).length;
-      const lifecycleOwnerCount = connectedRootElements.length + fallbackOwners.length;
-      const visibleLifecycleOwnerCount =
-        roots.filter((root) => root.connected && root.visible).length +
-        describedFallbacks.filter((fallback) => fallback.visible).length;
-      const accessibilityLifecycleOwnerCount =
-        roots.filter((root) => root.connected && !root.ariaHidden && !root.inert).length +
-        describedFallbacks.filter((fallback) => fallback.accessibilityActive).length;
+      const recognizedStateOwnerCount = recognizedStateOwnerElements.length;
+      const stableOwnerCount = connectedStableOwnerElements.length;
+      const presentationMainLandmarkCount = connectedPresentationMainElements.length;
+      const visibleLifecycleOwnerCount = stableOwners.filter(
+        (owner) => owner.connected && owner.visible
+      ).length;
+      const accessibilityLifecycleOwnerCount = stableOwners.filter(
+        (owner) => owner.connected && owner.accessibilityActive
+      ).length;
+      const duplicateStableLifecycleMarkerNodeIds = stableOwners
+        .filter((owner) => owner.connected)
+        .slice(1)
+        .map((owner) => owner.nodeId);
       const signature = JSON.stringify({
         event,
-        fallbackStates,
+        recognizedStates,
         duplicateStableTestIds,
-        lifecycleOwnerCount,
+        duplicateStableLifecycleMarkerNodeIds,
+        recognizedStateOwnerCount,
+        stableOwnerCount,
+        presentationMainLandmarkCount,
         visibleLifecycleOwnerCount,
         accessibilityLifecycleOwnerCount,
         orphanShareIdentityCount,
         outsideCurrentOwnerActionableCount,
-        roots,
+        recognizedStateOwners,
+        stableOwners,
+        presentationMainLandmarks,
       });
       if (event === "mutation" && signature === previousSignature) return;
       previousSignature = signature;
       diagnostics.sampleCount += 1;
-      diagnostics.maxConnectedRootCount = Math.max(
-        diagnostics.maxConnectedRootCount,
-        connectedRootElements.length
+      diagnostics.maxRecognizedStateOwnerCount = Math.max(
+        diagnostics.maxRecognizedStateOwnerCount,
+        recognizedStateOwnerCount
       );
-      diagnostics.maxVisibleRootCount = Math.max(
-        diagnostics.maxVisibleRootCount,
-        roots.filter((root) => root.visible).length
+      diagnostics.maxConnectedStableOwnerCount = Math.max(
+        diagnostics.maxConnectedStableOwnerCount,
+        stableOwnerCount
       );
-      diagnostics.maxLifecycleOwnerCount = Math.max(
-        diagnostics.maxLifecycleOwnerCount,
-        lifecycleOwnerCount
+      diagnostics.maxPresentationMainLandmarkCount = Math.max(
+        diagnostics.maxPresentationMainLandmarkCount,
+        presentationMainLandmarkCount
       );
       diagnostics.maxVisibleLifecycleOwnerCount = Math.max(
         diagnostics.maxVisibleLifecycleOwnerCount,
@@ -248,19 +358,29 @@ async function installPublicShareRootLifecycleObserver(page: Page) {
         diagnostics.maxOutsideCurrentOwnerActionableCount,
         outsideCurrentOwnerActionableCount
       );
-      if (samples.length < 256) {
+      if (samples.length < 1024) {
         samples.push({
           atMs: performance.now(),
           event,
-          url: location.href,
-          fallbackStates,
+          documentId,
+          documentGeneration,
+          routePathname: route.pathname,
+          routeIdentityDigest: route.identityDigest,
+          routeGeneration: route.generation,
+          pageCacheRestored,
+          recognizedStates,
           duplicateStableTestIds,
-          lifecycleOwnerCount,
+          duplicateStableLifecycleMarkerNodeIds,
+          recognizedStateOwnerCount,
+          stableOwnerCount,
+          presentationMainLandmarkCount,
           visibleLifecycleOwnerCount,
           accessibilityLifecycleOwnerCount,
           orphanShareIdentityCount,
           outsideCurrentOwnerActionableCount,
-          roots,
+          recognizedStateOwners,
+          stableOwners,
+          presentationMainLandmarks,
         });
       } else {
         diagnostics.truncated = true;
@@ -268,35 +388,48 @@ async function installPublicShareRootLifecycleObserver(page: Page) {
     };
     diagnosticWindow.__publicShareRootLifecycle = diagnostics;
     const observer = new MutationObserver((records) => {
-      const removedRoots: Element[] = [];
+      const removedLifecycleNodes: Element[] = [];
       for (const recordEntry of records) {
         for (const removedNode of recordEntry.removedNodes) {
           if (!(removedNode instanceof Element)) continue;
-          if (removedNode.matches('[data-testid="public-share-root"]')) {
-            removedRoots.push(removedNode);
+          if (removedNode.matches(stableLifecycleOwnerSelector)) {
+            removedLifecycleNodes.push(removedNode);
           }
-          removedRoots.push(
-            ...removedNode.querySelectorAll('[data-testid="public-share-root"]')
+          removedLifecycleNodes.push(
+            ...removedNode.querySelectorAll(stableLifecycleOwnerSelector)
           );
         }
       }
-      if (removedRoots.length > 0) record("removed", removedRoots);
+      if (removedLifecycleNodes.length > 0) record("removed", removedLifecycleNodes);
       record("mutation");
     });
     observer.observe(document, {
       attributes: true,
       attributeFilter: [
         "aria-hidden",
+        "class",
         "data-layout-generation",
         "data-layout-mode",
         "data-layout-status",
+        "data-public-share-lifecycle-owner",
         "data-selected-room-id",
         "data-selected-saved-view-id",
+        "data-testid",
         "hidden",
         "inert",
+        "role",
+        "style",
       ],
       childList: true,
       subtree: true,
+    });
+    addEventListener("pagehide", (event) => {
+      pageCacheRestored = event.persisted;
+      record("pagehide");
+    });
+    addEventListener("pageshow", (event) => {
+      pageCacheRestored = event.persisted;
+      record("pageshow");
     });
     record("mutation");
   });
@@ -374,9 +507,9 @@ async function readPublicShareRootLifecycle(page: Page) {
       samples: [],
       sampleCount: 0,
       truncated: false,
-      maxConnectedRootCount: 0,
-      maxVisibleRootCount: 0,
-      maxLifecycleOwnerCount: 0,
+      maxRecognizedStateOwnerCount: 0,
+      maxConnectedStableOwnerCount: 0,
+      maxPresentationMainLandmarkCount: 0,
       maxVisibleLifecycleOwnerCount: 0,
       maxAccessibilityLifecycleOwnerCount: 0,
       maxOutsideCurrentOwnerActionableCount: 0,
@@ -384,48 +517,162 @@ async function readPublicShareRootLifecycle(page: Page) {
   });
 }
 
+function publicShareLifecycleFailure(
+  message: string,
+  diagnostics: PublicShareRootLifecycleDiagnostics,
+  isRelevant: (sample: PublicShareRootLifecycleSample) => boolean
+) {
+  const relevantSamples = diagnostics.samples.filter(isRelevant);
+  const selectedSamples = (relevantSamples.length > 0
+    ? relevantSamples
+    : diagnostics.samples.slice(-1)
+  ).slice(-4);
+  const summarizeNode = (node: PublicShareLifecycleNode) => ({
+    nodeId: node.nodeId,
+    testId: node.testId,
+    state: node.state,
+    connected: node.connected,
+    visible: node.visible,
+    hidden: node.hidden,
+    ariaHidden: node.ariaHidden,
+    inert: node.inert,
+    accessibilityActive: node.accessibilityActive,
+    focusWithin: node.focusWithin,
+    parent: node.parent,
+    parentNodeId: node.parentNodeId,
+    streamingOwner: node.streamingOwner,
+    streamingOwnerNodeId: node.streamingOwnerNodeId,
+  });
+  const evidence = selectedSamples.map((sample) => ({
+    event: sample.event,
+    documentGeneration: sample.documentGeneration,
+    routePathname: sample.routePathname,
+    routeGeneration: sample.routeGeneration,
+    recognizedStateOwnerCount: sample.recognizedStateOwnerCount,
+    stableOwnerCount: sample.stableOwnerCount,
+    presentationMainLandmarkCount: sample.presentationMainLandmarkCount,
+    visibleLifecycleOwnerCount: sample.visibleLifecycleOwnerCount,
+    accessibilityLifecycleOwnerCount: sample.accessibilityLifecycleOwnerCount,
+    duplicateStableLifecycleMarkerNodeIds:
+      sample.duplicateStableLifecycleMarkerNodeIds,
+    duplicateStableTestIds: sample.duplicateStableTestIds,
+    stableOwners: sample.stableOwners.map(summarizeNode),
+    presentationMainLandmarks: sample.presentationMainLandmarks.map(summarizeNode),
+  }));
+  return `${message}; lifecycle evidence=${JSON.stringify(evidence)}`;
+}
+
 async function expectPublicShareRootLifecycleUnique(
   page: Page,
-  requiredStates: Array<PublicShareRootLifecycleSample["roots"][number]["state"]> = []
+  requiredStates: Array<PublicShareLifecycleNode["state"]> = []
 ) {
   const diagnostics = await readPublicShareRootLifecycle(page);
   const lifecycle = diagnostics.samples;
   expect(lifecycle.length).toBeGreaterThan(0);
-  expect(diagnostics.truncated, "lifecycle diagnostics must not truncate").toBe(false);
+  expect(
+    diagnostics.truncated,
+    publicShareLifecycleFailure(
+      "lifecycle diagnostics must not truncate",
+      diagnostics,
+      () => diagnostics.truncated
+    )
+  ).toBe(false);
   expect(diagnostics.sampleCount).toBe(lifecycle.length);
   expect(
-    diagnostics.maxConnectedRootCount,
-    "public-share-root must never have more than one connected owner"
+    diagnostics.maxConnectedStableOwnerCount,
+    publicShareLifecycleFailure(
+      "stable lifecycle owner count must never exceed one",
+      diagnostics,
+      (sample) => sample.stableOwnerCount > 1
+    )
   ).toBeLessThanOrEqual(1);
   expect(
-    diagnostics.maxVisibleRootCount,
-    "public-share-root must never have more than one visible owner"
+    diagnostics.maxPresentationMainLandmarkCount,
+    publicShareLifecycleFailure(
+      "presentation main-landmark count must never exceed one",
+      diagnostics,
+      (sample) => sample.presentationMainLandmarkCount > 1
+    )
   ).toBeLessThanOrEqual(1);
   expect(
     diagnostics.maxVisibleLifecycleOwnerCount,
-    "route fallbacks and the resolved public-share owner must not be visible together"
+    publicShareLifecycleFailure(
+      "visible lifecycle owner count must never exceed one",
+      diagnostics,
+      (sample) => sample.visibleLifecycleOwnerCount > 1
+    )
   ).toBeLessThanOrEqual(1);
   expect(
     diagnostics.maxAccessibilityLifecycleOwnerCount,
-    "route fallbacks and the resolved public-share owner must not share the accessibility tree"
+    publicShareLifecycleFailure(
+      "accessibility-active lifecycle owner count must never exceed one",
+      diagnostics,
+      (sample) => sample.accessibilityLifecycleOwnerCount > 1
+    )
   ).toBeLessThanOrEqual(1);
   expect(lifecycle.filter((sample) => sample.visibleLifecycleOwnerCount > 1)).toEqual([]);
   expect(lifecycle.filter((sample) => sample.accessibilityLifecycleOwnerCount > 1)).toEqual([]);
   expect(
-    diagnostics.maxOutsideCurrentOwnerActionableCount,
-    "public-share actions must belong to the current lifecycle owner"
-  ).toBe(0);
-  expect(
-    lifecycle.flatMap((sample) => sample.roots).filter(
-      (root) => root.focusWithin && (root.ariaHidden || root.inert || !root.connected)
+    lifecycle.flatMap((sample) => sample.duplicateStableLifecycleMarkerNodeIds),
+    publicShareLifecycleFailure(
+      "stable lifecycle owner markers must not be duplicated",
+      diagnostics,
+      (sample) => sample.duplicateStableLifecycleMarkerNodeIds.length > 0
     )
   ).toEqual([]);
-  expect(lifecycle.flatMap((sample) => sample.duplicateStableTestIds)).toEqual([]);
-  expect(lifecycle.filter((sample) => sample.orphanShareIdentityCount > 0)).toEqual([]);
-  expect(lifecycle.filter((sample) => sample.outsideCurrentOwnerActionableCount > 0)).toEqual([]);
+  expect(
+    diagnostics.maxOutsideCurrentOwnerActionableCount,
+    publicShareLifecycleFailure(
+      "public-share actions must belong to the current lifecycle owner",
+      diagnostics,
+      (sample) => sample.outsideCurrentOwnerActionableCount > 0
+    )
+  ).toBe(0);
+  expect(
+    lifecycle.flatMap((sample) => sample.stableOwners).filter(
+      (owner) =>
+        owner.focusWithin &&
+        (!owner.connected || owner.hidden || owner.ariaHidden || owner.inert)
+    ),
+    publicShareLifecycleFailure(
+      "focus must not remain in a disconnected, hidden, inert, or outgoing owner",
+      diagnostics,
+      (sample) => sample.stableOwners.some(
+        (owner) =>
+          owner.focusWithin &&
+          (!owner.connected || owner.hidden || owner.ariaHidden || owner.inert)
+      )
+    )
+  ).toEqual([]);
+  expect(
+    lifecycle.flatMap((sample) => sample.duplicateStableTestIds),
+    publicShareLifecycleFailure(
+      "stable public-share test IDs must not be duplicated",
+      diagnostics,
+      (sample) => sample.duplicateStableTestIds.length > 0
+    )
+  ).toEqual([]);
+  expect(
+    lifecycle.filter((sample) => sample.orphanShareIdentityCount > 0),
+    publicShareLifecycleFailure(
+      "share identities must not be orphaned outside the current owner",
+      diagnostics,
+      (sample) => sample.orphanShareIdentityCount > 0
+    )
+  ).toEqual([]);
+  expect(
+    lifecycle.filter((sample) => sample.outsideCurrentOwnerActionableCount > 0),
+    publicShareLifecycleFailure(
+      "stale actionable share elements must not survive outside the current owner",
+      diagnostics,
+      (sample) => sample.outsideCurrentOwnerActionableCount > 0
+    )
+  ).toEqual([]);
   const observedStates = lifecycle.map((sample) => [
-    ...sample.fallbackStates,
-    ...sample.roots.flatMap((root) => (root.connected && root.state ? [root.state] : [])),
+    ...sample.recognizedStates,
+    ...sample.stableOwners.flatMap((owner) =>
+      owner.connected && owner.state ? [owner.state] : []
+    ),
   ]);
   let previousStateIndex = -1;
   for (const requiredState of requiredStates) {
@@ -441,6 +688,116 @@ async function expectPublicShareRootLifecycleUnique(
   return diagnostics;
 }
 
+type PublicShareLifecycleNegativeControl =
+  | "same-id-duplicate"
+  | "distinct-id-duplicate"
+  | "hidden-distinct-id-duplicate"
+  | "unmarked-main";
+
+async function expectPublicShareLifecycleNegativeControl(
+  browser: Browser,
+  origin: string,
+  control: PublicShareLifecycleNegativeControl
+) {
+  const context = await browser.newContext();
+  const negativePage = await context.newPage();
+  try {
+    await installPublicShareRootLifecycleObserver(negativePage);
+    await negativePage.goto(new URL("/share/not-a-valid-public-token", origin).href, {
+      waitUntil: "domcontentloaded",
+    });
+    await expectOnlyPublicShareInvalid(negativePage);
+    const physicalCounts = await negativePage.evaluate((negativeControl) => {
+      const owner = document.querySelector<HTMLElement>(
+        "[data-public-share-lifecycle-owner]"
+      );
+      if (!owner) throw new Error("Invalid owner was unavailable for negative injection");
+      const duplicate = owner.cloneNode(true) as HTMLElement;
+      duplicate.dataset.publicShareNegativeControl = negativeControl;
+      if (negativeControl !== "same-id-duplicate") {
+        duplicate.dataset.testid = `public-share-negative-${negativeControl}`;
+      }
+      if (negativeControl === "hidden-distinct-id-duplicate") {
+        duplicate.hidden = true;
+        duplicate.setAttribute("aria-hidden", "true");
+      }
+      if (negativeControl === "unmarked-main") {
+        duplicate.removeAttribute("data-public-share-lifecycle-owner");
+      }
+      owner.after(duplicate);
+      const recognizedStateOwnerSelector = [
+        '[data-testid="public-share-root"]',
+        '[data-testid="public-share-loading"]',
+        '[data-testid="public-share-client-resolving"]',
+        '[data-testid="public-share-invalid"]',
+        '[data-testid="public-share-error"]',
+      ].join(",");
+      return {
+        recognizedStateOwnerCount:
+          document.querySelectorAll(recognizedStateOwnerSelector).length,
+        stableOwnerCount:
+          document.querySelectorAll("[data-public-share-lifecycle-owner]").length,
+        presentationMainLandmarkCount:
+          document.querySelectorAll('main, [role="main"]').length,
+        testIds: Array.from(document.querySelectorAll('main, [role="main"]')).map(
+          (node) => node.getAttribute("data-testid")
+        ),
+      };
+    }, control);
+    const expectedStableOwnerCount = control === "unmarked-main" ? 1 : 2;
+    const expectedRecognizedStateOwnerCount = control === "same-id-duplicate" ? 2 : 1;
+    expect(physicalCounts.stableOwnerCount).toBe(expectedStableOwnerCount);
+    expect(physicalCounts.presentationMainLandmarkCount).toBe(2);
+    expect(physicalCounts.recognizedStateOwnerCount).toBe(
+      expectedRecognizedStateOwnerCount
+    );
+    expect(physicalCounts.testIds).toHaveLength(2);
+    await expect
+      .poll(async () => {
+        const diagnostics = await readPublicShareRootLifecycle(negativePage);
+        return {
+          stableOwnerCount: diagnostics.maxConnectedStableOwnerCount,
+          presentationMainLandmarkCount:
+            diagnostics.maxPresentationMainLandmarkCount,
+          recognizedStateOwnerCount: diagnostics.maxRecognizedStateOwnerCount,
+        };
+      })
+      .toEqual({
+        stableOwnerCount: expectedStableOwnerCount,
+        presentationMainLandmarkCount: 2,
+        recognizedStateOwnerCount: expectedRecognizedStateOwnerCount,
+      });
+    const diagnostics = await readPublicShareRootLifecycle(negativePage);
+    if (control === "same-id-duplicate") {
+      expect(diagnostics.samples.flatMap((sample) => sample.duplicateStableTestIds)).toContain(
+        "public-share-invalid"
+      );
+    }
+    if (control === "hidden-distinct-id-duplicate") {
+      expect(diagnostics.maxVisibleLifecycleOwnerCount).toBe(1);
+      expect(diagnostics.maxAccessibilityLifecycleOwnerCount).toBe(1);
+    }
+    const rejection = expectPublicShareRootLifecycleUnique(negativePage);
+    if (control === "unmarked-main") {
+      await expect(rejection).rejects.toThrow(
+        /presentation main-landmark count must never exceed one/
+      );
+    } else {
+      await expect(rejection).rejects.toThrow(
+        /stable lifecycle owner count must never exceed one/
+      );
+    }
+    return diagnostics;
+  } finally {
+    await negativePage
+      .locator("[data-public-share-negative-control]")
+      .evaluateAll((nodes) => nodes.forEach((node) => node.remove()));
+    await expect(negativePage.locator("[data-public-share-lifecycle-owner]")).toHaveCount(1);
+    await expect(negativePage.locator('main, [role="main"]')).toHaveCount(1);
+    await context.close();
+  }
+}
+
 async function expectFiniteAttribute(locator: Locator, name: string) {
   const value = Number(await locator.getAttribute(name));
   expect(Number.isFinite(value)).toBe(true);
@@ -452,6 +809,9 @@ async function expectShareReady(
   expected: { mode: ShareLayoutMode; roomId: string }
 ) {
   const root = page.getByTestId("public-share-root");
+  await expect(root).toHaveCount(1);
+  await expect(page.getByRole("main")).toHaveCount(1);
+  await expect(page.locator("[data-public-share-lifecycle-owner]")).toHaveCount(1);
   await expect(root).toHaveAttribute("data-layout-status", "ready");
   await expect(root).toHaveAttribute("data-layout-mode", expected.mode);
   await expect(root).toHaveAttribute("data-selected-room-id", expected.roomId);
@@ -463,6 +823,18 @@ async function expectShareReady(
   await expectFiniteAttribute(root, "data-surface-width");
   await expectFiniteAttribute(root, "data-surface-height");
   return root;
+}
+
+async function expectOnlyPublicShareInvalid(page: Page) {
+  await expect(page.getByTestId("public-share-invalid")).toHaveCount(1);
+  await expect(page.getByTestId("public-share-invalid")).toBeVisible();
+  await expect(page.getByRole("main")).toHaveCount(1);
+  await expect(page.locator("[data-public-share-lifecycle-owner]")).toHaveCount(1);
+  await expect(page.getByTestId("public-share-root")).toHaveCount(0);
+  await expect(page.getByTestId("public-share-loading")).toHaveCount(0);
+  await expect(page.getByTestId("public-share-error")).toHaveCount(0);
+  await expect(page.locator('[data-testid^="share-"]')).toHaveCount(0);
+  await expect(page.locator("[data-share-touch-target]")).toHaveCount(0);
 }
 
 async function expectNoPageOverflow(page: Page) {
@@ -569,7 +941,9 @@ test.describe("ARCH-RC53-55 responsive public share", () => {
         waitUntil: "domcontentloaded",
       });
       try {
+        await expect(page.getByTestId("public-share-loading")).toHaveCount(1);
         await expect(page.getByTestId("public-share-loading")).toBeVisible();
+        await expect(page.getByRole("main")).toHaveCount(1);
         await expect(page.getByTestId("public-share-root")).toHaveCount(0);
       } finally {
         await releaseProjectionRead();
@@ -621,7 +995,7 @@ test.describe("ARCH-RC53-55 responsive public share", () => {
       expect(
         new Set(
           responsiveLifecycle.samples.flatMap((sample) =>
-            sample.roots.filter((root) => root.connected).map((root) => root.nodeId)
+            sample.stableOwners.filter((owner) => owner.connected).map((owner) => owner.nodeId)
           )
         ).size,
         "responsive mode changes must preserve the root node identity"
@@ -739,7 +1113,7 @@ test.describe("ARCH-RC53-55 responsive public share", () => {
       expect(
         new Set(
           responsiveLifecycle.samples.flatMap((sample) =>
-            sample.roots.filter((root) => root.connected).map((root) => root.nodeId)
+            sample.stableOwners.filter((owner) => owner.connected).map((owner) => owner.nodeId)
           )
         ).size,
         "room, saved-view, and responsive changes must preserve the root node identity"
@@ -770,6 +1144,7 @@ test.describe("ARCH-RC53-55 responsive public share", () => {
 
   test("history, reload, invalid, and revoked states are distinct and deterministic", async ({
     page,
+    browser,
   }) => {
     const seed = await createBetaSeedDesign();
     const secondSnapshot = buildBetaDesignSnapshot();
@@ -867,15 +1242,15 @@ test.describe("ARCH-RC53-55 responsive public share", () => {
       const tokenTransitionLifecycle = await expectPublicShareRootLifecycleUnique(page);
       const firstProjectionNodeIds = new Set(
         tokenTransitionLifecycle.samples.flatMap((sample) =>
-          sample.roots.flatMap((root) =>
-            root.projectionIdentity === firstProjectionIdentity ? [root.nodeId] : []
+          sample.stableOwners.flatMap((owner) =>
+            owner.projectionIdentity === firstProjectionIdentity ? [owner.nodeId] : []
           )
         )
       );
       const secondProjectionNodeIds = new Set(
         tokenTransitionLifecycle.samples.flatMap((sample) =>
-          sample.roots.flatMap((root) =>
-            root.projectionIdentity === secondProjectionIdentity ? [root.nodeId] : []
+          sample.stableOwners.flatMap((owner) =>
+            owner.projectionIdentity === secondProjectionIdentity ? [owner.nodeId] : []
           )
         )
       );
@@ -889,38 +1264,118 @@ test.describe("ARCH-RC53-55 responsive public share", () => {
         firstProjectionIdentity ?? ""
       );
       await expectPublicShareRootLifecycleUnique(page);
+      expect(
+        await page.evaluate(
+          () =>
+            (window as typeof window & { __publicShareDocumentMarker?: string })
+              .__publicShareDocumentMarker
+        )
+      ).toBe("token-a-document");
       await page.goForward({ waitUntil: "domcontentloaded" });
       await expect(page.getByTestId("public-share-root")).toHaveAttribute(
         "data-projection-content-identity",
         secondProjectionIdentity ?? ""
       );
       await expectPublicShareRootLifecycleUnique(page);
+      expect(
+        await page.evaluate(
+          () =>
+            (window as typeof window & { __publicShareDocumentMarker?: string })
+              .__publicShareDocumentMarker
+        )
+      ).toBe("token-a-document");
 
       await getBetaPrismaClient().design.update({
         where: { id: seed.designId },
         data: { shareEnabled: false },
       });
       await page.goto(`/share/${seed.shareToken}`, { waitUntil: "domcontentloaded" });
-      await expect(page.getByTestId("public-share-invalid")).toBeVisible();
-      await expect(page.getByTestId("public-share-root")).toHaveCount(0);
-      await expectPublicShareRootLifecycleUnique(page, ["loading", "invalid"]);
+      await expectOnlyPublicShareInvalid(page);
+      const disabledLifecycle = await expectPublicShareRootLifecycleUnique(
+        page,
+        ["loading", "invalid"]
+      );
 
       await page.goto("/share/not-a-valid-public-token", { waitUntil: "domcontentloaded" });
-      await expect(page.getByTestId("public-share-invalid")).toBeVisible();
-      await expect(page.getByTestId("public-share-root")).toHaveCount(0);
-      await expectPublicShareRootLifecycleUnique(page, ["loading", "invalid"]);
+      await expectOnlyPublicShareInvalid(page);
+      const malformedLifecycle = await expectPublicShareRootLifecycleUnique(
+        page,
+        ["loading", "invalid"]
+      );
+      expect(malformedLifecycle.samples[0]?.documentId).not.toBe(
+        disabledLifecycle.samples[0]?.documentId
+      );
 
       await page.goto(`/share/${emptySeed.shareToken}`, { waitUntil: "domcontentloaded" });
       await expectShareReady(page, { mode: "mobile", roomId: "beta-living" });
       await expect(page.getByText("No products added to this shared design yet")).toBeVisible();
       await expect(page.getByTestId("share-saved-view-navigation")).toHaveCount(0);
-      await expectPublicShareRootLifecycleUnique(page, ["loading", "resolving", "ready"]);
+      const emptyLifecycle = await expectPublicShareRootLifecycleUnique(
+        page,
+        ["loading", "resolving", "ready"]
+      );
+      expect(emptyLifecycle.samples[0]?.documentId).not.toBe(
+        malformedLifecycle.samples[0]?.documentId
+      );
 
+      const browserObservableProjectionChecks: Array<Promise<boolean>> = [];
+      const observeProjectionResponse = (response: import("@playwright/test").Response) => {
+        const contentType = response.headers()["content-type"] ?? "";
+        if (!/(?:text\/html|text\/x-component|application\/json)/.test(contentType)) return;
+        browserObservableProjectionChecks.push(
+          response.body().then((body) => {
+            const text = body.toString("utf8");
+            return (
+              text.includes("ownerInternalState") ||
+              text.includes("private-route-error-fixture")
+            );
+          })
+        );
+      };
+      page.on("response", observeProjectionResponse);
       await page.goto(`/share/${errorSeed.shareToken}`, { waitUntil: "domcontentloaded" });
+      await expect(page.getByTestId("public-share-error")).toHaveCount(1);
       await expect(page.getByTestId("public-share-error")).toBeVisible();
       await expect(page.getByTestId("public-share-error-retry")).toBeVisible();
       await expect(page.getByTestId("public-share-root")).toHaveCount(0);
-      await expectPublicShareRootLifecycleUnique(page, ["loading", "error"]);
+      await expect(page.getByTestId("public-share-invalid")).toHaveCount(0);
+      await expect(page.getByTestId("public-share-loading")).toHaveCount(0);
+      await expect(page.getByRole("main")).toHaveCount(1);
+      const errorLifecycle = await expectPublicShareRootLifecycleUnique(
+        page,
+        ["loading", "error"]
+      );
+      expect(errorLifecycle.samples[0]?.documentId).not.toBe(
+        emptyLifecycle.samples[0]?.documentId
+      );
+      page.removeListener("response", observeProjectionResponse);
+      expect(await Promise.all(browserObservableProjectionChecks)).not.toContain(true);
+      expect(
+        await page.evaluate(() => {
+          const publicMarkup = document.documentElement.innerHTML;
+          return (
+            publicMarkup.includes("ownerInternalState") ||
+            publicMarkup.includes("private-route-error-fixture")
+          );
+        })
+      ).toBe(false);
+
+      await expectPublicShareLifecycleNegativeControl(
+        browser,
+        page.url(),
+        "same-id-duplicate"
+      );
+      await expectPublicShareLifecycleNegativeControl(
+        browser,
+        page.url(),
+        "distinct-id-duplicate"
+      );
+      await expectPublicShareLifecycleNegativeControl(
+        browser,
+        page.url(),
+        "hidden-distinct-id-duplicate"
+      );
+      await expectPublicShareLifecycleNegativeControl(browser, page.url(), "unmarked-main");
     } finally {
       await cleanupBetaSeed(seed);
       await cleanupBetaSeed(secondSeed);

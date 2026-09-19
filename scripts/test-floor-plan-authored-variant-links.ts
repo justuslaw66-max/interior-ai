@@ -211,9 +211,13 @@ const addressSearch = fs.readFileSync(
   path.join(process.cwd(), "components/editor/FloorPlanAddressSearch.tsx"),
   "utf8"
 );
-assert.match(addressSearch, /buildCanonicalFloorPlanTemplateForAuthoredVariant/);
+const applicationRequests = fs.readFileSync(
+  path.join(process.cwd(), "components/editor/useFloorPlanResultApplicationRequests.ts"), "utf8"
+);
+assert.match(addressSearch, /useFloorPlanResultApplicationRequests/);
+assert.match(applicationRequests, /buildCanonicalFloorPlanTemplateForAuthoredVariant/);
 assert.match(addressSearch, /onChoosePublicVariant/);
-assert.match(addressSearch, /startAsNewDesign: pendingApplication\.startAsNewDesign/);
+assert.match(applicationRequests, /startAsNewDesign: pending\.startAsNewDesign/);
 assert.doesNotMatch(addressSearch, /cannot be switched here/);
 
 const adminCreateRoute = fs.readFileSync(

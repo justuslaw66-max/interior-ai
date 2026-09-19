@@ -2,6 +2,12 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
+import {
+  buildDesignPageViewportRegionAdapter,
+  type BuildDesignPageViewportRegionAdapterInput,
+} from "@/lib/design-page-viewport-region-adapter";
+import type { DesignPageViewportOpening } from "@/lib/design-page-opening-viewport";
+
 const root = process.cwd();
 const readSource = (relativePath: string) =>
   readFileSync(join(root, relativePath), "utf8");
@@ -23,8 +29,12 @@ const viewportWorkspaceSource = readSource(
 const viewportReadModelSource = readSource(
   "lib/design-page-viewport-workspace-read-model.ts"
 );
+const selectionInspectorSource = readSource(
+  "lib/useDesignPageSelectionInspectorModel.ts"
+);
 const normalizedViewportWorkspace = normalizeWhitespace(viewportWorkspaceSource);
 const normalizedViewportReadModel = normalizeWhitespace(viewportReadModelSource);
+const normalizedSelectionInspector = normalizeWhitespace(selectionInspectorSource);
 const normalizedOverlay = normalizeWhitespace(overlaySource);
 const normalizedAdapter = normalizeWhitespace(adapterSource);
 
@@ -93,7 +103,6 @@ for (const expected of [
 for (const expected of [
   "railVisible: state.visibility.rail",
   "sceneLoadingVisible: state.visibility.sceneLoading",
-  "!state.visibility.isClientPreview && state.opening.value && selectedOverlayId",
   "state.visibility.selectionInspector && selectionSummary",
   "planQuality: state.visibility.planQuality ?",
   "planCanvas: state.planCanvas",
@@ -111,6 +120,159 @@ for (const expected of [
   assert.ok(
     normalizedAdapter.includes(expected),
     `The viewport adapter should preserve live viewport policy: ${expected}.`
+  );
+}
+
+assert.ok(
+  normalizedAdapter.includes(
+    "const selectedOverlayId = state.opening.selectedId;"
+  ),
+  "The viewport adapter should derive overlay identity from the selected opening ID."
+);
+assert.ok(
+  normalizedAdapter.includes(
+    "const selectedOpeningState = resolveDesignPageOpeningViewportState( state.opening.value, state.selectionInspector.activeRoomHeightMm );"
+  ),
+  "The viewport adapter should resolve its opening state from the live opening value."
+);
+assert.ok(
+  normalizedAdapter.includes(
+    "!state.visibility.isClientPreview && selectedOpeningState && selectedOverlayId"
+  ),
+  "Selected-opening publication should require editing mode, resolved opening state, and selected identity."
+);
+assert.ok(
+  normalizedSelectionInspector.includes(
+    "selectedPlanOverlayId ? planOpenings.find((opening) => opening.id === selectedPlanOverlayId) ?? null : null"
+  ),
+  "A stale selected ID should resolve to no visible opening instead of publishing another opening."
+);
+
+const viewportOpening: DesignPageViewportOpening = {
+  id: "opening-current",
+  kind: "window",
+  wall: "north",
+  widthMm: 1200,
+  heightMm: 1100,
+  bottomMm: 700,
+  wallSpanMeters: 5,
+};
+
+function selectedOpeningFor(input: {
+  isClientPreview: boolean;
+  selectedId: string | null;
+  opening: DesignPageViewportOpening | null;
+}) {
+  const boundary = {
+    state: {
+      visibility: {
+        rail: false,
+        sceneLoading: false,
+        selectionInspector: false,
+        planQuality: false,
+        floorProperties: false,
+        isClientPreview: input.isClientPreview,
+      },
+      opening: { selectedId: input.selectedId, value: input.opening },
+      selectionInspector: {
+        summary: null,
+        measurementUnit: "mm",
+        activeRoomHeightMm: 2700,
+      },
+      planSummary: null,
+      planQuality: { report: { issues: [] }, collapsed: false },
+      planCanvas: {},
+      aiLayoutPreview: { proposal: null, toneText: "" },
+      crossRoomDragTarget: null,
+      navigator: { enabled: false },
+      floorProperties: {},
+      importedWallEditor: null,
+      selectionControls: {
+        viewMode: "2d",
+        stackedFloorView: false,
+        floorOptions: [],
+        activeFloorLevel: 1,
+        hiddenFloorLevels: [],
+        selectedCount: 0,
+        pendingZoneType: "seating",
+        selectedZone: null,
+        isClientPreview: input.isClientPreview,
+      },
+    },
+    configuration: {
+      dark: false,
+      sceneBackgroundColor: "#ffffff",
+      canEditPlanGeometry: true,
+      proMode: false,
+      selectionInspectorDockedWithRightRail: false,
+      floatingOverlayStackWidthPx: 320,
+      selectionInspectorRightPx: 16,
+      selectionInspectorTopPx: 64,
+      selectionInspectorWidthPx: 320,
+      planQualityReviewTopPx: 64,
+      editorMode: "design",
+      importedWallEditor: {},
+    },
+    references: {},
+    actions: {
+      deletePlanOverlay: () => undefined,
+      updateOpeningMetrics: () => undefined,
+      showToast: () => undefined,
+      selectionInspector: {},
+      planSummary: {},
+      planQuality: {},
+      planCanvas: {},
+      aiLayoutPreview: {},
+      navigator: {},
+      floorProperties: {},
+      importedWallEditor: {},
+      selectionControls: { selectedZone: {} },
+    },
+  } as unknown as BuildDesignPageViewportRegionAdapterInput;
+  return buildDesignPageViewportRegionAdapter(boundary).state.selectedOpening;
+}
+
+for (const scenario of [
+  {
+    label: "client preview",
+    isClientPreview: true,
+    opening: viewportOpening,
+    selectedId: viewportOpening.id,
+    emitted: false,
+  },
+  {
+    label: "missing opening",
+    isClientPreview: false,
+    opening: null,
+    selectedId: viewportOpening.id,
+    emitted: false,
+  },
+  {
+    label: "missing selected ID",
+    isClientPreview: false,
+    opening: viewportOpening,
+    selectedId: null,
+    emitted: false,
+  },
+  {
+    label: "current selected opening",
+    isClientPreview: false,
+    opening: viewportOpening,
+    selectedId: viewportOpening.id,
+    emitted: true,
+  },
+  {
+    label: "stale selected ID resolved upstream",
+    isClientPreview: false,
+    opening: null,
+    selectedId: "opening-stale",
+    emitted: false,
+  },
+] as const) {
+  assert.equal(
+    Boolean(selectedOpeningFor(scenario)),
+    scenario.emitted,
+    `${scenario.label} should ${scenario.emitted ? "emit" : "suppress"} the selected-opening overlay.`
   );
 }
 

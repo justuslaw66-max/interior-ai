@@ -14,8 +14,7 @@ type FloorPlanUploadWorkspaceDialogProps = {
   panelRef: RefObject<HTMLElement | null>;
   closeButtonRef: RefObject<HTMLButtonElement | null>;
   historyConfirmationOpen: boolean;
-  dark: boolean;
-  disabled: boolean;
+  dark: boolean; disabled: boolean; proMode: boolean;
   buttonClass: string;
   subtleClass: string;
   request: { file: File; trainingBenchmarkOptIn: boolean } | null;
@@ -81,8 +80,7 @@ export function FloorPlanUploadWorkspaceDialog(
     panelRef,
     closeButtonRef,
     historyConfirmationOpen,
-    dark,
-    disabled,
+    dark, disabled, proMode,
     buttonClass,
     subtleClass,
     request,
@@ -115,7 +113,7 @@ export function FloorPlanUploadWorkspaceDialog(
           : "min-h-0 flex-1 overflow-y-auto bg-neutral-100/70 p-3 sm:p-5 lg:p-6"}>
           <FloorPlanImportWorkspace request={request}
             trainingBenchmarkOptIn={trainingBenchmarkOptIn} dark={dark}
-            disabled={disabled} onChooseFile={onChooseFile}
+            disabled={disabled} proMode={proMode} onChooseFile={onChooseFile}
             onHistoryConfirmationOpenChange={onConfirmationOpenChange}
             onTrainingBenchmarkOptInChange={onTrainingBenchmarkOptInChange} />
         </div>

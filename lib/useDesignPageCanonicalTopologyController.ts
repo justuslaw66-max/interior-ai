@@ -1,14 +1,20 @@
 "use client";
 
 import { useCallback, useRef, type Dispatch, type MutableRefObject, type SetStateAction } from "react";
-import type { DesignPageOpeningMetricsPatch } from "@/lib/design-page-opening-metrics";
+import {
+  DesignPageOpeningMutationError,
+  type DesignPageOpeningMetricsPatch,
+} from "@/lib/design-page-opening-metrics";
 import type { FixedElement2D, RoomOpening2D } from "@/lib/editorScene";
 import {
-  applyFloorPlanMeasuredPropertyMutationV2,
   FloorPlanMeasuredPropertyMutationErrorV2,
-  type FloorPlanConsumerMeasurementEvidenceV2,
-  type FloorPlanMeasuredPropertyMutationResultV2,
+  floorPlanPropertyEvidenceIsEditable,
 } from "@/lib/floor-plan-measured-property-mutations";
+import {
+  applyCanonicalOpeningCompositeMeasurements,
+  hasDesignPageOpeningMeasurement,
+  planCanonicalOpeningMetrics,
+} from "@/lib/design-page-opening-measured-patch";
 import {
   buildCanonicalOpeningUpdateMutationV2,
   commitCanonicalTopologyMutationToSnapshotV2,
@@ -184,13 +190,24 @@ export function useDesignPageCanonicalTopologyController({
     (
       openingId: string,
       metrics: { widthMeters: number; offsetMeters: number }
-    ): boolean =>
-      commitOpeningMetrics({
+    ): boolean => {
+      const opening = refs.planOpenings.current.find(
+        (candidate) => candidate.id === openingId
+      );
+      if (!opening) return false;
+      const widthEvidence = opening.evidence?.width ?? "assumed";
+      if (!floorPlanPropertyEvidenceIsEditable(widthEvidence)) {
+        actions.showToast("Width is locked by source or site-measured evidence.");
+        return true;
+      }
+      return commitOpeningMetrics({
         openingId,
         centerOffsetMm: millimetres(metrics.offsetMeters),
         widthMm: millimetres(metrics.widthMeters),
-      }),
-    [commitOpeningMetrics]
+        changes: { widthEvidence: "user_confirmed" },
+      });
+    },
+    [actions, commitOpeningMetrics, refs.planOpenings]
   );
 
   const updateOpeningMetrics = useCallback(
@@ -209,48 +226,25 @@ export function useDesignPageCanonicalTopologyController({
         floor.openings.some((candidate) => candidate.id === openingId)
       );
       if (!canonicalFloor) return false;
-      const measuredHeight =
-        metrics.heightMeters !== undefined && metrics.heightEvidence !== undefined;
-      const measuredSill =
-        metrics.bottomMeters !== undefined && metrics.bottomEvidence !== undefined;
-      if (measuredHeight || measuredSill) {
-        let currentDocument = document;
-        let latestResult: FloorPlanMeasuredPropertyMutationResultV2 | null = null;
-        const commitMeasurement = (
-          kind: "opening_height" | "opening_sill_height",
-          valueMeters: number,
-          evidence: FloorPlanConsumerMeasurementEvidenceV2
-        ) => {
-          const baseContext = createContext(openingId);
-          latestResult = applyFloorPlanMeasuredPropertyMutationV2(
-            currentDocument,
-            {
-              target: { kind, floorId: canonicalFloor.id, openingId },
-              valueMm: millimetres(valueMeters),
-              evidence,
-            },
-            {
-              ...baseContext,
-              note: metrics.measurementNote?.trim() || baseContext.note,
-            }
-          );
-          currentDocument = latestResult.document;
-        };
+      let plan: ReturnType<typeof planCanonicalOpeningMetrics>;
+      try {
+        plan = planCanonicalOpeningMetrics({ canonical, metrics, opening });
+      } catch (cause) {
+        const message = cause instanceof DesignPageOpeningMutationError
+          ? cause.message
+          : "The opening kind change is not valid.";
+        if (lastErrorRef.current !== message) {
+          lastErrorRef.current = message;
+          actions.showToast(`Opening change blocked: ${message}`);
+        }
+        return true;
+      }
+      if (hasDesignPageOpeningMeasurement(plan.plannedMetrics)) {
         try {
-          if (measuredHeight) {
-            commitMeasurement(
-              "opening_height",
-              metrics.heightMeters!,
-              metrics.heightEvidence!
-            );
-          }
-          if (measuredSill) {
-            commitMeasurement(
-              "opening_sill_height",
-              metrics.bottomMeters!,
-              metrics.bottomEvidence!
-            );
-          }
+          const latestResult = applyCanonicalOpeningCompositeMeasurements({
+            changes: plan.changes, createContext, document,
+            floorId: canonicalFloor.id, metrics: plan.plannedMetrics, openingId,
+          });
           if (!latestResult) return true;
           const committed = commitCanonicalTopologyMutationToSnapshotV2(
             snapshot,
@@ -274,51 +268,17 @@ export function useDesignPageCanonicalTopologyController({
         }
         return true;
       }
-      const nextKind = metrics.kind;
-      const changes: FloorPlanOpeningChangesV2 = {
-        ...(metrics.heightMeters !== undefined
-          ? { heightMm: millimetres(metrics.heightMeters) }
-          : {}),
-        ...(metrics.bottomMeters !== undefined
-          ? { sillHeightMm: millimetres(metrics.bottomMeters) }
-          : {}),
-      };
-      if (nextKind === "window") {
-        Object.assign(changes, {
-          kind: "window" as const,
-          operation: "fixed" as const,
-          hinge: "none" as const,
-          handing: "none" as const,
-        });
-      } else if (nextKind === "door") {
-        Object.assign(changes, {
-          kind: "door" as const,
-          operation:
-            canonical.kind === "door" || canonical.kind === "gate"
-              ? canonical.operation
-              : "swing",
-          hinge:
-            canonical.kind === "door" || canonical.kind === "gate"
-              ? canonical.hinge
-              : "unknown",
-          handing:
-            canonical.kind === "door" || canonical.kind === "gate"
-              ? canonical.handing
-              : "unknown",
-          sillHeightMm: 0,
-        });
-      }
       return commitOpeningMetrics({
         openingId,
         centerOffsetMm:
-          metrics.offsetMeters !== undefined
-            ? millimetres(metrics.offsetMeters)
+          plan.plannedMetrics.offsetMeters !== undefined
+            ? millimetres(plan.plannedMetrics.offsetMeters)
             : opening.offsetMm,
         widthMm:
-          metrics.widthMeters !== undefined
-            ? millimetres(metrics.widthMeters)
+          plan.plannedMetrics.widthMeters !== undefined
+            ? millimetres(plan.plannedMetrics.widthMeters)
             : opening.widthMm,
-        changes,
+        changes: plan.changes,
       });
     },
     [actions, commitOpeningMetrics, createContext, refs]

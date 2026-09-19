@@ -45,6 +45,33 @@ export type UseDesignPagePlanQualityControllerInput = {
   actions: DesignPagePlanQualityActions;
 };
 
+function reportHasOpeningHostIssue(issues: readonly FloorPlanQualityIssue[]) {
+  return issues.some((issue) => issue.id.startsWith("opening-host:"));
+}
+
+function selectPlanIssueTarget(
+  targetRoomId: string | undefined,
+  target: FloorPlanQualityIssue["target"] | undefined,
+  selectRoom: (roomId: string | null) => void,
+  updateSelection: DesignPagePlanQualityActions["updateSelection"]
+) {
+  if (targetRoomId) selectRoom(targetRoomId);
+  if (target?.openingId) updateSelection(new Set([target.openingId]), target.openingId);
+}
+
+function activateAvailableIssueRoom(
+  targetRoomId: string | undefined,
+  activeRoomId: string | undefined,
+  rooms: readonly HousePlanRoom2D[],
+  switchRoom: DesignPagePlanQualityActions["switchRoom"]
+) {
+  const availableRoomId = targetRoomId && rooms.some((room) => room.id === targetRoomId)
+    ? targetRoomId
+    : undefined;
+  if (availableRoomId && activeRoomId !== availableRoomId) switchRoom(availableRoomId);
+  return availableRoomId;
+}
+
 export function useDesignPagePlanQualityController({
   state,
   configuration,
@@ -102,7 +129,7 @@ export function useDesignPagePlanQualityController({
 
   const reviewPanelVisible =
     !isClientPreview &&
-    viewMode === "2d" &&
+    (viewMode === "2d" || reportHasOpeningHostIssue(report.issues)) &&
     report.issues.length > 0 &&
     !planCanvasInteractionActive;
 
@@ -168,6 +195,9 @@ export function useDesignPagePlanQualityController({
     (action: FloorPlanQualityAction, issue?: FloorPlanQualityIssue) => {
       const target = issue?.target;
       const targetRoomId = target?.roomId ?? issue?.roomId ?? designSnapshot.activeRoomId;
+      const availableTargetRoomId = activateAvailableIssueRoom(
+        targetRoomId, designSnapshot.activeRoomId, housePlanRooms, switchRoom
+      );
 
       track("floor_plan_quality_fix_clicked", {
         action,
@@ -179,10 +209,6 @@ export function useDesignPagePlanQualityController({
         target_item_id: target?.itemInstanceId ?? null,
         top_issue: report.issues[0]?.id ?? null,
       });
-
-      if (targetRoomId && designSnapshot.activeRoomId !== targetRoomId) {
-        switchRoom(targetRoomId);
-      }
 
       if (action === "add_window" || action === "add_doorway") {
         goPlan();
@@ -206,7 +232,7 @@ export function useDesignPagePlanQualityController({
         goPlan();
         setViewMode("2d");
         clearNonRoomSelection();
-        if (targetRoomId) selectPlanRoom(targetRoomId);
+        selectPlanIssueTarget(availableTargetRoomId, target, selectPlanRoom, updateSelection);
         showToast("Review the highlighted plan issue");
         return;
       }
@@ -230,6 +256,7 @@ export function useDesignPagePlanQualityController({
       designSnapshot.activeRoomId,
       goFurnish,
       goPlan,
+      housePlanRooms,
       report,
       selectPlanRoom,
       setTraceOpeningKind,

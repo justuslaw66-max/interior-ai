@@ -1175,6 +1175,10 @@ const addressSearchSource = fs.readFileSync(
   path.join(process.cwd(), "components", "editor", "FloorPlanAddressSearch.tsx"),
   "utf8"
 );
+const directoryClientSource = fs.readFileSync(
+  path.join(process.cwd(), "lib", "floor-plan-directory-client.ts"),
+  "utf8"
+);
 const addressFieldsSource = fs.readFileSync(
   path.join(process.cwd(), "components", "editor", "FloorPlanAddressFields.tsx"),
   "utf8"
@@ -1184,9 +1188,14 @@ const resultListSource = fs.readFileSync(
   "utf8"
 );
 assert.match(
-  addressSearchSource,
+  directoryClientSource,
   /new URLSearchParams\(\{ browse: "1", limit: "12" \}\)[\s\S]*?fetch\(`\/api\/floor-plans\?\$\{params\}`\)/,
   "The address library should load and expose a visible approved-floor-plan browser."
+);
+assert.match(
+  addressSearchSource,
+  /const payload = await fetchFloorPlanBrowsePage\(cursor\);[\s\S]*?setBrowseResults/,
+  "The visible browser must consume the validated directory client response."
 );
 assert.match(addressFieldsSource, /Browse approved floor plans/);
 assert.doesNotMatch(
@@ -1196,7 +1205,7 @@ assert.doesNotMatch(
 );
 assert.match(
   addressSearchSource,
-  /const sourceResults = hasSearchQuery \? results : browseOpen \? browseResults : \[\][\s\S]*?<FloorPlanCatalogResultList/,
+  /const sourceResults = hasAddress \? results : browseOpen \? browseResults : \[\][\s\S]*?<FloorPlanCatalogResultList/,
   "The approved library browser should render its browse results without requiring a search query."
 );
 assert.match(

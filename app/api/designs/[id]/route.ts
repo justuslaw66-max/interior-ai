@@ -175,7 +175,7 @@ export async function PUT(
         client: transaction,
         designId: saved.id,
         ownerUserId: userId,
-        snapshot: saved.snapshot,
+        snapshot: saved.snapshot, previousSnapshot: design.snapshot,
       });
       return saved;
     });

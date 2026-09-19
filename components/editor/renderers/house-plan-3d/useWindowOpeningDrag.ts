@@ -4,6 +4,7 @@ import { useEffect, useLayoutEffect, useRef } from "react";
 import { useThree, type ThreeEvent } from "@react-three/fiber";
 import * as THREE from "three";
 import type { RoomRendererOpening } from "@/lib/design-page-plan-overlays";
+import { getCanonicalPlanLine } from "@/lib/wall-segment-geometry";
 import type { WallOpening3D, WallSegment3D } from "./geometry";
 import { getWindowOpeningHitVolume } from "./windowOpeningGeometry";
 import { getWindowDragPosition, type WindowDragBounds } from "./windowOpeningDrag";
@@ -36,12 +37,17 @@ function createDragSession(event: ThreeEvent<PointerEvent>, options: Options): D
   const axis = new THREE.Vector3(1, 0, 0).transformDirection(event.object.matrixWorld);
   const normal = new THREE.Vector3(0, 0, 1).transformDirection(event.object.matrixWorld);
   const sourceAlongX = sourceOpening?.wall === "north" || sourceOpening?.wall === "south";
+  // A host-resolved offset runs along the room segment's canonical line (legacyOpeningOffsetAtWorldPoint),
+  // so a diagonal wall moves the window 1:1 with the pointer instead of by the axis-aligned cosine.
+  const hostResolution = sourceOpening?.hostResolution;
+  const hostLine = hostResolution?.status === "resolved" ? getCanonicalPlanLine(hostResolution.host.roomSegment) : null;
   return {
     pointerId: event.pointerId, clientX: event.clientX, clientY: event.clientY,
     origin: event.point.clone(), axis,
     plane: new THREE.Plane().setFromNormalAndCoplanarPoint(normal, event.point),
     bounds: { offset: opening.offset, sourceOffset: sourceOpening?.offset ?? opening.offset,
-      sourceDirection: sourceOpening ? (sourceAlongX ? axis.x : axis.z) : 1,
+      sourceDirection: hostLine ? axis.x * hostLine.tangent.x + axis.z * hostLine.tangent.z
+        : sourceOpening ? (sourceAlongX ? axis.x : axis.z) : 1,
       width: opening.width, height: volume.height, bottom: volume.bottom,
       wallLength: segment.length, wallHeight },
   };

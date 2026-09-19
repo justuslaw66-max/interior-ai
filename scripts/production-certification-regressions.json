@@ -151,7 +151,7 @@
     "helper-readiness-failure-abort-cleanup",
     "helper-invalid-session-response-abort-cleanup",
     "helper-structured-result-publication-abort-cleanup",
-    "helper-active-session-exact-target-termination",
+    "helper-active-session-refusal-and-owned-close",
     "helper-repeated-abort-failure-retains-recovery-evidence",
     "failure-result-contract-tamper-rejected",
     "auth-passed-database-cleanup-failure-classified-accurately",

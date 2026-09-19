@@ -1,7 +1,11 @@
 import { defineConfig, devices } from "@playwright/test";
 import { requiredTestPlaywrightEvidence } from "./scripts/required-test-playwright.mjs";
 
-const localBaseURL = "http://127.0.0.1:3000";
+const port = process.env.CART_OVERLAY_TEST_PORT ?? "3000";
+if (!/^\d+$/.test(port) || Number(port) < 1 || Number(port) > 65_535) {
+  throw new Error("CART_OVERLAY_TEST_PORT must be a TCP port from 1 to 65535.");
+}
+const localBaseURL = `http://127.0.0.1:${port}`;
 const requiredEvidence = requiredTestPlaywrightEvidence({
   repositoryRoot: process.cwd(),
   expectedGateId: "ci.cart-overlay-accessibility",
@@ -29,9 +33,11 @@ export default defineConfig({
     baseURL: localBaseURL,
     actionTimeout: 30_000,
     navigationTimeout: 60_000,
-    trace: "retain-on-failure",
-    screenshot: "only-on-failure",
-    video: "retain-on-failure",
+    // Keep recording overhead out of the required lifecycle deadline, matching
+    // the other accessibility matrices. Focused runs retain full diagnostics.
+    trace: requiredTestGateId ? "off" : "retain-on-failure",
+    screenshot: requiredTestGateId ? "off" : "only-on-failure",
+    video: requiredTestGateId ? "off" : "retain-on-failure",
   },
   expect: { timeout: 30_000 },
   projects: [
@@ -39,9 +45,10 @@ export default defineConfig({
     { name: "webkit", use: { ...devices["Desktop Safari"] } },
   ],
   webServer: {
-    command: "npm run dev",
+    command: port === "3000" ? "npm run dev" :
+      `node scripts/dev-preflight.mjs && env -u DEBUG node node_modules/next/dist/bin/next dev --webpack --hostname 127.0.0.1 --port ${port}`,
     url: localBaseURL,
-    reuseExistingServer: !process.env.CI,
+    reuseExistingServer: requiredTestGateId ? false : !process.env.CI,
     timeout: 120_000,
   },
 });

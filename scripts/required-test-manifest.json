@@ -6,16 +6,16 @@
       "root": "scripts",
       "filePattern": "^test-.*\\.(?:js|mjs|ts)$",
       "classification": "risk-triggered",
-      "expectedFileCount": 278,
-      "expectedPathSha256": "3e7db9e51f6dc0e0252eadf0ef6d2bf34a85b11889c106a0d15fe00792e2b6e4"
+      "expectedFileCount": 289,
+      "expectedPathSha256": "c11160d81367aa0559480c2a2f936beb0c5c54dcfe19f803b98305e2d358a0ff"
     },
     {
       "id": "browser-specs",
       "root": "tests/e2e",
       "filePattern": "\\.spec\\.ts$",
       "classification": "release-only",
-      "expectedFileCount": 101,
-      "expectedPathSha256": "b4e63b256df544fa8009e1dc5bf393251ff3cb68fa2d3caee6fa7d5dde521875"
+      "expectedFileCount": 103,
+      "expectedPathSha256": "712171eac11047541792a96c2e1e4b2fee9abb78751099bb443b22f5848ed301"
     },
     {
       "id": "cabinetry-browser-modules",
@@ -115,12 +115,18 @@
       "blocking": true,
       "command": "npm run test:production-artifact-evidence",
       "packageScript": "test:production-artifact-evidence",
-      "packageClosure": { "expectedScriptCount": 1, "expectedSha256": "a01f95f06f0b83ec90d69b322bc42043ffe2a9de58f14e1c84e0bede23c31393" },
+      "packageClosure": { "expectedScriptCount": 1, "expectedSha256": "faf9cac7a8a0a6d80dcbaa792ebb7c56eb767c3b14f0e1da448081acdb8cb105" },
       "runner": "node",
       "requiredSources": [
         "playwright.config.ts",
         "scripts/production-artifact-contract.mjs",
         "scripts/production-artifact-evidence.mjs",
+        "scripts/production-artifact-source.mjs",
+        "scripts/production-artifact-runtime-binding.mjs",
+        "scripts/production-artifact-ordinary-runtime.mjs",
+        "scripts/production-artifact-ordinary-database.mjs",
+        "scripts/required-test-report-validation.mjs",
+        "scripts/required-test-workflow-policy.mjs",
         "scripts/production-artifact-playwright.mjs",
         "scripts/production-archive.mjs",
         "scripts/production-archive-plan-evidence.mjs",
@@ -133,8 +139,12 @@
         "scripts/production-certification-doctor.mjs",
         "scripts/production-certification-dependencies.mjs",
         "scripts/production-certification-database-adapter.mjs",
+        "scripts/production-certification-database-cleanup-observation.mjs",
+        "scripts/provision-gate-a3-database.mjs",
         "scripts/production-certification-database-contract.mjs",
         "scripts/production-certification-database-lifecycle.mjs",
+        "scripts/production-certification-database-transport.mjs",
+        "scripts/stable-runtime-smoke-database-transport.mjs",
         "scripts/production-certification-real.mjs",
         "scripts/production-certification-source-continuity.mjs",
         "scripts/production-certification-stage-result-contract.mjs",
@@ -158,6 +168,8 @@
         "scripts/runtime-smoke-operation-contracts.mjs",
         "scripts/runtime-smoke-operation-deadline.mjs",
         "scripts/runtime-smoke-phase-budget.mjs",
+        "scripts/runtime-smoke-render-idle.mjs",
+        "scripts/test-runtime-smoke-render-idle.mjs",
         "scripts/test-production-artifact-evidence.mjs",
         "scripts/test-production-archive-plan-evidence.mjs",
         "scripts/test-production-certification.mjs",
@@ -165,6 +177,7 @@
         "scripts/test-production-certification-dependency-lifecycle.mjs",
         "scripts/test-production-certification-app-event-writer.ts",
         "scripts/test-production-certification-database-lifecycle.mjs",
+        "scripts/production-certification-database-transport-contract.mjs",
         "scripts/test-production-certification-auth-preflight-database.mjs",
         "scripts/test-production-certification-state-worktrees.mjs",
         "scripts/test-production-trace-archive-policy.mjs",
@@ -236,6 +249,26 @@
           "id": "artifact.archive-plan-failure-evidence",
           "source": "scripts/test-production-archive-plan-evidence.mjs",
           "marker": "Archive plan policy rejection survives parent adaptation."
+        },
+        {
+          "id": "artifact.runtime-idle-permanent-loop-control",
+          "source": "scripts/test-runtime-smoke-render-idle.mjs",
+          "marker": "permanent 60-Hz render loop negative control executed"
+        },
+        {
+          "id": "artifact.runtime-idle-low-frequency-control",
+          "source": "scripts/test-runtime-smoke-render-idle.mjs",
+          "marker": "low-frequency recurring invalidation negative control executed"
+        },
+        {
+          "id": "artifact.runtime-idle-generation-lifecycle-controls",
+          "source": "scripts/test-runtime-smoke-render-idle.mjs",
+          "marker": "stale cross-generation hidden WebGL counter-reset active-animation controls executed"
+        },
+        {
+          "id": "artifact.runtime-idle-instrumentation-entry-controls",
+          "source": "scripts/test-runtime-smoke-render-idle.mjs",
+          "marker": "missing instrumentation and callback-entry controls executed"
         }
       ],
       "requiredProjects": [],
@@ -252,9 +285,9 @@
       "blocking": true,
       "command": "npm run evidence:production:build",
       "packageScript": "evidence:production:build",
-      "packageClosure": { "expectedScriptCount": 1, "expectedSha256": "b7ba610a68ce331c0879a5ab80d10390a877d3756173910dc6987986c9f08258" },
+      "packageClosure": { "expectedScriptCount": 1, "expectedSha256": "da5ab6b114d8be6a911a011e71d2ac47538c7d6b67f822abd072768f66610822" },
       "runner": "node",
-      "requiredSources": ["scripts/production-artifact-evidence.mjs"],
+      "requiredSources": ["scripts/production-artifact-source.mjs", "scripts/production-artifact-evidence.mjs", "scripts/required-test-report-validation.mjs"],
       "requiredProjects": [],
       "allowSkips": false,
       "allowRetries": false,
@@ -267,16 +300,51 @@
       "invariant": "The exact CH-0016 production artifact starts and satisfies both runtime readiness identities.",
       "cadence": "merge-required",
       "blocking": true,
-      "command": "npm run evidence:production:smoke",
-      "packageScript": "evidence:production:smoke",
-      "packageClosure": { "expectedScriptCount": 1, "expectedSha256": "d9971664dba648e6b1026b61fbf13ad8bf14f6faa052b3d0e5eed4d8cc7fd2b1" },
+      "command": "npm run evidence:production:stable-runtime-smoke",
+      "packageScript": "evidence:production:stable-runtime-smoke",
+      "packageClosure": { "expectedScriptCount": 2, "expectedSha256": "d43876a351475eb9ac36c81f0182ec7783bea24ed384ea4f908f5929df8958e5" },
       "runner": "playwright",
       "requiredSources": [
         "tests/e2e/00-runtime-smoke.spec.ts",
+        "components/editor/design-page/designSceneDemandPolicy.tsx",
+        "components/editor/design-page/lighting/ExposureController.tsx",
+        "components/scene/FurnitureItem.tsx",
+        "components/scene/furniture/useFurnitureFiniteAnimations.ts",
+        "components/scene/sceneDemandDiagnostics.ts",
+        "components/scene/glb-scaled-model/glbMainThreadTelemetryFacade.ts",
+        "scripts/production-artifact-source.mjs",
+        "scripts/production-artifact-runtime-binding.mjs",
+        "scripts/production-artifact-ordinary-runtime.mjs",
+        "scripts/production-artifact-ordinary-database.mjs",
         "scripts/runtime-smoke-failure-evidence.mjs",
         "scripts/runtime-smoke-operation-contracts.mjs",
         "scripts/runtime-smoke-operation-deadline.mjs",
-        "scripts/runtime-smoke-phase-budget.mjs"
+        "scripts/runtime-smoke-phase-budget.mjs",
+        "scripts/runtime-smoke-render-idle.mjs",
+        "scripts/test-design-scene-loading-frameloop.mjs",
+        "scripts/test-scene-demand-invalidation.ts",
+        "scripts/stable-runtime-smoke.mjs",
+        "scripts/stable-runtime-smoke-resources.mjs",
+        "scripts/stable-runtime-smoke-standalone.mjs",
+        "scripts/production-artifact-evidence.mjs",
+        "scripts/production-certification-database-contract.mjs",
+        "scripts/production-certification-database-lifecycle.mjs",
+        "scripts/production-certification-database-transport.mjs",
+        "scripts/stable-runtime-smoke-database-transport.mjs",
+        "scripts/production-certification-stage-environment.mjs",
+        "scripts/playwright-report-path.mjs"
+      ],
+      "requiredContributions": [
+        {
+          "id": "runtime.finite-item-animation-invalidation",
+          "source": "scripts/test-design-scene-loading-frameloop.mjs",
+          "marker": "item placement, shake, and snap animations must share finite invalidation"
+        },
+        {
+          "id": "runtime.exposure-demand-invalidation",
+          "source": "scripts/test-design-scene-loading-frameloop.mjs",
+          "marker": "renderer exposure changes must request a demand frame"
+        }
       ],
       "requiredTests": [
         {
@@ -355,7 +423,7 @@
       "blocking": true,
       "command": "npm run test:critical-required",
       "packageScript": "test:critical-required",
-      "packageClosure": { "expectedScriptCount": 42, "expectedSha256": "8bd66998bff433e6e26cf7e29ecb3aec879898924a9bc08d4be1c4baae663585" },
+      "packageClosure": { "expectedScriptCount": 42, "expectedSha256": "ee15eb1f9b1c134d152afbe2b92c271c5af9b34fe5f68456a60402ca3ab84be6" },
       "runner": "npm-chain",
       "supportingInventories": ["cabinetry-script-modules"],
       "requiredSources": [
@@ -437,9 +505,10 @@
       "blocking": true,
       "command": "npm run test:floor-plan-required",
       "packageScript": "test:floor-plan-required",
-      "packageClosure": { "expectedScriptCount": 57, "expectedSha256": "dffa1c298a28463308882fa042bb3b6aae48b466adab0ad67f3f08e85f8eaa61" },
+      "packageClosure": { "expectedScriptCount": 58, "expectedSha256": "0b088f3417444349915984b72f62ade7651b85662219c878b7fd3a640e023aea" },
       "runner": "npm-chain",
       "requiredSources": [
+        "scripts/test-floor-plan-directory-privacy.ts",
         "scripts/test-floor-plan-catalog-draft-match.ts",
         "scripts/test-floor-plan-live-progress.ts",
         "scripts/test-floor-plan-multifloor-parity.ts",
@@ -916,9 +985,24 @@
           "title": "Retailer-group keyboard lifecycle restores replacements and the Cart fallback"
         },
         {
-          "id": "retailer-confirmation.count-boundaries",
+          "id": "retailer-confirmation.count-zero",
           "file": "tests/required/retailer-confirmation-accessibility.spec.ts",
-          "title": "Counting boundaries preserve zero one three and four tab behavior"
+          "title": "Counting zero tabs keeps checkout disabled"
+        },
+        {
+          "id": "retailer-confirmation.count-one",
+          "file": "tests/required/retailer-confirmation-accessibility.spec.ts",
+          "title": "Counting one tab opens directly without confirmation"
+        },
+        {
+          "id": "retailer-confirmation.count-three",
+          "file": "tests/required/retailer-confirmation-accessibility.spec.ts",
+          "title": "Counting three tabs opens directly without confirmation"
+        },
+        {
+          "id": "retailer-confirmation.count-four",
+          "file": "tests/required/retailer-confirmation-accessibility.spec.ts",
+          "title": "Counting four tabs opens confirmation and supports cancellation"
         },
         {
           "id": "retailer-confirmation.count-bundle-exclusion-missing",

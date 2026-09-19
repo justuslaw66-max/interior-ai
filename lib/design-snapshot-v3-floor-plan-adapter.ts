@@ -533,12 +533,12 @@ export function designSnapshotV3ToFloorPlanDocumentV2(
             }
           }
           remappedOpeningIds.add(id);
-          opening.id = id;
+          opening.id = id; opening.widthEvidence = mapping.persisted.evidence?.width;
           if (mapping.persisted.heightMm !== undefined) {
-            opening.heightMm = Math.round(mapping.persisted.heightMm);
+            opening.heightMm = Math.round(mapping.persisted.heightMm); opening.heightEvidence = mapping.persisted.evidence?.height;
           }
           if (mapping.persisted.bottomMm !== undefined) {
-            opening.sillHeightMm = Math.round(mapping.persisted.bottomMm);
+            opening.sillHeightMm = Math.round(mapping.persisted.bottomMm); opening.sillHeightEvidence = mapping.persisted.evidence?.sillHeight;
           }
           if (
             mapping.persisted.canonicalWallId &&

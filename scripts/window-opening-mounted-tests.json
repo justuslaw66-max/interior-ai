@@ -1,0 +1,86 @@
+[
+  {
+    "id": "window-opening-01-visual-matrix",
+    "playwrightId": "3b1d7323a327f963b5b3-3d35bba25f23c63eb7d9",
+    "title": "final window matrix remains visible in full plan, focus, and both 3D directions",
+    "file": "window-opening-corrections.spec.ts",
+    "project": "chromium"
+  },
+  {
+    "id": "window-opening-02-unresolved-repair",
+    "playwrightId": "3b1d7323a327f963b5b3-2be6d4c3fa424f19dfbd",
+    "title": "known unresolved marker selects, repairs, and remains discoverable in 3D",
+    "file": "window-opening-corrections.spec.ts",
+    "project": "chromium"
+  },
+  {
+    "id": "window-opening-03-missing-host",
+    "playwrightId": "3b1d7323a327f963b5b3-5eea3e340fc382c99bcd",
+    "title": "missing-room opening has no origin marker and stays inspectable in both views",
+    "file": "window-opening-corrections.spec.ts",
+    "project": "chromium"
+  },
+  {
+    "id": "window-opening-04-ambiguous-host",
+    "playwrightId": "3b1d7323a327f963b5b3-d9fd8cde7ecf03adc12c",
+    "title": "ambiguous opening names the ambiguity and never auto-selects a candidate",
+    "file": "window-opening-corrections.spec.ts",
+    "project": "chromium"
+  },
+  {
+    "id": "window-opening-05-import-review-override",
+    "playwrightId": "3b1d7323a327f963b5b3-93d4ba02b3ce57a87d8f",
+    "title": "mounted import review locks protected fields independently and Pro records an override",
+    "file": "window-opening-corrections.spec.ts",
+    "project": "chromium"
+  },
+  {
+    "id": "window-opening-06-kind-override",
+    "playwrightId": "3b1d7323a327f963b5b3-35e7724886f702278388",
+    "title": "Consumer blocks and Pro explicitly approves a documented sill kind change",
+    "file": "window-opening-corrections.spec.ts",
+    "project": "chromium"
+  },
+  {
+    "id": "window-opening-07-diagonal-drag-resize",
+    "playwrightId": "3b1d7323a327f963b5b3-d5bb3004cc7cedc6ddac",
+    "title": "mounted diagonal drag persists one exact wall-local metre and resizes",
+    "file": "window-opening-corrections.spec.ts",
+    "project": "chromium"
+  },
+  {
+    "id": "window-opening-08-2d-projection-matrix",
+    "playwrightId": "3b1d7323a327f963b5b3-f111ce5f3b3596728706",
+    "title": "mounted 2D movement projects every wall orientation, zoom, noise, and clamp",
+    "file": "window-opening-corrections.spec.ts",
+    "project": "chromium"
+  },
+  {
+    "id": "window-opening-09-3d-tangent-drag",
+    "playwrightId": "3b1d7323a327f963b5b3-e213ec1157e7935a4918",
+    "title": "mounted 3D drag uses the projected physical tangent and persists undo/redo",
+    "file": "window-opening-corrections.spec.ts",
+    "project": "chromium"
+  },
+  {
+    "id": "window-opening-10-resize-matrix",
+    "playwrightId": "3b1d7323a327f963b5b3-80dce8d8c7cd22c50f4c",
+    "title": "mounted resize covers both handles, anchoring, minimum, endpoints, history, and reload",
+    "file": "window-opening-corrections.spec.ts",
+    "project": "chromium"
+  },
+  {
+    "id": "window-opening-11-diagonal-collision",
+    "playwrightId": "3b1d7323a327f963b5b3-e329054eac4b23792402",
+    "title": "mounted diagonal collision remains on its physical host",
+    "file": "window-opening-corrections.spec.ts",
+    "project": "chromium"
+  },
+  {
+    "id": "window-opening-12-shared-parallel-collision",
+    "playwrightId": "3b1d7323a327f963b5b3-68c76dd92f69ccef0a9f",
+    "title": "mounted collision distinguishes shared ownership from a nearby parallel host",
+    "file": "window-opening-corrections.spec.ts",
+    "project": "chromium"
+  }
+]

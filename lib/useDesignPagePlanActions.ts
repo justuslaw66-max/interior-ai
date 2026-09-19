@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useRef, useState, type Dispatch, type SetStateAction } from "react";
+import { useCallback, useMemo, useRef, useState, type Dispatch, type SetStateAction } from "react";
 import { metersToMm, type EditorAnnotation2D, type FixedElement2D, type RoomOpening2D } from "@/lib/editorScene";
 import type { HousePlan2D, HouseRoomDoorwaySuggestion } from "@/lib/design-page-house-plan";
 import {
@@ -9,33 +9,23 @@ import {
 } from "@/lib/design-page-types";
 import { createPlanAnnotation } from "@/lib/design-page-plan-scene";
 import {
+  clampDesignPageOpeningToNearestClearInterval,
+  validateDesignPageOpeningPlacement,
+} from "@/lib/design-page-opening-placement";
+import {
+  buildPlanOpeningMetricsCandidate,
   clampPlanOpeningMetrics,
   movePlanAnnotation,
   movePlanFixedElement,
-  PLAN_OPENING_MAX_HEIGHT_METERS,
-  PLAN_OPENING_MIN_HEIGHT_METERS,
   updatePlanOpeningMetrics,
 } from "@/lib/design-page-plan-overlays";
-import {
-  clampOpeningToNearestClearInterval,
-  validateTracedOpeningPlacement,
-} from "@/lib/floor-plan-tracing";
 import type { PlanLayers, PlanTheme } from "@/lib/useDesignPagePlanState";
+import {
+  DesignPageOpeningMutationError,
+  type DesignPageOpeningMetricsPatch,
+} from "@/lib/design-page-opening-metrics";
 
-type OpeningMetricsPatch = {
-  widthMeters?: number;
-  offsetMeters?: number;
-  heightMeters?: number;
-  bottomMeters?: number;
-  kind?: RoomOpening2D["kind"];
-};
-
-function clampOpeningHeightMeters(heightMeters: number): number {
-  return Math.min(
-    Math.max(heightMeters, PLAN_OPENING_MIN_HEIGHT_METERS),
-    PLAN_OPENING_MAX_HEIGHT_METERS
-  );
-}
+type OpeningMetricsPatch = DesignPageOpeningMetricsPatch;
 
 type TrackPlanAction = (
   eventName: string,
@@ -83,16 +73,17 @@ export function useDesignPagePlanActions({
   showRuleToast,
   track,
 }: UseDesignPagePlanActionsParams) {
-  const [pendingAnnotationKind, setPendingAnnotationKind] =
-    useState<EditorAnnotation2D["kind"] | null>(null);
+  const [pendingAnnotationKind, setPendingAnnotationKind] = useState<EditorAnnotation2D["kind"] | null>(null);
   const [pendingAnnotationText, setPendingAnnotationText] = useState("");
-  const lastOpeningValidationToastRef = useRef<{
-    id: string;
-    reason: string;
-  } | null>(null);
+  const openingPlacementContext = useMemo(() => ({
+    rooms: housePlanRooms, planWidthMeters: planViewWidth, planDepthMeters: planViewDepth,
+  }), [housePlanRooms, planViewDepth, planViewWidth]);
+  const lastOpeningValidationToastRef = useRef<{ id: string; reason: string } | null>(null);
 
   const showOpeningValidationToast = useCallback(
-    (id: string, validation: Exclude<ReturnType<typeof validateTracedOpeningPlacement>, { valid: true }>) => {
+    (id: string, validation: Exclude<
+      ReturnType<typeof validateDesignPageOpeningPlacement>, { valid: true }
+    >) => {
       const lastToast = lastOpeningValidationToastRef.current;
       if (lastToast?.id === id && lastToast.reason === validation.reason) return;
       lastOpeningValidationToastRef.current = {
@@ -175,16 +166,12 @@ export function useDesignPagePlanActions({
           ...currentOpening,
           offsetMm: metersToMm(offsetMeters),
         },
-        {
-          rooms: housePlanRooms,
-          planWidthMeters: planViewWidth,
-          planDepthMeters: planViewDepth,
-        }
+        openingPlacementContext
       );
-      const nextOpening = clampOpeningToNearestClearInterval(
+      const nextOpening = clampDesignPageOpeningToNearestClearInterval(
         boundedOpening,
-        housePlanRooms,
-        currentOpening
+        currentOpening,
+        openingPlacementContext
       );
       const blockedByWall = boundedOpening.offsetMm !== nextOpening.offsetMm;
       if (blockedByWall) {
@@ -195,11 +182,11 @@ export function useDesignPagePlanActions({
         });
       }
 
-      const validation = validateTracedOpeningPlacement(
+      const validation = validateDesignPageOpeningPlacement(
         nextOpening,
-        housePlanRooms,
         planOpenings,
-        id
+        id,
+        openingPlacementContext
       );
       if (!validation.valid) {
         showOpeningValidationToast(id, validation);
@@ -214,10 +201,8 @@ export function useDesignPagePlanActions({
       );
     },
     [
-      housePlanRooms,
+      openingPlacementContext,
       planOpenings,
-      planViewDepth,
-      planViewWidth,
       clearOpeningValidationToastGuard,
       setPlanOpenings,
       showOpeningValidationToast,
@@ -229,41 +214,26 @@ export function useDesignPagePlanActions({
       const currentOpening = planOpenings.find((opening) => opening.id === id);
       if (!currentOpening) return;
 
-      const nextOpening = clampPlanOpeningMetrics(
-        {
-          ...currentOpening,
-          widthMm:
-            metrics.widthMeters !== undefined
-              ? metersToMm(metrics.widthMeters)
-              : currentOpening.widthMm,
-          offsetMm:
-            metrics.offsetMeters !== undefined
-              ? metersToMm(metrics.offsetMeters)
-              : currentOpening.offsetMm,
-          heightMm:
-            metrics.heightMeters !== undefined
-              ? metersToMm(clampOpeningHeightMeters(metrics.heightMeters))
-              : currentOpening.heightMm,
-          bottomMm:
-            metrics.kind === "door"
-              ? 0
-              : metrics.bottomMeters !== undefined
-                ? metersToMm(Math.max(0, metrics.bottomMeters))
-                : currentOpening.bottomMm,
-          kind: metrics.kind ?? currentOpening.kind,
-        },
-        {
-          rooms: housePlanRooms,
-          planWidthMeters: planViewWidth,
-          planDepthMeters: planViewDepth,
+      let nextOpening: RoomOpening2D;
+      try {
+        nextOpening = buildPlanOpeningMetricsCandidate(
+          currentOpening,
+          metrics,
+          openingPlacementContext
+        );
+      } catch (cause) {
+        if (cause instanceof DesignPageOpeningMutationError) {
+          showRuleToast(cause.message);
+          return;
         }
-      );
+        throw cause;
+      }
 
-      const validation = validateTracedOpeningPlacement(
+      const validation = validateDesignPageOpeningPlacement(
         nextOpening,
-        housePlanRooms,
         planOpenings,
-        id
+        id,
+        openingPlacementContext
       );
       if (!validation.valid) {
         showOpeningValidationToast(id, validation);
@@ -272,21 +242,16 @@ export function useDesignPagePlanActions({
       clearOpeningValidationToastGuard(id);
 
       setPlanOpenings((prev) =>
-        updatePlanOpeningMetrics(prev, id, metrics, {
-          rooms: housePlanRooms,
-          planWidthMeters: planViewWidth,
-          planDepthMeters: planViewDepth,
-        })
+        updatePlanOpeningMetrics(prev, id, metrics, openingPlacementContext)
       );
     },
     [
-      housePlanRooms,
+      openingPlacementContext,
       planOpenings,
-      planViewDepth,
-      planViewWidth,
       clearOpeningValidationToastGuard,
       setPlanOpenings,
       showOpeningValidationToast,
+      showRuleToast,
     ]
   );
 

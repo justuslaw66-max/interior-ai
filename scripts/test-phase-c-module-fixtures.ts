@@ -468,27 +468,52 @@ runFixture("createPlanAnnotation applies callout anchor defaults", () => {
 });
 
 runFixture("plan overlay mapper converts mm scene overlays to meters", () => {
-  const mappedOpenings = mapPlanOpeningsToRoomRenderer([
-    {
-      id: "o1",
-      wall: "north",
-      kind: "door",
-      offsetMm: 1200,
-      widthMm: 900,
-    },
-  ]);
+  const mappedOpenings = mapPlanOpeningsToRoomRenderer(
+    [
+      {
+        id: "o1",
+        roomId: "fixture-room",
+        wall: "north",
+        kind: "door",
+        offsetMm: 1200,
+        widthMm: 900,
+      },
+    ],
+    [
+      {
+        id: "fixture-room",
+        name: "Fixture room",
+        roomType: "living",
+        shape: "rectangle",
+        x: 0,
+        z: 0,
+        w: 5,
+        d: 4,
+      },
+    ]
+  );
   assert.deepEqual(mappedOpenings, [
     {
       id: "o1",
-      roomId: undefined,
+      roomId: "fixture-room",
       wall: "north",
       kind: "door",
       offset: 1.2,
       width: 0.9,
       height: undefined,
       bottom: undefined,
+      doorStyle: undefined,
+      physicalWallId: "floor:1:fixture-room-0",
+      hostPhysicalSegmentKey: "fixture-room-0",
+      hostSegmentKey: "fixture-room-north",
+      hostSegmentOffset: 1.2,
+      hostWorldCenter: { x: 1.2, z: -2 },
+      hostTangent: { x: 1, z: 0 },
+      hostInwardNormal: { x: -0, z: 1 },
+      hostResolution: mappedOpenings[0].hostResolution,
     },
   ]);
+  assert.equal(mappedOpenings[0].hostResolution?.status, "resolved");
 
   const mappedFixed = mapPlanFixedElementsToRoomRenderer([
     {
@@ -510,6 +535,8 @@ runFixture("plan overlay mapper converts mm scene overlays to meters", () => {
       w: 0.7,
       d: 0.4,
       label: "Storage",
+      kind: "wardrobe",
+      locked: undefined,
     },
   ]);
 

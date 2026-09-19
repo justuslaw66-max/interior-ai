@@ -2,13 +2,75 @@ import type { Page, Route } from "@playwright/test";
 import { expect, test } from "./fixtures";
 import { fingerprintDesignSnapshot } from "../../lib/snapshot-fingerprint";
 import { legacyApiToSnapshot } from "../../lib/room-persistence";
+import type { PersistedPlanOpening } from "../../lib/room-types";
 import {
   addAuthCookies,
+  buildBetaDesignSnapshot,
   cleanupBetaSeed,
   createBetaSeedDesign,
   disconnectBetaPrismaClient,
 } from "./beta-seed";
 import { selectEditorWorkspace } from "./variant-test-utils";
+import {
+  allowKnownChromiumDesignRuntimeEvents,
+  installBrowserRuntimePolicy,
+  type BrowserRuntimePolicy,
+} from "./browser-runtime-policy";
+
+const CLOUD_AUTOSAVE_DELAY_MS = 900;
+const CLOUD_READY_TIMEOUT_MS = 30_000;
+const runtimePolicies = new WeakMap<Page, BrowserRuntimePolicy>();
+
+test.beforeEach(async ({ page }, testInfo) => {
+  const policy = installBrowserRuntimePolicy(
+    page,
+    testInfo.titlePath.join(" > "),
+  );
+  allowKnownChromiumDesignRuntimeEvents(policy);
+  runtimePolicies.set(page, policy);
+});
+
+test.afterEach(async ({ page }, testInfo) => {
+  const policy = runtimePolicies.get(page);
+  policy?.assertSatisfied();
+  const acceptedCancellations = policy?.getAcceptedNavigationCancellations() ?? [];
+  if (acceptedCancellations.length > 0) {
+    await testInfo.attach("accepted-navigation-cancellations", {
+      body: Buffer.from(JSON.stringify(acceptedCancellations, null, 2)),
+      contentType: "application/json",
+    });
+  }
+});
+
+function allowExpectedHttpFailure(input: {
+  page: Page;
+  method: string;
+  pathname: string;
+  status: number;
+  reason: string;
+}) {
+  const policy = runtimePolicies.get(input.page);
+  policy?.allowHttpFailure({
+    method: input.method,
+    url: new URL(input.pathname, input.page.url()).href,
+    status: input.status,
+    minCount: 1,
+    maxCount: 1,
+    reason: input.reason,
+  });
+  const descriptions: Record<number, string> = {
+    409: "Conflict",
+    503: "Service Unavailable",
+  };
+  const description = descriptions[input.status];
+  if (description) policy?.allowConsoleMessage({
+    type: "error",
+    text: `Failed to load resource: the server responded with a status of ${input.status} (${description})`,
+    minCount: 0,
+    maxCount: 1,
+    reason: `Chromium reports the exact expected ${input.status} response in its console`,
+  });
+}
 
 async function readStableFingerprint(page: Page): Promise<string> {
   const marker = page.getByTestId("qa-editor-snapshot-fingerprint");
@@ -52,6 +114,59 @@ async function expectPersistedFingerprint(
     .toBe(expectedFingerprint);
 }
 
+async function expectCloudDesignReady(
+  page: Page,
+  designId: string,
+  revision?: string,
+) {
+  const marker = page.getByTestId("qa-editor-cloud-design");
+  await expect(
+    marker,
+    `Cloud design ${designId} did not become authoritative.`,
+  ).toHaveAttribute("data-design-id", designId, {
+    timeout: CLOUD_READY_TIMEOUT_MS,
+  });
+  await expect(marker).toHaveAttribute(
+    "data-cloud-revision",
+    revision ?? /^\d{4}-\d{2}-\d{2}T/,
+    { timeout: CLOUD_READY_TIMEOUT_MS },
+  );
+  await expect(marker).toHaveAttribute(
+    "data-cloud-baseline-status",
+    "acknowledged",
+    { timeout: CLOUD_READY_TIMEOUT_MS },
+  );
+  await expect(page.getByTestId("save-status")).toHaveAttribute(
+    "data-status",
+    "saved",
+    { timeout: CLOUD_READY_TIMEOUT_MS },
+  );
+  await expect(page.getByTestId("save-status")).toHaveAttribute(
+    "data-source",
+    "cloud",
+    { timeout: CLOUD_READY_TIMEOUT_MS },
+  );
+}
+
+async function expectWriteCountStableAcrossAutosaveWindows(
+  readCount: () => number,
+  expectedCount: number,
+) {
+  const observationEndsAt = Date.now() + CLOUD_AUTOSAVE_DELAY_MS * 2 + 100;
+  await expect
+    .poll(
+      () => ({
+        complete: Date.now() >= observationEndsAt,
+        count: readCount(),
+      }),
+      {
+        intervals: [100],
+        timeout: CLOUD_AUTOSAVE_DELAY_MS * 2 + 1_000,
+      },
+    )
+    .toEqual({ complete: true, count: expectedCount });
+}
+
 async function openMyDesigns(page: Page) {
   const accountButton = page.getByTestId("editor-command-account");
   const accountMenu = page.getByTestId("editor-command-account-menu");
@@ -80,12 +195,34 @@ async function loadSeedDesign(
   await page.addInitScript(() => {
     window.localStorage.setItem("plan_measurement_unit", "mm");
   });
-  await page.goto("/design", { waitUntil: "domcontentloaded" });
-  await addAuthCookies(page.context(), new URL(page.url()).origin, seed.sessionToken);
-  await page.reload({ waitUntil: "domcontentloaded" });
-  await expect(page.getByTestId("scene-canvas").first()).toBeVisible({
-    timeout: 30_000,
+  const initialResponse = await page.goto("/design", {
+    waitUntil: "domcontentloaded",
   });
+  expect(initialResponse?.status()).toBe(200);
+  await addAuthCookies(page.context(), new URL(page.url()).origin, seed.sessionToken);
+  const navigation = runtimePolicies.get(page)?.beginNavigationCancellation({
+    reason: "reload the completed anonymous bootstrap document with the auth cookie",
+    // The dev document can still be loading layout, main-app, and design-page
+    // scripts when this immediate authentication reload replaces it.
+    maxCancellations: 3,
+  });
+  try {
+    const authenticatedResponse = await page.reload({
+      waitUntil: "domcontentloaded",
+    });
+    expect(authenticatedResponse?.status()).toBe(200);
+    const sceneCanvas = page.getByTestId("scene-canvas").first();
+    await expect(sceneCanvas).toBeVisible({ timeout: 30_000 });
+    await expect(sceneCanvas).toHaveAttribute("data-client-hydrated", "true", {
+      timeout: 30_000,
+    });
+    navigation?.completeReplacementReady();
+  } catch (cause) {
+    navigation?.failReplacement(
+      cause instanceof Error ? cause.message : String(cause),
+    );
+    throw cause;
+  }
   await openMyDesigns(page);
   await page.getByTestId(`load-design-${seed.designId}`).click();
   await expect(page.getByTestId("load-designs-modal")).toBeHidden({
@@ -103,10 +240,17 @@ async function openFurnishPanel(page: Page) {
 
 async function openPresentExport(page: Page) {
   await selectEditorWorkspace(page, "editor-workflow-export");
+  const dialog = page.getByTestId("present-export-dialog");
   const cameraViewName = page.getByTestId("camera-view-name-input");
-  if (await cameraViewName.isVisible().catch(() => false)) return;
-  await page.getByTestId("editor-command-overflow").click();
-  await page.getByTestId("editor-command-overflow-present-export").click();
+  await expect(async () => {
+    if (await dialog.isVisible().catch(() => false)) return;
+    await page.getByTestId("editor-command-overflow").click({ timeout: 1_000 });
+    await page
+      .getByTestId("editor-command-overflow-present-export")
+      .click({ timeout: 1_000 });
+  }).toPass({ timeout: 30_000 });
+  await expect(dialog).toBeVisible();
+  await cameraViewName.scrollIntoViewIfNeeded();
   await expect(cameraViewName).toBeVisible();
 }
 
@@ -147,6 +291,121 @@ async function expectLoadedDesignRemainsStable(
 test.describe("3. Save + Reload Persistence", () => {
   test.afterAll(async () => {
     await disconnectBetaPrismaClient();
+  });
+
+  test("window dimensions and field evidence survive undo, redo, cloud save, and reload", async ({ page }) => {
+    test.setTimeout(180_000);
+    const snapshot = buildBetaDesignSnapshot();
+    const opening: PersistedPlanOpening = {
+      id: "opening-dining-window", roomId: "beta-dining", kind: "window",
+      wall: "east", offsetMm: 650, widthMm: 1400, heightMm: 1200, bottomMm: 900,
+      evidence: { height: "source_documented", sillHeight: "site_measured" },
+    };
+    snapshot.activeRoomId = "beta-dining";
+    snapshot.floorPlan = {
+      ...snapshot.floorPlan,
+      openings: snapshot.floorPlan?.openings?.map((entry) =>
+        entry.id === opening.id ? opening : entry),
+    };
+    const initialOpenings = snapshot.floorPlan.openings;
+    expect(initialOpenings?.filter((entry) => entry.id === opening.id)).toHaveLength(1);
+    const edited: PersistedPlanOpening = {
+      ...opening, widthMm: 1600,
+      evidence: { ...opening.evidence, width: "user_confirmed" },
+    };
+    const editedOpenings = initialOpenings?.map((entry) =>
+      entry.id === opening.id ? edited : entry);
+    const seed = await createBetaSeedDesign({ snapshot });
+    const successfulWrites: unknown[] = [];
+    page.on("response", (response) => {
+      if (response.status() === 200 && response.request().method() === "PUT" &&
+          new URL(response.url()).pathname === `/api/designs/${seed.designId}`) {
+        successfulWrites.push(response.request().postDataJSON()?.snapshot?.floorPlan?.openings);
+      }
+    });
+    const storedOpenings = (): Promise<unknown> => page.evaluate(() => {
+      const raw = localStorage.getItem("interior-ai:v1:livingroom-design");
+      return raw ? JSON.parse(raw).floorPlan?.openings ?? null : null;
+    });
+    const selectWindow = async () => {
+      await page.getByTestId("editor-view-2d").click();
+      await page.locator(`[data-testid="plan-opening-kind-label"][data-opening-id="${opening.id}"]`).click();
+      await expect(page.getByTestId("selection-inspector-opening-dimensions")).toBeVisible();
+    };
+    const expectInspector = async (width: string, evidence: string) => {
+      await expect(page.getByTestId("selection-inspector-opening-kind")).toHaveValue("window");
+      const widthInput = page.getByTestId("selection-inspector-opening-width");
+      await expect(widthInput).toHaveValue(width);
+      await expect(widthInput).toHaveAttribute("data-model-value-mm", width);
+      await expect(widthInput).toBeEnabled();
+      for (const [field, value] of [["height", "1200"], ["bottom", "900"]]) {
+        const input = page.getByTestId(`selection-inspector-opening-${field}`);
+        await expect(input).toHaveValue(value);
+        await expect(input).toHaveAttribute("data-model-value-mm", value);
+        await expect(input).toBeDisabled();
+      }
+      await expect(page.getByTestId("selection-inspector-opening-width-evidence-badge")).toHaveText(evidence);
+      await expect(page.getByTestId("selection-inspector-opening-height-evidence-badge")).toHaveText("Source documented");
+      await expect(page.getByTestId("selection-inspector-opening-sill-evidence-badge")).toHaveText("Site measured");
+    };
+    const expectCloudOpenings = async (expected: typeof initialOpenings) => {
+      const response = await page.request.get(`/api/designs/${seed.designId}`);
+      expect(response.status()).toBe(200);
+      const body = await response.json();
+      expect(body.id).toBe(seed.designId);
+      expect(body.snapshot.floorPlan.openings).toEqual(expected);
+    };
+    try {
+      await loadSeedDesign(page, seed);
+      await expectCloudDesignReady(page, seed.designId);
+      await expectCloudOpenings(initialOpenings);
+      await selectWindow();
+      await expectInspector("1400", "Estimated");
+      await expect.poll(storedOpenings).toEqual(initialOpenings);
+      const baseline = await readStableFingerprint(page);
+
+      const width = page.getByTestId("selection-inspector-opening-width");
+      await width.fill("1600");
+      await width.press("Enter");
+      await expect.poll(storedOpenings).toEqual(editedOpenings);
+      await expectInspector("1600", "User confirmed");
+      const editedFingerprint = await readStableFingerprint(page);
+      expect(editedFingerprint).not.toBe(baseline);
+      await page.getByTestId("command-undo").click();
+      await expect.poll(storedOpenings).toEqual(initialOpenings);
+      await expect(page.getByTestId("qa-editor-snapshot-fingerprint")).toHaveAttribute("data-fingerprint", baseline);
+      await expectInspector("1400", "Estimated");
+      await page.getByTestId("command-redo").click();
+      await expect.poll(storedOpenings).toEqual(editedOpenings);
+      await expect(page.getByTestId("qa-editor-snapshot-fingerprint")).toHaveAttribute("data-fingerprint", editedFingerprint);
+      await expectInspector("1600", "User confirmed");
+
+      await page.getByTestId("save-design").click();
+      await expectCloudDesignReady(page, seed.designId);
+      // Autosave may have sent this state before the explicit Save click.
+      await expect.poll(() => successfulWrites, { timeout: 30_000 }).toContainEqual(editedOpenings);
+      await expectPersistedFingerprint(page, seed.designId, editedFingerprint);
+      await expectCloudOpenings(editedOpenings);
+      const [reloadResponse] = await Promise.all([
+        page.waitForResponse((response) =>
+          response.request().method() === "GET" &&
+          new URL(response.url()).pathname === `/api/designs/${seed.designId}` &&
+          !new URL(response.url()).searchParams.has("shareToken")),
+        page.reload({ waitUntil: "domcontentloaded" }),
+      ]);
+      expect(reloadResponse.status()).toBe(200);
+      const reloaded = await reloadResponse.json();
+      expect(reloaded.id).toBe(seed.designId);
+      expect(reloaded.snapshot.floorPlan.openings).toEqual(editedOpenings);
+      await expectCloudDesignReady(page, seed.designId);
+      await expect(page.getByTestId("qa-editor-snapshot-fingerprint")).toHaveAttribute("data-fingerprint", editedFingerprint);
+      await selectWindow();
+      await expectInspector("1600", "User confirmed");
+      await expect.poll(storedOpenings).toEqual(editedOpenings);
+      await expectCloudOpenings(editedOpenings);
+    } finally {
+      await cleanupBetaSeed(seed);
+    }
   });
 
   test("cloud save preserves items, zones, and named views after reload", async ({
@@ -253,6 +512,7 @@ test.describe("3. Save + Reload Persistence", () => {
       await expect(page.getByTestId("scene-canvas").first()).toBeVisible({
         timeout: 30_000,
       });
+      await expectCloudDesignReady(page, seed.designId);
       await expect(page.getByTestId("qa-editor-snapshot-fingerprint")).toHaveAttribute(
         "data-fingerprint",
         fingerprintBeforeSecondReload,
@@ -268,6 +528,10 @@ test.describe("3. Save + Reload Persistence", () => {
     const seed = await createBetaSeedDesign();
     try {
       await loadSeedDesign(page, seed);
+      allowExpectedHttpFailure({
+        page, method: "PUT", pathname: `/api/designs/${seed.designId}`,
+        status: 503, reason: "exercise visible cloud-save retry recovery",
+      });
       let rejectedWrite = false;
       const designRoute = `**/api/designs/${seed.designId}`;
       await page.route(designRoute, async (route) => {
@@ -322,6 +586,12 @@ test.describe("3. Save + Reload Persistence", () => {
       try {
         const seedB = await createBetaSeedDesign({ email });
         await loadSeedDesign(page, seedA);
+        if (staleResult === "failure") {
+          allowExpectedHttpFailure({
+            page, method: "PUT", pathname: `/api/designs/${seedA.designId}`,
+            status: 503, reason: "prove a stale failed write is inert",
+          });
+        }
 
         let captureWrite!: (route: Route) => void;
         const heldWrite = new Promise<Route>((resolve) => {
@@ -402,6 +672,17 @@ test.describe("3. Save + Reload Persistence", () => {
     const seed = await createBetaSeedDesign();
     try {
       await loadSeedDesign(page, seed);
+      await expectCloudDesignReady(page, seed.designId);
+      allowExpectedHttpFailure({
+        page, method: "PUT", pathname: `/api/designs/${seed.designId}`,
+        status: 409, reason: "create the single recovery-copy conflict",
+      });
+      const originalResponse = await page.request.get(
+        `/api/designs/${encodeURIComponent(seed.designId)}`,
+      );
+      expect(originalResponse.status()).toBe(200);
+      const originalSnapshot = legacyApiToSnapshot(await originalResponse.json());
+      const originalFingerprint = fingerprintDesignSnapshot(originalSnapshot);
       let rejectedWrites = 0;
       await page.route(`**/api/designs/${seed.designId}`, async (route) => {
         if (route.request().method() === "PUT") {
@@ -435,20 +716,64 @@ test.describe("3. Save + Reload Persistence", () => {
       );
 
       const writesAtConflict = rejectedWrites;
-      await page.waitForTimeout(2_200);
-      expect(rejectedWrites).toBe(writesAtConflict);
-
-      await page.getByTestId("cloud-conflict-save-copy").click();
-      await expect(dialog).toBeHidden({ timeout: 30_000 });
-      await expect(page.getByTestId("qa-editor-cloud-design")).not.toHaveAttribute(
-        "data-design-id",
-        seed.designId
+      await expectWriteCountStableAcrossAutosaveWindows(
+        () => rejectedWrites,
+        writesAtConflict,
       );
-      await expect(saveStatus).toHaveAttribute("data-status", "saved");
+
+      const copyCreated = page.waitForResponse(
+        (response) =>
+          response.request().method() === "POST" &&
+          new URL(response.url()).pathname === "/api/designs",
+      );
+      await page.getByTestId("cloud-conflict-save-copy").click();
+      const copyResponse = await copyCreated;
+      expect(copyResponse.status()).toBe(201);
+      const copyIdentity = await copyResponse.json() as {
+        id: string;
+        updatedAt: string;
+      };
+      expect(copyIdentity.id).not.toBe(seed.designId);
+      const copyRequestSnapshot = legacyApiToSnapshot(
+        copyResponse.request().postDataJSON(),
+      );
+      expect(copyRequestSnapshot.rooms).toHaveLength(3);
+      expect(fingerprintDesignSnapshot(copyRequestSnapshot)).toBe(localFingerprint);
+      await expect(dialog).toBeHidden({ timeout: 30_000 });
+      await expect
+        .poll(() =>
+          page.evaluate(() => new URL(window.location.href).searchParams.get("designId")),
+        )
+        .toBe(copyIdentity.id);
+      await expectCloudDesignReady(page, copyIdentity.id, copyIdentity.updatedAt);
       await expect(page.getByTestId("qa-editor-snapshot-fingerprint")).toHaveAttribute(
         "data-fingerprint",
         localFingerprint
       );
+
+      const storedCopyResponse = await page.request.get(
+        `/api/designs/${encodeURIComponent(copyIdentity.id)}`,
+      );
+      expect(storedCopyResponse.status()).toBe(200);
+      const storedCopyBody = await storedCopyResponse.json();
+      expect(storedCopyBody.updatedAt).toBe(copyIdentity.updatedAt);
+      const storedCopySnapshot = legacyApiToSnapshot(storedCopyBody);
+      expect(storedCopySnapshot.rooms).toHaveLength(3);
+      expect(storedCopySnapshot.rooms[0]?.geometry.width).toBe(5.9);
+      expect(fingerprintDesignSnapshot(storedCopySnapshot)).toBe(localFingerprint);
+      await expect(page.getByTestId("room-plan-status-room-count")).toHaveText(
+        "3 rooms",
+      );
+
+      const unchangedOriginalResponse = await page.request.get(
+        `/api/designs/${encodeURIComponent(seed.designId)}`,
+      );
+      expect(unchangedOriginalResponse.status()).toBe(200);
+      expect(
+        fingerprintDesignSnapshot(
+          legacyApiToSnapshot(await unchangedOriginalResponse.json()),
+        ),
+      ).toBe(originalFingerprint);
     } finally {
       await cleanupBetaSeed(seed.userId);
     }
@@ -461,6 +786,10 @@ test.describe("3. Save + Reload Persistence", () => {
     const seed = await createBetaSeedDesign();
     try {
       await loadSeedDesign(page, seed);
+      allowExpectedHttpFailure({
+        page, method: "PUT", pathname: `/api/designs/${seed.designId}`,
+        status: 409, reason: "exercise explicit destructive conflict reload",
+      });
       const loadedCloudFingerprint = await readStableFingerprint(page);
       await page.route(`**/api/designs/${seed.designId}`, async (route) => {
         if (route.request().method() === "PUT") {

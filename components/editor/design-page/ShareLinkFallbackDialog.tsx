@@ -1,3 +1,4 @@
+import { useCallback, useEffect, useRef } from "react";
 import { EditorDialog } from "@/components/editor/design-system/EditorDialog";
 import {
   SHARE_LINK_FALLBACK_CLOSE_ACTION_ID,
@@ -9,14 +10,18 @@ import {
 export type ShareLinkFallbackDialogProps = {
   url: string | null;
   dark: boolean;
+  copied: boolean;
+  errorMessage: string | null;
   onClose: () => void;
-  onCopy: (url: string) => void;
+  onCopy: (url: string, signal: AbortSignal) => void;
   onOpen: (url: string) => void;
 };
 
 function ShareLinkFallbackControls({
   url, dark, onClose, onCopy, onOpen,
-}: Omit<ShareLinkFallbackDialogProps, "url"> & { url: string }) {
+}: Omit<ShareLinkFallbackDialogProps, "url" | "copied" | "errorMessage" | "onCopy"> & {
+  url: string; onCopy: (url: string) => void;
+}) {
   const inputClassName = dark
     ? "designer-control min-w-0 flex-1 rounded-lg border px-3 py-2 text-sm text-neutral-200 font-mono outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
     : "min-w-0 flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm font-mono text-gray-700 outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2";
@@ -46,7 +51,25 @@ function ShareLinkFallbackControls({
   </>;
 }
 
-export function ShareLinkFallbackDialog({ url, dark, onClose, onCopy, onOpen }: ShareLinkFallbackDialogProps) {
+function useFallbackCopyLifecycle({ url, onCopy, onClose, onOpen }: ShareLinkFallbackDialogProps) {
+  const current = useRef<AbortController | null>(null);
+  const cancel = useCallback(() => { current.current?.abort(); current.current = null; }, []);
+  useEffect(() => cancel, [cancel, url]);
+  return {
+    onCopy: (link: string) => {
+      cancel();
+      const operation = new AbortController();
+      current.current = operation;
+      onCopy(link, operation.signal);
+    },
+    onClose: () => { cancel(); onClose(); },
+    onOpen: (link: string) => { cancel(); onOpen(link); },
+  };
+}
+
+export function ShareLinkFallbackDialog(props: ShareLinkFallbackDialogProps) {
+  const { url, dark, copied, errorMessage } = props;
+  const { onClose, onCopy, onOpen } = useFallbackCopyLifecycle(props);
   return (
     <EditorDialog
       open={Boolean(url)}
@@ -66,6 +89,10 @@ export function ShareLinkFallbackDialog({ url, dark, onClose, onCopy, onOpen }: 
       contentClassName="min-w-0"
     >
       {url ? <ShareLinkFallbackControls {...{ url, dark, onClose, onCopy, onOpen }} /> : null}
+      <p data-testid="share-copy-status" role="status" aria-live="polite" aria-atomic="true"
+        className="mt-3 text-sm">
+        {errorMessage ?? (copied ? "Share link copied to clipboard!" : "")}
+      </p>
     </EditorDialog>
   );
 }

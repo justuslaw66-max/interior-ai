@@ -7,9 +7,23 @@ structured command results under `auth-preflight-results` when the fixture
 session root is caller-owned. Each completed command still publishes the same
 versioned JSON plus SHA-256 sidecar; only the result-root ownership changes.
 The private fixture transport remains a sibling in the physical mode-0700
-session root and is never copied into result evidence. The disposable
-orchestration root, private `GITHUB_ENV`, and task-owned qualification sessions
-retain their existing cleanup behavior.
+session root and is never copied into result evidence. Successful task-owned
+sessions and failures before command dispatch remove the disposable
+orchestration root. After command dispatch, a failed task-owned session retains
+its physical mode-0700 orchestration root, sealed command results, private
+session transport, and a redacted mode-0600 `failure.txt`. The CLI reports the
+redacted cause and a SHA-256 locator for the retained root; it does not print
+private transport paths or provider values. Caller-owned results retain their
+existing location and file inventory.
+
+Primary child failures, result-validation failures, and later cleanup or
+retention failures remain ordered. Export mask payloads are removed even when
+the newly generated provider values have not reached the parent environment.
+The existing private-value validator checks diagnostic text after redaction;
+unresolved unsafe text is withheld while the command failure remains a failure.
+Retained diagnostics cannot qualify an unsuccessful preflight. Database,
+server, and worktree cleanup remain owned by the existing real-preflight
+lifecycle, independently of diagnostic retention.
 
 The normal real-preflight result remains
 `interior-ai.ci-auth-fixture-command-result.v1`. When the real helper fails
@@ -75,7 +89,8 @@ The unambiguous entry is `npm run certification:auth-preflight`: export,
 validate-existing, production-misuse-existing, then the database-owning
 `certification:auth-session-preflight`, whose server child uses
 preflight-existing. Caller-owned roots are retained for sealed
-rehearsal/build projection; qualification-owned roots are removed. Build
+rehearsal/build projection; successful qualification-owned roots are removed,
+and dispatched failures retain private diagnostic evidence. Build
 evidence reports the same safe session/digests and no raw values.
 
 Caller-owned retention is explicit: root, session ID, nonce, and exact
@@ -221,9 +236,10 @@ only then propagate a failure.
 GitHub does not provide the `runner` context in job-level `env`, and a workflow
 that names it there is rejected before any job runs. Each auth job therefore
 declares `CI_AUTH_FIXTURE_RESULT_ROOT` and `CI_AUTH_FIXTURE_SESSION_ROOT` in its
-first step, `Declare runner-temp auth fixture roots`, which appends the two
-non-secret `$RUNNER_TEMP` paths to `GITHUB_ENV` for every later step. That step
-creates neither root: the export step creates the result root, and the exporter
+first step, `Initialize runner-local auth fixture paths`, which appends the two
+non-secret `$RUNNER_TEMP` paths to `GITHUB_ENV` for every later step. The step
+fails when `RUNNER_TEMP` is not a single-line absolute path, so the append
+cannot inject another `GITHUB_ENV` line. It creates neither root: the export step creates the result root, and the exporter
 creates the mode-0700 session root and re-declares it as its realpath in the
 fixture session transport, which later steps then receive. No step sets either
 root in its own `env`, so nothing shadows that transport. The exporter's masked

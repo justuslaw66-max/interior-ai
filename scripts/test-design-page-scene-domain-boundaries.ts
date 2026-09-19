@@ -363,6 +363,11 @@ assert.match(
   glbResourcesSource,
   /"pagehide"[\s\S]*?clearPrepared: \(\) => preparedCache\.clear\(\),\s*clearParsed: \(\) => parsedCache\.clear\(\),/
 );
+assert.match(
+  glbResourcesSource,
+  /if \(scene\) disposeObjectGeometryAndMaterials\(scene\)/,
+  "A failed GLB preparation must dispose the partially prepared scene before releasing its source."
+);
 assert.match(floorPlanAssetsSource, /URL\.revokeObjectURL\(/);
 
 console.log("design page scene domain and lifecycle boundaries passed");

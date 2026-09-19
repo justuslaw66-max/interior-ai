@@ -19,7 +19,7 @@ import {
 import { inventoryProductionArchiveTree } from "./production-archive.mjs";
 import { deriveProductionVerifierClosure } from "./production-verifier-closure.mjs";
 import { certificationBuildGeneratedOutputIssues } from "./production-certification-build-generated-output.mjs";
-import { validateRequiredTestReport } from "./required-test-truthfulness.mjs";
+import { validateRequiredTestReport } from "./required-test-report-validation.mjs";
 import {
   canonicalizeBoundRuntimeSmokeReport,
   readRuntimeSmokeTelemetryBootstrapEvidence,
@@ -699,6 +699,9 @@ function portableRuntimeReportIssues(report) {
 }
 
 export function finalRuntimeArtifactIdentityIssues(identity, state) {
+  if (identity && Object.hasOwn(identity, "ordinaryRuntime")) {
+    return ["ordinary runtime evidence cannot identify a certified artifact"];
+  }
   if (
     identity?.candidateIdentifier !== state.candidate.id ||
     identity?.sourceCommitSha !== state.candidate.commitSha ||

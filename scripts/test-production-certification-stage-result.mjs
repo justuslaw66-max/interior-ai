@@ -1,5 +1,7 @@
 import assert from "node:assert/strict";
+import { spawnSync } from "node:child_process";
 import {
+  existsSync,
   mkdirSync,
   mkdtempSync,
   readFileSync,
@@ -17,10 +19,14 @@ import {
   createCertificationStageCommandResult,
   formatCertificationStageResult,
   parseCertificationStageResult,
+  redactCertificationStageResultDiagnostic,
+  redactCertificationStageResultDiagnosticOutput,
   sealCertificationStageResult,
   validateCertificationStageResult,
 } from "./production-certification-stage-result-contract.mjs";
 import { runCertificationStageCommand } from "./production-certification-stage-result-consumer.mjs";
+import { qualificationChildFailure } from "./production-certification.mjs";
+import { PRODUCTION_CERTIFICATION_STAGE_ENVIRONMENT_PATH } from "./production-certification-stage-environment.mjs";
 import {
   certificationStateSha256,
   certificationValidationReportIssues,
@@ -156,10 +162,89 @@ function rejected(action, pattern) {
   assert.throws(action, pattern);
 }
 
+const diagnosticSecret = "qualification-private-token-fixture";
+const diagnosticEnvironment = { AUTH_SECRET: diagnosticSecret };
+const diagnosticChild = {
+  status: 17,
+  signal: null,
+  error: undefined,
+  stdout: `before\n${"x".repeat(2_000)}\nstdout-tail`,
+  stderr: `AssertionError: expected 12 cases\n${"y".repeat(2_000)}\n` +
+    `postgresql://fixture:private-password@localhost/fixture\n` +
+    `/private/tmp/qualification-private-fixture\n${diagnosticSecret}\nstderr-tail`,
+};
+for (const [args, child, expected] of [
+  [["scripts/test-production-certification-state-worktrees.mjs"], diagnosticChild,
+    "NOT_QUALIFIED_SOURCE_CONTRACT_DEFECT"],
+  [["run", "certification:simulate"], diagnosticChild,
+    "NOT_QUALIFIED_ORCHESTRATION_GAP"],
+  [["source-check"], { ...diagnosticChild, status: null, signal: "SIGTERM" }, "INCONCLUSIVE"],
+  [["source-check"], { ...diagnosticChild, status: null,
+    error: { code: "ENOENT", message: `missing executable ${diagnosticSecret}` } }, "INCONCLUSIVE"],
+]) {
+  const failure = qualificationChildFailure("node", args, child, diagnosticEnvironment);
+  assert.equal(failure.classification, expected);
+  assert.match(failure.diagnostic, /Qualification child failed:/);
+  assert.ok(failure.diagnostic.includes(JSON.stringify(args)));
+  assert.ok(failure.diagnostic.includes(`"status":${JSON.stringify(child.status)}`));
+  assert.ok(failure.diagnostic.includes(`"signal":${JSON.stringify(child.signal)}`));
+  assert.match(failure.diagnostic, /AssertionError: expected 12 cases/);
+  assert.match(failure.diagnostic, /stdout-tail/);
+  assert.match(failure.diagnostic, /stderr-tail$/);
+  assert.doesNotMatch(failure.diagnostic, /private-password|qualification-private/);
+  if (child.error) assert.match(failure.diagnostic, /ENOENT/);
+}
+assert.equal(qualificationChildFailure("node", ["source-check"], {
+  ...diagnosticChild, status: 0,
+}, diagnosticEnvironment), null);
+assert.equal(qualificationChildFailure("node", ["source-check"], {
+  ...diagnosticChild, status: 0, error: { code: "EIO", message: "spawn fixture" },
+}, diagnosticEnvironment), null);
+const emptySpawnFailure = qualificationChildFailure("node", ["source-check"], {
+  status: null, signal: null, stdout: null, stderr: null,
+  error: { code: "ENOENT", message: "missing fixture executable" },
+}, diagnosticEnvironment);
+assert.equal(emptySpawnFailure.classification, "INCONCLUSIVE");
+assert.match(emptySpawnFailure.diagnostic, /ENOENT/);
+assert.match(emptySpawnFailure.diagnostic, /stdout \(redacted\):\n\nstderr \(redacted\):\n$/);
+assert.equal(redactCertificationStageResultDiagnostic("z".repeat(2_000)).length, 1_000);
+assert.equal(redactCertificationStageResultDiagnosticOutput("z".repeat(2_000)).length, 2_000);
+
 const root = mkdtempSync(path.join(tmpdir(), "stage-result-contract-"));
 const passedCases = [];
 
 try {
+  const qualificationRoot = path.join(root, "qualification-cli");
+  mkdirSync(path.join(qualificationRoot, "scripts"), { recursive: true });
+  const environmentContractPath = path.join(qualificationRoot, PRODUCTION_CERTIFICATION_STAGE_ENVIRONMENT_PATH);
+  mkdirSync(path.dirname(environmentContractPath), { recursive: true });
+  writeFileSync(environmentContractPath, readFileSync(PRODUCTION_CERTIFICATION_STAGE_ENVIRONMENT_PATH));
+  writeFileSync(path.join(qualificationRoot, "scripts/test-production-certification-stage-order.mjs"),
+    `process.stdout.write(${JSON.stringify(diagnosticChild.stdout)});\n` +
+    `process.stderr.write(${JSON.stringify("fixture assertion\n" + "y".repeat(2_000) + "\nstderr-tail")});\n` +
+    "process.exitCode = 17;\n");
+  writeFileSync(path.join(qualificationRoot, "scripts/test-production-certification-stage-result.mjs"),
+    'import { writeFileSync } from "node:fs"; writeFileSync("unexpected-next-check", "ran");\n');
+  for (const args of [
+    ["init", "-q"], ["add", "."],
+    ["-c", "user.name=Qualification fixture", "-c", "user.email=qualification@example.invalid",
+      "commit", "-qm", "qualification failure fixture"],
+  ]) {
+    const child = spawnSync("git", args, { cwd: qualificationRoot, encoding: "utf8" });
+    assert.equal(child.status, 0, child.stderr);
+  }
+  const qualificationFailure = spawnSync(process.execPath, [
+    path.resolve("scripts/production-certification.mjs"), "qualify",
+  ], { cwd: qualificationRoot, encoding: "utf8", env: process.env });
+  assert.equal(qualificationFailure.status, 1);
+  assert.equal(qualificationFailure.stdout, "NOT_QUALIFIED_SOURCE_CONTRACT_DEFECT\n", qualificationFailure.stderr);
+  assert.match(qualificationFailure.stderr, /Qualification child failed:/);
+  assert.match(qualificationFailure.stderr, /test-production-certification-stage-order\.mjs/);
+  assert.match(qualificationFailure.stderr, /"status":17/);
+  assert.match(qualificationFailure.stderr, /stdout-tail/);
+  assert.match(qualificationFailure.stderr, /stderr-tail/);
+  assert.equal(existsSync(path.join(qualificationRoot, "unexpected-next-check")), false);
+
   const baseline = doctorFixture(path.join(root, "baseline"));
   const frame = formatCertificationStageResult(baseline.value);
   const npmNoise = [

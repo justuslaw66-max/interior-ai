@@ -23,6 +23,7 @@ export const PRODUCTION_EVIDENCE_VERIFICATION_MODES = Object.freeze({
   ARCHIVE_PREFLIGHT: "archive-preflight",
   REPOSITORY_FINAL: "repository-final",
   REPOSITORY_RUNTIME_FAILURE: "repository-runtime-failure",
+  STANDALONE_BUNDLE: "standalone-bundle",
   STANDALONE_FINAL: "standalone-final",
 });
 export const CURRENT_PRODUCTION_EVIDENCE_VERSIONS = Object.freeze([

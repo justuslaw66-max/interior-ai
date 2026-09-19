@@ -82,7 +82,7 @@ export type DesignPageDialogLayerDialogs = {
 export type DesignPageDialogLayerOverlays = {
   betaFeedback: BetaFeedbackWidgetProps | null;
   toasts: DesignPageToastsProps;
-  shareFallback: ShareLinkFallbackDialogProps & {
+  shareFallback: Omit<ShareLinkFallbackDialogProps, "copied" | "errorMessage"> & {
     lifecycleMode: "consumer" | "designer";
   };
   validation: DesignValidationFeedbackProps;
@@ -100,8 +100,10 @@ function getShareFallbackLayerState(
   overlays: DesignPageDialogLayerOverlays
 ) {
   const parentOpen = dialogs.presentExport.configuration.open;
+  const open = parentOpen && Boolean(overlays.shareFallback.url);
   return {
-    open: parentOpen && Boolean(overlays.shareFallback.url),
+    open,
+    toasts: open ? { ...overlays.toasts, shareCopied: false, shareErrorMessage: null } : overlays.toasts,
     scopeKey: `${dialogs.presentExport.state.designId ?? "unsaved"}:${
       overlays.shareFallback.lifecycleMode
     }:${parentOpen ? "parent-open" : "parent-closed"}`,
@@ -155,11 +157,12 @@ export function DesignPageDialogLayer({ dialogs, overlays }: DesignPageDialogLay
       {overlays.betaFeedback ? (
         <BetaFeedbackWidget {...overlays.betaFeedback} />
       ) : null}
-      <DesignPageToasts {...overlays.toasts} />
+      <DesignPageToasts {...shareFallback.toasts} />
       <ShareLinkFallbackDialog
         key={shareFallback.scopeKey}
         {...overlays.shareFallback}
         url={shareFallback.open ? overlays.shareFallback.url : null}
+        copied={overlays.toasts.shareCopied} errorMessage={overlays.toasts.shareErrorMessage}
       />
       <DesignValidationFeedback {...overlays.validation} />
       <CabinetryStudioOverlay {...overlays.cabinetry} />

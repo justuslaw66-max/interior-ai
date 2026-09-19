@@ -12,8 +12,7 @@ import type { ConsumerFloorPlanImportJob } from "./floor-plan-import-ui-types";
 type FloorPlanImportWorkspaceProps = {
   request: { file: File; trainingBenchmarkOptIn: boolean } | null;
   trainingBenchmarkOptIn: boolean;
-  dark: boolean;
-  disabled: boolean;
+  dark: boolean; disabled: boolean; proMode: boolean;
   onChooseFile: () => void; onHistoryConfirmationOpenChange: (open: boolean) => void;
   onTrainingBenchmarkOptInChange: (value: boolean) => void;
 };
@@ -31,8 +30,7 @@ function useHistoryConfirmationGuard(onChange: (open: boolean) => void) {
 export default function FloorPlanImportWorkspace({
   request,
   trainingBenchmarkOptIn,
-  dark,
-  disabled,
+  dark, disabled, proMode,
   onChooseFile, onHistoryConfirmationOpenChange,
   onTrainingBenchmarkOptInChange,
 }: FloorPlanImportWorkspaceProps) {
@@ -80,8 +78,7 @@ export default function FloorPlanImportWorkspace({
             file={request && request !== ignoredRequest ? request.file : null}
             resumeJobId={request && request !== ignoredRequest ? null : resumeJobId}
             trainingBenchmarkOptIn={request?.trainingBenchmarkOptIn ?? false}
-            dark={dark}
-            disabled={disabled}
+            dark={dark} disabled={disabled} proMode={proMode}
             onChooseFile={onChooseFile}
             onActiveJobIdChange={recordActiveImportJob}
             onJobUpdate={recordJobUpdate}

@@ -23,9 +23,11 @@ import path from "node:path";
 import process from "node:process";
 
 import {
+  resolvePlaywrightReportPath,
   resolveAuthorizedExternalEvidenceRoot,
   resolveRetainedExternalEvidenceFile,
 } from "./playwright-report-path.mjs";
+import { ordinaryRuntimeReportIdentity, validateOrdinaryRuntimeIdentity, runtimeFailureText } from "./production-artifact-runtime-binding.mjs";
 import { deriveProductionVerifierClosure } from "./production-verifier-closure.mjs";
 import { projectCertificationChildEnvironment } from "./production-certification-stage-environment.mjs";
 import { certificationDependencyInstallationEnvironment } from "./production-certification-dependencies.mjs";
@@ -46,6 +48,8 @@ export const PRODUCTION_EVIDENCE_VERIFIER_SOURCE_PATHS = Object.freeze(
 );
 
 const ARCHIVE_PREFLIGHT_COMMAND = "verify-archive-preflight";
+const STABLE_RUNTIME_STANDALONE_SUMMARY_PATH =
+  ".local/production-artifact-evidence/stable-runtime-smoke-evidence.json";
 const ARCHIVE_PREFLIGHT_PROHIBITED_PATHS = Object.freeze([
   ".git",
   ".env",
@@ -101,7 +105,7 @@ if (process.argv[2] === ARCHIVE_PREFLIGHT_COMMAND) {
 }
 
 const { validateRequiredTestReport } = await import(
-  "./required-test-truthfulness.mjs"
+  "./required-test-report-validation.mjs"
 );
 const {
   FURNISHED_TEMPLATE_PHASE_CONTRACTS,
@@ -303,6 +307,12 @@ const VERIFICATION_MODE_CONFIG = Object.freeze({
       requireSemanticJournal: true,
       allowFailedRuntimeSmoke: true,
     }),
+  [PRODUCTION_EVIDENCE_VERIFICATION_MODES.STANDALONE_BUNDLE]: Object.freeze({
+    standalone: true,
+    testPolicy: "runtime-required",
+    requireSemanticJournal: false,
+    allowFailedRuntimeSmoke: false,
+  }),
   [PRODUCTION_EVIDENCE_VERIFICATION_MODES.STANDALONE_FINAL]: Object.freeze({
     standalone: true,
     testPolicy: "external-certification-required",
@@ -1654,9 +1664,14 @@ export function validateArtifactProductServerAuthFixtureBinding({
       treeSha: manifest.source.treeSha,
     },
   );
+  const buildContinuity = manifest.build?.authFixtureContinuity;
+  const comparableContinuity =
+    buildContinuity?.activationScope === "github-actions" &&
+    continuity.activationScope === "local-certification-projection"
+      ? { ...continuity, activationScope: "github-actions" }
+      : continuity;
   if (
-    JSON.stringify(continuity) !==
-    JSON.stringify(manifest.build?.authFixtureContinuity)
+    JSON.stringify(comparableContinuity) !== JSON.stringify(buildContinuity)
   ) {
     throw new Error(
       "artifact product server auth fixture differs from build continuity",
@@ -2632,13 +2647,37 @@ function resolvedRetainedEvidencePath(
   description,
   authorizedExternalRoot,
 ) {
-  return path.isAbsolute(filePath)
-    ? resolveRetainedExternalEvidenceFile({
-        filePath,
-        authorizedExternalRoot,
-        repositoryRoot,
-      }).absolutePath
-    : resolveRepositoryPath(repositoryRoot, filePath, description);
+  if (path.isAbsolute(filePath)) return resolveRetainedExternalEvidenceFile({
+    filePath, authorizedExternalRoot, repositoryRoot }).absolutePath;
+  const absolutePath = resolveRepositoryPath(repositoryRoot, filePath, description);
+  if (existsSync(absolutePath) && (lstatSync(absolutePath).isSymbolicLink() ||
+      !realpathSync(absolutePath).startsWith(`${realpathSync(repositoryRoot)}${path.sep}`))) {
+    throw new Error("Retained repository evidence escapes its physical owner");
+  }
+  return absolutePath;
+}
+
+function resolvedPortableTestEvidencePath(
+  repositoryRoot,
+  relativePath,
+  description,
+  environment,
+) {
+  const externalRoot =
+    environment?.CERTIFICATION_ENVIRONMENT_STAGE === "runtime-smoke"
+      ? environment[RUNTIME_SMOKE_EXTERNAL_ROOT_NAME]?.trim()
+      : null;
+  if (!externalRoot) {
+    return resolveRepositoryPath(repositoryRoot, relativePath, description);
+  }
+  if (path.isAbsolute(relativePath)) {
+    throw new Error(`${description} must use its portable relative path`);
+  }
+  return resolveRetainedExternalEvidenceFile({
+    filePath: path.join(externalRoot, relativePath),
+    authorizedExternalRoot: externalRoot,
+    repositoryRoot,
+  }).absolutePath;
 }
 
 export function canonicalizeProductionEvidenceReport(
@@ -2771,7 +2810,12 @@ export function bindRuntimeSmokeFailureToReport(
 function readReport(repositoryRoot, test, issues, environment) {
   let reportPath;
   try {
-    reportPath = resolveRepositoryPath(repositoryRoot, test.report.path, "test report path");
+    reportPath = resolvedPortableTestEvidencePath(
+      repositoryRoot,
+      test.report.path,
+      "test report path",
+      environment,
+    );
   } catch (error) {
     issues.push(error instanceof Error ? error.message : String(error));
     return null;
@@ -2950,16 +2994,25 @@ function readRuntimeSmokePhaseTimings(
   environment,
   { allowFailure = false, report = null, absoluteTimingPath = null } = {},
 ) {
-  if (!absoluteTimingPath && test.phaseTimings?.path !== DEFAULT_PHASE_TIMINGS_PATH) {
+  const externalTimingRoot =
+    environment?.CERTIFICATION_ENVIRONMENT_STAGE === "runtime-smoke"
+      ? environment[RUNTIME_SMOKE_EXTERNAL_ROOT_NAME]?.trim()
+      : null;
+  if (
+    !absoluteTimingPath &&
+    !externalTimingRoot &&
+    test.phaseTimings?.path !== DEFAULT_PHASE_TIMINGS_PATH
+  ) {
     issues.push("runtime-smoke phase timing path is not canonical");
     return null;
   }
   let timingPath = absoluteTimingPath;
   try {
-    timingPath ??= resolveRepositoryPath(
+    timingPath ??= resolvedPortableTestEvidencePath(
         repositoryRoot,
         test.phaseTimings.path,
         "runtime-smoke phase timing path",
+        environment,
       );
   } catch (error) {
     issues.push(error instanceof Error ? error.message : String(error));
@@ -3196,6 +3249,7 @@ function validateTestRecord(
   {
     requiredTestRepositoryRoot,
     validateRequiredTestRepository = true,
+    sourceRepositoryValidator,
     allowFailedRuntimeSmoke = false,
   } = {},
 ) {
@@ -3288,6 +3342,13 @@ function validateTestRecord(
     issues.push("recorded runtime telemetry bootstrap summary does not match the report");
   }
   const identity = report.config?.metadata?.productionArtifactEvidence;
+  if (identity?.ordinaryRuntime) {
+    try { validateOrdinaryRuntimeIdentity(identity.ordinaryRuntime, manifest); }
+    catch (error) { issues.push(error.message); }
+  }
+  if (JSON.stringify(identity?.ordinaryRuntime ?? null) !== JSON.stringify(test.ordinaryRuntime ?? null)) {
+    issues.push("Recorded ordinary runtime identity differs from its report");
+  }
   if (
     identity?.schema !== PRODUCTION_EVIDENCE_SCHEMA ||
     identity?.sourceCommitSha !== manifest.source.commitSha ||
@@ -3299,6 +3360,7 @@ function validateTestRecord(
     issues.push("test report metadata does not identify the recorded production artifact");
   }
   const truthfulness = validateRequiredTestReport({
+    sourceRepositoryValidator,
     repositoryRoot:
       requiredTestRepositoryRoot ?? path.resolve(import.meta.dirname, ".."),
     gateId: "ci.production-runtime-smoke",
@@ -3313,11 +3375,21 @@ function validateTestRecord(
   issues.push(...truthfulnessIssues.map((issue) => `required runtime smoke: ${issue}`));
 }
 
+function assertSourceRepositoryValidation(sourceRepositoryValidator, repositoryRoot) {
+  if (typeof sourceRepositoryValidator !== "function") {
+    throw new Error("Repository artifact operations require the source-repository driver.");
+  }
+  const validation = sourceRepositoryValidator({ repositoryRoot: path.resolve(repositoryRoot) });
+  if (!validation.valid) throw new Error(validation.issues.join("; "));
+}
+
 export async function validateProductionEvidence({
+  sourceRepositoryValidator,
   repositoryRoot,
   manifestPath,
   verificationMode = PRODUCTION_EVIDENCE_VERIFICATION_MODES.REPOSITORY_FINAL,
   expectedSourceCommitSha,
+  expectedManifestSha256,
   expectedArchiveIdentity,
   environment = process.env,
 }) {
@@ -3337,6 +3409,7 @@ export async function validateProductionEvidence({
     requireSemanticJournal,
     allowFailedRuntimeSmoke,
   } = modeConfig;
+  if (!standalone) assertSourceRepositoryValidation(sourceRepositoryValidator, repositoryRoot);
   const runtimeRequired =
     testPolicy === "runtime-required" ||
     testPolicy === "runtime-failure-required";
@@ -3348,6 +3421,13 @@ export async function validateProductionEvidence({
     return { valid: false, issues, manifest: null, verificationResult: null };
   }
   const { manifest, bytes } = readResult;
+  if (verificationMode === PRODUCTION_EVIDENCE_VERIFICATION_MODES.STANDALONE_BUNDLE) {
+    if (!/^[0-9a-f]{64}$/.test(expectedManifestSha256 ?? "")) {
+      issues.push("bundle verification requires an exact expected source manifest SHA-256");
+    } else if (createHash("sha256").update(bytes).digest("hex") !== expectedManifestSha256) {
+      issues.push("bundle manifest differs from the verified source manifest");
+    }
+  }
   if (
     manifest.schema !== PRODUCTION_EVIDENCE_SCHEMA ||
     manifest.validatorVersion !== PRODUCTION_EVIDENCE_VALIDATOR_VERSION
@@ -3426,7 +3506,8 @@ export async function validateProductionEvidence({
   if (standalone) {
     issues.push(...sourceIssues(manifest.source));
     if (
-      verificationMode === PRODUCTION_EVIDENCE_VERIFICATION_MODES.STANDALONE_FINAL
+      verificationMode === PRODUCTION_EVIDENCE_VERIFICATION_MODES.STANDALONE_FINAL ||
+      verificationMode === PRODUCTION_EVIDENCE_VERIFICATION_MODES.STANDALONE_BUNDLE
     ) {
       if (!/^[0-9a-f]{40,64}$/i.test(expectedSourceCommitSha ?? "")) {
         issues.push("standalone verification requires an exact expected source commit SHA");
@@ -3864,8 +3945,9 @@ export async function validateProductionEvidence({
         { report, allowFailure: allowFailedRuntimeSmoke && test.processExitCode !== 0 },
       );
       validateTestRecord(manifest, test, report, phaseTimings, issues, {
-        requiredTestRepositoryRoot: standalone ? root : undefined,
+        requiredTestRepositoryRoot: root,
         validateRequiredTestRepository: !standalone,
+        sourceRepositoryValidator,
         allowFailedRuntimeSmoke,
       });
       if (!canonicalUtcTimestamp(test.completedAt)) {
@@ -3923,6 +4005,7 @@ function truthfulRuntimeSmokeFailureIssues(truthfulness) {
 }
 
 export async function recordProductionEvidenceTest({
+  sourceRepositoryValidator,
   repositoryRoot,
   manifestPath,
   reportPath,
@@ -3936,6 +4019,7 @@ export async function recordProductionEvidenceTest({
   expectedRawReportSha256,
 }) {
   const preflight = await validateProductionEvidence({
+    sourceRepositoryValidator,
     repositoryRoot,
     manifestPath,
     verificationMode:
@@ -3984,6 +4068,10 @@ export async function recordProductionEvidenceTest({
     throw new Error(`test report contains sensitive environment values: ${leaks.join(", ")}`);
   }
   const identity = report.config?.metadata?.productionArtifactEvidence;
+  const ordinaryIdentity = ordinaryRuntimeReportIdentity(environment, manifest);
+  if (JSON.stringify(identity?.ordinaryRuntime ?? null) !== JSON.stringify(ordinaryIdentity)) {
+    throw new Error("Runtime report execution owner differs from ordinary/certification context");
+  }
   if (
     identity?.schema !== PRODUCTION_EVIDENCE_SCHEMA ||
     identity?.sourceCommitSha !== manifest.source.commitSha ||
@@ -4020,7 +4108,8 @@ export async function recordProductionEvidenceTest({
     throw new Error("test report does not prove the canonical non-reused production server");
   }
   const truthfulness = validateRequiredTestReport({
-    repositoryRoot: path.resolve(import.meta.dirname, ".."),
+    sourceRepositoryValidator,
+    repositoryRoot,
     gateId: "ci.production-runtime-smoke",
     report,
     processExitCode,
@@ -4091,6 +4180,7 @@ export async function recordProductionEvidenceTest({
     return normalizeRelativePath(path.relative(base, absolutePath));
   };
   const test = {
+    ...(ordinaryIdentity ? { ordinaryRuntime: ordinaryIdentity } : {}),
     name,
     command,
     processExitCode,
@@ -4128,6 +4218,7 @@ export async function recordProductionEvidenceTest({
 }
 
 export async function verifyRuntimeSmokeFailureEvidence({
+  sourceRepositoryValidator,
   repositoryRoot,
   manifestPath = DEFAULT_MANIFEST_PATH,
   reportPath = DEFAULT_REPORT_PATH,
@@ -4136,6 +4227,7 @@ export async function verifyRuntimeSmokeFailureEvidence({
 }) {
   const root = path.resolve(repositoryRoot);
   const fullValidation = await validateProductionEvidence({
+    sourceRepositoryValidator,
     repositoryRoot: root,
     manifestPath,
     verificationMode:
@@ -4200,7 +4292,8 @@ export async function verifyRuntimeSmokeFailureEvidence({
     issues.push("runtime-smoke failure timing summary is contradictory");
   }
   const truthfulness = validateRequiredTestReport({
-    repositoryRoot: path.resolve(import.meta.dirname, ".."),
+    sourceRepositoryValidator,
+    repositoryRoot,
     gateId: "ci.production-runtime-smoke",
     report,
     processExitCode: test?.processExitCode ?? 1,
@@ -4393,8 +4486,18 @@ async function completePreparedBuildEvidence(
   return result;
 }
 
-async function buildEvidence(repositoryRoot, manifestPath) {
+async function prepareSourceBuildEvidence(repositoryRoot, loadSourceRepositoryValidator) {
+  if (typeof loadSourceRepositoryValidator !== "function") {
+    throw new Error("Repository artifact operations require the source-repository driver.");
+  }
   const prepared = await prepareBuildEvidence(repositoryRoot);
+  const sourceRepositoryValidator = await loadSourceRepositoryValidator();
+  assertSourceRepositoryValidation(sourceRepositoryValidator, repositoryRoot);
+  return prepared;
+}
+
+async function buildEvidence(repositoryRoot, manifestPath, loadSourceRepositoryValidator) {
+  const prepared = await prepareSourceBuildEvidence(repositoryRoot, loadSourceRepositoryValidator);
   return completePreparedBuildEvidence(
     repositoryRoot,
     manifestPath,
@@ -4403,11 +4506,14 @@ async function buildEvidence(repositoryRoot, manifestPath) {
 }
 
 export async function createProductionEvidenceBundle({
+  sourceRepositoryValidator,
   repositoryRoot,
   manifestPath = DEFAULT_MANIFEST_PATH,
   reportPath = DEFAULT_REPORT_PATH,
   bundlePath = DEFAULT_BUNDLE_PATH,
   environment = process.env,
+  externalEvidenceRoot = null,
+  externalBundleInputs = [],
 }) {
   const root = path.resolve(repositoryRoot);
   if (normalizeRelativePath(bundlePath) !== DEFAULT_BUNDLE_PATH) {
@@ -4423,8 +4529,10 @@ export async function createProductionEvidenceBundle({
   if (uploadDirectory !== path.join(root, DEFAULT_UPLOAD_DIRECTORY)) {
     throw new Error("evidence upload directory is not the dedicated safe path");
   }
+  assertSourceRepositoryValidation(sourceRepositoryValidator, repositoryRoot);
   rmSync(uploadDirectory, { recursive: true, force: true });
   const result = await validateProductionEvidence({
+    sourceRepositoryValidator,
     repositoryRoot: root,
     manifestPath,
     verificationMode: PRODUCTION_EVIDENCE_VERIFICATION_MODES.REPOSITORY_FINAL,
@@ -4438,7 +4546,7 @@ export async function createProductionEvidenceBundle({
     );
   }
 
-  const bundleInputs = [
+  const repositoryBundleInputs = [
     ".next",
     "public",
     ".nvmrc",
@@ -4447,24 +4555,78 @@ export async function createProductionEvidenceBundle({
     ...PRODUCTION_EVIDENCE_VERIFIER_SOURCE_PATHS,
     manifestPath,
     `${manifestPath}.sha256`,
-    reportPath,
-    DEFAULT_PHASE_TIMINGS_PATH,
   ];
-  for (const relativePath of bundleInputs) {
+  for (const relativePath of repositoryBundleInputs) {
     const absolutePath = resolveRepositoryPath(root, relativePath, "evidence bundle input");
     if (!existsSync(absolutePath)) {
       throw new Error(`evidence bundle input is missing: ${relativePath}`);
     }
   }
+  let retainedExternalRoot = null;
+  if (externalEvidenceRoot !== null) {
+    if (
+      reportPath !== DEFAULT_REPORT_PATH ||
+      JSON.stringify(externalBundleInputs) !==
+        JSON.stringify([
+          DEFAULT_REPORT_PATH,
+          DEFAULT_PHASE_TIMINGS_PATH,
+          STABLE_RUNTIME_STANDALONE_SUMMARY_PATH,
+        ])
+    ) {
+      throw new Error("external runtime bundle inputs are not canonical");
+    }
+    const retainedExternal = resolveAuthorizedExternalEvidenceRoot({
+      authorizedExternalRoot: externalEvidenceRoot,
+      repositoryRoot: root,
+    });
+    const projectedExternal = resolveAuthorizedExternalEvidenceRoot({
+      authorizedExternalRoot:
+        environment[RUNTIME_SMOKE_EXTERNAL_ROOT_NAME],
+      repositoryRoot: root,
+    });
+    if (
+      retainedExternal.externalRootRealpath !==
+      projectedExternal.externalRootRealpath
+    ) {
+      throw new Error(
+        "external runtime bundle root differs from the projected evidence root",
+      );
+    }
+    retainedExternalRoot = retainedExternal.externalRoot;
+    for (const relativePath of externalBundleInputs) {
+      resolvedPortableTestEvidencePath(
+        root,
+        relativePath,
+        "external runtime bundle input",
+        environment,
+      );
+    }
+  } else {
+    repositoryBundleInputs.push(reportPath, DEFAULT_PHASE_TIMINGS_PATH);
+    for (const relativePath of [reportPath, DEFAULT_PHASE_TIMINGS_PATH]) {
+      const absolutePath = resolveRepositoryPath(root, relativePath, "evidence bundle input");
+      if (!existsSync(absolutePath)) {
+        throw new Error(`evidence bundle input is missing: ${relativePath}`);
+      }
+    }
+  }
   await mkdir(uploadDirectory, { recursive: true });
   const absoluteBundlePath = resolveRepositoryPath(root, bundlePath, "evidence bundle path");
+  const archiveInputs = [
+    "-C",
+    root,
+    ...repositoryBundleInputs,
+    ...(retainedExternalRoot
+      ? ["-C", retainedExternalRoot, ...externalBundleInputs]
+      : []),
+  ];
   run(
     "tar",
     [
       "-czf",
       absoluteBundlePath,
       ...ARTIFACT_EXCLUSIONS.map((excludedPath) => `--exclude=${excludedPath}`),
-      ...bundleInputs,
+      ...archiveInputs,
     ],
     { cwd: root, stdio: ["ignore", "pipe", "pipe"] },
   );
@@ -4522,8 +4684,9 @@ export function certifiedNestedDatabaseUrl(environment) {
   return environment.DATABASE_URL;
 }
 
-async function serveEvidence(repositoryRoot, manifestPath) {
+async function serveEvidence(repositoryRoot, manifestPath, sourceRepositoryValidator, consumeOrdinaryRuntime) {
   const result = await validateProductionEvidence({
+    sourceRepositoryValidator,
     repositoryRoot,
     manifestPath,
     verificationMode:
@@ -4532,12 +4695,12 @@ async function serveEvidence(repositoryRoot, manifestPath) {
   if (!result.valid) throw new Error(result.issues.join("; "));
   const manifest = result.manifest;
   const port = "3000";
-  const projectedEnvironment = projectArtifactProductServerEnvironment({
-    repositoryRoot,
-    baseEnvironment: process.env,
-    manifest,
-    databaseUrl: certifiedNestedDatabaseUrl(process.env),
-  });
+  const ordinary = Object.keys(process.env).some((name) => name.startsWith("ORDINARY_ARTIFACT_"));
+  if (ordinary && !consumeOrdinaryRuntime) throw new Error("Ordinary runtime requires its source execution owner");
+  const projectedEnvironment = ordinary
+    ? await consumeOrdinaryRuntime({ repositoryRoot, manifestPath, manifest, environment: process.env })
+    : projectArtifactProductServerEnvironment({ repositoryRoot, baseEnvironment: process.env,
+        manifest, databaseUrl: certifiedNestedDatabaseUrl(process.env) });
   const environment = { ...projectedEnvironment };
   for (const name of [...SAFE_FEATURE_FLAGS, ...DEVELOPMENT_ONLY_FLAGS]) delete environment[name];
   for (const [name, enabled] of Object.entries(manifest.build.featureFlags)) {
@@ -4567,31 +4730,58 @@ async function serveEvidence(repositoryRoot, manifestPath) {
   }
 }
 
-async function smokeEvidence(repositoryRoot, manifestPath, reportPath) {
+async function smokeEvidence(repositoryRoot, manifestPath, reportPath, sourceRepositoryValidator, runOrdinaryRuntime) {
   const preflight = await validateProductionEvidence({
+    sourceRepositoryValidator,
     repositoryRoot,
     manifestPath,
     verificationMode:
       PRODUCTION_EVIDENCE_VERIFICATION_MODES.REPOSITORY_PREFLIGHT,
   });
   if (!preflight.valid) throw new Error(preflight.issues.join("; "));
-  const manifest = preflight.manifest;
-  const absoluteReportPath = resolveRepositoryPath(repositoryRoot, reportPath, "test report path");
-  if (existsSync(absoluteReportPath)) rmSync(absoluteReportPath);
+  if (!runOrdinaryRuntime) throw new Error("Ordinary smoke requires its source execution owner");
+  validateOrdinarySmokeDestinations({ repositoryRoot, reportPath, environment: process.env });
+  return runOrdinaryRuntime({ repositoryRoot, manifestPath, manifest: preflight.manifest,
+    environment: process.env, execute: (environment, writeDiagnostic) => runVerifiedArtifactSmoke({ repositoryRoot,
+      manifestPath, reportPath, sourceRepositoryValidator, manifest: preflight.manifest, environment, writeDiagnostic }) });
+}
+
+export function validateOrdinarySmokeDestinations({ repositoryRoot, reportPath, environment }) {
+  const timingPath = environment.RUNTIME_SMOKE_PHASE_TIMINGS_PATH?.trim() || DEFAULT_PHASE_TIMINGS_PATH;
+  if (reportPath !== DEFAULT_REPORT_PATH || timingPath !== DEFAULT_PHASE_TIMINGS_PATH) {
+    throw new Error("Ordinary repository evidence requires its canonical owned report and timing destinations");
+  }
+  resolvePlaywrightReportPath({ repositoryRoot, requestedPath: reportPath });
+  resolveRuntimeSmokeTimingDestination({ repositoryRoot, timingPath, environment });
+}
+
+export async function retainRuntimeSmokeOutcome(playwright, report) {
+  const failures = [];
+  if (playwright.error || playwright.signal || playwright.status !== 0) {
+    failures.push(`Primary runtime failure (status ${playwright.status ?? "unknown"}, signal ${playwright.signal ?? "none"}): ${[playwright.error === undefined ? null : runtimeFailureText(playwright.error), playwright.stderr?.trim(), playwright.stdout?.trim()].filter(Boolean).join("\n") || "startup/test process failed"}`);
+  }
+  try { await report(); } catch (error) { failures.push(`Runtime reporting failure: ${runtimeFailureText(error)}`); }
+  if (failures.length) throw new Error(failures.join("\n"));
+}
+
+async function runVerifiedArtifactSmoke({ repositoryRoot, manifestPath, reportPath, sourceRepositoryValidator,
+  manifest, environment: baseEnvironment, writeDiagnostic }) {
+  const absoluteReportPath = resolvePlaywrightReportPath({ repositoryRoot, requestedPath: reportPath }).outputPath;
   const requestedTimingPath =
-    process.env.RUNTIME_SMOKE_PHASE_TIMINGS_PATH?.trim() ||
+    baseEnvironment.RUNTIME_SMOKE_PHASE_TIMINGS_PATH?.trim() ||
     DEFAULT_PHASE_TIMINGS_PATH;
   const timingDestination = resolveRuntimeSmokeTimingDestination({
     repositoryRoot,
     timingPath: requestedTimingPath,
-    environment: process.env,
+    environment: baseEnvironment,
   });
   const externalTimingRoot = timingDestination.rootVariableName
-    ? process.env[timingDestination.rootVariableName]?.trim()
+    ? baseEnvironment[timingDestination.rootVariableName]?.trim()
     : null;
+  const retainedTimingPath = timingDestination.retainedPath ?? requestedTimingPath;
   const absolutePhaseTimingPath = timingDestination.outputPath;
   const environment = {
-    ...process.env,
+    ...baseEnvironment,
     CI: "true",
     APP_ENV: manifest.build.applicationEnvironment,
     NEXT_PUBLIC_APP_ENV: manifest.build.applicationEnvironment,
@@ -4612,36 +4802,45 @@ async function smokeEvidence(repositoryRoot, manifestPath, reportPath) {
     PRODUCTION_EVIDENCE_EXPECTED_COMMIT_SHA: manifest.source.commitSha,
     PRODUCTION_EVIDENCE_EXPECTED_TREE_SHA: manifest.source.treeSha,
   };
-  const playwright = run(
+  const playwright = spawnSync(
     process.platform === "win32" ? "npx.cmd" : "npx",
     ["playwright", "test", "tests/e2e/00-runtime-smoke.spec.ts", "--project=chromium"],
     {
       cwd: repositoryRoot,
       env: environment,
-      stdio: "inherit",
-      allowFailure: true,
+      encoding: "utf8",
+      maxBuffer: 128 * 1024 * 1024,
     },
   );
+  writeDiagnostic([playwright.stdout, playwright.stderr].filter(Boolean).join("\n"));
+  await retainRuntimeSmokeOutcome(playwright, async () => {
   if (!existsSync(absoluteReportPath)) throw new Error("required test report is missing");
-  canonicalizeProductionEvidenceReport(repositoryRoot, reportPath);
+  if (!path.isAbsolute(reportPath)) canonicalizeProductionEvidenceReport(repositoryRoot, reportPath);
+  if (playwright.status !== 0 && !existsSync(absolutePhaseTimingPath)) {
+    throw new Error(
+      "runtime-smoke failed before product-test timing began; the preceding Playwright webServer failure is authoritative",
+    );
+  }
   bindRuntimeSmokeFailureToReport(
     repositoryRoot,
     reportPath,
-    absolutePhaseTimingPath,
+    retainedTimingPath,
     externalTimingRoot,
   );
   await recordProductionEvidenceTest({
+    sourceRepositoryValidator,
     repositoryRoot,
     manifestPath,
     reportPath,
-    phaseTimingPath: absolutePhaseTimingPath,
+    phaseTimingPath: retainedTimingPath,
     name: "runtime-smoke",
     command: RUNTIME_SMOKE_COMMAND,
     processExitCode: playwright.status ?? 1,
     environment,
   });
-  if (playwright.status !== 0) process.exit(playwright.status ?? 1);
+  });
   const finalResult = await validateProductionEvidence({
+    sourceRepositoryValidator,
     repositoryRoot,
     manifestPath,
     verificationMode: PRODUCTION_EVIDENCE_VERIFICATION_MODES.REPOSITORY_FINAL,
@@ -4652,16 +4851,22 @@ async function smokeEvidence(repositoryRoot, manifestPath, reportPath) {
   );
 }
 
-async function cli() {
+export async function runProductionArtifactEvidenceCli({ sourceRepositoryValidator, loadSourceRepositoryValidator,
+  runOrdinaryRuntime, consumeOrdinaryRuntime } = {}) {
   const repositoryRoot = process.cwd();
   const command = process.argv[2];
+  if (["complete-certification-build", "recover", "verify-preflight", "serve",
+    "smoke", "verify-runtime-failure", "bundle", "verify"].includes(command)) {
+    if (loadSourceRepositoryValidator) sourceRepositoryValidator = await loadSourceRepositoryValidator();
+    assertSourceRepositoryValidation(sourceRepositoryValidator, repositoryRoot);
+  }
   const manifestPath =
     process.env.PRODUCTION_EVIDENCE_MANIFEST?.trim() || DEFAULT_MANIFEST_PATH;
   const reportPath =
     process.env.PLAYWRIGHT_JSON_OUTPUT_FILE?.trim() || DEFAULT_REPORT_PATH;
-  if (command === "build") await buildEvidence(repositoryRoot, manifestPath);
+  if (command === "build") await buildEvidence(repositoryRoot, manifestPath, loadSourceRepositoryValidator);
   else if (command === "prepare-certification-build") {
-    const prepared = await prepareBuildEvidence(repositoryRoot);
+    const prepared = await prepareSourceBuildEvidence(repositoryRoot, loadSourceRepositoryValidator);
     console.log(JSON.stringify({
       prepared: true,
       runNonce: prepared.journal.runNonce,
@@ -4700,6 +4905,7 @@ async function cli() {
   }
   else if (command === "verify-preflight") {
     const result = await validateProductionEvidence({
+      sourceRepositoryValidator,
       repositoryRoot,
       manifestPath,
       verificationMode:
@@ -4708,10 +4914,11 @@ async function cli() {
     if (!result.valid) throw new Error(result.issues.join("; "));
     console.log("Production artifact canonical preflight valid.");
   }
-  else if (command === "serve") await serveEvidence(repositoryRoot, manifestPath);
-  else if (command === "smoke") await smokeEvidence(repositoryRoot, manifestPath, reportPath);
+  else if (command === "serve") await serveEvidence(repositoryRoot, manifestPath, sourceRepositoryValidator, consumeOrdinaryRuntime);
+  else if (command === "smoke") await smokeEvidence(repositoryRoot, manifestPath, reportPath, sourceRepositoryValidator, runOrdinaryRuntime);
   else if (command === "verify-runtime-failure") {
     const result = await verifyRuntimeSmokeFailureEvidence({
+      sourceRepositoryValidator,
       repositoryRoot,
       manifestPath,
       reportPath,
@@ -4721,12 +4928,14 @@ async function cli() {
     );
   } else if (command === "bundle") {
     await createProductionEvidenceBundle({
+      sourceRepositoryValidator,
       repositoryRoot,
       manifestPath,
       reportPath,
     });
   } else if (command === ARCHIVE_PREFLIGHT_COMMAND) {
     const result = await validateProductionEvidence({
+      sourceRepositoryValidator,
       repositoryRoot,
       manifestPath,
       verificationMode:
@@ -4735,8 +4944,26 @@ async function cli() {
     });
     if (!result.valid) throw new Error(result.issues.join("; "));
     console.log(JSON.stringify(result.verificationResult, null, 2));
+  } else if (command === "verify-bundle") {
+    const result = await validateProductionEvidence({
+      repositoryRoot,
+      manifestPath,
+      verificationMode: PRODUCTION_EVIDENCE_VERIFICATION_MODES.STANDALONE_BUNDLE,
+      expectedSourceCommitSha: process.env.PRODUCTION_EVIDENCE_EXPECTED_COMMIT_SHA?.trim(),
+      expectedManifestSha256: process.env.PRODUCTION_EVIDENCE_EXPECTED_MANIFEST_SHA256?.trim(),
+    });
+    if (!result.valid) throw new Error(result.issues.join("; "));
+    console.log(JSON.stringify({
+      bundleVerified: true,
+      sourceCommitSha: result.manifest.source.commitSha,
+      manifestSha256: process.env.PRODUCTION_EVIDENCE_EXPECTED_MANIFEST_SHA256.trim(),
+      artifactSha256: result.manifest.artifact.sha256,
+      certificationComplete: false,
+      finalStandaloneVerificationRequired: true,
+    }));
   } else if (command === "verify-standalone") {
     const result = await validateProductionEvidence({
+      sourceRepositoryValidator,
       repositoryRoot,
       manifestPath,
       verificationMode:
@@ -4756,6 +4983,7 @@ async function cli() {
     console.log(JSON.stringify(certification));
   } else if (command === "verify") {
     const result = await validateProductionEvidence({
+      sourceRepositoryValidator,
       repositoryRoot,
       manifestPath,
       verificationMode: PRODUCTION_EVIDENCE_VERIFICATION_MODES.REPOSITORY_FINAL,
@@ -4766,13 +4994,13 @@ async function cli() {
     );
   } else {
     throw new Error(
-      "Usage: production-artifact-evidence.mjs build|recover|verify-floor-plan-traces|verify-preflight|verify-archive-preflight|serve|smoke|verify-runtime-failure|bundle|verify|verify-standalone",
+      "Usage: production-artifact-evidence.mjs build|recover|verify-floor-plan-traces|verify-preflight|verify-archive-preflight|serve|smoke|verify-runtime-failure|bundle|verify|verify-bundle|verify-standalone",
     );
   }
 }
 
 if (process.argv[1] && path.resolve(process.argv[1]) === path.resolve(import.meta.filename)) {
-  cli().catch((error) => {
+  runProductionArtifactEvidenceCli().catch((error) => {
     console.error(error instanceof Error ? error.message : String(error));
     process.exit(1);
   });

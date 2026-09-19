@@ -5,6 +5,7 @@ import { join } from "node:path";
 import { resolveEditorCapabilities } from "../lib/editor-capabilities";
 import { getExportCapabilities } from "../lib/export-capabilities";
 import { isOnboardingEligible } from "../lib/onboarding";
+import { copyFallbackShareLinkWithFeedback } from "../lib/copy-fallback-share-link";
 
 const root = process.cwd();
 const read = (relativePath: string) =>
@@ -229,6 +230,10 @@ for (const required of [
   "SHARE_LINK_FALLBACK_COPY_ACTION_ID",
   "SHARE_LINK_FALLBACK_OPEN_ACTION_ID",
   'aria-label="Share URL"',
+  'data-testid="share-copy-status"',
+  'role="status"',
+  'aria-live="polite"',
+  'aria-atomic="true"',
   "min-w-0",
   "max-h-[calc(100dvh-2rem)]",
 ]) {
@@ -395,4 +400,59 @@ for (const required of [
   );
 }
 
-console.log("Editor capabilities and accessibility checks passed.");
+async function checkFallbackCopySettlement() {
+  const originalNavigator = Object.getOwnPropertyDescriptor(globalThis, "navigator");
+  const state: { success: boolean; error: string | null } = { success: false, error: null };
+  const setSuccess = (value: boolean) => { state.success = value; };
+  const setError = (value: string | null) => { state.error = value; };
+  let settle!: () => void;
+  let clipboardResult = new Promise<void>((resolve) => { settle = resolve; });
+  Object.defineProperty(globalThis, "navigator", { configurable: true, value: {
+    clipboard: { writeText: () => clipboardResult },
+  } });
+  const operations: AbortController[] = [];
+  const copy = () => {
+    const controller = new AbortController();
+    operations.push(controller);
+    return { controller, done: copyFallbackShareLinkWithFeedback(
+      "https://example.test/share/fixture", controller.signal, setSuccess, setError,
+    ) };
+  };
+  try {
+    const pending = copy();
+    assert.deepEqual(state, { success: false, error: null }, "Pending copy cannot announce success");
+    settle();
+    await pending.done;
+    assert.equal(state.success, true, "Only fulfillment announces success");
+    pending.controller.abort();
+    assert.deepEqual(state, { success: false, error: null }, "Dismissal clears feedback and its timer");
+
+    clipboardResult = Promise.reject(new Error("Synthetic clipboard rejection"));
+    const rejected = copy();
+    await rejected.done;
+    assert.equal(state.success, false);
+    assert.match(state.error ?? "", /Unable to copy share link/);
+    rejected.controller.abort();
+
+    clipboardResult = new Promise<void>((resolve) => { settle = resolve; });
+    const retired = copy();
+    retired.controller.abort();
+    clipboardResult = Promise.resolve();
+    const replacement = copy();
+    await replacement.done;
+    assert.equal(state.success, true);
+    settle();
+    await retired.done;
+    assert.equal(state.success, true, "Retired completion cannot overwrite the newer outcome");
+    replacement.controller.abort();
+    assert.deepEqual(state, { success: false, error: null });
+  } finally {
+    operations.forEach((operation) => operation.abort());
+    if (originalNavigator) Object.defineProperty(globalThis, "navigator", originalNavigator);
+    else Reflect.deleteProperty(globalThis, "navigator");
+  }
+}
+
+checkFallbackCopySettlement().then(() => {
+  console.log("Editor capabilities and accessibility checks passed, including clipboard settlement/cancellation.");
+}).catch((error: unknown) => { console.error(error); process.exitCode = 1; });

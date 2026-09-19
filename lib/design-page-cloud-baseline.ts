@@ -47,6 +47,11 @@ export type CloudBaselineState =
   | LoadingCloudBaseline
   | FailedCloudBaseline;
 
+export type CloudBaselineTransitionSnapshot = {
+  state: CloudBaselineState;
+  documentEpoch: number;
+};
+
 function identitiesMatch(
   left: CloudBaselineIdentity,
   right: CloudBaselineIdentity
@@ -122,6 +127,19 @@ export function createPendingCloudWriteBaseline(input: {
     fingerprint: input.fingerprint,
     requireFingerprintMatch: false,
     writeRequest: input.writeRequest,
+  };
+}
+
+export function createPendingCloudTransitionBaseline(input: {
+  identity: CloudBaselineIdentity;
+  fingerprint: string;
+}): CloudBaselineState {
+  return {
+    status: "pending",
+    identity: input.identity,
+    fingerprint: input.fingerprint,
+    requireFingerprintMatch: true,
+    writeRequest: null,
   };
 }
 

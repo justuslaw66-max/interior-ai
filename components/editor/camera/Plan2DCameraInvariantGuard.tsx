@@ -87,7 +87,6 @@ export function Plan2DCameraInvariantGuard({
   const { camera, size } = useThree();
   const recoveryCountRef = useRef(0);
   const lastDiagnosticsRef = useRef<Plan2DCameraDiagnostics | null>(null);
-  const lastWarningAtRef = useRef(0);
 
   useFrame(() => {
     if (!active) return;
@@ -103,11 +102,6 @@ export function Plan2DCameraInvariantGuard({
 
     if (recovery.recovered) {
       recoveryCountRef.current += 1;
-      const now = Date.now();
-      if (process.env.NODE_ENV !== "production" && now - lastWarningAtRef.current > 1500) {
-        lastWarningAtRef.current = now;
-        console.warn("[Plan2D] recovered non-degenerate top-down camera", recovery.previousStatus);
-      }
     }
 
     const status = getPlan2DCameraInvariantStatus(camera, controls);

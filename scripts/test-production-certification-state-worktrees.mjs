@@ -1,3 +1,4 @@
+import { PRODUCTION_EVIDENCE_JOURNAL_SCHEMA, PRODUCTION_EVIDENCE_JOURNAL_VERSION } from "./production-artifact-contract.mjs";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import {
@@ -38,6 +39,7 @@ import {
 import { runProductionCertificationSimulation } from "./production-certification-simulation.mjs";
 import { validateSourceValidationEvidence } from "./production-certification-source-continuity.mjs";
 import { projectCertificationChildEnvironment } from "./production-certification-stage-environment.mjs";
+import { projectProductionCertificationSimulationRuntimeEnvironment } from "./ci-auth-fixture-regression-environment.mjs";
 import { parseCertificationStageResult } from "./production-certification-stage-result-contract.mjs";
 import {
   certificationStateSha256,
@@ -167,6 +169,14 @@ for (const [schema, version] of [
       /historical runtime report identity is invalid/,
     );
     assert.notDeepEqual(finalRuntimeArtifactIdentityIssues(runtimeIdentity, state), []);
+    const certifiedIdentity = { ...runtimeIdentity, semanticJournalSchema: PRODUCTION_EVIDENCE_JOURNAL_SCHEMA,
+      semanticJournalVersion: PRODUCTION_EVIDENCE_JOURNAL_VERSION };
+    assert.deepEqual(finalRuntimeArtifactIdentityIssues(certifiedIdentity, state), []);
+    for (const ordinaryRuntime of [null, {}, { classification: "ORDINARY_CI_NOT_CERTIFICATION" }]) {
+      assert.match(finalRuntimeArtifactIdentityIssues({ ...certifiedIdentity, ordinaryRuntime }, state).join("; "),
+        /ordinary runtime evidence cannot identify a certified artifact/);
+    }
+
     assert.notDeepEqual(
       finalCertificationManifestIdentityIssues(
         { value: manifest, sha256: sha256Bytes(manifestBytes) },
@@ -514,16 +524,22 @@ async function worktreeIsolationMatrix() {
   rmSync(owner, { recursive: true, force: true });
 }
 
-function cliEnvironment(simulationRoot) {
+function cliEnvironment(simulationRoot, parentEnvironment) {
   const evidenceRoot = path.join(simulationRoot, "evidence");
   const statePath = path.join(evidenceRoot, "certification-state.json");
   const state = readCertificationState(statePath);
+  const { environment: runtimeEnvironment } =
+    projectProductionCertificationSimulationRuntimeEnvironment({
+      repositoryRoot,
+      baseEnvironment: parentEnvironment,
+    });
   return {
     evidenceRoot,
     statePath,
     state,
+    runtimeEnvironment,
     environment: {
-      ...process.env,
+      ...runtimeEnvironment,
       PRODUCTION_CERTIFICATION_STATE: statePath,
       CERTIFICATION_EVIDENCE_ROOT: evidenceRoot,
       CERTIFICATION_EXPECTED_COMMIT_SHA: state.candidate.commitSha,
@@ -577,7 +593,21 @@ async function transactionalValidationMatrix() {
     true,
   );
   const canonicalRoot = path.join(simulation.simulationRoot, "source");
-  const { statePath, state, environment } = cliEnvironment(simulation.simulationRoot);
+  const parentEnvironment = Object.freeze({
+    ...process.env,
+    CERTIFICATION_TEST_DATABASE_ADMIN_URL: "postgresql://fixture@127.0.0.1:1/not-used",
+    CI_AUTH_FIXTURE_SESSION_ROOT: "/unrelated-parent-fixture",
+    CERTIFICATION_EXPECTED_COMMIT_SHA: "0".repeat(40),
+  });
+  const { statePath, state, environment, runtimeEnvironment } =
+    cliEnvironment(simulation.simulationRoot, parentEnvironment);
+  assert.equal(Object.hasOwn(environment, "CERTIFICATION_TEST_DATABASE_ADMIN_URL"), false);
+  assert.equal(Object.hasOwn(runtimeEnvironment, "CERTIFICATION_TEST_DATABASE_ADMIN_URL"), false);
+  assert.equal(Object.hasOwn(environment, "CI_AUTH_FIXTURE_SESSION_ROOT"), false);
+  assert.equal(environment.CERTIFICATION_EXPECTED_COMMIT_SHA, state.candidate.commitSha);
+  assert.equal(parentEnvironment.CERTIFICATION_EXPECTED_COMMIT_SHA, "0".repeat(40));
+  assert.equal(parentEnvironment.CERTIFICATION_TEST_DATABASE_ADMIN_URL,
+    "postgresql://fixture@127.0.0.1:1/not-used", "Child projection must preserve the qualifier parent.");
   assert.equal(state.stages.doctor.status, "passed");
   assert.equal(state.stages["source-validation"].status, "passed");
   const sourceEvidence = JSON.parse(
@@ -786,7 +816,7 @@ async function transactionalValidationMatrix() {
       {
         cwd: path.join(evidenceRoot, "archive/extracted"),
         env: {
-          ...process.env,
+          ...runtimeEnvironment,
           CERTIFICATION_QUALIFICATION_MODE: "1",
           PRODUCTION_CERTIFICATION_STATE: candidateStatePath,
           CERTIFICATION_EVIDENCE_ROOT: evidenceRoot,

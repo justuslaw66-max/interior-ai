@@ -9,6 +9,86 @@ import {
 const EDITOR_ITEM_ID =
   "coffee-real-castlery-hugg-nesting-square-performance-basalt-closed";
 
+type DemandAnimationKind =
+  | "placement-scale"
+  | "snap-bump"
+  | "locked-shake"
+  | "control-damping";
+
+type DemandSnapshot = {
+  rendererCalls: number;
+  invalidationCalls: number;
+  pendingInvalidation: boolean;
+  activeSupportedAnimationCount: number;
+  animationEvents: Array<{
+    kind: DemandAnimationKind;
+    phase: "started" | "frame" | "settled";
+    rendererCalls: number;
+    value: number | null;
+  }>;
+  mutationEvents: Array<{
+    kind: "exposure" | "resize";
+    rendererCalls: number;
+    value: number;
+  }>;
+  itemFrames: Array<{
+    itemId: string;
+    rendererCalls: number;
+    position: [number, number, number];
+    scale: [number, number, number];
+    canvasPoint: [number, number];
+    dragCanvasPoint: [number, number];
+  }>;
+};
+
+async function readDemandSnapshot(page: Page): Promise<DemandSnapshot> {
+  return page.evaluate(() => {
+    const hook = (
+      globalThis as typeof globalThis & {
+        __INTERIOR_AI_SCENE_DEMAND_SNAPSHOT__?: () => DemandSnapshot;
+      }
+    ).__INTERIOR_AI_SCENE_DEMAND_SNAPSHOT__;
+    if (!hook) throw new Error("Scene demand diagnostics are unavailable");
+    return hook();
+  });
+}
+
+async function expectRendererPlateau(page: Page, durationMs = 1_800) {
+  let settled: DemandSnapshot | null = null;
+  await expect
+    .poll(
+      async () => {
+        const before = await readDemandSnapshot(page);
+        await page.waitForTimeout(durationMs);
+        const after = await readDemandSnapshot(page);
+        const stable =
+          before.activeSupportedAnimationCount === 0 &&
+          !before.pendingInvalidation &&
+          after.rendererCalls === before.rendererCalls &&
+          after.invalidationCalls === before.invalidationCalls;
+        if (stable) settled = after;
+        return stable;
+      },
+      { timeout: 20_000 },
+    )
+    .toBe(true);
+  if (!settled) throw new Error("Renderer did not reach a stable plateau");
+  return settled;
+}
+
+function expectCompletedFiniteAnimation(
+  snapshot: DemandSnapshot,
+  kind: Exclude<DemandAnimationKind, "control-damping">,
+) {
+  const events = snapshot.animationEvents.filter((event) => event.kind === kind);
+  const frames = events.filter((event) => event.phase === "frame");
+  expect(events.some((event) => event.phase === "started")).toBe(true);
+  expect(frames.length).toBeGreaterThanOrEqual(2);
+  expect(new Set(frames.map((event) => event.rendererCalls)).size).toBeGreaterThanOrEqual(2);
+  expect(events.at(-1)?.phase).toBe("settled");
+  return frames;
+}
+
 async function readFingerprint(page: Page): Promise<string> {
   const marker = page.getByTestId("qa-editor-snapshot-fingerprint");
   await expect(marker).toHaveAttribute("data-fingerprint", /[a-f0-9]{8}/);
@@ -38,6 +118,11 @@ async function setupSelectedItem(page: Page) {
     window.localStorage.clear();
     window.sessionStorage.clear();
     window.localStorage.setItem("plan_measurement_unit", "mm");
+    (
+      globalThis as typeof globalThis & {
+        __INTERIOR_AI_ENABLE_GLB_DIAGNOSTICS__?: boolean;
+      }
+    ).__INTERIOR_AI_ENABLE_GLB_DIAGNOSTICS__ = true;
   });
 
   const response = await page.goto("/design?mode=designer", {
@@ -226,6 +311,233 @@ test.describe("2. Editor Correctness", () => {
       await readModelMillimetres(xInput),
       await readModelMillimetres(zInput),
     ]).toEqual(snapped);
+  });
+
+  test("demand rendering completes placement, locked shake, and pointer snap before idling", async ({
+    page,
+  }) => {
+    test.setTimeout(150_000);
+    const { selectedPanel } = await setupSelectedItem(page);
+
+    await expect
+      .poll(async () => {
+        const snapshot = await readDemandSnapshot(page);
+        return snapshot.animationEvents.at(-1)?.phase;
+      })
+      .toBe("settled");
+    let snapshot = await readDemandSnapshot(page);
+    const placementFrames = expectCompletedFiniteAnimation(
+      snapshot,
+      "placement-scale",
+    );
+    expect(placementFrames.some((event) => (event.value ?? 1) < 1)).toBe(true);
+    expect(placementFrames.at(-1)?.value).toBe(1);
+    expect(snapshot.itemFrames).toHaveLength(1);
+    expect(snapshot.itemFrames[0]?.scale).toEqual([1, 1, 1]);
+    await expectRendererPlateau(page);
+
+    await page.getByRole("button", { name: "3D", exact: true }).first().click({
+      force: true,
+    });
+    await expectRendererPlateau(page);
+
+    const canvas = page.getByTestId("scene-canvas").first();
+    const canvasBox = await canvas.boundingBox();
+    expect(canvasBox).not.toBeNull();
+    if (!canvasBox) throw new Error("Scene canvas bounds are missing");
+
+    const lockButton = selectedPanel.getByRole("button", {
+      name: /^Lock(?: selected)?$/,
+    });
+    await lockButton.click();
+    await expect(
+      selectedPanel.getByRole("button", { name: /^Unlock(?: selected)?$/ }),
+    ).toBeVisible();
+    const beforeShake = (await readDemandSnapshot(page)).itemFrames[0];
+    expect(beforeShake).toBeTruthy();
+    await page.mouse.click(
+      canvasBox.x + beforeShake.canvasPoint[0],
+      canvasBox.y + beforeShake.canvasPoint[1],
+    );
+    await expect
+      .poll(async () => {
+        const current = await readDemandSnapshot(page);
+        return current.animationEvents.filter(
+          (event) => event.kind === "locked-shake",
+        ).at(-1)?.phase;
+      })
+      .toBe("settled");
+    snapshot = await readDemandSnapshot(page);
+    const shakeFrames = expectCompletedFiniteAnimation(snapshot, "locked-shake");
+    expect(shakeFrames.some((event) => Math.abs(event.value ?? 0) > 0)).toBe(true);
+    expect(shakeFrames.at(-1)?.value).toBe(0);
+    expect(snapshot.itemFrames[0]?.position).toEqual(beforeShake.position);
+    await expectRendererPlateau(page);
+
+    await selectedPanel
+      .getByRole("button", { name: /^Unlock(?: selected)?$/ })
+      .click();
+    await expectRendererPlateau(page);
+    const beforeSnap = (await readDemandSnapshot(page)).itemFrames[0];
+    await selectedPanel.getByTestId("selected-item-snap-wall").click();
+    await expect
+      .poll(async () => {
+        const current = await readDemandSnapshot(page);
+        return current.itemFrames[0]?.position.join(",");
+      })
+      .not.toBe(beforeSnap.position.join(","));
+    await expectRendererPlateau(page);
+    const snapStart = (await readDemandSnapshot(page)).itemFrames[0];
+    const pointerX = canvasBox.x + snapStart.canvasPoint[0];
+    const pointerY = canvasBox.y + snapStart.canvasPoint[1];
+    await page.mouse.move(
+      pointerX,
+      pointerY,
+    );
+    await page.mouse.down();
+    await page.waitForTimeout(100);
+    // Exercise the real pointer-snap path while remaining inside the configured
+    // threshold from the wall selected by the deterministic Snap wall command.
+    await page.mouse.move(
+      canvasBox.x + snapStart.dragCanvasPoint[0],
+      canvasBox.y + snapStart.dragCanvasPoint[1],
+      { steps: 12 },
+    );
+    await page.waitForTimeout(100);
+    await page.mouse.up();
+    await expect
+      .poll(async () => {
+        const current = await readDemandSnapshot(page);
+        return current.animationEvents.filter(
+          (event) => event.kind === "snap-bump",
+        ).at(-1)?.phase;
+      })
+      .toBe("settled");
+    snapshot = await readDemandSnapshot(page);
+    const snapFrames = expectCompletedFiniteAnimation(snapshot, "snap-bump");
+    expect(snapFrames.some((event) => Math.abs(event.value ?? 0) > 0)).toBe(true);
+    expect(snapFrames.at(-1)?.value).toBe(0);
+    expect(snapshot.itemFrames[0]?.position).not.toEqual(beforeSnap.position);
+    expect(snapshot.itemFrames[0]?.scale).toEqual([1, 1, 1]);
+    await expect(selectedPanel).toBeVisible();
+    await expect(page.getByTestId("collision-toast")).toHaveCount(0);
+    await expectRendererPlateau(page);
+  });
+
+  test("camera, exposure, and resize updates render their final state then plateau", async ({
+    page,
+  }) => {
+    test.setTimeout(150_000);
+    await setupSelectedItem(page);
+    await page.getByRole("button", { name: "3D", exact: true }).first().click({
+      force: true,
+    });
+    await expectRendererPlateau(page);
+
+    const canvas = page.getByTestId("scene-canvas").first();
+    const canvasBox = await canvas.boundingBox();
+    expect(canvasBox).not.toBeNull();
+    if (!canvasBox) throw new Error("Scene canvas bounds are missing");
+    const beforeControlEvents = (await readDemandSnapshot(page)).animationEvents.length;
+    await page.mouse.move(
+      canvasBox.x + canvasBox.width * 0.52,
+      canvasBox.y + canvasBox.height * 0.75,
+    );
+    await page.mouse.down();
+    await page.mouse.move(
+      canvasBox.x + canvasBox.width * 0.45,
+      canvasBox.y + canvasBox.height * 0.62,
+      { steps: 10 },
+    );
+    await page.mouse.up();
+    await page.mouse.wheel(0, -480);
+    await expect
+      .poll(async () => {
+        const events = (await readDemandSnapshot(page)).animationEvents.slice(
+          beforeControlEvents,
+        );
+        return events.filter((event) => event.kind === "control-damping").at(-1)
+          ?.phase;
+      })
+      .toBe("settled");
+    const controlEvents = (await readDemandSnapshot(page)).animationEvents
+      .slice(beforeControlEvents)
+      .filter((event) => event.kind === "control-damping");
+    expect(controlEvents[0]?.phase).toBe("started");
+    expect(controlEvents.at(-1)?.phase).toBe("settled");
+    expect(controlEvents.at(-1)?.rendererCalls).toBeGreaterThan(
+      controlEvents[0]?.rendererCalls ?? Number.MAX_SAFE_INTEGER,
+    );
+    await expectRendererPlateau(page);
+
+    const exposureEventsBefore = (await readDemandSnapshot(page)).mutationEvents
+      .filter((event) => event.kind === "exposure").length;
+    const beforeExposureImage = await canvas.screenshot();
+    await page.getByTestId("editor-command-overflow").click();
+    await page.getByTestId("editor-command-overflow-lighting").click();
+    const exposureInput = page.getByTestId("lighting-exposure-input");
+    await expect(exposureInput).toBeVisible();
+    await exposureInput.fill("0.6");
+    await expect
+      .poll(async () =>
+        (await readDemandSnapshot(page)).mutationEvents.filter(
+          (event) => event.kind === "exposure",
+        ).length,
+      )
+      .toBe(exposureEventsBefore + 1);
+    let snapshot = await readDemandSnapshot(page);
+    const exposureMutation = snapshot.mutationEvents.filter(
+      (event) => event.kind === "exposure",
+    ).at(-1);
+    expect(snapshot.rendererCalls).toBeGreaterThan(
+      exposureMutation?.rendererCalls ?? Number.MAX_SAFE_INTEGER,
+    );
+    const changedExposure = await canvas.getAttribute("data-lighting-exposure");
+    const afterExposureImage = await canvas.screenshot();
+    expect(changedExposure).not.toBeNull();
+    expect(Buffer.compare(beforeExposureImage, afterExposureImage)).not.toBe(0);
+    await expectRendererPlateau(page);
+
+    await exposureInput.fill("0.6");
+    await page.waitForTimeout(400);
+    expect(
+      (await readDemandSnapshot(page)).mutationEvents.filter(
+        (event) => event.kind === "exposure",
+      ),
+    ).toHaveLength(exposureEventsBefore + 1);
+
+    await exposureInput.fill("-0.4");
+    await expect
+      .poll(async () =>
+        (await readDemandSnapshot(page)).mutationEvents.filter(
+          (event) => event.kind === "exposure",
+        ).length,
+      )
+      .toBe(exposureEventsBefore + 2);
+    await expect(canvas).not.toHaveAttribute(
+      "data-lighting-exposure",
+      changedExposure ?? "",
+    );
+    await expectRendererPlateau(page);
+
+    const resizeEventsBefore = (await readDemandSnapshot(page)).mutationEvents
+      .filter((event) => event.kind === "resize").length;
+    await page.setViewportSize({ width: 1180, height: 760 });
+    await expect
+      .poll(async () =>
+        (await readDemandSnapshot(page)).mutationEvents.filter(
+          (event) => event.kind === "resize",
+        ).length,
+      )
+      .toBeGreaterThan(resizeEventsBefore);
+    snapshot = await readDemandSnapshot(page);
+    const resizeMutation = snapshot.mutationEvents.filter(
+      (event) => event.kind === "resize",
+    ).at(-1);
+    expect(snapshot.rendererCalls).toBeGreaterThan(
+      resizeMutation?.rendererCalls ?? Number.MAX_SAFE_INTEGER,
+    );
+    await expectRendererPlateau(page);
   });
 
   test("one duplicate is restored by one undo and one redo", async ({ page }) => {

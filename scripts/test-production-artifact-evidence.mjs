@@ -1,3 +1,9 @@
+import { ordinaryDatabaseTarget, projectOrdinaryArtifactEnvironment,
+  ORDINARY_ARTIFACT_SERVICE_CONFIGURATION, finishOrdinaryRuntimeResult } from "./production-artifact-ordinary-runtime.mjs";
+import { assertOrdinaryDatabaseObservation, createOrdinaryRuntimeRole, dropOrdinaryRuntimeRole,
+  withOrdinaryDatabase, inspectOrdinaryPostgresService } from "./production-artifact-ordinary-database.mjs";
+import { assertNoCertificationContext, ordinaryRuntimeIdentity, ordinaryRuntimeReportIdentity,
+  validateOrdinaryRuntimeIdentity } from "./production-artifact-runtime-binding.mjs";
 import assert from "node:assert/strict";
 import { execFileSync, spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
@@ -26,8 +32,10 @@ import {
   canonicalizeBoundRuntimeSmokeReport,
   canonicalizeProductionEvidenceReport,
   certifiedNestedDatabaseUrl,
+  retainRuntimeSmokeOutcome,
+  bindRuntimeSmokeFailureToReport,
+  validateOrdinarySmokeDestinations,
   comparePortablePaths,
-  createProductionEvidenceBundle,
   createProductionEvidenceManifest,
   executeProductionEvidenceChild,
   handoffProductionEvidenceSemanticJournal,
@@ -35,15 +43,18 @@ import {
   inspectFloorPlanRouteNftContract,
   projectArtifactProductServerEnvironment,
   readProductionEvidenceSemanticJournal,
-  recordProductionEvidenceTest,
   recoverProductionEvidenceFromSemanticJournal,
   resolveProductionEvidenceToolchain,
   validateProductionEvidenceSemanticJournal,
-  validateProductionEvidence,
   validateArtifactProductServerAuthFixtureBinding,
-  verifyRuntimeSmokeFailureEvidence,
   writeProductionEvidenceManifest,
 } from "./production-artifact-evidence.mjs";
+import {
+  createProductionEvidenceBundle,
+  recordProductionEvidenceTest,
+  validateProductionEvidence,
+  verifyRuntimeSmokeFailureEvidence,
+} from "./production-artifact-source.mjs";
 import {
   BUILD_COMMAND,
   CURRENT_PRODUCTION_EVIDENCE_VERSIONS,
@@ -59,7 +70,13 @@ import {
   certificationPreparedBuildJournalIssues,
   validateCurrentProductionEvidenceManifest,
 } from "./production-artifact-contract.mjs";
+import { inspectDirectProductionIdentity } from "./runtime-smoke-direct-production-identity.mjs";
 import { loadProductionArtifactForPlaywright } from "./production-artifact-playwright.mjs";
+import {
+  assertDirectRuntimeSmokeServer,
+  directRuntimeSmokeServerEnvironment,
+  loadDirectRuntimeSmokeIdentity,
+} from "./runtime-smoke-direct-identity.mjs";
 import {
   PLAYWRIGHT_EXTERNAL_EVIDENCE_ROOT,
   authorizeRuntimeSmokeReportPath,
@@ -67,6 +84,12 @@ import {
 } from "./playwright-report-path.mjs";
 import { validateRequiredTestReport } from "./required-test-truthfulness.mjs";
 import { inspectGitTree } from "./vercel-output-manifest.mjs";
+import { verifyStableRuntimeSmokeStandalone } from "./stable-runtime-smoke-standalone.mjs";
+import { STABLE_PORTABLE_SUMMARY_PATH, verifyStableRuntimeBundleTransport } from "./stable-runtime-smoke-resources.mjs";
+import {
+  certificationEnvironmentProfile,
+  projectCertificationChildEnvironment,
+} from "./production-certification-stage-environment.mjs";
 import {
   GITLEAKS_ARCHIVE_ENTRIES,
   GITLEAKS_STAGING_ROOT,
@@ -89,6 +112,7 @@ import {
   RuntimeSmokeTerminalError,
   createRuntimeSmokeOperationDeadline,
   createRuntimeSmokePhaseRecorder,
+  resolveRuntimeSmokeTimingDestination,
   deriveFurnishedTemplatePhaseTimeout,
   deriveRuntimeSmokeWholeTestTimeout,
   runRuntimeSmokeBoundedOperation,
@@ -112,9 +136,16 @@ import {
   runtimeSmokeRequiredRegistryReady,
 } from "./runtime-smoke-readiness-diagnostics.mjs";
 import {
+  classifyRuntimeSmokeBrowserCallbackProgress,
   projectRuntimeSmokeBrowserCallbackMilestone,
   projectRuntimeSmokeBrowserHeartbeat,
+  runtimeSmokeBrowserHeartbeatSupportsIdleAdmission,
+  runtimeSmokeBrowserCallbackMilestoneMatchesRequest,
 } from "./runtime-smoke-browser-diagnostics.mjs";
+import {
+  RUNTIME_SMOKE_RENDER_IDLE_OBSERVATION_CONTRACT,
+  evaluateRuntimeSmokeRendererIdle,
+} from "./runtime-smoke-render-idle.mjs";
 
 const sequentialRuntimeSmokeBudgetMs = RUNTIME_SMOKE_PHASE_BUDGETS.reduce(
   (total, phase) => total + phase.timeoutMs,
@@ -612,20 +643,179 @@ function boundAuthFixtureEnvironment() {
 }
 
 {
+  const models = [
+    { key: "model-1", renderCount: 3, boundsMaterialChangeCount: 1 },
+    { key: "model-2", renderCount: 4, boundsMaterialChangeCount: 1 },
+  ];
+  const idleSamples = () =>
+    Array.from(
+      { length: RUNTIME_SMOKE_RENDER_IDLE_OBSERVATION_CONTRACT.requiredSampleCount },
+      (_, index) => ({
+        schema: "interior-ai.runtime-smoke-render-idle-sample.v1",
+        version: 1,
+        capturedAtMs: 1_000 + index * 500,
+        callbackRequestId: 16,
+        callbackEnteredAtMs: 1_000,
+        callbackEntryObserved: true,
+        documentGenerationId: "document-1",
+        reloadGeneration: 3,
+        rendererInstrumentationGeneration: 2,
+        rendererCalls: 180,
+        invalidationCalls: 24,
+        lastRendererCallAtMs: 500,
+        lastInvalidationAtMs: 500,
+        visibilityState: "visible",
+        lifecycleState: "active",
+        webglContextState: "active",
+        webglGeneration: 0,
+        activeControlTransitionCount: 0,
+        activeItemAnimationCount: 0,
+        activeSupportedAnimationCount: 0,
+        pendingInvalidation: false,
+        requiredModelRegistryIdentity: "g3:v14:model-1,model-2",
+        requiredActiveModelCount: 2,
+        models: structuredClone(models),
+        sampleFreshnessMs: 0,
+      }),
+    );
+  const expectRejected = (samples, reason, description) => {
+    const verdict = evaluateRuntimeSmokeRendererIdle({ samples });
+    assert.equal(verdict.settled, false, description);
+    assert.ok(verdict.reasons.includes(reason), description);
+  };
+  const positive = evaluateRuntimeSmokeRendererIdle({ samples: idleSamples() });
+  assert.equal(positive.settled, true, "a static scene must become idle");
+  assert.equal(positive.observationDurationMs, 2_500);
+  assert.equal(positive.rendererCallDelta, 0);
+  assert.equal(positive.invalidationCallDelta, 0);
+
+  const permanent = idleSamples().map((sample, index) => ({
+    ...sample,
+    rendererCalls: 180 + index * 30,
+    lastRendererCallAtMs: sample.capturedAtMs,
+  }));
+  expectRejected(
+    permanent,
+    "renderer-calls-observed",
+    "a permanent 60-Hz renderer loop must fail",
+  );
+
+  const lowFrequency = idleSamples();
+  for (let index = 3; index < lowFrequency.length; index += 1) {
+    lowFrequency[index].rendererCalls += 1;
+    lowFrequency[index].invalidationCalls += 1;
+    lowFrequency[index].lastRendererCallAtMs = lowFrequency[3].capturedAtMs;
+    lowFrequency[index].lastInvalidationAtMs = lowFrequency[3].capturedAtMs;
+  }
+  expectRejected(
+    lowFrequency,
+    "invalidations-observed",
+    "a 1.5-second recurring invalidation must fail the 2.5-second window",
+  );
+
+  for (const [description, reason, mutate] of [
+    ["stale identical samples", "stale-sample", (samples) => {
+      samples[2].capturedAtMs = samples[1].capturedAtMs;
+    }],
+    ["cross-document samples", "cross-document-observation", (samples) => {
+      samples[4].documentGenerationId = "document-2";
+    }],
+    ["cross-reload samples", "cross-reload-observation", (samples) => {
+      samples[4].reloadGeneration = 4;
+    }],
+    ["hidden documents", "document-not-visible", (samples) => {
+      samples[2].visibilityState = "hidden";
+    }],
+    ["WebGL-lost documents", "webgl-context-lost", (samples) => {
+      samples[2].webglContextState = "lost";
+    }],
+    ["WebGL restoration between samples", "webgl-generation-changed", (samples) => {
+      samples[4].webglGeneration = 2;
+    }],
+    ["renderer counter resets", "renderer-counter-reset", (samples) => {
+      samples[3].rendererCalls = 179;
+    }],
+    ["invalidation counter resets", "invalidation-counter-reset", (samples) => {
+      samples[3].invalidationCalls = 23;
+    }],
+    ["active item animations", "active-item-animation", (samples) => {
+      samples[2].activeItemAnimationCount = 1;
+      samples[2].activeSupportedAnimationCount = 1;
+    }],
+    ["active control damping", "active-control-transition", (samples) => {
+      samples[2].activeControlTransitionCount = 1;
+      samples[2].activeSupportedAnimationCount = 1;
+    }],
+    ["pending invalidation", "pending-invalidation", (samples) => {
+      samples[2].pendingInvalidation = true;
+    }],
+  ]) {
+    const samples = idleSamples();
+    mutate(samples);
+    expectRejected(samples, reason, description);
+  }
+  for (const [description, mutate] of [
+    ["missing renderer instrumentation", (samples) => {
+      samples[0].rendererInstrumentationGeneration = 0;
+    }],
+    ["callback with no entered-browser milestone", (samples) => {
+      samples[0].callbackEntryObserved = false;
+    }],
+    ["malformed renderer counters", (samples) => {
+      samples[0].rendererCalls = -1;
+    }],
+  ]) {
+    const samples = idleSamples();
+    mutate(samples);
+    assert.throws(
+      () => evaluateRuntimeSmokeRendererIdle({ samples }),
+      /observation is malformed/,
+      description,
+    );
+  }
+}
+
+{
   const callback = projectRuntimeSmokeBrowserCallbackMilestone({
-    schema: "interior-ai.runtime-smoke-browser-callback.v1",
+    schema: "interior-ai.runtime-smoke-browser-callback.v2",
     phaseName: "reload-1",
     operationName: "model-responses-and-readiness",
     requestId: 3,
     stage: "snapshot-complete",
+    observedAtMs: 1_234,
   });
   assert.deepEqual(callback, {
-    schema: "interior-ai.runtime-smoke-browser-callback.v1",
+    schema: "interior-ai.runtime-smoke-browser-callback.v2",
     phaseName: "reload-1",
     operationName: "model-responses-and-readiness",
     requestId: 3,
     stage: "snapshot-complete",
+    observedAtMs: 1_234,
   });
+  assert.equal(
+    runtimeSmokeBrowserCallbackMilestoneMatchesRequest(
+      {
+        phaseName: "reload-1",
+        operationName: "model-responses-and-readiness",
+        requestId: 4,
+      },
+      callback,
+    ),
+    false,
+    "a stale snapshot milestone must not be attributed to the active request",
+  );
+  assert.deepEqual(
+    classifyRuntimeSmokeBrowserCallbackProgress({
+      request: {
+        phaseName: "reload-1",
+        operationName: "diagnostics-settle-evaluation",
+        requestId: 16,
+      },
+      milestones: [],
+    }),
+    { latestStage: "not-entered", nextStage: "entered-browser" },
+    "a missing first milestone must attribute the wait before browser entry",
+  );
   assert.throws(
     () =>
       projectRuntimeSmokeBrowserCallbackMilestone({
@@ -646,21 +836,77 @@ function boundAuthFixtureEnvironment() {
     );
   }
   const heartbeat = projectRuntimeSmokeBrowserHeartbeat({
-    schema: "interior-ai.runtime-smoke-browser-heartbeat.v1",
+    schema: "interior-ai.runtime-smoke-browser-heartbeat.v2",
     kind: "interval",
     sequence: 4,
     observedAtMs: 2_000,
     eventLoopDelayMs: 7,
     maximumEventLoopDelayMs: 12,
+    lastAnimationFrameDelayMs: 3,
+    maximumAnimationFrameDelayMs: 9,
+    lastAnimationFrameCadenceMs: 1_003,
+    visibilityState: "visible",
+    documentReadyState: "complete",
+    lifecycleState: "active",
+    rendererCalls: 180,
+    rendererCallDelta: 60,
+    rendererCallRateHz: 60,
+    activeAnimationCount: 0,
+    controlActivity: "idle",
+    controlEventCount: 0,
+    webglContextLostCount: 0,
+    webglContextRestoredCount: 0,
   });
   assert.deepEqual(heartbeat, {
-    schema: "interior-ai.runtime-smoke-browser-heartbeat.v1",
+    schema: "interior-ai.runtime-smoke-browser-heartbeat.v2",
     kind: "interval",
     sequence: 4,
     observedAtMs: 2_000,
     eventLoopDelayMs: 7,
     maximumEventLoopDelayMs: 12,
+    lastAnimationFrameDelayMs: 3,
+    maximumAnimationFrameDelayMs: 9,
+    lastAnimationFrameCadenceMs: 1_003,
+    visibilityState: "visible",
+    documentReadyState: "complete",
+    lifecycleState: "active",
+    rendererCalls: 180,
+    rendererCallDelta: 60,
+    rendererCallRateHz: 60,
+    activeAnimationCount: 0,
+    controlActivity: "idle",
+    controlEventCount: 0,
+    webglContextLostCount: 0,
+    webglContextRestoredCount: 0,
   });
+  const quiescentHeartbeat = {
+    ...heartbeat,
+    rendererCallDelta: 0,
+    rendererCallRateHz: 0,
+  };
+  assert.equal(
+    runtimeSmokeBrowserHeartbeatSupportsIdleAdmission(quiescentHeartbeat),
+    true,
+    "a complete, active, quiescent interval heartbeat may admit the authoritative idle observation",
+  );
+  for (const activeHeartbeat of [
+    { ...quiescentHeartbeat, kind: "started" },
+    { ...quiescentHeartbeat, visibilityState: "hidden" },
+    { ...quiescentHeartbeat, documentReadyState: "interactive" },
+    { ...quiescentHeartbeat, lifecycleState: "frozen" },
+    { ...quiescentHeartbeat, rendererCallDelta: 1 },
+    { ...quiescentHeartbeat, rendererCallRateHz: 1 },
+    { ...quiescentHeartbeat, activeAnimationCount: 1 },
+    { ...quiescentHeartbeat, controlActivity: "pointer-active" },
+    { ...quiescentHeartbeat, webglContextLostCount: 1 },
+    { ...quiescentHeartbeat, webglContextRestoredCount: 1 },
+  ]) {
+    assert.equal(
+      runtimeSmokeBrowserHeartbeatSupportsIdleAdmission(activeHeartbeat),
+      false,
+      "non-quiescent browser state must not admit an idle observation",
+    );
+  }
   assert.throws(
     () => projectRuntimeSmokeBrowserHeartbeat({ ...heartbeat, token: "unsafe" }),
     /browser heartbeat is unsafe/,
@@ -679,14 +925,25 @@ function boundAuthFixtureEnvironment() {
   }
 }
 assert.deepEqual(RUNTIME_SMOKE_DIAGNOSTICS_SETTLE_CONTRACT, {
-  requiredStableSamples: 2,
-  sampleIntervalMs: 500,
+  observation: {
+    schema: "interior-ai.runtime-smoke-render-idle-observation-contract.v1",
+    version: 1,
+    sampleIntervalMs: 500,
+    requiredSampleCount: 6,
+    observationDurationMs: 2_500,
+    rendererIdleWindowMs: 2_000,
+    maximumSampleFreshnessMs: 750,
+    maximumSampleGapMs: 1_250,
+  },
+  maximumObservationAttempts: 2,
+  finalReadbackEvaluationCount: 1,
+  admissionRequiresQuiescentHeartbeat: true,
   firstSampleImmediate: true,
-  baselineEvaluationCount: 1,
+  retryAlignsToQuiescence: true,
   evaluationCount: 3,
   evaluationTimeoutMs: 10_000,
-  assertionAllowanceMs: 1_000,
-  minimumTheoreticalCompletionMs: 1_000,
+  assertionAllowanceMs: 2_000,
+  minimumTheoreticalCompletionMs: 2_500,
   maximumLegalSequentialEnvelopeMs: 32_000,
   orchestrationMarginMs: 10_000,
   timeoutMs: 42_000,
@@ -783,7 +1040,7 @@ for (const phaseName of ["reload-1", "reload-2", "reload-3"]) {
   );
   assert.equal(runtimeSmokePhaseBudget(phaseName), 308_000);
 }
-assert.equal(runtimeSmokePhaseBudget("remount"), 165_000);
+assert.equal(runtimeSmokePhaseBudget("remount"), 160_000);
 assert.ok(
   runtimeSmokePhaseBudget("bounds-verification") - 43_432 >= 25_000,
   "bounds verification needs meaningful GitHub-runner headroom",
@@ -1289,7 +1546,9 @@ assert.equal(
 {
   const playwrightAssertionRecorder = createRuntimeSmokePhaseRecorder({
     repositoryRoot: process.cwd(),
-    phaseBudgets: [{ name: "remount", timeoutMs: 165_000 }],
+    phaseBudgets: [
+      { name: "remount", timeoutMs: runtimeSmokePhaseBudget("remount") },
+    ],
   });
   const matcherError = new Error("structured matcher fixture");
   matcherError.matcherResult = { pass: false };
@@ -1594,6 +1853,20 @@ assert.doesNotMatch(
   /fatalErrors\.push|checkpoint\(/,
   "invalid or delayed heartbeats must never fail or reset progress",
 );
+const heartbeatProducerSource = runtimeSmokeSource.slice(
+  runtimeSmokeSource.indexOf("if (!diagnosticsGlobal.__INTERIOR_AI_RUNTIME_SMOKE_HEARTBEAT__)"),
+  runtimeSmokeSource.indexOf('const clearSentinel = "__e2e_runtime_smoke_storage_cleared"'),
+);
+assert.equal(
+  heartbeatProducerSource.match(/requestAnimationFrame/g)?.length,
+  1,
+  "liveness diagnostics may request one animation frame per heartbeat but must not create a continuous frame loop",
+);
+assert.match(
+  heartbeatProducerSource,
+  /if \(!animationFramePending\)[\s\S]*requestAnimationFrame[\s\S]*animationFramePending = false/,
+  "animation-frame liveness sampling must remain coalesced and one-shot",
+);
 assert.match(
   runtimeSmokeSource,
   /projectRuntimeSmokeBrowserCallbackMilestone/,
@@ -1617,6 +1890,11 @@ assert.doesNotMatch(
   reloadLoop,
   /await\s+readModelDiagnostics\(\)/,
   "reload diagnostics must not bypass a named wall-clock operation bound",
+);
+assert.match(
+  reloadLoop,
+  /lastMainThreadTelemetrySummary\?\.counters\.rendererCalls[\s\S]*settledRendererCallsByPhase\.get\(phaseName\)/,
+  "reload assertions must prove the global scene renderer stayed idle",
 );
 assert.doesNotMatch(
   reloadLoop,
@@ -1703,7 +1981,7 @@ assert.match(
 );
 assert.match(
   diagnosticSnapshotSource,
-  /interior-ai\.runtime-smoke-browser-callback\.v1/,
+  /interior-ai\.runtime-smoke-browser-callback\.v2/,
   "diagnostic callbacks must expose fixed-stage browser timing observations",
 );
 assert.match(
@@ -1722,6 +2000,50 @@ assert.doesNotMatch(
   runtimeSmokeSource,
   /maximumSamples/,
   "diagnostics settling must enforce elapsed wall time rather than sample count",
+);
+const rendererIdleObservationSource = runtimeSmokeSource.slice(
+  runtimeSmokeSource.indexOf("const collectRendererIdleObservation"),
+  runtimeSmokeSource.indexOf("const settledResponseTotal"),
+);
+assert.match(
+  runtimeSmokeSource,
+  /admissionRequiresQuiescentHeartbeat[\s\S]*runtimeSmokeBrowserHeartbeatSupportsIdleAdmission\([\s\S]*lastBrowserHeartbeat/,
+  "renderer-idle evaluation must wait for a valid quiescent browser heartbeat",
+);
+assert.match(
+  runtimeSmokeSource,
+  /model-responses-ready[\s\S]*browser-callback-admission-wait-started[\s\S]*runtimeSmokeBrowserHeartbeatSupportsIdleAdmission\([\s\S]*browser-callback-admission-ready[\s\S]*selection-verification/,
+  "selection diagnostics must use the existing model-response budget to await quiescent browser admission",
+);
+assert.match(
+  runtimeSmokeSource,
+  /expectedReloadActiveResourceKindCounts[\s\S]*prepared\.activeReferenceCount[\s\S]*parsed\.activeReferenceCount/,
+  "reload cache proof must bind stable active-resource topology and exact live lease ownership",
+);
+assert.doesNotMatch(
+  runtimeSmokeSource,
+  /expectedReloadCacheEntryCounts/,
+  "reload cache proof must not require optional zero-reference retention across documents",
+);
+assert.match(
+  rendererIdleObservationSource,
+  /requestAnimationFrame\(observeFrame\)/,
+  "renderer-idle sampling must use monotonic animation-frame admission",
+);
+assert.doesNotMatch(
+  rendererIdleObservationSource,
+  /window\.setTimeout\(resolve, contract\.sampleIntervalMs\)/,
+  "renderer-idle sampling must not depend on throttled timeout admission",
+);
+assert.match(
+  rendererIdleObservationSource,
+  /alignToQuiescence[\s\S]*samples\.length = 0/,
+  "the retry observation must restart its candidate window until quiescent",
+);
+assert.match(
+  runtimeSmokeSource,
+  /attempt > 1[\s\S]*RUNTIME_SMOKE_DIAGNOSTICS_SETTLE_CONTRACT\.retryAlignsToQuiescence/,
+  "only retry observations may align their evidence window to quiescence",
 );
 assert.match(runtimeSmokeSource, /createRuntimeSmokeOperationDeadline/);
 assert.match(runtimeSmokeSource, /runtimeSmokeOperationAttempt/);
@@ -1859,6 +2181,226 @@ if (process.argv.includes("--post-readiness-contract-only")) {
 if (process.argv.includes("--readiness-diagnostics-contract-only")) {
   console.log("CH-0028 runtime-smoke readiness diagnostic contract tests passed.");
   process.exit(0);
+}
+
+// Exercise actual ordinary selection, projection, report failure and resource owners.
+{
+  const owner = readFileSync(path.join(process.cwd(), "scripts/stable-runtime-smoke.mjs"), "utf8");
+  const start = owner.indexOf("async function createAndVerifyBundle(");
+  const end = owner.indexOf("async function completeStableRuntimeSmoke(", start);
+  assert.ok(start >= 0 && end > start);
+  const caller = owner.slice(start, end);
+  const markers = [
+    "await createProductionEvidenceBundle(",
+    "const sourceManifestSha256 = verifyStableRuntimeBundleTransport(",
+    "const extract = spawnSync(",
+    "const standalone = spawnSync(",
+    "PRODUCTION_EVIDENCE_EXPECTED_MANIFEST_SHA256: sourceManifestSha256",
+  ];
+  function validBundleCaller(source) {
+    const offsets = markers.map((marker) => source.indexOf(marker));
+    return offsets.every((offset, index) => offset >= 0 && (index === 0 || offsets[index - 1] < offset)) &&
+      source.includes("bundleSha256: bundle.bundleSha256") &&
+      source.includes("PRODUCTION_EVIDENCE_EXPECTED_COMMIT_SHA: manifest.source.commitSha");
+  }
+  assert.equal(validBundleCaller(caller), true,
+    "actual Stable owner must bind transport before extraction and pass the captured source digest to standalone");
+  for (const marker of markers) {
+    assert.equal(validBundleCaller(caller.replace(marker, "omitted")), false, `missing ${marker} must fail closed`);
+  }
+  for (let index = 0; index < markers.length - 1; index += 1) {
+    const reordered = caller.replace(markers[index], "__swapped__")
+      .replace(markers[index + 1], markers[index]).replace("__swapped__", markers[index + 1]);
+    assert.equal(validBundleCaller(reordered), false, "reversed bundle boundaries must fail closed");
+  }
+  const standalone = readFileSync(path.join(process.cwd(), "scripts/stable-runtime-smoke-standalone.mjs"), "utf8");
+  assert.match(standalone, /verificationMode: PRODUCTION_EVIDENCE_VERIFICATION_MODES\.STANDALONE_BUNDLE/);
+  assert.match(standalone, /expectedManifestSha256: environment\.PRODUCTION_EVIDENCE_EXPECTED_MANIFEST_SHA256\?\.trim\(\)/);
+}
+{
+  const manifest = { candidateIdentifier: "github-123-1", source: { commitSha: "a".repeat(40), treeSha: "b".repeat(40) },
+    build: { nextBuildId: "ordinary-build", applicationEnvironment: "staging" },
+    artifact: { sha256: "c".repeat(64) }, execution: { runNonce: "build-run-001" } };
+  const ordinary = { CI: "true", GITHUB_ACTIONS: "true", GITHUB_REPOSITORY: "justuslaw66-max/interior-ai",
+    GITHUB_JOB: "stable-checks", GITHUB_RUN_ID: "123", GITHUB_RUN_ATTEMPT: "1",
+    CI_AUTH_FIXTURE_SESSION_ID: "123-1-stable-auth-session", CI_AUTH_FIXTURE_SESSION_NONCE: "123-1-stable-auth-nonce",
+    DATABASE_URL: "postgresql://test:test@localhost:5432/interior_ai_test", ...ORDINARY_ARTIFACT_SERVICE_CONFIGURATION };
+  ordinary.ORDINARY_ARTIFACT_POSTGRES_SERVICE_ID = "f".repeat(64);
+  const service = { Id: ordinary.ORDINARY_ARTIFACT_POSTGRES_SERVICE_ID, State: { Running: true },
+    Config: { Image: "postgres:15", Env: ["POSTGRES_USER=test", "POSTGRES_PASSWORD=test", "POSTGRES_DB=interior_ai_test"] },
+    NetworkSettings: { Ports: { "5432/tcp": [{ HostIp: "0.0.0.0", HostPort: "5432" }] },
+      Networks: { workflow: { IPAddress: "172.18.0.2", GlobalIPv6Address: "" } } } };
+  const inspectService = (environment) => inspectOrdinaryPostgresService(environment, (command, args, options) => {
+    assert.equal(command, "docker");
+    assert.deepEqual(args, ["inspect", "--type", "container", ordinary.ORDINARY_ARTIFACT_POSTGRES_SERVICE_ID]);
+    assert.equal(options.env.DATABASE_URL, undefined);
+    return { status: 0, stdout: JSON.stringify([service]) };
+  });
+  const target = ordinaryDatabaseTarget(ordinary, manifest, { inspectService });
+  assert.deepEqual(target.serverAddresses, ["172.18.0.2"]);
+  for (const patch of [{ Id: "0".repeat(64) }, { State: { Running: false } }, { Config: { ...service.Config, Image: "postgres:16" } },
+    { Config: { ...service.Config, Env: ["POSTGRES_USER=foreign"] } },
+    { NetworkSettings: { ...service.NetworkSettings, Ports: { "5432/tcp": [{ HostIp: "0.0.0.0", HostPort: "6432" }] } } },
+    { NetworkSettings: { ...service.NetworkSettings, Networks: {} } },
+    { NetworkSettings: { ...service.NetworkSettings, Networks: { workflow: { IPAddress: "not-an-ip" } } } }]) {
+    assert.throws(() => inspectOrdinaryPostgresService(ordinary, () => ({ status: 0, stdout: JSON.stringify([{ ...service, ...patch }]) })));
+  }
+  assert.throws(() => inspectOrdinaryPostgresService({ ...ordinary, ORDINARY_ARTIFACT_POSTGRES_SERVICE_ID: undefined }));
+  assert.throws(() => inspectOrdinaryPostgresService(ordinary, () => ({ status: 1, stderr: "unavailable" })));
+  const stableWorkflow = readFileSync(path.join(process.cwd(), ".github/workflows/ci.yml"), "utf8");
+  assert.match(stableWorkflow, /id: runtime-smoke\s+env:\s+CERTIFICATION_DATABASE_ADMIN_URL:/);
+  assert.match(stableWorkflow, /run: npm run evidence:production:stable-runtime-smoke/);
+  assert.doesNotMatch(stableWorkflow, /ORDINARY_ARTIFACT_POSTGRES_SERVICE_ID:/,
+    "Stable uses its attested lifecycle owner; ordinary service inspection remains a separate API");
+  assert.equal(target.resourceOwner, "github-stable-service");
+  for (const patch of [{ GITHUB_JOB: "foreign" }, { GITHUB_RUN_ID: "bad" }, { GITHUB_RUN_ATTEMPT: undefined },
+    { DATABASE_URL: "postgresql://test:test@remote:5432/interior_ai_test" },
+    { DATABASE_URL: "postgresql://test:test@localhost:5432/interior_ai_test?options=foreign" },
+    { CI_AUTH_FIXTURE_SESSION_NONCE: "foreign-nonce" }, { CERTIFICATION_ENVIRONMENT_STAGE: "runtime-smoke" }]) {
+    assert.throws(() => ordinaryDatabaseTarget({ ...ordinary, ...patch }, manifest, { inspectService }));
+  }
+  for (const name of ["CERTIFICATION_ENVIRONMENT_STAGE", "CERTIFICATION_STAGE_ENVIRONMENT_PROFILE_ID",
+    "PRODUCTION_CERTIFICATION_ID", "CERTIFICATION_QUALIFICATION_MODE"]) {
+    assert.throws(() => assertNoCertificationContext({ [name]: "" }), /conflicts.*no fallback/);
+  }
+  assert.throws(() => certifiedNestedDatabaseUrl({ ...ordinary, ORDINARY_ARTIFACT_RUN_ID: "d".repeat(32) }), /certified runtime/);
+  const identity = ordinaryRuntimeIdentity(manifest, "d".repeat(32));
+  for (const field of ["runId", "sourceCommitSha", "sourceTreeSha", "buildId", "artifactSha256", "buildRunNonce", "classification"]) {
+    assert.throws(() => validateOrdinaryRuntimeIdentity({ ...identity, [field]: "foreign" }, manifest));
+  }
+  const owner = { ...ordinary, ORDINARY_ARTIFACT_RUN_ID: identity.runId,
+    ORDINARY_ARTIFACT_CONTEXT_PATH: "/private/owned/context.json", ORDINARY_ARTIFACT_BINDING_SHA256: "e".repeat(64) };
+  assert.deepEqual(ordinaryRuntimeReportIdentity(owner, manifest), identity);
+  assert.throws(() => ordinaryRuntimeReportIdentity({ ...owner, PRODUCTION_CERTIFICATION_ID: "certified" }, manifest));
+  assert.throws(() => ordinaryRuntimeReportIdentity({ ...owner, ORDINARY_ARTIFACT_BINDING_SHA256: "bad" }, manifest));
+  const projected = projectOrdinaryArtifactEnvironment({ environment: { ...owner, NODE_OPTIONS: "injected",
+    DATABASE_ADMIN_URL: "private-admin", CI_AUTH_FIXTURE_SESSION_ROOT: "/private/session", GITHUB_TOKEN: "private-token" },
+    manifest, fixture: { CI_AUTH_FIXTURE_ACTIVE: "1" } });
+  for (const name of ["NODE_OPTIONS", "DATABASE_ADMIN_URL", "GITHUB_TOKEN", "CI_AUTH_FIXTURE_SESSION_ROOT", "ORDINARY_ARTIFACT_CONTEXT_PATH", "ORDINARY_ARTIFACT_POSTGRES_SERVICE_ID"]) {
+    assert.equal(projected[name], undefined, `Product must not inherit ${name}`);
+  }
+  assert.equal(projected.PRODUCTION_ARTIFACT_EVIDENCE, "1");
+  for (const [name, value] of Object.entries(ORDINARY_ARTIFACT_SERVICE_CONFIGURATION)) assert.equal(projected[name], value);
+  assert.throws(() => projectOrdinaryArtifactEnvironment({ environment: { ...owner, STRIPE_SECRET_KEY: "sk_live_foreign" }, manifest, fixture: {} }));
+  await assert.rejects(retainRuntimeSmokeOutcome({ status: 1, stdout: "actual startup cause", stderr: "reporter tail" },
+    async () => { throw new Error("missing phase report"); }), (error) => {
+    assert.match(error.message, /Primary runtime failure.*actual startup cause/s);
+    assert.match(error.message, /reporter tail/);
+    assert.match(error.message, /Runtime reporting failure: missing phase report/);
+    return true;
+  });
+  await retainRuntimeSmokeOutcome({ status: 0 }, async () => {});
+  for (const cause of ["string cause", null]) {
+    await assert.rejects(retainRuntimeSmokeOutcome({ status: 1, error: cause }, async () => { throw cause; }),
+      (error) => error.message.includes(String(cause)) && error.message.includes("Runtime reporting failure"));
+    assert.throws(() => finishOrdinaryRuntimeResult({ runId: identity.runId, receipt: {},
+      failures: [new Error("primary startup"), cause], sensitive: [],
+      close: () => { throw "close cause"; }, retain: () => { throw null; } }), (error) => {
+      assert.match(error.message, /primary startup/);
+      assert(error.message.includes(String(cause)));
+      assert.match(error.message, /Ordinary receipt close: close cause/);
+      assert.match(error.message, /Ordinary result retention: null/);
+      return true;
+    });
+  }
+
+  const root = mkdtempSync(path.join(tmpdir(), "ordinary-runtime-paths-"));
+  try {
+    mkdirSync(path.join(root, ".local/production-artifact-evidence"), { recursive: true });
+    validateOrdinarySmokeDestinations({ repositoryRoot: root,
+      reportPath: ".local/production-artifact-evidence/runtime-smoke.json", environment: {} });
+    assert.throws(() => validateOrdinarySmokeDestinations({ repositoryRoot: root,
+      reportPath: path.join(root, "external.json"), environment: {} }), /canonical owned/);
+    writeFileSync(path.join(root, ".local/production-artifact-evidence/runtime-smoke.json"), "retained");
+    assert.throws(() => validateOrdinarySmokeDestinations({ repositoryRoot: root,
+      reportPath: ".local/production-artifact-evidence/runtime-smoke.json", environment: {} }), /exist/);
+    assert.equal(readFileSync(path.join(root, ".local/production-artifact-evidence/runtime-smoke.json"), "utf8"), "retained");
+    const relativeTiming = ".local/production-artifact-evidence/runtime-smoke-phases.json";
+    const destination = resolveRuntimeSmokeTimingDestination({ repositoryRoot: root, timingPath: relativeTiming, environment: {} });
+    assert.equal(destination.retainedPath, relativeTiming);
+    writeFileSync(destination.outputPath, JSON.stringify({ failure: null }));
+    const reportPath = ".local/production-artifact-evidence/binding-test.json";
+    writeFileSync(path.join(root, reportPath), "{}");
+    assert.equal(bindRuntimeSmokeFailureToReport(root, reportPath, destination.retainedPath), null);
+    assert.throws(() => resolveRuntimeSmokeTimingDestination({ repositoryRoot: root, timingPath: relativeTiming, environment: {} }), /already exist/);
+    for (const timingPath of ["../escape.json", ".local/../escape.json", "unrelated.json", ".local/foreign\\path.json"]) {
+      assert.throws(() => resolveRuntimeSmokeTimingDestination({ repositoryRoot: root, timingPath, environment: {} }));
+    }
+    const external = mkdtempSync(path.join(tmpdir(), "ordinary-timing-external-"));
+    try {
+      symlinkSync(external, path.join(root, ".local/escape"));
+      assert.throws(() => resolveRuntimeSmokeTimingDestination({ repositoryRoot: root, timingPath: ".local/escape/timing.json", environment: {} }), /physical/);
+      const timingPath = path.join(external, "timing.json");
+      assert.throws(() => resolveRuntimeSmokeTimingDestination({ repositoryRoot: root, timingPath, environment: {} }));
+      const externalDestination = resolveRuntimeSmokeTimingDestination({ repositoryRoot: root, timingPath,
+        environment: { PLAYWRIGHT_EXTERNAL_EVIDENCE_ROOT: external } });
+      assert.equal(externalDestination.rootVariableName, "PLAYWRIGHT_EXTERNAL_EVIDENCE_ROOT");
+      assert.equal(externalDestination.retainedPath, timingPath);
+      writeFileSync(timingPath, JSON.stringify({ failure: null }));
+      assert.equal(bindRuntimeSmokeFailureToReport(root, reportPath, externalDestination.retainedPath, external), null);
+      assert.throws(() => bindRuntimeSmokeFailureToReport(root, reportPath, timingPath), /external evidence root/i);
+    } finally { rmSync(external, { recursive: true, force: true }); }
+
+  } finally { rmSync(root, { recursive: true, force: true }); }
+  const observed = { database: target.database, role: target.role, host: "172.18.0.2", port: 5432,
+    databaseOid: 7001, roleOid: 7002 };
+  assertOrdinaryDatabaseObservation(observed, target);
+  assert.throws(() => assertOrdinaryDatabaseObservation({ ...observed, host: "172.18.0.9" }, target));
+  assert.throws(() => assertOrdinaryDatabaseObservation({ ...observed, databaseOid: 9000 }, { ...target, databaseOid: 7001 }));
+  const restricted = { ...observed, role: `interior_ai_ordinary_stage_${identity.runId}`, roleOid: 7003,
+    rolsuper: false, rolcreatedb: false, rolcreaterole: false, rolinherit: false, rolreplication: false, rolbypassrls: false, canCreate: false };
+  assertOrdinaryDatabaseObservation(restricted, { ...target, role: restricted.role }, { runtime: true });
+  for (const name of ["rolsuper", "rolcreatedb", "rolcreaterole", "rolinherit", "rolreplication", "rolbypassrls", "canCreate"]) {
+    assert.throws(() => assertOrdinaryDatabaseObservation({ ...restricted, [name]: true }, { ...target, role: restricted.role }, { runtime: true }));
+  }
+  class FailingCloseClient {
+    async connect() { throw new Error("primary connect"); }
+    async end() { throw new Error("secondary close"); }
+  }
+  await assert.rejects(withOrdinaryDatabase("unused", async () => {}, FailingCloseClient), /primary connect.*secondary close/s);
+  const calls = [];
+  let roleExists = false;
+  let sessionCheck = 0;
+  let lateSession = false;
+  class OwnedRoleClient {
+    constructor({ connectionString }) { this.runtime = new URL(connectionString).username === restricted.role; }
+    async connect() {}
+    async end() {}
+    async query(sql) {
+      calls.push(sql);
+      if (sql.includes("current_database() AS database")) return { rowCount: 1, rows: [this.runtime ? restricted : observed] };
+      if (sql.startsWith("SELECT oid")) return { rowCount: roleExists ? 1 : 0, rows: roleExists ? [{ oid: 7003 }] : [] };
+      if (sql.startsWith("CREATE ROLE")) roleExists = true;
+      if (sql.startsWith("DROP ROLE")) roleExists = false;
+      if (sql.includes("pg_stat_activity")) {
+        sessionCheck += 1;
+        return { rowCount: lateSession && sessionCheck > 1 ? 1 : 0, rows: [] };
+      }
+      return { rowCount: 0, rows: [] };
+    }
+  }
+  const receipt = { outcome: "not-attempted", roleOid: null };
+  const snapshots = [];
+  const persist = () => snapshots.push(JSON.parse(JSON.stringify(receipt)));
+  await createOrdinaryRuntimeRole({ adminUrl: ordinary.DATABASE_URL, target, runId: identity.runId,
+    receipt, persist, ClientClass: OwnedRoleClient });
+  assert(snapshots.some((snapshot) => snapshot.outcome === "created" && snapshot.roleOid === null),
+    "Acknowledged role creation must persist before OID observation");
+  lateSession = true;
+  await assert.rejects(dropOrdinaryRuntimeRole({ adminUrl: ordinary.DATABASE_URL, target, receipt, persist,
+    ClientClass: OwnedRoleClient }), /sessions appeared/);
+  assert.equal(roleExists, true);
+  assert.equal(receipt.cleanup, undefined);
+  assert.equal(calls.some((sql) => sql.startsWith("DROP ROLE")), false);
+  // A separate fake run proves terminal observation; no live resource retry is performed.
+  lateSession = false;
+  sessionCheck = 0;
+  await dropOrdinaryRuntimeRole({ adminUrl: ordinary.DATABASE_URL, target, receipt, persist, ClientClass: OwnedRoleClient });
+  assert.equal(sessionCheck, 3);
+  assert.deepEqual(receipt.cleanup, { roleAbsent: true, sessionCount: 0 });
+  await assert.rejects(dropOrdinaryRuntimeRole({ adminUrl: ordinary.DATABASE_URL, target,
+    receipt: { outcome: "unacknowledged" }, persist, ClientClass: OwnedRoleClient }), /acknowledged exact ownership/);
+  console.log("Ordinary artifact runtime selection, projection, owned cleanup and ordered failures passed.");
 }
 
 if (process.argv.includes("--phase-budget-contract-only")) {
@@ -2724,6 +3266,8 @@ async function fixture({
   publicArtifactText = "public artifact\n",
   manifestFactory = createProductionEvidenceManifest,
   recordRuntimeTest = true,
+  nextBuildId = "build-fixture-001",
+  commitDate = null,
 } = {}) {
   const root = mkdtempSync(path.join(tmpdir(), "ch-0016-evidence-"));
   write(root, ".gitignore", ".next/\n.local/\nnode_modules/\n*.local.js\n");
@@ -2799,9 +3343,36 @@ async function fixture({
       readFileSync(path.join(process.cwd(), relativePath)),
     );
   }
+  // Give this synthetic artifact its own valid source-policy fixture. Source
+  // verification must check this root, never a different checkout's workflows.
+  for (const relativePath of [
+    "scripts/production-artifact-source.mjs",
+    "scripts/production-artifact-ordinary-runtime.mjs",
+    "scripts/production-artifact-ordinary-database.mjs",
+    "scripts/required-test-workflow-policy.mjs",
+  ]) write(root, relativePath, readFileSync(path.join(process.cwd(), relativePath)));
+  const fixtureManifest = JSON.parse(readFileSync(path.join(root, "scripts/required-test-manifest.json")));
+  const runtimeGate = fixtureManifest.gates.find((gate) => gate.id === "ci.production-runtime-smoke");
+  delete runtimeGate.ci;
+  for (const relativePath of runtimeGate.requiredSources) {
+    write(root, relativePath, readFileSync(path.join(process.cwd(), relativePath)));
+  }
+  write(root, "scripts/required-test-manifest.json", JSON.stringify({
+    schema: fixtureManifest.schema, gates: [runtimeGate], sourceInventories: [],
+  }));
+  const fixturePackage = JSON.parse(readFileSync(path.join(root, "package.json")));
+  const sourcePackage = JSON.parse(readFileSync(path.join(process.cwd(), "package.json")));
+  fixturePackage.scripts = Object.fromEntries([
+    "evidence:production:stable-runtime-smoke", "test:design-scene-loading-frameloop",
+  ].map((name) => [name, sourcePackage.scripts[name]]));
+  write(root, "package.json", JSON.stringify(fixturePackage));
+  write(root, "playwright.config.ts", "// Synthetic artifact source fixture configuration.\n");
+  write(root, "tests/e2e/00-runtime-smoke.spec.ts",
+    readFileSync(path.join(process.cwd(), "tests/e2e/00-runtime-smoke.spec.ts")));
+  cpSync(path.join(process.cwd(), "node_modules/yaml"), path.join(root, "node_modules/yaml"), { recursive: true });
   write(root, "generated/runtime.ts", "export const generated = true;\n");
   write(root, "public/asset.txt", publicArtifactText);
-  write(root, ".next/BUILD_ID", "build-fixture-001\n");
+  write(root, ".next/BUILD_ID", `${nextBuildId}\n`);
   write(root, ".next/build-manifest.json", "{}\n");
   write(root, ".next/required-server-files.json", "{}\n");
   write(root, ".next/static/chunk.js", "static chunk\n");
@@ -2829,6 +3400,12 @@ async function fixture({
     "package-lock.json",
     "scripts/production-artifact-contract.mjs",
     "scripts/production-artifact-evidence.mjs",
+    "scripts/production-artifact-source.mjs",
+    "scripts/production-artifact-ordinary-runtime.mjs",
+    "scripts/production-artifact-ordinary-database.mjs",
+    "scripts/required-test-workflow-policy.mjs",
+    "playwright.config.ts",
+    "tests/e2e/00-runtime-smoke.spec.ts",
     "scripts/runtime-smoke-phase-budget.mjs",
     "scripts/runtime-smoke-failure-evidence.mjs",
     "scripts/runtime-smoke-operation-contracts.mjs",
@@ -2839,11 +3416,16 @@ async function fixture({
     "scripts/test-production-archive-plan-evidence.mjs",
     "scripts/test-production-trace-archive-policy.mjs",
     ...PRODUCTION_EVIDENCE_VERIFIER_SOURCE_PATHS,
+    ...runtimeGate.requiredSources,
     "generated/runtime.ts",
     "public/asset.txt",
     "public/assets/floor-plans/preview.webp",
   ]);
-  git(root, ["commit", "-qm", "fixture"]);
+  execFileSync("git", ["commit", "-qm", "fixture"], {
+    cwd: root, env: { ...process.env, ...(commitDate ? {
+      GIT_AUTHOR_DATE: commitDate, GIT_COMMITTER_DATE: commitDate,
+    } : {}) },
+  });
 
   const manifestPath = ".local/production-artifact-evidence/manifest.json";
   const reportPath = ".local/production-artifact-evidence/runtime-smoke.json";
@@ -3574,7 +4156,7 @@ function listedSpecCount(suites) {
   }
 }
 
-function runtimeReportCanonicalizationFixture() {
+function runtimeReportCanonicalizationFixture(nextBuildId = "runtime-portable-build") {
   const repositoryRoot = process.cwd();
   const externalRoot = mkdtempSync(
     path.join(tmpdir(), "runtime-report-canonicalization-"),
@@ -3591,7 +4173,7 @@ function runtimeReportCanonicalizationFixture() {
     PRODUCTION_EVIDENCE_CANDIDATE_ID: "CANDIDATE-runtime-portable-fixture",
     PRODUCTION_EVIDENCE_EXPECTED_COMMIT_SHA: "1".repeat(40),
     PRODUCTION_EVIDENCE_EXPECTED_TREE_SHA: "2".repeat(40),
-    PRODUCTION_EVIDENCE_EXPECTED_BUILD_ID: "runtime-portable-build",
+    PRODUCTION_EVIDENCE_EXPECTED_BUILD_ID: nextBuildId,
     PRODUCTION_EVIDENCE_EXPECTED_ARTIFACT_SHA256: "3".repeat(64),
     PRODUCTION_EVIDENCE_EXPECTED_MANIFEST_SHA256: "4".repeat(64),
     PRODUCTION_EVIDENCE_EXPECTED_JOURNAL_SHA256: "5".repeat(64),
@@ -3772,8 +4354,12 @@ function runtimeReportCanonicalizationFixture() {
   };
 }
 
-{
-  const fixture = runtimeReportCanonicalizationFixture();
+// Physical report fixtures exercise authorization through portable evidence binding.
+for (const nextBuildId of [
+  "-HMijapRnjq-h9tldkjN0", "_jT2Js5lQ3W97uL42t3VQ",
+  "v3Dmenpr6d_fsLQY9tQPM", "release-2026.09:build_42", "A", "_".repeat(128),
+]) {
+  const fixture = runtimeReportCanonicalizationFixture(nextBuildId);
   try {
     const ownerBytes = readFileSync(`${fixture.reportPath}.owner.json`);
     const portable = fixture.canonicalize({
@@ -3818,8 +4404,11 @@ function runtimeReportCanonicalizationFixture() {
       reportAuthorizationEnvironment: fixture.environment,
     });
     assert.deepEqual(finalPortable, portable);
+    assert.equal(JSON.parse(ownerBytes).buildId, nextBuildId);
+    assert.equal(finalPortable.config.metadata.productionArtifactEvidence.nextBuildId, nextBuildId);
 
     for (const environmentMutation of [
+      { PRODUCTION_EVIDENCE_EXPECTED_BUILD_ID: "foreign-build" },
       { PRODUCTION_CERTIFICATION_ID: "CERT-foreign" },
       { PRODUCTION_EVIDENCE_CANDIDATE_ID: "CANDIDATE-foreign" },
       {
@@ -4215,6 +4804,38 @@ for (const mutation of [
   assert.deepEqual(canonicalPreflight.issues, []);
   const loaded = load();
   assert.deepEqual(loaded.identity, accepted.identity);
+  const direct = await inspectDirectProductionIdentity({
+    repositoryRoot: context.root, manifestPath: context.manifestPath,
+    environment: playwrightContractEnvironment(context),
+  });
+  assert.equal(direct.executionMode, "production");
+  assert.equal(direct.buildIdentity, loaded.identity.nextBuildId);
+  assert.equal(direct.artifactSha256, loaded.identity.artifactSha256);
+  assert.equal(direct.candidateTreeSha, loaded.identity.sourceTreeSha);
+  const health = { build: direct.buildIdentity, productionArtifact: {
+    kind: "local-production-mode-artifact", nextBuildId: direct.buildIdentity,
+    artifactSha256: direct.artifactSha256, sourceCommitSha: direct.candidateCommitSha,
+  } };
+  assert.doesNotThrow(() => assertDirectRuntimeSmokeServer(direct, health));
+  assert.throws(() => assertDirectRuntimeSmokeServer(direct, { ...health, build: "other" }), /does not match/);
+  assert.throws(() => assertDirectRuntimeSmokeServer(direct, {}), /does not match/);
+  assert.throws(() => assertDirectRuntimeSmokeServer(direct, {
+    ...health, productionArtifact: { ...health.productionArtifact, artifactSha256: "f".repeat(64) },
+  }), /does not match/);
+  assert.equal(directRuntimeSmokeServerEnvironment(direct).PRODUCTION_ARTIFACT_BUILD_ID, direct.buildIdentity);
+  const development = loadDirectRuntimeSmokeIdentity({
+    repositoryRoot: context.root, useProductionServer: false,
+  });
+  assert.equal(development.executionMode, "development");
+  assert.equal(development.buildIdentity, "next-development-server");
+  assert.equal(development.artifactSha256, null);
+  await assert.rejects(() => inspectDirectProductionIdentity({
+    repositoryRoot: context.root, manifestPath: context.manifestPath,
+    environment: { ...playwrightContractEnvironment(context), PRODUCTION_EVIDENCE_EXPECTED_BUILD_ID: "wrong" },
+  }), /conflicts|rejected/);
+  await assert.rejects(() => inspectDirectProductionIdentity({
+    repositoryRoot: context.root, manifestPath: "missing.json",
+  }), /rejected/);
   assert.equal(loaded.reportDestination.destinationClass, "repository-relative");
   assert.equal(
     loaded.reportDestination.outputPath,
@@ -4249,7 +4870,7 @@ for (const mutation of [
   const rejectedByCanonicalValidator = spawnSync(
     process.execPath,
     [
-      realpathSync(path.join(context.root, "scripts/production-artifact-evidence.mjs")),
+      realpathSync(path.join(context.root, "scripts/production-artifact-source.mjs")),
       "verify-preflight",
     ],
     {
@@ -4839,7 +5460,7 @@ for (const mutation of [
   );
   const smokeSource = producerSource.slice(
     producerSource.indexOf("async function smokeEvidence"),
-    producerSource.indexOf("async function cli"),
+    producerSource.indexOf("export async function runProductionArtifactEvidenceCli"),
   );
   const preflightIndex = smokeSource.indexOf(
     "const preflight = await validateProductionEvidence",
@@ -4849,19 +5470,32 @@ for (const mutation of [
     preflightIndex,
   );
   const runtimeStartIndex = smokeSource.indexOf(
-    "const playwright = run(",
+    "const playwright = spawnSync(",
     preflightIndex,
   );
   assert.ok(
     smokeSource.length > 0 &&
       preflightIndex >= 0 &&
       preflightRejectionIndex > preflightIndex &&
-      runtimeStartIndex > preflightRejectionIndex,
+      smokeSource.indexOf("return runOrdinaryRuntime(") > preflightRejectionIndex &&
+      runtimeStartIndex > smokeSource.indexOf("return runOrdinaryRuntime("),
     "runtime smoke cannot start when manifest validation fails",
   );
+  const artifactLoadIndex = configSource.indexOf("loadProductionArtifactForPlaywright({");
+  const configConstructionIndex = configSource.indexOf("const config = defineConfig({");
+  assert.match(
+    smokeSource,
+    /playwright\.status !== 0 && !existsSync\(absolutePhaseTimingPath\)[\s\S]*preceding Playwright webServer failure is authoritative/,
+    "a pre-test server failure must remain the primary direct-smoke diagnostic",
+  );
+  assert.match(
+    smokeSource,
+    /bindRuntimeSmokeFailureToReport\([\s\S]*retainedTimingPath,[\s\S]*externalTimingRoot/,
+    "repository-relative timing evidence must retain its requested path at the binding boundary",
+  );
   assert.ok(
-    configSource.indexOf("loadProductionArtifactForPlaywright") <
-      configSource.indexOf("export default defineConfig"),
+    artifactLoadIndex >= 0 && configConstructionIndex > artifactLoadIndex &&
+      configSource.indexOf("export default config;") > configConstructionIndex,
     "Playwright must reject invalid evidence before exposing a webServer command",
   );
 }
@@ -4968,6 +5602,54 @@ async function runtimeFailureFixture({
   return context;
 }
 
+// Physical artifact/manifest fixtures; no compiled artifact is rewritten here.
+// Independent inventories from the same source commit must stay distinct.
+{
+  const identities = [];
+  for (const nextBuildId of [
+    "-HMijapRnjq-h9tldkjN0", "_jT2Js5lQ3W97uL42t3VQ",
+    "v3Dmenpr6d_fsLQY9tQPM", "release-2026.09:build_42", "A", "_".repeat(128),
+  ]) {
+    const context = await fixture({ nextBuildId, recordRuntimeTest: false,
+      commitDate: "2026-07-31T00:00:00Z" });
+    try {
+      const identity = await inspectDirectProductionIdentity({
+        repositoryRoot: context.root, manifestPath: context.manifestPath,
+        environment: playwrightContractEnvironment(context),
+      });
+      assert.equal(identity.buildIdentity, nextBuildId, "physical BUILD_ID is never sanitized");
+      assert.equal(readFileSync(path.join(context.root, ".next/BUILD_ID"), "utf8"), `${nextBuildId}\n`);
+      const health = { build: nextBuildId, productionArtifact: {
+        kind: "local-production-mode-artifact", nextBuildId,
+        artifactSha256: identity.artifactSha256,
+        sourceCommitSha: identity.candidateCommitSha,
+      } };
+      assertDirectRuntimeSmokeServer(identity, health);
+      assert.throws(() => assertDirectRuntimeSmokeServer(identity, {
+        ...health, build: "foreign-build",
+      }), /does not match/);
+      assert.throws(() => assertDirectRuntimeSmokeServer(identity, {
+        ...health, productionArtifact: { ...health.productionArtifact, nextBuildId: "foreign-build" },
+      }), /does not match/);
+      await assert.rejects(() => inspectDirectProductionIdentity({
+        repositoryRoot: context.root, manifestPath: context.manifestPath,
+        environment: { ...playwrightContractEnvironment(context),
+          PRODUCTION_EVIDENCE_EXPECTED_BUILD_ID: "foreign-build" },
+      }), /conflicts with PRODUCTION_EVIDENCE_EXPECTED_BUILD_ID/);
+      identities.push(identity);
+      write(context.root, ".next/BUILD_ID", "unbound-build\n");
+      await assert.rejects(() => inspectDirectProductionIdentity({
+        repositoryRoot: context.root, manifestPath: context.manifestPath,
+        environment: playwrightContractEnvironment(context),
+      }), /rejected/);
+    } finally { rmSync(context.root, { recursive: true, force: true }); }
+  }
+  assert.equal(identities[0].candidateCommitSha, identities[1].candidateCommitSha);
+  assert.notEqual(identities[0].buildIdentity, identities[1].buildIdentity);
+  assert.notEqual(identities[0].artifactSha256, identities[1].artifactSha256);
+  console.log("Direct build identity C1-C6 controls passed, including distinct physical builds.");
+}
+
 async function expectRejected(context, expectedText) {
   const result = await validateProductionEvidence({
     repositoryRoot: context.root,
@@ -4979,6 +5661,33 @@ async function expectRejected(context, expectedText) {
     result.issues.some((issue) => issue.includes(expectedText)),
     `missing rejection ${JSON.stringify(expectedText)} in ${JSON.stringify(result.issues)}`,
   );
+}
+
+{
+  const context = await fixture();
+  const manifest = readManifest(context.root, context.manifestPath);
+  const reportFile = path.join(context.root, context.reportPath);
+  const report = JSON.parse(readFileSync(reportFile, "utf8"));
+  const identity = ordinaryRuntimeIdentity(manifest, "d".repeat(32));
+  await rewriteManifest(context.root, context.manifestPath, (pending) => {
+    pending.tests = [];
+    pending.repositoryEvidence.status = "pending_tests";
+  });
+  report.config.metadata.productionArtifactEvidence.ordinaryRuntime = identity;
+  writeFileSync(reportFile, `${JSON.stringify(report, null, 2)}\n`);
+  const options = { repositoryRoot: context.root, manifestPath: context.manifestPath,
+    reportPath: context.reportPath, phaseTimingPath: context.phaseTimingPath, name: "runtime-smoke",
+    command: "npx playwright test tests/e2e/00-runtime-smoke.spec.ts --project=chromium", processExitCode: 0 };
+  await assert.rejects(recordProductionEvidenceTest({ ...options,
+    environment: { PRODUCTION_CERTIFICATION_ID: "certification-owner", CERTIFICATION_ENVIRONMENT_STAGE: "runtime-smoke" } }), /execution owner/);
+  await assert.rejects(recordProductionEvidenceTest({ ...options, environment: {} }), /execution owner/);
+  await recordProductionEvidenceTest({ ...options, environment: {
+    ORDINARY_ARTIFACT_CONTEXT_PATH: "/private/synthetic-owner/context.json",
+    ORDINARY_ARTIFACT_RUN_ID: identity.runId, ORDINARY_ARTIFACT_BINDING_SHA256: "e".repeat(64) } });
+  const ordinaryResult = await validateProductionEvidence({ repositoryRoot: context.root, manifestPath: context.manifestPath,
+    verificationMode: PRODUCTION_EVIDENCE_VERIFICATION_MODES.REPOSITORY_FINAL });
+  assert.deepEqual(ordinaryResult.issues, []);
+  assert.deepEqual(ordinaryResult.manifest.tests[0].ordinaryRuntime, identity);
 }
 
 {
@@ -5181,6 +5890,17 @@ async function expectRejected(context, expectedText) {
       manifest,
     }),
     manifest.build.authFixtureContinuity,
+  );
+  const githubBuildManifest = structuredClone(manifest);
+  githubBuildManifest.build.authFixtureContinuity.activationScope =
+    "github-actions";
+  assert.equal(
+    validateArtifactProductServerAuthFixtureBinding({
+      environment: projectedProductEnvironment,
+      manifest: githubBuildManifest,
+    }).activationScope,
+    "local-certification-projection",
+    "the server-local fixture activation may preserve the same GitHub-built session identity",
   );
   assert.equal(
     projectedProductEnvironment.PRODUCTION_CERTIFICATION_ID,
@@ -6002,7 +6722,7 @@ for (const mutate of [
     );
     assert.match(
       `${repositoryPreflight.stdout}\n${repositoryPreflight.stderr}`,
-      /not a git repository|Unable to inspect the Git working tree/,
+      /Repository artifact operations require the source-repository driver/,
     );
 
     const finalStandalone = runStagedVerifier(
@@ -6450,6 +7170,153 @@ for (const mutate of [
 
 {
   const context = await fixture();
+  const manifestBytes = readFileSync(path.join(context.root, context.manifestPath));
+  const manifest = JSON.parse(manifestBytes.toString("utf8"));
+  const test = manifest.tests.find((entry) => entry.name === "runtime-smoke");
+  const stageProfile = certificationEnvironmentProfile(
+    process.cwd(),
+    "runtime-smoke",
+  );
+  const stageEnvironment = projectCertificationChildEnvironment({
+    repositoryRoot: process.cwd(),
+    baseEnvironment: {
+      APP_ENV: "staging",
+      CATALOG_STRICT_VALIDATION: "true",
+      CI: "true",
+      NEXT_PUBLIC_APP_ENV: "staging",
+      NODE_ENV: "production",
+      VERCEL_ENV: "preview",
+    },
+    stage: "runtime-smoke",
+    profileId: "runtime-smoke",
+    stageInputs: {
+      CERTIFICATION_ENVIRONMENT_STAGE: "runtime-smoke",
+      CERTIFICATION_RUNTIME_STAGE_ATTEMPT: "1",
+      CERTIFICATION_RUNTIME_START_MARKER_PATH: "/private/tmp/stable/marker.json",
+      CERTIFICATION_STAGE_ENVIRONMENT_CONTRACT_SHA256:
+        stageProfile.contract.sha256,
+      CERTIFICATION_STAGE_ENVIRONMENT_PROFILE_ID: stageProfile.id,
+      CERTIFICATION_STAGE_ENVIRONMENT_PROFILE_SHA256: stageProfile.sha256,
+      DATABASE_URL:
+        "postgresql://interior_ai_cert_stage_dddddddddddddddddddddddddddddddd:fixture@127.0.0.1:5432/interior_ai_gate_a3_test_cert_dddddddddddddddddddddddddddddddd",
+      GOOGLE_CLIENT_ID: "fixture.apps.googleusercontent.com",
+      GOOGLE_CLIENT_SECRET: "GOCSPX-fixture-placeholder",
+      PLAYWRIGHT_EXTERNAL_EVIDENCE_ROOT: "/private/tmp/stable/evidence",
+      PLAYWRIGHT_JSON_OUTPUT_FILE: "/private/tmp/stable/evidence/report.json",
+      PLAYWRIGHT_USE_PRODUCTION_SERVER: "1",
+      PRODUCTION_CERTIFICATION_ID:
+        `stable-runtime-smoke:123:1:${manifest.source.commitSha.slice(0, 12)}`,
+      PRODUCTION_EVIDENCE_CANDIDATE_ID: manifest.candidateIdentifier,
+      PRODUCTION_EVIDENCE_EXPECTED_ARTIFACT_SHA256: manifest.artifact.sha256,
+      PRODUCTION_EVIDENCE_EXPECTED_BUILD_ID: manifest.build.nextBuildId,
+      PRODUCTION_EVIDENCE_EXPECTED_COMMIT_SHA: manifest.source.commitSha,
+      PRODUCTION_EVIDENCE_EXPECTED_JOURNAL_NONCE: manifest.execution.runNonce,
+      PRODUCTION_EVIDENCE_EXPECTED_JOURNAL_SHA256: "c".repeat(64),
+      PRODUCTION_EVIDENCE_EXPECTED_MANIFEST_SHA256: createHash("sha256")
+        .update(manifestBytes)
+        .digest("hex"),
+      PRODUCTION_EVIDENCE_EXPECTED_TREE_SHA: manifest.source.treeSha,
+      PRODUCTION_EVIDENCE_JOURNAL_PATH:
+        ".local/production-artifact-evidence/semantic-event-journal.json",
+      PRODUCTION_EVIDENCE_MANIFEST: context.manifestPath,
+      RUNTIME_SMOKE_PHASE_TIMINGS_PATH:
+        "/private/tmp/stable/evidence/timings.json",
+    },
+  }).metadata;
+  const summary = {
+    schema: "interior-ai.stable-runtime-smoke-evidence.v1",
+    classification: "REPOSITORY_STABLE_RUNTIME_SMOKE_ONLY",
+    releaseCertification: false,
+    identity: {
+      certificationId:
+        `stable-runtime-smoke:123:1:${manifest.source.commitSha.slice(0, 12)}`,
+      candidateId: manifest.candidateIdentifier,
+      sourceCommitSha: manifest.source.commitSha,
+      sourceTreeSha: manifest.source.treeSha,
+      buildId: manifest.build.nextBuildId,
+      artifactSha256: manifest.artifact.sha256,
+      manifestSha256: createHash("sha256").update(manifestBytes).digest("hex"),
+      journalSha256: "c".repeat(64),
+      journalNonce: manifest.execution.runNonce,
+    },
+    authFixtureContinuity: manifest.build.authFixtureContinuity,
+    database: {
+      lifecycleClassification: "STABLE_RUNTIME_SMOKE_ONLY",
+      databaseName:
+        "interior_ai_gate_a3_test_cert_dddddddddddddddddddddddddddddddd",
+      databaseIdentitySha256: "d".repeat(64),
+      roleName: "interior_ai_cert_stage_dddddddddddddddddddddddddddddddd",
+      scopedRoleClassification: "private-stage-login-no-admin",
+      transportClassification: "native-loopback",
+      transportAttestationSha256: null,
+      transportVerificationStatus: "verified-live",
+      imageClassification: null,
+      migrationCount: 43,
+      finalState: "stable-absence-verified",
+      targetAbsent: true,
+    },
+    stageEnvironment,
+    evidence: {
+      rawReport: {
+        path: "runtime-smoke/playwright-report.json",
+        sha256: "e".repeat(64),
+      },
+      portableReport: {
+        path: ".local/production-artifact-evidence/runtime-smoke.json",
+        sha256: test.report.sha256,
+      },
+      timings: {
+        path: ".local/production-artifact-evidence/runtime-smoke-phases.json",
+        sha256: test.phaseTimings.sha256,
+      },
+      startMarker: {
+        path: "runtime-smoke/product-test-start.json",
+        sha256: "f".repeat(64),
+      },
+    },
+    stats: test.stats,
+    complete: true,
+  };
+  write(context.root, STABLE_PORTABLE_SUMMARY_PATH, `${JSON.stringify(summary)}\n`);
+  const verified = await verifyStableRuntimeSmokeStandalone({
+    repositoryRoot: context.root,
+    environment: {
+      CERTIFICATION_QUALIFICATION_MODE: "1",
+      PRODUCTION_EVIDENCE_EXPECTED_COMMIT_SHA: manifest.source.commitSha,
+      PRODUCTION_EVIDENCE_EXPECTED_MANIFEST_SHA256: summary.identity.manifestSha256,
+    },
+  });
+  assert.equal(verified.classification, "STABLE_RUNTIME_SMOKE_STANDALONE_VERIFIED");
+  assert.equal(verified.releaseCertification, false);
+  assert.equal(verified.databaseTargetAbsent, true);
+  for (const expectedDigest of [undefined, "0".repeat(64)]) {
+    await assert.rejects(() => verifyStableRuntimeSmokeStandalone({
+      repositoryRoot: context.root,
+      environment: {
+        PRODUCTION_EVIDENCE_EXPECTED_COMMIT_SHA: manifest.source.commitSha,
+        PRODUCTION_EVIDENCE_EXPECTED_MANIFEST_SHA256: expectedDigest,
+      },
+    }), /manifest SHA-256|manifest.*mismatch|manifest differs/);
+  }
+  write(context.root, STABLE_PORTABLE_SUMMARY_PATH, `${JSON.stringify({
+    ...summary,
+    database: { ...summary.database, targetAbsent: false },
+  })}\n`);
+  await assert.rejects(
+    () => verifyStableRuntimeSmokeStandalone({
+      repositoryRoot: context.root,
+      environment: {
+        CERTIFICATION_QUALIFICATION_MODE: "1",
+        PRODUCTION_EVIDENCE_EXPECTED_COMMIT_SHA: manifest.source.commitSha,
+      PRODUCTION_EVIDENCE_EXPECTED_MANIFEST_SHA256: summary.identity.manifestSha256,
+      },
+    }),
+    /database absence is unproved/,
+  );
+}
+
+{
+  const context = await fixture();
   const manifest = readManifest(context.root, context.manifestPath);
   const bundle = await createProductionEvidenceBundle({
     repositoryRoot: context.root,
@@ -6458,6 +7325,20 @@ for (const mutate of [
   });
   const absoluteBundlePath = path.join(context.root, bundle.bundlePath);
   const archiveBytes = readFileSync(absoluteBundlePath);
+  const transport = {
+    bundlePath: absoluteBundlePath, bundleSha256: bundle.bundleSha256,
+    manifestPath: path.join(context.root, context.manifestPath),
+  };
+  assert.equal(verifyStableRuntimeBundleTransport(transport),
+    createHash("sha256").update(readFileSync(transport.manifestPath)).digest("hex"));
+  const sidecarBytes = readFileSync(`${absoluteBundlePath}.sha256`);
+  writeFileSync(absoluteBundlePath, Buffer.concat([archiveBytes, Buffer.from("tampered")]));
+  assert.throws(() => verifyStableRuntimeBundleTransport(transport), /transport checksum/);
+  writeFileSync(absoluteBundlePath, archiveBytes);
+  writeFileSync(`${absoluteBundlePath}.sha256`, "wrong checksum\n");
+  assert.throws(() => verifyStableRuntimeBundleTransport(transport), /transport checksum/);
+  writeFileSync(`${absoluteBundlePath}.sha256`, sidecarBytes);
+
   const archiveSha256 = createHash("sha256").update(archiveBytes).digest("hex");
   assert.equal(bundle.bundleSha256, archiveSha256);
   assert.equal(
@@ -6525,6 +7406,70 @@ for (const mutate of [
     `${standaloneResult.stdout}\n${standaloneResult.stderr}`,
     /final standalone verification requires certification state and evidence root/,
   );
+  const sourceManifestSha256 = createHash("sha256")
+    .update(readFileSync(path.join(context.root, context.manifestPath))).digest("hex");
+  const verifyBundle = (overrides = {}) => spawnSync(
+    process.execPath,
+    ["scripts/production-artifact-evidence.mjs", "verify-bundle"],
+    {
+      cwd: extractedRoot,
+      encoding: "utf8",
+      env: {
+        ...process.env,
+        PRODUCTION_CERTIFICATION_STATE: "",
+        CERTIFICATION_EVIDENCE_ROOT: "",
+        PRODUCTION_EVIDENCE_EXPECTED_COMMIT_SHA: manifest.source.commitSha,
+        PRODUCTION_EVIDENCE_EXPECTED_MANIFEST_SHA256: sourceManifestSha256,
+        ...overrides,
+      },
+    },
+  );
+  const verifiedBundle = verifyBundle();
+  assert.equal(verifiedBundle.status, 0, verifiedBundle.stderr);
+  assert.deepEqual(JSON.parse(verifiedBundle.stdout), {
+    bundleVerified: true,
+    sourceCommitSha: manifest.source.commitSha,
+    manifestSha256: sourceManifestSha256,
+    artifactSha256: manifest.artifact.sha256,
+    certificationComplete: false,
+    finalStandaloneVerificationRequired: true,
+  });
+  for (const [overrides, failure] of [
+    [{ PRODUCTION_EVIDENCE_EXPECTED_COMMIT_SHA: "" }, /exact expected source commit SHA/],
+    [{ PRODUCTION_EVIDENCE_EXPECTED_COMMIT_SHA: "f".repeat(40) }, /another source commit/],
+    [{ PRODUCTION_EVIDENCE_EXPECTED_MANIFEST_SHA256: "" }, /exact expected source manifest SHA-256/],
+    [{ PRODUCTION_EVIDENCE_EXPECTED_MANIFEST_SHA256: "f".repeat(64) }, /differs from the verified source manifest/],
+  ]) {
+    const rejectedBundle = verifyBundle(overrides);
+    assert.notEqual(rejectedBundle.status, 0);
+    assert.match(rejectedBundle.stderr, failure);
+  }
+  const extractedManifestPath = path.join(extractedRoot, context.manifestPath);
+  const originalManifestBytes = readFileSync(extractedManifestPath);
+  await rewriteManifest(extractedRoot, context.manifestPath, (candidate) => {
+    candidate.tests = [];
+    candidate.repositoryEvidence.status = "pending_tests";
+  });
+  const reboundWithoutSmoke = verifyBundle({
+    PRODUCTION_EVIDENCE_EXPECTED_MANIFEST_SHA256: createHash("sha256")
+      .update(readFileSync(extractedManifestPath)).digest("hex"),
+  });
+  assert.notEqual(reboundWithoutSmoke.status, 0);
+  assert.match(reboundWithoutSmoke.stderr, /required production runtime-smoke report is missing/);
+  writeFileSync(extractedManifestPath, originalManifestBytes);
+  writeFileSync(`${extractedManifestPath}.sha256`, `${sourceManifestSha256}\n`);
+  const extractedReportPath = path.join(extractedRoot, context.reportPath);
+  const originalReportBytes = readFileSync(extractedReportPath);
+  writeFileSync(extractedReportPath, `${originalReportBytes.toString("utf8")}\n`);
+  const alteredReport = verifyBundle();
+  assert.notEqual(alteredReport.status, 0);
+  assert.match(alteredReport.stderr, /report SHA-256 mismatch/);
+  writeFileSync(extractedReportPath, originalReportBytes);
+  const buildIdPath = path.join(extractedRoot, ".next/BUILD_ID");
+  writeFileSync(buildIdPath, "different-build\n");
+  const alteredArtifact = verifyBundle();
+  assert.notEqual(alteredArtifact.status, 0);
+  assert.match(alteredArtifact.stderr, /artifact SHA-256 mismatch|BUILD_ID does not match/);
 }
 
 {
@@ -6997,12 +7942,12 @@ const playwrightConfiguration = readFileSync(
 );
 assert.match(
   playwrightConfiguration,
-  /command: productionArtifactEvidence[\s\S]{0,160}productionArtifactEvidence\.serverCommand[\s\S]{0,160}useProductionServer[\s\S]{0,100}"npm run start"[\s\S]{0,100}"npm run dev"/,
+  /command: productionArtifactEvidence[\s\S]{0,160}productionArtifactEvidence\.serverCommand[\s\S]{0,160}useProductionServer[\s\S]{0,100}"npm run start -- --hostname 127\.0\.0\.1"[\s\S]{0,100}"npm run dev"/,
   "production artifact evidence must select its verified server before any dev fallback",
 );
 assert.match(
   playwrightConfiguration,
-  /reuseExistingServer: productionArtifactEvidence \? false/,
+  /reuseExistingServer: productionArtifactEvidence \|\| directRuntimeSmokeIdentity \|\| useProductionServer \? false/,
   "production artifact evidence must never reuse an unrelated listener",
 );
 assert.match(
@@ -7022,8 +7967,8 @@ assert.match(
 const workflow = readFileSync(path.join(process.cwd(), ".github/workflows/ci.yml"), "utf8");
 assert.equal(workflow.includes('CATALOG_STRICT_VALIDATION: "false"'), false);
 assert.match(workflow, /npm run evidence:production:build/);
-assert.match(workflow, /npm run evidence:production:smoke/);
-assert.match(workflow, /npm run evidence:production:bundle/);
+assert.match(workflow, /npm run evidence:production:stable-runtime-smoke/);
+assert.doesNotMatch(workflow, /npm run evidence:production:(?:smoke|bundle|verify)\b/);
 assert.match(workflow, /\.local\/production-artifact-evidence\/upload\//);
 const vercelManifestSource = readFileSync(
   path.join(process.cwd(), "scripts/vercel-output-manifest.mjs"),

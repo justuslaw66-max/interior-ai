@@ -348,14 +348,19 @@ function sanitizeStageResultString(value, sensitiveValues = []) {
   return sanitized;
 }
 
-export function redactCertificationStageResultDiagnostic(
+export function redactCertificationStageResultDiagnosticOutput(
   value,
   sensitiveValues = certificationStageResultSensitiveValues(),
 ) {
   return sanitizeStageResultString(
     value instanceof Error ? value.message : String(value),
     sensitiveValues,
-  ).slice(0, 1_000);
+  );
+}
+
+export function redactCertificationStageResultDiagnostic(value, sensitiveValues) {
+  return redactCertificationStageResultDiagnosticOutput(value, sensitiveValues)
+    .slice(0, 1_000);
 }
 
 function sanitizeStageResultValue(value, sensitiveValues = []) {

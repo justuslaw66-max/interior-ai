@@ -68,17 +68,18 @@ The present uncommitted work centers on editable doors and windows across 2D and
 - `app/models-test/page.tsx` — Next.js page for route /models-test.
 - `app/page.tsx` — Next.js page for route /.
 - `app/share/[shareToken]/export/page.tsx` — Next.js page for route /share/[shareToken]/export.
-- `app/share/[shareToken]/page.tsx` — Next.js page for route /share/[shareToken].
+- `app/share/[shareToken]/(presentation)/page.tsx` — Next.js page for route /share/[shareToken].
 - `app/tools/glb-optimizer/page.tsx` — Next.js page for route /tools/glb-optimizer.
 
-### 2. Layouts, loading states, error states, and route metadata (7)
+### 2. Layouts, loading states, error states, and route metadata (8)
 
 - `app/error.tsx` — Error boundary UI for route subtree /.
 - `app/favicon.ico` — Browser favicon for the web application.
 - `app/icon.svg` — Vector application icon used by Next.js route metadata.
 - `app/layout.tsx` — Next.js layout for route subtree /.
-- `app/share/[shareToken]/error.tsx` — Error boundary UI for route subtree /share/[shareToken].
-- `app/share/[shareToken]/loading.tsx` — Loading state for route subtree /share/[shareToken].
+- `app/share/[shareToken]/(presentation)/error.tsx` — Error boundary UI for route /share/[shareToken].
+- `app/share/[shareToken]/(presentation)/layout.tsx` — Owns the public presentation lifecycle landmark for route /share/[shareToken].
+- `app/share/[shareToken]/(presentation)/loading.tsx` — Loading state for route /share/[shareToken].
 - `app/tools/layout.tsx` — Next.js layout for route subtree /tools.
 
 ### 3. React UI components (29)
@@ -222,8 +223,8 @@ The present uncommitted work centers on editable doors and windows across 2D and
 - `components/editor/FloorPlanWorkspaceOpener.tsx` — Implements `FloorPlanWorkspaceOpener` for Floor Plan Workspace Opener.
 - `components/editor/FloorPropertiesPanel.tsx` — Defines `FloorPropertiesPanel`, `FloorCreationMode`, `FloorPropertiesPanelProps` for Floor Properties Panel.
 - `components/editor/MeasurementField.tsx` — Implements `MeasurementField` for Measurement Field.
-- `components/editor/OpeningDimensionFields.tsx` — Shared unit-aware controls for opening width, height, sill, and horizontal position that honor measurement-evidence locks.
-- `components/editor/PlanOpeningInspector.tsx` — 2D floor-plan sidebar inspector for door/window selection, using shared dimension, sill, and horizontal-position controls.
+- `components/editor/PlanOpeningDimensionFields.tsx` — Unit-aware opening width, height, and sill controls for the 2D inspector that honor measurement-evidence locks; `components/editor/design-page/SelectedOpeningDimensions.tsx` is the viewport counterpart.
+- `components/editor/PlanOpeningInspector.tsx` — 2D floor-plan sidebar inspector for door/window selection, using `PlanOpeningDimensionFields`, the opening kind control, and host-repair warnings.
 - `components/editor/renderers/ItemRenderer2D.tsx` — Implements `ItemRenderer2D` for Item Renderer2 D.
 - `components/editor/renderers/PlanUnderlayRenderer2D.tsx` — Implements `PlanUnderlayRenderer2D` for Plan Underlay Renderer2 D.
 - `components/editor/renderers/RoomRenderer2D.tsx` — Renders interactive 2D room geometry, walls, openings, dimensions, and plan overlays.
@@ -3901,8 +3902,8 @@ Other-format breakdown: `.mjs` 109; `.sh` 7; `.cjs` 3; `.cts` 2; `.example` 2; `
 
 | Git status code | Relative path | Apparent purpose |
 |---|---|---|
-| ` M` | `components/editor/PlanOpeningInspector.tsx` | 2D floor-plan sidebar inspector for door/window selection, using shared dimension, sill, and horizontal-position controls. |
-| ` M` | `components/editor/design-page/DesignPageSelectionInspector.tsx` | Viewport selection inspector for items, openings, and surfaces; presents the shared door/window dimension controls. |
+| ` M` | `components/editor/PlanOpeningInspector.tsx` | 2D floor-plan sidebar inspector for door/window selection, using `PlanOpeningDimensionFields`, the opening kind control, and host-repair warnings. |
+| ` M` | `components/editor/design-page/DesignPageSelectionInspector.tsx` | Viewport selection inspector for items, openings, and surfaces; presents `SelectedOpeningDimensions` for doors and windows. |
 | ` M` | `components/editor/design-page/DesignSceneCanvas.tsx` | React Three Fiber editor canvas that composes scene rendering, selection, controls, and interaction lifecycle. |
 | ` M` | `components/editor/design-page/DesignSceneStructureLayer.tsx` | Composes the editor's structural room, wall, opening, and plan-rendering layers. |
 | ` M` | `components/editor/design-page/lighting/EnvironmentController.tsx` | Applies lighting-preset environment maps and key/fill softbox positioning to the editor scene. |
@@ -3957,7 +3958,6 @@ Other-format breakdown: `.mjs` 109; `.sh` 7; `.cjs` 3; `.cts` 2; `.example` 2; `
 
 | Relative path | Apparent purpose | Assessment |
 |---|---|---|
-| `components/editor/OpeningDimensionFields.tsx` | Shared unit-aware controls for opening width, height, sill, and horizontal position that honor measurement-evidence locks. | Likely intentional — imported by both current opening inspectors. |
 | `components/editor/renderers/house-plan-3d/continuousWallSelection.ts` | Groups fragmented window-wall finish panels into a stable whole-wall selection identity and aperture-aware outline. | Likely intentional — used by current 3D rendering and material BOM code. |
 | `components/editor/renderers/house-plan-3d/openingWallSurfacePanels.ts` | Projects lintel and sill solids around openings into interior/exterior wall surface-panel descriptors. | Likely intentional — used by current 3D rendering and material BOM code. |
 | `components/editor/renderers/house-plan-3d/useWindowOpeningDrag.ts` | Owns R3F pointer capture and wall-plane projection for dragging a 3D window aperture. | Likely intentional — used by the new 3D window aperture mesh. |

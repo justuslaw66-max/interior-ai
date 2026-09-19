@@ -1,9 +1,10 @@
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
-import { randomBytes } from "node:crypto";
+import { createHash, randomBytes } from "node:crypto";
 import { createRequire } from "node:module";
 import {
   chmodSync,
+  existsSync,
   lstatSync,
   mkdirSync,
   mkdtempSync,
@@ -14,6 +15,7 @@ import {
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { redactCertificationStageResultDiagnosticOutput } from "./production-certification-stage-result-contract.mjs";
 
 const require = createRequire(import.meta.url);
 const resultContract = require("./ci-auth-fixture-result-contract.cjs");
@@ -106,6 +108,53 @@ function canonicalIdentity(result) {
   };
 }
 
+export function canonicalAuthFailureText(value, environment = {}, additionalSensitive = []) {
+  const raw = value instanceof Error ? value.message : String(value);
+  const masks = [...raw.matchAll(/^::add-mask::([^\r\n]*)/gm)].map((match) => match[1]);
+  const sensitive = [...resultContract.privateValuesFromEnvironment(environment), ...masks, ...additionalSensitive];
+  const masked = raw.replace(/^::add-mask::[^\r\n]*/gm, "<REDACTED_MASK_COMMAND>")
+    .replace(/GOCSPX[-_][A-Za-z0-9_-]{8,}/g, "<REDACTED_PROVIDER_VALUE>")
+    .replace(/[0-9]+-gate-a3-ci-[a-f0-9]{32}\.apps\.googleusercontent\.com/gi, "<REDACTED_PROVIDER_VALUE>");
+  const diagnostic = redactCertificationStageResultDiagnosticOutput(masked, sensitive);
+  try { resultContract.assertNoRawPrivateValues(Buffer.from(diagnostic), sensitive); }
+  catch { return "Diagnostic text withheld by the private-value guard"; }
+  return diagnostic;
+}
+
+export function canonicalAuthCommandResult({ child, commandId, environment, validate }) {
+  const failures = [];
+  let validated;
+  const masks = [...String(child.stdout ?? "").matchAll(/^::add-mask::([^\r\n]*)/gm)].map((match) => match[1]);
+  const safe = (value) => canonicalAuthFailureText(value, environment, masks);
+  if (child.error || child.signal || child.status !== 0) {
+    failures.push(`Primary auth command failure: ${commandId}; status ${child.status ?? "unknown"}; signal ${child.signal ?? "none"}; ${safe([child.error === undefined ? null : safe(child.error), child.stdout, child.stderr].filter(Boolean).join("\n"))}`);
+  }
+  try { validated = validate(); }
+  catch (error) { failures.push(`Auth result validation failure: ${safe(error)}`); }
+  if (validated && (child.status === 0) !== (validated.result.result !== "failure")) {
+    failures.push("Canonical auth fixture result contradicts its process outcome");
+  }
+  if (validated?.result.result === "failure") {
+    failures.push(`Auth result failure: ${safe(JSON.stringify(validated.result.failure))}`);
+  }
+  if (failures.length) throw new Error(failures.join("\n"));
+  return validated.result;
+}
+
+export function finishCanonicalAuthSession({ failures, keepFailedRoot, cleanup, retain, environment }) {
+  if (failures.length === 0 || !keepFailedRoot) {
+    try { cleanup(); }
+    catch (error) { failures.push(`Auth orchestration cleanup failure: ${canonicalAuthFailureText(error, environment)}`); }
+  }
+  const diagnostic = () => failures.map((error) => canonicalAuthFailureText(error, environment)).join("\n");
+  if (failures.length) {
+    let locator = "";
+    try { locator = retain(diagnostic()) ?? ""; }
+    catch (error) { failures.push(`Auth failure retention error: ${canonicalAuthFailureText(error, environment)}`); }
+    throw new Error([diagnostic(), locator].filter(Boolean).join("\n"));
+  }
+}
+
 function runStructuredCommand({
   script,
   commandId,
@@ -131,10 +180,8 @@ function runStructuredCommand({
     env: childEnvironment,
     encoding: "utf8",
   });
-  if (child.error || child.signal) {
-    throw new Error("Canonical auth fixture command could not complete");
-  }
-  const validated = resultContract.validateAuthCommandResult({
+  return canonicalAuthCommandResult({ child, commandId, environment: childEnvironment,
+    validate: () => resultContract.validateAuthCommandResult({
     repositoryRoot: process.cwd(),
     externalRoot: resultRoot,
     resultPath,
@@ -144,14 +191,7 @@ function runStructuredCommand({
     expectedCandidateCommitSha: candidateCommitSha,
     expectedCandidateTreeSha: candidateTreeSha,
     sensitiveValues: resultContract.privateValuesFromEnvironment(childEnvironment),
-  });
-  if ((child.status === 0) !== (validated.result.result !== "failure")) {
-    throw new Error("Canonical auth fixture result contradicts its process outcome");
-  }
-  if (child.status !== 0) {
-    throw new Error("Canonical auth fixture command failed closed");
-  }
-  return validated.result;
+  }) });
 }
 
 export function canonicalSessionOwnership(environment = process.env) {
@@ -231,12 +271,16 @@ export async function runCanonicalAuthFixtureSession() {
   const identitySuffix = randomBytes(8).toString("hex");
   let retained = false;
   let workspaceTerminalEvidence = null;
+  let commandDispatched = false;
+  let retainedResultRoot = null;
+  const failures = [];
   try {
     const resultOwnership = canonicalAuthResultOwnership({
       sessionOwnership: ownership,
       orchestrationRoot,
     });
     const resultRoot = resultOwnership.resultRoot;
+    retainedResultRoot = resultRoot;
     const sessionRoot = ownedSessionRoot
       ? path.join(orchestrationRoot, "session")
       : ownership.sessionRoot;
@@ -274,6 +318,7 @@ export async function runCanonicalAuthFixtureSession() {
       [sessionContract.FIXTURE_SESSION_CLASSIFICATION_ENV]:
         sessionContract.FIXTURE_SESSION_CLASSIFICATION,
     };
+    commandDispatched = true;
     const exportResult = runStructuredCommand({
       script: "ci:auth-fixture:export",
       commandId: "ci:auth-fixture:export",
@@ -368,8 +413,25 @@ export async function runCanonicalAuthFixtureSession() {
       cleanup: workspaceEvidence.cleanup,
     };
     retained = resultOwnership.retainedByCaller;
+  } catch (error) {
+    failures.push(error);
   } finally {
-    rmSync(orchestrationRoot, { recursive: true, force: true });
+    finishCanonicalAuthSession({ failures, keepFailedRoot: ownedSessionRoot && commandDispatched,
+      environment: process.env,
+      cleanup: () => rmSync(orchestrationRoot, { recursive: true, force: true }),
+      retain: (diagnostic) => {
+        if (!commandDispatched) return "";
+        const retainedRoot = ownedSessionRoot ? orchestrationRoot : retainedResultRoot;
+        if (!retainedRoot || !existsSync(retainedRoot)) return "";
+        const metadata = lstatSync(retainedRoot);
+        if (!metadata.isDirectory() || metadata.isSymbolicLink() || (metadata.mode & 0o077) !== 0 ||
+            realpathSync(retainedRoot) !== retainedRoot) throw new Error("Auth failure evidence owner changed");
+        if (ownedSessionRoot) {
+          writeFileSync(path.join(retainedRoot, "failure.txt"), `${diagnostic}\n`, { flag: "wx", mode: 0o600 });
+        }
+        return `Retained private auth failure evidence root SHA-256: ${createHash("sha256").update(retainedRoot).digest("hex")}`;
+      },
+    });
   }
   console.log(
     `AUTH_PREFLIGHT_WORKSPACE_RESULT ${JSON.stringify(workspaceTerminalEvidence)}`,
@@ -385,8 +447,8 @@ if (
   process.argv[1] &&
   realpathSync(process.argv[1]) === realpathSync(fileURLToPath(import.meta.url))
 ) {
-  runCanonicalAuthFixtureSession().catch(() => {
-    console.error("Canonical exactly-once auth fixture session preflight failed closed");
+  runCanonicalAuthFixtureSession().catch((error) => {
+    console.error(`Canonical exactly-once auth fixture session preflight failed closed\n${canonicalAuthFailureText(error, process.env)}`);
     process.exitCode = 1;
   });
 }

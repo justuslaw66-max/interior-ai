@@ -162,7 +162,7 @@ export function buildRoomWallFinishQuantities(
     fallbackRoom?.geometry.depth ?? 5
   );
   const topologyRoomById = new Map(housePlan.rooms.map((room) => [room.id, room]));
-  const openings = mapPlanOpeningsToRoomRenderer([...planOpenings]);
+  const openings = mapPlanOpeningsToRoomRenderer([...planOpenings], housePlan.rooms);
   return rooms.map((room) =>
     resolveRoomWallFinishQuantities(
       room,

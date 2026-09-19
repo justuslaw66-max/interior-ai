@@ -6,6 +6,10 @@ import { track } from "@/lib/analytics";
 import { CATALOG_ITEMS } from "@/lib/catalog";
 import { resolveDesignLightingSettings } from "@/lib/design-lighting-settings";
 import {
+  DEFAULT_DOOR_WIDTH_MM,
+  DEFAULT_WINDOW_WIDTH_MM,
+} from "@/lib/design-page-opening-dimensions";
+import {
   PLAN_FLOATING_OVERLAY_DESKTOP_MIN_WIDTH,
   PLAN_FLOATING_OVERLAY_INSPECTOR_STACK_TOP_PX,
   PLAN_FLOATING_OVERLAY_STACK_GAP_PX,
@@ -109,14 +113,14 @@ export function useDesignPagePlanAuthoringRegistration({
         id: "door-east-main",
         wall: "east",
         offsetMm: 0,
-        widthMm: 900,
+        widthMm: DEFAULT_DOOR_WIDTH_MM,
         kind: "door",
       },
       {
         id: "window-west-main",
         wall: "west",
         offsetMm: 0,
-        widthMm: 1200,
+        widthMm: DEFAULT_WINDOW_WIDTH_MM,
         kind: "window",
       },
     ]);

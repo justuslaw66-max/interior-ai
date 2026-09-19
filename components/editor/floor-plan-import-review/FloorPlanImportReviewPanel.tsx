@@ -31,8 +31,7 @@ type FloorPlanImportReviewPanelProps = {
   retryingDetection?: boolean;
   onSubmit: (reviewIssues?: FloorPlanReviewIssue[]) => void;
   submitting: boolean;
-  disabled?: boolean;
-  dark?: boolean;
+  disabled?: boolean; proMode?: boolean; dark?: boolean;
 };
 
 function issuePrerequisite(
@@ -134,8 +133,7 @@ export default function FloorPlanImportReviewPanel({
   retryingDetection = false,
   onSubmit,
   submitting,
-  disabled = false,
-  dark = false,
+  disabled = false, proMode = false, dark = false,
 }: FloorPlanImportReviewPanelProps) {
   const floor = candidate.floors[0];
   const [focusedIssueId, setFocusedIssueId] = useState<string | null>(null);
@@ -463,7 +461,7 @@ export default function FloorPlanImportReviewPanel({
         job={job}
         focusedIssueEntityIds={focusedIssueEntityIds}
         onChange={(next) => setCandidate(next)}
-        consumerMode
+        consumerMode proMode={proMode}
         manualToolsOpen={manualToolsOpen}
         onManualToolsOpenChange={setManualToolsOpen}
         dark={dark}

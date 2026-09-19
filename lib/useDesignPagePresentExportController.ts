@@ -14,6 +14,10 @@ import type {
 } from "@/lib/design-page-types";
 import type { FixedElement2D, RoomOpening2D } from "@/lib/editorScene";
 import {
+  DEFAULT_DOOR_WIDTH_MM,
+  DEFAULT_WINDOW_WIDTH_MM,
+} from "@/lib/design-page-opening-dimensions";
+import {
   switchRoom,
   type DesignSnapshot,
 } from "@/lib/room-types";
@@ -212,7 +216,7 @@ export function useDesignPagePresentExportController({
               wall: kind === "door" ? "south" : "north",
               kind,
               offsetMm: 0,
-              widthMm: kind === "door" ? 900 : 1200,
+              widthMm: kind === "door" ? DEFAULT_DOOR_WIDTH_MM : DEFAULT_WINDOW_WIDTH_MM,
             },
           ])
       );

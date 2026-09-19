@@ -4,255 +4,224 @@ import type {
   PublishedFloorPlanRevisionDataSource,
   PublishedFloorPlanRevisionListInput,
 } from "@/lib/floor-plan-catalog-repository";
+import { projectFloorPlanPublicDisplayMetadata } from "@/lib/floor-plan-imports/public-display-metadata";
 import { assessFloorPlanServingIntegrity } from "@/lib/floor-plan-imports/serving-integrity";
-import { projectPublicFloorPlanAuthoredVariantGroups } from "@/lib/floor-plan-authored-variant-links";
 
 function addressBindingWhere(
   input: PublishedFloorPlanRevisionListInput
 ): Prisma.FloorPlanAddressBindingWhereInput {
   const evidenceRequired: Prisma.FloorPlanAddressBindingWhereInput = {
-    role: "catalog",
+    role: input.targetRevisionId
+      ? { in: ["catalog", "authored_variant"] }
+      : "catalog",
     sourceEvidenceJson: { not: Prisma.DbNull },
   };
-  if (input.browse) return evidenceRequired;
+  if (input.mode === "browse") return evidenceRequired;
 
-  // Use one selective token as the database prefilter, then let the repository's
-  // normalized pure matcher enforce every token. Requiring every raw token here
-  // would incorrectly reject common aliases such as "St" versus "Street".
   const anchorToken =
-    input.queryTokens.find((token) => /^\d+[a-z]?$/i.test(token)) ??
-    [...input.queryTokens]
+    input.addressTokens.find((token) => /^\d+[a-z]?$/i.test(token)) ??
+    [...input.addressTokens]
       .filter((token) => !["street", "road", "avenue", "singapore", "sg"].includes(token))
       .sort((left, right) => right.length - left.length)[0] ??
-    input.queryTokens[0];
-  const tokenClauses: Prisma.FloorPlanAddressBindingWhereInput[] = anchorToken
+    input.addressTokens[0];
+  const addressClauses: Prisma.FloorPlanAddressBindingWhereInput[] = anchorToken
     ? [{
-      OR: [
-        { addressNormalized: { contains: anchorToken, mode: "insensitive" } },
-        { block: { contains: anchorToken, mode: "insensitive" } },
-        { street: { contains: anchorToken, mode: "insensitive" } },
-        { postalCode: { contains: anchorToken, mode: "insensitive" } },
-        { countryCode: { equals: anchorToken, mode: "insensitive" } },
-      ],
-    }]
+        OR: [
+          { addressNormalized: { contains: anchorToken, mode: "insensitive" } },
+          { block: { contains: anchorToken, mode: "insensitive" } },
+          { street: { contains: anchorToken, mode: "insensitive" } },
+          { postalCode: { contains: anchorToken, mode: "insensitive" } },
+        ],
+      }]
     : [];
-  const unitClauses: Prisma.FloorPlanAddressBindingWhereInput[] =
-    input.unitQuery
-      ? [
-          { stack: { equals: input.unitQuery.stack, mode: "insensitive" } },
-          {
-            OR: [
-              { floorMin: null },
-              { floorMin: { lte: input.unitQuery.floor } },
-            ],
-          },
-          {
-            OR: [
-              { floorMax: null },
-              { floorMax: { gte: input.unitQuery.floor } },
-            ],
-          },
-        ]
-      : [];
-  return { AND: [evidenceRequired, ...tokenClauses, ...unitClauses] };
+  const unitClauses: Prisma.FloorPlanAddressBindingWhereInput[] = input.unit
+    ? [
+        { countryCode: input.countryCode },
+        { stack: { equals: input.unit.stack, mode: "insensitive" } },
+        { OR: [{ floorMin: null }, { floorMin: { lte: input.unit.floor } }] },
+        { OR: [{ floorMax: null }, { floorMax: { gte: input.unit.floor } }] },
+      ]
+    : [];
+  return { AND: [evidenceRequired, ...addressClauses, ...unitClauses] };
 }
 
-function publishedCatalogKeysetWhere(
+function publicRevisionKeysetWhere(
   input: PublishedFloorPlanRevisionListInput
-): Prisma.FloorPlanAddressBindingWhereInput | null {
+): Prisma.FloorPlanRevisionWhereInput | null {
   if (!input.after) return null;
   const publishedAt = new Date(input.after.publishedAt);
   return {
     OR: [
-      { revision: { is: { publishedAt: { lt: publishedAt } } } },
-      {
-        AND: [
-          { revision: { is: { publishedAt } } },
-          { revisionId: { gt: input.after.revisionId } },
-        ],
-      },
-      {
-        AND: [
-          { revision: { is: { publishedAt } } },
-          { revisionId: input.after.revisionId },
-          { id: { gt: input.after.bindingId } },
-        ],
-      },
+      { publishedAt: { lt: publishedAt } },
+      { AND: [{ publishedAt }, { id: { gt: input.after.revisionId } }] },
     ],
   };
 }
 
-/** Prisma implementation is deliberately behind the repository data-source surface. */
+const sourceJobSelect = {
+  renderedPagesJson: true,
+  sourceAsset: {
+    select: {
+      id: true,
+      sha256: true,
+      mimeType: true,
+      contentDeletedAt: true,
+    },
+  },
+  supplementarySources: {
+    select: {
+      attachedToCandidateAt: true,
+      renderedPagesJson: true,
+      sourceAsset: {
+        select: {
+          id: true,
+          fileName: true,
+          mimeType: true,
+          sha256: true,
+          contentDeletedAt: true,
+        },
+      },
+    },
+  },
+  constructionSources: {
+    select: {
+      evidenceKind: true,
+      authorizedAt: true,
+      authorizedByEmail: true,
+      attachedToCandidateAt: true,
+      sourceAsset: {
+        select: {
+          id: true,
+          fileName: true,
+          mimeType: true,
+          sha256: true,
+          contentDeletedAt: true,
+        },
+      },
+    },
+  },
+} satisfies Prisma.FloorPlanImportJobSelect;
+
+const variantOptionsSelect = {
+  group: {
+    select: {
+      groupKey: true,
+      label: true,
+      publicationStatus: true,
+      approvedByEmail: true,
+      publishedAt: true,
+      publishedByEmail: true,
+      options: {
+        select: {
+          optionKey: true,
+          label: true,
+          revisionId: true,
+          addressBindingId: true,
+          geometryHash: true,
+          sourceId: true,
+          sourcePage: true,
+          defaultSelected: true,
+          sourceEvidenceJson: true,
+          revision: {
+            select: {
+              id: true,
+              geometryHash: true,
+              verificationTier: true,
+              publicationStatus: true,
+              publishedAt: true,
+            },
+          },
+          addressBinding: {
+            select: { id: true, revisionId: true, transform: true, role: true },
+          },
+        },
+      },
+    },
+  },
+} satisfies Prisma.FloorPlanAuthoredVariantOptionSelect;
+
+/** Prisma pages immutable public revisions, never private binding rows. */
 export const prismaPublishedFloorPlanRevisionDataSource: PublishedFloorPlanRevisionDataSource = {
   async listPublishedRevisions(input) {
     const bindingWhere = addressBindingWhere(input);
-    const keysetWhere = publishedCatalogKeysetWhere(input);
-    const candidates = await prisma.floorPlanAddressBinding.findMany({
+    const keysetWhere = publicRevisionKeysetWhere(input);
+    const candidates = await prisma.floorPlanRevision.findMany({
       where: {
-        AND: [bindingWhere, ...(keysetWhere ? [keysetWhere] : [])],
-        revision: {
-          is: {
+        AND: [
+          {
             publicationStatus: "published",
             publishedAt: { not: null },
             verificationTier: { in: ["source_verified", "construction_verified"] },
             publicMetadata: { isNot: null },
+            addressBindings: { some: bindingWhere },
+            ...(input.targetRevisionId ? { id: input.targetRevisionId } : {}),
           },
-        },
+          ...(keysetWhere ? [keysetWhere] : []),
+        ],
       },
       select: {
         id: true,
-        revisionId: true,
-        countryCode: true,
-        addressNormalized: true,
-        block: true,
-        street: true,
-        postalCode: true,
-        stack: true,
-        floorMin: true,
-        floorMax: true,
-        transform: true,
-        sourceEvidenceJson: true,
-        revision: {
+        geometryHash: true,
+        verificationTier: true,
+        publicationStatus: true,
+        publishedAt: true,
+        approvedAt: true,
+        approvedByEmail: true,
+        publishedByEmail: true,
+        documentJson: true,
+        sourceManifestJson: true,
+        constructionEvidenceJson: true,
+        publicMetadata: {
           select: {
-            id: true,
-            geometryHash: true,
-            verificationTier: true,
-            publicationStatus: true,
-            publishedAt: true,
+            projectName: true,
+            label: true,
+            flatType: true,
+            floorAreaSqm: true,
+            previewUrl: true,
+            sourceUrl: true,
+            sourceTitle: true,
+            sourcePage: true,
+            publisher: true,
             approvedAt: true,
             approvedByEmail: true,
-            publishedByEmail: true,
-            documentJson: true,
-            sourceManifestJson: true,
-            constructionEvidenceJson: true,
-            publicMetadata: {
-              select: {
-                projectName: true,
-                label: true,
-                flatType: true,
-                floorAreaSqm: true,
-                previewUrl: true,
-                sourceUrl: true,
-                sourceTitle: true,
-                sourcePage: true,
-                publisher: true,
-                approvedAt: true,
-                approvedByEmail: true,
-              },
-            },
-            sourceJob: {
-              select: {
-                renderedPagesJson: true,
-                sourceAsset: {
-                  select: {
-                    id: true,
-                    sha256: true,
-                    mimeType: true,
-                    contentDeletedAt: true,
-                  },
-                },
-                supplementarySources: {
-                  select: {
-                    attachedToCandidateAt: true,
-                    renderedPagesJson: true,
-                    sourceAsset: {
-                      select: {
-                        id: true,
-                        fileName: true,
-                        mimeType: true,
-                        sha256: true,
-                        contentDeletedAt: true,
-                      },
-                    },
-                  },
-                },
-                constructionSources: {
-                  select: {
-                    evidenceKind: true,
-                    authorizedAt: true,
-                    authorizedByEmail: true,
-                    attachedToCandidateAt: true,
-                    sourceAsset: {
-                      select: {
-                        id: true,
-                        fileName: true,
-                        mimeType: true,
-                        sha256: true,
-                        contentDeletedAt: true,
-                      },
-                    },
-                  },
-                },
-              },
-            },
-            authoredVariantOptions: {
-              select: {
-                group: {
-                  select: {
-                    groupKey: true,
-                    label: true,
-                    publicationStatus: true,
-                    approvedByEmail: true,
-                    publishedAt: true,
-                    publishedByEmail: true,
-                    options: {
-                      select: {
-                        optionKey: true,
-                        label: true,
-                        revisionId: true,
-                        addressBindingId: true,
-                        geometryHash: true,
-                        sourceId: true,
-                        sourcePage: true,
-                        defaultSelected: true,
-                        sourceEvidenceJson: true,
-                        revision: {
-                          select: {
-                            id: true,
-                            geometryHash: true,
-                            verificationTier: true,
-                            publicationStatus: true,
-                            publishedAt: true,
-                          },
-                        },
-                        addressBinding: {
-                          select: { id: true, revisionId: true, transform: true, role: true },
-                        },
-                      },
-                    },
-                  },
-                },
-              },
-            },
           },
         },
+        sourceJob: { select: sourceJobSelect },
+        addressBindings: {
+          select: {
+            id: true,
+            countryCode: true,
+            addressNormalized: true,
+            block: true,
+            street: true,
+            postalCode: true,
+            stack: true,
+            floorMin: true,
+            floorMax: true,
+            transform: true,
+            role: true,
+            sourceEvidenceJson: true,
+          },
+          orderBy: { id: "asc" },
+        },
+        authoredVariantOptions: { select: variantOptionsSelect },
       },
-      orderBy: [
-        { revision: { publishedAt: "desc" } },
-        { revisionId: "asc" },
-        { id: "asc" },
-      ],
+      orderBy: [{ publishedAt: "desc" }, { id: "asc" }],
       take: input.take + 1,
     });
 
     const hasMore = candidates.length > input.take;
     const scanned = candidates.slice(0, input.take);
     const lastCandidate = scanned.at(-1);
-    const lastScannedKey = lastCandidate?.revision.publishedAt
+    const lastScannedKey = lastCandidate?.publishedAt
       ? {
-          publishedAt: lastCandidate.revision.publishedAt.toISOString(),
-          revisionId: lastCandidate.revisionId,
-          bindingId: lastCandidate.id,
+          publishedAt: lastCandidate.publishedAt.toISOString(),
+          revisionId: lastCandidate.id,
         }
       : null;
-    const rows = scanned.flatMap((candidate) => {
-      const { revision, sourceEvidenceJson, revisionId: _revisionId, ...binding } = candidate;
-      const integrityBinding = { ...binding, sourceEvidenceJson };
-      const row = { ...revision, addressBindings: [integrityBinding] };
-      if (!assessFloorPlanServingIntegrity(row).valid) {
-        return [];
-      }
-      if (!revision.publishedAt) {
+    const rows = scanned.flatMap((revision) => {
+      const row = revision;
+      if (!revision.publishedAt || !assessFloorPlanServingIntegrity(row).valid) {
         return [];
       }
       return [{
@@ -264,17 +233,24 @@ export const prismaPublishedFloorPlanRevisionDataSource: PublishedFloorPlanRevis
         publishedByEmail: revision.publishedByEmail,
         documentJson: revision.documentJson,
         sourceManifestJson: revision.sourceManifestJson,
-        publicMetadata: revision.publicMetadata,
-        authoredConfigurationGroups: projectPublicFloorPlanAuthoredVariantGroups(
-          revision.authoredVariantOptions.map((entry) => entry.group),
-          revision.id,
-          binding.id
-        ),
-        addressBindings: [binding],
+        publicMetadata: revision.publicMetadata ? projectFloorPlanPublicDisplayMetadata(revision.publicMetadata) : null,
+        authoredVariantGroups: revision.authoredVariantOptions.map((entry) => entry.group),
+        addressBindings: revision.addressBindings.map((binding) => ({
+          id: binding.id,
+          countryCode: binding.countryCode,
+          addressNormalized: binding.addressNormalized,
+          block: binding.block,
+          street: binding.street,
+          postalCode: binding.postalCode,
+          stack: binding.stack,
+          floorMin: binding.floorMin,
+          floorMax: binding.floorMax,
+          transform: binding.transform,
+          role: binding.role,
+        })),
         catalogKey: {
           publishedAt: revision.publishedAt.toISOString(),
           revisionId: revision.id,
-          bindingId: binding.id,
         },
       }];
     });

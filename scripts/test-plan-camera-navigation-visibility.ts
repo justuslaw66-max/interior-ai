@@ -134,6 +134,12 @@ assert.match(
 );
 
 assert.match(
+  cameraControllerSource,
+  /isPlan2DCameraDegenerate\(camera, controls as Plan2DCameraControls\)[\s\S]*?cameraRef\.current !== camera \|\| controlsRef\.current !== controls/,
+  "Delayed selection restores must reject invalid snapshots and a replacement camera/control pair."
+);
+
+assert.match(
   designSceneCanvasSource,
   /<Plan2DCameraInvariantGuard[\s\S]*?onDiagnosticsChange=\{actions\.onPlanDiagnosticsChange\}/,
   "The scene Canvas shell must mount the runtime camera-invariant guard."
@@ -159,6 +165,12 @@ assert.match(
   cameraInvariantGuardSource,
   /recoverPlan2DCameraIfNeeded/,
   "2D plan view must mount a runtime guard that recovers degenerate camera states."
+);
+
+assert.doesNotMatch(
+  cameraInvariantGuardSource,
+  /console\.(?:warn|error)/,
+  "Expected camera self-healing should remain in diagnostics instead of emitting runtime warnings."
 );
 
 assert.match(

@@ -2732,7 +2732,7 @@ export default function DesignControlsPlanPanel({
                     wallSpanMeters={visiblePlanOpeningWallSpanMeters}
                     maxHeightMeters={visiblePlanOpeningMaxHeightMeters}
                     measurementUnit={measurementUnit}
-                    dark={dark}
+                    dark={dark} proMode={isDesigner}
                     onChange={onUpdateOpeningMetrics}
                   />
                 </div>

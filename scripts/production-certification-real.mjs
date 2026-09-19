@@ -39,7 +39,7 @@ import {
 import {
   recordProductionEvidenceTest,
   validateProductionEvidence,
-} from "./production-artifact-evidence.mjs";
+} from "./production-artifact-source.mjs";
 import {
   PRODUCTION_EVIDENCE_JOURNAL_SCHEMA,
   PRODUCTION_EVIDENCE_JOURNAL_VERSION,
@@ -2598,7 +2598,7 @@ export async function runBuildStage({
         const prepared = childResult(
           process.execPath,
           [
-            "scripts/production-artifact-evidence.mjs",
+            "scripts/production-artifact-source.mjs",
             "prepare-certification-build",
           ],
           {
@@ -2667,7 +2667,7 @@ export async function runBuildStage({
     const child = childResult(
       process.execPath,
       [
-        "scripts/production-artifact-evidence.mjs",
+        "scripts/production-artifact-source.mjs",
         "complete-certification-build",
         preparedRunNonce,
       ],

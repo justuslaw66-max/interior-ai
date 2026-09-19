@@ -125,10 +125,14 @@ const addressSearch = fs.readFileSync(
   path.join(process.cwd(), "components/editor/FloorPlanAddressSearch.tsx"),
   "utf8"
 );
+const applicationRequests = fs.readFileSync(
+  path.join(process.cwd(), "components/editor/useFloorPlanResultApplicationRequests.ts"), "utf8"
+);
+assert.match(addressSearch, /useFloorPlanResultApplicationRequests/);
 assert.match(addressSearch, /floor-plan-configuration-confirmation/);
-assert.match(addressSearch, /inspectFloorPlanOptionalConfigurations/);
+assert.match(applicationRequests, /inspectFloorPlanOptionalConfigurations/);
 assert.match(addressSearch, /Use selected reviewed layout/);
-assert.match(addressSearch, /loads its own approved immutable revision/);
+assert.match(applicationRequests, /fetchPublicFloorPlanRevision/);
 const publicPanelCall = addressSearch.match(
   /<FloorPlanOptionalConfigurationPanel([\s\S]*?)\/>/
 )?.[1] ?? "";

@@ -1,10 +1,14 @@
 import assert from "node:assert/strict";
+import { gunzipSync } from "node:zlib";
 import {
+  chmodSync,
+  lutimesSync,
   mkdirSync,
   mkdtempSync,
   readFileSync,
   rmSync,
   symlinkSync,
+  utimesSync,
   writeFileSync,
 } from "node:fs";
 import { tmpdir } from "node:os";
@@ -13,8 +17,11 @@ import path from "node:path";
 import { inspectTraceInventory } from "./production-artifact-evidence.mjs";
 import {
   ProductionArchivePolicyError,
+  compressProductionArchive,
   immutableNextArtifactFiles,
+  inventoryProductionArchiveTree,
   nftDerivedInputs,
+  productionTarOwnershipArguments,
 } from "./production-archive.mjs";
 import {
   GLB_OPTIMIZER_NFT_MANIFEST,
@@ -389,5 +396,73 @@ assert.deepEqual(sensitiveShapedFixtures, [
   "scripts/test-production-certification-source-generated-outputs.mjs",
   "scripts/test-runtime-smoke-resource-isolation.mjs",
 ]);
+
+assert.deepEqual(productionTarOwnershipArguments("tar (GNU tar) 1.35\n"), [
+  "--owner=root:0", "--group=root:0",
+]);
+assert.deepEqual(productionTarOwnershipArguments("bsdtar 3.5.3 - libarchive 3.7.4\n"), [
+  "--uid", "0", "--gid", "0", "--uname", "root", "--gname", "root",
+]);
+for (const version of ["", "tar", "BusyBox v1.36", "tar (GNU tar)", "bsdtar"]) {
+  assert.throws(() => productionTarOwnershipArguments(version), /requires GNU tar or bsdtar/);
+}
+
+{
+  const root = mkdtempSync(path.join(tmpdir(), "trace-archive-compression-"));
+  const previousEvidenceRoot = process.env.CERTIFICATION_EVIDENCE_ROOT;
+  try {
+    process.env.CERTIFICATION_EVIDENCE_ROOT = root;
+    const archiveRoot = path.join(root, "archive");
+    const stageRoot = path.join(archiveRoot, "stage");
+    write(stageRoot, "z.txt", "last\n");
+    write(stageRoot, "a.txt", "first\n");
+    symlinkSync("a.txt", path.join(stageRoot, "link"));
+    write(stageRoot, ".certification/archive-inventory.json", JSON.stringify(
+      inventoryProductionArchiveTree(stageRoot),
+    ));
+    const compress = (filename) => compressProductionArchive({
+      repositoryRoot: process.cwd(), stageRoot, archivePath: path.join(archiveRoot, filename),
+    });
+    const first = compress("first.tar.gz");
+    const tar = gunzipSync(readFileSync(first.archivePath));
+    const entries = [];
+    for (let offset = 0; offset < tar.length && tar[offset] !== 0;) {
+      const header = tar.subarray(offset, offset + 512);
+      const field = (start, length) => header.subarray(start, start + length)
+        .toString("utf8").replace(/\0.*$/s, "").trim();
+      const name = field(0, 100);
+      const size = Number.parseInt(field(124, 12), 8);
+      const type = field(156, 1);
+      assert.equal(Number.parseInt(field(108, 8), 8), 0, `${name}: uid`);
+      assert.equal(Number.parseInt(field(116, 8), 8), 0, `${name}: gid`);
+      assert.equal(field(265, 32), "root", `${name}: uname`);
+      assert.equal(field(297, 32), "root", `${name}: gname`);
+      assert.equal(Number.parseInt(field(136, 12), 8), 0, `${name}: mtime`);
+      if (type === "2") {
+        assert.equal(name, "link");
+        assert.equal(field(157, 100), "a.txt");
+      } else {
+        assert.ok(type === "0" || type === "", `${name}: regular file`);
+        assert.equal(Number.parseInt(field(100, 8), 8), 0o644, `${name}: mode`);
+        assert.deepEqual(tar.subarray(offset + 512, offset + 512 + size),
+          readFileSync(path.join(stageRoot, name)), `${name}: payload`);
+      }
+      entries.push(name);
+      offset += 512 + Math.ceil(size / 512) * 512;
+    }
+    assert.deepEqual(entries, [".certification/archive-inventory.json", "a.txt", "link", "z.txt"]);
+    chmodSync(path.join(stageRoot, "a.txt"), 0o600);
+    utimesSync(path.join(stageRoot, "a.txt"), new Date(), new Date());
+    lutimesSync(path.join(stageRoot, "link"), new Date(), new Date());
+    const repeated = compress("repeat.tar.gz");
+    assert.equal(repeated.archiveSha256, first.archiveSha256);
+    assert.deepEqual(readFileSync(repeated.archivePath), readFileSync(first.archivePath));
+    assert.throws(() => compress("first.tar.gz"), /archive target must be absent/);
+  } finally {
+    if (previousEvidenceRoot === undefined) delete process.env.CERTIFICATION_EVIDENCE_ROOT;
+    else process.env.CERTIFICATION_EVIDENCE_ROOT = previousEvidenceRoot;
+    rmSync(root, { recursive: true, force: true });
+  }
+}
 
 console.log("Production trace/archive policy tests passed.");

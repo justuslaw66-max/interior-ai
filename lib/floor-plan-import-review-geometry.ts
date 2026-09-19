@@ -16,7 +16,12 @@ import {
   type FloorPlanTopologyMutationV2,
 } from "@/lib/floor-plan-topology-mutations";
 import type { ReviewSourcePoint } from "@/lib/floor-plan-import-review-overlay";
-
+import { assertFloorPlanImportReviewMutationPermission } from "@/lib/floor-plan-import-review-permissions";
+import {
+  applyFloorPlanHorizontalCalibrationV2,
+} from "@/lib/floor-plan-import-review-calibration";
+import type { FloorPlanOpeningOverrideAuthorizationV2 } from "@/lib/floor-plan-opening-mutation-policy";
+export { planFloorPlanHorizontalCalibrationV2 } from "@/lib/floor-plan-import-review-calibration";
 export {
   buildReviewOverlay,
   buildThumbnailPaths,
@@ -27,7 +32,6 @@ export {
   type ReviewSourceSnapCandidate,
   type ReviewSourceSnapResult,
 } from "@/lib/floor-plan-import-review-overlay";
-
 export type PointScaleAnalysis = {
   valid: boolean;
   /** Source dimension itself is usable even if plan registration is missing. */
@@ -351,75 +355,6 @@ export function analyzePointScale(input: {
   };
 }
 
-function rescaleFloorHorizontalGeometry(
-  floor: FloorPlanDocumentV2["floors"][number],
-  anchor: FloorPlanPointMmV2,
-  factor: number
-) {
-  const scaleCoordinate = (value: number, origin: number) =>
-    Math.round(origin + (value - origin) * factor);
-  const scaleLength = (value: number) => Math.round(value * factor);
-  for (const vertex of floor.vertices) {
-    vertex.xMm = scaleCoordinate(vertex.xMm, anchor.xMm);
-    vertex.zMm = scaleCoordinate(vertex.zMm, anchor.zMm);
-  }
-  for (const wall of floor.walls) wall.thicknessMm = scaleLength(wall.thicknessMm);
-  for (const opening of floor.openings) {
-    opening.offsetMm = scaleLength(opening.offsetMm);
-    opening.widthMm = scaleLength(opening.widthMm);
-  }
-  for (const annotation of floor.annotations) {
-    if (annotation.geometry.kind !== "wall_span") continue;
-    annotation.geometry.offsetMm = scaleLength(annotation.geometry.offsetMm);
-    annotation.geometry.widthMm = scaleLength(annotation.geometry.widthMm);
-  }
-  const vertices = new Map(floor.vertices.map((vertex) => [vertex.id, vertex]));
-  const straightWallLength = (wallId: string) => {
-    const wall = floor.walls.find((entry) => entry.id === wallId);
-    if (!wall || wall.path.kind !== "line") return null;
-    const start = vertices.get(wall.path.startVertexId);
-    const end = vertices.get(wall.path.endVertexId);
-    return start && end
-      ? Math.round(Math.hypot(end.xMm - start.xMm, end.zMm - start.zMm))
-      : null;
-  };
-  for (const opening of floor.openings) {
-    const wallLengthMm = straightWallLength(opening.wallId);
-    if (wallLengthMm === null) continue;
-    opening.widthMm = Math.min(opening.widthMm, wallLengthMm);
-    opening.offsetMm = Math.max(
-      0,
-      Math.min(opening.offsetMm, wallLengthMm - opening.widthMm)
-    );
-  }
-  for (const annotation of floor.annotations) {
-    if (annotation.geometry.kind !== "wall_span") continue;
-    const wallLengthMm = straightWallLength(annotation.geometry.wallId);
-    if (wallLengthMm === null) continue;
-    annotation.geometry.widthMm = Math.min(
-      annotation.geometry.widthMm,
-      wallLengthMm
-    );
-    annotation.geometry.offsetMm = Math.max(
-      0,
-      Math.min(
-        annotation.geometry.offsetMm,
-        wallLengthMm - annotation.geometry.widthMm
-      )
-    );
-  }
-  for (const calibration of floor.calibrations) {
-    calibration.controlPoints = calibration.controlPoints.map((control) => ({
-      ...control,
-      planMm: {
-        xMm: scaleCoordinate(control.planMm.xMm, anchor.xMm),
-        zMm: scaleCoordinate(control.planMm.zMm, anchor.zMm),
-      },
-    }));
-    calibration.rmsErrorPx = undefined;
-  }
-}
-
 function upsertReviewerSourceDimension(input: {
   document: FloorPlanDocumentV2;
   floor: FloorPlanDocumentV2["floors"][number];
@@ -564,11 +499,14 @@ export function applyPointScaleCalibration(input: {
   first: ReviewSourcePoint;
   second: ReviewSourcePoint;
   printedMm: number;
+  actorId?: string;
+  mutatedAt?: string;
+  overrideAuthorizations?: FloorPlanOpeningOverrideAuthorizationV2[];
 }): FloorPlanDocumentV2 {
-  const next = structuredClone(input.document);
-  const floor = next.floors.find((item) => item.id === input.floorId);
+  let next = structuredClone(input.document);
+  let floor = next.floors.find((item) => item.id === input.floorId);
   if (!floor) throw new Error("The selected floor is no longer available.");
-  const existing = floor.calibrations.find(
+  let existing = floor.calibrations.find(
     (item) =>
       item.sourceId === input.sourceId && item.pageNumber === input.pageNumber
   );
@@ -604,7 +542,18 @@ export function applyPointScaleCalibration(input: {
   if (!Number.isFinite(factor) || factor <= 0) {
     throw new Error("The requested scale is invalid.");
   }
-  rescaleFloorHorizontalGeometry(floor, oldStart, factor);
+  const existingCalibrationId = existing.id;
+  next = applyFloorPlanHorizontalCalibrationV2({
+    document: next,
+    floorId: floor.id,
+    anchor: oldStart,
+    factor,
+    actorId: input.actorId ?? "consumer-import-review",
+    mutatedAt: input.mutatedAt ?? new Date().toISOString(),
+    overrideAuthorizations: input.overrideAuthorizations,
+  }).document;
+  floor = next.floors.find((item) => item.id === input.floorId)!;
+  existing = floor.calibrations.find((item) => item.id === existingCalibrationId)!;
   const registeredStart = projectReviewSourcePointToPlan(existing, input.first);
   const registeredEnd = projectReviewSourcePointToPlan(existing, input.second);
   if (!registeredStart || !registeredEnd) {
@@ -647,9 +596,12 @@ export function registerPointScaleCalibration(input: {
   firstVertexId: string;
   secondVertexId: string;
   printedMm: number;
+  actorId?: string;
+  mutatedAt?: string;
+  overrideAuthorizations?: FloorPlanOpeningOverrideAuthorizationV2[];
 }): FloorPlanDocumentV2 {
-  const next = structuredClone(input.document);
-  const floor = next.floors.find((item) => item.id === input.floorId);
+  let next = structuredClone(input.document);
+  let floor = next.floors.find((item) => item.id === input.floorId);
   if (!floor) throw new Error("The selected floor is no longer available.");
   if (
     floor.calibrations.some(
@@ -688,7 +640,16 @@ export function registerPointScaleCalibration(input: {
     throw new Error("The requested source registration is invalid.");
   }
   const anchor = { xMm: firstVertex.xMm, zMm: firstVertex.zMm };
-  rescaleFloorHorizontalGeometry(floor, anchor, factor);
+  next = applyFloorPlanHorizontalCalibrationV2({
+    document: next,
+    floorId: floor.id,
+    anchor,
+    factor,
+    actorId: input.actorId ?? "consumer-import-review",
+    mutatedAt: input.mutatedAt ?? new Date().toISOString(),
+    overrideAuthorizations: input.overrideAuthorizations,
+  }).document;
+  floor = next.floors.find((item) => item.id === input.floorId)!;
   const registeredFirst = floor.vertices.find(
     (item) => item.id === input.firstVertexId
   )!;
@@ -1156,15 +1117,16 @@ export function applyConsumerTopologyCorrection(input: {
   document: FloorPlanDocumentV2;
   operation: FloorPlanTopologyMutationV2;
   mutationId: string;
-  at?: string;
+  at?: string; reviewMode?: "consumer" | "pro";
 }): FloorPlanDocumentV2 {
+  assertFloorPlanImportReviewMutationPermission(input.operation, input.reviewMode);
   const result = applyFloorPlanTopologyMutationV2(
     input.document,
     input.operation,
     {
       mutationId: input.mutationId,
       nextRevisionId: `${input.document.revisionId}:review:${input.mutationId}`,
-      actorId: "pending-consumer-review",
+      actorId: input.reviewMode === "pro" ? "pending-pro-review" : "pending-consumer-review",
       mutatedAt: input.at ?? new Date().toISOString(),
       extractionVersion: "consumer-visual-review-v1",
       note: "Consumer corrected geometry against the private source overlay.",

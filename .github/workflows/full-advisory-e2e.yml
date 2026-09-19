@@ -8,7 +8,7 @@ on:
         required: true
         type: string
   pull_request:
-    branches: [main, develop, staging]
+    branches: [main, develop, staging, integration/deep-clean-v1]
     types: [labeled]
   schedule:
     - cron: "17 2 * * *"
@@ -52,6 +52,8 @@ jobs:
       CI_AUTH_FIXTURE_SESSION_NONCE: ${{ github.run_id }}-${{ github.run_attempt }}-full-advisory-auth-nonce
       CI_AUTH_FIXTURE_SESSION_CLASSIFICATION: PRODUCTION_INELIGIBLE_SYNTHETIC_AUTH
       APP_ENV: development
+      NEXT_PUBLIC_APP_ENV: development
+      NEXT_PUBLIC_ENABLE_QA_HOOKS: "1"
       DATABASE_URL: postgresql://test:test@localhost:5432/interior_ai_test
       AUTH_SECRET: ci-only-auth-secret-at-least-32-characters
       NEXTAUTH_SECRET: ci-only-auth-secret-at-least-32-characters
@@ -65,18 +67,17 @@ jobs:
       # declares its runner-temp fixture roots here for every later step. The
       # exporter still creates the private session root itself (mode 0700) and
       # re-declares it as its realpath in the fixture session transport.
-      - name: Declare runner-temp auth fixture roots
+      - name: Initialize runner-local auth fixture paths
         shell: bash
         run: |
           set -euo pipefail
-          if [[ "${RUNNER_TEMP:?}" != /* || "$RUNNER_TEMP" == *[$'\r\n']* ]]; then
+          : "${RUNNER_TEMP:?RUNNER_TEMP is required for auth fixture paths}"
+          if [[ "$RUNNER_TEMP" != /* || "$RUNNER_TEMP" == *[$'\r\n']* ]]; then
             echo "RUNNER_TEMP must be a single-line absolute path" >&2
             exit 1
           fi
-          {
-            printf 'CI_AUTH_FIXTURE_RESULT_ROOT=%s\n' "$RUNNER_TEMP/interior-ai-auth-results"
-            printf 'CI_AUTH_FIXTURE_SESSION_ROOT=%s\n' "$RUNNER_TEMP/interior-ai-auth-session-full-advisory"
-          } >> "$GITHUB_ENV"
+          printf '%s\n' "CI_AUTH_FIXTURE_RESULT_ROOT=$RUNNER_TEMP/interior-ai-auth-results" >> "$GITHUB_ENV"
+          printf '%s\n' "CI_AUTH_FIXTURE_SESSION_ROOT=$RUNNER_TEMP/interior-ai-auth-session-full-advisory" >> "$GITHUB_ENV"
 
       - uses: actions/checkout@v4
         with:
@@ -193,17 +194,21 @@ jobs:
         run: npx playwright install --with-deps chromium
 
       - name: Run advisory full E2E inventory
+        id: advisory-run
         run: npm run test:e2e:advisory
 
       - name: Prepare portable advisory evidence
-        if: always() && !cancelled()
-        run: npm run evidence:required-tests:prepare-upload
+        id: advisory-evidence
+        if: always() && !cancelled() && (steps.advisory-run.outcome == 'success' || steps.advisory-run.outcome == 'failure')
+        env:
+          EVIDENCE_PATH: ${{ steps.advisory-run.outputs.evidence_path }}
+        run: npm run --silent evidence:required-tests:prepare-upload -- "$EVIDENCE_PATH"
 
       - name: Upload test results
-        if: always() && !cancelled()
+        if: always() && !cancelled() && steps.advisory-evidence.outcome == 'success' && steps.advisory-evidence.outputs.archive_root != ''
         uses: actions/upload-artifact@v4
         with:
           name: playwright-full-results
-          path: .local/required-test-upload/
+          path: ${{ steps.advisory-evidence.outputs.archive_root }}
           if-no-files-found: error
           retention-days: 30

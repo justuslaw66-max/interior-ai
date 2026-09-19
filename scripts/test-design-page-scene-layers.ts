@@ -445,7 +445,7 @@ for (const expected of [
   "<RoomRenderer2D",
   "<PlanQualityHintOverlay",
   "<HousePlanRenderer3D",
-  "mapPlanOpeningsToRoomRenderer(plan.scene.openings)",
+  "mapPlanOpeningsToRoomRenderer(",
   "mapPlanFixedElementsToRoomRenderer(",
   "mapPlanAnnotationsToRoomRenderer(plan.scene.annotations)",
 ] as const) {
@@ -569,8 +569,8 @@ assert.equal(
 );
 assert.match(
   planRendererSource,
-  /const loneRoomFrame = useMemo\(\(\) => resolveLoneRoomPlanFrame2D\(rooms\), \[rooms\]\);/,
-  "The 2D renderer should derive the lone-room floor and outline from the plan rooms."
+  /const hasHouseRooms = shouldRenderRoomPlanGeometry\(rooms\);[\s\S]*?const loneRoomFrame = useMemo\(\(\) => \(hasHouseRooms \? null : resolveLoneRoomPlanFrame2D\(rooms\)\), \[hasHouseRooms, rooms\]\);/,
+  "The 2D renderer should derive the lone-room floor and outline from the plan rooms, leaving a lone non-rectangular room to the plan-geometry path."
 );
 assert.match(
   planRendererSource,

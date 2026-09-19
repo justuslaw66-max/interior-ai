@@ -1,6 +1,5 @@
 "use client";
 
-import OpeningDimensionFields, { type OpeningDimensionFieldsProps } from "@/components/editor/OpeningDimensionFields";
 import { createPortal } from "react-dom";
 import { DisplayUnitSelect } from "@/components/editor/DisplayUnitSelect";
 import MeasurementField from "@/components/editor/MeasurementField";
@@ -20,6 +19,9 @@ import type { DesignPageSelectionInspectorSummary } from "@/lib/useDesignPageSel
 import FloorPlanPropertyEvidenceControl from "@/components/editor/FloorPlanPropertyEvidenceControl";
 import type { FixturePhotometricVerification } from "@/lib/catalog-schema";
 import type { PlacedFixtureLightState } from "@/lib/room-types";
+import { SelectedOpeningDimensions } from "./SelectedOpeningDimensions";
+import type { resolveDesignPageOpeningViewportState } from "@/lib/design-page-opening-viewport";
+import type { DesignPageOpeningMetricsPatch } from "@/lib/design-page-opening-metrics";
 
 type SelectedRoom = Pick<HousePlanRoom2D, "id" | "w" | "d">;
 
@@ -32,7 +34,7 @@ type DesignPageSelectionInspectorProps = {
     hasSelectedPlanFixedElement: boolean;
     hasSelectedPlanAnnotation: boolean;
     hasSelectedPlanOverlay: boolean;
-    selectedOpening: Pick<OpeningDimensionFieldsProps, "opening" | "wallSpanMeters" | "maxHeightMeters"> | null;
+    selectedOpening: NonNullable<ReturnType<typeof resolveDesignPageOpeningViewportState>>["inspector"] | null;
     surfaceInspectorIsWall: boolean;
     surfaceInspectorIsCeiling: boolean;
     surfaceInspector: SelectedSurfaceInspectorState | null;
@@ -56,6 +58,7 @@ type DesignPageSelectionInspectorProps = {
   configuration: {
     dark: boolean;
     canEditPlanGeometry: boolean;
+    proMode: boolean;
     dockWhenPortalAvailable: boolean;
     portalTarget: HTMLDivElement | null;
     dockedWidthPx: number;
@@ -66,16 +69,8 @@ type DesignPageSelectionInspectorProps = {
   actions: {
     clearSelection: () => void;
     setMeasurementUnit: (unit: PlanMeasurementUnit) => void;
-    commitRoomDimensionMm: (
-      roomId: string,
-      dimension: "width" | "depth",
-      valueMm: number
-    ) => void;
-    commitActiveFloorWallHeightMm: (
-      valueMm: number,
-      evidence?: FloorPlanConsumerMeasurementEvidenceV2,
-      measurementNote?: string
-    ) => void;
+    commitRoomDimensionMm: (roomId: string, dimension: "width" | "depth", valueMm: number) => void;
+    commitActiveFloorWallHeightMm: (valueMm: number, evidence?: FloorPlanConsumerMeasurementEvidenceV2, measurementNote?: string) => void;
     item: {
       center: () => void;
       snapToWall: () => void;
@@ -90,7 +85,9 @@ type DesignPageSelectionInspectorProps = {
       delete: (roomId: string) => void;
     };
     deleteSelectedPlanOverlay: () => void;
-    updateOpeningMetrics: OpeningDimensionFieldsProps["onChange"];
+    commitOpeningWidthMm: (valueMm: number) => void; commitOpeningHeightMm: (valueMm: number) => void;
+    commitOpeningBottomMm: (valueMm: number) => void; commitOpeningKind: (patch: DesignPageOpeningMetricsPatch) => void;
+    commitOpeningWall: (wall: "north" | "south" | "east" | "west") => void;
     surfaceInspector: SelectedSurfaceInspectorActions;
   };
 };
@@ -112,6 +109,7 @@ export function DesignPageSelectionInspector({
   const docked = Boolean(
     configuration.dockWhenPortalAvailable && configuration.portalTarget
   );
+  const [, openingPositionLabel = ""] = state.summary.metrics;
   const inspector = (
     <div
       data-testid="selection-inspector"
@@ -171,13 +169,11 @@ export function DesignPageSelectionInspector({
       </div>
 
       {state.selectedOpening ? (
-        <div data-testid="selection-inspector-opening-dimensions" className="mt-3">
-          <OpeningDimensionFields {...state.selectedOpening}
-            measurementUnit={state.measurementUnit} dark={configuration.dark}
-            disabled={!configuration.canEditPlanGeometry}
-            testIdPrefix="selection-inspector-opening" inputTestIdSuffix=""
-            onChange={actions.updateOpeningMetrics} />
-        </div>
+        <SelectedOpeningDimensions
+          state={{ ...state.selectedOpening, positionLabel: openingPositionLabel, measurementUnit: state.measurementUnit }}
+          configuration={{ dark: configuration.dark, canEdit: configuration.canEditPlanGeometry, proMode: configuration.proMode }}
+          actions={{ commitWidthMm: actions.commitOpeningWidthMm, commitHeightMm: actions.commitOpeningHeightMm,
+            commitBottomMm: actions.commitOpeningBottomMm, commitKind: actions.commitOpeningKind, commitWall: actions.commitOpeningWall }} />
       ) : state.summary.metrics.length > 0 ? (
         <div
           className={`mt-3 grid gap-2 ${

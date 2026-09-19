@@ -2,7 +2,7 @@
 
 import { Line } from "@react-three/drei/core/Line";
 import { useFrame, useThree, type ThreeEvent } from "@react-three/fiber";
-import { useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState, type ComponentProps } from "react";
 import * as THREE from "three";
 import {
   ROOM_DIMENSION_DEFAULTS,
@@ -15,10 +15,9 @@ import {
   getFloorMaterialById,
   normalizeFloorRotationDeg,
 } from "@/lib/floor-materials";
-import {
-  getCeilingSurfaceSettings,
-} from "@/lib/surface-settings";
+import { getCeilingSurfaceSettings } from "@/lib/surface-settings";
 import type { CanonicalFloorPlanRenderModel } from "@/lib/floor-plan-render-model";
+import { legacyOpeningOffsetAtWorldPoint } from "@/lib/design-page-opening-interaction";
 import { CanonicalFloorPlanWalls3D } from "./CanonicalFloorPlanStructure";
 import { buildOpeningWallSurfacePanels } from "./house-plan-3d/openingWallSurfacePanels";
 import { withContinuousWallSelection } from "./house-plan-3d/continuousWallSelection";
@@ -29,11 +28,12 @@ import {
   RoomCeilingCapMesh,
   RoomFloorMesh,
 } from "./house-plan-3d/surfaceMeshes";
+import { WallSurfacePanelMesh } from "./house-plan-3d/wallAndOpeningMeshes";
+import { MountedCutawayWallMesh } from "./house-plan-3d/MountedCutawayWallMesh";
 import {
-  CutawayWallMesh,
-  OpeningThresholdMesh,
-  WallSurfacePanelMesh,
-} from "./house-plan-3d/wallAndOpeningMeshes";
+  buildRenderableLegacyPhysicalOpeningAssemblies,
+  LegacyPhysicalOpeningMeshes,
+} from "./house-plan-3d/LegacyWallOpeningMeshes";
 import {
   buildLegacyFloorSlabsForTest,
   buildLegacyWallFaceRenderPatchesForTest,
@@ -41,7 +41,6 @@ import {
   buildOpeningLintelParts,
   buildOpeningSillParts,
   buildWallSurfacePanels,
-  getOpeningThresholds,
   getRoomOutlinePoints,
   getSharedWallRoomIds,
   getWallOpenings,
@@ -158,10 +157,20 @@ function isSameStructurePiece(first: StructureTarget | null, second: StructureTa
   return getStructurePieceKey(first) === getStructurePieceKey(second);
 }
 
-function visibleStructureHover(target: StructureTarget | null, selected: StructureTarget | null, selectedKey: string | null) {
+function visibleStructureHover(target: StructureTarget | null, selected: StructureTarget | null, hasSelectedKey: boolean) {
   // Keep the selected wall outline while allowing an opening hover inside it.
-  if (selected?.kind === "wall" && selectedKey && target?.kind !== "opening") return null;
+  if (selected?.kind === "wall" && hasSelectedKey && target?.kind !== "opening") return null;
   return getStructurePieceKey(target);
+}
+
+/** Door thresholds pick and drag doors; WindowOpeningMesh owns windows, so their assemblies only draw the frame. */
+function LegacyPhysicalOpenings(props: ComponentProps<typeof LegacyPhysicalOpeningMeshes>) {
+  return [false, true].map((windows) => (
+    <LegacyPhysicalOpeningMeshes key={windows ? "windows" : "doors"} {...props}
+      assemblies={props.assemblies.filter((assembly) => (assembly.threshold.kind === "window") === windows)}
+      interactive={props.interactive && !windows}
+      hoveredTargetKey={windows ? null : props.hoveredTargetKey} selectedTargetKey={windows ? null : props.selectedTargetKey} />
+  ));
 }
 
 function getStructureOutlineStyle(
@@ -280,16 +289,12 @@ export default function HousePlanRenderer3D({
     selectedSurfaceTarget?.kind === "wall"
       ? persistedWallPanelKey ?? selectedLogicalTargetKey
       : selectedLogicalTargetKey;
-  const visibleHoveredTargetKey = visibleStructureHover(hoveredStructureTarget, selectedSurfaceTarget, selectedTargetKey);
+  const visibleHoveredTargetKey = visibleStructureHover(hoveredStructureTarget, selectedSurfaceTarget, selectedTargetKey !== null);
   const legacyCutawaySegmentKeys = useLegacyCameraCutawaySegmentKeys({
     rooms,
     activeRoomId,
     enabled: !canonicalPlan && rooms.length > 0,
   });
-  // These editor-state arrays are immutable snapshots. The React compiler
-  // cannot prove that across the legacy geometry helpers, while retaining this
-  // memo avoids rebuilding planar unions during unrelated interactive renders.
-  /* eslint-disable react-hooks/preserve-manual-memoization */
   const legacyWatertightGeometry = useMemo(() => {
     if (canonicalPlan || rooms.length === 0) return null;
     return {
@@ -326,7 +331,6 @@ export default function HousePlanRenderer3D({
     topologyRooms,
     wallHeight,
   ]);
-  /* eslint-enable react-hooks/preserve-manual-memoization */
   const hasLegacyMergedSlab = Boolean(legacyWatertightGeometry?.floorSlabs.length);
   const hasLegacyMergedWalls = Boolean(legacyWatertightGeometry?.wallBands.length);
   const legacyWallTopMetersByFloor = new Map<number, number>();
@@ -371,6 +375,13 @@ export default function HousePlanRenderer3D({
     }
     onSelectOpening?.(null);
   };
+
+  const legacyPhysicalOpeningAssemblies = buildRenderableLegacyPhysicalOpeningAssemblies({
+      visibleRooms: rooms, topologyRooms, openings, defaultWallHeight: wallHeight,
+      defaultWallThickness: STRUCTURE_THICKNESS_METERS,
+      activeFloorLevel: resolvedActiveFloorLevel, stackedFloors,
+      fadeInactiveFloors, inactiveFloorOpacityMultiplier: INACTIVE_FLOOR_OPACITY_MULTIPLIER,
+      enabled: !canonicalStructureExpected });
 
   return (
     <group>
@@ -434,14 +445,15 @@ export default function HousePlanRenderer3D({
           onSelectOpening={onSelectOpening}
           onEditOpening={(openingId, metrics, mode) => {
             const sourceOpening = openings.find((opening) => opening.id === openingId);
-            const sourceRoom = sourceOpening?.roomId
-              ? rooms.find((room) => room.id === sourceOpening.roomId)
+            const host = sourceOpening?.hostResolution?.status === "resolved"
+              ? sourceOpening.hostResolution.host
               : null;
-            if (!sourceOpening || !sourceRoom) return;
-            const centerOffsetMeters =
-              sourceOpening.wall === "north" || sourceOpening.wall === "south"
-                ? metrics.centerMm.xMm / 1000 - sourceRoom.x
-                : metrics.centerMm.zMm / 1000 - sourceRoom.z;
+            if (!sourceOpening || !host) return;
+            const centerOffsetMeters = legacyOpeningOffsetAtWorldPoint(host, {
+              x: metrics.centerMm.xMm / 1000,
+              z: metrics.centerMm.zMm / 1000,
+            });
+            if (centerOffsetMeters === null) return;
             if (mode === "resize") {
               onResizeOpening?.(openingId, {
                 widthMeters: metrics.widthMm / 1000,
@@ -459,6 +471,12 @@ export default function HousePlanRenderer3D({
           }
         />
       )}
+      <LegacyPhysicalOpenings assemblies={legacyPhysicalOpeningAssemblies}
+          selectedOpeningId={selectedOpeningId} interactive={interactive}
+          hoveredTargetKey={visibleHoveredTargetKey} selectedTargetKey={selectedTargetKey}
+          onHoverTarget={setHoveredStructureTarget} onClearHoverTarget={clearHoveredTarget}
+          onSelectTarget={selectStructureTarget} onMoveOpening={onMoveOpening}
+          onOpeningDragStateChange={onOpeningDragStateChange} />
       {rooms.map((room, roomIndex) => {
         const isActive = room.id === activeRoomId;
         const roomFloorLevel = getRoomFloorLevel(room);
@@ -602,7 +620,6 @@ export default function HousePlanRenderer3D({
               ], segmentWallHeight, roomWallThickness, endJoinOptions);
               const lintelParts = buildOpeningLintelParts(segment, wallOpenings, segmentWallHeight, segmentWallHeight);
               const sillParts = buildOpeningSillParts(segment, wallOpenings, segmentWallHeight, segmentWallHeight);
-              const thresholds = getOpeningThresholds(segment, wallOpenings, segmentWallHeight, segmentWallHeight);
               const wallRenderParts = [
                 ...parts,
                 ...lintelParts,
@@ -610,34 +627,35 @@ export default function HousePlanRenderer3D({
               ];
               return [
                 ...wallRenderParts.map((part) => (
-                    <CutawayWallMesh
-                      key={part.key}
-                      room={room}
-                      rooms={topologyRooms}
-                      segment={segment}
-                      part={part}
-                      wallHeight={segmentWallHeight}
-                      wallThickness={roomWallThickness}
-                      wallOpacity={wallOpacity}
-                      renderBase={!hasLegacyMergedWalls}
-                      // Every finish, including opening fragments, is owned by a selectable panel.
-                      renderSurfaces={false}
-                      selectionPieceKey={null}
-                      selectionSettingsFallbackKeys={[]}
-                      selectionPanelLength={part.length}
-                      selectionPanelCenterOffset={0}
-                      forceCutaway={legacyCutawaySegmentKeys.has(segment.key)}
-                      squareStart={Boolean(endJoinOptions.squareStart)}
-                      squareEnd={Boolean(endJoinOptions.squareEnd)}
-                      activeRoomId={activeRoomId}
-                      isActive={isActive}
-                      interactive={false}
-                      hoveredTargetKey={visibleHoveredTargetKey}
-                      selectedTargetKey={selectedTargetKey}
-                      onHoverTarget={setHoveredStructureTarget}
-                      onClearHoverTarget={clearHoveredTarget}
-                      onSelectTarget={selectStructureTarget}
-                    />
+                  <MountedCutawayWallMesh
+                    key={part.key}
+                    room={room}
+                    rooms={topologyRooms}
+                    visibleRooms={rooms}
+                    segment={segment}
+                    part={part}
+                    wallHeight={segmentWallHeight}
+                    wallThickness={roomWallThickness}
+                    wallOpacity={wallOpacity}
+                    renderBase={!hasLegacyMergedWalls}
+                    // Every finish, including opening fragments, is owned by a selectable panel.
+                    renderSurfaces={false}
+                    selectionPieceKey={null}
+                    selectionSettingsFallbackKeys={[]}
+                    selectionPanelLength={part.length}
+                    selectionPanelCenterOffset={0}
+                    forceCutaway={legacyCutawaySegmentKeys.has(segment.key)}
+                    squareStart={Boolean(endJoinOptions.squareStart)}
+                    squareEnd={Boolean(endJoinOptions.squareEnd)}
+                    activeRoomId={activeRoomId}
+                    isActive={isActive}
+                    interactive={false}
+                    hoveredTargetKey={visibleHoveredTargetKey}
+                    selectedTargetKey={selectedTargetKey}
+                    onHoverTarget={setHoveredStructureTarget}
+                    onClearHoverTarget={clearHoveredTarget}
+                    onSelectTarget={selectStructureTarget}
+                  />
                 )),
                 ...resolvedWallSurfacePanels.map((panel) => (
                   <WallSurfacePanelMesh
@@ -674,33 +692,6 @@ export default function HousePlanRenderer3D({
                     onSelectTarget={selectStructureTarget}
                     onMoveOpening={onMoveOpening} onOpeningDragStateChange={onOpeningDragStateChange} />
                 )),
-                ...thresholds.map((threshold) => {
-                  const sourceOpening = openings.find((opening) => opening.id === threshold.sourceId);
-                  const sourceRoom = sourceOpening?.roomId
-                    ? topologyRooms.find((candidate) => candidate.id === sourceOpening.roomId)
-                    : undefined;
-
-                  return (
-                    <OpeningThresholdMesh
-                      key={threshold.key}
-                      roomId={room.id}
-                      threshold={threshold}
-                      segment={segment}
-                      wallThickness={roomWallThickness}
-                      sourceOpening={sourceOpening}
-                      sourceRoom={sourceRoom}
-                      floorWorldY={floorYOffset}
-                      interactive={interactive}
-                      hoveredTargetKey={visibleHoveredTargetKey}
-                      selectedTargetKey={selectedTargetKey}
-                      onHoverTarget={setHoveredStructureTarget}
-                      onClearHoverTarget={clearHoveredTarget}
-                      onSelectTarget={selectStructureTarget}
-                      onMoveOpening={onMoveOpening}
-                      onOpeningDragStateChange={onOpeningDragStateChange}
-                    />
-                  );
-                }),
               ];
             })}
 

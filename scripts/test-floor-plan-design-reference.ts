@@ -10,7 +10,11 @@ assert.deepEqual(
       revisionId: " revision-1 ",
       sourceRevisionGeometryHash: "A".repeat(64),
       addressTransform: "mirror_x",
-      addressBinding: { bindingId: "binding-1" },
+      addressBinding: {
+        bindingId: "binding-1",
+        unitFloor: 12,
+        unitStack: "509",
+      },
       underlay: {
         sourceJobId: "job-1",
         sourceAssetSha256: "b".repeat(64),
@@ -24,6 +28,8 @@ assert.deepEqual(
     geometryHash: "a".repeat(64),
     addressBindingId: "binding-1",
     transform: "mirror_x",
+    unitFloor: 12,
+    unitStack: "509",
   }
 );
 

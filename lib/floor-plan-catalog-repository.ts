@@ -2,12 +2,10 @@ import type { FloorPlanLibraryCatalog } from "@/lib/floor-plan-library-schema";
 import {
   browseReviewOnlyFloorPlanLibrary,
   normalizeFloorPlanAddress,
-  parseFloorPlanUnitNumber,
   searchReviewOnlyFloorPlanLibrary,
   type FloorPlanLibrarySearchResult,
-  type FloorPlanLibraryUnitMatch,
-  type FloorPlanLibraryUnitQuery,
 } from "@/lib/floor-plan-address-search";
+import type { FloorPlanExactSearch } from "@/lib/floor-plan-directory-contract";
 import type {
   FloorPlanAddressTransform,
   FloorPlanVerificationTier,
@@ -18,18 +16,20 @@ import {
   floorPlanPublicDisplayMetadataSchema,
   type FloorPlanPublicDisplayMetadata,
 } from "@/lib/floor-plan-imports/public-display-metadata";
-import type { PublicFloorPlanAuthoredVariantGroup } from "@/lib/floor-plan-authored-variant-links";
+import {
+  projectPublicFloorPlanAuthoredVariantGroups,
+  type PersistedFloorPlanAuthoredVariantGroup,
+  type PublicFloorPlanAuthoredVariantGroup,
+} from "@/lib/floor-plan-authored-variant-links";
 
 const MAX_CATALOG_RESULTS = 100;
 
-export type FloorPlanCatalogSearchOptions = {
-  limit?: number;
-};
+export type FloorPlanCatalogSearchOptions = { limit?: number };
 
+/** Public revision ordering key. Private binding identity is deliberately absent. */
 export type PublishedFloorPlanCatalogKey = {
   publishedAt: string;
   revisionId: string;
-  bindingId: string;
 };
 
 export type FloorPlanCatalogPageOptions = FloorPlanCatalogSearchOptions & {
@@ -52,6 +52,7 @@ export type PublishedFloorPlanAddressBindingRow = {
   floorMin: number | null;
   floorMax: number | null;
   transform: FloorPlanAddressTransform;
+  role?: "catalog" | "authored_variant";
 };
 
 export type PublishedFloorPlanRevisionRow = {
@@ -64,15 +65,18 @@ export type PublishedFloorPlanRevisionRow = {
   documentJson: unknown;
   sourceManifestJson: unknown;
   publicMetadata: FloorPlanPublicDisplayMetadata | null;
+  /** Private rows cross only this repository input boundary. */
   addressBindings: PublishedFloorPlanAddressBindingRow[];
-  authoredConfigurationGroups?: PublicFloorPlanAuthoredVariantGroup[];
+  authoredVariantGroups?: PersistedFloorPlanAuthoredVariantGroup[];
   catalogKey?: PublishedFloorPlanCatalogKey;
 };
 
 export type PublishedFloorPlanRevisionListInput = {
-  browse: boolean;
-  queryTokens: string[];
-  unitQuery: FloorPlanLibraryUnitQuery | null;
+  mode: "browse" | "search";
+  countryCode?: "SG";
+  addressTokens: string[];
+  unit?: { floor: number; stack: string };
+  targetRevisionId?: string;
   take: number;
   after?: PublishedFloorPlanCatalogKey | null;
 };
@@ -83,13 +87,13 @@ export type PublishedFloorPlanRevisionListPage = {
   hasMore: boolean;
 };
 
-/** Small data-source surface keeps catalog search testable without a database. */
 export interface PublishedFloorPlanRevisionDataSource {
   listPublishedRevisions(
     input: PublishedFloorPlanRevisionListInput
   ): Promise<PublishedFloorPlanRevisionListPage>;
 }
 
+/** Closed public DTO. Only an exact result receives one opaque selected binding. */
 export type FloorPlanPublishedRevisionSearchResult = {
   resultKind: "canonical_revision";
   id: string;
@@ -99,11 +103,7 @@ export type FloorPlanPublishedRevisionSearchResult = {
   revisionUrl: string;
   geometryHash: string;
   verificationTier: FloorPlanVerificationTier;
-  addressTransform: FloorPlanAddressTransform;
-  addressBinding: PublishedFloorPlanAddressBindingRow;
   projectName: string;
-  addressLabel: string;
-  matchedBlocks: string[];
   label: string;
   flatType: string;
   bedroomCount: number;
@@ -117,23 +117,24 @@ export type FloorPlanPublishedRevisionSearchResult = {
   fidelity: "canonical_v2";
   verificationNote: string;
   accuracyNotice: string;
-  matchLevel: "street" | "block" | "unit";
-  unitMatches: FloorPlanLibraryUnitMatch[];
+  matchLevel: "layout" | "unit";
+  selectedBindingId?: string;
+  addressTransform?: FloorPlanAddressTransform;
   authoredConfigurationGroups?: PublicFloorPlanAuthoredVariantGroup[];
 };
 
-/** Consumer catalog results are always approved immutable canonical revisions. */
 export type FloorPlanCatalogSearchResult = FloorPlanPublishedRevisionSearchResult;
 
 export interface FloorPlanCatalogRepository {
   search(
-    rawQuery: string,
+    exactSearch: FloorPlanExactSearch,
     options?: FloorPlanCatalogSearchOptions
   ): Promise<FloorPlanCatalogSearchResult[]>;
-  browse(
-    options?: FloorPlanCatalogSearchOptions
-  ): Promise<FloorPlanCatalogSearchResult[]>;
-  searchPage(rawQuery: string, options?: FloorPlanCatalogPageOptions): Promise<FloorPlanCatalogPage>;
+  browse(options?: FloorPlanCatalogSearchOptions): Promise<FloorPlanCatalogSearchResult[]>;
+  searchPage(
+    exactSearch: FloorPlanExactSearch,
+    options?: FloorPlanCatalogPageOptions
+  ): Promise<FloorPlanCatalogPage>;
   browsePage(options?: FloorPlanCatalogPageOptions): Promise<FloorPlanCatalogPage>;
 }
 
@@ -144,8 +145,8 @@ function clampLimit(limit: number | undefined, fallback: number) {
   );
 }
 
-function queryTokens(rawQuery: string) {
-  const normalized = normalizeFloorPlanAddress(rawQuery);
+function addressTokens(address: string) {
+  const normalized = normalizeFloorPlanAddress(address);
   return normalized ? normalized.split(" ") : [];
 }
 
@@ -153,102 +154,84 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return Boolean(value) && typeof value === "object" && !Array.isArray(value);
 }
 
-type PublicRoomMetadata = {
-  roomLabels: Array<{ id: string; name: string; roomType: string }>;
-  roomLabelsSafe: boolean;
-};
-
-function extractPublicRoomMetadata(documentValue: unknown): PublicRoomMetadata {
+function extractPublicRoomMetadata(documentValue: unknown) {
   const document = isRecord(documentValue) ? documentValue : {};
   const floors = Array.isArray(document.floors) ? document.floors : [];
-  let roomLabelsSafe = true;
+  let safe = true;
   const roomTypes = floors.flatMap((floor) => {
     if (!isRecord(floor) || !Array.isArray(floor.rooms)) {
-      roomLabelsSafe = false;
+      safe = false;
       return [];
     }
     return floor.rooms.flatMap((room) => {
       if (!isRecord(room) || typeof room.roomType !== "string") {
-        roomLabelsSafe = false;
+        safe = false;
         return [];
       }
       const name = publicFloorPlanRoomDisplayName(room.roomType);
       if (!name) {
-        roomLabelsSafe = false;
+        safe = false;
         return [];
       }
       return [{ roomType: room.roomType, name }];
     });
   });
-  const roomLabels = roomTypes.map(({ roomType, name }, index) => ({
-    id: `published-room-${index + 1}`,
-    name,
-    roomType,
-  }));
-
-  return { roomLabels, roomLabelsSafe };
+  return {
+    safe,
+    labels: roomTypes.map(({ roomType, name }, index) => ({
+      id: `published-room-${index + 1}`,
+      name,
+      roomType,
+    })),
+  };
 }
 
 function bindingSearchText(binding: PublishedFloorPlanAddressBindingRow) {
-  return normalizeFloorPlanAddress(
-    [
-      binding.addressNormalized,
-      binding.block,
-      binding.street,
-      binding.postalCode ?? "",
-      binding.countryCode,
-      binding.countryCode.toUpperCase() === "SG" ? "Singapore" : "",
-    ].join(" ")
-  );
+  return normalizeFloorPlanAddress([
+    binding.addressNormalized,
+    binding.block,
+    binding.street,
+    binding.postalCode ?? "",
+    binding.countryCode,
+    binding.countryCode.toUpperCase() === "SG" ? "Singapore" : "",
+  ].join(" "));
 }
 
-function matchesBinding(
-  binding: PublishedFloorPlanAddressBindingRow,
-  tokens: string[],
-  unitQuery: FloorPlanLibraryUnitQuery | null,
-  browse: boolean
+function matchingBinding(
+  revision: PublishedFloorPlanRevisionRow,
+  exactSearch: FloorPlanExactSearch
 ) {
-  if (!browse) {
+  const tokens = addressTokens(exactSearch.address);
+  return revision.addressBindings.find((binding) => {
     const availableTokens = new Set(bindingSearchText(binding).split(" "));
-    if (!tokens.every((token) => availableTokens.has(token))) return false;
-  }
-  if (!unitQuery) return true;
-  if (!binding.stack || binding.stack.toUpperCase() !== unitQuery.stack) return false;
-  if (binding.floorMin !== null && unitQuery.floor < binding.floorMin) return false;
-  if (binding.floorMax !== null && unitQuery.floor > binding.floorMax) return false;
-  return true;
+    return (
+      binding.countryCode.toUpperCase() === exactSearch.countryCode &&
+      (exactSearch.revisionId !== undefined || (binding.role ?? "catalog") === "catalog") &&
+      tokens.every((token) => availableTokens.has(token)) &&
+      binding.stack?.toUpperCase() === exactSearch.unit.stack &&
+      (binding.floorMin === null || exactSearch.unit.floor >= binding.floorMin) &&
+      (binding.floorMax === null || exactSearch.unit.floor <= binding.floorMax)
+    );
+  });
 }
 
-function resultMatchLevel(
-  binding: PublishedFloorPlanAddressBindingRow,
-  tokens: string[],
-  unitQuery: FloorPlanLibraryUnitQuery | null,
-  browse: boolean
-): "street" | "block" | "unit" {
-  if (unitQuery) return "unit";
-  if (browse) return "street";
-  const blockTokens = normalizeFloorPlanAddress(binding.block).split(" ");
-  return blockTokens.every((token) => tokens.includes(token)) ? "block" : "street";
+function publicAuthoredVariantGroups(
+  revision: PublishedFloorPlanRevisionRow,
+  binding: PublishedFloorPlanAddressBindingRow | undefined
+) {
+  return projectPublicFloorPlanAuthoredVariantGroups(
+    revision.authoredVariantGroups ?? [],
+    revision.id,
+    binding?.id
+  );
 }
 
 export function mapPublishedFloorPlanRevisionRows(
   rows: PublishedFloorPlanRevisionRow[],
-  input: {
-    rawQuery?: string;
-    browse?: boolean;
-    limit?: number;
-  } = {}
+  input: { exactSearch?: FloorPlanExactSearch; limit?: number } = {}
 ): FloorPlanPublishedRevisionSearchResult[] {
-  const browse = input.browse === true;
-  const rawQuery = input.rawQuery ?? "";
-  const tokens = queryTokens(rawQuery);
-  const unitQuery = browse ? null : parseFloorPlanUnitNumber(rawQuery);
-  if (!browse && (tokens.length === 0 || normalizeFloorPlanAddress(rawQuery).length < 2)) {
-    return [];
-  }
-  const limit = clampLimit(input.limit, browse ? 50 : 24);
+  const limit = clampLimit(input.limit, input.exactSearch ? 24 : 50);
   const results: FloorPlanPublishedRevisionSearchResult[] = [];
-
   for (const revision of rows) {
     if (
       !hasPublicFloorPlanPublicationEvidence({
@@ -260,91 +243,57 @@ export function mapPublishedFloorPlanRevisionRows(
         publishedByEmail: revision.publishedByEmail,
         sourceManifest: revision.sourceManifestJson,
       })
-    ) {
-      continue;
-    }
-    const parsedMetadata = floorPlanPublicDisplayMetadataSchema.safeParse(
-      revision.publicMetadata
-    );
-    const roomMetadata = extractPublicRoomMetadata(revision.documentJson);
-    if (!parsedMetadata.success || !roomMetadata.roomLabelsSafe) continue;
-    const metadata = parsedMetadata.data;
-    for (const binding of revision.addressBindings) {
-      if (!matchesBinding(binding, tokens, unitQuery, browse)) continue;
-      const sourcePage = metadata.sourcePage;
-      const unitMatches: FloorPlanLibraryUnitMatch[] = unitQuery
-        ? [
-            {
-              ...unitQuery,
-              block: binding.block,
-              distributionStatus: "verified",
-              sourceUrl: metadata.sourceUrl,
-              sourceTitle: metadata.sourceTitle,
-              sourcePdfPage: sourcePage ?? 1,
-              sourceBrochurePage: sourcePage ?? 1,
-            },
-          ]
-        : [];
-      const addressLabel = (binding.block || binding.street
-        ? [`Block ${binding.block}`, binding.street, binding.postalCode]
-        : [binding.addressNormalized, binding.postalCode])
-        .filter(Boolean)
-        .join(", ");
-      const bedroomCount = roomMetadata.roomLabels.filter((room) =>
-        room.roomType.toLowerCase().includes("bed")
-      ).length;
-      const verificationNote =
-        revision.verificationTier === "construction_verified"
-          ? "Geometry is backed by unit-specific construction or measured evidence."
-          : revision.verificationTier === "source_verified"
-            ? "Every critical element was reviewed against the registered source drawing."
-            : "This revision still requires verification before construction use.";
-
-      results.push({
-        resultKind: "canonical_revision",
-        id: `revision:${revision.id}:${binding.id}`,
-        planId: revision.id,
-        layoutId: revision.id,
-        revisionId: revision.id,
-        revisionUrl: `/api/floor-plans/revisions/${encodeURIComponent(revision.id)}`,
-        geometryHash: revision.geometryHash,
-        verificationTier: revision.verificationTier,
+    ) continue;
+    const metadata = floorPlanPublicDisplayMetadataSchema.safeParse(revision.publicMetadata);
+    const rooms = extractPublicRoomMetadata(revision.documentJson);
+    if (!metadata.success || !rooms.safe) continue;
+    const binding = input.exactSearch
+      ? matchingBinding(revision, input.exactSearch)
+      : undefined;
+    if (input.exactSearch && !binding) continue;
+    const display = metadata.data;
+    const bedroomCount = rooms.labels.filter((room) =>
+      room.roomType.toLowerCase().includes("bed")
+    ).length;
+    const verificationNote = revision.verificationTier === "construction_verified"
+      ? "Geometry is backed by reviewed construction or measured evidence."
+      : "Every critical element was reviewed against the registered source drawing.";
+    results.push({
+      resultKind: "canonical_revision",
+      id: `revision:${revision.id}`,
+      planId: revision.id,
+      layoutId: revision.id,
+      revisionId: revision.id,
+      revisionUrl: `/api/floor-plans/revisions/${encodeURIComponent(revision.id)}`,
+      geometryHash: revision.geometryHash,
+      verificationTier: revision.verificationTier,
+      projectName: display.projectName,
+      label: display.label,
+      flatType: display.flatType,
+      bedroomCount,
+      floorAreaSqm: display.floorAreaSqm,
+      roomLabels: rooms.labels,
+      previewUrl: display.previewUrl,
+      sourceUrl: display.sourceUrl,
+      sourceTitle: display.sourceTitle,
+      sourcePage: display.sourcePage,
+      publisher: display.publisher,
+      fidelity: "canonical_v2",
+      verificationNote,
+      accuracyNotice:
+        "Confirm the orientation after opening. Construction decisions require construction-verified evidence.",
+      matchLevel: binding ? "unit" : "layout",
+      ...(binding ? {
+        selectedBindingId: binding.id,
         addressTransform: binding.transform,
-        addressBinding: { ...binding },
-        projectName: metadata.projectName,
-        addressLabel,
-        matchedBlocks: binding.block ? [binding.block] : [],
-        label: metadata.label,
-        flatType: metadata.flatType,
-        bedroomCount,
-        floorAreaSqm: metadata.floorAreaSqm,
-        roomLabels: roomMetadata.roomLabels,
-        previewUrl: metadata.previewUrl,
-        sourceUrl: metadata.sourceUrl,
-        sourceTitle: metadata.sourceTitle,
-        sourcePage,
-        publisher: metadata.publisher,
-        fidelity: "canonical_v2",
-        verificationNote,
-        accuracyNotice:
-          "Confirm the unit orientation after opening. Construction decisions require construction-verified evidence.",
-        matchLevel: resultMatchLevel(binding, tokens, unitQuery, browse),
-        unitMatches,
-        authoredConfigurationGroups: structuredClone(
-          revision.authoredConfigurationGroups ?? []
-        ),
-      });
-      if (results.length >= limit) return results;
-    }
+      } : {}),
+      authoredConfigurationGroups: publicAuthoredVariantGroups(revision, binding),
+    });
+    if (results.length >= limit) break;
   }
   return results;
 }
 
-/**
- * Schema-v1 YAML catalogs are retained for migration, admin review and golden
- * regression fixtures. Their methods are deliberately not compatible with the
- * public FloorPlanCatalogRepository surface.
- */
 export class ReviewOnlyYamlFloorPlanCatalogRepository {
   constructor(private readonly loadCatalogs: () => FloorPlanLibraryCatalog[]) {}
 
@@ -363,39 +312,31 @@ export class ReviewOnlyYamlFloorPlanCatalogRepository {
 }
 
 export class PublishedRevisionFloorPlanCatalogRepository
-  implements FloorPlanCatalogRepository
-{
+  implements FloorPlanCatalogRepository {
   constructor(private readonly dataSource: PublishedFloorPlanRevisionDataSource) {}
 
   private async readPage(input: {
-    browse: boolean;
-    rawQuery: string;
+    exactSearch?: FloorPlanExactSearch;
     options: FloorPlanCatalogPageOptions;
   }): Promise<FloorPlanCatalogPage> {
-    const tokens = queryTokens(input.rawQuery);
-    if (!input.browse && (tokens.length === 0 || normalizeFloorPlanAddress(input.rawQuery).length < 2)) {
-      return { results: [], nextKey: null };
-    }
-    const limit = clampLimit(input.options.limit, input.browse ? 50 : 24);
+    const limit = clampLimit(input.options.limit, input.exactSearch ? 24 : 50);
     const wanted = limit + 1;
     const matches: Array<{
       result: FloorPlanCatalogSearchResult;
       key: PublishedFloorPlanCatalogKey;
     }> = [];
+    const seenRevisionIds = new Set<string>();
     let after = input.options.after ?? null;
-
-    // Read bounded keyset batches until the page is full or the immutable
-    // published set is exhausted. Invalid evidence advances the scan key but
-    // never consumes a public result slot.
     while (matches.length < wanted) {
       const page = await this.dataSource.listPublishedRevisions({
-        browse: input.browse,
-        queryTokens: input.browse ? [] : tokens,
-        unitQuery: input.browse ? null : parseFloorPlanUnitNumber(input.rawQuery),
+        mode: input.exactSearch ? "search" : "browse",
+        countryCode: input.exactSearch?.countryCode,
+        addressTokens: input.exactSearch ? addressTokens(input.exactSearch.address) : [],
+        unit: input.exactSearch?.unit,
+        targetRevisionId: input.exactSearch?.revisionId,
         take: Math.max(32, Math.min(128, (wanted - matches.length) * 4)),
         after,
       });
-
       for (const row of page.rows) {
         const key = row.catalogKey;
         const publishedAt = row.publishedAt ? new Date(row.publishedAt) : null;
@@ -404,33 +345,29 @@ export class PublishedRevisionFloorPlanCatalogRepository
           !publishedAt ||
           Number.isNaN(publishedAt.getTime()) ||
           key.publishedAt !== publishedAt.toISOString() ||
-          key.revisionId !== row.id ||
-          row.addressBindings.length !== 1 ||
-          key.bindingId !== row.addressBindings[0].id
-        ) {
-          continue;
+          key.revisionId !== row.id
+        ) continue;
+        if (seenRevisionIds.has(row.id)) {
+          throw new Error("Floor-plan catalog data source returned a duplicate public revision.");
         }
+        seenRevisionIds.add(row.id);
         const mapped = mapPublishedFloorPlanRevisionRows([row], {
-          rawQuery: input.rawQuery,
-          browse: input.browse,
+          exactSearch: input.exactSearch,
           limit: 1,
         });
         if (mapped[0]) matches.push({ result: mapped[0], key });
         if (matches.length >= wanted) break;
       }
-
       if (matches.length >= wanted || !page.hasMore || !page.lastScannedKey) break;
       if (
         after &&
         after.publishedAt === page.lastScannedKey.publishedAt &&
-        after.revisionId === page.lastScannedKey.revisionId &&
-        after.bindingId === page.lastScannedKey.bindingId
+        after.revisionId === page.lastScannedKey.revisionId
       ) {
         throw new Error("Floor-plan catalog data source did not advance its keyset cursor.");
       }
       after = page.lastScannedKey;
     }
-
     const selected = matches.slice(0, limit);
     return {
       results: selected.map((entry) => entry.result),
@@ -438,19 +375,25 @@ export class PublishedRevisionFloorPlanCatalogRepository
     };
   }
 
-  async search(rawQuery: string, options: FloorPlanCatalogSearchOptions = {}) {
-    return (await this.searchPage(rawQuery, options)).results;
+  async search(
+    exactSearch: FloorPlanExactSearch,
+    options: FloorPlanCatalogSearchOptions = {}
+  ) {
+    return (await this.searchPage(exactSearch, options)).results;
   }
 
   async browse(options: FloorPlanCatalogSearchOptions = {}) {
     return (await this.browsePage(options)).results;
   }
 
-  async searchPage(rawQuery: string, options: FloorPlanCatalogPageOptions = {}) {
-    return this.readPage({ browse: false, rawQuery, options });
+  async searchPage(
+    exactSearch: FloorPlanExactSearch,
+    options: FloorPlanCatalogPageOptions = {}
+  ) {
+    return this.readPage({ exactSearch, options });
   }
 
   async browsePage(options: FloorPlanCatalogPageOptions = {}) {
-    return this.readPage({ browse: true, rawQuery: "", options });
+    return this.readPage({ options });
   }
 }

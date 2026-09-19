@@ -1,3 +1,6 @@
+import { certificationAppEventBinding } from "../lib/certification-app-event-binding";
+import { validateEnvOrThrow } from "../lib/config";
+import { execFileSync } from "node:child_process";
 import {
   appendFileSync,
   existsSync,
@@ -529,6 +532,45 @@ async function run(): Promise<void> {
     PRODUCTION_EVIDENCE_CANDIDATE_ID: "candidate-runtime-fixture-001",
     PRODUCTION_EVIDENCE_EXPECTED_TREE_SHA: artifactTreeSha,
   };
+  const ordinaryFixtureEnvironment: NodeJS.ProcessEnv = {
+    ...artifactFixtureEnvironment, NODE_ENV: "production",
+    CERTIFICATION_ENVIRONMENT_STAGE: undefined, PRODUCTION_CERTIFICATION_ID: undefined,
+    ORDINARY_ARTIFACT_RUNTIME: "1", ORDINARY_ARTIFACT_RUN_ID: "a".repeat(32),
+    ORDINARY_ARTIFACT_BINDING_SHA256: "c".repeat(64), PRODUCTION_ARTIFACT_SHA256: "e".repeat(64),
+    PRODUCTION_ARTIFACT_BUILD_ID: "ordinary-built-app", DATABASE_URL: "postgresql://runtime@127.0.0.1:5432/interior_ai_test",
+  };
+  const projectionInput = { environment: ordinaryFixtureEnvironment,
+    manifest: { candidateIdentifier: "candidate-runtime-fixture-001",
+      source: { commitSha: artifactCommitSha, treeSha: artifactTreeSha },
+      build: { nextBuildId: "ordinary-built-app" }, artifact: { sha256: "e".repeat(64) } },
+    fixture: Object.fromEntries(Object.entries(ordinaryFixtureEnvironment).filter(([name]) =>
+      name.startsWith("CI_AUTH_FIXTURE_") || name.startsWith("GOOGLE_"))),
+  };
+  const actualProjection: NodeJS.ProcessEnv = JSON.parse(execFileSync(process.execPath,
+    ["--input-type=module", "-e", `
+      import { readFileSync } from "node:fs";
+      import { projectOrdinaryArtifactEnvironment, ORDINARY_ARTIFACT_SERVICE_CONFIGURATION }
+        from "./scripts/production-artifact-ordinary-runtime.mjs";
+      const input = JSON.parse(readFileSync(0, "utf8"));
+      input.environment = { ...input.environment, ...ORDINARY_ARTIFACT_SERVICE_CONFIGURATION };
+      process.stdout.write(JSON.stringify(projectOrdinaryArtifactEnvironment(input)));
+    `], { cwd: process.cwd(), input: JSON.stringify(projectionInput), encoding: "utf8" }));
+  validateEnvOrThrow(actualProjection);
+  getAuthEnvOrThrow(actualProjection);
+  assert(certificationAppEventBinding("internal-server-diagnostic", actualProjection) === null,
+    "Ordinary events must not receive certification provenance");
+  for (const patch of [
+    { ORDINARY_ARTIFACT_RUN_ID: undefined }, { ORDINARY_ARTIFACT_BINDING_SHA256: "bad" },
+    { PRODUCTION_ARTIFACT_EVIDENCE: undefined },
+    { PRODUCTION_ARTIFACT_SHA256: undefined }, { PRODUCTION_ARTIFACT_BUILD_ID: undefined },
+    { PRODUCTION_CERTIFICATION_ID: "foreign-certification" }, { CERTIFICATION_ENVIRONMENT_STAGE: "artifact-product-server" },
+    { APP_ENV: "production" }, { CI_AUTH_FIXTURE_CANDIDATE_COMMIT_SHA: "f".repeat(40) },
+    { CI_AUTH_FIXTURE_PROVIDER_CLIENT_SECRET_SHA256: "0".repeat(64) },
+  ]) {
+    let refused = false;
+    try { getAuthEnvOrThrow({ ...actualProjection, ...patch }); } catch { refused = true; }
+    assert(refused, "Invalid ordinary/certification auth binding must refuse");
+  }
   withEnv(artifactFixtureEnvironment, () => {
     const fixture = getAuthEnvOrThrow();
     assert(

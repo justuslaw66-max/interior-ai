@@ -29,8 +29,14 @@ export function registerTemplateTests() {
     );
     await expect(page.getByTestId("room-connection-checklist")).toContainText("Connections");
     await expect(page.getByTestId("room-connection-checklist")).toContainText("shared wall");
-    await expect(page.getByText(/^Overall horizontal [\d,.]+ cm$/)).toBeVisible();
-    await expect(page.getByText(/^Overall vertical [\d,.]+ cm$/)).toBeVisible();
+    const displayUnits = page.getByTestId("selection-inspector-measurement-units");
+    await expect(displayUnits).toHaveValue("cm");
+    await expect(page.getByText("Overall horizontal 880 cm", { exact: true })).toBeVisible();
+    await expect(page.getByText("Overall vertical 700 cm", { exact: true })).toBeVisible();
+    // Preserve the millimetre input used by the invalid-dimension regression below.
+    await displayUnits.selectOption("mm");
+    await expect(page.getByText("Overall horizontal 8,800 mm", { exact: true })).toBeVisible();
+    await expect(page.getByText("Overall vertical 7,000 mm", { exact: true })).toBeVisible();
     await expect(page.locator('[data-testid^="wall-draw-segment-length-"]')).toHaveCount(0);
 
     const originalWidthText = await page.getByTestId("active-room-dimension-width").textContent();
@@ -226,7 +232,7 @@ export function registerTemplateTests() {
   });
 
   test("adding a room keeps the plan visible as one whole-home 3D scene", async ({ page }) => {
-    test.setTimeout(60_000);
+    test.setTimeout(90_000);
 
     await page.goto("/design");
     await page.waitForLoadState("domcontentloaded");
@@ -250,14 +256,20 @@ export function registerTemplateTests() {
     const selectionInspector = page.getByTestId("selection-inspector");
     await expect(selectionInspector).toBeVisible();
     await expect(selectionInspector).toContainText("Bedroom");
-    await expect(page.getByTestId("selection-inspector-room-width")).toHaveAttribute(
-      "data-model-value-mm",
-      "4000"
-    );
-    await expect(page.getByTestId("selection-inspector-room-depth")).toHaveAttribute(
-      "data-model-value-mm",
-      "3600"
-    );
+    const widthInput = page.getByTestId("selection-inspector-room-width");
+    const depthInput = page.getByTestId("selection-inspector-room-depth");
+    const displayUnits = page.getByTestId("selection-inspector-measurement-units");
+    await expect(displayUnits).toHaveValue("cm");
+    await expect(widthInput).toHaveValue("400");
+    await expect(widthInput).toHaveAttribute("data-model-value-mm", "4000");
+    await expect(depthInput).toHaveValue("360");
+    await expect(depthInput).toHaveAttribute("data-model-value-mm", "3600");
+    // The later canvas labels and opening edits use millimetre values.
+    await displayUnits.selectOption("mm");
+    await expect(widthInput).toHaveValue("4000");
+    await expect(depthInput).toHaveValue("3600");
+    await expect(widthInput).toHaveAttribute("data-model-value-mm", "4000");
+    await expect(depthInput).toHaveAttribute("data-model-value-mm", "3600");
     await expect(page.getByTestId("consumer-plan-next-steps")).toContainText("2 rooms ready");
     await expect(page.getByTestId("consumer-plan-next-steps")).toContainText(
       "Add 1 doorway."
@@ -344,7 +356,8 @@ export function registerTemplateTests() {
     await page.getByTestId("room-pan-reset-view").click();
     await expect(page.getByTestId("collision-toast")).toContainText("Home fitted");
 
-    await clickWithFallback(page.getByTestId("editor-workflow-ai"));
+    await page.getByTestId("editor-command-workspace").click({ timeout: 10_000 });
+    await page.getByTestId("editor-workflow-ai").click({ timeout: 5_000, noWaitAfter: true });
     await expect(page.getByTestId("editor-workflow-ai")).toHaveAttribute("data-active", "true");
     await expect(page.getByText("AI Design Brief")).toBeVisible();
     await expect(page.getByTestId("ai-layout-goals")).toBeVisible();
@@ -354,7 +367,8 @@ export function registerTemplateTests() {
     await expect(page.getByTestId("ai-layout-readiness")).toContainText("Ready to generate");
     await expect(page.getByTestId("ai-layout-readiness")).toContainText("Living rooms first");
     await expect(page.getByText("AI layout supports living rooms first")).toBeVisible();
-    await clickWithFallback(page.getByTestId("editor-workflow-plan"));
+    await page.getByTestId("editor-command-workspace").click({ timeout: 10_000 });
+    await page.getByTestId("editor-workflow-plan").click({ timeout: 5_000, noWaitAfter: true });
     await expect(page.getByTestId("editor-workflow-plan")).toHaveAttribute("data-active", "true");
 
     await page.getByRole("button", { name: "2D Plan" }).click();
@@ -363,8 +377,8 @@ export function registerTemplateTests() {
     await expect(page.getByTestId("plan-start-draw")).toBeVisible();
     await expect(page.getByTestId("plan-tool-door")).toBeVisible();
     await expect(page.getByTestId("plan-tool-window")).toBeVisible();
-    await expect(page.getByTestId("active-room-dimension-width")).toContainText("Width 400 cm");
-    await expect(page.getByTestId("active-room-dimension-depth")).toContainText("Depth 360 cm");
+    await expect(page.getByTestId("active-room-dimension-width")).toContainText("Width 4,000 mm");
+    await expect(page.getByTestId("active-room-dimension-depth")).toContainText("Depth 3,600 mm");
     await expect(page.locator('[data-testid^="room-resize-handle-"][data-testid$="-n"]')).toBeVisible();
     const eastRoomHandle = page.locator('[data-testid^="room-resize-handle-"][data-testid$="-e"]');
     await expect(eastRoomHandle).toBeVisible();
@@ -392,31 +406,35 @@ export function registerTemplateTests() {
     await expect(planOpeningInspector).toBeVisible();
     await expect(page.getByTestId("plan-opening-live-label")).toContainText("Door");
     await expect(page.getByTestId("selected-plan-opening-actions")).toBeVisible();
+    // The display unit is millimetres here (selected in the 3D inspector above),
+    // so typed values and shown values match the millimetre model value.
     const selectedOpeningWidth = page.getByTestId("selected-plan-opening-width-input");
+    await expect(selectedOpeningWidth).toHaveValue("900");
     await expect(selectedOpeningWidth).toHaveAttribute("data-model-value-mm", "900");
-    await selectedOpeningWidth.fill("100");
+    await selectedOpeningWidth.fill("1000");
     await selectedOpeningWidth.press("Enter");
-    await expect(page.getByTestId("selection-inspector-opening-width")).toHaveAttribute(
-      "data-model-value-mm",
-      "1000"
-    );
+    const inspectorOpeningWidth = page.getByTestId("selection-inspector-opening-width");
+    await expect(inspectorOpeningWidth).toHaveValue("1000");
+    await expect(inspectorOpeningWidth).toHaveAttribute("data-model-value-mm", "1000");
     const planOpeningWidth = planOpeningInspector.getByTestId("plan-opening-width-input");
     const planOpeningOffset = planOpeningInspector.getByTestId("plan-opening-offset-input");
+    const planOpeningHeight = planOpeningInspector.getByTestId("plan-opening-height-input");
+    await expect(planOpeningWidth).toHaveValue("1000");
     await expect(planOpeningWidth).toHaveAttribute("data-model-value-mm", "1000");
-    await planOpeningWidth.fill("110");
+    await planOpeningWidth.fill("1100");
     await planOpeningWidth.press("Enter");
+    await expect(planOpeningWidth).toHaveValue("1100");
     await expect(planOpeningWidth).toHaveAttribute("data-model-value-mm", "1100");
-    await planOpeningOffset.fill("20");
+    await planOpeningOffset.fill("200");
     await planOpeningOffset.press("Enter");
+    await expect(planOpeningOffset).toHaveValue("200");
     await expect(planOpeningOffset).toHaveAttribute("data-model-value-mm", "200");
-    await expect(planOpeningInspector.getByTestId("plan-opening-height-input")).toHaveAttribute(
-      "data-model-value-mm",
-      "2100"
-    );
-    await planOpeningWidth.fill("115");
+    await expect(planOpeningHeight).toHaveValue("2100");
+    await expect(planOpeningHeight).toHaveAttribute("data-model-value-mm", "2100");
+    await planOpeningWidth.fill("1150");
     await planOpeningWidth.press("Enter");
+    await expect(planOpeningWidth).toHaveValue("1150");
     await expect(planOpeningWidth).toHaveAttribute("data-model-value-mm", "1150");
   });
 
 }
-

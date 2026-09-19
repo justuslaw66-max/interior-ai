@@ -345,7 +345,7 @@ export function DesignSceneStructureLayer({
           traceOpeningMode={plan.openingTrace.enabled && !plan.underlay}
           traceOpeningKind={plan.openingTrace.kind}
           onTraceOpeningPoint={actions.drawing.addOpeningPoint}
-          openings={mapPlanOpeningsToRoomRenderer(plan.scene.openings)}
+          openings={mapPlanOpeningsToRoomRenderer(plan.scene.openings, plan.rooms)}
           fixedElements={mapPlanFixedElementsToRoomRenderer(
             canonicalPlan
               ? plan.scene.fixedElements.filter((element) => !element.canonicalKind)
@@ -376,7 +376,7 @@ export function DesignSceneStructureLayer({
     // room is hidden, so the legacy topology builder must always receive the
     // complete whole-home room/opening graph.
     const topologyOpenings = mapPlanOpeningsToRoomRenderer(
-      state.plan.scene.openings
+      state.plan.scene.openings, state.wholeHome.rooms
     );
 
     return (

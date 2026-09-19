@@ -1,8 +1,9 @@
 import { expect, test, type Locator, type Page } from "@playwright/test";
 import path from "node:path";
+import type { RetailerFixtureInputs } from "./fixtures/retailer-confirmation-harness";
 
 type Entry = "pointer" | "keyboard";
-type UserKind = "guest" | "consumer" | "pro";
+type UserKind = RetailerFixtureInputs["userKind"];
 type OpenRecord = {
   url: string;
   target: string | null;
@@ -96,39 +97,71 @@ async function installSyntheticBoundaries(page: Page) {
   return boundaries;
 }
 
+async function inspectFixtureSetupBoundary(page: Page, harness: Locator) {
+  const mounted = await harness.count();
+  const roots = await page.locator("#retailer-confirmation-harness-root").count();
+  const controllerType = await page.evaluate(() => typeof window.__retailerResetFixture);
+  if (!mounted) {
+    expect(roots).toBe(0);
+    expect(controllerType).toBe("undefined");
+    return false;
+  }
+  await expect(harness).toHaveCount(1);
+  expect(roots).toBe(1);
+  expect(controllerType).toBe("function");
+  await expect(page.locator("#retailer-confirmation-harness-root > main")).toHaveCount(1);
+  await expect(page.getByRole("dialog", { includeHidden: true })).toHaveCount(0);
+  const cart = page.getByTestId("cart-panel");
+  if (await cart.count()) {
+    // This action is disabled only while Cart is busy, including the final tab delay.
+    await expect(cart.getByRole("button", { name: "Make room cheaper", exact: true })).toBeEnabled();
+  }
+  return true;
+}
+
 async function loadHarness(
   page: Page,
   boundaries: SyntheticBoundaries,
-  options: {
-    tabs?: number;
-    scenario?: string;
-    userKind?: UserKind;
+  options: Partial<RetailerFixtureInputs> & {
     viewport?: { width: number; height: number };
   } = {}
 ) {
+  const harness = page.getByTestId("retailer-confirmation-harness");
+  const mounted = await inspectFixtureSetupBoundary(page, harness);
   boundaries.reset();
-  boundaries.userKind = options.userKind ?? "consumer";
+  const fixture: RetailerFixtureInputs = {
+    scenario: options.scenario ?? "ordinary",
+    tabs: options.tabs ?? 4,
+    userKind: options.userKind ?? "consumer",
+  };
+  boundaries.userKind = fixture.userKind;
   await page.setViewportSize(options.viewport ?? DESKTOP);
-  const query = new URLSearchParams({
-    "retailer-tabs": String(options.tabs ?? 4),
-    "retailer-scenario": options.scenario ?? "ordinary",
-    "retailer-user": boundaries.userKind,
-  });
-  await page.goto(`/design?${query}`, { waitUntil: "domcontentloaded" });
-  const scene = page.locator(
-    '[data-testid="scene-canvas"][data-client-hydrated="true"]'
-  );
-  await expect(scene).toHaveCount(1);
-  await page.addScriptTag({
-    path: path.join(
-      process.cwd(),
-      ".next",
-      "cache",
-      "retailer-confirmation-browser-fixture",
-      "bundle.js"
-    ),
-  });
-  await expect(page.getByTestId("retailer-confirmation-harness")).toHaveCount(1);
+  let generation = 1;
+  if (mounted) {
+    generation = await page.evaluate((inputs) => {
+      if (typeof window.__retailerResetFixture !== "function") {
+        throw new Error("Mounted retailer fixture has no reset controller.");
+      }
+      window.__retailerWindowOpens = [];
+      return window.__retailerResetFixture(inputs);
+    }, fixture);
+  } else {
+    const query = new URLSearchParams({
+      "retailer-tabs": String(fixture.tabs),
+      "retailer-scenario": fixture.scenario,
+      "retailer-user": fixture.userKind,
+    });
+    await page.goto(`/design?${query}`, { waitUntil: "domcontentloaded" });
+    await expect(page.locator('[data-testid="scene-canvas"][data-client-hydrated="true"]')).toHaveCount(1);
+    await page.addScriptTag({
+      path: path.join(process.cwd(), ".next", "cache", "retailer-confirmation-browser-fixture", "bundle.js"),
+    });
+  }
+  await expect(harness).toHaveCount(1);
+  await expect(harness).toHaveAttribute("data-retailer-generation", String(generation));
+  await expect(harness).toHaveAttribute("data-retailer-scenario", fixture.scenario);
+  await expect(harness).toHaveAttribute("data-retailer-tabs", String(fixture.tabs));
+  await expect(harness).toHaveAttribute("data-retailer-user", fixture.userKind);
   await expect(page.getByTestId("cart-panel")).toHaveCount(1);
   await expect(page.getByTestId("retailer-confirmation-dialog")).toHaveCount(0);
 }
@@ -336,27 +369,32 @@ test("Retailer-group keyboard lifecycle restores replacements and the Cart fallb
   expect(boundaries.payloads).toHaveLength(4);
 });
 
-test("Counting boundaries preserve zero one three and four tab behavior", async ({ page }) => {
-  const boundaries = await installSyntheticBoundaries(page);
+for (const { tabs, title } of [
+  { tabs: 0, title: "Counting zero tabs keeps checkout disabled" },
+  { tabs: 1, title: "Counting one tab opens directly without confirmation" },
+  { tabs: 3, title: "Counting three tabs opens directly without confirmation" },
+  { tabs: 4, title: "Counting four tabs opens confirmation and supports cancellation" },
+]) {
+  test(title, async ({ page }) => {
+    const boundaries = await installSyntheticBoundaries(page);
+    await loadHarness(page, boundaries, tabs === 0 ? { scenario: "zero", tabs } : { tabs });
 
-  await loadHarness(page, boundaries, { scenario: "zero", tabs: 0 });
-  await expect(page.getByTestId("checkout-affiliate")).toBeDisabled();
+    if (tabs === 0) {
+      await expect(page.getByTestId("checkout-affiliate")).toBeDisabled();
+      return;
+    }
 
-  await loadHarness(page, boundaries, { tabs: 1 });
-  await page.getByTestId("checkout-affiliate").click();
-  await expectWindowOpenCount(page, 1);
-  await expect(page.getByTestId("retailer-confirmation-dialog")).toHaveCount(0);
+    await page.getByTestId("checkout-affiliate").click();
+    if (tabs < 4) {
+      await expectWindowOpenCount(page, tabs);
+      await expect(page.getByTestId("retailer-confirmation-dialog")).toHaveCount(0);
+      return;
+    }
 
-  await loadHarness(page, boundaries, { tabs: 3 });
-  await page.getByTestId("checkout-affiliate").click();
-  await expectWindowOpenCount(page, 3);
-  await expect(page.getByTestId("retailer-confirmation-dialog")).toHaveCount(0);
-
-  await loadHarness(page, boundaries, { tabs: 4 });
-  await page.getByTestId("checkout-affiliate").click();
-  await expectConfirmation(page, "Buy external items", GLOBAL_ACTION_ID);
-  await page.getByTestId("retailer-confirmation-cancel").click();
-});
+    await expectConfirmation(page, "Buy external items", GLOBAL_ACTION_ID);
+    await page.getByTestId("retailer-confirmation-cancel").click();
+  });
+}
 
 test("Counting preserves bundle exclusion and missing-link behavior", async ({ page }) => {
   const boundaries = await installSyntheticBoundaries(page);
@@ -365,11 +403,11 @@ test("Counting preserves bundle exclusion and missing-link behavior", async ({ p
   await expectWindowOpenCount(page, 1);
   await expect(page.getByTestId("retailer-confirmation-dialog")).toHaveCount(0);
 
-  await loadHarness(page, boundaries, { scenario: "excluded", tabs: 4 });
+  await loadHarness(page, boundaries, { scenario: "excluded" });
   await expect(page.getByTestId("checkout-affiliate")).toBeDisabled();
   expect(await readWindowOpens(page)).toHaveLength(0);
 
-  await loadHarness(page, boundaries, { scenario: "missing-link", tabs: 4 });
+  await loadHarness(page, boundaries, { scenario: "missing-link" });
   await page.getByTestId("checkout-affiliate").click();
   await expect(page.getByTestId("cart-notice")).toContainText(
     "No items in this group have buy links yet."

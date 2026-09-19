@@ -5,9 +5,9 @@ import {
   type HousePlanRoom2D,
 } from "@/lib/design-page-house-plan";
 import type { RoomOpening2D } from "@/lib/editorScene";
+import { buildOpeningHostQualityIssues, openingHasPhysicalHost } from "@/lib/floor-plan-opening-quality";
 import { getPlanRoomFloorAreaSqm } from "@/lib/room-floor-area";
 import type { DesignItem, RoomType } from "@/lib/room-types";
-
 export type FloorPlanQualityLabel = "Looks good" | "Improve" | "Review";
 export type FloorPlanQualityCategory =
   | "naturalLight"
@@ -17,14 +17,12 @@ export type FloorPlanQualityCategory =
   | "furnitureFit"
   | "accessibility"
   | "readiness";
-
 export type FloorPlanQualityAction =
   | "add_window"
   | "add_doorway"
   | "review_plan_layout"
   | "review_furniture_fit"
   | "add_storage";
-
 export type FloorPlanQualityIssue = {
   id: string;
   category: FloorPlanQualityCategory;
@@ -36,6 +34,7 @@ export type FloorPlanQualityIssue = {
     wall?: RoomOpening2D["wall"];
     openingKind?: RoomOpening2D["kind"];
     itemInstanceId?: string;
+    openingId?: string;
   };
   title: string;
   detail: string;
@@ -177,6 +176,7 @@ function roomWindows(room: HousePlanRoom2D, openings: RoomOpening2D[], rooms: Ho
     (opening) =>
       opening.kind === "window" &&
       opening.roomId === room.id &&
+      openingHasPhysicalHost(opening, rooms) &&
       wallIsExterior(room, opening.wall, rooms)
   );
 }
@@ -263,8 +263,8 @@ function labelForScore(score: number): FloorPlanQualityLabel {
 }
 
 function primaryActionForIssues(issues: FloorPlanQualityIssue[]): FloorPlanQualityReport["primaryAction"] {
-  const preferred = issues.find((issue) => issue.action === "add_window") ??
-    issues.find((issue) => issue.action === "add_doorway") ??
+  const preferred = issues.find((issue) => issue.action === "add_window") ?? issues.find((issue) => issue.action === "add_doorway") ??
+    issues.find((issue) => issue.action === "review_plan_layout") ??
     issues.find((issue) => issue.action === "review_furniture_fit") ??
     issues.find((issue) => issue.action === "add_storage");
   const action = preferred?.action ?? "review_furniture_fit";
@@ -300,7 +300,7 @@ export function buildFloorPlanQualityReport({
   items,
   activeRoomId,
 }: FloorPlanQualityInput): FloorPlanQualityReport {
-  const issues: FloorPlanQualityIssue[] = [];
+  const issues = buildOpeningHostQualityIssues(openings, rooms);
   const strengths: string[] = [];
   const roomsNeedingLight = rooms.filter(isRoomNeedingLight);
   const roomsWithExteriorLight = roomsNeedingLight.filter(
@@ -309,7 +309,6 @@ export function buildFloorPlanQualityReport({
   const roomsMissingLight = roomsNeedingLight.filter(
     (room) => roomWindows(room, openings, rooms).length === 0
   );
-
   for (const room of roomsMissingLight) {
     addIssue(issues, {
       id: `missing-window-${room.id}`,

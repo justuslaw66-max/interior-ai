@@ -2,6 +2,12 @@ import { Path, Shape } from "three";
 
 export type RoomPlanShapePoint = readonly [x: number, z: number];
 
+export function shouldRenderRoomPlanGeometry(
+  rooms: readonly { shape: "rectangle" | "l_shape" | "custom_polygon" }[]
+): boolean {
+  return rooms.length > 1 || rooms.some((room) => room.shape !== "rectangle");
+}
+
 function openLoop(points: readonly RoomPlanShapePoint[]): RoomPlanShapePoint[] {
   if (points.length < 2) return [...points];
   const first = points[0];

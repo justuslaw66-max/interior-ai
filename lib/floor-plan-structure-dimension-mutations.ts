@@ -9,6 +9,8 @@ import type {
   FloorPlanTopologyMutationV2,
   FloorPlanVertexDraftV2,
 } from "@/lib/floor-plan-topology-mutation-types";
+import { planFloorPlanOpeningMutationV2 } from "@/lib/floor-plan-opening-mutation-policy";
+import type { FloorPlanOpeningOverrideAuthorizationV2 } from "@/lib/floor-plan-opening-mutation-policy";
 
 export type FloorPlanEntityMutationServicesV2 = {
   changedIds: Set<string>;
@@ -30,7 +32,61 @@ export type FloorPlanEntityMutationServicesV2 = {
     entityId: string,
     reason: string
   ) => FloorPlanEntityProvenanceV2;
+  approveOpeningEvidenceOverride: (
+    provenance: FloorPlanEntityProvenanceV2,
+    entityId: string,
+    authorization: FloorPlanOpeningOverrideAuthorizationV2
+  ) => FloorPlanEntityProvenanceV2;
+  actorId: string;
 };
+
+function updateFloorPlanOpeningV2(
+  floor: FloorPlanFloorV2,
+  index: number,
+  opening: FloorPlanFloorV2["openings"][number],
+  operation: Extract<FloorPlanTopologyMutationV2, { kind: "update_opening" }>,
+  services: FloorPlanEntityMutationServicesV2
+): void {
+  const changedKeys = Object.keys(operation.changes) as Array<
+    keyof typeof operation.changes
+  >;
+  if (
+    !changedKeys.length ||
+    changedKeys.every((key) => operation.changes[key] === opening[key])
+  ) {
+    services.fail("NO_OP_MUTATION", `Opening ${opening.id} update has no changes.`);
+  }
+  const plan = planFloorPlanOpeningMutationV2({
+    opening, changes: operation.changes,
+    mutationPurpose: operation.mutationPurpose ??
+      (operation.changes.kind !== undefined ? "opening_kind_change" : "measurement_edit"),
+    actorId: services.actorId,
+    overrideAuthorization: operation.reviewedEvidenceOverride,
+  });
+  if (plan.status === "requires_override") {
+    services.fail(
+      "OPENING_EVIDENCE_OVERRIDE_REQUIRED",
+      plan.explanation ?? "The protected opening measurement requires an override."
+    );
+  }
+  if (plan.status !== "applied" || !plan.changes) {
+    services.fail(
+      "INVALID_OPENING_EVIDENCE_OVERRIDE",
+      plan.explanation ?? "The opening evidence override is invalid."
+    );
+  }
+  let provenance = services.demoteProvenance(
+    opening.provenance, opening.id, `Updated opening ${opening.id}`
+  );
+  if (plan.auditNote) {
+    provenance = services.approveOpeningEvidenceOverride(
+      provenance, opening.id, operation.reviewedEvidenceOverride!
+    );
+  }
+  floor.openings[index] = {
+    ...opening, ...plan.changes, id: opening.id, provenance,
+  };
+}
 
 export function mutateFloorPlanOpeningV2(
   floor: FloorPlanFloorV2,
@@ -52,6 +108,7 @@ export function mutateFloorPlanOpeningV2(
       ...operation.opening,
       heightEvidence:
         operation.opening.heightMm === undefined ? undefined : "assumed",
+      widthEvidence: operation.opening.widthEvidence ?? "assumed",
       sillHeightEvidence:
         operation.opening.sillHeightMm === undefined ? undefined : "assumed",
       provenance: services.demoteProvenance(
@@ -78,34 +135,7 @@ export function mutateFloorPlanOpeningV2(
     );
     return;
   }
-  const changedKeys = Object.keys(operation.changes) as Array<
-    keyof typeof operation.changes
-  >;
-  if (
-    !changedKeys.length ||
-    changedKeys.every((key) => operation.changes[key] === opening[key])
-  ) {
-    services.fail("NO_OP_MUTATION", `Opening ${opening.id} update has no changes.`);
-  }
-  const updatedOpening = {
-    ...opening,
-    ...operation.changes,
-    id: opening.id,
-    provenance: services.demoteProvenance(
-      opening.provenance,
-      opening.id,
-      `Updated opening ${opening.id}`
-    ),
-  };
-  if ("heightMm" in operation.changes) {
-    updatedOpening.heightEvidence =
-      operation.changes.heightMm === undefined ? undefined : "assumed";
-  }
-  if ("sillHeightMm" in operation.changes) {
-    updatedOpening.sillHeightEvidence =
-      operation.changes.sillHeightMm === undefined ? undefined : "assumed";
-  }
-  floor.openings[index] = updatedOpening;
+  updateFloorPlanOpeningV2(floor, index, opening, operation, services);
 }
 
 function validateStructureValues(

@@ -1,3 +1,4 @@
+import { ordinaryRuntimeReportIdentity } from "./production-artifact-runtime-binding.mjs";
 import { createHash } from "node:crypto";
 import { spawnSync } from "node:child_process";
 import { readFileSync, realpathSync } from "node:fs";
@@ -110,7 +111,7 @@ export function loadProductionArtifactForPlaywright({
       realpathSync(
         repositoryPath(
           repositoryRoot,
-          "scripts/production-artifact-evidence.mjs",
+          "scripts/production-artifact-source.mjs",
           "Production artifact validator path",
         ),
       ),
@@ -182,7 +183,7 @@ export function loadProductionArtifactForPlaywright({
     },
     requirePendingTests: true,
   });
-  if (!validation.valid) {
+  if (!validation.valid || !validation.identity) {
     throw new Error(`Production artifact evidence manifest rejected: ${validation.issues.join("; ")}`);
   }
   validateEnvironmentMode(manifestRead.value, environment);
@@ -203,7 +204,9 @@ export function loadProductionArtifactForPlaywright({
           authorizedExternalRoot,
         });
   return Object.freeze({
-    identity: validation.identity,
+    identity: { ...validation.identity,
+      ...(ordinaryRuntimeReportIdentity(environment, manifestRead.value)
+        ? { ordinaryRuntime: ordinaryRuntimeReportIdentity(environment, manifestRead.value) } : {}) },
     reportDestination,
   });
 }

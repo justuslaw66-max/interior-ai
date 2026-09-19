@@ -24,6 +24,12 @@ const nextConfig: NextConfig = {
       },
     ];
   },
+  // Retain the dynamically loaded sibling worker for each server PDF importer.
+  outputFileTracingIncludes: {
+    "/api/floor-plan-imports/*/process": ["./node_modules/pdfjs-dist/legacy/build/pdf.worker.mjs"],
+    "/api/admin/floor-plan-imports/*/construction-sources": ["./node_modules/pdfjs-dist/legacy/build/pdf.worker.mjs"],
+    "/api/admin/floor-plan-imports/*/supplementary-sources": ["./node_modules/pdfjs-dist/legacy/build/pdf.worker.mjs"],
+  },
   outputFileTracingExcludes: {
     "/*": [
       "./hero.jpg",

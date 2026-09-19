@@ -223,7 +223,7 @@ const roomAreaReadouts: Array<[string, RegExp]> = [
   ["lib/floor-plan-quality.ts", /Number\(getPlanRoomFloorAreaSqm\(room\)\.toFixed\(2\)\)/],
   ["components/editor/renderers/RoomRenderer2D.tsx",
     /\{formatDisplayArea\(getPlanRoomFloorAreaSqm\(room\), measurementUnit\)\}/],
-  ["app/share/[shareToken]/page.tsx", /const areaSqm = getRoomSnapshotFloorAreaSqm\(room\);/],
+  ["app/share/[shareToken]/(presentation)/page.tsx", /const areaSqm = getRoomSnapshotFloorAreaSqm\(room\);/],
   ["app/share/[shareToken]/export/page.tsx", /const areaSqm = getRoomSnapshotFloorAreaSqm\(room\);/],
   ["app/share/[shareToken]/export/pdf/route.ts", /const areaSqm = getRoomSnapshotFloorAreaSqm\(room\);/],
   ["lib/floor-plan-types.ts", /areaSqm: getRoomSnapshotFloorAreaSqm\(room\),/],

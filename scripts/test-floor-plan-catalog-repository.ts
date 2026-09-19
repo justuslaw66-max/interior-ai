@@ -5,6 +5,7 @@ import {
   PublishedRevisionFloorPlanCatalogRepository,
   ReviewOnlyYamlFloorPlanCatalogRepository,
   mapPublishedFloorPlanRevisionRows,
+  type PublishedFloorPlanAddressBindingRow,
   type PublishedFloorPlanCatalogKey,
   type PublishedFloorPlanRevisionRow,
 } from "../lib/floor-plan-catalog-repository";
@@ -12,422 +13,312 @@ import {
   decodeFloorPlanCatalogCursor,
   encodeFloorPlanCatalogCursor,
 } from "../lib/floor-plan-catalog-cursor";
+import type { FloorPlanExactSearch } from "../lib/floor-plan-directory-contract";
 import { getAllFloorPlanLibraryCatalogs } from "../lib/floor-plan-library-yaml";
+import {
+  assertPublicFloorPlanProjectionSafe,
+  assertPublicFloorPlanSentinelsAbsent,
+} from "./floor-plan-public-privacy-assertions";
 
-const PRIVATE_ROOM_ID = "private-owner-room-justus";
-const PRIVATE_ROOM_NAME = "Private homeowner nursery";
+const PRIVATE_ADDRESS = "867A Privacy Sentinel Street";
+const PRIVATE_STACK = "731";
+const PRIVATE_FLOOR = 73;
+const HASH = "a".repeat(64);
 
-const revisionRows: PublishedFloorPlanRevisionRow[] = [
-  {
-    id: "ping-yi-4-room-r2",
-    geometryHash: "a".repeat(64),
-    verificationTier: "source_verified",
-    publishedAt: "2026-07-16T00:00:00.000Z",
-    publicMetadata: {
-      projectName: "Ping Yi Court",
-      label: "4-room Type A",
-      flatType: "4-room",
-      floorAreaSqm: 93,
-      previewUrl: "/floor-plan-previews/ping-yi-4-room.webp",
-      sourceUrl: "https://www.hdb.gov.sg/ping-yi-court",
-      sourceTitle: "Ping Yi Court sales brochure",
-      sourcePage: 5,
-      publisher: "Housing and Development Board",
+function manifest() {
+  return {
+    schemaVersion: 2,
+    generatedAt: "2026-07-16T00:00:00.000Z",
+    reviewerId: "reviewer@example.com",
+    geometryHash: HASH,
+    sourceInventory: { licenseStatus: "permission_confirmed" },
+    publicationChecks: {
+      dimensionsExact: true,
+      criticalElementsAccountedFor: true,
+      topologyValid: true,
+      overlayRegistered: true,
+      sourceOverlayAnchorsWithinOnePixel: true,
+      renderParityVerified: true,
+      persistenceRoundTripVerified: true,
+      sourceBound: true,
+      sourceEvidenceWithinBounds: true,
     },
+    sourceOverlayVerification: { passed: true, residuals: [{ residualPx: 0 }] },
+  };
+}
+
+function binding(
+  id: string,
+  transform: "normal" | "mirror_x" = "normal"
+): PublishedFloorPlanAddressBindingRow {
+  return {
+    id,
+    countryCode: "SG",
+    addressNormalized: PRIVATE_ADDRESS,
+    block: "867A",
+    street: "Privacy Sentinel Street",
+    postalCode: "519867",
+    stack: PRIVATE_STACK,
+    floorMin: 70,
+    floorMax: 75,
+    transform,
+  };
+}
+
+function revision(
+  id: string,
+  publishedAt: string,
+  bindings = [binding(`${id}-binding`)]
+): PublishedFloorPlanRevisionRow {
+  return {
+    id,
+    geometryHash: HASH,
+    verificationTier: "source_verified",
+    publishedAt,
     documentJson: {
       schemaVersion: 2,
-      floors: [{
-        rooms: [
-          { id: PRIVATE_ROOM_ID, name: PRIVATE_ROOM_NAME, roomType: "bedroom" },
-          { id: "room-bed-2", name: "Bedroom 2", roomType: "bedroom" },
-          { id: "room-bed-3", name: "Bedroom 3", roomType: "bedroom" },
-          { id: "room-living", name: "Living / Dining", roomType: "living" },
-        ],
-      }],
+      floors: [{ rooms: [{ id: "private-room", name: "Private", roomType: "bedroom" }] }],
     },
-    sourceManifestJson: {
-      schemaVersion: 2,
-      generatedAt: "2026-07-16T00:00:00.000Z",
-      reviewerId: "reviewer@example.com",
-      geometryHash: "a".repeat(64),
-      sources: [
-        {
-          name: "Ping Yi Court floor plans",
-          uri: "https://example.com/ping-yi.pdf",
-        },
-      ],
-      sourceInventory: {
-        pageNumbers: [5],
-        licenseStatus: "permission_confirmed",
-      },
-      publicationChecks: {
-        dimensionsExact: true,
-        criticalElementsAccountedFor: true,
-        topologyValid: true,
-        overlayRegistered: true,
-        sourceOverlayAnchorsWithinOnePixel: true,
-        renderParityVerified: true,
-        persistenceRoundTripVerified: true,
-        sourceBound: true,
-        sourceEvidenceWithinBounds: true,
-      },
-      sourceOverlayVerification: { passed: true, residuals: [{ residualPx: 0 }] },
-      reviewerMetadata: {
-        display: {
-          projectName: "Ping Yi Court",
-          label: "4-room",
-          flatType: "4-room",
-          floorAreaSqm: 93,
-          previewUrl: "/floor-plans/ping-yi/4-room.png",
-          publisher: "HDB",
-        },
-      },
-      floors: [
-        {
-          labels: [
-            { id: PRIVATE_ROOM_ID, name: PRIVATE_ROOM_NAME, roomType: "bedroom" },
-            { id: "room-bed-2", name: "Bedroom 2", roomType: "bedroom" },
-            { id: "room-bed-3", name: "Bedroom 3", roomType: "bedroom" },
-            { id: "room-living", name: "Living / Dining", roomType: "living" },
-          ],
-        },
-      ],
+    sourceManifestJson: manifest(),
+    publicMetadata: {
+      projectName: `Public project ${id}`,
+      label: "Reviewed layout",
+      flatType: "4-room",
+      floorAreaSqm: 93,
+      previewUrl: "/public-preview.webp",
+      sourceUrl: "https://example.com/public-source",
+      sourceTitle: "Public source",
+      sourcePage: 5,
+      publisher: "Public authority",
     },
-    addressBindings: [
-      {
-        id: "binding-810a-509",
-        countryCode: "SG",
-        addressNormalized: "810a chai chee street singapore",
-        block: "810A",
-        street: "Chai Chee Street",
-        postalCode: "461810",
-        stack: "509",
-        floorMin: 2,
-        floorMax: 15,
-        transform: "mirror_x_rotate_90",
-      },
-      {
-        id: "binding-811a-541",
-        countryCode: "SG",
-        addressNormalized: "811a chai chee street singapore",
-        block: "811A",
-        street: "Chai Chee Street",
-        postalCode: null,
-        stack: "541",
-        floorMin: 2,
-        floorMax: 15,
-        transform: "rotate_90",
-      },
-    ],
-  },
-];
+    addressBindings: bindings.map((value) => ({ ...value })),
+    catalogKey: { publishedAt, revisionId: id },
+  };
+}
 
-const exact = mapPublishedFloorPlanRevisionRows(revisionRows, {
-  rawQuery: "810A Chai Chee St #12-509",
-});
-assert.equal(exact.length, 1);
-assert.equal(exact[0].resultKind, "canonical_revision");
-assert.equal(exact[0].revisionId, "ping-yi-4-room-r2");
-assert.equal(exact[0].geometryHash, "a".repeat(64));
-assert.equal(exact[0].verificationTier, "source_verified");
-assert.equal(exact[0].addressTransform, "mirror_x_rotate_90");
-assert.equal(exact[0].matchLevel, "unit");
-assert.equal(exact[0].unitMatches[0].label, "#12-509");
-assert.equal(exact[0].projectName, "Ping Yi Court");
-assert.equal(exact[0].label, "4-room Type A");
-assert.equal(exact[0].bedroomCount, 3);
-assert.equal(exact[0].floorAreaSqm, 93);
-assert.equal(exact[0].previewUrl, "/floor-plan-previews/ping-yi-4-room.webp");
-assert.equal(exact[0].sourceUrl, "https://www.hdb.gov.sg/ping-yi-court");
-assert.equal(exact[0].sourceTitle, "Ping Yi Court sales brochure");
-assert.equal(exact[0].sourcePage, 5);
-assert.equal(exact[0].publisher, "Housing and Development Board");
-assert.equal(exact[0].revisionUrl, "/api/floor-plans/revisions/ping-yi-4-room-r2");
-assert.equal("document" in exact[0], false, "search must not return the canonical document");
-assert.equal(JSON.stringify(exact).includes(PRIVATE_ROOM_ID), false);
-assert.equal(JSON.stringify(exact).includes(PRIVATE_ROOM_NAME), false);
-assert.deepEqual(exact[0].roomLabels, [
-  { id: "published-room-1", name: "Bedroom", roomType: "bedroom" },
-  { id: "published-room-2", name: "Bedroom", roomType: "bedroom" },
-  { id: "published-room-3", name: "Bedroom", roomType: "bedroom" },
-  { id: "published-room-4", name: "Living Room", roomType: "living" },
+const exactSearch: FloorPlanExactSearch = {
+  countryCode: "SG",
+  address: PRIVATE_ADDRESS,
+  unit: { floor: PRIVATE_FLOOR, stack: PRIVATE_STACK },
+};
+
+const base = revision("revision-a", "2026-07-18T00:00:00.000Z", [
+  binding("binding-wrong-stack"),
+  { ...binding("binding-intended", "mirror_x"), stack: PRIVATE_STACK },
+  { ...binding("binding-other-address"), addressNormalized: "Unrelated address", block: "999" },
 ]);
-
-const addressOnly = mapPublishedFloorPlanRevisionRows([{
-  ...revisionRows[0],
-  id: "address-only-r1",
-  addressBindings: [{
-    id: "binding-address-only",
-    countryCode: "SG",
-    addressNormalized: "810A Chai Chee Street Singapore",
-    block: "",
-    street: "",
-    postalCode: "460810",
-    stack: null,
-    floorMin: null,
-    floorMax: null,
-    transform: "normal",
-  }],
-}], { rawQuery: "810A Chai Chee Street" });
-assert.equal(addressOnly.length, 1);
-assert.equal(addressOnly[0].addressLabel, "810A Chai Chee Street Singapore, 460810");
-assert.equal(addressOnly[0].matchLevel, "street");
-assert.equal(addressOnly[0].unitMatches.length, 0);
-assert.equal(mapPublishedFloorPlanRevisionRows([{
-  ...revisionRows[0],
-  id: "address-only-r1",
-  addressBindings: addressOnly.length
-    ? [{ ...addressOnly[0].addressBinding }]
-    : [],
-}], { rawQuery: "810A Chai Chee Street #12-509" }).length, 0);
-
-const unsafeRoomTypeDocument = structuredClone(
-  revisionRows[0].documentJson as Record<string, unknown>
-);
-(unsafeRoomTypeDocument.floors as Array<{ rooms: Array<{ roomType: string }> }>)[0]
-  .rooms[0].roomType = "private_nursery";
-assert.equal(
-  mapPublishedFloorPlanRevisionRows(
-    [{
-      ...revisionRows[0],
-      id: "unsafe-room-label-row",
-      documentJson: unsafeRoomTypeDocument,
-    }],
-    { rawQuery: "810A Chai Chee St #12-509" }
-  ).length,
-  0,
-  "Unknown semantic room types must fail closed instead of entering public search."
-);
-
-assert.equal(
-  mapPublishedFloorPlanRevisionRows(
-    [{ ...revisionRows[0], id: "missing-display-row", publicMetadata: null }],
-    { rawQuery: "810A Chai Chee St #12-509" }
-  ).length,
-  0,
-  "A published revision without separately approved display metadata must fail closed."
-);
-assert.equal(
-  JSON.stringify(exact).includes("reviewerMetadata"),
-  false,
-  "Internal source-manifest display notes must never be projected into browse results."
-);
-
-assert.equal(
-  mapPublishedFloorPlanRevisionRows(
-    [{
-      ...revisionRows[0],
-      id: "unsafe-legacy-row",
-      sourceManifestJson: {
-        ...(revisionRows[0].sourceManifestJson as Record<string, unknown>),
-        sourceInventory: { licenseStatus: "unknown" },
+base.addressBindings[0].stack = "999";
+base.authoredVariantGroups = [{
+  groupKey: "kitchen-layout",
+  label: "Kitchen layout",
+  publicationStatus: "published",
+  approvedByEmail: "reviewer@example.com",
+  publishedAt: "2026-07-18T00:00:00.000Z",
+  publishedByEmail: "publisher@example.com",
+  options: [
+    {
+      optionKey: "open",
+      label: "Open kitchen",
+      revisionId: base.id,
+      addressBindingId: "binding-intended",
+      geometryHash: HASH,
+      sourceId: "source-a",
+      sourcePage: 1,
+      defaultSelected: true,
+      sourceEvidenceJson: {
+        basis: "direct_source_configuration",
+        sourceId: "source-a",
+        pageNumber: 1,
+        revisionId: base.id,
+        geometryHash: HASH,
       },
-    }],
-    { rawQuery: "810A Chai Chee St #12-509" }
-  ).length,
-  0,
-  "A published status without approved licence evidence must fail closed."
+      revision: {
+        id: base.id,
+        geometryHash: HASH,
+        verificationTier: "source_verified",
+        publicationStatus: "published",
+        publishedAt: "2026-07-18T00:00:00.000Z",
+      },
+      addressBinding: {
+        id: "binding-intended",
+        revisionId: base.id,
+        transform: "mirror_x",
+        role: "catalog",
+      },
+    },
+    {
+      optionKey: "enclosed",
+      label: "Enclosed kitchen",
+      revisionId: "revision-alternate",
+      addressBindingId: "binding-alternate",
+      geometryHash: HASH,
+      sourceId: "source-a",
+      sourcePage: 2,
+      defaultSelected: false,
+      sourceEvidenceJson: {
+        basis: "direct_source_configuration",
+        sourceId: "source-a",
+        pageNumber: 2,
+        revisionId: "revision-alternate",
+        geometryHash: HASH,
+      },
+      revision: {
+        id: "revision-alternate",
+        geometryHash: HASH,
+        verificationTier: "source_verified",
+        publicationStatus: "published",
+        publishedAt: "2026-07-18T00:00:00.000Z",
+      },
+      addressBinding: {
+        id: "binding-alternate",
+        revisionId: "revision-alternate",
+        transform: "normal",
+        role: "authored_variant",
+      },
+    },
+  ],
+}];
+
+const exact = mapPublishedFloorPlanRevisionRows([base], { exactSearch });
+assert.equal(exact.length, 1);
+assert.equal(exact[0].id, "revision:revision-a");
+assert.equal(exact[0].selectedBindingId, "binding-intended");
+assert.equal(exact[0].addressTransform, "mirror_x");
+assert.equal(exact[0].matchLevel, "unit");
+assert.equal(exact[0].floorAreaSqm, 93);
+assert.equal(exact[0].verificationTier, "source_verified");
+assert.equal(exact[0].authoredConfigurationGroups?.length, 1);
+const exactAuthoredGroup = exact[0].authoredConfigurationGroups?.[0];
+assert.ok(exactAuthoredGroup);
+assert.equal(
+  "addressBinding" in exactAuthoredGroup.options[0],
+  false,
+  "Authored variants must survive exact matching without exposing their binding"
 );
+assertPublicFloorPlanProjectionSafe(exact);
+const serializedExact = JSON.stringify(exact);
+assert.equal(serializedExact.includes(PRIVATE_ADDRESS), false);
+assert.equal(serializedExact.includes(`"${PRIVATE_FLOOR}"`), false);
+assert.equal(serializedExact.includes(PRIVATE_STACK), false);
+assert.equal(serializedExact.includes("binding-wrong-stack"), false);
+assertPublicFloorPlanSentinelsAbsent(exact, [PRIVATE_ADDRESS, PRIVATE_FLOOR, PRIVATE_STACK]);
 
 assert.equal(
-  mapPublishedFloorPlanRevisionRows(revisionRows, {
-    rawQuery: "810A Chai Chee St #16-509",
+  mapPublishedFloorPlanRevisionRows([base], {
+    exactSearch: { ...exactSearch, unit: { ...exactSearch.unit, floor: 69 } },
   }).length,
-  0,
-  "floor range must be enforced"
+  0
 );
 assert.equal(
-  mapPublishedFloorPlanRevisionRows(revisionRows, {
-    rawQuery: "810A Chai Chee St #12-527",
+  mapPublishedFloorPlanRevisionRows([base], {
+    exactSearch: { ...exactSearch, unit: { ...exactSearch.unit, stack: "000" } },
   }).length,
-  0,
-  "stack must be enforced"
-);
-assert.equal(
-  mapPublishedFloorPlanRevisionRows(revisionRows, {
-    rawQuery: "811A Chai Chee Street",
-  })[0].addressTransform,
-  "rotate_90"
+  0
 );
 
-const browsed = mapPublishedFloorPlanRevisionRows(revisionRows, {
-  browse: true,
-  limit: 10,
-});
-assert.equal(browsed.length, 2);
-assert.equal(browsed[0].matchLevel, "street");
+const browsed = mapPublishedFloorPlanRevisionRows([base]);
+assert.equal(browsed.length, 1, "Private bindings must group to one public revision");
+assert.equal(browsed[0].matchLevel, "layout");
+assert.equal("selectedBindingId" in browsed[0], false);
+assert.equal("addressTransform" in browsed[0], false);
+assertPublicFloorPlanProjectionSafe(browsed);
+
+assert.equal(
+  mapPublishedFloorPlanRevisionRows([{
+    ...base,
+    sourceManifestJson: { ...manifest(), sourceInventory: { licenseStatus: "unknown" } },
+  }], { exactSearch }).length,
+  0,
+  "Invalid publication evidence must fail closed"
+);
 
 async function main() {
-  let dataSourceInput: unknown = null;
-  const revisionRepository = new PublishedRevisionFloorPlanCatalogRepository({
+  let exactInput: unknown;
+  const exactRepository = new PublishedRevisionFloorPlanCatalogRepository({
     async listPublishedRevisions(input) {
-      dataSourceInput = input;
-      const catalogKey = {
-        publishedAt: new Date(revisionRows[0].publishedAt!).toISOString(),
-        revisionId: revisionRows[0].id,
-        bindingId: revisionRows[0].addressBindings[0].id,
-      };
-      return {
-        rows: [{
-          ...revisionRows[0],
-          addressBindings: [revisionRows[0].addressBindings[0]],
-          catalogKey,
-        }],
-        lastScannedKey: catalogKey,
-        hasMore: false,
-      };
+      exactInput = input;
+      return { rows: [base], lastScannedKey: base.catalogKey ?? null, hasMore: false };
     },
   });
-  const repositoryExact = await revisionRepository.search(
-    "810A Chai Chee Street #12-509",
-    { limit: 2 }
-  );
+  const repositoryExact = await exactRepository.search(exactSearch, { limit: 2 });
   assert.equal(repositoryExact.length, 1);
-  assert.deepEqual(
-    (dataSourceInput as { unitQuery: unknown }).unitQuery,
-    { floor: 12, stack: "509", label: "#12-509" }
-  );
+  assert.deepEqual((exactInput as { unit: unknown }).unit, exactSearch.unit);
+  assert.equal((exactInput as { mode: string }).mode, "search");
 
-  const pagedRows: PublishedFloorPlanRevisionRow[] = Array.from(
-    { length: 126 },
-    (_, index) => {
-      const bindingId = `binding-${String(index).padStart(3, "0")}`;
-      const catalogKey: PublishedFloorPlanCatalogKey = {
-        publishedAt: "2026-07-16T00:00:00.000Z",
-        revisionId: revisionRows[0].id,
-        bindingId,
-      };
-      const sourceManifestJson = index === 63
-        ? {
-            ...(revisionRows[0].sourceManifestJson as Record<string, unknown>),
-            sourceInventory: { licenseStatus: "unknown" },
-          }
-        : revisionRows[0].sourceManifestJson;
-      return {
-        ...revisionRows[0],
-        sourceManifestJson,
-        addressBindings: [{
-          ...revisionRows[0].addressBindings[0],
-          id: bindingId,
-          stack: String(500 + index),
-        }],
-        catalogKey,
-      };
-    }
-  );
-  const scalableRepository = new PublishedRevisionFloorPlanCatalogRepository({
+  const revisions = [
+    base,
+    revision("revision-b", "2026-07-17T00:00:00.000Z"),
+    revision("revision-c", "2026-07-16T00:00:00.000Z"),
+  ];
+  const pagedRepository = new PublishedRevisionFloorPlanCatalogRepository({
     async listPublishedRevisions(input) {
-      const cursor = input.after;
-      const start = cursor
-        ? pagedRows.findIndex((row) =>
-            row.catalogKey?.publishedAt === cursor.publishedAt &&
-            row.catalogKey?.revisionId === cursor.revisionId &&
-            row.catalogKey?.bindingId === cursor.bindingId
-          ) + 1
+      const start = input.after
+        ? revisions.findIndex((row) => row.id === input.after?.revisionId) + 1
         : 0;
-      const scanned = pagedRows.slice(start, start + input.take);
+      const rows = revisions.slice(start, start + input.take);
       return {
-        rows: scanned,
-        lastScannedKey: scanned.at(-1)?.catalogKey ?? null,
-        hasMore: start + scanned.length < pagedRows.length,
+        rows,
+        lastScannedKey: rows.at(-1)?.catalogKey ?? null,
+        hasMore: start + rows.length < revisions.length,
       };
     },
   });
-  const collectedIds: string[] = [];
-  let after: PublishedFloorPlanCatalogKey | null = null;
-  do {
-    const page = await scalableRepository.browsePage({ limit: 17, after });
-    collectedIds.push(...page.results.map((result) => result.id));
-    after = page.nextKey;
-  } while (after);
-  assert.equal(collectedIds.length, 125, "Keyset pagination must not retain a 100-result window.");
-  assert.equal(new Set(collectedIds).size, 125, "Keyset pages must not duplicate bindings.");
-  assert.equal(
-    collectedIds.some((id) => id.endsWith("binding-063")),
-    false,
-    "An invalid publication-evidence row must fail closed without stopping later pages."
-  );
+  const first = await pagedRepository.browsePage({ limit: 2 });
+  assert.equal(first.results.length, 2);
+  assert.deepEqual(first.results.map((result) => result.revisionId), ["revision-a", "revision-b"]);
+  assert.deepEqual(first.nextKey, revisions[1].catalogKey);
+  const second = await pagedRepository.browsePage({ limit: 2, after: first.nextKey });
+  assert.deepEqual(second.results.map((result) => result.revisionId), ["revision-c"]);
+  assert.equal(second.nextKey, null);
+  assert.equal(new Set([...first.results, ...second.results].map((result) => result.id)).size, 3);
 
-  const cursorScope = { mode: "search" as const, query: "810A Chai Chee Street" };
-  const cursorKey = pagedRows[20].catalogKey!;
-  const opaqueCursor = encodeFloorPlanCatalogCursor(cursorKey, cursorScope);
-  assert.doesNotMatch(opaqueCursor, /810A|Chai|offset:/i);
-  assert.deepEqual(decodeFloorPlanCatalogCursor(opaqueCursor, cursorScope), cursorKey);
+  const cursorKey: PublishedFloorPlanCatalogKey = revisions[1].catalogKey!;
+  const searchScope = { mode: "search" as const, ...exactSearch };
+  const opaqueCursor = encodeFloorPlanCatalogCursor(cursorKey, searchScope);
+  assert.doesNotMatch(opaqueCursor, /Privacy|867A|731/);
+  assert.deepEqual(decodeFloorPlanCatalogCursor(opaqueCursor, searchScope), cursorKey);
   assert.equal(
-    decodeFloorPlanCatalogCursor(opaqueCursor, { ...cursorScope, query: "811A Chai Chee Street" }),
+    decodeFloorPlanCatalogCursor(opaqueCursor, {
+      ...searchScope,
+      unit: { ...searchScope.unit, stack: "999" },
+    }),
     null,
-    "A search cursor must not be replayed against another address query."
+    "A search cursor must remain bound to the exact contract"
   );
   assert.equal(
-    decodeFloorPlanCatalogCursor(`${opaqueCursor.slice(0, -1)}x`, cursorScope),
+    decodeFloorPlanCatalogCursor(`${opaqueCursor.slice(0, -1)}x`, searchScope),
     null,
-    "Tampered cursors must fail closed."
+    "Tampered cursors must fail closed"
   );
+  const browseCursor = encodeFloorPlanCatalogCursor(cursorKey, { mode: "browse" });
+  assert.equal(decodeFloorPlanCatalogCursor(browseCursor, searchScope), null);
 
   const reviewOnlyYaml = new ReviewOnlyYamlFloorPlanCatalogRepository(
     getAllFloorPlanLibraryCatalogs
   );
-  const reviewMatches = await reviewOnlyYaml.searchForReview(
-    "810A Chai Chee Street #12-509"
-  );
   assert.deepEqual(
-    reviewMatches.map((result) => result.layoutId),
-    ["3gen"],
-    "Internal review must retain the corrected 810A stack 509 fixture mapping."
-  );
-  assert.deepEqual(
-    (
-      await reviewOnlyYaml.searchForReview("810A Chai Chee Street #12-527")
-    ).map((result) => result.layoutId),
-    ["3gen"],
-    "Internal review must retain the corrected 810A stack 527 fixture mapping."
+    (await reviewOnlyYaml.searchForReview("810A Chai Chee Street #12-509"))
+      .map((result) => result.layoutId),
+    ["3gen"]
   );
   assert.equal((await reviewOnlyYaml.browseForReview()).length, 7);
-  assert.equal(
-    "search" in reviewOnlyYaml,
-    false,
-    "A review-only YAML repository must not implement the consumer repository surface."
-  );
+  assert.equal("search" in reviewOnlyYaml, false);
 
   const publicRoute = fs.readFileSync(
     path.join(process.cwd(), "app/api/floor-plans/route.ts"),
     "utf8"
   );
+  const prismaSource = fs.readFileSync(
+    path.join(process.cwd(), "lib/floor-plan-catalog-prisma.ts"),
+    "utf8"
+  );
   assert.doesNotMatch(publicRoute, /YamlFloorPlanCatalogRepository|floor-plan-library-yaml/);
-  assert.doesNotMatch(publicRoute, /serving the YAML library|YAML fallback/i);
-  assert.match(
-    publicRoute,
-    /new PublishedRevisionFloorPlanCatalogRepository\([\s\S]*?prismaPublishedFloorPlanRevisionDataSource/,
-    "Consumer search must be backed only by approved canonical database revisions."
-  );
-  assert.match(
-    publicRoute,
-    /"Cache-Control": "no-store, max-age=0"/,
-    "Consumer search must not cache retired or corrected public floor-plan revisions."
-  );
-  assert.doesNotMatch(
-    publicRoute,
-    /stale-while-revalidate|"Cache-Control": "public/,
-    "Consumer search must withdraw unsafe revisions immediately instead of serving stale results."
-  );
-  assert.doesNotMatch(publicRoute, /offset:|MAX_RESULT_WINDOW/);
-  assert.match(publicRoute, /decodeFloorPlanCatalogCursor/);
-  assert.match(publicRoute, /encodeFloorPlanCatalogCursor/);
-  const consumerPicker = fs.readFileSync(
-    path.join(process.cwd(), "components/editor/FloorPlanAddressSearch.tsx"),
-    "utf8"
-  );
-  const consumerResults = fs.readFileSync(
-    path.join(process.cwd(), "components/editor/FloorPlanCatalogResultList.tsx"),
-    "utf8"
-  );
-  assert.doesNotMatch(
-    consumerPicker,
-    /onApplyPlanTemplate\(result\.template\)/,
-    "The consumer picker must not retain a direct legacy YAML apply path."
-  );
-  assert.match(consumerPicker, /buildCanonicalFloorPlanTemplate/);
-  assert.match(consumerResults, /Start a new design/);
+  assert.match(publicRoute, /prismaPublishedFloorPlanRevisionDataSource/);
+  assert.match(publicRoute, /"Cache-Control": SAFE_CACHE_CONTROL/);
+  assert.doesNotMatch(publicRoute, /offset:|stale-while-revalidate/);
+  assert.match(prismaSource, /floorPlanRevision\.findMany/);
+  assert.doesNotMatch(prismaSource, /floorPlanAddressBinding\.findMany/);
+  assert.match(prismaSource, /orderBy: \[\{ publishedAt: "desc" \}, \{ id: "asc" \}\]/);
 
   console.log("Floor-plan catalog repository checks passed.");
 }

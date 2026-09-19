@@ -154,6 +154,11 @@ assert.match(
   /process\.env\.NODE_ENV !== "production"[\s\S]*__INTERIOR_AI_ENABLE_GLB_DIAGNOSTICS__/,
 );
 assert.match(source, /observer\.observe\(\{ type: "longtask", buffered: true \}\)/);
+assert.doesNotMatch(
+  source,
+  /requestAnimationFrame|startFrameGapObserver/,
+  "diagnostics must not install a continuous animation-frame observer",
+);
 assert.match(source, /entry\.startTime < state\.startedAtMs/);
 assert.match(source, /Unsupported entry types must never affect model loading/);
 assert.match(

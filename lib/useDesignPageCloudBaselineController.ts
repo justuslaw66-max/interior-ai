@@ -13,12 +13,14 @@ import {
   beginCloudBaselineLoad,
   cancelCloudBaselineLoad,
   createDetachedCloudBaseline,
+  createPendingCloudTransitionBaseline,
   failCloudBaselineLoad,
   installPendingCloudBaseline,
   isCloudWriteBlocked,
   stagePendingCloudWriteBaseline,
   type CloudBaselineIdentity,
   type CloudBaselineState,
+  type CloudBaselineTransitionSnapshot,
 } from "@/lib/design-page-cloud-baseline";
 import type { DesignPageCloudWriteRequestIdentity } from "@/lib/design-page-cloud-write-queue";
 
@@ -222,6 +224,60 @@ function useDetachCloudBaseline(
   }, [documentEpochRef, transition]);
 }
 
+function useConflictCopyBaselineTransition(
+  store: BaselineStore,
+  documentEpochRef: MutableRefObject<number>
+) {
+  const captureTransition = useCallback(
+    (): CloudBaselineTransitionSnapshot => ({
+      state: store.baselineRef.current,
+      documentEpoch: documentEpochRef.current,
+    }),
+    [documentEpochRef, store.baselineRef]
+  );
+  const canCommitTransition = useCallback(
+    (snapshot: CloudBaselineTransitionSnapshot) =>
+      snapshot.state === store.baselineRef.current &&
+      snapshot.documentEpoch === documentEpochRef.current,
+    [documentEpochRef, store.baselineRef]
+  );
+  const commitTransition = useCallback(
+    (input: {
+      snapshot: CloudBaselineTransitionSnapshot;
+      designId: string;
+      revision: string;
+      fingerprint: string;
+    }) => {
+      if (!canCommitTransition(input.snapshot)) return null;
+      const identity = {
+        designId: input.designId,
+        revision: input.revision,
+        epoch: input.snapshot.documentEpoch + 1,
+      };
+      store.transition(() => createPendingCloudTransitionBaseline({
+        identity,
+        fingerprint: input.fingerprint,
+      }));
+      documentEpochRef.current = identity.epoch;
+      return identity;
+    },
+    [canCommitTransition, documentEpochRef, store]
+  );
+  const restoreTransition = useCallback(
+    (snapshot: CloudBaselineTransitionSnapshot) => {
+      documentEpochRef.current = snapshot.documentEpoch;
+      store.transition(() => snapshot.state);
+    },
+    [documentEpochRef, store]
+  );
+  return {
+    captureTransition,
+    canCommitTransition,
+    commitTransition,
+    restoreTransition,
+  };
+}
+
 function useCurrentWriteBlocked(
   designId: string | null,
   baselineRef: BaselineStore["baselineRef"],
@@ -295,6 +351,10 @@ export function useDesignPageCloudBaselineController(
     store.baselineRef,
     getCurrentIdentity
   );
+  const conflictCopyTransition = useConflictCopyBaselineTransition(
+    store,
+    input.documentEpochRef
+  );
   useAcknowledgePendingBaseline({
     store,
     currentFingerprint: input.currentFingerprint,
@@ -313,6 +373,7 @@ export function useDesignPageCloudBaselineController(
       detach,
       getCurrentIdentity,
       currentWriteIsBlocked,
+      ...conflictCopyTransition,
     },
   };
 }

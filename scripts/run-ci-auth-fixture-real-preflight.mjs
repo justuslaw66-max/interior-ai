@@ -1,3 +1,4 @@
+import { assertAutomaticDatabaseCleanupMayStart } from "./production-certification-database-cleanup-observation.mjs";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import { randomBytes } from "node:crypto";
@@ -606,6 +607,8 @@ export async function runPreparedAuthPreflightDatabaseSequence({
     }
   }
   if (retainedFailure) {
+    const current = readCertificationDatabaseLifecycle({ repositoryRoot, environment: prepared.environment });
+    assertAutomaticDatabaseCleanupMayStart(current.evidence, retainedFailure);
     databaseCompletion = await abortAuthSessionPreflightDatabaseLifecycle({
       repositoryRoot,
       environment: prepared.environment,
@@ -892,6 +895,8 @@ export async function runRealAuthPreflight({
       existsSync(lifecyclePath)
     ) {
       try {
+        const beforeFallback = readCertificationDatabaseLifecycle({ repositoryRoot: process.cwd(), environment });
+        assertAutomaticDatabaseCleanupMayStart(beforeFallback.evidence, orchestrationFailure);
         await abortCertificationDatabase({
           repositoryRoot: process.cwd(),
           environment,
@@ -1004,6 +1009,7 @@ export async function runRealAuthPreflight({
   if (fallbackCleanupFailure) {
     throw new Error(
       "Real auth preflight abort cleanup failed; private recovery evidence was retained",
+      { cause: fallbackCleanupFailure },
     );
   }
   if (workspaceCleanupFailure) {

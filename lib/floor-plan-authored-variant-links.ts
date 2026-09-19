@@ -65,10 +65,6 @@ export type PublicFloorPlanAuthoredVariantGroup = {
     verificationTier: FloorPlanVerificationTier;
     defaultSelected: boolean;
     sourcePage: number | null;
-    addressBinding: {
-      id: string;
-      transform: FloorPlanAddressTransform;
-    };
   }>;
 };
 
@@ -336,10 +332,6 @@ export function projectPublicFloorPlanAuthoredVariantGroups(
         verificationTier: option.revision.verificationTier as FloorPlanVerificationTier,
         defaultSelected: option.defaultSelected,
         sourcePage: option.sourcePage,
-        addressBinding: {
-          id: option.addressBinding.id,
-          transform: option.addressBinding.transform,
-        },
       }];
     });
     if (options.length !== group.options.length) continue;

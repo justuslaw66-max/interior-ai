@@ -1607,9 +1607,14 @@ assertion and production enable gate, per-call configuration reader, registered
 import-order regression, and exact historical real-runner coverage.
 `certification:simulate`
 exercises all 19 fixture checks and the value-policy tamper matrix.
-`certification:qualify` may emit only `QUALIFIED_FOR_FINAL_CANDIDATE_CERTIFICATION`,
+`certification:qualify` stdout may emit only `QUALIFIED_FOR_FINAL_CANDIDATE_CERTIFICATION`,
 `NOT_QUALIFIED_SOURCE_CONTRACT_DEFECT`, `NOT_QUALIFIED_ORCHESTRATION_GAP`, or
-`INCONCLUSIVE`. It performs deterministic doctor/simulation/regression/state,
+`INCONCLUSIVE`. On a child failure, stderr identifies the command, arguments,
+exit status, signal and spawn error, followed by its already-buffered stdout
+and stderr. The existing diagnostic privacy policy redacts connection URLs,
+private paths and sensitive projected environment values without truncating
+the captured tail. Child execution buffers, limits, order and classifications
+remain unchanged. It performs deterministic doctor/simulation/regression/state,
 production-artifact/truthfulness, type, zero-warning lint, code-quality,
 tracked-artifact hygiene, syntax, and diff checks without consuming the real
 gates. It may emit `QUALIFIED_FOR_FINAL_CANDIDATE_CERTIFICATION` only when the

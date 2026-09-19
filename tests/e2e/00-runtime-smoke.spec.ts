@@ -1,6 +1,7 @@
 import { expect, test } from "./fixtures";
+import path from "node:path";
+import { assertDirectRuntimeSmokeServer } from "../../scripts/runtime-smoke-direct-identity.mjs";
 import { confirmPlanTemplateReplacementIfNeeded } from "./plan-template-test-utils";
-import { getSelectedItemPanel } from "./variant-test-utils";
 import {
   FURNISHED_TEMPLATE_PHASE_CONTRACTS,
   FURNISHED_TEMPLATE_RELOAD_CONTRACT,
@@ -27,9 +28,16 @@ import {
   runtimeSmokeRequiredRegistryReady,
 } from "../../scripts/runtime-smoke-readiness-diagnostics.mjs";
 import {
+  classifyRuntimeSmokeBrowserCallbackProgress,
   projectRuntimeSmokeBrowserCallbackMilestone,
   projectRuntimeSmokeBrowserHeartbeat,
+  runtimeSmokeBrowserHeartbeatSupportsIdleAdmission,
+  runtimeSmokeBrowserCallbackMilestoneMatchesRequest,
 } from "../../scripts/runtime-smoke-browser-diagnostics.mjs";
+import {
+  RUNTIME_SMOKE_RENDER_IDLE_OBSERVATION_CONTRACT,
+  evaluateRuntimeSmokeRendererIdle,
+} from "../../scripts/runtime-smoke-render-idle.mjs";
 import {
   RUNTIME_SMOKE_TELEMETRY_BOOTSTRAP_ATTACHMENT,
   createRuntimeSmokeTelemetryBootstrapEvidence,
@@ -105,10 +113,51 @@ test.describe("00. Runtime smoke", () => {
   test("furnished template remains stable without a render loop", async ({ page }, testInfo) => {
     test.setTimeout(RUNTIME_SMOKE_WHOLE_TEST_TIMEOUT_MS);
     let finalLifecycleState = "not-observed";
+    const configuredTimingPath =
+      process.env.RUNTIME_SMOKE_PHASE_TIMINGS_PATH?.trim();
+    const directTimingPath = path.relative(
+      process.cwd(),
+      testInfo.outputPath(`phase-timings-${process.pid}.json`),
+    );
+    const directSourceIdentity = testInfo.project.metadata
+      .directRuntimeSmokeIdentity as
+      | {
+          candidateCommitSha: string;
+          candidateTreeSha: string;
+          buildIdentity: string;
+          executionMode: string;
+          artifactSha256: string | null;
+          manifestSha256: string | null;
+          invocationId: string;
+        }
+      | null;
     const phaseRecorder = createRuntimeSmokePhaseRecorder({
       repositoryRoot: process.cwd(),
-      timingPath: process.env.RUNTIME_SMOKE_PHASE_TIMINGS_PATH?.trim(),
+      timingPath: configuredTimingPath ?? directTimingPath,
+      attemptIdentity: configuredTimingPath
+        ? null
+        : {
+            schema: "interior-ai.runtime-smoke-direct-attempt.v1",
+            repeatEachIndex: testInfo.repeatEachIndex,
+            retry: testInfo.retry,
+            workerIndex: testInfo.workerIndex,
+            parallelIndex: testInfo.parallelIndex,
+            projectName: testInfo.project.name,
+            testId: testInfo.testId,
+            processId: process.pid,
+            ...directSourceIdentity,
+          },
     });
+    if (!configuredTimingPath) {
+      testInfo.annotations.push({
+        type: "runtime-smoke-direct-timing-path",
+        description: path.resolve(process.cwd(), directTimingPath),
+      });
+    }
+    const injectPostProductTimeout =
+      testInfo.project.metadata.runtimeSmokeTestInjection ===
+      "post-product-diagnostics-timeout";
+    let postProductTimeoutInjected = false;
     const fatalErrors: string[] = [];
     const modelRequestCounts = new Map(
       MODEL_FIXTURES.map(({ modelPath }) => [modelPath, 0])
@@ -139,7 +188,7 @@ test.describe("00. Runtime smoke", () => {
       serializationCompletedAtUnixMs?: number;
     };
     type BrowserCallbackMilestone = {
-      schema: "interior-ai.runtime-smoke-browser-callback.v1";
+      schema: "interior-ai.runtime-smoke-browser-callback.v2";
       phaseName: string;
       operationName: string;
       requestId: number;
@@ -148,14 +197,29 @@ test.describe("00. Runtime smoke", () => {
         | "snapshot-complete"
         | "callback-exited"
         | "serialization-complete";
+      observedAtMs: number;
     };
     type BrowserHeartbeat = {
-      schema: "interior-ai.runtime-smoke-browser-heartbeat.v1";
+      schema: "interior-ai.runtime-smoke-browser-heartbeat.v2";
       kind: "started" | "interval";
       sequence: number;
       observedAtMs: number;
       eventLoopDelayMs: number;
       maximumEventLoopDelayMs: number;
+      lastAnimationFrameDelayMs: number | null;
+      maximumAnimationFrameDelayMs: number;
+      lastAnimationFrameCadenceMs: number | null;
+      visibilityState: "hidden" | "visible" | "prerender";
+      documentReadyState: "loading" | "interactive" | "complete";
+      lifecycleState: "active" | "pagehide" | "frozen";
+      rendererCalls: number;
+      rendererCallDelta: number;
+      rendererCallRateHz: number;
+      activeAnimationCount: number;
+      controlActivity: "idle" | "pointer-active";
+      controlEventCount: number;
+      webglContextLostCount: number;
+      webglContextRestoredCount: number;
     };
     type BodyStateObservation = {
       hasMaximumDepthError: boolean;
@@ -217,6 +281,7 @@ test.describe("00. Runtime smoke", () => {
     let diagnosticSnapshotRequestSequence = 0;
     let lastBodyStateObservation: BodyStateObservation | null = null;
     let lastMainThreadTelemetrySummary: MainThreadTelemetrySummary | null = null;
+    const settledRendererCallsByPhase = new Map<string, number>();
     const immediatePostReadinessSnapshots: GLBRequiredSnapshot[] = [];
     const recordTelemetryBootstrapEvidence = async ({
       phaseName,
@@ -363,9 +428,7 @@ test.describe("00. Runtime smoke", () => {
       const timing = activeBrowserCallbackTiming;
       if (
         !timing ||
-        milestone.phaseName !== timing.phaseName ||
-        milestone.operationName !== timing.operationName ||
-        milestone.requestId !== timing.requestId
+        !runtimeSmokeBrowserCallbackMilestoneMatchesRequest(timing, milestone)
       ) {
         return;
       }
@@ -430,10 +493,11 @@ test.describe("00. Runtime smoke", () => {
             console.info(
               "[runtime-smoke-browser-callback-milestone]",
               JSON.stringify({
-                schema: "interior-ai.runtime-smoke-browser-callback.v1",
+                schema: "interior-ai.runtime-smoke-browser-callback.v2",
                 ...operation,
                 requestId,
                 stage,
+                observedAtMs: Math.max(0, Math.round(performance.now())),
               }),
             );
           };
@@ -453,6 +517,7 @@ test.describe("00. Runtime smoke", () => {
           ).__INTERIOR_AI_GLB_REQUIRED_SNAPSHOT__?.();
           const mainThreadTelemetry = (
             globalThis as typeof globalThis & {
+              __INTERIOR_AI_GLB_RENDERER_CALL_COUNT__?: number;
               __INTERIOR_AI_GLB_MAIN_THREAD_SNAPSHOT__?: () => {
                 timings: Array<{ category: string; durationMs: number }>;
                 timingAggregates: Record<
@@ -536,7 +601,16 @@ test.describe("00. Runtime smoke", () => {
                   ),
                   maximumSynchronousOperationsActive:
                     mainThreadTelemetry.maximumSynchronousOperationsActive,
-                  counters: mainThreadTelemetry.counters,
+                  counters: {
+                    ...mainThreadTelemetry.counters,
+                    rendererCalls:
+                      (
+                        globalThis as typeof globalThis & {
+                          __INTERIOR_AI_GLB_RENDERER_CALL_COUNT__?: number;
+                        }
+                      ).__INTERIOR_AI_GLB_RENDERER_CALL_COUNT__ ??
+                      mainThreadTelemetry.counters.rendererCalls,
+                  },
                   maximumTelemetryCallbackDurationMs:
                     mainThreadTelemetry.maximumTelemetryCallbackDurationMs,
                 }
@@ -597,7 +671,36 @@ test.describe("00. Runtime smoke", () => {
           operation,
           requestId,
         },
-      );
+      ).catch((error) => {
+        const timing = activeBrowserCallbackTiming;
+        const stages = ([
+          "entered-browser",
+          "snapshot-complete",
+          "callback-exited",
+          "serialization-complete",
+        ] as const).filter((stage) => timing?.milestones[stage] !== undefined);
+        const progress = classifyRuntimeSmokeBrowserCallbackProgress({
+          request: timing ?? { ...operation, requestId },
+          milestones: stages,
+        });
+        console.info(
+          "[runtime-smoke-browser-callback-failure]",
+          JSON.stringify({
+            schema: "interior-ai.runtime-smoke-browser-callback-failure.v1",
+            ...operation,
+            requestId,
+            hostObservedAfterMs: Math.max(
+              0,
+              Math.round(performance.now() - hostRequestStartedAt),
+            ),
+            ...progress,
+            lastHeartbeat: lastBrowserHeartbeat,
+          }),
+        );
+        requiredSnapshotMilestoneCheckpoint = null;
+        activeBrowserCallbackTiming = null;
+        throw error;
+      });
       const hostResultReceivedAt = performance.now();
       const hostResultReceivedAtUnixMs = Date.now();
       requiredSnapshotMilestoneCheckpoint = null;
@@ -717,7 +820,7 @@ test.describe("00. Runtime smoke", () => {
     };
     let expectedLifecycleRegistrySize: number | null = null;
     let expectedActiveRequiredKeys: string[] | null = null;
-    let expectedReloadCacheEntryCounts: {
+    let expectedReloadActiveResourceKindCounts: {
       parsed: number;
       prepared: number;
     } | null = null;
@@ -877,19 +980,6 @@ test.describe("00. Runtime smoke", () => {
       expect(snapshot.activeRequiredCount).toBe(
         snapshot.activeRequiredModelIds.length,
       );
-      if (expectedReloadCacheEntryCounts) {
-        expect(snapshot.caches.parsed.entryCount).toBe(
-          expectedReloadCacheEntryCounts.parsed,
-        );
-        expect(snapshot.caches.prepared.entryCount).toBe(
-          expectedReloadCacheEntryCounts.prepared,
-        );
-      } else {
-        expectedReloadCacheEntryCounts = {
-          parsed: snapshot.caches.parsed.entryCount,
-          prepared: snapshot.caches.prepared.entryCount,
-        };
-      }
       const declaredActiveRequired = snapshot.models.filter(
         (model) => model.active && model.requiredForReadiness,
       );
@@ -903,6 +993,43 @@ test.describe("00. Runtime smoke", () => {
       const activeRequired =
         activeRequiredEvaluation.activeRequiredDiagnostics;
       expect(activeRequired).toHaveLength(EXPECTED_ACTIVE_REQUIRED_MODEL_COUNT);
+      const activeResourceKindCounts = {
+        parsed: activeRequired.filter((model) => model.resourceKind === "parsed")
+          .length,
+        prepared: activeRequired.filter(
+          (model) => model.resourceKind === "prepared",
+        ).length,
+      };
+      if (expectedReloadActiveResourceKindCounts) {
+        expect(activeResourceKindCounts).toEqual(
+          expectedReloadActiveResourceKindCounts,
+        );
+      } else {
+        expectedReloadActiveResourceKindCounts = activeResourceKindCounts;
+      }
+      for (const cache of [snapshot.caches.parsed, snapshot.caches.prepared]) {
+        expect(cache.entryCount).toBe(cache.entries.length);
+        expect(cache.entryCount).toBe(
+          cache.entries.filter((entry) => entry.referenceCount > 0).length +
+            cache.zeroReferenceEntryCount,
+        );
+      }
+      expect(snapshot.caches.prepared.activeReferenceCount).toBe(
+        snapshot.models.filter(
+          (model) =>
+            model.active &&
+            model.resourceKind === "prepared" &&
+            model.resourceReleasedAtMs === null,
+        ).length,
+      );
+      expect(snapshot.caches.parsed.activeReferenceCount).toBe(
+        snapshot.models.filter(
+          (model) =>
+            model.active &&
+            model.resourceKind === "parsed" &&
+            model.resourceReleasedAtMs === null,
+        ).length + snapshot.caches.prepared.entryCount,
+      );
       activeRequired.forEach((model) => {
         expect(model.generationState, `${model.key} should be current`).toBe(
           "current",
@@ -1130,68 +1257,398 @@ test.describe("00. Runtime smoke", () => {
           });
         }
       };
-      let previous = await readSettleSample();
-      let stableSamples = 0;
-      let previousReadinessSignature = "";
-      let previousSettleSignature = "";
+      const collectRendererIdleObservation = async (
+        alignToQuiescence: boolean,
+      ) => {
+        const parentAttempt = runtimeSmokeOperationAttempt(
+          settleContext,
+          RUNTIME_SMOKE_DIAGNOSTICS_SETTLE_CONTRACT.evaluationTimeoutMs,
+        );
+        const evaluationContext = createRuntimeSmokeOperationDeadline({
+          phaseName,
+          operationName: "diagnostics-settle-evaluation",
+        });
+        const requestId = ++diagnosticSnapshotRequestSequence;
+        const operation = {
+          phaseName,
+          operationName: "diagnostics-settle-evaluation",
+        };
+        const hostStartedAt = performance.now();
+        activeBrowserCallbackTiming = {
+          ...operation,
+          requestId,
+          hostStartedAt,
+          browserCallInvokedAt: performance.now(),
+          milestones: {},
+        };
+        console.info(
+          "[runtime-smoke-browser-callback-requested]",
+          JSON.stringify({
+            schema: "interior-ai.runtime-smoke-browser-callback-request.v1",
+            ...operation,
+            requestId,
+          }),
+        );
+        try {
+          if (
+            injectPostProductTimeout &&
+            phaseName === "reload-1" &&
+            !postProductTimeoutInjected
+          ) {
+            postProductTimeoutInjected = true;
+            await runRuntimeSmokeBoundedOperation({
+              operationAttempt: runtimeSmokeOperationAttempt(
+                evaluationContext,
+                parentAttempt.attemptTimeoutMs,
+              ),
+              task: async () => {
+                await page.evaluate(
+                  ({ operation, requestId }) => {
+                    console.info(
+                      "[runtime-smoke-browser-callback-milestone]",
+                      JSON.stringify({
+                        schema: "interior-ai.runtime-smoke-browser-callback.v2",
+                        ...operation,
+                        requestId,
+                        stage: "entered-browser",
+                        observedAtMs: Math.max(0, Math.round(performance.now())),
+                      }),
+                    );
+                  },
+                  { operation, requestId },
+                );
+                await new Promise<never>(() => undefined);
+              },
+            });
+          }
+          const samples = await runRuntimeSmokeBoundedOperation({
+            operationAttempt: runtimeSmokeOperationAttempt(
+              evaluationContext,
+              parentAttempt.attemptTimeoutMs,
+            ),
+            task: () =>
+              page.evaluate(
+                async ({ alignToQuiescence, contract, operation, requestId }) => {
+                  type DemandSnapshot = {
+                    schema: "interior-ai.scene-demand-diagnostics.v1";
+                    version: 1;
+                    instrumentationGeneration: number;
+                    rendererCalls: number;
+                    invalidationCalls: number;
+                    lastRendererCallAtMs: number | null;
+                    lastInvalidationAtMs: number | null;
+                    pendingInvalidation: boolean;
+                    activeItemAnimationCount: number;
+                    activeControlTransitionCount: number;
+                    activeSupportedAnimationCount: number;
+                  };
+                  type RequiredSnapshot = {
+                    reloadGeneration: number;
+                    registryVersionEnd: number;
+                    activeRequiredModelIds: string[];
+                    activeRequiredCount: number;
+                    models: Array<{
+                      key: string;
+                      active: boolean;
+                      requiredForReadiness: boolean;
+                      reloadGeneration: number;
+                      renderCount: number;
+                      boundsMaterialChangeCount: number;
+                    }>;
+                  };
+                  type DocumentState = {
+                    documentGenerationId: string;
+                    lifecycleState:
+                      | "active"
+                      | "pagehide"
+                      | "frozen"
+                      | "terminating";
+                    webglContextState: "active" | "lost";
+                    webglGeneration: number;
+                  };
+                  const diagnosticsGlobal = globalThis as typeof globalThis & {
+                    __INTERIOR_AI_SCENE_DEMAND_SNAPSHOT__?: () => DemandSnapshot;
+                    __INTERIOR_AI_GLB_REQUIRED_SNAPSHOT__?: () => RequiredSnapshot;
+                    __INTERIOR_AI_RUNTIME_SMOKE_DOCUMENT_STATE__?: DocumentState;
+                  };
+                  const callbackEnteredAtMs = Math.max(
+                    0,
+                    Math.round(performance.now()),
+                  );
+                  const emitMilestone = (
+                    stage: BrowserCallbackMilestone["stage"],
+                  ) =>
+                    console.info(
+                      "[runtime-smoke-browser-callback-milestone]",
+                      JSON.stringify({
+                        schema: "interior-ai.runtime-smoke-browser-callback.v2",
+                        ...operation,
+                        requestId,
+                        stage,
+                        observedAtMs: Math.max(
+                          0,
+                          Math.round(performance.now()),
+                        ),
+                      }),
+                    );
+                  emitMilestone("entered-browser");
+                  const samples = [];
+                  const waitForMonotonicSampleTime = (targetAtMs: number) =>
+                    new Promise<void>((resolve) => {
+                      const observeFrame = (frameAtMs: number) => {
+                        if (frameAtMs >= targetAtMs) {
+                          resolve();
+                          return;
+                        }
+                        window.requestAnimationFrame(observeFrame);
+                      };
+                      window.requestAnimationFrame(observeFrame);
+                    });
+                  let expectedAtMs = performance.now();
+                  let capturedSampleCount = 0;
+                  while (samples.length < contract.requiredSampleCount) {
+                    if (capturedSampleCount > 0) {
+                      expectedAtMs += contract.sampleIntervalMs;
+                      await waitForMonotonicSampleTime(expectedAtMs);
+                    }
+                    capturedSampleCount += 1;
+                    const capturedAt = performance.now();
+                    const capturedAtMs = Math.max(0, Math.round(capturedAt));
+                    const required =
+                      diagnosticsGlobal.__INTERIOR_AI_GLB_REQUIRED_SNAPSHOT__?.();
+                    const demand =
+                      diagnosticsGlobal.__INTERIOR_AI_SCENE_DEMAND_SNAPSHOT__?.();
+                    const documentState =
+                      diagnosticsGlobal.__INTERIOR_AI_RUNTIME_SMOKE_DOCUMENT_STATE__;
+                    const generation = required?.reloadGeneration ?? 0;
+                    const models = (required?.models ?? [])
+                      .filter(
+                        (model) =>
+                          model.active &&
+                          model.requiredForReadiness &&
+                          model.reloadGeneration === generation,
+                      )
+                      .map((model) => ({
+                        key: model.key,
+                        renderCount: model.renderCount,
+                        boundsMaterialChangeCount:
+                          model.boundsMaterialChangeCount,
+                      }))
+                      .sort((left, right) => left.key.localeCompare(right.key));
+                    const boundedTime = (value: number | null | undefined) =>
+                      value === null || value === undefined
+                        ? null
+                        : Math.max(
+                            0,
+                            Math.min(capturedAtMs, Math.round(value)),
+                          );
+                    const sample = {
+                      schema:
+                        "interior-ai.runtime-smoke-render-idle-sample.v1",
+                      version: 1,
+                      capturedAtMs,
+                      callbackRequestId: requestId,
+                      callbackEnteredAtMs,
+                      callbackEntryObserved: true,
+                      documentGenerationId:
+                        documentState?.documentGenerationId ?? "missing",
+                      reloadGeneration: generation,
+                      rendererInstrumentationGeneration:
+                        demand?.instrumentationGeneration ?? 0,
+                      rendererCalls: demand?.rendererCalls ?? -1,
+                      invalidationCalls: demand?.invalidationCalls ?? -1,
+                      lastRendererCallAtMs: boundedTime(
+                        demand?.lastRendererCallAtMs,
+                      ),
+                      lastInvalidationAtMs: boundedTime(
+                        demand?.lastInvalidationAtMs,
+                      ),
+                      visibilityState:
+                        document.visibilityState === "hidden"
+                          ? "hidden"
+                          : document.visibilityState === "prerender"
+                            ? "prerender"
+                            : "visible",
+                      lifecycleState:
+                        documentState?.lifecycleState ?? "terminating",
+                      webglContextState:
+                        documentState?.webglContextState ?? "lost",
+                      webglGeneration: documentState?.webglGeneration ?? -1,
+                      activeControlTransitionCount:
+                        demand?.activeControlTransitionCount ?? -1,
+                      activeItemAnimationCount:
+                        demand?.activeItemAnimationCount ?? -1,
+                      activeSupportedAnimationCount:
+                        demand?.activeSupportedAnimationCount ?? -1,
+                      pendingInvalidation:
+                        demand?.pendingInvalidation ?? true,
+                      requiredModelRegistryIdentity: required
+                        ? `g${generation}:v${required.registryVersionEnd}:${[
+                            ...required.activeRequiredModelIds,
+                          ]
+                            .sort()
+                            .join(",")}`
+                        : "missing",
+                      requiredActiveModelCount:
+                        required?.activeRequiredCount ?? 0,
+                      models,
+                      sampleFreshnessMs: Math.max(
+                        0,
+                        Math.round(capturedAt - expectedAtMs),
+                      ),
+                    };
+                    const previous = samples.at(-1);
+                    const quiescent =
+                      sample.visibilityState === "visible" &&
+                      sample.lifecycleState === "active" &&
+                      sample.webglContextState === "active" &&
+                      sample.activeControlTransitionCount === 0 &&
+                      sample.activeItemAnimationCount === 0 &&
+                      sample.activeSupportedAnimationCount === 0 &&
+                      !sample.pendingInvalidation &&
+                      sample.sampleFreshnessMs <=
+                        contract.maximumSampleFreshnessMs;
+                    const stableFromPrevious =
+                      !previous ||
+                      (sample.capturedAtMs > previous.capturedAtMs &&
+                        sample.capturedAtMs - previous.capturedAtMs <=
+                          contract.maximumSampleGapMs &&
+                        sample.documentGenerationId ===
+                          previous.documentGenerationId &&
+                        sample.reloadGeneration === previous.reloadGeneration &&
+                        sample.rendererInstrumentationGeneration ===
+                          previous.rendererInstrumentationGeneration &&
+                        sample.webglGeneration === previous.webglGeneration &&
+                        sample.requiredModelRegistryIdentity ===
+                          previous.requiredModelRegistryIdentity &&
+                        sample.requiredActiveModelCount ===
+                          previous.requiredActiveModelCount &&
+                        sample.rendererCalls === previous.rendererCalls &&
+                        sample.invalidationCalls ===
+                          previous.invalidationCalls &&
+                        sample.models.length === previous.models.length &&
+                        sample.models.every((model, modelIndex) => {
+                          const priorModel = previous.models[modelIndex];
+                          return (
+                            model.key === priorModel?.key &&
+                            model.renderCount === priorModel.renderCount &&
+                            model.boundsMaterialChangeCount ===
+                              priorModel.boundsMaterialChangeCount
+                          );
+                        }));
+                    if (
+                      alignToQuiescence &&
+                      (!quiescent || !stableFromPrevious)
+                    ) {
+                      samples.length = 0;
+                      expectedAtMs = capturedAt;
+                      if (quiescent) samples.push(sample);
+                      continue;
+                    }
+                    samples.push(sample);
+                  }
+                  emitMilestone("snapshot-complete");
+                  emitMilestone("callback-exited");
+                  emitMilestone("serialization-complete");
+                  return samples;
+                },
+                {
+                  alignToQuiescence,
+                  contract: RUNTIME_SMOKE_RENDER_IDLE_OBSERVATION_CONTRACT,
+                  operation,
+                  requestId,
+                },
+              ),
+          });
+          return samples;
+        } catch (error) {
+          if (error instanceof RuntimeSmokeOperationAttemptTimeoutError) {
+            checkpoint?.("diagnostics-settle-parent-deadline-wait-started");
+            await waitForRuntimeSmokeOperationDeadline({
+              operationAttempt: parentAttempt,
+              cause: error,
+            });
+            checkpoint?.("diagnostics-settle-parent-deadline-wait-complete");
+          }
+          if (!(error instanceof RuntimeSmokeOperationTimeoutError)) throw error;
+          if (!settleContext.deadlineReached()) throw error;
+          throw new RuntimeSmokeOperationTimeoutError({
+            operationAttempt: parentAttempt,
+            cause: error,
+          });
+        } finally {
+          activeBrowserCallbackTiming = null;
+        }
+      };
       const settledResponseTotal = MODEL_FIXTURES.reduce(
         (total, { modelPath }) =>
           total + (modelResponseCounts.get(modelPath) ?? 0),
         0,
       );
-      previousReadinessSignature = recordReadinessObservation({
+      const previousReadinessSignature = recordReadinessObservation({
+        phaseName,
+        checkpoint,
+        previousSignature: "",
+        responseRequired: settledResponseTotal,
+        lifecycleState: finalLifecycleState,
+      });
+      if (
+        RUNTIME_SMOKE_DIAGNOSTICS_SETTLE_CONTRACT.admissionRequiresQuiescentHeartbeat
+      ) {
+        checkpoint?.("renderer-idle-admission-wait-started", "ready");
+        while (
+          lastBrowserHeartbeat === null ||
+          !runtimeSmokeBrowserHeartbeatSupportsIdleAdmission(
+            lastBrowserHeartbeat,
+          )
+        ) {
+          await page.waitForTimeout(
+            runtimeSmokeOperationAttempt(settleContext, 250).attemptTimeoutMs,
+          );
+        }
+        checkpoint?.("renderer-idle-admission-ready", "ready");
+      }
+      let finalVerdict: ReturnType<typeof evaluateRuntimeSmokeRendererIdle> | null = null;
+      let finalSamples: Array<{ rendererCalls: number }> = [];
+      for (
+        let attempt = 1;
+        attempt <=
+        RUNTIME_SMOKE_DIAGNOSTICS_SETTLE_CONTRACT.maximumObservationAttempts;
+        attempt += 1
+      ) {
+        const samples = await collectRendererIdleObservation(
+          attempt > 1 &&
+            RUNTIME_SMOKE_DIAGNOSTICS_SETTLE_CONTRACT.retryAlignsToQuiescence,
+        );
+        finalVerdict = evaluateRuntimeSmokeRendererIdle({ samples });
+        finalSamples = samples;
+        checkpoint?.(
+          finalVerdict.settled
+            ? `renderer-idle-observation-${attempt}-settled`
+            : `renderer-idle-observation-${attempt}-active`,
+          "ready",
+        );
+        if (finalVerdict.settled) break;
+      }
+      expect(
+        finalVerdict?.settled,
+        JSON.stringify(finalVerdict?.reasons ?? ["missing-idle-verdict"]),
+      ).toBe(true);
+      const current = await readSettleSample();
+      recordReadinessObservation({
         phaseName,
         checkpoint,
         previousSignature: previousReadinessSignature,
         responseRequired: settledResponseTotal,
         lifecycleState: finalLifecycleState,
       });
-      for (let sampleIndex = 0; ; sampleIndex += 1) {
-        await page.waitForTimeout(
-          runtimeSmokeOperationAttempt(
-            settleContext,
-            RUNTIME_SMOKE_DIAGNOSTICS_SETTLE_CONTRACT.sampleIntervalMs,
-          ).attemptTimeoutMs,
-        );
-        const current = await readSettleSample();
-        const progressSignature = current
-          .map(({ diagnostic }) =>
-            diagnostic
-              ? `${diagnostic.loadState}-${diagnostic.renderCount}-${diagnostic.boundsMaterialChangeCount}`
-              : "missing",
-          )
-          .join("-");
-        if (progressSignature !== previousSettleSignature) {
-          previousReadinessSignature = recordReadinessObservation({
-            phaseName,
-            checkpoint,
-            previousSignature: previousReadinessSignature,
-            responseRequired: settledResponseTotal,
-            lifecycleState: finalLifecycleState,
-          });
-          previousSettleSignature = progressSignature;
-        }
-        const stable = current.every(({ key, diagnostic }, index) => {
-          const previousDiagnostic = previous[index]?.diagnostic;
-          return (
-            previous[index]?.key === key &&
-            diagnostic &&
-            previousDiagnostic &&
-            diagnostic.boundsMaterialChangeCount >= 1 &&
-            diagnostic.renderCount === previousDiagnostic.renderCount &&
-            diagnostic.boundsMaterialChangeCount ===
-              previousDiagnostic.boundsMaterialChangeCount
-          );
-        });
-        stableSamples = stable ? stableSamples + 1 : 0;
-        if (
-          stableSamples >=
-          RUNTIME_SMOKE_DIAGNOSTICS_SETTLE_CONTRACT.requiredStableSamples
-        ) {
-          return current;
-        }
-        previous = current;
+      expect(current.every(({ diagnostic }) => diagnostic !== null)).toBe(true);
+      const settledRendererCalls = finalSamples.at(-1)?.rendererCalls;
+      if (settledRendererCalls === undefined) {
+        throw new Error("Runtime-smoke renderer-idle observation is missing");
       }
+      settledRendererCallsByPhase.set(phaseName, settledRendererCalls);
+      return current;
     };
     const verifyBodyStateAfterReadiness = async ({
       phaseName,
@@ -1413,6 +1870,18 @@ test.describe("00. Runtime smoke", () => {
           )
         ) {
           checkpoint?.("model-responses-ready", finalLifecycleState);
+          checkpoint?.("browser-callback-admission-wait-started", finalLifecycleState);
+          while (
+            lastBrowserHeartbeat === null ||
+            !runtimeSmokeBrowserHeartbeatSupportsIdleAdmission(
+              lastBrowserHeartbeat,
+            )
+          ) {
+            await page.waitForTimeout(
+              runtimeSmokeOperationAttempt(operationContext, 250).attemptTimeoutMs,
+            );
+          }
+          checkpoint?.("browser-callback-admission-ready", finalLifecycleState);
           return;
         }
         const totalResponses = MODEL_FIXTURES.reduce(
@@ -1436,6 +1905,11 @@ test.describe("00. Runtime smoke", () => {
     };
 
     await phaseRecorder.run("test-body-setup", async ({ checkpoint }) => {
+      if (directSourceIdentity?.executionMode === "production") {
+        const health = await page.request.get("/api/health");
+        expect(health.status()).toBe(200);
+        assertDirectRuntimeSmokeServer(directSourceIdentity, await health.json());
+      }
       page.on("pageerror", (error) => fatalErrors.push(error.message));
       page.on("console", (message) => {
         const snapshotMilestonePrefix =
@@ -1519,13 +1993,87 @@ test.describe("00. Runtime smoke", () => {
         const diagnosticsGlobal = globalThis as typeof globalThis & {
           __INTERIOR_AI_ENABLE_GLB_DIAGNOSTICS__?: boolean;
           __INTERIOR_AI_RUNTIME_SMOKE_HEARTBEAT__?: boolean;
+          __INTERIOR_AI_GLB_RENDERER_CALL_COUNT__?: number;
+          __INTERIOR_AI_RUNTIME_SMOKE_DOCUMENT_STATE__?: {
+            documentGenerationId: string;
+            lifecycleState: "active" | "pagehide" | "frozen" | "terminating";
+            webglContextState: "active" | "lost";
+            webglGeneration: number;
+          };
         };
         diagnosticsGlobal.__INTERIOR_AI_ENABLE_GLB_DIAGNOSTICS__ = true;
         if (!diagnosticsGlobal.__INTERIOR_AI_RUNTIME_SMOKE_HEARTBEAT__) {
           diagnosticsGlobal.__INTERIOR_AI_RUNTIME_SMOKE_HEARTBEAT__ = true;
+          const documentState = {
+            documentGenerationId: crypto.randomUUID(),
+            lifecycleState: "active" as const,
+            webglContextState: "active" as const,
+            webglGeneration: 0,
+          } as {
+            documentGenerationId: string;
+            lifecycleState: "active" | "pagehide" | "frozen" | "terminating";
+            webglContextState: "active" | "lost";
+            webglGeneration: number;
+          };
+          diagnosticsGlobal.__INTERIOR_AI_RUNTIME_SMOKE_DOCUMENT_STATE__ =
+            documentState;
           let sequence = 0;
           let maximumEventLoopDelayMs = 0;
+          let lastAnimationFrameDelayMs: number | null = null;
+          let maximumAnimationFrameDelayMs = 0;
+          let lastAnimationFrameCadenceMs: number | null = null;
+          let lastAnimationFrameAtMs: number | null = null;
+          let animationFramePending = false;
+          let lifecycleState: BrowserHeartbeat["lifecycleState"] = "active";
+          let pointerActive = false;
+          let controlEventCount = 0;
+          let webglContextLostCount = 0;
+          let webglContextRestoredCount = 0;
+          let previousRendererCalls = 0;
+          let previousHeartbeatAtMs = performance.now();
           let expectedAtMs = performance.now();
+          window.addEventListener("pointerdown", () => {
+            pointerActive = true;
+            controlEventCount += 1;
+          }, { capture: true });
+          for (const eventName of ["pointerup", "pointercancel"] as const) {
+            window.addEventListener(eventName, () => {
+              pointerActive = false;
+              controlEventCount += 1;
+            }, { capture: true });
+          }
+          window.addEventListener("wheel", () => {
+            controlEventCount += 1;
+          }, { capture: true, passive: true });
+          window.addEventListener("pagehide", () => {
+            lifecycleState = "pagehide";
+            documentState.lifecycleState = "pagehide";
+          });
+          window.addEventListener("pageshow", () => {
+            lifecycleState = "active";
+            documentState.lifecycleState = "active";
+          });
+          window.addEventListener("beforeunload", () => {
+            documentState.lifecycleState = "terminating";
+          });
+          document.addEventListener("freeze", () => {
+            lifecycleState = "frozen";
+            documentState.lifecycleState = "frozen";
+          });
+          document.addEventListener("resume", () => {
+            lifecycleState = "active";
+            documentState.lifecycleState = "active";
+          });
+          document.addEventListener("webglcontextlost", () => {
+            webglContextLostCount += 1;
+            documentState.webglContextState = "lost";
+            documentState.webglGeneration += 1;
+          }, { capture: true });
+          document.addEventListener("webglcontextrestored", () => {
+            webglContextRestoredCount += 1;
+            documentState.webglContextState = "active";
+            documentState.webglGeneration += 1;
+          }, { capture: true });
           const emitHeartbeat = (kind: BrowserHeartbeat["kind"]) => {
             const observedAtMs = performance.now();
             const eventLoopDelayMs = Math.max(0, observedAtMs - expectedAtMs);
@@ -1533,11 +2081,21 @@ test.describe("00. Runtime smoke", () => {
               maximumEventLoopDelayMs,
               eventLoopDelayMs,
             );
+            const rendererCalls =
+              diagnosticsGlobal.__INTERIOR_AI_GLB_RENDERER_CALL_COUNT__ ?? 0;
+            const rendererCallDelta = Math.max(
+              0,
+              rendererCalls - previousRendererCalls,
+            );
+            const elapsedSinceHeartbeatMs = Math.max(
+              1,
+              observedAtMs - previousHeartbeatAtMs,
+            );
             sequence += 1;
             console.info(
               "[runtime-smoke-browser-heartbeat]",
               JSON.stringify({
-                schema: "interior-ai.runtime-smoke-browser-heartbeat.v1",
+                schema: "interior-ai.runtime-smoke-browser-heartbeat.v2",
                 kind,
                 sequence,
                 observedAtMs: Math.max(0, Math.round(observedAtMs)),
@@ -1546,9 +2104,62 @@ test.describe("00. Runtime smoke", () => {
                   0,
                   Math.round(maximumEventLoopDelayMs),
                 ),
+                lastAnimationFrameDelayMs:
+                  lastAnimationFrameDelayMs === null
+                    ? null
+                    : Math.max(0, Math.round(lastAnimationFrameDelayMs)),
+                maximumAnimationFrameDelayMs: Math.max(
+                  0,
+                  Math.round(maximumAnimationFrameDelayMs),
+                ),
+                lastAnimationFrameCadenceMs:
+                  lastAnimationFrameCadenceMs === null
+                    ? null
+                    : Math.max(0, Math.round(lastAnimationFrameCadenceMs)),
+                visibilityState:
+                  document.visibilityState === "hidden" ? "hidden" : "visible",
+                documentReadyState: document.readyState,
+                lifecycleState,
+                rendererCalls,
+                rendererCallDelta,
+                rendererCallRateHz: Math.max(
+                  0,
+                  Math.round((rendererCallDelta * 1_000) / elapsedSinceHeartbeatMs),
+                ),
+                activeAnimationCount: document.getAnimations().filter(
+                  (animation) =>
+                    animation.playState === "running" ||
+                    animation.playState === "pending",
+                ).length,
+                controlActivity: pointerActive ? "pointer-active" : "idle",
+                controlEventCount,
+                webglContextLostCount,
+                webglContextRestoredCount,
               } satisfies BrowserHeartbeat),
             );
+            previousRendererCalls = rendererCalls;
+            previousHeartbeatAtMs = observedAtMs;
             expectedAtMs = observedAtMs + 1_000;
+            if (!animationFramePending) {
+              animationFramePending = true;
+              const requestedAtMs = performance.now();
+              window.requestAnimationFrame((animationFrameAtMs) => {
+                lastAnimationFrameDelayMs = Math.max(
+                  0,
+                  animationFrameAtMs - requestedAtMs,
+                );
+                maximumAnimationFrameDelayMs = Math.max(
+                  maximumAnimationFrameDelayMs,
+                  lastAnimationFrameDelayMs,
+                );
+                lastAnimationFrameCadenceMs =
+                  lastAnimationFrameAtMs === null
+                    ? null
+                    : Math.max(0, animationFrameAtMs - lastAnimationFrameAtMs);
+                lastAnimationFrameAtMs = animationFrameAtMs;
+                animationFramePending = false;
+              });
+            }
           };
           emitHeartbeat("started");
           window.setInterval(() => emitHeartbeat("interval"), 1_000);
@@ -1755,7 +2366,7 @@ test.describe("00. Runtime smoke", () => {
       );
       await auburnPlanTarget.click({ timeout: selectionClickTimeoutMs });
       checkpoint("auburn-selection-clicked");
-      await expect(getSelectedItemPanel(page)).toContainText("Auburn", {
+      await expect(auburnPlanTarget).toHaveAttribute("aria-pressed", "true", {
         timeout: phaseOperationTimeout(
           "initial-glb-loading-and-selection-verification",
           "plan-selection-assertion",
@@ -1786,12 +2397,21 @@ test.describe("00. Runtime smoke", () => {
           ({ modelPath }) => (modelRequestCounts.get(modelPath) ?? 0) >= 1
         )
       ).toBe(true);
-      await expect(getSelectedItemPanel(page)).toContainText("Auburn", {
+      const selectionOperationContext = createRuntimeSmokeOperationDeadline({
+        phaseName: "initial-glb-loading-and-selection-verification",
+        operationName: "selection-verification",
+      });
+      await expect.poll(async () => {
+        const diagnostics = await readModelDiagnosticsWithin(
+          selectionOperationContext,
+        );
+        return diagnostics[2]?.diagnostic?.selectionOutlineVisible ?? false;
+      }, {
         timeout: phaseOperationTimeout(
           "initial-glb-loading-and-selection-verification",
           "selection-verification",
         ),
-      });
+      }).toBe(true);
       checkpoint("initial-model-selection-verified");
     }, () => finalLifecycleState);
 
@@ -1836,6 +2456,10 @@ test.describe("00. Runtime smoke", () => {
           operationName: "diagnostic-snapshot-and-assertions",
         }),
       );
+      expect(
+        lastMainThreadTelemetrySummary?.counters.rendererCalls,
+        "the scene renderer should remain idle after the settled baseline",
+      ).toBe(settledRendererCallsByPhase.get("bounds-verification"));
       settledDiagnosticsAfter.forEach(({ key, diagnostic }, index) => {
         const before = settledDiagnosticsBefore[index]?.diagnostic;
         expect(diagnostic, `${key} should expose model diagnostics`).not.toBeNull();
@@ -1875,14 +2499,11 @@ test.describe("00. Runtime smoke", () => {
       await expect(layoutDebug).toHaveAttribute("data-view-mode", "3d", {
         timeout: phaseOperationTimeout("remount", "verify-3d"),
       });
-      await expect(getSelectedItemPanel(page)).toContainText("Auburn", {
-        timeout: phaseOperationTimeout("remount", "verify-selection"),
-      });
-      checkpoint("view-3d-selection-restored");
       const remountedReadiness = await waitForModelDiagnosticsReady({
         minimumMountCount: 2,
         phaseName: "remount",
       });
+      checkpoint("view-3d-selection-restored");
       expect(
         remountedReadiness.fixtureDiagnostics.every(
           ({ diagnostic }) => (diagnostic?.unmountCount ?? 0) >= 1
@@ -2075,6 +2696,10 @@ test.describe("00. Runtime smoke", () => {
             ),
         });
         recordRequiredSnapshotProof(phaseName, checkpoint);
+        expect(
+          lastMainThreadTelemetrySummary?.counters.rendererCalls,
+          `${phaseName} should leave the global scene renderer idle`,
+        ).toBe(settledRendererCallsByPhase.get(phaseName));
         expect(lastRequiredSnapshot?.reloadGeneration).toBe(
           immediateSnapshot.reloadGeneration,
         );

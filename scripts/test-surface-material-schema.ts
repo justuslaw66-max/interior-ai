@@ -1087,7 +1087,7 @@ const bomTopology = buildHousePlan2D([roomWithCanonicalPanelFinish], 4, 3).rooms
 const bomSegment = getWallSegments(bomTopology[0]).find((segment) => segment.wall === "north");
 assert.ok(bomSegment);
 const bomWindowPanels = buildOpeningWallSurfacePanels(bomTopology[0], bomTopology, bomSegment,
-  getWallOpenings(bomTopology[0], bomSegment, bomTopology, mapPlanOpeningsToRoomRenderer([bomWindow])), 2.5);
+  getWallOpenings(bomTopology[0], bomSegment, bomTopology, mapPlanOpeningsToRoomRenderer([bomWindow], bomTopology)), 2.5);
 const sillPanel = bomWindowPanels.find((panel) => panel.role === "interior" && panel.part.key.endsWith("-sill"));
 assert.ok(sillPanel);
 const windowPanelRoom: RoomSnapshot = {
@@ -1103,7 +1103,7 @@ assert.equal(windowBomRows.find((row) => row.wallPanelId === sillPanel.panelId)?
 assert.equal(Math.round(windowBomRows.reduce((sum, row) => sum + row.surfaceAreaSqm, 0) * 100), 3332,
   "The window aperture must be excluded and its lintel/sill areas counted exactly once.");
 const continuousPanelId = getContinuousWallPanelId(bomTopology[0], bomSegment,
-  getWallOpenings(bomTopology[0], bomSegment, bomTopology, mapPlanOpeningsToRoomRenderer([bomWindow])), "interior");
+  getWallOpenings(bomTopology[0], bomSegment, bomTopology, mapPlanOpeningsToRoomRenderer([bomWindow], bomTopology)), "interior");
 assert.ok(continuousPanelId);
 windowPanelRoom.surfaces!.walls!.panels![continuousPanelId] = { materialId: "goodrich-geff-novaclick-gnv-003-ash-oak" };
 const continuousBomRows = buildRoomSurfaceMaterialBomRows([windowPanelRoom], [bomWindow]);

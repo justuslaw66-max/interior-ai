@@ -553,7 +553,7 @@ export function canonicalFloorPlanToDesignSnapshot(
         canonicalWallId: opening.wallId,
         operation: opening.operation,
         evidence: {
-          height: opening.heightEvidence,
+          width: opening.widthEvidence, height: opening.heightEvidence,
           sillHeight: opening.sillHeightEvidence,
         },
       }];

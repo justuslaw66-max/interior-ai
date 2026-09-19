@@ -17,6 +17,8 @@ import {
 } from "@/lib/design-page-house-plan";
 import { getDoorwaySuggestionKey } from "@/lib/design-page-floor-plan-utils";
 import {
+  applyOpeningKindPlanToMetrics,
+  DesignPageOpeningMutationError,
   getDesignPageOpeningMetricsHistoryLabel,
   normalizeDesignPageOpeningMetrics,
   type DesignPageOpeningMetricsPatch,
@@ -48,6 +50,24 @@ type TrackPlanOverlayAction = (
   eventName: string,
   properties?: Record<string, unknown>
 ) => void;
+
+function planOpeningMetrics(
+  opening: RoomOpening2D | undefined,
+  metrics: DesignPageOpeningMetricsPatch,
+  roomHeight: number,
+  onBlocked: (message: string) => void
+): DesignPageOpeningMetricsPatch | null {
+  const normalized = normalizeDesignPageOpeningMetrics({
+    currentOpening: opening, metrics, roomHeight,
+  });
+  try {
+    return opening ? applyOpeningKindPlanToMetrics(opening, normalized) : normalized;
+  } catch (cause) {
+    if (!(cause instanceof DesignPageOpeningMutationError)) throw cause;
+    onBlocked(cause.message);
+    return null;
+  }
+}
 
 export {
   getDesignPageOpeningMetricsHistoryLabel,
@@ -236,17 +256,16 @@ export function useDesignPagePlanOverlayController({
       const currentOpening = planOpeningsRef.current.find(
         (opening) => opening.id === id
       );
-      const normalizedMetrics = normalizeDesignPageOpeningMetrics({
-        currentOpening,
-        metrics,
-        roomHeight,
-      });
+      const plannedMetrics = planOpeningMetrics(
+        currentOpening, metrics, roomHeight, showToast
+      );
+      if (!plannedMetrics) return;
       const historyLabel =
-        getDesignPageOpeningMetricsHistoryLabel(normalizedMetrics);
+        getDesignPageOpeningMetricsHistoryLabel(plannedMetrics);
 
       runHistoryTransaction(historyLabel, () => {
-        if (canonicalTopology?.updateOpeningMetrics(id, normalizedMetrics)) return;
-        handleUpdateOpeningMetrics2DFromPlanAction(id, normalizedMetrics);
+        if (canonicalTopology?.updateOpeningMetrics(id, plannedMetrics)) return;
+        handleUpdateOpeningMetrics2DFromPlanAction(id, plannedMetrics);
       });
     },
     [
@@ -255,6 +274,7 @@ export function useDesignPagePlanOverlayController({
       planOpeningsRef,
       roomHeight,
       runHistoryTransaction,
+      showToast,
     ]
   );
 
@@ -264,7 +284,7 @@ export function useDesignPagePlanOverlayController({
       metrics: { widthMeters: number; offsetMeters: number }
     ) => {
       if (canonicalTopology?.resizeOpening(id, metrics)) return;
-      handleUpdateOpeningMetrics2DFromPlanAction(id, metrics);
+      handleUpdateOpeningMetrics2DFromPlanAction(id, { ...metrics, widthEvidence: "user_confirmed" });
     },
     [canonicalTopology, handleUpdateOpeningMetrics2DFromPlanAction]
   );
