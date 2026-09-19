@@ -5,6 +5,7 @@ import { Lightformer } from "@react-three/drei/core/Lightformer";
 import {
   Component,
   Suspense,
+  useMemo,
   type ErrorInfo,
   type ReactNode,
 } from "react";
@@ -50,6 +51,30 @@ export function EnvironmentController({
 }: {
   lighting: ResolvedEditorLighting;
 }) {
+  const { intensity } = lighting.environment;
+  // drei re-renders the environment cube and its PMREM whenever these
+  // children change identity, so rebuild them only when their inputs change.
+  const lightformers = useMemo(
+    () => (
+      <>
+        <Lightformer
+          intensity={intensity}
+          color={ENVIRONMENT_KEY}
+          position={[5, 6, 4]}
+          rotation={[0, Math.PI / 4, 0]}
+          scale={[8, 8, 1]}
+        />
+        <Lightformer
+          intensity={intensity * 0.35}
+          color={ENVIRONMENT_FILL}
+          position={[-4, 3, -3]}
+          rotation={[0, -Math.PI / 6, 0]}
+          scale={[6, 6, 1]}
+        />
+      </>
+    ),
+    [intensity]
+  );
   if (!lighting.environment.enabled) return null;
 
   return (
@@ -61,20 +86,7 @@ export function EnvironmentController({
           background={lighting.environment.backgroundVisible}
           resolution={lighting.environment.resolution}
         >
-          <Lightformer
-            intensity={lighting.environment.intensity}
-            color={ENVIRONMENT_KEY}
-            position={[5, 6, 4]}
-            rotation={[0, Math.PI / 4, 0]}
-            scale={[8, 8, 1]}
-          />
-          <Lightformer
-            intensity={lighting.environment.intensity * 0.35}
-            color={ENVIRONMENT_FILL}
-            position={[-4, 3, -3]}
-            rotation={[0, -Math.PI / 6, 0]}
-            scale={[6, 6, 1]}
-          />
+          {lightformers}
         </Environment>
       </Suspense>
     </EnvironmentFailureBoundary>

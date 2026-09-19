@@ -34,6 +34,13 @@ const performanceBridgeSource = readFileSync(
   path.join(process.cwd(), "components/scene/ScenePerformanceBridge.tsx"),
   "utf8",
 );
+const environmentSource = readFileSync(
+  path.join(
+    process.cwd(),
+    "components/editor/design-page/lighting/EnvironmentController.tsx",
+  ),
+  "utf8",
+);
 
 assert.match(
   source,
@@ -98,6 +105,11 @@ assert.match(
   performanceBridgeSource,
   /if \(!enabled\) \{[\s\S]*return;[\s\S]*onFpsSample\(fps\);[\s\S]*onRendererSample\(/,
   "disabled performance sampling must not publish React state that re-invalidates the demand canvas",
+);
+assert.match(
+  environmentSource,
+  /const lightformers = useMemo\([\s\S]*?<Lightformer[\s\S]*?\[intensity\]\s*\)[\s\S]*?<Environment\b[^>]*>\s*\{lightformers\}\s*<\/Environment>/,
+  "unrelated re-renders must not change the environment children, which rebuilds its cube map and PMREM",
 );
 
 console.log("CH-0029 demand-driven design-scene frameloop contract passed.");
