@@ -1,4 +1,3 @@
-import { HOUSE_PLAN_RENDERED_WALL_THICKNESS_METERS } from "@/lib/editor-geometry-tolerances";
 import {
   resolveSceneItemCanonicalTransform,
   type SceneRoomItemEntry,
@@ -9,8 +8,6 @@ export type SceneProjection = "plan" | "spatial";
 export type SceneItemProjection = {
   position: [number, number, number];
   rotationY: number;
-  wallThickness: number;
-  wallContactInset: number;
 };
 
 /**
@@ -23,11 +20,6 @@ export function projectSceneRoomItem(
   localPosition: [number, number, number] = entry.item.position
 ): SceneItemProjection {
   const transform = resolveSceneItemCanonicalTransform(entry, localPosition);
-  const usesHousePlanShell = entry.roomWallModel === "house-plan-shell";
-  const wallThickness =
-    projection === "spatial" && usesHousePlanShell
-      ? HOUSE_PLAN_RENDERED_WALL_THICKNESS_METERS
-      : entry.roomWallThickness;
 
   return {
     position:
@@ -39,13 +31,6 @@ export function projectSceneRoomItem(
             transform.worldPosition[2],
           ],
     rotationY: transform.rotationY,
-    wallThickness,
-    wallContactInset:
-      projection === "plan"
-        ? 0
-        : usesHousePlanShell
-          ? HOUSE_PLAN_RENDERED_WALL_THICKNESS_METERS / 2
-          : entry.roomWallThickness,
   };
 }
 

@@ -1973,15 +1973,12 @@ export function getNextRoomPlanPosition(
   fallbackRoomWidth: number,
   newRoomWidth: number
 ): { x: number; z: number } {
+  if (rooms.length === 0) return { x: 0, z: 0 };
   const rightEdge = rooms.reduce(
     (edge, room) => Math.max(edge, room.x + room.w / 2),
     fallbackRoomWidth / 2
   );
-
-  return {
-    x: rightEdge + newRoomWidth / 2,
-    z: 0,
-  };
+  return { x: rightEdge + newRoomWidth / 2, z: 0 };
 }
 
 function getHouseRoomBounds(
@@ -2010,7 +2007,7 @@ function getHouseRoomOverlapArea(
 
 type HouseRoomPlanPoint = { x: number; z: number };
 
-function getHouseRoomPlanPolygon(
+export function getHouseRoomPlanPolygon(
   room: HousePlanRoom2D,
   x = room.x,
   z = room.z,

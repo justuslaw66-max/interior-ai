@@ -15,10 +15,12 @@ import { getWallPanelSurfaceSettings } from "@/lib/surface-settings";
 import { resolveWallSurfaceColorFillIntensity } from "@/lib/wall-paint-rendering";
 import { moveOpeningCenterFromWorldPoint, projectWorldPointToOpeningHost } from "@/lib/design-page-opening-interaction";
 import { useSurfaceMaterialTexture } from "../useSurfaceMaterialTexture";
+import type { SelectableWallSurfacePanel } from "./continuousWallSelection";
 import { OpeningInteractionQaMarker3D } from "./OpeningInteractionQaMarker3D";
 import {
   getSurfaceMaterialFallbackColor,
   useSurfaceMaterialSourceTexture,
+  useTransparencyRecompileRef,
 } from "./materials";
 import {
   buildWallFinishShellGeometry,
@@ -34,7 +36,6 @@ import {
   type OpeningThreshold3D,
   type WallPart3D,
   type WallSegment3D,
-  type WallSurfacePanelDescriptor,
 } from "./geometry";
 type StructureTarget = {
   kind: "floor" | "wall" | "ceiling" | "opening";
@@ -149,14 +150,13 @@ function WallSurfaceSideMesh({
 }) {
   const { gl, invalidate } = useThree();
   const surfaceMeshRef = useRef<THREE.Mesh | null>(null);
-  const materialRef = useRef<THREE.MeshStandardMaterial | null>(null);
+  const materialRef = useTransparencyRecompileRef<THREE.MeshStandardMaterial>(baseOpacity < 0.999);
   const wallSurfaceMaterial = getRuntimeSurfaceMaterialById(settings.materialId);
   const normalizedTexturePanelLength = Math.max(
     partLength,
     texturePanelLength
   );
-  const surfaceCenterWithinPanel =
-    centerOffset - texturePanelCenterOffset;
+  const surfaceCenterWithinPanel = centerOffset - texturePanelCenterOffset;
   const textureStartU =
     0.5 +
     (surfaceCenterWithinPanel - partLength / 2) /
@@ -252,7 +252,7 @@ function WallSurfaceSideMesh({
   useEffect(() => {
     onMaterialReady(materialKey, materialRef.current);
     return () => onMaterialReady(materialKey, null);
-  }, [materialKey, onMaterialReady]);
+  }, [materialKey, materialRef, onMaterialReady]);
 
   useEffect(() => () => surfaceGeometry.dispose(), [surfaceGeometry]);
 
@@ -262,7 +262,7 @@ function WallSurfaceSideMesh({
     materialRef.current.color.set(wallColor);
     materialRef.current.needsUpdate = true;
     invalidate();
-  }, [invalidate, wallColor, wallTexture]);
+  }, [invalidate, materialRef, wallColor, wallTexture]);
 
   return (
     <group position={[centerOffset, 0, surfaceOffsetZ]} rotation-y={surfaceRotationY}>
@@ -430,9 +430,9 @@ export function CutawayWallMesh({
 }) {
   const { camera } = useThree();
   const groupRef = useRef<THREE.Group | null>(null);
-  const baseMaterialRef = useRef<THREE.MeshStandardMaterial | null>(null);
   const surfaceMaterialRefs = useRef<Map<string, THREE.MeshStandardMaterial>>(new Map());
   const baseOpacity = (isActive ? ACTIVE_WALL_OPACITY : INACTIVE_WALL_OPACITY) * wallOpacity;
+  const baseMaterialRef = useTransparencyRecompileRef<THREE.MeshStandardMaterial>(baseOpacity < 0.999);
   const partHeight = part.height ?? wallHeight;
   const partCenterY = part.centerY ?? wallHeight / 2;
   const faceId = getWallSurfaceFaceId(room, segment);
@@ -739,7 +739,7 @@ export function WallSurfacePanelMesh({
   room: HousePlanRoom2D;
   rooms: readonly HousePlanRoom2D[];
   segment: WallSegment3D;
-  panel: WallSurfacePanelDescriptor;
+  panel: SelectableWallSurfacePanel;
   wallHeight: number;
   wallThickness: number;
   wallOpacity: number;
@@ -765,19 +765,22 @@ export function WallSurfacePanelMesh({
     (isActive ? ACTIVE_WALL_OPACITY : INACTIVE_WALL_OPACITY) * wallOpacity;
   const activeRoom = rooms.find((entry) => entry.id === activeRoomId);
   const surfaces = room.surfaces ?? room.surfaceFinishes;
+  const selectionPanelId = panel.selectionPanelId ?? panel.panelId;
   const target: StructureTarget = {
     kind: "wall",
     roomId: panel.roomId,
     id: panel.faceId,
-    pieceKey: `wall:${panel.roomId}:${panel.faceId}:${panel.panelId}`,
-    panelId: panel.panelId,
-    panelAliases: panel.legacyPanelIds,
+    pieceKey: `wall:${panel.roomId}:${panel.faceId}:${selectionPanelId}`,
+    panelId: selectionPanelId,
+    panelAliases: panel.selectionPanelAliases ?? panel.legacyPanelIds,
     surfaceSide: panel.side,
   };
   const targetKey = getStructureTargetKey(target) ??
     `${panel.roomId}:${panel.faceId}`;
-  const selectionKey = `${targetKey}:${panel.panelId}`;
+  const selectionKey = `${targetKey}:${selectionPanelId}`;
   const isSelected = selectionKey === selectedTargetKey;
+  const partHeight = panel.part.height ?? wallHeight;
+  const partCenterY = panel.part.centerY ?? wallHeight / 2;
   const outlineStyle = getStructureOutlineStyle(
     selectionKey,
     hoveredTargetKey,
@@ -794,10 +797,10 @@ export function WallSurfacePanelMesh({
   const settings = getWallPanelSurfaceSettings(
     surfaces,
     panel.faceId,
-    panel.panelId,
+    selectionPanelId,
     normalizeFloorRotationDeg,
     clampFloorPatternScale,
-    panel.legacyPanelIds
+    [panel.panelId, ...panel.legacyPanelIds]
   );
   const hasSharedSupport =
     getSharedWallRoomIds(room, rooms, segment, panel.part).length > 0;
@@ -857,27 +860,20 @@ export function WallSurfacePanelMesh({
     pickEnabledRef.current = renderState.visible;
   });
 
-  const outlineZ =
-    panel.side *
-    (wallThickness / 2 + WALL_SURFACE_THICKNESS_METERS + 0.003);
-  const outlineBottomY = -wallHeight / 2 + 0.025;
-  const outlineTopY = wallHeight / 2 - 0.025;
-  const outlineLeftX =
-    joinedSurface.centerDelta - joinedSurface.length / 2;
-  const outlineRightX =
-    joinedSurface.centerDelta + joinedSurface.length / 2;
-  const outlinePoints: Array<[number, number, number]> = [
-    [outlineLeftX, outlineBottomY, outlineZ],
-    [outlineRightX, outlineBottomY, outlineZ],
-    [outlineRightX, outlineTopY, outlineZ],
-    [outlineLeftX, outlineTopY, outlineZ],
-    [outlineLeftX, outlineBottomY, outlineZ],
+  const outlineZ = panel.side * (wallThickness / 2 + WALL_SURFACE_THICKNESS_METERS + 0.003);
+  const left = joinedSurface.centerDelta - joinedSurface.length / 2;
+  const right = joinedSurface.centerDelta + joinedSurface.length / 2;
+  const bottom = -partHeight / 2 + 0.025, top = partHeight / 2 - 0.025;
+  const edges = panel.boundaryEdges ?? [
+    [[left, bottom], [right, bottom]], [[right, bottom], [right, top]],
+    [[right, top], [left, top]], [[left, top], [left, bottom]],
   ];
+  const outlinePoints = edges.flatMap((edge) => edge.map(([x, y]): [number, number, number] => [x, y, outlineZ]));
 
   return (
     <group
       ref={groupRef}
-      position={[panel.part.x, wallHeight / 2, panel.part.z]}
+      position={[panel.part.x, partCenterY, panel.part.z]}
       rotation-y={segment.rotationY}
     >
       <WallSurfaceSideMesh
@@ -885,7 +881,7 @@ export function WallSurfacePanelMesh({
         target={target}
         settings={settings}
         partLength={joinedSurface.length}
-        partHeight={wallHeight}
+        partHeight={partHeight}
         centerOffset={joinedSurface.centerDelta}
         texturePanelLength={joinedSurface.length}
         texturePanelCenterOffset={joinedSurface.centerDelta}
@@ -894,17 +890,18 @@ export function WallSurfacePanelMesh({
         baseOpacity={baseOpacity}
         baseWallColor={isActive ? ACTIVE_WALL_COLOR : INACTIVE_WALL_COLOR}
         renderSurface
-        interactive={interactive}
+        interactive={interactive && panel.selectable !== false}
         pickEnabledRef={pickEnabledRef}
         onMaterialReady={handleMaterialReady}
         onHoverTarget={onHoverTarget}
         onClearHoverTarget={onClearHoverTarget}
         onSelectTarget={onSelectTarget}
       />
-      {outlineStyle ? (
+      {outlineStyle && outlinePoints.length > 0 ? (
         <Line
           key={`wall-surface-panel-outline:${panel.panelId}`}
           points={outlinePoints}
+          segments
           color={outlineStyle.color}
           lineWidth={outlineStyle.lineWidth}
           renderOrder={25}
@@ -1122,8 +1119,9 @@ export function OpeningThresholdMesh({
       </mesh>
       {outlineStyle ? (
         <>
-          <mesh
-            position={[0, jambBaseY, 0]}
+          {[jambBaseY, jambTopY].map((y) => <mesh
+            key={`opening-horizontal-edge:${y}`}
+            position={[0, y, 0]}
             raycast={() => null}
             renderOrder={20}
           >
@@ -1136,9 +1134,10 @@ export function OpeningThresholdMesh({
               depthWrite={false}
               toneMapped={false}
             />
-          </mesh>
-          <mesh
-            position={[-jambHalfWidth, jambBaseY + jambHeight / 2, 0]}
+          </mesh>)}
+          {[-jambHalfWidth, jambHalfWidth].map((x) => <mesh
+            key={`opening-vertical-edge:${x}`}
+            position={[x, jambBaseY + jambHeight / 2, 0]}
             raycast={() => null}
             renderOrder={20}
           >
@@ -1151,22 +1150,7 @@ export function OpeningThresholdMesh({
               depthWrite={false}
               toneMapped={false}
             />
-          </mesh>
-          <mesh
-            position={[jambHalfWidth, jambBaseY + jambHeight / 2, 0]}
-            raycast={() => null}
-            renderOrder={20}
-          >
-            <boxGeometry args={[highlightThickness, jambHeight, highlightDepth]} />
-            <meshBasicMaterial
-              color={outlineStyle.color}
-              transparent
-              opacity={0.74}
-              depthTest={false}
-              depthWrite={false}
-              toneMapped={false}
-            />
-          </mesh>
+          </mesh>)}
         </>
       ) : null}
     </mesh>

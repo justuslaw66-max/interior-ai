@@ -52,6 +52,15 @@ function getStoredActiveRoom(snapshot: StoredDesign) {
 
 function buildCanonicalActiveRoomFields(snapshot: StoredDesign) {
   const activeRoom = getStoredActiveRoom(snapshot);
+  if (!activeRoom) {
+    return {
+      roomWidth: 4,
+      roomDepth: 5,
+      items: [],
+      zones: [],
+      savedViews: [],
+    };
+  }
   return {
     roomWidth: activeRoom.geometry.width,
     roomDepth: activeRoom.geometry.depth,

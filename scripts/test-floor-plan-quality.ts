@@ -80,6 +80,33 @@ assert.ok(
   "AI planning context should expose one room graph node per template room."
 );
 
+// 4 m × 4 m bounds, minus a 2 m × 2 m notch and a 1 m × 1 m courtyard hole = 11 m².
+const notchedCourtyardRoom: HousePlanRoom2D = {
+  id: "notched",
+  name: "Notched room",
+  roomType: "living",
+  shape: "custom_polygon",
+  x: 0,
+  z: 0,
+  w: 4,
+  d: 4,
+  polygon: [
+    { x: -2, z: -2 }, { x: 2, z: -2 }, { x: 2, z: 0 },
+    { x: 0, z: 0 }, { x: 0, z: 2 }, { x: -2, z: 2 },
+  ],
+  holes: [[{ x: -1.5, z: -1.5 }, { x: -0.5, z: -1.5 }, { x: -0.5, z: -0.5 }, { x: -1.5, z: -0.5 }]],
+};
+assert.deepEqual(
+  buildFloorPlanQualityReport({
+    rooms: [notchedCourtyardRoom, { ...notchedCourtyardRoom, id: "stale", shape: "rectangle", holes: undefined, x: 6 }],
+    openings: [],
+    items: [],
+    activeRoomId: "notched",
+  }).aiPlanningContext.roomGraph.nodes.map((node) => [node.id, node.areaSqm]),
+  [["notched", 11], ["stale", 16]],
+  "Room graph areas must come from lib/room-floor-area: holes subtracted, stale polygons ignored."
+);
+
 const bedroomTemplate = HOUSE_PLAN_TEMPLATES.find((template) =>
   template.rooms.some((room) => room.roomType === "bedroom")
 );

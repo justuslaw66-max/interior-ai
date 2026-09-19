@@ -108,6 +108,21 @@ assert.match(
 );
 
 const panelSource = readFileSync("components/editor/DesignControlsPlanPanel.tsx", "utf8");
+assert.match(
+  panelSource,
+  /const activeSurfaceSummaryRows = buildSurfaceSummaryRows\(surfaceRooms,/,
+  "the Surface Summary must use the shared row derivation that reads export BOM wall quantities"
+);
+assert.match(
+  panelSource,
+  /\{row\.materialName\} · \{formatDisplayArea\(row\.areaSqm, measurementUnit\)\}/,
+  "Surface Summary areas must follow the display-unit preference"
+);
+assert.match(
+  panelSource,
+  /\{\(room\.floorLabel \?\? "Floor"\)\} · \{formatDisplayArea\(room\.floorAreaSqm, measurementUnit\)\}/,
+  "Surfaces room list areas must show the polygon-aware floor area in the display unit"
+);
 const surfaceFilterBody = extractRequiredBody(
   panelSource,
   /const filteredSurfaceMaterialGroups = \(\(\) => \{([\s\S]*?)\n  \}\)\(\);\n  const visibleFilteredSurfaceMaterialGroups/,

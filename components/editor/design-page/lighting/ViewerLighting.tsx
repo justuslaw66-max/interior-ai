@@ -41,7 +41,6 @@ export function ViewerLighting({
       roomHeight,
       roomPlanShape: "rectangle",
       roomWallThickness: 0.12,
-      roomWallModel: "canonical-room",
       isActiveRoom: true,
     }));
     return resolveLightingScene({

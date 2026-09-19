@@ -6,8 +6,9 @@ The design document is the source of truth for rooms, items, transforms,
 materials, hierarchy, and exact floor elevations. `design-page-scene-domain.ts`
 builds one renderer-neutral `SceneRoomItemEntry` collection from that document.
 The collection is independent of the current 2D/3D view and retains room-local
-item coordinates, room offsets, canonical finished-floor elevation, canonical
-wall thickness, and the wall relationship model.
+item coordinates, room offsets, canonical finished-floor elevation, and
+canonical wall thickness. It carries no wall model or renderer-specific wall
+value.
 
 `floor-plan-render-model.ts` remains the canonical structural model. Its same
 floors, walls, openings, and elevation data are consumed by
@@ -19,7 +20,7 @@ modules:
 | Domain concern | Pure owner |
 | --- | --- |
 | Scene hierarchy and room/world transforms | `design-page-scene-domain.ts` |
-| Projection and wall relationships | `design-page-scene-projection.ts` |
+| Plan/spatial item projection | `design-page-scene-projection.ts` |
 | Room polygons, bounds, clamping, pointer rotation | `design-page-geometry.ts` |
 | AABBs and snapping candidates | `snapGuides.ts` and `wallSnap.ts` |
 | Gap and clearance measurements | `measurements.ts` |
@@ -34,11 +35,14 @@ must not duplicate their calculations.
 
 ## Projection adapters
 
-`design-page-scene-projection.ts` is the item renderer adapter. A `plan`
-projection suppresses finished-floor elevation and uses the authored wall
-thickness; a `spatial` projection adds the exact canonical elevation and maps a
-house-plan shell to its established rendered wall thickness. Both furniture and
-parametric cabinetry go through this adapter before reaching their renderer.
+`design-page-scene-projection.ts` is the item renderer adapter. It returns
+only an item's position and rotation: a `plan` projection suppresses the
+canonical finished-floor elevation and keeps the item's room-local Y, and a
+`spatial` projection adds that elevation. The projection carries no wall
+values; `SceneItemsLayer` derives furniture wall contact from the canonical
+wall thickness with `getFurnitureWallInset(roomWallThickness)`. Both furniture
+and parametric cabinetry go through this adapter before reaching their
+renderer.
 
 Placed cabinetry keeps the renderer-specific mapping explicit:
 `CabinetDesignItemPlan2D` consumes the plan projection and renders the cabinet
@@ -66,12 +70,12 @@ slab geometry.
 | Value | Space and unit | Elevation, slab, and finish meaning | Owner, persistence, and consumers |
 | --- | --- | --- | --- |
 | Room floor elevation | World Y, integer mm at rest | The finished-floor plane; it includes no slab thickness or render-only finish offset. | `FloorPlanDocumentV2.floors[].elevationMm`, projected to `RoomSnapshot.floorElevationMm`; persisted and consumed by structural, item, persistence, and export adapters. |
-| `floorWorldY` | World Y, m | The renderer projection of the canonical finished-floor plane. | Derived by the canonical scene-elevation helpers; never persisted separately; supplied to single-room and whole-home floor, wall, opening, and ceiling adapters. |
+| `floorWorldY` | World Y, m | The renderer projection of the canonical finished-floor plane. | Derived by the canonical scene-elevation helpers; never persisted separately; supplied to the house-plan floor, wall, opening, and ceiling adapters. |
 | Floor surface mesh | Room-local Y, m | Structural surface is local `0`; the visible finish is offset `0.006 m` only to prevent z-fighting. | Renderer-owned and ephemeral. The offset does not change room elevation, placement, or persistence. |
 | Slab | Room-local/world Y, m | Slab top is the finished-floor plane, center is `floorWorldY - thickness / 2`, and bottom is `floorWorldY - thickness`. | Thickness is persisted canonically in integer mm and projected to metres; renderers derive positions. |
 | Wall base and top | Room-local/world Y, m | Base is local `0` / world `floorWorldY`; top is `floorWorldY + wallHeight`. | Structural render model plus room renderer; no competing wall elevation is persisted. |
 | Furniture position | Room-local at rest; world in spatial 3D, m | Saved item Y excludes room elevation. Spatial projection adds `floorWorldY`; plan projection preserves local Y. | `design-page-scene-domain.ts` and `design-page-scene-projection.ts`; persistence removes the world elevation before saving. |
-| Floor underside cutaway | World Y, m | Visibility threshold is derived by `resolveFloorUndersideCutawayElevationMeters(floorWorldY, slabThickness)`. It is neither slab bottom nor a clipping plane. | Pure scene-elevation owner consumed by single-room, legacy whole-home, and canonical slab renderers; ephemeral. |
+| Floor underside cutaway | World Y, m | Visibility threshold is derived by `resolveFloorUndersideCutawayElevationMeters(floorWorldY, slabThickness)`. It is neither slab bottom nor a clipping plane. | Pure scene-elevation owner consumed by the house-plan and canonical slab renderers; ephemeral. |
 | Wall cutaway | Plan XZ, m/mm | Camera-facing exterior walls are omitted or hidden from render and picking; this has no independent vertical elevation. | `floor-plan-camera-cutaway.ts` and `design-page-wall-cutaway.ts`; ephemeral and selection-aware. |
 | Opening drag plane | World Y, m | Horizontal picking plane at exactly `floorWorldY`; it is not a material clipping plane. | Opening interaction adapter; ephemeral. |
 
@@ -110,7 +114,7 @@ room/world round trips.
 | Confidence/toast timers | `useDesignPageTransientFeedback` | Every timer has a ref and is cleared on replacement and unmount |
 | Floor-plan underlay object URL | `useDesignPageFloorPlanAssets` | Revoked on replacement/unmount |
 | Cabinet preview groups and textures | `useCabinetSceneResourceOwnership` | Unique geometries, materials, and loaded textures disposed on dependency change/unmount; late texture results disposed after cancellation |
-| GLB source and normalized model resources | `GLBScaledModel` | Loader disposed; owned textures, cloned geometries, and cloned materials disposed on change/unmount |
+| GLB source and normalized model resources | `useGLBModelLifecycle`, `useGLBMaterials`, and the `glbModelResources` caches | `useGLBModelLifecycle` disposes an instance clone's geometries and materials on change/unmount only when the instance owns them (`ownsResources`); `useGLBMaterials` disposes owned variant textures on change/unmount, including late results after cancellation; the parsed and prepared caches dispose their scenes on eviction or a non-persisted `pagehide`, and loader decoders are disposed after each load |
 | React Three Fiber render loop/canvas/context | Scene canvas owner | Fiber owns loop and WebGL context teardown; child renderers dispose only resources they allocate |
 
 Resource creation and cleanup must remain paired in the same component or hook.
@@ -125,5 +129,6 @@ import boundary, distinct cabinet plan/spatial adapters, preview Canvas/scene
 ownership, unchanged tolerance values, projection and transform correctness,
 absence of business policy in render loops, and executable plus static cleanup
 checks for the cleanup-sensitive systems above. Visual equivalence is claimed
-only for the transform/wall parameters and renderer constants protected by
-these tests; no untested pixel-equivalence claim is made.
+only for the item transforms, the furniture wall inset, and the renderer
+constants protected by these tests; no untested pixel-equivalence claim is
+made.

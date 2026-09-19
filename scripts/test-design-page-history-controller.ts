@@ -139,6 +139,29 @@ assert.doesNotMatch(
   /history\.begin\("Apply plan template"\)/,
   "Persistence hydration must not leave an uncommitted user-history transaction."
 );
+const floorPlanUnderlayControllerSource = readFileSync(
+  join(root, "lib/useDesignPageFloorPlanUnderlayController.ts"),
+  "utf8"
+);
+assert.equal(
+  floorPlanUnderlayControllerSource.match(/history\.commit\(\)/g)?.length ?? 0,
+  floorPlanUnderlayControllerSource.match(/history\.begin\(/g)?.length ?? 0,
+  "Every floor-plan history commit must close a transaction the same controller began."
+);
+const applyPlanTemplateSource = floorPlanUnderlayControllerSource.slice(
+  floorPlanUnderlayControllerSource.indexOf("const applyPlanTemplate = useCallback"),
+  floorPlanUnderlayControllerSource.indexOf("const confirmPendingTemplateReplacement")
+);
+assert.match(
+  applyPlanTemplateSource,
+  /const replacePlanDocument = \([\s\S]*?runHistoryTransaction\("Apply plan template", \(\) => \{[\s\S]*?setDesignSnapshot\(snapshot\);\s*\}\);/,
+  "Applying a template must replace the plan inside one undoable history transaction."
+);
+assert.equal(
+  applyPlanTemplateSource.match(/replacePlanDocument\(/g)?.length,
+  2,
+  "Canonical and generated templates should both use the transactional plan replacement."
+);
 assert.match(
   documentHistoryWorkspaceSource,
   /useDesignPageDocumentRefSynchronization\(\{[\s\S]*?useDesignPageDocumentHistoryController\(\{/,

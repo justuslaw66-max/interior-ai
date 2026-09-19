@@ -52,6 +52,14 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return Boolean(value) && typeof value === "object" && !Array.isArray(value);
 }
 
+/** An empty room list is a valid blank draft only when no active room is claimed. */
+function activeRoomIdIssue(roomCount: number, activeRoomId: unknown): DesignDocumentValidationIssue | null {
+  const message = roomCount === 0
+    ? (activeRoomId === "" ? null : "activeRoomId must be empty when the design has no rooms.")
+    : (isNonEmptyString(activeRoomId) ? null : "activeRoomId must be a non-empty stable identifier.");
+  return message ? { code: "INVALID_VALUE", path: "$.activeRoomId", message } : null;
+}
+
 function isNonEmptyString(value: unknown): value is string {
   return typeof value === "string" && Boolean(value.trim());
 }
@@ -439,12 +447,8 @@ export function validateStoredDesignDocument(
       message: "Design document coordinate system is not supported.",
     });
   }
-  if (!Array.isArray(value.rooms) || value.rooms.length === 0) {
-    issues.push({
-      code: "INVALID_VALUE",
-      path: "$.rooms",
-      message: "Design document must contain at least one room.",
-    });
+  if (!Array.isArray(value.rooms)) {
+    issues.push({ code: "INVALID_TYPE", path: "$.rooms", message: "Design document rooms must be an array." });
     return { ok: false, issues };
   }
   if (value.rooms.length > DESIGN_DOCUMENT_LIMITS.maxRooms) {
@@ -454,13 +458,8 @@ export function validateStoredDesignDocument(
       message: `Design document exceeds the ${DESIGN_DOCUMENT_LIMITS.maxRooms}-room limit.`,
     });
   }
-  if (!isNonEmptyString(value.activeRoomId)) {
-    issues.push({
-      code: "INVALID_VALUE",
-      path: "$.activeRoomId",
-      message: "activeRoomId must be a non-empty stable identifier.",
-    });
-  }
+  const activeRoomIssue = activeRoomIdIssue(value.rooms.length, value.activeRoomId);
+  if (activeRoomIssue) issues.push(activeRoomIssue);
   if (value.lighting !== undefined) {
     if (!isRecord(value.lighting)) {
       issues.push({

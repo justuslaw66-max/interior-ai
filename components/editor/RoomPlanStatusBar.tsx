@@ -1,6 +1,8 @@
 "use client";
 
 import type { EditorViewMode } from "@/components/editor/EditorViewToggle";
+import type { DisplayUnit } from "@/lib/display-units";
+import { formatPlanDimensionsLabel } from "@/lib/plan-room-summary";
 
 type RoomPlanStatusBarProps = {
   roomName: string;
@@ -8,6 +10,8 @@ type RoomPlanStatusBarProps = {
   roomCount: number;
   widthMeters: number;
   depthMeters: number;
+  /** Null until the saved plan display unit has loaded, so no default-unit size flashes. */
+  measurementUnit: DisplayUnit | null;
   healthLevel?: "ready" | "review" | "blocked";
   healthScore?: number;
   healthNextAction?: string;
@@ -22,8 +26,32 @@ type RoomPlanStatusBarProps = {
   onRenameRoom?: () => void;
 };
 
-const formatMeters = (value: number) =>
-  value.toFixed(1).replace(/\.0$/, "");
+type RoomStatusDetails = Pick<
+  RoomPlanStatusBarProps,
+  "roomTypeLabel" | "widthMeters" | "depthMeters" | "measurementUnit" | "roomCount"
+>;
+
+/** One-line room details for the compact overflow card; the size waits for the display unit. */
+export function formatRoomStatusDetails(room: RoomStatusDetails): string {
+  const size = room.measurementUnit
+    ? formatPlanDimensionsLabel(room.widthMeters, room.depthMeters, room.measurementUnit)
+    : null;
+  const roomCount = `${room.roomCount} ${room.roomCount === 1 ? "room" : "rooms"}`;
+  return [room.roomTypeLabel, size, roomCount].filter(Boolean).join(" · ");
+}
+
+function renderRoomSize(widthMeters: number, depthMeters: number, unit: DisplayUnit | null) {
+  if (!unit) {
+    return (
+      <span
+        data-testid="room-plan-status-room-size-placeholder"
+        aria-hidden="true"
+        className="inline-block h-2 w-16 animate-pulse rounded-full bg-current align-middle opacity-20"
+      />
+    );
+  }
+  return formatPlanDimensionsLabel(widthMeters, depthMeters, unit);
+}
 
 export default function RoomPlanStatusBar({
   roomName,
@@ -31,6 +59,7 @@ export default function RoomPlanStatusBar({
   roomCount,
   widthMeters,
   depthMeters,
+  measurementUnit,
   healthLevel,
   healthScore,
   healthNextAction,
@@ -47,7 +76,6 @@ export default function RoomPlanStatusBar({
   const isCommand = variant === "command";
   const nextViewMode: EditorViewMode = viewMode === "2d" ? "3d" : "2d";
   const viewActionLabel = viewMode === "2d" ? "Room view" : "Plan";
-  const sizeLabel = `${formatMeters(widthMeters)} x ${formatMeters(depthMeters)}m`;
   const roomCountLabel = `${roomCount} room${roomCount === 1 ? "" : "s"}`;
   const showRoomType = roomTypeLabel.trim().toLowerCase() !== roomName.trim().toLowerCase();
   const healthLabel =
@@ -132,10 +160,10 @@ export default function RoomPlanStatusBar({
         {roomTypeLabel}
       </div>
       <div
-        data-testid="room-plan-status-room-size"
-        className={metaClass}
+        data-testid="room-plan-status-room-size" aria-busy={measurementUnit === null}
+        className={`${metaClass} whitespace-nowrap`}
       >
-        {sizeLabel}
+        {renderRoomSize(widthMeters, depthMeters, measurementUnit)}
       </div>
       <div
         data-testid="room-plan-status-room-count"

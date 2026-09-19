@@ -3,6 +3,7 @@ import path from "node:path";
 import assert from "node:assert/strict";
 import {
   resolveCameraViewForFloorWorldY,
+  resolveCameraViewForRoomOrigin,
   resolveCanonicalFloorElevationMeters,
   resolveFloorUndersideCutawayElevationMeters,
 } from "@/lib/floor-plan-scene-elevation";
@@ -69,6 +70,22 @@ assert.deepEqual(
   "A below-origin camera preset should preserve its floor-relative composition."
 );
 assert.deepEqual(
+  resolveCameraViewForRoomOrigin(localCameraView, { x: 0, y: 0, z: 0 }),
+  localCameraView,
+  "A lone room at the plan origin should keep the default camera framing unchanged."
+);
+const offOriginRoomCameraView = resolveCameraViewForRoomOrigin(localCameraView, { x: 8, y: 3.475, z: -2 });
+assert.deepEqual(
+  offOriginRoomCameraView,
+  { pos: [14.2, 7.075, 5.2], target: [8, 4.475, -2], fov: 45 },
+  "A lone off-origin room should frame the camera on its plan position and finished-floor plane."
+);
+assert.notEqual(
+  offOriginRoomCameraView.pos,
+  localCameraView.pos,
+  "Room-origin camera projection should return new vectors rather than aliasing the preset."
+);
+assert.deepEqual(
   localCameraView,
   { pos: [6.2, 3.6, 7.2], target: [0, 1, 0], fov: 45 },
   "Camera projection should not mutate the local preset or a persisted world camera view."
@@ -77,7 +94,7 @@ assert.deepEqual(
 const singleRoomFitKeyInput = {
   activeRoomId: "raised-room",
   designId: "design-a",
-  floorWorldY: 3.475,
+  roomOrigin: { x: 0, y: 3.475, z: 0 },
   hasWholeHousePlan: false,
 };
 assert.equal(
@@ -87,8 +104,13 @@ assert.equal(
 );
 assert.notEqual(
   resolveEditorInitial3DFitKey({ ...singleRoomFitKeyInput, wholeHomeResponsiveKey: "viewport-a" }),
-  resolveEditorInitial3DFitKey({ ...singleRoomFitKeyInput, floorWorldY: -1.25, wholeHomeResponsiveKey: "viewport-a" }),
+  resolveEditorInitial3DFitKey({ ...singleRoomFitKeyInput, roomOrigin: { x: 0, y: -1.25, z: 0 }, wholeHomeResponsiveKey: "viewport-a" }),
   "Changing the active canonical floor should create a new single-room initialization identity."
+);
+assert.notEqual(
+  resolveEditorInitial3DFitKey({ ...singleRoomFitKeyInput, wholeHomeResponsiveKey: "viewport-a" }),
+  resolveEditorInitial3DFitKey({ ...singleRoomFitKeyInput, roomOrigin: { x: 8, y: 3.475, z: 0 }, wholeHomeResponsiveKey: "viewport-a" }),
+  "Moving the lone room on the plan should create a new single-room initialization identity."
 );
 assert.notEqual(
   resolveEditorInitial3DFitKey({ ...singleRoomFitKeyInput, hasWholeHousePlan: true, wholeHomeResponsiveKey: "viewport-a" }),
@@ -116,10 +138,6 @@ const cameraNavigationSource = fs.readFileSync(
   path.join(process.cwd(), "lib", "useDesignPageCameraNavigation.ts"),
   "utf8"
 );
-const sceneRegionAdapterSource = fs.readFileSync(
-  path.join(process.cwd(), "lib", "design-page-scene-region-adapter.ts"),
-  "utf8"
-);
 const designSceneStructureLayerSource = fs.readFileSync(
   path.join(
     process.cwd(),
@@ -142,10 +160,6 @@ const designSceneCanvasSource = fs.readFileSync(
     "design-page",
     "DesignSceneCanvas.tsx"
   ),
-  "utf8"
-);
-const roomEnvironmentSource = fs.readFileSync(
-  path.join(process.cwd(), "components", "scene", "RoomEnvironment.tsx"),
   "utf8"
 );
 const housePlanRendererSource = fs.readFileSync(
@@ -203,34 +217,32 @@ assert.match(
   "The Canvas shell should apply its configured maximum polar angle to 3D OrbitControls."
 );
 
-assert.match(
-  roomEnvironmentSource,
-  /const floorVisible = camera\.position\.y > resolveFloorUndersideCutawayElevationMeters\(floorWorldY, slabThickness\);/,
-  "Single-room floor visibility should be derived from its finished-floor world elevation."
-);
+for (const retiredShell of [
+  ["components", "scene", "RoomEnvironment.tsx"],
+  ["components", "editor", "design-page", "DesignSceneSingleRoom.tsx"],
+]) {
+  assert.equal(
+    fs.existsSync(path.join(process.cwd(), ...retiredShell)),
+    false,
+    "Single rooms render through the house-plan scene, so the legacy single-room shell and its cutaway must stay retired."
+  );
+}
 
-assert.match(
-  roomEnvironmentSource,
-  /<group position=\{\[0, floorWorldY, 0\]\}>/,
-  "The single-room shell should be positioned on its canonical finished-floor world plane."
+assert.doesNotMatch(
+  sceneRegionWorkspaceRegistrationSource,
+  /floorWorldY:/,
+  "The scene registration should not project a floor plane for a separate single-room renderer."
 );
-
-assert.match(
-  roomEnvironmentSource,
-  /ceilingRef\.current\.visible = camera\.position\.y <= floorWorldY \+ height \+ wallThickness \+ outsideBuffer;/,
-  "Single-room ceiling visibility should use the same finished-floor world elevation."
+assert.doesNotMatch(
+  sceneRegionWorkspaceRegistrationSource,
+  /usesHousePlanScene/,
+  "Every design with rooms uses the house-plan scene, so no renderer-routing flag should remain."
 );
 
 assert.match(
   sceneRegionWorkspaceRegistrationSource,
-  /floorWorldY:\s*resolveCanonicalFloorElevationMeters\(room\.activeRoom \?\? \{\}\) \?\? 0/,
-  "The scene registration should project the active room's canonical elevation into world metres."
-);
-
-assert.match(
-  sceneRegionWorkspaceRegistrationSource,
-  /initialCameraView:\s*resolveCameraViewForFloorWorldY\([\s\S]*?DEFAULT_EDITOR_CAMERA_VIEW,[\s\S]*?resolveCanonicalFloorElevationMeters\(room\.activeRoom \?\? \{\}\) \?\? 0[\s\S]*?\)/,
-  "The initial single-room Canvas camera should start on the canonical floor plane."
+  /initialCameraView:\s*resolveCameraViewForFloorWorldY\([\s\S]*?DEFAULT_EDITOR_CAMERA_VIEW,\s*scene\.hasWholeHousePlan \? 0 : resolveCanonicalFloorElevationMeters\(room\.activeRoom \?\? \{\}\) \?\? 0\s*\)/,
+  "The initial single-room Canvas camera should start on the active room's canonical floor plane, and a multi-room plan at world Y zero."
 );
 
 assert.match(
@@ -238,11 +250,16 @@ assert.match(
   /activeRoomFloorWorldY:\s*resolveCanonicalFloorElevationMeters\(activeRoom \?\? \{\}\) \?\? 0/,
   "Camera navigation should receive the active room's canonical floor elevation."
 );
+assert.match(
+  editorInteractionRegistrationSource,
+  /const \{ housePlan2D, planViewWidth, planViewDepth, activeRoomPlanOffset \} =\s*documentRoom\.derived\.plan;[\s\S]*?activeRoomFloorWorldY:[^\n]*\n\s*activeRoomPlanOffset,/,
+  "Camera navigation should receive the active room's plan position."
+);
 
 assert.match(
   cameraNavigationSource,
-  /const singleRoomDefaultCameraView = useMemo\([\s\S]*?resolveCameraViewForFloorWorldY\(defaultCameraView, activeRoomFloorWorldY\)/,
-  "Single-room default navigation should derive a world-space camera view."
+  /activeRoomPlanOffset: \{ x: activeRoomPlanX, z: activeRoomPlanZ \}[\s\S]*?const activeRoomOrigin = useMemo\(\(\) => \(\{ x: activeRoomPlanX, y: activeRoomFloorWorldY, z: activeRoomPlanZ \}\)[\s\S]*?const singleRoomDefaultCameraView = useMemo\(\(\) => resolveCameraViewForRoomOrigin\(defaultCameraView, activeRoomOrigin\)/,
+  "Single-room default navigation should frame the active room at its plan position and floor plane."
 );
 
 assert.match(
@@ -253,14 +270,14 @@ assert.match(
 
 assert.match(
   cameraNavigationSource,
-  /const wholeHomeResponsiveKey = \[[\s\S]*?const fitKey = resolveEditorInitial3DFitKey\(\{ activeRoomId: rooms\[0\]\?\.id \?\? null, designId, floorWorldY: activeRoomFloorWorldY, hasWholeHousePlan, wholeHomeResponsiveKey \}\);[\s\S]*?applyQueued3DView\(hasWholeHousePlan \? getWholeHome3DView\(\) : singleRoomDefaultCameraView, 260\)/,
-  "A ready single-room scene should apply its floor-relative default camera view."
+  /const wholeHomeResponsiveKey = \[[\s\S]*?const fitKey = resolveEditorInitial3DFitKey\(\{ activeRoomId: rooms\[0\]\?\.id \?\? null, designId, roomOrigin: activeRoomOrigin, hasWholeHousePlan, wholeHomeResponsiveKey \}\);[\s\S]*?applyQueued3DView\(hasWholeHousePlan \? getWholeHome3DView\(\) : singleRoomDefaultCameraView, 260\)/,
+  "A ready single-room scene should apply its room-origin default camera view."
 );
 
 assert.match(
   cameraNavigationSource,
-  /const getEyeLevelView[\s\S]*?resolveCameraViewForFloorWorldY\([\s\S]*?activeRoomFloorWorldY[\s\S]*?const getFocusView[\s\S]*?resolveCameraViewForFloorWorldY\([\s\S]*?activeRoomFloorWorldY/,
-  "Eye-level and item-focus views should translate their local composition to the active floor."
+  /const getEyeLevelView[\s\S]*?resolveCameraViewForRoomOrigin\([\s\S]*?activeRoomOrigin\)[\s\S]*?const getFocusView[\s\S]*?resolveCameraViewForRoomOrigin\([\s\S]*?activeRoomOrigin\)/,
+  "Eye-level and item-focus views should translate their room-local composition to the active room's plan position and floor."
 );
 
 assert.match(
@@ -276,27 +293,9 @@ assert.match(
 );
 
 assert.match(
-  sceneRegionAdapterSource,
-  /singleRoom:[\s\S]*?floorWorldY: room\.floorWorldY/,
-  "The scene adapter should preserve the single-room finished-floor world elevation."
-);
-
-assert.match(
   designSceneStructureLayerSource,
-  /<Room[\s\S]*?floorWorldY=\{state\.singleRoom\.floorWorldY\}/,
-  "The structure layer should pass the canonical floor plane to the single-room renderer."
-);
-
-assert.match(
-  roomEnvironmentSource,
-  /floorSurfaceRef\.current\.visible = floorVisible;/,
-  "Single-room floor surface visibility should follow the underside cutaway."
-);
-
-assert.match(
-  roomEnvironmentSource,
-  /slabRef\.current\.visible = floorVisible;/,
-  "Single-room slab visibility should follow the underside cutaway."
+  /if \(state\.wholeHome\.rooms\.length > 0\) \{[\s\S]*?<HousePlanRenderer3D\s+rooms=\{visibleRooms\}/,
+  "Every design with rooms, including a lone room, should render its floors through the house-plan cutaway."
 );
 
 assert.match(

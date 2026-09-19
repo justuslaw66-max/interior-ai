@@ -5,6 +5,8 @@ import type { AiLayoutRole } from "@/lib/ai/layout-planner";
 import { GUEST_AI_LAYOUT_OPENER_ID } from "@/lib/guest-save-prompt";
 import { STYLES, type AiLayoutProposal, type Style } from "@/lib/design-page-types";
 import type { RoomType } from "@/lib/room-types";
+import { formatDisplayArea, type DisplayUnit } from "@/lib/display-units";
+import { formatPlanDimensionsLabel } from "@/lib/plan-room-summary";
 
 type Budget = "$" | "$$" | "$$$";
 type AiLayoutGoal = "balanced" | "conversation" | "media" | "compact";
@@ -18,6 +20,9 @@ type DesignControlsAiPanelProps = {
   activeRoomTypeLabel: string;
   roomWidth: number;
   roomDepth: number;
+  /** The active room's polygon-aware floor area (lib/room-floor-area). */
+  roomFloorAreaSqm: number;
+  measurementUnit: DisplayUnit;
   activeRoomItemCount: number;
   aiLayoutProposal: AiLayoutProposal | null;
   onStyleChange: (style: Style) => void;
@@ -38,10 +43,7 @@ const AI_MUST_HAVE_OPTIONS: Array<{ label: string; role: AiLayoutRole }> = [
 ];
 
 const AI_ROLE_LABELS: Record<AiLayoutRole, string> = AI_MUST_HAVE_OPTIONS.reduce(
-  (labels, option) => ({
-    ...labels,
-    [option.role]: option.label,
-  }),
+  (labels, option) => ({ ...labels, [option.role]: option.label }),
   {} as Record<AiLayoutRole, string>
 );
 
@@ -86,6 +88,8 @@ export default function DesignControlsAiPanel({
   activeRoomTypeLabel,
   roomWidth,
   roomDepth,
+  roomFloorAreaSqm: roomArea,
+  measurementUnit,
   activeRoomItemCount,
   aiLayoutProposal,
   onStyleChange,
@@ -98,17 +102,12 @@ export default function DesignControlsAiPanel({
   const [aiMustHaves, setAiMustHaves] = useState<string[]>(["Sofa", "Rug", "Coffee table"]);
   const [aiLayoutGoal, setAiLayoutGoal] = useState<AiLayoutGoal>("balanced");
   const aiMustHaveOptions = useMemo(() => AI_MUST_HAVE_OPTIONS, []);
-  const titleClass = dark
-    ? "designer-text-primary text-sm font-semibold"
-    : "text-sm font-semibold text-neutral-800";
+  const titleClass = dark ? "designer-text-primary text-sm font-semibold" : "text-sm font-semibold text-neutral-800";
   const selectedButtonClass = dark ? "designer-control-active border" : "bg-neutral-900 text-white";
   const idleButtonClass = dark ? "designer-control border" : "bg-neutral-100 text-neutral-900";
-  const cardClass = dark
-    ? "designer-recessed rounded-xl p-3"
-    : "rounded-xl border border-neutral-200 bg-white p-3";
+  const cardClass = dark ? "designer-recessed rounded-xl p-3" : "rounded-xl border border-neutral-200 bg-white p-3";
   const mutedClass = dark ? "text-neutral-400" : "text-neutral-500";
-  const roomArea = Math.max(0, roomWidth * roomDepth);
-  const roomSizeLabel = `${roomWidth.toFixed(1)} x ${roomDepth.toFixed(1)}m`;
+  const roomSizeLabel = formatPlanDimensionsLabel(roomWidth, roomDepth, measurementUnit);
   const roomSupported = activeRoomType === "living";
   const briefReady = aiMustHaves.length > 0 && roomArea > 0 && roomSupported;
   const requestedRoles = useMemo(
@@ -134,7 +133,7 @@ export default function DesignControlsAiPanel({
     {
       label: "Measured room",
       ready: roomArea > 0,
-      detail: roomArea > 0 ? `${roomArea.toFixed(1)} m2` : "Add dimensions",
+      detail: roomArea > 0 ? formatDisplayArea(roomArea, measurementUnit) : "Add dimensions",
     },
     {
       label: "Must-haves",
@@ -179,7 +178,7 @@ export default function DesignControlsAiPanel({
                 {activeRoomName}
               </div>
               <div className={`mt-1 text-xs ${mutedClass}`}>
-                {activeRoomTypeLabel} · {roomSizeLabel} · {roomArea.toFixed(1)} m2
+                {activeRoomTypeLabel} · {roomSizeLabel} · {formatDisplayArea(roomArea, measurementUnit)}
               </div>
             </div>
             <div className={dark ? "shrink-0 rounded-lg bg-white/10 px-2 py-1 text-xs text-neutral-200" : "shrink-0 rounded-lg bg-neutral-100 px-2 py-1 text-xs text-neutral-700"}>

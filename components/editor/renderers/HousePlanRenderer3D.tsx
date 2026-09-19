@@ -2,7 +2,7 @@
 
 import { Line } from "@react-three/drei/core/Line";
 import { useFrame, useThree, type ThreeEvent } from "@react-three/fiber";
-import { useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState, type ComponentProps } from "react";
 import * as THREE from "three";
 import {
   ROOM_DIMENSION_DEFAULTS,
@@ -19,6 +19,9 @@ import { getCeilingSurfaceSettings } from "@/lib/surface-settings";
 import type { CanonicalFloorPlanRenderModel } from "@/lib/floor-plan-render-model";
 import { legacyOpeningOffsetAtWorldPoint } from "@/lib/design-page-opening-interaction";
 import { CanonicalFloorPlanWalls3D } from "./CanonicalFloorPlanStructure";
+import { buildOpeningWallSurfacePanels } from "./house-plan-3d/openingWallSurfacePanels";
+import { withContinuousWallSelection } from "./house-plan-3d/continuousWallSelection";
+import { WindowOpeningMesh } from "./house-plan-3d/WindowOpeningMesh";
 import {
   LegacyFloorSlabMesh,
   LegacyWallBandMesh,
@@ -97,7 +100,7 @@ type HousePlanRenderer3DProps = {
     surfaceSide?: 1 | -1;
   }) => void;
   onSelectOpening?: (openingId: string | null) => void;
-  onMoveOpening?: (openingId: string, offsetMeters: number) => void;
+  onMoveOpening?: (openingId: string, offsetMeters: number, bottomMeters?: number) => void;
   onResizeOpening?: (
     openingId: string,
     metrics: { widthMeters: number; offsetMeters: number }
@@ -124,7 +127,7 @@ type StructureTarget = {
 
 const STRUCTURE_THICKNESS_METERS = 0.025;
 const FLOOR_THICKNESS_METERS = ROOM_DIMENSION_DEFAULTS.slabThickness;
-const CEILING_CAP_COLOR = "#9c9d99";
+const CEILING_CAP_COLOR = "#f8f8f6";
 const STRUCTURE_HOVER_OUTLINE_COLOR = "#00d5e8";
 const STRUCTURE_SELECTED_OUTLINE_COLOR = "#2563eb";
 const ACTIVE_FLOOR_OUTLINE_COLOR = "#1d4ed8";
@@ -152,6 +155,22 @@ function getStructurePieceKey(target: StructureTarget | null): string | null {
 
 function isSameStructurePiece(first: StructureTarget | null, second: StructureTarget): boolean {
   return getStructurePieceKey(first) === getStructurePieceKey(second);
+}
+
+function visibleStructureHover(target: StructureTarget | null, selected: StructureTarget | null, hasSelectedKey: boolean) {
+  // Keep the selected wall outline while allowing an opening hover inside it.
+  if (selected?.kind === "wall" && hasSelectedKey && target?.kind !== "opening") return null;
+  return getStructurePieceKey(target);
+}
+
+/** Door thresholds pick and drag doors; WindowOpeningMesh owns windows, so their assemblies only draw the frame. */
+function LegacyPhysicalOpenings(props: ComponentProps<typeof LegacyPhysicalOpeningMeshes>) {
+  return [false, true].map((windows) => (
+    <LegacyPhysicalOpeningMeshes key={windows ? "windows" : "doors"} {...props}
+      assemblies={props.assemblies.filter((assembly) => (assembly.threshold.kind === "window") === windows)}
+      interactive={props.interactive && !windows}
+      hoveredTargetKey={windows ? null : props.hoveredTargetKey} selectedTargetKey={windows ? null : props.selectedTargetKey} />
+  ));
 }
 
 function getStructureOutlineStyle(
@@ -250,7 +269,6 @@ export default function HousePlanRenderer3D({
         ? getRoomFloorLevel(activeRoom)
         : 1;
   const [hoveredStructureTarget, setHoveredStructureTarget] = useState<StructureTarget | null>(null);
-  const hoveredTargetKey = getStructurePieceKey(hoveredStructureTarget);
   const selectedOpening = selectedOpeningId
     ? openings.find((opening) => opening.id === selectedOpeningId) ?? null
     : null;
@@ -271,13 +289,7 @@ export default function HousePlanRenderer3D({
     selectedSurfaceTarget?.kind === "wall"
       ? persistedWallPanelKey ?? selectedLogicalTargetKey
       : selectedLogicalTargetKey;
-  // Keep the saved wall panel as the single visual selection. Previously a
-  // neighboring hover replaced the blue selection with a cyan outline, making
-  // the selection appear to jump or span more than one panel.
-  const visibleHoveredTargetKey =
-    selectedSurfaceTarget?.kind === "wall" && selectedTargetKey
-      ? null
-      : hoveredTargetKey;
+  const visibleHoveredTargetKey = visibleStructureHover(hoveredStructureTarget, selectedSurfaceTarget, selectedTargetKey !== null);
   const legacyCutawaySegmentKeys = useLegacyCameraCutawaySegmentKeys({
     rooms,
     activeRoomId,
@@ -319,12 +331,8 @@ export default function HousePlanRenderer3D({
     topologyRooms,
     wallHeight,
   ]);
-  const hasLegacyMergedSlab = Boolean(
-    legacyWatertightGeometry?.floorSlabs.length
-  );
-  const hasLegacyMergedWalls = Boolean(
-    legacyWatertightGeometry?.wallBands.length
-  );
+  const hasLegacyMergedSlab = Boolean(legacyWatertightGeometry?.floorSlabs.length);
+  const hasLegacyMergedWalls = Boolean(legacyWatertightGeometry?.wallBands.length);
   const legacyWallTopMetersByFloor = new Map<number, number>();
   for (const band of legacyWatertightGeometry?.wallBands ?? []) {
     legacyWallTopMetersByFloor.set(
@@ -348,6 +356,7 @@ export default function HousePlanRenderer3D({
   ) => {
     if (!interactive) return;
     event.stopPropagation();
+    if (event.delta > 2) return;
     if (target.kind === "opening") {
       onSelectOpening?.(target.id);
       return;
@@ -397,11 +406,11 @@ export default function HousePlanRenderer3D({
             ) <= 0.0005
           }
           opacity={
-            stackedFloors &&
-            fadeInactiveFloors &&
-            band.floorLevel !== resolvedActiveFloorLevel
+            (stackedFloors && fadeInactiveFloors && band.floorLevel !== resolvedActiveFloorLevel
               ? INACTIVE_FLOOR_OPACITY_MULTIPLIER
-              : 1
+              : 1) *
+            Math.min(1, ...rooms.filter((room) => getRoomFloorLevel(room) === band.floorLevel)
+              .map((room) => clampStructureOpacity(room.surfaceOpacity?.wall)))
           }
         />
       ))}
@@ -462,15 +471,12 @@ export default function HousePlanRenderer3D({
           }
         />
       )}
-      <LegacyPhysicalOpeningMeshes
-          assemblies={legacyPhysicalOpeningAssemblies}
+      <LegacyPhysicalOpenings assemblies={legacyPhysicalOpeningAssemblies}
           selectedOpeningId={selectedOpeningId} interactive={interactive}
           hoveredTargetKey={visibleHoveredTargetKey} selectedTargetKey={selectedTargetKey}
           onHoverTarget={setHoveredStructureTarget} onClearHoverTarget={clearHoveredTarget}
-          onSelectTarget={selectStructureTarget}
-          onMoveOpening={onMoveOpening}
-          onOpeningDragStateChange={onOpeningDragStateChange}
-      />
+          onSelectTarget={selectStructureTarget} onMoveOpening={onMoveOpening}
+          onOpeningDragStateChange={onOpeningDragStateChange} />
       {rooms.map((room, roomIndex) => {
         const isActive = room.id === activeRoomId;
         const roomFloorLevel = getRoomFloorLevel(room);
@@ -608,33 +614,17 @@ export default function HousePlanRenderer3D({
                 segment,
                 wallPanelParts
               );
-              const resolvedWallSurfacePanels =
-                withWallSurfacePanelSupportIntervals(
-                  wallSurfacePanels,
-                  segment,
-                  parts
-                );
-              const lintelParts = buildOpeningLintelParts(
-                segment,
-                wallOpenings,
-                segmentWallHeight,
-                segmentWallHeight
-              );
-              const sillParts = buildOpeningSillParts(
-                segment,
-                wallOpenings,
-                segmentWallHeight,
-                segmentWallHeight
-              );
+              const resolvedWallSurfacePanels = withContinuousWallSelection(room, segment, wallOpenings, [
+                ...withWallSurfacePanelSupportIntervals(wallSurfacePanels, segment, parts),
+                ...buildOpeningWallSurfacePanels(room, topologyRooms, segment, wallOpenings, segmentWallHeight),
+              ], segmentWallHeight, roomWallThickness, endJoinOptions);
+              const lintelParts = buildOpeningLintelParts(segment, wallOpenings, segmentWallHeight, segmentWallHeight);
+              const sillParts = buildOpeningSillParts(segment, wallOpenings, segmentWallHeight, segmentWallHeight);
               const wallRenderParts = [
                 ...parts,
                 ...lintelParts,
                 ...sillParts,
               ];
-              const fullHeightStructuralPartKeys = new Set(
-                parts.map((part) => part.key)
-              );
-
               return [
                 ...wallRenderParts.map((part) => (
                   <MountedCutawayWallMesh
@@ -648,10 +638,8 @@ export default function HousePlanRenderer3D({
                     wallThickness={roomWallThickness}
                     wallOpacity={wallOpacity}
                     renderBase={!hasLegacyMergedWalls}
-                    // Full-height decorative finishes are rendered once per
-                    // canonical room-facing panel below. Lintels and sills
-                    // remain structural sub-parts and inherit the face finish.
-                    renderSurfaces={!fullHeightStructuralPartKeys.has(part.key)}
+                    // Every finish, including opening fragments, is owned by a panel mesh.
+                    renderSurfaces={false}
                     selectionPieceKey={null}
                     selectionSettingsFallbackKeys={[]}
                     selectionPanelLength={part.length}
@@ -691,6 +679,18 @@ export default function HousePlanRenderer3D({
                     onClearHoverTarget={clearHoveredTarget}
                     onSelectTarget={selectStructureTarget}
                   />
+                )),
+                ...wallOpenings.filter((opening) => opening.kind === "window").map((opening) => (
+                  <WindowOpeningMesh key={`window-hit:${segment.key}:${opening.id}`}
+                    roomId={openings.find((source) => source.id === opening.sourceId)?.roomId ?? room.id}
+                    sourceOpening={openings.find((source) => source.id === opening.sourceId)}
+                    opening={opening} segment={segment} wallHeight={segmentWallHeight}
+                    wallThickness={roomWallThickness} floorWorldY={floorYOffset} interactive={interactive}
+                    hidden={legacyCutawaySegmentKeys.has(segment.key)}
+                    hoveredTargetKey={visibleHoveredTargetKey} selectedTargetKey={selectedTargetKey}
+                    onHoverTarget={setHoveredStructureTarget} onClearHoverTarget={clearHoveredTarget}
+                    onSelectTarget={selectStructureTarget}
+                    onMoveOpening={onMoveOpening} onOpeningDragStateChange={onOpeningDragStateChange} />
                 )),
               ];
             })}

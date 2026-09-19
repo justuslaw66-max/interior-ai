@@ -23,23 +23,9 @@ import type {
   DesignSnapshot,
   RoomSnapshot,
 } from "@/lib/room-types";
-import type { SurfaceTargetMode } from "@/lib/useDesignPageSurfaceActions";
 import { useDesignPageScenePerformance } from "@/lib/useDesignPageScenePerformance";
 
 type HousePlanRoom = ReturnType<typeof buildHousePlan2D>["rooms"][number];
-
-export function shouldUseHousePlanScene(input: {
-  stackedFloorView: boolean;
-  roomCount: number;
-  openingCount: number;
-  editingWallSurface: boolean;
-  hasWallSurfaceFinishes: boolean;
-  hasNonRectangularRoom: boolean;
-}): boolean {
-  return input.stackedFloorView || input.roomCount > 1 || input.openingCount > 0 ||
-    input.editingWallSurface || input.hasWallSurfaceFinishes ||
-    input.hasNonRectangularRoom;
-}
 
 export function reconcileDesignPageSceneReadiness(
   current: Record<string, boolean>,
@@ -82,12 +68,9 @@ export type UseDesignPageSceneReadModelInput = {
       stackedFloorView: boolean;
       hiddenFloorLevels: number[];
       selectedPlanRoomId: string | null;
-      openingCount: number;
     };
     editor: {
       viewMode: EditorViewMode;
-      activeSurfaceTarget: SurfaceTargetMode;
-      surfaceBrushActive: boolean;
     };
     ai: {
       pendingProposal: PendingAiLayoutProposal | null;
@@ -113,9 +96,8 @@ export function useDesignPageSceneReadModel({
       stackedFloorView,
       hiddenFloorLevels,
       selectedPlanRoomId,
-      openingCount,
     },
-    editor: { viewMode, activeSurfaceTarget, surfaceBrushActive },
+    editor: { viewMode },
     ai: { pendingProposal },
   } = state;
   const { setSelectedPlanRoomId, showToast } = actions;
@@ -126,25 +108,6 @@ export function useDesignPageSceneReadModel({
   const previousSelectedPlanActiveRoomIdRef = useRef<string | null>(null);
 
   const hasWholeHousePlan = housePlanRooms.length > 1;
-  const hasWallSurfaceFinishes = designSnapshot.rooms.some((room) => {
-    const surfaces = room.surfaces ?? room.surfaceFinishes;
-    const defaultWall = surfaces?.walls?.default;
-    const faceSettings = Object.values(surfaces?.walls?.faces ?? {});
-    return Boolean(
-      surfaces?.wallMaterialId ||
-        defaultWall?.materialId ||
-        defaultWall?.paintColorHex ||
-        faceSettings.some(
-          (settings) => settings.materialId || settings.paintColorHex
-        )
-    );
-  });
-  const usesHousePlanScene = shouldUseHousePlanScene({
-    stackedFloorView, roomCount: housePlanRooms.length, openingCount,
-    editingWallSurface: activeSurfaceTarget !== "floor" || surfaceBrushActive,
-    hasWallSurfaceFinishes,
-    hasNonRectangularRoom: housePlanRooms.some((room) => room.shape !== "rectangle"),
-  });
   const sceneHousePlanRooms3D = useMemo(
     () =>
       stackedFloorView
@@ -232,7 +195,6 @@ export function useDesignPageSceneReadModel({
         hasWholeHousePlan,
         housePlanRooms,
         houseRoomById,
-        usesHousePlanScene,
       }),
     [
       activeRoom,
@@ -240,7 +202,6 @@ export function useDesignPageSceneReadModel({
       hasWholeHousePlan,
       housePlanRooms,
       houseRoomById,
-      usesHousePlanScene,
     ]
   );
   const sceneRenderItemKeys = useMemo(
@@ -328,7 +289,6 @@ export function useDesignPageSceneReadModel({
     },
     derived: {
       hasWholeHousePlan,
-      usesHousePlanScene,
       sceneHousePlanRooms3D,
       houseRoomById,
       selectedPlanRoomContext,

@@ -44,7 +44,7 @@ export function useDesignPagePlanViewportRuntime({
   const [showLayoutDebugOverlay, setShowLayoutDebugOverlay] = useState(false);
   const [viewportSize, setViewportSize] = useState({ width: 0, height: 0 });
   const planDocument = useDesignPagePlanDocumentState();
-  const floorPlanDocument = useDesignPageFloorPlanDocumentState();
+  const floorPlanDocument = useDesignPageFloorPlanDocumentState(planDocument.state.planMeasurementUnit);
   const [selectedPlanOverlayId, setSelectedPlanOverlayId] =
     useState<string | null>(null);
   const [suppressedDoorwaySuggestionKeys, setSuppressedDoorwaySuggestionKeys] =

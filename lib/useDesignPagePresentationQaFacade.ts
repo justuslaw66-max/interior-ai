@@ -78,6 +78,7 @@ export type UseDesignPagePresentationQaFacadeInput = {
     > & {
       houseRoomCount: number;
       openingCount: number;
+      planMeasurementUnitReady: boolean;
       selectedPlanRoomId: string | null;
       commandSelectedPlanRoomId: string | null;
     };
@@ -368,9 +369,7 @@ export function useDesignPagePresentationQaFacade({
           canRedo: state.editor.canRedo,
           undoName: state.editor.undoName,
           redoName: state.editor.redoName,
-          designSidebarCollapsed:
-            state.chrome.designPanelCollapsed ||
-            !state.chrome.designPanelOpen,
+          designSidebarCollapsed: state.chrome.designPanelCollapsed || !state.chrome.designPanelOpen,
           millworkActive: state.chrome.millworkActive,
           showLoadDesign: state.editor.authenticated,
           isSaving: state.persistence.isSaving,
@@ -380,12 +379,11 @@ export function useDesignPagePresentationQaFacade({
           ? {
               id: state.document.activeRoom.id,
               roomName: state.document.activeRoom.name,
-              roomTypeLabel: getRoomTypeLabel(
-                state.document.activeRoom.roomType
-              ),
+              roomTypeLabel: getRoomTypeLabel(state.document.activeRoom.roomType),
               roomCount: state.document.snapshot.rooms.length,
               widthMeters: state.document.roomWidth,
               depthMeters: state.document.roomDepth,
+              measurementUnit: state.plan.planMeasurementUnitReady ? state.plan.planMeasurementUnit : null,
               viewMode: state.editor.viewMode,
               health: state.chrome.activeRoomHealthSummary
                 ? {

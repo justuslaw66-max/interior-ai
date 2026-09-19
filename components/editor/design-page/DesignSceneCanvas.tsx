@@ -148,14 +148,12 @@ type WorkspacePlanningGridProps = {
   centerX: number;
   centerZ: number;
   ceilingY: number;
-  shadowsEnabled: boolean;
   size: number;
 };
 function WorkspacePlanningGrid({
   centerX,
   centerZ,
   ceilingY,
-  shadowsEnabled,
   size,
 }: WorkspacePlanningGridProps) {
   const floorGridRef = useRef<THREE.Group>(null);
@@ -183,23 +181,6 @@ function WorkspacePlanningGrid({
         >
           <planeGeometry args={[size, size]} />
           <meshBasicMaterial color="#f3f5f5" toneMapped={false} />
-        </mesh>
-        <mesh
-          position={[
-            centerX,
-            WORKSPACE_GRID_FLOOR_Y_METERS + 0.005,
-            centerZ,
-          ]}
-          rotation-x={-Math.PI / 2}
-          receiveShadow={shadowsEnabled}
-          raycast={() => null}
-        >
-          <planeGeometry args={[size, size]} />
-          <shadowMaterial
-            color="#66736f"
-            opacity={shadowsEnabled ? 0.08 : 0}
-            transparent
-          />
         </mesh>
         <Grid
           args={[size, size]}
@@ -284,16 +265,16 @@ export function DesignSceneCanvas({
   const { planBounds } = configuration;
   const presentationBounds =
     configuration.presentationBounds ?? configuration.planBounds;
+  const ceilingShadowOverhang = planBounds.roomHeight * 2;
   const shadowCameraHalfSpan = Math.min(
     MAX_SHADOW_CAMERA_HALF_SPAN_METERS,
     Math.max(
       MIN_SHADOW_CAMERA_HALF_SPAN_METERS,
-      Math.max(
+      Math.hypot(
         presentationBounds.widthMeters,
         presentationBounds.depthMeters
-      ) /
-        2 +
-        SHADOW_CAMERA_PADDING_METERS
+      ) / 2 +
+        ceilingShadowOverhang + SHADOW_CAMERA_PADDING_METERS
     )
   );
   const workspaceGridSize = Math.max(
@@ -490,7 +471,6 @@ export function DesignSceneCanvas({
             centerX={presentationBounds.centerX}
             centerZ={presentationBounds.centerZ}
             ceilingY={workspaceGridCeilingY}
-            shadowsEnabled={effectiveShadowsEnabled}
             size={workspaceGridSize}
           />
         ) : null}

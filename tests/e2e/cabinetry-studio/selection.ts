@@ -1,5 +1,5 @@
 import { test, expect } from "../fixtures";
-import { dismissBlockingPrompt, mockPlan } from "./helpers";
+import { mockPlan, openMillworkStudioFromWorkspaceMenu } from "./helpers";
 
 export function registerSelectionTests() {
   test.describe("Custom Millwork Studio selection", () => {
@@ -10,18 +10,7 @@ export function registerSelectionTests() {
     }) => {
       await mockPlan(page, "pro");
       await page.goto("/design?mode=designer");
-
-      const workspaceMenu = page.getByTestId("editor-command-workspace");
-      await expect(workspaceMenu).toBeVisible({ timeout: 30000 });
-      await page.waitForLoadState("networkidle");
-      await dismissBlockingPrompt(page);
-      await workspaceMenu.click();
-      const openStudio = page.getByTestId("editor-workflow-millwork");
-      await expect(openStudio).toBeVisible();
-      await openStudio.click();
-      await expect(page.getByTestId("custom-millwork-studio")).toBeVisible({
-        timeout: 15000,
-      });
+      await openMillworkStudioFromWorkspaceMenu(page);
 
       await page.getByTestId("cabinet-guided-step-type").click();
       await page.getByTestId("cabinet-preset-wardrobe").click();

@@ -31,7 +31,7 @@ export type DesignPageOpeningPlacementValidation =
       label: string;
     };
 
-const OPENING_CORNER_CLEARANCE_METERS = 0.18;
+export const OPENING_CORNER_CLEARANCE_METERS = 0.18;
 const OPENING_SPACING_METERS = 0.18;
 
 type PlacementOpening = Pick<
@@ -117,7 +117,7 @@ export function validateDesignPageOpeningPlacement(
     resolution.host.alongSegmentMeters - halfWidth - range.low,
     range.high - resolution.host.alongSegmentMeters - halfWidth
   );
-  if (cornerDistance < OPENING_CORNER_CLEARANCE_METERS) {
+  if (cornerDistance + 1e-9 < OPENING_CORNER_CLEARANCE_METERS) {
     return {
       valid: false,
       reason: "too_close_to_corner",

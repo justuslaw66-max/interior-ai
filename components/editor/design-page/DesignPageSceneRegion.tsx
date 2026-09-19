@@ -87,7 +87,6 @@ export function DesignPageSceneRegion({
   );
   const focusAvailable =
     state.canvas.viewMode === "3d" &&
-    state.structure.wholeHome.enabled &&
     state.structure.wholeHome.rooms.length > 1 &&
     Boolean(activeRoom);
   const focusedRoomId =
