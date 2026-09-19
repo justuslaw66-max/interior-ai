@@ -11,6 +11,8 @@ export type SelectableWallSurfacePanel = WallSurfacePanelDescriptor & {
   selectionPanelId?: string;
   selectionPanelAliases?: string[];
   boundaryEdges?: [Point, Point][];
+  /** False for a lintel or sill that keeps its face finish because no whole-wall target owns it. */
+  selectable?: boolean;
 };
 const EPSILON = 0.00001;
 
@@ -59,7 +61,11 @@ export function withContinuousWallSelection(
   return (["interior", "exterior"] as const).flatMap((role) => {
     const siblings = panels.filter((panel) => panel.role === role);
     const selectionPanelId = getContinuousWallPanelId(room, segment, openings, role);
-    if (!selectionPanelId) return siblings;
+    // Only lintels and sills stop short of the wall height. Without a window
+    // there is no whole-wall target, so a door lintel stays a face-finish
+    // fragment instead of becoming a target between the pieces it bridges.
+    if (!selectionPanelId) return siblings.map((panel) =>
+      panel.part.height === undefined ? panel : { ...panel, selectable: false });
     const selectionPanelAliases = [...new Set(siblings.flatMap((panel) =>
       [panel.panelId, ...panel.legacyPanelIds]))].filter((id) => id !== selectionPanelId);
     const rectangles = siblings.map((panel): Rect => {

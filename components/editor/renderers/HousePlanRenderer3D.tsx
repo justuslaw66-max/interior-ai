@@ -638,7 +638,7 @@ export default function HousePlanRenderer3D({
                     wallThickness={roomWallThickness}
                     wallOpacity={wallOpacity}
                     renderBase={!hasLegacyMergedWalls}
-                    // Every finish, including opening fragments, is owned by a selectable panel.
+                    // Every finish, including opening fragments, is owned by a panel mesh.
                     renderSurfaces={false}
                     selectionPieceKey={null}
                     selectionSettingsFallbackKeys={[]}

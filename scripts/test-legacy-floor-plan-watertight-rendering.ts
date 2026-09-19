@@ -254,6 +254,8 @@ for (const dimensions of [
   ], 2.6, 0);
   assert.equal(new Set(grouped.map((panel) => panel.selectionPanelId)).size, 2,
     "The full wall around a window must have one target per side, including sill and lintel.");
+  assert(grouped.every((panel) => panel.selectable !== false),
+    "A window wall's lintel and sill stay selectable through the whole-wall target.");
   for (const side of [1, -1]) {
     let perimeter = 0;
     for (const panel of grouped.filter((entry) => entry.side === side)) {
@@ -721,6 +723,30 @@ assert(
       alias.includes("shared-split-")
     ),
   "Canonical panels must keep legacy shared-fragment aliases so old finishes can be consolidated and removed."
+);
+// Template doorways carry no height, so the default door head leaves a lintel
+// above both Living east doorways. Without a window there is no whole-wall
+// target, so each lintel keeps its face finish instead of becoming a target
+// between the pieces it bridges.
+const studioDefaultHeightEastOpenings = getWallOpenings(studioLiving, studioLivingEast, studioRooms,
+  studioOpenings.map((opening) => ({ ...opening, height: undefined, bottom: undefined })));
+const studioLivingEastTargets = withContinuousWallSelection(studioLiving, studioLivingEast,
+  studioDefaultHeightEastOpenings, [
+    ...studioPanelsWithSupport,
+    ...buildOpeningWallSurfacePanels(studioLiving, studioRooms, studioLivingEast, studioDefaultHeightEastOpenings, 2.5),
+  ], 2.5, 0.12);
+assert.deepEqual(
+  studioLivingEastTargets.filter((panel) => panel.role === "interior" && panel.part.height !== undefined)
+    .map((panel) => [Number(panel.part.length.toFixed(2)), Number(panel.part.height?.toFixed(2)), panel.selectable]),
+  [[1.2, 0.4, false], [0.9, 0.4, false]],
+  "Default-height Studio door lintels must render as face-finish fragments, not selectable targets."
+);
+assert.deepEqual(
+  [...new Set(studioLivingEastTargets
+    .filter((panel) => panel.role === "interior" && panel.selectable !== false)
+    .map((panel) => panel.selectionPanelId ?? panel.panelId))],
+  studioLivingEastPanels.map((panel) => panel.panelId),
+  "Door lintels must not add a fourth Studio Living east target between its three pieces."
 );
 
 const oppositeStudioPanelIds = studioRooms

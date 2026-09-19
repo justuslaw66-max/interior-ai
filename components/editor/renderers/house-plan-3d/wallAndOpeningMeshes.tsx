@@ -890,7 +890,7 @@ export function WallSurfacePanelMesh({
         baseOpacity={baseOpacity}
         baseWallColor={isActive ? ACTIVE_WALL_COLOR : INACTIVE_WALL_COLOR}
         renderSurface
-        interactive={interactive}
+        interactive={interactive && panel.selectable !== false}
         pickEnabledRef={pickEnabledRef}
         onMaterialReady={handleMaterialReady}
         onHoverTarget={onHoverTarget}

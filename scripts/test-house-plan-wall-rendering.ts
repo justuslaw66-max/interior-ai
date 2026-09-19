@@ -788,8 +788,8 @@ assert.match(
 
 assert.match(
   source,
-  /<WallSurfaceSideMesh[\s\S]*?target=\{target\}[\s\S]*?texturePanelLength=\{joinedSurface\.length\}[\s\S]*?interactive=\{interactive\}/,
-  "The one complete panel finish mesh must own raycasting and a UV domain spanning the whole panel."
+  /<WallSurfaceSideMesh[\s\S]*?target=\{target\}[\s\S]*?texturePanelLength=\{joinedSurface\.length\}[\s\S]*?interactive=\{interactive && panel\.selectable !== false\}/,
+  "The one complete panel finish mesh must own raycasting and a UV domain spanning the whole panel, except a lintel or sill without a whole-wall target, which keeps its face finish without becoming its own pick target."
 );
 
 assert.match(
