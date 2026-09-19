@@ -947,7 +947,13 @@ test.describe("Studio canonical wall panels", () => {
       .getByTestId("wall-paint-swatch-nippon-0803-spanish-red")
       .click();
     await page.getByTestId("selection-inspector-wall-apply-room").click();
-    await page.waitForTimeout(300);
+    // The orange "applied to … walls" toast lies inside the sampled scene
+    // window and passes as painted red, so sample the walls once it is gone.
+    const appliedToast = page
+      .getByTestId("collision-toast")
+      .filter({ hasText: "applied to" });
+    await expect(appliedToast).toBeVisible();
+    await expect(appliedToast).toBeHidden({ timeout: 5_000 });
 
     const orbitMetrics = await rapidOrbitGridLeakMetrics(page);
     const measurableFrames = orbitMetrics.filter(
