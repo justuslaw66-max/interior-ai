@@ -29,7 +29,7 @@ export const EDITOR_LIGHTING_PRESETS: Record<LightingMode, EditorLightingPreset>
       enabled: true,
       intensity: 0.8,
       keyPosition: [6, 4, 1],
-      fillIntensity: 1.5,
+      fillIntensity: 1.1,
       fillPosition: [-6, 4, -1],
       backgroundVisible: false,
       resolution: 128,
@@ -46,7 +46,7 @@ export const EDITOR_LIGHTING_PRESETS: Record<LightingMode, EditorLightingPreset>
     ambient: {
       enabled: true,
       color: NEUTRAL_AMBIENT,
-      intensity: 1.02,
+      intensity: 0.68,
     },
     fixtures: {
       enabled: false,
