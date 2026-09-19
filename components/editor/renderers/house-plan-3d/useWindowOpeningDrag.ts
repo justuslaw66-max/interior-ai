@@ -7,7 +7,9 @@ import type { RoomRendererOpening } from "@/lib/design-page-plan-overlays";
 import { getCanonicalPlanLine } from "@/lib/wall-segment-geometry";
 import type { WallOpening3D, WallSegment3D } from "./geometry";
 import { getWindowOpeningHitVolume } from "./windowOpeningGeometry";
-import { getWindowDragPosition, type WindowDragBounds } from "./windowOpeningDrag";
+import {
+  createWindowDragPlane, getWindowDragPosition, type WindowDragBounds, type WindowDragPlane,
+} from "./windowOpeningDrag";
 
 export type WindowOpeningDragActions = {
   onMoveOpening?: (id: string, offsetMeters: number, bottomMeters?: number) => void;
@@ -18,6 +20,7 @@ type Options = WindowOpeningDragActions & {
   sourceOpening?: RoomRendererOpening;
   segment: WallSegment3D;
   wallHeight: number;
+  floorWorldY: number;
   interactive: boolean;
   hidden: boolean;
 };
@@ -25,14 +28,13 @@ type DragSession = {
   pointerId: number;
   clientX: number;
   clientY: number;
-  origin: THREE.Vector3;
+  drag: WindowDragPlane;
   axis: THREE.Vector3;
-  plane: THREE.Plane;
   bounds: WindowDragBounds;
 };
 
 function createDragSession(event: ThreeEvent<PointerEvent>, options: Options): DragSession {
-  const { opening, sourceOpening, segment, wallHeight } = options;
+  const { opening, sourceOpening, segment, wallHeight, floorWorldY } = options;
   const volume = getWindowOpeningHitVolume(segment, opening, wallHeight);
   const axis = new THREE.Vector3(1, 0, 0).transformDirection(event.object.matrixWorld);
   const normal = new THREE.Vector3(0, 0, 1).transformDirection(event.object.matrixWorld);
@@ -43,8 +45,7 @@ function createDragSession(event: ThreeEvent<PointerEvent>, options: Options): D
   const hostLine = hostResolution?.status === "resolved" ? getCanonicalPlanLine(hostResolution.host.roomSegment) : null;
   return {
     pointerId: event.pointerId, clientX: event.clientX, clientY: event.clientY,
-    origin: event.point.clone(), axis,
-    plane: new THREE.Plane().setFromNormalAndCoplanarPoint(normal, event.point),
+    drag: createWindowDragPlane(event.ray, event.point, normal, floorWorldY), axis,
     bounds: { offset: opening.offset, sourceOffset: sourceOpening?.offset ?? opening.offset,
       sourceDirection: hostLine ? axis.x * hostLine.tangent.x + axis.z * hostLine.tangent.z
         : sourceOpening ? (sourceAlongX ? axis.x : axis.z) : 1,
@@ -55,7 +56,7 @@ function createDragSession(event: ThreeEvent<PointerEvent>, options: Options): D
 
 function trackWindowPointer(
   session: DragSession, canvas: HTMLCanvasElement, camera: THREE.Camera,
-  onMove: (offset: number, bottom: number) => void, onEnd: () => void
+  onMove: (offset: number, bottom?: number) => void, onEnd: () => void
 ) {
   const raycaster = new THREE.Raycaster();
   const point = new THREE.Vector3();
@@ -85,13 +86,13 @@ function trackWindowPointer(
     const rect = canvas.getBoundingClientRect();
     pointer.set((event.clientX - rect.left) / rect.width * 2 - 1, -(event.clientY - rect.top) / rect.height * 2 + 1);
     raycaster.setFromCamera(pointer, camera);
-    if (!raycaster.ray.intersectPlane(session.plane, point)) return;
-    point.sub(session.origin);
+    if (!raycaster.ray.intersectPlane(session.drag.plane, point)) return;
+    point.sub(session.drag.origin);
     const position = getWindowDragPosition(session.bounds, point.dot(session.axis), point.y);
     const key = `${position.offsetMeters}:${position.bottomMeters}`;
     if (key === lastPosition) return;
     lastPosition = key;
-    onMove(position.offsetMeters, position.bottomMeters);
+    onMove(position.offsetMeters, session.drag.vertical ? position.bottomMeters : undefined);
   };
   canvas.style.cursor = "grabbing";
   canvas.setPointerCapture(session.pointerId);

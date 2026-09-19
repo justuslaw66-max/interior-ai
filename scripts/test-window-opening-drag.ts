@@ -4,7 +4,10 @@ import type { HousePlanRoom2D } from "@/lib/design-page-house-plan";
 import type { DesignPageOpeningMetricsPatch } from "@/lib/design-page-opening-metrics";
 import { moveDesignPageOpening } from "@/lib/useDesignPageOpeningMoveAction";
 import { MIN_OPENING_CORNER_CLEARANCE_METERS, validateTracedOpeningPlacement } from "@/lib/floor-plan-tracing";
-import { getWindowDragPosition, type WindowDragBounds } from "@/components/editor/renderers/house-plan-3d/windowOpeningDrag";
+import * as THREE from "three";
+import {
+  createWindowDragPlane, getWindowDragPosition, type WindowDragBounds,
+} from "@/components/editor/renderers/house-plan-3d/windowOpeningDrag";
 
 const start: WindowDragBounds = {
   offset: 0.25, sourceOffset: 0.25, sourceDirection: 1,
@@ -60,4 +63,74 @@ moveDesignPageOpening({ ...options, canonicalTopology: {
 } }, opening.id, 0.5, 0.7);
 assert.deepEqual(calls, [{ route: "canonical", id: "window", metrics: { offsetMeters: 0.5, bottomMeters: 0.7 } }],
   "Both axes must reach the same canonical mutation without a duplicate legacy write or a measurement-only edit.");
+
+// Pointer rays for a 900x620 canvas, moved in screen pixels from a world point.
+const canvasSize = { width: 900, height: 620 };
+function pixelOf(camera: THREE.Camera, point: THREE.Vector3) {
+  const ndc = point.clone().project(camera);
+  return new THREE.Vector2((ndc.x + 1) / 2 * canvasSize.width, (1 - ndc.y) / 2 * canvasSize.height);
+}
+function screenDirection(camera: THREE.Camera, from: THREE.Vector3, direction: THREE.Vector3) {
+  return pixelOf(camera, from.clone().addScaledVector(direction, 0.3)).sub(pixelOf(camera, from)).normalize();
+}
+function rayAtPixel(camera: THREE.Camera, pixel: THREE.Vector2) {
+  const raycaster = new THREE.Raycaster();
+  raycaster.setFromCamera(new THREE.Vector2(pixel.x / canvasSize.width * 2 - 1, 1 - pixel.y / canvasSize.height * 2), camera);
+  return raycaster.ray;
+}
+function dragDelta(camera: THREE.Camera, drag: ReturnType<typeof createWindowDragPlane>, axis: THREE.Vector3,
+  grab: THREE.Vector3, screen: THREE.Vector2, pixels: number) {
+  const point = rayAtPixel(camera, pixelOf(camera, grab).addScaledVector(screen, pixels))
+    .intersectPlane(drag.plane, new THREE.Vector3());
+  assert.ok(point, "The drag plane must stay reachable for a small pointer move.");
+  point.sub(drag.origin);
+  return { horizontal: point.dot(axis), vertical: point.y };
+}
+function perspectiveCamera(position: THREE.Vector3, target: THREE.Vector3) {
+  const camera = new THREE.PerspectiveCamera(45, canvasSize.width / canvasSize.height, 0.05, 200);
+  camera.position.copy(position);
+  camera.lookAt(target);
+  camera.updateMatrixWorld();
+  return camera;
+}
+
+// The mounted e2e diagonal wall (-2,-2.75)->(1,0.25) seen from the default camera is 4-7 degrees off the view ray.
+const diagonalAxis = new THREE.Vector3(3, 0, 3).normalize();
+const diagonalNormal = new THREE.Vector3(-diagonalAxis.z, 0, diagonalAxis.x);
+const diagonalGrab = new THREE.Vector3(-0.5, 1.35, -1.25);
+const defaultCamera = perspectiveCamera(new THREE.Vector3(6.2, 3.6, 7.2), new THREE.Vector3(0, 1, 0));
+const grazingRay = rayAtPixel(defaultCamera, pixelOf(defaultCamera, diagonalGrab));
+const grazingDrag = createWindowDragPlane(grazingRay, diagonalGrab, diagonalNormal, 0);
+assert.equal(grazingDrag.vertical, false, "A grazing wall must not take a two-axis wall-plane drag.");
+const physicalNormal = screenDirection(defaultCamera, diagonalGrab, diagonalNormal);
+const physicalTangent = screenDirection(defaultCamera, diagonalGrab, diagonalAxis);
+const wallPlaneNoise = dragDelta(defaultCamera, {
+  plane: new THREE.Plane().setFromNormalAndCoplanarPoint(diagonalNormal, diagonalGrab),
+  origin: diagonalGrab, vertical: true,
+}, diagonalAxis, diagonalGrab, physicalNormal, 5);
+assert.ok(Math.abs(wallPlaneNoise.horizontal) > 0.3,
+  "Precondition: at this angle a 5 px perpendicular wobble moves a wall-plane drag by decimetres.");
+for (const pixels of [5, 75]) {
+  const noise = dragDelta(defaultCamera, grazingDrag, diagonalAxis, diagonalGrab, physicalNormal, pixels);
+  assert.ok(Math.abs(noise.horizontal) < 0.01, `A ${pixels} px drag along the physical normal must not slide a grazing window.`);
+  assert.ok(Math.abs(noise.vertical) < 1e-9, "A grazing drag must leave the sill alone.");
+}
+const grazingAlong = dragDelta(defaultCamera, grazingDrag, diagonalAxis, diagonalGrab, physicalTangent, 90);
+assert.ok(grazingAlong.horizontal > 0.1, "A drag along the projected tangent must still move a grazing window.");
+assert.ok(Math.abs(grazingAlong.vertical) < 1e-9);
+
+// A wall that faces the camera keeps the two-axis wall-plane drag that follows the pointer.
+const facingCamera = perspectiveCamera(
+  diagonalGrab.clone().addScaledVector(diagonalNormal, 4).add(new THREE.Vector3(0, 0.4, 0)), diagonalGrab
+);
+const facingDrag = createWindowDragPlane(
+  rayAtPixel(facingCamera, pixelOf(facingCamera, diagonalGrab)), diagonalGrab, diagonalNormal, 0
+);
+assert.equal(facingDrag.vertical, true, "A wall facing the camera must keep the vertical sill drag.");
+const up = dragDelta(facingCamera, facingDrag, diagonalAxis, diagonalGrab, new THREE.Vector2(0, -1), 40);
+assert.ok(up.vertical > 0.05 && Math.abs(up.horizontal) < 0.01, "Dragging up must raise the sill without sliding.");
+const across = dragDelta(facingCamera, facingDrag, diagonalAxis, diagonalGrab,
+  screenDirection(facingCamera, diagonalGrab, diagonalAxis), 40);
+assert.ok(Math.abs(across.horizontal) > 0.05 && Math.abs(across.vertical) < 0.01,
+  "Dragging along the wall must slide the window without changing the sill.");
 console.log("window opening drag bounds and mutation routing passed");
