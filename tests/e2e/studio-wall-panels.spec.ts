@@ -604,19 +604,25 @@ test.describe("Studio canonical wall panels", () => {
       .fill("40");
 
     // The band, its top cap and the finish panels keep their materials across
-    // the change, so each must recompile once it becomes transparent.
+    // the change, so each must recompile once it becomes transparent. The band
+    // is split into one mesh per piece around openings, so every piece must
+    // fade; a piece left at full opacity shows up as its own entry.
     await expect
       .poll(
         async () => {
-          const faded = (await readCompiledMaterialPrograms(page)).filter(
+          const programs = await readCompiledMaterialPrograms(page);
+          const faded = programs.filter(
             (program) =>
               program.transparent && program.opacity > 0 && program.opacity < 1
           );
           return {
-            band: faded
-              .filter(({ testId }) => testId?.startsWith("legacy-watertight-wall-"))
-              .map(({ testId, opacity }) => `${testId}@${opacity}`)
-              .sort(),
+            band: [
+              ...new Set(
+                programs
+                  .filter(({ testId }) => testId?.startsWith("legacy-watertight-wall-"))
+                  .map(({ testId, opacity }) => `${testId}@${opacity}`)
+              ),
+            ].sort(),
             finishPanelFaded: faded.some(
               ({ testId, opacity }) => testId === null && opacity === 0.4
             ),
