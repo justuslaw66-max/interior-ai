@@ -478,6 +478,8 @@ for (const [owner, materialRef] of [
   ["LegacyWallBandMesh", "capMaterialRef"],
   ["WallSurfaceSideMesh", "materialRef"],
   ["CutawayWallMesh", "baseMaterialRef"],
+  ["WindowFrameRailMesh", "railMaterialRef"],
+  ["WindowFrameMullionMesh", "mullionMaterialRef"],
 ] as const) {
   assert.match(
     source,
