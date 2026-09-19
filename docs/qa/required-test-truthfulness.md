@@ -1094,7 +1094,7 @@ ms whole-test timeout.
 The runtime-generated nonce is shared only between the client-ID and secret
 shapes; it is random, unregistered, unrelated to any GitHub secret, and the
 policy declares external authentication incapable. Both values are registered
-with `add-mask` before the only `GITHUB_ENV` append. Exact allowlisting,
+with `add-mask` before the exporter's only `GITHUB_ENV` append. Exact allowlisting,
 single-line validation, outside-workspace realpath checks, next-step structural
 validation, `/api/auth/session` JSON preflight, explicit CI/test activation,
 and production exclusion remain fail closed. Tests reject write-before-mask,

@@ -159,7 +159,7 @@ stages used wrapper results plus sealed physical state/evidence.
 
 | Command ID / mode | Executable and argv | Inputs and semantic success | Exit and human streams | Cleanup owner | Previous machine evidence / gap |
 | --- | --- | --- | --- | --- | --- |
-| `ci:auth-fixture:export` / `provider-fixture-export` | package-owned `npx ts-node … scripts/ci-auth-fixture.ts export-github-env` | explicit non-production GitHub CI; physical private `GITHUB_ENV` outside workspace; runtime-generated inert pair; masks precede the sole append | 0 on complete export; mask commands and safe success prose on stdout; safe error on stderr | no process cleanup; workflow owns its private environment file | Raw provider values remain canonically transported only by `GITHUB_ENV`; no safe command-result sidecar existed |
+| `ci:auth-fixture:export` / `provider-fixture-export` | package-owned `npx ts-node … scripts/ci-auth-fixture.ts export-github-env` | explicit non-production GitHub CI; physical private `GITHUB_ENV` outside workspace; runtime-generated inert pair; masks precede the exporter's sole append | 0 on complete export; mask commands and safe success prose on stdout; safe error on stderr | no process cleanup; workflow owns its private environment file | Raw provider values remain canonically transported only by `GITHUB_ENV`; no safe command-result sidecar existed |
 | `ci:auth-fixture:validate` / `auth-environment-validation` | same owner with `validate-env` | explicit development/staging GitHub CI; provider grammar/pair, secret, alias, activation, and application validator pass | 0 plus prose on success; 1 plus safe error on failure | none | No machine result; prose/exit were the only command authority |
 | `ci:auth-fixture:production-misuse` / `production-misuse-validation` | same owner with `production-misuse`; exact child uses `production-misuse-child` over IPC | an exact synthetic pair is rejected specifically because production activation is prohibited | parent exits 0 only after canonical expected-negative proof; child remains nonzero for the intended rejection; streams remain logs | parent owns the exact child | No dedicated command or intended-rejection proof existed; the old test accepted an in-process expected throw |
 | `ci:auth-fixture:preflight` / `auth-session-preflight` | same owner with `preflight` | CI-provided inert fixture; exact loopback Next dev server; canonical session/provider/CSRF/sign-out/sign-in/discovery checks | 0 plus safe prose on success; 1 plus earliest safe failure on failure | command owns SIGTERM, bounded SIGKILL fallback, final termination, and port release | Server/request/response facts were held in memory and discarded |
@@ -217,6 +217,20 @@ command closed. GitHub workflows use runner-temp roots, capture the auth
 command status without short-circuiting, validate each success or failure
 sidecar with the canonical reader, bind its classification to that status, and
 only then propagate a failure.
+
+GitHub does not provide the `runner` context in job-level `env`, and a workflow
+that names it there is rejected before any job runs. Each auth job therefore
+declares `CI_AUTH_FIXTURE_RESULT_ROOT` and `CI_AUTH_FIXTURE_SESSION_ROOT` in its
+first step, `Declare runner-temp auth fixture roots`, which appends the two
+non-secret `$RUNNER_TEMP` paths to `GITHUB_ENV` for every later step. That step
+creates neither root: the export step creates the result root, and the exporter
+creates the mode-0700 session root and re-declares it as its realpath in the
+fixture session transport, which later steps then receive. No step sets either
+root in its own `env`, so nothing shadows that transport. The exporter's masked
+append stays the only `GITHUB_ENV` write that carries provider values.
+`scripts/test-required-test-truthfulness.mjs` rejects any workflow expression
+that names a context GitHub does not provide at its level, and pins this
+declaration step.
 
 Stdout and stderr remain human log streams. They are not semantic result
 channels.
