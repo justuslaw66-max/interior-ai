@@ -534,6 +534,8 @@ function rewriteAdvisoryUploadPair(root, { mutateEvidence, mutateReport } = {}) 
 // rejects the whole workflow file, so no job runs at all, when an expression
 // names a context that is unavailable where it is evaluated (for example
 // `runner.temp` in jobs.<job_id>.env). A local YAML parse cannot see that.
+// Step keys share one list except jobs.<job_id>.steps.if, which GitHub gives
+// no `secrets` context.
 const STEP_EXPRESSION_CONTEXTS = Object.freeze([
   "github",
   "needs",
@@ -547,6 +549,9 @@ const STEP_EXPRESSION_CONTEXTS = Object.freeze([
   "steps",
   "inputs",
 ]);
+const STEP_IF_EXPRESSION_CONTEXTS = Object.freeze(
+  STEP_EXPRESSION_CONTEXTS.filter((context) => context !== "secrets"),
+);
 const JOB_EXPRESSION_CONTEXTS = Object.freeze([
   "github",
   "needs",
@@ -570,6 +575,10 @@ const WORKFLOW_LEVEL_EXPRESSION_RULES = Object.freeze({
   "run-name": { contexts: ["github", "inputs", "vars"] },
   concurrency: { contexts: ["github", "inputs", "vars"] },
   env: { contexts: ["github", "secrets", "inputs", "vars"] },
+});
+const WORKFLOW_CALL_EXPRESSION_RULES = Object.freeze({
+  inputs: { key: "default", rule: { contexts: ["github", "inputs", "vars"] } },
+  outputs: { key: "value", rule: { contexts: ["github", "jobs", "vars", "inputs"] } },
 });
 const JOB_LEVEL_EXPRESSION_RULES = Object.freeze({
   concurrency: { contexts: JOB_EXPRESSION_CONTEXTS },
@@ -659,6 +668,12 @@ function collectWorkflowExpressionIssues(file, workflow) {
   for (const [key, rule] of Object.entries(WORKFLOW_LEVEL_EXPRESSION_RULES)) {
     check(workflow?.[key], key, rule);
   }
+  const workflowCall = workflow?.on?.workflow_call;
+  for (const [section, { key, rule }] of Object.entries(WORKFLOW_CALL_EXPRESSION_RULES)) {
+    for (const [id, entry] of Object.entries(workflowCall?.[section] ?? {})) {
+      check(entry?.[key], `on.workflow_call.${section}.${id}.${key}`, rule);
+    }
+  }
   for (const [jobId, job] of Object.entries(workflow?.jobs ?? {})) {
     for (const [key, rule] of Object.entries(JOB_LEVEL_EXPRESSION_RULES)) {
       check(job?.[key], `jobs.${jobId}.${key}`, rule);
@@ -673,7 +688,7 @@ function collectWorkflowExpressionIssues(file, workflow) {
     (job?.steps ?? []).forEach((step, index) => {
       for (const key of STEP_EXPRESSION_KEYS) {
         check(step?.[key], `jobs.${jobId}.steps[${index}].${key}`, {
-          contexts: STEP_EXPRESSION_CONTEXTS,
+          contexts: key === "if" ? STEP_IF_EXPRESSION_CONTEXTS : STEP_EXPRESSION_CONTEXTS,
           functions: key === "if" ? [...STATUS_EXPRESSION_FUNCTIONS, "hashfiles"] : ["hashfiles"],
           implicit: key === "if",
         });
@@ -2170,6 +2185,15 @@ assert.equal(
   const unavailable = parseYaml(
     [
       "run-name: Deploy ${{ env.TARGET }}",
+      "on:",
+      "  workflow_call:",
+      "    inputs:",
+      "      root:",
+      "        type: string",
+      "        default: ${{ runner.temp }}",
+      "    outputs:",
+      "      root:",
+      "        value: ${{ steps.declare.outputs.root }}",
       "env:",
       "  TOP: ${{ runner.os }}",
       "jobs:",
@@ -2187,6 +2211,12 @@ assert.equal(
       "        image: postgres:${{ env.PG_VERSION }}",
       "    steps:",
       "      - run: echo ok",
+      "      - if: secrets.DEPLOY_TOKEN != ''",
+      "        run: echo implicit",
+      "      - if: ${{ secrets.DEPLOY_TOKEN != '' }}",
+      "        env:",
+      "          TOKEN: ${{ secrets.DEPLOY_TOKEN }}",
+      "        run: echo explicit",
       "",
     ].join("\n"),
   );
@@ -2197,6 +2227,8 @@ assert.equal(
     [
       "synthetic.yml: run-name uses the 'env' context, which is unavailable there",
       "synthetic.yml: env.TOP uses the 'runner' context, which is unavailable there",
+      "synthetic.yml: on.workflow_call.inputs.root.default uses the 'runner' context, which is unavailable there",
+      "synthetic.yml: on.workflow_call.outputs.root.value uses the 'steps' context, which is unavailable there",
       "synthetic.yml: jobs.broken.concurrency.group uses the 'job' context, which is unavailable there",
       "synthetic.yml: jobs.broken.env.RESULT_ROOT uses the 'runner' context, which is unavailable there",
       "synthetic.yml: jobs.broken.env.COPY uses the 'env' context, which is unavailable there",
@@ -2204,13 +2236,24 @@ assert.equal(
       "synthetic.yml: jobs.broken.if uses the 'steps' context, which is unavailable there",
       "synthetic.yml: jobs.broken.runs-on uses the 'runner' context, which is unavailable there",
       "synthetic.yml: jobs.broken.services.postgres.image uses the 'env' context, which is unavailable there",
+      "synthetic.yml: jobs.broken.steps[1].if uses the 'secrets' context, which is unavailable there",
+      "synthetic.yml: jobs.broken.steps[2].if uses the 'secrets' context, which is unavailable there",
     ],
-    "GitHub rejects the whole workflow when a job-level key names a context it cannot read",
+    "GitHub rejects the whole workflow when a key names a context it cannot read there, including secrets in a step if",
   );
   const available = parseYaml(
     [
       "concurrency:",
       "  group: valid-${{ github.ref }}",
+      "on:",
+      "  workflow_call:",
+      "    inputs:",
+      "      root:",
+      "        type: string",
+      "        default: ${{ github.ref_name }}-${{ inputs.suffix }}",
+      "    outputs:",
+      "      root:",
+      "        value: ${{ jobs.build.outputs.root }}",
       "jobs:",
       "  build:",
       "    if: always() && !cancelled() && github.event_name != 'runner.temp'",
@@ -2238,14 +2281,17 @@ assert.equal(
       "        env:",
       "          RESULT_PATH: ${{ runner.temp }}/results/out.json",
       "          COPY: ${{ env.SESSION_ID }}",
+      "          STEP_TOKEN: ${{ secrets.GITHUB_TOKEN }}",
       "        run: echo \"${{ job.status }} ${{ steps.declare.outcome }}\" >> \"$GITHUB_ENV\"",
+      "      - if: env.TOKEN != '' && runner.os == 'Linux'",
+      "        run: echo \"${{ secrets.GITHUB_TOKEN != '' }}\"",
       "",
     ].join("\n"),
   );
   assert.deepEqual(
     collectWorkflowExpressionIssues("synthetic.yml", available),
     [],
-    "step-level runner/env/steps expressions and quoted context names remain valid",
+    "step-level runner/env/steps/secrets expressions, env-gated step ifs, workflow_call defaults and outputs, and quoted context names remain valid",
   );
 }
 

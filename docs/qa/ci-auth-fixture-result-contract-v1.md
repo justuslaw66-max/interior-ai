@@ -228,9 +228,12 @@ creates the mode-0700 session root and re-declares it as its realpath in the
 fixture session transport, which later steps then receive. No step sets either
 root in its own `env`, so nothing shadows that transport. The exporter's masked
 append stays the only `GITHUB_ENV` write that carries provider values.
-`scripts/test-required-test-truthfulness.mjs` rejects any workflow expression
-that names a context GitHub does not provide at its level, and pins this
-declaration step.
+`scripts/test-required-test-truthfulness.mjs` checks the expressions in every
+key it scans against the contexts that GitHub's Context availability table lists
+for that key, and pins this declaration step. It scans workflow `run-name`,
+`concurrency` and `env`, `on.workflow_call` input defaults and output values,
+and the job, container, service, environment URL and step keys. Step `if` gets
+no `secrets` context. A workflow that names an unlisted context fails the test.
 
 Stdout and stderr remain human log streams. They are not semantic result
 channels.
