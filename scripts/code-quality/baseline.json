@@ -153,7 +153,7 @@
       "limit": 250
     },
     "components/editor/design-page/DesignPageSelectionInspector.tsx": {
-      "lines": 594,
+      "lines": 593,
       "limit": 250
     },
     "components/editor/design-page/DesignPageViewportOverlayLayer.tsx": {
@@ -3421,7 +3421,7 @@
     "lib/design-page-viewport-region-adapter.ts": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 198
+        "maximum": 195
       }
     },
     "lib/design-page-viewport-workspace-registration.ts": {

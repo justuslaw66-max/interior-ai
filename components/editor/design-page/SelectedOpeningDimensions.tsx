@@ -2,10 +2,27 @@ import MeasurementField from "@/components/editor/MeasurementField";
 import FloorPlanPropertyEvidenceControl from "@/components/editor/FloorPlanPropertyEvidenceControl";
 import type { PlanMeasurementUnit } from "@/lib/design-page-types";
 import type { FloorPlanPropertyEvidenceV2 } from "@/lib/floor-plan-document-v2";
+import type { FloorPlanConsumerMeasurementEvidenceV2 } from "@/lib/floor-plan-measured-property-mutations";
 import type { OpeningDimensionResolutionStatus } from "@/lib/design-page-opening-dimensions";
 import type { DesignPageOpeningMetricsPatch } from "@/lib/design-page-opening-metrics";
-import { formatDisplayLength, getDisplayUnitMetadata } from "@/lib/display-units";
+import { formatDisplayLength } from "@/lib/display-units";
 import { OpeningKindControl } from "@/components/editor/OpeningKindControl";
+
+/** Commits a measured opening value; evidence and note come from an evidence confirmation. */
+type CommitMeasuredMm = (
+  valueMm: number,
+  evidence?: FloorPlanConsumerMeasurementEvidenceV2,
+  measurementNote?: string
+) => void;
+
+export type SelectedOpeningDimensionsActions = {
+  commitWidthMm: CommitMeasuredMm;
+  commitHeightMm: CommitMeasuredMm;
+  commitBottomMm: CommitMeasuredMm;
+  commitOffsetMm: (valueMm: number) => void;
+  commitKind: (patch: DesignPageOpeningMetricsPatch) => void;
+  commitWall: (wall: "north" | "south" | "east" | "west") => void;
+};
 
 type SelectedOpeningDimensionsProps = {
   state: {
@@ -18,6 +35,8 @@ type SelectedOpeningDimensionsProps = {
     bottomMm: number;
     maxWidthMm: number;
     maxHeightMm: number;
+    offsetMm: number;
+    maxOffsetMm: number;
     effectiveHeightMm: number;
     effectiveBottomMm: number;
     heightStatus: OpeningDimensionResolutionStatus;
@@ -29,7 +48,6 @@ type SelectedOpeningDimensionsProps = {
     widthEditable: boolean;
     heightEditable: boolean;
     sillEditable: boolean;
-    positionLabel: string;
     measurementUnit: PlanMeasurementUnit;
   };
   configuration: {
@@ -37,48 +55,21 @@ type SelectedOpeningDimensionsProps = {
     canEdit: boolean;
     proMode: boolean;
   };
-  actions: {
-    commitWidthMm: (valueMm: number) => void;
-    commitHeightMm: (valueMm: number) => void;
-    commitBottomMm: (valueMm: number) => void;
-    commitKind: (patch: DesignPageOpeningMetricsPatch) => void;
-    commitWall: (wall: "north" | "south" | "east" | "west") => void;
-  };
+  actions: SelectedOpeningDimensionsActions;
 };
 
-function OpeningPositionDisplay({
-  label,
-  measurementUnit,
-  dark,
-}: {
-  label: string;
-  measurementUnit: PlanMeasurementUnit;
-  dark: boolean;
+function OpeningOffsetField({ state, configuration, onCommit }: Pick<SelectedOpeningDimensionsProps, "state" | "configuration"> & {
+  onCommit: SelectedOpeningDimensionsActions["commitOffsetMm"];
 }) {
   return (
-    <div>
-      <div
-        className={
-          dark
-            ? "flex items-center justify-between text-[11px] font-semibold text-neutral-300"
-            : "flex items-center justify-between text-[11px] font-semibold text-neutral-600"
-        }
-      >
-        <span>Position</span>
-        <span className={dark ? "font-normal text-neutral-400" : "font-normal text-neutral-500"}>
-          {getDisplayUnitMetadata(measurementUnit).indicator}
-        </span>
-      </div>
-      <div
-        className={
-          dark
-            ? "designer-raised mt-1 flex h-9 items-center rounded-md border px-2 text-xs font-semibold"
-            : "mt-1 flex h-9 items-center rounded-md border border-neutral-200 bg-neutral-50 px-2 text-xs font-semibold text-neutral-800"
-        }
-      >
-        {label}
-      </div>
-    </div>
+    <MeasurementField
+      label="Position from wall centre" valueMm={state.offsetMm}
+      minMm={-state.maxOffsetMm} maxMm={state.maxOffsetMm}
+      disabled={!configuration.canEdit || state.hostNeedsRepair}
+      testId="selection-inspector-opening-offset" unit={state.measurementUnit}
+      stepMm={50} keyboardStepMm={50} dark={configuration.dark} compact touchFriendly
+      onCommit={onCommit}
+    />
   );
 }
 
@@ -90,7 +81,7 @@ function OpeningMeasuredField({
   disabled: boolean; testId: string; evidenceTestId?: string;
   evidence: FloorPlanPropertyEvidenceV2;
   measurementUnit: PlanMeasurementUnit; dark: boolean;
-  onCommit: (valueMm: number) => void;
+  onCommit: CommitMeasuredMm;
 }) {
   return (
     <div>
@@ -101,9 +92,11 @@ function OpeningMeasuredField({
         onCommit={onCommit}
       />
       <FloorPlanPropertyEvidenceControl
-        evidence={evidence} dark={dark} testId={evidenceTestId ?? `${testId}-evidence`}
+        evidence={evidence} dark={dark} disabled={disabled}
+        testId={evidenceTestId ?? `${testId}-evidence`}
         assumedLabel="Estimated"
         assumedHelpText="This opening dimension was not read from a source drawing."
+        onConfirm={(nextEvidence, note) => onCommit(valueMm, nextEvidence, note)}
       />
     </div>
   );
@@ -216,11 +209,7 @@ export function SelectedOpeningDimensions({ state, configuration, actions }: Sel
           onCommit={actions.commitBottomMm}
         />
       ) : null}
-      <OpeningPositionDisplay
-        label={state.positionLabel}
-        measurementUnit={state.measurementUnit}
-        dark={configuration.dark}
-      />
+      <OpeningOffsetField state={state} configuration={configuration} onCommit={actions.commitOffsetMm} />
     </div>
   );
 }

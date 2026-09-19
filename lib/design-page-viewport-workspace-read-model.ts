@@ -161,6 +161,7 @@ function buildViewportPanelState(
             widthMm: inspector.visiblePlanOpening.widthMm,
             heightMm: inspector.visiblePlanOpening.heightMm,
             bottomMm: inspector.visiblePlanOpening.bottomMm,
+            offsetMm: inspector.visiblePlanOpening.offsetMm,
             evidence: inspector.visiblePlanOpening.evidence,
             wallSpanMeters: inspector.visiblePlanOpeningWallSpanMeters,
           }

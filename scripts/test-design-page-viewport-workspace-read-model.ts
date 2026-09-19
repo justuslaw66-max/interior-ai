@@ -436,20 +436,27 @@ assert.deepEqual(selectedOpening.state.selectionInspector?.selectedOpening, {
   id: windowFixture.id, kind: "window", wall: "north", hostNeedsRepair: false,
   widthMm: 900, heightMm: 1200, bottomMm: 800, effectiveHeightMm: 1200, effectiveBottomMm: 800,
   heightStatus: "exact", bottomStatus: "exact", dimensionIssues: [], maxWidthMm: 3940, maxHeightMm: 2700,
+  offsetMm: 250, maxOffsetMm: 1550,
   widthEvidence: "assumed", heightEvidence: "assumed", sillEvidence: "user_confirmed",
   widthEditable: true, heightEditable: true, sillEditable: true,
-}, "The visible 3D inspector must retain height, sill, evidence, and wall bounds.");
+}, "The visible 3D inspector must retain height, sill, offset, evidence, and wall bounds.");
 const viewportInspectorActions = selectedOpening.actions.selectionInspector;
 viewportInspectorActions.commitOpeningHeightMm(1400);
 viewportInspectorActions.commitOpeningBottomMm(900);
 viewportInspectorActions.commitOpeningWidthMm(1000);
 viewportInspectorActions.commitOpeningWall("east");
+viewportInspectorActions.commitOpeningOffsetMm(-350);
+viewportInspectorActions.commitOpeningHeightMm(1200, "site_measured", "Laser measured");
+viewportInspectorActions.commitOpeningBottomMm(800, "user_confirmed");
 assert.deepEqual(openingEdits, [
   [windowFixture.id, { heightMeters: 1.4, heightEvidence: "user_confirmed" }],
   [windowFixture.id, { bottomMeters: 0.9, bottomEvidence: "user_confirmed" }],
   [windowFixture.id, { widthMeters: 1, widthEvidence: "user_confirmed" }],
   [windowFixture.id, { wall: "east" }],
-], "Viewport edits must reach the existing opening mutation/history action without dropping metrics.");
+  [windowFixture.id, { offsetMeters: -0.35 }],
+  [windowFixture.id, { heightMeters: 1.2, heightEvidence: "site_measured", measurementNote: "Laser measured" }],
+  [windowFixture.id, { bottomMeters: 0.8, bottomEvidence: "user_confirmed" }],
+], "Viewport edits, offsets and evidence confirmations must reach the existing opening mutation/history action without dropping metrics.");
 assert.deepEqual(
   resolveDesignPageOpeningViewportState(
     {
@@ -457,6 +464,7 @@ assert.deepEqual(
       kind: "window",
       wall: "west",
       widthMm: 1400,
+      offsetMm: 0,
       wallSpanMeters: 5.7,
     },
     2600
@@ -476,6 +484,8 @@ assert.deepEqual(
     dimensionIssues: [],
     maxWidthMm: 5640,
     maxHeightMm: 2600,
+    offsetMm: 0,
+    maxOffsetMm: 2150,
     widthEvidence: "assumed",
     heightEvidence: "assumed",
     sillEvidence: "assumed",

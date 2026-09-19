@@ -64,6 +64,10 @@ const selectedOpeningDimensionsSource = readFileSync(
   ),
   "utf8"
 );
+const measurementFieldSource = readFileSync(
+  join(root, "components/editor/MeasurementField.tsx"),
+  "utf8"
+);
 const selectionInspectorSource = readFileSync(
   join(root, "components/editor/design-page/DesignPageSelectionInspector.tsx"),
   "utf8"
@@ -129,6 +133,7 @@ for (const testId of [
   "selection-inspector-opening-width",
   "selection-inspector-opening-height",
   "selection-inspector-opening-bottom",
+  "selection-inspector-opening-offset",
 ]) {
   assert.match(
     selectedOpeningDimensionsSource,
@@ -146,10 +151,27 @@ assert.doesNotMatch(
   /testId="selection-inspector-opening-width"/,
   "The selection inspector must not restore the retired duplicate inline width control."
 );
+const openingMeasurementFields =
+  selectedOpeningDimensionsSource.match(/<MeasurementField[\s\S]*?\/>/g) ?? [];
+assert.ok(
+  openingMeasurementFields.length >= 2 &&
+    openingMeasurementFields.every((field) => /unit=\{(?:state\.)?measurementUnit\}/.test(field)),
+  "Every extracted opening control should render through MeasurementField in the selected display unit."
+);
+assert.match(
+  measurementFieldSource,
+  /const metadata = getDisplayUnitMetadata\(unit\);[\s\S]*?\{metadata\.indicator\}/,
+  "The extracted opening controls should use the canonical display-unit indicator."
+);
 assert.match(
   selectedOpeningDimensionsSource,
-  /getDisplayUnitMetadata\(measurementUnit\)\.indicator/,
-  "The extracted opening controls should use the canonical display-unit indicator."
+  /<FloorPlanPropertyEvidenceControl[\s\S]*?onConfirm=\{\(nextEvidence, note\) => onCommit\(valueMm, nextEvidence, note\)\}/,
+  "The viewport opening inspector should confirm measurement evidence like the 2D inspector."
+);
+assert.match(
+  selectedOpeningDimensionsSource,
+  /label="Position from wall centre"[\s\S]*?minMm=\{-state\.maxOffsetMm\} maxMm=\{state\.maxOffsetMm\}[\s\S]*?testId="selection-inspector-opening-offset"[\s\S]*?onCommit=\{onCommit\}[\s\S]*?<OpeningOffsetField[^>]*onCommit=\{actions\.commitOffsetMm\}/,
+  "The viewport opening inspector should edit the horizontal position within the host wall bounds."
 );
 assert.match(
   roomRendererSource,
