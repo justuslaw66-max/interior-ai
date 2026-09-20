@@ -10,6 +10,7 @@ import { getWindowOpeningHitVolume } from "./windowOpeningGeometry";
 import {
   createWindowDragPlane, getWindowDragPosition, type WindowDragBounds, type WindowDragPlane,
 } from "./windowOpeningDrag";
+import { shouldOpeningPointerDownSelect } from "./openingPointerSelection";
 
 export type WindowOpeningDragActions = {
   onMoveOpening?: (id: string, offsetMeters: number, bottomMeters?: number) => void;
@@ -104,7 +105,10 @@ function trackWindowPointer(
   return finish;
 }
 
-/** Native pointer capture keeps the drag alive over wall solids and outside the aperture. */
+/**
+ * Native pointer capture keeps the drag alive over wall solids and outside the aperture. The
+ * returned starter reports whether it claimed the gesture, so an unclaimed one stays the camera's.
+ */
 export function useWindowOpeningDrag(options: Options) {
   const { camera, gl } = useThree();
   const latest = useRef(options);
@@ -114,13 +118,16 @@ export function useWindowOpeningDrag(options: Options) {
   useEffect(() => {
     if (options.hidden || !options.interactive) finishRef.current?.();
   }, [options.hidden, options.interactive]);
-  return (event: ThreeEvent<PointerEvent>) => {
-    if (event.button !== 0 || !options.interactive || !options.onMoveOpening) return;
+  return (event: ThreeEvent<PointerEvent>): boolean => {
+    if (!shouldOpeningPointerDownSelect({
+      button: event.button, interactive: options.interactive,
+      dragEnabled: Boolean(options.onMoveOpening) })) return false;
     finishRef.current?.();
     const session = createDragSession(event, options);
     options.onOpeningDragStateChange?.(true);
     finishRef.current = trackWindowPointer(session, gl.domElement, camera,
       (offset, bottom) => latest.current.onMoveOpening?.(options.opening.sourceId, offset, bottom),
       () => { finishRef.current = null; latest.current.onOpeningDragStateChange?.(false); });
+    return true;
   };
 }

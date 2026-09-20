@@ -17,6 +17,7 @@ import { moveOpeningCenterFromWorldPoint, projectWorldPointToOpeningHost } from 
 import { useSurfaceMaterialTexture } from "../useSurfaceMaterialTexture";
 import type { SelectableWallSurfacePanel } from "./continuousWallSelection";
 import { OpeningInteractionQaMarker3D } from "./OpeningInteractionQaMarker3D";
+import { shouldOpeningPointerDownSelect } from "./openingPointerSelection";
 import {
   getSurfaceMaterialFallbackColor,
   useSurfaceMaterialSourceTexture,
@@ -1037,16 +1038,15 @@ export function OpeningThresholdMesh({
       onPointerDown={
         interactive
           ? (event) => {
+              event.stopPropagation();
+              if (!shouldOpeningPointerDownSelect({
+                button: event.button, interactive, dragEnabled: canDragOpening }) || !resolvedHost) return;
               stopStructurePointerEvent(event);
               onSelectTarget(target, event);
-              if (!canDragOpening) return;
-              if (!resolvedHost) return;
               const pointerAlong = getPointerAlong(event) ?? resolvedHost.alongSegmentMeters;
               capturePointerIfSupported(event);
-              dragStateRef.current = {
-                pointerId: event.pointerId,
-                grabDeltaAlong: resolvedHost.alongSegmentMeters - pointerAlong,
-              };
+              dragStateRef.current = { pointerId: event.pointerId,
+                grabDeltaAlong: resolvedHost.alongSegmentMeters - pointerAlong };
               onOpeningDragStateChange?.(true);
             }
           : undefined

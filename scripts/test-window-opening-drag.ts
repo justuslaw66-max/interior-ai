@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import fs from "node:fs";
 import type { RoomOpening2D } from "@/lib/editorScene";
 import type { HousePlanRoom2D } from "@/lib/design-page-house-plan";
 import type { DesignPageOpeningMetricsPatch } from "@/lib/design-page-opening-metrics";
@@ -8,6 +9,9 @@ import * as THREE from "three";
 import {
   createWindowDragPlane, getWindowDragPosition, type WindowDragBounds,
 } from "@/components/editor/renderers/house-plan-3d/windowOpeningDrag";
+import {
+  OPENING_DRAG_POINTER_BUTTON, shouldOpeningPointerDownSelect,
+} from "@/components/editor/renderers/house-plan-3d/openingPointerSelection";
 
 const start: WindowDragBounds = {
   offset: 0.25, sourceOffset: 0.25, sourceDirection: 1,
@@ -133,4 +137,57 @@ const across = dragDelta(facingCamera, facingDrag, diagonalAxis, diagonalGrab,
   screenDirection(facingCamera, diagonalGrab, diagonalAxis), 40);
 assert.ok(Math.abs(across.horizontal) > 0.05 && Math.abs(across.vertical) < 0.01,
   "Dragging along the wall must slide the window without changing the sill.");
+
+// An orbit drag that starts on an opening must not select it. Only the gesture this renderer owns
+// may select on pointer-down: selectStructureTarget sees event.delta 0 there, so its drag guard
+// cannot refuse the selection, and a drag that ends on a canonical wall keeps it.
+assert.equal(OPENING_DRAG_POINTER_BUTTON, 0, "Only the primary button drags an opening.");
+for (const [pointerDown, expected, note] of [
+  [{ button: 0, interactive: true, dragEnabled: true }, true,
+    "A drag this renderer owns must select the opening it grabs."],
+  [{ button: 0, interactive: true, dragEnabled: false }, false,
+    "An opening this renderer cannot drag must leave the gesture, and the selection, to the camera."],
+  [{ button: 2, interactive: true, dragEnabled: true }, false, "A right-button camera pan must not select."],
+  [{ button: 1, interactive: true, dragEnabled: true }, false, "A middle-button camera gesture must not select."],
+  [{ button: 0, interactive: false, dragEnabled: true }, false, "A non-interactive scene selects nothing."],
+] as const) {
+  assert.equal(shouldOpeningPointerDownSelect(pointerDown), expected, note);
+}
+
+const thresholdSource = fs.readFileSync(
+  "components/editor/renderers/house-plan-3d/wallAndOpeningMeshes.tsx", "utf8"
+);
+assert.match(thresholdSource,
+  /import \{[^}]*shouldOpeningPointerDownSelect[^}]*\} from "\.\/openingPointerSelection";/,
+  "The opening threshold mesh must take its pointer-down rule from the shared module.");
+const thresholdPointerDown = thresholdSource.slice(
+  thresholdSource.indexOf("onPointerDown="), thresholdSource.indexOf("onPointerMove=")
+);
+assert.ok(thresholdPointerDown.includes("onSelectTarget(target, event)"),
+  "Precondition: the threshold pointer-down still owns the drag-start selection.");
+assert.match(thresholdPointerDown,
+  /if \(!shouldOpeningPointerDownSelect\(\{[\s\S]*?dragEnabled: canDragOpening \}\)[\s\S]*?\) return;/,
+  "The threshold pointer-down must refuse a gesture this renderer does not own.");
+for (const owned of ["onSelectTarget(target, event)", "stopStructurePointerEvent(event)"]) {
+  assert.ok(thresholdPointerDown.indexOf("shouldOpeningPointerDownSelect") < thresholdPointerDown.indexOf(owned),
+    `An unowned pointer-down must return before ${owned}: the camera keeps the gesture and the selection.`);
+}
+
+const windowMeshSource = fs.readFileSync(
+  "components/editor/renderers/house-plan-3d/WindowOpeningMesh.tsx", "utf8"
+);
+const windowPointerDown = windowMeshSource.slice(
+  windowMeshSource.indexOf("onPointerDown="), windowMeshSource.indexOf("onClick=")
+);
+assert.match(windowPointerDown, /if \(!startDrag\(event\)\) return;/,
+  "A window may select on pointer-down only when its drag actually starts.");
+for (const owned of ["props.onSelectTarget(target, event)", "stopPointer(event)"]) {
+  assert.ok(windowPointerDown.indexOf("startDrag(event)") < windowPointerDown.indexOf(owned),
+    `An unclaimed window pointer-down must return before ${owned}.`);
+}
+assert.match(
+  fs.readFileSync("components/editor/renderers/house-plan-3d/useWindowOpeningDrag.ts", "utf8"),
+  /if \(!shouldOpeningPointerDownSelect\(\{[\s\S]*?\}\)\) return false;/,
+  "The window drag hook must claim a pointer-down through the shared rule.");
+
 console.log("window opening drag bounds and mutation routing passed");

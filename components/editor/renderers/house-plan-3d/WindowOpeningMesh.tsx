@@ -66,9 +66,11 @@ export function WindowOpeningMesh(props: Props) {
         onPointerOver={(event) => { stopPointer(event); props.onHoverTarget(target); }}
         onPointerOut={() => props.onClearHoverTarget(target)}
         onPointerDown={(event) => {
+          // An unclaimed pointer-down is the camera's gesture: it selects nothing and keeps orbiting.
+          event.stopPropagation();
+          if (!startDrag(event)) return;
           stopPointer(event);
           props.onSelectTarget(target, event);
-          startDrag(event);
         }}
         onClick={(event) => { stopPointer(event); props.onSelectTarget(target, event); }}
       >
