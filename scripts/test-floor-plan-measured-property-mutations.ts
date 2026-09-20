@@ -513,6 +513,15 @@ assert.match(openingInspector, /PlanOpeningDimensionFields/);
 assert.match(openingDimensionFields, /opening\.evidence\?\.width/);
 assert.match(openingDimensionFields, /assumedLabel: "Estimated"/);
 assert.match(openingDimensionFields, /floorPlanPropertyEvidenceIsEditable/);
+const selectedOpeningDimensions = fs.readFileSync(
+  path.join(root, "components/editor/design-page/SelectedOpeningDimensions.tsx"),
+  "utf8"
+);
+for (const lock of ["widthEditable", "heightEditable", "sillEditable"]) {
+  assert.match(selectedOpeningDimensions, new RegExp(`disabled=\\{!configuration\\.canEdit \\|\\| !state\\.${lock}\\}`),
+    "The viewport opening inspector must honour the same measurement-evidence locks as the plan inspector.");
+}
+assert.match(selectedOpeningDimensions, /<FloorPlanPropertyEvidenceControl/);
 assert.match(floorInspector, /floor-properties-wall-height-evidence/);
 assert.match(floorInspector, /floor-properties-slab-thickness-evidence/);
 assert.match(floorInspector, /canEditActiveRoomWallHeight/);

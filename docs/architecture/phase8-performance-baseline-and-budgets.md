@@ -206,9 +206,15 @@ browser ceilings and requires FPS/draw-call samples.
 
 ## Cleanup and limitations
 
-Cleanup is verified both structurally and at runtime. `GLBScaledModel`, room
-materials, generated cabinetry, cabinet blob storage, and export/download URLs
-have paired disposal or revocation. After complete project-page teardown, all
+Cleanup is verified both structurally and at runtime. `GLBScaledModel` only
+composes the GLB hooks and disposes nothing itself: `useGLBModelLifecycle`
+disposes owned instance clones, `useGLBMaterials` disposes owned variant
+textures, `useGLBLoadedResource` releases its cache leases, and the
+`glbModelResources` caches dispose their scenes on eviction and on a
+non-persisted `pagehide`. Room materials, generated cabinetry, cabinet blob
+storage, and export/download URLs have paired disposal or revocation. See
+`docs/architecture/3d-asset-performance-policy.md` for the full GLB ownership
+rules. After complete project-page teardown, all
 three fixtures retained about 0.68 MB, well below the 2-MB ceiling even though
 live heap grew to 49.6 MB for the large project.
 

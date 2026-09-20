@@ -680,6 +680,11 @@ test("responsive cart retains modal ownership without overflow or clipped focus"
   page,
   browser,
 }) => {
+  // Five full cart lifecycles plus two mid-entry viewport switches and the
+  // reduced-motion and no-transition passes take about 29.3 s in CI Chromium
+  // (WebKit about 15 s), so the default 30 s budget left no headroom and the
+  // unchanged scenario timed out at 30.2 s on unrelated branches.
+  test.setTimeout(60_000);
   const trigger = await openEditor(page, "consumer", MOBILE);
   await installCartEntryTrace(page);
   await trigger.evaluate((element) => {

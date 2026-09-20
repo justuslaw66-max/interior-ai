@@ -1,5 +1,10 @@
 import { test, expect } from "../fixtures";
-import { dismissBlockingPrompt, mockPlan, openDetailedProStudio } from "./helpers";
+import {
+  dismissBlockingPrompt,
+  mockPlan,
+  openDetailedProStudio,
+  openMillworkStudioFromWorkspaceMenu,
+} from "./helpers";
 
 export function registerGuidedTests() {
   test.describe("Custom Millwork Studio guided", () => {
@@ -11,18 +16,7 @@ export function registerGuidedTests() {
       await page.setViewportSize({ width: 1692, height: 1000 });
       await mockPlan(page, "pro");
       await page.goto("/design?mode=designer");
-
-      const workspaceMenu = page.getByTestId("editor-command-workspace");
-      await expect(workspaceMenu).toBeVisible({ timeout: 30000 });
-      await page.waitForLoadState("networkidle");
-      await dismissBlockingPrompt(page);
-      await workspaceMenu.click();
-      const openStudio = page.getByTestId("editor-workflow-millwork");
-      await expect(openStudio).toBeVisible();
-      await openStudio.click();
-      await expect(page.getByTestId("custom-millwork-studio")).toBeVisible({
-        timeout: 15000,
-      });
+      await openMillworkStudioFromWorkspaceMenu(page);
 
       await page.getByTestId("cabinet-guided-step-type").click();
       await page.getByTestId("cabinet-preset-wardrobe").click();
@@ -69,14 +63,9 @@ export function registerGuidedTests() {
     test("new designer can configure a valid drawer cabinet in Guided setup", async ({ page }) => {
       await mockPlan(page, "pro");
       await page.goto("/design?mode=designer");
-
-      const openStudio = page.getByTestId("open-custom-millwork-studio");
-      await expect(openStudio).toBeVisible({ timeout: 30000 });
-      await dismissBlockingPrompt(page);
-      await openStudio.click();
+      await openMillworkStudioFromWorkspaceMenu(page);
 
       const studio = page.getByTestId("custom-millwork-studio");
-      await expect(studio).toBeVisible({ timeout: 15000 });
       await expect(studio).toHaveAttribute("data-access-level", "pro");
       await expect(studio).toHaveAttribute("data-experience", "guided");
       const onboarding = page.getByTestId("cabinet-onboarding-hint");

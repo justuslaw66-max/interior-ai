@@ -36,16 +36,22 @@ export function buildDuplicatedDesignData(
   const activeRoom = safeSnapshot ? getStoredActiveRoom(safeSnapshot) : null;
   const safeItems = activeRoom
     ? deepCloneJson(activeRoom.items)
+    : safeSnapshot
+      ? []
     : Array.isArray(source.items)
       ? deepCloneJson(source.items)
       : [];
   const safeZones = activeRoom
     ? deepCloneJson(activeRoom.zones)
+    : safeSnapshot
+      ? []
     : Array.isArray(source.zones)
       ? deepCloneJson(source.zones)
       : [];
   const safeSavedViews = activeRoom
     ? deepCloneJson(activeRoom.savedViews)
+    : safeSnapshot
+      ? []
     : Array.isArray(source.savedViews)
       ? deepCloneJson(source.savedViews)
       : [];

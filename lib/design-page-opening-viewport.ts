@@ -4,7 +4,7 @@ import type { RoomOpening2D } from "@/lib/editorScene";
 
 export type DesignPageViewportOpening = Pick<
   RoomOpening2D,
-  "id" | "kind" | "wall" | "widthMm" | "heightMm" | "bottomMm" | "evidence"
+  "id" | "kind" | "wall" | "widthMm" | "heightMm" | "bottomMm" | "offsetMm" | "evidence"
 > & {
   wallSpanMeters: number;
 };
@@ -79,6 +79,8 @@ export function resolveDesignPageOpeningViewportState(
       dimensionIssues: vertical.issues,
       maxWidthMm,
       maxHeightMm,
+      offsetMm: opening.offsetMm,
+      maxOffsetMm: Math.max(0, (opening.wallSpanMeters * 1000 - opening.widthMm) / 2),
       ...openingEvidenceState(opening),
     },
   };

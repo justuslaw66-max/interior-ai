@@ -25,10 +25,10 @@ import {
   type RoomSizePresetId,
 } from "@/lib/design-page-house-plan";
 import { normalizeItemsToRoom } from "@/lib/design-page-zone-layout";
+import { useDesignPageDeleteRoomAction } from "@/lib/useDesignPageDeleteRoomAction";
 import type { RoomOpening2D } from "@/lib/editorScene";
 import {
   createRoom,
-  deleteRoom,
   switchRoom as switchActiveRoom,
   updateRoom,
   type DesignItem,
@@ -80,6 +80,7 @@ export type DesignPageRoomPlanControllerActions = {
   setRoomWidthInput: Dispatch<SetStateAction<string>>;
   setRoomDepthInput: Dispatch<SetStateAction<string>>;
   clearNonRoomSelection: () => void;
+  clearPlanForEmptyCanvas: () => void;
   renameRoom: (roomId: string, nextName: string) => void;
   moveRoom2D: (
     roomId: string,
@@ -126,6 +127,7 @@ export function useDesignPageRoomPlanController({
     setRoomWidthInput,
     setRoomDepthInput,
     clearNonRoomSelection,
+    clearPlanForEmptyCanvas,
     renameRoom,
     moveRoom2D,
     history,
@@ -257,36 +259,16 @@ export function useDesignPageRoomPlanController({
     ]
   );
 
-  const deleteSelectedRoom = useCallback(
-    (roomId: string) => {
-      if (designSnapshotRef.current.rooms.length <= 1) {
-        showToast("Keep at least one room");
-        return;
-      }
-
-      const room = designSnapshotRef.current.rooms.find((entry) => entry.id === roomId);
-      if (!room) return;
-      history.begin("Delete room");
-      setDesignSnapshot((previous) => deleteRoom(previous, roomId));
-      setPlanOpenings((previous) =>
-        previous.filter((opening) => opening.roomId !== roomId)
-      );
-      history.commit();
-      setSelectedPlanRoomId(null);
-      clearNonRoomSelection();
-      showToast(`${room.name} deleted`);
-      track("floor_plan_room_deleted", { roomId });
-    },
-    [
-      clearNonRoomSelection,
-      designSnapshotRef,
-      history,
-      setDesignSnapshot,
-      setPlanOpenings,
-      setSelectedPlanRoomId,
-      showToast,
-    ]
-  );
+  const deleteSelectedRoom = useDesignPageDeleteRoomAction({
+    designSnapshotRef,
+    history,
+    setDesignSnapshot,
+    setPlanOpenings,
+    setSelectedPlanRoomId,
+    clearNonRoomSelection,
+    clearPlanForEmptyCanvas,
+    showToast,
+  });
 
   const resizeRoom2D = useCallback(
     (roomId: string, next: { x: number; z: number; w: number; d: number }) => {

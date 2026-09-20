@@ -81,15 +81,15 @@
       "limit": 400
     },
     "app/lighting-reference/LightingReferenceClient.tsx": {
-      "lines": 467,
+      "lines": 466,
       "limit": 250
     },
     "app/share/[shareToken]/export/page.tsx": {
-      "lines": 1505,
+      "lines": 1475,
       "limit": 250
     },
     "app/share/[shareToken]/export/pdf/route.ts": {
-      "lines": 531,
+      "lines": 521,
       "limit": 400
     },
     "app/tools/glb-optimizer/page.tsx": {
@@ -145,7 +145,7 @@
       "limit": 250
     },
     "components/editor/design-page/DesignPageEditorCommandBar.tsx": {
-      "lines": 345,
+      "lines": 339,
       "limit": 250
     },
     "components/editor/design-page/DesignPageQaMarkers.tsx": {
@@ -153,7 +153,7 @@
       "limit": 250
     },
     "components/editor/design-page/DesignPageSelectionInspector.tsx": {
-      "lines": 612,
+      "lines": 593,
       "limit": 250
     },
     "components/editor/design-page/DesignPageViewportOverlayLayer.tsx": {
@@ -165,11 +165,11 @@
       "limit": 250
     },
     "components/editor/design-page/DesignSceneCanvas.tsx": {
-      "lines": 565,
+      "lines": 545,
       "limit": 250
     },
     "components/editor/design-page/DesignSceneStructureLayer.tsx": {
-      "lines": 456,
+      "lines": 423,
       "limit": 250
     },
     "components/editor/design-page/ImportedFloorPlanWallEditor.tsx": {
@@ -213,7 +213,7 @@
       "limit": 250
     },
     "components/editor/DesignControlsAiPanel.tsx": {
-      "lines": 465,
+      "lines": 464,
       "limit": 250
     },
     "components/editor/DesignControlsFurnishPanel.tsx": {
@@ -221,11 +221,11 @@
       "limit": 250
     },
     "components/editor/DesignControlsPanel.tsx": {
-      "lines": 970,
+      "lines": 957,
       "limit": 250
     },
     "components/editor/DesignControlsPlanPanel.tsx": {
-      "lines": 3893,
+      "lines": 3738,
       "limit": 250
     },
     "components/editor/DraggableFloatingPanel.tsx": {
@@ -269,11 +269,11 @@
       "limit": 250
     },
     "components/editor/FloorPropertiesPanel.tsx": {
-      "lines": 693,
+      "lines": 692,
       "limit": 250
     },
     "components/editor/renderers/CanonicalFloorPlanStructure.tsx": {
-      "lines": 1296,
+      "lines": 1288,
       "limit": 250
     },
     "components/editor/renderers/house-plan-3d/geometry.ts": {
@@ -281,11 +281,11 @@
       "limit": 400
     },
     "components/editor/renderers/house-plan-3d/surfaceMeshes.tsx": {
-      "lines": 487,
+      "lines": 486,
       "limit": 250
     },
     "components/editor/renderers/house-plan-3d/wallAndOpeningMeshes.tsx": {
-      "lines": 1174,
+      "lines": 1158,
       "limit": 250
     },
     "components/editor/renderers/HousePlanRenderer3D.tsx": {
@@ -301,7 +301,7 @@
       "limit": 250
     },
     "components/editor/renderers/RoomRenderer2D.tsx": {
-      "lines": 5544,
+      "lines": 5539,
       "limit": 250
     },
     "components/editor/renderers/useSurfaceMaterialTexture.ts": {
@@ -342,10 +342,6 @@
     },
     "components/scene/GLBScaledModel.tsx": {
       "lines": 255,
-      "limit": 250
-    },
-    "components/scene/RoomEnvironment.tsx": {
-      "lines": 273,
       "limit": 250
     },
     "features/cabinetry/automation.ts": {
@@ -505,7 +501,7 @@
       "limit": 400
     },
     "lib/design-document-contract.ts": {
-      "lines": 656,
+      "lines": 655,
       "limit": 400
     },
     "lib/design-page-calibration.ts": {
@@ -517,7 +513,7 @@
       "limit": 400
     },
     "lib/design-page-house-plan.ts": {
-      "lines": 2912,
+      "lines": 2909,
       "limit": 400
     },
     "lib/design-page-model-maps.ts": {
@@ -617,7 +613,7 @@
       "limit": 400
     },
     "lib/floor-plan-quality.ts": {
-      "lines": 642,
+      "lines": 630,
       "limit": 400
     },
     "lib/floor-plan-topology-mutations.ts": {
@@ -625,7 +621,7 @@
       "limit": 400
     },
     "lib/floor-plan-tracing.ts": {
-      "lines": 1045,
+      "lines": 1044,
       "limit": 400
     },
     "lib/floor-plan-wall-footprints.ts": {
@@ -637,19 +633,15 @@
       "limit": 400
     },
     "lib/resolve-lighting-scene.ts": {
-      "lines": 736,
+      "lines": 728,
       "limit": 400
     },
     "lib/room-types.ts": {
-      "lines": 621,
+      "lines": 615,
       "limit": 400
     },
     "lib/surface-material-audit.ts": {
       "lines": 505,
-      "limit": 400
-    },
-    "lib/surface-material-bom.ts": {
-      "lines": 422,
       "limit": 400
     },
     "lib/surface-settings.ts": {
@@ -677,7 +669,7 @@
       "limit": 400
     },
     "lib/useDesignPageFloorPlanUnderlayController.ts": {
-      "lines": 790,
+      "lines": 781,
       "limit": 400
     },
     "lib/useDesignPageItemDocumentController.ts": {
@@ -685,7 +677,7 @@
       "limit": 400
     },
     "lib/useDesignPageOnboarding.ts": {
-      "lines": 760,
+      "lines": 758,
       "limit": 400
     },
     "lib/useDesignPagePersistence.ts": {
@@ -697,7 +689,7 @@
       "limit": 400
     },
     "lib/useDesignPagePresentationQaFacade.ts": {
-      "lines": 508,
+      "lines": 506,
       "limit": 400
     },
     "lib/useDesignPageProductConfiguration.ts": {
@@ -717,11 +709,7 @@
       "limit": 400
     },
     "lib/useDesignPageRoomPlanController.ts": {
-      "lines": 627,
-      "limit": 400
-    },
-    "lib/useDesignPageRoomReadModel.ts": {
-      "lines": 410,
+      "lines": 609,
       "limit": 400
     },
     "lib/useDesignPageSceneItemDrag.ts": {
@@ -729,11 +717,11 @@
       "limit": 400
     },
     "lib/useDesignPageSceneRegionWorkspaceRegistration.ts": {
-      "lines": 436,
+      "lines": 427,
       "limit": 400
     },
     "lib/useDesignPageSelectionInspectorModel.ts": {
-      "lines": 418,
+      "lines": 415,
       "limit": 400
     },
     "lib/useDesignPageSelectionTransforms.ts": {
@@ -745,7 +733,7 @@
       "limit": 400
     },
     "lib/useDesignPageSurfaceInspector.ts": {
-      "lines": 1109,
+      "lines": 1107,
       "limit": 400
     },
     "lib/useDesignPageZoneController.ts": {
@@ -1629,7 +1617,7 @@
     "components/editor/ConsumerRoomSetupCard.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 261
+        "maximum": 259
       },
       "complexFunctions": {
         "count": 1,
@@ -1703,11 +1691,11 @@
     "components/editor/design-page/DesignPageEditorCommandBar.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 247
+        "maximum": 244
       },
       "complexFunctions": {
         "count": 1,
-        "maximum": 35
+        "maximum": 34
       }
     },
     "components/editor/design-page/DesignPagePanelRegion.tsx": {
@@ -1731,17 +1719,17 @@
     "components/editor/design-page/DesignPageSceneRegion.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 140
+        "maximum": 139
       }
     },
     "components/editor/design-page/DesignPageSelectionInspector.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 509
+        "maximum": 500
       },
       "complexFunctions": {
         "count": 1,
-        "maximum": 50
+        "maximum": 49
       }
     },
     "components/editor/design-page/DesignPageToasts.tsx": {
@@ -1769,7 +1757,7 @@
     "components/editor/design-page/DesignSceneCanvas.tsx": {
       "overlongFunctions": {
         "count": 2,
-        "maximum": 294
+        "maximum": 293
       },
       "complexFunctions": {
         "count": 1,
@@ -1791,11 +1779,11 @@
     "components/editor/design-page/DesignSceneStructureLayer.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 264
+        "maximum": 251
       },
       "complexFunctions": {
         "count": 1,
-        "maximum": 19
+        "maximum": 18
       }
     },
     "components/editor/design-page/DesignValidationFeedback.tsx": {
@@ -1839,7 +1827,7 @@
     "components/editor/design-page/lighting/ViewerLighting.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 78
+        "maximum": 77
       }
     },
     "components/editor/design-page/LightingSettingsControls.tsx": {
@@ -1911,7 +1899,7 @@
     "components/editor/design-page/PlanRoomSummaryCard.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 133
+        "maximum": 130
       },
       "complexFunctions": {
         "count": 1,
@@ -2021,7 +2009,7 @@
     "components/editor/DesignControlsAiPanel.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 386
+        "maximum": 383
       },
       "complexFunctions": {
         "count": 1,
@@ -2041,7 +2029,7 @@
     "components/editor/DesignControlsPanel.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 677
+        "maximum": 674
       },
       "complexFunctions": {
         "count": 1,
@@ -2050,11 +2038,11 @@
     },
     "components/editor/DesignControlsPlanPanel.tsx": {
       "overlongFunctions": {
-        "count": 7,
-        "maximum": 3777
+        "count": 6,
+        "maximum": 3628
       },
       "complexFunctions": {
-        "count": 6,
+        "count": 5,
         "maximum": 251
       }
     },
@@ -2269,7 +2257,7 @@
     "components/editor/FloorPropertiesPanel.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 630
+        "maximum": 628
       },
       "complexFunctions": {
         "count": 1,
@@ -2337,11 +2325,11 @@
     "components/editor/renderers/HousePlanRenderer3D.tsx": {
       "overlongFunctions": {
         "count": 3,
-        "maximum": 495
+        "maximum": 476
       },
       "complexFunctions": {
         "count": 2,
-        "maximum": 23
+        "maximum": 21
       }
     },
     "components/editor/renderers/ItemRenderer2D.tsx": {
@@ -2367,7 +2355,7 @@
     "components/editor/renderers/RoomRenderer2D.tsx": {
       "overlongFunctions": {
         "count": 17,
-        "maximum": 4176
+        "maximum": 4172
       },
       "complexFunctions": {
         "count": 8,
@@ -2387,7 +2375,7 @@
     "components/editor/RoomConnectionChecklist.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 114
+        "maximum": 113
       }
     },
     "components/editor/RoomPanNavigator.tsx": {
@@ -2534,12 +2522,6 @@
       "complexFunctions": {
         "count": 1,
         "maximum": 25
-      }
-    },
-    "components/scene/RoomEnvironment.tsx": {
-      "overlongFunctions": {
-        "count": 1,
-        "maximum": 251
       }
     },
     "components/scene/ZoneOutline.tsx": {
@@ -3263,11 +3245,11 @@
     "lib/design-document-contract.ts": {
       "overlongFunctions": {
         "count": 5,
-        "maximum": 267
+        "maximum": 258
       },
       "complexFunctions": {
         "count": 3,
-        "maximum": 41
+        "maximum": 40
       }
     },
     "lib/design-document-migrations.ts": {
@@ -3367,11 +3349,11 @@
     "lib/design-page-local-backup.ts": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 175
+        "maximum": 166
       },
       "complexFunctions": {
         "count": 1,
-        "maximum": 30
+        "maximum": 29
       }
     },
     "lib/design-page-panel-registration.ts": {
@@ -3421,7 +3403,7 @@
     "lib/design-page-scene-region-adapter.ts": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 186
+        "maximum": 171
       }
     },
     "lib/design-page-selection-panel-model.ts": {
@@ -3439,7 +3421,7 @@
     "lib/design-page-viewport-region-adapter.ts": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 198
+        "maximum": 195
       }
     },
     "lib/design-page-viewport-workspace-registration.ts": {
@@ -4293,7 +4275,7 @@
     "lib/surface-material-bom.ts": {
       "overlongFunctions": {
         "count": 3,
-        "maximum": 258
+        "maximum": 183
       }
     },
     "lib/surface-settings.ts": {
@@ -4357,7 +4339,7 @@
     "lib/useDesignPageCameraNavigation.ts": {
       "overlongFunctions": {
         "count": 3,
-        "maximum": 1160
+        "maximum": 1159
       },
       "complexFunctions": {
         "count": 1,
@@ -4469,7 +4451,7 @@
     "lib/useDesignPageDocumentSelectionRegistrationFacade.ts": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 222
+        "maximum": 220
       }
     },
     "lib/useDesignPageDocumentStateController.ts": {
@@ -4523,7 +4505,7 @@
     "lib/useDesignPageFloorPlanUnderlayController.ts": {
       "overlongFunctions": {
         "count": 3,
-        "maximum": 690
+        "maximum": 680
       },
       "complexFunctions": {
         "count": 1,
@@ -4629,7 +4611,7 @@
     "lib/useDesignPageOnboarding.ts": {
       "overlongFunctions": {
         "count": 6,
-        "maximum": 548
+        "maximum": 546
       }
     },
     "lib/useDesignPagePanelActions.ts": {
@@ -4713,7 +4695,7 @@
     "lib/useDesignPagePlanOverlayController.ts": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 238
+        "maximum": 236
       }
     },
     "lib/useDesignPagePlanPresentationModel.ts": {
@@ -4755,7 +4737,7 @@
     "lib/useDesignPagePlanWorkspaceFacade.ts": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 220
+        "maximum": 215
       }
     },
     "lib/useDesignPagePlanWorkspaceRegistrationFacade.ts": {
@@ -4779,7 +4761,7 @@
     "lib/useDesignPagePresentationQaFacade.ts": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 315
+        "maximum": 312
       }
     },
     "lib/useDesignPagePresentationWorkspaceRegistration.ts": {
@@ -4845,7 +4827,7 @@
     "lib/useDesignPageRoomPlanController.ts": {
       "overlongFunctions": {
         "count": 3,
-        "maximum": 526
+        "maximum": 507
       },
       "complexFunctions": {
         "count": 2,
@@ -4855,7 +4837,7 @@
     "lib/useDesignPageRoomReadModel.ts": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 315
+        "maximum": 304
       },
       "complexFunctions": {
         "count": 1,
@@ -4881,13 +4863,13 @@
     "lib/useDesignPageSceneReadModel.ts": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 249
+        "maximum": 226
       }
     },
     "lib/useDesignPageSceneRegionWorkspaceRegistration.ts": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 408
+        "maximum": 399
       }
     },
     "lib/useDesignPageSceneRoomReadRegistration.ts": {
@@ -4917,7 +4899,7 @@
     "lib/useDesignPageSelectionInspectorModel.ts": {
       "overlongFunctions": {
         "count": 2,
-        "maximum": 166
+        "maximum": 165
       },
       "complexFunctions": {
         "count": 1,
@@ -4953,7 +4935,7 @@
     "lib/useDesignPageSurfaceInspector.ts": {
       "overlongFunctions": {
         "count": 3,
-        "maximum": 618
+        "maximum": 614
       },
       "complexFunctions": {
         "count": 2,

@@ -1,4 +1,5 @@
 import { PLAN_FLOATING_OVERLAY_STACK_WIDTH_PX } from "@/lib/design-page-editor-configuration";
+import { getActiveSurfaceRoomFloorAreaSqm } from "@/components/editor/design-controls-plan/surfaceSummaryRows";
 import type { BuildDesignPageViewportRegionAdapterInput } from "@/lib/design-page-viewport-region-adapter";
 import { resolveDesignLightingSettings } from "@/lib/design-lighting-settings";
 import { LIGHTING_PRESETS } from "@/lib/lightingPresets";
@@ -160,6 +161,7 @@ function buildViewportPanelState(
             widthMm: inspector.visiblePlanOpening.widthMm,
             heightMm: inspector.visiblePlanOpening.heightMm,
             bottomMm: inspector.visiblePlanOpening.bottomMm,
+            offsetMm: inspector.visiblePlanOpening.offsetMm,
             evidence: inspector.visiblePlanOpening.evidence,
             wallSpanMeters: inspector.visiblePlanOpeningWallSpanMeters,
           }
@@ -221,13 +223,14 @@ function buildViewportPlanControlState(
     sources;
   const floor = documentRoom.derived.floor;
   const floorState = documentRoom.state.floor;
-  const room = documentRoom.derived.room;
   const roomRead = sources.sceneRoomRead.derived.room;
 
   return {
     floorProperties: {
-      roomWidth: room.roomWidth,
-      roomDepth: room.roomDepth,
+      activeRoomFloorAreaSqm: getActiveSurfaceRoomFloorAreaSqm(
+        roomRead.surfaceRoomSummaries,
+        coreShell.state.document.designSnapshot.activeRoomId
+      ),
       floorOptions: floor.floorOptions,
       hiddenFloorLevels: floorState.hiddenFloorLevels,
       activeFloorLevel: floor.activeFloorLevel,

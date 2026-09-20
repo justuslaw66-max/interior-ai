@@ -75,6 +75,33 @@ assert.deepEqual(migratedV2.document.partnerExtension, {
   revision: "kept-verbatim",
 });
 
+const emptyDocument = {
+  ...migratedV2.document,
+  rooms: [],
+  activeRoomId: "",
+};
+assert.equal(validateStoredDesignDocument(emptyDocument).ok, true);
+const emptySnapshot = storedToSnapshot(emptyDocument);
+assert.deepEqual(emptySnapshot.rooms, []);
+assert.equal(emptySnapshot.activeRoomId, "");
+assert.deepEqual(snapshotToStored(emptySnapshot).rooms, []);
+const restoredEmptyBackup = normalizeDesignPageLocalBackup({
+  rawBackup: JSON.stringify(emptyDocument),
+  state: {
+    activeRoomId: "",
+    roomWidth: 5,
+    roomDepth: 4,
+    wallThickness: 0.12,
+  },
+  configuration: {
+    catalogItems: {} as typeof CATALOG_ITEMS,
+    resolveConfiguredPlanningDimsMm: (_item, product) => product.dimsMm,
+  },
+});
+assert.ok(restoredEmptyBackup.snapshot);
+assert.deepEqual(restoredEmptyBackup.snapshot.rooms, []);
+assert.equal(restoredEmptyBackup.snapshot.activeRoomId, "");
+
 const futureRevision = migrateDesignDocument({
   ...migratedV2.document,
   schemaRevision: 99,

@@ -4,6 +4,7 @@ import { Line } from "@react-three/drei/core/Line";
 import { useFrame, useThree, type ThreeEvent } from "@react-three/fiber";
 import { useCallback, useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
+import { CeilingShadowOccluder } from "@/components/scene/CeilingShadowOccluder";
 import type { HousePlanRoom2D } from "@/lib/design-page-house-plan";
 import {
   clampFloorPatternScale,
@@ -14,7 +15,7 @@ import { resolveFloorUndersideCutawayElevationMeters } from "@/lib/floor-plan-sc
 import { getRuntimeSurfaceMaterialById } from "@/lib/surface-material-runtime";
 import { normalizeFloorSurfaceSettings } from "@/lib/surface-settings";
 import { useSurfaceMaterialTexture } from "../useSurfaceMaterialTexture";
-import { createFloorMaterialTexture } from "./materials";
+import { createFloorMaterialTexture, useTransparencyRecompileRef } from "./materials";
 import {
   buildLegacyWallBandCoreGeometry,
   buildHorizontalRoomGeometry,
@@ -102,14 +103,11 @@ export function LegacyWallBandMesh({
 }) {
   const shapes = useMemo(() => legacyPlanarShape(band.polygons), [band.polygons]);
   const coreGeometry = useMemo(
-    () =>
-      buildLegacyWallBandCoreGeometry({
-        band,
-        facePatches,
-        removeTopCap: showTopCap,
-      }),
+    () => buildLegacyWallBandCoreGeometry({ band, facePatches, removeTopCap: showTopCap }),
     [band, facePatches, showTopCap]
   );
+  const coreMaterialRef = useTransparencyRecompileRef<THREE.MeshStandardMaterial>(opacity < 0.999);
+  const capMaterialRef = useTransparencyRecompileRef<THREE.MeshStandardMaterial>(opacity < 0.999);
 
   useEffect(() => () => coreGeometry.dispose(), [coreGeometry]);
 
@@ -133,6 +131,7 @@ export function LegacyWallBandMesh({
       >
         <primitive object={coreGeometry} attach="geometry" />
         <meshStandardMaterial
+          ref={coreMaterialRef}
           color={INACTIVE_WALL_COLOR}
           emissive={INACTIVE_WALL_COLOR}
           emissiveIntensity={WALL_INDIRECT_FILL_INTENSITY}
@@ -155,6 +154,7 @@ export function LegacyWallBandMesh({
         >
           <shapeGeometry args={[shapes]} />
           <meshStandardMaterial
+            ref={capMaterialRef}
             color={WALL_CUT_SURFACE_COLOR}
             emissive={WALL_CUT_SURFACE_COLOR}
             emissiveIntensity={WALL_INDIRECT_FILL_INTENSITY}
@@ -382,14 +382,12 @@ export function RoomCeilingCapMesh({
   const groupRef = useRef<THREE.Group | null>(null);
   const ceilingCapMeshRef = useRef<THREE.Mesh | null>(null);
   const ceilingCapPickEnabledRef = useRef(false);
-  const ceilingCapGeometry = useMemo(
-    () => buildHorizontalRoomGeometry(room),
-    [room]
+  const ceilingCapGeometry = useMemo(() => buildHorizontalRoomGeometry(room), [room]);
+  const ceilingShadowGeometry = useMemo(
+    () => buildHorizontalRoomGeometry(room, wallHeight * 2),
+    [room, wallHeight]
   );
-  const ceilingBandGeometry = useMemo(
-    () => buildRoomEdgeBandGeometry(room, CEILING_THICKNESS_METERS),
-    [room]
-  );
+  const ceilingBandGeometry = useMemo(() => buildRoomEdgeBandGeometry(room, CEILING_THICKNESS_METERS), [room]);
   const raycastCeilingCap = useCallback(
     (raycaster: THREE.Raycaster, intersects: THREE.Intersection[]) => {
       const mesh = ceilingCapMeshRef.current;
@@ -409,79 +407,80 @@ export function RoomCeilingCapMesh({
       ceilingCapPickEnabledRef.current = false;
       return;
     }
-
     const ceilingWorldY = floorWorldY + wallHeight;
     const canPickCeilingCap = camera.position.y < ceilingWorldY - 0.005;
     group.visible = canPickCeilingCap;
     ceilingCapPickEnabledRef.current = canPickCeilingCap;
   });
-
   useEffect(() => {
     return () => {
       ceilingCapGeometry.dispose();
+      ceilingShadowGeometry.dispose();
       ceilingBandGeometry.dispose();
     };
-  }, [ceilingBandGeometry, ceilingCapGeometry]);
-
+  }, [ceilingBandGeometry, ceilingCapGeometry, ceilingShadowGeometry]);
   return (
-    <group ref={groupRef} position={[0, wallHeight, 0]} visible={false}>
-      <mesh
-        ref={ceilingCapMeshRef}
-        geometry={ceilingCapGeometry}
-        raycast={raycastCeilingCap}
-        renderOrder={1}
-        onPointerOver={
-          interactive
-            ? (event) => {
-                event.stopPropagation();
-                onHoverTarget(ceilingTarget);
-              }
-            : undefined
-        }
-        onPointerOut={
-          interactive
-            ? (event) => {
-                event.stopPropagation();
-                onClearHoverTarget(ceilingTarget);
-              }
-            : undefined
-        }
-        onClick={
-          interactive
-            ? (event) => {
-                onSelectTarget(ceilingTarget, event);
-              }
-            : undefined
-        }
-      >
-        <meshBasicMaterial
-          color={color}
-          opacity={opacity}
-          transparent={opacity < 0.999}
-          side={THREE.DoubleSide}
-        />
-      </mesh>
-      {outlineStyle ? (
-        <Line
-          points={getRoomOutlinePoints(room).map(([x, z]) => [x, -0.012, z])}
-          color={outlineStyle.color}
-          lineWidth={outlineStyle.lineWidth}
-          depthTest={false}
+    <>
+      <CeilingShadowOccluder geometry={ceilingShadowGeometry} position={[0, wallHeight, 0]} />
+      <group ref={groupRef} position={[0, wallHeight, 0]} visible={false}>
+        <mesh
+          ref={ceilingCapMeshRef}
+          geometry={ceilingCapGeometry}
+          raycast={raycastCeilingCap}
+          renderOrder={1}
+          onPointerOver={
+            interactive
+              ? (event) => {
+                  event.stopPropagation();
+                  onHoverTarget(ceilingTarget);
+                }
+              : undefined
+          }
+          onPointerOut={
+            interactive
+              ? (event) => {
+                  event.stopPropagation();
+                  onClearHoverTarget(ceilingTarget);
+                }
+              : undefined
+          }
+          onClick={
+            interactive
+              ? (event) => {
+                  onSelectTarget(ceilingTarget, event);
+                }
+              : undefined
+          }
+        >
+          <meshBasicMaterial
+            color={color}
+            opacity={opacity}
+            transparent={opacity < 0.999}
+            side={THREE.DoubleSide}
+          />
+        </mesh>
+        {outlineStyle ? (
+          <Line
+            points={getRoomOutlinePoints(room).map(([x, z]) => [x, -0.012, z])}
+            color={outlineStyle.color}
+            lineWidth={outlineStyle.lineWidth}
+            depthTest={false}
+            raycast={() => null}
+          />
+        ) : null}
+        <mesh
+          geometry={ceilingBandGeometry}
           raycast={() => null}
-        />
-      ) : null}
-      <mesh
-        geometry={ceilingBandGeometry}
-        raycast={() => null}
-        renderOrder={2}
-      >
-        <meshBasicMaterial
-          color={CEILING_EDGE_COLOR}
-          opacity={opacity}
-          transparent={opacity < 0.999}
-          side={THREE.DoubleSide}
-        />
-      </mesh>
-    </group>
+          renderOrder={2}
+        >
+          <meshBasicMaterial
+            color={CEILING_EDGE_COLOR}
+            opacity={opacity}
+            transparent={opacity < 0.999}
+            side={THREE.DoubleSide}
+          />
+        </mesh>
+      </group>
+    </>
   );
 }

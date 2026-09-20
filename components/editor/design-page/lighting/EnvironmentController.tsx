@@ -64,15 +64,15 @@ export function EnvironmentController({
           <Lightformer
             intensity={lighting.environment.intensity}
             color={ENVIRONMENT_KEY}
-            position={[5, 6, 4]}
-            rotation={[0, Math.PI / 4, 0]}
+            position={lighting.environment.keyPosition ?? [5, 6, 4]}
+            rotation={lighting.environment.keyPosition ? undefined : [0, Math.PI / 4, 0]}
             scale={[8, 8, 1]}
           />
           <Lightformer
-            intensity={lighting.environment.intensity * 0.35}
+            intensity={lighting.environment.fillIntensity ?? lighting.environment.intensity * 0.35}
             color={ENVIRONMENT_FILL}
-            position={[-4, 3, -3]}
-            rotation={[0, -Math.PI / 6, 0]}
+            position={lighting.environment.fillPosition ?? [-4, 3, -3]}
+            rotation={lighting.environment.fillPosition ? undefined : [0, -Math.PI / 6, 0]}
             scale={[6, 6, 1]}
           />
         </Environment>

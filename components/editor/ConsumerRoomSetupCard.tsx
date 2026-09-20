@@ -22,6 +22,8 @@ export type ConsumerRoomSetupCardProps = {
   roomDepthInput: string;
   roomWidth: number;
   roomDepth: number;
+  /** The active room's polygon-aware floor area (lib/room-floor-area). */
+  activeRoomFloorAreaSqm: number;
   measurementUnit: PlanMeasurementUnit;
   measurementUnitReady: boolean;
   openingCount: number;
@@ -58,19 +60,16 @@ export function ConsumerRoomSetupCard({
   roomDepthInput,
   roomWidth,
   roomDepth,
+  activeRoomFloorAreaSqm,
   measurementUnit,
   measurementUnitReady,
   openingCount,
   hasConnectionBlockers,
   actions,
 }: ConsumerRoomSetupCardProps) {
-  const widthMm =
-    (hasRooms ? roomWidth : validDraftMetres(roomWidthInput, roomWidth)) * 1000;
-  const depthMm =
-    (hasRooms ? roomDepth : validDraftMetres(roomDepthInput, roomDepth)) * 1000;
-  const roomTypeLabel =
-    HOUSE_ROOM_TYPES.find((option) => option.type === newRoomType)?.label ??
-    "Room";
+  const widthMm = (hasRooms ? roomWidth : validDraftMetres(roomWidthInput, roomWidth)) * 1000;
+  const depthMm = (hasRooms ? roomDepth : validDraftMetres(roomDepthInput, roomDepth)) * 1000;
+  const roomTypeLabel = HOUSE_ROOM_TYPES.find((option) => option.type === newRoomType)?.label ?? "Room";
   const shellClass = dark
     ? "designer-recessed border-b border-white/10 p-3"
     : "border-b border-neutral-100 bg-neutral-50/80 p-3";
@@ -186,6 +185,7 @@ export function ConsumerRoomSetupCard({
         ready={measurementUnitReady}
         widthMm={widthMm}
         depthMm={depthMm}
+        roomFloorAreaSqm={activeRoomFloorAreaSqm}
         measurementUnit={measurementUnit}
         onChangeUnit={actions.changeMeasurementUnit}
         onChangeDraft={(axis, value) => axis === "width"

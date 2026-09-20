@@ -3,7 +3,11 @@
 import { useMemo, useState } from "react";
 
 import type { HousePlanRoom2D } from "@/lib/design-page-house-plan";
-import { buildPlanRoomSummary } from "@/lib/plan-room-summary";
+import type { DisplayUnit } from "@/lib/display-units";
+import {
+  buildPlanRoomSummary,
+  formatPlanRoomMetricLabel,
+} from "@/lib/plan-room-summary";
 
 export type PlanRoomSummaryCardState = {
   rooms: HousePlanRoom2D[];
@@ -12,6 +16,7 @@ export type PlanRoomSummaryCardState = {
 
 export type PlanRoomSummaryCardConfiguration = {
   dark: boolean;
+  measurementUnit: DisplayUnit;
   mobile?: boolean;
 };
 
@@ -25,20 +30,6 @@ type PlanRoomSummaryCardProps = {
   configuration: PlanRoomSummaryCardConfiguration;
   actions: PlanRoomSummaryCardActions;
 };
-
-const formatMeters = (value: number) =>
-  value.toFixed(1).replace(/\.0$/, "");
-
-const formatArea = (value: number) =>
-  value.toFixed(1).replace(/\.0$/, "");
-
-function Dimensions({ width, depth }: { width: number; depth: number }) {
-  return (
-    <>
-      {formatMeters(width)} × {formatMeters(depth)} m
-    </>
-  );
-}
 
 export function PlanRoomSummaryCard({
   state,
@@ -88,8 +79,7 @@ export function PlanRoomSummaryCard({
         <span>
           <span className="block text-xs font-bold">Plan summary</span>
           <span className={`mt-0.5 block text-[11px] ${mutedClass}`}>
-            <Dimensions width={wholePlan.widthMeters} depth={wholePlan.depthMeters} />
-            {` · ${formatArea(wholePlan.areaSquareMeters)} m² · ${wholePlan.roomCount} room${wholePlan.roomCount === 1 ? "" : "s"}`}
+            {`${formatPlanRoomMetricLabel(wholePlan, configuration.measurementUnit)} · ${wholePlan.roomCount} room${wholePlan.roomCount === 1 ? "" : "s"}`}
           </span>
         </span>
         <span aria-hidden="true" className={`text-xs ${mutedClass}`}>
@@ -112,8 +102,7 @@ export function PlanRoomSummaryCard({
                 {selection.roomCount} rooms selected
               </div>
               <div className={`mt-0.5 text-[11px] ${mutedClass}`}>
-                Combined bounds <Dimensions width={selection.widthMeters} depth={selection.depthMeters} />
-                {` · ${formatArea(selection.areaSquareMeters)} m²`}
+                Combined bounds {formatPlanRoomMetricLabel(selection, configuration.measurementUnit)}
               </div>
             </div>
           ) : null}
@@ -137,8 +126,7 @@ export function PlanRoomSummaryCard({
                 >
                   <span className="min-w-0 truncate font-semibold">{room.name}</span>
                   <span className={`shrink-0 ${selected ? "" : mutedClass}`}>
-                    <Dimensions width={room.widthMeters} depth={room.depthMeters} />
-                    {` · ${formatArea(room.areaSquareMeters)} m²`}
+                    {formatPlanRoomMetricLabel(room, configuration.measurementUnit)}
                   </span>
                 </div>
               );

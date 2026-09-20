@@ -5,7 +5,6 @@ import {
   type HousePlanRoom2D,
   type HouseRoomDoorwaySuggestion,
 } from "@/lib/design-page-house-plan";
-export { HOUSE_PLAN_RENDERED_WALL_THICKNESS_METERS } from "@/lib/editor-geometry-tolerances";
 export { isPersistableFloorPlanAssetUrl } from "@/lib/room-persistence";
 
 export const SUPPORTED_FLOOR_PLAN_MIME_TYPES = new Set([

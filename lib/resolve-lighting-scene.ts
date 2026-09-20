@@ -5,6 +5,7 @@ import type {
   FixturePhotometricVerification,
 } from "@/lib/catalog-schema";
 import type { HousePlanRoom2D } from "@/lib/design-page-house-plan";
+import { resolveEffectiveOpeningDimensions } from "@/lib/design-page-opening-dimensions";
 import type { SceneRoomItemEntry } from "@/lib/design-page-scene-domain";
 import type { RoomOpening2D } from "@/lib/editorScene";
 import {
@@ -119,8 +120,6 @@ export type ResolveLightingSceneInput = {
 
 const DEFAULT_LATITUDE_DEG = 35;
 const DEFAULT_DATE_ISO = "2026-03-20";
-const DEFAULT_WINDOW_HEIGHT_METERS = 1.2;
-const DEFAULT_WINDOW_SILL_METERS = 0.9;
 const DEG_TO_RAD = Math.PI / 180;
 const RAD_TO_DEG = 180 / Math.PI;
 
@@ -405,16 +404,9 @@ function resolveWindowLight(
   colorAvailable: boolean
 ): Omit<ResolvedWindowLight, "castShadow"> {
   const widthMeters = Math.max(0.2, opening.widthMm / 1000);
-  const heightMeters =
-    typeof opening.heightMm === "number" && opening.heightMm > 0
-      ? opening.heightMm / 1000
-      : DEFAULT_WINDOW_HEIGHT_METERS;
-  const sillMeters =
-    typeof opening.bottomMm === "number" && opening.bottomMm >= 0
-      ? opening.bottomMm / 1000
-      : DEFAULT_WINDOW_SILL_METERS;
-  const offsetMeters = opening.offsetMm / 1000;
   const roomHeight = room.height ?? 2.6;
+  const { heightMm, bottomMm } = resolveEffectiveOpeningDimensions(opening, roomHeight * 1000);
+  const heightMeters = heightMm / 1000, sillMeters = bottomMm / 1000, offsetMeters = opening.offsetMm / 1000;
   const centerY = clamp(
     sillMeters + heightMeters / 2,
     0.1,

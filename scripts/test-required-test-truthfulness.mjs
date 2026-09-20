@@ -619,6 +619,175 @@ function rewriteAdvisoryUploadPair(root, { mutateEvidence, mutateReport } = {}) 
   write(root, evidencePath, `${JSON.stringify(evidence, null, 2)}\n`);
 }
 
+// GitHub Actions context and function availability per workflow key, from the
+// "Context availability" table of the GitHub Actions contexts reference. GitHub
+// rejects the whole workflow file, so no job runs at all, when an expression
+// names a context that is unavailable where it is evaluated (for example
+// `runner.temp` in jobs.<job_id>.env). A local YAML parse cannot see that.
+// Step keys share one list except jobs.<job_id>.steps.if, which GitHub gives
+// no `secrets` context.
+const STEP_EXPRESSION_CONTEXTS = Object.freeze([
+  "github",
+  "needs",
+  "strategy",
+  "matrix",
+  "job",
+  "runner",
+  "env",
+  "vars",
+  "secrets",
+  "steps",
+  "inputs",
+]);
+const STEP_IF_EXPRESSION_CONTEXTS = Object.freeze(
+  STEP_EXPRESSION_CONTEXTS.filter((context) => context !== "secrets"),
+);
+const JOB_EXPRESSION_CONTEXTS = Object.freeze([
+  "github",
+  "needs",
+  "strategy",
+  "matrix",
+  "vars",
+  "inputs",
+]);
+const GENERAL_EXPRESSION_FUNCTIONS = Object.freeze([
+  "contains",
+  "startswith",
+  "endswith",
+  "format",
+  "join",
+  "tojson",
+  "fromjson",
+]);
+const STATUS_EXPRESSION_FUNCTIONS = Object.freeze(["always", "cancelled", "success", "failure"]);
+const EXPRESSION_LITERALS = new Set(["true", "false", "null", "nan", "infinity"]);
+const WORKFLOW_LEVEL_EXPRESSION_RULES = Object.freeze({
+  "run-name": { contexts: ["github", "inputs", "vars"] },
+  concurrency: { contexts: ["github", "inputs", "vars"] },
+  env: { contexts: ["github", "secrets", "inputs", "vars"] },
+});
+const WORKFLOW_CALL_EXPRESSION_RULES = Object.freeze({
+  inputs: { key: "default", rule: { contexts: ["github", "inputs", "vars"] } },
+  outputs: { key: "value", rule: { contexts: ["github", "jobs", "vars", "inputs"] } },
+});
+const JOB_LEVEL_EXPRESSION_RULES = Object.freeze({
+  concurrency: { contexts: JOB_EXPRESSION_CONTEXTS },
+  "continue-on-error": { contexts: JOB_EXPRESSION_CONTEXTS },
+  defaults: { contexts: [...JOB_EXPRESSION_CONTEXTS, "env"] },
+  env: { contexts: [...JOB_EXPRESSION_CONTEXTS, "secrets"] },
+  if: {
+    contexts: ["github", "needs", "vars", "inputs"],
+    functions: STATUS_EXPRESSION_FUNCTIONS,
+    implicit: true,
+  },
+  name: { contexts: JOB_EXPRESSION_CONTEXTS },
+  outputs: { contexts: STEP_EXPRESSION_CONTEXTS },
+  "runs-on": { contexts: JOB_EXPRESSION_CONTEXTS },
+  secrets: { contexts: [...JOB_EXPRESSION_CONTEXTS, "secrets"] },
+  strategy: { contexts: ["github", "needs", "vars", "inputs"] },
+  "timeout-minutes": { contexts: JOB_EXPRESSION_CONTEXTS },
+  with: { contexts: JOB_EXPRESSION_CONTEXTS },
+});
+const CONTAINER_EXPRESSION_RULES = Object.freeze({
+  credentials: { contexts: [...JOB_EXPRESSION_CONTEXTS, "env", "secrets"] },
+  env: { contexts: [...JOB_EXPRESSION_CONTEXTS, "job", "runner", "env", "secrets"] },
+});
+const SERVICE_EXPRESSION_RULES = Object.freeze({
+  credentials: { contexts: ["github", "env", "vars", "secrets", "inputs"] },
+  env: { contexts: ["github", "job", "runner", "env", "vars", "secrets", "inputs"] },
+});
+const STEP_EXPRESSION_KEYS = Object.freeze([
+  "name",
+  "if",
+  "env",
+  "with",
+  "run",
+  "continue-on-error",
+  "timeout-minutes",
+  "working-directory",
+]);
+
+function workflowExpressionReferences(expression) {
+  const source = expression.replace(/'(?:[^']|'')*'/g, "''");
+  const references = [];
+  for (const match of source.matchAll(/[A-Za-z_][\w-]*/g)) {
+    const before = source.slice(0, match.index);
+    if (/\.\s*$/.test(before) || /\d$/.test(before)) continue;
+    const after = source.slice(match.index + match[0].length);
+    if (/^\s*\(/.test(after)) {
+      references.push({ kind: "function", name: match[0] });
+    } else if (!EXPRESSION_LITERALS.has(match[0].toLowerCase())) {
+      references.push({ kind: "context", name: match[0] });
+    }
+  }
+  return references;
+}
+
+function collectWorkflowExpressionIssues(file, workflow) {
+  const issues = [];
+  const check = (value, location, rule) => {
+    if (typeof value === "string") {
+      const expressions = [...value.matchAll(/\$\{\{([\s\S]*?)\}\}/g)].map((match) => match[1]);
+      if (rule.implicit && expressions.length === 0) expressions.push(value);
+      const functions = [...GENERAL_EXPRESSION_FUNCTIONS, ...(rule.functions ?? [])];
+      for (const reference of expressions.flatMap(workflowExpressionReferences)) {
+        const name = reference.name.toLowerCase();
+        if (reference.kind === "context" && !rule.contexts.includes(name)) {
+          issues.push(
+            `${file}: ${location} uses the '${reference.name}' context, which is unavailable there (available: ${rule.contexts.join(", ")})`,
+          );
+        } else if (reference.kind === "function" && !functions.includes(name)) {
+          issues.push(`${file}: ${location} calls ${reference.name}(), which is unavailable there`);
+        }
+      }
+    } else if (Array.isArray(value)) {
+      value.forEach((item, index) => check(item, `${location}[${index}]`, rule));
+    } else if (value && typeof value === "object") {
+      for (const [key, item] of Object.entries(value)) check(item, `${location}.${key}`, rule);
+    }
+  };
+  const checkNested = (value, location, nestedRules) => {
+    if (!value || typeof value !== "object" || Array.isArray(value)) {
+      check(value, location, { contexts: JOB_EXPRESSION_CONTEXTS });
+      return;
+    }
+    for (const [key, item] of Object.entries(value)) {
+      check(item, `${location}.${key}`, nestedRules[key] ?? { contexts: JOB_EXPRESSION_CONTEXTS });
+    }
+  };
+  for (const [key, rule] of Object.entries(WORKFLOW_LEVEL_EXPRESSION_RULES)) {
+    check(workflow?.[key], key, rule);
+  }
+  const workflowCall = workflow?.on?.workflow_call;
+  for (const [section, { key, rule }] of Object.entries(WORKFLOW_CALL_EXPRESSION_RULES)) {
+    for (const [id, entry] of Object.entries(workflowCall?.[section] ?? {})) {
+      check(entry?.[key], `on.workflow_call.${section}.${id}.${key}`, rule);
+    }
+  }
+  for (const [jobId, job] of Object.entries(workflow?.jobs ?? {})) {
+    for (const [key, rule] of Object.entries(JOB_LEVEL_EXPRESSION_RULES)) {
+      check(job?.[key], `jobs.${jobId}.${key}`, rule);
+    }
+    checkNested(job?.container, `jobs.${jobId}.container`, CONTAINER_EXPRESSION_RULES);
+    for (const [serviceId, service] of Object.entries(job?.services ?? {})) {
+      checkNested(service, `jobs.${jobId}.services.${serviceId}`, SERVICE_EXPRESSION_RULES);
+    }
+    checkNested(job?.environment, `jobs.${jobId}.environment`, {
+      url: { contexts: STEP_EXPRESSION_CONTEXTS.filter((context) => context !== "secrets") },
+    });
+    (job?.steps ?? []).forEach((step, index) => {
+      for (const key of STEP_EXPRESSION_KEYS) {
+        check(step?.[key], `jobs.${jobId}.steps[${index}].${key}`, {
+          contexts: key === "if" ? STEP_IF_EXPRESSION_CONTEXTS : STEP_EXPRESSION_CONTEXTS,
+          functions: key === "if" ? [...STATUS_EXPRESSION_FUNCTIONS, "hashfiles"] : ["hashfiles"],
+          implicit: key === "if",
+        });
+      }
+    });
+  }
+  return issues;
+}
+
 if (process.argv.includes("--advisory-upload-only")) {
   verifyCanonicalReportHandoff();
   process.exit(0);
@@ -2108,6 +2277,120 @@ assert.equal(
 }
 
 {
+  const unavailable = parseYaml(
+    [
+      "run-name: Deploy ${{ env.TARGET }}",
+      "on:",
+      "  workflow_call:",
+      "    inputs:",
+      "      root:",
+      "        type: string",
+      "        default: ${{ runner.temp }}",
+      "    outputs:",
+      "      root:",
+      "        value: ${{ steps.declare.outputs.root }}",
+      "env:",
+      "  TOP: ${{ runner.os }}",
+      "jobs:",
+      "  broken:",
+      "    if: steps.check.outputs.ok == 'true'",
+      "    runs-on: ${{ runner.os }}",
+      "    concurrency:",
+      "      group: broken-${{ job.status }}",
+      "    env:",
+      "      RESULT_ROOT: ${{ runner.temp }}/results",
+      "      COPY: ${{ env.OTHER }}",
+      "      KEY: ${{ hashFiles('package-lock.json') }}",
+      "    services:",
+      "      postgres:",
+      "        image: postgres:${{ env.PG_VERSION }}",
+      "    steps:",
+      "      - run: echo ok",
+      "      - if: secrets.DEPLOY_TOKEN != ''",
+      "        run: echo implicit",
+      "      - if: ${{ secrets.DEPLOY_TOKEN != '' }}",
+      "        env:",
+      "          TOKEN: ${{ secrets.DEPLOY_TOKEN }}",
+      "        run: echo explicit",
+      "",
+    ].join("\n"),
+  );
+  assert.deepEqual(
+    collectWorkflowExpressionIssues("synthetic.yml", unavailable).map((issue) =>
+      issue.replace(/ \(available: [^)]*\)$/, ""),
+    ),
+    [
+      "synthetic.yml: run-name uses the 'env' context, which is unavailable there",
+      "synthetic.yml: env.TOP uses the 'runner' context, which is unavailable there",
+      "synthetic.yml: on.workflow_call.inputs.root.default uses the 'runner' context, which is unavailable there",
+      "synthetic.yml: on.workflow_call.outputs.root.value uses the 'steps' context, which is unavailable there",
+      "synthetic.yml: jobs.broken.concurrency.group uses the 'job' context, which is unavailable there",
+      "synthetic.yml: jobs.broken.env.RESULT_ROOT uses the 'runner' context, which is unavailable there",
+      "synthetic.yml: jobs.broken.env.COPY uses the 'env' context, which is unavailable there",
+      "synthetic.yml: jobs.broken.env.KEY calls hashFiles(), which is unavailable there",
+      "synthetic.yml: jobs.broken.if uses the 'steps' context, which is unavailable there",
+      "synthetic.yml: jobs.broken.runs-on uses the 'runner' context, which is unavailable there",
+      "synthetic.yml: jobs.broken.services.postgres.image uses the 'env' context, which is unavailable there",
+      "synthetic.yml: jobs.broken.steps[1].if uses the 'secrets' context, which is unavailable there",
+      "synthetic.yml: jobs.broken.steps[2].if uses the 'secrets' context, which is unavailable there",
+    ],
+    "GitHub rejects the whole workflow when a key names a context it cannot read there, including secrets in a step if",
+  );
+  const available = parseYaml(
+    [
+      "concurrency:",
+      "  group: valid-${{ github.ref }}",
+      "on:",
+      "  workflow_call:",
+      "    inputs:",
+      "      root:",
+      "        type: string",
+      "        default: ${{ github.ref_name }}-${{ inputs.suffix }}",
+      "    outputs:",
+      "      root:",
+      "        value: ${{ jobs.build.outputs.root }}",
+      "jobs:",
+      "  build:",
+      "    if: always() && !cancelled() && github.event_name != 'runner.temp'",
+      "    runs-on: ${{ matrix.os }}",
+      "    strategy:",
+      "      matrix:",
+      "        os: [ubuntu-latest]",
+      "    env:",
+      "      SESSION_ID: ${{ github.run_id }}-${{ github.run_attempt }}",
+      "      TOKEN: ${{ secrets.GITHUB_TOKEN }}",
+      "      LABEL: ${{ format('{0}', 'steps.declare') }}",
+      "    outputs:",
+      "      root: ${{ steps.declare.outputs.root }}",
+      "    services:",
+      "      postgres:",
+      "        image: postgres:15",
+      "        env:",
+      "          TEMP: ${{ runner.temp }}",
+      "    environment:",
+      "      name: preview",
+      "      url: ${{ steps.declare.outputs.url }}",
+      "    steps:",
+      "      - id: declare",
+      "        if: ${{ hashFiles('package-lock.json') != '' && success() }}",
+      "        env:",
+      "          RESULT_PATH: ${{ runner.temp }}/results/out.json",
+      "          COPY: ${{ env.SESSION_ID }}",
+      "          STEP_TOKEN: ${{ secrets.GITHUB_TOKEN }}",
+      "        run: echo \"${{ job.status }} ${{ steps.declare.outcome }}\" >> \"$GITHUB_ENV\"",
+      "      - if: env.TOKEN != '' && runner.os == 'Linux'",
+      "        run: echo \"${{ secrets.GITHUB_TOKEN != '' }}\"",
+      "",
+    ].join("\n"),
+  );
+  assert.deepEqual(
+    collectWorkflowExpressionIssues("synthetic.yml", available),
+    [],
+    "step-level runner/env/steps/secrets expressions, env-gated step ifs, workflow_call defaults and outputs, and quoted context names remain valid",
+  );
+}
+
+{
   const requiredWorkflow = readFileSync(
     path.join(process.cwd(), ".github/workflows/ci.yml"),
     "utf8",
@@ -2119,6 +2402,24 @@ assert.equal(
   const requiredDefinition = parseYaml(requiredWorkflow);
   const advisoryDefinition = parseYaml(advisoryWorkflow);
   assert.ok(requiredDefinition && advisoryDefinition, "both workflow files must be valid YAML");
+  const workflowRoot = path.join(process.cwd(), ".github/workflows");
+  const workflowFiles = readdirSync(workflowRoot)
+    .filter((file) => /\.ya?ml$/.test(file))
+    .sort();
+  assert.ok(
+    workflowFiles.includes("ci.yml") && workflowFiles.includes("full-advisory-e2e.yml"),
+    "the workflow expression scan must cover both checked-in workflows",
+  );
+  assert.deepEqual(
+    workflowFiles.flatMap((file) =>
+      collectWorkflowExpressionIssues(
+        file,
+        parseYaml(readFileSync(path.join(workflowRoot, file), "utf8")),
+      ),
+    ),
+    [],
+    "every workflow expression must use only contexts GitHub provides at its level, or GitHub rejects the file and runs no job",
+  );
   const requiredJobs = requiredDefinition.jobs;
   assert.ok(requiredJobs?.["secret-scan"], "the required secret-scan job must retain its exact id");
   assert.ok(requiredJobs?.["stable-checks"], "the required stable-checks job must retain its exact id");
@@ -2509,6 +2810,109 @@ assert.equal(
   assert.match(secretScanJob, /node scripts\/gitleaks-artifact\.mjs prepare/);
   assert.match(secretScanJob, /path:\s*\.local\/gitleaks-upload\//);
   assert.match(secretScanJob, /retention-days:\s*90/);
+}
+
+{
+  // The auth fixture roots live under runner.temp, which jobs.<job_id>.env cannot
+  // read (GitHub rejects the whole workflow). Each auth job appends them to
+  // GITHUB_ENV from its first step, "Initialize runner-local auth fixture paths",
+  // instead, so every later step sees the values the job-level env intended, and
+  // the exporter's realpath session transport still takes precedence afterwards.
+  const workflowRoot = path.join(process.cwd(), ".github/workflows");
+  const declareRootsRun = (sessionSuffix) =>
+    [
+      "set -euo pipefail",
+      ": \"${RUNNER_TEMP:?RUNNER_TEMP is required for auth fixture paths}\"",
+      "if [[ \"$RUNNER_TEMP\" != /* || \"$RUNNER_TEMP\" == *[$'\\r\\n']* ]]; then",
+      "  echo \"RUNNER_TEMP must be a single-line absolute path\" >&2",
+      "  exit 1",
+      "fi",
+      "printf '%s\\n' \"CI_AUTH_FIXTURE_RESULT_ROOT=$RUNNER_TEMP/interior-ai-auth-results\" >> \"$GITHUB_ENV\"",
+      `printf '%s\\n' "CI_AUTH_FIXTURE_SESSION_ROOT=$RUNNER_TEMP/interior-ai-auth-session-${sessionSuffix}" >> "$GITHUB_ENV"`,
+      "",
+    ].join("\n");
+  const authJobs = [
+    { file: "ci.yml", jobId: "stable-checks", sessionSuffix: "stable", authStepCount: 3 },
+    {
+      file: "ci.yml",
+      jobId: "advisory-contract-preflight",
+      sessionSuffix: "advisory",
+      authStepCount: 4,
+    },
+    {
+      file: "full-advisory-e2e.yml",
+      jobId: "e2e-full",
+      sessionSuffix: "full-advisory",
+      authStepCount: 4,
+    },
+  ];
+  for (const { file, jobId, sessionSuffix, authStepCount } of authJobs) {
+    const job = parseYaml(readFileSync(path.join(workflowRoot, file), "utf8")).jobs[jobId];
+    const where = `${file} ${jobId}`;
+    const [declare] = job.steps;
+    assert.equal(
+      declare?.name,
+      "Initialize runner-local auth fixture paths",
+      `${where} must declare its auth fixture roots in its first step`,
+    );
+    assert.equal(declare.shell, "bash");
+    assert.equal(declare.env, undefined);
+    assert.equal(
+      declare.run,
+      declareRootsRun(sessionSuffix),
+      `${where} must append exactly its runner-temp roots to GITHUB_ENV without creating the private session root`,
+    );
+    assert.deepEqual(
+      job.steps.filter((step) => /CI_AUTH_FIXTURE_(?:RESULT|SESSION)_ROOT=/.test(step.run ?? "")),
+      [declare],
+      `${where} must declare its auth fixture roots exactly once`,
+    );
+    for (const variable of ["CI_AUTH_FIXTURE_RESULT_ROOT", "CI_AUTH_FIXTURE_SESSION_ROOT"]) {
+      assert.equal(
+        job.env?.[variable],
+        undefined,
+        `${where} must not set ${variable} in job-level env, where runner.temp is unavailable`,
+      );
+      for (const step of job.steps) {
+        assert.equal(
+          step.env?.[variable],
+          undefined,
+          `${where} step ${step.name ?? step.uses} must not shadow the declared or exported ${variable}`,
+        );
+      }
+    }
+    const configureIndex = job.steps.findIndex(
+      (step) => step.name === "Configure synthetic CI OAuth fixture",
+    );
+    assert.ok(configureIndex > 0, `${where} must export the fixture after declaring its roots`);
+    assert.match(
+      job.steps[configureIndex].run,
+      /^mkdir -p "\$CI_AUTH_FIXTURE_RESULT_ROOT"$/m,
+      `${where} must create the declared result root before the first auth command`,
+    );
+    assert.equal(
+      job.steps[configureIndex + 1]?.name,
+      "Validate synthetic CI OAuth fixture",
+      `${where} must validate fixture propagation in the step immediately after export`,
+    );
+    const authSteps = job.steps.filter((step) =>
+      /npm run ci:auth-fixture:result:validate/.test(step.run ?? ""),
+    );
+    assert.equal(authSteps.length, authStepCount, `${where} must validate every auth command result`);
+    assert.equal(authSteps[0], job.steps[configureIndex]);
+    assert.deepEqual(
+      job.steps.filter((step) => step.env?.CI_AUTH_FIXTURE_RESULT_PATH !== undefined),
+      authSteps,
+      `${where} must bind a result path to exactly the validated auth steps`,
+    );
+    for (const step of authSteps) {
+      assert.match(
+        step.env.CI_AUTH_FIXTURE_RESULT_PATH,
+        /^\$\{\{ runner\.temp \}\}\/interior-ai-auth-results\/[a-z-]+\.json$/,
+        `${where} step ${step.name} must write its result beneath the declared result root`,
+      );
+    }
+  }
 }
 
 {

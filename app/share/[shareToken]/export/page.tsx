@@ -2,7 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { CATALOG_ITEMS } from "@/lib/catalog";
 import { resolveCatalogVariant } from "@/lib/catalog/variant-resolver";
 import { resolveDesignItemVisualProduct } from "@/lib/design-item-product-snapshot";
-import { buildHousePlan2D } from "@/lib/design-page-house-plan";
+import { buildHousePlan2D, getHouseRoomPlanPolygon } from "@/lib/design-page-house-plan";
 import { storedToSnapshot } from "@/lib/room-persistence";
 import { projectSharedDesignTransport } from "@/lib/shared-design-snapshot";
 import {
@@ -19,6 +19,7 @@ import {
 } from "@/lib/share-shopping-csv";
 import { buildShareExportFidelitySummary } from "@/lib/share-export-fidelity";
 import { buildRoomHealthSummary } from "@/lib/room-health-summary";
+import { getPlanRoomFloorAreaSqm, getRoomSnapshotFloorAreaSqm } from "@/lib/room-floor-area";
 import { buildRoomSurfaceMaterialBomResult } from "@/lib/surface-material-bom-result";
 import type { DesignSnapshot, PersistedPlanOpening, RoomSnapshot, SavedView } from "@/lib/room-types";
 import {
@@ -61,15 +62,6 @@ function formatMeasurement(value: number, unit: string) {
   return `${value.toFixed(1).replace(/\.0$/, "")} ${unit}`;
 }
 
-function getPolygonArea(points: NonNullable<RoomSnapshot["planPolygon"]>) {
-  if (points.length < 3) return 0;
-  const area = points.reduce((sum, point, index) => {
-    const next = points[(index + 1) % points.length];
-    return sum + point.x * next.z - next.x * point.z;
-  }, 0);
-  return Math.abs(area) / 2;
-}
-
 function getPolygonPerimeter(points: NonNullable<RoomSnapshot["planPolygon"]>) {
   if (points.length < 2) return 0;
   return points.reduce((sum, point, index) => {
@@ -98,9 +90,7 @@ function getRoomMetrics(
   const depth = room.geometry.depth;
   const polygon = room.planShape === "custom_polygon" ? room.planPolygon : null;
   const holes = room.planHoles ?? [];
-  const areaSqm = polygon?.length
-    ? Math.max(0, getPolygonArea(polygon) - holes.reduce((sum, hole) => sum + getPolygonArea(hole), 0))
-    : width * depth;
+  const areaSqm = getRoomSnapshotFloorAreaSqm(room);
   const perimeterM = polygon?.length
     ? getPolygonPerimeter(polygon) + holes.reduce((sum, hole) => sum + getPolygonPerimeter(hole), 0)
     : (width + depth) * 2;
@@ -285,26 +275,6 @@ function buildOpeningScheduleRows(
   );
 }
 
-function getPlanRoomPoints(room: ReturnType<typeof buildHousePlan2D>["rooms"][number]): PlanPoint[] {
-  if (room.shape === "custom_polygon" && room.polygon && room.polygon.length >= 3) {
-    return room.polygon.map((point) => ({
-      x: room.x + point.x,
-      z: room.z + point.z,
-    }));
-  }
-
-  const left = room.x - room.w / 2;
-  const right = room.x + room.w / 2;
-  const top = room.z - room.d / 2;
-  const bottom = room.z + room.d / 2;
-  return [
-    { x: left, z: top },
-    { x: right, z: top },
-    { x: right, z: bottom },
-    { x: left, z: bottom },
-  ];
-}
-
 function getPlanPointsBounds(points: PlanPoint[]) {
   return points.reduce(
     (bounds, point) => ({
@@ -476,7 +446,7 @@ function buildPlanDiagramFloors(
     const floorLevel = sourceRoom?.floorLevel ?? room.floorLevel ?? 1;
     const floorLabel = sourceRoom?.floorLabel ?? room.floorLabel ?? `Floor ${floorLevel}`;
     const floorKey = String(floorLevel);
-    const points = getPlanRoomPoints(room);
+    const points = getHouseRoomPlanPolygon(room);
     const bounds = getPlanPointsBounds(points);
     const metrics = roomMetricsById.get(room.id);
     const diagramOpenings = buildPlanDiagramOpenings(room, sourceRoom, rooms, openings);
@@ -492,7 +462,7 @@ function buildPlanDiagramFloors(
       labelZ: (bounds.minZ + bounds.maxZ) / 2,
       width: room.w,
       depth: room.d,
-      areaSqm: metrics?.areaSqm ?? room.w * room.d,
+      areaSqm: metrics?.areaSqm ?? getPlanRoomFloorAreaSqm(room),
       itemCount: sourceRoom?.items.length ?? 0,
       openingCount: metrics?.openingCount ?? 0,
     };

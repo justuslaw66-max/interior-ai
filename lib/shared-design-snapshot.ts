@@ -318,18 +318,15 @@ export function projectSharedDesignTransport(
   const activeRoom =
     projectedStored.rooms.find((room) => room.id === projectedStored.activeRoomId) ??
     projectedStored.rooms[0];
-  if (!activeRoom) {
-    throw new Error("Shared design projection requires an active public room");
-  }
 
   return {
     snapshot: projectedStored,
     title: projectedStored.title,
-    roomWidth: activeRoom.geometry.width,
-    roomDepth: activeRoom.geometry.depth,
-    items: activeRoom.items,
-    zones: activeRoom.zones,
-    savedViews: activeRoom.savedViews,
+    roomWidth: activeRoom?.geometry.width ?? data.roomWidth,
+    roomDepth: activeRoom?.geometry.depth ?? data.roomDepth,
+    items: activeRoom?.items ?? [],
+    zones: activeRoom?.zones ?? [],
+    savedViews: activeRoom?.savedViews ?? [],
     style: projectedStored.style ?? null,
     budget: projectedStored.budget ?? null,
     mode: data.mode === "designer" ? "designer" : "homeowner",

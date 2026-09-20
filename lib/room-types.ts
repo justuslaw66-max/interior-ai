@@ -497,7 +497,7 @@ export function createRoom(
  */
 export function migrateToV3(snapshot: DesignSnapshot): DesignSnapshot {
   // If already v3, return as-is
-  if (snapshot.version === 3 && snapshot.rooms && snapshot.rooms.length > 0) {
+  if (snapshot.version === 3 && Array.isArray(snapshot.rooms)) {
     return {
       ...snapshot,
       rooms: snapshot.rooms.map((room) => ({
@@ -509,6 +509,7 @@ export function migrateToV3(snapshot: DesignSnapshot): DesignSnapshot {
         savedViews: room.savedViews ?? [],
         layoutVersions: room.layoutVersions ?? [],
       })),
+      activeRoomId: snapshot.rooms.length === 0 ? "" : snapshot.activeRoomId,
     };
   }
 
@@ -599,23 +600,16 @@ export function addRoom(snapshot: DesignSnapshot, room: RoomSnapshot): DesignSna
 }
 
 /**
- * Delete a room from the design (if not the only room)
+ * Delete a room from the design. An empty v3 document is a valid blank draft.
  */
 export function deleteRoom(snapshot: DesignSnapshot, roomId: string): DesignSnapshot {
   const migrated = migrateToV3(snapshot);
+  if (!migrated.rooms.some((room) => room.id === roomId)) return migrated;
   const remaining = migrated.rooms.filter((r) => r.id !== roomId);
-  
-  if (remaining.length === 0) {
-    console.warn("Cannot delete the last room");
-    return migrated;
-  }
-
-  const nextActiveId =
-    migrated.activeRoomId === roomId ? remaining[0].id : migrated.activeRoomId;
-
-  return {
-    ...migrated,
-    rooms: remaining,
-    activeRoomId: nextActiveId,
-  };
+  const activeRoomId = remaining.length === 0
+    ? ""
+    : migrated.activeRoomId === roomId ? remaining[0].id : migrated.activeRoomId;
+  const nextSnapshot: DesignSnapshot = { ...migrated, rooms: remaining, activeRoomId };
+  if (remaining.length === 0) delete nextSnapshot.floorPlan;
+  return nextSnapshot;
 }

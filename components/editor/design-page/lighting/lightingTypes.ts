@@ -28,6 +28,12 @@ export type EditorLightingPreset = {
   environment: {
     enabled: boolean;
     intensity: number;
+    /** Optional key direction; an explicit position aims the softbox at the origin. */
+    keyPosition?: [number, number, number];
+    /** Opposite-side softbox power; defaults to 35% of the key. */
+    fillIntensity?: number;
+    /** Optional fill direction; an explicit position aims the softbox at the origin. */
+    fillPosition?: [number, number, number];
     backgroundVisible: boolean;
     resolution: 32 | 64 | 128 | 256;
   };

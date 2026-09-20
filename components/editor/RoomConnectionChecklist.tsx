@@ -4,9 +4,11 @@ import type {
   HouseRoomConnectionChecklistItem,
   HouseRoomDoorwaySuggestion,
 } from "@/lib/design-page-house-plan";
+import { formatDisplayLength, type DisplayUnit } from "@/lib/display-units";
 
 type RoomConnectionChecklistProps = {
   items: HouseRoomConnectionChecklistItem[];
+  measurementUnit: DisplayUnit;
   disabled?: boolean;
   dark?: boolean;
   variant?: "pro" | "consumer";
@@ -15,10 +17,9 @@ type RoomConnectionChecklistProps = {
   onAddDoorway: (suggestion: HouseRoomDoorwaySuggestion) => void;
 };
 
-const formatMeters = (value: number) => value.toFixed(1).replace(/\.0$/, "");
-
 export default function RoomConnectionChecklist({
   items,
+  measurementUnit,
   disabled = false,
   dark = false,
   variant = "consumer",
@@ -75,7 +76,7 @@ export default function RoomConnectionChecklist({
   const getItemMeta = (item: HouseRoomConnectionChecklistItem) => {
     if (item.status === "detached") return "No shared wall on this floor";
     if (item.status === "disconnected_group") return "Separate connected group on this floor";
-    return `${formatMeters(item.sharedWallLengthMeters)}m shared wall`;
+    return `${formatDisplayLength(item.sharedWallLengthMeters * 1000, measurementUnit)} shared wall`;
   };
 
   return (
@@ -102,9 +103,7 @@ export default function RoomConnectionChecklist({
                 <div className={labelClass}>
                   {getItemLabel(item)}
                 </div>
-                <div className={metaClass}>
-                  {getItemMeta(item)}
-                </div>
+                <div className={metaClass}>{getItemMeta(item)}</div>
               </div>
               <div
                 data-testid="room-connection-status"

@@ -19,10 +19,7 @@ const NEUTRAL_AMBIENT = "#f7f7f5";
  * named and co-located so room, furniture, and page components cannot apply
  * independent global-light compensation.
  */
-export const EDITOR_LIGHTING_PRESETS: Record<
-  LightingMode,
-  EditorLightingPreset
-> = {
+export const EDITOR_LIGHTING_PRESETS: Record<LightingMode, EditorLightingPreset> = {
   design: {
     id: "design",
     persistedId: "studio",
@@ -31,6 +28,9 @@ export const EDITOR_LIGHTING_PRESETS: Record<
     environment: {
       enabled: true,
       intensity: 0.8,
+      keyPosition: [6, 4, 1],
+      fillIntensity: 1.1,
+      fillPosition: [-6, 4, -1],
       backgroundVisible: false,
       resolution: 128,
     },

@@ -63,11 +63,19 @@ jobs:
       ADMIN_EMAILS: gate-a3-admin@example.test
       PLAYWRIGHT_ADMIN_EMAIL: gate-a3-admin@example.test
     steps:
+      # The runner context is unavailable in job-level env, so each auth job
+      # declares its runner-temp fixture roots here for every later step. The
+      # exporter still creates the private session root itself (mode 0700) and
+      # re-declares it as its realpath in the fixture session transport.
       - name: Initialize runner-local auth fixture paths
         shell: bash
         run: |
           set -euo pipefail
           : "${RUNNER_TEMP:?RUNNER_TEMP is required for auth fixture paths}"
+          if [[ "$RUNNER_TEMP" != /* || "$RUNNER_TEMP" == *[$'\r\n']* ]]; then
+            echo "RUNNER_TEMP must be a single-line absolute path" >&2
+            exit 1
+          fi
           printf '%s\n' "CI_AUTH_FIXTURE_RESULT_ROOT=$RUNNER_TEMP/interior-ai-auth-results" >> "$GITHUB_ENV"
           printf '%s\n' "CI_AUTH_FIXTURE_SESSION_ROOT=$RUNNER_TEMP/interior-ai-auth-session-full-advisory" >> "$GITHUB_ENV"
 
@@ -94,15 +102,6 @@ jobs:
             exit 1
           fi
           echo "tested_source_sha=$actual_source_sha" >> "$GITHUB_OUTPUT"
-
-      - name: Configure runner-local authentication fixture paths
-        shell: bash
-        run: |
-          set -euo pipefail
-          {
-            echo "CI_AUTH_FIXTURE_RESULT_ROOT=$RUNNER_TEMP/interior-ai-auth-results"
-            echo "CI_AUTH_FIXTURE_SESSION_ROOT=$RUNNER_TEMP/interior-ai-auth-session-full-advisory"
-          } >> "$GITHUB_ENV"
 
       - name: Setup Node.js
         uses: actions/setup-node@v4

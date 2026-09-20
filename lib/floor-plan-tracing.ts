@@ -100,6 +100,8 @@ export type TracedOpeningPreview = {
 };
 
 const MAX_OPENING_WALL_DISTANCE_METERS = 0.45;
+/** The corner clearance the placement owner enforces; the 3D window drag clamps to it. */
+export { OPENING_CORNER_CLEARANCE_METERS as MIN_OPENING_CORNER_CLEARANCE_METERS } from "@/lib/design-page-opening-placement";
 export const ROOM_DRAW_GRID_STEP_METERS = 0.1;
 export const ROOM_DRAW_EDGE_SNAP_DISTANCE_METERS = 0.35;
 export const ROOM_DRAW_CORNER_SNAP_DISTANCE_METERS = 0.35;
@@ -823,12 +825,9 @@ export function clampOpeningToNearestClearInterval(
   rooms: HousePlanRoom2D[],
   existingOpenings: RoomOpening2D[] | RoomOpening2D = []
 ): RoomOpening2D {
-  const existingOpeningList = Array.isArray(existingOpenings)
-    ? existingOpenings
-    : [existingOpenings];
   return clampDesignPageOpeningToNearestClearInterval(
     opening,
-    existingOpeningList,
+    existingOpenings,
     { rooms, planWidthMeters: 0, planDepthMeters: 0 }
   );
 }
