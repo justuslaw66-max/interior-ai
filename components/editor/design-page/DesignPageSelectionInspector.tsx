@@ -19,9 +19,8 @@ import type { DesignPageSelectionInspectorSummary } from "@/lib/useDesignPageSel
 import FloorPlanPropertyEvidenceControl from "@/components/editor/FloorPlanPropertyEvidenceControl";
 import type { FixturePhotometricVerification } from "@/lib/catalog-schema";
 import type { PlacedFixtureLightState } from "@/lib/room-types";
-import { SelectedOpeningDimensions } from "./SelectedOpeningDimensions";
+import { SelectedOpeningDimensions, type SelectedOpeningDimensionsActions as OpeningActions } from "./SelectedOpeningDimensions";
 import type { resolveDesignPageOpeningViewportState } from "@/lib/design-page-opening-viewport";
-import type { DesignPageOpeningMetricsPatch } from "@/lib/design-page-opening-metrics";
 
 type SelectedRoom = Pick<HousePlanRoom2D, "id" | "w" | "d">;
 
@@ -69,16 +68,8 @@ type DesignPageSelectionInspectorProps = {
   actions: {
     clearSelection: () => void;
     setMeasurementUnit: (unit: PlanMeasurementUnit) => void;
-    commitRoomDimensionMm: (
-      roomId: string,
-      dimension: "width" | "depth",
-      valueMm: number
-    ) => void;
-    commitActiveFloorWallHeightMm: (
-      valueMm: number,
-      evidence?: FloorPlanConsumerMeasurementEvidenceV2,
-      measurementNote?: string
-    ) => void;
+    commitRoomDimensionMm: (roomId: string, dimension: "width" | "depth", valueMm: number) => void;
+    commitActiveFloorWallHeightMm: (valueMm: number, evidence?: FloorPlanConsumerMeasurementEvidenceV2, measurementNote?: string) => void;
     item: {
       center: () => void;
       snapToWall: () => void;
@@ -93,10 +84,9 @@ type DesignPageSelectionInspectorProps = {
       delete: (roomId: string) => void;
     };
     deleteSelectedPlanOverlay: () => void;
-    commitOpeningWidthMm: (valueMm: number) => void; commitOpeningHeightMm: (valueMm: number) => void;
-    commitOpeningBottomMm: (valueMm: number) => void;
-    commitOpeningKind: (patch: DesignPageOpeningMetricsPatch) => void;
-    commitOpeningWall: (wall: "north" | "south" | "east" | "west") => void;
+    commitOpeningWidthMm: OpeningActions["commitWidthMm"]; commitOpeningHeightMm: OpeningActions["commitHeightMm"];
+    commitOpeningBottomMm: OpeningActions["commitBottomMm"]; commitOpeningKind: OpeningActions["commitKind"];
+    commitOpeningWall: OpeningActions["commitWall"]; commitOpeningOffsetMm: OpeningActions["commitOffsetMm"];
     surfaceInspector: SelectedSurfaceInspectorActions;
   };
 };
@@ -178,20 +168,11 @@ export function DesignPageSelectionInspector({
 
       {state.selectedOpening ? (
         <SelectedOpeningDimensions
-          state={{ ...state.selectedOpening, positionLabel: state.summary.metrics[1] ?? "",
-            measurementUnit: state.measurementUnit }}
-          configuration={{
-            dark: configuration.dark,
-            canEdit: configuration.canEditPlanGeometry,
-            proMode: configuration.proMode,
-          }}
-          actions={{ commitWidthMm: actions.commitOpeningWidthMm,
-            commitHeightMm: actions.commitOpeningHeightMm,
-            commitBottomMm: actions.commitOpeningBottomMm,
-            commitKind: actions.commitOpeningKind,
-            commitWall: actions.commitOpeningWall,
-          }}
-        />
+          state={{ ...state.selectedOpening, measurementUnit: state.measurementUnit }}
+          configuration={{ dark: configuration.dark, canEdit: configuration.canEditPlanGeometry, proMode: configuration.proMode }}
+          actions={{ commitWidthMm: actions.commitOpeningWidthMm, commitHeightMm: actions.commitOpeningHeightMm,
+            commitBottomMm: actions.commitOpeningBottomMm, commitKind: actions.commitOpeningKind,
+            commitWall: actions.commitOpeningWall, commitOffsetMm: actions.commitOpeningOffsetMm }} />
       ) : state.summary.metrics.length > 0 ? (
         <div
           className={`mt-3 grid gap-2 ${

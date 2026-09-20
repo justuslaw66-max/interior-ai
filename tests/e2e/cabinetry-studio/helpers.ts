@@ -38,15 +38,25 @@ export async function dismissBlockingPrompt(page: import("@playwright/test").Pag
   ).toHaveCount(0, { timeout: 5000 });
 }
 
+export async function openMillworkStudioFromWorkspaceMenu(
+  page: import("@playwright/test").Page
+) {
+  const workspaceMenu = page.getByTestId("editor-command-workspace");
+  await expect(workspaceMenu).toBeVisible({ timeout: 30000 });
+  await page.waitForLoadState("networkidle");
+  await dismissBlockingPrompt(page);
+  await workspaceMenu.click();
+  const openStudio = page.getByTestId("editor-workflow-millwork");
+  await expect(openStudio).toBeVisible();
+  await openStudio.click();
+  await expect(page.getByTestId("custom-millwork-studio")).toBeVisible({ timeout: 15000 });
+}
+
 export async function openDetailedProStudio(page: import("@playwright/test").Page) {
   await mockPlan(page, "pro");
   await page.goto("/design?mode=designer");
 
-  const openStudio = page.getByTestId("open-custom-millwork-studio");
-  await expect(openStudio).toBeVisible({ timeout: 30000 });
-  await dismissBlockingPrompt(page);
-  await openStudio.click();
-  await expect(page.getByTestId("custom-millwork-studio")).toBeVisible({ timeout: 15000 });
+  await openMillworkStudioFromWorkspaceMenu(page);
   await page.getByTestId("cabinet-experience-detailed").click();
   await expect(page.getByTestId("custom-millwork-studio")).toHaveAttribute(
     "data-experience",

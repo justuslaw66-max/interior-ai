@@ -1,4 +1,6 @@
+import { formatDisplayLength, type DisplayUnit } from "@/lib/display-units";
 import type { FloorPlanPoint, FloorPlanUnderlay } from "@/lib/floor-plan-types";
+import { formatPlanDimensionsLabel } from "@/lib/plan-room-summary";
 
 const MIN_REFERENCE_DISTANCE_METERS = 0.05;
 
@@ -85,4 +87,15 @@ export function applyFloorPlanScaleCalibration(params: {
       referencePointsPx: [firstPx, secondPx],
     },
   };
+}
+
+/** "Reference set (underlay width × depth)" in the viewer's display unit; null until calibrated. */
+export function formatFloorPlanCalibrationSummary(
+  underlay: FloorPlanUnderlay | null,
+  unit: DisplayUnit
+): string | null {
+  if (!underlay?.calibration) return null;
+  const reference = formatDisplayLength(underlay.calibration.referenceLengthMeters * 1000, unit);
+  const extent = formatPlanDimensionsLabel(underlay.widthMeters, underlay.depthMeters, unit);
+  return `${reference} set (${extent})`;
 }

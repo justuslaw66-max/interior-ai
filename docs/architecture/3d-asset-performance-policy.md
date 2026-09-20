@@ -137,12 +137,22 @@ or retailer URL is not proof of redistribution rights.
 
 ## Resource ownership and disposal
 
-- `GLBScaledModel` owns the loader instance, source-scene textures/geometries,
-  and its normalized cloned geometries/materials. It disposes late cancelled
-  loads, Draco state, and owned clones on URL/dependency change or unmount.
-- Upholstery textures created by `TextureLoader` belong to the component that
-  requested them and are disposed after cancellation or unmount. Shared source
-  data must be cloned before product-specific mutation.
+- `GLBScaledModel` only composes the GLB hooks; it disposes nothing itself.
+  `useGLBModelLifecycle` disposes a mounted instance clone's geometries and
+  materials on change or unmount only when that instance owns them
+  (`ownsResources`); it never disposes cached source textures.
+  `useGLBLoadedResource` releases its cache lease on cancellation, change, or
+  unmount.
+- The `glbModelResources` parsed and prepared caches own the parsed source
+  scenes (including their textures) and the prepared normalized scenes. They
+  dispose them on LRU eviction of an unreferenced entry (deferred until
+  resolution for a pending load) and on a non-persisted `pagehide`; a
+  bfcache-persisted `pagehide` keeps them. Loader Draco decoders are disposed
+  after each load.
+- `useGLBMaterials` owns the variant upholstery textures created by
+  `TextureLoader` and disposes them on change or unmount, including late
+  results that resolve after cancellation. Shared source data must be cloned
+  before product-specific mutation.
 - `CabinetSceneItem` allocates generated cabinet groups and edges, while
   `useCabinetSceneResourceOwnership` pairs their geometry/material disposal and
   finish-texture cancellation cleanup with the mounted item lifecycle.

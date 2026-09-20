@@ -21,7 +21,6 @@ for (const project of createAllPhase8RepresentativeProjects()) {
     hasWholeHousePlan: true,
     housePlanRooms: planRooms,
     houseRoomById: new Map(planRooms.map((room) => [room.id, room])),
-    usesHousePlanScene: true,
   });
 
   assert.equal(entries.length, project.itemCount, `${project.scale}: every item must render`);

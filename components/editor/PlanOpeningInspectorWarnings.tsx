@@ -1,5 +1,7 @@
 import type { DesignPageOpeningMetricsPatch } from "@/lib/design-page-opening-metrics";
 import type { OpeningInspectorVerticalState } from "@/lib/design-page-opening-inspector";
+import type { PlanMeasurementUnit } from "@/lib/design-page-types";
+import { formatDisplayLength } from "@/lib/display-units";
 import type { RoomOpening2D } from "@/lib/editorScene";
 
 const warningClass = (dark: boolean) => dark
@@ -44,19 +46,22 @@ function HostWarning({
 
 function DimensionWarning({
   vertical,
+  unit,
   dark,
 }: {
   vertical: OpeningInspectorVerticalState;
+  unit: PlanMeasurementUnit;
   dark: boolean;
 }) {
   const needsWarning = [vertical.heightStatus, vertical.bottomStatus]
     .some((status) => status === "constrained" || status === "invalid");
   if (!needsWarning) return null;
+  const length = (valueMm: number) => formatDisplayLength(valueMm, unit);
   return (
     <div data-testid="plan-opening-dimension-resolution-warning" className={warningClass(dark)}>
       <div className="font-semibold">Stored dimensions differ from physical geometry</div>
       <div className="mt-0.5">
-        Stored: {vertical.heightMm} mm high at {vertical.bottomMm} mm. Effective render: {vertical.effectiveHeightMm} mm high at {vertical.effectiveBottomMm} mm.
+        Stored: {length(vertical.heightMm)} high at {length(vertical.bottomMm)}. Effective render: {length(vertical.effectiveHeightMm)} high at {length(vertical.effectiveBottomMm)}.
       </div>
       {vertical.issues.map((issue) => <div key={issue} className="mt-0.5">{issue}</div>)}
     </div>
@@ -67,19 +72,21 @@ export function PlanOpeningInspectorWarnings({
   opening,
   hostNeedsRepair,
   vertical,
+  unit,
   dark,
   onChange,
 }: {
   opening: RoomOpening2D;
   hostNeedsRepair: boolean;
   vertical: OpeningInspectorVerticalState;
+  unit: PlanMeasurementUnit;
   dark: boolean;
   onChange: (id: string, patch: DesignPageOpeningMetricsPatch) => void;
 }) {
   return (
     <>
       {hostNeedsRepair ? <HostWarning opening={opening} dark={dark} onChange={onChange} /> : null}
-      <DimensionWarning vertical={vertical} dark={dark} />
+      <DimensionWarning vertical={vertical} unit={unit} dark={dark} />
     </>
   );
 }

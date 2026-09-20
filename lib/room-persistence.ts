@@ -207,7 +207,7 @@ export function snapshotToStored(snapshot: DesignSnapshot): StoredDesign {
  */
 export function storedToSnapshot(stored: StoredDesign): DesignSnapshot {
   // If it has the v3 multi-room format, use it directly
-  if (stored.version === 3 && stored.rooms && stored.rooms.length > 0) {
+  if (stored.version === 3 && Array.isArray(stored.rooms)) {
     const lighting = resolveDesignLightingSettings(stored);
     return {
       ...(stored as StoredDesign & Record<string, unknown>),
@@ -218,7 +218,7 @@ export function storedToSnapshot(stored: StoredDesign): DesignSnapshot {
         surfaceFinishes: room.surfaceFinishes ?? room.surfaces,
         layoutVersions: room.layoutVersions ?? [],
       })),
-      activeRoomId: stored.activeRoomId,
+      activeRoomId: stored.rooms.length === 0 ? "" : stored.activeRoomId,
       title: stored.title,
       style: stored.style,
       budget: stored.budget as DesignSnapshot["budget"],

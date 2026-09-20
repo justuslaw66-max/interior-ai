@@ -285,6 +285,7 @@ export function registerWorkspaceTests() {
     await expect(widthInput).toHaveValue(String(initialWidthMm / 10));
     await expect(depthInput).toHaveValue(String(initialDepthMm / 10));
     await displayUnits.selectOption("mm");
+    await expect(displayUnits).toHaveValue("mm");
     await expect(widthInput).toHaveValue(String(initialWidthMm));
     await expect(depthInput).toHaveValue(String(initialDepthMm));
     const nextWidthMm = initialWidthMm - 100;
@@ -304,6 +305,7 @@ export function registerWorkspaceTests() {
     await expect(widthInput).toHaveValue(String(nextWidthMm));
 
     await displayUnits.selectOption("cm");
+    await expect(displayUnits).toHaveValue("cm");
     await expect(widthInput).toHaveValue(String(nextWidthMm / 10));
     await expect(depthInput).toHaveValue(String(nextDepthMm / 10));
     await expect(widthInput).toHaveAttribute("data-model-value-mm", String(nextWidthMm));

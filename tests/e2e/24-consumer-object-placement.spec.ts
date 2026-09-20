@@ -84,6 +84,20 @@ async function setupConsumerItem(page: Page): Promise<{
     await continueToFurnish.click();
   }
 
+  // A fresh design seeds its default door and window after plan settings load,
+  // and that update can land after the first paint. Capture the pre-placement
+  // baseline only once the initial document has settled.
+  await expect
+    .poll(
+      () =>
+        page.evaluate(
+          () =>
+            (JSON.parse(window.localStorage.getItem("plan_openings") ?? "[]") as unknown[])
+              .length
+        ),
+      { timeout: 15_000 }
+    )
+    .toBeGreaterThan(0);
   const opened = await openCatalogPreview(page, TEST_ITEM_ID, "Hugg");
   expect(opened, "The deterministic Hugg fixture must be available").toBe(true);
   const beforePlacement = await readFingerprint(page);

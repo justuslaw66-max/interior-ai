@@ -51,7 +51,8 @@ export function EnvironmentController({
 }: {
   lighting: ResolvedEditorLighting;
 }) {
-  const { intensity } = lighting.environment;
+  const { intensity, keyPosition, fillIntensity, fillPosition } =
+    lighting.environment;
   // drei re-renders the environment cube and its PMREM whenever these
   // children change identity, so rebuild them only when their inputs change.
   const lightformers = useMemo(
@@ -60,20 +61,20 @@ export function EnvironmentController({
         <Lightformer
           intensity={intensity}
           color={ENVIRONMENT_KEY}
-          position={[5, 6, 4]}
-          rotation={[0, Math.PI / 4, 0]}
+          position={keyPosition ?? [5, 6, 4]}
+          rotation={keyPosition ? undefined : [0, Math.PI / 4, 0]}
           scale={[8, 8, 1]}
         />
         <Lightformer
-          intensity={intensity * 0.35}
+          intensity={fillIntensity ?? intensity * 0.35}
           color={ENVIRONMENT_FILL}
-          position={[-4, 3, -3]}
-          rotation={[0, -Math.PI / 6, 0]}
+          position={fillPosition ?? [-4, 3, -3]}
+          rotation={fillPosition ? undefined : [0, -Math.PI / 6, 0]}
           scale={[6, 6, 1]}
         />
       </>
     ),
-    [intensity]
+    [fillIntensity, fillPosition, intensity, keyPosition]
   );
   if (!lighting.environment.enabled) return null;
 

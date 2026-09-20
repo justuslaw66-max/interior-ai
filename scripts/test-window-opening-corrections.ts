@@ -85,7 +85,6 @@ import {
 import { HistoryManager } from "@/lib/historyManager";
 import { snapshotToStored, storedToSnapshot } from "@/lib/room-persistence";
 import { createRoom, type DesignSnapshot } from "@/lib/room-types";
-import { shouldUseHousePlanScene } from "@/lib/useDesignPageSceneReadModel";
 import { validateTracedOpeningPlacement } from "@/lib/floor-plan-tracing";
 import { buildFloorPlanQualityReport } from "@/lib/floor-plan-quality";
 import { buildRoomSurfaceMaterialBomResult } from "@/lib/surface-material-bom-result";
@@ -185,17 +184,17 @@ const seededLegacyCounts = getLegacyWallOpeningCountsForTest(
 ).flatMap((entry) => entry.segments.flat());
 assert.ok(seededLegacyCounts.includes("door-east-main"));
 assert.ok(seededLegacyCounts.includes("window-west-main"));
-assert.equal(
-  shouldUseHousePlanScene({
-    stackedFloorView: false,
-    roomCount: 1,
-    openingCount: seededOpenings.length,
-    editingWallSurface: false,
-    hasWallSurfaceFinishes: false,
-    hasNonRectangularRoom: false,
-  }),
-  true,
+// Every design with rooms, including a single room with seeded openings, renders through the
+// opening-aware house-plan structure; the scene read model keeps no second routing predicate.
+assert.match(
+  readFileSync("components/editor/design-page/DesignSceneStructureLayer.tsx", "utf8"),
+  /if \(state\.wholeHome\.rooms\.length > 0\) \{[\s\S]*?mapPlanOpeningsToRoomRenderer\([\s\S]*?<HousePlanRenderer3D[\s\S]*?openings=\{topologyOpenings\}/,
   "A single-room scene with seeded openings must use the opening-aware legacy structure renderer."
+);
+assert.doesNotMatch(
+  readFileSync("lib/useDesignPageSceneReadModel.ts", "utf8"),
+  /shouldUseHousePlanScene|usesHousePlanScene/,
+  "The scene read model must not reintroduce a single-room renderer route."
 );
 
 const topologyCountedRooms = [singleRoom];

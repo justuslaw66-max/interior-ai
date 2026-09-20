@@ -451,6 +451,45 @@ assert.match(
   "The compatibility top cap must be the only depth owner at the exact union-footprint wall top."
 );
 
+const legacyWallBandOpacityExpression =
+  source.match(/<LegacyWallBandMesh[\s\S]*?\n\s*opacity=\{([\s\S]*?)\n\s*\}\n\s*\/>/)?.[1] ?? "";
+assert.match(
+  legacyWallBandOpacityExpression,
+  /INACTIVE_FLOOR_OPACITY_MULTIPLIER/,
+  "Merged wall bands on inactive floors should keep the inactive-floor fade."
+);
+assert.match(
+  legacyWallBandOpacityExpression,
+  /getRoomFloorLevel\(room\) === band\.floorLevel[\s\S]*?clampStructureOpacity\(room\.surfaceOpacity\?\.wall\)/,
+  "Merged wall bands should fade with the lowest wall-opacity setting of the rooms on their floor."
+);
+
+const houseMaterialsSource = fs.readFileSync(
+  path.join(path.dirname(rendererPath), "house-plan-3d", "materials.ts"),
+  "utf8"
+);
+assert.match(
+  houseMaterialsSource,
+  /export function useTransparencyRecompileRef[\s\S]*?useLayoutEffect\(\(\) => \{[\s\S]*?\.needsUpdate = true;[\s\S]*?\}, \[transparent\]\);/,
+  "A live transparency flip must bump the material version; three otherwise keeps the opaque program that pins alpha to 1."
+);
+for (const [owner, materialRef] of [
+  ["LegacyWallBandMesh", "coreMaterialRef"],
+  ["LegacyWallBandMesh", "capMaterialRef"],
+  ["WallSurfaceSideMesh", "materialRef"],
+  ["CutawayWallMesh", "baseMaterialRef"],
+  ["WindowFrameRailMesh", "railMaterialRef"],
+  ["WindowFrameMullionMesh", "mullionMaterialRef"],
+] as const) {
+  assert.match(
+    source,
+    new RegExp(
+      `function ${owner}\\b[\\s\\S]*?const ${materialRef} = useTransparencyRecompileRef<THREE\\.MeshStandardMaterial>\\((?:baseOpacity|opacity) < 0\\.999\\);[\\s\\S]*?ref=\\{${materialRef}\\}`
+    ),
+    `${owner} must recompile its ${materialRef} material when the wall-opacity slider flips its transparency.`
+  );
+}
+
 assert.match(
   source,
   /function CanonicalWallBodies3D[\s\S]*?canonical-wall-top-cap-3d[\s\S]*?<shapeGeometry args=\{\[shapes\]\}/,
@@ -646,6 +685,11 @@ assert.match(
   "Actual infill rendering must resolve ownership among mounted rooms using full topology."
 );
 assert.match(
+  fs.readFileSync(rendererPath, "utf8"),
+  /function LegacyPhysicalOpenings\([\s\S]*?<LegacyPhysicalOpeningMeshes[\s\S]*?\(assembly\.threshold\.kind === "window"\) === windows[\s\S]*?interactive=\{props\.interactive && !windows\}[\s\S]*?hoveredTargetKey=\{windows \? null : props\.hoveredTargetKey\} selectedTargetKey=\{windows \? null : props\.selectedTargetKey\}[\s\S]*?<LegacyPhysicalOpenings assemblies=\{legacyPhysicalOpeningAssemblies\}[\s\S]*?<WindowOpeningMesh /,
+  "WindowOpeningMesh must be the only window pick, outline and drag owner; window assemblies draw only the frame while door thresholds stay interactive."
+);
+assert.match(
   source,
   /<MountedCutawayWallMesh[\s\S]*?wallHeight=\{segmentWallHeight\}/,
   "Rendered wall geometry should use the selected wall face height."
@@ -683,7 +727,7 @@ assert.doesNotMatch(
 
 assert.match(
   source,
-  /const visibleHoveredTargetKey =\s*selectedSurfaceTarget\?\.kind === "wall" && selectedTargetKey\s*\? null\s*: hoveredTargetKey;[\s\S]*?hoveredTargetKey=\{visibleHoveredTargetKey\}[\s\S]*?selectedTargetKey=\{selectedTargetKey\}/,
+  /if \(selected\?\.kind === "wall" && hasSelectedKey && target\?\.kind !== "opening"\) return null;[\s\S]*?const visibleHoveredTargetKey = visibleStructureHover\(hoveredStructureTarget, selectedSurfaceTarget, selectedTargetKey !== null\);[\s\S]*?hoveredTargetKey=\{visibleHoveredTargetKey\}/,
   "A selected wall panel should keep the only visible wall outline while pointer movement crosses neighboring panels."
 );
 
@@ -695,13 +739,20 @@ assert.match(
 
 assert.match(
   source,
-  /<MountedCutawayWallMesh[\s\S]*?renderSurfaces=\{!fullHeightStructuralPartKeys\.has\(part\.key\)\}[\s\S]*?interactive=\{false\}[\s\S]*?resolvedWallSurfacePanels\.map\(\s*\(panel\) => \([\s\S]*?<WallSurfacePanelMesh/,
+  /<MountedCutawayWallMesh[\s\S]*?renderSurfaces=\{false\}[\s\S]*?interactive=\{false\}[\s\S]*?resolvedWallSurfacePanels\.map\(\s*\(panel\) => \([\s\S]*?<WallSurfacePanelMesh/,
   "Structural fragments must not render finish planes or receive raycasts; one canonical panel mesh owns both."
 );
 
+assert.match(source, /\.\.\.buildOpeningWallSurfacePanels\(room, topologyRooms, segment, wallOpenings, segmentWallHeight\)/,
+  "Opening lintels and sills must be routed through the same selectable panel owner as the side sections.");
+assert.match(source, /const partHeight = panel\.part\.height \?\? wallHeight;[\s\S]*const partCenterY = panel\.part\.centerY \?\? wallHeight \/ 2;[\s\S]*position=\{\[panel\.part\.x, partCenterY, panel\.part\.z\]\}[\s\S]*partHeight=\{partHeight\}/,
+  "Opening panel hit geometry and visible surfaces must retain their own height and elevation.");
+assert.match(source, /const edges = panel\.boundaryEdges \?\?/,
+  "Window walls must use the exposed boundary, excluding internal fragment seams.");
+
 assert.match(
   source,
-  /export function WallSurfacePanelMesh\([\s\S]*?pieceKey: `wall:\$\{panel\.roomId\}:\$\{panel\.faceId\}:\$\{panel\.panelId\}`,[\s\S]*?panelAliases: panel\.legacyPanelIds,[\s\S]*?getWallPanelSurfaceSettings\([\s\S]*?panel\.panelId[\s\S]*?panel\.legacyPanelIds/,
+  /export function WallSurfacePanelMesh\([\s\S]*?pieceKey: `wall:\$\{panel\.roomId\}:\$\{panel\.faceId\}:\$\{selectionPanelId\}`,[\s\S]*?panelAliases: panel\.selectionPanelAliases \?\? panel\.legacyPanelIds,[\s\S]*?getWallPanelSurfaceSettings\([\s\S]*?panel\.panelId[\s\S]*?panel\.legacyPanelIds/,
   "Every finish mesh must resolve one canonical target and one settings object with deterministic legacy fallbacks."
 );
 
@@ -731,14 +782,14 @@ assert.match(
 
 assert.match(
   source,
-  /const target: StructureTarget = \{[\s\S]*?roomId: panel\.roomId,[\s\S]*?id: panel\.faceId,[\s\S]*?panelId: panel\.panelId,[\s\S]*?surfaceSide: panel\.side/,
+  /const target: StructureTarget = \{[\s\S]*?roomId: panel\.roomId,[\s\S]*?id: panel\.faceId,[\s\S]*?panelId: selectionPanelId,[\s\S]*?surfaceSide: panel\.side/,
   "Clicks on a panel must return the canonical room, face, panel, and physical side."
 );
 
 assert.match(
   source,
-  /<WallSurfaceSideMesh[\s\S]*?target=\{target\}[\s\S]*?texturePanelLength=\{joinedSurface\.length\}[\s\S]*?interactive=\{interactive\}/,
-  "The one complete panel finish mesh must own raycasting and a UV domain spanning the whole panel."
+  /<WallSurfaceSideMesh[\s\S]*?target=\{target\}[\s\S]*?texturePanelLength=\{joinedSurface\.length\}[\s\S]*?interactive=\{interactive && panel\.selectable !== false\}/,
+  "The one complete panel finish mesh must own raycasting and a UV domain spanning the whole panel, except a lintel or sill without a whole-wall target, which keeps its face finish without becoming its own pick target."
 );
 
 assert.match(
@@ -777,8 +828,8 @@ assert.match(
 
 assert.match(
   source,
-  /const outlinePoints:[\s\S]*?\[outlineLeftX, outlineBottomY, outlineZ\][\s\S]*?\[outlineRightX, outlineBottomY, outlineZ\][\s\S]*?\[outlineRightX, outlineTopY, outlineZ\][\s\S]*?\[outlineLeftX, outlineTopY, outlineZ\][\s\S]*?\[outlineLeftX, outlineBottomY, outlineZ\][\s\S]*?key=\{`wall-surface-panel-outline:\$\{panel\.panelId\}`\}[\s\S]*?renderOrder=\{25\}[\s\S]*?depthTest=\{false\}[\s\S]*?depthWrite=\{false\}/,
-  "A selected canonical panel must draw one closed four-edge overlay that cannot be occluded by adjacent wall caps."
+  /const outlinePoints = edges\.flatMap[\s\S]*?key=\{`wall-surface-panel-outline:\$\{panel\.panelId\}`\}[\s\S]*?segments[\s\S]*?renderOrder=\{25\}[\s\S]*?depthTest=\{false\}[\s\S]*?depthWrite=\{false\}/,
+  "The outline must draw only exposed boundary edges, including holes, above the wall caps."
 );
 
 assert.doesNotMatch(
@@ -792,5 +843,26 @@ assert.doesNotMatch(
   /data-testid="house-room-3d-label"|activeFloorBounds|from "@react-three\/drei\/web\/Html"/,
   "Whole-home 3D should stay uncluttered without persistent floating room or floor labels."
 );
+
+const rendererCeilingFallback = source.match(
+  /const ceilingColor = ceilingSettings\.paintColorHex \?\? surfaces\?\.ceilingColor \?\? (\w+);/
+)?.[1];
+const rendererCeilingDefault = rendererCeilingFallback
+  ? source.match(new RegExp(`const ${rendererCeilingFallback} = "(#[0-9a-fA-F]{6})";`))?.[1]
+  : undefined;
+const panelCeilingDefaults = [
+  ["useDesignPageRoomReadModel.ts", /activeRoomSurfaces\?\.ceilingColor \?\?\s*"(#[0-9a-fA-F]{6})"/],
+  ["useDesignPageSurfaceInspector.ts", /floorInspectorSurfaces\?\.ceilingColor \?\?\s*"(#[0-9a-fA-F]{6})"/],
+] as const;
+for (const [fileName, fallbackPattern] of panelCeilingDefaults) {
+  const panelSource = fs.readFileSync(path.join(process.cwd(), "lib", fileName), "utf8");
+  const panelCeilingDefault = panelSource.match(fallbackPattern)?.[1];
+  assert.ok(panelCeilingDefault, `${fileName} must keep a literal ceiling colour fallback.`);
+  assert.equal(
+    rendererCeilingDefault?.toLowerCase(),
+    panelCeilingDefault.toLowerCase(),
+    `An unpainted 3D ceiling must render the ceiling colour ${fileName} shows in the panel.`
+  );
+}
 
 console.log("House-plan wall rendering guardrails passed.");

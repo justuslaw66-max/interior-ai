@@ -39,10 +39,6 @@ import {
   DEFAULT_FLOOR_JOINT_SIZE_MM,
   DEFAULT_FLOOR_PATTERN_OFFSET,
   getFloorPatternLabel,
-  getDefaultWallSurfaceSettings,
-  getCeilingSurfaceSettings,
-  getWallFaceLabel,
-  getWallFaceSurfaceSettings,
   normalizeFloorSurfaceSettings,
   type NormalizedSurfaceSettings,
 } from "@/lib/surface-settings";
@@ -82,7 +78,6 @@ import {
   WALL_PAINT_INITIAL_VISIBLE_COUNT,
   buildFacetOptions,
   buildSurfaceMaterialProductGroups,
-  formatSurfaceMaterialValue,
   getFloorMaterialSwatchStyle,
   getSurfaceMaterialCollectionLabel,
   getSurfaceMaterialColorLabel,
@@ -96,17 +91,16 @@ import {
   getSurfaceMaterialSizeOptionLabel,
   getSurfaceMaterialSupplierLabel,
   getSurfaceMaterialSwatchStyle,
-  getSurfaceRoomAreaSqm,
-  getSurfaceRoomWallAreaSqm,
-  getSurfaceRoomWallFaceAreaSqm,
   type SurfaceBrowserTab,
   type SurfaceBrowserViewMode,
   type SurfaceFilterKey,
   type SurfaceFilterState,
   type SurfaceMaterialProductGroup,
-  type SurfaceSummaryRow,
   type WallSurfaceMode,
 } from "./design-controls-plan/surfaceCatalog";
+import { buildSurfaceSummaryRows, getActiveSurfaceRoomFloorAreaSqm } from "./design-controls-plan/surfaceSummaryRows";
+import { formatDisplayArea, formatDisplayLength } from "@/lib/display-units";
+import { formatPlanDimensionsLabel } from "@/lib/plan-room-summary";
 
 export type { FloorPlanLifecycleIdentity, PlanStartMode } from "./design-controls-plan/DesignControlsPlanPanel.types";
 import type {
@@ -1218,158 +1212,9 @@ export default function DesignControlsPlanPanel({
     }
     openSurfaceSummary("information_fallback");
   };
-  const activeSurfaceSummaryRows = surfaceRooms.flatMap((room) => {
-    const surfaces = room.surfaces ?? room.surfaceFinishes;
-    const floorMaterialId = surfaces?.floorMaterialId ?? null;
-    const floorMaterial = getRuntimeSurfaceMaterialById(floorMaterialId);
-    const starterMaterial = getFloorMaterialById(floorMaterialId);
-    const floorSettings = normalizeFloorSurfaceSettings(
-      surfaces,
-      normalizeFloorRotationDeg,
-      clampFloorPatternScale
-    );
-    const floorRow = {
-      id: `${room.id}-floor`,
-      room,
-      target: "floor" as const,
-      surfaceLabel: "Floor",
-      materialId: floorMaterial?.surface_material.material_id ?? starterMaterial.id,
-      materialName: floorMaterial?.surface_material.product_name ?? starterMaterial.name,
-      supplier: floorMaterial
-        ? floorMaterial.surface_material.brand ?? formatSurfaceMaterialValue(floorMaterial.surface_material.supplier)
-        : "Starter finish",
-      areaSqm: getSurfaceRoomAreaSqm(room),
-      status: floorMaterial?.import_governance.publish_status ?? "not_orderable",
-      sampleUrl: getSurfaceMaterialSampleUrl(surfaceCatalog.byId.get(floorMaterialId)),
-      settings: {
-        pattern: floorSettings.floorPattern,
-        rotationDeg: floorSettings.floorRotationDeg,
-        scale: floorSettings.floorScale,
-        offset: floorSettings.floorPatternOffset,
-        jointSizeMm: floorSettings.floorJointSizeMm,
-        jointColor: floorSettings.floorJointColor,
-      },
-    };
-
-    const rows: SurfaceSummaryRow[] = [floorRow];
-    const ceilingSettings = getCeilingSurfaceSettings(
-      surfaces,
-      normalizeFloorRotationDeg,
-      clampFloorPatternScale
-    );
-    const ceilingPaintName = ceilingSettings.paintColorHex
-      ? getWallPaintDisplayName(ceilingSettings.paintColorHex, ceilingSettings.paintName)
-      : "No ceiling paint";
-    rows.push({
-      id: `${room.id}-ceiling`,
-      room,
-      target: "ceiling" as const,
-      surfaceLabel: "Ceiling",
-      materialId: ceilingSettings.paintColorHex ? `paint:${ceilingSettings.paintColorHex}` : `ceiling:${room.id}`,
-      materialName: ceilingPaintName,
-      supplier: ceilingSettings.paintColorHex ? "Paint colour" : "Visual finish",
-      areaSqm: getSurfaceRoomAreaSqm(room),
-      status: ceilingSettings.paintColorHex ? "visual_finish" : "not_started",
-      sampleUrl: null,
-      settings: {
-        pattern: ceilingSettings.pattern,
-        rotationDeg: ceilingSettings.rotationDeg,
-        scale: ceilingSettings.scale,
-        offset: ceilingSettings.offset,
-        jointSizeMm: ceilingSettings.jointSizeMm,
-        jointColor: ceilingSettings.jointColor,
-      },
-    });
-    const wallDefaultSettings = getDefaultWallSurfaceSettings(
-      surfaces,
-      normalizeFloorRotationDeg,
-      clampFloorPatternScale
-    );
-    const faceIds = Object.keys(surfaces?.walls?.faces ?? {});
-    const faceAreaTotal = faceIds.reduce(
-      (sum, faceId) => sum + getSurfaceRoomWallFaceAreaSqm(room, faceId),
-      0
-    );
-    const defaultWallArea = Math.max(
-      0,
-      getSurfaceRoomWallAreaSqm(room) - Math.min(getSurfaceRoomWallAreaSqm(room), faceAreaTotal)
-    );
-    if (wallDefaultSettings.materialId || wallDefaultSettings.paintColorHex) {
-      const material = wallDefaultSettings.materialId
-        ? getRuntimeSurfaceMaterialById(wallDefaultSettings.materialId)
-        : null;
-      const starter = wallDefaultSettings.materialId
-        ? getFloorMaterialById(wallDefaultSettings.materialId)
-        : null;
-      const paintName = getWallPaintDisplayName(
-        wallDefaultSettings.paintColorHex,
-        wallDefaultSettings.paintName
-      );
-      rows.push({
-        id: `${room.id}-walls`,
-        room,
-        target: "walls" as const,
-        surfaceLabel: faceIds.length > 0 ? "Remaining walls" : "All walls",
-        materialId: material?.surface_material.material_id ?? starter?.id ?? `paint:${wallDefaultSettings.paintColorHex}`,
-        materialName: material?.surface_material.product_name ?? starter?.name ?? paintName,
-        supplier: material
-          ? material.surface_material.brand ?? formatSurfaceMaterialValue(material.surface_material.supplier)
-          : starter
-            ? "Starter finish"
-            : "Paint colour",
-        areaSqm: defaultWallArea,
-        status: material?.import_governance.publish_status ?? (starter ? "not_orderable" : "visual_finish"),
-        sampleUrl: getSurfaceMaterialSampleUrl(surfaceCatalog.byId.get(wallDefaultSettings.materialId)),
-        settings: {
-          pattern: wallDefaultSettings.pattern,
-          rotationDeg: wallDefaultSettings.rotationDeg,
-          scale: wallDefaultSettings.scale,
-          offset: wallDefaultSettings.offset,
-          jointSizeMm: wallDefaultSettings.jointSizeMm,
-          jointColor: wallDefaultSettings.jointColor,
-        },
-      });
-    }
-
-    faceIds.forEach((faceId) => {
-      const settings = getWallFaceSurfaceSettings(
-        surfaces,
-        faceId,
-        normalizeFloorRotationDeg,
-        clampFloorPatternScale
-      );
-      if (!settings.materialId && !settings.paintColorHex) return;
-      const material = settings.materialId ? getRuntimeSurfaceMaterialById(settings.materialId) : null;
-      const starter = settings.materialId ? getFloorMaterialById(settings.materialId) : null;
-      const paintName = getWallPaintDisplayName(settings.paintColorHex, settings.paintName);
-      rows.push({
-        id: `${room.id}-wall-${faceId}`,
-        room,
-        target: "selected_wall" as const,
-        surfaceLabel: getWallFaceLabel(faceId),
-        materialId: material?.surface_material.material_id ?? starter?.id ?? `paint:${settings.paintColorHex}`,
-        materialName: material?.surface_material.product_name ?? starter?.name ?? paintName,
-        supplier: material
-          ? material.surface_material.brand ?? formatSurfaceMaterialValue(material.surface_material.supplier)
-          : starter
-            ? "Starter finish"
-            : "Paint colour",
-        areaSqm: getSurfaceRoomWallFaceAreaSqm(room, faceId),
-        status: material?.import_governance.publish_status ?? (starter ? "not_orderable" : "visual_finish"),
-        sampleUrl: getSurfaceMaterialSampleUrl(surfaceCatalog.byId.get(settings.materialId)),
-        settings: {
-          pattern: settings.pattern,
-          rotationDeg: settings.rotationDeg,
-          scale: settings.scale,
-          offset: settings.offset,
-          jointSizeMm: settings.jointSizeMm,
-          jointColor: settings.jointColor,
-        },
-      });
-    });
-
-    return rows;
-  });
+  const activeSurfaceSummaryRows = buildSurfaceSummaryRows(surfaceRooms, (materialId) =>
+    getSurfaceMaterialSampleUrl(surfaceCatalog.byId.get(materialId))
+  );
   const setSurfaceFilter = (key: SurfaceFilterKey, value: string) => {
     setSurfaceFilters((current) => ({
       ...current,
@@ -1445,7 +1290,7 @@ export default function DesignControlsPlanPanel({
     : "min-h-10 rounded-lg border border-neutral-200 bg-white px-2.5 py-2 text-sm text-neutral-900 outline-none disabled:opacity-50";
   const activeFloorLabel =
     floorOptions.find((option) => option.level === activeFloorLevel)?.label ?? "1F";
-  const activeRoomArea = Math.max(0, roomWidth * roomDepth);
+  const activeRoomArea = getActiveSurfaceRoomFloorAreaSqm(surfaceRooms, activeRoomId);
   const activeRoomPerimeter = Math.max(0, (roomWidth + roomDepth) * 2);
   const activeRoomAspectRatio = roomWidth > 0 && roomDepth > 0 ? roomWidth / roomDepth : 0;
   const activeRoomAspectLabel =
@@ -1478,7 +1323,7 @@ export default function DesignControlsPlanPanel({
   const measurementChecks = [
     {
       label: "Dimensions",
-      value: `${roomWidth.toFixed(1)} x ${roomDepth.toFixed(1)}m`,
+      value: formatPlanDimensionsLabel(roomWidth, roomDepth, measurementUnit),
       ready: hasRooms,
     },
     {
@@ -1990,7 +1835,7 @@ export default function DesignControlsPlanPanel({
                       {room.name}
                     </div>
                     <div className={progressMetaClass}>
-                      {(room.floorLabel ?? "Floor")} · {getSurfaceRoomAreaSqm(room).toFixed(2)} sqm
+                      {(room.floorLabel ?? "Floor")} · {formatDisplayArea(room.floorAreaSqm, measurementUnit)}
                     </div>
                     <div className={progressMetaClass}>
                       {row?.materialName ?? "Starter finish"}
@@ -2085,7 +1930,7 @@ export default function DesignControlsPlanPanel({
                       {row.room.name} · {row.surfaceLabel}
                     </div>
                     <div className={progressMetaClass}>
-                      {row.materialName} · {row.areaSqm.toFixed(2)} sqm
+                      {row.materialName} · {formatDisplayArea(row.areaSqm, measurementUnit)}
                     </div>
                     <div className={progressMetaClass}>
                       {getFloorPatternLabel(row.settings.pattern)} · {row.settings.rotationDeg}° · Scale {row.settings.scale.toFixed(2)}x · Joint {row.settings.jointSizeMm} mm
@@ -2297,8 +2142,8 @@ export default function DesignControlsPlanPanel({
                 activeRoomPresetId={activeRoomPresetId}
                 roomWidthInput={roomWidthInput}
                 roomDepthInput={roomDepthInput}
-                roomWidth={roomWidth}
-                roomDepth={roomDepth}
+                roomWidth={roomWidth} roomDepth={roomDepth}
+                activeRoomFloorAreaSqm={activeRoomArea}
                 measurementUnit={measurementUnit} measurementUnitReady={measurementUnitReady}
                 openingCount={planOpeningCount}
                 hasConnectionBlockers={hasConnectionBlockers}
@@ -2709,7 +2554,7 @@ export default function DesignControlsPlanPanel({
                   <div className={progressLabelClass}>Floor plan</div>
                   <div className={progressMetaClass}>
                     {hasRooms
-                      ? `${planRoomCount} room${planRoomCount === 1 ? "" : "s"} · ${roomWidth.toFixed(1)} x ${roomDepth.toFixed(1)}m`
+                      ? `${planRoomCount} room${planRoomCount === 1 ? "" : "s"} · ${formatPlanDimensionsLabel(roomWidth, roomDepth, measurementUnit)}`
                       : "Draw, upload, or choose a template."}
                   </div>
                 </div>
@@ -2754,21 +2599,21 @@ export default function DesignControlsPlanPanel({
             </summary>
             <div className="mt-2 grid grid-cols-2 gap-2">
               <div className={measurementTileClass} data-testid="plan-measurement-area">
-                <div className={measurementValueClass}>{activeRoomArea.toFixed(2)} m2</div>
+                <div className={measurementValueClass}>{formatDisplayArea(activeRoomArea, measurementUnit)}</div>
                 <div className={measurementLabelClass}>Area</div>
               </div>
               <div className={measurementTileClass} data-testid="plan-measurement-perimeter">
-                <div className={measurementValueClass}>{activeRoomPerimeter.toFixed(1)} m</div>
+                <div className={measurementValueClass}>{formatDisplayLength(activeRoomPerimeter * 1000, measurementUnit)}</div>
                 <div className={measurementLabelClass}>Perimeter</div>
               </div>
               <div className={measurementTileClass} data-testid="plan-measurement-clearance">
                 <div className={measurementValueClass}>
-                  {activeRoomClearWidth.toFixed(1)} x {activeRoomClearDepth.toFixed(1)}m
+                  {formatPlanDimensionsLabel(activeRoomClearWidth, activeRoomClearDepth, measurementUnit)}
                 </div>
                 <div className={measurementLabelClass}>Clear span</div>
               </div>
               <div className={measurementTileClass} data-testid="plan-measurement-height">
-                <div className={measurementValueClass}>{(activeRoomHeightMm / 1000).toFixed(2)} m</div>
+                <div className={measurementValueClass}>{formatDisplayLength(activeRoomHeightMm, measurementUnit)}</div>
                 <div className={measurementLabelClass}>Floor wall height</div>
               </div>
               <div className={measurementTileClass} data-testid="plan-measurement-ratio">
@@ -3062,7 +2907,7 @@ export default function DesignControlsPlanPanel({
             <div className="grid gap-2">
               <div className="grid grid-cols-[1fr_7rem] items-center gap-3">
                 <span className={floorFieldLabelClass}>Interior area</span>
-                <div className={floorInputClass}>{activeRoomArea.toFixed(2)} m2</div>
+                <div className={floorInputClass}>{formatDisplayArea(activeRoomArea, measurementUnit)}</div>
               </div>
               <MeasurementField
                 label="Floor wall height"
@@ -3430,7 +3275,7 @@ export default function DesignControlsPlanPanel({
       {roomConnectionChecklistItems.length > 0 && (
         <div className="mt-3">
           <RoomConnectionChecklist
-            items={roomConnectionChecklistItems}
+            items={roomConnectionChecklistItems} measurementUnit={measurementUnit}
             disabled={isClientPreview}
             dark={dark}
             variant={isDesigner ? "pro" : "consumer"}
@@ -3674,7 +3519,7 @@ export default function DesignControlsPlanPanel({
                     <span className="flex items-center justify-between gap-2">
                       <span>{template.label}</span>
                       <span className={dark ? "shrink-0 text-xs text-neutral-400" : "shrink-0 text-xs text-neutral-500"}>
-                        {Math.round(areaSqm)} m²
+                        {formatDisplayArea(areaSqm, measurementUnit)}
                       </span>
                     </span>
                     <span className={dark ? "mt-0.5 block text-xs text-neutral-400" : "mt-0.5 block text-xs text-neutral-500"}>
@@ -3684,7 +3529,7 @@ export default function DesignControlsPlanPanel({
                       data-testid={`plan-template-dimensions-${template.id}`}
                       className={dark ? "mt-1 block text-[11px] font-semibold text-neutral-300" : "mt-1 block text-[11px] font-semibold text-neutral-700"}
                     >
-                      Footprint {planWidth.toFixed(1)} × {planDepth.toFixed(1)} m · {template.rooms.length} room{template.rooms.length === 1 ? "" : "s"}
+                      Footprint {formatPlanDimensionsLabel(planWidth, planDepth, measurementUnit)} · {template.rooms.length} room{template.rooms.length === 1 ? "" : "s"}
                     </span>
                     <span className={dark ? "mt-1 block text-[11px] font-semibold text-emerald-200" : "mt-1 block text-[11px] font-semibold text-emerald-700"}>
                       Good for: {template.bestFor}
@@ -3778,7 +3623,7 @@ export default function DesignControlsPlanPanel({
               >
                 <span className="block">{template.label}</span>
                 <span className={dark ? "mt-0.5 block text-xs text-neutral-400" : "mt-0.5 block text-xs text-neutral-500"}>
-                  {template.width} x {template.depth}m
+                  {formatPlanDimensionsLabel(template.width, template.depth, measurementUnit)}
                 </span>
               </button>
             ))}

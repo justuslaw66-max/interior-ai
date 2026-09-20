@@ -3,11 +3,11 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
 import type { RoomOpening2D } from "@/lib/editorScene";
+import { mapPlanOpeningsToRoomRenderer, resolvePlanOpeningVerticalMetrics } from "@/lib/design-page-plan-overlays";
 import {
   getDesignPageOpeningMetricsHistoryLabel,
   normalizeDesignPageOpeningMetrics,
 } from "@/lib/design-page-opening-metrics";
-import { resolvePlanOpeningVerticalMetrics } from "@/lib/design-page-plan-overlays";
 
 const root = process.cwd();
 const workspaceSource = readFileSync(
@@ -263,6 +263,32 @@ const normalizedSparseResize = normalizeDesignPageOpeningMetrics({
   metrics: sparseResizePatch,
   roomHeight: 2.8,
 });
+const legacyWindow: RoomOpening2D = {
+  id: "legacy-window", wall: "north", kind: "window", offsetMm: 0, widthMm: 1400,
+};
+assert.deepEqual(
+  (({ heightMeters, bottomMeters }) => ({ heightMeters, bottomMeters }))(
+    resolvePlanOpeningVerticalMetrics({ kind: legacyWindow.kind }, 2.6)
+  ),
+  { heightMeters: 1.2, bottomMeters: 0.9 }
+);
+const legacySillPatch = normalizeDesignPageOpeningMetrics({
+  currentOpening: legacyWindow, metrics: { bottomMeters: 0.7 }, roomHeight: 2.6,
+});
+assert.deepEqual(legacySillPatch, { bottomMeters: 0.7 }, "A sill edit must stay sparse.");
+assert.equal(
+  resolvePlanOpeningVerticalMetrics({ kind: legacyWindow.kind, ...legacySillPatch }, 2.6).heightMeters,
+  1.2,
+  "Changing an unmeasured window's sill must retain the same default height shown by the inspector and 3D view."
+);
+for (const dimensions of [{ heightMm: 1350, bottomMm: 650 }, { heightMm: 2600, bottomMm: 0 }]) {
+  const [projected] = mapPlanOpeningsToRoomRenderer([{ ...legacyWindow, ...dimensions }], []);
+  assert.equal(projected.height, dimensions.heightMm / 1000);
+  assert.equal(projected.bottom, dimensions.bottomMm / 1000, "Explicit floor-level windows must not gain a default sill.");
+}
+const [legacyDoor] = mapPlanOpeningsToRoomRenderer([{ ...legacyWindow, kind: "door" }], []);
+assert.equal(legacyDoor.height, undefined, "The window fallback must preserve legacy door/passage rendering.");
+assert.equal(legacyDoor.bottom, undefined);
 assert.deepEqual(
   normalizedSparseResize,
   sparseResizePatch,

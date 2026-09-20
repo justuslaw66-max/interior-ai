@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import type { CatalogItemSchema } from "@/lib/catalog-schema";
+import { buildDesignSelectionContext } from "@/lib/design-page-selection-context";
 import type { HousePlanRoom2D } from "@/lib/design-page-house-plan";
 import type {
   EditorAnnotation2D,
@@ -61,6 +62,10 @@ const selectedOpeningDimensionsSource = readFileSync(
     root,
     "components/editor/design-page/SelectedOpeningDimensions.tsx"
   ),
+  "utf8"
+);
+const measurementFieldSource = readFileSync(
+  join(root, "components/editor/MeasurementField.tsx"),
   "utf8"
 );
 const selectionInspectorSource = readFileSync(
@@ -128,6 +133,7 @@ for (const testId of [
   "selection-inspector-opening-width",
   "selection-inspector-opening-height",
   "selection-inspector-opening-bottom",
+  "selection-inspector-opening-offset",
 ]) {
   assert.match(
     selectedOpeningDimensionsSource,
@@ -145,10 +151,27 @@ assert.doesNotMatch(
   /testId="selection-inspector-opening-width"/,
   "The selection inspector must not restore the retired duplicate inline width control."
 );
+const openingMeasurementFields =
+  selectedOpeningDimensionsSource.match(/<MeasurementField[\s\S]*?\/>/g) ?? [];
+assert.ok(
+  openingMeasurementFields.length >= 2 &&
+    openingMeasurementFields.every((field) => /unit=\{(?:state\.)?measurementUnit\}/.test(field)),
+  "Every extracted opening control should render through MeasurementField in the selected display unit."
+);
+assert.match(
+  measurementFieldSource,
+  /const metadata = getDisplayUnitMetadata\(unit\);[\s\S]*?\{metadata\.indicator\}/,
+  "The extracted opening controls should use the canonical display-unit indicator."
+);
 assert.match(
   selectedOpeningDimensionsSource,
-  /getDisplayUnitMetadata\(measurementUnit\)\.indicator/,
-  "The extracted opening controls should use the canonical display-unit indicator."
+  /<FloorPlanPropertyEvidenceControl[\s\S]*?onConfirm=\{\(nextEvidence, note\) => onCommit\(valueMm, nextEvidence, note\)\}/,
+  "The viewport opening inspector should confirm measurement evidence like the 2D inspector."
+);
+assert.match(
+  selectedOpeningDimensionsSource,
+  /label="Position from wall centre"[\s\S]*?minMm=\{-state\.maxOffsetMm\} maxMm=\{state\.maxOffsetMm\}[\s\S]*?testId="selection-inspector-opening-offset"[\s\S]*?onCommit=\{onCommit\}[\s\S]*?<OpeningOffsetField[^>]*onCommit=\{actions\.commitOffsetMm\}/,
+  "The viewport opening inspector should edit the horizontal position within the host wall bounds."
 );
 assert.match(
   roomRendererSource,
@@ -434,13 +457,73 @@ assert.deepEqual(
   {
     kind: "Room",
     title: "Living Room",
-    detail: "living room · 20.0 sqm",
+    detail: "living room · 20.0 m²",
     metrics: [],
   },
   "A room summary should retain its type and calculated area."
 );
+assert.equal(
+  summarize({ selectedPlanRoom: room, planMeasurementUnit: "ft-in" })?.detail,
+  "living room · 215.3 ft²",
+  "A room summary area should follow the display-unit preference."
+);
+assert.equal(
+  summarize({
+    selectedPlanRoom: {
+      ...room,
+      shape: "custom_polygon",
+      w: 4,
+      d: 4,
+      polygon: [
+        { x: -2, z: -2 }, { x: 2, z: -2 }, { x: 2, z: 0 },
+        { x: 0, z: 0 }, { x: 0, z: 2 }, { x: -2, z: 2 },
+      ],
+      holes: [[{ x: -1.5, z: -1.5 }, { x: -0.5, z: -1.5 }, { x: -0.5, z: -0.5 }, { x: -1.5, z: -0.5 }]],
+    },
+  })?.detail,
+  "living room · 11.0 m²",
+  "A custom-polygon room summary must show the polygon-aware floor area, not width × depth."
+);
 
 assert.equal(summarize(), null, "The model should return no summary when nothing is selected.");
+
+const selectionContextParams: Parameters<typeof buildDesignSelectionContext>[0] = {
+  selectedFurniture: null,
+  activeRoomName: room.name,
+  planMeasurementUnit: "cm",
+  visiblePlanOpening: null,
+  visiblePlanOpeningRoomName: room.name,
+  selectedPlanRoom: room,
+};
+assert.equal(
+  buildDesignSelectionContext(selectionContextParams)?.detail,
+  "500 cm × 400 cm",
+  "The selected-room context card should size the room in the display unit."
+);
+assert.equal(
+  buildDesignSelectionContext({ ...selectionContextParams, planMeasurementUnit: "ft-in" })?.detail,
+  "16′ 4.9″ × 13′ 1.5″",
+  "The selected-room context card should follow a feet-and-inches preference."
+);
+assert.equal(
+  buildDesignSelectionContext({ ...selectionContextParams, visiblePlanOpening: opening })?.detail,
+  "90 cm wide",
+  "The selected-door context card should state its width in the display unit."
+);
+assert.equal(
+  buildDesignSelectionContext({
+    ...selectionContextParams,
+    planMeasurementUnit: "ft-in",
+    visiblePlanOpening: opening,
+  })?.detail,
+  "2′ 11.4″ wide",
+  "The selected-door context card should follow a feet-and-inches preference."
+);
+assert.match(
+  modelSource,
+  /buildDesignSelectionContext\(\{[\s\S]*?planMeasurementUnit,[\s\S]*?\}\),\s*\[[^\]]*?planMeasurementUnit,[^\]]*\]/,
+  "The selection context card must be rebuilt from the viewer's display unit."
+);
 
 assert.equal(
   isDesignPageSelectionInspectorVisible({

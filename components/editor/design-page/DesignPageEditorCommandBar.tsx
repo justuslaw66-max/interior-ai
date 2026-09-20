@@ -3,7 +3,7 @@
 import type { ComponentProps } from "react";
 import EditorCommandBar from "@/components/editor/EditorCommandBar";
 import { LightingSettingsControls } from "@/components/editor/design-page/LightingSettingsControls";
-import RoomPlanStatusBar from "@/components/editor/RoomPlanStatusBar";
+import RoomPlanStatusBar, { formatRoomStatusDetails } from "@/components/editor/RoomPlanStatusBar";
 import type {
   DesignLightingSettings,
   LightingPreset,
@@ -26,10 +26,7 @@ type CommandBarActions = Pick<
   EditorCommandBarProps,
   HandlerKeys<EditorCommandBarProps>
 >;
-type RoomStatusHandlerKeys = Exclude<
-  HandlerKeys<RoomPlanStatusBarProps>,
-  "onRenameRoom"
->;
+type RoomStatusHandlerKeys = Exclude<HandlerKeys<RoomPlanStatusBarProps>, "onRenameRoom">;
 type RoomStatusState = Omit<
   RoomPlanStatusBarProps,
   | HandlerKeys<RoomPlanStatusBarProps>
@@ -128,6 +125,7 @@ export function DesignPageEditorCommandBar({
           roomCount={room.roomCount}
           widthMeters={room.widthMeters}
           depthMeters={room.depthMeters}
+          measurementUnit={room.measurementUnit}
           healthLevel={
             configuration.showRoomHealth
               ? room.health?.level
@@ -175,11 +173,7 @@ export function DesignPageEditorCommandBar({
               >
                 {room.roomName}
               </div>
-              <div className="mt-0.5 text-xs opacity-65">
-                {room.roomTypeLabel} · {room.widthMeters.toFixed(1)} ×{" "}
-                {room.depthMeters.toFixed(1)}m · {room.roomCount}{" "}
-                {room.roomCount === 1 ? "room" : "rooms"}
-              </div>
+              <div className="mt-0.5 text-xs opacity-65">{formatRoomStatusDetails(room)}</div>
             </div>
             {configuration.showRoomHealth && overflowRoomHealthLabel ? (
               <span

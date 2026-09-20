@@ -38,17 +38,16 @@ import {
   mergeSharedWallSegments2D,
   splitWallBandByOpenings2D,
 } from "@/lib/room-renderer-2d-walls";
+import { resolveLoneRoomPlanFrame2D } from "@/lib/room-renderer-2d-lone-room";
 import { EDITOR_GEOMETRY_TOLERANCES } from "@/lib/editor-geometry-tolerances";
 import type { Plan2DViewOrientation } from "@/components/editor/camera/EditorCamera2D";
-import {
-  CanonicalFloorPlanWalls2D,
-  type CanonicalOpeningDragMetricsV2,
-} from "./CanonicalFloorPlanStructure";
+import { CanonicalFloorPlanWalls2D, type CanonicalOpeningDragMetricsV2 } from "./CanonicalFloorPlanStructure";
 import type { CanonicalFloorPlanRenderModel } from "@/lib/floor-plan-render-model";
 import { buildRoomPlanShape, shouldRenderRoomPlanGeometry } from "@/lib/room-plan-shape";
 import { ROOM_PLAN_CLICK_DISTANCE_PX, selectRoomSurfaceFromClick } from "./room-renderer-2d-surface-selection";
 import type { PlanMeasurementUnit } from "@/lib/design-page-types";
-import { formatDisplayLength } from "@/lib/display-units";
+import { formatDisplayArea, formatDisplayLength } from "@/lib/display-units";
+import { getPlanRoomFloorAreaSqm } from "@/lib/room-floor-area";
 import { floorPlanPropertyEvidenceIsEditable } from "@/lib/floor-plan-measured-property-mutations";
 import { buildOpeningRenderSegments, type Opening2D,
   type OpeningSegment2D } from "./room-renderer-2d-opening-geometry";
@@ -1440,6 +1439,8 @@ export default function RoomRenderer2D({
   const halfD = depth / 2;
   const isPro = theme === "pro";
   const hasHouseRooms = shouldRenderRoomPlanGeometry(rooms);
+  // A lone non-rectangular room draws its own plan geometry instead of the plain frame.
+  const loneRoomFrame = useMemo(() => (hasHouseRooms ? null : resolveLoneRoomPlanFrame2D(rooms)), [hasHouseRooms, rooms]);
   const canEditPlan = interactive && !drawRoomMode && !traceOpeningMode;
   const canEditRoomGeometry = canEditPlan && !canonicalStructureExpected;
   const canClearRoomSelection = canEditPlan && Boolean(onClearRoomSelection);
@@ -3089,16 +3090,16 @@ export default function RoomRenderer2D({
         </group>
       )}
 
-      {!hasHouseRooms && (
+      {loneRoomFrame && (
         <mesh
           rotation-x={-Math.PI / 2}
-          position={[0, 0.0005, 0]}
+          position={[loneRoomFrame.centerX, 0.0005, loneRoomFrame.centerZ]}
           onPointerDown={handleOpeningTraceCommit}
           onPointerMove={handleOpeningTracePointerMove}
           onPointerOut={handleOpeningTracePointerOut}
           onClick={handleOpeningTraceCommit}
         >
-          <planeGeometry args={[width, depth]} />
+          <planeGeometry args={[loneRoomFrame.width, loneRoomFrame.depth]} />
           <meshBasicMaterial color={floorColor} />
         </mesh>
       )}
@@ -3555,7 +3556,7 @@ export default function RoomRenderer2D({
                     <div style={{ color: "#166534", fontSize: 11 }}>
                       {formatDimension(room.w)} x {formatDimension(room.d)}
                       <span style={{ color: "#4b5563", fontWeight: 600, marginLeft: 6 }}>
-                        {(room.w * room.d).toFixed(1)} m2
+                        {formatDisplayArea(getPlanRoomFloorAreaSqm(room), measurementUnit)}
                       </span>
                     </div>
                     <div style={{ color: "#6b7280", fontSize: 9, fontWeight: 650, marginTop: 1 }}>
@@ -4882,15 +4883,9 @@ export default function RoomRenderer2D({
         </>
       )}
 
-      {!hasHouseRooms && (
+      {loneRoomFrame && (
         <Line
-          points={[
-            [-halfW, 0.002, -halfD],
-            [halfW, 0.002, -halfD],
-            [halfW, 0.002, halfD],
-            [-halfW, 0.002, halfD],
-            [-halfW, 0.002, -halfD],
-          ]}
+          points={loneRoomFrame.outline.map(([x, z]): [number, number, number] => [x, 0.002, z])}
           color={borderColor}
           lineWidth={isPro ? 2 : 1.5}
         />

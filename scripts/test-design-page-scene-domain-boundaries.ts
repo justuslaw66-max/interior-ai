@@ -19,7 +19,6 @@ import {
 } from "@/lib/design-page-geometry";
 import {
   EDITOR_GEOMETRY_TOLERANCES,
-  HOUSE_PLAN_RENDERED_WALL_THICKNESS_METERS,
   isWithinEditorTolerance,
 } from "@/lib/editor-geometry-tolerances";
 import { createRoom, type DesignItem, type DesignSnapshot } from "@/lib/room-types";
@@ -68,7 +67,6 @@ const entries = buildDesignPageSceneRoomItems({
   hasWholeHousePlan: false,
   housePlanRooms: [planRoom],
   houseRoomById: new Map([[room.id, planRoom]]),
-  usesHousePlanScene: true,
 });
 
 assert.equal(entries.length, 1);
@@ -76,7 +74,7 @@ const entry = entries[0];
 assert.equal(entry.item, item, "The canonical scene entry must retain the document item.");
 assert.equal(entry.roomFloorElevationMeters, 3.475, "Integer millimetres project to metres once.");
 assert.equal(entry.roomWallThickness, 0.14);
-assert.equal(entry.roomWallModel, "house-plan-shell");
+assert.equal("roomWallModel" in entry, false);
 assert.equal(entry.layerId, "room:upper-room:items");
 assert.equal(entry.visible, true);
 
@@ -118,16 +116,8 @@ assert.deepEqual(
 assert.deepEqual(planProjection.position, [4.25, 0.125, -2.5]);
 assert.deepEqual(spatialProjection.position, canonical.worldPosition);
 assert.equal(planProjection.rotationY, spatialProjection.rotationY);
-assert.equal(planProjection.wallThickness, 0.14);
-assert.equal(planProjection.wallContactInset, 0);
-assert.equal(
-  spatialProjection.wallThickness,
-  HOUSE_PLAN_RENDERED_WALL_THICKNESS_METERS
-);
-assert.equal(
-  spatialProjection.wallContactInset,
-  HOUSE_PLAN_RENDERED_WALL_THICKNESS_METERS / 2
-);
+assert.deepEqual(Object.keys(spatialProjection).sort(), ["position", "rotationY"]);
+assert.deepEqual(Object.keys(planProjection).sort(), ["position", "rotationY"]);
 assert.ok(
   Math.abs(getFurnitureWallInset(entry.roomWallThickness) - 0.09) <
     EDITOR_GEOMETRY_TOLERANCES.boundaryMeters,
@@ -233,13 +223,34 @@ const cabinetRendererSource = source(
 const cabinetResourceOwnershipSource = source(
   "features/cabinetry/hooks/useCabinetSceneResourceOwnership.ts"
 );
-const glbResourceOwnershipSource = source(
-  "components/scene/glb-scaled-model/glbModelResources.ts"
+const glbRendererSource = source("components/scene/GLBScaledModel.tsx");
+const glbLifecycleSource = source(
+  "components/scene/glb-scaled-model/useGLBModelLifecycle.ts"
 );
-const glbMaterialOwnershipSource = source(
+const glbMaterialsSource = source(
   "components/scene/glb-scaled-model/useGLBMaterials.ts"
 );
+const glbResourcesSource = source(
+  "components/scene/glb-scaled-model/glbModelResources.ts"
+);
 const floorPlanAssetsSource = source("lib/useDesignPageFloorPlanAssets.ts");
+const boundaryDoc = source("docs/architecture/scene-domain-renderer-boundaries.md");
+
+assert.doesNotMatch(
+  boundaryDoc,
+  /wall\s+relationship|authored\s+wall\s+thickness|rendered\s+wall\s+thickness|transform\/wall\s+parameters/,
+  "The boundary doc must not describe the retired projection wall model or wall-thickness fields."
+);
+assert.match(
+  boundaryDoc,
+  /\| Plan\/spatial item projection \| `design-page-scene-projection\.ts` \|/,
+  "The boundary doc must name the projection module as the plan/spatial item projection owner."
+);
+assert.match(
+  boundaryDoc,
+  /`SceneItemsLayer`[\s\S]*?`getFurnitureWallInset\(roomWallThickness\)`/,
+  "The boundary doc must say furniture wall contact comes from the canonical wall thickness in SceneItemsLayer."
+);
 
 for (const [name, moduleSource] of [
   ["scene domain", domainSource],
@@ -276,6 +287,11 @@ assert.doesNotMatch(
   readModelSource.slice(readModelSource.indexOf("buildDesignPageSceneRoomItems({"), readModelSource.indexOf("const sceneRenderItemKeys")),
   /viewMode/,
   "The canonical item model must not vary by active renderer."
+);
+assert.doesNotMatch(
+  readModelSource,
+  /usesHousePlanScene|hasWallSurfaceFinishes|activeSurfaceTarget|surfaceBrushActive/,
+  "Every design with rooms renders through the house-plan scene, so surface tools and finishes must not route the renderer."
 );
 assert.match(itemLayerSource, /projectSceneRoomItem\(\s*sceneEntry,\s*projection/);
 assert.match(itemLayerSource, /resolveSceneItemViewContinuity\(sceneEntry/);
@@ -322,13 +338,35 @@ assert.match(
   cabinetResourceOwnershipSource,
   /if \(cancelled\)[\s\S]*?texture\.dispose\(\)/
 );
+assert.match(glbRendererSource, /useGLBModelLifecycle\(\{/);
 assert.match(
-  glbResourceOwnershipSource,
-  /if \(scene\) disposeObjectGeometryAndMaterials\(scene\)/
+  glbLifecycleSource,
+  /if \(!modelResult\.model \|\| !modelResult\.ownsResources\) return;[\s\S]*?disposeObjectGeometryAndMaterials\(modelResult\.model!\)/
 );
 assert.match(
-  glbMaterialOwnershipSource,
-  /control\.ownedTextures\.forEach\(\(texture\) => texture\.dispose\(\)\)/
+  glbMaterialsSource,
+  /return \(\) => \{[\s\S]*?control\.ownedTextures\.forEach\(\(texture\) => texture\.dispose\(\)\)/
+);
+assert.match(
+  glbMaterialsSource,
+  /if \(control\.cancelled\) \{\s*control\.ownedTextures\.forEach\(\(texture\) => texture\.dispose\(\)\);/
+);
+assert.match(
+  glbResourcesSource,
+  /const parsedCache = createGLBResourceCache<CachedGLBSource>\(\{[\s\S]*?dispose: \(\{ scene \}\) =>[\s\S]*?disposeObjectTextures\(scene\);\s*disposeObjectGeometryAndMaterials\(scene\);/
+);
+assert.match(
+  glbResourcesSource,
+  /const preparedCache = createGLBResourceCache<PreparedGLBResource>\(\{[\s\S]*?dispose: \(\{ scene, releaseSource \}\) =>[\s\S]*?disposeObjectGeometryAndMaterials\(scene\);\s*releaseSource\(\);/
+);
+assert.match(
+  glbResourcesSource,
+  /"pagehide"[\s\S]*?clearPrepared: \(\) => preparedCache\.clear\(\),\s*clearParsed: \(\) => parsedCache\.clear\(\),/
+);
+assert.match(
+  glbResourcesSource,
+  /if \(scene\) disposeObjectGeometryAndMaterials\(scene\)/,
+  "A failed GLB preparation must dispose the partially prepared scene before releasing its source."
 );
 assert.match(floorPlanAssetsSource, /URL\.revokeObjectURL\(/);
 

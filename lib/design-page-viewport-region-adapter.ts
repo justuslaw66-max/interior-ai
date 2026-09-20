@@ -3,6 +3,7 @@ import type {
   DesignPageSceneRegionState,
 } from "@/components/editor/design-page/DesignPageSceneRegion";
 import type { DesignPageOpeningMetricsPatch } from "@/lib/design-page-opening-metrics";
+import type { FloorPlanConsumerMeasurementEvidenceV2 } from "@/lib/floor-plan-measured-property-mutations";
 import { resolveDesignPageOpeningViewportState, type DesignPageViewportOpening } from "@/lib/design-page-opening-viewport";
 import {
   resolveDesignPageViewportSelectionControlsState,
@@ -23,41 +24,27 @@ type AddFloor = NonNullable<
 >;
 type RotateQuarterTurn =
   ViewportActions["selectionControls"]["selectedZone"]["rotateQuarterTurn"];
+type OpeningEvidence = FloorPlanConsumerMeasurementEvidenceV2;
 
 function createOpeningMetricActions({ selectedId, update }: {
   selectedId: string | null;
   update: BuildDesignPageViewportRegionAdapterInput["actions"]["updateOpeningMetrics"];
 }) {
+  const commit = (patch: DesignPageOpeningMetricsPatch) => {
+    if (selectedId) update(selectedId, patch);
+  };
+  const note = (measurementNote?: string) =>
+    measurementNote === undefined ? {} : { measurementNote };
   return {
-    commitKind: (patch: DesignPageOpeningMetricsPatch) => {
-      if (!selectedId) return;
-      update(selectedId, patch);
-    },
-    commitWall: (wall: "north" | "south" | "east" | "west") => {
-      if (!selectedId) return;
-      update(selectedId, { wall });
-    },
-    commitWidthMm: (valueMm: number) => {
-      if (!selectedId) return;
-      update(selectedId, {
-        widthMeters: valueMm / 1000,
-        widthEvidence: "user_confirmed",
-      });
-    },
-    commitHeightMm: (valueMm: number) => {
-      if (!selectedId) return;
-      update(selectedId, {
-        heightMeters: valueMm / 1000,
-        heightEvidence: "user_confirmed",
-      });
-    },
-    commitBottomMm: (valueMm: number) => {
-      if (!selectedId) return;
-      update(selectedId, {
-        bottomMeters: valueMm / 1000,
-        bottomEvidence: "user_confirmed",
-      });
-    },
+    commitKind: commit,
+    commitWall: (wall: "north" | "south" | "east" | "west") => commit({ wall }),
+    commitWidthMm: (valueMm: number, evidence: OpeningEvidence = "user_confirmed", measurementNote?: string) =>
+      commit({ widthMeters: valueMm / 1000, widthEvidence: evidence, ...note(measurementNote) }),
+    commitHeightMm: (valueMm: number, evidence: OpeningEvidence = "user_confirmed", measurementNote?: string) =>
+      commit({ heightMeters: valueMm / 1000, heightEvidence: evidence, ...note(measurementNote) }),
+    commitBottomMm: (valueMm: number, evidence: OpeningEvidence = "user_confirmed", measurementNote?: string) =>
+      commit({ bottomMeters: valueMm / 1000, bottomEvidence: evidence, ...note(measurementNote) }),
+    commitOffsetMm: (valueMm: number) => commit({ offsetMeters: valueMm / 1000 }),
   };
 }
 
@@ -160,6 +147,7 @@ export type BuildDesignPageViewportRegionAdapterInput = {
       | "commitOpeningBottomMm"
       | "commitOpeningKind"
       | "commitOpeningWall"
+      | "commitOpeningOffsetMm"
       | "deleteSelectedPlanOverlay"
     > & {
       commitRoomDimensionMeters: (
@@ -256,7 +244,7 @@ export function buildDesignPageViewportRegionAdapter({
               activeFloorRoomCount:
                 state.selectionInspector.activeFloorRoomCount,
               canDeleteSelectedRoom:
-                state.selectionInspector.designRoomCount > 1,
+                state.selectionInspector.designRoomCount > 0,
               selectedFixtureLight:
                 state.selectionInspector.selectedFixtureLight,
             }
@@ -323,7 +311,7 @@ export function buildDesignPageViewportRegionAdapter({
         floatingTopPx: configuration.selectionInspectorTopPx,
         floatingWidthPx: configuration.selectionInspectorWidthPx,
       },
-      planSummary: { dark: configuration.dark },
+      planSummary: { dark: configuration.dark, measurementUnit: state.selectionInspector.measurementUnit },
       planQuality: {
         dark: configuration.dark,
         dockedWidthPx: configuration.floatingOverlayStackWidthPx,
@@ -355,11 +343,7 @@ export function buildDesignPageViewportRegionAdapter({
       selectionInspector: {
         ...actions.selectionInspector,
         commitRoomDimensionMm: (roomId, dimension, valueMm) =>
-          actions.selectionInspector.commitRoomDimensionMeters(
-            roomId,
-            dimension,
-            valueMm / 1000
-          ),
+          actions.selectionInspector.commitRoomDimensionMeters(roomId, dimension, valueMm / 1000),
         deleteSelectedPlanOverlay: () =>
           actions.deletePlanOverlay(selectedOverlayId),
         commitOpeningWidthMm: openingMetricActions.commitWidthMm,
@@ -367,6 +351,7 @@ export function buildDesignPageViewportRegionAdapter({
         commitOpeningBottomMm: openingMetricActions.commitBottomMm,
         commitOpeningKind: openingMetricActions.commitKind,
         commitOpeningWall: openingMetricActions.commitWall,
+        commitOpeningOffsetMm: openingMetricActions.commitOffsetMm,
       },
       planSummary: actions.planSummary,
       planQuality: actions.planQuality,

@@ -11,6 +11,7 @@ import {
   ROOM_DIMENSION_DEFAULTS,
 } from "@/lib/design-page-house-plan";
 import { track } from "@/lib/analytics";
+import type { DisplayUnit } from "@/lib/display-units";
 import type {
   EditorAnnotation2D,
   FixedElement2D,
@@ -169,8 +170,8 @@ export function useDesignPagePlanDocumentState() {
   };
 }
 
-export function useDesignPageFloorPlanDocumentState() {
-  const workflow = useDesignPageFloorPlanWorkflowState();
+export function useDesignPageFloorPlanDocumentState(measurementUnit: DisplayUnit) {
+  const workflow = useDesignPageFloorPlanWorkflowState(measurementUnit);
   const { setFloorPlanUnderlay: setFloorPlanUnderlayState } = workflow;
   const {
     refs: {

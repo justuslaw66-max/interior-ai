@@ -1,4 +1,5 @@
-import { FrontSide } from "three";
+import * as THREE from "three";
+import { useTransparencyRecompileRef } from "./house-plan-3d/materials";
 
 type GeneratedWindowFrame3DProps = {
   widthMeters: number;
@@ -54,6 +55,8 @@ function WindowFrameRailMesh({
   color: string;
   opacity: number;
 }) {
+  // The wall-opacity slider flips transparency live; three keeps the opaque program until recompiled.
+  const railMaterialRef = useTransparencyRecompileRef<THREE.MeshStandardMaterial>(opacity < 0.999);
   return (
     <mesh
       position={rail.position}
@@ -63,6 +66,32 @@ function WindowFrameRailMesh({
     >
       <boxGeometry args={rail.size} />
       <meshStandardMaterial
+        ref={railMaterialRef}
+        color={color}
+        metalness={0.12}
+        roughness={0.5}
+        transparent={opacity < 0.999}
+        opacity={opacity}
+      />
+    </mesh>
+  );
+}
+
+function WindowFrameMullionMesh({
+  size,
+  color,
+  opacity,
+}: {
+  size: [number, number, number];
+  color: string;
+  opacity: number;
+}) {
+  const mullionMaterialRef = useTransparencyRecompileRef<THREE.MeshStandardMaterial>(opacity < 0.999);
+  return (
+    <mesh castShadow raycast={() => null} userData={{ testId: "generated-window-mullion-3d" }}>
+      <boxGeometry args={size} />
+      <meshStandardMaterial
+        ref={mullionMaterialRef}
         color={color}
         metalness={0.12}
         roughness={0.5}
@@ -100,16 +129,11 @@ export function GeneratedWindowFrame3D({
         />
       ))}
       {width >= 1.1 ? (
-        <mesh castShadow raycast={() => null} userData={{ testId: "generated-window-mullion-3d" }}>
-          <boxGeometry args={[frameThickness * 0.7, innerHeight, depth * 0.9]} />
-          <meshStandardMaterial
-            color={frameColor}
-            metalness={0.12}
-            roughness={0.5}
-            transparent={opacity < 0.999}
-            opacity={opacity}
-          />
-        </mesh>
+        <WindowFrameMullionMesh
+          size={[frameThickness * 0.7, innerHeight, depth * 0.9]}
+          color={frameColor}
+          opacity={opacity}
+        />
       ) : null}
       <mesh raycast={() => null} userData={{ testId: "generated-window-glass-3d" }}>
         <boxGeometry args={[innerWidth, innerHeight, Math.min(0.018, depth * 0.35)]} />
@@ -122,7 +146,7 @@ export function GeneratedWindowFrame3D({
           transmission={0}
           thickness={0.01}
           depthWrite={false}
-          side={FrontSide}
+          side={THREE.FrontSide}
         />
       </mesh>
     </group>

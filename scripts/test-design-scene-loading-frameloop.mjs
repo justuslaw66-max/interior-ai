@@ -108,7 +108,7 @@ assert.match(
 );
 assert.match(
   environmentSource,
-  /const lightformers = useMemo\([\s\S]*?<Lightformer[\s\S]*?\[intensity\]\s*\)[\s\S]*?<Environment\b[^>]*>\s*\{lightformers\}\s*<\/Environment>/,
+  /const lightformers = useMemo\([\s\S]*?<Lightformer[\s\S]*?\[[^\]]*intensity[^\]]*\]\s*\)[\s\S]*?<Environment\b[^>]*>\s*\{lightformers\}\s*<\/Environment>/,
   "unrelated re-renders must not change the environment children, which rebuilds its cube map and PMREM",
 );
 

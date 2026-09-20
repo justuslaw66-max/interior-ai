@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
 import type { FloorMaterial } from "@/lib/floor-materials";
 import type { RoomFloorPattern } from "@/lib/room-types";
@@ -268,6 +268,21 @@ export function getSurfaceMaterialFallbackColor(material: SurfaceMaterialRenderI
   if (colorFamily === "cream" || colorFamily === "beige") return "#d8ccbb";
   if (colorFamily === "white") return "#ece9e1";
   return material ? "#c9c2b4" : null;
+}
+
+/**
+ * Returns a material ref whose shader is recompiled whenever `transparent`
+ * flips. three bakes `#define OPAQUE` (alpha pinned to 1) into the program of
+ * an opaque material and only rebuilds it when `material.version` changes,
+ * which an R3F prop update never bumps, so a live opacity change would keep
+ * the mesh opaque until it remounts.
+ */
+export function useTransparencyRecompileRef<T extends THREE.Material>(transparent: boolean) {
+  const materialRef = useRef<T | null>(null);
+  useLayoutEffect(() => {
+    if (materialRef.current) materialRef.current.needsUpdate = true;
+  }, [transparent]);
+  return materialRef;
 }
 
 export function useSurfaceMaterialSourceTexture({
