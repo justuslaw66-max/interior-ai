@@ -93,6 +93,7 @@ const typescriptGuardFiles = [
   "test-shopping-readiness-polish.ts",
   "test-tap-target-placement.ts",
   "test-touch-placement-polish.ts",
+  "test-window-opening-drag.ts",
 ];
 
 const nodeGuardFiles = ["check-design-page-architecture.mjs"];
