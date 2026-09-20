@@ -154,6 +154,11 @@ for (const [pointerDown, expected, note] of [
   assert.equal(shouldOpeningPointerDownSelect(pointerDown), expected, note);
 }
 
+// Each call site below is pinned as one literal, whitespace aside, because a wildcard cannot tell
+// the rule apart from a broken caller: between the call and its `return` it borrows the `) return;`
+// of a later statement, and over the arguments it accepts constants (`button: 0`, `dragEnabled:
+// true`) that make the rule always true and hand every camera gesture back to the opening.
+const collapseWhitespace = (source: string) => source.replace(/\s+/g, " ");
 const thresholdSource = fs.readFileSync(
   "components/editor/renderers/house-plan-3d/wallAndOpeningMeshes.tsx", "utf8"
 );
@@ -165,9 +170,13 @@ const thresholdPointerDown = thresholdSource.slice(
 );
 assert.ok(thresholdPointerDown.includes("onSelectTarget(target, event)"),
   "Precondition: the threshold pointer-down still owns the drag-start selection.");
-assert.match(thresholdPointerDown,
-  /if \(!shouldOpeningPointerDownSelect\(\{[\s\S]*?dragEnabled: canDragOpening \}\)[\s\S]*?\) return;/,
-  "The threshold pointer-down must refuse a gesture this renderer does not own.");
+const thresholdGuard = "event.stopPropagation(); "
+  + "if (!shouldOpeningPointerDownSelect({ button: event.button, interactive, "
+  + "dragEnabled: canDragOpening }) || !resolvedHost) return;";
+assert.ok(collapseWhitespace(thresholdPointerDown).includes(thresholdGuard),
+  `The threshold pointer-down must open with exactly "${thresholdGuard}": it refuses a gesture this `
+  + "renderer does not own, judged by the live pointer button, this mesh's own drag capability and "
+  + "the resolved host, while R3F propagation stays stopped for the camera.");
 for (const owned of ["onSelectTarget(target, event)", "stopStructurePointerEvent(event)"]) {
   assert.ok(thresholdPointerDown.indexOf("shouldOpeningPointerDownSelect") < thresholdPointerDown.indexOf(owned),
     `An unowned pointer-down must return before ${owned}: the camera keeps the gesture and the selection.`);
@@ -179,15 +188,20 @@ const windowMeshSource = fs.readFileSync(
 const windowPointerDown = windowMeshSource.slice(
   windowMeshSource.indexOf("onPointerDown="), windowMeshSource.indexOf("onClick=")
 );
-assert.match(windowPointerDown, /if \(!startDrag\(event\)\) return;/,
-  "A window may select on pointer-down only when its drag actually starts.");
+assert.ok(collapseWhitespace(windowPointerDown).includes("event.stopPropagation(); if (!startDrag(event)) return;"),
+  "A window may select on pointer-down only when its drag actually starts, and an unclaimed one must "
+  + "still stop R3F propagation: exactly \"event.stopPropagation(); if (!startDrag(event)) return;\".");
 for (const owned of ["props.onSelectTarget(target, event)", "stopPointer(event)"]) {
   assert.ok(windowPointerDown.indexOf("startDrag(event)") < windowPointerDown.indexOf(owned),
     `An unclaimed window pointer-down must return before ${owned}.`);
 }
-assert.match(
-  fs.readFileSync("components/editor/renderers/house-plan-3d/useWindowOpeningDrag.ts", "utf8"),
-  /if \(!shouldOpeningPointerDownSelect\(\{[\s\S]*?\}\)\) return false;/,
-  "The window drag hook must claim a pointer-down through the shared rule.");
+const windowDragGuard = "if (!shouldOpeningPointerDownSelect({ button: event.button, "
+  + "interactive: options.interactive, dragEnabled: Boolean(options.onMoveOpening) })) return false;";
+assert.ok(collapseWhitespace(
+  fs.readFileSync("components/editor/renderers/house-plan-3d/useWindowOpeningDrag.ts", "utf8")
+).includes(windowDragGuard),
+  `The window drag hook must claim a pointer-down through exactly "${windowDragGuard}": the rule has `
+  + "to see the live pointer button, the scene's interactive flag and the real move handler, or a "
+  + "right-button pan selects the window and sticks.");
 
 console.log("window opening drag bounds and mutation routing passed");
