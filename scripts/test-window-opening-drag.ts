@@ -5,7 +5,9 @@ import {
   HOUSE_PLAN_TEMPLATES, resolveHousePlanTemplateOpeningMetrics, type HousePlanRoom2D,
 } from "@/lib/design-page-house-plan";
 import { mapPlanOpeningsToRoomRenderer } from "@/lib/design-page-plan-overlays";
-import { validateDesignPageOpeningPlacement } from "@/lib/design-page-opening-placement";
+import {
+  designPageOpeningHasMoveRoom, validateDesignPageOpeningPlacement,
+} from "@/lib/design-page-opening-placement";
 import {
   legacyOpeningOffsetAtWorldPoint, worldPointAtOpeningHostAlong,
 } from "@/lib/design-page-opening-interaction";
@@ -272,5 +274,35 @@ assert.deepEqual(
   [true, false, true, true, false],
   "compact_two_bed: the entry -> bathroom and entry -> Bedroom 2 doors have no valid position to move to."
 );
+
+// The structure layer projects every opening's move room on each 2D and 3D render, so the check has
+// to stay polynomial in the openings that share one wall. Subtracting a spacing band splits at most
+// one free interval in two; keeping the emptied halves doubled the list for every other opening.
+const crowdedWall = { physicalWallId: "floor:1:crowded", alongSegmentMeters: 11, spanMeters: 22 };
+const crowdAt = (along: number) => ({ host: { ...crowdedWall, alongSegmentMeters: along }, widthMeters: 0.6 });
+const crowd = Array.from({ length: 22 }, (_, index) => crowdAt(0.5 + index));
+const moving = crowdAt(11);
+assert.equal(designPageOpeningHasMoveRoom(moving, crowd), false,
+  "Spacing bands 1.56 m wide every 1 m, plus the corner clearance, leave no centre on a 22 m wall.");
+const withGap = crowd.filter((_, index) => index !== 11);
+assert.equal(designPageOpeningHasMoveRoom(moving, withGap), true,
+  "Removing the opening at 11.5 m leaves the 0.44 m of centres between 11.28 m and 11.72 m.");
+assert.equal(designPageOpeningHasMoveRoom(moving, [...withGap, crowdAt(10.5 + 1.56 + 0.0005)]), false,
+  "A sliver of centres narrower than the interaction tolerance is not room to move.");
+assert.equal(designPageOpeningHasMoveRoom(moving, withGap.map((other) => ({
+  ...other, host: { ...other.host, physicalWallId: "floor:1:other" },
+}))), true, "Openings on another physical wall never take this wall's room.");
+const longRoom: HousePlanRoom2D = { id: "hall", name: "Hall", roomType: "living", shape: "rectangle", x: 0, z: 0, w: 30, d: 4 };
+const northWindows: RoomOpening2D[] = Array.from({ length: 22 }, (_, index) => ({
+  id: `north-${index}`, roomId: longRoom.id, kind: "window", wall: "north",
+  offsetMm: metersToMm(-13.65 + index * 1.3), widthMm: 600,
+}));
+const projectionStartedAt = performance.now();
+const crowdedProjection = mapPlanOpeningsToRoomRenderer(northWindows, [longRoom]);
+const projectionMs = performance.now() - projectionStartedAt;
+assert.deepEqual(crowdedProjection.map((projected) => projected.movableOnHost), northWindows.map(() => true),
+  "Each window 1.3 m from its neighbours keeps 1.04 m of valid centres around it.");
+assert.ok(projectionMs < 150,
+  `Projecting 22 windows on one wall must not stall a render (took ${projectionMs.toFixed(1)} ms).`);
 
 console.log("window opening drag bounds and mutation routing passed");

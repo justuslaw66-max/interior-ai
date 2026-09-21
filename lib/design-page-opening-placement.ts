@@ -143,11 +143,19 @@ type HostedPlacementOpening = {
   widthMeters: number;
 };
 
+type CentreInterval = { low: number; high: number };
+
+function isRoomToMove({ low, high }: CentreInterval): boolean {
+  return high - low > OPENING_INTERACTION_TOLERANCE_METERS;
+}
+
 /**
  * Whether a move can put this opening anywhere else on its resolved host. Pointer moves keep the
  * centre on that host, and validateDesignPageOpeningPlacement accepts only centres that keep the
  * corner clearance and stay out of every other opening's spacing band on the same physical wall.
  * When that leaves no interval longer than the interaction tolerance, every move is rejected.
+ * Intervals too short to move in are dropped as they appear: a band then splits at most one of
+ * the disjoint intervals in two, so k other openings leave at most k + 1 intervals, not 2^k.
  */
 export function designPageOpeningHasMoveRoom(
   opening: HostedPlacementOpening,
@@ -157,16 +165,18 @@ export function designPageOpeningHasMoveRoom(
   let free = [{
     low: halfWidth + OPENING_CORNER_CLEARANCE_METERS,
     high: opening.host.spanMeters - halfWidth - OPENING_CORNER_CLEARANCE_METERS,
-  }];
+  }].filter(isRoomToMove);
   for (const other of otherOpenings) {
     if (other.host.physicalWallId !== opening.host.physicalWallId) continue;
     const distance = other.widthMeters / 2 + halfWidth + OPENING_SPACING_METERS;
+    const bandLow = other.host.alongSegmentMeters - distance;
+    const bandHigh = other.host.alongSegmentMeters + distance;
     free = free.flatMap(({ low, high }) => [
-      { low, high: Math.min(high, other.host.alongSegmentMeters - distance) },
-      { low: Math.max(low, other.host.alongSegmentMeters + distance), high },
-    ]);
+      { low, high: Math.min(high, bandLow) },
+      { low: Math.max(low, bandHigh), high },
+    ].filter(isRoomToMove));
   }
-  return free.some(({ low, high }) => high - low > OPENING_INTERACTION_TOLERANCE_METERS);
+  return free.length > 0;
 }
 
 function clamp(value: number, min: number, max: number): number {
