@@ -5,6 +5,7 @@ import {
 } from "@/lib/design-page-opening-host";
 import {
   legacyOpeningOffsetAtWorldPoint,
+  OPENING_INTERACTION_TOLERANCE_METERS,
   worldPointAtOpeningHostAlong,
 } from "@/lib/design-page-opening-interaction";
 import { metersToMm, type RoomOpening2D } from "@/lib/editorScene";
@@ -135,6 +136,37 @@ export function validateDesignPageOpeningPlacement(
         label: "Too close to another opening",
       }
     : { valid: true };
+}
+
+type HostedPlacementOpening = {
+  host: Pick<DesignPagePhysicalWallHost, "physicalWallId" | "alongSegmentMeters" | "spanMeters">;
+  widthMeters: number;
+};
+
+/**
+ * Whether a move can put this opening anywhere else on its resolved host. Pointer moves keep the
+ * centre on that host, and validateDesignPageOpeningPlacement accepts only centres that keep the
+ * corner clearance and stay out of every other opening's spacing band on the same physical wall.
+ * When that leaves no interval longer than the interaction tolerance, every move is rejected.
+ */
+export function designPageOpeningHasMoveRoom(
+  opening: HostedPlacementOpening,
+  otherOpenings: readonly HostedPlacementOpening[]
+): boolean {
+  const halfWidth = opening.widthMeters / 2;
+  let free = [{
+    low: halfWidth + OPENING_CORNER_CLEARANCE_METERS,
+    high: opening.host.spanMeters - halfWidth - OPENING_CORNER_CLEARANCE_METERS,
+  }];
+  for (const other of otherOpenings) {
+    if (other.host.physicalWallId !== opening.host.physicalWallId) continue;
+    const distance = other.widthMeters / 2 + halfWidth + OPENING_SPACING_METERS;
+    free = free.flatMap(({ low, high }) => [
+      { low, high: Math.min(high, other.host.alongSegmentMeters - distance) },
+      { low: Math.max(low, other.host.alongSegmentMeters + distance), high },
+    ]);
+  }
+  return free.some(({ low, high }) => high - low > OPENING_INTERACTION_TOLERANCE_METERS);
 }
 
 function clamp(value: number, min: number, max: number): number {

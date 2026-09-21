@@ -970,7 +970,7 @@ export function OpeningThresholdMesh({
   const hitHeight = Math.max(0.75, jambTopY + 0.18);
   const resolvedHost = sourceOpening?.hostResolution?.status === "resolved"
     ? sourceOpening.hostResolution.host : null;
-  const canDragOpening = interactive && Boolean(sourceOpening && resolvedHost && onMoveOpening);
+  const canDragOpening = interactive && Boolean(sourceOpening?.movableOnHost && resolvedHost && onMoveOpening);
   const raycastOpeningWhenPickable = useCallback(
     (raycaster: THREE.Raycaster, intersects: THREE.Intersection[]) => {
       const mesh = openingMeshRef.current;

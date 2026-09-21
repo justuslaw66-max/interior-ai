@@ -4,7 +4,7 @@ export type OpeningPointerDown = {
   /** Only the primary button drags an opening; the others orbit, pan or zoom the camera. */
   button: number;
   interactive: boolean;
-  /** This renderer can move the opening: a move handler, and a resolved host for a threshold. */
+  /** This renderer can move the opening: a move handler, and for a threshold a resolved host with room to move. */
   dragEnabled: boolean;
 };
 
