@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import {
   buildHousePlan2D,
   HOUSE_PLAN_TEMPLATES,
@@ -12,6 +13,10 @@ import { isPointInPlanarRing } from "@/lib/floor-plan-planar-union";
 import { buildOpeningWallSurfacePanels } from "@/components/editor/renderers/house-plan-3d/openingWallSurfacePanels";
 import { withContinuousWallSelection } from "@/components/editor/renderers/house-plan-3d/continuousWallSelection";
 import { getWindowOpeningHitVolume } from "@/components/editor/renderers/house-plan-3d/windowOpeningGeometry";
+import {
+  buildRenderableLegacyPhysicalOpeningAssemblies,
+  getLegacyOpeningHostSegmentKeys,
+} from "@/components/editor/renderers/house-plan-3d/LegacyWallOpeningMeshes";
 import {
   buildLegacyFloorSlabsForTest,
   buildLegacyWallBandsForTest,
@@ -1362,6 +1367,135 @@ assert(cutawayContains(0, -1550), "The rear wall should remain after cutaway.");
 assert(cutawayContains(-2050, 0), "The left wall should remain after cutaway.");
 assert(!cutawayContains(2050, 0), "The camera-facing right wall body must be removed.");
 assert(!cutawayContains(0, 1550), "The camera-facing front wall body must be removed.");
+
+// A camera cutaway removes a wall's doors and windows with the wall: the Studio
+// template's default south-east view must not leave the Kitchenette window frame
+// floating where the east wall was, and focus mode exposes shared-wall doorways.
+// A selected opening keeps its host wall standing, like the canonical cutaway's
+// pinned walls, so it never floats and never disappears while selected.
+const studioWindowOpenings: RoomRendererOpening[] = studioTemplate.windows.map(
+  (window, index) => ({
+    id: `studio-window-${index}`,
+    roomId: window.roomId,
+    wall: window.wall,
+    kind: "window",
+    offset: window.offsetMeters ?? 0,
+    width: window.widthMeters ?? 1.2,
+    height: 1.2,
+    bottom: 0.9,
+  })
+);
+const studioDefaultCamera = { cameraX: 7.84, cameraZ: 10.29, viewDirectionX: -4.99, viewDirectionZ: -7.24 };
+const studioCutawayKeys = resolveLegacyCameraCutawaySegmentKeysForTest({
+  rooms: studioRooms,
+  activeRoomId: "living",
+  ...studioDefaultCamera,
+});
+assert.deepEqual(
+  [...studioCutawayKeys].sort(),
+  ["bathroom-east", "bathroom-south", "entry-east", "kitchen-east", "living-south"],
+  "The Studio default 3D camera should cut away its south and east exterior walls."
+);
+const studioOpeningAssemblies = (
+  visibleRooms: HousePlanRoom2D[],
+  excludedSegmentKeys?: ReadonlySet<string>
+) =>
+  buildRenderableLegacyPhysicalOpeningAssemblies({
+    visibleRooms,
+    topologyRooms: studioRooms,
+    openings: [...studioOpenings, ...studioWindowOpenings],
+    defaultWallHeight: 2.5,
+    defaultWallThickness: 0.12,
+    activeFloorLevel: 1,
+    stackedFloors: false,
+    fadeInactiveFloors: false,
+    inactiveFloorOpacityMultiplier: 0.32,
+    enabled: true,
+    excludedSegmentKeys,
+  }).map((assembly) => `${assembly.threshold.kind}:${assembly.sourceOpening.id}@${assembly.segment.key}`);
+const onCutSegment = (keys: ReadonlySet<string>) => (assembly: string) =>
+  keys.has(assembly.slice(assembly.indexOf("@") + 1));
+const studioAssemblies = studioOpeningAssemblies(studioRooms);
+assert.deepEqual(
+  studioAssemblies.filter(onCutSegment(studioCutawayKeys)),
+  ["window:studio-window-1@kitchen-east"],
+  "The Kitchenette window is hosted on a cut-away wall in the default view."
+);
+assert.deepEqual(
+  studioOpeningAssemblies(studioRooms, studioCutawayKeys),
+  studioAssemblies.filter((assembly) => !onCutSegment(studioCutawayKeys)(assembly)),
+  "Every door and window assembly on a cut-away wall must leave with it, and every other assembly must stay."
+);
+assert.deepEqual(
+  studioOpeningAssemblies(studioRooms, new Set()),
+  studioAssemblies,
+  "Without a cutaway every opening assembly must render unchanged."
+);
+const studioKitchenWindowHost = getLegacyOpeningHostSegmentKeys(
+  studioRooms,
+  studioRooms,
+  studioWindowOpenings[1]
+);
+assert.deepEqual(
+  [...studioKitchenWindowHost],
+  ["kitchen-east"],
+  "Selecting the Kitchenette window pins exactly its host wall."
+);
+assert.deepEqual(
+  studioOpeningAssemblies(
+    studioRooms,
+    new Set([...studioCutawayKeys].filter((key) => !studioKitchenWindowHost.has(key)))
+  ),
+  studioAssemblies,
+  "A selected opening's pinned host wall keeps the opening with it."
+);
+assert.deepEqual(
+  [...getLegacyOpeningHostSegmentKeys(studioRooms, studioRooms, studioOpenings[0])].sort(),
+  ["entry-west", "living-east"],
+  "A selected shared-wall doorway pins both faces of its physical wall."
+);
+assert.equal(
+  getLegacyOpeningHostSegmentKeys(studioRooms, studioRooms, null).size,
+  0,
+  "Without a selected opening no wall is pinned."
+);
+const studioEntry = studioRooms.find((room) => room.id === "entry");
+assert.ok(studioEntry);
+const studioEntryCutawayKeys = resolveLegacyCameraCutawaySegmentKeysForTest({
+  rooms: [studioEntry],
+  activeRoomId: "entry",
+  ...studioDefaultCamera,
+});
+const studioEntryAssemblies = studioOpeningAssemblies([studioEntry]);
+assert.deepEqual(
+  studioEntryAssemblies.filter(onCutSegment(studioEntryCutawayKeys)),
+  ["door:studio-doorway-1@entry-south"],
+  "Focus mode exposes the Entry's shared south wall, so its doorway is on a cut-away wall."
+);
+assert.deepEqual(
+  studioOpeningAssemblies([studioEntry], studioEntryCutawayKeys),
+  studioEntryAssemblies.filter((assembly) => !onCutSegment(studioEntryCutawayKeys)(assembly)),
+  "A doorway on a focus-mode cut-away wall must leave with it."
+);
+const housePlanRendererSource = readFileSync(
+  "components/editor/renderers/HousePlanRenderer3D.tsx",
+  "utf8"
+);
+assert.match(
+  housePlanRendererSource,
+  /buildRenderableLegacyPhysicalOpeningAssemblies\(\{[^}]*excludedSegmentKeys: legacyCutawaySegmentKeys,[^}]*\}\)/,
+  "Door and window assemblies must leave with the same camera-facing segments as the wall bands and finishes."
+);
+assert.match(
+  housePlanRendererSource,
+  /getLegacyOpeningHostSegmentKeys\(rooms, topologyRooms, selectedOpening\)[\s\S]*?resolveLegacyCameraCutawaySegmentKeysForTest\([\s\S]*?pinnedSegmentKeys\.forEach\(\(key\) => keys\.delete\(key\)\)[\s\S]*?useLegacyCameraCutawaySegmentKeys\(\{[^}]*selectedOpening,[^}]*\}\)/,
+  "The selected opening's host wall must be pinned out of the one cutaway key set every wall and opening mesh reads."
+);
+assert.match(
+  housePlanRendererSource,
+  /<WindowOpeningMesh [\s\S]*?hidden=\{legacyCutawaySegmentKeys\.has\(segment\.key\)\}/,
+  "The window pick volume must follow the same cutaway key set as its drawn assembly."
+);
 
 const seed = loadPingYiCourtV2ReviewSeedBundle().fixtures.find(
   (fixture) => fixture.layoutId === "4-room"

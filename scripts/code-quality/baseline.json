@@ -289,7 +289,7 @@
       "limit": 250
     },
     "components/editor/renderers/HousePlanRenderer3D.tsx": {
-      "lines": 717,
+      "lines": 714,
       "limit": 250
     },
     "components/editor/renderers/ItemRenderer2D.tsx": {
@@ -2325,7 +2325,7 @@
     "components/editor/renderers/HousePlanRenderer3D.tsx": {
       "overlongFunctions": {
         "count": 3,
-        "maximum": 476
+        "maximum": 475
       },
       "complexFunctions": {
         "count": 2,
