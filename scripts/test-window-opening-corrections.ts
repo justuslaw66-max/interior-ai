@@ -40,6 +40,7 @@ import {
 import { MountedCutawayWallMesh } from "@/components/editor/renderers/house-plan-3d/MountedCutawayWallMesh";
 import { CutawayWallMesh } from "@/components/editor/renderers/house-plan-3d/wallAndOpeningMeshes";
 import {
+  createDefaultPlanOpenings,
   openingMetersToMillimetres,
   openingMillimetresToMeters,
   resolveEffectiveOpeningDimensions,
@@ -159,6 +160,57 @@ const seededOpenings: RoomOpening2D[] = [
     kind: "window",
   },
 ];
+
+assert.deepEqual(
+  createDefaultPlanOpenings(),
+  seededOpenings,
+  "A fresh plan must seed exactly the default east door and west window."
+);
+assert.notEqual(
+  createDefaultPlanOpenings(),
+  createDefaultPlanOpenings(),
+  "Each seed must be a fresh list so plan edits never mutate the defaults."
+);
+// The storage load owns the seed and must run in the layout phase of the editor's mount
+// commit. A passive effect there inherits the idle update priority of the Suspense-hydrated
+// workspace, so a fresh room rendered for seconds without its door and window.
+const planSettingsLoadSource = readFileSync("lib/useDesignPagePlanState.ts", "utf8");
+const storedOpeningsRead = planSettingsLoadSource.indexOf('localStorage.getItem("plan_openings")');
+assert.ok(storedOpeningsRead > 0, "The plan-settings load must read the stored plan openings.");
+const planSettingsLoadStart = planSettingsLoadSource.lastIndexOf(
+  "useLayoutEffect(() => {",
+  storedOpeningsRead
+);
+assert.ok(
+  planSettingsLoadStart > planSettingsLoadSource.lastIndexOf("useEffect(() => {", storedOpeningsRead),
+  "Stored plan settings and the default-opening seed must load in a layout effect."
+);
+const planSettingsLoadEffect = planSettingsLoadSource.slice(
+  planSettingsLoadStart,
+  planSettingsLoadSource.indexOf("}, []);", storedOpeningsRead)
+);
+assert.match(
+  planSettingsLoadEffect,
+  /setPlanOpenings\(createDefaultPlanOpenings\(\)\);[\s\S]*setPlanSettingsLoaded\(true\);/,
+  "A profile without stored openings must be seeded in the same batch that marks settings loaded."
+);
+// Only a missing key is a fresh plan. A stored "[]" means the user deleted every opening, and
+// reseeding it would bring back a door and window they removed.
+assert.match(
+  planSettingsLoadEffect,
+  /storedOpeningsFound = storedOpenings !== null;/,
+  "Only a missing plan_openings key may count as a fresh plan; saved or emptied openings are kept."
+);
+assert.match(
+  planSettingsLoadEffect,
+  /if \(!storedOpeningsFound\) setPlanOpenings\(createDefaultPlanOpenings\(\)\);/,
+  "The default door and window may only be seeded when no openings were stored."
+);
+assert.doesNotMatch(
+  readFileSync("lib/useDesignPagePlanAuthoringRegistration.ts", "utf8"),
+  /setPlanOpenings\(\[|createDefaultPlanOpenings|planOpeningsStorageState|defaultPlanOpeningsSeeded/,
+  "Plan authoring must not keep a second, deferred default-opening seed."
+);
 
 for (const opening of seededOpenings) {
   const resolution = resolveDesignPageOpeningHost(opening, [singleRoom]);

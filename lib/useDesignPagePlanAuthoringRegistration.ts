@@ -1,14 +1,8 @@
 "use client";
 
-import { useEffect } from "react";
-
 import { track } from "@/lib/analytics";
 import { CATALOG_ITEMS } from "@/lib/catalog";
 import { resolveDesignLightingSettings } from "@/lib/design-lighting-settings";
-import {
-  DEFAULT_DOOR_WIDTH_MM,
-  DEFAULT_WINDOW_WIDTH_MM,
-} from "@/lib/design-page-opening-dimensions";
 import {
   PLAN_FLOATING_OVERLAY_DESKTOP_MIN_WIDTH,
   PLAN_FLOATING_OVERLAY_INSPECTOR_STACK_TOP_PX,
@@ -87,51 +81,6 @@ export function useDesignPagePlanAuthoringRegistration({
     selectedPlanOverlayId,
     suppressedDoorwaySuggestionKeys,
   } = planViewport.state.overlaySelection;
-  const {
-    planSettingsLoaded,
-    planOpeningsStorageState,
-    planOpenings,
-  } = planDocument.state;
-  const { defaultPlanOpeningsSeededRef } = planDocument.refs;
-  const { markDefaultPlanOpeningsSeeded, setPlanOpenings } =
-    planDocument.actions;
-
-  useEffect(() => {
-    if (!planSettingsLoaded) return;
-    if (defaultPlanOpeningsSeededRef.current) return;
-    if (planOpeningsStorageState === "pending") return;
-    if (
-      planOpeningsStorageState !== "missing" ||
-      planOpenings.length > 0
-    ) {
-      markDefaultPlanOpeningsSeeded();
-      return;
-    }
-    markDefaultPlanOpeningsSeeded();
-    setPlanOpenings([
-      {
-        id: "door-east-main",
-        wall: "east",
-        offsetMm: 0,
-        widthMm: DEFAULT_DOOR_WIDTH_MM,
-        kind: "door",
-      },
-      {
-        id: "window-west-main",
-        wall: "west",
-        offsetMm: 0,
-        widthMm: DEFAULT_WINDOW_WIDTH_MM,
-        kind: "window",
-      },
-    ]);
-  }, [
-    defaultPlanOpeningsSeededRef,
-    markDefaultPlanOpeningsSeeded,
-    planOpenings.length,
-    planOpeningsStorageState,
-    planSettingsLoaded,
-    setPlanOpenings,
-  ]);
 
   const selectionInspection = useDesignPageSelectionInspectionRuntime({
     boundaries: {
