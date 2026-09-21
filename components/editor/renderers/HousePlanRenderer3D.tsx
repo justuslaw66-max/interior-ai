@@ -32,7 +32,7 @@ import { WallSurfacePanelMesh } from "./house-plan-3d/wallAndOpeningMeshes";
 import { MountedCutawayWallMesh } from "./house-plan-3d/MountedCutawayWallMesh";
 import {
   buildRenderableLegacyPhysicalOpeningAssemblies,
-  LegacyPhysicalOpeningMeshes,
+  getLegacyOpeningHostSegmentKeys, LegacyPhysicalOpeningMeshes,
 } from "./house-plan-3d/LegacyWallOpeningMeshes";
 import {
   buildLegacyFloorSlabsForTest,
@@ -189,47 +189,45 @@ function getStructureOutlineStyle(
   return null;
 }
 
+/** Like the canonical cutaway's pinned walls, the selected opening's host wall stays standing with it. */
 function useLegacyCameraCutawaySegmentKeys({
   rooms,
+  topologyRooms,
   activeRoomId,
   enabled,
+  selectedOpening,
 }: {
   rooms: readonly HousePlanRoom2D[];
+  topologyRooms: readonly HousePlanRoom2D[];
   activeRoomId: string;
   enabled: boolean;
+  selectedOpening: RoomRendererOpening | null;
 }) {
   const { camera } = useThree();
   const viewDirectionRef = useRef(new THREE.Vector3());
-  const initialKeys = useMemo(
-    () => {
-      if (!enabled) return new Set<string>();
-      const viewDirection = camera.getWorldDirection(new THREE.Vector3());
-      return resolveLegacyCameraCutawaySegmentKeysForTest({
-        rooms,
-        activeRoomId,
-        cameraX: camera.position.x,
-        cameraZ: camera.position.z,
-        viewDirectionX: viewDirection.x,
-        viewDirectionZ: viewDirection.z,
-      });
-    },
-    [activeRoomId, camera, enabled, rooms]
+  const pinnedSegmentKeys = useMemo(
+    () => getLegacyOpeningHostSegmentKeys(rooms, topologyRooms, selectedOpening),
+    [rooms, selectedOpening, topologyRooms]
   );
-  const [cutawaySegmentKeys, setCutawaySegmentKeys] = useState(initialKeys);
-  const signatureRef = useRef(legacyCutawaySegmentKeySignature(initialKeys));
+  const resolveKeys = (viewDirection: THREE.Vector3) => {
+    if (!enabled) return new Set<string>();
+    camera.getWorldDirection(viewDirection);
+    const keys = resolveLegacyCameraCutawaySegmentKeysForTest({
+      rooms,
+      activeRoomId,
+      cameraX: camera.position.x,
+      cameraZ: camera.position.z,
+      viewDirectionX: viewDirection.x,
+      viewDirectionZ: viewDirection.z,
+    });
+    pinnedSegmentKeys.forEach((key) => keys.delete(key));
+    return keys;
+  };
+  const [cutawaySegmentKeys, setCutawaySegmentKeys] = useState(() => resolveKeys(new THREE.Vector3()));
+  const signatureRef = useRef(legacyCutawaySegmentKeySignature(cutawaySegmentKeys));
 
   useFrame(() => {
-    const viewDirection = camera.getWorldDirection(viewDirectionRef.current);
-    const nextKeys = enabled
-      ? resolveLegacyCameraCutawaySegmentKeysForTest({
-          rooms,
-          activeRoomId,
-          cameraX: camera.position.x,
-          cameraZ: camera.position.z,
-          viewDirectionX: viewDirection.x,
-          viewDirectionZ: viewDirection.z,
-        })
-      : new Set<string>();
+    const nextKeys = resolveKeys(viewDirectionRef.current);
     const nextSignature = legacyCutawaySegmentKeySignature(nextKeys);
     if (nextSignature === signatureRef.current) return;
     signatureRef.current = nextSignature;
@@ -291,8 +289,7 @@ export default function HousePlanRenderer3D({
       : selectedLogicalTargetKey;
   const visibleHoveredTargetKey = visibleStructureHover(hoveredStructureTarget, selectedSurfaceTarget, selectedTargetKey !== null);
   const legacyCutawaySegmentKeys = useLegacyCameraCutawaySegmentKeys({
-    rooms,
-    activeRoomId,
+    rooms, topologyRooms, activeRoomId, selectedOpening,
     enabled: !canonicalPlan && rooms.length > 0,
   });
   const legacyWatertightGeometry = useMemo(() => {
@@ -378,7 +375,7 @@ export default function HousePlanRenderer3D({
 
   const legacyPhysicalOpeningAssemblies = buildRenderableLegacyPhysicalOpeningAssemblies({
       visibleRooms: rooms, topologyRooms, openings, defaultWallHeight: wallHeight,
-      defaultWallThickness: STRUCTURE_THICKNESS_METERS,
+      defaultWallThickness: STRUCTURE_THICKNESS_METERS, excludedSegmentKeys: legacyCutawaySegmentKeys,
       activeFloorLevel: resolvedActiveFloorLevel, stackedFloors,
       fadeInactiveFloors, inactiveFloorOpacityMultiplier: INACTIVE_FLOOR_OPACITY_MULTIPLIER,
       enabled: !canonicalStructureExpected });

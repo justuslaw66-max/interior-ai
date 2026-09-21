@@ -189,7 +189,7 @@ assert.match(
 
 assert.match(
   source,
-  /camera\.getWorldDirection\(viewDirectionRef\.current\)[\s\S]*?viewDirectionX: viewDirection\.x,[\s\S]*?viewDirectionZ: viewDirection\.z/,
+  /const resolveKeys = \(viewDirection: THREE\.Vector3\) => \{[\s\S]*?camera\.getWorldDirection\(viewDirection\);[\s\S]*?viewDirectionX: viewDirection\.x,[\s\S]*?viewDirectionZ: viewDirection\.z[\s\S]*?useFrame\(\(\) => \{\s*const nextKeys = resolveKeys\(viewDirectionRef\.current\);/,
   "Compatibility cutaway selection should follow camera viewing direction instead of zoom distance."
 );
 

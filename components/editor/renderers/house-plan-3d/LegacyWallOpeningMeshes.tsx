@@ -50,23 +50,37 @@ type LegacyPhysicalOpeningMeshesProps = Pick<
   selectedOpeningId?: string | null;
 };
 
+const isUnresolvedOpening = (opening: RoomRendererOpening) =>
+  Boolean(opening.hostResolution && opening.hostResolution.status !== "resolved");
+
+/** Wall segments that host an opening; a selected opening keeps them out of the camera cutaway. */
+export function getLegacyOpeningHostSegmentKeys(visibleRooms: readonly HousePlanRoom2D[],
+  topologyRooms: readonly HousePlanRoom2D[], opening: RoomRendererOpening | null): Set<string> {
+  if (!opening || isUnresolvedOpening(opening)) return new Set();
+  return new Set(visibleRooms.flatMap((room) => getWallSegments(room)
+    .filter((segment) => getWallOpenings(room, segment, topologyRooms, [opening]).length > 0)
+    .map((segment) => segment.key)));
+}
+
 export function buildLegacyPhysicalOpeningAssemblies({
   visibleRooms,
   topologyRooms,
   openings,
   defaultWallHeight,
+  excludedSegmentKeys,
 }: {
   visibleRooms: readonly HousePlanRoom2D[];
   topologyRooms: readonly HousePlanRoom2D[];
   openings: readonly RoomRendererOpening[];
   defaultWallHeight: number;
+  /** Camera-cutaway wall segments, as excluded from the wall bands: their openings leave with them. */
+  excludedSegmentKeys?: ReadonlySet<string>;
 }): LegacyPhysicalOpeningAssembly[] {
   return openings.flatMap((opening) => {
-    if (opening.hostResolution && opening.hostResolution.status !== "resolved") {
-      return [];
-    }
+    if (isUnresolvedOpening(opening)) return [];
     const candidates = visibleRooms.flatMap((room) =>
       getWallSegments(room).flatMap((segment) => {
+        if (excludedSegmentKeys?.has(segment.key)) return [];
         const wallOpenings = getWallOpenings(
           room,
           segment,
@@ -98,15 +112,12 @@ export function buildLegacyPhysicalOpeningAssemblies({
 
 export function buildRenderableLegacyPhysicalOpeningAssemblies({
   activeFloorLevel,
-  defaultWallHeight,
   defaultWallThickness,
   enabled,
   fadeInactiveFloors,
   inactiveFloorOpacityMultiplier,
-  openings,
   stackedFloors,
-  topologyRooms,
-  visibleRooms,
+  ...assemblyInput
 }: Parameters<typeof buildLegacyPhysicalOpeningAssemblies>[0] & {
   activeFloorLevel: number;
   defaultWallThickness: number;
@@ -116,9 +127,8 @@ export function buildRenderableLegacyPhysicalOpeningAssemblies({
   stackedFloors: boolean;
 }): RenderableLegacyPhysicalOpeningAssembly[] {
   if (!enabled) return [];
-  return buildLegacyPhysicalOpeningAssemblies({
-    visibleRooms, topologyRooms, openings, defaultWallHeight,
-  }).map((assembly) => {
+  const { defaultWallHeight } = assemblyInput;
+  return buildLegacyPhysicalOpeningAssemblies(assemblyInput).map((assembly) => {
     const room = assembly.room;
     const inactive = stackedFloors && fadeInactiveFloors && (room.floorLevel ?? 1) !== activeFloorLevel;
     const wallHeight = Math.max(

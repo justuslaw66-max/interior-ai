@@ -962,12 +962,18 @@ test("final window matrix remains visible in full plan, focus, and both 3D direc
 
   await page.locator('[data-testid="editor-view-3d"]:visible').first().click();
   await expect(page.getByTestId("qa-design-layout-debug")).toHaveAttribute("data-view-mode", "3d");
-  await assertOpeningMarkerInCanvas(page, "standard-window");
-  await assertOpeningMarkerInCanvas(page, "full-height-window");
+  // Direction A cuts away Room A's south and Room B's east walls; their windows leave with them.
+  await assertOpeningMarkerInCanvas(page, "seeded-roomless-window");
+  await assertOpeningMarkerInCanvas(page, "partial-shared-window");
+  await expect(page.getByTestId("qa-opening-anchor-3d-standard-window")).toHaveCount(0);
+  await expect(page.getByTestId("qa-opening-anchor-3d-full-height-window")).toHaveCount(0);
   const cameraA = await capture(page, "02-full-plan-3d-direction-a-standard-window");
   const directionB = await orbitToSecondDirection(page, cameraA);
+  // Direction B restores those walls with their windows and cuts away Room A's north and west walls.
   await assertOpeningMarkerInCanvas(page, "standard-window");
   await assertOpeningMarkerInCanvas(page, "full-height-window");
+  await expect(page.getByTestId("qa-opening-anchor-3d-seeded-roomless-window")).toHaveCount(0);
+  await expect(page.getByTestId("qa-opening-anchor-3d-seeded-roomless-door")).toHaveCount(0);
   await capture(page, "03-full-plan-3d-direction-b-full-height-window", {
     fromScreenshotId: "02-full-plan-3d-direction-a-standard-window",
     minimumAngleDeg: 10,
