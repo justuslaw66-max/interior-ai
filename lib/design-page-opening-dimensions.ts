@@ -8,6 +8,14 @@ export const DEFAULT_DOOR_WIDTH_MM = 900;
 export const DEFAULT_WINDOW_WIDTH_MM = 1200;
 export const MIN_EFFECTIVE_OPENING_HEIGHT_MM = 1;
 
+/** The door and window a plan starts with when no plan openings were ever stored. */
+export function createDefaultPlanOpenings(): RoomOpening2D[] {
+  return [
+    { id: "door-east-main", wall: "east", offsetMm: 0, widthMm: DEFAULT_DOOR_WIDTH_MM, kind: "door" },
+    { id: "window-west-main", wall: "west", offsetMm: 0, widthMm: DEFAULT_WINDOW_WIDTH_MM, kind: "window" },
+  ];
+}
+
 export type OpeningDimensionInputState =
   | "missing"
   | "undefined"

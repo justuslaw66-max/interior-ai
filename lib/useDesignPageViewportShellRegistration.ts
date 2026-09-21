@@ -48,7 +48,6 @@ export function useDesignPageViewportShellRegistration({
         planMeasurementUnit,
         exportStylePreset,
         planGuidedActionsEnabled,
-        planOpeningsStorageState,
         planSettingsLoaded,
       },
       floorPlan: {
@@ -107,7 +106,6 @@ export function useDesignPageViewportShellRegistration({
       },
     },
     refs: {
-      plan: { defaultPlanOpeningsSeededRef },
       camera: {
         canvas: canvasRef,
         camera: cameraRef,
@@ -180,7 +178,6 @@ export function useDesignPageViewportShellRegistration({
         planMeasurementUnit,
         exportStylePreset,
         planGuidedActionsEnabled,
-        planOpeningsStorageState,
         planSettingsLoaded,
       },
       floorPlan: {
@@ -260,7 +257,6 @@ export function useDesignPageViewportShellRegistration({
       initialCameraView: configuration.initialCameraView,
     },
     refs: {
-      defaultPlanOpeningsSeededRef,
       canvasRef,
       cameraRef,
       orbitControlsRef,
