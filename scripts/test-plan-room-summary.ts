@@ -7,6 +7,7 @@ import {
   buildPlanRoomSummary,
   formatPlanDimensionsLabel,
   formatPlanRoomMetricLabel,
+  formatRoomDrawPreviewLabel,
   resolvePlanRoomSelection,
 } from "@/lib/plan-room-summary";
 import { getPlanRoomFloorAreaSqm, getRoomFloorAreaSqm, L_SHAPE_NOTCH_RATIO } from "@/lib/room-floor-area";
@@ -285,6 +286,60 @@ assert.doesNotMatch(
 );
 assert.match(aiPanelSource, /formatPlanDimensionsLabel\(roomWidth, roomDepth, measurementUnit\)/);
 assert.match(aiPanelSource, /formatDisplayArea\(roomArea, measurementUnit\)/);
+
+// Draw previews, drag HUDs, catalog cards and the millwork inspector follow the display unit too.
+const drawPreview = { width: 4.2, depth: 3, areaSqm: 12.6 };
+assert.equal(
+  formatRoomDrawPreviewLabel({ ...drawPreview, rectangle: {} }, "ft-in"),
+  "13′ 9.4″ × 9′ 10.1″ · 135.6 ft²",
+  "A resolved rectangle-draw preview should show feet/inches and ft² in ft+in mode."
+);
+assert.equal(
+  formatRoomDrawPreviewLabel({ ...drawPreview, rectangle: null }, "cm"),
+  "420 cm × 300 cm",
+  "An unresolved rectangle-draw preview should show only its dimensions in the display unit."
+);
+const unitAwareReadouts: Array<[string, RegExp[]]> = [
+  ["components/editor/renderers/RoomRenderer2D.tsx", [
+    /\{formatRoomDrawPreviewLabel\(roomDrawPreview, measurementUnit\)\}/,
+    /getOpeningPreviewDetailText\(openingPreview, measurementUnit\)/,
+    /\{formatDimension\(getWallDrawSegmentLengthMeters\(lastWallDrawPoint, activeDrawRoomPreviewPoint\)\)\}/,
+    /Shared wall · \{formatDimension\(sharedWallPreviewSegment\.lengthMeters\)\}/,
+    /<span>X \{formatDimension\(renderX\)\}<\/span>/,
+  ]],
+  ["components/editor/renderers/PlanUnderlayRenderer2D.tsx", [
+    /\{formatRoomDrawPreviewLabel\(roomDrawPreview, measurementUnit\)\}/,
+    /\{formatDisplayLength\(arcWallDrawPreview\.arcLengthMeters \* 1000, measurementUnit\)\}/,
+  ]],
+  ["components/editor/design-page/DesignSceneStructureLayer.tsx", [
+    /<PlanUnderlayRenderer2D[^>]*?measurementUnit=\{configuration\.plan\.measurementUnit\}/,
+  ]],
+  ["components/editor/design-page/SelectedCabinetPanel.tsx", [
+    /formatDisplayLength\(selectedCabinetItem\.cabinetDefinition\.totalWidth, measurementUnit\)/,
+    /formatDisplayLength\(selectedCabinetPlanningDimensionsMm\.w, measurementUnit\)/,
+    /formatDisplayLength\(edgeBandingTotalM \* 1000, measurementUnit\)/,
+  ]],
+  ["lib/design-page-panel-registration.ts", [
+    /cabinet: \{\s*state: \{[^}]*?measurementUnit: planDocument\.state\.planMeasurementUnit,/,
+  ]],
+  ["components/editor/FloorPlanCatalogResultList.tsx", [
+    /formatDisplayArea\(result\.floorAreaSqm, measurementUnit\)/,
+  ]],
+  ["components/editor/DesignControlsPlanPanel.tsx", [
+    /<FloorPlanAddressSearch[^>]*?measurementUnit=\{measurementUnit\}/,
+  ]],
+];
+for (const [file, patterns] of unitAwareReadouts) {
+  const source = readFileSync(join(process.cwd(), file), "utf8");
+  for (const pattern of patterns) {
+    assert.match(source, pattern, `${file} must format this length or area in the viewer's display unit.`);
+  }
+  assert.doesNotMatch(
+    source,
+    /\bformatMillimeters\b|\$\{\w+\} mm`|\} m2\)|\}m[`<]|\}d mm|\.toFixed\(2\)\}? m\b|\} m²/,
+    `${file} must not hard-code mm, m or m² readouts that ignore the display unit.`
+  );
+}
 
 assert.deepEqual(resolvePlanRoomSelection([], "living", false), {
   ids: ["living"],

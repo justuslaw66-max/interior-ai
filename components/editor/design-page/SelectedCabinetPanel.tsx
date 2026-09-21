@@ -8,6 +8,8 @@ import type {
   CabinetProjectHandoffPackage,
 } from "@/features/cabinetry/types";
 import type { SelectedCabinetExportKind } from "@/features/cabinetry/selectedCabinetExportFeedback";
+import type { PlanMeasurementUnit } from "@/lib/design-page-types";
+import { formatDisplayLength } from "@/lib/display-units";
 
 export type { SelectedCabinetExportKind } from "@/features/cabinetry/selectedCabinetExportFeedback";
 
@@ -15,8 +17,12 @@ export type SelectedCabinetDocumentation = CabinetDocumentationSnapshot & {
   bom: CabinetBOMItem[];
 };
 
+function sumEdgeBandingMetres(documentation: SelectedCabinetDocumentation | null): number {
+  return documentation ? documentation.edgeBandingSchedule.reduce((sum, item) => sum + item.totalLengthM, 0) : 0;
+}
 
 export interface SelectedCabinetPanelProps {
+  measurementUnit: PlanMeasurementUnit;
   cabinet: {
     item: ParametricCabinetDesignItem;
     planningDimensionsMm: { w: number; d: number; h: number } | null;
@@ -49,6 +55,7 @@ export interface SelectedCabinetPanelProps {
 }
 
 export function SelectedCabinetPanel({
+  measurementUnit,
   cabinet,
   project,
   access,
@@ -58,6 +65,7 @@ export function SelectedCabinetPanel({
   const selectedCabinetPlanningDimensionsMm = cabinet.planningDimensionsMm;
   const selectedCabinetDocumentationSnapshot = cabinet.documentation;
   const selectedCabinetAssetManifest = cabinet.assetManifest;
+  const edgeBandingTotalM = sumEdgeBandingMetres(selectedCabinetDocumentationSnapshot);
   const projectCabinetHandoffPackage = project.handoffPackage;
   const {
     canEdit,
@@ -96,7 +104,7 @@ export function SelectedCabinetPanel({
                 {selectedCabinetItem.name ?? selectedCabinetItem.cabinetDefinition.name}
               </div>
               <div className={showDesignerTheme ? "mt-1 text-xs text-neutral-400" : "mt-1 text-xs text-neutral-500"}>
-                {selectedCabinetItem.cabinetDefinition.totalWidth}w x {selectedCabinetItem.cabinetDefinition.height}h x {selectedCabinetItem.cabinetDefinition.depth}d mm
+                W {formatDisplayLength(selectedCabinetItem.cabinetDefinition.totalWidth, measurementUnit)} × H {formatDisplayLength(selectedCabinetItem.cabinetDefinition.height, measurementUnit)} × D {formatDisplayLength(selectedCabinetItem.cabinetDefinition.depth, measurementUnit)}
               </div>
               <div className="mt-3 grid grid-cols-2 gap-2 text-xs">
                 <div className={showDesignerTheme ? "rounded-lg bg-white/5 p-2" : "rounded-lg bg-neutral-50 p-2"}>
@@ -141,7 +149,7 @@ export function SelectedCabinetPanel({
                 </div>
                 <div className={showDesignerTheme ? "mt-1 text-xs text-neutral-400" : "mt-1 text-xs text-neutral-500"}>
                   {selectedCabinetPlanningDimensionsMm
-                    ? `${(selectedCabinetPlanningDimensionsMm.w / 1000).toFixed(2)} x ${(selectedCabinetPlanningDimensionsMm.d / 1000).toFixed(2)} m footprint`
+                    ? `${formatDisplayLength(selectedCabinetPlanningDimensionsMm.w, measurementUnit)} × ${formatDisplayLength(selectedCabinetPlanningDimensionsMm.d, measurementUnit)} footprint`
                     : "Footprint unavailable"}
                 </div>
                 <div className="mt-2 grid grid-cols-2 gap-2">
@@ -264,14 +272,7 @@ export function SelectedCabinetPanel({
                   data-material-schedule-count={String(selectedCabinetDocumentationSnapshot.materialSchedule.length)}
                   data-hardware-schedule-count={String(selectedCabinetDocumentationSnapshot.hardwareSchedule.length)}
                   data-edge-banding-schedule-count={String(selectedCabinetDocumentationSnapshot.edgeBandingSchedule.length)}
-                  data-edge-banding-total-m={String(
-                    Math.round(
-                      selectedCabinetDocumentationSnapshot.edgeBandingSchedule.reduce(
-                        (sum, item) => sum + item.totalLengthM,
-                        0
-                      ) * 100
-                    ) / 100
-                  )}
+                  data-edge-banding-total-m={String(Math.round(edgeBandingTotalM * 100) / 100)}
                   data-cut-list-count={String(selectedCabinetDocumentationSnapshot.cutList.length)}
                   data-dimension-schedule-count={String(selectedCabinetDocumentationSnapshot.dimensionSchedule.length)}
                   data-drawing-view-schedule-count={String(selectedCabinetDocumentationSnapshot.drawingViewSchedule.length)}
@@ -327,10 +328,7 @@ export function SelectedCabinetPanel({
                     <div className={showDesignerTheme ? "rounded-md bg-black/10 p-2" : "rounded-md bg-white p-2"}>
                       <div className={showDesignerTheme ? "text-neutral-400" : "text-neutral-500"}>Edge banding</div>
                       <div className="mt-1 font-semibold">
-                        {selectedCabinetDocumentationSnapshot.edgeBandingSchedule.reduce(
-                          (sum, item) => sum + item.totalLengthM,
-                          0
-                        ).toFixed(2)} m
+                        {formatDisplayLength(edgeBandingTotalM * 1000, measurementUnit)}
                       </div>
                     </div>
                     <div className={showDesignerTheme ? "rounded-md bg-black/10 p-2" : "rounded-md bg-white p-2"}>
