@@ -5,6 +5,7 @@ import { Lightformer } from "@react-three/drei/core/Lightformer";
 import {
   Component,
   Suspense,
+  useMemo,
   type ErrorInfo,
   type ReactNode,
 } from "react";
@@ -50,6 +51,31 @@ export function EnvironmentController({
 }: {
   lighting: ResolvedEditorLighting;
 }) {
+  const { intensity, keyPosition, fillIntensity, fillPosition } =
+    lighting.environment;
+  // drei re-renders the environment cube and its PMREM whenever these
+  // children change identity, so rebuild them only when their inputs change.
+  const lightformers = useMemo(
+    () => (
+      <>
+        <Lightformer
+          intensity={intensity}
+          color={ENVIRONMENT_KEY}
+          position={keyPosition ?? [5, 6, 4]}
+          rotation={keyPosition ? undefined : [0, Math.PI / 4, 0]}
+          scale={[8, 8, 1]}
+        />
+        <Lightformer
+          intensity={fillIntensity ?? intensity * 0.35}
+          color={ENVIRONMENT_FILL}
+          position={fillPosition ?? [-4, 3, -3]}
+          rotation={fillPosition ? undefined : [0, -Math.PI / 6, 0]}
+          scale={[6, 6, 1]}
+        />
+      </>
+    ),
+    [fillIntensity, fillPosition, intensity, keyPosition]
+  );
   if (!lighting.environment.enabled) return null;
 
   return (
@@ -61,20 +87,7 @@ export function EnvironmentController({
           background={lighting.environment.backgroundVisible}
           resolution={lighting.environment.resolution}
         >
-          <Lightformer
-            intensity={lighting.environment.intensity}
-            color={ENVIRONMENT_KEY}
-            position={lighting.environment.keyPosition ?? [5, 6, 4]}
-            rotation={lighting.environment.keyPosition ? undefined : [0, Math.PI / 4, 0]}
-            scale={[8, 8, 1]}
-          />
-          <Lightformer
-            intensity={lighting.environment.fillIntensity ?? lighting.environment.intensity * 0.35}
-            color={ENVIRONMENT_FILL}
-            position={lighting.environment.fillPosition ?? [-4, 3, -3]}
-            rotation={lighting.environment.fillPosition ? undefined : [0, -Math.PI / 6, 0]}
-            scale={[6, 6, 1]}
-          />
+          {lightformers}
         </Environment>
       </Suspense>
     </EnvironmentFailureBoundary>
