@@ -1,7 +1,16 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
-import type { RoomOpening2D } from "@/lib/editorScene";
-import type { HousePlanRoom2D } from "@/lib/design-page-house-plan";
+import { metersToMm, type RoomOpening2D } from "@/lib/editorScene";
+import {
+  HOUSE_PLAN_TEMPLATES, resolveHousePlanTemplateOpeningMetrics, type HousePlanRoom2D,
+} from "@/lib/design-page-house-plan";
+import { mapPlanOpeningsToRoomRenderer } from "@/lib/design-page-plan-overlays";
+import {
+  designPageOpeningHasMoveRoom, validateDesignPageOpeningPlacement,
+} from "@/lib/design-page-opening-placement";
+import {
+  legacyOpeningOffsetAtWorldPoint, worldPointAtOpeningHostAlong,
+} from "@/lib/design-page-opening-interaction";
 import type { DesignPageOpeningMetricsPatch } from "@/lib/design-page-opening-metrics";
 import { moveDesignPageOpening } from "@/lib/useDesignPageOpeningMoveAction";
 import { MIN_OPENING_CORNER_CLEARANCE_METERS, validateTracedOpeningPlacement } from "@/lib/floor-plan-tracing";
@@ -181,6 +190,11 @@ for (const owned of ["onSelectTarget(target, event)", "stopStructurePointerEvent
   assert.ok(thresholdPointerDown.indexOf("shouldOpeningPointerDownSelect") < thresholdPointerDown.indexOf(owned),
     `An unowned pointer-down must return before ${owned}: the camera keeps the gesture and the selection.`);
 }
+const thresholdCapability = "const canDragOpening = interactive && "
+  + "Boolean(sourceOpening?.movableOnHost && resolvedHost && onMoveOpening);";
+assert.ok(collapseWhitespace(thresholdSource).includes(thresholdCapability),
+  `The threshold may claim a drag only for an opening with room to move: exactly "${thresholdCapability}". `
+  + "An opening the placement rules pin in place would select, freeze the camera and never move.");
 
 const windowMeshSource = fs.readFileSync(
   "components/editor/renderers/house-plan-3d/WindowOpeningMesh.tsx", "utf8"
@@ -203,5 +217,92 @@ assert.ok(collapseWhitespace(
   `The window drag hook must claim a pointer-down through exactly "${windowDragGuard}": the rule has `
   + "to see the live pointer button, the scene's interactive flag and the real move handler, or a "
   + "right-button pan selects the window and sticks.");
+
+// compact_two_bed puts its entry -> bathroom door at the entry's south-wall centre, past the end of
+// the bathroom, on the 1.8 m wall the entry shares with Bedroom 2, overlapping the Bedroom 2 door.
+// Two 0.9 m doors need 2.34 m there with corner clearance and spacing, so the move owner rejects
+// every position of either door, and narrow_one_bed's 0.9 m entry door cannot keep its corner
+// clearance on a 1.2 m wall. A drag the threshold claims has to be able to move its opening, so
+// the projection must say exactly when the validator accepts another centre on the host.
+function templatePlan(templateId: string) {
+  const template = HOUSE_PLAN_TEMPLATES.find((candidate) => candidate.id === templateId);
+  assert.ok(template, `Precondition: the ${templateId} template exists.`);
+  const rooms: HousePlanRoom2D[] = template.rooms.map((source) => ({
+    id: source.id, name: source.name, roomType: source.roomType, shape: source.shape,
+    x: source.x, z: source.z, w: source.width, d: source.depth,
+  }));
+  const place = (kind: RoomOpening2D["kind"], roomId: string, wall: RoomOpening2D["wall"],
+    widthMeters: number, offsetMeters: number, index: number): RoomOpening2D => {
+    const source = template.rooms.find((candidate) => candidate.id === roomId)!;
+    const metrics = resolveHousePlanTemplateOpeningMetrics(
+      wall === "north" || wall === "south" ? source.width : source.depth, widthMeters, offsetMeters
+    );
+    return { id: `${kind}-${index}`, roomId, wall, kind,
+      offsetMm: metersToMm(metrics.offsetMeters), widthMm: metersToMm(metrics.widthMeters) };
+  };
+  const openings = [
+    ...template.doorways.map((doorway, index) => place("door", doorway.fromRoomId, doorway.wall,
+      doorway.widthMeters ?? 0.9, doorway.offsetMeters ?? 0, index)),
+    ...template.windows.map((spec, index) => place("window", spec.roomId, spec.wall,
+      spec.widthMeters ?? 1, spec.offsetMeters ?? 0, index)),
+  ];
+  return { rooms, openings, projected: mapPlanOpeningsToRoomRenderer(openings, rooms) };
+}
+for (const templateId of ["compact_two_bed", "narrow_one_bed"]) {
+  const { rooms, openings, projected } = templatePlan(templateId);
+  const placement = { rooms, planWidthMeters: 10, planDepthMeters: 10 };
+  for (const opening of projected) {
+    const resolution = opening.hostResolution;
+    assert.equal(resolution?.status, "resolved", `Precondition: ${templateId} ${opening.id} has a host.`);
+    if (resolution?.status !== "resolved") continue;
+    const host = resolution.host;
+    const source = openings.find((candidate) => candidate.id === opening.id)!;
+    let accepted = false;
+    for (let along = 0; along <= host.spanMeters && !accepted; along += 0.01) {
+      const offsetMeters = legacyOpeningOffsetAtWorldPoint(host, worldPointAtOpeningHostAlong(host, along));
+      accepted = offsetMeters !== null && Math.abs(along - host.alongSegmentMeters) > 0.005 &&
+        validateDesignPageOpeningPlacement({ ...source, offsetMm: metersToMm(offsetMeters) },
+          openings, source.id, placement).valid;
+    }
+    assert.equal(opening.movableOnHost, accepted,
+      `${templateId} ${opening.id} must be movable on its host exactly when the move owner accepts another centre.`);
+  }
+}
+assert.deepEqual(
+  templatePlan("compact_two_bed").projected.filter((opening) => opening.kind === "door")
+    .map((opening) => opening.movableOnHost),
+  [true, false, true, true, false],
+  "compact_two_bed: the entry -> bathroom and entry -> Bedroom 2 doors have no valid position to move to."
+);
+
+// The structure layer projects every opening's move room on each 2D and 3D render, so the check has
+// to stay polynomial in the openings that share one wall. Subtracting a spacing band splits at most
+// one free interval in two; keeping the emptied halves doubled the list for every other opening.
+const crowdedWall = { physicalWallId: "floor:1:crowded", alongSegmentMeters: 11, spanMeters: 22 };
+const crowdAt = (along: number) => ({ host: { ...crowdedWall, alongSegmentMeters: along }, widthMeters: 0.6 });
+const crowd = Array.from({ length: 22 }, (_, index) => crowdAt(0.5 + index));
+const moving = crowdAt(11);
+assert.equal(designPageOpeningHasMoveRoom(moving, crowd), false,
+  "Spacing bands 1.56 m wide every 1 m, plus the corner clearance, leave no centre on a 22 m wall.");
+const withGap = crowd.filter((_, index) => index !== 11);
+assert.equal(designPageOpeningHasMoveRoom(moving, withGap), true,
+  "Removing the opening at 11.5 m leaves the 0.44 m of centres between 11.28 m and 11.72 m.");
+assert.equal(designPageOpeningHasMoveRoom(moving, [...withGap, crowdAt(10.5 + 1.56 + 0.0005)]), false,
+  "A sliver of centres narrower than the interaction tolerance is not room to move.");
+assert.equal(designPageOpeningHasMoveRoom(moving, withGap.map((other) => ({
+  ...other, host: { ...other.host, physicalWallId: "floor:1:other" },
+}))), true, "Openings on another physical wall never take this wall's room.");
+const longRoom: HousePlanRoom2D = { id: "hall", name: "Hall", roomType: "living", shape: "rectangle", x: 0, z: 0, w: 30, d: 4 };
+const northWindows: RoomOpening2D[] = Array.from({ length: 22 }, (_, index) => ({
+  id: `north-${index}`, roomId: longRoom.id, kind: "window", wall: "north",
+  offsetMm: metersToMm(-13.65 + index * 1.3), widthMm: 600,
+}));
+const projectionStartedAt = performance.now();
+const crowdedProjection = mapPlanOpeningsToRoomRenderer(northWindows, [longRoom]);
+const projectionMs = performance.now() - projectionStartedAt;
+assert.deepEqual(crowdedProjection.map((projected) => projected.movableOnHost), northWindows.map(() => true),
+  "Each window 1.3 m from its neighbours keeps 1.04 m of valid centres around it.");
+assert.ok(projectionMs < 150,
+  `Projecting 22 windows on one wall must not stall a render (took ${projectionMs.toFixed(1)} ms).`);
 
 console.log("window opening drag bounds and mutation routing passed");
