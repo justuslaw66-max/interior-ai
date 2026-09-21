@@ -3332,7 +3332,7 @@ export default function DesignControlsPlanPanel({
           <div className="mt-3">
             <FloorPlanAddressSearch
               dark={dark}
-              canEdit={canEdit}
+              canEdit={canEdit} measurementUnit={measurementUnit}
               onApplyPlanTemplate={onApplyPlanTemplate}
             />
           </div>

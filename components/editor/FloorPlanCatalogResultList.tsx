@@ -2,6 +2,8 @@
 
 import Image from "next/image";
 import type { FloorPlanCatalogSearchResult } from "@/lib/floor-plan-catalog-repository";
+import type { PlanMeasurementUnit } from "@/lib/design-page-types";
+import { formatDisplayArea } from "@/lib/display-units";
 
 import { floorPlanOrientationLabel } from "./FloorPlanSelectionContext";
 type ResultGroup = { projectName: string; plans: FloorPlanCatalogSearchResult[] };
@@ -15,6 +17,7 @@ type FloorPlanCatalogResultListProps = {
   applyingResultId: string | null;
   applyError: { id: string; message: string } | null;
   onUse: (result: FloorPlanCatalogSearchResult, startAsNewDesign: boolean) => void;
+  measurementUnit: PlanMeasurementUnit;
 };
 
 export default function FloorPlanCatalogResultList({
@@ -26,6 +29,7 @@ export default function FloorPlanCatalogResultList({
   applyingResultId,
   applyError,
   onUse,
+  measurementUnit,
 }: FloorPlanCatalogResultListProps) {
   const subtle = dark ? "text-neutral-400" : "text-neutral-600";
   return (
@@ -67,7 +71,7 @@ export default function FloorPlanCatalogResultList({
                       <div>
                         <div className="text-sm font-semibold">{result.label}</div>
                         <div className={`mt-0.5 text-[11px] ${subtle}`}>
-                          {result.flatType}{result.floorAreaSqm ? ` · ${result.floorAreaSqm} m²` : ""}
+                          {result.flatType}{result.floorAreaSqm ? ` · ${formatDisplayArea(result.floorAreaSqm, measurementUnit)}` : ""}
                         </div>
                       </div>
                       <div className="flex shrink-0 flex-wrap justify-end gap-1">
@@ -127,9 +131,7 @@ export default function FloorPlanCatalogResultList({
           </div>
         </section>
       ))}
-      {groups[0]?.plans[0] ? (
-        <p className={`text-[10px] leading-4 ${subtle}`}>{groups[0].plans[0].accuracyNotice}</p>
-      ) : null}
+      {groups[0]?.plans[0] ? <p className={`text-[10px] leading-4 ${subtle}`}>{groups[0].plans[0].accuracyNotice}</p> : null}
     </div>
   );
 }
