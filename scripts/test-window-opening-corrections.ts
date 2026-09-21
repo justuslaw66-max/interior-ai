@@ -194,6 +194,18 @@ assert.match(
   /setPlanOpenings\(createDefaultPlanOpenings\(\)\);[\s\S]*setPlanSettingsLoaded\(true\);/,
   "A profile without stored openings must be seeded in the same batch that marks settings loaded."
 );
+// Only a missing key is a fresh plan. A stored "[]" means the user deleted every opening, and
+// reseeding it would bring back a door and window they removed.
+assert.match(
+  planSettingsLoadEffect,
+  /storedOpeningsFound = storedOpenings !== null;/,
+  "Only a missing plan_openings key may count as a fresh plan; saved or emptied openings are kept."
+);
+assert.match(
+  planSettingsLoadEffect,
+  /if \(!storedOpeningsFound\) setPlanOpenings\(createDefaultPlanOpenings\(\)\);/,
+  "The default door and window may only be seeded when no openings were stored."
+);
 assert.doesNotMatch(
   readFileSync("lib/useDesignPagePlanAuthoringRegistration.ts", "utf8"),
   /setPlanOpenings\(\[|createDefaultPlanOpenings|planOpeningsStorageState|defaultPlanOpeningsSeeded/,
