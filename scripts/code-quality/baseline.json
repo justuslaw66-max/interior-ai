@@ -4457,7 +4457,7 @@
     "lib/useDesignPageDocumentStateController.ts": {
       "overlongFunctions": {
         "count": 2,
-        "maximum": 137
+        "maximum": 128
       }
     },
     "lib/useDesignPageEditorChromeController.ts": {
@@ -4677,7 +4677,7 @@
     "lib/useDesignPagePlanAuthoringRegistration.ts": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 283
+        "maximum": 238
       }
     },
     "lib/useDesignPagePlanCanvasActionsController.ts": {
@@ -4963,7 +4963,7 @@
     "lib/useDesignPageViewportShellRegistration.ts": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 254
+        "maximum": 250
       }
     },
     "lib/useDesignPageZoneController.ts": {

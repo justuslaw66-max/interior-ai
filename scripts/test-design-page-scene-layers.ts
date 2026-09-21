@@ -181,12 +181,19 @@ assertSourceOrder(
   "Workspace should preserve deferred paywall registration order"
 );
 assertSourceOrder(
-  planAuthoringRegistrationSource,
+  readSource("lib/useDesignPagePlanState.ts"),
   [
-    "if (!planSettingsLoaded)",
-    "useDesignPageSelectionInspectionRuntime({",
+    "useLayoutEffect(() => {",
+    'localStorage.getItem("plan_openings")',
+    "setPlanOpenings(createDefaultPlanOpenings());",
+    "setPlanSettingsLoaded(true);",
   ],
-  "Plan authoring should seed default openings before selection inspection"
+  "The plan-settings load should seed default openings in the mount commit, before selection inspection"
+);
+assert.doesNotMatch(
+  planAuthoringRegistrationSource,
+  /if \(!planSettingsLoaded\)|setPlanOpenings\(\[/,
+  "Plan authoring should not defer default openings behind the plan-settings load"
 );
 assert.match(
   presentationBackupRegistrationSource,
