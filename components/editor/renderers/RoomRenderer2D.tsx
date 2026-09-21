@@ -47,6 +47,7 @@ import { buildRoomPlanShape, shouldRenderRoomPlanGeometry } from "@/lib/room-pla
 import { ROOM_PLAN_CLICK_DISTANCE_PX, selectRoomSurfaceFromClick } from "./room-renderer-2d-surface-selection";
 import type { PlanMeasurementUnit } from "@/lib/design-page-types";
 import { formatDisplayArea, formatDisplayLength } from "@/lib/display-units";
+import { formatRoomDrawPreviewLabel } from "@/lib/plan-room-summary";
 import { getPlanRoomFloorAreaSqm } from "@/lib/room-floor-area";
 import { floorPlanPropertyEvidenceIsEditable } from "@/lib/floor-plan-measured-property-mutations";
 import { buildOpeningRenderSegments, type Opening2D,
@@ -1238,21 +1239,6 @@ function buildWallDrawSnapMarker(
   };
 }
 
-function buildRoomDrawPreviewLabel(preview: RoomDrawPreview): string {
-  const width = preview.width.toFixed(1).replace(/\.0$/, "");
-  const depth = preview.depth.toFixed(1).replace(/\.0$/, "");
-  const area = preview.areaSqm.toFixed(1).replace(/\.0$/, "");
-  return preview.rectangle ? `${width} x ${depth}m (${area} m2)` : `${width} x ${depth}m`;
-}
-
-function buildWallDrawPreviewLabel(
-  start: FloorPlanPoint,
-  end: FloorPlanPoint
-): string {
-  const lengthMm = Math.round(Math.hypot(end.x - start.x, end.z - start.z) * 1000);
-  return `${lengthMm} mm`;
-}
-
 const MAX_WALL_DRAW_SEGMENT_LENGTH_METERS = ROOM_DIMENSION_DEFAULTS.max;
 const ROOM_DIMENSION_EDITOR_MIN_MILLIMETERS = ROOM_DIMENSION_DEFAULTS.min * 1000;
 const ROOM_DIMENSION_EDITOR_MAX_MILLIMETERS = ROOM_DIMENSION_DEFAULTS.max * 1000;
@@ -1273,10 +1259,6 @@ function areWallDrawSegmentsRenderable(points: FloorPlanPoint[]): boolean {
     }
   }
   return true;
-}
-
-function formatMillimeters(meters: number): string {
-  return `${Math.round(meters * 1000)} mm`;
 }
 
 function getOpeningPreviewHelpText(preview: TracedOpeningPreview): string | null {
@@ -1301,11 +1283,14 @@ function getOpeningPreviewHelpText(preview: TracedOpeningPreview): string | null
   return "Choose another point on the wall.";
 }
 
-function getOpeningPreviewDetailText(preview: TracedOpeningPreview): string | null {
+function getOpeningPreviewDetailText(
+  preview: TracedOpeningPreview,
+  unit: PlanMeasurementUnit
+): string | null {
   if (!preview.opening) return null;
 
-  const widthLabel = formatMillimeters(preview.opening.widthMm / 1000);
-  const offsetLabel = formatMillimeters(Math.abs(preview.opening.offsetMm) / 1000);
+  const widthLabel = formatDisplayLength(preview.opening.widthMm, unit);
+  const offsetLabel = formatDisplayLength(Math.abs(preview.opening.offsetMm), unit);
   const offsetSuffix = preview.opening.offsetMm === 0 ? "centered" : `${offsetLabel} from center`;
   return `${widthLabel} · ${preview.opening.wall} wall · ${offsetSuffix}`;
 }
@@ -2038,7 +2023,7 @@ export default function RoomRenderer2D({
   const openingPreviewWallGuide = buildOpeningPreviewWallGuide(openingPreview, rooms);
   const openingPreviewHelpText = openingPreview ? getOpeningPreviewHelpText(openingPreview) : null;
   const openingPreviewDetailText = openingPreview
-    ? getOpeningPreviewDetailText(openingPreview)
+    ? getOpeningPreviewDetailText(openingPreview, measurementUnit)
     : null;
 
   const formatDimension = (meters: number) =>
@@ -3366,8 +3351,8 @@ export default function RoomRenderer2D({
                       <span>{dragHudStatusLabel}</span>
                     </div>
                     <div style={{ color: "#4b5563", display: "flex", gap: 8, fontWeight: 650 }}>
-                      <span>X {renderX.toFixed(2)}m</span>
-                      <span>Z {renderZ.toFixed(2)}m</span>
+                      <span>X {formatDimension(renderX)}</span>
+                      <span>Z {formatDimension(renderZ)}</span>
                       <span>Shift: no snap</span>
                     </div>
                   </div>
@@ -4439,7 +4424,7 @@ export default function RoomRenderer2D({
                 boxShadow: "0 1px 5px rgba(15,23,42,0.14)",
               }}
             >
-              Shared wall · {formatMillimeters(sharedWallPreviewSegment.lengthMeters)}
+              Shared wall · {formatDimension(sharedWallPreviewSegment.lengthMeters)}
             </div>
           </Html>
         </>
@@ -4668,7 +4653,7 @@ export default function RoomRenderer2D({
                     boxShadow: "0 1px 5px rgba(15,23,42,0.12)",
                   }}
                 >
-                  {buildWallDrawPreviewLabel(previousPoint, point)}
+                  {formatDimension(getWallDrawSegmentLengthMeters(previousPoint, point))}
                 </button>
               )}
             </Html>
@@ -4713,7 +4698,7 @@ export default function RoomRenderer2D({
               boxShadow: "0 1px 5px rgba(15,23,42,0.12)",
             }}
           >
-            {buildWallDrawPreviewLabel(lastWallDrawPoint, activeDrawRoomPreviewPoint)}
+            {formatDimension(getWallDrawSegmentLengthMeters(lastWallDrawPoint, activeDrawRoomPreviewPoint))}
           </div>
         </Html>
       )}
@@ -4754,7 +4739,7 @@ export default function RoomRenderer2D({
               boxShadow: "0 1px 5px rgba(15,23,42,0.12)",
             }}
           >
-            {buildRoomDrawPreviewLabel(roomDrawPreview)}
+            {formatRoomDrawPreviewLabel(roomDrawPreview, measurementUnit)}
           </div>
         </Html>
       )}
@@ -4786,7 +4771,7 @@ export default function RoomRenderer2D({
                 boxShadow: "0 1px 5px rgba(15,23,42,0.12)",
               }}
             >
-              {formatMillimeters(roomDrawPreview.width)}
+              {formatDimension(roomDrawPreview.width)}
             </div>
           </Html>
           <Html
@@ -4815,7 +4800,7 @@ export default function RoomRenderer2D({
                 writingMode: "vertical-rl",
               }}
             >
-              {formatMillimeters(roomDrawPreview.depth)}
+              {formatDimension(roomDrawPreview.depth)}
             </div>
           </Html>
         </>
@@ -4853,7 +4838,7 @@ export default function RoomRenderer2D({
                 boxShadow: "0 1px 5px rgba(15,23,42,0.12)",
               }}
             >
-              {formatMillimeters(arcWallDrawPreview.arcLengthMeters)}
+              {formatDimension(arcWallDrawPreview.arcLengthMeters)}
             </div>
           </Html>
           <Html

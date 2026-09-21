@@ -41,7 +41,7 @@ type ProductFinishControlSources = {
 
 export type BuildDesignPageSelectionPanelModelsInput = {
   cabinet: {
-    state: Pick<SelectedCabinetPanelProps, "cabinet" | "project">;
+    state: Pick<SelectedCabinetPanelProps, "measurementUnit" | "cabinet" | "project">;
     configuration: SelectedCabinetPanelProps["access"];
     actions: SelectedCabinetPanelProps["actions"];
   };

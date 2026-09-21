@@ -169,7 +169,7 @@
       "limit": 250
     },
     "components/editor/design-page/DesignSceneStructureLayer.tsx": {
-      "lines": 423,
+      "lines": 422,
       "limit": 250
     },
     "components/editor/design-page/ImportedFloorPlanWallEditor.tsx": {
@@ -201,7 +201,7 @@
       "limit": 250
     },
     "components/editor/design-page/SelectedCabinetPanel.tsx": {
-      "lines": 771,
+      "lines": 769,
       "limit": 250
     },
     "components/editor/design-page/SelectedItemPanel.tsx": {
@@ -297,11 +297,11 @@
       "limit": 250
     },
     "components/editor/renderers/PlanUnderlayRenderer2D.tsx": {
-      "lines": 569,
+      "lines": 549,
       "limit": 250
     },
     "components/editor/renderers/RoomRenderer2D.tsx": {
-      "lines": 5539,
+      "lines": 5524,
       "limit": 250
     },
     "components/editor/renderers/useSurfaceMaterialTexture.ts": {
@@ -1779,7 +1779,7 @@
     "components/editor/design-page/DesignSceneStructureLayer.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 251
+        "maximum": 250
       },
       "complexFunctions": {
         "count": 1,
@@ -1967,7 +1967,7 @@
     "components/editor/design-page/SelectedCabinetPanel.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 721
+        "maximum": 713
       },
       "complexFunctions": {
         "count": 1,
@@ -2189,7 +2189,7 @@
     "components/editor/FloorPlanCatalogResultList.tsx": {
       "overlongFunctions": {
         "count": 3,
-        "maximum": 116
+        "maximum": 115
       },
       "complexFunctions": {
         "count": 1,
@@ -2345,7 +2345,7 @@
     "components/editor/renderers/PlanUnderlayRenderer2D.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 433
+        "maximum": 419
       },
       "complexFunctions": {
         "count": 1,

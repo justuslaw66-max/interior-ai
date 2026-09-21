@@ -137,3 +137,15 @@ export function formatPlanRoomMetricLabel(
   const dimensions = formatPlanDimensionsLabel(metric.widthMeters, metric.depthMeters, unit);
   return `${dimensions} · ${formatDisplayArea(metric.areaSquareMeters, unit)}`;
 }
+
+/** Rectangle-draw preview: dimensions, plus the area once the drag resolves to a room. */
+export function formatRoomDrawPreviewLabel(
+  preview: { width: number; depth: number; areaSqm: number; rectangle: object | null },
+  unit: DisplayUnit
+): string {
+  if (!preview.rectangle) return formatPlanDimensionsLabel(preview.width, preview.depth, unit);
+  return formatPlanRoomMetricLabel(
+    { widthMeters: preview.width, depthMeters: preview.depth, areaSquareMeters: preview.areaSqm },
+    unit
+  );
+}

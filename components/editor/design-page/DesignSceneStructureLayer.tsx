@@ -268,6 +268,7 @@ export function DesignSceneStructureLayer({
           rooms={plan.rooms}
           existingOpenings={plan.scene.openings}
           onTraceOpeningPoint={actions.underlay.addOpeningTracePoint}
+          measurementUnit={configuration.plan.measurementUnit}
         />
         <RoomRenderer2D
           width={plan.width}
@@ -337,9 +338,7 @@ export function DesignSceneStructureLayer({
               ? undefined
               : actions.drawing.commitRoomDimension
           }
-          onCommitWallDrawSegmentLength={
-            actions.drawing.commitWallSegmentLength
-          }
+          onCommitWallDrawSegmentLength={actions.drawing.commitWallSegmentLength}
           onDrawRoomDrag={actions.drawing.drawRoom}
           drawRoomInteractionMode={plan.roomTrace.interactionMode}
           traceOpeningMode={plan.openingTrace.enabled && !plan.underlay}

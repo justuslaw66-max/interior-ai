@@ -161,7 +161,8 @@ export function registerDrawingTests() {
     await expect(page.getByTestId("wall-draw-segment-length-editor")).toBeVisible();
     await page.getByTestId("wall-draw-segment-length-editor").fill("1800");
     await page.getByTestId("wall-draw-segment-length-editor").press("Enter");
-    await expect(page.getByTestId("wall-draw-segment-length-1")).toContainText("1800 mm");
+    // The in-canvas editor takes millimetres; the committed label follows the default cm display unit.
+    await expect(page.getByTestId("wall-draw-segment-length-1")).toContainText("180 cm");
 
     await page.getByTestId("wall-draw-segment-length-1").dblclick();
     await expect(page.getByTestId("wall-draw-segment-length-editor")).toBeVisible();
