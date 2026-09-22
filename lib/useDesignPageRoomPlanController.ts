@@ -261,7 +261,7 @@ export function useDesignPageRoomPlanController({
 
   const deleteSelectedRoom = useDesignPageDeleteRoomAction({
     designSnapshotRef,
-    history,
+    runHistoryTransaction,
     setDesignSnapshot,
     setPlanOpenings,
     setSelectedPlanRoomId,

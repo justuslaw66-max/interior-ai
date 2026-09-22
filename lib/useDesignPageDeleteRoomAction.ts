@@ -12,7 +12,7 @@ import { deleteRoom, type DesignSnapshot } from "@/lib/room-types";
 
 export type DesignPageDeleteRoomActionInput = {
   designSnapshotRef: MutableRefObject<DesignSnapshot>;
-  history: { begin: (name: string) => void; commit: () => void };
+  runHistoryTransaction: (name: string, mutation: () => void) => void;
   setDesignSnapshot: (
     next: DesignSnapshot | ((previous: DesignSnapshot) => DesignSnapshot)
   ) => void;
@@ -28,7 +28,7 @@ export type DesignPageDeleteRoomActionInput = {
 /** Deleting the last room is allowed; the design becomes a valid blank canvas. */
 export function useDesignPageDeleteRoomAction({
   designSnapshotRef,
-  history,
+  runHistoryTransaction,
   setDesignSnapshot,
   setPlanOpenings,
   setSelectedPlanRoomId,
@@ -42,13 +42,19 @@ export function useDesignPageDeleteRoomAction({
       const room = rooms.find((entry) => entry.id === roomId);
       if (!room) return;
       const deletingLastRoom = rooms.length === 1;
-      history.begin("Delete room");
-      setDesignSnapshot((previous) => deleteRoom(previous, roomId));
-      setPlanOpenings((previous) =>
-        previous.filter((opening) => opening.roomId !== roomId)
-      );
-      if (deletingLastRoom) clearPlanForEmptyCanvas();
-      history.commit();
+      // Not the history manager's begin/commit pair: begin refuses to nest and returns false, so a
+      // deletion that landed inside a still-open coalesced transaction (a slider drag holds one for
+      // 420 ms) used to commit that transaction instead of its own: the deletion joined the
+      // slider's undo entry, and the slider's own commit then warned "No active transaction to
+      // commit". runHistoryTransaction flushes the open transaction first, so deletion owns its own
+      // entry.
+      runHistoryTransaction("Delete room", () => {
+        setDesignSnapshot((previous) => deleteRoom(previous, roomId));
+        setPlanOpenings((previous) =>
+          previous.filter((opening) => opening.roomId !== roomId)
+        );
+        if (deletingLastRoom) clearPlanForEmptyCanvas();
+      });
       setSelectedPlanRoomId(null);
       clearNonRoomSelection();
       showToast(
@@ -65,7 +71,7 @@ export function useDesignPageDeleteRoomAction({
       clearNonRoomSelection,
       clearPlanForEmptyCanvas,
       designSnapshotRef,
-      history,
+      runHistoryTransaction,
       setDesignSnapshot,
       setPlanOpenings,
       setSelectedPlanRoomId,
