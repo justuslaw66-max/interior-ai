@@ -2203,6 +2203,12 @@ test.describe("Pro visual policy", () => {
     await expect(renderer).toHaveAttribute("data-front-axis", "negative-z");
     await expect(renderer).toHaveAttribute("data-render-color-space", "srgb");
     await expect(renderer).toHaveAttribute("data-tone-mapping", "aces-filmic");
+    await expect(renderer).toHaveAttribute("data-frameloop", "demand");
+    // WebKit screenshots paint the canvas from its drawing buffer; a settled
+    // on-demand canvas must keep its last frame there.
+    expect(await renderer.locator("canvas").evaluate((canvas: HTMLCanvasElement) =>
+      canvas.getContext("webgl2")?.getContextAttributes()?.preserveDrawingBuffer
+    )).toBe(true);
 
     // Screenshot capture must preserve the running page rather than finishing
     // animations and firing lifecycle callbacks while sampling the WebGL view.

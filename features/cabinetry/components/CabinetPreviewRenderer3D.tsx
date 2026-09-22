@@ -28,7 +28,11 @@ function CabinetPreviewReadySignal({
   useFrame(() => {
     if (reportedKeyRef.current === previewKey) return;
     frameCountRef.current += 1;
-    if (frameCountRef.current < 3) return;
+    if (frameCountRef.current < 3) {
+      // On-demand rendering: keep requesting frames until readiness is proven.
+      invalidate();
+      return;
+    }
     reportedKeyRef.current = previewKey;
     onReady(previewKey);
   });
@@ -61,8 +65,12 @@ export function CabinetPreviewRenderer3D({
   }, []);
 
   return (
+    // Render on demand, like the design scene: a settled preview stops
+    // redrawing instead of re-rendering every frame.
     <Canvas
+      frameloop="demand"
       data-cabinet-preview-renderer="rc5"
+      data-frameloop="demand"
       data-shadow-maps-enabled="false"
       data-front-axis="negative-z"
       data-render-color-space="srgb"
@@ -75,6 +83,10 @@ export function CabinetPreviewRenderer3D({
       shadows={false}
       gl={{
         antialias: true,
+        // Keep the last frame in the drawing buffer. Otherwise WebKit page
+        // snapshots (Playwright screenshots, print, page capture) can paint a
+        // settled canvas as empty while it is still shown on screen.
+        preserveDrawingBuffer: true,
         outputColorSpace: THREE.SRGBColorSpace,
         toneMapping: THREE.ACESFilmicToneMapping,
         toneMappingExposure: 0.96,
