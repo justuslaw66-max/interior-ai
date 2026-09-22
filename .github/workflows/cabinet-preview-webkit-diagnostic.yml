@@ -1,9 +1,13 @@
 # DIAGNOSTIC ONLY (branch diagnostic/cabinet-preview-webkit-blank, never merged).
 # Reproduces the flaky WebKit "keeps all recommended Cabinet Preview templates
 # readable" test by repeating the real required spec, once per candidate fix:
-#   baseline  - current code
-#   preserve  - preview canvas with preserveDrawingBuffer: true
-#   demand    - preview canvas with frameloop="demand"
+#   baseline         - current code (frameloop "always")
+#   preserve         - preserveDrawingBuffer: true
+#   demand           - frameloop="demand"
+#   demand-preserve  - frameloop="demand" + preserveDrawingBuffer: true
+# Run 3 showed baseline 0/100, preserve 0/100, demand 4/100 failing, so this
+# run uses "demand" as the reproducing control and tests whether a preserved
+# drawing buffer removes those blank captures (two shards of the treatment).
 # Same runner, services and build env as ci.yml's Stable checks job.
 name: Cabinet Preview WebKit capture diagnostic
 
@@ -17,13 +21,19 @@ permissions:
 
 jobs:
   repro:
-    name: repro (${{ matrix.variant }})
+    name: repro (${{ matrix.variant }} ${{ matrix.shard }})
     runs-on: ubuntu-latest
     timeout-minutes: 170
     strategy:
       fail-fast: false
       matrix:
-        variant: [baseline, preserve, demand]
+        include:
+          - variant: demand
+            shard: 1
+          - variant: demand-preserve
+            shard: 1
+          - variant: demand-preserve
+            shard: 2
     services:
       postgres:
         image: postgres:15
@@ -41,8 +51,8 @@ jobs:
     env:
       CI: "true"
       CI_AUTH_FIXTURE_MODE: "1"
-      CI_AUTH_FIXTURE_SESSION_ID: ${{ github.run_id }}-${{ github.run_attempt }}-${{ matrix.variant }}-auth-session
-      CI_AUTH_FIXTURE_SESSION_NONCE: ${{ github.run_id }}-${{ github.run_attempt }}-${{ matrix.variant }}-auth-nonce
+      CI_AUTH_FIXTURE_SESSION_ID: ${{ github.run_id }}-${{ github.run_attempt }}-${{ matrix.variant }}-${{ matrix.shard }}-auth-session
+      CI_AUTH_FIXTURE_SESSION_NONCE: ${{ github.run_id }}-${{ github.run_attempt }}-${{ matrix.variant }}-${{ matrix.shard }}-auth-nonce
       CI_AUTH_FIXTURE_SESSION_CLASSIFICATION: PRODUCTION_INELIGIBLE_SYNTHETIC_AUTH
       APP_ENV: development
       DATABASE_URL: postgresql://test:test@localhost:5432/interior_ai_test
@@ -86,7 +96,7 @@ jobs:
       - name: Configure synthetic CI OAuth fixture
         env:
           CI_AUTH_FIXTURE_RESULT_PATH: ${{ runner.temp }}/interior-ai-auth-results/diag-export.json
-          CI_AUTH_FIXTURE_RESULT_NONCE: ${{ github.run_id }}-${{ github.run_attempt }}-${{ matrix.variant }}-export
+          CI_AUTH_FIXTURE_RESULT_NONCE: ${{ github.run_id }}-${{ github.run_attempt }}-${{ matrix.variant }}-${{ matrix.shard }}-export
           CI_AUTH_FIXTURE_EXPECTED_COMMAND_ID: ci:auth-fixture:export
           CI_AUTH_FIXTURE_EXPECTED_MODE: provider-fixture-export
         run: |
@@ -113,7 +123,7 @@ jobs:
         run: npx playwright install --with-deps webkit
 
       - name: Minimal WebGL capture check
-        if: matrix.variant == 'baseline'
+        if: false
         continue-on-error: true
         run: npx playwright test --config=playwright.cabinet-preview-minimal.config.ts
 
@@ -131,7 +141,7 @@ jobs:
         if: always()
         shell: bash
         env:
-          VARIANT: ${{ matrix.variant }}
+          VARIANT: ${{ matrix.variant }} shard ${{ matrix.shard }}
         run: |
           node -e '
             const fs = require("fs");
@@ -169,7 +179,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: cabinet-preview-repro-${{ matrix.variant }}-${{ github.run_id }}-${{ github.run_attempt }}
+          name: cabinet-preview-repro-${{ matrix.variant }}-${{ matrix.shard }}-${{ github.run_id }}-${{ github.run_attempt }}
           path: |
             test-results/cabinet-preview-repro/
             test-results/cabinet-preview-minimal/

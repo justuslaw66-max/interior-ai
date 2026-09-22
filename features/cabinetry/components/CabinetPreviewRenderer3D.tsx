@@ -98,7 +98,7 @@ export function CabinetPreviewRenderer3D({
 
   return (
     <Canvas
-      frameloop={DIAG_VARIANT === "demand" ? "demand" : "always"}
+      frameloop={DIAG_VARIANT.startsWith("demand") ? "demand" : "always"}
       data-diag-variant={DIAG_VARIANT}
       data-cabinet-preview-renderer="rc5"
       data-shadow-maps-enabled="false"
@@ -113,7 +113,7 @@ export function CabinetPreviewRenderer3D({
       shadows={false}
       gl={{
         antialias: true,
-        preserveDrawingBuffer: DIAG_VARIANT === "preserve",
+        preserveDrawingBuffer: DIAG_VARIANT.includes("preserve"),
         outputColorSpace: THREE.SRGBColorSpace,
         toneMapping: THREE.ACESFilmicToneMapping,
         toneMappingExposure: 0.96,
