@@ -28,11 +28,47 @@ function CabinetPreviewReadySignal({
   useFrame(() => {
     if (reportedKeyRef.current === previewKey) return;
     frameCountRef.current += 1;
-    if (frameCountRef.current < 3) return;
+    if (frameCountRef.current < 3) {
+      invalidate();
+      return;
+    }
     reportedKeyRef.current = previewKey;
     onReady(previewKey);
   });
 
+  return null;
+}
+
+// DIAGNOSTIC ONLY (branch diagnostic/cabinet-preview-webkit-blank, never merged):
+// the CI matrix builds one variant per job to A/B candidate fixes under the
+// real required spec, and logs WebGL context loss / buffer resizes to the
+// console so they land in failure traces.
+const DIAG_VARIANT = process.env.NEXT_PUBLIC_CABINET_PREVIEW_DIAG_VARIANT ?? "baseline";
+
+function CabinetPreviewDiagnosticProbe() {
+  const gl = useThree((state) => state.gl);
+  useEffect(() => {
+    const canvas = gl.domElement;
+    let width = canvas.width;
+    let height = canvas.height;
+    const onLost = () => console.warn("[cabinet-preview-diag] webglcontextlost");
+    const onRestored = () => console.warn("[cabinet-preview-diag] webglcontextrestored");
+    const observer = new MutationObserver(() => {
+      if (canvas.width === width && canvas.height === height) return;
+      console.warn(`[cabinet-preview-diag] buffer ${width}x${height} -> ${canvas.width}x${canvas.height}`);
+      width = canvas.width;
+      height = canvas.height;
+    });
+    observer.observe(canvas, { attributes: true, attributeFilter: ["width", "height"] });
+    canvas.addEventListener("webglcontextlost", onLost);
+    canvas.addEventListener("webglcontextrestored", onRestored);
+    console.warn(`[cabinet-preview-diag] mounted variant=${DIAG_VARIANT} buffer=${width}x${height}`);
+    return () => {
+      observer.disconnect();
+      canvas.removeEventListener("webglcontextlost", onLost);
+      canvas.removeEventListener("webglcontextrestored", onRestored);
+    };
+  }, [gl]);
   return null;
 }
 
@@ -62,6 +98,8 @@ export function CabinetPreviewRenderer3D({
 
   return (
     <Canvas
+      frameloop={DIAG_VARIANT === "demand" ? "demand" : "always"}
+      data-diag-variant={DIAG_VARIANT}
       data-cabinet-preview-renderer="rc5"
       data-shadow-maps-enabled="false"
       data-front-axis="negative-z"
@@ -75,6 +113,7 @@ export function CabinetPreviewRenderer3D({
       shadows={false}
       gl={{
         antialias: true,
+        preserveDrawingBuffer: DIAG_VARIANT === "preserve",
         outputColorSpace: THREE.SRGBColorSpace,
         toneMapping: THREE.ACESFilmicToneMapping,
         toneMappingExposure: 0.96,
@@ -86,6 +125,7 @@ export function CabinetPreviewRenderer3D({
         far: 50,
       }}
     >
+      <CabinetPreviewDiagnosticProbe />
       <CabinetPreviewReadySignal
         previewKey={previewRenderKey}
         onReady={handlePreviewReady}
