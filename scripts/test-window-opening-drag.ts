@@ -218,12 +218,10 @@ assert.ok(collapseWhitespace(
   + "to see the live pointer button, the scene's interactive flag and the real move handler, or a "
   + "right-button pan selects the window and sticks.");
 
-// compact_two_bed puts its entry -> bathroom door at the entry's south-wall centre, past the end of
-// the bathroom, on the 1.8 m wall the entry shares with Bedroom 2, overlapping the Bedroom 2 door.
-// Two 0.9 m doors need 2.34 m there with corner clearance and spacing, so the move owner rejects
-// every position of either door, and narrow_one_bed's 0.9 m entry door cannot keep its corner
-// clearance on a 1.2 m wall. A drag the threshold claims has to be able to move its opening, so
-// the projection must say exactly when the validator accepts another centre on the host.
+// narrow_one_bed's 0.9 m entry door cannot keep its corner clearance on a 1.2 m wall, while every
+// compact_two_bed door has room (its bathroom and Bedroom 2 doors each own a 1.4 m entry-wall
+// segment). A drag the threshold claims has to be able to move its opening, so the projection must
+// say exactly when the validator accepts another centre on the host.
 function templatePlan(templateId: string) {
   const template = HOUSE_PLAN_TEMPLATES.find((candidate) => candidate.id === templateId);
   assert.ok(template, `Precondition: the ${templateId} template exists.`);
@@ -271,8 +269,9 @@ for (const templateId of ["compact_two_bed", "narrow_one_bed"]) {
 assert.deepEqual(
   templatePlan("compact_two_bed").projected.filter((opening) => opening.kind === "door")
     .map((opening) => opening.movableOnHost),
-  [true, false, true, true, false],
-  "compact_two_bed: the entry -> bathroom and entry -> Bedroom 2 doors have no valid position to move to."
+  [true, true, true, true, true],
+  "compact_two_bed: every door, including entry -> bathroom and entry -> Bedroom 2, must have room to "
+  + "move on its own wall segment instead of overlapping on the Bedroom 2 wall."
 );
 
 // The structure layer projects every opening's move room on each 2D and 3D render, so the check has
