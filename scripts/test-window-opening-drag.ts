@@ -196,6 +196,25 @@ assert.ok(collapseWhitespace(thresholdSource).includes(thresholdCapability),
   `The threshold may claim a drag only for an opening with room to move: exactly "${thresholdCapability}". `
   + "An opening the placement rules pin in place would select, freeze the camera and never move.");
 
+// 2D claims the same drags through RoomRenderer2D's startOpeningMoveDrag, so it has to refuse the
+// openings the threshold refuses. Selection stays ahead of the refusal: a pinned opening must still
+// open its inspector on pointer-down instead of swallowing the gesture.
+const planRendererSource = fs.readFileSync(
+  "components/editor/renderers/RoomRenderer2D.tsx", "utf8"
+);
+const planDragCapability = "const host = getResolvedOpeningHost(opening); "
+  + "if (!host || !opening.movableOnHost) return false;";
+assert.ok(collapseWhitespace(planRendererSource).includes(planDragCapability),
+  `The 2D opening drag may start only for an opening with room to move: exactly "${planDragCapability}". `
+  + "Otherwise a 2D drag captures the pointer for a move the placement rules can never commit, which is "
+  + "what makes a template door feel stuck.");
+const planDragStart = planRendererSource.slice(
+  planRendererSource.indexOf("const startOpeningMoveDrag ="),
+  planRendererSource.indexOf("const handleOpeningMove =")
+);
+assert.ok(planDragStart.indexOf("onSelectOverlay?.(openingId)") < planDragStart.indexOf("opening.movableOnHost"),
+  "A pinned 2D opening must still be selected on pointer-down before the drag start refuses it.");
+
 const windowMeshSource = fs.readFileSync(
   "components/editor/renderers/house-plan-3d/WindowOpeningMesh.tsx", "utf8"
 );

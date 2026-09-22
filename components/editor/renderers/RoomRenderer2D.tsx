@@ -2550,7 +2550,7 @@ export default function RoomRenderer2D({
     if (!opening) return false;
 
     const host = getResolvedOpeningHost(opening);
-    if (!host) return false;
+    if (!host || !opening.movableOnHost) return false;
     const pointerAlong = projectWorldPointToOpeningHost(
       host, getPlanPointFromPointerEvent(event)
     );
