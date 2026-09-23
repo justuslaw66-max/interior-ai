@@ -85,11 +85,11 @@
       "limit": 250
     },
     "app/share/[shareToken]/export/page.tsx": {
-      "lines": 1475,
+      "lines": 1468,
       "limit": 250
     },
     "app/share/[shareToken]/export/pdf/route.ts": {
-      "lines": 521,
+      "lines": 514,
       "limit": 400
     },
     "app/tools/glb-optimizer/page.tsx": {
@@ -317,7 +317,7 @@
       "limit": 250
     },
     "components/editor/ShoppingOverviewPanel.tsx": {
-      "lines": 643,
+      "lines": 640,
       "limit": 250
     },
     "components/GoogleAddressAutocomplete.tsx": {
@@ -497,7 +497,7 @@
       "limit": 400
     },
     "lib/catalog/view-builders.ts": {
-      "lines": 1009,
+      "lines": 989,
       "limit": 400
     },
     "lib/design-document-contract.ts": {
@@ -1517,7 +1517,7 @@
     "components/CartSidebar.tsx": {
       "overlongFunctions": {
         "count": 6,
-        "maximum": 979
+        "maximum": 978
       },
       "complexFunctions": {
         "count": 3,
@@ -1533,7 +1533,7 @@
     "components/catalog/CatalogCard.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 114
+        "maximum": 112
       }
     },
     "components/catalog/CatalogCategoryTabs.tsx": {

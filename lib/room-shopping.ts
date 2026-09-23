@@ -1,7 +1,7 @@
 import { CATALOG_ITEMS } from "@/lib/catalog";
 import { resolveCatalogVariant } from "@/lib/catalog/variant-resolver";
+import { getPriceLabel } from "@/lib/catalog/price-labels";
 import {
-  getPriceLabel,
   mapToTopCategory,
   type CatalogTopCategory,
 } from "@/lib/catalog/view-builders";
