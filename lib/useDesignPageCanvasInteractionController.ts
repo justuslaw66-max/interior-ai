@@ -14,6 +14,7 @@ import {
   getPlanOverlayMoveHistoryLabel,
   type PlanOverlayDragKind,
 } from "@/lib/design-page-floor-plan-utils";
+import { syncGestureTransaction } from "@/lib/design-page-gesture-history";
 import {
   rollbackInterruptedSceneItemDrag,
   SCENE_ITEM_DRAG_COMMAND_ID,
@@ -37,6 +38,13 @@ export type UseDesignPageCanvasInteractionControllerInput = {
   };
   actions: {
     history: CanvasInteractionHistory;
+    /**
+     * Closes a slider's still-open coalesced transaction. Room moves, room resizes and overlay
+     * drags call it, through syncGestureTransaction, before opening their own: begin() refuses to
+     * nest, so a gesture used to join the slider's undo entry, its end committed the slider's
+     * transaction, and the slider's own commit then warned "No active transaction to commit".
+     */
+    flushCoalescedHistoryTransaction: () => void;
     updateCameraViewFromScene: () => void;
   };
 };
@@ -48,7 +56,8 @@ export function useDesignPageCanvasInteractionController({
 }: UseDesignPageCanvasInteractionControllerInput) {
   const { orbitControls: orbitControlsRef, cameraAnimating: cameraAnimatingRef } =
     refs;
-  const { history, updateCameraViewFromScene } = actions;
+  const { flushCoalescedHistoryTransaction, history, updateCameraViewFromScene } =
+    actions;
   const [canvasObjectDragging, setCanvasObjectDragging] = useState(false);
   const [planRoomDragging, setPlanRoomDragging] = useState(false);
   const [planRoomResizing, setPlanRoomResizing] = useState(false);
@@ -97,16 +106,21 @@ export function useDesignPageCanvasInteractionController({
     [history]
   );
 
+  const syncGestureHistory = useCallback(
+    (activeRef: MutableRefObject<boolean>, active: boolean, name: string) =>
+      syncGestureTransaction(
+        history,
+        flushCoalescedHistoryTransaction,
+        activeRef,
+        active,
+        name
+      ),
+    [flushCoalescedHistoryTransaction, history]
+  );
+
   const changePlanRoomDragging = useCallback(
     (dragging: boolean) => {
-      if (dragging && !roomDragHistoryActiveRef.current) {
-        history.begin("Move room");
-        roomDragHistoryActiveRef.current = true;
-      } else if (!dragging && roomDragHistoryActiveRef.current) {
-        history.commit();
-        roomDragHistoryActiveRef.current = false;
-      }
-
+      syncGestureHistory(roomDragHistoryActiveRef, dragging, "Move room");
       setPlanRoomDragging(dragging);
       setOrbitControlsEnabled(
         !dragging &&
@@ -117,23 +131,20 @@ export function useDesignPageCanvasInteractionController({
     },
     [
       canvasObjectDragging,
-      history,
       planOverlayDragging,
       planRoomResizing,
       setOrbitControlsEnabled,
+      syncGestureHistory,
     ]
   );
 
   const changePlanOverlayDragging = useCallback(
     (dragging: boolean, kind?: PlanOverlayDragKind) => {
-      if (dragging && !overlayDragHistoryActiveRef.current) {
-        history.begin(getPlanOverlayMoveHistoryLabel(kind));
-        overlayDragHistoryActiveRef.current = true;
-      } else if (!dragging && overlayDragHistoryActiveRef.current) {
-        history.commit();
-        overlayDragHistoryActiveRef.current = false;
-      }
-
+      syncGestureHistory(
+        overlayDragHistoryActiveRef,
+        dragging,
+        getPlanOverlayMoveHistoryLabel(kind)
+      );
       setPlanOverlayDragging(dragging);
       setOrbitControlsEnabled(
         !dragging &&
@@ -144,10 +155,10 @@ export function useDesignPageCanvasInteractionController({
     },
     [
       canvasObjectDragging,
-      history,
       planRoomDragging,
       planRoomResizing,
       setOrbitControlsEnabled,
+      syncGestureHistory,
     ]
   );
 
@@ -160,14 +171,7 @@ export function useDesignPageCanvasInteractionController({
 
   const changePlanRoomResizing = useCallback(
     (resizing: boolean) => {
-      if (resizing && !roomResizeHistoryActiveRef.current) {
-        history.begin("Resize room");
-        roomResizeHistoryActiveRef.current = true;
-      } else if (!resizing && roomResizeHistoryActiveRef.current) {
-        history.commit();
-        roomResizeHistoryActiveRef.current = false;
-      }
-
+      syncGestureHistory(roomResizeHistoryActiveRef, resizing, "Resize room");
       setPlanRoomResizing(resizing);
       setOrbitControlsEnabled(
         !resizing &&
@@ -178,10 +182,10 @@ export function useDesignPageCanvasInteractionController({
     },
     [
       canvasObjectDragging,
-      history,
       planOverlayDragging,
       planRoomDragging,
       setOrbitControlsEnabled,
+      syncGestureHistory,
     ]
   );
 

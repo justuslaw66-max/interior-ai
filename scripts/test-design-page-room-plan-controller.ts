@@ -105,7 +105,7 @@ for (const [source, historyLabel] of [
 ] as const) {
   assert.match(
     source,
-    new RegExp(`(?:begin|runHistoryTransaction)\\(\"${historyLabel}\"`),
+    new RegExp(`runHistoryTransaction\\(\"${historyLabel}\"`),
     `The owning module should preserve the ${historyLabel} history transaction.`
   );
 }
@@ -142,6 +142,20 @@ assert.match(
   "Every mutation the deletion has to undo belongs inside its transaction, including the "
   + "empty-canvas reset that runs when the last room goes."
 );
+assert.doesNotMatch(
+  controllerSource,
+  /history\.(?:begin|commit)\(/,
+  "Duplicate, dimension and resize edits must not drive the history manager directly either: "
+  + "begin() is ignored while a coalesced transaction is open, so the commit that follows closes "
+  + "that transaction instead of its own."
+);
+for (const historyLabel of ["Duplicate room", "Edit room dimension", "Resize room"]) {
+  assert.match(
+    controllerSource,
+    new RegExp(`runHistoryTransaction\\("${historyLabel}", \\(\\) => \\{\\s*setDesignSnapshot\\(`),
+    `${historyLabel} must write the snapshot inside its own transaction, not after it.`
+  );
+}
 
 assert.match(
   planEditingFacadeSource,
