@@ -677,7 +677,7 @@
       "limit": 400
     },
     "lib/useDesignPageOnboarding.ts": {
-      "lines": 758,
+      "lines": 755,
       "limit": 400
     },
     "lib/useDesignPagePersistence.ts": {
@@ -4605,7 +4605,7 @@
     "lib/useDesignPageOnboarding.ts": {
       "overlongFunctions": {
         "count": 6,
-        "maximum": 546
+        "maximum": 543
       }
     },
     "lib/useDesignPagePanelActions.ts": {

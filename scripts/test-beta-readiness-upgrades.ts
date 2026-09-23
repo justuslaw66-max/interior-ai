@@ -481,6 +481,16 @@ assert.match(
   /const firstRunActivationState = useMemo/,
   "the design-page onboarding controller should compute first-run activation state."
 );
+assert.match(
+  designPageOnboardingSource,
+  /templateChosen: state\.designRoomCount > 1 \|\| state\.items\.length > 0,/,
+  "Choosing a template must come from the design changing, not from the fast-start panel being hidden (it is hidden on every fresh visit)."
+);
+assert.match(
+  designPageOnboardingSource,
+  /state\.saveStatusKind === "saved" && state\.saveStatusSource === "cloud"/,
+  "Only a cloud save completes save_design; the local autosave on load is not the user saving."
+);
 const emptyRoomNudgeInput = {
   hasItems: false,
   hasSofa: false,
