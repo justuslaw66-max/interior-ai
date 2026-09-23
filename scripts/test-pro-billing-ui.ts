@@ -100,6 +100,17 @@ assert.match(
   /id=\{PLANS_UPGRADE_OPENER_ID\}[\s\S]*?data-testid="upgrade-see-plans"/,
   "The nested Plans path must return to the current Plans action inside Upgrade."
 );
+const upgradeDialog = read("components/editor/design-page/UpgradeDialog.tsx");
+assert.doesNotMatch(
+  upgradeDialog,
+  /Variant:\s*\{state\.variantLabel\}|data-testid="upgrade-variant-label"/,
+  "The paywall experiment variant is telemetry, not copy: Upgrade must not print it to users."
+);
+assert.match(
+  upgradeDialog,
+  /data-testid="upgrade-variant-content"[\s\S]*?data-upgrade-variant=\{state\.variantLabel\}/,
+  "Upgrade should expose its experiment variant as a data attribute for tests and analytics."
+);
 assert.match(
   read("lib/design-page-dialog-layer-model.ts"),
   /openedFromUpgrade:\s*billing\.upgrade\.open/,
