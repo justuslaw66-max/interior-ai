@@ -35,19 +35,13 @@ import PlanSvgDownload from "./PlanSvgDownload";
 import ShoppingList from "./ShoppingList";
 import ShoppingCsvDownload from "./ShoppingCsvDownload";
 import { SurfaceMaterialBomSection } from "@/components/SurfaceMaterialBomSection";
+import { formatSgd } from "@/lib/money-format";
+import { PublicShareUnavailableCard } from "@/components/public-share/PublicShareUnavailableCard";
 
 export const metadata = {
   robots: { index: false, follow: false },
   title: "Design Export",
 };
-
-function formatCurrency(value: number) {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    maximumFractionDigits: 0,
-  }).format(value);
-}
 
 function formatRoomType(value: string) {
   return value.replace(/_/g, " ").replace(/\b\w/g, (letter) => letter.toUpperCase());
@@ -834,7 +828,7 @@ function CheckoutReadinessSchedule({ rows }: { rows: CheckoutReadinessRow[] }) {
         </div>
         <div className="text-right text-sm">
           <div className="font-semibold text-gray-900">
-            {formatCurrency(rows.reduce((sum, row) => sum + row.linePrice, 0))}
+            {formatSgd(rows.reduce((sum, row) => sum + row.linePrice, 0))}
           </div>
           <div className="text-xs text-gray-500">Estimated shopping total</div>
         </div>
@@ -861,7 +855,7 @@ function CheckoutReadinessSchedule({ rows }: { rows: CheckoutReadinessRow[] }) {
               <td className="p-2 text-center text-gray-600">{row.quantity}</td>
               <td className="p-2 text-gray-600">{getCheckoutStatusLabel(row)}</td>
               <td className="p-2 text-gray-600">{getCheckoutSourceLabel(row)}</td>
-              <td className="p-2 text-right text-gray-600">{formatCurrency(row.linePrice)}</td>
+              <td className="p-2 text-right text-gray-600">{formatSgd(row.linePrice)}</td>
             </tr>
           ))}
         </tbody>
@@ -993,12 +987,7 @@ export default async function ExportPage({
   if (!design) {
     return (
       <main className="min-h-screen flex items-center justify-center p-8">
-        <div className="rounded-xl border bg-white p-6">
-          <div className="text-lg font-semibold">Link not available</div>
-          <div className="text-sm text-neutral-600">
-            This share link is disabled or invalid.
-          </div>
-        </div>
+        <PublicShareUnavailableCard />
       </main>
     );
   }
@@ -1246,7 +1235,7 @@ export default async function ExportPage({
               </div>
               <div className="rounded-lg border bg-gray-50 p-4">
                 <div className="text-xs font-semibold uppercase tracking-wide text-gray-500">Estimated Total</div>
-                <div className="mt-1 text-2xl font-bold text-gray-900">{formatCurrency(homeSummary.subtotal)}</div>
+                <div className="mt-1 text-2xl font-bold text-gray-900">{formatSgd(homeSummary.subtotal)}</div>
               </div>
             </div>
             <div className="mt-3 grid gap-3 sm:grid-cols-4">
@@ -1329,7 +1318,7 @@ export default async function ExportPage({
                           {health ? `${health.level} ${health.placementScore}` : "review"}
                         </td>
                         <td className="p-2 text-center">{room.shoppableCount}</td>
-                        <td className="p-2 text-right">{formatCurrency(room.subtotal)}</td>
+                        <td className="p-2 text-right">{formatSgd(room.subtotal)}</td>
                       </tr>
                     );
                   })}

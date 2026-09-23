@@ -3,6 +3,7 @@ import { resolveCatalogVariant } from "@/lib/catalog/variant-resolver";
 import { mapToTopCategory } from "@/lib/catalog/view-builders";
 import type { ActiveRoomShoppingItem } from "@/lib/room-shopping";
 import type { RoomType } from "@/lib/room-types";
+import { formatSgd } from "@/lib/money-format";
 
 export type ShoppingReplacementSuggestion = {
   productId: string;
@@ -70,14 +71,6 @@ function getDimensionDelta(left: CatalogItemSchema, right: CatalogItemSchema) {
   return Math.abs(leftArea - rightArea) / leftArea;
 }
 
-function formatFallbackPrice(price: number) {
-  return new Intl.NumberFormat("en-SG", {
-    style: "currency",
-    currency: "SGD",
-    maximumFractionDigits: 0,
-  }).format(price);
-}
-
 export function buildShoppingReplacementSuggestions({
   item,
   catalogItems,
@@ -141,7 +134,7 @@ export function buildShoppingReplacementSuggestions({
               variantLabel: purchaseOption?.label ?? variant.label,
               imageUrl: purchaseOption?.imageUrl ?? variant.thumbnailUrl ?? candidate.assets.thumbUrl ?? null,
               price,
-              priceLabel: formatFallbackPrice(price),
+              priceLabel: formatSgd(price),
               reason: reasonParts.join(" · "),
               retailerUrl,
               score,

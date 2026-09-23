@@ -407,15 +407,15 @@ test.describe("14. Phase A Revenue Smoke", () => {
     await setPaywallVariantOverride(page, "unlock_pro_exports");
     await page.goto(`${baseURL}/design?paywall_variant=unlock_pro_exports&paywall_open=1`);
 
-    const variantLabel = page.getByTestId("upgrade-variant-label");
-    const variantLabelVisible = await expect(variantLabel)
-      .toContainText("unlock_pro_exports", { timeout: 15000 })
+    const variantContent = page.getByTestId("upgrade-variant-content");
+    const variantContentRendered = await expect(variantContent)
+      .toHaveAttribute("data-upgrade-variant", "unlock_pro_exports", { timeout: 15000 })
       .then(() => true)
       .catch(() => false);
-    if (!variantLabelVisible) {
+    if (!variantContentRendered) {
       test.info().annotations.push({
         type: "note",
-        description: "Skipping unlock_pro_exports paywall assertions because variant label was not rendered in this runtime",
+        description: "Skipping unlock_pro_exports paywall assertions because the variant content was not rendered in this runtime",
       });
       return;
     }
@@ -445,15 +445,15 @@ test.describe("14. Phase A Revenue Smoke", () => {
       waitUntil: "domcontentloaded",
     });
 
-    const variantLabel = page.getByTestId("upgrade-variant-label");
-    const variantLabelVisible = await expect(variantLabel)
-      .toContainText("see_pricing", { timeout: 15000 })
+    const variantContent = page.getByTestId("upgrade-variant-content");
+    const variantContentRendered = await expect(variantContent)
+      .toHaveAttribute("data-upgrade-variant", "see_pricing", { timeout: 15000 })
       .then(() => true)
       .catch(() => false);
-    if (!variantLabelVisible) {
+    if (!variantContentRendered) {
       test.info().annotations.push({
         type: "note",
-        description: "Skipping see_pricing paywall assertions because variant label was not rendered in this runtime",
+        description: "Skipping see_pricing paywall assertions because the variant content was not rendered in this runtime",
       });
       return;
     }

@@ -50,7 +50,7 @@ export type DesignPageOnboardingState = {
   items: DesignItem[];
   zones: ZoneMin[];
   constraintResults: ConstraintResult[];
-  showBetaStart: boolean;
+  saveStatusSource: string;
   designRoomCount: number;
   planRoomCount: number;
   saveStatusKind: string;
@@ -630,13 +630,10 @@ export function useDesignPageOnboarding({
   const firstRunActivationState = useMemo(
     () =>
       buildFirstRunActivationState({
-        templateChosen:
-          !state.showBetaStart ||
-          state.designRoomCount > 1 ||
-          state.items.length > 0,
+        templateChosen: state.designRoomCount > 1 || state.items.length > 0,
         itemCount: state.items.length,
         saveState:
-          state.saveStatusKind === "saved"
+          state.saveStatusKind === "saved" && state.saveStatusSource === "cloud"
             ? "saved"
             : state.saveStatusKind === "saving"
               ? "saving"
@@ -652,7 +649,7 @@ export function useDesignPageOnboarding({
       state.items.length,
       state.saveStatusKind,
       state.shareToken,
-      state.showBetaStart,
+      state.saveStatusSource,
     ]
   );
 

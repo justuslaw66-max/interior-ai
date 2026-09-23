@@ -555,4 +555,15 @@ assert.match(
   "The Pro selected-item panel should preserve its semantic panel surface."
 );
 
+assert.match(
+  css,
+  /@custom-variant dark \(&:where\(\[data-color-scheme="dark"\], \[data-color-scheme="dark"\] \*\)\);/,
+  "Tailwind dark: utilities must be opt-in; following the OS setting half-themes the light-first dialogs."
+);
+assert.doesNotMatch(
+  css,
+  /@media\s*\(prefers-color-scheme:\s*dark\)/,
+  "No stylesheet rule may follow the OS dark setting until the app has a designed dark theme."
+);
+
 console.log("Designer theme contrast checks passed.");

@@ -1,6 +1,7 @@
 "use client";
 
 import { usePublicShareLayout } from "@/components/public-share/PublicShareShell";
+import { formatSgd } from "@/lib/money-format";
 
 export type PublicShareRoomScheduleItem = {
   id: string;
@@ -16,14 +17,6 @@ export type PublicShareRoomScheduleItem = {
   healthScore: number;
   healthNextAction: string;
 };
-
-function formatCurrency(value: number) {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    maximumFractionDigits: 0,
-  }).format(value);
-}
 
 function healthClass(label: PublicShareRoomScheduleItem["healthLabel"]) {
   if (label === "Ready") return "font-semibold text-emerald-700";
@@ -44,7 +37,7 @@ function MobileRoomCards({ rooms }: { rooms: readonly PublicShareRoomScheduleIte
               </div>
             </div>
             <div className="shrink-0 text-right font-semibold text-neutral-950">
-              {formatCurrency(room.subtotal)}
+              {formatSgd(room.subtotal)}
             </div>
           </div>
           <div className="mt-3 grid grid-cols-2 gap-3 text-neutral-700">
@@ -110,7 +103,7 @@ function RoomTable({ rooms }: { rooms: readonly PublicShareRoomScheduleItem[] })
                 </div>
               </td>
               <td className="px-3 py-3 text-right font-semibold text-neutral-950">
-                {formatCurrency(room.subtotal)}
+                {formatSgd(room.subtotal)}
               </td>
             </tr>
           ))}

@@ -861,7 +861,6 @@ const shadowBudgetSource = read(
 );
 const readOnlyViewerSource = read("components/ReadOnlyViewer.tsx");
 const shareViewerSource = read("components/public-share/ShareScene.tsx");
-const designerCanvasSource = read("components/DesignerCanvas.tsx");
 assert.match(
   lightingSystemSource,
   /<ExposureController[\s\S]*?<EnvironmentController[\s\S]*?<ambientLight[\s\S]*?<SunController/,
@@ -900,7 +899,6 @@ assert.match(
 for (const [name, source] of [
   ["read-only", readOnlyViewerSource],
   ["share", shareViewerSource],
-  ["legacy designer", designerCanvasSource],
 ] as const) {
   assert.match(
     source,

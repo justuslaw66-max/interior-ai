@@ -5,7 +5,7 @@ import {
   type HousePlanRoom2D,
 } from "@/lib/design-page-house-plan";
 import type { RoomOpening2D } from "@/lib/editorScene";
-import { buildOpeningHostQualityIssues, openingHasPhysicalHost } from "@/lib/floor-plan-opening-quality";
+import { buildOpeningHostQualityIssues, openingHostRoomId } from "@/lib/floor-plan-opening-quality";
 import { getPlanRoomFloorAreaSqm } from "@/lib/room-floor-area";
 import type { DesignItem, RoomType } from "@/lib/room-types";
 export type FloorPlanQualityLabel = "Looks good" | "Improve" | "Review";
@@ -175,8 +175,7 @@ function roomWindows(room: HousePlanRoom2D, openings: RoomOpening2D[], rooms: Ho
   return openings.filter(
     (opening) =>
       opening.kind === "window" &&
-      opening.roomId === room.id &&
-      openingHasPhysicalHost(opening, rooms) &&
+      openingHostRoomId(opening, rooms) === room.id &&
       wallIsExterior(room, opening.wall, rooms)
   );
 }
