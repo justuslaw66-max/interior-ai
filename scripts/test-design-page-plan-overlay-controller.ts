@@ -89,7 +89,7 @@ assert.match(
 );
 assert.match(
   controllerSource,
-  /suppressedDoorwaySuggestionKeys\.includes\([\s\S]*?getDoorwaySuggestionKey\(suggestion\)[\s\S]*?return;[\s\S]*?runHistoryTransaction\("Add doorway"/,
+  /suppressedDoorwaySuggestionKeys\.includes\([\s\S]*?getDoorwaySuggestionKey\(suggestion\)[\s\S]*?return;[\s\S]*?runHistoryTransaction\("Add door"/,
   "Suppressed doorway suggestions should stay inert while accepted suggestions remain history-aware."
 );
 
@@ -313,7 +313,7 @@ for (const metrics of [
 ]) {
   assert.equal(
     getDesignPageOpeningMetricsHistoryLabel(metrics),
-    "Resize opening",
+    "Resize door or window",
     "Dimension-only opening changes should use the resize history label."
   );
 }
@@ -326,7 +326,7 @@ for (const metrics of [
 ]) {
   assert.equal(
     getDesignPageOpeningMetricsHistoryLabel(metrics),
-    "Edit opening",
+    "Edit door or window",
     "Offset-only and kind changes should use the edit history label."
   );
 }

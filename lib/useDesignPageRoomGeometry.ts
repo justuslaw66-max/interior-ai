@@ -135,7 +135,7 @@ export function useDesignPageRoomGeometry({
             currentSnapshot,
             result
           );
-          runHistoryTransaction("Edit canonical floor wall height", () => {
+          runHistoryTransaction("Edit floor wall height", () => {
             designSnapshotRef.current = committed.snapshot;
             setDesignSnapshot(committed.snapshot);
             setPlanOpenings(committed.openings);
@@ -322,7 +322,7 @@ export function useDesignPageRoomGeometry({
             currentSnapshot,
             result
           );
-          runHistoryTransaction("Edit canonical slab thickness", () => {
+          runHistoryTransaction("Edit slab thickness", () => {
             designSnapshotRef.current = committed.snapshot;
             setDesignSnapshot(committed.snapshot);
             setPlanOpenings(committed.openings);

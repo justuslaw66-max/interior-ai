@@ -315,7 +315,7 @@ export function CabinetSceneItem({
                 <button
                   type="button"
                   data-testid="plan-item-keyboard-target"
-                  aria-label={`Select ${definition.name} in 2D plan`}
+                  aria-label={`Select ${definition.name} in 2D`}
                   aria-pressed={selected}
                   className="focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
                   onPointerDown={(event) => event.stopPropagation()}

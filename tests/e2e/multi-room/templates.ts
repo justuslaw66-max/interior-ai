@@ -13,7 +13,7 @@ export function registerTemplateTests() {
     await page.waitForLoadState("domcontentloaded");
 
     await expect(page.getByTestId("scene-canvas").first()).toBeVisible({ timeout: 20000 });
-    await page.getByRole("button", { name: "2D Plan" }).click();
+    await page.getByRole("button", { name: "2D", exact: true }).click();
     await chooseTemplateStart(page);
 
     await expect(page.getByTestId("apply-plan-template-studio")).toBeVisible();
@@ -79,7 +79,7 @@ export function registerTemplateTests() {
     await page.waitForLoadState("domcontentloaded");
 
     await expect(page.getByTestId("scene-canvas").first()).toBeVisible({ timeout: 20000 });
-    await page.getByRole("button", { name: "2D Plan" }).click();
+    await page.getByRole("button", { name: "2D", exact: true }).click();
     await chooseTemplateStart(page);
 
     await expect(page.getByTestId("plan-template-dimensions-studio")).toContainText(
@@ -144,7 +144,7 @@ export function registerTemplateTests() {
     await page.waitForLoadState("domcontentloaded");
 
     await expect(page.getByTestId("scene-canvas").first()).toBeVisible({ timeout: 20000 });
-    await page.getByRole("button", { name: "2D Plan" }).click();
+    await page.getByRole("button", { name: "2D", exact: true }).click();
     await chooseTemplateStart(page);
 
     await expect(page.getByTestId("apply-furnished-template-studio")).toBeVisible();
@@ -286,7 +286,7 @@ export function registerTemplateTests() {
     await expect(page.getByTestId("coohom-floor-panel")).toBeVisible();
     await expect(page.getByTestId("selection-inspector-room-dimensions")).toBeVisible();
 
-    await page.getByRole("button", { name: "2D Plan" }).click();
+    await page.getByRole("button", { name: "2D", exact: true }).click();
     const sceneCanvas = page.getByTestId("scene-canvas").first();
     await expect(sceneCanvas).toHaveAttribute("data-plan-2d-orientation", /^(normal|rotated)$/);
     const planOrientationBeforeFit = await sceneCanvas.getAttribute("data-plan-2d-orientation");
@@ -371,7 +371,7 @@ export function registerTemplateTests() {
     await page.getByTestId("editor-workflow-plan").click({ timeout: 5_000, noWaitAfter: true });
     await expect(page.getByTestId("editor-workflow-plan")).toHaveAttribute("data-active", "true");
 
-    await page.getByRole("button", { name: "2D Plan" }).click();
+    await page.getByRole("button", { name: "2D", exact: true }).click();
     await expect(sceneCanvas).toHaveAttribute("data-plan-2d-camera-valid", "true");
     await expect(page.getByTestId("plan-tool-palette")).toBeVisible();
     await expect(page.getByTestId("plan-start-draw")).toBeVisible();
@@ -392,12 +392,12 @@ export function registerTemplateTests() {
     await expect(page.getByTestId("room-adjacency-guide")).toHaveText("Shared wall");
     await expect(page.getByTestId("room-connection-checklist")).toBeVisible();
     await expect(page.getByTestId("room-connection-checklist")).toContainText("Connections");
-    await expect(page.getByTestId("room-connection-checklist")).toContainText("Needs doorway");
+    await expect(page.getByTestId("room-connection-checklist")).toContainText("Needs a door");
     await expect(page.getByTestId("room-connection-checklist")).toContainText("shared wall");
-    await expect(page.getByTestId("room-connection-add-doorway")).toHaveText("Add doorway");
+    await expect(page.getByTestId("room-connection-add-doorway")).toHaveText("Add connecting door");
     await page.getByTestId("room-connection-add-doorway").click();
-    await expect(page.getByText("⚠️ Doorway added", { exact: true })).toBeVisible();
-    await expect(page.getByTestId("consumer-plan-next-steps")).toContainText("openings placed");
+    await expect(page.getByText("⚠️ Door added", { exact: true })).toBeVisible();
+    await expect(page.getByTestId("consumer-plan-next-steps")).toContainText(/(door or window|doors and windows) placed/);
     const selectedRoomSectionToggle = page.getByTestId("plan-section-toggle-selectedRoom");
     if ((await selectedRoomSectionToggle.getAttribute("aria-expanded")) === "false") {
       await selectedRoomSectionToggle.click();

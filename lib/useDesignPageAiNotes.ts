@@ -167,7 +167,7 @@ export function useDesignPageAiNotes({ state, actions }: UseDesignPageAiNotesOpt
               if (!snapshot.items) return;
               commitItems(
                 snapshot.items as DesignItem[],
-                suggestion.type ? `AI: ${suggestion.type}` : "AI suggestion"
+                "Apply AI suggestion"
               );
             },
             getDesignSnapshot: () => ({ items: getItems() }),

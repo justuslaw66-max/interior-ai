@@ -216,7 +216,7 @@ export function ConsumerRoomSetupCard({
           }
         >
           Room geometry is read-only in this view. Return to the editable plan
-          to change dimensions or openings.
+          to change dimensions, doors or windows.
         </div>
       ) : null}
 
@@ -248,7 +248,7 @@ export function ConsumerRoomSetupCard({
           >
             {roomSetupOpeningStatus({ hasConnectionBlockers, planSettingsReady: measurementUnitReady, openingCount })}
           </div>
-          <div className="grid grid-cols-2 gap-2" aria-label="Add room openings">
+          <div className="grid grid-cols-2 gap-2" aria-label="Doors & windows">
             <button
               type="button"
               data-testid="plan-tool-door"

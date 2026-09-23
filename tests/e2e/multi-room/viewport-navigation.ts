@@ -23,7 +23,7 @@ export function registerViewportNavigationTests() {
     await chooseTemplateStart(page);
     await page.getByTestId("add-room-template-bedroom").click();
 
-    await page.getByRole("button", { name: "2D Plan" }).click();
+    await page.getByRole("button", { name: "2D", exact: true }).click();
     await expectPlan2DProjectionHealthy(page);
 
     await clickWithFallback(page.getByTestId("room-plan-status-fit-view"));
@@ -41,7 +41,7 @@ export function registerViewportNavigationTests() {
     await expectPlan2DProjectionHealthy(page);
 
     await page.getByRole("button", { name: "3D" }).click();
-    await page.getByRole("button", { name: "2D Plan" }).click();
+    await page.getByRole("button", { name: "2D", exact: true }).click();
     await expectPlan2DProjectionHealthy(page);
   });
 
@@ -59,7 +59,7 @@ export function registerViewportNavigationTests() {
 
     await chooseTemplateStart(page);
     await page.getByTestId("add-room-template-bedroom").click();
-    await page.getByRole("button", { name: "2D Plan" }).click();
+    await page.getByRole("button", { name: "2D", exact: true }).click();
     await expectPlan2DProjectionHealthy(page);
 
     const roomLabel = await getActiveRoomBodyProbe(page);

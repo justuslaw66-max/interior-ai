@@ -172,7 +172,7 @@ export function useDesignPageAiLayout({
   const applyPendingProposal = useCallback(() => {
     if (!pendingProposal) return;
 
-    commitItems(pendingProposal.items, "Apply AI layout proposal");
+    commitItems(pendingProposal.items, "Apply suggested layout");
     clearAllSelection();
     if (pendingProposal.appliedRugRule) {
       showRuleToast("Rug sized to sofa width");

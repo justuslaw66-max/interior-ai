@@ -310,15 +310,15 @@ function roomlessCandidates(
 
 function consumerMessage(status: OpeningHostFailure["status"]) {
   if (status === "ambiguous") {
-    return "This opening matches more than one wall. Choose its intended wall before it can cut the plan.";
+    return "This door or window matches more than one wall. Choose its intended wall before it can cut the plan.";
   }
   if (status === "unsupported") {
-    return "This wall shape is not supported for physical openings yet. Reassign the opening to a supported wall.";
+    return "Doors and windows are not supported on this wall shape yet. Reassign it to a supported wall.";
   }
   if (status === "invalid") {
-    return "This opening has invalid width or placement values. Repair them before it can cut the plan.";
+    return "This door or window has invalid width or placement values. Repair them before it can cut the plan.";
   }
-  return "This opening is not attached to a physical wall. Reassign its wall before it can cut the plan.";
+  return "This door or window is not attached to a physical wall. Reassign its wall before it can cut the plan.";
 }
 
 function hostFailure(
@@ -357,7 +357,7 @@ export function resolveDesignPageOpeningHostWithContext(
     return hostFailure("unresolved",
       `Opening ${opening.id} refers to missing room ${opening.roomId}.`,
       persistedWorldCenter,
-      "The original room and wall are unavailable. Choose a new wall before this opening can cut the plan.");
+      "The original room and wall are unavailable. Choose a new wall before this door or window can cut the plan.");
   }
   const candidates = owningRoom
     ? owningRoomCandidates(opening, topology, owningRoom)

@@ -449,7 +449,7 @@ async function openConsumerRoomSetup(page: Page) {
     "true",
     { timeout: 30_000 },
   );
-  await page.getByRole("button", { name: "2D Plan", exact: true }).click();
+  await page.getByRole("button", { name: "2D", exact: true }).click();
   await expect(page.getByTestId("consumer-room-setup")).toBeVisible({ timeout: 20_000 });
 }
 
@@ -729,7 +729,7 @@ test.describe("23. Consumer room setup", () => {
       replacement: { displayUnit: "ft-in" },
       prepareReplacement: async () => {
         if (!(await page.getByTestId("consumer-room-setup").isVisible().catch(() => false))) {
-          await page.getByRole("button", { name: "2D Plan", exact: true }).click();
+          await page.getByRole("button", { name: "2D", exact: true }).click();
         }
         await expect(page.getByTestId("consumer-room-setup")).toBeVisible({
           timeout: 20_000,
@@ -838,7 +838,7 @@ test.describe("23. Consumer room setup", () => {
         "true",
         { timeout: 30_000 },
       );
-      await page.getByRole("button", { name: "2D Plan", exact: true }).click();
+      await page.getByRole("button", { name: "2D", exact: true }).click();
       await expect(page.getByTestId("consumer-room-setup")).toBeVisible({
         timeout: 20_000,
       });
@@ -893,7 +893,7 @@ test.describe("23. Consumer room setup", () => {
           displayUnit: "ft-in",
         },
         prepareReplacement: async () => {
-          await page.getByRole("button", { name: "2D Plan", exact: true }).click();
+          await page.getByRole("button", { name: "2D", exact: true }).click();
           await expect(page.getByTestId("consumer-room-setup")).toBeVisible({
             timeout: 20_000,
           });

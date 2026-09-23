@@ -18,7 +18,7 @@ export function registerStartAndFloorTests() {
       await chooseTemplateStart(page);
     }
 
-    await expect(page.getByRole("button", { name: "2D Plan" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "2D", exact: true })).toBeVisible();
     await expect(page.getByTestId("apply-plan-template-studio")).toBeVisible();
     await expect(page.getByTestId("apply-plan-template-compact_two_bed")).toBeVisible();
 

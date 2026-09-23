@@ -333,7 +333,7 @@ const planItemRenderer = read(
 );
 for (const required of [
   'data-testid="plan-item-keyboard-target"',
-  "aria-label={`Select ${label} in 2D plan`}",
+  "aria-label={`Select ${label} in 2D`}",
   "aria-pressed={selected}",
   "focus-visible:outline",
   "onSelect(event.shiftKey)",

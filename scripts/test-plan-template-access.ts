@@ -231,7 +231,7 @@ assert.match(
 const planToolSectionContracts = [
   { section: "importFloorPlan", title: "Upload floor plan" },
   { section: "drawRoom", title: "Draw room" },
-  { section: "openings", title: "Place doors and windows" },
+  { section: "openings", title: "Doors & windows" },
   { section: "templates", title: "Templates" },
 ] as const satisfies ReadonlyArray<{
   section: CollapsiblePlanSection;
@@ -282,7 +282,7 @@ for (const { section, title, markup } of renderedPlanToolSections) {
     `${testId} should retain native keyboard activation and collapsed state.`
   );
   assert.ok(
-    markup.includes(`>${title}</span>`),
+    markup.includes(`>${title.replace("&", "&amp;")}</span>`),
     `${testId} should keep its accessible visible section name independent from its test ID.`
   );
 }
@@ -299,7 +299,7 @@ assert.match(
 
 assert.match(
   source,
-  /data-testid="plan-tool-palette"[\s\S]*?overflow-hidden rounded-sm border[\s\S]*?Room setup[\s\S]*?ConsumerRoomSetupCard[\s\S]*?Upload floor plan[\s\S]*?Draw room[\s\S]*?Place doors and windows[\s\S]*?Templates/,
+  /data-testid="plan-tool-palette"[\s\S]*?overflow-hidden rounded-sm border[\s\S]*?Room setup[\s\S]*?ConsumerRoomSetupCard[\s\S]*?Upload floor plan[\s\S]*?Draw room[\s\S]*?Doors & windows[\s\S]*?Templates/,
   "Consumer plan editing should lead with one focused Room setup card while retaining grouped advanced tools."
 );
 

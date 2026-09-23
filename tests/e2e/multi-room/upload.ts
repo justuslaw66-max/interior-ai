@@ -22,7 +22,7 @@ export function registerUploadTests() {
       const scene = page.getByTestId("scene-canvas").first();
       await expect(scene).toBeVisible({ timeout: 20000 });
       await expect(scene).toHaveAttribute("data-client-hydrated", "true", { timeout: 20000 });
-      const planView = page.getByRole("button", { name: "2D Plan" });
+      const planView = page.getByRole("button", { name: "2D", exact: true });
       await planView.click();
       await expect(planView).toHaveAttribute("aria-pressed", "true");
       await page.getByTestId("plan-tool-section-importFloorPlan")

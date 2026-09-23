@@ -337,7 +337,7 @@ export function buildDesignPageViewportRegionAdapter({
         changeWidthMm: openingMetricActions.commitWidthMm,
         deleteOpening: () => {
           actions.deletePlanOverlay(selectedOverlayId);
-          actions.showToast("Opening deleted");
+          actions.showToast("Door or window deleted");
         },
       },
       selectionInspector: {

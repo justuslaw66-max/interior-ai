@@ -198,9 +198,9 @@ export default function EditorToolRail({
       />
       <ToolButton
         dark={dark}
-        label="Fit plan shortcut"
+        label="Fit to screen"
         testId="editor-rail-fit-plan"
-        title="Fit plan"
+        title="Fit to screen"
         onClick={onFitPlan}
       >
         <FitIcon />

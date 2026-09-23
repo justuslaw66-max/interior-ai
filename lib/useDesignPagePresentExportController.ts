@@ -227,7 +227,7 @@ export function useDesignPagePresentExportController({
 
   const addBuiltIn = useCallback(() => {
     const id = `fixed-${Date.now()}`;
-    actions.history.runTransaction("Add plan fixture", () =>
+    actions.history.runTransaction("Add built-in", () =>
       actions.plan.setFixedElements((previous) => [
         ...previous,
         {

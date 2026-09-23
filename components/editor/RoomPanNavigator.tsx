@@ -182,7 +182,7 @@ export default function RoomPanNavigator({
           ? "designer-dock w-[264px] max-[520px]:w-full overflow-hidden rounded-lg"
           : "w-[264px] max-[520px]:w-full overflow-hidden rounded-lg border border-neutral-200 bg-white shadow-lg"
       }
-      aria-label="Room view navigator"
+      aria-label="Room navigator"
     >
       <div
         className={
@@ -204,8 +204,8 @@ export default function RoomPanNavigator({
                 disabled={disabled}
                 onClick={onResetView}
                 className={navigatorButtonClass}
-                aria-label="Reset room view"
-                title="Reset view"
+                aria-label="Fit to screen"
+                title="Fit to screen"
               >
                 <RotateCcw className="h-3.5 w-3.5" aria-hidden="true" />
               </button>

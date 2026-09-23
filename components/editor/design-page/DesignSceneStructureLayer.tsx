@@ -242,7 +242,7 @@ export function DesignSceneStructureLayer({
             whiteSpace: "nowrap",
           }}
         >
-          Room boundaries source-locked · openings editable on-wall
+          Room boundaries source-locked · doors and windows editable
         </div>
       </Html>
     ) : null;

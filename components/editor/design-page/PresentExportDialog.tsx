@@ -220,7 +220,7 @@ export function PresentExportDialog({ configuration, state, actions }: PresentEx
                 ? "designer-text-primary mb-2 text-sm font-semibold"
                 : "mb-2 text-sm font-semibold text-gray-800"
             }>
-              Camera Views
+              Saved views
             </h3>
             <div className="space-y-2">
               <EditorViewToggle
@@ -255,7 +255,7 @@ export function PresentExportDialog({ configuration, state, actions }: PresentEx
                       : "mb-1 block text-[11px] font-semibold uppercase tracking-wide text-gray-500"
                   }
                 >
-                  Named camera view
+                  View name
                 </label>
                 <div className="grid grid-cols-[1fr_auto] gap-2">
                   <input

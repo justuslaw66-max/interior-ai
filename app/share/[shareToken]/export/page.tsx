@@ -679,7 +679,7 @@ function PlanOverview({
                         textAnchor="middle"
                         className="fill-gray-500 text-[10px]"
                       >
-                        {formatMeasurement(room.areaSqm, "m2")} • {room.itemCount} items • {room.openingCount} openings
+                        {formatMeasurement(room.areaSqm, "m2")} • {room.itemCount} items • {room.openingCount} doors & windows
                       </text>
                     </g>
                   );
@@ -874,9 +874,9 @@ function PresentationViewSchedule({ rows }: { rows: PresentationViewRow[] }) {
   return (
     <section className="avoid-break mb-12">
       <div className="mb-4">
-        <h2 className="text-2xl font-bold text-gray-900">Presentation View Schedule</h2>
+        <h2 className="text-2xl font-bold text-gray-900">Saved views</h2>
         <div className="mt-1 text-sm text-gray-600">
-          {rows.length} saved camera view{rows.length === 1 ? "" : "s"} for the shared 3D walkthrough
+          {rows.length} saved view{rows.length === 1 ? "" : "s"} for the shared 3D walkthrough
         </div>
       </div>
       <table className="w-full border-collapse text-sm">
@@ -1245,16 +1245,16 @@ export default async function ExportPage({
                 <div className="mt-1 text-xs text-gray-500">{formatMeasurement(totalAreaSqm * SQM_TO_SQFT, "sq ft")}</div>
               </div>
               <div className="rounded-lg border bg-white p-4">
-                <div className="text-xs font-semibold uppercase tracking-wide text-gray-500">Openings</div>
+                <div className="text-xs font-semibold uppercase tracking-wide text-gray-500">Doors & windows</div>
                 <div className="mt-1 text-xl font-bold text-gray-900">{totalOpenings}</div>
-                <div className="mt-1 text-xs text-gray-500">Doors and windows saved in plan mode</div>
+                <div className="mt-1 text-xs text-gray-500">Doors and windows in this design</div>
               </div>
               <div className="rounded-lg border bg-white p-4">
                 <div className="text-xs font-semibold uppercase tracking-wide text-gray-500">Plan Readiness</div>
                 <div className="mt-1 text-xl font-bold text-gray-900">
                   {totalAreaSqm > 0 && totalOpenings > 0 ? "Ready" : "Review"}
                 </div>
-                <div className="mt-1 text-xs text-gray-500">Measurement and opening coverage</div>
+                <div className="mt-1 text-xs text-gray-500">Measurements, doors and windows</div>
               </div>
               <div className="rounded-lg border bg-white p-4" data-testid="export-handoff-integrity">
                 <div className="text-xs font-semibold uppercase tracking-wide text-gray-500">Handoff Integrity</div>
@@ -1295,7 +1295,7 @@ export default async function ExportPage({
                     <th className="p-2 text-left">Type</th>
                     <th className="p-2 text-right">Area</th>
                     <th className="p-2 text-center">Items</th>
-                    <th className="p-2 text-center">Openings</th>
+                    <th className="p-2 text-center">Doors & windows</th>
                     <th className="p-2 text-center">Health</th>
                     <th className="p-2 text-center">Shoppable</th>
                     <th className="p-2 text-right">Subtotal</th>
@@ -1360,7 +1360,7 @@ export default async function ExportPage({
                   <div className="mt-1 text-xs text-gray-500">Wall length estimate</div>
                 </div>
                 <div className="rounded-lg border bg-gray-50 p-4">
-                  <div className="text-xs font-semibold uppercase tracking-wide text-gray-500">Openings</div>
+                  <div className="text-xs font-semibold uppercase tracking-wide text-gray-500">Doors & windows</div>
                   <div className="mt-1 text-lg font-bold text-gray-900">{metrics.openingCount}</div>
                   <div className="mt-1 text-xs text-gray-500">
                     {metrics.doorCount} door{metrics.doorCount === 1 ? "" : "s"} / {metrics.windowCount} window{metrics.windowCount === 1 ? "" : "s"}
@@ -1378,7 +1378,7 @@ export default async function ExportPage({
               {/* Saved Views */}
               {room.savedViews && room.savedViews.length > 0 && (
                 <div className="mb-6">
-                  <h3 className="mb-2 text-lg font-semibold text-gray-800">Saved Views</h3>
+                  <h3 className="mb-2 text-lg font-semibold text-gray-800">Saved views</h3>
                   <div className="grid grid-cols-2 gap-3">
                     {room.savedViews.map((view: SavedView) => (
                       <div
@@ -1440,7 +1440,7 @@ export default async function ExportPage({
                   {totalOpenings > 0 ? "✓" : "!"}
                 </span>
                 <span>
-                  Doors and windows: {totalOpenings > 0 ? `${totalOpenings} opening${totalOpenings === 1 ? "" : "s"} included` : "Trace openings for stronger installation and shopping notes"}
+                  Doors and windows: {totalOpenings > 0 ? `${totalOpenings} included` : "Trace doors and windows for stronger installation and shopping notes"}
                 </span>
               </div>
               <div className="flex items-center gap-2">

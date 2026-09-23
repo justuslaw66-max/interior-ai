@@ -265,7 +265,7 @@ async function benchmarkProject(
   const scene = await readSceneMetrics(page);
 
   const switchStartedAt = nodePerformance.now();
-  await page.getByRole("button", { name: "2D Plan" }).click();
+  await page.getByRole("button", { name: "2D", exact: true }).click();
   await page
     .getByTestId("scene-canvas")
     .first()

@@ -75,7 +75,7 @@ export default function RoomPlanStatusBar({
 }: RoomPlanStatusBarProps) {
   const isCommand = variant === "command";
   const nextViewMode: EditorViewMode = viewMode === "2d" ? "3d" : "2d";
-  const viewActionLabel = viewMode === "2d" ? "Room view" : "Plan";
+  const viewActionLabel = viewMode === "2d" ? "Switch to 3D" : "Switch to 2D";
   const roomCountLabel = `${roomCount} room${roomCount === 1 ? "" : "s"}`;
   const showRoomType = roomTypeLabel.trim().toLowerCase() !== roomName.trim().toLowerCase();
   const healthLabel =
@@ -197,13 +197,13 @@ export default function RoomPlanStatusBar({
       <button
         type="button"
         data-testid="room-plan-status-fit-view"
-        aria-label="Fit plan"
-        title="Fit plan"
+        aria-label="Fit to screen"
+        title="Fit to screen"
         onClick={onFitPlan}
         disabled={disabled || !onFitPlan}
         className={`${secondaryButtonClass} shrink-0`}
       >
-        {compact || isCommand ? "Fit" : "Fit plan"}
+        {compact || isCommand ? "Fit" : "Fit to screen"}
       </button>
       {onRenameRoom && (
         <button

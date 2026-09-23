@@ -18,7 +18,7 @@ export function registerDrawingTests() {
 
     await expect(page.getByTestId("scene-canvas").first()).toBeVisible({ timeout: 20000 });
     await expect(page.getByTestId("floor-plan-draw-mode-straight_wall")).toHaveCount(0);
-    await page.getByRole("button", { name: "2D Plan" }).click();
+    await page.getByRole("button", { name: "2D", exact: true }).click();
     await chooseDrawFromScratch(page);
     await expect(page.getByTestId("plan-tool-section-drawRoom")).toBeVisible();
 
@@ -133,7 +133,7 @@ export function registerDrawingTests() {
     await page.waitForLoadState("domcontentloaded");
 
     await expect(page.getByTestId("scene-canvas").first()).toBeVisible({ timeout: 20000 });
-    await page.getByRole("button", { name: "2D Plan" }).click();
+    await page.getByRole("button", { name: "2D", exact: true }).click();
     await chooseDrawFromScratch(page);
     await page.getByTestId("floor-plan-draw-mode-straight_wall").click();
 
@@ -179,7 +179,7 @@ export function registerDrawingTests() {
     await page.waitForLoadState("domcontentloaded");
 
     await expect(page.getByTestId("scene-canvas").first()).toBeVisible({ timeout: 20000 });
-    await page.getByRole("button", { name: "2D Plan" }).click();
+    await page.getByRole("button", { name: "2D", exact: true }).click();
     await chooseDrawFromScratch(page);
     await page.getByText("More drawing options").click();
     await page.getByTestId("floor-plan-draw-mode-arc_wall").click();
@@ -225,7 +225,7 @@ export function registerDrawingTests() {
     await page.waitForLoadState("domcontentloaded");
 
     await expect(page.getByTestId("scene-canvas").first()).toBeVisible({ timeout: 20000 });
-    await page.getByRole("button", { name: "2D Plan" }).click();
+    await page.getByRole("button", { name: "2D", exact: true }).click();
     await chooseDrawFromScratch(page);
     await page.getByTestId("floor-plan-draw-mode-rectangle_wall").click();
 
@@ -323,7 +323,7 @@ export function registerDrawingTests() {
     await expect(page.getByTestId("room-plan-status-room-count")).toHaveText("1 room");
     await chooseTemplateStart(page);
     await page.getByTestId("add-room-template-bedroom").click();
-    await page.getByRole("button", { name: "2D Plan" }).click();
+    await page.getByRole("button", { name: "2D", exact: true }).click();
     const guidedActionsToggle = page.getByTestId("plan-guided-actions-toggle");
     if ((await guidedActionsToggle.getAttribute("data-enabled")) === "true") {
       await guidedActionsToggle.click();
@@ -397,7 +397,7 @@ export function registerDrawingTests() {
     await expect(page.getByTestId("scene-canvas").first()).toBeVisible({ timeout: 20000 });
     await chooseTemplateStart(page);
     await page.getByTestId("add-room-template-bedroom").click();
-    await page.getByRole("button", { name: "2D Plan" }).click();
+    await page.getByRole("button", { name: "2D", exact: true }).click();
 
     await expect(page.getByTestId("room-plan-status-room-count")).toHaveText("2 rooms");
     const livingLabel = page

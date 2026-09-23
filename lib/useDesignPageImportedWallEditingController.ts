@@ -85,10 +85,10 @@ export type UseDesignPageImportedWallEditingControllerInput = {
 };
 
 const ACTION_LABELS: Record<ConsumerWallTopologyMutationV2["kind"], string> = {
-  move_vertex: "Move imported wall endpoint",
-  move_wall: "Move imported wall",
-  update_wall: "Update imported wall",
-  split_wall: "Split imported wall",
+  move_vertex: "Move wall corner",
+  move_wall: "Move wall",
+  update_wall: "Edit wall",
+  split_wall: "Split wall",
 };
 
 function stableIdPart(value: string): string {

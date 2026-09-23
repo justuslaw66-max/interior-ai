@@ -180,11 +180,11 @@ export default async function SharePage({
       tone: measuredRoomCount === designSnapshot.rooms.length ? "ready" : "review",
     },
     {
-      label: "Openings",
+      label: "Doors & windows",
       value:
         totalOpenings > 0
-          ? `${totalOpenings} opening${totalOpenings === 1 ? "" : "s"} included`
-          : "No openings traced",
+          ? `${totalOpenings} ${totalOpenings === 1 ? "door or window" : "doors and windows"} included`
+          : "No doors or windows traced",
       detail:
         totalOpenings > 0
           ? "Doors and windows are included in the saved design."
@@ -206,7 +206,7 @@ export default async function SharePage({
       detail:
         presentationViewItems.length > 0
           ? "Curated camera angles are ready for walkthrough."
-          : "Save a camera view in the editor to show it here.",
+          : "Save a view in the editor to show it here.",
       tone: presentationViewItems.length > 0 ? "ready" : "info",
     },
   ];

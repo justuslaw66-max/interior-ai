@@ -38,7 +38,7 @@ export function buildOpeningHostQualityIssues(
       },
       title: `${opening.kind === "door" ? "Door" : "Window"} needs wall repair`,
       detail: resolution.consumerMessage,
-      suggestedFix: "Select the opening and assign it to a wall that contains its requested position.",
+      suggestedFix: `Select the ${opening.kind} and assign it to a wall that contains its requested position.`,
       action: "review_plan_layout",
     } satisfies FloorPlanQualityIssue];
   });

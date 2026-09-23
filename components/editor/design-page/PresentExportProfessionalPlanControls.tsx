@@ -23,7 +23,7 @@ const LAYERS: ReadonlyArray<[keyof PlanLayers, string]> = [
   ["grid", "Grid"],
   ["dimensions", "Dimensions"],
   ["labels", "Labels"],
-  ["openings", "Doors/windows"],
+  ["openings", "Doors & windows"],
   ["builtIns", "Built-ins"],
   ["zones", "Zones"],
   ["annotations", "Notes"],

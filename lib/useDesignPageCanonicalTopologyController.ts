@@ -114,10 +114,10 @@ export function useDesignPageCanonicalTopologyController({
       ) {
         return;
       }
-      const message = cause instanceof Error ? cause.message : "The opening edit is not valid.";
+      const message = cause instanceof Error ? cause.message : "This door or window edit is not valid.";
       if (lastErrorRef.current === message) return;
       lastErrorRef.current = message;
-      actions.showToast(`Opening change blocked: ${message}`);
+      actions.showToast(`Door or window change blocked: ${message}`);
     },
     [actions]
   );
@@ -232,10 +232,10 @@ export function useDesignPageCanonicalTopologyController({
       } catch (cause) {
         const message = cause instanceof DesignPageOpeningMutationError
           ? cause.message
-          : "The opening kind change is not valid.";
+          : "This door or window type change is not valid.";
         if (lastErrorRef.current !== message) {
           lastErrorRef.current = message;
-          actions.showToast(`Opening change blocked: ${message}`);
+          actions.showToast(`Door or window change blocked: ${message}`);
         }
         return true;
       }

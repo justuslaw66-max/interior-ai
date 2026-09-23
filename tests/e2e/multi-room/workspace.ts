@@ -271,7 +271,7 @@ export function registerWorkspaceTests() {
     await page.waitForLoadState("domcontentloaded");
 
     await expect(page.getByTestId("scene-canvas").first()).toBeVisible({ timeout: 20000 });
-    await page.getByRole("button", { name: "2D Plan" }).click();
+    await page.getByRole("button", { name: "2D", exact: true }).click();
 
     await expect(page.getByTestId("room-plan-status-room-count")).toHaveText("1 room");
     const widthInput = page.getByTestId("selection-inspector-room-width");
@@ -372,7 +372,7 @@ export function registerWorkspaceTests() {
     await page.waitForLoadState("domcontentloaded");
 
     await expect(page.getByTestId("scene-canvas").first()).toBeVisible({ timeout: 20000 });
-    await page.getByRole("button", { name: "2D Plan" }).click();
+    await page.getByRole("button", { name: "2D", exact: true }).click();
     const selectedRoomSectionToggle = page.getByTestId("plan-section-toggle-selectedRoom");
     await selectedRoomSectionToggle.scrollIntoViewIfNeeded();
     if ((await selectedRoomSectionToggle.getAttribute("aria-expanded")) !== "true") {
@@ -394,7 +394,7 @@ export function registerWorkspaceTests() {
     await page.waitForLoadState("domcontentloaded");
 
     await expect(page.getByTestId("scene-canvas").first()).toBeVisible({ timeout: 20000 });
-    await page.getByRole("button", { name: "2D Plan" }).click();
+    await page.getByRole("button", { name: "2D", exact: true }).click();
     await chooseTemplateStart(page);
     await page.getByTestId("add-room-template-bedroom").click();
 

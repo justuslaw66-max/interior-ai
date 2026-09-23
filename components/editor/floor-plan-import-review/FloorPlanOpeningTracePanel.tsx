@@ -34,7 +34,7 @@ const OPENING_TYPES: ReadonlyArray<{
 }> = [
   { value: "door", label: "Door" },
   { value: "window", label: "Window" },
-  { value: "open_passage", label: "Open passage" },
+  { value: "open_passage", label: "Opening (no door)" },
 ];
 
 export default function FloorPlanOpeningTracePanel({

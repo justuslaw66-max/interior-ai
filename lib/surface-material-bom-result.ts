@@ -42,7 +42,7 @@ export function buildRoomSurfaceMaterialBomResult(
       code: "UNRESOLVED_OPENING_HOST",
       openingId: opening.id,
       status: resolution.status,
-      message: `${resolution.consumerMessage} Wall quantities were left uncut for this opening.`,
+      message: `${resolution.consumerMessage} Wall quantities were left uncut for this door or window.`,
     }];
   });
   return {

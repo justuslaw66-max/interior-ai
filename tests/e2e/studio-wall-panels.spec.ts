@@ -24,7 +24,7 @@ type RapidOrbitFrame = WorkspaceGridLeakMetrics & {
 };
 
 async function frameLivingEastWall(page: Page) {
-  const navigator = page.getByRole("region", { name: "Room view navigator" });
+  const navigator = page.getByRole("region", { name: "Room navigator" });
   const cameraHandle = page.getByRole("button", {
     name: "Drag camera position",
   });
@@ -439,7 +439,7 @@ async function wallPaintColorMetrics(
 async function rapidOrbitGridLeakMetrics(
   page: Page
 ): Promise<RapidOrbitFrame[]> {
-  const navigator = page.getByRole("region", { name: "Room view navigator" });
+  const navigator = page.getByRole("region", { name: "Room navigator" });
   const cameraHandle = page.getByRole("button", {
     name: "Drag camera position",
   });
@@ -706,7 +706,7 @@ test.describe("Studio canonical wall panels", () => {
     await expect(page.getByTestId("scene-canvas").first()).toBeVisible({
       timeout: 30_000,
     });
-    await page.getByRole("button", { name: "2D Plan" }).click();
+    await page.getByRole("button", { name: "2D", exact: true }).click();
     await chooseTemplateStart(page);
     await page.getByTestId("apply-plan-template-studio").click();
     await expect(page.getByTestId("room-plan-status-room-count")).toHaveText(
@@ -855,7 +855,7 @@ test.describe("Studio canonical wall panels", () => {
     await expect(page.getByTestId("scene-canvas").first()).toBeVisible({
       timeout: 30_000,
     });
-    await page.getByRole("button", { name: "2D Plan" }).click();
+    await page.getByRole("button", { name: "2D", exact: true }).click();
     await chooseTemplateStart(page);
     await page.getByTestId("apply-plan-template-studio").click();
     await expect(page.getByTestId("room-plan-status-room-count")).toHaveText(
@@ -956,7 +956,7 @@ test.describe("Studio canonical wall panels", () => {
     await expect(page.getByTestId("scene-canvas").first()).toBeVisible({
       timeout: 30_000,
     });
-    await page.getByRole("button", { name: "2D Plan" }).click();
+    await page.getByRole("button", { name: "2D", exact: true }).click();
     await chooseTemplateStart(page);
     await page.getByTestId("apply-plan-template-studio").click();
     await expect(page.getByTestId("room-plan-status-room-count")).toHaveText(
@@ -1045,7 +1045,7 @@ test.describe("Studio canonical wall panels", () => {
     await expect(page.getByTestId("scene-canvas").first()).toBeVisible({
       timeout: 30_000,
     });
-    await page.getByRole("button", { name: "2D Plan" }).click();
+    await page.getByRole("button", { name: "2D", exact: true }).click();
     await chooseTemplateStart(page);
     await page.getByTestId("apply-plan-template-studio").click();
     await expect(page.getByTestId("room-plan-status-room-count")).toHaveText(

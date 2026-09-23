@@ -87,7 +87,7 @@ export function useDesignPageBetaStartController({
     actions.setViewMode("2d");
     actions.activateFloorPlanRoomTrace(true);
     actions.setDesignPanelOpen(true);
-    actions.showToast("Draw room walls in 2D plan mode");
+    actions.showToast("Draw room walls in 2D");
     dismiss();
   }, [actions, dismiss]);
 

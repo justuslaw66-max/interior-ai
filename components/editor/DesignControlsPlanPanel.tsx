@@ -596,8 +596,8 @@ export default function DesignControlsPlanPanel({
         }
       : hasConnectionBlockers
         ? {
-            label: "Add doorway",
-            body: "One connected room still needs a doorway before this plan feels complete.",
+            label: "Add door",
+            body: "One connected room still needs a door before this plan feels complete.",
             action: () => onAddFloorPlanOpeningFromTool("door"),
           }
         : !hasStartedFurniture
@@ -619,8 +619,8 @@ export default function DesignControlsPlanPanel({
               };
   const openingStatusLabel = hasConnectionBlockers
     ? missingDoorwayCount > 0
-      ? "Needs doorway"
-      : "Review links"
+      ? "Needs a door"
+      : "Review connections"
     : hasOpenings
       ? `${planOpeningCount} placed`
       : "Optional";
@@ -628,7 +628,7 @@ export default function DesignControlsPlanPanel({
   const consumerPlanConnectionSummary =
     connectionBlockerCount > 0
       ? missingDoorwayCount === connectionBlockerCount
-        ? `Add ${connectionBlockerCount} doorway${connectionBlockerCount === 1 ? "" : "s"}.`
+        ? `Add ${connectionBlockerCount} door${connectionBlockerCount === 1 ? "" : "s"}.`
         : `Review ${connectionBlockerCount} room connection${connectionBlockerCount === 1 ? "" : "s"}.`
       : "";
   const consumerPlanNextSteps = [
@@ -1336,7 +1336,7 @@ export default function DesignControlsPlanPanel({
       ready: snapEnabled,
     },
     {
-      label: "Doors/windows",
+      label: "Doors & windows",
       value: hasOpenings ? `${planOpeningCount} placed` : "Optional",
       ready: true,
     },
@@ -1960,7 +1960,7 @@ export default function DesignControlsPlanPanel({
   };
   const getPlanQualityActionLabel = (action: FloorPlanQualityAction) => {
     if (action === "add_window") return "Add window";
-    if (action === "add_doorway") return "Add doorway";
+    if (action === "add_doorway") return "Add door";
     if (action === "add_storage") return "Add storage";
     if (action === "review_plan_layout") return "Review plan";
     return "Review furniture fit";
@@ -2232,7 +2232,7 @@ export default function DesignControlsPlanPanel({
 
               {renderPlanToolSection({
                 section: "openings",
-                title: "Place doors and windows",
+                title: "Doors & windows",
                 children: (
                   <div className={planToolGridClass}>
                     {renderPlanToolTile({
@@ -2489,7 +2489,7 @@ export default function DesignControlsPlanPanel({
             <span
               className={progressViewClass}
             >
-              {viewMode === "2d" ? "2D active" : "3D view"}
+              {viewMode === "2d" ? "2D view" : "3D view"}
             </span>
           </div>
           <div className="mt-3 grid gap-2">
@@ -2555,7 +2555,7 @@ export default function DesignControlsPlanPanel({
                 <div className="min-w-0">
                   <div className={progressLabelClass}>Doors & windows</div>
                   <div className={progressMetaClass}>
-                    {hasConnectionBlockers ? "A room link needs a doorway." : "Add only if you need them before furnishing."}
+                    {hasConnectionBlockers ? "A connected room needs a door." : "Add only if you need them before furnishing."}
                   </div>
                 </div>
                 <span className={hasConnectionBlockers ? progressTodoClass : progressReadyClass}>
@@ -2771,7 +2771,7 @@ export default function DesignControlsPlanPanel({
           <div className={progressCardClass}>
             <div className="flex items-center justify-between gap-3">
               <div>
-                <div className={titleClass}>Plan view</div>
+                <div className={titleClass}>2D view</div>
                 <div className={progressMetaClass}>
                   {simplePlanControls ? "Simple planning view." : "Detailed drafting view."}
                 </div>

@@ -49,7 +49,7 @@ export function UnresolvedOpeningMarkers2D({
             borderRadius: 6, color: "#991b1b", fontSize: 10, fontWeight: 800,
             padding: "4px 6px", whiteSpace: "nowrap", cursor: "pointer",
           }}>
-            Opening needs wall repair
+            {opening.kind === "door" ? "Door" : "Window"} needs wall repair
           </button>
         </Html>
       </group>

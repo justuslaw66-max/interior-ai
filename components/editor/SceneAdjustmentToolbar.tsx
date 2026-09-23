@@ -105,8 +105,8 @@ export default function SceneAdjustmentToolbar({
         className={iconButtonClass}
         onClick={onFitView}
         disabled={disabled}
-        aria-label="Fit view"
-        title="Fit view"
+        aria-label="Fit to screen"
+        title="Fit to screen"
       >
         <FitIcon />
       </button>

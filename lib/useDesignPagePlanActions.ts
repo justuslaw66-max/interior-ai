@@ -269,7 +269,7 @@ export function useDesignPagePlanActions({
       );
 
       if (alreadyExists) {
-        showRuleToast("Doorway already exists");
+        showRuleToast("There is already a door here");
         return;
       }
 
@@ -298,7 +298,7 @@ export function useDesignPagePlanActions({
       });
 
       onSelectPlanOverlay(id);
-      showRuleToast("Doorway added");
+      showRuleToast("Door added");
       track("floor_plan_suggested_doorway_added", {
         roomId: suggestion.roomId,
         adjacentRoomId: suggestion.adjacentRoomId,

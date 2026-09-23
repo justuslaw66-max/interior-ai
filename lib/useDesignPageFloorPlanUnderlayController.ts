@@ -169,7 +169,7 @@ export function useDesignPageFloorPlanUnderlayController({
         fixedElements: FixedElement2D[],
         snapshot: SetStateAction<DesignSnapshot>
       ) =>
-        runHistoryTransaction("Apply plan template", () => {
+        runHistoryTransaction("Apply template", () => {
           revokeUnderlayObjectUrl();
           pdfSourceDataRef.current = null;
           setFloorPlanPdfSourceReady(false);

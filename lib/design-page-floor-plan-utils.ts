@@ -304,9 +304,9 @@ export function getDeletedDoorwaySuggestionKeys(
 export type PlanOverlayDragKind = "opening" | "opening_resize" | "fixed" | "annotation";
 
 export function getPlanOverlayMoveHistoryLabel(kind?: PlanOverlayDragKind): string {
-  if (kind === "opening") return "Move opening";
-  if (kind === "opening_resize") return "Resize opening";
+  if (kind === "opening") return "Move door or window";
+  if (kind === "opening_resize") return "Resize door or window";
   if (kind === "fixed") return "Move built-in";
   if (kind === "annotation") return "Move annotation";
-  return "Move plan overlay";
+  return "Move plan item";
 }

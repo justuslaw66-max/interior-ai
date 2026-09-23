@@ -36,7 +36,7 @@ async function openTemplatePlan(page: import("@playwright/test").Page) {
     await page.getByTestId("new-plan-replace-current").click();
   }
   await expect(page.getByTestId("room-plan-status")).toHaveCount(1, { timeout: 20000 });
-  await page.getByRole("button", { name: "2D Plan", exact: true }).click();
+  await page.getByRole("button", { name: "2D", exact: true }).click();
   await expect(page.getByTestId("plan-guided-actions-toggle")).toBeVisible();
 }
 
@@ -49,7 +49,7 @@ test.describe("20. Mobile Plan Mode", () => {
 
       await expect(page.getByTestId("room-plan-status")).toHaveAttribute("data-compact", "true");
       await expect(page.getByTestId("room-plan-status-fit-view")).toHaveText("Fit");
-      await expect(page.getByRole("button", { name: /^Fit (room|plan)$/ }).first()).toBeVisible();
+      await expect(page.getByRole("button", { name: /^Fit (room|to screen)$/ }).first()).toBeVisible();
       await expect(page.getByTestId("plan-guided-actions-toggle")).toBeVisible();
       await expect(page.getByTestId("plan-guided-actions-toggle")).toHaveAttribute("role", "switch");
 

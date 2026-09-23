@@ -53,7 +53,7 @@ test.describe("4. Share Link Read-Only", () => {
     const openingId = "window-export-review";
     const materialId = "goodrich-geff-novaclick-gnv-002-silver-oak";
     const materialName = "GEFF NovaClick GNV-002 Silver Oak";
-    const warning = "The original room and wall are unavailable. Choose a new wall before this opening can cut the plan. Wall quantities were left uncut for this opening.";
+    const warning = "The original room and wall are unavailable. Choose a new wall before this door or window can cut the plan. Wall quantities were left uncut for this door or window.";
     const unresolved: DesignSnapshot = {
       version: 3, title: "Window Export Review", activeRoomId: "window-export-room",
       rooms: [{

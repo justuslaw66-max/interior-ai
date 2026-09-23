@@ -85,17 +85,17 @@ function buildPaletteActions(
       hint: "Restore the last undone edit", enabled: canRedo, run: redo,
     },
     {
-      id: "fit-plan", label: viewMode === "2d" ? "Fit plan" : "Fit view",
+      id: "fit-plan", label: "Fit to screen",
       hint: "Reset the current camera framing", enabled: true, run: fitPlanView,
     },
     {
       id: "toggle-view",
-      label: viewMode === "2d" ? "Switch to 3D" : "Switch to 2D plan",
+      label: viewMode === "2d" ? "Switch to 3D" : "Switch to 2D",
       hint: "Toggle the main editor view", enabled: true,
       run: () => changeViewMode(viewMode === "2d" ? "3d" : "2d"),
     },
     {
-      id: "add-door", label: "Add door", hint: "Place a doorway on a wall",
+      id: "add-door", label: "Add door", hint: "Place a door on a wall",
       enabled: planRoomCount > 0, run: () => addFloorPlanOpening("door"),
     },
     {

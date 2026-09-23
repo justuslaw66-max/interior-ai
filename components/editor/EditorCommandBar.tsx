@@ -3,7 +3,7 @@
 import EditorViewToggle, { type EditorViewMode } from "@/components/editor/EditorViewToggle";
 import { LightingSettingsDrawer } from "@/components/editor/design-page/LightingSettingsDrawer";
 import { handleWorkspaceMenuKeyDown } from "@/components/editor/workspaceMenuKeyboard";
-import { ChevronDown, Ellipsis, PanelLeft, Plus, UserRound } from "lucide-react";
+import { ChevronDown, Ellipsis, PanelLeft, Plus, Redo2, Undo2, UserRound } from "lucide-react";
 import { signIn, signOut } from "next-auth/react";
 import { CLIENT_PREVIEW_COMMAND_BAR_ID, CLIENT_PREVIEW_FALLBACK_ACTION_ID, guardHiddenCommandAction } from "@/lib/useClientPreviewCommandBarFocus";
 import { PLANS_ACCOUNT_OPENER_ID } from "@/lib/plans-dialog-focus";
@@ -304,7 +304,7 @@ export default function EditorCommandBar({
           disabled={isClientPreview || !canUndo}
           title={undoName ? `Undo "${undoName}" (Cmd/Ctrl+Z)` : "Undo (Cmd/Ctrl+Z)"}
         >
-          ↶
+          <Undo2 className="h-4 w-4" aria-hidden="true" />
         </button>
         <button
           type="button"
@@ -315,7 +315,7 @@ export default function EditorCommandBar({
           disabled={isClientPreview || !canRedo}
           title={redoName ? `Redo "${redoName}" (Cmd/Ctrl+Shift+Z)` : "Redo (Cmd/Ctrl+Shift+Z)"}
         >
-          ↷
+          <Redo2 className="h-4 w-4" aria-hidden="true" />
         </button>
 
         <div className="shrink-0">

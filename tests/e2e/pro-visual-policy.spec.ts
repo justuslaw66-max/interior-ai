@@ -2154,7 +2154,7 @@ test.describe("Pro visual policy", () => {
 
     await page
       .getByTestId("editor-command-bar")
-      .getByRole("button", { name: "2D Plan", exact: true })
+      .getByRole("button", { name: "2D", exact: true })
       .click();
     await expect(sceneCanvas).toHaveCSS("background-color", "rgb(255, 255, 255)");
 

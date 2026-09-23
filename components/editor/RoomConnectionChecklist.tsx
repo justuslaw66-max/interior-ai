@@ -63,8 +63,8 @@ export default function RoomConnectionChecklist({
     return reviewClass;
   };
   const getStatusLabel = (status: HouseRoomConnectionChecklistItem["status"]) => {
-    if (status === "connected") return "Doorway ready";
-    if (status === "needs_doorway") return "Needs doorway";
+    if (status === "connected") return "Connected";
+    if (status === "needs_doorway") return "Needs a door";
     if (status === "detached") return "Detached";
     return "Disconnected";
   };
@@ -120,7 +120,7 @@ export default function RoomConnectionChecklist({
                 disabled={disabled}
                 onClick={() => onAddDoorway(item.doorwaySuggestion!)}
               >
-                Add doorway
+                Add connecting door
               </button>
             )}
           </div>

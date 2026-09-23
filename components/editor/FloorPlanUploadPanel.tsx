@@ -734,12 +734,12 @@ export default function FloorPlanUploadPanel({
             <div className="flex items-center justify-between gap-2">
               <div>
                 <div className={dark ? "text-xs font-semibold text-neutral-100" : "text-xs font-semibold text-neutral-800"}>
-                  Trace opening
+                  Doors & windows
                 </div>
                 <div className={subtleClass}>
                   {canTraceOpenings
                     ? "Click along a wall for a door or window."
-                    : "Draw a room before adding openings."}
+                    : "Draw a room before adding doors or windows."}
                 </div>
               </div>
               <button
@@ -749,14 +749,14 @@ export default function FloorPlanUploadPanel({
                 disabled={disabled || !canTraceOpenings}
                 onClick={() => onTraceOpeningModeChange?.(!traceOpeningMode)}
               >
-                {traceOpeningMode ? "Done" : "Opening"}
+                {traceOpeningMode ? "Done" : "Trace"}
               </button>
             </div>
 
             {traceOpeningMode && (
               <div className="mt-3 space-y-2">
                 <div className={subtleClass}>
-                  Opening points: {traceOpeningPointCount}/2
+                  Points: {traceOpeningPointCount}/2
                 </div>
                 <div className="flex items-center gap-2">
                   <select

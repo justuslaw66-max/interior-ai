@@ -1279,7 +1279,7 @@ function getOpeningPreviewHelpText(preview: TracedOpeningPreview): string | null
   }
 
   if (preview.reason === "opening_too_wide") {
-    return "Use a wider wall or a smaller opening.";
+    return "Use a wider wall or a smaller door or window.";
   }
 
   return "Choose another point on the wall.";
@@ -4248,7 +4248,7 @@ export default function RoomRenderer2D({
               boxShadow: "0 1px 4px rgba(15,23,42,0.12)",
             }}
           >
-            Doorway
+            Add door here
           </button>
         </Html>
       ))}

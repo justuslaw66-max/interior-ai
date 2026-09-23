@@ -292,7 +292,7 @@ export function useDesignPagePlanOverlayController({
   const runPlanOverlayCommand = useCallback(
     (commandId: PlanOverlayCommandId) => {
       if (commandId.startsWith("preset:")) {
-        runHistoryTransaction("Change plan preset", () =>
+        runHistoryTransaction("Change layer preset", () =>
           runPlanOverlayCommandFromPlanAction(commandId)
         );
         return;
@@ -326,7 +326,7 @@ export function useDesignPagePlanOverlayController({
       ) {
         return;
       }
-      runHistoryTransaction("Add doorway", () =>
+      runHistoryTransaction("Add door", () =>
         handleAddSuggestedDoorwayFromPlanAction(suggestion)
       );
     },
