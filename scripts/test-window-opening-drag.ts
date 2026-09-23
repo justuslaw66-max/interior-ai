@@ -215,6 +215,35 @@ const planDragStart = planRendererSource.slice(
 assert.ok(planDragStart.indexOf("onSelectOverlay?.(openingId)") < planDragStart.indexOf("opening.movableOnHost"),
   "A pinned 2D opening must still be selected on pointer-down before the drag start refuses it.");
 
+// Imported and traced plans do not go through RoomRenderer2D at all: CanonicalFloorPlanStructure
+// drives both its 2D and 3D opening drags through useCanonicalOpeningDrag, which has no projection
+// to ask and so decides from the host wall itself. Its move clamps the centre to
+// [halfWidth, wallLengthMm - halfWidth], a single point once the wall is no longer than the
+// opening, so without this refusal the drag captures the pointer for a move it can never commit.
+const canonicalDragSource = fs.readFileSync(
+  "components/editor/renderers/canonical-floor-plan/openingDrag.ts", "utf8"
+);
+const canonicalDragCapability =
+  "if (!enabled || !openingCanMoveOnWall(wallLengthMm, opening.widthMm)) return;";
+assert.ok(collapseWhitespace(canonicalDragSource).includes(canonicalDragCapability),
+  `The canonical opening move drag may start only for an opening with room to move: exactly `
+  + `"${canonicalDragCapability}". Otherwise every imported or traced plan keeps the stuck door `
+  + "that 8bd6a150 removed from RoomRenderer2D.");
+assert.ok(collapseWhitespace(canonicalDragSource).includes(
+  "return wallLengthMm - widthMm >= MINIMUM_MOVE_TRAVEL_MM;"),
+  "Room to move is measured against MINIMUM_MOVE_TRAVEL_MM, not zero: emitted centres are rounded "
+  + "to whole millimetres, so sub-millimetre travel commits nothing and would feel stuck too.");
+
+// Resize is deliberately not gated the same way. An opening that fills its wall cannot be moved,
+// but it can still be made narrower, and that is how a user gives it room to move in the first place.
+const canonicalResize = canonicalDragSource.slice(
+  canonicalDragSource.indexOf("const beginResize ="),
+  canonicalDragSource.indexOf("const move =")
+);
+assert.ok(collapseWhitespace(canonicalResize).includes("if (!enabled) return;"),
+  "The canonical resize drag must keep its plain enabled check: gating it on room to move would "
+  + "trap an opening that fills its wall, with no way to shrink it back.");
+
 const windowMeshSource = fs.readFileSync(
   "components/editor/renderers/house-plan-3d/WindowOpeningMesh.tsx", "utf8"
 );
