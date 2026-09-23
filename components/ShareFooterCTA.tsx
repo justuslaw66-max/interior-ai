@@ -9,18 +9,23 @@ export function ShareFooterCTA({ shareToken }: { shareToken?: string }) {
     <footer className="mx-auto max-w-6xl px-6 pb-10">
       <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border bg-white px-4 py-3 shadow">
         <div className="text-xs text-neutral-500">Made with Interior AI (beta)</div>
-        <div className="flex items-center gap-2">
+        <div
+          className="flex flex-wrap items-center justify-end gap-2"
+          data-testid="share-footer-actions"
+        >
           {shareToken ? (
             <DuplicateDesignButton
               shareToken={shareToken}
-              className="rounded-lg bg-neutral-900 px-3 py-2 text-sm text-white disabled:opacity-70"
+              data-share-touch-target="true"
+              className="inline-flex min-h-11 items-center rounded-lg bg-neutral-900 px-3 py-2 text-sm text-white outline-offset-2 focus-visible:outline-2 disabled:opacity-70"
             >
               Duplicate this design
             </DuplicateDesignButton>
           ) : null}
           <Link
             href="/?source=share"
-            className="rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 hover:bg-neutral-50"
+            data-share-touch-target="true"
+            className="inline-flex min-h-11 items-center rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 outline-offset-2 hover:bg-neutral-50 focus-visible:outline-2"
             onClick={() => track("share_cta_clicked", { source: "share_page" })}
           >
             Create your own room

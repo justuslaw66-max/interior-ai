@@ -16,25 +16,39 @@ export const DEFAULT_CATEGORY_TABS: RegExp[] = [
 ];
 
 async function openFurnishPanel(page: Page): Promise<void> {
+  await dismissBlockingDialogs(page);
   const searchInput = getCatalogSearchInput(page);
   if (await searchInput.isVisible().catch(() => false)) return;
 
-  const furnishButton = page.locator('[data-testid="editor-workflow-furnish"]');
-  if ((await furnishButton.count()) > 0) {
-    await furnishButton.first().click();
+  await selectEditorWorkspace(page, "editor-workflow-furnish");
+
+  if (await searchInput.isVisible().catch(() => false)) return;
+
+  await dismissBlockingDialogs(page);
+  const guidedFurnishButton = page.getByRole("button", { name: /\b3\s+Furnish\b/i });
+  if (await guidedFurnishButton.isVisible().catch(() => false)) {
+    await guidedFurnishButton.click();
   }
 
   if (await searchInput.isVisible().catch(() => false)) return;
 
-  const fullCatalog = page.locator('[data-testid="furnish-full-catalog"]');
-  if ((await fullCatalog.count()) === 0) return;
+  const startFurnishingButton = page.getByRole("button", { name: /^Start furnishing$/i });
+  if (await startFurnishingButton.isVisible().catch(() => false)) {
+    await startFurnishingButton.click();
+  }
 
-  const isOpen = await fullCatalog
-    .first()
-    .evaluate((node) => (node as HTMLDetailsElement).open)
-    .catch(() => true);
-  if (!isOpen) {
-    await page.locator('[data-testid="furnish-full-catalog-toggle"]').first().click();
+  if (await searchInput.isVisible().catch(() => false)) return;
+
+  const catalogMode = page.locator('[data-testid="furnish-mode-catalog"]:visible').first();
+  if (await catalogMode.isVisible().catch(() => false)) {
+    await clickButtonWithDomFallback(catalogMode);
+  }
+
+  if (await searchInput.isVisible().catch(() => false)) return;
+
+  const legacyCatalogToggle = page.locator('[data-testid="furnish-full-catalog-toggle"]:visible').first();
+  if (await legacyCatalogToggle.isVisible().catch(() => false)) {
+    await legacyCatalogToggle.click();
   }
 }
 
@@ -44,6 +58,66 @@ export function getSelectedItemPanel(page: Page): Locator {
     .filter({ hasText: "Selected Item" })
     .filter({ has: page.getByRole("button", { name: "View retailer" }) })
     .first();
+}
+
+async function dismissBlockingDialogs(page: Page): Promise<void> {
+  const maybeLater = page.getByRole("button", { name: /^Maybe later$/i });
+  if (await maybeLater.isVisible().catch(() => false)) {
+    await maybeLater.click({ force: true }).catch(() => undefined);
+  }
+}
+
+async function clickButtonWithDomFallback(locator: Locator): Promise<void> {
+  await locator.click({ timeout: 5000 }).catch(async () => {
+    await locator.evaluate((button) => {
+      (button as HTMLButtonElement).click();
+    });
+  });
+}
+
+export async function ensureEditorWorkspaceMenuOpen(
+  trigger: Pick<Locator, "click" | "getAttribute">,
+): Promise<void> {
+  if (await trigger.getAttribute("aria-expanded") === "true") return;
+  try {
+    await trigger.click({ timeout: 5000 });
+  } catch (cause) {
+    if (!(cause instanceof Error) || cause.name !== "TimeoutError") throw cause;
+    let opened: boolean;
+    try {
+      opened = await trigger.getAttribute("aria-expanded") === "true";
+    } catch {
+      // An unreadable postcondition cannot establish delivery; retain the click failure.
+      throw cause;
+    }
+    if (!opened) throw cause;
+    // The native click opened this toggle before its post-action wait timed out.
+    // Replaying it would close the menu that the caller is about to inspect.
+  }
+}
+
+export async function selectEditorWorkspace(
+  page: Page,
+  itemTestId: string
+): Promise<void> {
+  const item = page.getByTestId(itemTestId).first();
+  if (!(await item.isVisible().catch(() => false))) {
+    const trigger = page.getByTestId("editor-command-workspace");
+    await expect(trigger).toBeVisible({ timeout: 20_000 });
+    await ensureEditorWorkspaceMenuOpen(trigger);
+  }
+  await expect(item).toBeVisible({ timeout: 10_000 });
+  await clickButtonWithDomFallback(item);
+}
+
+export async function openShopPanel(page: Page): Promise<void> {
+  const visibleCartRailButton = page.locator('[data-testid="editor-rail-cart"]:visible').first();
+  if (await visibleCartRailButton.isVisible().catch(() => false)) {
+    await visibleCartRailButton.click();
+    return;
+  }
+
+  await selectEditorWorkspace(page, "editor-workflow-shop");
 }
 
 function getCatalogSearchInput(page: Page): Locator {
@@ -62,7 +136,7 @@ export async function waitForCatalogReady(page: Page): Promise<boolean> {
     .catch(() => false);
   if (!searchVisible) return false;
 
-  return expect(page.getByText(/of\s+\d+\s+items/i))
+  return expect(page.getByTestId("catalog-focused-category-pill"))
     .toBeVisible({ timeout: 30000 })
     .then(() => true)
     .catch(() => false);
@@ -240,8 +314,75 @@ export async function addImportedProductIfReady(page: Page): Promise<boolean> {
   if (!enabled) return false;
 
   await addButton.click({ noWaitAfter: true });
+  await confirmCatalogPlacementIfVisible(page);
   await page.waitForTimeout(1200);
   return true;
+}
+
+export async function confirmCatalogPlacementIfVisible(page: Page): Promise<boolean> {
+  const confirmButton = page.getByTestId("catalog-placement-confirm");
+  const visible = await expect(confirmButton)
+    .toBeVisible({ timeout: 20000 })
+    .then(() => true)
+    .catch(() => false);
+  if (!visible) return false;
+
+  await confirmButton.click({ noWaitAfter: true });
+  await page.waitForTimeout(600);
+  return true;
+}
+
+export async function addCatalogDrawerItemToRoom(page: Page): Promise<void> {
+  await page.getByTestId("catalog-detail-add-to-room").click();
+  const confirmed = await confirmCatalogPlacementIfVisible(page);
+  expect(confirmed).toBeTruthy();
+}
+
+export async function addCatalogCardItemToRoom(
+  page: Page,
+  productId: string,
+  productTitle?: string
+): Promise<void> {
+  const exactAddButton = page.getByTestId(`catalog-add-${productId}`).first();
+  const addButton =
+    productTitle && (await exactAddButton.count()) === 0
+      ? page
+          .getByText(productTitle, { exact: true })
+          .first()
+          .locator("xpath=ancestor::div[.//button[@aria-label='Add item']][1]")
+          .getByRole("button", { name: "Add item" })
+      : exactAddButton;
+  const selectedItemPanel = getSelectedItemPanel(page);
+  const confirmButton = page.getByTestId("catalog-placement-confirm");
+
+  await expect(addButton).toBeVisible({ timeout: 30_000 });
+  await expect(addButton).toBeEnabled({ timeout: 30_000 });
+
+  for (let attempt = 0; attempt < 2; attempt += 1) {
+    if (await confirmButton.isVisible().catch(() => false)) {
+      await confirmButton.click({ noWaitAfter: true });
+      await expect(selectedItemPanel).toBeVisible({ timeout: 30_000 });
+      return;
+    }
+    if (await selectedItemPanel.isVisible().catch(() => false)) return;
+
+    await addButton.click({ timeout: 15_000 });
+    const confirmed = await confirmCatalogPlacementIfVisible(page);
+    if (confirmed) {
+      await expect(selectedItemPanel).toBeVisible({ timeout: 30_000 });
+      return;
+    }
+    if (
+      await selectedItemPanel
+        .waitFor({ state: "visible", timeout: 10_000 })
+        .then(() => true)
+        .catch(() => false)
+    ) {
+      return;
+    }
+  }
+
+  await expect(selectedItemPanel).toBeVisible({ timeout: 30_000 });
 }
 
 export async function ensureItemSelectedForVariants(page: Page): Promise<boolean> {
@@ -300,24 +441,28 @@ export async function openCatalogPreview(
   const ready = await waitForCatalogReady(page);
   if (!ready) return false;
 
-  const previewButton = page.getByTestId(`catalog-preview-${productId}`);
+  const openPreviewIfAvailable = async () => {
+    const exactPreviewButton = page.getByTestId(`catalog-preview-${productId}`).first();
+    const exactProductVisible = await expect(exactPreviewButton)
+      .toBeVisible({ timeout: 5000 })
+      .then(() => true)
+      .catch(() => false);
+    if (!exactProductVisible) return false;
+    await exactPreviewButton.scrollIntoViewIfNeeded().catch(() => undefined);
+    await exactPreviewButton.click();
+    return true;
+  };
   for (let attempt = 0; attempt < 3; attempt += 1) {
     const searched = await fillCatalogSearch(page, searchTerm);
     if (!searched) continue;
 
-    if (await previewButton.isVisible().catch(() => false)) {
-      await previewButton.click().catch(() => null);
-      return true;
-    }
+    if (await openPreviewIfAvailable()) return true;
 
     for (const tabName of categoryTabs) {
       const tab = page.getByRole("button", { name: tabName });
       if (!(await tab.isVisible().catch(() => false))) continue;
       await tab.click().catch(() => null);
-      if (await previewButton.isVisible().catch(() => false)) {
-        await previewButton.click().catch(() => null);
-        return true;
-      }
+      if (await openPreviewIfAvailable()) return true;
     }
   }
 

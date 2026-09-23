@@ -3,11 +3,8 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { config } from "@/lib/config";
 import { rateLimit } from "@/lib/rateLimit";
-
-function getErrorMessage(error: unknown): string {
-  if (error instanceof Error) return error.message;
-  return String(error);
-}
+import { recordServerAnalyticsEvent } from "@/lib/app-events";
+import { trackMonetization } from "@/lib/monetization-tracking";
 
 function getStripeClient() {
   const secretKey = process.env.STRIPE_SECRET_KEY;
@@ -55,19 +52,30 @@ export async function POST(req: Request) {
     }
 
     const stripe = getStripeClient();
-    const origin = req.headers.get("origin") || process.env.APP_ORIGIN || "http://localhost:3000";
+    const origin = process.env.APP_ORIGIN || new URL(req.url).origin;
 
     const portalSession = await stripe.billingPortal.sessions.create({
       customer: dbUser.stripeCustomerId,
-      return_url: `${origin}?refresh_plan=true`,
+      return_url: `${origin}/design?refresh_plan=true`,
     });
+
+    await Promise.allSettled([
+      recordServerAnalyticsEvent({
+        eventType: "billing_portal_opened",
+        userId: dbUser.id,
+      }),
+      trackMonetization("billing_portal_opened", dbUser.id, {
+        plan: dbUser.plan === "pro" ? "pro" : "free",
+      }),
+    ]);
 
     return NextResponse.json({ url: portalSession.url });
   } catch (error: unknown) {
-    const message = getErrorMessage(error);
-    console.error("Stripe portal error:", message);
+    console.error("Stripe portal request failed", {
+      errorType: error instanceof Error ? error.name : "unknown",
+    });
     return NextResponse.json(
-      { error: message || "Unable to create portal session" },
+      { error: "Unable to create portal session. Please try again." },
       { status: 500 }
     );
   }

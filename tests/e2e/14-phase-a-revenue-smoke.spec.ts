@@ -6,40 +6,16 @@ import { PrismaPg } from "@prisma/adapter-pg";
 import { Pool } from "pg";
 import { PDFDocument } from "pdf-lib";
 import { test, expect } from "./fixtures";
+import { getE2EBaseUrl, resolveE2EDatabaseUrl } from "./release-environment";
 
-const baseURL = "http://localhost:3000";
+const baseURL = getE2EBaseUrl();
 
 let prismaClient: PrismaClient | null = null;
-
-function resolveDatabaseUrl() {
-  if (process.env.DATABASE_URL) {
-    return process.env.DATABASE_URL;
-  }
-
-  const candidates = [
-    path.resolve(process.cwd(), ".env.local"),
-    path.resolve(process.cwd(), ".env"),
-  ];
-
-  for (const envPath of candidates) {
-    if (!fs.existsSync(envPath)) continue;
-    const content = fs.readFileSync(envPath, "utf8");
-    const match = content.match(/^DATABASE_URL=(.*)$/m);
-    if (!match?.[1]) continue;
-    const value = match[1].trim().replace(/^"|"$/g, "").replace(/^'|'$/g, "");
-    if (value) {
-      process.env.DATABASE_URL = value;
-      return value;
-    }
-  }
-
-  return undefined;
-}
 
 function getPrismaClient() {
   if (prismaClient) return prismaClient;
 
-  const url = resolveDatabaseUrl();
+  const url = resolveE2EDatabaseUrl();
   if (!url) {
     throw new Error("DATABASE_URL is required for phase-a smoke tests");
   }
@@ -356,14 +332,32 @@ test.describe("14. Phase A Revenue Smoke", () => {
 
     await prismaWithRetry(() => prisma.appEvent.createMany({
       data: [
-        { eventType: "landing_viewed", userId: user.id, createdAt: new Date() },
-        { eventType: "design_started", userId: user.id, createdAt: new Date() },
-        { eventType: "first_item_added", userId: user.id, createdAt: new Date() },
-        { eventType: "third_item_added", userId: user.id, createdAt: new Date() },
-        { eventType: "export_clicked", userId: user.id, createdAt: new Date() },
-        { eventType: "upgrade_clicked", userId: user.id, createdAt: new Date() },
-        { eventType: "checkout_started", userId: user.id, createdAt: new Date() },
-        { eventType: "checkout_completed", userId: user.id, createdAt: new Date() },
+        ...[
+          "landing_viewed",
+          "design_started",
+          "first_item_added",
+          "third_item_added",
+          "export_clicked",
+          "upgrade_clicked",
+          "checkout_started",
+        ].map((eventType) => ({
+          eventType,
+          userId: user.id,
+          authority: "BROWSER_AUTHORIZED_ANALYTICS" as const,
+          producer: "SERVER_APPLICATION" as const,
+          verificationMethod: "SERVER_ACTION" as const,
+          provenanceVersion: 1,
+          createdAt: new Date(),
+        })),
+        {
+          eventType: "checkout_success_viewed",
+          userId: user.id,
+          authority: "BROWSER_AUTHORIZED_ANALYTICS",
+          producer: "SERVER_APPLICATION",
+          verificationMethod: "SERVER_ACTION",
+          provenanceVersion: 1,
+          createdAt: new Date(),
+        },
       ],
     }));
 
@@ -439,8 +433,8 @@ test.describe("14. Phase A Revenue Smoke", () => {
 
     await page.goto(`${baseURL}/design?paywall_variant=unlock_pro_exports&plans_open=1`);
     await expect(page.getByTestId("plans-layout-default")).toBeVisible();
-    await expect(page.getByTestId("checkout-monthly")).toContainText("Start Pro monthly");
-    await expect(page.getByTestId("checkout-yearly")).toContainText("Save with yearly");
+    await expect(page.getByTestId("checkout-monthly")).toContainText("Start monthly — SGD 29.90/month");
+    await expect(page.getByTestId("checkout-yearly")).toContainText("Start yearly — SGD 249.90/year");
   });
 
   test("free paywall renders the see_pricing annual-highlight layout", async ({ page }) => {
@@ -484,7 +478,7 @@ test.describe("14. Phase A Revenue Smoke", () => {
     const monthlyCta = page.getByTestId("checkout-monthly");
     await expect(yearlyCta).toBeVisible({ timeout: 15000 });
     await expect(monthlyCta).toBeVisible({ timeout: 15000 });
-    await expect(yearlyCta).toContainText("Start yearly and save", { timeout: 15000 });
-    await expect(monthlyCta).toContainText("Or start monthly", { timeout: 15000 });
+    await expect(yearlyCta).toContainText("Start yearly — SGD 249.90/year", { timeout: 15000 });
+    await expect(monthlyCta).toContainText("Start monthly — SGD 29.90/month", { timeout: 15000 });
   });
 });

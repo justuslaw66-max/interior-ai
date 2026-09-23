@@ -1,27 +1,28 @@
 import { NextResponse } from "next/server";
 import { CATALOG_ITEMS } from "@/lib/catalog";
 import { buildLiveCatalogPayload } from "@/lib/catalog-live";
-import { getAllCatalogYamlEntries } from "@/lib/catalog-yaml";
+import { getFreshCatalogYamlMap } from "@/lib/catalog-yaml";
+import { getPublishedFlooringMaterials } from "@/lib/catalog-registry";
 
 export const dynamic = "force-dynamic";
 
 export async function GET() {
   try {
-    const yamlEntries = getAllCatalogYamlEntries();
-    const payload = buildLiveCatalogPayload({
+    const liveCatalogPayload = buildLiveCatalogPayload({
       catalogItems: CATALOG_ITEMS,
-      yamlEntries,
+      yamlEntries: Array.from(getFreshCatalogYamlMap().values()),
+      surfaceMaterials: getPublishedFlooringMaterials(),
     });
 
     return NextResponse.json(
-      payload,
+      liveCatalogPayload,
       {
         headers: {
           "Cache-Control": "no-store",
         },
       }
     );
-  } catch (error) {
-    return NextResponse.json({ error: String(error) }, { status: 500 });
+  } catch {
+    return NextResponse.json({ error: "Live catalog is temporarily unavailable." }, { status: 500 });
   }
 }

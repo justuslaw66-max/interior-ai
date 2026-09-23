@@ -1,14 +1,22 @@
 import assert from "node:assert/strict";
+import { createElement } from "react";
+import { renderToStaticMarkup } from "react-dom/server";
+import RoomConnectionChecklist from "@/components/editor/RoomConnectionChecklist";
 import {
   buildHousePlan2D,
   buildHouseRoomAdjacencyGuides,
   buildHouseRoomConnectionChecklist,
+  buildHouseRoomConnectivityReport,
   buildHouseRoomDoorwaySuggestions,
   clampRoomDimension,
   doesHouseRoomOverlap,
   getActiveRoomPlanOffset,
+  getHouseRoomPlanPolygon,
   getNextRoomPlanPosition,
   resolveFloorPlanDrawCancelDecision,
+  resolveHouseRoomDimension,
+  resolveHouseRoomResizePlacement,
+  resolveHouseRoomMove,
   resolvePlanFitZoom,
   resolveHouseRoomSnapPreview,
   resolveNewRoomName,
@@ -28,6 +36,8 @@ import {
   resolveDominantCameraCutawayWall,
   resolveCutawayWallOpacity,
 } from "@/lib/design-page-wall-cutaway";
+import { calculateFloorPlanPolygonAreaSqm } from "@/lib/floor-plan-types";
+import { getPlanRoomFloorAreaSqm } from "@/lib/room-floor-area";
 import type { RoomSnapshot } from "@/lib/room-types";
 
 function makeRoom(
@@ -55,7 +65,16 @@ const bedroom = makeRoom("bedroom", "Bedroom", 4, 3);
 
 const plan = buildHousePlan2D([living, bedroom], 5, 4);
 assert.equal(plan.rooms.length, 2);
-assert.deepEqual(plan.rooms[0], {
+assert.deepEqual({
+  id: plan.rooms[0].id,
+  name: plan.rooms[0].name,
+  roomType: plan.rooms[0].roomType,
+  shape: plan.rooms[0].shape,
+  x: plan.rooms[0].x,
+  z: plan.rooms[0].z,
+  w: plan.rooms[0].w,
+  d: plan.rooms[0].d,
+}, {
   id: "living",
   name: "Living Room",
   roomType: "living",
@@ -69,6 +88,125 @@ assert.equal(plan.rooms[1].x, 4.5);
 assert.equal(plan.width, 13);
 assert.equal(plan.depth, 4);
 
+const sourceTracedOpenRoom: RoomSnapshot = {
+  ...makeRoom("source-open", "Living / Dining", 6, 6, { x: 0, z: 0 }),
+  planShape: "custom_polygon",
+  planPolygon: [
+    { x: -3, z: -3 },
+    { x: 3, z: -3 },
+    { x: 3, z: 0 },
+    { x: 0, z: 0 },
+    { x: 0, z: 3 },
+    { x: -3, z: 3 },
+  ],
+};
+const sourceTracedNotchRoom = makeRoom(
+  "source-notch",
+  "Kitchen",
+  3,
+  3,
+  { x: 1.5, z: 1.5 }
+);
+const sourceTracedPlan = buildHousePlan2D(
+  [sourceTracedOpenRoom, sourceTracedNotchRoom],
+  6,
+  6
+);
+assert.deepEqual(
+  sourceTracedPlan.rooms[0].polygon,
+  sourceTracedOpenRoom.planPolygon,
+  "Source-derived custom polygons should survive room-to-plan conversion."
+);
+assert.equal(
+  doesHouseRoomOverlap(
+    sourceTracedPlan.rooms[1].id,
+    sourceTracedPlan.rooms[1].x,
+    sourceTracedPlan.rooms[1].z,
+    sourceTracedPlan.rooms[1].w,
+    sourceTracedPlan.rooms[1].d,
+    sourceTracedPlan.rooms
+  ),
+  false,
+  "A room inside a concave polygon notch should not be treated as overlapping its bounding box."
+);
+assert.ok(
+  buildHouseRoomAdjacencyGuides(sourceTracedPlan.rooms).some(
+    (guide) =>
+      guide.roomIds.includes("source-open") &&
+      guide.roomIds.includes("source-notch") &&
+      guide.lengthMeters === 3
+  ),
+  "Polygon adjacency should follow shared traced wall segments."
+);
+
+assert.equal(resolveHouseRoomDimension(3.2, 5), 3.2);
+assert.equal(resolveHouseRoomDimension(23.234, 5), 5);
+assert.equal(
+  resolveHouseRoomDimension(1.2, 5),
+  1.2,
+  "Stored floor-plan service spaces must keep valid sub-1.8 m dimensions."
+);
+assert.equal(resolveHouseRoomDimension(0.2, 5), 5);
+assert.equal(resolveHouseRoomDimension(Number.NaN, 5), 5);
+
+const resizeAnchorRooms = buildHousePlan2D(
+  [
+    makeRoom("resize", "Resize", 4, 4, { x: 0, z: 0 }),
+    makeRoom("neighbor", "Neighbor", 4, 4, { x: 4, z: 0 }),
+  ],
+  4,
+  4
+).rooms;
+assert.deepEqual(
+  resolveHouseRoomResizePlacement("resize", 6, 4, resizeAnchorRooms),
+  { x: -1, z: 0 },
+  "Room resizing should keep the shared edge anchored when a centered resize would overlap."
+);
+
+const staleWidePlan = buildHousePlan2D(
+  [makeRoom("stale", "Stale Width", 23.234, 2.6, { x: 0, z: 0 })],
+  5,
+  4
+);
+assert.equal(staleWidePlan.rooms[0].w, 5);
+assert.equal(staleWidePlan.rooms[0].d, 2.6);
+assert.equal(staleWidePlan.width, 5);
+
+const wallSurfaceRoom = {
+  ...makeRoom("wall_surface", "Wall Surface", 4, 3, { x: 0, z: 0 }),
+  surfaces: {
+    walls: {
+      faces: {
+        north: {
+          materialId: "gardenia-wall-tile-anima-fango-0007195-60x120-196229-0",
+          rotationDeg: 0,
+        },
+      },
+    },
+  },
+  surfaceFinishes: {
+    walls: {
+      faces: {
+        north: {
+          materialId: null,
+          paintColorHex: "#eeeeee",
+        },
+      },
+    },
+  },
+} satisfies RoomSnapshot;
+const wallSurfacePlan = buildHousePlan2D([wallSurfaceRoom], 5, 4);
+assert.equal(
+  wallSurfacePlan.rooms[0].surfaces?.walls?.faces?.north?.materialId,
+  "gardenia-wall-tile-anima-fango-0007195-60x120-196229-0",
+  "House-plan 3D rooms should prefer current surfaces over stale legacy surfaceFinishes."
+);
+assert.equal(
+  wallSurfacePlan.rooms[0].surfaceFinishes?.walls?.faces?.north?.materialId,
+  "gardenia-wall-tile-anima-fango-0007195-60x120-196229-0",
+  "House-plan 3D renderer should receive selected wall tile state under both surface aliases."
+);
+
 assert.deepEqual(getActiveRoomPlanOffset(plan.rooms, "bedroom"), { x: 4.5, z: 0 });
 assert.deepEqual(getActiveRoomPlanOffset(plan.rooms, "missing"), { x: 0, z: 0 });
 
@@ -76,6 +214,11 @@ assert.equal(resolveNewRoomName([living], "bedroom"), "Bedroom");
 assert.equal(resolveNewRoomName([living, bedroom], "bedroom"), "Bedroom 2");
 
 assert.deepEqual(getNextRoomPlanPosition(plan.rooms, 5, 3), { x: 8, z: 0 });
+assert.deepEqual(
+  getNextRoomPlanPosition([], 5, 3),
+  { x: 0, z: 0 },
+  "The first room drawn on a blank canvas should be centered."
+);
 
 assert.deepEqual(
   resolveFloorPlanDrawCancelDecision({
@@ -226,6 +369,50 @@ assert.equal(snapHouseRoomMove("missing", 1, 1, plan.rooms), null);
 assert.equal(doesHouseRoomOverlap("bedroom", 4.5, 0, 4, 3, plan.rooms), false);
 assert.equal(doesHouseRoomOverlap("bedroom", 1.5, 0, 4, 3, plan.rooms), true);
 assert.deepEqual(snapHouseRoomMove("bedroom", 1.5, 0, plan.rooms), { x: 4.5, z: 0 });
+const resolvedSnappedMove = resolveHouseRoomMove({
+  roomId: "bedroom",
+  x: 4.68,
+  z: 0,
+  rooms: plan.rooms,
+});
+assert.equal(resolvedSnappedMove?.movementStatus, "snapped");
+assert.equal(resolvedSnappedMove?.structuralStatus, "attached");
+assert.deepEqual(
+  resolvedSnappedMove
+    ? { x: roundPlanCoordinate(resolvedSnappedMove.x), z: roundPlanCoordinate(resolvedSnappedMove.z) }
+    : null,
+  { x: 4.5, z: 0 }
+);
+const resolvedBlockedMove = resolveHouseRoomMove({
+  roomId: "bedroom",
+  x: 1.5,
+  z: 0,
+  rooms: plan.rooms,
+});
+assert.equal(resolvedBlockedMove?.movementStatus, "blocked");
+assert.deepEqual(
+  resolvedBlockedMove
+    ? { x: roundPlanCoordinate(resolvedBlockedMove.x), z: roundPlanCoordinate(resolvedBlockedMove.z) }
+    : null,
+  { x: 4.5, z: 0 }
+);
+const resolvedFreeDetachedMove = resolveHouseRoomMove({
+  roomId: "bedroom",
+  x: 9,
+  z: 0,
+  rooms: plan.rooms,
+  snap: false,
+});
+assert.equal(resolvedFreeDetachedMove?.movementStatus, "free");
+assert.equal(resolvedFreeDetachedMove?.structuralStatus, "detached");
+const resolvedFreeBlockedMove = resolveHouseRoomMove({
+  roomId: "bedroom",
+  x: 1.5,
+  z: 0,
+  rooms: plan.rooms,
+  snap: false,
+});
+assert.equal(resolvedFreeBlockedMove?.movementStatus, "blocked");
 
 const stackedPlan = buildHousePlan2D(
   [
@@ -239,6 +426,62 @@ assert.deepEqual(snapHouseRoomMove("study", 0.22, 3.66, stackedPlan.rooms), {
   x: 0,
   z: 3.5,
 });
+assert.deepEqual(buildHouseRoomConnectivityReport([plan.rooms[0]]), {
+  roomCount: 1,
+  components: [["living"]],
+  detachedRoomIds: [],
+  disconnectedGroups: [],
+});
+const detachedPlanRooms = buildHousePlan2D(
+  [
+    living,
+    makeRoom("study", "Study", 3, 3, { x: 10, z: 0 }),
+  ],
+  5,
+  4
+).rooms;
+assert.deepEqual(buildHouseRoomConnectivityReport(detachedPlanRooms).detachedRoomIds, [
+  "living",
+  "study",
+]);
+assert.equal(
+  buildHouseRoomConnectionChecklist(detachedPlanRooms, [], "study").some(
+    (item) => item.status === "detached" && item.roomIds.includes("study")
+  ),
+  true
+);
+const disconnectedPlanRooms = buildHousePlan2D(
+  [
+    living,
+    makeRoom("bedroom", "Bedroom", 4, 3, { x: 4.5, z: 0 }),
+    makeRoom("dining", "Dining", 3, 3, { x: 12, z: 0 }),
+    makeRoom("kitchen", "Kitchen", 3, 3, { x: 15, z: 0 }),
+  ],
+  5,
+  4
+).rooms;
+assert.equal(
+  buildHouseRoomConnectivityReport(disconnectedPlanRooms).disconnectedGroups.length,
+  2
+);
+assert.equal(
+  buildHouseRoomConnectionChecklist(disconnectedPlanRooms, [], "bedroom").some(
+    (item) => item.status === "disconnected_group"
+  ),
+  true
+);
+const upperFloorBedroom = { ...plan.rooms[1], floorLevel: 2, x: 0, z: 0 };
+assert.equal(
+  doesHouseRoomOverlap("bedroom", 0, 0, upperFloorBedroom.w, upperFloorBedroom.d, [
+    plan.rooms[0],
+    upperFloorBedroom,
+  ]),
+  false
+);
+assert.equal(
+  buildHouseRoomAdjacencyGuides([plan.rooms[0], upperFloorBedroom]).length,
+  0
+);
 assert.deepEqual(buildHouseRoomAdjacencyGuides(plan.rooms), [
   {
     id: "living-bedroom-vertical-east-west",
@@ -308,6 +551,24 @@ assert.deepEqual(buildHouseRoomConnectionChecklist(plan.rooms, [], "bedroom"), [
     },
   },
 ]);
+const renderConnectionChecklist = (measurementUnit: "cm" | "ft-in") =>
+  renderToStaticMarkup(
+    createElement(RoomConnectionChecklist, {
+      items: buildHouseRoomConnectionChecklist(plan.rooms, [], "bedroom"),
+      measurementUnit,
+      onAddDoorway: () => undefined,
+    })
+  );
+assert.match(
+  renderConnectionChecklist("cm"),
+  />300 cm shared wall</,
+  "The connections checklist should state the shared wall length in the display unit."
+);
+assert.match(
+  renderConnectionChecklist("ft-in"),
+  />9′ 10\.1″ shared wall</,
+  "The connections checklist should follow a feet-and-inches preference."
+);
 assert.deepEqual(
   buildHouseRoomConnectionChecklist(
     plan.rooms,
@@ -388,6 +649,42 @@ assert.deepEqual(
       widthMm: 1100,
     },
   ]
+);
+assert.deepEqual(
+  updatePlanOpeningMetrics(
+    [
+      {
+        id: "window-editable",
+        roomId: "bedroom",
+        wall: "north",
+        kind: "window",
+        offsetMm: 0,
+        widthMm: 1200,
+        heightMm: 1200,
+        bottomMm: 900,
+      },
+    ],
+    "window-editable",
+    { heightMeters: 1.35, bottomMeters: 0.75 },
+    {
+      rooms: plan.rooms,
+      planWidthMeters: plan.width,
+      planDepthMeters: plan.depth,
+    }
+  ),
+  [
+    {
+      id: "window-editable",
+      roomId: "bedroom",
+      wall: "north",
+      kind: "window",
+      offsetMm: 0,
+      widthMm: 1200,
+      heightMm: 1350,
+      bottomMm: 750,
+    },
+  ],
+  "opening metric edits should persist window height and sill height"
 );
 assert.deepEqual(
   movePlanOpening(
@@ -650,5 +947,24 @@ assert.equal(
   }),
   220
 );
+
+// The shared house-plan outline is what the share preview and export diagram draw,
+// so an L-shape must keep its notch and the drawn area must match the reported area.
+const [lShapePlanRoom] = buildHousePlan2D(
+  [{ ...makeRoom("l-living", "L Living", 5, 4, { x: 1, z: 2 }), planShape: "l_shape" }],
+  5,
+  4
+).rooms;
+const lShapeOutline = getHouseRoomPlanPolygon(lShapePlanRoom);
+assert.deepEqual(
+  lShapeOutline.map((point) => [roundPlanCoordinate(point.x), roundPlanCoordinate(point.z)]),
+  [[-1.5, 0], [3.5, 0], [3.5, 2.32], [1.4, 2.32], [1.4, 4], [-1.5, 4]],
+  "An L-shape plan outline must cut its south-east notch at the room's plan position."
+);
+assert.ok(
+  Math.abs(calculateFloorPlanPolygonAreaSqm(lShapeOutline) - getPlanRoomFloorAreaSqm(lShapePlanRoom)) < 1e-9,
+  "The drawn L-shape outline must enclose exactly the floor area the room reports."
+);
+assert.equal(getHouseRoomPlanPolygon(plan.rooms[0]).length, 4, "A rectangle room keeps its four-corner outline.");
 
 console.log("Design page house-plan helper checks passed.");

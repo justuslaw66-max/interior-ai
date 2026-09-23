@@ -1,6 +1,15 @@
 "use client";
 
 import posthog from "posthog-js";
+import { sanitizeObservabilityMeta } from "@/lib/observability";
+import { isUsablePostHogKey } from "@/lib/posthog-config";
+import {
+  sanitizeProductPerformanceObservation,
+  sanitizeProductTelemetryProperties,
+  type ProductPerformanceObservation,
+  type ProductTelemetryEvent,
+  type ProductTelemetryProperties,
+} from "@/lib/product-telemetry";
 
 type TrackProps = object;
 
@@ -18,6 +27,7 @@ export function setClientAnalyticsDisabled(disabled: boolean) {
 export function isClientAnalyticsDisabled(): boolean {
   return (
     process.env.NEXT_PUBLIC_ENABLE_QA_HOOKS === "1" ||
+    !isUsablePostHogKey(process.env.NEXT_PUBLIC_POSTHOG_KEY) ||
     (typeof window !== "undefined" && window.__INTERIOR_AI_ANALYTICS_DISABLED__ === true)
   );
 }
@@ -25,11 +35,32 @@ export function isClientAnalyticsDisabled(): boolean {
 export function track(event: string, props: TrackProps = {}) {
   if (isClientAnalyticsDisabled()) return;
 
-  const base = {
+  const base = sanitizeObservabilityMeta({
     app: "interior_designer",
     platform: "desktop",
     ...props,
-  };
+  });
 
-  posthog.capture(event, base);
+  try {
+    posthog.capture(event, base);
+  } catch {
+    // Analytics is best-effort and must never interrupt editing or saving.
+  }
+}
+
+export function trackProductEvent(
+  event: ProductTelemetryEvent,
+  properties: ProductTelemetryProperties = {}
+) {
+  track(event, sanitizeProductTelemetryProperties(properties));
+}
+
+export function trackProductPerformance(observation: ProductPerformanceObservation) {
+  const safe = sanitizeProductPerformanceObservation(observation);
+  if (!safe) return;
+  track("editor_performance_measured", {
+    metric: safe.metric,
+    value: safe.value,
+    ...(safe.context ?? {}),
+  });
 }

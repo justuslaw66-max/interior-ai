@@ -1,0 +1,1671 @@
+"use strict";
+
+const { createHash, randomBytes } = module.require("node:crypto");
+const {
+  accessSync,
+  closeSync,
+  constants,
+  existsSync,
+  fsyncSync,
+  linkSync,
+  lstatSync,
+  openSync,
+  readFileSync,
+  realpathSync,
+  unlinkSync,
+  writeFileSync,
+} = module.require("node:fs");
+const path = module.require("node:path");
+const { spawnSync } = module.require("node:child_process");
+
+const AUTH_RESULT_SCHEMA = "interior-ai.ci-auth-fixture-command-result.v1";
+const AUTH_RESULT_VERSION = 1;
+const AUTH_RESULT_COMPLETION_MARKER = "CI_AUTH_FIXTURE_COMMAND_RESULT_COMPLETE";
+const AUTH_RESULT_ROOT_ENV = "CI_AUTH_FIXTURE_RESULT_ROOT";
+const AUTH_RESULT_PATH_ENV = "CI_AUTH_FIXTURE_RESULT_PATH";
+const AUTH_RESULT_NONCE_ENV = "CI_AUTH_FIXTURE_RESULT_NONCE";
+const AUTH_RESULT_EXPECTED_COMMAND_ENV = "CI_AUTH_FIXTURE_EXPECTED_COMMAND_ID";
+const AUTH_RESULT_EXPECTED_MODE_ENV = "CI_AUTH_FIXTURE_EXPECTED_MODE";
+const AUTH_RESULT_COMMAND_STATUS_ENV = "CI_AUTH_FIXTURE_ACTUAL_EXIT_STATUS";
+const AUTH_RESULT_CANDIDATE_COMMIT_ENV = "CI_AUTH_FIXTURE_CANDIDATE_COMMIT_SHA";
+const AUTH_RESULT_CANDIDATE_TREE_ENV = "CI_AUTH_FIXTURE_CANDIDATE_TREE_SHA";
+const AUTH_PRIVATE_VALUE_NAMES = Object.freeze([
+  "AUTH_SECRET",
+  "NEXTAUTH_SECRET",
+  "GOOGLE_CLIENT_ID",
+  "GOOGLE_CLIENT_SECRET",
+  "DATABASE_URL",
+]);
+
+const COMMAND_MODES = Object.freeze({
+  "export-github-env": Object.freeze({
+    commandId: "ci:auth-fixture:export",
+    mode: "provider-fixture-export",
+  }),
+  "validate-env": Object.freeze({
+    commandId: "ci:auth-fixture:validate",
+    mode: "auth-environment-validation",
+  }),
+  "validate-existing": Object.freeze({
+    commandId: "ci:auth-fixture:validate-existing",
+    mode: "auth-environment-validation",
+  }),
+  "production-misuse": Object.freeze({
+    commandId: "ci:auth-fixture:production-misuse",
+    mode: "production-misuse-validation",
+  }),
+  "production-misuse-existing": Object.freeze({
+    commandId: "ci:auth-fixture:production-misuse-existing",
+    mode: "production-misuse-validation",
+  }),
+  preflight: Object.freeze({
+    commandId: "ci:auth-fixture:preflight",
+    mode: "auth-session-preflight",
+  }),
+  "preflight-existing": Object.freeze({
+    commandId: "ci:auth-fixture:preflight-existing",
+    mode: "auth-session-preflight",
+  }),
+  "preflight-local": Object.freeze({
+    commandId: "test:advisory-auth-preflight",
+    mode: "auth-session-preflight",
+  }),
+  "real-preflight": Object.freeze({
+    commandId: "certification:auth-session-preflight",
+    mode: "auth-session-preflight",
+  }),
+});
+
+const RESULT_VALUES = new Set(["success", "expected-negative-pass", "failure"]);
+const SAFE_ENVIRONMENT_CLASSIFICATIONS = new Set([
+  "development",
+  "staging",
+  "production",
+  "invalid",
+]);
+const SHA256_PATTERN = /^[a-f0-9]{64}$/;
+const SOURCE_SHA_PATTERN = /^[a-f0-9]{40}$/;
+const NONCE_PATTERN = /^[A-Za-z0-9][A-Za-z0-9._:-]{7,127}$/;
+const PROCESS_ERROR_CODE_PATTERN = /^[A-Z][A-Z0-9_]{1,63}$/;
+const RESOLVED_AUTH_RESULT_DESTINATIONS = new WeakSet();
+const AUTH_VALIDATION_FAILURE_CATEGORIES = Object.freeze({
+  SYNTHETIC_AUTH_FIXTURE_MODE_NOT_ENABLED: "fixture-activation",
+  SYNTHETIC_AUTH_FIXTURE_PRODUCTION_MISUSE_REJECTED:
+    "production-activation-prohibited",
+  SYNTHETIC_AUTH_FIXTURE_ENVIRONMENT_INVALID: "environment-classification",
+  AUTH_FIXTURE_VALIDATION_NOT_GITHUB_CI: "fixture-validation-scope",
+  AUTH_SECRET_ALIAS_MISMATCH: "auth-secret-alias-policy",
+  AUTH_PROVIDER_VARIABLE_MISSING: "provider-presence",
+  AUTH_PROVIDER_VARIABLE_EMPTY: "provider-presence",
+  AUTH_SECRET_MISSING: "auth-secret-presence",
+  AUTH_SECRET_EMPTY: "auth-secret-presence",
+  AUTH_SECRET_INVALID: "auth-secret-grammar",
+  AUTH_PROVIDER_CLIENT_ID_GRAMMAR_INVALID: "provider-client-id-grammar",
+  AUTH_PROVIDER_CLIENT_SECRET_GRAMMAR_INVALID:
+    "provider-client-secret-grammar",
+  RETIRED_SYNTHETIC_AUTH_FIXTURE_REJECTED: "synthetic-fixture-policy",
+  SYNTHETIC_AUTH_FIXTURE_SCOPE_REJECTED: "synthetic-fixture-scope",
+  AUTH_FIXTURE_PAIR_COHERENCE_INVALID: "provider-pair-coherence",
+});
+
+function sha256Bytes(value) {
+  return createHash("sha256").update(value).digest("hex");
+}
+
+function canonicalJsonBytes(value) {
+  return Buffer.from(`${JSON.stringify(value, null, 2)}\n`);
+}
+
+function isInside(parent, candidate) {
+  const relative = path.relative(parent, candidate);
+  return (
+    relative === "" ||
+    (!relative.startsWith(`..${path.sep}`) &&
+      relative !== ".." &&
+      !path.isAbsolute(relative))
+  );
+}
+
+function lstatOrNull(filePath) {
+  try {
+    return lstatSync(filePath);
+  } catch (error) {
+    if (error && error.code === "ENOENT") return null;
+    throw error;
+  }
+}
+
+function discoverGitWorktrees(repositoryRoot) {
+  const result = spawnSync("git", ["worktree", "list", "--porcelain"], {
+    cwd: repositoryRoot,
+    encoding: "utf8",
+  });
+  if (result.error || result.signal || result.status !== 0) {
+    throw new Error("Auth result destination could not enumerate repository worktrees");
+  }
+  return result.stdout
+    .split("\n")
+    .filter((line) => line.startsWith("worktree "))
+    .map((line) => line.slice("worktree ".length))
+    .map((worktree) => realpathSync(worktree));
+}
+
+function assertPhysicalContainedParent(root, parent) {
+  const relative = path.relative(root, parent);
+  if (relative.startsWith("..") || path.isAbsolute(relative)) {
+    throw new Error("Auth result parent escapes the authorized external root");
+  }
+  let current = root;
+  for (const component of relative.split(path.sep).filter(Boolean)) {
+    current = path.join(current, component);
+    const metadata = lstatSync(current);
+    if (metadata.isSymbolicLink() || !metadata.isDirectory()) {
+      throw new Error("Auth result parent contains a symlink or non-directory component");
+    }
+  }
+  if (realpathSync(parent) !== parent) {
+    throw new Error("Auth result parent is not a canonical physical directory");
+  }
+}
+
+function resolveAuthResultDestination({
+  repositoryRoot,
+  externalRoot,
+  resultPath,
+  requireAbsent = true,
+  worktreeRoots,
+}) {
+  if (!path.isAbsolute(repositoryRoot || "")) {
+    throw new Error("Auth result validation requires an absolute repository root");
+  }
+  if (!path.isAbsolute(externalRoot || "") || !path.isAbsolute(resultPath || "")) {
+    throw new Error("Auth result root and result path must be explicit absolute paths");
+  }
+  const repository = realpathSync(repositoryRoot);
+  const rootMetadata = lstatSync(externalRoot);
+  if (rootMetadata.isSymbolicLink() || !rootMetadata.isDirectory()) {
+    throw new Error("Auth result root must be a physical directory");
+  }
+  const root = realpathSync(externalRoot);
+  if (root !== path.resolve(externalRoot)) {
+    throw new Error("Auth result root must be supplied as its canonical physical path");
+  }
+  const repositoryWorktrees = (worktreeRoots || discoverGitWorktrees(repository)).map((entry) =>
+    realpathSync(entry),
+  );
+  if (
+    repositoryWorktrees.some(
+      (worktree) => isInside(worktree, root) || isInside(root, worktree),
+    )
+  ) {
+    throw new Error("Auth result root must remain outside the repository and every worktree");
+  }
+  const requested = path.resolve(resultPath);
+  if (!isInside(root, requested) || requested === root) {
+    throw new Error("Auth result path must remain beneath the authorized external root");
+  }
+  if (repositoryWorktrees.some((worktree) => isInside(worktree, requested))) {
+    throw new Error("Auth result path must remain outside every repository worktree");
+  }
+  if (path.extname(requested) !== ".json") {
+    throw new Error("Auth result path must use a .json target");
+  }
+  const parent = path.dirname(requested);
+  assertPhysicalContainedParent(root, parent);
+  const parentMetadata = lstatSync(parent);
+  accessSync(parent, constants.W_OK);
+  const sidecarPath = `${requested}.sha256`;
+  if (requireAbsent && (lstatOrNull(requested) || lstatOrNull(sidecarPath))) {
+    throw new Error("Auth result and checksum targets must be absent before invocation");
+  }
+  const relativePath = path.relative(root, requested).split(path.sep).join("/");
+  const destination = Object.freeze({
+    repositoryRoot: repository,
+    externalRoot: root,
+    resultPath: requested,
+    sidecarPath,
+    parentPath: parent,
+    parentDevice: parentMetadata.dev,
+    parentInode: parentMetadata.ino,
+    relativePath,
+    externalRootIdentitySha256: sha256Bytes(root),
+    resultPathIdentitySha256: sha256Bytes(`${root}\0${relativePath}`),
+  });
+  RESOLVED_AUTH_RESULT_DESTINATIONS.add(destination);
+  return destination;
+}
+
+function assertDestinationParentIdentity(destination) {
+  assertPhysicalContainedParent(destination.externalRoot, destination.parentPath);
+  const metadata = lstatSync(destination.parentPath);
+  if (
+    metadata.dev !== destination.parentDevice ||
+    metadata.ino !== destination.parentInode
+  ) {
+    throw new Error("Auth result parent identity changed during publication");
+  }
+}
+
+function assertDestinationPathBindings(destination) {
+  if (
+    !RESOLVED_AUTH_RESULT_DESTINATIONS.has(destination) ||
+    destination.sidecarPath !== `${destination.resultPath}.sha256` ||
+    path.dirname(destination.resultPath) !== destination.parentPath ||
+    path.dirname(destination.sidecarPath) !== destination.parentPath ||
+    !isInside(destination.externalRoot, destination.resultPath) ||
+    destination.resultPath === destination.externalRoot ||
+    destination.relativePath !==
+      path.relative(destination.externalRoot, destination.resultPath)
+        .split(path.sep)
+        .join("/") ||
+    destination.externalRootIdentitySha256 !==
+      sha256Bytes(destination.externalRoot) ||
+    destination.resultPathIdentitySha256 !==
+      sha256Bytes(`${destination.externalRoot}\0${destination.relativePath}`)
+  ) {
+    throw new Error("Auth result destination path bindings are inconsistent");
+  }
+}
+
+function writeAtomicFile(destination, filePath, bytes) {
+  const parent = path.dirname(filePath);
+  const stagingPath = path.join(
+    parent,
+    `.${path.basename(filePath)}.${process.pid}.${randomBytes(8).toString("hex")}.tmp`,
+  );
+  let descriptor;
+  try {
+    assertDestinationPathBindings(destination);
+    if (
+      (filePath !== destination.resultPath &&
+        filePath !== destination.sidecarPath) ||
+      parent !== destination.parentPath
+    ) {
+      throw new Error("Auth result writer target is not bound to its verified parent");
+    }
+    assertDestinationParentIdentity(destination);
+    descriptor = openSync(stagingPath, "wx", 0o600);
+    writeFileSync(descriptor, bytes);
+    fsyncSync(descriptor);
+    closeSync(descriptor);
+    descriptor = undefined;
+    // A same-filesystem hard link publishes the fully fsynced inode atomically
+    // while retaining O_EXCL semantics. Unlike POSIX rename, link never
+    // overwrites a target that appears after the destination preflight.
+    linkSync(stagingPath, filePath);
+    unlinkSync(stagingPath);
+    assertDestinationParentIdentity(destination);
+    const parentDescriptor = openSync(parent, "r");
+    try {
+      fsyncSync(parentDescriptor);
+    } finally {
+      closeSync(parentDescriptor);
+    }
+  } finally {
+    if (descriptor !== undefined) closeSync(descriptor);
+    if (existsSync(stagingPath)) unlinkSync(stagingPath);
+  }
+}
+
+function sealAuthCommandResult(payload) {
+  const aggregateSha256 = sha256Bytes(canonicalJsonBytes(payload));
+  return Object.freeze({ ...payload, aggregateSha256 });
+}
+
+function writeSealedResultFiles({ destination, result }) {
+  assertDestinationPathBindings(destination);
+  if (lstatOrNull(destination.resultPath) || lstatOrNull(destination.sidecarPath)) {
+    throw new Error("Auth result writer refuses to overwrite an existing result");
+  }
+  const { aggregateSha256, ...payload } = result;
+  if (
+    !SHA256_PATTERN.test(aggregateSha256 || "") ||
+    sha256Bytes(canonicalJsonBytes(payload)) !== aggregateSha256
+  ) {
+    throw new Error("Auth result writer requires a valid sealed payload");
+  }
+  const bytes = canonicalJsonBytes(result);
+  writeAtomicFile(destination, destination.resultPath, bytes);
+  const checksumBytes = Buffer.from(
+    `${aggregateSha256}  ${path.basename(destination.resultPath)}\n`,
+  );
+  writeAtomicFile(destination, destination.sidecarPath, checksumBytes);
+  return result;
+}
+
+function writeAuthCommandResult({ destination, payload }) {
+  const result = sealAuthCommandResult(payload);
+  return writeSealedResultFiles({ destination, result });
+}
+
+function assertExactKeys(value, expected, description) {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    throw new Error(`${description} must be an object`);
+  }
+  const actual = Object.keys(value).sort();
+  const wanted = [...expected].sort();
+  if (JSON.stringify(actual) !== JSON.stringify(wanted)) {
+    throw new Error(`${description} has missing or unknown fields`);
+  }
+}
+
+function assertDescriptor(value, description) {
+  assertExactKeys(value, ["bytes", "sha256"], description);
+  if (!Number.isSafeInteger(value.bytes) || value.bytes < 0 || !SHA256_PATTERN.test(value.sha256)) {
+    throw new Error(`${description} is malformed`);
+  }
+}
+
+function assertFixtureSessionIdentity(
+  fixtureSession,
+  resultIdentity,
+  expectedAction,
+  expectedSourceCommand,
+  expectedSourceMode,
+) {
+  assertExactKeys(
+    fixtureSession,
+    [
+      "schema",
+      "version",
+      "sessionId",
+      "invocationNonce",
+      "candidate",
+      "generator",
+      "policy",
+      "exportedVariableNames",
+      "exportedVariableNamesSha256",
+      "providerDigests",
+      "createdAt",
+      "classification",
+      "privateTransport",
+      "completion",
+      "sessionAggregateSha256",
+      "lifecycle",
+    ],
+    "Auth fixture session identity",
+  );
+  assertExactKeys(fixtureSession.candidate, ["commitSha", "treeSha"], "Auth fixture candidate");
+  assertExactKeys(fixtureSession.generator, ["owner", "sourceSha256"], "Auth fixture generator");
+  assertExactKeys(fixtureSession.policy, ["schema", "sourceSha256"], "Auth fixture policy");
+  assertExactKeys(
+    fixtureSession.providerDigests,
+    ["googleClientIdSha256", "googleClientSecretSha256"],
+    "Auth fixture provider digests",
+  );
+  assertExactKeys(
+    fixtureSession.privateTransport,
+    [
+      "identitySha256",
+      "contentSha256",
+      "ownerOnlyMode",
+      "portable",
+      "rawValuesRetainedInPortableEvidence",
+    ],
+    "Auth fixture private transport",
+  );
+  assertExactKeys(
+    fixtureSession.completion,
+    ["complete", "marker", "successfulGenerationEvents"],
+    "Auth fixture completion",
+  );
+  assertExactKeys(
+    fixtureSession.lifecycle,
+    [
+      "action",
+      "generationCount",
+      "regenerationDetected",
+      "sourceCommand",
+      "sourceMode",
+      "certificationEligibility",
+    ],
+    "Auth fixture lifecycle",
+  );
+  const expectedNames = [
+    "CI_AUTH_FIXTURE_ACTIVE",
+    "CI_AUTH_FIXTURE_SESSION_CLASSIFICATION",
+    "CI_AUTH_FIXTURE_SESSION_ID",
+    "CI_AUTH_FIXTURE_SESSION_NONCE",
+    "CI_AUTH_FIXTURE_SESSION_ROOT",
+    "CI_AUTH_FIXTURE_PROVIDER_CLIENT_ID_SHA256",
+    "CI_AUTH_FIXTURE_PROVIDER_CLIENT_SECRET_SHA256",
+    "CI_AUTH_FIXTURE_NO_REGENERATION",
+    "GOOGLE_CLIENT_ID",
+    "GOOGLE_CLIENT_SECRET",
+  ].sort();
+  if (
+    fixtureSession.schema !== "interior-ai.ci-auth-fixture-session.v1" ||
+    fixtureSession.version !== 1 ||
+    !NONCE_PATTERN.test(fixtureSession.sessionId) ||
+    !NONCE_PATTERN.test(fixtureSession.invocationNonce) ||
+    fixtureSession.candidate.commitSha !== resultIdentity.candidateCommitSha ||
+    fixtureSession.candidate.treeSha !== resultIdentity.candidateTreeSha ||
+    fixtureSession.generator.owner !==
+      "scripts/ci-auth-fixture.ts#export-github-env" ||
+    !SHA256_PATTERN.test(fixtureSession.generator.sourceSha256) ||
+    fixtureSession.policy.schema !==
+      "interior-ai.synthetic-ci-oauth-fixture-policy.v1" ||
+    !SHA256_PATTERN.test(fixtureSession.policy.sourceSha256) ||
+    JSON.stringify(fixtureSession.exportedVariableNames) !==
+      JSON.stringify(expectedNames) ||
+    fixtureSession.exportedVariableNamesSha256 !==
+      sha256Bytes(expectedNames.join("\0")) ||
+    !SHA256_PATTERN.test(fixtureSession.providerDigests.googleClientIdSha256) ||
+    !SHA256_PATTERN.test(fixtureSession.providerDigests.googleClientSecretSha256) ||
+    !Number.isFinite(Date.parse(fixtureSession.createdAt)) ||
+    fixtureSession.classification !==
+      "PRODUCTION_INELIGIBLE_SYNTHETIC_AUTH" ||
+    !SHA256_PATTERN.test(fixtureSession.privateTransport.identitySha256) ||
+    !SHA256_PATTERN.test(fixtureSession.privateTransport.contentSha256) ||
+    fixtureSession.privateTransport.ownerOnlyMode !== "0600" ||
+    fixtureSession.privateTransport.portable !== false ||
+    fixtureSession.privateTransport.rawValuesRetainedInPortableEvidence !==
+      false ||
+    fixtureSession.completion.complete !== true ||
+    fixtureSession.completion.marker !== "CI_AUTH_FIXTURE_SESSION_COMPLETE" ||
+    fixtureSession.completion.successfulGenerationEvents !== 1 ||
+    !SHA256_PATTERN.test(fixtureSession.sessionAggregateSha256) ||
+    fixtureSession.lifecycle.action !== expectedAction ||
+    fixtureSession.lifecycle.generationCount !==
+      (expectedAction === "generated" ? 1 : 0) ||
+    fixtureSession.lifecycle.regenerationDetected !== false ||
+    fixtureSession.lifecycle.sourceCommand !== expectedSourceCommand ||
+    fixtureSession.lifecycle.sourceMode !== expectedSourceMode ||
+    fixtureSession.lifecycle.certificationEligibility !==
+      "ELIGIBLE_FOR_CANONICAL_AUTH_CONTINUITY_ONLY"
+  ) {
+    throw new Error("Auth fixture session identity or exactly-once lifecycle is invalid");
+  }
+}
+
+function assertAuthPreflightDatabaseEvidence(evidence, resultClassification) {
+  assertExactKeys(
+    evidence,
+    [
+      "schema",
+      "classification",
+      "rehearsalClassification",
+      "releaseCertificationClassification",
+      "integrationClassification",
+      "stage",
+      "lifecycleIdentitySha256",
+      "databaseIdentitySha256",
+      "databaseNameSha256",
+      "authPreflightInvocationNonceSha256",
+      "projectionLifecycleEvidenceSha256",
+      "completionLifecycleEvidenceSha256",
+      "planResult",
+      "provisionResult",
+      "migrationResult",
+      "initialVerificationResult",
+      "scopedRoleClassification",
+      "scopedRoleIdentitySha256",
+      "connectionProjectionResult",
+      "adminCapabilities",
+      "authSessionServerPreflight",
+      "finalInspectionResult",
+      "cleanupMode",
+      "scopedRoleRemovalResult",
+      "dropResult",
+      "absenceResult",
+      "originalFailureRetained",
+      "failedPreflightRehabilitated",
+      "completionMarker",
+    ],
+    "Auth preflight database prerequisite",
+  );
+  const digestNames = [
+    "lifecycleIdentitySha256",
+    "databaseIdentitySha256",
+    "databaseNameSha256",
+    "authPreflightInvocationNonceSha256",
+    "projectionLifecycleEvidenceSha256",
+    "completionLifecycleEvidenceSha256",
+    "scopedRoleIdentitySha256",
+  ];
+  if (
+    evidence.schema !==
+      "interior-ai.ci-auth-fixture-database-prerequisite-evidence.v1" ||
+    evidence.classification !== "AUTH_SESSION_PREFLIGHT_ONLY" ||
+    evidence.rehearsalClassification !== "NOT_REHEARSAL_DATABASE" ||
+    evidence.releaseCertificationClassification !==
+      "NOT_RELEASE_CERTIFICATION" ||
+    evidence.integrationClassification !== "NOT_VALID_FOR_INTEGRATION" ||
+    evidence.stage !== "auth-session-preflight" ||
+    digestNames.some((name) => !SHA256_PATTERN.test(evidence[name])) ||
+    !new Set(["passed", "failed"]).has(evidence.planResult) ||
+    !new Set(["passed", "failed"]).has(evidence.provisionResult) ||
+    !new Set(["passed", "failed"]).has(evidence.migrationResult) ||
+    !new Set(["passed", "failed"]).has(evidence.initialVerificationResult) ||
+    evidence.scopedRoleClassification !== "private-stage-login-no-admin" ||
+    evidence.connectionProjectionResult !== "passed" ||
+    evidence.adminCapabilities !== false ||
+    !new Set(["passed", "failed"]).has(evidence.authSessionServerPreflight) ||
+    !new Set(["passed", "failed", "abort-inspected"]).has(
+      evidence.finalInspectionResult,
+    ) ||
+    !new Set(["normal", "abort"]).has(evidence.cleanupMode) ||
+    !new Set(["passed", "failed"]).has(evidence.scopedRoleRemovalResult) ||
+    !new Set(["passed", "failed"]).has(evidence.dropResult) ||
+    !new Set(["passed", "failed"]).has(evidence.absenceResult) ||
+    typeof evidence.originalFailureRetained !== "boolean" ||
+    typeof evidence.failedPreflightRehabilitated !== "boolean" ||
+    !new Set([
+      "AUTH_SESSION_PREFLIGHT_DATABASE_LIFECYCLE_COMPLETE",
+      "AUTH_SESSION_PREFLIGHT_DATABASE_LIFECYCLE_INCOMPLETE",
+    ]).has(evidence.completionMarker)
+  ) {
+    throw new Error("Auth preflight database prerequisite evidence is malformed");
+  }
+  if (
+    resultClassification === "success" &&
+    (evidence.planResult !== "passed" ||
+      evidence.provisionResult !== "passed" ||
+      evidence.migrationResult !== "passed" ||
+      evidence.initialVerificationResult !== "passed" ||
+      evidence.authSessionServerPreflight !== "passed" ||
+      evidence.finalInspectionResult !== "passed" ||
+      evidence.cleanupMode !== "normal" ||
+      evidence.scopedRoleRemovalResult !== "passed" ||
+      evidence.dropResult !== "passed" ||
+      evidence.absenceResult !== "passed" ||
+      evidence.originalFailureRetained !== false ||
+      evidence.failedPreflightRehabilitated !== false ||
+      evidence.completionMarker !==
+        "AUTH_SESSION_PREFLIGHT_DATABASE_LIFECYCLE_COMPLETE")
+  ) {
+    throw new Error(
+      "Auth preflight success lacks complete database prerequisite and cleanup proof",
+    );
+  }
+  if (
+    resultClassification === "failure" &&
+    (evidence.planResult !== "passed" ||
+      evidence.provisionResult !== "passed" ||
+      evidence.migrationResult !== "passed" ||
+      evidence.initialVerificationResult !== "passed" ||
+      evidence.cleanupMode !== "abort" ||
+      evidence.finalInspectionResult !== "abort-inspected" ||
+      evidence.scopedRoleRemovalResult !== "passed" ||
+      evidence.dropResult !== "passed" ||
+      evidence.absenceResult !== "passed" ||
+      evidence.originalFailureRetained !== true ||
+      evidence.failedPreflightRehabilitated !== false ||
+      evidence.completionMarker !==
+        "AUTH_SESSION_PREFLIGHT_DATABASE_LIFECYCLE_COMPLETE")
+  ) {
+    throw new Error(
+      "Auth preflight failure lacks retained failure and complete abort cleanup proof",
+    );
+  }
+}
+
+function assertAuthPreflightWorkspaceEvidence(evidence, result) {
+  assertExactKeys(
+    evidence,
+    [
+      "schema",
+      "owner",
+      "classification",
+      "candidateCommitSha",
+      "candidateTreeSha",
+      "fixtureSessionIdentitySha256",
+      "pathIdentitySha256",
+      "exactHeadDetached",
+      "sourceRoot",
+      "trackedOutput",
+      "cleanup",
+    ],
+    "Auth preflight worktree prerequisite",
+  );
+  assertExactKeys(
+    evidence.sourceRoot,
+    [
+      "beforeCleanStateSha256",
+      "duringCleanStateSha256",
+      "byteIdenticalBeforeAndDuring",
+    ],
+    "Auth preflight source-root continuity",
+  );
+  assertExactKeys(
+    evidence.trackedOutput,
+    [
+      "preTrackedStatusSha256",
+      "postTrackedStatusSha256",
+      "changedPaths",
+      "changedPathCount",
+      "stagedPathCount",
+      "ordinaryUntrackedPathCount",
+      "mutationClassification",
+      "expectedGeneratedInclude",
+      "tsconfigPreBlob",
+      "tsconfigPreSha256",
+      "tsconfigPostSha256",
+      "expectedGeneratedSha256",
+      "unexpectedTrackedPathCount",
+      "issues",
+    ],
+    "Auth preflight tracked-output lifecycle",
+  );
+  assertExactKeys(
+    evidence.cleanup,
+    [
+      "owner",
+      "method",
+      "worktreeRemoved",
+      "registrationAbsent",
+      "sourceByteIdenticalAfterCleanup",
+      "completed",
+    ],
+    "Auth preflight worktree cleanup",
+  );
+  const trackedOutput = evidence.trackedOutput;
+  const digestValues = [
+    evidence.fixtureSessionIdentitySha256,
+    evidence.pathIdentitySha256,
+    evidence.sourceRoot.beforeCleanStateSha256,
+    evidence.sourceRoot.duringCleanStateSha256,
+    trackedOutput.preTrackedStatusSha256,
+    trackedOutput.postTrackedStatusSha256,
+    trackedOutput.tsconfigPreSha256,
+    trackedOutput.tsconfigPostSha256,
+    trackedOutput.expectedGeneratedSha256,
+  ];
+  if (
+    evidence.schema !== "interior-ai.auth-preflight-worktree-lifecycle.v1" ||
+    evidence.owner !== "scripts/ci-auth-preflight-worktree.mjs" ||
+    evidence.classification !==
+      "AUTH_PREFLIGHT_EXACT_HEAD_DISPOSABLE_WORKTREE" ||
+    evidence.candidateCommitSha !== result.identity.candidateCommitSha ||
+    evidence.candidateTreeSha !== result.identity.candidateTreeSha ||
+    evidence.fixtureSessionIdentitySha256 !==
+      result.identity.fixtureSession.sessionAggregateSha256 ||
+    !SOURCE_SHA_PATTERN.test(evidence.candidateCommitSha) ||
+    !SOURCE_SHA_PATTERN.test(evidence.candidateTreeSha) ||
+    digestValues.some((value) => !SHA256_PATTERN.test(value)) ||
+    evidence.exactHeadDetached !== true ||
+    typeof evidence.sourceRoot.byteIdenticalBeforeAndDuring !== "boolean" ||
+    !Array.isArray(trackedOutput.changedPaths) ||
+    trackedOutput.changedPaths.some(
+      (entry) => typeof entry !== "string" || !entry || path.isAbsolute(entry),
+    ) ||
+    trackedOutput.changedPathCount !== trackedOutput.changedPaths.length ||
+    !Number.isSafeInteger(trackedOutput.stagedPathCount) ||
+    trackedOutput.stagedPathCount < 0 ||
+    !Number.isSafeInteger(trackedOutput.ordinaryUntrackedPathCount) ||
+    trackedOutput.ordinaryUntrackedPathCount < 0 ||
+    !Number.isSafeInteger(trackedOutput.unexpectedTrackedPathCount) ||
+    trackedOutput.unexpectedTrackedPathCount < 0 ||
+    !Array.isArray(trackedOutput.issues) ||
+    trackedOutput.issues.some((entry) => typeof entry !== "string" || !entry) ||
+    !new Set([
+      "absent",
+      "deterministic-next-generated",
+      "inspection-failed",
+    ]).has(trackedOutput.mutationClassification) ||
+    trackedOutput.expectedGeneratedInclude !==
+      ".next/dev/dev/types/**/*.ts" ||
+    !SOURCE_SHA_PATTERN.test(trackedOutput.tsconfigPreBlob) ||
+    evidence.cleanup.owner !== "scripts/ci-auth-preflight-worktree.mjs" ||
+    evidence.cleanup.method !==
+      "git-worktree-remove-force-exact-task-owned-path" ||
+    evidence.cleanup.worktreeRemoved !== true ||
+    evidence.cleanup.registrationAbsent !== true ||
+    evidence.cleanup.sourceByteIdenticalAfterCleanup !== true ||
+    evidence.cleanup.completed !== true
+  ) {
+    throw new Error("Auth preflight worktree prerequisite evidence is malformed");
+  }
+  if (
+    result.result === "success" &&
+    (evidence.sourceRoot.byteIdenticalBeforeAndDuring !== true ||
+      trackedOutput.stagedPathCount !== 0 ||
+      trackedOutput.ordinaryUntrackedPathCount !== 0 ||
+      trackedOutput.unexpectedTrackedPathCount !== 0 ||
+      trackedOutput.issues.length !== 0 ||
+      (trackedOutput.mutationClassification === "absent"
+        ? trackedOutput.changedPathCount !== 0 ||
+          trackedOutput.tsconfigPostSha256 !== trackedOutput.tsconfigPreSha256
+        : trackedOutput.mutationClassification ===
+            "deterministic-next-generated"
+          ? JSON.stringify(trackedOutput.changedPaths) !==
+              JSON.stringify(["tsconfig.json"]) ||
+            trackedOutput.tsconfigPostSha256 !==
+              trackedOutput.expectedGeneratedSha256
+          : true))
+  ) {
+    throw new Error(
+      "Auth preflight success lacks exact-head worktree isolation and cleanup proof",
+    );
+  }
+}
+
+function assertModeEvidence(result, allowNonConsumableFailure = false) {
+  const evidence = result.evidence;
+  if (result.command.mode === "provider-fixture-export") {
+    assertExactKeys(
+      evidence,
+      [
+        "variableNames",
+        "providerVariablesPresent",
+        "maskRegistrationCount",
+        "privateGithubEnvironment",
+        "rawValuesRetained",
+        "completed",
+      ],
+      "Auth export evidence",
+    );
+    if (
+      result.result === "success" &&
+      (
+      JSON.stringify(evidence.variableNames) !==
+        JSON.stringify(["CI_AUTH_FIXTURE_ACTIVE", "GOOGLE_CLIENT_ID", "GOOGLE_CLIENT_SECRET"]) ||
+      evidence.providerVariablesPresent !== true ||
+      evidence.maskRegistrationCount !== 2 ||
+      evidence.privateGithubEnvironment !== true ||
+      evidence.rawValuesRetained !== false ||
+      evidence.completed !== true
+      )
+    ) {
+      throw new Error("Auth export evidence is incomplete");
+    }
+    return;
+  }
+  if (result.command.mode === "auth-environment-validation") {
+    assertExactKeys(
+      evidence,
+      [
+        "providerVariablesPresent",
+        "providerClientIdGrammar",
+        "providerPairCoherence",
+        "authSecretPresence",
+        "aliasPolicy",
+        "nonProductionClassification",
+        "applicationValidator",
+        "networkClassification",
+        "leakScan",
+        "completed",
+      ],
+      "Auth validation evidence",
+    );
+    if (result.result === "success") {
+      if (
+        evidence.providerVariablesPresent !== true ||
+        evidence.providerClientIdGrammar !== "passed" ||
+        evidence.providerPairCoherence !== "passed" ||
+        evidence.authSecretPresence !== "passed" ||
+        !new Set(["auth-secret-only", "nextauth-secret-only", "dual-equal"]).has(
+          evidence.aliasPolicy,
+        ) ||
+        !new Set(["development", "staging"]).has(evidence.nonProductionClassification) ||
+        evidence.applicationValidator !== "passed" ||
+        evidence.networkClassification !== "not-used" ||
+        evidence.leakScan !== "passed" ||
+        evidence.completed !== true
+      ) {
+        throw new Error("Auth validation success evidence is incomplete");
+      }
+    } else if (
+      typeof evidence.providerVariablesPresent !== "boolean" ||
+      !new Set(["passed", "failed", "not-completed"]).has(
+        evidence.providerClientIdGrammar,
+      ) ||
+      !new Set(["passed", "failed", "not-completed"]).has(
+        evidence.providerPairCoherence,
+      ) ||
+      !new Set(["passed", "failed"]).has(evidence.authSecretPresence) ||
+      !new Set([
+        "dual-equal",
+        "mismatch-rejected",
+        "auth-secret-only",
+        "nextauth-secret-only",
+        "missing",
+      ]).has(
+        evidence.aliasPolicy,
+      ) ||
+      !new Set([
+        "development",
+        "staging",
+        "production-rejected",
+        "invalid",
+      ]).has(evidence.nonProductionClassification) ||
+      evidence.applicationValidator !== "failed" ||
+      evidence.networkClassification !== "not-used" ||
+      evidence.leakScan !== "passed" ||
+      evidence.completed !== true
+    ) {
+      throw new Error("Auth validation failure evidence is incomplete");
+    }
+    if (result.result === "failure") {
+      const expectedCategory =
+        AUTH_VALIDATION_FAILURE_CATEGORIES[result.failure.code];
+      if (!expectedCategory || result.failure.category !== expectedCategory) {
+        throw new Error("Auth validation failure code and category are inconsistent");
+      }
+      if (
+        new Set([
+          "AUTH_PROVIDER_VARIABLE_MISSING",
+          "AUTH_PROVIDER_VARIABLE_EMPTY",
+        ]).has(result.failure.code) &&
+        evidence.providerVariablesPresent !== false
+      ) {
+        throw new Error("Auth validation provider-presence evidence is inconsistent");
+      }
+      if (
+        result.failure.code === "AUTH_PROVIDER_CLIENT_ID_GRAMMAR_INVALID" &&
+        evidence.providerClientIdGrammar !== "failed"
+      ) {
+        throw new Error("Auth validation client-ID evidence is inconsistent");
+      }
+      if (
+        result.failure.code === "AUTH_FIXTURE_PAIR_COHERENCE_INVALID" &&
+        evidence.providerPairCoherence !== "failed"
+      ) {
+        throw new Error("Auth validation provider-pair evidence is inconsistent");
+      }
+      if (
+        new Set(["AUTH_SECRET_MISSING", "AUTH_SECRET_EMPTY"]).has(
+          result.failure.code,
+        ) &&
+        evidence.authSecretPresence !== "failed"
+      ) {
+        throw new Error("Auth validation secret-presence evidence is inconsistent");
+      }
+      if (
+        result.failure.code === "AUTH_SECRET_ALIAS_MISMATCH" &&
+        evidence.aliasPolicy !== "mismatch-rejected"
+      ) {
+        throw new Error("Auth validation alias evidence is inconsistent");
+      }
+      if (
+        evidence.providerPairCoherence === "passed" &&
+        (evidence.providerVariablesPresent !== true ||
+          evidence.providerClientIdGrammar !== "passed")
+      ) {
+        throw new Error("Auth validation provider evidence is contradictory");
+      }
+      if (
+        evidence.aliasPolicy === "mismatch-rejected" &&
+        evidence.authSecretPresence !== "passed"
+      ) {
+        throw new Error("Auth validation alias/secret evidence is contradictory");
+      }
+      if (
+        result.failure.code ===
+          "SYNTHETIC_AUTH_FIXTURE_PRODUCTION_MISUSE_REJECTED" &&
+        evidence.nonProductionClassification !== "production-rejected"
+      ) {
+        throw new Error("Auth validation production evidence is inconsistent");
+      }
+      if (
+        result.failure.child.exitStatus !== null ||
+        result.failure.child.signal !== null ||
+        result.failure.child.spawnError !== null
+      ) {
+        throw new Error("Auth validation failure has contradictory child evidence");
+      }
+    }
+    return;
+  }
+  if (result.command.mode === "production-misuse-validation") {
+    assertExactKeys(
+      evidence,
+      [
+        "expectedNegativeClassification",
+        "child",
+        "safeFailureCode",
+        "intendedRejectionProved",
+        "syntheticFixtureUseProved",
+        "productionActivationProhibitedProved",
+        "excludedFailureCauses",
+        "stdout",
+        "stderr",
+        "rawValueLeakScan",
+        "completed",
+      ],
+      "Production-misuse evidence",
+    );
+    assertExactKeys(evidence.child, ["exitStatus", "signal", "spawnError"], "Production child");
+    assertExactKeys(
+      evidence.excludedFailureCauses,
+      [
+        "missingDependency",
+        "loaderFailure",
+        "syntaxError",
+        "transportFailure",
+        "missingInput",
+        "databaseFailure",
+      ],
+      "Production excluded causes",
+    );
+    assertDescriptor(evidence.stdout, "Production child stdout");
+    assertDescriptor(evidence.stderr, "Production child stderr");
+    if (
+      result.result === "expected-negative-pass" &&
+      (
+      result.result !== "expected-negative-pass" ||
+      evidence.expectedNegativeClassification !== "intended-production-rejection" ||
+      !Number.isSafeInteger(evidence.child.exitStatus) ||
+      evidence.child.exitStatus === 0 ||
+      evidence.child.signal !== null ||
+      evidence.child.spawnError !== null ||
+      evidence.safeFailureCode !==
+        "SYNTHETIC_AUTH_FIXTURE_PRODUCTION_MISUSE_REJECTED" ||
+      evidence.intendedRejectionProved !== true ||
+      evidence.syntheticFixtureUseProved !== true ||
+      evidence.productionActivationProhibitedProved !== true ||
+      Object.values(evidence.excludedFailureCauses).some((value) => value !== true) ||
+      evidence.rawValueLeakScan !== "passed" ||
+      evidence.completed !== true
+      )
+    ) {
+      throw new Error("Production-misuse intended rejection proof is incomplete");
+    }
+    if (
+      result.result === "failure" &&
+      (JSON.stringify(result.failure.child) !== JSON.stringify(evidence.child) ||
+        JSON.stringify(result.failure.stdout) !== JSON.stringify(evidence.stdout) ||
+        JSON.stringify(result.failure.stderr) !== JSON.stringify(evidence.stderr))
+    ) {
+      throw new Error("Production-misuse failure child or stream evidence is inconsistent");
+    }
+    return;
+  }
+  if (result.command.mode === "auth-session-preflight") {
+    const realDatabasePreflight =
+      result.command.id === "certification:auth-session-preflight";
+    assertExactKeys(
+      evidence,
+      [
+        "invocation",
+        "server",
+        "sessionRequest",
+        "checks",
+        "cleanup",
+        ...(realDatabasePreflight
+          ? ["databasePrerequisite", "workspacePrerequisite"]
+          : []),
+      ],
+      "Auth preflight evidence",
+    );
+    assertExactKeys(
+      evidence.invocation,
+      [
+        "packageCommandId",
+        "executableClassification",
+        "argvIdentitySha256",
+        "fixturePolicySha256",
+        "authValidatorSha256",
+        "environmentNameSetSha256",
+        "resultPathIdentitySha256",
+        "invocationNonce",
+      ],
+      "Auth preflight invocation",
+    );
+    if (
+      evidence.invocation.packageCommandId !== result.command.id ||
+      evidence.invocation.executableClassification !== result.command.executable ||
+      evidence.invocation.argvIdentitySha256 !==
+        sha256Bytes(result.command.argv.join("\0")) ||
+      evidence.invocation.fixturePolicySha256 !==
+        result.identity.fixturePolicy.sha256 ||
+      evidence.invocation.authValidatorSha256 !==
+        result.identity.authValidator.sha256 ||
+      evidence.invocation.environmentNameSetSha256 !==
+        result.identity.environmentNameSetSha256 ||
+      evidence.invocation.resultPathIdentitySha256 !==
+        result.identity.resultPathIdentitySha256 ||
+      evidence.invocation.invocationNonce !== result.identity.invocationNonce
+    ) {
+      throw new Error("Auth preflight invocation evidence is not identity-bound");
+    }
+    assertExactKeys(
+      evidence.server,
+      [
+        "commandClassification",
+        "pid",
+        "started",
+        "closed",
+        "exitStatus",
+        "signal",
+        "spawnError",
+        "stdout",
+        "stderr",
+        "listenerReady",
+        "readinessAttemptCount",
+        "readinessStartedAt",
+        "readinessCompletedAt",
+      ],
+      "Auth preflight server",
+    );
+    assertDescriptor(evidence.server.stdout, "Auth preflight server stdout");
+    assertDescriptor(evidence.server.stderr, "Auth preflight server stderr");
+    if (
+      evidence.server.commandClassification !== "next-dev-webpack-loopback" ||
+      (evidence.server.pid !== null &&
+        (!Number.isSafeInteger(evidence.server.pid) || evidence.server.pid <= 0)) ||
+      typeof evidence.server.started !== "boolean" ||
+      typeof evidence.server.closed !== "boolean" ||
+      (evidence.server.exitStatus !== null &&
+        !Number.isSafeInteger(evidence.server.exitStatus)) ||
+      (evidence.server.signal !== null &&
+        !new Set(["SIGTERM", "SIGKILL"]).has(evidence.server.signal)) ||
+      (evidence.server.spawnError !== null &&
+        !PROCESS_ERROR_CODE_PATTERN.test(evidence.server.spawnError)) ||
+      typeof evidence.server.listenerReady !== "boolean" ||
+      !Number.isSafeInteger(evidence.server.readinessAttemptCount) ||
+      evidence.server.readinessAttemptCount < 0 ||
+      !Number.isFinite(Date.parse(evidence.server.readinessStartedAt)) ||
+      (evidence.server.readinessCompletedAt !== null &&
+        !Number.isFinite(Date.parse(evidence.server.readinessCompletedAt)))
+    ) {
+      throw new Error("Auth preflight server evidence is malformed");
+    }
+    assertExactKeys(
+      evidence.sessionRequest,
+      [
+        "endpointClassification",
+        "method",
+        "statusCode",
+        "redirectCount",
+        "redirectClassification",
+        "contentTypeClassification",
+        "bodyBytes",
+        "bodySha256",
+        "safeBodyType",
+        "jsonParseResult",
+        "signedOutValidation",
+      ],
+      "Auth preflight session request",
+    );
+    assertExactKeys(
+      evidence.checks,
+      [
+        "providerEndpointContract",
+        "csrfContract",
+        "signOutContract",
+        "googleSignInContract",
+        "inertDiscoveryContract",
+        "nonLoopbackRequestCount",
+        "logSafetyScan",
+      ],
+      "Auth preflight checks",
+    );
+    assertExactKeys(
+      evidence.cleanup,
+      [
+        "sigtermAttempted",
+        "sigkillFallbackAttempted",
+        "finalServerTermination",
+        "portReleased",
+        "taskOwnedCleanup",
+        "completed",
+      ],
+      "Auth preflight cleanup",
+    );
+    if (
+      evidence.sessionRequest.endpointClassification !== "loopback-auth-session" ||
+      evidence.sessionRequest.method !== "GET" ||
+      (evidence.sessionRequest.statusCode !== null &&
+        (!Number.isSafeInteger(evidence.sessionRequest.statusCode) ||
+          evidence.sessionRequest.statusCode < 100 ||
+          evidence.sessionRequest.statusCode > 599)) ||
+      !Number.isSafeInteger(evidence.sessionRequest.redirectCount) ||
+      evidence.sessionRequest.redirectCount < 0 ||
+      !new Set(["not-observed", "none", "http-redirect-rejected"]).has(
+        evidence.sessionRequest.redirectClassification,
+      ) ||
+      !new Set(["not-observed", "application-json", "html", "other", "missing"]).has(
+        evidence.sessionRequest.contentTypeClassification,
+      ) ||
+      !Number.isSafeInteger(evidence.sessionRequest.bodyBytes) ||
+      evidence.sessionRequest.bodyBytes < 0 ||
+      !SHA256_PATTERN.test(evidence.sessionRequest.bodySha256) ||
+      !new Set([
+        "null",
+        "object",
+        "array",
+        "scalar",
+        "HTML",
+        "text",
+        "empty",
+        "malformed",
+      ]).has(evidence.sessionRequest.safeBodyType) ||
+      !new Set(["not-attempted", "passed", "failed"]).has(
+        evidence.sessionRequest.jsonParseResult,
+      ) ||
+      !new Set(["not-attempted", "passed", "failed"]).has(
+        evidence.sessionRequest.signedOutValidation,
+      ) ||
+      typeof evidence.cleanup.sigtermAttempted !== "boolean" ||
+      typeof evidence.cleanup.sigkillFallbackAttempted !== "boolean" ||
+      !new Set(["not-started", "passed", "failed"]).has(
+        evidence.cleanup.finalServerTermination,
+      ) ||
+      !new Set(["not-required", "passed", "failed"]).has(
+        evidence.cleanup.taskOwnedCleanup,
+      ) ||
+      typeof evidence.cleanup.portReleased !== "boolean" ||
+      evidence.cleanup.completed !== true
+    ) {
+      throw new Error("Auth preflight request or cleanup evidence is malformed");
+    }
+    for (const checkName of [
+      "providerEndpointContract",
+      "csrfContract",
+      "signOutContract",
+      "googleSignInContract",
+      "inertDiscoveryContract",
+      "logSafetyScan",
+    ]) {
+      if (
+        !new Set(["passed", "failed", "not-attempted"]).has(
+          evidence.checks[checkName],
+        )
+      ) {
+        throw new Error("Auth preflight check classification is invalid");
+      }
+    }
+    if (
+      !Number.isSafeInteger(evidence.checks.nonLoopbackRequestCount) ||
+      evidence.checks.nonLoopbackRequestCount < 0 ||
+      typeof evidence.server.started !== "boolean" ||
+      typeof evidence.server.closed !== "boolean"
+    ) {
+      throw new Error("Auth preflight lifecycle or network evidence is invalid");
+    }
+    const taskOwnedSignalConsistent =
+      evidence.cleanup.taskOwnedCleanup !== "passed" ||
+      (evidence.cleanup.sigtermAttempted === true &&
+        (evidence.cleanup.sigkillFallbackAttempted === true
+          ? evidence.server.signal === "SIGKILL"
+          : evidence.server.signal === "SIGTERM" ||
+            (evidence.server.signal === null &&
+              Number.isSafeInteger(evidence.server.exitStatus))));
+    if (
+      (evidence.cleanup.sigkillFallbackAttempted === true &&
+        evidence.cleanup.sigtermAttempted !== true) ||
+      !taskOwnedSignalConsistent
+    ) {
+      if (!(allowNonConsumableFailure && result.result === "failure")) {
+        throw new Error("Auth preflight cleanup signal evidence is inconsistent");
+      }
+    }
+    if (
+      evidence.cleanup.finalServerTermination === "failed" ||
+      evidence.cleanup.portReleased !== true ||
+      evidence.cleanup.taskOwnedCleanup === "failed" ||
+      evidence.cleanup.completed !== true
+    ) {
+      if (!(allowNonConsumableFailure && result.result === "failure")) {
+        throw new Error("Auth preflight result reports failed server cleanup");
+      }
+    }
+    if (
+      evidence.server.started === true &&
+      (evidence.server.closed !== true ||
+        evidence.cleanup.finalServerTermination !== "passed")
+    ) {
+      if (!(allowNonConsumableFailure && result.result === "failure")) {
+        throw new Error("Auth preflight started a server without completed cleanup");
+      }
+    }
+    if (
+      result.result === "failure" &&
+      (result.failure.child.exitStatus !== evidence.server.exitStatus ||
+        result.failure.child.signal !== evidence.server.signal ||
+        result.failure.child.spawnError !== evidence.server.spawnError)
+    ) {
+      throw new Error("Auth preflight failure child evidence is inconsistent");
+    }
+    if (result.result === "success") {
+      if (
+        evidence.server.started !== true ||
+        evidence.server.closed !== true ||
+        evidence.server.spawnError !== null ||
+        evidence.server.listenerReady !== true ||
+        evidence.cleanup.sigtermAttempted !== true ||
+        evidence.cleanup.taskOwnedCleanup !== "passed" ||
+        (evidence.cleanup.sigkillFallbackAttempted === true
+          ? evidence.server.signal !== "SIGKILL"
+          : !(
+              evidence.server.signal === "SIGTERM" ||
+              (evidence.server.signal === null &&
+                Number.isSafeInteger(evidence.server.exitStatus))
+            )) ||
+        evidence.sessionRequest.endpointClassification !== "loopback-auth-session" ||
+        evidence.sessionRequest.method !== "GET" ||
+        evidence.sessionRequest.statusCode !== 200 ||
+        evidence.sessionRequest.redirectCount !== 0 ||
+        evidence.sessionRequest.redirectClassification !== "none" ||
+        evidence.sessionRequest.contentTypeClassification !== "application-json" ||
+        !Number.isSafeInteger(evidence.sessionRequest.bodyBytes) ||
+        !SHA256_PATTERN.test(evidence.sessionRequest.bodySha256) ||
+        evidence.sessionRequest.safeBodyType !== "null" ||
+        evidence.sessionRequest.jsonParseResult !== "passed" ||
+        evidence.sessionRequest.signedOutValidation !== "passed" ||
+        Object.entries(evidence.checks).some(([name, value]) =>
+          name === "nonLoopbackRequestCount" ? value !== 0 : value !== "passed",
+        )
+      ) {
+        throw new Error("Auth preflight success lacks canonical session-response proof");
+      }
+    }
+    if (realDatabasePreflight) {
+      assertAuthPreflightDatabaseEvidence(
+        evidence.databasePrerequisite,
+        result.result,
+      );
+      assertAuthPreflightWorkspaceEvidence(
+        evidence.workspacePrerequisite,
+        result,
+      );
+    }
+    return;
+  }
+  throw new Error("Auth result mode is unknown or unsupported");
+}
+
+function privateValuesFromEnvironment(environment) {
+  const values = AUTH_PRIVATE_VALUE_NAMES.flatMap((name) => {
+    const raw = environment?.[name];
+    if (typeof raw !== "string") return [];
+    const normalized = raw.trim();
+    if (normalized.length < 4) return [];
+    return [raw, normalized];
+  });
+  return [...new Set(values)];
+}
+
+function assertNoRawPrivateValues(bytes, sensitiveValues = []) {
+  const text = bytes.toString("utf8");
+  for (const value of sensitiveValues) {
+    if (value && text.includes(value)) {
+      throw new Error("Auth result contains a raw private value");
+    }
+  }
+  if (
+    /postgres(?:ql)?:\/\//i.test(text) ||
+    /authjs\.(?:csrf-token|session-token)=/i.test(text) ||
+    /GOCSPX[-_][A-Za-z0-9_-]{8,}/.test(text) ||
+    /[0-9]+-gate-a3-ci-[a-f0-9]{32}\.apps\.googleusercontent\.com/i.test(text)
+  ) {
+    throw new Error("Auth result contains credential, cookie, or database material");
+  }
+}
+
+function validateAuthCommandResultValue({
+  result,
+  destination,
+  expectedNonce,
+  expectedCommandId,
+  expectedMode,
+  expectedCandidateCommitSha,
+  expectedCandidateTreeSha,
+  sensitiveValues = [],
+  expectedStreamDescriptors,
+  allowNonConsumableFailure = false,
+}) {
+  const bytes = canonicalJsonBytes(result);
+  assertNoRawPrivateValues(bytes, sensitiveValues);
+  assertExactKeys(
+    result,
+    [
+      "schema",
+      "version",
+      "command",
+      "result",
+      "valid",
+      "identity",
+      "evidence",
+      "failure",
+      "completion",
+      "aggregateSha256",
+    ],
+    "Auth result",
+  );
+  if (result.schema !== AUTH_RESULT_SCHEMA || result.version !== AUTH_RESULT_VERSION) {
+    throw new Error("Auth result schema or version is unknown or from the future");
+  }
+  assertExactKeys(result.command, ["id", "mode", "executable", "argv"], "Auth command");
+  const commandEntry = Object.entries(COMMAND_MODES).find(
+    ([, entry]) =>
+      entry.commandId === result.command.id && entry.mode === result.command.mode,
+  );
+  if (
+    !commandEntry ||
+    result.command.id !== expectedCommandId ||
+    result.command.mode !== expectedMode
+  ) {
+    throw new Error("Auth result command or mode does not match this invocation");
+  }
+  const commandKey = commandEntry[0];
+  const realDatabasePreflight = commandKey === "real-preflight";
+  const expectedExecutable = realDatabasePreflight ? "node" : "node-ts-node";
+  const expectedArgv = realDatabasePreflight
+    ? ["scripts/run-ci-auth-fixture-real-preflight.mjs"]
+    : ["scripts/ci-auth-fixture.ts", commandEntry[0]];
+  if (
+    result.command.executable !== expectedExecutable ||
+    !Array.isArray(result.command.argv) ||
+    JSON.stringify(result.command.argv) !== JSON.stringify(expectedArgv)
+  ) {
+    throw new Error("Auth result executable or argv identity is invalid");
+  }
+  if (!RESULT_VALUES.has(result.result) || result.valid !== (result.result !== "failure")) {
+    throw new Error("Auth result classification is invalid");
+  }
+  if (
+    result.command.mode !== "production-misuse-validation" &&
+    result.result === "expected-negative-pass"
+  ) {
+    throw new Error("Expected-negative result is invalid for this auth mode");
+  }
+  const fixtureSessionRequired =
+    commandKey === "export-github-env" ||
+    commandKey.endsWith("-existing") ||
+    realDatabasePreflight;
+  assertExactKeys(
+    result.identity,
+    [
+      "candidateCommitSha",
+      "candidateTreeSha",
+      "invocationNonce",
+      "fixturePolicy",
+      "authValidator",
+      "environmentNameSetSha256",
+      "environmentClassification",
+      "externalRootIdentitySha256",
+      "resultPathIdentitySha256",
+      "startedAt",
+      "completedAt",
+      ...(Object.hasOwn(result.identity, "fixtureSession")
+        ? ["fixtureSession"]
+        : []),
+      ...(Object.hasOwn(result.identity, "advisoryFixture")
+        ? ["advisoryFixture"]
+        : []),
+    ],
+    "Auth result identity",
+  );
+  if (!NONCE_PATTERN.test(result.identity.invocationNonce) || result.identity.invocationNonce !== expectedNonce) {
+    throw new Error("Auth result nonce is stale or belongs to another invocation");
+  }
+  if (fixtureSessionRequired && result.result !== "failure") {
+    if (!result.identity.fixtureSession) {
+      throw new Error("Auth result lacks the canonical fixture session identity");
+    }
+    const expectedAction =
+      commandKey === "export-github-env" ? "generated" : "consumed";
+    assertFixtureSessionIdentity(
+      result.identity.fixtureSession,
+      result.identity,
+      expectedAction,
+      result.command.id,
+      commandKey,
+    );
+  } else if (result.identity.fixtureSession) {
+    const expectedAction =
+      commandKey === "export-github-env" ? "generated" : "consumed";
+    assertFixtureSessionIdentity(
+      result.identity.fixtureSession,
+      result.identity,
+      expectedAction,
+      result.command.id,
+      commandKey,
+    );
+  }
+  if (new Set(["preflight-local", "production-misuse"]).has(commandKey)) {
+    assertExactKeys(
+      result.identity.advisoryFixture,
+      [
+        "classification",
+        "fixtureSessionClassification",
+        "rehearsalClassification",
+        "integrationClassification",
+      ],
+      "Local advisory auth fixture classification",
+    );
+    if (
+      result.identity.advisoryFixture.classification !== "LOCAL_ADVISORY_ONLY" ||
+      result.identity.advisoryFixture.fixtureSessionClassification !==
+        "NOT_CERTIFICATION_FIXTURE_SESSION" ||
+      result.identity.advisoryFixture.rehearsalClassification !==
+        "NOT_VALID_FOR_REHEARSAL" ||
+      result.identity.advisoryFixture.integrationClassification !==
+        "NOT_VALID_FOR_INTEGRATION"
+    ) {
+      throw new Error("Local advisory auth result is certification-ineligible");
+    }
+  } else if (result.identity.advisoryFixture) {
+    throw new Error("Certification auth result cannot consume a local advisory fixture");
+  }
+  if (
+    result.identity.candidateCommitSha !== (expectedCandidateCommitSha || null) ||
+    result.identity.candidateTreeSha !== (expectedCandidateTreeSha || null)
+  ) {
+    throw new Error("Auth result candidate commit or tree binding is mismatched");
+  }
+  if (
+    (result.identity.candidateCommitSha !== null &&
+      !SOURCE_SHA_PATTERN.test(result.identity.candidateCommitSha)) ||
+    (result.identity.candidateTreeSha !== null &&
+      !SOURCE_SHA_PATTERN.test(result.identity.candidateTreeSha))
+  ) {
+    throw new Error("Auth result candidate identity is malformed");
+  }
+  assertExactKeys(result.identity.fixturePolicy, ["schema", "sha256"], "Fixture policy identity");
+  assertExactKeys(result.identity.authValidator, ["owner", "sha256"], "Auth validator identity");
+  if (
+    result.identity.fixturePolicy.schema !==
+      "interior-ai.synthetic-ci-oauth-fixture-policy.v1" ||
+    !SHA256_PATTERN.test(result.identity.fixturePolicy.sha256) ||
+    result.identity.authValidator.owner !== "lib/auth-env.ts" ||
+    !SHA256_PATTERN.test(result.identity.authValidator.sha256) ||
+    !SHA256_PATTERN.test(result.identity.environmentNameSetSha256) ||
+    !SAFE_ENVIRONMENT_CLASSIFICATIONS.has(result.identity.environmentClassification) ||
+    result.identity.externalRootIdentitySha256 !== destination.externalRootIdentitySha256 ||
+    result.identity.resultPathIdentitySha256 !== destination.resultPathIdentitySha256
+  ) {
+    throw new Error("Auth result owner, environment, or external destination binding is invalid");
+  }
+  const started = Date.parse(result.identity.startedAt);
+  const completed = Date.parse(result.identity.completedAt);
+  if (!Number.isFinite(started) || !Number.isFinite(completed) || completed < started) {
+    throw new Error("Auth result timestamps are invalid");
+  }
+  assertExactKeys(result.completion, ["complete", "marker"], "Auth completion marker");
+  if (
+    result.completion.complete !== true ||
+    result.completion.marker !== AUTH_RESULT_COMPLETION_MARKER
+  ) {
+    throw new Error("Auth result completion marker is missing");
+  }
+  if (result.result === "failure") {
+    assertExactKeys(
+      result.failure,
+      ["code", "category", "stdout", "stderr", "child", "completed"],
+      "Auth failure evidence",
+    );
+    if (
+      !/^[A-Z][A-Z0-9_]+$/.test(result.failure.code) ||
+      !/^[a-z][a-z0-9-]+$/.test(result.failure.category) ||
+      result.failure.completed !== true
+    ) {
+      throw new Error("Auth failure code or category is invalid");
+    }
+    assertDescriptor(result.failure.stdout, "Auth failure stdout");
+    assertDescriptor(result.failure.stderr, "Auth failure stderr");
+    assertExactKeys(result.failure.child, ["exitStatus", "signal", "spawnError"], "Auth failure child");
+    if (
+      (result.failure.child.exitStatus !== null &&
+        !Number.isSafeInteger(result.failure.child.exitStatus)) ||
+      (result.failure.child.signal !== null &&
+        typeof result.failure.child.signal !== "string") ||
+      (result.failure.child.spawnError !== null &&
+        !PROCESS_ERROR_CODE_PATTERN.test(result.failure.child.spawnError))
+    ) {
+      throw new Error("Auth failure child process evidence is malformed");
+    }
+  } else if (result.failure !== null) {
+    throw new Error("Successful auth result must not contain failure evidence");
+  }
+  assertModeEvidence(result, allowNonConsumableFailure);
+  if (expectedStreamDescriptors) {
+    if (result.command.mode !== "production-misuse-validation") {
+      throw new Error("Auth stream binding is only valid for production-misuse results");
+    }
+    assertDescriptor(expectedStreamDescriptors.stdout, "Expected production stdout");
+    assertDescriptor(expectedStreamDescriptors.stderr, "Expected production stderr");
+    if (
+      JSON.stringify(result.evidence.stdout) !==
+        JSON.stringify(expectedStreamDescriptors.stdout) ||
+      JSON.stringify(result.evidence.stderr) !==
+        JSON.stringify(expectedStreamDescriptors.stderr)
+    ) {
+      throw new Error("Production-misuse result stream descriptor mismatch");
+    }
+  }
+  if (!SHA256_PATTERN.test(result.aggregateSha256)) {
+    throw new Error("Auth result aggregate SHA-256 is malformed");
+  }
+  const { aggregateSha256, ...payload } = result;
+  if (sha256Bytes(canonicalJsonBytes(payload)) !== aggregateSha256) {
+    throw new Error("Auth result aggregate hash mismatch indicates manual editing");
+  }
+  assertNoRawPrivateValues(bytes, sensitiveValues);
+  return Object.freeze({ result, destination });
+}
+
+function validateAuthCommandResult({
+  repositoryRoot,
+  externalRoot,
+  resultPath,
+  expectedNonce,
+  expectedCommandId,
+  expectedMode,
+  expectedCandidateCommitSha,
+  expectedCandidateTreeSha,
+  sensitiveValues = [],
+  expectedStreamDescriptors,
+  worktreeRoots,
+}) {
+  const destination = resolveAuthResultDestination({
+    repositoryRoot,
+    externalRoot,
+    resultPath,
+    requireAbsent: false,
+    worktreeRoots,
+  });
+  const resultMetadata = lstatSync(destination.resultPath);
+  const sidecarMetadata = lstatSync(destination.sidecarPath);
+  if (
+    resultMetadata.isSymbolicLink() ||
+    !resultMetadata.isFile() ||
+    sidecarMetadata.isSymbolicLink() ||
+    !sidecarMetadata.isFile()
+  ) {
+    throw new Error("Auth result and checksum must be physical files");
+  }
+  const bytes = readFileSync(destination.resultPath);
+  let result;
+  try {
+    result = JSON.parse(bytes.toString("utf8"));
+  } catch {
+    throw new Error("Auth result is not valid JSON");
+  }
+  if (!bytes.equals(canonicalJsonBytes(result))) {
+    throw new Error("Auth result is not canonical JSON");
+  }
+  const validated = validateAuthCommandResultValue({
+    result,
+    destination,
+    expectedNonce,
+    expectedCommandId,
+    expectedMode,
+    expectedCandidateCommitSha,
+    expectedCandidateTreeSha,
+    sensitiveValues,
+    expectedStreamDescriptors,
+  });
+  const expectedSidecar = `${result.aggregateSha256}  ${path.basename(destination.resultPath)}\n`;
+  if (readFileSync(destination.sidecarPath, "utf8") !== expectedSidecar) {
+    throw new Error("Auth result checksum sidecar does not close the result digest");
+  }
+  return validated;
+}
+
+function commandMode(command) {
+  const mode = COMMAND_MODES[command];
+  if (!mode) throw new Error("Auth command result mode is unknown");
+  return mode;
+}
+
+function cli() {
+  if (process.argv[2] !== "validate") {
+    throw new Error("Usage: ci-auth-fixture-result-contract.cjs validate");
+  }
+  const validated = validateAuthCommandResult({
+    repositoryRoot: process.cwd(),
+    externalRoot: process.env[AUTH_RESULT_ROOT_ENV],
+    resultPath: process.env[AUTH_RESULT_PATH_ENV],
+    expectedNonce: process.env[AUTH_RESULT_NONCE_ENV],
+    expectedCommandId: process.env[AUTH_RESULT_EXPECTED_COMMAND_ENV],
+    expectedMode: process.env[AUTH_RESULT_EXPECTED_MODE_ENV],
+    expectedCandidateCommitSha: process.env[AUTH_RESULT_CANDIDATE_COMMIT_ENV],
+    expectedCandidateTreeSha: process.env[AUTH_RESULT_CANDIDATE_TREE_ENV],
+    sensitiveValues: privateValuesFromEnvironment(process.env),
+  });
+  const rawStatus = process.env[AUTH_RESULT_COMMAND_STATUS_ENV];
+  if (!/^(?:0|[1-9][0-9]{0,2})$/.test(rawStatus || "")) {
+    throw new Error("Auth result validator requires the actual command exit status");
+  }
+  const actualStatus = Number(rawStatus);
+  if (actualStatus > 255) {
+    throw new Error("Auth result command exit status is invalid");
+  }
+  if ((actualStatus === 0) !== (validated.result.result !== "failure")) {
+    throw new Error("Auth result classification does not match the command exit status");
+  }
+  process.stdout.write(
+    `Validated canonical auth result for ${validated.result.command.id}.\n`,
+  );
+}
+
+module.exports = Object.freeze({
+  AUTH_RESULT_SCHEMA,
+  AUTH_RESULT_VERSION,
+  AUTH_RESULT_COMPLETION_MARKER,
+  AUTH_RESULT_ROOT_ENV,
+  AUTH_RESULT_PATH_ENV,
+  AUTH_RESULT_NONCE_ENV,
+  AUTH_RESULT_EXPECTED_COMMAND_ENV,
+  AUTH_RESULT_EXPECTED_MODE_ENV,
+  AUTH_RESULT_COMMAND_STATUS_ENV,
+  AUTH_RESULT_CANDIDATE_COMMIT_ENV,
+  AUTH_RESULT_CANDIDATE_TREE_ENV,
+  AUTH_PRIVATE_VALUE_NAMES,
+  COMMAND_MODES,
+  assertNoRawPrivateValues,
+  canonicalJsonBytes,
+  commandMode,
+  privateValuesFromEnvironment,
+  resolveAuthResultDestination,
+  sealAuthCommandResult,
+  sha256Bytes,
+  validateAuthCommandResult,
+  validateAuthCommandResultValue,
+  validateAuthPreflightDatabaseEvidence: assertAuthPreflightDatabaseEvidence,
+  validateAuthPreflightWorkspaceEvidence: assertAuthPreflightWorkspaceEvidence,
+  writeAuthCommandResult,
+  writeSealedResultFiles,
+});
+
+if (require.main === module) {
+  try {
+    cli();
+  } catch (error) {
+    console.error(error instanceof Error ? error.message : String(error));
+    process.exitCode = 1;
+  }
+}

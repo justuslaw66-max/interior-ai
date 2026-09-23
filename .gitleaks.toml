@@ -1,0 +1,10 @@
+title = "Interior AI Gitleaks configuration"
+
+[allowlist]
+description = "Known non-secret CI and documentation placeholders"
+regexTarget = "match"
+regexes = [
+  '''GOCSPX-ci-build-secret-placeholder''',
+  '''GOCSPX-test-secret-value''',
+  '''sk-test-your-staging-key''',
+]

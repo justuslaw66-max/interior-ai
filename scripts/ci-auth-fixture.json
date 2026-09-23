@@ -1,0 +1,7 @@
+{
+  "schema": "interior-ai.synthetic-ci-oauth-fixture-policy.v1",
+  "provider": "google",
+  "generatedAtRuntime": true,
+  "usesRepositoryOrOrganizationSecrets": false,
+  "externalAuthenticationCapable": false
+}

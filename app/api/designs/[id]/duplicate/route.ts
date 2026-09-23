@@ -1,9 +1,10 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
-import { getPostHogClient } from "@/lib/posthog-server";
-import { logAppEvent } from "@/lib/app-events";
+import { trackServerEvent } from "@/lib/server-analytics";
+import { recordServerAnalyticsEvent } from "@/lib/app-events";
 import { buildDuplicatedDesignData } from "@/lib/design-duplication";
+import { rateLimit } from "@/lib/rateLimit";
 
 export const runtime = "nodejs";
 
@@ -16,6 +17,8 @@ export async function POST(
   if (!userId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+  const rl = rateLimit(`design-duplicate:${userId}`, 20, 60_000);
+  if (!rl.ok) return NextResponse.json({ error: "Too many duplicate requests" }, { status: 429 });
 
   const { id } = await params;
   const design = await prisma.design.findFirst({
@@ -24,6 +27,14 @@ export async function POST(
 
   if (!design) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
+  }
+
+  const user = await prisma.user.findUnique({ where: { id: userId }, select: { plan: true } });
+  if (user?.plan !== "pro" && await prisma.design.count({ where: { userId } }) >= 20) {
+    return NextResponse.json(
+      { error: "Free beta limit reached (max 20 designs). Upgrade to create more." },
+      { status: 403 }
+    );
   }
 
   const copy = await prisma.design.create({
@@ -46,7 +57,7 @@ export async function POST(
     select: { id: true },
   });
 
-  await logAppEvent({
+  await recordServerAnalyticsEvent({
     eventType: "design_duplicated",
     userId,
     designId: copy.id,
@@ -56,17 +67,11 @@ export async function POST(
     },
   });
 
-  // Server-side PostHog tracking for design duplication (engagement metric)
-  const posthog = getPostHogClient();
-  posthog.capture({
-    distinctId: userId,
-    event: "design_duplicated",
-    properties: {
-      original_design_id: id,
-      new_design_id: copy.id,
-      style: design.style ?? null,
-      budget: design.budget ?? null,
-    },
+  trackServerEvent("design_duplicated", userId, {
+    original_design_id: id,
+    new_design_id: copy.id,
+    style: design.style ?? null,
+    budget: design.budget ?? null,
   });
 
   return NextResponse.json({ id: copy.id });

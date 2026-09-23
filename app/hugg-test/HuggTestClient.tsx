@@ -1,7 +1,8 @@
 "use client";
 
 import { Canvas } from "@react-three/fiber";
-import { OrbitControls, Environment } from "@react-three/drei";
+import { Environment } from "@react-three/drei/core/Environment";
+import { OrbitControls } from "@react-three/drei/core/OrbitControls";
 import { Suspense } from "react";
 import { GLBScaledModel } from "@/components/scene/GLBScaledModel";
 

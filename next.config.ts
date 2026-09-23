@@ -1,57 +1,59 @@
 import type { NextConfig } from "next";
-import path from "path";
 
-function resolvePostHogIngestHost(rawHost?: string): string {
-  const fallback = "https://us.i.posthog.com";
-  const host = (rawHost ?? fallback).trim();
-
-  if (!host) return fallback;
-
-  const normalized = host.replace(/\/$/, "").toLowerCase();
-
-  if (
-    normalized === "https://app.posthog.com" ||
-    normalized === "https://us.posthog.com" ||
-    normalized === "app.posthog.com" ||
-    normalized === "us.posthog.com"
-  ) {
-    return fallback;
-  }
-
-  if (normalized === "https://eu.posthog.com" || normalized === "eu.posthog.com") {
-    return "https://eu.i.posthog.com";
-  }
-
-  return host.replace(/\/$/, "");
-}
-
-const posthogIngestHost = resolvePostHogIngestHost(process.env.NEXT_PUBLIC_POSTHOG_HOST);
+const postHogRegion = process.env.NEXT_PUBLIC_POSTHOG_HOST?.toLowerCase().includes("eu.")
+  ? "eu"
+  : "us";
 
 const nextConfig: NextConfig = {
-  distDir: ".next-cache",
-  turbopack: {
-    root: path.resolve(__dirname),
-  },
-  images: {
-    remotePatterns: [
-      {
-        protocol: "https",
-        hostname: "res.cloudinary.com",
-        pathname: "/**",
-      },
-    ],
-  },
+  allowedDevOrigins: ["127.0.0.1"],
+  serverExternalPackages: ["stripe", "@napi-rs/canvas"],
+  skipTrailingSlashRedirect: true,
   async rewrites() {
     return [
       {
         source: "/ingest/static/:path*",
-        destination: `${posthogIngestHost}/static/:path*`,
+        destination: `https://${postHogRegion}-assets.i.posthog.com/static/:path*`,
+      },
+      {
+        source: "/ingest/array/:path*",
+        destination: `https://${postHogRegion}-assets.i.posthog.com/array/:path*`,
       },
       {
         source: "/ingest/:path*",
-        destination: `${posthogIngestHost}/:path*`,
+        destination: `https://${postHogRegion}.i.posthog.com/:path*`,
       },
     ];
+  },
+  // Retain the dynamically loaded sibling worker for each server PDF importer.
+  outputFileTracingIncludes: {
+    "/api/floor-plan-imports/*/process": ["./node_modules/pdfjs-dist/legacy/build/pdf.worker.mjs"],
+    "/api/admin/floor-plan-imports/*/construction-sources": ["./node_modules/pdfjs-dist/legacy/build/pdf.worker.mjs"],
+    "/api/admin/floor-plan-imports/*/supplementary-sources": ["./node_modules/pdfjs-dist/legacy/build/pdf.worker.mjs"],
+  },
+  outputFileTracingExcludes: {
+    "/*": [
+      "./hero.jpg",
+      "./studio.jpg",
+      "./.env*",
+      "./.git/**/*",
+      "./.local/**/*",
+      "./.vercel/**/*",
+      "./incoming/**/*",
+      "./release-evidence-private/**/*",
+      "./reports/**/*",
+      "./test-results*/**/*",
+      "./public/assets/catalog/**/*",
+      "./public/assets/models/**/*",
+      "./public/assets/thumbs/**/*",
+      "./public/draco/**/*",
+      "./public/materials/**/*",
+      "./public/pbr/**/*",
+      "./public/swatches/**/*",
+    ],
+    "/api/tools/glb-optimizer": ["./scripts/test-*"],
+  },
+  turbopack: {
+    root: process.cwd(),
   },
 };
 

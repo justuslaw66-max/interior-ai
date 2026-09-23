@@ -228,6 +228,30 @@ upholstery_options:
 # Fabric palette is resolved from the shared Dawson upholstery library.
 # Edit catalog/furniture/_upholstery_libraries/dawson.yaml to update all Dawson products at once.
 upholstery_library_ref: "dawson"
+supported_upholstery_codes:
+  # Castlery's live wide-chaise configuration currently offers fabric only.
+  - beach_linen
+  - navagio_seagull
+  - marcel_brilliant_white
+  - performance_twill_pearl_beige
+  - performance_twill_dove_grey
+  - performance_twill_slate
+  - performance_twill_moss
+  - peyton_ivory
+  - peyton_dove_grey
+  - peyton_moss
+  - peyton_cumin
+  - performance_genova_oat
+  - performance_linen_weave_cream
+  - performance_linen_weave_light_grey
+  - performance_boucle_cream
+  - infinity_boucle_white_quartz
+  - performance_infinity_boucle_moss
+  - infinity_boucle_ginger
+  - greta_ivory
+  - washed_chenille_sand
+  - greta_mustard_brown
+  - greta_moss
 
 assets:
   asset_id: "sofa-real-castlery-dawson-wide-chaise-sectional-left"

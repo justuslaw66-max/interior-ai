@@ -1,0 +1,15 @@
+{
+  "schema": "interior-ai.production-trace-regression-fixture.v1",
+  "classification": "PROVEN_NFT_OVERTRACE",
+  "nftManifestPath": ".next/server/app/api/tools/glb-optimizer/route.js.nft.json",
+  "files": [
+    "../../../../../../scripts/test-floor-plan-construction-sources.ts",
+    "../../../../../../scripts/test-floor-plan-private-source-retention.ts",
+    "../../../../../../scripts/test-floor-plan-source-observation-governance.ts",
+    "../../../../../../scripts/test-floor-plan-source-overlay-residuals.ts",
+    "../../../../../../scripts/test-floor-plan-supplementary-sources.ts",
+    "../../../../../../scripts/test-production-certification-resources.mjs",
+    "../../../../../../scripts/test-production-certification-source-generated-outputs.mjs",
+    "../../../../../../scripts/test-runtime-smoke-resource-isolation.mjs"
+  ]
+}

@@ -11,6 +11,8 @@ cp -f "$SRC/Dining table/Brighton Oval Dining Table.glb" "$DST/dining-real-castl
 cp -f "$SRC/Dining table/Forma Oval Dining Table.glb" "$DST/dining-real-castlery-forma-oval-150.glb"
 cp -f "$SRC/Dining table/Forma Round Dining Table 90cm.glb" "$DST/dining-real-castlery-forma-round-90.glb"
 cp -f "$SRC/Dining table/Forma Round Dining Table 120cm.glb" "$DST/dining-real-castlery-forma-round-120.glb"
+cp -f "$SRC/Dining table/Seb Dining Table 150cm.glb" "$DST/dining-real-castlery-seb-dining-table-150.glb"
+cp -f "$SRC/Dining table/Seb Dining Table 180cm.glb" "$DST/dining-real-castlery-seb-dining-table-180.glb"
 cp -f "$SRC/Dining table/Sloane Travertine Dining Table 180cm.glb" "$DST/dining-real-castlery-sloane-travertine-180.glb"
 cp -f "$SRC/Dining table/Sloane Travertine Dining Table 220cm.glb" "$DST/dining-real-castlery-sloane-travertine-220.glb"
 

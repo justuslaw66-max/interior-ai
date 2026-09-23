@@ -8,6 +8,21 @@
 import { prisma } from "../lib/prisma";
 
 async function seedTestData() {
+  if (process.env.APP_ENV?.trim().toLowerCase() !== "development") {
+    throw new Error("Test catalog seeding is allowed only with APP_ENV=development");
+  }
+  const databaseUrl = process.env.DATABASE_URL;
+  if (!databaseUrl) throw new Error("DATABASE_URL is required for test catalog seeding");
+  let databaseHost: string;
+  try {
+    databaseHost = new URL(databaseUrl).hostname;
+  } catch {
+    throw new Error("DATABASE_URL must be a valid URL for test catalog seeding");
+  }
+  if (!["localhost", "127.0.0.1", "[::1]"].includes(databaseHost)) {
+    throw new Error("Test catalog seeding requires a local database");
+  }
+
   try {
     console.log("🌱 Seeding test catalog data...\n");
 

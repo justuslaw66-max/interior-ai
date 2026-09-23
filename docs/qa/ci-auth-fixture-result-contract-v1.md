@@ -1,0 +1,335 @@
+# CI Auth Fixture Command Result Contract v1
+
+## Caller-owned auth-preflight failure retention
+
+The canonical `certification:auth-preflight` outer owner retains its existing
+structured command results under `auth-preflight-results` when the fixture
+session root is caller-owned. Each completed command still publishes the same
+versioned JSON plus SHA-256 sidecar; only the result-root ownership changes.
+The private fixture transport remains a sibling in the physical mode-0700
+session root and is never copied into result evidence. Successful task-owned
+sessions and failures before command dispatch remove the disposable
+orchestration root. After command dispatch, a failed task-owned session retains
+its physical mode-0700 orchestration root, sealed command results, private
+session transport, and a redacted mode-0600 `failure.txt`. The CLI reports the
+redacted cause and a SHA-256 locator for the retained root; it does not print
+private transport paths or provider values. Caller-owned results retain their
+existing location and file inventory.
+
+Primary child failures, result-validation failures, and later cleanup or
+retention failures remain ordered. Export mask payloads are removed even when
+the newly generated provider values have not reached the parent environment.
+The existing private-value validator checks diagnostic text after redaction;
+unresolved unsafe text is withheld while the command failure remains a failure.
+Retained diagnostics cannot qualify an unsuccessful preflight. Database,
+server, and worktree cleanup remain owned by the existing real-preflight
+lifecycle, independently of diagnostic retention.
+
+The normal real-preflight result remains
+`interior-ai.ci-auth-fixture-command-result.v1`. When the real helper fails
+before that composed result is successfully published and validated, the sibling
+`interior-ai.auth-preflight-orchestration-failure.v1` receipt records only its
+safe earliest boundary and post-cleanup lifecycle classifications. Mere
+existence of a partial or invalid normal-result JSON does not suppress the
+receipt. The receipt retains the safe database lifecycle state, failure mode
+and classification, evidence digest, and per-substage status needed to
+distinguish plan, provision, migrations, initial verification, scoped-role and
+private-sidecar creation, stage binding, and projection failures. The receipt
+is canonical JSON with an aggregate SHA-256 and owner-mode-0600 checksum
+sidecar, is candidate/session/nonce-digest bound, and is explicitly
+non-consumable as auth-preflight success.
+
+This closes the committed failure-evidence gap in which the outer `finally`
+removed successful predecessor results and the earliest structured failure
+before the caller could attribute a generic fail-closed exit. A focused
+failure-path regression proves retained export success followed by retained
+validate-existing failure. A second regression injects a concrete private
+sidecar activation failure, proves exact lifecycle attribution despite cleanup,
+and proves a partial normal-result JSON cannot suppress the receipt. The
+task-owned success-path assertion proves that the correction does not weaken
+task cleanup.
+
+## Exactly-once certification fixture session continuity
+
+The preserved static discovery remains exactly
+`COMMITTED_COMMAND_MODE_INCONCLUSIVE` /
+`PRECONDITION_ORCHESTRATION_FAILURE` with
+`consumedSubstantiveGate=false`. It is not reinterpreted: committed export
+generated one provider pair, production-misuse generated another,
+`preflight-local` generated another, and the database-owning helper delegated
+to that local generator. No mode was guessed or executed during that discovery.
+
+This correction is classified as
+`CERTIFICATION_AUTH_FIXTURE_CONTINUITY_OWNER_MISSING`,
+`AUTH_COMMAND_MODE_COMPOSITION_CONTRACT_GAP`,
+`AUTH_SESSION_PREFLIGHT_FIXTURE_REGENERATION_DEFECT`, and
+`PRODUCTION_MISUSE_FIXTURE_REGENERATION_DEFECT`. These are certification
+infrastructure classifications only.
+
+`scripts/ci-auth-fixture-session.cjs` now owns
+`interior-ai.ci-auth-fixture-session.v1`. A session binds the session ID and
+nonce, optional candidate commit/tree, the sole generator owner and source
+hash, fixture-policy identity, exact exported-name inventory, separate
+SHA-256 digests of both provider values, creation time, the explicit
+production-ineligible synthetic classification, private transport identity,
+completion marker, one successful generation event, and an aggregate SHA-256.
+Raw provider bytes exist only in the external, physical, symlink-rejected,
+atomic, no-overwrite, owner-mode-0600 transport.
+
+`ci:auth-fixture:export` is the sole canonical generator. The explicit
+consumers are `ci:auth-fixture:validate-existing`,
+`ci:auth-fixture:production-misuse-existing`, and
+`ci:auth-fixture:preflight-existing`. Missing, stale, foreign,
+cross-candidate, tampered, whitespace-mutated, or parent-overridden input fails
+before server/build dispatch. Production misuse still proves exactly
+`SYNTHETIC_AUTH_FIXTURE_PRODUCTION_MISUSE_REJECTED` with regeneration and all
+unintended failure causes excluded.
+
+The unambiguous entry is `npm run certification:auth-preflight`: export,
+validate-existing, production-misuse-existing, then the database-owning
+`certification:auth-session-preflight`, whose server child uses
+preflight-existing. Caller-owned roots are retained for sealed
+rehearsal/build projection; successful qualification-owned roots are removed,
+and dispatched failures retain private diagnostic evidence. Build
+evidence reports the same safe session/digests and no raw values.
+
+Caller-owned retention is explicit: root, session ID, nonce, and exact
+classification must be supplied together or generation fails before creating
+a task-owned root. Later build consumption injects the sealed build-state
+commit/tree, accepts their absence from ambient environment, and rejects a
+conflicting ambient candidate. The build child receives no private session
+root. Its safe continuity record uses neutral digest field names and an exact
+activation-scope classification; qualification-only unbound continuity cannot
+satisfy real validation.
+
+`preflight-local` is only `LOCAL_ADVISORY_ONLY`,
+`NOT_CERTIFICATION_FIXTURE_SESSION`, `NOT_VALID_FOR_REHEARSAL`, and
+`NOT_VALID_FOR_INTEGRATION`. The real helper cannot delegate to it. The
+existing `interior-ai.ci-auth-fixture-command-result.v1` shape is extended
+compatibly with conditional `identity.fixtureSession` generated/consumed,
+no-regeneration, source-command/mode, eligibility, and digest binding.
+
+Independent read-only review of the complete correction is **PASS**. Exact
+clean committed-head qualification on implementation commit
+`54401bfeff100e59ffc7412197d0816858ada0bf`, tree
+`1ad58ea5b661e659b43393395f6b083d82bc54bd`, returned
+`QUALIFIED_FOR_FINAL_CANDIDATE_CERTIFICATION`. The final handoff records the
+same exact-head rerun for the documentation-only follow-up.
+
+## Auth-preflight database prerequisite binding
+
+The real canonical `auth-session-preflight` result now adds safe
+`interior-ai.ci-auth-fixture-database-prerequisite-evidence.v1` evidence. It
+contains only lifecycle/database/nonce/sidecar/role hashes, the explicit
+preflight-only classifications, plan/provision/migration/initial-verification
+results, scoped-role classification, projection/admin-capability result,
+auth-server result, final inspection, normal-or-abort cleanup, role removal,
+drop, absence, original-failure retention, non-rehabilitation, and completion.
+It never stores a raw database name, URL, password, admin connection, sidecar
+path, SQL, cookie, or session value.
+
+The real result is composed only after the inner auth command result is
+validated and the database lifecycle reaches normal `absence-verified` or
+failure-preserving `abort-absence-verified`. Success requires the database
+prerequisite, scoped projection, signed-out auth response, server cleanup,
+final empty inspection, scoped-role removal, exact drop, and absence proof all
+to pass. The standalone helper no longer generates database names, executes
+database SQL, terminates sessions, constructs `DATABASE_URL`, or chooses drop
+policy; source guards enforce that ownership boundary.
+
+Failure results are equally fail-closed: they validate only with abort cleanup,
+the original failure retained, `failedPreflightRehabilitated=false`, role
+removal, exact drop, final absence, and the complete lifecycle marker. The
+auth-server outcome remains independent, so a passed auth preflight followed
+by database-cleanup failure is not falsely relabeled as an auth failure. If
+canonical abort cannot prove absence, private recovery evidence is retained
+and no portable completion result is claimed.
+
+For this bounded database-lifecycle correction, final independent read-only
+review passed and exact clean committed-head qualification returned
+`QUALIFIED_FOR_FINAL_CANDIDATE_CERTIFICATION`. No rehearsal or final
+certification was run.
+
+## Scope and preserved mapping
+
+This bounded correction is classified as
+`COMMITTED_AUTH_RESULT_CHANNEL_MISSING`,
+`AUTH_PREFLIGHT_STRUCTURED_EVIDENCE_CONTRACT_GAP`, and
+`AUTH_SESSION_PREFLIGHT_FAILURE_EVIDENCE_CONTRACT_DEFECT`. These are
+certification-infrastructure defects; application auth behavior, product/UI
+behavior, runtime-readiness semantics, database schema, dependencies, and
+certification stage semantics are unchanged.
+
+The latest read-only channel-mapping outcome remains exactly:
+
+`COMMITTED_RESULT_CHANNEL_INCONCLUSIVE`
+
+That mapping remains authoritative for the pre-correction state: provider
+fixture export used private `GITHUB_ENV`; auth validation and auth-session
+preflight had prose-only success; production misuse used prose plus a nonzero
+exit; database planning used canonical JSON on stdout; and certification
+stages used wrapper results plus sealed physical state/evidence.
+
+## Pre-edit command matrix
+
+| Command ID / mode | Executable and argv | Inputs and semantic success | Exit and human streams | Cleanup owner | Previous machine evidence / gap |
+| --- | --- | --- | --- | --- | --- |
+| `ci:auth-fixture:export` / `provider-fixture-export` | package-owned `npx ts-node … scripts/ci-auth-fixture.ts export-github-env` | explicit non-production GitHub CI; physical private `GITHUB_ENV` outside workspace; runtime-generated inert pair; masks precede the exporter's sole append | 0 on complete export; mask commands and safe success prose on stdout; safe error on stderr | no process cleanup; workflow owns its private environment file | Raw provider values remain canonically transported only by `GITHUB_ENV`; no safe command-result sidecar existed |
+| `ci:auth-fixture:validate` / `auth-environment-validation` | same owner with `validate-env` | explicit development/staging GitHub CI; provider grammar/pair, secret, alias, activation, and application validator pass | 0 plus prose on success; 1 plus safe error on failure | none | No machine result; prose/exit were the only command authority |
+| `ci:auth-fixture:production-misuse` / `production-misuse-validation` | same owner with `production-misuse`; exact child uses `production-misuse-child` over IPC | an exact synthetic pair is rejected specifically because production activation is prohibited | parent exits 0 only after canonical expected-negative proof; child remains nonzero for the intended rejection; streams remain logs | parent owns the exact child | No dedicated command or intended-rejection proof existed; the old test accepted an in-process expected throw |
+| `ci:auth-fixture:preflight` / `auth-session-preflight` | same owner with `preflight` | CI-provided inert fixture; exact loopback Next dev server; canonical session/provider/CSRF/sign-out/sign-in/discovery checks | 0 plus safe prose on success; 1 plus earliest safe failure on failure | command owns SIGTERM, bounded SIGKILL fallback, final termination, and port release | Server/request/response facts were held in memory and discarded |
+| `test:advisory-auth-preflight` / `auth-session-preflight` | same owner with `preflight-local` | task-generated inert fixture and the same exact preflight contract | same | same | Same missing result/evidence contract |
+| `test:e2e:runtime-smoke-ci` / `runtime-smoke-local` | same script with Playwright runtime-smoke argv | separate runtime-smoke owner | unchanged | Playwright/runtime-smoke owners | Out of scope; no auth result routing was attached |
+
+Stable checks use export then validation. Advisory-contract and full-advisory
+use export, validation, then preflight; the required workflow retains its
+separate post-preflight port-isolation probe. Production-artifact evidence
+continues to own only production environment shape and leak rejection. It does
+not become an auth command-result owner.
+
+## Canonical result
+
+`scripts/ci-auth-fixture-result-contract.cjs` is the side-effect-free CommonJS
+interoperability owner shared by the CommonJS ts-node auth entrypoint and the
+ESM production-certification harness. The schema is:
+
+`interior-ai.ci-auth-fixture-command-result.v1`
+
+Every result binds schema/version, package command and mode, portable
+executable/argv identity, `success`, `expected-negative-pass`, or `failure`, a
+validity boolean, optional candidate commit/tree, invocation nonce, fixture
+policy schema/hash, `lib/auth-env.ts` owner/hash, environment-name-set hash,
+safe environment classification, start/completion timestamps, the closed
+completion marker, and an aggregate SHA-256.
+
+The sealed canonical result passes the schema, identity/binding, and
+raw-plus-trimmed-private-value validator before either result artifact is
+published, and is validated again after publication. The result never stores
+OAuth values, auth secrets, cookies, session or CSRF
+contents, passwords, provider tokens, raw database URLs, raw private
+environment, response bodies, or private machine paths.
+
+## Explicit external destination lifecycle
+
+Each structured command requires all three explicit inputs:
+
+- `CI_AUTH_FIXTURE_RESULT_ROOT`
+- `CI_AUTH_FIXTURE_RESULT_PATH`
+- `CI_AUTH_FIXTURE_RESULT_NONCE`
+
+The root and target must be absolute canonical physical paths outside the
+repository and every Git worktree. The root and parent must already exist; no
+root/worktree overlap in either direction, symlink component, repository-local
+fallback, or `.local` fallback is allowed.
+The result and `<result>.sha256` must both be absent. Each file is written to a
+mode-0600 same-parent temporary file, fsynced, published through an exclusive
+same-filesystem hard link, and followed by a parent-directory fsync. The writer
+accepts only the exact destination object issued by the resolver and
+revalidates its result/sidecar/root/relative-path/hash bindings plus the
+physical parent device/inode around publication; a target that appears
+concurrently cannot be overwritten. Failure to complete either file fails the
+command closed. GitHub workflows use runner-temp roots, capture the auth
+command status without short-circuiting, validate each success or failure
+sidecar with the canonical reader, bind its classification to that status, and
+only then propagate a failure.
+
+GitHub does not provide the `runner` context in job-level `env`, and a workflow
+that names it there is rejected before any job runs. Each auth job therefore
+declares `CI_AUTH_FIXTURE_RESULT_ROOT` and `CI_AUTH_FIXTURE_SESSION_ROOT` in its
+first step, `Initialize runner-local auth fixture paths`, which appends the two
+non-secret `$RUNNER_TEMP` paths to `GITHUB_ENV` for every later step. The step
+fails when `RUNNER_TEMP` is not a single-line absolute path, so the append
+cannot inject another `GITHUB_ENV` line. It creates neither root: the export step creates the result root, and the exporter
+creates the mode-0700 session root and re-declares it as its realpath in the
+fixture session transport, which later steps then receive. No step sets either
+root in its own `env`, so nothing shadows that transport. The exporter's masked
+append stays the only `GITHUB_ENV` write that carries provider values.
+`scripts/test-required-test-truthfulness.mjs` checks the expressions in every
+key it scans against the contexts that GitHub's Context availability table lists
+for that key, and pins this declaration step. It scans workflow `run-name`,
+`concurrency` and `env`, `on.workflow_call` input defaults and output values,
+and the job, container, service, environment URL and step keys. Step `if` gets
+no `secrets` context. A workflow that names an unlisted context fails the test.
+
+Stdout and stderr remain human log streams. They are not semantic result
+channels.
+
+## Mode evidence
+
+Auth environment validation records only provider-variable presence, client-ID
+grammar, pair coherence, secret presence, alias-policy classification,
+non-production classification, canonical application-validator result,
+no-network classification, no-leak classification, and completion. Failures
+retain a stable safe code/category plus safe stream descriptors and child
+classification where applicable.
+
+Production misuse passes only when the exact child IPC proves
+`SYNTHETIC_AUTH_FIXTURE_PRODUCTION_MISUSE_REJECTED`, synthetic fixture use, and
+prohibited production activation. It also binds exit/signal/spawn status,
+stdout/stderr byte counts and hashes, and positive exclusion of dependency,
+loader, syntax, transport, missing-input, and database failures. An arbitrary
+nonzero exit or absent result cannot pass.
+
+Auth-session preflight retains portable invocation identity; server PID,
+lifecycle, exit/signal/spawn classification, stream descriptors, listener and
+readiness attempts/timestamps; and the session request's loopback/method,
+status, redirect, content type, body byte/hash, safe body type, JSON parse, and
+exact signed-out `null` classifications. It also retains provider, CSRF,
+sign-out, Google sign-in, inert-discovery, observed non-loopback-request-count,
+and log-safety results.
+Cleanup records SIGTERM, SIGKILL fallback, final termination, observed process
+close/stdio drain, port release, task ownership, and completion. Final stream
+descriptors and the log-safety scan are computed after close. Response bodies,
+cookies, CSRF values, and session contents remain process-private and are
+discarded after their safe descriptors/classifications are sealed. A cleanup
+signal must be accepted by the child-process API before it is task-owned, and
+the final signal/exit evidence must agree with the attempted SIGTERM/SIGKILL
+path; an exit in the check-to-kill race cannot become a successful cleanup.
+
+## Canonical validation
+
+The importable reader and `ci:auth-fixture:result:validate` CLI reject unknown
+or future schema, noncanonical JSON, missing completion, invalid result/mode,
+stale or cross-run nonce, candidate or command mismatch, another external root,
+exact argv or mode-evidence gaps, nested invocation/identity mismatch,
+failure-child or stream disagreement, malformed server/session/cleanup values,
+arbitrary expected-negative exits, preflight success without signed-out session
+proof, failed or contradictory server cleanup, aggregate or checksum mismatch,
+stream descriptor mismatch, manual editing, raw
+private-value leakage, and disagreement between the captured command exit and
+the sidecar classification.
+
+Focused coverage is owned by `scripts/test-ci-auth-fixture-results.ts` and is
+included in `test:auth-env-hardening`, deterministic certification simulation,
+and committed-head qualification. Qualification also invokes one real
+task-owned local auth-session preflight through
+`scripts/run-ci-auth-fixture-real-preflight.mjs`; that owner creates and drops a
+unique disposable loopback PostgreSQL database and validates the external
+sidecar before cleaning its task-owned temporary result root. The real helper
+also delegates server execution to a detached exact-head worktree owned by
+`scripts/ci-auth-preflight-worktree.mjs`. Its structured prerequisite binds the
+candidate and fixture-session identities, accepts only an absent mutation or
+the exact deterministic Next.js `tsconfig.json` generated include, rejects all
+other staged/tracked/ordinary-untracked or symlink output, proves exact
+task-owned worktree removal, and proves that the canonical source stayed
+byte-identical. Real-preflight success requires both database absence and this
+workspace cleanup evidence.
+
+Exact clean code head `ac0f981993deae1d0783eb17da4e5e5cfa554ae9`, tree
+`0d597321c4f2f6744287b1807836858ef230564c`, returned
+`QUALIFIED_FOR_FINAL_CANDIDATE_CERTIFICATION`. The terminal independent
+read-only review found no actionable issue after the final regressions were
+added. This is source qualification only and does not certify an immutable
+candidate artifact.
+
+## Unchanged result channels and pending release work
+
+Provider values remain private `GITHUB_ENV` transport only. Database planning
+remains canonical JSON on stdout from
+`production-certification-database-lifecycle.mjs`. Certification stages remain
+wrapper-result plus sealed physical state/evidence bound. This correction does
+not generalize auth handling into a repository-wide stream parser.
+
+A fresh rehearsal remains pending. Immutable final certification, integration,
+and the CH-0015 closure audit remain pending; none is authorized by this
+correction.

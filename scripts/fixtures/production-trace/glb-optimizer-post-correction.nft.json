@@ -1,0 +1,10 @@
+{
+  "schema": "interior-ai.production-trace-regression-fixture.v1",
+  "classification": "ROUTE_SCOPED_TRACE_CORRECTION",
+  "nftManifestPath": ".next/server/app/api/tools/glb-optimizer/route.js.nft.json",
+  "files": [
+    "./route.js",
+    "../../../../../../lib/asset-pipeline/normalize.ts",
+    "../../../../../../lib/asset-pipeline/optimize.ts"
+  ]
+}

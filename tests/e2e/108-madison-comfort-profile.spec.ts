@@ -1,14 +1,25 @@
 import { test, expect } from "./fixtures";
 import { openCatalogPreview } from "./variant-test-utils";
 
-const MADISON_3S_ID = "sofa-real-castlery-madison-3s";
+// The catalog deduplicates the Madison sofa family to its 2-seater card.
+// Keep this drawer test bound to the exact representative that users can open.
+const MADISON_CATALOG_REPRESENTATIVE_ID = "sofa-real-castlery-madison-2s";
 
 test.describe("108. Madison Comfort Profile", () => {
   test("renders Castlery Singapore seat-feel ratings in the catalog preview drawer", async ({ page }) => {
+    test.setTimeout(120_000);
+
     await page.goto("/design");
     await page.waitForLoadState("domcontentloaded");
+    await expect(page.getByTestId("scene-canvas").first()).toBeVisible({
+      timeout: 20_000,
+    });
 
-    const opened = await openCatalogPreview(page, MADISON_3S_ID, "Madison");
+    const opened = await openCatalogPreview(
+      page,
+      MADISON_CATALOG_REPRESENTATIVE_ID,
+      "Madison",
+    );
     expect(opened).toBeTruthy();
 
     const comfortProfile = page.getByTestId("catalog-comfort-profile");

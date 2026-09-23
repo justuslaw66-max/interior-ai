@@ -406,6 +406,41 @@ upholstery_options:
         x: 2.2
         y: 2.2
 
+  - upholstery_code: navagio_beach_linen
+    upholstery_label: "Slub Linen Weave (Navagio), Cream (Beach Linen)"
+    fabric_family: linen_slub_weave
+    fabric_label: Navagio
+    color_label: "Cream (Beach Linen)"
+    collection_type: stocked
+    color_family: cream
+    tone: warm
+    material_type: woven_fabric
+    texture_type: slub_weave
+    pattern_scale: fine_medium
+    performance_features:
+      - natural_blends
+      - machine_washable
+    composition:
+      polyester_pct: 93
+      linen_pct: 7
+      pfas_free: false
+    care:
+      - machine_wash_below_30c
+      - do_not_bleach
+      - tumble_dry_low
+      - cool_iron_if_needed
+    display_assets:
+      swatch_image: "https://res.cloudinary.com/castlery/image/private/b_rgb:FFFFFF,c_fit,f_auto,q_auto,w_800/v1665460017/crusader/variants/NG-4001/Beach-Linen_1-1665460015.jpg"
+      closeup_image: "https://res.cloudinary.com/castlery/image/private/b_rgb:FFFFFF,c_fit,f_auto,q_auto,w_800/v1665460017/crusader/variants/NG-4001/Beach-Linen_1-1665460015.jpg"
+    render_assets:
+      material_family_key: linen_slub_weave
+      base_color_map: /pbr/dawson/beach-linen/basecolor.jpg
+      normal_map: /pbr/fabrics/linen-slub-weave/normal.jpg
+      roughness_map: /pbr/fabrics/linen-slub-weave/roughness.jpg
+      tile_scale:
+        x: 2.2
+        y: 2.2
+
   - upholstery_code: performance_boucle_cream
     upholstery_label: "Performance Infinity Boucle, Cream"
     fabric_family: infinity_boucle

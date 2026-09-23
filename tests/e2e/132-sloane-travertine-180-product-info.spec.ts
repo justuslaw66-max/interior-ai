@@ -1,6 +1,6 @@
 import { expect, test } from "./fixtures";
 import { GLB_CALIBRATION_BY_PRODUCT_ID } from "../../lib/design-page-calibration";
-import { openCatalogPreview } from "./variant-test-utils";
+import { addCatalogDrawerItemToRoom, openCatalogPreview } from "./variant-test-utils";
 
 const SLOANE_TRAVERTINE_180_ID = "dining-real-castlery-sloane-travertine-180";
 const SLOANE_TRAVERTINE_225_ID = "dining-real-castlery-sloane-travertine-225";
@@ -19,7 +19,13 @@ type ProductInfoSection = {
 type ImportedModel = {
   id: string;
   catalog?: {
-    variants?: Array<{ size_label?: string; finish_code?: string }>;
+    assets?: { thumbnail_url?: string; gallery_images?: string[] };
+    variants?: Array<{
+      size_label?: string;
+      finish_code?: string;
+      thumbnail_url?: string;
+      gallery_images?: string[];
+    }>;
     product_details?: ProductInfoSection;
   } | null;
 };
@@ -63,6 +69,14 @@ test.describe("132. Sloane Travertine Dining Table 180cm Product Info", () => {
     expect(variants).toHaveLength(1);
     expect(variants[0]?.size_label).toBe("180");
     expect(variants[0]?.finish_code).toBe("grey_oak");
+    expect(model?.catalog?.assets?.thumbnail_url).toContain("Sloane-Travertine-Dining-Table-180cm-Front");
+    expect(variants[0]?.thumbnail_url).toContain("Sloane-Travertine-Dining-Table-180cm-Front");
+    expect(model?.catalog?.assets?.gallery_images).toEqual(
+      expect.arrayContaining([
+        expect.stringContaining("Dining-Room-2-Bradley-Sideboard"),
+        expect.stringContaining("Dining-Table-Square-Set_1"),
+      ]),
+    );
 
     const details = model?.catalog?.product_details;
     expect(details).toBeDefined();
@@ -124,6 +138,8 @@ test.describe("132. Sloane Travertine Dining Table 180cm Product Info", () => {
     expect(variants).toHaveLength(1);
     expect(variants[0]?.size_label).toBe("225");
     expect(variants[0]?.finish_code).toBe("grey_oak");
+    expect(model?.catalog?.assets?.thumbnail_url).toContain("Sloane-Travertine-Dining-Table-225cm-Front");
+    expect(variants[0]?.thumbnail_url).toContain("Sloane-Travertine-Dining-Table-225cm-Front");
 
     expectRows(model?.catalog?.product_details?.dimensions, [
       /Dimension: W225 x D100 x H76cm/i,
@@ -145,13 +161,13 @@ test.describe("132. Sloane Travertine Dining Table 180cm Product Info", () => {
     await page.goto("/design");
     await page.waitForLoadState("domcontentloaded");
 
-    await expect(page.getByTestId("scene-canvas")).toBeVisible({ timeout: 20000 });
+    await expect(page.getByTestId("scene-canvas").first()).toBeVisible({ timeout: 20000 });
 
     const opened = await openCatalogPreview(page, SLOANE_TRAVERTINE_180_ID, "Sloane Travertine");
     expect(opened).toBeTruthy();
 
     await expect(page.getByText("Product details")).toBeVisible({ timeout: 10000 });
-    await page.getByTestId("catalog-detail-add-to-room").click({ noWaitAfter: true });
+    await addCatalogDrawerItemToRoom(page);
 
     await expect(page.getByText("Selected Item")).toBeVisible({ timeout: 10000 });
 

@@ -1,0 +1,178 @@
+status: "live"
+brand: "Castlery"
+source_url: "https://www.castlery.com/sg/products/cedric-pendant?quantity=single&diameter=0_2m"
+category: "pendant_light"
+
+product_family: "Cedric"
+product_name: "Cedric Pendant 20cm"
+variant: "20cm"
+
+price_usd: 99
+price_band: "mid"
+brand_tier: "premium_mid"
+
+design_zone: "lighting_zone"
+anchor_role: "lighting_anchor"
+
+# A practical 120cm default drop is used for the editor model. The retail
+# fixture is height-adjustable from 31.4cm to 206.4cm.
+dimensions:
+  width_cm: 20
+  depth_cm: 20
+  height_cm: 120
+
+size_class: "small"
+shape: "round"
+base_type: "ceiling_canopy_and_cable"
+
+material_family: "mixed"
+material_mix:
+  - "metal"
+  - "glass"
+
+color_family: "yellow"
+tone: "warm"
+
+style_cluster: "modern"
+style_secondary: "mid_century"
+design_era: "contemporary"
+
+visual_attributes:
+  visual_weight: "light"
+  edge_profile: "rounded"
+  silhouette: "single_glass_globe_pendant"
+  form_language: "minimal_sculptural"
+  descriptors:
+    - "brushed_brass_ceiling_canopy"
+    - "milk_glass_globe"
+    - "slender_adjustable_cable"
+    - "cedric_family_lighting"
+
+spatial_attributes:
+  footprint_shape: "round"
+  descriptors:
+    - "ceiling_mounted"
+    - "adjustable_drop"
+    - "compact_pendant_light"
+
+room_compatibility:
+  - "dining_room"
+  - "living_room"
+  - "bedroom"
+  - "open_plan"
+  - "entryway"
+
+placement_rules:
+  floor_only: false
+  ceiling_only: true
+  wall_snappable: false
+  wall_mountable: false
+  allow_rug_overlap: false
+  snap_margin_mm: 0
+  clearance_sensitive: false
+  center_room_preferred: true
+  placement_note: "Pendant canopy stays anchored to the room ceiling while the fixture moves freely across the ceiling plane."
+
+design_pairings:
+  - "dining_table"
+  - "kitchen_island"
+  - "sideboard"
+  - "bed"
+
+recommendation_metadata:
+  recommendation_role: "ceiling_light"
+  primary_use_cases:
+    - "dining_table_pendant"
+    - "bedside_pendant"
+    - "entryway_ceiling_light"
+  suggest_when_scene_has:
+    - "dining_table_without_ceiling_light"
+    - "bedroom_without_ceiling_light"
+    - "entryway_without_ceiling_light"
+
+feature_flags:
+  is_ceiling_light: true
+  is_pendant_light: true
+  has_light: true
+  is_height_adjustable: true
+  adjustable_height_min_cm: 31.4
+  adjustable_height_max_cm: 206.4
+  adjustable_height_default_cm: 120
+  cable_start_ratio: 0.05
+  cable_end_ratio: 0.70
+  hardwired_installation: true
+
+product_details:
+  material:
+    - label: "Material"
+      value: "Metal frame and glass shade"
+    - label: "Finish"
+      value: "Brushed brass"
+    - label: "Bulb recommendation"
+      value: "<=6W LED"
+    - label: "Lightbulb"
+      value: "Not included"
+    - label: "Switch"
+      value: "Wall switch"
+    - label: "Bulb type"
+      value: "E14"
+  dimensions:
+    - label: "Adjustable dimension"
+      value: "Diameter 20 x H31.4-206.4cm"
+    - label: "Cable length"
+      value: "175cm"
+    - label: "Product weight"
+      value: "1.04kg"
+    - label: "Packaging dimensions"
+      value: "1 box"
+    - label: "Max bulb"
+      value: "Max bulb diameter 4cm; height 12cm"
+  delivery_and_warranty:
+    - label: "Warranty"
+      value: "2-year limited warranty"
+    - label: "Return policy"
+      value: "30-day returns"
+    - label: "Assembly"
+      value: "Hardwired installation; professional installation strongly recommended"
+
+assets:
+  asset_id: "ceiling-real-castlery-cedric-pendant-20cm"
+  model_url: "/assets/models/ceiling-real-castlery-cedric-pendant-20cm.glb"
+  thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1739778538/crusader/variants/51240008/Cedric-Small-Pendant-Front-1739778537.jpg"
+  gallery_images:
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1739778538/crusader/variants/51240008/Cedric-Small-Pendant-Front-1739778537.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1739778538/crusader/variants/51240008/Cedric-Small-Pendant-Front_1-1739778537.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1742195356/crusader/variants/PB-001590/Cedric-Pendant-Set_2-1742195356.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1742195357/crusader/variants/PB-001590/Cedric-Pendant-Set_1-1742195356.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1739781168/crusader/variants/T51240011/Cedric-Small-Pendant-Dim-1739781166.jpg"
+
+variants:
+  - variant: "20cm"
+    size_label: "20cm diameter"
+    finish_code: "20cm_brushed_brass_glass"
+    finish_label: "20cm brushed brass and glass shade"
+    swatch_group: "material"
+    swatch_hex: "#b79a68"
+    color_family: "yellow"
+    tone: "warm"
+    materials:
+      primary: "metal"
+      secondary: "glass shade"
+    finish:
+      code: "20cm_brushed_brass_glass"
+      label: "Brushed brass and glass shade"
+    model_url: "/assets/models/ceiling-real-castlery-cedric-pendant-20cm.glb"
+    affiliate_url: "https://www.castlery.com/sg/products/cedric-pendant?quantity=single&diameter=0_2m"
+    available: true
+    price_usd: 99
+    dimensions:
+      width_cm: 20
+      depth_cm: 20
+      height_cm: 120
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1739778538/crusader/variants/51240008/Cedric-Small-Pendant-Front-1739778537.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1739778538/crusader/variants/51240008/Cedric-Small-Pendant-Front-1739778537.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1739778538/crusader/variants/51240008/Cedric-Small-Pendant-Front_1-1739778537.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1742195356/crusader/variants/PB-001590/Cedric-Pendant-Set_2-1742195356.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1742195357/crusader/variants/PB-001590/Cedric-Pendant-Set_1-1742195356.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1739781168/crusader/variants/T51240011/Cedric-Small-Pendant-Dim-1739781166.jpg"

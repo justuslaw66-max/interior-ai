@@ -15,6 +15,8 @@ export type CatalogPresetCategory =
   | "desk"
   | "office_chair"
   | "rug"
+  | "floor_lamp"
+  | "table_lamp"
   | "pendant_light";
 
 export type CatalogPresetMode = "draft" | "publish";
@@ -38,6 +40,7 @@ export type CatalogCategoryPreset = {
   defaults: {
     placement_rules?: {
       floor_only?: boolean;
+      ceiling_only?: boolean;
       wall_snappable?: boolean;
       clearance_sensitive?: boolean;
       center_room_preferred?: boolean;
@@ -207,6 +210,16 @@ const DESIGN_PAIRING_RULES: Record<CatalogPresetCategory, DesignPairingRule> = {
     severity: "warning",
   },
   rug: {
+    requiredMode: "token_match",
+    minMatches: 1,
+    severity: "warning",
+  },
+  floor_lamp: {
+    requiredMode: "token_match",
+    minMatches: 1,
+    severity: "warning",
+  },
+  table_lamp: {
     requiredMode: "token_match",
     minMatches: 1,
     severity: "warning",
@@ -1074,9 +1087,9 @@ export const catalogCategoryPresets: Record<CatalogPresetCategory, CatalogCatego
   },
   pendant_light: {
     category: "pendant_light",
-    label: "Pendant Light",
-    designZone: "dining_zone",
-    anchorRole: "decor",
+    label: "Ceiling Light",
+    designZone: "lighting_zone",
+    anchorRole: "lighting_anchor",
     requiredFields: [
       "brand",
       "product_family",
@@ -1096,6 +1109,7 @@ export const catalogCategoryPresets: Record<CatalogPresetCategory, CatalogCatego
     defaults: {
       placement_rules: {
         floor_only: false,
+        ceiling_only: true,
         wall_snappable: false,
         clearance_sensitive: false,
         center_room_preferred: true,
@@ -1121,6 +1135,112 @@ export const catalogCategoryPresets: Record<CatalogPresetCategory, CatalogCatego
       positiveNumberFields: [...COMMON_POSITIVE_FIELDS],
       publishRequiresAssetLink: true,
       designPairingRules: DESIGN_PAIRING_RULES.pendant_light,
+    },
+  },
+  floor_lamp: {
+    category: "floor_lamp",
+    label: "Floor Lamp",
+    designZone: "lighting_zone",
+    anchorRole: "lighting_anchor",
+    requiredFields: [
+      "brand",
+      "product_family",
+      "product_name",
+      "price_usd",
+      "price_band",
+      "dimensions.width_cm",
+      "dimensions.depth_cm",
+      "dimensions.height_cm",
+      "size_class",
+      "shape",
+      "base_type",
+      "material_family",
+      "style_cluster",
+      "color_family",
+      "tone",
+    ],
+    optionalFields: ["brand_tier", "material_mix", "style_secondary", "design_era"],
+    defaults: {
+      placement_rules: {
+        floor_only: true,
+        wall_snappable: false,
+        clearance_sensitive: false,
+        center_room_preferred: false,
+      },
+      room_compatibility: ["living_room", "bedroom", "home_office"],
+      design_pairings: ["sofa", "accent_chair", "bed"],
+      ai_flags: COMMON_AI_FLAGS,
+    },
+    enums: {
+      shape: ["round", "oval", "rectangular", "square", "organic"],
+      material_family: ["metal", "glass", "fabric", "ceramic", "mixed"],
+      style_cluster: [...STYLE_CLUSTERS],
+      color_family: [...COLOR_FAMILIES],
+      tone: [...TONES],
+      size_class: ["small", "medium", "large"],
+    },
+    autoMetadata: {
+      roomType: "living_room",
+      placementProfile: "floor_accent",
+      recommendedTags: ["lighting", "ambient", "floor-lamp"],
+    },
+    validationRules: {
+      positiveNumberFields: [...COMMON_POSITIVE_FIELDS],
+      publishRequiresAssetLink: true,
+      designPairingRules: DESIGN_PAIRING_RULES.floor_lamp,
+    },
+  },
+  table_lamp: {
+    category: "table_lamp",
+    label: "Table Lamp",
+    designZone: "lighting_zone",
+    anchorRole: "lighting_anchor",
+    requiredFields: [
+      "brand",
+      "product_family",
+      "product_name",
+      "price_usd",
+      "price_band",
+      "dimensions.width_cm",
+      "dimensions.depth_cm",
+      "dimensions.height_cm",
+      "size_class",
+      "shape",
+      "base_type",
+      "material_family",
+      "style_cluster",
+      "color_family",
+      "tone",
+    ],
+    optionalFields: ["brand_tier", "material_mix", "style_secondary", "design_era"],
+    defaults: {
+      placement_rules: {
+        floor_only: false,
+        wall_snappable: false,
+        clearance_sensitive: false,
+        center_room_preferred: false,
+      },
+      room_compatibility: ["living_room", "bedroom", "home_office"],
+      design_pairings: ["side_table", "coffee_table", "dining_table", "tv_console"],
+      ai_flags: COMMON_AI_FLAGS,
+    },
+    enums: {
+      shape: ["round", "oval", "rectangular", "square", "organic"],
+      material_family: ["metal", "glass", "fabric", "ceramic", "mixed"],
+      style_cluster: [...STYLE_CLUSTERS],
+      color_family: [...COLOR_FAMILIES],
+      tone: [...TONES],
+      size_class: ["small", "medium"],
+    },
+    autoMetadata: {
+      roomType: "living_room",
+      placementProfile: "surface_accent",
+      recommendedTags: ["lighting", "ambient", "tabletop"],
+    },
+    validationRules: {
+      positiveNumberFields: [...COMMON_POSITIVE_FIELDS],
+      publishRequiresAssetLink: true,
+      designPairingRules: DESIGN_PAIRING_RULES.table_lamp,
     },
   },
 };

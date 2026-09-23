@@ -29,5 +29,5 @@ export function proxy(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/api/:path*", "/ingest/:path*", "/__nextjs_original-stack-frames"],
+  matcher: ["/api/:path*", "/__nextjs_original-stack-frames"],
 };

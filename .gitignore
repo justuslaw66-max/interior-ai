@@ -2,6 +2,8 @@
 
 # dependencies
 /node_modules
+/node_modules.*/
+/.node_modules.*/
 /.pnp
 .pnp.*
 .yarn/*
@@ -14,9 +16,12 @@
 /coverage
 /playwright-report
 /test-results
+/catalog/furniture/_route_hardening/
+/test-fixtures/private-floor-plans/
 
 # next.js
 /.next/
+/.next*/
 /.next-cache/
 /out/
 
@@ -26,18 +31,32 @@
 # misc
 .DS_Store
 *.pem
+*.db
+*.db-journal
+*.sqlite
+*.sqlite3
+/.local/
 
 # debug
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
+.next-dev.log
 
 # env files (can opt-in for committing if needed)
 .env*
+!.env.example
+!.env.staging.template
 
 # vercel
 .vercel
+
+# local release-review artifacts and temporary worktree links
+/release-evidence-private/
+
+# editor
+.vscode/
 
 # typescript
 *.tsbuildinfo

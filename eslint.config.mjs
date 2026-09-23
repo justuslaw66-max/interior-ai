@@ -10,6 +10,7 @@ const eslintConfig = defineConfig([
     // Default ignores of eslint-config-next:
     ".next/**",
     ".next-cache/**",
+    ".vercel/**",
     "out/**",
     "build/**",
     "public/draco/**",
@@ -19,6 +20,8 @@ const eslintConfig = defineConfig([
   ]),
   {
     rules: {
+      "@typescript-eslint/no-explicit-any": "error",
+      "@typescript-eslint/ban-ts-comment": "error",
       "@typescript-eslint/no-unused-vars": [
         "warn",
         {

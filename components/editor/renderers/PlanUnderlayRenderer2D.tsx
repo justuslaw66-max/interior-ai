@@ -1,7 +1,8 @@
 "use client";
 
 import { useLoader } from "@react-three/fiber";
-import { Html, Line } from "@react-three/drei";
+import { Line } from "@react-three/drei/core/Line";
+import { Html } from "@react-three/drei/web/Html";
 import { useMemo, useState } from "react";
 import * as THREE from "three";
 import type {
@@ -15,9 +16,11 @@ import {
   resolveTracedOpeningPreview,
   snapFloorPlanPointToGrid,
   type ArcWallDrawPreview,
-  type RoomDrawPreview,
 } from "@/lib/floor-plan-tracing";
 import type { HousePlanRoom2D } from "@/lib/design-page-house-plan";
+import type { PlanMeasurementUnit } from "@/lib/design-page-types";
+import { formatDisplayLength } from "@/lib/display-units";
+import { formatRoomDrawPreviewLabel } from "@/lib/plan-room-summary";
 import type { RoomOpening2D } from "@/lib/editorScene";
 
 type PlanUnderlayRenderer2DProps = {
@@ -35,7 +38,14 @@ type PlanUnderlayRenderer2DProps = {
   rooms?: HousePlanRoom2D[];
   existingOpenings?: RoomOpening2D[];
   onTraceOpeningPoint?: (point: FloorPlanPoint) => void;
+  measurementUnit: PlanMeasurementUnit;
 };
+
+class PlanUnderlayTextureLoader extends THREE.TextureLoader {
+  constructor() {
+    super(new THREE.LoadingManager());
+  }
+}
 
 function getPointFromEvent(point: THREE.Vector3, snapToGrid = false): FloorPlanPoint {
   const nextPoint = {
@@ -73,17 +83,6 @@ function buildArcWallLinePoints(
   return [...preview.outline, preview.outline[0]].map((point) => [point.x, 0.021, point.z]);
 }
 
-function buildPreviewLabel(preview: RoomDrawPreview): string {
-  const width = preview.width.toFixed(1).replace(/\.0$/, "");
-  const depth = preview.depth.toFixed(1).replace(/\.0$/, "");
-  const area = preview.areaSqm.toFixed(1).replace(/\.0$/, "");
-  return preview.rectangle ? `${width} x ${depth}m (${area} m2)` : `${width} x ${depth}m`;
-}
-
-function formatMillimeters(meters: number): string {
-  return `${Math.round(meters * 1000)} mm`;
-}
-
 function ImagePlanUnderlay({
   underlay,
   calibrationMode = false,
@@ -99,23 +98,9 @@ function ImagePlanUnderlay({
   rooms = [],
   existingOpenings = [],
   onTraceOpeningPoint,
-}: {
-  underlay: FloorPlanUnderlay;
-  calibrationMode?: boolean;
-  calibrationPoints?: FloorPlanPoint[];
-  onCalibrationPoint?: (point: FloorPlanPoint) => void;
-  traceRoomMode?: boolean;
-  traceRoomDrawMode?: FloorPlanDrawRoomMode;
-  traceRoomPoints?: FloorPlanPoint[];
-  onTraceRoomPoint?: (point: FloorPlanPoint) => void;
-  traceOpeningMode?: boolean;
-  traceOpeningPoints?: FloorPlanPoint[];
-  traceOpeningKind?: RoomOpening2D["kind"];
-  rooms?: HousePlanRoom2D[];
-  existingOpenings?: RoomOpening2D[];
-  onTraceOpeningPoint?: (point: FloorPlanPoint) => void;
-}) {
-  const texture = useLoader(THREE.TextureLoader, underlay.assetUrl);
+  measurementUnit,
+}: PlanUnderlayRenderer2DProps & { underlay: FloorPlanUnderlay }) {
+  const texture = useLoader(PlanUnderlayTextureLoader, underlay.assetUrl);
   const [traceRoomPreviewPoint, setTraceRoomPreviewPoint] = useState<FloorPlanPoint | null>(null);
   const [traceOpeningPreviewPoint, setTraceOpeningPreviewPoint] =
     useState<FloorPlanPoint | null>(null);
@@ -301,7 +286,7 @@ function ImagePlanUnderlay({
               boxShadow: "0 1px 5px rgba(15,23,42,0.12)",
             }}
           >
-            {buildPreviewLabel(roomDrawPreview)}
+            {formatRoomDrawPreviewLabel(roomDrawPreview, measurementUnit)}
           </div>
         </Html>
       )}
@@ -333,7 +318,7 @@ function ImagePlanUnderlay({
                 boxShadow: "0 1px 5px rgba(15,23,42,0.12)",
               }}
             >
-              {formatMillimeters(roomDrawPreview.width)}
+              {formatDisplayLength(roomDrawPreview.width * 1000, measurementUnit)}
             </div>
           </Html>
           <Html
@@ -362,7 +347,7 @@ function ImagePlanUnderlay({
                 writingMode: "vertical-rl",
               }}
             >
-              {formatMillimeters(roomDrawPreview.depth)}
+              {formatDisplayLength(roomDrawPreview.depth * 1000, measurementUnit)}
             </div>
           </Html>
         </>
@@ -400,7 +385,7 @@ function ImagePlanUnderlay({
                 boxShadow: "0 1px 5px rgba(15,23,42,0.12)",
               }}
             >
-              {formatMillimeters(arcWallDrawPreview.arcLengthMeters)}
+              {formatDisplayLength(arcWallDrawPreview.arcLengthMeters * 1000, measurementUnit)}
             </div>
           </Html>
           <Html
@@ -533,8 +518,12 @@ export default function PlanUnderlayRenderer2D({
   rooms = [],
   existingOpenings = [],
   onTraceOpeningPoint,
+  measurementUnit,
 }: PlanUnderlayRenderer2DProps) {
-  if (!underlay?.mimeType.startsWith("image/")) {
+  if (
+    !underlay?.mimeType.startsWith("image/") ||
+    underlay.visible === false
+  ) {
     return null;
   }
 
@@ -554,6 +543,7 @@ export default function PlanUnderlayRenderer2D({
       rooms={rooms}
       existingOpenings={existingOpenings}
       onTraceOpeningPoint={onTraceOpeningPoint}
+      measurementUnit={measurementUnit}
     />
   );
 }

@@ -2,6 +2,8 @@ import * as fs from "node:fs";
 import * as path from "node:path";
 import { execFileSync } from "node:child_process";
 
+const COMMAND_TIMEOUT_MS = Number(process.env.GLTF_TRANSFORM_TIMEOUT_MS || 15_000);
+
 type NormalizeResult = {
   normalizedPath: string;
   usedFallback: boolean;
@@ -13,6 +15,7 @@ function runCli(args: string[]): { ok: boolean; output: string } {
     const output = execFileSync("npx", ["-y", "@gltf-transform/cli", ...args], {
       encoding: "utf8",
       stdio: ["ignore", "pipe", "pipe"],
+      timeout: COMMAND_TIMEOUT_MS,
     });
     return { ok: true, output };
   } catch (error) {

@@ -1,0 +1,4 @@
+@reference "tailwindcss";
+@tailwind utilities source(none);
+
+@source inline("bg-cyan-300 bg-cyan-300/10 bg-cyan-300/15 bg-neutral-950/60 border-cyan-300 border-neutral-950/30 border-t-neutral-950 hover:bg-cyan-200 lg:grid-cols-[minmax(0,1.1fr)_minmax(340px,0.9fr)] md:flex-row md:items-end md:justify-between md:px-8 md:text-4xl min-h-[360px] pb-5 px-5 text-cyan-200 text-cyan-300 text-neutral-50");

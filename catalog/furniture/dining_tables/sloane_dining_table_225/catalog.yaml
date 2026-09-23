@@ -122,7 +122,7 @@ product_details:
 assets:
   asset_id: "dining-real-castlery-sloane-dining-table-225"
   model_url: "/assets/models/dining-real-castlery-sloane-dining-table-225.glb"
-  thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1678429678/crusader/variants/50520004/Sloane-Dining-Table-225cm-Angle-1678429676.jpg"
+  thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1678429678/crusader/variants/50520004/Sloane-Dining-Table-225cm-Front-1678429676.jpg"
   gallery_images:
     - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1678697688/crusader/variants/50520004/Sloane-Dining-Table-With-Dining-Bench-With-4-Cane-Chair-Dune-Grey-Oak-Square-Set_1-1678697686.jpg"
     - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1678429678/crusader/variants/50520004/Sloane-Dining-Table-225cm-Angle-1678429676.jpg"
@@ -147,7 +147,7 @@ variants:
     finish_code: "grey_oak"
     finish_label: "Grey Oak"
     swatch_group: "wood_finish"
-    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1678429678/crusader/variants/50520004/Sloane-Dining-Table-225cm-Angle-1678429676.jpg"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1678429678/crusader/variants/50520004/Sloane-Dining-Table-225cm-Front-1678429676.jpg"
     gallery_images:
       - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1678697688/crusader/variants/50520004/Sloane-Dining-Table-With-Dining-Bench-With-4-Cane-Chair-Dune-Grey-Oak-Square-Set_1-1678697686.jpg"
       - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1678429678/crusader/variants/50520004/Sloane-Dining-Table-225cm-Angle-1678429676.jpg"

@@ -8,43 +8,19 @@
  */
 
 import crypto from "node:crypto";
-import fs from "node:fs";
-import path from "node:path";
 import { PrismaClient } from "@prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { Pool } from "pg";
 import { test, expect } from "./fixtures";
+import { getE2EBaseUrl, resolveE2EDatabaseUrl } from "./release-environment";
 
-const baseURL = "http://localhost:3000";
+const baseURL = getE2EBaseUrl();
 
 let prismaClient: PrismaClient | null = null;
 
-function resolveDatabaseUrl() {
-  if (process.env.DATABASE_URL) return process.env.DATABASE_URL;
-
-  const candidates = [
-    path.resolve(process.cwd(), ".env.local"),
-    path.resolve(process.cwd(), ".env"),
-  ];
-
-  for (const envPath of candidates) {
-    if (!fs.existsSync(envPath)) continue;
-    const content = fs.readFileSync(envPath, "utf8");
-    const match = content.match(/^DATABASE_URL=(.*)$/m);
-    if (!match?.[1]) continue;
-    const value = match[1].trim().replace(/^"|"$/g, "").replace(/^'|'$/g, "");
-    if (value) {
-      process.env.DATABASE_URL = value;
-      return value;
-    }
-  }
-
-  return undefined;
-}
-
 function getPrismaClient(): PrismaClient {
   if (prismaClient) return prismaClient;
-  const url = resolveDatabaseUrl();
+  const url = resolveE2EDatabaseUrl();
   if (!url) throw new Error("DATABASE_URL is required for share-duplicate smoke tests");
   prismaClient = new PrismaClient({
     adapter: new PrismaPg(new Pool({ connectionString: url })),
@@ -166,12 +142,72 @@ test.describe("16. Share → Duplicate Smoke", () => {
     }
   });
 
+  test("design GET stays private unless a valid share token is provided", async ({ request }) => {
+    const prisma = getPrismaClient();
+    const { userId: ownerId } = await createUserSession();
+    const shareToken = `design-get-${crypto.randomBytes(8).toString("hex")}`;
+    const design = await prisma.design.create({
+      data: {
+        title: "Shared API Read Smoke",
+        roomWidth: 6,
+        roomDepth: 4,
+        items: [{ id: "sofa-1", type: "sofa", x: 1, y: 1, width: 2, depth: 1 }],
+        zones: [{ id: "zone-1", name: "Conversation", itemIds: ["sofa-1"] }],
+        savedViews: [{ id: "view-1", name: "Client Preview", mode: "3d" }],
+        shareEnabled: true,
+        shareToken,
+        userId: ownerId,
+      },
+      select: { id: true },
+    });
+
+    try {
+      const privateResponse = await request.get(`${baseURL}/api/designs/${design.id}`);
+      expect(privateResponse.status()).toBe(404);
+
+      const wrongTokenResponse = await request.get(
+        `${baseURL}/api/designs/${design.id}?shareToken=wrong-${shareToken}`
+      );
+      expect(wrongTokenResponse.status()).toBe(404);
+
+      const sharedResponse = await request.get(
+        `${baseURL}/api/designs/${design.id}?shareToken=${shareToken}`
+      );
+      expect(sharedResponse.status()).toBe(200);
+
+      const body = await sharedResponse.json();
+      expect(body.id).toBe(design.id);
+      expect(body.title).toBe("Shared API Read Smoke");
+      expect(body.shareEnabled).toBe(true);
+      expect(body.shareToken).toBeNull();
+      expect(body.items).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ id: "sofa-1", type: "sofa" }),
+        ])
+      );
+      expect(body.zones).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ id: "zone-1", name: "Conversation" }),
+        ])
+      );
+      expect(body.savedViews).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ id: "view-1", name: "Client Preview" }),
+        ])
+      );
+    } finally {
+      await prisma.design.deleteMany({ where: { id: design.id } }).catch(() => {});
+      await prisma.session.deleteMany({ where: { userId: ownerId } }).catch(() => {});
+      await prisma.user.deleteMany({ where: { id: ownerId } }).catch(() => {});
+    }
+  });
+
   test("duplicate of non-existent or non-shared token returns 404", async ({ request }) => {
     const prisma = getPrismaClient();
     const { sessionToken } = await createUserSession();
 
     const fakeToken = `nonexistent-${crypto.randomBytes(8).toString("hex")}`;
-const { response: _response, status } = await postWithSession(
+    const { response: _response, status } = await postWithSession(
       request,
       `${baseURL}/api/share/${fakeToken}/duplicate`,
       sessionToken

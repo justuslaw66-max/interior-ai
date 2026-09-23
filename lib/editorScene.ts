@@ -1,3 +1,5 @@
+import type { FloorPlanPropertyEvidenceV2 } from "@/lib/floor-plan-document-v2";
+
 export type EditorViewMode = "3d" | "2d";
 
 export type Vec2Mm = {
@@ -38,18 +40,40 @@ export type RoomOpening2D = {
   wall: "north" | "south" | "east" | "west";
   offsetMm: number;
   widthMm: number;
+  heightMm?: number;
+  /** Finished-floor height to the bottom of the opening; doors default to zero. */
+  bottomMm?: number;
   kind: "door" | "window";
+  /** A wall-free passage behaves like a door for circulation but has no door leaf. */
+  doorStyle?: "swing" | "sliding" | "folding" | "open";
+  canonicalWallId?: string;
+  /** Last trustworthy imported/requested position, used only while host resolution fails. */
+  requestedWorldCenterMm?: Vec2Mm;
+  operation?: "swing" | "sliding" | "folding" | "fixed" | "open";
+  evidence?: {
+    width?: FloorPlanPropertyEvidenceV2;
+    height?: FloorPlanPropertyEvidenceV2;
+    sillHeight?: FloorPlanPropertyEvidenceV2;
+  };
 };
 
 export type FixedElement2D = {
   id: string;
-  kind: "kitchen_counter" | "island" | "wardrobe" | "window" | "door";
+  kind:
+    | "kitchen_counter"
+    | "island"
+    | "wardrobe"
+    | "window"
+    | "door"
+    | "reference_zone";
   xMm: number;
   zMm: number;
   widthMm: number;
   depthMm: number;
   rotationDeg: number;
   label?: string;
+  locked?: boolean;
+  canonicalKind?: string;
 };
 
 export type EditorScene2D = {

@@ -59,11 +59,48 @@ git push -u origin feat/<short-name>
 ## Pre-PR Checks
 
 ```bash
-pnpm -s tsc --noEmit
-pnpm -s playwright test
+npm run typecheck
+npm run test:e2e
 ```
 
 If the full e2e suite has known unrelated failures, run targeted tests for your touched area and document that in the PR body.
+
+For Cabinetry Studio changes, run the target-scoped deterministic gate and lint
+every touched source file with zero warnings:
+
+```bash
+npm run verify:cabinetry
+npx eslint <touched-source-files> --max-warnings 0
+```
+
+Run `npm run build` for runtime, route, dependency-boundary, or bundling changes.
+Document any known unrelated failure separately; do not suppress or reclassify it
+as a passing result.
+
+For Cabinetry dependency or bundle changes, also run:
+
+```bash
+npm ls --depth=0
+npm audit --omit=dev
+npm run test:phase8-performance
+```
+
+Treat `npm audit` as evidence, not permission to run `npm audit fix`. Review
+the dependency chain, separate safe removals from upgrades, and document every
+remaining advisory. The Cabinetry architecture decision, saved-data contract,
+rendering policy, performance budgets, security boundary, and final verification
+report are indexed from `docs/architecture/cabinetry-studio-decomposition.md`.
+
+For editor document-state, scene-command, or undo/redo changes, also run:
+
+```bash
+npm run test:editor-command-history
+npm run test:design-page-history-controller
+```
+
+Scene UI components must call a document/controller action instead of mutating
+scene objects. New undoable actions should use the atomic command boundary
+documented in `docs/architecture/editor-state-command-ownership.md`.
 
 ## PR Rules
 

@@ -15,9 +15,9 @@ export function dimsFromBoundsCm(
   bounds: ConfigurableBoundsCm | undefined,
   fallbackHeightMm: number
 ): { w: number; d: number; h: number } | null {
-  const widthCm = Number(bounds?.width ?? 0);
-  const depthCm = Number(bounds?.depth ?? 0);
-  const heightCm = Number(bounds?.height ?? fallbackHeightMm / 10);
+  const widthCm = Number(bounds?.width ?? bounds?.width_cm ?? 0);
+  const depthCm = Number(bounds?.depth ?? bounds?.depth_cm ?? 0);
+  const heightCm = Number(bounds?.height ?? bounds?.height_cm ?? fallbackHeightMm / 10);
   if (!(widthCm > 0 && depthCm > 0)) return null;
   return {
     w: Math.round(widthCm * 10),
@@ -157,6 +157,8 @@ export function resolveConfiguredModelUrl(
     .replace(`imported-${item.productId}-`, "")
     .trim()
     .toLowerCase();
+  const variantCodeParts = variantCode.split("__").filter((part) => part.trim().length > 0);
+  const variantSpecificFinishCode = variantCodeParts.length > 1 ? variantCodeParts[variantCodeParts.length - 1] : "";
   const variantMeta = ctx.catalogItems[item.productId]?.variants.find((v) => v.id === variantId);
   const finishCode = String(variantMeta?.finishCode ?? "").trim().toLowerCase();
   const inferredUpholsteryCode = (() => {
@@ -172,6 +174,8 @@ export function resolveConfiguredModelUrl(
   const lookupKeys = [
     variantCode,
     variantCode.replace(/-/g, "_"),
+    variantSpecificFinishCode,
+    variantSpecificFinishCode.replace(/-/g, "_"),
     variantCode.split("__")[0],
     finishCode,
     finishCode.replace(/-/g, "_"),
@@ -221,8 +225,10 @@ export function resolveConfiguredModelUrl(
     return (
       variantEntries
         .map((entry) => {
+          const normalizedEntryFinishCode = normalizeLookupToken(String(entry?.finish_code ?? ""));
+          const normalizedVariantSpecificFinishCode = normalizeLookupToken(variantSpecificFinishCode);
           const entryKeys = [
-            normalizeLookupToken(String(entry?.finish_code ?? "")),
+            normalizedEntryFinishCode,
             normalizeLookupToken(String(entry?.upholstery_code ?? "")),
             normalizeLookupToken(String(entry?.variant ?? "")),
             normalizeLookupToken(String(entry?.size_label ?? "")),
@@ -230,6 +236,11 @@ export function resolveConfiguredModelUrl(
           const keyMatch = lookupKeys
             .map((key) => normalizeLookupToken(key))
             .some((key) => entryKeys.includes(key));
+          const exactFinishCodeMatch = Boolean(
+            normalizedVariantSpecificFinishCode &&
+              normalizedEntryFinishCode &&
+              normalizedVariantSpecificFinishCode === normalizedEntryFinishCode
+          );
 
           const entryWidthMm = Math.round(Number(entry?.dimensions?.width_cm ?? 0) * 10);
           const entryDepthMm = Math.round(Number(entry?.dimensions?.depth_cm ?? 0) * 10);
@@ -245,7 +256,11 @@ export function resolveConfiguredModelUrl(
             String(entry?.model_url ?? "").trim() || String(entry?.model_asset_id ?? "").trim()
           );
 
-          const score = (dimsMatch ? 4 : 0) + (keyMatch ? 2 : 0) + (hasExplicitModel ? 1 : 0);
+          const score =
+            (exactFinishCodeMatch ? 16 : 0) +
+            (dimsMatch ? 4 : 0) +
+            (keyMatch ? 2 : 0) +
+            (hasExplicitModel ? 1 : 0);
           return { entry, score };
         })
         .filter(({ score }) => score > 0)
@@ -276,6 +291,15 @@ export function resolveConfiguredModelUrl(
   const variantStateModelUrl = resolveVariantStateAssetModelUrl(bestVariantEntry, code);
   if (variantStateModelUrl) return variantStateModelUrl;
 
+  const configurationEntry = resolveItemConfigurationEntry(item, ctx);
+  const configurationModelUrl = normalizeModelUrlValue(configurationEntry?.model_url);
+  if (configurationModelUrl) return configurationModelUrl;
+
+  const configurationAssetModelUrl = resolveAssetIdToModelUrl(
+    configurationEntry?.model_asset_id
+  );
+  if (configurationAssetModelUrl) return configurationAssetModelUrl;
+
   const assetMap = code ? catalog?.configurableMetadata?.configuration_model_assets?.[code] : null;
   if (assetMap) {
     const candidateAssetId =
@@ -288,12 +312,37 @@ export function resolveConfiguredModelUrl(
   }
 
   if (bestVariantEntry) {
-      const directUrl = normalizeModelUrlValue(bestVariantEntry.model_url);
-      if (directUrl) return directUrl;
+    const directUrl = normalizeModelUrlValue(bestVariantEntry.model_url);
+    if (directUrl) return directUrl;
 
-      const mapped = resolveAssetIdToModelUrl(bestVariantEntry.model_asset_id);
-      if (mapped) return mapped;
+    const mapped = resolveAssetIdToModelUrl(bestVariantEntry.model_asset_id);
+    if (mapped) return mapped;
   }
 
   return fallbackModelUrl;
+}
+
+export function applyConfiguredModelUrlToVariant(
+  variants: CatalogItemSchema["variants"],
+  activeVariantId: string,
+  configuredModelUrl: string | undefined
+): CatalogItemSchema["variants"] {
+  if (!configuredModelUrl) return variants;
+
+  let changed = false;
+  const configuredVariants = variants.map((variant) => {
+    if (
+      variant.id !== activeVariantId ||
+      variant.modelUrl === configuredModelUrl
+    ) {
+      return variant;
+    }
+    changed = true;
+    return {
+      ...variant,
+      modelUrl: configuredModelUrl,
+    };
+  });
+
+  return changed ? configuredVariants : variants;
 }

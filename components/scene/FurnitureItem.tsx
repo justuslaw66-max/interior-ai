@@ -2,11 +2,12 @@
 
 import React, { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
-import { useFrame, useThree, type ThreeEvent } from "@react-three/fiber";
-import { Edges, Html, Line, useCursor } from "@react-three/drei";
+import { type ThreeEvent } from "@react-three/fiber";
+import { Line } from "@react-three/drei/core/Line";
+import { Html } from "@react-three/drei/web/Html";
+import { useCursor } from "@react-three/drei/web/useCursor";
 import { track } from "@/lib/analytics";
 import { CATALOG_ITEMS } from "@/lib/catalog";
-import type { CatalogItemSchema } from "@/lib/catalog-schema";
 import {
   computeSnapCandidates,
   computeAABB,
@@ -20,94 +21,33 @@ import { resolveMaterialProps } from "@/lib/design-page-material-props";
 import {
   getRotatedFootprint,
   normalizeRotationDegrees,
-  ROTATION_SNAP_STEP_DEGREES,
   ROTATION_SNAP_STEP_RADIANS,
-  snapRotationRadians,
 } from "@/lib/design-page-utils";
-import { type GLBCalibration, getModelCalibration } from "@/lib/design-page-calibration";
-import {
-  type SnapNeighbor,
-  type ConfigurableNodeTransform,
-  type PlanMeasurementUnit,
-  type WallDescriptor,
-} from "@/lib/design-page-types";
+import { type SnapNeighbor } from "@/lib/design-page-types";
 import { SnapGuides } from "@/components/SnapGuides";
 import { Measurements } from "@/components/Measurements";
 import { GLBScaledModel } from "@/components/scene/GLBScaledModel";
 import ItemRenderer2D from "@/components/editor/renderers/ItemRenderer2D";
 import { radiansToDeg } from "@/lib/editorScene";
-import type { EditorViewMode } from "@/components/editor/EditorViewToggle";
-import { clampToRoom } from "@/lib/design-page-geometry";
-import type { DesignItem, RoomPlanPolygonPoint, RoomPlanShape } from "@/lib/room-types";
-type FurnitureProps = {
-  product: CatalogItemSchema;
-  planningBoundsMm?: { w: number; d: number; h: number };
-  nodeTransforms?: Record<string, ConfigurableNodeTransform>;
-  variantColor: string;
-  variantName?: string;
-  variantId: string;
-  variantRenderAssets?: CatalogItemSchema["variants"][number]["renderAssets"];
-  initialPosition?: [number, number, number];
-  initialRotationY?: number;
-  roomWidth?: number;
-  roomDepth?: number;
-  roomOriginX?: number;
-  roomOriginZ?: number;
-  roomPlanShape?: RoomPlanShape;
-  roomPlanPolygon?: RoomPlanPolygonPoint[];
-  wallThickness?: number;
-  margin?: number;
-  snapDistance?: number;
-  enableSnap?: boolean;
-  onDraggingChange?: (dragging: boolean) => void;
-  walls?: WallDescriptor[];
-  instanceId: string;
-  isSelected?: boolean;
-  isPrimarySelected?: boolean;
-  onSelect?: (id: string, additive: boolean) => void;
-  onMove?: (id: string, pos: [number, number, number]) => boolean | void;
-  onRotate?: (
-    id: string,
-    rotationY: number,
-    meta?: {
-      source?: "keyboard" | "handle" | "inspector" | "canvas";
-      snap?: boolean;
-    }
-  ) => boolean | void;
-  onDragEnd?: (id: string, pos: [number, number, number]) => void;
-  locked?: boolean;
-  interactive?: boolean;
-  showSelection?: boolean;
-  showLocks?: boolean;
-  onSnapPulse?: () => void;
-  onSnapSuccess?: () => void;
-  items?: DesignItem[];
-  materialPreset?: string;
-  materialOverrides?: DesignItem["materialOverrides"];
-  itemPlanningBoundsByInstanceId?: Record<string, { w: number; d: number; h: number }>;
-  showGuidesAndMeasurements?: boolean;
-  cartPreviewed?: boolean;
-  viewMode?: EditorViewMode;
-  planShowLabels?: boolean;
-  planShowDimensions?: boolean;
-  planMeasurementUnit?: PlanMeasurementUnit;
-  rotationSnapStepRadians?: number;
-  rotationSnapStepDegrees?: number;
-  rotationSnapEnabled?: boolean;
-  "data-testid"?: string;
-};
+import {
+  clampToRoom,
+  isAabbWithinPadding,
+  resolveAxisAlignedRoomItemBounds,
+  resolvePointerRotationRadians,
+} from "@/lib/design-page-geometry";
+import { getAdjustablePendantHeight } from "@/lib/pendant-light-adjustment";
+import { EDITOR_GEOMETRY_TOLERANCES } from "@/lib/editor-geometry-tolerances";
+import { resolveObjectShadowEligibility } from "@/components/editor/design-page/lighting";
+import type { FurnitureProps } from "./furniture/FurnitureProps";
+import { FurnitureSelectionOutline } from "./furniture/FurnitureSelectionOutline";
+import { resolveFurnitureModelAppearance } from "./furniture/resolveFurnitureModelAppearance";
+import { useFurnitureFiniteAnimations } from "./furniture/useFurnitureFiniteAnimations";
+import { sceneDemandItemUserData } from "./sceneDemandDiagnostics";
 
+export { CameraCapture } from "./furniture/CameraCapture";
+export type { FurnitureProps } from "./furniture/FurnitureProps";
 
 type SnapType = "none" | "wall-left" | "wall-right" | "wall-front" | "wall-back";
-
-function isAabbWithinPadding(target: AABB, reference: AABB, padding: number): boolean {
-  return !(
-    target.maxX < reference.minX - padding ||
-    target.minX > reference.maxX + padding ||
-    target.maxZ < reference.minZ - padding ||
-    target.minZ > reference.maxZ + padding
-  );
-}
 
 export function Furniture({
   product,
@@ -117,6 +57,7 @@ export function Furniture({
   variantName,
   variantId,
   variantRenderAssets,
+  hangingHeightCm,
   initialPosition = [0, 0, -1.4] as [number, number, number],
   initialRotationY = 0,
   roomWidth = 5,
@@ -125,15 +66,21 @@ export function Furniture({
   roomOriginZ = 0,
   roomPlanShape = "rectangle",
   roomPlanPolygon,
+  roomPlanHoles,
   wallThickness = 0.12,
+  wallContactInset,
   snapDistance = 0.25,
   enableSnap = true,
+  allowCrossRoomDrag = false,
   onDraggingChange,
   instanceId,
   isSelected,
   isPrimarySelected = false,
   onSelect,
   onMove,
+  onDragPointerMove,
+  onDuplicate,
+  onDelete,
   onRotate,
   onDragEnd,
   locked,
@@ -153,38 +100,91 @@ export function Furniture({
   planShowDimensions = true,
   planMeasurementUnit = "mm",
   rotationSnapStepRadians = ROTATION_SNAP_STEP_RADIANS,
-  rotationSnapStepDegrees = ROTATION_SNAP_STEP_DEGREES,
   rotationSnapEnabled = true,
+  renderQuality = "standard",
+  renderReadyKey,
+  onRenderReadyChange,
 }: FurnitureProps) {
   const width = product.dimsMm.w / 1000;
   const depth = product.dimsMm.d / 1000;
   const height = product.dimsMm.h / 1000;
+  const shadowPolicy = resolveObjectShadowEligibility({
+    category: product.category,
+    quality: renderQuality === "lite" ? "low" : "medium",
+  });
   const planningWidth = (planningBoundsMm?.w ?? product.dimsMm.w) / 1000;
   const planningDepth = (planningBoundsMm?.d ?? product.dimsMm.d) / 1000;
+  const pendantCableAdjustment = useMemo(
+    () => getAdjustablePendantHeight(product, { hangingHeightCm }),
+    [hangingHeightCm, product]
+  );
+  const {
+    modelUrl,
+    shouldTintVariantColor,
+    expectedModelUrl,
+    effectiveModelCalibration,
+  } = useMemo(
+    () =>
+      resolveFurnitureModelAppearance({
+        product,
+        variantId,
+        variantName,
+        variantColor,
+      }),
+    [product, variantColor, variantId, variantName]
+  );
   const [dragging, setDragging] = useState(false);
   const [position, setPosition] = useState<[number, number, number]>(
     initialPosition
   );
-  const [rotation, setRotation] = useState(initialRotationY); // Y-axis rotation in radians
-  const [snapType, setSnapType] = useState<SnapType>("none"); // Track current snap type for auto-facing
-  const [snapGuides, setSnapGuides] = useState<Guide[]>([]); // Snap visualization guides
-  const [measurements, setMeasurements] = useState<Measure[]>([]); // Real-time measurements
+  const [rotation, setRotation] = useState(initialRotationY);
+  const [snapType, setSnapType] = useState<SnapType>("none");
+  const [snapGuides, setSnapGuides] = useState<Guide[]>([]);
+  const [measurements, setMeasurements] = useState<Measure[]>([]);
   const [hovered, setHovered] = useState(false);
   const [invalidPlacement, setInvalidPlacement] = useState(false);
   const [rotateDragging, setRotateDragging] = useState(false);
-  const [modelExists, setModelExists] = useState<boolean>(false);
-  const [runtimeModelUrl, setRuntimeModelUrl] = useState<string | null>(null);
-  const [modelLoadState, setModelLoadState] = useState<"idle" | "loading" | "ready" | "error">("idle");
-  const groupRef = useRef<THREE.Group>(null);
-  const shakeUntilRef = useRef(0);
-  const placementStartRef = useRef<number | null>(null);
-  const snapBumpUntilRef = useRef(0);
+  const [reportedModelLoad, setReportedModelLoad] = useState<{
+    url: string | null;
+    state: "loading" | "ready" | "error";
+  }>({
+    url: null,
+    state: "loading",
+  });
+  const runtimeModelUrl = expectedModelUrl ?? null;
+  const shouldLoadModel =
+    viewMode === "3d" &&
+    renderQuality !== "lite" &&
+    Boolean(modelUrl && runtimeModelUrl);
+  const modelLoadState =
+    reportedModelLoad.url === runtimeModelUrl
+      ? reportedModelLoad.state
+      : runtimeModelUrl
+        ? "loading"
+        : "idle";
+  const handleModelLoadStateChange = useCallback(
+    (nextState: "loading" | "ready" | "error") => {
+      setReportedModelLoad((current) =>
+        current.url === runtimeModelUrl && current.state === nextState
+          ? current
+          : { url: runtimeModelUrl, state: nextState }
+      );
+    },
+    [runtimeModelUrl]
+  );
+  const initialPositionX = initialPosition[0];
+  const initialPositionY = initialPosition[1];
+  const initialPositionZ = initialPosition[2];
   const rotateStartRef = useRef(initialRotationY);
   const rotateTargetRef = useRef(initialRotationY);
   const rotatePointerTargetRef = useRef<HTMLElement | null>(null);
   const rotatePointerIdRef = useRef<number | null>(null);
   const rotateSnapEnabledRef = useRef(true);
-
+  const snapTypeRef = useRef<SnapType>("none");
+  const lastReportedRenderReadyRef = useRef<{
+    key: string;
+    ready: boolean;
+  } | null>(null);
   const materialProps = useMemo(() => {
     return resolveMaterialProps({
       category: product.category,
@@ -197,89 +197,39 @@ export function Furniture({
   useEffect(() => {
     if (dragging) return;
     const frameId = window.requestAnimationFrame(() => {
-      setPosition(initialPosition);
-      setRotation(initialRotationY);
-      setSnapType("none");
+      setPosition((currentPosition) =>
+        currentPosition[0] === initialPositionX &&
+        currentPosition[1] === initialPositionY &&
+        currentPosition[2] === initialPositionZ
+          ? currentPosition
+          : [initialPositionX, initialPositionY, initialPositionZ]
+      );
+      setRotation((currentRotation) =>
+        currentRotation === initialRotationY
+          ? currentRotation
+          : initialRotationY
+      );
+      setSnapType((currentSnapType) =>
+        currentSnapType === "none" ? currentSnapType : "none"
+      );
+      snapTypeRef.current = "none";
       rotateStartRef.current = initialRotationY;
       rotateTargetRef.current = initialRotationY;
     });
     return () => window.cancelAnimationFrame(frameId);
-  }, [dragging, initialPosition, initialRotationY]);
+  }, [
+    dragging,
+    initialPositionX,
+    initialPositionY,
+    initialPositionZ,
+    initialRotationY,
+  ]);
 
   useEffect(() => {
     rotateTargetRef.current = rotation;
   }, [rotation]);
 
   useCursor(hovered && Boolean(locked), "not-allowed");
-
-  useEffect(() => {
-    if (!interactive) return;
-    placementStartRef.current = performance.now();
-  }, [instanceId, interactive]);
-
-  // Keyboard listener for rotation
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (locked || !interactive || !isPrimarySelected) return;
-      if (dragging || rotateDragging) return;
-      const activeElement = document.activeElement as HTMLElement | null;
-      if (activeElement) {
-        const tagName = activeElement.tagName;
-        if (
-          tagName === "INPUT" ||
-          tagName === "TEXTAREA" ||
-          tagName === "SELECT" ||
-          activeElement.isContentEditable
-        ) {
-          return;
-        }
-      }
-
-      let nextRotation: number | null = null;
-      let isSnapped = true;
-      if ((e.key === "r" || e.key === "R") && !e.metaKey && !e.ctrlKey && !e.altKey) {
-        nextRotation = rotation + (e.shiftKey ? -Math.PI / 2 : Math.PI / 2);
-      } else if ((e.key === "q" || e.key === "Q") && !e.metaKey && !e.ctrlKey && !e.altKey) {
-        const step =
-          ((rotationSnapEnabled ? rotationSnapStepDegrees : 1) * Math.PI) / 180;
-        nextRotation = rotation - step;
-        isSnapped = rotationSnapEnabled;
-      } else if ((e.key === "e" || e.key === "E") && !e.metaKey && !e.ctrlKey && !e.altKey) {
-        const step =
-          ((rotationSnapEnabled ? rotationSnapStepDegrees : 1) * Math.PI) / 180;
-        nextRotation = rotation + step;
-        isSnapped = rotationSnapEnabled;
-      } else if (e.key === "0" && !e.metaKey && !e.ctrlKey && !e.altKey) {
-        nextRotation = 0;
-      }
-
-      if (nextRotation === null) return;
-      e.preventDefault();
-      setRotation((prev: number) => {
-        const fallback = nextRotation ?? prev;
-        const accepted = onRotate?.(instanceId, fallback, {
-          source: "keyboard",
-          snap: isSnapped,
-        });
-        return accepted === false ? prev : fallback;
-      });
-    };
-
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [
-    dragging,
-    interactive,
-    instanceId,
-    isPrimarySelected,
-    locked,
-    onRotate,
-    rotateDragging,
-    rotation,
-    rotationSnapEnabled,
-    rotationSnapStepDegrees,
-    rotationSnapStepRadians,
-  ]);
 
   const getPointerRotation = (
     e: ThreeEvent<PointerEvent>,
@@ -290,19 +240,20 @@ export function Furniture({
     if (!hit) return null;
     const dx = intersection.x - position[0];
     const dz = intersection.z - position[2];
-    if (Math.abs(dx) < 1e-4 && Math.abs(dz) < 1e-4) return null;
-    const raw = Math.atan2(dx, -dz);
-    const shouldSnap = snapToStep && rotationSnapEnabled;
-    return shouldSnap
-      ? snapRotationRadians(raw, rotationSnapStepRadians)
-      : raw;
+    return resolvePointerRotationRadians({
+      deltaX: dx,
+      deltaZ: dz,
+      snapToStep,
+      snapEnabled: rotationSnapEnabled,
+      snapStepRadians: rotationSnapStepRadians,
+    });
   };
 
   const onRotateHandlePointerDown = (e: ThreeEvent<PointerEvent>) => {
     e.stopPropagation();
     if (!interactive || locked || viewMode !== "2d") {
       if (locked) {
-        shakeUntilRef.current = Number(e.timeStamp) + 220;
+        startLockedShake();
       }
       return;
     }
@@ -385,14 +336,24 @@ export function Furniture({
     return () => window.removeEventListener("keydown", handleEscape);
   }, [instanceId, onDraggingChange, rotateDragging]);
 
-  const isCustomPolygonRoom =
-    roomPlanShape === "custom_polygon" && Boolean(roomPlanPolygon?.length);
+  // Room outlines represent wall centrelines. Use the shared inner-face
+  // clearance for both clamping and snapping so every wall axis lands at the
+  // same visible distance without intersecting the wall mesh.
+  const roomWallInset =
+    typeof wallContactInset === "number" && Number.isFinite(wallContactInset)
+      ? wallContactInset
+      : wallThickness;
+
   const clampWorldToRoomShape = useCallback(
     (
       worldX: number,
       worldZ: number,
       nextRotationY: number = rotation
     ): [number, number] => {
+      if (allowCrossRoomDrag) {
+        return [worldX, worldZ];
+      }
+
       const [localX, localZ] = clampToRoom(
         worldX - roomOriginX,
         worldZ - roomOriginZ,
@@ -400,10 +361,11 @@ export function Furniture({
         planningDepth,
         roomWidth,
         roomDepth,
-        wallThickness,
+        roomWallInset,
         nextRotationY,
         roomPlanShape,
-        roomPlanPolygon
+        roomPlanPolygon,
+        roomPlanHoles
       );
 
       return [localX + roomOriginX, localZ + roomOriginZ];
@@ -411,14 +373,16 @@ export function Furniture({
     [
       planningDepth,
       planningWidth,
+      allowCrossRoomDrag,
       roomDepth,
       roomOriginX,
       roomOriginZ,
       roomPlanPolygon,
+      roomPlanHoles,
       roomPlanShape,
       roomWidth,
       rotation,
-      wallThickness,
+      roomWallInset,
     ]
   );
 
@@ -430,7 +394,7 @@ export function Furniture({
       
       if (newX !== position[0] || newZ !== position[2]) {
         const frameId = window.requestAnimationFrame(() => {
-          setPosition([newX, 0, newZ]);
+          setPosition([newX, position[1] ?? 0, newZ]);
         });
         return () => window.cancelAnimationFrame(frameId);
       }
@@ -465,18 +429,23 @@ export function Furniture({
   );
 
   // Compute room bounds
-  const halfRoomW = roomWidth / 2;
-  const halfRoomD = roomDepth / 2;
-  const halfEffectiveW = effectiveWidth / 2;
-  const halfEffectiveD = effectiveDepth / 2;
-
   // Hard constraint bounds: prevent items from exiting the room
   // Walls have physical thickness, so we must account for that
   // Items must stay inside the inner room boundaries (wall edges)
-  const hardMinX = roomOriginX - halfRoomW + wallThickness + halfEffectiveW;
-  const hardMaxX = roomOriginX + halfRoomW - wallThickness - halfEffectiveW;
-  const hardMinZ = roomOriginZ - halfRoomD + wallThickness + halfEffectiveD;
-  const hardMaxZ = roomOriginZ + halfRoomD - wallThickness - halfEffectiveD;
+  const {
+    minX: hardMinX,
+    maxX: hardMaxX,
+    minZ: hardMinZ,
+    maxZ: hardMaxZ,
+  } = resolveAxisAlignedRoomItemBounds({
+    roomOriginX,
+    roomOriginZ,
+    roomWidth,
+    roomDepth,
+    wallContactInset: roomWallInset,
+    itemWidth: effectiveWidth,
+    itemDepth: effectiveDepth,
+  });
 
   // Soft snap bounds: walls where items snap flush
   // Items snap directly to hard bounds (wall edges), no gap
@@ -493,6 +462,15 @@ export function Furniture({
     position[1],
     clampedZ,
   ] as [number, number, number];
+  const { groupRef, startLockedShake, startSnapBump } =
+    useFurnitureFiniteAnimations({
+      instanceId,
+      interactive,
+      dragging,
+      cartPreviewed,
+      clampedPosition,
+      height,
+    });
 
   // Snap to wall when within threshold (typically 3cm)
   const applySnap = (x: number, z: number): [number, number, SnapType] => {
@@ -532,7 +510,7 @@ export function Furniture({
     e.stopPropagation();
     if (!interactive || locked) {
       if (locked) {
-        shakeUntilRef.current = performance.now() + 220;
+        startLockedShake();
       }
       return;
     }
@@ -544,16 +522,16 @@ export function Furniture({
 
   const onPointerUp = (e: ThreeEvent<PointerEvent>) => {
     e.stopPropagation();
-    const wasSnapped = snapType !== "none";
+    const wasSnapped = snapTypeRef.current !== "none";
     try {
       (e.target as unknown as HTMLElement).releasePointerCapture(e.pointerId);
     } catch {}
     setDragging(false);
-    setSnapType("none"); // Reset snap type
+    setSnapType("none");
+    snapTypeRef.current = "none";
     setInvalidPlacement(false);
-    onDraggingChange?.(false); // notify parent
     if (wasSnapped && interactive) {
-      snapBumpUntilRef.current = performance.now() + 160;
+      startSnapBump();
       onSnapPulse?.();
       onSnapSuccess?.();
     }
@@ -562,6 +540,7 @@ export function Furniture({
     if (interactive && onDragEnd) {
       onDragEnd(instanceId, position);
     }
+    onDraggingChange?.(false); // notify parent after the document command finishes
   };
 
   const onPointerMove = (e: ThreeEvent<PointerEvent>) => {
@@ -569,6 +548,7 @@ export function Furniture({
     if (rotateDragging) return;
     if (!dragging) return;
     e.stopPropagation(); // prevent OrbitControls from responding
+    onDragPointerMove?.(e);
 
     raycaster.setFromCamera(e.pointer, e.camera);
     raycaster.ray.intersectPlane(plane, intersection);
@@ -580,7 +560,7 @@ export function Furniture({
     let snappedZ = z;
     let snap: SnapType = "none";
 
-    if (enableSnap && !isCustomPolygonRoom) {
+    if (enableSnap) {
       const [resultX, resultZ, resultSnap] = applySnap(x, z);
       snappedX = resultX;
       snappedZ = resultZ;
@@ -589,7 +569,7 @@ export function Furniture({
 
     [snappedX, snappedZ] = clampWorldToRoomShape(snappedX, snappedZ);
 
-    const nextPos: [number, number, number] = [snappedX, 0, snappedZ];
+    const nextPos: [number, number, number] = [snappedX, position[1] ?? 0, snappedZ];
 
     // Compute snap guides for visualization
     if (dragging && enableSnap && items && items.length > 0) {
@@ -625,14 +605,12 @@ export function Furniture({
         }));
 
         // Wall snap points (flush to walls, no breathing room)
-        const walls = isCustomPolygonRoom
-          ? []
-          : [
-              { axis: "x" as const, coord: wallLeftX, label: "Left Wall" },
-              { axis: "x" as const, coord: wallRightX, label: "Right Wall" },
-              { axis: "z" as const, coord: wallFrontZ, label: "Front Wall" },
-              { axis: "z" as const, coord: wallBackZ, label: "Back Wall" },
-            ];
+        const walls = [
+          { axis: "x" as const, coord: wallLeftX, label: "Left Wall" },
+          { axis: "x" as const, coord: wallRightX, label: "Right Wall" },
+          { axis: "z" as const, coord: wallFrontZ, label: "Front Wall" },
+          { axis: "z" as const, coord: wallBackZ, label: "Back Wall" },
+        ];
 
         // Compute all snap candidates
         const snapCandidates = computeSnapCandidates(selectedAABB, neighborGuides, walls, snapDistance);
@@ -704,540 +682,48 @@ export function Furniture({
     }
     setInvalidPlacement(false);
     setSnapType(snap);
+    snapTypeRef.current = snap;
     setPosition(nextPos);
   };
-
-
-  // Determine if current position is snapped (based on snap type rather than position)
   const isSnapped = snapType !== "none";
-
-  useFrame(() => {
-    if (!groupRef.current) return;
-    const now = performance.now();
-    const baseX = clampedPosition[0];
-    const baseZ = clampedPosition[2];
-    const baseY = height / 2;
-    const bumpRemaining = snapBumpUntilRef.current - now;
-    const bump =
-      bumpRemaining > 0
-        ? Math.sin((bumpRemaining / 160) * Math.PI) * 0.02
-        : 0;
-
-    if (shakeUntilRef.current > now) {
-      const phase = (shakeUntilRef.current - now) / 220;
-      const offset = Math.sin(phase * Math.PI * 10) * 0.02;
-      groupRef.current.position.set(baseX + offset + bump, baseY, baseZ);
-    } else {
-      groupRef.current.position.set(baseX + bump, baseY, baseZ);
-    }
-
-    if (dragging) {
-      groupRef.current.scale.set(1, 1, 1);
-      return;
-    }
-
-    if (cartPreviewed) {
-      groupRef.current.scale.set(1.02, 1.02, 1.02);
-      return;
-    }
-
-    if (!interactive) {
-      groupRef.current.scale.set(1, 1, 1);
-      return;
-    }
-
-    const start = placementStartRef.current;
-    if (start !== null) {
-      const t = Math.min(1, (now - start) / 160);
-      const scale = 0.98 + 0.02 * t;
-      groupRef.current.scale.set(scale, scale, scale);
-      if (t >= 1) {
-        placementStartRef.current = null;
-      }
-    } else {
-      groupRef.current.scale.set(1, 1, 1);
-    }
-  });
-
-  // finalRotation is the current rotation state (set directly when snapping)
   const finalRotation = rotation;
   const rotationHudLabel =
     viewMode === "2d" && rotateDragging
       ? `${normalizeRotationDegrees(radiansToDeg(rotation))}°`
       : null;
-  const modelUrl = product?.assets?.modelUrl as string | undefined;
-  const modelCalibration = getModelCalibration(product);
-  const variantMarker = `${String(variantName ?? "")} ${String(variantId ?? "")}`.toLowerCase();
-  const variantColorKey = String(variantColor ?? "").trim().toLowerCase();
-  const isKelseyTableVariant = product.id.startsWith("dining-real-castlery-kelsey-marble-");
-  const variantHex = variantColorKey.match(/^#([0-9a-f]{6})$/i)?.[1] ?? null;
-  const variantLuma = useMemo(() => {
-    if (!variantHex) return null;
-    const r = parseInt(variantHex.slice(0, 2), 16) / 255;
-    const g = parseInt(variantHex.slice(2, 4), 16) / 255;
-    const b = parseInt(variantHex.slice(4, 6), 16) / 255;
-    return 0.2126 * r + 0.7152 * g + 0.0722 * b;
-  }, [variantHex]);
-  const normalizedVariantMarker = variantMarker.replace(/[_-]+/g, " ");
-  // variantMarker includes variantId (e.g. "cocoa_leather") so check both name and marker.
-  const isLeatherVariant = /\bleather\b/i.test(String(variantName ?? "")) || /\bleather\b/i.test(normalizedVariantMarker);
-  const isMadisonProduct =
-    product.id.startsWith("sofa-real-castlery-madison-") ||
-    product.id.startsWith("armchair-real-castlery-madison-");
-  const isMadisonFabricVariant = isMadisonProduct && !isLeatherVariant;
-  const isMadisonBisqueFabricVariant =
-    isMadisonFabricVariant && /\bbisque\b/i.test(normalizedVariantMarker);
-  const isMadisonStoneFabricVariant =
-    isMadisonFabricVariant && /\bstone\b/i.test(normalizedVariantMarker);
-  const isMadisonCamilleForestFabricVariant =
-    isMadisonFabricVariant &&
-    (/\bcamille\b.*\bforest\b/i.test(normalizedVariantMarker) || /\bforest\b/i.test(normalizedVariantMarker));
-  const isDawsonFabricVariant =
-    product.id.startsWith("sofa-real-castlery-dawson-") && !isLeatherVariant;
-  const isDawsonCreamyWhiteVariant =
-    product.id.startsWith("sofa-real-castlery-dawson-") &&
-    /(?:\bcreamy[\s_-]*white\b|\bperformance[\s_-]*creamy[\s_-]*white\b|\bpt4001\b)/i.test(variantMarker);
-  const isDawsonPerformanceTwillVariant =
-    isDawsonFabricVariant &&
-    !isDawsonCreamyWhiteVariant &&
-    /(?:\bperformance[\s_-]*twill\b|\bperformance_twill_\w+\b|\bpt400[2-5]\b)/i.test(variantMarker);
-  const isDawsonPeytonVariant =
-    isDawsonFabricVariant &&
-    /(?:\bpeyton\b|\bpy400[1-4]\b|\bpeyton_[a-z_]+\b)/i.test(variantMarker);
-  const isDawsonGenovaVariant =
-    isDawsonFabricVariant &&
-    /(?:\bgenova\b|\bperformance_linen_weave\b|\bperformance[\s_-]*linen[\s_-]*weave\b|\bpg400[2-4]\b)/i.test(variantMarker);
-  const isDawsonBoucleVariant =
-    isDawsonFabricVariant &&
-    /(?:\bboucle\b|\bin400[2-5]\b|\bperformance_boucle_cream\b|\bperformance_infinity_boucle_moss\b|\binfinity_boucle_[a-z_]+\b)/i.test(variantMarker);
-  const isDawsonChenilleVariant =
-    isDawsonFabricVariant &&
-    /(?:\bwashed[\s_-]*chenille\b|\bgreta\b|\bgr400[1-4]\b|\bwashed_chenille_[a-z_]+\b|\bgreta_[a-z_]+\b)/i.test(variantMarker);
-  const isDawsonStockedLinenVariant =
-    isDawsonFabricVariant &&
-    /(?:\bbeach[\s_-]*linen\b|\bnavagio\b|\bseagull\b|\bng400[12]\b|\bbeach_linen\b|\bnavagio_seagull\b)/i.test(variantMarker);
-  const isPerformanceDuneFabricVariant =
-    (product.id.startsWith("sofa-real-castlery-jaron-") &&
-      /(?:\bperformance[\s_-]*dune\b|\bdune\b)/.test(variantMarker)) ||
-    (/performance\s*dune/i.test(String(variantName ?? "")) &&
-      /\bfabric\b/i.test(String(variantName ?? "")));
-  const isIvoryLeatherVariant =
-    (product.id.startsWith("sofa-real-castlery-jaron-") && /\bivory\b/.test(variantMarker)) ||
-    (isLeatherVariant && /\bivory\b/i.test(String(variantName ?? "")));
-  const isCocoaLeatherVariant =
-    (product.id.startsWith("sofa-real-castlery-jaron-") && /\bcocoa\b/.test(variantMarker)) ||
-    (isLeatherVariant && /\bcocoa\b/i.test(String(variantName ?? "")));
-  const isGraphiteLeatherVariant =
-    isLeatherVariant && /\bgraphite\b/i.test(String(variantName ?? ""));
-  const isMadisonCaramelLeatherVariant =
-    isMadisonProduct &&
-    /\bcaramel\b/i.test(String(variantName ?? "")) &&
-    /\bleather\b/i.test(String(variantName ?? ""));
-  const kelseyHasWhiteToken = /white[\s_-]*wash/i.test(variantMarker);
-  const kelseyHasDarkWalnutToken = /dark[\s_-]*walnut/i.test(variantMarker);
-  const isKelseyWhiteWashVariant =
-    isKelseyTableVariant &&
-    (kelseyHasWhiteToken || variantColorKey === "#d8d0c2" || (!kelseyHasDarkWalnutToken && (variantLuma ?? 1) >= 0.72));
-  const isKelseyDarkWalnutVariant =
-    isKelseyTableVariant &&
-    (kelseyHasDarkWalnutToken || variantColorKey === "#7a4b2d" || (!kelseyHasWhiteToken && (variantLuma ?? 1) < 0.72));
-  const preferredModelUrl = modelUrl ?? null;
-
-  const normalizeModelCandidate = (value: string | null | undefined): string | null => {
-    const raw = String(value ?? "").trim();
-    if (!raw) return null;
-    if (/^https?:\/\//i.test(raw) || raw.startsWith("/")) return raw;
-    if (raw.startsWith("assets/")) return `/${raw}`;
-    return `/assets/models/${raw.replace(/^\/+/, "")}`;
-  };
-
-  const effectiveModelCalibration: GLBCalibration | undefined = (() => {
-    const modelUrlKey = String(product.assets?.modelUrl ?? "").toLowerCase();
-    const productIdKey = String(product.id ?? "").toLowerCase();
-    const variantKey = String(variantName ?? "").toLowerCase();
-    const isSloaneOrSawyerSideboard =
-      product.category === "sideboard" &&
-      (/(sloane|sawyer)[-_ ]sideboard/.test(productIdKey) ||
-        /(sloane|sawyer)[-_ ]sideboard/.test(modelUrlKey) ||
-        /(sloane|sawyer)/.test(productIdKey) ||
-        /(sloane|sawyer)/.test(modelUrlKey) ||
-        /(grey\s*oak|natural)/.test(variantKey));
-
-    // Sideboards can arrive through multiple catalog paths/IDs; enforce a stable
-    // lighter wood calibration here to avoid crushed dark tones from tint stacking.
-    if (isSloaneOrSawyerSideboard) {
-      return {
-        ...(modelCalibration ?? {}),
-        useVariantColor: false,
-        brightness: 1.43,
-        saturation: 0.94,
-        roughnessOverride: 0.82,
-        metalnessOverride: 0,
-        disableAoMap: false,
-        aoMapIntensity: 0.2,
-        emissiveBoost: 0,
-        specularIntensityOverride: 0.08,
-        disableVertexColors: true,
-      };
-    }
-
-    if (!modelCalibration) return modelCalibration;
-
-    if (isMadisonBisqueFabricVariant) {
-      // Madison Bisque fabric: light warm woven beige, matched to the Castlery SG swatch card.
-      return {
-        ...modelCalibration,
-        forceBaseColorHex: "#d8d0c2",
-        disableBaseColorMap: true,
-        brightness: 1.02,
-        saturation: 0.78,
-        roughnessOverride: 0.97,
-        metalnessOverride: 0,
-        aoMapIntensity: 0.2,
-        emissiveBoost: 0,
-        specularIntensityOverride: 0.05,
-      };
-    }
-
-    if (isMadisonCamilleForestFabricVariant) {
-      // Madison Camille, Forest fabric: muted moss-green, matched to the Castlery SG swatch card.
-      return {
-        ...modelCalibration,
-        forceBaseColorHex: "#566448",
-        disableBaseColorMap: true,
-        brightness: 0.96,
-        saturation: 1.02,
-        roughnessOverride: 0.98,
-        metalnessOverride: 0,
-        aoMapIntensity: 0.22,
-        emissiveBoost: 0,
-        specularIntensityOverride: 0.04,
-      };
-    }
-
-    if (isMadisonStoneFabricVariant) {
-      return {
-        ...modelCalibration,
-        forceBaseColorHex: "#9d9991",
-        disableBaseColorMap: true,
-        brightness: 0.98,
-        saturation: 0.72,
-        roughnessOverride: 0.98,
-        metalnessOverride: 0,
-        aoMapIntensity: 0.22,
-        emissiveBoost: 0,
-        specularIntensityOverride: 0.04,
-      };
-    }
-
-    if (isDawsonCreamyWhiteVariant) {
-      // Dawson Creamy White should stay soft and warm relative to Sand, without the
-      // crisp, pebbled micro-relief that makes it read as artificial plaster.
-      return {
-        ...modelCalibration,
-        forceBaseColorHex: "#dfd7ca",
-        brightness: 0.95,
-        saturation: 0.88,
-        roughnessOverride: 0.9,
-        metalnessOverride: 0,
-        aoMapIntensity: 0.18,
-        emissiveBoost: 0,
-        specularIntensityOverride: 0.04,
-        importedNormalScale: 0.012,
-      };
-    }
-
-    if (isDawsonPerformanceTwillVariant) {
-      return {
-        ...modelCalibration,
-        brightness: 0.97,
-        saturation: 0.94,
-        roughnessOverride: 0.9,
-        metalnessOverride: 0,
-        aoMapIntensity: 0.18,
-        emissiveBoost: 0,
-        specularIntensityOverride: 0.05,
-        importedNormalScale: 0.014,
-      };
-    }
-
-    if (isDawsonPeytonVariant) {
-      return {
-        ...modelCalibration,
-        brightness: 0.96,
-        saturation: 0.94,
-        roughnessOverride: 0.93,
-        metalnessOverride: 0,
-        aoMapIntensity: 0.14,
-        emissiveBoost: 0,
-        specularIntensityOverride: 0.03,
-        importedNormalScale: 0.014,
-      };
-    }
-
-    if (isDawsonGenovaVariant) {
-      return {
-        ...modelCalibration,
-        brightness: 0.98,
-        saturation: 0.94,
-        roughnessOverride: 0.92,
-        metalnessOverride: 0,
-        aoMapIntensity: 0.16,
-        emissiveBoost: 0,
-        specularIntensityOverride: 0.04,
-        importedNormalScale: 0.016,
-      };
-    }
-
-    if (isDawsonBoucleVariant) {
-      return {
-        ...modelCalibration,
-        brightness: 0.97,
-        saturation: 0.95,
-        roughnessOverride: 0.95,
-        metalnessOverride: 0,
-        aoMapIntensity: 0.12,
-        emissiveBoost: 0,
-        specularIntensityOverride: 0.025,
-        importedNormalScale: 0.02,
-      };
-    }
-
-    if (isDawsonChenilleVariant) {
-      return {
-        ...modelCalibration,
-        brightness: 0.97,
-        saturation: 0.95,
-        roughnessOverride: 0.91,
-        metalnessOverride: 0,
-        aoMapIntensity: 0.16,
-        emissiveBoost: 0,
-        specularIntensityOverride: 0.04,
-        importedNormalScale: 0.015,
-      };
-    }
-
-    if (isDawsonStockedLinenVariant) {
-      return {
-        ...modelCalibration,
-        brightness: 0.98,
-        saturation: 0.94,
-        roughnessOverride: 0.92,
-        metalnessOverride: 0,
-        aoMapIntensity: 0.16,
-        emissiveBoost: 0,
-        specularIntensityOverride: 0.04,
-        importedNormalScale: 0.018,
-      };
-    }
-
-
-    if (isMadisonCaramelLeatherVariant) {
-      // Keep base texture map for Madison caramel leather so non-upholstery parts
-      // (legs/frame details) retain separation instead of collapsing into one flat tint.
-      return {
-        ...modelCalibration,
-        forceBaseColorHex: "#956a43",
-        disableBaseColorMap: false,
-        brightness: 0.86,
-        saturation: 0.98,
-        roughnessOverride: 0.26,
-        metalnessOverride: 0.03,
-        aoMapIntensity: 0.36,
-        emissiveBoost: 0,
-        specularIntensityOverride: 0.5,
-        clearcoatOverride: 0.3,
-        clearcoatRoughnessOverride: 0.42,
-      };
-    }
-
-    if (isKelseyDarkWalnutVariant) {
-      // Kelsey ships as a single baked material, so tint the lower assembly by height.
-      return {
-        ...modelCalibration,
-        preserveWoodLegColorHex: "#7a4b2d",
-        lowerAssemblyTintHex: "#7a4b2d",
-        lowerAssemblyTintStrength: 0.95,
-        // Cover full legs and underframe while leaving the tabletop cap mostly unchanged.
-        lowerAssemblyFadeStart: 0.82,
-        lowerAssemblyFadeEnd: 0.94,
-      };
-    }
-
-    if (isKelseyWhiteWashVariant) {
-      return {
-        ...modelCalibration,
-        preserveWoodLegColorHex: "#d8d0c2",
-        lowerAssemblyTintHex: "#e1d6c8",
-        lowerAssemblyTintStrength: 0,
-        lowerAssemblyFadeStart: 0.82,
-        lowerAssemblyFadeEnd: 0.94,
-      };
-    }
-
-    if (product.id.startsWith("sofa-real-castlery-jaron-")) {
-      if (isPerformanceDuneFabricVariant) {
-        // Tweed-like fabric target: matte, soft contrast, almost no glossy rolloff.
-        return {
-          ...modelCalibration,
-          forceBaseColorHex: "#efeae2",
-          disableBaseColorMap: true,
-          brightness: 1.08,
-          saturation: 0.68,
-          roughnessOverride: 0.98,
-          metalnessOverride: 0,
-          aoMapIntensity: 0.3,
-          emissiveBoost: 0,
-          specularIntensityOverride: 0.02,
-          clearcoatOverride: 0,
-          clearcoatRoughnessOverride: 1,
-        };
-      }
-
-      if (!isLeatherVariant && !isCocoaLeatherVariant && !isIvoryLeatherVariant) return modelCalibration;
-
-      if (isCocoaLeatherVariant) {
-        // Cocoa Marche leather: rich warm chocolate-brown saddle tone.
-        // Reference eyedrop mid-tone #805134 → albedo ~#a87050. Lift brightness
-        // and add a small emissive fill so the GLB's baked shadows don't collapse it.
-        return {
-          ...modelCalibration,
-          forceBaseColorHex: "#a87050",
-          disableBaseColorMap: true,
-          brightness: 1.06,
-          saturation: 1.04,
-          roughnessOverride: 0.7,
-          metalnessOverride: 0.02,
-          aoMapIntensity: 0.12,
-          emissiveBoost: 0.06,
-          specularIntensityOverride: 0.24,
-          clearcoatOverride: 0.08,
-          clearcoatRoughnessOverride: 0.72,
-        };
-      }
-
-      if (isIvoryLeatherVariant) {
-        // Ivory Marche leather: warm cream/parchment. Reference eyedrop mid-tone
-        // #b4afa6 → albedo ~#d0c8b4. Reduce brightness (was 1.2 → pure white) and
-        // add warm saturation so it reads as cream, not grey-white.
-        return {
-          ...modelCalibration,
-          forceBaseColorHex: "#cfc4ae",
-          disableBaseColorMap: true,
-          brightness: 0.9,
-          saturation: 1.06,
-          roughnessOverride: 0.8,
-          metalnessOverride: 0,
-          aoMapIntensity: 0.08,
-          emissiveBoost: 0.04,
-          specularIntensityOverride: 0.14,
-          clearcoatOverride: 0.04,
-          clearcoatRoughnessOverride: 0.84,
-        };
-      }
-
-      // Jaron default leather: aligns with cross-brand leather baseline.
-      return {
-        ...modelCalibration,
-        brightness: 0.96,
-        saturation: 1.08,
-        roughnessOverride: 0.38,
-        metalnessOverride: 0.04,
-        normalScale: 0.5,
-        aoMapIntensity: 0.26,
-        emissiveBoost: 0.03,
-        specularIntensityOverride: 0.48,
-        clearcoatOverride: 0.24,
-        clearcoatRoughnessOverride: 0.44,
-      };
-    }
-
-    if (!isLeatherVariant && !isCocoaLeatherVariant && !isIvoryLeatherVariant) return modelCalibration;
-
-    if (isGraphiteLeatherVariant) {
-      // Graphite leather should stay deep, but avoid crushed blacks on large cushions.
-      return {
-        ...modelCalibration,
-        brightness: 1.18,
-        saturation: 1.05,
-        roughnessOverride: 0.3,
-        metalnessOverride: 0.04,
-        normalScale: 0.5,
-        aoMapIntensity: 0.24,
-        emissiveBoost: 0.04,
-        specularIntensityOverride: 0.7,
-        clearcoatOverride: 0.34,
-        clearcoatRoughnessOverride: 0.48,
-      };
-    }
-
-    // Leather: semi-gloss with visible clearcoat sheen regardless of geometry.
-    // Low roughness + high clearcoat so broad cushion faces still catch env reflections.
-    // normalScale: 0.5 prevents inheriting fabric-level bump (e.g. Dawson base 4.2)
-    // which scatters specular and makes leather read as matte.
-    return {
-      ...modelCalibration,
-      brightness: 0.96,
-      saturation: 1.08,
-      roughnessOverride: 0.31,
-      metalnessOverride: 0.04,
-      normalScale: 0.5,
-      aoMapIntensity: 0.32,
-      emissiveBoost: 0.03,
-      specularIntensityOverride: 0.6,
-      clearcoatOverride: 0.3,
-      clearcoatRoughnessOverride: 0.44,
-    };
-  })();
+  const showModel = shouldLoadModel && modelLoadState === "ready";
+  const shouldWaitForModel =
+    viewMode === "3d" && renderQuality !== "lite" && Boolean(expectedModelUrl);
+  const renderReady =
+    !shouldWaitForModel ||
+    (runtimeModelUrl === expectedModelUrl &&
+      (modelLoadState === "ready" || modelLoadState === "error"));
 
   useEffect(() => {
-    let cancelled = false;
-
-    if (!modelUrl) {
-      const frameId = window.requestAnimationFrame(() => {
-        setModelExists(false);
-        setRuntimeModelUrl(null);
-        setModelLoadState("idle");
-      });
-      return () => window.cancelAnimationFrame(frameId);
-    }
-
-    const candidates = [preferredModelUrl, modelUrl]
-      .map((value) => normalizeModelCandidate(value))
-      .filter((value, index, arr): value is string => Boolean(value) && arr.indexOf(value) === index);
-
-    if (candidates.length === 0) {
+    if (!renderReadyKey) return;
+    const lastReported = lastReportedRenderReadyRef.current;
+    if (
+      lastReported?.key === renderReadyKey &&
+      lastReported.ready === renderReady
+    ) {
       return;
     }
-
-    // Do not preflight with HEAD requests: some valid model hosts and dev servers
-    // reject HEAD while serving GET successfully, which hides models incorrectly.
-    void Promise.resolve().then(() => {
-      if (cancelled) return;
-      const chosen = candidates[0] ?? null;
-      if (chosen) {
-        setRuntimeModelUrl(chosen);
-        setModelExists(true);
-        setModelLoadState("loading");
-        return;
-      }
-      setRuntimeModelUrl(null);
-      setModelExists(false);
-      setModelLoadState("error");
-    });
-
-    return () => {
-      cancelled = true;
+    lastReportedRenderReadyRef.current = {
+      key: renderReadyKey,
+      ready: renderReady,
     };
-  }, [modelUrl, preferredModelUrl]);
-
-  const shouldLoadModel = viewMode === "3d" && Boolean(runtimeModelUrl) && modelExists;
-  const showModel = shouldLoadModel && modelLoadState === "ready";
+    onRenderReadyChange?.(renderReadyKey, renderReady);
+  }, [onRenderReadyChange, renderReady, renderReadyKey]);
 
   return (
     <group
       ref={groupRef}
-      position={[clampedPosition[0], viewMode === "2d" ? 0.01 : height / 2, clampedPosition[2]]}
+      userData={sceneDemandItemUserData(instanceId, viewMode, height)}
+      position={[
+        clampedPosition[0],
+        viewMode === "2d" ? 0.01 : (clampedPosition[1] ?? 0) + height / 2,
+        clampedPosition[2],
+      ]}
       rotation-y={finalRotation}
       onClick={(e) => {
         if (!interactive) return;
@@ -1268,14 +754,16 @@ export function Furniture({
             depth={depth}
             nodeTransforms={nodeTransforms}
             calibration={effectiveModelCalibration}
-            variantColorHex={variantColor}
+            variantColorHex={shouldTintVariantColor ? variantColor : undefined}
             variantName={variantName}
             variantRenderAssets={variantRenderAssets}
-            onLoadStateChange={(state) => {
-              if (state === "loading") setModelLoadState("loading");
-              else if (state === "ready") setModelLoadState("ready");
-              else setModelLoadState("error");
-            }}
+            pendantCableAdjustment={pendantCableAdjustment}
+            castShadow={shadowPolicy.castShadow}
+            diagnosticKey={instanceId} readinessKey={renderReadyKey} requiredForReadiness={Boolean(renderReadyKey)}
+            showSelectionOutline={Boolean(
+              showModel && showSelection && isSelected
+            )}
+            onLoadStateChange={handleModelLoadStateChange}
           />
         </Suspense>
       ) : null}
@@ -1287,6 +775,7 @@ export function Furniture({
           color={materialProps.color}
           category={product.category}
           selected={Boolean(showSelection && isSelected)}
+          hovered={hovered}
           dragging={dragging}
           snapped={isSnapped}
           invalidPlacement={invalidPlacement}
@@ -1295,12 +784,18 @@ export function Furniture({
           measurementUnit={planMeasurementUnit}
           label={product.title}
           rotationHudLabel={rotationHudLabel}
+          interactive={interactive}
+          onSelect={(additive) => onSelect?.(instanceId, additive)}
           onRotateHandlePointerDown={onRotateHandlePointerDown}
           onRotateHandlePointerMove={onRotateHandlePointerMove}
           onRotateHandlePointerUp={onRotateHandlePointerUp}
         />
       ) : (
-        <mesh castShadow receiveShadow visible={!showModel}>
+        <mesh
+          castShadow={shadowPolicy.castShadow}
+          receiveShadow={shadowPolicy.receiveShadow}
+          visible={!showModel}
+        >
           <boxGeometry args={[width, height, depth]} />
           <meshStandardMaterial
             color={
@@ -1325,10 +820,18 @@ export function Furniture({
               showSelection && isSelected ? 0.15 : cartPreviewed ? 0.12 : isSnapped && dragging ? 0.3 : 0
             }
           />
-          {showSelection && isSelected && <Edges scale={1.01} />}
         </mesh>
       )}
-      {Math.abs(planningWidth - width) > 0.001 || Math.abs(planningDepth - depth) > 0.001 ? (
+      {viewMode === "3d" && showSelection && isSelected && !showModel ? (
+        <FurnitureSelectionOutline
+          localRenderBounds={{
+            center: [0, 0, 0],
+            size: [width, height, depth],
+          }}
+        />
+      ) : null}
+      {Math.abs(planningWidth - width) > EDITOR_GEOMETRY_TOLERANCES.dimensionMeters ||
+      Math.abs(planningDepth - depth) > EDITOR_GEOMETRY_TOLERANCES.dimensionMeters ? (
         <Line
           points={[
             [-planningWidth / 2, 0.01, -planningDepth / 2],
@@ -1344,6 +847,84 @@ export function Furniture({
           gapSize={0.05}
         />
       ) : null}
+      {viewMode === "2d" && showSelection && isPrimarySelected && !dragging && !rotateDragging && (
+        <Html
+          zIndexRange={[18, 0]}
+          position={[0, 0.08, -planningDepth / 2 - 0.34]}
+          center
+          transform={false}
+        >
+          <div
+            data-testid="selected-furniture-action-chips"
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 4,
+              padding: 4,
+              border: "1px solid rgba(37,99,235,0.24)",
+              borderRadius: 999,
+              background: "rgba(255,255,255,0.96)",
+              boxShadow: "0 8px 22px rgba(15,23,42,0.14)",
+              pointerEvents: "auto",
+              whiteSpace: "nowrap",
+            }}
+            onPointerDown={(event) => event.stopPropagation()}
+            onClick={(event) => event.stopPropagation()}
+          >
+            {[
+              {
+                id: "rotate",
+                label: "Rotate",
+                disabled: locked || !interactive || !onRotate,
+                action: () =>
+                  onRotate?.(instanceId, rotation + Math.PI / 2, {
+                    source: "canvas",
+                    snap: true,
+                  }),
+              },
+              {
+                id: "copy",
+                label: "Copy",
+                disabled: locked || !interactive || !onDuplicate,
+                action: () => onDuplicate?.(instanceId),
+              },
+              {
+                id: "delete",
+                label: "Delete",
+                disabled: locked || !interactive || !onDelete,
+                action: () => onDelete?.(instanceId),
+              },
+            ].map((chip) => (
+              <button
+                key={chip.id}
+                type="button"
+                data-testid={`selected-furniture-${chip.id}`}
+                aria-label={`${chip.label} selected furniture`}
+                title={`${chip.label} selected furniture`}
+                disabled={chip.disabled}
+                onClick={(event) => {
+                  event.stopPropagation();
+                  chip.action();
+                }}
+                style={{
+                  border: "none",
+                  borderRadius: 999,
+                  background: chip.id === "delete" ? "#fee2e2" : "#f3f4f6",
+                  color: chip.id === "delete" ? "#991b1b" : "#111827",
+                  cursor: chip.disabled ? "not-allowed" : "pointer",
+                  fontSize: 10,
+                  fontWeight: 800,
+                  opacity: chip.disabled ? 0.45 : 1,
+                  minWidth: chip.id === "delete" ? 46 : 42,
+                  padding: "5px 8px",
+                }}
+              >
+                {chip.label}
+              </button>
+            ))}
+          </div>
+        </Html>
+      )}
       <SnapGuides guides={snapGuides} visible={showGuidesAndMeasurements && dragging} isDesigner={interactive} />
       <Measurements measures={measurements} visible={showGuidesAndMeasurements && dragging} />
       {locked && showLocks && (
@@ -1369,27 +950,4 @@ export function Furniture({
       )}
     </group>
   );
-}
-
-export function CameraCapture({
-  cameraRef,
-  canvasRef,
-  rendererRef,
-  sceneRef,
-}: {
-  cameraRef: React.MutableRefObject<THREE.Camera | null>;
-  canvasRef: React.MutableRefObject<HTMLCanvasElement | null>;
-  rendererRef: React.MutableRefObject<THREE.WebGLRenderer | null>;
-  sceneRef: React.MutableRefObject<THREE.Scene | null>;
-}) {
-  const { camera, gl, scene } = useThree();
-
-  useFrame(() => {
-    cameraRef.current = camera as THREE.Camera;
-    rendererRef.current = gl as THREE.WebGLRenderer;
-    sceneRef.current = scene;
-    canvasRef.current = gl.domElement as HTMLCanvasElement;
-  });
-
-  return null;
 }

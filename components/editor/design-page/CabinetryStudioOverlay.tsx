@@ -1,0 +1,100 @@
+"use client";
+
+import dynamic from "next/dynamic";
+import type { MutableRefObject } from "react";
+
+import { CabinetryStudioDialog } from "@/components/editor/design-page/CabinetryStudioDialog";
+import { track } from "@/lib/analytics";
+import type { CabinetryStudioProps } from "@/features/cabinetry/components/CabinetryStudio.contract";
+import { CabinetMeasurementUnitProvider } from "@/features/cabinetry/components/CabinetMeasurementUnitContext";
+import type { CabinetMeasurementUnit } from "@/features/cabinetry/measurementUnits";
+import type { CabinetDefinition } from "@/features/cabinetry/types";
+import type { PlanMeasurementUnit } from "@/lib/design-page-types";
+
+const CabinetryStudio = dynamic<CabinetryStudioProps>(
+  () =>
+    import("@/features/cabinetry/components/CabinetryStudio").then(
+      (module) => module.default
+    ),
+  {
+    ssr: false,
+    loading: () => (
+      <div
+        className="grid h-full place-items-center bg-white px-6 text-sm text-neutral-600"
+        role="status"
+        aria-live="polite"
+      >
+        Loading cabinetry studio…
+      </div>
+    ),
+  }
+);
+
+export type CabinetryStudioOverlayState = {
+  mode: "create" | "edit";
+  instanceId?: string;
+  initialDefinition?: CabinetDefinition;
+};
+
+export type CabinetryStudioOverlayProps = {
+  state: CabinetryStudioOverlayState | null;
+  enabled: boolean;
+  accessLevel: CabinetryStudioProps["accessLevel"];
+  measurementUnit: PlanMeasurementUnit;
+  availableSpaces: NonNullable<CabinetryStudioProps["availableSpaces"]>;
+  preferredSpaceId: CabinetryStudioProps["preferredSpaceId"];
+  openedAtRef: MutableRefObject<number | null>;
+  onSave: NonNullable<CabinetryStudioProps["onSave"]>;
+  onPlaceInPlan: NonNullable<CabinetryStudioProps["onPlaceInPlan"]>;
+  onDismiss: () => void;
+};
+
+export function CabinetryStudioOverlay({
+  state,
+  enabled,
+  accessLevel,
+  measurementUnit,
+  availableSpaces,
+  preferredSpaceId,
+  openedAtRef,
+  onSave,
+  onPlaceInPlan,
+  onDismiss,
+}: CabinetryStudioOverlayProps) {
+  if (!state || !enabled) return null;
+  const cabinetryMeasurementUnit: CabinetMeasurementUnit =
+    measurementUnit === "ft-in" ? "in" : measurementUnit;
+
+  const handleCancel = () => {
+    track("millwork_studio_closed", {
+      access_level: accessLevel,
+      studio_mode: state.mode,
+      completed: false,
+      elapsed_ms:
+        openedAtRef.current === null
+          ? null
+          : Math.max(0, Math.round(performance.now() - openedAtRef.current)),
+    });
+    openedAtRef.current = null;
+    onDismiss();
+  };
+
+  return (
+    <CabinetryStudioDialog mode={state.mode} onDismiss={handleCancel}>
+      <div className="h-full overflow-hidden rounded-xl bg-white shadow-2xl">
+        <CabinetMeasurementUnitProvider unit={cabinetryMeasurementUnit}>
+          <CabinetryStudio
+            mode={state.mode}
+            accessLevel={accessLevel}
+            initialDefinition={state.initialDefinition}
+            availableSpaces={availableSpaces}
+            preferredSpaceId={preferredSpaceId}
+            onSave={onSave}
+            onPlaceInPlan={onPlaceInPlan}
+            onCancel={handleCancel}
+          />
+        </CabinetMeasurementUnitProvider>
+      </div>
+    </CabinetryStudioDialog>
+  );
+}

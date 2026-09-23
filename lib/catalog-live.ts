@@ -1,11 +1,13 @@
 import type { CatalogItemSchema } from "./catalog-schema";
 import type { CatalogYamlEntry } from "./catalog-yaml";
+import type { SurfaceMaterial } from "./surface-material-schema";
 import { isLiveCatalogEntry } from "./catalog-publication";
 
 export type LiveCatalogPayload = {
   ids: string[];
   itemIds: string[];
   assetIds: string[];
+  surfaceMaterialIds: string[];
   source: "catalog-yaml";
 };
 
@@ -17,6 +19,7 @@ function getYamlAssetId(entry: CatalogYamlEntry): string | null {
 export function buildLiveCatalogPayload(params: {
   catalogItems: Record<string, CatalogItemSchema>;
   yamlEntries: CatalogYamlEntry[];
+  surfaceMaterials?: SurfaceMaterial[];
 }): LiveCatalogPayload {
   const liveYamlAssetIds = new Set(
     params.yamlEntries
@@ -31,11 +34,15 @@ export function buildLiveCatalogPayload(params: {
   });
 
   const assetIds = Array.from(liveYamlAssetIds.values());
+  const surfaceMaterialIds = (params.surfaceMaterials ?? [])
+    .filter((material) => material.import_governance.publish_status === "published")
+    .map((material) => material.surface_material.material_id);
 
   return {
     ids: itemIds,
     itemIds,
     assetIds,
+    surfaceMaterialIds,
     source: "catalog-yaml",
   };
 }

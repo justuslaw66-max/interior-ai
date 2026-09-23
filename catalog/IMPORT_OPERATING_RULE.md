@@ -6,6 +6,7 @@ For this import wave, keep the process strict and predictable:
 2. Every product must match a canonical structure reference.
 3. Any ambiguous item stays `draft` and is not published.
 4. Variant-label hardening is mandatory: normalize variant codes and disambiguate duplicate shopper-facing labels with stable family qualifiers.
+5. Castlery seating imports must use retailer-hosted Castlery product media for product thumbnails, variant thumbnails, variant galleries, and set/bundle option images. Local generated `/assets/thumbs/*.png` files may support legacy exceptions only; they are not acceptable as the primary shopper-facing photo for new armchair, sofa, sectional, recliner, or ottoman imports.
 
 ## Design Pairings Rule (Tiered)
 

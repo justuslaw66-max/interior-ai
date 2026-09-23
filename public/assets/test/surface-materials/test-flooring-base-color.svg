@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256" role="img" aria-label="Test-only flooring base color texture">
+  <rect width="256" height="256" fill="#d7b174"/>
+  <g stroke="#8f6738" stroke-width="5">
+    <path d="M0 64h256M0 128h256M0 192h256"/>
+  </g>
+  <g stroke="#a77a43" stroke-width="3">
+    <path d="M64 0v64M192 0v64M32 64v64M160 64v64M96 128v64M224 128v64M64 192v64M192 192v64"/>
+  </g>
+  <g fill="none" stroke="#7b562f" stroke-width="2" opacity="0.55">
+    <path d="M12 28c28 13 47-11 77 2 27 12 49-9 78 1 28 10 43-1 77 5"/>
+    <path d="M8 94c31-14 49 9 77-1 30-10 49 13 78 0 28-12 54 5 85-4"/>
+    <path d="M11 157c25 14 46-10 74 2 31 13 50-8 80 2 29 9 50-5 79 4"/>
+    <path d="M6 225c32-11 53 7 83-2 29-8 51 9 78-1 29-11 50 4 82-3"/>
+  </g>
+</svg>

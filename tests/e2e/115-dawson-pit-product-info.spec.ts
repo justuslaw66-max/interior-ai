@@ -1,5 +1,5 @@
 import { expect, test } from "./fixtures";
-import { openCatalogPreview } from "./variant-test-utils";
+import { addCatalogDrawerItemToRoom, openCatalogPreview } from "./variant-test-utils";
 
 const DAWSON_PIT_ID = "sofa-real-castlery-dawson-pit-sectional";
 
@@ -9,7 +9,7 @@ test.describe("115. Dawson Pit Product Info", () => {
 
     await page.goto("/design");
     await page.waitForLoadState("domcontentloaded");
-    await expect(page.getByTestId("scene-canvas")).toBeVisible({ timeout: 20000 });
+    await expect(page.getByTestId("scene-canvas").first()).toBeVisible({ timeout: 20000 });
 
     const opened = await openCatalogPreview(page, DAWSON_PIT_ID, "Dawson Pit", [/^Sofa \(/]);
     expect(opened).toBeTruthy();
@@ -21,7 +21,7 @@ test.describe("115. Dawson Pit Product Info", () => {
     await expect(page.locator('[aria-label="Seat height: 4 of 5"]')).toBeVisible();
     await expect(page.locator('[aria-label="Seat softness: 1 of 5"]')).toBeVisible();
 
-    await page.getByTestId("catalog-detail-add-to-room").click();
+    await addCatalogDrawerItemToRoom(page);
     await expect(page.getByText("Selected Item")).toBeVisible({ timeout: 10000 });
     await expect(page.getByText(/Dawson Pit-Sectional Sofa/i).first()).toBeVisible();
 

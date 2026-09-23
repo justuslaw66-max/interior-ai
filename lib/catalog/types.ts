@@ -1,13 +1,16 @@
 // lib/catalog/types.ts
 
 export type CatalogCategory =
+  | "bed"
   | "sofa"
   | "coffee_table"
   | "rug"
   | "tv_console"
   | "sideboard"
   | "accent_chair"
-  | "floor_lamp";
+  | "floor_lamp"
+  | "table_lamp"
+  | "pendant_light";
 
 export type MmDims = { w: number; d: number; h: number };
 
@@ -30,6 +33,10 @@ export type PlacementRules = {
   minWallGapMm: number;
   snapMarginMm: number;
   allowRugOverlap: boolean; // rugs can overlap furniture
+  surfaceOnly?: boolean;
+  requiredSurfaceCategories?: string[];
+  surfaceInsetMm?: number;
+  ceilingOnly?: boolean;
 };
 
 export type ClearanceRules = {

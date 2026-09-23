@@ -4,12 +4,15 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useSession, signIn } from "next-auth/react";
 import { track } from "@/lib/analytics";
+import { buildDesignEditorUrl } from "@/lib/design-editor-url";
 
 type DuplicateDesignButtonProps = {
   sourceDesignId?: string;
   shareToken?: string;
   className?: string;
   children?: React.ReactNode;
+  unauthenticatedChildren?: React.ReactNode;
+  "data-testid"?: string;
 };
 
 export default function DuplicateDesignButton({
@@ -17,8 +20,11 @@ export default function DuplicateDesignButton({
   shareToken,
   className,
   children,
+  unauthenticatedChildren,
+  "data-testid": testId,
 }: DuplicateDesignButtonProps) {
   const [busy, setBusy] = useState(false);
+  const [message, setMessage] = useState<string | null>(null);
   const router = useRouter();
   const { status } = useSession();
   const source = shareToken ? "share_page" : "dashboard";
@@ -29,13 +35,13 @@ export default function DuplicateDesignButton({
     track("duplicate_design_clicked", {
       source,
       source_design_id: sourceDesignId ?? null,
-      share_token: shareToken ?? null,
+      shared_context: Boolean(shareToken),
     });
 
     if (status !== "authenticated") {
       track("duplicate_design_auth_required", {
         source,
-        share_token: shareToken ?? null,
+        shared_context: Boolean(shareToken),
       });
       await signIn("google", { callbackUrl: window.location.href });
       return;
@@ -48,11 +54,12 @@ export default function DuplicateDesignButton({
         : null;
 
     if (!endpoint) {
-      alert("Unable to duplicate this design.");
+      setMessage("Unable to duplicate this design.");
       return;
     }
 
     setBusy(true);
+    setMessage(null);
     try {
       const res = await fetch(endpoint, { method: "POST" });
       const data = await res.json().catch(() => ({}));
@@ -63,7 +70,7 @@ export default function DuplicateDesignButton({
           status: res.status,
           error: errorMessage,
         });
-        alert(errorMessage);
+        setMessage(errorMessage);
         return;
       }
 
@@ -74,18 +81,18 @@ export default function DuplicateDesignButton({
           status: 200,
           error: "Missing id in duplicate response",
         });
-        alert("Duplication failed: invalid response");
+        setMessage("Duplication failed: invalid response");
         return;
       }
 
       track("duplicate_design_succeeded", {
         source,
         source_design_id: sourceDesignId ?? null,
-        share_token: shareToken ?? null,
+        shared_context: Boolean(shareToken),
         new_design_id: newDesignId,
       });
 
-      router.push(`/design/${newDesignId}`);
+      router.push(buildDesignEditorUrl({ designId: newDesignId }));
       router.refresh();
     } finally {
       setBusy(false);
@@ -93,15 +100,27 @@ export default function DuplicateDesignButton({
   };
 
   return (
-    <button
-      className={
-        className ??
-        "rounded-lg border px-3 py-2 text-sm text-neutral-700 hover:bg-neutral-50 disabled:cursor-not-allowed disabled:opacity-70"
-      }
-      onClick={handleDuplicate}
-      disabled={busy}
-    >
-      {busy ? "Duplicating..." : (children ?? "Duplicate")}
-    </button>
+    <>
+      <button
+        data-testid={testId}
+        className={
+          className ??
+          "rounded-lg border px-3 py-2 text-sm text-neutral-700 hover:bg-neutral-50 disabled:cursor-not-allowed disabled:opacity-70"
+        }
+        onClick={handleDuplicate}
+        disabled={busy}
+      >
+        {busy
+          ? "Duplicating..."
+          : status === "unauthenticated" && unauthenticatedChildren
+            ? unauthenticatedChildren
+            : (children ?? "Duplicate")}
+      </button>
+      {message && (
+        <span className="text-xs text-red-600" role="alert">
+          {message}
+        </span>
+      )}
+    </>
   );
 }

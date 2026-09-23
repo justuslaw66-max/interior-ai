@@ -1,0 +1,89 @@
+schema_version: 1
+
+surface_material:
+  supplier: test_fixture_surface_materials
+  brand: Test Fixture Flooring
+  collection: test_only_flooring
+  material_id: test-only-published-flooring
+  product_name: Test Only Published Flooring
+  slug: test-only-published-flooring
+  surface_category: flooring
+  material_family: luxury_vinyl_tile
+
+source:
+  supplier_region: international
+  source_url: https://example.com/test-fixtures/surface-materials/flooring
+  sample_request_url: https://example.com/test-fixtures/surface-materials/request-sample
+  currency: SGD
+  license_status: confirmed
+  notes:
+    - "Test-only published flooring fixture for non-production runtime and E2E coverage."
+    - "Do not copy into production catalog/surface-materials."
+
+classification:
+  flooring_type: luxury_vinyl_tile
+  design_effect: wood
+  color_family: light_oak
+  tone:
+    - warm
+    - natural
+  style_cluster:
+    - contemporary
+    - soft_minimal
+  room_suitability:
+    - living_room
+    - bedroom
+    - dining_room
+    - study
+
+physical_specs:
+  plank_or_tile_format: plank
+  plank_width_mm: 180
+  plank_length_mm: 1200
+  total_thickness_mm: 5
+  wear_layer_mm: 0.3
+  installation_method:
+    - click_lock
+  waterproof: true
+  slip_rating: null
+  suitable_for_wet_area: false
+  suitable_for_outdoor: false
+  commercial_grade: false
+
+texture_assets:
+  swatch_url: /assets/test/surface-materials/test-flooring-swatch.svg
+  base_color_url: /assets/test/surface-materials/test-flooring-base-color.svg
+  normal_url: null
+  roughness_url: null
+  ao_url: null
+  preview_room_url: null
+  tileable: true
+  texture_repeat_size_cm:
+    width: 120
+    height: 120
+
+rendering:
+  default_rotation_deg: 0
+  roughness: 0.7
+  metalness: 0
+  normal_strength: 0.2
+  scale_mode: physical_repeat
+  seam_strategy: repeat_texture
+
+commerce:
+  purchase_mode: quote_or_sample
+  price_per_sqm:
+    currency: SGD
+    amount: 42
+  sample_available: true
+  sample_request_url: https://example.com/test-fixtures/surface-materials/request-sample
+  direct_checkout: false
+
+import_governance:
+  publish_status: published
+  publish_blockers: []
+  qa_flags:
+    - test_only_fixture
+    - non_production_only
+    - surface_material_defined
+    - flooring_material_defined

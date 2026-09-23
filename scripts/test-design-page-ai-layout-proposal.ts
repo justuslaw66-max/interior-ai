@@ -40,12 +40,19 @@ const plan: LayoutPlan = {
     completeness: 80,
     fitRisk: "low",
     requiredMissing: [],
+    requestedMissing: ["floor_lamp"],
     warnings: ["AI warning"],
   },
   meta: {
     style: "Modern",
     budget: "$$",
     seed: 42,
+    requestedRoles: ["sofa", "coffee_table", "floor_lamp"],
+  },
+  picks: {
+    sofa: "known-sofa",
+    coffee_table: "missing-title",
+    floor_lamp: null,
   },
 };
 
@@ -86,6 +93,8 @@ assert.equal(proposal.style, "Modern");
 assert.equal(proposal.budget, "$$");
 assert.equal(proposal.seed, 42);
 assert.equal(proposal.appliedRugRule, true);
+assert.deepEqual(proposal.requestedRoles, ["sofa", "coffee_table", "floor_lamp"]);
+assert.deepEqual(proposal.missingRoles, ["floor_lamp"]);
 assert.deepEqual(proposal.itemNames, ["Known Sofa", "missing-title"]);
 assert.deepEqual(proposal.warnings, [
   "AI warning",

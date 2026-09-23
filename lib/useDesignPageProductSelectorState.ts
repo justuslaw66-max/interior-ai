@@ -29,6 +29,14 @@ type MaterialOption = {
   label: string;
   variantId: string;
   colorHex: string;
+  swatchTextureUrl?: string;
+};
+
+type LegFinishOption = {
+  key: string;
+  label: string;
+  variantId: string;
+  colorHex: string;
 };
 
 export type StructuredVariantEntry = {
@@ -61,6 +69,62 @@ function normalizeMaterialCode(value: string): string {
     .trim();
 }
 
+function normalizeOptionKey(value: string | null | undefined): string {
+  return String(value ?? "")
+    .trim()
+    .toLowerCase()
+    .replace(/_/g, "-")
+    .replace(/[^a-z0-9-]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+function baseFinishKeyForLegVariant(variant: CatalogItemSchema["variants"][number]): string {
+  const finishKey = normalizeOptionKey(variant.finishCode);
+  if (!finishKey || (!variant.legFinishCode && !variant.legFinishLabel)) return finishKey;
+
+  const legKey = normalizeOptionKey(variant.legFinishCode ?? variant.legFinishLabel);
+  if (!legKey) return finishKey;
+
+  return finishKey
+    .replace(new RegExp(`-${legKey}(?:-wood)?-legs$`, "i"), "")
+    .replace(new RegExp(`-${legKey}$`, "i"), "");
+}
+
+function stripLegFinishFromColourLabel(value: string, variant: CatalogItemSchema["variants"][number]): string {
+  if (!variant.legFinishCode && !variant.legFinishLabel) return value;
+
+  const legLabel = String(variant.legFinishLabel ?? "")
+    .trim()
+    .replace(/\s+/g, " ");
+  const legCodeLabel = String(variant.legFinishCode ?? "")
+    .trim()
+    .replace(/[-_]+/g, " ")
+    .replace(/\s+/g, " ");
+  const legPatterns = [legLabel, legCodeLabel]
+    .filter(Boolean)
+    .map((label) => label.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"));
+
+  let next = value.trim();
+  for (const escaped of legPatterns) {
+    next = next
+      .replace(new RegExp(`\\s*\\([^)]*${escaped}[^)]*\\)\\s*$`, "i"), "")
+      .replace(new RegExp(`\\s*/\\s*${escaped}(?:\\s+wood)?(?:\\s+legs?)?\\s*$`, "i"), "");
+  }
+  next = next.replace(/\s*\([^)]*wood[^)]*legs?[^)]*\)\s*$/i, "");
+  next = next.replace(/\s*\([^)]*legs?[^)]*\)\s*$/i, "");
+  next = next.replace(/\s*\(imported-[^)]+\)\s*$/i, "");
+  return next.trim() || value;
+}
+
+function legFinishColorHex(optionKey: string, label: string): string {
+  const source = `${optionKey} ${label}`.toLowerCase();
+  if (source.includes("black")) return "#202020";
+  if (source.includes("white") || source.includes("wash")) return "#d8c49c";
+  if (source.includes("walnut")) return "#8a643f";
+  if (source.includes("natural")) return "#c8a36f";
+  return "#b18a63";
+}
+
 const SHOPPER_COLOUR_LABEL_BY_FINISH_CODE: Record<string, string> = {
   bisque_fabric: "Bisque",
   bisque: "Bisque",
@@ -74,7 +138,7 @@ function buildMaterialFields(entry: CatalogItemSchema["variants"][number]): {
   key: string;
   label: string;
 } {
-  const finishCode = normalizeMaterialCode(String(entry.finishCode ?? ""));
+  const finishCode = normalizeMaterialCode(baseFinishKeyForLegVariant(entry) || String(entry.finishCode ?? ""));
   const finishLabel = normalizeMaterialCode(String(entry.finishLabel ?? ""));
   // Upholstery/finish code is the stable material dimension for imported Castlery variants.
   const preferred = finishCode || finishLabel;
@@ -91,6 +155,140 @@ function buildMaterialFields(entry: CatalogItemSchema["variants"][number]): {
   };
 }
 
+function buildJosephBedModelFields(entry: CatalogItemSchema["variants"][number]): {
+  key: string;
+  label: string;
+  colourLabel: string;
+} {
+  const finishCode = normalizeOptionKey(entry.finishCode);
+  const finishLabel = String(entry.finishLabel ?? entry.label ?? "").trim();
+  const isSet = finishCode.includes("set") || /\bset\b/i.test(finishLabel);
+
+  if (finishCode.includes("walnut")) {
+    return {
+      key: isSet ? "walnut-set" : "walnut-bedframe",
+      label: isSet ? "Walnut set" : "Walnut bedframe",
+      colourLabel: "Walnut",
+    };
+  }
+
+  if (finishCode.includes("boucle")) {
+    return {
+      key: isSet ? "boucle-set" : "boucle-bedframe",
+      label: isSet ? "Boucle set" : "Boucle bedframe",
+      colourLabel: "Snow Boucle",
+    };
+  }
+
+  const colourLabel = finishLabel
+    .replace(/^fabric\s+bedframe\s*[-:]\s*/i, "")
+    .replace(/^fabric\s+set\s*[-:]\s*/i, "")
+    .replace(/^fabric\s*/i, "")
+    .trim();
+
+  return {
+    key: isSet ? "fabric-set" : "fabric-bedframe",
+    label: isSet ? "Fabric set" : "Fabric bedframe",
+    colourLabel: colourLabel || "Fabric",
+  };
+}
+
+function buildRochelleBedModelFields(entry: CatalogItemSchema["variants"][number]): {
+  key: string;
+  label: string;
+  colourLabel: string;
+} {
+  const finishCode = normalizeOptionKey(entry.finishCode);
+  const finishLabel = String(entry.finishLabel ?? entry.label ?? "").trim();
+  const isStorage = finishCode.includes("storage") || /\bstorage\b/i.test(finishLabel);
+
+  return {
+    key: isStorage ? "storage-bedframe" : "standard-bedframe",
+    label: isStorage ? "Storage" : "Standard",
+    colourLabel: "White Quartz Boucle",
+  };
+}
+
+function buildSebBedModelFields(entry: CatalogItemSchema["variants"][number]): {
+  key: string;
+  label: string;
+  colourLabel: string;
+} {
+  const finishCode = normalizeOptionKey(entry.finishCode);
+  const finishLabel = String(entry.finishLabel ?? entry.label ?? "").trim();
+  const marker = `${finishCode} ${finishLabel}`.toLowerCase();
+
+  if (marker.includes("two") || marker.includes("2") || marker.includes("set_of_2")) {
+    return {
+      key: "two-table-set",
+      label: "2 bedside tables",
+      colourLabel: "Performance Creamy White",
+    };
+  }
+
+  if (marker.includes("single") || marker.includes("one") || marker.includes("1")) {
+    return {
+      key: "single-table-set",
+      label: "1 bedside table",
+      colourLabel: "Performance Creamy White",
+    };
+  }
+
+  return {
+    key: "bedframe",
+    label: "Bedframe",
+    colourLabel: "Performance Creamy White",
+  };
+}
+
+function buildDaltonBedModelFields(entry: CatalogItemSchema["variants"][number]): {
+  key: string;
+  label: string;
+  colourLabel: string;
+} {
+  const finishCode = normalizeOptionKey(entry.finishCode);
+  const finishLabel = String(entry.finishLabel ?? entry.label ?? "").trim();
+  const isStorage = finishCode.includes("storage") || /\bstorage\b/i.test(finishLabel);
+
+  return {
+    key: isStorage ? "storage-bedframe" : "standard-bedframe",
+    label: isStorage ? "Storage" : "Standard",
+    colourLabel: "Beach Linen",
+  };
+}
+
+function buildClaudeBedModelFields(entry: CatalogItemSchema["variants"][number]): {
+  key: string;
+  label: string;
+  colourLabel: string;
+} {
+  const finishCode = normalizeOptionKey(entry.finishCode);
+  const finishLabel = String(entry.finishLabel ?? entry.label ?? "").trim();
+  const hasExtendedHeadboard =
+    finishCode.includes("extended") || /\bextended\b/i.test(finishLabel);
+
+  return {
+    key: hasExtendedHeadboard ? "extended-headboard" : "standard-bed",
+    label: hasExtendedHeadboard ? "Extended headboard" : "Standard bed",
+    colourLabel: "Performance Dune",
+  };
+}
+
+function getJosephBedSizeLabel(entry: CatalogItemSchema["variants"][number]): string {
+  const authoredSizeLabel = String(entry.sizeLabel ?? "").trim();
+  if (authoredSizeLabel) return authoredSizeLabel;
+
+  const variantId = String(entry.id ?? "").trim().toLowerCase();
+  if (variantId.startsWith("queen_") || variantId.includes("_queen_")) return "Queen";
+  if (variantId.startsWith("king_") || variantId.includes("_king_")) return "King";
+
+  const widthMm = Number(entry.dimensionsMm?.w ?? 0);
+  if (widthMm > 0 && widthMm < 1800) return "Queen";
+  if (widthMm >= 1800) return "King";
+
+  return "";
+}
+
 type Params = {
   selectedProduct: CatalogItemSchema | null;
   selectedItem: DesignItem | null;
@@ -102,6 +300,18 @@ export function useDesignPageProductSelectorState({
   selectedItem,
   catalogItems,
 }: Params) {
+  const isJosephBedSelected = selectedProduct?.id === "bed-real-castlery-joseph";
+  const isRochelleBedSelected = selectedProduct?.id === "bed-real-castlery-rochelle-boucle";
+  const isSebBedSelected = selectedProduct?.id === "bed-real-castlery-seb";
+  const isDaltonBedSelected = selectedProduct?.id === "bed-real-castlery-dalton";
+  const isClaudeBedSelected = selectedProduct?.id === "bed-real-castlery-claude";
+  const usesBedModelVariantMapping =
+    isJosephBedSelected ||
+    isRochelleBedSelected ||
+    isSebBedSelected ||
+    isDaltonBedSelected ||
+    isClaudeBedSelected;
+
   const selectedBrand = useMemo(() => {
     if (!selectedProduct) return null;
     const metadataBrand = selectedProduct.metadata?.brand?.trim();
@@ -256,6 +466,17 @@ export function useDesignPageProductSelectorState({
       selectedProduct.metadata?.productFamily?.trim().toLowerCase() === "madison";
     return selectedProduct.variants.map((variant) => {
       const parts = parseVariantLabel(variant.label);
+      const bedModelFields = isJosephBedSelected
+        ? buildJosephBedModelFields(variant)
+        : isRochelleBedSelected
+          ? buildRochelleBedModelFields(variant)
+        : isSebBedSelected
+          ? buildSebBedModelFields(variant)
+        : isDaltonBedSelected
+          ? buildDaltonBedModelFields(variant)
+        : isClaudeBedSelected
+          ? buildClaudeBedModelFields(variant)
+        : null;
       const swatchGroup = String(variant.swatchGroup ?? "").trim().toLowerCase();
       const isWoodSwatch = swatchGroup.includes("wood");
       const materialType =
@@ -268,14 +489,14 @@ export function useDesignPageProductSelectorState({
           variant.label
         );
       const collectionType = String(variant.collectionType ?? "").trim().toLowerCase();
-      const materialFields = buildMaterialFields(variant);
+      const materialFields = bedModelFields ?? buildMaterialFields(variant);
       const normalizedFinishCode = normalizeMaterialCode(String(variant.finishCode ?? ""));
       const rawFinishCode = String(variant.finishCode ?? "").trim().toLowerCase();
       const rawParsedColourLabel = parts.colourLabel.trim().toLowerCase();
       const shopperColourLabel =
         SHOPPER_COLOUR_LABEL_BY_FINISH_CODE[rawFinishCode] ??
         (isMadisonProduct && rawParsedColourLabel === "forest" ? "Camille, Forest" : null);
-      const resolvedColourLabel = shopperColourLabel
+      const rawResolvedColourLabel = shopperColourLabel
         ? shopperColourLabel
         : isWoodSwatch
         ? variant.finishLabel?.trim() ||
@@ -283,6 +504,8 @@ export function useDesignPageProductSelectorState({
           parts.colourLabel.trim() ||
           variant.label.trim()
         : parts.colourLabel.trim() || variant.label.trim();
+      const resolvedColourLabel = bedModelFields?.colourLabel ??
+        stripLegFinishFromColourLabel(rawResolvedColourLabel, variant);
       return {
         variant,
         colourLabel: resolvedColourLabel,
@@ -293,7 +516,14 @@ export function useDesignPageProductSelectorState({
         materialDisplayLabel: materialFields.label,
       } as StructuredVariantEntry;
     });
-  }, [selectedProduct]);
+  }, [
+    selectedProduct,
+    isJosephBedSelected,
+    isRochelleBedSelected,
+    isSebBedSelected,
+    isDaltonBedSelected,
+    isClaudeBedSelected,
+  ]);
 
   const activeStructuredVariant = useMemo(() => {
     if (!structuredVariants.length) return null;
@@ -312,11 +542,12 @@ export function useDesignPageProductSelectorState({
   const isHuggProduct = Boolean(selectedProduct?.id.toLowerCase().includes("hugg"));
 
   const hasWoodColourOptions = useMemo(() => {
+    if (usesBedModelVariantMapping) return false;
     return structuredVariants.some((entry) => {
       const swatchGroup = String(entry.variant.swatchGroup ?? "").trim().toLowerCase();
       return swatchGroup.includes("wood") || (isHuggProduct && entry.materialType === "Wood");
     });
-  }, [structuredVariants, isHuggProduct]);
+  }, [structuredVariants, isHuggProduct, usesBedModelVariantMapping]);
 
   const showFabricGroupingDebug = process.env.NODE_ENV !== "production";
   const selectedProductIdLower = selectedProduct?.id?.toLowerCase();
@@ -399,7 +630,54 @@ export function useDesignPageProductSelectorState({
 
   const activeMaterialKey = activeStructuredVariant?.materialKey ?? null;
 
+  const legFinishOptions = useMemo(() => {
+    if (!selectedProduct || !activeStructuredVariant) return [] as LegFinishOption[];
+
+    const variantsWithLegFinish = selectedProduct.variants.filter(
+      (variant) => variant.legFinishCode || variant.legFinishLabel
+    );
+    if (variantsWithLegFinish.length < 2) return [] as LegFinishOption[];
+
+    const activeFabricKey = baseFinishKeyForLegVariant(activeStructuredVariant.variant);
+    const scopedVariants = activeFabricKey
+      ? variantsWithLegFinish.filter((variant) => baseFinishKeyForLegVariant(variant) === activeFabricKey)
+      : variantsWithLegFinish;
+    const candidates = scopedVariants.length > 0 ? scopedVariants : variantsWithLegFinish;
+
+    const byLeg = new Map<string, LegFinishOption>();
+    for (const variant of candidates) {
+      const key = normalizeOptionKey(variant.legFinishCode ?? variant.legFinishLabel ?? "");
+      if (!key) continue;
+      const label =
+        variant.legFinishLabel?.trim() ||
+        toTitleCase(key.replace(/-/g, " "));
+      const existing = byLeg.get(key);
+      if (existing && existing.variantId === activeStructuredVariant.variant.id) continue;
+      if (existing && variant.id !== activeStructuredVariant.variant.id) continue;
+      byLeg.set(key, {
+        key,
+        label,
+        variantId: variant.id,
+        colorHex: legFinishColorHex(key, label),
+      });
+    }
+
+    return Array.from(byLeg.values()).sort((a, b) => {
+      const rank = (option: LegFinishOption) =>
+        option.key.includes("white") || option.key.includes("wash")
+          ? 0
+          : option.key.includes("black")
+            ? 1
+            : 2;
+      return rank(a) - rank(b) || a.label.localeCompare(b.label);
+    });
+  }, [activeStructuredVariant, selectedProduct]);
+
   const visibleColourVariants = useMemo(() => {
+    if (usesBedModelVariantMapping && activeMaterialKey) {
+      return structuredVariants.filter((entry) => entry.materialKey === activeMaterialKey);
+    }
+
     if (hasWoodColourOptions) {
       const woodOnly = structuredVariants.filter((entry) => {
         const swatchGroup = String(entry.variant.swatchGroup ?? "").trim().toLowerCase();
@@ -423,6 +701,7 @@ export function useDesignPageProductSelectorState({
     hasWoodColourOptions,
     hasColourOverlapAcrossMaterials,
     isHuggProduct,
+    usesBedModelVariantMapping,
   ]);
 
   const dedupedVisibleColourVariants = useMemo(() => {
@@ -503,7 +782,7 @@ export function useDesignPageProductSelectorState({
       return [] as MaterialOption[];
     }
 
-    if (hasColourOverlapAcrossMaterials) {
+    if (usesBedModelVariantMapping || hasColourOverlapAcrossMaterials) {
       const byMaterialKey = new Map<string, MaterialOption>();
       for (const entry of structuredVariants) {
         if (!byMaterialKey.has(entry.materialKey)) {
@@ -512,6 +791,7 @@ export function useDesignPageProductSelectorState({
             label: entry.materialDisplayLabel,
             variantId: entry.variant.id,
             colorHex: entry.variant.swatchHex ?? entry.variant.colorHex,
+            swatchTextureUrl: entry.variant.swatchTextureUrl,
           });
         }
       }
@@ -519,7 +799,10 @@ export function useDesignPageProductSelectorState({
     }
 
     const orderedTypes: MaterialType[] = ["Fabric", "Wood", "Leather"];
-    const byType = new Map<MaterialType, { variantId: string; colorHex: string; label: string }>();
+    const byType = new Map<
+      MaterialType,
+      { variantId: string; colorHex: string; label: string; swatchTextureUrl?: string }
+    >();
 
     for (const entry of structuredVariants) {
       if (!byType.has(entry.materialType)) {
@@ -527,12 +810,13 @@ export function useDesignPageProductSelectorState({
           variantId: entry.variant.id,
           colorHex: entry.variant.swatchHex ?? entry.variant.colorHex,
           label: entry.materialType,
+          swatchTextureUrl: entry.variant.swatchTextureUrl,
         });
       }
     }
 
     return orderedTypes
-      .map((type) => {
+      .map<MaterialOption | null>((type) => {
         const mapped = byType.get(type);
         if (!mapped) return null;
         return {
@@ -540,10 +824,11 @@ export function useDesignPageProductSelectorState({
           label: mapped.label,
           variantId: mapped.variantId,
           colorHex: mapped.colorHex,
+          swatchTextureUrl: mapped.swatchTextureUrl,
         };
       })
       .filter((entry): entry is MaterialOption => Boolean(entry));
-  }, [selectedProduct, structuredVariants, hasColourOverlapAcrossMaterials]);
+  }, [selectedProduct, structuredVariants, hasColourOverlapAcrossMaterials, usesBedModelVariantMapping]);
 
   const useLengthOptionsAsVariants = Boolean(
     !hasStructuredVariantLabels &&
@@ -591,6 +876,21 @@ export function useDesignPageProductSelectorState({
     !isSloaneTvConsoleSelected &&
     materialOptions.length > 1;
 
+  const structuredColourOptionCount = groupedVisibleColourVariants.reduce(
+    (count, group) => count + group.entries.length,
+    0
+  );
+  const showStructuredColourSelector =
+    hasStructuredVariantLabels &&
+    !hideColourSelector &&
+    structuredColourOptionCount >= (usesBedModelVariantMapping ? 2 : hasWoodColourOptions ? 2 : 1);
+  const variantSelectorLabel = usesBedModelVariantMapping
+    ? "Model"
+    : hasWoodColourOptions
+      ? "Fabric colour"
+      : "Material";
+  const colourSelectorLabel = usesBedModelVariantMapping ? "Fabric colour" : null;
+
   const sizeOptionsForActiveSelection = useMemo(() => {
     if (!hasStructuredVariantLabels || !activeMaterialType || !activeColourLabel) {
       return [] as Array<{ key: string; label: string; variantId: string }>;
@@ -599,7 +899,8 @@ export function useDesignPageProductSelectorState({
     const scoped = structuredVariants.filter(
       (entry) =>
         entry.materialType === activeMaterialType &&
-        entry.colourLabel.trim().toLowerCase() === activeColourLabel.trim().toLowerCase()
+        entry.colourLabel.trim().toLowerCase() === activeColourLabel.trim().toLowerCase() &&
+        (!usesBedModelVariantMapping || !activeMaterialKey || entry.materialKey === activeMaterialKey)
     );
 
     if (scoped.length < 2) {
@@ -612,22 +913,27 @@ export function useDesignPageProductSelectorState({
       const widthMm = Number(dims?.w ?? 0);
       const depthMm = Number(dims?.d ?? 0);
       const hasValidDims = widthMm > 0 && depthMm > 0;
+      const authoredSizeLabel = isJosephBedSelected
+        ? getJosephBedSizeLabel(entry.variant)
+        : String(entry.variant.sizeLabel ?? "").trim();
       const sizeMatch = entry.variant.label.match(/(\d+)\s*(?:x|by)\s*(\d+)\s*cm/i);
       const singleSizeMatch = entry.variant.label.match(/(\d+)\s*cm/i);
-      const derivedKey = hasValidDims
+      const derivedKey = authoredSizeLabel
+        ? normalizeOptionKey(authoredSizeLabel)
+        : hasValidDims
         ? `${Math.round(widthMm)}x${Math.round(depthMm)}`
         : sizeMatch
           ? `${sizeMatch[1]}x${sizeMatch[2]}`
           : singleSizeMatch
             ? singleSizeMatch[1]
             : entry.variant.id;
-      const derivedLabel = hasValidDims
+      const derivedLabel = authoredSizeLabel || (hasValidDims
         ? `${Math.round(widthMm / 10)} x ${Math.round(depthMm / 10)} cm`
         : sizeMatch
           ? `${sizeMatch[1]} x ${sizeMatch[2]} cm`
           : singleSizeMatch
             ? `${singleSizeMatch[1]} cm`
-            : "Standard";
+            : "Standard");
       if (!options.has(derivedKey)) {
         options.set(derivedKey, {
           key: derivedKey,
@@ -649,7 +955,10 @@ export function useDesignPageProductSelectorState({
     hasStructuredVariantLabels,
     activeMaterialType,
     activeColourLabel,
+    activeMaterialKey,
     structuredVariants,
+    isJosephBedSelected,
+    usesBedModelVariantMapping,
   ]);
 
   const showSizeSection = sizeOptionsForActiveSelection.length > 1;
@@ -683,6 +992,7 @@ export function useDesignPageProductSelectorState({
     activeSelectedBenchSize,
     activeSelectedBenchCushion,
     groupedVisibleColourVariants,
+    legFinishOptions,
     hideColourSelector,
     materialOptions,
     useModelOptionsAsVariants,
@@ -690,6 +1000,9 @@ export function useDesignPageProductSelectorState({
     useShapeOptionsAsVariants,
     showVariantsSection,
     showFinishSection,
+    showStructuredColourSelector,
+    variantSelectorLabel,
+    colourSelectorLabel,
     sizeOptionsForActiveSelection,
     showSizeSection,
     hasWoodColourOptions,

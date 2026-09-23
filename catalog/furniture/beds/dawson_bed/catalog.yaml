@@ -1,0 +1,166 @@
+brand: "Castlery"
+source_url: "https://www.castlery.com/sg/products/dawson-bed"
+category: "bed"
+
+product_family: "Dawson"
+product_name: "Dawson Bed"
+variant: "Standard Queen - Beach Linen"
+
+price_usd: 1099
+compare_at_price_usd: 1199
+price_band: "premium"
+brand_tier: "premium_mid"
+
+design_zone: "sleeping_zone"
+anchor_role: "bed_anchor"
+
+dimensions:
+  width_cm: 194
+  depth_cm: 237
+  height_cm: 89
+
+size_class: "large"
+shape: "rectangular"
+material_family: "upholstered"
+material_mix: "fabric_upholstery_wood_frame"
+
+color_family: "beige"
+tone: "warm"
+
+style_cluster: "minimalist"
+style_secondary: "contemporary"
+design_era: "contemporary"
+
+visual_attributes:
+  visual_weight: "large"
+  edge_profile: "soft_rounded"
+  silhouette: "low_profile_platform"
+  form_language: "minimal_upholstered"
+
+spatial_attributes:
+  footprint_shape: "rectangular"
+  walkway_clearance_cm: 90
+  wall_clearance_cm: 0
+
+room_compatibility:
+  - "bedroom"
+
+placement_rules:
+  floor_only: true
+  wall_snappable: true
+  clearance_sensitive: true
+  center_room_preferred: false
+
+design_pairings:
+  - "nightstand"
+  - "table_lamp"
+  - "rug"
+  - "dresser"
+
+product_details:
+  material:
+    - label: "Upholstery"
+      value: "Slub linen weave (Navagio), cream (Beach Linen); 93% polyester, 7% linen"
+    - label: "Frame"
+      value: "Laminated veneer lumber with plywood"
+    - label: "Filling"
+      value: "Foam and fibre"
+    - label: "Cover type"
+      value: "Fully removable covers"
+  dimensions:
+    - label: "Queen dimension"
+      value: "W194 x D237 x H89cm"
+    - label: "King dimension"
+      value: "W224 x D237 x H89cm"
+    - label: "Queen mattress space"
+      value: "W154 x D193cm with 11cm mattress inset"
+    - label: "King mattress space"
+      value: "W184 x D193cm with 11cm mattress inset"
+    - label: "Bed frame height"
+      value: "28cm"
+    - label: "Leg height"
+      value: "2.5cm"
+    - label: "Recommended mattress thickness"
+      value: "20-30cm"
+  delivery_and_warranty:
+    - label: "Return policy"
+      value: "30-day returns"
+    - label: "Warranty"
+      value: "Frame 10 years; Fabric 1 year; Foam 2 years"
+    - label: "Assembly"
+      value: "Bedframe needs assembly"
+
+assets:
+  asset_id: "bed-real-castlery-dawson"
+  model_url: "/assets/models/bed-real-castlery-dawson-standard-queen-beach-linen.glb"
+  thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1634544577/crusader/variants/54000057-NG4001/Dawson-Queen-Size-Bed-Beach-Linen-Front.jpg"
+  gallery_images:
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1634544577/crusader/variants/54000057-NG4001/Dawson-Queen-Size-Bed-Beach-Linen-Front.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1634545101/crusader/variants/54000056-NG4001/Dawson-King-Size-Bed-Beach-Linen-Front.jpg"
+
+variants:
+  - variant: "Standard Queen - Beach Linen"
+    size_label: "Queen"
+    source_sku: "54000143-NG4001"
+    finish_code: "standard_bed_beach_linen"
+    finish_label: "Standard bed - Beach Linen"
+    swatch_group: "upholstery"
+    swatch_hex: "#d7d0c4"
+    swatch_image_url: "https://res.cloudinary.com/castlery/image/private/b_rgb:FFFFFF,c_fit,f_auto,q_auto,w_800/v1665460017/crusader/variants/NG-4001/Beach-Linen_1-1665460015.jpg"
+    collection_type: "stocked"
+    model_url: "/assets/models/bed-real-castlery-dawson-standard-queen-beach-linen.glb"
+    affiliate_url: "https://www.castlery.com/sg/products/dawson-bed?cover_type=fully_removable&bed_frame_size=queen&material=beach_linen"
+    available: true
+    price_usd: 1099
+    compare_at_price_usd: 1199
+    dimensions: &queen_dims
+      width_cm: 194
+      depth_cm: 237
+      height_cm: 89
+    size_class: "large"
+    color_family: "beige"
+    tone: "warm"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1634544577/crusader/variants/54000057-NG4001/Dawson-Queen-Size-Bed-Beach-Linen-Front.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1634544577/crusader/variants/54000057-NG4001/Dawson-Queen-Size-Bed-Beach-Linen-Front.jpg"
+    materials: &dawson_beach_linen_materials
+      upholstery:
+        structure: "fabric"
+        surface: "slub_linen_weave"
+      frame:
+        structure: "laminated_veneer_lumber_plywood"
+        surface: "foam_padded_upholstery"
+      headboard:
+        structure: "foam_fibre"
+        surface: "upholstered"
+    finish: &dawson_beach_linen_finish
+      color_finish: "beach_linen"
+      surface_finish: "slub_linen_weave"
+      finish_color: "cream"
+
+  - variant: "Standard King - Beach Linen"
+    size_label: "King"
+    source_sku: "54000144-NG4001"
+    finish_code: "standard_bed_beach_linen"
+    finish_label: "Standard bed - Beach Linen"
+    swatch_group: "upholstery"
+    swatch_hex: "#d7d0c4"
+    swatch_image_url: "https://res.cloudinary.com/castlery/image/private/b_rgb:FFFFFF,c_fit,f_auto,q_auto,w_800/v1665460017/crusader/variants/NG-4001/Beach-Linen_1-1665460015.jpg"
+    collection_type: "stocked"
+    model_url: "/assets/models/bed-real-castlery-dawson-standard-king-beach-linen.glb"
+    affiliate_url: "https://www.castlery.com/sg/products/dawson-bed?cover_type=fully_removable&bed_frame_size=king&material=beach_linen"
+    available: true
+    price_usd: 1289
+    compare_at_price_usd: 1399
+    dimensions: &king_dims
+      width_cm: 224
+      depth_cm: 237
+      height_cm: 89
+    size_class: "large"
+    color_family: "beige"
+    tone: "warm"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1634545101/crusader/variants/54000056-NG4001/Dawson-King-Size-Bed-Beach-Linen-Front.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1634545101/crusader/variants/54000056-NG4001/Dawson-King-Size-Bed-Beach-Linen-Front.jpg"
+    materials: *dawson_beach_linen_materials
+    finish: *dawson_beach_linen_finish

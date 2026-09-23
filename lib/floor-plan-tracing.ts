@@ -4,6 +4,10 @@ import {
   roundPlanCoordinate,
   type HousePlanRoom2D,
 } from "@/lib/design-page-house-plan";
+import {
+  clampDesignPageOpeningToNearestClearInterval,
+  validateDesignPageOpeningPlacement,
+} from "@/lib/design-page-opening-placement";
 import { metersToMm, type RoomOpening2D } from "@/lib/editorScene";
 
 export type TracedRoomRectangle = {
@@ -71,7 +75,13 @@ export type TracedOpeningPlacementValidation =
   | { valid: true }
   | {
       valid: false;
-      reason: "too_close_to_corner" | "too_close_to_opening" | "opening_too_wide";
+      reason:
+        | "too_close_to_corner"
+        | "too_close_to_opening"
+        | "opening_too_wide"
+        | "blocked_by_wall"
+        | "unresolved_wall_host"
+        | "ambiguous_wall_host";
       label: string;
     };
 
@@ -90,8 +100,8 @@ export type TracedOpeningPreview = {
 };
 
 const MAX_OPENING_WALL_DISTANCE_METERS = 0.45;
-const MIN_OPENING_CORNER_CLEARANCE_METERS = 0.18;
-const MIN_OPENING_SPACING_METERS = 0.18;
+/** The corner clearance the placement owner enforces; the 3D window drag clamps to it. */
+export { OPENING_CORNER_CLEARANCE_METERS as MIN_OPENING_CORNER_CLEARANCE_METERS } from "@/lib/design-page-opening-placement";
 export const ROOM_DRAW_GRID_STEP_METERS = 0.1;
 export const ROOM_DRAW_EDGE_SNAP_DISTANCE_METERS = 0.35;
 export const ROOM_DRAW_CORNER_SNAP_DISTANCE_METERS = 0.35;
@@ -754,15 +764,6 @@ function getOpeningRoom(opening: Pick<RoomOpening2D, "roomId">, rooms: HousePlan
     : null;
 }
 
-function getOpeningWallSpanMeters(
-  opening: Pick<RoomOpening2D, "roomId" | "wall">,
-  rooms: HousePlanRoom2D[]
-): number | null {
-  const room = getOpeningRoom(opening, rooms);
-  if (!room) return null;
-  return opening.wall === "north" || opening.wall === "south" ? room.w : room.d;
-}
-
 export function buildTracedOpeningSegment(
   opening: Pick<RoomOpening2D, "roomId" | "wall" | "offsetMm" | "widthMm">,
   rooms: HousePlanRoom2D[]
@@ -811,53 +812,24 @@ export function validateTracedOpeningPlacement(
   > = [],
   ignoreOpeningId?: string
 ): TracedOpeningPlacementValidation {
-  const span = getOpeningWallSpanMeters(opening, rooms);
-  if (!span) {
-    return {
-      valid: false,
-      reason: "opening_too_wide",
-      label: "Pick a room wall",
-    };
-  }
+  return validateDesignPageOpeningPlacement(
+    opening,
+    existingOpenings,
+    ignoreOpeningId,
+    { rooms, planWidthMeters: 0, planDepthMeters: 0 }
+  );
+}
 
-  const width = opening.widthMm / 1000;
-  const halfWidth = width / 2;
-  const maxUsableWidth = span - MIN_OPENING_CORNER_CLEARANCE_METERS * 2;
-  if (width > maxUsableWidth) {
-    return {
-      valid: false,
-      reason: "opening_too_wide",
-      label: "Opening is too wide for this wall",
-    };
-  }
-
-  const distanceToNearestCorner = span / 2 - Math.abs(opening.offsetMm / 1000) - halfWidth;
-  if (distanceToNearestCorner < MIN_OPENING_CORNER_CLEARANCE_METERS) {
-    return {
-      valid: false,
-      reason: "too_close_to_corner",
-      label: "Too close to corner",
-    };
-  }
-
-  const overlappingOpening = existingOpenings.find((existing) => {
-    if (ignoreOpeningId && existing.id === ignoreOpeningId) return false;
-    if (existing.roomId !== opening.roomId || existing.wall !== opening.wall) return false;
-    const centerDistance = Math.abs(existing.offsetMm - opening.offsetMm) / 1000;
-    const requiredDistance =
-      existing.widthMm / 2000 + opening.widthMm / 2000 + MIN_OPENING_SPACING_METERS;
-    return centerDistance < requiredDistance;
-  });
-
-  if (overlappingOpening) {
-    return {
-      valid: false,
-      reason: "too_close_to_opening",
-      label: "Too close to another opening",
-    };
-  }
-
-  return { valid: true };
+export function clampOpeningToNearestClearInterval(
+  opening: RoomOpening2D,
+  rooms: HousePlanRoom2D[],
+  existingOpenings: RoomOpening2D[] | RoomOpening2D = []
+): RoomOpening2D {
+  return clampDesignPageOpeningToNearestClearInterval(
+    opening,
+    existingOpenings,
+    { rooms, planWidthMeters: 0, planDepthMeters: 0 }
+  );
 }
 
 export function resolveTracedOpeningPreview(

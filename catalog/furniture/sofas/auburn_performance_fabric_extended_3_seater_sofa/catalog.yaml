@@ -1,0 +1,87 @@
+brand: "Castlery"
+status: "published"
+source_url: "https://www.castlery.com/sg/products/auburn-performance-boucle-extended-3-seater-sofa?material=chalk_boucle"
+category: "sofa"
+
+product_family: "Auburn"
+product_name: "Auburn Performance Fabric Extended 3 Seater Sofa"
+variant: "Chalk Bouclé"
+
+price_usd: 2437
+price_band: "premium"
+brand_tier: "premium_mid"
+
+design_zone: "living_zone"
+anchor_role: "sofa_anchor"
+
+dimensions:
+  width_cm: 321
+  depth_cm: 91.5
+  height_cm: 76.5
+
+seat_capacity: 3
+size_class: "extra_large"
+shape: "rectangular"
+material_family: "upholstered"
+color_family: "beige"
+tone: "neutral"
+style_cluster: "contemporary"
+
+upholstery_library_ref: "auburn"
+
+room_compatibility:
+  - "living_room"
+  - "family_room"
+design_pairings:
+  - "coffee_table"
+  - "rug"
+  - "side_table"
+
+placement_rules:
+  floor_only: true
+  wall_snappable: true
+  clearance_sensitive: true
+  center_room_preferred: false
+
+assets:
+  asset_id: "sofa-real-castlery-auburn-performance-fabric-extended-3-seater-sofa"
+  model_url: "/assets/models/sofa-real-castlery-auburn-performance-fabric-extended-3-seater-sofa.glb"
+  thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1683792814/crusader/variants/T50441132-CB4001/Auburn-Performance-Boucle-Extended-3-Seater-Sofa-Chalk_-Front-1683792811.jpg"
+
+variants:
+  - variant: "Selected upholstery"
+    price_usd: 2437
+    price_band: "premium"
+    brand_tier: "premium_mid"
+    dimensions:
+      width_cm: 321
+      depth_cm: 91.5
+      height_cm: 76.5
+    color_family: "beige"
+    tone: "neutral"
+
+product_details:
+  material:
+    - { label: "Fabric composition", value: "100% polyester, spill-resistant bouclé fabric" }
+    - { label: "Frame", value: "Engineered wood with plywood" }
+    - { label: "Leg frame", value: "Plastic" }
+    - { label: "Filling", value: "Foam, fibre and pocket spring seat; foam and fibre back" }
+    - { label: "Cover type", value: "Fixed" }
+  dimensions:
+    - { label: "Seating depth", value: "62cm" }
+    - { label: "Seating height", value: "42.5cm" }
+    - { label: "Armrest height", value: "56cm" }
+    - { label: "Leg height", value: "3cm" }
+  delivery_and_warranty:
+    - { label: "Warranty", value: "Frame 10 years; Fabric 1 year; Foam 2 years" }
+    - { label: "Returns", value: "30-day returns" }
+
+shipping_and_warranty:
+  free_delivery_threshold_sgd: 500
+  warranty: "Frame 10 years; Fabric 1 year; Foam 2 years"
+  return_policy: "30-day returns"
+
+authoring_notes:
+  source_checked: "Castlery Singapore product pages, 2026-07-30"
+  local_model_status: "Copied and verified at the declared public model URL"
+  note: "Published after source, price, dimensions, upholstery, and local model availability review."

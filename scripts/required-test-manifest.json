@@ -1,0 +1,1535 @@
+{
+  "schema": "interior-ai.required-test-manifest.v1",
+  "sourceInventories": [
+    {
+      "id": "script-tests",
+      "root": "scripts",
+      "filePattern": "^test-.*\\.(?:js|mjs|ts)$",
+      "classification": "risk-triggered",
+      "expectedFileCount": 289,
+      "expectedPathSha256": "c11160d81367aa0559480c2a2f936beb0c5c54dcfe19f803b98305e2d358a0ff"
+    },
+    {
+      "id": "browser-specs",
+      "root": "tests/e2e",
+      "filePattern": "\\.spec\\.ts$",
+      "classification": "release-only",
+      "expectedFileCount": 103,
+      "expectedPathSha256": "712171eac11047541792a96c2e1e4b2fee9abb78751099bb443b22f5848ed301"
+    },
+    {
+      "id": "cabinetry-browser-modules",
+      "root": "tests/e2e/cabinetry-studio",
+      "filePattern": "\\.ts$",
+      "classification": "release-only-imported-test-modules",
+      "expectedFileCount": 6,
+      "expectedPathSha256": "805b0ec8a0d24658c0cb5e01616fb1a684c8dc2aae81b6338f3d1b87fd6fafa9"
+    },
+    {
+      "id": "multi-room-browser-modules",
+      "root": "tests/e2e/multi-room",
+      "filePattern": "\\.ts$",
+      "classification": "release-only-imported-test-modules",
+      "expectedFileCount": 8,
+      "expectedPathSha256": "e701b0ff04421c8eca749fdd8e6daffcd0c0fbb987226ec2319bdcee8d368851"
+    },
+    {
+      "id": "cabinetry-script-modules",
+      "root": "scripts/cabinetry-tests",
+      "filePattern": "\\.ts$",
+      "classification": "merge-required-imported-test-modules",
+      "expectedFileCount": 8,
+      "expectedPathSha256": "55ed53e1acde7854a321a3a6480aba3c2c89636d9227057d66341bfd845d6696"
+    }
+  ],
+  "gates": [
+    {
+      "id": "ci.secret-scan",
+      "invariant": "The complete checked-out Git history is scanned for committed secrets before merge.",
+      "cadence": "merge-required",
+      "blocking": true,
+      "command": "gitleaks/gitleaks-action@v2",
+      "runner": "github-action",
+      "requiredSources": [
+        ".github/workflows/ci.yml",
+        "scripts/gitleaks-artifact.mjs"
+      ],
+      "requiredProjects": [],
+      "allowSkips": false,
+      "allowRetries": false,
+      "reportType": "github-check",
+      "artifactBinding": "source-history",
+      "ci": {
+        "job": "secret-scan",
+        "step": "gitleaks/gitleaks-action@v2",
+        "invocation": "uses: gitleaks/gitleaks-action@v2"
+      }
+    },
+    {
+      "id": "ci.required-test-truthfulness",
+      "invariant": "The canonical required-test inventory, command wiring, and negative truthfulness contract remain valid.",
+      "cadence": "merge-required",
+      "blocking": true,
+      "command": "npm run test:required-test-truthfulness",
+      "packageScript": "test:required-test-truthfulness",
+      "packageClosure": { "expectedScriptCount": 1, "expectedSha256": "a63f8a3c477cedbe71fea9dc36e6ab1bda3eb228ce36352f2d6b5e942d1283e6" },
+      "runner": "node",
+      "requiredSources": [
+        "scripts/required-test-manifest.json",
+        "scripts/required-test-truthfulness.mjs",
+        "scripts/test-required-test-truthfulness.mjs"
+      ],
+      "requiredProjects": [],
+      "allowSkips": false,
+      "allowRetries": false,
+      "reportType": "process-exit",
+      "artifactBinding": "none",
+      "ci": { "job": "stable-checks", "step": "Verify required-test and lightweight advisory truthfulness" }
+    },
+    {
+      "id": "ci.code-quality",
+      "invariant": "Production size, complexity, suppression, unsafe-TypeScript, cycle, and tracked-source hygiene ratchets do not regress.",
+      "cadence": "merge-required",
+      "blocking": true,
+      "command": "npm run check:code-quality",
+      "packageScript": "check:code-quality",
+      "packageClosure": { "expectedScriptCount": 1, "expectedSha256": "8f9316f4c27ed5e0366b61899d76ecfc1ab6d6c882e5df4a625e34ccaa9d2964" },
+      "runner": "node",
+      "requiredSources": [
+        "scripts/code-quality/check.mjs",
+        "scripts/code-quality/tracked-artifact-policy.mjs",
+        "scripts/test-code-quality-ratchet.mjs",
+        "scripts/test-tracked-artifact-hygiene.mjs"
+      ],
+      "requiredProjects": [],
+      "allowSkips": false,
+      "allowRetries": false,
+      "reportType": "process-exit",
+      "artifactBinding": "none",
+      "ci": { "job": "stable-checks", "step": "Enforce code-quality ratchets" }
+    },
+    {
+      "id": "ci.production-artifact-contract",
+      "invariant": "The CH-0016 source, semantic timestamp provenance, artifact, Playwright schema-consumer, runtime, canonical trace/archive inclusion, Floor Plan route-NFT, report, and external-claim evidence contract fails closed.",
+      "cadence": "merge-required",
+      "blocking": true,
+      "command": "npm run test:production-artifact-evidence",
+      "packageScript": "test:production-artifact-evidence",
+      "packageClosure": { "expectedScriptCount": 1, "expectedSha256": "faf9cac7a8a0a6d80dcbaa792ebb7c56eb767c3b14f0e1da448081acdb8cb105" },
+      "runner": "node",
+      "requiredSources": [
+        "playwright.config.ts",
+        "scripts/production-artifact-contract.mjs",
+        "scripts/production-artifact-evidence.mjs",
+        "scripts/production-artifact-source.mjs",
+        "scripts/production-artifact-runtime-binding.mjs",
+        "scripts/production-artifact-ordinary-runtime.mjs",
+        "scripts/production-artifact-ordinary-database.mjs",
+        "scripts/required-test-report-validation.mjs",
+        "scripts/required-test-workflow-policy.mjs",
+        "scripts/production-artifact-playwright.mjs",
+        "scripts/production-archive.mjs",
+        "scripts/production-archive-plan-evidence.mjs",
+        "scripts/production-trace-archive-policy.mjs",
+        "scripts/production-verifier-closure.mjs",
+        "scripts/production-certification-contract.mjs",
+        "scripts/production-certification-state.mjs",
+        "scripts/production-certification-evidence.mjs",
+        "scripts/production-certification-historical-evidence.mjs",
+        "scripts/production-certification-doctor.mjs",
+        "scripts/production-certification-dependencies.mjs",
+        "scripts/production-certification-database-adapter.mjs",
+        "scripts/production-certification-database-cleanup-observation.mjs",
+        "scripts/provision-gate-a3-database.mjs",
+        "scripts/production-certification-database-contract.mjs",
+        "scripts/production-certification-database-lifecycle.mjs",
+        "scripts/production-certification-database-transport.mjs",
+        "scripts/stable-runtime-smoke-database-transport.mjs",
+        "scripts/production-certification-real.mjs",
+        "scripts/production-certification-source-continuity.mjs",
+        "scripts/production-certification-stage-result-contract.mjs",
+        "scripts/production-certification-stage-result-consumer.mjs",
+        "scripts/production-certification.mjs",
+        "scripts/production-certification-simulation.mjs",
+        "scripts/production-certification-stage-environment.mjs",
+        "scripts/production-certification-worktrees.mjs",
+        "scripts/production-certification-regressions.json",
+        "docs/qa/production-certification-contract.v1.json",
+        "docs/qa/production-certification-database-lifecycle-v1.md",
+        "docs/qa/production-certification-stage-environment.v2.json",
+        "docs/qa/production-certification-harness-v1.md",
+        "docs/qa/production-certification-state-worktree-remediation.md",
+        "scripts/certification-playwright-start-reporter.mjs",
+        "scripts/benchmark-phase8-projects.ts",
+        "scripts/phase8-project-benchmark-contract.ts",
+        "scripts/required-test-playwright.mjs",
+        "scripts/playwright-report-path.mjs",
+        "scripts/runtime-smoke-failure-evidence.mjs",
+        "scripts/runtime-smoke-operation-contracts.mjs",
+        "scripts/runtime-smoke-operation-deadline.mjs",
+        "scripts/runtime-smoke-phase-budget.mjs",
+        "scripts/runtime-smoke-render-idle.mjs",
+        "scripts/test-runtime-smoke-render-idle.mjs",
+        "scripts/test-production-artifact-evidence.mjs",
+        "scripts/test-production-archive-plan-evidence.mjs",
+        "scripts/test-production-certification.mjs",
+        "scripts/test-production-certification-stage-result.mjs",
+        "scripts/test-production-certification-dependency-lifecycle.mjs",
+        "scripts/test-production-certification-app-event-writer.ts",
+        "scripts/test-production-certification-database-lifecycle.mjs",
+        "scripts/production-certification-database-transport-contract.mjs",
+        "scripts/test-production-certification-auth-preflight-database.mjs",
+        "scripts/test-production-certification-state-worktrees.mjs",
+        "scripts/test-production-trace-archive-policy.mjs",
+        "playwright.floor-plan-upload.config.ts",
+        "playwright.pro-visual.config.ts",
+        "playwright.guest-save-overlay.config.ts",
+        "playwright.my-designs-overlay.config.ts",
+        "playwright.share-responsive.config.ts",
+        "playwright.cart-overlay.config.ts",
+        "playwright.retailer-confirmation.config.ts"
+      ],
+      "requiredContributions": [
+        {
+          "id": "artifact.semantic-timestamp-provenance",
+          "source": "scripts/test-production-artifact-evidence.mjs",
+          "marker": "semantic start must be durable immediately before child dispatch"
+        },
+        {
+          "id": "artifact.playwright-v3-producer-consumer",
+          "source": "scripts/test-production-artifact-evidence.mjs",
+          "marker": "producer manifest passes real Playwright config with nonzero discovery"
+        },
+        {
+          "id": "artifact.playwright-external-report-producer-consumer",
+          "source": "scripts/test-production-artifact-evidence.mjs",
+          "marker": "real Playwright config must write to the exact external report path"
+        },
+        {
+          "id": "artifact.staged-archive-preflight-cli",
+          "source": "scripts/test-production-artifact-evidence.mjs",
+          "marker": "actual staged archive-preflight CLI executes the physical staged verifier"
+        },
+      {
+        "id": "artifact.production-certification-harness-v1",
+        "source": "scripts/test-production-certification.mjs",
+        "marker": "Production certification harness tests passed."
+      },
+      {
+        "id": "artifact.production-certification-stage-result-consumer",
+        "source": "scripts/test-production-certification-stage-result.mjs",
+        "marker": "Production certification stage-result consumer tests passed."
+      },
+      {
+        "id": "artifact.production-certification-transactional-state-worktrees",
+        "source": "scripts/test-production-certification-state-worktrees.mjs",
+        "marker": "production certification transactional state/worktree isolation tests passed"
+      },
+        {
+          "id": "artifact.certification-source-stage-environment-isolation",
+          "source": "scripts/test-production-artifact-evidence.mjs",
+          "marker": "real source-validation Playwright config must not activate runtime smoke"
+        },
+        {
+          "id": "artifact.certification-runtime-evidence-root-regression",
+          "source": "scripts/test-production-certification.mjs",
+          "marker": "Production certification runtime evidence-root regression passed"
+        },
+        {
+          "id": "floor-plan.route-nft-fail-closed",
+          "source": "scripts/test-production-artifact-evidence.mjs",
+          "marker": "production trace/archive policy rejects"
+        },
+        {
+          "id": "artifact.trace-archive-policy-parity",
+          "source": "scripts/test-production-trace-archive-policy.mjs",
+          "marker": "Production trace/archive policy tests passed."
+        },
+        {
+          "id": "artifact.archive-plan-failure-evidence",
+          "source": "scripts/test-production-archive-plan-evidence.mjs",
+          "marker": "Archive plan policy rejection survives parent adaptation."
+        },
+        {
+          "id": "artifact.runtime-idle-permanent-loop-control",
+          "source": "scripts/test-runtime-smoke-render-idle.mjs",
+          "marker": "permanent 60-Hz render loop negative control executed"
+        },
+        {
+          "id": "artifact.runtime-idle-low-frequency-control",
+          "source": "scripts/test-runtime-smoke-render-idle.mjs",
+          "marker": "low-frequency recurring invalidation negative control executed"
+        },
+        {
+          "id": "artifact.runtime-idle-generation-lifecycle-controls",
+          "source": "scripts/test-runtime-smoke-render-idle.mjs",
+          "marker": "stale cross-generation hidden WebGL counter-reset active-animation controls executed"
+        },
+        {
+          "id": "artifact.runtime-idle-instrumentation-entry-controls",
+          "source": "scripts/test-runtime-smoke-render-idle.mjs",
+          "marker": "missing instrumentation and callback-entry controls executed"
+        }
+      ],
+      "requiredProjects": [],
+      "allowSkips": false,
+      "allowRetries": false,
+      "reportType": "process-exit",
+      "artifactBinding": "ch-0016-source-artifact-report",
+      "ci": { "job": "stable-checks", "step": "Verify production artifact evidence contract" }
+    },
+    {
+      "id": "ci.production-artifact-build",
+      "invariant": "One strict clean-source production artifact is built, its Floor Plan route NFTs contain no test sources, and it is bound to its dependency and trace closure.",
+      "cadence": "merge-required",
+      "blocking": true,
+      "command": "npm run evidence:production:build",
+      "packageScript": "evidence:production:build",
+      "packageClosure": { "expectedScriptCount": 1, "expectedSha256": "da5ab6b114d8be6a911a011e71d2ac47538c7d6b67f822abd072768f66610822" },
+      "runner": "node",
+      "requiredSources": ["scripts/production-artifact-source.mjs", "scripts/production-artifact-evidence.mjs", "scripts/required-test-report-validation.mjs"],
+      "requiredProjects": [],
+      "allowSkips": false,
+      "allowRetries": false,
+      "reportType": "production-evidence-manifest",
+      "artifactBinding": "ch-0016-source-artifact-report",
+      "ci": { "job": "stable-checks", "step": "Build strict production-equivalent artifact evidence" }
+    },
+    {
+      "id": "ci.production-runtime-smoke",
+      "invariant": "The exact CH-0016 production artifact starts and satisfies both runtime readiness identities.",
+      "cadence": "merge-required",
+      "blocking": true,
+      "command": "npm run evidence:production:stable-runtime-smoke",
+      "packageScript": "evidence:production:stable-runtime-smoke",
+      "packageClosure": { "expectedScriptCount": 2, "expectedSha256": "d43876a351475eb9ac36c81f0182ec7783bea24ed384ea4f908f5929df8958e5" },
+      "runner": "playwright",
+      "requiredSources": [
+        "tests/e2e/00-runtime-smoke.spec.ts",
+        "components/editor/design-page/designSceneDemandPolicy.tsx",
+        "components/editor/design-page/lighting/ExposureController.tsx",
+        "components/scene/FurnitureItem.tsx",
+        "components/scene/furniture/useFurnitureFiniteAnimations.ts",
+        "components/scene/sceneDemandDiagnostics.ts",
+        "components/scene/glb-scaled-model/glbMainThreadTelemetryFacade.ts",
+        "scripts/production-artifact-source.mjs",
+        "scripts/production-artifact-runtime-binding.mjs",
+        "scripts/production-artifact-ordinary-runtime.mjs",
+        "scripts/production-artifact-ordinary-database.mjs",
+        "scripts/runtime-smoke-failure-evidence.mjs",
+        "scripts/runtime-smoke-operation-contracts.mjs",
+        "scripts/runtime-smoke-operation-deadline.mjs",
+        "scripts/runtime-smoke-phase-budget.mjs",
+        "scripts/runtime-smoke-render-idle.mjs",
+        "scripts/test-design-scene-loading-frameloop.mjs",
+        "scripts/test-scene-demand-invalidation.ts",
+        "scripts/stable-runtime-smoke.mjs",
+        "scripts/stable-runtime-smoke-resources.mjs",
+        "scripts/stable-runtime-smoke-standalone.mjs",
+        "scripts/production-artifact-evidence.mjs",
+        "scripts/production-certification-database-contract.mjs",
+        "scripts/production-certification-database-lifecycle.mjs",
+        "scripts/production-certification-database-transport.mjs",
+        "scripts/stable-runtime-smoke-database-transport.mjs",
+        "scripts/production-certification-stage-environment.mjs",
+        "scripts/playwright-report-path.mjs"
+      ],
+      "requiredContributions": [
+        {
+          "id": "runtime.finite-item-animation-invalidation",
+          "source": "scripts/test-design-scene-loading-frameloop.mjs",
+          "marker": "item placement, shake, and snap animations must share finite invalidation"
+        },
+        {
+          "id": "runtime.exposure-demand-invalidation",
+          "source": "scripts/test-design-scene-loading-frameloop.mjs",
+          "marker": "renderer exposure changes must request a demand frame"
+        }
+      ],
+      "requiredTests": [
+        {
+          "id": "runtime.template-stability",
+          "file": "tests/e2e/00-runtime-smoke.spec.ts",
+          "title": "furnished template remains stable without a render loop"
+        },
+        {
+          "id": "runtime.health-catalog-ready",
+          "file": "tests/e2e/00-runtime-smoke.spec.ts",
+          "title": "health and catalog endpoints report ready"
+        }
+      ],
+      "requiredProjects": ["chromium"],
+      "allowSkips": false,
+      "allowRetries": false,
+      "allowAnnotations": false,
+      "reportType": "playwright-json",
+      "artifactBinding": "ch-0016-source-artifact-report",
+      "playwright": {
+        "config": "playwright.config.ts",
+        "args": ["playwright", "test", "tests/e2e/00-runtime-smoke.spec.ts", "--project=chromium"]
+      },
+      "ci": { "job": "stable-checks", "step": "Run runtime smoke tests" }
+    },
+    {
+      "id": "ci.authorization-boundaries",
+      "invariant": "Deployment classification and every inventoried admin/security boundary deny invalid or unauthorized access, while auth validation, production misuse, and session preflight retain canonical structured results.",
+      "cadence": "merge-required",
+      "blocking": true,
+      "command": "npm run test:auth-env-hardening",
+      "packageScript": "test:auth-env-hardening",
+      "packageClosure": { "expectedScriptCount": 2, "expectedSha256": "dc728be72c7ab3fab844c7072038f4316fdd9c7b88a7623917c01b7421d089a9" },
+      "runner": "ts-node",
+      "requiredSources": [
+        "lib/auth-env.ts",
+        "lib/auth-fixture-network.ts",
+        "lib/auth.ts",
+        "scripts/ci-auth-fixture.json",
+        "scripts/ci-auth-fixture-result-contract.cjs",
+        "scripts/ci-auth-fixture-result-contract.d.cts",
+        "scripts/ci-auth-preflight-worktree.mjs",
+        "scripts/ci-auth-fixture.ts",
+        "scripts/test-ci-auth-fixture-results.ts",
+        "scripts/test-auth-env-hardening.ts",
+        "scripts/test-admin-authorization.ts"
+      ],
+      "requiredProjects": [],
+      "allowSkips": false,
+      "allowRetries": false,
+      "reportType": "process-exit",
+      "artifactBinding": "none",
+      "ci": { "job": "stable-checks", "step": "Verify fail-closed authentication and admin environment policy" }
+    },
+    {
+      "id": "ci.database-migrations",
+      "invariant": "The configured CI database accepts the repository migration chain before dependent required checks run.",
+      "cadence": "merge-required",
+      "blocking": true,
+      "command": "npm run gate:a3:db",
+      "packageScript": "gate:a3:db",
+      "packageClosure": { "expectedScriptCount": 1, "expectedSha256": "f075521ce17b8ea6466796237f70d8b9e3359cd01ebb9d8beac64433846de1c7" },
+      "runner": "node",
+      "requiredSources": ["scripts/provision-gate-a3-database.mjs"],
+      "requiredProjects": [],
+      "allowSkips": false,
+      "allowRetries": false,
+      "reportType": "process-exit",
+      "artifactBinding": "database-target",
+      "ci": { "job": "stable-checks", "step": "Apply database migrations" }
+    },
+    {
+      "id": "ci.critical-domain-contracts",
+      "invariant": "Security, persistence, billing, product-flow, telemetry, Consumer/Pro, and cabinetry contracts remain merge-blocking.",
+      "cadence": "merge-required",
+      "blocking": true,
+      "command": "npm run test:critical-required",
+      "packageScript": "test:critical-required",
+      "packageClosure": { "expectedScriptCount": 42, "expectedSha256": "ee15eb1f9b1c134d152afbe2b92c271c5af9b34fe5f68456a60402ca3ab84be6" },
+      "runner": "npm-chain",
+      "supportingInventories": ["cabinetry-script-modules"],
+      "requiredSources": [
+        "scripts/test-phase7-security-boundaries.ts",
+        "scripts/test-design-document-compatibility.ts",
+        "scripts/test-design-page-local-backup-recovery.ts",
+        "scripts/test-display-units.ts",
+        "scripts/test-stripe-pro-billing.ts",
+        "scripts/test-pro-billing-ui.ts",
+        "scripts/test-phase14-product-flow.ts",
+        "scripts/test-phase15.ts",
+        "scripts/test-editor-capabilities-accessibility.ts",
+        "scripts/test-cabinetry.ts",
+        "scripts/cabinetry-tests/export-behavior.ts",
+        "scripts/test-cabinetry-release-evidence.ts"
+      ],
+      "requiredProjects": [],
+      "allowSkips": false,
+      "allowRetries": false,
+      "reportType": "process-exit",
+      "artifactBinding": "none",
+      "ci": { "job": "stable-checks", "step": "Verify critical domain contracts" }
+    },
+    {
+      "id": "ci.design-cleanup",
+      "invariant": "The canonical design-page static and behavior guard manifest executes without masked child failures.",
+      "cadence": "merge-required",
+      "blocking": true,
+      "command": "npm run test:design-page-cleanup",
+      "packageScript": "test:design-page-cleanup",
+      "packageClosure": { "expectedScriptCount": 1, "expectedSha256": "2649e75478c4214608459c1c4cfe063e69f07246b2341bfb484f8584a9697b49" },
+      "runner": "node",
+      "requiredSources": ["scripts/run-design-page-cleanup-tests.mjs"],
+      "requiredProjects": [],
+      "allowSkips": false,
+      "allowRetries": false,
+      "reportType": "process-exit",
+      "artifactBinding": "none",
+      "ci": { "job": "stable-checks", "step": "Verify design-page cleanup guards" }
+    },
+    {
+      "id": "ci.typecheck",
+      "invariant": "Production TypeScript compiles under the repository strict configuration.",
+      "cadence": "merge-required",
+      "blocking": true,
+      "command": "npm run typecheck",
+      "packageScript": "typecheck",
+      "packageClosure": { "expectedScriptCount": 1, "expectedSha256": "b43579a2174ed4e7ee7f7129cb8edbb2b10c02d5e9aeee9099621be7b3b90d9f" },
+      "runner": "tsc",
+      "requiredSources": ["tsconfig.json"],
+      "requiredProjects": [],
+      "allowSkips": false,
+      "allowRetries": false,
+      "reportType": "process-exit",
+      "artifactBinding": "none",
+      "ci": { "job": "stable-checks", "step": "Typecheck" }
+    },
+    {
+      "id": "ci.lint",
+      "invariant": "Repository lint completes with zero warnings.",
+      "cadence": "merge-required",
+      "blocking": true,
+      "command": "npm run lint -- --max-warnings=0",
+      "packageScript": "lint",
+      "packageClosure": { "expectedScriptCount": 1, "expectedSha256": "9d4b756f63d86d3dbfa77b655cb12478f23d5efff0466b3e233736393e8bdbea" },
+      "runner": "eslint",
+      "requiredSources": ["eslint.config.mjs"],
+      "requiredProjects": [],
+      "allowSkips": false,
+      "allowRetries": false,
+      "reportType": "process-exit",
+      "artifactBinding": "none",
+      "ci": { "job": "stable-checks", "step": "Lint (zero warnings)" }
+    },
+    {
+      "id": "ci.floor-plan-required",
+      "invariant": "The complete required floor-plan platform, persistence progress, security, storage, telemetry, parity, performance, and architecture checks execute.",
+      "cadence": "merge-required",
+      "blocking": true,
+      "command": "npm run test:floor-plan-required",
+      "packageScript": "test:floor-plan-required",
+      "packageClosure": { "expectedScriptCount": 58, "expectedSha256": "0b088f3417444349915984b72f62ade7651b85662219c878b7fd3a640e023aea" },
+      "runner": "npm-chain",
+      "requiredSources": [
+        "scripts/test-floor-plan-directory-privacy.ts",
+        "scripts/test-floor-plan-catalog-draft-match.ts",
+        "scripts/test-floor-plan-live-progress.ts",
+        "scripts/test-floor-plan-multifloor-parity.ts",
+        "scripts/test-floor-plan-render-parity.ts",
+        "scripts/test-floor-plan-serving-integrity.ts",
+        "scripts/test-floor-plan-private-source-retention.ts"
+      ],
+      "requiredContributions": [
+        {
+          "id": "floor-plan.preview-asset-static-root",
+          "source": "scripts/test-floor-plan-catalog-draft-match.ts",
+          "marker": "The trace-visible root must be statically bounded to public/assets."
+        },
+        {
+          "id": "floor-plan.preview-asset-security-negatives",
+          "source": "scripts/test-floor-plan-catalog-draft-match.ts",
+          "marker": "Unsafe preview path must be rejected:"
+        }
+      ],
+      "requiredProjects": [],
+      "allowSkips": false,
+      "allowRetries": false,
+      "reportType": "process-exit",
+      "artifactBinding": "none",
+      "ci": { "job": "stable-checks", "step": "Verify complete floor-plan platform" }
+    },
+    {
+      "id": "ci.catalog-materials",
+      "invariant": "Catalog quality, registry/media identities, surface-material schema and render/lazy parity, retailer mappings, and required asset availability remain strict.",
+      "cadence": "merge-required",
+      "blocking": true,
+      "command": "npm run test:catalog-audit && npm run test:catalog-asset-availability && npm run test:surface-material-semantics",
+      "packageScripts": ["test:catalog-audit", "test:catalog-asset-availability", "test:surface-material-semantics"],
+      "packageClosure": { "expectedScriptCount": 12, "expectedSha256": "7ea65dfdc5ea31aac049836764123a9bc5a2e80b3af30c36bb42c34d8755b5e0" },
+      "runner": "npm-chain",
+      "requiredSources": [
+        "scripts/test-catalog-quality-audit.ts",
+        "scripts/test-catalog-registry-sync.ts",
+        "scripts/test-catalog-asset-availability.ts",
+        "scripts/test-surface-material-schema.ts",
+        "scripts/test-surface-material-browser-semantics.ts",
+        "scripts/test-phase8-performance-boundaries.ts"
+      ],
+      "requiredCommandSources": [
+        "scripts/test-surface-material-schema.ts",
+        "scripts/test-surface-material-browser-semantics.ts",
+        "scripts/test-phase8-performance-boundaries.ts"
+      ],
+      "forbiddenCommandFragments": ["--filter", "--skip", "--retry", "--only"],
+      "forbidCommandFailureSwallowing": true,
+      "requiredContributions": [
+        {
+          "id": "surface.yaml-render-parity",
+          "source": "scripts/test-surface-material-schema.ts",
+          "marker": "every production YAML record must contribute exactly one render-registry record"
+        },
+        {
+          "id": "surface.render-lazy-id-parity",
+          "source": "scripts/test-surface-material-schema.ts",
+          "marker": "generated render and lazy catalog projections must preserve identical IDs and ordering"
+        },
+        {
+          "id": "surface.fixture-exclusion",
+          "source": "scripts/test-surface-material-schema.ts",
+          "marker": "test-only published flooring fixture must not be in production runtime data"
+        },
+        {
+          "id": "surface.texture-map-identity",
+          "source": "scripts/test-surface-material-schema.ts",
+          "marker": "texture-map identities must match canonical YAML"
+        },
+        {
+          "id": "surface.physical-uv-scaling",
+          "source": "scripts/test-surface-material-schema.ts",
+          "marker": "physical repeat must not change between different room sizes"
+        },
+        {
+          "id": "surface.2d-3d-parity",
+          "source": "scripts/test-surface-material-schema.ts",
+          "marker": "north wall finishes should render only on the room-facing side"
+        },
+        {
+          "id": "surface.room-assignment",
+          "source": "scripts/test-surface-material-schema.ts",
+          "marker": "selected wall face must resolve its override material"
+        },
+        {
+          "id": "surface.save-reload",
+          "source": "scripts/test-surface-material-schema.ts",
+          "marker": "surface assignments and rendering settings must survive the application save/sanitize/reload boundary"
+        },
+        {
+          "id": "surface.search-filter-grouping",
+          "source": "scripts/test-surface-material-browser-semantics.ts",
+          "marker": "surface search must retain product, ID, supplier, collection, and suitability terms"
+        },
+        {
+          "id": "surface.variants",
+          "source": "scripts/test-surface-material-browser-semantics.ts",
+          "marker": "the selected material variant must remain the primary browser identity"
+        },
+        {
+          "id": "surface.nippon-selection",
+          "source": "scripts/test-surface-material-browser-semantics.ts",
+          "marker": "the lazy browser must expose every Nippon selection"
+        },
+        {
+          "id": "surface.bom-export",
+          "source": "scripts/test-surface-material-schema.ts",
+          "marker": "surface BOM CSV rows must include floor pattern, rotation, and joint metadata"
+        },
+        {
+          "id": "surface.negative-publication-policy",
+          "source": "scripts/test-surface-material-schema.ts",
+          "marker": "published surface materials must not have unresolved publish blockers"
+        },
+        {
+          "id": "surface.lazy-catalog-boundary",
+          "source": "scripts/test-phase8-performance-boundaries.ts",
+          "marker": "the full surface catalog must be absent from /design initial chunks"
+        },
+        {
+          "id": "surface.phase8-bundle-boundary",
+          "source": "scripts/test-phase8-performance-boundaries.ts",
+          "marker": "the required surface-material bundle boundary needs the strict /design route manifest"
+        }
+      ],
+      "requiredProjects": [],
+      "allowSkips": false,
+      "allowRetries": false,
+      "reportType": "process-exit",
+      "artifactBinding": "none",
+      "ci": {
+        "job": "stable-checks",
+        "steps": ["Audit catalog quality and surface-material semantics", "Audit catalog asset availability"],
+        "afterSteps": ["Build strict production-equivalent artifact evidence"],
+        "stepInvocations": [
+          {
+            "step": "Audit catalog quality and surface-material semantics",
+            "invocation": "npm run test:catalog-audit && npm run test:surface-material-semantics"
+          }
+        ]
+      }
+    },
+    {
+      "id": "ci.asset-inventory",
+      "invariant": "Required public/model assets resolve under the strict asset inventory policy.",
+      "cadence": "merge-required",
+      "blocking": true,
+      "command": "npm run assets:inventory:strict",
+      "packageScript": "assets:inventory:strict",
+      "packageClosure": { "expectedScriptCount": 1, "expectedSha256": "474f6817f74b6072bc7e366a8b48c5db5ca8c89ccb2a670fd839ece38d0603a1" },
+      "runner": "node",
+      "requiredSources": ["scripts/asset-inventory.mjs"],
+      "requiredProjects": [],
+      "allowSkips": false,
+      "allowRetries": false,
+      "reportType": "process-exit",
+      "artifactBinding": "none",
+      "ci": { "job": "stable-checks", "step": "Verify asset inventory" }
+    },
+    {
+      "id": "ci.pro-visual-static",
+      "invariant": "Consumer/Pro theme contrast and Cabinet Preview renderer policies execute before browser coverage.",
+      "cadence": "merge-required",
+      "blocking": true,
+      "command": "npm run test:designer-theme-contrast && npm run test:cabinetry-preview-renderer",
+      "packageScripts": ["test:designer-theme-contrast", "test:cabinetry-preview-renderer"],
+      "packageClosure": { "expectedScriptCount": 2, "expectedSha256": "0908541015653b673b36cc89a5067873e130b354e7273df75ec6956e05a20534" },
+      "runner": "npm-chain",
+      "requiredSources": [
+        "scripts/test-designer-theme-contrast.ts",
+        "scripts/test-cabinetry-preview-renderer.ts"
+      ],
+      "requiredProjects": [],
+      "allowSkips": false,
+      "allowRetries": false,
+      "reportType": "process-exit",
+      "artifactBinding": "none",
+      "ci": { "job": "stable-checks", "step": "Verify Pro visual and Cabinet Preview policies" }
+    },
+    {
+      "id": "ci.pro-visual-policy",
+      "invariant": "Consumer and Pro visual policy, including the accessible Cmd/Ctrl+K Command Palette lifecycle, Client Preview command-bar focus exclusion, direct and nested Plans ownership, and the route-mocked Present/Export to Share Link Fallback clipboard-failure lifecycle with topmost isolation, semantic return, preserved command and Copy/Open behavior, narrow containment, scope cancellation, and supersession, executes in both required browser engines with no focus, skip, retry, or flake.",
+      "cadence": "merge-required",
+      "blocking": true,
+      "command": "npm run test:pro-visual-policy",
+      "packageScript": "test:pro-visual-policy",
+      "packageClosure": { "expectedScriptCount": 1, "expectedSha256": "e405cb73f95c111fb19dd7bbb4886c760841f8a08afcf0ba5bdb7e99482e3fa3" },
+      "runner": "playwright",
+      "requiredSources": [
+        "tests/e2e/pro-visual-policy.spec.ts",
+        "tests/e2e/client-preview-focus-recorder.ts"
+      ],
+      "requiredTests": [
+        {
+          "id": "visual.consumer-pro-theme",
+          "file": "tests/e2e/pro-visual-policy.spec.ts",
+          "title": "uses the consumer visual theme with a clear Pro mode indicator"
+        },
+        {
+          "id": "visual.cabinet-preview-policy",
+          "file": "tests/e2e/pro-visual-policy.spec.ts",
+          "title": "keeps all recommended Cabinet Preview templates readable under the RC-5 policy"
+        },
+        {
+          "id": "visual.client-preview-command-bar-focus",
+          "file": "tests/e2e/pro-visual-policy.spec.ts",
+          "title": "excludes the persistent command bar from Client Preview focus and restores semantic focus"
+        },
+        {
+          "id": "visual.client-preview-responsive-scope",
+          "file": "tests/e2e/pro-visual-policy.spec.ts",
+          "title": "keeps Client Preview responsive, scope-cancelled, and Pro-gated"
+        },
+        {
+          "id": "visual.client-preview-presentation-entry",
+          "file": "tests/e2e/pro-visual-policy.spec.ts",
+          "title": "uses the same Client Preview focus contract from presentation export"
+        },
+        {
+          "id": "visual.plans-account-pointer",
+          "file": "tests/e2e/pro-visual-policy.spec.ts",
+          "title": "gives Account pointer entry a complete Plans modal lifecycle"
+        },
+        {
+          "id": "visual.plans-account-keyboard-narrow",
+          "file": "tests/e2e/pro-visual-policy.spec.ts",
+          "title": "gives Account keyboard entry semantic replacement and narrow Plans return"
+        },
+        {
+          "id": "visual.plans-upgrade-pointer",
+          "file": "tests/e2e/pro-visual-policy.spec.ts",
+          "title": "gives Upgrade pointer entry exclusive nested Plans ownership"
+        },
+        {
+          "id": "visual.plans-upgrade-keyboard",
+          "file": "tests/e2e/pro-visual-policy.spec.ts",
+          "title": "gives Upgrade keyboard entry topmost Escape and supersession safety"
+        },
+        {
+          "id": "visual.plans-unmount-billing-policy",
+          "file": "tests/e2e/pro-visual-policy.spec.ts",
+          "title": "cancels Plans return on route unmount and preserves Free and Pro billing policy"
+        },
+        {
+          "id": "visual.share-fallback-consumer-pointer-actions",
+          "file": "tests/e2e/pro-visual-policy.spec.ts",
+          "title": "gives Consumer pointer Share Link Fallback exclusive nested ownership and preserved actions"
+        },
+        {
+          "id": "visual.share-fallback-pro-keyboard-narrow",
+          "file": "tests/e2e/pro-visual-policy.spec.ts",
+          "title": "gives Pro keyboard and narrow Share Link Fallback semantic return and parent guards"
+        },
+        {
+          "id": "visual.share-fallback-supersession-scope",
+          "file": "tests/e2e/pro-visual-policy.spec.ts",
+          "title": "cancels Share Link Fallback restoration across supersession, project scope, mode, and unmount"
+        },
+        {
+          "id": "visual.command-palette-consumer-meta",
+          "file": "tests/e2e/pro-visual-policy.spec.ts",
+          "title": "gives Consumer Meta Command Palette complete modal and Enter execution ownership"
+        },
+        {
+          "id": "visual.command-palette-pro-control-narrow",
+          "file": "tests/e2e/pro-visual-policy.spec.ts",
+          "title": "gives Pro Control narrow Palette containment, semantic replacement, fallback, and backdrop dismissal"
+        },
+        {
+          "id": "visual.command-palette-modal-ownership",
+          "file": "tests/e2e/pro-visual-policy.spec.ts",
+          "title": "blocks Palette behind another modal and gives a newer registered dialog exclusive ownership"
+        },
+        {
+          "id": "visual.command-palette-scope-cancellation",
+          "file": "tests/e2e/pro-visual-policy.spec.ts",
+          "title": "invalidates open Palette sessions on Client Preview, project scope, and unmount"
+        },
+        {
+          "id": "visual.command-palette-editable-pointer",
+          "file": "tests/e2e/pro-visual-policy.spec.ts",
+          "title": "preserves editable suppression and pointer action exact-once close ordering"
+        }
+      ],
+      "requiredProjects": ["chromium", "webkit"],
+      "allowSkips": false,
+      "allowRetries": false,
+      "allowAnnotations": false,
+      "reportType": "required-test-evidence",
+      "reportPath": ".local/required-test-evidence/ci.pro-visual-policy/evidence.json",
+      "maxAgeMinutes": 240,
+      "artifactBinding": "none",
+      "playwright": {
+        "config": "playwright.pro-visual.config.ts",
+        "args": ["playwright", "test", "-c", "playwright.pro-visual.config.ts"]
+      },
+      "ci": { "job": "stable-checks", "step": "Run Pro visual policy matrix" }
+    },
+    {
+      "id": "ci.public-share-responsive",
+      "invariant": "The closed public projection and responsive share presentation execute in Chromium and WebKit across canonical room, view, breakpoint, readiness, identity, overflow, focus, touch-target, privacy, and invalid-token states.",
+      "cadence": "merge-required",
+      "blocking": true,
+      "command": "npm run test:public-share-responsive-required",
+      "packageScript": "test:public-share-responsive-required",
+      "packageClosure": { "expectedScriptCount": 2, "expectedSha256": "d554bcd17619cead3de0012153f24a352b71dd45719262e0a7902c7453a033fe" },
+      "packagePrerequisites": ["test:share-responsive-unit"],
+      "requiredEnvironment": {
+        "APP_ENV": "staging",
+        "CATALOG_STRICT_VALIDATION": "true",
+        "PLAYWRIGHT_USE_PRODUCTION_SERVER": "1"
+      },
+      "runner": "playwright",
+      "requiredSources": [
+        "scripts/test-public-share-responsive.ts",
+        "scripts/fixtures/public-share-projection-identity-collision.json",
+        "tests/e2e/share-responsive.spec.ts",
+        "tests/e2e/beta-seed.ts",
+        "tests/e2e/fixtures.ts",
+        "playwright.share-responsive.config.ts"
+      ],
+      "requiredTests": [
+        {
+          "id": "share.single-room-responsive-projection",
+          "file": "tests/e2e/share-responsive.spec.ts",
+          "title": "single-room desktop and mobile share has a deterministic fallback and projection"
+        },
+        {
+          "id": "share.multi-room-responsive-continuity",
+          "file": "tests/e2e/share-responsive.spec.ts",
+          "title": "multi-room selection, saved view, focus, and identity survive both resize directions"
+        },
+        {
+          "id": "share.tablet-landscape-overflow",
+          "file": "tests/e2e/share-responsive.spec.ts",
+          "title": "tablet and mobile-landscape layouts remain ready without overflow"
+        },
+        {
+          "id": "share.invalid-revoked-history",
+          "file": "tests/e2e/share-responsive.spec.ts",
+          "title": "history, reload, invalid, and revoked states are distinct and deterministic"
+        }
+      ],
+      "requiredProjects": ["chromium", "webkit"],
+      "allowSkips": false,
+      "allowRetries": false,
+      "allowAnnotations": false,
+      "requireCleanSource": true,
+      "reportType": "required-test-evidence",
+      "reportPath": ".local/required-test-evidence/ci.public-share-responsive/evidence.json",
+      "maxAgeMinutes": 240,
+      "artifactBinding": "none",
+      "playwright": {
+        "config": "playwright.share-responsive.config.ts",
+        "args": ["playwright", "test", "--config=playwright.share-responsive.config.ts"],
+        "exactConfigOnly": true
+      },
+      "ci": { "job": "stable-checks", "step": "Run required responsive public-share matrix" }
+    },
+    {
+      "id": "ci.cart-overlay-accessibility",
+      "invariant": "The Selection Tray owns one modal drawer lifecycle with no closed accessibility-active controls and deterministic focus entry, containment, Escape, backdrop, return, replacement, supersession, responsive, Consumer, and Pro behavior in Chromium and WebKit.",
+      "cadence": "merge-required",
+      "blocking": true,
+      "command": "npm run test:cart-overlay-accessibility-required",
+      "packageScript": "test:cart-overlay-accessibility-required",
+      "packageClosure": { "expectedScriptCount": 2, "expectedSha256": "cc8a751cbca29e97536938dab1525cb17ee1cc8dad18174564d58d4dae1703fb" },
+      "packagePrerequisites": ["test:cart-overlay-static"],
+      "requiredEnvironment": { "APP_ENV": "development" },
+      "runner": "playwright",
+      "requiredSources": [
+        "scripts/test-cart-overlay-static.tsx",
+        "tests/required/cart-overlay-accessibility.spec.ts",
+        "playwright.cart-overlay.config.ts"
+      ],
+      "requiredTests": [
+        {
+          "id": "cart.consumer-lifecycle",
+          "file": "tests/required/cart-overlay-accessibility.spec.ts",
+          "title": "consumer empty cart owns a closed, pointer, keyboard, and reopen lifecycle"
+        },
+        {
+          "id": "cart.pro-lifecycle",
+          "file": "tests/required/cart-overlay-accessibility.spec.ts",
+          "title": "pro empty cart owns a closed, pointer, keyboard, and reopen lifecycle"
+        },
+        {
+          "id": "cart.semantic-opener-replacement",
+          "file": "tests/required/cart-overlay-accessibility.spec.ts",
+          "title": "cart restoration resolves the current semantic replacement opener"
+        },
+        {
+          "id": "cart.missing-opener",
+          "file": "tests/required/cart-overlay-accessibility.spec.ts",
+          "title": "cart restoration ignores a missing and disabled opener"
+        },
+        {
+          "id": "cart.newer-modal",
+          "file": "tests/required/cart-overlay-accessibility.spec.ts",
+          "title": "a newer modal supersedes cart Escape and focus restoration"
+        },
+        {
+          "id": "cart.owned-dialog",
+          "file": "tests/required/cart-overlay-accessibility.spec.ts",
+          "title": "an owned dialog keeps initial focus and cannot steal focus when the cart closes"
+        },
+        {
+          "id": "cart.responsive-lifecycle",
+          "file": "tests/required/cart-overlay-accessibility.spec.ts",
+          "title": "responsive cart retains modal ownership without overflow or clipped focus"
+        },
+        {
+          "id": "cart.route-unmount",
+          "file": "tests/required/cart-overlay-accessibility.spec.ts",
+          "title": "route replacement cancels cart focus restoration"
+        }
+      ],
+      "requiredProjects": ["chromium", "webkit"],
+      "allowSkips": false,
+      "allowRetries": false,
+      "allowAnnotations": false,
+      "reportType": "required-test-evidence",
+      "reportPath": ".local/required-test-evidence/ci.cart-overlay-accessibility/evidence.json",
+      "maxAgeMinutes": 240,
+      "artifactBinding": "none",
+      "playwright": {
+        "config": "playwright.cart-overlay.config.ts",
+        "testRoot": "tests/required",
+        "args": ["playwright", "test", "-c", "playwright.cart-overlay.config.ts"],
+        "exactConfigOnly": true
+      },
+      "ci": { "job": "stable-checks", "step": "Run required cart overlay accessibility matrix" }
+    },
+    {
+      "id": "ci.retailer-confirmation-accessibility",
+      "invariant": "Retailer multi-tab confirmation owns one typed, generation-bound modal lifecycle across global and retailer-group actions while preserving exact affiliate counting, tracking, opening, cancellation, focus, responsive, Guest, Consumer, and Pro behavior in Chromium and WebKit.",
+      "cadence": "merge-required",
+      "blocking": true,
+      "command": "npm run test:retailer-confirmation-accessibility-required",
+      "packageScript": "test:retailer-confirmation-accessibility-required",
+      "packageClosure": { "expectedScriptCount": 2, "expectedSha256": "808a1bf39daa58ac4e0e7a0599ecdb9782abd2beeec7c2d434e2ca3e49bbc836" },
+      "packagePrerequisites": ["test:retailer-confirmation-static"],
+      "requiredEnvironment": { "APP_ENV": "development" },
+      "runner": "playwright",
+      "requiredSources": [
+        "scripts/test-retailer-confirmation-static.tsx",
+        "scripts/build-retailer-confirmation-browser-fixture.mjs",
+        "scripts/guest-save-overlay-ts-loader.mjs",
+        "tests/required/retailer-confirmation-accessibility.spec.ts",
+        "tests/required/fixtures/retailer-confirmation-harness.tsx",
+        "playwright.retailer-confirmation.config.ts"
+      ],
+      "requiredTests": [
+        {
+          "id": "retailer-confirmation.global-pointer-lifecycle",
+          "file": "tests/required/retailer-confirmation-accessibility.spec.ts",
+          "title": "Global pointer lifecycle owns modal cancellation and exact-once continuation"
+        },
+        {
+          "id": "retailer-confirmation.global-keyboard-fail-open",
+          "file": "tests/required/retailer-confirmation-accessibility.spec.ts",
+          "title": "Global keyboard lifecycle keeps tracking failure fail-open without duplicate windows"
+        },
+        {
+          "id": "retailer-confirmation.group-pointer-same-tab",
+          "file": "tests/required/retailer-confirmation-accessibility.spec.ts",
+          "title": "Retailer-group pointer lifecycle preserves same-tab first-link navigation"
+        },
+        {
+          "id": "retailer-confirmation.group-keyboard-restoration",
+          "file": "tests/required/retailer-confirmation-accessibility.spec.ts",
+          "title": "Retailer-group keyboard lifecycle restores replacements and the Cart fallback"
+        },
+        {
+          "id": "retailer-confirmation.count-zero",
+          "file": "tests/required/retailer-confirmation-accessibility.spec.ts",
+          "title": "Counting zero tabs keeps checkout disabled"
+        },
+        {
+          "id": "retailer-confirmation.count-one",
+          "file": "tests/required/retailer-confirmation-accessibility.spec.ts",
+          "title": "Counting one tab opens directly without confirmation"
+        },
+        {
+          "id": "retailer-confirmation.count-three",
+          "file": "tests/required/retailer-confirmation-accessibility.spec.ts",
+          "title": "Counting three tabs opens directly without confirmation"
+        },
+        {
+          "id": "retailer-confirmation.count-four",
+          "file": "tests/required/retailer-confirmation-accessibility.spec.ts",
+          "title": "Counting four tabs opens confirmation and supports cancellation"
+        },
+        {
+          "id": "retailer-confirmation.count-bundle-exclusion-missing",
+          "file": "tests/required/retailer-confirmation-accessibility.spec.ts",
+          "title": "Counting preserves bundle exclusion and missing-link behavior"
+        },
+        {
+          "id": "retailer-confirmation.count-duplicate",
+          "file": "tests/required/retailer-confirmation-accessibility.spec.ts",
+          "title": "Counting preserves duplicate URLs without deduplication"
+        },
+        {
+          "id": "retailer-confirmation.count-unavailable-row",
+          "file": "tests/required/retailer-confirmation-accessibility.spec.ts",
+          "title": "Counting preserves unavailable affiliate and row-open behavior"
+        },
+        {
+          "id": "retailer-confirmation.scope-route-unmount",
+          "file": "tests/required/retailer-confirmation-accessibility.spec.ts",
+          "title": "Scope route and unmount changes cancel stale continuation and restoration"
+        },
+        {
+          "id": "retailer-confirmation.newer-dialog",
+          "file": "tests/required/retailer-confirmation-accessibility.spec.ts",
+          "title": "A newer registered dialog supersedes dismissal and stale focus restoration"
+        },
+        {
+          "id": "retailer-confirmation.audience-parity",
+          "file": "tests/required/retailer-confirmation-accessibility.spec.ts",
+          "title": "Guest Consumer and Pro receive the same affiliate confirmation contract"
+        },
+        {
+          "id": "retailer-confirmation.responsive-visual",
+          "file": "tests/required/retailer-confirmation-accessibility.spec.ts",
+          "title": "Desktop and 390x844 global and group prompts contain actions focus rings and IDs"
+        }
+      ],
+      "requiredProjects": ["chromium", "webkit"],
+      "allowSkips": false,
+      "allowRetries": false,
+      "allowAnnotations": false,
+      "reportType": "required-test-evidence",
+      "reportPath": ".local/required-test-evidence/ci.retailer-confirmation-accessibility/evidence.json",
+      "maxAgeMinutes": 240,
+      "artifactBinding": "none",
+      "playwright": {
+        "config": "playwright.retailer-confirmation.config.ts",
+        "testRoot": "tests/required",
+        "args": ["playwright", "test", "-c", "playwright.retailer-confirmation.config.ts"],
+        "exactConfigOnly": true
+      },
+      "ci": { "job": "stable-checks", "step": "Run required Retailer Confirmation accessibility matrix" }
+    },
+    {
+      "id": "ci.guest-save-overlay-accessibility",
+      "invariant": "The Guest Save Prompt owns one typed, generation-bound modal lifecycle across Save, AI layout, and Shopify checkout, separating explicit continuation from cancellation and restoring current semantic focus across desktop, narrow, scope, auth, and supersession paths in Chromium and WebKit.",
+      "cadence": "merge-required",
+      "blocking": true,
+      "command": "npm run test:guest-save-overlay-accessibility-required",
+      "packageScript": "test:guest-save-overlay-accessibility-required",
+      "packageClosure": { "expectedScriptCount": 2, "expectedSha256": "c39ee6ba1530d042c500662969f56b81b728ee7f4b6d644dc5420db54d3b254e" },
+      "packagePrerequisites": ["test:guest-save-overlay-static"],
+      "requiredEnvironment": {
+        "APP_ENV": "development",
+        "PLAYWRIGHT_USE_PRODUCTION_SERVER": "1"
+      },
+      "runner": "playwright",
+      "requiredSources": [
+        "scripts/test-guest-save-overlay-static.tsx",
+        "scripts/build-guest-save-overlay-browser-fixture.mjs",
+        "scripts/guest-save-overlay-ts-loader.mjs",
+        "tests/required/guest-save-overlay-accessibility.spec.ts",
+        "tests/required/fixtures/guest-save-checkout-harness.tsx",
+        "playwright.guest-save-overlay.config.ts"
+      ],
+      "requiredTests": [
+        {
+          "id": "guest-save.save-pointer-lifecycle",
+          "file": "tests/required/guest-save-overlay-accessibility.spec.ts",
+          "title": "Save pointer lifecycle owns semantics, containment, cancellation, return, and reopen"
+        },
+        {
+          "id": "guest-save.save-keyboard-lifecycle",
+          "file": "tests/required/guest-save-overlay-accessibility.spec.ts",
+          "title": "Save keyboard lifecycle returns across responsive remount and blocks duplicate primary activation"
+        },
+        {
+          "id": "guest-save.ai-pointer-lifecycle",
+          "file": "tests/required/guest-save-overlay-accessibility.spec.ts",
+          "title": "AI pointer lifecycle cancels every generic dismissal without starting generation"
+        },
+        {
+          "id": "guest-save.ai-keyboard-fallback",
+          "file": "tests/required/guest-save-overlay-accessibility.spec.ts",
+          "title": "AI keyboard lifecycle rejects a removed opener and restores the workflow fallback"
+        },
+        {
+          "id": "guest-save.checkout-pointer-lifecycle",
+          "file": "tests/required/guest-save-overlay-accessibility.spec.ts",
+          "title": "Checkout pointer lifecycle cancels without request or navigation and continues once"
+        },
+        {
+          "id": "guest-save.checkout-keyboard-scope",
+          "file": "tests/required/guest-save-overlay-accessibility.spec.ts",
+          "title": "Checkout keyboard lifecycle uses semantic fallback with no cancelled request"
+        },
+        {
+          "id": "guest-save.topmost-supersession",
+          "file": "tests/required/guest-save-overlay-accessibility.spec.ts",
+          "title": "A newer registered modal owns topmost dismissal before the Guest Save Prompt"
+        },
+        {
+          "id": "guest-save.mobile-authenticated-policy",
+          "file": "tests/required/guest-save-overlay-accessibility.spec.ts",
+          "title": "Guest mobile geometry contains every reason and authenticated Pro bypass remains unchanged"
+        }
+      ],
+      "requiredProjects": ["chromium", "webkit"],
+      "allowSkips": false,
+      "allowRetries": false,
+      "allowAnnotations": false,
+      "reportType": "required-test-evidence",
+      "reportPath": ".local/required-test-evidence/ci.guest-save-overlay-accessibility/evidence.json",
+      "maxAgeMinutes": 240,
+      "artifactBinding": "none",
+      "playwright": {
+        "config": "playwright.guest-save-overlay.config.ts",
+        "testRoot": "tests/required",
+        "args": ["playwright", "test", "--config=playwright.guest-save-overlay.config.ts"],
+        "exactConfigOnly": true
+      },
+      "ci": {
+        "job": "stable-checks",
+        "step": "Run required Guest Save Prompt accessibility matrix",
+        "afterSteps": ["Build strict production-equivalent artifact evidence"]
+      }
+    },
+    {
+      "id": "ci.my-designs-overlay-accessibility",
+      "invariant": "My Designs owns one modal parent lifecycle while its nested single and bulk delete confirmation exclusively owns the topmost dialog, conceals the mounted parent, invokes each mutation once, and restores focus by current semantic identity across Consumer, Pro, responsive, replacement, failure, supersession, and unmount paths in Chromium and WebKit.",
+      "cadence": "merge-required",
+      "blocking": true,
+      "command": "npm run test:my-designs-overlay-accessibility-required",
+      "packageScript": "test:my-designs-overlay-accessibility-required",
+      "packageClosure": { "expectedScriptCount": 2, "expectedSha256": "a0f941f3c13cf76f469164bc1f0562ec045124e0c2e4f0ccbf5b98f9d9d6159e" },
+      "packagePrerequisites": ["test:my-designs-overlay-static"],
+      "requiredEnvironment": {
+        "APP_ENV": "development",
+        "PLAYWRIGHT_USE_PRODUCTION_SERVER": "1"
+      },
+      "runner": "playwright",
+      "requiredSources": [
+        "scripts/test-my-designs-overlay-static.tsx",
+        "tests/required/my-designs-overlay-accessibility.spec.ts",
+        "playwright.my-designs-overlay.config.ts"
+      ],
+      "requiredTests": [
+        {
+          "id": "my-designs.consumer-parent-lifecycle",
+          "file": "tests/required/my-designs-overlay-accessibility.spec.ts",
+          "title": "consumer parent pointer lifecycle owns semantics, containment, dismissal, return, and lazy entry"
+        },
+        {
+          "id": "my-designs.pro-keyboard-narrow",
+          "file": "tests/required/my-designs-overlay-accessibility.spec.ts",
+          "title": "pro keyboard and narrow lifecycle preserves backdrop return without overflow or clipped focus"
+        },
+        {
+          "id": "my-designs.content-states",
+          "file": "tests/required/my-designs-overlay-accessibility.spec.ts",
+          "title": "loading, empty, and populated states retain one parent owner"
+        },
+        {
+          "id": "my-designs.single-delete",
+          "file": "tests/required/my-designs-overlay-accessibility.spec.ts",
+          "title": "single delete cancel and success conceal the parent and restore a current semantic target"
+        },
+        {
+          "id": "my-designs.single-delete-failure",
+          "file": "tests/required/my-designs-overlay-accessibility.spec.ts",
+          "title": "failed single delete invokes once and restores the surviving delete action"
+        },
+        {
+          "id": "my-designs.bulk-delete",
+          "file": "tests/required/my-designs-overlay-accessibility.spec.ts",
+          "title": "bulk delete cancel, busy guard, and success invoke once per target and focus the surviving row"
+        },
+        {
+          "id": "my-designs.current-design-delete",
+          "file": "tests/required/my-designs-overlay-accessibility.spec.ts",
+          "title": "deleting the loaded final design preserves detach semantics and focuses the empty parent hierarchy"
+        },
+        {
+          "id": "my-designs.supersession-unmount",
+          "file": "tests/required/my-designs-overlay-accessibility.spec.ts",
+          "title": "semantic replacement, newer owned dialog, reopen, and route unmount suppress stale restoration"
+        }
+      ],
+      "requiredProjects": ["chromium", "webkit"],
+      "allowSkips": false,
+      "allowRetries": false,
+      "allowAnnotations": false,
+      "reportType": "required-test-evidence",
+      "reportPath": ".local/required-test-evidence/ci.my-designs-overlay-accessibility/evidence.json",
+      "maxAgeMinutes": 240,
+      "artifactBinding": "none",
+      "playwright": {
+        "config": "playwright.my-designs-overlay.config.ts",
+        "testRoot": "tests/required",
+        "args": ["playwright", "test", "--config=playwright.my-designs-overlay.config.ts"],
+        "exactConfigOnly": true
+      },
+      "ci": {
+        "job": "stable-checks",
+        "step": "Run required My Designs overlay accessibility matrix",
+        "afterSteps": ["Build strict production-equivalent artifact evidence"]
+      }
+    },
+    {
+      "id": "ci.floor-plan-upload-accessibility",
+      "invariant": "The full-screen Floor Plan Upload workspace owns one accessible parent lifecycle across Consumer and Pro entry paths, workflow states, desktop and 390x844 presentation, topmost containment, semantic return, registered-child supersession, and stack-safe body-scroll ownership in Chromium and WebKit while preserving inline history confirmation policy.",
+      "cadence": "merge-required",
+      "blocking": true,
+      "command": "npm run test:floor-plan-upload-accessibility-required",
+      "packageScript": "test:floor-plan-upload-accessibility-required",
+      "packageClosure": { "expectedScriptCount": 2, "expectedSha256": "9886ed08fb4a74d67873494181be2ef5c4ea6963553eaf7dca76a32b48318d2f" },
+      "packagePrerequisites": ["test:floor-plan-upload-accessibility-static"],
+      "requiredEnvironment": {
+        "APP_ENV": "development",
+        "PLAYWRIGHT_USE_PRODUCTION_SERVER": "1"
+      },
+      "runner": "playwright",
+      "requiredSources": [
+        "scripts/test-floor-plan-upload-accessibility-static.ts",
+        "scripts/build-floor-plan-upload-browser-fixture.mjs",
+        "scripts/guest-save-overlay-ts-loader.mjs",
+        "tests/required/floor-plan-upload-accessibility.spec.ts",
+        "tests/required/fixtures/floor-plan-inert-html-host.ts",
+        "tests/required/fixtures/floor-plan-empty-entry-harness.tsx",
+        "tests/required/fixtures/floor-plan-upload-dialog-harness.tsx",
+        "tests/required/fixtures/next-navigation-browser-fixture.ts",
+        "playwright.floor-plan-upload.config.ts"
+      ],
+      "requiredTests": [
+        {
+          "id": "floor-plan-upload.consumer-pointer",
+          "file": "tests/required/floor-plan-upload-accessibility.spec.ts",
+          "title": "consumer pointer desktop owns containment and semantic return"
+        },
+        {
+          "id": "floor-plan-upload.consumer-keyboard",
+          "file": "tests/required/floor-plan-upload-accessibility.spec.ts",
+          "title": "consumer keyboard desktop owns containment and semantic return"
+        },
+        {
+          "id": "floor-plan-upload.pro-pointer",
+          "file": "tests/required/floor-plan-upload-accessibility.spec.ts",
+          "title": "pro pointer desktop preserves backdrop, close, and opener return"
+        },
+        {
+          "id": "floor-plan-upload.pro-keyboard",
+          "file": "tests/required/floor-plan-upload-accessibility.spec.ts",
+          "title": "pro keyboard desktop preserves backdrop, close, and opener return"
+        },
+        {
+          "id": "floor-plan-upload.mobile",
+          "file": "tests/required/floor-plan-upload-accessibility.spec.ts",
+          "title": "mobile 390x844 remains full-screen without overflow and survives responsive replacement"
+        },
+        {
+          "id": "floor-plan-upload.workflow-states",
+          "file": "tests/required/floor-plan-upload-accessibility.spec.ts",
+          "title": "state transitions focus page selection, calibration recovery, and review"
+        },
+        {
+          "id": "floor-plan-upload.ready-failure-upload",
+          "file": "tests/required/floor-plan-upload-accessibility.spec.ts",
+          "title": "state transitions focus ready, failure, and image upload"
+        },
+        {
+          "id": "floor-plan-upload.registered-child",
+          "file": "tests/required/floor-plan-upload-accessibility.spec.ts",
+          "title": "registered child supersedes, returns inside, and retains Strict Mode scroll ownership"
+        },
+        {
+          "id": "floor-plan-upload.history-policy",
+          "file": "tests/required/floor-plan-upload-accessibility.spec.ts",
+          "title": "history confirmation is unchanged and guards parent Escape while scope replacement cancels stale return"
+        },
+        {
+          "id": "floor-plan-upload.fallback-reopen",
+          "file": "tests/required/floor-plan-upload-accessibility.spec.ts",
+          "title": "removed opener falls back and reopen creates a new lifecycle generation"
+        }
+      ],
+      "requiredProjects": ["chromium", "webkit"],
+      "allowSkips": false,
+      "allowRetries": false,
+      "allowAnnotations": false,
+      "reportType": "required-test-evidence",
+      "reportPath": ".local/required-test-evidence/ci.floor-plan-upload-accessibility/evidence.json",
+      "maxAgeMinutes": 240,
+      "artifactBinding": "none",
+      "playwright": {
+        "config": "playwright.floor-plan-upload.config.ts",
+        "testRoot": "tests/required",
+        "args": ["playwright", "test", "--config=playwright.floor-plan-upload.config.ts"],
+        "exactConfigOnly": true
+      },
+      "ci": {
+        "job": "stable-checks",
+        "step": "Run required Floor Plan Upload accessibility matrix",
+        "afterSteps": [
+          "Apply database migrations",
+          "Build strict production-equivalent artifact evidence"
+        ]
+      }
+    },
+    {
+      "id": "ci.merge-gate",
+      "invariant": "Merge eligibility requires secret-scan, stable-checks, and advisory-contract-preflight to conclude successfully.",
+      "cadence": "merge-required",
+      "blocking": true,
+      "command": "GitHub Actions merge-gate result aggregation",
+      "runner": "github-actions",
+      "requiredSources": [".github/workflows/ci.yml"],
+      "requiredProjects": [],
+      "allowSkips": false,
+      "allowRetries": false,
+      "reportType": "github-check",
+      "artifactBinding": "source-workflow-results",
+      "ci": {
+        "job": "merge-gate",
+        "step": "Check required results",
+        "invocations": [
+          "needs: [secret-scan, stable-checks, advisory-contract-preflight]",
+          "if [ \"$SECRET_SCAN_RESULT\" != \"success\" ] || [ \"$STABLE_CHECKS_RESULT\" != \"success\" ] || [ \"$ADVISORY_CONTRACT_PREFLIGHT_RESULT\" != \"success\" ]; then",
+          "exit 1"
+        ]
+      }
+    },
+    {
+      "id": "advisory.full-e2e",
+      "invariant": "The broad development/staging browser inventory remains visible without being represented as merge or release certification.",
+      "cadence": "advisory",
+      "blocking": false,
+      "command": "npm run test:e2e:advisory",
+      "packageScript": "test:e2e:advisory",
+      "packageClosure": { "expectedScriptCount": 1, "expectedSha256": "814167f721e8d3bc126e455a00cf30975a211f45fa4edf83b0905b8b54d679fb" },
+      "runner": "playwright",
+      "requiredInventory": "browser-specs",
+      "supportingInventories": [
+        "cabinetry-browser-modules",
+        "multi-room-browser-modules"
+      ],
+      "reportOwnershipRegistrations": [
+        "cabinetry-browser-registrations",
+        "multi-room-browser-registrations"
+      ],
+      "requiredSources": [],
+      "requiredTests": [
+        { "id": "commerce.shopify-cart-checkout", "file": "tests/e2e/05-buy.spec.ts", "title": "add Shopify-mapped item to cart and checkout link works" },
+        { "id": "commerce.affiliate-checkout", "file": "tests/e2e/05-buy.spec.ts", "title": "affiliate checkout works" },
+        { "id": "commerce.imported-buyer-controls", "file": "tests/e2e/05-buy.spec.ts", "title": "imported catalog item can be added and reaches buyer controls" },
+        { "id": "catalog.kelsey-160-dropdown", "file": "tests/e2e/07-kelsey-variants.spec.ts", "title": "Kelsey 160 appears in imported furniture dropdown" },
+        { "id": "catalog.kelsey-variant-api", "file": "tests/e2e/07-kelsey-variants.spec.ts", "title": "API returns White Wash and Dark Walnut variants for both Kelsey sizes" },
+        { "id": "catalog.kelsey-dark-walnut-swatch", "file": "tests/e2e/07-kelsey-variants.spec.ts", "title": "Kelsey 160 Dark Walnut swatch is clickable when scene is ready" }
+      ],
+      "requiredProjects": ["chromium"],
+      "allowSkips": true,
+      "allowRetries": true,
+      "allowAnnotations": true,
+      "reportType": "required-test-evidence",
+      "reportPath": ".local/required-test-evidence/advisory.full-e2e/evidence.json",
+      "maxAgeMinutes": 1440,
+      "artifactBinding": "none",
+      "playwright": { "config": "playwright.config.ts", "args": ["playwright", "test"] },
+      "ci": {
+        "workflow": ".github/workflows/full-advisory-e2e.yml",
+        "job": "e2e-full",
+        "step": "Run advisory full E2E inventory"
+      }
+    },
+    {
+      "id": "release.gate-a3",
+      "invariant": "The complete checked-in Playwright spec inventory executes against one staged immutable artifact with no focus, filter, skip, retry, flake, failure, or not-run result.",
+      "cadence": "release-blocking",
+      "blocking": true,
+      "command": "npm run test:e2e:release",
+      "packageScript": "test:e2e:release",
+      "packageClosure": { "expectedScriptCount": 1, "expectedSha256": "e52bf0d5b54a97f622095dd017039c8faf3a55016dd5b707a9985249de800dab" },
+      "runner": "playwright",
+      "requiredInventory": "browser-specs",
+      "supportingInventories": [
+        "cabinetry-browser-modules",
+        "multi-room-browser-modules"
+      ],
+      "reportOwnershipRegistrations": [
+        "cabinetry-browser-registrations",
+        "multi-room-browser-registrations"
+      ],
+      "requiredSources": [],
+      "requiredTests": [
+        { "id": "commerce.shopify-cart-checkout", "file": "tests/e2e/05-buy.spec.ts", "title": "add Shopify-mapped item to cart and checkout link works" },
+        { "id": "commerce.affiliate-checkout", "file": "tests/e2e/05-buy.spec.ts", "title": "affiliate checkout works" },
+        { "id": "commerce.imported-buyer-controls", "file": "tests/e2e/05-buy.spec.ts", "title": "imported catalog item can be added and reaches buyer controls" },
+        { "id": "catalog.kelsey-160-dropdown", "file": "tests/e2e/07-kelsey-variants.spec.ts", "title": "Kelsey 160 appears in imported furniture dropdown" },
+        { "id": "catalog.kelsey-variant-api", "file": "tests/e2e/07-kelsey-variants.spec.ts", "title": "API returns White Wash and Dark Walnut variants for both Kelsey sizes" },
+        { "id": "catalog.kelsey-dark-walnut-swatch", "file": "tests/e2e/07-kelsey-variants.spec.ts", "title": "Kelsey 160 Dark Walnut swatch is clickable when scene is ready" }
+      ],
+      "requiredProjects": ["chromium"],
+      "allowSkips": false,
+      "allowRetries": false,
+      "allowAnnotations": false,
+      "reportType": "required-test-evidence",
+      "reportPath": ".vercel/gate-a3-required-test-evidence.json",
+      "maxAgeMinutes": 1440,
+      "artifactBinding": "vercel-prebuilt-source-artifact",
+      "playwright": { "config": "playwright.config.ts", "args": ["playwright", "test"] }
+    },
+    {
+      "id": "release.cabinetry-browser",
+      "invariant": "Every named Consumer/Pro cabinetry workflow executes in Chromium against the release candidate without focus, skip, retry, flake, failure, or not-run results.",
+      "cadence": "release-blocking",
+      "blocking": true,
+      "command": "npm run test:e2e:cabinetry-release",
+      "packageScript": "test:e2e:cabinetry-release",
+      "packageClosure": { "expectedScriptCount": 1, "expectedSha256": "21953753f89d99e6e1d9c07447e2648cb8e042e3a830467fc4a40fc7a08c82b4" },
+      "runner": "playwright",
+      "supportingInventories": ["cabinetry-browser-modules"],
+      "reportOwnershipRegistrations": ["cabinetry-browser-registrations"],
+      "requiredSources": ["tests/e2e/cabinetry-studio.spec.ts"],
+      "requiredTests": [
+        { "id": "cabinetry.wardrobe-selection", "file": "tests/e2e/cabinetry-studio.spec.ts", "title": "Detailed wardrobe selection stays coherent from module to shelf and back" },
+        { "id": "cabinetry.guided-preview-layout", "file": "tests/e2e/cabinetry-studio.spec.ts", "title": "Guided preview chrome does not overlap selection or dimension controls" },
+        { "id": "cabinetry.guided-new-designer", "file": "tests/e2e/cabinetry-studio.spec.ts", "title": "new designer can configure a valid drawer cabinet in Guided setup" },
+        { "id": "cabinetry.returning-pro", "file": "tests/e2e/cabinetry-studio.spec.ts", "title": "returning Pro users keep their chosen entry workspace and dismissed help" },
+        { "id": "cabinetry.module-drag-reorder", "file": "tests/e2e/cabinetry-studio.spec.ts", "title": "module drag reordering is committed once and remains undoable" },
+        { "id": "cabinetry.guided-recovery", "file": "tests/e2e/cabinetry-studio.spec.ts", "title": "guided Fit, locks, and validation recovery stay reversible" },
+        { "id": "cabinetry.numeric-drafts", "file": "tests/e2e/cabinetry-studio.spec.ts", "title": "detailed numeric drafts keep the last valid model and preview until committed" },
+        { "id": "cabinetry.wardrobe-semantics", "file": "tests/e2e/cabinetry-studio.spec.ts", "title": "Guided wardrobe arrangements and illustrated choices expose semantic state" },
+        { "id": "cabinetry.keyboard-preview", "file": "tests/e2e/cabinetry-studio.spec.ts", "title": "preview controls remain keyboard-operable across responsive layouts" },
+        { "id": "cabinetry.pro-template-catalog", "file": "tests/e2e/cabinetry-studio.spec.ts", "title": "Pro designer can enter Detailed mode and validate the template catalog" },
+        { "id": "cabinetry.core-construction", "file": "tests/e2e/cabinetry-studio.spec.ts", "title": "Pro designer can configure core and architectural construction controls" },
+        { "id": "cabinetry.room-systems", "file": "tests/e2e/cabinetry-studio.spec.ts", "title": "Pro designer can configure built-in storage and room-system controls" },
+        { "id": "cabinetry.lifestyle-controls", "file": "tests/e2e/cabinetry-studio.spec.ts", "title": "Pro designer can configure lifestyle, hospitality, and seating controls" },
+        { "id": "cabinetry.base-construction", "file": "tests/e2e/cabinetry-studio.spec.ts", "title": "Pro designer can configure detailed base-cabinet construction options" },
+        { "id": "cabinetry.fabrication-export", "file": "tests/e2e/cabinetry-studio.spec.ts", "title": "Pro designer can export a cabinet-run fabrication package" },
+        { "id": "cabinetry.place-project", "file": "tests/e2e/cabinetry-studio.spec.ts", "title": "Pro designer can place a cabinet run with complete project metadata" },
+        { "id": "cabinetry.installer-export", "file": "tests/e2e/cabinetry-studio.spec.ts", "title": "Pro designer can export placed, installer, and field-finish packages" },
+        { "id": "cabinetry.commercial-export", "file": "tests/e2e/cabinetry-studio.spec.ts", "title": "Pro designer can export project commercial and release-readiness packages" },
+        { "id": "cabinetry.handoff-export", "file": "tests/e2e/cabinetry-studio.spec.ts", "title": "Pro designer can export project approval, production, and handoff packages" },
+        { "id": "cabinetry.persistence", "file": "tests/e2e/cabinetry-studio.spec.ts", "title": "Pro designer can transform, edit, persist, and restore a placed cabinet run" },
+        { "id": "cabinetry.placed-3d-drag", "file": "tests/e2e/cabinetry-studio.spec.ts", "title": "placed millwork can be repositioned by dragging it in the 3D canvas" },
+        { "id": "cabinetry.placed-2d-3d-parity", "file": "tests/e2e/cabinetry-studio.spec.ts", "title": "placed cabinet identity and transform stay consistent between 2D and 3D" },
+        { "id": "cabinetry.consumer-boundary", "file": "tests/e2e/cabinetry-studio.spec.ts", "title": "homeowner/free mode gets Guided millwork, an estimate, and no Pro controls" }
+      ],
+      "requiredProjects": ["chromium"],
+      "allowSkips": false,
+      "allowRetries": false,
+      "allowAnnotations": false,
+      "reportType": "required-test-evidence",
+      "reportPath": ".local/required-test-evidence/release.cabinetry-browser/evidence.json",
+      "maxAgeMinutes": 1440,
+      "artifactBinding": "cabinetry-release-candidate",
+      "playwright": {
+        "config": "playwright.config.ts",
+        "args": ["playwright", "test", "tests/e2e/cabinetry-studio.spec.ts", "--project=chromium"]
+      }
+    }
+  ],
+  "requiredRegistrations": [
+    {
+      "id": "cabinetry-script-registrations",
+      "entry": "scripts/test-cabinetry.ts",
+      "registrations": [
+        { "module": "./cabinetry-tests/architectural-preset-contracts", "symbol": "runArchitecturalPresetContractTests" },
+        { "module": "./cabinetry-tests/core-rendering-contracts", "symbol": "runCoreRenderingContractTests" },
+        { "module": "./cabinetry-tests/export-behavior", "symbol": "runExportBehaviorTests" },
+        { "module": "./cabinetry-tests/fabrication-contracts", "symbol": "runFabricationContractTests" },
+        { "module": "./cabinetry-tests/layout-validation", "symbol": "runLayoutAndValidationTests" },
+        { "module": "./cabinetry-tests/preset-contracts", "symbol": "runPresetContractTests" },
+        { "module": "./cabinetry-tests/specialty-preset-contracts", "symbol": "runSpecialtyPresetContractTests" }
+      ]
+    },
+    {
+      "id": "cabinetry-browser-registrations",
+      "entry": "tests/e2e/cabinetry-studio.spec.ts",
+      "registrations": [
+        { "module": "./cabinetry-studio/detailed", "symbol": "registerDetailedTests" },
+        { "module": "./cabinetry-studio/export", "symbol": "registerExportTests" },
+        { "module": "./cabinetry-studio/guided", "symbol": "registerGuidedTests" },
+        { "module": "./cabinetry-studio/placement", "symbol": "registerPlacementTests" },
+        { "module": "./cabinetry-studio/selection", "symbol": "registerSelectionTests" }
+      ]
+    },
+    {
+      "id": "multi-room-browser-registrations",
+      "entry": "tests/e2e/18-multi-room-whole-home.spec.ts",
+      "registrations": [
+        { "module": "./multi-room/drawing", "symbol": "registerDrawingTests" },
+        { "module": "./multi-room/editing", "symbol": "registerEditingTests" },
+        { "module": "./multi-room/start-and-floors", "symbol": "registerStartAndFloorTests" },
+        { "module": "./multi-room/templates", "symbol": "registerTemplateTests" },
+        { "module": "./multi-room/upload", "symbol": "registerUploadTests" },
+        { "module": "./multi-room/viewport-navigation", "symbol": "registerViewportNavigationTests" },
+        { "module": "./multi-room/workspace", "symbol": "registerWorkspaceTests" }
+      ]
+    }
+  ],
+  "staticPolicies": {
+    "forbidFocusedTestsIn": ["tests/e2e"],
+    "failClosedPrerequisiteSources": [
+      "tests/e2e/05-buy.spec.ts",
+      "tests/e2e/07-kelsey-variants.spec.ts"
+    ]
+  },
+  "externalControls": [
+    {
+      "id": "github.required-checks",
+      "status": "not-verified",
+      "reason": "Branch-protection required-check selection and workflow execution require GitHub platform evidence."
+    },
+    {
+      "id": "github.artifact-retention",
+      "status": "not-verified",
+      "reason": "Actual upload retention and downloadable hashes require GitHub platform evidence."
+    }
+  ]
+}

@@ -1,0 +1,59 @@
+{
+  "base": "https://interior-d8xiqnj42-justuslaw66-maxs-projects.vercel.app",
+  "generatedAt": "2026-06-24T14:46:26.186Z",
+  "fields": {
+    "savedDesignId": "cmqs6rzfn0001plccy2obuoh4",
+    "shareToken": "share-1782312387100-6e33d3ec",
+    "cloudFingerprint": "a21f6aec",
+    "preAutosaveHandoffFingerprint": "a21f6aec",
+    "currentPersistedFingerprint": "46c9dc79",
+    "currentPersistedHandoffFingerprint": "46c9dc79",
+    "editorSnapshotFingerprint": "a21f6aec",
+    "shareSnapshotFingerprint": "46c9dc79",
+    "exportSnapshotFingerprint": "46c9dc79",
+    "checkoutBoundaryResponseMode": "boundary blocked"
+  },
+  "rows": {
+    "editor_fingerprint": {
+      "status": "PASS",
+      "evidence": "reports/staging-smoke-evidence-2026-06-24/18-retest-editor-fingerprint.png",
+      "notes": "Editor marker a21f6aec matched the pre-autosave cloud fingerprint. After editor load/autosave, the current persisted API fingerprint became 46c9dc79."
+    },
+    "share_fingerprint": {
+      "status": "PASS",
+      "evidence": "reports/staging-smoke-evidence-2026-06-24/19-retest-share-fingerprint.png",
+      "notes": "Share marker 46c9dc79 matched the current persisted API/handoff fingerprint after editor load/autosave."
+    },
+    "export_fingerprint": {
+      "status": "PASS",
+      "evidence": "reports/staging-smoke-evidence-2026-06-24/20-retest-export-fingerprint.png",
+      "notes": "Export marker 46c9dc79 matched the current persisted API/handoff fingerprint after editor load/autosave."
+    },
+    "checkout_boundary": {
+      "status": "PASS",
+      "evidence": "reports/staging-smoke-evidence-2026-06-24/retest-checkout-fingerprint-result.json",
+      "notes": "Checkout response 503; mode boundary blocked; no checkout page opened and no payment attempted."
+    }
+  },
+  "artifacts": {
+    "checkout": {
+      "status": 503,
+      "error": "Checkout boundary blocked this request",
+      "diagnostics": {
+        "appStage": "staging",
+        "vercelEnv": "preview",
+        "stripeSecretMode": "test",
+        "stripePublishableMode": "missing",
+        "databaseBoundary": "unknown",
+        "warnings": [
+          "Stripe checkout failed before a checkout URL was created: An error occurred with our connection to Stripe. Request was retried 2 times."
+        ],
+        "hardStops": [
+          "Checkout provider connectivity could not be verified in staging or preview."
+        ]
+      },
+      "hasUrl": false
+    }
+  },
+  "error": null
+}

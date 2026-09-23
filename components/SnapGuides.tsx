@@ -1,4 +1,5 @@
-import { Line, Html } from "@react-three/drei";
+import { Line } from "@react-three/drei/core/Line";
+import { Html } from "@react-three/drei/web/Html";
 import { Guide } from "@/lib/snapGuides";
 
 interface SnapGuidesProps {

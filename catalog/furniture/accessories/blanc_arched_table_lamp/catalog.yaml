@@ -1,0 +1,170 @@
+status: "live"
+brand: "Castlery"
+source_url: "https://www.castlery.com/sg/products/blanc-arched-table-lamp?quantity=single"
+category: "table_lamp"
+
+product_family: "Blanc"
+product_name: "Blanc Arched Table Lamp"
+variant: "Single"
+
+price_usd: 129
+price_band: "mid"
+brand_tier: "premium_mid"
+
+design_zone: "lighting_zone"
+anchor_role: "lighting_anchor"
+
+dimensions:
+  width_cm: 30
+  depth_cm: 30
+  height_cm: 52
+
+size_class: "small"
+shape: "round"
+base_type: "arched_ceramic"
+
+material_family: "mixed"
+material_mix:
+  - "ceramic"
+  - "fabric"
+
+color_family: "beige"
+tone: "warm"
+
+style_cluster: "modern"
+style_secondary: "scandinavian"
+design_era: "contemporary"
+
+visual_attributes:
+  visual_weight: "small"
+  edge_profile: "rounded"
+  silhouette: "arched_table_lamp_with_drum_shade"
+  form_language: "sculptural_minimal"
+  descriptors:
+    - "arched_ceramic_base"
+    - "fabric_drum_shade"
+    - "sand_glazed_texture"
+
+spatial_attributes:
+  footprint_shape: "round"
+  descriptors:
+    - "tabletop_only"
+    - "bedside_or_side_table_lighting"
+    - "small_surface_accent"
+
+room_compatibility:
+  - "living_room"
+  - "bedroom"
+  - "home_office"
+
+placement_rules:
+  floor_only: false
+  surface_only: true
+  required_surface_categories:
+    - "side_table"
+    - "coffee_table"
+    - "dining_table"
+    - "tv_console"
+  surface_inset_mm: 50
+  clearance_sensitive: false
+  center_room_preferred: false
+  placement_note: "Table lamp must be placed on a valid table surface, never directly on the floor."
+
+design_pairings:
+  - "side_table"
+  - "coffee_table"
+  - "dining_table"
+  - "tv_console"
+  - "bed"
+  - "sofa"
+  - "accent_chair"
+
+recommendation_metadata:
+  recommendation_role: "table_lamp"
+  primary_use_cases:
+    - "tabletop_ambient_light"
+    - "bedside_lighting"
+    - "reading_corner_accent"
+  suggest_when_scene_has:
+    - "side_table_without_lamp"
+    - "bed_without_table_lamp"
+    - "reading_corner_without_lighting"
+  avoid_when_scene_has:
+    - "no_valid_table_surface"
+
+feature_flags:
+  is_tabletop_only: true
+  has_light: true
+  has_inline_switch: true
+
+product_details:
+  material:
+    - label: "Material"
+      value: "Ceramic base, fabric shade"
+    - label: "Lightbulb"
+      value: "Not included"
+    - label: "Switch"
+      value: "Inline switch"
+    - label: "Bulb type"
+      value: "E27"
+    - label: "Bulb recommendation"
+      value: "<=60W"
+    - label: "Certification"
+      value: "Safety Mark"
+  dimensions:
+    - label: "Dimension"
+      value: "W30 x D30 x H52cm"
+    - label: "Cable length"
+      value: "152cm"
+    - label: "Product weight"
+      value: "2.5kg"
+    - label: "Max bulb"
+      value: "Max Bulb Dia. 7cm; Height 12cm"
+  delivery_and_warranty:
+    - label: "Warranty"
+      value: "2-year limited warranty"
+    - label: "Return policy"
+      value: "30-day returns"
+
+assets:
+  asset_id: "accessory-real-castlery-blanc-arched-table-lamp"
+  model_url: "/assets/models/accessory-real-castlery-blanc-arched-table-lamp.glb"
+  thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1697702180/crusader/variants/50230005/Blanc-Arched-Table-Lamp_1-1697702178.jpg"
+  gallery_images:
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1697702180/crusader/variants/50230005/Blanc-Arched-Table-Lamp_1-1697702178.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1698222242/crusader/variants/PB-001136/Blanc-Arched-Table-Lamp_2-1698222239.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1697773723/crusader/variants/PB-001136/Blanc-Arched-Table-Lamp-Square-Set_2-1697773720.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1697773723/crusader/variants/PB-001136/Blanc-Arched-Table-Lamp-Square-Set_1-1697773720.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1697702207/crusader/variants/50230005/Blanc-Arched-Table-Lamp-Angle-Square-Det_1-1697702204.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1698130885/crusader/variants/PB-001136/Blanc-Arched-Table-Lamp-Angle-Square-Det_3-1698130883.jpg"
+
+variants:
+  - variant: "Single"
+    finish_code: "single_sand_glazed_ceramic"
+    finish_label: "Sand-glazed ceramic"
+    swatch_group: "material"
+    swatch_hex: "#d8cec0"
+    color_family: "beige"
+    tone: "warm"
+    materials:
+      primary: "ceramic"
+      secondary: "fabric shade"
+    finish:
+      code: "single_sand_glazed_ceramic"
+      label: "Sand-glazed ceramic"
+    model_url: "/assets/models/accessory-real-castlery-blanc-arched-table-lamp.glb"
+    affiliate_url: "https://www.castlery.com/sg/products/blanc-arched-table-lamp?quantity=single"
+    available: false
+    price_usd: 129
+    dimensions:
+      width_cm: 30
+      depth_cm: 30
+      height_cm: 52
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1697702180/crusader/variants/50230005/Blanc-Arched-Table-Lamp_1-1697702178.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1697702180/crusader/variants/50230005/Blanc-Arched-Table-Lamp_1-1697702178.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1698222242/crusader/variants/PB-001136/Blanc-Arched-Table-Lamp_2-1698222239.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1697773723/crusader/variants/PB-001136/Blanc-Arched-Table-Lamp-Square-Set_2-1697773720.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1697773723/crusader/variants/PB-001136/Blanc-Arched-Table-Lamp-Square-Set_1-1697773720.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1697702207/crusader/variants/50230005/Blanc-Arched-Table-Lamp-Angle-Square-Det_1-1697702204.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1698130885/crusader/variants/PB-001136/Blanc-Arched-Table-Lamp-Angle-Square-Det_3-1698130883.jpg"

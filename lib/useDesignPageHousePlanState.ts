@@ -15,18 +15,22 @@ import {
   type RoomPlanShape,
   type RoomType,
 } from "@/lib/room-types";
-import { track } from "@/lib/analytics";
-import { clampToRoom } from "@/lib/design-page-geometry";
+import { track, trackProductEvent } from "@/lib/analytics";
+import {
+  clampToRoom,
+  getFurnitureWallInset,
+} from "@/lib/design-page-geometry";
 import {
   buildHousePlan2D,
   clampRoomDimension,
   getActiveRoomPlanOffset,
   getNextRoomPlanPosition,
+  resolveHouseRoomMove,
   resolveNewRoomName,
+  resolveHouseRoomDimension,
   ROOM_DIMENSION_DEFAULTS,
   ROOM_SIZE_PRESETS,
   roundPlanCoordinate,
-  snapHouseRoomMove,
 } from "@/lib/design-page-house-plan";
 
 type Params = {
@@ -57,17 +61,15 @@ export function useDesignPageHousePlanState({
 }: Params) {
   const activeRoom = useMemo(() => getActiveRoom(designSnapshot), [designSnapshot]);
 
-  const activeRoomWidth = activeRoom?.geometry.width;
-  const roomWidth =
-    typeof activeRoomWidth === "number" && Number.isFinite(activeRoomWidth)
-      ? activeRoomWidth
-      : ROOM_DIMENSION_DEFAULTS.width;
+  const roomWidth = resolveHouseRoomDimension(
+    activeRoom?.geometry.width,
+    ROOM_DIMENSION_DEFAULTS.width
+  );
 
-  const activeRoomDepth = activeRoom?.geometry.depth;
-  const roomDepth =
-    typeof activeRoomDepth === "number" && Number.isFinite(activeRoomDepth)
-      ? activeRoomDepth
-      : ROOM_DIMENSION_DEFAULTS.depth;
+  const roomDepth = resolveHouseRoomDimension(
+    activeRoom?.geometry.depth,
+    ROOM_DIMENSION_DEFAULTS.depth
+  );
 
   const activeRoomHeight = activeRoom?.geometry.height;
   const roomHeight =
@@ -82,6 +84,11 @@ export function useDesignPageHousePlanState({
       : ROOM_DIMENSION_DEFAULTS.wallThickness;
   const activeRoomPlanShape = activeRoom?.planShape ?? "rectangle";
   const activeRoomPlanPolygon = activeRoom?.planPolygon;
+  const activeRoomPlanHoles = activeRoom?.planHoles;
+  const activeFloorLevel =
+    typeof activeRoom?.floorLevel === "number" && Number.isFinite(activeRoom.floorLevel)
+      ? activeRoom.floorLevel
+      : 1;
 
   const clampToActiveRoom = useCallback(
     (
@@ -101,12 +108,13 @@ export function useDesignPageHousePlanState({
         itemDepth,
         targetRoomWidth,
         targetRoomDepth,
-        targetWallThickness,
+        getFurnitureWallInset(targetWallThickness),
         rotationY,
         activeRoomPlanShape,
-        activeRoomPlanPolygon
+        activeRoomPlanPolygon,
+        activeRoomPlanHoles
       ),
-    [activeRoomPlanPolygon, activeRoomPlanShape]
+    [activeRoomPlanHoles, activeRoomPlanPolygon, activeRoomPlanShape]
   );
 
   const formattedRoomWidth = roomWidth.toFixed(2);
@@ -156,9 +164,17 @@ export function useDesignPageHousePlanState({
   const items = useMemo(() => activeRoom?.items ?? [], [activeRoom]);
   const zones = useMemo(() => activeRoom?.zones ?? [], [activeRoom]);
 
+  const activeFloorRooms = useMemo(
+    () =>
+      (designSnapshot.rooms ?? []).filter(
+        (room) => (room.floorLevel ?? 1) === activeFloorLevel
+      ),
+    [activeFloorLevel, designSnapshot.rooms]
+  );
+
   const housePlan2D = useMemo(
-    () => buildHousePlan2D(designSnapshot.rooms ?? [], roomWidth, roomDepth),
-    [designSnapshot.rooms, roomDepth, roomWidth]
+    () => buildHousePlan2D(activeFloorRooms, roomWidth, roomDepth),
+    [activeFloorRooms, roomDepth, roomWidth]
   );
 
   const activeRoomPlanOffset = useMemo(
@@ -180,7 +196,7 @@ export function useDesignPageHousePlanState({
       typeof options?.depth === "number"
         ? clampRoomDimension(options.depth)
         : roomDepth;
-    const roomName = resolveNewRoomName(designSnapshot.rooms, nextRoomType);
+    const roomName = resolveNewRoomName(activeFloorRooms, nextRoomType);
     const newRoom = createRoom(
       `room_${Date.now()}`,
       roomName,
@@ -189,8 +205,13 @@ export function useDesignPageHousePlanState({
         width: nextRoomWidth,
         depth: nextRoomDepth,
         wallThickness,
+        height: roomHeight,
+        slabThickness:
+          activeRoom?.geometry.slabThickness ?? ROOM_DIMENSION_DEFAULTS.slabThickness,
       }
     );
+    newRoom.floorLevel = activeFloorLevel;
+    newRoom.floorLabel = activeRoom?.floorLabel;
     newRoom.planPosition = options?.planPosition
       ? {
           x: roundPlanCoordinate(options.planPosition.x),
@@ -203,6 +224,12 @@ export function useDesignPageHousePlanState({
         );
     newRoom.planShape = nextRoomShape;
     newRoom.planPolygon = options?.planPolygon;
+    if (activeRoom?.surfaceFinishes) {
+      newRoom.surfaceFinishes = { ...activeRoom.surfaceFinishes };
+    }
+    if (activeRoom?.surfaceOpacity) {
+      newRoom.surfaceOpacity = { ...activeRoom.surfaceOpacity };
+    }
 
     setDesignSnapshot((prev) => {
       const updated = addRoom(prev, newRoom);
@@ -210,13 +237,21 @@ export function useDesignPageHousePlanState({
     });
 
     track("editor_room_added", { roomType: newRoom.roomType, roomName: newRoom.name });
+    trackProductEvent("room_created", {
+      roomType: newRoom.roomType,
+      source: "editor",
+      roomCount: activeFloorRooms.length + 1,
+    });
   }, [
-    designSnapshot.rooms,
+    activeRoom,
+    activeFloorLevel,
+    activeFloorRooms,
     housePlan2D.rooms,
     newRoomShape,
     newRoomType,
     roomDepth,
     roomWidth,
+    roomHeight,
     setDesignSnapshot,
     wallThickness,
   ]);
@@ -237,16 +272,21 @@ export function useDesignPageHousePlanState({
 
   const handleMoveRoom2D = useCallback(
     (roomId: string, x: number, z: number, options?: { snap?: boolean }) => {
-      const nextRoomPosition =
-        options?.snap === false ? { x, z } : snapHouseRoomMove(roomId, x, z, housePlan2D.rooms);
-      if (!nextRoomPosition) return;
+      const move = resolveHouseRoomMove({
+        roomId,
+        x,
+        z,
+        rooms: housePlan2D.rooms,
+        snap: options?.snap !== false,
+      });
+      if (!move || move.movementStatus === "blocked") return;
 
       setDesignSnapshot((prev) => {
         const target = prev.rooms.find((room) => room.id === roomId);
         if (!target) return prev;
         const nextPosition = {
-          x: roundPlanCoordinate(nextRoomPosition.x),
-          z: roundPlanCoordinate(nextRoomPosition.z),
+          x: roundPlanCoordinate(move.x),
+          z: roundPlanCoordinate(move.z),
         };
         const currentPosition = target.planPosition ?? { x: 0, z: 0 };
         if (

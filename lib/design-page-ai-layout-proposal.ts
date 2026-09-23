@@ -60,6 +60,9 @@ export function buildPendingAiLayoutProposal(params: {
     ...(params.plan.quality?.warnings ?? []),
     ...(params.validationWarnings ?? []),
   ];
+  const requestedRoles = params.plan.meta?.requestedRoles ?? [];
+  const missingRoles =
+    params.plan.quality?.requestedMissing ?? params.plan.quality?.requiredMissing ?? [];
 
   return {
     id: `ai-layout-${params.nowMs ?? Date.now()}-${params.plan.meta?.seed ?? "seed"}`,
@@ -76,5 +79,7 @@ export function buildPendingAiLayoutProposal(params: {
     style: params.plan.meta?.style ?? params.style,
     budget: params.plan.meta?.budget ?? params.budget,
     seed: params.plan.meta?.seed,
+    requestedRoles,
+    missingRoles,
   };
 }

@@ -1,10 +1,12 @@
 import { expect, test } from "./fixtures";
 import {
+  applyConfiguredModelUrlToVariant,
+  resolveConfiguredModelUrl,
   resolveConfiguredNodeTransforms,
   resolveConfiguredPlanningDimsMm,
   resolveConfiguredVisualDimsMm,
 } from "../../lib/design-page-config-resolvers";
-import { openCatalogPreview } from "./variant-test-utils";
+import { addCatalogDrawerItemToRoom, openCatalogPreview } from "./variant-test-utils";
 
 const SEB_LIFT_TOP_SMALL_ID = "coffee-real-castlery-seb-lift-top-small";
 
@@ -50,6 +52,131 @@ function expectRows(rows: ProductInfoRow[] | undefined, expected: RegExp[]) {
 }
 
 test.describe("143. Seb Lift Top Small Product Info", () => {
+  test("imported configurable bounds accept YAML *_cm keys for Jaron open recliner states", () => {
+    const productId = "armchair-real-castlery-jaron-recliner-armchair";
+    const variantId = "imported-armchair-real-castlery-jaron-recliner-armchair-slim-arm-marche-ivory";
+    const item = {
+      instanceId: "jaron-open-state",
+      productId,
+      variantId,
+      position: [0, 0, 0],
+      rotationY: 0,
+    };
+    const fallbackProduct = {
+      id: productId,
+      dimsMm: { w: 1340, d: 1150, h: 770 },
+      variants: [{ id: variantId, dimensionsMm: { w: 1340, d: 1150, h: 770 } }],
+    };
+    const ctx = {
+      importedModelById: new Map([
+        [
+          productId,
+          {
+            id: productId,
+            catalog: {
+              configurableMetadata: { default_configuration: "closed" },
+              configurations: [
+                {
+                  configuration_code: "open_recliner",
+                  visual_bounds_cm: { width_cm: 134, depth_cm: 150, height_cm: 98 },
+                  planning_bounds_cm: { width_cm: 134, depth_cm: 165, height_cm: 77 },
+                },
+              ],
+            },
+          },
+        ],
+      ]),
+      itemConfigurationByInstanceId: { "jaron-open-state": "open_recliner" },
+    };
+
+    expect(resolveConfiguredVisualDimsMm(item as never, fallbackProduct as never, ctx as never)).toEqual({
+      w: 1340,
+      d: 1500,
+      h: 980,
+    });
+    expect(resolveConfiguredPlanningDimsMm(item as never, fallbackProduct as never, ctx as never)).toEqual({
+      w: 1340,
+      d: 1650,
+      h: 770,
+    });
+  });
+
+  test("Jaron open state uses the configuration GLB when variant state matching is unavailable", () => {
+    const productId = "armchair-real-castlery-jaron-recliner-armchair";
+    const item = {
+      instanceId: "jaron-open-model",
+      productId,
+      variantId: "persisted-jaron-variant",
+      configurationCode: "open_recliner",
+      position: [0, 0, 0],
+      rotationY: 0,
+    };
+    const ctx = {
+      importedModelById: new Map([
+        [
+          productId,
+          {
+            id: productId,
+            catalog: {
+              configurations: [
+                {
+                  configuration_code: "open_recliner",
+                  model_url:
+                    "/assets/models/armchair-real-castlery-jaron-recliner-armchair-slim-arm-open.glb",
+                },
+              ],
+              variants: [],
+            },
+          },
+        ],
+      ]),
+      itemConfigurationByInstanceId: {},
+      importedModelUrlByAssetId: {},
+      catalogItems: {},
+    };
+
+    expect(
+      resolveConfiguredModelUrl(
+        item as never,
+        "/assets/models/armchair-real-castlery-jaron-recliner-armchair-slim-arm-closed.glb",
+        item.variantId,
+        ctx as never
+      )
+    ).toBe(
+      "/assets/models/armchair-real-castlery-jaron-recliner-armchair-slim-arm-open.glb"
+    );
+  });
+
+  test("Jaron configured GLB overrides the closed purchase variant at the scene handoff", () => {
+    const closedModelUrl =
+      "/assets/models/armchair-real-castlery-jaron-recliner-armchair-slim-arm-closed.glb";
+    const openModelUrl =
+      "/assets/models/armchair-real-castlery-jaron-recliner-armchair-slim-arm-open.glb";
+    const variants = [
+      {
+        id: "jaron-ivory",
+        label: "Ivory",
+        colorHex: "#eeeae1",
+        modelUrl: closedModelUrl,
+      },
+      {
+        id: "jaron-cocoa",
+        label: "Cocoa",
+        colorHex: "#8d593f",
+        modelUrl: closedModelUrl,
+      },
+    ];
+
+    const configured = applyConfiguredModelUrlToVariant(
+      variants as never,
+      "jaron-ivory",
+      openModelUrl
+    );
+
+    expect(configured[0]?.modelUrl).toBe(openModelUrl);
+    expect(configured[1]).toBe(variants[1]);
+  });
+
   test("configurable bounds keep the open lift-top footprint instead of closed variant size", () => {
     const productId = SEB_LIFT_TOP_SMALL_ID;
     const variantId = "imported-coffee-real-castlery-seb-lift-top-small-90cm-muted-honey";
@@ -109,14 +236,17 @@ test.describe("143. Seb Lift Top Small Product Info", () => {
     await page.goto("/design");
     await page.waitForLoadState("domcontentloaded");
 
-    await expect(page.getByTestId("scene-canvas")).toBeVisible({ timeout: 20000 });
+    await expect(page.getByTestId("scene-canvas").first()).toBeVisible({ timeout: 20000 });
 
     const opened = await openCatalogPreview(page, SEB_LIFT_TOP_SMALL_ID, "Seb Lift Top Coffee");
     expect(opened).toBeTruthy();
 
     await expect(page.getByText("Product details")).toBeVisible({ timeout: 10000 });
-    const drawer = page.getByRole("complementary");
-    await expect(drawer.getByText(/Seb Lift Top Coffee Table, Small/i).first()).toBeVisible();
+    const drawer = page.getByRole("dialog", { name: /^Review exact variant$/i });
+    await expect(drawer).toHaveCount(1);
+    await expect(drawer).toBeVisible();
+    await expect(drawer).toHaveAttribute("aria-modal", "true");
+    await expect(drawer.getByText(/^Seb Lift Top Coffee Table, Small$/i)).toBeVisible();
     await expect(page.getByTestId("catalog-detail-variant-label")).toContainText(/Muted Honey/i);
     await expect(page.getByTestId("catalog-detail-add-to-room")).toBeEnabled();
     await expect(drawer.getByRole("link", { name: /retailer/i })).toHaveAttribute(
@@ -124,7 +254,7 @@ test.describe("143. Seb Lift Top Small Product Info", () => {
       /castlery\.com\/sg\/products\/seb-lift-top-coffee-table-small/i
     );
 
-    await page.getByTestId("catalog-detail-add-to-room").click();
+    await addCatalogDrawerItemToRoom(page);
 
     await expect(page.getByText("Selected Item")).toBeVisible({ timeout: 10000 });
     await expect(page.getByTestId("selected-single-finish-label")).toContainText(/Muted Honey/i);

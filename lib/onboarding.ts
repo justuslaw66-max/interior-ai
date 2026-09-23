@@ -70,29 +70,35 @@ export function getOnboardingProgress(
 
 /**
  * Eligibility rules for onboarding
- * Only show if: new user/guest AND not Pro AND not shared/read-only AND not Present
+ * Only show for a new user when the active experience does not skip guided
+ * onboarding, and the design is not shared, read-only, or in Present mode.
  */
 export function isOnboardingEligible(opts: {
   isNewUser?: boolean;
-  isPro?: boolean;
+  skipGuidedOnboarding?: boolean;
   isShared?: boolean;
   isClientPreview?: boolean;
   mode?: "design" | "adjust" | "buy" | "present";
 }): boolean {
   const {
     isNewUser = true,
-    isPro = false,
+    skipGuidedOnboarding = false,
     isShared = false,
     isClientPreview = false,
     mode = "design",
   } = opts;
 
   // Not eligible if:
-  // - Already Pro
+  // - The active experience intentionally skips guided onboarding
   // - Shared or client preview
   // - In Present mode
   // - Not a new user
-  if (isPro || isShared || isClientPreview || mode === "present") {
+  if (
+    skipGuidedOnboarding ||
+    isShared ||
+    isClientPreview ||
+    mode === "present"
+  ) {
     return false;
   }
 
@@ -141,31 +147,12 @@ export function checkActivation(opts: {
 }
 
 /**
- * Empty-state coaching messages per mode
- * Only show when mode panel is visible and there's nothing useful inside
- */
-export function getEmptyStateCoaching(
-  mode: "design" | "adjust" | "buy" | "present"
-): string | null {
-  switch (mode) {
-    case "design":
-      return "Start with a sofa to define the room.";
-    case "adjust":
-      return "Select an item to fine-tune spacing and finishes.";
-    case "buy":
-      return "Add items to your cart from the room.";
-    case "present":
-      return "Save 2–3 views to present this design clearly.";
-    default:
-      return null;
-  }
-}
-
-/**
  * "Next best action" nudge based on current state
- * Context-aware hints to help users when stuck
+ * Context-aware hints to help users when stuck. Every nudge is about
+ * furnishing a room, so a design without rooms gets none.
  */
 export function getNextBestActionNudge(opts: {
+  roomCount: number;
   hasItems: boolean;
   hasSofa: boolean;
   hasRug: boolean;
@@ -175,6 +162,7 @@ export function getNextBestActionNudge(opts: {
   mode: "design" | "adjust" | "buy" | "present";
 }): string | null {
   const {
+    roomCount,
     hasItems,
     hasSofa,
     hasRug,
@@ -184,13 +172,13 @@ export function getNextBestActionNudge(opts: {
     mode,
   } = opts;
 
-  if (mode === "present") {
-    return null; // No nudges in present
+  if (mode === "present" || roomCount === 0) {
+    return null; // No nudges in present or before a room exists
   }
 
   if (mode === "design" || mode === "adjust") {
     if (!hasItems) {
-      return "Try placing a sofa first.";
+      return "Choose a furnishing that fits how you use this room.";
     }
     if (hasSofa && !hasRug && !hasCoffeeTable) {
       return "Add a rug or coffee table to complete the seating area.";

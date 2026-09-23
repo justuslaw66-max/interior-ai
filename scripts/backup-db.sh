@@ -1,6 +1,14 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+case "${APP_ENV:-}" in
+  development|staging|production) ;;
+  *)
+    echo "APP_ENV must explicitly be development, staging, or production." >&2
+    exit 1
+    ;;
+esac
+
 if ! command -v pg_dump >/dev/null 2>&1; then
   echo "pg_dump is required (install PostgreSQL client tools)." >&2
   exit 1

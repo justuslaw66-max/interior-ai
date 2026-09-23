@@ -12,7 +12,7 @@ export default function ExportTracking({
 }) {
   useEffect(() => {
     track("export_opened", {
-      share_token: shareToken,
+      shared_context: Boolean(shareToken),
       design_id: designId ?? null,
     });
 

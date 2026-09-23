@@ -1,0 +1,328 @@
+status: "published"
+brand: "Castlery"
+retailer: "Castlery Singapore"
+source_url: "https://www.castlery.com/sg/products/arden-performance-fabric-swivel-armchair"
+category: "armchair"
+
+product_family: "Arden"
+product_name: "Arden Performance Swivel Armchair"
+slug: "castlery-arden-performance-swivel-armchair"
+variant: "Swivel Armchair"
+
+price_usd: 999
+price_band: "mid_premium"
+brand_tier: "premium_mid"
+
+design_zone: "living_zone"
+anchor_role: "secondary"
+
+dimensions:
+  width_cm: 89
+  depth_cm: 84
+  height_cm: 75
+
+seat_capacity: 1
+size_class: "medium"
+shape: "rectangular"
+base_type: "swivel_base"
+
+material_family: "upholstered"
+material_mix: "upholstered_metal"
+material_mix_components:
+  - "laminated_veneer_lumber"
+  - "plywood"
+  - "solid_pine_wood"
+  - "solid_rubber_wood"
+  - "metal"
+  - "performance_fabric"
+
+materials:
+  frame:
+    structure:
+      - "laminated_veneer_lumber"
+      - "plywood"
+      - "solid_pine_wood"
+      - "solid_rubber_wood"
+      - "metal"
+  leg:
+    structure: "metal"
+    glide: "plastic_glides"
+  upholstery:
+    material_type: "performance_fabric"
+    label: "Performance Linen Weave (Genova), Alpine"
+    composition: "100% polyester"
+
+color_family: "grey"
+tone: "cool"
+style_cluster: "contemporary"
+style_secondary: "modern"
+design_era: "contemporary"
+
+room_compatibility:
+  - "living_room"
+  - "family_room"
+  - "bedroom"
+  - "open_plan"
+
+design_pairings:
+  - "sofa"
+  - "side_table"
+  - "floor_lamp"
+  - "rug"
+
+placement_rules:
+  room_min_width_cm: 240
+  room_min_depth_cm: 240
+  min_clearance_front_cm: 55
+  min_clearance_side_cm: 20
+  ideal_use:
+    - "Accent seating"
+    - "Reading corner"
+    - "Bedroom lounge chair"
+
+summary:
+  short_description: "A plush swivel armchair with soft rounded cushioning and a 360-degree metal swivel base."
+  long_description: "Sink into Arden's plush cushions and swivel in style as you enjoy the best seat in the house."
+  key_features:
+    - "360-degree swivel metal base"
+    - "Durable performance fabric option"
+    - "Leather sibling variant from the same Arden swivel armchair family"
+    - "Pocket spring and sinuous spring suspension with foam"
+
+feature_flags:
+  is_swivel: true
+  has_removable_cover: false
+  has_removable_cushion: false
+
+product_details:
+  material:
+    - label: "Frame"
+      value: "Laminated veneer lumber, plywood, solid pine wood, solid rubber wood and metal"
+    - label: "Leg frame"
+      value: "Metal with plastic glides, 360-degree swivel"
+    - label: "Fabric composition"
+      value: "100% polyester"
+    - label: "Seat construction"
+      value: "Pocket spring and sinuous spring suspension with foam"
+    - label: "Cushion"
+      value: "Foam and fiber"
+    - label: "Removable cover"
+      value: "No"
+    - label: "Removable cushion"
+      value: "No"
+  dimensions:
+    - label: "Overall"
+      value: "W89 x D84 x H75 cm"
+    - label: "Seating depth"
+      value: "56 cm"
+    - label: "Seating height"
+      value: "45 cm"
+    - label: "Packaging"
+      value: "W96 x D89 x H61 cm"
+  delivery_and_warranty:
+    - label: "Return policy"
+      value: "100-day return policy applies for non-clearance items."
+    - label: "Ships from"
+      value: "Singapore"
+    - label: "Warranty"
+      value: "Frame 3 years; foam 2 years; leather/fabric 1 year; mechanism 1 year."
+    - label: "Care"
+      value: "Blot spills immediately and spot clean with mild detergent and a damp cloth."
+
+product_details_by_material_type:
+  fabric:
+    material:
+      - label: "Frame"
+        value: "Laminated veneer lumber, plywood, solid pine wood, solid rubber wood and metal"
+      - label: "Leg frame"
+        value: "Metal with plastic glides, 360-degree swivel"
+      - label: "Fabric composition"
+        value: "100% polyester"
+      - label: "Seat construction"
+        value: "Pocket spring and sinuous spring suspension with foam"
+      - label: "Cushion"
+        value: "Foam and fiber"
+      - label: "Removable cover"
+        value: "No"
+      - label: "Removable cushion"
+        value: "No"
+    dimensions:
+      - label: "Overall"
+        value: "W89 x D84 x H75 cm"
+      - label: "Seating depth"
+        value: "56 cm"
+      - label: "Seating height"
+        value: "45 cm"
+      - label: "Packaging"
+        value: "W96 x D89 x H61 cm"
+    delivery_and_warranty:
+      - label: "Return policy"
+        value: "100-day return policy applies for non-clearance items."
+      - label: "Ships from"
+        value: "Singapore"
+      - label: "Warranty"
+        value: "Frame 3 years; foam 2 years; leather/fabric 1 year; mechanism 1 year."
+      - label: "Care"
+        value: "Professional cleaning advised. Blot spills immediately and spot clean with mild detergent and a damp cloth."
+  leather:
+    material:
+      - label: "Frame"
+        value: "Laminated veneer lumber, plywood, solid pine wood, solid rubber wood and metal"
+      - label: "Leg frame"
+        value: "Metal with plastic glides, 360-degree swivel"
+      - label: "Leather"
+        value: "Semi-aniline leather"
+      - label: "Fabric content"
+        value: "Top grain leather with match"
+      - label: "Seat construction"
+        value: "Pocket spring and sinuous spring suspension with foam"
+      - label: "Cushion"
+        value: "Foam and fiber"
+      - label: "Removable cover"
+        value: "No"
+      - label: "Removable cushion"
+        value: "No"
+    dimensions:
+      - label: "Overall"
+        value: "W89 x D84 x H75 cm"
+      - label: "Seating depth"
+        value: "56 cm"
+      - label: "Seating height"
+        value: "45 cm"
+      - label: "Packaging"
+        value: "W96 x D89 x H61 cm"
+    delivery_and_warranty:
+      - label: "Return policy"
+        value: "100-day return policy applies for non-clearance items."
+      - label: "Ships from"
+        value: "Singapore"
+      - label: "Warranty"
+        value: "Frame 3 years; foam 2 years; leather/fabric 1 year; mechanism 1 year."
+      - label: "Care"
+        value: "Blot spills immediately, dust regularly, avoid direct heat and sunlight, and condition leather every 6 to 12 months."
+
+comfort_profile:
+  seat_comfort:
+    label: "Balanced"
+    value: 3
+    min_label: "Soft"
+    max_label: "Firm"
+  seat_depth:
+    label: "Medium"
+    value: 3
+    min_label: "Upright"
+    max_label: "Deep"
+  seat_height:
+    label: "Standard"
+    value: 3
+    min_label: "Low"
+    max_label: "High"
+
+assets:
+  asset_id: "armchair-real-castlery-arden-performance-swivel-armchair"
+  model_url: "/assets/models/armchair-real-castlery-arden-performance-swivel-armchair.glb"
+  thumbnail_url: "https://res.cloudinary.com/castlery/image/private/w_1000,f_auto,q_auto,b_rgb:F3F3F3,c_fit/v1688635268/crusader/variants/T50441148-PG4001/Arden-Swivel-Armchair-Alpine-Front-1688635266.jpg"
+  gallery_images:
+    - "https://res.cloudinary.com/castlery/image/private/w_1000,f_auto,q_auto,c_fit/v1692328168/crusader/variants/54000104-PG4001/Arden-Swivel-Armchair-Alpine-Square-Set_2-1692328166.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1000/v1688635268/crusader/variants/T50441148-PG4001/Arden-Swivel-Armchair-Alpine-Angle-1688635266.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/w_1000,f_auto,q_auto,b_rgb:F3F3F3,c_fit/v1688635268/crusader/variants/T50441148-PG4001/Arden-Swivel-Armchair-Alpine-Front-1688635266.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/w_1000,f_auto,q_auto,b_rgb:F3F3F3,c_fit/v1688635268/crusader/variants/T50441148-PG4001/Arden-Swivel-Armchair-Alpine-Side-1688635266.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/w_1000,f_auto,q_auto,b_rgb:F3F3F3,c_fit/v1688635268/crusader/variants/T50441148-PG4001/Arden-Swivel-Armchair-Alpine-Back-1688635266.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/w_1000,f_auto,q_auto,c_fit/v1688635760/crusader/variants/T54000104/Arden-Swivel-Armchair-Alpine-Dim-1688635758.jpg"
+
+ai_flags:
+  room_anchor_weight: 0.5
+  requires_sofa_pairing: false
+  good_for_small_spaces: true
+  avoid_blocking_paths: true
+
+variants:
+  - variant: "Arden Performance Fabric Swivel Armchair / Alpine"
+    upholstery_code: "genova_alpine"
+    upholstery_label: "Performance Linen Weave (Genova), Alpine"
+    size_label: "89cm"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/w_1000,f_auto,q_auto,b_rgb:F3F3F3,c_fit/v1688635268/crusader/variants/T50441148-PG4001/Arden-Swivel-Armchair-Alpine-Front-1688635266.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/w_1000,f_auto,q_auto,c_fit/v1692328168/crusader/variants/54000104-PG4001/Arden-Swivel-Armchair-Alpine-Square-Set_2-1692328166.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1000/v1688635268/crusader/variants/T50441148-PG4001/Arden-Swivel-Armchair-Alpine-Angle-1688635266.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1000,f_auto,q_auto,b_rgb:F3F3F3,c_fit/v1688635268/crusader/variants/T50441148-PG4001/Arden-Swivel-Armchair-Alpine-Front-1688635266.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1000,f_auto,q_auto,b_rgb:F3F3F3,c_fit/v1688635268/crusader/variants/T50441148-PG4001/Arden-Swivel-Armchair-Alpine-Side-1688635266.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1000,f_auto,q_auto,b_rgb:F3F3F3,c_fit/v1688635268/crusader/variants/T50441148-PG4001/Arden-Swivel-Armchair-Alpine-Back-1688635266.jpg"
+    swatch_group: "upholstery_option"
+    swatch_hex: "#d2d5d2"
+    swatch_image_url: "https://res.cloudinary.com/castlery/image/private/b_rgb:FFFFFF,c_fit,f_auto,q_auto,w_800/v1688632827/crusader/variants/PG-4001/Arden-Swivel-Armchair-Alpine-Square-Det_1-1688632825.jpg"
+    color_family: "grey"
+    tone: "cool"
+    price_usd: 999
+    price_band: "mid_premium"
+    brand_tier: "premium_mid"
+    affiliate_url: "https://www.castlery.com/sg/products/arden-performance-fabric-swivel-armchair"
+    purchase_options:
+      - id: "single"
+        label: "Single"
+        quantity: 1
+        sku: "54000104-PG4001"
+        affiliate_url: "https://www.castlery.com/sg/products/arden-performance-fabric-swivel-armchair"
+        price_usd: 999
+        available: true
+      - id: "set_of_2"
+        label: "Set of 2"
+        quantity: 2
+        sku: "PB-000575-PG4001"
+        affiliate_url: "https://www.castlery.com/sg/products/arden-performance-fabric-swivel-armchair?material=performance_alpine&quantity=set_of_2"
+        price_usd: 1899
+        compare_at_price_usd: 1998
+        savings_usd: 99
+        image_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1689067735/crusader/variants/PB-000575-PG4001/Arden-Swivel-2-Armchair-Alpine-Angle-1689067733.jpg"
+        available: true
+    dimensions:
+      width_cm: 89
+      depth_cm: 84
+      height_cm: 75
+    materials:
+      upholstery:
+        material_type: "performance_fabric"
+        structure: "fabric"
+        fabric_family: "Performance Linen Weave"
+        fabric_label: "Genova"
+        color: "Alpine"
+        composition: "100% polyester"
+      base:
+        structure: "metal_swivel_base"
+    finish:
+      color_finish: "Alpine"
+
+  - variant: "Arden Leather Swivel Armchair / Cocoa"
+    upholstery_code: "semi_aniline_leather_cocoa"
+    upholstery_label: "Semi-Aniline Leather, Cocoa"
+    size_label: "89cm"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/w_1000,f_auto,q_auto,b_rgb:F3F3F3,c_fit/v1688635787/crusader/variants/T50441149-LE4020/Arden-Leather-Swivel-Armchair-Cocoa-Front-1688635785.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/w_1000,f_auto,q_auto,c_fit/v1692328487/crusader/variants/54000104-LE4020/Arden-Leather-Swivel-Armchair-Cocoa-Square-Set_3-1692328485.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1000/v1688635787/crusader/variants/T50441149-LE4020/Arden-Leather-Swivel-Armchair-Cocoa-Angle-1688635785.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1000,f_auto,q_auto,b_rgb:F3F3F3,c_fit/v1688635787/crusader/variants/T50441149-LE4020/Arden-Leather-Swivel-Armchair-Cocoa-Front-1688635785.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1000,f_auto,q_auto,b_rgb:F3F3F3,c_fit/v1688635787/crusader/variants/T50441149-LE4020/Arden-Leather-Swivel-Armchair-Cocoa-Side-1688635785.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1000,f_auto,q_auto,b_rgb:F3F3F3,c_fit/v1688635787/crusader/variants/T50441149-LE4020/Arden-Leather-Swivel-Armchair-Cocoa-Back-1688635785.jpg"
+    swatch_group: "upholstery_option"
+    swatch_hex: "#6f4b39"
+    swatch_image_url: "https://res.cloudinary.com/castlery/image/private/b_rgb:FFFFFF,c_fit,f_auto,q_auto,w_800/v1688632818/crusader/variants/LE-4020/Arden-Leather-Swivel-Armchair-Cocoa-Square-Det_1-1688632815.jpg"
+    color_family: "brown"
+    tone: "warm"
+    price_usd: 1199
+    price_band: "premium"
+    brand_tier: "premium_mid"
+    affiliate_url: "https://www.castlery.com/sg/products/arden-leather-swivel-armchair"
+    dimensions:
+      width_cm: 89
+      depth_cm: 84
+      height_cm: 75
+    materials:
+      upholstery:
+        material_type: "leather"
+        structure: "top_grain_leather_with_match"
+        leather_type: "semi_aniline_leather"
+        color: "Cocoa"
+      base:
+        structure: "metal_swivel_base"
+    finish:
+      color_finish: "Cocoa"

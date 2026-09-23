@@ -13,8 +13,6 @@
     "esModuleInterop": true,
     "module": "esnext",
     "moduleResolution": "bundler",
-    "ignoreDeprecations": "5.0",
-    "baseUrl": ".",
     "resolveJsonModule": true,
     "isolatedModules": true,
     "jsx": "react-jsx",
@@ -35,12 +33,16 @@
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts",
-    ".next/dev/types/**/*.ts",
-    "**/*.mts",
-    ".next-cache/types/**/*.ts",
-    ".next-cache/dev/types/**/*.ts"
+    ".next/dev/types/**/*.ts"
   ],
   "exclude": [
-    "node_modules"
+    "node_modules",
+    "**/node_modules",
+    "tests/e2e",
+    "playwright-report*",
+    "test-results*",
+    "release-evidence",
+    "release-evidence-private",
+    "backups"
   ]
 }

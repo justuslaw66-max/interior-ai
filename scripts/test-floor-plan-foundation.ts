@@ -4,11 +4,25 @@ import {
   isFootprintInsideRoomPolygon,
   isPointInsideRoomPolygon,
 } from "@/lib/design-page-geometry";
-import { applyFloorPlanScaleCalibration } from "@/lib/floor-plan-calibration";
+import {
+  applyFloorPlanScaleCalibration,
+  formatFloorPlanCalibrationSummary,
+} from "@/lib/floor-plan-calibration";
+import {
+  clampDesignPageOpeningToNearestClearInterval,
+  validateDesignPageOpeningPlacement,
+} from "@/lib/design-page-opening-placement";
 import {
   HOUSE_PLAN_TEMPLATES,
   resolveFloorPlanOpeningCancelDecision,
 } from "@/lib/design-page-house-plan";
+import { CATALOG_ITEMS } from "@/lib/catalog";
+import { resolveCatalogVariant } from "@/lib/catalog/variant-resolver";
+import { getItemPrice } from "@/lib/design-page-utils";
+import {
+  clampFloorPatternScale,
+  normalizeFloorRotationDeg,
+} from "@/lib/floor-materials";
 import {
   lockFloorPlanWallDrawAngle,
   resolveOpeningPlacementFromPoint,
@@ -32,8 +46,8 @@ import {
   buildFloorPlanRoomPolygon,
   calculateFloorPlanPolygonAreaSqm,
 } from "@/lib/floor-plan-types";
-import { snapshotToStored, storedToSnapshot } from "@/lib/room-persistence";
-import type { DesignSnapshot, RoomSnapshot } from "@/lib/room-types";
+import { legacyApiToSnapshot, snapshotToStored, storedToSnapshot } from "@/lib/room-persistence";
+import type { DesignItem, DesignSnapshot, RoomSnapshot } from "@/lib/room-types";
 import type { FloorPlanUnderlay } from "@/lib/floor-plan-types";
 
 function makeRoom(
@@ -62,14 +76,214 @@ const living = makeRoom("living", "Living Room", 5, 4, 0, 0);
 const bedroom = makeRoom("bedroom", "Bedroom", 4, 4, 4.5, 0);
 const plan = buildFloorPlanFromRooms([living, bedroom]);
 const floor = plan.floors[0];
+const supportedFurnishingCategories = new Set([
+  "sofa",
+  "coffee_table",
+  "rug",
+  "dining_table",
+  "dining_bench",
+  "accent_chair",
+  "floor_lamp",
+  "tv_console",
+  "sideboard",
+  "ottoman",
+  "side_table",
+]);
+const tunedFurnishedTemplateIds = new Set([
+  "studio",
+  "one_bedroom",
+  "living_dining",
+  "compact_two_bed",
+  "three_room_flat",
+]);
+
+function hasReadyCatalogProduct(category: string): boolean {
+  return Object.values(CATALOG_ITEMS).some((product) => {
+    if (product.category !== category) return false;
+    const resolved = resolveCatalogVariant(product, product.defaultVariantId);
+    const price = resolved.priceReference.amount ?? getItemPrice(product);
+    const hasCommerce =
+      resolved.commerce.type === "affiliate"
+        ? Boolean(resolved.commerce.url)
+        : resolved.commerce.type === "shopify"
+          ? Boolean(resolved.commerce.variantId && resolved.commerce.available)
+          : false;
+    return Boolean(resolved.media.thumbUrl && product.assets.modelUrl && price && price > 0 && hasCommerce);
+  });
+}
+
+function reverseWall(wall: "north" | "south" | "east" | "west") {
+  if (wall === "north") return "south";
+  if (wall === "south") return "north";
+  if (wall === "east") return "west";
+  return "east";
+}
+
+function roomBounds(room: (typeof HOUSE_PLAN_TEMPLATES)[number]["rooms"][number]) {
+  return {
+    left: room.x - room.width / 2,
+    right: room.x + room.width / 2,
+    top: room.z - room.depth / 2,
+    bottom: room.z + room.depth / 2,
+  };
+}
+
+function roomsShareWallOnSide(
+  room: (typeof HOUSE_PLAN_TEMPLATES)[number]["rooms"][number],
+  wall: "north" | "south" | "east" | "west",
+  other: (typeof HOUSE_PLAN_TEMPLATES)[number]["rooms"][number]
+) {
+  const first = roomBounds(room);
+  const second = roomBounds(other);
+  if (wall === "east") {
+    return (
+      Math.abs(first.right - second.left) <= 0.01 &&
+      Math.min(first.bottom, second.bottom) - Math.max(first.top, second.top) > 0.5
+    );
+  }
+  if (wall === "west") {
+    return (
+      Math.abs(first.left - second.right) <= 0.01 &&
+      Math.min(first.bottom, second.bottom) - Math.max(first.top, second.top) > 0.5
+    );
+  }
+  if (wall === "south") {
+    return (
+      Math.abs(first.bottom - second.top) <= 0.01 &&
+      Math.min(first.right, second.right) - Math.max(first.left, second.left) > 0.5
+    );
+  }
+  return (
+    Math.abs(first.top - second.bottom) <= 0.01 &&
+    Math.min(first.right, second.right) - Math.max(first.left, second.left) > 0.5
+  );
+}
+
+function distanceFromTemplateDoorwayCenter(
+  template: (typeof HOUSE_PLAN_TEMPLATES)[number],
+  roomId: string,
+  x: number,
+  z: number
+): number {
+  const room = template.rooms.find((entry) => entry.id === roomId);
+  assert.ok(room, `${template.id} furnishing should reference a real room`);
+
+  return template.doorways.reduce((closest, doorway) => {
+    if (doorway.fromRoomId !== roomId && doorway.toRoomId !== roomId) return closest;
+    const wall = doorway.fromRoomId === roomId ? doorway.wall : reverseWall(doorway.wall);
+    const offset = doorway.offsetMeters ?? 0;
+    const doorwayX = wall === "east" ? room.width / 2 : wall === "west" ? -room.width / 2 : offset;
+    const doorwayZ = wall === "south" ? room.depth / 2 : wall === "north" ? -room.depth / 2 : offset;
+    return Math.min(closest, Math.hypot(x - doorwayX, z - doorwayZ));
+  }, Infinity);
+}
+
+assert.equal(normalizeFloorRotationDeg(450), 90);
+assert.equal(normalizeFloorRotationDeg(-90), 270);
+assert.equal(normalizeFloorRotationDeg(44), 45);
+assert.equal(normalizeFloorRotationDeg(46), 45);
+assert.equal(clampFloorPatternScale(0.1), 0.5);
+assert.equal(clampFloorPatternScale(2.9), 2);
+assert.equal(clampFloorPatternScale(null), 1);
 
 for (const template of HOUSE_PLAN_TEMPLATES) {
   assert.ok(template.rooms.length >= 1, `${template.id} should include at least one room`);
+  assert.ok(template.bestFor.length > 0, `${template.id} should describe who it is best for`);
+  assert.ok(template.tags.length >= 3, `${template.id} should include useful tags`);
+  assert.ok(template.zones.length >= 3, `${template.id} should include starter furniture zones`);
+  assert.ok(template.realLifeChecks.length >= 3, `${template.id} should include real-life planning checks`);
+  assert.ok(template.doorways.length >= Math.max(1, template.rooms.length - 2), `${template.id} should include automatic doorway specs`);
+  assert.ok(template.windows.length >= 2, `${template.id} should include automatic exterior window specs`);
+  assert.deepEqual(
+    template.furnishingPacks.map((pack) => pack.id),
+    ["essentials", "styled_starter"],
+    `${template.id} should expose essentials and styled starter furnishing packs`
+  );
   assert.equal(
     new Set(template.rooms.map((room) => room.id)).size,
     template.rooms.length,
     `${template.id} should use unique room ids`
   );
+  const roomIds = new Set(template.rooms.map((room) => room.id));
+  const roomsNeedingExteriorLight = template.rooms.filter(
+    (room) =>
+      room.roomType === "living" ||
+      room.roomType === "bedroom" ||
+      room.roomType === "dining" ||
+      room.id.includes("nook") ||
+      room.id.includes("den") ||
+      room.id.includes("study")
+  );
+  const nonBathroomRoomIds = new Set(
+    template.rooms.filter((room) => room.roomType !== "toilet").map((room) => room.id)
+  );
+  const nonBathroomConnections = new Map<string, Set<string>>();
+  for (const roomId of nonBathroomRoomIds) {
+    nonBathroomConnections.set(roomId, new Set());
+  }
+  const readyCategoriesInTemplate = new Set<string>();
+
+  for (const pack of template.furnishingPacks) {
+    assert.ok(pack.label.length > 0, `${template.id} ${pack.id} should have a label`);
+    assert.ok(pack.bestFor.length > 0, `${template.id} ${pack.id} should explain when to use it`);
+    assert.ok(pack.intents.length >= 2, `${template.id} ${pack.id} should include starter item intents`);
+
+    for (const intent of pack.intents) {
+      assert.ok(roomIds.has(intent.roomId), `${template.id} ${pack.id} ${intent.id} should target a real room`);
+      assert.ok(supportedFurnishingCategories.has(intent.category), `${template.id} ${pack.id} should use a supported category`);
+      const room = template.rooms.find((entry) => entry.id === intent.roomId);
+      assert.ok(room, `${template.id} ${pack.id} ${intent.id} room should exist`);
+      assert.ok(Math.abs(intent.x) <= room.width / 2, `${template.id} ${pack.id} ${intent.id} should stay inside room width`);
+      assert.ok(Math.abs(intent.z) <= room.depth / 2, `${template.id} ${pack.id} ${intent.id} should stay inside room depth`);
+      assert.ok(
+        distanceFromTemplateDoorwayCenter(template, intent.roomId, intent.x, intent.z) >= 0.95,
+        `${template.id} ${pack.id} ${intent.id} should avoid automatic doorway centers`
+      );
+      if (hasReadyCatalogProduct(intent.category)) {
+        readyCategoriesInTemplate.add(intent.category);
+      }
+    }
+  }
+
+  for (const windowSpec of template.windows) {
+    assert.ok(roomIds.has(windowSpec.roomId), `${template.id} window should target a real room`);
+    assert.ok((windowSpec.widthMeters ?? 1) >= 0.6, `${template.id} window should be at least 0.6m wide`);
+    const room = template.rooms.find((entry) => entry.id === windowSpec.roomId);
+    assert.ok(room, `${template.id} window room should exist`);
+    assert.equal(
+      template.rooms.some(
+        (other) =>
+          other.id !== room.id &&
+          roomsShareWallOnSide(room, windowSpec.wall, other)
+      ),
+      false,
+      `${template.id} ${windowSpec.roomId} ${windowSpec.wall} window should sit on an exterior wall`
+    );
+  }
+
+  for (const room of roomsNeedingExteriorLight) {
+    assert.ok(
+      template.windows.some((windowSpec) => windowSpec.roomId === room.id),
+      `${template.id} ${room.id} should include an exterior window`
+    );
+  }
+  assert.ok(
+    readyCategoriesInTemplate.size >= 1,
+    `${template.id} should have at least one furnishing category that resolves to a beta-ready catalog item`
+  );
+  if (tunedFurnishedTemplateIds.has(template.id)) {
+    const styledStarter = template.furnishingPacks.find((pack) => pack.id === "styled_starter");
+    assert.ok(styledStarter, `${template.id} should include a styled starter pack`);
+    assert.ok(
+      styledStarter.intents.length >= 6,
+      `${template.id} styled starter pack should be hand-tuned with a lived-in starter count`
+    );
+    assert.ok(
+      styledStarter.intents.some((intent) => intent.category === "sofa") &&
+        styledStarter.intents.some((intent) => intent.category === "coffee_table"),
+      `${template.id} styled starter pack should include a seating anchor and table`
+    );
+  }
 
   for (let firstIndex = 0; firstIndex < template.rooms.length; firstIndex += 1) {
     const first = template.rooms[firstIndex];
@@ -101,7 +315,141 @@ for (const template of HOUSE_PLAN_TEMPLATES) {
       );
     }
   }
+
+  for (const doorway of template.doorways) {
+    const toRoomId = doorway.toRoomId;
+    if (!toRoomId || !nonBathroomRoomIds.has(doorway.fromRoomId) || !nonBathroomRoomIds.has(toRoomId)) {
+      continue;
+    }
+    nonBathroomConnections.get(doorway.fromRoomId)?.add(toRoomId);
+    nonBathroomConnections.get(toRoomId)?.add(doorway.fromRoomId);
+  }
+
+  const [firstNonBathroomRoomId] = nonBathroomRoomIds;
+  if (firstNonBathroomRoomId) {
+    const reachable = new Set<string>();
+    const queue = [firstNonBathroomRoomId];
+    while (queue.length > 0) {
+      const roomId = queue.shift();
+      if (!roomId || reachable.has(roomId)) continue;
+      reachable.add(roomId);
+      for (const nextRoomId of nonBathroomConnections.get(roomId) ?? []) {
+        if (!reachable.has(nextRoomId)) queue.push(nextRoomId);
+      }
+    }
+
+    for (const roomId of nonBathroomRoomIds) {
+      assert.ok(
+        reachable.has(roomId),
+        `${template.id} should not make ${roomId} reachable only through a bathroom`
+      );
+    }
+  }
 }
+
+function getTemplate(templateId: string) {
+  const template = HOUSE_PLAN_TEMPLATES.find((entry) => entry.id === templateId);
+  assert.ok(template, `${templateId} template should exist`);
+  return template;
+}
+
+function getTemplateBounds(templateId: string, roomId: string) {
+  const template = getTemplate(templateId);
+  const room = template.rooms.find((entry) => entry.id === roomId);
+  assert.ok(room, `${templateId} template should include ${roomId}`);
+  return {
+    left: room.x - room.width / 2,
+    right: room.x + room.width / 2,
+    top: room.z - room.depth / 2,
+    bottom: room.z + room.depth / 2,
+  };
+}
+
+function assertRoomsShareWall(templateId: string, firstId: string, secondId: string) {
+  const first = getTemplateBounds(templateId, firstId);
+  const second = getTemplateBounds(templateId, secondId);
+  const verticalTouch =
+    Math.abs(first.right - second.left) <= 0.01 ||
+    Math.abs(second.right - first.left) <= 0.01;
+  const verticalOverlap =
+    Math.min(first.bottom, second.bottom) - Math.max(first.top, second.top);
+  const horizontalTouch =
+    Math.abs(first.bottom - second.top) <= 0.01 ||
+    Math.abs(second.bottom - first.top) <= 0.01;
+  const horizontalOverlap =
+    Math.min(first.right, second.right) - Math.max(first.left, second.left);
+
+  assert.ok(
+    (verticalTouch && verticalOverlap > 0.5) || (horizontalTouch && horizontalOverlap > 0.5),
+    `${templateId} template rooms ${firstId} and ${secondId} should share a useful wall`
+  );
+}
+
+for (const template of HOUSE_PLAN_TEMPLATES) {
+  const roomIds = new Set(template.rooms.map((room) => room.id));
+  for (const doorway of template.doorways) {
+    const toRoomId = doorway.toRoomId;
+    assert.ok(roomIds.has(doorway.fromRoomId), `${template.id} doorway should start from a real room`);
+    assert.ok(toRoomId && roomIds.has(toRoomId), `${template.id} doorway should point to a real room`);
+    if (!toRoomId) continue;
+    assert.notEqual(doorway.fromRoomId, toRoomId, `${template.id} doorway should connect two rooms`);
+    assert.ok((doorway.widthMeters ?? 0.9) >= 0.7, `${template.id} doorway should be at least 0.7m wide`);
+    assertRoomsShareWall(template.id, doorway.fromRoomId, toRoomId);
+  }
+}
+
+assert.ok(HOUSE_PLAN_TEMPLATES.length >= 10, "Template library should include real-life layout categories beyond the original starters");
+
+assert.deepEqual(
+  getTemplate("studio").rooms.map((room) => room.id),
+  ["living", "kitchen", "entry", "bathroom"],
+  "Studio template should model an alcove living area with a compact service stack"
+);
+assertRoomsShareWall("studio", "living", "kitchen");
+assertRoomsShareWall("studio", "living", "entry");
+assertRoomsShareWall("studio", "entry", "bathroom");
+
+assert.deepEqual(
+  getTemplate("one_bedroom").rooms.map((room) => room.id),
+  ["living", "kitchen", "entry", "bedroom", "bathroom"],
+  "1-bedroom template should model a realistic entry/service/living/private room sequence"
+);
+assertRoomsShareWall("one_bedroom", "living", "kitchen");
+assertRoomsShareWall("one_bedroom", "living", "entry");
+assertRoomsShareWall("one_bedroom", "living", "bedroom");
+assertRoomsShareWall("one_bedroom", "entry", "bathroom");
+
+assert.deepEqual(
+  getTemplate("living_dining").rooms.map((room) => room.id),
+  ["living", "dining", "kitchen", "entry", "bedroom", "bathroom"],
+  "Open-plan template should include public, service, and private zones"
+);
+assertRoomsShareWall("living_dining", "living", "dining");
+assertRoomsShareWall("living_dining", "dining", "kitchen");
+assertRoomsShareWall("living_dining", "kitchen", "entry");
+assertRoomsShareWall("living_dining", "dining", "bathroom");
+assertRoomsShareWall("living_dining", "living", "bedroom");
+
+assert.deepEqual(
+  getTemplate("compact_two_bed").rooms.map((room) => room.id),
+  ["living", "kitchen", "entry", "bedroom", "bedroom_2", "bathroom"],
+  "Compact 2-bed template should include an entry/service band and two private bedrooms"
+);
+assertRoomsShareWall("compact_two_bed", "living", "kitchen");
+assertRoomsShareWall("compact_two_bed", "entry", "bathroom");
+assertRoomsShareWall("compact_two_bed", "living", "bedroom");
+assertRoomsShareWall("compact_two_bed", "entry", "bedroom_2");
+
+assert.deepEqual(
+  getTemplate("three_room_flat").rooms.map((room) => room.id),
+  ["living", "kitchen_dining", "hall", "bedroom", "bedroom_2", "bathroom"],
+  "3-room flat template should include a public front, service side, and private rear hall"
+);
+assertRoomsShareWall("three_room_flat", "living", "kitchen_dining");
+assertRoomsShareWall("three_room_flat", "living", "hall");
+assertRoomsShareWall("three_room_flat", "hall", "bedroom");
+assertRoomsShareWall("three_room_flat", "hall", "bedroom_2");
+assertRoomsShareWall("three_room_flat", "hall", "bathroom");
 
 assert.equal(plan.version, 1);
 assert.equal(plan.units, "m");
@@ -185,6 +533,18 @@ assert.deepEqual(buildFloorPlanRoomPolygon(customRoom), [
   { x: 0, z: 1 },
 ]);
 assert.equal(calculateFloorPlanPolygonAreaSqm(buildFloorPlanRoomPolygon(customRoom)), 8);
+customRoom.planHoles = [[
+  { x: -1.5, z: -1.25 },
+  { x: -1, z: -1.25 },
+  { x: -1, z: -0.75 },
+  { x: -1.5, z: -0.75 },
+]];
+assert.equal(
+  buildFloorPlanFromRooms([customRoom]).floors[0].rooms[0].areaSqm,
+  7.75,
+  "Floor-plan documents must report the room floor area from lib/room-floor-area, holes excluded."
+);
+customRoom.planHoles = undefined;
 assert.equal(
   isPointInsideRoomPolygon({ x: 1, z: 2 }, buildFloorPlanRoomPolygon(customRoom)),
   false
@@ -275,6 +635,47 @@ const restoredSnapshot = storedToSnapshot(storedSnapshot);
 assert.equal(restoredSnapshot.floorPlan?.underlay?.calibration?.pixelsPerMeter, 200);
 assert.equal(restoredSnapshot.floorPlan?.openings?.[0]?.kind, "door");
 
+const staleLegacyItems: DesignItem[] = [
+  {
+    instanceId: "stale-item",
+    productId: "stale-product",
+    variantId: "stale-variant",
+    position: [0, 0, 0],
+  },
+];
+const snapshotFromValidApi = legacyApiToSnapshot({
+  id: "design_valid_snapshot",
+  title: "Valid Snapshot",
+  roomWidth: 1,
+  roomDepth: 1,
+  items: staleLegacyItems,
+  zones: [],
+  savedViews: [],
+  snapshot: storedSnapshot,
+});
+assert.equal(snapshotFromValidApi.activeRoomId, "bedroom");
+assert.equal(snapshotFromValidApi.rooms.length, 2);
+assert.equal(snapshotFromValidApi.rooms.find((room) => room.id === "bedroom")?.geometry.width, 4);
+assert.equal(snapshotFromValidApi.rooms[0].items.length, 0);
+
+const snapshotFromInvalidApi = legacyApiToSnapshot({
+  id: "design_invalid_snapshot",
+  title: "Invalid Snapshot",
+  roomWidth: 8,
+  roomDepth: 6,
+  items: staleLegacyItems,
+  zones: [],
+  savedViews: [],
+  snapshot: {
+    ...storedSnapshot,
+    activeRoomId: "missing-room",
+  } as unknown as Parameters<typeof legacyApiToSnapshot>[0]["snapshot"],
+});
+assert.equal(snapshotFromInvalidApi.activeRoomId, "room_living");
+assert.equal(snapshotFromInvalidApi.rooms.length, 1);
+assert.equal(snapshotFromInvalidApi.rooms[0].geometry.width, 8);
+assert.equal(snapshotFromInvalidApi.rooms[0].items[0].instanceId, "stale-item");
+
 const underlay: FloorPlanUnderlay = {
   id: "underlay",
   floorId: "floor_1",
@@ -302,6 +703,22 @@ assert.ok(calibrated);
 assert.equal(calibrated.calibration?.pixelsPerMeter, 200);
 assert.equal(calibrated.widthMeters, 5);
 assert.equal(calibrated.depthMeters, 2.5);
+assert.equal(formatFloorPlanCalibrationSummary(null, "cm"), null);
+assert.equal(
+  formatFloorPlanCalibrationSummary(underlay, "cm"),
+  null,
+  "An uncalibrated underlay should not claim a scale."
+);
+assert.equal(
+  formatFloorPlanCalibrationSummary(calibrated, "cm"),
+  "500 cm set (500 cm × 250 cm)",
+  "The calibration summary should use the plan display unit instead of hard-coded metres."
+);
+assert.equal(
+  formatFloorPlanCalibrationSummary(calibrated, "ft-in"),
+  "16′ 4.9″ set (16′ 4.9″ × 8′ 2.4″)",
+  "Imperial viewers should read the calibration reference and underlay extent in feet and inches."
+);
 assert.equal(
   applyFloorPlanScaleCalibration({
     underlay,
@@ -987,6 +1404,66 @@ assert.deepEqual(
     reason: "too_close_to_opening",
     label: "Too close to another opening",
   }
+);
+assert.deepEqual(
+  validateDesignPageOpeningPlacement(
+    {
+      wall: "west",
+      kind: "window",
+      offsetMm: 0,
+      widthMm: 1400,
+    },
+    [],
+    undefined,
+    { rooms: [], planWidthMeters: 5, planDepthMeters: 4 }
+  ),
+  {
+    valid: false,
+    reason: "unresolved_wall_host",
+    label: "Opening has no physical wall",
+  },
+  "Roomless openings must fail closed when no physical wall topology exists."
+);
+assert.deepEqual(
+  validateDesignPageOpeningPlacement(
+    {
+      wall: "west",
+      kind: "window",
+      offsetMm: 400,
+      widthMm: 1200,
+    },
+    [
+      {
+        id: "global-window-existing",
+        wall: "west",
+        offsetMm: 0,
+        widthMm: 900,
+      },
+    ],
+    undefined,
+    { rooms: [], planWidthMeters: 5, planDepthMeters: 4 }
+  ),
+  {
+    valid: false,
+    reason: "unresolved_wall_host",
+    label: "Opening has no physical wall",
+  },
+  "A synthetic plan rectangle must not become collision authority."
+);
+assert.equal(
+  clampDesignPageOpeningToNearestClearInterval(
+    {
+      id: "global-window-moving",
+      wall: "west",
+      kind: "window",
+      offsetMm: 2500,
+      widthMm: 1200,
+    },
+    [],
+    { rooms: [], planWidthMeters: 5, planDepthMeters: 4 }
+  ).offsetMm,
+  2500,
+  "An unresolved opening must not be moved onto an invented plan edge."
 );
 
 console.log("Floor plan foundation checks passed.");

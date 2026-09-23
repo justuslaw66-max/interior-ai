@@ -1,4 +1,5 @@
 import type { AISuggestionAction } from "@/lib/ai/applySuggestion";
+import type { DisplayUnit } from "@/lib/display-units";
 import type { AABB } from "@/lib/snapGuides";
 
 export const STYLES = ["Scandi", "Luxury", "Modern", "Japandi", "Minimalistic"] as const;
@@ -15,12 +16,27 @@ export type NamedCameraView = {
   view: CameraView;
 };
 
+export type DesignPageCloudLoadResult =
+  | "loaded"
+  | "missing"
+  | "unavailable"
+  | "superseded";
+
+export type LayoutPlanRole =
+  | "sofa"
+  | "rug"
+  | "coffee_table"
+  | "tv_console"
+  | "accent_chair"
+  | "floor_lamp";
+
 export type LayoutPlan = {
-  picks?: Partial<Record<"sofa" | "rug" | "coffee_table" | "tv_console" | "accent_chair" | "floor_lamp", string | null>>;
+  picks?: Partial<Record<LayoutPlanRole, string | null>>;
   quality?: {
     completeness: number;
     fitRisk: "low" | "medium" | "high";
-    requiredMissing: Array<"sofa" | "rug" | "coffee_table" | "tv_console" | "accent_chair" | "floor_lamp">;
+    requiredMissing: LayoutPlanRole[];
+    requestedMissing?: LayoutPlanRole[];
     warnings: string[];
   };
   meta?: {
@@ -29,6 +45,7 @@ export type LayoutPlan = {
     seed?: number;
     roomType?: string;
     supportedRoomType?: boolean;
+    requestedRoles?: LayoutPlanRole[];
   };
 };
 
@@ -42,6 +59,8 @@ export type AiLayoutProposal = {
   style?: string;
   budget?: string;
   seed?: number;
+  requestedRoles?: LayoutPlanRole[];
+  missingRoles?: LayoutPlanRole[];
 };
 
 export type AINotesResponse = {
@@ -84,12 +103,12 @@ export const PLAN_LAYER_PRESETS: Record<
     theme: "consumer",
     layers: {
       grid: false,
-      dimensions: false,
-      labels: true,
+      dimensions: true,
+      labels: false,
       openings: true,
       builtIns: true,
-      zones: true,
-      annotations: true,
+      zones: false,
+      annotations: false,
     },
   },
   technical: {
@@ -120,7 +139,7 @@ export const PLAN_LAYER_PRESETS: Record<
   },
 };
 
-export type PlanMeasurementUnit = "mm" | "cm" | "in";
+export type PlanMeasurementUnit = DisplayUnit;
 
 export type WallDescriptor = {
   axis: "x" | "z";
@@ -138,8 +157,11 @@ export type ConfigurableNodeTransform = {
 
 export type ConfigurableBoundsCm = {
   width?: number;
+  width_cm?: number;
   depth?: number;
+  depth_cm?: number;
   height?: number;
+  height_cm?: number;
 };
 
 /**

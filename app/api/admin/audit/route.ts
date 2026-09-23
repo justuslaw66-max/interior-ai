@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { isAdminEmail } from "@/lib/admin";
-import { config } from "@/lib/config";
 import {
   getRelativeCatalogPath,
   runCatalogGovernanceAudit,
@@ -23,13 +22,8 @@ function asRecord(entry: { [key: string]: unknown }) {
 export async function GET(request: Request) {
   try {
     const url = new URL(request.url);
-    const allowDevBypass =
-      config.isDev &&
-      url.searchParams.get("devBypass") === "1" &&
-      request.headers.get("x-interior-admin-bypass") === "1";
-
     const session = await auth();
-    if (!allowDevBypass && (!session?.user?.email || !isAdminEmail(session.user.email))) {
+    if (!session?.user?.email || !isAdminEmail(session.user.email)) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 

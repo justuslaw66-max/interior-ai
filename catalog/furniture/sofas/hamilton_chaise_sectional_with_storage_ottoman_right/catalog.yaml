@@ -1,0 +1,120 @@
+status: "published"
+brand: "Castlery"
+retailer: "Castlery Singapore"
+source_url: "https://www.castlery.com/sg/products/hamilton-chaise-sectional-sofa-with-storage-ottoman?orientation=right_facing"
+category: "sofa"
+
+product_family: "Hamilton"
+product_name: "Hamilton Chaise Sectional Sofa with Storage Ottoman"
+slug: "castlery-hamilton-chaise-sectional-with-storage-ottoman-right"
+variant: "Chaise Sectional with Storage Ottoman / Right Facing"
+
+price_usd: 2939
+price_band: "premium"
+brand_tier: "premium_mid"
+design_zone: "living_zone"
+anchor_role: "sofa_anchor"
+
+dimensions:
+  width_cm: 278
+  depth_cm: 171
+  height_cm: 82
+
+seat_capacity: 4
+size_class: "extra_large"
+shape: "rectangular"
+base_type: "low_metal_leg"
+material_family: "upholstered"
+material_mix: "upholstered_metal"
+color_family: "white"
+tone: "neutral"
+style_cluster: "contemporary"
+style_secondary: "modern"
+design_era: "contemporary"
+
+visual_attributes:
+  visual_weight: "medium"
+  edge_profile: "rounded"
+  silhouette: "l_shaped_with_ottoman"
+  form_language: "soft"
+spatial_attributes:
+  footprint_shape: "l_shaped_with_ottoman"
+  walkway_clearance_cm: 75
+room_compatibility: ["living_room", "family_room", "open_plan"]
+placement_rules:
+  floor_only: true
+  wall_snappable: false
+  clearance_sensitive: true
+  floating_layout_supported: true
+design_pairings: ["coffee_table", "side_table", "floor_lamp", "rug", "accent_chair"]
+
+summary:
+  short_description: "Hamilton Chaise Sectional Sofa with Storage Ottoman (right facing) in Performance Marcel Brilliant White, with product-specific fabric availability."
+  key_features:
+    - "Deep foam, fibre and pocket-spring seating"
+    - "Removable frame, seat and back cushion covers"
+    - "2 verified stocked Performance Marcel fabric choices"
+
+feature_flags:
+  has_removable_cover: true
+  has_removable_cushion: true
+  is_configurable: true
+
+authoring_notes:
+  category_confidence: "high"
+  source_checked: "Castlery Singapore product page, 2026-07-12"
+  source_url: "https://www.castlery.com/sg/products/hamilton-chaise-sectional-sofa-with-storage-ottoman?orientation=right_facing"
+  local_source_model: "/Users/justus/Desktop/Webapp project/castlery/Sofa/Hamilton /Chaise Sectional with Storage Ottoman / Right Facing.glb"
+  note: "The supplied GLB is the baked Performance Marcel Brilliant White geometry. Runtime upholstery variants are restricted to the 2 choices verified on this exact Castlery listing; leather is excluded because it is sold as a separate Hamilton Leather product and no leather GLB was supplied."
+
+shipping_and_warranty:
+  free_delivery_threshold_sgd: 500
+  warranty: "Frame 10 years; Fabric 1 year; Foam 2 years"
+  return_policy: "30-day returns"
+
+product_details:
+  material:
+    - { label: "Frame", value: "Laminated veneer lumber and plywood" }
+    - { label: "Leg frame", value: "Stainless steel" }
+    - { label: "Filling", value: "Foam, fibre and pocket spring filled seat; fibre filled back" }
+    - { label: "Cover type", value: "Removable frame, seat and back cushions" }
+  dimensions:
+    - { label: "Dimension", value: "W278 x D171 x H82cm" }
+    - { label: "Seating height", value: "42cm" }
+    - { label: "Leg height", value: "4.5cm" }
+
+comfort_profile:
+  seat_comfort: { label: "Relaxed", value: 2, min_label: "Relaxed", max_label: "Upright" }
+  seat_depth: { label: "Deep", value: 4, min_label: "Shallow", max_label: "Deep" }
+  seat_height: { label: "Medium", value: 3, min_label: "Low", max_label: "High" }
+  seat_softness: { label: "Soft", value: 2, min_label: "Soft", max_label: "Firm" }
+
+upholstery_library_ref: "hamilton"
+supported_upholstery_codes:
+  - "marcel_brilliant_white"
+  - "marcel_smoke_grey"
+
+assets:
+  asset_id: "sofa-real-castlery-hamilton-chaise-sectional-with-storage-ottoman-right"
+  model_url: "/assets/models/sofas/sofa-real-castlery-hamilton-chaise-sectional-with-storage-ottoman-right.glb"
+  thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1000/v1756695191/crusader/variants/PB-001797-PM4002/Hamilton-Chaise-Sectional-Sofa-Right-Facing-With-Storage-Ottoman-Performance-Marcel-Brilliant-White-Front-1756695189.png"
+  gallery_images:
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1000/v1756695191/crusader/variants/PB-001797-PM4002/Hamilton-Chaise-Sectional-Sofa-Right-Facing-With-Storage-Ottoman-Performance-Marcel-Brilliant-White-Front-1756695189.png"
+  media_presentation: "studio"
+
+ai_flags:
+  isStarterEligible: true
+  isAiPlacementEligible: true
+  isAutoLayoutEligible: true
+
+variants:
+  - variant: "Chaise Sectional with Storage Ottoman / Right Facing / Performance Marcel, Brilliant White"
+    sku: "sofa-real-castlery-hamilton-chaise-sectional-with-storage-ottoman-right-marcel-brilliant-white"
+    model_asset_id: "sofa-real-castlery-hamilton-chaise-sectional-with-storage-ottoman-right"
+    model_url: "/assets/models/sofas/sofa-real-castlery-hamilton-chaise-sectional-with-storage-ottoman-right.glb"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1000/v1756695191/crusader/variants/PB-001797-PM4002/Hamilton-Chaise-Sectional-Sofa-Right-Facing-With-Storage-Ottoman-Performance-Marcel-Brilliant-White-Front-1756695189.png"
+    swatch_group: "upholstery_option"
+    price_usd: 2939
+    dimensions: { width_cm: 278, depth_cm: 171, height_cm: 82 }
+    affiliate_url: "https://www.castlery.com/sg/products/hamilton-chaise-sectional-sofa-with-storage-ottoman?orientation=right_facing"
+    available: true

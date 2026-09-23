@@ -4,20 +4,27 @@ import type {
   HouseRoomConnectionChecklistItem,
   HouseRoomDoorwaySuggestion,
 } from "@/lib/design-page-house-plan";
+import { formatDisplayLength, type DisplayUnit } from "@/lib/display-units";
 
 type RoomConnectionChecklistProps = {
   items: HouseRoomConnectionChecklistItem[];
+  measurementUnit: DisplayUnit;
   disabled?: boolean;
   dark?: boolean;
+  variant?: "pro" | "consumer";
+  collapsed?: boolean;
+  onCollapsedChange?: (collapsed: boolean) => void;
   onAddDoorway: (suggestion: HouseRoomDoorwaySuggestion) => void;
 };
 
-const formatMeters = (value: number) => value.toFixed(1).replace(/\.0$/, "");
-
 export default function RoomConnectionChecklist({
   items,
+  measurementUnit,
   disabled = false,
   dark = false,
+  variant = "consumer",
+  collapsed = false,
+  onCollapsedChange,
   onAddDoorway,
 }: RoomConnectionChecklistProps) {
   if (items.length === 0) return null;
@@ -39,32 +46,70 @@ export default function RoomConnectionChecklist({
     ? "rounded-full bg-emerald-400/15 px-2 py-1 text-[11px] font-semibold text-emerald-200"
     : "rounded-full bg-emerald-50 px-2 py-1 text-[11px] font-semibold text-emerald-700";
   const needsClass = dark
-    ? "rounded-full bg-amber-400/15 px-2 py-1 text-[11px] font-semibold text-amber-200"
+    ? "designer-status-warning rounded-full px-2 py-1 text-[11px] font-semibold"
     : "rounded-full bg-amber-50 px-2 py-1 text-[11px] font-semibold text-amber-700";
+  const reviewClass = dark
+    ? "rounded-full bg-orange-400/15 px-2 py-1 text-[11px] font-semibold text-orange-200"
+    : "rounded-full bg-orange-50 px-2 py-1 text-[11px] font-semibold text-orange-700";
   const buttonClass = dark
     ? "rounded-lg bg-white px-2.5 py-1.5 text-[11px] font-semibold text-neutral-950 disabled:opacity-50"
     : "rounded-lg bg-neutral-900 px-2.5 py-1.5 text-[11px] font-semibold text-white hover:bg-neutral-700 disabled:opacity-50";
+  const toggleClass = dark
+    ? "rounded-lg border border-white/10 px-2 py-1 text-[11px] font-semibold text-neutral-300"
+    : "rounded-lg border border-neutral-200 px-2 py-1 text-[11px] font-semibold text-neutral-600";
+  const getStatusClass = (status: HouseRoomConnectionChecklistItem["status"]) => {
+    if (status === "connected") return connectedClass;
+    if (status === "needs_doorway") return needsClass;
+    return reviewClass;
+  };
+  const getStatusLabel = (status: HouseRoomConnectionChecklistItem["status"]) => {
+    if (status === "connected") return "Doorway ready";
+    if (status === "needs_doorway") return "Needs doorway";
+    if (status === "detached") return "Detached";
+    return "Disconnected";
+  };
+  const getItemLabel = (item: HouseRoomConnectionChecklistItem) => {
+    if (item.status === "detached") return item.roomNames[0] ?? "Room";
+    if (item.status === "disconnected_group") return item.roomNames.join(", ");
+    return `${item.roomNames[0]} - ${item.roomNames[1]}`;
+  };
+  const getItemMeta = (item: HouseRoomConnectionChecklistItem) => {
+    if (item.status === "detached") return "No shared wall on this floor";
+    if (item.status === "disconnected_group") return "Separate connected group on this floor";
+    return `${formatDisplayLength(item.sharedWallLengthMeters * 1000, measurementUnit)} shared wall`;
+  };
 
   return (
-    <div data-testid="room-connection-checklist" className={shellClass}>
-      <div className={titleClass}>Connections</div>
+    <div data-testid="room-connection-checklist" data-variant={variant} className={shellClass}>
+      <div className="flex items-center justify-between gap-2">
+        <div className={titleClass}>Connections</div>
+        {onCollapsedChange ? (
+          <button
+            type="button"
+            className={toggleClass}
+            aria-expanded={!collapsed}
+            onClick={() => onCollapsedChange(!collapsed)}
+          >
+            {collapsed ? "Expand" : "Collapse"}
+          </button>
+        ) : null}
+      </div>
+      {collapsed ? null : (
       <div className="mt-2 space-y-2">
         {items.map((item) => (
           <div key={item.id} data-testid="room-connection-row" className={rowClass}>
             <div className="flex items-start justify-between gap-2">
               <div className="min-w-0">
                 <div className={labelClass}>
-                  {item.roomNames[0]} - {item.roomNames[1]}
+                  {getItemLabel(item)}
                 </div>
-                <div className={metaClass}>
-                  {formatMeters(item.sharedWallLengthMeters)}m shared wall
-                </div>
+                <div className={metaClass}>{getItemMeta(item)}</div>
               </div>
               <div
                 data-testid="room-connection-status"
-                className={item.status === "connected" ? connectedClass : needsClass}
+                className={getStatusClass(item.status)}
               >
-                {item.status === "connected" ? "Doorway ready" : "Needs doorway"}
+                {getStatusLabel(item.status)}
               </div>
             </div>
             {item.status === "needs_doorway" && item.doorwaySuggestion && (
@@ -81,6 +126,7 @@ export default function RoomConnectionChecklist({
           </div>
         ))}
       </div>
+      )}
     </div>
   );
 }

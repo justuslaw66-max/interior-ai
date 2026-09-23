@@ -1,40 +1,35 @@
-import { prisma } from "@/lib/prisma";
-import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
-import DesignerCanvas from "@/components/DesignerCanvas";
+import { buildDesignEditorUrl } from "@/lib/design-editor-url";
+
+type LegacyDesignSearchParams = {
+  mode?: string | string[];
+  view?: string | string[];
+  workspace?: string | string[];
+  floorPlanImport?: string | string[];
+};
+
+function singleValue(value: string | string[] | undefined) {
+  return typeof value === "string" ? value : undefined;
+}
 
 export default async function DesignPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<LegacyDesignSearchParams>;
 }) {
   const { id } = await params;
-  const session = await auth();
+  const resolvedSearchParams = await searchParams;
+  const mode = singleValue(resolvedSearchParams.mode);
+  const view = singleValue(resolvedSearchParams.view);
+  const workspace = singleValue(resolvedSearchParams.workspace);
 
-  if (!session?.user?.id) {
-    redirect("/");
-  }
-
-  const design = await prisma.design.findUnique({
-    where: { id },
-  });
-
-  if (!design || design.userId !== session.user.id) {
-    redirect("/dashboard");
-  }
-
-  return (
-    <DesignerCanvas
-      initialItems={design.items as unknown as Array<{
-        instanceId: string;
-        productId: string;
-        variantId: string;
-        position: [number, number, number];
-        rotationY?: number;
-        includeInCheckout?: boolean;
-      }>}
-      roomWidth={design.roomWidth}
-      roomDepth={design.roomDepth}
-    />
-  );
+  redirect(buildDesignEditorUrl({
+    designId: id,
+    mode: mode === "designer" ? mode : undefined,
+    view: view === "2d" ? view : undefined,
+    workspace: workspace === "furnish" ? workspace : undefined,
+    floorPlanImportId: singleValue(resolvedSearchParams.floorPlanImport),
+  }));
 }

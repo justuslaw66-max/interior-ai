@@ -5,6 +5,16 @@ import { CatalogValidator } from "@/lib/catalog-validation";
 
 let validated = false;
 
+function shouldCheckLocalAssetFiles(): boolean {
+  if (process.env.CATALOG_VALIDATE_RUNTIME_ASSETS === "true") return true;
+
+  // Vercel serves /public files as static assets, but output-file tracing should
+  // not bundle every model/thumbnail into each serverless function.
+  if (process.env.VERCEL === "1") return false;
+
+  return true;
+}
+
 function assetExists(assetUrl: string): boolean {
   if (!assetUrl.startsWith("/")) return true;
   const clean = assetUrl.replace(/^\/+/, "");
@@ -40,13 +50,16 @@ export function validateCatalogOrThrow() {
   const validation = validator.validateCatalog(CATALOG_ITEMS);
 
   const extraErrors: string[] = [];
+  const checkLocalAssetFiles = shouldCheckLocalAssetFiles();
 
   for (const item of Object.values(CATALOG_ITEMS)) {
-    if (!assetExists(item.assets.modelUrl)) {
-      extraErrors.push(`${item.id}: modelUrl missing on disk (${item.assets.modelUrl})`);
-    }
-    if (!assetExists(item.assets.thumbUrl)) {
-      extraErrors.push(`${item.id}: thumbUrl missing on disk (${item.assets.thumbUrl})`);
+    if (checkLocalAssetFiles) {
+      if (!assetExists(item.assets.modelUrl)) {
+        extraErrors.push(`${item.id}: modelUrl missing on disk (${item.assets.modelUrl})`);
+      }
+      if (!assetExists(item.assets.thumbUrl)) {
+        extraErrors.push(`${item.id}: thumbUrl missing on disk (${item.assets.thumbUrl})`);
+      }
     }
 
     if (item.commerce.type === "shopify") {

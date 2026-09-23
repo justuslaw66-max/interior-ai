@@ -1,11 +1,17 @@
 import { expect, test } from "./fixtures";
-import { getSelectedItemPanel, openCatalogPreview } from "./variant-test-utils";
+import {
+  addCatalogDrawerItemToRoom,
+  getSelectedItemPanel,
+  openCatalogPreview,
+} from "./variant-test-utils";
 
-const MADISON_3S_ID = "sofa-real-castlery-madison-3s";
+// The catalog deduplicates the Madison sofa family to its 2-seater card.
+// Bind drawer assertions to the exact representative instead of a hidden ID.
+const MADISON_CATALOG_REPRESENTATIVE_ID = "sofa-real-castlery-madison-2s";
 
 const expectedSwatches = [
   { label: "Bisque", urlPart: "AM-4001/Madison-Armchair-Bisque-Square-Det_1" },
-  { label: "Camille, Forest", urlPart: "CM-4001/Madison-3-Seater-Sofa-Forest-Det_5" },
+  { label: "Camille", urlPart: "CM-4001/Madison-3-Seater-Sofa-Forest-Det_5" },
   { label: "Caramel", urlPart: "LE-4016/Jonathan-Sofa-Brown_1" },
 ];
 
@@ -16,9 +22,13 @@ test.describe("109. Madison Swatch Textures", () => {
     await page.goto("/design");
     await page.waitForLoadState("domcontentloaded");
 
-    await expect(page.getByTestId("scene-canvas")).toBeVisible({ timeout: 20000 });
+    await expect(page.getByTestId("scene-canvas").first()).toBeVisible({ timeout: 20000 });
 
-    const opened = await openCatalogPreview(page, MADISON_3S_ID, "Madison");
+    const opened = await openCatalogPreview(
+      page,
+      MADISON_CATALOG_REPRESENTATIVE_ID,
+      "Madison",
+    );
     expect(opened).toBeTruthy();
 
     const drawer = page.locator("aside").filter({ hasText: "Product details" }).first();
@@ -29,12 +39,17 @@ test.describe("109. Madison Swatch Textures", () => {
     await expect(fabricTab).toHaveAttribute("aria-selected", "true");
     await expect(leatherTab).toHaveAttribute("aria-selected", "false");
     await expect(drawer.getByText("Fabric colour")).toBeVisible();
-    await expect(drawer.getByText("Selected: Bisque")).toBeVisible();
-    await expect(drawer.getByText("Selected: Caramel")).toHaveCount(0);
+    await expect(drawer.getByRole("button", { name: /Bisque/ }).first()).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
 
     await leatherTab.click();
     await expect(leatherTab).toHaveAttribute("aria-selected", "true");
-    await expect(drawer.getByText("Selected: Caramel")).toBeVisible();
+    await expect(drawer.getByRole("button", { name: /Caramel/ }).first()).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
     await expect(drawer.getByText("Fabric colour")).toHaveCount(0);
   });
 
@@ -44,15 +59,19 @@ test.describe("109. Madison Swatch Textures", () => {
     await page.goto("/design");
     await page.waitForLoadState("domcontentloaded");
 
-    await expect(page.getByTestId("scene-canvas")).toBeVisible({ timeout: 20000 });
+    await expect(page.getByTestId("scene-canvas").first()).toBeVisible({ timeout: 20000 });
 
-    const opened = await openCatalogPreview(page, MADISON_3S_ID, "Madison");
+    const opened = await openCatalogPreview(
+      page,
+      MADISON_CATALOG_REPRESENTATIVE_ID,
+      "Madison",
+    );
     expect(opened).toBeTruthy();
 
     await expect(page.getByTestId("catalog-detail-add-to-room")).toBeVisible({ timeout: 10000 });
     await expect(page.getByText("Stone").first()).toHaveCount(0);
 
-    await page.getByTestId("catalog-detail-add-to-room").click();
+    await addCatalogDrawerItemToRoom(page);
 
     const selectedItemPanel = getSelectedItemPanel(page);
     await expect(selectedItemPanel.getByText("Selected Item")).toBeVisible({ timeout: 10000 });

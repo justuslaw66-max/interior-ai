@@ -1,44 +1,18 @@
 import crypto from "node:crypto";
-import fs from "node:fs";
-import path from "node:path";
 import { PrismaClient } from "@prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { Pool } from "pg";
 import { test, expect } from "./fixtures";
+import { getE2EBaseUrl, resolveE2EDatabaseUrl } from "./release-environment";
 
-const baseURL = "http://localhost:3000";
+const baseURL = getE2EBaseUrl();
 
 let prismaClient: PrismaClient | null = null;
-
-function resolveDatabaseUrl() {
-  if (process.env.DATABASE_URL) {
-    return process.env.DATABASE_URL;
-  }
-
-  const candidates = [
-    path.resolve(process.cwd(), ".env.local"),
-    path.resolve(process.cwd(), ".env"),
-  ];
-
-  for (const envPath of candidates) {
-    if (!fs.existsSync(envPath)) continue;
-    const content = fs.readFileSync(envPath, "utf8");
-    const match = content.match(/^DATABASE_URL=(.*)$/m);
-    if (!match?.[1]) continue;
-    const value = match[1].trim().replace(/^"|"$/g, "").replace(/^'|'$/g, "");
-    if (value) {
-      process.env.DATABASE_URL = value;
-      return value;
-    }
-  }
-
-  return undefined;
-}
 
 function getPrismaClient() {
   if (prismaClient) return prismaClient;
 
-  const url = resolveDatabaseUrl();
+  const url = resolveE2EDatabaseUrl();
   if (!url) {
     throw new Error("DATABASE_URL is required for phase-b blocker tests");
   }
@@ -52,11 +26,13 @@ function getPrismaClient() {
 
 test.describe("Phase B - Blocker Enforcement", () => {
   const createdJobs: string[] = [];
+  const createdAssets: string[] = [];
 
   test.afterAll(async () => {
-    // Cleanup: delete all test jobs
+    const client = getPrismaClient();
+
+    // Cleanup jobs before their referenced model assets.
     if (createdJobs.length > 0) {
-      const client = getPrismaClient();
       for (const jobId of createdJobs) {
         try {
           await client.importJob.delete({
@@ -65,6 +41,16 @@ test.describe("Phase B - Blocker Enforcement", () => {
         } catch {
           // Job may have already been deleted or not exist
         }
+      }
+    }
+
+    for (const assetId of createdAssets) {
+      try {
+        await client.modelAsset.delete({
+          where: { id: assetId },
+        });
+      } catch {
+        // Asset may have already been deleted or not exist
       }
     }
   });
@@ -141,7 +127,26 @@ test.describe("Phase B - Blocker Enforcement", () => {
     const client = getPrismaClient();
 
     const jobId = crypto.randomUUID();
+    const assetId = `phase-b-${crypto.randomUUID()}`;
     createdJobs.push(jobId);
+    createdAssets.push(assetId);
+
+    await client.modelAsset.create({
+      data: {
+        id: assetId,
+        modelUrl: "https://example.com/test-clean.glb",
+        thumbUrl: "https://example.com/test-clean.png",
+        aabbCenterX: 0,
+        aabbCenterY: 0.5,
+        aabbCenterZ: 0,
+        aabbSizeX: 1,
+        aabbSizeY: 1,
+        aabbSizeZ: 1,
+        dimsDmm: 1000,
+        dimsHmm: 1000,
+        dimsWmm: 1000,
+      },
+    });
 
     await client.importJob.create({
       data: {
@@ -153,6 +158,7 @@ test.describe("Phase B - Blocker Enforcement", () => {
         workflowStage: "review",
         workflowBlockers: [],
         nextAction: "Approve",
+        normalizedAssetId: assetId,
         rawMetadataJson: {},
       },
     });

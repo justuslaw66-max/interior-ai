@@ -1,6 +1,7 @@
 import { expect, test } from "./fixtures";
 import {
   addImportedProductIfReady,
+  addCatalogDrawerItemToRoom,
   openCatalogPreview,
   selectImportedFamilyByHint,
   selectImportedProductById,
@@ -14,11 +15,11 @@ test.describe("110. Dawson Product Info", () => {
 
     await page.goto("/design");
     await page.waitForLoadState("domcontentloaded");
-    await expect(page.getByTestId("scene-canvas")).toBeVisible({ timeout: 20000 });
+    await expect(page.getByTestId("scene-canvas").first()).toBeVisible({ timeout: 20000 });
 
     const opened = await openCatalogPreview(page, DAWSON_3S_ID, "Dawson 3 Seater", [/^Sofa \(/]);
     if (opened) {
-      await page.getByTestId("catalog-detail-add-to-room").click();
+      await addCatalogDrawerItemToRoom(page);
     } else {
       await expect(selectImportedFamilyByHint(page, "Dawson")).resolves.toBeTruthy();
       await expect(selectImportedProductById(page, DAWSON_3S_ID)).resolves.toBeTruthy();
@@ -27,6 +28,26 @@ test.describe("110. Dawson Product Info", () => {
 
     await expect(page.getByText("Selected Item")).toBeVisible({ timeout: 10000 });
     await expect(page.getByText(/Dawson 3 Seater Sofa|Dawson/i).first()).toBeVisible();
+    const availability = page.getByTestId("selected-item-availability");
+    await expect(availability).toBeVisible();
+    await expect(availability).toContainText("External retailer");
+    await expect(availability).toContainText("Check stock");
+    const liveAvailabilityButton = availability.getByRole("button", {
+      name: /Check current stock and delivery at Castlery/i,
+    });
+    await expect(liveAvailabilityButton).toBeVisible();
+    await page.context().route(/^https:\/\/www\.castlery\.com\/sg\/products\//, (route) =>
+      route.fulfill({
+        status: 200,
+        contentType: "text/html",
+        body: "<title>Castlery availability</title>",
+      }),
+    );
+    const retailerPopupPromise = page.waitForEvent("popup", { timeout: 15000 });
+    await liveAvailabilityButton.click();
+    const retailerPopup = await retailerPopupPromise;
+    await expect.poll(() => retailerPopup.url(), { timeout: 15000 }).toContain("castlery.com/sg/products");
+    await retailerPopup.close().catch(() => null);
 
     await page.getByRole("button", { name: /^Show details$/i }).click();
     const detailsPanel = page.getByTestId("selected-product-details-panel");

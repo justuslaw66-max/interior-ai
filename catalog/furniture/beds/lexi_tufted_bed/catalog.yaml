@@ -1,0 +1,342 @@
+brand: "Castlery"
+source_url: "https://www.castlery.com/sg/products/lexi-tufted-bed"
+category: "bed"
+
+product_family: "Lexi"
+product_name: "Lexi Tufted Bed"
+variant: "Queen - Nickel Grey"
+
+price_usd: 949
+compare_at_price_usd: 999
+price_band: "mid_premium"
+brand_tier: "premium_mid"
+
+design_zone: "sleeping_zone"
+anchor_role: "bed_anchor"
+
+dimensions:
+  width_cm: 163
+  depth_cm: 228
+  height_cm: 114
+
+size_class: "large"
+shape: "rectangular"
+material_family: "upholstered"
+material_mix: "upholstered_wood"
+
+color_family: "grey"
+tone: "neutral"
+
+style_cluster: "contemporary"
+style_secondary: "modern"
+design_era: "contemporary"
+
+visual_attributes:
+  visual_weight: "medium"
+  edge_profile: "rounded"
+  silhouette: "tufted"
+  form_language: "soft"
+
+spatial_attributes:
+  footprint_shape: "rectangular"
+  walkway_clearance_cm: 90
+  wall_clearance_cm: 0
+
+room_compatibility:
+  - "bedroom"
+
+placement_rules:
+  floor_only: true
+  wall_snappable: true
+  clearance_sensitive: true
+  center_room_preferred: false
+
+design_pairings:
+  - "nightstand"
+  - "table_lamp"
+  - "rug"
+  - "dresser"
+
+product_details:
+  material:
+    - label: "Fabric composition"
+      value: "100% polyester"
+    - label: "Frame"
+      value: "Laminated veneer lumber with plywood"
+    - label: "Leg frame"
+      value: "Rubber wood with metal cap"
+    - label: "Filling"
+      value: "Foam and fibre"
+    - label: "Finish"
+      value: "Walnut stain on wood, brass stain on metal"
+    - label: "Headboard backing material"
+      value: "Non-woven fabric"
+    - label: "Bed slats"
+      value: "Poplar plywood"
+    - label: "Care"
+      value: "Upholstered bed"
+    - label: "Material & safety standards"
+      value: "Low formaldehyde"
+  dimensions:
+    - label: "Queen dimension"
+      value: "W163 x D228 x H114cm"
+    - label: "King dimension"
+      value: "W193 x D228 x H114cm"
+    - label: "Queen mattress space dimension"
+      value: "W154 x D193cm with 7cm mattress inset"
+    - label: "Slat to slat distance"
+      value: "7.5cm"
+    - label: "Recommended mattress thickness"
+      value: "20-35cm"
+    - label: "Leg height"
+      value: "18cm"
+    - label: "Slat height"
+      value: "31.5cm"
+    - label: "Queen product weight"
+      value: "59.5kg"
+    - label: "Packaging dimensions"
+      value: "2 boxes"
+    - label: "Max bearing support"
+      value: "360kg"
+  delivery_and_warranty:
+    - label: "Cancellation"
+      value: "Free - 5 working days before delivery"
+    - label: "Warranty"
+      value: "Frame 10 years; Fabric 1 year; Foam 2 years"
+    - label: "Return policy"
+      value: "30-day returns"
+    - label: "Assembly"
+      value: "Bedframe needs assembly, 2 people required"
+
+assets:
+  asset_id: "bed-real-castlery-lexi-tufted"
+  model_url: "/assets/models/bed-real-castlery-lexi-tufted-queen-nickel-grey.glb"
+  thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1634541304/crusader/variants/54000038-CY4002/Lexi-Queen-Size-Bed-Nickel-Grey-Front_1-SG.jpg"
+  gallery_images:
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1634541304/crusader/variants/54000038-CY4002/Lexi-Queen-Size-Bed-Nickel-Grey-Front_1-SG.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1655221914/crusader/variants/50440066-CY4002/Lexi-Queen-Size-Bed-Nickel-Grey-Dim-SG-1655221911.jpg"
+
+variants:
+  - variant: "Queen - Nickel Grey"
+    size_label: "Queen"
+    source_sku: "54000066-CY4002"
+    finish_code: "nickel_grey"
+    finish_label: "Nickel Grey"
+    swatch_group: "upholstery"
+    swatch_hex: "#8b8983"
+    swatch_image_url: "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1634527192/crusader/variants/CY-4002/Nickel-Grey_1.jpg"
+    collection_type: "stocked"
+    model_url: "/assets/models/bed-real-castlery-lexi-tufted-queen-nickel-grey.glb"
+    affiliate_url: "https://www.castlery.com/sg/products/lexi-tufted-bed?bed_frame_size=queen&material=nickel_grey"
+    available: true
+    price_usd: 949
+    compare_at_price_usd: 999
+    price_band: "mid_premium"
+    brand_tier: "premium_mid"
+    dimensions:
+      width_cm: 163
+      depth_cm: 228
+      height_cm: 114
+    size_class: "large"
+    color_family: "grey"
+    tone: "neutral"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1634541304/crusader/variants/54000038-CY4002/Lexi-Queen-Size-Bed-Nickel-Grey-Front_1-SG.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1634541304/crusader/variants/54000038-CY4002/Lexi-Queen-Size-Bed-Nickel-Grey-Front_1-SG.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1655221914/crusader/variants/50440066-CY4002/Lexi-Queen-Size-Bed-Nickel-Grey-Dim-SG-1655221911.jpg"
+    materials: &variant_materials
+      upholstery:
+        structure: "fabric"
+        surface: "polyester"
+      frame:
+        structure: "engineered_wood"
+        surface: "upholstered"
+      legs:
+        structure: "rubber_wood"
+        surface: "wood_metal_cap"
+    finish:
+      color_finish: "nickel_grey"
+      wood_finish: "walnut_stain"
+      metal_finish: "brass_stain"
+      surface_finish: "matte"
+      finish_color: "nickel_grey"
+
+  - variant: "Queen - Frost White"
+    size_label: "Queen"
+    source_sku: "54000066-CY4001"
+    finish_code: "frost_white"
+    finish_label: "Frost White"
+    swatch_group: "upholstery"
+    swatch_hex: "#ded9d1"
+    swatch_image_url: "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1634527192/crusader/variants/CY-4001/Frost-White_1.jpg"
+    collection_type: "stocked"
+    model_url: "/assets/models/bed-real-castlery-lexi-tufted-queen-frost-white.glb"
+    affiliate_url: "https://www.castlery.com/sg/products/lexi-tufted-bed?bed_frame_size=queen&material=frost_white"
+    available: true
+    price_usd: 949
+    compare_at_price_usd: 999
+    price_band: "mid_premium"
+    brand_tier: "premium_mid"
+    dimensions:
+      width_cm: 163
+      depth_cm: 228
+      height_cm: 114
+    size_class: "large"
+    color_family: "white"
+    tone: "neutral"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1634530364/crusader/variants/54000038-CY4001/Lexi-Queen-Size-Bed-Frost-White-Front_1-SG.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1634530364/crusader/variants/54000038-CY4001/Lexi-Queen-Size-Bed-Frost-White-Front_1-SG.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1655221911/crusader/variants/50440066-CY4001/Lexi-Queen-Size-Bed-Frost-White-Dim-SG-1655221908.jpg"
+    materials: *variant_materials
+    finish:
+      color_finish: "frost_white"
+      wood_finish: "walnut_stain"
+      metal_finish: "brass_stain"
+      surface_finish: "matte"
+      finish_color: "frost_white"
+
+  - variant: "Queen - Light Blush"
+    size_label: "Queen"
+    source_sku: "54000066-CY4003"
+    finish_code: "light_blush"
+    finish_label: "Light Blush"
+    swatch_group: "upholstery"
+    swatch_hex: "#d6c9c1"
+    swatch_image_url: "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1634527192/crusader/variants/CY-4003/Light-Blush_1.jpg"
+    collection_type: "stocked"
+    model_url: "/assets/models/bed-real-castlery-lexi-tufted-queen-light-blush.glb"
+    affiliate_url: "https://www.castlery.com/sg/products/lexi-tufted-bed?bed_frame_size=queen&material=light_blush"
+    available: true
+    price_usd: 949
+    compare_at_price_usd: 999
+    price_band: "mid_premium"
+    brand_tier: "premium_mid"
+    dimensions:
+      width_cm: 163
+      depth_cm: 228
+      height_cm: 114
+    size_class: "large"
+    color_family: "beige"
+    tone: "warm"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1634540645/crusader/variants/54000038-CY4003/Lexi-Queen-Size-Bed-Light-Blush-Front_1-SG.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1634540645/crusader/variants/54000038-CY4003/Lexi-Queen-Size-Bed-Light-Blush-Front_1-SG.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1655221910/crusader/variants/50440066-CY4003/Lexi-Queen-Size-Bed-Light-Blush-Dim-SG-1655221907.jpg"
+    materials: *variant_materials
+    finish:
+      color_finish: "light_blush"
+      wood_finish: "walnut_stain"
+      metal_finish: "brass_stain"
+      surface_finish: "matte"
+      finish_color: "light_blush"
+
+  - variant: "King - Nickel Grey"
+    size_label: "King"
+    source_sku: "54000065-CY4002"
+    finish_code: "nickel_grey"
+    finish_label: "Nickel Grey"
+    swatch_group: "upholstery"
+    swatch_hex: "#8b8983"
+    swatch_image_url: "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1634527192/crusader/variants/CY-4002/Nickel-Grey_1.jpg"
+    collection_type: "stocked"
+    model_url: "/assets/models/bed-real-castlery-lexi-tufted-king-nickel-grey.glb"
+    affiliate_url: "https://www.castlery.com/sg/products/lexi-tufted-bed?bed_frame_size=king&material=nickel_grey"
+    available: true
+    price_usd: 1039
+    compare_at_price_usd: 1099
+    price_band: "mid_premium"
+    brand_tier: "premium_mid"
+    dimensions:
+      width_cm: 193
+      depth_cm: 228
+      height_cm: 114
+    size_class: "large"
+    color_family: "grey"
+    tone: "neutral"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1639361227/crusader/variants/54000036-CY4002/Lexi-King-Size-Bed-Nickel-Grey-Front_1-AU.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1639361227/crusader/variants/54000036-CY4002/Lexi-King-Size-Bed-Nickel-Grey-Front_1-AU.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1655221918/crusader/variants/50440065-CY4002/Lexi-King-Size-Bed-Nickel-Grey-Dim-SG-1655221916.jpg"
+    materials: *variant_materials
+    finish:
+      color_finish: "nickel_grey"
+      wood_finish: "walnut_stain"
+      metal_finish: "brass_stain"
+      surface_finish: "matte"
+      finish_color: "nickel_grey"
+
+  - variant: "King - Frost White"
+    size_label: "King"
+    source_sku: "54000065-CY4001"
+    finish_code: "frost_white"
+    finish_label: "Frost White"
+    swatch_group: "upholstery"
+    swatch_hex: "#ded9d1"
+    swatch_image_url: "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1634527192/crusader/variants/CY-4001/Frost-White_1.jpg"
+    collection_type: "stocked"
+    model_url: "/assets/models/bed-real-castlery-lexi-tufted-king-frost-white.glb"
+    affiliate_url: "https://www.castlery.com/sg/products/lexi-tufted-bed?bed_frame_size=king&material=frost_white"
+    available: true
+    price_usd: 1039
+    compare_at_price_usd: 1099
+    price_band: "mid_premium"
+    brand_tier: "premium_mid"
+    dimensions:
+      width_cm: 193
+      depth_cm: 228
+      height_cm: 114
+    size_class: "large"
+    color_family: "white"
+    tone: "neutral"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1639361174/crusader/variants/54000036-CY4001/Lexi-King-Size-Bed-Frost-White-Front_1-AU.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1639361174/crusader/variants/54000036-CY4001/Lexi-King-Size-Bed-Frost-White-Front_1-AU.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1655221917/crusader/variants/50440065-CY4001/Lexi-King-Size-Bed-Frost-White-Dim-SG-1655221915.jpg"
+    materials: *variant_materials
+    finish:
+      color_finish: "frost_white"
+      wood_finish: "walnut_stain"
+      metal_finish: "brass_stain"
+      surface_finish: "matte"
+      finish_color: "frost_white"
+
+  - variant: "King - Light Blush"
+    size_label: "King"
+    source_sku: "54000065-CY4003"
+    finish_code: "light_blush"
+    finish_label: "Light Blush"
+    swatch_group: "upholstery"
+    swatch_hex: "#d6c9c1"
+    swatch_image_url: "https://res.cloudinary.com/castlery/image/private/w_1995,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1634527192/crusader/variants/CY-4003/Light-Blush_1.jpg"
+    collection_type: "stocked"
+    model_url: "/assets/models/bed-real-castlery-lexi-tufted-king-light-blush.glb"
+    affiliate_url: "https://www.castlery.com/sg/products/lexi-tufted-bed?bed_frame_size=king&material=light_blush"
+    available: true
+    price_usd: 1039
+    compare_at_price_usd: 1099
+    price_band: "mid_premium"
+    brand_tier: "premium_mid"
+    dimensions:
+      width_cm: 193
+      depth_cm: 228
+      height_cm: 114
+    size_class: "large"
+    color_family: "beige"
+    tone: "warm"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1639361316/crusader/variants/54000036-CY4003/Lexi-King-Size-Bed-Light-Blush-Front_1-AU.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1639361316/crusader/variants/54000036-CY4003/Lexi-King-Size-Bed-Light-Blush-Front_1-AU.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1655221915/crusader/variants/50440065-CY4003/Lexi-King-Size-Bed-Light-Blush-Dim-SG-1655221912.jpg"
+    materials: *variant_materials
+    finish:
+      color_finish: "light_blush"
+      wood_finish: "walnut_stain"
+      metal_finish: "brass_stain"
+      surface_finish: "matte"
+      finish_color: "light_blush"
+
+ai_flags:
+  isStarterEligible: true
+  isAiPlacementEligible: true
+  isAutoLayoutEligible: true

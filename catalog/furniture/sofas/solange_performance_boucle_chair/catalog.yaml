@@ -1,0 +1,3322 @@
+status: "published"
+brand: "Castlery"
+retailer: "Castlery Singapore"
+source_url: "https://www.castlery.com/sg/products/solange-performance-boucle-chair?quantity=single&material=chalk_boucle&wood=white_wash"
+category: "armchair"
+product_family: "Solange"
+product_name: "Solange Performance Boucle Chair"
+slug: "castlery-solange-performance-boucle-chair"
+variant: "Chalk Boucle / White Wash Wood Legs"
+price_usd: 599
+price_band: mid
+brand_tier: premium_mid
+design_zone: living_zone
+anchor_role: secondary
+dimensions:
+  width_cm: 68
+  depth_cm: 77
+  height_cm: 75
+seat_capacity: 1
+size_class: small
+shape: rectangular
+base_type: legged
+material_family: upholstered
+material_mix: upholstered_wood
+material_mix_components:
+  - solid_wood
+  - solid_rubber_wood
+  - performance_boucle
+  - foam
+materials:
+  frame:
+    structure: solid_wood
+  leg:
+    structure: solid_rubber_wood
+    finish: White Wash or Black wood
+  upholstery:
+    material_type: performance_boucle
+    label: Chalk Boucle
+    composition: performance boucle fabric
+color_family: white
+tone: neutral
+style_cluster: contemporary
+style_secondary: postmodern
+design_era: contemporary
+visual_attributes:
+  visual_weight: medium
+  edge_profile: rounded
+  silhouette: curved_back_lounge_chair
+  form_language: soft_sculptural
+  descriptors:
+    - curved_backrest
+    - performance_boucle
+    - wood_legs
+    - compact_lounge_chair
+spatial_attributes:
+  footprint_shape: rectangular
+  walkway_clearance_cm: 60
+  descriptors:
+    - accent_lounge_chair
+    - reading_corner_suitable
+    - living_room_accent
+room_compatibility:
+  - living_room
+  - family_room
+  - bedroom
+  - open_plan
+placement_rules:
+  floor_only: true
+  wall_snappable: false
+  clearance_sensitive: true
+  center_room_preferred: false
+  floating_layout_supported: true
+  recommended_in_front_of:
+    - side_table
+    - floor_lamp
+    - rug
+    - coffee_table
+  clearance_guidance:
+    chair_to_table_cm_min: 20
+    circulation_cm_min: 60
+design_pairings:
+  - side_table
+  - floor_lamp
+  - rug
+  - sofa
+  - coffee_table
+bundle_metadata:
+  bundle_role: accent
+  can_bundle_with:
+    - side_table
+    - floor_lamp
+    - rug
+    - sofa
+  set_behavior:
+    supports_reading_corner_pairing: true
+    supports_living_room_pairing: true
+    supports_pair_chair_layout: true
+summary:
+  short_description: A compact sculptural lounge chair in Chalk performance boucle with selectable White Wash or Black wood legs.
+  long_description: Solange pairs a comfy performance boucle seat with a curved backrest and exposed wood legs, making it a compact accent chair for living rooms, bedrooms, and reading corners.
+  key_features:
+    - Chalk Boucle stocked fabric
+    - White Wash and Black wood leg finishes
+    - Single and set-of-2 purchase options for stocked Chalk Boucle
+    - Official custom fabric options mapped per wood finish
+feature_flags:
+  has_removable_cover: false
+  has_removable_cushion: false
+authoring_notes:
+  category_confidence: high
+  source_checked: Castlery Singapore product page, 2026-06-21
+  source_url: https://www.castlery.com/sg/products/solange-performance-boucle-chair?quantity=single&material=chalk_boucle&wood=white_wash
+  note: Solange Performance Boucle Chair import. The two local GLBs are Draco-compressed Chalk Boucle variants with White Wash and Black wood legs. Upholstery variants are represented separately from leg finish so fabric tinting does not change the selected wood-leg GLB.
+shipping_and_warranty:
+  cancellation: Free - 5 working days before delivery
+  warranty: Frame 3 years; Foam 2 years; Fabric 1 year
+  return_policy: 30-day returns
+product_details:
+  material:
+    - label: Cover type
+      value: Fixed
+    - label: Upholstery
+      value: Chalk Boucle stocked fabric, plus official custom fabric options
+    - label: Leg frame
+      value: Wood legs, available in White Wash or Black
+  dimensions:
+    - label: Dimension
+      value: W68 x D77 x H75cm
+    - label: Seating depth
+      value: 60cm
+    - label: Seatable width
+      value: 68cm
+    - label: Seating height
+      value: 42cm
+  delivery_and_warranty:
+    - label: Cancellation
+      value: Free - 5 working days before delivery
+    - label: Warranty
+      value: Frame 3 years; Foam 2 years; Fabric 1 year
+    - label: Return policy
+      value: 30-day returns
+product_details_by_material_type:
+  fabric:
+    material:
+      - label: Cover type
+        value: Fixed
+      - label: Upholstery
+        value: Performance boucle and custom performance fabric options
+      - label: Leg frame
+        value: Wood legs, available in White Wash or Black
+    dimensions:
+      - label: Dimension
+        value: W68 x D77 x H75cm
+      - label: Seating depth
+        value: 60cm
+      - label: Seatable width
+        value: 68cm
+      - label: Seating height
+        value: 42cm
+    delivery_and_warranty:
+      - label: Cancellation
+        value: Free - 5 working days before delivery
+      - label: Warranty
+        value: Frame 3 years; Foam 2 years; Fabric 1 year
+      - label: Return policy
+        value: 30-day returns
+comfort_profile:
+  seat_comfort:
+    label: Relaxed
+    value: 2
+    min_label: Relaxed
+    max_label: Upright
+  seat_depth:
+    label: Deep
+    value: 4
+    min_label: Shallow
+    max_label: Deep
+  seat_height:
+    label: Standard
+    value: 3
+    min_label: Low
+    max_label: High
+  seat_softness:
+    label: Soft
+    value: 2
+    min_label: Soft
+    max_label: Firm
+assets:
+  asset_id: armchair-real-castlery-solange-performance-boucle-chair-white-wash-legs
+  model_url: /assets/models/armchair-real-castlery-solange-performance-boucle-chair-white-wash-legs.glb
+  thumbnail_url: https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1683691730/crusader/variants/54000102-CB4001/Solange-Performance-Boucle-Armchair-Chalk-White-Wash-Front-1683691727.jpg
+  gallery_images:
+    - https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1683691730/crusader/variants/54000102-CB4001/Solange-Performance-Boucle-Armchair-Chalk-White-Wash-Front-1683691727.jpg
+    - https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1683691730/crusader/variants/54000102-CB4001/Solange-Performance-Boucle-Armchair-Chalk-White-Wash-Angle-1683691727.jpg
+    - https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1683691730/crusader/variants/54000102-CB4001/Solange-Performance-Boucle-Armchair-Chalk-White-Wash-Side-1683691727.jpg
+    - https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1683691731/crusader/variants/54000102-CB4001/Solange-Performance-Boucle-Armchair-Chalk-White-Wash-Back-1683691727.jpg
+    - https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1683881891/crusader/variants/54000102-CB4001/Solange-Performance-Boucle-Armchair-Square-Set_6-1683881888.jpg
+    - https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1683883010/crusader/variants/54000102-CB4001/Solange-Performance-Boucle-Armchair-Square-Set_3-1683883007.jpg
+    - https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1683691816/crusader/variants/54000102-CB4001/Solange-Performance-Boucle-Armchair-Chalk-Copy-1683691813.jpg
+    - https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1683691760/crusader/variants/54000102-CB4001/Solange-Performance-Boucle-Armchair-Chalk-White-Wash-Square-Det_2-1683691758.jpg
+    - https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1684311764/crusader/variants/T54000102/Solange-Performance-Boucle-Armchair-Chalk-White-Wash-Dim-1684311762.jpg
+    - https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1683883350/crusader/variants/T50441146-CB4001/Solange-2-Performance-Boucle-Armchair-Chalk-White-Wash-Angle-1683883348.jpg
+upholstery_options:
+  - upholstery_code: chalk_boucle
+    color_label: Chalk
+    upholstery_label: Chalk Boucle
+    fabric_family: Performance Boucle
+    collection_type: stocked_fabric
+    swatch_group: upholstery_option
+    material_type: performance_boucle
+    texture_type: boucle
+    color_family: cream
+    tone: neutral
+    swatch_hex: "#d8d2c7"
+    swatch_image_url: https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1683873976/crusader/variants/CB-4001/Auburn-Performance-Boucle-Sofa-Chalk-Det_4-1683873973.jpg
+  - upholstery_code: infinity_boucle_cream
+    color_label: Cream
+    upholstery_label: Performance Infinity Boucle, Cream
+    fabric_family: Performance Infinity Boucle
+    collection_type: custom_fabric
+    swatch_group: upholstery_option
+    material_type: performance_fabric
+    color_family: cream
+    tone: neutral
+    swatch_image_url: https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,c_fit/v1770191309/crusader/variants/IN-4005/IN4005-Cream-1770191306.jpg
+    swatch_hex: "#e6dfd3"
+  - upholstery_code: infinity_boucle_white_quartz
+    color_label: Light Grey (White Quartz)
+    upholstery_label: Performance Infinity Boucle, Light Grey (White Quartz)
+    fabric_family: Performance Infinity Boucle
+    collection_type: custom_fabric
+    swatch_group: upholstery_option
+    material_type: performance_fabric
+    color_family: cream
+    tone: neutral
+    swatch_image_url: https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1640236351/crusader/variants/IN-4001/White-Quartz_1.jpg
+    swatch_hex: "#d8d7d2"
+  - upholstery_code: infinity_boucle_moss
+    color_label: Moss
+    upholstery_label: Performance Infinity Boucle, Moss
+    fabric_family: Performance Infinity Boucle
+    collection_type: custom_fabric
+    swatch_group: upholstery_option
+    material_type: performance_fabric
+    color_family: green
+    tone: cool
+    swatch_image_url: https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,c_fit/v1770098928/crusader/variants/IN-4004/IN4004-Moss-1770098923.jpg
+    swatch_hex: "#65715a"
+  - upholstery_code: infinity_boucle_ginger
+    color_label: Rust (Ginger)
+    upholstery_label: Performance Infinity Boucle, Rust (Ginger)
+    fabric_family: Performance Infinity Boucle
+    collection_type: custom_fabric
+    swatch_group: upholstery_option
+    material_type: performance_fabric
+    color_family: brown
+    tone: warm
+    swatch_image_url: https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1710492060/crusader/variants/IN-4003/Marlow-Armless-2-Seater-Sofa-Performance-Ginger-Caramel-Square-Det_3-1710492057.jpg
+    swatch_hex: "#a55f37"
+  - upholstery_code: peyton_ivory
+    color_label: Ivory (Cream)
+    upholstery_label: Performance Fleece (Peyton), Ivory (Cream)
+    fabric_family: Performance Fleece (Peyton)
+    collection_type: custom_fabric
+    swatch_group: upholstery_option
+    material_type: performance_fabric
+    color_family: cream
+    tone: neutral
+    swatch_image_url: https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1722322775/crusader/variants/PY-4001/Ivory-1722322773.jpg
+    swatch_hex: "#ebe5d9"
+  - upholstery_code: peyton_dove_grey
+    color_label: Medium Grey (Dove Grey)
+    upholstery_label: Performance Fleece (Peyton), Medium Grey (Dove Grey)
+    fabric_family: Performance Fleece (Peyton)
+    collection_type: custom_fabric
+    swatch_group: upholstery_option
+    material_type: performance_fabric
+    color_family: grey
+    tone: cool
+    swatch_image_url: https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1722322647/crusader/variants/PY-4002/Dove-Grey-1722322645.jpg
+    swatch_hex: "#b7b5ae"
+  - upholstery_code: peyton_moss
+    color_label: Moss
+    upholstery_label: Performance Fleece (Peyton), Moss
+    fabric_family: Performance Fleece (Peyton)
+    collection_type: custom_fabric
+    swatch_group: upholstery_option
+    material_type: performance_fabric
+    color_family: green
+    tone: cool
+    swatch_image_url: https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1722320266/crusader/variants/PY-4003/Moss-1722320263.jpg
+    swatch_hex: "#697262"
+  - upholstery_code: peyton_cumin
+    color_label: Caramel (Cumin)
+    upholstery_label: Performance Fleece (Peyton), Caramel (Cumin)
+    fabric_family: Performance Fleece (Peyton)
+    collection_type: custom_fabric
+    swatch_group: upholstery_option
+    material_type: performance_fabric
+    color_family: brown
+    tone: warm
+    swatch_image_url: https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1721120972/crusader/variants/PY-4004/Cumin-Swathc_1-1721120969.jpg
+    swatch_hex: "#b8793a"
+  - upholstery_code: genova_oat
+    color_label: Sand (Oat)
+    upholstery_label: Performance Linen Weave (Genova), Sand (Oat)
+    fabric_family: Performance Linen Weave (Genova)
+    collection_type: custom_fabric
+    swatch_group: upholstery_option
+    material_type: performance_fabric
+    color_family: beige
+    tone: warm
+    swatch_image_url: https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,c_fit/v1757063296/crusader/variants/PG-4002/Mori-Armchair-Oat-Walnut-Leg-Det_2-1757063296.jpg
+    swatch_hex: "#cfc2af"
+  - upholstery_code: genova_cream
+    color_label: Cream
+    upholstery_label: Performance Linen Weave (Genova), Cream
+    fabric_family: Performance Linen Weave (Genova)
+    collection_type: custom_fabric
+    swatch_group: upholstery_option
+    material_type: performance_fabric
+    color_family: cream
+    tone: neutral
+    swatch_image_url: https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,c_fit/v1770188184/crusader/variants/PG-4003/PG4003-Cream-1770188182.jpg
+    swatch_hex: "#e8dfd2"
+  - upholstery_code: genova_light_grey
+    color_label: Light Grey
+    upholstery_label: Performance Linen Weave (Genova), Light Grey
+    fabric_family: Performance Linen Weave (Genova)
+    collection_type: custom_fabric
+    swatch_group: upholstery_option
+    material_type: performance_fabric
+    color_family: grey
+    tone: cool
+    swatch_image_url: https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,c_fit/v1770188172/crusader/variants/PG-4004/PG4004-Light-Grey-1770188170.jpg
+    swatch_hex: "#bfc1bd"
+  - upholstery_code: performance_creamy_white
+    color_label: Creamy White
+    upholstery_label: Performance Creamy White
+    fabric_family: Performance Twill
+    collection_type: custom_fabric
+    swatch_group: upholstery_option
+    material_type: performance_fabric
+    color_family: cream
+    tone: neutral
+    swatch_image_url: https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,c_fit/v1774943787/crusader/variants/PT-4001/PT4001-Performance-Twill-Creamy-White-1774943785.jpg
+    swatch_hex: "#eee8dc"
+  - upholstery_code: performance_twill_pearl_beige
+    color_label: Pearl Beige
+    upholstery_label: Performance Twill, Pearl Beige
+    fabric_family: Performance Twill
+    collection_type: custom_fabric
+    swatch_group: upholstery_option
+    material_type: performance_fabric
+    color_family: beige
+    tone: warm
+    swatch_image_url: https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1747116409/crusader/variants/PT-4002/Levi-Office-Chair-Twill-Pearl-Beige-Square-Det_4-1747116407.jpg
+    swatch_hex: "#d6c8b7"
+  - upholstery_code: performance_twill_medium_grey
+    color_label: Medium Grey
+    upholstery_label: Performance Twill, Medium Grey
+    fabric_family: Performance Twill
+    collection_type: custom_fabric
+    swatch_group: upholstery_option
+    material_type: performance_fabric
+    color_family: grey
+    tone: cool
+    swatch_image_url: https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,c_fit/v1769061840/crusader/variants/PT-4005/PT4005-Performance-Twill-Dove-Grey-1769061838.jpg
+    swatch_hex: "#9f9f99"
+  - upholstery_code: performance_twill_slate
+    color_label: Slate
+    upholstery_label: Performance Twill, Slate
+    fabric_family: Performance Twill
+    collection_type: custom_fabric
+    swatch_group: upholstery_option
+    material_type: performance_fabric
+    color_family: grey
+    tone: cool
+    swatch_image_url: https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1756361613/crusader/variants/PT-4003/Performance-Twill-Slate-1756361610.jpg
+    swatch_hex: "#4f5552"
+  - upholstery_code: performance_twill_moss
+    color_label: Moss
+    upholstery_label: Performance Twill, Moss
+    fabric_family: Performance Twill
+    collection_type: custom_fabric
+    swatch_group: upholstery_option
+    material_type: performance_fabric
+    color_family: green
+    tone: cool
+    swatch_image_url: https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1756438801/crusader/variants/PT-4004/Moss-1756438798.jpg
+    swatch_hex: "#69705d"
+  - upholstery_code: washed_chenille_cream
+    color_label: Cream
+    upholstery_label: Washed Chenille, Cream
+    fabric_family: Washed Chenille
+    collection_type: custom_fabric
+    swatch_group: upholstery_option
+    material_type: performance_fabric
+    color_family: cream
+    tone: neutral
+    swatch_image_url: https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,c_fit/v1769054456/crusader/variants/GR-4001/GR4001-Greta-Ivory-1769054453.jpg
+    swatch_hex: "#e8dfcf"
+  - upholstery_code: washed_chenille_sand
+    color_label: Sand
+    upholstery_label: Washed Chenille, Sand
+    fabric_family: Washed Chenille
+    collection_type: custom_fabric
+    swatch_group: upholstery_option
+    material_type: performance_fabric
+    color_family: beige
+    tone: warm
+    swatch_image_url: https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,c_fit/v1770188296/crusader/variants/GR-4002/GR4002-Latte-1770188293.jpg
+    swatch_hex: "#c8b39c"
+  - upholstery_code: washed_chenille_caramel
+    color_label: Caramel
+    upholstery_label: Washed Chenille, Caramel
+    fabric_family: Washed Chenille
+    collection_type: custom_fabric
+    swatch_group: upholstery_option
+    material_type: performance_fabric
+    color_family: brown
+    tone: warm
+    swatch_image_url: https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,c_fit/v1769054464/crusader/variants/GR-4003/GR4003-Greta-Mustard-Brown-1769054461.jpg
+    swatch_hex: "#a87542"
+  - upholstery_code: washed_chenille_moss
+    color_label: Moss
+    upholstery_label: Washed Chenille, Moss
+    fabric_family: Washed Chenille
+    collection_type: custom_fabric
+    swatch_group: upholstery_option
+    material_type: performance_fabric
+    color_family: green
+    tone: cool
+    swatch_image_url: https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,c_fit/v1769054472/crusader/variants/GR-4004/GR4004-Greta-Moss-1769054469.jpg
+    swatch_hex: "#68715e"
+  - upholstery_code: caramel_leather
+    color_label: Caramel
+    upholstery_label: Caramel Leather
+    fabric_family: Top Grain Leather
+    collection_type: stocked_leather
+    swatch_group: upholstery_option
+    material_type: leather
+    texture_type: leather
+    color_family: brown
+    tone: warm
+    swatch_image_url: https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1626941764/crusader/variants/LE-4016/Jonathan-Sofa-Brown_1.jpg
+    swatch_hex: "#a46d3a"
+  - upholstery_code: warm_taupe_leather
+    color_label: Warm Taupe
+    upholstery_label: Lugano Leather, Warm Taupe
+    fabric_family: Lugano Leather
+    collection_type: custom_leather
+    swatch_group: upholstery_option
+    material_type: leather
+    texture_type: leather
+    color_family: brown
+    tone: neutral
+    swatch_image_url: https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1626941786/crusader/variants/LE-4017/Jonathan-Sofa-Taupe_1.jpg
+    swatch_hex: "#8a7868"
+  - upholstery_code: marche_ivory_leather
+    color_label: Ivory
+    upholstery_label: Marche Leather, Ivory
+    fabric_family: Marche Leather
+    collection_type: custom_leather
+    swatch_group: upholstery_option
+    material_type: leather
+    texture_type: leather
+    color_family: cream
+    tone: neutral
+    swatch_image_url: https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1710728527/crusader/variants/LE-4021/Hamilton-Leather-Sofa-Ivory-Det_1-1710728524.jpg
+    swatch_hex: "#d6d0c3"
+  - upholstery_code: marche_graphite_leather
+    color_label: Graphite
+    upholstery_label: Marche Leather, Graphite
+    fabric_family: Marche Leather
+    collection_type: custom_leather
+    swatch_group: upholstery_option
+    material_type: leather
+    texture_type: leather
+    color_family: black
+    tone: cool
+    swatch_image_url: https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1710728543/crusader/variants/LE-4022/Hamilton-Leather-Sofa-Graphite-Det_1-1710728540.jpg
+    swatch_hex: "#242424"
+  - upholstery_code: marche_cocoa_leather
+    color_label: Cocoa
+    upholstery_label: Marche Leather, Cocoa
+    fabric_family: Marche Leather
+    collection_type: custom_leather
+    swatch_group: upholstery_option
+    material_type: leather
+    texture_type: leather
+    color_family: brown
+    tone: warm
+    swatch_image_url: https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1741163167/crusader/variants/LE-4023/Cocoa_Swatch-1741163165.jpg
+    swatch_hex: "#7b4f3a"
+finish_options:
+  - finish_code: white_wash
+    finish_label: White Wash Wood
+    material_structure: solid_rubber_wood
+    swatch_image_url: https://production-static-images.s3.ap-southeast-1.amazonaws.com/swatches/Lucia-3-Seater-Sofa-Texture_1.jpg
+  - finish_code: black
+    finish_label: Black Wood
+    material_structure: solid_rubber_wood
+    swatch_image_url: https://s3-ap-southeast-1.amazonaws.com/production-static-images/swatches/black-wood.png
+ai_flags:
+  isStarterEligible: true
+  isAiPlacementEligible: true
+  isAutoLayoutEligible: true
+  room_anchor_weight: 0.5
+  requires_sofa_pairing: false
+  good_for_small_spaces: true
+  avoid_blocking_paths: true
+variants:
+  - variant: Solange Performance Boucle Chair / Chalk Boucle / White Wash Wood Legs
+    sku: 54000102-CB4001
+    size_label: 68x77
+    finish_code: chalk_boucle_white_wash_legs
+    finish_label: Chalk / White Wash Wood Legs
+    upholstery_code: chalk_boucle
+    upholstery_label: Chalk Boucle
+    leg_finish_code: white_wash
+    leg_finish_label: White Wash Wood
+    model_asset_id: armchair-real-castlery-solange-performance-boucle-chair-white-wash-legs
+    model_url: /assets/models/armchair-real-castlery-solange-performance-boucle-chair-white-wash-legs.glb
+    thumbnail_url: https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1683691730/crusader/variants/54000102-CB4001/Solange-Performance-Boucle-Armchair-Chalk-White-Wash-Front-1683691727.jpg
+    gallery_images:
+      - https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1683691730/crusader/variants/54000102-CB4001/Solange-Performance-Boucle-Armchair-Chalk-White-Wash-Front-1683691727.jpg
+      - https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1683691730/crusader/variants/54000102-CB4001/Solange-Performance-Boucle-Armchair-Chalk-White-Wash-Angle-1683691727.jpg
+      - https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1683691730/crusader/variants/54000102-CB4001/Solange-Performance-Boucle-Armchair-Chalk-White-Wash-Side-1683691727.jpg
+      - https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1683691731/crusader/variants/54000102-CB4001/Solange-Performance-Boucle-Armchair-Chalk-White-Wash-Back-1683691727.jpg
+      - https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1683881891/crusader/variants/54000102-CB4001/Solange-Performance-Boucle-Armchair-Square-Set_6-1683881888.jpg
+      - https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1683883010/crusader/variants/54000102-CB4001/Solange-Performance-Boucle-Armchair-Square-Set_3-1683883007.jpg
+      - https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1683691816/crusader/variants/54000102-CB4001/Solange-Performance-Boucle-Armchair-Chalk-Copy-1683691813.jpg
+      - https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1683691760/crusader/variants/54000102-CB4001/Solange-Performance-Boucle-Armchair-Chalk-White-Wash-Square-Det_2-1683691758.jpg
+      - https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1684311764/crusader/variants/T54000102/Solange-Performance-Boucle-Armchair-Chalk-White-Wash-Dim-1684311762.jpg
+      - https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1683883350/crusader/variants/T50441146-CB4001/Solange-2-Performance-Boucle-Armchair-Chalk-White-Wash-Angle-1683883348.jpg
+    swatch_group: upholstery_option
+    swatch_hex: "#d8d2c7"
+    swatch_image_url: https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1683873976/crusader/variants/CB-4001/Auburn-Performance-Boucle-Sofa-Chalk-Det_4-1683873973.jpg
+    color_family: cream
+    tone: neutral
+    collection_type: stocked_fabric
+    price_usd: 599
+    price_band: mid
+    brand_tier: premium_mid
+    available: true
+    affiliate_url: https://www.castlery.com/sg/products/solange-performance-boucle-chair?quantity=single&material=chalk_boucle&wood=white_wash
+    purchase_options:
+      - id: single
+        label: Single
+        quantity: 1
+        sku: 54000102-CB4001
+        price_usd: 599
+        affiliate_url: https://www.castlery.com/sg/products/solange-performance-boucle-chair?quantity=single&material=chalk_boucle&wood=white_wash
+        available: true
+      - id: set_of_2
+        label: Set of 2
+        quantity: 2
+        sku: PB-000508-CB4001-WW
+        price_usd: 1198
+        affiliate_url: https://www.castlery.com/sg/products/solange-performance-boucle-chair?quantity=set_of_2&material=chalk_boucle&wood=white_wash
+        image_url: https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1683883350/crusader/variants/T50441146-CB4001/Solange-2-Performance-Boucle-Armchair-Chalk-White-Wash-Angle-1683883348.jpg
+        available: true
+    dimensions:
+      width_cm: 68
+      depth_cm: 77
+      height_cm: 75
+    materials:
+      upholstery:
+        material_type: performance_boucle
+        structure: performance_boucle
+        fabric_family: Performance Boucle
+        color: Chalk
+      frame:
+        structure: solid_wood
+      leg:
+        structure: solid_rubber_wood
+        finish: White Wash Wood
+    finish:
+      color_finish: Chalk
+      surface_finish: Performance Boucle
+      finish_color: chalk_boucle
+      leg_finish: white_wash
+  - variant: Solange Performance Boucle Chair / Chalk Boucle / Black Wood Legs
+    sku: 54000103-CB4001
+    size_label: 68x77
+    finish_code: chalk_boucle_black_legs
+    finish_label: Chalk / Black Wood Legs
+    upholstery_code: chalk_boucle
+    upholstery_label: Chalk Boucle
+    leg_finish_code: black
+    leg_finish_label: Black Wood
+    model_asset_id: armchair-real-castlery-solange-performance-boucle-chair-black-legs
+    model_url: /assets/models/armchair-real-castlery-solange-performance-boucle-chair-black-legs.glb
+    thumbnail_url: https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1683692084/crusader/variants/54000103-CB4001/Solange-Performance-Boucle-Armchair-Chalk-Black-Front-1683692081.jpg
+    gallery_images:
+      - https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1683692084/crusader/variants/54000103-CB4001/Solange-Performance-Boucle-Armchair-Chalk-Black-Front-1683692081.jpg
+      - https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1683692084/crusader/variants/54000103-CB4001/Solange-Performance-Boucle-Armchair-Chalk-Black-Angle-1683692081.jpg
+      - https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1683692085/crusader/variants/54000103-CB4001/Solange-Performance-Boucle-Armchair-Chalk-Black-Back-1683692081.jpg
+      - https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1684383778/crusader/variants/T50441147-CB4001/Solange-Performance-Boucle-Sofa-Chalk-Square-Set_2-1684383776.jpg
+      - https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1683692179/crusader/variants/T50441147-CB4001/Solange-Performance-Boucle-Sofa-Chalk-Det_2-1683692175.jpg
+      - https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1683883208/crusader/variants/T50441147-CB4001/Solange-2-Performance-Boucle-Armchair-Chalk-Black-Angle-1683883205.jpg
+    swatch_group: upholstery_option
+    swatch_hex: "#d8d2c7"
+    swatch_image_url: https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1683873976/crusader/variants/CB-4001/Auburn-Performance-Boucle-Sofa-Chalk-Det_4-1683873973.jpg
+    color_family: cream
+    tone: neutral
+    collection_type: stocked_fabric
+    price_usd: 599
+    price_band: mid
+    brand_tier: premium_mid
+    available: true
+    affiliate_url: https://www.castlery.com/sg/products/solange-performance-boucle-chair?quantity=single&material=chalk_boucle&wood=black
+    purchase_options:
+      - id: single
+        label: Single
+        quantity: 1
+        sku: 54000103-CB4001
+        price_usd: 599
+        affiliate_url: https://www.castlery.com/sg/products/solange-performance-boucle-chair?quantity=single&material=chalk_boucle&wood=black
+        available: true
+      - id: set_of_2
+        label: Set of 2
+        quantity: 2
+        sku: PB-000508-CB4001-BLK
+        price_usd: 1198
+        affiliate_url: https://www.castlery.com/sg/products/solange-performance-boucle-chair?quantity=set_of_2&material=chalk_boucle&wood=black
+        image_url: https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1683883208/crusader/variants/T50441147-CB4001/Solange-2-Performance-Boucle-Armchair-Chalk-Black-Angle-1683883205.jpg
+        available: true
+    dimensions:
+      width_cm: 68
+      depth_cm: 77
+      height_cm: 75
+    materials:
+      upholstery:
+        material_type: performance_boucle
+        structure: performance_boucle
+        fabric_family: Performance Boucle
+        color: Chalk
+      frame:
+        structure: solid_wood
+      leg:
+        structure: solid_rubber_wood
+        finish: Black Wood
+    finish:
+      color_finish: Chalk
+      surface_finish: Performance Boucle
+      finish_color: chalk_boucle
+      leg_finish: black
+  - variant: Solange Performance Boucle Chair / Performance Infinity Boucle, Cream / White Wash Wood Legs
+    sku: 54000102C-IN4005
+    size_label: 68x77
+    finish_code: infinity_boucle_cream_white_wash_legs
+    finish_label: Cream / White Wash Wood Legs
+    upholstery_code: infinity_boucle_cream
+    upholstery_label: Performance Infinity Boucle, Cream
+    leg_finish_code: white_wash
+    leg_finish_label: White Wash Wood
+    model_asset_id: armchair-real-castlery-solange-performance-boucle-chair-white-wash-legs
+    model_url: /assets/models/armchair-real-castlery-solange-performance-boucle-chair-white-wash-legs.glb
+    thumbnail_url: https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1773907573/crusader/variants/54000102C-IN4005/Solange-Chair-Performance-Infinity-Boucle-Cream-White-Wash-Angle-1773907571.jpg
+    gallery_images:
+      - https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1773907573/crusader/variants/54000102C-IN4005/Solange-Chair-Performance-Infinity-Boucle-Cream-White-Wash-Angle-1773907571.jpg
+    swatch_group: upholstery_option
+    swatch_hex: "#e6dfd3"
+    swatch_image_url: https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,c_fit/v1770191309/crusader/variants/IN-4005/IN4005-Cream-1770191306.jpg
+    color_family: cream
+    tone: neutral
+    collection_type: custom_fabric
+    price_usd: 599
+    price_band: mid
+    brand_tier: premium_mid
+    available: true
+    affiliate_url: https://www.castlery.com/sg/products/solange-performance-boucle-chair?quantity=single&material=infinity_boucle_cream&wood=white_wash
+    purchase_options:
+      - id: single
+        label: Single
+        quantity: 1
+        sku: 54000102C-IN4005
+        price_usd: 599
+        affiliate_url: https://www.castlery.com/sg/products/solange-performance-boucle-chair?quantity=single&material=infinity_boucle_cream&wood=white_wash
+        available: true
+    dimensions:
+      width_cm: 68
+      depth_cm: 77
+      height_cm: 75
+    materials:
+      upholstery:
+        material_type: performance_fabric
+        structure: performance_boucle
+        fabric_family: Performance Infinity Boucle
+        color: Cream
+      frame:
+        structure: solid_wood
+      leg:
+        structure: solid_rubber_wood
+        finish: White Wash Wood
+    finish:
+      color_finish: Cream
+      surface_finish: Performance Infinity Boucle
+      finish_color: infinity_boucle_cream
+      leg_finish: white_wash
+  - variant: Solange Performance Boucle Chair / Performance Infinity Boucle, Cream / Black Wood Legs
+    sku: 54000103C-IN4005
+    size_label: 68x77
+    finish_code: infinity_boucle_cream_black_legs
+    finish_label: Cream / Black Wood Legs
+    upholstery_code: infinity_boucle_cream
+    upholstery_label: Performance Infinity Boucle, Cream
+    leg_finish_code: black
+    leg_finish_label: Black Wood
+    model_asset_id: armchair-real-castlery-solange-performance-boucle-chair-black-legs
+    model_url: /assets/models/armchair-real-castlery-solange-performance-boucle-chair-black-legs.glb
+    thumbnail_url: https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1773907815/crusader/variants/54000103C-IN4005/Solange-Chair-Performance-Infinity-Boucle-Cream-Black-Wash-Angle-1773907813.jpg
+    gallery_images:
+      - https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1773907815/crusader/variants/54000103C-IN4005/Solange-Chair-Performance-Infinity-Boucle-Cream-Black-Wash-Angle-1773907813.jpg
+    swatch_group: upholstery_option
+    swatch_hex: "#e6dfd3"
+    swatch_image_url: https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,c_fit/v1770191309/crusader/variants/IN-4005/IN4005-Cream-1770191306.jpg
+    color_family: cream
+    tone: neutral
+    collection_type: custom_fabric
+    price_usd: 599
+    price_band: mid
+    brand_tier: premium_mid
+    available: true
+    affiliate_url: https://www.castlery.com/sg/products/solange-performance-boucle-chair?quantity=single&material=infinity_boucle_cream&wood=black
+    purchase_options:
+      - id: single
+        label: Single
+        quantity: 1
+        sku: 54000103C-IN4005
+        price_usd: 599
+        affiliate_url: https://www.castlery.com/sg/products/solange-performance-boucle-chair?quantity=single&material=infinity_boucle_cream&wood=black
+        available: true
+    dimensions:
+      width_cm: 68
+      depth_cm: 77
+      height_cm: 75
+    materials:
+      upholstery:
+        material_type: performance_fabric
+        structure: performance_boucle
+        fabric_family: Performance Infinity Boucle
+        color: Cream
+      frame:
+        structure: solid_wood
+      leg:
+        structure: solid_rubber_wood
+        finish: Black Wood
+    finish:
+      color_finish: Cream
+      surface_finish: Performance Infinity Boucle
+      finish_color: infinity_boucle_cream
+      leg_finish: black
+  - variant: Solange Performance Boucle Chair / Performance Infinity Boucle, Light Grey (White Quartz) / White Wash Wood Legs
+    sku: 54000102C-IN4002
+    size_label: 68x77
+    finish_code: infinity_boucle_white_quartz_white_wash_legs
+    finish_label: Light Grey (White Quartz) / White Wash Wood Legs
+    upholstery_code: infinity_boucle_white_quartz
+    upholstery_label: Performance Infinity Boucle, Light Grey (White Quartz)
+    leg_finish_code: white_wash
+    leg_finish_label: White Wash Wood
+    model_asset_id: armchair-real-castlery-solange-performance-boucle-chair-white-wash-legs
+    model_url: /assets/models/armchair-real-castlery-solange-performance-boucle-chair-white-wash-legs.glb
+    thumbnail_url: https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1731314079/crusader/variants/54000102C-IN4002/Solange-Performance-Boucl%C3%A9-Chair-White-Quartz-White-Wash-Leg-Angle-1731314077.jpg
+    gallery_images:
+      - https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1731314079/crusader/variants/54000102C-IN4002/Solange-Performance-Boucl%C3%A9-Chair-White-Quartz-White-Wash-Leg-Angle-1731314077.jpg
+    swatch_group: upholstery_option
+    swatch_hex: "#d8d7d2"
+    swatch_image_url: https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1640236351/crusader/variants/IN-4001/White-Quartz_1.jpg
+    color_family: cream
+    tone: neutral
+    collection_type: custom_fabric
+    price_usd: 599
+    price_band: mid
+    brand_tier: premium_mid
+    available: true
+    affiliate_url: https://www.castlery.com/sg/products/solange-performance-boucle-chair?quantity=single&material=infinity_boucle_white_quartz&wood=white_wash
+    purchase_options:
+      - id: single
+        label: Single
+        quantity: 1
+        sku: 54000102C-IN4002
+        price_usd: 599
+        affiliate_url: https://www.castlery.com/sg/products/solange-performance-boucle-chair?quantity=single&material=infinity_boucle_white_quartz&wood=white_wash
+        available: true
+    dimensions:
+      width_cm: 68
+      depth_cm: 77
+      height_cm: 75
+    materials:
+      upholstery:
+        material_type: performance_fabric
+        structure: performance_boucle
+        fabric_family: Performance Infinity Boucle
+        color: Light Grey (White Quartz)
+      frame:
+        structure: solid_wood
+      leg:
+        structure: solid_rubber_wood
+        finish: White Wash Wood
+    finish:
+      color_finish: Light Grey (White Quartz)
+      surface_finish: Performance Infinity Boucle
+      finish_color: infinity_boucle_white_quartz
+      leg_finish: white_wash
+  - variant: Solange Performance Boucle Chair / Performance Infinity Boucle, Light Grey (White Quartz) / Black Wood Legs
+    sku: 54000103C-IN4002
+    size_label: 68x77
+    finish_code: infinity_boucle_white_quartz_black_legs
+    finish_label: Light Grey (White Quartz) / Black Wood Legs
+    upholstery_code: infinity_boucle_white_quartz
+    upholstery_label: Performance Infinity Boucle, Light Grey (White Quartz)
+    leg_finish_code: black
+    leg_finish_label: Black Wood
+    model_asset_id: armchair-real-castlery-solange-performance-boucle-chair-black-legs
+    model_url: /assets/models/armchair-real-castlery-solange-performance-boucle-chair-black-legs.glb
+    thumbnail_url: https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1731314272/crusader/variants/54000103C-IN4002/Solange-Performance-Boucl%C3%A9-Chair-White-Quartz-Black-Leg-Angle-1731314269.jpg
+    gallery_images:
+      - https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1731314272/crusader/variants/54000103C-IN4002/Solange-Performance-Boucl%C3%A9-Chair-White-Quartz-Black-Leg-Angle-1731314269.jpg
+    swatch_group: upholstery_option
+    swatch_hex: "#d8d7d2"
+    swatch_image_url: https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1640236351/crusader/variants/IN-4001/White-Quartz_1.jpg
+    color_family: cream
+    tone: neutral
+    collection_type: custom_fabric
+    price_usd: 599
+    price_band: mid
+    brand_tier: premium_mid
+    available: true
+    affiliate_url: https://www.castlery.com/sg/products/solange-performance-boucle-chair?quantity=single&material=infinity_boucle_white_quartz&wood=black
+    purchase_options:
+      - id: single
+        label: Single
+        quantity: 1
+        sku: 54000103C-IN4002
+        price_usd: 599
+        affiliate_url: https://www.castlery.com/sg/products/solange-performance-boucle-chair?quantity=single&material=infinity_boucle_white_quartz&wood=black
+        available: true
+    dimensions:
+      width_cm: 68
+      depth_cm: 77
+      height_cm: 75
+    materials:
+      upholstery:
+        material_type: performance_fabric
+        structure: performance_boucle
+        fabric_family: Performance Infinity Boucle
+        color: Light Grey (White Quartz)
+      frame:
+        structure: solid_wood
+      leg:
+        structure: solid_rubber_wood
+        finish: Black Wood
+    finish:
+      color_finish: Light Grey (White Quartz)
+      surface_finish: Performance Infinity Boucle
+      finish_color: infinity_boucle_white_quartz
+      leg_finish: black
+  - variant: Solange Performance Boucle Chair / Performance Infinity Boucle, Moss / White Wash Wood Legs
+    sku: 54000102C-IN4004
+    size_label: 68x77
+    finish_code: infinity_boucle_moss_white_wash_legs
+    finish_label: Moss / White Wash Wood Legs
+    upholstery_code: infinity_boucle_moss
+    upholstery_label: Performance Infinity Boucle, Moss
+    leg_finish_code: white_wash
+    leg_finish_label: White Wash Wood
+    model_asset_id: armchair-real-castlery-solange-performance-boucle-chair-white-wash-legs
+    model_url: /assets/models/armchair-real-castlery-solange-performance-boucle-chair-white-wash-legs.glb
+    thumbnail_url: https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1773907551/crusader/variants/54000102C-IN4004/Solange-Chair-Performance-Infinity-Boucle-Moss-White-Wash-Angle-1773907548.jpg
+    gallery_images:
+      - https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1773907551/crusader/variants/54000102C-IN4004/Solange-Chair-Performance-Infinity-Boucle-Moss-White-Wash-Angle-1773907548.jpg
+    swatch_group: upholstery_option
+    swatch_hex: "#65715a"
+    swatch_image_url: https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,c_fit/v1770098928/crusader/variants/IN-4004/IN4004-Moss-1770098923.jpg
+    color_family: green
+    tone: cool
+    collection_type: custom_fabric
+    price_usd: 599
+    price_band: mid
+    brand_tier: premium_mid
+    available: true
+    affiliate_url: https://www.castlery.com/sg/products/solange-performance-boucle-chair?quantity=single&material=infinity_boucle_moss&wood=white_wash
+    purchase_options:
+      - id: single
+        label: Single
+        quantity: 1
+        sku: 54000102C-IN4004
+        price_usd: 599
+        affiliate_url: https://www.castlery.com/sg/products/solange-performance-boucle-chair?quantity=single&material=infinity_boucle_moss&wood=white_wash
+        available: true
+    dimensions:
+      width_cm: 68
+      depth_cm: 77
+      height_cm: 75
+    materials:
+      upholstery:
+        material_type: performance_fabric
+        structure: performance_boucle
+        fabric_family: Performance Infinity Boucle
+        color: Moss
+      frame:
+        structure: solid_wood
+      leg:
+        structure: solid_rubber_wood
+        finish: White Wash Wood
+    finish:
+      color_finish: Moss
+      surface_finish: Performance Infinity Boucle
+      finish_color: infinity_boucle_moss
+      leg_finish: white_wash
+  - variant: Solange Performance Boucle Chair / Performance Infinity Boucle, Moss / Black Wood Legs
+    sku: 54000103C-IN4004
+    size_label: 68x77
+    finish_code: infinity_boucle_moss_black_legs
+    finish_label: Moss / Black Wood Legs
+    upholstery_code: infinity_boucle_moss
+    upholstery_label: Performance Infinity Boucle, Moss
+    leg_finish_code: black
+    leg_finish_label: Black Wood
+    model_asset_id: armchair-real-castlery-solange-performance-boucle-chair-black-legs
+    model_url: /assets/models/armchair-real-castlery-solange-performance-boucle-chair-black-legs.glb
+    thumbnail_url: https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1773907798/crusader/variants/54000103C-IN4004/Solange-Chair-Performance-Infinity-Boucle-Moss-Black-Wash-Angle-1773907795.jpg
+    gallery_images:
+      - https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1773907798/crusader/variants/54000103C-IN4004/Solange-Chair-Performance-Infinity-Boucle-Moss-Black-Wash-Angle-1773907795.jpg
+    swatch_group: upholstery_option
+    swatch_hex: "#65715a"
+    swatch_image_url: https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,c_fit/v1770098928/crusader/variants/IN-4004/IN4004-Moss-1770098923.jpg
+    color_family: green
+    tone: cool
+    collection_type: custom_fabric
+    price_usd: 599
+    price_band: mid
+    brand_tier: premium_mid
+    available: true
+    affiliate_url: https://www.castlery.com/sg/products/solange-performance-boucle-chair?quantity=single&material=infinity_boucle_moss&wood=black
+    purchase_options:
+      - id: single
+        label: Single
+        quantity: 1
+        sku: 54000103C-IN4004
+        price_usd: 599
+        affiliate_url: https://www.castlery.com/sg/products/solange-performance-boucle-chair?quantity=single&material=infinity_boucle_moss&wood=black
+        available: true
+    dimensions:
+      width_cm: 68
+      depth_cm: 77
+      height_cm: 75
+    materials:
+      upholstery:
+        material_type: performance_fabric
+        structure: performance_boucle
+        fabric_family: Performance Infinity Boucle
+        color: Moss
+      frame:
+        structure: solid_wood
+      leg:
+        structure: solid_rubber_wood
+        finish: Black Wood
+    finish:
+      color_finish: Moss
+      surface_finish: Performance Infinity Boucle
+      finish_color: infinity_boucle_moss
+      leg_finish: black
+  - variant: Solange Performance Boucle Chair / Performance Infinity Boucle, Rust (Ginger) / White Wash Wood Legs
+    sku: 54000102C-IN4003
+    size_label: 68x77
+    finish_code: infinity_boucle_ginger_white_wash_legs
+    finish_label: Rust (Ginger) / White Wash Wood Legs
+    upholstery_code: infinity_boucle_ginger
+    upholstery_label: Performance Infinity Boucle, Rust (Ginger)
+    leg_finish_code: white_wash
+    leg_finish_label: White Wash Wood
+    model_asset_id: armchair-real-castlery-solange-performance-boucle-chair-white-wash-legs
+    model_url: /assets/models/armchair-real-castlery-solange-performance-boucle-chair-white-wash-legs.glb
+    thumbnail_url: https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1731314096/crusader/variants/54000102C-IN4003/Solange-Performance-Boucl%C3%A9-Chair-Ginger-White-Wash-Leg-Angle-1731314094.jpg
+    gallery_images:
+      - https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1731314096/crusader/variants/54000102C-IN4003/Solange-Performance-Boucl%C3%A9-Chair-Ginger-White-Wash-Leg-Angle-1731314094.jpg
+    swatch_group: upholstery_option
+    swatch_hex: "#a55f37"
+    swatch_image_url: https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1710492060/crusader/variants/IN-4003/Marlow-Armless-2-Seater-Sofa-Performance-Ginger-Caramel-Square-Det_3-1710492057.jpg
+    color_family: brown
+    tone: warm
+    collection_type: custom_fabric
+    price_usd: 599
+    price_band: mid
+    brand_tier: premium_mid
+    available: true
+    affiliate_url: https://www.castlery.com/sg/products/solange-performance-boucle-chair?quantity=single&material=infinity_boucle_ginger&wood=white_wash
+    purchase_options:
+      - id: single
+        label: Single
+        quantity: 1
+        sku: 54000102C-IN4003
+        price_usd: 599
+        affiliate_url: https://www.castlery.com/sg/products/solange-performance-boucle-chair?quantity=single&material=infinity_boucle_ginger&wood=white_wash
+        available: true
+    dimensions:
+      width_cm: 68
+      depth_cm: 77
+      height_cm: 75
+    materials:
+      upholstery:
+        material_type: performance_fabric
+        structure: performance_boucle
+        fabric_family: Performance Infinity Boucle
+        color: Rust (Ginger)
+      frame:
+        structure: solid_wood
+      leg:
+        structure: solid_rubber_wood
+        finish: White Wash Wood
+    finish:
+      color_finish: Rust (Ginger)
+      surface_finish: Performance Infinity Boucle
+      finish_color: infinity_boucle_ginger
+      leg_finish: white_wash
+  - variant: Solange Performance Boucle Chair / Performance Infinity Boucle, Rust (Ginger) / Black Wood Legs
+    sku: 54000103C-IN4003
+    size_label: 68x77
+    finish_code: infinity_boucle_ginger_black_legs
+    finish_label: Rust (Ginger) / Black Wood Legs
+    upholstery_code: infinity_boucle_ginger
+    upholstery_label: Performance Infinity Boucle, Rust (Ginger)
+    leg_finish_code: black
+    leg_finish_label: Black Wood
+    model_asset_id: armchair-real-castlery-solange-performance-boucle-chair-black-legs
+    model_url: /assets/models/armchair-real-castlery-solange-performance-boucle-chair-black-legs.glb
+    thumbnail_url: https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1731314289/crusader/variants/54000103C-IN4003/Solange-Performance-Boucl%C3%A9-Chair-Ginger-Black-Leg-Angle-1731314287.jpg
+    gallery_images:
+      - https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1731314289/crusader/variants/54000103C-IN4003/Solange-Performance-Boucl%C3%A9-Chair-Ginger-Black-Leg-Angle-1731314287.jpg
+    swatch_group: upholstery_option
+    swatch_hex: "#a55f37"
+    swatch_image_url: https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1710492060/crusader/variants/IN-4003/Marlow-Armless-2-Seater-Sofa-Performance-Ginger-Caramel-Square-Det_3-1710492057.jpg
+    color_family: brown
+    tone: warm
+    collection_type: custom_fabric
+    price_usd: 599
+    price_band: mid
+    brand_tier: premium_mid
+    available: true
+    affiliate_url: https://www.castlery.com/sg/products/solange-performance-boucle-chair?quantity=single&material=infinity_boucle_ginger&wood=black
+    purchase_options:
+      - id: single
+        label: Single
+        quantity: 1
+        sku: 54000103C-IN4003
+        price_usd: 599
+        affiliate_url: https://www.castlery.com/sg/products/solange-performance-boucle-chair?quantity=single&material=infinity_boucle_ginger&wood=black
+        available: true
+    dimensions:
+      width_cm: 68
+      depth_cm: 77
+      height_cm: 75
+    materials:
+      upholstery:
+        material_type: performance_fabric
+        structure: performance_boucle
+        fabric_family: Performance Infinity Boucle
+        color: Rust (Ginger)
+      frame:
+        structure: solid_wood
+      leg:
+        structure: solid_rubber_wood
+        finish: Black Wood
+    finish:
+      color_finish: Rust (Ginger)
+      surface_finish: Performance Infinity Boucle
+      finish_color: infinity_boucle_ginger
+      leg_finish: black
+  - variant: Solange Performance Boucle Chair / Performance Fleece (Peyton), Ivory (Cream) / White Wash Wood Legs
+    sku: 54000102C-PY4001
+    size_label: 68x77
+    finish_code: peyton_ivory_white_wash_legs
+    finish_label: Ivory (Cream) / White Wash Wood Legs
+    upholstery_code: peyton_ivory
+    upholstery_label: Performance Fleece (Peyton), Ivory (Cream)
+    leg_finish_code: white_wash
+    leg_finish_label: White Wash Wood
+    model_asset_id: armchair-real-castlery-solange-performance-boucle-chair-white-wash-legs
+    model_url: /assets/models/armchair-real-castlery-solange-performance-boucle-chair-white-wash-legs.glb
+    thumbnail_url: https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1732162034/crusader/variants/54000102C-PY4001/Solange-Performance-Boucl%C3%A9-Chair-Ivory-White-Wash-Leg-Angle-1732162031.jpg
+    gallery_images:
+      - https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1732162034/crusader/variants/54000102C-PY4001/Solange-Performance-Boucl%C3%A9-Chair-Ivory-White-Wash-Leg-Angle-1732162031.jpg
+    swatch_group: upholstery_option
+    swatch_hex: "#ebe5d9"
+    swatch_image_url: https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1722322775/crusader/variants/PY-4001/Ivory-1722322773.jpg
+    color_family: cream
+    tone: neutral
+    collection_type: custom_fabric
+    price_usd: 599
+    price_band: mid
+    brand_tier: premium_mid
+    available: true
+    affiliate_url: https://www.castlery.com/sg/products/solange-performance-boucle-chair?quantity=single&material=peyton_ivory&wood=white_wash
+    purchase_options:
+      - id: single
+        label: Single
+        quantity: 1
+        sku: 54000102C-PY4001
+        price_usd: 599
+        affiliate_url: https://www.castlery.com/sg/products/solange-performance-boucle-chair?quantity=single&material=peyton_ivory&wood=white_wash
+        available: true
+    dimensions:
+      width_cm: 68
+      depth_cm: 77
+      height_cm: 75
+    materials:
+      upholstery:
+        material_type: performance_fabric
+        structure: performance_fleece
+        fabric_family: Performance Fleece (Peyton)
+        color: Ivory (Cream)
+      frame:
+        structure: solid_wood
+      leg:
+        structure: solid_rubber_wood
+        finish: White Wash Wood
+    finish:
+      color_finish: Ivory (Cream)
+      surface_finish: Performance Fleece (Peyton)
+      finish_color: peyton_ivory
+      leg_finish: white_wash
+  - variant: Solange Performance Boucle Chair / Performance Fleece (Peyton), Ivory (Cream) / Black Wood Legs
+    sku: 54000103C-PY4001
+    size_label: 68x77
+    finish_code: peyton_ivory_black_legs
+    finish_label: Ivory (Cream) / Black Wood Legs
+    upholstery_code: peyton_ivory
+    upholstery_label: Performance Fleece (Peyton), Ivory (Cream)
+    leg_finish_code: black
+    leg_finish_label: Black Wood
+    model_asset_id: armchair-real-castlery-solange-performance-boucle-chair-black-legs
+    model_url: /assets/models/armchair-real-castlery-solange-performance-boucle-chair-black-legs.glb
+    thumbnail_url: https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1732162142/crusader/variants/54000103C-PY4001/Solange-Performance-Boucl%C3%A9-Chair-Ivory-Black-Leg-Angle-1732162139.jpg
+    gallery_images:
+      - https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1732162142/crusader/variants/54000103C-PY4001/Solange-Performance-Boucl%C3%A9-Chair-Ivory-Black-Leg-Angle-1732162139.jpg
+    swatch_group: upholstery_option
+    swatch_hex: "#ebe5d9"
+    swatch_image_url: https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1722322775/crusader/variants/PY-4001/Ivory-1722322773.jpg
+    color_family: cream
+    tone: neutral
+    collection_type: custom_fabric
+    price_usd: 599
+    price_band: mid
+    brand_tier: premium_mid
+    available: true
+    affiliate_url: https://www.castlery.com/sg/products/solange-performance-boucle-chair?quantity=single&material=peyton_ivory&wood=black
+    purchase_options:
+      - id: single
+        label: Single
+        quantity: 1
+        sku: 54000103C-PY4001
+        price_usd: 599
+        affiliate_url: https://www.castlery.com/sg/products/solange-performance-boucle-chair?quantity=single&material=peyton_ivory&wood=black
+        available: true
+    dimensions:
+      width_cm: 68
+      depth_cm: 77
+      height_cm: 75
+    materials:
+      upholstery:
+        material_type: performance_fabric
+        structure: performance_fleece
+        fabric_family: Performance Fleece (Peyton)
+        color: Ivory (Cream)
+      frame:
+        structure: solid_wood
+      leg:
+        structure: solid_rubber_wood
+        finish: Black Wood
+    finish:
+      color_finish: Ivory (Cream)
+      surface_finish: Performance Fleece (Peyton)
+      finish_color: peyton_ivory
+      leg_finish: black
+  - variant: Solange Performance Boucle Chair / Performance Fleece (Peyton), Medium Grey (Dove Grey) / White Wash Wood Legs
+    sku: 54000102C-PY4002
+    size_label: 68x77
+    finish_code: peyton_dove_grey_white_wash_legs
+    finish_label: Medium Grey (Dove Grey) / White Wash Wood Legs
+    upholstery_code: peyton_dove_grey
+    upholstery_label: Performance Fleece (Peyton), Medium Grey (Dove Grey)
+    leg_finish_code: white_wash
+    leg_finish_label: White Wash Wood
+    model_asset_id: armchair-real-castlery-solange-performance-boucle-chair-white-wash-legs
+    model_url: /assets/models/armchair-real-castlery-solange-performance-boucle-chair-white-wash-legs.glb
+    thumbnail_url: https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1732162050/crusader/variants/54000102C-PY4002/Solange-Performance-Boucl%C3%A9-Chair-Dove-Grey-White-Wash-White-Wash-Leg-Angle-1732162048.jpg
+    gallery_images:
+      - https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1732162050/crusader/variants/54000102C-PY4002/Solange-Performance-Boucl%C3%A9-Chair-Dove-Grey-White-Wash-White-Wash-Leg-Angle-1732162048.jpg
+    swatch_group: upholstery_option
+    swatch_hex: "#b7b5ae"
+    swatch_image_url: https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1722322647/crusader/variants/PY-4002/Dove-Grey-1722322645.jpg
+    color_family: grey
+    tone: cool
+    collection_type: custom_fabric
+    price_usd: 599
+    price_band: mid
+    brand_tier: premium_mid
+    available: true
+    affiliate_url: https://www.castlery.com/sg/products/solange-performance-boucle-chair?quantity=single&material=peyton_dove_grey&wood=white_wash
+    purchase_options:
+      - id: single
+        label: Single
+        quantity: 1
+        sku: 54000102C-PY4002
+        price_usd: 599
+        affiliate_url: https://www.castlery.com/sg/products/solange-performance-boucle-chair?quantity=single&material=peyton_dove_grey&wood=white_wash
+        available: true
+    dimensions:
+      width_cm: 68
+      depth_cm: 77
+      height_cm: 75
+    materials:
+      upholstery:
+        material_type: performance_fabric
+        structure: performance_fleece
+        fabric_family: Performance Fleece (Peyton)
+        color: Medium Grey (Dove Grey)
+      frame:
+        structure: solid_wood
+      leg:
+        structure: solid_rubber_wood
+        finish: White Wash Wood
+    finish:
+      color_finish: Medium Grey (Dove Grey)
+      surface_finish: Performance Fleece (Peyton)
+      finish_color: peyton_dove_grey
+      leg_finish: white_wash
+  - variant: Solange Performance Boucle Chair / Performance Fleece (Peyton), Medium Grey (Dove Grey) / Black Wood Legs
+    sku: 54000103C-PY4002
+    size_label: 68x77
+    finish_code: peyton_dove_grey_black_legs
+    finish_label: Medium Grey (Dove Grey) / Black Wood Legs
+    upholstery_code: peyton_dove_grey
+    upholstery_label: Performance Fleece (Peyton), Medium Grey (Dove Grey)
+    leg_finish_code: black
+    leg_finish_label: Black Wood
+    model_asset_id: armchair-real-castlery-solange-performance-boucle-chair-black-legs
+    model_url: /assets/models/armchair-real-castlery-solange-performance-boucle-chair-black-legs.glb
+    thumbnail_url: https://res.cloudinary.com/castlery/image/upload/c_fit,f_auto,q_auto,w_1200/v1777537816/pim/converting/1777537814604/Solange-Performance-Boucl%C3%A9-Chair-Performance-Fleece-Meduim-Grey-Angle-PY4002.jpg
+    gallery_images:
+      - https://res.cloudinary.com/castlery/image/upload/c_fit,f_auto,q_auto,w_1200/v1777537816/pim/converting/1777537814604/Solange-Performance-Boucl%C3%A9-Chair-Performance-Fleece-Meduim-Grey-Angle-PY4002.jpg
+    swatch_group: upholstery_option
+    swatch_hex: "#b7b5ae"
+    swatch_image_url: https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1722322647/crusader/variants/PY-4002/Dove-Grey-1722322645.jpg
+    color_family: grey
+    tone: cool
+    collection_type: custom_fabric
+    price_usd: 599
+    price_band: mid
+    brand_tier: premium_mid
+    available: true
+    affiliate_url: https://www.castlery.com/sg/products/solange-performance-boucle-chair?quantity=single&material=peyton_dove_grey&wood=black
+    purchase_options:
+      - id: single
+        label: Single
+        quantity: 1
+        sku: 54000103C-PY4002
+        price_usd: 599
+        affiliate_url: https://www.castlery.com/sg/products/solange-performance-boucle-chair?quantity=single&material=peyton_dove_grey&wood=black
+        available: true
+    dimensions:
+      width_cm: 68
+      depth_cm: 77
+      height_cm: 75
+    materials:
+      upholstery:
+        material_type: performance_fabric
+        structure: performance_fleece
+        fabric_family: Performance Fleece (Peyton)
+        color: Medium Grey (Dove Grey)
+      frame:
+        structure: solid_wood
+      leg:
+        structure: solid_rubber_wood
+        finish: Black Wood
+    finish:
+      color_finish: Medium Grey (Dove Grey)
+      surface_finish: Performance Fleece (Peyton)
+      finish_color: peyton_dove_grey
+      leg_finish: black
+  - variant: Solange Performance Boucle Chair / Performance Fleece (Peyton), Moss / White Wash Wood Legs
+    sku: 54000102C-PY4003
+    size_label: 68x77
+    finish_code: peyton_moss_white_wash_legs
+    finish_label: Moss / White Wash Wood Legs
+    upholstery_code: peyton_moss
+    upholstery_label: Performance Fleece (Peyton), Moss
+    leg_finish_code: white_wash
+    leg_finish_label: White Wash Wood
+    model_asset_id: armchair-real-castlery-solange-performance-boucle-chair-white-wash-legs
+    model_url: /assets/models/armchair-real-castlery-solange-performance-boucle-chair-white-wash-legs.glb
+    thumbnail_url: https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1730946704/crusader/variants/54000102C-PY4003/Solange-Performance-Boucl%C3%A9-Chair-Moss-White-Wash-Leg-Angle-1730946701.jpg
+    gallery_images:
+      - https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1730946704/crusader/variants/54000102C-PY4003/Solange-Performance-Boucl%C3%A9-Chair-Moss-White-Wash-Leg-Angle-1730946701.jpg
+    swatch_group: upholstery_option
+    swatch_hex: "#697262"
+    swatch_image_url: https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1722320266/crusader/variants/PY-4003/Moss-1722320263.jpg
+    color_family: green
+    tone: cool
+    collection_type: custom_fabric
+    price_usd: 599
+    price_band: mid
+    brand_tier: premium_mid
+    available: true
+    affiliate_url: https://www.castlery.com/sg/products/solange-performance-boucle-chair?quantity=single&material=peyton_moss&wood=white_wash
+    purchase_options:
+      - id: single
+        label: Single
+        quantity: 1
+        sku: 54000102C-PY4003
+        price_usd: 599
+        affiliate_url: https://www.castlery.com/sg/products/solange-performance-boucle-chair?quantity=single&material=peyton_moss&wood=white_wash
+        available: true
+    dimensions:
+      width_cm: 68
+      depth_cm: 77
+      height_cm: 75
+    materials:
+      upholstery:
+        material_type: performance_fabric
+        structure: performance_fleece
+        fabric_family: Performance Fleece (Peyton)
+        color: Moss
+      frame:
+        structure: solid_wood
+      leg:
+        structure: solid_rubber_wood
+        finish: White Wash Wood
+    finish:
+      color_finish: Moss
+      surface_finish: Performance Fleece (Peyton)
+      finish_color: peyton_moss
+      leg_finish: white_wash
+  - variant: Solange Performance Boucle Chair / Performance Fleece (Peyton), Moss / Black Wood Legs
+    sku: 54000103C-PY4003
+    size_label: 68x77
+    finish_code: peyton_moss_black_legs
+    finish_label: Moss / Black Wood Legs
+    upholstery_code: peyton_moss
+    upholstery_label: Performance Fleece (Peyton), Moss
+    leg_finish_code: black
+    leg_finish_label: Black Wood
+    model_asset_id: armchair-real-castlery-solange-performance-boucle-chair-black-legs
+    model_url: /assets/models/armchair-real-castlery-solange-performance-boucle-chair-black-legs.glb
+    thumbnail_url: https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1730946843/crusader/variants/54000103C-PY4003/Solange-Performance-Boucl%C3%A9-Chair-Moss-Black-Leg-Angle-1730946841.jpg
+    gallery_images:
+      - https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1730946843/crusader/variants/54000103C-PY4003/Solange-Performance-Boucl%C3%A9-Chair-Moss-Black-Leg-Angle-1730946841.jpg
+    swatch_group: upholstery_option
+    swatch_hex: "#697262"
+    swatch_image_url: https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1722320266/crusader/variants/PY-4003/Moss-1722320263.jpg
+    color_family: green
+    tone: cool
+    collection_type: custom_fabric
+    price_usd: 599
+    price_band: mid
+    brand_tier: premium_mid
+    available: true
+    affiliate_url: https://www.castlery.com/sg/products/solange-performance-boucle-chair?quantity=single&material=peyton_moss&wood=black
+    purchase_options:
+      - id: single
+        label: Single
+        quantity: 1
+        sku: 54000103C-PY4003
+        price_usd: 599
+        affiliate_url: https://www.castlery.com/sg/products/solange-performance-boucle-chair?quantity=single&material=peyton_moss&wood=black
+        available: true
+    dimensions:
+      width_cm: 68
+      depth_cm: 77
+      height_cm: 75
+    materials:
+      upholstery:
+        material_type: performance_fabric
+        structure: performance_fleece
+        fabric_family: Performance Fleece (Peyton)
+        color: Moss
+      frame:
+        structure: solid_wood
+      leg:
+        structure: solid_rubber_wood
+        finish: Black Wood
+    finish:
+      color_finish: Moss
+      surface_finish: Performance Fleece (Peyton)
+      finish_color: peyton_moss
+      leg_finish: black
+  - variant: Solange Performance Boucle Chair / Performance Fleece (Peyton), Caramel (Cumin) / White Wash Wood Legs
+    sku: 54000102C-PY4004
+    size_label: 68x77
+    finish_code: peyton_cumin_white_wash_legs
+    finish_label: Caramel (Cumin) / White Wash Wood Legs
+    upholstery_code: peyton_cumin
+    upholstery_label: Performance Fleece (Peyton), Caramel (Cumin)
+    leg_finish_code: white_wash
+    leg_finish_label: White Wash Wood
+    model_asset_id: armchair-real-castlery-solange-performance-boucle-chair-white-wash-legs
+    model_url: /assets/models/armchair-real-castlery-solange-performance-boucle-chair-white-wash-legs.glb
+    thumbnail_url: https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1730946678/crusader/variants/54000102C-PY4004/Solange-Performance-Boucl%C3%A9-Chair-Cumin-White-Wash-Leg-Angle-1730946676.jpg
+    gallery_images:
+      - https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1730946678/crusader/variants/54000102C-PY4004/Solange-Performance-Boucl%C3%A9-Chair-Cumin-White-Wash-Leg-Angle-1730946676.jpg
+    swatch_group: upholstery_option
+    swatch_hex: "#b8793a"
+    swatch_image_url: https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1721120972/crusader/variants/PY-4004/Cumin-Swathc_1-1721120969.jpg
+    color_family: brown
+    tone: warm
+    collection_type: custom_fabric
+    price_usd: 599
+    price_band: mid
+    brand_tier: premium_mid
+    available: true
+    affiliate_url: https://www.castlery.com/sg/products/solange-performance-boucle-chair?quantity=single&material=peyton_cumin&wood=white_wash
+    purchase_options:
+      - id: single
+        label: Single
+        quantity: 1
+        sku: 54000102C-PY4004
+        price_usd: 599
+        affiliate_url: https://www.castlery.com/sg/products/solange-performance-boucle-chair?quantity=single&material=peyton_cumin&wood=white_wash
+        available: true
+    dimensions:
+      width_cm: 68
+      depth_cm: 77
+      height_cm: 75
+    materials:
+      upholstery:
+        material_type: performance_fabric
+        structure: performance_fleece
+        fabric_family: Performance Fleece (Peyton)
+        color: Caramel (Cumin)
+      frame:
+        structure: solid_wood
+      leg:
+        structure: solid_rubber_wood
+        finish: White Wash Wood
+    finish:
+      color_finish: Caramel (Cumin)
+      surface_finish: Performance Fleece (Peyton)
+      finish_color: peyton_cumin
+      leg_finish: white_wash
+  - variant: Solange Performance Boucle Chair / Performance Fleece (Peyton), Caramel (Cumin) / Black Wood Legs
+    sku: 54000103C-PY4004
+    size_label: 68x77
+    finish_code: peyton_cumin_black_legs
+    finish_label: Caramel (Cumin) / Black Wood Legs
+    upholstery_code: peyton_cumin
+    upholstery_label: Performance Fleece (Peyton), Caramel (Cumin)
+    leg_finish_code: black
+    leg_finish_label: Black Wood
+    model_asset_id: armchair-real-castlery-solange-performance-boucle-chair-black-legs
+    model_url: /assets/models/armchair-real-castlery-solange-performance-boucle-chair-black-legs.glb
+    thumbnail_url: https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1730946789/crusader/variants/54000103C-PY4004/Solange-Performance-Boucl%C3%A9-Chair-Cumin-Black-Leg-Angle-1730946786.jpg
+    gallery_images:
+      - https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1730946789/crusader/variants/54000103C-PY4004/Solange-Performance-Boucl%C3%A9-Chair-Cumin-Black-Leg-Angle-1730946786.jpg
+    swatch_group: upholstery_option
+    swatch_hex: "#b8793a"
+    swatch_image_url: https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1721120972/crusader/variants/PY-4004/Cumin-Swathc_1-1721120969.jpg
+    color_family: brown
+    tone: warm
+    collection_type: custom_fabric
+    price_usd: 599
+    price_band: mid
+    brand_tier: premium_mid
+    available: true
+    affiliate_url: https://www.castlery.com/sg/products/solange-performance-boucle-chair?quantity=single&material=peyton_cumin&wood=black
+    purchase_options:
+      - id: single
+        label: Single
+        quantity: 1
+        sku: 54000103C-PY4004
+        price_usd: 599
+        affiliate_url: https://www.castlery.com/sg/products/solange-performance-boucle-chair?quantity=single&material=peyton_cumin&wood=black
+        available: true
+    dimensions:
+      width_cm: 68
+      depth_cm: 77
+      height_cm: 75
+    materials:
+      upholstery:
+        material_type: performance_fabric
+        structure: performance_fleece
+        fabric_family: Performance Fleece (Peyton)
+        color: Caramel (Cumin)
+      frame:
+        structure: solid_wood
+      leg:
+        structure: solid_rubber_wood
+        finish: Black Wood
+    finish:
+      color_finish: Caramel (Cumin)
+      surface_finish: Performance Fleece (Peyton)
+      finish_color: peyton_cumin
+      leg_finish: black
+  - variant: Solange Performance Boucle Chair / Performance Linen Weave (Genova), Sand (Oat) / White Wash Wood Legs
+    sku: 54000102C-PG4002
+    size_label: 68x77
+    finish_code: genova_oat_white_wash_legs
+    finish_label: Sand (Oat) / White Wash Wood Legs
+    upholstery_code: genova_oat
+    upholstery_label: Performance Linen Weave (Genova), Sand (Oat)
+    leg_finish_code: white_wash
+    leg_finish_label: White Wash Wood
+    model_asset_id: armchair-real-castlery-solange-performance-boucle-chair-white-wash-legs
+    model_url: /assets/models/armchair-real-castlery-solange-performance-boucle-chair-white-wash-legs.glb
+    thumbnail_url: https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1773907608/crusader/variants/54000102C-PG4002/Solange-Chair--Performance-Genova-Oat-White-Wash-Angle-1773907605.jpg
+    gallery_images:
+      - https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1773907608/crusader/variants/54000102C-PG4002/Solange-Chair--Performance-Genova-Oat-White-Wash-Angle-1773907605.jpg
+    swatch_group: upholstery_option
+    swatch_hex: "#cfc2af"
+    swatch_image_url: https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,c_fit/v1757063296/crusader/variants/PG-4002/Mori-Armchair-Oat-Walnut-Leg-Det_2-1757063296.jpg
+    color_family: beige
+    tone: warm
+    collection_type: custom_fabric
+    price_usd: 599
+    price_band: mid
+    brand_tier: premium_mid
+    available: true
+    affiliate_url: https://www.castlery.com/sg/products/solange-performance-boucle-chair?quantity=single&material=genova_oat&wood=white_wash
+    purchase_options:
+      - id: single
+        label: Single
+        quantity: 1
+        sku: 54000102C-PG4002
+        price_usd: 599
+        affiliate_url: https://www.castlery.com/sg/products/solange-performance-boucle-chair?quantity=single&material=genova_oat&wood=white_wash
+        available: true
+    dimensions:
+      width_cm: 68
+      depth_cm: 77
+      height_cm: 75
+    materials:
+      upholstery:
+        material_type: performance_fabric
+        structure: performance_linen_weave
+        fabric_family: Performance Linen Weave (Genova)
+        color: Sand (Oat)
+      frame:
+        structure: solid_wood
+      leg:
+        structure: solid_rubber_wood
+        finish: White Wash Wood
+    finish:
+      color_finish: Sand (Oat)
+      surface_finish: Performance Linen Weave (Genova)
+      finish_color: genova_oat
+      leg_finish: white_wash
+  - variant: Solange Performance Boucle Chair / Performance Linen Weave (Genova), Sand (Oat) / Black Wood Legs
+    sku: 54000103C-PG4002
+    size_label: 68x77
+    finish_code: genova_oat_black_legs
+    finish_label: Sand (Oat) / Black Wood Legs
+    upholstery_code: genova_oat
+    upholstery_label: Performance Linen Weave (Genova), Sand (Oat)
+    leg_finish_code: black
+    leg_finish_label: Black Wood
+    model_asset_id: armchair-real-castlery-solange-performance-boucle-chair-black-legs
+    model_url: /assets/models/armchair-real-castlery-solange-performance-boucle-chair-black-legs.glb
+    thumbnail_url: https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1773907839/crusader/variants/54000103C-PG4002/Solange-Chair--Performance-Genova-Oat-Black-Wash-Angle-1773907837.jpg
+    gallery_images:
+      - https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1773907839/crusader/variants/54000103C-PG4002/Solange-Chair--Performance-Genova-Oat-Black-Wash-Angle-1773907837.jpg
+    swatch_group: upholstery_option
+    swatch_hex: "#cfc2af"
+    swatch_image_url: https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,c_fit/v1757063296/crusader/variants/PG-4002/Mori-Armchair-Oat-Walnut-Leg-Det_2-1757063296.jpg
+    color_family: beige
+    tone: warm
+    collection_type: custom_fabric
+    price_usd: 599
+    price_band: mid
+    brand_tier: premium_mid
+    available: true
+    affiliate_url: https://www.castlery.com/sg/products/solange-performance-boucle-chair?quantity=single&material=genova_oat&wood=black
+    purchase_options:
+      - id: single
+        label: Single
+        quantity: 1
+        sku: 54000103C-PG4002
+        price_usd: 599
+        affiliate_url: https://www.castlery.com/sg/products/solange-performance-boucle-chair?quantity=single&material=genova_oat&wood=black
+        available: true
+    dimensions:
+      width_cm: 68
+      depth_cm: 77
+      height_cm: 75
+    materials:
+      upholstery:
+        material_type: performance_fabric
+        structure: performance_linen_weave
+        fabric_family: Performance Linen Weave (Genova)
+        color: Sand (Oat)
+      frame:
+        structure: solid_wood
+      leg:
+        structure: solid_rubber_wood
+        finish: Black Wood
+    finish:
+      color_finish: Sand (Oat)
+      surface_finish: Performance Linen Weave (Genova)
+      finish_color: genova_oat
+      leg_finish: black
+  - variant: Solange Performance Boucle Chair / Performance Linen Weave (Genova), Cream / White Wash Wood Legs
+    sku: 54000102C-PG4003
+    size_label: 68x77
+    finish_code: genova_cream_white_wash_legs
+    finish_label: Cream / White Wash Wood Legs
+    upholstery_code: genova_cream
+    upholstery_label: Performance Linen Weave (Genova), Cream
+    leg_finish_code: white_wash
+    leg_finish_label: White Wash Wood
+    model_asset_id: armchair-real-castlery-solange-performance-boucle-chair-white-wash-legs
+    model_url: /assets/models/armchair-real-castlery-solange-performance-boucle-chair-white-wash-legs.glb
+    thumbnail_url: https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1773907628/crusader/variants/54000102C-PG4003/Solange-Chair-Performance-Linen-Weave-Cream-White-Wash-Angle-1773907625.jpg
+    gallery_images:
+      - https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1773907628/crusader/variants/54000102C-PG4003/Solange-Chair-Performance-Linen-Weave-Cream-White-Wash-Angle-1773907625.jpg
+    swatch_group: upholstery_option
+    swatch_hex: "#e8dfd2"
+    swatch_image_url: https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,c_fit/v1770188184/crusader/variants/PG-4003/PG4003-Cream-1770188182.jpg
+    color_family: cream
+    tone: neutral
+    collection_type: custom_fabric
+    price_usd: 599
+    price_band: mid
+    brand_tier: premium_mid
+    available: true
+    affiliate_url: https://www.castlery.com/sg/products/solange-performance-boucle-chair?quantity=single&material=genova_cream&wood=white_wash
+    purchase_options:
+      - id: single
+        label: Single
+        quantity: 1
+        sku: 54000102C-PG4003
+        price_usd: 599
+        affiliate_url: https://www.castlery.com/sg/products/solange-performance-boucle-chair?quantity=single&material=genova_cream&wood=white_wash
+        available: true
+    dimensions:
+      width_cm: 68
+      depth_cm: 77
+      height_cm: 75
+    materials:
+      upholstery:
+        material_type: performance_fabric
+        structure: performance_linen_weave
+        fabric_family: Performance Linen Weave (Genova)
+        color: Cream
+      frame:
+        structure: solid_wood
+      leg:
+        structure: solid_rubber_wood
+        finish: White Wash Wood
+    finish:
+      color_finish: Cream
+      surface_finish: Performance Linen Weave (Genova)
+      finish_color: genova_cream
+      leg_finish: white_wash
+  - variant: Solange Performance Boucle Chair / Performance Linen Weave (Genova), Cream / Black Wood Legs
+    sku: 54000103C-PG4003
+    size_label: 68x77
+    finish_code: genova_cream_black_legs
+    finish_label: Cream / Black Wood Legs
+    upholstery_code: genova_cream
+    upholstery_label: Performance Linen Weave (Genova), Cream
+    leg_finish_code: black
+    leg_finish_label: Black Wood
+    model_asset_id: armchair-real-castlery-solange-performance-boucle-chair-black-legs
+    model_url: /assets/models/armchair-real-castlery-solange-performance-boucle-chair-black-legs.glb
+    thumbnail_url: https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1773907858/crusader/variants/54000103C-PG4003/Solange-Chair-Performance-Linen-Weave-Cream-Black-Wash-Angle-1773907855.jpg
+    gallery_images:
+      - https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1773907858/crusader/variants/54000103C-PG4003/Solange-Chair-Performance-Linen-Weave-Cream-Black-Wash-Angle-1773907855.jpg
+    swatch_group: upholstery_option
+    swatch_hex: "#e8dfd2"
+    swatch_image_url: https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,c_fit/v1770188184/crusader/variants/PG-4003/PG4003-Cream-1770188182.jpg
+    color_family: cream
+    tone: neutral
+    collection_type: custom_fabric
+    price_usd: 599
+    price_band: mid
+    brand_tier: premium_mid
+    available: true
+    affiliate_url: https://www.castlery.com/sg/products/solange-performance-boucle-chair?quantity=single&material=genova_cream&wood=black
+    purchase_options:
+      - id: single
+        label: Single
+        quantity: 1
+        sku: 54000103C-PG4003
+        price_usd: 599
+        affiliate_url: https://www.castlery.com/sg/products/solange-performance-boucle-chair?quantity=single&material=genova_cream&wood=black
+        available: true
+    dimensions:
+      width_cm: 68
+      depth_cm: 77
+      height_cm: 75
+    materials:
+      upholstery:
+        material_type: performance_fabric
+        structure: performance_linen_weave
+        fabric_family: Performance Linen Weave (Genova)
+        color: Cream
+      frame:
+        structure: solid_wood
+      leg:
+        structure: solid_rubber_wood
+        finish: Black Wood
+    finish:
+      color_finish: Cream
+      surface_finish: Performance Linen Weave (Genova)
+      finish_color: genova_cream
+      leg_finish: black
+  - variant: Solange Performance Boucle Chair / Performance Linen Weave (Genova), Light Grey / White Wash Wood Legs
+    sku: 54000102C-PG4004
+    size_label: 68x77
+    finish_code: genova_light_grey_white_wash_legs
+    finish_label: Light Grey / White Wash Wood Legs
+    upholstery_code: genova_light_grey
+    upholstery_label: Performance Linen Weave (Genova), Light Grey
+    leg_finish_code: white_wash
+    leg_finish_label: White Wash Wood
+    model_asset_id: armchair-real-castlery-solange-performance-boucle-chair-white-wash-legs
+    model_url: /assets/models/armchair-real-castlery-solange-performance-boucle-chair-white-wash-legs.glb
+    thumbnail_url: https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1773907646/crusader/variants/54000102C-PG4004/Solange-Chair-Performance-Linen-Weave-Light-Grey-White-Wash-Angle-1773907644.jpg
+    gallery_images:
+      - https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1773907646/crusader/variants/54000102C-PG4004/Solange-Chair-Performance-Linen-Weave-Light-Grey-White-Wash-Angle-1773907644.jpg
+    swatch_group: upholstery_option
+    swatch_hex: "#bfc1bd"
+    swatch_image_url: https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,c_fit/v1770188172/crusader/variants/PG-4004/PG4004-Light-Grey-1770188170.jpg
+    color_family: grey
+    tone: cool
+    collection_type: custom_fabric
+    price_usd: 599
+    price_band: mid
+    brand_tier: premium_mid
+    available: true
+    affiliate_url: https://www.castlery.com/sg/products/solange-performance-boucle-chair?quantity=single&material=genova_light_grey&wood=white_wash
+    purchase_options:
+      - id: single
+        label: Single
+        quantity: 1
+        sku: 54000102C-PG4004
+        price_usd: 599
+        affiliate_url: https://www.castlery.com/sg/products/solange-performance-boucle-chair?quantity=single&material=genova_light_grey&wood=white_wash
+        available: true
+    dimensions:
+      width_cm: 68
+      depth_cm: 77
+      height_cm: 75
+    materials:
+      upholstery:
+        material_type: performance_fabric
+        structure: performance_linen_weave
+        fabric_family: Performance Linen Weave (Genova)
+        color: Light Grey
+      frame:
+        structure: solid_wood
+      leg:
+        structure: solid_rubber_wood
+        finish: White Wash Wood
+    finish:
+      color_finish: Light Grey
+      surface_finish: Performance Linen Weave (Genova)
+      finish_color: genova_light_grey
+      leg_finish: white_wash
+  - variant: Solange Performance Boucle Chair / Performance Linen Weave (Genova), Light Grey / Black Wood Legs
+    sku: 54000103C-PG4004
+    size_label: 68x77
+    finish_code: genova_light_grey_black_legs
+    finish_label: Light Grey / Black Wood Legs
+    upholstery_code: genova_light_grey
+    upholstery_label: Performance Linen Weave (Genova), Light Grey
+    leg_finish_code: black
+    leg_finish_label: Black Wood
+    model_asset_id: armchair-real-castlery-solange-performance-boucle-chair-black-legs
+    model_url: /assets/models/armchair-real-castlery-solange-performance-boucle-chair-black-legs.glb
+    thumbnail_url: https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1773907874/crusader/variants/54000103C-PG4004/Solange-Chair-Performance-Linen-Weave-Light-Grey-Black-Wash-Angle-1773907871.jpg
+    gallery_images:
+      - https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1773907874/crusader/variants/54000103C-PG4004/Solange-Chair-Performance-Linen-Weave-Light-Grey-Black-Wash-Angle-1773907871.jpg
+    swatch_group: upholstery_option
+    swatch_hex: "#bfc1bd"
+    swatch_image_url: https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,c_fit/v1770188172/crusader/variants/PG-4004/PG4004-Light-Grey-1770188170.jpg
+    color_family: grey
+    tone: cool
+    collection_type: custom_fabric
+    price_usd: 599
+    price_band: mid
+    brand_tier: premium_mid
+    available: true
+    affiliate_url: https://www.castlery.com/sg/products/solange-performance-boucle-chair?quantity=single&material=genova_light_grey&wood=black
+    purchase_options:
+      - id: single
+        label: Single
+        quantity: 1
+        sku: 54000103C-PG4004
+        price_usd: 599
+        affiliate_url: https://www.castlery.com/sg/products/solange-performance-boucle-chair?quantity=single&material=genova_light_grey&wood=black
+        available: true
+    dimensions:
+      width_cm: 68
+      depth_cm: 77
+      height_cm: 75
+    materials:
+      upholstery:
+        material_type: performance_fabric
+        structure: performance_linen_weave
+        fabric_family: Performance Linen Weave (Genova)
+        color: Light Grey
+      frame:
+        structure: solid_wood
+      leg:
+        structure: solid_rubber_wood
+        finish: Black Wood
+    finish:
+      color_finish: Light Grey
+      surface_finish: Performance Linen Weave (Genova)
+      finish_color: genova_light_grey
+      leg_finish: black
+  - variant: Solange Performance Boucle Chair / Performance Creamy White / White Wash Wood Legs
+    sku: 54000102C-PT4001
+    size_label: 68x77
+    finish_code: performance_creamy_white_white_wash_legs
+    finish_label: Creamy White / White Wash Wood Legs
+    upholstery_code: performance_creamy_white
+    upholstery_label: Performance Creamy White
+    leg_finish_code: white_wash
+    leg_finish_label: White Wash Wood
+    model_asset_id: armchair-real-castlery-solange-performance-boucle-chair-white-wash-legs
+    model_url: /assets/models/armchair-real-castlery-solange-performance-boucle-chair-white-wash-legs.glb
+    thumbnail_url: https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1731314119/crusader/variants/54000102C-PT4001/Solange-Performance-Boucl%C3%A9-Chair-Creamy-White-White-Wash-Leg-Angle-1731314116.jpg
+    gallery_images:
+      - https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1731314119/crusader/variants/54000102C-PT4001/Solange-Performance-Boucl%C3%A9-Chair-Creamy-White-White-Wash-Leg-Angle-1731314116.jpg
+    swatch_group: upholstery_option
+    swatch_hex: "#eee8dc"
+    swatch_image_url: https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,c_fit/v1774943787/crusader/variants/PT-4001/PT4001-Performance-Twill-Creamy-White-1774943785.jpg
+    color_family: cream
+    tone: neutral
+    collection_type: custom_fabric
+    price_usd: 599
+    price_band: mid
+    brand_tier: premium_mid
+    available: true
+    affiliate_url: https://www.castlery.com/sg/products/solange-performance-boucle-chair?quantity=single&material=performance_creamy_white&wood=white_wash
+    purchase_options:
+      - id: single
+        label: Single
+        quantity: 1
+        sku: 54000102C-PT4001
+        price_usd: 599
+        affiliate_url: https://www.castlery.com/sg/products/solange-performance-boucle-chair?quantity=single&material=performance_creamy_white&wood=white_wash
+        available: true
+    dimensions:
+      width_cm: 68
+      depth_cm: 77
+      height_cm: 75
+    materials:
+      upholstery:
+        material_type: performance_fabric
+        structure: performance_twill
+        fabric_family: Performance Twill
+        color: Creamy White
+      frame:
+        structure: solid_wood
+      leg:
+        structure: solid_rubber_wood
+        finish: White Wash Wood
+    finish:
+      color_finish: Creamy White
+      surface_finish: Performance Twill
+      finish_color: performance_creamy_white
+      leg_finish: white_wash
+  - variant: Solange Performance Boucle Chair / Performance Creamy White / Black Wood Legs
+    sku: 54000103C-PT4001
+    size_label: 68x77
+    finish_code: performance_creamy_white_black_legs
+    finish_label: Creamy White / Black Wood Legs
+    upholstery_code: performance_creamy_white
+    upholstery_label: Performance Creamy White
+    leg_finish_code: black
+    leg_finish_label: Black Wood
+    model_asset_id: armchair-real-castlery-solange-performance-boucle-chair-black-legs
+    model_url: /assets/models/armchair-real-castlery-solange-performance-boucle-chair-black-legs.glb
+    thumbnail_url: https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1730946819/crusader/variants/54000103C-PT4001/Solange-Performance-Boucl%C3%A9-Chair-Creamy-White-Black-Leg-Angle-1730946817.jpg
+    gallery_images:
+      - https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1730946819/crusader/variants/54000103C-PT4001/Solange-Performance-Boucl%C3%A9-Chair-Creamy-White-Black-Leg-Angle-1730946817.jpg
+    swatch_group: upholstery_option
+    swatch_hex: "#eee8dc"
+    swatch_image_url: https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,c_fit/v1774943787/crusader/variants/PT-4001/PT4001-Performance-Twill-Creamy-White-1774943785.jpg
+    color_family: cream
+    tone: neutral
+    collection_type: custom_fabric
+    price_usd: 599
+    price_band: mid
+    brand_tier: premium_mid
+    available: true
+    affiliate_url: https://www.castlery.com/sg/products/solange-performance-boucle-chair?quantity=single&material=performance_creamy_white&wood=black
+    purchase_options:
+      - id: single
+        label: Single
+        quantity: 1
+        sku: 54000103C-PT4001
+        price_usd: 599
+        affiliate_url: https://www.castlery.com/sg/products/solange-performance-boucle-chair?quantity=single&material=performance_creamy_white&wood=black
+        available: true
+    dimensions:
+      width_cm: 68
+      depth_cm: 77
+      height_cm: 75
+    materials:
+      upholstery:
+        material_type: performance_fabric
+        structure: performance_twill
+        fabric_family: Performance Twill
+        color: Creamy White
+      frame:
+        structure: solid_wood
+      leg:
+        structure: solid_rubber_wood
+        finish: Black Wood
+    finish:
+      color_finish: Creamy White
+      surface_finish: Performance Twill
+      finish_color: performance_creamy_white
+      leg_finish: black
+  - variant: Solange Performance Boucle Chair / Performance Twill, Pearl Beige / White Wash Wood Legs
+    sku: 54000102C-PT4002
+    size_label: 68x77
+    finish_code: performance_twill_pearl_beige_white_wash_legs
+    finish_label: Pearl Beige / White Wash Wood Legs
+    upholstery_code: performance_twill_pearl_beige
+    upholstery_label: Performance Twill, Pearl Beige
+    leg_finish_code: white_wash
+    leg_finish_label: White Wash Wood
+    model_asset_id: armchair-real-castlery-solange-performance-boucle-chair-white-wash-legs
+    model_url: /assets/models/armchair-real-castlery-solange-performance-boucle-chair-white-wash-legs.glb
+    thumbnail_url: https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1775027889/crusader/variants/54000102C-PT4002/Solange-Chair-Performance-Twill-Light-Grey-Wash-Angle-1775027887.jpg
+    gallery_images:
+      - https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1775027889/crusader/variants/54000102C-PT4002/Solange-Chair-Performance-Twill-Light-Grey-Wash-Angle-1775027887.jpg
+    swatch_group: upholstery_option
+    swatch_hex: "#d6c8b7"
+    swatch_image_url: https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1747116409/crusader/variants/PT-4002/Levi-Office-Chair-Twill-Pearl-Beige-Square-Det_4-1747116407.jpg
+    color_family: beige
+    tone: warm
+    collection_type: custom_fabric
+    price_usd: 599
+    price_band: mid
+    brand_tier: premium_mid
+    available: true
+    affiliate_url: https://www.castlery.com/sg/products/solange-performance-boucle-chair?quantity=single&material=performance_twill_pearl_beige&wood=white_wash
+    purchase_options:
+      - id: single
+        label: Single
+        quantity: 1
+        sku: 54000102C-PT4002
+        price_usd: 599
+        affiliate_url: https://www.castlery.com/sg/products/solange-performance-boucle-chair?quantity=single&material=performance_twill_pearl_beige&wood=white_wash
+        available: true
+    dimensions:
+      width_cm: 68
+      depth_cm: 77
+      height_cm: 75
+    materials:
+      upholstery:
+        material_type: performance_fabric
+        structure: performance_twill
+        fabric_family: Performance Twill
+        color: Pearl Beige
+      frame:
+        structure: solid_wood
+      leg:
+        structure: solid_rubber_wood
+        finish: White Wash Wood
+    finish:
+      color_finish: Pearl Beige
+      surface_finish: Performance Twill
+      finish_color: performance_twill_pearl_beige
+      leg_finish: white_wash
+  - variant: Solange Performance Boucle Chair / Performance Twill, Pearl Beige / Black Wood Legs
+    sku: 54000103C-PT4002
+    size_label: 68x77
+    finish_code: performance_twill_pearl_beige_black_legs
+    finish_label: Pearl Beige / Black Wood Legs
+    upholstery_code: performance_twill_pearl_beige
+    upholstery_label: Performance Twill, Pearl Beige
+    leg_finish_code: black
+    leg_finish_label: Black Wood
+    model_asset_id: armchair-real-castlery-solange-performance-boucle-chair-black-legs
+    model_url: /assets/models/armchair-real-castlery-solange-performance-boucle-chair-black-legs.glb
+    thumbnail_url: https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1773907898/crusader/variants/54000103C-PT4002/Solange-Chair-Performance-Twill-Pearl-Beige-Black-Wash-Angle-1773907896.jpg
+    gallery_images:
+      - https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1773907898/crusader/variants/54000103C-PT4002/Solange-Chair-Performance-Twill-Pearl-Beige-Black-Wash-Angle-1773907896.jpg
+    swatch_group: upholstery_option
+    swatch_hex: "#d6c8b7"
+    swatch_image_url: https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1747116409/crusader/variants/PT-4002/Levi-Office-Chair-Twill-Pearl-Beige-Square-Det_4-1747116407.jpg
+    color_family: beige
+    tone: warm
+    collection_type: custom_fabric
+    price_usd: 599
+    price_band: mid
+    brand_tier: premium_mid
+    available: true
+    affiliate_url: https://www.castlery.com/sg/products/solange-performance-boucle-chair?quantity=single&material=performance_twill_pearl_beige&wood=black
+    purchase_options:
+      - id: single
+        label: Single
+        quantity: 1
+        sku: 54000103C-PT4002
+        price_usd: 599
+        affiliate_url: https://www.castlery.com/sg/products/solange-performance-boucle-chair?quantity=single&material=performance_twill_pearl_beige&wood=black
+        available: true
+    dimensions:
+      width_cm: 68
+      depth_cm: 77
+      height_cm: 75
+    materials:
+      upholstery:
+        material_type: performance_fabric
+        structure: performance_twill
+        fabric_family: Performance Twill
+        color: Pearl Beige
+      frame:
+        structure: solid_wood
+      leg:
+        structure: solid_rubber_wood
+        finish: Black Wood
+    finish:
+      color_finish: Pearl Beige
+      surface_finish: Performance Twill
+      finish_color: performance_twill_pearl_beige
+      leg_finish: black
+  - variant: Solange Performance Boucle Chair / Performance Twill, Medium Grey / White Wash Wood Legs
+    sku: 54000102C-PT4005
+    size_label: 68x77
+    finish_code: performance_twill_medium_grey_white_wash_legs
+    finish_label: Medium Grey / White Wash Wood Legs
+    upholstery_code: performance_twill_medium_grey
+    upholstery_label: Performance Twill, Medium Grey
+    leg_finish_code: white_wash
+    leg_finish_label: White Wash Wood
+    model_asset_id: armchair-real-castlery-solange-performance-boucle-chair-white-wash-legs
+    model_url: /assets/models/armchair-real-castlery-solange-performance-boucle-chair-white-wash-legs.glb
+    thumbnail_url: https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1775027949/crusader/variants/54000102C-PT4005/Solange-Chair-Performance-Twill-Medium-Grey-White-Wash-Angle-1775027946.jpg
+    gallery_images:
+      - https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1775027949/crusader/variants/54000102C-PT4005/Solange-Chair-Performance-Twill-Medium-Grey-White-Wash-Angle-1775027946.jpg
+    swatch_group: upholstery_option
+    swatch_hex: "#9f9f99"
+    swatch_image_url: https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,c_fit/v1769061840/crusader/variants/PT-4005/PT4005-Performance-Twill-Dove-Grey-1769061838.jpg
+    color_family: grey
+    tone: cool
+    collection_type: custom_fabric
+    price_usd: 599
+    price_band: mid
+    brand_tier: premium_mid
+    available: true
+    affiliate_url: https://www.castlery.com/sg/products/solange-performance-boucle-chair?quantity=single&material=performance_twill_medium_grey&wood=white_wash
+    purchase_options:
+      - id: single
+        label: Single
+        quantity: 1
+        sku: 54000102C-PT4005
+        price_usd: 599
+        affiliate_url: https://www.castlery.com/sg/products/solange-performance-boucle-chair?quantity=single&material=performance_twill_medium_grey&wood=white_wash
+        available: true
+    dimensions:
+      width_cm: 68
+      depth_cm: 77
+      height_cm: 75
+    materials:
+      upholstery:
+        material_type: performance_fabric
+        structure: performance_twill
+        fabric_family: Performance Twill
+        color: Medium Grey
+      frame:
+        structure: solid_wood
+      leg:
+        structure: solid_rubber_wood
+        finish: White Wash Wood
+    finish:
+      color_finish: Medium Grey
+      surface_finish: Performance Twill
+      finish_color: performance_twill_medium_grey
+      leg_finish: white_wash
+  - variant: Solange Performance Boucle Chair / Performance Twill, Medium Grey / Black Wood Legs
+    sku: 54000103C-PT4005
+    size_label: 68x77
+    finish_code: performance_twill_medium_grey_black_legs
+    finish_label: Medium Grey / Black Wood Legs
+    upholstery_code: performance_twill_medium_grey
+    upholstery_label: Performance Twill, Medium Grey
+    leg_finish_code: black
+    leg_finish_label: Black Wood
+    model_asset_id: armchair-real-castlery-solange-performance-boucle-chair-black-legs
+    model_url: /assets/models/armchair-real-castlery-solange-performance-boucle-chair-black-legs.glb
+    thumbnail_url: https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1773907956/crusader/variants/54000103C-PT4005/Solange-Chair-Performance-Twill-Dove-Grey-Black-Wash-Angle-1773907953.jpg
+    gallery_images:
+      - https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1773907956/crusader/variants/54000103C-PT4005/Solange-Chair-Performance-Twill-Dove-Grey-Black-Wash-Angle-1773907953.jpg
+    swatch_group: upholstery_option
+    swatch_hex: "#9f9f99"
+    swatch_image_url: https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,c_fit/v1769061840/crusader/variants/PT-4005/PT4005-Performance-Twill-Dove-Grey-1769061838.jpg
+    color_family: grey
+    tone: cool
+    collection_type: custom_fabric
+    price_usd: 599
+    price_band: mid
+    brand_tier: premium_mid
+    available: true
+    affiliate_url: https://www.castlery.com/sg/products/solange-performance-boucle-chair?quantity=single&material=performance_twill_medium_grey&wood=black
+    purchase_options:
+      - id: single
+        label: Single
+        quantity: 1
+        sku: 54000103C-PT4005
+        price_usd: 599
+        affiliate_url: https://www.castlery.com/sg/products/solange-performance-boucle-chair?quantity=single&material=performance_twill_medium_grey&wood=black
+        available: true
+    dimensions:
+      width_cm: 68
+      depth_cm: 77
+      height_cm: 75
+    materials:
+      upholstery:
+        material_type: performance_fabric
+        structure: performance_twill
+        fabric_family: Performance Twill
+        color: Medium Grey
+      frame:
+        structure: solid_wood
+      leg:
+        structure: solid_rubber_wood
+        finish: Black Wood
+    finish:
+      color_finish: Medium Grey
+      surface_finish: Performance Twill
+      finish_color: performance_twill_medium_grey
+      leg_finish: black
+  - variant: Solange Performance Boucle Chair / Performance Twill, Slate / White Wash Wood Legs
+    sku: 54000102C-PT4003
+    size_label: 68x77
+    finish_code: performance_twill_slate_white_wash_legs
+    finish_label: Slate / White Wash Wood Legs
+    upholstery_code: performance_twill_slate
+    upholstery_label: Performance Twill, Slate
+    leg_finish_code: white_wash
+    leg_finish_label: White Wash Wood
+    model_asset_id: armchair-real-castlery-solange-performance-boucle-chair-white-wash-legs
+    model_url: /assets/models/armchair-real-castlery-solange-performance-boucle-chair-white-wash-legs.glb
+    thumbnail_url: https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1775027919/crusader/variants/54000102C-PT4003/Solange-Chair-Performance_Twill-Slate-White-Wash-Angle-1775027916.jpg
+    gallery_images:
+      - https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1775027919/crusader/variants/54000102C-PT4003/Solange-Chair-Performance_Twill-Slate-White-Wash-Angle-1775027916.jpg
+    swatch_group: upholstery_option
+    swatch_hex: "#4f5552"
+    swatch_image_url: https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1756361613/crusader/variants/PT-4003/Performance-Twill-Slate-1756361610.jpg
+    color_family: grey
+    tone: cool
+    collection_type: custom_fabric
+    price_usd: 599
+    price_band: mid
+    brand_tier: premium_mid
+    available: true
+    affiliate_url: https://www.castlery.com/sg/products/solange-performance-boucle-chair?quantity=single&material=performance_twill_slate&wood=white_wash
+    purchase_options:
+      - id: single
+        label: Single
+        quantity: 1
+        sku: 54000102C-PT4003
+        price_usd: 599
+        affiliate_url: https://www.castlery.com/sg/products/solange-performance-boucle-chair?quantity=single&material=performance_twill_slate&wood=white_wash
+        available: true
+    dimensions:
+      width_cm: 68
+      depth_cm: 77
+      height_cm: 75
+    materials:
+      upholstery:
+        material_type: performance_fabric
+        structure: performance_twill
+        fabric_family: Performance Twill
+        color: Slate
+      frame:
+        structure: solid_wood
+      leg:
+        structure: solid_rubber_wood
+        finish: White Wash Wood
+    finish:
+      color_finish: Slate
+      surface_finish: Performance Twill
+      finish_color: performance_twill_slate
+      leg_finish: white_wash
+  - variant: Solange Performance Boucle Chair / Performance Twill, Slate / Black Wood Legs
+    sku: 54000103C-PT4003
+    size_label: 68x77
+    finish_code: performance_twill_slate_black_legs
+    finish_label: Slate / Black Wood Legs
+    upholstery_code: performance_twill_slate
+    upholstery_label: Performance Twill, Slate
+    leg_finish_code: black
+    leg_finish_label: Black Wood
+    model_asset_id: armchair-real-castlery-solange-performance-boucle-chair-black-legs
+    model_url: /assets/models/armchair-real-castlery-solange-performance-boucle-chair-black-legs.glb
+    thumbnail_url: https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1773907917/crusader/variants/54000103C-PT4003/Solange-Chair-Performance_Twill-Slate-Black-Wash-Angle-1773907915.jpg
+    gallery_images:
+      - https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1773907917/crusader/variants/54000103C-PT4003/Solange-Chair-Performance_Twill-Slate-Black-Wash-Angle-1773907915.jpg
+    swatch_group: upholstery_option
+    swatch_hex: "#4f5552"
+    swatch_image_url: https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1756361613/crusader/variants/PT-4003/Performance-Twill-Slate-1756361610.jpg
+    color_family: grey
+    tone: cool
+    collection_type: custom_fabric
+    price_usd: 599
+    price_band: mid
+    brand_tier: premium_mid
+    available: true
+    affiliate_url: https://www.castlery.com/sg/products/solange-performance-boucle-chair?quantity=single&material=performance_twill_slate&wood=black
+    purchase_options:
+      - id: single
+        label: Single
+        quantity: 1
+        sku: 54000103C-PT4003
+        price_usd: 599
+        affiliate_url: https://www.castlery.com/sg/products/solange-performance-boucle-chair?quantity=single&material=performance_twill_slate&wood=black
+        available: true
+    dimensions:
+      width_cm: 68
+      depth_cm: 77
+      height_cm: 75
+    materials:
+      upholstery:
+        material_type: performance_fabric
+        structure: performance_twill
+        fabric_family: Performance Twill
+        color: Slate
+      frame:
+        structure: solid_wood
+      leg:
+        structure: solid_rubber_wood
+        finish: Black Wood
+    finish:
+      color_finish: Slate
+      surface_finish: Performance Twill
+      finish_color: performance_twill_slate
+      leg_finish: black
+  - variant: Solange Performance Boucle Chair / Performance Twill, Moss / White Wash Wood Legs
+    sku: 54000102C-PT4004
+    size_label: 68x77
+    finish_code: performance_twill_moss_white_wash_legs
+    finish_label: Moss / White Wash Wood Legs
+    upholstery_code: performance_twill_moss
+    upholstery_label: Performance Twill, Moss
+    leg_finish_code: white_wash
+    leg_finish_label: White Wash Wood
+    model_asset_id: armchair-real-castlery-solange-performance-boucle-chair-white-wash-legs
+    model_url: /assets/models/armchair-real-castlery-solange-performance-boucle-chair-white-wash-legs.glb
+    thumbnail_url: https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1775027933/crusader/variants/54000102C-PT4004/Solange-Chair-Performance-Twill-Moss-White-Wash-Angle-1775027931.jpg
+    gallery_images:
+      - https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1775027933/crusader/variants/54000102C-PT4004/Solange-Chair-Performance-Twill-Moss-White-Wash-Angle-1775027931.jpg
+    swatch_group: upholstery_option
+    swatch_hex: "#69705d"
+    swatch_image_url: https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1756438801/crusader/variants/PT-4004/Moss-1756438798.jpg
+    color_family: green
+    tone: cool
+    collection_type: custom_fabric
+    price_usd: 599
+    price_band: mid
+    brand_tier: premium_mid
+    available: true
+    affiliate_url: https://www.castlery.com/sg/products/solange-performance-boucle-chair?quantity=single&material=performance_twill_moss&wood=white_wash
+    purchase_options:
+      - id: single
+        label: Single
+        quantity: 1
+        sku: 54000102C-PT4004
+        price_usd: 599
+        affiliate_url: https://www.castlery.com/sg/products/solange-performance-boucle-chair?quantity=single&material=performance_twill_moss&wood=white_wash
+        available: true
+    dimensions:
+      width_cm: 68
+      depth_cm: 77
+      height_cm: 75
+    materials:
+      upholstery:
+        material_type: performance_fabric
+        structure: performance_twill
+        fabric_family: Performance Twill
+        color: Moss
+      frame:
+        structure: solid_wood
+      leg:
+        structure: solid_rubber_wood
+        finish: White Wash Wood
+    finish:
+      color_finish: Moss
+      surface_finish: Performance Twill
+      finish_color: performance_twill_moss
+      leg_finish: white_wash
+  - variant: Solange Performance Boucle Chair / Performance Twill, Moss / Black Wood Legs
+    sku: 54000103C-PT4004
+    size_label: 68x77
+    finish_code: performance_twill_moss_black_legs
+    finish_label: Moss / Black Wood Legs
+    upholstery_code: performance_twill_moss
+    upholstery_label: Performance Twill, Moss
+    leg_finish_code: black
+    leg_finish_label: Black Wood
+    model_asset_id: armchair-real-castlery-solange-performance-boucle-chair-black-legs
+    model_url: /assets/models/armchair-real-castlery-solange-performance-boucle-chair-black-legs.glb
+    thumbnail_url: https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1773907936/crusader/variants/54000103C-PT4004/Solange-Chair-Performance-Twill-Moss-Black-Wash-Angle-1773907933.jpg
+    gallery_images:
+      - https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1773907936/crusader/variants/54000103C-PT4004/Solange-Chair-Performance-Twill-Moss-Black-Wash-Angle-1773907933.jpg
+    swatch_group: upholstery_option
+    swatch_hex: "#69705d"
+    swatch_image_url: https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1756438801/crusader/variants/PT-4004/Moss-1756438798.jpg
+    color_family: green
+    tone: cool
+    collection_type: custom_fabric
+    price_usd: 599
+    price_band: mid
+    brand_tier: premium_mid
+    available: true
+    affiliate_url: https://www.castlery.com/sg/products/solange-performance-boucle-chair?quantity=single&material=performance_twill_moss&wood=black
+    purchase_options:
+      - id: single
+        label: Single
+        quantity: 1
+        sku: 54000103C-PT4004
+        price_usd: 599
+        affiliate_url: https://www.castlery.com/sg/products/solange-performance-boucle-chair?quantity=single&material=performance_twill_moss&wood=black
+        available: true
+    dimensions:
+      width_cm: 68
+      depth_cm: 77
+      height_cm: 75
+    materials:
+      upholstery:
+        material_type: performance_fabric
+        structure: performance_twill
+        fabric_family: Performance Twill
+        color: Moss
+      frame:
+        structure: solid_wood
+      leg:
+        structure: solid_rubber_wood
+        finish: Black Wood
+    finish:
+      color_finish: Moss
+      surface_finish: Performance Twill
+      finish_color: performance_twill_moss
+      leg_finish: black
+  - variant: Solange Performance Boucle Chair / Washed Chenille, Cream / White Wash Wood Legs
+    sku: 54000102C-GR4001
+    size_label: 68x77
+    finish_code: washed_chenille_cream_white_wash_legs
+    finish_label: Cream / White Wash Wood Legs
+    upholstery_code: washed_chenille_cream
+    upholstery_label: Washed Chenille, Cream
+    leg_finish_code: white_wash
+    leg_finish_label: White Wash Wood
+    model_asset_id: armchair-real-castlery-solange-performance-boucle-chair-white-wash-legs
+    model_url: /assets/models/armchair-real-castlery-solange-performance-boucle-chair-white-wash-legs.glb
+    thumbnail_url: https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1773907458/crusader/variants/54000102C-GR4001/Solange-Chair-Greta-Ivory-White-Wash-Angle-1773907455.jpg
+    gallery_images:
+      - https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1773907458/crusader/variants/54000102C-GR4001/Solange-Chair-Greta-Ivory-White-Wash-Angle-1773907455.jpg
+    swatch_group: upholstery_option
+    swatch_hex: "#e8dfcf"
+    swatch_image_url: https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,c_fit/v1769054456/crusader/variants/GR-4001/GR4001-Greta-Ivory-1769054453.jpg
+    color_family: cream
+    tone: neutral
+    collection_type: custom_fabric
+    price_usd: 599
+    price_band: mid
+    brand_tier: premium_mid
+    available: true
+    affiliate_url: https://www.castlery.com/sg/products/solange-performance-boucle-chair?quantity=single&material=washed_chenille_cream&wood=white_wash
+    purchase_options:
+      - id: single
+        label: Single
+        quantity: 1
+        sku: 54000102C-GR4001
+        price_usd: 599
+        affiliate_url: https://www.castlery.com/sg/products/solange-performance-boucle-chair?quantity=single&material=washed_chenille_cream&wood=white_wash
+        available: true
+    dimensions:
+      width_cm: 68
+      depth_cm: 77
+      height_cm: 75
+    materials:
+      upholstery:
+        material_type: performance_fabric
+        structure: washed_chenille
+        fabric_family: Washed Chenille
+        color: Cream
+      frame:
+        structure: solid_wood
+      leg:
+        structure: solid_rubber_wood
+        finish: White Wash Wood
+    finish:
+      color_finish: Cream
+      surface_finish: Washed Chenille
+      finish_color: washed_chenille_cream
+      leg_finish: white_wash
+  - variant: Solange Performance Boucle Chair / Washed Chenille, Cream / Black Wood Legs
+    sku: 54000103C-GR4001
+    size_label: 68x77
+    finish_code: washed_chenille_cream_black_legs
+    finish_label: Cream / Black Wood Legs
+    upholstery_code: washed_chenille_cream
+    upholstery_label: Washed Chenille, Cream
+    leg_finish_code: black
+    leg_finish_label: Black Wood
+    model_asset_id: armchair-real-castlery-solange-performance-boucle-chair-black-legs
+    model_url: /assets/models/armchair-real-castlery-solange-performance-boucle-chair-black-legs.glb
+    thumbnail_url: https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1773907699/crusader/variants/54000103C-GR4001/Solange-Chair-Greta-Ivory-Black-Wash-Angle-1773907696.jpg
+    gallery_images:
+      - https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1773907699/crusader/variants/54000103C-GR4001/Solange-Chair-Greta-Ivory-Black-Wash-Angle-1773907696.jpg
+    swatch_group: upholstery_option
+    swatch_hex: "#e8dfcf"
+    swatch_image_url: https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,c_fit/v1769054456/crusader/variants/GR-4001/GR4001-Greta-Ivory-1769054453.jpg
+    color_family: cream
+    tone: neutral
+    collection_type: custom_fabric
+    price_usd: 599
+    price_band: mid
+    brand_tier: premium_mid
+    available: true
+    affiliate_url: https://www.castlery.com/sg/products/solange-performance-boucle-chair?quantity=single&material=washed_chenille_cream&wood=black
+    purchase_options:
+      - id: single
+        label: Single
+        quantity: 1
+        sku: 54000103C-GR4001
+        price_usd: 599
+        affiliate_url: https://www.castlery.com/sg/products/solange-performance-boucle-chair?quantity=single&material=washed_chenille_cream&wood=black
+        available: true
+    dimensions:
+      width_cm: 68
+      depth_cm: 77
+      height_cm: 75
+    materials:
+      upholstery:
+        material_type: performance_fabric
+        structure: washed_chenille
+        fabric_family: Washed Chenille
+        color: Cream
+      frame:
+        structure: solid_wood
+      leg:
+        structure: solid_rubber_wood
+        finish: Black Wood
+    finish:
+      color_finish: Cream
+      surface_finish: Washed Chenille
+      finish_color: washed_chenille_cream
+      leg_finish: black
+  - variant: Solange Performance Boucle Chair / Washed Chenille, Sand / White Wash Wood Legs
+    sku: 54000102C-GR4002
+    size_label: 68x77
+    finish_code: washed_chenille_sand_white_wash_legs
+    finish_label: Sand / White Wash Wood Legs
+    upholstery_code: washed_chenille_sand
+    upholstery_label: Washed Chenille, Sand
+    leg_finish_code: white_wash
+    leg_finish_label: White Wash Wood
+    model_asset_id: armchair-real-castlery-solange-performance-boucle-chair-white-wash-legs
+    model_url: /assets/models/armchair-real-castlery-solange-performance-boucle-chair-white-wash-legs.glb
+    thumbnail_url: https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1773907486/crusader/variants/54000102C-GR4002/Solange-Chair-Greta-Latte-White-Wash-Angle-1773907483.jpg
+    gallery_images:
+      - https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1773907486/crusader/variants/54000102C-GR4002/Solange-Chair-Greta-Latte-White-Wash-Angle-1773907483.jpg
+    swatch_group: upholstery_option
+    swatch_hex: "#c8b39c"
+    swatch_image_url: https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,c_fit/v1770188296/crusader/variants/GR-4002/GR4002-Latte-1770188293.jpg
+    color_family: beige
+    tone: warm
+    collection_type: custom_fabric
+    price_usd: 599
+    price_band: mid
+    brand_tier: premium_mid
+    available: true
+    affiliate_url: https://www.castlery.com/sg/products/solange-performance-boucle-chair?quantity=single&material=washed_chenille_sand&wood=white_wash
+    purchase_options:
+      - id: single
+        label: Single
+        quantity: 1
+        sku: 54000102C-GR4002
+        price_usd: 599
+        affiliate_url: https://www.castlery.com/sg/products/solange-performance-boucle-chair?quantity=single&material=washed_chenille_sand&wood=white_wash
+        available: true
+    dimensions:
+      width_cm: 68
+      depth_cm: 77
+      height_cm: 75
+    materials:
+      upholstery:
+        material_type: performance_fabric
+        structure: washed_chenille
+        fabric_family: Washed Chenille
+        color: Sand
+      frame:
+        structure: solid_wood
+      leg:
+        structure: solid_rubber_wood
+        finish: White Wash Wood
+    finish:
+      color_finish: Sand
+      surface_finish: Washed Chenille
+      finish_color: washed_chenille_sand
+      leg_finish: white_wash
+  - variant: Solange Performance Boucle Chair / Washed Chenille, Sand / Black Wood Legs
+    sku: 54000103C-GR4002
+    size_label: 68x77
+    finish_code: washed_chenille_sand_black_legs
+    finish_label: Sand / Black Wood Legs
+    upholstery_code: washed_chenille_sand
+    upholstery_label: Washed Chenille, Sand
+    leg_finish_code: black
+    leg_finish_label: Black Wood
+    model_asset_id: armchair-real-castlery-solange-performance-boucle-chair-black-legs
+    model_url: /assets/models/armchair-real-castlery-solange-performance-boucle-chair-black-legs.glb
+    thumbnail_url: https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1773907720/crusader/variants/54000103C-GR4002/Solange-Chair-Greta-Latte-Black-Wash-Angle-1773907718.jpg
+    gallery_images:
+      - https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1773907720/crusader/variants/54000103C-GR4002/Solange-Chair-Greta-Latte-Black-Wash-Angle-1773907718.jpg
+    swatch_group: upholstery_option
+    swatch_hex: "#c8b39c"
+    swatch_image_url: https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,c_fit/v1770188296/crusader/variants/GR-4002/GR4002-Latte-1770188293.jpg
+    color_family: beige
+    tone: warm
+    collection_type: custom_fabric
+    price_usd: 599
+    price_band: mid
+    brand_tier: premium_mid
+    available: true
+    affiliate_url: https://www.castlery.com/sg/products/solange-performance-boucle-chair?quantity=single&material=washed_chenille_sand&wood=black
+    purchase_options:
+      - id: single
+        label: Single
+        quantity: 1
+        sku: 54000103C-GR4002
+        price_usd: 599
+        affiliate_url: https://www.castlery.com/sg/products/solange-performance-boucle-chair?quantity=single&material=washed_chenille_sand&wood=black
+        available: true
+    dimensions:
+      width_cm: 68
+      depth_cm: 77
+      height_cm: 75
+    materials:
+      upholstery:
+        material_type: performance_fabric
+        structure: washed_chenille
+        fabric_family: Washed Chenille
+        color: Sand
+      frame:
+        structure: solid_wood
+      leg:
+        structure: solid_rubber_wood
+        finish: Black Wood
+    finish:
+      color_finish: Sand
+      surface_finish: Washed Chenille
+      finish_color: washed_chenille_sand
+      leg_finish: black
+  - variant: Solange Performance Boucle Chair / Washed Chenille, Caramel / White Wash Wood Legs
+    sku: 54000102C-GR4003
+    size_label: 68x77
+    finish_code: washed_chenille_caramel_white_wash_legs
+    finish_label: Caramel / White Wash Wood Legs
+    upholstery_code: washed_chenille_caramel
+    upholstery_label: Washed Chenille, Caramel
+    leg_finish_code: white_wash
+    leg_finish_label: White Wash Wood
+    model_asset_id: armchair-real-castlery-solange-performance-boucle-chair-white-wash-legs
+    model_url: /assets/models/armchair-real-castlery-solange-performance-boucle-chair-white-wash-legs.glb
+    thumbnail_url: https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1773907508/crusader/variants/54000102C-GR4003/Solange-Chair-Greta-Mustard-Brown-White-Wash-Angle-1773907506.jpg
+    gallery_images:
+      - https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1773907508/crusader/variants/54000102C-GR4003/Solange-Chair-Greta-Mustard-Brown-White-Wash-Angle-1773907506.jpg
+    swatch_group: upholstery_option
+    swatch_hex: "#a87542"
+    swatch_image_url: https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,c_fit/v1769054464/crusader/variants/GR-4003/GR4003-Greta-Mustard-Brown-1769054461.jpg
+    color_family: brown
+    tone: warm
+    collection_type: custom_fabric
+    price_usd: 599
+    price_band: mid
+    brand_tier: premium_mid
+    available: true
+    affiliate_url: https://www.castlery.com/sg/products/solange-performance-boucle-chair?quantity=single&material=washed_chenille_caramel&wood=white_wash
+    purchase_options:
+      - id: single
+        label: Single
+        quantity: 1
+        sku: 54000102C-GR4003
+        price_usd: 599
+        affiliate_url: https://www.castlery.com/sg/products/solange-performance-boucle-chair?quantity=single&material=washed_chenille_caramel&wood=white_wash
+        available: true
+    dimensions:
+      width_cm: 68
+      depth_cm: 77
+      height_cm: 75
+    materials:
+      upholstery:
+        material_type: performance_fabric
+        structure: washed_chenille
+        fabric_family: Washed Chenille
+        color: Caramel
+      frame:
+        structure: solid_wood
+      leg:
+        structure: solid_rubber_wood
+        finish: White Wash Wood
+    finish:
+      color_finish: Caramel
+      surface_finish: Washed Chenille
+      finish_color: washed_chenille_caramel
+      leg_finish: white_wash
+  - variant: Solange Performance Boucle Chair / Washed Chenille, Caramel / Black Wood Legs
+    sku: 54000103C-GR4003
+    size_label: 68x77
+    finish_code: washed_chenille_caramel_black_legs
+    finish_label: Caramel / Black Wood Legs
+    upholstery_code: washed_chenille_caramel
+    upholstery_label: Washed Chenille, Caramel
+    leg_finish_code: black
+    leg_finish_label: Black Wood
+    model_asset_id: armchair-real-castlery-solange-performance-boucle-chair-black-legs
+    model_url: /assets/models/armchair-real-castlery-solange-performance-boucle-chair-black-legs.glb
+    thumbnail_url: https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1773907735/crusader/variants/54000103C-GR4003/Solange-Chair-Greta-Mustard-Brown-Black-Wash-Angle-1773907732.jpg
+    gallery_images:
+      - https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1773907735/crusader/variants/54000103C-GR4003/Solange-Chair-Greta-Mustard-Brown-Black-Wash-Angle-1773907732.jpg
+    swatch_group: upholstery_option
+    swatch_hex: "#a87542"
+    swatch_image_url: https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,c_fit/v1769054464/crusader/variants/GR-4003/GR4003-Greta-Mustard-Brown-1769054461.jpg
+    color_family: brown
+    tone: warm
+    collection_type: custom_fabric
+    price_usd: 599
+    price_band: mid
+    brand_tier: premium_mid
+    available: true
+    affiliate_url: https://www.castlery.com/sg/products/solange-performance-boucle-chair?quantity=single&material=washed_chenille_caramel&wood=black
+    purchase_options:
+      - id: single
+        label: Single
+        quantity: 1
+        sku: 54000103C-GR4003
+        price_usd: 599
+        affiliate_url: https://www.castlery.com/sg/products/solange-performance-boucle-chair?quantity=single&material=washed_chenille_caramel&wood=black
+        available: true
+    dimensions:
+      width_cm: 68
+      depth_cm: 77
+      height_cm: 75
+    materials:
+      upholstery:
+        material_type: performance_fabric
+        structure: washed_chenille
+        fabric_family: Washed Chenille
+        color: Caramel
+      frame:
+        structure: solid_wood
+      leg:
+        structure: solid_rubber_wood
+        finish: Black Wood
+    finish:
+      color_finish: Caramel
+      surface_finish: Washed Chenille
+      finish_color: washed_chenille_caramel
+      leg_finish: black
+  - variant: Solange Performance Boucle Chair / Washed Chenille, Moss / White Wash Wood Legs
+    sku: 54000102C-GR4004
+    size_label: 68x77
+    finish_code: washed_chenille_moss_white_wash_legs
+    finish_label: Moss / White Wash Wood Legs
+    upholstery_code: washed_chenille_moss
+    upholstery_label: Washed Chenille, Moss
+    leg_finish_code: white_wash
+    leg_finish_label: White Wash Wood
+    model_asset_id: armchair-real-castlery-solange-performance-boucle-chair-white-wash-legs
+    model_url: /assets/models/armchair-real-castlery-solange-performance-boucle-chair-white-wash-legs.glb
+    thumbnail_url: https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1773907528/crusader/variants/54000102C-GR4004/Solange-Chair-Greta-Moss-White-Wash-Angle-1773907525.jpg
+    gallery_images:
+      - https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1773907528/crusader/variants/54000102C-GR4004/Solange-Chair-Greta-Moss-White-Wash-Angle-1773907525.jpg
+    swatch_group: upholstery_option
+    swatch_hex: "#68715e"
+    swatch_image_url: https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,c_fit/v1769054472/crusader/variants/GR-4004/GR4004-Greta-Moss-1769054469.jpg
+    color_family: green
+    tone: cool
+    collection_type: custom_fabric
+    price_usd: 599
+    price_band: mid
+    brand_tier: premium_mid
+    available: true
+    affiliate_url: https://www.castlery.com/sg/products/solange-performance-boucle-chair?quantity=single&material=washed_chenille_moss&wood=white_wash
+    purchase_options:
+      - id: single
+        label: Single
+        quantity: 1
+        sku: 54000102C-GR4004
+        price_usd: 599
+        affiliate_url: https://www.castlery.com/sg/products/solange-performance-boucle-chair?quantity=single&material=washed_chenille_moss&wood=white_wash
+        available: true
+    dimensions:
+      width_cm: 68
+      depth_cm: 77
+      height_cm: 75
+    materials:
+      upholstery:
+        material_type: performance_fabric
+        structure: washed_chenille
+        fabric_family: Washed Chenille
+        color: Moss
+      frame:
+        structure: solid_wood
+      leg:
+        structure: solid_rubber_wood
+        finish: White Wash Wood
+    finish:
+      color_finish: Moss
+      surface_finish: Washed Chenille
+      finish_color: washed_chenille_moss
+      leg_finish: white_wash
+  - variant: Solange Performance Boucle Chair / Washed Chenille, Moss / Black Wood Legs
+    sku: 54000103C-GR4004
+    size_label: 68x77
+    finish_code: washed_chenille_moss_black_legs
+    finish_label: Moss / Black Wood Legs
+    upholstery_code: washed_chenille_moss
+    upholstery_label: Washed Chenille, Moss
+    leg_finish_code: black
+    leg_finish_label: Black Wood
+    model_asset_id: armchair-real-castlery-solange-performance-boucle-chair-black-legs
+    model_url: /assets/models/armchair-real-castlery-solange-performance-boucle-chair-black-legs.glb
+    thumbnail_url: https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1773907752/crusader/variants/54000103C-GR4004/Solange-Chair-Greta-Moss-Black-Wash-Angle-1773907750.jpg
+    gallery_images:
+      - https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1773907752/crusader/variants/54000103C-GR4004/Solange-Chair-Greta-Moss-Black-Wash-Angle-1773907750.jpg
+    swatch_group: upholstery_option
+    swatch_hex: "#68715e"
+    swatch_image_url: https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,c_fit/v1769054472/crusader/variants/GR-4004/GR4004-Greta-Moss-1769054469.jpg
+    color_family: green
+    tone: cool
+    collection_type: custom_fabric
+    price_usd: 599
+    price_band: mid
+    brand_tier: premium_mid
+    available: true
+    affiliate_url: https://www.castlery.com/sg/products/solange-performance-boucle-chair?quantity=single&material=washed_chenille_moss&wood=black
+    purchase_options:
+      - id: single
+        label: Single
+        quantity: 1
+        sku: 54000103C-GR4004
+        price_usd: 599
+        affiliate_url: https://www.castlery.com/sg/products/solange-performance-boucle-chair?quantity=single&material=washed_chenille_moss&wood=black
+        available: true
+    dimensions:
+      width_cm: 68
+      depth_cm: 77
+      height_cm: 75
+    materials:
+      upholstery:
+        material_type: performance_fabric
+        structure: washed_chenille
+        fabric_family: Washed Chenille
+        color: Moss
+      frame:
+        structure: solid_wood
+      leg:
+        structure: solid_rubber_wood
+        finish: Black Wood
+    finish:
+      color_finish: Moss
+      surface_finish: Washed Chenille
+      finish_color: washed_chenille_moss
+      leg_finish: black
+  - variant: Solange Leather Chair / Caramel Leather / White Wash Wood Legs
+    sku: 54000196-LE4016
+    size_label: 68x77
+    finish_code: caramel_leather_white_wash_legs
+    finish_label: Caramel / White Wash Wood Legs
+    upholstery_code: caramel_leather
+    upholstery_label: Caramel Leather
+    leg_finish_code: white_wash
+    leg_finish_label: White Wash Wood
+    model_asset_id: armchair-real-castlery-solange-performance-boucle-chair-white-wash-legs
+    model_url: /assets/models/armchair-real-castlery-solange-performance-boucle-chair-white-wash-legs.glb
+    thumbnail_url: https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1723777490/crusader/variants/54000196-LE4016/Solange-Leather-Chair-Caramel-White-Wash-Front-1723777488.jpg
+    gallery_images:
+      - https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1723777490/crusader/variants/54000196-LE4016/Solange-Leather-Chair-Caramel-White-Wash-Front-1723777488.jpg
+      - https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1723777489/crusader/variants/54000196-LE4016/Solange-Leather-Chair-Caramel-White-Wash-Angle-1723777487.jpg
+      - https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1723777548/crusader/variants/54000196-LE4016/Solange-Leather-Chair-Caramel-White-Wash-Side-1723777546.jpg
+      - https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1723777490/crusader/variants/54000196-LE4016/Solange-Leather-Chair-Caramel-White-Wash-Back-1723777488.jpg
+      - https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1723777488/crusader/variants/54000196-LE4016/Solange-Leather-Chair-Caramel-White-Wash-Square-Det_1-1723777487.jpg
+      - https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1725531171/crusader/variants/54000196-LE4016/Solange-Leather-Chair-Caramel-White-Wash-Square-Det_9-1725531168.jpg
+      - https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1725531264/crusader/variants/PB-001496-LE4016-WW/Leather-Texture-Caramel-1725531261.jpg
+      - https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1723777712/crusader/variants/T54000196/Solange-Leather-Chair-Caramel-White-Wash-Side-Dim-1723777710.jpg
+      - https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1725531387/crusader/variants/PB-001496-LE4016-WW/Solange-Leather-Chair-Caramel-White-Wash-Set-Of-2-Front-1725531385.jpg
+    swatch_group: upholstery_option
+    swatch_hex: "#a46d3a"
+    swatch_image_url: https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1626941764/crusader/variants/LE-4016/Jonathan-Sofa-Brown_1.jpg
+    color_family: brown
+    tone: warm
+    collection_type: stocked_leather
+    price_usd: 799
+    price_band: mid
+    brand_tier: premium_mid
+    available: true
+    affiliate_url: https://www.castlery.com/sg/products/solange-leather-chair?quantity=single&leg_color=white_wash&material=caramel
+    purchase_options:
+      - id: single
+        label: Single
+        quantity: 1
+        sku: 54000196-LE4016
+        price_usd: 799
+        affiliate_url: https://www.castlery.com/sg/products/solange-leather-chair?quantity=single&leg_color=white_wash&material=caramel
+        available: true
+      - id: set_of_2
+        label: Set of 2
+        quantity: 2
+        sku: PB-001496-LE4016-WW
+        price_usd: 1598
+        affiliate_url: https://www.castlery.com/sg/products/solange-leather-chair?quantity=set_of_2&leg_color=white_wash&material=caramel
+        available: true
+    dimensions:
+      width_cm: 68
+      depth_cm: 77
+      height_cm: 75
+    materials:
+      upholstery:
+        material_type: leather
+        structure: top_grain_leather
+        fabric_family: Top Grain Leather
+        color: Caramel
+      frame:
+        structure: solid_wood
+      leg:
+        structure: solid_rubber_wood
+        finish: White Wash Wood
+    finish:
+      color_finish: Caramel
+      surface_finish: Top Grain Leather
+      finish_color: caramel_leather
+      leg_finish: white_wash
+  - variant: Solange Leather Chair / Caramel Leather / Black Wood Legs
+    sku: 54000197-LE4016
+    size_label: 68x77
+    finish_code: caramel_leather_black_legs
+    finish_label: Caramel / Black Wood Legs
+    upholstery_code: caramel_leather
+    upholstery_label: Caramel Leather
+    leg_finish_code: black
+    leg_finish_label: Black Wood
+    model_asset_id: armchair-real-castlery-solange-performance-boucle-chair-black-legs
+    model_url: /assets/models/armchair-real-castlery-solange-performance-boucle-chair-black-legs.glb
+    thumbnail_url: https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1723777416/crusader/variants/54000197-LE4016/Solange-Leather-Chair-Caramel-Black-Angle-1723777414.jpg
+    gallery_images:
+      - https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1723777416/crusader/variants/54000197-LE4016/Solange-Leather-Chair-Caramel-Black-Angle-1723777414.jpg
+      - https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1725531337/crusader/variants/PB-001496-LE4016-BLK/Solange-Leather-Chair-Caramel-Black-Set-Of-2-Front-1725531335.jpg
+    swatch_group: upholstery_option
+    swatch_hex: "#a46d3a"
+    swatch_image_url: https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1626941764/crusader/variants/LE-4016/Jonathan-Sofa-Brown_1.jpg
+    color_family: brown
+    tone: warm
+    collection_type: stocked_leather
+    price_usd: 799
+    price_band: mid
+    brand_tier: premium_mid
+    available: true
+    affiliate_url: https://www.castlery.com/sg/products/solange-leather-chair?quantity=single&leg_color=black&material=caramel
+    purchase_options:
+      - id: single
+        label: Single
+        quantity: 1
+        sku: 54000197-LE4016
+        price_usd: 799
+        affiliate_url: https://www.castlery.com/sg/products/solange-leather-chair?quantity=single&leg_color=black&material=caramel
+        available: true
+      - id: set_of_2
+        label: Set of 2
+        quantity: 2
+        sku: PB-001496-LE4016-BLK
+        price_usd: 1598
+        affiliate_url: https://www.castlery.com/sg/products/solange-leather-chair?quantity=set_of_2&leg_color=black&material=caramel
+        available: true
+    dimensions:
+      width_cm: 68
+      depth_cm: 77
+      height_cm: 75
+    materials:
+      upholstery:
+        material_type: leather
+        structure: top_grain_leather
+        fabric_family: Top Grain Leather
+        color: Caramel
+      frame:
+        structure: solid_wood
+      leg:
+        structure: solid_rubber_wood
+        finish: Black Wood
+    finish:
+      color_finish: Caramel
+      surface_finish: Top Grain Leather
+      finish_color: caramel_leather
+      leg_finish: black
+  - variant: Solange Leather Chair / Lugano Leather, Warm Taupe / White Wash Wood Legs
+    sku: 54000196C-LE4017
+    size_label: 68x77
+    finish_code: warm_taupe_leather_white_wash_legs
+    finish_label: Warm Taupe / White Wash Wood Legs
+    upholstery_code: warm_taupe_leather
+    upholstery_label: Lugano Leather, Warm Taupe
+    leg_finish_code: white_wash
+    leg_finish_label: White Wash Wood
+    model_asset_id: armchair-real-castlery-solange-performance-boucle-chair-white-wash-legs
+    model_url: /assets/models/armchair-real-castlery-solange-performance-boucle-chair-white-wash-legs.glb
+    thumbnail_url: https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1773908124/crusader/variants/54000196C-LE4017/Solange-Chair-Lugano-Warm_Taupe-White-Wash-Angle-1773908121.jpg
+    gallery_images:
+      - https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1773908124/crusader/variants/54000196C-LE4017/Solange-Chair-Lugano-Warm_Taupe-White-Wash-Angle-1773908121.jpg
+    swatch_group: upholstery_option
+    swatch_hex: "#8a7868"
+    swatch_image_url: https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1626941786/crusader/variants/LE-4017/Jonathan-Sofa-Taupe_1.jpg
+    color_family: brown
+    tone: neutral
+    collection_type: custom_leather
+    price_usd: 799
+    price_band: mid
+    brand_tier: premium_mid
+    available: true
+    affiliate_url: https://www.castlery.com/sg/products/solange-leather-chair?quantity=single&leg_color=white_wash&material=warm_taupe
+    purchase_options:
+      - id: single
+        label: Single
+        quantity: 1
+        sku: 54000196C-LE4017
+        price_usd: 799
+        affiliate_url: https://www.castlery.com/sg/products/solange-leather-chair?quantity=single&leg_color=white_wash&material=warm_taupe
+        available: true
+    dimensions:
+      width_cm: 68
+      depth_cm: 77
+      height_cm: 75
+    materials:
+      upholstery:
+        material_type: leather
+        structure: top_grain_leather
+        fabric_family: Lugano Leather
+        color: Warm Taupe
+      frame:
+        structure: solid_wood
+      leg:
+        structure: solid_rubber_wood
+        finish: White Wash Wood
+    finish:
+      color_finish: Warm Taupe
+      surface_finish: Lugano Leather
+      finish_color: warm_taupe_leather
+      leg_finish: white_wash
+  - variant: Solange Leather Chair / Lugano Leather, Warm Taupe / Black Wood Legs
+    sku: 54000197C-LE4017
+    size_label: 68x77
+    finish_code: warm_taupe_leather_black_legs
+    finish_label: Warm Taupe / Black Wood Legs
+    upholstery_code: warm_taupe_leather
+    upholstery_label: Lugano Leather, Warm Taupe
+    leg_finish_code: black
+    leg_finish_label: Black Wood
+    model_asset_id: armchair-real-castlery-solange-performance-boucle-chair-black-legs
+    model_url: /assets/models/armchair-real-castlery-solange-performance-boucle-chair-black-legs.glb
+    thumbnail_url: https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1773908205/crusader/variants/54000197C-LE4017/Solange-Chair-Lugano-Warm_Taupe-Black-Wash-Angle-1773908203.jpg
+    gallery_images:
+      - https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1773908205/crusader/variants/54000197C-LE4017/Solange-Chair-Lugano-Warm_Taupe-Black-Wash-Angle-1773908203.jpg
+    swatch_group: upholstery_option
+    swatch_hex: "#8a7868"
+    swatch_image_url: https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1626941786/crusader/variants/LE-4017/Jonathan-Sofa-Taupe_1.jpg
+    color_family: brown
+    tone: neutral
+    collection_type: custom_leather
+    price_usd: 799
+    price_band: mid
+    brand_tier: premium_mid
+    available: true
+    affiliate_url: https://www.castlery.com/sg/products/solange-leather-chair?quantity=single&leg_color=black&material=warm_taupe
+    purchase_options:
+      - id: single
+        label: Single
+        quantity: 1
+        sku: 54000197C-LE4017
+        price_usd: 799
+        affiliate_url: https://www.castlery.com/sg/products/solange-leather-chair?quantity=single&leg_color=black&material=warm_taupe
+        available: true
+    dimensions:
+      width_cm: 68
+      depth_cm: 77
+      height_cm: 75
+    materials:
+      upholstery:
+        material_type: leather
+        structure: top_grain_leather
+        fabric_family: Lugano Leather
+        color: Warm Taupe
+      frame:
+        structure: solid_wood
+      leg:
+        structure: solid_rubber_wood
+        finish: Black Wood
+    finish:
+      color_finish: Warm Taupe
+      surface_finish: Lugano Leather
+      finish_color: warm_taupe_leather
+      leg_finish: black
+  - variant: Solange Leather Chair / Marche Leather, Ivory / White Wash Wood Legs
+    sku: 54000196C-LE4021
+    size_label: 68x77
+    finish_code: marche_ivory_leather_white_wash_legs
+    finish_label: Ivory / White Wash Wood Legs
+    upholstery_code: marche_ivory_leather
+    upholstery_label: Marche Leather, Ivory
+    leg_finish_code: white_wash
+    leg_finish_label: White Wash Wood
+    model_asset_id: armchair-real-castlery-solange-performance-boucle-chair-white-wash-legs
+    model_url: /assets/models/armchair-real-castlery-solange-performance-boucle-chair-white-wash-legs.glb
+    thumbnail_url: https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1773908142/crusader/variants/54000196C-LE4021/Solange-Chair-Marche-Ivory-White-Wash-Angle-1773908140.jpg
+    gallery_images:
+      - https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1773908142/crusader/variants/54000196C-LE4021/Solange-Chair-Marche-Ivory-White-Wash-Angle-1773908140.jpg
+    swatch_group: upholstery_option
+    swatch_hex: "#d6d0c3"
+    swatch_image_url: https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1710728527/crusader/variants/LE-4021/Hamilton-Leather-Sofa-Ivory-Det_1-1710728524.jpg
+    color_family: cream
+    tone: neutral
+    collection_type: custom_leather
+    price_usd: 799
+    price_band: mid
+    brand_tier: premium_mid
+    available: true
+    affiliate_url: https://www.castlery.com/sg/products/solange-leather-chair?quantity=single&leg_color=white_wash&material=marche_Ivory
+    purchase_options:
+      - id: single
+        label: Single
+        quantity: 1
+        sku: 54000196C-LE4021
+        price_usd: 799
+        affiliate_url: https://www.castlery.com/sg/products/solange-leather-chair?quantity=single&leg_color=white_wash&material=marche_Ivory
+        available: true
+    dimensions:
+      width_cm: 68
+      depth_cm: 77
+      height_cm: 75
+    materials:
+      upholstery:
+        material_type: leather
+        structure: top_grain_leather
+        fabric_family: Marche Leather
+        color: Ivory
+      frame:
+        structure: solid_wood
+      leg:
+        structure: solid_rubber_wood
+        finish: White Wash Wood
+    finish:
+      color_finish: Ivory
+      surface_finish: Marche Leather
+      finish_color: marche_ivory_leather
+      leg_finish: white_wash
+  - variant: Solange Leather Chair / Marche Leather, Ivory / Black Wood Legs
+    sku: 54000197C-LE4021
+    size_label: 68x77
+    finish_code: marche_ivory_leather_black_legs
+    finish_label: Ivory / Black Wood Legs
+    upholstery_code: marche_ivory_leather
+    upholstery_label: Marche Leather, Ivory
+    leg_finish_code: black
+    leg_finish_label: Black Wood
+    model_asset_id: armchair-real-castlery-solange-performance-boucle-chair-black-legs
+    model_url: /assets/models/armchair-real-castlery-solange-performance-boucle-chair-black-legs.glb
+    thumbnail_url: https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1773908230/crusader/variants/54000197C-LE4021/Solange-Chair-Marche-Ivory-Black-Wash-Angle-1773908227.jpg
+    gallery_images:
+      - https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1773908230/crusader/variants/54000197C-LE4021/Solange-Chair-Marche-Ivory-Black-Wash-Angle-1773908227.jpg
+    swatch_group: upholstery_option
+    swatch_hex: "#d6d0c3"
+    swatch_image_url: https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1710728527/crusader/variants/LE-4021/Hamilton-Leather-Sofa-Ivory-Det_1-1710728524.jpg
+    color_family: cream
+    tone: neutral
+    collection_type: custom_leather
+    price_usd: 799
+    price_band: mid
+    brand_tier: premium_mid
+    available: true
+    affiliate_url: https://www.castlery.com/sg/products/solange-leather-chair?quantity=single&leg_color=black&material=marche_Ivory
+    purchase_options:
+      - id: single
+        label: Single
+        quantity: 1
+        sku: 54000197C-LE4021
+        price_usd: 799
+        affiliate_url: https://www.castlery.com/sg/products/solange-leather-chair?quantity=single&leg_color=black&material=marche_Ivory
+        available: true
+    dimensions:
+      width_cm: 68
+      depth_cm: 77
+      height_cm: 75
+    materials:
+      upholstery:
+        material_type: leather
+        structure: top_grain_leather
+        fabric_family: Marche Leather
+        color: Ivory
+      frame:
+        structure: solid_wood
+      leg:
+        structure: solid_rubber_wood
+        finish: Black Wood
+    finish:
+      color_finish: Ivory
+      surface_finish: Marche Leather
+      finish_color: marche_ivory_leather
+      leg_finish: black
+  - variant: Solange Leather Chair / Marche Leather, Graphite / White Wash Wood Legs
+    sku: 54000196C-LE4022
+    size_label: 68x77
+    finish_code: marche_graphite_leather_white_wash_legs
+    finish_label: Graphite / White Wash Wood Legs
+    upholstery_code: marche_graphite_leather
+    upholstery_label: Marche Leather, Graphite
+    leg_finish_code: white_wash
+    leg_finish_label: White Wash Wood
+    model_asset_id: armchair-real-castlery-solange-performance-boucle-chair-white-wash-legs
+    model_url: /assets/models/armchair-real-castlery-solange-performance-boucle-chair-white-wash-legs.glb
+    thumbnail_url: https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1773908159/crusader/variants/54000196C-LE4022/Solange-Chair-Marche-Graphite-White-Wash-Angle-1773908157.jpg
+    gallery_images:
+      - https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1773908159/crusader/variants/54000196C-LE4022/Solange-Chair-Marche-Graphite-White-Wash-Angle-1773908157.jpg
+    swatch_group: upholstery_option
+    swatch_hex: "#242424"
+    swatch_image_url: https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1710728543/crusader/variants/LE-4022/Hamilton-Leather-Sofa-Graphite-Det_1-1710728540.jpg
+    color_family: black
+    tone: cool
+    collection_type: custom_leather
+    price_usd: 799
+    price_band: mid
+    brand_tier: premium_mid
+    available: true
+    affiliate_url: https://www.castlery.com/sg/products/solange-leather-chair?quantity=single&leg_color=white_wash&material=marche_graphite
+    purchase_options:
+      - id: single
+        label: Single
+        quantity: 1
+        sku: 54000196C-LE4022
+        price_usd: 799
+        affiliate_url: https://www.castlery.com/sg/products/solange-leather-chair?quantity=single&leg_color=white_wash&material=marche_graphite
+        available: true
+    dimensions:
+      width_cm: 68
+      depth_cm: 77
+      height_cm: 75
+    materials:
+      upholstery:
+        material_type: leather
+        structure: top_grain_leather
+        fabric_family: Marche Leather
+        color: Graphite
+      frame:
+        structure: solid_wood
+      leg:
+        structure: solid_rubber_wood
+        finish: White Wash Wood
+    finish:
+      color_finish: Graphite
+      surface_finish: Marche Leather
+      finish_color: marche_graphite_leather
+      leg_finish: white_wash
+  - variant: Solange Leather Chair / Marche Leather, Graphite / Black Wood Legs
+    sku: 54000197C-LE4022
+    size_label: 68x77
+    finish_code: marche_graphite_leather_black_legs
+    finish_label: Graphite / Black Wood Legs
+    upholstery_code: marche_graphite_leather
+    upholstery_label: Marche Leather, Graphite
+    leg_finish_code: black
+    leg_finish_label: Black Wood
+    model_asset_id: armchair-real-castlery-solange-performance-boucle-chair-black-legs
+    model_url: /assets/models/armchair-real-castlery-solange-performance-boucle-chair-black-legs.glb
+    thumbnail_url: https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1773908247/crusader/variants/54000197C-LE4022/Solange-Chair-Marche-Graphite-Black-Wash-Angle-1773908245.jpg
+    gallery_images:
+      - https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1773908247/crusader/variants/54000197C-LE4022/Solange-Chair-Marche-Graphite-Black-Wash-Angle-1773908245.jpg
+    swatch_group: upholstery_option
+    swatch_hex: "#242424"
+    swatch_image_url: https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1710728543/crusader/variants/LE-4022/Hamilton-Leather-Sofa-Graphite-Det_1-1710728540.jpg
+    color_family: black
+    tone: cool
+    collection_type: custom_leather
+    price_usd: 799
+    price_band: mid
+    brand_tier: premium_mid
+    available: true
+    affiliate_url: https://www.castlery.com/sg/products/solange-leather-chair?quantity=single&leg_color=black&material=marche_graphite
+    purchase_options:
+      - id: single
+        label: Single
+        quantity: 1
+        sku: 54000197C-LE4022
+        price_usd: 799
+        affiliate_url: https://www.castlery.com/sg/products/solange-leather-chair?quantity=single&leg_color=black&material=marche_graphite
+        available: true
+    dimensions:
+      width_cm: 68
+      depth_cm: 77
+      height_cm: 75
+    materials:
+      upholstery:
+        material_type: leather
+        structure: top_grain_leather
+        fabric_family: Marche Leather
+        color: Graphite
+      frame:
+        structure: solid_wood
+      leg:
+        structure: solid_rubber_wood
+        finish: Black Wood
+    finish:
+      color_finish: Graphite
+      surface_finish: Marche Leather
+      finish_color: marche_graphite_leather
+      leg_finish: black
+  - variant: Solange Leather Chair / Marche Leather, Cocoa / White Wash Wood Legs
+    sku: 54000196C-LE4023
+    size_label: 68x77
+    finish_code: marche_cocoa_leather_white_wash_legs
+    finish_label: Cocoa / White Wash Wood Legs
+    upholstery_code: marche_cocoa_leather
+    upholstery_label: Marche Leather, Cocoa
+    leg_finish_code: white_wash
+    leg_finish_label: White Wash Wood
+    model_asset_id: armchair-real-castlery-solange-performance-boucle-chair-white-wash-legs
+    model_url: /assets/models/armchair-real-castlery-solange-performance-boucle-chair-white-wash-legs.glb
+    thumbnail_url: https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1773908180/crusader/variants/54000196C-LE4023/Solange-Chair-Marche-Cocoa-White-Wash-Angle-1773908178.jpg
+    gallery_images:
+      - https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1773908180/crusader/variants/54000196C-LE4023/Solange-Chair-Marche-Cocoa-White-Wash-Angle-1773908178.jpg
+    swatch_group: upholstery_option
+    swatch_hex: "#7b4f3a"
+    swatch_image_url: https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1741163167/crusader/variants/LE-4023/Cocoa_Swatch-1741163165.jpg
+    color_family: brown
+    tone: warm
+    collection_type: custom_leather
+    price_usd: 799
+    price_band: mid
+    brand_tier: premium_mid
+    available: true
+    affiliate_url: https://www.castlery.com/sg/products/solange-leather-chair?quantity=single&leg_color=white_wash&material=marche_cocoa
+    purchase_options:
+      - id: single
+        label: Single
+        quantity: 1
+        sku: 54000196C-LE4023
+        price_usd: 799
+        affiliate_url: https://www.castlery.com/sg/products/solange-leather-chair?quantity=single&leg_color=white_wash&material=marche_cocoa
+        available: true
+    dimensions:
+      width_cm: 68
+      depth_cm: 77
+      height_cm: 75
+    materials:
+      upholstery:
+        material_type: leather
+        structure: top_grain_leather
+        fabric_family: Marche Leather
+        color: Cocoa
+      frame:
+        structure: solid_wood
+      leg:
+        structure: solid_rubber_wood
+        finish: White Wash Wood
+    finish:
+      color_finish: Cocoa
+      surface_finish: Marche Leather
+      finish_color: marche_cocoa_leather
+      leg_finish: white_wash
+  - variant: Solange Leather Chair / Marche Leather, Cocoa / Black Wood Legs
+    sku: 54000197C-LE4023
+    size_label: 68x77
+    finish_code: marche_cocoa_leather_black_legs
+    finish_label: Cocoa / Black Wood Legs
+    upholstery_code: marche_cocoa_leather
+    upholstery_label: Marche Leather, Cocoa
+    leg_finish_code: black
+    leg_finish_label: Black Wood
+    model_asset_id: armchair-real-castlery-solange-performance-boucle-chair-black-legs
+    model_url: /assets/models/armchair-real-castlery-solange-performance-boucle-chair-black-legs.glb
+    thumbnail_url: https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1773908264/crusader/variants/54000197C-LE4023/Solange-Chair-Marche-Cocoa-Black-Wash-Angle-1773908261.jpg
+    gallery_images:
+      - https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1773908264/crusader/variants/54000197C-LE4023/Solange-Chair-Marche-Cocoa-Black-Wash-Angle-1773908261.jpg
+    swatch_group: upholstery_option
+    swatch_hex: "#7b4f3a"
+    swatch_image_url: https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,b_rgb:FFFFFF,c_fit/v1741163167/crusader/variants/LE-4023/Cocoa_Swatch-1741163165.jpg
+    color_family: brown
+    tone: warm
+    collection_type: custom_leather
+    price_usd: 799
+    price_band: mid
+    brand_tier: premium_mid
+    available: true
+    affiliate_url: https://www.castlery.com/sg/products/solange-leather-chair?quantity=single&leg_color=black&material=marche_cocoa
+    purchase_options:
+      - id: single
+        label: Single
+        quantity: 1
+        sku: 54000197C-LE4023
+        price_usd: 799
+        affiliate_url: https://www.castlery.com/sg/products/solange-leather-chair?quantity=single&leg_color=black&material=marche_cocoa
+        available: true
+    dimensions:
+      width_cm: 68
+      depth_cm: 77
+      height_cm: 75
+    materials:
+      upholstery:
+        material_type: leather
+        structure: top_grain_leather
+        fabric_family: Marche Leather
+        color: Cocoa
+      frame:
+        structure: solid_wood
+      leg:
+        structure: solid_rubber_wood
+        finish: Black Wood
+    finish:
+      color_finish: Cocoa
+      surface_finish: Marche Leather
+      finish_color: marche_cocoa_leather
+      leg_finish: black

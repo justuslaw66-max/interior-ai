@@ -1,0 +1,83 @@
+# Exact-artifact Vercel release workflow
+
+Repository-controlled local production-mode evidence is defined in
+`docs/qa/production-artifact-evidence.md`. It is a required artifact/build/start
+integrity input, not proof of Vercel execution. The workflow below is the
+separately authorized external deployment path.
+
+This workflow makes `.vercel/output` the immutable release artifact. It follows
+Vercel's Build Output API flow: pull production settings, build once, hash the
+output, stage that prebuilt output without assigning production domains, run
+Gate A3 against the staged URL, and promote the already-tested deployment.
+
+## Preconditions
+
+- Use a clean, committed candidate checkout with Git LFS assets materialized.
+- Non-ignored untracked files and ignored files outside the explicit generated
+  roots (`.next`, `.vercel`, `node_modules`, and generated Prisma output) are
+  part of the clean-source check. Root `.env*`, private/local evidence, editor,
+  test-fixture, and other ignored inputs are rejected. Vercel-pulled settings
+  remain an external input under `.vercel` and require separate platform review.
+- Configure the linked Vercel project and authenticate the pinned local CLI.
+- Provision a dedicated Gate A3 PostgreSQL database. Never point destructive or
+  fixture-writing tests at customer or production data.
+- Production-environment certification must use production-safe test accounts
+  and isolation. If the staged deployment cannot safely run the full Gate A3
+  suite, do not certify or promote it.
+
+## Local database
+
+```sh
+GATE_A3_DATABASE_URL='postgresql://user@127.0.0.1:5432/interior_ai_gate_a3_rc2' \
+  npm run gate:a3:db
+```
+
+The provisioner refuses generic database names and remote hosts by default,
+creates the database if needed, deploys all Prisma migrations, and verifies the
+applied migration count. A dedicated remote test database additionally requires
+`GATE_A3_ALLOW_REMOTE_DATABASE=1`.
+
+## Build and stage once
+
+```sh
+npm run release:vercel:pull
+npm run release:vercel:build
+npm run release:vercel:verify
+npm run release:vercel:stage
+```
+
+`release:vercel:build` writes `.vercel/output` and a sibling manifest at
+`.vercel/prebuilt-manifest.json`. The manifest is outside the upload root, so
+hashing does not mutate the artifact. Staging verifies the hash and uploads only
+that output via `vercel deploy --prebuilt --prod --skip-domain`.
+
+## Certify and promote
+
+Run the canonical required-test wrapper against the HTTPS URL recorded in
+`.vercel/staged-deployment.json`. Supply the verified prebuilt artifact SHA-256;
+the wrapper deletes stale output, preserves the Playwright process status, and
+binds the full checked-in spec inventory plus its JSON report to the source and
+artifact. Then bind that evidence to the deployment:
+
+```sh
+PLAYWRIGHT_RELEASE_BASE_URL='https://staged.example.vercel.app' \
+REQUIRED_TEST_ARTIFACT_SHA256='<sha256 from .vercel/prebuilt-manifest.json>' \
+  npm run test:e2e:release
+
+GATE_A3_CERTIFIED_DEPLOYMENT_URL='https://staged.example.vercel.app' \
+  npm run release:vercel:certify -- \
+  .vercel/gate-a3-required-test-evidence.json
+
+npm run release:vercel:promote
+```
+
+Certification rejects a nonzero test process, focus/filter/shard execution,
+missing required specs/projects, skips, retries, flakes, failures, annotations,
+not-run tests, aggregate/per-test disagreement, stale or malformed evidence,
+dirty release source, and source/artifact/URL mismatch. Promotion re-hashes
+`.vercel/output`, re-reads and hashes the recorded required-test envelope,
+revalidates its current report and freshness, and requires the manifest, staged
+deployment, certification, envelope, and report to identify the same source,
+artifact, and deployment URL. Editing or substituting only the certification
+JSON cannot bypass this check. Do not run `vercel deploy` again between
+certification and promotion.

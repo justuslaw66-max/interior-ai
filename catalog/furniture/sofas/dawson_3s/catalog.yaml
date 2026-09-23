@@ -246,6 +246,7 @@ variants:
   - variant: "Dawson 3 Seater Sofa / Slub Linen Weave (Navagio), Cream (Beach Linen)"
     size_label: "228x114"
     upholstery_code: "beach_linen"
+    affiliate_url: "https://www.castlery.com/sg/products/dawson-3-seater-sofa?frame_cover=removable&material=beach_linen"
     upholstery_label: "Slub Linen Weave (Navagio), Cream (Beach Linen)"
     thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1634716861/crusader/variants/T50440986-NG4001/Dawson-3-Seater-Sofa-Beach-Linen-Front.jpg"
     gallery_images:
@@ -268,6 +269,7 @@ variants:
   - variant: "Dawson 3 Seater Sofa / Slub Linen Weave (Navagio), Medium Grey (Seagull)"
     size_label: "228x114"
     upholstery_code: "navagio_seagull"
+    affiliate_url: "https://www.castlery.com/sg/products/dawson-3-seater-sofa?frame_cover=removable&material=seagull"
     upholstery_label: "Slub Linen Weave (Navagio), Medium Grey (Seagull)"
     thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1697614106/crusader/variants/AS-000374-NG4002/Dawson-3-Seater-Sofa-Seagull-Front-1697614103.jpg"
     gallery_images:
@@ -292,6 +294,7 @@ variants:
   - variant: "Dawson 3 Seater Sofa / Performance Creamy White"
     size_label: "228x114"
     upholstery_code: "performance_creamy_white"
+    affiliate_url: "https://www.castlery.com/sg/products/dawson-3-seater-sofa?frame_cover=removable&material=twill_performance_creamy_white"
     upholstery_label: "Performance Creamy White"
     thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1731313137/crusader/variants/AS-000374C-PT4001/Dawson-3-Seater-Sofa-Creamy-White-Front-1731313134.jpg"
     gallery_images:
@@ -309,6 +312,7 @@ variants:
   - variant: "Dawson 3 Seater Sofa / Performance Textured Plain Weave (Marcel), Cream (Brilliant White)"
     size_label: "228x114"
     upholstery_code: "marcel_brilliant_white"
+    affiliate_url: "https://www.castlery.com/sg/products/dawson-3-seater-sofa?frame_cover=removable&material=performance_brilliant_white"
     upholstery_label: "Performance Textured Plain Weave (Marcel), Cream (Brilliant White)"
     thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1731313178/crusader/variants/AS-000374C-PM4002/Dawson-3-Seater-Sofa-Brilliant-White-Front-1731313175.jpg"
     gallery_images:
@@ -326,6 +330,7 @@ variants:
   - variant: "Dawson 3 Seater Sofa / Performance Fleece (Peyton), Ivory (Cream)"
     size_label: "228x114"
     upholstery_code: "peyton_ivory"
+    affiliate_url: "https://www.castlery.com/sg/products/dawson-3-seater-sofa?frame_cover=removable&material=performance_ivory"
     upholstery_label: "Performance Fleece (Peyton), Ivory (Cream)"
     thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1730946379/crusader/variants/AS-000374C-PY4001/Dawson-3-Seater-Sofa-Ivory-Front-1730946377.jpg"
     gallery_images:
@@ -343,6 +348,7 @@ variants:
   - variant: "Dawson 3 Seater Sofa / Performance Fleece (Peyton), Medium Grey (Dove Grey)"
     size_label: "228x114"
     upholstery_code: "peyton_dove_grey"
+    affiliate_url: "https://www.castlery.com/sg/products/dawson-3-seater-sofa?frame_cover=removable&material=performance_dove_grey"
     upholstery_label: "Performance Fleece (Peyton), Medium Grey (Dove Grey)"
     thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1730946413/crusader/variants/AS-000374C-PY4002/Dawson-3-Seater-Sofa-Dove-Grey-Front-1730946410.jpg"
     gallery_images:
@@ -360,6 +366,7 @@ variants:
   - variant: "Dawson 3 Seater Sofa / Performance Textured Plain Weave (Marcel), Smoke Grey"
     size_label: "228x114"
     upholstery_code: "marcel_smoke_grey"
+    affiliate_url: "https://www.castlery.com/sg/products/dawson-3-seater-sofa?frame_cover=removable&material=performance_smoke_grey"
     upholstery_label: "Performance Textured Plain Weave (Marcel), Smoke Grey"
     thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1731313159/crusader/variants/AS-000374C-PM4001/Dawson-3-Seater-Sofa-Smoke-Grey-Front-1731313156.jpg"
     gallery_images:
@@ -377,6 +384,7 @@ variants:
   - variant: "Dawson 3 Seater Sofa / Performance Fleece (Peyton), Moss"
     size_label: "228x114"
     upholstery_code: "peyton_moss"
+    affiliate_url: "https://www.castlery.com/sg/products/dawson-3-seater-sofa?frame_cover=removable&material=performance_moss"
     upholstery_label: "Performance Fleece (Peyton), Moss"
     thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1730946446/crusader/variants/AS-000374C-PY4003/Dawson-3-Seater-Sofa-Moss-Front-1730946444.jpg"
     gallery_images:
@@ -394,6 +402,7 @@ variants:
   - variant: "Dawson 3 Seater Sofa / Performance Fleece (Peyton), Caramel (Cumin)"
     size_label: "228x114"
     upholstery_code: "peyton_cumin"
+    affiliate_url: "https://www.castlery.com/sg/products/dawson-3-seater-sofa?frame_cover=removable&material=performance_cumin"
     upholstery_label: "Performance Fleece (Peyton), Caramel (Cumin)"
     thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1730946570/crusader/variants/AS-000374C-PY4004/Dawson-3-Seater-Sofa-Cumin-Front-1730946567.jpg"
     gallery_images:
@@ -411,6 +420,7 @@ variants:
   - variant: "Dawson 3 Seater Sofa / Performance Infinity Boucle, Rust (Ginger)"
     size_label: "228x114"
     upholstery_code: "infinity_boucle_ginger"
+    affiliate_url: "https://www.castlery.com/sg/products/dawson-3-seater-sofa?frame_cover=removable&material=performance_ginger"
     upholstery_label: "Performance Infinity Boucle, Rust (Ginger)"
     thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1731313112/crusader/variants/AS-000374C-IN4003/Dawson-3-Seater-Sofa-Ginger-Front-1731313109.jpg"
     gallery_images:
@@ -428,6 +438,7 @@ variants:
   - variant: "Dawson 3 Seater Sofa / Performance Infinity Boucle, Light Grey (White Quartz)"
     size_label: "228x114"
     upholstery_code: "infinity_boucle_white_quartz"
+    affiliate_url: "https://www.castlery.com/sg/products/dawson-3-seater-sofa?frame_cover=removable&material=performance_white_quartz_boucle_new"
     upholstery_label: "Performance Infinity Boucle, Light Grey (White Quartz)"
     thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1731313073/crusader/variants/AS-000374C-IN4002/Dawson-3-Seater-Sofa-White-Quartz-Front-1731313071.jpg"
     gallery_images:
@@ -446,6 +457,7 @@ variants:
   - variant: "Dawson 3 Seater Sofa / Performance Infinity Boucle, Cream"
     size_label: "228x114"
     upholstery_code: "performance_boucle_cream"
+    affiliate_url: "https://www.castlery.com/sg/products/dawson-3-seater-sofa?frame_cover=removable&material=performance_boucle_cream"
     upholstery_label: "Performance Infinity Boucle, Cream"
     thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1773903244/crusader/variants/AS-000374C-IN4005/Dawson-3-Seater-Sofa-Cream-Front-1773903241.jpg"
     gallery_images:
@@ -464,6 +476,7 @@ variants:
   - variant: "Dawson 3 Seater Sofa / Performance Infinity Boucle, Moss"
     size_label: "228x114"
     upholstery_code: "performance_infinity_boucle_moss"
+    affiliate_url: "https://www.castlery.com/sg/products/dawson-3-seater-sofa?frame_cover=removable&material=performance_infinity_boucle_moss"
     upholstery_label: "Performance Infinity Boucle, Moss"
     thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1774246106/crusader/variants/AS-000374C-IN4004/Dawson-3-Seater-Sofa-Moss-Front-1774246103.jpg"
     gallery_images:
@@ -482,6 +495,7 @@ variants:
   - variant: "Dawson 3 Seater Sofa / Performance Twill, Pearl Beige"
     size_label: "228x114"
     upholstery_code: "performance_twill_pearl_beige"
+    affiliate_url: "https://www.castlery.com/sg/products/dawson-3-seater-sofa?frame_cover=removable&material=performance_twill_pearl_beige"
     upholstery_label: "Performance Twill, Pearl Beige"
     thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1773900669/crusader/variants/AS-000374C-PT4002/Dawson-3-Seater-Sofa-Performance-Twill-Pearl-Beige-Front-1773900666.jpg"
     gallery_images:
@@ -500,6 +514,7 @@ variants:
   - variant: "Dawson 3 Seater Sofa / Performance Twill, Slate"
     size_label: "228x114"
     upholstery_code: "performance_twill_slate"
+    affiliate_url: "https://www.castlery.com/sg/products/dawson-3-seater-sofa?frame_cover=removable&material=performance_twill_slate"
     upholstery_label: "Performance Twill, Slate"
     thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1773900741/crusader/variants/AS-000374C-PT4003/Dawson-3-Seater-Sofa-Performance-Twill-Slate-Front-1773900738.jpg"
     gallery_images:
@@ -518,6 +533,7 @@ variants:
   - variant: "Dawson 3 Seater Sofa / Performance Twill, Moss"
     size_label: "228x114"
     upholstery_code: "performance_twill_moss"
+    affiliate_url: "https://www.castlery.com/sg/products/dawson-3-seater-sofa?frame_cover=removable&material=performance_twill_moss"
     upholstery_label: "Performance Twill, Moss"
     thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1773900767/crusader/variants/AS-000374C-PT4004/Dawson-3-Seater-Sofa-Performance-Twill-Moss-Front-1773900764.jpg"
     gallery_images:
@@ -536,6 +552,7 @@ variants:
   - variant: "Dawson 3 Seater Sofa / Performance Twill, Medium Grey"
     size_label: "228x114"
     upholstery_code: "performance_twill_dove_grey"
+    affiliate_url: "https://www.castlery.com/sg/products/dawson-3-seater-sofa?frame_cover=removable&material=performance_twill_dove_grey"
     upholstery_label: "Performance Twill, Medium Grey"
     thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1773900782/crusader/variants/AS-000374C-PT4005/Dawson-3-Seater-Sofa-Performance-Twill-Dove-Grey-Front-1773900779.jpg"
     gallery_images:
@@ -554,6 +571,7 @@ variants:
   - variant: "Dawson 3 Seater Sofa / Performance Linen Weave (Genova), Sand (Oat)"
     size_label: "228x114"
     upholstery_code: "performance_genova_oat"
+    affiliate_url: "https://www.castlery.com/sg/products/dawson-3-seater-sofa?frame_cover=removable&material=performance_genova_oat"
     upholstery_label: "Performance Linen Weave (Genova), Sand (Oat)"
     thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1773911115/crusader/variants/AS-000374C-PG4002/Dawson-3-Seater-Sofa-Performance-Genova-Oat-Front-1773911112.jpg"
     gallery_images:
@@ -572,6 +590,7 @@ variants:
   - variant: "Dawson 3 Seater Sofa / Performance Linen Weave (Genova), Cream"
     size_label: "228x114"
     upholstery_code: "performance_linen_weave_cream"
+    affiliate_url: "https://www.castlery.com/sg/products/dawson-3-seater-sofa?frame_cover=removable&material=performance_linen_weave_cream"
     upholstery_label: "Performance Linen Weave (Genova), Cream"
     thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1773911135/crusader/variants/AS-000374C-PG4003/Dawson-3-Seater-Sofa-Cream-Front-1773911132.jpg"
     gallery_images:
@@ -590,6 +609,7 @@ variants:
   - variant: "Dawson 3 Seater Sofa / Performance Linen Weave (Genova), Light Grey"
     size_label: "228x114"
     upholstery_code: "performance_linen_weave_light_grey"
+    affiliate_url: "https://www.castlery.com/sg/products/dawson-3-seater-sofa?frame_cover=removable&material=performance_linen_weave_light_grey"
     upholstery_label: "Performance Linen Weave (Genova), Light Grey"
     thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1773911148/crusader/variants/AS-000374C-PG4004/Dawson-3-Seater-Sofa-Light-Grey-Front-1773911145.jpg"
     gallery_images:
@@ -608,6 +628,7 @@ variants:
   - variant: "Dawson 3 Seater Sofa / Washed Chenille, Cream"
     size_label: "228x114"
     upholstery_code: "greta_ivory"
+    affiliate_url: "https://www.castlery.com/sg/products/dawson-3-seater-sofa?frame_cover=removable&material=greta_ivory"
     upholstery_label: "Washed Chenille, Cream"
     thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1774246163/crusader/variants/AS-000374C-GR4001/Dawson-3-Seater-Sofa-Cream-Front-1774246160.jpg"
     gallery_images:
@@ -626,6 +647,7 @@ variants:
   - variant: "Dawson 3 Seater Sofa / Washed Chenille, Sand"
     size_label: "228x114"
     upholstery_code: "washed_chenille_sand"
+    affiliate_url: "https://www.castlery.com/sg/products/dawson-3-seater-sofa?frame_cover=removable&material=washed_chenille_sand"
     upholstery_label: "Washed Chenille, Sand"
     thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1774246184/crusader/variants/AS-000374C-GR4002/Dawson-3-Seater-Sofa-Sand-Front-1774246181.jpg"
     gallery_images:
@@ -644,6 +666,7 @@ variants:
   - variant: "Dawson 3 Seater Sofa / Washed Chenille, Caramel"
     size_label: "228x114"
     upholstery_code: "greta_mustard_brown"
+    affiliate_url: "https://www.castlery.com/sg/products/dawson-3-seater-sofa?frame_cover=removable&material=greta_mustard_brown"
     upholstery_label: "Washed Chenille, Caramel"
     thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1774246197/crusader/variants/AS-000374C-GR4003/Dawson-3-Seater-Sofa-Caramel-Front-1774246194.jpg"
     gallery_images:
@@ -662,6 +685,7 @@ variants:
   - variant: "Dawson 3 Seater Sofa / Washed Chenille, Moss"
     size_label: "228x114"
     upholstery_code: "greta_moss"
+    affiliate_url: "https://www.castlery.com/sg/products/dawson-3-seater-sofa?frame_cover=removable&material=greta_moss"
     upholstery_label: "Washed Chenille, Moss"
     thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1774246216/crusader/variants/AS-000374C-GR4004/Dawson-3-Seater-Sofa-Moss-Front-1774246214.jpg"
     gallery_images:
@@ -680,6 +704,7 @@ variants:
   - variant: "Dawson 3 Seater Sofa / Cocoa (Leather)"
     size_label: "228x114"
     upholstery_code: "cocoa_leather"
+    affiliate_url: "https://www.castlery.com/sg/products/dawson-leather-3-seater-sofa?material=cocoa"
     upholstery_label: "Cocoa (Leather)"
     finish_code: "cocoa_leather"
     finish_label: "Cocoa (Leather)"
@@ -705,6 +730,7 @@ variants:
   - variant: "Dawson 3 Seater Sofa / Caramel (Leather)"
     size_label: "228x114"
     upholstery_code: "caramel_leather"
+    affiliate_url: "https://www.castlery.com/sg/products/dawson-leather-3-seater-sofa?material=caramel"
     upholstery_label: "Caramel (Leather)"
     finish_code: "caramel_leather"
     finish_label: "Caramel (Leather)"
@@ -725,6 +751,7 @@ variants:
   - variant: "Dawson 3 Seater Sofa / Warm Taupe (Leather)"
     size_label: "228x114"
     upholstery_code: "warm_taupe_leather"
+    affiliate_url: "https://www.castlery.com/sg/products/dawson-leather-3-seater-sofa?material=warm_taupe"
     upholstery_label: "Warm Taupe (Leather)"
     finish_code: "warm_taupe_leather"
     finish_label: "Warm Taupe (Leather)"
@@ -745,6 +772,7 @@ variants:
   - variant: "Dawson 3 Seater Sofa / Marche Ivory (Leather)"
     size_label: "228x114"
     upholstery_code: "marche_ivory_leather"
+    affiliate_url: "https://www.castlery.com/sg/products/dawson-leather-3-seater-sofa?material=marche_Ivory"
     upholstery_label: "Marche Ivory (Leather)"
     finish_code: "marche_ivory_leather"
     finish_label: "Marche Ivory (Leather)"
@@ -765,6 +793,7 @@ variants:
   - variant: "Dawson 3 Seater Sofa / Marche Graphite (Leather)"
     size_label: "228x114"
     upholstery_code: "marche_graphite_leather"
+    affiliate_url: "https://www.castlery.com/sg/products/dawson-leather-3-seater-sofa?material=marche_graphite"
     upholstery_label: "Marche Graphite (Leather)"
     finish_code: "marche_graphite_leather"
     finish_label: "Marche Graphite (Leather)"
@@ -786,6 +815,7 @@ variants:
   - variant: "Dawson 3 Seater Sofa / Marche Cocoa (Leather)"
     size_label: "228x114"
     upholstery_code: "marche_cocoa_leather"
+    affiliate_url: "https://www.castlery.com/sg/products/dawson-leather-3-seater-sofa?material=marche_cocoa"
     upholstery_label: "Marche Cocoa (Leather)"
     finish_code: "marche_cocoa_leather"
     finish_label: "Marche Cocoa (Leather)"

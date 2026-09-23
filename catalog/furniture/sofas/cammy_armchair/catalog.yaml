@@ -1,0 +1,377 @@
+status: "published"
+brand: "Castlery"
+retailer: "Castlery Singapore"
+source_url: "https://www.castlery.com/sg/products/cammy-armchair"
+category: "armchair"
+
+product_family: "Cammy"
+product_name: "Cammy Armchair"
+slug: "castlery-cammy-armchair"
+variant: "Armchair / Pine Green Fabric"
+
+price_usd: 449
+price_band: "mid"
+brand_tier: "premium_mid"
+
+design_zone: "living_zone"
+anchor_role: "secondary"
+
+dimensions:
+  width_cm: 75.5
+  depth_cm: 72.5
+  height_cm: 88
+
+seat_capacity: 1
+size_class: "medium"
+shape: "rectangular"
+base_type: "legged"
+
+material_family: "upholstered"
+material_mix: "upholstered_metal_wood"
+material_mix_components:
+  - "solid_wood"
+  - "metal"
+  - "fabric"
+  - "foam"
+
+materials:
+  frame:
+    structure: "solid_wood"
+  leg:
+    structure: "metal"
+  upholstery:
+    material_type: "fabric"
+    label: "Tweed Collection, Pine Green"
+    composition: "100% polyester"
+
+color_family: "green"
+tone: "cool"
+
+style_cluster: "contemporary"
+style_secondary: "modern"
+design_era: "contemporary"
+
+visual_attributes:
+  visual_weight: "medium"
+  edge_profile: "angular"
+  silhouette: "tailored_armchair"
+  form_language: "structured"
+  descriptors:
+    - "angular_frame"
+    - "supportive_backrest"
+    - "lumbar_cushion"
+    - "slim_metal_legs"
+
+spatial_attributes:
+  footprint_shape: "rectangular"
+  walkway_clearance_cm: 60
+  descriptors:
+    - "compact_lounge_chair"
+    - "reading_corner_suitable"
+    - "living_room_accent"
+
+room_compatibility:
+  - "living_room"
+  - "family_room"
+  - "bedroom"
+  - "open_plan"
+
+placement_rules:
+  floor_only: true
+  wall_snappable: false
+  clearance_sensitive: true
+  center_room_preferred: false
+  floating_layout_supported: true
+  recommended_in_front_of:
+    - "side_table"
+    - "floor_lamp"
+    - "rug"
+  clearance_guidance:
+    chair_to_table_cm_min: 20
+    circulation_cm_min: 60
+
+design_pairings:
+  - "side_table"
+  - "floor_lamp"
+  - "rug"
+  - "sofa"
+  - "coffee_table"
+
+bundle_metadata:
+  bundle_role: "accent"
+  can_bundle_with:
+    - "side_table"
+    - "floor_lamp"
+    - "rug"
+    - "sofa"
+  set_behavior:
+    supports_reading_corner_pairing: true
+    supports_living_room_pairing: true
+
+authoring_notes:
+  category_confidence: "high"
+  source_checked: "Castlery Singapore product page, 2026-06-19"
+  source_url: "https://www.castlery.com/sg/products/cammy-armchair"
+  note: "Cammy Armchair import. The local GLB is the Pine Green fabric version and is not Draco-compressed. The Castlery SG page exposes Pine Green and Mustard single-chair variants plus official set-of-2 bundle purchase options."
+
+shipping_and_warranty:
+  cancellation: "Free - 5 working days before delivery"
+  warranty: "Frame 10 years; Fabric 1 year; Foam 2 years"
+  return_policy: "30-day returns"
+
+product_details:
+  material:
+    - label: "Frame"
+      value: "Solid wood"
+    - label: "Leg frame"
+      value: "Metal"
+    - label: "Filling"
+      value: "Foam"
+    - label: "Care"
+      value: "Fabric sofa, metal legs"
+    - label: "Suspension"
+      value: "Webbing"
+    - label: "Material & safety standards"
+      value: "Formaldehyde safe"
+    - label: "Fabric composition"
+      value: "100% polyester"
+    - label: "Fabric collection"
+      value: "Tweed Collection"
+  dimensions:
+    - label: "Dimension"
+      value: "W75.5 x D72.5 x H88cm"
+    - label: "Seating depth"
+      value: "45cm"
+    - label: "Seatable width"
+      value: "52cm"
+    - label: "Seating height"
+      value: "44cm"
+    - label: "Leg height"
+      value: "26cm"
+    - label: "Product weight"
+      value: "18.6kg"
+    - label: "Packaging dimensions"
+      value: "1 box"
+    - label: "Max bearing support"
+      value: "150kg"
+  delivery_and_warranty:
+    - label: "Cancellation"
+      value: "Free - 5 working days before delivery"
+    - label: "Warranty"
+      value: "Frame 10 years; Fabric 1 year; Foam 2 years"
+    - label: "Return policy"
+      value: "30-day returns"
+
+product_details_by_material_type:
+  fabric:
+    material:
+      - label: "Frame"
+        value: "Solid wood"
+      - label: "Leg frame"
+        value: "Metal"
+      - label: "Filling"
+        value: "Foam"
+      - label: "Care"
+        value: "Fabric sofa, metal legs"
+      - label: "Suspension"
+        value: "Webbing"
+      - label: "Material & safety standards"
+        value: "Formaldehyde safe"
+      - label: "Fabric composition"
+        value: "100% polyester"
+      - label: "Fabric collection"
+        value: "Tweed Collection"
+    dimensions:
+      - label: "Dimension"
+        value: "W75.5 x D72.5 x H88cm"
+      - label: "Seating depth"
+        value: "45cm"
+      - label: "Seatable width"
+        value: "52cm"
+      - label: "Seating height"
+        value: "44cm"
+      - label: "Leg height"
+        value: "26cm"
+      - label: "Product weight"
+        value: "18.6kg"
+      - label: "Packaging dimensions"
+        value: "1 box"
+      - label: "Max bearing support"
+        value: "150kg"
+    delivery_and_warranty:
+      - label: "Cancellation"
+        value: "Free - 5 working days before delivery"
+      - label: "Warranty"
+        value: "Frame 10 years; Fabric 1 year; Foam 2 years"
+      - label: "Return policy"
+        value: "30-day returns"
+
+comfort_profile:
+  seat_comfort:
+    label: "Supportive"
+    value: 3
+    min_label: "Relaxed"
+    max_label: "Upright"
+  seat_depth:
+    label: "Medium"
+    value: 3
+    min_label: "Shallow"
+    max_label: "Deep"
+  seat_height:
+    label: "Standard"
+    value: 3
+    min_label: "Low"
+    max_label: "High"
+  seat_softness:
+    label: "Balanced"
+    value: 3
+    min_label: "Soft"
+    max_label: "Firm"
+
+assets:
+  asset_id: "armchair-real-castlery-cammy-armchair"
+  model_url: "/assets/models/armchair-real-castlery-cammy-armchair.glb"
+  thumbnail_url: "https://res.cloudinary.com/castlery/image/private/w_1000,f_auto,q_auto,c_fit/v1683185093/crusader/variants/50440514-TW4005/Cammy-Armchair-Pine-Green-Front-1683185090.jpg"
+  gallery_images:
+    - "https://res.cloudinary.com/castlery/image/private/w_1000,f_auto,q_auto,c_fit/v1683185552/crusader/variants/50440514-TW4005/Cammy-Armchair-Pine-Green-Square-Set_1-1683185549.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/w_1000,f_auto,q_auto,c_fit/v1683185511/crusader/variants/50440514-TW4005/Cammy-Armchair-Pine-Green-Square-Set_5-1683185504.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/w_1000,f_auto,q_auto,c_fit/v1683185092/crusader/variants/50440514-TW4005/Cammy-Armchair-Pine-Green-Angle-1683185090.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/w_1000,f_auto,q_auto,c_fit/v1683185093/crusader/variants/50440514-TW4005/Cammy-Armchair-Pine-Green-Front-1683185090.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/w_1000,f_auto,q_auto,c_fit/v1683185092/crusader/variants/50440514-TW4005/Cammy-Armchair-Pine-Green-Side-1683185090.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/w_1000,f_auto,q_auto,c_fit/v1683185093/crusader/variants/50440514-TW4005/Cammy-Armchair-Pine-Green-Back-1683185090.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/w_1000,f_auto,q_auto,c_fit/v1683188193/crusader/variants/T50440514/Cammy-Armchair-Pine-Green-Dim-1683188191.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/w_1000,f_auto,q_auto,c_fit/v1683614113/crusader/variants/50440514-TW4005/Cammy-Armchair-Pine-Green-Det_3-1683614111.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/w_1000,f_auto,q_auto,c_fit/v1683614113/crusader/variants/50440514-TW4005/Cammy-Armchair-Pine-Green-Det_4-1683614111.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/w_1000,f_auto,q_auto,c_fit/v1683614113/crusader/variants/50440514-TW4005/Cammy-Armchair-Pine-Green-Det_5-1683614111.jpg"
+
+ai_flags:
+  isStarterEligible: true
+  isAiPlacementEligible: true
+  isAutoLayoutEligible: true
+
+variants:
+  - variant: "Armchair / Pine Green (Fabric)"
+    sku: "50440514-TW4005"
+    size_label: "75.5x72.5"
+    finish_code: "pine_green_fabric"
+    finish_label: "Pine Green"
+    upholstery_code: "tweed_pine_green"
+    upholstery_label: "Tweed Collection, Pine Green"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/w_1000,f_auto,q_auto,c_fit/v1683185093/crusader/variants/50440514-TW4005/Cammy-Armchair-Pine-Green-Front-1683185090.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/w_1000,f_auto,q_auto,c_fit/v1683185552/crusader/variants/50440514-TW4005/Cammy-Armchair-Pine-Green-Square-Set_1-1683185549.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1000,f_auto,q_auto,c_fit/v1683185511/crusader/variants/50440514-TW4005/Cammy-Armchair-Pine-Green-Square-Set_5-1683185504.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1000,f_auto,q_auto,c_fit/v1683185092/crusader/variants/50440514-TW4005/Cammy-Armchair-Pine-Green-Angle-1683185090.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1000,f_auto,q_auto,c_fit/v1683185093/crusader/variants/50440514-TW4005/Cammy-Armchair-Pine-Green-Front-1683185090.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1000,f_auto,q_auto,c_fit/v1683185092/crusader/variants/50440514-TW4005/Cammy-Armchair-Pine-Green-Side-1683185090.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1000,f_auto,q_auto,c_fit/v1683185093/crusader/variants/50440514-TW4005/Cammy-Armchair-Pine-Green-Back-1683185090.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1000,f_auto,q_auto,c_fit/v1683188193/crusader/variants/T50440514/Cammy-Armchair-Pine-Green-Dim-1683188191.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1000,f_auto,q_auto,c_fit/v1683614113/crusader/variants/50440514-TW4005/Cammy-Armchair-Pine-Green-Det_3-1683614111.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/b_rgb:FFFFFF,c_fit,f_auto,q_auto,w_800/v1683874365/crusader/variants/TW-4005/Cammy-Armchair-Pine-Green-Det_3-1683874365.jpg"
+    swatch_group: "upholstery_option"
+    swatch_hex: "#4f6f5d"
+    swatch_image_url: "https://res.cloudinary.com/castlery/image/private/b_rgb:FFFFFF,c_fit,f_auto,q_auto,w_800/v1683874365/crusader/variants/TW-4005/Cammy-Armchair-Pine-Green-Det_3-1683874365.jpg"
+    color_family: "green"
+    tone: "cool"
+    price_usd: 449
+    price_band: "mid"
+    brand_tier: "premium_mid"
+    affiliate_url: "https://www.castlery.com/sg/products/cammy-armchair?quantity=single&material=pine_green"
+    purchase_options:
+      - id: "single"
+        label: "Single"
+        quantity: 1
+        sku: "50440514-TW4005"
+        affiliate_url: "https://www.castlery.com/sg/products/cammy-armchair?quantity=single&material=pine_green"
+        price_usd: 449
+        available: true
+      - id: "set_of_2"
+        label: "Set of 2"
+        quantity: 2
+        sku: "PB-000083-TW4005"
+        affiliate_url: "https://www.castlery.com/sg/products/cammy-armchair?quantity=set_of_2&material=pine_green"
+        price_usd: 849
+        compare_at_price_usd: 898
+        savings_usd: 49
+        image_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1683186813/crusader/variants/T50440552-TW4005/Cammy-Armchair-Pine-Green-2-Bundle-1683186810.jpg"
+        available: true
+    dimensions: { width_cm: 75.5, depth_cm: 72.5, height_cm: 88 }
+    seat_capacity: 1
+    size_class: "medium"
+    materials:
+      upholstery:
+        material_type: "fabric"
+        structure: "fabric"
+        fabric_family: "Tweed Collection"
+        fabric_label: "Tweed"
+        color: "Pine Green"
+        composition: "100% polyester"
+      frame:
+        structure: "solid_wood"
+      leg:
+        structure: "metal"
+    finish:
+      color_finish: "pine_green"
+      surface_finish: "woven"
+      finish_color: "pine_green_fabric"
+
+  - variant: "Armchair / Mustard (Fabric)"
+    sku: "50440514-TW4004"
+    size_label: "75.5x72.5"
+    finish_code: "mustard_fabric"
+    finish_label: "Mustard"
+    upholstery_code: "tweed_mustard"
+    upholstery_label: "Tweed Collection, Mustard"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/w_1000,f_auto,q_auto,c_fit/v1683182871/crusader/variants/50440514-TW4004/Cammy-Armchair-Mustard-Angle-1683182868.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/w_1000,f_auto,q_auto,c_fit/v1683182871/crusader/variants/50440514-TW4004/Cammy-Armchair-Mustard-Angle-1683182868.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1000,f_auto,q_auto,c_fit/v1683182871/crusader/variants/50440514-TW4004/Cammy-Armchair-Mustard-Side-1683182868.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1000,f_auto,q_auto,c_fit/v1683182872/crusader/variants/50440514-TW4004/Cammy-Armchair-Mustard-Back-1683182868.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_1000,f_auto,q_auto,c_fit/v1683184066/crusader/variants/T50440552-TW4004/Cammy-Armchair-Mustard-2-Bundle-1683184064.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/b_rgb:FFFFFF,c_fit,f_auto,q_auto,w_800/v1683188657/crusader/variants/TW-4004/Cammy-Armchair-Mustard-Det_1-1683188654.jpg"
+    swatch_group: "upholstery_option"
+    swatch_hex: "#b08a37"
+    swatch_image_url: "https://res.cloudinary.com/castlery/image/private/b_rgb:FFFFFF,c_fit,f_auto,q_auto,w_800/v1683188657/crusader/variants/TW-4004/Cammy-Armchair-Mustard-Det_1-1683188654.jpg"
+    color_family: "yellow"
+    tone: "warm"
+    price_usd: 449
+    price_band: "mid"
+    brand_tier: "premium_mid"
+    affiliate_url: "https://www.castlery.com/sg/products/cammy-armchair?quantity=single&material=mustard"
+    purchase_options:
+      - id: "single"
+        label: "Single"
+        quantity: 1
+        sku: "50440514-TW4004"
+        affiliate_url: "https://www.castlery.com/sg/products/cammy-armchair?quantity=single&material=mustard"
+        price_usd: 449
+        available: true
+      - id: "set_of_2"
+        label: "Set of 2"
+        quantity: 2
+        sku: "PB-000083-TW4004"
+        affiliate_url: "https://www.castlery.com/sg/products/cammy-armchair?quantity=set_of_2&material=mustard"
+        price_usd: 849
+        compare_at_price_usd: 898
+        savings_usd: 49
+        image_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1683184066/crusader/variants/T50440552-TW4004/Cammy-Armchair-Mustard-2-Bundle-1683184064.jpg"
+        available: true
+    dimensions: { width_cm: 75.5, depth_cm: 72.5, height_cm: 88 }
+    seat_capacity: 1
+    size_class: "medium"
+    materials:
+      upholstery:
+        material_type: "fabric"
+        structure: "fabric"
+        fabric_family: "Tweed Collection"
+        fabric_label: "Tweed"
+        color: "Mustard"
+        composition: "100% polyester"
+      frame:
+        structure: "solid_wood"
+      leg:
+        structure: "metal"
+    finish:
+      color_finish: "mustard"
+      surface_finish: "woven"
+      finish_color: "mustard_fabric"

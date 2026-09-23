@@ -1,5 +1,9 @@
 import { test, expect } from './fixtures';
-import { openCatalogPreview as openCatalogPreviewShared } from './variant-test-utils';
+import {
+  addCatalogDrawerItemToRoom,
+  openCatalogPreview as openCatalogPreviewShared,
+  openShopPanel,
+} from './variant-test-utils';
 
 test.describe('5. Buy Flow (Shopify + Affiliate)', () => {
   test('add Shopify-mapped item to cart and checkout link works', async ({ page }) => {
@@ -7,20 +11,9 @@ test.describe('5. Buy Flow (Shopify + Affiliate)', () => {
     await page.waitForLoadState('domcontentloaded');
     await page.waitForTimeout(2000);
     
-    // Wait for canvas, but skip if the runtime never renders it.
+    // A required commerce smoke must fail when its runtime prerequisite is absent.
     const sceneCanvas = page.locator('[data-testid="scene-canvas"]');
-    const canvasVisible = await sceneCanvas
-      .waitFor({ state: 'visible', timeout: 15000 })
-      .then(() => true)
-      .catch(() => false);
-
-    if (!canvasVisible) {
-      test.info().annotations.push({
-        type: 'note',
-        description: 'Skipping strict buy smoke because the scene canvas was not visible in this runtime',
-      });
-      return;
-    }
+    await expect(sceneCanvas).toBeVisible({ timeout: 15000 });
     
     // Close UI panels
     await page.keyboard.press('Escape');
@@ -29,17 +22,15 @@ test.describe('5. Buy Flow (Shopify + Affiliate)', () => {
     // Place an item
     const box = await sceneCanvas.boundingBox();
     
-    if (box) {
-      await sceneCanvas.click({ position: { x: box.width * 0.5, y: box.height * 0.5 } });
-      await page.waitForTimeout(1500);
-    }
+    expect(box, 'scene canvas must expose clickable bounds').not.toBeNull();
+    await sceneCanvas.click({ position: { x: box!.width * 0.5, y: box!.height * 0.5 } });
+    await page.waitForTimeout(1500);
     
-    // Verify cart panel, checkout button, or canvas exists
+    // Canvas readiness alone is not commerce evidence.
     const cartPanel = await page.locator('[data-testid="cart-panel"]').isVisible().catch(() => false);
     const checkoutBtn = await page.locator('[data-testid="checkout-shopify"]').isVisible().catch(() => false);
-    
-    // Pass if canvas loaded (app functioning)
-    expect(box !== null || cartPanel || checkoutBtn).toBeTruthy();
+
+    expect(cartPanel || checkoutBtn, 'Shopify-mapped flow must reach buyer controls').toBeTruthy();
   });
 
   test('affiliate checkout works', async ({ page }) => {
@@ -47,20 +38,9 @@ test.describe('5. Buy Flow (Shopify + Affiliate)', () => {
     await page.waitForLoadState('domcontentloaded');
     await page.waitForTimeout(2000);
     
-    // Wait for canvas, but skip if the runtime never renders it.
+    // A required affiliate smoke must fail when its runtime prerequisite is absent.
     const sceneCanvas = page.locator('[data-testid="scene-canvas"]');
-    const canvasVisible = await sceneCanvas
-      .waitFor({ state: 'visible', timeout: 15000 })
-      .then(() => true)
-      .catch(() => false);
-
-    if (!canvasVisible) {
-      test.info().annotations.push({
-        type: 'note',
-        description: 'Skipping strict affiliate buy smoke because the scene canvas was not visible in this runtime',
-      });
-      return;
-    }
+    await expect(sceneCanvas).toBeVisible({ timeout: 15000 });
     
     // Close UI panels
     await page.keyboard.press('Escape');
@@ -69,16 +49,14 @@ test.describe('5. Buy Flow (Shopify + Affiliate)', () => {
     // Place item
     const box = await sceneCanvas.boundingBox();
     
-    if (box) {
-      await sceneCanvas.click({ position: { x: box.width * 0.5, y: box.height * 0.5 } });
-      await page.waitForTimeout(1500);
-    }
+    expect(box, 'scene canvas must expose clickable bounds').not.toBeNull();
+    await sceneCanvas.click({ position: { x: box!.width * 0.5, y: box!.height * 0.5 } });
+    await page.waitForTimeout(1500);
     
     // Find affiliate checkout button
     const affiliateCheckout = await page.locator('[data-testid="checkout-affiliate"]').isVisible().catch(() => false);
     
-    // Verify checkout button exists or is available
-    expect(affiliateCheckout || box).toBeTruthy();
+    expect(affiliateCheckout, 'affiliate flow must expose its checkout control').toBeTruthy();
   });
 
   test('imported catalog item can be added and reaches buyer controls', async ({ page }) => {
@@ -93,31 +71,13 @@ test.describe('5. Buy Flow (Shopify + Affiliate)', () => {
       'Dawson'
     );
 
-    if (!opened) {
-      test.info().annotations.push({
-        type: 'note',
-        description: 'Skipping imported buy smoke because Dawson imported card was not visible in this runtime',
-      });
-      return;
-    }
+    expect(opened, 'Dawson imported card must be available to the required buy flow').toBeTruthy();
 
     const addToRoom = page.getByTestId('catalog-detail-add-to-room');
-    const addToRoomVisible = await expect(addToRoom)
-      .toBeVisible({ timeout: 10000 })
-      .then(() => true)
-      .catch(() => false);
-    if (!addToRoomVisible) {
-      test.info().annotations.push({
-        type: 'note',
-        description: 'Skipping imported buy smoke because add-to-room control was not visible in this runtime',
-      });
-      return;
-    }
-    await addToRoom.click();
+    await expect(addToRoom).toBeVisible({ timeout: 10000 });
+    await addCatalogDrawerItemToRoom(page);
 
-    const shopButton = page.getByTestId('editor-workflow-shop');
-    await expect(shopButton).toBeVisible({ timeout: 10000 });
-    await shopButton.click();
+    await openShopPanel(page);
 
     await expect(page.getByTestId('cart-panel')).toBeVisible({ timeout: 10000 });
 
@@ -131,18 +91,7 @@ test.describe('5. Buy Flow (Shopify + Affiliate)', () => {
       .filter({ hasText: /Dawson Swivel Armchair/i })
       .first();
 
-    const rowVisible = await expect(importedRow)
-      .toBeVisible({ timeout: 10000 })
-      .then(() => true)
-      .catch(() => false);
-
-    if (!rowVisible) {
-      test.info().annotations.push({
-        type: 'note',
-        description: 'Skipping strict imported cart-row assertion because Dawson cart row was not present in this runtime',
-      });
-      return;
-    }
+    await expect(importedRow).toBeVisible({ timeout: 10000 });
 
     const shopifyCheckout = page.getByTestId('checkout-shopify');
     const affiliateCheckout = page.getByTestId('checkout-affiliate');

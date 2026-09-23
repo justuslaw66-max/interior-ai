@@ -1,0 +1,86 @@
+brand: "Castlery"
+status: "draft"
+source_url: "https://www.castlery.com/sg/products/harper-tv-console?length=1_5m&color_option=natural_oak"
+category: "tv_console"
+subcategory: "media_console"
+
+product_family: "Harper"
+product_name: "Harper TV Console"
+variant: "150cm natural oak draft import"
+
+price_usd: 999
+price_band: "mid"
+brand_tier: "premium_mid"
+
+design_zone: "living_zone"
+anchor_role: "media_anchor"
+
+dimensions:
+  width_cm: 150
+  depth_cm: 50
+  height_cm: 66
+
+size_class: "large"
+shape: "rectangular"
+base_type: "frame"
+material_family: "wood"
+color_family: "brown"
+tone: "warm"
+style_cluster: "contemporary"
+
+room_compatibility:
+  - "living_room"
+  - "family_room"
+design_pairings:
+  - "sofa"
+  - "rug"
+  - "side_table"
+
+placement_rules:
+  floor_only: true
+  wall_snappable: true
+  clearance_sensitive: true
+  center_room_preferred: false
+
+materials:
+  body:
+    structure: "wood"
+finish:
+  color_finish: "natural_oak"
+  finish_label: "Natural Oak"
+
+assets:
+  asset_id: "tv-real-castlery-harper-tv-console-150"
+  model_url: "/assets/models/tv-real-castlery-harper-tv-console-150.glb"
+  thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1756453932/crusader/variants/40550348/Harper-TV-Console-150cm-Natural-Front_1-1756453929.jpg"
+
+variants:
+  - variant: "150cm natural oak draft import"
+    finish_code: "natural_oak"
+    finish_label: "Natural Oak"
+    price_usd: 999
+    price_band: "mid"
+    brand_tier: "premium_mid"
+    dimensions:
+      width_cm: 150
+      depth_cm: 50
+      height_cm: 66
+    materials:
+      body:
+        structure: "wood"
+    finish:
+      color_finish: "natural_oak"
+      finish_label: "Natural Oak"
+    color_family: "brown"
+    tone: "warm"
+
+publish_blockers:
+  - "confirm_exact_product_source_url"
+  - "confirm_price_and_variant_metadata"
+  - "confirm_catalog_dimensions_against_supplier_specs"
+  - "confirm_local_model_asset_availability"
+  - "complete_product_details"
+
+notes:
+  - "Draft mapping for an approved imported ModelAsset so governance can track publication readiness."
+  - "Do not publish until product metadata, pricing, dimensions, and local model availability are confirmed."

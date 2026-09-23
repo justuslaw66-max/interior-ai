@@ -1,0 +1,24 @@
+{
+  "version": 2,
+  "title": "Legacy Product Room",
+  "roomBounds": {
+    "width": 5.4,
+    "depth": 4.2,
+    "wallThickness": 0.14,
+    "height": 2.8
+  },
+  "items": [
+    {
+      "instanceId": "legacy-item-001",
+      "productId": "legacy-sofa-001",
+      "variantId": "legacy-sofa-001-oak",
+      "position": [0.25, 0, -0.4],
+      "rotationY": 0.7853981633974483
+    }
+  ],
+  "zones": [],
+  "savedViews": [],
+  "partnerExtension": {
+    "revision": "kept-verbatim"
+  }
+}

@@ -1,0 +1,369 @@
+brand: "Castlery"
+source_url: "https://www.castlery.com/sg/products/seb-bed-with-bedside-table-set"
+category: "bed"
+
+product_family: "Seb"
+product_name: "Seb Bed"
+variant: "Super Single - Performance Creamy White"
+
+price_usd: 849
+compare_at_price_usd: 849
+price_band: "mid_premium"
+brand_tier: "premium_mid"
+
+design_zone: "sleeping_zone"
+anchor_role: "bed_anchor"
+
+dimensions:
+  width_cm: 114
+  depth_cm: 209
+  height_cm: 96
+
+size_class: "medium"
+shape: "rectangular"
+material_family: "mixed"
+material_mix: "acacia_wood_fabric"
+
+color_family: "white"
+tone: "warm"
+
+style_cluster: "midcentury_modern"
+style_secondary: "modern"
+design_era: "contemporary"
+
+visual_attributes:
+  visual_weight: "medium"
+  edge_profile: "rounded"
+  silhouette: "platform"
+  form_language: "mid_century_modern"
+
+spatial_attributes:
+  footprint_shape: "rectangular"
+  walkway_clearance_cm: 90
+  wall_clearance_cm: 0
+
+room_compatibility:
+  - "bedroom"
+
+placement_rules:
+  floor_only: true
+  wall_snappable: true
+  clearance_sensitive: true
+  center_room_preferred: false
+
+design_pairings:
+  - "nightstand"
+  - "table_lamp"
+  - "rug"
+  - "dresser"
+
+product_details:
+  material:
+    - label: "Frame"
+      value: "Solid acacia wood with acacia veneer"
+    - label: "Headboard"
+      value: "Fabric upholstered headboard in Performance Creamy White"
+    - label: "Filling"
+      value: "Foam"
+    - label: "Finish"
+      value: "Muted honey tone and wire brush distressed finish"
+  dimensions:
+    - label: "Super Single dimension"
+      value: "W114 x D209 x H96cm"
+    - label: "Queen dimension"
+      value: "W158.6 x D209 x H96cm"
+    - label: "King dimension"
+      value: "W188.6 x D209 x H96cm"
+    - label: "Bedside table dimension"
+      value: "W40-W56 x D45 x H55cm"
+    - label: "Recommended mattress thickness"
+      value: "30cm"
+    - label: "Slat height"
+      value: "28cm"
+    - label: "Packaging dimensions"
+      value: "3-4 boxes"
+  delivery_and_warranty:
+    - label: "Return policy"
+      value: "30-day returns"
+    - label: "Warranty"
+      value: "10-year limited warranty"
+    - label: "Assembly"
+      value: "Bedframe needs assembly, 2 people required"
+
+assets:
+  asset_id: "bed-real-castlery-seb"
+  model_url: "/assets/models/bed-real-castlery-seb-super-single-performance-creamy-white.glb"
+  thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1766715470/crusader/variants/40550353-PT4001/Seb-Queen-Bed-Performance-Twill-Creamy-White-Front-1766715467.jpg"
+  gallery_images:
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1766715470/crusader/variants/40550353-PT4001/Seb-Queen-Bed-Performance-Twill-Creamy-White-Front-1766715467.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1755569848/crusader/variants/T40550108/Seb-Queen-Bed-Performance-Twill-Creamy-White-Dim-SG-1755569846.jpg"
+
+variants:
+  - variant: "Super Single - Performance Creamy White"
+    size_label: "Super Single"
+    source_sku: "40550352-PT4001"
+    finish_code: "bedframe_performance_creamy_white"
+    finish_label: "Bedframe - Performance Creamy White"
+    swatch_group: "upholstery"
+    swatch_hex: "#e7dfd3"
+    swatch_image_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_800/v1774943787/crusader/variants/PT-4001/PT4001-Performance-Twill-Creamy-White-1774943785.jpg"
+    collection_type: "stocked"
+    model_url: "/assets/models/bed-real-castlery-seb-super-single-performance-creamy-white.glb"
+    affiliate_url: "https://www.castlery.com/sg/products/seb-bed?material=twill_performance_creamy_white&bed_frame_size=super_single"
+    available: true
+    price_usd: 849
+    compare_at_price_usd: 849
+    dimensions: &super_single_dims
+      width_cm: 114
+      depth_cm: 209
+      height_cm: 96
+    size_class: "medium"
+    color_family: "white"
+    tone: "warm"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1766715410/crusader/variants/40550352-PT4001/Seb-Super-Single-Bed-Performance-Twill-Creamy-White-Front-1766715408.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1766715410/crusader/variants/40550352-PT4001/Seb-Super-Single-Bed-Performance-Twill-Creamy-White-Front-1766715408.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1766041184/crusader/variants/T40550108/Seb-Super-Single-Bed-Performance-Twill-Creamy-White-Dim-SG__1_-1766041182.jpg"
+    materials: &seb_creamy_white_materials
+      upholstery:
+        structure: "fabric"
+        surface: "performance_twill"
+      frame:
+        structure: "solid_acacia_wood"
+        surface: "wire_brushed_distressed_finish"
+      headboard:
+        structure: "foam"
+        surface: "upholstered"
+    finish: &seb_creamy_white_finish
+      color_finish: "performance_creamy_white"
+      surface_finish: "performance_twill"
+      finish_color: "performance_creamy_white"
+
+  - variant: "Queen - Performance Creamy White"
+    size_label: "Queen"
+    source_sku: "40550353-PT4001"
+    finish_code: "bedframe_performance_creamy_white"
+    finish_label: "Bedframe - Performance Creamy White"
+    swatch_group: "upholstery"
+    swatch_hex: "#e7dfd3"
+    swatch_image_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_800/v1774943787/crusader/variants/PT-4001/PT4001-Performance-Twill-Creamy-White-1774943785.jpg"
+    collection_type: "stocked"
+    model_url: "/assets/models/bed-real-castlery-seb-queen-performance-creamy-white.glb"
+    affiliate_url: "https://www.castlery.com/sg/products/seb-bed?material=twill_performance_creamy_white&bed_frame_size=queen"
+    available: true
+    price_usd: 999
+    compare_at_price_usd: 999
+    dimensions: &queen_dims
+      width_cm: 158.6
+      depth_cm: 209
+      height_cm: 96
+    size_class: "large"
+    color_family: "white"
+    tone: "warm"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1766715470/crusader/variants/40550353-PT4001/Seb-Queen-Bed-Performance-Twill-Creamy-White-Front-1766715467.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1766715470/crusader/variants/40550353-PT4001/Seb-Queen-Bed-Performance-Twill-Creamy-White-Front-1766715467.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1755569848/crusader/variants/T40550108/Seb-Queen-Bed-Performance-Twill-Creamy-White-Dim-SG-1755569846.jpg"
+    materials: *seb_creamy_white_materials
+    finish: *seb_creamy_white_finish
+
+  - variant: "King - Performance Creamy White"
+    size_label: "King"
+    source_sku: "40550350-PT4001"
+    finish_code: "bedframe_performance_creamy_white"
+    finish_label: "Bedframe - Performance Creamy White"
+    swatch_group: "upholstery"
+    swatch_hex: "#e7dfd3"
+    swatch_image_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_800/v1774943787/crusader/variants/PT-4001/PT4001-Performance-Twill-Creamy-White-1774943785.jpg"
+    collection_type: "stocked"
+    model_url: "/assets/models/bed-real-castlery-seb-king-performance-creamy-white.glb"
+    affiliate_url: "https://www.castlery.com/sg/products/seb-bed?material=twill_performance_creamy_white&bed_frame_size=king"
+    available: true
+    price_usd: 1099
+    compare_at_price_usd: 1099
+    dimensions: &king_dims
+      width_cm: 188.6
+      depth_cm: 209
+      height_cm: 96
+    size_class: "large"
+    color_family: "white"
+    tone: "warm"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1766715560/crusader/variants/40550350-PT4001/Seb-King-Bed-Performance-Twill-Creamy-White-Front-1766715558.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1766715560/crusader/variants/40550350-PT4001/Seb-King-Bed-Performance-Twill-Creamy-White-Front-1766715558.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1755569848/crusader/variants/T40550108/Seb-King-Bed-Performance-Twill-Creamy-White-Dim-SG-1755569846.jpg"
+    materials: *seb_creamy_white_materials
+    finish: *seb_creamy_white_finish
+
+  - variant: "Super Single - 1 Bedside Table - Performance Creamy White"
+    size_label: "Super Single"
+    source_sku: "PB-001800-PT4001"
+    finish_code: "single_table_set_performance_creamy_white"
+    finish_label: "1 bedside table set - Performance Creamy White"
+    swatch_group: "upholstery"
+    swatch_hex: "#e7dfd3"
+    swatch_image_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_800/v1774943787/crusader/variants/PT-4001/PT4001-Performance-Twill-Creamy-White-1774943785.jpg"
+    collection_type: "stocked"
+    model_url: "/assets/models/bed-real-castlery-seb-super-single-single-table-performance-creamy-white.glb"
+    affiliate_url: "https://www.castlery.com/sg/products/seb-bed-with-bedside-table-set?table_qty=single&material=twill_performance_creamy_white&bedside_table=1-drawer&bed_frame_size=super_single"
+    available: true
+    price_usd: 1089
+    compare_at_price_usd: 1148
+    dimensions: &super_single_single_table_dims
+      width_cm: 154
+      depth_cm: 209
+      height_cm: 96
+    size_class: "large"
+    color_family: "white"
+    tone: "warm"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1766715633/crusader/variants/PB-001800-PT4001/Seb-Super-Single-Bed-With-1-Drawer-Bedside-Table-Performance-Twill-Creamy-White-Front-1766715631.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1766715633/crusader/variants/PB-001800-PT4001/Seb-Super-Single-Bed-With-1-Drawer-Bedside-Table-Performance-Twill-Creamy-White-Front-1766715631.jpg"
+    materials: *seb_creamy_white_materials
+    finish: &seb_single_table_finish
+      color_finish: "performance_creamy_white"
+      surface_finish: "performance_twill"
+      finish_color: "single_table_set_performance_creamy_white"
+
+  - variant: "Queen - 1 Bedside Table - Performance Creamy White"
+    size_label: "Queen"
+    source_sku: "PB-001802-PT4001"
+    finish_code: "single_table_set_performance_creamy_white"
+    finish_label: "1 bedside table set - Performance Creamy White"
+    swatch_group: "upholstery"
+    swatch_hex: "#e7dfd3"
+    swatch_image_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_800/v1774943787/crusader/variants/PT-4001/PT4001-Performance-Twill-Creamy-White-1774943785.jpg"
+    collection_type: "stocked"
+    model_url: "/assets/models/bed-real-castlery-seb-queen-single-table-performance-creamy-white.glb"
+    affiliate_url: "https://www.castlery.com/sg/products/seb-bed-with-bedside-table-set?table_qty=single&material=twill_performance_creamy_white&bedside_table=2-drawer&bed_frame_size=queen"
+    available: true
+    price_usd: 1289
+    compare_at_price_usd: 1358
+    dimensions: &queen_single_table_dims
+      width_cm: 198.6
+      depth_cm: 209
+      height_cm: 96
+    size_class: "large"
+    color_family: "white"
+    tone: "warm"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1766715793/crusader/variants/PB-001802-PT4001/Seb-Queen-Bed-With-2-Drawer-Bedside-Table-Performance-Twill-Creamy-White-Front-1766715791.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1766715793/crusader/variants/PB-001802-PT4001/Seb-Queen-Bed-With-2-Drawer-Bedside-Table-Performance-Twill-Creamy-White-Front-1766715791.jpg"
+    materials: *seb_creamy_white_materials
+    finish: *seb_single_table_finish
+
+  - variant: "King - 1 Bedside Table - Performance Creamy White"
+    size_label: "King"
+    source_sku: "PB-001803-PT4001"
+    finish_code: "single_table_set_performance_creamy_white"
+    finish_label: "1 bedside table set - Performance Creamy White"
+    swatch_group: "upholstery"
+    swatch_hex: "#e7dfd3"
+    swatch_image_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_800/v1774943787/crusader/variants/PT-4001/PT4001-Performance-Twill-Creamy-White-1774943785.jpg"
+    collection_type: "stocked"
+    model_url: "/assets/models/bed-real-castlery-seb-king-single-table-performance-creamy-white.glb"
+    affiliate_url: "https://www.castlery.com/sg/products/seb-bed-with-bedside-table-set?table_qty=single&material=twill_performance_creamy_white&bedside_table=2-drawer&bed_frame_size=king"
+    available: true
+    price_usd: 1389
+    compare_at_price_usd: 1458
+    dimensions: &king_single_table_dims
+      width_cm: 244.6
+      depth_cm: 209
+      height_cm: 96
+    size_class: "large"
+    color_family: "white"
+    tone: "warm"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1766715763/crusader/variants/PB-001803-PT4001/Seb-King-Bed-With-2-Drawer-Bedside-Table-Performance-Twill-Creamy-White-Front-1766715761.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1766715763/crusader/variants/PB-001803-PT4001/Seb-King-Bed-With-2-Drawer-Bedside-Table-Performance-Twill-Creamy-White-Front-1766715761.jpg"
+    materials: *seb_creamy_white_materials
+    finish: *seb_single_table_finish
+
+  - variant: "Super Single - 2 Bedside Tables - Performance Creamy White"
+    size_label: "Super Single"
+    source_sku: "PB-001801-PT4001"
+    finish_code: "two_table_set_performance_creamy_white"
+    finish_label: "2 bedside tables set - Performance Creamy White"
+    swatch_group: "upholstery"
+    swatch_hex: "#e7dfd3"
+    swatch_image_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_800/v1774943787/crusader/variants/PT-4001/PT4001-Performance-Twill-Creamy-White-1774943785.jpg"
+    collection_type: "stocked"
+    model_url: "/assets/models/bed-real-castlery-seb-super-single-two-tables-performance-creamy-white.glb"
+    affiliate_url: "https://www.castlery.com/sg/products/seb-bed-with-bedside-table-set?table_qty=set_of_2&material=twill_performance_creamy_white&bedside_table=1-drawer&bed_frame_size=super_single"
+    available: true
+    price_usd: 1379
+    compare_at_price_usd: 1447
+    dimensions: &super_single_two_tables_dims
+      width_cm: 194
+      depth_cm: 209
+      height_cm: 96
+    size_class: "large"
+    color_family: "white"
+    tone: "warm"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1766715672/crusader/variants/PB-001801-PT4001/Seb-Super-Single-Bed-With-2-1-Drawer-Bedside-Table-Performance-Twill-Creamy-White-Front-1766715670.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1766715672/crusader/variants/PB-001801-PT4001/Seb-Super-Single-Bed-With-2-1-Drawer-Bedside-Table-Performance-Twill-Creamy-White-Front-1766715670.jpg"
+    materials: *seb_creamy_white_materials
+    finish: &seb_two_tables_finish
+      color_finish: "performance_creamy_white"
+      surface_finish: "performance_twill"
+      finish_color: "two_table_set_performance_creamy_white"
+
+  - variant: "Queen - 2 Bedside Tables - Performance Creamy White"
+    size_label: "Queen"
+    source_sku: "PB-001804-PT4001"
+    finish_code: "two_table_set_performance_creamy_white"
+    finish_label: "2 bedside tables set - Performance Creamy White"
+    swatch_group: "upholstery"
+    swatch_hex: "#e7dfd3"
+    swatch_image_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_800/v1774943787/crusader/variants/PT-4001/PT4001-Performance-Twill-Creamy-White-1774943785.jpg"
+    collection_type: "stocked"
+    model_url: "/assets/models/bed-real-castlery-seb-queen-two-tables-performance-creamy-white.glb"
+    affiliate_url: "https://www.castlery.com/sg/products/seb-bed-with-bedside-table-set?table_qty=set_of_2&material=twill_performance_creamy_white&bedside_table=2-drawer&bed_frame_size=queen"
+    available: true
+    price_usd: 1629
+    compare_at_price_usd: 1717
+    dimensions: &queen_two_tables_dims
+      width_cm: 238.6
+      depth_cm: 209
+      height_cm: 96
+    size_class: "large"
+    color_family: "white"
+    tone: "warm"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1766715702/crusader/variants/PB-001804-PT4001/Seb-Queen-Bed-With-2-2-Drawer-Bedside-Table-Performance-Twill-Creamy-White-Front-1766715700.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1766715702/crusader/variants/PB-001804-PT4001/Seb-Queen-Bed-With-2-2-Drawer-Bedside-Table-Performance-Twill-Creamy-White-Front-1766715700.jpg"
+    materials: *seb_creamy_white_materials
+    finish: *seb_two_tables_finish
+
+  - variant: "King - 2 Bedside Tables - Performance Creamy White"
+    size_label: "King"
+    source_sku: "PB-001805-PT4001"
+    finish_code: "two_table_set_performance_creamy_white"
+    finish_label: "2 bedside tables set - Performance Creamy White"
+    swatch_group: "upholstery"
+    swatch_hex: "#e7dfd3"
+    swatch_image_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_800/v1774943787/crusader/variants/PT-4001/PT4001-Performance-Twill-Creamy-White-1774943785.jpg"
+    collection_type: "stocked"
+    model_url: "/assets/models/bed-real-castlery-seb-king-two-tables-performance-creamy-white.glb"
+    affiliate_url: "https://www.castlery.com/sg/products/seb-bed-with-bedside-table-set?table_qty=set_of_2&material=twill_performance_creamy_white&bedside_table=2-drawer&bed_frame_size=king"
+    available: true
+    price_usd: 1729
+    compare_at_price_usd: 1817
+    dimensions: &king_two_tables_dims
+      width_cm: 300.6
+      depth_cm: 209
+      height_cm: 96
+    size_class: "large"
+    color_family: "white"
+    tone: "warm"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1766715741/crusader/variants/PB-001805-PT4001/Seb-King-Bed-With-2-2-Drawer-Bedside-Table-Performance-Twill-Creamy-White-Front-1766715739.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1766715741/crusader/variants/PB-001805-PT4001/Seb-King-Bed-With-2-2-Drawer-Bedside-Table-Performance-Twill-Creamy-White-Front-1766715739.jpg"
+    materials: *seb_creamy_white_materials
+    finish: *seb_two_tables_finish
+
+placement_notes:
+  - "Use as the bedroom anchor against a main wall."
+  - "Leave standard walkway clearance around both long sides where possible."
+  - "Pair with warm wood bedside tables or soft neutral textiles."

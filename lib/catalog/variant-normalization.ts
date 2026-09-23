@@ -1,6 +1,6 @@
 import type { ProductVariant } from "../catalog-schema";
 
-export const IMPORTED_VARIANT_PIPELINE_REVISION = "2026-04-26-shared-imported-variant-normalizer-v3";
+export const IMPORTED_VARIANT_PIPELINE_REVISION = "2026-07-11-prioritize-front-shot-thumbnails-v5";
 
 const KNOWN_STOCKED_CODES = [
   "beach_linen",
@@ -16,6 +16,31 @@ export function sentenceCaseLabel(value: string): string {
   const trimmed = value.trim();
   if (!trimmed) return "";
   return trimmed.charAt(0).toUpperCase() + trimmed.slice(1);
+}
+
+export function getHighResolutionSwatchUrl(url?: string | null): string | undefined {
+  const raw = String(url ?? "").trim();
+  if (!raw) return undefined;
+
+  if (!raw.includes("res.cloudinary.com")) return raw;
+
+  return raw
+    .replace(/\/w_\d+(?=,|\/)/, "/w_512")
+    .replace(/,w_\d+(?=,|\/)/, ",w_512")
+    .replace(/\/q_auto(?=,|\/)/, "/q_auto:best")
+    .replace(/,q_auto(?=,|\/)/, ",q_auto:best");
+}
+
+export function getMaterialDisplayLabel(
+  variant: Pick<ProductVariant, "label" | "finishLabel" | "finishCode" | "materialType">
+): string {
+  const label = String(variant.finishLabel ?? variant.label ?? "").trim();
+  if (label) return label;
+
+  const finishCode = String(variant.finishCode ?? "").trim();
+  if (finishCode) return sentenceCaseLabel(finishCode.replace(/[_-]+/g, " "));
+
+  return variant.materialType ?? "Finish";
 }
 
 export function normalizeLabelToken(value: string): string {
@@ -126,7 +151,15 @@ export function deriveVariantDisambiguator(
 }
 
 export function hardenDuplicateImportedVariantLabels<
-  T extends { id: string; label: string; finishLabel?: string; finishCode?: string; dimensionsMm?: { w: number; d: number } }
+  T extends {
+    id: string;
+    label: string;
+    finishLabel?: string;
+    finishCode?: string;
+    legFinishLabel?: string;
+    legFinishCode?: string;
+    dimensionsMm?: { w: number; d: number };
+  }
 >(variants: T[]): T[] {
   const labelCounts = new Map<string, number>();
   for (const variant of variants) {
@@ -139,8 +172,9 @@ export function hardenDuplicateImportedVariantLabels<
     const isDuplicateLabel = (labelCounts.get(key) ?? 0) > 1;
     if (!isDuplicateLabel) return variant;
 
-    const qualifierParts = [deriveVariantDisambiguator(variant)];
-    if (variant.dimensionsMm?.w && variant.dimensionsMm?.d) {
+    const legQualifier = normalizeVariantQualifier(variant.legFinishLabel ?? variant.legFinishCode ?? "");
+    const qualifierParts = [legQualifier || deriveVariantDisambiguator(variant)];
+    if (!qualifierParts.some(Boolean) && variant.dimensionsMm?.w && variant.dimensionsMm?.d) {
       qualifierParts.push(`${variant.dimensionsMm.w}x${variant.dimensionsMm.d}`);
     }
     const qualifier = qualifierParts.filter(Boolean).join(" ");
@@ -237,6 +271,8 @@ export function inferCollectionType(
 ): "stocked" | "custom" | undefined {
   const explicit = String(explicitCollectionType ?? "").trim().toLowerCase();
   if (explicit === "stocked" || explicit === "custom") return explicit;
+  if (explicit.startsWith("stocked_")) return "stocked";
+  if (explicit.startsWith("custom_")) return "custom";
 
   const normalizedCode = normalizeUpholsteryCode(String(upholsteryCode ?? ""));
   if (!normalizedCode) return undefined;

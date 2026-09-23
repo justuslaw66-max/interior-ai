@@ -93,7 +93,59 @@ const incomplete = buildDeterministicLivingRoomLayoutPlan({
   catalog: [{ id: "sofa-only", category: "sofa", price: 900, styleTags: ["modern"] }],
 });
 
-assert.deepEqual(incomplete.quality.requiredMissing, ["rug", "coffee_table"]);
+assert.deepEqual(incomplete.quality.requiredMissing, ["coffee_table"]);
 assert.ok(incomplete.quality.completeness < 1);
+
+const noRugCatalogPlan = buildDeterministicLivingRoomLayoutPlan({
+  roomWidth: 5,
+  roomDepth: 4,
+  style: "Modern",
+  budget: "$$",
+  seed: 1234,
+  catalog: catalog.filter((item) => item.category !== "rug"),
+});
+
+assert.equal(noRugCatalogPlan.picks.rug, null);
+assert.deepEqual(noRugCatalogPlan.quality.requiredMissing, []);
+assert.equal(noRugCatalogPlan.intent.rug, "optional_when_catalog_has_live_rugs");
+
+const briefPlan = buildDeterministicLivingRoomLayoutPlan({
+  roomWidth: 5.6,
+  roomDepth: 5.2,
+  style: "Modern",
+  budget: "$$$",
+  seed: 1234,
+  catalog,
+  requestedRoles: ["sofa", "coffee_table", "tv_console"],
+});
+
+assert.deepEqual(briefPlan.meta.requestedRoles, ["sofa", "coffee_table", "tv_console"]);
+assert.equal(briefPlan.picks.sofa, "premium-sofa");
+assert.equal(briefPlan.picks.coffee_table, "coffee-2");
+assert.equal(briefPlan.picks.tv_console, "console-1");
+assert.equal(briefPlan.picks.rug, null);
+assert.equal(briefPlan.picks.accent_chair, null);
+assert.equal(briefPlan.picks.floor_lamp, null);
+assert.equal(briefPlan.quality.completeness, 1);
+assert.deepEqual(briefPlan.quality.requestedMissing, []);
+
+const missingOptionalBriefPlan = buildDeterministicLivingRoomLayoutPlan({
+  roomWidth: 5.6,
+  roomDepth: 5.2,
+  style: "Modern",
+  budget: "$$$",
+  seed: 1234,
+  catalog: catalog.filter((item) => item.category !== "floor_lamp"),
+  requestedRoles: ["sofa", "coffee_table", "floor_lamp"],
+});
+
+assert.deepEqual(missingOptionalBriefPlan.meta.requestedRoles, [
+  "sofa",
+  "coffee_table",
+  "floor_lamp",
+]);
+assert.deepEqual(missingOptionalBriefPlan.quality.requiredMissing, []);
+assert.deepEqual(missingOptionalBriefPlan.quality.requestedMissing, ["floor_lamp"]);
+assert.equal(missingOptionalBriefPlan.quality.completeness, 0.67);
 
 console.log("AI layout planner fixtures passed");

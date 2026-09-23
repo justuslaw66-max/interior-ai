@@ -1,0 +1,13 @@
+{
+  "stableAlias": "https://interior-ai-justuslaw66-max-justuslaw66-maxs-projects.vercel.app",
+  "targetPreview": "https://interior-hr2bpyza0-justuslaw66-maxs-projects.vercel.app",
+  "deploymentId": "dpl_9e2Pi2wjB3yopf5oLWKcYtuUmGdw",
+  "promotedAt": "2026-06-24T15:04:20.000Z",
+  "status": "READY",
+  "verification": {
+    "method": "vercel inspect",
+    "result": "Stable staging alias resolves to the feedback-reference preview deployment.",
+    "deploymentProtection": "No-bypass /design probe still redirects to Vercel SSO, so deployment protection remains enabled."
+  },
+  "notes": "Alias promotion completed with Vercel CLI. Raw response headers and deployment-protection bypass material are intentionally omitted."
+}

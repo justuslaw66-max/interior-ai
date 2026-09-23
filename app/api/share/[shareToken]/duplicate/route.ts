@@ -1,9 +1,11 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
-import { logAppEvent } from "@/lib/app-events";
+import { recordServerAnalyticsEvent } from "@/lib/app-events";
 import { buildDuplicatedDesignData } from "@/lib/design-duplication";
-import { getPostHogClient } from "@/lib/posthog-server";
+import { trackServerEvent } from "@/lib/server-analytics";
 import { prisma } from "@/lib/prisma";
+import { projectSharedDesignTransport } from "@/lib/shared-design-snapshot";
+import { rateLimit } from "@/lib/rateLimit";
 
 export const runtime = "nodejs";
 
@@ -16,8 +18,13 @@ export async function POST(
   if (!userId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+  const rl = rateLimit(`share-duplicate:${userId}`, 20, 60_000);
+  if (!rl.ok) return NextResponse.json({ error: "Too many duplicate requests" }, { status: 429 });
 
   const { shareToken } = await params;
+  if (shareToken.length < 20 || shareToken.length > 128) {
+    return NextResponse.json({ error: "Share link not found" }, { status: 404 });
+  }
   const source = await prisma.design.findFirst({
     where: { shareToken, shareEnabled: true },
   });
@@ -26,48 +33,37 @@ export async function POST(
     return NextResponse.json({ error: "Share link not found" }, { status: 404 });
   }
 
+  const user = await prisma.user.findUnique({ where: { id: userId }, select: { plan: true } });
+  if (user?.plan !== "pro" && await prisma.design.count({ where: { userId } }) >= 20) {
+    return NextResponse.json(
+      { error: "Free beta limit reached (max 20 designs). Upgrade to create more." },
+      { status: 403 }
+    );
+  }
+
+  const projectedSource = projectSharedDesignTransport(source);
+
   const copy = await prisma.design.create({
-    data: buildDuplicatedDesignData(
-      {
-        title: source.title,
-        roomWidth: source.roomWidth,
-        roomDepth: source.roomDepth,
-        items: source.items,
-        snapshot: source.snapshot,
-        zones: source.zones,
-        savedViews: source.savedViews,
-        style: source.style,
-        budget: source.budget,
-        mode: source.mode,
-        notes: source.notes,
-      },
-      userId
-    ),
+    data: buildDuplicatedDesignData(projectedSource, userId),
     select: { id: true },
   });
 
-  await logAppEvent({
+  await recordServerAnalyticsEvent({
     eventType: "share_design_duplicated",
     userId,
     designId: copy.id,
     shareToken,
     meta: {
       sourceDesignId: source.id,
-      sourceOwnerId: source.userId,
     },
   });
 
-  const posthog = getPostHogClient();
-  posthog.capture({
-    distinctId: userId,
-    event: "share_design_duplicated",
-    properties: {
-      source_design_id: source.id,
-      source_share_token: shareToken,
-      new_design_id: copy.id,
-      style: source.style ?? null,
-      budget: source.budget ?? null,
-    },
+  trackServerEvent("share_design_duplicated", userId, {
+    source_design_id: source.id,
+    shared_context: true,
+    new_design_id: copy.id,
+    style: projectedSource.style,
+    budget: projectedSource.budget,
   });
 
   return NextResponse.json({ id: copy.id });

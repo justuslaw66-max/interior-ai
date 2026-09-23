@@ -1,8 +1,11 @@
+import { PRO_YEARLY_SAVINGS_LABEL } from "@/lib/pro-plan-catalog";
+
 export type FunnelEventName =
   | "landing_viewed"
   | "design_started"
   | "first_item_added"
   | "third_item_added"
+  | "first_run_activation_step_completed"
   | "export_clicked"
   | "upgrade_clicked"
   | "checkout_started";
@@ -28,7 +31,7 @@ export type PaywallExperimentEnvConfig = {
   paywallExperimentSlot: PaywallExperimentSlot;
 };
 
-export const ANNUAL_PLAN_SAVINGS_LABEL = "Best value: yearly plan saves 20%";
+export const ANNUAL_PLAN_SAVINGS_LABEL = PRO_YEARLY_SAVINGS_LABEL;
 
 export const hashStringToVariant = (value: string): UpgradeCtaVariant => {
   let hash = 0;

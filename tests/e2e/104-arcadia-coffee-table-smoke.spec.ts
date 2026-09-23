@@ -1,5 +1,5 @@
 import { test, expect } from "./fixtures";
-import { openCatalogPreview } from "./variant-test-utils";
+import { addCatalogDrawerItemToRoom, openCatalogPreview } from "./variant-test-utils";
 
 const ARCADIA_COFFEE_TABLE_ID = "coffee-real-castlery-arcadia-coffee-table";
 
@@ -10,13 +10,16 @@ test.describe("104. Arcadia Coffee Table Catalog Smoke", () => {
     await page.goto("/design");
     await page.waitForLoadState("domcontentloaded");
 
-    await expect(page.getByTestId("scene-canvas")).toBeVisible({ timeout: 20000 });
+    await expect(page.getByTestId("scene-canvas").first()).toBeVisible({ timeout: 20000 });
 
     const opened = await openCatalogPreview(page, ARCADIA_COFFEE_TABLE_ID, "Arcadia");
     expect(opened).toBeTruthy();
 
     await expect(page.getByText("Product details")).toBeVisible({ timeout: 10000 });
-    const drawer = page.getByRole("complementary");
+    const drawer = page.getByRole("dialog", { name: /^Review exact variant$/i });
+    await expect(drawer).toHaveCount(1);
+    await expect(drawer).toBeVisible();
+    await expect(drawer).toHaveAttribute("aria-modal", "true");
     await expect(drawer.getByText(/^Arcadia Coffee Table$/i)).toBeVisible();
     await expect(page.getByTestId("catalog-detail-variant-label")).toContainText(/Caramel Oak/i);
     await expect(page.getByTestId("catalog-detail-add-to-room")).toBeEnabled();
@@ -25,7 +28,7 @@ test.describe("104. Arcadia Coffee Table Catalog Smoke", () => {
       /castlery\.com\/sg\/products\/arcadia-coffee-table/i,
     );
 
-    await page.getByTestId("catalog-detail-add-to-room").click();
+    await addCatalogDrawerItemToRoom(page);
 
     await expect(page.getByText("Selected Item")).toBeVisible({ timeout: 10000 });
     await expect(page.getByTestId("selected-single-finish-label")).toContainText(/Caramel Oak/i);

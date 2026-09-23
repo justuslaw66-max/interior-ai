@@ -1,0 +1,110 @@
+schema_version: 1
+surface_material:
+  supplier: gardenia_orchidea
+  brand: Gardenia Orchidea
+  collection: La Marmoteca
+  material_id: gardenia-flooring-la-marmoteca-pure-onyx-pf60014467-120x120-soft-90570-0
+  product_name: Gardenia La Marmoteca Pure Onyx 120x120 Soft
+  slug: gardenia-flooring-la-marmoteca-pure-onyx-pf60014467-120x120-soft-90570-0
+  surface_category: flooring
+  material_family: tile
+source:
+  supplier_region: international
+  source_url: https://www.gardenia.it/en/collection/la-marmoteca
+  sample_request_url: null
+  currency: EUR
+  license_status: confirmed
+  notes:
+    - Imported from Gardenia RealityRemod configurator with user-confirmed permission on 2026-07-04.
+    - Gardenia tile item GARDENIA/PF60014467/0/90570 for floor use.
+    - "Configurator format: 120x120 Soft; surface destination: ENTRAMBE."
+    - "Configurator pattern IDs: pieno_01, pieno_05."
+    - "Collection page technology: Porcelain slabs."
+    - "Collection page description: Gardenia & Ariana have selected and collected within LA MARMOTECA a total of 18 different subjects inspired by marble.."
+    - "Collection page thicknesses: 6, 8.5 mm."
+    - "Collection page sizes: 120x280, 120x120, 60x120."
+    - "Collection page color availability for PURE ONYX: PURE ONYX 6 mm: 120x280 (48\"x110\") SOFT, LUX; 120X120 (48\"X48\") SOFT, LUX; 60X120 (24\"X48\") SOFT, LUX."
+    - "Available configurator formats: PF60014464 120x120 Lux ENTRAMBE patterns pieno_01,pieno_05; PF60014467 120x120 Soft ENTRAMBE patterns pieno_01,pieno_05; PF60014472 60x120 Lux ENTRAMBE patterns pieno_01,pieno_05; PF60014475 60x120 Soft ENTRAMBE patterns pieno_01,pieno_05; PF60014454 120x280 Lux ENTRAMBE patterns pieno_01,pieno_05; PF60014457 120x280 Soft ENTRAMBE patterns pieno_01,pieno_05."
+    - The configurator API did not expose slip rating, package quantity, price, or seamless texture QA data.
+classification:
+  flooring_type: tile
+  design_effect: marble
+  color_family: unknown
+  tone:
+    - neutral
+    - durable
+    - clean
+    - natural
+    - textured
+  style_cluster:
+    - contemporary
+    - modern
+    - hospitality
+    - commercial
+  room_suitability:
+    - living_room
+    - dining_room
+    - kitchen
+    - bathroom
+    - hallway
+    - commercial
+    - hospitality
+physical_specs:
+  plank_or_tile_format: tile
+  plank_width_mm: null
+  plank_length_mm: null
+  tile_width_mm: 1200
+  tile_length_mm: 1200
+  total_thickness_mm: 6
+  wear_layer_mm: null
+  installation_method:
+    - direct_stick
+  waterproof: null
+  slip_rating: null
+  suitable_for_wet_area: null
+  suitable_for_outdoor: null
+  commercial_grade: null
+texture_assets:
+  swatch_url: /assets/catalog/surface-materials/gardenia/la-marmoteca/pf60014464.webp
+  base_color_url: /assets/catalog/surface-materials/gardenia/la-marmoteca/pf60014464.webp
+  normal_url: null
+  roughness_url: null
+  ao_url: null
+  preview_room_url: null
+  tileable: needs_confirmation
+  texture_repeat_size_cm:
+    width: 120
+    height: 120
+rendering:
+  default_rotation_deg: 0
+  roughness: 0.48
+  metalness: 0
+  normal_strength: 0.15
+  scale_mode: physical_repeat
+  seam_strategy: repeat_texture
+  source_pattern_ids:
+    - pieno_01
+    - pieno_05
+  available_pattern_layouts:
+    - straight
+    - vertical_brick
+commerce:
+  purchase_mode: unknown
+  price_per_sqm:
+    currency: EUR
+    amount: null
+  sample_available: unknown
+  sample_request_url: null
+  direct_checkout: false
+import_governance:
+  publish_status: draft
+  publish_blockers:
+    - confirm_texture_tileability
+    - confirm_price_per_sqm_or_quote_mode
+  qa_flags:
+    - gardenia_realityremod_import
+    - gardenia_tile_item_variant
+    - user_confirmed_permission
+    - configurator_preview_asset
+    - gardenia_collection_page_enriched
+    - surface_target_specific_entry

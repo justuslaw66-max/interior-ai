@@ -40,16 +40,21 @@ function main() {
   const blockingInvalid = audit.invalidMediaUrls;
   const blockingMissing = audit.missingMedia;
   const blockingQuality = audit.lowQualityMedia.filter((issue) => qualityTargetIds.has(issue.catalogItemId));
+  const huggSquareQualityIssues = audit.lowQualityMedia.filter((issue) =>
+    issue.catalogItemId.startsWith("coffee-real-castlery-hugg-nesting-square-")
+  );
 
   printIssues("Parity mismatches", blockingParity);
   printIssues("Low-quality media", blockingQuality);
+  printIssues("Hugg square media regressions", huggSquareQualityIssues);
   printIssues("Invalid media URLs", blockingInvalid);
   printIssues("Missing media", blockingMissing);
 
   const hasBlockingIssues =
     blockingParity.length > 0 ||
     blockingInvalid.length > 0 ||
-    blockingMissing.length > 0;
+    blockingMissing.length > 0 ||
+    huggSquareQualityIssues.length > 0;
 
   if (hasBlockingIssues) {
     throw new Error("Catalog media health audit failed");

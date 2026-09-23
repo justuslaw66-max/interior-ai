@@ -1,0 +1,106 @@
+schema_version: 1
+
+surface_material:
+  supplier: goodrich_global
+  brand: Goodrich Global
+  collection: GEFF NovaClick Flooring 2025
+  material_id: goodrich-geff-novaclick-gnv-010-weathered-timberland
+  product_name: GEFF NovaClick GNV-010 Weathered Timberland
+  slug: goodrich-geff-novaclick-gnv-010-weathered-timberland
+  surface_category: flooring
+  material_family: luxury_vinyl_tile
+
+source:
+  supplier_region: singapore
+  source_url: https://issuu.com/goodrichglobal/docs/geff_novaclick_flooring_2025?fr=sNzFlYTgzODQ3MDc
+  sample_request_url: https://www.goodrichglobal.com/singapore/contact-us/request-samples/
+  currency: SGD
+  license_status: needs_permission
+  notes:
+    - "Supplier catalogue identifies this as GEFF NovaClick LVT Click SKU GNV-010 Weathered Timberland."
+    - "Catalogue page lists size 177.8 x 1219.2 mm and package 10 pcs / 2.168 sqm per box."
+    - "Catalogue technical page lists 5.0 mm overall thickness and 0.55 mm wear layer."
+    - "Draft swatch asset is cropped from the supplier catalogue page for admin reference only; confirm supplier image usage rights before publishing."
+    - "Draft preview texture represents an approximately 365.76 x 365.76 cm installed area for physical-scale editor preview."
+
+classification:
+  flooring_type: luxury_vinyl_tile
+  design_effect: wood
+  color_family: grey
+  tone:
+    - cool
+    - neutral
+    - textured
+  style_cluster:
+    - contemporary
+    - modern
+    - commercial
+  room_suitability:
+    - living_room
+    - bedroom
+    - dining_room
+    - study
+    - hallway
+    - commercial
+    - hospitality
+
+physical_specs:
+  plank_or_tile_format: plank
+  plank_width_mm: 177.8
+  plank_length_mm: 1219.2
+  total_thickness_mm: 5.0
+  wear_layer_mm: 0.55
+  installation_method:
+    - click_lock
+  waterproof: null
+  slip_rating: DS / R10
+  suitable_for_wet_area: null
+  suitable_for_outdoor: false
+  commercial_grade: true
+
+texture_assets:
+  swatch_url: /assets/catalog/surface-materials/flooring/goodrich/geff-novaclick/gnv-010-weathered-timberland-swatch.jpg
+  base_color_url: null
+  normal_url: null
+  roughness_url: null
+  ao_url: null
+  preview_room_url: null
+  tileable: needs_confirmation
+  texture_repeat_size_cm:
+    width: 365.76
+    height: 365.76
+
+rendering:
+  default_rotation_deg: 0
+  roughness: 0.76
+  metalness: 0
+  normal_strength: 0.25
+  scale_mode: physical_repeat
+  seam_strategy: repeat_texture
+
+commerce:
+  purchase_mode: quote_or_sample
+  price_per_sqm:
+    currency: SGD
+    amount: null
+  sample_available: true
+  sample_request_url: https://www.goodrichglobal.com/singapore/contact-us/request-samples/
+  direct_checkout: false
+
+import_governance:
+  publish_status: draft
+  publish_blockers:
+    - confirm_exact_goodrich_product_code
+    - confirm_supplier_image_usage_rights
+    - add_tileable_base_color_texture
+    - confirm_texture_tileability
+    - confirm_price_per_sqm_or_quote_mode
+  qa_flags:
+    - surface_material_defined
+    - flooring_material_defined
+    - singapore_supplier
+    - quote_or_sample_purchase_mode
+    - exact_product_code_from_2025_issuu_catalogue
+    - physical_dimensions_from_2025_issuu_catalogue
+    - source_catalogue_swatch_reference
+    - draft_until_assets_confirmed

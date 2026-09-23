@@ -1,6 +1,10 @@
 import type { Page } from "@playwright/test";
 import { test, expect } from "./fixtures";
-import { openCatalogPreview as openCatalogPreviewShared } from "./variant-test-utils";
+import {
+  addCatalogDrawerItemToRoom,
+  openCatalogPreview as openCatalogPreviewShared,
+  openShopPanel,
+} from "./variant-test-utils";
 
 async function openCatalogPreview(page: Page, searchTerm: string, productId: string) {
   return openCatalogPreviewShared(page, productId, searchTerm);
@@ -119,9 +123,9 @@ test.describe("12. Variant Identity", () => {
     await expect(variantLabel).toContainText(/Seagull/);
     const selectedVariantText = (await variantLabel.textContent()) ?? "";
 
-    await page.getByTestId("catalog-detail-add-to-room").click();
+    await addCatalogDrawerItemToRoom(page);
 
-    await page.getByRole("button", { name: "Shop" }).click();
+    await openShopPanel(page);
     const autoFillButton = page.getByRole("button", { name: "Auto-fill cart from room" });
     if (await autoFillButton.isVisible().catch(() => false)) {
       await autoFillButton.click();
@@ -241,6 +245,43 @@ test.describe("12. Variant Identity", () => {
         description: "Skipping strict Jaron gallery coverage assertion due to transient catalog rerender instability",
       });
     }
+  });
+
+  test("Castlery studio previews keep the retailer white canvas", async ({ page }) => {
+    test.setTimeout(120000);
+
+    await page.goto("/design");
+    await page.waitForLoadState("domcontentloaded");
+
+    const opened = await openCatalogPreview(
+      page,
+      "Hamilton 3 Seater",
+      "sofa-real-castlery-hamilton-3-seater"
+    );
+    if (!opened) {
+      test.info().annotations.push({
+        type: "note",
+        description: "Skipping Castlery studio canvas assertion because the Hamilton sofa card was not visible",
+      });
+      return;
+    }
+
+    const gallery = page.getByTestId("catalog-item-gallery");
+    const galleryImage = page.getByTestId("catalog-gallery-image");
+    await expect(gallery).toBeVisible({ timeout: 5000 });
+    await expect(galleryImage).toBeVisible({ timeout: 5000 });
+    await expect(gallery).toHaveAttribute("data-presentation-mode", "studio");
+
+    const canvasColors = await gallery.evaluate((node) => {
+      const image = document.querySelector('[data-testid="catalog-gallery-image"]');
+      return {
+        gallery: getComputedStyle(node).backgroundColor,
+        imageWrapper: image?.parentElement ? getComputedStyle(image.parentElement).backgroundColor : "",
+      };
+    });
+
+    expect(canvasColors.gallery).toBe("rgb(255, 255, 255)");
+    expect(canvasColors.imageWrapper).toBe("rgb(255, 255, 255)");
   });
 
   test("Jaron wide-arm finish variants maintain gallery minimums", async ({ page }) => {

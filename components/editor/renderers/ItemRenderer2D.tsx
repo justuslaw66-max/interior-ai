@@ -1,7 +1,10 @@
 "use client";
 
-import { Html, Line } from "@react-three/drei";
+import { Line } from "@react-three/drei/core/Line";
+import { Html } from "@react-three/drei/web/Html";
 import type { ThreeEvent } from "@react-three/fiber";
+import type { PlanMeasurementUnit } from "@/lib/design-page-types";
+import { formatDisplayLength } from "@/lib/display-units";
 
 type ItemRenderer2DProps = {
   width: number;
@@ -9,14 +12,17 @@ type ItemRenderer2DProps = {
   color: string;
   category: string;
   selected: boolean;
+  hovered?: boolean;
   dragging: boolean;
   snapped: boolean;
   invalidPlacement: boolean;
   showLabels: boolean;
   showDimensions: boolean;
   label: string;
-  measurementUnit?: "mm" | "cm" | "in";
+  measurementUnit?: PlanMeasurementUnit;
   rotationHudLabel?: string | null;
+  interactive?: boolean;
+  onSelect?: (additive: boolean) => void;
   onRotateHandlePointerDown?: (e: ThreeEvent<PointerEvent>) => void;
   onRotateHandlePointerMove?: (e: ThreeEvent<PointerEvent>) => void;
   onRotateHandlePointerUp?: (e: ThreeEvent<PointerEvent>) => void;
@@ -32,6 +38,7 @@ export default function ItemRenderer2D({
   color,
   category,
   selected,
+  hovered = false,
   dragging,
   snapped,
   invalidPlacement,
@@ -40,6 +47,8 @@ export default function ItemRenderer2D({
   label,
   measurementUnit = "mm",
   rotationHudLabel = null,
+  interactive = false,
+  onSelect,
   onRotateHandlePointerDown,
   onRotateHandlePointerMove,
   onRotateHandlePointerUp,
@@ -50,6 +59,8 @@ export default function ItemRenderer2D({
     ? "#d91f1f"
     : selected
       ? "#2a66ff"
+      : hovered
+        ? "#0f766e"
       : snapped && dragging
         ? "#4ea81f"
         : "#5f6770";
@@ -57,18 +68,8 @@ export default function ItemRenderer2D({
   const fillColor = invalidPlacement ? "#f8b6b6" : color;
 
   const corner = 0.04;
-  const formatDimension = (meters: number) => {
-    const millimeters = meters * 1000;
-    if (measurementUnit === "cm") {
-      const value = (millimeters / 10).toFixed(1).replace(/\.0$/, "");
-      return `${value} cm`;
-    }
-    if (measurementUnit === "in") {
-      const value = (millimeters / 25.4).toFixed(1).replace(/\.0$/, "");
-      return `${value} in`;
-    }
-    return `${Math.round(millimeters)} mm`;
-  };
+  const formatDimension = (meters: number) =>
+    formatDisplayLength(meters * 1000, measurementUnit);
   const cornerPoints: Array<[number, number, number]> = [
     [-width / 2, 0.003, -depth / 2],
     [width / 2, 0.003, -depth / 2],
@@ -80,7 +81,7 @@ export default function ItemRenderer2D({
     <group>
       <mesh rotation-x={-Math.PI / 2}>
         <planeGeometry args={[width, depth]} />
-        <meshBasicMaterial color={fillColor} transparent opacity={selected ? 0.7 : 0.5} />
+        <meshBasicMaterial color={fillColor} transparent opacity={selected ? 0.7 : hovered ? 0.62 : 0.5} />
       </mesh>
 
       <Line
@@ -92,7 +93,7 @@ export default function ItemRenderer2D({
           [-width / 2, 0.002, -depth / 2],
         ]}
         color={borderColor}
-        lineWidth={selected ? 2.4 : 1.4}
+        lineWidth={selected ? 2.4 : hovered ? 2 : 1.4}
       />
 
       {category === "sofa" && (
@@ -202,7 +203,6 @@ export default function ItemRenderer2D({
           <mesh
             rotation-x={-Math.PI / 2}
             position={[0, 0.0026, -depth / 2 - 0.18]}
-            data-testid="rotation-handle-hit-area"
             onPointerDown={onRotateHandlePointerDown}
             onPointerMove={onRotateHandlePointerMove}
             onPointerUp={onRotateHandlePointerUp}
@@ -238,22 +238,53 @@ export default function ItemRenderer2D({
         </>
       )}
 
-      {showLabels && (selected || !dragging) && (
+      {showLabels && (selected || hovered || !dragging) && (
         <Html zIndexRange={htmlZIndexRange} position={[0, 0.01, 0]} center transform={false}>
-          <div
-            style={{
-              fontSize: 11,
-              padding: "2px 6px",
-              borderRadius: 6,
-              background: "rgba(255,255,255,0.9)",
-              border: "1px solid rgba(120,120,120,0.35)",
-              color: "#1f2937",
-              whiteSpace: "nowrap",
-              pointerEvents: "none",
-            }}
-          >
-            {label}
-          </div>
+          {interactive && onSelect ? (
+            <button
+              type="button"
+              data-testid="plan-item-keyboard-target"
+              aria-label={`Select ${label} in 2D plan`}
+              aria-pressed={selected}
+              className="focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+              onPointerDown={(event) => event.stopPropagation()}
+              onClick={(event) => {
+                event.stopPropagation();
+                onSelect(event.shiftKey);
+              }}
+              style={{
+                appearance: "none",
+                fontSize: 11,
+                padding: "2px 6px",
+                borderRadius: 6,
+                background: "rgba(255,255,255,0.9)",
+                border: selected
+                  ? "1px solid rgba(37,99,235,0.62)"
+                  : "1px solid rgba(120,120,120,0.35)",
+                color: "#1f2937",
+                cursor: "pointer",
+                whiteSpace: "nowrap",
+                pointerEvents: "auto",
+              }}
+            >
+              {label}
+            </button>
+          ) : (
+            <div
+              style={{
+                fontSize: 11,
+                padding: "2px 6px",
+                borderRadius: 6,
+                background: "rgba(255,255,255,0.9)",
+                border: "1px solid rgba(120,120,120,0.35)",
+                color: "#1f2937",
+                whiteSpace: "nowrap",
+                pointerEvents: "none",
+              }}
+            >
+              {label}
+            </div>
+          )}
         </Html>
       )}
 

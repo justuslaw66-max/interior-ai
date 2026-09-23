@@ -12,6 +12,11 @@ import { summarizeCatalogPublication } from "@/lib/catalog-publication";
 import { getAllCatalogYamlEntries } from "@/lib/catalog-yaml";
 import { runVariantResolutionAudit } from "@/lib/catalog/variant-audit";
 import { CATALOG_MEDIA_FALLBACK_POLICY_MATRIX } from "@/lib/catalog/media-policy";
+import {
+  buildSurfaceMaterialAdminAuditSummaries,
+  getRelativeSurfaceMaterialPath,
+  runSurfaceMaterialAudit,
+} from "@/lib/surface-material-audit";
 import AuditActions from "./AuditActions";
 
 function toneClass(hasIssue: boolean) {
@@ -20,18 +25,153 @@ function toneClass(hasIssue: boolean) {
     : "border-green-300 bg-green-50 text-green-900";
 }
 
-export default async function AdminAuditPage() {
+function formatAuditValue(value: string | null | undefined) {
+  return value ? value.replace(/_/g, " ") : "Not set";
+}
+
+function statusPillClass(status: string) {
+  if (status === "published") return "bg-green-50 text-green-700 ring-green-100";
+  if (status === "draft") return "bg-amber-50 text-amber-700 ring-amber-100";
+  if (status === "blocked") return "bg-red-50 text-red-700 ring-red-100";
+  return "bg-neutral-100 text-neutral-700 ring-neutral-200";
+}
+
+type SurfaceMaterialAuditFilter =
+  | "all"
+  | "draft"
+  | "published"
+  | "needs_permission"
+  | "missing_assets"
+  | "missing_specs"
+  | "unresolved_blockers"
+  | "sample_available"
+  | "missing_links";
+
+type SurfaceMaterialAuditSort =
+  | "blocker_count"
+  | "supplier"
+  | "material_family"
+  | "publish_status"
+  | "license_status";
+
+const SURFACE_MATERIAL_AUDIT_FILTERS: Array<{
+  id: SurfaceMaterialAuditFilter;
+  label: string;
+}> = [
+  { id: "all", label: "All" },
+  { id: "draft", label: "Draft" },
+  { id: "published", label: "Published" },
+  { id: "needs_permission", label: "Needs permission" },
+  { id: "missing_assets", label: "Missing assets" },
+  { id: "missing_specs", label: "Missing specs" },
+  { id: "unresolved_blockers", label: "Unresolved blockers" },
+  { id: "sample_available", label: "Sample available" },
+  { id: "missing_links", label: "Missing sample/source link" },
+];
+
+const SURFACE_MATERIAL_AUDIT_SORTS: Array<{
+  id: SurfaceMaterialAuditSort;
+  label: string;
+}> = [
+  { id: "blocker_count", label: "Blocker count" },
+  { id: "supplier", label: "Supplier" },
+  { id: "material_family", label: "Material family" },
+  { id: "publish_status", label: "Publish status" },
+  { id: "license_status", label: "License status" },
+];
+
+function getSearchParamValue(
+  params: Record<string, string | string[] | undefined> | undefined,
+  key: string
+): string | undefined {
+  const value = params?.[key];
+  return Array.isArray(value) ? value[0] : value;
+}
+
+function normalizeSurfaceMaterialFilter(value: string | undefined): SurfaceMaterialAuditFilter {
+  return SURFACE_MATERIAL_AUDIT_FILTERS.some((filter) => filter.id === value)
+    ? (value as SurfaceMaterialAuditFilter)
+    : "all";
+}
+
+function normalizeSurfaceMaterialSort(value: string | undefined): SurfaceMaterialAuditSort {
+  return SURFACE_MATERIAL_AUDIT_SORTS.some((sort) => sort.id === value)
+    ? (value as SurfaceMaterialAuditSort)
+    : "blocker_count";
+}
+
+function matchesSurfaceMaterialFilter(
+  material: ReturnType<typeof buildSurfaceMaterialAdminAuditSummaries>[number],
+  filter: SurfaceMaterialAuditFilter
+): boolean {
+  if (filter === "all") return true;
+  if (filter === "draft") return material.publishStatus === "draft";
+  if (filter === "published") return material.publishStatus === "published";
+  if (filter === "needs_permission") return material.licenseStatus === "needs_permission";
+  if (filter === "missing_assets") return material.missingAssets.length > 0;
+  if (filter === "missing_specs") return material.missingSpecs.length > 0;
+  if (filter === "unresolved_blockers") return material.blockers.length > 0;
+  if (filter === "sample_available") return material.sampleAvailable === true;
+  if (filter === "missing_links") return !material.sourceUrl || !material.sampleRequestUrl;
+  return true;
+}
+
+function sortSurfaceMaterialSummaries(
+  summaries: ReturnType<typeof buildSurfaceMaterialAdminAuditSummaries>,
+  sort: SurfaceMaterialAuditSort
+) {
+  return [...summaries].sort((a, b) => {
+    if (sort === "blocker_count") return b.blockers.length - a.blockers.length;
+    if (sort === "supplier") return a.supplier.localeCompare(b.supplier);
+    if (sort === "material_family") return a.materialFamily.localeCompare(b.materialFamily);
+    if (sort === "publish_status") return a.publishStatus.localeCompare(b.publishStatus);
+    if (sort === "license_status") return a.licenseStatus.localeCompare(b.licenseStatus);
+    return 0;
+  });
+}
+
+function surfaceAuditHref(filter: SurfaceMaterialAuditFilter, sort: SurfaceMaterialAuditSort) {
+  const params = new URLSearchParams();
+  if (filter !== "all") params.set("surfaceFilter", filter);
+  if (sort !== "blocker_count") params.set("surfaceSort", sort);
+  const query = params.toString();
+  return query ? `/admin/audit?${query}#surface-material-qa` : "/admin/audit#surface-material-qa";
+}
+
+export default async function AdminAuditPage({
+  searchParams,
+}: {
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
+}) {
   const session = await auth();
   if (!session?.user?.email || !isAdminEmail(session.user.email)) {
     redirect("/");
   }
 
+  const resolvedSearchParams = searchParams ? await searchParams : undefined;
+  const activeSurfaceMaterialFilter = normalizeSurfaceMaterialFilter(
+    getSearchParamValue(resolvedSearchParams, "surfaceFilter")
+  );
+  const activeSurfaceMaterialSort = normalizeSurfaceMaterialSort(
+    getSearchParamValue(resolvedSearchParams, "surfaceSort")
+  );
   const refreshedAt = new Date();
 
   const [governance, quality] = await Promise.all([
     runCatalogGovernanceAudit(),
     Promise.resolve(runCatalogQualityAudit()),
   ]);
+  const surfaceMaterials = runSurfaceMaterialAudit();
+  const allSurfaceMaterialSummaries = buildSurfaceMaterialAdminAuditSummaries();
+  const surfaceMaterialSummaries = sortSurfaceMaterialSummaries(
+    allSurfaceMaterialSummaries.filter((material) =>
+      matchesSurfaceMaterialFilter(material, activeSurfaceMaterialFilter)
+    ),
+    activeSurfaceMaterialSort
+  );
+  const draftSurfaceMaterialCount = allSurfaceMaterialSummaries.filter(
+    (material) => material.publishStatus === "draft"
+  ).length;
   const variantAudit = runVariantResolutionAudit(CATALOG_ITEMS_MAP.values());
   const catalogPublication = summarizeCatalogPublication(getAllCatalogYamlEntries());
   const catalogStatusEntries = Object.entries(catalogPublication.statusCounts).sort(([a], [b]) =>
@@ -63,7 +203,7 @@ export default async function AdminAuditPage() {
         </p>
       </header>
 
-      <section className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-6">
+      <section className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-7">
         <div className={`rounded-xl border p-4 ${toneClass(governance.hasFailures)}`}>
           <div className="text-xs uppercase tracking-wide">Governance</div>
           <div className="mt-2 text-2xl font-semibold">{governance.hasFailures ? "Needs action" : "Passing"}</div>
@@ -104,6 +244,13 @@ export default async function AdminAuditPage() {
           </div>
           <div className="mt-1 text-sm">
             {variantAudit.mediaParityMismatches.length} parity mismatches, {variantAudit.lowQualityMedia.length} low-quality galleries
+          </div>
+        </div>
+        <div className={`rounded-xl border p-4 ${toneClass(surfaceMaterials.hasFailures)}`}>
+          <div className="text-xs uppercase tracking-wide">Surface materials</div>
+          <div className="mt-2 text-2xl font-semibold">{surfaceMaterials.hasFailures ? "Needs action" : "Passing"}</div>
+          <div className="mt-1 text-sm">
+            {surfaceMaterials.files.length} files, {surfaceMaterials.draftCount} draft, {surfaceMaterials.failureCount} failures
           </div>
         </div>
       </section>
@@ -305,6 +452,218 @@ export default async function AdminAuditPage() {
             )}
           </div>
         </div>
+      </section>
+
+      <section id="surface-material-qa" className="rounded-xl border p-4">
+        <h2 className="text-lg font-semibold">Surface Material QA</h2>
+        <p className="mt-1 text-sm text-neutral-600">
+          Separate flooring/material catalog checks. Draft blockers are shown for admin import QA and are not furniture cart lines.
+        </p>
+        <div className="mt-3 grid grid-cols-2 gap-3 text-sm md:grid-cols-4">
+          <div className="rounded-lg border p-3">
+            <div className="text-neutral-500">Files scanned</div>
+            <div className="text-lg font-semibold">{surfaceMaterials.files.length}</div>
+          </div>
+          <div className="rounded-lg border p-3">
+            <div className="text-neutral-500">Draft flooring</div>
+            <div className="text-lg font-semibold">{draftSurfaceMaterialCount}</div>
+          </div>
+          <div className="rounded-lg border p-3">
+            <div className="text-neutral-500">Failures</div>
+            <div className="text-lg font-semibold">{surfaceMaterials.failureCount}</div>
+          </div>
+          <div className="rounded-lg border p-3">
+            <div className="text-neutral-500">Warnings</div>
+            <div className="text-lg font-semibold">{surfaceMaterials.warningCount}</div>
+          </div>
+        </div>
+
+        <div className="mt-4 grid gap-3 rounded-lg border bg-neutral-50 p-3 text-sm md:grid-cols-2">
+          <div>
+            <div className="text-xs font-semibold uppercase tracking-wide text-neutral-500">Filter</div>
+            <div className="mt-2 flex flex-wrap gap-2">
+              {SURFACE_MATERIAL_AUDIT_FILTERS.map((filter) => (
+                <Link
+                  key={filter.id}
+                  href={surfaceAuditHref(filter.id, activeSurfaceMaterialSort)}
+                  className={
+                    activeSurfaceMaterialFilter === filter.id
+                      ? "rounded-full bg-neutral-900 px-2.5 py-1 text-xs font-semibold text-white"
+                      : "rounded-full border border-neutral-200 bg-white px-2.5 py-1 text-xs font-semibold text-neutral-700"
+                  }
+                >
+                  {filter.label}
+                </Link>
+              ))}
+            </div>
+          </div>
+          <div>
+            <div className="text-xs font-semibold uppercase tracking-wide text-neutral-500">Sort</div>
+            <div className="mt-2 flex flex-wrap gap-2">
+              {SURFACE_MATERIAL_AUDIT_SORTS.map((sort) => (
+                <Link
+                  key={sort.id}
+                  href={surfaceAuditHref(activeSurfaceMaterialFilter, sort.id)}
+                  className={
+                    activeSurfaceMaterialSort === sort.id
+                      ? "rounded-full bg-neutral-900 px-2.5 py-1 text-xs font-semibold text-white"
+                      : "rounded-full border border-neutral-200 bg-white px-2.5 py-1 text-xs font-semibold text-neutral-700"
+                  }
+                >
+                  {sort.label}
+                </Link>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {surfaceMaterialSummaries.length > 0 ? (
+          <div className="mt-4">
+            <h3 className="text-sm font-medium">
+              Surface material status ({surfaceMaterialSummaries.length} of {allSurfaceMaterialSummaries.length})
+            </h3>
+            <div className="mt-2 space-y-4 text-sm text-neutral-700">
+              {surfaceMaterialSummaries.map((material) => {
+                const hasMissingAssets = material.missingAssets.length > 0;
+                const hasMissingSpecs = material.missingSpecs.length > 0;
+                const hasAuditIssues = material.failures.length > 0 || material.warnings.length > 0;
+                const hasSwatch = !material.missingAssets.includes("swatch_url");
+                const hasBaseColor = !material.missingAssets.includes("base_color_url");
+                return (
+                  <div key={`${material.materialId}:${material.filePath}`} className="rounded-lg border p-3">
+                    <div className="flex flex-wrap items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <div className="font-medium">{material.productName || material.materialId}</div>
+                        <div className="mt-1 font-mono text-xs text-neutral-700">{material.materialId}</div>
+                        <div className="mt-1 text-xs text-neutral-500">
+                          {getRelativeSurfaceMaterialPath(material.filePath)}
+                        </div>
+                      </div>
+                      <span className={`rounded-full px-2 py-1 text-xs font-semibold capitalize ring-1 ${statusPillClass(material.publishStatus)}`}>
+                        {formatAuditValue(material.publishStatus)}
+                      </span>
+                    </div>
+
+                    <div className="mt-3 grid gap-2 text-xs md:grid-cols-2 xl:grid-cols-4">
+                      <div className="rounded-md border bg-neutral-50 p-2">
+                        <div className="text-neutral-500">Supplier</div>
+                        <div className="mt-0.5 font-medium text-neutral-900">
+                          {material.brand ?? formatAuditValue(material.supplier)}
+                        </div>
+                      </div>
+                      <div className="rounded-md border bg-neutral-50 p-2">
+                        <div className="text-neutral-500">Material family</div>
+                        <div className="mt-0.5 font-medium text-neutral-900">
+                          {formatAuditValue(material.materialFamily)}
+                        </div>
+                      </div>
+                      <div className="rounded-md border bg-neutral-50 p-2">
+                        <div className="text-neutral-500">License status</div>
+                        <div className="mt-0.5 font-medium text-neutral-900">
+                          {formatAuditValue(material.licenseStatus)}
+                        </div>
+                      </div>
+                      <div className="rounded-md border bg-neutral-50 p-2">
+                        <div className="text-neutral-500">Sample available</div>
+                        <div className="mt-0.5 font-medium text-neutral-900">
+                          {String(material.sampleAvailable)}
+                        </div>
+                      </div>
+                      <div className="rounded-md border bg-neutral-50 p-2">
+                        <div className="text-neutral-500">Swatch / base texture</div>
+                        <div className="mt-0.5 font-medium text-neutral-900">
+                          {hasSwatch ? "Swatch ok" : "Swatch missing"} / {hasBaseColor ? "Base ok" : "Base missing"}
+                        </div>
+                      </div>
+                      <div className="rounded-md border bg-neutral-50 p-2">
+                        <div className="text-neutral-500">Blocker count</div>
+                        <div className="mt-0.5 font-medium text-neutral-900">
+                          {material.blockers.length}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="mt-3 grid gap-2 text-xs md:grid-cols-2">
+                      <div className={hasMissingAssets ? "rounded-md border border-amber-200 bg-amber-50 p-2 text-amber-800" : "rounded-md border border-green-200 bg-green-50 p-2 text-green-800"}>
+                        <div className="font-semibold">Missing assets</div>
+                        <div className="mt-1">
+                          {hasMissingAssets ? material.missingAssets.map(formatAuditValue).join(", ") : "None"}
+                        </div>
+                      </div>
+                      <div className={hasMissingSpecs ? "rounded-md border border-amber-200 bg-amber-50 p-2 text-amber-800" : "rounded-md border border-green-200 bg-green-50 p-2 text-green-800"}>
+                        <div className="font-semibold">Missing specs</div>
+                        <div className="mt-1">
+                          {hasMissingSpecs ? material.missingSpecs.map(formatAuditValue).join(", ") : "None"}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="mt-3 grid gap-2 text-xs md:grid-cols-2">
+                      <div className="rounded-md border p-2">
+                        <div className="font-semibold text-neutral-700">Source URL</div>
+                        {material.sourceUrl ? (
+                          <a className="mt-1 block break-all text-blue-700" href={material.sourceUrl} target="_blank" rel="noreferrer">
+                            {material.sourceUrl}
+                          </a>
+                        ) : (
+                          <div className="mt-1 text-red-700">Missing</div>
+                        )}
+                      </div>
+                      <div className="rounded-md border p-2">
+                        <div className="font-semibold text-neutral-700">Sample / quote URL</div>
+                        {material.sampleRequestUrl ? (
+                          <a className="mt-1 block break-all text-blue-700" href={material.sampleRequestUrl} target="_blank" rel="noreferrer">
+                            {material.sampleRequestUrl}
+                          </a>
+                        ) : (
+                          <div className="mt-1 text-red-700">Missing</div>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="mt-3 rounded-md border p-2 text-xs">
+                      <div className="font-semibold text-neutral-700">Publish blockers</div>
+                      <div className={material.blockers.length > 0 ? "mt-1 text-amber-700" : "mt-1 text-green-700"}>
+                        {material.blockers.length > 0 ? material.blockers.map(formatAuditValue).join("; ") : "None"}
+                      </div>
+                    </div>
+
+                    {hasAuditIssues ? (
+                      <div className="mt-3 rounded-md border p-2 text-xs">
+                        <div className="font-semibold text-neutral-700">Audit detail</div>
+                        {material.failures.map((entry) => (
+                          <div key={`fail-${entry}`} className="mt-1 text-red-700">
+                            FAIL: {entry}
+                          </div>
+                        ))}
+                        {material.warnings.map((entry) => (
+                          <div key={`warn-${entry}`} className="mt-1 text-amber-700">
+                            WARN: {entry}
+                          </div>
+                        ))}
+                      </div>
+                    ) : null}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        ) : (
+          <div className="mt-4 rounded-lg border border-neutral-200 bg-neutral-50 p-3 text-sm text-neutral-600">
+            No surface materials match the current filter.
+          </div>
+        )}
+
+        {surfaceMaterials.parseErrorFiles.length > 0 && (
+          <div className="mt-4">
+            <h3 className="text-sm font-medium">Surface material parse errors</h3>
+            <ul className="mt-2 space-y-1 text-sm text-red-700">
+              {surfaceMaterials.parseErrorFiles.map((filePath) => (
+                <li key={filePath}>{getRelativeSurfaceMaterialPath(filePath)}</li>
+              ))}
+            </ul>
+          </div>
+        )}
       </section>
 
       <section className="rounded-xl border p-4">

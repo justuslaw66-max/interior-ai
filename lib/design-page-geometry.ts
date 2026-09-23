@@ -6,8 +6,12 @@
  */
 
 import { type AABB } from "@/lib/snapGuides";
-import { getRotatedFootprint } from "@/lib/design-page-utils";
+import {
+  getRotatedFootprint,
+  snapRotationRadians,
+} from "@/lib/design-page-utils";
 import type { RoomPlanPolygonPoint, RoomPlanShape } from "@/lib/room-types";
+import { EDITOR_GEOMETRY_TOLERANCES } from "@/lib/editor-geometry-tolerances";
 
 // Re-export AABB so callers don't need a separate snapGuides import for this type.
 export type { AABB };
@@ -16,11 +20,81 @@ function clampValue(value: number, min: number, max: number): number {
   return Math.max(min, Math.min(max, value));
 }
 
+export const FURNITURE_WALL_CLEARANCE_METERS = 0.02;
+
+export function getFurnitureWallInset(wallThickness: number): number {
+  const wall = Number.isFinite(wallThickness) ? Math.max(0, wallThickness) : 0;
+  return wall / 2 + FURNITURE_WALL_CLEARANCE_METERS;
+}
+
+export function isAabbWithinPadding(
+  target: AABB,
+  reference: AABB,
+  padding: number
+): boolean {
+  return !(
+    target.maxX < reference.minX - padding ||
+    target.minX > reference.maxX + padding ||
+    target.maxZ < reference.minZ - padding ||
+    target.minZ > reference.maxZ + padding
+  );
+}
+
+export function resolveAxisAlignedRoomItemBounds({
+  roomOriginX,
+  roomOriginZ,
+  roomWidth,
+  roomDepth,
+  wallContactInset,
+  itemWidth,
+  itemDepth,
+}: {
+  roomOriginX: number;
+  roomOriginZ: number;
+  roomWidth: number;
+  roomDepth: number;
+  wallContactInset: number;
+  itemWidth: number;
+  itemDepth: number;
+}): { minX: number; maxX: number; minZ: number; maxZ: number } {
+  return {
+    minX: roomOriginX - roomWidth / 2 + wallContactInset + itemWidth / 2,
+    maxX: roomOriginX + roomWidth / 2 - wallContactInset - itemWidth / 2,
+    minZ: roomOriginZ - roomDepth / 2 + wallContactInset + itemDepth / 2,
+    maxZ: roomOriginZ + roomDepth / 2 - wallContactInset - itemDepth / 2,
+  };
+}
+
+export function resolvePointerRotationRadians({
+  deltaX,
+  deltaZ,
+  snapToStep,
+  snapEnabled,
+  snapStepRadians,
+}: {
+  deltaX: number;
+  deltaZ: number;
+  snapToStep: boolean;
+  snapEnabled: boolean;
+  snapStepRadians: number;
+}): number | null {
+  if (
+    Math.abs(deltaX) < EDITOR_GEOMETRY_TOLERANCES.rotationVectorMeters &&
+    Math.abs(deltaZ) < EDITOR_GEOMETRY_TOLERANCES.rotationVectorMeters
+  ) {
+    return null;
+  }
+  const rotation = Math.atan2(deltaX, -deltaZ);
+  return snapToStep && snapEnabled
+    ? snapRotationRadians(rotation, snapStepRadians)
+    : rotation;
+}
+
 function isPointOnSegment(
   point: RoomPlanPolygonPoint,
   first: RoomPlanPolygonPoint,
   second: RoomPlanPolygonPoint,
-  epsilon = 0.0001
+  epsilon = EDITOR_GEOMETRY_TOLERANCES.polygonMeters
 ): boolean {
   const cross =
     (point.z - first.z) * (second.x - first.x) -
@@ -67,12 +141,104 @@ export function isPointInsideRoomPolygon(
   return inside;
 }
 
+export function isPointInsideRoomPolygonWithHoles(
+  point: RoomPlanPolygonPoint,
+  polygon: RoomPlanPolygonPoint[],
+  holes: RoomPlanPolygonPoint[][] = []
+): boolean {
+  return (
+    isPointInsideRoomPolygon(point, polygon) &&
+    !holes.some(
+      (hole) => hole.length >= 3 && isPointInsideRoomPolygon(point, hole)
+    )
+  );
+}
+
+function lineSegmentsIntersect(
+  firstStart: RoomPlanPolygonPoint,
+  firstEnd: RoomPlanPolygonPoint,
+  secondStart: RoomPlanPolygonPoint,
+  secondEnd: RoomPlanPolygonPoint
+): boolean {
+  const cross = (
+    origin: RoomPlanPolygonPoint,
+    first: RoomPlanPolygonPoint,
+    second: RoomPlanPolygonPoint
+  ) =>
+    (first.x - origin.x) * (second.z - origin.z) -
+    (first.z - origin.z) * (second.x - origin.x);
+  const firstSideA = cross(firstStart, firstEnd, secondStart);
+  const firstSideB = cross(firstStart, firstEnd, secondEnd);
+  const secondSideA = cross(secondStart, secondEnd, firstStart);
+  const secondSideB = cross(secondStart, secondEnd, firstEnd);
+  const epsilon = EDITOR_GEOMETRY_TOLERANCES.polygonMeters;
+
+  if (
+    Math.abs(firstSideA) <= epsilon &&
+    isPointOnSegment(secondStart, firstStart, firstEnd, epsilon)
+  ) return true;
+  if (
+    Math.abs(firstSideB) <= epsilon &&
+    isPointOnSegment(secondEnd, firstStart, firstEnd, epsilon)
+  ) return true;
+  if (
+    Math.abs(secondSideA) <= epsilon &&
+    isPointOnSegment(firstStart, secondStart, secondEnd, epsilon)
+  ) return true;
+  if (
+    Math.abs(secondSideB) <= epsilon &&
+    isPointOnSegment(firstEnd, secondStart, secondEnd, epsilon)
+  ) return true;
+
+  return (
+    firstSideA * firstSideB < -epsilon &&
+    secondSideA * secondSideB < -epsilon
+  );
+}
+
+function polygonIntersectsFootprint(
+  polygon: RoomPlanPolygonPoint[],
+  minX: number,
+  maxX: number,
+  minZ: number,
+  maxZ: number
+): boolean {
+  const footprint = [
+    { x: minX, z: minZ },
+    { x: maxX, z: minZ },
+    { x: maxX, z: maxZ },
+    { x: minX, z: maxZ },
+  ];
+  if (
+    polygon.some(
+      (point) =>
+        point.x >= minX &&
+        point.x <= maxX &&
+        point.z >= minZ &&
+        point.z <= maxZ
+    )
+  ) return true;
+
+  return polygon.some((point, index) => {
+    const next = polygon[(index + 1) % polygon.length];
+    return footprint.some((corner, edgeIndex) =>
+      lineSegmentsIntersect(
+        point,
+        next,
+        corner,
+        footprint[(edgeIndex + 1) % footprint.length]
+      )
+    );
+  });
+}
+
 export function isFootprintInsideRoomPolygon(
   x: number,
   z: number,
   halfWidth: number,
   halfDepth: number,
-  polygon: RoomPlanPolygonPoint[]
+  polygon: RoomPlanPolygonPoint[],
+  holes: RoomPlanPolygonPoint[][] = []
 ): boolean {
   const samplePoints: RoomPlanPolygonPoint[] = [
     { x: x - halfWidth, z: z - halfDepth },
@@ -86,8 +252,22 @@ export function isFootprintInsideRoomPolygon(
     { x: x + halfWidth, z: z + halfDepth },
   ];
 
-  return samplePoints.every((samplePoint) =>
-    isPointInsideRoomPolygon(samplePoint, polygon)
+  if (
+    !samplePoints.every((samplePoint) =>
+      isPointInsideRoomPolygonWithHoles(samplePoint, polygon, holes)
+    )
+  ) return false;
+
+  return !holes.some(
+    (hole) =>
+      hole.length >= 3 &&
+      polygonIntersectsFootprint(
+        hole,
+        x - halfWidth,
+        x + halfWidth,
+        z - halfDepth,
+        z + halfDepth
+      )
   );
 }
 
@@ -98,6 +278,7 @@ function clampToCustomPolygonRoom(
   effectiveDepth: number,
   wall: number,
   polygon: RoomPlanPolygonPoint[],
+  holes: RoomPlanPolygonPoint[][],
   fallbackBounds: { minX: number; maxX: number; minZ: number; maxZ: number }
 ): [number, number] {
   if (polygon.length < 3) {
@@ -130,7 +311,8 @@ function clampToCustomPolygonRoom(
       clampedZ,
       clearanceHalfWidth,
       clearanceHalfDepth,
-      polygon
+      polygon,
+      holes
     )
   ) {
     return [clampedX, clampedZ];
@@ -145,6 +327,16 @@ function clampToCustomPolygonRoom(
     zCandidates.add(clampValue(point.z - clearanceHalfDepth, minZ, maxZ));
     zCandidates.add(clampValue(point.z + clearanceHalfDepth, minZ, maxZ));
   }
+  const holeClearanceX =
+    clearanceHalfWidth + EDITOR_GEOMETRY_TOLERANCES.clearanceMeters;
+  const holeClearanceZ =
+    clearanceHalfDepth + EDITOR_GEOMETRY_TOLERANCES.clearanceMeters;
+  for (const point of holes.flat()) {
+    xCandidates.add(clampValue(point.x - holeClearanceX, minX, maxX));
+    xCandidates.add(clampValue(point.x + holeClearanceX, minX, maxX));
+    zCandidates.add(clampValue(point.z - holeClearanceZ, minZ, maxZ));
+    zCandidates.add(clampValue(point.z + holeClearanceZ, minZ, maxZ));
+  }
 
   let best: { x: number; z: number; distanceSq: number } | null = null;
   for (const candidateX of xCandidates) {
@@ -155,7 +347,8 @@ function clampToCustomPolygonRoom(
           candidateZ,
           clearanceHalfWidth,
           clearanceHalfDepth,
-          polygon
+          polygon,
+          holes
         )
       ) {
         continue;
@@ -189,7 +382,8 @@ export function clampToRoom(
   wall: number,
   rotationY: number = 0,
   planShape: RoomPlanShape = "rectangle",
-  planPolygon?: RoomPlanPolygonPoint[]
+  planPolygon?: RoomPlanPolygonPoint[],
+  planHoles: RoomPlanPolygonPoint[][] = []
 ): [number, number] {
   const [effW, effD] = getRotatedFootprint(itemWidth, itemDepth, rotationY);
   const minX = -roomW / 2 + wall + effW / 2;
@@ -198,7 +392,7 @@ export function clampToRoom(
   const maxZ = roomD / 2 - wall - effD / 2;
 
   if (planShape === "custom_polygon" && planPolygon?.length) {
-    return clampToCustomPolygonRoom(x, z, effW, effD, wall, planPolygon, {
+    return clampToCustomPolygonRoom(x, z, effW, effD, wall, planPolygon, planHoles, {
       minX,
       maxX,
       minZ,
@@ -271,7 +465,9 @@ export function separateIfOverlapping(
 ): [number, number] {
   const dx = ax - bx;
   const dz = az - bz;
-  const dist = Math.sqrt(dx * dx + dz * dz) || 0.0001;
+  const dist =
+    Math.sqrt(dx * dx + dz * dz) ||
+    EDITOR_GEOMETRY_TOLERANCES.polygonMeters;
   const minDist = ar + br + padding;
 
   if (dist >= minDist) return [ax, az];

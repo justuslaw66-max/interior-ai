@@ -1,0 +1,214 @@
+brand: "Castlery"
+source_url: "https://www.castlery.com/sg/products/claude-performance-fabric-bed"
+category: "bed"
+
+product_family: "Claude"
+product_name: "Claude Performance Fabric Bed"
+variant: "Extended Headboard Queen - Performance Dune"
+
+price_usd: 1699
+compare_at_price_usd: 1699
+price_band: "premium"
+brand_tier: "premium_mid"
+
+design_zone: "sleeping_zone"
+anchor_role: "bed_anchor"
+
+dimensions:
+  width_cm: 292
+  depth_cm: 214
+  height_cm: 110
+
+size_class: "large"
+shape: "rectangular"
+material_family: "upholstered"
+material_mix: "performance_fabric_upholstery_wood_frame"
+
+color_family: "beige"
+tone: "warm"
+
+style_cluster: "contemporary"
+style_secondary: "modern"
+design_era: "contemporary"
+
+visual_attributes:
+  visual_weight: "large"
+  edge_profile: "soft_rounded"
+  silhouette: "panel_headboard"
+  form_language: "soft_modern"
+
+spatial_attributes:
+  footprint_shape: "rectangular"
+  walkway_clearance_cm: 90
+  wall_clearance_cm: 0
+
+room_compatibility:
+  - "bedroom"
+
+placement_rules:
+  floor_only: true
+  wall_snappable: true
+  clearance_sensitive: true
+  center_room_preferred: false
+
+design_pairings:
+  - "nightstand"
+  - "table_lamp"
+  - "rug"
+  - "dresser"
+
+product_details:
+  material:
+    - label: "Upholstery"
+      value: "Performance Arvo fabric in Performance Dune"
+    - label: "Frame"
+      value: "Wood frame with foam padded upholstery"
+    - label: "Headboard"
+      value: "Adjustable upholstered headboard; extended-headboard variants include floating nightstand extensions"
+  dimensions:
+    - label: "Queen with extended headboard"
+      value: "W292 x D214 x H110cm"
+    - label: "King with extended headboard"
+      value: "W322 x D214 x H110cm"
+    - label: "Queen standard bed"
+      value: "W169 x D214 x H110cm"
+    - label: "King standard bed"
+      value: "W199 x D214 x H110cm"
+    - label: "Mattress space"
+      value: "Queen: W154 x D193cm; King: W184 x D193cm, both with 8.5cm mattress inset"
+  delivery_and_warranty:
+    - label: "Return policy"
+      value: "30-day returns"
+    - label: "Warranty"
+      value: "10-year limited warranty"
+    - label: "Assembly"
+      value: "Bedframe needs assembly, 2 people required"
+
+assets:
+  asset_id: "bed-real-castlery-claude"
+  model_url: "/assets/models/bed-real-castlery-claude-extended-headboard-queen-performance-dune.glb"
+  thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1678693175/crusader/variants/T50441129-AR4001/Claude-Queen-Bed-Front_1-1678693173.jpg"
+  gallery_images:
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1678693175/crusader/variants/T50441129-AR4001/Claude-Queen-Bed-Front_1-1678693173.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1710930312/crusader/variants/54000080-AR4001/Claude-Queen-Bed-Front_1-1710930312.jpg"
+
+variants:
+  - variant: "Extended Headboard Queen - Performance Dune"
+    size_label: "Queen"
+    source_sku: "AS-000304-AR4001"
+    finish_code: "extended_headboard_performance_dune"
+    finish_label: "Extended headboard - Performance Dune"
+    swatch_group: "upholstery"
+    swatch_hex: "#b8b0a3"
+    swatch_image_url: "https://res.cloudinary.com/castlery/image/private/b_rgb:FFFFFF,c_fit,f_auto,q_auto,w_800/v1674034715/crusader/variants/AR-4001/Sloane-Cane-Chair-Dune-Grey-Oak-Det_1-1674034712.jpg"
+    collection_type: "stocked"
+    model_url: "/assets/models/bed-real-castlery-claude-extended-headboard-queen-performance-dune.glb"
+    affiliate_url: "https://www.castlery.com/sg/products/claude-performance-fabric-bed?material=performance_dune&variant=with_extended_headboard&bed_frame_size=queen"
+    available: true
+    price_usd: 1699
+    compare_at_price_usd: 1699
+    dimensions: &extended_queen_dims
+      width_cm: 292
+      depth_cm: 214
+      height_cm: 110
+    size_class: "large"
+    color_family: "beige"
+    tone: "warm"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1678693175/crusader/variants/T50441129-AR4001/Claude-Queen-Bed-Front_1-1678693173.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1678693175/crusader/variants/T50441129-AR4001/Claude-Queen-Bed-Front_1-1678693173.jpg"
+    materials: &claude_performance_dune_materials
+      upholstery:
+        structure: "performance_fabric"
+        surface: "performance_arvo"
+      frame:
+        structure: "wood"
+        surface: "foam_padded_upholstery"
+      headboard:
+        structure: "foam"
+        surface: "upholstered"
+    finish: &claude_performance_dune_finish
+      color_finish: "performance_dune"
+      surface_finish: "performance_arvo"
+      finish_color: "dune"
+
+  - variant: "Extended Headboard King - Performance Dune"
+    size_label: "King"
+    source_sku: "AS-000303-AR4001"
+    finish_code: "extended_headboard_performance_dune"
+    finish_label: "Extended headboard - Performance Dune"
+    swatch_group: "upholstery"
+    swatch_hex: "#b8b0a3"
+    swatch_image_url: "https://res.cloudinary.com/castlery/image/private/b_rgb:FFFFFF,c_fit,f_auto,q_auto,w_800/v1674034715/crusader/variants/AR-4001/Sloane-Cane-Chair-Dune-Grey-Oak-Det_1-1674034712.jpg"
+    collection_type: "stocked"
+    model_url: "/assets/models/bed-real-castlery-claude-extended-headboard-king-performance-dune.glb"
+    affiliate_url: "https://www.castlery.com/sg/products/claude-performance-fabric-bed?material=performance_dune&variant=with_extended_headboard&bed_frame_size=king"
+    available: true
+    price_usd: 1799
+    compare_at_price_usd: 1799
+    dimensions: &extended_king_dims
+      width_cm: 322
+      depth_cm: 214
+      height_cm: 110
+    size_class: "large"
+    color_family: "beige"
+    tone: "warm"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1678693188/crusader/variants/T50441130-AR4001/Claude-King-Bed-Front_1-1678693186.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1678693188/crusader/variants/T50441130-AR4001/Claude-King-Bed-Front_1-1678693186.jpg"
+    materials: *claude_performance_dune_materials
+    finish: *claude_performance_dune_finish
+
+  - variant: "Standard Queen - Performance Dune"
+    size_label: "Queen"
+    source_sku: "54000078-AR4001"
+    finish_code: "standard_bed_performance_dune"
+    finish_label: "Standard bed - Performance Dune"
+    swatch_group: "upholstery"
+    swatch_hex: "#b8b0a3"
+    swatch_image_url: "https://res.cloudinary.com/castlery/image/private/b_rgb:FFFFFF,c_fit,f_auto,q_auto,w_800/v1674034715/crusader/variants/AR-4001/Sloane-Cane-Chair-Dune-Grey-Oak-Det_1-1674034712.jpg"
+    collection_type: "stocked"
+    model_url: "/assets/models/bed-real-castlery-claude-standard-queen-performance-dune.glb"
+    affiliate_url: "https://www.castlery.com/sg/products/claude-performance-fabric-bed?material=performance_dune&variant=standard_bed&bed_frame_size=queen"
+    available: true
+    price_usd: 1199
+    compare_at_price_usd: 1199
+    dimensions: &standard_queen_dims
+      width_cm: 169
+      depth_cm: 214
+      height_cm: 110
+    size_class: "large"
+    color_family: "beige"
+    tone: "warm"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1710930312/crusader/variants/54000080-AR4001/Claude-Queen-Bed-Front_1-1710930312.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1710930312/crusader/variants/54000080-AR4001/Claude-Queen-Bed-Front_1-1710930312.jpg"
+    materials: *claude_performance_dune_materials
+    finish: *claude_performance_dune_finish
+
+  - variant: "Standard King - Performance Dune"
+    size_label: "King"
+    source_sku: "54000079-AR4001"
+    finish_code: "standard_bed_performance_dune"
+    finish_label: "Standard bed - Performance Dune"
+    swatch_group: "upholstery"
+    swatch_hex: "#b8b0a3"
+    swatch_image_url: "https://res.cloudinary.com/castlery/image/private/b_rgb:FFFFFF,c_fit,f_auto,q_auto,w_800/v1674034715/crusader/variants/AR-4001/Sloane-Cane-Chair-Dune-Grey-Oak-Det_1-1674034712.jpg"
+    collection_type: "stocked"
+    model_url: "/assets/models/bed-real-castlery-claude-standard-king-performance-dune.glb"
+    affiliate_url: "https://www.castlery.com/sg/products/claude-performance-fabric-bed?material=performance_dune&variant=standard_bed&bed_frame_size=king"
+    available: true
+    price_usd: 1299
+    compare_at_price_usd: 1299
+    dimensions: &standard_king_dims
+      width_cm: 199
+      depth_cm: 214
+      height_cm: 110
+    size_class: "large"
+    color_family: "beige"
+    tone: "warm"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1710930333/crusader/variants/54000082-AR4001/Claude-King-Bed-Front_1-1710930332.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1710930333/crusader/variants/54000082-AR4001/Claude-King-Bed-Front_1-1710930332.jpg"
+    materials: *claude_performance_dune_materials
+    finish: *claude_performance_dune_finish

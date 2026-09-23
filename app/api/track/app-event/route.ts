@@ -1,30 +1,16 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
-import { logAppEvent, AppEventType } from "@/lib/app-events";
+import { recordBrowserAnalyticsEvent } from "@/lib/app-events";
+import { ingestBrowserAppEvent } from "@/lib/browser-app-event-ingestion";
 import { rateLimit } from "@/lib/rateLimit";
-
-const ALLOWED = new Set<AppEventType>([
-  "landing_viewed",
-  "design_started",
-  "first_item_added",
-  "third_item_added",
-  "export_clicked",
-  "upgrade_clicked",
-  "share_link_opened",
-  "design_duplicated",
-  "share_design_duplicated",
-  "export_opened",
-  "export_printed",
-  "export_pdf_clicked",
-  "export_upgrade_prompt_shown",
-  "checkout_completed",
-  "upgrade_checkout_started",
-  "upgrade_checkout_completed",
-  "billing_portal_opened",
-  "subscription_canceled",
-]);
-
-const skipAppEventPersistence = process.env.NEXT_PUBLIC_ENABLE_QA_HOOKS === "1";
+import { prisma } from "@/lib/prisma";
+import {
+  ApiBoundaryError,
+  apiErrorResponse,
+  apiSuccessHeaders,
+  createOperationId,
+  readJsonRequest,
+} from "@/lib/api-boundary";
 
 function getClientIp(req: Request) {
   const header = req.headers.get("x-forwarded-for") || "";
@@ -32,33 +18,51 @@ function getClientIp(req: Request) {
 }
 
 export async function POST(req: Request) {
-  const session = await auth();
-  const body = await req.json().catch(() => ({}));
-  const { eventType, designId, shareToken, meta } = body ?? {};
+  const operation = "telemetry.app_event";
+  const operationId = createOperationId();
+  const startedAt = Date.now();
+  try {
+    const session = await auth();
+    const body = await readJsonRequest(req, 16 * 1024);
+    const key = session?.user?.id
+      ? `user:${session.user.id}:app-event`
+      : `ip:${getClientIp(req)}:app-event`;
+    const rl = rateLimit(key, 30, 60_000);
+    if (!rl.ok) {
+      throw new ApiBoundaryError(429, "RATE_LIMITED", "Too many requests.");
+    }
 
-  if (!ALLOWED.has(eventType)) {
-    return NextResponse.json({ error: "Invalid eventType" }, { status: 400 });
+    const result = await ingestBrowserAppEvent(
+      body,
+      { userId: session?.user?.id ?? null },
+      {
+        findSharedDesignId: async (shareToken) => {
+          const shared = await prisma.design.findFirst({
+            where: { shareToken, shareEnabled: true },
+            select: { id: true },
+          });
+          return shared?.id ?? null;
+        },
+        findOwnedDesignId: async (designId, userId) => {
+          const owned = await prisma.design.findFirst({
+            where: { id: designId, userId },
+            select: { id: true },
+          });
+          return owned?.id ?? null;
+        },
+        recordBrowserEvent: recordBrowserAnalyticsEvent,
+      }
+    );
+
+    if (!result.ok) {
+      throw new ApiBoundaryError(400, "BAD_REQUEST", "Invalid event type.");
+    }
+
+    return NextResponse.json(
+      { ok: true, persisted: result.persisted, eventId: result.eventId },
+      { headers: apiSuccessHeaders(operationId) }
+    );
+  } catch (error) {
+    return apiErrorResponse(error, { operation, operationId, startedAt });
   }
-
-  const key = session?.user?.id
-    ? `user:${session.user.id}:app-event`
-    : `ip:${getClientIp(req)}:app-event`;
-  const rl = rateLimit(key, 30, 60_000);
-  if (!rl.ok) {
-    return NextResponse.json({ error: "Too many requests" }, { status: 429 });
-  }
-
-  if (skipAppEventPersistence) {
-    return NextResponse.json({ ok: true, skipped: "qa" });
-  }
-
-  await logAppEvent({
-    eventType,
-    userId: session?.user?.id ?? null,
-    designId: typeof designId === "string" ? designId : null,
-    shareToken: typeof shareToken === "string" ? shareToken : null,
-    meta: typeof meta === "object" && meta ? meta : null,
-  });
-
-  return NextResponse.json({ ok: true });
 }

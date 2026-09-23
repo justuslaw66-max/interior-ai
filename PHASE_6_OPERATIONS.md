@@ -5,7 +5,7 @@
 ### 1.1 APP_ENV Setup
 
 Set `APP_ENV` in each environment:
-- **Development**: `AWS_ENV=development` (or omit, defaults to `development`)
+- **Development**: `APP_ENV=development` (required explicitly)
 - **Staging**: `APP_ENV=staging`
 - **Production**: `APP_ENV=production`
 
@@ -175,7 +175,7 @@ Admin pages require:
 - Authenticated user
 - Email in `ADMIN_EMAILS` allowlist
 
-**In development**: If `ADMIN_EMAILS` is empty, **all logged-in users** get admin access.
+**In development**: `ADMIN_EMAILS` remains required for admin access. Missing or malformed deployment/admin configuration denies access.
 
 ### 4.2 Available Metrics
 

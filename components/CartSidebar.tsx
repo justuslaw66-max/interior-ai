@@ -3,18 +3,39 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { CatalogItemSchema } from "@/lib/catalog-schema";
 import { CATALOG_ITEMS } from "@/lib/catalog";
-import { track } from "@/lib/analytics";
+import { track, trackProductEvent } from "@/lib/analytics";
 import { createCommerceEvent } from "@/lib/commerce-helpers";
 import { resolveCatalogVariant } from "@/lib/catalog/variant-resolver";
 import { trackVariantIssues } from "@/lib/catalog/variant-observability";
+import { GUEST_CHECKOUT_OPENER_ID, type GuestPromptReason } from "@/lib/guest-save-prompt";
+import { RetailerConfirmationDialog } from "@/components/RetailerConfirmationDialog";
+import {
+  RETAILER_CONFIRMATION_CART_FALLBACK_ID, RETAILER_CONFIRMATION_GLOBAL_OPENER_ID,
+  cancelRetailerConfirmationSession, canonicalRetailerGroupIdentity,
+  consumeRetailerConfirmationSession, countRetailerTabs,
+  createRetailerConfirmationScopeKey, createRetailerConfirmationSession,
+  getCurrentRetailerConfirmationSession, getRetailerGroupOpenerId, updateRetailerConfirmationSameTab,
+  type RetailerConfirmationLine, type RetailerConfirmationOpener,
+  type RetailerConfirmationSession,
+} from "@/lib/retailer-confirmation";
+import { useShopifyCheckoutLock } from "@/lib/useShopifyCheckoutLock";
 
-type PlacedItem = {
+export type CartSidebarPlacedItem = {
   instanceId: string;
   productId: string;
   variantId: string;
   qty?: number;
   includeInCheckout?: boolean;
+  purchaseOptionId?: string;
+  bundleGroupId?: string;
+  bundleRole?: "primary" | "component";
+  bundleQuantity?: number;
   locked?: boolean;
+};
+
+type CartNotice = {
+  message: string;
+  tone: "info" | "warning" | "error";
 };
 
 function getItemPrice(product: CatalogItemSchema) {
@@ -28,14 +49,12 @@ function getItemPrice(product: CatalogItemSchema) {
 async function trackAndOpen({
   designId,
   productId,
-  price,
-  retailer,
+  variantId,
   buyUrl,
 }: {
   designId?: string | null;
   productId: string;
-  price: number;
-  retailer: string | null;
+  variantId: string;
   buyUrl: string;
 }) {
   let urlToOpen = buyUrl;
@@ -47,9 +66,7 @@ async function trackAndOpen({
       body: JSON.stringify({
         designId: designId ?? null,
         productId,
-        price,
-        retailer,
-        buyUrl,
+        variantId,
       }),
     });
 
@@ -77,6 +94,20 @@ async function trackAndOpen({
   return urlToOpen;
 }
 
+export type CartSidebarProps = {
+  items: CartSidebarPlacedItem[];
+  designId?: string | null;
+  plan: "free" | "pro";
+  onRemove: (instanceId: string) => void;
+  onSetQty: (instanceId: string, qty: number) => void;
+  onSetInclude: (instanceId: string, include: boolean) => void;
+  onBulkSwap: (direction: "cheaper" | "premium") => void;
+  onShowUpgrade: () => void;
+  isGuest?: boolean;
+  onGuestCapture?: (reason: GuestPromptReason, onContinue: () => void) => void;
+  theme?: "default" | "designer";
+};
+
 export default function CartSidebar({
   items,
   designId,
@@ -89,43 +120,56 @@ export default function CartSidebar({
   isGuest = false,
   onGuestCapture,
   theme = "default",
-}: {
-  items: PlacedItem[];
-  designId?: string | null;
-  plan: "free" | "pro";
-  onRemove: (instanceId: string) => void;
-  onSetQty: (instanceId: string, qty: number) => void;
-  onSetInclude: (instanceId: string, include: boolean) => void;
-  onBulkSwap: (direction: "cheaper" | "premium") => void;
-  onShowUpgrade: () => void;
-  isGuest?: boolean;
-  onGuestCapture?: (reason: string, onContinue: () => void) => void;
-  theme?: "default" | "designer";
-}) {
+}: CartSidebarProps) {
   const isDesignerTheme = theme === "designer";
   const [busy, setBusy] = useState(false);
   const [openInSameTab, setOpenInSameTab] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
   const cartOpenedRef = useRef(false);
+  const checkoutLock = useShopifyCheckoutLock(setBusy);
   const autoFillPulseRef = useRef(false);
+  const noticeTimerRef = useRef<number | null>(null);
   const [autoFillPulse, setAutoFillPulse] = useState(false);
-  const [confirmOpen, setConfirmOpen] = useState<null | {
-    title: string;
-    tabs: number;
-    lines: typeof cartLines;
-  }>(null);
+  const [notice, setNotice] = useState<CartNotice | null>(null);
+  const [confirmationSession, setConfirmationSession] = useState<RetailerConfirmationSession | null>(null);
+  const confirmationSessionRef = useRef<RetailerConfirmationSession | null>(null); const confirmationGenerationRef = useRef(0);
+
+  const showCartNotice = (message: string, tone: CartNotice["tone"] = "info") => {
+    setNotice({ message, tone });
+    if (noticeTimerRef.current) {
+      window.clearTimeout(noticeTimerRef.current);
+    }
+    noticeTimerRef.current = window.setTimeout(() => {
+      setNotice(null);
+      noticeTimerRef.current = null;
+    }, tone === "error" ? 5000 : 3200);
+  };
+
+  useEffect(() => {
+    return () => {
+      if (noticeTimerRef.current) {
+        window.clearTimeout(noticeTimerRef.current);
+      }
+    };
+  }, []);
 
   const cartLines = useMemo(() => {
     return items
       .map((it) => {
+        if (it.bundleRole === "component") return null;
         const product = CATALOG_ITEMS[it.productId];
         if (!product) return null;
 
         const resolved = resolveCatalogVariant(product, it.variantId);
+        const purchaseOption = it.purchaseOptionId
+          ? resolved.variant.purchaseOptions?.find((option) => option.id === it.purchaseOptionId) ?? null
+          : null;
+        const optionQuantity = purchaseOption?.quantity ?? it.bundleQuantity ?? null;
+        const isBundleLine = Boolean(optionQuantity && optionQuantity > 1);
         const unitPrice =
           resolved.commerce.type === "affiliate" ? resolved.commerce.priceHint ?? 0 : getItemPrice(product);
-        const qty = Math.max(1, Math.min(99, it.qty ?? 1));
-        const linePrice = unitPrice * qty;
+        const qty = Math.max(1, Math.min(99, optionQuantity ?? it.qty ?? 1));
+        const linePrice = purchaseOption?.priceHint ?? unitPrice * qty;
 
         return {
           instanceId: it.instanceId,
@@ -133,10 +177,15 @@ export default function CartSidebar({
           variantId: resolved.variantId,
           name: product.title,
           category: product.category,
-          variantName: resolved.variant.label,
-          unitPrice,
+          variantName: purchaseOption ? `${resolved.variant.label} · ${purchaseOption.label}` : resolved.variant.label,
+          purchaseOptionLabel: purchaseOption?.label ?? null,
+          isBundleLine,
+          unitPrice: purchaseOption?.priceHint ?? unitPrice,
           qty,
           linePrice,
+          linkOpenCount: isBundleLine ? 1 : qty,
+          compareAtPrice: purchaseOption?.compareAtPriceHint ?? null,
+          savings: purchaseOption?.savingsHint ?? null,
           includeInCheckout: it.includeInCheckout ?? true,
           locked: Boolean(it.locked),
           purchaseMode: resolved.commerce.type,
@@ -146,7 +195,7 @@ export default function CartSidebar({
               : resolved.commerce.type === "shopify"
               ? "Shopify"
               : "Unknown",
-          buyUrl: resolved.commerce.type === "affiliate" ? resolved.commerce.url : null,
+          buyUrl: purchaseOption?.affiliateUrl ?? (resolved.commerce.type === "affiliate" ? resolved.commerce.url : null),
           shopifyVariantId: resolved.commerce.type === "shopify" ? resolved.commerce.variantId : null,
           shopifyAvailable: resolved.commerce.type === "shopify" ? resolved.commerce.available : false,
         };
@@ -164,12 +213,35 @@ export default function CartSidebar({
       includeInCheckout: boolean;
       locked: boolean;
       purchaseMode: "shopify" | "affiliate" | "not_buyable";
+      purchaseOptionLabel: string | null;
+      isBundleLine: boolean;
+      linkOpenCount: number;
+      compareAtPrice: number | null;
+      savings: number | null;
       retailer: string;
       buyUrl: string | null;
       shopifyVariantId: string | null;
       shopifyAvailable: boolean;
     }>;
   }, [items]);
+
+  const confirmationScopeKey = useMemo(() =>
+    createRetailerConfirmationScopeKey(designId, items), [designId, items]);
+  const renderedConfirmationSession = getCurrentRetailerConfirmationSession(confirmationSession, confirmationScopeKey);
+
+  useEffect(() => {
+    const active = confirmationSessionRef.current;
+    if (!active || active.scopeKey === confirmationScopeKey) return;
+    cancelRetailerConfirmationSession(active, active);
+    confirmationSessionRef.current = null;
+    setConfirmationSession(null);
+  }, [confirmationScopeKey]);
+
+  useEffect(() => () => {
+    const active = confirmationSessionRef.current;
+    if (active) cancelRetailerConfirmationSession(active, active);
+    confirmationSessionRef.current = null;
+  }, []);
 
   useEffect(() => {
     for (const item of items) {
@@ -217,6 +289,25 @@ export default function CartSidebar({
     () => includedLines.filter((x) => x.purchaseMode === "affiliate"),
     [includedLines]
   );
+  const readyShopifyItems = useMemo(
+    () => shopifyItems.filter((x) => Boolean(x.shopifyVariantId && x.shopifyAvailable)),
+    [shopifyItems]
+  );
+  const unavailableShopifyItems = useMemo(
+    () => shopifyItems.filter((x) => !x.shopifyVariantId || !x.shopifyAvailable),
+    [shopifyItems]
+  );
+  const readyAffiliateItems = useMemo(
+    () => affiliateItems.filter((x) => Boolean(x.buyUrl)),
+    [affiliateItems]
+  );
+  const missingAffiliateItems = useMemo(
+    () => affiliateItems.filter((x) => !x.buyUrl),
+    [affiliateItems]
+  );
+  const excludedLineCount = cartLines.filter((x) => !(x.includeInCheckout ?? true)).length;
+  const checkoutReadyCount = readyShopifyItems.length + readyAffiliateItems.length;
+  const needsReviewCount = unavailableShopifyItems.length + missingAffiliateItems.length;
 
   const totals = useMemo(() => {
     const total = includedLines.reduce((sum, x) => sum + x.linePrice, 0);
@@ -232,6 +323,10 @@ export default function CartSidebar({
       design_id: designId ?? null,
       cart_items_shopify: shopifyItems.length,
       cart_items_affiliate: affiliateItems.length,
+    });
+    trackProductEvent("shopping_list_opened", {
+      source: "editor_cart",
+      itemCount: shopifyItems.length + affiliateItems.length,
     });
     cartOpenedRef.current = true;
   }, [isCollapsed, designId, shopifyItems.length, affiliateItems.length]);
@@ -249,10 +344,11 @@ export default function CartSidebar({
     track("cart_empty_autofill_clicked", { design_id: designId ?? null });
     const targets = eligibleLines.length ? eligibleLines : cartLines;
     if (targets.length === 0) {
-      alert("No shoppable items found yet.");
+      showCartNotice("No shoppable items found yet.", "warning");
       return;
     }
     targets.forEach((x) => onSetInclude(x.instanceId, true));
+    showCartNotice(`${targets.length} item${targets.length === 1 ? "" : "s"} included in checkout.`);
   };
 
   const addItemsIndividually = () => {
@@ -276,6 +372,7 @@ export default function CartSidebar({
     }
     return Array.from(map.entries()).map(([retailer, entry]) => ({
       retailer,
+      groupIdentity: canonicalRetailerGroupIdentity(retailer),
       lines: entry.lines,
       includedLines: entry.includedLines,
       subtotal: entry.includedLines.reduce((s, x) => s + x.linePrice, 0),
@@ -283,42 +380,47 @@ export default function CartSidebar({
     }));
   }, [affiliateAll]);
 
-  const countTabs = (lines: typeof cartLines) =>
-    lines
-      .filter((x) => x.buyUrl)
-      .reduce((sum, x) => sum + (x.qty ?? 1), 0);
-
-  const openUrl = async (url: string) => {
-    if (openInSameTab) {
+  const openUrl = async (url: string, sameTabPreference: boolean) => {
+    if (sameTabPreference) {
       window.location.href = url;
       return;
     }
     window.open(url, "_blank", "noopener,noreferrer");
   };
 
-  const doBuyLines = async (lines: typeof cartLines) => {
+  const doBuyLines = async (lines: readonly RetailerConfirmationLine[],
+    sameTabPreference = openInSameTab) => {
     const purchasable = lines.filter((x) => x.buyUrl);
     if (purchasable.length === 0) {
-      alert("No items in this group have buy links yet.");
+      showCartNotice("No items in this group have buy links yet.", "warning");
       return;
     }
 
     setBusy(true);
+    showCartNotice(
+      sameTabPreference
+        ? "Opening the first retailer link in this tab."
+        : `Opening ${countRetailerTabs(purchasable)} retailer tab${countRetailerTabs(purchasable) === 1 ? "" : "s"}.`
+    );
     try {
       for (const line of purchasable) {
-        for (let i = 0; i < (line.qty ?? 1); i++) {
+        for (let i = 0; i < (line.linkOpenCount ?? line.qty ?? 1); i++) {
           const urlToOpen = await trackAndOpen({
             designId,
             productId: line.productId,
-            price: line.unitPrice,
-            retailer: line.retailer,
+            variantId: line.variantId,
             buyUrl: line.buyUrl!,
           });
-          await openUrl(urlToOpen);
+          trackProductEvent("product_purchase_clicked", {
+            source: "affiliate",
+            category: line.category,
+            result: "success",
+          });
+          await openUrl(urlToOpen, sameTabPreference);
 
-          if (openInSameTab) return;
+          if (sameTabPreference) return;
 
-          await new Promise((r) => setTimeout(r, 350));
+          await new Promise((resolve) => setTimeout(resolve, 350));
         }
       }
     } finally {
@@ -326,30 +428,76 @@ export default function CartSidebar({
     }
   };
 
-  const requestBuy = (title: string, lines: typeof cartLines) => {
-    const tabs = countTabs(lines);
+  const requestBuy = (
+    title: string,
+    lines: readonly RetailerConfirmationLine[],
+    opener: RetailerConfirmationOpener
+  ) => {
+    const tabs = countRetailerTabs(lines);
 
     if (tabs <= 3) {
-      doBuyLines(lines);
+      void doBuyLines(lines);
       return;
     }
 
-    setConfirmOpen({ title, tabs, lines });
+    const active = confirmationSessionRef.current;
+    if (active) cancelRetailerConfirmationSession(active, active);
+    confirmationGenerationRef.current += 1;
+    const session = createRetailerConfirmationSession({
+      generation: confirmationGenerationRef.current,
+      opener,
+      title,
+      lines,
+      tabCount: tabs,
+      openInSameTab,
+      scopeKey: confirmationScopeKey,
+    });
+    confirmationSessionRef.current = session;
+    setConfirmationSession(session);
   };
 
+  const cancelConfirmation = (expected: RetailerConfirmationSession) => {
+    if (!cancelRetailerConfirmationSession(confirmationSessionRef.current, expected)) return;
+    confirmationSessionRef.current = null;
+    setConfirmationSession(null);
+  };
+
+  const continueConfirmation = (expected: RetailerConfirmationSession) => {
+    const consumed = consumeRetailerConfirmationSession(
+      confirmationSessionRef.current,
+      expected
+    );
+    if (!consumed) return;
+    confirmationSessionRef.current = null;
+    setConfirmationSession(null);
+    void doBuyLines(consumed.lines, consumed.openInSameTab);
+  };
+
+  const toggleConfirmationSameTab = (expected: RetailerConfirmationSession) => {
+    const next = updateRetailerConfirmationSameTab(
+      confirmationSessionRef.current,
+      expected,
+      !expected.openInSameTab
+    );
+    if (!next) return;
+    confirmationSessionRef.current = next;
+    setConfirmationSession(next);
+    setOpenInSameTab(next.openInSameTab);
+  };
   const startShopifyCheckoutInternal = async () => {
+    if (checkoutLock.active()) return;
     const invalidShopify = shopifyItems.filter(
       (line) => !line.shopifyVariantId || !line.shopifyAvailable
     );
     if (invalidShopify.length > 0) {
-      alert(
+      showCartNotice(
         `Some selected variants are unavailable for checkout:\n${invalidShopify
           .map((line) => `- ${line.name} (${line.variantName})`)
-          .join("\n")}`
+          .join("\n")}`,
+        "error"
       );
       return;
     }
-
     const lines = shopifyItems
       .filter((x) => x.shopifyVariantId)
       .map((x) => ({
@@ -360,18 +508,21 @@ export default function CartSidebar({
       }));
 
     if (lines.length === 0) {
-      alert("No Shopify items have variant IDs yet.");
+      showCartNotice("No Shopify items have variant IDs yet.", "warning");
       return;
     }
-
     track("shopify_checkout_started", {
       design_id: designId ?? null,
       cart_items_shopify: shopifyItems.length,
       cart_items_affiliate: affiliateItems.length,
     });
+    trackProductEvent("product_purchase_clicked", {
+      source: "shopify_checkout",
+      itemCount: lines.length,
+      result: "success",
+    });
 
-    setBusy(true);
-    try {
+    await checkoutLock.run(async () => {
       const res = await fetch("/api/shopify/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -388,19 +539,18 @@ export default function CartSidebar({
                 )
                 .join("\n")}`
             : data?.error ?? "Checkout failed";
-        alert(msg);
+        showCartNotice(msg, "error");
         return;
       }
 
       const u = new URL(data.checkoutUrl as string);
       if (designId) u.searchParams.set("designId", designId);
       window.location.href = u.toString();
-    } finally {
-      setBusy(false);
-    }
+    });
   };
 
   const startShopifyCheckout = async () => {
+    if (busy || checkoutLock.active()) return;
     if (isGuest && onGuestCapture) {
       onGuestCapture("checkout", () => {
         void startShopifyCheckoutInternal();
@@ -427,8 +577,20 @@ export default function CartSidebar({
   const secondaryButtonClass = isDesignerTheme
     ? "rounded-xl border border-white/10 px-3 py-2 text-sm text-neutral-200 transition hover:bg-white/5 disabled:text-neutral-500"
     : "rounded-xl border border-neutral-200 px-3 py-2 text-sm text-neutral-800 transition hover:bg-neutral-50 disabled:text-neutral-400";
+  const noticeClass =
+    notice?.tone === "error"
+      ? isDesignerTheme
+        ? "border-red-400/30 bg-red-500/10 text-red-100"
+        : "border-red-200 bg-red-50 text-red-800"
+      : notice?.tone === "warning"
+        ? isDesignerTheme
+          ? "border-amber-400/30 bg-amber-500/10 text-amber-100"
+          : "border-amber-200 bg-amber-50 text-amber-800"
+        : isDesignerTheme
+          ? "border-sky-400/30 bg-sky-500/10 text-sky-100"
+          : "border-sky-200 bg-sky-50 text-sky-800";
 
-  return (
+  return (<>
     <aside
       data-testid="cart-panel"
       className={panelClass}
@@ -468,6 +630,8 @@ export default function CartSidebar({
         </div>
 
         <button
+          id={RETAILER_CONFIRMATION_CART_FALLBACK_ID}
+          data-testid="retailer-confirmation-cart-fallback"
           className={secondaryButtonClass}
           onClick={() => setIsCollapsed((v) => !v)}
           aria-expanded={!isCollapsed}
@@ -480,8 +644,60 @@ export default function CartSidebar({
 
       {!isCollapsed && (
         <div id="cart-body">
+          <div
+            className={
+              isDesignerTheme
+                ? "mt-3 rounded-2xl border border-white/10 bg-black/10 p-3"
+                : "mt-3 rounded-2xl border border-neutral-200 bg-neutral-50 p-3"
+            }
+            data-testid="cart-checkout-readiness"
+          >
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <div className={`text-sm font-semibold ${textClass}`}>Checkout readiness</div>
+                <div className={`mt-1 text-xs ${mutedTextClass}`}>
+                  {checkoutReadyCount > 0
+                    ? `${checkoutReadyCount} included line${checkoutReadyCount === 1 ? "" : "s"} can be purchased now.`
+                    : "No checkout-ready items are included yet."}
+                </div>
+              </div>
+              <span
+                className={
+                  needsReviewCount > 0
+                    ? isDesignerTheme
+                      ? "rounded-full bg-amber-500/10 px-2 py-1 text-[10px] font-semibold text-amber-100"
+                      : "rounded-full bg-amber-50 px-2 py-1 text-[10px] font-semibold text-amber-800"
+                    : isDesignerTheme
+                      ? "rounded-full bg-emerald-500/10 px-2 py-1 text-[10px] font-semibold text-emerald-100"
+                      : "rounded-full bg-emerald-50 px-2 py-1 text-[10px] font-semibold text-emerald-700"
+                }
+              >
+                {needsReviewCount > 0 ? "Review needed" : "Ready"}
+              </span>
+            </div>
+            <div className="mt-3 grid grid-cols-3 gap-2 text-center">
+              <div className={isDesignerTheme ? "rounded-xl bg-white/5 p-2" : "rounded-xl bg-white p-2"}>
+                <div className={`text-sm font-semibold ${textClass}`}>{readyShopifyItems.length}</div>
+                <div className={`text-[10px] ${mutedTextClass}`}>Cart-ready</div>
+              </div>
+              <div className={isDesignerTheme ? "rounded-xl bg-white/5 p-2" : "rounded-xl bg-white p-2"}>
+                <div className={`text-sm font-semibold ${textClass}`}>{readyAffiliateItems.length}</div>
+                <div className={`text-[10px] ${mutedTextClass}`}>Retailer links</div>
+              </div>
+              <div className={isDesignerTheme ? "rounded-xl bg-white/5 p-2" : "rounded-xl bg-white p-2"}>
+                <div className={`text-sm font-semibold ${textClass}`}>{needsReviewCount}</div>
+                <div className={`text-[10px] ${mutedTextClass}`}>Needs review</div>
+              </div>
+            </div>
+            {excludedLineCount > 0 ? (
+              <div className={`mt-2 text-[11px] ${mutedTextClass}`}>
+                {excludedLineCount} line{excludedLineCount === 1 ? "" : "s"} excluded from checkout.
+              </div>
+            ) : null}
+          </div>
+
           <div className="mt-3 grid gap-2">
-            <button
+            <button id={GUEST_CHECKOUT_OPENER_ID}
               data-testid="checkout-shopify"
               className={`w-full rounded-xl px-3 py-2 text-sm font-semibold text-white transition ${
                 shopifyItems.length === 0 || busy ? "bg-neutral-300" : "bg-neutral-900 hover:bg-neutral-800"
@@ -493,16 +709,31 @@ export default function CartSidebar({
             </button>
 
             <button
+              id={RETAILER_CONFIRMATION_GLOBAL_OPENER_ID}
               data-testid="checkout-affiliate"
               className={`${secondaryButtonClass} w-full ${
                 affiliateItems.length === 0 || busy ? "opacity-60" : ""
               }`}
               disabled={affiliateItems.length === 0 || busy}
-              onClick={() => requestBuy("Buy external items", affiliateItems)}
+              onClick={() => requestBuy(
+                "Buy external items",
+                affiliateItems,
+                { kind: "global" }
+              )}
             >
               Open retailer links ({affiliateItems.length})
             </button>
           </div>
+
+          {notice && (
+            <div
+              data-testid="cart-notice"
+              role={notice.tone === "error" ? "alert" : "status"}
+              className={`mt-3 whitespace-pre-line rounded-xl border px-3 py-2 text-sm ${noticeClass}`}
+            >
+              {notice.message}
+            </div>
+          )}
 
           <div className="mt-3 grid grid-cols-2 gap-2">
             <button
@@ -590,8 +821,14 @@ export default function CartSidebar({
                                 {x.variantName} • {x.category}
                                 </span>
                               </div>
-                              <span className="mt-2 inline-flex rounded-full bg-green-100 px-2 py-0.5 text-[11px] font-medium text-green-700">
-                                Checkout here
+                              <span
+                                className={
+                                  x.shopifyVariantId && x.shopifyAvailable
+                                    ? "mt-2 inline-flex rounded-full bg-green-100 px-2 py-0.5 text-[11px] font-medium text-green-700"
+                                    : "mt-2 inline-flex rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-medium text-amber-800"
+                                }
+                              >
+                                {x.shopifyVariantId && x.shopifyAvailable ? "Checkout here" : "Needs Shopify review"}
                               </span>
                               <label className={`mt-2 flex items-center gap-2 text-xs ${isDesignerTheme ? "text-neutral-300" : "text-neutral-600"}`}>
                                 <input
@@ -615,28 +852,45 @@ export default function CartSidebar({
 
                             <div className="text-right">
                               <div className={`text-sm font-semibold ${textClass}`}>${x.linePrice}</div>
-                              <div className={`text-[11px] ${mutedTextClass}`}>${x.unitPrice} ea</div>
+                              <div className={`text-[11px] ${mutedTextClass}`}>
+                                {x.isBundleLine ? (
+                                  <>
+                                    Set price
+                                    {x.compareAtPrice ? (
+                                      <span className="ml-1 line-through">${x.compareAtPrice}</span>
+                                    ) : null}
+                                  </>
+                                ) : (
+                                  <>${x.unitPrice} ea</>
+                                )}
+                              </div>
                             </div>
                           </div>
 
                           <div className="mt-2 flex items-center justify-between">
-                            <div className="flex items-center gap-2">
-                              <button
-                                className={isDesignerTheme ? "h-7 w-7 rounded-lg border border-white/10 text-sm text-neutral-200" : "h-7 w-7 rounded-lg border border-neutral-200 text-sm"}
-                                onClick={() => onSetQty(x.instanceId, Math.max(1, x.qty - 1))}
-                                data-testid="cart-quantity-decrease"
-                              >
-                                -
-                              </button>
-                              <div className={`w-8 text-center text-sm ${textClass}`} data-testid="cart-quantity">{x.qty}</div>
-                              <button
-                                className={isDesignerTheme ? "h-7 w-7 rounded-lg border border-white/10 text-sm text-neutral-200" : "h-7 w-7 rounded-lg border border-neutral-200 text-sm"}
-                                onClick={() => onSetQty(x.instanceId, Math.min(99, x.qty + 1))}
-                                data-testid="cart-quantity-increase"
-                              >
-                                +
-                              </button>
-                            </div>
+                            {x.isBundleLine ? (
+                              <div className={`rounded-full px-2.5 py-1 text-xs font-semibold ${isDesignerTheme ? "bg-white/10 text-neutral-200" : "bg-emerald-50 text-emerald-700"}`}>
+                                Set includes {x.qty}
+                              </div>
+                            ) : (
+                              <div className="flex items-center gap-2">
+                                <button
+                                  className={isDesignerTheme ? "h-7 w-7 rounded-lg border border-white/10 text-sm text-neutral-200" : "h-7 w-7 rounded-lg border border-neutral-200 text-sm"}
+                                  onClick={() => onSetQty(x.instanceId, Math.max(1, x.qty - 1))}
+                                  data-testid="cart-quantity-decrease"
+                                >
+                                  -
+                                </button>
+                                <div className={`w-8 text-center text-sm ${textClass}`} data-testid="cart-quantity">{x.qty}</div>
+                                <button
+                                  className={isDesignerTheme ? "h-7 w-7 rounded-lg border border-white/10 text-sm text-neutral-200" : "h-7 w-7 rounded-lg border border-neutral-200 text-sm"}
+                                  onClick={() => onSetQty(x.instanceId, Math.min(99, x.qty + 1))}
+                                  data-testid="cart-quantity-increase"
+                                >
+                                  +
+                                </button>
+                              </div>
+                            )}
 
                             <button
                               className="rounded-lg px-2 py-1 text-xs text-red-600 transition hover:bg-red-50"
@@ -668,6 +922,8 @@ export default function CartSidebar({
                         </div>
 
                         <button
+                          id={getRetailerGroupOpenerId(g.groupIdentity)}
+                          data-testid={getRetailerGroupOpenerId(g.groupIdentity)}
                           className={`rounded-lg px-3 py-1 text-xs font-semibold text-white ${
                             busy || g.includedLines.length === 0
                               ? "bg-neutral-400"
@@ -675,7 +931,14 @@ export default function CartSidebar({
                           }`}
                           disabled={busy || g.includedLines.length === 0}
                           onClick={() =>
-                            requestBuy(`Buy from ${g.retailer}`, g.includedLines)
+                            requestBuy(
+                              `Buy from ${g.retailer}`,
+                              g.includedLines,
+                              {
+                                kind: "retailer-group",
+                                groupIdentity: g.groupIdentity,
+                              }
+                            )
                           }
                         >
                           Buy retailer
@@ -700,8 +963,14 @@ export default function CartSidebar({
                                   {x.variantName} • {x.category}
                                   </span>
                                 </div>
-                                <span className="mt-2 inline-flex rounded-full bg-blue-100 px-2 py-0.5 text-[11px] font-medium text-blue-700">
-                                  External retailer
+                                <span
+                                  className={
+                                    x.buyUrl
+                                      ? "mt-2 inline-flex rounded-full bg-blue-100 px-2 py-0.5 text-[11px] font-medium text-blue-700"
+                                      : "mt-2 inline-flex rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-medium text-amber-800"
+                                  }
+                                >
+                                  {x.buyUrl ? "Retailer link ready" : "Needs retailer link"}
                                 </span>
 
                                 <label className={`mt-2 flex items-center gap-2 text-xs ${isDesignerTheme ? "text-neutral-300" : "text-neutral-600"}`}>
@@ -724,33 +993,52 @@ export default function CartSidebar({
                                 </label>
 
                                 {!x.buyUrl && (
-                                  <div className={`mt-1 text-xs ${mutedTextClass}`}>
-                                    Buy link coming soon
+                                  <div className={isDesignerTheme ? "mt-1 text-xs text-amber-100" : "mt-1 text-xs text-amber-700"}>
+                                    Add a retailer URL before sharing this as checkout-ready.
                                   </div>
                                 )}
                               </div>
 
                               <div className="text-right">
                                 <div className={`text-sm font-semibold ${textClass}`}>${x.linePrice}</div>
-                                <div className={`text-[11px] ${mutedTextClass}`}>${x.unitPrice} ea</div>
+                                <div className={`text-[11px] ${mutedTextClass}`}>
+                                  {x.isBundleLine ? (
+                                    <>
+                                      Set price
+                                      {x.compareAtPrice ? (
+                                        <span className="ml-1 line-through">${x.compareAtPrice}</span>
+                                      ) : null}
+                                    </>
+                                  ) : (
+                                    <>${x.unitPrice} ea</>
+                                  )}
+                                </div>
                               </div>
                             </div>
 
                             <div className="mt-2 flex items-center justify-between">
                               <div className="flex items-center gap-2">
-                                <button
-                                  className={isDesignerTheme ? "h-7 w-7 rounded-lg border border-white/10 text-sm text-neutral-200" : "h-7 w-7 rounded-lg border border-neutral-200 text-sm"}
-                                  onClick={() => onSetQty(x.instanceId, Math.max(1, x.qty - 1))}
-                                >
-                                  -
-                                </button>
-                                <div className={`w-8 text-center text-sm ${textClass}`}>{x.qty}</div>
-                                <button
-                                  className={isDesignerTheme ? "h-7 w-7 rounded-lg border border-white/10 text-sm text-neutral-200" : "h-7 w-7 rounded-lg border border-neutral-200 text-sm"}
-                                  onClick={() => onSetQty(x.instanceId, Math.min(99, x.qty + 1))}
-                                >
-                                  +
-                                </button>
+                                {x.isBundleLine ? (
+                                  <div className={`rounded-full px-2.5 py-1 text-xs font-semibold ${isDesignerTheme ? "bg-white/10 text-neutral-200" : "bg-emerald-50 text-emerald-700"}`}>
+                                    Set includes {x.qty}
+                                  </div>
+                                ) : (
+                                  <>
+                                    <button
+                                      className={isDesignerTheme ? "h-7 w-7 rounded-lg border border-white/10 text-sm text-neutral-200" : "h-7 w-7 rounded-lg border border-neutral-200 text-sm"}
+                                      onClick={() => onSetQty(x.instanceId, Math.max(1, x.qty - 1))}
+                                    >
+                                      -
+                                    </button>
+                                    <div className={`w-8 text-center text-sm ${textClass}`}>{x.qty}</div>
+                                    <button
+                                      className={isDesignerTheme ? "h-7 w-7 rounded-lg border border-white/10 text-sm text-neutral-200" : "h-7 w-7 rounded-lg border border-neutral-200 text-sm"}
+                                      onClick={() => onSetQty(x.instanceId, Math.min(99, x.qty + 1))}
+                                    >
+                                      +
+                                    </button>
+                                  </>
+                                )}
 
                                 <button
                                   className={`ml-2 rounded-lg px-3 py-1 text-xs ${
@@ -759,9 +1047,9 @@ export default function CartSidebar({
                                       : "bg-neutral-200 text-neutral-600"
                                   }`}
                                   disabled={!x.buyUrl || busy}
-                                  onClick={() => doBuyLines([x])}
+                                  onClick={() => void doBuyLines([x])}
                                 >
-                                  Buy
+                                  {x.buyUrl ? "Open" : "Review"}
                                 </button>
                               </div>
 
@@ -788,98 +1076,14 @@ export default function CartSidebar({
         </div>
       )}
 
-      {confirmOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-          <div
-            className={
-              isDesignerTheme
-                ? "designer-panel designer-panel-strong w-full max-w-md rounded-2xl p-5"
-                : "w-full max-w-md rounded-2xl bg-white p-5 shadow-lg"
-            }
-          >
-            <div className="text-lg font-semibold">{confirmOpen.title}</div>
-            <div className="mt-1 text-sm text-neutral-600">
-              {openInSameTab ? (
-                <>
-                  This will open the first link in the{" "}
-                  <span className="font-semibold">same tab</span>.
-                </>
-              ) : (
-                <>
-                  This will open <span className="font-semibold">{confirmOpen.tabs}</span>{" "}
-                  tab{confirmOpen.tabs === 1 ? "" : "s"} to retailer pages.
-                </>
-              )}
-            </div>
-
-            <div className="mt-4 max-h-48 overflow-auto rounded-xl border">
-              <ul className="divide-y text-sm">
-                {confirmOpen.lines
-                  .filter((x) => x.buyUrl)
-                  .map((x) => (
-                    <li key={x.instanceId} className="p-3">
-                      <div className="flex items-start justify-between gap-2">
-                        <div className="min-w-0">
-                          <div className="truncate font-semibold">{x.name}</div>
-                          <div className="text-xs text-neutral-500">
-                            {x.retailer} • qty {x.qty}
-                          </div>
-                        </div>
-                        <div className="text-xs text-neutral-500">
-                          {x.qty} tab{x.qty === 1 ? "" : "s"}
-                        </div>
-                      </div>
-                    </li>
-                  ))}
-              </ul>
-            </div>
-
-            <div className="mt-4 flex items-center justify-between rounded-xl border bg-neutral-50 px-3 py-2">
-              <div>
-                <div className="text-sm font-semibold">Open in same tab</div>
-                <div className="text-xs text-neutral-500">
-                  Safer for popup blockers. Opens the first link and leaves this page.
-                </div>
-              </div>
-
-              <button
-                className={`rounded-lg px-3 py-1 text-sm ${
-                  openInSameTab ? "bg-neutral-900 text-white" : "bg-white border"
-                }`}
-                onClick={() => setOpenInSameTab((v) => !v)}
-                type="button"
-              >
-                {openInSameTab ? "On" : "Off"}
-              </button>
-            </div>
-
-            <div className="mt-4 flex justify-end gap-2">
-              <button
-                className="rounded-xl bg-neutral-200 px-4 py-2 text-sm"
-                onClick={() => setConfirmOpen(null)}
-                disabled={busy}
-              >
-                Cancel
-              </button>
-              <button
-                className="rounded-xl bg-neutral-900 px-4 py-2 text-sm text-white"
-                onClick={() => {
-                  const payload = confirmOpen;
-                  setConfirmOpen(null);
-                  doBuyLines(payload.lines);
-                }}
-                disabled={busy}
-              >
-                Continue
-              </button>
-            </div>
-
-            <div className="mt-2 text-[11px] text-neutral-500">
-              Tip: reduce quantity to open fewer tabs.
-            </div>
-          </div>
-        </div>
-      )}
     </aside>
-  );
+    <RetailerConfirmationDialog
+        key={confirmationScopeKey} session={renderedConfirmationSession}
+        busy={busy}
+        isDesignerTheme={isDesignerTheme}
+        onCancel={cancelConfirmation}
+        onContinue={continueConfirmation}
+        onToggleSameTab={toggleConfirmationSameTab}
+    />
+  </>);
 }

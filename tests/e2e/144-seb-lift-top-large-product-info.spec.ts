@@ -109,7 +109,7 @@ test.describe("144. Seb Lift Top Large Product Info", () => {
     await page.goto("/design");
     await page.waitForLoadState("domcontentloaded");
 
-    await expect(page.getByTestId("scene-canvas")).toBeVisible({ timeout: 20000 });
+    await expect(page.getByTestId("scene-canvas").first()).toBeVisible({ timeout: 20000 });
 
     expect(await selectImportedFamilyByHint(page, "Seb")).toBeTruthy();
     expect(await selectImportedProductById(page, SEB_LIFT_TOP_LARGE_ID)).toBeTruthy();
@@ -173,7 +173,7 @@ test.describe("144. Seb Lift Top Large Product Info", () => {
     await page.goto("/design");
     await page.waitForLoadState("domcontentloaded");
 
-    await expect(page.getByTestId("scene-canvas")).toBeVisible({ timeout: 20000 });
+    await expect(page.getByTestId("scene-canvas").first()).toBeVisible({ timeout: 20000 });
 
     expect(await selectImportedFamilyByHint(page, "Seb")).toBeTruthy();
     expect(await selectImportedProductById(page, SEB_STORAGE_120_ID)).toBeTruthy();

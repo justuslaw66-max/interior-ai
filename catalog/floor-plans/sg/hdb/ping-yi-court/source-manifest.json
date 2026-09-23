@@ -1,0 +1,221 @@
+{
+  "schema_version": 2,
+  "fixture_kind": "floor_plan_source_manifest",
+  "plan_id": "sg-hdb-ping-yi-court",
+  "coordinate_unit": "millimetre",
+  "verification_status": "needs_review",
+  "accuracy_contract": {
+    "source_verified": "Every visible and dimensioned source element is represented and independently reviewed.",
+    "construction_verified": "Unit-specific CAD, as-built documentation, or site measurements confirm the geometry.",
+    "current_tier": "approximate_editable"
+  },
+  "source": {
+    "url": "https://d14s2iums0fe7u.cloudfront.net/hdb/floorplan/pyc.pdf",
+    "sha256": "f81afb74e74969bbe6fb2d9e55c3406e3caf7206aa66884d27e59e02a96637a0",
+    "page_count": 7
+  },
+  "official_brochure": {
+    "url": "https://assets.hdb.gov.sg/residential/buying-a-flat/finding-a-flat/sales-brochure/25OCTBTO_pdf_selection/ping_yi_court.pdf",
+    "sha256": "c222a058459f0128cc8046d039b2b7559e0cb36fd030ac9160d3a1807041be00",
+    "page_count": 24,
+    "unit_distribution_pdf_pages": [10, 11],
+    "unit_distribution_brochure_pages": [17, 18, 19]
+  },
+  "evidence_types": {
+    "explicit_dimension": "Printed dimension on the source page.",
+    "derived_dimension": "Arithmetic consequence of printed dimensions.",
+    "scale_traced": "Registered to source linework where no dimension is printed.",
+    "official_specification": "Operation or material corroborated by the official HDB brochure.",
+    "official_unit_distribution": "Block, floor, stack, and flat type corroborated by the official HDB unit distribution.",
+    "explicit_source_annotation": "Text or dashed annotation printed on the source page."
+  },
+  "stack_bindings": [
+    {
+      "block": "810A",
+      "stacks": ["509", "527"],
+      "floor_ranges": [{ "from": 2, "to": 15 }],
+      "layout_id": "3gen",
+      "evidence": "official_unit_distribution",
+      "transform": "needs_review"
+    }
+  ],
+  "layouts": [
+    {
+      "layout_id": "2-room-flexi-type-1",
+      "source_page": 1,
+      "printed_dimensions_mm": [2890, 2895, 3110, 3515, 1780, 1150, 2495, 2265, 1320, 1180, 1200, 700],
+      "catalog_room_assertions": [
+        { "room_id": "bedroom", "width_mm": 2890, "depth_mm": 3110, "evidence": "explicit_dimension" },
+        { "room_id": "kitchen", "width_mm": 2265, "depth_mm": 2495, "evidence": "explicit_dimension" }
+      ],
+      "catalog_opening_assertions": [
+        { "from_room_id": "kitchen", "to_room_id": "living_dining", "wall": "east", "width_mm": 1800, "offset_mm": -347.5, "kind": "opening", "evidence": "derived_dimension" },
+        { "from_room_id": "living_dining", "to_room_id": null, "wall": "south", "width_mm": 1200, "offset_mm": -847.5, "kind": "door", "evidence": "explicit_dimension" }
+      ],
+      "catalog_reference_zone_assertions": [
+        { "zone_id": "aircon_ledge", "depth_mm": 1780, "evidence": "explicit_dimension" },
+        { "zone_id": "entry_structure", "depth_mm": 1800, "evidence": "explicit_dimension" }
+      ],
+      "opening_semantics": [
+        { "id": "bedroom-partition", "operation": "sliding", "evidence": "official_specification" },
+        { "id": "bathroom-door", "operation": "folding", "evidence": "official_specification" }
+      ],
+      "unresolved": ["Air-con Ledge width and exterior wall projection are scale-traced.", "Bathroom vents and kitchen louvres need v2 opening classifications."]
+    },
+    {
+      "layout_id": "2-room-flexi-type-2-open",
+      "source_page": 2,
+      "printed_dimensions_mm": [2815, 3090, 1545, 1805, 2270, 4340, 1845, 2680, 1200, 1240, 1520, 700, 900],
+      "catalog_room_assertions": [
+        { "room_id": "living_dining", "width_mm": 5905, "depth_mm": 7215, "center_x_mm": 2952.5, "center_z_mm": 5102.5, "evidence": "derived_dimension" },
+        { "room_id": "shelter", "width_mm": 1240, "depth_mm": 1845, "center_x_mm": 4955, "center_z_mm": 6757.5, "evidence": "explicit_dimension" }
+      ],
+      "catalog_polygon_assertions": [
+        { "room_id": "living_dining", "global_points_mm": [[2815,1495],[5905,1495],[5905,5835],[4335,5835],[4335,7680],[4015,7680],[4015,8710],[2815,8710],[2815,4635],[0,4635],[0,3090],[2815,3090]], "evidence": "derived_dimension" }
+      ],
+      "catalog_opening_assertions": [
+        { "from_room_id": "living_dining", "to_room_id": null, "wall": "south", "width_mm": 1200, "offset_mm": 462.5, "kind": "door", "evidence": "explicit_dimension" }
+      ],
+      "catalog_reference_zone_assertions": [
+        { "zone_id": "aircon_ledge", "depth_mm": 1805, "evidence": "explicit_dimension" },
+        { "zone_id": "entry_shaft", "width_mm": 330, "depth_mm": 1200, "evidence": "scale_traced" }
+      ],
+      "opening_semantics": [
+        { "id": "bedroom-partition", "operation": "sliding", "evidence": "official_specification" },
+        { "id": "bathroom-door", "operation": "folding", "evidence": "official_specification" }
+      ],
+      "unresolved": ["The shaft dimensions and Air-con Ledge width are scale-traced.", "Bedroom partition span is not printed."]
+    },
+    {
+      "layout_id": "2-room-flexi-type-2-partitioned",
+      "source_page": 3,
+      "printed_dimensions_mm": [2815, 3090, 1545, 1805, 2270, 4340, 1845, 2680, 1200, 1240, 1520, 700, 900],
+      "catalog_room_assertions": [
+        { "room_id": "living_dining", "width_mm": 3090, "depth_mm": 7215, "center_x_mm": 4360, "center_z_mm": 5102.5, "evidence": "derived_dimension" },
+        { "room_id": "shelter", "width_mm": 1240, "depth_mm": 1845, "center_x_mm": 4955, "center_z_mm": 6757.5, "evidence": "explicit_dimension" }
+      ],
+      "catalog_opening_assertions": [
+        { "from_room_id": "flex", "to_room_id": "living_dining", "wall": "east", "width_mm": 900, "offset_mm": 322.5, "kind": "door", "evidence": "explicit_dimension" },
+        { "from_room_id": "living_dining", "to_room_id": null, "wall": "south", "width_mm": 1200, "offset_mm": -945, "kind": "door", "evidence": "explicit_dimension" }
+      ],
+      "catalog_reference_zone_assertions": [
+        { "zone_id": "aircon_ledge", "depth_mm": 1805, "evidence": "explicit_dimension" },
+        { "zone_id": "entry_shaft", "width_mm": 330, "depth_mm": 1200, "evidence": "scale_traced" }
+      ],
+      "optional_configuration": {
+        "room_id": "flex",
+        "source_label": null,
+        "default_variant": "2-room-flexi-type-2-open",
+        "evidence": "The partition and 900 mm door are drawn, but the space has no printed room label."
+      },
+      "opening_semantics": [
+        { "id": "bedroom-partition", "operation": "sliding", "evidence": "official_specification" },
+        { "id": "bathroom-door", "operation": "folding", "evidence": "official_specification" }
+      ],
+      "unresolved": ["The optional flex space must not be presented as a source-labelled room."]
+    },
+    {
+      "layout_id": "3-room",
+      "source_page": 4,
+      "printed_dimensions_mm": [2980, 3000, 3295, 4465, 4150, 1800, 1030, 3020, 585, 1200, 1175, 1860, 1715, 1145, 900, 700],
+      "catalog_room_assertions": [
+        { "room_id": "main_bedroom", "width_mm": 2980, "depth_mm": 4465, "evidence": "explicit_dimension" },
+        { "room_id": "kitchen_utility", "width_mm": 3020, "depth_mm": 2380, "center_x_mm": 4470, "center_z_mm": 7455, "evidence": "scale_traced" }
+      ],
+      "catalog_opening_assertions": [
+        { "from_room_id": "kitchen_utility", "to_room_id": "living_dining", "wall": "north", "width_mm": 1960, "offset_mm": 530, "kind": "opening", "evidence": "derived_dimension" },
+        { "from_room_id": "living_dining", "to_room_id": null, "wall": "south", "width_mm": 1200, "offset_mm": 452.5, "kind": "door", "evidence": "explicit_dimension" }
+      ],
+      "catalog_reference_zone_assertions": [
+        { "zone_id": "aircon_ledge", "depth_mm": 1030, "width_mm": 2375, "evidence": "derived_dimension" },
+        { "zone_id": "service_strip", "width_mm": 585, "depth_mm": 2380, "evidence": "scale_traced" }
+      ],
+      "opening_semantics": [
+        { "id": "main-bathroom-door", "operation": "folding", "evidence": "official_specification" },
+        { "id": "common-bathroom-door", "operation": "folding", "evidence": "official_specification" },
+        { "id": "service-strip", "operation": "louvre", "evidence": "scale_traced" }
+      ],
+      "unresolved": ["The 2380 mm Kitchen/Utility depth is scale-traced and must remain unverified until independently measured."]
+    },
+    {
+      "layout_id": "4-room",
+      "source_page": 5,
+      "printed_dimensions_mm": [3035, 3035, 3015, 3680, 4500, 4290, 1830, 1310, 630, 1425, 2815, 1200, 1230, 2305, 1825, 900, 700],
+      "catalog_room_assertions": [
+        { "room_id": "service_yard", "width_mm": 1425, "depth_mm": 2400, "center_x_mm": 5557.5, "center_z_mm": 7530, "evidence": "scale_traced" },
+        { "room_id": "kitchen", "width_mm": 2815, "depth_mm": 2400, "evidence": "scale_traced" }
+      ],
+      "catalog_opening_assertions": [
+        { "from_room_id": "service_yard", "to_room_id": "kitchen", "wall": "east", "width_mm": 900, "offset_mm": -90, "kind": "door", "evidence": "scale_traced" },
+        { "from_room_id": "kitchen", "to_room_id": "living_dining", "wall": "north", "width_mm": 2815, "offset_mm": 0, "kind": "opening", "evidence": "derived_dimension" },
+        { "from_room_id": "living_dining", "to_room_id": null, "wall": "south", "width_mm": 1200, "offset_mm": 2722.5, "kind": "door", "evidence": "explicit_dimension" }
+      ],
+      "catalog_reference_zone_assertions": [
+        { "zone_id": "aircon_ledge", "depth_mm": 1310, "evidence": "explicit_dimension" },
+        { "zone_id": "service_strip", "width_mm": 630, "depth_mm": 2400, "evidence": "scale_traced" }
+      ],
+      "opening_semantics": [
+        { "id": "main-bathroom-door", "operation": "folding", "evidence": "official_specification" },
+        { "id": "common-bathroom-door", "operation": "folding", "evidence": "official_specification" },
+        { "id": "service-yard-door", "operation": "needs_review", "material": "aluminium_framed_glass", "evidence": "official_specification" },
+        { "id": "service-strip", "operation": "louvre", "evidence": "scale_traced" }
+      ],
+      "unresolved": ["Service Yard and Kitchen depths are scale-traced; their printed widths are exact."]
+    },
+    {
+      "layout_id": "5-room",
+      "source_page": 6,
+      "printed_dimensions_mm": [3000, 2975, 2975, 6495, 4460, 4150, 1810, 1280, 630, 1395, 5065, 1200, 1185, 2280, 2415, 900, 700],
+      "catalog_room_assertions": [
+        { "room_id": "service_yard", "width_mm": 1395, "depth_mm": 2550, "evidence": "scale_traced" },
+        { "room_id": "kitchen", "width_mm": 5065, "depth_mm": 2550, "evidence": "scale_traced" }
+      ],
+      "catalog_opening_assertions": [
+        { "from_room_id": "service_yard", "to_room_id": "kitchen", "wall": "east", "width_mm": 900, "offset_mm": -345, "kind": "door", "evidence": "scale_traced" },
+        { "from_room_id": "kitchen", "to_room_id": "living_dining", "wall": "north", "width_mm": 5065, "offset_mm": 0, "kind": "opening", "evidence": "derived_dimension" },
+        { "from_room_id": "living_dining", "to_room_id": null, "wall": "south", "width_mm": 1200, "offset_mm": 2417.5, "kind": "door", "evidence": "explicit_dimension" }
+      ],
+      "catalog_reference_zone_assertions": [
+        { "zone_id": "aircon_ledge", "depth_mm": 1280, "evidence": "explicit_dimension" },
+        { "zone_id": "service_strip", "width_mm": 630, "depth_mm": 2550, "evidence": "scale_traced" }
+      ],
+      "annotations": [
+        { "label": "SUGGESTED STUDY", "kind": "optional_partition", "must_not_create_room": true, "evidence": "explicit_source_annotation" }
+      ],
+      "opening_semantics": [
+        { "id": "main-bathroom-door", "operation": "folding", "evidence": "official_specification" },
+        { "id": "common-bathroom-door", "operation": "folding", "evidence": "official_specification" },
+        { "id": "service-yard-door", "operation": "needs_review", "material": "aluminium_framed_glass", "evidence": "official_specification" },
+        { "id": "service-strip", "operation": "louvre", "evidence": "scale_traced" }
+      ],
+      "unresolved": ["Suggested Study is an annotation, not a source room.", "Service-zone depths and the yard door position are scale-traced."]
+    },
+    {
+      "layout_id": "3gen",
+      "source_page": 7,
+      "printed_dimensions_mm": [2795, 4285, 2975, 2975, 3000, 4960, 1790, 1210, 2325, 1200, 1235, 2793, 1395, 630, 4460, 1810, 1280, 2580, 900, 700],
+      "catalog_room_assertions": [
+        { "room_id": "main_bedroom_2", "width_mm": 2795, "depth_mm": 4960, "evidence": "explicit_dimension" },
+        { "room_id": "kitchen", "width_mm": 2793, "depth_mm": 2730, "evidence": "scale_traced" },
+        { "room_id": "service_yard", "width_mm": 1395, "depth_mm": 2730, "evidence": "scale_traced" }
+      ],
+      "catalog_opening_assertions": [
+        { "from_room_id": "kitchen", "to_room_id": "living_dining", "wall": "north", "width_mm": 2350, "offset_mm": -221.5, "kind": "opening", "evidence": "derived_dimension" },
+        { "from_room_id": "living_dining", "to_room_id": null, "wall": "south", "width_mm": 1200, "offset_mm": -2667.5, "kind": "door", "evidence": "explicit_dimension" }
+      ],
+      "catalog_reference_zone_assertions": [
+        { "zone_id": "aircon_ledge_left", "width_mm": 1210, "depth_mm": 1790, "evidence": "explicit_dimension" },
+        { "zone_id": "aircon_ledge_right", "width_mm": 1132, "depth_mm": 1280, "evidence": "scale_traced" },
+        { "zone_id": "service_strip", "width_mm": 630, "depth_mm": 2730, "evidence": "scale_traced" }
+      ],
+      "opening_semantics": [
+        { "id": "main-bedroom-2-bathroom-door", "operation": "folding", "evidence": "official_specification" },
+        { "id": "common-bathroom-door", "operation": "folding", "evidence": "official_specification" },
+        { "id": "main-bedroom-1-bathroom-door", "operation": "folding", "evidence": "official_specification" },
+        { "id": "service-yard-door", "operation": "needs_review", "material": "aluminium_framed_glass", "evidence": "official_specification" },
+        { "id": "service-strip", "operation": "louvre", "evidence": "scale_traced" }
+      ],
+      "unresolved": ["The right Air-con Ledge width is derived from registered linework; only its 1280 mm depth is printed.", "Per-stack mirror and rotation transforms still require official floor-plan review."]
+    }
+  ]
+}

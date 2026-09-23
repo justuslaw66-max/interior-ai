@@ -1,5 +1,7 @@
 "use client";
 
+import { useState } from "react";
+
 type Row = {
   id: string;
   createdAtLabel: string;
@@ -10,6 +12,8 @@ type Row = {
 };
 
 export default function RecentClicksTable({ rows }: { rows: Row[] }) {
+  const [copiedClickKey, setCopiedClickKey] = useState<string | null>(null);
+
   return (
     <div className="mt-3 overflow-x-auto rounded-lg border">
       <table className="w-full text-sm">
@@ -39,11 +43,16 @@ export default function RecentClicksTable({ rows }: { rows: Row[] }) {
                     className="rounded bg-neutral-900 px-2 py-1 text-xs text-white"
                     onClick={async () => {
                       await navigator.clipboard.writeText(c.clickKey);
-                      alert("clickKey copied ✅");
+                      setCopiedClickKey(c.clickKey);
                     }}
                   >
                     Copy
                   </button>
+                  {copiedClickKey === c.clickKey && (
+                    <span className="text-xs text-green-700" role="status">
+                      Copied
+                    </span>
+                  )}
                 </div>
               </td>
             </tr>

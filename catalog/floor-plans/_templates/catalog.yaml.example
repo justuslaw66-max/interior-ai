@@ -1,0 +1,79 @@
+schema_version: 1
+
+floor_plan:
+  plan_id: sg-example-project
+  slug: example-project
+  project_name: Example Project
+  title: Example Project floor plans
+  country_code: SG
+  property_type: apartment
+
+address:
+  street_name: Example Street
+  street_aliases: [Example St]
+  buildings:
+    - id: block-1a
+      block: 1A
+      postal_code: null
+      aliases: [1A Example Street, 1A Example St]
+      unit_distribution:
+        status: partial
+        source_pdf_page: 1
+        source_brochure_page: 1
+        groups:
+          - stacks: ["101"]
+            floor_ranges: [{ from: 2, to: 12 }]
+            layout_ids: [example-layout]
+
+source:
+  source_url: https://example.com/floor-plan.pdf
+  source_title: Example floor-plan brochure
+  publisher: Example publisher
+  retrieved_at: "2026-01-01"
+  sha256: null
+  license_status: unknown
+  corroborating_sources: []
+
+unit_distribution_source:
+  source_url: https://example.com/unit-distribution.pdf
+  source_title: Example unit distribution
+  publisher: Example publisher
+
+publication:
+  status: draft
+  visibility: review_only
+  accuracy_notice: Internal review fixture only. Publish a separately approved canonical revision before exposing this plan to consumers.
+
+layouts:
+  - layout_id: example-layout
+    label: Example layout
+    source_page: 1
+    flat_type: Example
+    bedroom_count: 1
+    floor_area_sqm: null
+    applies_to_building_ids: [block-1a]
+    preview_url: /assets/floor-plans/sg/example/previews/example-layout.webp
+    fidelity: approximate_editable
+    verification_note: Confirm this layout against the exact unit number.
+    template:
+      summary: Example editable room layout
+      best_for: Starting a measured space-planning draft
+      layout_type: one_bed
+      footprint: compact
+      tags: [address plan, example]
+      zones: [Living, Bedroom]
+      real_life_checks: [Confirm dimensions on site]
+      rooms:
+        - id: living
+          name: Living Room
+          room_type: living
+          shape: rectangle
+          width: 4
+          depth: 3
+          x: 2
+          z: 1.5
+      doorways: []
+      windows: []
+      # Source-supported suggestions stay non-physical until the consumer
+      # chooses a separately authored configuration.
+      annotations: []

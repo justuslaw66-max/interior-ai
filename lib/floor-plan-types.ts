@@ -5,6 +5,7 @@ import {
   type RoomSnapshot,
   type RoomType,
 } from "@/lib/room-types";
+import { getRoomSnapshotFloorAreaSqm } from "@/lib/room-floor-area";
 
 export type FloorPlanSource = "manual" | "room_snapshot" | "uploaded" | "ai_detected" | "cad_imported";
 
@@ -57,6 +58,8 @@ export type FloorPlanUnderlay = {
   assetUrl: string;
   mimeType: string;
   sourceMimeType?: string;
+  sourceAssetSha256?: string;
+  sourceJobId?: string;
   renderedPage?: number;
   pageCount?: number;
   widthPx?: number;
@@ -65,6 +68,8 @@ export type FloorPlanUnderlay = {
   widthMeters: number;
   depthMeters: number;
   opacity: number;
+  /** Legacy underlays omit this and remain visible. */
+  visible?: boolean;
   rotationDeg: number;
   locked: boolean;
   calibration?: FloorPlanScaleCalibration;
@@ -263,7 +268,7 @@ export function buildFloorPlanFromRooms(
       name: room.name,
       roomType: room.roomType,
       polygon,
-      areaSqm: calculateFloorPlanPolygonAreaSqm(polygon),
+      areaSqm: getRoomSnapshotFloorAreaSqm(room),
       source: "room_snapshot",
     };
   });

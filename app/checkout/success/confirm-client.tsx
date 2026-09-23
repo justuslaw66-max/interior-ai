@@ -23,18 +23,19 @@ export default function ConfirmOrderClient({
 
   useEffect(() => {
     if (!orderRef || trackedRef.current) return;
-    track("checkout_completed", {
-      order_id: orderRef,
+    track("checkout_return_observed", {
+      provider_reference_present: true,
       design_id: designId ?? null,
+      order_verified: false,
     });
 
     fetch("/api/track/app-event", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        eventType: "checkout_completed",
+        eventType: "checkout_return_observed",
         designId,
-        meta: { orderRef },
+        meta: { providerReferencePresent: true },
       }),
     }).catch(() => undefined);
 

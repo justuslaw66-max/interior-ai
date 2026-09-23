@@ -54,7 +54,7 @@ export function useDesignPagePanelMode({
   const goShop = useCallback(() => {
     setEditorMode("buy");
     setDesignPanelOpen(false);
-    setItemCartOpen(true);
+    setItemCartOpen(false);
   }, [setDesignPanelOpen, setEditorMode, setItemCartOpen]);
 
   return {

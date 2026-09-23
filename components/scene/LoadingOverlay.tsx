@@ -1,6 +1,7 @@
 "use client";
 
-import { Html, useProgress } from "@react-three/drei";
+import { useProgress } from "@react-three/drei/core/Progress";
+import { Html } from "@react-three/drei/web/Html";
 
 export function LoadingOverlay() {
   const { active, progress, item, loaded, total } = useProgress();

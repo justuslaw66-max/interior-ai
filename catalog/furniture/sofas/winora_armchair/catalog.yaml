@@ -1,0 +1,405 @@
+status: "published"
+brand: "Castlery"
+retailer: "Castlery Singapore"
+source_url: "https://www.castlery.com/sg/products/winora-armchair?quantity=single&material=tessa_sand"
+category: "armchair"
+
+product_family: "Winora"
+product_name: "Winora Armchair"
+slug: "castlery-winora-armchair"
+variant: ""
+
+price_usd: 549
+price_band: "mid"
+brand_tier: "premium_mid"
+
+design_zone: "living_zone"
+anchor_role: "secondary"
+
+dimensions:
+  width_cm: 70.5
+  depth_cm: 85
+  height_cm: 85
+
+seat_capacity: 1
+size_class: "medium"
+shape: "rectangular"
+base_type: "legged"
+
+material_family: "upholstered"
+material_mix: "upholstered_wood"
+material_mix_components:
+  - "rubber_wood"
+  - "plywood"
+  - "pu_foam"
+  - "faux_pile_sherpa"
+
+materials:
+  frame:
+    structure: "rubber_wood_with_plywood"
+  leg:
+    structure: "rubber_wood"
+    finish: "brushed_walnut_stain"
+  armrest:
+    structure: "rubber_wood"
+    finish: "brushed_walnut_stain"
+  upholstery:
+    material_type: "faux_pile_sherpa"
+    label: "Faux Pile Sherpa, Sand"
+
+color_family: "beige"
+tone: "warm"
+style_cluster: "contemporary"
+style_secondary: "mid_century_modern"
+design_era: "contemporary"
+
+visual_attributes:
+  visual_weight: "medium"
+  edge_profile: "rounded"
+  silhouette: "wingback_armchair"
+  form_language: "soft"
+  descriptors:
+    - "wingback_profile"
+    - "textured_sherpa"
+    - "wood_armrests"
+    - "slim_wood_legs"
+
+spatial_attributes:
+  footprint_shape: "rectangular"
+  walkway_clearance_cm: 60
+  descriptors:
+    - "accent_lounge_chair"
+    - "reading_corner_suitable"
+    - "living_room_accent"
+
+room_compatibility:
+  - "living_room"
+  - "family_room"
+  - "bedroom"
+  - "open_plan"
+
+placement_rules:
+  floor_only: true
+  wall_snappable: false
+  clearance_sensitive: true
+  center_room_preferred: false
+  floating_layout_supported: true
+  recommended_in_front_of:
+    - "side_table"
+    - "floor_lamp"
+    - "rug"
+    - "coffee_table"
+  clearance_guidance:
+    chair_to_table_cm_min: 20
+    circulation_cm_min: 60
+
+design_pairings:
+  - "side_table"
+  - "floor_lamp"
+  - "rug"
+  - "sofa"
+  - "coffee_table"
+
+bundle_metadata:
+  bundle_role: "accent"
+  can_bundle_with:
+    - "side_table"
+    - "floor_lamp"
+    - "rug"
+    - "sofa"
+  set_behavior:
+    supports_reading_corner_pairing: true
+    supports_living_room_pairing: true
+    supports_pair_chair_layout: true
+
+summary:
+  short_description: "A textured sherpa wingback armchair with brushed walnut rubberwood arms and legs."
+  long_description: "Winora pairs a softly rounded wingback seat with faux pile sherpa upholstery and warm brushed walnut-stained rubberwood details for compact lounge, reading, and accent-chair layouts."
+  key_features:
+    - "Faux Pile Sherpa stocked fabrics"
+    - "Brushed walnut-stained rubberwood legs and armrests"
+    - "Single and set-of-2 purchase options"
+    - "Wingback lounge silhouette"
+
+feature_flags:
+  has_removable_cover: false
+  has_removable_cushion: false
+
+authoring_notes:
+  category_confidence: "high"
+  source_checked: "Castlery Singapore product page, 2026-06-21"
+  source_url: "https://www.castlery.com/sg/products/winora-armchair?quantity=single&material=tessa_sand"
+  note: "Winora Armchair import. The local GLB is the Faux Pile Sherpa, Sand variant and is not Draco-compressed. Castlery SG exposes Sand and Moss stocked fabric variants plus quantity choices for single and set of 2; the set-of-2 option is represented as a purchase option while the model remains a single physical chair for room planning. Fabric recolor uses the shared upper-upholstery tint path with warm wood preservation so the walnut legs and armrests are not recolored."
+
+shipping_and_warranty:
+  cancellation: "Free - 5 working days before delivery"
+  warranty: "Frame 10 years; Fabric 1 year; Foam 2 years"
+  return_policy: "30-day returns"
+
+product_details:
+  material:
+    - label: "Frame"
+      value: "Rubber wood with plywood and PU foam"
+    - label: "Legs"
+      value: "Rubber wood"
+    - label: "Finish"
+      value: "Brushed walnut stain"
+    - label: "Care"
+      value: "Fabric sofa, wooden legs"
+    - label: "Material & safety standards"
+      value: "Formaldehyde safe"
+  dimensions:
+    - label: "Dimension"
+      value: "W70.5 x D85 x H85cm"
+    - label: "Armrest height"
+      value: "61.5cm"
+    - label: "Seating depth"
+      value: "55cm"
+    - label: "Seatable width"
+      value: "54cm"
+    - label: "Seating height"
+      value: "43.5cm"
+    - label: "Leg height"
+      value: "Front 31cm; Rear 28cm"
+    - label: "Backrest height"
+      value: "44.5cm"
+    - label: "Product weight"
+      value: "13.7kg"
+    - label: "Packaging dimensions"
+      value: "1 box"
+    - label: "Max bearing support"
+      value: "150kg"
+  delivery_and_warranty:
+    - label: "Cancellation"
+      value: "Free - 5 working days before delivery"
+    - label: "Warranty"
+      value: "Frame 10 years; Fabric 1 year; Foam 2 years"
+    - label: "Return policy"
+      value: "30-day returns"
+    - label: "Assembly"
+      value: "Legs to be fitted"
+
+product_details_by_material_type:
+  fabric:
+    material:
+      - label: "Frame"
+        value: "Rubber wood with plywood and PU foam"
+      - label: "Legs"
+        value: "Rubber wood"
+      - label: "Finish"
+        value: "Brushed walnut stain"
+      - label: "Care"
+        value: "Fabric sofa, wooden legs"
+      - label: "Material & safety standards"
+        value: "Formaldehyde safe"
+    dimensions:
+      - label: "Dimension"
+        value: "W70.5 x D85 x H85cm"
+      - label: "Seating depth"
+        value: "55cm"
+      - label: "Seatable width"
+        value: "54cm"
+      - label: "Seating height"
+        value: "43.5cm"
+      - label: "Leg height"
+        value: "Front 31cm; Rear 28cm"
+      - label: "Product weight"
+        value: "13.7kg"
+      - label: "Packaging dimensions"
+        value: "1 box"
+      - label: "Max bearing support"
+        value: "150kg"
+    delivery_and_warranty:
+      - label: "Cancellation"
+        value: "Free - 5 working days before delivery"
+      - label: "Warranty"
+        value: "Frame 10 years; Fabric 1 year; Foam 2 years"
+      - label: "Return policy"
+        value: "30-day returns"
+
+comfort_profile:
+  seat_comfort:
+    label: "Relaxed"
+    value: 2
+    min_label: "Relaxed"
+    max_label: "Upright"
+  seat_depth:
+    label: "Medium"
+    value: 3
+    min_label: "Shallow"
+    max_label: "Deep"
+  seat_height:
+    label: "Standard"
+    value: 3
+    min_label: "Low"
+    max_label: "High"
+  seat_softness:
+    label: "Soft"
+    value: 2
+    min_label: "Soft"
+    max_label: "Firm"
+
+assets:
+  asset_id: "armchair-real-castlery-winora-armchair"
+  model_url: "/assets/models/armchair-real-castlery-winora-armchair.glb"
+  thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1767852974/crusader/variants/50441114-TS4001/Winora-Armchair-Tessa-Sand-Angle-1767852972.jpg"
+  gallery_images:
+    - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1767852974/crusader/variants/50441114-TS4001/Winora-Armchair-Tessa-Sand-Angle-1767852972.jpg"
+    - "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1767852991/crusader/variants/50441114-TS4001/Winora-Armchair-Tessa-Sand-Set_1-1767852989.jpg"
+
+upholstery_options:
+  - upholstery_code: "tessa_sand"
+    color_label: "Sand"
+    upholstery_label: "Faux Pile Sherpa, Sand"
+    swatch_image_url: "https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,c_fit/v1770186485/crusader/variants/TS-4001/TS4001-Tessa-Sand-1770186483.jpg"
+    fabric_family: "Faux Pile Sherpa"
+    collection_type: "stocked_fabric"
+    swatch_group: "upholstery_option"
+    material_type: "faux_pile_sherpa"
+    texture_type: "sherpa"
+    color_family: "beige"
+    tone: "warm"
+    swatch_hex: "#d7c7b4"
+  - upholstery_code: "tessa_moss"
+    color_label: "Moss"
+    upholstery_label: "Faux Pile Sherpa, Moss"
+    swatch_image_url: "https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,c_fit/v1770186492/crusader/variants/TS-4002/TS4002-Tessa-Moss-1770186490.jpg"
+    fabric_family: "Faux Pile Sherpa"
+    collection_type: "stocked_fabric"
+    swatch_group: "upholstery_option"
+    material_type: "faux_pile_sherpa"
+    texture_type: "sherpa"
+    color_family: "green"
+    tone: "cool"
+    swatch_hex: "#7a8169"
+
+ai_flags:
+  isStarterEligible: true
+  isAiPlacementEligible: true
+  isAutoLayoutEligible: true
+  room_anchor_weight: 0.5
+  requires_sofa_pairing: false
+  good_for_small_spaces: true
+  avoid_blocking_paths: true
+
+variants:
+  - variant: "Winora Armchair / Faux Pile Sherpa, Sand"
+    sku: "winora-armchair-tessa-sand"
+    size_label: "70.5x85"
+    finish_code: "tessa_sand"
+    finish_label: "Faux Pile Sherpa, Sand"
+    upholstery_code: "tessa_sand"
+    upholstery_label: "Faux Pile Sherpa, Sand"
+    swatch_image_url: "https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,c_fit/v1770186485/crusader/variants/TS-4001/TS4001-Tessa-Sand-1770186483.jpg"
+    model_asset_id: "armchair-real-castlery-winora-armchair"
+    model_url: "/assets/models/armchair-real-castlery-winora-armchair.glb"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1767852974/crusader/variants/50441114-TS4001/Winora-Armchair-Tessa-Sand-Angle-1767852972.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1767852974/crusader/variants/50441114-TS4001/Winora-Armchair-Tessa-Sand-Angle-1767852972.jpg"
+      - "https://res.cloudinary.com/castlery/image/private/w_560,f_auto,q_auto,c_fit/v1767852991/crusader/variants/50441114-TS4001/Winora-Armchair-Tessa-Sand-Set_1-1767852989.jpg"
+    swatch_group: "upholstery_option"
+    swatch_hex: "#d7c7b4"
+    color_family: "beige"
+    tone: "warm"
+    collection_type: "stocked_fabric"
+    price_usd: 549
+    price_band: "mid"
+    brand_tier: "premium_mid"
+    affiliate_url: "https://www.castlery.com/sg/products/winora-armchair?quantity=single&material=tessa_sand"
+    purchase_options:
+      - id: "single"
+        label: "Single"
+        quantity: 1
+        sku: "winora-armchair-tessa-sand"
+        affiliate_url: "https://www.castlery.com/sg/products/winora-armchair?quantity=single&material=tessa_sand"
+        price_usd: 549
+        available: true
+      - id: "set_of_2"
+        label: "Set of 2"
+        quantity: 2
+        sku: "winora-armchair-tessa-sand-set-of-2"
+        affiliate_url: "https://www.castlery.com/sg/products/winora-armchair?quantity=set_of_2&material=tessa_sand"
+        price_usd: 1098
+        image_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1769054133/crusader/variants/PB-002084-TS4001/Winora-Armchair-Tessa-Sand-Set-of-2-Front-1769054131.jpg"
+        available: true
+    dimensions: { width_cm: 70.5, depth_cm: 85, height_cm: 85 }
+    seat_capacity: 1
+    size_class: "medium"
+    materials:
+      upholstery:
+        material_type: "faux_pile_sherpa"
+        structure: "sherpa"
+        fabric_family: "Faux Pile Sherpa"
+        color: "Sand"
+      frame:
+        structure: "rubber_wood_with_plywood"
+      leg:
+        structure: "rubber_wood"
+        finish: "brushed_walnut_stain"
+      armrest:
+        structure: "rubber_wood"
+        finish: "brushed_walnut_stain"
+    finish:
+      color_finish: "sand"
+      surface_finish: "sherpa"
+      finish_color: "tessa_sand"
+
+  - variant: "Winora Armchair / Faux Pile Sherpa, Moss"
+    sku: "winora-armchair-tessa-moss"
+    size_label: "70.5x85"
+    finish_code: "tessa_moss"
+    finish_label: "Faux Pile Sherpa, Moss"
+    upholstery_code: "tessa_moss"
+    upholstery_label: "Faux Pile Sherpa, Moss"
+    swatch_image_url: "https://res.cloudinary.com/castlery/image/private/w_800,f_auto,q_auto,c_fit/v1770186492/crusader/variants/TS-4002/TS4002-Tessa-Moss-1770186490.jpg"
+    model_asset_id: "armchair-real-castlery-winora-armchair"
+    model_url: "/assets/models/armchair-real-castlery-winora-armchair.glb"
+    thumbnail_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1767853031/crusader/variants/50441114-TS4002/Winora-Armchair-Moss-Angle-1767853029.jpg"
+    gallery_images:
+      - "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1767853031/crusader/variants/50441114-TS4002/Winora-Armchair-Moss-Angle-1767853029.jpg"
+    swatch_group: "upholstery_option"
+    swatch_hex: "#7a8169"
+    color_family: "green"
+    tone: "cool"
+    collection_type: "stocked_fabric"
+    price_usd: 549
+    price_band: "mid"
+    brand_tier: "premium_mid"
+    affiliate_url: "https://www.castlery.com/sg/products/winora-armchair?quantity=single&material=tessa_moss"
+    purchase_options:
+      - id: "single"
+        label: "Single"
+        quantity: 1
+        sku: "winora-armchair-tessa-moss"
+        affiliate_url: "https://www.castlery.com/sg/products/winora-armchair?quantity=single&material=tessa_moss"
+        price_usd: 549
+        available: true
+      - id: "set_of_2"
+        label: "Set of 2"
+        quantity: 2
+        sku: "winora-armchair-tessa-moss-set-of-2"
+        affiliate_url: "https://www.castlery.com/sg/products/winora-armchair?quantity=set_of_2&material=tessa_moss"
+        price_usd: 1098
+        image_url: "https://res.cloudinary.com/castlery/image/private/c_fit,f_auto,q_auto,w_1200/v1769054148/crusader/variants/PB-002084-TS4002/Winora-Armchair-Moss-Set-of-2-Front-1769054146.jpg"
+        available: true
+    dimensions: { width_cm: 70.5, depth_cm: 85, height_cm: 85 }
+    seat_capacity: 1
+    size_class: "medium"
+    materials:
+      upholstery:
+        material_type: "faux_pile_sherpa"
+        structure: "sherpa"
+        fabric_family: "Faux Pile Sherpa"
+        color: "Moss"
+      frame:
+        structure: "rubber_wood_with_plywood"
+      leg:
+        structure: "rubber_wood"
+        finish: "brushed_walnut_stain"
+      armrest:
+        structure: "rubber_wood"
+        finish: "brushed_walnut_stain"
+    finish:
+      color_finish: "moss"
+      surface_finish: "sherpa"
+      finish_color: "tessa_moss"

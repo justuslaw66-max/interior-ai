@@ -1,247 +1,223 @@
 "use client";
 
-import * as THREE from "three";
-import { Canvas } from "@react-three/fiber";
-import { Grid, OrbitControls } from "@react-three/drei";
-import { useMemo, useState } from "react";
-import { CATALOG_ITEMS } from "@/lib/catalog";
-import type { DesignSnapshot, RoomSnapshot, SavedView } from "@/lib/room-types";
-import { getActiveRoom, switchRoom } from "@/lib/room-types";
-import { resolveCatalogVariant } from "@/lib/catalog/variant-resolver";
+import { useCallback, useLayoutEffect, useMemo, useRef, type KeyboardEvent } from "react";
+import type { DesignSnapshot, RoomSnapshot } from "@/lib/room-types";
+import type { DesignLightingSettings } from "@/lib/lightingPresets";
+import { resolveDesignLightingSettings } from "@/lib/design-lighting-settings";
+import {
+  publicShareRoomActionTestId,
+  publicShareSavedViewActionTestId,
+} from "@/lib/public-share-layout";
+import {
+  resolvePublicShareSavedViews,
+  type PublicShareCameraView,
+} from "@/lib/public-share-saved-views";
+import { usePublicShareLayout } from "@/components/public-share/PublicShareShell";
+import { ShareScene } from "@/components/public-share/ShareScene";
 
-function Room({
-  width,
-  depth,
-  height = 2.6,
-  wallThickness = 0.12,
-  showGrid = false,
-}: {
-  width: number;
-  depth: number;
-  height?: number;
-  wallThickness?: number;
-  showGrid?: boolean;
-}) {
-  const floorMat = useMemo(
-    () =>
-      new THREE.MeshStandardMaterial({
-        color: "#e8decc",
-        roughness: 0.86,
-        metalness: 0.0,
-      }),
-    []
+function focusAdjacentRoom(event: KeyboardEvent<HTMLButtonElement>) {
+  if (!["ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key)) return;
+  const roomButtons = Array.from(
+    event.currentTarget.parentElement?.querySelectorAll<HTMLButtonElement>("button") ?? []
   );
-
-  const wallMat = useMemo(
-    () =>
-      new THREE.MeshStandardMaterial({
-        color: "#f2eee6",
-        roughness: 0.92,
-        metalness: 0.0,
-      }),
-    []
-  );
-
-  const halfW = width / 2;
-  const halfD = depth / 2;
-
-  return (
-    <group>
-      <mesh receiveShadow rotation-x={-Math.PI / 2} position={[0, 0, 0]}>
-        <planeGeometry args={[width, depth]} />
-        <primitive object={floorMat} attach="material" />
-      </mesh>
-      {showGrid && (
-        <group position={[0, 0.001, 0]}>
-          <Grid
-            args={[width, depth]}
-            cellSize={0.5}
-            cellThickness={0.5}
-            sectionSize={1}
-            sectionThickness={1}
-            infiniteGrid={false}
-            fadeDistance={0}
-          />
-        </group>
-      )}
-
-      <mesh
-        receiveShadow
-        castShadow
-        position={[0, height / 2, -halfD + wallThickness / 2]}
-      >
-        <boxGeometry args={[width, height, wallThickness]} />
-        <primitive object={wallMat} attach="material" />
-      </mesh>
-
-      <mesh
-        receiveShadow
-        castShadow
-        position={[0, height / 2, halfD - wallThickness / 2]}
-      >
-        <boxGeometry args={[width, height, wallThickness]} />
-        <primitive object={wallMat} attach="material" />
-      </mesh>
-
-      <mesh
-        receiveShadow
-        castShadow
-        position={[-halfW + wallThickness / 2, height / 2, 0]}
-      >
-        <boxGeometry args={[wallThickness, height, depth]} />
-        <primitive object={wallMat} attach="material" />
-      </mesh>
-
-      <mesh
-        receiveShadow
-        castShadow
-        position={[halfW - wallThickness / 2, height / 2, 0]}
-      >
-        <boxGeometry args={[wallThickness, height, depth]} />
-        <primitive object={wallMat} attach="material" />
-      </mesh>
-    </group>
-  );
+  const currentIndex = roomButtons.indexOf(event.currentTarget);
+  if (currentIndex < 0) return;
+  const nextIndex =
+    event.key === "Home"
+      ? 0
+      : event.key === "End"
+        ? roomButtons.length - 1
+        : (currentIndex + (event.key === "ArrowRight" ? 1 : -1) + roomButtons.length) %
+          roomButtons.length;
+  event.preventDefault();
+  roomButtons[nextIndex]?.focus();
 }
 
-function Furniture({
-  dimsMm,
-  variantColor,
-  position,
-  rotationY,
+function RoomNavigation({
+  rooms,
+  selectedRoomId,
+  selectRoom,
 }: {
-  dimsMm: { w: number; d: number; h: number };
-  variantColor: string;
-  position: [number, number, number];
-  rotationY?: number;
+  rooms: readonly RoomSnapshot[];
+  selectedRoomId: string | null;
+  selectRoom: (roomId: string) => void;
 }) {
+  if (rooms.length <= 1) return null;
   return (
-    <mesh
-      castShadow
-      receiveShadow
-      position={[position[0], dimsMm.h / 1000 / 2, position[2]]}
-      rotation-y={rotationY ?? 0}
+    <nav
+      aria-label="Shared rooms"
+      className="flex gap-2 overflow-x-auto pb-1 md:flex-wrap md:overflow-visible"
+      data-testid="share-room-navigation"
     >
-      <boxGeometry args={[dimsMm.w / 1000, dimsMm.h / 1000, dimsMm.d / 1000]} />
-      <meshStandardMaterial color={variantColor} roughness={0.8} metalness={0.05} />
-    </mesh>
+      {rooms.map((room) => (
+        <button
+          key={room.id}
+          type="button"
+          aria-controls="public-share-preview-surface"
+          aria-pressed={room.id === selectedRoomId}
+          data-testid={publicShareRoomActionTestId(room.id)}
+          data-share-touch-target="true"
+          onClick={() => selectRoom(room.id)}
+          onKeyDown={focusAdjacentRoom}
+          className={
+            room.id === selectedRoomId
+              ? "min-h-11 min-w-11 shrink-0 rounded-lg bg-purple-600 px-4 py-2 text-sm font-medium text-white outline-offset-2 focus:outline-2"
+              : "min-h-11 min-w-11 shrink-0 rounded-lg border bg-white px-4 py-2 text-sm font-medium text-gray-700 outline-offset-2 hover:bg-gray-50 focus:outline-2"
+          }
+        >
+          {room.name}
+        </button>
+      ))}
+    </nav>
   );
 }
 
-export default function ShareViewer({
-  initialSnapshot,
+function SharePreviewSurface({
+  room,
+  lightingSettings,
+  activeView,
 }: {
-  initialSnapshot: DesignSnapshot;
+  room: RoomSnapshot;
+  lightingSettings: DesignLightingSettings;
+  activeView: PublicShareCameraView | null;
 }) {
-  const [snapshot, setSnapshot] = useState(initialSnapshot);
-  const activeRoom = useMemo(() => getActiveRoom(snapshot), [snapshot]);
-  const rooms = snapshot.rooms || [];
+  const { layoutGeneration, layoutKey, reportCanvasReady, reportSurfaceMeasurement } =
+    usePublicShareLayout();
+  const surfaceRef = useRef<HTMLDivElement | null>(null);
+  const canvasCreatedRef = useRef(false);
+  const markCanvasCreated = useCallback(() => {
+    canvasCreatedRef.current = true;
+    if (layoutKey) reportCanvasReady(layoutKey);
+  }, [layoutKey, reportCanvasReady]);
 
-  if (!activeRoom) {
-    return <div>No room available</div>;
+  useLayoutEffect(() => {
+    const surface = surfaceRef.current;
+    if (!surface || !layoutKey || layoutGeneration <= 0) return;
+    if (canvasCreatedRef.current) reportCanvasReady(layoutKey);
+    const report = () => {
+      const bounds = surface.getBoundingClientRect();
+      reportSurfaceMeasurement({
+        layoutKey,
+        generation: layoutGeneration,
+        width: Math.round(bounds.width),
+        height: Math.round(bounds.height),
+      });
+    };
+    const observer = new ResizeObserver(report);
+    observer.observe(surface);
+    report();
+    return () => observer.disconnect();
+  }, [layoutGeneration, layoutKey, reportCanvasReady, reportSurfaceMeasurement]);
+
+  return (
+    <div className="relative overflow-hidden rounded-2xl bg-white shadow">
+      <div className="pointer-events-none absolute right-3 top-3 z-10 rounded-lg bg-black/70 px-3 py-1 text-xs text-white md:right-4 md:top-4">
+        Shared preview
+      </div>
+      <div
+        ref={surfaceRef}
+        id="public-share-preview-surface"
+        className="h-[min(68svh,36rem)] min-h-72 w-full md:h-[min(72vh,44rem)] md:min-h-80"
+        data-testid="share-preview-surface"
+        data-room-id={room.id}
+      >
+        <ShareScene
+          room={room}
+          lightingSettings={lightingSettings}
+          activeView={activeView}
+          onCreated={markCanvasCreated}
+        />
+      </div>
+    </div>
+  );
+}
+
+function SavedViewNavigation({
+  room,
+  savedViews,
+  selectedSavedViewId,
+  selectSavedView,
+}: {
+  room: RoomSnapshot;
+  savedViews: readonly PublicShareCameraView[];
+  selectedSavedViewId: string | null;
+  selectSavedView: (savedViewId: string) => void;
+}) {
+  if (savedViews.length === 0) return null;
+  return (
+    <nav
+      aria-label={`Saved views for ${room.name}`}
+      className="rounded-xl bg-white p-4 shadow"
+      data-testid="share-saved-view-navigation"
+    >
+      <h3 className="mb-2 text-sm font-semibold text-gray-800">Saved Views</h3>
+      <div className="grid grid-cols-1 gap-2 min-[360px]:grid-cols-2 sm:grid-cols-3">
+        {savedViews.map((view) => (
+          <button
+            type="button"
+            key={view.id}
+            aria-pressed={view.id === selectedSavedViewId}
+            data-testid={publicShareSavedViewActionTestId(view.id)}
+            data-share-touch-target="true"
+            onClick={() => selectSavedView(view.id)}
+            className={
+              view.id === selectedSavedViewId
+                ? "min-h-11 rounded-lg border border-neutral-900 bg-neutral-900 p-3 text-center text-white outline-offset-2 focus:outline-2"
+                : "min-h-11 rounded-lg border bg-gray-50 p-3 text-center text-gray-700 outline-offset-2 transition hover:border-neutral-400 hover:bg-white focus:outline-2"
+            }
+          >
+            <span className="text-sm font-medium">{view.name}</span>
+          </button>
+        ))}
+      </div>
+    </nav>
+  );
+}
+
+function useShareViewerModel(snapshot: DesignSnapshot, room: RoomSnapshot | null) {
+  const lightingSettings = useMemo(() => resolveDesignLightingSettings(snapshot), [snapshot]);
+  const savedViews = useMemo(() => resolvePublicShareSavedViews(room), [room]);
+  return { lightingSettings, savedViews };
+}
+
+export default function ShareViewer() {
+  const layout = usePublicShareLayout();
+  const { lightingSettings, savedViews } = useShareViewerModel(layout.snapshot, layout.activeRoom);
+  const activeSavedView =
+    savedViews.find((view) => view.id === layout.selectedSavedViewId) ?? null;
+
+  if (!layout.activeRoom) {
+    return (
+      <section className="rounded-xl border bg-white p-6" data-testid="public-share-empty">
+        No room is available in this shared design.
+      </section>
+    );
   }
 
-  const items = activeRoom.items || [];
-
   return (
-    <div className="space-y-4">
-      {/* Room Switcher */}
-      {rooms.length > 1 && (
-        <div className="flex gap-2 flex-wrap">
-          {rooms.map((room: RoomSnapshot) => (
-            <button
-              key={room.id}
-              onClick={() => setSnapshot(switchRoom(snapshot, room.id))}
-              className={
-                room.id === snapshot.activeRoomId
-                  ? "rounded-lg bg-purple-600 px-4 py-2 text-sm font-medium text-white"
-                  : "rounded-lg bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 border"
-              }
-            >
-              {room.name}
-            </button>
-          ))}
-        </div>
-      )}
-
-      {/* 3D Viewer */}
-      <div className="relative overflow-hidden rounded-2xl bg-white shadow">
-        <div className="pointer-events-none absolute right-4 top-4 rounded-lg bg-black/70 px-3 py-1 text-xs text-white z-10">
-          Shared preview
-        </div>
-
-        <div className="h-[78vh] w-full">
-          <Canvas
-            shadows
-            camera={{ position: [4.5, 3.2, 5.5], fov: 45, near: 0.1, far: 100 }}
-          >
-            <ambientLight intensity={0.5} color="#fff8ef" />
-            <directionalLight
-              position={[6, 8, 4]}
-              intensity={1.1}
-              color="#fff6e8"
-              castShadow
-              shadow-mapSize-width={2048}
-              shadow-mapSize-height={2048}
-              shadow-camera-near={1}
-              shadow-camera-far={25}
-              shadow-camera-left={-10}
-              shadow-camera-right={10}
-              shadow-camera-top={10}
-              shadow-camera-bottom={-10}
-            />
-
-            <Room 
-              width={activeRoom.geometry.width} 
-              depth={activeRoom.geometry.depth} 
-            />
-
-            {items.map((it) => {
-              const product = CATALOG_ITEMS[it.productId];
-              if (!product) return null;
-              const resolved = resolveCatalogVariant(product, it.variantId);
-              return (
-                <Furniture
-                  key={it.instanceId}
-                  dimsMm={resolved.dimsMm}
-                  variantColor={resolved.variant.colorHex}
-                  position={it.position ?? [0, 0, 0]}
-                  rotationY={it.rotationY ?? 0}
-                />
-              );
-            })}
-
-            <OrbitControls
-              target={[0, 1.1, 0]}
-              enableDamping
-              dampingFactor={0.08}
-              minDistance={2.5}
-              maxDistance={10}
-              minPolarAngle={0.35}
-              maxPolarAngle={Math.PI / 2.05}
-              maxAzimuthAngle={Infinity}
-              minAzimuthAngle={-Infinity}
-            />
-          </Canvas>
-        </div>
-      </div>
-
-      {/* Saved Views */}
-      {activeRoom.savedViews && activeRoom.savedViews.length > 0 && (
-        <div className="rounded-lg bg-white p-4 shadow">
-          <h3 className="mb-2 text-sm font-semibold text-gray-800">Saved Views</h3>
-          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-            {activeRoom.savedViews.map((view: SavedView) => (
-              <div
-                key={view.id}
-                className="rounded-lg border bg-gray-50 p-3 text-center"
-              >
-                <div className="text-sm font-medium text-gray-700">{view.name}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-    </div>
+    <section
+      className="space-y-4"
+      data-testid="share-viewer"
+      data-ready={layout.layoutReady ? "true" : "false"}
+      data-layout-mode={layout.layoutMode ?? "resolving"}
+      data-selected-room-id={layout.selectedRoomId ?? ""}
+    >
+      <RoomNavigation
+        rooms={layout.snapshot.rooms}
+        selectedRoomId={layout.selectedRoomId}
+        selectRoom={layout.selectRoom}
+      />
+      <SharePreviewSurface
+        room={layout.activeRoom}
+        lightingSettings={lightingSettings}
+        activeView={activeSavedView}
+      />
+      <SavedViewNavigation
+        room={layout.activeRoom}
+        savedViews={savedViews}
+        selectedSavedViewId={layout.selectedSavedViewId}
+        selectSavedView={layout.selectSavedView}
+      />
+    </section>
   );
 }

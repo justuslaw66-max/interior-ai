@@ -5,6 +5,8 @@
  * This is the source of truth for how items behave in the editor and in commerce.
  */
 
+import type { CatalogMediaPresentationMode } from "./catalog/media-policy";
+
 // ============================================================================
 // Identity & Categorization
 // ============================================================================
@@ -13,12 +15,15 @@ export type ProductCategory =
   | "sofa"
   | "ottoman"
   | "accessory"
+  | "bed"
   | "rug"
   | "coffee_table"
   | "dining_table"
   | "dining_bench"
   | "accent_chair"
   | "floor_lamp"
+  | "table_lamp"
+  | "pendant_light"
   | "tv_console"
   | "sideboard"
   | "bookshelf"
@@ -69,6 +74,10 @@ export interface PlacementRules {
   minWallGapMm: number; // minimum distance from wall in mm
   allowRugOverlap: boolean; // can overlap with rugs
   snapMarginMm: number; // snap detection margin
+  surfaceOnly?: boolean; // must sit on top of another furniture surface
+  requiredSurfaceCategories?: ProductCategory[]; // valid supporting furniture categories
+  surfaceInsetMm?: number; // minimum inset from supporting surface edge
+  ceilingOnly?: boolean; // top of the item stays anchored to the room ceiling
 }
 
 // ============================================================================
@@ -121,23 +130,43 @@ export type RoomTag =
 // Variants (Style/Color Options)
 // ============================================================================
 
+export interface CatalogPurchaseOption {
+  id: string; // e.g. "single" | "set_of_2"
+  label: string; // customer-facing label
+  quantity: number; // number of physical pieces included
+  sku?: string;
+  affiliateUrl?: string;
+  priceHint?: number;
+  compareAtPriceHint?: number;
+  savingsHint?: number;
+  imageUrl?: string;
+  available?: boolean;
+}
+
 export interface ProductVariant {
   id: string; // e.g., "sofa-real-castlery-dawson-3s-navagio_seagull"
   label: string; // e.g., "Gray"
   colorHex: string; // e.g., "#808080"
   thumbnailUrl: string; // variant-specific thumb
   galleryImages?: string[];
+  mediaPresentationMode?: CatalogMediaPresentationMode;
   dimensionsMm?: DimensionsMm;
+  sizeLabel?: string;
+  modelUrl?: string;
   shopifyVariantId?: string;
   affiliateUrl?: string;
   priceHint?: number;
+  purchaseOptions?: CatalogPurchaseOption[];
   available?: boolean;
   finishCode?: string;
   finishLabel?: string;
   materialType?: "Fabric" | "Leather" | "Wood";
   swatchGroup?: string;
   swatchHex?: string;
+  swatchTextureUrl?: string;
   collectionType?: string; // "stocked" | "custom" from upholstery options
+  legFinishCode?: string;
+  legFinishLabel?: string;
   renderAssets?: {
     baseColorMap?: string;
     normalMap?: string;
@@ -199,6 +228,54 @@ export interface ComfortProfile {
   seat_softness?: ComfortAxisProfile;
 }
 
+export interface AdjustablePendantHeightMetadata {
+  minCm: number;
+  maxCm: number;
+  defaultCm: number;
+  cableStartRatio: number;
+  cableEndRatio: number;
+}
+
+export type CatalogAssetQualityStatus = "approved" | "needs_review" | "blocked";
+export type CatalogLicensingStatus = "verified" | "unverified" | "restricted";
+
+export interface CatalogLicensingMetadata {
+  status: CatalogLicensingStatus;
+  licenseId?: string;
+  sourceUrl?: string;
+  attribution?: string;
+  usageNotes?: string;
+  verifiedAt?: string;
+}
+
+export interface CatalogAssetQualityMetadata {
+  status: CatalogAssetQualityStatus;
+  validatorVersion?: string;
+  validatedAt?: string;
+}
+
+export type FixtureEmitterType = "point" | "spot";
+export type FixturePhotometricVerification =
+  | "estimated"
+  | "manufacturer"
+  | "photometric";
+
+/**
+ * Immutable emitter facts supplied by the catalog or copied into a placed
+ * product snapshot. Values are authored in local product space.
+ */
+export interface FixturePhotometricMetadata {
+  emitterType: FixtureEmitterType;
+  localOffsetMeters: [number, number, number];
+  direction: [number, number, number];
+  beamAngleDeg: number;
+  luminousFluxLumens: number;
+  cctKelvin: number;
+  dimmable: boolean;
+  emissiveMeshNames?: string[];
+  verification: FixturePhotometricVerification;
+}
+
 // ============================================================================
 // Complete Catalog Item (Full Contract)
 // ============================================================================
@@ -229,6 +306,7 @@ export interface CatalogItemSchema {
 
   // Rendering
   assets: AssetReferences;
+  lighting?: FixturePhotometricMetadata;
   variants: ProductVariant[];
   defaultVariantId: string; // must exist in variants array
 
@@ -238,6 +316,7 @@ export interface CatalogItemSchema {
   // Metadata
   metadata?: {
     brand?: string;
+    merchantId?: string;
     modelLabel?: string;
     productFamily?: string;
     productName?: string;
@@ -249,6 +328,12 @@ export interface CatalogItemSchema {
     colorFamily?: string;
     tone?: string;
     priceUsd?: number;
+    currencyCode?: string;
+    lastSynchronizedAt?: string;
+    deliveryInformation?: string;
+    promotions?: string[];
+    licensing?: CatalogLicensingMetadata;
+    assetQuality?: CatalogAssetQualityMetadata;
     priceBand?: string;
     seatCapacity?: number;
     materialFamily?: string;
@@ -256,7 +341,9 @@ export interface CatalogItemSchema {
     compatibility?: unknown;
     bundleMetadata?: unknown;
     comfortProfile?: ComfortProfile;
+    adjustablePendantHeight?: AdjustablePendantHeightMetadata;
     galleryImages?: string[];
+    mediaPresentationMode?: CatalogMediaPresentationMode;
   };
   aiRoles?: string[]; // e.g., ["seating_anchor", "living_room_focal_point"]
   tags?: string[];
@@ -314,6 +401,25 @@ export const CATEGORY_DEFAULTS: Record<ProductCategory, CategoryDefaults> = {
       wallClearanceMm: 100,
     },
     aiRoles: ["seating_accessory", "seating_secondary"],
+  },
+  bed: {
+    dimsMm: { w: 1630, d: 2280, h: 1140 },
+    placement: {
+      floorOnly: true,
+      wallSnappable: true,
+      wallMountable: false,
+      minWallGapMm: 0,
+      allowRugOverlap: true,
+      snapMarginMm: 50,
+    },
+    clearance: {
+      walkwayMinMm: 800,
+      coffeeGapMinMm: 0,
+      coffeeGapMaxMm: 0,
+      sofaClearanceMm: 0,
+      wallClearanceMm: 0,
+    },
+    aiRoles: ["sleeping_anchor", "bedroom_focal"],
   },
   accessory: {
     dimsMm: { w: 900, d: 650, h: 450 },
@@ -447,6 +553,48 @@ export const CATEGORY_DEFAULTS: Record<ProductCategory, CategoryDefaults> = {
       wallClearanceMm: 100,
     },
     aiRoles: ["ambient_lighting"],
+  },
+  table_lamp: {
+    dimsMm: { w: 300, d: 300, h: 520 },
+    placement: {
+      floorOnly: false,
+      wallSnappable: false,
+      wallMountable: false,
+      minWallGapMm: 0,
+      allowRugOverlap: false,
+      snapMarginMm: 0,
+      surfaceOnly: true,
+      requiredSurfaceCategories: ["side_table", "coffee_table", "dining_table", "tv_console"],
+      surfaceInsetMm: 50,
+    },
+    clearance: {
+      walkwayMinMm: 0,
+      coffeeGapMinMm: 0,
+      coffeeGapMaxMm: 0,
+      sofaClearanceMm: 0,
+      wallClearanceMm: 0,
+    },
+    aiRoles: ["tabletop_lighting", "ambient_lighting"],
+  },
+  pendant_light: {
+    dimsMm: { w: 300, d: 300, h: 1200 },
+    placement: {
+      floorOnly: false,
+      wallSnappable: false,
+      wallMountable: false,
+      minWallGapMm: 0,
+      allowRugOverlap: false,
+      snapMarginMm: 0,
+      ceilingOnly: true,
+    },
+    clearance: {
+      walkwayMinMm: 0,
+      coffeeGapMinMm: 0,
+      coffeeGapMaxMm: 0,
+      sofaClearanceMm: 0,
+      wallClearanceMm: 0,
+    },
+    aiRoles: ["ceiling_lighting", "ambient_lighting"],
   },
   tv_console: {
     dimsMm: { w: 2000, d: 420, h: 500 },
