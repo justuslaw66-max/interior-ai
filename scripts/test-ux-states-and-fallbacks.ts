@@ -85,4 +85,15 @@ assert.doesNotMatch(
   "The canvas boundary wraps both 2D and 3D, so its copy must not blame the 3D view."
 );
 
+// SX10: legacy /d links reach the current share page.
+assert.match(
+  read("app/d/[token]/page.tsx"),
+  /permanentRedirect\(`\/share\/\$\{encodeURIComponent\(token\)\}`\)/,
+  "Legacy /d share links should redirect to the current share page."
+);
+assert.ok(
+  !fs.existsSync(path.join(process.cwd(), "components", "DesignerCanvas.tsx")),
+  "The box-drawing legacy viewer should stay deleted."
+);
+
 console.log("UX states and fallbacks checks passed.");

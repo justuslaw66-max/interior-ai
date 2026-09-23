@@ -1,37 +1,18 @@
-import { prisma } from "@/lib/prisma";
-import DesignerCanvas from "@/components/DesignerCanvas";
-import { notFound } from "next/navigation";
+import { permanentRedirect } from "next/navigation";
 
 export const metadata = {
   robots: { index: false, follow: false },
 };
 
-export default async function PublicDesignPage({
+/**
+ * /d/<token> was the first public viewer and drew items as plain boxes. Share
+ * tokens are the same, so old links go to the current share page.
+ */
+export default async function LegacyShareLinkRedirect({
   params,
 }: {
   params: Promise<{ token: string }>;
 }) {
   const { token } = await params;
-
-  const design = await prisma.design.findFirst({
-    where: { shareToken: token, shareEnabled: true },
-  });
-
-  if (!design) return notFound();
-
-  return (
-    <DesignerCanvas
-      initialItems={design.items as unknown as Array<{
-        instanceId: string;
-        productId: string;
-        variantId: string;
-        position: [number, number, number];
-        rotationY?: number;
-        includeInCheckout?: boolean;
-      }>}
-      roomWidth={design.roomWidth}
-      roomDepth={design.roomDepth}
-      readOnly
-    />
-  );
+  permanentRedirect(`/share/${encodeURIComponent(token)}`);
 }
