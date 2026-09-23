@@ -64,4 +64,25 @@ assert.match(
   "The Plan palette summary must take its opening copy from the shared copy owner."
 );
 
+// SX9 / AX9: every dead end offers a way back into the app.
+const notFound = read("app/not-found.tsx");
+assert.match(notFound, /href="\/design"[\s\S]*?Start designing/);
+assert.match(notFound, /href="\/dashboard"[\s\S]*?My designs/);
+assert.match(
+  read("app/global-error.tsx"),
+  /<html[\s\S]*?onClick=\{reset\}[\s\S]*?Try again[\s\S]*?window\.location\.assign\("\/design"\)/,
+  "The global error page must offer retry and a way back to the editor."
+);
+assert.match(
+  read("components/public-share/PublicShareUnavailableCard.tsx"),
+  /href="\/design"[\s\S]*?Start your own design/
+);
+assert.match(read("components/public-share/PublicShareRootLifecycle.tsx"), /<PublicShareUnavailableCard \/>/);
+assert.match(read("app/share/[shareToken]/export/page.tsx"), /<PublicShareUnavailableCard \/>/);
+assert.doesNotMatch(
+  read("components/CanvasErrorBoundary.tsx"),
+  /3D view encountered|Reload Page/,
+  "The canvas boundary wraps both 2D and 3D, so its copy must not blame the 3D view."
+);
+
 console.log("UX states and fallbacks checks passed.");

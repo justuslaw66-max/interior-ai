@@ -36,6 +36,7 @@ import ShoppingList from "./ShoppingList";
 import ShoppingCsvDownload from "./ShoppingCsvDownload";
 import { SurfaceMaterialBomSection } from "@/components/SurfaceMaterialBomSection";
 import { formatSgd } from "@/lib/money-format";
+import { PublicShareUnavailableCard } from "@/components/public-share/PublicShareUnavailableCard";
 
 export const metadata = {
   robots: { index: false, follow: false },
@@ -986,12 +987,7 @@ export default async function ExportPage({
   if (!design) {
     return (
       <main className="min-h-screen flex items-center justify-center p-8">
-        <div className="rounded-xl border bg-white p-6">
-          <div className="text-lg font-semibold">Link not available</div>
-          <div className="text-sm text-neutral-600">
-            This share link is disabled or invalid.
-          </div>
-        </div>
+        <PublicShareUnavailableCard />
       </main>
     );
   }
