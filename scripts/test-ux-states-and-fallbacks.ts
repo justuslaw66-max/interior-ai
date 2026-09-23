@@ -96,4 +96,20 @@ assert.ok(
   "The box-drawing legacy viewer should stay deleted."
 );
 
+// AD3: admin links point at pages that exist, and inbox filters are plain links.
+for (const relativePath of ["app/admin/imports/[id]/page.tsx", "app/admin/catalog/[catalogItemId]/page.tsx"]) {
+  for (const match of read(relativePath).matchAll(/href=\{`\/admin\/catalog\/\$\{[^}]+\}\/([a-z-]+)`\}/g)) {
+    assert.ok(
+      fs.existsSync(path.join(process.cwd(), "app", "admin", "catalog", "[catalogItemId]", match[1], "page.tsx")),
+      `${relativePath} links to /admin/catalog/<id>/${match[1]}, which has no page.`
+    );
+  }
+}
+const inboxFilters = read("components/admin/InboxFiltersUI.tsx");
+assert.doesNotMatch(
+  inboxFilters,
+  /preventDefault|history\.replaceState|localStorage|"use client"/,
+  "Inbox queue chips must navigate so the server-filtered list changes with them."
+);
+
 console.log("UX states and fallbacks checks passed.");

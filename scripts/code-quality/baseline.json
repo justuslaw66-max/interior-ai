@@ -775,7 +775,7 @@
     "app/admin/catalog/[catalogItemId]/page.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 92
+        "maximum": 91
       }
     },
     "app/admin/catalog/inbox/page.tsx": {
@@ -955,7 +955,7 @@
     "app/admin/imports/[id]/page.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 194
+        "maximum": 185
       },
       "complexFunctions": {
         "count": 1,
@@ -1476,12 +1476,6 @@
       "overlongFunctions": {
         "count": 1,
         "maximum": 164
-      }
-    },
-    "components/admin/InboxFiltersUI.tsx": {
-      "overlongFunctions": {
-        "count": 1,
-        "maximum": 108
       }
     },
     "components/admin/PaywallPerformancePanel.tsx": {
@@ -4996,9 +4990,6 @@
     }
   },
   "lintSuppressions": {
-    "components/admin/InboxFiltersUI.tsx": {
-      "react-hooks/set-state-in-effect": 1
-    },
     "components/common/LazyImage.tsx": {
       "@next/next/no-img-element": 1
     },
