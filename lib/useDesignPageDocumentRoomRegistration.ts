@@ -52,7 +52,6 @@ export function useDesignPageDocumentRoomRegistration({
     refs: {
       ...refs,
       designSnapshotRef: boundaries.snapshot.refs.designSnapshotRef,
-      history: documentHistory.refs.history,
     },
     actions: {
       document: {
