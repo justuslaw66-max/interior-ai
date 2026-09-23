@@ -2287,18 +2287,6 @@ export default function DesignControlsPlanPanel({
                   </div>
                 ),
               })}
-
-              {hasRooms && (
-                <button
-                  type="button"
-                  data-testid="plan-palette-furnish"
-                  className={`${progressActionClass} m-2 min-h-9 w-[calc(100%-1rem)]`}
-                  disabled={!canEdit}
-                  onClick={onGoFurnish}
-                >
-                  Continue to Furnish
-                </button>
-              )}
             </>
           )}
         </div>
