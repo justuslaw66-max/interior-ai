@@ -843,14 +843,29 @@ async function openImportReview(page: Page, proMode: boolean) {
   });
   await loadFixture(
     page,
-    fixture([room("import-shell-room", 0, 0)], []),
+    // The plan needs one opening to select: DesignControlsPlanPanel only renders
+    // FloorPlanUploadPanel, and so the workspace launcher below, when
+    // showFloorPlanPanel is true, and outside designer mode the only term that
+    // satisfies it here is a selected opening (visiblePlanOpening).
+    fixture([room("import-shell-room", 0, 0)], [{
+      id: "import-shell-window",
+      roomId: "import-shell-room",
+      wall: "north",
+      offsetMm: 0,
+      widthMm: 900,
+      heightMm: 1200,
+      bottomMm: 900,
+      kind: "window",
+    }]),
     proMode ? "/design?mode=designer&debug_layout=1" : "/design?debug_layout=1"
   );
   await page.evaluate(
     ({ key, value }) => localStorage.setItem(key, value),
     { key: ACTIVE_IMPORT_KEY, value: job.id }
   );
-  await page.locator('[data-testid="plan-opening-kind-label"]').first().click();
+  await page.locator(
+    '[data-testid="plan-opening-kind-label"][data-opening-id="import-shell-window"]'
+  ).click();
   await page.getByTestId("floor-plan-import-workspace-launcher").first().click();
   await expect(page.getByTestId("floor-plan-import-review")).toBeVisible();
   await page.locator("summary").filter({ hasText: "Help AI finish this plan" }).click();
