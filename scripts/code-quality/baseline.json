@@ -4445,7 +4445,7 @@
     "lib/useDesignPageDocumentRoomRegistration.ts": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 66
+        "maximum": 65
       }
     },
     "lib/useDesignPageDocumentSelectionRegistrationFacade.ts": {
