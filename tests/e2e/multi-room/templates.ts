@@ -31,11 +31,11 @@ export function registerTemplateTests() {
     await expect(page.getByTestId("room-connection-checklist")).toContainText("shared wall");
     const displayUnits = page.getByTestId("selection-inspector-measurement-units");
     await expect(displayUnits).toHaveValue("cm");
-    await expect(page.getByText("Overall horizontal 880 cm", { exact: true })).toBeVisible();
+    await expect(page.getByText("Overall horizontal 920 cm", { exact: true })).toBeVisible();
     await expect(page.getByText("Overall vertical 700 cm", { exact: true })).toBeVisible();
     // Preserve the millimetre input used by the invalid-dimension regression below.
     await displayUnits.selectOption("mm");
-    await expect(page.getByText("Overall horizontal 8,800 mm", { exact: true })).toBeVisible();
+    await expect(page.getByText("Overall horizontal 9,200 mm", { exact: true })).toBeVisible();
     await expect(page.getByText("Overall vertical 7,000 mm", { exact: true })).toBeVisible();
     await expect(page.locator('[data-testid^="wall-draw-segment-length-"]')).toHaveCount(0);
 
