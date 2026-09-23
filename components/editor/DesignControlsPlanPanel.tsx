@@ -1327,7 +1327,7 @@ export default function DesignControlsPlanPanel({
     },
     {
       label: "Scale",
-      value: floorPlanUnderlay ? (floorPlanUnderlay.calibration ? "Calibrated" : "Review") : "Native",
+      value: floorPlanUnderlay ? (floorPlanUnderlay.calibration ? "Set" : "Not set") : "Not needed",
       ready: !floorPlanUnderlay || Boolean(floorPlanUnderlay.calibration),
     },
     {
@@ -2166,14 +2166,14 @@ export default function DesignControlsPlanPanel({
 
               {renderPlanToolSection({
                 section: "importFloorPlan",
-                title: "Import floor plan",
+                title: "Upload floor plan",
                 children: (
                   <div className={planToolGridClass}>
                     {renderPlanToolTile({
                       id: FLOOR_PLAN_CONSUMER_IMPORT_ACTION_ID,
                       testId: "plan-tool-import-2d",
                       icon: "upload",
-                      label: "Import 2D drawing",
+                      label: "Choose a file",
                       active: planStartMode === "upload",
                       disabled: !canEdit,
                       onClick: () => openFloorPlanUploadPicker(FLOOR_PLAN_CONSUMER_IMPORT_ACTION_ID),
@@ -2303,7 +2303,7 @@ export default function DesignControlsPlanPanel({
               <div className={titleClass}>{hasRooms ? "Add to plan" : "Start your room"}</div>
               <div className={dark ? "mt-1 text-xs text-neutral-400" : "mt-1 text-xs text-neutral-500"}>
                 {hasRooms
-                  ? "Add another room, upload a plan, or draw by hand."
+                  ? "Add another room, upload a floor plan, or draw by hand."
                   : "Choose a room and size. You can adjust it anytime."}
               </div>
             </div>
@@ -2462,7 +2462,7 @@ export default function DesignControlsPlanPanel({
                   : "mt-3 rounded-lg bg-white p-3 text-xs text-neutral-600"
               }
             >
-              Upload a drawing, then trace rooms, doors, and windows over it.
+              Upload your floor plan, then trace rooms, doors, and windows over it.
             </div>
           )}
           {planStartMode === "template" && !isDesigner && (

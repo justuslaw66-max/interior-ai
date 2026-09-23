@@ -98,7 +98,7 @@ export function useDesignPageBetaStartController({
     actions.setViewMode("2d");
     actions.setDesignPanelOpen(true);
     actions.showToast(
-      "Upload a plan from the Plan panel, then calibrate and trace"
+      "Upload your floor plan from the Plan panel, then set scale and trace"
     );
     dismiss();
   }, [actions, dismiss]);

@@ -119,7 +119,7 @@ export default function FloorPlanImportWorkspace({
               disabled={disabled}
               onClick={onChooseFile}
             >
-              Choose floor-plan file
+              Choose a file
             </button>
           </div>
         )}
@@ -135,11 +135,11 @@ export default function FloorPlanImportWorkspace({
         onToggle={(event) => setSecondaryOptionsOpen(event.currentTarget.open)}
       >
         <summary className="cursor-pointer text-sm font-semibold" data-floor-plan-workspace-focus="primary">
-          Previous imports & privacy
+          Previous uploads & privacy
         </summary>
         <p className={`mt-1 text-xs leading-5 ${subtle}`}>
           Most people can ignore this section. Open it to resume an older
-          import, manage private source files, or change optional data settings.
+          upload, manage your private files, or change optional data settings.
         </p>
         <div className="mt-3 grid min-w-0 items-start gap-3 lg:grid-cols-2">
           <div
@@ -152,10 +152,10 @@ export default function FloorPlanImportWorkspace({
           >
             <div className="text-xs font-semibold">Private by default</div>
             <p className={`mt-1 text-xs leading-5 ${subtle}`}>
-              Source files are retained temporarily and can be deleted without
-              deleting the editable plan. When vision recognition is enabled,
-              plan pages are sent to the configured model with response storage
-              disabled.
+              Your uploaded files are kept for a limited time and can be deleted
+              without deleting your design. When AI reading is used, pages of
+              your floor plan are sent to our AI provider with storage of its
+              replies turned off.
             </p>
             <label
               className={`mt-3 flex items-start gap-2 text-xs leading-5 ${
@@ -172,7 +172,7 @@ export default function FloorPlanImportWorkspace({
                 }
               />
               <span>
-                Allow this upload to improve internal detection benchmarks.
+                Allow us to use this upload to test and improve floor plan detection.
               </span>
             </label>
           </div>

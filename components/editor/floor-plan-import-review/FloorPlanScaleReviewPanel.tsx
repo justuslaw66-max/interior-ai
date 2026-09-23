@@ -77,7 +77,7 @@ export default function FloorPlanScaleReviewPanel({
     <details className="mt-3 rounded-lg border border-blue-200 bg-blue-50 p-3" open={openByDefault || !calibration}>
       <summary className="cursor-pointer text-sm font-semibold">
         <span className="mr-2 inline-flex h-6 w-6 items-center justify-center rounded-full bg-blue-600 text-xs text-white">1</span>
-        Set one real measurement
+        Set scale
         <span className={`ml-2 rounded-full px-2 py-0.5 text-[10px] ${
           calibration
             ? "bg-emerald-100 text-emerald-800"

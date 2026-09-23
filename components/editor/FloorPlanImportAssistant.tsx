@@ -428,7 +428,7 @@ export default function FloorPlanImportAssistant({
       setDeleteError(
         cause instanceof Error
           ? cause.message
-          : "Unable to delete the private floor-plan source"
+          : "Unable to delete your uploaded file"
       );
     } finally {
       setDeletingSource(false);
@@ -499,7 +499,7 @@ export default function FloorPlanImportAssistant({
           </div>
           <div
             role="progressbar"
-            aria-label="Estimated floor-plan import progress"
+            aria-label="Estimated progress reading your floor plan"
             aria-valuemin={0}
             aria-valuemax={100}
             aria-valuenow={progress}
@@ -551,7 +551,7 @@ export default function FloorPlanImportAssistant({
       <div className={surface} data-testid="floor-plan-import-failed" data-floor-plan-workspace-state="failure">
         <div className="text-xs font-semibold">Could not read this drawing</div>
         <p className={`mt-1 text-xs ${subtle}`}>
-          {activeJob.errorMessage ?? "Retry with a clearer drawing or start a new import."}
+          {activeJob.errorMessage ?? "Retry with a clearer drawing or upload a new file."}
         </p>
         {!sourceContentDeleted && !sourceDeletionPending ? (
           <button
@@ -581,7 +581,7 @@ export default function FloorPlanImportAssistant({
         ) : (
           <p className={`mt-2 text-[10px] ${subtle}`}>
             {savedUnderlaysScrubbed > 0
-              ? "Upload and matching saved-design reference deleted."
+              ? "Your upload and its floor plan image in your designs were deleted."
               : "Private upload deleted."}
           </p>
         )}
@@ -594,9 +594,9 @@ export default function FloorPlanImportAssistant({
     return (
       <div className={surface} data-testid="floor-plan-import-ready" data-floor-plan-workspace-state="ready">
         <div className="text-xs font-bold uppercase tracking-[0.14em] text-emerald-700">
-          AI import complete
+          AI check complete
         </div>
-        <h3 className="mt-1 text-2xl font-semibold">Your editable plan is ready</h3>
+        <h3 className="mt-1 text-2xl font-semibold">Your floor plan is ready</h3>
         <p className={`mt-2 max-w-3xl text-sm leading-6 ${subtle}`}>
           AI found {canonicalRoomCount} room
           {canonicalRoomCount === 1 ? "" : "s"} and{" "}
@@ -640,7 +640,7 @@ export default function FloorPlanImportAssistant({
             ? "Creating and opening…"
             : createError
               ? "Try creating again"
-              : "Create editable plan"}
+              : "Create design"}
         </button>
         <p className={`mt-2 text-center text-xs leading-5 ${subtle}`}>
           Opens in 2D Furnish. Switch to 3D at any time.
@@ -682,22 +682,22 @@ export default function FloorPlanImportAssistant({
             className={`mt-3 text-xs leading-5 ${subtle}`}
             data-testid="floor-plan-import-accuracy-baseline"
           >
-            Accuracy baseline passed: {canonicalRoomCount} canonical room
+            Accuracy check passed: {canonicalRoomCount} room
             {canonicalRoomCount === 1 ? "" : "s"} and{" "}
             {canonicalDimensionCount} exact printed dimension
-            {canonicalDimensionCount === 1 ? "" : "s"}. Source scale and all
-            critical review items passed validation.
+            {canonicalDimensionCount === 1 ? "" : "s"}. The scale and all
+            required checks passed.
           </p>
           <p className={`mt-2 text-xs leading-5 ${subtle}`}>
             {sourceDeletionPending
-              ? "Private-source deletion is queued."
+              ? "Your uploaded file is queued for deletion."
               : sourceContentDeleted
                 ? savedUnderlaysScrubbed > 0
-                  ? "The upload and saved-design reference were deleted."
+                  ? "Your upload and its floor plan image in your designs were deleted."
                   : "The private upload was deleted."
                 : retentionDate && !Number.isNaN(retentionDate.getTime())
-                  ? `Private file bytes are scheduled for deletion by ${retentionDate.toLocaleDateString()}.`
-                  : "Private file bytes are retained temporarily."}
+                  ? `Your uploaded file will be deleted by ${retentionDate.toLocaleDateString()}.`
+                  : "Your uploaded file is kept for a limited time."}
           </p>
           {!sourceContentDeleted && !sourceDeletionPending ? (
             <button

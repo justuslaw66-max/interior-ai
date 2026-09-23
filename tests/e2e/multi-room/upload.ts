@@ -26,7 +26,7 @@ export function registerUploadTests() {
       await planView.click();
       await expect(planView).toHaveAttribute("aria-pressed", "true");
       await page.getByTestId("plan-tool-section-importFloorPlan")
-        .getByRole("button", { name: "Import floor plan", exact: true }).click();
+        .getByRole("button", { name: "Upload floor plan", exact: true }).click();
       await page.getByTestId("plan-tool-import-2d").click();
       await expect(page.getByTestId("floor-plan-upload-empty-state")).toBeVisible();
       const createdResponse = page.waitForResponse((response) =>
@@ -57,9 +57,9 @@ export function registerUploadTests() {
       expect(job.id).toBe(jobId);
       expect(job.sourceAsset.fileName).toBe("sample-floor-plan.pdf");
       expect(job.renderedPagesJson).toHaveLength(2);
-      const sourcePage = review.getByRole("combobox", { name: "Source page" });
+      const sourcePage = review.getByRole("combobox", { name: "Floor plan page" });
       await expect(sourcePage.locator("option")).toHaveText(["Page 1", "Page 2"]);
-      const image = review.getByRole("img", { name: "Uploaded floor plan source", exact: true });
+      const image = review.getByRole("img", { name: "Your floor plan", exact: true });
       for (const pageNumber of [1, 2]) {
         const rendered = job.renderedPagesJson.find((entry: { pageNumber: number }) => entry.pageNumber === pageNumber);
         expect(rendered).toBeDefined();
@@ -76,10 +76,10 @@ export function registerUploadTests() {
       }
       await manualTools.getByRole("button", { name: "Choose the two endpoints on the plan", exact: true }).click();
       await expect(manualTools.getByRole("button", { name: "Selecting points — click twice on the plan", exact: true })).toBeVisible();
-      await expect(review.getByLabel("Pick scale points on the source drawing", { exact: true })).toBeVisible();
+      await expect(review.getByLabel("Pick two scale points on your floor plan", { exact: true })).toBeVisible();
       await expect(manualTools.getByText("No measurement selected yet.", { exact: true })).toBeVisible();
       await page.getByTestId("floor-plan-import-secondary-options").locator("summary").first().click();
-      await page.getByText("My floor-plan imports", { exact: true }).click();
+      await page.getByText("Your uploads", { exact: true }).click();
       await expect(page.getByTestId(`floor-plan-import-history-${jobId}`)).toContainText("sample-floor-plan.pdf");
       expect(renderWarnings).toEqual([]);
       expect(pageErrors).toEqual([]);

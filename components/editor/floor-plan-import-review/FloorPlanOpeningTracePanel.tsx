@@ -115,7 +115,7 @@ export default function FloorPlanOpeningTracePanel({
         </label>
         {!calibration || !floor.walls.length ? (
           <div className="rounded-md border border-amber-200 bg-amber-50 p-2 text-[10px] font-medium text-amber-900">
-            Finish the scale and room outlines first.
+            Set scale and outline the rooms first.
           </div>
         ) : null}
         <button

@@ -501,10 +501,10 @@ export function DesignPageWorkspace() {
           <div className="pointer-events-auto absolute bottom-4 left-4 z-40 flex items-center gap-3 rounded-xl border border-neutral-200 bg-white/95 px-3 py-2 shadow-lg backdrop-blur md:left-[304px]">
             <div>
               <div className="text-xs font-semibold text-neutral-900">
-                Source reference
+                Floor plan image
               </div>
               <div className="text-[10px] text-neutral-500">
-                Locked import underlay
+                Locked tracing guide
               </div>
             </div>
             <button

@@ -72,7 +72,7 @@ export default function FloorPlanRoomTracePanel({
         </p>
         {!calibration ? (
           <div className="rounded-md border border-amber-200 bg-amber-50 p-2 text-[10px] font-medium text-amber-900">
-            Set the drawing scale above before tracing rooms.
+            Set scale above before tracing rooms.
           </div>
         ) : null}
         <button

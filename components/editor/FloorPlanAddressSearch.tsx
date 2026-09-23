@@ -166,10 +166,10 @@ export default function FloorPlanAddressSearch({
         <div className={dark ? "mt-2 rounded-lg border border-white/10 p-3" : "mt-2 rounded-lg border border-blue-200 bg-white p-3"}>
           <div className="text-xs font-semibold">No directory match yet</div>
           <p className={`mt-1 text-[10px] leading-4 ${subtle}`}>
-            Directory requests are not available yet. You can still open your own plan now.
+            Directory requests are not available yet. You can still upload your own floor plan now.
           </p>
           <button id={FLOOR_PLAN_ADDRESS_UPLOAD_ACTION_ID} type="button" className={`${control} mt-2`} onClick={requestUpload}>
-            Upload your floor plan
+            Upload floor plan
           </button>
         </div>
       ) : null}

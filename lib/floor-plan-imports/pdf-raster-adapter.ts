@@ -665,7 +665,7 @@ async function renderPdf(
   const pdf = await loadingTask.promise;
   try {
     if (pdf.numPages > MAX_PDF_PAGES) {
-      throw new Error(`PDF has ${pdf.numPages} pages; the import limit is ${MAX_PDF_PAGES}`);
+      throw new Error(`PDF has ${pdf.numPages} pages; the limit is ${MAX_PDF_PAGES} pages`);
     }
     const result: FloorPlanRenderedPage[] = [];
     for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber += 1) {

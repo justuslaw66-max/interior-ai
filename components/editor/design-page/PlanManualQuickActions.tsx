@@ -137,7 +137,7 @@ export function PlanManualQuickActions({ state, actions }: PlanManualQuickAction
             !state.canScale
           )}
           disabled={!state.canScale}
-          aria-label="Set plan scale"
+          aria-label="Set scale"
           aria-pressed={state.calibrationActive}
           title={state.canScale ? "Set scale" : "Scale is unavailable for this upload"}
           onClick={actions.scale}

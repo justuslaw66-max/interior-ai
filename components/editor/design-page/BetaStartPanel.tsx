@@ -84,7 +84,7 @@ export function BetaStartPanel({ state, actions }: BetaStartPanelProps) {
         <StartPathButton
           testId="beta-start-upload-plan"
           title="Upload floor plan"
-          description="Import an image or PDF, calibrate scale, then trace rooms and openings."
+          description="Upload an image or PDF, set scale, then trace rooms and openings."
           onClick={actions.uploadPlan}
         />
         <StartPathButton

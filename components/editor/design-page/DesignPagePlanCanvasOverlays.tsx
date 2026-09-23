@@ -65,7 +65,7 @@ function resolveGuidancePrimaryAction(
   if (action === "scale") {
     return {
       label: "Set scale",
-      ariaLabel: "Start plan scale calibration",
+      ariaLabel: "Set scale for your floor plan",
       onClick: actions.startScale,
     };
   }

@@ -1254,6 +1254,6 @@ const reviewPanelUi = fs.readFileSync(
   ),
   "utf8"
 );
-assert.match(reviewPanelUi, /What did you verify or correct\?/);
+assert.match(reviewPanelUi, /What did you check or fix\?/);
 
 console.log("Floor-plan consumer visual review geometry tests passed.");

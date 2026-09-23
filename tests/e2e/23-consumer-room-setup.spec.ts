@@ -749,11 +749,11 @@ test.describe("23. Consumer room setup", () => {
       "plan-tool-section-importFloorPlan"
     );
     await importFloorPlanSection
-      .getByRole("button", { name: "Import floor plan", exact: true })
+      .getByRole("button", { name: "Upload floor plan", exact: true })
       .click();
     await expect(
       importFloorPlanSection.getByRole("button", {
-        name: "Import floor plan",
+        name: "Upload floor plan",
         exact: true,
       })
     ).toHaveAttribute("aria-expanded", "true");
@@ -767,7 +767,7 @@ test.describe("23. Consumer room setup", () => {
       [page.getByTestId("room-setup-continue-furnish"), "continue to furnish"],
       [page.getByTestId("plan-start-template"), "starter layouts"],
       [page.getByTestId("plan-start-draw"), "draw measured room"],
-      [page.getByTestId("plan-tool-import-2d"), "import 2D drawing"],
+      [page.getByTestId("plan-tool-import-2d"), "choose a file"],
     ] as const;
     for (const [locator, label] of touchTargets) {
       await expectTouchTarget(locator, label);

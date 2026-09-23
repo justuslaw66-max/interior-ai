@@ -61,7 +61,7 @@ function resolveCalibrationGuidance(pointCount: number): PlanCanvasGuidance {
   }
 
   return {
-    title: "Set plan scale",
+    title: "Set scale",
     detail: "Pick two points on a wall with a known real length.",
     label: "Scale",
     tone: "active",
@@ -215,8 +215,8 @@ export function resolvePlanCanvasGuidance(
 
   if (params.floorPlanUnderlay && !params.floorPlanUnderlay.calibration) {
     return {
-      title: "Set plan scale",
-      detail: "Calibrate the upload before tracing rooms from it.",
+      title: "Scale needed",
+      detail: "Set scale on your floor plan before tracing rooms over it.",
       label: "Scale",
       tone: "active",
       action: "scale",

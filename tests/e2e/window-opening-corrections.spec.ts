@@ -869,7 +869,7 @@ async function openImportReview(page: Page, proMode: boolean) {
   await page.getByTestId("floor-plan-import-workspace-launcher").first().click();
   await expect(page.getByTestId("floor-plan-import-review")).toBeVisible();
   await page.locator("summary").filter({ hasText: "Help AI finish this plan" }).click();
-  await page.locator("summary").filter({ hasText: "Expert corrections" }).click();
+  await page.locator("summary").filter({ hasText: "Advanced corrections" }).click();
   await page.getByText("Correct walls, openings and structures", { exact: true }).click();
   await page.getByTestId("import-review-opening-select")
     .selectOption("mounted-protected-window");

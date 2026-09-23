@@ -92,7 +92,7 @@ export default function FloorPlanSourceReviewCanvas({
             : "mt-2 rounded-md bg-neutral-100 p-2 text-[10px] text-neutral-600"
         }
       >
-        No durable source preview is available. Keep the underlay and use guided
+        A preview of your floor plan is not available. Use guided
         tracing.
       </div>
     );
@@ -168,7 +168,7 @@ export default function FloorPlanSourceReviewCanvas({
             className={dark ? "text-xs text-neutral-400" : "text-xs text-neutral-600"}
           >
             {overlay
-              ? "Saved room and wall outlines are shown over the uploaded plan."
+              ? "Saved room and wall outlines are shown over your floor plan."
               : "Your selected measurements and room corners will appear here."}
           </div>
         </div>
@@ -201,7 +201,7 @@ export default function FloorPlanSourceReviewCanvas({
           </button>
           {pages.length > 1 ? (
             <select
-              aria-label="Source page"
+              aria-label="Floor plan page"
               className={
                 dark
                   ? "designer-control rounded border px-1 py-1 text-[10px]"
@@ -244,8 +244,8 @@ export default function FloorPlanSourceReviewCanvas({
           <img
             alt={
               isCad
-                ? "Deterministic CAD linework preview"
-                : "Uploaded floor plan source"
+                ? "CAD drawing preview"
+                : "Your floor plan"
             }
             className="absolute inset-0 h-full w-full select-none"
             draggable={false}
@@ -255,12 +255,12 @@ export default function FloorPlanSourceReviewCanvas({
           <svg
             aria-label={
               pickingScale
-                ? "Pick scale points on the source drawing"
+                ? "Pick two scale points on your floor plan"
                 : pickingRoom
-                  ? "Trace room corners on the source drawing"
+                  ? "Trace room corners on your floor plan"
                   : pickingOpening
-                    ? "Pick both ends of an opening on the source drawing"
-                  : "Canonical candidate overlay"
+                    ? "Pick both ends of an opening on your floor plan"
+                  : "Detected rooms and walls"
             }
             className={
               picking
@@ -540,9 +540,9 @@ export default function FloorPlanSourceReviewCanvas({
             Snap to saved corners and straight lines
           </label>
           <label>
-            Uploaded plan {sourceOpacity}%
+            Floor plan image {sourceOpacity}%
             <input
-              aria-label="Uploaded plan opacity"
+              aria-label="Floor plan image opacity"
               className="block w-full accent-emerald-600"
               type="range"
               min={10}

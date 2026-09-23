@@ -589,13 +589,13 @@ export function useDesignPageFloorPlanUnderlayController({
       if (opacity <= 0 || floorPlanUnderlay?.visible === false) {
         runHistoryTransaction(
           opacity <= 0
-            ? "Hide floor plan reference"
-            : "Show floor plan reference",
+            ? "Hide floor plan image"
+            : "Show floor plan image",
           applyChange
         );
         return;
       }
-      runCoalescedHistoryTransaction("Change floor plan opacity", applyChange);
+      runCoalescedHistoryTransaction("Change floor plan image opacity", applyChange);
     },
     [
       floorPlanUnderlay?.visible,
@@ -608,7 +608,7 @@ export function useDesignPageFloorPlanUnderlayController({
   const changeUnderlayLock = useCallback(
     (locked: boolean) => {
       runHistoryTransaction(
-        locked ? "Lock floor plan" : "Unlock floor plan",
+        locked ? "Lock floor plan image" : "Unlock floor plan image",
         () =>
           setFloorPlanUnderlay((previous) =>
             previous ? { ...previous, locked } : previous
@@ -723,7 +723,7 @@ export function useDesignPageFloorPlanUnderlayController({
       return;
     }
 
-    runHistoryTransaction("Calibrate floor plan", () =>
+    runHistoryTransaction("Set scale", () =>
       setFloorPlanUnderlay(nextUnderlay)
     );
     resetFloorPlanCalibration(false);

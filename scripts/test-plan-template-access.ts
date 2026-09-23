@@ -229,7 +229,7 @@ assert.match(
 );
 
 const planToolSectionContracts = [
-  { section: "importFloorPlan", title: "Import floor plan" },
+  { section: "importFloorPlan", title: "Upload floor plan" },
   { section: "drawRoom", title: "Draw room" },
   { section: "openings", title: "Place doors and windows" },
   { section: "templates", title: "Templates" },
@@ -299,7 +299,7 @@ assert.match(
 
 assert.match(
   source,
-  /data-testid="plan-tool-palette"[\s\S]*?overflow-hidden rounded-sm border[\s\S]*?Room setup[\s\S]*?ConsumerRoomSetupCard[\s\S]*?Import floor plan[\s\S]*?Draw room[\s\S]*?Place doors and windows[\s\S]*?Templates/,
+  /data-testid="plan-tool-palette"[\s\S]*?overflow-hidden rounded-sm border[\s\S]*?Room setup[\s\S]*?ConsumerRoomSetupCard[\s\S]*?Upload floor plan[\s\S]*?Draw room[\s\S]*?Place doors and windows[\s\S]*?Templates/,
   "Consumer plan editing should lead with one focused Room setup card while retaining grouped advanced tools."
 );
 
@@ -403,7 +403,7 @@ assert.match(
 
 assert.match(
   source,
-  /testId: "plan-tool-import-2d"[\s\S]*?label: "Import 2D drawing"[\s\S]*?openFloorPlanUploadPicker\(FLOOR_PLAN_CONSUMER_IMPORT_ACTION_ID\)/,
+  /testId: "plan-tool-import-2d"[\s\S]*?label: "Choose a file"[\s\S]*?openFloorPlanUploadPicker\(FLOOR_PLAN_CONSUMER_IMPORT_ACTION_ID\)/,
   "The import tile should invoke the working file-picker flow."
 );
 
