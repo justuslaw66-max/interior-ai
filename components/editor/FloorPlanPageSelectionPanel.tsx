@@ -104,7 +104,7 @@ export default function FloorPlanPageSelectionPanel({
         }
         onClick={onConfirm}
       >
-        {submitting ? "Analyzing selected page…" : "Use this page"}
+        {submitting ? "Analysing selected page…" : "Use this page"}
       </button>
     </section>
   );

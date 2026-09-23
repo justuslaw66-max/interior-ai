@@ -510,7 +510,7 @@ export default function DesignControlsFurnishPanel({
               [
                 {
                   id: "catalog",
-                  title: "Full catalog",
+                  title: "Full catalogue",
                 },
                 {
                   id: "guided",
@@ -855,7 +855,7 @@ export default function DesignControlsFurnishPanel({
             onCatalogDragEnd={onCatalogDragEnd}
             activeRoomName={activeRoomName}
             recommendedCategoryIds={recommendedCategories}
-            title="Browse catalog"
+            title="Browse catalogue"
             selectedCategory={activeCatalogCategory}
             onSelectedCategoryChange={handleCatalogCategoryChange}
             navigationRevision={`${catalogRoomNavigationRevision}:${catalogCategoryNavigationRevision}`}
@@ -971,7 +971,7 @@ export default function DesignControlsFurnishPanel({
                 ? activeRoomPreviewNames.length > 0
                   ? activeRoomPreviewNames.join(", ")
                   : `${activeRoomItemCount} item${activeRoomItemCount === 1 ? "" : "s"} placed`
-                : "Add real catalog items to build this room list."}
+                : "Add real catalogue items to build this room list."}
             </div>
           </div>
           {activeRoomItemCount > 0 ? (
@@ -1222,7 +1222,7 @@ export default function DesignControlsFurnishPanel({
         >
           <span>
             <span className={titleClass}>All 3D models</span>
-            <span className={mutedClass}>Pick any verified model by family, including pieces not in the catalog yet.</span>
+            <span className={mutedClass}>Pick any verified model by family, including pieces not in the catalogue yet.</span>
           </span>
           <span
             className={

@@ -674,7 +674,7 @@ export default function FloorPropertiesPanel({
             <span className={fieldLabelClass}>Visible in 3D</span>
           </label>
           <label className="flex items-center gap-2 text-xs">
-            <span className={fieldLabelClass}>Color</span>
+            <span className={fieldLabelClass}>Colour</span>
             <input
               type="color"
               value={activeRoomCeilingColor}

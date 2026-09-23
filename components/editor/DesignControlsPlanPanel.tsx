@@ -3045,7 +3045,7 @@ export default function DesignControlsPlanPanel({
                 <span className={floorFieldLabelClass}>Visible in 3D</span>
               </label>
               <label className="flex items-center gap-2">
-                <span className={floorFieldLabelClass}>Color</span>
+                <span className={floorFieldLabelClass}>Colour</span>
                 <input
                   type="color"
                   value={activeRoomCeilingColor}

@@ -156,7 +156,7 @@ export function useDesignPageAiNotes({ state, actions }: UseDesignPageAiNotesOpt
                 (item) => item.category === "floor_lamp"
               );
               if (!lamp) {
-                showToast("No floor lamp is available in the catalog yet");
+                showToast("No floor lamp is available in the catalogue yet");
                 return;
               }
               addItem(lamp.id, getItems().length > 0 ? [2, 0, 2] : [1.5, 0, 1.5]);

@@ -914,7 +914,7 @@ export function CabinetryStudioGuidedView({
                             Use this measured area
                           </button>
                           <p className="text-[11px] leading-5 text-blue-700 sm:col-span-2">
-                            Custom areas coordinate dimensions and clearances. Without a modeled wall face, final plan position remains manual.
+                            Custom areas coordinate dimensions and clearances. Without a modelled wall face, final plan position remains manual.
                           </p>
                         </div>
                       ) : null}
@@ -1626,7 +1626,7 @@ export function CabinetryStudioGuidedView({
                       </>
                     ) : (
                       <div className="rounded-2xl border border-amber-200 bg-amber-50 p-6">
-                        <h3 className="text-base font-semibold text-amber-950">Specialized layout included</h3>
+                        <h3 className="text-base font-semibold text-amber-950">Specialised layout included</h3>
                         <p className="mt-2 max-w-2xl text-sm leading-6 text-amber-900/75">
                           {activePreset?.label ?? "This template"} already includes a professionally configured {formatCabinetLabel(activeModule.millworkComponentType ?? "component")} layout. {isProWorkspace
                             ? "Use the detailed editor only if you need to change its construction-specific settings."

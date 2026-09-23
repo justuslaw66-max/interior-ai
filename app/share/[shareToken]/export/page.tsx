@@ -743,7 +743,7 @@ function FurniturePlacementSchedule({ floors }: { floors: PlanDiagramFloor[] }) 
             <th className="p-2 text-left">Floor</th>
             <th className="p-2 text-left">Room</th>
             <th className="p-2 text-left">Item</th>
-            <th className="p-2 text-left">Center</th>
+            <th className="p-2 text-left">Centre</th>
             <th className="p-2 text-right">Rotation</th>
             <th className="p-2 text-right">Footprint</th>
           </tr>

@@ -707,7 +707,7 @@ export default async function SharePage({
             </>
           ) : (
             <div className="mt-4 rounded-lg border border-dashed border-neutral-300 bg-neutral-50 p-4 text-sm text-neutral-600">
-              Add catalog products in the editor to turn this shared design into a shopping-ready preview.
+              Add catalogue products in the editor to turn this shared design into a shopping-ready preview.
             </div>
           )}
         </div>

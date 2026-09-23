@@ -100,7 +100,7 @@ function buildPaletteActions(
     },
     {
       id: "insert-default-door", label: "Insert default door",
-      hint: "Add a centered south-wall door immediately", enabled: true,
+      hint: "Add a centred south-wall door immediately", enabled: true,
       run: insertDefaultDoor,
     },
     {

@@ -200,7 +200,7 @@ function SurfaceGroutControls({
               : "block text-[11px] font-semibold text-neutral-600"
           }
         >
-          Color
+          Colour
           <button
             type="button"
             data-testid={`${testIdPrefix}-joint-color`}
@@ -210,8 +210,8 @@ function SurfaceGroutControls({
                 ? "designer-control mt-1 grid h-8 w-12 place-items-center rounded-lg border p-1 disabled:opacity-50"
                 : "mt-1 grid h-8 w-12 place-items-center rounded-lg border border-neutral-200 bg-white p-1 disabled:opacity-50"
             }
-            aria-label="Choose grout color"
-            title="Choose grout color"
+            aria-label="Choose grout colour"
+            title="Choose grout colour"
             onClick={actions.onToggleGroutPalette}
           >
             <span
@@ -246,7 +246,7 @@ function SurfaceGroutControls({
                     ? "grid aspect-square min-h-8 place-items-center rounded-md border border-transparent bg-white/5 p-0 hover:bg-white/10"
                     : "grid aspect-square min-h-8 place-items-center rounded-md border border-transparent bg-white p-0 hover:border-neutral-200"
               }
-              aria-label={`Set grout color ${color.color}`}
+              aria-label={`Set grout colour ${color.color}`}
               title={color.color}
               onClick={() => actions.onSelectGroutColor(color.color)}
             >

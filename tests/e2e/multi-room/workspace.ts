@@ -151,7 +151,7 @@ export function registerWorkspaceTests() {
     await expect
       .poll(() => page.evaluate(() => window.localStorage.getItem("interior-ai:catalog-recents")))
       .toContain(firstCatalogItemId);
-    const placementPreview = page.getByRole("dialog", { name: "Preview catalog placement" });
+    const placementPreview = page.getByRole("dialog", { name: "Preview catalogue placement" });
     if (await placementPreview.isVisible({ timeout: 1000 }).catch(() => false)) {
       await clickWithFallback(placementPreview.getByRole("button", { name: "Cancel" }));
     }

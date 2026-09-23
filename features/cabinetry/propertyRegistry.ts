@@ -535,7 +535,7 @@ export const CABINET_PROPERTY_REGISTRY: readonly CabinetPropertyMetadata[] = [
     assemblyTypes: ["slat_wall"],
   }),
   moduleProperty("slatSpacing", "Slat spacing", "layout", "cabinet-input-slat-spacing", {
-    description: "Clear gap between neighboring slats.",
+    description: "Clear gap between neighbouring slats.",
     terms: ["batten gap", "slat gap", "pitch", "spacing on center"],
     componentTypes: CABINET_COMPONENT,
     assemblyTypes: ["slat_wall"],
@@ -590,7 +590,7 @@ export const CABINET_PROPERTY_REGISTRY: readonly CabinetPropertyMetadata[] = [
     priority: 76,
   }),
   moduleProperty("roomDividerStabilizerFootCount", "Stabilizer feet", "installation", "cabinet-input-room-divider-stabilizer-feet", {
-    description: "Number of floor stabilizers on a room divider.",
+    description: "Number of floor stabilisers on a room divider.",
     terms: ["outrigger feet", "anti tip feet", "divider supports"],
     componentTypes: CABINET_COMPONENT,
     assemblyTypes: ["room_divider_storage"],

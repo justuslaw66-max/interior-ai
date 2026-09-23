@@ -164,7 +164,7 @@ export function SelectedCabinetPanel({
                     disabled={!canEdit || (isDesigner && Boolean(selectedCabinetItem.locked))}
                     onClick={actions.center}
                   >
-                    Center
+                    Centre
                   </button>
                   <button
                     type="button"

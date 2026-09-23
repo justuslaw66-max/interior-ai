@@ -585,7 +585,7 @@ export function updatePendingCatalogPlacementDraft({
   };
 
   const xSnap = snapToTarget(nextX, [
-    { value: 0, label: "Aligned to room center" },
+    { value: 0, label: "Aligned to room centre" },
     ...(wallX > 0
       ? [
           { value: -wallX, label: "Snapped near left wall" },
@@ -599,7 +599,7 @@ export function updatePendingCatalogPlacementDraft({
   }
 
   const zSnap = snapToTarget(nextZ, [
-    { value: 0, label: "Aligned to room center" },
+    { value: 0, label: "Aligned to room centre" },
     ...(wallZ > 0
       ? [
           { value: -wallZ, label: "Snapped near back wall" },
@@ -609,7 +609,7 @@ export function updatePendingCatalogPlacementDraft({
   ]);
   if (zSnap) {
     nextZ = zSnap.value;
-    reason = xSnap && zSnap ? "Aligned to room center" : zSnap.label;
+    reason = xSnap && zSnap ? "Aligned to room centre" : zSnap.label;
   }
 
   const [clampedX, clampedZ] = clampToActiveRoom(

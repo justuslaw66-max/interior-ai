@@ -939,7 +939,7 @@ export function useDesignPageSurfaceInspector({
                   }),
                   emptyMessage: `No published ${
                     surfaceInspectorIsWall ? "wall" : "flooring"
-                  } catalog materials are available in this mode.`,
+                  } catalogue materials are available in this mode.`,
                 }
               : null;
           const floorPattern =

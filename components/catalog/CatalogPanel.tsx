@@ -838,7 +838,7 @@ export default function CatalogPanel({
             onToggleDrawer={() => setFiltersOpen((value) => !value)}
             activeFilterCount={activeFilterCount}
           />
-          <div className="ml-auto flex shrink-0 rounded-lg bg-neutral-100 p-0.5" aria-label="Catalog view">
+          <div className="ml-auto flex shrink-0 rounded-lg bg-neutral-100 p-0.5" aria-label="Catalogue view">
             {[
               { scope: "all" as const, label: "All", count: allCatalogFamilies.length },
               { scope: "favorites" as const, label: "Favourites", count: favoriteCards.length },

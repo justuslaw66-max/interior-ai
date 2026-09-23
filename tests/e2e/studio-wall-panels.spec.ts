@@ -121,7 +121,7 @@ async function setLivingEastWallAngle(
     direction *
       Math.tan(THREE_DEGREES_TO_RADIANS * angleDeg) *
       normalDistance;
-  await dragNavigatorHandle(page, "Drag view center", targetX, targetY);
+  await dragNavigatorHandle(page, "Drag view centre", targetX, targetY);
   await dragNavigatorHandle(page, "Drag camera position", cameraX, cameraY);
   await page.waitForTimeout(300);
 }

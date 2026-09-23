@@ -268,7 +268,7 @@ export function useDesignPageSelectionTransforms({
       getItemAABB,
       aabbIntersects,
     });
-    if (nextItems) commitItems(nextItems, "Align X center");
+    if (nextItems) commitItems(nextItems, "Align X centre");
   }, [
     clampToActiveRoom,
     commitItems,
@@ -297,7 +297,7 @@ export function useDesignPageSelectionTransforms({
       getItemAABB,
       aabbIntersects,
     });
-    if (nextItems) commitItems(nextItems, "Align Z center");
+    if (nextItems) commitItems(nextItems, "Align Z centre");
   }, [
     clampToActiveRoom,
     commitItems,
@@ -893,8 +893,8 @@ export function useDesignPageSelectionTransforms({
     commitSelectedItemPosition(
       0,
       0,
-      "Center item",
-      "This item is already centered."
+      "Centre item",
+      "This item is already centred."
     );
   }, [commitSelectedItemPosition]);
 

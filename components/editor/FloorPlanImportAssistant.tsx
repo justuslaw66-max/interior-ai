@@ -315,7 +315,7 @@ export default function FloorPlanImportAssistant({
       );
       const job = await processAndPoll(
         activeJob.id,
-        "Analyzing the selected floor plan",
+        "Analysing the selected floor plan",
         { continueSelectedPage: true }
       );
       setCandidate(parseFloorPlanImportDocument(job.candidateJson));
