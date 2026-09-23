@@ -106,7 +106,7 @@ test.describe("4. Share Link Read-Only", () => {
         const warningElement = page.getByTestId("surface-material-bom-opening-warning");
         if (state.blocked) {
           await expect(warningElement).toBeVisible();
-          await expect(warningElement).toContainText(`Opening ${openingId}: ${warning}`);
+          await expect(warningElement).toContainText(`Door or window 1: ${warning}`);
         } else {
           await expect(warningElement).toHaveCount(0);
         }
@@ -142,7 +142,7 @@ test.describe("4. Share Link Read-Only", () => {
         expect(pdfText).toContain(`Surface area ${state.surface} m2`);
         expect(pdfText).toContain(`Order ${state.order} m2 incl. 10% waste`);
         if (state.blocked) {
-          expect(pdfText).toContain(`Warning — wall quantities remain uncut for opening: ${openingId}.`);
+          expect(pdfText).toContain("Warning — wall quantities remain uncut for 1 door or window.");
         } else {
           expect(pdfText).not.toContain("wall quantities remain uncut");
         }

@@ -14,6 +14,7 @@ import type {
   ConsumerFloorPlanImportJob,
   ConsumerFloorPlanImportProgressEstimate,
 } from "./floor-plan-import-ui-types";
+import { UserFacingError, userFacingErrorMessage } from "@/lib/user-facing-error";
 
 export type ConsumerFloorPlanImportState =
   | { kind: "idle" }
@@ -53,9 +54,9 @@ export function parseFloorPlanImportIssues(value: unknown): FloorPlanReviewIssue
 export async function floorPlanImportResponseJson(response: Response) {
   const payload = (await response.json().catch(() => ({}))) as Record<string, unknown>;
   if (!response.ok) {
-    throw Object.assign(
-      new Error(typeof payload.error === "string" ? payload.error : "Floor plan upload failed"),
-      { status: response.status }
+    throw new UserFacingError(
+      typeof payload.error === "string" ? payload.error : "Floor plan upload failed",
+      response.status
     );
   }
   return payload;
@@ -219,7 +220,7 @@ export function useConsumerFloorPlanImportSession(input: {
             ? isCad
               ? "Sign in to privately extract and review this CAD plan."
               : "Sign in to privately detect, review, and save this plan."
-            : error.message,
+            : userFacingErrorMessage(cause, "Floor plan upload failed"),
           authenticationRequired: error.status === 401,
           ...(recoveryJobId ? { resumableJobId: recoveryJobId } : {}),
         });

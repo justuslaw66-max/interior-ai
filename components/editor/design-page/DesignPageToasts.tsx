@@ -1,3 +1,8 @@
+import {
+  EDITOR_FEEDBACK_TONE_CLASS,
+  editorFeedbackTone,
+} from "@/lib/editor-feedback-tone";
+
 export type DesignPageToastsProps = {
   ruleMessage: string | null;
   nudgeMessage: string | null;
@@ -5,12 +10,7 @@ export type DesignPageToastsProps = {
   shareErrorMessage: string | null;
 };
 
-const ASSERTIVE_RULE_MESSAGE =
-  /\b(?:failed|failure|invalid|error|blocked|unavailable)\b|\bcould not\b|\bcannot\b|\bcan't\b|^enter a valid\b|^choose a valid\b|^keep at least\b|^try again\b/i;
-
-function isAssertiveRuleMessage(message: string | null) {
-  return Boolean(message && ASSERTIVE_RULE_MESSAGE.test(message));
-}
+const TOAST = "rounded-lg px-4 py-3 text-sm font-semibold shadow-lg";
 
 export function DesignPageToasts({
   ruleMessage,
@@ -18,9 +18,8 @@ export function DesignPageToasts({
   shareCopied,
   shareErrorMessage,
 }: DesignPageToastsProps) {
-  const assertiveRuleMessage = isAssertiveRuleMessage(ruleMessage)
-    ? ruleMessage
-    : null;
+  const ruleTone = ruleMessage ? editorFeedbackTone(ruleMessage) : "notice";
+  const assertiveRuleMessage = ruleTone === "error" ? ruleMessage : null;
   const politeRuleMessage =
     ruleMessage && !assertiveRuleMessage ? ruleMessage : null;
 
@@ -52,12 +51,12 @@ export function DesignPageToasts({
       {/* Collision/Rule Toast */}
       {ruleMessage && (
         <div
-          data-testid="collision-toast"
+          data-testid="collision-toast" data-tone={ruleTone}
           aria-hidden="true"
           className="pointer-events-none fixed top-11 left-1/2 z-50 -translate-x-1/2 animate-fade-in"
         >
-          <div className="rounded-lg bg-orange-500 px-4 py-3 text-sm font-semibold text-white shadow-lg">
-            ⚠️ {ruleMessage}
+          <div className={`${TOAST} ${EDITOR_FEEDBACK_TONE_CLASS[ruleTone]}`}>
+            {ruleMessage}
           </div>
         </div>
       )}
@@ -65,8 +64,8 @@ export function DesignPageToasts({
       {/* Onboarding/Nudge Toast */}
       {nudgeMessage && (
         <div data-testid="sofa-nudge" className="fixed top-23 left-1/2 z-50 -translate-x-1/2 animate-fade-in">
-          <div className="rounded-lg bg-purple-600 px-4 py-3 text-sm font-semibold text-white shadow-lg">
-            💡 {nudgeMessage}
+          <div className={`${TOAST} ${EDITOR_FEEDBACK_TONE_CLASS.tip}`}>
+            {nudgeMessage}
           </div>
         </div>
       )}
@@ -74,8 +73,8 @@ export function DesignPageToasts({
       {/* Share Success Toast */}
       {shareCopied && (
         <div className="fixed top-6 right-6 z-50 animate-fade-in">
-          <div className="rounded-lg bg-green-600 px-4 py-3 text-sm font-semibold text-white shadow-lg">
-            ✅ Share link copied to clipboard!
+          <div className={`${TOAST} ${EDITOR_FEEDBACK_TONE_CLASS.success}`}>
+            Share link copied to clipboard!
           </div>
         </div>
       )}
@@ -83,8 +82,8 @@ export function DesignPageToasts({
       {/* Share Error Toast */}
       {shareErrorMessage && (
         <div className="fixed top-6 right-6 z-50 animate-fade-in">
-          <div className="rounded-lg bg-red-600 px-4 py-3 text-sm font-semibold text-white shadow-lg">
-            ❌ {shareErrorMessage}
+          <div className={`${TOAST} ${EDITOR_FEEDBACK_TONE_CLASS.error}`}>
+            {shareErrorMessage}
           </div>
         </div>
       )}

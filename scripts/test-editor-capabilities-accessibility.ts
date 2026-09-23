@@ -6,6 +6,7 @@ import { resolveEditorCapabilities } from "../lib/editor-capabilities";
 import { getExportCapabilities } from "../lib/export-capabilities";
 import { isOnboardingEligible } from "../lib/onboarding";
 import { copyFallbackShareLinkWithFeedback } from "../lib/copy-fallback-share-link";
+import { EDITOR_FEEDBACK_DURATION_MS, editorFeedbackTone } from "../lib/editor-feedback-tone";
 
 const root = process.cwd();
 const read = (relativePath: string) =>
@@ -370,9 +371,20 @@ for (const required of [
   );
 }
 assert.match(
-  designPageToasts,
+  read("lib/editor-feedback-tone.ts"),
   /failed\|failure\|invalid\|error\|blocked\|unavailable/,
   "validation and save failures should use the assertive live region"
+);
+// UX audit AX4: one tone map, no warning styling on success, errors readable.
+assert.doesNotMatch(designPageToasts, /⚠️|💡|✅|❌|bg-orange-500/, "Toasts take their look from the shared tone map.");
+assert.match(designPageToasts, /EDITOR_FEEDBACK_TONE_CLASS\[ruleTone\]/);
+assert.equal(editorFeedbackTone("Rug sized to sofa width"), "notice");
+assert.equal(editorFeedbackTone("Save failed: Unable to reach the server."), "error");
+assert.ok(EDITOR_FEEDBACK_DURATION_MS.error >= 6000, "Errors must stay up long enough to read.");
+assert.match(
+  read("lib/useDesignPageTransientFeedback.ts"),
+  /EDITOR_FEEDBACK_DURATION_MS\[editorFeedbackTone\(message\)\]/,
+  "The rule toast must stay up for its tone's duration."
 );
 assert.match(
   designPageToasts,

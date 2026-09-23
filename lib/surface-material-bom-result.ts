@@ -22,8 +22,8 @@ export type SurfaceMaterialBomResult = {
 export function formatSurfaceMaterialBomWarning(
   warnings: readonly Pick<SurfaceMaterialBomWarning, "openingId">[]
 ) {
-  const noun = warnings.length === 1 ? "opening" : "openings";
-  return `Warning — wall quantities remain uncut for ${noun}: ${warnings.map(({ openingId }) => openingId).join(", ")}.`;
+  const noun = warnings.length === 1 ? "door or window" : "doors or windows";
+  return `Warning — wall quantities remain uncut for ${warnings.length} ${noun}.`;
 }
 
 export function buildRoomSurfaceMaterialBomResult(

@@ -9,6 +9,7 @@ import {
   traceRoomFromSourcePolygon,
   type ReviewSourcePoint,
 } from "@/lib/floor-plan-import-review-geometry";
+import { userFacingErrorMessage } from "@/lib/user-facing-error";
 
 type FloorPlanRoomTracePanelProps = {
   document: FloorPlanDocumentV2;
@@ -139,11 +140,7 @@ export default function FloorPlanRoomTracePanel({
               onPickingRoomChange(false);
               setRoomName("");
             } catch (cause) {
-              onError(
-                cause instanceof Error
-                  ? cause.message
-                  : "The traced room could not be added."
-              );
+              onError(userFacingErrorMessage(cause, "The traced room could not be added."));
             }
           }}
           type="button"

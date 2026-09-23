@@ -1,3 +1,5 @@
+import { EDITOR_FEEDBACK_DURATION_MS } from "@/lib/editor-feedback-tone";
+
 /** Copy feedback belongs to the settled clipboard operation, including rejection. */
 export async function copyFallbackShareLinkWithFeedback(
   url: string,
@@ -20,9 +22,10 @@ export async function copyFallbackShareLinkWithFeedback(
     await navigator.clipboard.writeText(url);
     if (signal.aborted) return;
     setSuccess(true);
+    timer = setTimeout(clearFeedback, EDITOR_FEEDBACK_DURATION_MS.success);
   } catch {
     if (signal.aborted) return;
     setError("Unable to copy share link. Select the link and copy it manually.");
+    timer = setTimeout(clearFeedback, EDITOR_FEEDBACK_DURATION_MS.error);
   }
-  timer = setTimeout(clearFeedback, 3000);
 }

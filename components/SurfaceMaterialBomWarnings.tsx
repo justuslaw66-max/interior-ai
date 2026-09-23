@@ -12,9 +12,9 @@ export function SurfaceMaterialBomWarnings({
       className="mb-4 rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900"
     >
       <div className="font-semibold">Wall quantities need opening review</div>
-      {warnings.map((warning) => (
+      {warnings.map((warning, index) => (
         <div key={warning.openingId} className="mt-1">
-          Opening {warning.openingId}: {warning.message}
+          Door or window {index + 1}: {warning.message}
         </div>
       ))}
     </div>

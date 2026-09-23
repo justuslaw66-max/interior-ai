@@ -97,7 +97,7 @@ export function DesignValidationFeedback({
                 <div className="text-sm font-semibold">A newer verified floor plan is available</div>
                 <p className="mt-0.5 text-xs leading-4 text-neutral-600">
                   {floorPlanRevisionUpdate.diffSummary}. {floorPlanRevisionUpdate.mappedRoomCount}{" "}
-                  stable room {floorPlanRevisionUpdate.mappedRoomCount === 1 ? "ID" : "IDs"} can keep {floorPlanRevisionUpdate.preservedItemCount}{" "}
+                  room{floorPlanRevisionUpdate.mappedRoomCount === 1 ? "" : "s"} can keep {floorPlanRevisionUpdate.preservedItemCount}{" "}
                   furniture item{floorPlanRevisionUpdate.preservedItemCount === 1 ? "" : "s"}, finishes and saved views.
                   Your current design will stay unchanged.
                 </p>
@@ -108,17 +108,11 @@ export function DesignValidationFeedback({
                   <div className="rounded-lg border border-neutral-200 bg-neutral-50 p-2">
                     <div className="font-semibold text-neutral-800">Current design</div>
                     <div className="mt-1 text-neutral-600">Kept unchanged</div>
-                    <div className="mt-1 font-mono text-[9px] text-neutral-400">
-                      {floorPlanRevisionUpdate.currentRevisionId.slice(0, 18)}
-                    </div>
                   </div>
                   <div className="rounded-lg border border-blue-200 bg-blue-50 p-2">
                     <div className="font-semibold text-blue-900">Updated copy</div>
                     <div className="mt-1 text-blue-800">
                       {floorPlanRevisionUpdate.mappedRoomCount} rooms · {floorPlanRevisionUpdate.preservedItemCount} items carried over
-                    </div>
-                    <div className="mt-1 font-mono text-[9px] text-blue-500">
-                      {floorPlanRevisionUpdate.revisionId.slice(0, 18)}
                     </div>
                   </div>
                 </div>

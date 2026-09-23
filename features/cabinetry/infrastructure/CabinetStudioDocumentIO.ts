@@ -17,6 +17,7 @@ import {
   type CabinetSourceImportFileInfo,
 } from "../importPolicy";
 import type { CabinetBOMItem, CabinetDefinition } from "../types";
+import { UserFacingError } from "@/lib/user-facing-error";
 
 export type CabinetStudioExportArtifact =
   | "glb"
@@ -161,7 +162,7 @@ export async function readCabinetStudioSourceDefinition(
   file: CabinetStudioSourceDefinitionFile
 ): Promise<CabinetDefinition> {
   const validation = validateCabinetSourceImportFile(file);
-  if (!validation.ok) throw new Error(validation.error);
+  if (!validation.ok) throw new UserFacingError(validation.error);
   return parseCabinetSourceDefinitionJson(await file.text());
 }
 

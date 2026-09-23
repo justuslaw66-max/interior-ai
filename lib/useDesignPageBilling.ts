@@ -5,6 +5,7 @@ import { useCallback, useEffect, useState, type Dispatch, type SetStateAction } 
 import { track } from "@/lib/analytics";
 import type { FunnelEventName, PricingLayoutVariant } from "@/lib/design-page-paywall";
 import type { Plan } from "@/lib/plan";
+import { userFacingErrorMessage } from "@/lib/user-facing-error";
 
 type UpgradeReason = "designer" | "export_images" | "export_pdf" | null;
 type CheckoutInterval = "monthly" | "yearly";
@@ -108,16 +109,13 @@ export function useDesignPageBilling({
       const response = await fetch("/api/stripe/portal", { method: "POST" });
       const data = await response.json().catch(() => ({}));
       if (!response.ok || !data?.url) {
-        const message = data?.error || "Unable to open billing portal. Please try again.";
-        showToast(message);
-        console.warn("Portal request failed:", message);
+        showToast("Unable to open billing portal. Please try again.");
+        console.warn("Portal request failed:", data?.error);
         return;
       }
       window.location.href = data.url as string;
     } catch (error) {
-      const message =
-        error instanceof Error ? error.message : "Unable to open billing portal";
-      showToast(message);
+      showToast(userFacingErrorMessage(error, "Unable to open billing portal. Please try again."));
       console.warn("Billing portal request failed:", error);
     } finally {
       setOpeningBillingPortal(false);
@@ -149,21 +147,18 @@ export function useDesignPageBilling({
         });
         const data = await response.json().catch(() => ({}));
         if (!response.ok) {
-          const message = data?.error || "Unable to start checkout right now.";
-          showToast(message);
-          console.warn("Checkout request failed:", message);
+          showToast("Unable to start checkout right now.");
+          console.warn("Checkout request failed:", data?.error);
           return;
         }
         if (data?.url) {
           window.location.href = data.url;
           return;
         }
-        showToast("No checkout URL returned. Please try again.");
+        showToast("Unable to start checkout right now.");
       } catch (error) {
-        const message =
-          error instanceof Error ? error.message : "Unable to start checkout right now.";
         console.warn("Failed to start checkout:", error);
-        showToast(message);
+        showToast(userFacingErrorMessage(error, "Unable to start checkout right now."));
       } finally {
         setStartingCheckout(false);
       }

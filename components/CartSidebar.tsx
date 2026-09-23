@@ -143,7 +143,7 @@ export default function CartSidebar({
     noticeTimerRef.current = window.setTimeout(() => {
       setNotice(null);
       noticeTimerRef.current = null;
-    }, tone === "error" ? 5000 : 3200);
+    }, tone === "error" ? 8000 : 3200);
   };
 
   useEffect(() => {
@@ -539,7 +539,7 @@ export default function CartSidebar({
                   `- ${u.title ?? "Item"} (${u.variant ?? "Variant"})`
                 )
                 .join("\n")}`
-            : data?.error ?? "Checkout failed";
+            : "Checkout failed";
         showCartNotice(msg, "error");
         return;
       }

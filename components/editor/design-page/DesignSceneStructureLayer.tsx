@@ -188,13 +188,7 @@ export function DesignSceneStructureLayer({
       };
     } catch (cause) {
       console.error("Canonical floor-plan render model rejected", cause);
-      return {
-        plan: null,
-        error:
-          cause instanceof Error
-            ? cause.message
-            : "Canonical floor-plan integrity check failed",
-      };
+      return { plan: null, error: "Canonical floor-plan integrity check failed" };
     }
   }, [state.plan.canonicalDocument, state.plan.canonicalGeometryHash]);
   const canonicalPlan = canonicalResolution.plan;

@@ -11,6 +11,7 @@ import {
   traceOpeningFromSourceSpan,
   type ReviewSourcePoint,
 } from "@/lib/floor-plan-import-review-geometry";
+import { userFacingErrorMessage } from "@/lib/user-facing-error";
 
 type FloorPlanOpeningTracePanelProps = {
   document: FloorPlanDocumentV2;
@@ -193,11 +194,7 @@ export default function FloorPlanOpeningTracePanel({
               onOpeningPointsChange([]);
               onPickingOpeningChange(false);
             } catch (cause) {
-              onError(
-                cause instanceof Error
-                  ? cause.message
-                  : "The opening could not be added."
-              );
+              onError(userFacingErrorMessage(cause, "The door or window could not be added."));
             }
           }}
           type="button"

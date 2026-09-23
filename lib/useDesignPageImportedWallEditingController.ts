@@ -19,6 +19,7 @@ import {
 } from "@/lib/floor-plan-consumer-wall-edit";
 import type { FixedElement2D, RoomOpening2D } from "@/lib/editorScene";
 import type { DesignSnapshot } from "@/lib/room-types";
+import { userFacingErrorMessage } from "@/lib/user-facing-error";
 
 type FunctionalStateAction<T> = T | ((previous: T) => T);
 
@@ -173,11 +174,7 @@ export function useDesignPageImportedWallEditingController({
         );
         return true;
       } catch (cause) {
-        actions.showToast(
-          `Wall change blocked: ${
-            cause instanceof Error ? cause.message : "The geometry is not valid."
-          }`
-        );
+        actions.showToast(userFacingErrorMessage(cause, "That wall change couldn't be made."));
         return false;
       }
     },

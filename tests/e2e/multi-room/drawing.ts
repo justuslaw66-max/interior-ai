@@ -170,7 +170,8 @@ export function registerDrawingTests() {
     await expect(page.getByTestId("wall-draw-segment-length-editor")).toBeVisible();
     // Still past the 20 m maximum when read as centimetres, so the editor tears down.
     await page.getByTestId("wall-draw-segment-length-editor").fill("23234");
-    await expect(page.getByText("⚠️ Enter a valid wall length.", { exact: true })).toBeVisible();
+    await expect(page.getByTestId("collision-toast")).toHaveText("Enter a valid wall length.");
+    await expect(page.getByTestId("collision-toast")).toHaveAttribute("data-tone", "error");
     await expect(page.locator('[data-testid^="wall-draw-segment-length-"]')).toHaveCount(0);
   });
 

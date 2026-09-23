@@ -237,7 +237,7 @@ export function useDesignPageAiLayout({
           fallback.picks?.sofa && fallback.picks?.coffee_table
         );
         if (!hasCoreStarter) {
-          showRuleToast(reason || "Couldn't suggest a layout. Please add items manually.");
+          showRuleToast("Couldn't suggest a layout. Please add items manually.");
           return;
         }
         queueProposal(fallback, "Local starter");
@@ -331,7 +331,7 @@ export function useDesignPageAiLayout({
         }
       } catch (error) {
         if (error instanceof DOMException && error.name === "AbortError") return;
-        applyFallbackLayout(error instanceof Error ? error.message : "AI failed");
+        applyFallbackLayout(error instanceof Error ? error.name : "AI failed");
       }
     },
     [

@@ -129,6 +129,7 @@ import type {
   CabinetWallBedOrientation,
   CabinetWallBedSideStorage,
 } from "../types";
+import { UserFacingError, userFacingErrorMessage } from "@/lib/user-facing-error";
 import type { CabinetryStudioProps } from "./CabinetryStudio.contract";
 import type { CabinetTemplateSourceIdentity, SavedCabinetTemplate } from "./CabinetryStudio.types";
 import type { CabinetOverallDimensionField } from "./CabinetOverallDimensionHandles";
@@ -956,9 +957,7 @@ export default function CabinetryStudio({
       setActionSuccess("Reusable template removed. You can restore it below.");
     } catch (error) {
       setActionSuccess(null);
-      setActionError(
-        error instanceof Error ? error.message : "Unable to remove the reusable template."
-      );
+      setActionError(userFacingErrorMessage(error, "Unable to remove the reusable template."));
     }
   };
 
@@ -985,11 +984,7 @@ export default function CabinetryStudio({
       trackStudioInteraction("millwork_reusable_template_delete_undone");
     } catch (error) {
       setActionSuccess(null);
-      setActionError(
-        error instanceof Error
-          ? error.message
-          : "Unable to restore the reusable template."
-      );
+      setActionError(userFacingErrorMessage(error, "Unable to restore the reusable template."));
     }
   };
 
@@ -2252,9 +2247,7 @@ export default function CabinetryStudio({
       const completed = await downloadCabinetStudioArtifact(definition, artifact);
       recordExportSuccess(completed.artifact, completed.successMessage);
     } catch (error) {
-      setActionError(
-        error instanceof Error ? error.message : descriptor.fallbackError
-      );
+      setActionError(userFacingErrorMessage(error, descriptor.fallbackError));
     } finally {
       setBusyAction(null);
     }
@@ -2298,7 +2291,7 @@ export default function CabinetryStudio({
         source_preset_id: importedDefinition.sourcePresetId ?? null,
       });
     } catch (error) {
-      setActionError(error instanceof Error ? error.message : "Unable to import source definition.");
+      setActionError(userFacingErrorMessage(error, "Unable to import source definition."));
     } finally {
       setBusyAction(null);
     }
@@ -2323,11 +2316,11 @@ export default function CabinetryStudio({
         return;
       }
       if (!onSave) {
-        throw new Error("Saving is unavailable for this placed built-in.");
+        throw new UserFacingError("Saving is unavailable for this placed built-in.");
       }
       const saved = await onSave(definition);
       if (!saved) {
-        throw new Error(
+        throw new UserFacingError(
           mode === "edit"
             ? "The placed built-in could not be updated."
             : "Save is unavailable until this design is placed or stored as a reusable template."
@@ -2335,7 +2328,7 @@ export default function CabinetryStudio({
       }
       setActionSuccess(mode === "edit" ? "Built-in updated." : "Built-in saved.");
     } catch (error) {
-      setActionError(error instanceof Error ? error.message : "Unable to save this built-in.");
+      setActionError(userFacingErrorMessage(error, "Unable to save this built-in."));
     } finally {
       setBusyAction(null);
     }
@@ -2350,11 +2343,11 @@ export default function CabinetryStudio({
       const payload = await createCabinetStudioPlacementPayload(definition);
       const placed = await onPlaceInPlan(payload);
       if (!placed) {
-        throw new Error("Add or select a room before placing this built-in.");
+        throw new UserFacingError("Add or select a room before placing this built-in.");
       }
       setActionSuccess(mode === "edit" ? "Built-in placement updated." : "Built-in placed in plan.");
     } catch (error) {
-      setActionError(error instanceof Error ? error.message : "Unable to place this built-in.");
+      setActionError(userFacingErrorMessage(error, "Unable to place this built-in."));
     } finally {
       setBusyAction(null);
     }
@@ -2374,11 +2367,11 @@ export default function CabinetryStudio({
       });
       const placed = await onPlaceInPlan(payload);
       if (!placed) {
-        throw new Error("Add or select a room before placing a copy.");
+        throw new UserFacingError("Add or select a room before placing a copy.");
       }
       setActionSuccess("A separate copy of this built-in was placed in the plan.");
     } catch (error) {
-      setActionError(error instanceof Error ? error.message : "Unable to save this design as a copy.");
+      setActionError(userFacingErrorMessage(error, "Unable to save this design as a copy."));
     } finally {
       setBusyAction(null);
     }

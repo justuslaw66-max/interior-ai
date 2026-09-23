@@ -230,9 +230,6 @@ export default function CatalogItemDrawer({
                   {detail.variantLabel}
                 </div>
                 <div className="mt-1 text-xs text-neutral-600">Finish: {selectedFinishLabel}</div>
-                <div className="mt-1 truncate text-[11px] font-medium text-neutral-500">
-                  Variant ID: {detail.variantId}
-                </div>
               </div>
             </div>
             <div className="shrink-0 text-right">

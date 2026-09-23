@@ -268,8 +268,8 @@ export async function PATCH(
     }
     return NextResponse.json({ ok: true, status: "validating", candidateVersion: nextVersion });
   } catch (cause) {
-    const message = cause instanceof Error ? cause.message : "Invalid candidate correction";
-    return error(message, 400);
+    console.error("Floor-plan correction rejected", cause);
+    return error("These corrections couldn't be saved. Check the plan and try again.", 400);
   }
 }
 

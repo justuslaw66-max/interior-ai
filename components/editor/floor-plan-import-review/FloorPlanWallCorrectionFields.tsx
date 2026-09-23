@@ -59,9 +59,9 @@ export default function FloorPlanWallCorrectionFields({
           onChange={(event) => selectWall(event.target.value)}
         >
           <option value="">Choose a wall…</option>
-          {floor.walls.map((wall) => (
+          {floor.walls.map((wall, index) => (
             <option key={wall.id} value={wall.id}>
-              {wall.id} · {wall.classification}
+              Wall {index + 1} · {wall.classification}
             </option>
           ))}
         </select>

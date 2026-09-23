@@ -20,6 +20,7 @@ import {
   updatePlanOpeningMetrics,
 } from "@/lib/design-page-plan-overlays";
 import type { PlanLayers, PlanTheme } from "@/lib/useDesignPagePlanState";
+import { userFacingErrorMessage } from "@/lib/user-facing-error";
 import {
   DesignPageOpeningMutationError,
   type DesignPageOpeningMetricsPatch,
@@ -223,7 +224,7 @@ export function useDesignPagePlanActions({
         );
       } catch (cause) {
         if (cause instanceof DesignPageOpeningMutationError) {
-          showRuleToast(cause.message);
+          showRuleToast(userFacingErrorMessage(cause));
           return;
         }
         throw cause;

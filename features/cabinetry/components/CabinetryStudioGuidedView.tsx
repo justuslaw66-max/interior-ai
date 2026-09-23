@@ -1069,7 +1069,7 @@ export function CabinetryStudioGuidedView({
                               <ul className="mt-2 grid gap-1.5 text-neutral-700">
                                 {fitFeedback.moduleAdjustments.map((adjustment) => (
                                   <li key={adjustment.moduleId}>
-                                    {adjustment.moduleId}: {formatProjectMeasurement(adjustment.previousWidthMm)} → {formatProjectMeasurement(adjustment.nextWidthMm)} ({formatCabinetLabel(adjustment.source)})
+                                    Module {definition.modules.findIndex((module) => module.id === adjustment.moduleId) + 1}: {formatProjectMeasurement(adjustment.previousWidthMm)} → {formatProjectMeasurement(adjustment.nextWidthMm)} ({formatCabinetLabel(adjustment.source)})
                                   </li>
                                 ))}
                               </ul>

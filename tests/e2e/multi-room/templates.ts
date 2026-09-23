@@ -396,7 +396,8 @@ export function registerTemplateTests() {
     await expect(page.getByTestId("room-connection-checklist")).toContainText("shared wall");
     await expect(page.getByTestId("room-connection-add-doorway")).toHaveText("Add connecting door");
     await page.getByTestId("room-connection-add-doorway").click();
-    await expect(page.getByText("⚠️ Door added", { exact: true })).toBeVisible();
+    await expect(page.getByTestId("collision-toast")).toHaveText("Door added");
+    await expect(page.getByTestId("collision-toast")).toHaveAttribute("data-tone", "notice");
     await expect(page.getByTestId("consumer-plan-next-steps")).toContainText(/(door or window|doors and windows) placed/);
     const selectedRoomSectionToggle = page.getByTestId("plan-section-toggle-selectedRoom");
     if ((await selectedRoomSectionToggle.getAttribute("aria-expanded")) === "false") {

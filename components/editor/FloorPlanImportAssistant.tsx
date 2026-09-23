@@ -25,6 +25,7 @@ import { inspectFloorPlanOptionalConfigurations } from "@/lib/floor-plan-optiona
 import { readFloorPlanPageSelection } from "@/lib/floor-plan-imports/page-selection";
 import { formatFloorPlanRemainingTime } from "@/lib/floor-plan-imports/progress-estimate";
 import FloorPlanPageSelectionPanel from "./FloorPlanPageSelectionPanel";
+import { userFacingErrorMessage } from "@/lib/user-facing-error";
 
 type FloorPlanImportAssistantProps = {
   file: File | null;
@@ -249,11 +250,7 @@ export default function FloorPlanImportAssistant({
       setIssues(parseFloorPlanImportIssues(job.reviewIssuesJson));
       setState({ kind: "job", job });
     } catch (cause) {
-      setReviewError(
-        cause instanceof Error
-          ? cause.message
-          : "Unable to save floor-plan review"
-      );
+      setReviewError(userFacingErrorMessage(cause, "Unable to save floor-plan review"));
     } finally {
       setSubmitting(false);
     }
@@ -282,10 +279,7 @@ export default function FloorPlanImportAssistant({
         )}`
       );
     } catch (cause) {
-      const message = cause instanceof Error
-        ? cause.message
-        : "Unable to create the new design";
-      setCreateError(message);
+      setCreateError(userFacingErrorMessage(cause, "Unable to create the new design"));
     } finally {
       setSubmitting(false);
     }
@@ -330,10 +324,7 @@ export default function FloorPlanImportAssistant({
     } catch (cause) {
       setState({
         kind: "error",
-        message:
-          cause instanceof Error
-            ? cause.message
-            : "Unable to analyze the selected page",
+        message: userFacingErrorMessage(cause, "Unable to analyze the selected page"),
       });
     } finally {
       setSubmitting(false);
@@ -371,10 +362,7 @@ export default function FloorPlanImportAssistant({
     } catch (cause) {
       setState({
         kind: "error",
-        message:
-          cause instanceof Error
-            ? cause.message
-            : "Unable to retry floor-plan detection",
+        message: userFacingErrorMessage(cause, "Unable to retry floor-plan detection"),
       });
     } finally {
       setRetryingDetection(false);
@@ -425,11 +413,7 @@ export default function FloorPlanImportAssistant({
           : current
       );
     } catch (cause) {
-      setDeleteError(
-        cause instanceof Error
-          ? cause.message
-          : "Unable to delete your uploaded file"
-      );
+      setDeleteError(userFacingErrorMessage(cause, "Unable to delete your uploaded file"));
     } finally {
       setDeletingSource(false);
     }
@@ -551,7 +535,7 @@ export default function FloorPlanImportAssistant({
       <div className={surface} data-testid="floor-plan-import-failed" data-floor-plan-workspace-state="failure">
         <div className="text-xs font-semibold">Could not read this drawing</div>
         <p className={`mt-1 text-xs ${subtle}`}>
-          {activeJob.errorMessage ?? "Retry with a clearer drawing or upload a new file."}
+          Retry with a clearer drawing or upload a new file.
         </p>
         {!sourceContentDeleted && !sourceDeletionPending ? (
           <button

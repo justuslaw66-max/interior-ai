@@ -18,6 +18,7 @@ import FloorPlanCatalogResultList from "./FloorPlanCatalogResultList";
 import FloorPlanOptionalConfigurationPanel from "./FloorPlanOptionalConfigurationPanel";
 import { useFloorPlanExactSearchRequests } from "./useFloorPlanExactSearchRequests";
 import { useFloorPlanResultApplicationRequests } from "./useFloorPlanResultApplicationRequests";
+import { userFacingErrorMessage } from "@/lib/user-facing-error";
 
 type FloorPlanAddressSearchProps = {
   dark?: boolean;
@@ -79,7 +80,7 @@ export default function FloorPlanAddressSearch({
       setBrowseStatus("ready");
     } catch (cause) {
       setBrowseStatus("error");
-      setBrowseErrorMessage(cause instanceof Error ? cause.message : "Floor-plan library failed to load.");
+      setBrowseErrorMessage(userFacingErrorMessage(cause, "Floor-plan library failed to load."));
     }
   }, []);
 

@@ -24,6 +24,7 @@ import {
   type Style,
 } from "@/lib/design-page-types";
 import type { DesignSnapshot } from "@/lib/room-types";
+import { userFacingErrorMessage } from "@/lib/user-facing-error";
 import { resolveSharedDesignPresentation } from "@/lib/shared-design-projection-schema";
 import {
   isSupersededDesignPageLoadError,
@@ -180,9 +181,7 @@ function handleCloudLoadFailure(
       ? "You do not have access to that design"
       : error instanceof DesignApiError && error.kind === "not_found"
         ? load.notFoundMessage ?? "Design not found"
-        : error instanceof Error
-          ? error.message
-          : "Failed to load design"
+        : userFacingErrorMessage(error, "Failed to load design")
   );
   return error instanceof DesignApiError &&
     (error.kind === "forbidden" || error.kind === "not_found")

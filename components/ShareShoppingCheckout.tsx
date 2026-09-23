@@ -32,10 +32,9 @@ export default function ShareShoppingCheckout({
       const payload = await response.json().catch(() => ({}));
 
       if (!response.ok) {
-        const error =
-          typeof payload?.error === "string"
-            ? payload.error
-            : "Checkout is temporarily unavailable.";
+        const error = Array.isArray(payload?.unavailable) && payload.unavailable.length > 0
+          ? "Some items are out of stock."
+          : "Checkout is temporarily unavailable.";
         track("share_shopify_checkout_failed", {
           shared_context: true,
           status: response.status,

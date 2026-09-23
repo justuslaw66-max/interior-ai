@@ -4,7 +4,7 @@ import { useProgress } from "@react-three/drei/core/Progress";
 import { Html } from "@react-three/drei/web/Html";
 
 export function LoadingOverlay() {
-  const { active, progress, item, loaded, total } = useProgress();
+  const { active, progress, loaded, total } = useProgress();
 
   if (!active) return null;
 
@@ -45,10 +45,6 @@ export function LoadingOverlay() {
                 transition: "width 180ms ease",
               }}
             />
-          </div>
-
-          <div style={{ fontSize: 12, opacity: 0.65, marginTop: 10 }}>
-            {item ? `Loading: ${item}` : "Loading..."}
           </div>
         </div>
       </div>

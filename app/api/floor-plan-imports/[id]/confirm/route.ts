@@ -189,8 +189,8 @@ export async function POST(
       })(),
     });
   } catch (cause) {
-    const message = cause instanceof Error ? cause.message : "Invalid canonical floor plan";
-    return error(message, 409);
+    console.error("Floor-plan candidate could not become a design", cause);
+    return error("This floor plan couldn't be turned into a design. Review it and try again.", 409);
   }
 
   const user = await prisma.user.findUnique({

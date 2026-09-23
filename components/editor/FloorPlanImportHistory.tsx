@@ -7,6 +7,7 @@ import {
 } from "@/lib/floor-plan-import-client";
 import type { ConsumerFloorPlanImportJob, ConsumerFloorPlanImportSummary } from "./floor-plan-import-ui-types";
 import { useFloorPlanHistoryConfirmationState } from "./useFloorPlanHistoryConfirmationState";
+import { UserFacingError, userFacingErrorMessage } from "@/lib/user-facing-error";
 
 type FloorPlanImportHistoryProps = {
   dark?: boolean;
@@ -82,7 +83,7 @@ export default function FloorPlanImportHistory({
         headers: { Accept: "application/json" },
       });
       const payload = (await response.json().catch(() => ({}))) as ImportListResponse;
-      if (!response.ok) throw new Error(payload.error ?? "Your uploads could not be loaded");
+      if (!response.ok) throw new UserFacingError(payload.error ?? "Your uploads could not be loaded");
       const page = Array.isArray(payload.jobs) ? payload.jobs : [];
       setJobs((current) => append ? [...current, ...page] : page);
       if (!append) {
@@ -94,7 +95,7 @@ export default function FloorPlanImportHistory({
       }
       setNextCursor(typeof payload.nextCursor === "string" ? payload.nextCursor : null);
     } catch (cause) {
-      setErrorMessage(cause instanceof Error ? cause.message : "Your uploads could not be loaded");
+      setErrorMessage(userFacingErrorMessage(cause, "Your uploads could not be loaded"));
     } finally {
       if (!silent) {
         setLoading(false);
@@ -162,7 +163,7 @@ export default function FloorPlanImportHistory({
         error?: string;
         job?: { id?: string };
       };
-      if (!response.ok) throw new Error(payload.error ?? `Unable to ${action} this upload`);
+      if (!response.ok) throw new UserFacingError(payload.error ?? `Unable to ${action} this upload`);
       if (action === "retry" && typeof payload.job?.id === "string") {
         onResume(payload.job.id);
       } else if (activeJobId === job.id) {
@@ -179,7 +180,7 @@ export default function FloorPlanImportHistory({
       }
       await load(null, false);
     } catch (cause) {
-      setErrorMessage(cause instanceof Error ? cause.message : `Unable to ${action} this upload`);
+      setErrorMessage(userFacingErrorMessage(cause, `Unable to ${action} this upload`));
     } finally {
       setActionJobId(null);
     }
@@ -207,7 +208,7 @@ export default function FloorPlanImportHistory({
         skippedBusyCount?: number;
       };
       if (!response.ok) {
-        throw new Error(payload.error ?? "Unable to delete these uploads");
+        throw new UserFacingError(payload.error ?? "Unable to delete these uploads");
       }
       if (
         scope === "all" ||
@@ -227,9 +228,7 @@ export default function FloorPlanImportHistory({
         );
       }
     } catch (cause) {
-      setErrorMessage(
-        cause instanceof Error ? cause.message : "Unable to delete these uploads"
-      );
+      setErrorMessage(userFacingErrorMessage(cause, "Unable to delete these uploads"));
     } finally {
       setBulkDeleting(false);
     }

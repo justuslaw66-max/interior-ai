@@ -14,6 +14,7 @@ import {
   type FloorPlanExactSearchRequestBinding,
   type FloorPlanExactSearchRequestToken,
 } from "@/lib/floor-plan-exact-search-request-authority";
+import { userFacingErrorMessage } from "@/lib/user-facing-error";
 
 type SearchStatus = "idle" | "loading" | "ready" | "error";
 
@@ -45,10 +46,6 @@ type SearchRunnerInput = Pick<
 
 function resultSetIdentity(results: FloorPlanCatalogSearchResult[]) {
   return results.map((result) => result.id).join("\u001f");
-}
-
-function requestError(cause: unknown, fallback: string) {
-  return cause instanceof Error ? cause.message : fallback;
 }
 
 function useSearchState(identity: string | null): SearchState {
@@ -100,7 +97,7 @@ async function runInitialSearch(
     input.setResults([]);
     input.setCursor(null);
     input.setStatus("error");
-    input.setMessage(requestError(cause, "Floor-plan search failed."));
+    input.setMessage(userFacingErrorMessage(cause, "Floor-plan search failed."));
   } finally {
     input.authority.finish(input.token);
   }
@@ -171,7 +168,7 @@ async function runLoadMoreSearch(input: SearchRunnerInput) {
     };
     if (!input.authority.isCurrent(input.token, currentBinding)) return;
     input.setStatus("error");
-    input.setMessage(requestError(cause, "More floor plans could not be loaded."));
+    input.setMessage(userFacingErrorMessage(cause, "More floor plans could not be loaded."));
   } finally {
     input.authority.finish(input.token);
   }
