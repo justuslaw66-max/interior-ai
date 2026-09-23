@@ -457,8 +457,8 @@ export default function EditorCommandBar({
           aria-live="polite"
           aria-label={`${saveStatus.label}. ${saveStatus.detail}`}
           title={`${saveStatus.label}: ${saveStatus.detail}`}
-          className={`hidden h-[30px] min-w-0 items-center gap-1.5 rounded-full border px-2 text-xs md:flex ${
-            saveStatus.canRetry ? "shrink-0" : ""
+          className={`hidden h-[30px] min-w-0 shrink-0 items-center gap-1.5 rounded-full border px-2 text-xs md:flex ${
+            saveStatus.canRetry ? "" : "lg:shrink"
           } ${getSaveStatusClassName(
             saveStatus.tone,
             dark
