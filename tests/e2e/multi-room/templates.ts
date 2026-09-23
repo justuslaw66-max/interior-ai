@@ -213,7 +213,7 @@ export function registerTemplateTests() {
     await chooseTemplateStart(page);
     await page.getByTestId("apply-plan-template-one_bedroom").click();
 
-    const replaceDialog = page.getByRole("dialog", { name: "Start a new plan?" });
+    const replaceDialog = page.getByRole("dialog", { name: "Start a new design?" });
     await expect(replaceDialog).toBeVisible();
     await expect(replaceDialog).toContainText("Compact 1-bed");
     await expect(page.getByTestId("new-plan-save-current")).toBeVisible();
@@ -359,7 +359,7 @@ export function registerTemplateTests() {
     await page.getByTestId("editor-command-workspace").click({ timeout: 10_000 });
     await page.getByTestId("editor-workflow-ai").click({ timeout: 5_000, noWaitAfter: true });
     await expect(page.getByTestId("editor-workflow-ai")).toHaveAttribute("data-active", "true");
-    await expect(page.getByText("AI Design Brief")).toBeVisible();
+    await expect(page.getByText("Layout brief")).toBeVisible();
     await expect(page.getByTestId("ai-layout-goals")).toBeVisible();
     await expect(page.getByTestId("ai-layout-goal-balanced")).toHaveAttribute("data-active", "true");
     await page.getByTestId("ai-layout-goal-media").click();

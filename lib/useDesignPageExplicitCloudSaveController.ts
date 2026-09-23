@@ -303,10 +303,10 @@ async function executePreserveSave(
   input: PreserveSaveInput
 ): Promise<PreserveCurrentDesignResult> {
   if (!input.state.isAuthenticated) {
-    return { ok: false, error: "Sign in before starting a new plan so the current design can be kept." };
+    return { ok: false, error: "Sign in before starting a new design so the current design can be kept." };
   }
   if (input.actions.currentWriteIsBlocked()) {
-    return { ok: false, error: "Wait for the loaded cloud design to finish restoring before starting a new plan." };
+    return { ok: false, error: "Wait for the loaded cloud design to finish restoring before starting a new design." };
   }
   input.actions.setIsSaving(true);
   input.actions.setLastCloudSaveError(null);

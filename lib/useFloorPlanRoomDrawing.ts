@@ -217,7 +217,7 @@ export function useFloorPlanRoomDrawing({
           ]);
           if (!resolvedRoom) {
             resetFloorPlanTraceRoomPoints();
-            showRuleToast("Close straight wall segments into a valid room.");
+            showRuleToast("Close the custom shape into a valid room.");
             return;
           }
 
@@ -249,7 +249,7 @@ export function useFloorPlanRoomDrawing({
         }).resolvedRoom;
         if (!arcRoom) {
           resetFloorPlanTraceRoomPoints();
-          showRuleToast("Draw a larger arc wall");
+          showRuleToast("Draw a larger curved wall");
           return;
         }
 
@@ -305,7 +305,7 @@ export function useFloorPlanRoomDrawing({
           const arcRoom = resolveArcWallDrawPreview(nextPoints[0], nextPoints[1]).resolvedRoom;
           if (!arcRoom) {
             resetFloorPlanTraceRoomPoints();
-            showRuleToast("Draw a larger arc wall");
+            showRuleToast("Draw a larger curved wall");
             return;
           }
 
@@ -359,7 +359,7 @@ export function useFloorPlanRoomDrawing({
         ]);
         if (!resolvedRoom) {
           resetFloorPlanTraceRoomPoints();
-          showRuleToast("Close straight wall segments into a valid room.");
+          showRuleToast("Close the custom shape into a valid room.");
           return;
         }
 
@@ -461,7 +461,7 @@ export function useFloorPlanRoomDrawing({
       ]);
       if (!resolvedRoom) {
         resetFloorPlanTraceRoomPoints();
-        showRuleToast("Close straight wall segments into a valid room.");
+        showRuleToast("Close the custom shape into a valid room.");
         return;
       }
 
@@ -555,7 +555,7 @@ export function useFloorPlanRoomDrawing({
         const arcRoom = resolveArcWallDrawPreview(snappedStart, snappedEnd).resolvedRoom;
         if (!arcRoom) {
           resetFloorPlanTraceRoomPoints();
-          showRuleToast("Draw a larger arc wall");
+          showRuleToast("Draw a larger curved wall");
           return;
         }
 

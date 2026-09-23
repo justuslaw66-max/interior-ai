@@ -113,7 +113,7 @@ export function useDesignPageAiLayout({
     (plan: LayoutPlan, sourceLabel: string) => {
       const { items: proposedItems, appliedRugRule } = buildItemsFromPlan(plan);
       if (proposedItems.length === 0) {
-        showRuleToast("Starter layout unavailable. Please add items manually.");
+        showRuleToast("Couldn't suggest a layout. Please add items manually.");
         return;
       }
 
@@ -237,7 +237,7 @@ export function useDesignPageAiLayout({
           fallback.picks?.sofa && fallback.picks?.coffee_table
         );
         if (!hasCoreStarter) {
-          showRuleToast(reason || "Starter layout unavailable. Please add items manually.");
+          showRuleToast(reason || "Couldn't suggest a layout. Please add items manually.");
           return;
         }
         queueProposal(fallback, "Local starter");

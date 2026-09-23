@@ -722,7 +722,7 @@ export function useDesignPagePersistence({
       roomType: "living_room",
       itemsCount: items.length,
       designSnapshot: {
-        title: "Guest Design",
+        title: "My Living Room",
         roomWidth,
         roomDepth,
         items,
@@ -962,7 +962,7 @@ export function useDesignPagePersistence({
         roomType: "living_room",
         itemsCount: items.length,
         snapshot: {
-          title: "Guest Design",
+          title: "My Living Room",
           roomWidth,
           roomDepth,
           items,

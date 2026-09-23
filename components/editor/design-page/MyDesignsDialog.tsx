@@ -108,7 +108,7 @@ export function MyDesignsDialog({
                       : "text-sm font-semibold text-emerald-900"
                   }
                 >
-                  Want a fresh floor plan?
+                  Start a new design
                 </div>
                 <p
                   className={
@@ -118,7 +118,7 @@ export function MyDesignsDialog({
                   }
                 >
                   Saved designs are listed here. Templates open in Plan, with empty and furnished
-                  starter options.
+                  options.
                 </p>
               </div>
               <button
@@ -131,7 +131,7 @@ export function MyDesignsDialog({
                     : "min-h-10 rounded-lg bg-emerald-600 px-3 text-sm font-semibold text-white hover:bg-emerald-700"
                 }
               >
-                Start from template
+                Choose a template
               </button>
             </div>
 

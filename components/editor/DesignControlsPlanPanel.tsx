@@ -603,7 +603,7 @@ export default function DesignControlsPlanPanel({
         : !hasStartedFurniture
           ? {
               label: "Furnish room",
-              body: "The room outline is ready. Add furniture or ask AI for a starter layout.",
+              body: "The room outline is ready. Add furniture or let AI suggest a layout.",
               action: onGoFurnish,
             }
           : viewMode === "2d" && onGoView3D
@@ -2094,7 +2094,7 @@ export default function DesignControlsPlanPanel({
                 <div className={progressMetaClass}>
                   {hasRooms
                     ? `${planRoomCount} room${planRoomCount === 1 ? "" : "s"} · ${activeRoomName}`
-                    : "Choose a starter layout, enter dimensions, or draw."}
+                    : "Choose a template, enter dimensions, or draw."}
                 </div>
                 {hasRooms && (
                   <div data-testid="consumer-plan-next-steps" className={progressMetaClass}>
@@ -2195,7 +2195,7 @@ export default function DesignControlsPlanPanel({
                     {renderPlanToolTile({
                       testId: "plan-tool-straight-wall",
                       icon: "straightWall",
-                      label: "Straight wall",
+                      label: "Custom shape",
                       shortcut: "B",
                       active: floorPlanTraceRoomMode && floorPlanDrawRoomMode === "straight_wall",
                       disabled: !canEdit,
@@ -2204,7 +2204,7 @@ export default function DesignControlsPlanPanel({
                     {renderPlanToolTile({
                       testId: "plan-tool-rectangle-wall",
                       icon: "rectangleWall",
-                      label: "Rectangle wall",
+                      label: "Rectangle room",
                       shortcut: "F",
                       active: floorPlanTraceRoomMode && floorPlanDrawRoomMode === "rectangle_wall",
                       disabled: !canEdit,
@@ -2213,7 +2213,7 @@ export default function DesignControlsPlanPanel({
                     {renderPlanToolTile({
                       testId: "plan-tool-arc-wall",
                       icon: "arcWall",
-                      label: "Arc wall",
+                      label: "Curved wall",
                       shortcut: "H",
                       active: floorPlanTraceRoomMode && floorPlanDrawRoomMode === "arc_wall",
                       disabled: !canEdit,
@@ -2278,7 +2278,7 @@ export default function DesignControlsPlanPanel({
                     {renderPlanToolTile({
                       testId: "plan-tool-template-library",
                       icon: "template",
-                      label: "Starter layouts",
+                      label: "Choose a template",
                       active: planStartMode === "template",
                       disabled: !canEdit,
                       onClick: openTemplatePicker,
@@ -2449,7 +2449,7 @@ export default function DesignControlsPlanPanel({
                 disabled={!canEdit}
                 onClick={openTemplatePicker}
               >
-                Use template
+                Choose a template
               </button>
             </div>
           </details>
@@ -2473,7 +2473,7 @@ export default function DesignControlsPlanPanel({
                   : "mt-3 rounded-lg bg-white p-3 text-xs text-neutral-600"
               }
             >
-              Pick a starter plan below. Resize rooms and add doors when ready.
+              Choose a template below. Resize rooms and add doors when ready.
             </div>
           )}
         </div>
@@ -2761,7 +2761,7 @@ export default function DesignControlsPlanPanel({
               onClick={onGoAiDesign}
               disabled={!canEdit}
             >
-              Ask AI for a starter layout
+              Suggest a layout
             </button>
           )}
         </div>
@@ -3296,11 +3296,11 @@ export default function DesignControlsPlanPanel({
               tabIndex={-1}
               className={`${titleClass} rounded-sm outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2`}
             >
-              Choose a floor plan
+              Choose a template
             </h2>
             <div className="flex items-center gap-2">
               <div className={dark ? "text-xs font-semibold text-neutral-400" : "text-xs font-semibold text-neutral-500"}>
-                {filteredPlanTemplates.length} starter layouts
+                {filteredPlanTemplates.length} templates
               </div>
               <button
                 type="button"
@@ -3312,7 +3312,7 @@ export default function DesignControlsPlanPanel({
                 }
                 onClick={() => firstTemplateActionRef.current?.focus()}
               >
-                Skip to starter layouts
+                Skip to templates
               </button>
             </div>
           </div>
@@ -3324,7 +3324,7 @@ export default function DesignControlsPlanPanel({
             />
           </div>
           <div className={dark ? "mt-4 text-xs font-semibold text-neutral-300" : "mt-4 text-xs font-semibold text-neutral-600"}>
-            Or browse starter layouts
+            Or browse templates
           </div>
           <div
             data-testid="template-filter-panel"
@@ -3349,7 +3349,7 @@ export default function DesignControlsPlanPanel({
             </div>
             <div className="grid grid-cols-2 gap-2">
               <select
-                aria-label="Plan size"
+                aria-label="Template size"
                 data-testid="template-footprint-filter"
                 value={templateFootprintFilter}
                 onChange={(event) =>
@@ -3363,7 +3363,7 @@ export default function DesignControlsPlanPanel({
                 <option value="wide">Spacious</option>
               </select>
               <select
-                aria-label="Plan style"
+                aria-label="Template style"
                 data-testid="template-style-filter"
                 value={templateStyleFilter}
                 onChange={(event) =>
@@ -3556,7 +3556,7 @@ export default function DesignControlsPlanPanel({
                             : "rounded-md border border-neutral-200 px-2 py-1.5 text-center text-xs font-semibold text-neutral-700 hover:bg-neutral-100 disabled:cursor-not-allowed disabled:opacity-50"
                         }
                       >
-                        Empty layout
+                        Empty
                       </button>
                       <button
                         type="button"
@@ -3573,7 +3573,7 @@ export default function DesignControlsPlanPanel({
                             : "rounded-md bg-emerald-600 px-2 py-1.5 text-center text-xs font-semibold text-white hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-50"
                         }
                       >
-                        <span className="block">Furnished starter</span>
+                        <span className="block">Furnished</span>
                         <span className={dark ? "block text-[10px] text-emerald-950/80" : "block text-[10px] text-white/90"}>
                           {furnishedItemCount} items
                         </span>

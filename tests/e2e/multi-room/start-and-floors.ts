@@ -41,12 +41,12 @@ export function registerStartAndFloorTests() {
     }
 
     await expect(page.getByTestId("editor-workflow-ai")).toHaveAttribute("data-active", "true");
-    await expect(page.getByText("AI Design Brief")).toBeVisible();
+    await expect(page.getByText("Layout brief")).toBeVisible();
     await expect(page.getByText("Step 1 · Room goal")).toBeVisible();
     await expect(page.getByText("Step 2 · Style")).toBeVisible();
     await expect(page.getByText("Step 3 · Budget")).toBeVisible();
     await expect(page.getByText("Step 4 · Must-have items")).toBeVisible();
-    await expect(page.getByRole("button", { name: "Generate layout" })).toBeEnabled();
+    await expect(page.getByRole("button", { name: "Suggest a layout", exact: true })).toBeEnabled();
     await expect(page.getByText("Review the result before saving, exporting, or shopping.")).toBeVisible();
   });
 

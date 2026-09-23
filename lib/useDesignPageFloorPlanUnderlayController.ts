@@ -392,11 +392,11 @@ export function useDesignPageFloorPlanUnderlayController({
       );
 
       if (selectedFurnishingPack && skippedFurnishingCount > 0) {
-        showRuleToast("Some starter items were skipped");
+        showRuleToast("Some items couldn't be added");
       } else {
         showRuleToast(
           selectedFurnishingPack
-            ? `${template.label} furnished starter added`
+            ? `${template.label} added with furniture`
             : `${template.label} added`
         );
       }

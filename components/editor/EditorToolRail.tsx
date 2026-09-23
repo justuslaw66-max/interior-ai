@@ -163,7 +163,7 @@ export default function EditorToolRail({
           dark={dark}
           label="AI shortcut"
           testId="editor-rail-ai"
-          title="Generate a starter layout"
+          title="Suggest a layout"
           onClick={onAi}
         >
           <AiIcon />

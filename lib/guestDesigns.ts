@@ -53,7 +53,7 @@ function migrateLegacyDesigns() {
       roomType: "living_room",
       itemsCount: Array.isArray(d.items) ? d.items.length : 0,
       snapshot: {
-        title: d.title ?? "Guest Design",
+        title: d.title ?? "My Living Room",
         roomWidth: Number(d.roomWidth) || 4.2,
         roomDepth: Number(d.roomDepth) || 4.2,
         items: Array.isArray(d.items) ? d.items : [],

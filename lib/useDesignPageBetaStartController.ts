@@ -76,7 +76,7 @@ export function useDesignPageBetaStartController({
     actions.goPlan();
     actions.setViewMode("2d");
     actions.setDesignPanelOpen(true);
-    actions.showToast("Choose a room template in the Plan panel");
+    actions.showToast("Choose a template in the Plan panel");
     dismiss();
   }, [actions, dismiss]);
 
@@ -107,7 +107,7 @@ export function useDesignPageBetaStartController({
     track("launch_path_selected", { path: "ai", source: "beta_start" });
     actions.goAiDesign();
     actions.setDesignPanelOpen(true);
-    actions.showToast("Complete the AI brief, then generate a layout");
+    actions.showToast("Fill in the brief, then choose Suggest a layout");
     dismiss();
   }, [actions, dismiss]);
 

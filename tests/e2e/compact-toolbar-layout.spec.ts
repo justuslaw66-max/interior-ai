@@ -124,7 +124,7 @@ test.describe("compact top toolbar", () => {
     await page.keyboard.press("Escape");
 
     await chooseWorkspace(page, "editor-workflow-furnish", "Furnish");
-    await chooseWorkspace(page, "editor-workflow-ai", "AI Design");
+    await chooseWorkspace(page, "editor-workflow-ai", "Suggest a layout");
     await chooseWorkspace(page, "editor-workflow-plan", "Plan");
 
     const sidebarToggle = page.getByTestId("editor-design-sidebar-toggle");
@@ -153,7 +153,7 @@ test.describe("compact top toolbar", () => {
     })).toBeHidden();
     await expect(page.getByTestId("room-plan-status")).toBeHidden();
     await chooseWorkspace(page, "editor-workflow-furnish", "Furnish");
-    await chooseWorkspace(page, "editor-workflow-ai", "AI Design");
+    await chooseWorkspace(page, "editor-workflow-ai", "Suggest a layout");
     await chooseWorkspace(page, "editor-workflow-plan", "Plan");
 
     await page.screenshot({

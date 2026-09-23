@@ -110,7 +110,7 @@ const PRIMARY_DRAW_ROOM_TOOLS: Array<{
   detail: string;
   shortcut: string;
 }> = [
-  { id: "rectangle_wall", label: "Outline room", detail: "Fastest start", shortcut: "F" },
+  { id: "rectangle_wall", label: "Rectangle room", detail: "Fastest start", shortcut: "F" },
   { id: "straight_wall", label: "Custom shape", detail: "Click corners", shortcut: "B" },
 ];
 

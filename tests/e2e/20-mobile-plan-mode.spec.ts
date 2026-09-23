@@ -19,7 +19,7 @@ async function openTemplatePlan(page: import("@playwright/test").Page) {
 
   const newPlan = page.getByTestId("editor-command-new-plan");
   await expect(newPlan).toBeVisible();
-  await expect(newPlan).toHaveAccessibleName("Start a new floor plan");
+  await expect(newPlan).toHaveAccessibleName("Start a new design");
   const newPlanBox = await newPlan.boundingBox();
   expect(newPlanBox, "New plan should be measurable").not.toBeNull();
   expect(newPlanBox?.width ?? 0, "New plan should be finger-friendly").toBeGreaterThanOrEqual(36);

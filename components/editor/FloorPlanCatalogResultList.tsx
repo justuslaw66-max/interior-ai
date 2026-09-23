@@ -111,7 +111,7 @@ export default function FloorPlanCatalogResultList({
                           ? "designer-control rounded-md border px-3 py-1.5 text-[11px] font-semibold disabled:opacity-50"
                           : "rounded-md border border-neutral-200 bg-white px-3 py-1.5 text-[11px] font-semibold text-neutral-600 hover:bg-neutral-50 disabled:opacity-50"}
                       >
-                        Replace current plan…
+                        Replace current design…
                       </button>
                     </div>
                     <div className="mt-2 flex flex-wrap gap-3">

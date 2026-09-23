@@ -641,7 +641,7 @@ assert.match(addressSearch, /ph-no-capture/);
 assert.match(addressFields, /ph-no-capture/);
 assert.match(catalogResults, /Exact unit match/);
 assert.match(addressSearch, /floorPlanSearchFacets[\s\S]*?groupFloorPlanSearchResults/);
-assert.match(catalogResults, /Start a new design[\s\S]*?Replace current plan/);
+assert.match(catalogResults, /Start a new design[\s\S]*?Replace current design/);
 assert.match(addressSearch, /startAsNewDesign/);
 assert.match(
   newPlanController,

@@ -21,7 +21,7 @@ export default function EmptyDesignsState() {
             })
           }
         >
-          Start from template
+          Choose a template
         </Link>
         <Link
           href="/?source=blank"

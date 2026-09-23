@@ -62,7 +62,7 @@ export function EmptyFloorPlanSurfacesActions({
       <div className={dark ? "text-sm font-semibold text-neutral-100" : "text-sm font-semibold text-neutral-950"}>
         Choose a room before applying finishes
       </div>
-      <div className={progressMetaClass}>Start from a template, draw a room, or upload a floor plan.</div>
+      <div className={progressMetaClass}>Choose a template, draw a room, or upload a floor plan.</div>
       <div className="mt-3 grid grid-cols-2 gap-2">
         <button type="button" className={progressActionClass} onClick={onOpenTemplatePicker}>
           Templates

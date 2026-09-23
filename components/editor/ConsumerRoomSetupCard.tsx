@@ -289,7 +289,7 @@ export function ConsumerRoomSetupCard({
           disabled={!canEdit}
           onClick={actions.chooseTemplate}
         >
-          Starter layouts
+          Choose a template
         </button>
         <button
           type="button"

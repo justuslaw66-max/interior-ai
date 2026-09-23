@@ -218,7 +218,7 @@ export default function EditorCommandBar({
     ...(aiDesignEnabled
       ? [{
           id: "ai",
-          label: "AI Design",
+          label: "Suggest a layout",
           testId: "editor-workflow-ai",
           onClick: onAiDesign,
           active: !millworkActive && editorMode === "ai",
@@ -431,8 +431,8 @@ export default function EditorCommandBar({
         <button
           type="button"
           data-testid="editor-command-new-plan"
-          aria-label="Start a new floor plan"
-          title="Start a new floor plan"
+          aria-label="Start a new design"
+          title="Start a new design"
           className={
             dark
               ? "designer-control inline-flex h-[30px] w-[30px] shrink-0 items-center justify-center gap-1.5 rounded-lg border border-emerald-300/30 bg-emerald-300/10 text-sm font-semibold leading-none text-emerald-100 hover:bg-emerald-300/20 sm:w-auto sm:px-3"
@@ -441,7 +441,7 @@ export default function EditorCommandBar({
           onClick={onNewPlan}
         >
           <Plus className="h-4 w-4" strokeWidth={2.5} aria-hidden="true" />
-          <span className="hidden sm:inline">New plan</span>
+          <span className="hidden sm:inline">New design</span>
         </button>
 
         <div

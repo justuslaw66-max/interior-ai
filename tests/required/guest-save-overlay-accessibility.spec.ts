@@ -152,15 +152,15 @@ async function openSavePrompt(page: Page, entry: Entry) {
 }
 
 async function revealAiPanel(page: Page) {
-  if ((await page.getByRole("button", { name: "Generate layout" }).count()) === 0) {
+  if ((await page.getByRole("button", { name: "Suggest a layout", exact: true }).count()) === 0) {
     await openWorkflow(page, "editor-workflow-ai");
   }
-  await expect(page.getByRole("button", { name: "Generate layout" })).toBeEnabled();
+  await expect(page.getByRole("button", { name: "Suggest a layout", exact: true })).toBeEnabled();
 }
 
 async function openAiPrompt(page: Page, entry: Entry) {
   await revealAiPanel(page);
-  await activate(page, page.getByRole("button", { name: "Generate layout" }), entry);
+  await activate(page, page.getByRole("button", { name: "Suggest a layout", exact: true }), entry);
   return expectPromptContract(page, "ai-layout", "guest-ai-layout-action");
 }
 
@@ -524,7 +524,7 @@ test("Guest mobile geometry contains every reason and authenticated Pro bypass r
   await expect.poll(() => boundaries.calls.save).toBeGreaterThan(0);
 
   await revealAiPanel(page);
-  await page.getByRole("button", { name: "Generate layout" }).click();
+  await page.getByRole("button", { name: "Suggest a layout", exact: true }).click();
   await expect(page.getByRole("dialog", { name: PROMPT_NAME })).toHaveCount(0);
   expect(boundaries.calls.ai).toBeLessThanOrEqual(1);
 
