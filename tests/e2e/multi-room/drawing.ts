@@ -159,13 +159,16 @@ export function registerDrawingTests() {
     await expect(page.getByTestId("wall-draw-segment-length-1")).toBeVisible();
     await page.getByTestId("wall-draw-segment-length-1").dblclick();
     await expect(page.getByTestId("wall-draw-segment-length-editor")).toBeVisible();
-    await page.getByTestId("wall-draw-segment-length-editor").fill("1800");
+    await page.getByTestId("wall-draw-segment-length-editor").fill("180");
     await page.getByTestId("wall-draw-segment-length-editor").press("Enter");
-    // The in-canvas editor takes millimetres; the committed label follows the default cm display unit.
+    // The in-canvas editor reads and writes the plan's display unit, cm by default, so the label it
+    // commits to says back what was typed. It used to take millimetres while the label beside it
+    // followed the display unit, which is what made a length change tenfold when it round-tripped.
     await expect(page.getByTestId("wall-draw-segment-length-1")).toContainText("180 cm");
 
     await page.getByTestId("wall-draw-segment-length-1").dblclick();
     await expect(page.getByTestId("wall-draw-segment-length-editor")).toBeVisible();
+    // Still past the 20 m maximum when read as centimetres, so the editor tears down.
     await page.getByTestId("wall-draw-segment-length-editor").fill("23234");
     await expect(page.getByText("⚠️ Enter a valid wall length.", { exact: true })).toBeVisible();
     await expect(page.locator('[data-testid^="wall-draw-segment-length-"]')).toHaveCount(0);
