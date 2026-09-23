@@ -9,6 +9,7 @@ import {
 import type { PlanMeasurementUnit } from "@/lib/design-page-types";
 import type { RoomOpening2D } from "@/lib/editorScene";
 import type { RoomType } from "@/lib/room-types";
+import { roomSetupOpeningStatus } from "@/lib/consumer-room-setup-copy";
 
 export type ConsumerRoomSetupCardProps = {
   dark: boolean;
@@ -245,11 +246,7 @@ export function ConsumerRoomSetupCard({
                   : "rounded-lg border border-neutral-200 bg-white px-3 py-2 text-xs text-neutral-600"
             }
           >
-            {hasConnectionBlockers
-              ? "A connected room still needs a doorway. Add one before furnishing."
-              : openingCount > 0
-                ? `${openingCount} door/window opening${openingCount === 1 ? "" : "s"} placed.`
-                : "No doors or windows placed yet. Add only the openings that affect fit."}
+            {roomSetupOpeningStatus({ hasConnectionBlockers, planSettingsReady: measurementUnitReady, openingCount })}
           </div>
           <div className="grid grid-cols-2 gap-2" aria-label="Add room openings">
             <button
