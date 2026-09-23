@@ -96,6 +96,7 @@ const typescriptGuardFiles = [
   "test-window-opening-drag.ts",
   "test-ux-states-and-fallbacks.ts",
   "test-user-facing-errors.ts",
+  "test-ui-glossary.ts",
 ];
 
 const nodeGuardFiles = ["check-design-page-architecture.mjs"];

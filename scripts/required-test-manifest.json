@@ -6,8 +6,8 @@
       "root": "scripts",
       "filePattern": "^test-.*\\.(?:js|mjs|ts)$",
       "classification": "risk-triggered",
-      "expectedFileCount": 291,
-      "expectedPathSha256": "747fb502e8ea34dbdb8eb91368eb18c288aa5aef3e6c84f824032f9e7768bf74"
+      "expectedFileCount": 292,
+      "expectedPathSha256": "a721250e34e30b16aa8008045e43b2184b5cf519a8bac20c6956993bb3f02266"
     },
     {
       "id": "browser-specs",
