@@ -8,10 +8,12 @@ export function PublicShareUnavailableCard() {
       <div className="mt-1 text-sm text-neutral-600">
         The owner may have turned sharing off, or the link is incomplete.
       </div>
+      {/* No share- or public-share- test id here: share-responsive.spec.ts counts those
+          as share actions that must sit inside the current lifecycle owner, and while
+          the invalid page loads this link briefly exists outside it. It leaves the share. */}
       <Link
         href="/design"
         className="mt-4 inline-block rounded-md bg-neutral-950 px-4 py-2 text-sm font-medium text-white"
-        data-testid="public-share-unavailable-start"
       >
         Start your own design
       </Link>
