@@ -111,6 +111,18 @@ assert.match(
   /data-testid="upgrade-variant-content"[\s\S]*?data-upgrade-variant=\{state\.variantLabel\}/,
   "Upgrade should expose its experiment variant as a data attribute for tests and analytics."
 );
+
+const billingHook = read("lib/useDesignPageBilling.ts");
+assert.doesNotMatch(
+  billingHook,
+  /Plan status:/,
+  "The load-time plan sync must stay silent; announcing the plan on every editor load reads as a warning."
+);
+assert.match(
+  billingHook,
+  /const refreshPlan = useCallback\(async \(\) => \{(?:(?!showToast)[\s\S])*?\}, \[/,
+  "refreshPlan runs on every editor load and must not raise a toast."
+);
 assert.match(
   read("lib/design-page-dialog-layer-model.ts"),
   /openedFromUpgrade:\s*billing\.upgrade\.open/,
