@@ -362,7 +362,7 @@ export function useDesignPageAiLayout({
   const bulkSwap = useCallback(
     (direction: "cheaper" | "premium") => {
       const historyLabel =
-        direction === "cheaper" ? "Make room cheaper" : "Make room premium";
+        direction === "cheaper" ? "Swap all for cheaper" : "Swap all for pricier";
       commitItems(
         (currentItems) => bulkSwapItems({ items: currentItems, style, direction }),
         historyLabel

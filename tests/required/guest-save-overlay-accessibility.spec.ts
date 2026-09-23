@@ -12,7 +12,7 @@ type RequestCounts = {
 
 const DESKTOP = { width: 1440, height: 900 };
 const MOBILE = { width: 390, height: 844 };
-const PROMPT_NAME = "Save and sync this design?";
+const PROMPT_NAME = "Sign in to save this design";
 
 async function installSyntheticBoundaries(page: Page, initialAuth = false) {
   let authenticated = initialAuth;

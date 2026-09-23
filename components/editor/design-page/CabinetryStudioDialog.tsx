@@ -78,7 +78,7 @@ export function CabinetryStudioDialog({
       window.cancelAnimationFrame(frame);
       window.requestAnimationFrame(() => {
         const replacementDialog = document.querySelector(
-          '[role="dialog"][aria-label="Custom Millwork Studio"]'
+          '[role="dialog"][aria-label="Built-ins"]'
         );
         if (!replacementDialog && returnFocus?.isConnected) returnFocus.focus();
       });
@@ -90,7 +90,7 @@ export function CabinetryStudioDialog({
       ref={dialogRef}
       role="dialog"
       aria-modal="true"
-      aria-label="Custom Millwork Studio"
+      aria-label="Built-ins"
       tabIndex={-1}
       className="fixed inset-0 z-[80] bg-black/45 p-4 backdrop-blur-sm outline-none"
       onKeyDown={(event) => handleDialogKeyDown(event, onDismiss)}

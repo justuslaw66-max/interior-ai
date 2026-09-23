@@ -632,7 +632,7 @@ export default function CatalogPanel({
     return [
       { title: "Similar items", ids: set.similar },
       { title: "Cheaper alternatives", ids: set.cheaper },
-      { title: "Premium alternatives", ids: set.premium },
+      { title: "Pricier alternatives", ids: set.premium },
       { title: "Works well with", ids: set.coordination },
     ];
   }, [selectedId]);
@@ -841,7 +841,7 @@ export default function CatalogPanel({
           <div className="ml-auto flex shrink-0 rounded-lg bg-neutral-100 p-0.5" aria-label="Catalog view">
             {[
               { scope: "all" as const, label: "All", count: allCatalogFamilies.length },
-              { scope: "favorites" as const, label: "Saved", count: favoriteCards.length },
+              { scope: "favorites" as const, label: "Favourites", count: favoriteCards.length },
               { scope: "recent" as const, label: "Recent", count: recentCards.length },
             ].map((option) => {
               const active = memoryScope === option.scope;
@@ -988,7 +988,7 @@ export default function CatalogPanel({
         >
           <div className="text-sm font-semibold text-neutral-900">
             {memoryScope === "favorites"
-              ? "No favorite products yet"
+              ? "No favourites yet"
               : memoryScope === "recent"
                 ? "No recently added products yet"
                 : hasActiveSmartFilters
@@ -997,7 +997,7 @@ export default function CatalogPanel({
           </div>
           <div className="mt-1 text-xs text-neutral-500">
             {memoryScope === "favorites"
-              ? "Save products from the catalog to build a short list for this project."
+              ? "Choose Favourite on any product to build a shortlist for this design."
               : memoryScope === "recent"
                 ? "Add products to a room and they will appear here for fast repeat placement."
                 : hasActiveSmartFilters

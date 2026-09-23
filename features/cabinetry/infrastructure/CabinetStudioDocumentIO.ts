@@ -74,13 +74,13 @@ const exportDescriptors: Record<
   glb: {
     artifact: "glb",
     busyAction: "download",
-    successMessage: "Millwork GLB exported.",
-    fallbackError: "Unable to export cabinet GLB.",
+    successMessage: "Built-in GLB exported.",
+    fallbackError: "Unable to export built-in GLB.",
   },
   documentation_csv: {
     artifact: "documentation_csv",
     busyAction: "docs",
-    successMessage: "Millwork documentation exported.",
+    successMessage: "Built-in documentation exported.",
     fallbackError: "Unable to export documentation.",
   },
   source_definition_json: {
@@ -110,8 +110,8 @@ const exportDescriptors: Record<
   millwork_package_json: {
     artifact: "millwork_package_json",
     busyAction: "package",
-    successMessage: "Millwork package exported.",
-    fallbackError: "Unable to export millwork package.",
+    successMessage: "Built-in package exported.",
+    fallbackError: "Unable to export built-in package.",
   },
 };
 

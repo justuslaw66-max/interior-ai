@@ -229,7 +229,7 @@ export async function POST(req: Request) {
           },
           {
             id: "fallback_budget_optimize",
-            label: "Optimize budget by swapping to cost-effective alternatives.",
+            label: "Lower the total by swapping items for cheaper alternatives.",
             action: { type: "MAKE_CHEAPER", percent: 10 },
           },
           {

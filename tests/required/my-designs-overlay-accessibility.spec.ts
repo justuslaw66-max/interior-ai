@@ -170,7 +170,7 @@ async function openMyDesigns(page: Page, entry: "pointer" | "keyboard") {
     await action.focus();
     await page.keyboard.press("Enter");
   }
-  const dialog = page.getByRole("dialog", { name: "My Designs" });
+  const dialog = page.getByRole("dialog", { name: "My designs" });
   await expect(dialog).toHaveCount(1);
   await expect(dialog).toBeVisible();
   return dialog;
@@ -191,7 +191,7 @@ async function readValidatedLocalBackup(page: Page) {
 }
 
 async function expectParentContract(page: Page) {
-  const dialog = page.getByRole("dialog", { name: "My Designs" });
+  const dialog = page.getByRole("dialog", { name: "My designs" });
   await expect(dialog).toHaveAttribute("aria-modal", "true");
   await expect(dialog).toHaveAttribute("data-editor-dialog-focus-trap", "active");
   await expect(page.getByTestId("load-designs-close")).toBeFocused();
@@ -245,7 +245,7 @@ test("consumer parent pointer lifecycle owns semantics, containment, dismissal, 
   const seed = await createSeed(testInfo, "consumer", ["Consumer Living Room"]);
   try {
     await openEditor(page, seed, "consumer");
-    await expect(page.getByRole("dialog", { name: "My Designs" })).toHaveCount(0);
+    await expect(page.getByRole("dialog", { name: "My designs" })).toHaveCount(0);
     const scriptsBefore = await page.evaluate(() =>
       performance.getEntriesByType("resource").map(({ name }) => name).filter((name) => name.endsWith(".js"))
     );
@@ -269,7 +269,7 @@ test("consumer parent pointer lifecycle owns semantics, containment, dismissal, 
 
     await openMyDesigns(page, "pointer");
     await page.getByTestId("load-designs-close").click();
-    await expect(page.getByRole("dialog", { name: "My Designs" })).toHaveCount(0);
+    await expect(page.getByRole("dialog", { name: "My designs" })).toHaveCount(0);
     await expect(page.getByTestId("editor-command-overflow")).toBeFocused();
   } finally {
     await cleanupSeed(seed);
@@ -327,12 +327,12 @@ test("loading, empty, and populated states retain one parent owner", async ({ pa
     await openEditor(page, seed, "consumer");
     const open = openMyDesigns(page, "pointer");
     await requested;
-    await expect(page.getByText("Loading your designs...")).toBeVisible();
+    await expect(page.getByText("Loading your designs…")).toBeVisible();
     releaseList();
     const dialog = await open;
     await expect(page.getByText("No saved designs yet")).toBeVisible();
     await expectParentContract(page);
-    await dialog.getByRole("button", { name: "Close My Designs" }).click();
+    await dialog.getByRole("button", { name: "Close My designs" }).click();
 
     const id = `ch0015d-design-${fixtureIdentity(testInfo)}-populated`;
     await prisma.design.create({
@@ -467,7 +467,7 @@ test("deleting the loaded final design preserves detach semantics and focuses th
     const committedLoad = expect(loadAnnouncement).toHaveText(loadedMessage);
     await page.getByTestId(`load-design-${designId}`).click();
     await committedLoad;
-    await expect(page.getByRole("dialog", { name: "My Designs" })).toHaveCount(0);
+    await expect(page.getByRole("dialog", { name: "My designs" })).toHaveCount(0);
     await expect(page).toHaveURL(new RegExp(`[?&]designId=${designId}(?:&|$)`));
     await expect.poll(() => readValidatedLocalBackup(page)).toMatchObject({ designId });
     const loadedBackup = await readValidatedLocalBackup(page);
@@ -538,7 +538,7 @@ test("semantic replacement, newer owned dialog, reopen, and route unmount suppre
     await expect(action).toBeFocused();
 
     await page.keyboard.press("Escape");
-    await expect(page.getByRole("dialog", { name: "My Designs" })).toHaveCount(0);
+    await expect(page.getByRole("dialog", { name: "My designs" })).toHaveCount(0);
     parent = await openMyDesigns(page, "pointer");
     const pendingRouteConfirm = await openSingleConfirm(page, designId);
     await expectNestedOwnership(page, "Delete saved design?");

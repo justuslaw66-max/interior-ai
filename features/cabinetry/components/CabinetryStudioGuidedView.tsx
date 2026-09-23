@@ -472,7 +472,7 @@ export function CabinetryStudioGuidedView({
                       <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-400" />
                       <input
                         data-testid="cabinet-template-search"
-                        aria-label="Search millwork templates"
+                        aria-label="Search built-in templates"
                         className="h-12 w-full rounded-2xl border border-neutral-300 bg-white pl-10 pr-4 text-sm outline-none transition placeholder:text-neutral-400 focus:border-neutral-900 focus:ring-2 focus:ring-neutral-900/10"
                         type="search"
                         value={templateQuery}
@@ -575,7 +575,7 @@ export function CabinetryStudioGuidedView({
                         <div>
                           <h3 className="text-sm font-semibold text-neutral-950">My reusable templates</h3>
                           <p className="mt-1 text-xs text-neutral-500">
-                            Designs saved in this browser. Placement and room host data are excluded.
+                            Templates saved in this browser. Placement and room host data are excluded.
                           </p>
                         </div>
                         <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">

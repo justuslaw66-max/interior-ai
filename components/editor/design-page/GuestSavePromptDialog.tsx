@@ -33,10 +33,10 @@ export function GuestSavePromptDialog({
   return (
     <EditorDialog
       open={reason !== null}
-      title="Save and sync this design?"
-      description="We will save this design so it shows up on your account after login."
+      title="Sign in to save this design"
+      description="After you sign in, this design appears in My designs."
       onClose={onCancel}
-      closeLabel="Close save and sync prompt"
+      closeLabel="Close sign-in prompt"
       closeButtonId={GUEST_PROMPT_CLOSE_ACTION_ID}
       closeButtonTestId="guest-save-prompt-close"
       closeButtonClassName="focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-white"
@@ -63,7 +63,7 @@ export function GuestSavePromptDialog({
             disabled={busy}
             onClick={() => void onSaveAndContinue()}
           >
-            {busy ? "Saving..." : "Save and continue"}
+            {busy ? "Saving…" : "Sign in and save"}
           </EditorDialogButton>
         </EditorDialogActions>
       }

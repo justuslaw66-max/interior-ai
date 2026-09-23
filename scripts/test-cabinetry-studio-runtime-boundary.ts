@@ -47,13 +47,13 @@ assert.doesNotMatch(
 );
 assert.match(
   overlaySource,
-  /loading:[\s\S]*?role="status"[\s\S]*?aria-live="polite"[\s\S]*?Loading cabinetry studio/,
+  /loading:[\s\S]*?role="status"[\s\S]*?aria-live="polite"[\s\S]*?Loading built-ins/,
   "The lazy boundary must expose an accessible loading state."
 );
 for (const required of [
   'role="dialog"',
   'aria-modal="true"',
-  'aria-label="Custom Millwork Studio"',
+  'aria-label="Built-ins"',
   "handleDialogKeyDown(event, onDismiss)",
   "dialogRef.current?.focus()",
   "returnFocus?.isConnected",

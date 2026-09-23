@@ -24,7 +24,7 @@ const CabinetryStudio = dynamic<CabinetryStudioProps>(
         role="status"
         aria-live="polite"
       >
-        Loading cabinetry studio…
+        Loading built-ins…
       </div>
     ),
   }

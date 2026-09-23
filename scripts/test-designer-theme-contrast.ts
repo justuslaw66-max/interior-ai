@@ -432,7 +432,7 @@ assert.match(
 );
 assert.match(
   editorCommandBarSource,
-  /data-testid="pro-mode-indicator"[\s\S]{0,300}?aria-label="Pro mode active"[\s\S]{0,300}?>Pro mode</,
+  /data-testid="pro-mode-indicator"[\s\S]{0,300}?aria-label="Pro tools on"[\s\S]{0,300}?>Pro tools</,
   "The shared command bar should clearly label Pro mode without changing its theme."
 );
 assert.match(

@@ -1577,7 +1577,7 @@ export default function DesignControlsPlanPanel({
               }
               onClick={toggleFavoriteSurfaceFilter}
             >
-              Favorites
+              Favourites
             </button>
             <button
               type="button"
@@ -1692,7 +1692,7 @@ export default function DesignControlsPlanPanel({
                         className={progressSecondaryActionClass}
                         onClick={() => toggleFavoriteSurfaceMaterialGroup(group)}
                       >
-                        {favorite ? "Saved" : "Save"}
+                        {favorite ? "Favourited" : "Favourite"}
                       </button>
                       <button
                         type="button"
@@ -2773,7 +2773,7 @@ export default function DesignControlsPlanPanel({
               <div>
                 <div className={titleClass}>Plan view</div>
                 <div className={progressMetaClass}>
-                  {simplePlanControls ? "Simple planning view." : "Pro drafting view."}
+                  {simplePlanControls ? "Simple planning view." : "Detailed drafting view."}
                 </div>
               </div>
               <div
@@ -2797,7 +2797,7 @@ export default function DesignControlsPlanPanel({
                 <button
                   type="button"
                   disabled={!isDesigner}
-                  title={!isDesigner ? "Open Pro tools to use Pro drafting controls" : undefined}
+                  title={!isDesigner ? "Open Pro tools to use the detailed drafting view" : undefined}
                   className={
                     !simplePlanControls
                       ? progressActionClass
@@ -2807,7 +2807,7 @@ export default function DesignControlsPlanPanel({
                     if (isDesigner) onSimplePlanControlsChange(false);
                   }}
                 >
-                  Pro
+                  Detailed
                 </button>
               </div>
             </div>

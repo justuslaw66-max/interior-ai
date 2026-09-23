@@ -4,18 +4,18 @@ export const PRO_PLAN_PRICING = {
   monthly: {
     amountMinor: 2990,
     currency: "sgd",
-    label: "SGD 29.90/month",
+    label: "S$29.90/month",
   },
   yearly: {
     amountMinor: 24990,
     currency: "sgd",
-    label: "SGD 249.90/year",
-    effectiveMonthlyLabel: "SGD 20.83/month, billed yearly",
+    label: "S$249.90/year",
+    effectiveMonthlyLabel: "S$20.83/month, billed yearly",
   },
 } as const;
 
 export const PRO_YEARLY_SAVINGS_LABEL =
-  "Best value: save SGD 108.90/year (about 30%)";
+  "Best value: save S$108.90/year (about 30%)";
 
 export function parseProBillingInterval(
   value: unknown,

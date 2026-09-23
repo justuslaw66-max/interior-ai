@@ -27,7 +27,7 @@ const markup = renderToStaticMarkup(
     onStepChange: () => undefined,
   })
 );
-assert.match(markup, /^<nav aria-label="Guided millwork steps"/);
+assert.match(markup, /^<nav aria-label="Guided built-in steps"/);
 assert.equal(markup.match(/data-testid="cabinet-guided-step-/g)?.length, 6);
 assert.match(
   markup,
@@ -56,7 +56,7 @@ assert.match(
 assert.match(guidedViewSource, /<CabinetGuidedStepNavigation/);
 assert.doesNotMatch(
   guidedViewSource,
-  /aria-label="Guided millwork steps"/,
+  /aria-label="Guided built-in steps"/,
   "The studio shell must not regain Guided-step navigation markup."
 );
 

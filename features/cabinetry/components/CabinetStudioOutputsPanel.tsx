@@ -143,7 +143,7 @@ export function CabinetStudioOutputsPanel({
                 data-testid="cabinet-validation-success"
                 className="rounded-md bg-emerald-50 px-3 py-2 text-xs text-emerald-800"
               >
-                Cabinet parameters are valid.
+                Built-in parameters are valid.
               </p>
             ) : (
               <div className="grid gap-2">
@@ -292,7 +292,7 @@ export function CabinetStudioOutputsPanel({
                   onClick={onSaveAsCopy}
                   icon="copy"
                   muted
-                  label={busyAction === "copy" ? "Copying..." : "Save as copy"}
+                  label={busyAction === "copy" ? "Copying…" : "Save as copy"}
                 />
               ) : null}
               {mode === "create" || (!canPlaceInPlan && canSaveDefinition) ? (
@@ -304,10 +304,10 @@ export function CabinetStudioOutputsPanel({
                   strongBorder
                   label={
                     busyAction === "save"
-                      ? "Saving..."
+                      ? "Saving…"
                       : mode === "create"
-                        ? "Save as Reusable Template"
-                        : "Save Definition"
+                        ? "Save as template"
+                        : "Save built-in"
                   }
                 />
               ) : null}
@@ -324,10 +324,10 @@ export function CabinetStudioOutputsPanel({
                   onClick={onPlaceInPlan}
                 >
                   {busyAction === "place"
-                    ? "Generating..."
+                    ? "Generating…"
                     : mode === "edit"
-                      ? "Update Placed Millwork"
-                      : "Place in Plan"}
+                      ? "Update in plan"
+                      : "Place in plan"}
                 </button>
               ) : null}
             </div>
@@ -351,14 +351,14 @@ function busyActionLabel(
     dxf: "Exporting fabrication DXF...",
     rfq: "Exporting fabrication RFQ...",
     package: "Exporting package...",
-    copy: "Creating a separate millwork copy...",
-    save: "Saving millwork...",
+    copy: "Creating a separate copy…",
+    save: "Saving built-in…",
   };
   return (
     labels[action] ??
     (mode === "edit"
-      ? "Updating placed millwork..."
-      : "Generating millwork asset...")
+      ? "Updating placed built-in…"
+      : "Generating built-in…")
   );
 }
 

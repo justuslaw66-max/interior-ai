@@ -104,7 +104,7 @@ export function useDesignPageBilling({
 
     setOpeningBillingPortal(true);
     try {
-      showToast("Opening billing portal...");
+      showToast("Opening billing…");
       const response = await fetch("/api/stripe/portal", { method: "POST" });
       const data = await response.json().catch(() => ({}));
       if (!response.ok || !data?.url) {
@@ -287,8 +287,8 @@ export function useDesignPageBilling({
         setPlan(nextPlan);
         showToast(
           nextPlan === "pro"
-            ? "Plan updated! You now have Pro access."
-            : "Plan information refreshed."
+            ? "Pro is active on your account."
+            : "Account details refreshed."
         );
       } catch {
         console.warn("Failed to sync plan after portal return");

@@ -24,8 +24,8 @@ export const SELECTED_CABINET_EXPORT_FEEDBACK: Record<
   { success: string; failure: string; consoleLabel: string }
 > = {
   "placed-package": {
-    success: "Placed millwork package exported",
-    failure: "Placed millwork package export failed",
+    success: "Placed built-in package exported",
+    failure: "Placed built-in package export failed",
     consoleLabel: "placed millwork package",
   },
   "installer-work-order": {
@@ -44,13 +44,13 @@ export const SELECTED_CABINET_EXPORT_FEEDBACK: Record<
     consoleLabel: "finish schedule",
   },
   "project-schedule": {
-    success: "Project millwork schedule exported",
-    failure: "Project millwork schedule export failed",
+    success: "Project built-ins schedule exported",
+    failure: "Project built-ins schedule export failed",
     consoleLabel: "project millwork schedule",
   },
   "project-schedule-csv": {
-    success: "Project millwork schedule CSV exported",
-    failure: "Project millwork schedule CSV export failed",
+    success: "Project built-ins schedule CSV exported",
+    failure: "Project built-ins schedule CSV export failed",
     consoleLabel: "project millwork schedule CSV",
   },
   "project-scope": {
@@ -109,8 +109,8 @@ export const SELECTED_CABINET_EXPORT_FEEDBACK: Record<
     consoleLabel: "installation plan",
   },
   "project-rfq": {
-    success: "Project millwork RFQ exported",
-    failure: "Project millwork RFQ export failed",
+    success: "Project built-ins RFQ exported",
+    failure: "Project built-ins RFQ export failed",
     consoleLabel: "project millwork RFQ",
   },
   "project-handoff": {

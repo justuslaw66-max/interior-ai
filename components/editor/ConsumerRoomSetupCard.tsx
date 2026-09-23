@@ -155,7 +155,7 @@ export function ConsumerRoomSetupCard({
               </select>
             </label>
             <label className={`grid gap-1 ${labelClass}`}>
-              Starting size
+              Size
               <select
                 data-testid="room-setup-size-preset"
                 value={activeRoomPresetId}

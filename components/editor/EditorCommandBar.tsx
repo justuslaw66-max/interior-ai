@@ -198,14 +198,14 @@ export default function EditorCommandBar({
     ...(onMillwork
       ? [{
           id: "millwork",
-          label: "Millwork",
+          label: "Built-ins",
           testId: "editor-workflow-millwork",
           onClick: onMillwork,
           active: millworkActive,
-          ariaLabel: "Custom Millwork Studio",
-          title: "Custom Millwork Studio",
+          ariaLabel: "Built-ins",
+          title: "Built-ins",
           legacyTestId: "open-custom-millwork-studio",
-          screenReaderLabel: "Custom Millwork Studio",
+          screenReaderLabel: "Built-ins",
         }]
       : []),
     {
@@ -406,11 +406,11 @@ export default function EditorCommandBar({
           <span
             data-testid="pro-mode-indicator"
             role="status"
-            aria-label="Pro mode active"
+            aria-label="Pro tools on"
             className="inline-flex h-[30px] shrink-0 items-center rounded-full border border-blue-200 bg-blue-50 px-2 text-[11px] font-bold text-blue-700"
           >
             <span className="sm:hidden">Pro</span>
-            <span className="hidden sm:inline">Pro mode</span>
+            <span className="hidden sm:inline">Pro tools</span>
           </span>
         ) : null}
 
@@ -682,7 +682,7 @@ export default function EditorCommandBar({
                     onViewPlans();
                   }}
                 >
-                  View Pro plans
+                  Pricing
                 </button>
               ))}
               {isAuthed ? (

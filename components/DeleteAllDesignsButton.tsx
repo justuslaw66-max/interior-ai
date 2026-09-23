@@ -40,7 +40,7 @@ export default function DeleteAllDesignsButton({
           setConfirmOpen(true);
         }}
       >
-        {busy ? "Deleting..." : "Delete All"}
+        {busy ? "Deleting…" : "Delete all"}
       </button>
       {message && (
         <span className="text-xs text-red-600" role="alert">
@@ -50,7 +50,7 @@ export default function DeleteAllDesignsButton({
       <ConfirmDialog
         open={confirmOpen}
         title="Delete all designs?"
-        description="Every design in your dashboard will be permanently removed."
+        description="Every design in My designs will be permanently removed."
         confirmLabel="Delete all"
         busy={busy}
         destructive

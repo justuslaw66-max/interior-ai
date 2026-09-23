@@ -2323,19 +2323,19 @@ export default function CabinetryStudio({
         return;
       }
       if (!onSave) {
-        throw new Error("Saving is unavailable for this placed millwork asset.");
+        throw new Error("Saving is unavailable for this placed built-in.");
       }
       const saved = await onSave(definition);
       if (!saved) {
         throw new Error(
           mode === "edit"
-            ? "The placed millwork could not be updated."
+            ? "The placed built-in could not be updated."
             : "Save is unavailable until this design is placed or stored as a reusable template."
         );
       }
-      setActionSuccess(mode === "edit" ? "Millwork definition updated." : "Millwork definition saved.");
+      setActionSuccess(mode === "edit" ? "Built-in updated." : "Built-in saved.");
     } catch (error) {
-      setActionError(error instanceof Error ? error.message : "Unable to save cabinet definition.");
+      setActionError(error instanceof Error ? error.message : "Unable to save this built-in.");
     } finally {
       setBusyAction(null);
     }
@@ -2350,11 +2350,11 @@ export default function CabinetryStudio({
       const payload = await createCabinetStudioPlacementPayload(definition);
       const placed = await onPlaceInPlan(payload);
       if (!placed) {
-        throw new Error("Add or select a room before placing this millwork in the plan.");
+        throw new Error("Add or select a room before placing this built-in.");
       }
-      setActionSuccess(mode === "edit" ? "Millwork placement updated." : "Millwork placed in plan.");
+      setActionSuccess(mode === "edit" ? "Built-in placement updated." : "Built-in placed in plan.");
     } catch (error) {
-      setActionError(error instanceof Error ? error.message : "Unable to place cabinet.");
+      setActionError(error instanceof Error ? error.message : "Unable to place this built-in.");
     } finally {
       setBusyAction(null);
     }
@@ -2374,9 +2374,9 @@ export default function CabinetryStudio({
       });
       const placed = await onPlaceInPlan(payload);
       if (!placed) {
-        throw new Error("Add or select a room before placing a millwork copy.");
+        throw new Error("Add or select a room before placing a copy.");
       }
-      setActionSuccess("A separate millwork copy was placed in the plan.");
+      setActionSuccess("A separate copy of this built-in was placed in the plan.");
     } catch (error) {
       setActionError(error instanceof Error ? error.message : "Unable to save this design as a copy.");
     } finally {

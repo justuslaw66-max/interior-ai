@@ -221,7 +221,7 @@ test.describe("4. Share Link Read-Only", () => {
       await expect(viewer).toHaveAttribute("data-ready", "true", {
         timeout: 30_000,
       });
-      await expect(page.getByText(/No editing in share view/i)).toBeVisible();
+      await expect(page.getByText(/Make a copy to edit/i)).toBeVisible();
       await expect(page.getByTestId("qa-share-snapshot-fingerprint")).toHaveAttribute(
         "data-fingerprint",
         expectedFingerprint,
@@ -236,7 +236,7 @@ test.describe("4. Share Link Read-Only", () => {
         "Deterministic beta smoke fixture.",
       );
       await expect(page.locator("h1").first()).toHaveText(seed.snapshot.title ?? "");
-      await expect(page.getByText("Read-only • modern • mid", { exact: true })).toBeVisible();
+      await expect(page.getByText("View only • modern • mid", { exact: true })).toBeVisible();
       expect(await page.title()).toBe("Interior AI");
       const publicPageSource = await page.content();
       const publicPageMetadata = await page.locator("head").innerHTML();

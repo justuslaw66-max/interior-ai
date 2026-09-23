@@ -61,7 +61,7 @@ assert.match(plansDialog, /Start monthly — \{state\.monthlyLabel\}/);
 assert.match(plansDialog, /Start yearly — \{state\.yearlyLabel\}/);
 for (const required of [
   "EditorDialog",
-  'title="Plans"',
+  'title="Pricing"',
   'testId="plans-dialog"',
   'closeButtonTestId="plans-dialog-close"',
   "manageBackground",

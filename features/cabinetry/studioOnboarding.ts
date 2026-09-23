@@ -70,7 +70,7 @@ export const CABINET_ONBOARDING_ACTIONS = [
     guidedStep: "review",
     title: "Reopen it later",
     description:
-      "Select the placed millwork in the room and edit it again; its parametric definition stays attached.",
+      "Select the placed built-in in the room and edit it again; its parametric definition stays attached.",
   },
 ] as const satisfies readonly CabinetOnboardingAction[];
 

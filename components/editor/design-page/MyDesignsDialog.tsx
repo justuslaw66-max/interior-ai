@@ -77,9 +77,9 @@ export function MyDesignsDialog({
     <>
       <EditorDialog
         open={open}
-        title="My Designs"
+        title="My designs"
         onClose={onClose}
-        closeLabel="Close My Designs"
+        closeLabel="Close My designs"
         testId="load-designs-modal"
         dialogId="editor-my-designs-dialog"
         closeButtonId={MY_DESIGNS_CLOSE_ACTION_ID}
@@ -209,7 +209,7 @@ export function MyDesignsDialog({
                   designerTheme ? "text-center text-neutral-400" : "text-center text-gray-500"
                 }
               >
-                Loading your designs...
+                Loading your designs…
               </div>
             ) : designs.length === 0 ? (
               <div
@@ -293,7 +293,7 @@ export function MyDesignsDialog({
                           : "shrink-0 rounded-md border border-red-200 px-3 py-2 text-sm font-semibold text-red-600 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-60"
                       }
                     >
-                      {deletingDesignIds.has(design.id) ? "Deleting..." : "Delete"}
+                      {deletingDesignIds.has(design.id) ? "Deleting…" : "Delete"}
                     </button>
                   </div>
                 ))}
@@ -313,9 +313,9 @@ export function MyDesignsDialog({
         description={
           pendingDeleteDesign
             ? pendingDeleteDesign.mode === "single"
-              ? `"${pendingDeleteDesign.title ?? "This design"}" will be permanently removed from My Designs.`
-              : `${pendingDeleteDesign.ids.length} design${pendingDeleteDesign.ids.length === 1 ? "" : "s"} will be permanently removed from My Designs.`
-            : "This design will be permanently removed from My Designs."
+              ? `"${pendingDeleteDesign.title ?? "This design"}" will be permanently removed from My designs.`
+              : `${pendingDeleteDesign.ids.length} design${pendingDeleteDesign.ids.length === 1 ? "" : "s"} will be permanently removed from My designs.`
+            : "This design will be permanently removed from My designs."
         }
         confirmLabel="Delete"
         busy={deletingDesignIds.size > 0}

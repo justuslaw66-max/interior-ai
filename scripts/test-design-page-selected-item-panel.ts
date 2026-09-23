@@ -557,8 +557,8 @@ assert.equal(
 );
 
 for (const label of [
-  "Swap to cheaper",
-  "Upgrade this item",
+  "Swap for cheaper",
+  "Swap for pricier",
   "Check current stock and delivery at",
   "Check stock",
   "View retailer",

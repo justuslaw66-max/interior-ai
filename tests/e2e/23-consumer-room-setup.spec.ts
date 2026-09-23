@@ -614,7 +614,7 @@ test.describe("23. Consumer room setup", () => {
     }
 
     const displayUnits = page.getByTestId("room-setup-measurement-units");
-    await expect(displayUnits).toHaveAccessibleName("Display units");
+    await expect(displayUnits).toHaveAccessibleName("Units");
     await expect(displayUnits).toHaveValue("cm");
     await expect(displayUnits.locator("option:checked")).toHaveText(
       "Centimetres (cm)"

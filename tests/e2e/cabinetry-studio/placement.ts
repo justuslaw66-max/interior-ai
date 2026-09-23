@@ -164,7 +164,7 @@ export function registerPlacementTests() {
       await page.getByTestId("cabinet-dimension-width").fill("1200");
       await page.getByTestId("cabinet-input-front-material").selectOption("matte_black_laminate");
       const updatePlacedMillwork = page.getByRole("button", {
-        name: "Update Placed Millwork",
+        name: "Update in plan",
         exact: true,
       });
       await expect(updatePlacedMillwork).toBeEnabled();

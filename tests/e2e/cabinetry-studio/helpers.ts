@@ -16,7 +16,7 @@ export async function mockPlan(page: import("@playwright/test").Page, plan: "fre
 export async function dismissBlockingPrompt(page: import("@playwright/test").Page) {
   const overlay = page
     .locator(".fixed.inset-0.z-50:visible")
-    .filter({ hasText: /Upgrade to Pro|Save and sync this design/i })
+    .filter({ hasText: /Upgrade to Pro|Sign in to save this design/i })
     .last();
   if (!(await overlay.isVisible().catch(() => false))) return;
 
@@ -34,7 +34,7 @@ export async function dismissBlockingPrompt(page: import("@playwright/test").Pag
   await expect(
     page
       .locator(".fixed.inset-0.z-50:visible")
-      .filter({ hasText: /Upgrade to Pro|Save and sync this design/i }),
+      .filter({ hasText: /Upgrade to Pro|Sign in to save this design/i }),
   ).toHaveCount(0, { timeout: 5000 });
 }
 

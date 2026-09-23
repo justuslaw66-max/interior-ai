@@ -306,7 +306,7 @@ export type PlanOverlayDragKind = "opening" | "opening_resize" | "fixed" | "anno
 export function getPlanOverlayMoveHistoryLabel(kind?: PlanOverlayDragKind): string {
   if (kind === "opening") return "Move opening";
   if (kind === "opening_resize") return "Resize opening";
-  if (kind === "fixed") return "Move plan fixture";
+  if (kind === "fixed") return "Move built-in";
   if (kind === "annotation") return "Move annotation";
   return "Move plan overlay";
 }

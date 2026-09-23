@@ -37,9 +37,9 @@ export function PlansDialog({ state, actions }: PlansDialogProps) {
   return (
     <EditorDialog
       open={state.open}
-      title="Plans"
+      title="Pricing"
       onClose={actions.onClose}
-      closeLabel="Close Plans"
+      closeLabel="Close pricing"
       testId="plans-dialog"
       dialogId="editor-plans-dialog"
       closeButtonTestId="plans-dialog-close"
@@ -54,10 +54,10 @@ export function PlansDialog({ state, actions }: PlansDialogProps) {
         {state.layout === "annual_highlight" ? (
           <>
             <div data-testid="plans-layout-annual-highlight" style={{ marginBottom: 8 }}>
-              <b>Pro Yearly — {state.yearlyLabel}</b> · {state.yearlyEffectiveMonthlyLabel}
+              <b>Pro yearly — {state.yearlyLabel}</b> · {state.yearlyEffectiveMonthlyLabel}
             </div>
             <div style={{ marginBottom: 8 }}>
-              <b>Pro Monthly — {state.monthlyLabel}</b> · flexible access for short project
+              <b>Pro monthly — {state.monthlyLabel}</b> · flexible access for short design
               bursts
             </div>
             <div style={{ marginBottom: 12, color: "#047857", fontWeight: 600 }}>
@@ -70,13 +70,13 @@ export function PlansDialog({ state, actions }: PlansDialogProps) {
               <b>Free</b> — design, save, share, and export a watermarked preview
             </div>
             <div style={{ marginBottom: 8 }}>
-              <b>Pro Monthly — {state.monthlyLabel}</b>
+              <b>Pro monthly — {state.monthlyLabel}</b>
             </div>
             <div style={{ marginBottom: 8 }}>
-              <b>Pro Yearly — {state.yearlyLabel}</b>
+              <b>Pro yearly — {state.yearlyLabel}</b>
             </div>
             <div style={{ marginBottom: 12 }}>
-              Clean PDFs, up to four image angles, and Pro planning controls
+              Clean PDFs, up to four image angles, and Pro tools
             </div>
             <div style={{ marginBottom: 12, color: "#047857", fontWeight: 600 }}>
               {state.annualSavingsLabel}

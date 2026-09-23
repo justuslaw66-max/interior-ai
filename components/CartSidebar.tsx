@@ -745,7 +745,7 @@ export default function CartSidebar({
                 onBulkSwap("cheaper");
               }}
             >
-              Make room cheaper
+              Swap for cheaper
             </button>
 
             <button
@@ -756,7 +756,7 @@ export default function CartSidebar({
                 onBulkSwap("premium");
               }}
             >
-              Upgrade room
+              Swap for pricier
             </button>
           </div>
 

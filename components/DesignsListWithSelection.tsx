@@ -80,7 +80,7 @@ export default function DesignsListWithSelection({
               setConfirmDeleteSelectedOpen(true);
             }}
           >
-            {busy ? "Deleting..." : "Delete Selected"}
+            {busy ? "Deleting…" : "Delete selected"}
           </button>
         </div>
         {message && (
@@ -122,7 +122,7 @@ export default function DesignsListWithSelection({
                 sourceDesignId={design.id}
                 className="rounded-lg border px-3 py-2 text-sm text-neutral-700 hover:bg-neutral-50"
               >
-                Duplicate
+                Make a copy
               </DuplicateDesignButton>
               <DeleteDesignButton designId={design.id} />
             </div>
@@ -132,7 +132,7 @@ export default function DesignsListWithSelection({
       <ConfirmDialog
         open={confirmDeleteSelectedOpen}
         title={`Delete ${selectedIds.length} selected design${selectedIds.length === 1 ? "" : "s"}?`}
-        description="Selected designs will be permanently removed from your dashboard."
+        description="Selected designs will be permanently removed from My designs."
         confirmLabel="Delete selected"
         busy={busy}
         destructive

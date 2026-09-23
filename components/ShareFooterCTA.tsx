@@ -19,7 +19,7 @@ export function ShareFooterCTA({ shareToken }: { shareToken?: string }) {
               data-share-touch-target="true"
               className="inline-flex min-h-11 items-center rounded-lg bg-neutral-900 px-3 py-2 text-sm text-white outline-offset-2 focus-visible:outline-2 disabled:opacity-70"
             >
-              Duplicate this design
+              Make a copy
             </DuplicateDesignButton>
           ) : null}
           <Link
