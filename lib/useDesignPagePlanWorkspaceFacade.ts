@@ -124,7 +124,7 @@ export type UseDesignPagePlanWorkspaceFacadeInput = {
         "setViewMode" | "prepareCameraForPlanTemplate"
       >;
     history: EditingInput["actions"]["history"] &
-      Pick<UnderlayInput["actions"], "runCoalescedHistoryTransaction">;
+      Pick<UnderlayInput["actions"], "history" | "runCoalescedHistoryTransaction">;
     feedback: EditingInput["actions"]["feedback"];
     floorPlanState: Pick<
       UnderlayInput["actions"],

@@ -1221,8 +1221,8 @@ export default function DesignControlsFurnishPanel({
           }
         >
           <span>
-            <span className={titleClass}>Advanced model picker</span>
-            <span className={mutedClass}>Verified imported assets and QA catalog controls.</span>
+            <span className={titleClass}>All 3D models</span>
+            <span className={mutedClass}>Pick any verified model by family, including pieces not in the catalog yet.</span>
           </span>
           <span
             className={
@@ -1238,7 +1238,7 @@ export default function DesignControlsFurnishPanel({
         <div className="mt-3 flex flex-1 flex-col gap-2">
           <select
             data-testid="imported-family-select"
-            aria-label="Imported furniture family"
+            aria-label="Model family"
             className={inputClass}
             value={selectedImportedFamilyKey}
             onChange={(event) => {
@@ -1260,7 +1260,7 @@ export default function DesignControlsFurnishPanel({
           </select>
           <select
             data-testid="imported-product-select"
-            aria-label="Imported furniture product"
+            aria-label="Model"
             className={inputClass}
             value={selectedImportedProductId}
             onChange={(event) => onSelectedImportedProductChange(event.target.value)}

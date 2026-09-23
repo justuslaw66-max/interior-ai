@@ -204,15 +204,6 @@ export default async function ImportJobDetailPage(
               <Link className="text-blue-700 hover:underline" href={`/admin/catalog/${job.catalogItemId}`}>
                 Open catalog item
               </Link>
-              <Link className="text-blue-700 hover:underline" href={`/admin/catalog/${job.catalogItemId}/finishes`}>
-                Open finish mapping
-              </Link>
-              <Link className="text-blue-700 hover:underline" href={`/admin/catalog/${job.catalogItemId}/commerce`}>
-                Open commerce mapping
-              </Link>
-              <Link className="text-blue-700 hover:underline" href={`/admin/catalog/${job.catalogItemId}/qa`}>
-                Open catalog QA
-              </Link>
             </>
           ) : (
             <span className="text-xs text-neutral-600">

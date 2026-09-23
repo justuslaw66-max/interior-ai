@@ -3,14 +3,7 @@
 import type { DesignItem } from "@/lib/room-types";
 import { resolveRoomShoppingItems } from "@/lib/room-shopping";
 import ShopLink from "./ShopLink";
-
-function formatCurrency(value: number) {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    maximumFractionDigits: 0,
-  }).format(value);
-}
+import { formatSgd } from "@/lib/money-format";
 
 function formatCategory(value: string) {
   return value.replace(/_/g, " ").replace(/\b\w/g, (letter) => letter.toUpperCase());
@@ -48,7 +41,7 @@ export default function ShoppingList({
           </div>
         </div>
         <div className="text-right text-sm">
-          <div className="font-semibold text-gray-900">{formatCurrency(roomSubtotal)}</div>
+          <div className="font-semibold text-gray-900">{formatSgd(roomSubtotal)}</div>
           <div className="text-xs text-gray-500">Estimated subtotal</div>
         </div>
       </div>
@@ -77,7 +70,7 @@ export default function ShoppingList({
                       ) : null}
                     </td>
                     <td className="p-2 text-center">{item.quantity}</td>
-                    <td className="p-2 text-right">{formatCurrency(item.linePrice)}</td>
+                    <td className="p-2 text-right">{formatSgd(item.linePrice)}</td>
                     <td className="p-2 text-left">
                       <div className={item.hasValidCommerce ? "text-green-700" : "text-amber-700"}>
                         {item.retailerStatusLabel}

@@ -1,125 +1,52 @@
-"use client";
-
 import Link from "next/link";
-import { useEffect, useState } from "react";
 
-type QueueFilter = "all" | "scrape" | "normalize" | "review" | "publish";
+export type InboxQueueFilter = "all" | "scrape" | "normalize" | "review" | "publish";
 
-interface InboxFiltersUIProps {
-  initialQueue: QueueFilter;
-  initialBlocked: boolean;
+const QUEUE_OPTIONS: InboxQueueFilter[] = ["all", "scrape", "normalize", "review", "publish"];
+
+function inboxHref(queue: InboxQueueFilter, blockersOnly: boolean) {
+  const params = new URLSearchParams();
+  if (queue !== "all") params.set("queue", queue);
+  if (blockersOnly) params.set("blocked", "1");
+  const query = params.toString();
+  return query ? `/admin/catalog/inbox?${query}` : "/admin/catalog/inbox";
 }
 
-const STORAGE_KEY = "admin-inbox-filters";
-
-interface StoredFilters {
-  queue: QueueFilter;
-  blocked: boolean;
+function chipClass(active: boolean, activeClass: string) {
+  return `rounded-full border px-3 py-1 ${
+    active ? activeClass : "border-neutral-200 text-neutral-700 hover:bg-neutral-50"
+  }`;
 }
 
-export function InboxFiltersUI({ initialQueue, initialBlocked }: InboxFiltersUIProps) {
-  const [queue, setQueue] = useState<QueueFilter>(() => {
-    if (typeof window === "undefined") return initialQueue;
-    try {
-      const stored = localStorage.getItem(STORAGE_KEY);
-      if (stored) {
-        const parsed = JSON.parse(stored) as StoredFilters;
-        return parsed.queue;
-      }
-    } catch {
-      // Ignore parsing errors
-    }
-    return initialQueue;
-  });
-  const [blocked, setBlocked] = useState(() => {
-    if (typeof window === "undefined") return initialBlocked;
-    try {
-      const stored = localStorage.getItem(STORAGE_KEY);
-      if (stored) {
-        const parsed = JSON.parse(stored) as StoredFilters;
-        return parsed.blocked;
-      }
-    } catch {
-      // Ignore parsing errors
-    }
-    return initialBlocked;
-  });
-  const [mounted, setMounted] = useState(false);
-
-  // Mark client mount to avoid hydration mismatch flashes.
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setMounted(true);
-  }, []);
-
-  // Save filters to localStorage when they change
-  useEffect(() => {
-    if (!mounted) return;
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify({ queue, blocked }));
-    } catch {
-      // Ignore storage errors
-    }
-  }, [queue, blocked, mounted]);
-
-  const buildHref = (newQueue: QueueFilter, newBlocked: boolean) => {
-    if (newQueue === "all" && !newBlocked) {
-      return "/admin/catalog/inbox";
-    }
-    const params = new URLSearchParams();
-    if (newQueue !== "all") {
-      params.set("queue", newQueue);
-    }
-    if (newBlocked) {
-      params.set("blocked", "1");
-    }
-    const queryString = params.toString();
-    return queryString ? `/admin/catalog/inbox?${queryString}` : "/admin/catalog/inbox";
-  };
-
-  if (!mounted) {
-    return null; // Avoid hydration mismatch
-  }
-
+/**
+ * Queue filters are plain links. The URL is the filter and the server page
+ * applies it, so the highlighted chip and the listed jobs always agree.
+ */
+export function InboxFiltersUI({
+  queue,
+  blockersOnly,
+}: {
+  queue: InboxQueueFilter;
+  blockersOnly: boolean;
+}) {
   return (
     <section className="rounded-xl border p-4">
       <div className="flex flex-wrap items-center gap-2 text-xs">
-        {(["all", "scrape", "normalize", "review", "publish"] as QueueFilter[]).map((option) => {
-          const href = buildHref(option, blocked);
-          const active = queue === option;
-          return (
-            <Link
-              key={option}
-              href={href}
-              onClick={(e) => {
-                e.preventDefault();
-                setQueue(option);
-                window.history.replaceState({}, "", buildHref(option, blocked));
-              }}
-              className={`rounded-full border px-3 py-1 ${
-                active
-                  ? "border-neutral-900 bg-neutral-900 text-white"
-                  : "border-neutral-200 text-neutral-700 hover:bg-neutral-50"
-              }`}
-            >
-              {option === "all" ? "All queues" : `${option[0].toUpperCase()}${option.slice(1)} queue`}
-            </Link>
-          );
-        })}
+        {QUEUE_OPTIONS.map((option) => (
+          <Link
+            key={option}
+            href={inboxHref(option, blockersOnly)}
+            aria-current={queue === option ? "page" : undefined}
+            className={chipClass(queue === option, "border-neutral-900 bg-neutral-900 text-white")}
+          >
+            {option === "all" ? "All queues" : `${option[0].toUpperCase()}${option.slice(1)} queue`}
+          </Link>
+        ))}
         <Link
-          href={buildHref(queue, !blocked)}
-          onClick={(e) => {
-            e.preventDefault();
-            setBlocked(!blocked);
-            window.history.replaceState({}, "", buildHref(queue, !blocked));
-          }}
-          className={`rounded-full border px-3 py-1 ${
-            blocked
-              ? "border-red-700 bg-red-700 text-white"
-              : "border-neutral-200 text-neutral-700 hover:bg-neutral-50"
-          }`}
+          href={inboxHref(queue, !blockersOnly)}
+          className={chipClass(blockersOnly, "border-red-700 bg-red-700 text-white")}
         >
-          {blocked ? "Showing blockers only" : "Blockers only"}
+          {blockersOnly ? "Showing blockers only" : "Blockers only"}
         </Link>
       </div>
     </section>

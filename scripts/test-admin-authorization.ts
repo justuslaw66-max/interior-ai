@@ -255,6 +255,12 @@ for (const routePath of [
   assertProtectedHandlers(routePath);
 }
 
+assert.match(
+  source("app/tools/layout.tsx"),
+  /const session = await auth\(\);\s*if \(!isAdminEmail\(session\?\.user\?\.email\)\) notFound\(\);/,
+  "Internal /tools pages must be admin-only, like the APIs they call."
+);
+
 const adminPagePaths = discoverFiles(path.join(process.cwd(), "app/admin"), "page.tsx")
   .map((filePath) => path.relative(process.cwd(), filePath));
 for (const pagePath of adminPagePaths) {

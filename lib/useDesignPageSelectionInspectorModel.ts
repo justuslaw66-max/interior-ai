@@ -3,7 +3,7 @@ import { formatCabinetMeasurement } from "@/features/cabinetry/measurementUnits"
 import { resolveCatalogVariant } from "@/lib/catalog/variant-resolver";
 import type { CatalogItemSchema, DimensionsMm } from "@/lib/catalog-schema";
 import { buildDesignSelectionContext, type DesignSelectionContext } from "@/lib/design-page-selection-context";
-import { getItemPrice, normalizeRotationDegrees } from "@/lib/design-page-utils";
+import { formatMoney, getItemPrice, normalizeRotationDegrees } from "@/lib/design-page-utils";
 import type { HousePlanRoom2D } from "@/lib/design-page-house-plan";
 import { getPlanOpeningWallSpanMeters } from "@/lib/design-page-plan-overlays";
 import type { PlanMeasurementUnit } from "@/lib/design-page-types";
@@ -153,7 +153,7 @@ export function buildDesignPageSelectionInspectorSummary({
       metrics: [
         `${formatCabinetMeasurement(dims.w, planMeasurementUnit)} x ${formatCabinetMeasurement(dims.d, planMeasurementUnit)}`,
         `${normalizeRotationDegrees(radiansToDeg(selectedItem.rotationY ?? 0))}°`,
-        `$${getItemPrice(selectedProduct)}`,
+        formatMoney(getItemPrice(selectedProduct)),
       ],
     };
   }

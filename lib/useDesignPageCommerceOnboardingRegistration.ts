@@ -76,10 +76,10 @@ export function useDesignPageCommerceOnboardingRegistration({
       items,
       zones,
       constraintResults: coreShell.state.feedback.constraintResults,
-      showBetaStart: documentSelection.state.betaStart.visible,
       designRoomCount: coreShell.state.document.designSnapshot.rooms.length,
       planRoomCount: documentRoom.derived.plan.housePlan2D.rooms.length,
       saveStatusKind: persistence.state.persistence.saveStatus.kind,
+      saveStatusSource: persistence.state.persistence.saveStatus.source,
       planGuidedActionsEnabled:
         viewportShell.state.plan.planGuidedActionsEnabled,
       viewportSize: viewportShell.state.diagnostics.viewportSize,

@@ -96,6 +96,26 @@ assert.match(
   "Cabinet Preview must keep shadow maps disabled with sRGB output and ACES tone mapping."
 );
 assert.match(
+  previewRendererSource,
+  /<Canvas\s+frameloop="demand"[\s\S]*?data-frameloop="demand"/,
+  "Cabinet Preview must render on demand so a settled preview stops redrawing."
+);
+assert.match(
+  previewRendererSource,
+  /<Canvas[\s\S]*?gl=\{\{(?:(?!\}\})[\s\S])*?preserveDrawingBuffer:\s*true,/,
+  "Cabinet Preview must keep its last frame in the drawing buffer so page snapshots never paint a settled canvas as empty."
+);
+assert.match(
+  previewRendererSource,
+  /frameCountRef\.current < 3\) \{\s*(?:\/\/[^\n]*\n\s*)*invalidate\(\);\s*return;/,
+  "On-demand readiness must request each frame it counts."
+);
+assert.match(
+  resourceOwnershipSource,
+  /attachCabinetMaterialTexture\(assembly, materialRef\.id, texture\);[\s\S]*?invalidate\(\);/,
+  "A texture that arrives after the scene settled must request a frame."
+);
+assert.match(
   previewSource,
   /<CabinetPreviewRenderer3D[\s\S]*?<CabinetPreviewScene3D/,
   "The preview adapter must compose separate runtime and scene boundaries."
