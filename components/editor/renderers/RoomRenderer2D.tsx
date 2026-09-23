@@ -52,6 +52,9 @@ import { getPlanRoomFloorAreaSqm } from "@/lib/room-floor-area";
 import { floorPlanPropertyEvidenceIsEditable } from "@/lib/floor-plan-measured-property-mutations";
 import { buildOpeningRenderSegments, type Opening2D,
   type OpeningSegment2D } from "./room-renderer-2d-opening-geometry";
+import { formatWallDrawLengthInput, MAX_WALL_DRAW_SEGMENT_LENGTH_METERS,
+  parseWallDrawLengthMm, wallDrawLengthUnitIndicator,
+  wallDrawSegmentEditorIsStale } from "./room-renderer-2d-wall-length-editor";
 import { UnresolvedOpeningMarkers2D } from "./UnresolvedOpeningMarkers2D";
 import { OpeningInteractionQaMarker2D } from "./OpeningInteractionQaMarker2D";
 import { legacyOpeningOffsetAtWorldPoint, moveOpeningCenterFromWorldPoint,
@@ -1239,7 +1242,6 @@ function buildWallDrawSnapMarker(
   };
 }
 
-const MAX_WALL_DRAW_SEGMENT_LENGTH_METERS = ROOM_DIMENSION_DEFAULTS.max;
 const ROOM_DIMENSION_EDITOR_MIN_MILLIMETERS = ROOM_DIMENSION_DEFAULTS.min * 1000;
 const ROOM_DIMENSION_EDITOR_MAX_MILLIMETERS = ROOM_DIMENSION_DEFAULTS.max * 1000;
 
@@ -1952,10 +1954,10 @@ export default function RoomRenderer2D({
       const lengthMm = Math.round(Math.hypot(end.x - start.x, end.z - start.z) * 1000);
       setEditingWallDrawSegment({
         segmentIndex,
-        value: String(lengthMm),
+        value: formatWallDrawLengthInput(lengthMm, measurementUnit),
       });
     },
-    []
+    [measurementUnit]
   );
   const cancelWallDrawSegmentLengthEdit = useCallback(() => {
     setEditingWallDrawSegment(null);
@@ -1963,7 +1965,8 @@ export default function RoomRenderer2D({
   const commitWallDrawSegmentLengthEdit = useCallback(
     (rawValue?: string) => {
       if (!editingWallDrawSegment) return;
-      const finalMillimeters = Number(rawValue ?? editingWallDrawSegment.value);
+      const text = rawValue ?? editingWallDrawSegment.value;
+      const finalMillimeters = parseWallDrawLengthMm(text, measurementUnit);
       if (!Number.isFinite(finalMillimeters) || finalMillimeters <= 0) {
         setEditingWallDrawSegment(null);
         return;
@@ -1974,12 +1977,12 @@ export default function RoomRenderer2D({
       );
       setEditingWallDrawSegment(null);
     },
-    [editingWallDrawSegment, onCommitWallDrawSegmentLength]
+    [editingWallDrawSegment, measurementUnit, onCommitWallDrawSegmentLength]
   );
   const updateWallDrawSegmentEditorValue = useCallback(
     (value: string) => {
       setEditingWallDrawSegment((current) => (current ? { ...current, value } : current));
-      const finalMillimeters = Number(value);
+      const finalMillimeters = parseWallDrawLengthMm(value, measurementUnit);
       if (
         Number.isFinite(finalMillimeters) &&
         finalMillimeters > MAX_WALL_DRAW_SEGMENT_LENGTH_METERS * 1000
@@ -1987,20 +1990,15 @@ export default function RoomRenderer2D({
         commitWallDrawSegmentLengthEdit(value);
       }
     },
-    [commitWallDrawSegmentLengthEdit]
+    [commitWallDrawSegmentLengthEdit, measurementUnit]
   );
 
-  if (editingWallDrawSegment) {
-    const finalMillimeters = Number(editingWallDrawSegment.value);
-    if (
-      !canRenderWallDrawSegmentMeasurements ||
-      editingWallDrawSegment.segmentIndex <= 0 ||
-      editingWallDrawSegment.segmentIndex >= activeDrawRoomPoints.length ||
-      (Number.isFinite(finalMillimeters) &&
-        finalMillimeters > MAX_WALL_DRAW_SEGMENT_LENGTH_METERS * 1000)
-    ) {
-      setEditingWallDrawSegment(null);
-    }
+  if (
+    editingWallDrawSegment &&
+    wallDrawSegmentEditorIsStale(editingWallDrawSegment, measurementUnit,
+      canRenderWallDrawSegmentMeasurements, activeDrawRoomPoints.length)
+  ) {
+    setEditingWallDrawSegment(null);
   }
 
   const openingPreview = useMemo<TracedOpeningPreview | null>(() => {
@@ -4596,11 +4594,8 @@ export default function RoomRenderer2D({
                   <input
                     data-testid="wall-draw-segment-length-editor"
                     autoFocus
-                    type="number"
-                    inputMode="numeric"
-                    min={0}
-                    max={MAX_WALL_DRAW_SEGMENT_LENGTH_METERS * 1000}
-                    step={1}
+                    type="text"
+                    inputMode={measurementUnit === "ft-in" ? "text" : "decimal"}
                     value={editingWallDrawSegment.value}
                     onChange={(event) =>
                       updateWallDrawSegmentEditorValue(event.currentTarget.value)
@@ -4627,7 +4622,9 @@ export default function RoomRenderer2D({
                       outline: "none",
                     }}
                   />
-                  <span style={{ color: "#4b5563", fontWeight: 700 }}>mm</span>
+                  <span style={{ color: "#4b5563", fontWeight: 700 }}>
+                    {wallDrawLengthUnitIndicator(measurementUnit)}
+                  </span>
                 </div>
               ) : (
                 <button
