@@ -323,7 +323,7 @@ export function registerWorkspaceTests() {
     await chooseTemplateStart(page);
     await page.getByTestId("apply-plan-template-compact_two_bed").click();
     await expect(page.getByTestId("room-plan-status-room-count")).toHaveText("6 rooms");
-    await page.getByRole("button", { name: "3D" }).click();
+    await page.getByRole("button", { name: "3D", exact: true }).click();
     const rail = page.getByTestId("plan-right-rail");
     const navigator = page.getByTestId("room-pan-navigator");
     const floorPanel = page.getByTestId("coohom-floor-panel");

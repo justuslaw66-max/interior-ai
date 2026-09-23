@@ -83,6 +83,6 @@ test.describe("100. Hugg Catalog Smoke", () => {
 
     await expect(page.getByRole("button", { name: "2D", exact: true }).first()).toBeVisible({ timeout: 10000 });
     await page.getByRole("button", { name: "2D", exact: true }).first().click({ force: true });
-    await page.getByRole("button", { name: "3D" }).first().click({ force: true });
+    await page.getByRole("button", { name: "3D", exact: true }).first().click({ force: true });
   });
 });

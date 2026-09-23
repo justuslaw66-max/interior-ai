@@ -247,7 +247,7 @@ export function registerTemplateTests() {
 
     await chooseTemplateStart(page);
     await page.getByTestId("add-room-template-bedroom").click();
-    await page.getByRole("button", { name: "3D" }).click();
+    await page.getByRole("button", { name: "3D", exact: true }).click();
 
     await expect(page.getByRole("button", { name: "Focus Living Room" })).toBeVisible({
       timeout: 10000,
@@ -272,7 +272,7 @@ export function registerTemplateTests() {
     await expect(depthInput).toHaveAttribute("data-model-value-mm", "3600");
     await expect(page.getByTestId("consumer-plan-next-steps")).toContainText("2 rooms ready");
     await expect(page.getByTestId("consumer-plan-next-steps")).toContainText(
-      "Add 1 doorway."
+      "Add 1 door."
     );
 
     await expect(page.getByTestId("selection-inspector-fit-room")).toBeVisible();
@@ -295,7 +295,7 @@ export function registerTemplateTests() {
       "data-plan-2d-orientation",
       planOrientationBeforeFit ?? "normal"
     );
-    await page.getByRole("button", { name: "3D" }).click();
+    await page.getByRole("button", { name: "3D", exact: true }).click();
     await expect(page.getByTestId("room-pan-navigator")).toBeVisible();
     await page.getByTestId("room-pan-navigator").scrollIntoViewIfNeeded();
 

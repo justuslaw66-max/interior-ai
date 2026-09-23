@@ -40,7 +40,7 @@ export function registerViewportNavigationTests() {
     await page.mouse.wheel(0, -360);
     await expectPlan2DProjectionHealthy(page);
 
-    await page.getByRole("button", { name: "3D" }).click();
+    await page.getByRole("button", { name: "3D", exact: true }).click();
     await page.getByRole("button", { name: "2D", exact: true }).click();
     await expectPlan2DProjectionHealthy(page);
   });

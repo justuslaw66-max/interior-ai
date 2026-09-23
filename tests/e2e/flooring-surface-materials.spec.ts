@@ -153,7 +153,7 @@ test.describe("Flooring surface materials", () => {
 
     await page.getByRole("button", { name: "2D", exact: true }).click();
     await expect(page.locator('[data-testid="scene-canvas"]:visible').first()).toBeVisible();
-    await page.getByRole("button", { name: "3D" }).click();
+    await page.getByRole("button", { name: "3D", exact: true }).click();
     await expect(page.locator('[data-testid="scene-canvas"]:visible').first()).toBeVisible();
 
     await page.getByTestId("save-design").click();
@@ -212,7 +212,7 @@ test.describe("Flooring surface materials", () => {
     expect(rightRailMetrics.gap).toBeLessThanOrEqual(10);
     expect(rightRailMetrics.leftDelta).toBeLessThanOrEqual(1);
     expect(rightRailMetrics.widthDelta).toBeLessThanOrEqual(1);
-    await page.getByRole("button", { name: "3D" }).click();
+    await page.getByRole("button", { name: "3D", exact: true }).click();
     await expect(page.getByTestId("qa-design-layout-debug")).toHaveAttribute("data-view-mode", "3d");
 
     await page.getByTestId("plan-change-floor-finish").click();

@@ -94,7 +94,7 @@ export function registerStartAndFloorTests() {
 
     await chooseTemplateStart(page);
     await page.getByTestId("add-room-template-bedroom").click();
-    await page.getByRole("button", { name: "3D" }).click();
+    await page.getByRole("button", { name: "3D", exact: true }).click();
 
     await expect(page.getByTestId("room-pan-navigator")).toHaveCount(0);
     await expect(page.getByTestId("coohom-floor-panel")).toHaveCount(0);
@@ -112,7 +112,7 @@ export function registerStartAndFloorTests() {
     await expect(page.getByTestId("scene-canvas").first()).toBeVisible({ timeout: 20000 });
     await chooseTemplateStart(page);
     await page.getByTestId("add-room-template-bedroom").click();
-    await page.getByRole("button", { name: "3D" }).click();
+    await page.getByRole("button", { name: "3D", exact: true }).click();
     await clickWithFallback(page.getByTestId("editor-workflow-shop"));
 
     await expect(page.getByTestId("editor-workflow-shop")).toHaveAttribute("data-active", "true");

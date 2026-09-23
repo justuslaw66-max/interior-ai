@@ -713,7 +713,7 @@ test.describe("Studio canonical wall panels", () => {
       "4 rooms",
       { timeout: 30_000 }
     );
-    await page.getByRole("button", { name: "3D" }).click();
+    await page.getByRole("button", { name: "3D", exact: true }).click();
     await expect(page.getByRole("button", { name: "Focus room" })).toBeVisible({
       timeout: 30_000,
     });
@@ -862,7 +862,7 @@ test.describe("Studio canonical wall panels", () => {
       "4 rooms",
       { timeout: 30_000 },
     );
-    await page.getByRole("button", { name: "3D" }).click();
+    await page.getByRole("button", { name: "3D", exact: true }).click();
     await expect(page.getByRole("button", { name: "Focus room" })).toBeVisible({
       timeout: 30_000,
     });
@@ -963,7 +963,7 @@ test.describe("Studio canonical wall panels", () => {
       "4 rooms",
       { timeout: 30_000 }
     );
-    await page.getByRole("button", { name: "3D" }).click();
+    await page.getByRole("button", { name: "3D", exact: true }).click();
     await expect(page.getByRole("button", { name: "Focus room" })).toBeVisible({
       timeout: 30_000,
     });
@@ -1052,7 +1052,7 @@ test.describe("Studio canonical wall panels", () => {
       "4 rooms",
       { timeout: 30_000 }
     );
-    await page.getByRole("button", { name: "3D" }).click();
+    await page.getByRole("button", { name: "3D", exact: true }).click();
     await expect(page.getByRole("button", { name: "Focus room" })).toBeVisible({
       timeout: 30_000,
     });
