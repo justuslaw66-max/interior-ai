@@ -4677,7 +4677,7 @@
     "lib/useDesignPagePlanEditingFacade.ts": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 143
+        "maximum": 142
       }
     },
     "lib/useDesignPagePlanOverlayController.ts": {
@@ -4815,7 +4815,7 @@
     "lib/useDesignPageRoomPlanController.ts": {
       "overlongFunctions": {
         "count": 3,
-        "maximum": 507
+        "maximum": 506
       },
       "complexFunctions": {
         "count": 2,
