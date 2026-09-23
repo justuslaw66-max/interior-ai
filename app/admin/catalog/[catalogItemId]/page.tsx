@@ -90,7 +90,6 @@ export default async function CatalogItemPage({
         <div className="text-sm text-neutral-600">Updated {item.updatedAt.toLocaleString()}</div>
         <div className="flex flex-wrap gap-4 text-xs text-blue-700">
           <Link href={`/admin/models/${item.assetId}`} className="hover:underline">Open linked model</Link>
-          <Link href={`/admin/catalog/${item.id}/commerce`} className="hover:underline">Open commerce mapping</Link>
         </div>
       </header>
 

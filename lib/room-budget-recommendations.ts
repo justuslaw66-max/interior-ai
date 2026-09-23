@@ -4,6 +4,7 @@ import {
   mapToTopCategory,
   type CatalogTopCategory,
 } from "@/lib/catalog/view-builders";
+import { formatSgd } from "@/lib/money-format";
 
 export interface RoomBudgetRecommendation {
   productId: string;
@@ -30,14 +31,6 @@ export interface BuildRoomBudgetRecommendationsParams {
   activeStyle?: string;
   productQuantities?: Record<string, number>;
   limit?: number;
-}
-
-function formatFallbackMoney(value: number): string {
-  return new Intl.NumberFormat("en-SG", {
-    style: "currency",
-    currency: "SGD",
-    maximumFractionDigits: 0,
-  }).format(value);
 }
 
 function categoryNeedRank(
@@ -121,7 +114,7 @@ export function buildRoomBudgetRecommendations({
         title: item.title,
         category,
         price,
-        priceLabel: priceKnown ? formatFallbackMoney(price) : "Price check",
+        priceLabel: priceKnown ? formatSgd(price) : "Price check",
         reason: getRecommendationReason(category, price, remaining, needScore, styleMatched),
         overBudget,
         remainingAfterAdd: priceKnown ? remaining - price : remaining,

@@ -72,12 +72,10 @@ export function UpgradeDialog({ state, actions }: UpgradeDialogProps) {
       }
     >
         <div
-          className="text-[11px] uppercase tracking-[0.2em] text-neutral-400"
-          data-testid="upgrade-variant-label"
+          className="rounded-xl border border-neutral-200 bg-neutral-50 p-3 text-sm text-neutral-700"
+          data-testid="upgrade-variant-content"
+          data-upgrade-variant={state.variantLabel}
         >
-          Variant: {state.variantLabel}
-        </div>
-        <div className="mt-4 rounded-xl border border-neutral-200 bg-neutral-50 p-3 text-sm text-neutral-700">
           {state.contentVariant === "unlock_pro_exports" ? (
             <div data-testid="upgrade-variant-unlock-pro-exports">
               <div className="font-medium text-neutral-900">Best for active projects</div>

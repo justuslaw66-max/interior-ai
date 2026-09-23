@@ -457,4 +457,41 @@ assert.match(
   "Existing AI layout flow should remain in place for future quality-context consumption."
 );
 
+// The default consumer design is one living room whose seeded door and window
+// are legacy openings without a roomId. The window still sits in that room's
+// exterior wall, so the review must not ask for daylight (UX audit ED4).
+const defaultLivingRoom: HousePlanRoom2D = {
+  id: "room_living",
+  name: "Living Room",
+  roomType: "living",
+  shape: "rectangle",
+  x: 0,
+  z: 0,
+  w: 5,
+  d: 4,
+};
+const defaultRoomReport = buildFloorPlanQualityReport({
+  rooms: [defaultLivingRoom],
+  openings: [
+    { id: "door-east-main", wall: "east", offsetMm: 0, widthMm: 900, kind: "door" },
+    { id: "window-west-main", wall: "west", offsetMm: 0, widthMm: 1200, kind: "window" },
+  ],
+  items: [],
+  activeRoomId: defaultLivingRoom.id,
+});
+assert.ok(
+  !defaultRoomReport.issues.some((issue) => issue.id === "missing-window-room_living"),
+  "A roomless window in the only room's exterior wall must count as that room's daylight."
+);
+const windowlessRoomReport = buildFloorPlanQualityReport({
+  rooms: [defaultLivingRoom],
+  openings: [{ id: "door-east-main", wall: "east", offsetMm: 0, widthMm: 900, kind: "door" }],
+  items: [],
+  activeRoomId: defaultLivingRoom.id,
+});
+assert.ok(
+  windowlessRoomReport.issues.some((issue) => issue.id === "missing-window-room_living"),
+  "A living room with no window at all should still be asked for daylight."
+);
+
 console.log("Floor plan quality checks passed.");

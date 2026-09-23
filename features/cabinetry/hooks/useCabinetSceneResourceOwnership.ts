@@ -1,5 +1,6 @@
 "use client";
 
+import { useThree } from "@react-three/fiber";
 import { useEffect } from "react";
 import * as THREE from "three";
 
@@ -55,6 +56,8 @@ export function useCabinetSceneResourceOwnership({
   previewFrontEdges,
   materials,
 }: CabinetSceneResourceOwnership): void {
+  const invalidate = useThree((state) => state.invalidate);
+
   useEffect(() => {
     return () => disposeCabinetObject3DResources(assembly);
   }, [assembly]);
@@ -86,6 +89,8 @@ export function useCabinetSceneResourceOwnership({
           texture.wrapT = THREE.RepeatWrapping;
           loadedTextures.push(texture);
           attachCabinetMaterialTexture(assembly, materialRef.id, texture);
+          // Scenes render on demand; a late texture needs its own frame.
+          invalidate();
         },
         undefined,
         () => {
@@ -98,5 +103,5 @@ export function useCabinetSceneResourceOwnership({
       cancelled = true;
       disposeCabinetOwnedTextures(loadedTextures);
     };
-  }, [assembly, materials]);
+  }, [assembly, invalidate, materials]);
 }

@@ -85,11 +85,11 @@
       "limit": 250
     },
     "app/share/[shareToken]/export/page.tsx": {
-      "lines": 1475,
+      "lines": 1464,
       "limit": 250
     },
     "app/share/[shareToken]/export/pdf/route.ts": {
-      "lines": 521,
+      "lines": 514,
       "limit": 400
     },
     "app/tools/glb-optimizer/page.tsx": {
@@ -125,7 +125,7 @@
       "limit": 250
     },
     "components/editor/ConsumerRoomSetupCard.tsx": {
-      "lines": 309,
+      "lines": 306,
       "limit": 250
     },
     "components/editor/design-controls-plan/PlanToolIcon.tsx": {
@@ -225,7 +225,7 @@
       "limit": 250
     },
     "components/editor/DesignControlsPlanPanel.tsx": {
-      "lines": 3738,
+      "lines": 3725,
       "limit": 250
     },
     "components/editor/DraggableFloatingPanel.tsx": {
@@ -317,7 +317,7 @@
       "limit": 250
     },
     "components/editor/ShoppingOverviewPanel.tsx": {
-      "lines": 643,
+      "lines": 640,
       "limit": 250
     },
     "components/GoogleAddressAutocomplete.tsx": {
@@ -497,7 +497,7 @@
       "limit": 400
     },
     "lib/catalog/view-builders.ts": {
-      "lines": 1009,
+      "lines": 989,
       "limit": 400
     },
     "lib/design-document-contract.ts": {
@@ -613,7 +613,7 @@
       "limit": 400
     },
     "lib/floor-plan-quality.ts": {
-      "lines": 630,
+      "lines": 629,
       "limit": 400
     },
     "lib/floor-plan-topology-mutations.ts": {
@@ -677,7 +677,7 @@
       "limit": 400
     },
     "lib/useDesignPageOnboarding.ts": {
-      "lines": 758,
+      "lines": 755,
       "limit": 400
     },
     "lib/useDesignPagePersistence.ts": {
@@ -775,7 +775,7 @@
     "app/admin/catalog/[catalogItemId]/page.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 92
+        "maximum": 91
       }
     },
     "app/admin/catalog/inbox/page.tsx": {
@@ -955,7 +955,7 @@
     "app/admin/imports/[id]/page.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 194
+        "maximum": 185
       },
       "complexFunctions": {
         "count": 1,
@@ -1437,7 +1437,7 @@
     "app/share/[shareToken]/export/page.tsx": {
       "overlongFunctions": {
         "count": 7,
-        "maximum": 512
+        "maximum": 507
       },
       "complexFunctions": {
         "count": 1,
@@ -1478,12 +1478,6 @@
         "maximum": 164
       }
     },
-    "components/admin/InboxFiltersUI.tsx": {
-      "overlongFunctions": {
-        "count": 1,
-        "maximum": 108
-      }
-    },
     "components/admin/PaywallPerformancePanel.tsx": {
       "overlongFunctions": {
         "count": 1,
@@ -1517,7 +1511,7 @@
     "components/CartSidebar.tsx": {
       "overlongFunctions": {
         "count": 6,
-        "maximum": 979
+        "maximum": 978
       },
       "complexFunctions": {
         "count": 3,
@@ -1533,7 +1527,7 @@
     "components/catalog/CatalogCard.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 114
+        "maximum": 112
       }
     },
     "components/catalog/CatalogCategoryTabs.tsx": {
@@ -1590,12 +1584,6 @@
         "maximum": 92
       }
     },
-    "components/DesignerCanvas.tsx": {
-      "overlongFunctions": {
-        "count": 2,
-        "maximum": 94
-      }
-    },
     "components/DesignsListWithSelection.tsx": {
       "overlongFunctions": {
         "count": 1,
@@ -1617,11 +1605,11 @@
     "components/editor/ConsumerRoomSetupCard.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 259
+        "maximum": 255
       },
       "complexFunctions": {
         "count": 1,
-        "maximum": 30
+        "maximum": 27
       }
     },
     "components/editor/design-controls-plan/PlanToolComponents.tsx": {
@@ -1997,7 +1985,7 @@
     "components/editor/design-page/UpgradeDialog.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 82
+        "maximum": 80
       }
     },
     "components/editor/design-system/EditorDialog.tsx": {
@@ -2039,11 +2027,11 @@
     "components/editor/DesignControlsPlanPanel.tsx": {
       "overlongFunctions": {
         "count": 6,
-        "maximum": 3628
+        "maximum": 3614
       },
       "complexFunctions": {
         "count": 5,
-        "maximum": 251
+        "maximum": 249
       }
     },
     "components/editor/DraggableFloatingPanel.tsx": {
@@ -4321,7 +4309,7 @@
     "lib/useDesignPageBilling.ts": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 288
+        "maximum": 286
       }
     },
     "lib/useDesignPageCabinetryWorkspaceRegistration.ts": {
@@ -4365,7 +4353,7 @@
     "lib/useDesignPageCanvasInteractionController.ts": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 208
+        "maximum": 204
       }
     },
     "lib/useDesignPageCartHoverCameraFocus.ts": {
@@ -4475,7 +4463,7 @@
     "lib/useDesignPageEditorInteractionRegistration.ts": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 151
+        "maximum": 149
       }
     },
     "lib/useDesignPageEditorShellRuntime.ts": {
@@ -4611,7 +4599,7 @@
     "lib/useDesignPageOnboarding.ts": {
       "overlongFunctions": {
         "count": 6,
-        "maximum": 546
+        "maximum": 543
       }
     },
     "lib/useDesignPagePanelActions.ts": {
@@ -4689,7 +4677,7 @@
     "lib/useDesignPagePlanEditingFacade.ts": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 143
+        "maximum": 142
       }
     },
     "lib/useDesignPagePlanOverlayController.ts": {
@@ -4827,7 +4815,7 @@
     "lib/useDesignPageRoomPlanController.ts": {
       "overlongFunctions": {
         "count": 3,
-        "maximum": 507
+        "maximum": 506
       },
       "complexFunctions": {
         "count": 2,
@@ -5002,9 +4990,6 @@
     }
   },
   "lintSuppressions": {
-    "components/admin/InboxFiltersUI.tsx": {
-      "react-hooks/set-state-in-effect": 1
-    },
     "components/common/LazyImage.tsx": {
       "@next/next/no-img-element": 1
     },

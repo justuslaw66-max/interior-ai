@@ -109,10 +109,7 @@ export type UseDesignPagePlanEditingFacadeInput = {
     > & {
       setTraceOpeningKind: QualityInput["actions"]["setTraceOpeningKind"];
     };
-    history: Pick<
-      RoomPlanInput["actions"],
-      "history" | "runHistoryTransaction"
-    >;
+    history: Pick<RoomPlanInput["actions"], "runHistoryTransaction">;
     feedback: {
       showToast: RoomPlanInput["actions"]["showToast"];
       track: OverlayInput["actions"]["track"];
@@ -152,7 +149,6 @@ export function useDesignPagePlanEditingFacade({
       clearNonRoomSelection: actions.selection.clearNonRoomSelection,
       renameRoom: actions.room.renameRoom,
       moveRoom2D: actions.room.moveRoom2D,
-      history: actions.history.history,
       runHistoryTransaction: actions.history.runHistoryTransaction,
       showToast: actions.feedback.showToast,
     },
