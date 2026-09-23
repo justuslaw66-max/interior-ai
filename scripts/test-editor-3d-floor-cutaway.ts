@@ -8,6 +8,11 @@ import {
   resolveFloorUndersideCutawayElevationMeters,
 } from "@/lib/floor-plan-scene-elevation";
 import { resolveEditorInitial3DFitKey } from "@/lib/design-page-editor-configuration";
+import {
+  buildHorizontalRoomGeometry,
+  getRectangleWallSegments,
+} from "@/components/editor/renderers/house-plan-3d/geometry";
+import type { HousePlanRoom2D } from "@/lib/design-page-house-plan";
 
 function assertMetersEqual(actual: number, expected: number, message: string) {
   assert.ok(Math.abs(actual - expected) < 1e-12, message);
@@ -175,6 +180,11 @@ const housePlanSurfaceMeshesSource = fs.readFileSync(
     "house-plan-3d",
     "surfaceMeshes.tsx"
   ),
+  "utf8"
+);
+const roomCeilingCapMeshSource = fs.readFileSync(
+  path.join(process.cwd(), "components", "editor", "renderers", "house-plan-3d",
+    "RoomCeilingCapMesh.tsx"),
   "utf8"
 );
 const housePlanWallAndOpeningMeshesSource = fs.readFileSync(
@@ -377,19 +387,19 @@ assert.match(
 );
 
 assert.match(
-  housePlanSurfaceMeshesSource,
+  roomCeilingCapMeshSource,
   /const ceilingWorldY = floorWorldY \+ wallHeight;/,
   "Ceiling selection should account for the stacked-floor world offset."
 );
 
 assert.match(
-  housePlanSurfaceMeshesSource,
+  roomCeilingCapMeshSource,
   /if \(raycaster\.ray\.direction\.y <= 0\.001\) return;/,
   "Ceiling caps should accept only upward pointer rays from the underside."
 );
 
 assert.match(
-  housePlanSurfaceMeshesSource,
+  roomCeilingCapMeshSource,
   /const canPickCeilingCap = camera\.position\.y < ceilingWorldY - 0\.005;/,
   "Ceiling caps should stop rendering and receiving hits above the ceiling plane."
 );
@@ -400,16 +410,109 @@ assert.match(
   "Each room ceiling should receive its floor world offset."
 );
 
+// The ceiling covers the walls out to their outer faces. Seen from outside and below the ceiling --
+// which is most of how this editor is used -- a wall's top face points away from the camera, so
+// whatever the ceiling does not cover is a wall-thickness strip of nothing between the wall's top
+// edge and the ceiling's edge. The room outline, the wall centreline, left half that strip open;
+// the inner faces left all of it.
 assert.match(
-  housePlanSurfaceMeshesSource,
-  /const ceilingCapGeometry = useMemo\(\s*\(\) => buildHorizontalRoomGeometry\(room\),[\s\S]*const ceilingBandGeometry = useMemo\(\s*\(\) => buildRoomEdgeBandGeometry\(room, CEILING_THICKNESS_METERS\)/,
-  "Ceiling surfaces and edge bands should terminate on the room wall boundary without an outward or inward offset."
+  roomCeilingCapMeshSource,
+  /buildHorizontalRoomGeometry\(room, wallThickness \/ 2\)/,
+  "The ceiling surface should cover the walls out to their outer faces."
+);
+const ceilingInsetProbeRoom = {
+  id: "ceiling-inset-probe", name: "Ceiling inset probe", roomType: "living", shape: "rectangle",
+  x: 0, z: 0, w: 4, d: 3,
+} as HousePlanRoom2D;
+const ceilingInsetProbeThickness = 0.2;
+const insetCeiling = buildHorizontalRoomGeometry(
+  ceilingInsetProbeRoom, ceilingInsetProbeThickness / 2
+);
+insetCeiling.computeBoundingBox();
+const insetCeilingBox = insetCeiling.boundingBox;
+assert.ok(insetCeilingBox, "Precondition: the inset ceiling surface has a bounding box.");
+assert.ok(
+  Math.abs((insetCeilingBox.max.x - insetCeilingBox.min.x)
+    - (ceilingInsetProbeRoom.w + ceilingInsetProbeThickness)) < 1e-4 &&
+  Math.abs((insetCeilingBox.max.z - insetCeilingBox.min.z)
+    - (ceilingInsetProbeRoom.d + ceilingInsetProbeThickness)) < 1e-4,
+  "A ceiling offset by half the wall thickness should measure the building's outside, so its edge "
+  + "lands exactly on the outer faces: no strip of wall top left uncovered, and no overhang past "
+  + "them either."
+);
+insetCeiling.dispose();
+
+assert.match(
+  roomCeilingCapMeshSource,
+  /polygonOffset\b/,
+  "Covering the wall heads puts the ceiling surface back in their plane, so it needs the polygon "
+  + "offset the floor surface has always used against its slab."
 );
 
 assert.doesNotMatch(
-  housePlanSurfaceMeshesSource,
-  /ceilingEdge(Inset|Offset)/,
-  "Ceiling geometry should not apply a half-wall inset or overhang."
+  roomCeilingCapMeshSource,
+  /buildRoomEdgeBandGeometry|CeilingSlabEdge|CEILING_THICKNESS_METERS/,
+  "The ceiling is its surface and nothing else. An edge band around the room outline, which is the "
+  + "wall centreline, is a rim standing proud of the wall head when it rises above the ceiling "
+  + "plane, and a double-sided ribbon buried inside the wall when it hangs below one, intersecting "
+  + "the wall's own geometry and hatching at the corners. Neither draws anything the room can see: "
+  + "the outline sits behind the wall's inner face and inside its outer one."
+);
+
+// A separate, latent defect in the same corner, recorded because two reverted attempts went into
+// finding it. The rectangle wall segments are exactly room.w and room.d long and centred on the
+// room outline, so each corner leaves a wallThickness / 2 square that no wall fills while the
+// square inside it is filled twice, giving those two boxes coincident top and bottom faces there.
+// It is why a ceiling slab widened to the wall faces hangs past the corners in open air. Tiling
+// the ring (w + thickness along x, d - thickness along z) closes both halves at once, but it also
+// pushes each wall's end into the adjoining wall's visible face and seams every corner, so the
+// wall meshes have to handle their own ends before that is worth doing.
+const cornerProbeRoom = {
+  id: "corner-probe", name: "Corner probe", roomType: "living", shape: "rectangle",
+  x: 0, z: 0, w: 4, d: 3,
+} as HousePlanRoom2D;
+const cornerProbeWallThickness = 0.2;
+const cornerProbeWalls = getRectangleWallSegments(cornerProbeRoom).map((segment) => {
+  const alongHalf = segment.length / 2;
+  const acrossHalf = cornerProbeWallThickness / 2;
+  const halfX = segment.axis === "x" ? alongHalf : acrossHalf;
+  const halfZ = segment.axis === "x" ? acrossHalf : alongHalf;
+  return {
+    minX: segment.x - halfX, maxX: segment.x + halfX,
+    minZ: segment.z - halfZ, maxZ: segment.z + halfZ,
+  };
+});
+const coveredByAWall = (x: number, z: number) => cornerProbeWalls.some((wall) =>
+  x >= wall.minX - 1e-9 && x <= wall.maxX + 1e-9 &&
+  z >= wall.minZ - 1e-9 && z <= wall.maxZ + 1e-9);
+const outerFaceOffset = cornerProbeWallThickness / 2;
+assert.ok(
+  coveredByAWall(cornerProbeRoom.w / 2 + outerFaceOffset - 1e-6, 0),
+  "Precondition: a wall does reach its own outer face along its length, which is why the offset "
+  + "looks right until you get to a corner."
+);
+const wallsCovering = (x: number, z: number) => cornerProbeWalls.filter((wall) =>
+  x > wall.minX + 1e-9 && x < wall.maxX - 1e-9 &&
+  z > wall.minZ + 1e-9 && z < wall.maxZ - 1e-9).length;
+assert.equal(
+  wallsCovering(
+    cornerProbeRoom.w / 2 + outerFaceOffset / 2,
+    -cornerProbeRoom.d / 2 - outerFaceOffset / 2
+  ),
+  0,
+  "No wall fills the outer corner, so a ceiling slab offset out to the wall faces would overhang "
+  + "there. Close the wall corners before offsetting the slab."
+);
+assert.equal(
+  wallsCovering(
+    cornerProbeRoom.w / 2 - outerFaceOffset / 2,
+    -cornerProbeRoom.d / 2 + outerFaceOffset / 2
+  ),
+  2,
+  "The other half of the same defect: two wall boxes cover the inner corner square, so their top "
+  + "and bottom faces are coincident there and z-fight into a hatched patch at some camera "
+  + "angles. A ring of walls that tiles instead (w + thickness along x, d - thickness along z) "
+  + "would close the gap and drop the overlap together."
 );
 
 assert.match(

@@ -130,6 +130,19 @@ assert.match(
   "The controller must delegate room deletion to the focused delete-room action."
 );
 
+assert.doesNotMatch(
+  deleteRoomActionSource,
+  /history\.(?:begin|commit)\(/,
+  "Room deletion must not drive the history manager directly: begin() is ignored while a coalesced "
+  + "transaction is open, so the commit that follows closes that transaction instead of its own."
+);
+assert.match(
+  deleteRoomActionSource,
+  /runHistoryTransaction\("Delete room", \(\) => \{[\s\S]*?clearPlanForEmptyCanvas\(\);\s*\}\);/,
+  "Every mutation the deletion has to undo belongs inside its transaction, including the "
+  + "empty-canvas reset that runs when the last room goes."
+);
+
 assert.match(
   planEditingFacadeSource,
   /actions:\s*\{[\s\S]*?setDesignSnapshot:\s*actions\.document\.setDesignSnapshot,[\s\S]*?setPlanOpenings:\s*actions\.document\.setPlanOpenings,[\s\S]*?renameRoom:\s*actions\.room\.renameRoom,[\s\S]*?moveRoom2D:\s*actions\.room\.moveRoom2D/,

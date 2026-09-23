@@ -335,7 +335,42 @@ function testPlanAnnotationPersistence() {
   );
 }
 
+function testNestedBeginStealsTheOpenTransaction() {
+  // begin() refuses to nest, so a discrete edit that drives the manager directly and drops begin()'s
+  // boolean commits whichever transaction was already open. A coalesced transaction holds one for
+  // its whole idle window, which is how a deletion used to join a slider's undo entry and leave the
+  // slider's own commit warning "No active transaction to commit". Discrete edits go through
+  // runHistoryTransaction, which flushes the open transaction before starting its own.
+  const { history, getState, setState } = createCounterHistory();
+  const warnings: string[] = [];
+  const restoreWarn = console.warn;
+  console.warn = (...args: unknown[]) => {
+    warnings.push(args.map((arg) => String(arg)).join(" "));
+  };
+  try {
+    assert.equal(history.begin("Change floor plan opacity"), true);
+    setState({ value: 1, label: "opacity" });
+    assert.equal(history.begin("Delete room"), false,
+      "begin() must refuse to nest instead of stacking transactions.");
+    setState({ value: 2, label: "deleted" });
+    history.commit();
+    history.commit();
+  } finally {
+    console.warn = restoreWarn;
+  }
+  assert.deepEqual(warnings, [
+    'Transaction already active: "Change floor plan opacity". Ignoring begin("Delete room")',
+    "No active transaction to commit",
+  ], "Dropping begin()'s boolean shows up as the open transaction being stolen, and then as its "
+    + "real owner finding nothing left to commit.");
+  history.undo();
+  assert.deepEqual(getState(), { value: 0, label: "initial" },
+    "The cost of the stolen transaction: one undo reverts both edits, because the second never got "
+    + "an entry of its own.");
+}
+
 testDiscreteCommandsAndRollback();
+testNestedBeginStealsTheOpenTransaction();
 testContinuousCommands();
 testInterruptedDragRecovery();
 testLongMixedSequenceAndMemoryBound();

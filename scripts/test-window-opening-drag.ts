@@ -196,6 +196,25 @@ assert.ok(collapseWhitespace(thresholdSource).includes(thresholdCapability),
   `The threshold may claim a drag only for an opening with room to move: exactly "${thresholdCapability}". `
   + "An opening the placement rules pin in place would select, freeze the camera and never move.");
 
+// 2D claims the same drags through RoomRenderer2D's startOpeningMoveDrag, so it has to refuse the
+// openings the threshold refuses. Selection stays ahead of the refusal: a pinned opening must still
+// open its inspector on pointer-down instead of swallowing the gesture.
+const planRendererSource = fs.readFileSync(
+  "components/editor/renderers/RoomRenderer2D.tsx", "utf8"
+);
+const planDragCapability = "const host = getResolvedOpeningHost(opening); "
+  + "if (!host || !opening.movableOnHost) return false;";
+assert.ok(collapseWhitespace(planRendererSource).includes(planDragCapability),
+  `The 2D opening drag may start only for an opening with room to move: exactly "${planDragCapability}". `
+  + "Otherwise a 2D drag captures the pointer for a move the placement rules can never commit, which is "
+  + "what makes a template door feel stuck.");
+const planDragStart = planRendererSource.slice(
+  planRendererSource.indexOf("const startOpeningMoveDrag ="),
+  planRendererSource.indexOf("const handleOpeningMove =")
+);
+assert.ok(planDragStart.indexOf("onSelectOverlay?.(openingId)") < planDragStart.indexOf("opening.movableOnHost"),
+  "A pinned 2D opening must still be selected on pointer-down before the drag start refuses it.");
+
 const windowMeshSource = fs.readFileSync(
   "components/editor/renderers/house-plan-3d/WindowOpeningMesh.tsx", "utf8"
 );
@@ -218,10 +237,10 @@ assert.ok(collapseWhitespace(
   + "to see the live pointer button, the scene's interactive flag and the real move handler, or a "
   + "right-button pan selects the window and sticks.");
 
-// narrow_one_bed's 0.9 m entry door cannot keep its corner clearance on a 1.2 m wall, while every
-// compact_two_bed door has room (its bathroom and Bedroom 2 doors each own a 1.4 m entry-wall
-// segment). A drag the threshold claims has to be able to move its opening, so the projection must
-// say exactly when the validator accepts another centre on the host.
+// A drag the threshold claims has to be able to commit, so every template door needs another legal
+// centre on its host: compact_two_bed's bathroom and Bedroom 2 doors each own a 1.4 m entry-wall
+// segment (#41), and narrow_one_bed's entry door owns the 1.6 m the entry shares with the living
+// room. The projection must say exactly when the validator accepts another centre on the host.
 function templatePlan(templateId: string) {
   const template = HOUSE_PLAN_TEMPLATES.find((candidate) => candidate.id === templateId);
   assert.ok(template, `Precondition: the ${templateId} template exists.`);
@@ -272,6 +291,38 @@ assert.deepEqual(
   [true, true, true, true, true],
   "compact_two_bed: every door, including entry -> bathroom and entry -> Bedroom 2, must have room to "
   + "move on its own wall segment instead of overlapping on the Bedroom 2 wall."
+);
+assert.deepEqual(
+  templatePlan("narrow_one_bed").projected.filter((opening) => opening.kind === "door")
+    .map((opening) => opening.movableOnHost),
+  [true, true, true, true],
+  "narrow_one_bed: every door, including entry -> living on the 1.6 m the entry shares with the "
+  + "living room, must have room to move."
+);
+
+// narrow_one_bed used to be the pinned case: a 0.9 m entry door on the 1.2 m the entry shared with
+// the living room, where two 0.18 m corner clearances leave 0.84 m of usable wall and so no legal
+// centre at all. The template now shares 1.6 m, so that geometry is kept here as a fixture rather
+// than shipped: without it nothing would prove the projection ever reports no room to move, which is
+// the only case the 3D threshold and RoomRenderer2D's drag start exist to refuse.
+const pinnedRooms: HousePlanRoom2D[] = [
+  { id: "living", name: "Living Room", roomType: "living", shape: "rectangle",
+    x: 1.7, z: 2.1, w: 3.4, d: 4.2 },
+  { id: "entry", name: "Entry", roomType: "custom", shape: "rectangle",
+    x: 4.5, z: 4.1, w: 2.2, d: 2.2 },
+];
+const pinnedDoor: RoomOpening2D = { id: "pinned-door", roomId: "entry", wall: "west", kind: "door",
+  offsetMm: metersToMm(-0.4), widthMm: metersToMm(0.9) };
+assert.deepEqual(
+  validateDesignPageOpeningPlacement(pinnedDoor, [], pinnedDoor.id,
+    { rooms: pinnedRooms, planWidthMeters: 10, planDepthMeters: 10 }),
+  { valid: false, reason: "opening_too_wide", label: "Opening is too wide for this wall" },
+  "Precondition: 0.9 m of door plus two 0.18 m corner clearances does not fit the 1.2 m these rooms "
+  + "share, so no centre on that host is legal."
+);
+assert.equal(mapPlanOpeningsToRoomRenderer([pinnedDoor], pinnedRooms)[0]?.movableOnHost, false,
+  "An opening the placement rules pin in place must project movableOnHost false: that is the value "
+  + "the 3D threshold and RoomRenderer2D's startOpeningMoveDrag both refuse a drag on."
 );
 
 // The structure layer projects every opening's move room on each 2D and 3D render, so the check has

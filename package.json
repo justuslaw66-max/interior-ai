@@ -278,7 +278,7 @@
     "test:floor-plan-quality": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' -r tsconfig-paths/register scripts/test-floor-plan-quality.ts",
     "test:designer-theme-contrast": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' scripts/test-designer-theme-contrast.ts",
     "test:pro-visual-policy": "node scripts/required-test-truthfulness.mjs run ci.pro-visual-policy",
-    "test:room-resize-handle-style": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' scripts/test-room-resize-handle-style.ts",
+    "test:room-resize-handle-style": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' -r tsconfig-paths/register scripts/test-room-resize-handle-style.ts",
     "import:gardenia-surfaces": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' scripts/import-gardenia-surface-materials.ts",
     "test:catalog-audit": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' -r tsconfig-paths/register scripts/test-catalog-quality-audit.ts && npm run test:catalog-registry-sync && npm run test:catalog-editor-coverage && npm run test:dalton-catalog-media && npm run test:dawson-retailer-links && npm run test:castlery-retailer-variant-coverage && npm run test:cedric-lamp-calibration",
     "test:catalog-registry-sync": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' -r tsconfig-paths/register scripts/test-catalog-registry-sync.ts",

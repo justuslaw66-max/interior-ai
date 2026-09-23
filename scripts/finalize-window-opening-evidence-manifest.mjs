@@ -365,7 +365,7 @@ const screenshots = await Promise.all(artifactPaths
 const traces = artifacts.filter((entry) => /(^|\/)trace[^/]*\.zip$/.test(entry.path));
 assertWindowOpeningScreenshotSet(screenshots, 19);
 const cameraA = screenshots.find((entry) =>
-  entry.capture.screenshotId === "02-full-plan-3d-direction-a-standard-window");
+  entry.capture.screenshotId === "02-full-plan-3d-direction-a-seeded-roomless-window");
 const cameraB = screenshots.find((entry) =>
   entry.capture.screenshotId === "03-full-plan-3d-direction-b-full-height-window");
 const transition = cameraB?.capture.cameraTransitionProof;
