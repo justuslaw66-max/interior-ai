@@ -837,7 +837,7 @@ export default function FloorPlanUploadPanel({
                     })}
                   </select>
                   {pdfPageChanging && (
-                    <span className={subtleClass}>Rendering...</span>
+                    <span className={subtleClass}>Rendering…</span>
                   )}
                   {!canSelectPdfPage && !pdfPageChanging && (
                     <span className={subtleClass}>Re-upload PDF to switch pages.</span>

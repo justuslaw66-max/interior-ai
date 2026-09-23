@@ -160,10 +160,10 @@ export default function FloorPlanSourceReviewCanvas({
     : 0;
 
   return (
-    <section className="mt-3" aria-label="Interactive 2D plan preview">
+    <section className="mt-3" aria-label="Interactive 2D preview">
       <div className="mb-2 flex items-center justify-between gap-2">
         <div>
-          <div className="text-sm font-semibold">2D plan preview</div>
+          <div className="text-sm font-semibold">2D preview</div>
           <div
             className={dark ? "text-xs text-neutral-400" : "text-xs text-neutral-600"}
           >

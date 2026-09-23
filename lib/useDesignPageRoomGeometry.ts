@@ -444,7 +444,7 @@ export function useDesignPageRoomGeometry({
           ceilingColor: safeColor,
         },
       });
-      history.begin("Edit ceiling color");
+      history.begin("Edit ceiling colour");
       designSnapshotRef.current = nextSnapshot;
       setDesignSnapshot(nextSnapshot);
       history.commit();

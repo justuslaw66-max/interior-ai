@@ -498,7 +498,7 @@ function PlanOverview({
 
   return (
     <section className="avoid-break mb-12">
-      <h2 className="mb-4 text-2xl font-bold text-gray-900">2D Plan Overview</h2>
+      <h2 className="mb-4 text-2xl font-bold text-gray-900">2D overview</h2>
       <div className="space-y-5">
         {floors.map((floor) => {
           const widthMeters = Math.max(1, floor.bounds.maxX - floor.bounds.minX);

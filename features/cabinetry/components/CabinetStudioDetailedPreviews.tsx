@@ -172,7 +172,7 @@ export function CabinetDetailedPreviewPanel({
           aria-live="polite"
           className="pointer-events-none justify-self-end rounded-md bg-white/90 px-3 py-2 text-xs text-neutral-700 shadow-sm"
         >
-          {status === "regenerating" ? "Regenerating preview..." : "Preview ready"}
+          {status === "regenerating" ? "Regenerating preview…" : "Preview ready"}
         </div>
       </div>
       {activeModuleIssues.length ? (

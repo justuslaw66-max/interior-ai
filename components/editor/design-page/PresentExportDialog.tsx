@@ -794,7 +794,7 @@ export function PresentExportDialog({ configuration, state, actions }: PresentEx
               disabled={isExporting || !sceneReady}
               onClick={actions.onExportImages}
             >
-              {isExporting ? "Exporting..." : "📸 Export Images"}
+              {isExporting ? "Exporting…" : "📸 Export Images"}
             </button>
             <button
               className={
@@ -805,7 +805,7 @@ export function PresentExportDialog({ configuration, state, actions }: PresentEx
               disabled={isPdfExporting || !sceneReady}
               onClick={actions.onExportPdf}
             >
-              {isPdfExporting ? "Generating..." : "📄 Export PDF"}
+              {isPdfExporting ? "Generating…" : "📄 Export PDF"}
             </button>
             <button
               className={
@@ -816,7 +816,7 @@ export function PresentExportDialog({ configuration, state, actions }: PresentEx
               disabled={aiNotesLoading || !hasItems}
               onClick={actions.onGenerateAiNotes}
             >
-              {aiNotesLoading ? "Generating..." : "✨ AI Notes"}
+              {aiNotesLoading ? "Generating…" : "✨ AI Notes"}
             </button>
           </div>
 

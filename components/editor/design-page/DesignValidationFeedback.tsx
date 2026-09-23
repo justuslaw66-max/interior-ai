@@ -148,7 +148,7 @@ export function DesignValidationFeedback({
                   disabled={floorPlanRevisionUpdate.creatingCopy}
                 >
                   {floorPlanRevisionUpdate.creatingCopy
-                    ? "Creating copy..."
+                    ? "Creating copy…"
                     : "Create updated copy"}
                 </button>
               </div>

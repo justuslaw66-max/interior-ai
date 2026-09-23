@@ -789,7 +789,7 @@ export default function CatalogPanel({
         <CatalogSearchInput
           value={rawSearch}
           onChange={setRawSearch}
-          placeholder={`Search products for ${activeRoomLabel}...`}
+          placeholder={`Search products for ${activeRoomLabel}…`}
         />
       </div>
 

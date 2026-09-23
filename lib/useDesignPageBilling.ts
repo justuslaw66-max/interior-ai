@@ -139,7 +139,7 @@ export function useDesignPageBilling({
         };
         track("checkout_started", { ...analytics, design_id: designId ?? null });
         logFunnelEvent("checkout_started", analytics);
-        showToast("Opening checkout...");
+        showToast("Opening checkout…");
         const response = await fetch("/api/stripe/checkout", {
           method: "POST",
           headers: { "Content-Type": "application/json" },

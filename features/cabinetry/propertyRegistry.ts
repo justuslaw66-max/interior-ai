@@ -167,12 +167,12 @@ export const CABINET_PROPERTY_REGISTRY: readonly CabinetPropertyMetadata[] = [
     priority: 100,
   }),
   definitionProperty("totalWidth", "Overall width", "dimensions", "cabinet-guided-width", {
-    description: "Finished width of the complete millwork assembly.",
+    description: "Finished width of the complete built-in.",
     terms: ["total width", "run length", "assembly width", "fit width"],
     priority: 95,
   }),
   definitionProperty("height", "Overall height", "dimensions", "cabinet-guided-height", {
-    description: "Finished height of the complete millwork assembly.",
+    description: "Finished height of the complete built-in.",
     terms: ["total height", "assembly height", "fit height"],
     priority: 95,
   }),
@@ -182,7 +182,7 @@ export const CABINET_PROPERTY_REGISTRY: readonly CabinetPropertyMetadata[] = [
     priority: 95,
   }),
   moduleProperty("millworkComponentType", "Component type", "structure", "cabinet-input-component-type", {
-    description: "Switches the selected module between cabinetry and specialty millwork constructions.",
+    description: "Switches the selected module between cabinet and specialty built-in constructions.",
     terms: ["component", "construction type", "specialty millwork", "beam", "trim", "surround"],
     priority: 90,
   }),

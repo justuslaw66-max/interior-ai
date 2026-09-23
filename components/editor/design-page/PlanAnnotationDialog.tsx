@@ -35,7 +35,7 @@ export function PlanAnnotationDialog({
     <EditorDialog
       open
       title={title}
-      description="Place a draggable label on the 2D plan."
+      description="Place a draggable label on the 2D view."
       onClose={onCancel}
       closeLabel="Close annotation dialog"
       testId="plan-annotation-dialog"

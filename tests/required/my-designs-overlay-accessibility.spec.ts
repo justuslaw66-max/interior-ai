@@ -437,8 +437,8 @@ test("bulk delete cancel, busy guard, and success invoke once per target and foc
     await confirmAction.click();
     await expect.poll(() => deleteCalls.length).toBe(1);
     await expect(confirm.getByRole("button", { name: "Cancel" })).toBeDisabled();
-    await expect(confirm.getByRole("button", { name: "Working..." })).toBeDisabled();
-    await confirm.getByRole("button", { name: "Working..." }).evaluate((button) =>
+    await expect(confirm.getByRole("button", { name: "Working…" })).toBeDisabled();
+    await confirm.getByRole("button", { name: "Working…" }).evaluate((button) =>
       (button as HTMLButtonElement).click()
     );
     expect(deleteCalls).toHaveLength(1);

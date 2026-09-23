@@ -65,7 +65,7 @@ export default function ShareShoppingCheckout({
         className="rounded-lg bg-neutral-950 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-neutral-800 disabled:cursor-not-allowed disabled:bg-neutral-300"
       >
         {busy
-          ? "Checking availability..."
+          ? "Checking availability…"
           : lines.length > 0
             ? `Checkout ${totalQuantity} item${totalQuantity === 1 ? "" : "s"}`
             : "No direct-checkout items"}

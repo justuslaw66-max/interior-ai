@@ -684,7 +684,7 @@ assert.match(
 assert.match(assistant, /isFloorPlanMvpBlockingIssue/);
 assert.match(
   assistant,
-  /2D plan preview[\s\S]*?Floor plan image \{sourceOpacity\}%[\s\S]*?Saved outlines \{overlayOpacity\}%/
+  /2D preview[\s\S]*?Floor plan image \{sourceOpacity\}%[\s\S]*?Saved outlines \{overlayOpacity\}%/
 );
 assert.match(
   assistant,

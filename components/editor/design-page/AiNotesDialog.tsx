@@ -28,10 +28,10 @@ export function AiNotesDialog({
   return (
     <EditorDialog
       open
-      title="AI Design Notes"
+      title="AI notes"
       description="Review the generated rationale and suggested design actions."
       onClose={onClose}
-      closeLabel="Close AI design notes"
+      closeLabel="Close AI notes"
       panelClassName="max-w-2xl"
       footer={
         <EditorDialogActions>

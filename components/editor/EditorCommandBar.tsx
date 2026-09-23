@@ -502,7 +502,7 @@ export default function EditorCommandBar({
           onClick={onSave}
           disabled={isSaving}
         >
-          {isSaving ? "Saving..." : "Save"}
+          {isSaving ? "Saving…" : "Save"}
         </button>
         <div ref={overflowRef} className="relative shrink-0">
           <button

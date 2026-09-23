@@ -217,14 +217,14 @@ export function CabinetStudioOutputsPanel({
                 disabled={!valid || interactionDisabled}
                 onClick={onDownloadGlb}
                 icon="download"
-                label={busyAction === "download" ? "Exporting..." : "Download GLB"}
+                label={busyAction === "download" ? "Exporting…" : "Download GLB"}
               />
               <OutputButton
                 testId="cabinet-download-source-definition"
                 disabled={!valid || interactionDisabled}
                 onClick={onDownloadSource}
                 label={
-                  busyAction === "source" ? "Exporting..." : "Download Source JSON"
+                  busyAction === "source" ? "Exporting…" : "Download Source JSON"
                 }
               />
               <OutputButton
@@ -233,14 +233,14 @@ export function CabinetStudioOutputsPanel({
                 onClick={() => sourceImportInputRef.current?.click()}
                 icon="upload"
                 label={
-                  busyAction === "import" ? "Importing..." : "Import Source JSON"
+                  busyAction === "import" ? "Importing…" : "Import Source JSON"
                 }
               />
               <OutputButton
                 testId="cabinet-download-documentation"
                 disabled={!valid || interactionDisabled}
                 onClick={onDownloadDocumentation}
-                label={busyAction === "docs" ? "Exporting..." : "Download Docs CSV"}
+                label={busyAction === "docs" ? "Exporting…" : "Download Docs CSV"}
               />
               <OutputButton
                 testId="cabinet-download-shop-drawing-svg"
@@ -248,7 +248,7 @@ export function CabinetStudioOutputsPanel({
                 onClick={onDownloadShopDrawing}
                 label={
                   busyAction === "shopDrawing"
-                    ? "Exporting..."
+                    ? "Exporting…"
                     : "Download Shop Drawing SVG"
                 }
               />
@@ -257,21 +257,21 @@ export function CabinetStudioOutputsPanel({
                 disabled={!valid || interactionDisabled}
                 onClick={onDownloadDxf}
                 label={
-                  busyAction === "dxf" ? "Exporting..." : "Download Fabrication DXF"
+                  busyAction === "dxf" ? "Exporting…" : "Download Fabrication DXF"
                 }
               />
               <OutputButton
                 testId="cabinet-download-fabrication-rfq"
                 disabled={!valid || interactionDisabled}
                 onClick={onDownloadRfq}
-                label={busyAction === "rfq" ? "Exporting..." : "Download RFQ JSON"}
+                label={busyAction === "rfq" ? "Exporting…" : "Download RFQ JSON"}
               />
               <OutputButton
                 testId="cabinet-download-package-json"
                 disabled={!valid || interactionDisabled}
                 onClick={onDownloadPackage}
                 label={
-                  busyAction === "package" ? "Exporting..." : "Download Package JSON"
+                  busyAction === "package" ? "Exporting…" : "Download Package JSON"
                 }
               />
             </div>

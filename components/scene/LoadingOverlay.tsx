@@ -23,7 +23,7 @@ export function LoadingOverlay() {
       >
         <div className="panel" style={{ width: 360, padding: 16 }}>
           <div style={{ fontWeight: 600, marginBottom: 8 }}>
-            Preparing your editor...
+            Preparing your editor…
           </div>
           <div style={{ fontSize: 12, opacity: 0.8, marginBottom: 10 }}>
             Loading assets {loaded}/{total}
