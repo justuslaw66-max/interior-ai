@@ -41,7 +41,10 @@ export type UseDesignPageCameraWorkspaceFacadeInput = {
     navigation: Omit<DesignPageCameraNavigationAdapters, "setCameraView"> & {
       setViewMode: Dispatch<SetStateAction<EditorViewMode>>;
     };
-    canvas: Pick<CanvasInput["actions"], "history">;
+    canvas: Pick<
+      CanvasInput["actions"],
+      "history" | "flushCoalescedHistoryTransaction"
+    >;
   };
 };
 
@@ -89,7 +92,7 @@ export function useDesignPageCameraWorkspaceFacade({
       cameraAnimating: navigationController.refs.isCameraAnimatingRef,
     },
     actions: {
-      history: actions.canvas.history,
+      ...actions.canvas,
       updateCameraViewFromScene:
         actions.camera.navigation.updateCameraViewFromScene,
     },

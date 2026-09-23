@@ -4353,7 +4353,7 @@
     "lib/useDesignPageCanvasInteractionController.ts": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 208
+        "maximum": 204
       }
     },
     "lib/useDesignPageCartHoverCameraFocus.ts": {
@@ -4463,7 +4463,7 @@
     "lib/useDesignPageEditorInteractionRegistration.ts": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 151
+        "maximum": 149
       }
     },
     "lib/useDesignPageEditorShellRuntime.ts": {
