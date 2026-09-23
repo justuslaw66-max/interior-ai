@@ -94,6 +94,7 @@ const typescriptGuardFiles = [
   "test-tap-target-placement.ts",
   "test-touch-placement-polish.ts",
   "test-window-opening-drag.ts",
+  "test-ux-states-and-fallbacks.ts",
 ];
 
 const nodeGuardFiles = ["check-design-page-architecture.mjs"];
