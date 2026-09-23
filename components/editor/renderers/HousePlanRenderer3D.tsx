@@ -25,9 +25,9 @@ import { WindowOpeningMesh } from "./house-plan-3d/WindowOpeningMesh";
 import {
   LegacyFloorSlabMesh,
   LegacyWallBandMesh,
-  RoomCeilingCapMesh,
   RoomFloorMesh,
 } from "./house-plan-3d/surfaceMeshes";
+import { RoomCeilingCapMesh } from "./house-plan-3d/RoomCeilingCapMesh";
 import { WallSurfacePanelMesh } from "./house-plan-3d/wallAndOpeningMeshes";
 import { MountedCutawayWallMesh } from "./house-plan-3d/MountedCutawayWallMesh";
 import {
@@ -695,7 +695,7 @@ export default function HousePlanRenderer3D({
             <RoomCeilingCapMesh
               room={room}
               floorWorldY={floorYOffset}
-              wallHeight={roomWallHeight}
+              wallHeight={roomWallHeight} wallThickness={roomWallThickness}
               visible={room.ceilingVisible ?? true}
               opacity={ceilingOpacity}
               color={ceilingColor}

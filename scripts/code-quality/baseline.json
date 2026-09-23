@@ -281,7 +281,7 @@
       "limit": 400
     },
     "components/editor/renderers/house-plan-3d/surfaceMeshes.tsx": {
-      "lines": 486,
+      "lines": 346,
       "limit": 250
     },
     "components/editor/renderers/house-plan-3d/wallAndOpeningMeshes.tsx": {
@@ -2308,7 +2308,7 @@
     },
     "components/editor/renderers/house-plan-3d/surfaceMeshes.tsx": {
       "overlongFunctions": {
-        "count": 3,
+        "count": 2,
         "maximum": 180
       }
     },

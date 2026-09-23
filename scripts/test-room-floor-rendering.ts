@@ -17,6 +17,11 @@ const housePlanRendererPath = path.join(
   "surfaceMeshes.tsx"
 );
 const housePlanSource = fs.readFileSync(housePlanRendererPath, "utf8");
+const roomCeilingCapMeshSource = fs.readFileSync(
+  path.join(process.cwd(), "components", "editor", "renderers", "house-plan-3d",
+    "RoomCeilingCapMesh.tsx"),
+  "utf8"
+);
 const ceilingShadowOccluderPath = path.join(
   process.cwd(),
   "components",
@@ -70,7 +75,7 @@ assert.doesNotMatch(
 );
 
 assert.match(
-  housePlanSource,
+  roomCeilingCapMeshSource,
   /const ceilingShadowGeometry = useMemo\([\s\S]*?buildHorizontalRoomGeometry\([\s\S]*?room,[\s\S]*?wallHeight \* 2[\s\S]*?geometry=\{ceilingShadowGeometry\}[\s\S]*?<group ref=\{groupRef\}[\s\S]*?visible=\{false\}/,
   "Whole-home ceiling occlusion must use a height-bounded overhang while visual cutaway state remains independent."
 );
